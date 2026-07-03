@@ -252,9 +252,11 @@ jobs:
 
       # [Task #1192 B] CodeQL rust analyze 는 cargo 캐시가 없어 매번 cold build 였다.
       # ci.yml 과 동일 path, 별도 key namespace(codeql-rust)로 warm build 화.
-      - name: Cache cargo registry & build (rust)
+      # [Task #1667] PR run 은 restore-only, trusted branch push 에서만 save 한다.
+      - name: Restore cargo registry & build cache (rust)
+        id: codeql_rust_cache_restore
         if: matrix.language == 'rust'
-        uses: actions/cache@v5
+        uses: actions/cache/restore@v5
         with:
           path: |
             ~/.cargo/registry
@@ -267,6 +269,16 @@ jobs:
       - name: Build Rust (for CodeQL)
         if: matrix.language == 'rust'
         run: cargo build
+
+      - name: Save cargo registry & build cache (rust)
+        if: ${{ matrix.language == 'rust' && github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.codeql_rust_cache_restore.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-codeql-rust-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
