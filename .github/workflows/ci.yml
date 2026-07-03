@@ -261,13 +261,16 @@ jobs:
       - name: Format check
         run: cargo fmt --all -- --check
 
+      # [Task #1849] PR is release-test full regression. devel push keeps this Build
+      # step as release smoke, while test steps below use release-test. main/tag/manual
+      # keep full release tests.
       - name: Build
         run: |
           if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-            echo "profile=release-test event=${GITHUB_EVENT_NAME}"
+            echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
             cargo build --profile release-test --verbose
           else
-            echo "profile=release event=${GITHUB_EVENT_NAME}"
+            echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF} role=release-smoke-or-full"
             cargo build --release --verbose
           fi
 
@@ -288,31 +291,31 @@ jobs:
 
       - name: Native Skia tests
         run: |
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-            echo "profile=release-test event=${GITHUB_EVENT_NAME}"
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]] || [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/devel" ]]; then
+            echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
             cargo test --profile release-test --features native-skia skia --lib --verbose
           else
-            echo "profile=release event=${GITHUB_EVENT_NAME}"
+            echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
             cargo test --release --features native-skia skia --lib --verbose
           fi
 
       - name: Run lib tests
         run: |
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-            echo "profile=release-test event=${GITHUB_EVENT_NAME}"
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]] || [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/devel" ]]; then
+            echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
             cargo test --profile release-test --lib --verbose
           else
-            echo "profile=release event=${GITHUB_EVENT_NAME}"
+            echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
             cargo test --release --lib --verbose
           fi
 
       - name: Run integration tests
         run: |
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-            echo "profile=release-test event=${GITHUB_EVENT_NAME}"
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]] || [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/devel" ]]; then
+            echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
             cargo test --profile release-test --tests --verbose
           else
-            echo "profile=release event=${GITHUB_EVENT_NAME}"
+            echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
             cargo test --release --tests --verbose
           fi
 

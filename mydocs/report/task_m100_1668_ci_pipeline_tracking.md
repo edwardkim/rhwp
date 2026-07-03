@@ -2,7 +2,7 @@
 
 ## 목적
 
-이 문서는 #1668의 하위 이슈인 #1664, #1666, #1667, #1665 사이의 정책 결정, 측정 기준,
+이 문서는 #1668의 하위 이슈인 #1664, #1666, #1849, #1667, #1665 사이의 정책 결정, 측정 기준,
 변경 전/후 기준선, PR 상태를 연결해 추적하는 장기 보관 문서다.
 
 각 하위 이슈의 원천 측정값은 개별 측정 문서에 두고, 이 문서는 하위 이슈 간 해석,
@@ -13,6 +13,8 @@
 - #1664 원천 측정 문서: `mydocs/report/task_m100_1664_measurement.md`
 - #1664 cache 정책: `mydocs/tech/ci_cache_policy_1664.md`
 - #1666 원천 측정 문서: `mydocs/report/task_m100_1666_measurement.md`
+- #1849 수행 계획서: `mydocs/plans/task_m100_1849.md`
+- #1849 최종 보고서: `mydocs/report/task_m100_1849_report.md`
 
 문서 PR #1701은 정책/측정 기록만 포함한다. 실제 CI workflow 변경은 후속 코드 PR #1702에서 다루며, #1702
 관측값은 draft 코드 PR run 기준 비교 자료다. #1702가 merge되기 전에는 workflow 변경이 `devel`에 반영된
@@ -27,6 +29,14 @@
 2026-07-03 추가 보강 문서 PR에서는 #1702 merge 이후 #1739 merge 전까지의 순수 #1664 구간 표본을
 재집계해 #1664 P50/P90을 보강한다. #1739 이후 run은 #1666 profile 전환 효과가 섞이므로 #1664
 P50/P90에는 포함하지 않는다.
+
+2026-07-03 후속 정책 검토에서는 #1666 measurement에서 드러난 `devel` push full `release --tests`
+비용을 근거로 #1849를 새 sub-issue로 추가한다. #1849는 #1666 구현 오류 수정이 아니라, PR / `devel` /
+`main` / tag / release workflow 사이의 profile 배치 정책을 재검토하는 작업이다.
+
+2026-07-03 #1849 merge 후 관측에서는 `devel` push가 `release` build smoke + `release-test` 전체 회귀
+검증으로 분리됐음을 확인했다. `Build & Test`는 #1666 merge 후 P50 56m55s에서 14m13s로 줄었고,
+`Run integration tests`는 P50 42m27s에서 3m58s로 줄었다.
 
 ## 메인테이너 결정사항
 
@@ -65,8 +75,9 @@ CI 단축은 회귀 가드 구조를 보존하면서 프로필, 캐시, 병렬�
 |------|------|------|-----------|
 | 1 | #1664 | 캐시 정책 정리 | 코드 PR #1702 merge 완료. PR save 차단, cleanup 후 trusted branch save, 후속 exact-hit 확인 완료. 순수 #1664 구간 P50/P90 보강 완료 |
 | 2 | #1666 | PR `release-test` 프로필 전환 | 코드 PR #1739 merge 완료. PR `Build & Test`는 10m49s로 개선, merge 후 `devel` push는 release integration 비용으로 50분대 확인 |
-| 3 | #1667 | Rust 캐시 전략 검토 | exact cache hit 이후에도 `Dirty rhwp` / `Compiling rhwp`가 남는 원인을 cache key, fingerprint, checkout timestamp, feature/test target 조합 관점에서 검토 |
-| 4 | #1665 | Build & Test job 병렬 분리 | #1666 이후 `devel` push integration step P50 42m27s를 병렬화 판단의 주요 입력으로 사용 |
+| 3 | #1849 | `devel` push profile 배치 재조정 | 코드 PR #1851 merge 완료. `devel` push는 release build smoke + `release-test` 전체 회귀로 전환됐고, `Build & Test`는 14m13s로 감소 |
+| 4 | #1667 | Rust 캐시 전략 검토 | exact cache hit 이후에도 `Dirty rhwp` / `Compiling rhwp`가 남는 원인을 cache key, fingerprint, checkout timestamp, feature/test target 조합 관점에서 검토 |
+| 5 | #1665 | Build & Test job 병렬 분리 | #1849에서 `devel` push profile 정책을 먼저 확정한 뒤 병렬화 효과와 runner-minutes를 재산정 |
 
 ## 공통 측정 기준
 
@@ -293,13 +304,69 @@ trusted branch cache save:
 
 ## branch protection / required check 영향
 
-#1664 PR #1702 및 #1666 PR #1739 merge 후 관측 기준:
+#1664 PR #1702, #1666 PR #1739, #1849 PR #1851 merge 후 관측 기준:
 
 - `Build & Test` job 이름 유지
 - `CI / Build & Test` check 표면 유지
 - branch protection / required check 변경 없음
 - job 병렬화 없음
 - #1666 이후 runner-minutes proxy인 `Build & Test` wall time은 PR에서 감소, trusted `devel` push에서 증가
+- #1849 이후 runner-minutes proxy인 `Build & Test` wall time은 trusted `devel` push에서 다시 감소
+
+## #1849 관측 요약
+
+원천 최종 보고서: `mydocs/report/task_m100_1849_report.md`
+
+### #1851 최종 PR run
+
+- PR: #1851
+- Run: <https://github.com/edwardkim/rhwp/actions/runs/28648923176>
+- head SHA: `5c2afe845ec4fe4afb0eacba49ffb33f22691fc2`
+- 결론: 성공
+- cache: exact hit `Linux-cargo-6a1af...`, 1,637,296,893 B
+- save: PR에서 skipped
+- 실패 / cache reservation / read-only / save 실패 경고: 없음
+
+| 항목 | 시간 |
+|------|------|
+| PR checks 완료 시간 | 12m09s |
+| `CI / Build & Test` job | 11m59s |
+| Build | 1m30s |
+| Native Skia tests | 2m16s |
+| Run lib tests | 1m47s |
+| Run integration tests | 3m53s |
+| Clippy | 26s |
+
+판단:
+
+- PR 경로는 #1666의 `release-test` 전체 회귀 검증을 유지했다.
+- 회귀 가드는 normalized test binary 180개, issue 계열 147개가 실행됐다.
+- 단일 after 표본이므로 #1849 PR P50/P90은 산출하지 않는다.
+
+### #1851 merge 후 `devel` push
+
+- merge commit: `d76f1997f07cc14f06d80d18cbec1d1b36b0839c`
+- Run: <https://github.com/edwardkim/rhwp/actions/runs/28649575142>
+- 결론: 성공
+- cache: exact hit `Linux-cargo-6a1af...`, 1,637,296,893 B
+- save: exact hit 상태라 skipped
+- 실패 / cache reservation / read-only / save 실패 경고: 없음
+
+| 항목 | #1666 merge 후 P50 | #1666 merge 후 P90 | #1849 merge 후 | 판단 |
+|------|--------------------|--------------------|----------------|------|
+| `CI / Build & Test` job | 56m55s | 59m14s | 14m13s | P50 대비 -42m42s, -75.0% |
+| Build | 3m35s | 3m41s | 3m38s | release smoke 유지 |
+| Native Skia tests | 4m02s | 4m15s | 2m13s | `release-test` 전환 |
+| Run lib tests | 3m51s | 4m00s | 1m48s | `release-test` 전환 |
+| Run integration tests | 42m27s | 44m14s | 3m58s | P50 대비 -38m29s, -90.7% |
+| Clippy | 25s | 27s | 26s | 동일 수준 |
+
+판단:
+
+- `devel` push에서 Build는 `release` smoke로 남고, Native Skia / lib / integration test는 `release-test`로 실행됐다.
+- #1666 이후 가장 큰 비용이던 full `release --tests` integration이 `devel` push에서 제거됐다.
+- `Dirty rhwp` 신호는 남지만, 비용이 full release integration에서 40분대로 증폭되지 않는다.
+- 잔존 dirty/fingerprint 원인은 #1667에서 계속 다룬다.
 
 ## P50/P90 상태
 
@@ -315,11 +382,14 @@ trusted branch cache save:
 | #1666 변경 후 | PR #1739 관측값 | 1 | PR P50/P90 산출 보류. `Build & Test` 10m49s |
 | #1666 merge 후 | trusted branch `Build & Test` job 시간 | 13 | P50 56m55s, P90 59m14s |
 | #1666 merge 후 | trusted branch `Run integration tests` 시간 | 13 | P50 42m27s, P90 44m14s |
+| #1849 변경 후 | PR #1851 최종 관측값 | 1 | PR P50/P90 산출 보류. `Build & Test` 11m59s |
+| #1849 merge 후 | trusted branch `Build & Test` job 시간 | 1 | 단일 관측값 14m13s. #1666 P50 56m55s 대비 감소 |
+| #1849 merge 후 | trusted branch `Run integration tests` 시간 | 1 | 단일 관측값 3m58s. #1666 P50 42m27s 대비 감소 |
 
 ## 다음 확인 항목
 
-1. #1666은 PR 단축 성공과 trusted branch 비용 증가를 분리해 메인테이너에게 보고한다.
+1. #1849는 PR 단축 효과 유지와 `devel` push 비용 감소를 분리해 최종 보고한다.
 2. #1667에서는 exact cache hit 이후에도 `Dirty rhwp` / `Compiling rhwp`가 남는 원인을 Build & Test cargo cache와
    CodeQL Rust analyze cache 범위를 분리해 판단한다.
-3. #1665에서는 `devel` push integration step P50 42m27s를 병렬화 효과 산정의 주요 입력으로 사용한다.
+3. #1665에서는 #1849 이후에도 남는 `devel` push wall time과 runner-minutes를 병렬화 효과 산정의 주요 입력으로 사용한다.
 4. OPEN PR cache는 계속 생성될 수 있으므로, cleanup은 closed/merged PR ref만 대상으로 유지한다.
