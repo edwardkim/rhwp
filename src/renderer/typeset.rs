@@ -12283,11 +12283,31 @@ impl TypesetEngine {
         // 단 상단 시작 표(18151945 별표7)와 텍스트 선행 표는 기존 분할 유지.
         let total_rows_h: f64 =
             cut_row_h.iter().sum::<f64>() + cs * row_count.saturating_sub(1) as f64;
-        let preceded_by_same_para_float = st.current_items.iter().any(|it| match it {
-            PageItem::Table { para_index, .. } | PageItem::PartialTable { para_index, .. } => {
-                *para_index == para_idx
-            }
-            _ => false,
+        // [Task #1853] 이월 그룹은 같은 문단의 **진짜 flow 스택 float**(자리차지·문단
+        // 앵커·글자처럼 아님)로 한정한다. 선행 항목의 소스 컨트롤을 조회해
+        // is_para_topbottom(!tac && TopAndBottom && vert=Para) 인 표만 선행 float 로
+        // 센다. `para_index` 만 비교하면 (a) 표 자신의 tac=true 캡션 상자(156767631
+        // 캡션 ci=1, 78842 캡션 ci=0)나 (b) vert=용지 페이지-절대 앵커 상자(3143097
+        // pi2 의 상자 22개)까지 "선행 형제 float" 로 오분류해, 분할 가능한 본체 표를
+        // 통째로 다음 쪽으로 밀어 +1쪽 회귀가 났다(#1844 서베이). 별표4(2448877)의
+        // 표1 은 tac=false·TopAndBottom·vert=Para 라 그대로 인정되어 정합을 유지한다.
+        let preceded_by_same_para_float = st.current_items.iter().any(|it| {
+            let ci = match it {
+                PageItem::Table {
+                    para_index,
+                    control_index,
+                }
+                | PageItem::PartialTable {
+                    para_index,
+                    control_index,
+                    ..
+                } if *para_index == para_idx => *control_index,
+                _ => return false,
+            };
+            matches!(
+                para.controls.get(ci),
+                Some(Control::Table(t)) if is_para_topbottom_float(&t.common)
+            )
         });
         if row_count > 1 && preceded_by_same_para_float {
             let remaining_now =
