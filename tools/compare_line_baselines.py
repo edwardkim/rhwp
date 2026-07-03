@@ -36,14 +36,27 @@ def lines(path: str, page: int):
     return out
 
 
+def match_key(t: str) -> str:
+    """짝짓기 키 — 공백 제거 후 앞 24자.
+
+    한컴 PDF 는 수식을 PUA(U+E000~U+F8FF) 글리프로 임베드하므로 키에서 제거한다.
+    남기면 인접한 유사 줄(예: '종료' vs '시작')과 짝지어져 한 줄 피치만큼의
+    가짜 Δbaseline 스텝(−21~−23pt)을 만든다 (#1829 오탐 원인).
+    """
+    return "".join(ch for ch in t if not "\ue000" <= ch <= "\uf8ff").replace(" ", "")[:24]
+
+
 def pair_deltas(a, b):
     deltas = []
     bi = 0
     for ya, ta in a:
-        ka = ta.replace(" ", "")[:24]
+        ka = match_key(ta)
+        if not ka:
+            continue
         for j in range(bi, min(bi + 6, len(b))):
             yb, tb = b[j]
-            if difflib.SequenceMatcher(None, ka, tb.replace(" ", "")[:24]).ratio() > 0.7:
+            kb = match_key(tb)
+            if kb and difflib.SequenceMatcher(None, ka, kb).ratio() > 0.7:
                 deltas.append((ya - yb, ya, ta[:24]))
                 bi = j + 1
                 break
