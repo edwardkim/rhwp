@@ -4890,33 +4890,35 @@ impl LayoutEngine {
                             }
                         } else {
                             let current_h: f64 = fragment_heights.iter().map(|(h, _, _)| *h).sum();
-                            let hwpx_rowbreak_top_pad = if self.is_hwpx_source.get()
-                                && is_block_rowbreak
-                                && !has_internal_line_reset
-                            {
-                                p.controls
-                                    .iter()
-                                    .filter_map(|ctrl| {
-                                        if let Control::Table(t) = ctrl {
-                                            let top_pad = t
-                                                .cells
-                                                .iter()
-                                                .filter(|cell| cell.row == 0)
-                                                .map(|cell| {
-                                                    let (_, _, pad_top, _) =
-                                                        self.resolve_cell_padding(cell, t);
-                                                    pad_top
-                                                })
-                                                .fold(0.0f64, f64::max);
-                                            Some(top_pad)
-                                        } else {
-                                            None
-                                        }
-                                    })
-                                    .sum::<f64>()
-                            } else {
-                                0.0
-                            };
+                            // [Task #1809] top pad 차감(c7dbe8a2, 종전 HWPX 한정)을 소스
+                            // 무관화 — 한글 편집기 대조에서 pad 적용 컷 위치가 정답
+                            // (admrul_0556 p1 조각 하단: 한글 808.8 = pad 적용 808.7,
+                            // 미적용 810.1). HWP5 재파스에도 동일 적용해야 정합.
+                            let hwpx_rowbreak_top_pad =
+                                if is_block_rowbreak && !has_internal_line_reset {
+                                    p.controls
+                                        .iter()
+                                        .filter_map(|ctrl| {
+                                            if let Control::Table(t) = ctrl {
+                                                let top_pad = t
+                                                    .cells
+                                                    .iter()
+                                                    .filter(|cell| cell.row == 0)
+                                                    .map(|cell| {
+                                                        let (_, _, pad_top, _) =
+                                                            self.resolve_cell_padding(cell, t);
+                                                        pad_top
+                                                    })
+                                                    .fold(0.0f64, f64::max);
+                                                Some(top_pad)
+                                            } else {
+                                                None
+                                            }
+                                        })
+                                        .sum::<f64>()
+                                } else {
+                                    0.0
+                                };
                             let top_up = (target_h - current_h).max(0.0);
                             let target_h = target_h - hwpx_rowbreak_top_pad.min(top_up);
                             if target_h > current_h + 0.5 {
@@ -6002,10 +6004,9 @@ impl LayoutEngine {
         start_unit: usize,
         end_unit: usize,
     ) -> f64 {
-        if self.is_hwpx_source.get() {
-            return 0.0;
-        }
-
+        // [Task #1809] 종전 is_hwpx_source 조기 0 반환 제거 — 컷 이월 조각의 flow
+        // extra 는 소스 무관 기하다. 한글 편집기 대조(admrul_0072 서명 셀: 텍스트→
+        // 하단 경계 한글 25.5pt = extra 적용 25.9pt, 미적용 13.9pt)로 적용이 정답.
         let units = self.cell_units(cell, table, styles);
         let lo = start_unit.min(units.len());
         let hi = end_unit.min(units.len()).max(lo);
