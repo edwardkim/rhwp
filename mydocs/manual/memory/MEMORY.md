@@ -51,6 +51,7 @@
 - [renderer별 별도 image 함수 sweep](feedback_image_renderer_paths_separate.md) — svg/canvas/paint/json 4 backend 점검
 - [결함 진단 시 layer 귀속 정확화](feedback_diagnosis_layer_attribution.md) — emission 위치 ≠ 결함 본질 위치, 시프트 출처 추적
 - [정정 시 두 경로 점검 패턴](feedback_fix_scope_check_two_paths.md) — layout 정정만으로 부족, reflow/preprocessing도 동일 정정
+- [렌더링 보정 하드코딩 금지](feedback_no_hardcoded_render_tuning.md) — 샘플명/페이지/임의 계수 대신 문서 속성과 스펙 필드 기반
 - [폰트 추가 시 alias 동기화 필수](feedback_font_alias_sync.md) — style_resolver + font_metrics_data 2계층 등록
 - [트러블슈팅 폴더 사전 검색 의무](feedback_search_troubleshootings_first.md) — 직렬화/한컴 호환 작업 전 전수 검색
 

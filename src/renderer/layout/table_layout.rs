@@ -4500,6 +4500,9 @@ impl LayoutEngine {
             0.0
         };
         let inner_width = (cell_w - pad_left - pad_right).max(0.0);
+        let line_seg_is_synthetic = |seg: &crate::model::paragraph::LineSeg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        };
         let is_block_rowbreak_table = matches!(
             table.page_break,
             crate::model::table::TablePageBreak::RowBreak
@@ -4604,8 +4607,18 @@ impl LayoutEngine {
             // vpos 리셋을 하드 브레이크(강제 페이지 분할)에서 제외하기 위한 게이트.
             // 가시 텍스트 문단 사이 리셋(Task #993 의도)은 그대로 하드 브레이크로 보존한다.
             let para_has_visible_text = p.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+            let para_uses_synthetic_line_segs =
+                !p.line_segs.is_empty() && p.line_segs.iter().all(|seg| line_seg_is_synthetic(seg));
             let raw_spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
             let spacing_before = if pi > 0 {
+                raw_spacing_before
+            } else if self.is_hwpx_source.get()
+                && is_block_rowbreak
+                && para_uses_synthetic_line_segs
+            {
+                // HWPX 에서 lineSegArray 가 누락된 표 셀 문단은 reflow 로 합성되지만,
+                // ParaShape 의 spacing_before 는 여전히 문서 속성이다. 저장 HWP 는
+                // 첫 줄 vpos 에 이 값을 반영하므로 row cut 측정도 같은 값을 사용한다.
                 raw_spacing_before
             } else if raw_spacing_before > 0.0 {
                 let first_vpos = p
@@ -4626,13 +4639,15 @@ impl LayoutEngine {
             // vpos 리셋 검출: 직전 문단 끝보다 현재 문단 시작 vpos 가 작으면 리셋.
             let reset_before = if pi > 0 && cell_has_local_vpos_origin {
                 let prev = &cell.paragraphs[pi - 1];
-                let prev_end = prev
-                    .line_segs
-                    .last()
-                    .map(|s| s.vertical_pos + s.line_height)
-                    .unwrap_or(-1);
-                let cur_first = p.line_segs.first().map(|s| s.vertical_pos).unwrap_or(-1);
-                cur_first >= 0 && prev_end > 0 && cur_first < prev_end
+                match (prev.line_segs.last(), p.line_segs.first()) {
+                    (Some(prev_seg), Some(cur_seg))
+                        if !line_seg_is_synthetic(prev_seg) && !line_seg_is_synthetic(cur_seg) =>
+                    {
+                        let prev_end = prev_seg.vertical_pos + prev_seg.line_height;
+                        cur_seg.vertical_pos >= 0 && prev_end > 0 && cur_seg.vertical_pos < prev_end
+                    }
+                    _ => false,
+                }
             } else {
                 false
             };
@@ -4647,13 +4662,18 @@ impl LayoutEngine {
             let vpos_gap_before_para = if use_vpos_unit_positions && pi > 0 && cell_first_vpos == 0
             {
                 let prev = &cell.paragraphs[pi - 1];
-                let prev_end = prev
-                    .line_segs
-                    .last()
-                    .map(|s| s.vertical_pos + s.line_height + s.line_spacing)
-                    .unwrap_or(-1);
-                let cur_first = p.line_segs.first().map(|s| s.vertical_pos).unwrap_or(-1);
-                cur_first >= 0 && prev_end > 0 && cur_first > prev_end + vpos_gap_threshold_hu
+                match (prev.line_segs.last(), p.line_segs.first()) {
+                    (Some(prev_seg), Some(cur_seg))
+                        if !line_seg_is_synthetic(prev_seg) && !line_seg_is_synthetic(cur_seg) =>
+                    {
+                        let prev_end =
+                            prev_seg.vertical_pos + prev_seg.line_height + prev_seg.line_spacing;
+                        cur_seg.vertical_pos >= 0
+                            && prev_end > 0
+                            && cur_seg.vertical_pos > prev_end + vpos_gap_threshold_hu
+                    }
+                    _ => false,
+                }
             } else {
                 false
             };
@@ -4670,6 +4690,9 @@ impl LayoutEngine {
                 let Some(cur) = p.line_segs.get(li) else {
                     return false;
                 };
+                if line_seg_is_synthetic(prev) || line_seg_is_synthetic(cur) {
+                    return false;
+                }
                 let prev_end = prev.vertical_pos + prev.line_height;
                 cur.vertical_pos >= 0 && prev_end > 0 && cur.vertical_pos < prev_end
             };
@@ -4677,8 +4700,14 @@ impl LayoutEngine {
             // corrected_line_height 를 적용한다 — raw line_height 가 폰트보다
             // 작은 폴백 케이스에서 렌더러가 키운 높이를 컷 측정이 따라가지
             // 못하면 분할 표가 페이지를 넘는다(측정 공간 불일치).
-            let corrected_h = |line: &ComposedLine| -> f64 {
+            let corrected_h = |line: &ComposedLine, _li: usize| -> f64 {
                 let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
+                // [Task #1811] HWPX RowBreak 셀의 synthetic lineSeg 는 저장 근거가 아니라
+                // reflow 산물이다. row cut 측정에서 다시 corrected_line_height 를 적용하면
+                // HWP 기준보다 줄 유닛이 커져 p4→p5 split 이 한 유닛 빨라진다.
+                if self.is_hwpx_source.get() && is_block_rowbreak && para_uses_synthetic_line_segs {
+                    return raw_lh;
+                }
                 match para_style {
                     Some(ps) => {
                         let max_fs = line
@@ -4712,7 +4741,12 @@ impl LayoutEngine {
             };
             let has_table_in_para = p.controls.iter().any(|c| matches!(c, Control::Table(_)));
             let line_count = comp.lines.len();
-            let line_core_height: f64 = comp.lines.iter().map(|line| corrected_h(line)).sum();
+            let line_core_height: f64 = comp
+                .lines
+                .iter()
+                .enumerate()
+                .map(|(li, line)| corrected_h(line, li))
+                .sum();
             let para_non_inline_extra_h = if p.text.trim().is_empty() && line_count > 0 {
                 (para_non_inline_h - line_core_height).max(0.0)
             } else {
@@ -4799,7 +4833,7 @@ impl LayoutEngine {
                     .sum();
                 if nested_h > 0.0 {
                     for (li, line) in comp.lines.iter().enumerate() {
-                        let h = corrected_h(line);
+                        let h = corrected_h(line, li);
                         let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                         let is_cell_last_line = is_last_para && li + 1 == line_count;
                         let is_block_rowbreak = matches!(
@@ -4821,7 +4855,10 @@ impl LayoutEngine {
                             vpos_gap_before_para
                         } else if use_vpos_unit_positions && cell_first_vpos == 0 {
                             match (p.line_segs.get(li - 1), p.line_segs.get(li)) {
-                                (Some(prev), Some(cur)) => {
+                                (Some(prev), Some(cur))
+                                    if !line_seg_is_synthetic(prev)
+                                        && !line_seg_is_synthetic(cur) =>
+                                {
                                     cur.vertical_pos
                                         > prev.vertical_pos
                                             + prev.line_height
@@ -4835,10 +4872,12 @@ impl LayoutEngine {
                         };
                         if use_vpos_unit_positions {
                             if let Some(seg) = p.line_segs.get(li) {
-                                let target_top = normalized_vpos_px(seg.vertical_pos);
-                                if target_top > unit_cum {
-                                    lh += target_top - unit_cum;
-                                    vpos_gap_before = true;
+                                if !line_seg_is_synthetic(seg) {
+                                    let target_top = normalized_vpos_px(seg.vertical_pos);
+                                    if target_top > unit_cum {
+                                        lh += target_top - unit_cum;
+                                        vpos_gap_before = true;
+                                    }
                                 }
                             }
                         }
@@ -4977,7 +5016,7 @@ impl LayoutEngine {
                         .iter()
                         .enumerate()
                         .map(|(li, line)| {
-                            let h = corrected_h(line);
+                            let h = corrected_h(line, li);
                             let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                             let is_cell_last_line = is_last_para && li + 1 == line_count;
                             // [Task #1022/#1086] trailing ls 규칙 — HeightMeasurer 와
@@ -5017,15 +5056,17 @@ impl LayoutEngine {
                 let mut vpos_gap_before = vpos_gap_before_para;
                 if use_vpos_unit_positions {
                     if let Some(seg) = p.line_segs.first() {
-                        let target_top = normalized_vpos_px(seg.vertical_pos);
-                        if target_top > unit_cum {
-                            let delta = target_top - unit_cum;
-                            let suppress_hwpx_mixed_nested_gap = self.is_hwpx_source.get()
-                                && prev_para_has_mixed_nested_table
-                                && delta <= 24.0;
-                            if !suppress_hwpx_mixed_nested_gap {
-                                para_h += delta;
-                                vpos_gap_before = true;
+                        if !line_seg_is_synthetic(seg) {
+                            let target_top = normalized_vpos_px(seg.vertical_pos);
+                            if target_top > unit_cum {
+                                let delta = target_top - unit_cum;
+                                let suppress_hwpx_mixed_nested_gap = self.is_hwpx_source.get()
+                                    && prev_para_has_mixed_nested_table
+                                    && delta <= 24.0;
+                                if !suppress_hwpx_mixed_nested_gap {
+                                    para_h += delta;
+                                    vpos_gap_before = true;
+                                }
                             }
                         }
                     }
@@ -5055,7 +5096,7 @@ impl LayoutEngine {
             } else {
                 // 일반 텍스트 문단 — 합성 줄마다 유닛 1개.
                 for (li, line) in comp.lines.iter().enumerate() {
-                    let h = corrected_h(line);
+                    let h = corrected_h(line, li);
                     let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                     let is_cell_last_line = is_last_para && li + 1 == line_count;
                     let include_trailing_ls = !is_cell_last_line || para_count > 1;
@@ -5077,7 +5118,9 @@ impl LayoutEngine {
                         vpos_gap_before_para
                     } else if use_vpos_unit_positions && cell_first_vpos == 0 {
                         match (p.line_segs.get(li - 1), p.line_segs.get(li)) {
-                            (Some(prev), Some(cur)) => {
+                            (Some(prev), Some(cur))
+                                if !line_seg_is_synthetic(prev) && !line_seg_is_synthetic(cur) =>
+                            {
                                 cur.vertical_pos
                                     > prev.vertical_pos
                                         + prev.line_height
@@ -5091,16 +5134,18 @@ impl LayoutEngine {
                     };
                     if use_vpos_unit_positions {
                         if let Some(seg) = p.line_segs.get(li) {
-                            let target_top = normalized_vpos_px(seg.vertical_pos);
-                            if target_top > unit_cum {
-                                let delta = target_top - unit_cum;
-                                let suppress_hwpx_mixed_nested_gap = self.is_hwpx_source.get()
-                                    && li == 0
-                                    && prev_para_has_mixed_nested_table
-                                    && delta <= 24.0;
-                                if !suppress_hwpx_mixed_nested_gap {
-                                    lh += delta;
-                                    vpos_gap_before = true;
+                            if !line_seg_is_synthetic(seg) {
+                                let target_top = normalized_vpos_px(seg.vertical_pos);
+                                if target_top > unit_cum {
+                                    let delta = target_top - unit_cum;
+                                    let suppress_hwpx_mixed_nested_gap = self.is_hwpx_source.get()
+                                        && li == 0
+                                        && prev_para_has_mixed_nested_table
+                                        && delta <= 24.0;
+                                    if !suppress_hwpx_mixed_nested_gap {
+                                        lh += delta;
+                                        vpos_gap_before = true;
+                                    }
                                 }
                             }
                         }

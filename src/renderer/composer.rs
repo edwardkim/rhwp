@@ -1267,17 +1267,16 @@ pub fn estimate_composed_line_width(line: &ComposedLine, styles: &ResolvedStyleS
         .sum()
 }
 
-/// [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
-/// 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할한다.
+/// [Task #671/#1811] 저장 lineSeg 가 없거나 synthetic lineSeg 만 있는 셀 paragraph 의
+/// ComposedLine 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할한다.
 ///
 /// 본질: HWP5 일부 파일은 셀 paragraph 의 PARA_LINE_SEG 를 인코딩하지 않는다
 /// (한컴이 layout 시 자동 계산). 본 환경 fallback (`compose_lines` 단일 ComposedLine
 /// 압축) 은 셀 너비를 초과하는 텍스트가 한 줄에 그려져 줄겹침 시각 결함을 발생.
 ///
 /// 본 함수는 다음 가드로 동작 영역을 좁힌다:
-/// - `para.line_segs.is_empty()` (한컴 인코딩 부재)
-/// - `composed.lines.len() == 1` (compose_lines fallback 결과)
-/// - 단일 ComposedLine 의 측정 폭이 `cell_inner_width_px` 초과
+/// - `para.line_segs.is_empty()` 또는 모든 lineSeg 가 synthetic 구현 속성
+/// - ComposedLine 전체 측정 폭이 `cell_inner_width_px` 초과
 ///
 /// 분할 전략: 단어 경계 (공백) 우선, 단어가 셀 너비 초과 시 글자 단위 break.
 pub fn recompose_for_cell_width(
@@ -1286,7 +1285,23 @@ pub fn recompose_for_cell_width(
     cell_inner_width_px: f64,
     styles: &ResolvedStyleSet,
 ) {
-    if !para.line_segs.is_empty() {
+    let has_authoritative_line_segs = !para.line_segs.is_empty()
+        && para
+            .line_segs
+            .iter()
+            .any(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+    if has_authoritative_line_segs {
+        return;
+    }
+    if para.line_segs.len() >= 2
+        && para
+            .line_segs
+            .iter()
+            .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+    {
+        // HWPX 로드 단계에서 셀 폭/높이/anchor 속성으로 합성한 lineSeg 경계는
+        // 이미 문서 속성 기반 보정 결과다. 여기서 다시 폭 기준으로 합치고
+        // 재분할하면 RowBreak 표의 쪽 나눔 기준 줄 수가 원본 세로 정보와 어긋난다.
         return;
     }
     if composed.lines.is_empty() {
@@ -1295,13 +1310,34 @@ pub fn recompose_for_cell_width(
     if cell_inner_width_px <= 0.0 {
         return;
     }
+    let text_width_px = styles
+        .para_styles
+        .get(para.para_shape_id as usize)
+        .map(|ps| {
+            let continuation_left = if ps.indent < 0.0 {
+                ps.margin_left + ps.indent.abs()
+            } else {
+                ps.margin_left
+            };
+            let first_left = if ps.indent > 0.0 {
+                ps.margin_left + ps.indent
+            } else {
+                ps.margin_left
+            };
+            let effective_left = first_left.max(continuation_left).max(0.0);
+            (cell_inner_width_px - effective_left - ps.margin_right).max(0.0)
+        })
+        .unwrap_or(cell_inner_width_px);
+    if text_width_px <= 0.0 {
+        return;
+    }
     // Some HWP3-origin HWP5 files omit PARA_LINE_SEG for legacy bullet paragraphs.
     // HY신명조's embedded metrics are slightly wider than Hancom's converted reflow here,
     // so use a small tolerance only for the tight leading-body style pattern.
     let effective_width_px = if is_hwp3_hwp5_missing_lineseg_legacy_bullet(para, composed, styles) {
-        cell_inner_width_px * 1.04
+        text_width_px * 1.04
     } else {
-        cell_inner_width_px
+        text_width_px
     };
     // [Task #1042 Stage 6a] multi-line 지원 — compose_lines fallback 의 CHARS_PER_LINE=45
     // heuristic 결과가 cell width 와 일치 안 할 수 있음. 모든 lines 의 runs 를 합쳐서
