@@ -91,6 +91,8 @@ python3 scripts/task1274_visual_sweep.py \
 - visual sweep: `flagged=0/2`
 - p44 review: `/private/tmp/rhwp-pr1855-review/output/pr1855_visual/pr1855-issue1853/review/review_044.png`
 - p45 review: `/private/tmp/rhwp-pr1855-review/output/pr1855_visual/pr1855-issue1853/review/review_045.png`
+- p44 asset: `mydocs/pr/assets/pr_1855_issue1853_review_p044.png`
+- p45 asset: `mydocs/pr/assets/pr_1855_issue1853_review_p045.png`
 - p44 `visual_accuracy_proxy_percent`: 약 24.27%
 - p45 `visual_accuracy_proxy_percent`: 약 11.79%
 

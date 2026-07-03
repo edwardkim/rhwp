@@ -69,6 +69,8 @@ python3 scripts/task1274_visual_sweep.py \
 - 결과: `flagged=0/2`.
 - p44 review: `output/pr1855_visual/pr1855-issue1853/review/review_044.png`
 - p45 review: `output/pr1855_visual/pr1855-issue1853/review/review_045.png`
+- p44 asset: `mydocs/pr/assets/pr_1855_issue1853_review_p044.png`
+- p45 asset: `mydocs/pr/assets/pr_1855_issue1853_review_p045.png`
 - p44 자동 일치율 보조값: 약 24.27%.
 - p45 자동 일치율 보조값: 약 11.79%.
 
