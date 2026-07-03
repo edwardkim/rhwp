@@ -11830,10 +11830,27 @@ impl TypesetEngine {
                     crate::renderer::hwpunit_to_px(first_seg.vertical_pos as i32, self.dpi);
                 // 호스트 본문 lines + 표는 절대 좌표 → cur_h 는 first_vpos + host lines 만 진행.
                 let pre_lines_h = fmt.line_advances_sum(0..fmt.line_heights.len());
-                if target_y > st.current_height && target_y + pre_lines_h <= available {
-                    st.current_height = target_y;
+                let can_sync = target_y > st.current_height && target_y + pre_lines_h <= available;
+                // [Task #1858] Paper 앵커 자리차지 표는 절대좌표(table_layout vert=Paper)로
+                // 그려지며 flow 를 소비하지 않는다. 첫 박스는 host vpos 로 current_height 를
+                // sync 해 본문 텍스트를 정렬하지만, 같은 host 문단에 co-anchored 된 후속 Paper
+                // 박스는 target_y(=동일 host vpos)가 이미 sync 된 current_height 이하라 기존
+                // 가드(target_y > current_height)를 통과하지 못하고 flow 경로로 빠져 각 박스가
+                // 높이를 소비 → 페이지가 폭발했다(3143097: 용지앵커 서식상자 22개가 모두 1쪽
+                // 용지좌표에 있는데 한컴 1쪽 대비 rhwp 3~4쪽). 후속 co-anchored Paper 박스도
+                // 절대배치(0 flow)한다. 단독 Paper 박스(선행 없음·sync 불가)는 기존대로 flow.
+                let has_preceding_paper_float = para.controls.iter().take(ctrl_idx).any(|c| {
+                    matches!(c, Control::Table(t)
+                        if !t.common.treat_as_char
+                            && matches!(t.common.text_wrap, TextWrap::TopAndBottom)
+                            && matches!(t.common.vert_rel_to, VertRelTo::Paper))
+                });
+                if can_sync || has_preceding_paper_float {
+                    if can_sync {
+                        st.current_height = target_y;
+                    }
                     // table_total = 0: 표 자체는 cur_h advance 에 영향 없음 (Paper-absolute).
-                    // 호스트 본문 lines 만 place_table_with_text 가 pre_height 로 추가.
+                    // 호스트 본문 lines 만 place_table_with_text 가 pre_height 로 추가(첫 박스만).
                     self.place_table_with_text(
                         st,
                         para_idx,
