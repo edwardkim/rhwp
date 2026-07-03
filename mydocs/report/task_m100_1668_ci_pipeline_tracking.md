@@ -44,6 +44,11 @@ save-only 구조로 정렬됐음을 확인했다. PR #1857에서는 `refs/pull/1
 merge 후 `devel` push에서는 CodeQL Rust exact-hit restore 후 save skipped, cache reservation/read-only/save
 failure 경고 없음이 확인됐다.
 
+2026-07-03 #1667 후속 Render Diff before 관측에서는 최근 full `Canvas visual diff` 20개가 모두 cargo/npm
+cache miss였고, post-save는 cache budget read-only / reservation failure로 실패했음을 확인했다. 현재
+`Linux-render-diff-cargo-*` 9개와 `node-cache-*` 9개는 모두 merged PR ref에 묶여 있으며, 최신 PR run에는
+재사용되지 않았다.
+
 ## 메인테이너 결정사항
 
 ### 회귀 가드 1:1 추적성 보존
@@ -82,7 +87,7 @@ CI 단축은 회귀 가드 구조를 보존하면서 프로필, 캐시, 병렬�
 | 1 | #1664 | 캐시 정책 정리 | 코드 PR #1702 merge 완료. PR save 차단, cleanup 후 trusted branch save, 후속 exact-hit 확인 완료. 순수 #1664 구간 P50/P90 보강 완료 |
 | 2 | #1666 | PR `release-test` 프로필 전환 | 코드 PR #1739 merge 완료. PR `Build & Test`는 10m49s로 개선, merge 후 `devel` push는 release integration 비용으로 50분대 확인 |
 | 3 | #1849 | `devel` push profile 배치 재조정 | 코드 PR #1851 merge 완료. `devel` push는 release build smoke + `release-test` 전체 회귀로 전환됐고, `Build & Test`는 14m13s로 감소 |
-| 4 | #1667 | Rust 캐시 전략 검토 | 1차 CodeQL Rust restore/save 분리 PR #1857 merge 완료. PR cache save 표면 제거 확인. exact-hit 이후 남는 `Dirty rhwp` / `Compiling rhwp`, Render Diff cargo cache, stale PR ref cleanup은 후속 판단 |
+| 4 | #1667 | Rust 캐시 전략 검토 | 1차 CodeQL Rust restore/save 분리 PR #1857 merge 완료. Render Diff before 표본 수집 완료. 최신 Render Diff PR run은 cache miss + save failure 상태라 PR save 차단 / trusted seed / path 축소 후보를 구현계획서에서 선택해야 함 |
 | 5 | #1665 | Build & Test job 병렬 분리 | #1849에서 `devel` push profile 정책을 먼저 확정한 뒤 병렬화 효과와 runner-minutes를 재산정 |
 
 ## 공통 측정 기준
@@ -460,6 +465,44 @@ Build & Test 참고값:
   `Dirty rhwp`는 cache fingerprint, checkout timestamp, test target 산출물 관점의 후속 분석 대상이다.
 - branch protection / required check 변경은 없고, `devel` required status check context는 `Build & Test` 그대로다.
 
+### Render Diff before
+
+- 기준 계획서 PR: #1861
+- merge commit: `8ea6f3f5e6e5446a8312d59e58eb81c70f8c80c4`
+- 표본: 최근 successful full `Canvas visual diff` 20개, fast-pass 9개 별도 분리
+- 원천 기록: `mydocs/report/task_m100_1667_measurement.md`
+
+시간:
+
+| 항목 | n | P50 | P90 | 판단 |
+|------|---|-----|-----|------|
+| `Render Diff` workflow 완료 시간 | 20 | 4m00s | 4m14s | PR check proxy. 일부 queue/concurrency outlier 존재 |
+| `Canvas visual diff` job | 20 | 3m47s | 3m57s | runner-minutes proxy |
+| `Build WASM package` | 20 | 1m15s | 1m18s | 가장 큰 build step |
+| `Build native CLI for PDF report` | 20 | 1m04s | 1m09s | 두 번째 build step |
+| `Run canvas visual diff and PDF report` | 20 | 26s | 27s | 실제 diff 실행 |
+
+cache:
+
+| 항목 | 관측 |
+|------|------|
+| Render Diff cargo restore | 20/20 miss |
+| Render Diff cargo save | 20/20 save 시도 후 실패 |
+| npm restore | 20/20 miss |
+| npm save | 20/20 reservation failure |
+| 실패 가시성 | 대표 run `28655648394`: cargo restore miss line 456, npm save failure line 875, cargo read-only warning line 878, cargo save failure line 879 |
+| cache inventory | 전체 30개 / 11,131,139,002 B. `Linux-render-diff-cargo-*` 9개 / 4,685,680,935 B, `node-cache-*` 9개 / 427,401,927 B |
+| stale 판단 | Render Diff cargo/npm cache 18개는 모두 merged PR ref |
+
+판단:
+
+- 현행 Render Diff cache는 관측된 최신 PR run에서 복원 이득을 주지 못하고, post-save 실패 로그와 cache quota
+  부담을 만든다.
+- Render Diff full run 자체는 P50 3m47s로 짧으므로, PR ref별 520 MB cargo cache를 계속 저장할 비용 대비
+  이득이 낮아 보인다.
+- 후속 구현계획서에서는 PR save 차단을 기본 후보로 두고, trusted seed 또는 `target` 제외 path 축소가 필요한지
+  별도 판단한다.
+
 ## P50/P90 상태
 
 | 구간 | 대상 | 샘플 수 | 판단 |
@@ -480,11 +523,15 @@ Build & Test 참고값:
 | #1667 변경 후 | PR #1857 관측값 | 1 | PR P50/P90 산출 보류. CodeQL `Analyze (rust)` 8m18s, PR cache save skipped |
 | #1667 merge 후 | trusted branch CodeQL `Analyze (rust)` job 시간 | 1 | 단일 관측값 8m17s. exact hit라 save skipped |
 | #1667 merge 후 | trusted branch `Build & Test` job 시간 | 1 | 참고값 14m08s. #1857은 Build & Test workflow 변경 없음 |
+| #1667 Render Diff before | `Render Diff` workflow 완료 시간 | 20 | P50 4m00s, P90 4m14s. full run만 집계, fast-pass 제외 |
+| #1667 Render Diff before | `Canvas visual diff` job 시간 | 20 | P50 3m47s, P90 3m57s. runner-minutes proxy |
+| #1667 Render Diff before | Render Diff cargo/npm cache | 20 | cargo/npm restore 20/20 miss, save 20/20 실패 |
 
 ## 다음 확인 항목
 
 1. #1667에서는 exact cache hit 이후에도 `Dirty rhwp` / `Compiling rhwp`가 남는 원인을 Build & Test cargo cache와
    CodeQL Rust analyze cache 범위를 분리해 판단한다.
-2. Render Diff cargo cache는 PR ref 누적 규모가 크므로 #1667 후속 PR에서 정책을 별도로 결정한다.
+2. Render Diff cargo cache는 before 표본상 최신 PR run에서 hit가 없고 save failure만 남으므로, 후속
+   구현계획서에서 PR save 차단 / trusted seed / `target` 제외 path 축소 중 하나를 선택한다.
 3. #1665에서는 #1849 이후에도 남는 `devel` push wall time과 runner-minutes를 병렬화 효과 산정의 주요 입력으로 사용한다.
 4. OPEN PR cache는 계속 생성될 수 있으므로, cleanup은 closed/merged PR ref만 대상으로 유지한다.
