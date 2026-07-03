@@ -2346,7 +2346,67 @@ impl DocumentCore {
                     },
                 )
             } else {
+                use crate::renderer::pagination::{DeferredEndnote, EndnoteDeferral, EndnoteRef};
                 use crate::renderer::typeset::TypesetEngine;
+                // [미주 배치 — Hancom EndnoteEndOfSection vs EndnoteEndOfDocument]
+                // rhwp 는 지금까지 구역마다 미주를 그 구역 끝에 렌더했으나(END_OF_SECTION),
+                // 한컴 기본값은 END_OF_DOCUMENT(EACH_COLUMN)로 문서 끝에 모아 렌더한다.
+                // END_OF_DOCUMENT 구역의 미주 본문은 마지막 구역 끝(=문서 끝)으로 미룬다.
+                // (참조 표시 위첨자는 원래 위치에 남는다.) 단일 구역은 구역 끝 ≡ 문서 끝
+                // 이라 동작 불변 — 회귀 없음.
+                use crate::model::footnote::FootnotePlacement;
+                let section_count = self.document.sections.len();
+                let is_last_section = idx + 1 == section_count;
+                let is_doc_end = matches!(
+                    section.section_def.endnote_shape.placement,
+                    FootnotePlacement::EachColumn
+                );
+                // 마지막 구역: 앞선 END_OF_DOCUMENT 구역들의 미주 본문을 문서 순서로 수집.
+                let deferred: Vec<DeferredEndnote> = if is_last_section && section_count > 1 {
+                    let mut acc = Vec::new();
+                    for (sj, sec_j) in self.document.sections.iter().enumerate() {
+                        if sj >= idx {
+                            break;
+                        }
+                        if !matches!(
+                            sec_j.section_def.endnote_shape.placement,
+                            FootnotePlacement::EachColumn
+                        ) {
+                            continue;
+                        }
+                        for (pi, para) in sec_j.paragraphs.iter().enumerate() {
+                            for (ci, ctrl) in para.controls.iter().enumerate() {
+                                if let crate::model::control::Control::Endnote(en) = ctrl {
+                                    acc.push(DeferredEndnote {
+                                        reff: EndnoteRef {
+                                            number: en.number,
+                                            section_index: sj,
+                                            para_index: pi,
+                                            control_index: ci,
+                                        },
+                                        endnote: (**en).clone(),
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    acc
+                } else {
+                    Vec::new()
+                };
+                let endnote_deferral = if section_count <= 1 {
+                    EndnoteDeferral::None
+                } else if is_last_section {
+                    if deferred.is_empty() {
+                        EndnoteDeferral::None
+                    } else {
+                        EndnoteDeferral::RenderAll(&deferred)
+                    }
+                } else if is_doc_end {
+                    EndnoteDeferral::Suppress
+                } else {
+                    EndnoteDeferral::None
+                };
                 let typesetter = TypesetEngine::new(self.dpi);
                 typesetter.typeset_section_with_variant(
                     &section.paragraphs,
@@ -2365,6 +2425,7 @@ impl DocumentCore {
                     force_breaks.get(idx).unwrap_or(&empty_breaks),
                     matches!(self.source_format, crate::parser::FileFormat::Hwp3),
                     is_hwpx_source,
+                    endnote_deferral,
                 )
             };
 
