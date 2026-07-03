@@ -79,6 +79,10 @@ pub struct PageGeomDiff {
     pub top_deltas: Vec<NodeDelta>,
     /// 노드 타입별 개수 증감 (개수가 다른 타입만). 구조 불일치 원인 국소화용.
     pub type_deltas: Vec<TypeDelta>,
+    /// 구조 불일치가 TextRun ±1 (삽입·삭제 각 최대 1개, 다른 타입 없음) 뿐인지.
+    /// 레거시 무-컨트롤문자 구역정의 정규화가 유발하는 경미 조성 노이즈 (#1773) —
+    /// 게이트에서 WARN_TEXTRUN 으로 분리한다.
+    pub struct_textrun_pm1: bool,
 }
 
 /// 문서 전체 기하 차이.
@@ -175,6 +179,10 @@ struct PageAccum {
     count: usize,
     max_disp: f64,
     structure_mismatch: bool,
+    /// 구조 불일치로 기록된 삽입(b 전용) 노드 타입들.
+    struct_inserts: Vec<&'static str>,
+    /// 구조 불일치로 기록된 삭제(a 전용) 노드 타입들.
+    struct_deletes: Vec<&'static str>,
     top: Vec<NodeDelta>,
 }
 
@@ -185,6 +193,8 @@ impl PageAccum {
             count: 0,
             max_disp: 0.0,
             structure_mismatch: false,
+            struct_inserts: Vec::new(),
+            struct_deletes: Vec::new(),
             top: Vec::new(),
         }
     }
@@ -282,9 +292,31 @@ fn walk(a: &RenderNode, b: &RenderNode, path: &str, acc: &mut PageAccum) {
                 walk(&a.children[i], &b.children[j], &child_path, acc);
             }
             // 한쪽에만 있는 노드 = 삽입/삭제 → 구조 불일치(변위 아님).
-            _ => acc.structure_mismatch = true,
+            (Some(i), None) => {
+                acc.structure_mismatch = true;
+                acc.struct_deletes.push(sa[i]);
+            }
+            (None, Some(j)) => {
+                acc.structure_mismatch = true;
+                acc.struct_inserts.push(sb[j]);
+            }
+            (None, None) => unreachable!("lcs_align 은 (None, None) 을 내지 않는다"),
         }
     }
+}
+
+/// 구조 불일치 이벤트가 "TextRun ±1" 뿐인지 — 삽입·삭제 모두 TextRun 타입이고
+/// 각각 최대 1개일 때만 true. 컨트롤문자-무 구역정의 정규화가 유발하는 run 조성
+/// 차이(#1773)를 하드 실패에서 분리하기 위한 판별.
+fn is_textrun_pm1(inserts: &[&'static str], deletes: &[&'static str]) -> bool {
+    let only_textrun = inserts
+        .iter()
+        .chain(deletes.iter())
+        .all(|t| *t == "TextRun");
+    (!inserts.is_empty() || !deletes.is_empty())
+        && only_textrun
+        && inserts.len() <= 1
+        && deletes.len() <= 1
 }
 
 /// 한 페이지의 루트 노드 쌍을 비교한다.
@@ -307,6 +339,8 @@ pub fn diff_page(page: u32, root_a: &RenderNode, root_b: &RenderNode) -> PageGeo
     } else {
         0.0
     };
+    let struct_textrun_pm1 =
+        acc.structure_mismatch && is_textrun_pm1(&acc.struct_inserts, &acc.struct_deletes);
     PageGeomDiff {
         page,
         node_count_a,
@@ -316,6 +350,7 @@ pub fn diff_page(page: u32, root_a: &RenderNode, root_b: &RenderNode) -> PageGeo
         mean_disp,
         top_deltas: acc.top,
         type_deltas: compute_type_deltas(root_a, root_b),
+        struct_textrun_pm1,
     }
 }
 
@@ -450,6 +485,8 @@ struct DiffSummary {
     worst_page: Option<u32>,
     max_disp: f64,
     struct_pages: usize,
+    /// TextRun ±1 로 설명되지 않는 구조 불일치 페이지 수 (하드 실패 기준).
+    hard_struct_pages: usize,
     over_pages: usize,
 }
 
@@ -458,10 +495,14 @@ fn summarize(diff: &DocGeomDiff, page: Option<u32>, threshold: f64) -> DiffSumma
     let mut worst_page = None;
     let mut max_disp = 0.0_f64;
     let mut struct_pages = 0;
+    let mut hard_struct_pages = 0;
     let mut over_pages = 0;
     for p in &pages {
         if p.structure_mismatch {
             struct_pages += 1;
+            if !p.struct_textrun_pm1 {
+                hard_struct_pages += 1;
+            }
         }
         if p.max_disp > threshold {
             over_pages += 1;
@@ -475,6 +516,7 @@ fn summarize(diff: &DocGeomDiff, page: Option<u32>, threshold: f64) -> DiffSumma
         worst_page,
         max_disp,
         struct_pages,
+        hard_struct_pages,
         over_pages,
     }
 }
@@ -482,17 +524,20 @@ fn summarize(diff: &DocGeomDiff, page: Option<u32>, threshold: f64) -> DiffSumma
 fn status_str(diff: &DocGeomDiff, sum: &DiffSummary, threshold: f64) -> &'static str {
     if diff.page_count_mismatch() {
         "PAGE_MISMATCH"
-    } else if sum.struct_pages > 0 {
+    } else if sum.hard_struct_pages > 0 {
         "STRUCT_MISMATCH"
     } else if sum.max_disp > threshold {
         "OVER"
+    } else if sum.struct_pages > 0 {
+        // 구조 차이가 TextRun ±1 뿐이고 변위도 임계 이내 — 경미 조성 노이즈 (#1773).
+        "WARN_TEXTRUN"
     } else {
         "PASS"
     }
 }
 
 fn status_is_hard_failure(status: &str) -> bool {
-    status != "PASS"
+    !matches!(status, "PASS" | "WARN_TEXTRUN")
 }
 
 /// `.hwp`/`.hwpx` 파일을 재귀 수집(정렬).
@@ -674,6 +719,7 @@ fn print_batch_summary(rows: &[BatchRow]) {
     println!("=== render-diff 요약 ===");
     println!("  총 파일         : {}", rows.len());
     println!("  PASS            : {}", count("PASS"));
+    println!("  WARN_TEXTRUN    : {}", count("WARN_TEXTRUN"));
     println!("  OVER            : {}", count("OVER"));
     println!("  STRUCT_MISMATCH : {}", count("STRUCT_MISMATCH"));
     println!("  PAGE_MISMATCH   : {}", count("PAGE_MISMATCH"));
@@ -761,7 +807,9 @@ fn run_single(opts: &CliOptions) -> i32 {
                 p.mean_disp,
                 p.node_count_a,
                 p.node_count_b,
-                if p.structure_mismatch {
+                if p.struct_textrun_pm1 {
+                    "  [STRUCT:TextRun±1]"
+                } else if p.structure_mismatch {
                     "  [STRUCT]"
                 } else {
                     ""
@@ -792,9 +840,10 @@ fn run_single(opts: &CliOptions) -> i32 {
     }
     println!("status: {status}");
 
-    match status {
-        "PASS" => 0,
-        _ => 1,
+    if status_is_hard_failure(status) {
+        1
+    } else {
+        0
     }
 }
 
@@ -925,11 +974,89 @@ mod tests {
     #[test]
     fn non_pass_statuses_are_hard_failures() {
         assert!(!status_is_hard_failure("PASS"));
+        // TextRun ±1 경미 조성 노이즈는 게이트 하드 실패에서 제외 (#1773).
+        assert!(!status_is_hard_failure("WARN_TEXTRUN"));
         for status in ["OVER", "STRUCT_MISMATCH", "PAGE_MISMATCH", "LOAD_FAIL"] {
             assert!(
                 status_is_hard_failure(status),
                 "{status} must fail the gate"
             );
         }
+    }
+
+    #[test]
+    fn textrun_pm1_predicate() {
+        // 삽입/삭제 각 1개 이하 + TextRun 만 → true.
+        assert!(is_textrun_pm1(&["TextRun"], &[]));
+        assert!(is_textrun_pm1(&[], &["TextRun"]));
+        assert!(is_textrun_pm1(&["TextRun"], &["TextRun"]));
+        // 이벤트 없음 → false (구조 불일치가 아님).
+        assert!(!is_textrun_pm1(&[], &[]));
+        // 다른 타입 혼입 → false.
+        assert!(!is_textrun_pm1(&["TextLine"], &[]));
+        assert!(!is_textrun_pm1(&["TextRun"], &["Line"]));
+        // 같은 방향 2개 이상 → false.
+        assert!(!is_textrun_pm1(&["TextRun", "TextRun"], &[]));
+    }
+
+    fn page_diff(
+        structure_mismatch: bool,
+        struct_textrun_pm1: bool,
+        max_disp: f64,
+    ) -> PageGeomDiff {
+        PageGeomDiff {
+            page: 0,
+            node_count_a: 1,
+            node_count_b: 1,
+            structure_mismatch,
+            max_disp,
+            mean_disp: 0.0,
+            top_deltas: Vec::new(),
+            type_deltas: Vec::new(),
+            struct_textrun_pm1,
+        }
+    }
+
+    fn doc_diff(pages: Vec<PageGeomDiff>) -> DocGeomDiff {
+        let max_disp = pages.iter().map(|p| p.max_disp).fold(0.0_f64, f64::max);
+        DocGeomDiff {
+            page_count_a: pages.len() as u32,
+            page_count_b: pages.len() as u32,
+            pages,
+            max_disp,
+        }
+    }
+
+    #[test]
+    fn textrun_pm1_struct_downgrades_to_warn() {
+        let d = doc_diff(vec![page_diff(true, true, 0.5)]);
+        let sum = summarize(&d, None, 1.0);
+        assert_eq!(status_str(&d, &sum, 1.0), "WARN_TEXTRUN");
+    }
+
+    #[test]
+    fn non_textrun_struct_stays_hard() {
+        let d = doc_diff(vec![page_diff(true, false, 0.5)]);
+        let sum = summarize(&d, None, 1.0);
+        assert_eq!(status_str(&d, &sum, 1.0), "STRUCT_MISMATCH");
+    }
+
+    #[test]
+    fn textrun_pm1_with_over_disp_is_over() {
+        // 조성 노이즈가 있어도 변위가 임계를 넘으면 OVER 로 하드 실패 유지.
+        let d = doc_diff(vec![page_diff(true, true, 5.0)]);
+        let sum = summarize(&d, None, 1.0);
+        assert_eq!(status_str(&d, &sum, 1.0), "OVER");
+    }
+
+    #[test]
+    fn mixed_pages_hard_struct_wins() {
+        // 한 페이지는 TextRun ±1, 다른 페이지는 일반 구조 불일치 → STRUCT_MISMATCH.
+        let d = doc_diff(vec![
+            page_diff(true, true, 0.0),
+            page_diff(true, false, 0.0),
+        ]);
+        let sum = summarize(&d, None, 1.0);
+        assert_eq!(status_str(&d, &sum, 1.0), "STRUCT_MISMATCH");
     }
 }
