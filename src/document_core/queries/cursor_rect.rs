@@ -3982,12 +3982,22 @@ impl DocumentCore {
         let mut number_runs: Vec<FnNumberInfo> = Vec::new();
         collect_fn_runs(fn_node, &mut runs, &mut number_runs);
 
-        // Y 좌표로 가장 가까운 각주의 footnoteIndex 결정 (텍스트 run이 없는 빈 각주 지원)
-        if runs.is_empty()
-            || !runs
-                .iter()
-                .any(|r| y >= r.bbox_y && y <= r.bbox_y + r.bbox_h)
-        {
+        // 빈 각주(텍스트 run이 전혀 없는 각주) 지원: 텍스트 run이 하나도 없거나,
+        // 클릭 y가 "텍스트 run이 없는 각주"의 번호 run 줄 안에 있을 때만 번호 run
+        // 폴백을 쓴다. 이전에는 "y가 어떤 텍스트 run 줄에도 없으면" 폴백이었는데,
+        // 그 조건은 각주 줄 사이 간격(줄 피치 - 글리프 높이, 약 1/3 영역) 클릭을
+        // 전부 가로채서 charOffset 0(각주 시작)으로 붕괴시켰다 — 아래 3단계의
+        // 가장-가까운-줄 클램프가 영원히 실행되지 못했다.
+        let y_in_text_band = runs
+            .iter()
+            .any(|r| y >= r.bbox_y && y <= r.bbox_y + r.bbox_h);
+        let y_in_empty_note_number_band = !y_in_text_band
+            && number_runs.iter().any(|nr| {
+                y >= nr.bbox_y
+                    && y <= nr.bbox_y + nr.bbox_h
+                    && !runs.iter().any(|r| r.footnote_index == nr.footnote_index)
+            });
+        if runs.is_empty() || y_in_empty_note_number_band {
             // 번호 run에서 Y 좌표로 가장 가까운 각주 찾기
             let closest_num = number_runs.iter().min_by(|a, b| {
                 let da = (y - (a.bbox_y + a.bbox_h / 2.0)).abs();
@@ -4094,6 +4104,17 @@ impl DocumentCore {
             .filter(|r| (r.bbox_y - target_y).abs() < 1.0 && (r.bbox_h - target_h).abs() < 1.0)
             .collect();
         line_runs.sort_by(|a, b| a.bbox_x.partial_cmp(&b.bbox_x).unwrap());
+
+        // 줄 사이 간격 클릭: y만 가장 가까운 줄로 클램프하고 x는 본래대로
+        // 글자 위치에 매핑한다 (1단계와 동일한 run-내부 매핑). 이전에는 줄
+        // 시작/끝으로만 스냅해서 간격 클릭이 항상 줄 경계로 튀었다.
+        for run in &line_runs {
+            if x >= run.bbox_x && x <= run.bbox_x + run.bbox_w {
+                let local_x = x - run.bbox_x;
+                let char_offset = find_char_at_x(&run.char_positions, local_x);
+                return Ok(format_fn_hit(run, run.char_start + char_offset, page_num));
+            }
+        }
 
         if x < line_runs[0].bbox_x {
             let run = line_runs[0];
