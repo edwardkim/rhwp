@@ -1285,20 +1285,16 @@ pub fn recompose_for_cell_width(
     cell_inner_width_px: f64,
     styles: &ResolvedStyleSet,
 ) {
-    let has_authoritative_line_segs = !para.line_segs.is_empty()
+    let has_synthetic_line_segs = !para.line_segs.is_empty()
         && para
             .line_segs
             .iter()
-            .any(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+            .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0);
+    let has_authoritative_line_segs = !para.line_segs.is_empty() && !has_synthetic_line_segs;
     if has_authoritative_line_segs {
         return;
     }
-    if para.line_segs.len() >= 2
-        && para
-            .line_segs
-            .iter()
-            .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
-    {
+    if para.line_segs.len() >= 2 && has_synthetic_line_segs {
         // HWPX 로드 단계에서 셀 폭/높이/anchor 속성으로 합성한 lineSeg 경계는
         // 이미 문서 속성 기반 보정 결과다. 여기서 다시 폭 기준으로 합치고
         // 재분할하면 RowBreak 표의 쪽 나눔 기준 줄 수가 원본 세로 정보와 어긋난다.
@@ -1310,24 +1306,30 @@ pub fn recompose_for_cell_width(
     if cell_inner_width_px <= 0.0 {
         return;
     }
-    let text_width_px = styles
-        .para_styles
-        .get(para.para_shape_id as usize)
-        .map(|ps| {
-            let continuation_left = if ps.indent < 0.0 {
-                ps.margin_left + ps.indent.abs()
-            } else {
-                ps.margin_left
-            };
-            let first_left = if ps.indent > 0.0 {
-                ps.margin_left + ps.indent
-            } else {
-                ps.margin_left
-            };
-            let effective_left = first_left.max(continuation_left).max(0.0);
-            (cell_inner_width_px - effective_left - ps.margin_right).max(0.0)
-        })
-        .unwrap_or(cell_inner_width_px);
+    let text_width_px = if has_synthetic_line_segs {
+        styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map(|ps| {
+                let continuation_left = if ps.indent < 0.0 {
+                    ps.margin_left + ps.indent.abs()
+                } else {
+                    ps.margin_left
+                };
+                let first_left = if ps.indent > 0.0 {
+                    ps.margin_left + ps.indent
+                } else {
+                    ps.margin_left
+                };
+                let effective_left = first_left.max(continuation_left).max(0.0);
+                (cell_inner_width_px - effective_left - ps.margin_right).max(0.0)
+            })
+            .unwrap_or(cell_inner_width_px)
+    } else {
+        // lineSeg 자체가 없는 HWP/HWP3-origin fallback 은 기존 Task #671 폭 기준을
+        // 유지한다. HWP3-origin legacy bullet 은 별도 1.04 tolerance 로 정합한다.
+        cell_inner_width_px
+    };
     if text_width_px <= 0.0 {
         return;
     }
