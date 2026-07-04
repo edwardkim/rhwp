@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   HWP_DOCUMENT_ACCEPT,
+  canUseOpenFilePicker,
   isSupportedDocumentFileName,
   pickOpenFileHandle,
   readFileFromHandle,
@@ -64,6 +65,11 @@ test('HWP_DOCUMENT_ACCEPT는 넓은 binary MIME을 등록하지 않는다', () =
   assert.equal(Object.hasOwn(HWP_DOCUMENT_ACCEPT, '*/*'), false);
 });
 
+test('canUseOpenFilePicker는 native open picker 지원 여부를 구분한다', () => {
+  assert.equal(canUseOpenFilePicker({}), false);
+  assert.equal(canUseOpenFilePicker({ showOpenFilePicker: async () => [] }), true);
+});
+
 test('pickOpenFileHandle는 showOpenFilePicker가 있으면 첫 handle을 반환한다', async () => {
   const handle = createHandle('opened.hwp');
   let receivedOptions: Record<string, unknown> | undefined;
@@ -77,6 +83,16 @@ test('pickOpenFileHandle는 showOpenFilePicker가 있으면 첫 handle을 반환
 
   assert.equal(result, handle);
   assert.ok(receivedOptions);
+});
+
+test('pickOpenFileHandle는 native picker 취소 시 null을 반환한다', async () => {
+  const result = await pickOpenFileHandle({
+    showOpenFilePicker: async () => {
+      throw new DOMException('cancelled', 'AbortError');
+    },
+  });
+
+  assert.equal(result, null);
 });
 
 test('readFileFromHandle은 handle 파일 내용을 Uint8Array로 읽는다', async () => {

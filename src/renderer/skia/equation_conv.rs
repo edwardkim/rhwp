@@ -1,6 +1,8 @@
 use skia_safe::{font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathBuilder};
 
-use super::font_lookup::{match_system_family_style, SystemFontFamilies};
+use super::font_lookup::{
+    legacy_typeface_for_style, match_system_family_style, SystemFontFamilies,
+};
 
 use crate::renderer::equation::ast::MatrixStyle;
 use crate::renderer::equation::layout::{
@@ -699,7 +701,7 @@ fn draw_text(
         .map(str::trim)
         .filter(|family| !family.is_empty())
         .find_map(|family| match_system_family_style(font_mgr, system_families, family, font_style))
-        .or_else(|| font_mgr.legacy_make_typeface(None::<&str>, font_style));
+        .or_else(|| legacy_typeface_for_style(font_mgr, font_style));
     let mut font = if let Some(typeface) = typeface {
         Font::new(typeface, font_size as f32)
     } else {

@@ -2,22 +2,40 @@
    F5 셀 블록 선택 하이라이트
    ================================================================ */
 .cell-selection-highlight {
-  background: rgba(51, 122, 183, 0.25);
+  background: var(--table-selection-fill);
   pointer-events: none;
+}
+
+.protected-cell-hover-guard {
+  position: fixed;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #d54f33;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 /* ================================================================
    표 객체 선택 (외곽선 + 리사이즈 핸들)
    ================================================================ */
 .table-object-border {
-  border: 2px solid #337ab7;
+  border: 2px solid var(--table-selection-stroke);
   pointer-events: none;
   box-sizing: border-box;
 }
 .table-object-handle {
-  background: #337ab7;
-  border: 1px solid #fff;
+  background: var(--table-selection-stroke);
+  border: 1px solid var(--doc-paper);
   box-sizing: border-box;
   pointer-events: none;
 }
-

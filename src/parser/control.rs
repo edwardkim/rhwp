@@ -345,7 +345,7 @@ fn parse_cell(records: &[Record]) -> Cell {
     //   bit 2 (=property bit 18): 제목 셀
     //   bit 3 (=property bit 19): 양식모드 편집 가능
     // 현재 IR은 미해석 확장 bit를 분해하지 않고 list_header_width_ref 원값으로 보존한다.
-    cell.is_header = (cell.list_header_width_ref & 0x04) != 0;
+    cell.is_header = cell.list_header_width_ref & crate::model::table::CELL_FLAG_HEADER != 0;
 
     // 셀 속성 (표 82: 26바이트)
     cell.col = r.read_u16().unwrap_or(0);
@@ -371,12 +371,13 @@ fn parse_cell(records: &[Record]) -> Cell {
     // bit 0=1: 셀 고유 여백 사용 (파싱한 패딩값 그대로)
     // bit 0=0: 표 기본 여백 사용 — 단, 레이아웃 시 표 기본 패딩으로 대체
     // → 파싱 단계에서는 원본값을 보존하고, 레이아웃에서 처리
-    cell.apply_inner_margin = (cell.list_header_width_ref & 0x0001) != 0;
+    cell.apply_inner_margin =
+        cell.list_header_width_ref & crate::model::table::CELL_FLAG_HAS_MARGIN != 0;
 
     // 34바이트 이후 추가 데이터 보존 (라운드트립용)
     if r.remaining() > 0 {
         cell.raw_list_extra = r.read_bytes(r.remaining()).unwrap_or_default();
-        // 셀 필드명 추출: raw_list_extra offset 14-15(name_len) + 16~(UTF-16LE)
+        // 셀 필드명 추출: raw_list_extra offset 15..17(name_len) + 17..(UTF-16LE)
         cell.field_name = parse_cell_field_name(&cell.raw_list_extra);
     }
 
@@ -387,8 +388,9 @@ fn parse_cell(records: &[Record]) -> Cell {
 }
 
 /// 셀의 raw_list_extra에서 필드 이름을 추출한다.
-/// 구조: raw_list_extra[14..16] = name_len (u16), [16..16+name_len*2] = UTF-16LE 문자열
-fn parse_cell_field_name(extra: &[u8]) -> Option<String> {
+/// 구조: raw_list_extra[15..17] = name_len (u16 LE), [17..17+name_len*2] = UTF-16LE 문자열
+/// (직렬화 대칭: serializer::control::build_cell_list_extra — #1808)
+pub(crate) fn parse_cell_field_name(extra: &[u8]) -> Option<String> {
     if extra.len() < 18 {
         return None;
     }

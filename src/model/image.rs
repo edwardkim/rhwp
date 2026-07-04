@@ -69,6 +69,8 @@ pub struct ImageAttr {
     pub effect: ImageEffect,
     /// BinData ID 참조
     pub bin_data_id: u16,
+    /// 그림 개체 전체 투명도. 한컴 UI 기준으로 0=불투명, 100=완전 투명.
+    pub transparency: u8,
     /// [Task #741] 외부 file path 그림 (HWP3 spec offset 74 그림 종류 0=외부 파일,
     /// 1=OLE, 2=Embedded Image / offset 83~339 그림 파일 이름).
     /// HWP3 외부 link 그림이고 binary 데이터 부재 시 placeholder 표시용.
@@ -123,6 +125,18 @@ pub struct EffectRgb {
 }
 
 impl ImageAttr {
+    pub fn clamped_transparency(&self) -> u8 {
+        self.transparency.min(100)
+    }
+
+    pub fn transparency_alpha_byte(&self) -> u8 {
+        transparency_percent_to_alpha_byte(self.clamped_transparency())
+    }
+
+    pub fn opacity(&self) -> f64 {
+        1.0 - (self.clamped_transparency() as f64 / 100.0)
+    }
+
     /// 워터마크 효과가 적용되어 있는지 식별 (Task #516, Issue #1156 정정).
     ///
     /// HWP/HWPX 에는 워터마크 적용을 나타내는 별도 비트/속성이 **존재하지 않는다**
@@ -143,6 +157,16 @@ impl ImageAttr {
             None
         }
     }
+}
+
+/// 한컴 UI 투명도(0~100%)를 HWP/HWPX 저장용 alpha byte(0~255)로 변환한다.
+pub fn transparency_percent_to_alpha_byte(transparency: u8) -> u8 {
+    ((transparency.min(100) as u16 * 255) / 100) as u8
+}
+
+/// HWP/HWPX 저장용 alpha byte(0~255)를 한컴 UI 투명도(0~100%)로 변환한다.
+pub fn alpha_byte_to_transparency_percent(alpha: u8) -> u8 {
+    ((alpha as f64 * 100.0) / 255.0).round().clamp(0.0, 100.0) as u8
 }
 
 /// 이미지 효과

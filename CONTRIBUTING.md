@@ -83,16 +83,21 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 - PR을 생성하면 CI가 자동으로 빌드 + 테스트 + Clippy를 실행합니다
 - CI가 통과하지 않으면 merge할 수 없습니다
 - 메인테이너의 코드 리뷰 승인 후 merge됩니다
+- **하나의 PR에 여러 fix를 담을 때는 이슈별로 커밋을 분리**해주세요. 여러 수정이 한 커밋에
+  섞이면 회귀 추적·선별 반영·리뷰가 어려워져 머지가 지연됩니다.
 
 ### PR 전 체크리스트
 
 ```bash
-cargo fmt --all -- --check        # 포맷 정책 준수
-cargo test                       # 1,100+ 테스트 통과
-cargo clippy -- -D warnings      # 린트 경고 0건
+cargo fmt --all -- --check                   # 포맷 정책 준수
+cargo test --profile release-test --tests    # 통합 테스트 포함 전체 (2,800+)
+cargo clippy -- -D warnings                  # 린트 경고 0건
 ```
 
 세 명령이 모두 통과하는지 확인한 후 PR을 생성해주세요.
+
+- `release-test` 프로필은 CI와 같은 기준이며 debug 대비 수 배 빠릅니다.
+- `cargo test --lib` 만으로는 통합 테스트 회귀를 잡지 못합니다 — `--tests` 를 포함해주세요.
 
 ### 포맷 정책
 
@@ -119,9 +124,9 @@ cargo fmt --all -- --check       # CI와 같은 포맷 검증
 신뢰할 수 있는 검증 기준 (우선순위):
 
 1. **결정적 자동 검증** (필수):
-   - `cargo test --lib` (회귀 0)
+   - `cargo test --profile release-test --tests` (통합 테스트 포함, 회귀 0)
    - `cargo test --test svg_snapshot` (rhwp 자체 일관성)
-   - `cargo clippy --lib -- -D warnings`
+   - `cargo clippy -- -D warnings`
 
 2. **시각 검증** (참고):
    - 한컴 PDF / 한컴 화면 캡처 + rhwp SVG 비교 — **본인 환경 명시 필수** (한컴 버전, OS, 폰트 등)
@@ -138,9 +143,42 @@ cargo fmt --all -- --check       # CI와 같은 포맷 검증
 2. 메인테이너 환경 재검증 후 머지 결정 (작업지시자가 직접 확인)
 3. 회귀 테스트 (`tests/page_number_propagation.rs` 같은 패턴) 포함 권장
 
+### 렌더링 PR 자가 검증 도구 (한컴 없이 가능)
+
+렌더링·레이아웃을 수정하는 PR 은 제출 전 아래 도구로 자가 검증하면 리뷰 왕복이 크게
+줄어듭니다. 모두 **한컴 설치 없이** (macOS/Linux 포함) 실행할 수 있습니다.
+
+```bash
+# 개체(표·그림) geometry 무회귀 — 수정 전 baseline 저장, 수정 후 비교
+python tools/object_visual_regression.py <샘플.hwp> -o out/ovr --no-hwp --save-baseline
+#   (수정 적용 후)
+python tools/object_visual_regression.py <샘플.hwp> -o out/ovr2 --no-hwp --baseline out/ovr/baseline.json
+
+# 라운드트립 시각 기하 회귀
+cargo run --release --bin rhwp -- render-diff <샘플.hwp>
+
+# HWPX→HWP 변환 페이지네이션 정합
+python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir out/rtf -o out/rtf/result.tsv
+```
+
+- OVR(개체 시각 회귀)로 "변경 범위 밖 문서의 개체가 움직이지 않았음"을 결과와 함께
+  PR 본문에 적어주시면 리뷰가 빨라집니다.
+- 어떤 PR 에 어떤 시각 증거가 필요한지는
+  [시각 검증 거버넌스](mydocs/manual/visual_verification_governance.md)를 참고하세요 —
+  시각 검증은 전수 절차가 아니라 **PR 의 수정 목적과 사용자에게 보이는 동작 기준으로 선택**합니다.
+- 전체 CLI 도구는 [cli_commands.md](mydocs/manual/cli_commands.md) 참조.
+- 자가 검증 통과는 회귀 없음의 증명이며, 한컴 정합의 최종 판정은 메인테이너 환경에서
+  이루어집니다.
+
 ### HWP 샘플 파일 제공
 
 다양한 HWP 파일로 테스트할수록 렌더링 품질이 올라갑니다. 개인정보가 없는 공공 문서나 테스트용 파일을 제공해주시면 큰 도움이 됩니다.
+
+- **스크린샷·비교 이미지는 저장소에 커밋하지 말고 PR 본문에 첨부**해주세요 (필요 시
+  메인테이너가 판정 자료를 `mydocs/pr/assets/` 에 반영합니다).
+- **한컴 편집기 PDF 를 오라클로 제공하실 때**: `pdf/{원본 stem}-{한컴버전}.pdf` 명명
+  (예: `pdf/issue1835_tac_stale_height-2022.pdf`), PR 본문에 생성 환경(한컴 버전)을
+  명시해주세요. 재현 fixture 는 가능하면 1~2페이지로 축소해 `samples/` 에 포함합니다.
 
 ## 브랜치 규칙
 

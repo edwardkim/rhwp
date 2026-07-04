@@ -5,7 +5,9 @@
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::{Control, Field, FieldType};
-use crate::model::paragraph::Paragraph;
+use crate::model::event::DocumentEvent;
+use crate::model::paragraph::{FieldRange, Paragraph};
+use crate::parser::tags;
 
 /// 필드 위치 정보
 #[derive(Debug, Clone)]
@@ -60,24 +62,199 @@ impl DocumentCore {
         result
     }
 
+    /// 본문 문단의 현재 커서 위치에 빈 ClickHere 누름틀을 삽입한다.
+    pub fn insert_click_here_field_at(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        guide: &str,
+        memo: &str,
+        name: &str,
+        editable: bool,
+    ) -> Result<String, HwpError> {
+        let field_id = self.next_click_here_field_id();
+        let inserted_offset = {
+            let section = self
+                .document
+                .sections
+                .get_mut(section_idx)
+                .ok_or_else(|| HwpError::InvalidField("구역 인덱스 초과".into()))?;
+            section.raw_stream = None;
+            let para = section
+                .paragraphs
+                .get_mut(para_idx)
+                .ok_or_else(|| HwpError::InvalidField("문단 인덱스 초과".into()))?;
+            insert_click_here_field_in_para(
+                para,
+                char_offset,
+                field_id,
+                guide,
+                memo,
+                name,
+                editable,
+            )?
+        };
+
+        self.reflow_paragraph(section_idx, para_idx);
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+        );
+        self.recompose_paragraph(section_idx, para_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+        self.event_log.push(DocumentEvent::TextInserted {
+            section: section_idx,
+            para: para_idx,
+            offset: inserted_offset,
+            len: 0,
+        });
+
+        Ok(format!(
+            "{{\"ok\":true,\"fieldId\":{},\"charOffset\":{}}}",
+            field_id, inserted_offset
+        ))
+    }
+
+    /// 셀/글상자 내 문단의 현재 커서 위치에 빈 ClickHere 누름틀을 삽입한다.
+    pub fn insert_click_here_field_at_in_cell(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        _is_textbox: bool,
+        guide: &str,
+        memo: &str,
+        name: &str,
+        editable: bool,
+    ) -> Result<String, HwpError> {
+        let field_id = self.next_click_here_field_id();
+        let inserted_offset = {
+            let para = self.get_cell_paragraph_mut(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )?;
+            insert_click_here_field_in_para(
+                para,
+                char_offset,
+                field_id,
+                guide,
+                memo,
+                name,
+                editable,
+            )?
+        };
+
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
+        self.reflow_cell_paragraph(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        );
+        if let Some(section) = self.document.sections.get_mut(section_idx) {
+            section.raw_stream = None;
+        }
+        self.mark_section_dirty(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+        self.event_log.push(DocumentEvent::CellTextChanged {
+            section: section_idx,
+            para: parent_para_idx,
+            ctrl: control_idx,
+            cell: cell_idx,
+        });
+
+        Ok(format!(
+            "{{\"ok\":true,\"fieldId\":{},\"charOffset\":{}}}",
+            field_id, inserted_offset
+        ))
+    }
+
+    /// path 기반 중첩 표 셀의 현재 커서 위치에 빈 ClickHere 누름틀을 삽입한다.
+    pub fn insert_click_here_field_at_by_path(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        char_offset: usize,
+        guide: &str,
+        memo: &str,
+        name: &str,
+        editable: bool,
+    ) -> Result<String, HwpError> {
+        if path.is_empty() {
+            return Err(HwpError::InvalidField("cellPath가 비어 있음".into()));
+        }
+        let field_id = self.next_click_here_field_id();
+        let inserted_offset = {
+            let para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
+            insert_click_here_field_in_para(
+                para,
+                char_offset,
+                field_id,
+                guide,
+                memo,
+                name,
+                editable,
+            )?
+        };
+
+        let outer_ctrl = path[0].0;
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
+        if let Some(section) = self.document.sections.get_mut(section_idx) {
+            section.raw_stream = None;
+        }
+        self.mark_section_dirty(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+        self.event_log.push(DocumentEvent::CellTextChanged {
+            section: section_idx,
+            para: parent_para_idx,
+            ctrl: outer_ctrl,
+            cell: path[0].1,
+        });
+
+        Ok(format!(
+            "{{\"ok\":true,\"fieldId\":{},\"charOffset\":{}}}",
+            field_id, inserted_offset
+        ))
+    }
+
     /// getFieldList: 모든 필드를 JSON 배열로 반환
     pub fn get_field_list_json(&self) -> String {
         let fields = self.collect_all_fields();
-        let entries: Vec<String> = fields.iter().map(|fi| {
-            let name = fi.field.field_name().unwrap_or("");
-            let guide = fi.field.guide_text().unwrap_or("");
-            let location_json = field_location_json(&fi.location);
-            format!(
-                "{{\"fieldId\":{},\"fieldType\":\"{}\",\"name\":{},\"guide\":{},\"command\":{},\"value\":{},\"location\":{}}}",
-                fi.field.field_id,
-                fi.field.field_type_str(),
-                json_escape(name),
-                json_escape(guide),
-                json_escape(&fi.field.command),
-                json_escape(&fi.value),
-                location_json,
-            )
-        }).collect();
+        let entries: Vec<String> = fields
+            .iter()
+            .map(|fi| {
+                let name = fi.field.field_name().unwrap_or("");
+                let guide = fi.field.guide_text().unwrap_or("");
+                let location_json = field_location_json(&fi.location);
+                let (start_char_idx, end_char_idx) = field_range_bounds(self, fi)
+                    .unwrap_or((0, fi.value.chars().count()));
+                format!(
+                    "{{\"fieldId\":{},\"fieldType\":\"{}\",\"name\":{},\"guide\":{},\"command\":{},\"value\":{},\"location\":{},\"startCharIdx\":{},\"endCharIdx\":{},\"editableInForm\":{}}}",
+                    fi.field.field_id,
+                    fi.field.field_type_str(),
+                    json_escape(name),
+                    json_escape(guide),
+                    json_escape(&fi.field.command),
+                    json_escape(&fi.value),
+                    location_json,
+                    start_char_idx,
+                    end_char_idx,
+                    fi.field.is_editable_in_form(),
+                )
+            })
+            .collect();
         format!("[{}]", entries.join(","))
     }
 
@@ -503,7 +680,7 @@ impl DocumentCore {
         Ok(para)
     }
 
-    /// 본문 문단의 커서 위치에서 필드를 제거한다 (텍스트 유지, 필드 마커만 삭제).
+    /// 본문 문단의 커서 위치에서 필드를 제거한다 (필드 내용과 컨트롤 삭제).
     ///
     /// 성공 시 `{"ok":true}`, 필드가 없으면 에러를 반환한다.
     pub fn remove_field_at(
@@ -766,6 +943,27 @@ impl DocumentCore {
 /// 문단 내 커서 위치의 필드 범위 정보를 JSON으로 반환한다.
 fn field_info_at_in_para(para: &Paragraph, char_offset: usize) -> String {
     for fr in &para.field_ranges {
+        if fr.start_char_idx != fr.end_char_idx || char_offset != fr.start_char_idx {
+            continue;
+        }
+        if let Some(Control::Field(field)) = para.controls.get(fr.control_idx) {
+            if field.field_type != FieldType::ClickHere {
+                continue;
+            }
+            let guide = field.guide_text().unwrap_or("");
+            return format!(
+                "{{\"inField\":true,\"fieldId\":{},\"fieldType\":\"{}\",\"startCharIdx\":{},\"endCharIdx\":{},\"isGuide\":true,\"guideName\":{},\"editableInForm\":{}}}",
+                field.field_id,
+                field.field_type_str(),
+                fr.start_char_idx,
+                fr.end_char_idx,
+                json_escape(guide),
+                field.is_editable_in_form(),
+            );
+        }
+    }
+
+    for fr in &para.field_ranges {
         if let Some(Control::Field(field)) = para.controls.get(fr.control_idx) {
             if field.field_type != FieldType::ClickHere {
                 continue;
@@ -776,13 +974,14 @@ fn field_info_at_in_para(para: &Paragraph, char_offset: usize) -> String {
                 let is_guide = fr.start_char_idx == fr.end_char_idx;
                 let guide = field.guide_text().unwrap_or("");
                 return format!(
-                    "{{\"inField\":true,\"fieldId\":{},\"fieldType\":\"{}\",\"startCharIdx\":{},\"endCharIdx\":{},\"isGuide\":{},\"guideName\":{}}}",
+                    "{{\"inField\":true,\"fieldId\":{},\"fieldType\":\"{}\",\"startCharIdx\":{},\"endCharIdx\":{},\"isGuide\":{},\"guideName\":{},\"editableInForm\":{}}}",
                     field.field_id,
                     field.field_type_str(),
                     fr.start_char_idx,
                     fr.end_char_idx,
                     is_guide,
                     json_escape(guide),
+                    field.is_editable_in_form(),
                 );
             }
         }
@@ -844,7 +1043,7 @@ fn collect_fields_from_paragraph(
                                 field_id: (ci as u32) << 16 | cell_i as u32,
                                 field_type: FieldType::ClickHere,
                                 command: String::new(),
-                                properties: 0,
+                                properties: if cell.editable_in_form() { 1 } else { 0 },
                                 extra_properties: 0,
                                 ctrl_data_name: Some(fname.clone()),
                                 memo_index: 0,
@@ -913,6 +1112,56 @@ fn field_location_json(loc: &FieldLocation) -> String {
     }
 }
 
+fn para_at_location<'a>(core: &'a DocumentCore, location: &FieldLocation) -> Option<&'a Paragraph> {
+    let mut para = core
+        .document
+        .sections
+        .get(location.section_index)?
+        .paragraphs
+        .get(location.para_index)?;
+
+    for entry in &location.nested_path {
+        para = match entry {
+            NestedEntry::TableCell {
+                control_index,
+                cell_index,
+                para_index,
+            } => {
+                let ctrl = para.controls.get(*control_index)?;
+                if let Control::Table(table) = ctrl {
+                    table.cells.get(*cell_index)?.paragraphs.get(*para_index)?
+                } else {
+                    return None;
+                }
+            }
+            NestedEntry::TextBox {
+                control_index,
+                para_index,
+            } => {
+                let ctrl = para.controls.get(*control_index)?;
+                if let Control::Shape(shape) = ctrl {
+                    shape
+                        .drawing()?
+                        .text_box
+                        .as_ref()?
+                        .paragraphs
+                        .get(*para_index)?
+                } else {
+                    return None;
+                }
+            }
+        };
+    }
+
+    Some(para)
+}
+
+fn field_range_bounds(core: &DocumentCore, fi: &FieldInfo) -> Option<(usize, usize)> {
+    let para = para_at_location(core, &fi.location)?;
+    let range = para.field_ranges.get(fi.field_range_index)?;
+    Some((range.start_char_idx, range.end_char_idx))
+}
+
 impl DocumentCore {
     /// 본문 문단에서 커서 위치의 필드 컨트롤 인덱스를 찾는다.
     fn find_field_control_idx(
@@ -965,10 +1214,139 @@ impl DocumentCore {
         };
         find_field_ctrl_idx_in_para(para, char_offset)
     }
+
+    fn next_click_here_field_id(&self) -> u32 {
+        let mut max_id = 0u32;
+        for section in &self.document.sections {
+            for para in &section.paragraphs {
+                collect_max_field_id(para, &mut max_id);
+            }
+        }
+        max_id.saturating_add(1).max(1)
+    }
+}
+
+fn collect_max_field_id(para: &Paragraph, max_id: &mut u32) {
+    for ctrl in &para.controls {
+        match ctrl {
+            Control::Field(field) if field.field_id > *max_id => {
+                *max_id = field.field_id;
+            }
+            Control::Table(table) => {
+                for cell in &table.cells {
+                    for cell_para in &cell.paragraphs {
+                        collect_max_field_id(cell_para, max_id);
+                    }
+                }
+                if let Some(caption) = &table.caption {
+                    for cap_para in &caption.paragraphs {
+                        collect_max_field_id(cap_para, max_id);
+                    }
+                }
+            }
+            Control::Shape(shape) => {
+                if let Some(drawing) = shape.drawing() {
+                    if let Some(text_box) = &drawing.text_box {
+                        for tb_para in &text_box.paragraphs {
+                            collect_max_field_id(tb_para, max_id);
+                        }
+                    }
+                }
+            }
+            Control::Picture(pic) => {
+                if let Some(caption) = &pic.caption {
+                    for cap_para in &caption.paragraphs {
+                        collect_max_field_id(cap_para, max_id);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+fn insert_click_here_field_in_para(
+    para: &mut Paragraph,
+    char_offset: usize,
+    field_id: u32,
+    guide: &str,
+    memo: &str,
+    name: &str,
+    editable: bool,
+) -> Result<usize, HwpError> {
+    let text_len = para.text.chars().count();
+    let start = char_offset.min(text_len);
+    let positions = para.control_text_positions();
+    let insert_idx = positions
+        .iter()
+        .position(|&pos| pos > start)
+        .unwrap_or(para.controls.len());
+
+    for range in &mut para.field_ranges {
+        if range.control_idx >= insert_idx {
+            range.control_idx += 1;
+        }
+    }
+
+    let field = Field {
+        field_type: FieldType::ClickHere,
+        // [#1434] 이름은 ctrl_data_name(CTRL_DATA 0x57)으로 별도 저장하므로 command 에
+        // 넣지 않는다 (Name 키가 끼면 한컴이 안내문 바인딩 실패).
+        command: Field::build_clickhere_command(guide, memo),
+        properties: if editable { 1 } else { 0 },
+        extra_properties: 0x09,
+        field_id,
+        ctrl_id: tags::FIELD_CLICKHERE,
+        ctrl_data_name: if name.is_empty() {
+            None
+        } else {
+            Some(name.to_string())
+        },
+        memo_index: 0,
+        memo_paragraphs: Vec::new(),
+        raw_parameters_xml: None,
+    };
+
+    para.controls.insert(insert_idx, Control::Field(field));
+    if para.ctrl_data_records.len() < insert_idx {
+        para.ctrl_data_records.resize(insert_idx, None);
+    }
+    para.ctrl_data_records.insert(insert_idx, None);
+
+    let new_range = FieldRange {
+        start_char_idx: start,
+        end_char_idx: start,
+        control_idx: insert_idx,
+    };
+    let range_idx = para
+        .field_ranges
+        .iter()
+        .position(|range| {
+            range.start_char_idx > start
+                || (range.start_char_idx == start && range.control_idx > insert_idx)
+        })
+        .unwrap_or(para.field_ranges.len());
+    para.field_ranges.insert(range_idx, new_range);
+    rebuild_char_offsets(para);
+
+    Ok(start)
 }
 
 /// 문단에서 커서 위치의 ClickHere 필드 컨트롤 인덱스를 반환한다.
 fn find_field_ctrl_idx_in_para(para: &Paragraph, char_offset: usize) -> Option<usize> {
+    // 인접 누름틀 경계에서는 앞 누름틀의 끝과 다음 빈 누름틀의 시작이
+    // 같은 charOffset을 공유한다. 새 빈 누름틀을 먼저 잡아야 첫 입력이
+    // 앞 누름틀 값으로 붙지 않는다.
+    for fr in &para.field_ranges {
+        if fr.start_char_idx == fr.end_char_idx && char_offset == fr.start_char_idx {
+            if let Some(Control::Field(field)) = para.controls.get(fr.control_idx) {
+                if field.field_type == FieldType::ClickHere {
+                    return Some(fr.control_idx);
+                }
+            }
+        }
+    }
+
     for fr in &para.field_ranges {
         if let Some(Control::Field(field)) = para.controls.get(fr.control_idx) {
             if field.field_type != FieldType::ClickHere {
@@ -982,7 +1360,7 @@ fn find_field_ctrl_idx_in_para(para: &Paragraph, char_offset: usize) -> Option<u
     None
 }
 
-/// 문단 내 커서 위치의 누름틀 필드를 제거한다 (FieldRange만 삭제, 텍스트 유지).
+/// 문단 내 커서 위치의 누름틀 필드를 제거한다.
 fn remove_field_in_para(para: &mut Paragraph, char_offset: usize) -> Result<(), HwpError> {
     let idx = para.field_ranges.iter().position(|fr| {
         if let Some(Control::Field(field)) = para.controls.get(fr.control_idx) {
@@ -996,7 +1374,25 @@ fn remove_field_in_para(para: &mut Paragraph, char_offset: usize) -> Result<(), 
     });
     match idx {
         Some(i) => {
+            let start = para.field_ranges[i].start_char_idx;
+            let end = para.field_ranges[i].end_char_idx;
+            let removed_control_idx = para.field_ranges[i].control_idx;
             para.field_ranges.remove(i);
+            if end > start {
+                para.delete_text_at(start, end - start);
+            }
+            if removed_control_idx < para.controls.len() {
+                para.controls.remove(removed_control_idx);
+            }
+            if removed_control_idx < para.ctrl_data_records.len() {
+                para.ctrl_data_records.remove(removed_control_idx);
+            }
+            for range in &mut para.field_ranges {
+                if range.control_idx > removed_control_idx {
+                    range.control_idx -= 1;
+                }
+            }
+            rebuild_char_offsets(para);
             Ok(())
         }
         None => Err(HwpError::InvalidField(
@@ -1010,14 +1406,9 @@ fn remove_field_in_para(para: &mut Paragraph, char_offset: usize) -> Result<(), 
 ///
 /// 원본 char_offsets에서 컨트롤 배치 패턴을 보존하면서,
 /// 텍스트 길이 변경(필드 값 삽입)에 맞게 오프셋을 재계산한다.
-fn rebuild_char_offsets(para: &mut Paragraph) {
+pub(crate) fn rebuild_char_offsets(para: &mut Paragraph) {
     let text_chars: Vec<char> = para.text.chars().collect();
     let text_len = text_chars.len();
-
-    if text_len == 0 {
-        para.char_offsets = Vec::new();
-        return;
-    }
 
     // 원본 char_offsets에서 첫 문자 이전 컨트롤 수 추정
     // (원본 gap / 8 = 컨트롤 수)
@@ -1025,12 +1416,14 @@ fn rebuild_char_offsets(para: &mut Paragraph) {
         para.char_offsets[0] as usize / 8
     } else {
         para.controls.len()
-    };
+    }
+    .min(para.controls.len());
 
-    // FIELD_BEGIN: control_idx >= ctrls_before_text이고 start > 0인 필드의 시작 위치에 갭 필요
+    // FIELD_BEGIN: 이미 char_offsets의 첫 갭에 포함된 선행 컨트롤은 보존하고,
+    // 새로 삽입된 시작 위치 필드는 첫 문자 앞에도 갭을 추가해야 한다.
     let mut field_begin_at: Vec<usize> = vec![0; text_len + 1];
     for fr in &para.field_ranges {
-        if fr.control_idx >= ctrls_before_text && fr.start_char_idx > 0 {
+        if fr.control_idx >= ctrls_before_text {
             let idx = fr.start_char_idx.min(text_len);
             field_begin_at[idx] += 1;
         }
@@ -1041,6 +1434,13 @@ fn rebuild_char_offsets(para: &mut Paragraph) {
     for fr in &para.field_ranges {
         let idx = fr.end_char_idx.min(text_len);
         field_end_at[idx] += 1;
+    }
+
+    if text_len == 0 {
+        para.char_offsets = Vec::new();
+        para.char_count =
+            ((ctrls_before_text + field_begin_at[0] + field_end_at[0]) * 8 + 1) as u32;
+        return;
     }
 
     let mut offset: u32 = ctrls_before_text as u32 * 8;
@@ -1065,6 +1465,10 @@ fn rebuild_char_offsets(para: &mut Paragraph) {
         offset += char_size;
     }
 
+    // 텍스트 뒤에 위치한 빈 필드/필드 끝 마커와 문단 끝 마커를 char_count에 반영한다.
+    offset += field_begin_at[text_len] as u32 * 8;
+    offset += field_end_at[text_len] as u32 * 8;
+    para.char_count = offset + 1;
     para.char_offsets = new_offsets;
 }
 
@@ -1189,7 +1593,7 @@ mod tests {
     fn set_cell_field_text_updates_text_metadata() {
         let cell_para = Paragraph {
             text: "기존값".into(),
-            char_count: 3,
+            char_count: 4,
             char_offsets: vec![0, 1, 2],
             ..Default::default()
         };
@@ -1229,7 +1633,7 @@ mod tests {
         };
         let updated = &table.cells[0].paragraphs[0];
         assert_eq!(updated.text, "새값");
-        assert_eq!(updated.char_count, 2);
+        assert_eq!(updated.char_count, 3);
         assert_eq!(updated.char_offsets, vec![0, 1]);
     }
 }

@@ -482,7 +482,15 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
         }
 
         // 갭에 컨트롤 문자 배치 (각 컨트롤 = 8 code unit)
-        while prev_end + 8 <= offset && ctrl_idx < para.controls.len() {
+        // [#1795] 이 인덱스에 삽입될 FIELD_END(각 8 cu)의 공간을 먼저 예약한다.
+        // 예약 없이 갭을 컨트롤로 채우면 FIELD_END 전용 갭(8 cu)을 다음 컨트롤이
+        // 선점하여 이후 모든 char_offsets 가 시프트되고, 재파싱 시 lineseg
+        // text_start 매핑이 어긋나 줄바꿈 위치가 이동한다 (seoul_0043 글상자).
+        let pending_field_end_cus = field_ends
+            .get(&i)
+            .map(|markers| markers.len() as u32 * 8)
+            .unwrap_or(0);
+        while prev_end + 8 + pending_field_end_cus <= offset && ctrl_idx < para.controls.len() {
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
             ctrl_idx += 1;
@@ -520,7 +528,9 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
                 prev_end = offset + 1;
             }
             '\u{00A0}' => {
-                code_units.push(0x0018);
+                // 묶음 빈칸 (HWP 5.0 표 7: 코드 30). 코드 24(0x18)는 하이픈으로
+                // 재파싱 시 '-' 가 되므로 쓰면 안 된다 (#1793).
+                code_units.push(0x001E);
                 prev_end = offset + 1;
             }
             '\u{2007}' => {
@@ -1118,6 +1128,22 @@ mod tests {
         assert_ne!(compute_control_mask(&para) & (1u32 << 0x001f), 0);
     }
 
+    /// [#1793] 묶음 빈칸(NBSP, U+00A0)은 코드 30(0x1E)으로 직렬화되어야 한다.
+    /// 코드 24(0x18)는 하이픈이라 재파싱 시 '-' 로 손상된다.
+    #[test]
+    fn test_nbsp_serializes_as_code_30() {
+        let para = Paragraph {
+            char_count: 4,
+            text: "가\u{00A0}나".to_string(),
+            char_offsets: vec![0, 1, 2],
+            ..Default::default()
+        };
+
+        let bytes = test_serialize_para_text(&para);
+
+        assert_eq!(&bytes[2..4], &0x001E_u16.to_le_bytes());
+    }
+
     /// 컨트롤 문자 코드 매핑 테스트
     #[test]
     fn test_control_char_code() {
@@ -1169,6 +1195,72 @@ mod tests {
         assert!(bytes
             .windows(expected_field_end.len())
             .any(|window| window == expected_field_end));
+    }
+
+    /// [#1795] FIELD_END 전용 갭(8 cu)을 다음 컨트롤(FIELD_BEGIN)이 선점하면
+    /// 이후 char_offsets 가 시프트되어 lineseg text_start 매핑이 어긋난다.
+    /// 필드 2개 문단에서 스트림 배치와 offsets 가 라운드트립 보존되는지 검증.
+    #[test]
+    fn test_field_end_gap_not_stolen_by_next_control() {
+        let make_field = || {
+            Control::Field(Field {
+                field_type: FieldType::Hyperlink,
+                ctrl_id: tags::FIELD_HYPERLINK,
+                ..Default::default()
+            })
+        };
+        let para = Paragraph {
+            char_count: 38,
+            text: "ab cd".to_string(),
+            // [FB0 0..8] a=8 b=9 [FE0 10..18] ' '=18 [FB1 19..27] c=27 d=28 [FE1] 0x0D
+            char_offsets: vec![8, 9, 18, 27, 28],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                ..Default::default()
+            }],
+            controls: vec![make_field(), make_field()],
+            field_ranges: vec![
+                crate::model::paragraph::FieldRange {
+                    start_char_idx: 0,
+                    end_char_idx: 2,
+                    control_idx: 0,
+                },
+                crate::model::paragraph::FieldRange {
+                    start_char_idx: 3,
+                    end_char_idx: 5,
+                    control_idx: 1,
+                },
+            ],
+            ..Default::default()
+        };
+
+        let section = Section {
+            paragraphs: vec![para],
+            raw_stream: None,
+            ..Default::default()
+        };
+
+        let bytes = serialize_section(&section);
+        let parsed = parse_body_text_section(&bytes).unwrap();
+
+        assert_eq!(parsed.paragraphs.len(), 1);
+        let p = &parsed.paragraphs[0];
+        assert_eq!(p.text, "ab cd");
+        assert_eq!(
+            p.char_offsets,
+            vec![8, 9, 18, 27, 28],
+            "FIELD_END 갭 선점으로 char_offsets 가 시프트되면 안 된다"
+        );
+        assert_eq!(p.field_ranges.len(), 2);
+        assert_eq!(
+            p.field_ranges[1].start_char_idx, 3,
+            "두 번째 필드 범위가 앞으로 당겨지면 안 된다"
+        );
+        assert_eq!(p.field_ranges[1].end_char_idx, 5);
     }
 
     /// 확장 컨트롤 포함 문단 라운드트립

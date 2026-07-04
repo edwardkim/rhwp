@@ -20,11 +20,6 @@
 </p>
 
 <p align="center">
-  <a href="https://oosmetrics.com/repo/edwardkim/rhwp"><img src="https://api.oosmetrics.com/api/v1/badge/achievement/921c34bc-4dd3-4409-ba2e-2d99c8b4a9b6.svg" alt="Top 2 in WebAssembly by originality - 2026-04-21" /></a>
-  <a href="https://oosmetrics.com/repo/edwardkim/rhwp"><img src="https://api.oosmetrics.com/api/v1/badge/achievement/fd1e3217-b99a-4ec2-8cba-98429f3d91c7.svg" alt="Top 2 in Editors by originality - 2026-04-21" /></a>
-</p>
-
-<p align="center">
   <a href="README.md">한국어</a> | <strong>English</strong>
 </p>
 
@@ -70,6 +65,47 @@ Foundation  Typeset   Collab    Complete
 - SVG export (CLI) + Canvas rendering (WASM/Web)
 - Web editor + hwpctl-compatible API (30 Actions, Field API)
 - 1,100+ tests
+
+#### v0.7.17 Cycle (2026-06-23)
+
+> Patch after v0.7.16 — first OOXML chart render-fidelity work, legacy-shape shapeComment
+> serialization, WASM options-object APIs, rhwp-studio table/picture/cursor editing fixes,
+> and a dependency bump batch
+
+**Rendering · charts**
+- 2D-approximation routing for 7 OOXML chart types (3D-bar/3D-pie/ofPie) + bar stacking/percent (C1a)
+- Keep v2 font authority on fallback, expand CanvasKit replay contract guards
+
+**Save contract · API**
+- Fixed missing shapeComment serialization on legacy shapes (ellipse/arc/polygon/curve/chart/ole)
+- Added 26 WASM options-object APIs (`*Ex`, backward-compatible) + consumer README/manual
+
+**rhwp-studio · extension**
+- Table row/column insert-delete regression fix, autosave/recovery, local-font consent, picture/cursor fidelity, table-cell editing/protection
+- Browser extension 0.2.6: viewer CSP fix, Chrome download interceptor side-effect removal
+
+#### v0.7.16 Cycle (2026-06-19)
+
+> Patch after v0.7.15 — HWPX save-contract (serializer fidelity) refinements, ClickHere
+> guide-text Hancom compatibility, rhwp-studio drag-and-drop security gate, and rendering/
+> table/picture fixes with many external contributor PRs
+
+**HWPX Save Contract (serializer fidelity)**
+- Preserved cell/text-box controls, linesegs, and captions; emit secPr margins and body
+  column (colPr) from the IR instead of template hardcoding
+- Preserved picture sizes, MEMO, shapeComment, registration axis, table pageBreak; lossless
+  roundtrip for DocInfo/numbering and more
+- Made parser autoNum width consistent, fixed newNum slot position, added enum-token surface check
+
+**Hancom Compatibility · rhwp-studio**
+- Fixed ClickHere (click-to-type) guide-text command format — resolves guide text not binding
+  in the Hancom editor
+- Drag-and-drop local file loading security gate (modal opt-in, extension/web common); ClickHere
+  editing and dark theme
+
+**Rendering · Other**
+- Native PDF export API, Text IR v2 font-proof gates, endnote height SSOT, rotated-cell picture placement
+- 27-sample chart corpus verification fixture; preserve mixed page sizes when printing
 
 #### v0.7.15 Cycle (2026-06-06)
 
@@ -312,10 +348,12 @@ See the [roadmap document](mydocs/eng/report/rhwp-milestone.md) for details.
 - P6 adds native Skia `RawSvg` fragment rasterization through `resvg`, with external file href loading disabled.
 - P21 adds report-first renderer baseline sweep artifacts and shared replay-plane helpers so SVG, Canvas2D, CanvasKit, and native Skia compare the same background/behindText/flow/inFrontText plane ordering before the sweep becomes a default CI gate.
 - P22 keeps public Canvas on the existing layer path but reduces the WebCanvas layer adapter: core `PaintOp` leaves are replayed directly instead of being rebuilt as temporary `RenderNode` wrappers. Layer JSON also separates canonical `buildOptions`, `debugOptions`, and replay `outputOptions` metadata while keeping legacy `outputOptions` mirrors for compatibility.
+- P23 promotes SVG-derived PDF export to native `DocumentCore` APIs for single-page, explicit page selection, and full-document export. The CLI `export-pdf` command now uses the same native API surface, and render-diff CI writes a report-only PDF visual diff by rasterizing `export-pdf` output against browser Canvas output. Direct/vector PDF replay remains a follow-up.
+- P24-P27 harden strict text/glyph sidecar proof boundaries: bitmap/SVG glyph resource identity, variation/TTC/dataRef/digest proof, guarded orientation/transform authority, and font resolver/proof separation. `TextRun` remains the compatibility fallback whenever proof is incomplete.
 - CI covers the native Skia path with `cargo test --features native-skia skia --lib`; the feature is not available on `wasm32` targets.
-- The initial native Skia path is a PNG raster backend with core image/equation/raw-svg replay; CanvasKit, resource interning/cache, complex text shaping, advanced image parity, and native form replay stay as follow-up work.
+- The initial native Skia path is a PNG raster backend with core image/equation/raw-svg replay; full CanvasKit glyph replay, exact native glyph replay, real document font blob extraction, complex text shaping, advanced image parity, and native form replay stay as follow-up work.
 - C ABI export is intentionally left for a later PR.
-- `ResourceArena` is reserved in `PageLayerTree`; binary resource interning is not implemented yet.
+- `ResourceArena` now supports interned image, static SVG, and font blob resources for guarded replay proof; broader document extraction and full resource transport remain follow-up work.
 - This phase establishes the frontend/backend boundary for later CanvasKit and fuller native Skia backends.
 
 ### Web Editor
@@ -332,7 +370,7 @@ See the [roadmap document](mydocs/eng/report/rhwp-milestone.md) for details.
 
 ## npm Packages — Use in Your Web Project
 
-Current release: `@rhwp/core` / `@rhwp/editor` v0.7.15.
+Current release: `@rhwp/core` / `@rhwp/editor` v0.7.17.
 
 ### Embed a Full Editor (3 lines)
 

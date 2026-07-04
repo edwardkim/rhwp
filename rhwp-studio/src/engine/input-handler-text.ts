@@ -15,6 +15,30 @@ import {
 const FOOTNOTE_DELETE_TITLE = '각주 삭제';
 const FOOTNOTE_DELETE_MESSAGE = '각주를 삭제하시겠습니까?';
 
+function tryConfirmRemoveClickHereAtBoundary(
+  this: any,
+  pos: DocumentPosition,
+  direction: 'backward' | 'forward',
+): boolean {
+  if (this.isFormMode?.()) return false;
+  try {
+    const fi = this.wasm.getFieldInfoAt(pos);
+    if (!fi.inField || fi.fieldType !== 'clickhere') return false;
+    const start = fi.startCharIdx ?? -1;
+    const end = fi.endCharIdx ?? -1;
+    if (start < 0 || end < 0) return false;
+
+    const atBoundary = direction === 'forward'
+      ? pos.charOffset >= end
+      : pos.charOffset <= start || (pos.charOffset >= end && this.isAtExitedFieldEnd?.(pos, fi));
+    if (!atBoundary) return false;
+
+    return this.confirmRemoveCurrentField?.() ?? true;
+  } catch {
+    return false;
+  }
+}
+
 /** IME 조합 종료 후 대기 중인 탐색 키를 처리한다 */
 function executeNavigationAction(this: any, action: NavigationAction, shiftKey: boolean): void {
   if (shiftKey) this.cursor.setAnchor();
@@ -29,9 +53,11 @@ function executeNavigationAction(this: any, action: NavigationAction, shiftKey: 
       break;
     case 'lineStart':
       this.cursor.moveToLineStart();
+      this.markCurrentFieldStartOutside?.();
       break;
     case 'lineEnd':
       this.cursor.moveToLineEnd();
+      this.markCurrentFieldEndOutside?.();
       break;
     case 'paragraphBackward':
       this.cursor.moveToParagraphBoundary(-1);
@@ -75,16 +101,34 @@ function processPendingNav(this: any, nav: NavigationKeyInput): void {
     } else {
       if (vertical) moveH = 1; else moveV = 1;
     }
+    if (!shiftKey && moveH === 1 && this.tryEnterExitedFieldStart?.()) {
+      this.updateCaret();
+      return;
+    }
+    if (!shiftKey && moveH === -1 && this.tryEnterExitedFieldEnd?.()) {
+      this.updateCaret();
+      return;
+    }
+    if (!shiftKey && moveH === -1 && this.tryExitCurrentFieldStart?.()) {
+      this.updateCaret();
+      return;
+    }
+    if (!shiftKey && moveH === 1 && this.tryExitCurrentFieldEnd?.()) {
+      this.updateCaret();
+      return;
+    }
     if (moveH !== null) this.cursor.moveHorizontal(moveH);
     if (moveV !== null) this.cursor.moveVertical(moveV);
     this.updateCaret();
   } else if (code === 'Home') {
     if (shiftKey) this.cursor.setAnchor(); else this.cursor.clearSelection();
     this.cursor.moveToLineStart();
+    this.markCurrentFieldStartOutside?.();
     this.updateCaret();
   } else if (code === 'End') {
     if (shiftKey) this.cursor.setAnchor(); else this.cursor.clearSelection();
     this.cursor.moveToLineEnd();
+    this.markCurrentFieldEndOutside?.();
     this.updateCaret();
   } else if (code === 'Enter') {
     // Enter는 조합 확정만으로 충분 (줄바꿈은 별도 처리 불필요)
@@ -141,6 +185,7 @@ function tryDeleteBodyFootnoteAtCursor(
 }
 
 export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolean): void {
+  if (this.isFormMode?.() && !this.canEditCurrentFormField?.()) return;
   // 머리말/꼬리말 편집 모드
   if (this.cursor.isInHeaderFooter()) {
     const isHeader = this.cursor.headerFooterMode === 'header';
@@ -169,7 +214,15 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
   // 필드 경계 보호: 필드 시작 위치에서는 Backspace 차단
   try {
     const fi = this.wasm.getFieldInfoAt(pos);
-    if (fi.inField && charOffset <= fi.startCharIdx) return;
+    if (fi.inField && this.isAtExitedFieldStart?.(pos, fi)) {
+      // 누름틀 시작 바깥에서는 Backspace가 앞쪽 본문 글자를 지운다.
+    } else if (fi.inField && charOffset <= fi.startCharIdx) {
+      if (tryConfirmRemoveClickHereAtBoundary.call(this, pos, 'backward')) return;
+      return;
+    }
+    if (fi.inField && this.isAtExitedFieldEnd?.(pos, fi)) {
+      if (tryConfirmRemoveClickHereAtBoundary.call(this, pos, 'backward')) return;
+    }
   } catch { /* 무시 */ }
 
   if (inCell) {
@@ -194,6 +247,7 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
 }
 
 export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean): void {
+  if (this.isFormMode?.() && !this.canEditCurrentFormField?.()) return;
   // 머리말/꼬리말 편집 모드
   if (this.cursor.isInHeaderFooter()) {
     const isHeader = this.cursor.headerFooterMode === 'header';
@@ -227,7 +281,10 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
   // 필드 경계 보호: 필드 끝 위치에서는 Delete 차단
   try {
     const fi = this.wasm.getFieldInfoAt(pos);
-    if (fi.inField && charOffset >= fi.endCharIdx) return;
+    if (fi.inField && charOffset >= fi.endCharIdx) {
+      if (tryConfirmRemoveClickHereAtBoundary.call(this, pos, 'forward')) return;
+      return;
+    }
   } catch { /* 무시 */ }
 
   if (inCell) {
@@ -271,23 +328,37 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
 export function onCompositionStart(this: any): void {
   // 선택 영역이 있으면 삭제 후 조합 시작
   if (this.cursor.hasSelection()) {
+    if (!this.canDeleteSelectionInFormMode?.()) {
+      this.textarea.value = '';
+      return;
+    }
     this.deleteSelection();
   }
+  let basePos = this.cursor.isInHeaderFooter()
+    ? { ...this.cursor.getPosition(), charOffset: this.cursor.hfCharOffset }
+    : this.cursor.isInFootnote()
+      ? { ...this.cursor.getPosition(), charOffset: this.cursor.fnCharOffset }
+      : this.cursor.getPosition();
+  if (!this.cursor.isInHeaderFooter() && !this.cursor.isInFootnote()) {
+    basePos = this.prepareClickHereInputPosition?.() ?? basePos;
+  }
+  if (!this.canInsertTextInFormMode?.(basePos)) {
+    this.textarea.value = '';
+    this.isComposing = false;
+    this.compositionAnchor = null;
+    this.compositionLength = 0;
+    return;
+  }
+
   this.isComposing = true;
   if (this.cursor.isInHeaderFooter()) {
     // 머리말/꼬리말 모드에서는 hfCharOffset을 anchor의 charOffset으로 사용
-    this.compositionAnchor = {
-      ...this.cursor.getPosition(),
-      charOffset: this.cursor.hfCharOffset,
-    };
+    this.compositionAnchor = basePos;
   } else if (this.cursor.isInFootnote()) {
     // 각주 모드에서는 fnCharOffset을 anchor의 charOffset으로 사용
-    this.compositionAnchor = {
-      ...this.cursor.getPosition(),
-      charOffset: this.cursor.fnCharOffset,
-    };
+    this.compositionAnchor = basePos;
   } else {
-    this.compositionAnchor = this.cursor.getPosition();
+    this.compositionAnchor = basePos;
   }
   this.compositionLength = 0;
 }
@@ -351,6 +422,10 @@ export function onInput(this: any, e?: InputEvent): void {
   // Undo 스택에는 기록하지 않음 (compositionend에서 한 번에 기록)
   if (this.isComposing && this.compositionAnchor) {
     const anchor = this.compositionAnchor;
+    if (!this.canInsertTextInFormMode?.(anchor)) {
+      this.textarea.value = '';
+      return;
+    }
 
     // 이전 조합 텍스트 삭제
     if (this.compositionLength > 0) {
@@ -401,9 +476,13 @@ export function onInput(this: any, e?: InputEvent): void {
       } else if (this.cursor.isInFootnote()) {
         this._iosAnchor = { ...this.cursor.getPosition(), charOffset: this.cursor.fnCharOffset };
       } else {
-        this._iosAnchor = this.cursor.getPosition();
+        this._iosAnchor = this.prepareClickHereInputPosition?.() ?? this.cursor.getPosition();
       }
       this._iosLength = 0;
+    }
+    if (!this.canInsertTextInFormMode?.(this._iosAnchor)) {
+      this.textarea.value = '';
+      return;
     }
 
     // 이전 삽입 전부 삭제
@@ -486,13 +565,29 @@ export function onInput(this: any, e?: InputEvent): void {
   }
 
   // 선택 영역이 있으면 먼저 삭제
+  let insertPos = this.prepareClickHereInputPosition?.() ?? this.cursor.getPosition();
+  let refreshClickHereGuide = this.isClickHereGuidePosition?.(insertPos) === true;
   if (this.cursor.hasSelection()) {
+    if (!this.canDeleteSelectionInFormMode?.()) {
+      this.textarea.value = '';
+      return;
+    }
     this.deleteSelection();
+    insertPos = this.prepareClickHereInputPosition?.() ?? this.cursor.getPosition();
+    refreshClickHereGuide = this.isClickHereGuidePosition?.(insertPos) === true;
   }
-  this.executeOperation({ kind: 'command', command: new InsertTextCommand(this.cursor.getPosition(), text) });
+  if (!this.canInsertTextInFormMode?.(insertPos)) {
+    this.textarea.value = '';
+    return;
+  }
+  this.executeOperation({ kind: 'command', command: new InsertTextCommand(insertPos, text) });
+  if (refreshClickHereGuide) {
+    this.refreshClickHereAfterFirstInput?.();
+  }
 }
 
 export function insertTextAtRaw(this: any, pos: DocumentPosition, text: string): void {
+  if (!this.canInsertTextInFormMode?.(pos)) return;
   // 머리말/꼬리말 편집 모드
   if (this.cursor.isInHeaderFooter()) {
     const isHeader = this.cursor.headerFooterMode === 'header';
@@ -522,6 +617,7 @@ export function insertTextAtRaw(this: any, pos: DocumentPosition, text: string):
 }
 
 export function deleteTextAt(this: any, pos: DocumentPosition, count: number): void {
+  if (!this.canDeleteTextInFormMode?.(pos, count)) return;
   // 머리말/꼬리말 편집 모드
   if (this.cursor.isInHeaderFooter()) {
     const isHeader = this.cursor.headerFooterMode === 'header';

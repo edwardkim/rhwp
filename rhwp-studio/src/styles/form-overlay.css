@@ -5,8 +5,8 @@
   position: absolute;
   z-index: 20;
   background: var(--color-surface);
-  border: 1px solid #999;
-  box-shadow: 0 2px 6px var(--overlay-bg);
+  border: 1px solid var(--ui-border-strong);
+  box-shadow: var(--shadow-light);
   overflow-y: auto;
   max-height: 200px;
 }
@@ -20,16 +20,16 @@
 }
 
 .form-combo-dropdown .form-combo-item:hover {
-  background: #e5f1fb;
+  background: var(--ui-selected);
 }
 
 .form-combo-dropdown .form-combo-item.selected {
-  background: #0078d7;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--ui-text-on-accent);
 }
 
 .form-combo-dropdown .form-combo-item.selected:hover {
-  background: #005fa3;
+  background: var(--accent-strong);
 }
 
 /* Edit 입력 오버레이 */
@@ -38,6 +38,6 @@
   z-index: 20;
   box-sizing: border-box;
   padding: 0 2px;
-  border: 1px solid #0078d7;
+  border: 1px solid var(--color-primary);
   outline: none;
 }

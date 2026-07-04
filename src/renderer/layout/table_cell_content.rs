@@ -411,6 +411,7 @@ impl LayoutEngine {
             &empty_map,
             &[],
             shape_table_cell_ref,
+            false,
         );
     }
 
@@ -622,7 +623,7 @@ impl LayoutEngine {
             }
 
             // 셀 패딩 (apply_inner_margin 고려)
-            let (mut pad_left, mut pad_right, pad_top, _pad_bottom) =
+            let (mut pad_left, mut pad_right, pad_top, pad_bottom) =
                 self.resolve_cell_padding(cell, table);
 
             // 셀 내 문단 레이아웃
@@ -640,20 +641,53 @@ impl LayoutEngine {
                 &composed_paras,
                 &cell.paragraphs,
                 styles,
+                cell.apply_inner_margin,
             );
             pad_left = new_pl;
             pad_right = new_pr;
 
             let inner_x = cell_x + pad_left;
             let inner_width = (cell_w - pad_left - pad_right).max(0.0);
+            let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
+            let has_nested = cell
+                .paragraphs
+                .iter()
+                .any(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))));
+            let total_content_height = if has_nested {
+                let last_seg_end: i32 = cell
+                    .paragraphs
+                    .iter()
+                    .flat_map(|p| p.line_segs.last())
+                    .map(|s| s.vertical_pos + s.line_height)
+                    .max()
+                    .unwrap_or(0);
+                hwpunit_to_px(last_seg_end, self.dpi)
+                    .max(self.calc_composed_paras_content_height(
+                        &composed_paras,
+                        &cell.paragraphs,
+                        styles,
+                    ))
+                    .max(self.calc_nested_controls_bottom_height(&cell.paragraphs, styles))
+            } else {
+                self.calc_composed_paras_content_height(&composed_paras, &cell.paragraphs, styles)
+            };
+            let text_y_start = match cell.vertical_align {
+                VerticalAlign::Top => cell_y + pad_top,
+                VerticalAlign::Center => {
+                    cell_y + pad_top + (inner_height - total_content_height).max(0.0) / 2.0
+                }
+                VerticalAlign::Bottom => {
+                    cell_y + pad_top + (inner_height - total_content_height).max(0.0)
+                }
+            };
             let inner_area = LayoutRect {
                 x: inner_x,
-                y: cell_y + pad_top,
+                y: text_y_start,
                 width: inner_width,
-                height: cell_h,
+                height: inner_height,
             };
 
-            let mut para_y = cell_y + pad_top;
+            let mut para_y = text_y_start;
             let para_count = composed_paras.len();
             let cell_idx = cell_enum_idx;
             for (pidx, (composed, para)) in composed_paras
@@ -697,7 +731,7 @@ impl LayoutEngine {
                     sec_for_layout,
                     para_for_layout,
                     ctx,
-                    false,
+                    !matches!(cell.vertical_align, VerticalAlign::Top),
                     pidx + 1 == para_count,
                     0.0,
                     None,
@@ -771,6 +805,7 @@ impl LayoutEngine {
                                     effect: pic.image_attr.effect,
                                     brightness: pic.image_attr.brightness,
                                     contrast: pic.image_attr.contrast,
+                                    opacity: pic.image_attr.opacity(),
                                     text_wrap: None,
                                     external_path: pic.image_attr.external_path.clone(),
                                     header_footer_ref: None,

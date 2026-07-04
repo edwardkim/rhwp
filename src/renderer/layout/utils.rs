@@ -56,6 +56,29 @@ pub(crate) fn picture_display_size_hu(picture: &Picture) -> (i32, i32) {
     (width, height)
 }
 
+/// [Issue #1230] 본문 float 그림의 배치/표시 프레임 크기.
+///
+/// 비-TAC + 텍스트가 옆으로 흐르는 wrap(Square/Tight/Through)에서는 파일
+/// LINE_SEG(sw)/레이아웃이 `common`(개체 틀) 크기로 자리를 예약하므로, 표시도
+/// 그 틀에 맞춰야 본문과 겹치지 않는다 (한컴 정합 — KICE EMF: common=198px 로
+/// 그림, current=367px 는 과대). 그 외(TAC 인라인, TopAndBottom 등)는 종전
+/// `picture_display_size_hu`(max(common, current)) 유지 — #1122 문26(주머니
+/// 그림: TAC, common.width 가 손상되어 current 가 정답) 회귀 방지.
+pub(crate) fn picture_flow_frame_size_hu(picture: &Picture) -> (i32, i32) {
+    let flows_beside = !picture.common.treat_as_char
+        && matches!(
+            picture.common.text_wrap,
+            crate::model::shape::TextWrap::Square
+                | crate::model::shape::TextWrap::Tight
+                | crate::model::shape::TextWrap::Through
+        );
+    if flows_beside && picture.common.width > 0 && picture.common.height > 0 {
+        (picture.common.width as i32, picture.common.height as i32)
+    } else {
+        picture_display_size_hu(picture)
+    }
+}
+
 /// 문단의 실효 numbering_id를 반환한다.
 /// Outline 문단이고 para_style.numbering_id==0이면 구역의 outline_numbering_id로 fallback.
 pub fn resolve_numbering_id(
@@ -470,6 +493,66 @@ mod tests {
         picture.shape_attr.current_height = 4000;
 
         assert_eq!(picture_display_size_hu(&picture), (9000, 8000));
+    }
+
+    /// [Issue #1230] 비-TAC Square wrap: current 가 부풀려져도 common 프레임 사용.
+    #[test]
+    fn picture_flow_frame_uses_common_for_square_wrap_float() {
+        use super::picture_flow_frame_size_hu;
+        let mut picture = Picture::default();
+        picture.common.treat_as_char = false;
+        picture.common.text_wrap = crate::model::shape::TextWrap::Square;
+        picture.common.width = 14847; // KICE: 198px
+        picture.common.height = 10230;
+        picture.shape_attr.current_width = 27494; // 367px (과대)
+        picture.shape_attr.current_height = 18956;
+
+        assert_eq!(picture_flow_frame_size_hu(&picture), (14847, 10230));
+    }
+
+    /// [Issue #1230/#1122] TAC 인라인은 종전 max 유지 (문26 주머니 그림 회귀 방지).
+    #[test]
+    fn picture_flow_frame_keeps_display_size_for_tac_inline() {
+        use super::picture_flow_frame_size_hu;
+        let mut picture = Picture::default();
+        picture.common.treat_as_char = true;
+        picture.common.text_wrap = crate::model::shape::TextWrap::Square;
+        picture.common.width = 3365; // #1122 문26: 손상된 common
+        picture.common.height = 9446;
+        picture.shape_attr.current_width = 9014;
+        picture.shape_attr.current_height = 9446;
+
+        assert_eq!(picture_flow_frame_size_hu(&picture), (9014, 9446));
+    }
+
+    /// [Issue #1230] TopAndBottom float 은 종전 max 유지 (측면흐름 아님).
+    #[test]
+    fn picture_flow_frame_keeps_display_size_for_topbottom_float() {
+        use super::picture_flow_frame_size_hu;
+        let mut picture = Picture::default();
+        picture.common.treat_as_char = false;
+        picture.common.text_wrap = crate::model::shape::TextWrap::TopAndBottom;
+        picture.common.width = 3365;
+        picture.common.height = 9446;
+        picture.shape_attr.current_width = 9014;
+        picture.shape_attr.current_height = 9446;
+
+        assert_eq!(picture_flow_frame_size_hu(&picture), (9014, 9446));
+    }
+
+    /// [Issue #1230] Square float 라도 common 이 0 이면 display size 로 폴백.
+    #[test]
+    fn picture_flow_frame_falls_back_when_common_is_zero() {
+        use super::picture_flow_frame_size_hu;
+        let mut picture = Picture::default();
+        picture.common.treat_as_char = false;
+        picture.common.text_wrap = crate::model::shape::TextWrap::Square;
+        picture.common.width = 0;
+        picture.common.height = 0;
+        picture.shape_attr.current_width = 9014;
+        picture.shape_attr.current_height = 9446;
+
+        assert_eq!(picture_flow_frame_size_hu(&picture), (9014, 9446));
     }
 
     /// hwpspec.hwp 패턴 — bin_data_id=1 이 storage_id=12 를 가리킴 (가드 회귀 방지)

@@ -5,17 +5,20 @@ document.getElementById('title').textContent = browser.i18n.getMessage('optionsT
 document.getElementById('labelAutoOpen').textContent = browser.i18n.getMessage('optionsAutoOpen');
 document.getElementById('labelShowBadges').textContent = browser.i18n.getMessage('optionsShowBadges');
 document.getElementById('labelHoverPreview').textContent = browser.i18n.getMessage('optionsHoverPreview');
+document.getElementById('labelDisableExternalWebFonts').textContent = browser.i18n.getMessage('optionsDisableExternalWebFonts');
+document.getElementById('descDisableExternalWebFonts').textContent = browser.i18n.getMessage('optionsDisableExternalWebFontsDesc');
 document.getElementById('saved').textContent = browser.i18n.getMessage('optionsSaved');
 document.getElementById('privacy').textContent = browser.i18n.getMessage('optionsPrivacy');
 document.getElementById('version').textContent = browser.runtime.getManifest().version;
 
-const inputs = ['autoOpen', 'showBadges', 'hoverPreview'];
+const inputs = ['autoOpen', 'showBadges', 'hoverPreview', 'disableExternalWebFonts'];
 
 async function loadSettings() {
   const settings = await browser.storage.sync.get({
     autoOpen: true,
     showBadges: true,
-    hoverPreview: true
+    hoverPreview: true,
+    disableExternalWebFonts: false
   });
   for (const id of inputs) {
     document.getElementById(id).checked = settings[id];

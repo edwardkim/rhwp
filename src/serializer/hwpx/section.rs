@@ -22,19 +22,20 @@
 use quick_xml::Writer;
 
 use crate::model::control::{
-    AutoNumber, AutoNumberType, CharOverlap, Control, Equation, NewNumber, PageHide, PageNumberPos,
+    AutoNumber, AutoNumberType, CharOverlap, Control, Equation, Field, NewNumber, PageHide,
+    PageNumberPos, Ruby,
 };
-use crate::model::document::{Document, Section};
+use crate::model::document::{Document, Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
 use crate::model::page::{ColumnDef, ColumnDirection, ColumnType};
-use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
+use crate::model::paragraph::{ColumnBreakType, LineSeg, OrphanFieldEnd, Paragraph};
 use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertAlign, VertRelTo,
 };
 
 use super::context::SerializeContext;
-use super::field::{write_bookmark, write_field_begin, write_field_end};
+use super::field::{write_bookmark, write_field_begin, write_field_end, write_field_end_full};
 use super::utils::xml_escape;
 use super::SerializeError;
 use super::{picture, table};
@@ -59,6 +60,35 @@ const TEMPLATE_SECPR_RUN_OPEN: &str = r#"<hp:run charPrIDRef="0"><hp:secPr "#;
 // ColumnDef 가 있으면 이 anchor 를 IR 값으로 치환한다 (#1388 secPr 동형).
 const TEMPLATE_BODY_COL_PR: &str = r#"<hp:ctrl><hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/></hp:ctrl>"#;
 
+// [#1637] 템플릿의 하드코딩 secPr visibility — 전부 기본값(미숨김/SHOW_ALL). 원본의
+// visibility 를 IR(SectionDef) 값으로 치환하지 않으면 hideFirstEmptyLine 등이 드롭되어
+// (특히 ="1" → "0") 선두 빈줄이 가시화되며 본문이 밀려 페이지네이션이 달라진다 (#1388 동형).
+const TEMPLATE_VISIBILITY: &str = r#"<hp:visibility hideFirstHeader="0" hideFirstFooter="0" hideFirstMasterPage="0" border="SHOW_ALL" fill="SHOW_ALL" hideFirstPageNum="0" hideFirstEmptyLine="0" showLineNumber="0"/>"#;
+
+/// SectionDef 의 visibility 플래그를 `<hp:visibility>` 요소로 직렬화.
+///
+/// 파서가 IR 에 보존하는 6필드(hideFirstHeader/Footer/MasterPage·border·fill·
+/// hideFirstEmptyLine)만 치환하고, IR 미보존 필드(hideFirstPageNum·showLineNumber)는
+/// 템플릿 기본값("0")을 유지한다.
+fn render_visibility(sd: &SectionDef) -> String {
+    let b = |v: bool| if v { "1" } else { "0" };
+    let bf = |v: bool| if v { "HIDE_ALL" } else { "SHOW_ALL" };
+    format!(
+        r#"<hp:visibility hideFirstHeader="{}" hideFirstFooter="{}" hideFirstMasterPage="{}" border="{}" fill="{}" hideFirstPageNum="0" hideFirstEmptyLine="{}" showLineNumber="0"/>"#,
+        b(sd.hide_header),
+        b(sd.hide_footer),
+        b(sd.hide_master_page),
+        bf(sd.hide_border),
+        bf(sd.hide_fill),
+        b(sd.hide_empty_line),
+    )
+}
+
+/// 템플릿의 visibility 고정 문자열을 IR 기반 값으로 1회 치환.
+fn replace_visibility(xml: &str, sd: &SectionDef) -> String {
+    xml.replacen(TEMPLATE_VISIBILITY, &render_visibility(sd), 1)
+}
+
 /// 레퍼런스 기준 줄 레이아웃 파라미터.
 const VERT_STEP: u32 = 1600; // vertsize(1000) + spacing(600)
 /// 탭 기본 폭 (한컴이 열면서 재계산하지만 초기값으로 필요).
@@ -67,18 +97,22 @@ const TAB_DEFAULT_WIDTH: u32 = 4000;
 /// Stage 2 진입점. `ctx` 는 Stage 3+ 에서 파라미터 검증에 사용.
 pub fn write_section(
     section: &Section,
-    _doc: &Document,
-    _index: usize,
+    doc: &Document,
+    index: usize,
     ctx: &mut SerializeContext,
 ) -> Result<Vec<u8>, SerializeError> {
     let mut vert_cursor: u32 = 0;
 
     let first_para = section.paragraphs.first();
+    // [#1584] 첫 문단 렌더 직전 set — 본문 첫 ColumnDef(섹션 템플릿 흡수분)의 인라인
+    // XML 방출만 1회 억제한다(슬롯 위치는 보존). 렌더 직후 reset 하여 추가 문단 누설 방지.
+    ctx.body_coldef_template_pending = true;
     let (first_runs, first_linesegs, first_advance) = match first_para {
         Some(p) => render_paragraph_parts(p, vert_cursor, ctx),
         // 문단이 없는 섹션(비파싱 IR) — linesegarray 방출 생략 (#1380)
         None => (String::new(), String::new(), vert_cursor),
     };
+    ctx.body_coldef_template_pending = false;
     vert_cursor = first_advance;
 
     // 치환은 모두 pristine 템플릿의 고정 anchor 에 대해 수행한다 (#1378):
@@ -86,6 +120,32 @@ pub fn write_section(
     // 중첩 linesegarray(각주·머리말 등)가 anchor 탐색을 오염시키지 않도록 한다.
     let mut out = replace_first_linesegs(EMPTY_SECTION_XML, &first_linesegs);
     out = replace_page_pr(&out, &section.section_def.page_def);
+    // 쪽 테두리/배경 — 템플릿의 하드코딩 borderFillIDRef="1"(테두리 없음)을 IR 값으로
+    // 치환한다. 누락 시 문서의 쪽 테두리가 소실되어 외곽 4선 노드가 사라진다(#1388 동형).
+    out = replace_page_border_fill(&out, &section.section_def);
+    // [#1637] secPr visibility — 템플릿 고정값을 IR 값으로 치환(hideFirstEmptyLine 등 보존).
+    out = replace_visibility(&out, &section.section_def);
+
+    // 바탕쪽(masterPage) — secPr 의 masterPageCnt 치환 + secPr 내부 끝에 idRef 참조 삽입.
+    // 누락 시 라운드트립에서 바탕쪽 전체(그 안의 그림/표/문단 노드 포함)가 소실된다.
+    // id 인덱스는 전 섹션 누적 전역값으로, mod.rs 의 파일 생성 인덱스와 정합한다.
+    let master_pages = &section.section_def.master_pages;
+    if !master_pages.is_empty() {
+        let base: usize = doc.sections[..index]
+            .iter()
+            .map(|s| s.section_def.master_pages.len())
+            .sum();
+        let ids: Vec<String> = (0..master_pages.len())
+            .map(|k| format!("masterpage{}", base + k))
+            .collect();
+        out = out.replacen(
+            r#"masterPageCnt="0""#,
+            &format!(r#"masterPageCnt="{}""#, master_pages.len()),
+            1,
+        );
+        let refs = super::master_page::render_master_page_refs(&ids);
+        out = out.replacen("</hp:secPr>", &format!("{refs}</hp:secPr>"), 1);
+    }
 
     // [#1407] 본문 단 정의(colPr) — 첫 문단 IR 의 ColumnDef 를 템플릿 하드코딩
     // colPr(colCount=1)에 치환한다. 본문(depth 0) ColumnDef 는 render_runs 인라인
@@ -333,6 +393,15 @@ fn emit_field_end(out: &mut String, para: &Paragraph, control_idx: usize) {
     }
 }
 
+/// 고아(다단락) fieldEnd 를 `<hp:ctrl><hp:fieldEnd .../></hp:ctrl>` 로 방출 (Task #1556).
+fn emit_orphan_field_end(out: &mut String, ofe: &OrphanFieldEnd) {
+    if let Ok(xml) = writer_to_string(|w| write_field_end_full(w, ofe.begin_id_ref, ofe.field_id)) {
+        out.push_str("<hp:ctrl>");
+        out.push_str(&xml);
+        out.push_str("</hp:ctrl>");
+    }
+}
+
 /// 문단 텍스트 전체를 char_shapes 경계로 분할하며 `splitter` 에 누적한다.
 ///
 /// `char_offsets` 로 문자 idx → UTF-16 위치를 매핑하므로 IR 내 컨트롤(8 유닛 갭)이
@@ -373,40 +442,128 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         ctx.char_shape_ids.reference(cs.char_shape_id);
     }
 
+    // [#1592] 완전 빈 문단(원본에 <hp:run> 없음)은 run 을 방출하지 않는다. char_shapes=[]
+    // 인 문단에 RunSplitter 가 기본 (0,0) 세그먼트로 charPrIDRef="0" 빈 run 을 추가하면,
+    // 재파싱 시 spurious (0,0) char_shape 가 생긴다(원본은 run 없어 char_shapes=[]).
+    // char_shapes 가 있으면(예: [(0,0)] 명시) 종전대로 run 을 방출한다(linesegarray 는 별도).
+    if para.text.is_empty()
+        && para.char_shapes.is_empty()
+        && para.controls.is_empty()
+        && para.field_ranges.is_empty()
+        && para.orphan_field_ends.is_empty()
+    {
+        return String::new();
+    }
+
     let mut splitter = RunSplitter::new(para);
 
-    // Bookmark는 IR에 위치 정보가 없어 문단 시작(첫 run)에 배치한다.
-    // (HWPX 파서가 char_count에 포함하지 않아 slot 시스템이 위치를 추적할 수 없음)
-    for ctrl in &para.controls {
-        if let Control::Bookmark(bm) = ctrl {
-            if let Ok(xml) = writer_to_string(|w| write_bookmark(w, bm)) {
-                splitter.content.push_str("<hp:ctrl>");
-                splitter.content.push_str(&xml);
-                splitter.content.push_str("</hp:ctrl>");
+    let slot_count = inferred_control_slot_count(para);
+    // slots 와 각 slot 의 para.controls 인덱스(slot_ctrl_indices)를 병행 수집 —
+    // [Task #1627] empty-text 문단의 bookmark in-order 방출에서 slot 사이 위치 계산에 사용.
+    let (slots, slot_ctrl_indices): (Vec<&Control>, Vec<usize>) =
+        if slot_count == para.controls.len() {
+            // 전 컨트롤이 위치 슬롯인 경로. 본문 첫 문단의 첫 ColumnDef 도 슬롯으로 남겨
+            // char-offset 정합을 보존하고, 그 XML 만 render_control_slot 의 consume-once
+            // 플래그로 억제한다(템플릿이 이미 방출 — 중복 방지). 2번째+ 는 인라인 방출.
+            (
+                para.controls.iter().collect(),
+                (0..para.controls.len()).collect(),
+            )
+        } else {
+            // [Task #1379] 셀·글상자 subList(depth>0) 경로에서는 ColumnDef 도 인라인 슬롯으로
+            // 취급한다 (원본 XML 에 <hp:ctrl><hp:colPr/></hp:ctrl> 인라인 존재).
+            // [Task #1584] 본문(depth 0) 경로에서도 ColumnDef 를 인라인 슬롯에 포함하되,
+            // 첫 문단의 첫 ColumnDef(섹션 템플릿 흡수분)는 슬롯에서 기본 제외한다.
+            // 2번째+ 본문 ColumnDef 는 포함하여 드롭을 방지한다.
+            let suppress_first_col = ctx.sub_list_depth == 0 && ctx.body_coldef_template_pending;
+            let mut col_seen = 0u32;
+            let mut s: Vec<&Control> = Vec::new();
+            let mut si: Vec<usize> = Vec::new();
+            // 제외된 hidden 슬롯 후보(SectionDef·템플릿 흡수 첫 ColumnDef)의 인덱스.
+            let mut hidden: Vec<usize> = Vec::new();
+            for (i, c) in para.controls.iter().enumerate() {
+                let keep = if matches!(c, Control::ColumnDef(_)) {
+                    col_seen += 1;
+                    if suppress_first_col && col_seen == 1 {
+                        hidden.push(i);
+                        false
+                    } else {
+                        true
+                    }
+                } else if matches!(c, Control::SectionDef(_)) {
+                    hidden.push(i);
+                    false
+                } else {
+                    is_hwpx_inline_slot(c)
+                };
+                if keep {
+                    s.push(c);
+                    si.push(i);
+                }
+            }
+            // [Task #1591 v2] hidden 슬롯 정합: cc 증거(slot_count)가 hidden 후보
+            // (secPr/템플릿 흡수 colPr — 원본 XML 에서 첫 run 이 점유하는 8유닛 슬롯)의
+            // 점유를 보여주면 위치 슬롯으로 편입한다. XML 은 방출되지 않고
+            // (SectionDef: 방출 arm 없음, 첫 ColumnDef: consume-once 억제) 위치 축만
+            // 8유닛씩 전진 — 첫 문단이 mismatch 폴백 대신 메인 경로(위치 정확)로
+            // 진입해 후위 슬롯(pageNum 등)·fieldEnd 가 char-offset 위치에 방출된다
+            // (Class C1 +8 시프트·C2 fieldEnd 드롭의 근원 교정). 증거 불일치(합성 IR,
+            // hidden 이 cc 를 점유하지 않는 문서)는 종전 동작 그대로.
+            if !hidden.is_empty() && slot_count == s.len() + hidden.len() {
+                let mut s2: Vec<&Control> = Vec::new();
+                let mut si2: Vec<usize> = Vec::new();
+                let mut keep_iter = si.iter().peekable();
+                for (i, c) in para.controls.iter().enumerate() {
+                    let kept = keep_iter.peek() == Some(&&i);
+                    if kept {
+                        keep_iter.next();
+                    }
+                    if kept || hidden.contains(&i) {
+                        s2.push(c);
+                        si2.push(i);
+                    }
+                }
+                // 첫 ColumnDef 를 슬롯으로 되살렸으므로 consume-once 플래그를 유지해
+                // render_control_slot 이 XML 방출만 1회 건너뛰게 한다(첫 분기와 동형).
+                (s2, si2)
+            } else {
+                if suppress_first_col {
+                    // 템플릿 흡수분을 슬롯에서 제외한 채 진행하므로, render_control_slot 의
+                    // consume-once 억제가 2번째 ColumnDef 를 잘못 건너뛰지 않도록 플래그 해제.
+                    ctx.body_coldef_template_pending = false;
+                }
+                (s, si)
+            }
+        };
+
+    // Bookmark는 zero-width 라 slot char-position 축에 안 잡힌다.
+    // - [Task #1627] empty-text(객체-only) 문단: 문단 시작 강제는 원본 컨트롤 순서(예:
+    //   Table·PageNumberPos 뒤의 Bookmark)를 깨고 roundtrip char_shape 오프셋을 shift시킨다
+    //   → para.controls 순서대로 slot 사이에 in-order 방출.
+    // - [Task #1591 v2] 슬롯이 있는 비-empty 문단도 in-order 로 통일(1라운드 hoist 제거
+    //   편입 — 표/pageNum 뒤 북마크의 원본 순서 보존).
+    // - 비-empty·무슬롯 문단: 종전대로 문단 시작(첫 run)에 배치(순서 증거 없음, 종전 유지).
+    let bm_inorder = para.text.is_empty() || !slots.is_empty();
+    if !bm_inorder {
+        for ctrl in &para.controls {
+            if let Control::Bookmark(bm) = ctrl {
+                if let Ok(xml) = writer_to_string(|w| write_bookmark(w, bm)) {
+                    splitter.content.push_str("<hp:ctrl>");
+                    splitter.content.push_str(&xml);
+                    splitter.content.push_str("</hp:ctrl>");
+                }
             }
         }
     }
 
-    let slot_count = inferred_control_slot_count(para);
-    let slots: Vec<&Control> = if slot_count == para.controls.len() {
-        para.controls.iter().collect()
-    } else {
-        // [Task #1379] 셀·글상자 subList(depth > 0) 경로에서는 ColumnDef 도
-        // 인라인 슬롯으로 취급한다 (원본 XML 에 <hp:ctrl><hp:colPr/></hp:ctrl> 인라인 존재).
-        // 본문(depth 0) 경로는 섹션 템플릿 첫 run 의 colPr 가 받으므로 불변.
-        para.controls
-            .iter()
-            .filter(|c| {
-                is_hwpx_inline_slot(c)
-                    || (ctx.sub_list_depth > 0 && matches!(c, Control::ColumnDef(_)))
-            })
-            .collect()
-    };
-
     let mut tab_idx = 0usize;
 
-    // fast path: 슬롯·필드·경계 없음 — 텍스트 전체를 단일 run 으로
-    if slots.is_empty() && para.field_ranges.is_empty() && splitter.single_run() {
+    // fast path: 슬롯·필드·고아 fieldEnd·경계 없음 — 텍스트 전체를 단일 run 으로
+    if slots.is_empty()
+        && para.field_ranges.is_empty()
+        && para.orphan_field_ends.is_empty()
+        && splitter.single_run()
+    {
         let t = render_hp_t_content(&para.text, &para.tab_extended, &mut tab_idx);
         splitter.content.push_str(&t);
         return splitter.finish();
@@ -415,8 +572,33 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     // mismatch 경로: 슬롯 위치 추정 불가 — 텍스트(경계 분할 포함) 후 슬롯 일괄 방출
     if slot_count != slots.len() {
         split_text_into(&mut splitter, para, &mut tab_idx);
-        for slot in &slots {
+        let mut bm_done = vec![false; para.controls.len()];
+        for (si, slot) in slots.iter().enumerate() {
+            // [Task #1627] empty-text 문단: 이 slot 앞(controls 순서)의 bookmark 를 먼저 방출.
+            if bm_inorder {
+                emit_inorder_bookmarks(
+                    &mut splitter.content,
+                    para,
+                    &mut bm_done,
+                    slot_ctrl_indices[si],
+                );
+            }
             render_control_slot(&mut splitter.content, slot, ctx);
+        }
+        if bm_inorder {
+            // 마지막 slot 뒤에 오는 trailing bookmark.
+            emit_inorder_bookmarks(&mut splitter.content, para, &mut bm_done, usize::MAX);
+        }
+        // [Task #1591 v2] 균형 field_ranges 의 닫는 fieldEnd 도 말미 복원 — 이 경로는
+        // fieldBegin(슬롯)만 방출하고 fieldEnd 방출 코드가 없어 same-para 균형 필드가
+        // 1/0 으로 깨지며 cc −8 (#1593). #1556 고아 복원과 동형(위치 대신 말미 일괄).
+        for fr in &para.field_ranges {
+            emit_field_end(&mut splitter.content, para, fr.control_idx);
+        }
+        // [Task #1556] 위치 추정 불가 경로에서도 고아 fieldEnd 의 8유닛 슬롯은 복원한다
+        // (정확한 위치 대신 말미 일괄 — 최소한 char_count 보존).
+        for ofe in &para.orphan_field_ends {
+            emit_orphan_field_end(&mut splitter.content, ofe);
         }
         return splitter.finish();
     }
@@ -426,12 +608,28 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     let mut slot_idx = 0usize;
     let mut expected_utf16_pos = 0u32;
     let mut field_end_emitted = vec![false; para.field_ranges.len()];
+    // [Task #1556] 고아 fieldEnd 방출 추적.
+    let mut orphan_emitted = vec![false; para.orphan_field_ends.len()];
+    let text_char_count = para.text.chars().count();
+
+    // [Task #1591 v2] 메인 경로 bookmark in-order 방출 추적 (mismatch 경로와 동일 기제).
+    // 메인 경로는 종전엔 hoist 전담이라 방출 지점이 없었다 — 첫 문단(hidden 슬롯 정합)이
+    // 메인 경로로 진입하면서 슬롯 사이 in-order 방출이 필요해졌다.
+    let mut bm_done = vec![false; para.controls.len()];
 
     // 빈 문단(text == "")의 0-length 필드: 메인 루프가 실행되지 않아
     // pre-char 검사를 통과하지 못하므로 루프 전에 slots → fieldEnd 순으로 방출한다.
     if para.text.is_empty() {
         while slot_idx < slots.len() {
             splitter.cut_before(expected_utf16_pos);
+            if bm_inorder {
+                emit_inorder_bookmarks(
+                    &mut splitter.content,
+                    para,
+                    &mut bm_done,
+                    slot_ctrl_indices[slot_idx],
+                );
+            }
             render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -442,6 +640,15 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                 emit_field_end(&mut splitter.content, para, fr.control_idx);
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                 field_end_emitted[i] = true;
+            }
+        }
+        // [Task #1556] 빈 문단의 고아 fieldEnd (char_idx == 0).
+        for (i, ofe) in para.orphan_field_ends.iter().enumerate() {
+            if ofe.char_idx == 0 && !orphan_emitted[i] {
+                splitter.cut_before(expected_utf16_pos);
+                emit_orphan_field_end(&mut splitter.content, ofe);
+                expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                orphan_emitted[i] = true;
             }
         }
     }
@@ -464,9 +671,33 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             );
             // 슬롯 시작 위치의 경계 — 슬롯은 새 run 소속 (규칙 1)
             splitter.cut_before(expected_utf16_pos);
+            if bm_inorder {
+                emit_inorder_bookmarks(
+                    &mut splitter.content,
+                    para,
+                    &mut bm_done,
+                    slot_ctrl_indices[slot_idx],
+                );
+            }
             render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+        }
+
+        // [Task #1556] 고아 fieldEnd (char_idx == idx): 문자 push 전에 8유닛 슬롯 방출.
+        for (i, ofe) in para.orphan_field_ends.iter().enumerate() {
+            if ofe.char_idx == idx && !orphan_emitted[i] {
+                flush_text_fragment(
+                    &mut splitter.content,
+                    &mut text_buf,
+                    &para.tab_extended,
+                    &mut tab_idx,
+                );
+                splitter.cut_before(expected_utf16_pos);
+                emit_orphan_field_end(&mut splitter.content, ofe);
+                expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                orphan_emitted[i] = true;
+            }
         }
 
         // 0-length 필드(start == end == idx): fieldBegin 방출 직후, 문자 push 전에 fieldEnd 방출.
@@ -581,11 +812,37 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         }
     }
 
+    // [Task #1556] 텍스트 끝(char_idx == text_char_count) 의 고아 fieldEnd — para 0.16 케이스.
+    for (i, ofe) in para.orphan_field_ends.iter().enumerate() {
+        if !orphan_emitted[i] {
+            debug_assert!(
+                ofe.char_idx >= text_char_count,
+                "미방출 고아 fieldEnd 는 텍스트 끝이어야 함"
+            );
+            splitter.cut_before(expected_utf16_pos);
+            emit_orphan_field_end(&mut splitter.content, ofe);
+            expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+            orphan_emitted[i] = true;
+        }
+    }
+
     while slot_idx < slots.len() {
         splitter.cut_before(expected_utf16_pos);
+        if bm_inorder {
+            emit_inorder_bookmarks(
+                &mut splitter.content,
+                para,
+                &mut bm_done,
+                slot_ctrl_indices[slot_idx],
+            );
+        }
         render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
         slot_idx += 1;
         expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+    }
+    if bm_inorder {
+        // 마지막 슬롯 뒤(컨트롤 순서 후미)의 trailing bookmark.
+        emit_inorder_bookmarks(&mut splitter.content, para, &mut bm_done, usize::MAX);
     }
 
     splitter.finish()
@@ -624,9 +881,11 @@ fn inferred_control_slot_count(para: &Paragraph) -> usize {
 
     // fieldEnd는 8 code unit 슬롯이지만 para.controls[]에 대응 컨트롤이 없다.
     // field_ranges.len()이 fieldEnd 수와 정확히 일치하므로 빼서 보정한다.
+    // [Task #1556] 고아(다단락) fieldEnd 도 컨트롤 없는 8유닛 슬롯이므로 동일하게 차감.
     from_char_count
         .max(from_offsets)
-        .saturating_sub(para.field_ranges.len() as u32) as usize
+        .saturating_sub(para.field_ranges.len() as u32)
+        .saturating_sub(para.orphan_field_ends.len() as u32) as usize
 }
 
 pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
@@ -663,6 +922,33 @@ fn flush_text_fragment(
     }
 }
 
+/// [Task #1627] empty-text 문단에서 bookmark 를 para.controls 순서대로 in-order 방출한다.
+/// `upto_ctrl_idx` 미만 인덱스의 미방출 bookmark 만 방출(usize::MAX = 나머지 전부).
+/// bookmark 는 zero-width 라 char-position 을 점유하지 않으므로 slot 사이에 끼워도 위치 불변.
+fn emit_inorder_bookmarks(
+    content: &mut String,
+    para: &Paragraph,
+    bm_done: &mut [bool],
+    upto_ctrl_idx: usize,
+) {
+    for (i, ctrl) in para.controls.iter().enumerate() {
+        if i >= upto_ctrl_idx {
+            break;
+        }
+        if bm_done[i] {
+            continue;
+        }
+        if let Control::Bookmark(bm) = ctrl {
+            if let Ok(xml) = writer_to_string(|w| write_bookmark(w, bm)) {
+                content.push_str("<hp:ctrl>");
+                content.push_str(&xml);
+                content.push_str("</hp:ctrl>");
+            }
+            bm_done[i] = true;
+        }
+    }
+}
+
 fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeContext) {
     match control {
         Control::Equation(eq) => {
@@ -688,14 +974,19 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         Control::Field(f) => {
             // fieldBegin은 <hp:ctrl>...</hp:ctrl>로 감싸야 함 (Table/Picture와 달리)
             out.push_str("<hp:ctrl>");
-            let has_params = f.raw_parameters_xml.is_some();
+            let generated_params = generated_field_parameters(f);
+            let has_params = f.raw_parameters_xml.is_some() || generated_params.is_some();
             let has_memo = f.field_type == crate::model::control::FieldType::Memo
                 && !f.memo_paragraphs.is_empty();
             if has_params || has_memo {
                 // [#1391] 자식(parameters / memo subList)이 있으면 start/end 태그.
                 out.push_str(&super::field::field_begin_open_tag(f));
                 out.push('>');
-                if let Some(params) = &f.raw_parameters_xml {
+                if let Some(params) = f
+                    .raw_parameters_xml
+                    .as_deref()
+                    .or(generated_params.as_deref())
+                {
                     out.push_str(params);
                 }
                 if has_memo {
@@ -735,13 +1026,57 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
             Err(e) => eprintln!("[hwpx] Form 직렬화 실패: {e}"),
         },
         Control::CharOverlap(co) => out.push_str(&render_compose(co)),
-        // [Task #1379] 셀·글상자 subList 한정 인라인 colPr 방출.
-        // 본문 경로(depth 0)는 섹션 템플릿 첫 run 에서 처리하므로 미방출 유지.
-        Control::ColumnDef(cd) if ctx.sub_list_depth > 0 => {
-            out.push_str(&render_col_pr_ctrl(cd));
+        // [Task #1587] 덧말(Ruby) 인라인 방출. is_hwpx_inline_slot 에 등록돼 슬롯 위치는
+        // 자동이나 종전 방출 arm 부재로 드롭됐다. parse_dutmal 의 역매핑.
+        Control::Ruby(r) => out.push_str(&render_dutmal(r)),
+        // [Task #1379/#1584] 인라인 colPr 방출.
+        // - subList(depth>0): 전부 인라인 방출(원본 XML 인라인 존재).
+        // - 본문(depth 0): 첫 문단의 첫 ColumnDef 1개는 섹션 템플릿 colPr 앵커가 이미
+        //   방출했으므로(중복 방지) consume-once 플래그로 XML 만 건너뛴다. 슬롯 자체는
+        //   상위(render_runs)에서 유지하므로 char-offset 위치 정합은 보존된다.
+        Control::ColumnDef(cd) => {
+            if ctx.sub_list_depth == 0 && ctx.body_coldef_template_pending {
+                ctx.body_coldef_template_pending = false;
+            } else {
+                out.push_str(&render_col_pr_ctrl(cd));
+            }
         }
         _ => {}
     }
+}
+
+/// 덧말(Ruby) `<hp:dutmal>` 직렬화 (#1587). `parse_dutmal` 의 역매핑.
+/// 속성 순서는 한컴 실측(posType szRatio option styleIDRef align)을 따른다.
+fn render_dutmal(r: &Ruby) -> String {
+    let pos_type = match r.pos_type {
+        1 => "BOTTOM",
+        _ => "TOP",
+    };
+    let align = match r.align {
+        1 => "RIGHT",
+        2 => "CENTER",
+        _ => "LEFT",
+    };
+    format!(
+        r#"<hp:dutmal posType="{}" szRatio="{}" option="{}" styleIDRef="{}" align="{}"><hp:mainText>{}</hp:mainText><hp:subText>{}</hp:subText></hp:dutmal>"#,
+        pos_type,
+        r.sz_ratio,
+        r.option,
+        r.style_id_ref,
+        align,
+        xml_escape(&r.main_text),
+        xml_escape(&r.ruby_text),
+    )
+}
+
+fn generated_field_parameters(field: &Field) -> Option<String> {
+    if field.command.is_empty() || field.raw_parameters_xml.is_some() {
+        return None;
+    }
+    Some(format!(
+        r#"<hp:parameters cnt="1" name=""><hp:stringParam name="Command">{}</hp:stringParam></hp:parameters>"#,
+        xml_escape(&field.command),
+    ))
 }
 
 /// 셀·글상자 subList 인라인 `<hp:ctrl><hp:colPr .../></hp:ctrl>` (#1379 3단계).
@@ -891,12 +1226,13 @@ fn render_header_footer(
 ) -> String {
     let mut out = format!(
         concat!(
-            r#"<hp:ctrl><hp:{tag} id="0" applyPageType="{apply}">"#,
+            r#"<hp:ctrl><hp:{tag} id="{id}" applyPageType="{apply}">"#,
             r#"<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" "#,
             r#"linkListIDRef="0" linkListNextIDRef="0" textWidth="{tw}" textHeight="{th}" "#,
             r#"hasTextRef="{tr}" hasNumRef="{nr}">"#
         ),
         tag = tag,
+        id = h.id,
         apply = apply_page_type_to_str(h.apply_to),
         tw = h.text_width,
         th = h.text_height,
@@ -918,6 +1254,7 @@ fn render_header_footer(
 
 /// render_header_footer 공통 인자 묶음 (Header/Footer가 동일 필드를 가짐).
 struct HeaderFooterFields<'a> {
+    id: u32,
     apply_to: HeaderFooterApply,
     text_width: u32,
     text_height: u32,
@@ -926,10 +1263,18 @@ struct HeaderFooterFields<'a> {
     paragraphs: &'a [Paragraph],
 }
 
+fn hwpx_header_footer_id(raw_ctrl_extra: &[u8]) -> u32 {
+    raw_ctrl_extra
+        .get(..4)
+        .map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+        .unwrap_or(0)
+}
+
 fn render_header(h: &Header, ctx: &mut SerializeContext) -> String {
     render_header_footer(
         "header",
         HeaderFooterFields {
+            id: hwpx_header_footer_id(&h.raw_ctrl_extra),
             apply_to: h.apply_to,
             text_width: h.text_width,
             text_height: h.text_height,
@@ -945,6 +1290,7 @@ fn render_footer(f: &Footer, ctx: &mut SerializeContext) -> String {
     render_header_footer(
         "footer",
         HeaderFooterFields {
+            id: hwpx_header_footer_id(&f.raw_ctrl_extra),
             apply_to: f.apply_to,
             text_width: f.text_width,
             text_height: f.text_height,
@@ -1080,7 +1426,9 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
         };
     }
     if let ShapeObject::Group(g) = shape {
-        let mut xml = match writer_to_string(|w| super::shape::write_container_open(w, &g.common)) {
+        let mut xml = match writer_to_string(|w| {
+            super::shape::write_container_open(w, &g.common, &g.shape_attr)
+        }) {
             Ok(xml) => xml,
             Err(e) => {
                 eprintln!("[hwpx] Shape::Group 직렬화 실패: {e}");
@@ -1100,12 +1448,43 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
         }
         return xml;
     }
-    let (tag, c, caption) = match shape {
+    const NO_PTS: &[crate::model::Point] = &[];
+    let (tag, c, caption, drawing, points): (
+        _,
+        _,
+        _,
+        Option<&crate::model::shape::DrawingObjAttr>,
+        &[crate::model::Point],
+    ) = match shape {
         ShapeObject::Rectangle(_) | ShapeObject::Line(_) => unreachable!(),
-        ShapeObject::Ellipse(e) => ("ellipse", &e.common, &e.drawing.caption),
-        ShapeObject::Arc(a) => ("arc", &a.common, &a.drawing.caption),
-        ShapeObject::Polygon(p) => ("polygon", &p.common, &p.drawing.caption),
-        ShapeObject::Curve(cv) => ("curve", &cv.common, &cv.drawing.caption),
+        ShapeObject::Ellipse(e) => (
+            "ellipse",
+            &e.common,
+            &e.drawing.caption,
+            Some(&e.drawing),
+            NO_PTS,
+        ),
+        ShapeObject::Arc(a) => (
+            "arc",
+            &a.common,
+            &a.drawing.caption,
+            Some(&a.drawing),
+            NO_PTS,
+        ),
+        ShapeObject::Polygon(p) => (
+            "polygon",
+            &p.common,
+            &p.drawing.caption,
+            Some(&p.drawing),
+            &p.points,
+        ),
+        ShapeObject::Curve(cv) => (
+            "curve",
+            &cv.common,
+            &cv.drawing.caption,
+            Some(&cv.drawing),
+            &cv.points,
+        ),
         ShapeObject::Group(_) => unreachable!(),
         ShapeObject::Picture(pic) => {
             return match writer_to_string(|w| picture::write_picture(w, pic, ctx)) {
@@ -1116,30 +1495,105 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
                 }
             };
         }
-        ShapeObject::Chart(ch) => ("chart", &ch.common, &ch.caption),
-        ShapeObject::Ole(o) => ("ole", &o.common, &o.caption),
+        ShapeObject::Chart(ch) => ("chart", &ch.common, &ch.caption, None, NO_PTS),
+        ShapeObject::Ole(o) => {
+            return match writer_to_string(|w| super::shape::write_ole(w, o, ctx)) {
+                Ok(xml) => xml,
+                Err(e) => {
+                    eprintln!("[hwpx] Shape::Ole 직렬화 실패: {e}");
+                    String::new()
+                }
+            };
+        }
     };
-    render_common_shape_xml(tag, c, caption, ctx)
+    // [Task #1598] ellipse / arc 전용 지오메트리(center/축/시작끝점) — 미방출 시 한글이
+    // 타원/호를 다르게 렌더 → 누적 레이아웃 변동 → 페이지 붕괴(#1589 잔여). hc:pt(polygon/
+    // curve) 와 상호배타이므로 동일 위치(shadow 직후, sz 직전)에 방출.
+    let hc = |t: &str, p: &crate::model::Point| format!(r#"<hc:{t} x="{}" y="{}"/>"#, p.x, p.y);
+    let geom_tail = match shape {
+        ShapeObject::Ellipse(e) => format!(
+            "{}{}{}{}{}{}{}",
+            hc("center", &e.center),
+            hc("ax1", &e.axis1),
+            hc("ax2", &e.axis2),
+            hc("start1", &e.start1),
+            hc("end1", &e.end1),
+            hc("start2", &e.start2),
+            hc("end2", &e.end2),
+        ),
+        ShapeObject::Arc(a) => format!(
+            "{}{}{}",
+            hc("center", &a.center),
+            hc("ax1", &a.axis1),
+            hc("ax2", &a.axis2),
+        ),
+        _ => String::new(),
+    };
+    render_common_shape_xml(tag, c, caption, drawing, points, &geom_tail, ctx)
 }
 
 fn render_common_shape_xml(
     tag: &str,
     c: &CommonObjAttr,
     caption: &Option<crate::model::shape::Caption>,
+    drawing: Option<&crate::model::shape::DrawingObjAttr>,
+    points: &[crate::model::Point],
+    geom_tail: &str,
     ctx: &mut SerializeContext,
 ) -> String {
+    // 도형 좌표계 블록(offset/orgSz/curSz/flip/rotationInfo/renderingInfo) — 누락 시
+    // 회전/뒤집힘이 소실되어 bbox 가 전치되는 등 렌더가 어긋난다(#1501 동류, polygon 등).
+    let shape_block = drawing
+        .map(|d| {
+            writer_to_string(|w| super::shape::write_shape_component_block(w, &d.shape_attr))
+                .unwrap_or_default()
+        })
+        .unwrap_or_default();
+    // [#1596] 지오메트리(lineShape/fillBrush/shadow/꼭짓점) — 종전 드롭으로 도형 형상 소실 →
+    // 페이지 붕괴(#1589 잔여). write_rect 와 동형 순서(shape_block 직후, sz 직전).
+    let geometry = drawing
+        .map(|d| {
+            let ls = writer_to_string(|w| super::shape::write_line_shape(w, &d.border_line))
+                .unwrap_or_default();
+            let fb = writer_to_string(|w| super::shape::write_fill_brush(w, &d.fill, ctx))
+                .unwrap_or_default();
+            let sh = writer_to_string(|w| super::shape::write_shadow(w, d)).unwrap_or_default();
+            let pts: String = points
+                .iter()
+                .map(|p| format!(r#"<hc:pt x="{}" y="{}"/>"#, p.x, p.y))
+                .collect();
+            // [#1598] ellipse/arc 전용 지오메트리(center/축/시작끝점)는 hc:pt 와 상호배타.
+            format!("{ls}{fb}{sh}{pts}{geom_tail}")
+        })
+        .unwrap_or_default();
+    // 태그 부수 속성 — numberingType/dropcapstyle/href/groupLevel/instid (rect/line 동형).
+    let group_level = drawing.map(|d| d.shape_attr.group_level).unwrap_or(0);
+    let instid = drawing
+        .map(|d| d.inst_id)
+        .filter(|&i| i != 0)
+        .unwrap_or(c.instance_id);
     let mut out = format!(
         concat!(
-            r#"<hp:{tag} id="{id}" zOrder="{zo}" textWrap="{tw}" textFlow="BOTH_SIDES" lock="0">"#,
+            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}">"#,
+            "{block}",
+            "{geometry}",
             r#"<hp:sz width="{w}" height="{h}" widthRelTo="ABSOLUTE" heightRelTo="ABSOLUTE"/>"#,
-            r#"<hp:pos treatAsChar="{tac}" vertRelTo="{vr}" vertAlign="{va}" horzRelTo="{hr}" horzAlign="{ha}" vertOffset="{vo}" horzOffset="{ho}"/>"#,
+            r#"<hp:pos treatAsChar="{tac}" affectLSpacing="0" flowWithText="{fwt}" allowOverlap="{ao}" holdAnchorAndSO="{hold}" vertRelTo="{vr}" vertAlign="{va}" horzRelTo="{hr}" horzAlign="{ha}" vertOffset="{vo}" horzOffset="{ho}"/>"#,
             r#"<hp:outMargin left="{ml}" right="{mr}" top="{mt}" bottom="{mb}"/>"#,
         ),
         tag = tag,
+        block = shape_block,
+        geometry = geometry,
         id = c.instance_id,
         zo = c.z_order,
+        nt = super::shape::numbering_type_str(c.numbering_type),
+        gl = group_level,
+        iid = instid,
         tw = text_wrap_to_hwpx(c.text_wrap),
         tac = if c.treat_as_char { "1" } else { "0" },
+        fwt = if c.flow_with_text { "1" } else { "0" },
+        ao = if c.allow_overlap { "1" } else { "0" },
+        hold = if c.prevent_page_break != 0 { "1" } else { "0" },
         w = c.width,
         h = c.height,
         vr = vert_rel_to_hwpx(c.vert_rel_to),
@@ -1160,6 +1614,13 @@ fn render_common_shape_xml(
             Ok(xml) => out.push_str(&xml),
             Err(e) => eprintln!("[hwpx] Shape({tag}) 캡션 직렬화 실패: {e}"),
         }
+    }
+    // 설명 (#1451) — caption 직후 (OWPML AbstractShapeObjectType: outMargin→caption→shapeComment).
+    // picture.rs:104 선례와 동일 순서. legacy 경로(ellipse/arc/polygon/curve/chart/ole) 보존.
+    // 빈 description 미방출은 write_shape_comment 내부 가드로 보장된다.
+    match writer_to_string(|w| super::shape::write_shape_comment(w, c)) {
+        Ok(xml) => out.push_str(&xml),
+        Err(e) => eprintln!("[hwpx] Shape({tag}) shapeComment 직렬화 실패: {e}"),
     }
     out.push_str(&format!("</hp:{tag}>"));
     out
@@ -1227,8 +1688,11 @@ fn render_equation(eq: &Equation) -> String {
         )
     };
 
+    // [#1594] holdAnchorAndSO 는 IR(prevent_page_break)을 보존(종전 "0" 하드코딩 제거).
+    let hold = if c.prevent_page_break != 0 { "1" } else { "0" };
+
     format!(
-        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
         text_wrap_to_hwpx(c.text_wrap),
         vert_rel_to_hwpx(c.vert_rel_to),
         horz_rel_to_hwpx(c.horz_rel_to),
@@ -1433,10 +1897,116 @@ fn replace_page_pr(xml: &str, page_def: &crate::model::page::PageDef) -> String 
     }
 }
 
+/// 템플릿의 3개 `pageBorderFill`(BOTH/EVEN/ODD, 하드코딩 borderFillIDRef="1") 을 IR 값으로
+/// 치환한다. 누락 시 문서의 실제 쪽 테두리가 소실된다. 파서는 첫 항목(BOTH)을
+/// `page_border_fill`, 나머지(EVEN/ODD)를 `extra_page_border_fills` 에 위치 기반 저장한다.
+fn replace_page_border_fill(xml: &str, sec_def: &crate::model::document::SectionDef) -> String {
+    let entries: [(&str, &crate::model::page::PageBorderFill); 3] = [
+        ("BOTH", &sec_def.page_border_fill),
+        (
+            "EVEN",
+            sec_def
+                .extra_page_border_fills
+                .first()
+                .unwrap_or(&sec_def.page_border_fill),
+        ),
+        (
+            "ODD",
+            sec_def
+                .extra_page_border_fills
+                .get(1)
+                .unwrap_or(&sec_def.page_border_fill),
+        ),
+    ];
+    let mut out = xml.to_string();
+    for (ty, pbf) in entries {
+        // 템플릿 고정 문자열 (empty_section0.xml 와 정확히 일치해야 함).
+        let template = format!(
+            r#"<hp:pageBorderFill type="{ty}" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER"><hp:offset left="1417" right="1417" top="1417" bottom="1417"/></hp:pageBorderFill>"#
+        );
+        if out.contains(&template) {
+            out = out.replacen(&template, &render_page_border_fill(ty, pbf), 1);
+        }
+        // 미일치 시 원본 유지(회귀 방지) — replace_page_pr 패턴과 동형.
+    }
+    out
+}
+
+/// 단일 `pageBorderFill` 요소를 IR 에서 재구성한다. attr 비트 → textBorder/fillArea/
+/// headerInside/footerInside (parser `page_border_fill_attr` 의 역).
+fn render_page_border_fill(ty: &str, pbf: &crate::model::page::PageBorderFill) -> String {
+    let text_border = if pbf.attr & 0x0000_0001 != 0 {
+        "PAPER"
+    } else {
+        "CONTENT"
+    };
+    let fill_area = if pbf.attr & 0x0000_0008 != 0 {
+        "PAGE"
+    } else if pbf.attr & 0x0000_0010 != 0 {
+        "BORDER"
+    } else {
+        "PAPER"
+    };
+    let header_inside = if pbf.attr & 0x0000_0002 != 0 {
+        "1"
+    } else {
+        "0"
+    };
+    let footer_inside = if pbf.attr & 0x0000_0004 != 0 {
+        "1"
+    } else {
+        "0"
+    };
+    format!(
+        r#"<hp:pageBorderFill type="{ty}" borderFillIDRef="{}" textBorder="{}" headerInside="{}" footerInside="{}" fillArea="{}"><hp:offset left="{}" right="{}" top="{}" bottom="{}"/></hp:pageBorderFill>"#,
+        pbf.border_fill_id,
+        text_border,
+        header_inside,
+        footer_inside,
+        fill_area,
+        pbf.spacing_left,
+        pbf.spacing_right,
+        pbf.spacing_top,
+        pbf.spacing_bottom,
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::model::paragraph::{CharShapeRef, Paragraph};
+
+    /// [Task #1627] empty-text(객체-only) 문단에서 bookmark 는 문단 시작으로 끌려가지 않고
+    /// para.controls 순서대로 in-order 방출되어야 한다(원본 컨트롤 순서 보존).
+    #[test]
+    fn task1627_empty_para_bookmark_serialized_after_preceding_table() {
+        use crate::model::control::{Bookmark, Control};
+
+        let mut para = Paragraph::default();
+        // empty text, controls 순서 = [Table, Bookmark]
+        para.controls = vec![
+            Control::Table(Box::default()),
+            Control::Bookmark(Bookmark {
+                name: "BM_AFTER_TBL".to_string(),
+            }),
+        ];
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        let tbl_pos = xml.find("<hp:tbl");
+        let bm_pos = xml.find("BM_AFTER_TBL");
+        assert!(
+            tbl_pos.is_some(),
+            "table 직렬화 필요: {}",
+            &xml[..400.min(xml.len())]
+        );
+        assert!(bm_pos.is_some(), "bookmark 직렬화 필요");
+        assert!(
+            tbl_pos < bm_pos,
+            "bookmark 가 table 뒤(원본 순서)에 와야 함 — 문단 시작 강제 회귀 (#1627)"
+        );
+    }
 
     fn make_doc_with_paragraph(para: Paragraph) -> (Document, Section) {
         let mut section = Section::default();
@@ -1903,6 +2473,113 @@ mod tests {
         );
     }
 
+    // ---------- #1556: 고아(다단락) fieldEnd 방출 ----------
+
+    #[test]
+    fn task1556_orphan_field_end_emitted_at_text_end() {
+        // 다단락 필드의 end 문단(para 0.16 동형): 텍스트 "끝." 뒤에 고아 fieldEnd 8유닛.
+        use crate::model::paragraph::{CharShapeRef, OrphanFieldEnd};
+        let mut para = Paragraph::default();
+        para.text = "끝.".to_string();
+        para.char_offsets = vec![0, 1];
+        para.char_count = 11; // 텍스트 2 + fieldEnd 8 + 끝마커 1
+        para.char_shapes = vec![
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 3,
+            },
+            CharShapeRef {
+                start_pos: 10,
+                char_shape_id: 30,
+            },
+        ];
+        para.orphan_field_ends = vec![OrphanFieldEnd {
+            char_idx: 2,
+            begin_id_ref: 1_878_228_493,
+            field_id: 627_272_811,
+        }];
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"<hp:fieldEnd beginIDRef="1878228493" fieldid="627272811"/>"#),
+            "고아 fieldEnd 가 attrs 와 함께 방출되어야 함: {xml}"
+        );
+        // 텍스트가 fieldEnd 보다 앞에 나온다 (run 말미 fieldEnd 패턴).
+        let t_pos = xml.find("끝.").expect("텍스트");
+        let fe_pos = xml.find("<hp:fieldEnd").expect("fieldEnd");
+        assert!(t_pos < fe_pos, "텍스트가 fieldEnd 앞: {xml}");
+    }
+
+    #[test]
+    fn task1556_multipara_field_parse_serialize_parse_roundtrip() {
+        // 합성 다단락 필드(begin=문단0, end=문단1) → parse → serialize → re-parse.
+        // end 문단의 char_count/text/char_offsets/orphan 이 보존되어야 한다 (IR diff=0).
+        use crate::parser::hwpx::section::parse_hwpx_section;
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0"><hp:ctrl><hp:fieldBegin id="1878228493" type="CLICK_HERE" name="본문" fieldid="627272811"/></hp:ctrl><hp:t>본문</hp:t></hp:run>
+  </hp:p>
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="3"><hp:t>끝.</hp:t><hp:ctrl><hp:fieldEnd beginIDRef="1878228493" fieldid="627272811"/></hp:ctrl></hp:run>
+    <hp:run charPrIDRef="30"><hp:t/></hp:run>
+  </hp:p>
+</hs:sec>"#;
+        let sec1 = parse_hwpx_section(xml).unwrap();
+        let mut doc = Document::default();
+        doc.sections.push(sec1.clone());
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let bytes = write_section(&sec1, &doc, 0, &mut ctx).unwrap();
+        let xml2 = String::from_utf8(bytes).unwrap();
+        let sec2 = parse_hwpx_section(&xml2).unwrap();
+
+        // 두 번째 문단(고아 fieldEnd 보유) IR 보존.
+        let a = &sec1.paragraphs[1];
+        let b = &sec2.paragraphs[1];
+        assert_eq!(b.text, a.text, "text 보존");
+        assert_eq!(
+            b.char_count, a.char_count,
+            "char_count 보존 (8유닛 소실 없음)"
+        );
+        assert_eq!(b.char_offsets, a.char_offsets, "char_offsets 보존");
+        assert_eq!(
+            b.char_shapes
+                .iter()
+                .map(|c| (c.start_pos, c.char_shape_id))
+                .collect::<Vec<_>>(),
+            a.char_shapes
+                .iter()
+                .map(|c| (c.start_pos, c.char_shape_id))
+                .collect::<Vec<_>>(),
+            "char_shape 경계 보존"
+        );
+        assert_eq!(b.orphan_field_ends.len(), 1, "고아 fieldEnd 재파싱 보존");
+        assert_eq!(b.orphan_field_ends[0].begin_id_ref, 1_878_228_493);
+    }
+
+    #[test]
+    fn task1556_orphan_field_end_zero_fieldid_omits_attr() {
+        use crate::model::paragraph::OrphanFieldEnd;
+        let mut para = Paragraph::default();
+        para.text = "a".to_string();
+        para.char_offsets = vec![0];
+        para.char_count = 10; // 1 + 8 + 1
+        para.orphan_field_ends = vec![OrphanFieldEnd {
+            char_idx: 1,
+            begin_id_ref: 42,
+            field_id: 0,
+        }];
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"<hp:fieldEnd beginIDRef="42"/>"#),
+            "field_id 0 이면 fieldid 속성 생략: {xml}"
+        );
+    }
+
     // ---------- #1289: Bookmark / Field dispatcher 연결 ----------
 
     use crate::model::control::{Bookmark, Control, Field, FieldType};
@@ -2020,7 +2697,7 @@ mod tests {
         let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
 
         assert!(
-            xml.contains(r#"<hp:ctrl><hp:fieldBegin id="99" type="CLICKHERE""#),
+            xml.contains(r#"<hp:ctrl><hp:fieldBegin id="99" type="CLICK_HERE""#),
             "fieldBegin must be emitted: {}",
             &xml[..500.min(xml.len())]
         );
@@ -2368,12 +3045,12 @@ mod tests {
 
     #[test]
     fn task1378_empty_paragraph_single_run_id_zero() {
-        // 빈 문단·char_shapes 빈 경우 — 단일 run id 0 유지 (경계 케이스 5)
+        // [#1592 갱신] 완전 빈 문단(text="", char_shapes=[], 컨트롤 없음)은 run 을 방출하지
+        // 않는다. char_shapes=[] 는 "원본에 <hp:run> 없음"을 의미하므로(빈 run 이 있었다면
+        // 파서가 [(0,0)] 을 산출), run 을 추가하면 재파싱 시 spurious (0,0) 가 생긴다(#1592).
+        // 종전 #1378 은 빈 run(id 0)을 방출했으나, 이는 run 없던 빈 문단에 entry 를 가공했다.
         let para = Paragraph::default();
-        assert_eq!(
-            runs_of(&para),
-            r#"<hp:run charPrIDRef="0"><hp:t></hp:t></hp:run>"#
-        );
+        assert_eq!(runs_of(&para), "");
     }
 
     #[test]
@@ -2512,5 +3189,58 @@ mod tests {
         };
         assert_eq!(shapes_of(0), vec![(0, 1), (19, 2)], "섹션 첫 문단");
         assert_eq!(shapes_of(1), vec![(0, 1), (3, 2)], "추가 문단");
+    }
+
+    // ---------- #1584: 본문 인라인 ColumnDef 드롭 회귀 가드 ----------
+
+    #[test]
+    fn task1584_body_first_para_two_columndefs_roundtrip() {
+        // 본문 첫 문단에 ColumnDef 2개(섹션 단 정의 + 인라인 단 정의).
+        // 섹션 템플릿은 첫 ColumnDef 1개만 흡수하고, 2번째 인라인 ColumnDef 는
+        // 본문 인라인 슬롯에서 제외되어 드롭된다(controls 6→5 양상).
+        // 수정 전: reparse 후 ColumnDef 1개만 → RED. 수정 후: 2개 보존 → GREEN.
+        let mut p0 = Paragraph::default();
+        p0.controls.push(Control::ColumnDef(ColumnDef::default()));
+        p0.controls.push(Control::ColumnDef(ColumnDef::default()));
+
+        let mut section = Section::default();
+        section.paragraphs.push(p0);
+        let mut doc = Document::default();
+        doc.sections.push(section);
+
+        let bytes = crate::serializer::hwpx::serialize_hwpx(&doc).expect("serialize");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse");
+        let coldef_count = doc2.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .filter(|c| matches!(c, Control::ColumnDef(_)))
+            .count();
+        assert_eq!(
+            coldef_count, 2,
+            "본문 첫 문단의 ColumnDef 2개가 roundtrip 후 모두 보존돼야 한다 (템플릿1 + 인라인1): {coldef_count}"
+        );
+    }
+
+    // ---------- #1596: generic-shape 지오메트리 직렬화 ----------
+
+    #[test]
+    fn task1596_polygon_geometry_serialized() {
+        // [#1596] polygon 의 꼭짓점(hc:pt)·테두리(lineShape)·그림자(shadow)가 방출돼야 한다.
+        // render_common_shape_xml 이 종전 이들을 드롭 → 도형 형상 소실 → 페이지 붕괴(#1589 잔여).
+        use crate::model::shape::PolygonShape;
+        use crate::model::Point;
+        let mut poly = PolygonShape::default();
+        poly.points = vec![
+            Point { x: 0, y: 0 },
+            Point { x: 100, y: 0 },
+            Point { x: 100, y: 100 },
+        ];
+        poly.drawing.border_line.width = 50;
+        poly.drawing.shadow_type = 1;
+        let mut ctx = SerializeContext::collect_from_document(&Document::default());
+        let xml = render_shape(&ShapeObject::Polygon(poly), &mut ctx);
+        assert!(xml.contains("<hc:pt "), "폴리곤 꼭짓점(hc:pt) 방출: {xml}");
+        assert!(xml.contains("<hp:lineShape"), "lineShape 방출: {xml}");
+        assert!(xml.contains("<hp:shadow"), "shadow 방출: {xml}");
     }
 }

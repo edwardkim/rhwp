@@ -6,13 +6,27 @@
  */
 import { ModalDialog } from './dialog';
 
-/** 외부 크레이트 라이선스 정보 */
+/**
+ * 외부 크레이트 라이선스 정보.
+ *
+ * WASM 번들에 실제 포함되는 핵심 Rust 크레이트만 표시한다.
+ * native-skia(skia-safe/resvg/usvg) 등 optional feature 전용 크레이트는 WASM 빌드에
+ * 포함되지 않으므로 제외한다. 전체 목록은 저장소 루트 THIRD_PARTY_LICENSES.md 참조.
+ */
 const THIRD_PARTY_LICENSES = [
   { name: 'wasm-bindgen', license: 'MIT / Apache-2.0' },
   { name: 'web-sys', license: 'MIT / Apache-2.0' },
   { name: 'js-sys', license: 'MIT / Apache-2.0' },
+  { name: 'quick-xml', license: 'MIT' },
   { name: 'cfb', license: 'MIT' },
+  { name: 'zip', license: 'MIT' },
   { name: 'flate2', license: 'MIT / Apache-2.0' },
+  { name: 'encoding_rs', license: '(Apache-2.0 / MIT) AND BSD-3-Clause' },
+  { name: 'image', license: 'MIT / Apache-2.0' },
+  { name: 'serde / serde_json', license: 'MIT / Apache-2.0' },
+  { name: 'unicode-segmentation', license: 'MIT / Apache-2.0' },
+  { name: 'ttf-parser', license: 'MIT / Apache-2.0' },
+  { name: 'subsetter', license: 'MIT / Apache-2.0' },
   { name: 'byteorder', license: 'MIT / Unlicense' },
   { name: 'base64', license: 'MIT / Apache-2.0' },
   { name: 'console_error_panic_hook', license: 'MIT / Apache-2.0' },
@@ -30,7 +44,7 @@ export class AboutDialog extends ModalDialog {
     // 제품 영문명
     const titleEn = document.createElement('div');
     titleEn.className = 'about-product-name';
-    titleEn.textContent = 'HWP 5.0 Compatible Module for Rust';
+    titleEn.textContent = 'HWP/HWPX Compatible Module for Rust';
     body.appendChild(titleEn);
 
     // 제품 한글명
@@ -77,6 +91,13 @@ export class AboutDialog extends ModalDialog {
       licenseTable.appendChild(tr);
     }
     body.appendChild(licenseTable);
+
+    // 전체 라이선스 목록 안내
+    const licenseNote = document.createElement('div');
+    licenseNote.className = 'about-license-note';
+    licenseNote.textContent =
+      'WASM 번들에 포함되는 핵심 크레이트만 표시합니다. 전체 목록은 THIRD_PARTY_LICENSES.md를 참조하세요.';
+    body.appendChild(licenseNote);
 
     // 저작권
     const copyright = document.createElement('div');

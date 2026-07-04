@@ -135,15 +135,21 @@ fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Seria
     let treat = bool01(c.treat_as_char);
     let vert_offset = c.vertical_offset.to_string();
     let horz_offset = c.horizontal_offset.to_string();
+    // [#1594] holdAnchorAndSO 는 IR(prevent_page_break)을 보존한다. 종전 "0" 하드코딩은
+    // 페이지 하단 앵커 개체(발신명의 footer 등)의 1→0 드롭으로 한글 페이지 붕괴를 유발했다.
+    let hold = bool01(c.prevent_page_break != 0);
     empty_tag(
         w,
         "hp:pos",
         &[
             ("treatAsChar", treat),
             ("affectLSpacing", "0"),
-            ("flowWithText", "1"),
+            // [#1637] flowWithText 는 IR(flow_with_text)을 보존한다. 종전 "1" 하드코딩은
+            // treatAsChar 표의 1→0 케이스에서 0→1 드롭으로 표 partial-split 임계를 흔들어
+            // 페이지네이션이 달라졌다(IR-invisible). #1594 holdAnchorAndSO 와 동형.
+            ("flowWithText", bool01(c.flow_with_text)),
             ("allowOverlap", "0"),
-            ("holdAnchorAndSO", "0"),
+            ("holdAnchorAndSO", hold),
             ("vertRelTo", vert_rel_to_str(c.vert_rel_to)),
             ("horzRelTo", horz_rel_to_str(c.horz_rel_to)),
             ("vertAlign", vert_align_str(c.vert_align)),
@@ -227,6 +233,8 @@ fn write_cell<W: Write>(
     let name = cell.field_name.as_deref().unwrap_or("");
     let header = bool01(cell.is_header);
     let has_margin = bool01(cell.apply_inner_margin);
+    let protect = bool01(cell.cell_protect());
+    let editable = bool01(cell.editable_in_form());
     let border_ref = cell.border_fill_id.to_string();
 
     start_tag_attrs(
@@ -236,8 +244,8 @@ fn write_cell<W: Write>(
             ("name", name),
             ("header", header),
             ("hasMargin", has_margin),
-            ("protect", "0"),
-            ("editable", "0"),
+            ("protect", protect),
+            ("editable", editable),
             ("dirty", "0"),
             ("borderFillIDRef", &border_ref),
         ],
@@ -544,6 +552,34 @@ mod tests {
             start_pos,
             char_shape_id,
         }
+    }
+
+    // ---------- #1594: holdAnchorAndSO 보존 ----------
+
+    #[test]
+    fn task1594_hold_anchor_preserved() {
+        // [#1594] holdAnchorAndSO 는 IR(common.prevent_page_break)을 보존해야 한다.
+        // 현재 직렬화가 "0" 하드코딩 → 1→0 드롭(페이지 하단 앵커 개체에서 페이지 붕괴 원인). RED.
+        let mut t = empty_table(1, 1);
+        t.common.prevent_page_break = 1;
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r#"holdAnchorAndSO="1""#),
+            "holdAnchorAndSO 가 IR 값(1)으로 방출돼야 한다(현재 0 하드코딩): {}",
+            &xml[..xml.len().min(500)]
+        );
+    }
+
+    #[test]
+    fn task1594_hold_anchor_zero_when_unset() {
+        // prevent_page_break=0 이면 holdAnchorAndSO="0" (기존 동작 보존).
+        let t = empty_table(1, 1);
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r#"holdAnchorAndSO="0""#),
+            "기본 0: {}",
+            &xml[..xml.len().min(300)]
+        );
     }
 
     // ---------- #1387: write_caption — 표 캡션 직렬화 ----------

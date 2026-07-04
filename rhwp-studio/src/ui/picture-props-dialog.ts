@@ -13,6 +13,7 @@
 import type { PictureProperties, ShapeProperties, CellPathLike } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { EventBus } from '@/core/event-bus';
+import { userSettings } from '@/core/user-settings';
 import { enableDialogDrag } from './dialog-drag';
 
 /** HWPUNIT ↔ mm 변환 상수 (1 inch = 25.4 mm = 7200 HWPUNIT) */
@@ -82,6 +83,9 @@ export class PicturePropsDialog {
   private widthInput!: HTMLInputElement;
   private heightInput!: HTMLInputElement;
   private sizeFixedCheck!: HTMLInputElement;
+  private keepRatioCheck!: HTMLInputElement;
+  private sizeLockControls: Array<HTMLInputElement | HTMLSelectElement | HTMLButtonElement> = [];
+  private syncingBasicSize = false;
   private originalWidth = 0;
   private originalHeight = 0;
 
@@ -203,6 +207,7 @@ export class PicturePropsDialog {
   private picBrightnessInput!: HTMLInputElement;
   private picContrastInput!: HTMLInputElement;
   private picWatermarkCheck!: HTMLInputElement;
+  private picTransparencyInput!: HTMLInputElement;
 
   // ── 그림자 탭 컨트롤 ──
   private shadowTypeBtns: HTMLButtonElement[] = [];
@@ -343,12 +348,9 @@ export class PicturePropsDialog {
     this.dialog.appendChild(mainRow);
     this.overlay.appendChild(this.dialog);
 
-    // Escape / 오버레이 클릭
+    // Escape
     this.overlay.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { e.stopPropagation(); this.hide(); }
-    });
-    this.overlay.addEventListener('mousedown', (e) => {
-      if (e.target === this.overlay) this.hide();
     });
 
     enableDialogDrag(this.dialog, titleBar);
@@ -365,6 +367,7 @@ export class PicturePropsDialog {
     this.body.replaceChildren();
     this.tabs = [];
     this.panels = [];
+    this.sizeLockControls = [];
 
     const tabNames = this.objectType === 'line' ? LINE_TAB_NAMES
       : (this.objectType === 'shape' || this.objectType === 'group') ? SHAPE_TAB_NAMES
@@ -414,8 +417,11 @@ export class PicturePropsDialog {
     // 너비
     const wRow = this.row();
     wRow.appendChild(this.label('너비(W)'));
-    wRow.appendChild(this.sizeTypeSelect());
+    const widthTypeSelect = this.sizeTypeSelect();
+    this.sizeLockControls.push(widthTypeSelect);
+    wRow.appendChild(widthTypeSelect);
     this.widthInput = this.numberInput(0);
+    this.sizeLockControls.push(this.widthInput);
     wRow.appendChild(this.widthInput);
     wRow.appendChild(this.unit('mm'));
     sizeFs.appendChild(wRow);
@@ -423,29 +429,52 @@ export class PicturePropsDialog {
     // 높이
     const hRow = this.row();
     hRow.appendChild(this.label('높이(H)'));
-    hRow.appendChild(this.sizeTypeSelect());
+    const heightTypeSelect = this.sizeTypeSelect();
+    this.sizeLockControls.push(heightTypeSelect);
+    hRow.appendChild(heightTypeSelect);
     this.heightInput = this.numberInput(0);
+    this.sizeLockControls.push(this.heightInput);
     hRow.appendChild(this.heightInput);
     hRow.appendChild(this.unit('mm'));
     // 크기 고정
     const sfLabel = this.checkboxLabel('크기 고정(S)');
     this.sizeFixedCheck = sfLabel.querySelector('input') as HTMLInputElement;
     hRow.appendChild(sfLabel);
+    const krLabel = this.checkboxLabel('비율 유지');
+    this.keepRatioCheck = krLabel.querySelector('input') as HTMLInputElement;
+    this.keepRatioCheck.checked = userSettings.getPicturePropsKeepRatio();
+    this.sizeLockControls.push(this.keepRatioCheck);
+    hRow.appendChild(krLabel);
     sizeFs.appendChild(hRow);
 
+    this.sizeFixedCheck.addEventListener('change', () => this.updateSizeProtectControls());
+
     // 비율 유지 이벤트
+    this.keepRatioCheck.addEventListener('change', () => {
+      userSettings.setPicturePropsKeepRatio(this.keepRatioCheck.checked);
+    });
     this.widthInput.addEventListener('input', () => {
-      if (this.originalWidth > 0) {
+      if (this.keepRatioCheck.checked && !this.syncingBasicSize && this.originalWidth > 0) {
         const ratio = this.originalHeight / this.originalWidth;
         const w = parseFloat(this.widthInput.value) || 0;
-        this.heightInput.value = (w * ratio).toFixed(2);
+        this.syncingBasicSize = true;
+        try {
+          this.heightInput.value = (w * ratio).toFixed(2);
+        } finally {
+          this.syncingBasicSize = false;
+        }
       }
     });
     this.heightInput.addEventListener('input', () => {
-      if (this.originalHeight > 0) {
+      if (this.keepRatioCheck.checked && !this.syncingBasicSize && this.originalHeight > 0) {
         const ratio = this.originalWidth / this.originalHeight;
         const h = parseFloat(this.heightInput.value) || 0;
-        this.widthInput.value = (h * ratio).toFixed(2);
+        this.syncingBasicSize = true;
+        try {
+          this.widthInput.value = (h * ratio).toFixed(2);
+        } finally {
+          this.syncingBasicSize = false;
+        }
       }
     });
 
@@ -492,12 +521,11 @@ export class PicturePropsDialog {
     const hPosRow = this.row();
     hPosRow.classList.add('pp-pos-detail');
     hPosRow.appendChild(this.label('가로(I):'));
-    // [Task #1151 v8 결함 B] Para 옵션 추가. horz_rel_to 의 valid 값은
-    // Paper/Page/Column/Para 4 개 (스펙 pack_common_attr_bits 의 horz_rel_to_to_bits).
-    // 이전: ['Paper', '종이'], ['Page', '쪽'], ['Column', '단'] 만 → picture.common.horz_rel_to
-    // = Para 시 select 매칭 실패 → "select 없음" 표시. 사용자 한컴 native 시연 시
-    // 글자처럼 해제 후 가로 기준이 "문단" 으로 표시되어야 정합 (한컴 동작).
+    // [Task #1282] 한컴은 자리차지(TopAndBottom) 그림의 가로 기준 칸에
+    // 실제 HorzRelTo 대신 "자리 차지"를 표시한다. 저장값은 textWrap 이므로
+    // OK 시에는 HorzRelTo 로 넘기지 않는다.
     this.horzRelSelect = this.selectEl([
+      ['TakePlace', '자리 차지'],
       ['Paper', '종이'], ['Page', '쪽'], ['Column', '단'], ['Para', '문단'],
     ]);
     hPosRow.appendChild(this.horzRelSelect);
@@ -538,12 +566,10 @@ export class PicturePropsDialog {
     optRow.classList.add('pp-pos-detail');
     const palLabel = this.checkboxLabel('쪽 영역 안으로 제한(B)');
     this.pageAreaLimitCheck = palLabel.querySelector('input') as HTMLInputElement;
-    this.pageAreaLimitCheck.disabled = true;
+    this.pageAreaLimitCheck.addEventListener('change', () => this.updateOverlapOption());
     optRow.appendChild(palLabel);
     const oaLabel = this.checkboxLabel('서로 겹침 허용(L)');
     this.overlapAllowCheck = oaLabel.querySelector('input') as HTMLInputElement;
-    this.overlapAllowCheck.checked = true;
-    this.overlapAllowCheck.disabled = true;
     optRow.appendChild(oaLabel);
     posFs.appendChild(optRow);
     this.posDetailEls.push(optRow);
@@ -1496,6 +1522,7 @@ export class PicturePropsDialog {
           this.picScaleYInput.value = String(p.pct);
         }
       });
+      this.sizeLockControls.push(btn);
       sxRow.appendChild(btn);
     }
     scaleFs.appendChild(sxRow);
@@ -1504,6 +1531,7 @@ export class PicturePropsDialog {
     syRow.appendChild(this.label('세로'));
     this.picScaleYInput = this.numberInput(1, 1000, 0.01);
     this.picScaleYInput.style.width = '70px';
+    this.sizeLockControls.push(this.picScaleXInput, this.picScaleYInput);
     syRow.appendChild(this.picScaleYInput);
     syRow.appendChild(this.unit('%'));
     scaleFs.appendChild(syRow);
@@ -1511,6 +1539,7 @@ export class PicturePropsDialog {
     const ratioRow = this.row();
     const ratioLabel = this.checkboxLabel('가로 세로 같은 비율 유지');
     this.picKeepRatioCheck = ratioLabel.querySelector('input') as HTMLInputElement;
+    this.sizeLockControls.push(this.picKeepRatioCheck);
     ratioRow.appendChild(ratioLabel);
     const resetBtn = document.createElement('button');
     resetBtn.className = 'dialog-btn';
@@ -1527,7 +1556,9 @@ export class PicturePropsDialog {
       if (this.picEffectRadios[0]) this.picEffectRadios[0].checked = true;
       this.picBrightnessInput.value = '0';
       this.picContrastInput.value = '0';
+      this.picTransparencyInput.value = '0';
     });
+    this.sizeLockControls.push(resetBtn);
     ratioRow.appendChild(resetBtn);
     scaleFs.appendChild(ratioRow);
 
@@ -1695,10 +1726,9 @@ export class PicturePropsDialog {
     panel.appendChild(transFs);
     const transRow = this.row();
     transRow.appendChild(this.label('투명도'));
-    const transInput = this.numberInput(0, 100, 1);
-    transInput.value = '0';
-    transInput.disabled = true;
-    transRow.appendChild(transInput);
+    this.picTransparencyInput = this.numberInput(0, 100, 1);
+    this.picTransparencyInput.value = '0';
+    transRow.appendChild(this.picTransparencyInput);
     transRow.appendChild(this.unit('%'));
     transFs.appendChild(transRow);
 
@@ -1891,22 +1921,30 @@ export class PicturePropsDialog {
   private handleOk(): void {
     if (!this.props) { this.hide(); return; }
     const updated: Record<string, unknown> = {};
+    const sizeProtect = this.sizeFixedCheck.checked;
+
+    if (sizeProtect !== (this.props.sizeProtect ?? false)) {
+      updated['sizeProtect'] = sizeProtect;
+    }
 
     // 크기
-    const newW = mmToHwp(parseFloat(this.widthInput.value) || 0);
-    const newH = mmToHwp(parseFloat(this.heightInput.value) || 0);
-    if (newW !== this.props.width) updated['width'] = newW;
-    if (newH !== this.props.height) updated['height'] = newH;
+    if (!sizeProtect) {
+      const newW = mmToHwp(parseFloat(this.widthInput.value) || 0);
+      const newH = mmToHwp(parseFloat(this.heightInput.value) || 0);
+      if (newW !== this.props.width) updated['width'] = newW;
+      if (newH !== this.props.height) updated['height'] = newH;
+    }
 
     // 위치
     const tac = this.treatAsCharCheck.checked;
     if (tac !== this.props.treatAsChar) updated['treatAsChar'] = tac;
 
     if (!tac) {
-      const tw = this.getSelectedWrap();
-      if (tw !== this.props.textWrap) updated['textWrap'] = tw;
+      let tw = this.getSelectedWrap();
       const hr = this.horzRelSelect.value;
-      if (hr !== this.props.horzRelTo) updated['horzRelTo'] = hr;
+      if (hr === 'TakePlace') tw = 'TopAndBottom';
+      if (tw !== this.props.textWrap) updated['textWrap'] = tw;
+      if (hr !== 'TakePlace' && hr !== this.props.horzRelTo) updated['horzRelTo'] = hr;
       const ha = this.horzAlignSelect.value;
       if (ha !== this.props.horzAlign) updated['horzAlign'] = ha;
       const ho = mmToHwp(parseFloat(this.horzOffsetInput.value) || 0);
@@ -1917,6 +1955,14 @@ export class PicturePropsDialog {
       if (va !== this.props.vertAlign) updated['vertAlign'] = va;
       const vo = mmToHwp(parseFloat(this.vertOffsetInput.value) || 0);
       if (vo !== this.props.vertOffset) updated['vertOffset'] = vo;
+      const restrictInPage = this.pageAreaLimitCheck.checked;
+      if (restrictInPage !== (this.props.restrictInPage ?? true)) {
+        updated['restrictInPage'] = restrictInPage;
+      }
+      const allowOverlap = this.overlapAllowCheck.checked;
+      if (allowOverlap !== (this.props.allowOverlap ?? false)) {
+        updated['allowOverlap'] = allowOverlap;
+      }
     }
 
     // 기타
@@ -2053,7 +2099,7 @@ export class PicturePropsDialog {
 
       // 회전/대칭
       if (this.rotationInput && !this.rotationInput.disabled) {
-        const rot = (parseInt(this.rotationInput.value) || 0) * 100; // 도→raw
+        const rot = parseInt(this.rotationInput.value) || 0;
         if (rot !== (pp.rotationAngle ?? 0)) updated['rotationAngle'] = rot;
       }
       if (this.horzFlipCheck && !this.horzFlipCheck.disabled) {
@@ -2109,7 +2155,7 @@ export class PicturePropsDialog {
       }
 
       // 그림 탭 — 확대/축소 → 크기 변환
-      if (this.picScaleXInput && pp.originalWidth > 0) {
+      if (!sizeProtect && this.picScaleXInput && pp.originalWidth > 0) {
         const scaleX = parseFloat(this.picScaleXInput.value) || 100;
         const scaleY = parseFloat(this.picScaleYInput.value) || 100;
         const newW = Math.round(pp.originalWidth * scaleX / 100);
@@ -2158,6 +2204,10 @@ export class PicturePropsDialog {
       if (this.picContrastInput) {
         const ct = parseInt(this.picContrastInput.value) || 0;
         if (ct !== (pp.contrast ?? 0)) updated['contrast'] = ct;
+      }
+      if (this.picTransparencyInput) {
+        const transparency = Math.max(0, Math.min(100, parseInt(this.picTransparencyInput.value) || 0));
+        if (transparency !== (pp.transparency ?? 0)) updated['transparency'] = transparency;
       }
     }
 
@@ -2218,18 +2268,24 @@ export class PicturePropsDialog {
     }
     this.widthInput.value = hwpToMm(this.props.width).toFixed(2);
     this.heightInput.value = hwpToMm(this.props.height).toFixed(2);
+    this.sizeFixedCheck.checked = this.props.sizeProtect ?? false;
     this.treatAsCharCheck.checked = this.props.treatAsChar;
     this.selectWrap(this.wrapValues.indexOf(this.props.textWrap));
-    this.horzRelSelect.value = this.props.horzRelTo;
+    this.horzRelSelect.value = this.props.textWrap === 'TopAndBottom'
+      ? 'TakePlace'
+      : this.props.horzRelTo;
     this.horzAlignSelect.value = this.props.horzAlign;
     this.horzOffsetInput.value = hwpToMm(this.props.horzOffset).toFixed(2);
     this.vertRelSelect.value = this.props.vertRelTo;
     this.vertAlignSelect.value = this.props.vertAlign;
     this.vertOffsetInput.value = hwpToMm(this.props.vertOffset).toFixed(2);
+    this.pageAreaLimitCheck.checked = this.props.restrictInPage ?? true;
+    this.overlapAllowCheck.checked = this.props.allowOverlap ?? false;
     this.descInput.value = this.props.description;
     this.skewHInput.value = '0';
     this.skewVInput.value = '0';
     this.updatePositionVisibility();
+    this.updateOverlapOption();
 
     // Shape/Line 전용 필드
     if ((this.objectType === 'shape' || this.objectType === 'line' || this.objectType === 'group') && this.shapeProps) {
@@ -2361,7 +2417,7 @@ export class PicturePropsDialog {
 
       // 기본 탭 — 회전/대칭 활성화
       if (this.rotationInput) {
-        this.rotationInput.value = String(Math.round((pp.rotationAngle ?? 0) / 100));
+        this.rotationInput.value = String(pp.rotationAngle ?? 0);
         this.rotationInput.disabled = false;
       }
       if (this.horzFlipCheck) {
@@ -2444,7 +2500,25 @@ export class PicturePropsDialog {
       if (this.picWatermarkCheck) {
         this.picWatermarkCheck.checked = (pp.brightness === 70 && pp.contrast === -50);
       }
+      if (this.picTransparencyInput) {
+        this.picTransparencyInput.value = String(pp.transparency ?? 0);
+        this.picTransparencyInput.disabled = false;
+      }
     }
+    this.updateSizeProtectControls();
+  }
+
+  private updateSizeProtectControls(): void {
+    if (!this.sizeFixedCheck) return;
+    const locked = this.sizeFixedCheck.checked;
+    this.sizeLockControls.forEach((control) => {
+      control.disabled = locked;
+    });
+    if (this.rotationInput) this.rotationInput.disabled = locked;
+    if (this.horzFlipCheck) this.horzFlipCheck.disabled = locked;
+    if (this.vertFlipCheck) this.vertFlipCheck.disabled = locked;
+    if (this.skewHInput) this.skewHInput.disabled = true;
+    if (this.skewVInput) this.skewVInput.disabled = true;
   }
 
   private updatePositionVisibility(): void {
@@ -2452,10 +2526,26 @@ export class PicturePropsDialog {
     this.posDetailEls.forEach(el => {
       el.style.display = hidden ? 'none' : '';
     });
+    this.updateOverlapOption();
+  }
+
+  private updateOverlapOption(): void {
+    if (!this.overlapAllowCheck || !this.pageAreaLimitCheck) return;
+    const restricted = this.pageAreaLimitCheck.checked;
+    this.overlapAllowCheck.disabled = restricted || this.treatAsCharCheck.checked;
+    if (restricted) {
+      this.overlapAllowCheck.checked = false;
+    }
   }
 
   private selectWrap(idx: number): void {
     this.wrapBtns.forEach((b, i) => b.classList.toggle('active', i === idx));
+    if (!this.horzRelSelect) return;
+    if (this.wrapValues[idx] === 'TopAndBottom') {
+      this.horzRelSelect.value = 'TakePlace';
+    } else if (this.horzRelSelect.value === 'TakePlace') {
+      this.horzRelSelect.value = this.props?.horzRelTo ?? 'Column';
+    }
   }
 
   private getSelectedWrap(): string {
@@ -2537,12 +2627,9 @@ export class PicturePropsDialog {
     overlay.appendChild(dlg);
     enableDialogDrag(dlg, titleBar);
 
-    // Escape / 오버레이 클릭
+    // Escape
     overlay.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { e.stopPropagation(); overlay.remove(); }
-    });
-    overlay.addEventListener('mousedown', (e) => {
-      if (e.target === overlay) overlay.remove();
     });
 
     document.body.appendChild(overlay);

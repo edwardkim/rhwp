@@ -23,7 +23,25 @@ use super::SerializeError;
 /// Document IR을 HWP 5.0 CFB 바이너리로 직렬화
 pub fn serialize_hwp(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     // 1. FileHeader 직렬화
-    let header_bytes = serialize_file_header(&doc.header);
+    // [Task #1768] 배포용/암호화 문서 강하: IR 은 이미 복호화된 평문이고 본 직렬화는
+    // ViewText/DISTRIBUTE_DOC_DATA 를 생성하지 않으므로, 플래그를 유지하면 산출물
+    // 재로드가 "암호 오류: DISTRIBUTE_DOC_DATA 레코드 없음" 으로 실패한다. 일반
+    // 문서로 강하(배포용 0x04 · 암호화 0x02 클리어, raw_data 의 [36..40] 도 패치).
+    let header_bytes = if doc.header.distribution || doc.header.encrypted {
+        let mut header = doc.header.clone();
+        header.distribution = false;
+        header.encrypted = false;
+        header.flags &= !0x06;
+        if let Some(raw) = header.raw_data.as_mut() {
+            if raw.len() >= 40 {
+                let flags = u32::from_le_bytes([raw[36], raw[37], raw[38], raw[39]]) & !0x06u32;
+                raw[36..40].copy_from_slice(&flags.to_le_bytes());
+            }
+        }
+        serialize_file_header(&header)
+    } else {
+        serialize_file_header(&doc.header)
+    };
 
     // 2. DocInfo 직렬화
     let doc_info_bytes = serialize_doc_info(&doc.doc_info, &doc.doc_properties);

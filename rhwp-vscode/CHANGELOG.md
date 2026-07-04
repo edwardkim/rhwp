@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.7.17] - 2026-06-23
+
+라이브러리 버전 동기화. v0.7.16 후속 patch 릴리즈.
+
+핵심 변경:
+
+- OOXML 차트 렌더 정합 첫 작업(C1a): 3D막대·3D원형·ofPie 7종 2D 근사 라우팅 + 막대 누적/백분율 보정.
+- legacy 도형(ellipse/arc/polygon/curve/chart/ole) shapeComment 직렬화 누락 정정.
+- WASM options object API(`*Ex`) 26종 추가(하위 호환). 소비자 README/매뉴얼 보강.
+- rhwp-studio: 표 줄/칸 입력·지우기 회귀 보정, 미저장 문서 자동 백업·복구, 로컬 글꼴 동의, 그림/커서 정합, 표 셀 편집·보호.
+- 렌더링: Text IR v2 폰트 fallback 권위 유지, CanvasKit replay 계약 가드 확장.
+- 의존성 일괄 업데이트 + Cargo.lock git 추적.
+
+자세한 내용은 저장소 루트 CHANGELOG.md 를 참조하세요.
+
+## [0.7.16] - 2026-06-19
+
+라이브러리 버전 동기화. v0.7.15 후속 사이클 (6/6~6/19) patch 릴리즈.
+
+핵심 변경:
+
+- HWPX 저장 계약(serializer fidelity): 셀·글상자 컨트롤·lineseg·캡션 보존, secPr 여백·본문 단(colPr) IR 치환, 그림 크기·MEMO·shapeComment·등록 축·표 pageBreak 보존, 무손실 라운드트립 보강.
+- 한컴 호환: 누름틀 안내문(Direction) command 포맷 정정 — 한컴 에디터 안내문 바인딩 해소.
+- rhwp-studio: 드래그&드롭 로컬 파일 로딩 보안 게이트(모달 확인), 누름틀 편집·다크테마·표 셀 그림 정합.
+- 렌더링: native PDF export API, Text IR v2 폰트 증명 게이트, 미주 높이 SSOT, 회전 셀 그림 배치.
+- 외부 기여자 PR 다수 반영(@seo-rii/@planet6897/@oksure/@physwkim/@mrshinds/@postmelee/@msjang/@johndoekim/@Martinel2/@Mireutale/@jangster77).
+
 ## [0.7.14] - 2026-06-05
 
 라이브러리 버전 동기화. v0.7.13 후속 사이클 (5/26~6/5) — 미주 흐름·간격 정합, 수식 렌더링/배치 정밀화, 표 셀 안 그림 편집 한컴 정합, HWPX 저장 계약 확장, 외부 기여자 PR 다수 반영 중심의 patch 릴리즈.

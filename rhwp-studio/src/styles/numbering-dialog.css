@@ -24,7 +24,7 @@
 }
 
 .nd-radio-label:hover {
-  background: #eef1f8;
+  background: var(--color-accent-bg-light);
 }
 
 .nd-radio-label input[type="radio"] {
@@ -50,8 +50,8 @@
 }
 
 .nd-preview {
-  background: #fafbfc;
-  border: 1px solid #d0d5dd;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--ui-border-light);
   border-radius: var(--radius-md);
   padding: 8px 10px;
   font-family: 'Malgun Gothic', sans-serif;
@@ -67,7 +67,7 @@
 .nd-tab-bar {
   display: flex;
   gap: 0;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--ui-border-light);
   margin-bottom: 8px;
 }
 .nd-tab {
@@ -80,7 +80,7 @@
 }
 .nd-tab.active {
   background: var(--color-surface);
-  border-bottom: 1px solid #fff;
+  border-bottom: 1px solid var(--color-surface);
   margin-bottom: -1px;
   font-weight: bold;
 }
@@ -95,7 +95,7 @@
   padding: 4px;
 }
 .nd-bullet-cell {
-  border: 1px solid #ddd;
+  border: 1px solid var(--ui-border-light);
   padding: 8px;
   text-align: center;
   cursor: pointer;
@@ -105,11 +105,11 @@
   justify-content: center;
 }
 .nd-bullet-cell:hover {
-  background: #e8f0fe;
+  background: var(--ui-selected);
 }
 .nd-bullet-cell.selected {
-  border-color: #1a73e8;
-  background: #e8f0fe;
+  border-color: var(--color-primary);
+  background: var(--ui-selected);
 }
 .nd-bullet-char {
   font-size: 18px;

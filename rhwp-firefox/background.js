@@ -17,7 +17,8 @@ browser.runtime.onInstalled.addListener((details) => {
     browser.storage.sync.set({
       autoOpen: true,
       showBadges: true,
-      hoverPreview: true
+      hoverPreview: true,
+      disableExternalWebFonts: false
     }).catch((err) => {
       console.error('[rhwp] 초기 설정 저장 오류:', err);
     });

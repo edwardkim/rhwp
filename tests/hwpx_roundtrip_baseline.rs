@@ -60,6 +60,12 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
         for entry in entries {
             let path = entry.expect("디렉토리 항목 읽기 실패").path();
             if path.is_dir() {
+                // opengov 고정 실문서 말뭉치(#1564)는 자체 스냅샷 게이트
+                // (tests/opengov_corpus_snapshot.rs)로 검증한다. 대다수 IR_DIFF 실문서라
+                // diff=0 강제 baseline 대상에서 제외.
+                if path.file_name().is_some_and(|n| n == "opengov") {
+                    continue;
+                }
                 walk(&path, root, acc);
             } else if path
                 .extension()

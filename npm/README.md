@@ -135,6 +135,51 @@ for (let i = 0; i < total; i++) {
 }
 ```
 
+### 편집 API
+
+`HwpDocument` 는 텍스트·표·그림·필드·서식을 편집하는 API 를 제공합니다. 대부분의
+편집 메서드는 결과를 JSON 문자열로 반환합니다.
+
+```javascript
+// 텍스트 삽입 (구역 0, 문단 0, 오프셋 0)
+doc.insertText(0, 0, 0, '안녕하세요');
+
+// 표 생성 (2행 2열)
+doc.createTable(0, 0, 0, 2, 2);
+```
+
+전체 편집 API 목록과 시그니처는 패키지에 포함된 타입 정의 `rhwp.d.ts` 를 참고하세요
+(IDE 자동완성으로 인자·반환 타입을 확인할 수 있습니다).
+
+### options object 변형 (`*Ex`) — 권장
+
+인자가 많은 편집 API 는 **options object 변형 `<이름>Ex(optionsJson)`** 을 함께
+제공합니다. positional 인자 대신 JSON 문자열로 호출하므로, 라이브러리 버전이 올라가며
+인자가 추가·변경돼도 호출부가 덜 깨집니다(0.x 단계 권장).
+
+```javascript
+// positional — 인자 위치가 바뀌면 호출부를 모두 수정해야 함
+doc.insertPicture(0, 0, 0, '', imageBytes, 4000, 3000, 100, 80, 'png', '', null, null);
+
+// options object (권장) — 필드 추가/순서 변경에 안전
+doc.insertPictureEx(
+  JSON.stringify({
+    sectionIdx: 0, paraIdx: 0, charOffset: 0,
+    width: 4000, height: 3000, naturalWidthPx: 100, naturalHeightPx: 80,
+    extension: 'png',
+  }),
+  imageBytes, // 이미지 바이너리는 별도 인자(Uint8Array)
+);
+```
+
+- 키는 camelCase(`section_idx` → `sectionIdx`). 선택 키는 생략 시 기본값으로 처리됩니다.
+- 반환값과 동작은 positional 버전과 동일합니다.
+- 이미지 같은 바이너리 데이터는 JSON 이 아니라 별도 인자로 받습니다.
+- 어떤 메서드에 `*Ex` 가 있는지는 `rhwp.d.ts` 에서 `Ex(options` 로 확인할 수 있습니다.
+
+> 0.x 단계라 편집 API 시그니처가 바뀔 수 있습니다. 인자가 많은 API 는 `*Ex` 사용을
+> 권장하며, 변경 사항은 CHANGELOG 의 `### API` 항목에 기록합니다.
+
 ## 필수 설정: measureTextWidth
 
 WASM 내부에서 텍스트 레이아웃(줄바꿈, 정렬 등)을 계산할 때

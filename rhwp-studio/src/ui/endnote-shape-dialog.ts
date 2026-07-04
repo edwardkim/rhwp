@@ -359,10 +359,10 @@ export class EndnoteShapeDialog extends ModalDialog {
 
   private group(title: string): HTMLFieldSetElement {
     const fieldset = document.createElement('fieldset');
-    fieldset.style.cssText = 'border:1px solid #d8dce5;padding:9px 10px 10px;margin:0;';
+    fieldset.style.cssText = 'border:1px solid var(--color-border-lighter);padding:9px 10px 10px;margin:0;';
     const legend = document.createElement('legend');
     legend.textContent = title;
-    legend.style.cssText = 'font-size:12px;color:#315fc0;padding:0 4px;';
+    legend.style.cssText = 'font-size:12px;color:var(--color-primary-dark);padding:0 4px;';
     fieldset.appendChild(legend);
     return fieldset;
   }
@@ -398,14 +398,14 @@ export class EndnoteShapeDialog extends ModalDialog {
   private pairLabel(text: string): HTMLSpanElement {
     const label = document.createElement('span');
     label.textContent = text;
-    label.style.cssText = 'color:#222;text-align:right;white-space:nowrap;';
+    label.style.cssText = 'color:var(--color-text);text-align:right;white-space:nowrap;';
     return label;
   }
 
   private label(text: string): HTMLSpanElement {
     const label = document.createElement('span');
     label.textContent = text;
-    label.style.cssText = 'min-width:78px;color:#222;';
+    label.style.cssText = 'min-width:78px;color:var(--color-text);';
     return label;
   }
 
@@ -495,7 +495,7 @@ export class EndnoteShapeDialog extends ModalDialog {
         this.closePopupMenus();
       });
       option.title = choice.label;
-      option.append(this.linePreview(choice, 2, '#222'));
+      option.append(this.linePreview(choice, 2, 'var(--color-text)'));
       this.lineTypeMenu.appendChild(option);
     }
     this.lineTypeButton.addEventListener('click', (event) => {
@@ -517,7 +517,7 @@ export class EndnoteShapeDialog extends ModalDialog {
       });
       const label = document.createElement('span');
       label.textContent = choice.label;
-      label.style.cssText = 'width:50px;color:#222;';
+      label.style.cssText = 'width:50px;color:var(--color-text);';
       option.append(label, this.widthPreview(choice));
       this.lineWidthMenu.appendChild(option);
     }
@@ -554,11 +554,11 @@ export class EndnoteShapeDialog extends ModalDialog {
       swatch.title = color;
       swatch.dataset.color = color;
       swatch.style.cssText = [
-        'width:20px;height:20px;border:1px solid #b8b8b8;background:#fff;padding:0;',
+        'width:20px;height:20px;border:1px solid var(--color-border);background:var(--color-surface);padding:0;',
         'display:flex;align-items:center;justify-content:center;cursor:pointer;',
       ].join('');
       const chip = document.createElement('span');
-      chip.style.cssText = `display:block;width:14px;height:14px;background:${color};border:1px solid #777;`;
+      chip.style.cssText = `display:block;width:14px;height:14px;background:${color};border:1px solid var(--color-border-dark);`;
       swatch.appendChild(chip);
       swatch.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -572,8 +572,8 @@ export class EndnoteShapeDialog extends ModalDialog {
     custom.type = 'button';
     custom.textContent = '다른 색...';
     custom.style.cssText = [
-      'grid-column:1 / -1;height:24px;border:1px solid #c9c9c9;background:#f8f8f8;',
-      'font-size:12px;color:#222;cursor:pointer;margin-top:2px;',
+      'grid-column:1 / -1;height:24px;border:1px solid var(--color-border);background:var(--color-surface);',
+      'font-size:12px;color:var(--color-text);cursor:pointer;margin-top:2px;color-scheme:inherit;',
     ].join('');
     custom.addEventListener('click', (event) => {
       event.stopPropagation();
@@ -593,14 +593,14 @@ export class EndnoteShapeDialog extends ModalDialog {
     const button = document.createElement('button');
     button.type = 'button';
     button.style.cssText = [
-      'width:104px;height:26px;border:1px solid #b9b9b9;background:#fff;',
+      'width:104px;height:26px;border:1px solid var(--color-border);background:var(--color-surface);',
       'display:flex;align-items:center;justify-content:center;padding:0 20px 0 8px;',
-      'position:relative;cursor:pointer;',
+      'position:relative;cursor:pointer;color:var(--color-text);color-scheme:inherit;',
     ].join('');
     const arrow = document.createElement('span');
     arrow.textContent = '▾';
     arrow.dataset.dropdownArrow = '1';
-    arrow.style.cssText = 'position:absolute;right:6px;top:4px;color:#555;font-size:11px;';
+    arrow.style.cssText = 'position:absolute;right:6px;top:4px;color:var(--color-text-secondary);font-size:11px;';
     button.appendChild(arrow);
     return button;
   }
@@ -609,8 +609,8 @@ export class EndnoteShapeDialog extends ModalDialog {
     const menu = document.createElement('div');
     menu.style.cssText = [
       'display:none;position:absolute;left:0;top:27px;z-index:1200;',
-      `width:${width}px;background:#fff;border:1px solid #b8b8b8;box-shadow:0 2px 6px rgba(0,0,0,.18);`,
-      'padding:4px;max-height:260px;overflow:auto;',
+      `width:${width}px;background:var(--color-surface);border:1px solid var(--color-border);box-shadow:var(--shadow-dropdown);`,
+      'padding:4px;max-height:260px;overflow:auto;color:var(--color-text);',
     ].join('');
     menu.addEventListener('click', event => event.stopPropagation());
     return menu;
@@ -620,11 +620,11 @@ export class EndnoteShapeDialog extends ModalDialog {
     const option = document.createElement('button');
     option.type = 'button';
     option.style.cssText = [
-      'width:100%;height:24px;border:0;background:#fff;display:flex;align-items:center;',
-      'gap:8px;padding:2px 8px;cursor:pointer;',
+      'width:100%;height:24px;border:0;background:var(--color-surface);display:flex;align-items:center;',
+      'gap:8px;padding:2px 8px;cursor:pointer;color:var(--color-text);color-scheme:inherit;',
     ].join('');
-    option.addEventListener('mouseenter', () => { option.style.background = '#eef3ff'; });
-    option.addEventListener('mouseleave', () => { option.style.background = '#fff'; });
+    option.addEventListener('mouseenter', () => { option.style.background = 'var(--color-accent-bg)'; });
+    option.addEventListener('mouseleave', () => { option.style.background = 'var(--color-surface)'; });
     option.addEventListener('click', event => {
       event.stopPropagation();
       onClick();
@@ -661,7 +661,7 @@ export class EndnoteShapeDialog extends ModalDialog {
     const line = document.createElement('span');
     line.style.cssText = [
       'display:block;width:62px;height:0;border-top-style:solid;',
-      `border-top-width:${choice.px}px;border-top-color:#333;`,
+      `border-top-width:${choice.px}px;border-top-color:var(--color-text);`,
     ].join('');
     preview.appendChild(line);
     return preview;
@@ -671,7 +671,7 @@ export class EndnoteShapeDialog extends ModalDialog {
     const choice = LINE_TYPE_CHOICES.find(item => item.value === this.lineTypeSelect.value)
       ?? LINE_TYPE_CHOICES[0];
     this.setLineTypeValue(choice.value);
-    this.replaceButtonPreview(this.lineTypeButton, this.linePreview(choice, 2, '#222'));
+    this.replaceButtonPreview(this.lineTypeButton, this.linePreview(choice, 2, 'var(--color-text)'));
   }
 
   private updateLineWidthPreview(): void {
@@ -703,12 +703,12 @@ export class EndnoteShapeDialog extends ModalDialog {
     const chip = document.createElement('span');
     chip.style.cssText = [
       `display:block;width:44px;height:16px;background:${color};`,
-      'border:1px solid #777;',
+      'border:1px solid var(--color-border-dark);',
     ].join('');
     this.replaceButtonPreview(this.lineColorButton, chip);
     this.lineColorMenu?.querySelectorAll<HTMLButtonElement>('button[data-color]').forEach((button) => {
       const active = normalizeColor(button.dataset.color) === color;
-      button.style.outline = active ? '2px solid #315fc0' : 'none';
+      button.style.outline = active ? '2px solid var(--color-primary)' : 'none';
       button.style.outlineOffset = active ? '1px' : '0';
     });
   }
@@ -771,7 +771,7 @@ export class EndnoteShapeDialog extends ModalDialog {
     wrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px;';
     const unitEl = document.createElement('span');
     unitEl.textContent = unit;
-    unitEl.style.color = '#555';
+    unitEl.style.color = 'var(--color-text-secondary)';
     wrap.append(input, unitEl);
     return wrap;
   }

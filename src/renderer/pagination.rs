@@ -12,10 +12,39 @@ use super::height_measurer::{HeightMeasurer, MeasuredSection};
 use super::page_layout::PageLayoutInfo;
 use super::style_resolver::ResolvedStyleSet;
 use crate::model::control::Control;
+use crate::model::footnote::{Footnote, FootnoteShape};
 use crate::model::header_footer::HeaderFooterApply;
 use crate::model::page::{ColumnDef, PageDef};
 use crate::model::paragraph::{ColumnBreakType, Paragraph};
 use crate::model::shape::CaptionDirection;
+
+pub fn estimate_footnote_note_height(footnote: &Footnote, dpi: f64) -> f64 {
+    let mut height = 0.0;
+    for para in &footnote.paragraphs {
+        if para.line_segs.is_empty() {
+            height += super::hwpunit_to_px(400, dpi);
+        } else {
+            for seg in &para.line_segs {
+                height += super::hwpunit_to_px(seg.line_height, dpi);
+            }
+        }
+    }
+    if height <= 0.0 {
+        super::hwpunit_to_px(400, dpi)
+    } else {
+        height
+    }
+}
+
+pub fn footnote_separator_overhead_px(shape: &FootnoteShape, dpi: f64) -> f64 {
+    super::hwpunit_to_px(shape.separator_above_margin_hu() as i32, dpi)
+        + super::layout::border_width_to_px(shape.separator_line_width).max(0.5)
+        + super::hwpunit_to_px(shape.separator_below_margin_hu() as i32, dpi)
+}
+
+pub fn footnote_between_notes_margin_px(shape: &FootnoteShape, dpi: f64) -> f64 {
+    super::hwpunit_to_px(shape.between_notes_margin_hu() as i32, dpi)
+}
 
 /// 미주 참조
 #[derive(Debug, Clone)]
@@ -28,6 +57,30 @@ pub struct EndnoteRef {
     pub para_index: usize,
     /// 문단 내 컨트롤 인덱스
     pub control_index: usize,
+}
+
+/// [미주 배치 — END_OF_DOCUMENT] 문서 끝으로 미룬, 앞선 구역의 미주 하나.
+/// Hancom 의 `EndnoteEndOfDocument` 배치를 정합: 참조 표시(위첨자 번호)는 원래
+/// 구역 본문 흐름에 남고, 본문(body)만 마지막 구역 끝(=문서 끝)에서 렌더된다.
+/// `reff` 는 원래 참조 위치(문서 순서·번호 보존), `endnote` 는 문서 끝에서 렌더할
+/// 미주 본문(앞선 구역 paragraphs 에서 복제).
+#[derive(Debug, Clone)]
+pub struct DeferredEndnote {
+    pub reff: EndnoteRef,
+    pub endnote: crate::model::footnote::Endnote,
+}
+
+/// 이 구역의 미주를 어떻게 배치할지 (Hancom: EndnoteEndOfSection vs EndnoteEndOfDocument).
+pub enum EndnoteDeferral<'a> {
+    /// 기본: 이 구역 미주를 구역 끝에 렌더 (END_OF_SECTION, 그리고 단일 구역
+    /// END_OF_DOCUMENT — 구역 끝 ≡ 문서 끝이라 결과 동일).
+    None,
+    /// END_OF_DOCUMENT, 마지막이 아닌 구역: 본문 렌더를 억제(참조 표시는 인라인
+    /// 유지)하고 미주 본문은 문서 끝으로 미룬다.
+    Suppress,
+    /// END_OF_DOCUMENT, 마지막 구역: 앞선 구역들의 미주 본문(문서 순서)에 이어
+    /// 이 구역 미주를 모두 문서 끝에 렌더한다.
+    RenderAll(&'a [DeferredEndnote]),
 }
 
 /// 렌더용으로 가상 삽입된 미주 문단의 원본 위치.
@@ -52,6 +105,10 @@ pub struct PaginationResult {
     pub wrap_around_paras: Vec<WrapAroundPara>,
     /// 빈 줄 감추기로 높이 0 처리된 문단 인덱스 집합
     pub hidden_empty_paras: std::collections::HashSet<usize>,
+    /// [Task #1755] 지연 이월 표의 host 텍스트 줄이 typeset 에서 이월 전 쪽에
+    /// PartialParagraph 로 pre-emit 된 문단 집합 — layout 의 마지막 fragment 뒤
+    /// host 렌더(`render_deferred_rowbreak_host_text_after`) 이중 렌더 억제용.
+    pub pre_emitted_host_paras: std::collections::HashSet<usize>,
     /// 섹션별 미주 목록 (문서 끝 또는 섹션 끝에 렌더)
     pub endnotes: Vec<EndnoteRef>,
     /// [Task #836] 미주 paragraphs (endnote_para_base + idx 로 lookup)
@@ -61,6 +118,10 @@ pub struct PaginationResult {
     /// [Task #1246] 현재 섹션 미주의 between-notes 마진(HU, 0=미적용). HeightCursor 가 미주 사이
     /// min-gap 보정에 사용.
     pub endnote_between_notes_hu: i32,
+    /// 현재 섹션 미주의 정규화된 "구분선 위" 마진(HU).
+    pub endnote_separator_above_hu: i32,
+    /// 현재 섹션 미주의 정규화된 "구분선 아래" 마진(HU).
+    pub endnote_separator_below_hu: i32,
 }
 
 /// 한 페이지에 배치될 콘텐츠
@@ -265,8 +326,8 @@ pub enum PageItem {
     },
     /// 미주 영역 시작 구분선
     EndnoteSeparator {
-        /// 구분선 길이 (HWP 단위)
-        separator_length: i16,
+        /// 구분선 길이 (HWP 단위). 한컴 전폭 sentinel(14692344)이 i16을 넘으므로 i32.
+        separator_length: i32,
         /// 구분선 위 여백 (HWP 단위)
         margin_above: i16,
         /// 구분선 아래 여백 (HWP 단위)
@@ -663,6 +724,8 @@ pub struct PaginationOpts {
     /// 페이지 절반 이상 + 현재 paragraph 의 first_line vpos 가 페이지 1/4 이내)
     /// 시 강제 page break — 한컴 변환 시 인코딩한 page break 시그널 인식.
     pub is_hwp3_variant: bool,
+    /// 현재 구역의 각주 모양. 각주 예약 영역을 렌더 영역과 같은 metric으로 계산한다.
+    pub footnote_shape: Option<FootnoteShape>,
 }
 
 /// 페이지 분할 엔진

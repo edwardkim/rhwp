@@ -914,6 +914,23 @@ fn parse_picture(common: CommonObjAttr, shape_attr: ShapeComponentAttr, data: &[
     // 남은 바이트 보존 (라운드트립용)
     if r.remaining() > 0 {
         pic.raw_picture_extra = r.read_bytes(r.remaining()).unwrap_or_default().to_vec();
+        if let Some(&border_opacity) = pic.raw_picture_extra.first() {
+            pic.border_opacity = border_opacity;
+        }
+        if pic.raw_picture_extra.len() >= 5 {
+            pic.instance_id = u32::from_le_bytes([
+                pic.raw_picture_extra[1],
+                pic.raw_picture_extra[2],
+                pic.raw_picture_extra[3],
+                pic.raw_picture_extra[4],
+            ]);
+        }
+        if pic.raw_picture_extra.len() >= 18 {
+            if let Some(&alpha) = pic.raw_picture_extra.last() {
+                pic.image_attr.transparency =
+                    crate::model::image::alpha_byte_to_transparency_percent(alpha);
+            }
+        }
     }
 
     pic

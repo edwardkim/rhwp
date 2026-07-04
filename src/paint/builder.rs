@@ -57,55 +57,39 @@ impl LayerBuilder {
         }
 
         let own_ops = match &node.node_type {
-            RenderNodeType::PageBackground(background) => Some(vec![PaintOp::PageBackground {
-                bbox: node.bbox,
-                background: background.clone(),
-            }]),
+            RenderNodeType::PageBackground(background) => Some(vec![PaintOp::page_background(
+                node.bbox,
+                background.clone(),
+            )]),
             RenderNodeType::TextRun(run) => {
                 Some(text_run_ops(node.bbox, run.clone(), self.output_options))
             }
-            RenderNodeType::FootnoteMarker(marker) => Some(vec![PaintOp::FootnoteMarker {
-                bbox: node.bbox,
-                marker: marker.clone(),
-            }]),
-            RenderNodeType::Line(line) => Some(vec![PaintOp::Line {
-                bbox: node.bbox,
-                line: line.clone(),
-            }]),
-            RenderNodeType::Rectangle(rect) => Some(vec![PaintOp::Rectangle {
-                bbox: node.bbox,
-                rect: rect.clone(),
-            }]),
-            RenderNodeType::Ellipse(ellipse) => Some(vec![PaintOp::Ellipse {
-                bbox: node.bbox,
-                ellipse: ellipse.clone(),
-            }]),
-            RenderNodeType::Path(path) => Some(vec![PaintOp::Path {
-                bbox: node.bbox,
-                path: path.clone(),
-            }]),
-            RenderNodeType::Image(image) => Some(vec![PaintOp::Image {
-                bbox: node.bbox,
-                image: image.clone(),
-                resolved: crate::renderer::image_resolver::resolve_image_payload(image)
-                    .map(Box::new),
-            }]),
-            RenderNodeType::Equation(equation) => Some(vec![PaintOp::Equation {
-                bbox: node.bbox,
-                equation: equation.clone(),
-            }]),
-            RenderNodeType::FormObject(form) => Some(vec![PaintOp::FormObject {
-                bbox: node.bbox,
-                form: form.clone(),
-            }]),
-            RenderNodeType::Placeholder(placeholder) => Some(vec![PaintOp::Placeholder {
-                bbox: node.bbox,
-                placeholder: placeholder.clone(),
-            }]),
-            RenderNodeType::RawSvg(raw) => Some(vec![PaintOp::RawSvg {
-                bbox: node.bbox,
-                raw: raw.clone(),
-            }]),
+            RenderNodeType::FootnoteMarker(marker) => {
+                Some(vec![PaintOp::footnote_marker(node.bbox, marker.clone())])
+            }
+            RenderNodeType::Line(line) => Some(vec![PaintOp::line(node.bbox, line.clone())]),
+            RenderNodeType::Rectangle(rect) => {
+                Some(vec![PaintOp::rectangle(node.bbox, rect.clone())])
+            }
+            RenderNodeType::Ellipse(ellipse) => {
+                Some(vec![PaintOp::ellipse(node.bbox, ellipse.clone())])
+            }
+            RenderNodeType::Path(path) => Some(vec![PaintOp::path(node.bbox, path.clone())]),
+            RenderNodeType::Image(image) => Some(vec![PaintOp::image(
+                node.bbox,
+                image.clone(),
+                crate::renderer::image_resolver::resolve_image_payload(image),
+            )]),
+            RenderNodeType::Equation(equation) => {
+                Some(vec![PaintOp::equation(node.bbox, equation.clone())])
+            }
+            RenderNodeType::FormObject(form) => {
+                Some(vec![PaintOp::form_object(node.bbox, form.clone())])
+            }
+            RenderNodeType::Placeholder(placeholder) => {
+                Some(vec![PaintOp::placeholder(node.bbox, placeholder.clone())])
+            }
+            RenderNodeType::RawSvg(raw) => Some(vec![PaintOp::raw_svg(node.bbox, raw.clone())]),
             _ => None,
         };
 
@@ -251,48 +235,36 @@ fn text_run_ops(
             + has_strikethrough as usize
             + has_emphasis_dot as usize,
     );
-    ops.push(PaintOp::TextRun {
-        bbox,
-        run: run.clone(),
-    });
+    ops.push(PaintOp::text_run(bbox, run.clone()));
     if has_char_overlap {
-        ops.push(PaintOp::CharOverlap {
-            bbox,
-            run: run.clone(),
-        });
+        ops.push(PaintOp::char_overlap(bbox, run.clone()));
     }
     if has_control_mark {
-        ops.push(PaintOp::TextControlMark {
-            bbox,
-            run: run.clone(),
-        });
+        ops.push(PaintOp::text_control_mark(bbox, run.clone()));
     }
     if has_tab_leader {
-        ops.push(PaintOp::TabLeader {
-            bbox,
-            run: run.clone(),
-        });
+        ops.push(PaintOp::tab_leader(bbox, run.clone()));
     }
     if has_underline {
-        ops.push(PaintOp::TextDecoration {
+        ops.push(PaintOp::text_decoration(
             bbox,
-            run: run.clone(),
-            kind: TextDecorationKind::Underline,
-        });
+            run.clone(),
+            TextDecorationKind::Underline,
+        ));
     }
     if has_strikethrough {
-        ops.push(PaintOp::TextDecoration {
+        ops.push(PaintOp::text_decoration(
             bbox,
-            run: run.clone(),
-            kind: TextDecorationKind::Strikethrough,
-        });
+            run.clone(),
+            TextDecorationKind::Strikethrough,
+        ));
     }
     if has_emphasis_dot {
-        ops.push(PaintOp::TextDecoration {
+        ops.push(PaintOp::text_decoration(
             bbox,
             run,
-            kind: TextDecorationKind::EmphasisDot,
-        });
+            TextDecorationKind::EmphasisDot,
+        ));
     }
     ops
 }

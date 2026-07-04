@@ -16,24 +16,24 @@
 
 /* 눈금자 교차 코너 (좌상단) */
 #ruler-corner {
-  background: #d0d0d0;
-  border-right: 1px solid #999;
-  border-bottom: 1px solid #999;
+  background: var(--ruler-bg);
+  border-right: 1px solid var(--ui-border-strong);
+  border-bottom: 1px solid var(--ui-border-strong);
 }
 
 /* 가로 눈금자 */
 #h-ruler {
   display: block;
-  border-bottom: 1px solid #999;
-  background: #d0d0d0;
+  border-bottom: 1px solid var(--ui-border-strong);
+  background: var(--ruler-bg);
   cursor: default;
 }
 
 /* 세로 눈금자 */
 #v-ruler {
   display: block;
-  border-right: 1px solid #999;
-  background: #d0d0d0;
+  border-right: 1px solid var(--ui-border-strong);
+  background: var(--ruler-bg);
   cursor: default;
 }
 
@@ -41,7 +41,7 @@
   position: relative;
   overflow-y: auto;
   overflow-x: auto;
-  background: var(--color-hover-bg);
+  background: var(--doc-workspace);
 }
 
 #scroll-content {
@@ -55,7 +55,7 @@
   transform: translateX(-50%);
   z-index: 0;
   box-shadow: none;
-  background: var(--color-surface);
+  background: var(--doc-paper);
 }
 
 #scroll-content .page-grid-overlay {
@@ -69,12 +69,12 @@
 
 /* Drag & Drop */
 #scroll-container.drag-over {
-  background: #d0d8e8;
-  outline: 3px dashed #4a90d9;
+  background: var(--ui-selected);
+  outline: 3px dashed var(--focus-ring);
   outline-offset: -3px;
 }
 
 /* 머리말/꼬리말 편집 모드: 본문 영역 dimming */
 #scroll-container.hf-editing {
-  background: #c8c8c8;
+  background: var(--ui-active);
 }

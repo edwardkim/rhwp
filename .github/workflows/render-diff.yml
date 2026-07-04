@@ -10,7 +10,11 @@ on:
       - 'src/renderer/**'
       - 'src/document_core/queries/rendering.rs'
       - 'src/wasm_api.rs'
+      - 'src/main.rs'
+      - 'docs/canvaskit-parity-implementation.md'
+      - 'docs/text-ir-v2.md'
       - 'rhwp-studio/**'
+      - 'mydocs/**'
       - '.github/workflows/render-diff.yml'
   workflow_dispatch:
     inputs:
@@ -29,7 +33,7 @@ on:
         default: false
         type: boolean
       write-images:
-        description: 'Write PNG artifacts even when cases pass'
+        description: 'Write Canvas PNG artifacts even when cases pass. PDF report artifacts are always retained.'
         required: false
         default: false
         type: boolean
@@ -44,9 +48,184 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  preflight:
+    name: Render Diff preflight
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: read
+      pull-requests: read
+    outputs:
+      fast_pass: ${{ steps.detect.outputs.fast_pass || 'false' }}
+      reason: ${{ steps.detect.outputs.reason || 'preflight-unavailable' }}
+      candidate_sha: ${{ steps.detect.outputs.candidate_sha || '' }}
+
+    steps:
+      - name: Detect review-only fast pass
+        id: detect
+        continue-on-error: true
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const allowedConclusions = new Set(['success', 'skipped', 'neutral']);
+            const { owner, repo } = context.repo;
+
+            function setResult(fastPass, reason, candidateSha = '') {
+              core.setOutput('fast_pass', fastPass ? 'true' : 'false');
+              core.setOutput('reason', reason);
+              core.setOutput('candidate_sha', candidateSha);
+              core.info(`fast_pass=${fastPass} reason=${reason} candidate_sha=${candidateSha}`);
+            }
+
+            function isAllowedReviewPath(file) {
+              const filename = file.filename;
+              if (filename.startsWith('mydocs/')) {
+                return true;
+              }
+              if (file.status !== 'added') {
+                return false;
+              }
+              return isReviewReferencePath(filename);
+            }
+
+            function isReviewReferencePath(filename) {
+              return (
+                filename.startsWith('samples/')
+                && (
+                  filename.endsWith('.hwp')
+                  || filename.endsWith('.hwpx')
+                  || filename.endsWith('.pdf')
+                )
+              ) || (filename.startsWith('pdf/') && filename.endsWith('.pdf'));
+            }
+
+            function reviewOnlyLabel(files) {
+              const hasReferenceArtifact = files.some((file) => (
+                file.status === 'added'
+                && isReviewReferencePath(file.filename)
+              ));
+              return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
+            }
+
+            function latestRun(runs) {
+              return runs
+                .slice()
+                .sort((a, b) => {
+                  const bTime = Date.parse(b.completed_at || b.started_at || b.created_at || 0);
+                  const aTime = Date.parse(a.completed_at || a.started_at || a.created_at || 0);
+                  return bTime - aTime;
+                })[0];
+            }
+
+            try {
+              if (context.eventName !== 'pull_request') {
+                setResult(false, 'not-pull-request');
+                return;
+              }
+
+              const pr = context.payload.pull_request;
+              const prFiles = await github.paginate(github.rest.pulls.listFiles, {
+                owner,
+                repo,
+                pull_number: pr.number,
+                per_page: 100,
+              });
+              if (prFiles.length > 0 && prFiles.every((file) => isAllowedReviewPath(file))) {
+                core.info(`all PR files are review-only; using base SHA ${pr.base.sha}`);
+                setResult(true, 'all-review-only-no-render-impact', pr.base.sha);
+                return;
+              }
+
+              const commits = await github.paginate(github.rest.pulls.listCommits, {
+                owner,
+                repo,
+                pull_number: pr.number,
+                per_page: 100,
+              });
+
+              if (commits.length === 0) {
+                setResult(false, 'no-pr-commits');
+                return;
+              }
+
+              let trailingReviewOnlyCommits = 0;
+              let candidateSha = '';
+
+              for (let index = commits.length - 1; index >= 0; index -= 1) {
+                const sha = commits[index].sha;
+                const { data: commit } = await github.rest.repos.getCommit({
+                  owner,
+                  repo,
+                  ref: sha,
+                });
+                const files = commit.files || [];
+
+                // The commit endpoint may truncate very large file lists. Fall back to full Render Diff.
+                if (files.length === 0 || files.length >= 300) {
+                  setResult(false, `unusable-file-list:${sha}`);
+                  return;
+                }
+
+                const reviewOnly = files.every((file) => isAllowedReviewPath(file));
+                if (reviewOnly) {
+                  if ((commit.parents || []).length !== 1) {
+                    setResult(false, `${reviewOnlyLabel(files)}-merge-commit:${sha}`);
+                    return;
+                  }
+                  trailingReviewOnlyCommits += 1;
+                  continue;
+                }
+
+                candidateSha = sha;
+                break;
+              }
+
+              if (trailingReviewOnlyCommits === 0) {
+                setResult(false, 'no-trailing-review-only-commits');
+                return;
+              }
+              if (!candidateSha) {
+                candidateSha = pr.base.sha;
+                core.info(`all PR commits are review-only; using base SHA ${candidateSha}`);
+                setResult(true, 'all-review-only-no-render-impact', candidateSha);
+                return;
+              }
+
+              const checkRuns = await github.paginate(github.rest.checks.listForRef, {
+                owner,
+                repo,
+                ref: candidateSha,
+                per_page: 100,
+              });
+              const renderDiffRun = latestRun(checkRuns.filter((run) => (
+                run.name === 'Canvas visual diff'
+                && run.app?.slug === 'github-actions'
+              )));
+
+              if (!renderDiffRun) {
+                setResult(false, `missing-canvas-visual-diff:${candidateSha}`, candidateSha);
+                return;
+              }
+              if (renderDiffRun.status !== 'completed') {
+                setResult(false, `canvas-visual-diff-not-completed:${renderDiffRun.status}`, candidateSha);
+                return;
+              }
+              if (!allowedConclusions.has(renderDiffRun.conclusion)) {
+                setResult(false, `canvas-visual-diff-not-green:${renderDiffRun.conclusion}`, candidateSha);
+                return;
+              }
+
+              setResult(true, `canvas-visual-diff-green:${renderDiffRun.conclusion}`, candidateSha);
+            } catch (error) {
+              core.warning(`Render Diff preflight failed; running full Render Diff. ${error.message}`);
+              setResult(false, 'preflight-error');
+            }
+
   canvas-visual-diff:
     name: Canvas visual diff
     runs-on: ubuntu-latest
+    needs: preflight
+    if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
     permissions:
       contents: read
 
@@ -58,11 +237,19 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
+      - name: Install PDF raster tools
+        continue-on-error: true
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-      - name: Cache cargo registry & build
-        uses: actions/cache@v5
+      # [Task #1667] Render Diff is PR-heavy; pull_request caches are scoped to
+      # refs/pull/* and are not reused by other PRs. Keep PR runs restore-only,
+      # and allow only trusted manual devel/main seed runs to save a cache.
+      - name: Restore cargo registry & build cache
+        id: render_diff_cargo_cache_restore
+        uses: actions/cache/restore@v5
         with:
           path: |
             ~/.cargo/registry
@@ -75,12 +262,24 @@ jobs:
       - name: Build WASM package
         run: wasm-pack build --target web --dev
 
+      - name: Build native CLI for PDF report
+        continue-on-error: true
+        run: cargo build --bin rhwp
+
+      - name: Save cargo registry & build cache
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.render_diff_cargo_cache_restore.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-render-diff-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
-          cache-dependency-path: rhwp-studio/package-lock.json
 
       - name: Install Studio dependencies
         working-directory: rhwp-studio
@@ -96,10 +295,13 @@ jobs:
       - name: Check render diff script syntax
         working-directory: rhwp-studio
         run: |
+          node --check e2e/renderer-contract.test.mjs
           node --check e2e/canvas-render-diff.test.mjs
+          node --check e2e/pdf-render-diff-report.mjs
           node --check e2e/run-render-diff.mjs
+          npm run e2e:renderer-contract
 
-      - name: Run canvas visual diff
+      - name: Run canvas visual diff and PDF report
         working-directory: rhwp-studio
         env:
           VITE_PORT: 7700
@@ -107,15 +309,24 @@ jobs:
           RHWP_RENDER_DIFF_MAX_PAGES: ${{ inputs['max-pages'] || '1' }}
           RHWP_RENDER_DIFF_ALL: ${{ inputs['full-suite'] == true && '1' || '0' }}
           RHWP_RENDER_DIFF_WRITE_IMAGES: ${{ inputs['write-images'] == true && '1' || '0' }}
+          RHWP_RENDER_DIFF_PDF: '1'
+          RHWP_RENDER_DIFF_PDF_WRITE_IMAGES: '1'
+          RHWP_RENDER_DIFF_RHWP_BIN: ../target/debug/rhwp
         run: npm run e2e:render-diff:ci
 
       - name: Add render diff summary
         if: always()
         working-directory: rhwp-studio
         run: |
-          if [ -f e2e/screenshots/render-diff/summary.md ]; then
-            cat e2e/screenshots/render-diff/summary.md >> "$GITHUB_STEP_SUMMARY"
-          fi
+          for summary in \
+            e2e/screenshots/render-diff/summary.md \
+            e2e/screenshots/render-diff/pdf-summary.md
+          do
+            if [ -f "$summary" ]; then
+              cat "$summary" >> "$GITHUB_STEP_SUMMARY"
+              printf '\n\n' >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
 
       - name: Upload render diff artifacts
         if: always()

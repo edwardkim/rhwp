@@ -155,6 +155,16 @@
 | 참조 문서 | `troubleshootings/repeat_header_image_duplication.md` |
 | 발견일 | 2026-02-10 |
 
+**추가 조사 (2026-07-03, #1831)**: bytes 6-7 의 **상위 바이트(b7)** 에도 하위 바이트와
+동형의 비트 패턴(0x01/0x04/0x05 — 안여백/제목셀 유사)이 코퍼스에 대량 존재한다
+(452 통제셋 .hwp 에서 b7≠0 셀 5,639개 vs b6 의 제목셀 비트 103개, 한 셀에 양쪽
+공존도 흔함). **인과 플립 실험 결과 한글 2022 는 b7 비트를 렌더링·UI(COM Header/
+HasMargin) 모두에서 무시**하며, 재저장 시 원값 그대로 보존 재기록한다
+(2448877=`samples/float-stack-defer.hwp` 실험, 패처 `tools/patch_cell_flags.py`).
+결론: b7 은 레이아웃 불활성
+보존 데이터 — is_header 추출은 현행 b6(bit 2) 기준이 옳고, rhwp 는
+`list_header_width_ref` u16 원값 보존으로 라운드트립 요건을 이미 충족한다.
+
 ---
 
 ## 11. 단 정의(ColumnDef) 너비/간격 — 비례값 인코딩
@@ -665,6 +675,63 @@ Task #1061 (2026-05-22).
 
 - `feedback_diagnosis_layer_attribution` — EQEDIT raw byte 직접 분석으로 본질 정확 식별
 - `reference_hwp2hwpx_library` — hwplib 권위 자료가 spec errata 의 결정적 근거
+
+---
+
+## 31. CommonObjAttr bit 13 — 한컴 UI `쪽 영역 안으로 제한`과 HWPX `flowWithText`
+
+### 현상
+
+한컴 개체 속성 대화상자의 `쪽 영역 안으로 제한` 체크박스는 HWP5 스펙 표 70의
+CommonObjAttr `bit 13`에 대응한다. HWPX에서는 같은 값이 `<hp:pos flowWithText="1|0">`
+속성으로 저장된다.
+
+### 기준 샘플
+
+- `samples/ta-pic-001-r-쪽영역안제한.hwp(x)`: 첫 번째 그림 `flowWithText=true`
+- `samples/ta-pic-001-r-쪽영역안제한no.hwp(x)`: 첫 번째 그림 `flowWithText=false`
+
+HWP5 `hwp5-anchor-trace` 결과도 첫 번째 그림 `CTRL_HEADER`에서 각각
+`properties=0x002a2210`(bit 13 on), `properties=0x002a0210`(bit 13 off)로 갈린다.
+
+### 정정
+
+- `flowWithText`라는 HWPX 이름은 한컴 UI 의미와 직관적으로 맞지 않는다.
+- rhwp 내부 IR은 `CommonObjAttr::flow_with_text`로 저장하되, 사용자-facing JSON/UI에서는
+  한컴 UI 명칭에 맞춰 `restrictInPage`로 노출해야 한다.
+- 이 값이 켜지면 한컴 UI에서 `서로 겹침 허용`은 비활성/false 취급된다.
+- HWPX picture serializer는 `flowWithText`를 고정값으로 쓰지 말고 `CommonObjAttr::flow_with_text`
+  값을 그대로 직렬화해야 한다.
+- 렌더링 의미는 한컴 도움말의 `쪽 영역 안으로 제한` 설명을 따른다. 세로 위치 기준이
+  `문단`인 개체가 편집 가능한 쪽 영역의 위/아래 끝을 벗어나면 개체를 다음 쪽으로 넘겨야
+  하며, 표 셀 내부의 자리 차지 그림도 이 값이 켜져 있을 때만 개체의 세로 오프셋과 높이를
+  행/셀 높이 흐름에 반영한다.
+
+---
+
+## 32. ParaShape attr1 bit 28/29 — HWPX `hh:border connect/ignoreMargin`
+
+### 현상
+
+한컴 문단 모양 대화상자의 `문단 테두리 연결`은 두 개 이상의 연속 문단을 하나의
+문단 테두리로 연결하는 설정이다. HWP5에서는 `HWPTAG_PARA_SHAPE` 속성1의 bit 28에
+저장되고, `문단 여백 무시`는 bit 29에 저장된다.
+
+HWPX에서는 같은 값이 `<hh:paraPr>` 아래 `<hh:border>`의 `connect="1|0"` 및
+`ignoreMargin="1|0"` 속성으로 저장된다.
+
+### 기준 샘플
+
+- `samples/[2027] 온새미로 1 본교재.hwp(x)` 6쪽 지문 박스 문단
+- HWPX 원본 `paraPr`의 `<hh:border connect="1" ignoreMargin="1">`
+- HWP5/HWPX 파싱 후 ParaShape `attr1` bit 28/29 on
+
+### 정정
+
+- Studio 문단 모양 속성 JSON은 `borderConnect`, `borderIgnoreMargin`을 노출해야 한다.
+- 문단 모양 수정 명령은 위 값을 ParaShape attr1 bit 28/29에 반영해야 한다.
+- HWPX serializer는 `connect`/`ignoreMargin`을 고정 `0`으로 쓰지 말고 ParaShape attr1
+  bit 28/29에서 출력해야 한다.
 
 ---
 

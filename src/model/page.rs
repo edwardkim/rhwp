@@ -208,6 +208,14 @@ impl PageAreas {
         } else {
             (page_def.width, page_def.height)
         };
+        // [Task #1583] 손상/미설정 PageDef 방어 — 용지 크기가 0(구역정의 누락 등)이면
+        // A4 로 폴백. 렌더링측 방어이며 IR 은 불변(라운드트립 보존). 방치 시 본문높이
+        // 0 → 전 블록 LAYOUT_OVERFLOW(bottom=0.0) + "SVG has an invalid size" PDF 실패.
+        let (page_width, page_height) = if page_width == 0 || page_height == 0 {
+            (59528, 84188) // A4 210×297mm
+        } else {
+            (page_width, page_height)
+        };
 
         let is_even_page = page_number != 0 && page_number.is_multiple_of(2);
         let (effective_left, effective_right) =
@@ -223,12 +231,24 @@ impl PageAreas {
                 )
             };
 
-        let content_left = effective_left;
-        let content_right = page_width - effective_right;
+        let mut content_left = effective_left;
+        let mut content_right = page_width.saturating_sub(effective_right);
         // HWP 본문 시작 = margin_header + margin_top (한컴 도움말 기준)
-        let content_top = page_def.margin_header + page_def.margin_top;
+        let mut content_top = page_def.margin_header + page_def.margin_top;
         // HWP 본문 끝 = height - margin_footer - margin_bottom
-        let content_bottom = page_height - page_def.margin_footer - page_def.margin_bottom;
+        let mut content_bottom = page_height
+            .saturating_sub(page_def.margin_footer)
+            .saturating_sub(page_def.margin_bottom);
+        // [Task #1583] 여백 과대(합 ≥ 용지)로 본문이 소멸하면 용지의 5% 기본 여백으로
+        // 폴백 — 본문 영역이 항상 양수가 되도록 보장.
+        if content_bottom <= content_top {
+            content_top = page_height / 20;
+            content_bottom = page_height - page_height / 20;
+        }
+        if content_right <= content_left {
+            content_left = page_width / 20;
+            content_right = page_width - page_width / 20;
+        }
 
         let header_area = Rect {
             left: content_left as i32,
@@ -264,6 +284,39 @@ impl PageAreas {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// [Task #1583] 손상/미설정 PageDef(전부 0) — 본문 영역이 항상 양수로 폴백.
+    #[test]
+    fn test_page_areas_zero_page_def_falls_back() {
+        let areas = PageAreas::from_page_def_for_page(&PageDef::default(), 1);
+        let body = &areas.body_area;
+        assert!(
+            body.bottom > body.top && body.right > body.left,
+            "PageDef 0 이어도 본문 영역은 양수여야 한다: {body:?}"
+        );
+    }
+
+    /// [Task #1583] 여백 합이 용지를 초과해도 본문 영역이 양수로 폴백.
+    #[test]
+    fn test_page_areas_oversized_margins_fall_back() {
+        let page = PageDef {
+            width: 59528,
+            height: 84188,
+            margin_top: 50000,
+            margin_bottom: 50000,
+            margin_header: 10000,
+            margin_footer: 10000,
+            margin_left: 40000,
+            margin_right: 40000,
+            ..Default::default()
+        };
+        let areas = PageAreas::from_page_def_for_page(&page, 1);
+        let body = &areas.body_area;
+        assert!(
+            body.bottom > body.top && body.right > body.left,
+            "여백 과대여도 본문 영역은 양수여야 한다: {body:?}"
+        );
+    }
 
     #[test]
     fn test_page_def_a4() {

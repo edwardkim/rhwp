@@ -91,6 +91,8 @@ pub struct AdapterReport {
     pub section_def_single_master_page_flags_materialized: u32,
     /// HWPX SectionDef masterPageCnt=2 flags 를 한컴 HWP 저장 관례로 보정한 횟수
     pub section_def_multi_master_page_flags_materialized: u32,
+    /// HWPX SectionDef hide_empty_line bool 을 HWP5 flags bit 19로 동기화한 횟수
+    pub section_def_hide_empty_line_flag_materialized: u32,
     /// HWPX AutoNumber 뒤 fixed-width space 문단의 HWP5 PARA_RANGE_TAG materialize 횟수
     pub autonum_fwspace_range_tag_materialized: u32,
     /// HWPX AutoNumber 뒤 fixed-width space 문단의 char shape start_pos 보정 횟수
@@ -143,6 +145,7 @@ impl AdapterReport {
                 + self.following_section_break_type_materialized
                 + self.section_def_single_master_page_flags_materialized
                 + self.section_def_multi_master_page_flags_materialized
+                + self.section_def_hide_empty_line_flag_materialized
                 + self.autonum_fwspace_range_tag_materialized
                 + self.autonum_fwspace_char_shape_offsets_materialized
                 + self.header_footer_fwspace_control_materialized
@@ -985,6 +988,7 @@ fn materialize_para_header_tail(para: &mut Paragraph, report: &mut AdapterReport
 }
 
 fn adapt_section_def(section_def: &mut SectionDef, report: &mut AdapterReport) {
+    materialize_section_def_hide_empty_line_flag(section_def, report);
     materialize_single_master_page_flags(section_def, report);
     materialize_multi_master_page_flags(section_def, report);
     materialize_section_def_master_page_tail(section_def, report);
@@ -995,6 +999,24 @@ fn adapt_section_def(section_def: &mut SectionDef, report: &mut AdapterReport) {
             report,
             ParagraphContext::MasterPage,
         );
+    }
+}
+
+fn materialize_section_def_hide_empty_line_flag(
+    section_def: &mut SectionDef,
+    report: &mut AdapterReport,
+) {
+    const HIDE_EMPTY_LINE_FLAG: u32 = 0x0008_0000;
+
+    let old_flags = section_def.flags;
+    if section_def.hide_empty_line {
+        section_def.flags |= HIDE_EMPTY_LINE_FLAG;
+    } else {
+        section_def.flags &= !HIDE_EMPTY_LINE_FLAG;
+    }
+
+    if section_def.flags != old_flags {
+        report.section_def_hide_empty_line_flag_materialized += 1;
     }
 }
 
@@ -1385,9 +1407,10 @@ fn adapt_table_with_context(
 
     // 셀별 보강 + 내부 문단 재귀 (중첩 표 대응)
     let use_cell_width_ref = table_requires_cell_width_ref_contract(table);
+    let table_padding = table.padding;
     for cell in &mut table.cells {
         adapt_cell_list_attr(cell, report);
-        materialize_cell_list_header_contract(cell, use_cell_width_ref, report);
+        materialize_cell_list_header_contract(cell, use_cell_width_ref, &table_padding, report);
         for cpara in &mut cell.paragraphs {
             adapt_paragraph_with_context(cpara, report, context);
         }
@@ -1407,10 +1430,20 @@ fn table_requires_cell_width_ref_contract(table: &Table) -> bool {
 fn materialize_cell_list_header_contract(
     cell: &mut Cell,
     use_width_ref: bool,
+    table_padding: &crate::model::Padding,
     report: &mut AdapterReport,
 ) {
     let before_width_ref = cell.list_header_width_ref;
     let before_extra_len = cell.raw_list_extra.len();
+
+    // [#1809] micro-grid 계약으로 width_ref bit0(=aim)을 켤 때, aim=false 셀의
+    // 유효 안 여백(effective_padding — 표 기본 폴백 포함)을 셀 padding 에 물질화한다.
+    // 재파싱 시 aim=true 가 되면 측정/레이아웃의 aim=true 원값 존중 경로(#493 시멘틱)가
+    // raw cell padding 을 그대로 쓰므로, 물질화 없이는 padding 0 셀의 행높이가
+    // 원본(HWPX, 표 기본 여백)과 어긋난다 (admrul_0296 행 32.37→31.60, 표 3.87px).
+    if use_width_ref && !cell.apply_inner_margin {
+        cell.padding = cell.effective_padding(table_padding);
+    }
 
     if use_width_ref || cell.apply_inner_margin {
         cell.list_header_width_ref |= 0x0001;
@@ -1544,12 +1577,33 @@ fn adapt_cell_list_attr(cell: &mut Cell, report: &mut AdapterReport) {
     }
 }
 
+/// [Issue #1770] HWPX-origin 마커 스트림 경로.
+///
+/// rhwp 의 HWPX→HWP 변환은 LINE_SEG 를 verbatim 직렬화하므로 산출 HWP5 의 IR 은
+/// HWPX 시멘틱 그대로다. 재파스 시 이 마커로 `Document::is_hwpx_variant` 를 세워
+/// pagination/렌더의 `is_hwpx_source` 분기(RowBreak 분할 tolerance 등)를 HWPX 로
+/// 해석한다 — 같은 IR 이 같은 쪽수(roundtrip 자기정합, 2953495 4→5쪽 divergence 해소).
+/// 한컴은 미지의 루트 스트림을 무시하고(열림 계약 게이트로 검증), 한컴에서 재저장하면
+/// 마커가 사라지며 그 문서는 진짜 native HWP5 가 되므로 시멘틱이 자기일관적이다.
+pub const HWPX_ORIGIN_STREAM_PATH: &str = "/RhwpHwpxOrigin";
+
 /// `source_format` 검사 후 어댑터를 호출하는 보조 함수.
 ///
 /// 호출자: `DocumentCore::export_hwp_with_adapter()` (Stage 5 에서 추가).
 pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> AdapterReport {
     if !matches!(source_format, FileFormat::Hwpx | FileFormat::Hwp3) {
         return AdapterReport::new().no_op("source_format != Hwpx/Hwp3");
+    }
+    // [Issue #1770] HWPX 출처만 마커 부여 (HWP3 은 자체 variant 시멘틱 유지).
+    // idempotent — 이미 있으면 추가하지 않는다.
+    if matches!(source_format, FileFormat::Hwpx)
+        && !doc
+            .extra_streams
+            .iter()
+            .any(|(p, _)| p == HWPX_ORIGIN_STREAM_PATH)
+    {
+        doc.extra_streams
+            .push((HWPX_ORIGIN_STREAM_PATH.to_string(), b"1".to_vec()));
     }
     convert_hwpx_to_hwp_ir(doc)
 }
@@ -1767,7 +1821,12 @@ mod tests {
         };
         let mut report = AdapterReport::new();
 
-        materialize_cell_list_header_contract(&mut cell, true, &mut report);
+        materialize_cell_list_header_contract(
+            &mut cell,
+            true,
+            &crate::model::Padding::default(),
+            &mut report,
+        );
 
         assert_eq!(cell.list_header_width_ref & 0x0001, 0x0001);
         assert_eq!(cell.raw_list_extra.len(), 13);
@@ -1778,7 +1837,12 @@ mod tests {
         assert!(cell.raw_list_extra[4..].iter().all(|&byte| byte == 0));
         assert_eq!(report.cells_list_header_contract_materialized, 1);
 
-        materialize_cell_list_header_contract(&mut cell, true, &mut report);
+        materialize_cell_list_header_contract(
+            &mut cell,
+            true,
+            &crate::model::Padding::default(),
+            &mut report,
+        );
         assert_eq!(report.cells_list_header_contract_materialized, 1);
     }
 
@@ -1792,7 +1856,12 @@ mod tests {
         };
         let mut report = AdapterReport::new();
 
-        materialize_cell_list_header_contract(&mut cell, false, &mut report);
+        materialize_cell_list_header_contract(
+            &mut cell,
+            false,
+            &crate::model::Padding::default(),
+            &mut report,
+        );
 
         assert_eq!(cell.list_header_width_ref & 0x0001, 0);
         assert_eq!(cell.raw_list_extra.len(), 13);
@@ -2015,6 +2084,29 @@ mod tests {
         let mut second = AdapterReport::new();
         adapt_section_def(&mut section_def, &mut second);
         assert_eq!(second.section_def_multi_master_page_flags_materialized, 0);
+    }
+
+    #[test]
+    fn task1654_hide_empty_line_flag_materializes_before_section_def_control_copy() {
+        let mut section = Section::default();
+        section.section_def.hide_empty_line = true;
+        section.section_def.flags &= !0x0008_0000;
+        section.paragraphs.push(Paragraph::default());
+
+        let mut doc = Document {
+            sections: vec![section],
+            ..Default::default()
+        };
+
+        let report = convert_hwpx_to_hwp_ir(&mut doc);
+        assert_eq!(report.section_def_hide_empty_line_flag_materialized, 1);
+        assert_ne!(doc.sections[0].section_def.flags & 0x0008_0000, 0);
+
+        let Control::SectionDef(section_def) = &doc.sections[0].paragraphs[0].controls[0] else {
+            panic!("SectionDef 컨트롤이 삽입되어야 함");
+        };
+        assert!(section_def.hide_empty_line);
+        assert_ne!(section_def.flags & 0x0008_0000, 0);
     }
 
     #[test]

@@ -22,6 +22,21 @@ fn make_table(rows: u16, cols: u16) -> Table {
     table
 }
 
+fn set_cell_text(table: &mut Table, row: u16, col: u16, text: &str) {
+    let idx = table.cell_index_at(row, col).expect("cell index");
+    let mut para = Paragraph::new_empty();
+    para.insert_text_at(0, text);
+    table.cells[idx].paragraphs = vec![para];
+}
+
+fn cell_text(table: &Table, row: u16, col: u16) -> String {
+    table
+        .cell_at(row, col)
+        .and_then(|cell| cell.paragraphs.first())
+        .map(|para| para.text.clone())
+        .unwrap_or_default()
+}
+
 #[test]
 fn test_table_default() {
     let table = Table::default();
@@ -908,4 +923,140 @@ fn test_split_cells_in_range_single_cell() {
     let mut table = make_table(2, 2);
     table.split_cells_in_range(0, 0, 0, 0, 1, 3, true).unwrap();
     assert_eq!(table.col_count, 4); // 2 + 2
+}
+
+// === transpose copy/paste 테스트 ===
+
+#[test]
+fn test_transpose_copy_paste_4x2_to_2x4() {
+    let mut table = make_table(4, 6);
+    for r in 0..4u16 {
+        for c in 0..2u16 {
+            set_cell_text(&mut table, r, c, &format!("s{r}{c}"));
+        }
+    }
+    set_cell_text(&mut table, 0, 2, "target");
+
+    let data = table.copy_transpose_range(0, 0, 3, 1).unwrap();
+    let changed = table.paste_transposed_cells(0, 2, &data).unwrap();
+
+    assert_eq!(data.source_rows, 4);
+    assert_eq!(data.source_cols, 2);
+    assert_eq!(changed.len(), 8);
+    assert_eq!(cell_text(&table, 0, 2), "s00");
+    assert_eq!(cell_text(&table, 0, 3), "s10");
+    assert_eq!(cell_text(&table, 0, 4), "s20");
+    assert_eq!(cell_text(&table, 0, 5), "s30");
+    assert_eq!(cell_text(&table, 1, 2), "s01");
+    assert_eq!(cell_text(&table, 1, 3), "s11");
+    assert_eq!(cell_text(&table, 1, 4), "s21");
+    assert_eq!(cell_text(&table, 1, 5), "s31");
+
+    // 원본 범위는 정적 복사이므로 유지된다.
+    assert_eq!(cell_text(&table, 3, 1), "s31");
+}
+
+#[test]
+fn test_transpose_full_table_in_place_4x2_to_2x4() {
+    let mut table = make_table(4, 2);
+    for r in 0..4u16 {
+        for c in 0..2u16 {
+            set_cell_text(&mut table, r, c, &format!("s{r}{c}"));
+        }
+    }
+
+    let changed = table.transpose_unmerged_table_in_place().unwrap();
+
+    assert_eq!(table.row_count, 2);
+    assert_eq!(table.col_count, 4);
+    assert_eq!(changed.len(), 8);
+    assert_eq!(cell_text(&table, 0, 0), "s00");
+    assert_eq!(cell_text(&table, 0, 1), "s10");
+    assert_eq!(cell_text(&table, 0, 2), "s20");
+    assert_eq!(cell_text(&table, 0, 3), "s30");
+    assert_eq!(cell_text(&table, 1, 0), "s01");
+    assert_eq!(cell_text(&table, 1, 1), "s11");
+    assert_eq!(cell_text(&table, 1, 2), "s21");
+    assert_eq!(cell_text(&table, 1, 3), "s31");
+}
+
+#[test]
+fn test_transpose_paste_out_of_bounds_fails() {
+    let mut table = make_table(2, 2);
+    set_cell_text(&mut table, 0, 0, "a");
+    set_cell_text(&mut table, 0, 1, "b");
+    set_cell_text(&mut table, 1, 0, "c");
+    set_cell_text(&mut table, 1, 1, "d");
+
+    let data = table.copy_transpose_range(0, 0, 1, 1).unwrap();
+
+    assert!(table.paste_transposed_cells(1, 1, &data).is_err());
+    assert_eq!(cell_text(&table, 1, 1), "d");
+}
+
+#[test]
+fn test_transpose_rejects_merged_cells() {
+    let mut table = make_table(3, 3);
+    table.merge_cells(0, 0, 0, 1).unwrap();
+    assert!(table.copy_transpose_range(0, 0, 1, 1).is_err());
+
+    let mut target_table = make_table(3, 3);
+    set_cell_text(&mut target_table, 0, 0, "a");
+    set_cell_text(&mut target_table, 1, 0, "b");
+    let data = target_table.copy_transpose_range(0, 0, 1, 0).unwrap();
+    target_table.merge_cells(0, 1, 0, 2).unwrap();
+    assert!(target_table.paste_transposed_cells(0, 1, &data).is_err());
+}
+
+// [Task #1716] leading_header_rows: 상단 연속 제목행 블록만 반환하는지 검증
+#[test]
+fn test_leading_header_rows_scattered_body_headers() {
+    // 상단 1행 header + 본문(행 2·4)에 흩어진 header → [0] 만
+    let mut t = make_table(6, 3);
+    for c in 0..3 {
+        let i = t.cell_index_at(0, c).unwrap();
+        t.cells[i].is_header = true;
+    }
+    for &r in &[2u16, 4] {
+        let i = t.cell_index_at(r, 0).unwrap();
+        t.cells[i].is_header = true;
+    }
+    assert_eq!(t.leading_header_rows(), vec![0]);
+}
+
+#[test]
+fn test_leading_header_rows_contiguous_multi() {
+    // 상단 연속 2행 header → [0,1] (#1022 다중 머리행 보존)
+    let mut t = make_table(5, 3);
+    for r in 0..2 {
+        for c in 0..3 {
+            let i = t.cell_index_at(r, c).unwrap();
+            t.cells[i].is_header = true;
+        }
+    }
+    assert_eq!(t.leading_header_rows(), vec![0, 1]);
+}
+
+#[test]
+fn test_leading_header_rows_rowspan_header() {
+    // rowspan=2 header 셀이 행 0..2 를 덮음 → [0,1]
+    let mut t = make_table(4, 2);
+    let i = t.cell_index_at(0, 0).unwrap();
+    t.cells[i].is_header = true;
+    t.cells[i].row_span = 2;
+    assert_eq!(t.leading_header_rows(), vec![0, 1]);
+}
+
+#[test]
+fn test_leading_header_rows_none_and_all() {
+    let t = make_table(3, 2);
+    assert_eq!(t.leading_header_rows(), Vec::<usize>::new());
+    let mut all = make_table(3, 2);
+    for r in 0..3 {
+        for c in 0..2 {
+            let i = all.cell_index_at(r, c).unwrap();
+            all.cells[i].is_header = true;
+        }
+    }
+    assert_eq!(all.leading_header_rows(), vec![0, 1, 2]);
 }

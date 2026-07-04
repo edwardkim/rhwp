@@ -1,0 +1,22 @@
+id	status	ir_diff_count	class
+36382399	PASS	0	본문 인라인 ColumnDef 드롭 회귀가드(#1584)
+36383351	PASS	0	holdAnchorAndSO 드롭 회귀가드(#1594, 페이지 붕괴)
+36389301	PASS	0	Ruby(덧말) 드롭 회귀가드(#1587)
+36386761	PASS	0	빈 문단 spurious (0,0) 회귀가드(#1592)
+36392900	PASS	0	선 도형 shapeComment 드롭 회귀가드(#1588)
+36385226	PASS	0	ellipse 전용 지오메트리 드롭 회귀가드(#1598, 페이지 붕괴)
+36382669	PASS	0	multi-section/secCnt 회귀가드(#1557)
+36383351	PASS	0	PASS 클린
+36384285	PASS	0	PASS 클린
+36385464	PASS	0	PASS 클린
+36387103	PASS	0	PASS 클린
+36388571	PASS	0	PASS 클린
+36388853	PASS	0	PASS 클린
+36389298	PASS	0	PASS 클린
+36395270	PASS	0	footer over-push 가드(#1624)
+36387725	PASS	0	footer Page+Bottom page-fit 가드(#1611)
+36384689	PASS	0	first-para hidden 슬롯 정합 회귀가드(#1591 v2, Class C1 char_shape +8)
+36385445	PASS	0	first-para hidden 슬롯 정합 회귀가드(#1591 v2, Class C1 동형)
+36388711	PASS	0	same-para fieldEnd 복원+북마크 in-order 회귀가드(#1593, Class C2)
+36389312	PASS	0	페이지 하단 고정 틀 2개 배타 예약 가드(#1658 v3, 한글 1쪽)
+36398366	PASS	0	페이지 하단 고정 틀 배타 예약 가드(#1658 v3, PC셧다운 계열)

@@ -5,6 +5,7 @@ use super::utils::{expand_numbering_format, numbering_format_to_number_format};
 use super::*;
 use crate::model::page::{ColumnDef, PageDef};
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+use crate::model::shape::RectangleShape;
 use crate::model::style::{Numbering, NumberingHead};
 use crate::renderer::composer::compose_paragraph;
 use crate::renderer::style_resolver::ResolvedStyleSet;
@@ -61,6 +62,39 @@ fn test_build_empty_page() {
     );
     // 페이지 노드 + 배경 + 머리말 + 본문 + 각주 + 꼬리말
     assert!(tree.root.children.len() >= 4);
+}
+
+#[test]
+fn compact_endnote_tail_log_tolerance_allows_line_box_bleed_only() {
+    let col_bottom = 1092.3;
+
+    assert!(is_tolerated_endnote_column_bottom_bleed(
+        true,
+        col_bottom + 43.3,
+        col_bottom
+    ));
+    assert!(!is_tolerated_endnote_column_bottom_bleed(
+        true,
+        col_bottom + 49.0,
+        col_bottom
+    ));
+    assert!(is_tolerated_endnote_column_bottom_bleed_with_limit(
+        true,
+        col_bottom + 64.0,
+        col_bottom,
+        ENDNOTE_EQUATION_TAIL_LINE_BOX_OVERFLOW_LOG_TOLERANCE_PX,
+    ));
+    assert!(!is_tolerated_endnote_column_bottom_bleed_with_limit(
+        true,
+        col_bottom + 69.0,
+        col_bottom,
+        ENDNOTE_EQUATION_TAIL_LINE_BOX_OVERFLOW_LOG_TOLERANCE_PX,
+    ));
+    assert!(!is_tolerated_endnote_column_bottom_bleed(
+        false,
+        col_bottom + 1.0,
+        col_bottom
+    ));
 }
 
 #[test]
@@ -1173,16 +1207,18 @@ fn test_square_bullet_with_space_preserves_layout() {
         "positions[1] expected 18.4, got {}",
         positions[1]
     );
-    // 공백: 반각(10) + 자간(-1.6) = advance 8.4 (min_clamp 5.0 미작동)
+    // 공백: 반각(10) + 반각 스케일 자간(-1.6 × 10/20 = -0.8) = advance 9.2
+    // (effective_letter_spacing — 반각 글리프는 base_width/font_size 비율로
+    //  자간을 축소 적용. test_negative_letter_spacing_scales_with_halfwidth_glyphs 참조)
     assert!(
-        (positions[2] - 26.8).abs() < 0.01,
-        "positions[2] expected 26.8, got {}",
+        (positions[2] - 27.6).abs() < 0.01,
+        "positions[2] expected 27.6, got {}",
         positions[2]
     );
     // 가: 전각(20) + 자간(-1.6) = advance 18.4
     assert!(
-        (positions[3] - 45.2).abs() < 0.01,
-        "positions[3] expected 45.2, got {}",
+        (positions[3] - 46.0).abs() < 0.01,
+        "positions[3] expected 46.0, got {}",
         positions[3]
     );
 }
@@ -1228,8 +1264,9 @@ fn test_tac_leading_width_block_table_full_line() {
         ..Default::default()
     };
     let width = super::compute_tac_leading_width(&composed, 0, &styles);
-    // 4 spaces × (10 base - 1.6 lspc) = 33.6 (min_clamp 5.0 미작동)
-    assert!((width - 33.6).abs() < 0.5, "expected ~33.6, got {}", width);
+    // 4 spaces × (10 base - 반각 스케일 자간 0.8) = 36.8 → estimate_text_width
+    // 말미 round 로 37 (effective_letter_spacing: 반각 자간 = -1.6 × 10/20)
+    assert!((width - 37.0).abs() < 0.5, "expected ~37, got {}", width);
 }
 
 #[test]
@@ -1500,4 +1537,363 @@ fn task1197_paper_nodes_sort_by_plane_z_order_and_stable_index() {
         vec![3, 5, 2, 4, 1],
         "BehindText는 z-order/stable 순서로 먼저, flow, InFrontOfText 순으로 정렬"
     );
+}
+
+#[test]
+fn master_page_controls_sort_by_render_layer_z_order() {
+    fn rect_control(z_order: i32, horizontal_offset: u32) -> Control {
+        Control::Shape(Box::new(ShapeObject::Rectangle(RectangleShape {
+            common: CommonObjAttr {
+                width: 10_000,
+                height: 10_000,
+                horizontal_offset,
+                z_order,
+                text_wrap: TextWrap::InFrontOfText,
+                horz_rel_to: HorzRelTo::Paper,
+                vert_rel_to: VertRelTo::Paper,
+                ..Default::default()
+            },
+            ..Default::default()
+        })))
+    }
+
+    let engine = LayoutEngine::with_default_dpi();
+    let layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
+    let mut tree = PageRenderTree::new(0, layout.page_width, layout.page_height);
+    let master_page = MasterPage {
+        paragraphs: vec![Paragraph {
+            controls: vec![
+                rect_control(20, 0),
+                rect_control(10, 20_000),
+                rect_control(20, 40_000),
+            ],
+            ..Default::default()
+        }],
+        text_width: 10_000,
+        text_height: 10_000,
+        ..Default::default()
+    };
+
+    engine.build_master_page_into(
+        &mut tree,
+        Some(&master_page),
+        &layout,
+        &[],
+        &ResolvedStyleSet::default(),
+        &[],
+        0,
+        1,
+    );
+
+    let master_node = tree
+        .root
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::MasterPage))
+        .expect("master page node should be rendered");
+    let z_order: Vec<i32> = master_node
+        .children
+        .iter()
+        .filter_map(|node| match node.node_type {
+            RenderNodeType::Rectangle(_) => node.layer.map(|layer| layer.z_order),
+            _ => None,
+        })
+        .collect();
+
+    assert_eq!(
+        z_order,
+        vec![10, 20, 20],
+        "master-page children should replay Hancom object order, not raw control order"
+    );
+}
+
+fn first_master_child_layer<F>(tree: &PageRenderTree, predicate: F) -> RenderLayerInfo
+where
+    F: Fn(&RenderNodeType) -> bool + Copy,
+{
+    fn find<F>(node: &RenderNode, predicate: F) -> Option<RenderLayerInfo>
+    where
+        F: Fn(&RenderNodeType) -> bool + Copy,
+    {
+        if predicate(&node.node_type) {
+            return node.layer;
+        }
+        node.children
+            .iter()
+            .find_map(|child| find(child, predicate))
+    }
+
+    let master = tree
+        .root
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::MasterPage))
+        .expect("master page node should be rendered");
+    find(master, predicate).expect("matching master-page child should carry a layer")
+}
+
+fn master_rect_control(width: u32, height: u32) -> Control {
+    Control::Shape(Box::new(ShapeObject::Rectangle(RectangleShape {
+        common: CommonObjAttr {
+            width,
+            height,
+            text_wrap: TextWrap::InFrontOfText,
+            horz_rel_to: HorzRelTo::Paper,
+            vert_rel_to: VertRelTo::Paper,
+            horz_align: HorzAlign::Left,
+            vert_align: VertAlign::Top,
+            ..Default::default()
+        },
+        ..Default::default()
+    })))
+}
+
+#[test]
+fn master_page_paper_sized_background_replays_behind_body_text() {
+    let page = a4_page_def();
+    let tree = render_tree_with_master_page_control(master_rect_control(page.width, page.height));
+    let layer = first_master_child_layer(&tree, |node_type| {
+        matches!(node_type, RenderNodeType::Rectangle(_))
+    });
+
+    assert_eq!(layer.text_wrap, Some(TextWrap::BehindText));
+}
+
+#[test]
+fn master_page_smaller_front_control_stays_in_front_of_body_text() {
+    let page = a4_page_def();
+    let tree =
+        render_tree_with_master_page_control(master_rect_control(page.width / 2, page.height / 2));
+    let layer = first_master_child_layer(&tree, |node_type| {
+        matches!(node_type, RenderNodeType::Rectangle(_))
+    });
+
+    assert_eq!(layer.text_wrap, Some(TextWrap::InFrontOfText));
+}
+
+fn first_master_child_bbox<F>(tree: &PageRenderTree, predicate: F) -> BoundingBox
+where
+    F: Fn(&RenderNodeType) -> bool + Copy,
+{
+    fn find<F>(node: &RenderNode, predicate: F) -> Option<BoundingBox>
+    where
+        F: Fn(&RenderNodeType) -> bool + Copy,
+    {
+        if predicate(&node.node_type) {
+            return Some(node.bbox);
+        }
+        node.children
+            .iter()
+            .find_map(|child| find(child, predicate))
+    }
+
+    let master = tree
+        .root
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::MasterPage))
+        .expect("master page node should be rendered");
+    find(master, predicate).expect("matching master-page child should be rendered")
+}
+
+fn render_tree_with_master_page_control(control: Control) -> PageRenderTree {
+    let engine = LayoutEngine::with_default_dpi();
+    let layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
+    let mut tree = PageRenderTree::new(0, layout.page_width, layout.page_height);
+    let master_page = MasterPage {
+        paragraphs: vec![Paragraph {
+            controls: vec![control],
+            ..Default::default()
+        }],
+        text_width: 10_000,
+        text_height: 10_000,
+        ..Default::default()
+    };
+
+    engine.build_master_page_into(
+        &mut tree,
+        Some(&master_page),
+        &layout,
+        &[],
+        &ResolvedStyleSet::default(),
+        &[],
+        0,
+        1,
+    );
+    tree
+}
+
+#[test]
+fn master_page_paper_relative_shape_uses_page_origin() {
+    let tree = render_tree_with_master_page_control(Control::Shape(Box::new(
+        ShapeObject::Rectangle(RectangleShape {
+            common: CommonObjAttr {
+                width: 7_500,
+                height: 3_000,
+                horizontal_offset: 1_500,
+                vertical_offset: 2_250,
+                horz_rel_to: HorzRelTo::Paper,
+                vert_rel_to: VertRelTo::Paper,
+                text_wrap: TextWrap::InFrontOfText,
+                ..Default::default()
+            },
+            ..Default::default()
+        }),
+    )));
+
+    let bbox = first_master_child_bbox(&tree, |node_type| {
+        matches!(node_type, RenderNodeType::Rectangle(_))
+    });
+    assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
+    assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
+}
+
+#[test]
+fn master_page_paper_relative_picture_uses_page_origin() {
+    let tree = render_tree_with_master_page_control(Control::Picture(Box::new(
+        crate::model::image::Picture {
+            common: CommonObjAttr {
+                width: 7_500,
+                height: 3_000,
+                horizontal_offset: 1_500,
+                vertical_offset: 2_250,
+                horz_rel_to: HorzRelTo::Paper,
+                vert_rel_to: VertRelTo::Paper,
+                text_wrap: TextWrap::InFrontOfText,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    )));
+
+    let bbox = first_master_child_bbox(&tree, |node_type| {
+        matches!(node_type, RenderNodeType::Image(_))
+    });
+    assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
+    assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
+}
+
+fn first_header_child_bbox<F>(tree: &PageRenderTree, predicate: F) -> BoundingBox
+where
+    F: Fn(&RenderNodeType) -> bool + Copy,
+{
+    fn find<F>(node: &RenderNode, predicate: F) -> Option<BoundingBox>
+    where
+        F: Fn(&RenderNodeType) -> bool + Copy,
+    {
+        if predicate(&node.node_type) {
+            return Some(node.bbox);
+        }
+        node.children
+            .iter()
+            .find_map(|child| find(child, predicate))
+    }
+
+    let header = tree
+        .root
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Header))
+        .expect("header node should be rendered");
+    find(header, predicate).expect("matching header child should be rendered")
+}
+
+fn render_tree_with_header_control(control: Control) -> PageRenderTree {
+    use crate::model::header_footer::Header;
+    use crate::renderer::pagination::HeaderFooterRef;
+
+    let engine = LayoutEngine::with_default_dpi();
+    let layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
+    let paragraphs = vec![Paragraph {
+        controls: vec![Control::Header(Box::new(Header {
+            paragraphs: vec![Paragraph {
+                controls: vec![control],
+                ..Default::default()
+            }],
+            ..Default::default()
+        }))],
+        ..Default::default()
+    }];
+    let page_content = PageContent {
+        page_index: 0,
+        page_number: 1,
+        section_index: 0,
+        layout,
+        column_contents: Vec::new(),
+        active_header: Some(HeaderFooterRef {
+            para_index: 0,
+            control_index: 0,
+            source_section_index: 0,
+        }),
+        active_footer: None,
+        page_number_pos: None,
+        page_hide: None,
+        footnotes: Vec::new(),
+        active_master_page: None,
+        extra_master_pages: Vec::new(),
+    };
+    engine.build_render_tree(
+        &page_content,
+        &paragraphs,
+        &paragraphs,
+        &paragraphs,
+        &[],
+        &ResolvedStyleSet::default(),
+        &FootnoteShape::default(),
+        &[],
+        None,
+        &[],
+        None,
+        0,
+        &[],
+    )
+}
+
+#[test]
+fn header_paper_relative_shape_uses_page_origin() {
+    let tree = render_tree_with_header_control(Control::Shape(Box::new(ShapeObject::Rectangle(
+        RectangleShape {
+            common: CommonObjAttr {
+                width: 7_500,
+                height: 3_000,
+                horizontal_offset: 1_500,
+                vertical_offset: 2_250,
+                horz_rel_to: HorzRelTo::Paper,
+                vert_rel_to: VertRelTo::Paper,
+                text_wrap: TextWrap::InFrontOfText,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    ))));
+
+    let bbox = first_header_child_bbox(&tree, |node_type| {
+        matches!(node_type, RenderNodeType::Rectangle(_))
+    });
+    assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
+    assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
+}
+
+#[test]
+fn header_paper_relative_picture_uses_page_origin() {
+    let tree =
+        render_tree_with_header_control(Control::Picture(Box::new(crate::model::image::Picture {
+            common: CommonObjAttr {
+                width: 7_500,
+                height: 3_000,
+                horizontal_offset: 1_500,
+                vertical_offset: 2_250,
+                horz_rel_to: HorzRelTo::Paper,
+                vert_rel_to: VertRelTo::Paper,
+                text_wrap: TextWrap::InFrontOfText,
+                ..Default::default()
+            },
+            ..Default::default()
+        })));
+
+    let bbox = first_header_child_bbox(&tree, |node_type| {
+        matches!(node_type, RenderNodeType::Image(_))
+    });
+    assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
+    assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
 }

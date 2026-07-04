@@ -21,7 +21,6 @@ on:
   pull_request:
     branches: [main, devel]
     paths-ignore:
-      - 'mydocs/**'
       - 'docs/**'
       - 'samples/**'
       - 'assets/**'
@@ -46,9 +45,184 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build-and-test:
-    name: Build & Test
+  preflight:
+    name: CI preflight
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: read
+      pull-requests: read
+    outputs:
+      fast_pass: ${{ steps.detect.outputs.fast_pass || 'false' }}
+      reason: ${{ steps.detect.outputs.reason || 'preflight-unavailable' }}
+      candidate_sha: ${{ steps.detect.outputs.candidate_sha || '' }}
+
+    steps:
+      - name: Detect review-only fast pass
+        id: detect
+        continue-on-error: true
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const allowedConclusions = new Set(['success', 'skipped', 'neutral']);
+            const { owner, repo } = context.repo;
+
+            function setResult(fastPass, reason, candidateSha = '') {
+              core.setOutput('fast_pass', fastPass ? 'true' : 'false');
+              core.setOutput('reason', reason);
+              core.setOutput('candidate_sha', candidateSha);
+              core.info(`fast_pass=${fastPass} reason=${reason} candidate_sha=${candidateSha}`);
+            }
+
+            function isAllowedReviewPath(file) {
+              const filename = file.filename;
+              if (filename.startsWith('mydocs/')) {
+                return true;
+              }
+              if (file.status !== 'added') {
+                return false;
+              }
+              return isReviewReferencePath(filename);
+            }
+
+            function isReviewReferencePath(filename) {
+              return (
+                filename.startsWith('samples/')
+                && (
+                  filename.endsWith('.hwp')
+                  || filename.endsWith('.hwpx')
+                  || filename.endsWith('.pdf')
+                )
+              ) || (filename.startsWith('pdf/') && filename.endsWith('.pdf'));
+            }
+
+            function reviewOnlyLabel(files) {
+              const hasReferenceArtifact = files.some((file) => (
+                file.status === 'added'
+                && isReviewReferencePath(file.filename)
+              ));
+              return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
+            }
+
+            function latestRun(runs) {
+              return runs
+                .slice()
+                .sort((a, b) => {
+                  const bTime = Date.parse(b.completed_at || b.started_at || b.created_at || 0);
+                  const aTime = Date.parse(a.completed_at || a.started_at || a.created_at || 0);
+                  return bTime - aTime;
+                })[0];
+            }
+
+            try {
+              if (context.eventName !== 'pull_request') {
+                setResult(false, 'not-pull-request');
+                return;
+              }
+
+              const pr = context.payload.pull_request;
+              const prFiles = await github.paginate(github.rest.pulls.listFiles, {
+                owner,
+                repo,
+                pull_number: pr.number,
+                per_page: 100,
+              });
+              if (prFiles.length > 0 && prFiles.every((file) => isAllowedReviewPath(file))) {
+                core.info(`all PR files are review-only; using base SHA ${pr.base.sha}`);
+                setResult(true, 'all-review-only-no-code-impact', pr.base.sha);
+                return;
+              }
+
+              const commits = await github.paginate(github.rest.pulls.listCommits, {
+                owner,
+                repo,
+                pull_number: pr.number,
+                per_page: 100,
+              });
+
+              if (commits.length === 0) {
+                setResult(false, 'no-pr-commits');
+                return;
+              }
+
+              let trailingReviewOnlyCommits = 0;
+              let candidateSha = '';
+
+              for (let index = commits.length - 1; index >= 0; index -= 1) {
+                const sha = commits[index].sha;
+                const { data: commit } = await github.rest.repos.getCommit({
+                  owner,
+                  repo,
+                  ref: sha,
+                });
+                const files = commit.files || [];
+
+                // The commit endpoint may truncate very large file lists. Fall back to full CI.
+                if (files.length === 0 || files.length >= 300) {
+                  setResult(false, `unusable-file-list:${sha}`);
+                  return;
+                }
+
+                const reviewOnly = files.every((file) => isAllowedReviewPath(file));
+                if (reviewOnly) {
+                  if ((commit.parents || []).length !== 1) {
+                    setResult(false, `${reviewOnlyLabel(files)}-merge-commit:${sha}`);
+                    return;
+                  }
+                  trailingReviewOnlyCommits += 1;
+                  continue;
+                }
+
+                candidateSha = sha;
+                break;
+              }
+
+              if (trailingReviewOnlyCommits === 0) {
+                setResult(false, 'no-trailing-review-only-commits');
+                return;
+              }
+              if (!candidateSha) {
+                candidateSha = pr.base.sha;
+                core.info(`all PR commits are review-only; using base SHA ${candidateSha}`);
+                setResult(true, 'all-review-only-no-code-impact', candidateSha);
+                return;
+              }
+
+              const checkRuns = await github.paginate(github.rest.checks.listForRef, {
+                owner,
+                repo,
+                ref: candidateSha,
+                per_page: 100,
+              });
+              const buildRun = latestRun(checkRuns.filter((run) => (
+                run.name === 'Build & Test'
+                && run.app?.slug === 'github-actions'
+              )));
+
+              if (!buildRun) {
+                setResult(false, `missing-build-and-test:${candidateSha}`, candidateSha);
+                return;
+              }
+              if (buildRun.status !== 'completed') {
+                setResult(false, `build-and-test-not-completed:${buildRun.status}`, candidateSha);
+                return;
+              }
+              if (!allowedConclusions.has(buildRun.conclusion)) {
+                setResult(false, `build-and-test-not-green:${buildRun.conclusion}`, candidateSha);
+                return;
+              }
+
+              setResult(true, `build-and-test-green:${buildRun.conclusion}`, candidateSha);
+            } catch (error) {
+              core.warning(`CI preflight failed; running full CI. ${error.message}`);
+              setResult(false, 'preflight-error');
+            }
+
+  build-default-feature-tests:
+    name: Build default-feature tests
+    runs-on: ubuntu-latest
+    needs: preflight
+    if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
     permissions:
       contents: read
 
@@ -56,7 +230,7 @@ jobs:
       - uses: actions/checkout@v5
 
       # [Task #1109 / #1192 C] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
-      # cargo test (28 examples + integration tests) 빌드 시 디스크 한도 초과 방지.
+      # 테스트 빌드 시 디스크 한도 초과를 줄인다.
       # [#1192] 캐시 정상 작동 확인 후 "크고 빠른" 항목(android/dotnet)만 남기고 축소.
       # 느린 docker prune --all / apt clean / ghc / CodeQL 정리는 제거. df -h 로 여유 확인.
       - name: Free disk space (remove unused pre-installed toolchains)
@@ -72,8 +246,9 @@ jobs:
           components: clippy, rustfmt
           targets: wasm32-unknown-unknown
 
-      - name: Cache cargo registry & build
-        uses: actions/cache@v5
+      - name: Restore cargo registry & build cache
+        id: cargo_cache_restore
+        uses: actions/cache/restore@v5
         with:
           path: |
             ~/.cargo/registry
@@ -86,15 +261,85 @@ jobs:
       - name: Format check
         run: cargo fmt --all -- --check
 
+      # [Task #1849] PR is release-test full regression. devel push keeps this Build
+      # step as release smoke, while test steps below use release-test. main/tag/manual
+      # keep full release tests.
       - name: Build
-        run: cargo build --verbose
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
+            cargo build --profile release-test --verbose
+          else
+            echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF} role=release-smoke-or-full"
+            cargo build --release --verbose
+          fi
 
-      # [Task #1192 A] canvas_layer_tree_matches_legacy* 는 feature gate 없는 lib 테스트로
-      # 아래 "Run tests"(cargo test)에 이미 포함된다. 별도 step 은 순수 중복이라 제거.
-      # (native-skia 테스트는 default feature 가 아니므로 전용 step 을 유지한다.)
+      # [Task #1667] `cargo test --tests` covers all default-feature test=true
+      # targets, including the rhwp lib test executable. Keep one default-feature
+      # test step here so the same lib tests are not rerun by a separate --lib step.
+      - name: Run default-feature tests
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]] || [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/devel" ]]; then
+            echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
+            cargo test --profile release-test --tests --verbose
+          else
+            echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
+            cargo test --release --tests --verbose
+          fi
 
       - name: Check WASM target
         run: cargo check --target wasm32-unknown-unknown --lib
+
+      - name: Clippy
+        run: cargo clippy -- -D warnings
+
+      - name: Save cargo registry & build cache
+        if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.cargo_cache_restore.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+  native-skia-tests:
+    name: Native Skia tests
+    runs-on: ubuntu-latest
+    needs: preflight
+    if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # [Task #1109 / #1192 C] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
+      # 테스트 빌드 시 디스크 한도 초과를 줄인다.
+      # [#1192] 캐시 정상 작동 확인 후 "크고 빠른" 항목(android/dotnet)만 남기고 축소.
+      # 느린 docker prune --all / apt clean / ghc / CodeQL 정리는 제거. df -h 로 여유 확인.
+      - name: Free disk space (remove unused pre-installed toolchains)
+        run: |
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
+          df -h
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.93.1
+
+      - name: Restore cargo registry & build cache
+        id: cargo_cache_restore
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Install native Skia runtime packages
         run: |
@@ -105,13 +350,54 @@ jobs:
             libfreetype6-dev
 
       - name: Native Skia tests
-        run: cargo test --features native-skia skia --lib --verbose
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]] || [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/devel" ]]; then
+            echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
+            cargo test --profile release-test --features native-skia skia --lib --verbose
+          else
+            echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
+            cargo test --release --features native-skia skia --lib --verbose
+          fi
 
-      - name: Run tests
-        run: cargo test --verbose
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    needs:
+      - preflight
+      - build-default-feature-tests
+      - native-skia-tests
+    if: ${{ always() }}
+    permissions:
+      contents: read
 
-      - name: Clippy
-        run: cargo clippy -- -D warnings
+    steps:
+      - name: Check Build & Test worker results
+        run: |
+          echo "preflight=${{ needs.preflight.result }}"
+          echo "fast_pass=${{ needs.preflight.outputs.fast_pass }}"
+          echo "build_default=${{ needs['build-default-feature-tests'].result }}"
+          echo "native_skia=${{ needs['native-skia-tests'].result }}"
+
+          if [[ "${{ needs.preflight.result }}" != "success" ]]; then
+            echo "::error::CI preflight did not succeed: ${{ needs.preflight.result }}"
+            exit 1
+          fi
+
+          if [[ "${{ needs.preflight.outputs.fast_pass }}" == "true" ]]; then
+            echo "CI preflight fast-pass accepted."
+            exit 0
+          fi
+
+          failed=0
+          if [[ "${{ needs['build-default-feature-tests'].result }}" != "success" ]]; then
+            echo "::error::Build default-feature tests result: ${{ needs['build-default-feature-tests'].result }}"
+            failed=1
+          fi
+          if [[ "${{ needs['native-skia-tests'].result }}" != "success" ]]; then
+            echo "::error::Native Skia tests result: ${{ needs['native-skia-tests'].result }}"
+            failed=1
+          fi
+          exit "${failed}"
 
   wasm-build:
     name: WASM Build

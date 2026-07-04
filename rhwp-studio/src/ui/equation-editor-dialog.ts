@@ -441,10 +441,6 @@ export class EquationEditorDialog {
       e.stopPropagation();
     });
 
-    this.overlay.addEventListener('mousedown', (e) => {
-      if (e.target === this.overlay) this.hide();
-    });
-
     enableDialogDrag(this.dialog, titleBar, { ignoreSelector: '.dialog-close, .eq-mode-btn' });
   }
 

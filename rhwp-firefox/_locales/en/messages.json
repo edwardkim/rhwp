@@ -34,6 +34,12 @@
   "optionsHoverPreview": {
     "message": "Show preview when hovering over HWP links"
   },
+  "optionsDisableExternalWebFonts": {
+    "message": "Do not use external web fonts"
+  },
+  "optionsDisableExternalWebFontsDesc": {
+    "message": "Recommended for intranet/offline environments. Some documents may show different fonts, line breaks, or page layout."
+  },
   "optionsSaved": {
     "message": "Saved"
   },

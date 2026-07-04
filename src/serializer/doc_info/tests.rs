@@ -1,8 +1,8 @@
 use super::*;
 use crate::model::bin_data::{BinDataCompression, BinDataStatus};
 use crate::model::style::{
-    Alignment, BorderLine, DiagonalLine, Fill, ImageFill, ImageFillMode, LineSpacingType,
-    NumberingHead, SolidFill,
+    Alignment, BorderLine, CenterLine, DiagonalLine, Fill, ImageFill, ImageFillMode,
+    LineSpacingType, NumberingHead, SolidFill,
 };
 use crate::parser::doc_info::parse_doc_info;
 use crate::parser::record::Record;
@@ -332,6 +332,7 @@ fn test_serialize_border_fill_solid() {
             },
         ],
         diagonal: DiagonalLine::default(),
+        center_line: CenterLine::None,
         fill: Fill {
             fill_type: FillType::Solid,
             solid: Some(SolidFill {
@@ -361,6 +362,27 @@ fn test_serialize_border_fill_solid() {
 }
 
 #[test]
+fn test_serialize_border_fill_cross_centerline_uses_hwp5_center_bits() {
+    let bf = BorderFill {
+        raw_data: None,
+        attr: (0b010 << 2) | (0b010 << 5),
+        borders: [BorderLine::default(); 4],
+        diagonal: DiagonalLine::default(),
+        center_line: CenterLine::Cross,
+        fill: Fill::default(),
+    };
+
+    let data = serialize_border_fill(&bf);
+    let mut r = crate::parser::byte_reader::ByteReader::new(&data);
+
+    assert_eq!(
+        r.read_u16().unwrap(),
+        (1 << 13) | (0x03 << 8) | (1 << 10),
+        "HWP5 바이너리 CROSS 중심선은 한컴 중심선 보조 비트를 함께 저장해야 함"
+    );
+}
+
+#[test]
 fn test_serialize_border_fill_image_fill_mode_uses_hwp5_values() {
     let cases = [
         (ImageFillMode::TileAll, 0),
@@ -387,6 +409,7 @@ fn test_serialize_border_fill_image_fill_mode_uses_hwp5_values() {
             attr: 0,
             borders: [BorderLine::default(); 4],
             diagonal: DiagonalLine::default(),
+            center_line: CenterLine::None,
             fill: Fill {
                 fill_type: FillType::Image,
                 solid: None,
@@ -569,4 +592,57 @@ fn test_serialize_numbering_roundtrip() {
     // 형식 문자열 "^1."
     let len = r.read_u16().unwrap();
     assert_eq!(len, 3);
+}
+
+/// [#1793] BULLET 레코드 직렬화 레이아웃 — 문단 머리 정보는 char_shape_id 포함
+/// 12바이트. char_shape_id 4바이트 누락 시 재파싱에서 bullet_char 오프셋이
+/// 어긋나 글머리표 문자가 NUL 로 손상된다 (HWPX→HWP 저장 후 렌더 손상).
+#[test]
+fn test_serialize_bullet_layout_and_roundtrip() {
+    let bullet = crate::model::style::Bullet {
+        raw_data: None,
+        attr: 0,
+        width_adjust: 0,
+        text_distance: 50,
+        char_shape_id: 2,
+        bullet_char: '-',
+        image_bullet: 0,
+        image_data: [0; 4],
+        check_bullet_char: '\0',
+    };
+
+    // 레이아웃: 문단 머리 정보 12바이트 후 offset 12 에 bullet_char
+    let data = serialize_bullet(&bullet);
+    assert_eq!(data.len(), 24);
+    let mut r = crate::parser::byte_reader::ByteReader::new(&data);
+    assert_eq!(r.read_u32().unwrap(), 0); // attr
+    assert_eq!(r.read_i16().unwrap(), 0); // width_adjust
+    assert_eq!(r.read_i16().unwrap(), 50); // text_distance
+    assert_eq!(r.read_u32().unwrap(), 2); // char_shape_id
+    assert_eq!(r.read_u16().unwrap(), '-' as u16); // bullet_char
+
+    // 전체 doc_info 라운드트립에서도 bullet_char 가 보존되어야 한다
+    let doc_props = DocProperties {
+        section_count: 1,
+        page_start_num: 1,
+        footnote_start_num: 1,
+        endnote_start_num: 1,
+        picture_start_num: 1,
+        table_start_num: 1,
+        equation_start_num: 1,
+        raw_data: None,
+        caret_list_id: 0,
+        caret_para_id: 0,
+        caret_char_pos: 0,
+    };
+    let mut doc_info = DocInfo::default();
+    doc_info.font_faces = vec![Vec::new(); 7];
+    doc_info.bullets.push(bullet);
+
+    let stream = serialize_doc_info(&doc_info, &doc_props);
+    let (parsed_info, _) = parse_doc_info(&stream).unwrap();
+    assert_eq!(parsed_info.bullets.len(), 1);
+    assert_eq!(parsed_info.bullets[0].bullet_char, '-');
+    assert_eq!(parsed_info.bullets[0].char_shape_id, 2);
+    assert_eq!(parsed_info.bullets[0].text_distance, 50);
 }

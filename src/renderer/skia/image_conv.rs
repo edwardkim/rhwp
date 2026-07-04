@@ -3,9 +3,11 @@ use skia_safe::{
     canvas::SrcRectConstraint, color_filters, image::RequiredProperties, Color, Data, FilterMode,
     IRect, Image, Matrix, MipmapMode, Paint, Rect, SamplingOptions, TileMode,
 };
+use std::sync::{Arc, OnceLock};
 
 use crate::model::image::ImageEffect;
 use crate::model::style::ImageFillMode;
+use crate::renderer::image_resolver::{detect_image_mime_type, grayscale_jpeg_bytes_to_png_bytes};
 
 const MAX_SVG_FRAGMENT_BYTES: usize = 4 * 1024 * 1024;
 const MAX_SVG_RASTER_PIXELS: u64 = 67_108_864;
@@ -145,7 +147,14 @@ pub fn draw_image_bytes(
     if !is_valid_destination_rect(x, y, width, height) {
         return;
     }
-    let Some(image) = Image::from_encoded(Data::new_copy(bytes)) else {
+    let normalized_bytes = if detect_image_mime_type(bytes) == "image/jpeg" {
+        grayscale_jpeg_bytes_to_png_bytes(bytes)
+    } else {
+        None
+    };
+    let encoded_bytes = normalized_bytes.as_deref().unwrap_or(bytes);
+
+    let Some(image) = Image::from_encoded(Data::new_copy(encoded_bytes)) else {
         draw_missing_image_placeholder(x, y, width, height);
         return;
     };
@@ -226,6 +235,7 @@ pub fn draw_image_bytes(
     if matches!(
         mode,
         ImageFillMode::TileAll
+            | ImageFillMode::Total
             | ImageFillMode::TileHorzTop
             | ImageFillMode::TileHorzBottom
             | ImageFillMode::TileVertLeft
@@ -275,7 +285,9 @@ pub fn draw_image_bytes(
             true
         };
 
-        if matches!(mode, ImageFillMode::TileAll) && draw_tiled_shader(dst, x, y) {
+        if matches!(mode, ImageFillMode::TileAll | ImageFillMode::Total)
+            && draw_tiled_shader(dst, x, y)
+        {
             canvas.restore();
             return;
         }
@@ -361,10 +373,21 @@ fn svg_parse_options() -> usvg::Options<'static> {
         resolve_data: usvg::ImageHrefResolver::default_data_resolver(),
         resolve_string: Box::new(|_, _| None),
     };
-    let fontdb = options.fontdb_mut();
-    fontdb.load_system_fonts();
-    fontdb.set_sans_serif_family("Noto Sans CJK KR");
-    fontdb.set_serif_family("Noto Serif CJK KR");
-    fontdb.set_monospace_family("D2Coding");
+    options.fontdb = svg_fontdb();
     options
+}
+
+fn svg_fontdb() -> Arc<usvg::fontdb::Database> {
+    static SVG_FONTDB: OnceLock<Arc<usvg::fontdb::Database>> = OnceLock::new();
+
+    SVG_FONTDB
+        .get_or_init(|| {
+            let mut fontdb = usvg::fontdb::Database::new();
+            fontdb.load_system_fonts();
+            fontdb.set_sans_serif_family("Noto Sans CJK KR");
+            fontdb.set_serif_family("Noto Serif CJK KR");
+            fontdb.set_monospace_family("D2Coding");
+            Arc::new(fontdb)
+        })
+        .clone()
 }

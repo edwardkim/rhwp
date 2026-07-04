@@ -14,8 +14,8 @@ use super::tags;
 use crate::model::bin_data::{BinData, BinDataCompression, BinDataStatus, BinDataType};
 use crate::model::document::{DocInfo, DocProperties, RawRecord};
 use crate::model::style::{
-    Alignment, BorderFill, BorderLine, BorderLineType, Bullet, CharShape, DiagonalLine, Fill,
-    FillType, Font, GradientFill, ImageFill, ImageFillMode, LineSpacingType, Numbering,
+    Alignment, BorderFill, BorderLine, BorderLineType, Bullet, CenterLine, CharShape, DiagonalLine,
+    Fill, FillType, Font, GradientFill, ImageFill, ImageFillMode, LineSpacingType, Numbering,
     NumberingHead, ParaShape, SolidFill, Style, TabDef, TabItem, UnderlineType,
 };
 
@@ -362,6 +362,7 @@ fn parse_border_fill(data: &[u8]) -> Result<BorderFill, DocInfoError> {
         attr,
         borders,
         diagonal,
+        center_line: CenterLine::from_hwp_attr(attr),
         fill,
     })
 }
@@ -812,7 +813,7 @@ fn parse_bullet(data: &[u8]) -> Result<Bullet, DocInfoError> {
     let attr = r.read_u32().unwrap_or(0);
     let width_adjust = r.read_i16().unwrap_or(0);
     let text_distance = r.read_i16().unwrap_or(0);
-    let _char_shape_id = r.read_u32().unwrap_or(0);
+    let char_shape_id = r.read_u32().unwrap_or(0);
 
     // 글머리표 문자 (WCHAR, 2바이트)
     let bullet_char_u16 = r.read_u16().unwrap_or(0x2022); // 기본: ●(U+2022)
@@ -836,6 +837,7 @@ fn parse_bullet(data: &[u8]) -> Result<Bullet, DocInfoError> {
         attr,
         width_adjust,
         text_distance,
+        char_shape_id,
         bullet_char,
         image_bullet,
         image_data,

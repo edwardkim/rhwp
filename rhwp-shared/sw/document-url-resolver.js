@@ -4,6 +4,13 @@
 // 호출부에서 직접 분기하지 않도록 이 모듈에서 정규화한다.
 
 const DOCUMENT_EXTENSION_RE = /\.(hwp|hwpx)$/i;
+const GITHUB_NON_DOCUMENT_MARKERS = new Set(['edit', 'commits', 'blame', 'tree']);
+
+function classification(status, reason, resolvedUrl) {
+  const result = { status, reason };
+  if (resolvedUrl) result.resolvedUrl = resolvedUrl;
+  return result;
+}
 
 /**
  * rhwp가 직접 열 수 있는 문서 경로인지 확인한다.
@@ -53,6 +60,90 @@ export function resolveGithubBlobUrl(parsed) {
   if (!isDocumentPath(encodedPath)) return null;
 
   return `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${encodedPath}`;
+}
+
+/**
+ * GitHub 계열 URL이 실제 문서 후보인지 정적으로 분류한다.
+ *
+ * `blob` 페이지는 raw URL로 변환 가능하므로 openable이고, `edit`,
+ * `commits`, `blame`, `tree`는 `.hwp` 경로처럼 보여도 HTML 페이지이므로
+ * not-document로 분류한다.
+ *
+ * @param {URL} parsed
+ * @returns {{status: 'openable'|'not-document'|'unknown', reason: string, resolvedUrl?: string}|null}
+ */
+export function classifyGithubDocumentUrl(parsed) {
+  if (!(parsed instanceof URL)) return null;
+  if (parsed.protocol !== 'https:') return null;
+
+  if (parsed.hostname === 'raw.githubusercontent.com') {
+    return isDocumentPath(parsed.pathname)
+      ? classification('openable', 'github-raw-document', parsed.href)
+      : classification('not-document', 'github-raw-non-document');
+  }
+
+  if (parsed.hostname !== 'github.com') return null;
+
+  const segments = parsed.pathname.split('/').filter(Boolean);
+  if (segments.length < 3) {
+    return classification('unknown', 'github-unrecognized');
+  }
+
+  const [owner, repo, marker, ref, ...pathParts] = segments;
+  if (!owner || !repo || !marker) {
+    return classification('unknown', 'github-unrecognized');
+  }
+
+  if (marker === 'blob') {
+    if (!ref || pathParts.length === 0) {
+      return classification('not-document', 'github-blob-missing-path');
+    }
+
+    const resolvedUrl = resolveGithubBlobUrl(parsed);
+    if (resolvedUrl) {
+      return classification('openable', 'github-blob-document', resolvedUrl);
+    }
+    return classification('not-document', 'github-blob-non-document');
+  }
+
+  if (GITHUB_NON_DOCUMENT_MARKERS.has(marker)) {
+    return classification('not-document', `github-${marker}-page`);
+  }
+
+  return classification('unknown', 'github-unrecognized');
+}
+
+/**
+ * URL을 content-script 후보 판정에 사용할 수 있는 형태로 분류한다.
+ *
+ * - provider가 실제 문서 URL로 정규화 가능한 경우: openable
+ * - provider가 명확한 HTML/도구 페이지인 경우: not-document
+ * - 일반 직접 HWP/HWPX 경로: openable
+ * - 그 외: unknown
+ *
+ * @param {string} url
+ * @returns {{status: 'openable'|'not-document'|'unknown', reason: string, resolvedUrl?: string}}
+ */
+export function classifyDocumentUrl(url) {
+  if (!url || typeof url !== 'string') {
+    return classification('unknown', 'invalid-url');
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return classification('unknown', 'invalid-url');
+  }
+
+  const githubResult = classifyGithubDocumentUrl(parsed);
+  if (githubResult) return githubResult;
+
+  if (isDocumentPath(parsed.pathname)) {
+    return classification('openable', 'document-path', parsed.href);
+  }
+
+  return classification('unknown', 'no-document-path');
 }
 
 /**

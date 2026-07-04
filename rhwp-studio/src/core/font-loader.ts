@@ -15,6 +15,11 @@ interface FontEntry {
   unicodeRange?: string;
 }
 
+export interface WebFontLoadOptions {
+  /** true면 CDN 등 외부 URL 웹폰트 등록/로드를 건너뛴다. */
+  disableExternalWebFonts?: boolean;
+}
+
 // 함초롬체 CDN (눈누 jsdelivr — 비상업적 사용 허용, 한컴 라이선스)
 const CDN_HAMCHOB_R = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff';
 const CDN_HAMCHOB_B = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatangB.woff';
@@ -125,10 +130,39 @@ export const REGISTERED_FONTS = new Set(FONT_LIST.map(f => f.name));
 const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움']);
 
 /** CSS @font-face 등록 여부 (중복 등록 방지) */
-let fontFaceRegistered = false;
+let fontFaceRegistrationMode: 'all' | 'local-only' | null = null;
 
 /** 이미 로드 완료된 woff2 파일 (중복 네트워크 요청 방지) */
 const loadedFiles = new Set<string>();
+
+function isExternalFontFile(file: string): boolean {
+  return /^https?:\/\//i.test(file);
+}
+
+function selectableFontList(options?: WebFontLoadOptions): FontEntry[] {
+  if (options?.disableExternalWebFonts !== true) return FONT_LIST;
+  return FONT_LIST.filter(f => !isExternalFontFile(f.file));
+}
+
+function registerFontFaces(options?: WebFontLoadOptions): void {
+  const disableExternal = options?.disableExternalWebFonts === true;
+  const mode = disableExternal ? 'local-only' : 'all';
+  if (fontFaceRegistrationMode === mode) return;
+
+  const styleId = 'rhwp-web-font-faces';
+  let style = document.getElementById(styleId) as HTMLStyleElement | null;
+  if (!style) {
+    style = document.createElement('style');
+    style.id = styleId;
+    document.head.appendChild(style);
+  }
+  style.textContent = selectableFontList(options).map(f => {
+    const fmt = f.format ?? 'woff2';
+    const ur = f.unicodeRange ? ` unicode-range: ${f.unicodeRange};` : '';
+    return `@font-face { font-family: "${f.name}"; src: url("${f.file}") format("${fmt}"); font-display: swap;${ur} }`;
+  }).join('\n');
+  fontFaceRegistrationMode = mode;
+}
 
 /**
  * OS에 설치된 폰트인지 감지한다 (document.fonts.check 기반).
@@ -166,37 +200,30 @@ export function getDetectedOSFonts(): ReadonlySet<string> {
 
 /**
  * 웹폰트를 선별 로드한다.
- *   1단계(동기): CSS @font-face 전체 등록 (최초 1회, 네트워크 미발생)
+ *   1단계(동기): CSS @font-face 등록
  *   2단계: 대상 폰트 로드 (이미 로드된 파일은 건너뜀)
  *
  * @param docFonts 문서에서 사용하는 폰트 이름 목록 (있으면 해당 폰트 + CRITICAL만 로드, 없으면 전체)
  * @param onProgress 폰트 로드 진행률 콜백 (loaded, total)
+ * @param options 외부 웹폰트 사용 여부 등 로드 옵션
  */
 export async function loadWebFonts(
   docFonts?: string[],
   onProgress?: (loaded: number, total: number) => void,
+  options?: WebFontLoadOptions,
 ): Promise<void> {
   // 0) OS 폰트 감지 (@font-face 등록 전에 실행해야 정확)
-  if (!fontFaceRegistered) {
+  if (!fontFaceRegistrationMode) {
     detectOSFonts();
   }
 
-  // 1) CSS @font-face 규칙 전체 등록 (네트워크 미발생, 최초 1회만)
-  if (!fontFaceRegistered) {
-    const style = document.createElement('style');
-    style.textContent = FONT_LIST.map(f => {
-      const fmt = f.format ?? 'woff2';
-      const ur = f.unicodeRange ? ` unicode-range: ${f.unicodeRange};` : '';
-      return `@font-face { font-family: "${f.name}"; src: url("${f.file}") format("${fmt}"); font-display: swap;${ur} }`;
-    }).join('\n');
-    document.head.appendChild(style);
-    fontFaceRegistered = true;
-  }
+  // 1) CSS @font-face 규칙 등록. 오프라인 옵션이면 외부 URL 폰트는 제외한다.
+  registerFontFaces(options);
 
   // 2) 로드 대상 결정: docFonts에 포함된 폰트 + CRITICAL만 로드
   //    OS에 설치된 폰트는 웹폰트 로딩 건너뜀
   const targetSet = new Set([...(docFonts ?? []), ...CRITICAL_FONTS]);
-  const toLoad = FONT_LIST.filter(f => {
+  const toLoad = selectableFontList(options).filter(f => {
     if (!targetSet.has(f.name)) return false;
     // OS에 동일 이름 폰트가 있으면 웹폰트 로딩 불필요
     if (detectedOSFonts.has(f.name)) return false;

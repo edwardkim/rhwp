@@ -7,6 +7,7 @@ interface LayerPlaneSummary {
   hasBehind: boolean;
   hasFront: boolean;
   imageCount: number;
+  rawSvgCount: number;  // OLE/차트 rawSvg op 수 — 비동기 디코드 재렌더 트리거용(image 와 의미 분리, #1456)
 }
 
 export class PageRenderer {
@@ -39,7 +40,9 @@ export class PageRenderer {
     this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow');
     this.drawMarginGuides(pageIdx, canvas, renderScale);
     const overlays = this.applyOverlays(pageIdx, canvas, renderScale, dpr);
-    this.scheduleReRender(pageIdx, canvas, renderScale, overlays.imageCount);
+    // rawSvg(차트/OLE)도 web_canvas draw_image 비동기 디코드 경로를 타므로
+    // image 와 함께 재렌더 트리거 카운트에 합산한다(#1456).
+    this.scheduleReRender(pageIdx, canvas, renderScale, overlays.imageCount + overlays.rawSvgCount);
   }
 
   getBackend(): RenderBackend {
@@ -93,7 +96,7 @@ export class PageRenderer {
     dpr: number,
   ): LayerPlaneSummary {
     const parent = canvas.parentElement;
-    if (!parent) return { hasBehind: false, hasFront: false, imageCount: 0 };
+    if (!parent) return { hasBehind: false, hasFront: false, imageCount: 0, rawSvgCount: 0 };
 
     // 페이지 단위 overlay 컨테이너를 Canvas 의 sibling 으로 관리.
     // data-rhwp-overlay-page 속성으로 식별, 페이지 재렌더링 시 갱신.
@@ -222,7 +225,7 @@ export class PageRenderer {
   }
 
   private getLayerPlaneSummary(pageIdx: number): LayerPlaneSummary {
-    const summary: LayerPlaneSummary = { hasBehind: false, hasFront: false, imageCount: 0 };
+    const summary: LayerPlaneSummary = { hasBehind: false, hasFront: false, imageCount: 0, rawSvgCount: 0 };
     let json: string;
     try {
       json = this.wasm.getPageLayerTree(pageIdx);
@@ -448,6 +451,10 @@ function collectLayerPlaneSummary(
       if (!op || typeof op !== 'object') continue;
       if (op.type === 'image') {
         summary.imageCount += 1;
+      } else if (op.type === 'rawSvg') {
+        // 차트/OLE 미리보기. web_canvas draw_image 비동기 디코드 경로를 타므로
+        // image 와 동일하게 재렌더 트리거 대상에 포함한다(#1456).
+        summary.rawSvgCount += 1;
       }
       const plane = layerReplayPlane(op, activeLayer);
       if (plane === 'behindText') {

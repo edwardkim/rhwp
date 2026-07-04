@@ -317,10 +317,15 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     case 'get-settings': {
       browser.storage.local.get({
-        autoOpen: true, showBadges: true, hoverPreview: true,
+        autoOpen: true, showBadges: true, hoverPreview: true, disableExternalWebFonts: false,
         allowHttp: true, httpWarning: true, devMode: false,
         allowedDomains: DEFAULT_ALLOWED_DOMAINS, allSitesEnabled: false,
-      }).then(s => sendResponse(s)).catch(() => sendResponse({ autoOpen: true, showBadges: true, hoverPreview: true }));
+      }).then(s => sendResponse(s)).catch(() => sendResponse({
+        autoOpen: true,
+        showBadges: true,
+        hoverPreview: true,
+        disableExternalWebFonts: false,
+      }));
       return true;
     }
 
@@ -475,7 +480,7 @@ browser.runtime.onInstalled.addListener((details) => {
   setupContextMenus();
   if (details.reason === 'install') {
     browser.storage.local.set({
-      autoOpen: true, showBadges: true, hoverPreview: true,
+      autoOpen: true, showBadges: true, hoverPreview: true, disableExternalWebFonts: false,
       allowHttp: true, httpWarning: true, devMode: false, securityLog: false,
       allowedDomains: DEFAULT_ALLOWED_DOMAINS, allSitesEnabled: false,
       maxFileSize: 20,

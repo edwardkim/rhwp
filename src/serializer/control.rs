@@ -386,7 +386,9 @@ fn serialize_footnote_shape(fs: &FootnoteShape) -> Vec<u8> {
     w.write_u16(fs.prefix_char as u16).unwrap();
     w.write_u16(fs.suffix_char as u16).unwrap();
     w.write_u16(fs.start_number).unwrap();
-    w.write_i16(fs.separator_length).unwrap();
+    // HWP5 노트 구분선 길이는 i16 슬롯. 한컴 전폭 sentinel(14692344)은 i16을 넘지만
+    // HWP5 포맷 한계상 하위 16비트로 기록한다(HWPX 경로는 i32 원본을 보존).
+    w.write_i16(fs.separator_length as i16).unwrap();
     w.write_i16(fs.separator_margin_top).unwrap();
     w.write_i16(fs.separator_margin_bottom).unwrap();
     w.write_i16(fs.note_spacing).unwrap();
@@ -535,6 +537,19 @@ fn serialize_table_record(table: &Table) -> Vec<u8> {
 
     w.write_u16(table.border_fill_id).unwrap();
 
+    // 영역 속성: UINT16 nZones + TableZone[nZones].
+    //
+    // `셀 테두리/배경 - 하나의 셀처럼 적용`은 개별 셀이 아니라 TABLE cellzone
+    // overlay로 저장되어야 한컴에서 선택 영역 전체 대각선으로 표시된다.
+    w.write_u16(table.zones.len() as u16).unwrap();
+    for zone in &table.zones {
+        w.write_u16(zone.start_row).unwrap();
+        w.write_u16(zone.start_col).unwrap();
+        w.write_u16(zone.end_row).unwrap();
+        w.write_u16(zone.end_col).unwrap();
+        w.write_u16(zone.border_fill_id).unwrap();
+    }
+
     // 원본 추가 바이트 복원 (라운드트립용)
     if !table.raw_table_record_extra.is_empty() {
         w.write_bytes(&table.raw_table_record_extra).unwrap();
@@ -558,7 +573,12 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
     };
     let list_attr: u32 = ((cell.text_direction as u32) << 16) | (v_align_code << 21);
     w.write_u32(list_attr).unwrap();
-    w.write_u16(cell.list_header_width_ref).unwrap();
+    let list_header_width_ref = if cell.list_header_width_ref == 0 {
+        0x0400
+    } else {
+        cell.list_header_width_ref
+    };
+    w.write_u16(list_header_width_ref).unwrap();
 
     // 셀 속성
     w.write_u16(cell.col).unwrap();
@@ -573,9 +593,15 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
     w.write_i16(cell.padding.bottom).unwrap();
     w.write_u16(cell.border_fill_id).unwrap();
 
-    // 원본 추가 바이트 복원 (라운드트립용)
-    if !cell.raw_list_extra.is_empty() {
+    // 원본 추가 바이트 복원. HWPX/신규 생성 셀에는 원본이 없으므로
+    // 한컴 저장본의 셀 LIST_HEADER 47바이트 contract에 맞춰 폭 참조를 보강한다.
+    // [#1808] 모델의 field_name 과 raw_list_extra 인코딩이 일치하면 원본 보존,
+    // 불일치(HWPX 출처 셀 필드, 편집기 변경)면 한컴 계약대로 재구성한다.
+    let raw_field = crate::parser::control::parse_cell_field_name(&cell.raw_list_extra);
+    if !cell.raw_list_extra.is_empty() && raw_field.as_deref() == cell.field_name.as_deref() {
         w.write_bytes(&cell.raw_list_extra).unwrap();
+    } else {
+        w.write_bytes(&build_cell_list_extra(cell)).unwrap();
     }
 
     records.push(Record {
@@ -587,6 +613,48 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
 
     // 셀 내부 문단 (원본 HWP에서는 LIST_HEADER와 같은 레벨)
     serialize_paragraph_list(&cell.paragraphs, level, records);
+}
+
+/// [#1808] 셀 LIST_HEADER 추가 바이트(34바이트 이후) 재구성 — 한컴 계약.
+///
+/// 필드 없는 셀: width(4) + 0×9 = 13바이트.
+/// 필드 셀 (한컴 원본 admrul_0039/0045 대조로 확정한 레이아웃):
+///   [0..4]   width (u32 LE)
+///   [4..8]   ff 1b 02 01 (필드 속성 마커)
+///   [8..12]  00 ×4
+///   [12..15] 40 01 00
+///   [15..17] name_len (u16 LE)
+///   [17..]   UTF-16LE 필드 이름
+///   [+8]     00 ×8
+/// 파서 대칭: parser::control::parse_cell_field_name (offset 15/17).
+fn build_cell_list_extra(cell: &Cell) -> Vec<u8> {
+    // 원본 extra 가 있으면 선두 4바이트(폭 참조 계약값)를 보존한다.
+    let width_bytes: [u8; 4] = if cell.raw_list_extra.len() >= 4 {
+        cell.raw_list_extra[0..4].try_into().unwrap()
+    } else {
+        cell.width.to_le_bytes()
+    };
+    match cell.field_name.as_deref() {
+        Some(name) if !name.is_empty() => {
+            let utf16: Vec<u16> = name.encode_utf16().collect();
+            let mut v = Vec::with_capacity(25 + utf16.len() * 2);
+            v.extend_from_slice(&width_bytes);
+            v.extend_from_slice(&[0xff, 0x1b, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00]);
+            v.extend_from_slice(&[0x40, 0x01, 0x00]);
+            v.extend_from_slice(&(utf16.len() as u16).to_le_bytes());
+            for cu in &utf16 {
+                v.extend_from_slice(&cu.to_le_bytes());
+            }
+            v.extend_from_slice(&[0u8; 8]);
+            v
+        }
+        _ => {
+            let mut v = Vec::with_capacity(13);
+            v.extend_from_slice(&width_bytes);
+            v.extend_from_slice(&[0u8; 9]);
+            v
+        }
+    }
 }
 
 fn serialize_caption(caption: &Caption, level: u16, records: &mut Vec<Record>) {
@@ -995,7 +1063,8 @@ fn serialize_picture_data(pic: &Picture) -> Vec<u8> {
 
     // 원본 추가 바이트 복원 (라운드트립 보존)
     if !pic.raw_picture_extra.is_empty() {
-        w.write_bytes(&pic.raw_picture_extra).unwrap();
+        w.write_bytes(&picture_raw_extra_with_transparency(pic))
+            .unwrap();
     } else {
         // border_opacity(1) + instance_id(4) + image_effect(4) = 9바이트
         w.write_u8(pic.border_opacity).unwrap();
@@ -1004,10 +1073,36 @@ fn serialize_picture_data(pic: &Picture) -> Vec<u8> {
                                  // 원본 이미지 크기(HWPUNIT) + 플래그(1): 한컴 호환 추가 9바이트
         w.write_u32(pic.crop.right as u32).unwrap(); // original width in HWPUNIT
         w.write_u32(pic.crop.bottom as u32).unwrap(); // original height in HWPUNIT
-        w.write_u8(0).unwrap(); // flag
+        w.write_u8(pic.image_attr.transparency_alpha_byte())
+            .unwrap();
     }
 
     w.into_bytes()
+}
+
+fn picture_raw_extra_with_transparency(pic: &Picture) -> Vec<u8> {
+    let transparency = pic.image_attr.transparency_alpha_byte();
+    let mut extra = pic.raw_picture_extra.clone();
+    if extra.len() >= 18 {
+        if let Some(last) = extra.last_mut() {
+            *last = transparency;
+        }
+    } else if transparency > 0 {
+        let original_width = if pic.shape_attr.original_width > 0 {
+            pic.shape_attr.original_width
+        } else {
+            pic.crop.right.max(0) as u32
+        };
+        let original_height = if pic.shape_attr.original_height > 0 {
+            pic.shape_attr.original_height
+        } else {
+            pic.crop.bottom.max(0) as u32
+        };
+        extra.extend_from_slice(&original_width.to_le_bytes());
+        extra.extend_from_slice(&original_height.to_le_bytes());
+        extra.push(transparency);
+    }
+    extra
 }
 
 // ============================================================
@@ -1304,43 +1399,12 @@ fn serialize_shape_control(
             ));
             emit_top_level_synthesized_ctrl_data(records);
             // 그룹 컨테이너: SHAPE_COMPONENT + 자식 수 + 자식 ctrl_id 목록 (한컴 호환)
-            {
-                let mut data = serialize_shape_component(0x24636f6e, &group.shape_attr, true); // '$con'
-                                                                                               // 자식 수 (u16)
-                let mut w = ByteWriter::new();
-                w.write_u16(group.children.len() as u16).unwrap();
-                // 각 자식의 ctrl_id (u32)
-                for child in &group.children {
-                    let child_ctrl_id = match child {
-                        ShapeObject::Line(_) => tags::SHAPE_LINE_ID,
-                        ShapeObject::Rectangle(_) => tags::SHAPE_RECT_ID,
-                        ShapeObject::Ellipse(_) => tags::SHAPE_ELLIPSE_ID,
-                        ShapeObject::Arc(_) => tags::SHAPE_ARC_ID,
-                        ShapeObject::Polygon(_) => tags::SHAPE_POLYGON_ID,
-                        ShapeObject::Curve(_) => tags::SHAPE_CURVE_ID,
-                        ShapeObject::Group(_) => tags::CTRL_GEN_SHAPE,
-                        ShapeObject::Picture(_) => tags::SHAPE_PICTURE_ID,
-                        ShapeObject::Chart(c) => c.drawing.shape_attr.ctrl_id,
-                        ShapeObject::Ole(o) => {
-                            if o.drawing.shape_attr.ctrl_id != 0 {
-                                o.drawing.shape_attr.ctrl_id
-                            } else {
-                                tags::SHAPE_OLE_ID
-                            }
-                        }
-                    };
-                    w.write_u32(child_ctrl_id).unwrap();
-                }
-                // instance_id (한컴 호환)
-                w.write_u32(group.common.instance_id).unwrap();
-                data.extend_from_slice(&w.into_bytes());
-                records.push(Record {
-                    tag_id: tags::HWPTAG_SHAPE_COMPONENT,
-                    level: level + 1,
-                    size: 0,
-                    data,
-                });
-            }
+            records.push(Record {
+                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
+                level: level + 1,
+                size: 0,
+                data: group_container_component_data(group, true),
+            });
             emit_ctrl_data(records);
             // 자식 개체 직렬화 (CTRL_HEADER 없이 SHAPE_COMPONENT + 도형별 태그)
             let child_comp_level = level + 2;
@@ -1398,6 +1462,43 @@ fn serialize_shape_control(
             });
         }
     }
+}
+
+/// 그룹('$con') SHAPE_COMPONENT 데이터: 공통 component + 자식 수(u16) +
+/// 자식 ctrl_id 목록(u32[]) + instance_id (한컴 호환). 최상위/중첩 그룹 공용.
+fn group_container_component_data(
+    group: &crate::model::shape::GroupShape,
+    top_level: bool,
+) -> Vec<u8> {
+    use crate::parser::tags;
+
+    let mut data = serialize_shape_component(0x24636f6e, &group.shape_attr, top_level); // '$con'
+    let mut w = ByteWriter::new();
+    w.write_u16(group.children.len() as u16).unwrap();
+    for child in &group.children {
+        let child_ctrl_id = match child {
+            ShapeObject::Line(_) => tags::SHAPE_LINE_ID,
+            ShapeObject::Rectangle(_) => tags::SHAPE_RECT_ID,
+            ShapeObject::Ellipse(_) => tags::SHAPE_ELLIPSE_ID,
+            ShapeObject::Arc(_) => tags::SHAPE_ARC_ID,
+            ShapeObject::Polygon(_) => tags::SHAPE_POLYGON_ID,
+            ShapeObject::Curve(_) => tags::SHAPE_CURVE_ID,
+            ShapeObject::Group(_) => tags::CTRL_GEN_SHAPE,
+            ShapeObject::Picture(_) => tags::SHAPE_PICTURE_ID,
+            ShapeObject::Chart(c) => c.drawing.shape_attr.ctrl_id,
+            ShapeObject::Ole(o) => {
+                if o.drawing.shape_attr.ctrl_id != 0 {
+                    o.drawing.shape_attr.ctrl_id
+                } else {
+                    tags::SHAPE_OLE_ID
+                }
+            }
+        };
+        w.write_u32(child_ctrl_id).unwrap();
+    }
+    w.write_u32(group.common.instance_id).unwrap();
+    data.extend_from_slice(&w.into_bytes());
+    data
 }
 
 /// 그룹 자식 개체 직렬화 (CTRL_HEADER 없이 SHAPE_COMPONENT + 도형별 태그)
@@ -1591,12 +1692,15 @@ fn serialize_group_child(
             });
         }
         ShapeObject::Group(group) => {
-            // 중첩 그룹
+            // [Task #1771] 중첩 그룹: 파서(parse_container_children)·한컴 계약은
+            // "자식 경계 = SHAPE_COMPONENT @ child_level ('$con') + 손자들이 더 깊은
+            // level" 이다. 기존 CONTAINER(0x56) 단독 방출은 경계로 인식되지 않아
+            // 재파스 시 하위 전체가 소실됐다 (3067999: children 710→12).
             records.push(Record {
-                tag_id: tags::HWPTAG_SHAPE_COMPONENT_CONTAINER,
+                tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: comp_level,
                 size: 0,
-                data: serialize_shape_component(tags::CTRL_GEN_SHAPE, &group.shape_attr, false),
+                data: group_container_component_data(group, false),
             });
             for nested_child in &group.children {
                 serialize_group_child(nested_child, comp_level + 1, comp_level + 2, records);
@@ -2119,6 +2223,7 @@ fn serialize_shape_fill(w: &mut ByteWriter, fill: &Fill) {
                 ImageFillMode::TileHorzBottom => 2,
                 ImageFillMode::TileVertLeft => 3,
                 ImageFillMode::TileVertRight => 4,
+                ImageFillMode::Total => 0,
                 ImageFillMode::FitToSize => 5,
                 ImageFillMode::Center => 6,
                 ImageFillMode::CenterTop => 7,

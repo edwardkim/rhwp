@@ -11,7 +11,7 @@ import {
   type NavigationAction,
   type NavigationKeyInput,
 } from './navigation-keymap';
-import type { DocumentPosition, CellPathLike } from '@/core/types';
+import type { DocumentPosition, CellBbox, CellPathLike } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 
 const RHWP_CLIPBOARD_MARKER_RE = /<!--\s*rhwp-studio-clipboard:([A-Za-z0-9._:-]+)\s*-->/;
@@ -62,6 +62,67 @@ function isNestedCellPosition(pos: DocumentPosition): boolean {
   return pos.parentParaIndex !== undefined && (pos.cellPath?.length ?? 0) > 1;
 }
 
+function uniqueCellsInReadingOrder(bboxes: CellBbox[]): CellBbox[] {
+  const seen = new Set<number>();
+  const unique: CellBbox[] = [];
+  for (const bbox of bboxes) {
+    if (seen.has(bbox.cellIdx)) continue;
+    seen.add(bbox.cellIdx);
+    unique.push(bbox);
+  }
+  unique.sort((a, b) => a.row !== b.row ? a.row - b.row : a.col - b.col);
+  return unique;
+}
+
+function tableCellStartPosition(pos: DocumentPosition, cellIndex: number): DocumentPosition {
+  return {
+    sectionIndex: pos.sectionIndex,
+    paragraphIndex: 0,
+    charOffset: 0,
+    parentParaIndex: pos.parentParaIndex,
+    controlIndex: pos.controlIndex,
+    cellIndex,
+    cellParaIndex: 0,
+  };
+}
+
+function insertRowAfterLastTableCellByTab(this: any): boolean {
+  const pos = this.cursor.getPosition() as DocumentPosition;
+  const sec = pos.sectionIndex;
+  const ppi = pos.parentParaIndex;
+  const ci = pos.controlIndex;
+  const currentCellIdx = pos.cellIndex;
+  if (ppi === undefined || ci === undefined || currentCellIdx === undefined) return false;
+  if (isNestedCellPosition(pos)) return false;
+
+  try {
+    const order = uniqueCellsInReadingOrder(this.wasm.getTableCellBboxes(sec, ppi, ci));
+    if (order.length === 0 || order[order.length - 1].cellIdx !== currentCellIdx) {
+      return false;
+    }
+
+    const info = this.wasm.getCellInfo(sec, ppi, ci, currentCellIdx);
+    const insertAfterRow = info.row + Math.max(1, info.rowSpan || 1) - 1;
+    this.executeOperation({
+      kind: 'snapshot',
+      operationType: 'insertTableRow',
+      operation: (wasm: WasmBridge) => {
+        wasm.insertTableRow(sec, ppi, ci, insertAfterRow, true);
+        const nextOrder = uniqueCellsInReadingOrder(wasm.getTableCellBboxes(sec, ppi, ci));
+        const insertedRow = insertAfterRow + 1;
+        const nextCell = nextOrder.find(cell => cell.row === insertedRow)
+          ?? nextOrder.find(cell => cell.row > insertAfterRow)
+          ?? nextOrder[nextOrder.length - 1];
+        return tableCellStartPosition(pos, nextCell?.cellIdx ?? currentCellIdx);
+      },
+    });
+    return true;
+  } catch (error) {
+    console.warn('[InputHandler] 마지막 셀 Tab 행 추가 실패:', error);
+    return false;
+  }
+}
+
 type PictureDeleteRef = {
   sec: number;
   ppi: number;
@@ -108,9 +169,11 @@ function executeNavigationAction(this: any, action: NavigationAction, shiftKey: 
       break;
     case 'lineStart':
       this.cursor.moveToLineStart();
+      this.markCurrentFieldStartOutside?.();
       break;
     case 'lineEnd':
       this.cursor.moveToLineEnd();
+      this.markCurrentFieldEndOutside?.();
       break;
     case 'paragraphBackward':
       this.cursor.moveToParagraphBoundary(-1);
@@ -893,8 +956,8 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       }
       return;
     }
-    // Ctrl+방향키: 셀 크기 조절
-    if ((e.ctrlKey || e.metaKey) && (
+    // Ctrl/Cmd/Alt+방향키: 셀 크기 조절
+    if ((e.ctrlKey || e.metaKey || e.altKey) && (
         e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
         e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
       e.preventDefault();
@@ -937,6 +1000,19 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       this.dispatcher?.dispatch('table:cell-split');
       return;
     }
+    if (e.altKey && !e.ctrlKey && !e.metaKey) {
+      const cmdId = matchShortcut(e, defaultShortcuts);
+      if (cmdId === 'edit:format-copy') {
+        e.preventDefault();
+        this.dispatcher?.dispatch(cmdId);
+        return;
+      }
+    }
+    if (this.cursor.isProtectedCellSelectionMode()) {
+      e.preventDefault();
+      this.textarea.focus();
+      return;
+    }
     // 수정자 키(Shift/Ctrl/Alt/Meta)만 누른 경우 무시
     if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') {
       return;
@@ -958,7 +1034,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
 
   // Alt 조합 단축키 처리
   // - Alt+Backspace → 이전 단어 삭제 (아래 Backspace/Delete case)
-  // - Alt+Delete → 표 안 영역 영역 'table:delete-col' (기존 동작 보존),
+  // - Alt+Delete → 표 안 영역은 'table:delete-row-col' 대화상자,
   //                표 외 영역 영역 다음 단어 삭제 (아래 Backspace/Delete case)
   const isAltWordKey = e.altKey && (
     e.key === 'Backspace' ||
@@ -1038,6 +1114,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     case 'Backspace':
     case 'Delete': {
       e.preventDefault();
+      if (this.isFormMode?.() && e.altKey) return;
       if (this.cursor.hasSelection()) {
         this.deleteSelection();
       } else if (e.altKey) {
@@ -1054,6 +1131,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     }
     case 'Enter': {
       e.preventDefault();
+      if (this.isFormMode?.()) return;
       if (this.cursor.hasSelection()) this.deleteSelection();
       if (e.shiftKey) {
         // Shift+Enter: 강제 줄바꿈 (문단 유지, 줄만 바꿈)
@@ -1089,6 +1167,22 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       } else {
         this.cursor.clearSelection();
       }
+      if (!e.shiftKey && moveH === 1 && this.tryEnterExitedFieldStart?.()) {
+        this.updateCaret();
+        break;
+      }
+      if (!e.shiftKey && moveH === -1 && this.tryEnterExitedFieldEnd?.()) {
+        this.updateCaret();
+        break;
+      }
+      if (!e.shiftKey && moveH === -1 && this.tryExitCurrentFieldStart?.()) {
+        this.updateCaret();
+        break;
+      }
+      if (!e.shiftKey && moveH === 1 && this.tryExitCurrentFieldEnd?.()) {
+        this.updateCaret();
+        break;
+      }
       if (moveH !== null) this.cursor.moveHorizontal(moveH);
       if (moveV !== null) this.cursor.moveVertical(moveV);
       this.updateCaret();
@@ -1120,6 +1214,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
         this.cursor.clearSelection();
         this.cursor.moveToLineStart();
       }
+      this.markCurrentFieldStartOutside?.();
       this.updateCaret();
       if (e.shiftKey) this.updateSelection();
       break;
@@ -1133,17 +1228,33 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
         this.cursor.clearSelection();
         this.cursor.moveToLineEnd();
       }
+      this.markCurrentFieldEndOutside?.();
       this.updateCaret();
       if (e.shiftKey) this.updateSelection();
       break;
     }
     case 'Tab': {
       e.preventDefault();
+      if (this.isFormMode?.()) {
+        this.moveToAdjacentFormField?.(e.shiftKey ? -1 : 1);
+        return;
+      }
+      if (this.cursor.isInCell() && !this.cursor.isInTextBox()) {
+        if (e.shiftKey) {
+          this.cursor.moveToCellPrev();
+        } else if (insertRowAfterLastTableCellByTab.call(this)) {
+          // 마지막 셀 Tab은 한컴처럼 새 줄을 자동 추가하고 새 줄 첫 셀로 이동한다.
+        } else {
+          this.cursor.moveToCellNext();
+        }
+        this.updateCaret();
+        break;
+      }
       if (e.shiftKey) {
         this.applyHangingIndentAtCursor();
         break;
       }
-      // 탭 문자 삽입 (본문·표 셀·글상자 공통)
+      // 탭 문자 삽입 (본문·글상자 공통)
       this.executeOperation({ kind: 'command', command: new InsertTabCommand(this.cursor.getPosition()) });
       break;
     }
@@ -1208,6 +1319,7 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
   switch (e.key.toLowerCase()) {
     case 'backspace': {
       e.preventDefault();
+      if (this.isFormMode?.()) return;
       if (this.cursor.hasSelection()) {
         this.deleteSelection();
       } else if (e.metaKey && !e.ctrlKey) {
@@ -1226,6 +1338,7 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
     case 'delete': {
       if (!e.ctrlKey) break;
       e.preventDefault();
+      if (this.isFormMode?.()) return;
       if (this.cursor.hasSelection()) {
         this.deleteSelection();
       } else {
@@ -1401,6 +1514,10 @@ export function onCopy(this: any, e: ClipboardEvent): void {
 
 export function onCut(this: any, e: ClipboardEvent): void {
   if (!this.active) return;
+  if (this.isFormMode?.()) {
+    e.preventDefault();
+    return;
+  }
 
   // 개체 선택 모드 → 개체 잘라내기 (복사 후 삭제)
   if (this.cursor.isInPictureObjectSelection()) {
@@ -1428,6 +1545,7 @@ export function onCut(this: any, e: ClipboardEvent): void {
 export function onPaste(this: any, e: ClipboardEvent): void {
   if (!this.active) return;
   e.preventDefault();
+  if (this.isFormMode?.()) return;
 
   // 개체/표 선택 모드 해제 후 붙여넣기 진행
   if (this.cursor.isInPictureObjectSelection()) {
@@ -1473,6 +1591,7 @@ export function onPaste(this: any, e: ClipboardEvent): void {
 
     // 내부 클립보드 텍스트 붙여넣기 (서식 보존)
     this.executeOperation({ kind: 'snapshot', operationType: 'pasteInternal', operation: (wasm: WasmBridge) => {
+      this.pastedFieldEndOutsidePending = false;
       if (hasSelection) this.deleteSelection();
       const p = this.cursor.getPosition();
       let result: string;
@@ -1490,6 +1609,9 @@ export function onPaste(this: any, e: ClipboardEvent): void {
       }
       const parsed = JSON.parse(result);
       if (parsed.ok) {
+        if (parsed.containsField === true) {
+          this.pastedFieldEndOutsidePending = true;
+        }
         return positionAfterPasteResult(p, parsed);
       }
       return p;

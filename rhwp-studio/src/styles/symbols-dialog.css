@@ -16,7 +16,7 @@
 
 .sym-label {
   font-size: 12px;
-  color: #333;
+  color: var(--color-text);
   margin-bottom: 3px;
 }
 
@@ -29,8 +29,8 @@
 }
 
 .sym-block-list {
-  border: 1px solid #aab;
-  background: #fff;
+  border: 1px solid var(--ui-border-strong);
+  background: var(--color-surface);
   overflow-y: auto;
   height: 280px;
   font-size: 12px;
@@ -45,11 +45,11 @@
 }
 
 .sym-block-item:hover {
-  background: #e8edf5;
+  background: var(--ui-selected);
 }
 
 .sym-block-item.selected {
-  background: #c5d4f0;
+  background: var(--ui-selected);
   font-weight: 600;
 }
 
@@ -71,8 +71,8 @@
 .sym-code-value {
   font-family: monospace;
   font-size: 12px;
-  background: #fff;
-  border: 1px solid #aab;
+  background: var(--color-surface);
+  border: 1px solid var(--ui-border-strong);
   padding: 1px 6px;
   min-width: 42px;
   text-align: center;
@@ -82,8 +82,8 @@
 .sym-char-grid {
   display: grid;
   grid-template-columns: repeat(16, 1fr);
-  border: 1px solid #aab;
-  background: #fff;
+  border: 1px solid var(--ui-border-strong);
+  background: var(--color-surface);
   overflow-y: auto;
   height: 250px;
   gap: 0;
@@ -97,23 +97,23 @@
   aspect-ratio: 1;
   font-size: 15px;
   cursor: pointer;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--ui-border-subtle);
   box-sizing: border-box;
   user-select: none;
 }
 
 .sym-cell:hover {
-  background: #dfe8f5;
+  background: var(--ui-selected);
 }
 
 .sym-cell.selected {
-  background: #4a7abb;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--ui-text-on-accent);
 }
 
 .sym-cell.empty {
   cursor: default;
-  background: #f5f5f5;
+  background: var(--color-surface-raised);
 }
 
 /* 미리보기 */
@@ -121,8 +121,8 @@
   margin-top: 4px;
   width: 48px;
   height: 48px;
-  border: 1px solid #aab;
-  background: #fff;
+  border: 1px solid var(--ui-border-strong);
+  background: var(--color-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -135,8 +135,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 2px;
-  border: 1px solid #aab;
-  background: #fff;
+  border: 1px solid var(--ui-border-strong);
+  background: var(--color-surface);
   min-height: 30px;
   padding: 3px;
   align-items: center;
@@ -146,12 +146,12 @@
   width: 24px;
   height: 24px;
   font-size: 14px;
-  border-color: #d0d0d0;
+  border-color: var(--ui-border-light);
   aspect-ratio: auto;
 }
 
 .sym-recent-empty {
   font-size: 11px;
-  color: #888;
+  color: var(--color-text-hint);
   padding: 4px 8px;
 }

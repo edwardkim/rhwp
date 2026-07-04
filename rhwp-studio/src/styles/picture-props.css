@@ -1,9 +1,29 @@
 /* ── 개체 속성 대화상자 (picture-props, pp-) ─── */
 .pp-dialog {
-  width: 580px;
+  width: min(675px, calc(100vw - 32px));
+  height: min(720px, calc(100vh - 32px));
+  display: flex;
+  flex-direction: column;
+}
+.pp-dialog .cs-main-row {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.pp-dialog .cs-left-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 .pp-dialog .dialog-body {
-  min-height: 400px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.pp-dialog .dialog-tab-panel {
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 .pp-dialog .dialog-label {
   min-width: 60px;
@@ -27,12 +47,12 @@
 }
 .pp-wrap-btn:hover:not(:disabled) {
   background: var(--color-accent-bg);
-  border-color: #a0b0d8;
+  border-color: var(--accent-hover);
 }
 .pp-wrap-btn.active {
-  background: #dde3f4;
+  background: var(--color-accent-bg-light);
   border-color: var(--color-primary);
-  box-shadow: inset 0 0 0 1px #6182d6;
+  box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 .pp-wrap-btn:disabled {
   opacity: 0.45;
@@ -99,8 +119,8 @@
   justify-content: center;
 }
 .pp-sync-arrow-btn:hover {
-  background: #e0e8f4;
-  border-color: #a0b0d8;
+  background: var(--color-accent-bg-light);
+  border-color: var(--accent-hover);
 }
 
 /* ── 캡션 가로 배치 (그리드 + 속성) ── */
@@ -216,7 +236,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ccc;
+  color: var(--ui-text-disabled);
   font-size: var(--font-size-base);
 }
 
@@ -299,7 +319,7 @@
   justify-content: center;
 }
 .pp-preset-btn:disabled { opacity: 0.5; cursor: default; }
-.pp-preset-btn.active { border-color: #4472c4; background: #e0ecff; }
+.pp-preset-btn.active { border-color: var(--color-primary); background: var(--color-accent-bg-light); }
 
 /* ── 슬라이더 ── */
 .pp-slider {

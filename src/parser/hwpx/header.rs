@@ -62,8 +62,10 @@ pub(crate) fn is_real_strike_shape(shape: &str) -> bool {
 
 /// header.xml의 `<hh:head version="X.Y">` 속성에서 hwpml 스키마 버전을 추출한다.
 ///
-/// HWP3 → HWPX 변환본은 한컴이 hwpml="1.4"로 저장하는 반면, 한컴 한글로 직접
-/// 작성한 HWPX는 hwpml="1.5" 이상이다 (Task #554 진단 결과: 6/6 fixture 100% 정확).
+/// 이 값은 HWPML **스키마 버전**일 뿐 HWP3→HWPX 변환 지표가 아니다. 네이티브 한글2022
+/// HWPX 도 head version "1.4" 로 저장되므로 변환본 판별에 쓰면 안 된다(Task #1608 — 과거
+/// Task #554 의 `== "1.4"` 판별은 오탐지로 제거됨). 현재 용도는 직렬화 무손실을 위한 원본
+/// 버전 보존(`doc_info.hwpml_version`)뿐이다.
 ///
 /// 본 함수는 헤더 root element 만 읽고 즉시 반환하므로 비용이 매우 낮다.
 pub fn parse_hwpx_hwpml_version(xml: &str) -> Option<String> {
@@ -1300,6 +1302,16 @@ fn parse_border_fill(
     doc_info: &mut DocInfo,
 ) -> Result<(), HwpxError> {
     let mut bf = BorderFill::default();
+    for attr in e.attributes().flatten() {
+        if attr.key.as_ref() == b"centerLine" {
+            bf.center_line = parse_center_line(&attr);
+            if bf.center_line == CenterLine::None {
+                bf.attr &= !(1 << 13);
+            } else {
+                bf.attr |= 1 << 13;
+            }
+        }
+    }
 
     if !is_empty_event(e) {
         let mut buf = Vec::new();
@@ -1453,9 +1465,10 @@ fn parse_border_fill(
                                             "CENTER" => ImageFillMode::Center,
                                             "CENTER_TOP" => ImageFillMode::CenterTop,
                                             "CENTER_BOTTOM" => ImageFillMode::CenterBottom,
-                                            "FIT" | "FIT_TO_SIZE" | "STRETCH" | "TOTAL" => {
+                                            "FIT" | "FIT_TO_SIZE" | "STRETCH" => {
                                                 ImageFillMode::FitToSize
                                             }
+                                            "TOTAL" => ImageFillMode::Total,
                                             "TOP_LEFT_ALIGN" => ImageFillMode::LeftTop,
                                             _ => ImageFillMode::TileAll,
                                         };
@@ -1504,18 +1517,33 @@ fn parse_border_fill(
                             // 선 종류가 아니다. 방향 비트(attr bits 2~4)만 설정하고,
                             // 선 종류/굵기/색은 <hh:diagonal> 요소가 전담한다.
                             for attr in ce.attributes().flatten() {
-                                if attr.key.as_ref() == b"type" {
-                                    let code = parse_slash_shape_code(&attr);
-                                    set_diagonal_attr_bits(&mut bf, 2, code);
+                                match attr.key.as_ref() {
+                                    b"type" => {
+                                        let code = parse_slash_shape_code(&attr);
+                                        set_diagonal_attr_bits(&mut bf, 2, code);
+                                    }
+                                    b"Crooked" => set_diagonal_attr_field(
+                                        &mut bf.attr,
+                                        8,
+                                        0x03,
+                                        parse_u16(&attr),
+                                    ),
+                                    b"isCounter" => set_bit(&mut bf.attr, 11, parse_bool(&attr)),
+                                    _ => {}
                                 }
                             }
                         }
                         b"backSlash" => {
                             // backSlash 방향 비트(attr bits 5~7)만 설정.
                             for attr in ce.attributes().flatten() {
-                                if attr.key.as_ref() == b"type" {
-                                    let code = parse_slash_shape_code(&attr);
-                                    set_diagonal_attr_bits(&mut bf, 5, code);
+                                match attr.key.as_ref() {
+                                    b"type" => {
+                                        let code = parse_slash_shape_code(&attr);
+                                        set_diagonal_attr_bits(&mut bf, 5, code);
+                                    }
+                                    b"Crooked" => set_bit(&mut bf.attr, 10, parse_bool(&attr)),
+                                    b"isCounter" => set_bit(&mut bf.attr, 12, parse_bool(&attr)),
+                                    _ => {}
                                 }
                             }
                         }
@@ -1903,6 +1931,7 @@ fn parse_alignment(attr: &quick_xml::events::attributes::Attribute) -> Alignment
         "RIGHT" => Alignment::Right,
         "CENTER" => Alignment::Center,
         "DISTRIBUTE" => Alignment::Distribute,
+        "DISTRIBUTE_SPACE" => Alignment::Justify,
         _ => Alignment::Justify,
     }
 }
@@ -1980,6 +2009,10 @@ fn parse_slash_shape_code(attr: &quick_xml::events::attributes::Attribute) -> u8
     }
 }
 
+fn parse_center_line(attr: &quick_xml::events::attributes::Attribute) -> CenterLine {
+    CenterLine::from_hwpx(&attr_str(attr))
+}
+
 /// HWP5 BORDER_FILL attr 의 대각선 방향 비트 필드를 설정한다.
 /// slash 는 shift=2, backSlash 는 shift=5 위치의 3비트.
 /// `code` 는 [`parse_slash_shape_code`] 가 반환한 3비트 방향 코드.
@@ -1987,6 +2020,21 @@ fn set_diagonal_attr_bits(bf: &mut BorderFill, shift: u16, code: u8) {
     let mask = 0x07u16 << shift;
     bf.attr &= !mask;
     bf.attr |= ((code as u16) & 0x07) << shift;
+}
+
+fn set_diagonal_attr_field(attr: &mut u16, shift: u16, mask_value: u16, value: u16) {
+    let mask = mask_value << shift;
+    *attr &= !mask;
+    *attr |= (value & mask_value) << shift;
+}
+
+fn set_bit(attr: &mut u16, bit: u16, enabled: bool) {
+    let mask = 1u16 << bit;
+    if enabled {
+        *attr |= mask;
+    } else {
+        *attr &= !mask;
+    }
 }
 
 fn parse_border_width(attr: &quick_xml::events::attributes::Attribute) -> u8 {
@@ -2223,13 +2271,21 @@ mod tests {
 
     #[test]
     fn test_parse_alignment() {
-        let xml = r#"<e horizontal="CENTER"/>"#;
-        let mut reader = Reader::from_str(xml);
-        let mut buf = Vec::new();
-        if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
-            for attr in e.attributes().flatten() {
-                if attr.key.as_ref() == b"horizontal" {
-                    assert_eq!(parse_alignment(&attr), Alignment::Center);
+        let cases = [
+            ("CENTER", Alignment::Center),
+            ("DISTRIBUTE", Alignment::Distribute),
+            ("DISTRIBUTE_SPACE", Alignment::Justify),
+        ];
+
+        for (value, expected) in cases {
+            let xml = format!(r#"<e horizontal="{value}"/>"#);
+            let mut reader = Reader::from_str(&xml);
+            let mut buf = Vec::new();
+            if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
+                for attr in e.attributes().flatten() {
+                    if attr.key.as_ref() == b"horizontal" {
+                        assert_eq!(parse_alignment(&attr), expected);
+                    }
                 }
             }
         }
@@ -2603,6 +2659,23 @@ mod tests {
     }
 
     #[test]
+    fn test_img_brush_total_keeps_total_mode() {
+        let bf = parse_single_border_fill(
+            r#"<hh:borderFill id="346">
+                 <hh:fillBrush>
+                   <hc:imgBrush mode="TOTAL" bright="10" contrast="0" effect="REAL_PIC">
+                     <hc:img binaryItemIDRef="image36"/>
+                   </hc:imgBrush>
+                 </hh:fillBrush>
+               </hh:borderFill>"#,
+        );
+
+        let img = bf.fill.image.expect("image brush");
+        assert_eq!(img.fill_mode, ImageFillMode::Total);
+        assert_eq!(img.bin_data_id, 36);
+    }
+
+    #[test]
     fn test_slash_center_without_diagonal_no_line() {
         // #1038 회귀 가드: slash type="CENTER" 만 있고 <hh:diagonal> 가 없으면
         // 방향 비트만 설정되고 diagonal_type 은 0 으로 남아야 한다(대각선 미표시).
@@ -2633,5 +2706,39 @@ mod tests {
         );
         assert_eq!((bf.attr >> 2) & 0x07, 0, "slash 방향 비트 없음");
         assert_eq!(bf.diagonal.diagonal_type, 1, "diagonal SOLID → 선 종류 1");
+    }
+
+    #[test]
+    fn test_center_line_vertical_sets_attr_and_direction() {
+        let bf = parse_single_border_fill(
+            r##"<hh:borderFill id="9" centerLine="VERTICAL">
+                 <hh:slash type="NONE" Crooked="3" isCounter="0"/>
+                 <hh:backSlash type="NONE" Crooked="0" isCounter="0"/>
+                 <hh:diagonal type="SOLID" width="2.0 mm" color="#41C7F4"/>
+               </hh:borderFill>"##,
+        );
+
+        assert_eq!(bf.center_line, CenterLine::Vertical);
+        assert_ne!(bf.attr & (1 << 13), 0, "centerLine != NONE → bit 13 설정");
+        assert_eq!((bf.attr >> 8) & 0x03, 3, "slash Crooked=3 보존");
+        assert_eq!(
+            bf.diagonal.diagonal_type, 1,
+            "중심선도 diagonal 스타일 사용"
+        );
+        assert_eq!(bf.diagonal.color, 0x00F4_C741);
+    }
+
+    #[test]
+    fn test_slash_crooked_preserves_two_bit_value() {
+        let bf = parse_single_border_fill(
+            r##"<hh:borderFill id="5">
+                 <hh:slash type="NONE" Crooked="2" isCounter="0"/>
+                 <hh:backSlash type="CENTER" Crooked="0" isCounter="0"/>
+                 <hh:diagonal type="SOLID" width="0.1 mm" color="#000000"/>
+               </hh:borderFill>"##,
+        );
+
+        assert_eq!((bf.attr >> 8) & 0x03, 2, "Crooked=2 보존");
+        assert_eq!((bf.attr >> 5) & 0x07, 0b010, "backSlash CENTER 보존");
     }
 }

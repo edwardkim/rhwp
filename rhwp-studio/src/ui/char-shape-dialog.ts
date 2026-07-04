@@ -252,12 +252,9 @@ export class CharShapeDialog {
 
     this.overlay.appendChild(this.dialog);
 
-    // Escape / 오버레이 클릭
+    // Escape
     this.overlay.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { e.stopPropagation(); this.hide(); }
-    });
-    this.overlay.addEventListener('mousedown', (e) => {
-      if (e.target === this.overlay) this.hide();
     });
 
     enableDialogDrag(this.dialog, titleBar);

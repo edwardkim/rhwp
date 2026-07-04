@@ -44,18 +44,18 @@
   padding: 6px 10px;
   cursor: pointer;
   font-size: var(--font-size-md);
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--ui-border-subtle);
 }
 .fs-list-item:hover {
-  background: #e8f0fe;
+  background: var(--ui-selected);
 }
 .fs-list-item.selected {
-  background: #1a73e8;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--ui-text-on-accent);
 }
 .fs-list-item.selected .fs-badge {
-  background: rgba(255,255,255,0.3);
-  color: #fff;
+  background: var(--ui-on-accent-overlay);
+  color: var(--ui-text-on-accent);
 }
 
 .fs-badge {
@@ -88,7 +88,7 @@
   font-size: var(--font-size-lg);
   margin-bottom: 10px;
   padding-bottom: 6px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--ui-border-light);
 }
 
 .fs-info-row {
@@ -139,6 +139,6 @@
 
 .fse-sep {
   border: none;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--ui-border-light);
   margin: 8px 0;
 }

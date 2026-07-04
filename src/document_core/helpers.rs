@@ -8,16 +8,19 @@ use crate::model::paragraph::Paragraph;
 use crate::model::path::PathSegment;
 use crate::model::style::BorderLineType;
 
+pub(crate) fn is_treat_as_char_object_control(ctrl: &Control) -> bool {
+    match ctrl {
+        Control::Shape(shape) => shape.common().treat_as_char,
+        Control::Table(table) => table.common.treat_as_char,
+        Control::Picture(picture) => picture.common.treat_as_char,
+        Control::Equation(equation) => equation.common.treat_as_char,
+        _ => false,
+    }
+}
+
 fn is_logical_inline_control(ctrl: &Control) -> bool {
-    matches!(
-        ctrl,
-        Control::Shape(_)
-            | Control::Table(_)
-            | Control::Picture(_)
-            | Control::Equation(_)
-            | Control::Footnote(_)
-            | Control::Endnote(_)
-    )
+    is_treat_as_char_object_control(ctrl)
+        || matches!(ctrl, Control::Footnote(_) | Control::Endnote(_))
 }
 
 /// 문단의 탐색 가능한 텍스트 길이를 반환한다.
@@ -145,6 +148,20 @@ pub(crate) fn find_control_text_positions(para: &Paragraph) -> Vec<usize> {
 /// 반면 커서 이동은 `SectionDef`, `ColumnDef` 같은 구조 컨트롤을 건너뛰고,
 /// Shape/Table/Picture/Equation/Footnote/Endnote 같은 인라인 개체만 한 글자 폭으로 센다.
 pub(crate) fn find_logical_control_positions(para: &Paragraph) -> Vec<usize> {
+    if para.text.is_empty() && para.char_offsets.is_empty() {
+        let mut inline_seen = 0usize;
+        let mut positions = Vec::with_capacity(para.controls.len());
+
+        for ctrl in &para.controls {
+            positions.push(inline_seen);
+            if is_logical_inline_control(ctrl) {
+                inline_seen += 1;
+            }
+        }
+
+        return positions;
+    }
+
     let text_positions = find_control_text_positions(para);
     let text_len = para.text.chars().count();
     let mut inline_seen = 0usize;
@@ -578,6 +595,12 @@ pub(crate) fn parse_para_shape_mods(json: &str) -> crate::model::style::ParaShap
     }
     if let Some(v) = json_i32(json, "koreanBreakUnit") {
         mods.korean_break_unit = Some(v as u8);
+    }
+    if let Some(v) = json_bool(json, "borderConnect") {
+        mods.border_connect = Some(v);
+    }
+    if let Some(v) = json_bool(json, "borderIgnoreMargin") {
+        mods.border_ignore_margin = Some(v);
     }
 
     mods
@@ -1376,6 +1399,18 @@ pub(crate) fn border_fills_equal(
     if a.attr != b.attr {
         return false;
     }
+    if a.center_line != b.center_line {
+        return false;
+    }
+    if a.diagonal.diagonal_type != b.diagonal.diagonal_type {
+        return false;
+    }
+    if a.diagonal.width != b.diagonal.width {
+        return false;
+    }
+    if a.diagonal.color != b.diagonal.color {
+        return false;
+    }
     for i in 0..4 {
         if a.borders[i].line_type != b.borders[i].line_type {
             return false;
@@ -1403,7 +1438,9 @@ mod tests {
     use super::*;
     use crate::model::document::SectionDef;
     use crate::model::footnote::Footnote;
+    use crate::model::image::Picture;
     use crate::model::page::ColumnDef;
+    use crate::model::shape::TextWrap;
 
     #[test]
     fn navigable_text_len_counts_trailing_footnote_marker() {
@@ -1436,5 +1473,56 @@ mod tests {
         assert_eq!(find_logical_control_positions(&para), vec![0, 0, 0, 3]);
         assert_eq!(logical_paragraph_length(&para), 4);
         assert_eq!(navigable_text_len(&para), 4);
+    }
+
+    #[test]
+    fn logical_positions_do_not_double_count_control_only_fallback() {
+        let mut first_picture = Picture::default();
+        first_picture.common.treat_as_char = true;
+        let mut second_picture = Picture::default();
+        second_picture.common.treat_as_char = true;
+
+        let para = Paragraph {
+            text: String::new(),
+            char_offsets: vec![],
+            controls: vec![
+                Control::SectionDef(Box::<SectionDef>::default()),
+                Control::ColumnDef(ColumnDef::default()),
+                Control::Picture(Box::new(first_picture)),
+                Control::Picture(Box::new(second_picture)),
+            ],
+            ..Default::default()
+        };
+
+        assert_eq!(find_control_text_positions(&para), vec![0, 0, 0, 1]);
+        assert_eq!(find_logical_control_positions(&para), vec![0, 0, 0, 1]);
+        assert_eq!(logical_paragraph_length(&para), 2);
+        assert_eq!(navigable_text_len(&para), 2);
+    }
+
+    #[test]
+    fn logical_positions_skip_non_tac_picture_controls() {
+        let mut tac_picture = Picture::default();
+        tac_picture.common.treat_as_char = true;
+        let mut topbottom_picture = Picture::default();
+        topbottom_picture.common.treat_as_char = false;
+        topbottom_picture.common.text_wrap = TextWrap::TopAndBottom;
+
+        let para = Paragraph {
+            text: String::new(),
+            char_offsets: vec![],
+            controls: vec![
+                Control::SectionDef(Box::<SectionDef>::default()),
+                Control::ColumnDef(ColumnDef::default()),
+                Control::Picture(Box::new(topbottom_picture)),
+                Control::Picture(Box::new(tac_picture)),
+            ],
+            ..Default::default()
+        };
+
+        assert_eq!(find_control_text_positions(&para), vec![0, 0, 0, 1]);
+        assert_eq!(find_logical_control_positions(&para), vec![0, 0, 0, 0]);
+        assert_eq!(logical_paragraph_length(&para), 1);
+        assert_eq!(navigable_text_len(&para), 1);
     }
 }

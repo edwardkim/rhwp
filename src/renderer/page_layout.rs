@@ -72,6 +72,13 @@ impl PageLayoutInfo {
         } else {
             (page_def.width, page_def.height)
         };
+        // [Task #1583] 손상/미설정 PageDef(용지 0) 방어 — A4 폴백 (PageAreas 와 동일
+        // 규칙). 방치 시 0-크기 SVG 캔버스로 PDF 변환이 "SVG has an invalid size" 실패.
+        let (width_hwp, height_hwp) = if width_hwp == 0 || height_hwp == 0 {
+            (59528, 84188)
+        } else {
+            (width_hwp, height_hwp)
+        };
         let page_width = hwpunit_to_px(width_hwp as i32, dpi);
         let page_height = hwpunit_to_px(height_hwp as i32, dpi);
 
@@ -158,12 +165,12 @@ impl PageLayoutInfo {
 
     /// 각주 영역을 동적으로 계산하여 레이아웃을 갱신한다.
     ///
-    /// 각주 높이만큼 본문 영역 하단을 축소하고 각주 영역을 설정한다.
+    /// 각주 높이만큼 본문 영역 하단에 각주 영역을 설정한다.
     pub fn update_footnote_area(&mut self, footnote_height: f64) {
         if footnote_height <= 0.0 {
             return;
         }
-        let h = footnote_height.min(self.body_area.height * 0.5); // 본문의 절반까지만
+        let h = footnote_height.min(self.body_area.height);
         self.footnote_area = LayoutRect {
             x: self.body_area.x,
             y: self.body_area.y + self.body_area.height - h,

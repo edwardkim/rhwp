@@ -1,47 +1,110 @@
 /* ─── 디자인 토큰 ───────────────────────────────────── */
 :root {
-  /* 브랜드 */
-  --color-primary: #6182d6;
-  --color-primary-dark: #335095;
-  --color-primary-light: #4a90d9;
-  --color-primary-hover: #a0b0d8;
-  --color-primary-subtle: #748bc9;
-  --color-accent-bg: #e7eaf4;
-  --color-accent-bg-light: #f0f3fa;
+  /* 앱 UI semantic token */
+  --ui-bg: #f0f0f0;
+  --ui-bg-light: #f5f5f5;
+  --ui-surface: #ffffff;
+  --ui-surface-raised: #fafafa;
+  --ui-surface-muted: #e8e8e8;
+  --ui-border: #c0c0c0;
+  --ui-border-light: #d0d0d0;
+  --ui-border-subtle: #d8d8d8;
+  --ui-border-strong: #b4b4b4;
+  --ui-text: #333333;
+  --ui-text-secondary: #555555;
+  --ui-text-muted: #666666;
+  --ui-text-hint: #888888;
+  --ui-text-disabled: #aaaaaa;
+  --ui-text-placeholder: #999999;
+  --ui-text-on-accent: #ffffff;
+  --ui-on-accent-overlay: rgba(255, 255, 255, 0.3);
+  --ui-hover: #e0e0e0;
+  --ui-hover-strong: #dfe4ec;
+  --ui-active: #c8c8c8;
+  --ui-selected: #e8f0fe;
+  --ui-menu-open: #3e62bb;
+  --ui-menu-open-border: #4c73d5;
+  --ui-toolbar-bg-start: #fafafa;
+  --ui-toolbar-bg-end: #f0f0f0;
+  --ui-accent-bg: #e7eaf4;
+  --ui-accent-bg-light: #f0f3fa;
+  --ui-note-bg: #f5f6fa;
+  --ui-note-border: #d0d4e2;
+  --ui-note-text: #444444;
+  --ui-warning-bg: #fffbea;
+  --ui-warning-border: #f0d060;
+  --ui-warning-text: #7a6200;
+  --ui-link: #2563eb;
+  --ui-danger: #c44;
+  --ui-danger-strong: #dc3545;
+  --ui-danger-soft: rgba(220, 53, 69, 0.2);
+  --ui-focus-soft: rgba(74, 144, 217, 0.2);
 
-  /* 표면 */
-  --color-surface: #fff;
-  --color-surface-raised: #fafafa;
-  --color-bg: #f0f0f0;
-  --color-bg-light: #f5f5f5;
+  /* 문서 영역 token: 앱 테마와 문서 렌더를 분리한다. */
+  --doc-workspace: #e0e0e0;
+  --doc-paper: #ffffff;
+  --doc-shadow: rgba(0, 0, 0, 0.2);
 
-  /* 테두리 */
-  --color-border: #c0c0c0;
-  --color-border-light: #d0d0d0;
-  --color-border-lighter: #d8d8d8;
-  --color-border-dark: #b4b4b4;
-  --color-border-input: #ccc;
+  /* 포커스/선택/핸들 */
+  --focus-ring: #4a90d9;
+  --selection-fill: #b8d7ff;
+  --caret-color: #111111;
+  --resize-handle: #3f78d8;
+  --ui-align-icon-filter: none;
+  --ui-icon-sprite-url: url(/images/icon_small_ko.svg);
+  --table-selection-fill: rgba(51, 122, 183, 0.25);
+  --table-selection-stroke: #337ab7;
 
-  /* 텍스트 */
-  --color-text: #333;
-  --color-text-secondary: #555;
-  --color-text-muted: #666;
-  --color-text-hint: #888;
-  --color-text-disabled: #aaa;
-  --color-text-placeholder: #999;
+  /* 눈금자 */
+  --ruler-bg: #d0d0d0;
+  --ruler-body: #ffffff;
+  --ruler-tick: #555555;
+  --ruler-text: #333333;
+  --ruler-marker: #4080c0;
 
-  /* 상호작용 */
-  --color-hover-bg: #e0e0e0;
-  --color-active-bg: #c8c8c8;
-  --color-selected-bg: #e8f0fe;
-  --color-focus-border: #4a90d9;
+  /* 브랜드/강조 */
+  --accent-primary: #6182d6;
+  --accent-strong: #335095;
+  --accent-light: #4a90d9;
+  --accent-hover: #a0b0d8;
+  --accent-subtle: #748bc9;
 
-  /* 그림자 */
+  /* 기존 CSS 호환 alias */
+  --color-primary: var(--accent-primary);
+  --color-primary-dark: var(--accent-strong);
+  --color-primary-light: var(--accent-light);
+  --color-primary-hover: var(--accent-hover);
+  --color-primary-subtle: var(--accent-subtle);
+  --color-accent-bg: var(--ui-accent-bg);
+  --color-accent-bg-light: var(--ui-accent-bg-light);
+
+  --color-surface: var(--ui-surface);
+  --color-surface-raised: var(--ui-surface-raised);
+  --color-bg: var(--ui-bg);
+  --color-bg-light: var(--ui-bg-light);
+
+  --color-border: var(--ui-border);
+  --color-border-light: var(--ui-border-light);
+  --color-border-lighter: var(--ui-border-subtle);
+  --color-border-dark: var(--ui-border-strong);
+  --color-border-input: var(--ui-border-light);
+
+  --color-text: var(--ui-text);
+  --color-text-secondary: var(--ui-text-secondary);
+  --color-text-muted: var(--ui-text-muted);
+  --color-text-hint: var(--ui-text-hint);
+  --color-text-disabled: var(--ui-text-disabled);
+  --color-text-placeholder: var(--ui-text-placeholder);
+
+  --color-hover-bg: var(--ui-hover);
+  --color-active-bg: var(--ui-active);
+  --color-selected-bg: var(--ui-selected);
+  --color-focus-border: var(--focus-ring);
+
   --shadow-dropdown: 2px 2px 8px rgba(0, 0, 0, 0.15);
   --shadow-dialog: 4px 4px 12px rgba(0, 0, 0, 0.2);
   --shadow-light: 2px 2px 6px rgba(0, 0, 0, 0.12);
 
-  /* 오버레이 */
   --overlay-bg: rgba(0, 0, 0, 0.2);
 
   /* 타이포그래피 */
@@ -80,6 +143,77 @@
 
   /* 브레이크포인트 (참조용, 미디어 쿼리에서 직접 사용) */
   /* mobile: ~767px, tablet: 768~1023px, desktop: 1024px~ */
+}
+
+:root[data-theme-effective="dark"] {
+  --ui-bg: #25292f;
+  --ui-bg-light: #2b3037;
+  --ui-surface: #2f343c;
+  --ui-surface-raised: #363c45;
+  --ui-surface-muted: #252a31;
+  --ui-border: #4d5561;
+  --ui-border-light: #596270;
+  --ui-border-subtle: #454d58;
+  --ui-border-strong: #687384;
+  --ui-text: #eef1f5;
+  --ui-text-secondary: #d5dbe3;
+  --ui-text-muted: #b6c0cc;
+  --ui-text-hint: #97a2b1;
+  --ui-text-disabled: #737d8b;
+  --ui-text-placeholder: #8a94a3;
+  --ui-text-on-accent: #ffffff;
+  --ui-on-accent-overlay: rgba(255, 255, 255, 0.24);
+  --ui-hover: #3b424d;
+  --ui-hover-strong: #424b58;
+  --ui-active: #4b5564;
+  --ui-selected: #244b75;
+  --ui-menu-open: #4f78d7;
+  --ui-menu-open-border: #6f96ec;
+  --ui-toolbar-bg-start: #343a43;
+  --ui-toolbar-bg-end: #2b3037;
+  --ui-accent-bg: #263b61;
+  --ui-accent-bg-light: #2d446f;
+  --ui-note-bg: #2d3440;
+  --ui-note-border: #465065;
+  --ui-note-text: #d8dee7;
+  --ui-warning-bg: #433b1d;
+  --ui-warning-border: #7b6b23;
+  --ui-warning-text: #f0dfa0;
+  --ui-link: #8bb8ff;
+  --ui-danger: #ff8c8c;
+  --ui-danger-strong: #ff7373;
+  --ui-danger-soft: rgba(255, 115, 115, 0.22);
+  --ui-focus-soft: rgba(139, 184, 255, 0.24);
+
+  --doc-workspace: #1f2329;
+  --doc-paper: #ffffff;
+  --doc-shadow: rgba(0, 0, 0, 0.5);
+
+  --focus-ring: #8bb8ff;
+  --selection-fill: #315f91;
+  --caret-color: #111111;
+  --resize-handle: #8bb8ff;
+  --ui-align-icon-filter: invert(1) brightness(1.6);
+  --ui-icon-sprite-url: url(/images/icon_small_ko_dark.svg);
+  --table-selection-fill: rgba(139, 184, 255, 0.28);
+  --table-selection-stroke: #8bb8ff;
+
+  --ruler-bg: #2d333b;
+  --ruler-body: var(--ui-surface-raised);
+  --ruler-tick: #c2cad6;
+  --ruler-text: #e3e7ed;
+  --ruler-marker: #8bb8ff;
+
+  --accent-primary: #7fa8ff;
+  --accent-strong: #a9c3ff;
+  --accent-light: #8bb8ff;
+  --accent-hover: #5f78a8;
+  --accent-subtle: #6f8ed6;
+
+  --shadow-dropdown: 2px 2px 12px rgba(0, 0, 0, 0.45);
+  --shadow-dialog: 4px 4px 16px rgba(0, 0, 0, 0.55);
+  --shadow-light: 2px 2px 8px rgba(0, 0, 0, 0.32);
+  --overlay-bg: rgba(0, 0, 0, 0.45);
 }
 
 /* ─── 리셋 ──────────────────────────────────────────── */

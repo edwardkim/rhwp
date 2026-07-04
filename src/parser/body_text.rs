@@ -805,45 +805,17 @@ fn parse_footnote_shape_record(data: &[u8]) -> FootnoteShape {
 
     fs.attr = r.read_u32().unwrap_or(0);
 
-    // attr에서 number_format, numbering, placement 추출
-    let num_fmt = fs.attr & 0xFF;
-    fs.number_format = match num_fmt {
-        0 => crate::model::footnote::NumberFormat::Digit,
-        1 => crate::model::footnote::NumberFormat::CircledDigit,
-        2 => crate::model::footnote::NumberFormat::UpperRoman,
-        3 => crate::model::footnote::NumberFormat::LowerRoman,
-        4 => crate::model::footnote::NumberFormat::UpperAlpha,
-        5 => crate::model::footnote::NumberFormat::LowerAlpha,
-        6 => crate::model::footnote::NumberFormat::CircledUpperAlpha,
-        7 => crate::model::footnote::NumberFormat::CircledLowerAlpha,
-        8 => crate::model::footnote::NumberFormat::HangulSyllable,
-        9 => crate::model::footnote::NumberFormat::CircledHangulSyllable,
-        10 => crate::model::footnote::NumberFormat::HangulJamo,
-        11 => crate::model::footnote::NumberFormat::CircledHangulJamo,
-        12 => crate::model::footnote::NumberFormat::HangulDigit,
-        13 => crate::model::footnote::NumberFormat::HanjaDigit,
-        14 => crate::model::footnote::NumberFormat::CircledHanjaDigit,
-        15 => crate::model::footnote::NumberFormat::HanjaGapEul,
-        16 => crate::model::footnote::NumberFormat::HanjaGapEulHanja,
-        _ => crate::model::footnote::NumberFormat::Digit,
-    };
-    fs.numbering = match (fs.attr >> 8) & 0x03 {
-        1 => crate::model::footnote::FootnoteNumbering::RestartSection,
-        2 => crate::model::footnote::FootnoteNumbering::RestartPage,
-        _ => crate::model::footnote::FootnoteNumbering::Continue,
-    };
-    fs.placement = match (fs.attr >> 8) & 0x03 {
-        1 => crate::model::footnote::FootnotePlacement::BelowText,
-        2 => crate::model::footnote::FootnotePlacement::RightColumn,
-        _ => crate::model::footnote::FootnotePlacement::EachColumn,
-    };
+    // 표 134: bit 8~9는 위치, bit 10~11은 번호 매기기이다.
+    fs.apply_attr_fields_from_raw();
 
     fs.user_char = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
     fs.prefix_char = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
     fs.suffix_char = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
     fs.start_number = r.read_u16().unwrap_or(1);
-    fs.separator_length = r.read_i16().unwrap_or(0);
+    fs.separator_length = r.read_i16().unwrap_or(0) as i32;
     fs.separator_margin_top = r.read_i16().unwrap_or(0);
+    // HWP5 실파일에서는 이 슬롯이 한컴 UI "구분선 위" 값으로 쓰이는 사례가 있다.
+    // HWPX aboveLine 은 separator_margin_top 에 들어오므로 정규화 접근자에서 합친다.
     fs.separator_margin_bottom = r.read_i16().unwrap_or(0);
     fs.note_spacing = r.read_i16().unwrap_or(0);
 

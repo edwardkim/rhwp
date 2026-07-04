@@ -14,6 +14,7 @@ pub mod equation;
 pub(crate) mod equation_tac_flow;
 pub mod float_placement;
 pub mod font_metrics_data;
+pub(crate) mod form_caption;
 pub mod height_cursor;
 pub mod height_measurer;
 pub mod html;
@@ -203,12 +204,27 @@ impl TextStyle {
     /// 시각 bold 소실을 보완하기 위해 SVG 출력 시 font-weight="bold" 강제에
     /// 사용된다.
     pub fn is_visually_bold(&self) -> bool {
-        self.bold || crate::renderer::style_resolver::is_heavy_display_face(&self.font_family)
+        self.bold
+            || crate::renderer::style_resolver::is_heavy_display_face(&self.font_family)
+            || crate::renderer::style_resolver::is_bold_weight_face(&self.font_family)
     }
 
     /// 중고딕 계열(font-weight 500) 여부. SVG/HTML 출력 시 `font-weight: 500` 힌트 삽입에 사용.
     pub fn is_medium_weight(&self) -> bool {
         !self.bold && crate::renderer::style_resolver::is_medium_weight_face(&self.font_family)
+    }
+
+    /// CSS/SVG font-weight hint for fallback rendering.
+    pub fn css_font_weight(&self) -> Option<&'static str> {
+        if self.is_visually_bold() {
+            Some("bold")
+        } else if crate::renderer::style_resolver::is_light_weight_face(&self.font_family) {
+            Some("300")
+        } else if self.is_medium_weight() {
+            Some("500")
+        } else {
+            None
+        }
     }
 }
 
@@ -611,6 +627,31 @@ pub fn corrected_line_metrics(
     }
 }
 
+/// 저장된 순수 텍스트 줄은 `vertsize`에 내부 여백이 포함되어도 한컴의 줄 진행이
+/// `textheight + spacing`에 맞춰지는 사례가 있다. IR 값은 보존하고 렌더/조판용
+/// line height만 낮춘다.
+#[inline]
+pub fn corrected_line_metrics_for_source(
+    raw_lh: f64,
+    raw_text_height: f64,
+    raw_ls: f64,
+    max_fs: f64,
+    ls_type: LineSpacingType,
+    ls_val: f64,
+    use_stored_text_height: bool,
+) -> (f64, f64) {
+    let (lh, ls) = corrected_line_metrics(raw_lh, raw_ls, max_fs, ls_type, ls_val);
+    if use_stored_text_height
+        && raw_text_height > 0.0
+        && raw_text_height < lh
+        && (max_fs <= 0.0 || raw_text_height + 0.5 >= max_fs * 0.8)
+    {
+        (raw_text_height, ls)
+    } else {
+        (lh, ls)
+    }
+}
+
 /// HWP3-origin HWP5 conversions may omit PARA_LINE_SEG for body paragraphs.
 /// The composer then emits synthetic lines with a tiny raw line height. For
 /// those synthetic lines, applying ParaShape's percent line spacing again makes
@@ -694,6 +735,49 @@ pub fn generic_font_class(font_family: &str) -> &'static str {
     "sans-serif"
 }
 
+/// [Task #1745] 텍스트 혼합 anchor 문단의 Square wrap 표 우측 wrap 띠 (cs, sw) HU 도출.
+///
+/// Square wrap(어울림) 표가 텍스트 문단(예: 별표 제목)에 anchor 되면 anchor 문단의
+/// 첫 LINE_SEG 는 전폭 텍스트 줄(cs=0)이라 wrap 띠를 인코딩하지 않는다. 이때 표
+/// geometry(가로 오프셋 + 바깥여백 좌 + 폭 + 바깥여백 우)로 띠 시작 cs 를 계산하고,
+/// 띠 폭은 전폭 줄 너비에서 뺀 나머지로 잡는다 (한글 저장 LINE_SEG 와 정확 일치 —
+/// samples/task1745 cs=45568=45002+283×2, sw=2620=48188−45568).
+///
+/// 기존 케이스(표 단독 anchor — 첫 LINE_SEG 가 이미 띠, cs>0)나 텍스트 없는 anchor,
+/// 좌측 정렬이 아닌 표, 띠 폭이 남지 않는 표는 None (기존 경로 유지).
+pub(crate) fn text_anchor_square_table_strip(
+    para: &crate::model::paragraph::Paragraph,
+) -> Option<(i32, i32)> {
+    let first = para.line_segs.first()?;
+    if first.column_start != 0 {
+        return None;
+    }
+    let full_sw = first.segment_width;
+    if full_sw <= 0 {
+        return None;
+    }
+    let has_real_text = para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+    if !has_real_text {
+        return None;
+    }
+    let cm = para.controls.iter().find_map(|c| match c {
+        crate::model::control::Control::Table(t)
+            if !t.common.treat_as_char
+                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square)
+                && matches!(t.common.horz_align, crate::model::shape::HorzAlign::Left) =>
+        {
+            Some(&t.common)
+        }
+        _ => None,
+    })?;
+    let strip_cs = cm.horizontal_offset as i32
+        + cm.margin.left as i32
+        + cm.width as i32
+        + cm.margin.right as i32;
+    let strip_sw = full_sw - strip_cs;
+    (strip_cs > 0 && strip_sw > 0).then_some((strip_cs, strip_sw))
+}
+
 /// CSS generic fallback 반환 (serif 또는 sans-serif)
 ///
 /// 폰트 이름에 명조/바탕/궁서 등 세리프 계열 키워드가 포함되면 "serif",
@@ -717,6 +801,16 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     }
     // 고정폭 키워드
     let lower = font_family.to_ascii_lowercase();
+    if (font_family.contains("KoPub돋움체") || lower.contains("kopub dotum"))
+        && (font_family.contains("Light") || lower.contains("light"))
+    {
+        return "'Noto Sans KR ExtraLight','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard','HCR Batang Ext-B','함초롬바탕 확장B','HCR Batang Ext','함초롬바탕 확장','HCR Batang','함초롬바탕','Source Han Serif K Old Hangul',sans-serif";
+    }
+    // KoPub Batang uses "바탕체" in the family name, but it is a proportional
+    // serif publication face, not the Windows fixed-width BatangChe face.
+    if font_family.contains("KoPub바탕체") || lower.contains("kopub batang") {
+        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang Ext-B','함초롬바탕 확장B','HCR Batang Ext','함초롬바탕 확장','HCR Batang','함초롬바탕','Source Han Serif K Old Hangul',serif";
+    }
     if font_family.contains("굴림체")
         || font_family.contains("바탕체")
         || lower.contains("gulimche")
@@ -1121,6 +1215,84 @@ mod tests {
         assert!((h - 1122.5).abs() < 1.0);
     }
 
+    /// [Task #1745] 텍스트 혼합 anchor: 표 geometry 로 wrap 띠 도출
+    #[test]
+    fn test_text_anchor_square_table_strip_derives_from_geometry() {
+        use crate::model::control::Control;
+        use crate::model::paragraph::{LineSeg, Paragraph};
+        use crate::model::shape::TextWrap;
+        use crate::model::table::Table;
+
+        let mut table = Table::default();
+        table.common.treat_as_char = false;
+        table.common.text_wrap = TextWrap::Square;
+        table.common.horizontal_offset = 0;
+        table.common.width = 45002;
+        table.common.margin.left = 283;
+        table.common.margin.right = 283;
+
+        let mut para = Paragraph::default();
+        para.text = "■ 약사법 시행령 [별표 2]".to_string();
+        para.line_segs.push(LineSeg {
+            column_start: 0,
+            segment_width: 48188,
+            ..Default::default()
+        });
+        para.controls.push(Control::Table(Box::new(table)));
+
+        // samples/task1745: cs=45568(=45002+283×2), sw=2620(=48188−45568)
+        assert_eq!(text_anchor_square_table_strip(&para), Some((45568, 2620)));
+    }
+
+    /// [Task #1745] 표 단독 anchor(첫 seg 가 이미 wrap 띠) — None (기존 경로 유지)
+    #[test]
+    fn test_text_anchor_square_table_strip_none_for_table_only_anchor() {
+        use crate::model::control::Control;
+        use crate::model::paragraph::{LineSeg, Paragraph};
+        use crate::model::shape::TextWrap;
+        use crate::model::table::Table;
+
+        let mut table = Table::default();
+        table.common.treat_as_char = false;
+        table.common.text_wrap = TextWrap::Square;
+        table.common.width = 20000;
+
+        // 표 단독 anchor: 첫 LINE_SEG 가 이미 띠 (cs>0)
+        let mut para = Paragraph::default();
+        para.text = " ".to_string();
+        para.line_segs.push(LineSeg {
+            column_start: 20600,
+            segment_width: 27000,
+            ..Default::default()
+        });
+        para.controls.push(Control::Table(Box::new(table.clone())));
+        assert_eq!(text_anchor_square_table_strip(&para), None);
+
+        // 텍스트 없는 anchor — None
+        let mut para2 = Paragraph::default();
+        para2.text = String::new();
+        para2.line_segs.push(LineSeg {
+            column_start: 0,
+            segment_width: 48188,
+            ..Default::default()
+        });
+        para2.controls.push(Control::Table(Box::new(table.clone())));
+        assert_eq!(text_anchor_square_table_strip(&para2), None);
+
+        // 띠 폭이 남지 않는 표(전폭) — None
+        let mut wide = table.clone();
+        wide.common.width = 48188;
+        let mut para3 = Paragraph::default();
+        para3.text = "제목".to_string();
+        para3.line_segs.push(LineSeg {
+            column_start: 0,
+            segment_width: 48188,
+            ..Default::default()
+        });
+        para3.controls.push(Control::Table(Box::new(wide)));
+        assert_eq!(text_anchor_square_table_strip(&para3), None);
+    }
+
     #[test]
     fn test_auto_number_counter() {
         let mut counter = AutoNumberCounter::new();
@@ -1178,12 +1350,21 @@ mod tests {
         assert_eq!(generic_fallback("HY견명조"), serif);
         assert_eq!(generic_fallback("Times New Roman"), serif);
         assert_eq!(generic_fallback("Palatino Linotype"), serif);
+        // KoPub바탕체는 이름에 "바탕체"가 들어가지만 고정폭 BatangChe가 아니라
+        // 비례폭 본문/제목용 세리프 계열이다.
+        assert_eq!(generic_fallback("KoPub바탕체 Light"), serif);
+        assert_eq!(generic_fallback("KoPub바탕체 Medium"), serif);
+        assert_eq!(generic_fallback("KoPub Batang Medium"), serif);
         // 산세리프 계열
         assert_eq!(generic_fallback("함초롬돋움"), sans);
         assert_eq!(generic_fallback("돋움"), sans);
         assert_eq!(generic_fallback("굴림"), sans);
         assert_eq!(generic_fallback("Arial"), sans);
         assert_eq!(generic_fallback("맑은 고딕"), sans);
+        assert!(generic_fallback("KoPub돋움체 Light")
+            .starts_with("'Noto Sans KR ExtraLight','Malgun Gothic'"));
+        assert!(generic_fallback("KoPub Dotum Light")
+            .starts_with("'Noto Sans KR ExtraLight','Malgun Gothic'"));
         // 고정폭 계열
         assert_eq!(generic_fallback("굴림체"), mono);
         assert_eq!(generic_fallback("바탕체"), mono);
@@ -1214,6 +1395,22 @@ mod tests {
         assert!(!is_medium_weight_face("바탕"));
         assert!(!is_medium_weight_face("맑은 고딕"));
         assert!(!is_medium_weight_face(""));
+    }
+
+    #[test]
+    fn test_explicit_face_weight_hints() {
+        let light = TextStyle {
+            font_family: "KoPub돋움체 Light".to_string(),
+            ..Default::default()
+        };
+        assert_eq!(light.css_font_weight(), Some("300"));
+
+        let bold = TextStyle {
+            font_family: "KoPub바탕체 Bold".to_string(),
+            ..Default::default()
+        };
+        assert_eq!(bold.css_font_weight(), Some("bold"));
+        assert!(bold.is_visually_bold());
     }
 
     #[test]

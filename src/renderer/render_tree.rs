@@ -901,6 +901,8 @@ pub struct ImageNode {
     pub brightness: i8,
     /// 명암(대비) (-100 ~ +100)
     pub contrast: i8,
+    /// 그림 개체 전체 불투명도. 1.0=불투명, 0.0=완전 투명.
+    pub opacity: f64,
     /// 텍스트 흐름 wrap 모드 (Task #516, 다층 레이어 분리용).
     /// `None` 또는 `Some(Square/TopAndBottom/Tight/Through)` 는 본문 layer 에 포함되고,
     /// `Some(BehindText)` / `Some(InFrontOfText)` 는 overlay layer 로 분리 후보.
@@ -983,6 +985,7 @@ impl ImageNode {
             effect: ImageEffect::RealPic,
             brightness: 0,
             contrast: 0,
+            opacity: 1.0,
             text_wrap: None,
             external_path: None,
             header_footer_ref: None,

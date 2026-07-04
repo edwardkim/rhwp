@@ -20,16 +20,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #444;
+  color: var(--color-text-secondary);
 }
 .ps-align-btn:hover {
   background: var(--color-accent-bg);
-  border-color: #a0b0d8;
+  border-color: var(--accent-hover);
 }
 .ps-align-btn.active {
-  background: #d0d8f0;
-  border-color: #5070b0;
-  color: #1a3a6a;
+  background: var(--color-accent-bg-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
 }
 .ps-two-col {
   display: grid;
@@ -40,11 +40,11 @@
   margin-top: 8px;
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
-  background: var(--color-surface-raised);
+  background: var(--doc-paper);
   padding: 10px;
   min-height: 56px;
   font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
+  color: #111111;
   line-height: 1.6;
 }
 /* 탭 설정 탭 */
@@ -65,7 +65,7 @@
 .ps-tab-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-base); }
 .ps-tab-table th {
   background: var(--color-bg);
-  border-bottom: 1px solid #d0d0d0;
+  border-bottom: 1px solid var(--ui-border-light);
   padding: 3px 6px;
   text-align: left;
   font-weight: 500;
@@ -74,7 +74,7 @@
 }
 .ps-tab-table td { padding: 2px 6px; cursor: pointer; }
 .ps-tab-table tr:hover { background: var(--color-bg-light); }
-.ps-tab-table tr.selected { background: #cce5ff; }
+.ps-tab-table tr.selected { background: var(--ui-selected); }
 .ps-tab-list-btns {
   display: flex;
   flex-direction: column;
@@ -85,7 +85,7 @@
   min-width: 28px;
   padding: 2px 6px;
   font-size: var(--font-size-md);
-  color: #c00;
+  color: var(--ui-danger);
 }
 
 /* 문단 테두리/배경 탭 */
@@ -94,10 +94,10 @@
 .ps-border-right { flex: 1; display: flex; flex-direction: column; align-items: center; }
 .ps-border-preview {
   width: 140px; height: 120px;
-  border: 1px solid var(--color-border); background: var(--color-surface);
+  border: 1px solid var(--color-border); background: var(--doc-paper);
   display: flex; align-items: center; justify-content: center;
 }
-.ps-border-inner { width: 100px; height: 80px; border: 1px dashed #ccc; }
+.ps-border-inner { width: 100px; height: 80px; border: 1px dashed #d0d0d0; }
 .ps-border-presets { display: flex; gap: 2px; margin-top: 4px; }
 .ps-preset-btn {
   width: 28px; height: 26px;
@@ -106,7 +106,7 @@
   font-size: var(--font-size-base);
   display: inline-flex; align-items: center; justify-content: center;
 }
-.ps-preset-btn:hover { background: #e8e8e8; }
+.ps-preset-btn:hover { background: var(--ui-hover); }
 .ps-spacing-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -122,4 +122,3 @@
   min-width: 62px;
   text-align: right;
 }
-

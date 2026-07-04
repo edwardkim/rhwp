@@ -105,11 +105,7 @@ mod tests {
     fn image_with_wrap(wrap: Option<TextWrap>) -> PaintOp {
         let mut image = ImageNode::new(1, Some(vec![1, 2, 3]));
         image.text_wrap = wrap;
-        PaintOp::Image {
-            bbox: bbox(),
-            image,
-            resolved: None,
-        }
+        PaintOp::image(bbox(), image, None)
     }
 
     #[test]
@@ -122,16 +118,16 @@ mod tests {
 
     #[test]
     fn page_background_replays_on_background_plane() {
-        let op = PaintOp::PageBackground {
-            bbox: bbox(),
-            background: PageBackgroundNode {
+        let op = PaintOp::page_background(
+            bbox(),
+            PageBackgroundNode {
                 background_color: None,
                 border_color: None,
                 border_width: 0.0,
                 gradient: None,
                 image: None,
             },
-        };
+        );
 
         assert_eq!(paint_op_replay_plane(&op), PaintReplayPlane::Background);
     }
@@ -154,10 +150,8 @@ mod tests {
     fn non_layered_ops_replay_on_flow_plane() {
         let plain_image = image_with_wrap(None);
         let top_and_bottom_image = image_with_wrap(Some(TextWrap::TopAndBottom));
-        let vector = PaintOp::Rectangle {
-            bbox: bbox(),
-            rect: RectangleNode::new(0.0, ShapeStyle::default(), None),
-        };
+        let vector =
+            PaintOp::rectangle(bbox(), RectangleNode::new(0.0, ShapeStyle::default(), None));
 
         assert_eq!(paint_op_replay_plane(&plain_image), PaintReplayPlane::Flow);
         assert_eq!(
@@ -169,10 +163,8 @@ mod tests {
 
     #[test]
     fn render_layer_metadata_overrides_non_image_paint_ops() {
-        let vector = PaintOp::Rectangle {
-            bbox: bbox(),
-            rect: RectangleNode::new(0.0, ShapeStyle::default(), None),
-        };
+        let vector =
+            PaintOp::rectangle(bbox(), RectangleNode::new(0.0, ShapeStyle::default(), None));
         let behind_layer = RenderLayerInfo::new(Some(TextWrap::BehindText), 1, 1);
         let front_layer = RenderLayerInfo::new(Some(TextWrap::InFrontOfText), 2, 2);
 
@@ -216,10 +208,10 @@ mod tests {
         let child = LayerNode::leaf(
             bbox(),
             None,
-            vec![PaintOp::Rectangle {
-                bbox: bbox(),
-                rect: RectangleNode::new(0.0, ShapeStyle::default(), None),
-            }],
+            vec![PaintOp::rectangle(
+                bbox(),
+                RectangleNode::new(0.0, ShapeStyle::default(), None),
+            )],
         );
         let group = LayerNode::group(
             bbox(),

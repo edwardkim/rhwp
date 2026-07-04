@@ -279,9 +279,11 @@ fn test_compose_with_ctrl_char_gap() {
 fn test_identify_inline_controls_table() {
     use crate::model::table::Table;
 
+    let mut table = Table::default();
+    table.common.treat_as_char = true;
     let para = Paragraph {
         text: "표 앞 텍스트".to_string(),
-        controls: vec![Control::Table(Box::default())],
+        controls: vec![Control::Table(Box::new(table))],
         ..Default::default()
     };
 
@@ -757,6 +759,32 @@ fn test_reflow_english_word_wrap() {
     assert_eq!(para.line_segs[1].text_start, 6); // "World" 시작
 }
 
+#[test]
+fn test_reflow_condense_shrinks_measured_space_width() {
+    let mut styles = make_styles_with_font_size(10.0);
+    styles.para_styles[0].condense_min_space = 20;
+
+    let mut para = Paragraph {
+        text: "A B ABCDEF".to_string(),
+        char_offsets: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+        char_count: 10,
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    // Natural width is 50px: 8 latin chars at 5px + 2 spaces at 5px.
+    // condense=20 allows each measured space to shrink by 20%, saving 2px.
+    reflow_line_segs(&mut para, 48.0, &styles, 96.0);
+    assert_eq!(para.line_segs.len(), 1);
+}
+
 /// 강제 줄 바꿈: \n에서 즉시 줄 바꿈
 #[test]
 fn test_reflow_forced_line_break() {
@@ -814,7 +842,7 @@ fn test_tokenize_korean_eojeol() {
         char_shape_id: 0,
     }];
 
-    let tokens = tokenize_paragraph(&text, &offsets, &shapes, &styles, 0, 0);
+    let tokens = tokenize_paragraph(&text, &offsets, &shapes, &styles, 0, 1);
     // "가나" (Text) + " " (Space) + "다라" (Text) = 3 tokens
     assert_eq!(tokens.len(), 3);
     assert!(matches!(
@@ -831,6 +859,37 @@ fn test_tokenize_korean_eojeol() {
         BreakToken::Text {
             start_idx: 3,
             end_idx: 5,
+            ..
+        }
+    ));
+}
+
+/// 토크나이저: 한국어 글자 단위 토큰화
+#[test]
+fn test_tokenize_korean_break_word_chars() {
+    let styles = make_styles_with_font_size(16.0);
+    let text: Vec<char> = "가나".chars().collect();
+    let offsets: Vec<u32> = (0..text.len() as u32).collect();
+    let shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id: 0,
+    }];
+
+    let tokens = tokenize_paragraph(&text, &offsets, &shapes, &styles, 0, 0);
+    assert_eq!(tokens.len(), 2);
+    assert!(matches!(
+        tokens[0],
+        BreakToken::Text {
+            start_idx: 0,
+            end_idx: 1,
+            ..
+        }
+    ));
+    assert!(matches!(
+        tokens[1],
+        BreakToken::Text {
+            start_idx: 1,
+            end_idx: 2,
             ..
         }
     ));
@@ -973,5 +1032,30 @@ fn test_677_effective_text_for_metrics_preserves_f081c_filler() {
     assert_eq!(
         effective, "\u{F081C}\u{F081C}",
         "U+F081C filler 는 0폭 측정 규칙을 유지하기 위해 원문으로 측정해야 함."
+    );
+}
+
+/// 방점(U+302E/U+302F)은 유니코드 결합문자라 유효 base 없이(줄 시작/공백 뒤)
+/// 셰이핑되면 dotted-circle(U+25CC) placeholder 아티팩트가 생긴다. 렌더 확장
+/// 경로에서 spacing 가운데 점으로 치환해 한컴 정합을 맞춘다. (Task #1735)
+#[test]
+fn test_expand_tone_marks_to_spacing_dot() {
+    // U+302E HANGUL SINGLE DOT TONE MARK → · (U+00B7 MIDDLE DOT)
+    let out = expand_pua_render_text("\u{302E} 각");
+    assert!(!out.contains('\u{302E}'), "원본 방점이 남으면 안 됨");
+    assert!(!out.contains('\u{25CC}'), "dotted-circle 아티팩트 금지");
+    assert_eq!(out, "\u{00B7} 각", "선두 방점은 가운데 점으로 치환");
+
+    // U+302F HANGUL DOUBLE DOT TONE MARK → ⁚ (U+205A TWO DOT PUNCTUATION)
+    let out2 = expand_pua_render_text("\u{302F}가");
+    assert_eq!(out2, "\u{205A}가", "쌍방점은 세로 두 점으로 치환");
+}
+
+#[test]
+fn test_expand_hancom_relationship_line_pua_to_box_drawing() {
+    let out = expand_pua_render_text("\u{F0811}\u{F0817}\u{F081A}");
+    assert_eq!(
+        out, "┌└─",
+        "한컴 관계도 PUA 선문자는 공개 폰트 환경에서 두부가 아닌 box drawing 문자로 표시되어야 함"
     );
 }

@@ -78,6 +78,25 @@ pub fn write_field_end<W: Write>(w: &mut Writer<W>, field_id: u32) -> Result<(),
     empty_tag(w, "hp:fieldEnd", &[("beginIDRef", &id_str)])
 }
 
+/// `<hp:fieldEnd beginIDRef=".." fieldid="..">` — beginIDRef 와 fieldid 동시 방출.
+/// 다단락 필드의 고아 fieldEnd 복원용 (Task #1556). `field_id == 0` 이면 `fieldid` 생략.
+pub fn write_field_end_full<W: Write>(
+    w: &mut Writer<W>,
+    begin_id_ref: u32,
+    field_id: u32,
+) -> Result<(), SerializeError> {
+    let begin_str = begin_id_ref.to_string();
+    if field_id == 0 {
+        return empty_tag(w, "hp:fieldEnd", &[("beginIDRef", &begin_str)]);
+    }
+    let field_str = field_id.to_string();
+    empty_tag(
+        w,
+        "hp:fieldEnd",
+        &[("beginIDRef", &begin_str), ("fieldid", &field_str)],
+    )
+}
+
 // =====================================================================
 // 하이퍼링크 (필드의 특수형) — <hp:fieldBegin type="HYPERLINK"> 변형
 // =====================================================================
@@ -158,7 +177,7 @@ fn field_type_str(t: FieldType) -> &'static str {
         MailMerge => "MAILMERGE",
         CrossRef => "CROSSREF",
         Formula => "FORMULA",
-        ClickHere => "CLICKHERE",
+        ClickHere => "CLICK_HERE",
         Summary => "SUMMARY",
         UserInfo => "USERINFO",
         Hyperlink => "HYPERLINK",
@@ -195,7 +214,9 @@ mod tests {
         f.field_id = 42;
         let xml = to_string(|w| write_field_begin(w, &f));
         assert!(xml.contains(r#"id="42""#));
-        assert!(xml.contains(r#"type="CLICKHERE""#));
+        // [#1595] 올바른 HWPX 값은 CLICK_HERE (언더스코어). 종전 "CLICKHERE" 는
+        // 한글이 미인식해 ClickHere placeholder 높이 변동 → 페이지 붕괴(#1589).
+        assert!(xml.contains(r#"type="CLICK_HERE""#), "{xml}");
     }
 
     #[test]

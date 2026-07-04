@@ -106,32 +106,42 @@ test('IME pending nav처럼 key가 Process여도 code로 navigation을 판별한
   assert.equal(action({ key: 'Process', code: 'ArrowRight', altKey: true }, 'mac'), 'wordForward');
 });
 
-test('formatShortcutLabel은 macOS에서 Ctrl을 Command로 치환한다', () => {
-  assert.equal(formatShortcutLabel('Ctrl+S', 'mac'), 'Command+S');
-  assert.equal(formatShortcutLabel('Ctrl+Shift+Z', 'mac'), 'Command+Shift+Z');
-  assert.equal(formatShortcutLabel('Ctrl+Alt+C', 'mac'), 'Command+Alt+C');
-  assert.equal(formatShortcutLabel('Ctrl+M,K', 'mac'), 'Command+M,K');
-  assert.equal(formatShortcutLabel('Ctrl+Enter', 'mac'), 'Command+Enter');
+test('formatShortcutLabel은 macOS에서 modifier를 Apple 기호로 치환한다', () => {
+  assert.equal(formatShortcutLabel('Ctrl+S', 'mac'), '⌘S');
+  assert.equal(formatShortcutLabel('Ctrl+Shift+Z', 'mac'), '⌘⇧Z');
+  assert.equal(formatShortcutLabel('Ctrl+Alt+C', 'mac'), '⌘⌥C');
+  assert.equal(formatShortcutLabel('Ctrl+M,K', 'mac'), '⌘M,K');
+  assert.equal(formatShortcutLabel('Ctrl+Enter', 'mac'), '⌘Enter');
+  assert.equal(formatShortcutLabel('Alt+N', 'mac'), '⌥N');
+  assert.equal(formatShortcutLabel('Alt+Shift+V', 'mac'), '⌥⇧V');
+  assert.equal(formatShortcutLabel('Shift+Alt+J', 'mac'), '⇧⌥J');
+  assert.equal(formatShortcutLabel('Shift+Num +', 'mac'), '⇧Num +');
+});
+
+test('formatShortcutLabel은 한컴 표 줄/칸 단축키를 플랫폼별로 표시한다', () => {
+  assert.equal(formatShortcutLabel('Alt+Enter', 'mac'), '⌥Enter');
+  assert.equal(formatShortcutLabel('Alt+Delete', 'mac'), '⌥Delete');
+  assert.equal(formatShortcutLabel('Alt+Enter', 'other'), 'Alt+Enter');
+  assert.equal(formatShortcutLabel('Alt+Delete', 'other'), 'Alt+Delete');
 });
 
 test('formatShortcutLabel은 Windows/Linux에서 원본을 유지한다', () => {
   assert.equal(formatShortcutLabel('Ctrl+S', 'other'), 'Ctrl+S');
   assert.equal(formatShortcutLabel('Ctrl+Shift+Z', 'other'), 'Ctrl+Shift+Z');
+  assert.equal(formatShortcutLabel('Alt+N', 'other'), 'Alt+N');
+  assert.equal(formatShortcutLabel('Ctrl+Alt+Enter', 'other'), 'Ctrl+Alt+Enter');
 });
 
-test('formatShortcutLabel은 Ctrl이 없는 라벨을 변경하지 않는다', () => {
+test('formatShortcutLabel은 플랫폼 modifier가 없는 라벨을 변경하지 않는다', () => {
   assert.equal(formatShortcutLabel('F7', 'mac'), 'F7');
-  assert.equal(formatShortcutLabel('Alt+G', 'mac'), 'Alt+G');
-  assert.equal(formatShortcutLabel('Shift+Num +', 'mac'), 'Shift+Num +');
   assert.equal(formatShortcutLabel('H', 'mac'), 'H');
-  assert.equal(formatShortcutLabel('Alt+Shift+V', 'mac'), 'Alt+Shift+V');
 });
 
 test('formatShortcutLabel은 테스트 override를 존중한다', () => {
   const globalForTest = globalThis as typeof globalThis & { __rhwpTestPlatformKind?: PlatformKind };
   try {
     globalForTest.__rhwpTestPlatformKind = 'mac';
-    assert.equal(formatShortcutLabel('Ctrl+S'), 'Command+S');
+    assert.equal(formatShortcutLabel('Ctrl+S'), '⌘S');
     globalForTest.__rhwpTestPlatformKind = 'other';
     assert.equal(formatShortcutLabel('Ctrl+S'), 'Ctrl+S');
   } finally {

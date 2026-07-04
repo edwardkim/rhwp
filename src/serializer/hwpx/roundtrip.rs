@@ -157,6 +157,15 @@ pub enum IrDifference {
         section: usize,
         detail: String,
     },
+    /// 섹션 `<hp:visibility>`(첫쪽 머리말/꼬리말/바탕쪽 숨김·테두리·배경·첫 빈줄 숨김)
+    /// 불일치 — secPr visibility 보존 게이트 (#1637).
+    ///
+    /// 직렬화기가 visibility 를 IR 대신 템플릿 고정값으로 방출하면 hideFirstEmptyLine 등이
+    /// 드롭되어 페이지네이션이 달라진다(IR-invisible 결함). `detail` 형식은 `diff_page_def` 동형.
+    SectionVisibility {
+        section: usize,
+        detail: String,
+    },
     /// 표 캡션 불일치 — 캡션 보존 게이트 (#1387).
     ///
     /// `path` 는 `…tbl.caption` 까지의 중첩 경로. `detail` 은 존재 비대칭 또는
@@ -211,6 +220,22 @@ pub enum IrDifference {
     /// 방출(serializer)은 PR #1405 에서 정정됨 — 본 게이트는 회귀 봉인용.
     /// `path` 는 `…tbl`.
     TablePageBreak {
+        section: usize,
+        paragraph: usize,
+        path: String,
+        detail: String,
+    },
+    /// 개체 `holdAnchorAndSO`(IR `prevent_page_break`) 불일치 — 페이지 하단 앵커
+    /// 개체에서 1→0 드롭 시 한글 페이지 붕괴를 유발(#1594). IR-invisible 였던 갭을 봉인.
+    ObjectHoldAnchor {
+        section: usize,
+        paragraph: usize,
+        path: String,
+        detail: String,
+    },
+    /// 개체 `flowWithText`(IR `flow_with_text`) 불일치 — 표(treatAsChar)에서 0→1 드롭 시
+    /// partial-split 임계가 흔들려 페이지네이션이 달라진다(#1637). IR-invisible 였던 갭을 봉인.
+    ObjectFlowWithText {
         section: usize,
         paragraph: usize,
         path: String,
@@ -300,6 +325,9 @@ impl std::fmt::Display for IrDifference {
             SectionPageDef { section, detail } => {
                 write!(f, "section[{}] page_def: {}", section, detail)
             }
+            SectionVisibility { section, detail } => {
+                write!(f, "section[{}] visibility: {}", section, detail)
+            }
             TableCaption {
                 section,
                 paragraph,
@@ -360,6 +388,26 @@ impl std::fmt::Display for IrDifference {
                 "section[{}] paragraph[{}]{} tbl page_break: {}",
                 section, paragraph, path, detail
             ),
+            ObjectHoldAnchor {
+                section,
+                paragraph,
+                path,
+                detail,
+            } => write!(
+                f,
+                "section[{}] paragraph[{}]{} holdAnchorAndSO: {}",
+                section, paragraph, path, detail
+            ),
+            ObjectFlowWithText {
+                section,
+                paragraph,
+                path,
+                detail,
+            } => write!(
+                f,
+                "section[{}] paragraph[{}]{} flowWithText: {}",
+                section, paragraph, path, detail
+            ),
         }
     }
 }
@@ -410,6 +458,36 @@ fn diff_object_comment(a: &str, b: &str) -> Option<String> {
     }
 }
 
+/// 두 개체의 `prevent_page_break`(holdAnchorAndSO) 비교 (#1594). 다르면 detail, 같으면 None.
+fn diff_hold_anchor(
+    a: &crate::model::shape::CommonObjAttr,
+    b: &crate::model::shape::CommonObjAttr,
+) -> Option<String> {
+    if a.prevent_page_break == b.prevent_page_break {
+        None
+    } else {
+        Some(format!(
+            "expected={} actual={}",
+            a.prevent_page_break, b.prevent_page_break
+        ))
+    }
+}
+
+/// 두 개체의 `flow_with_text`(flowWithText) 비교 (#1637). 다르면 detail, 같으면 None.
+fn diff_flow_with_text(
+    a: &crate::model::shape::CommonObjAttr,
+    b: &crate::model::shape::CommonObjAttr,
+) -> Option<String> {
+    if a.flow_with_text == b.flow_with_text {
+        None
+    } else {
+        Some(format!(
+            "expected={} actual={}",
+            a.flow_with_text, b.flow_with_text
+        ))
+    }
+}
+
 /// HWPX 바이트 → parse → serialize → parse → 원본 IR과 비교.
 pub fn roundtrip_ir_diff(hwpx_bytes: &[u8]) -> Result<IrDiff, SerializeError> {
     let doc1 = parse_hwpx(hwpx_bytes)
@@ -454,6 +532,13 @@ pub fn diff_documents(a: &Document, b: &Document) -> IrDiff {
             &b.sections[i].section_def.page_def,
         ) {
             diff.push(IrDifference::SectionPageDef { section: i, detail });
+        }
+
+        // 섹션 visibility(hideFirstEmptyLine 등) 비교 (#1637) — secPr visibility 보존 게이트.
+        if let Some(detail) =
+            diff_visibility(&a.sections[i].section_def, &b.sections[i].section_def)
+        {
+            diff.push(IrDifference::SectionVisibility { section: i, detail });
         }
 
         // 문단별 char_shapes 시퀀스 비교 (#1378) — run 분할 보존 게이트.
@@ -627,6 +712,41 @@ fn diff_page_def(
             a.binding, b.binding
         ));
     }
+    if parts.is_empty() {
+        None
+    } else {
+        Some(parts.join("; "))
+    }
+}
+
+/// 섹션 `<hp:visibility>` 플래그 비교 (#1637) — secPr visibility 보존 게이트.
+///
+/// IR(SectionDef)에 보존되는 6필드만 비교한다(hideFirstPageNum·showLineNumber 는
+/// 파서가 IR 에 적재하지 않으므로 제외). 직렬화기가 visibility 를 IR 로 방출하지 않으면
+/// (특히 hide_empty_line) 페이지네이션이 달라지는 IR-invisible 결함을 게이트화한다.
+fn diff_visibility(
+    a: &crate::model::document::SectionDef,
+    b: &crate::model::document::SectionDef,
+) -> Option<String> {
+    let mut parts: Vec<String> = Vec::new();
+    macro_rules! cmp_field {
+        ($field:ident) => {
+            if a.$field != b.$field {
+                parts.push(format!(
+                    "{}: expected={} actual={}",
+                    stringify!($field),
+                    a.$field,
+                    b.$field
+                ));
+            }
+        };
+    }
+    cmp_field!(hide_header);
+    cmp_field!(hide_footer);
+    cmp_field!(hide_master_page);
+    cmp_field!(hide_border);
+    cmp_field!(hide_fill);
+    cmp_field!(hide_empty_line);
     if parts.is_empty() {
         None
     } else {
@@ -936,6 +1056,24 @@ fn diff_paragraph_char_shapes(
                         detail: format!("expected={:?} actual={:?}", ta.page_break, tb.page_break),
                     });
                 }
+                // [#1594] holdAnchorAndSO 보존 게이트 — 페이지 하단 앵커 개체 붕괴 봉인.
+                if let Some(detail) = diff_hold_anchor(&ta.common, &tb.common) {
+                    diff.push(IrDifference::ObjectHoldAnchor {
+                        section,
+                        paragraph,
+                        path: format!("{path}/ctrl[{ci}]tbl"),
+                        detail,
+                    });
+                }
+                // [#1637] flowWithText 보존 게이트 — 표 partial-split 임계 변동 봉인.
+                if let Some(detail) = diff_flow_with_text(&ta.common, &tb.common) {
+                    diff.push(IrDifference::ObjectFlowWithText {
+                        section,
+                        paragraph,
+                        path: format!("{path}/ctrl[{ci}]tbl"),
+                        detail,
+                    });
+                }
                 for (cell_i, (cea, ceb)) in ta.cells.iter().zip(tb.cells.iter()).enumerate() {
                     for (k, (qa, qb)) in
                         cea.paragraphs.iter().zip(ceb.paragraphs.iter()).enumerate()
@@ -991,6 +1129,15 @@ fn diff_paragraph_char_shapes(
                         detail,
                     });
                 }
+                // [#1594] holdAnchorAndSO 보존 게이트.
+                if let Some(detail) = diff_hold_anchor(&pia.common, &pib.common) {
+                    diff.push(IrDifference::ObjectHoldAnchor {
+                        section,
+                        paragraph,
+                        path: format!("{path}/ctrl[{ci}]pic"),
+                        detail,
+                    });
+                }
                 if let (Some(ca), Some(cb)) = (&pia.caption, &pib.caption) {
                     for (k, (qa, qb)) in ca.paragraphs.iter().zip(cb.paragraphs.iter()).enumerate()
                     {
@@ -1006,6 +1153,15 @@ fn diff_paragraph_char_shapes(
                     diff_object_comment(&ea.common.description, &eb.common.description)
                 {
                     diff.push(IrDifference::ObjectComment {
+                        section,
+                        paragraph,
+                        path: format!("{path}/ctrl[{ci}]eq"),
+                        detail,
+                    });
+                }
+                // [#1594] holdAnchorAndSO 보존 게이트.
+                if let Some(detail) = diff_hold_anchor(&ea.common, &eb.common) {
+                    diff.push(IrDifference::ObjectHoldAnchor {
                         section,
                         paragraph,
                         path: format!("{path}/ctrl[{ci}]eq"),
@@ -1942,6 +2098,86 @@ mod tests {
         assert!(diff.is_empty(), "{:?}", diff.differences);
     }
 
+    // ---------- #1637: secPr visibility (hideFirstEmptyLine 등 게이트 동승) ----------
+
+    fn doc_with_visibility(hide_empty_line: bool, hide_header: bool) -> Document {
+        let mut doc = Document::default();
+        let mut section = crate::model::document::Section::default();
+        section.section_def.hide_empty_line = hide_empty_line;
+        section.section_def.hide_header = hide_header;
+        doc.sections.push(section);
+        doc
+    }
+
+    #[test]
+    fn task1637_visibility_in_gate() {
+        // hideFirstEmptyLine 등 visibility 차이는 diff_documents(게이트)에서 검출되어야 한다.
+        let a = doc_with_visibility(true, false);
+        let b = doc_with_visibility(false, false);
+        let diff = diff_documents(&a, &b);
+        assert_eq!(diff.differences.len(), 1, "{:?}", diff.differences);
+        match &diff.differences[0] {
+            IrDifference::SectionVisibility { section, detail } => {
+                assert_eq!(*section, 0);
+                assert_eq!(detail, "hide_empty_line: expected=true actual=false");
+            }
+            other => panic!("SectionVisibility 여야 함: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn task1637_visibility_equal_is_empty() {
+        // 동일 visibility 는 차이 0.
+        let diff = diff_documents(
+            &doc_with_visibility(true, true),
+            &doc_with_visibility(true, true),
+        );
+        assert!(diff.is_empty(), "{:?}", diff.differences);
+    }
+
+    #[test]
+    fn task1637_roundtrip_preserves_hide_empty_line() {
+        // hideFirstEmptyLine="1" 문서의 roundtrip 에서 값 보존 + 게이트 0 (직렬화기
+        // visibility IR 치환 검증). 종전엔 템플릿 고정값 "0" 으로 드롭되어 페이지네이션 변동.
+        // serialize_hwpx 는 HWPX 패키지(ZIP)를 반환하므로 reparse 로 값 보존을 검증한다.
+        let doc = doc_with_visibility(true, true);
+        let out = serialize_hwpx(&doc).expect("serialize");
+        let doc2 = parse_hwpx(&out).expect("reparse");
+        assert!(
+            doc2.sections[0].section_def.hide_empty_line,
+            "hide_empty_line=1 이 roundtrip 에서 보존되어야 한다"
+        );
+        assert!(
+            doc2.sections[0].section_def.hide_header,
+            "hide_header=1 이 roundtrip 에서 보존되어야 한다"
+        );
+        // visibility 축의 게이트 0 (다른 축의 near-empty-doc 직렬화 산물은 본 테스트 범위 밖).
+        assert!(
+            diff_visibility(&doc.sections[0].section_def, &doc2.sections[0].section_def).is_none(),
+            "visibility roundtrip 차이가 없어야 한다"
+        );
+    }
+
+    #[test]
+    fn task1637_table_flow_with_text_in_gate() {
+        // 표 flowWithText 차이는 diff_documents(게이트)에서 ObjectFlowWithText 로 검출.
+        use crate::model::table::Table;
+        let mut ta = Table::default();
+        ta.common.flow_with_text = false;
+        let mut tb = Table::default();
+        tb.common.flow_with_text = true;
+        let a = doc_with_control(crate::model::control::Control::Table(Box::new(ta)));
+        let b = doc_with_control(crate::model::control::Control::Table(Box::new(tb)));
+        let diff = diff_documents(&a, &b);
+        assert!(
+            diff.differences
+                .iter()
+                .any(|d| matches!(d, IrDifference::ObjectFlowWithText { .. })),
+            "표 flowWithText 차이는 게이트에서 검출되어야 한다: {:?}",
+            diff.differences
+        );
+    }
+
     // ---------- #1403: 그림/도형/묶음 캡션 (게이트 동승) ----------
 
     #[test]
@@ -2151,6 +2387,29 @@ mod tests {
         let a = doc_with_control(crate::model::control::Control::Picture(Box::new(pa)));
         let b = doc_with_control(crate::model::control::Control::Picture(Box::new(pb)));
         assert!(diff_documents(&a, &b).is_empty());
+    }
+
+    #[test]
+    fn task1451_legacy_shape_comment_serialize_roundtrip() {
+        // #1451: render_common_shape_xml 경유 도형(polygon 등)의 shapeComment 가
+        // serialize → parse 왕복에서 보존되는지 직접 가드한다.
+        // 기존 task1392 게이트는 IR diff 검출만 하므로, 여기서 "보존 성공" 방향을 가드한다.
+        let mut poly = crate::model::shape::PolygonShape::default();
+        poly.common.description = "다각형입니다.".to_string();
+        let doc = roundtrip_doc_with_control(crate::model::control::Control::Shape(Box::new(
+            crate::model::shape::ShapeObject::Polygon(poly),
+        )));
+
+        let bytes = serialize_hwpx(&doc).expect("serialize");
+        let doc2 = parse_hwpx(&bytes).expect("parse");
+        let desc = match &doc2.sections[0].paragraphs[1].controls[0] {
+            crate::model::control::Control::Shape(s) => match s.as_ref() {
+                crate::model::shape::ShapeObject::Polygon(p) => &p.common.description,
+                other => panic!("Polygon 이어야 함: {other:?}"),
+            },
+            other => panic!("Shape 컨트롤이어야 함: {other:?}"),
+        };
+        assert_eq!(desc, "다각형입니다.", "polygon shapeComment 왕복 보존");
     }
 
     // ---------- #1391: 필드 parameters / MEMO 본문 게이트 동승 ----------

@@ -20,8 +20,9 @@
 </p>
 
 <p align="center">
-  <a href="https://oosmetrics.com/repo/edwardkim/rhwp"><img src="https://api.oosmetrics.com/api/v1/badge/achievement/921c34bc-4dd3-4409-ba2e-2d99c8b4a9b6.svg" alt="Top 2 in WebAssembly by originality - 2026-04-21" /></a>
-  <a href="https://oosmetrics.com/repo/edwardkim/rhwp"><img src="https://api.oosmetrics.com/api/v1/badge/achievement/fd1e3217-b99a-4ec2-8cba-98429f3d91c7.svg" alt="Top 2 in Editors by originality - 2026-04-21" /></a>
+  <a href="https://chromewebstore.google.com/detail/pgakpjflombjmehnebnbpnalhegaanag"><img src="https://img.shields.io/chrome-web-store/v/pgakpjflombjmehnebnbpnalhegaanag?label=Chrome%20Web%20Store&logo=googlechrome&logoColor=white" alt="Chrome Web Store" /></a>
+  <a href="https://microsoftedge.microsoft.com/addons/detail/rhwp/nfkdfobhmanddlhdbclkpoanbccpigcn"><img src="https://img.shields.io/badge/Edge%20Add--ons-Store-0078D7" alt="Edge Add-ons" /></a>
+  <a href="https://addons.mozilla.org/firefox/addon/rhwp-free-hwp-editor/"><img src="https://img.shields.io/amo/v/rhwp-free-hwp-editor?label=Firefox%20Add-ons&logo=firefoxbrowser&logoColor=white" alt="Firefox Add-ons" /></a>
 </p>
 
 <p align="center">
@@ -68,6 +69,41 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 - SVG 내보내기 (CLI) + Canvas 렌더링 (WASM/Web)
 - 웹 에디터 + hwpctl 호환 API (30 Actions, Field API)
 - 1,100+ 테스트
+
+#### v0.7.17 사이클 (2026-06-23)
+
+> v0.7.16 후속 patch — OOXML 차트 렌더 정합 첫 작업, legacy 도형 shapeComment 직렬화,
+> WASM options object API, rhwp-studio 표/그림/커서 편집 정합, 의존성 일괄 업데이트
+
+**렌더링 · 차트**
+- OOXML 차트 7종(3D막대·3D원형·ofPie) 2D 근사 라우팅 + 막대 누적/백분율 보정 (C1a)
+- Text IR v2 폰트 fallback 권위 유지, CanvasKit replay 계약 가드 확장
+
+**저장 계약 · API**
+- legacy 도형(ellipse/arc/polygon/curve/chart/ole) shapeComment 직렬화 누락 정정
+- WASM options object API(`*Ex`) 26종 추가(하위 호환), 소비자 README/매뉴얼 보강
+
+**rhwp-studio · 확장**
+- 표 줄/칸 입력·지우기 회귀 보정, 미저장 문서 자동 백업·복구, 로컬 글꼴 동의, 그림/커서 정합, 표 셀 편집·보호
+- 브라우저 확장 0.2.6: viewer CSP 정정, Chrome 다운로드 interceptor 부작용 제거
+
+#### v0.7.16 사이클 (2026-06-19)
+
+> v0.7.15 후속 patch — HWPX 저장 계약(serializer fidelity) 정밀화, 누름틀 안내문 한컴 호환,
+> rhwp-studio 드래그&드롭 보안 게이트, 렌더·표·그림 정합과 외부 기여자 PR 다수 반영
+
+**HWPX 저장 계약 (serializer fidelity)**
+- 셀·글상자 컨트롤·lineseg·캡션 보존, secPr 여백·본문 단(colPr) IR 치환(템플릿 하드코딩 제거)
+- 그림 크기·MEMO·shapeComment·등록 축·표 pageBreak 보존, DocInfo·numbering 등 무손실 라운드트립 보강
+- 파서 autoNum 폭 일관화, newNum 슬롯 위치 정정, 열거 속성 표면 표기 정합 검사
+
+**한컴 호환 · rhwp-studio**
+- 누름틀(클릭하여 입력) 안내문 command 포맷 정정 — 한컴 편집기 안내문 바인딩 해소
+- 드래그&드롭 로컬 파일 로딩 보안 게이트(모달 확인 opt-in, 확장/웹 공통), 누름틀 편집·다크테마
+
+**렌더링 · 기타**
+- native PDF export API, Text IR v2 폰트 증명 게이트, 미주 높이 SSOT, 회전 셀 그림 배치
+- 차트 샘플 코퍼스 27종 검증 fixture, 인쇄 시 혼합 용지 크기 보존
 
 #### v0.7.15 사이클 (2026-06-06)
 
@@ -327,6 +363,11 @@ v0.7.x 배포 주기 누적 외부 기여자: [@ahnbu](https://github.com/ahnbu)
 - P20 adds glyph payload resource identity keys and native Skia font-construction proof diagnostics. Bitmap, SVG, and color glyph sidecars no longer share a replay/cache identity just because their numeric refs overlap, and native Skia reports missing blob bytes, face-index, and variation blockers before glyph-id replay is enabled.
 - P21 adds report-first renderer baseline sweep artifacts and shared replay-plane helpers so SVG, Canvas2D, CanvasKit, and native Skia compare the same background/behindText/flow/inFrontText plane ordering before the sweep becomes a default CI gate.
 - P22 keeps public Canvas on the existing layer path but reduces the WebCanvas layer adapter: core `PaintOp` leaves are replayed directly instead of being rebuilt as temporary `RenderNode` wrappers. Layer JSON also separates canonical `buildOptions`, `debugOptions`, and replay `outputOptions` metadata while keeping legacy `outputOptions` mirrors for compatibility.
+- P23 promotes SVG-derived PDF export to native `DocumentCore` APIs for single-page, explicit page selection, and full-document export. The CLI `export-pdf` command now uses the same native API surface, and render-diff CI writes a report-only PDF visual diff by rasterizing `export-pdf` output against browser Canvas output. Direct/vector PDF replay remains a follow-up.
+- P24 widens strict bitmap/SVG glyph payload corpus coverage while keeping those payload families behind explicit resource and backend gates.
+- P25 widens exact font replay proof coverage for variation instances, TTC/OTC face indexes, font blob `dataRef`, and digest mismatch while keeping `TextRun` fallback for unproven construction cases.
+- P26 closes guarded Text IR v2 authority gaps for `MixedPerGlyph`, non-horizontal glyph orientation, `glyphTransforms`, and line-break telemetry while keeping `TextRun` fallback as the compatibility path.
+- P27 separates font resolver diagnostics from portable glyph replay proof. CanvasKit/native-style selection now requires matching `fontResources`, blob `dataRef`, interned bytes, and digest agreement before a `Portable` glyph run can be selected.
 - CI covers the native Skia path with `cargo test --features native-skia skia --lib`; the feature is not available on `wasm32` targets.
 - The initial native Skia path is a PNG raster backend with core image/equation/raw-svg replay; full CanvasKit glyph replay, exact native glyph replay, real font blob extraction, complex text shaping, advanced image parity, and native form replay stay as follow-up work.
 - C ABI export is intentionally left for a later PR.
@@ -347,7 +388,7 @@ v0.7.x 배포 주기 누적 외부 기여자: [@ahnbu](https://github.com/ahnbu)
 
 ## npm 패키지 — 웹에서 바로 사용하기
 
-현재 배포 버전은 `@rhwp/core` / `@rhwp/editor` v0.7.15입니다.
+현재 배포 버전은 `@rhwp/core` / `@rhwp/editor` v0.7.17입니다.
 
 ### 에디터 임베드 (3줄)
 

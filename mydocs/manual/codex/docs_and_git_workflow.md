@@ -105,6 +105,10 @@ PR 댓글 톤은 과장하지 않는다. "정말 감사합니다", "정성스러
 - "PR 준비"는 커밋, 검증 기록, PR 본문 초안, 생성 명령 준비까지를 의미한다.
 - `gh pr create` 실행, Open PR 생성, Draft/Open 상태 전환은 별도 승인을 받은 뒤 진행한다.
 - 실수로 승인 없이 PR을 열었으면 작업지시자 지시에 따라 즉시 close하고, 후속 진행은 승인 대기 상태로 되돌린다.
+- PR 직전 전체 CI 성격의 긴 검증(`cargo test --verbose`, `cargo clippy -- -D warnings` 등)은
+  focused test와 visual sweep 결과를 공유한 뒤 작업지시자 승인을 받은 경우에만 실행한다.
+- 작업 전체에 대한 자동 승인 또는 `/Goal` 자동 진행 지시가 있어도 PR CI 전체 테스트 승인을
+  대체하지 않는다. PR CI는 별도 명시 승인이 필요하다.
 
 ## Commit Rules
 

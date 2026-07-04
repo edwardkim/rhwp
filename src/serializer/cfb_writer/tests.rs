@@ -69,6 +69,7 @@ fn test_serialize_hwp_cfb_streams() {
         extra_streams: Vec::new(),
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
+        is_hwpx_variant: false,
     };
 
     let bytes = serialize_hwp(&doc).unwrap();
@@ -112,6 +113,7 @@ fn test_serialize_hwp_compressed() {
         extra_streams: Vec::new(),
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
+        is_hwpx_variant: false,
     };
 
     let bytes = serialize_hwp(&doc).unwrap();
@@ -209,6 +211,7 @@ fn test_full_roundtrip_uncompressed() {
         extra_streams: Vec::new(),
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
+        is_hwpx_variant: false,
     };
 
     // Document → HWP bytes
@@ -287,6 +290,7 @@ fn test_full_roundtrip_compressed() {
         extra_streams: Vec::new(),
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
+        is_hwpx_variant: false,
     };
 
     // Document → HWP bytes (compressed)
@@ -1678,6 +1682,7 @@ fn test_ole_storage_size_prefix_restored() {
         extra_streams: Vec::new(),
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
+        is_hwpx_variant: false,
     };
 
     let bytes = serialize_hwp(&doc).unwrap();
@@ -1763,6 +1768,7 @@ fn test_compressed_ole_storage_payload_is_deflated() {
         extra_streams: Vec::new(),
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
+        is_hwpx_variant: false,
     };
 
     let bytes = serialize_hwp(&doc).unwrap();

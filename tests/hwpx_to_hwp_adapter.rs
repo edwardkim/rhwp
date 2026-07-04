@@ -9,7 +9,7 @@ use rhwp::document_core::converters::hwpx_to_hwp::{
 };
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
-use rhwp::model::document::Document;
+use rhwp::model::document::{Document, Section};
 use rhwp::model::paragraph::Paragraph;
 use rhwp::model::shape::{CommonObjAttr, ShapeObject};
 use rhwp::model::style::FillType;
@@ -631,6 +631,29 @@ fn stage4_page_def_preserved_after_roundtrip() {
         orig_pd.margin_bottom, reload_pd.margin_bottom,
         "margin_bottom 보존"
     );
+}
+
+#[test]
+fn task1654_hide_empty_line_flag_preserved_after_hwp_export_reload() {
+    let mut section = Section::default();
+    section.section_def.hide_empty_line = true;
+    section.section_def.flags &= !0x0008_0000;
+    section.paragraphs.push(Paragraph::default());
+
+    let mut doc = Document {
+        sections: vec![section],
+        ..Default::default()
+    };
+
+    let report = convert_hwpx_to_hwp_ir(&mut doc);
+    assert_eq!(report.section_def_hide_empty_line_flag_materialized, 1);
+
+    let hwp_bytes = rhwp::serializer::serialize_hwp(&doc).expect("HWP 직렬화 실패");
+    let reloaded = DocumentCore::from_bytes(&hwp_bytes).expect("HWP 재로드 실패");
+    let section_def = &reloaded.document().sections[0].section_def;
+
+    assert!(section_def.hide_empty_line);
+    assert_ne!(section_def.flags & 0x0008_0000, 0);
 }
 
 /// Stage 4 핵심 게이트: 어댑터 적용 → 직렬화 → 재로드 시 페이지 수가 HWP 저장 기준과 일치.

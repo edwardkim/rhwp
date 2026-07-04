@@ -2,7 +2,7 @@
 
 use super::super::helpers::{
     color_ref_to_css, find_char_at_x, find_logical_control_positions, has_table_control,
-    navigable_text_len, utf16_pos_to_char_idx, LineInfoResult,
+    is_treat_as_char_object_control, navigable_text_len, utf16_pos_to_char_idx, LineInfoResult,
 };
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
@@ -240,11 +240,7 @@ impl DocumentCore {
         }
 
         fn is_inline_cursor_control(ctrl: &Control) -> bool {
-            match ctrl {
-                Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => true,
-                Control::Table(table) => table.common.treat_as_char,
-                _ => false,
-            }
+            is_treat_as_char_object_control(ctrl)
         }
 
         fn text_offset_after_same_pos_inline_controls(
@@ -383,6 +379,17 @@ impl DocumentCore {
                     let ascent = font_size * 0.8;
                     let caret_y = node.bbox.y + text_run.baseline - ascent;
 
+                    if text_run.text.is_empty() && effective_char_count(text_run) == 0 {
+                        if let Some(char_start) = text_run.char_start {
+                            stops.entry(char_start).or_insert(CursorHit {
+                                page_index,
+                                x: node.bbox.x,
+                                y: caret_y,
+                                height: font_size.max(10.0),
+                            });
+                        }
+                    }
+
                     for (idx, ch) in run_chars.iter().enumerate() {
                         if *ch == '\u{fffc}' {
                             continue;
@@ -489,7 +496,12 @@ impl DocumentCore {
                         let text_mid = *text_y + *text_h / 2.0;
                         text_mid >= y && text_mid <= y + h
                     })
-                    .unwrap_or((y, h.max(10.0)));
+                    .unwrap_or_else(|| {
+                        let fallback_h = 12.0;
+                        let baseline = h * 0.85;
+                        let ascent = fallback_h * 0.8;
+                        (y + (baseline - ascent).max(0.0), fallback_h)
+                    });
 
                 stops.insert(
                     pos,
@@ -500,17 +512,61 @@ impl DocumentCore {
                         height: line_metrics.1,
                     },
                 );
-                stops.insert(
-                    pos + 1,
-                    CursorHit {
-                        page_index,
-                        x: x + w,
-                        y: line_metrics.0,
-                        height: line_metrics.1,
-                    },
-                );
+                stops.entry(pos + 1).or_insert(CursorHit {
+                    page_index,
+                    x: x + w,
+                    y: line_metrics.0,
+                    height: line_metrics.1,
+                });
             }
             inline_controls.sort_by_key(|&(ci, raw_pos, pos, _, _)| (raw_pos, pos, ci));
+
+            if para.text.is_empty()
+                && para.controls.iter().all(|ctrl| {
+                    matches!(ctrl, Control::Equation(_)) && is_treat_as_char_object_control(ctrl)
+                })
+            {
+                let mut equation_controls = para
+                    .controls
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(ci, ctrl)| {
+                        if !matches!(ctrl, Control::Equation(_))
+                            || !is_treat_as_char_object_control(ctrl)
+                        {
+                            return None;
+                        }
+                        let (x, y, w, h) = control_bboxes.get(&ci).copied()?;
+                        let raw_pos = raw_ctrl_positions.get(ci).copied().unwrap_or(ci);
+                        let pos = ctrl_positions.get(ci).copied().unwrap_or(ci);
+                        Some((ci, raw_pos, pos, x, y, w, h))
+                    })
+                    .collect::<Vec<_>>();
+                equation_controls.sort_by_key(|&(ci, raw_pos, pos, _, _, _, _)| (raw_pos, pos, ci));
+
+                for (slot, (_, _, _, x, y, w, h)) in equation_controls.iter().enumerate() {
+                    let fallback_h = 12.0;
+                    let baseline = *h * 0.85;
+                    let ascent = fallback_h * 0.8;
+                    let caret_y = *y + (baseline - ascent).max(0.0);
+                    if offset == slot * 2 {
+                        return Some(CursorHit {
+                            page_index,
+                            x: *x,
+                            y: caret_y,
+                            height: fallback_h,
+                        });
+                    }
+                    if offset == slot * 2 + 1 {
+                        return Some(CursorHit {
+                            page_index,
+                            x: *x + *w,
+                            y: caret_y,
+                            height: fallback_h,
+                        });
+                    }
+                }
+            }
 
             let para_chars: Vec<char> = para.text.chars().collect();
             for pair in inline_controls.windows(2) {
@@ -592,6 +648,7 @@ impl DocumentCore {
             node: &RenderNode,
             sec: usize,
             para: usize,
+            render_para: Option<&Paragraph>,
             offset: usize,
             page_index: u32,
             exact_only: bool,
@@ -632,48 +689,86 @@ impl DocumentCore {
                         // 커서가 이 TextRun 범위 안에 있는지 확인
                         // char_start <= offset <= char_start + char_count
                         if offset >= char_start && offset <= char_start + char_count {
-                            let empty_list_anchor = is_list_para
-                                && char_count == 0
-                                && offset == char_start
-                                && text_run.text.is_empty();
-                            // exact_only 모드: zero-width 앵커(bbox.width==0)만 허용
-                            if empty_list_anchor {
-                                // 빈 번호/글머리표 문단의 body anchor 는 marker 앞쪽 x 에
-                                // 놓일 수 있으므로 fallback 에서 marker 오른쪽 끝으로 보정한다.
-                            } else if exact_only
-                                && !(char_count == 0
-                                    && offset == char_start
-                                    && node.bbox.width == 0.0)
+                            if node.bbox.width <= f64::EPSILON
+                                && !text_run.text.is_empty()
+                                && text_run.text.chars().all(|ch| ch == '\u{fffc}')
                             {
-                                // skip: 이 TextRun은 경계 매칭일 뿐 정확한 앵커가 아님
+                                if let Some(render_para) = render_para {
+                                    let visible: String = render_para
+                                        .text
+                                        .chars()
+                                        .skip(char_start)
+                                        .take(char_count)
+                                        .collect();
+                                    if !visible.is_empty()
+                                        && visible.chars().any(|ch| ch != '\u{fffc}')
+                                    {
+                                        let positions =
+                                            compute_char_positions(&visible, &text_run.style);
+                                        let local_offset = offset - char_start;
+                                        let x_in_run = if local_offset < positions.len() {
+                                            positions[local_offset]
+                                        } else if !positions.is_empty() {
+                                            *positions.last().unwrap()
+                                        } else {
+                                            0.0
+                                        };
+                                        let font_size = text_run.style.font_size;
+                                        let ascent = font_size * 0.8;
+                                        let caret_y = node.bbox.y + text_run.baseline - ascent;
+                                        return Some(CursorHit {
+                                            page_index,
+                                            x: node.bbox.x + x_in_run,
+                                            y: caret_y,
+                                            height: font_size,
+                                        });
+                                    }
+                                }
+                                // 실제 문단 텍스트로 복원할 수 없는 placeholder는 cursor hit에서 제외한다.
                             } else {
-                                let local_offset = offset - char_start;
-                                // PUA 다자리 글자겹침: 커서 위치는 [0.0, bbox.width]
-                                let positions =
-                                    if text_run.char_overlap.is_some() && char_count == 1 {
-                                        vec![0.0, node.bbox.width]
-                                    } else {
-                                        compute_char_positions(&text_run.text, &text_run.style)
-                                    };
-                                let x_in_run = if local_offset < positions.len() {
-                                    positions[local_offset]
-                                } else if !positions.is_empty() {
-                                    *positions.last().unwrap()
+                                let empty_list_anchor = is_list_para
+                                    && char_count == 0
+                                    && offset == char_start
+                                    && text_run.text.is_empty();
+                                // exact_only 모드: zero-width 앵커(bbox.width==0)만 허용
+                                if empty_list_anchor {
+                                    // 빈 번호/글머리표 문단의 body anchor 는 marker 앞쪽 x 에
+                                    // 놓일 수 있으므로 fallback 에서 marker 오른쪽 끝으로 보정한다.
+                                } else if exact_only
+                                    && !(char_count == 0
+                                        && offset == char_start
+                                        && node.bbox.width == 0.0)
+                                {
+                                    // skip: 이 TextRun은 경계 매칭일 뿐 정확한 앵커가 아님
                                 } else {
-                                    0.0
-                                };
-                                // 베이스라인 기반 캐럿 y 계산:
-                                // 같은 줄에 서로 다른 글꼴 크기가 혼재할 때
-                                // 각 글자의 ascent 위치에서 캐럿이 시작되어야 함
-                                let font_size = text_run.style.font_size;
-                                let ascent = font_size * 0.8;
-                                let caret_y = node.bbox.y + text_run.baseline - ascent;
-                                return Some(CursorHit {
-                                    page_index,
-                                    x: node.bbox.x + x_in_run,
-                                    y: caret_y,
-                                    height: font_size,
-                                });
+                                    let local_offset = offset - char_start;
+                                    // PUA 다자리 글자겹침: 커서 위치는 [0.0, bbox.width]
+                                    let positions =
+                                        if text_run.char_overlap.is_some() && char_count == 1 {
+                                            vec![0.0, node.bbox.width]
+                                        } else {
+                                            compute_char_positions(&text_run.text, &text_run.style)
+                                        };
+                                    let x_in_run = if local_offset < positions.len() {
+                                        positions[local_offset]
+                                    } else if !positions.is_empty() {
+                                        *positions.last().unwrap()
+                                    } else {
+                                        0.0
+                                    };
+                                    // 베이스라인 기반 캐럿 y 계산:
+                                    // 같은 줄에 서로 다른 글꼴 크기가 혼재할 때
+                                    // 각 글자의 ascent 위치에서 캐럿이 시작되어야 함
+                                    let font_size = text_run.style.font_size;
+                                    let ascent = font_size * 0.8;
+                                    let caret_y = node.bbox.y + text_run.baseline - ascent;
+                                    return Some(CursorHit {
+                                        page_index,
+                                        x: node.bbox.x + x_in_run,
+                                        y: caret_y,
+                                        height: font_size,
+                                    });
+                                }
                             }
                         }
                     }
@@ -716,6 +811,7 @@ impl DocumentCore {
                     child,
                     sec,
                     para,
+                    render_para,
                     offset,
                     page_index,
                     exact_only,
@@ -749,10 +845,12 @@ impl DocumentCore {
                     }
                 }
             }
+            let render_para_for_cursor = self.get_render_paragraph_ref(section_idx, para_idx).ok();
             let exact_hit = find_cursor_in_node(
                 &tree.root,
                 section_idx,
                 para_idx,
+                render_para_for_cursor,
                 char_offset,
                 page_num,
                 true,
@@ -764,6 +862,7 @@ impl DocumentCore {
                     &tree.root,
                     section_idx,
                     para_idx,
+                    render_para_for_cursor,
                     char_offset,
                     page_num,
                     false,
@@ -789,20 +888,16 @@ impl DocumentCore {
 
                 // char_offset 위치에 인라인 컨트롤이 있는지 확인
                 let inline_ctrl = para.controls.iter().enumerate().find(|(ci, ctrl)| {
-                    matches!(
-                        ctrl,
-                        Control::Shape(_) | Control::Picture(_) | Control::Equation(_)
-                    ) && ctrl_positions.get(*ci).copied() == Some(char_offset)
+                    is_inline_cursor_control(ctrl)
+                        && ctrl_positions.get(*ci).copied() == Some(char_offset)
                         && char_offset != text_len
                 });
                 // 텍스트 범위 밖이지만 navigable 범위 내 (도형이 텍스트 뒤에 있을 때)
                 let beyond_ctrl =
                     if char_offset > text_len && char_offset <= navigable_text_len(para) {
                         para.controls.iter().enumerate().find(|(ci, ctrl)| {
-                            matches!(
-                                ctrl,
-                                Control::Shape(_) | Control::Picture(_) | Control::Equation(_)
-                            ) && ctrl_positions.get(*ci).copied() == Some(char_offset)
+                            is_inline_cursor_control(ctrl)
+                                && ctrl_positions.get(*ci).copied() == Some(char_offset)
                         })
                     } else {
                         None
@@ -993,42 +1088,66 @@ impl DocumentCore {
                     node: &RenderNode,
                     sec: usize,
                     para: usize,
+                    render_para: Option<&Paragraph>,
                     bboxes: &mut Vec<(f64, f64)>,
                 ) {
+                    fn is_caret_control(
+                        render_para: Option<&Paragraph>,
+                        control_index: Option<usize>,
+                    ) -> bool {
+                        let Some(ci) = control_index else {
+                            return false;
+                        };
+                        render_para
+                            .and_then(|para| para.controls.get(ci))
+                            .is_some_and(is_treat_as_char_object_control)
+                    }
+
                     match &node.node_type {
                         RenderNodeType::Line(ln)
                             if ln.section_index == Some(sec) && ln.para_index == Some(para) =>
                         {
-                            bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            if is_caret_control(render_para, ln.control_index) {
+                                bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            }
                         }
                         RenderNodeType::Rectangle(rn)
                             if rn.section_index == Some(sec) && rn.para_index == Some(para) =>
                         {
-                            bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            if is_caret_control(render_para, rn.control_index) {
+                                bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            }
                         }
                         RenderNodeType::Ellipse(en)
                             if en.section_index == Some(sec) && en.para_index == Some(para) =>
                         {
-                            bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            if is_caret_control(render_para, en.control_index) {
+                                bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            }
                         }
                         RenderNodeType::Table(tn)
                             if tn.section_index == Some(sec) && tn.para_index == Some(para) =>
                         {
-                            bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            if is_caret_control(render_para, tn.control_index) {
+                                bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            }
                         }
                         RenderNodeType::Image(im)
                             if im.section_index == Some(sec) && im.para_index == Some(para) =>
                         {
-                            bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            if is_caret_control(render_para, im.control_index) {
+                                bboxes.push((node.bbox.x, node.bbox.x + node.bbox.width));
+                            }
                         }
                         _ => {}
                     }
                     for child in &node.children {
-                        collect_inline_bboxes(child, sec, para, bboxes);
+                        collect_inline_bboxes(child, sec, para, render_para, bboxes);
                     }
                 }
                 let mut bboxes = Vec::new();
-                collect_inline_bboxes(&tree.root, section_idx, para_idx, &mut bboxes);
+                let render_para = self.get_render_paragraph_ref(section_idx, para_idx).ok();
+                collect_inline_bboxes(&tree.root, section_idx, para_idx, render_para, &mut bboxes);
                 bboxes.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
 
                 if char_offset <= bboxes.len() && !bboxes.is_empty() {
@@ -1557,6 +1676,87 @@ impl DocumentCore {
             })
         }
 
+        fn same_cell_context(a: &Option<CellContext>, b: &Option<CellContext>) -> bool {
+            match (a, b) {
+                (None, None) => true,
+                (Some(a), Some(b)) => {
+                    a.parent_para_index == b.parent_para_index
+                        && a.path.len() == b.path.len()
+                        && a.path.iter().zip(&b.path).all(|(a, b)| {
+                            a.control_index == b.control_index
+                                && a.cell_index == b.cell_index
+                                && a.cell_para_index == b.cell_para_index
+                                && a.text_direction == b.text_direction
+                        })
+                }
+                _ => false,
+            }
+        }
+
+        fn inline_image_caret_metrics(y: f64, h: f64) -> (f64, f64) {
+            let fallback_h = 12.0;
+            let baseline = h * 0.85;
+            let ascent = fallback_h * 0.8;
+            (y + (baseline - ascent).max(0.0), fallback_h)
+        }
+
+        fn collect_body_inline_image_hits(
+            core: &DocumentCore,
+            node: &RenderNode,
+            hits: &mut Vec<(usize, usize, usize, f64, f64, f64, f64)>,
+        ) {
+            if let RenderNodeType::Image(ref img) = node.node_type {
+                if img.cell_context.is_none() {
+                    if let (Some(si), Some(pi), Some(ci)) =
+                        (img.section_index, img.para_index, img.control_index)
+                    {
+                        let char_offset = core
+                            .document
+                            .sections
+                            .get(si)
+                            .and_then(|section| section.paragraphs.get(pi))
+                            .and_then(|para| {
+                                let ctrl = para.controls.get(ci)?;
+                                if !is_treat_as_char_object_control(ctrl) {
+                                    return None;
+                                }
+                                find_logical_control_positions(para).get(ci).copied()
+                            });
+                        if let Some(char_offset) = char_offset {
+                            hits.push((
+                                si,
+                                pi,
+                                char_offset,
+                                node.bbox.x,
+                                node.bbox.y,
+                                node.bbox.width,
+                                node.bbox.height,
+                            ));
+                        }
+                    }
+                }
+            }
+
+            for child in &node.children {
+                collect_body_inline_image_hits(core, child, hits);
+            }
+        }
+
+        fn format_body_inline_image_hit(
+            page_num: u32,
+            si: usize,
+            pi: usize,
+            offset: usize,
+            x: f64,
+            y: f64,
+            h: f64,
+        ) -> String {
+            format!(
+                "{{\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":{},\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
+                si, pi, offset, page_num, x, y, h
+            )
+        }
+
         let mut runs: Vec<RunInfo> = Vec::new();
         let mut guide_runs: Vec<GuideRunInfo> = Vec::new();
         let mut cell_bboxes: Vec<CellBboxInfo> = Vec::new();
@@ -1645,6 +1845,46 @@ impl DocumentCore {
             }
         }
 
+        let mut inline_image_hits = Vec::new();
+        collect_body_inline_image_hits(self, &tree.root, &mut inline_image_hits);
+        for (si, pi, char_offset, ix, iy, iw, ih) in inline_image_hits {
+            let (caret_y, caret_h) = inline_image_caret_metrics(iy, ih);
+            let right = ix + iw;
+            if x >= ix && x <= right && y >= iy && y <= iy + ih {
+                let offset = if x > ix + iw / 2.0 {
+                    char_offset + 1
+                } else {
+                    char_offset
+                };
+                let caret_x = if offset == char_offset { ix } else { right };
+                return Ok(format_body_inline_image_hit(
+                    page_num, si, pi, offset, caret_x, caret_y, caret_h,
+                ));
+            }
+            if x >= right && x <= right + caret_h && y >= caret_y && y <= caret_y + caret_h {
+                return Ok(format_body_inline_image_hit(
+                    page_num,
+                    si,
+                    pi,
+                    char_offset + 1,
+                    right,
+                    caret_y,
+                    caret_h,
+                ));
+            }
+            if x <= ix && x >= ix - caret_h && y >= caret_y && y <= caret_y + caret_h {
+                return Ok(format_body_inline_image_hit(
+                    page_num,
+                    si,
+                    pi,
+                    char_offset,
+                    ix,
+                    caret_y,
+                    caret_h,
+                ));
+            }
+        }
+
         // 0. 안내문(guide text) 히트 검사 — 필드 클릭 진입
         // 안내문 위 클릭 시 해당 필드의 시작 위치로 커서를 보낸다.
         for gr in &guide_runs {
@@ -1653,12 +1893,24 @@ impl DocumentCore {
                 && y >= gr.bbox_y
                 && y <= gr.bbox_y + gr.bbox_h
             {
+                let guide_char_offset = runs
+                    .iter()
+                    .find(|run| {
+                        run.section_index == gr.section_index
+                            && run.paragraph_index == gr.paragraph_index
+                            && run.char_count == 0
+                            && same_cell_context(&run.cell_context, &gr.cell_context)
+                            && (run.bbox_x - gr.bbox_x).abs() < 0.5
+                            && (run.bbox_y - gr.bbox_y).abs() < 1.0
+                    })
+                    .map(|run| run.char_start);
                 // 필드 시작 위치 찾기: 해당 문단의 field_ranges에서 검색
                 if let Some(field_hit) = self.find_field_hit_for_guide(
                     gr.section_index,
                     gr.paragraph_index,
                     &gr.cell_context,
                     page_num,
+                    guide_char_offset,
                     gr.bbox_x,
                     gr.bbox_y,
                     gr.bbox_h,
@@ -1758,6 +2010,11 @@ impl DocumentCore {
                             if shape_has_textbox {
                                 // 글상자는 메인 매칭에서 처리 — 0.5 분기 break.
                                 break;
+                            }
+                            if !is_treat_as_char_object_control(ctrl) {
+                                // 자리차지/글 앞으로/글 뒤로 개체는 본문 문자 슬롯이 아니므로
+                                // 그림 bbox 클릭을 커서 앞/뒤 offset으로 변환하지 않는다.
+                                continue;
                             }
                             let ctrl_positions =
                                 crate::document_core::helpers::find_logical_control_positions(para);
@@ -2059,6 +2316,7 @@ impl DocumentCore {
         paragraph_index: usize,
         cell_context: &Option<crate::renderer::layout::CellContext>,
         page_num: u32,
+        guide_char_offset: Option<usize>,
         guide_x: f64,
         guide_y: f64,
         guide_h: f64,
@@ -2082,64 +2340,80 @@ impl DocumentCore {
                 .get(paragraph_index)?
         };
 
-        // 이 문단의 ClickHere 필드 범위 검색
+        let build_hit = |char_offset: usize, field: &crate::model::control::Field| {
+            let base = format!(
+                "\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":{}",
+                section_index, paragraph_index, char_offset,
+            );
+            let cursor_rect = format!(
+                ",\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+                page_num, guide_x, guide_y, guide_h,
+            );
+            let field_info = format!(
+                ",\"isField\":true,\"fieldId\":{},\"fieldType\":\"{}\"",
+                field.field_id,
+                field.field_type_str(),
+            );
+            if let Some(ctx) = cell_context {
+                let outer = &ctx.path[0];
+                let tb = if matches!(
+                    self.document
+                        .sections
+                        .get(section_index)
+                        .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
+                        .and_then(|p| p.controls.get(outer.control_index)),
+                    Some(Control::Shape(_))
+                ) {
+                    ",\"isTextBox\":true"
+                } else {
+                    ""
+                };
+                let path_entries: Vec<String> = ctx
+                    .path
+                    .iter()
+                    .map(|e| {
+                        format!(
+                            "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                            e.control_index, e.cell_index, e.cell_para_index
+                        )
+                    })
+                    .collect();
+                let cell_path = format!(",\"cellPath\":[{}]", path_entries.join(","));
+                format!(
+                    "{{{},\"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}{}{}{}{}}}",
+                    base, ctx.parent_para_index, outer.control_index,
+                    outer.cell_index, outer.cell_para_index,
+                    cell_path, tb, field_info, cursor_rect,
+                )
+            } else {
+                format!("{{{}{}{}}}", base, field_info, cursor_rect)
+            }
+        };
+
+        let mut first_empty_clickhere = None;
+        let mut first_clickhere = None;
+
+        // 안내문은 빈 ClickHere에만 표시되므로 빈 field range를 우선 매칭한다.
         for fr in &para.field_ranges {
             if let Some(Control::Field(field)) = para.controls.get(fr.control_idx) {
                 if field.field_type == FieldType::ClickHere {
-                    // 필드 시작 위치로 커서를 보낸다
-                    let char_offset = fr.start_char_idx;
-                    let base = format!(
-                        "\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":{}",
-                        section_index, paragraph_index, char_offset,
-                    );
-                    let cursor_rect = format!(
-                        ",\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                        page_num, guide_x, guide_y, guide_h,
-                    );
-                    let field_info = format!(
-                        ",\"isField\":true,\"fieldId\":{},\"fieldType\":\"{}\"",
-                        field.field_id,
-                        field.field_type_str(),
-                    );
-                    if let Some(ctx) = cell_context {
-                        let outer = &ctx.path[0];
-                        let tb = if matches!(
-                            self.document
-                                .sections
-                                .get(section_index)
-                                .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
-                                .and_then(|p| p.controls.get(outer.control_index)),
-                            Some(Control::Shape(_))
-                        ) {
-                            ",\"isTextBox\":true"
-                        } else {
-                            ""
-                        };
-                        let path_entries: Vec<String> = ctx
-                            .path
-                            .iter()
-                            .map(|e| {
-                                format!(
-                                    "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
-                                    e.control_index, e.cell_index, e.cell_para_index
-                                )
-                            })
-                            .collect();
-                        let cell_path = format!(",\"cellPath\":[{}]", path_entries.join(","));
-                        return Some(format!(
-                            "{{{},\"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}{}{}{}{}}}",
-                            base, ctx.parent_para_index, outer.control_index,
-                            outer.cell_index, outer.cell_para_index,
-                            cell_path, tb, field_info, cursor_rect,
-                        ));
-                    } else {
-                        return Some(format!("{{{}{}{}}}", base, field_info, cursor_rect));
+                    let is_empty = fr.start_char_idx == fr.end_char_idx;
+                    if is_empty {
+                        if guide_char_offset == Some(fr.start_char_idx) {
+                            return Some(build_hit(fr.start_char_idx, field));
+                        }
+                        if first_empty_clickhere.is_none() {
+                            first_empty_clickhere = Some(build_hit(fr.start_char_idx, field));
+                        }
+                    }
+                    if first_clickhere.is_none() {
+                        first_clickhere = Some(build_hit(fr.start_char_idx, field));
                     }
                 }
             }
         }
 
-        None
+        first_empty_clickhere.or(first_clickhere)
     }
 
     /// 셀의 (col, row, pad_left_px, pad_top_px, pad_bottom_px)를 모델에서 조회한다.

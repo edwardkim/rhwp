@@ -86,6 +86,11 @@ pub enum DocumentEvent {
         ctrl: usize,
         cell: usize,
     },
+    TableCellsTransposed {
+        section: usize,
+        para: usize,
+        ctrl: usize,
+    },
 
     // ── 개체 ──
     PictureInserted {
@@ -240,6 +245,14 @@ impl DocumentEvent {
             } => format!(
                 r#"{{"type":"CellTextChanged","section":{},"para":{},"ctrl":{},"cell":{}}}"#,
                 section, para, ctrl, cell
+            ),
+            DocumentEvent::TableCellsTransposed {
+                section,
+                para,
+                ctrl,
+            } => format!(
+                r#"{{"type":"TableCellsTransposed","section":{},"para":{},"ctrl":{}}}"#,
+                section, para, ctrl
             ),
 
             // 개체

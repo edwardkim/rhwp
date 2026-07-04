@@ -1,7 +1,11 @@
 # Rust
 /target/
 /target-local/
-Cargo.lock
+# 루트 Cargo.lock 은 추적한다 — rhwp 는 bin 산출 패키지라 재현 가능 빌드를 위해
+# 커밋 권장(#1423, Cargo 공식 가이드). 의존성 갱신은 별도 PR 로 관리.
+# bindings/Native(iOS FFI, ios/devel 분기) 는 별개 패키지이며 Linux 메인 환경에서
+# 소스가 drift 되어 빌드가 깨진 상태라 lock 을 추적하지 않는다 — 추후 별도 정리.
+bindings/Native/Cargo.lock
 
 # WebAssembly
 /pkg/
@@ -91,3 +95,7 @@ rhwp-safari/dist/
 rhwp-safari/HWP Viewer/
 rhwp-safari/.DS_Store
 samples/issue836/
+
+# Python 바이트코드 캐시 (tools/render_page_gate.py 등 실행 시 생성)
+__pycache__/
+*.pyc

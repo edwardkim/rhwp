@@ -109,5 +109,8 @@ export function formatShortcutLabel(
   platform: PlatformKind = detectPlatformKind(),
 ): string {
   if (platform !== 'mac') return label;
-  return label.replace(/\bCtrl\b/g, 'Command');
+  return label
+    .replace(/\bCtrl\+/g, '⌘')
+    .replace(/\bAlt\+/g, '⌥')
+    .replace(/\bShift\+/g, '⇧');
 }

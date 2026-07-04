@@ -124,37 +124,37 @@ impl SvgLayerRenderer {
         let node = match op {
             PaintOp::PageBackground { bbox, background } => RenderNode::new(
                 self.take_node_id(source_node_id),
-                RenderNodeType::PageBackground(background.clone()),
+                RenderNodeType::PageBackground(background.as_ref().clone()),
                 *bbox,
             ),
             PaintOp::TextRun { bbox, run } => RenderNode::new(
                 self.take_node_id(source_node_id),
-                RenderNodeType::TextRun(run.clone()),
+                RenderNodeType::TextRun(run.as_ref().clone()),
                 *bbox,
             ),
             PaintOp::FootnoteMarker { bbox, marker } => RenderNode::new(
                 self.take_node_id(source_node_id),
-                RenderNodeType::FootnoteMarker(marker.clone()),
+                RenderNodeType::FootnoteMarker(marker.as_ref().clone()),
                 *bbox,
             ),
             PaintOp::Line { bbox, line } => RenderNode::new(
                 self.take_node_id(source_node_id),
-                RenderNodeType::Line(line.clone()),
+                RenderNodeType::Line(line.as_ref().clone()),
                 *bbox,
             ),
             PaintOp::Rectangle { bbox, rect } => RenderNode::new(
                 self.take_node_id(source_node_id),
-                RenderNodeType::Rectangle(rect.clone()),
+                RenderNodeType::Rectangle(rect.as_ref().clone()),
                 *bbox,
             ),
             PaintOp::Ellipse { bbox, ellipse } => RenderNode::new(
                 self.take_node_id(source_node_id),
-                RenderNodeType::Ellipse(ellipse.clone()),
+                RenderNodeType::Ellipse(ellipse.as_ref().clone()),
                 *bbox,
             ),
             PaintOp::Path { bbox, path } => RenderNode::new(
                 self.take_node_id(source_node_id),
-                RenderNodeType::Path(path.clone()),
+                RenderNodeType::Path(path.as_ref().clone()),
                 *bbox,
             ),
             PaintOp::Image {
@@ -173,22 +173,22 @@ impl SvgLayerRenderer {
             ),
             PaintOp::Equation { bbox, equation } => RenderNode::new(
                 self.take_node_id(source_node_id),
-                RenderNodeType::Equation(equation.clone()),
+                RenderNodeType::Equation(equation.as_ref().clone()),
                 *bbox,
             ),
             PaintOp::FormObject { bbox, form } => RenderNode::new(
                 self.take_node_id(source_node_id),
-                RenderNodeType::FormObject(form.clone()),
+                RenderNodeType::FormObject(form.as_ref().clone()),
                 *bbox,
             ),
             PaintOp::Placeholder { bbox, placeholder } => RenderNode::new(
                 self.take_node_id(source_node_id),
-                RenderNodeType::Placeholder(placeholder.clone()),
+                RenderNodeType::Placeholder(placeholder.as_ref().clone()),
                 *bbox,
             ),
             PaintOp::RawSvg { bbox, raw } => RenderNode::new(
                 self.take_node_id(source_node_id),
-                RenderNodeType::RawSvg(raw.clone()),
+                RenderNodeType::RawSvg(raw.as_ref().clone()),
                 *bbox,
             ),
             PaintOp::GlyphRun { .. }

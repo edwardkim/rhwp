@@ -11,7 +11,11 @@ const DEMO: &str = "/Users/phihu/Downloads/2단_각주_데모.hwp";
 
 #[test]
 fn probe_multipage_endnote_placement() {
-    let data = std::fs::read(DEMO).expect("read demo");
+    // 진단용 probe (assert 없는 dump 전용) — 로컬 데모 파일이 없으면 건너뛴다.
+    let Ok(data) = std::fs::read(DEMO) else {
+        eprintln!("SKIP: demo file not found: {DEMO}");
+        return;
+    };
     let mut core = DocumentCore::from_bytes(&data).expect("parse demo");
 
     println!("=== BEFORE inflate: {} page(s) ===", core.page_count());

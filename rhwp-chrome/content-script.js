@@ -5,6 +5,8 @@
   'use strict';
 
   const HWP_EXTENSIONS = /\.(hwp|hwpx)(\?.*)?$/i;
+  const DOCUMENT_PATH_EXTENSIONS = /\.(hwp|hwpx)$/i;
+  const GITHUB_NON_DOCUMENT_MARKERS = new Set(['edit', 'commits', 'blame', 'tree']);
   const BADGE_CLASS = 'rhwp-badge';
   const HOVER_CLASS = 'rhwp-hover-card';
   const PROCESSED_ATTR = 'data-rhwp-processed';
@@ -121,9 +123,9 @@
 
   // 확장 존재 알림
   document.documentElement.setAttribute('data-hwp-extension', 'rhwp');
-  document.documentElement.setAttribute('data-hwp-extension-version', '0.2.4');
+  document.documentElement.setAttribute('data-hwp-extension-version', '0.2.8');
   window.dispatchEvent(new CustomEvent('hwp-extension-ready', {
-    detail: { name: 'rhwp', version: '0.2.4', capabilities: ['preview', 'edit', 'print'] }
+    detail: { name: 'rhwp', version: '0.2.8', capabilities: ['preview', 'edit', 'print'] }
   }));
 
   // 개발자 도구 주입 (페이지 컨텍스트에 rhwpDev 노출)
@@ -185,10 +187,58 @@
 
   // ─── 링크 감지 ───
 
+  function hasDocumentPath(pathname) {
+    if (typeof pathname !== 'string') return false;
+    try {
+      return DOCUMENT_PATH_EXTENSIONS.test(decodeURIComponent(pathname).toLowerCase());
+    } catch {
+      return DOCUMENT_PATH_EXTENSIONS.test(pathname.toLowerCase());
+    }
+  }
+
+  function classifyDocumentHref(href) {
+    let parsed;
+    try {
+      parsed = new URL(href);
+    } catch {
+      return { status: 'unknown' };
+    }
+
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return { status: 'unknown' };
+    }
+
+    if (parsed.hostname === 'raw.githubusercontent.com') {
+      return hasDocumentPath(parsed.pathname)
+        ? { status: 'openable' }
+        : { status: 'not-document' };
+    }
+
+    if (parsed.hostname === 'github.com') {
+      const segments = parsed.pathname.split('/').filter(Boolean);
+      if (segments.length >= 3) {
+        const marker = segments[2];
+        if (marker === 'blob') {
+          const pathParts = segments.slice(4);
+          return pathParts.length > 0 && hasDocumentPath(pathParts.join('/'))
+            ? { status: 'openable' }
+            : { status: 'not-document' };
+        }
+        if (GITHUB_NON_DOCUMENT_MARKERS.has(marker)) {
+          return { status: 'not-document' };
+        }
+      }
+    }
+
+    return hasDocumentPath(parsed.pathname)
+      ? { status: 'openable' }
+      : { status: 'unknown' };
+  }
+
   function isHwpLink(anchor) {
     if (!anchor.href) return false;
     if (anchor.getAttribute('data-hwp') === 'true') return true;
-    return HWP_EXTENSIONS.test(anchor.href);
+    return classifyDocumentHref(anchor.href).status === 'openable';
   }
 
   function isExplicitHwpLink(anchor) {
@@ -225,14 +275,66 @@
 
   // ─── 호버 미리보기 카드 ───
 
+  const HOVER_SHOW_DELAY_MS = 300;
+  const HOVER_HIDE_DELAY_MS = 200;
   let activeCard = null;
-  let hoverTimeout = null;
+  let activeAnchor = null;
+  let pendingAnchor = null;
+  let showHoverTimeout = null;
+  let hideHoverTimeout = null;
   const thumbnailCache = new Map(); // URL → dataUri 캐시 (content-script 측)
 
-  function showHoverCard(anchor) {
-    if (!settings.hoverPreview) return;
+  function clearShowHoverTimer() {
+    if (showHoverTimeout !== null) {
+      clearTimeout(showHoverTimeout);
+      showHoverTimeout = null;
+    }
+  }
 
-    hideHoverCard();
+  function clearHideHoverTimer() {
+    if (hideHoverTimeout !== null) {
+      clearTimeout(hideHoverTimeout);
+      hideHoverTimeout = null;
+    }
+  }
+
+  function removeActiveHoverCard() {
+    if (activeCard) {
+      if (activeCard.__rhwpHost) {
+        activeCard.__rhwpHost.remove();
+      } else {
+        activeCard.remove();
+      }
+      activeCard = null;
+      activeAnchor = null;
+    }
+  }
+
+  function scheduleHideHoverCard() {
+    clearHideHoverTimer();
+    hideHoverTimeout = setTimeout(() => {
+      hideHoverTimeout = null;
+      hideHoverCard();
+    }, HOVER_HIDE_DELAY_MS);
+  }
+
+  function showHoverCard(anchor) {
+    if (!settings.hoverPreview) {
+      if (pendingAnchor === anchor) pendingAnchor = null;
+      return;
+    }
+    if (pendingAnchor !== anchor) return;
+    if (!anchor.isConnected) {
+      pendingAnchor = null;
+      return;
+    }
+    if (typeof anchor.matches === 'function' && !anchor.matches(':hover')) {
+      pendingAnchor = null;
+      return;
+    }
+
+    clearHideHoverTimer();
+    removeActiveHoverCard();
 
     const { host, card } = createHoverCardShell();
 
@@ -304,6 +406,8 @@
     const rect = anchor.getBoundingClientRect();
     document.body.appendChild(host);
     activeCard = card;
+    activeAnchor = anchor;
+    pendingAnchor = null;
 
     const cardHeight = card.offsetHeight;
     const spaceBelow = window.innerHeight - rect.bottom;
@@ -336,8 +440,8 @@
     host.style.top = `${top}px`;
 
     // 카드에 마우스 올리면 유지
-    card.addEventListener('mouseenter', () => clearTimeout(hoverTimeout));
-    card.addEventListener('mouseleave', () => hideHoverCard());
+    card.addEventListener('mouseenter', () => clearHideHoverTimer());
+    card.addEventListener('mouseleave', () => scheduleHideHoverCard());
 
     // data-hwp-thumbnail이 없으면 캐시 확인 또는 Service Worker에 추출 요청
     if (!thumbnail && anchor.href) {
@@ -359,7 +463,7 @@
           (response) => {
             if (response && response.dataUri) {
               thumbnailCache.set(anchor.href, response);
-              if (activeCard === card) {
+              if (activeCard === card && activeAnchor === anchor) {
                 const thumbDiv = card.querySelector('.rhwp-thumb-loading');
                 if (thumbDiv) {
                   insertThumbnailImg(thumbDiv, response.dataUri);
@@ -367,7 +471,7 @@
               }
             } else {
               thumbnailCache.set(anchor.href, null); // 실패 기록
-              if (activeCard === card) {
+              if (activeCard === card && activeAnchor === anchor) {
                 const thumbDiv = card.querySelector('.rhwp-thumb-loading');
                 if (thumbDiv) thumbDiv.remove();
               }
@@ -379,27 +483,37 @@
   }
 
   function hideHoverCard() {
-    if (activeCard) {
-      if (activeCard.__rhwpHost) {
-        activeCard.__rhwpHost.remove();
-      } else {
-        activeCard.remove();
-      }
-      activeCard = null;
-    }
-    clearTimeout(hoverTimeout);
+    clearShowHoverTimer();
+    clearHideHoverTimer();
+    pendingAnchor = null;
+    removeActiveHoverCard();
   }
 
   function attachHoverEvents(anchor) {
     if (!settings.hoverPreview) return;
 
     anchor.addEventListener('mouseenter', () => {
-      clearTimeout(hoverTimeout); // 이전 디바운스 타이머 취소
-      hideHoverCard(); // 이전 카드 제거
-      hoverTimeout = setTimeout(() => showHoverCard(anchor), 300);
+      clearShowHoverTimer();
+      clearHideHoverTimer();
+      if (activeAnchor === anchor && activeCard) {
+        pendingAnchor = null;
+        return;
+      }
+      pendingAnchor = anchor;
+      removeActiveHoverCard();
+      showHoverTimeout = setTimeout(() => {
+        showHoverTimeout = null;
+        showHoverCard(anchor);
+      }, HOVER_SHOW_DELAY_MS);
     });
     anchor.addEventListener('mouseleave', () => {
-      hoverTimeout = setTimeout(() => hideHoverCard(), 200);
+      if (pendingAnchor === anchor) {
+        pendingAnchor = null;
+      }
+      clearShowHoverTimer();
+      if (activeAnchor === anchor && activeCard) {
+        scheduleHideHoverCard();
+      }
     });
   }
 

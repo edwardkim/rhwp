@@ -17,7 +17,7 @@ use quick_xml::Writer;
 
 use crate::model::document::{DocInfo, DocProperties, Document};
 use crate::model::style::{
-    border_width_mm_str, Alignment, BorderFill, BorderLine, BorderLineType, CharShape,
+    border_width_mm_str, Alignment, BorderFill, BorderLine, BorderLineType, CenterLine, CharShape,
     DiagonalLine, FillType, Font, HeadType, LineSpacingType, Numbering, ParaShape, Style,
     SubstFont, TabDef,
 };
@@ -34,7 +34,10 @@ pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, S
     write_xml_decl(&mut w)?;
 
     // <hh:head> 루트 + 전체 네임스페이스 (parser가 기대하는 접두어 모두 선언)
-    let sec_cnt = doc.doc_properties.section_count.max(1).to_string();
+    // secCnt 는 실제 직렬화하는 섹션 파일 수(`doc.sections`)와 일치해야 한다 (#1557).
+    // doc_properties.section_count 는 파서가 갱신하지 않아 stale(1)일 수 있어, 그대로
+    // 쓰면 secCnt < 실제 섹션 수가 되어 한글이 뒤 구역을 로드하지 않고 페이지가 붕괴한다.
+    let sec_cnt = doc.sections.len().max(1).to_string();
     // HWPML 스키마 버전: 원본 보존값(문서별 상이, 1.2~1.5). 없으면 "1.2" 폴백.
     let hwpml_version = doc.doc_info.hwpml_version.as_deref().unwrap_or("1.2");
     start_tag_attrs(
@@ -79,6 +82,7 @@ pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, S
     write_char_properties(&mut w, &doc.doc_info, ctx)?;
     write_tab_properties(&mut w, &doc.doc_info)?;
     write_numberings(&mut w, &doc.doc_info)?;
+    write_bullets(&mut w, &doc.doc_info)?;
     write_para_properties(&mut w, &doc.doc_info, ctx)?;
     write_styles(&mut w, &doc.doc_info, ctx)?;
     end_tag(&mut w, "hh:refList")?;
@@ -269,7 +273,6 @@ fn write_border_fills<W: Write>(
     doc_info: &DocInfo,
     ctx: &SerializeContext,
 ) -> Result<(), SerializeError> {
-    let _ = ctx;
     if doc_info.border_fills.is_empty() {
         return Ok(());
     }
@@ -281,7 +284,7 @@ fn write_border_fills<W: Write>(
     // HWPX borderFill의 id는 1부터 시작 (관찰값: ref_empty.hwpx).
     // 그러나 rhwp parser는 인덱스 기반으로 저장하므로 id는 배열 인덱스 그대로 사용.
     for (idx, bf) in doc_info.border_fills.iter().enumerate() {
-        write_border_fill(w, idx as u16, bf)?;
+        write_border_fill(w, idx as u16, bf, ctx)?;
     }
     end_tag(w, "hh:borderFills")?;
     Ok(())
@@ -291,7 +294,10 @@ fn write_border_fill<W: Write>(
     w: &mut Writer<W>,
     id: u16,
     bf: &BorderFill,
+    ctx: &SerializeContext,
 ) -> Result<(), SerializeError> {
+    let attr = effective_border_fill_attr(bf);
+
     // 속성 순서 (BorderFillType.cpp:64-68): id, threeD, shadow, centerLine, breakCellSeparateLine
     start_tag_attrs(
         w,
@@ -300,7 +306,7 @@ fn write_border_fill<W: Write>(
             ("id", &(id + 1).to_string()), // HWPX 관찰: id는 1-based
             ("threeD", "0"),
             ("shadow", "0"),
-            ("centerLine", "NONE"),
+            ("centerLine", center_line_type(bf)),
             ("breakCellSeparateLine", "0"),
         ],
     )?;
@@ -310,12 +316,16 @@ fn write_border_fill<W: Write>(
     write_diag_line(
         w,
         "hh:slash",
-        diagonal_shape_type(((bf.attr >> 2) & 0x07) as u8),
+        diagonal_shape_type(((attr >> 2) & 0x07) as u8),
+        (attr >> 8) & 0x03,
+        attr & (1 << 11) != 0,
     )?;
     write_diag_line(
         w,
         "hh:backSlash",
-        diagonal_shape_type(((bf.attr >> 5) & 0x07) as u8),
+        diagonal_shape_type(((attr >> 5) & 0x07) as u8),
+        (attr >> 10) & 0x01,
+        attr & (1 << 12) != 0,
     )?;
     write_border_line(w, "hh:leftBorder", &bf.borders[0])?;
     write_border_line(w, "hh:rightBorder", &bf.borders[1])?;
@@ -326,7 +336,7 @@ fn write_border_fill<W: Write>(
     // fillBrush: 도형과 동일한 fillBrush 구조를 공유한다.
     // 종전 Stage 1 은 빈 래퍼만 출력해 winBrush(배경색)/gradation/imgBrush 를
     // 전부 잃었다. 파서가 채운 Fill 을 shape 의 검증된 역매핑으로 직렬화한다.
-    super::shape::write_fill_brush(w, &bf.fill)?;
+    super::shape::write_fill_brush(w, &bf.fill, ctx)?;
 
     end_tag(w, "hh:borderFill")?;
     Ok(())
@@ -336,11 +346,19 @@ fn write_diag_line<W: Write>(
     w: &mut Writer<W>,
     name: &str,
     type_str: &str,
+    crooked: u16,
+    is_counter: bool,
 ) -> Result<(), SerializeError> {
+    let crooked = crooked.to_string();
+    let is_counter = if is_counter { "1" } else { "0" };
     empty_tag(
         w,
         name,
-        &[("type", type_str), ("Crooked", "0"), ("isCounter", "0")],
+        &[
+            ("type", type_str),
+            ("Crooked", crooked.as_str()),
+            ("isCounter", is_counter),
+        ],
     )
 }
 
@@ -352,6 +370,30 @@ fn diagonal_shape_type(code: u8) -> &'static str {
         0b110 => "CENTER_ABOVE",
         _ => "ALL",
     }
+}
+
+fn center_line_type(bf: &BorderFill) -> &'static str {
+    effective_center_line(bf).as_hwpx()
+}
+
+fn effective_center_line(bf: &BorderFill) -> CenterLine {
+    if bf.center_line != CenterLine::None {
+        bf.center_line
+    } else {
+        CenterLine::from_hwp_attr(bf.attr)
+    }
+}
+
+fn effective_border_fill_attr(bf: &BorderFill) -> u16 {
+    let center_line = effective_center_line(bf);
+    if center_line == CenterLine::None {
+        return bf.attr;
+    }
+
+    let mut attr = bf.attr;
+    attr &=
+        !((0x07 << 2) | (0x07 << 5) | (0x03 << 8) | (1 << 10) | (1 << 11) | (1 << 12) | (1 << 13));
+    attr | center_line.hwp_attr_bits()
 }
 
 fn write_border_line<W: Write>(
@@ -831,6 +873,63 @@ fn write_numbering<W: Write>(
 }
 
 // =====================================================================
+// <hh:bullets> — 글머리표 정의
+//
+// 종전 직렬화는 bullets 를 전혀 쓰지 않아 라운드트립에서 글머리표 정의(❏/※/❍ 등)가
+// 소실되고, 글머리표 문단의 마커 글리프가 렌더에서 사라졌다. 파서(parse_bullet_hwpx)는
+// `char`/`useImage` 만 읽으므로 그 둘 + paraHead 뼈대를 방출하면 round-trip 무손실이다.
+// =====================================================================
+fn write_bullets<W: Write>(w: &mut Writer<W>, doc_info: &DocInfo) -> Result<(), SerializeError> {
+    if doc_info.bullets.is_empty() {
+        return Ok(());
+    }
+    start_tag_attrs(
+        w,
+        "hh:bullets",
+        &[("itemCnt", &doc_info.bullets.len().to_string())],
+    )?;
+    for (idx, b) in doc_info.bullets.iter().enumerate() {
+        write_bullet(w, idx as u16, b)?;
+    }
+    end_tag(w, "hh:bullets")?;
+    Ok(())
+}
+
+fn write_bullet<W: Write>(
+    w: &mut Writer<W>,
+    id: u16,
+    b: &crate::model::style::Bullet,
+) -> Result<(), SerializeError> {
+    let id_s = (id + 1).to_string(); // 관찰: 1-based, ParaShape.numbering_id 참조와 정합
+    let char_s = b.bullet_char.to_string();
+    let use_image = if b.image_bullet > 0 { "1" } else { "0" };
+    start_tag_attrs(
+        w,
+        "hh:bullet",
+        &[("id", &id_s), ("char", &char_s), ("useImage", use_image)],
+    )?;
+    // paraHead 뼈대 (파서는 무시하나 OWPML 유효성/한컴 호환 위해 방출).
+    empty_tag(
+        w,
+        "hh:paraHead",
+        &[
+            ("level", "0"),
+            ("align", "LEFT"),
+            ("useInstWidth", "0"),
+            ("autoIndent", "1"),
+            ("widthAdjust", &b.width_adjust.to_string()),
+            ("textOffsetType", "PERCENT"),
+            ("textOffset", "50"),
+            ("numFormat", "DIGIT"),
+            ("charPrIDRef", &u32::MAX.to_string()),
+            ("checkable", "0"),
+        ],
+    )?;
+    end_tag(w, "hh:bullet")?;
+    Ok(())
+}
+
+// =====================================================================
 // <hh:paraProperties>
 // =====================================================================
 fn write_para_properties<W: Write>(
@@ -941,6 +1040,9 @@ fn write_para_pr<W: Write>(
     // margin + lineSpacing 은 한컴 원본과 동일하게 <hp:switch>(case/default)로 감싼다.
     write_para_margin_switch(w, ps)?;
 
+    let border_connect = if (ps.attr1 >> 28) & 1 != 0 { "1" } else { "0" };
+    let border_ignore_margin = if (ps.attr1 >> 29) & 1 != 0 { "1" } else { "0" };
+
     empty_tag(
         w,
         "hh:border",
@@ -950,8 +1052,8 @@ fn write_para_pr<W: Write>(
             ("offsetRight", &ps.border_spacing[1].to_string()),
             ("offsetTop", &ps.border_spacing[2].to_string()),
             ("offsetBottom", &ps.border_spacing[3].to_string()),
-            ("connect", "0"),
-            ("ignoreMargin", "0"),
+            ("connect", border_connect),
+            ("ignoreMargin", border_ignore_margin),
         ],
     )?;
 
@@ -1193,6 +1295,23 @@ mod tests {
     }
 
     #[test]
+    fn write_header_seccnt_matches_section_count() {
+        // #1557: secCnt 는 실제 직렬화 섹션 수(doc.sections)와 일치해야 한다.
+        // doc_properties.section_count 가 stale(1) 이어도 섹션 수가 우선 — 불일치 시
+        // 한글이 뒤 구역을 로드하지 않아 다중 페이지 문서가 1쪽으로 붕괴한다.
+        use crate::model::document::Section;
+        let mut doc = Document::default();
+        doc.sections = vec![Section::default(), Section::default(), Section::default()];
+        doc.doc_properties.section_count = 1; // stale 모사
+        let ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_header(&doc, &ctx).expect("write_header")).unwrap();
+        assert!(
+            xml.contains(r#"secCnt="3""#),
+            "secCnt 가 섹션 수(3)와 일치해야 함(붕괴 회귀 가드)"
+        );
+    }
+
+    #[test]
     fn write_header_emits_preserved_hwpml_version() {
         // [Finding 17] 원본 HWPML 버전(문서별 상이, 예: 1.5)을 하드코딩 1.2 로
         // 변질시키지 않고 그대로 재방출해야 한다.
@@ -1403,7 +1522,13 @@ mod tests {
         bf.attr = (0b010 << 2) | (0b011 << 5);
 
         let mut writer = Writer::new(Vec::new());
-        write_border_fill(&mut writer, 0, &bf).expect("write borderFill");
+        write_border_fill(
+            &mut writer,
+            0,
+            &bf,
+            &SerializeContext::collect_from_document(&Default::default()),
+        )
+        .expect("write borderFill");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
 
         assert!(
@@ -1413,6 +1538,56 @@ mod tests {
         assert!(
             xml.contains(r#"<hh:backSlash type="CENTER_BELOW" Crooked="0" isCounter="0"/>"#),
             "backSlash 방향 비트가 CENTER_BELOW로 보존되어야 함: {xml}"
+        );
+    }
+
+    #[test]
+    fn write_border_fill_preserves_center_line_type() {
+        let mut bf = BorderFill::default();
+        bf.center_line = CenterLine::Vertical;
+
+        let mut writer = Writer::new(Vec::new());
+        write_border_fill(
+            &mut writer,
+            0,
+            &bf,
+            &SerializeContext::collect_from_document(&Default::default()),
+        )
+        .expect("write borderFill");
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(r#"centerLine="VERTICAL""#),
+            "centerLine 방향이 보존되어야 함: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hh:slash type="NONE" Crooked="3" isCounter="0"/>"#),
+            "VERTICAL 중심선의 HWP attr 보조 비트가 Crooked=3 으로 보존되어야 함: {xml}"
+        );
+    }
+
+    #[test]
+    fn write_border_fill_preserves_slash_crooked_two_bit_value() {
+        let mut bf = BorderFill::default();
+        bf.attr = (2 << 8) | (0b010 << 5);
+
+        let mut writer = Writer::new(Vec::new());
+        write_border_fill(
+            &mut writer,
+            0,
+            &bf,
+            &SerializeContext::collect_from_document(&Default::default()),
+        )
+        .expect("write borderFill");
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hh:slash type="NONE" Crooked="2" isCounter="0"/>"#),
+            "slash Crooked=2 가 보존되어야 함: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hh:backSlash type="CENTER" Crooked="0" isCounter="0"/>"#),
+            "backSlash CENTER 가 보존되어야 함: {xml}"
         );
     }
 
@@ -1434,7 +1609,13 @@ mod tests {
         };
 
         let mut writer = Writer::new(Vec::new());
-        write_border_fill(&mut writer, 5, &bf).expect("write borderFill");
+        write_border_fill(
+            &mut writer,
+            5,
+            &bf,
+            &SerializeContext::collect_from_document(&Default::default()),
+        )
+        .expect("write borderFill");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
 
         assert!(
@@ -1450,7 +1631,13 @@ mod tests {
         // FillType::None + solid 없음 = 원본에 fillBrush 부재 → 미출력.
         let bf = BorderFill::default();
         let mut writer = Writer::new(Vec::new());
-        write_border_fill(&mut writer, 0, &bf).expect("write borderFill");
+        write_border_fill(
+            &mut writer,
+            0,
+            &bf,
+            &SerializeContext::collect_from_document(&Default::default()),
+        )
+        .expect("write borderFill");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
         assert!(
             !xml.contains("fillBrush"),
@@ -1477,7 +1664,13 @@ mod tests {
         };
 
         let mut writer = Writer::new(Vec::new());
-        write_border_fill(&mut writer, 1, &bf).expect("write borderFill");
+        write_border_fill(
+            &mut writer,
+            1,
+            &bf,
+            &SerializeContext::collect_from_document(&Default::default()),
+        )
+        .expect("write borderFill");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
 
         assert!(

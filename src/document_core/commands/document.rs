@@ -7,12 +7,12 @@ use crate::document_core::{DocumentCore, DEFAULT_FALLBACK_FONT};
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::document::Document;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::renderer::composer::{compose_section, reflow_line_segs};
 use crate::renderer::layout::LayoutEngine;
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
-use crate::renderer::DEFAULT_DPI;
+use crate::renderer::{px_to_hwpunit, DEFAULT_DPI};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
@@ -115,6 +115,7 @@ impl DocumentCore {
             fallback_font: DEFAULT_FALLBACK_FONT.to_string(),
             layout_engine: LayoutEngine::new(DEFAULT_DPI),
             clipboard: None,
+            table_transpose_clipboard: None,
             paste_cascade_count: 0,
             show_paragraph_marks: false,
             show_control_codes: false,
@@ -327,6 +328,10 @@ impl DocumentCore {
                 // 표 셀 내부 문단 reflow
                 for ctrl in &mut para.controls {
                     if let Control::Table(ref mut table) = ctrl {
+                        let is_rowbreak_table = matches!(
+                            table.page_break,
+                            crate::model::table::TablePageBreak::RowBreak
+                        );
                         for cell in &mut table.cells {
                             // [Task #671 후속 / Issue #671 자동보정 영역 정정]
                             // 셀 폭 (cell.width) 에서 좌우 padding 차감하여 셀 inner 폭 계산.
@@ -343,6 +348,14 @@ impl DocumentCore {
                                 if Self::needs_line_seg_reflow(cell_para, include_empty) {
                                     reflow_line_segs(cell_para, cell_inner_width, styles, dpi);
                                 }
+                            }
+                            if include_empty && is_rowbreak_table {
+                                Self::fit_hwpx_rowbreak_synthetic_cell_lines(
+                                    cell,
+                                    styles,
+                                    dpi,
+                                    table.common.treat_as_char,
+                                );
                             }
                         }
                     }
@@ -443,11 +456,161 @@ impl DocumentCore {
             || (para.line_segs.len() == 1 && para.line_segs[0].line_height == 0)
     }
 
+    /// HWPX RowBreak 표 셀의 합성 lineSeg를 셀에 저장된 세로 정보와 맞춘다.
+    ///
+    /// HWPX는 표 셀 안의 문단별 `<hp:linesegarray>`를 생략하면서도, 셀 높이와 마지막
+    /// 빈 anchor 문단에는 한컴이 계산한 세로 기준선을 남기는 경우가 있다. 셀의 명시
+    /// 높이에 비해 합성 lineSeg가 부족하면 쪽 나눔 후 다음 페이지 표 조각의 줄 수가
+    /// 모자라므로, 다음 문서 속성만 근거로 부족한 줄을 보강한다.
+    ///
+    /// - RowBreak 표 셀의 `height`
+    /// - 문단 `ParaShape.spacing_before`
+    /// - 합성 lineSeg의 `line_height + line_spacing`
+    /// - 셀 끝의 저장 anchor lineSeg (`vertical_pos > 0`, implementation tag 없음)
+    fn fit_hwpx_rowbreak_synthetic_cell_lines(
+        cell: &mut crate::model::table::Cell,
+        styles: &ResolvedStyleSet,
+        dpi: f64,
+        allow_without_anchor: bool,
+    ) {
+        if cell.height == 0 || cell.paragraphs.len() < 2 {
+            return;
+        }
+
+        let is_synthetic = |seg: &LineSeg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0;
+        let para_is_synthetic = |para: &Paragraph| {
+            !para.text.is_empty()
+                && !para.line_segs.is_empty()
+                && para.line_segs.iter().all(is_synthetic)
+        };
+        let has_stored_anchor = cell.paragraphs.iter().any(|para| {
+            para.text.is_empty()
+                && para.controls.is_empty()
+                && para.line_segs.len() == 1
+                && !is_synthetic(&para.line_segs[0])
+                && para.line_segs[0].vertical_pos > 0
+                && para.line_segs[0].segment_width > 0
+        });
+        if !has_stored_anchor && !allow_without_anchor {
+            return;
+        }
+        if !cell.paragraphs.iter().any(para_is_synthetic) {
+            return;
+        }
+
+        let spacing_before_hu = |para: &Paragraph| -> i32 {
+            styles
+                .para_styles
+                .get(para.para_shape_id as usize)
+                .map(|ps| px_to_hwpunit(ps.spacing_before, dpi).max(0))
+                .unwrap_or(0)
+        };
+
+        let paragraph_height = |para: &Paragraph| -> i32 {
+            if para.line_segs.is_empty() {
+                return 0;
+            }
+            let spacing_before = spacing_before_hu(para);
+            if para.text.is_empty() && para.controls.is_empty() {
+                return spacing_before + para.line_segs[0].line_height.max(0);
+            }
+            spacing_before
+                + para
+                    .line_segs
+                    .iter()
+                    .map(|seg| (seg.line_height + seg.line_spacing).max(0))
+                    .sum::<i32>()
+        };
+
+        let mut current_height: i32 = cell.paragraphs.iter().map(paragraph_height).sum();
+        let target_height = cell.height.min(i32::MAX as u32) as i32;
+        if current_height >= target_height {
+            return;
+        }
+
+        let nominal_advance = cell
+            .paragraphs
+            .iter()
+            .filter(|para| para_is_synthetic(para))
+            .flat_map(|para| para.line_segs.iter())
+            .map(|seg| seg.line_height + seg.line_spacing)
+            .filter(|advance| *advance > 0)
+            .min()
+            .unwrap_or(0);
+        if nominal_advance <= 0 {
+            return;
+        }
+
+        let capacity_hint = cell
+            .paragraphs
+            .iter()
+            .filter(|para| para_is_synthetic(para) && para.line_segs.len() >= 2)
+            .filter_map(|para| para.line_segs.get(1).map(|seg| seg.text_start))
+            .filter(|text_start| *text_start > 0)
+            .min();
+
+        let mut candidates: Vec<usize> = cell
+            .paragraphs
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, para)| {
+                if para_is_synthetic(para) && para.line_segs.len() == 1 {
+                    Some((idx, para.text.chars().count()))
+                } else {
+                    None
+                }
+            })
+            .filter(|(_, text_len)| *text_len > 1)
+            .collect::<Vec<_>>()
+            .into_iter()
+            .map(|(idx, _)| idx)
+            .collect();
+        candidates.sort_by(|a, b| {
+            let len_a = cell.paragraphs[*a].text.chars().count();
+            let len_b = cell.paragraphs[*b].text.chars().count();
+            len_b.cmp(&len_a).then_with(|| a.cmp(b))
+        });
+
+        for para_idx in candidates {
+            if current_height + nominal_advance > target_height {
+                break;
+            }
+            if Self::append_synthetic_cell_line(&mut cell.paragraphs[para_idx], capacity_hint) {
+                current_height += nominal_advance;
+            }
+        }
+    }
+
+    fn append_synthetic_cell_line(para: &mut Paragraph, capacity_hint: Option<u32>) -> bool {
+        if para.line_segs.len() != 1 {
+            return false;
+        }
+        let first = para.line_segs[0].clone();
+        if first.line_height + first.line_spacing <= 0 {
+            return false;
+        }
+        let text_unit_len = para.char_count.saturating_sub(1);
+        if text_unit_len <= 1 {
+            return false;
+        }
+        let split_start = capacity_hint
+            .unwrap_or(text_unit_len.saturating_sub(1))
+            .min(text_unit_len.saturating_sub(1))
+            .max(1);
+        if split_start <= first.text_start {
+            return false;
+        }
+        let mut second = first.clone();
+        second.text_start = split_start;
+        second.vertical_pos = first.vertical_pos + first.line_height + first.line_spacing;
+        para.line_segs.push(second);
+        true
+    }
+
     /// 사용자 명시 요청에 의한 더 넓은 reflow 판정 (#177).
     ///
     /// `needs_line_seg_reflow` (명백한 미계산) + 다음 케이스 포함:
     /// - 텍스트가 있는데 line_segs 가 비어있음 (LinesegArrayEmpty)
-    /// - 긴 텍스트 + lineseg 1개 + '\n' 없음 (LinesegTextRunReflow 패턴)
     ///
     /// 이 함수는 `reflow_linesegs_on_demand` 에서만 사용되며, 자동 파싱 경로에는 영향 없음.
     fn needs_reflow_broadly(para: &crate::model::paragraph::Paragraph) -> bool {
@@ -457,22 +620,16 @@ impl DocumentCore {
         if Self::needs_line_seg_reflow(para, false) {
             return true;
         }
-        // 한컴 textRun reflow 패턴 — 규칙 R3 과 동일 조건
-        const LONG_TEXT_THRESHOLD: usize = 40;
-        if para.line_segs.len() == 1
-            && !para.text.contains('\n')
-            && para.text.chars().count() > LONG_TEXT_THRESHOLD
-        {
-            return true;
-        }
         false
     }
 
     /// 사용자 명시 요청에 의한 전체 lineseg reflow (#177).
     ///
-    /// `validate_linesegs` 에 기록된 경고 대상 문단들 중 reflow 가능한 것을 모두 처리한다.
+    /// `validate_linesegs` 에 기록된 경고 대상 문단들 중 명백히 reflow 가능한 것을 처리한다.
     /// 기본 파싱 경로의 `reflow_zero_height_paragraphs` 와 달리 이 메서드는
     /// 사용자가 UI에서 "자동 보정" 을 명시적으로 선택했을 때만 호출되어야 한다.
+    /// `LinesegTextRunReflow` 는 한컴이 계산한 1개 lineseg 를 강제로 다시 풀면
+    /// 페이지 수가 바뀔 수 있으므로 경고만 남기고 자동 보정 대상에서 제외한다.
     ///
     /// 반환값: 실제로 reflow 된 문단 개수 (본문 + 셀 내부 합계).
     pub fn reflow_linesegs_on_demand(&mut self) -> usize {
@@ -577,6 +734,7 @@ impl DocumentCore {
         self.styles = styles;
         self.composed = composed;
         self.clipboard = None;
+        self.table_transpose_clipboard = None;
         self.dirty_sections = vec![true; sec_count];
         self.measured_tables = Vec::new();
         self.measured_sections = Vec::new();
@@ -585,6 +743,8 @@ impl DocumentCore {
         self.page_tree_cache.borrow_mut().clear();
         self.snapshot_store.clear();
         self.next_snapshot_id = 0;
+        self.source_format = crate::parser::FileFormat::Hwp;
+        self.validation_report = ValidationReport::new();
 
         self.convert_to_editable_native()?;
         self.paginate();
@@ -936,8 +1096,14 @@ impl DocumentCore {
             }
             // 뒤에서부터 삭제 (인덱스 안정성 유지)
             for &(fri, start, end) in removals.iter().rev() {
-                let removed_len = end - start;
                 let chars: Vec<char> = para.text.chars().collect();
+                // [Task #1620] 다중 removal 처리 중 앞선 removal 이 para.text 를 축소하면(특히
+                // 같은 범위를 가리키는 중첩 field_range) 이후 removal 의 수집-시점 (start,end) 가
+                // 현재 길이를 초과해 슬라이스 패닉(36396650). 현재 길이 기준 범위를 재검증해 skip.
+                if start > end || end > chars.len() {
+                    continue;
+                }
+                let removed_len = end - start;
                 let new_text: String = chars[..start].iter().chain(chars[end..].iter()).collect();
                 para.text = new_text;
                 para.field_ranges[fri].end_char_idx = start;
@@ -989,6 +1155,54 @@ mod validate_linesegs_tests {
     use super::*;
     use crate::model::document::{Document, Section};
     use crate::model::paragraph::{LineSeg, Paragraph};
+
+    /// [Task #1620] `clear_initial_field_texts`: 같은 텍스트 범위를 가리키는 다중 ClickHere
+    /// field_range 처리 시, 첫 removal 이 `para.text` 를 비우면 이후 removal 이 stale 인덱스로
+    /// 슬라이스해 패닉(36396650, `document.rs:927` range out of range). 범위 가드 추가로
+    /// 패닉 없이 정규화돼야 함.
+    #[test]
+    fn clear_initial_field_texts_no_panic_on_overlapping_removals() {
+        use crate::model::control::{Control, Field, FieldType};
+        use crate::model::paragraph::FieldRange;
+
+        let field = Field {
+            field_type: FieldType::ClickHere,
+            command: "Clickhere:set:48:Direction:wstring:6:여기에 입력 HelpState:wstring:0:  "
+                .to_string(),
+            properties: 0, // bit15 == 0 (초기 상태 → 안내문 제거 대상)
+            ..Default::default()
+        };
+        // 같은 텍스트 범위 [0,6) 를 가리키는 field_range 2개(중첩) → 다중 removal.
+        let para = Paragraph {
+            text: "여기에 입력".to_string(),
+            controls: vec![Control::Field(field)],
+            field_ranges: vec![
+                FieldRange {
+                    start_char_idx: 0,
+                    end_char_idx: 6,
+                    control_idx: 0,
+                },
+                FieldRange {
+                    start_char_idx: 0,
+                    end_char_idx: 6,
+                    control_idx: 0,
+                },
+            ],
+            ..Default::default()
+        };
+        let mut doc = Document::default();
+        let mut section = Section::default();
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        // 수정 전: document.rs 제거 루프에서 stale 인덱스 슬라이스 패닉.
+        // 수정 후: 패닉 없이 안내문 제거(빈 텍스트).
+        DocumentCore::clear_initial_field_texts(&mut doc);
+        assert!(
+            doc.sections[0].paragraphs[0].text.is_empty(),
+            "안내문이 제거돼 빈 텍스트여야 함"
+        );
+    }
 
     /// 텍스트는 있는데 line_segs 가 비어있는 문단 — LinesegArrayEmpty 감지
     #[test]
@@ -1221,13 +1435,13 @@ mod validate_linesegs_tests {
     }
 
     #[test]
-    fn needs_reflow_broadly_covers_textrun_reflow() {
+    fn needs_reflow_broadly_skips_textrun_reflow() {
         let mut para = Paragraph::default();
         para.text = "이것은 충분히 길어서 한 줄로 표시하기 어려운 한국어 문장입니다. 한컴은 textRun으로 reflow하지만 rhwp는 그대로 그립니다.".to_string();
         let mut seg = LineSeg::default();
         seg.line_height = 1000;
         para.line_segs.push(seg);
-        assert!(DocumentCore::needs_reflow_broadly(&para));
+        assert!(!DocumentCore::needs_reflow_broadly(&para));
     }
 }
 

@@ -1,0 +1,167 @@
+name: Close Issues on devel Push
+
+on:
+  push:
+    branches: [devel]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  close-issues:
+    name: Close linked issues
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Close issues referenced by merged PRs
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const payload = context.payload;
+
+            const closingIssueRef = /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\b\s*:?\s*(?:https:\/\/github\.com\/([^/\s#]+)\/([^/\s#]+)\/issues\/(\d+)|(?:(\w[\w.-]*)\/([\w.-]+))?#(\d+))/gi;
+
+            function collectIssueNumbers(text) {
+              const numbers = new Set();
+              const source = String(text || '');
+              const lines = source.split(/\r?\n/);
+
+              for (const line of lines) {
+                closingIssueRef.lastIndex = 0;
+                let refMatch;
+
+                while ((refMatch = closingIssueRef.exec(line)) !== null) {
+                  const refOwner = refMatch[1] || refMatch[4] || owner;
+                  const refRepo = refMatch[2] || refMatch[5] || repo;
+                  const number = Number(refMatch[3] || refMatch[6]);
+
+                  if (
+                    Number.isInteger(number) &&
+                    refOwner.toLowerCase() === owner.toLowerCase() &&
+                    refRepo.toLowerCase() === repo.toLowerCase()
+                  ) {
+                    numbers.add(number);
+                  }
+                }
+              }
+
+              return numbers;
+            }
+
+            async function collectPrTexts(prNumber) {
+              const texts = [];
+              const { data: pr } = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: prNumber,
+              });
+
+              if (pr.base.ref !== 'devel' || !pr.merged_at) {
+                core.info(`Skip PR #${prNumber}: base=${pr.base.ref}, merged_at=${pr.merged_at}`);
+                return texts;
+              }
+
+              texts.push(pr.title, pr.body);
+
+              const commits = await github.paginate(github.rest.pulls.listCommits, {
+                owner,
+                repo,
+                pull_number: prNumber,
+                per_page: 100,
+              });
+              for (const commit of commits) {
+                texts.push(commit.commit.message);
+              }
+
+              return texts;
+            }
+
+            async function collectAssociatedPrNumbers(commitSha) {
+              const numbers = new Set();
+
+              const associated = await github.paginate(
+                github.rest.repos.listPullRequestsAssociatedWithCommit,
+                {
+                  owner,
+                  repo,
+                  commit_sha: commitSha,
+                  per_page: 100,
+                },
+              );
+              for (const pr of associated) {
+                numbers.add(pr.number);
+              }
+
+              const { data: commit } = await github.rest.repos.getCommit({
+                owner,
+                repo,
+                ref: commitSha,
+              });
+              const mergeMatch = commit.commit.message.match(/^Merge pull request #(\d+)\b/m);
+              if (mergeMatch) {
+                numbers.add(Number(mergeMatch[1]));
+              }
+
+              return numbers;
+            }
+
+            const issueSources = new Map();
+
+            for (const commit of payload.commits || []) {
+              const sha = commit.id;
+              for (const number of collectIssueNumbers(commit.message)) {
+                if (!issueSources.has(number)) {
+                  issueSources.set(number, `commit ${sha.slice(0, 7)}`);
+                }
+              }
+
+              const prNumbers = await collectAssociatedPrNumbers(sha);
+              for (const prNumber of prNumbers) {
+                const texts = await collectPrTexts(prNumber);
+                for (const text of texts) {
+                  for (const number of collectIssueNumbers(text)) {
+                    if (!issueSources.has(number)) {
+                      issueSources.set(number, `PR #${prNumber}`);
+                    }
+                  }
+                }
+              }
+            }
+
+            if (issueSources.size === 0) {
+              core.info('No closing issue references found in this devel push.');
+              return;
+            }
+
+            for (const [issue_number, source] of [...issueSources].sort((a, b) => a[0] - b[0])) {
+              const { data: issue } = await github.rest.issues.get({
+                owner,
+                repo,
+                issue_number,
+              });
+
+              if (issue.state === 'closed') {
+                core.info(`Issue #${issue_number} is already closed.`);
+                continue;
+              }
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body: `${source} was merged into \`devel\` and referenced this issue with a closing keyword. Closing this issue automatically.`,
+              });
+
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number,
+                state: 'closed',
+                state_reason: 'completed',
+              });
+
+              core.info(`Closed issue #${issue_number} from ${source}.`);
+            }

@@ -30,9 +30,11 @@ use crate::model::style::ImageFillMode;
 use crate::model::style::UnderlineType;
 use crate::paint::replay_order::layer_node_has_replay_plane;
 use crate::paint::{
-    paint_op_replay_plane_with_layer, ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree,
-    PaintOp, PaintReplayPlane,
+    paint_op_replay_plane_with_layer, render_layer_replay_plane, ClipKind, GroupKind, LayerNode,
+    LayerNodeKind, PageLayerTree, PaintOp, PaintReplayPlane,
 };
+
+const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
 
 /// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장 (Task #528).
 fn expand_pua_old_hangul_canvas(text: &str) -> String {
@@ -68,9 +70,20 @@ fn canvas_glyph_fit_policy(
         skip_fit: has_negative_spacing || (font_substituted && is_ascii_alnum),
     }
 }
+
+fn group_label_matches_replay_plane(
+    active_replay_plane: Option<PaintReplayPlane>,
+    layer: Option<RenderLayerInfo>,
+) -> bool {
+    match active_replay_plane {
+        Some(active) => render_layer_replay_plane(layer) == active,
+        None => true,
+    }
+}
 use super::composer::{
     decode_pua_overlap_number, expand_pua_render_text, pua_to_display_text, CharOverlapInfo,
 };
+use super::form_caption::display_form_caption;
 #[cfg(target_arch = "wasm32")]
 use super::layout::{compute_char_positions, font_family_has_metrics, split_into_clusters};
 use crate::model::control::FormType;
@@ -83,15 +96,6 @@ thread_local! {
         std::cell::RefCell::new(std::collections::HashMap::new());
 }
 
-// [Task: 임베디드 그림 첫-렌더 페인트] 동기 디코드 캔버스 캐시.
-//
-// 기존 draw_image 는 HtmlImageElement.set_src(data URL) 로 이미지를 비동기
-// 로드하므로, 페이지를 한 번만 renderPageToCanvas 하는 뷰어(ecrits)에서는
-// img.complete()==false 라 첫 렌더에 그림이 그려지지 않는다 (재렌더가 없어
-// 영영 빈 칸). PNG/JPEG/BMP 는 image 크레이트로 Rust 측에서 즉시 디코드해
-// 오프스크린 HtmlCanvasElement 에 put_image_data 한 뒤, drawImage(canvas)
-// 로 첫 렌더에 동기 페인트한다. 캐시 값 None = 디코드 불가(WMF/SVG 등) →
-// 기존 HtmlImageElement 비동기 경로로 폴백.
 #[cfg(target_arch = "wasm32")]
 thread_local! {
     static DECODED_CANVAS_CACHE: std::cell::RefCell<
@@ -99,10 +103,6 @@ thread_local! {
     > = std::cell::RefCell::new(std::collections::HashMap::new());
 }
 
-/// 이미지 바이트를 RGBA 로 디코드해 오프스크린 캔버스로 만든다 (동기).
-///
-/// image 크레이트가 디코드 가능한 포맷(PNG/JPEG/BMP)만 처리. 실패하면
-/// None — 호출부는 기존 HtmlImageElement 비동기 경로로 폴백한다.
 #[cfg(target_arch = "wasm32")]
 fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
     let dynimg = image::load_from_memory(data).ok()?;
@@ -111,6 +111,7 @@ fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
     if iw == 0 || ih == 0 {
         return None;
     }
+
     let buf = rgba.into_raw();
     let image_data =
         web_sys::ImageData::new_with_u8_clamped_array_and_sh(wasm_bindgen::Clamped(&buf), iw, ih)
@@ -124,6 +125,7 @@ fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
         .ok()?;
     canvas.set_width(iw);
     canvas.set_height(ih);
+
     let ctx = canvas
         .get_context("2d")
         .ok()??
@@ -337,6 +339,9 @@ pub struct WebCanvasRenderer {
     /// BehindText plane 을 별도 canvas layer 로 합성할 때 flow Canvas 의 페이지 배경을
     /// 투명하게 둘지 여부.
     transparent_page_background: bool,
+    /// `LayerFilter::All` renders the layer tree in logical replay-plane order,
+    /// independent of raw tree child order.
+    active_replay_plane: Option<PaintReplayPlane>,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -357,6 +362,7 @@ impl WebCanvasRenderer {
             scale: 1.0,
             layer_filter: LayerFilter::All,
             transparent_page_background: false,
+            active_replay_plane: None,
         })
     }
 
@@ -379,6 +385,9 @@ impl WebCanvasRenderer {
     fn should_render_op(&self, op: &PaintOp, layer: Option<RenderLayerInfo>) -> bool {
         use crate::model::shape::TextWrap;
         let replay_plane = paint_op_replay_plane_with_layer(op, layer);
+        if let Some(active) = self.active_replay_plane {
+            return replay_plane == active;
+        }
         match self.layer_filter {
             LayerFilter::All => true,
             LayerFilter::BackgroundOnly => replay_plane == PaintReplayPlane::Background,
@@ -400,6 +409,10 @@ impl WebCanvasRenderer {
         !self.transparent_page_background
     }
 
+    fn should_render_group_label(&self, layer: Option<RenderLayerInfo>) -> bool {
+        self.show_control_codes && group_label_matches_replay_plane(self.active_replay_plane, layer)
+    }
+
     /// 렌더 트리를 Canvas에 렌더링
     pub fn render_tree(&mut self, tree: &PageRenderTree) {
         self.render_node(&tree.root);
@@ -418,7 +431,19 @@ impl WebCanvasRenderer {
             LayerFilter::WrapOnly(_) => true,
         };
         self.begin_page(tree.page_width, tree.page_height);
-        self.render_layer_node(&tree.root, None);
+        if self.layer_filter == LayerFilter::All {
+            let prev = self.active_replay_plane;
+            for replay_plane in PaintReplayPlane::ORDERED {
+                if !layer_node_has_replay_plane(&tree.root, replay_plane) {
+                    continue;
+                }
+                self.active_replay_plane = Some(replay_plane);
+                self.render_layer_node(&tree.root, None);
+            }
+            self.active_replay_plane = prev;
+        } else {
+            self.render_layer_node(&tree.root, None);
+        }
         self.transparent_page_background = false;
     }
 
@@ -458,20 +483,19 @@ impl WebCanvasRenderer {
             } => {
                 self.ctx.save();
                 self.ctx.begin_path();
-                // 우측 여유: 레이아웃 메트릭과 브라우저 글리프 폭 차이 흡수
-                self.ctx.rect(cr.x, cr.y, cr.width + 4.0, cr.height);
+                let right_pad = if self.show_paragraph_marks || self.show_control_codes {
+                    TEXT_MARK_CLIP_RIGHT_PAD
+                } else {
+                    4.0
+                };
+                self.ctx.rect(cr.x, cr.y, cr.width + right_pad, cr.height);
                 self.ctx.clip();
             }
             RenderNodeType::TableCell(ref tc) if tc.clip => {
                 self.ctx.save();
                 self.ctx.begin_path();
-                // 셀 우측 여유: 레이아웃 반올림 오차로 마지막 글리프 잘림 방지
-                self.ctx.rect(
-                    node.bbox.x,
-                    node.bbox.y,
-                    node.bbox.width + 4.0,
-                    node.bbox.height,
-                );
+                self.ctx
+                    .rect(node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height);
                 self.ctx.clip();
             }
             RenderNodeType::Equation(eq) => {
@@ -721,7 +745,7 @@ impl WebCanvasRenderer {
             if !run.text.is_empty() && !is_marker {
                 let char_positions = compute_char_positions(&run.text, &run.style);
                 let mark_font_size = font_size * 0.5;
-                self.ctx.set_fill_style_str("#4A90D9");
+                self.ctx.set_fill_style_str("#0066FF");
                 self.ctx
                     .set_font(&format!("{:.3}px sans-serif", mark_font_size));
                 for (i, c) in run.text.chars().enumerate() {
@@ -741,7 +765,7 @@ impl WebCanvasRenderer {
                 }
             }
             if run.is_para_end || run.is_line_break_end {
-                self.ctx.set_fill_style_str("#4A90D9");
+                self.ctx.set_fill_style_str("#0066FF");
                 self.ctx.set_font(&format!("{:.3}px sans-serif", font_size));
                 if run.is_vertical {
                     let mark_x = bbox.x + (bbox.width - font_size * 0.5) / 2.0;
@@ -893,13 +917,19 @@ impl WebCanvasRenderer {
             }
             let needs_watermark_opacity =
                 preserve_color_watermark || (is_watermark_image && !baked_watermark);
-            if needs_watermark_opacity {
-                let opacity = if preserve_color_watermark {
+            let watermark_opacity = if needs_watermark_opacity {
+                if preserve_color_watermark {
                     REAL_PICTURE_WATERMARK_FILL_OPACITY
                 } else {
                     LEGACY_IMAGE_WATERMARK_OPACITY
-                };
-                self.ctx.set_global_alpha(opacity);
+                }
+            } else {
+                1.0
+            };
+            let combined_opacity =
+                (img.opacity.clamp(0.0, 1.0) * watermark_opacity).clamp(0.0, 1.0);
+            if combined_opacity < 1.0 {
+                self.ctx.set_global_alpha(combined_opacity);
             }
             self.draw_image_with_fill_mode(
                 render_data.as_ref(),
@@ -909,7 +939,7 @@ impl WebCanvasRenderer {
                 img.crop,
                 img.original_size_hu,
             );
-            if needs_watermark_opacity {
+            if combined_opacity < 1.0 {
                 self.ctx.set_global_alpha(1.0);
             }
             if filter_str.is_some() {
@@ -1091,7 +1121,7 @@ impl WebCanvasRenderer {
                 for child in children {
                     self.render_layer_node(child, active_layer);
                 }
-                if self.show_control_codes {
+                if self.should_render_group_label(active_layer) {
                     let label = match group_kind {
                         GroupKind::Table(_) => Some("[표]"),
                         GroupKind::TextBox => Some("[글상자]"),
@@ -1116,7 +1146,13 @@ impl WebCanvasRenderer {
                 ClipKind::Body => {
                     self.ctx.save();
                     self.ctx.begin_path();
-                    self.ctx.rect(clip.x, clip.y, clip.width + 4.0, clip.height);
+                    let right_pad = if self.show_paragraph_marks || self.show_control_codes {
+                        TEXT_MARK_CLIP_RIGHT_PAD
+                    } else {
+                        4.0
+                    };
+                    self.ctx
+                        .rect(clip.x, clip.y, clip.width + right_pad, clip.height);
                     self.ctx.clip();
                     self.render_layer_node(child, active_layer);
                     self.ctx.restore();
@@ -1196,7 +1232,7 @@ impl WebCanvasRenderer {
                     self.ctx.rect(
                         node.bounds.x,
                         node.bounds.y,
-                        node.bounds.width + 4.0,
+                        node.bounds.width,
                         node.bounds.height,
                     );
                     self.ctx.clip();
@@ -1867,12 +1903,15 @@ impl WebCanvasRenderer {
                 self.ctx.stroke_rect(x, y, w, h);
                 // 캡션 텍스트 (회색)
                 if !form.caption.is_empty() {
+                    let caption = display_form_caption(&form.caption);
                     let font_size = (h * 0.5).min(12.0).max(8.0);
                     self.ctx.set_font(&format!("{}px sans-serif", font_size));
                     self.ctx.set_fill_style_str("#808080");
                     self.ctx.set_text_align("center");
                     self.ctx.set_text_baseline("middle");
-                    let _ = self.ctx.fill_text(&form.caption, x + w / 2.0, y + h / 2.0);
+                    let _ = self
+                        .ctx
+                        .fill_text(caption.as_ref(), x + w / 2.0, y + h / 2.0);
                     self.ctx.set_text_align("left");
                     self.ctx.set_text_baseline("alphabetic");
                 }
@@ -1899,13 +1938,14 @@ impl WebCanvasRenderer {
                 }
                 // 캡션
                 if !form.caption.is_empty() {
+                    let caption = display_form_caption(&form.caption);
                     let font_size = (h * 0.7).min(12.0).max(8.0);
                     self.ctx.set_font(&format!("{}px sans-serif", font_size));
                     self.ctx.set_fill_style_str(&form.fore_color);
                     self.ctx.set_text_baseline("middle");
                     let _ = self
                         .ctx
-                        .fill_text(&form.caption, x + box_size + 4.0, y + h / 2.0);
+                        .fill_text(caption.as_ref(), x + box_size + 4.0, y + h / 2.0);
                     self.ctx.set_text_baseline("alphabetic");
                 }
             }
@@ -1930,13 +1970,14 @@ impl WebCanvasRenderer {
                 }
                 // 캡션
                 if !form.caption.is_empty() {
+                    let caption = display_form_caption(&form.caption);
                     let font_size = (h * 0.7).min(12.0).max(8.0);
                     self.ctx.set_font(&format!("{}px sans-serif", font_size));
                     self.ctx.set_fill_style_str(&form.fore_color);
                     self.ctx.set_text_baseline("middle");
                     let _ = self
                         .ctx
-                        .fill_text(&form.caption, x + r * 2.0 + 4.0, y + h / 2.0);
+                        .fill_text(caption.as_ref(), x + r * 2.0 + 4.0, y + h / 2.0);
                     self.ctx.set_text_baseline("alphabetic");
                 }
             }
@@ -2574,16 +2615,11 @@ impl Renderer for WebCanvasRenderer {
     fn draw_image(&mut self, data: &[u8], x: f64, y: f64, w: f64, h: f64) {
         let key = hash_bytes(data);
 
-        // [동기 페인트] PNG/JPEG/BMP 는 image 크레이트로 즉시 디코드한 오프스크린
-        // 캔버스를 drawImage 로 첫 렌더에 그린다 (비동기 HtmlImageElement 가
-        // 첫 렌더에 빈 칸이 되는 문제 회피). drawImage(canvas) 는 ctx 변환을
-        // 존중하고 (x,y,w,h) 로 스케일한다.
         let decoded = DECODED_CANVAS_CACHE.with(|cache| {
             let mut c = cache.borrow_mut();
             if let Some(slot) = c.get(&key) {
                 return slot.clone();
             }
-            // 캐시 크기 제한 (최대 200개)
             if c.len() > 200 {
                 c.clear();
             }
@@ -2598,8 +2634,7 @@ impl Renderer for WebCanvasRenderer {
             return;
         }
 
-        // 캐시에서 이미 로드된 이미지를 찾는다 (image 크레이트 미지원 포맷:
-        // WMF/SVG/PCX 등 → HtmlImageElement 비동기 경로)
+        // 캐시에서 이미 로드된 이미지를 찾는다
         let cached = IMAGE_CACHE.with(|cache| {
             let c = cache.borrow();
             c.get(&key).cloned()
@@ -2690,8 +2725,6 @@ impl WebCanvasRenderer {
     ) {
         let key = hash_bytes(data);
 
-        // [동기 페인트] PNG/JPEG/BMP 는 디코드된 오프스크린 캔버스로 첫 렌더에
-        // crop 적용. (draw_image 와 동일 캐시 공유)
         let decoded = DECODED_CANVAS_CACHE.with(|cache| {
             let mut c = cache.borrow_mut();
             if let Some(slot) = c.get(&key) {

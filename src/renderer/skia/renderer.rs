@@ -1,7 +1,8 @@
 use skia_safe::{
-    paint, surfaces, Canvas, Color, EncodedImageFormat, Font, FontMgr, FontStyle, Paint,
-    PathBuilder, PathEffect, RRect, Rect, Typeface,
+    paint, png_encoder, surfaces, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathBuilder,
+    PathEffect, RRect, Rect, Typeface,
 };
+use std::borrow::Cow;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::error::HwpError;
@@ -13,6 +14,7 @@ use crate::paint::{
     LayerGlyphRunPaint, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree, PaintOp,
     PaintReplayPlane, ResourceArena, TextVariantQuality,
 };
+use crate::renderer::form_caption::display_form_caption;
 use crate::renderer::layer_renderer::{
     LayerRasterRenderer, LayerRenderResult, RasterOutputFormat, RasterRenderOptions,
     RasterRenderOutput,
@@ -21,7 +23,10 @@ use crate::renderer::render_tree::RenderLayerInfo;
 use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash};
 
 use super::equation_conv::render_equation;
-use super::font_lookup::{collect_system_families, match_system_family_style, SystemFontFamilies};
+use super::font_lookup::{
+    collect_system_families, legacy_typeface_for_style, match_system_family_style,
+    SystemFontFamilies,
+};
 use super::image_conv::{draw_image_bytes, draw_svg_fragment, ImageSampling};
 use super::text_replay::SkiaTextReplay;
 
@@ -46,6 +51,8 @@ pub enum NativeGlyphRunReplayProofReason {
     FontBlobMissing,
     FontBlobNotPortable,
     FontBlobBytesMissing,
+    FontBlobDataRefMismatch,
+    FontBlobDigestMismatch,
     FaceIndexUnsupported,
     FontVariationUnsupported,
     TypefaceConstructionNotImplemented,
@@ -73,6 +80,8 @@ impl NativeGlyphRunReplayProofReason {
             Self::FontBlobMissing => "fontBlobMissing",
             Self::FontBlobNotPortable => "fontBlobNotPortable",
             Self::FontBlobBytesMissing => "fontBlobBytesMissing",
+            Self::FontBlobDataRefMismatch => "fontBlobDataRefMismatch",
+            Self::FontBlobDigestMismatch => "fontBlobDigestMismatch",
             Self::FaceIndexUnsupported => "faceIndexUnsupported",
             Self::FontVariationUnsupported => "fontVariationUnsupported",
             Self::TypefaceConstructionNotImplemented => "typefaceConstructionNotImplemented",
@@ -180,8 +189,20 @@ pub fn native_skia_glyph_run_replay_proof(
             } else if let crate::paint::FontPortability::PortableBlob { data_ref, .. } =
                 &blob.portability
             {
-                if resources.font_blob_bytes_for_ref(data_ref).is_none() {
-                    contract_reasons.insert(NativeGlyphRunReplayProofReason::FontBlobBytesMissing);
+                if blob.data_ref.as_ref() != Some(data_ref) {
+                    contract_reasons
+                        .insert(NativeGlyphRunReplayProofReason::FontBlobDataRefMismatch);
+                }
+                match resources.font_blob_bytes_for_ref(data_ref) {
+                    Some(bytes) if font_blob_digest_matches(bytes, blob) => {}
+                    Some(_) => {
+                        contract_reasons
+                            .insert(NativeGlyphRunReplayProofReason::FontBlobDigestMismatch);
+                    }
+                    None => {
+                        contract_reasons
+                            .insert(NativeGlyphRunReplayProofReason::FontBlobBytesMissing);
+                    }
                 }
             }
         } else {
@@ -235,6 +256,25 @@ pub fn native_skia_glyph_run_replay_proof(
     }
 }
 
+fn font_blob_digest_matches(bytes: &[u8], blob: &crate::paint::FontBlobResource) -> bool {
+    let actual = crate::paint::resource_digest_hex(bytes);
+    let portability_digest_matches = match &blob.portability {
+        crate::paint::FontPortability::PortableBlob { digest, .. } => {
+            font_digest_matches_resource_bytes(digest, &actual)
+        }
+        _ => false,
+    };
+    let blob_digest_matches = blob
+        .digest
+        .as_ref()
+        .is_none_or(|digest| font_digest_matches_resource_bytes(digest, &actual));
+    portability_digest_matches && blob_digest_matches
+}
+
+fn font_digest_matches_resource_bytes(digest: &crate::paint::FontDigest, actual: &str) -> bool {
+    digest.algorithm == crate::paint::RESOURCE_KEY_ALGORITHM && digest.value == actual
+}
+
 pub struct SkiaLayerRenderer {
     font_mgr: FontMgr,
     /// 사용자 지정 폰트 디렉토리에서 미리 로드한 폰트 캐시.
@@ -249,13 +289,23 @@ pub struct SkiaLayerRenderer {
 
 impl SkiaLayerRenderer {
     pub fn new() -> Self {
-        let font_mgr = FontMgr::default();
-        let system_families = collect_system_families(&font_mgr);
-        Self {
-            font_mgr,
-            custom_typefaces: HashMap::new(),
-            system_families,
+        // [perf] FontMgr::default() + collect_system_families() (시스템 폰트 family 전수
+        // 열거) 는 페이지당 ~8ms 가 드는데, 프로세스(스레드) 내에서 불변이다. 매 렌더마다
+        // 재열거하지 않도록 thread-local 로 1회만 계산하고, 이후 new() 는 캐시를 복제
+        // (FontMgr = refcount bump, families = HashSet clone ~수십 µs) 해 재사용한다.
+        // 폰트 매칭 입력이 동일하므로 렌더 출력은 바이트 단위로 불변이다.
+        thread_local! {
+            static SKIA_FONT_BASE: (FontMgr, SystemFontFamilies) = {
+                let font_mgr = FontMgr::default();
+                let system_families = collect_system_families(&font_mgr);
+                (font_mgr, system_families)
+            };
         }
+        SKIA_FONT_BASE.with(|(font_mgr, system_families)| Self {
+            font_mgr: font_mgr.clone(),
+            custom_typefaces: HashMap::new(),
+            system_families: system_families.clone(),
+        })
     }
 
     /// 사용자 지정 폰트 디렉토리 (ttfs 등) 의 폰트를 로드하여 Skia 가 직접 사용 가능하게 한다.
@@ -364,6 +414,7 @@ impl SkiaLayerRenderer {
         if options.scale != 1.0 {
             canvas.scale((options.scale as f32, options.scale as f32));
         }
+
         let mut next_text_source_id = 0_u32;
         for replay_plane in PaintReplayPlane::ORDERED {
             if !layer_node_has_replay_plane(&tree.root, replay_plane) {
@@ -381,9 +432,16 @@ impl SkiaLayerRenderer {
         }
 
         let image = surface.image_snapshot();
-        let data = image
-            .encode(None, EncodedImageFormat::PNG, None)
-            .ok_or_else(|| HwpError::RenderError("Skia PNG 인코딩 실패".to_string()))?;
+        let mut png_options = png_encoder::Options::default();
+        // PNG is lossless at every zlib level. Level 1 avoids spending most of
+        // native export time on compression while preserving decoded pixels.
+        png_options.z_lib_level = 1;
+        let data = png_encoder::encode_image(
+            None::<&mut skia_safe::gpu::DirectContext>,
+            &image,
+            &png_options,
+        )
+        .ok_or_else(|| HwpError::RenderError("Skia PNG 인코딩 실패".to_string()))?;
         Ok(RasterRenderOutput {
             bytes: data.as_bytes().to_vec(),
             format: RasterOutputFormat::Png,
@@ -977,6 +1035,17 @@ impl SkiaLayerRenderer {
                                 } else {
                                     image.effect
                                 };
+                                let opacity = image.opacity.clamp(0.0, 1.0);
+                                if opacity < 1.0 {
+                                    let rect = Rect::from_xywh(
+                                        bbox.x as f32,
+                                        bbox.y as f32,
+                                        bbox.width as f32,
+                                        bbox.height as f32,
+                                    );
+                                    let alpha = (255.0 * opacity).round() as u32;
+                                    canvas.save_layer_alpha(Some(rect), alpha);
+                                }
                                 draw_image(
                                     data,
                                     *bbox,
@@ -985,6 +1054,9 @@ impl SkiaLayerRenderer {
                                     image.crop,
                                     effect,
                                 );
+                                if opacity < 1.0 {
+                                    canvas.restore();
+                                }
                             } else {
                                 draw_placeholder(*bbox, "image");
                             }
@@ -1086,7 +1158,7 @@ impl SkiaLayerRenderer {
                 return Font::new(tf, size);
             }
         }
-        if let Some(tf) = self.font_mgr.legacy_make_typeface(None::<&str>, style) {
+        if let Some(tf) = legacy_typeface_for_style(&self.font_mgr, style) {
             return Font::new(tf, size);
         }
         let mut f = Font::default();
@@ -1133,19 +1205,19 @@ impl SkiaLayerRenderer {
                 canvas.draw_rrect(rrect, &stroke);
 
                 let label = if form.caption.is_empty() {
-                    &form.name
+                    Cow::Borrowed(form.name.as_str())
                 } else {
-                    &form.caption
+                    display_form_caption(&form.caption)
                 };
                 if !label.is_empty() {
                     let font = self.make_form_font((h * 0.45).clamp(8.0, 14.0));
                     let mut tp = Paint::default();
                     tp.set_anti_alias(true);
                     tp.set_color(fg_color);
-                    let text_w = font.measure_str(label, Some(&tp)).0;
+                    let text_w = font.measure_str(label.as_ref(), Some(&tp)).0;
                     let tx = x + (w - text_w) / 2.0;
                     let ty = y + h / 2.0 + font.size() * 0.35;
-                    canvas.draw_str(label, (tx, ty), &font, &tp);
+                    canvas.draw_str(label.as_ref(), (tx, ty), &font, &tp);
                 }
             }
             FormType::CheckBox => {
@@ -1189,13 +1261,14 @@ impl SkiaLayerRenderer {
                 }
 
                 if !form.caption.is_empty() {
+                    let caption = display_form_caption(&form.caption);
                     let font = self.make_form_font((h * 0.6).clamp(8.0, 13.0));
                     let mut tp = Paint::default();
                     tp.set_anti_alias(true);
                     tp.set_color(fg_color);
                     let tx = bx + box_size + 4.0;
                     let ty = y + h / 2.0 + font.size() * 0.35;
-                    canvas.draw_str(&form.caption, (tx, ty), &font, &tp);
+                    canvas.draw_str(caption.as_ref(), (tx, ty), &font, &tp);
                 }
             }
             FormType::RadioButton => {
@@ -1225,13 +1298,14 @@ impl SkiaLayerRenderer {
                 }
 
                 if !form.caption.is_empty() {
+                    let caption = display_form_caption(&form.caption);
                     let font = self.make_form_font((h * 0.6).clamp(8.0, 13.0));
                     let mut tp = Paint::default();
                     tp.set_anti_alias(true);
                     tp.set_color(fg_color);
                     let tx = cx + r + 4.0;
                     let ty = y + h / 2.0 + font.size() * 0.35;
-                    canvas.draw_str(&form.caption, (tx, ty), &font, &tp);
+                    canvas.draw_str(caption.as_ref(), (tx, ty), &font, &tp);
                 }
             }
             FormType::ComboBox => {
@@ -1599,6 +1673,113 @@ mod tests {
     }
 
     #[test]
+    fn native_skia_glyph_run_proof_reports_portability_font_blob_digest_mismatch() {
+        let mut resources = portable_font_resources();
+        let wrong_digest = FontDigest {
+            algorithm: "blake3".to_string(),
+            value: resource_digest_hex([9_u8, 9, 9, 9]),
+        };
+        if let FontPortability::PortableBlob { digest, .. } =
+            &mut resources.font_resources_mut().blobs[0].portability
+        {
+            *digest = wrong_digest.clone();
+        }
+        let run = portable_glyph_run(GlyphRunOrientation::Horizontal);
+        let proof = native_skia_glyph_run_replay_proof(&run, &resources);
+
+        assert!(!proof.contract_replayable);
+        assert!(proof
+            .reasons
+            .contains(&NativeGlyphRunReplayProofReason::FontBlobDigestMismatch));
+        assert_eq!(
+            NativeGlyphRunReplayProofReason::FontBlobDigestMismatch.as_str(),
+            "fontBlobDigestMismatch"
+        );
+    }
+
+    #[test]
+    fn native_skia_glyph_run_proof_reports_blob_font_digest_mismatch() {
+        let mut resources = portable_font_resources();
+        resources.font_resources_mut().blobs[0].digest = Some(FontDigest {
+            algorithm: "blake3".to_string(),
+            value: resource_digest_hex([9_u8, 9, 9, 9]),
+        });
+        let run = portable_glyph_run(GlyphRunOrientation::Horizontal);
+        let proof = native_skia_glyph_run_replay_proof(&run, &resources);
+
+        assert!(!proof.contract_replayable);
+        assert!(proof
+            .reasons
+            .contains(&NativeGlyphRunReplayProofReason::FontBlobDigestMismatch));
+    }
+
+    #[test]
+    fn native_skia_glyph_run_proof_rejects_unsupported_font_digest_algorithm() {
+        {
+            let mut resources = portable_font_resources();
+            if let FontPortability::PortableBlob { digest, .. } =
+                &mut resources.font_resources_mut().blobs[0].portability
+            {
+                digest.algorithm = "sha256".to_string();
+            }
+            let run = portable_glyph_run(GlyphRunOrientation::Horizontal);
+            let proof = native_skia_glyph_run_replay_proof(&run, &resources);
+
+            assert!(!proof.contract_replayable);
+            assert!(proof
+                .reasons
+                .contains(&NativeGlyphRunReplayProofReason::FontBlobDigestMismatch));
+        }
+
+        {
+            let mut resources = portable_font_resources();
+            if let Some(digest) = &mut resources.font_resources_mut().blobs[0].digest {
+                digest.algorithm = "sha256".to_string();
+            }
+            let run = portable_glyph_run(GlyphRunOrientation::Horizontal);
+            let proof = native_skia_glyph_run_replay_proof(&run, &resources);
+
+            assert!(!proof.contract_replayable);
+            assert!(proof
+                .reasons
+                .contains(&NativeGlyphRunReplayProofReason::FontBlobDigestMismatch));
+        }
+    }
+
+    #[test]
+    fn native_skia_glyph_run_proof_reports_missing_blob_data_ref_metadata() {
+        let mut resources = portable_font_resources();
+        resources.font_resources_mut().blobs[0].data_ref = None;
+        let run = portable_glyph_run(GlyphRunOrientation::Horizontal);
+        let proof = native_skia_glyph_run_replay_proof(&run, &resources);
+
+        assert!(!proof.contract_replayable);
+        assert!(proof
+            .reasons
+            .contains(&NativeGlyphRunReplayProofReason::FontBlobDataRefMismatch));
+        assert_eq!(
+            NativeGlyphRunReplayProofReason::FontBlobDataRefMismatch.as_str(),
+            "fontBlobDataRefMismatch"
+        );
+    }
+
+    #[test]
+    fn native_skia_glyph_run_proof_reports_mismatched_blob_data_ref_metadata() {
+        let mut resources = portable_font_resources();
+        resources.font_resources_mut().blobs[0].data_ref = Some(BinaryResourceRef {
+            kind: BinaryResourceKind::FontBlob,
+            id: "font:blake3:4:wrong".to_string(),
+        });
+        let run = portable_glyph_run(GlyphRunOrientation::Horizontal);
+        let proof = native_skia_glyph_run_replay_proof(&run, &resources);
+
+        assert!(!proof.contract_replayable);
+        assert!(proof
+            .reasons
+            .contains(&NativeGlyphRunReplayProofReason::FontBlobDataRefMismatch));
+    }
+
+    #[test]
     fn native_skia_glyph_run_proof_separates_replay_eligibility_from_blob_portability() {
         let resources = portable_font_resources();
         let mut run = portable_glyph_run(GlyphRunOrientation::Horizontal);
@@ -1636,6 +1817,19 @@ mod tests {
     }
 
     #[test]
+    fn native_skia_glyph_run_proof_keeps_glyph_id_range_guard() {
+        let resources = portable_font_resources();
+        let mut run = portable_glyph_run(GlyphRunOrientation::Horizontal);
+        run.glyph_ids[0] = u16::MAX as u32 + 1;
+        let proof = native_skia_glyph_run_replay_proof(&run, &resources);
+
+        assert!(!proof.contract_replayable);
+        assert!(proof
+            .reasons
+            .contains(&NativeGlyphRunReplayProofReason::GlyphIdOutOfRange));
+    }
+
+    #[test]
     fn native_skia_glyph_run_proof_reports_missing_face() {
         let resources = ResourceArena::default();
         let run = portable_glyph_run(GlyphRunOrientation::Horizontal);
@@ -1663,18 +1857,18 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, page_width, page_height),
                 None,
-                vec![PaintOp::Rectangle {
+                vec![PaintOp::rectangle(
                     bbox,
-                    rect: RectangleNode::new(0.0, style, None),
-                }],
+                    RectangleNode::new(0.0, style, None),
+                )],
             ),
         )
     }
 
     fn solid_rect_op(bbox: BoundingBox, fill_color: ColorRef) -> PaintOp {
-        PaintOp::Rectangle {
+        PaintOp::rectangle(
             bbox,
-            rect: RectangleNode::new(
+            RectangleNode::new(
                 0.0,
                 ShapeStyle {
                     fill_color: Some(fill_color),
@@ -1682,17 +1876,13 @@ mod tests {
                 },
                 None,
             ),
-        }
+        )
     }
 
     fn solid_image_op(bbox: BoundingBox, color: [u8; 4], wrap: TextWrap) -> PaintOp {
         let mut image = ImageNode::new(1, Some(solid_png(color)));
         image.text_wrap = Some(wrap);
-        PaintOp::Image {
-            bbox,
-            image,
-            resolved: None,
-        }
+        PaintOp::image(bbox, image, None)
     }
 
     #[test]
@@ -1791,10 +1981,10 @@ mod tests {
         let child = LayerNode::leaf(
             BoundingBox::new(0.0, 0.0, 20.0, 20.0),
             None,
-            vec![PaintOp::Rectangle {
-                bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
-                rect: RectangleNode::new(0.0, style, None),
-            }],
+            vec![PaintOp::rectangle(
+                BoundingBox::new(0.0, 0.0, 20.0, 20.0),
+                RectangleNode::new(0.0, style, None),
+            )],
         );
         let clipped = PageLayerTree::new(
             20.0,
@@ -1941,16 +2131,16 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 8.0, 8.0),
                 None,
-                vec![PaintOp::PageBackground {
-                    bbox: BoundingBox::new(0.0, 0.0, 8.0, 8.0),
-                    background: PageBackgroundNode {
+                vec![PaintOp::page_background(
+                    BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                    PageBackgroundNode {
                         background_color: Some(0x0000ff00),
                         border_color: Some(0x00ff0000),
                         border_width: 2.0,
                         gradient: None,
                         image: None,
                     },
-                }],
+                )],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -1975,9 +2165,9 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 8.0, 8.0),
                 None,
-                vec![PaintOp::PageBackground {
-                    bbox: BoundingBox::new(0.0, 0.0, 8.0, 8.0),
-                    background: PageBackgroundNode {
+                vec![PaintOp::page_background(
+                    BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                    PageBackgroundNode {
                         background_color: None,
                         border_color: None,
                         border_width: 0.0,
@@ -1990,7 +2180,7 @@ mod tests {
                             effect: crate::model::image::ImageEffect::RealPic,
                         }),
                     },
-                }],
+                )],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2078,26 +2268,11 @@ mod tests {
                 BoundingBox::new(0.0, 0.0, 40.0, 40.0),
                 None,
                 vec![
-                    PaintOp::Rectangle {
-                        bbox: BoundingBox::new(2.0, 2.0, 10.0, 8.0),
-                        rect: gradient_rect,
-                    },
-                    PaintOp::Rectangle {
-                        bbox: BoundingBox::new(16.0, 2.0, 10.0, 8.0),
-                        rect: pattern_rect,
-                    },
-                    PaintOp::Ellipse {
-                        bbox: BoundingBox::new(2.0, 12.0, 10.0, 10.0),
-                        ellipse,
-                    },
-                    PaintOp::Path {
-                        bbox: BoundingBox::new(2.0, 24.0, 10.0, 10.0),
-                        path,
-                    },
-                    PaintOp::Line {
-                        bbox: BoundingBox::new(18.0, 28.0, 16.0, 4.0),
-                        line,
-                    },
+                    PaintOp::rectangle(BoundingBox::new(2.0, 2.0, 10.0, 8.0), gradient_rect),
+                    PaintOp::rectangle(BoundingBox::new(16.0, 2.0, 10.0, 8.0), pattern_rect),
+                    PaintOp::ellipse(BoundingBox::new(2.0, 12.0, 10.0, 10.0), ellipse),
+                    PaintOp::path(BoundingBox::new(2.0, 24.0, 10.0, 10.0), path),
+                    PaintOp::line(BoundingBox::new(18.0, 28.0, 16.0, 4.0), line),
                 ],
             ),
         );
@@ -2138,10 +2313,7 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 24.0, 18.0),
                 None,
-                vec![PaintOp::Path {
-                    bbox: BoundingBox::new(4.0, 4.0, 16.0, 12.0),
-                    path,
-                }],
+                vec![PaintOp::path(BoundingBox::new(4.0, 4.0, 16.0, 12.0), path)],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2161,16 +2333,16 @@ mod tests {
                 BoundingBox::new(0.0, 0.0, 20.0, 10.0),
                 None,
                 vec![
-                    PaintOp::Image {
-                        bbox: BoundingBox::new(0.0, 0.0, 8.0, 8.0),
-                        image: ImageNode::new(1, Some(solid_png([0, 0, 255, 255]))),
-                        resolved: None,
-                    },
-                    PaintOp::Image {
-                        bbox: BoundingBox::new(10.0, 0.0, 8.0, 8.0),
-                        image: ImageNode::new(2, Some(vec![1, 2, 3, 4])),
-                        resolved: None,
-                    },
+                    PaintOp::image(
+                        BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                        ImageNode::new(1, Some(solid_png([0, 0, 255, 255]))),
+                        None,
+                    ),
+                    PaintOp::image(
+                        BoundingBox::new(10.0, 0.0, 8.0, 8.0),
+                        ImageNode::new(2, Some(vec![1, 2, 3, 4])),
+                        None,
+                    ),
                 ],
             ),
         );
@@ -2289,11 +2461,11 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 8.0, 8.0),
                 None,
-                vec![PaintOp::Image {
-                    bbox: BoundingBox::new(0.0, 0.0, 8.0, 8.0),
-                    image: node,
-                    resolved: None,
-                }],
+                vec![PaintOp::image(
+                    BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                    node,
+                    None,
+                )],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2320,11 +2492,11 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 16.0, 4.0),
                 None,
-                vec![PaintOp::Image {
-                    bbox: BoundingBox::new(0.0, 0.0, 16.0, 4.0),
-                    image: node,
-                    resolved: None,
-                }],
+                vec![PaintOp::image(
+                    BoundingBox::new(0.0, 0.0, 16.0, 4.0),
+                    node,
+                    None,
+                )],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2352,11 +2524,11 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 8.0, 8.0),
                 None,
-                vec![PaintOp::Image {
-                    bbox: BoundingBox::new(0.0, 0.0, 8.0, 8.0),
-                    image: node,
-                    resolved: None,
-                }],
+                vec![PaintOp::image(
+                    BoundingBox::new(0.0, 0.0, 8.0, 8.0),
+                    node,
+                    None,
+                )],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2379,11 +2551,11 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 8.0, 8.0),
                 None,
-                vec![PaintOp::Image {
-                    bbox: BoundingBox::new(f64::NAN, 0.0, 8.0, 8.0),
-                    image: ImageNode::new(1, Some(solid_png([255, 0, 0, 255]))),
-                    resolved: None,
-                }],
+                vec![PaintOp::image(
+                    BoundingBox::new(f64::NAN, 0.0, 8.0, 8.0),
+                    ImageNode::new(1, Some(solid_png([255, 0, 0, 255]))),
+                    None,
+                )],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2435,14 +2607,8 @@ mod tests {
                 BoundingBox::new(0.0, 0.0, 64.0, 32.0),
                 None,
                 vec![
-                    PaintOp::TextRun {
-                        bbox: BoundingBox::new(4.0, 4.0, 24.0, 24.0),
-                        run,
-                    },
-                    PaintOp::FootnoteMarker {
-                        bbox: BoundingBox::new(32.0, 4.0, 24.0, 24.0),
-                        marker,
-                    },
+                    PaintOp::text_run(BoundingBox::new(4.0, 4.0, 24.0, 24.0), run),
+                    PaintOp::footnote_marker(BoundingBox::new(32.0, 4.0, 24.0, 24.0), marker),
                 ],
             ),
         );
@@ -2487,10 +2653,10 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 40.0, 40.0),
                 None,
-                vec![PaintOp::TextRun {
-                    bbox: BoundingBox::new(8.0, 8.0, 24.0, 24.0),
+                vec![PaintOp::text_run(
+                    BoundingBox::new(8.0, 8.0, 24.0, 24.0),
                     run,
-                }],
+                )],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2536,10 +2702,10 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 88.0, 36.0),
                 None,
-                vec![PaintOp::TextRun {
-                    bbox: BoundingBox::new(4.0, 4.0, 80.0, 28.0),
+                vec![PaintOp::text_run(
+                    BoundingBox::new(4.0, 4.0, 80.0, 28.0),
                     run,
-                }],
+                )],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2580,10 +2746,10 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 72.0, 36.0),
                 None,
-                vec![PaintOp::TextRun {
-                    bbox: BoundingBox::new(4.0, 4.0, 60.0, 28.0),
+                vec![PaintOp::text_run(
+                    BoundingBox::new(4.0, 4.0, 60.0, 28.0),
                     run,
-                }],
+                )],
             ),
         )
         .with_output_options(LayerOutputOptions {
@@ -2632,10 +2798,10 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 48.0, 40.0),
                 None,
-                vec![PaintOp::TextRun {
-                    bbox: BoundingBox::new(8.0, 8.0, 32.0, 28.0),
+                vec![PaintOp::text_run(
+                    BoundingBox::new(8.0, 8.0, 32.0, 28.0),
                     run,
-                }],
+                )],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2672,10 +2838,10 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 64.0, 48.0),
                 None,
-                vec![PaintOp::Equation {
-                    bbox: BoundingBox::new(6.0, 6.0, 44.0, 32.0),
+                vec![PaintOp::equation(
+                    BoundingBox::new(6.0, 6.0, 44.0, 32.0),
                     equation,
-                }],
+                )],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2719,10 +2885,10 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 64.0, 48.0),
                 None,
-                vec![PaintOp::Equation {
-                    bbox: BoundingBox::new(6.0, 6.0, 44.0, 32.0),
+                vec![PaintOp::equation(
+                    BoundingBox::new(6.0, 6.0, 44.0, 32.0),
                     equation,
-                }],
+                )],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2763,24 +2929,21 @@ mod tests {
                 BoundingBox::new(0.0, 0.0, 48.0, 16.0),
                 None,
                 vec![
-                    PaintOp::Placeholder {
-                        bbox: BoundingBox::new(0.0, 0.0, 14.0, 14.0),
-                        placeholder: PlaceholderNode {
+                    PaintOp::placeholder(
+                        BoundingBox::new(0.0, 0.0, 14.0, 14.0),
+                        PlaceholderNode {
                             fill_color: 0,
                             stroke_color: 0,
                             label: "ph".to_string(),
                         },
-                    },
-                    PaintOp::RawSvg {
-                        bbox: BoundingBox::new(16.0, 0.0, 14.0, 14.0),
-                        raw: RawSvgNode {
+                    ),
+                    PaintOp::raw_svg(
+                        BoundingBox::new(16.0, 0.0, 14.0, 14.0),
+                        RawSvgNode {
                             svg: "<invalid".to_string(),
                         },
-                    },
-                    PaintOp::FormObject {
-                        bbox: BoundingBox::new(32.0, 0.0, 14.0, 14.0),
-                        form,
-                    },
+                    ),
+                    PaintOp::form_object(BoundingBox::new(32.0, 0.0, 14.0, 14.0), form),
                 ],
             ),
         );
@@ -2800,13 +2963,13 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 32.0, 24.0),
                 None,
-                vec![PaintOp::RawSvg {
-                    bbox: BoundingBox::new(4.0, 4.0, 18.0, 12.0),
-                    raw: RawSvgNode {
+                vec![PaintOp::raw_svg(
+                    BoundingBox::new(4.0, 4.0, 18.0, 12.0),
+                    RawSvgNode {
                         svg: "<rect x=\"0\" y=\"0\" width=\"18\" height=\"12\" fill=\"#00ff00\"/>"
                             .to_string(),
                     },
-                }],
+                )],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2838,15 +3001,15 @@ mod tests {
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 32.0, 24.0),
                 None,
-                vec![PaintOp::RawSvg {
-                    bbox: BoundingBox::new(4.0, 4.0, 20.0, 16.0),
-                    raw: RawSvgNode {
+                vec![PaintOp::raw_svg(
+                    BoundingBox::new(4.0, 4.0, 20.0, 16.0),
+                    RawSvgNode {
                         svg: format!(
                             "<image href=\"{}\" x=\"0\" y=\"0\" width=\"20\" height=\"16\"/>",
                             external_href
                         ),
                     },
-                }],
+                )],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2867,9 +3030,9 @@ mod tests {
         let red = LayerNode::leaf(
             BoundingBox::new(0.0, 0.0, 12.0, 12.0),
             None,
-            vec![PaintOp::Rectangle {
-                bbox: BoundingBox::new(0.0, 0.0, 12.0, 12.0),
-                rect: RectangleNode::new(
+            vec![PaintOp::rectangle(
+                BoundingBox::new(0.0, 0.0, 12.0, 12.0),
+                RectangleNode::new(
                     0.0,
                     ShapeStyle {
                         fill_color: Some(0x000000ff),
@@ -2877,14 +3040,14 @@ mod tests {
                     },
                     None,
                 ),
-            }],
+            )],
         );
         let blue = LayerNode::leaf(
             BoundingBox::new(3.0, 3.0, 6.0, 6.0),
             None,
-            vec![PaintOp::Rectangle {
-                bbox: BoundingBox::new(3.0, 3.0, 6.0, 6.0),
-                rect: RectangleNode::new(
+            vec![PaintOp::rectangle(
+                BoundingBox::new(3.0, 3.0, 6.0, 6.0),
+                RectangleNode::new(
                     0.0,
                     ShapeStyle {
                         fill_color: Some(0x00ff0000),
@@ -2892,7 +3055,7 @@ mod tests {
                     },
                     None,
                 ),
-            }],
+            )],
         );
         let tree = PageLayerTree::new(
             12.0,

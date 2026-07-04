@@ -1,17 +1,19 @@
 import { WasmBridge } from '@/core/wasm-bridge';
 import type { DocumentInfo } from '@/core/types';
 import { EventBus } from '@/core/event-bus';
+import { assertRemoteDocumentBytes } from '@/core/document-signature';
 import { CanvasView } from '@/view/canvas-view';
 import { InputHandler } from '@/engine/input-handler';
 import { Toolbar } from '@/ui/toolbar';
 import { MenuBar } from '@/ui/menu-bar';
 import { loadWebFonts } from '@/core/font-loader';
+import { loadExtensionViewerSettings, type ExtensionViewerSettings } from '@/core/extension-settings';
 import { CommandRegistry } from '@/command/registry';
 import { CommandDispatcher } from '@/command/dispatcher';
-import type { EditorContext, CommandServices } from '@/command/types';
+import type { EditorContext, CommandServices, EditorEditMode } from '@/command/types';
 import { confirmSaveBeforeReplacingDocument, fileCommands } from '@/command/commands/file';
 import { editCommands } from '@/command/commands/edit';
-import { viewCommands } from '@/command/commands/view';
+import { syncTextMarkMenu, viewCommands } from '@/command/commands/view';
 import { formatCommands } from '@/command/commands/format';
 import { insertCommands } from '@/command/commands/insert';
 import { tableCommands } from '@/command/commands/table';
@@ -21,9 +23,19 @@ import { installPwaFileHandling, type FileHandlingWindowLike } from '@/command/p
 import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
 import { showValidationModalIfNeeded } from '@/ui/validation-modal';
+import { showLocalFontsModalIfNeeded } from '@/ui/local-fonts-modal';
 import { showToast } from '@/ui/toast';
+import { showDropConfirmDialog } from '@/ui/drop-confirm-dialog';
 import { initRhwpDev } from '@/core/rhwp-dev';
 import { DocumentDirtyState } from '@/core/document-dirty-state';
+import { initThemeSync, setThemeMode, getThemeMode, getEffectiveTheme } from '@/core/theme';
+import { analyzeDocumentFonts } from '@/core/document-font-status';
+import { detectLocalFonts, getLocalFontState, loadStoredLocalFonts } from '@/core/local-fonts';
+import { userSettings } from '@/core/user-settings';
+import { AutosaveManager } from '@/recovery/autosave-manager';
+import { clearAutosaveDrafts, deleteAutosaveDraft, listAutosaveDrafts, type AutosaveDraft } from '@/recovery/autosave-store';
+import { recoveryFileName } from '@/recovery/recovery-format';
+import { showAutosaveRecoveryDialog } from '@/recovery/recovery-ui';
 import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
@@ -40,18 +52,32 @@ const wasm = new WasmBridge();
 const eventBus = new EventBus();
 const documentState = new DocumentDirtyState(eventBus);
 documentState.installBeforeUnload(window);
+const autosaveManager = new AutosaveManager({
+  exportBytes: () => wasm.exportHwp(),
+});
+autosaveManager.connect(eventBus);
+initThemeSync((effective, mode) => {
+  eventBus.emit('theme-changed', { mode, effective });
+  eventBus.emit('command-state-changed');
+});
 
 // E2E 테스트용 전역 노출 (개발 모드 전용)
 if (import.meta.env.DEV) {
   (window as any).__wasm = wasm;
   (window as any).__eventBus = eventBus;
   (window as any).__documentState = documentState;
+  (window as any).__autosaveManager = autosaveManager;
+  (window as any).__theme = { getThemeMode, getEffectiveTheme, setThemeMode };
   initRhwpDev(wasm);
 }
 let canvasView: CanvasView | null = null;
 let inputHandler: InputHandler | null = null;
 let toolbar: Toolbar | null = null;
 let ruler: Ruler | null = null;
+let editMode: EditorEditMode = 'normal';
+let extensionViewerSettings: ExtensionViewerSettings = {
+  disableExternalWebFonts: false,
+};
 
 
 // ─── 커맨드 시스템 ─────────────────────────────
@@ -59,22 +85,43 @@ const registry = new CommandRegistry();
 
 function getContext(): EditorContext {
   const hasDoc = wasm.pageCount > 0;
+  const canEditFormField = inputHandler?.canEditCurrentFormField() ?? false;
+  const isFormMode = editMode === 'form';
   return {
     hasDocument: hasDoc,
     hasSelection: inputHandler?.hasSelection() ?? false,
+    hasCopiedFormat: inputHandler?.hasCopiedFormat() ?? false,
     inTable: inputHandler?.isInTable() ?? false,
     inCellSelectionMode: inputHandler?.isInCellSelectionMode() ?? false,
+    hasMultiCellSelection: inputHandler?.hasMultiCellSelection() ?? false,
+    hasTableTransposeClipboard: wasm.hasTableTransposeClipboard(),
     inTableObjectSelection: inputHandler?.isInTableObjectSelection() ?? false,
     inPictureObjectSelection: inputHandler?.isInPictureObjectSelection() ?? false,
     inField: inputHandler?.isInField() ?? false,
-    isEditable: true,
+    isEditable: !isFormMode || canEditFormField,
+    editMode,
+    isFormMode,
+    canEditFormField,
     canUndo: inputHandler?.canUndo() ?? false,
     canRedo: inputHandler?.canRedo() ?? false,
     zoom: canvasView?.getViewportManager().getZoom() ?? 1.0,
     showControlCodes: wasm.getShowControlCodes(),
+    showParagraphMarks: wasm.getShowParagraphMarks(),
     isDirty: documentState.isDirty(),
     sourceFormat: hasDoc ? (wasm.getSourceFormat() as 'hwp' | 'hwpx') : undefined,
   };
+}
+
+function setEditMode(mode: EditorEditMode): void {
+  editMode = mode;
+  inputHandler?.setEditMode(mode);
+  document.documentElement.dataset.editMode = mode;
+  document.querySelectorAll('[data-cmd="view:form-mode"]').forEach(el => {
+    el.classList.toggle('active', mode === 'form');
+  });
+  sbMessage().textContent = mode === 'form' ? '양식 모드' : '기본 편집 모드';
+  eventBus.emit('edit-mode-changed', mode);
+  eventBus.emit('command-state-changed');
 }
 
 const commandServices: CommandServices = {
@@ -84,6 +131,7 @@ const commandServices: CommandServices = {
   getContext,
   getInputHandler: () => inputHandler,
   getViewportManager: () => canvasView?.getViewportManager() ?? null,
+  setEditMode,
 };
 
 const dispatcher = new CommandDispatcher(registry, commandServices, eventBus);
@@ -107,8 +155,14 @@ const sbZoomVal = () => document.getElementById('sb-zoom-val')!;
 async function initialize(): Promise<void> {
   const msg = sbMessage();
   try {
-    msg.textContent = '웹폰트 로딩 중...';
-    await loadWebFonts([]);  // CSS @font-face 등록 + CRITICAL 폰트만 로드
+    extensionViewerSettings = await loadExtensionViewerSettings();
+    if (extensionViewerSettings.disableExternalWebFonts) {
+      console.info('[main] 외부 웹폰트 사용 안 함 옵션이 켜져 있습니다.');
+    }
+    msg.textContent = extensionViewerSettings.disableExternalWebFonts
+      ? '로컬 폰트 준비 중...'
+      : '웹폰트 로딩 중...';
+    await loadWebFonts([], undefined, extensionViewerSettings);  // CSS @font-face 등록 + CRITICAL 폰트만 로드
     msg.textContent = 'WASM 로딩 중...';
     await wasm.initialize();
     if (import.meta.env.DEV) {
@@ -164,6 +218,7 @@ async function initialize(): Promise<void> {
       canvasView.getVirtualScroll(),
       canvasView.getViewportManager(),
     );
+    inputHandler.setEditMode(editMode);
 
     toolbar = new Toolbar(document.getElementById('style-bar')!, wasm, eventBus, dispatcher);
     toolbar.setEnabled(false);
@@ -185,7 +240,7 @@ async function initialize(): Promise<void> {
       new TableObjectRenderer(container, canvasView.getVirtualScroll(), true),
     );
 
-    new MenuBar(document.getElementById('menu-bar')!, eventBus, dispatcher);
+    new MenuBar(document.getElementById('menu-bar')!, eventBus, dispatcher, registry);
 
     // 툴바 내 data-cmd 버튼 클릭 → 커맨드 디스패치
     document.querySelectorAll('.tb-btn[data-cmd]').forEach(btn => {
@@ -239,7 +294,8 @@ async function initialize(): Promise<void> {
     setupZoomControls();
     setupEventListeners();
     setupGlobalShortcuts();
-    loadFromUrlParam();
+    void loadFromUrlParam();
+    void offerAutosaveRecoveryIfIdle();
     installPwaFileHandling(window as FileHandlingWindowLike, {
       openDocumentBytes(payload) {
         eventBus.emit('open-document-bytes', payload);
@@ -342,7 +398,19 @@ function setupFileInput(): void {
     if (!file) return;
     const dropName = file.name.toLowerCase();
     const imageExts = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
-    if (imageExts.some(ext => dropName.endsWith(ext))) {
+    const isImage = imageExts.some(ext => dropName.endsWith(ext));
+    const isDoc = dropName.endsWith('.hwp') || dropName.endsWith('.hwpx');
+    if (!isImage && !isDoc) {
+      alert('HWP/HWPX 파일 또는 이미지 파일만 지원합니다.');
+      return;
+    }
+
+    // [#1439] 보안: 드롭으로 로컬 파일을 읽는 동작은 기본에서 제외하고, 사용자가
+    // 명시적으로 [열기]를 눌러 동의한 경우에만 진행한다 (확장/웹 공통).
+    const confirmed = await showDropConfirmDialog(file.name);
+    if (!confirmed) return;
+
+    if (isImage) {
       if (!inputHandler || wasm.pageCount === 0) return;
       const data = new Uint8Array(await file.arrayBuffer());
       const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
@@ -351,18 +419,34 @@ function setupFileInput(): void {
       try {
         img.src = url;
         await img.decode();
-        inputHandler.enterImagePlacementMode(data, ext, img.naturalWidth, img.naturalHeight, file.name);
+        const result = inputHandler.insertDroppedImageAtClientPoint(
+          data,
+          ext,
+          img.naturalWidth,
+          img.naturalHeight,
+          file.name,
+          e.clientX,
+          e.clientY,
+        );
+        if (!result.ok) {
+          showToast({
+            message: `그림 삽입에 실패했습니다.\n${result.error ?? '삽입 위치 또는 이미지 정보를 확인할 수 없습니다.'}`,
+            durationMs: 6000,
+          });
+        }
       } catch {
         console.warn('[drop] 이미지 디코딩 실패:', file.name);
+        showToast({
+          message: '그림을 삽입할 수 없습니다.\n브라우저가 이 이미지 파일을 읽지 못했습니다.',
+          durationMs: 6000,
+        });
       } finally {
         URL.revokeObjectURL(url);
       }
       return;
     }
-    if (!dropName.endsWith('.hwp') && !dropName.endsWith('.hwpx')) {
-      alert('HWP/HWPX 파일 또는 이미지 파일만 지원합니다.');
-      return;
-    }
+
+    // HWP/HWPX — loadFile 내부 unsaved 가드는 드롭 확인 이후에 동작한다.
     await loadFile(file);
   });
 }
@@ -468,6 +552,12 @@ function setupEventListeners(): void {
     eventBus.emit('command-state-changed');
   });
 
+  eventBus.on('local-fonts-changed', () => {
+    if (wasm.pageCount > 0) {
+      canvasView?.loadDocument();
+    }
+  });
+
   // 필드 정보 표시
   const sbField = document.getElementById('sb-field');
   eventBus.on('field-info-changed', (info) => {
@@ -539,6 +629,13 @@ function setupEventListeners(): void {
 }
 
 /** 문서 초기화 공통 시퀀스 (loadFile, createNewDocument 양쪽에서 사용) */
+function applySavedTextMarkSettings(): void {
+  const view = userSettings.getViewSettings();
+  wasm.setShowControlCodes(view.showControlCodes);
+  wasm.setShowParagraphMarks(view.showParagraphMarks);
+  syncTextMarkMenu(view.showControlCodes, view.showParagraphMarks);
+}
+
 async function initializeDocument(docInfo: DocumentInfo, displayName: string): Promise<void> {
   const msg = sbMessage();
   let normalizedDuringLoad = false;
@@ -547,12 +644,13 @@ async function initializeDocument(docInfo: DocumentInfo, displayName: string): P
     if (docInfo.fontsUsed?.length) {
       await loadWebFonts(docInfo.fontsUsed, (loaded, total) => {
         msg.textContent = `폰트 로딩 중... (${loaded}/${total})`;
-      });
+      }, extensionViewerSettings);
     }
     console.log('[initDoc] 2. 폰트 로딩 완료');
     msg.textContent = displayName;
     totalSections = docInfo.sectionCount ?? 1;
     sbSection().textContent = `구역: 1 / ${totalSections}`;
+    applySavedTextMarkSettings();
     console.log('[initDoc] 3. inputHandler deactivate');
     inputHandler?.deactivate();
     console.log('[initDoc] 4. canvasView loadDocument');
@@ -568,23 +666,30 @@ async function initializeDocument(docInfo: DocumentInfo, displayName: string): P
 
     // #177: HWPX 비표준 lineseg 감지 → 경고 있으면 모달로 사용자 선택 요청
     try {
-      const report = wasm.getValidationWarnings();
-      console.log(`[validation] ${report.count} warnings`, report.summary);
-      if (report.count > 0) {
-        const choice = await showValidationModalIfNeeded(report);
-        console.log(`[validation] user choice: ${choice}`);
-        if (choice === 'auto-fix') {
-          const n = wasm.reflowLinesegs();
-          console.log(`[validation] reflowed ${n} paragraphs`);
-          // 렌더 재계산
-          canvasView?.loadDocument();
-          msg.textContent = `${displayName} (비표준 lineseg ${n}건 자동 보정됨)`;
-          normalizedDuringLoad = n > 0;
+      if (wasm.getSourceFormat() === 'hwpx') {
+        const report = wasm.getValidationWarnings();
+        console.log(`[validation] ${report.count} warnings`, report.summary);
+        if (report.count > 0) {
+          const choice = await showValidationModalIfNeeded(report);
+          console.log(`[validation] user choice: ${choice}`);
+          if (choice === 'auto-fix') {
+            const n = wasm.reflowLinesegs();
+            console.log(`[validation] reflowed ${n} paragraphs`);
+            if (n > 0) {
+              // 렌더 재계산
+              canvasView?.loadDocument();
+              msg.textContent = `${displayName} (비표준 lineseg ${n}건 자동 보정됨)`;
+              normalizedDuringLoad = true;
+            }
+          }
         }
       }
     } catch (e) {
       console.warn('[validation] 감지/보정 실패 (치명적이지 않음):', e);
     }
+
+    await promptLocalFontsIfNeeded(docInfo, displayName);
+
     if (normalizedDuringLoad) {
       documentState.markDirty('validation-auto-fix');
     } else {
@@ -593,6 +698,45 @@ async function initializeDocument(docInfo: DocumentInfo, displayName: string): P
   } catch (error) {
     console.error('[initDoc] 오류:', error);
     if (window.innerWidth < 768) alert(`초기화 오류: ${error}`);
+  }
+}
+
+async function promptLocalFontsIfNeeded(docInfo: DocumentInfo, displayName: string): Promise<void> {
+  if (!docInfo.fontsUsed?.length) return;
+
+  const msg = sbMessage();
+  try {
+    await loadStoredLocalFonts();
+    const report = analyzeDocumentFonts(docInfo.fontsUsed);
+    if (!report.shouldPromptLocalAccess) return;
+
+    const choice = await showLocalFontsModalIfNeeded(report, {
+      disableExternalWebFonts: extensionViewerSettings.disableExternalWebFonts,
+    });
+    if (choice !== 'detect') return;
+
+    msg.textContent = '로컬 글꼴 감지 중...';
+    const fonts = await detectLocalFonts({
+      force: true,
+      includeRegistered: true,
+      candidateFamilies: docInfo.fontsUsed,
+    });
+    const nextReport = analyzeDocumentFonts(docInfo.fontsUsed);
+    eventBus.emit('local-fonts-changed', { fonts, report: nextReport });
+    const state = getLocalFontState();
+    const resultLabel = state.source === 'font-presence-probe' ? '확인됨' : '감지됨';
+    msg.textContent = `${displayName} (로컬 글꼴 ${fonts.length}개 ${resultLabel})`;
+    showToast({
+      message: `로컬 글꼴 ${fonts.length}개를 ${resultLabel.replace('됨', '')}하고 저장했습니다.\n다음 문서 로드부터 감지 결과를 재사용합니다.`,
+      durationMs: 5000,
+    });
+  } catch (error) {
+    console.warn('[local-fonts] 감지 안내/실행 실패 (치명적이지 않음):', error);
+    msg.textContent = displayName;
+    showToast({
+      message: '로컬 글꼴 감지에 실패했습니다.\n웹 대체 글꼴로 계속 표시합니다.',
+      durationMs: 8000,
+    });
   }
 }
 
@@ -622,86 +766,68 @@ async function loadBytes(
 ): Promise<void> {
   const docInfo = wasm.loadDocument(data, fileName);
   wasm.currentFileHandle = fileHandle;
+  await autosaveManager.beginDocument(
+    { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
+    { discardPreviousDraft: true },
+  );
   const elapsed = performance.now() - startTime;
-  // initializeDocument 안에서 #177 validation 모달이 표시될 수 있음.
-  // HWPX 토스트는 모달과의 이벤트 충돌을 피하기 위해 모달 닫힌 후 표시.
   await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`);
-  notifyHwpxSaveModeIfNeeded();
 }
 
-/**
- * #888: HWPX 출처 문서 로드 시 HWP 변환 저장 안내.
- * - 우상단 토스트 1회
- * - 상태 표시줄 메시지
- */
-function notifyHwpxSaveModeIfNeeded(): void {
-  if (wasm.getSourceFormat() !== 'hwpx') return;
+function shouldSkipInitialAutosaveRecovery(): boolean {
+  const params = new URLSearchParams(window.location.search);
+  return params.has('url');
+}
 
+async function offerAutosaveRecoveryIfIdle(): Promise<void> {
+  if (shouldSkipInitialAutosaveRecovery()) return;
+
+  try {
+    const drafts = (await listAutosaveDrafts()).filter((draft) => draft.data.byteLength > 0);
+    if (drafts.length === 0) return;
+    if (wasm.pageCount > 0 || documentState.isDirty()) return;
+
+    const choice = await showAutosaveRecoveryDialog(drafts);
+    if (choice.action === 'later') return;
+    if (choice.action === 'delete-all') {
+      await clearAutosaveDrafts();
+      showToast({ message: '복구 후보를 삭제했습니다.', durationMs: 2200 });
+      return;
+    }
+
+    const draft = drafts.find((item) => item.id === choice.draftId);
+    if (!draft) return;
+    try {
+      await restoreAutosaveDraft(draft);
+    } catch (error) {
+      showLoadError(error);
+    }
+  } catch (error) {
+    console.warn('[autosave] 복구 후보 확인 실패:', error);
+  }
+}
+
+async function restoreAutosaveDraft(draft: AutosaveDraft): Promise<void> {
+  const fileName = recoveryFileName(draft.fileName, draft.sourceFormat);
+  await loadBytes(new Uint8Array(draft.data), fileName, null);
+  await deleteAutosaveDraft(draft.id);
+  documentState.markDirty('autosave-recovered');
   showToast({
-    message: 'HWPX 문서는 저장 시 HWP 형식으로 변환 저장됩니다.\n원본 HWPX를 덮어쓰지 않도록 .hwp 파일명으로 저장합니다.',
-    durationMs: 0, // 자동 페이드 없음 — 사용자가 확인 버튼으로 닫음
-    action: {
-      label: '이슈 보기',
-      onClick: () => {
-        window.open('https://github.com/edwardkim/rhwp/issues/888', '_blank');
-      },
-    },
-    confirmLabel: '확인',
+    message: `"${fileName}" 복구본을 열었습니다.\n원본 파일은 자동으로 덮어쓰지 않습니다.`,
+    durationMs: 5000,
   });
-
-  const sb = sbMessage();
-  if (sb) sb.textContent = 'HWPX 변환 저장 모드 — 저장 시 HWP(.hwp)로 내보냅니다';
 }
 
-type DocumentByteKind = 'hwp' | 'hwpx' | 'html' | 'unknown';
-
-const HWP_CFB_SIGNATURE = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1] as const;
-const ZIP_SIGNATURES = [
-  [0x50, 0x4B, 0x03, 0x04],
-  [0x50, 0x4B, 0x05, 0x06],
-  [0x50, 0x4B, 0x07, 0x08],
-] as const;
-
-function startsWithBytes(bytes: Uint8Array, signature: readonly number[]): boolean {
-  if (bytes.length < signature.length) return false;
-  return signature.every((byte, index) => bytes[index] === byte);
-}
-
-function detectDocumentByteKind(bytes: Uint8Array, contentType?: string | null): DocumentByteKind {
-  if (startsWithBytes(bytes, HWP_CFB_SIGNATURE)) return 'hwp';
-  if (ZIP_SIGNATURES.some(signature => startsWithBytes(bytes, signature))) return 'hwpx';
-
-  const declaredContentType = contentType?.toLowerCase() ?? '';
-  if (declaredContentType.includes('text/html')) return 'html';
-
-  const prefix = new TextDecoder('utf-8')
-    .decode(bytes.subarray(0, Math.min(bytes.length, 256)))
-    .trimStart()
-    .toLowerCase();
-
-  if (prefix.startsWith('<!doctype') || prefix.startsWith('<html') || prefix.startsWith('<?xml')) {
-    return 'html';
-  }
-
-  return 'unknown';
-}
-
-function assertRemoteDocumentBytes(bytes: Uint8Array, contentType?: string | null): void {
-  const kind = detectDocumentByteKind(bytes, contentType);
-  if (kind === 'hwp' || kind === 'hwpx') return;
-
-  if (kind === 'html') {
-    throw new Error('실제 HWP/HWPX 파일이 아닙니다. 파일 미리보기/오류 페이지가 반환되었습니다.');
-  }
-
-  throw new Error('실제 HWP/HWPX 파일이 아닙니다. 파일 시그니처를 확인할 수 없습니다.');
-}
 
 async function createNewDocument(): Promise<void> {
   const msg = sbMessage();
   try {
     msg.textContent = '새 문서 생성 중...';
     const docInfo = wasm.createNewDocument();
+    await autosaveManager.beginDocument(
+      { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
+      { discardPreviousDraft: true },
+    );
     await initializeDocument(docInfo, `새 문서.hwp — ${docInfo.pageCount}페이지`);
   } catch (error) {
     msg.textContent = `새 문서 생성 실패: ${error}`;

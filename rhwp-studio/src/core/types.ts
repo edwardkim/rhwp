@@ -248,6 +248,7 @@ export interface FieldInfoResult {
   endCharIdx?: number;
   isGuide?: boolean;
   guideName?: string;
+  editableInForm?: boolean;
 }
 
 /** WASM getLineInfo() 반환 타입 */
@@ -410,6 +411,8 @@ export interface ParaProperties {
   patternColor?: string;   // '#RRGGBB'
   patternType?: number;    // 0=없음, 1~6=무늬
   borderSpacing?: number[];  // [좌, 우, 상, 하] HWPUNIT
+  borderConnect?: boolean;   // 문단 테두리 연결
+  borderIgnoreMargin?: boolean; // 문단 여백 무시
 }
 
 /** 테두리 선 정보 */
@@ -430,6 +433,8 @@ export interface CellProperties {
   paddingRight: number;
   paddingTop: number;
   paddingBottom: number;
+  /** 셀 고유 안 여백 지정 */
+  applyInnerMargin: boolean;
   /** 0=top, 1=center, 2=bottom */
   verticalAlign: number;
   /** 0=horizontal, 1=vertical */
@@ -437,6 +442,10 @@ export interface CellProperties {
   isHeader: boolean;
   /** 셀 보호 */
   cellProtect?: boolean;
+  /** 셀 필드 이름 */
+  fieldName?: string;
+  /** 양식 모드에서 편집 가능 */
+  editableInForm?: boolean;
   /** 테두리/배경 */
   borderFillId?: number;
   borderLeft?: BorderLineInfo;
@@ -447,6 +456,18 @@ export interface CellProperties {
   fillColor?: string;
   patternColor?: string;
   patternType?: number;
+  /** 대각선 선 종류 (0=없음, 1=실선, 2=파선, ...) */
+  diagonalLine?: number;
+  /** / 대각선 방향 비트 */
+  diagonalSlash?: number;
+  /** \ 대각선 방향 비트 */
+  diagonalBackSlash?: number;
+  /** 대각선 굵기 (0-6) */
+  diagonalWidth?: number;
+  /** 대각선 색상 (#rrggbb) */
+  diagonalColor?: string;
+  /** 중심선 방향: NONE / VERTICAL / HORIZONTAL / CROSS */
+  centerLine?: string;
 }
 
 /** WASM getTableProperties() 반환 타입 — HWPUNIT 원본값 */
@@ -573,6 +594,8 @@ export interface ShapeProperties {
   vertOffset: number;
   horzOffset: number;
   textWrap: string;
+  /** 크기 고정 */
+  sizeProtect?: boolean;
   tbMarginLeft?: number;
   tbMarginRight?: number;
   tbMarginTop?: number;
@@ -617,6 +640,8 @@ export interface EquationProperties {
   vertOffset?: number;
   horzOffset?: number;
   textWrap?: string;
+  /** 크기 고정 */
+  sizeProtect?: boolean;
   zOrder?: number;
   instanceId?: number;
   outerMarginLeft?: number;
@@ -647,9 +672,17 @@ export interface PictureProperties {
   vertOffset: number;
   horzOffset: number;
   textWrap: string;
+  /** 쪽 영역 안으로 제한 */
+  restrictInPage?: boolean;
+  /** 서로 겹침 허용 */
+  allowOverlap?: boolean;
+  /** 크기 고정 */
+  sizeProtect?: boolean;
   brightness: number;
   contrast: number;
   effect: string;
+  /** 그림 개체 전체 투명도. 한컴 UI 기준 0=불투명, 100=완전 투명. */
+  transparency?: number;
   description: string;
   rotationAngle: number;
   horzFlip: boolean;
@@ -953,8 +986,22 @@ export interface LayerTextStyle {
   italic?: boolean;
   ratio?: number;
   underline?: string;
+  underlineShape?: number;
   strikethrough?: boolean;
+  strikeShape?: number;
+  outlineType?: number;
+  shadowType?: number;
+  shadowColor?: string;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
+  emboss?: boolean;
+  engrave?: boolean;
+  superscript?: boolean;
+  subscript?: boolean;
+  underlineColor?: string;
+  strikeColor?: string;
   shadeColor?: string;
+  emphasisDot?: number;
 }
 
 export interface LayerTextRunOp {
@@ -1060,6 +1107,7 @@ export interface LayerImageOp {
   effect?: string;
   brightness?: number;
   contrast?: number;
+  opacity?: number;
   bakedWatermark?: boolean;
   wrap?: 'behindText' | 'inFrontOfText' | string;
   transform?: LayerPathTransform;

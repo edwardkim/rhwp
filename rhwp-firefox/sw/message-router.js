@@ -84,7 +84,8 @@ const messageHandlers = {
     const settings = await browser.storage.sync.get({
       autoOpen: true,
       showBadges: true,
-      hoverPreview: true
+      hoverPreview: true,
+      disableExternalWebFonts: false
     });
     return settings;
   }

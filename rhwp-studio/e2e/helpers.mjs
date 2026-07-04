@@ -20,6 +20,10 @@ import { TestReporter } from './report-generator.mjs';
 const CHROME_CDP = process.env.CHROME_CDP || 'http://172.21.192.1:19222';
 const VITE_URL = process.env.VITE_URL || 'http://localhost:7700';
 const REPORT_DIR = '../output/e2e';
+const CHROME_EXTRA_ARGS = (process.env.CHROME_EXTRA_ARGS || '')
+  .split(/\s+/)
+  .map((arg) => arg.trim())
+  .filter(Boolean);
 
 function resolveChromePath() {
   const envPath = process.env.CHROME_PATH || process.env.PUPPETEER_EXECUTABLE_PATH;
@@ -115,7 +119,7 @@ export async function launchBrowser() {
     return await puppeteer.launch({
       headless: true,
       executablePath: CHROME_PATH,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', ...CHROME_EXTRA_ARGS],
     });
   }
   // 호스트 Chrome CDP에 연결
@@ -183,8 +187,27 @@ const CANVAS_SELECTOR = '#scroll-container canvas';
 
 /** Vite dev server에서 앱을 로드하고 WASM 초기화 완료 대기 */
 export async function loadApp(page, search = '') {
-  await page.goto(`${VITE_URL}${search}`, { waitUntil: 'networkidle0', timeout: 30000 });
-  await page.waitForFunction(() => !!window.__wasm && !!window.__canvasView, { timeout: 15000 });
+  await page.goto(`${VITE_URL}${search}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const appReady = page.waitForFunction(() => !!window.__wasm && !!window.__canvasView, {
+    timeout: 60000,
+  });
+  // CI/Vite/PWA 조합에서 networkidle0 이 끝까지 내려가지 않는 경우가 있어 보조 대기로만 사용한다.
+  await Promise.race([
+    appReady,
+    page.waitForNetworkIdle({ idleTime: 500, timeout: 5000 }).catch(() => {}),
+  ]);
+  try {
+    await appReady;
+  } catch (err) {
+    const state = await page.evaluate(() => ({
+      readyState: document.readyState,
+      hasWasm: !!window.__wasm,
+      hasCanvasView: !!window.__canvasView,
+      location: window.location.href,
+      title: document.title,
+    })).catch(() => null);
+    throw new Error(`앱 초기화 대기 실패: ${err.message || err}; state=${JSON.stringify(state)}`);
+  }
   await page.evaluate(() => new Promise(r => setTimeout(r, 500)));
 }
 

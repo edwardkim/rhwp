@@ -22,7 +22,7 @@
   flex-direction: column;
   gap: 4px;
   padding: 8px 10px;
-  border-left: 1px solid #d0d0d0;
+  border-left: 1px solid var(--ui-border-light);
 }
 
 .cs-right-col .dialog-btn {
@@ -62,13 +62,13 @@
 
 .cs-icon-btn:hover {
   background: var(--color-accent-bg);
-  border-color: #a0b0d8;
+  border-color: var(--accent-hover);
 }
 
 .cs-icon-btn.active {
-  background: #dde3f4;
+  background: var(--color-accent-bg-light);
   border-color: var(--color-primary);
-  box-shadow: inset 0 0 0 1px #6182d6;
+  box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 
 /* 색상 선택 */
@@ -92,7 +92,7 @@
   font-size: var(--font-size-lg);
   line-height: 1.8;
   min-height: 36px;
-  color: #000;
+  color: var(--color-text);
 }
 
 /* 탭 패널 고정 높이 — 탭 전환 시 다이얼로그 크기 변동 방지 */
@@ -152,7 +152,7 @@
 .cs-border-inner {
   width: 80px;
   height: 70px;
-  border: 1px dashed #ccc;
+  border: 1px dashed var(--ui-border-light);
 }
 .cs-border-presets {
   display: flex;
@@ -173,7 +173,7 @@
 }
 .cs-preset-btn:hover {
   background: var(--color-accent-bg);
-  border-color: #a0b0d8;
+  border-color: var(--accent-hover);
 }
 .cs-line-preview {
   display: inline-block;
@@ -182,4 +182,3 @@
   color: var(--color-text-muted);
   vertical-align: middle;
 }
-

@@ -908,6 +908,28 @@ fn test_apply_char_shape_range_right_partial() {
 }
 
 #[test]
+fn test_apply_char_shape_range_seeds_empty_shape_refs() {
+    // 표 셀처럼 텍스트/오프셋은 있지만 글자 모양 ref가 비어 있는 문단도
+    // 범위 서식을 적용할 수 있어야 한다.
+    let mut para = Paragraph {
+        text: "ABCDE".to_string(),
+        char_offsets: vec![0, 1, 2, 3, 4],
+        char_shapes: vec![],
+        ..Default::default()
+    };
+
+    para.apply_char_shape_range(1, 4, 99);
+
+    assert_eq!(para.char_shapes.len(), 3);
+    assert_eq!(para.char_shapes[0].char_shape_id, 0);
+    assert_eq!(para.char_shapes[0].start_pos, 0);
+    assert_eq!(para.char_shapes[1].char_shape_id, 99);
+    assert_eq!(para.char_shapes[1].start_pos, 1);
+    assert_eq!(para.char_shapes[2].char_shape_id, 0);
+    assert_eq!(para.char_shapes[2].start_pos, 4);
+}
+
+#[test]
 fn test_apply_char_shape_range_middle() {
     // 중간 부분 변경: [1,3) → 99
     let mut para = Paragraph {

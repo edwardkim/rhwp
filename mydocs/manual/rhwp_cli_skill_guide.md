@@ -38,6 +38,7 @@ Claude: rhwp export-svg samples/3-09월_교육_통합_2023.hwp -o output/svg -p 
 | "sample.hwp 1쪽 SVG로 빼줘" | `export-svg sample.hwp -p 0` |
 | "전체를 PNG로, Claude Vision 입력용" | `export-png sample.hwp --vlm-target claude` |
 | "PDF로 변환" | `export-pdf sample.hwp -o out.pdf` |
+| "PDF 변환 시 한글 fallback 폰트 지정" | `export-pdf sample.hwp -o out.pdf --fallback-serif "Noto Serif CJK KR" --fallback-sans "Noto Sans CJK KR"` |
 | "본문 텍스트만 뽑아줘" | `export-text sample.hwp` |
 | "5쪽이 어떻게 배치됐는지" | `dump-pages sample.hwp -p 4` |
 | "3번 문단 조판 구조" | `dump sample.hwp -s 0 -p 3` |
@@ -158,6 +159,8 @@ rhwp hwp5-anchor-trace  파일.hwp --needle "찾을텍스트" --section 0
 
 - **페이지 번호는 0부터.** `-p 3` = 4쪽. PDF/한컴(1부터)과 다르다.
 - **출력 폴더는 기본 `output/`** (gitignore). 분석 산출물은 `output/poc/<주제>/` 로 분리 권장.
+- **공백 포함 CLI 값은 큰따옴표 권장.** 예: `--font-path "./My Fonts"`,
+  `--fallback-sans "Apple SD Gothic Neo"`. 작은따옴표는 zsh/bash/PowerShell에서 literal 값이 필요할 때만 사용한다.
 - **export-png/pdf** 는 release 바이너리(또는 `--features native-skia`)에서 동작.
 - **Docker 는 WASM 빌드 전용** — 분석 명령에는 쓰지 않는다(로컬 cargo 사용).
 - **자기검증 ≠ 한컴 호환**: 저장/렌더 결함은 한컴 2020/2022 에서 직접 열어 확인하는 게 최종 판정.

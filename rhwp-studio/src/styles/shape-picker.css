@@ -13,10 +13,10 @@
   font-weight: bold;
   font-size: var(--font-size-sm);
   color: var(--color-primary-dark);
-  border-bottom: 1px solid #c0c0c0;
+  border-bottom: 1px solid var(--ui-border);
 }
 .shape-picker-title:not(:first-child) {
-  border-top: 1px solid #c0c0c0;
+  border-top: 1px solid var(--ui-border);
 }
 .shape-picker-grid {
   display: grid;
@@ -37,7 +37,7 @@
 }
 .shape-picker-btn:hover {
   background: var(--color-accent-bg);
-  border-color: #748bc9;
+  border-color: var(--color-primary-subtle);
 }
 .shape-picker-icon {
   font-size: 18px;

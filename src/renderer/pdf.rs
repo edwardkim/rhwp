@@ -3,11 +3,122 @@
 //! SVG 렌더러의 출력을 svg2pdf + pdf-writer로 PDF를 생성한다.
 //! 단일/다중 페이지 모두 지원. 네이티브 전용 (WASM 미지원).
 
+/// PDF 내보내기 폰트 설정.
+///
+/// `export-pdf`는 SVG를 usvg/svg2pdf로 변환하므로 generic font family와 수식 SVG
+/// font-family를 PDF 변환 직전에 조정한다.
+#[cfg(not(target_arch = "wasm32"))]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PdfExportOptions {
+    /// serif generic fallback family.
+    pub fallback_serif: String,
+    /// sans-serif generic fallback family.
+    pub fallback_sans: String,
+    /// monospace generic fallback family.
+    pub fallback_mono: String,
+    /// 사용자 지정 수식 우선 폰트. None이면 기존 수식 font-family 체인을 유지한다.
+    pub equation_font: Option<String>,
+    /// 사용자 지정 폰트 탐색 디렉토리. 기본 탐색 경로보다 먼저 로드한다.
+    pub font_paths: Vec<std::path::PathBuf>,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl Default for PdfExportOptions {
+    fn default() -> Self {
+        Self {
+            fallback_serif: default_serif_family().to_string(),
+            fallback_sans: default_sans_family().to_string(),
+            fallback_mono: default_mono_family().to_string(),
+            equation_font: None,
+            font_paths: Vec::new(),
+        }
+    }
+}
+
+#[cfg(all(not(target_arch = "wasm32"), target_os = "windows"))]
+fn default_serif_family() -> &'static str {
+    "바탕"
+}
+
+#[cfg(all(not(target_arch = "wasm32"), target_os = "windows"))]
+fn default_sans_family() -> &'static str {
+    "맑은 고딕"
+}
+
+#[cfg(all(not(target_arch = "wasm32"), target_os = "windows"))]
+fn default_mono_family() -> &'static str {
+    "D2Coding"
+}
+
+#[cfg(all(not(target_arch = "wasm32"), target_os = "linux"))]
+fn default_serif_family() -> &'static str {
+    "Noto Serif CJK KR"
+}
+
+#[cfg(all(not(target_arch = "wasm32"), target_os = "linux"))]
+fn default_sans_family() -> &'static str {
+    "Noto Sans CJK KR"
+}
+
+#[cfg(all(not(target_arch = "wasm32"), target_os = "linux"))]
+fn default_mono_family() -> &'static str {
+    "Noto Sans Mono CJK KR"
+}
+
+#[cfg(all(not(target_arch = "wasm32"), target_os = "macos"))]
+fn default_serif_family() -> &'static str {
+    "AppleMyungjo"
+}
+
+#[cfg(all(not(target_arch = "wasm32"), target_os = "macos"))]
+fn default_sans_family() -> &'static str {
+    "Apple SD Gothic Neo"
+}
+
+#[cfg(all(not(target_arch = "wasm32"), target_os = "macos"))]
+fn default_mono_family() -> &'static str {
+    "Menlo"
+}
+
+#[cfg(all(
+    not(target_arch = "wasm32"),
+    not(any(target_os = "windows", target_os = "linux", target_os = "macos"))
+))]
+fn default_serif_family() -> &'static str {
+    "Noto Serif CJK KR"
+}
+
+#[cfg(all(
+    not(target_arch = "wasm32"),
+    not(any(target_os = "windows", target_os = "linux", target_os = "macos"))
+))]
+fn default_sans_family() -> &'static str {
+    "Noto Sans CJK KR"
+}
+
+#[cfg(all(
+    not(target_arch = "wasm32"),
+    not(any(target_os = "windows", target_os = "linux", target_os = "macos"))
+))]
+fn default_mono_family() -> &'static str {
+    "Noto Sans Mono CJK KR"
+}
+
 /// 폰트 데이터베이스를 초기화 (시스템 폰트 + 프로젝트 폰트 로드)
 #[cfg(not(target_arch = "wasm32"))]
-fn create_fontdb() -> usvg::fontdb::Database {
+fn create_fontdb(options: &PdfExportOptions) -> usvg::fontdb::Database {
     let mut fontdb = usvg::fontdb::Database::new();
     fontdb.load_system_fonts();
+    for dir in &options.font_paths {
+        if dir.exists() {
+            fontdb.load_fonts_dir(dir);
+        } else {
+            eprintln!(
+                "WARN: PDF font path '{}' not found. 해당 경로의 폰트는 로드하지 않습니다.",
+                dir.display()
+            );
+        }
+    }
     for dir in &["ttfs", "ttfs/windows", "ttfs/hwp"] {
         if std::path::Path::new(dir).exists() {
             fontdb.load_fonts_dir(dir);
@@ -16,57 +127,181 @@ fn create_fontdb() -> usvg::fontdb::Database {
     if std::path::Path::new("/mnt/c/Windows/Fonts").exists() {
         fontdb.load_fonts_dir("/mnt/c/Windows/Fonts");
     }
-    fontdb.set_serif_family("바탕");
-    fontdb.set_sans_serif_family("맑은 고딕");
-    fontdb.set_monospace_family("D2Coding");
+    fontdb.set_serif_family(options.fallback_serif.as_str());
+    fontdb.set_sans_serif_family(options.fallback_sans.as_str());
+    fontdb.set_monospace_family(options.fallback_mono.as_str());
+    warn_missing_family(
+        &fontdb,
+        "serif",
+        &options.fallback_serif,
+        "--fallback-serif",
+    );
+    warn_missing_family(
+        &fontdb,
+        "sans-serif",
+        &options.fallback_sans,
+        "--fallback-sans",
+    );
+    warn_missing_family(
+        &fontdb,
+        "monospace",
+        &options.fallback_mono,
+        "--fallback-mono",
+    );
+    if let Some(equation_font) = options.equation_font.as_deref() {
+        let family = first_font_family(equation_font);
+        if !family.is_empty() {
+            warn_missing_family(&fontdb, "equation", &family, "--equation-font");
+        }
+    }
     fontdb
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn warn_missing_family(
+    fontdb: &usvg::fontdb::Database,
+    kind: &str,
+    family: &str,
+    option_name: &str,
+) {
+    if !font_family_exists(fontdb, family) {
+        eprintln!(
+            "WARN: fallback {kind} font '{family}' not found.\n      한글 또는 수식이 빈칸으로 렌더링될 수 있습니다.\n      {option_name} \"<family>\" 로 설치된 폰트를 지정하세요."
+        );
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn font_family_exists(fontdb: &usvg::fontdb::Database, family: &str) -> bool {
+    fontdb.faces().any(|face| {
+        face.families
+            .iter()
+            .any(|(name, _)| name == family || name.eq_ignore_ascii_case(family))
+    })
 }
 
 /// SVG에서 없는 한글 폰트명에 fallback 추가
 #[cfg(not(target_arch = "wasm32"))]
-fn add_font_fallbacks(svg: &str) -> String {
+fn add_font_fallbacks(svg: &str, options: &PdfExportOptions) -> String {
+    let serif = css_family_for_attr(&options.fallback_serif);
+    let sans = css_family_for_attr(&options.fallback_sans);
     svg.replace(
         "font-family=\"휴먼명조\"",
-        "font-family=\"휴먼명조, 바탕, serif\"",
+        &format!("font-family=\"휴먼명조, {serif}, serif\""),
     )
     .replace(
         "font-family=\"HCI Poppy\"",
-        "font-family=\"HCI Poppy, 맑은 고딕, sans-serif\"",
+        &format!("font-family=\"HCI Poppy, {sans}, sans-serif\""),
     )
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn apply_pdf_font_options(svg: &str, options: &PdfExportOptions) -> String {
+    let svg = add_font_fallbacks(svg, options);
+    if let Some(equation_font) = options.equation_font.as_deref() {
+        let attr = format!(
+            "font-family=\"{}\"",
+            escape_xml_attr(&equation_font_chain(equation_font))
+        );
+        svg.replace(
+            crate::renderer::equation::svg_render::DEFAULT_EQUATION_FONT_FAMILY_ATTR,
+            &attr,
+        )
+    } else {
+        svg
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn equation_font_chain(equation_font: &str) -> String {
+    if equation_font.contains(',') {
+        return equation_font.trim().to_string();
+    }
+    let first = css_family_for_attr(equation_font);
+    let default =
+        "'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif";
+    if first == "'Latin Modern Math'" {
+        default.to_string()
+    } else {
+        format!("{first}, {default}")
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn first_font_family(value: &str) -> String {
+    value
+        .split(',')
+        .next()
+        .unwrap_or_default()
+        .trim()
+        .trim_matches('"')
+        .trim_matches('\'')
+        .to_string()
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn css_family_for_attr(family: &str) -> String {
+    let family = family.trim();
+    if family.eq_ignore_ascii_case("serif")
+        || family.eq_ignore_ascii_case("sans-serif")
+        || family.eq_ignore_ascii_case("monospace")
+    {
+        return family.to_string();
+    }
+    let escaped = escape_xml_attr(family);
+    format!("'{escaped}'")
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn escape_xml_attr(value: &str) -> String {
+    let mut escaped = String::with_capacity(value.len());
+    for ch in value.chars() {
+        match ch {
+            '&' => escaped.push_str("&amp;"),
+            '<' => escaped.push_str("&lt;"),
+            '>' => escaped.push_str("&gt;"),
+            '"' => escaped.push_str("&quot;"),
+            '\'' => escaped.push_str("&apos;"),
+            _ => escaped.push(ch),
+        }
+    }
+    escaped
 }
 
 /// 단일 SVG를 PDF로 변환
 #[cfg(not(target_arch = "wasm32"))]
 pub fn svg_to_pdf(svg_content: &str) -> Result<Vec<u8>, String> {
-    let fontdb = create_fontdb();
-    let mut options = usvg::Options::default();
-    options.fontdb = std::sync::Arc::new(fontdb);
-    let svg_with_fallback = add_font_fallbacks(svg_content);
-    let tree = usvg::Tree::from_str(&svg_with_fallback, &options)
-        .map_err(|e| format!("SVG 파싱 실패: {}", e))?;
-    let pdf = svg2pdf::to_pdf(
-        &tree,
-        svg2pdf::ConversionOptions::default(),
-        svg2pdf::PageOptions::default(),
-    )
-    .map_err(|e| format!("PDF 변환 실패: {:?}", e))?;
-    Ok(pdf)
+    svgs_to_pdf(&[svg_content.to_string()])
+}
+
+/// 단일 SVG를 옵션 기반 PDF로 변환
+#[cfg(not(target_arch = "wasm32"))]
+pub fn svg_to_pdf_with_options(
+    svg_content: &str,
+    options: &PdfExportOptions,
+) -> Result<Vec<u8>, String> {
+    svgs_to_pdf_with_options(&[svg_content.to_string()], options)
 }
 
 /// 여러 SVG 페이지를 단일 다중 페이지 PDF로 생성
 #[cfg(not(target_arch = "wasm32"))]
 pub fn svgs_to_pdf(svg_pages: &[String]) -> Result<Vec<u8>, String> {
+    svgs_to_pdf_with_options(svg_pages, &PdfExportOptions::default())
+}
+
+/// 여러 SVG 페이지를 옵션 기반 단일 다중 페이지 PDF로 생성
+#[cfg(not(target_arch = "wasm32"))]
+pub fn svgs_to_pdf_with_options(
+    svg_pages: &[String],
+    export_options: &PdfExportOptions,
+) -> Result<Vec<u8>, String> {
     if svg_pages.is_empty() {
         return Err("페이지가 없습니다".to_string());
     }
-    if svg_pages.len() == 1 {
-        return svg_to_pdf(&svg_pages[0]);
-    }
-
     use pdf_writer::{Finish, Pdf, Ref};
     use std::collections::HashMap;
 
-    let fontdb = create_fontdb();
+    let fontdb = create_fontdb(export_options);
     let mut options = usvg::Options::default();
     options.fontdb = std::sync::Arc::new(fontdb);
 
@@ -85,7 +320,7 @@ pub fn svgs_to_pdf(svg_pages: &[String]) -> Result<Vec<u8>, String> {
     let mut page_datas: Vec<PageData> = Vec::new();
 
     for svg in svg_pages {
-        let svg_with_fallback = add_font_fallbacks(svg);
+        let svg_with_fallback = apply_pdf_font_options(svg, export_options);
         let tree = usvg::Tree::from_str(&svg_with_fallback, &options)
             .map_err(|e| format!("SVG 파싱 실패: {}", e))?;
 
@@ -169,4 +404,46 @@ pub fn svgs_to_pdf(svg_pages: &[String]) -> Result<Vec<u8>, String> {
         .producer(pdf_writer::TextStr("rhwp"));
 
     Ok(pdf.finish())
+}
+
+#[cfg(all(test, not(target_arch = "wasm32")))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_pdf_font_options_are_os_specific_and_non_empty() {
+        let options = PdfExportOptions::default();
+        assert!(!options.fallback_serif.is_empty());
+        assert!(!options.fallback_sans.is_empty());
+        assert!(!options.fallback_mono.is_empty());
+        assert!(options.equation_font.is_none());
+    }
+
+    #[test]
+    fn pdf_font_options_replace_generic_fallbacks_and_equation_font() {
+        let options = PdfExportOptions {
+            fallback_serif: "Noto Serif CJK KR".to_string(),
+            fallback_sans: "Noto Sans CJK KR".to_string(),
+            fallback_mono: "Noto Sans Mono CJK KR".to_string(),
+            equation_font: Some("STIX Two Math".to_string()),
+            font_paths: Vec::new(),
+        };
+        let svg = format!(
+            r#"<svg><text font-family="휴먼명조">가</text><text font-family="HCI Poppy">A</text><text {}>x</text></svg>"#,
+            crate::renderer::equation::svg_render::DEFAULT_EQUATION_FONT_FAMILY_ATTR
+        );
+
+        let out = apply_pdf_font_options(&svg, &options);
+
+        assert!(out.contains(r#"font-family="휴먼명조, 'Noto Serif CJK KR', serif""#));
+        assert!(out.contains(r#"font-family="HCI Poppy, 'Noto Sans CJK KR', sans-serif""#));
+        assert!(out
+            .contains(r#"font-family="&apos;STIX Two Math&apos;, &apos;Latin Modern Math&apos;"#));
+    }
+
+    #[test]
+    fn equation_font_accepts_full_family_chain() {
+        let chain = equation_font_chain("'Custom Math', 'Fallback Math', serif");
+        assert_eq!(chain, "'Custom Math', 'Fallback Math', serif");
+    }
 }

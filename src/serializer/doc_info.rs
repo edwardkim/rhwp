@@ -13,8 +13,8 @@ use super::record_writer::write_record;
 use crate::model::bin_data::{BinData, BinDataType};
 use crate::model::document::{DocInfo, DocProperties};
 use crate::model::style::{
-    BorderFill, BorderLineType, Bullet, CharShape, FillType, Font, ImageFillMode, Numbering,
-    ParaShape, Style, TabDef,
+    BorderFill, BorderLineType, Bullet, CenterLine, CharShape, FillType, Font, ImageFillMode,
+    Numbering, ParaShape, Style, TabDef,
 };
 use crate::parser::tags;
 
@@ -290,6 +290,7 @@ fn image_fill_mode_to_u8(mode: ImageFillMode) -> u8 {
         ImageFillMode::TileHorzBottom => 2,
         ImageFillMode::TileVertLeft => 3,
         ImageFillMode::TileVertRight => 4,
+        ImageFillMode::Total => 0,
         ImageFillMode::FitToSize => 5,
         ImageFillMode::Center => 6,
         ImageFillMode::CenterTop => 7,
@@ -306,7 +307,23 @@ fn image_fill_mode_to_u8(mode: ImageFillMode) -> u8 {
 
 pub fn serialize_border_fill(bf: &BorderFill) -> Vec<u8> {
     let mut w = ByteWriter::new();
-    w.write_u16(bf.attr).unwrap();
+    let mut attr = bf.attr;
+    let center_line = if bf.center_line != CenterLine::None {
+        bf.center_line
+    } else {
+        CenterLine::from_hwp_attr(attr)
+    };
+    if center_line != CenterLine::None {
+        attr &= !((0x07 << 2)
+            | (0x07 << 5)
+            | (0x03 << 8)
+            | (1 << 10)
+            | (1 << 11)
+            | (1 << 12)
+            | (1 << 13));
+        attr |= center_line.hwp_binary_attr_bits();
+    }
+    w.write_u16(attr).unwrap();
 
     // 4방향 테두리 (인터리브: 종류 + 굵기 + 색상)
     for border in &bf.borders {
@@ -552,14 +569,19 @@ fn serialize_numbering(numbering: &Numbering) -> Vec<u8> {
     w.into_bytes()
 }
 
-/// HWPTAG_BULLET 직렬화 (표 44: 글머리표, 20바이트)
+/// HWPTAG_BULLET 직렬화 (표 44: 글머리표)
+///
+/// 문단 머리 정보는 12바이트(attr 4 + width_adjust 2 + text_distance 2 +
+/// char_shape_id 4)다. char_shape_id 4바이트를 누락하면 재파싱 시
+/// bullet_char 오프셋이 어긋나 글머리표 문자가 NUL 로 손상된다 (#1793).
 fn serialize_bullet(bullet: &Bullet) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
-    // 문단 머리 정보 (8바이트)
+    // 문단 머리 정보 (12바이트)
     w.write_u32(bullet.attr).unwrap();
     w.write_i16(bullet.width_adjust).unwrap();
     w.write_i16(bullet.text_distance).unwrap();
+    w.write_u32(bullet.char_shape_id).unwrap();
 
     // 글머리표 문자 (WCHAR)
     w.write_u16(bullet.bullet_char as u16).unwrap();

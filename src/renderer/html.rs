@@ -3,9 +3,12 @@
 //! 렌더 트리를 HTML 문자열로 변환한다.
 //! CSS로 스타일링하여 접근성과 텍스트 선택을 지원한다.
 
+use super::image_resolver::{
+    bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes, tiff_bytes_to_png_bytes,
+};
 use super::layout::compute_char_positions;
 use super::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
-use super::svg::{convert_wmf_to_svg, detect_image_mime_type};
+use super::svg::convert_wmf_to_svg;
 use super::{LineStyle, PathCommand, Renderer, ShapeStyle, TextStyle};
 use crate::model::style::UnderlineType;
 use base64::Engine;
@@ -144,13 +147,13 @@ impl HtmlRenderer {
                                 };
                                 let mid_x = (cx + next_x) / 2.0 - mark_font_size * 0.25;
                                 self.output.push_str(&format!(
-                                    "<span class=\"para-mark\" style=\"position:absolute;left:{}px;top:{}px;font-size:{}px;color:#4A90D9;\">\u{2228}</span>\n",
+                                    "<span class=\"para-mark\" style=\"position:absolute;left:{}px;top:{}px;font-size:{}px;color:#0066FF;\">\u{2228}</span>\n",
                                     mid_x, node.bbox.y, mark_font_size,
                                 ));
                             } else if c == '\t' {
                                 let cx = node.bbox.x + char_positions[i];
                                 self.output.push_str(&format!(
-                                    "<span class=\"para-mark\" style=\"position:absolute;left:{}px;top:{}px;font-size:{}px;color:#4A90D9;\">\u{2192}</span>\n",
+                                    "<span class=\"para-mark\" style=\"position:absolute;left:{}px;top:{}px;font-size:{}px;color:#0066FF;\">\u{2192}</span>\n",
                                     cx, node.bbox.y, mark_font_size,
                                 ));
                             }
@@ -169,7 +172,7 @@ impl HtmlRenderer {
                             "\u{21B5}"
                         };
                         self.output.push_str(&format!(
-                            "<span class=\"para-mark\" style=\"position:absolute;left:{}px;top:{}px;font-size:{}px;color:#4A90D9;\">{}</span>\n",
+                            "<span class=\"para-mark\" style=\"position:absolute;left:{}px;top:{}px;font-size:{}px;color:#0066FF;\">{}</span>\n",
                             mark_x, node.bbox.y, font_size, mark,
                         ));
                     }
@@ -306,10 +309,8 @@ impl Renderer for HtmlRenderer {
             x, draw_y, font_family, draw_size, color,
         );
 
-        if style.is_visually_bold() {
-            css.push_str("font-weight:bold;");
-        } else if style.is_medium_weight() {
-            css.push_str("font-weight:500;");
+        if let Some(weight) = style.css_font_weight() {
+            css.push_str(&format!("font-weight:{};", weight));
         }
         if style.italic {
             css.push_str("font-style:italic;");
@@ -460,6 +461,21 @@ impl Renderer for HtmlRenderer {
             if mime_type == "image/x-wmf" {
                 match convert_wmf_to_svg(data) {
                     Some(svg_bytes) => (std::borrow::Cow::Owned(svg_bytes), "image/svg+xml"),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
+            } else if mime_type == "image/bmp" {
+                match bmp_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
+            } else if mime_type == "image/x-pcx" {
+                match pcx_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type),
+                }
+            } else if mime_type == "image/tiff" {
+                match tiff_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png"),
                     None => (std::borrow::Cow::Borrowed(data), mime_type),
                 }
             } else {

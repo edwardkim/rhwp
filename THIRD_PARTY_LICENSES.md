@@ -4,7 +4,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 기준 파일:
 
-- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.7.13)
+- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.7.17)
 - `rhwp-studio/package.json` / `rhwp-studio/package-lock.json`
 - `rhwp-chrome/package.json` / `rhwp-chrome/package-lock.json`
 - `rhwp-firefox/package.json` / `rhwp-firefox/package-lock.json`
@@ -29,31 +29,31 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 | encoding_rs | 0.8.35 | (Apache-2.0 OR MIT) AND BSD-3-Clause | hsivonen/encoding_rs | 문자 인코딩 |
 | flate2 | 1.1.9 | MIT OR Apache-2.0 | rust-lang/flate2-rs | 압축/해제 |
 | image | 0.25.10 | MIT OR Apache-2.0 | image-rs/image | BMP/JPEG/PNG 디코딩 |
-| js-sys | 0.3.85 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM JS interop |
+| js-sys | 0.3.102 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM JS interop |
 | paste | 1.0.15 | MIT OR Apache-2.0 | dtolnay/paste | 매크로 보조 |
 | pcx | 0.2.5 | MIT OR Apache-2.0 OR WTFPL | kryptan/pcx | PCX 이미지 디코딩 |
 | pdf-writer | 0.12.1 | MIT OR Apache-2.0 | typst/pdf-writer | PDF 출력 |
 | quick-xml | 0.40.1 | MIT | tafia/quick-xml | HWPX XML 파싱 |
-| resvg | 0.47.0 | Apache-2.0 OR MIT | linebender/resvg | native-skia SVG raster (optional) |
+| resvg | 0.45.1 | Apache-2.0 OR MIT | linebender/resvg | native-skia SVG raster (optional) |
 | serde | 1.0.228 | MIT OR Apache-2.0 | serde-rs/serde | 직렬화 |
-| serde_json | 1.0.149 | MIT OR Apache-2.0 | serde-rs/json | JSON 직렬화 |
-| skia-safe | 0.97.0 | MIT | rust-skia/rust-skia | native-skia PNG/PDF backend (optional) |
-| snafu | 0.9.0 | MIT OR Apache-2.0 | shepmaster/snafu | 에러 처리 |
+| serde_json | 1.0.150 | MIT OR Apache-2.0 | serde-rs/json | JSON 직렬화 |
+| skia-safe | 0.99.0 | BSD-3-Clause | rust-skia/rust-skia | native-skia PNG/PDF backend (optional) |
+| snafu | 0.9.1 | MIT OR Apache-2.0 | shepmaster/snafu | 에러 처리 |
 | strum | 0.28.0 | MIT | Peternator7/strum | enum derive |
-| subsetter | 0.2.3 | MIT OR Apache-2.0 | typst/subsetter | 폰트 subset |
+| subsetter | 0.2.6 | MIT OR Apache-2.0 | typst/subsetter | 폰트 subset |
 | svg2pdf | 0.13.0 | MIT OR Apache-2.0 | typst/svg2pdf | SVG → PDF |
 | ttf-parser | 0.25.1 | MIT OR Apache-2.0 | harfbuzz/ttf-parser | 폰트 파싱 |
-| unicode-segmentation | 1.12.0 | MIT OR Apache-2.0 | unicode-rs/unicode-segmentation | grapheme/word segmentation |
+| unicode-segmentation | 1.13.3 | MIT OR Apache-2.0 | unicode-rs/unicode-segmentation | grapheme/word segmentation |
 | unicode-width | 0.2.2 | MIT OR Apache-2.0 | unicode-rs/unicode-width | 문자 폭 계산 |
 | usvg | 0.45.1 | Apache-2.0 OR MIT | linebender/resvg | SVG 파싱 |
-| wasm-bindgen | 0.2.108 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM binding |
-| wasm-bindgen-test | 0.3.58 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM 테스트 |
-| web-sys | 0.3.85 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | Web API binding |
-| zip | 8.5.1 | MIT | zip-rs/zip2 | HWPX ZIP 처리 |
+| wasm-bindgen | 0.2.125 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM binding |
+| wasm-bindgen-test | 0.3.75 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM 테스트 |
+| web-sys | 0.3.102 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | Web API binding |
+| zip | 8.6.0 | MIT | zip-rs/zip2 | HWPX ZIP 처리 |
 
 ### 전체 Rust 의존성 요약
 
-`Cargo.lock` 기준 package entry는 192개이며, 이 중 root package `rhwp`를 제외한 외부 Rust 크레이트는 191개다.
+`Cargo.lock` 기준 package entry는 190개이며, 이 중 root package `rhwp`를 제외한 외부 Rust 크레이트는 189개다.
 
 주요 라이선스군:
 

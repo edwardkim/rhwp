@@ -16,7 +16,8 @@ chrome.runtime.onInstalled.addListener((details) => {
     chrome.storage.sync.set({
       autoOpen: true,
       showBadges: true,
-      hoverPreview: true
+      hoverPreview: true,
+      disableExternalWebFonts: false
     });
   }
 });

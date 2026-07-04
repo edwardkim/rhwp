@@ -4,6 +4,7 @@
 //! 한글 어절/글자, 영어 단어/하이픈, CJK 개별 분할을 지원한다.
 
 use super::{find_active_char_shape, is_lang_neutral};
+use crate::model::control::Control;
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::style::LineSpacingType;
 use crate::renderer::layout::{
@@ -221,9 +222,11 @@ pub(crate) fn tokenize_paragraph(
             continue;
         }
 
-        // 한글 어절 또는 글자
+        // 한글 어절 또는 글자.
+        // HWPX breakNonLatinWord="KEEP_WORD" is preserved as attr1 bit 7,
+        // which resolves to korean_break_unit == 1.
         if is_hangul(ch) {
-            if korean_break_unit == 0 {
+            if korean_break_unit == 1 {
                 // 어절 모드: 연속 한글 + 후행 금칙 문자를 하나의 토큰으로
                 let start = i;
                 let mut max_fs = 0.0f64;
@@ -576,6 +579,34 @@ fn to_hwp(px: f64) -> i32 {
     (px * 75.0) as i32
 }
 
+fn condense_space_savings_hwp(space_width_hwp: i32, condense_min_space: u8) -> i32 {
+    if condense_min_space == 0 || space_width_hwp <= 0 {
+        return 0;
+    }
+    let shrink_percent = condense_min_space.min(75) as i32;
+    space_width_hwp * shrink_percent / 100
+}
+
+fn condensed_line_width_hwp(width_hwp: i32, space_savings_hwp: i32) -> i32 {
+    width_hwp - space_savings_hwp
+}
+
+fn condense_fit_can_pull_next_token(
+    current_width_hwp: i32,
+    current_space_savings_hwp: i32,
+    effective_width_hwp: i32,
+    max_font_size: f64,
+) -> bool {
+    let current_condensed_width =
+        condensed_line_width_hwp(current_width_hwp, current_space_savings_hwp);
+    let remaining_hwp = effective_width_hwp - current_condensed_width;
+    // Hancom uses condense to rescue a line that still has a meaningful
+    // natural gap, but it does not pull the next word into an already tight
+    // line. The p03 PDF preface is sensitive to that distinction.
+    let min_remaining_hwp = to_hwp((max_font_size * 2.5).max(20.0));
+    remaining_hwp >= min_remaining_hwp
+}
+
 /// 토큰을 줄에 배치하는 Greedy 알고리즘
 /// 한컴과 동일한 결과를 위해 HWPUNIT 정수로 폭을 누적한다.
 fn fill_lines(
@@ -585,6 +616,7 @@ fn fill_lines(
     indent_px: f64,
     default_tab_width: f64,
     korean_break_unit: u8,
+    condense_min_space: u8,
 ) -> Vec<LineBreakResult> {
     if tokens.is_empty() {
         return vec![LineBreakResult {
@@ -608,12 +640,14 @@ fn fill_lines(
     let mut results = Vec::new();
     let mut line_start_idx = 0usize;
     let mut lw = 0i32; // HWPUNIT 정수 누적
+    let mut line_space_savings = 0i32;
     let mut line_max_fs = 0.0f64;
     let mut is_first_line = true;
 
     let mut last_break_token_idx: Option<usize> = None;
     let mut last_break_char_idx: usize = 0;
     let mut width_at_last_break = 0i32;
+    let mut space_savings_at_last_break = 0i32;
     let mut fs_at_last_break = 0.0f64;
 
     let eff_w = |first: bool| -> i32 {
@@ -645,6 +679,7 @@ fn fill_lines(
                 });
                 line_start_idx = *idx + 1;
                 lw = 0;
+                line_space_savings = 0;
                 line_max_fs = 0.0;
                 is_first_line = false;
                 last_break_token_idx = None;
@@ -668,6 +703,7 @@ fn fill_lines(
                         });
                         line_start_idx = last_break_char_idx;
                         lw = lw - width_at_last_break;
+                        line_space_savings -= space_savings_at_last_break;
                     } else {
                         results.push(LineBreakResult {
                             start_idx: line_start_idx,
@@ -677,6 +713,7 @@ fn fill_lines(
                         });
                         line_start_idx = *idx;
                         lw = 0;
+                        line_space_savings = 0;
                         line_max_fs = *max_font_size;
                     }
                     is_first_line = false;
@@ -688,6 +725,7 @@ fn fill_lines(
                     last_break_token_idx = Some(ti);
                     last_break_char_idx = *idx;
                     width_at_last_break = lw;
+                    space_savings_at_last_break = line_space_savings;
                     fs_at_last_break = line_max_fs;
                     lw = next_tab_hwp;
                 }
@@ -703,8 +741,11 @@ fn fill_lines(
                 last_break_token_idx = Some(ti);
                 last_break_char_idx = *idx;
                 width_at_last_break = lw;
+                space_savings_at_last_break = line_space_savings;
                 fs_at_last_break = line_max_fs;
-                lw += to_hwp(*width);
+                let space_hwp = to_hwp(*width);
+                lw += space_hwp;
+                line_space_savings += condense_space_savings_hwp(space_hwp, condense_min_space);
             }
             BreakToken::Text {
                 start_idx,
@@ -725,22 +766,43 @@ fn fill_lines(
                 if *end_idx - *start_idx == 1 && *start_idx > line_start_idx {
                     let c = text_chars[*start_idx];
                     let allow_break = if is_hangul(c) {
-                        korean_break_unit == 1
+                        korean_break_unit == 0
                     } else {
                         is_cjk_ideograph(c)
                     };
+                    let candidate_w = lw + w_hwp;
                     // 이 글자가 줄에 들어가는 경우에만 break point 갱신
-                    if allow_break && lw + w_hwp <= eff_w(is_first_line) + LINE_BREAK_TOLERANCE {
+                    if allow_break
+                        && condensed_line_width_hwp(candidate_w, line_space_savings)
+                            <= eff_w(is_first_line) + LINE_BREAK_TOLERANCE
+                    {
                         last_break_token_idx = Some(ti);
                         last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
-                        width_at_last_break = lw + w_hwp; // 이 글자 폭 포함
+                        width_at_last_break = candidate_w; // 이 글자 폭 포함
+                        space_savings_at_last_break = line_space_savings;
                         fs_at_last_break = line_max_fs;
                     }
                 }
                 // 한컴은 HWPUNIT 정수 양자화 시 미세한 반올림 차이를 허용
                 // 12 HU(~0.17mm) 이내의 초과는 줄에 포함 (경험적 허용 오차)
                 const LINE_BREAK_TOLERANCE: i32 = 15;
-                if lw + w_hwp > eff_w(is_first_line) + LINE_BREAK_TOLERANCE {
+                let effective_width = eff_w(is_first_line);
+                let natural_candidate = lw + w_hwp;
+                let condensed_candidate =
+                    condensed_line_width_hwp(natural_candidate, line_space_savings);
+                let needs_condense_to_fit = natural_candidate
+                    > effective_width + LINE_BREAK_TOLERANCE
+                    && condensed_candidate <= effective_width + LINE_BREAK_TOLERANCE;
+                let condense_pull_allowed = !needs_condense_to_fit
+                    || condense_fit_can_pull_next_token(
+                        lw,
+                        line_space_savings,
+                        effective_width,
+                        *max_font_size,
+                    );
+                if condensed_candidate > effective_width + LINE_BREAK_TOLERANCE
+                    || !condense_pull_allowed
+                {
                     if *start_idx > line_start_idx {
                         if let Some(_) = last_break_token_idx {
                             results.push(LineBreakResult {
@@ -755,6 +817,12 @@ fn fill_lines(
                             }
                             line_start_idx = next_start;
                             lw = recalc_width_hwp(tokens, ti, next_start);
+                            line_space_savings = recalc_space_savings_hwp(
+                                tokens,
+                                ti,
+                                next_start,
+                                condense_min_space,
+                            );
                             lw += w_hwp;
                             line_max_fs = *max_font_size;
                             is_first_line = false;
@@ -781,6 +849,7 @@ fn fill_lines(
                         is_first_line = false;
                     }
                     lw = remaining_w;
+                    line_space_savings = 0;
                     line_max_fs = remaining_fs;
                     last_break_token_idx = None;
                     continue;
@@ -834,6 +903,30 @@ fn recalc_width_hwp(tokens: &[BreakToken], current_token_idx: usize, new_line_st
             }
             BreakToken::Space { idx, width, .. } if *idx >= new_line_start => {
                 w += to_hwp(*width);
+            }
+            _ => {}
+        }
+    }
+    w
+}
+
+/// 줄 바꿈 지점 이후 공백 압축 가능 폭 재계산 (HWPUNIT)
+fn recalc_space_savings_hwp(
+    tokens: &[BreakToken],
+    current_token_idx: usize,
+    new_line_start: usize,
+    condense_min_space: u8,
+) -> i32 {
+    let mut w = 0i32;
+    for t in &tokens[..current_token_idx] {
+        match t {
+            BreakToken::Space {
+                idx,
+                width,
+                max_font_size,
+            } if *idx >= new_line_start => {
+                let space_hwp = to_hwp(*width);
+                w += condense_space_savings_hwp(space_hwp, condense_min_space);
             }
             _ => {}
         }
@@ -899,6 +992,64 @@ fn char_level_break_hwp(
 ///
 /// 텍스트 편집(삽입/삭제) 후 호출하여 줄 바꿈을 재배치한다.
 /// `available_width_px`는 문단 여백을 제외한 사용 가능 너비(px)이다.
+fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
+    para.controls
+        .iter()
+        .filter_map(|ctrl| match ctrl {
+            Control::Picture(pic) if pic.common.treat_as_char => Some(pic.common.height as i32),
+            Control::Shape(shape) if shape.common().treat_as_char => {
+                let common_h = shape.common().height as i32;
+                let current_h = shape.shape_attr().current_height as i32;
+                Some(common_h.max(current_h))
+            }
+            Control::Table(table) if table.common.treat_as_char => Some(table.common.height as i32),
+            Control::Equation(eq) if eq.common.treat_as_char => Some(eq.common.height as i32),
+            Control::Form(form) => Some(form.height as i32),
+            _ => None,
+        })
+        .filter(|height| *height > 0)
+        .max()
+}
+
+fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
+    let (width, height) = match ctrl {
+        Control::Picture(pic) if pic.common.treat_as_char => {
+            (pic.common.width as i32, pic.common.height as i32)
+        }
+        Control::Shape(shape) if shape.common().treat_as_char => {
+            let common = shape.common();
+            let shape_attr = shape.shape_attr();
+            (
+                (common.width as i32).max(shape_attr.current_width as i32),
+                (common.height as i32).max(shape_attr.current_height as i32),
+            )
+        }
+        Control::Table(table) if table.common.treat_as_char => {
+            let width = table.get_column_widths().iter().sum::<u32>() as i32;
+            (width, table.common.height as i32)
+        }
+        Control::Equation(eq) if eq.common.treat_as_char => {
+            (eq.common.width as i32, eq.common.height as i32)
+        }
+        Control::Form(form) => (form.width as i32, form.height as i32),
+        _ => return None,
+    };
+
+    if width > 0 && height > 0 {
+        Some((width, height))
+    } else {
+        None
+    }
+}
+
+fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
+    if height_hwp > seg.line_height {
+        seg.line_height = height_hwp;
+        seg.text_height = height_hwp;
+        seg.baseline_distance = (height_hwp as f64 * 0.85).round() as i32;
+    }
+}
+
 pub(crate) fn reflow_line_segs(
     para: &mut Paragraph,
     available_width_px: f64,
@@ -929,10 +1080,13 @@ pub(crate) fn reflow_line_segs(
         let text_height_hwp = line_height_hwp;
         let baseline_distance_hwp = (line_height_hwp as f64 * 0.85) as i32;
         let line_spacing_hwp = compute_line_spacing_hwp(ls_type, ls_value, line_height_hwp, dpi);
+        // [Task #1811] 원본 linesegarray 부재(orig=None) 시 합성 seg 에 구현속성
+        // 태그를 부여 — vpos 보정 등에서 실제 저장 증거와 구분한다 (컨버터의
+        // 합성 lineseg flags=0x8000_0000 관례와 정합).
         let orig_tag = orig
             .as_ref()
             .map(|ls| ls.tag)
-            .unwrap_or(LineSeg::TAG_SINGLE_SEGMENT_LINE);
+            .unwrap_or(LineSeg::TAG_SINGLE_SEGMENT_LINE | LineSeg::TAG_IMPLEMENTATION_PROPERTY);
         LineSeg {
             text_start: utf16_start,
             line_height: line_height_hwp,
@@ -950,7 +1104,69 @@ pub(crate) fn reflow_line_segs(
     };
 
     if para.text.is_empty() {
-        para.line_segs = vec![make_line_seg(0, 0.0)];
+        let inline_sizes = para
+            .controls
+            .iter()
+            .filter_map(inline_control_size_hwp)
+            .collect::<Vec<_>>();
+        if !inline_sizes.is_empty() {
+            let max_line_width = seg_width_hwp.max(1);
+            let mut line_specs: Vec<(usize, i32, i32)> = Vec::new();
+            let mut line_start = 0usize;
+            let mut line_width = 0i32;
+            let mut line_height = 0i32;
+
+            for (idx, (ctrl_width, ctrl_height)) in inline_sizes.iter().copied().enumerate() {
+                if line_width > 0 && line_width + ctrl_width > max_line_width {
+                    line_specs.push((line_start, line_width, line_height));
+                    line_start = idx;
+                    line_width = 0;
+                    line_height = 0;
+                }
+                line_width += ctrl_width;
+                line_height = line_height.max(ctrl_height);
+            }
+            line_specs.push((line_start, line_width, line_height));
+
+            let orig_line_segs = para.line_segs.clone();
+            let mut new_line_segs = Vec::with_capacity(line_specs.len());
+            for (line_idx, (start_pos, _line_width, height_hwp)) in
+                line_specs.into_iter().enumerate()
+            {
+                let mut seg = make_line_seg(start_pos as u32, 0.0);
+                if let Some(template) = orig_line_segs
+                    .get(line_idx)
+                    .or_else(|| orig_line_segs.first())
+                {
+                    seg.line_spacing = template.line_spacing;
+                    seg.segment_width = if template.segment_width > 0 {
+                        template.segment_width
+                    } else {
+                        seg_width_hwp
+                    };
+                    seg.tag = if template.tag != 0 {
+                        template.tag
+                    } else {
+                        seg.tag
+                    };
+                }
+                apply_inline_control_line_height(&mut seg, height_hwp);
+                new_line_segs.push(seg);
+            }
+
+            let mut vpos = orig.as_ref().map(|ls| ls.vertical_pos).unwrap_or(0);
+            for seg in &mut new_line_segs {
+                seg.vertical_pos = vpos;
+                vpos += seg.line_height + seg.line_spacing;
+            }
+            para.line_segs = new_line_segs;
+        } else {
+            let mut seg = make_line_seg(0, 0.0);
+            if let Some(height_hwp) = inline_control_line_height_hwp(para) {
+                apply_inline_control_line_height(&mut seg, height_hwp);
+            }
+            para.line_segs = vec![seg];
+        }
         return;
     }
 
@@ -962,6 +1178,7 @@ pub(crate) fn reflow_line_segs(
     let indent_px = para_style.map(|s| s.indent).unwrap_or(0.0);
     let english_break_unit = para_style.map(|s| s.english_break_unit).unwrap_or(0);
     let korean_break_unit = para_style.map(|s| s.korean_break_unit).unwrap_or(0);
+    let condense_min_space = para_style.map(|s| s.condense_min_space).unwrap_or(0);
     let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(0.0);
 
     // 토큰화 → 줄 채움 → LineSeg 생성
@@ -980,8 +1197,8 @@ pub(crate) fn reflow_line_segs(
         indent_px,
         tab_width,
         korean_break_unit,
+        condense_min_space,
     );
-
     let mut new_line_segs: Vec<LineSeg> = Vec::new();
     for lb in &line_breaks {
         let utf16_start = if new_line_segs.is_empty() {
@@ -1013,28 +1230,11 @@ pub(crate) fn reflow_line_segs(
         new_line_segs.push(make_line_seg(0, 12.0));
     }
 
-    // 인라인 TAC 표의 높이 반영: 표가 포함된 줄의 line_height를 표 높이 이상으로 보정
+    // 인라인 TAC 개체의 높이 반영: 개체가 포함된 줄의 line_height를 개체 높이 이상으로 보정
     {
-        use crate::model::control::Control;
-        let has_inline_table = para
-            .controls
-            .iter()
-            .any(|c| matches!(c, Control::Table(t) if t.common.treat_as_char));
-        if has_inline_table {
-            for ctrl in &para.controls {
-                if let Control::Table(t) = ctrl {
-                    if t.common.treat_as_char {
-                        let table_height_hwp = t.common.height as i32;
-                        // 첫 번째 LINE_SEG의 line_height를 표 높이 이상으로 확장
-                        if let Some(seg) = new_line_segs.first_mut() {
-                            if table_height_hwp > seg.line_height {
-                                seg.line_height = table_height_hwp;
-                                seg.text_height = table_height_hwp;
-                                seg.baseline_distance = (table_height_hwp as f64 * 0.85) as i32;
-                            }
-                        }
-                    }
-                }
+        if let Some(height_hwp) = inline_control_line_height_hwp(para) {
+            if let Some(seg) = new_line_segs.first_mut() {
+                apply_inline_control_line_height(seg, height_hwp);
             }
         }
     }

@@ -78,20 +78,50 @@ impl LayoutEngine {
         cell_ctx: Option<&crate::renderer::layout::CellContext>,
     ) {
         // 그림 크기 (HWPUNIT → 픽셀)
-        // CommonObjAttr의 width/height가 개체의 실제 표시 크기
-        let (pic_width_hu, pic_height_hu) = picture_display_size_hu(picture);
+        // 회전 picture에서 common.width/height는 한컴이 저장한 회전 후 외접 프레임이고
+        // current_width/current_height는 실제로 회전시킬 원본 표시 크기다. common 프레임을
+        // 다시 회전시키면 다단/셀 경계를 침범하므로, current 이미지를 common 프레임 중앙에 둔다.
+        let rotation = picture.shape_attr.rotation_angle.rem_euclid(360);
+        let uses_rotated_frame = rotation != 0
+            && picture.shape_attr.current_width > 0
+            && picture.shape_attr.current_height > 0
+            && picture.common.width > 0
+            && picture.common.height > 0;
+        let (pic_width_hu, pic_height_hu) = if uses_rotated_frame {
+            (
+                picture.shape_attr.current_width as i32,
+                picture.shape_attr.current_height as i32,
+            )
+        } else {
+            picture_display_size_hu(picture)
+        };
         let mut pic_width = hwpunit_to_px(pic_width_hu, self.dpi);
         let mut pic_height = hwpunit_to_px(pic_height_hu, self.dpi);
+        let mut frame_width = if uses_rotated_frame {
+            hwpunit_to_px(picture.common.width as i32, self.dpi)
+        } else {
+            pic_width
+        };
+        let mut frame_height = if uses_rotated_frame {
+            hwpunit_to_px(picture.common.height as i32, self.dpi)
+        } else {
+            pic_height
+        };
 
-        // 컨테이너 초과 시 비율 유지하며 축소 (표 셀 등)
-        if container.width > 0.0 && pic_width > container.width {
-            let scale = container.width / pic_width;
-            pic_width = container.width;
+        // 컨테이너 초과 시 비율 유지하며 축소 (표 셀 등). 회전 프레임과 실제 이미지를 같은
+        // 비율로 축소해야 중심/회전축이 유지된다.
+        if container.width > 0.0 && frame_width > container.width {
+            let scale = container.width / frame_width;
+            frame_width = container.width;
+            frame_height *= scale;
+            pic_width *= scale;
             pic_height *= scale;
         }
-        if container.height > 0.0 && pic_height > container.height {
-            let scale = container.height / pic_height;
-            pic_height = container.height;
+        if container.height > 0.0 && frame_height > container.height {
+            let scale = container.height / frame_height;
+            frame_height = container.height;
+            frame_width *= scale;
+            pic_height *= scale;
             pic_width *= scale;
         }
 
@@ -100,30 +130,38 @@ impl LayoutEngine {
         let (pic_x, pic_y) = if !picture.common.treat_as_char {
             let h_offset = hwpunit_to_px(picture.common.horizontal_offset as i32, self.dpi);
             let v_offset = hwpunit_to_px(picture.common.vertical_offset as i32, self.dpi);
-            let x = match picture.common.horz_align {
+            let frame_x = match picture.common.horz_align {
                 HorzAlign::Left | HorzAlign::Inside => container.x + h_offset,
-                HorzAlign::Center => container.x + (container.width - pic_width) / 2.0 + h_offset,
+                HorzAlign::Center => container.x + (container.width - frame_width) / 2.0 + h_offset,
                 HorzAlign::Right | HorzAlign::Outside => {
-                    container.x + container.width - pic_width - h_offset
+                    container.x + container.width - frame_width - h_offset
                 }
             };
-            let y = match picture.common.vert_align {
+            let frame_y = match picture.common.vert_align {
                 VertAlign::Top | VertAlign::Inside => container.y + v_offset,
-                VertAlign::Center => container.y + (container.height - pic_height) / 2.0 + v_offset,
+                VertAlign::Center => {
+                    container.y + (container.height - frame_height) / 2.0 + v_offset
+                }
                 VertAlign::Bottom | VertAlign::Outside => {
-                    container.y + container.height - pic_height - v_offset
+                    container.y + container.height - frame_height - v_offset
                 }
             };
-            (x, y)
+            (
+                frame_x + (frame_width - pic_width) / 2.0,
+                frame_y + (frame_height - pic_height) / 2.0,
+            )
         } else {
-            let x = match alignment {
+            let frame_x = match alignment {
                 Alignment::Center | Alignment::Distribute => {
-                    container.x + (container.width - pic_width).max(0.0) / 2.0
+                    container.x + (container.width - frame_width).max(0.0) / 2.0
                 }
-                Alignment::Right => container.x + (container.width - pic_width).max(0.0),
+                Alignment::Right => container.x + (container.width - frame_width).max(0.0),
                 _ => container.x,
             };
-            (x, container.y)
+            (
+                frame_x + (frame_width - pic_width) / 2.0,
+                container.y + (frame_height - pic_height) / 2.0,
+            )
         };
 
         // BinData에서 이미지 데이터 찾기 (bin_data_id는 1-indexed 순번)
@@ -172,6 +210,7 @@ impl LayoutEngine {
                 effect: picture.image_attr.effect,
                 brightness: picture.image_attr.brightness,
                 contrast: picture.image_attr.contrast,
+                opacity: picture.image_attr.opacity(),
                 text_wrap: Some(picture.common.text_wrap),
                 transform: extract_shape_transform(&picture.shape_attr),
                 external_path: picture.image_attr.external_path.clone(),
@@ -327,7 +366,8 @@ impl LayoutEngine {
         vpos_accounts_for_height: bool,
     ) -> f64 {
         // 그림 크기 (HWPUNIT → 픽셀)
-        let (pic_width_hu, pic_height_hu) = picture_display_size_hu(picture);
+        // [Issue #1230] 측면흐름 wrap 은 common(개체 틀) 프레임으로 그린다.
+        let (pic_width_hu, pic_height_hu) = super::utils::picture_flow_frame_size_hu(picture);
         let pic_width = hwpunit_to_px(pic_width_hu, self.dpi);
         let pic_height = hwpunit_to_px(pic_height_hu, self.dpi);
 
@@ -429,6 +469,7 @@ impl LayoutEngine {
                 effect: picture.image_attr.effect,
                 brightness: picture.image_attr.brightness,
                 contrast: picture.image_attr.contrast,
+                opacity: picture.image_attr.opacity(),
                 text_wrap: Some(picture.common.text_wrap),
                 transform: extract_shape_transform(&picture.shape_attr),
                 external_path: picture.image_attr.external_path.clone(),
@@ -497,6 +538,7 @@ impl LayoutEngine {
                 cap_w,
                 cap_y,
                 &mut self.auto_counter.borrow_mut(),
+                bin_data_content,
                 Some(cell_ctx),
             );
         }
@@ -539,11 +581,19 @@ impl LayoutEngine {
             return 0.0;
         }
 
-        let mut total_height = 0.0;
+        let mut line_seg_height = 0.0f64;
+        let mut composed_height = 0.0f64;
         for para in &caption.paragraphs {
+            if let (Some(first), Some(last)) = (para.line_segs.first(), para.line_segs.last()) {
+                let para_top = first.vertical_pos.min(0);
+                let para_bottom = last.vertical_pos + last.line_height;
+                line_seg_height =
+                    line_seg_height.max(hwpunit_to_px(para_bottom - para_top, self.dpi));
+            }
+
             let composed = compose_paragraph(para);
             if composed.lines.is_empty() {
-                total_height += hwpunit_to_px(400, self.dpi); // 기본 줄 높이
+                composed_height += hwpunit_to_px(400, self.dpi); // 기본 줄 높이
             } else {
                 for (i, line) in composed.lines.iter().enumerate() {
                     let line_h = hwpunit_to_px(line.line_height, self.dpi);
@@ -552,12 +602,12 @@ impl LayoutEngine {
                     } else {
                         0.0 // 마지막 줄은 line_spacing 제외
                     };
-                    total_height += line_h + spacing;
+                    composed_height += line_h + spacing;
                 }
             }
         }
 
-        total_height
+        line_seg_height.max(composed_height)
     }
 
     /// 캡션을 레이아웃한다.
@@ -572,6 +622,7 @@ impl LayoutEngine {
         content_width: f64,
         y_start: f64,
         auto_counter: &mut AutoNumberCounter,
+        bin_data_content: &[BinDataContent],
         cell_ctx: Option<super::CellContext>,
     ) {
         if caption.paragraphs.is_empty() {
@@ -587,6 +638,7 @@ impl LayoutEngine {
 
         let mut para_y = y_start;
         for (pi, para) in caption.paragraphs.iter().enumerate() {
+            let para_y_before_layout = para_y;
             // 먼저 문단을 조합
             let mut composed = compose_paragraph(para);
 
@@ -613,15 +665,110 @@ impl LayoutEngine {
                 composed.lines.len(),
                 0,
                 0,
-                ctx,
+                ctx.clone(),
                 false,
                 false,
                 0.0,
                 None,
-                None,
-                None,
+                Some(para),
+                Some(bin_data_content),
                 None, // 캡션 컨텍스트 — wrap zone 무관
             );
+
+            self.layout_caption_topbottom_pictures(
+                tree,
+                parent_node,
+                para,
+                &caption_area,
+                para_y_before_layout,
+                bin_data_content,
+                ctx.as_ref(),
+            );
+        }
+    }
+
+    fn layout_caption_topbottom_pictures(
+        &self,
+        tree: &mut PageRenderTree,
+        parent_node: &mut RenderNode,
+        para: &Paragraph,
+        caption_area: &LayoutRect,
+        para_y: f64,
+        bin_data_content: &[BinDataContent],
+        cell_ctx: Option<&super::CellContext>,
+    ) {
+        let anchor_y = para
+            .line_segs
+            .first()
+            .filter(|seg| seg.vertical_pos >= 0)
+            .map(|seg| caption_area.y + hwpunit_to_px(seg.vertical_pos, self.dpi))
+            .unwrap_or(para_y);
+
+        for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
+            let Control::Picture(pic) = ctrl else {
+                continue;
+            };
+            if !matches!(pic.common.text_wrap, TextWrap::TopAndBottom) {
+                continue;
+            }
+            if tree
+                .get_inline_shape_position(0, 0, ctrl_idx, cell_ctx)
+                .is_some()
+            {
+                continue;
+            }
+
+            let (pic_width_hu, pic_height_hu) = picture_display_size_hu(pic);
+            let pic_width = hwpunit_to_px(pic_width_hu, self.dpi);
+            let pic_height = hwpunit_to_px(pic_height_hu, self.dpi);
+            let placement_area = LayoutRect {
+                x: caption_area.x,
+                y: anchor_y,
+                width: caption_area.width,
+                height: pic_height.max(caption_area.height),
+            };
+            let mut placement_common = pic.common.clone();
+            placement_common.treat_as_char = false;
+            let (pic_x, pic_y) = self.compute_object_position(
+                &placement_common,
+                pic_width,
+                pic_height,
+                &placement_area,
+                &placement_area,
+                &placement_area,
+                &placement_area,
+                anchor_y,
+                Alignment::Left,
+            );
+            let pic_area = LayoutRect {
+                x: pic_x,
+                y: pic_y,
+                width: pic_width,
+                height: pic_height,
+            };
+            let mut pic_for_layout = (**pic).clone();
+            pic_for_layout.common.treat_as_char = false;
+            pic_for_layout.common.horizontal_offset = 0;
+            pic_for_layout.common.vertical_offset = 0;
+            pic_for_layout.common.horz_align = HorzAlign::Left;
+            pic_for_layout.common.vert_align = VertAlign::Top;
+
+            self.layout_picture(
+                tree,
+                parent_node,
+                &pic_for_layout,
+                &pic_area,
+                bin_data_content,
+                Alignment::Left,
+                Some(0),
+                Some(0),
+                Some(ctrl_idx),
+                cell_ctx,
+            );
+
+            if pic.common.treat_as_char {
+                tree.set_inline_shape_position(0, 0, ctrl_idx, cell_ctx, pic_x, pic_y);
+            }
         }
     }
 
@@ -637,9 +784,9 @@ impl LayoutEngine {
         let mut total = 0.0;
 
         // 구분선 위 여백 + 구분선 + 아래 여백
-        total += hwpunit_to_px(shape.separator_margin_top as i32, self.dpi);
+        total += hwpunit_to_px(shape.separator_above_margin_hu() as i32, self.dpi);
         total += border_width_to_px(shape.separator_line_width).max(0.5);
-        total += hwpunit_to_px(shape.separator_margin_bottom as i32, self.dpi);
+        total += hwpunit_to_px(shape.separator_below_margin_hu() as i32, self.dpi);
 
         // 각 각주의 문단 높이 (LineSeg.line_height는 HWP에서 줄간격 이미 반영됨)
         for (i, fn_ref) in footnotes.iter().enumerate() {
@@ -655,7 +802,7 @@ impl LayoutEngine {
             }
             // 각주 간 간격
             if i + 1 < footnotes.len() {
-                total += hwpunit_to_px(shape.note_spacing as i32, self.dpi);
+                total += hwpunit_to_px(shape.between_notes_margin_hu() as i32, self.dpi);
             }
         }
         total
@@ -675,7 +822,7 @@ impl LayoutEngine {
         let mut y = fn_area.y;
 
         // (1) 구분선 위 여백
-        y += hwpunit_to_px(shape.separator_margin_top as i32, self.dpi);
+        y += hwpunit_to_px(shape.separator_above_margin_hu() as i32, self.dpi);
 
         // (2) 구분선
         let sep_length = if shape.separator_length > 0 {
@@ -708,7 +855,7 @@ impl LayoutEngine {
         y += line_width;
 
         // (3) 구분선 아래 여백
-        y += hwpunit_to_px(shape.separator_margin_bottom as i32, self.dpi);
+        y += hwpunit_to_px(shape.separator_below_margin_hu() as i32, self.dpi);
 
         // (4) 각 각주 렌더링
         // 각주 TextRun에 마커를 인코딩하여 히트테스트에서 식별 가능하도록 함
@@ -735,7 +882,7 @@ impl LayoutEngine {
                     .unwrap_or(composed.para_style_id as u32);
 
                 // [Issue #483] 각주의 마지막 paragraph 는 trailing line_spacing 미적용
-                // — 다음 각주와의 간격은 note_spacing 이 책임. trailing ls 까지 합산하면
+                // — 다음 각주와의 간격은 between-notes 값이 책임. trailing ls 까지 합산하면
                 // 각주 사이 gap 이 line_spacing 만큼 부풀려짐.
                 let is_last_para_of_fn = p_idx + 1 == fn_paras.len();
 
@@ -777,7 +924,7 @@ impl LayoutEngine {
                     );
                     if is_last_para_of_fn {
                         // layout_composed_paragraph 가 마지막 line 의 trailing line_spacing 을
-                        // 포함시키므로, 각주 마지막 paragraph 에서는 그만큼 빼서 note_spacing
+                        // 포함시키므로, 각주 마지막 paragraph 에서는 그만큼 빼서 between-notes
                         // 과의 이중 합산을 막는다.
                         let trail_ls = composed
                             .lines
@@ -793,7 +940,7 @@ impl LayoutEngine {
 
             // 각주 간 간격
             if i + 1 < footnotes.len() {
-                y += hwpunit_to_px(shape.note_spacing as i32, self.dpi);
+                y += hwpunit_to_px(shape.between_notes_margin_hu() as i32, self.dpi);
             }
         }
     }
@@ -814,7 +961,7 @@ impl LayoutEngine {
         marker_para: usize,
         base_cs_id: u32,
         // [Issue #483] true 면 각주의 마지막 paragraph — 마지막 line 의 trailing
-        // line_spacing 을 누적하지 않는다 (note_spacing 과 이중 합산 방지).
+        // line_spacing 을 누적하지 않는다 (between-notes 와 이중 합산 방지).
         is_last_para_of_fn: bool,
     ) -> f64 {
         let mut y = y_start;
@@ -913,7 +1060,7 @@ impl LayoutEngine {
             parent.children.push(line_node);
             // [Issue #483] trailing line_spacing 추가 — layout_composed_paragraph:2560 과 정합.
             // 단, 각주의 마지막 paragraph 의 마지막 line 에서는 trailing line_spacing 을
-            // 누적하지 않는다 — 다음 각주와의 간격은 note_spacing 이 책임하므로
+            // 누적하지 않는다 — 다음 각주와의 간격은 between-notes 값이 책임하므로
             // 이중 합산을 피하기 위함.
             let is_last_line = line_idx + 1 >= composed.lines.len();
             if is_last_para_of_fn && is_last_line {

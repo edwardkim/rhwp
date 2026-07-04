@@ -46,6 +46,12 @@ pub struct Document {
     /// 변환본의 ParaShape spacing/margin 은 HWP3 원본의 2배 단위로 저장되어
     /// 한컴 viewer 와 일치하려면 typeset 단계에서 1/2 보정 필요.
     pub is_hwp3_variant: bool,
+    /// [Issue #1770] rhwp 가 HWPX 에서 변환한 HWP5 여부 (`/RhwpHwpxOrigin` 마커
+    /// 스트림 감지, 결정론). 변환은 LINE_SEG 를 verbatim 직렬화하므로 IR 은 HWPX
+    /// 시멘틱 그대로다 — pagination/렌더의 `is_hwpx_source` 분기(RowBreak 분할
+    /// tolerance 2.0 vs 64.0px 등)를 HWPX 로 해석해야 같은 IR 이 같은 쪽수가 된다
+    /// (roundtrip 자기정합). native HWP5 는 마커가 없어 불변.
+    pub is_hwpx_variant: bool,
 }
 
 /// 미리보기 데이터 (PrvImage, PrvText 스트림)

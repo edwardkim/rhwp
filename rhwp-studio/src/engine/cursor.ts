@@ -1,6 +1,8 @@
 import type { DocumentPosition, CursorRect, LineInfo, CellPathEntry, NavContextEntry, CellBbox } from '@/core/types';
 import { WasmBridge } from '@/core/wasm-bridge';
 
+type CellSelectionReason = 'manual' | 'protected';
+
 type PictureSelectionRef = {
   sec: number;
   ppi: number;
@@ -62,6 +64,7 @@ export class CursorState {
   private _cellSelectionMode = false;
   /** 셀 선택 단계: 1=단일셀, 2=범위선택, 3=전체선택 */
   private _cellSelectionPhase = 1;
+  private _cellSelectionReason: CellSelectionReason = 'manual';
   private cellAnchor: { row: number; col: number } | null = null;
   private cellFocus: { row: number; col: number } | null = null;
   /** Ctrl+클릭으로 제외된 셀 ("row,col" 문자열 Set) */
@@ -451,26 +454,44 @@ export class CursorState {
 
   /** 커서를 위/아래로 이동한다 (delta: -1=위, +1=아래) — WASM 단일 호출 */
   moveVertical(delta: number): void {
+    const wasAtLineEnd = this.atLineEnd;
     this.atLineEnd = false;
-    const px = this.preferredX ?? -1.0;
+    let px = this.preferredX ?? this.rect?.x ?? -1.0;
     const pos = this.position;
+    let queryPos = pos;
+    let preserveLineEndAffinity = false;
+
+    if (wasAtLineEnd && pos.charOffset > 0) {
+      try {
+        const prevLineInfo = this.getLineInfoForOffset(pos, pos.charOffset - 1);
+        if (prevLineInfo.charEnd === pos.charOffset) {
+          queryPos = { ...pos, charOffset: pos.charOffset - 1 };
+          // soft-wrap 경계의 줄 끝은 다음 줄 시작 offset과 같다.
+          // X를 줄 끝 쪽으로 보낸 뒤 WASM이 대상 줄에서 가장 오른쪽 후보를 고르게 한다.
+          px = Number.MAX_SAFE_INTEGER;
+          preserveLineEndAffinity = true;
+        }
+      } catch {
+        queryPos = pos;
+      }
+    }
 
     try {
       let result;
-      if ((pos.cellPath?.length ?? 0) > 0 && pos.parentParaIndex !== undefined) {
+      if ((queryPos.cellPath?.length ?? 0) > 0 && queryPos.parentParaIndex !== undefined) {
         // cellPath가 있으면 1-depth 표/글상자도 경로 기반 API 사용
-        const pathJson = JSON.stringify(pos.cellPath);
+        const pathJson = JSON.stringify(queryPos.cellPath);
         result = this.wasm.moveVerticalByPath(
-          pos.sectionIndex, pos.parentParaIndex, pathJson,
-          pos.charOffset, delta, px,
+          queryPos.sectionIndex, queryPos.parentParaIndex, pathJson,
+          queryPos.charOffset, delta, px,
         );
       } else {
-        const ppi = pos.parentParaIndex ?? 0xFFFFFFFF;
-        const ci = pos.controlIndex ?? 0xFFFFFFFF;
-        const cei = pos.cellIndex ?? 0xFFFFFFFF;
-        const cpi = pos.cellParaIndex ?? 0xFFFFFFFF;
+        const ppi = queryPos.parentParaIndex ?? 0xFFFFFFFF;
+        const ci = queryPos.controlIndex ?? 0xFFFFFFFF;
+        const cei = queryPos.cellIndex ?? 0xFFFFFFFF;
+        const cpi = queryPos.cellParaIndex ?? 0xFFFFFFFF;
         result = this.wasm.moveVertical(
-          pos.sectionIndex, pos.paragraphIndex, pos.charOffset,
+          queryPos.sectionIndex, queryPos.paragraphIndex, queryPos.charOffset,
           delta, px,
           ppi, ci, cei, cpi,
         );
@@ -502,8 +523,9 @@ export class CursorState {
         };
       }
 
+      this.atLineEnd = preserveLineEndAffinity && this.isPreviousLineEnd(this.position);
       // preferredX 저장 (다음 연속 이동에 재사용)
-      this.preferredX = result.preferredX;
+      this.preferredX = this.atLineEnd ? (this.rect?.x ?? result.x) : result.preferredX;
     } catch (e) {
       console.warn('[CursorState] moveVertical 실패:', e);
     }
@@ -532,7 +554,9 @@ export class CursorState {
       }
       this.atLineEnd = false;
       this.position = { ...this.position, charOffset: lineInfo.charStart };
-      this.updateRect();
+      const visualRect = this.getCursorRectOnVisualLine(lineInfo.lineIndex, false);
+      if (visualRect) this.rect = visualRect;
+      else this.updateRect();
     } catch (e) {
       console.warn('[CursorState] moveToLineStart 실패:', e);
     }
@@ -542,10 +566,21 @@ export class CursorState {
   moveToLineEnd(): void {
     this.preferredX = null;
     try {
-      const lineInfo = this.getLineInfoAtCursor();
+      const pos = this.position;
+      let lineInfo = this.getLineInfoAtCursor();
+      // soft-wrap 줄 끝 offset은 다음 줄 시작 offset과 같다.
+      // End를 반복 입력할 때 현재 줄 끝 affinity를 잃고 다음 줄 끝으로 이동하지 않도록 한다.
+      if (this.atLineEnd && pos.charOffset === lineInfo.charStart && pos.charOffset > 0) {
+        const prevLineInfo = this.getLineInfoForOffset(pos, pos.charOffset - 1);
+        if (prevLineInfo.charEnd === pos.charOffset) {
+          lineInfo = prevLineInfo;
+        }
+      }
       this.position = { ...this.position, charOffset: lineInfo.charEnd };
       this.atLineEnd = true;
-      this.updateRect();
+      const visualRect = this.getCursorRectOnVisualLine(lineInfo.lineIndex, true);
+      if (visualRect) this.rect = visualRect;
+      else this.updateRect();
     } catch (e) {
       console.warn('[CursorState] moveToLineEnd 실패:', e);
     }
@@ -553,14 +588,46 @@ export class CursorState {
 
   /** 현재 커서 위치의 줄 정보를 얻는다 (본문/셀 자동 분기) */
   private getLineInfoAtCursor(): LineInfo {
-    const pos = this.position;
-    if (this.isInCell()) {
+    return this.getLineInfoForOffset(this.position, this.position.charOffset);
+  }
+
+  private getLineInfoForOffset(pos: DocumentPosition, charOffset: number): LineInfo {
+    const inCell = (pos.cellPath?.length ?? 0) > 0 || pos.parentParaIndex !== undefined;
+    if (inCell) {
       return this.wasm.getLineInfoInCell(
         pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!,
-        pos.cellIndex!, pos.cellParaIndex!, pos.charOffset,
+        pos.cellIndex!, pos.cellParaIndex!, charOffset,
       );
     } else {
-      return this.wasm.getLineInfo(pos.sectionIndex, pos.paragraphIndex, pos.charOffset);
+      return this.wasm.getLineInfo(pos.sectionIndex, pos.paragraphIndex, charOffset);
+    }
+  }
+
+  private getCursorRectOnVisualLine(lineIndex: number, atEnd: boolean): CursorRect | null {
+    const pos = this.position;
+    try {
+      return this.wasm.getCursorRectOnLine(
+        pos.sectionIndex,
+        pos.paragraphIndex,
+        lineIndex,
+        atEnd,
+        pos.parentParaIndex ?? 0xFFFFFFFF,
+        pos.controlIndex ?? 0xFFFFFFFF,
+        pos.cellIndex ?? 0xFFFFFFFF,
+        pos.cellParaIndex ?? 0xFFFFFFFF,
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  private isPreviousLineEnd(pos: DocumentPosition): boolean {
+    if (pos.charOffset <= 0) return false;
+    try {
+      const prevLineInfo = this.getLineInfoForOffset(pos, pos.charOffset - 1);
+      return prevLineInfo.charEnd === pos.charOffset;
+    } catch {
+      return false;
     }
   }
 
@@ -910,12 +977,7 @@ export class CursorState {
         return;
       }
     } else {
-      if (ppi! > 0) {
-        const prevLen = this.wasm.getParagraphLength(sec, ppi! - 1);
-        this.position = { sectionIndex: sec, paragraphIndex: ppi! - 1, charOffset: prevLen };
-      } else {
-        return;
-      }
+      this.position = { sectionIndex: sec, paragraphIndex: ppi!, charOffset: 0 };
     }
     this.updateRect();
   }
@@ -1000,7 +1062,7 @@ export class CursorState {
   // ─── F5 셀 블록 선택 모드 ─────────────────────────────────
 
   /** 셀 선택 모드에 진입한다. 현재 셀의 row/col이 anchor/focus가 된다. */
-  enterCellSelectionMode(): boolean {
+  enterCellSelectionMode(reason: CellSelectionReason = 'manual'): boolean {
     if (!this.isInCell() || this.isInTextBox()) return false;
     const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellIndex: cei, cellPath } = this.position;
     if (ppi === undefined || ci === undefined || cei === undefined) return false;
@@ -1021,6 +1083,7 @@ export class CursorState {
       this.cellTableCtx = { sec, ppi, ci, rowCount: dims.rowCount, colCount: dims.colCount, cellPath };
       this._cellSelectionMode = true;
       this._cellSelectionPhase = 1;
+      this._cellSelectionReason = reason;
       return true;
     } catch (e) {
       console.warn('[CursorState] enterCellSelectionMode 실패:', e);
@@ -1032,6 +1095,7 @@ export class CursorState {
   exitCellSelectionMode(): void {
     this._cellSelectionMode = false;
     this._cellSelectionPhase = 1;
+    this._cellSelectionReason = 'manual';
     this.cellAnchor = null;
     this.cellFocus = null;
     this.excludedCells.clear();
@@ -1075,6 +1139,11 @@ export class CursorState {
   /** 셀 선택 모드인가? */
   isInCellSelectionMode(): boolean {
     return this._cellSelectionMode;
+  }
+
+  /** 보호 셀 클릭으로 진입한 셀 선택 모드인가? */
+  isProtectedCellSelectionMode(): boolean {
+    return this._cellSelectionMode && this._cellSelectionReason === 'protected';
   }
 
   // ─── F5 본문 블록 선택 (#220) ──────────────────────
@@ -1202,9 +1271,33 @@ export class CursorState {
 
   /** Shift+클릭: anchor 고정, focus를 클릭 셀로 이동 (범위 선택). */
   shiftSelectCell(row: number, col: number): void {
-    if (!this._cellSelectionMode) return;
-    this.cellFocus = { row, col };
+    this.setCellSelectionFocus(row, col);
+  }
+
+  /** 마우스 드래그 시작 셀을 anchor/focus로 지정한다. */
+  setCellSelectionAnchor(row: number, col: number): void {
+    if (!this._cellSelectionMode || !this.cellTableCtx) return;
+    const clamped = this.clampCellSelectionPoint(row, col);
+    this.cellAnchor = clamped;
+    this.cellFocus = clamped;
     this.excludedCells.clear();
+    this._cellSelectionPhase = 1;
+  }
+
+  /** 셀 선택 anchor를 유지하고 focus만 갱신한다. */
+  setCellSelectionFocus(row: number, col: number): void {
+    if (!this._cellSelectionMode || !this.cellTableCtx) return;
+    this.cellFocus = this.clampCellSelectionPoint(row, col);
+    this.excludedCells.clear();
+  }
+
+  private clampCellSelectionPoint(row: number, col: number): { row: number; col: number } {
+    if (!this.cellTableCtx) return { row, col };
+    const { rowCount, colCount } = this.cellTableCtx;
+    return {
+      row: Math.max(0, Math.min(rowCount - 1, row)),
+      col: Math.max(0, Math.min(colCount - 1, col)),
+    };
   }
 
   /** Ctrl+클릭: 해당 셀을 선택에서 제외/복원 토글. */
@@ -1236,7 +1329,12 @@ export class CursorState {
 
   /** 현재 셀 선택의 표 컨텍스트를 반환한다 (셀 bbox 조회용). */
   getCellTableContext(): { sec: number; ppi: number; ci: number; cellPath?: CellPathEntry[] } | null {
-    return this.cellTableCtx;
+    if (this.cellTableCtx) return this.cellTableCtx;
+    if (!this.isInCell()) return null;
+
+    const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellPath } = this.position;
+    if (ppi === undefined || ci === undefined) return null;
+    return { sec, ppi, ci, cellPath };
   }
 
   // ─── 표 객체 선택 모드 ─────────────────────────────────

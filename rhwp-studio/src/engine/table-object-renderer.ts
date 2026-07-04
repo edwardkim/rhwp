@@ -2,6 +2,34 @@ import { VirtualScroll } from '@/view/virtual-scroll';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+function createObjectHandle(cx: number, cy: number, size: number, locked: boolean): HTMLDivElement {
+  const actualSize = locked ? Math.max(size, 10) : size;
+  const half = actualSize / 2;
+  const el = document.createElement('div');
+  el.style.cssText =
+    `position:absolute;` +
+    `left:${cx - half}px;top:${cy - half}px;` +
+    `width:${actualSize}px;height:${actualSize}px;` +
+    `box-sizing:border-box;pointer-events:none;`;
+  if (!locked) {
+    el.style.background = '#fff';
+    el.style.border = '1px solid #000';
+    return el;
+  }
+
+  el.style.background = 'rgba(255,255,255,0.9)';
+  el.style.border = '1px solid #777';
+  el.style.borderRadius = '50%';
+  const slash = document.createElement('div');
+  slash.style.cssText =
+    `position:absolute;left:50%;top:50%;` +
+    `width:${Math.max(actualSize - 1, 1)}px;height:1px;` +
+    `background:#777;transform:translate(-50%,-50%) rotate(45deg);` +
+    `transform-origin:center;`;
+  el.appendChild(slash);
+  return el;
+}
+
 function createSvgRoot(width: string, height: string): SVGSVGElement {
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.style.width = width;
@@ -71,9 +99,10 @@ export class TableObjectRenderer {
     tableBBox: { pageIndex: number; x: number; y: number; width: number; height: number },
     zoom: number,
     angleDeg: number = 0,
+    locked: boolean = false,
   ): void {
     if (angleDeg === 0) {
-      this.renderMultiPage([tableBBox], zoom);
+      this.renderMultiPage([tableBBox], zoom, locked);
       return;
     }
     // 회전된 도형: CSS 회전 테두리 + 실제 회전된 꼭짓점에 핸들 배치
@@ -112,7 +141,6 @@ export class TableObjectRenderer {
 
     // 8개 핸들 (실제 회전된 꼭짓점/변 중점)
     const hs = TableObjectRenderer.HANDLE_SIZE;
-    const half = hs / 2;
     const positions: { dir: HandleDirection; lx: number; ly: number }[] = [
       { dir: 'nw', lx: -w / 2, ly: -h / 2 },
       { dir: 'n',  lx: 0,      ly: -h / 2 },
@@ -125,12 +153,7 @@ export class TableObjectRenderer {
     ];
     for (const pos of positions) {
       const [px, py] = rot(pos.lx, pos.ly);
-      const el = document.createElement('div');
-      el.style.cssText =
-        `position:absolute;` +
-        `left:${px - half}px;top:${py - half}px;` +
-        `width:${hs}px;height:${hs}px;` +
-        `background:#fff;border:1px solid #000;box-sizing:border-box;pointer-events:none;`;
+      const el = createObjectHandle(px, py, hs, locked);
       this.layer.appendChild(el);
       this.handles.push({ dir: pos.dir, el, cx: px, cy: py });
     }
@@ -143,24 +166,28 @@ export class TableObjectRenderer {
       const [topCx, topCy] = rot(0, -h / 2);
       const [rcx, rcy] = rot(0, -h / 2 - gap);
 
-      // 연결선 (SVG)
-      const svgEl = document.createElement('div');
-      svgEl.style.cssText = 'position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;';
-      const svg = createSvgRoot('', '');
-      svg.style.position = 'absolute';
-      svg.style.pointerEvents = 'none';
-      svg.appendChild(createSvgLine(topCx, topCy, rcx, rcy, '#4CAF50', 1));
-      svgEl.appendChild(svg);
-      this.layer.appendChild(svgEl);
-      this.extraEls.push(svgEl);
+      if (!locked) {
+        // 연결선 (SVG)
+        const svgEl = document.createElement('div');
+        svgEl.style.cssText = 'position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;';
+        const svg = createSvgRoot('', '');
+        svg.style.position = 'absolute';
+        svg.style.pointerEvents = 'none';
+        svg.appendChild(createSvgLine(topCx, topCy, rcx, rcy, '#4CAF50', 1));
+        svgEl.appendChild(svg);
+        this.layer.appendChild(svgEl);
+        this.extraEls.push(svgEl);
+      }
 
       // 원형 회전 핸들
-      const el = document.createElement('div');
-      el.style.cssText =
-        `position:absolute;` +
-        `left:${rcx - rhalf}px;top:${rcy - rhalf}px;` +
-        `width:${rhs}px;height:${rhs}px;` +
-        `background:#4CAF50;border:1px solid #388E3C;border-radius:50%;box-sizing:border-box;pointer-events:none;`;
+      const el = locked ? createObjectHandle(rcx, rcy, rhs, true) : document.createElement('div');
+      if (!locked) {
+        el.style.cssText =
+          `position:absolute;` +
+          `left:${rcx - rhalf}px;top:${rcy - rhalf}px;` +
+          `width:${rhs}px;height:${rhs}px;` +
+          `background:#4CAF50;border:1px solid #388E3C;border-radius:50%;box-sizing:border-box;pointer-events:none;`;
+      }
       this.layer.appendChild(el);
       this.handles.push({ dir: 'rotate', el, cx: rcx, cy: rcy });
     }
@@ -170,6 +197,7 @@ export class TableObjectRenderer {
   renderMultiPage(
     bboxes: { pageIndex: number; x: number; y: number; width: number; height: number }[],
     zoom: number,
+    locked: boolean = false,
   ): void {
     this.clear();
     this.ensureAttached();
@@ -201,7 +229,6 @@ export class TableObjectRenderer {
 
     // 각 페이지 bbox마다 8개 핸들 생성
     const hs = TableObjectRenderer.HANDLE_SIZE;
-    const half = hs / 2;
     for (const bbox of bboxes) {
       const po = this.virtualScroll.getPageOffset(bbox.pageIndex);
       const pdw = this.virtualScroll.getPageWidth(bbox.pageIndex);
@@ -223,12 +250,7 @@ export class TableObjectRenderer {
       ];
 
       for (const pos of positions) {
-        const el = document.createElement('div');
-        el.style.cssText =
-          `position:absolute;` +
-          `left:${pos.cx - half}px;top:${pos.cy - half}px;` +
-          `width:${hs}px;height:${hs}px;` +
-          `background:#fff;border:1px solid #000;box-sizing:border-box;pointer-events:none;`;
+        const el = createObjectHandle(pos.cx, pos.cy, hs, locked);
         this.layer.appendChild(el);
         this.handles.push({ dir: pos.dir, el, cx: pos.cx, cy: pos.cy });
       }
@@ -241,23 +263,27 @@ export class TableObjectRenderer {
         const rcx = l + w / 2;
         const rcy = t - gap;
 
-        // 연결선: 상단 중앙 → 회전 핸들
-        const line = document.createElement('div');
-        line.style.cssText =
-          `position:absolute;` +
-          `left:${rcx}px;top:${rcy}px;` +
-          `width:1px;height:${gap}px;` +
-          `background:#4CAF50;pointer-events:none;`;
-        this.layer.appendChild(line);
-        this.extraEls.push(line);
+        if (!locked) {
+          // 연결선: 상단 중앙 → 회전 핸들
+          const line = document.createElement('div');
+          line.style.cssText =
+            `position:absolute;` +
+            `left:${rcx}px;top:${rcy}px;` +
+            `width:1px;height:${gap}px;` +
+            `background:#4CAF50;pointer-events:none;`;
+          this.layer.appendChild(line);
+          this.extraEls.push(line);
+        }
 
         // 원형 회전 핸들
-        const el = document.createElement('div');
-        el.style.cssText =
-          `position:absolute;` +
-          `left:${rcx - rhalf}px;top:${rcy - rhalf}px;` +
-          `width:${rhs}px;height:${rhs}px;` +
-          `background:#4CAF50;border:1px solid #388E3C;border-radius:50%;box-sizing:border-box;pointer-events:none;`;
+        const el = locked ? createObjectHandle(rcx, rcy, rhs, true) : document.createElement('div');
+        if (!locked) {
+          el.style.cssText =
+            `position:absolute;` +
+            `left:${rcx - rhalf}px;top:${rcy - rhalf}px;` +
+            `width:${rhs}px;height:${rhs}px;` +
+            `background:#4CAF50;border:1px solid #388E3C;border-radius:50%;box-sizing:border-box;pointer-events:none;`;
+        }
         this.layer.appendChild(el);
         this.handles.push({ dir: 'rotate', el, cx: rcx, cy: rcy });
       }

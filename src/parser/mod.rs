@@ -261,7 +261,7 @@ fn parse_hwp_with_cfb(
     // 5-7. 미리보기, BinData, 추가 스트림
     let preview = extract_preview(&mut cfb);
     let bin_data_content = load_bin_data_content(&mut cfb, &doc_info.bin_data_list, compressed);
-    let extra_streams = collect_extra_streams(&mut cfb, &doc_info.bin_data_list);
+    let extra_streams = collect_extra_streams(&mut cfb, &doc_info.bin_data_list, &bin_data_content);
 
     // Document 조립
     let model_header = ModelFileHeader {
@@ -285,6 +285,13 @@ fn parse_hwp_with_cfb(
     // 다양한 스타일 사용 안하므로 작은 비율).
     let summary_hwp3_era = cfb.detect_hwp3_variant();
 
+    // [Issue #1770] rhwp HWPX→HWP 변환본 식별 — 마커 스트림 감지 (결정론).
+    // 변환본 IR 은 HWPX LINE_SEG 시멘틱 그대로이므로 pagination/렌더의
+    // is_hwpx_source 분기를 HWPX 로 해석해야 roundtrip 쪽수가 자기정합한다.
+    let is_hwpx_variant = extra_streams
+        .iter()
+        .any(|(p, _)| p == crate::document_core::converters::hwpx_to_hwp::HWPX_ORIGIN_STREAM_PATH);
+
     let mut doc = Document {
         header: model_header,
         doc_properties,
@@ -295,6 +302,7 @@ fn parse_hwp_with_cfb(
         extra_streams,
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
+        is_hwpx_variant,
     };
 
     // 자동 번호 할당 (문서 전체에서 순차적으로)
@@ -322,10 +330,16 @@ fn parse_hwp_with_cfb(
                 // [Task #1037 → #1042 정정] ParaShape unit semantic normalize.
                 // HWP3 vs HWP5 variant 비교 결과 (diag_1042_hwp3_vs_hwp5_paragraph):
                 //   - margin_left/right: HWP5 raw = HWP3 raw 동일 → /2 적용은 wrong
-                //   - indent / spacing_before / spacing_after: HWP5 raw = HWP3 × 2 → /2 정합
+                //   - spacing_before / spacing_after: HWP5 raw = HWP3 × 2 → /2 정합
                 // margin_left/right /2 제거 — HWP3 정답 paragraph 분포 정합.
+                //
+                // [Task #1472] indent /2 제거 — IR 은 정답(full HWPUNIT, HWPX 일치)로 둔다.
+                //   종전 indent /2 는 본문 내어쓰기를 절반으로 훼손(한컴/HWPX 와 어긋남)하면서,
+                //   미주 TAC 수식 흐름의 available_width 계산이 indent_scale=2.0 으로 이를 되돌려
+                //   "수식 effective indent = (indent/2)×2 = full" 로 페이지네이션을 한컴과 정합시켰다.
+                //   재설계: IR indent 는 full 로 두고, 미주 수식 흐름의 indent_scale 을 변환본에서만
+                //   절반(2.0→1.0)으로 낮춰 effective indent(=full) 를 불변 유지한다(아래 렌더러).
                 for ps in &mut doc.doc_info.para_shapes {
-                    ps.indent /= 2;
                     ps.spacing_before /= 2;
                     ps.spacing_after /= 2;
                 }
@@ -564,6 +578,7 @@ fn parse_hwp_with_lenient(
         preview: None,
         bin_data_content,
         extra_streams: Vec::new(),
+        is_hwpx_variant: false,
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
     };
@@ -755,6 +770,7 @@ fn assign_auto_numbers_in_controls(
                 let idx = counter_index(an.number_type);
                 counters[idx] += 1;
                 an.assigned_number = counters[idx];
+                an.number = counters[idx];
             }
             Control::Table(table) => {
                 // 표 내부 셀의 문단도 처리
@@ -1060,10 +1076,24 @@ fn detect_image_format(data: &[u8]) -> PreviewImageFormat {
 /// 이미 별도로 파싱되므로 제외한다.
 fn collect_extra_streams(
     cfb: &mut cfb_reader::CfbReader,
-    _bin_data_list: &[crate::model::bin_data::BinData],
+    bin_data_list: &[crate::model::bin_data::BinData],
+    bin_data_content: &[BinDataContent],
 ) -> Vec<(String, Vec<u8>)> {
     let all_streams = cfb.list_streams();
     let mut extra = Vec::new();
+
+    // [Task #1554] 직렬화기(`cfb_writer`)가 `bin_data_content` 로부터 재생성할
+    // /BinData 스트림 경로 집합. 직렬화기와 동일한 명명 규칙(`find_bin_data_info_with_compress`)
+    // 을 미러링하여 계산한다. 이 집합에 들어가지 않는 /BinData 스트림은 대응 BinData
+    // 레코드가 없는 "고아 스트림"(예: img-start-001 의 20개 BIN, interview.hwp 의 BIN0001)
+    // 이며, 그대로 두면 저장 시 통째 드롭된다. extra_streams 로 원본 바이트를 보존한다.
+    let emitted_bin_paths: std::collections::HashSet<String> = bin_data_content
+        .iter()
+        .map(|c| {
+            let (storage_id, ext) = serialized_bin_name(bin_data_list, c);
+            format!("/BinData/BIN{:04X}.{}", storage_id, ext)
+        })
+        .collect();
 
     for path in &all_streams {
         // 이미 파싱된 스트림은 제외
@@ -1071,10 +1101,14 @@ fn collect_extra_streams(
             || path == "/DocInfo"
             || path.starts_with("/BodyText/")
             || path.starts_with("/ViewText/")
-            || path.starts_with("/BinData/")
             || path == "/PrvImage"
             || path == "/PrvText"
         {
+            continue;
+        }
+
+        // /BinData 는 직렬화기가 재생성하는 스트림만 제외하고, 고아 스트림은 보존
+        if path.starts_with("/BinData/") && emitted_bin_paths.contains(path) {
             continue;
         }
 
@@ -1085,6 +1119,25 @@ fn collect_extra_streams(
     }
 
     extra
+}
+
+/// 직렬화기가 `BinDataContent` 에 대해 생성할 스트림 이름의 (storage_id, ext) 계산.
+///
+/// `cfb_writer::find_bin_data_info_with_compress` 의 명명 규칙(매칭 레코드 우선,
+/// 없으면 content 자체값)을 미러링한다. extra_streams 의 고아 /BinData 판별 전용.
+fn serialized_bin_name<'a>(
+    bin_data_list: &'a [crate::model::bin_data::BinData],
+    content: &'a BinDataContent,
+) -> (u16, &'a str) {
+    use crate::model::bin_data::BinDataType;
+    for bd in bin_data_list {
+        if matches!(bd.data_type, BinDataType::Embedding | BinDataType::Storage)
+            && bd.storage_id == content.id
+        {
+            return (bd.storage_id, bd.extension.as_deref().unwrap_or("dat"));
+        }
+    }
+    (content.id, &content.extension)
 }
 
 /// BinData 스토리지에서 이미지 데이터 로드

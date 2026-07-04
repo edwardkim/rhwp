@@ -6,6 +6,7 @@
 use super::composer::{
     decode_pua_overlap_number, expand_pua_render_text, pua_to_display_text, CharOverlapInfo,
 };
+use super::form_caption::display_form_caption;
 pub(crate) use super::image_resolver::{
     bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes,
     real_picture_watermark_bytes_to_hancom_tone_png_bytes,
@@ -43,6 +44,8 @@ use super::layout::{compute_char_positions, split_into_clusters};
 use crate::model::control::FormType;
 use crate::model::style::{ImageFillMode, UnderlineType};
 use base64::Engine;
+
+const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
 
 /// SVG 폰트 임베딩 모드
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
@@ -376,13 +379,13 @@ impl SvgRenderer {
                                 };
                                 let mid_x = (cx + next_x) / 2.0 - mark_font_size * 0.25;
                                 self.output.push_str(&format!(
-                                    "<text x=\"{}\" y=\"{}\" font-size=\"{}\" fill=\"#4A90D9\">\u{2228}</text>\n",
+                                    "<text x=\"{}\" y=\"{}\" font-size=\"{}\" fill=\"#0066FF\">\u{2228}</text>\n",
                                     mid_x, node.bbox.y + run.baseline, mark_font_size,
                                 ));
                             } else if c == '\t' {
                                 let cx = node.bbox.x + char_positions[i];
                                 self.output.push_str(&format!(
-                                    "<text x=\"{}\" y=\"{}\" font-size=\"{}\" fill=\"#4A90D9\">\u{2192}</text>\n",
+                                    "<text x=\"{}\" y=\"{}\" font-size=\"{}\" fill=\"#0066FF\">\u{2192}</text>\n",
                                     cx, node.bbox.y + run.baseline, mark_font_size,
                                 ));
                             }
@@ -401,7 +404,7 @@ impl SvgRenderer {
                             "\u{21B5}"
                         };
                         self.output.push_str(&format!(
-                            "<text x=\"{}\" y=\"{}\" font-size=\"{}\" fill=\"#4A90D9\">{}</text>\n",
+                            "<text x=\"{}\" y=\"{}\" font-size=\"{}\" fill=\"#0066FF\">{}</text>\n",
                             mark_x,
                             node.bbox.y + run.baseline,
                             font_size,
@@ -530,9 +533,18 @@ impl SvgRenderer {
                 clip_rect: Some(cr),
             } => {
                 let clip_id = format!("body-clip-{}", node.id);
+                let right_pad = if self.show_paragraph_marks || self.show_control_codes {
+                    TEXT_MARK_CLIP_RIGHT_PAD
+                } else {
+                    0.0
+                };
                 self.defs.push(format!(
                     "<clipPath id=\"{}\"><rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\"/></clipPath>\n",
-                    clip_id, cr.x, cr.y, cr.width, cr.height,
+                    clip_id,
+                    cr.x,
+                    cr.y,
+                    cr.width + right_pad,
+                    cr.height,
                 ));
                 self.output
                     .push_str(&format!("<g clip-path=\"url(#{})\">", clip_id));
@@ -1520,6 +1532,11 @@ impl SvgRenderer {
             self.output
                 .push_str(&format!("<g filter=\"url(#{})\">\n", fid));
         }
+        let object_opacity = img.opacity.clamp(0.0, 1.0);
+        if object_opacity < 1.0 {
+            self.output
+                .push_str(&format!("<g opacity=\"{:.3}\">\n", object_opacity));
+        }
         // 밝기/대비 → SVG 필터 래핑
         // [Issue #677] 한컴 워터마크 효과 (effect != RealPic 이고 brightness/contrast 가
         // 비-zero) 는 저장값을 그대로 brightness/contrast 필터로 적용한다. JPEG 워터마크는
@@ -1650,6 +1667,9 @@ impl SvgRenderer {
             self.output.push_str("</g>\n");
         }
         if bc_filter_id.is_some() {
+            self.output.push_str("</g>\n");
+        }
+        if object_opacity < 1.0 {
             self.output.push_str("</g>\n");
         }
         if effect_filter_id.is_some() {
@@ -2267,10 +2287,11 @@ impl SvgRenderer {
                     x, y, w, h));
                 // 캡션 텍스트 (회색, 중앙)
                 if !form.caption.is_empty() {
+                    let caption = display_form_caption(&form.caption);
                     let font_size = (h * 0.55).min(12.0).max(7.0);
                     self.output.push_str(&format!(
                         "<text x=\"{}\" y=\"{}\" font-size=\"{:.1}\" fill=\"#808080\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"'맑은 고딕',sans-serif\">{}</text>\n",
-                        x + w / 2.0, y + h / 2.0, font_size, escape_xml(&form.caption)));
+                        x + w / 2.0, y + h / 2.0, font_size, escape_xml(caption.as_ref())));
                 }
             }
             FormType::CheckBox => {
@@ -2295,11 +2316,12 @@ impl SvgRenderer {
                 }
                 // 캡션
                 if !form.caption.is_empty() {
+                    let caption = display_form_caption(&form.caption);
                     let text_x = box_x + box_size + 3.0;
                     let font_size = (h * 0.55).min(12.0).max(7.0);
                     self.output.push_str(&format!(
                         "<text x=\"{}\" y=\"{}\" font-size=\"{:.1}\" fill=\"{}\" dominant-baseline=\"central\" font-family=\"'맑은 고딕',sans-serif\">{}</text>\n",
-                        text_x, y + h / 2.0, font_size, form.fore_color, escape_xml(&form.caption)));
+                        text_x, y + h / 2.0, font_size, form.fore_color, escape_xml(caption.as_ref())));
                 }
             }
             FormType::RadioButton => {
@@ -2320,11 +2342,12 @@ impl SvgRenderer {
                 }
                 // 캡션
                 if !form.caption.is_empty() {
+                    let caption = display_form_caption(&form.caption);
                     let text_x = cx + r + 3.0;
                     let font_size = (h * 0.55).min(12.0).max(7.0);
                     self.output.push_str(&format!(
                         "<text x=\"{}\" y=\"{}\" font-size=\"{:.1}\" fill=\"{}\" dominant-baseline=\"central\" font-family=\"'맑은 고딕',sans-serif\">{}</text>\n",
-                        text_x, y + h / 2.0, font_size, form.fore_color, escape_xml(&form.caption)));
+                        text_x, y + h / 2.0, font_size, form.fore_color, escape_xml(caption.as_ref())));
                 }
             }
             FormType::ComboBox => {

@@ -7,7 +7,7 @@
   gap: 0;
   padding: 0 8px;
   background: var(--color-bg-light);
-  border-bottom: 1px solid #d0d0d0;
+  border-bottom: 1px solid var(--ui-border-light);
   flex-shrink: 0;
   height: 28px;
   font-size: var(--font-size-md);
@@ -28,15 +28,15 @@
 }
 
 .menu-title:hover {
-  background: #e2e6f1;
-  border-color: #96a6cd;
+  background: var(--ui-accent-bg);
+  border-color: var(--accent-hover);
   color: var(--color-primary-dark);
 }
 
 .menu-item.open > .menu-title {
-  background: #3e62bb;
-  border-color: #4c73d5;
-  color: #fff;
+  background: var(--ui-menu-open);
+  border-color: var(--ui-menu-open-border);
+  color: var(--ui-text-on-accent);
   z-index: 1001;
   position: relative;
 }
@@ -49,7 +49,7 @@
   left: 0;
   min-width: 220px;
   background: var(--color-surface);
-  border: 1px solid #c8c8c8;
+  border: 1px solid var(--ui-border);
   box-shadow: var(--shadow-dropdown);
   z-index: 1000;
   padding: 4px 0;
@@ -81,7 +81,7 @@
   display: block;
   width: 16px;
   height: 16px;
-  background-image: url(/images/icon_small_ko.svg);
+  background-image: var(--ui-icon-sprite-url);
   background-repeat: no-repeat;
 }
 
@@ -99,7 +99,12 @@
 }
 
 .md-item:hover {
-  background: #e9eefb;
+  background: var(--ui-selected);
+  color: var(--color-primary-dark);
+}
+
+.md-item.active {
+  background: var(--ui-selected);
   color: var(--color-primary-dark);
 }
 
@@ -122,14 +127,14 @@
 }
 
 .md-item.disabled .md-shortcut {
-  color: #c0c0c0;
+  color: var(--ui-border);
 }
 
 /* 구분선 */
 .md-sep {
   height: 0;
   margin: 3px 8px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--ui-border-subtle);
 }
 
 /* 서브메뉴 컨테이너 */
@@ -154,7 +159,7 @@
 }
 
 .md-sub:hover {
-  background: #e9eefb;
+  background: var(--ui-selected);
   color: var(--color-primary-dark);
 }
 
@@ -176,7 +181,7 @@
 }
 
 .md-sub.disabled .md-arrow {
-  color: #ccc;
+  color: var(--ui-border-light);
 }
 
 /* 서브메뉴 패널 */
@@ -187,7 +192,7 @@
   top: -4px;
   min-width: 150px;
   background: var(--color-surface);
-  border: 1px solid #c8c8c8;
+  border: 1px solid var(--ui-border);
   box-shadow: var(--shadow-dropdown);
   padding: 4px 0;
   z-index: 1001;

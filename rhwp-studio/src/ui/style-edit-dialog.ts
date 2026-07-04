@@ -22,6 +22,7 @@
 
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { EventBus } from '@/core/event-bus';
+import type { CharProperties, ParaProperties } from '@/core/types';
 import { ModalDialog } from './dialog';
 import { CharShapeDialog } from './char-shape-dialog';
 import { ParaShapeDialog } from './para-shape-dialog';
@@ -32,6 +33,11 @@ interface StyleInfo {
   englishName: string;
   type: number;
   nextStyleId: number;
+}
+
+interface StyleBaseInfo {
+  charProps?: CharProperties;
+  paraProps?: ParaProperties;
 }
 
 export class StyleEditDialog extends ModalDialog {
@@ -47,6 +53,7 @@ export class StyleEditDialog extends ModalDialog {
   /** true=추가 모드, false=편집 모드 */
   private addMode: boolean;
   private styleInfo: StyleInfo;
+  private baseInfo: StyleBaseInfo;
 
   onSave?: () => void;
   onClose?: () => void;
@@ -56,10 +63,12 @@ export class StyleEditDialog extends ModalDialog {
     private eventBus: EventBus,
     mode: 'add' | 'edit',
     styleInfo?: StyleInfo,
+    baseInfo?: StyleBaseInfo,
   ) {
     super(mode === 'add' ? '스타일 추가하기' : '스타일 편집하기', 480);
     this.addMode = mode === 'add';
     this.styleInfo = styleInfo ?? { id: -1, name: '새 스타일', englishName: '', type: 0, nextStyleId: 0 };
+    this.baseInfo = baseInfo ?? {};
   }
 
   protected createBody(): HTMLElement {
@@ -213,7 +222,7 @@ export class StyleEditDialog extends ModalDialog {
       dialog.onApply = (mods) => {
         this.paraModsJson = JSON.stringify(mods);
       };
-      dialog.show({});
+      dialog.show(this.baseInfo.paraProps ?? {});
       return;
     }
     try {
@@ -239,7 +248,7 @@ export class StyleEditDialog extends ModalDialog {
         }
         this.charModsJson = JSON.stringify(mods);
       };
-      dialog.show({});
+      dialog.show(this.baseInfo.charProps ?? {});
       return;
     }
     try {
@@ -272,8 +281,12 @@ export class StyleEditDialog extends ModalDialog {
 
     try {
       if (this.addMode) {
+        const baseParaShapeId = this.baseInfo.paraProps?.paraShapeId;
+        const baseCharShapeId = this.baseInfo.charProps?.charShapeId;
         const newId = this.wasm.createStyle(JSON.stringify({
           name, englishName, type: styleType, nextStyleId,
+          ...(typeof baseParaShapeId === 'number' ? { baseParaShapeId } : {}),
+          ...(typeof baseCharShapeId === 'number' ? { baseCharShapeId } : {}),
         }));
         if (this.charModsJson !== '{}' || this.paraModsJson !== '{}') {
           this.wasm.updateStyleShapes(newId, this.charModsJson, this.paraModsJson);

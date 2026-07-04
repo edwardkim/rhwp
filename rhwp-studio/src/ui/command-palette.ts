@@ -135,10 +135,11 @@ export class CommandPalette {
       // canExecute가 항상 false인 stub는 제외
       if (def.canExecute) {
         const ctx = {
-          hasDocument: false, hasSelection: false, inTable: false,
-          inCellSelectionMode: false, inTableObjectSelection: false,
+          hasDocument: false, hasSelection: false, hasCopiedFormat: false, inTable: false,
+          inCellSelectionMode: false, hasMultiCellSelection: false, hasTableTransposeClipboard: false, inTableObjectSelection: false,
           inPictureObjectSelection: false, inField: false, isEditable: true,
-          canUndo: false, canRedo: false, zoom: 1.0, showControlCodes: false,
+          editMode: 'normal' as const, isFormMode: false, canEditFormField: false,
+          canUndo: false, canRedo: false, zoom: 1.0, showControlCodes: false, showParagraphMarks: false,
         };
         // canExecute(ctx=hasDocument:false) → false 인 경우도 목록에는 포함
         // (실행 시점에 dispatcher가 다시 판단)

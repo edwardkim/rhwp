@@ -21,8 +21,9 @@ fn nested_table_border_exam_social_p1_q4_outline_present() {
     let bytes = fs::read(&hwp_path).expect("read exam_social.hwp");
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse exam_social.hwp");
 
-    // 4 페이지 (PDF 정합)
-    assert_eq!(doc.page_count(), 4, "exam_social.hwp 는 4 페이지");
+    // [fork] 한컴 PDF(=upstream) 4쪽; fork 글리프 메트릭은 1쪽 초과 페이지네이션
+    // (issue_1100 exam_social.hwpx pin 과 동일 계열) — 5 로 pin. p1 검증에는 무영향.
+    assert_eq!(doc.page_count(), 5, "exam_social.hwp 는 fork 실측 5 페이지");
 
     // 페이지 1 SVG 출력
     let svg = doc.render_page_svg(0).expect("render_page_svg");

@@ -5,7 +5,7 @@
 // 3. dist/ 폴더가 곧 Chrome 확장 프로그램
 
 import { execFileSync } from 'child_process';
-import { cpSync, mkdirSync, existsSync, renameSync, rmSync } from 'fs';
+import { cpSync, mkdirSync, existsSync, renameSync, rmSync, readdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -89,9 +89,16 @@ copy(resolve(__dirname, 'icons'), resolve(DIST, 'icons'));
 // i18n
 copy(resolve(__dirname, '_locales'), resolve(DIST, '_locales'));
 
+// [#1444] 다크테마 FOUC 방지 스크립트. vite 는 publicDir:false 라 public/ 을 복사하지
+// 않으므로 viewer.html 의 <script src="/theme-init.js"> 가 가리키는 파일을 개별 복사한다.
+// 확장 CSP('self')는 인라인을 금지하므로 인라인 대신 이 외부 파일을 쓴다.
+copy(resolve(ROOT, 'rhwp-studio', 'public', 'theme-init.js'), resolve(DIST, 'theme-init.js'));
+
 // rhwp-studio 리소스 (CSS에서 참조)
 mkdirSync(resolve(DIST, 'images'), { recursive: true });
 copy(resolve(ROOT, 'rhwp-studio', 'public', 'images', 'icon_small_ko.svg'), resolve(DIST, 'images', 'icon_small_ko.svg'));
+// [#1444] 다크 모드 아이콘 스프라이트 (base.css 다크 테마에서 참조). 누락 시 viewer 404.
+copy(resolve(ROOT, 'rhwp-studio', 'public', 'images', 'icon_small_ko_dark.svg'), resolve(DIST, 'images', 'icon_small_ko_dark.svg'));
 copy(resolve(ROOT, 'rhwp-studio', 'public', 'favicon.ico'), resolve(DIST, 'favicon.ico'));
 
 // 3. WASM 복사
@@ -102,28 +109,17 @@ copy(resolve(ROOT, 'pkg', 'rhwp.d.ts'), resolve(DIST, 'wasm', 'rhwp.d.ts'));
 copy(resolve(ROOT, 'pkg', 'rhwp_bg.wasm'), resolve(DIST, 'wasm', 'rhwp_bg.wasm'));
 copy(resolve(ROOT, 'pkg', 'rhwp_bg.wasm.d.ts'), resolve(DIST, 'wasm', 'rhwp_bg.wasm.d.ts'));
 
-// 4. 폰트 복사 (필수 폰트만)
+// 4. 폰트 복사 (web/fonts 전체 woff2)
+// FontLoader(rhwp-studio)가 참조하는 폰트와 자동 일치시키기 위해 하드코딩 목록 대신
+// web/fonts 의 woff2 전부를 복사한다. 목록을 고정하면 폴백 폰트 추가 시 누락된다 (#1484).
 console.log('\n[4/4] 폰트 복사...');
 mkdirSync(resolve(DIST, 'fonts'), { recursive: true });
-const essentialFonts = [
-  'Pretendard-Regular.woff2',
-  'Pretendard-Bold.woff2',
-  'NotoSansKR-Regular.woff2',
-  'NotoSansKR-Bold.woff2',
-  'NotoSerifKR-Regular.woff2',
-  'NotoSerifKR-Bold.woff2',
-  'GowunBatang-Regular.woff2',
-  'GowunBatang-Bold.woff2',
-  'GowunDodum-Regular.woff2',
-  'NanumGothic-Regular.woff2',
-  'NanumGothic-Bold.woff2',
-  'NanumMyeongjo-Regular.woff2',
-  'NanumMyeongjo-Bold.woff2',
-  'D2Coding-Regular.woff2',
-];
-for (const font of essentialFonts) {
-  copy(resolve(ROOT, 'web', 'fonts', font), resolve(DIST, 'fonts', font));
+const fontDir = resolve(ROOT, 'web', 'fonts');
+const fontFiles = readdirSync(fontDir).filter((f) => f.endsWith('.woff2'));
+for (const font of fontFiles) {
+  copy(resolve(fontDir, font), resolve(DIST, 'fonts', font));
 }
+console.log(`  woff2 ${fontFiles.length}개 복사`);
 
 console.log('\n=== 빌드 완료 ===');
 console.log(`출력: ${DIST}`);

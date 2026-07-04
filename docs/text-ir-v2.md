@@ -220,6 +220,117 @@ resource identity and native font-construction blockers explicit.
 - The public compatibility path is unchanged: unsupported or unconstructed
   glyph variants continue to use the `TextRun` fallback.
 
+## P24 Strict Bitmap/SVG Glyph Producer Corpus
+
+P24 widens the advanced glyph payload corpus without making bitmap or SVG glyphs
+the default public replay path.
+
+- `ResourceArena` can now intern image bytes and static SVG fragments alongside
+  font blobs, giving producer-output fixtures a concrete resource path instead
+  of only hand-authored numeric ids.
+- `payloadResourceKey` keeps the existing payload-family/source/placement
+  identity and appends the interned resource's `blake3` key when bytes are
+  available. Two exports that reuse `imageRef: 0` or `svgRef: 0` for different
+  producer bytes therefore do not share a strict glyph cache slot.
+- The schema minor version and feature arrays advertise the P24 additions:
+  `text.glyphOutline.payloadResourceDigestKey` and
+  `text.glyphOutline.svgGlyph.vectorResourceId`.
+- `BitmapGlyph` remains strict only for a single producer-selected strike with
+  deterministic alpha, scaling, filtering, finite placement, non-empty text and
+  glyph ranges, and no `backendDefault` scaling policy.
+- `SvgGlyph` remains strict only for a static sanitized vector resource with a
+  required finite positive `viewBox`; script, animation, external resources, and
+  interactivity flags must all stay false. JSON keeps the compatibility `svgRef`
+  field and also exposes `vectorResourceId` as the clearer static-vector alias.
+- Even when a backend explicitly enables the bitmap or SVG glyph family, invalid
+  strict payloads still reject and the schema-v1 compatibility export keeps the
+  `TextRun` fallback.
+
+## P25 Exact Font Replay Proof Corpus
+
+P25 widens the exact-font replay proof corpus while keeping public glyph-run
+fallback behavior conservative.
+
+- CanvasKit selection now rejects variable-font glyph-run instances with
+  `variationUnsupported` until an exact variation constructor is proven for the
+  public backend.
+- CanvasKit selection also rejects non-default TTC/OTC face indexes with
+  `faceIndexUnsupported`; default face index `0` remains the positive control.
+- Native Skia proof now distinguishes missing font blob bytes, exported
+  `dataRef` mismatch, and digest mismatch between the interned bytes and the
+  font metadata. Metadata mismatch is treated as a failed portable contract,
+  not as a best-effort construction case.
+- Native Skia still reports variation axes, non-zero collection face indexes,
+  and the intentionally unimplemented exact typeface constructor as separate
+  proof reasons. This keeps later exact-construction work from silently changing
+  fallback policy.
+- The glyph id field remains `u32` in Text IR, but backend selection/proof keeps
+  the current range guard before direct glyph replay.
+
+## P26 Guarded V2 Authority Follow-Ups
+
+P26 does not promote a new replay family. It closes the authority gaps left by
+the earlier v2 phases so experimental vocabulary cannot be mistaken for a stable
+backend contract.
+
+- `MixedPerGlyph`, non-horizontal glyph orientation, and `glyphTransforms`
+  remain vocabulary for future vertical and per-glyph transform work.
+  CanvasKit/native selection now reports `mixedPerGlyphAuthorityPending`,
+  `verticalGlyphOrientationAuthorityPending`, or
+  `glyphTransformAuthorityPending` and keeps the homogeneous `TextRun` fallback
+  until cluster/grapheme orientation, transform replay, vertical fixtures, and
+  backend fallback policy are proven together.
+- `lineBreakRisks` stays report-only telemetry. Even under
+  `fallbackFreeStrict`, line-break risk metadata does not become a validation
+  error when the slot has a strict variant.
+- The guarded COLRv1 subset remains limited to the P19 solid/gradient/transform
+  graph contract. Composite, blend, clip, nested paint, partial sweep, and other
+  future graph primitives require document-backed fixtures before writer or
+  backend authority expands.
+- Cross-scope variant vocabulary stays diagnostic-only. Variants still need a
+  same-leaf default `TextRun` fallback before they can participate in schema-v1
+  compatible export.
+- Font metrics data and font-name resolution remain compatibility diagnostics,
+  not portable replay proof. A resolver may use `font_metrics_data.rs` to compare
+  shaped advances against legacy `TextRun` layout, but the future native strict
+  replay proof should still be based on explicit `fontResources`/`ResourceArena`
+  identity, resource bytes, digest/`dataRef`, face index, variation axes, and
+  shaping proof. P26 keeps metrics/name resolution out of strict proof and leaves
+  full ResourceArena enforcement to the resolver/proof follow-up.
+
+## P27 Font Resolver and Proof Boundary
+
+P27 closes the resolver/proof boundary without turning glyph-id replay into a
+default path.
+
+- A `GlyphRun` marked `Portable` is no longer enough for CanvasKit/native-style
+  selection by itself. The shared selection report also requires a matching
+  `FontFaceResource`, `FontBlobResource`, portable `dataRef`, interned blob
+  bytes, and digest agreement before it can select the sidecar.
+- Font name resolution, HWP `FontFace` substitution, runtime font fallback, and
+  `font_metrics_data.rs` remain compatibility diagnostics. They may explain why
+  `TextRun` layout or advances look plausible, but they are not portable
+  glyph-id replay proof.
+- Missing or incomplete proof now has deterministic shared reject reasons:
+  `fontFaceMissing`, `fontBlobMissing`, `fontBlobNotPortable`,
+  `fontBlobBytesMissing`, `fontBlobDataRefMismatch`, and
+  `fontBlobDigestMismatch`.
+- Variation axes and non-default collection faces remain separate gates. P27
+  keeps those as exact-construction blockers rather than folding them into
+  generic font-name matching.
+- The public compatibility path is unchanged: when proof is missing, the backend
+  keeps the `TextRun` fallback.
+
+## CanvasKit Parity Plan Link
+
+CanvasKit replay widening is tracked in
+`docs/canvaskit-parity-implementation.md`. That plan keeps Text IR v2 sidecars
+as guarded alternatives to the `TextRun` compatibility path, and it keeps
+CanvasKit direct replay separate from hidden Canvas2D overlay behavior. Text IR
+v2 changes that affect `GlyphRun`, `GlyphOutline`, `text.variantGroups`,
+`ResourceArena`, or fallback-free profiles should update that plan when they
+also change CanvasKit selection, cache, or render-diff expectations.
+
 Every overlay removal requires a Canvas2D-vs-CanvasKit fixture. Rasterizer
 output can use fuzzy PNG comparison, but semantic decisions must be exact:
 selected variant id, fallback reason, resource resolution, effect preprocessing

@@ -934,7 +934,10 @@ mod wasm_internals {
 
     /// 1000pt 측정용 CSS font 문자열 생성
     pub(super) fn build_1000pt_font_string(style: &TextStyle) -> String {
-        let font_weight = if style.bold { "bold " } else { "" };
+        let font_weight = style
+            .css_font_weight()
+            .map(|weight| format!("{} ", weight))
+            .unwrap_or_default();
         let font_style = if style.italic { "italic " } else { "" };
         let font_family = if style.font_family.is_empty() {
             "sans-serif".to_string()
@@ -1636,6 +1639,36 @@ pub(crate) fn font_family_has_metrics(font_family: &str, bold: bool, italic: boo
 ///
 /// 내장 메트릭이 있으면 JS 브릿지 호출 없이 즉시 반환.
 /// 없으면 None을 반환하여 폴백 경로를 사용하게 한다.
+fn quantize_hwp_px(px: f64) -> f64 {
+    let hwp = (px * 75.0) as i32;
+    hwp as f64 / 75.0
+}
+
+fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> {
+    let lower = primary_name.to_lowercase();
+    let is_dotum = primary_name.contains("KoPub돋움체") || lower.contains("kopub dotum");
+    let is_batang = primary_name.contains("KoPub바탕체") || lower.contains("kopub batang");
+    if !is_dotum && !is_batang {
+        return None;
+    }
+
+    if c == ' ' {
+        return Some(quantize_hwp_px(font_size * 0.5));
+    }
+    if is_narrow_punctuation(c) {
+        return Some(quantize_hwp_px(font_size * 0.3));
+    }
+    if c.is_ascii() {
+        return Some(quantize_hwp_px(font_size * 0.5));
+    }
+    if is_cjk_char(c) || is_fullwidth_symbol(c) {
+        let factor = if is_dotum { 0.84 } else { 0.94 };
+        return Some(quantize_hwp_px(font_size * factor));
+    }
+
+    None
+}
+
 fn measure_char_width_embedded(
     font_family: &str,
     bold: bool,
@@ -1645,6 +1678,9 @@ fn measure_char_width_embedded(
 ) -> Option<f64> {
     // CSS font-family 체인에서 첫 번째 폰트명으로 메트릭 조회
     let primary_name = font_family.split(',').next().unwrap_or(font_family).trim();
+    if let Some(w) = kopub_char_width(primary_name, c, font_size) {
+        return Some(w);
+    }
     let mm = font_metrics_data::find_metric(primary_name, bold, italic)?;
     // HWP 반각 처리: space 및 한컴이 반각으로 처리하는 구두점/기호
     let w = if c == ' ' {
@@ -1696,8 +1732,7 @@ fn measure_char_width_embedded(
 
     // 한컴과 동일한 HWPUNIT 정수 변환: w * base_size / em (내림)
     // round가 아닌 truncate (as i32)로 처리하여 한컴 정수 나눗셈과 일치
-    let hwp = (actual_px * 75.0) as i32;
-    Some(hwp as f64 / 75.0)
+    Some(quantize_hwp_px(actual_px))
 }
 
 // ── 호환 래퍼 (기존 호출부 변경 없음) ──────────────────────────────
@@ -1831,7 +1866,11 @@ fn is_narrow_punctuation(c: char) -> bool {
         '\u{00B7}' |  // · MIDDLE DOT
         '\u{2018}' |  // ' LEFT SINGLE QUOTATION MARK
         '\u{2019}' |  // ' RIGHT SINGLE QUOTATION MARK
-        '\u{2027}' // ‧ HYPHENATION POINT
+        '\u{2027}' |  // ‧ HYPHENATION POINT
+        // [Task #1735] 한글 방점. 렌더 경로에서 좁은 가운데 점(·)으로 치환되므로
+        // 측정 폭도 narrow 로 맞춰 측정-렌더 폭 정합 유지(0.5em 기본 폴백 방지).
+        '\u{302E}' |  // 〮 HANGUL SINGLE DOT TONE MARK (방점)
+        '\u{302F}' // 〯 HANGUL DOUBLE DOT TONE MARK (쌍방점)
     )
 }
 
@@ -1877,6 +1916,7 @@ fn is_fullwidth_symbol(c: char) -> bool {
         '\u{00A3}' |                   // £ POUND SIGN
         '\u{00A5}'                     // ¥ YEN SIGN
     )
+    || ('\u{2190}'..='\u{21FF}').contains(&c) // Arrows (→, ⇨, ⇒ 등)
     || ('\u{2460}'..='\u{24FF}').contains(&c) // Enclosed Alphanumerics (①②③ 등)
     || ('\u{25A0}'..='\u{25FF}').contains(&c) // Geometric Shapes (□■▲◆○ 등, 섹션 머리 기호)
     || ('\u{2600}'..='\u{26FF}').contains(&c) // Miscellaneous Symbols (☆★ 등)
@@ -2119,9 +2159,12 @@ mod tests {
             ..Default::default()
         };
         let w = m.estimate_text_width("AB", &style);
+        // effective_letter_spacing: 자간은 base_width/font_size 비율로 스케일
+        // (10/16 = 0.625) → 글자당 2.0 × 0.625 = 1.25.
+        // test_negative_letter_spacing_scales_with_halfwidth_glyphs 와 동일 규칙.
         assert!(
-            (w - 24.0).abs() < 0.01,
-            "expected 24.0 (2*(10+2)), got {}",
+            (w - 22.5).abs() < 0.01,
+            "expected 22.5 (2*(10+2*10/16)), got {}",
             w
         );
     }
@@ -2137,6 +2180,22 @@ mod tests {
         // "A B" = A(10) + space(10+5) + B(10) = 35
         let w = m.estimate_text_width("A B", &style);
         assert!((w - 35.0).abs() < 0.01, "expected 35.0, got {}", w);
+    }
+
+    #[test]
+    fn test_unicode_arrow_uses_symbol_advance() {
+        let style = TextStyle {
+            font_family: "KoPub돋움체 Light".to_string(),
+            font_size: 10.0,
+            ..Default::default()
+        };
+
+        let arrow = estimate_text_width("⇒", &style);
+        let ascii = estimate_text_width("A", &style);
+        assert!(
+            arrow > ascii,
+            "arrow should use symbol advance, arrow={arrow}, ascii={ascii}"
+        );
     }
 
     #[test]
@@ -2193,6 +2252,19 @@ mod tests {
             "expected 32.0 (2*16.0 heuristic), got {}",
             w
         );
+    }
+
+    #[test]
+    fn test_kopub_dotum_uses_narrow_publication_metrics() {
+        let m = EmbeddedTextMeasurer;
+        let style = TextStyle {
+            font_family: "KoPub돋움체 Light".to_string(),
+            font_size: 14.0,
+            ..Default::default()
+        };
+
+        let w = m.estimate_text_width("가나", &style);
+        assert_eq!(w, 24.0);
     }
 
     #[test]
@@ -2446,6 +2518,31 @@ mod tests {
             style.font_size * 0.35,
             dot_advance
         );
+    }
+
+    /// [Task #1735] 방점 U+302E/U+302F 는 렌더 경로에서 좁은 가운데 점(·)으로
+    /// 치환·렌더되므로, 측정 폭도 narrow(≤0.35em)로 분류해 측정-렌더 폭 정합을
+    /// 유지한다(0.5em 기본 폴백 방지).
+    #[test]
+    fn test_narrow_glyph_tone_marks() {
+        let m = EmbeddedTextMeasurer;
+        let style = TextStyle {
+            font_family: UNREGISTERED_FONT.to_string(),
+            font_size: 16.667,
+            ratio: 1.0,
+            ..Default::default()
+        };
+        for text in &["가\u{302E}나", "가\u{302F}나"] {
+            let positions = m.compute_char_positions(text, &style);
+            let advance = positions[2] - positions[1];
+            assert!(
+                advance <= style.font_size * 0.35,
+                "tone mark advance should be ≤ font_size * 0.35 ({:.2}), got {:.2} for {:?}",
+                style.font_size * 0.35,
+                advance,
+                text
+            );
+        }
     }
 
     #[test]

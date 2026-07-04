@@ -20,11 +20,13 @@ export class FieldEditDialog extends ModalDialog {
 
   /** 적용 콜백 */
   onApply: ((props: ClickHereProps) => void) | null = null;
+  /** 닫힘 후 문서 입력 포커스 복구용 콜백 */
+  onClose: (() => void) | null = null;
 
   private initialProps: ClickHereProps = { guide: '', memo: '', name: '', editable: true };
 
   constructor() {
-    super('필드 입력 고치기', 420);
+    super('필드 입력 고치기', 420, false);
   }
 
   /** 대화상자를 열고 초기값을 설정한다 */
@@ -128,5 +130,10 @@ export class FieldEditDialog extends ModalDialog {
       if (buttons[0]) buttons[0].textContent = '고치기(D)';
       if (buttons[1]) buttons[1].textContent = '취소';
     }
+  }
+
+  override hide(): void {
+    super.hide();
+    this.onClose?.();
   }
 }

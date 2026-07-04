@@ -20,7 +20,6 @@ on:
   pull_request:
     branches: [main, devel]
     paths-ignore:
-      - 'mydocs/**'
       - 'docs/**'
       - 'samples/**'
       - 'assets/**'
@@ -44,9 +43,192 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  preflight:
+    name: CodeQL preflight
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: read
+      pull-requests: read
+    outputs:
+      fast_pass: ${{ steps.detect.outputs.fast_pass || 'false' }}
+      reason: ${{ steps.detect.outputs.reason || 'preflight-unavailable' }}
+      candidate_sha: ${{ steps.detect.outputs.candidate_sha || '' }}
+
+    steps:
+      - name: Detect review-only fast pass
+        id: detect
+        continue-on-error: true
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const requiredChecks = [
+              'Analyze (javascript-typescript)',
+              'Analyze (python)',
+              'Analyze (rust)',
+            ];
+            const allowedConclusions = new Set(['success', 'skipped', 'neutral']);
+            const { owner, repo } = context.repo;
+
+            function setResult(fastPass, reason, candidateSha = '') {
+              core.setOutput('fast_pass', fastPass ? 'true' : 'false');
+              core.setOutput('reason', reason);
+              core.setOutput('candidate_sha', candidateSha);
+              core.info(`fast_pass=${fastPass} reason=${reason} candidate_sha=${candidateSha}`);
+            }
+
+            function isAllowedReviewPath(file) {
+              const filename = file.filename;
+              if (filename.startsWith('mydocs/')) {
+                return true;
+              }
+              if (file.status !== 'added') {
+                return false;
+              }
+              return isReviewReferencePath(filename);
+            }
+
+            function isReviewReferencePath(filename) {
+              return (
+                filename.startsWith('samples/')
+                && (
+                  filename.endsWith('.hwp')
+                  || filename.endsWith('.hwpx')
+                  || filename.endsWith('.pdf')
+                )
+              ) || (filename.startsWith('pdf/') && filename.endsWith('.pdf'));
+            }
+
+            function reviewOnlyLabel(files) {
+              const hasReferenceArtifact = files.some((file) => (
+                file.status === 'added'
+                && isReviewReferencePath(file.filename)
+              ));
+              return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
+            }
+
+            function latestRun(runs) {
+              return runs
+                .slice()
+                .sort((a, b) => {
+                  const bTime = Date.parse(b.completed_at || b.started_at || b.created_at || 0);
+                  const aTime = Date.parse(a.completed_at || a.started_at || a.created_at || 0);
+                  return bTime - aTime;
+                })[0];
+            }
+
+            try {
+              if (context.eventName !== 'pull_request') {
+                setResult(false, 'not-pull-request');
+                return;
+              }
+
+              const pr = context.payload.pull_request;
+              const prFiles = await github.paginate(github.rest.pulls.listFiles, {
+                owner,
+                repo,
+                pull_number: pr.number,
+                per_page: 100,
+              });
+              if (prFiles.length > 0 && prFiles.every((file) => isAllowedReviewPath(file))) {
+                core.info(`all PR files are review-only; using base SHA ${pr.base.sha}`);
+                setResult(true, 'all-review-only-no-code-impact', pr.base.sha);
+                return;
+              }
+
+              const commits = await github.paginate(github.rest.pulls.listCommits, {
+                owner,
+                repo,
+                pull_number: pr.number,
+                per_page: 100,
+              });
+
+              if (commits.length === 0) {
+                setResult(false, 'no-pr-commits');
+                return;
+              }
+
+              let trailingReviewOnlyCommits = 0;
+              let candidateSha = '';
+
+              for (let index = commits.length - 1; index >= 0; index -= 1) {
+                const sha = commits[index].sha;
+                const { data: commit } = await github.rest.repos.getCommit({
+                  owner,
+                  repo,
+                  ref: sha,
+                });
+                const files = commit.files || [];
+
+                // The commit endpoint may truncate very large file lists. Fall back to full CodeQL.
+                if (files.length === 0 || files.length >= 300) {
+                  setResult(false, `unusable-file-list:${sha}`);
+                  return;
+                }
+
+                const reviewOnly = files.every((file) => isAllowedReviewPath(file));
+                if (reviewOnly) {
+                  if ((commit.parents || []).length !== 1) {
+                    setResult(false, `${reviewOnlyLabel(files)}-merge-commit:${sha}`);
+                    return;
+                  }
+                  trailingReviewOnlyCommits += 1;
+                  continue;
+                }
+
+                candidateSha = sha;
+                break;
+              }
+
+              if (trailingReviewOnlyCommits === 0) {
+                setResult(false, 'no-trailing-review-only-commits');
+                return;
+              }
+              if (!candidateSha) {
+                candidateSha = pr.base.sha;
+                core.info(`all PR commits are review-only; using base SHA ${candidateSha}`);
+                setResult(true, 'all-review-only-no-code-impact', candidateSha);
+                return;
+              }
+
+              const checkRuns = await github.paginate(github.rest.checks.listForRef, {
+                owner,
+                repo,
+                ref: candidateSha,
+                per_page: 100,
+              });
+
+              for (const checkName of requiredChecks) {
+                const checkRun = latestRun(checkRuns.filter((run) => (
+                  run.name === checkName
+                  && run.app?.slug === 'github-actions'
+                )));
+
+                if (!checkRun) {
+                  setResult(false, `missing-check:${checkName}:${candidateSha}`, candidateSha);
+                  return;
+                }
+                if (checkRun.status !== 'completed') {
+                  setResult(false, `check-not-completed:${checkName}:${checkRun.status}`, candidateSha);
+                  return;
+                }
+                if (!allowedConclusions.has(checkRun.conclusion)) {
+                  setResult(false, `check-not-green:${checkName}:${checkRun.conclusion}`, candidateSha);
+                  return;
+                }
+              }
+
+              setResult(true, 'codeql-checks-green', candidateSha);
+            } catch (error) {
+              core.warning(`CodeQL preflight failed; running full CodeQL. ${error.message}`);
+              setResult(false, 'preflight-error');
+            }
+
   analyze:
     name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
+    needs: preflight
+    if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
     permissions:
       security-events: write
       contents: read
@@ -70,9 +252,11 @@ jobs:
 
       # [Task #1192 B] CodeQL rust analyze 는 cargo 캐시가 없어 매번 cold build 였다.
       # ci.yml 과 동일 path, 별도 key namespace(codeql-rust)로 warm build 화.
-      - name: Cache cargo registry & build (rust)
+      # [Task #1667] PR run 은 restore-only, trusted branch push 에서만 save 한다.
+      - name: Restore cargo registry & build cache (rust)
+        id: codeql_rust_cache_restore
         if: matrix.language == 'rust'
-        uses: actions/cache@v5
+        uses: actions/cache/restore@v5
         with:
           path: |
             ~/.cargo/registry
@@ -85,6 +269,16 @@ jobs:
       - name: Build Rust (for CodeQL)
         if: matrix.language == 'rust'
         run: cargo build
+
+      - name: Save cargo registry & build cache (rust)
+        if: ${{ matrix.language == 'rust' && github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.codeql_rust_cache_restore.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-codeql-rust-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4

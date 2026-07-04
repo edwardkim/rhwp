@@ -913,8 +913,8 @@ export class MovePictureCommand implements EditCommand {
   execute(wasm: WasmBridge): DocumentPosition {
     const props = moveGetProps(wasm, 'image', this.sec, this.ppi, this.ci, this.cellPath);
     moveSetProps(wasm, 'image', this.sec, this.ppi, this.ci, this.cellPath, {
-      horzOffset: ((props.horzOffset + this.deltaH) >>> 0),
-      vertOffset: ((props.vertOffset + this.deltaV) >>> 0),
+      horzOffset: props.horzOffset + this.deltaH,
+      vertOffset: props.vertOffset + this.deltaV,
     });
     return { sectionIndex: this.sec, paragraphIndex: this.ppi, charOffset: 0 };
   }
@@ -966,8 +966,8 @@ export class MoveShapeCommand implements EditCommand {
   execute(wasm: WasmBridge): DocumentPosition {
     const props = moveGetProps(wasm, 'shape', this.sec, this.ppi, this.ci, this.cellPath);
     moveSetProps(wasm, 'shape', this.sec, this.ppi, this.ci, this.cellPath, {
-      horzOffset: ((props.horzOffset + this.deltaH) >>> 0),
-      vertOffset: ((props.vertOffset + this.deltaV) >>> 0),
+      horzOffset: props.horzOffset + this.deltaH,
+      vertOffset: props.vertOffset + this.deltaV,
     });
     return { sectionIndex: this.sec, paragraphIndex: this.ppi, charOffset: 0 };
   }

@@ -10,7 +10,8 @@
  *   3. 최종 fallback → generic serif/sans-serif
  */
 
-import { REGISTERED_FONTS } from './font-loader';
+import { REGISTERED_FONTS } from './font-loader.ts';
+import { getDetectedLocalFonts } from './local-fonts.ts';
 
 // 치환 엔트리: [원본폰트, 원본타입, 대체폰트, 대체타입]
 // 타입: 1=TTF, 2=HFT
@@ -191,6 +192,46 @@ const _substMaps = SUBST_TABLES.map(langTable => {
 
 // 해소 결과 캐시
 const _resolveCache = new Map<string, string>();
+const GENERIC_FONTS = new Set(['serif', 'sans-serif', 'monospace']);
+
+interface FontFamilyChainOptions {
+  /** 감지 승인 후 확인된 로컬 글꼴 목록. 미지정 시 저장된 감지 결과를 사용한다. */
+  confirmedLocalFonts?: readonly string[];
+  /** 테스트/레거시 용도: 감지 전 원본 글꼴명을 강제로 포함한다. */
+  includeUnconfirmedOriginal?: boolean;
+}
+
+function quoteCssFontFamily(fontName: string): string {
+  return `"${fontName.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+}
+
+function formatCssFontFamilies(families: string[]): string {
+  return families
+    .map(name => GENERIC_FONTS.has(name) ? name : quoteCssFontFamily(name))
+    .join(', ');
+}
+
+function pushUniqueFontFamily(families: string[], fontName: string): void {
+  const name = fontName.trim();
+  if (!name) return;
+  const key = name.toLocaleLowerCase('en-US');
+  if (families.some(existing => existing.toLocaleLowerCase('en-US') === key)) return;
+  families.push(name);
+}
+
+function systemFallbackFamilies(fontName: string): string[] {
+  if (GENERIC_FONTS.has(fontName)) return [fontName];
+  // Monospace 판별
+  if (/굴림체|바탕체|gulimche|batangche|coding|courier/i.test(fontName)) {
+    return ['GulimChe', 'D2Coding', 'Noto Sans Mono', 'monospace'];
+  }
+  // Serif 판별
+  if (/[바탕명조궁서]|hymjre|times|palatino|georgia|batang|gungsuh/i.test(fontName)) {
+    return ['Batang', 'AppleMyungjo', 'Noto Serif KR', 'serif'];
+  }
+  // Sans-serif (기본)
+  return ['Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Pretendard', 'sans-serif'];
+}
 
 /**
  * 폰트 이름을 웹에서 렌더링 가능한 폰트로 치환한다.
@@ -251,18 +292,52 @@ export function resolveFont(fontName: string, altType: number, langId: number): 
  * Windows → macOS/iOS → Android → 오픈소스 → generic
  */
 export function fontFamilyWithFallback(fontName: string): string {
-  if (fontName === 'serif' || fontName === 'sans-serif' || fontName === 'monospace') {
+  if (GENERIC_FONTS.has(fontName)) {
     return fontName;
   }
-  const lower = fontName.toLowerCase();
-  // Monospace 판별
-  if (/굴림체|바탕체|gulimche|batangche|coding|courier/i.test(fontName)) {
-    return `"${fontName}", "GulimChe", "D2Coding", "Noto Sans Mono", monospace`;
+  return formatCssFontFamilies([fontName, ...systemFallbackFamilies(fontName)]);
+}
+
+/**
+ * 문서 원본 글꼴명을 보존하면서 표시/측정용 CSS font-family chain을 만든다.
+ *
+ * 순서:
+ *   1. rhwp 웹폰트 또는 감지 승인 후 확인된 문서 원본 글꼴명
+ *   2. rhwp 웹 대체 글꼴명(resolveFont 결과)
+ *   3. OS/system fallback
+ *   4. generic fallback
+ */
+export function fontFamilyChainForDisplay(
+  fontName: string,
+  altType = 0,
+  langId = 0,
+  options: FontFamilyChainOptions = {},
+): string {
+  if (!fontName || GENERIC_FONTS.has(fontName)) return fontName;
+
+  const families: string[] = [];
+  const confirmedLocalFonts = options.confirmedLocalFonts ?? getDetectedLocalFonts();
+  const confirmedLocalFontSet = new Set(
+    confirmedLocalFonts.map(name => name.toLocaleLowerCase('en-US')),
+  );
+  const originalAllowed =
+    options.includeUnconfirmedOriginal === true ||
+    REGISTERED_FONTS.has(fontName) ||
+    confirmedLocalFontSet.has(fontName.toLocaleLowerCase('en-US'));
+
+  if (originalAllowed) {
+    pushUniqueFontFamily(families, fontName);
   }
-  // Serif 판별
-  if (/[바탕명조궁서]|hymjre|times|palatino|georgia|batang|gungsuh/i.test(fontName)) {
-    return `"${fontName}", "Batang", "AppleMyungjo", "Noto Serif KR", serif`;
+
+  const resolved = resolveFont(fontName, altType, langId);
+  if (resolved && resolved !== fontName) {
+    pushUniqueFontFamily(families, resolved);
   }
-  // Sans-serif (기본)
-  return `"${fontName}", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", sans-serif`;
+
+  const fallbackBase = resolved && resolved !== fontName ? resolved : fontName;
+  for (const fallback of systemFallbackFamilies(fallbackBase)) {
+    pushUniqueFontFamily(families, fallback);
+  }
+
+  return formatCssFontFamilies(families);
 }

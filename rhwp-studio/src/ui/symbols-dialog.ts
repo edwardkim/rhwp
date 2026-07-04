@@ -229,9 +229,6 @@ export class SymbolsDialog {
     this.dialog.appendChild(footer);
 
     this.overlay.appendChild(this.dialog);
-    this.overlay.addEventListener('click', (e) => {
-      if (e.target === this.overlay) this.hide();
-    });
   }
 
   // ── 블록 선택 ──

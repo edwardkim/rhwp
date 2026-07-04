@@ -2,7 +2,7 @@ use crate::model::style::UnderlineType;
 use crate::model::ColorRef;
 use crate::paint::font::{GlyphRunReplayEligibility, ShapeKey, TextDirection, WritingMode};
 use crate::paint::layer_tree::{TextSourceRange, TextSourceSpan};
-use crate::paint::resources::{ImageResourceId, SvgResourceId};
+use crate::paint::resources::{ImageResourceId, ResourceArena, SvgResourceId};
 use crate::renderer::render_tree::{
     BoundingBox, EllipseNode, EquationNode, FootnoteMarkerNode, FormObjectNode, ImageNode,
     LineNode, PageBackgroundNode, PathNode, PlaceholderNode, RawSvgNode, RectangleNode,
@@ -49,11 +49,11 @@ pub struct ResolvedImagePayload {
 pub enum PaintOp {
     PageBackground {
         bbox: BoundingBox,
-        background: PageBackgroundNode,
+        background: Box<PageBackgroundNode>,
     },
     TextRun {
         bbox: BoundingBox,
-        run: TextRunNode,
+        run: Box<TextRunNode>,
     },
     GlyphRun {
         bbox: BoundingBox,
@@ -69,68 +69,200 @@ pub enum PaintOp {
     /// 새 backend는 이 op를 선택하고 TextRun mirror를 건너뛸 수 있다.
     CharOverlap {
         bbox: BoundingBox,
-        run: TextRunNode,
+        run: Box<TextRunNode>,
     },
     /// 문단 끝/줄 바꿈/필드 마커처럼 source text와 visual projection이 다른 표식.
     TextControlMark {
         bbox: BoundingBox,
-        run: TextRunNode,
+        run: Box<TextRunNode>,
     },
     /// 탭 리더 visual geometry.
     TabLeader {
         bbox: BoundingBox,
-        run: TextRunNode,
+        run: Box<TextRunNode>,
     },
     /// 밑줄/취소선/강조점 visual geometry.
     TextDecoration {
         bbox: BoundingBox,
-        run: TextRunNode,
+        run: Box<TextRunNode>,
         kind: TextDecorationKind,
     },
     FootnoteMarker {
         bbox: BoundingBox,
-        marker: FootnoteMarkerNode,
+        marker: Box<FootnoteMarkerNode>,
     },
     Line {
         bbox: BoundingBox,
-        line: LineNode,
+        line: Box<LineNode>,
     },
     Rectangle {
         bbox: BoundingBox,
-        rect: RectangleNode,
+        rect: Box<RectangleNode>,
     },
     Ellipse {
         bbox: BoundingBox,
-        ellipse: EllipseNode,
+        ellipse: Box<EllipseNode>,
     },
     Path {
         bbox: BoundingBox,
-        path: PathNode,
+        path: Box<PathNode>,
     },
     Image {
         bbox: BoundingBox,
-        image: ImageNode,
+        image: Box<ImageNode>,
         resolved: Option<Box<ResolvedImagePayload>>,
     },
     Equation {
         bbox: BoundingBox,
-        equation: EquationNode,
+        equation: Box<EquationNode>,
     },
     FormObject {
         bbox: BoundingBox,
-        form: FormObjectNode,
+        form: Box<FormObjectNode>,
     },
     Placeholder {
         bbox: BoundingBox,
-        placeholder: PlaceholderNode,
+        placeholder: Box<PlaceholderNode>,
     },
     RawSvg {
         bbox: BoundingBox,
-        raw: RawSvgNode,
+        raw: Box<RawSvgNode>,
     },
 }
 
 impl PaintOp {
+    pub fn page_background(bbox: BoundingBox, background: PageBackgroundNode) -> Self {
+        Self::PageBackground {
+            bbox,
+            background: Box::new(background),
+        }
+    }
+
+    pub fn text_run(bbox: BoundingBox, run: TextRunNode) -> Self {
+        Self::TextRun {
+            bbox,
+            run: Box::new(run),
+        }
+    }
+
+    pub fn glyph_run(bbox: BoundingBox, run: LayerGlyphRunPaint) -> Self {
+        Self::GlyphRun {
+            bbox,
+            run: Box::new(run),
+        }
+    }
+
+    pub fn glyph_outline(bbox: BoundingBox, outline: LayerGlyphOutlinePaint) -> Self {
+        Self::GlyphOutline {
+            bbox,
+            outline: Box::new(outline),
+        }
+    }
+
+    pub fn char_overlap(bbox: BoundingBox, run: TextRunNode) -> Self {
+        Self::CharOverlap {
+            bbox,
+            run: Box::new(run),
+        }
+    }
+
+    pub fn text_control_mark(bbox: BoundingBox, run: TextRunNode) -> Self {
+        Self::TextControlMark {
+            bbox,
+            run: Box::new(run),
+        }
+    }
+
+    pub fn tab_leader(bbox: BoundingBox, run: TextRunNode) -> Self {
+        Self::TabLeader {
+            bbox,
+            run: Box::new(run),
+        }
+    }
+
+    pub fn text_decoration(bbox: BoundingBox, run: TextRunNode, kind: TextDecorationKind) -> Self {
+        Self::TextDecoration {
+            bbox,
+            run: Box::new(run),
+            kind,
+        }
+    }
+
+    pub fn footnote_marker(bbox: BoundingBox, marker: FootnoteMarkerNode) -> Self {
+        Self::FootnoteMarker {
+            bbox,
+            marker: Box::new(marker),
+        }
+    }
+
+    pub fn line(bbox: BoundingBox, line: LineNode) -> Self {
+        Self::Line {
+            bbox,
+            line: Box::new(line),
+        }
+    }
+
+    pub fn rectangle(bbox: BoundingBox, rect: RectangleNode) -> Self {
+        Self::Rectangle {
+            bbox,
+            rect: Box::new(rect),
+        }
+    }
+
+    pub fn ellipse(bbox: BoundingBox, ellipse: EllipseNode) -> Self {
+        Self::Ellipse {
+            bbox,
+            ellipse: Box::new(ellipse),
+        }
+    }
+
+    pub fn path(bbox: BoundingBox, path: PathNode) -> Self {
+        Self::Path {
+            bbox,
+            path: Box::new(path),
+        }
+    }
+
+    pub fn image(
+        bbox: BoundingBox,
+        image: ImageNode,
+        resolved: Option<ResolvedImagePayload>,
+    ) -> Self {
+        Self::Image {
+            bbox,
+            image: Box::new(image),
+            resolved: resolved.map(Box::new),
+        }
+    }
+
+    pub fn equation(bbox: BoundingBox, equation: EquationNode) -> Self {
+        Self::Equation {
+            bbox,
+            equation: Box::new(equation),
+        }
+    }
+
+    pub fn form_object(bbox: BoundingBox, form: FormObjectNode) -> Self {
+        Self::FormObject {
+            bbox,
+            form: Box::new(form),
+        }
+    }
+
+    pub fn placeholder(bbox: BoundingBox, placeholder: PlaceholderNode) -> Self {
+        Self::Placeholder {
+            bbox,
+            placeholder: Box::new(placeholder),
+        }
+    }
+
+    pub fn raw_svg(bbox: BoundingBox, raw: RawSvgNode) -> Self {
+        Self::RawSvg {
+            bbox,
+            raw: Box::new(raw),
+        }
+    }
+
     pub fn bounds(&self) -> BoundingBox {
         match self {
             PaintOp::PageBackground { bbox, .. }
@@ -241,10 +373,18 @@ impl LayerGlyphOutlinePaint {
     }
 
     /// Stable, export-local identity for payload resources that sit behind a
-    /// GlyphOutline sidecar. This is not a binary digest; it is the replay
-    /// decision key that keeps color/bitmap/SVG payload families from sharing a
-    /// cache slot merely because a producer reused the same numeric resource id.
+    /// GlyphOutline sidecar. The key starts with replay decision metadata and
+    /// may append an interned resource digest when bytes are available, so
+    /// color/bitmap/SVG payload families do not share a cache slot merely
+    /// because a producer reused the same numeric resource id.
     pub fn payload_resource_key(&self) -> Option<String> {
+        self.payload_resource_key_with_resources(None)
+    }
+
+    pub fn payload_resource_key_with_resources(
+        &self,
+        resources: Option<&ResourceArena>,
+    ) -> Option<String> {
         if !self.has_payload_resource_key() {
             return None;
         }
@@ -258,10 +398,11 @@ impl LayerGlyphOutlinePaint {
             GlyphOutlinePayloadKind::BitmapGlyph => self
                 .bitmap_glyph
                 .as_ref()
-                .map(bitmap_glyph_payload_resource_key),
-            GlyphOutlinePayloadKind::SvgGlyph => {
-                self.svg_glyph.as_ref().map(svg_glyph_payload_resource_key)
-            }
+                .map(|payload| bitmap_glyph_payload_resource_key(payload, resources)),
+            GlyphOutlinePayloadKind::SvgGlyph => self
+                .svg_glyph
+                .as_ref()
+                .map(|payload| svg_glyph_payload_resource_key(payload, resources)),
         }
     }
 
@@ -345,8 +486,11 @@ fn color_paint_graph_key(graph: &ColorPaintGraphPayload) -> String {
     key
 }
 
-fn bitmap_glyph_payload_resource_key(payload: &BitmapGlyphPayload) -> String {
-    format!(
+fn bitmap_glyph_payload_resource_key(
+    payload: &BitmapGlyphPayload,
+    resources: Option<&ResourceArena>,
+) -> String {
+    let mut key = format!(
         "glyphPayload:bitmapGlyph:imageRef:{}:range:{}:glyphRange:{}:placement:{}:alphaPremultiplied:{}:scaling:{}:filtering:{}:transform:{}",
         payload.image_ref.0,
         text_range_key(payload.source_range_utf8),
@@ -356,11 +500,21 @@ fn bitmap_glyph_payload_resource_key(payload: &BitmapGlyphPayload) -> String {
         payload.scaling_policy.as_str(),
         payload.filtering.as_str(),
         optional_affine_key(payload.transform_to_run),
-    )
+    );
+    if let Some(resource_key) =
+        resources.and_then(|resources| resources.image_resource_key(payload.image_ref))
+    {
+        key.push_str(":resource:");
+        key.push_str(resource_key);
+    }
+    key
 }
 
-fn svg_glyph_payload_resource_key(payload: &SvgGlyphPayload) -> String {
-    format!(
+fn svg_glyph_payload_resource_key(
+    payload: &SvgGlyphPayload,
+    resources: Option<&ResourceArena>,
+) -> String {
+    let mut key = format!(
         "glyphPayload:svgGlyph:svgRef:{}:range:{}:glyphRange:{}:viewBox:{}:intrinsicSize:{}:staticSanitized:{}:script:{}:animation:{}:external:{}:interactive:{}:transform:{}",
         payload.svg_ref.0,
         text_range_key(payload.source_range_utf8),
@@ -376,7 +530,14 @@ fn svg_glyph_payload_resource_key(payload: &SvgGlyphPayload) -> String {
         payload.external_resources_allowed,
         payload.interactivity_allowed,
         optional_affine_key(payload.transform_to_run),
-    )
+    );
+    if let Some(resource_key) =
+        resources.and_then(|resources| resources.svg_resource_key(payload.svg_ref))
+    {
+        key.push_str(":resource:");
+        key.push_str(resource_key);
+    }
+    key
 }
 
 fn font_color_glyph_ref_key(value: Option<&FontColorGlyphRef>) -> String {

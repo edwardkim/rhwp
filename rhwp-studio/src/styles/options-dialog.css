@@ -40,8 +40,13 @@
   padding: 6px 16px;
 }
 
+.opt-local-actions {
+  flex-wrap: wrap;
+}
+
 .opt-local-status {
   font-size: var(--font-size-base);
   color: var(--color-text-muted);
-  margin-left: 8px;
+  margin: 6px 0 0;
+  line-height: 1.4;
 }

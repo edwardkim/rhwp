@@ -17,11 +17,32 @@
 
 import { makeOption } from './dom-utils';
 import { enableDialogDrag } from './dialog-drag';
+import { HWPUNIT_PER_MM } from '@/core/hwp-constants';
 
 const GRID_ROWS = 8;
 const GRID_COLS = 10;
 const CELL_SIZE = 16;   // px
 const CELL_GAP = 2;     // px
+
+export interface TableCreateOptions {
+  treatAsChar?: boolean;
+  colWidths?: number[];
+  rowHeights?: number[];
+}
+
+function mmToHwpunit(mm: number): number {
+  return Math.round(mm * HWPUNIT_PER_MM);
+}
+
+function splitEvenly(total: number, count: number): number[] {
+  const base = Math.floor(total / count);
+  let rest = total - base * count;
+  return Array.from({ length: count }, () => {
+    const v = base + (rest > 0 ? 1 : 0);
+    rest -= rest > 0 ? 1 : 0;
+    return Math.max(1, v);
+  });
+}
 
 export class TableCreateDialog {
   private overlay!: HTMLDivElement;
@@ -34,7 +55,7 @@ export class TableCreateDialog {
   private hoverCol = -1;
 
   /** 그리드 선택 콜백 */
-  onApply: ((rows: number, cols: number) => void) | null = null;
+  onApply: ((rows: number, cols: number, options?: TableCreateOptions) => void) | null = null;
 
   /**
    * 그리드 피커를 표시한다.
@@ -83,20 +104,20 @@ export class TableCreateDialog {
     // 팝업 컨테이너
     this.popup = document.createElement('div');
     this.popup.style.cssText =
-      'position:fixed;z-index:9999;background:#fff;border:1px solid #ccc;' +
-      'box-shadow:0 2px 8px rgba(0,0,0,0.18);padding:0;user-select:none;';
+      'position:fixed;z-index:9999;background:var(--color-surface-raised);border:1px solid var(--ui-border-light);' +
+      'box-shadow:var(--shadow-dropdown);padding:0;user-select:none;color:var(--color-text);';
 
     // ── 상단: 취소 버튼 ──
     const header = document.createElement('div');
-    header.style.cssText = 'padding:4px 6px;border-bottom:1px solid #e0e0e0;';
+    header.style.cssText = 'padding:4px 6px;border-bottom:1px solid var(--ui-border-light);';
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = '취소';
     cancelBtn.style.cssText =
-      'width:100%;padding:3px 0;font-size:12px;border:1px solid #ccc;' +
-      'background:#f8f8f8;cursor:pointer;border-radius:2px;';
+      'width:100%;padding:3px 0;font-size:12px;border:1px solid var(--color-border);' +
+      'background:var(--color-surface);color:var(--color-text);cursor:pointer;border-radius:2px;color-scheme:inherit;';
     cancelBtn.addEventListener('click', () => this.hide());
-    cancelBtn.addEventListener('mouseenter', () => { cancelBtn.style.background = '#e8e8e8'; });
-    cancelBtn.addEventListener('mouseleave', () => { cancelBtn.style.background = '#f8f8f8'; });
+    cancelBtn.addEventListener('mouseenter', () => { cancelBtn.style.background = 'var(--ui-hover)'; });
+    cancelBtn.addEventListener('mouseleave', () => { cancelBtn.style.background = 'var(--color-surface)'; });
     header.appendChild(cancelBtn);
     this.popup.appendChild(header);
 
@@ -116,7 +137,7 @@ export class TableCreateDialog {
         cell.style.cssText =
           `position:absolute;width:${CELL_SIZE}px;height:${CELL_SIZE}px;` +
           `left:${c * (CELL_SIZE + CELL_GAP)}px;top:${r * (CELL_SIZE + CELL_GAP)}px;` +
-          'border:1px solid #ccc;box-sizing:border-box;background:#fff;';
+          'border:1px solid var(--color-border);box-sizing:border-box;background:var(--color-surface);';
         cell.dataset.row = String(r);
         cell.dataset.col = String(c);
         grid.appendChild(cell);
@@ -158,7 +179,7 @@ export class TableCreateDialog {
     // 라벨: "3 × 4"
     this.label = document.createElement('div');
     this.label.style.cssText =
-      'text-align:center;margin-top:4px;font-size:11px;color:#666;font-family:sans-serif;height:14px;';
+      'text-align:center;margin-top:4px;font-size:11px;color:var(--color-text-muted);font-family:sans-serif;height:14px;';
     gridWrap.appendChild(this.label);
 
     this.popup.appendChild(gridWrap);
@@ -166,13 +187,13 @@ export class TableCreateDialog {
     // ── 하단: 표 만들기... 링크 ──
     const footer = document.createElement('div');
     footer.style.cssText =
-      'padding:5px 8px;border-top:1px solid #e0e0e0;cursor:pointer;font-size:12px;color:#333;';
+      'padding:5px 8px;border-top:1px solid var(--ui-border-light);cursor:pointer;font-size:12px;color:var(--color-text);';
     const icon = document.createElement('span');
     icon.style.marginRight = '4px';
     icon.textContent = '\u229E';
     footer.appendChild(icon);
     footer.appendChild(document.createTextNode('표 만들기...'));
-    footer.addEventListener('mouseenter', () => { footer.style.background = '#e8f0fe'; });
+    footer.addEventListener('mouseenter', () => { footer.style.background = 'var(--color-accent-bg)'; });
     footer.addEventListener('mouseleave', () => { footer.style.background = ''; });
     footer.addEventListener('click', () => {
       this.hide();
@@ -198,11 +219,11 @@ export class TableCreateDialog {
       const r = parseInt(cell.dataset.row!, 10);
       const c = parseInt(cell.dataset.col!, 10);
       if (this.hoverRow >= 0 && r <= this.hoverRow && c <= this.hoverCol) {
-        cell.style.background = '#ffeebb';
-        cell.style.borderColor = '#8cb4d8';
+        cell.style.background = 'var(--color-accent-bg-light)';
+        cell.style.borderColor = 'var(--color-primary)';
       } else {
-        cell.style.background = '#fff';
-        cell.style.borderColor = '#ccc';
+        cell.style.background = 'var(--color-surface)';
+        cell.style.borderColor = 'var(--color-border)';
       }
     }
     if (this.hoverRow >= 0) {
@@ -240,10 +261,6 @@ export class TableCreateDialog {
 
     // 오버레이 내부에 대화상자를 넣어야 flex 센터링이 작동함
     overlay.appendChild(dlg);
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) close();
-    });
-
     // 타이틀
     const title = document.createElement('div');
     title.className = 'dialog-title';
@@ -331,7 +348,7 @@ export class TableCreateDialog {
     const treatChk = document.createElement('input');
     treatChk.type = 'checkbox';
     treatChk.id = 'tc-treat-as-char';
-    treatChk.checked = true;
+    treatChk.checked = false;
     const treatLbl = document.createElement('label');
     treatLbl.htmlFor = 'tc-treat-as-char';
     treatLbl.textContent = ' 글자처럼 취급';
@@ -373,8 +390,17 @@ export class TableCreateDialog {
     function doApply() {
       const rows = Math.max(1, Math.min(256, parseInt(rowInput.value, 10) || 2));
       const cols = Math.max(1, Math.min(256, parseInt(colInput.value, 10) || 3));
+      const options: TableCreateOptions = { treatAsChar: treatChk.checked };
+      if (widthMode.value === 'custom') {
+        const totalWidth = mmToHwpunit(Math.max(1, parseFloat(widthVal.value) || 148));
+        options.colWidths = splitEvenly(totalWidth, cols);
+      }
+      if (heightMode.value === 'custom') {
+        const rowHeight = mmToHwpunit(Math.max(1, parseFloat(heightVal.value) || 22.6));
+        options.rowHeights = Array.from({ length: rows }, () => rowHeight);
+      }
       close();
-      if (self.onApply) self.onApply(rows, cols);
+      if (self.onApply) self.onApply(rows, cols, options);
     }
 
     document.body.appendChild(overlay);

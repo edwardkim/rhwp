@@ -1,15 +1,211 @@
 //! 텍스트 삽입/삭제/문단 분리·병합/범위 삭제/문단 쿼리 관련 native 메서드
 
 use super::super::helpers::get_textbox_from_shape;
-use crate::document_core::DocumentCore;
+use super::super::queries::field_query::rebuild_char_offsets;
+use crate::document_core::{ActiveFieldInfo, DocumentCore};
 use crate::error::HwpError;
-use crate::model::control::Control;
+use crate::model::control::{Control, FieldType};
 use crate::model::event::DocumentEvent;
 use crate::model::page::ColumnDef;
 use crate::model::paragraph::Paragraph;
+use crate::model::shape::{TextWrap, VertRelTo};
 use crate::renderer::composer::{compose_paragraph, reflow_line_segs, ComposedParagraph};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::resolve_styles;
+
+#[derive(Clone, Copy)]
+struct FieldEndInsertion {
+    control_idx: usize,
+    start_char_idx: usize,
+    end_char_idx: usize,
+}
+
+#[derive(Clone, Copy)]
+struct FieldStartInsertion {
+    control_idx: usize,
+    start_char_idx: usize,
+    end_char_idx: usize,
+}
+
+fn active_field_matches(
+    active_field: Option<&ActiveFieldInfo>,
+    section_idx: usize,
+    para_idx: usize,
+    cell_path: Option<&[(usize, usize, usize)]>,
+    control_idx: usize,
+) -> bool {
+    active_field.is_some_and(|af| {
+        af.section_idx == section_idx
+            && af.para_idx == para_idx
+            && af.control_idx == control_idx
+            && match (&af.cell_path, cell_path) {
+                (None, None) => true,
+                (Some(a), Some(b)) => a.as_slice() == b,
+                _ => false,
+            }
+    })
+}
+
+fn inactive_field_end_insertions(
+    para: &Paragraph,
+    active_field: Option<&ActiveFieldInfo>,
+    section_idx: usize,
+    para_idx: usize,
+    cell_path: Option<&[(usize, usize, usize)]>,
+    char_offset: usize,
+) -> Vec<FieldEndInsertion> {
+    para.field_ranges
+        .iter()
+        .filter_map(|fr| {
+            match para.controls.get(fr.control_idx) {
+                Some(Control::Field(field)) if field.field_type == FieldType::ClickHere => {}
+                _ => return None,
+            }
+            // 빈 누름틀은 active 상태가 아직 반영되기 전 첫 입력도 값으로 받아야 한다.
+            if fr.start_char_idx == fr.end_char_idx || fr.end_char_idx != char_offset {
+                return None;
+            }
+            if active_field_matches(
+                active_field,
+                section_idx,
+                para_idx,
+                cell_path,
+                fr.control_idx,
+            ) {
+                return None;
+            }
+            Some(FieldEndInsertion {
+                control_idx: fr.control_idx,
+                start_char_idx: fr.start_char_idx,
+                end_char_idx: fr.end_char_idx,
+            })
+        })
+        .collect()
+}
+
+fn para_has_visible_text_for_enter(para: &Paragraph) -> bool {
+    para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
+}
+
+fn is_empty_topbottom_table_anchor_for_enter(para: &Paragraph) -> bool {
+    !para_has_visible_text_for_enter(para)
+        && para.controls.iter().any(|ctrl| {
+            matches!(
+                ctrl,
+                Control::Table(table)
+                    if !table.common.treat_as_char
+                        && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+                        && matches!(table.common.vert_rel_to, VertRelTo::Para)
+            )
+        })
+}
+
+fn empty_paragraph_after_table_anchor(anchor: &Paragraph) -> Paragraph {
+    let mut para = Paragraph::new_empty();
+    para.para_shape_id = anchor.para_shape_id;
+    para.style_id = anchor.style_id;
+    para.char_shapes = anchor
+        .char_shapes
+        .first()
+        .cloned()
+        .map(|shape| vec![shape])
+        .unwrap_or_default();
+    if let Some(seg) = para.line_segs.first_mut() {
+        if let Some(anchor_seg) = anchor.line_segs.first() {
+            seg.segment_width = anchor_seg.segment_width;
+        }
+    }
+    let mut raw_header_extra = vec![0u8; 10];
+    raw_header_extra[0..2].copy_from_slice(&1u16.to_le_bytes());
+    raw_header_extra[4..6].copy_from_slice(&1u16.to_le_bytes());
+    para.raw_header_extra = raw_header_extra;
+    para.has_para_text = false;
+    para
+}
+
+fn inactive_field_start_insertions(
+    para: &Paragraph,
+    active_field: Option<&ActiveFieldInfo>,
+    section_idx: usize,
+    para_idx: usize,
+    cell_path: Option<&[(usize, usize, usize)]>,
+    char_offset: usize,
+) -> Vec<FieldStartInsertion> {
+    para.field_ranges
+        .iter()
+        .filter_map(|fr| {
+            match para.controls.get(fr.control_idx) {
+                Some(Control::Field(field)) if field.field_type == FieldType::ClickHere => {}
+                _ => return None,
+            }
+            // 빈 누름틀은 시작/끝 경계가 없고 첫 입력이 필드 값이어야 한다.
+            if fr.start_char_idx == fr.end_char_idx || fr.start_char_idx != char_offset {
+                return None;
+            }
+            if active_field_matches(
+                active_field,
+                section_idx,
+                para_idx,
+                cell_path,
+                fr.control_idx,
+            ) {
+                return None;
+            }
+            Some(FieldStartInsertion {
+                control_idx: fr.control_idx,
+                start_char_idx: fr.start_char_idx,
+                end_char_idx: fr.end_char_idx,
+            })
+        })
+        .collect()
+}
+
+fn keep_inactive_field_end_outside(
+    para: &mut Paragraph,
+    insertions: &[FieldEndInsertion],
+    inserted_len: usize,
+) {
+    if inserted_len == 0 || insertions.is_empty() {
+        return;
+    }
+    for target in insertions {
+        if let Some(fr) = para.field_ranges.iter_mut().find(|fr| {
+            fr.control_idx == target.control_idx
+                && fr.start_char_idx == target.start_char_idx
+                && fr.end_char_idx == target.end_char_idx + inserted_len
+        }) {
+            fr.end_char_idx = target.end_char_idx;
+        }
+    }
+}
+
+fn keep_inactive_field_start_outside(
+    para: &mut Paragraph,
+    insertions: &[FieldStartInsertion],
+    inserted_len: usize,
+) {
+    if inserted_len == 0 || insertions.is_empty() {
+        return;
+    }
+    for target in insertions {
+        if let Some(fr) = para.field_ranges.iter_mut().find(|fr| {
+            fr.control_idx == target.control_idx
+                && fr.start_char_idx == target.start_char_idx
+                && fr.end_char_idx == target.end_char_idx + inserted_len
+        }) {
+            fr.start_char_idx = target.start_char_idx + inserted_len;
+        }
+    }
+}
+
+fn has_clickhere_field_range(para: &Paragraph) -> bool {
+    para.field_ranges.iter().any(|fr| {
+        matches!(
+            para.controls.get(fr.control_idx),
+            Some(Control::Field(field)) if field.field_type == FieldType::ClickHere
+        )
+    })
+}
 
 impl DocumentCore {
     pub fn insert_text_native(
@@ -41,7 +237,32 @@ impl DocumentCore {
 
         // 텍스트 삽입
         let new_chars_count = text.chars().count();
-        self.document.sections[section_idx].paragraphs[para_idx].insert_text_at(char_offset, text);
+        let active_field = self.active_field.clone();
+        let outside_insertions = inactive_field_end_insertions(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+            active_field.as_ref(),
+            section_idx,
+            para_idx,
+            None,
+            char_offset,
+        );
+        let before_insertions = inactive_field_start_insertions(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+            active_field.as_ref(),
+            section_idx,
+            para_idx,
+            None,
+            char_offset,
+        );
+        {
+            let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+            para.insert_text_at(char_offset, text);
+            keep_inactive_field_start_outside(para, &before_insertions, new_chars_count);
+            keep_inactive_field_end_outside(para, &outside_insertions, new_chars_count);
+            if has_clickhere_field_range(para) {
+                rebuild_char_offsets(para);
+            }
+        }
 
         // line_segs 재계산 (리플로우) → vpos 재계산 → 재구성 → 재페이지네이션
         // 다단 문서에서 편집 후 문단이 다른 단으로 재배치될 수 있으므로
@@ -276,6 +497,8 @@ impl DocumentCore {
         text: &str,
     ) -> Result<String, HwpError> {
         // 셀 문단 접근 검증 및 텍스트 삽입
+        let active_field = self.active_field.clone();
+        let cell_path = [(control_idx, cell_idx, cell_para_idx)];
         let cell_para = self.get_cell_paragraph_mut(
             section_idx,
             parent_para_idx,
@@ -284,7 +507,28 @@ impl DocumentCore {
             cell_para_idx,
         )?;
         let new_chars_count = text.chars().count();
+        let outside_insertions = inactive_field_end_insertions(
+            cell_para,
+            active_field.as_ref(),
+            section_idx,
+            cell_para_idx,
+            Some(&cell_path),
+            char_offset,
+        );
+        let before_insertions = inactive_field_start_insertions(
+            cell_para,
+            active_field.as_ref(),
+            section_idx,
+            cell_para_idx,
+            Some(&cell_path),
+            char_offset,
+        );
         cell_para.insert_text_at(char_offset, text);
+        keep_inactive_field_start_outside(cell_para, &before_insertions, new_chars_count);
+        keep_inactive_field_end_outside(cell_para, &outside_insertions, new_chars_count);
+        if has_clickhere_field_range(cell_para) {
+            rebuild_char_offsets(cell_para);
+        }
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
         self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
@@ -524,12 +768,12 @@ impl DocumentCore {
                             return;
                         }
                     } else if let Some(cell) = table.cells.get(cell_idx) {
-                        let pad_l = if cell.padding.left != 0 {
+                        let pad_l = if cell.apply_inner_margin {
                             cell.padding.left
                         } else {
                             table.padding.left
                         };
-                        let pad_r = if cell.padding.right != 0 {
+                        let pad_r = if cell.apply_inner_margin {
                             cell.padding.right
                         } else {
                             table.padding.right
@@ -556,6 +800,7 @@ impl DocumentCore {
             }
         };
 
+        let styles = resolve_styles(&self.document.doc_info, self.dpi);
         let cell_width_px = hwpunit_to_px(cell_width as i32, self.dpi);
         let pad_left_px = hwpunit_to_px(pad_left as i32, self.dpi);
         let pad_right_px = hwpunit_to_px(pad_right as i32, self.dpi);
@@ -575,7 +820,7 @@ impl DocumentCore {
                 None => return,
             }
         };
-        let para_style = self.styles.para_styles.get(para_shape_id as usize);
+        let para_style = styles.para_styles.get(para_shape_id as usize);
         let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
         let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
         let final_width = (available_width - margin_left - margin_right).max(0.0);
@@ -588,21 +833,24 @@ impl DocumentCore {
             Some(Control::Table(table)) => {
                 if let Some(cell) = table.cells.get_mut(cell_idx) {
                     if let Some(cell_para) = cell.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(cell_para, final_width, &self.styles, self.dpi);
+                        cell_para.line_segs.clear();
+                        reflow_line_segs(cell_para, final_width, &styles, self.dpi);
                     }
                 }
             }
             Some(Control::Shape(shape)) => {
                 if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
                     if let Some(cell_para) = tb.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(cell_para, final_width, &self.styles, self.dpi);
+                        cell_para.line_segs.clear();
+                        reflow_line_segs(cell_para, final_width, &styles, self.dpi);
                     }
                 }
             }
             Some(Control::Picture(pic)) => {
                 if let Some(ref mut cap) = pic.caption {
                     if let Some(cell_para) = cap.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(cell_para, final_width, &self.styles, self.dpi);
+                        cell_para.line_segs.clear();
+                        reflow_line_segs(cell_para, final_width, &styles, self.dpi);
                     }
                 }
             }
@@ -858,6 +1106,64 @@ impl DocumentCore {
             )));
         }
 
+        if char_offset == 0
+            && is_empty_topbottom_table_anchor_for_enter(
+                &self.document.sections[section_idx].paragraphs[para_idx],
+            )
+        {
+            self.document.sections[section_idx].raw_stream = None;
+            let new_para_idx = para_idx + 1;
+            let new_para = empty_paragraph_after_table_anchor(
+                &self.document.sections[section_idx].paragraphs[para_idx],
+            );
+            self.document.sections[section_idx]
+                .paragraphs
+                .insert(new_para_idx, new_para);
+
+            let old_col = self
+                .para_column_map
+                .get(section_idx)
+                .and_then(|m| m.get(para_idx))
+                .copied()
+                .unwrap_or(0);
+            self.reflow_paragraph(section_idx, new_para_idx);
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[section_idx].paragraphs,
+                para_idx,
+            );
+            self.insert_composed_paragraph(section_idx, new_para_idx);
+            self.paginate_if_needed();
+
+            for _ in 0..2 {
+                let new_col = self
+                    .para_column_map
+                    .get(section_idx)
+                    .and_then(|m| m.get(para_idx))
+                    .copied()
+                    .unwrap_or(0);
+                if new_col == old_col {
+                    break;
+                }
+                self.reflow_paragraph(section_idx, new_para_idx);
+                crate::renderer::composer::recalculate_section_vpos(
+                    &mut self.document.sections[section_idx].paragraphs,
+                    para_idx,
+                );
+                self.recompose_paragraph(section_idx, new_para_idx);
+                self.paginate_if_needed();
+            }
+
+            self.event_log.push(DocumentEvent::ParagraphSplit {
+                section: section_idx,
+                para: para_idx,
+                offset: char_offset,
+            });
+            return Ok(super::super::helpers::json_ok_with(&format!(
+                "\"paraIdx\":{},\"charOffset\":0",
+                new_para_idx
+            )));
+        }
+
         // 편집 시 raw 스트림 무효화 (재직렬화 유도)
         self.document.sections[section_idx].raw_stream = None;
 
@@ -870,6 +1176,14 @@ impl DocumentCore {
         self.document.sections[section_idx]
             .paragraphs
             .insert(new_para_idx, new_para);
+        for i in para_idx..=new_para_idx {
+            if !self.document.sections[section_idx].paragraphs[i]
+                .field_ranges
+                .is_empty()
+            {
+                rebuild_char_offsets(&mut self.document.sections[section_idx].paragraphs[i]);
+            }
+        }
 
         // 양쪽 문단 리플로우 → vpos 재계산 → 재구성 → 재페이지네이션 + 다단 수렴 루프
         let old_col1 = self
@@ -952,6 +1266,14 @@ impl DocumentCore {
         self.document.sections[section_idx]
             .paragraphs
             .insert(new_para_idx, new_para);
+        for i in para_idx..=new_para_idx {
+            if !self.document.sections[section_idx].paragraphs[i]
+                .field_ranges
+                .is_empty()
+            {
+                rebuild_char_offsets(&mut self.document.sections[section_idx].paragraphs[i]);
+            }
+        }
 
         // 새 문단에 쪽 나누기 설정
         self.document.sections[section_idx].paragraphs[new_para_idx].column_type =
@@ -2526,8 +2848,31 @@ impl DocumentCore {
         text: &str,
     ) -> Result<String, HwpError> {
         let new_chars_count = text.chars().count();
+        let active_field = self.active_field.clone();
         let cell_para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
+        let cell_para_idx = path.last().map(|entry| entry.2).unwrap_or(0);
+        let outside_insertions = inactive_field_end_insertions(
+            cell_para,
+            active_field.as_ref(),
+            section_idx,
+            cell_para_idx,
+            Some(path),
+            char_offset,
+        );
+        let before_insertions = inactive_field_start_insertions(
+            cell_para,
+            active_field.as_ref(),
+            section_idx,
+            cell_para_idx,
+            Some(path),
+            char_offset,
+        );
         cell_para.insert_text_at(char_offset, text);
+        keep_inactive_field_start_outside(cell_para, &before_insertions, new_chars_count);
+        keep_inactive_field_end_outside(cell_para, &outside_insertions, new_chars_count);
+        if has_clickhere_field_range(cell_para) {
+            rebuild_char_offsets(cell_para);
+        }
 
         // 최외곽 표 dirty 마킹
         let outer_ctrl = path[0].0;

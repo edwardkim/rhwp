@@ -17,6 +17,7 @@ pub mod validation;
 use crate::model::document::Document;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
+use crate::model::table::TableTransposeData;
 use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::height_measurer::{MeasuredSection, MeasuredTable};
 use crate::renderer::layout::LayoutEngine;
@@ -36,6 +37,11 @@ pub(crate) struct ClipboardData {
     pub(crate) paragraphs: Vec<Paragraph>,
     /// 플레인 텍스트
     pub(crate) plain_text: String,
+}
+
+/// 표 셀 행/열 바꿈 전용 내부 버퍼
+pub(crate) struct TableTransposeClipboard {
+    pub(crate) data: TableTransposeData,
 }
 
 /// HWP 문서 핵심 도메인 모델
@@ -59,6 +65,8 @@ pub struct DocumentCore {
     pub(crate) layout_engine: LayoutEngine,
     /// 내부 클립보드
     pub(crate) clipboard: Option<ClipboardData>,
+    /// 표 셀 행/열 바꿈 복사 버퍼
+    pub(crate) table_transpose_clipboard: Option<TableTransposeClipboard>,
     /// [Task #1161] 떠 있는 개체(treat_as_char=false) 반복 붙여넣기 cascade 카운터.
     /// 새 컨트롤 복사 시 0 으로 리셋, 붙여넣기마다 +1 하여 위치 오프셋 누적(한컴 정합).
     pub(crate) paste_cascade_count: u32,
@@ -225,6 +233,7 @@ impl DocumentCore {
             fallback_font: DEFAULT_FALLBACK_FONT.to_string(),
             layout_engine: LayoutEngine::new(DEFAULT_DPI),
             clipboard: None,
+            table_transpose_clipboard: None,
             paste_cascade_count: 0,
             show_paragraph_marks: false,
             show_control_codes: false,

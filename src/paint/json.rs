@@ -6,6 +6,7 @@ use crate::document_core::helpers::{color_ref_to_css, json_escape as raw_json_es
 use crate::model::control::FormType;
 use crate::model::image::ImageEffect;
 use crate::model::style::{ImageFillMode, UnderlineType};
+use crate::paint::ResourceArena;
 use crate::paint::{
     BitmapGlyphPayload, CacheHint, ClipKind, ColorLayerNode, ColorLayersPayload,
     ColorPaintGraphNode, ColorPaintGraphPayload, FontColorGlyphRef, FontResourceTable,
@@ -25,6 +26,39 @@ use crate::renderer::{
     ArrowStyle, GradientFillInfo, LineRenderType, LineStyle, PathCommand, PatternFillInfo,
     ShadowStyle, ShapeStyle, StrokeDash, TabLeaderInfo, TextStyle,
 };
+
+const KNOWN_TEXT_FEATURES: &[&str] = &[
+    "fontResources",
+    "fontResources.blobFaceSplit",
+    "text.variantGroups",
+    "text.shapeDiagnostics",
+    "text.v2.diagnostics",
+    "text.v2.slotDiagnostics",
+    "text.v2.validationIssues",
+    "text.lineBreakRiskTelemetry",
+    "text.fallbackFreeStrictProfile",
+    "text.glyphRun",
+    "text.outlineGlyph",
+    "text.glyphOutline",
+    "text.glyphOutline.strictSidecar",
+    "text.glyphOutline.monochromeFill",
+    "text.glyphOutline.monochromeFillStroke",
+    "text.glyphOutline.colorLayers",
+    "text.glyphOutline.colorLayers.colrV0",
+    "text.glyphOutline.colorLayers.colrV1",
+    "text.glyphOutline.bitmapGlyph",
+    "text.glyphOutline.svgGlyph",
+    "text.glyphOutline.svgGlyph.vectorResourceId",
+    "text.glyphOutline.payloadResourceKey",
+    "text.glyphOutline.payloadResourceDigestKey",
+    "text.specialVisualOps",
+    "text.charOverlapOp",
+    "text.controlMarkOp",
+    "text.tabLeaderOp",
+    "text.decorationOp",
+    "text.displayText",
+    "text.vertical.mixedPerGlyph",
+];
 
 impl PageLayerTree {
     pub fn to_json(&self) -> String {
@@ -56,12 +90,13 @@ impl PageLayerTree {
             self.page_height
         );
         let mut text_source_state = TextSourceExportState::default();
-        self.root.write_json(&mut buf, &mut text_source_state);
+        self.root
+            .write_json(&mut buf, &mut text_source_state, &self.resources);
         buf.push_str(",\"textSources\":");
         write_text_source_entries(&mut buf, &self.text_sources);
         buf.push_str(",\"fontResources\":");
         write_font_resources(&mut buf, self.resources.font_resources());
-        write_text_export_metadata(&mut buf, &self.root);
+        write_text_export_metadata(&mut buf, &self.root, &self.resources);
         buf.push_str(",\"textV2\":");
         TextV2Diagnostics::from_layer_tree(self).write_json(&mut buf);
         buf.push('}');
@@ -69,9 +104,9 @@ impl PageLayerTree {
     }
 }
 
-fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
+fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &ResourceArena) {
     let externalized_visuals = externalized_text_visuals(root);
-    let text_variant_features = collect_text_variant_features(root);
+    let text_variant_features = collect_text_variant_features(root, resources);
     let has_variant_groups = text_variant_features.has_variant_groups();
     let has_glyph_runs = text_variant_features.has_glyph_runs;
     let has_glyph_outlines = text_variant_features.has_glyph_outlines;
@@ -80,6 +115,8 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     let has_glyph_outline_svg = text_variant_features.has_glyph_outline_svg;
     let has_glyph_outline_payload_resource_keys =
         text_variant_features.has_glyph_outline_payload_resource_keys;
+    let has_glyph_outline_payload_resource_digest_keys =
+        text_variant_features.has_glyph_outline_payload_resource_digest_keys;
     let has_display_text = text_variant_features.has_display_text;
     buf.push_str(",\"usedFeatures\":[\"text.paintStyle\",\"text.sourceTable\",\"text.sourceSpan\",\"text.v2.placement\",\"text.v2.clusters\",\"text.v2.diagnostics\",\"text.projectionKind\",\"text.legacyVisuals\",\"layer.optionMetadata\"");
     if has_display_text {
@@ -99,9 +136,13 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     }
     if has_glyph_outline_svg {
         buf.push_str(",\"text.glyphOutline.svgGlyph\"");
+        buf.push_str(",\"text.glyphOutline.svgGlyph.vectorResourceId\"");
     }
     if has_glyph_outline_payload_resource_keys {
         buf.push_str(",\"text.glyphOutline.payloadResourceKey\"");
+    }
+    if has_glyph_outline_payload_resource_digest_keys {
+        buf.push_str(",\"text.glyphOutline.payloadResourceDigestKey\"");
     }
     if has_variant_groups {
         buf.push_str(",\"text.variantGroups\"");
@@ -135,9 +176,13 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
     }
     if has_glyph_outline_svg {
         optional_features.push("text.glyphOutline.svgGlyph");
+        optional_features.push("text.glyphOutline.svgGlyph.vectorResourceId");
     }
     if has_glyph_outline_payload_resource_keys {
         optional_features.push("text.glyphOutline.payloadResourceKey");
+    }
+    if has_glyph_outline_payload_resource_digest_keys {
+        optional_features.push("text.glyphOutline.payloadResourceDigestKey");
     }
     buf.push_str("],\"optionalFeatures\":[");
     for (idx, feature) in optional_features.iter().enumerate() {
@@ -146,7 +191,14 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode) {
         }
         buf.push_str(&json_escape(feature));
     }
-    buf.push_str("],\"knownFeatures\":[\"fontResources\",\"fontResources.blobFaceSplit\",\"text.variantGroups\",\"text.shapeDiagnostics\",\"text.v2.diagnostics\",\"text.v2.slotDiagnostics\",\"text.v2.validationIssues\",\"text.lineBreakRiskTelemetry\",\"text.fallbackFreeStrictProfile\",\"text.glyphRun\",\"text.outlineGlyph\",\"text.glyphOutline\",\"text.glyphOutline.strictSidecar\",\"text.glyphOutline.monochromeFill\",\"text.glyphOutline.monochromeFillStroke\",\"text.glyphOutline.colorLayers\",\"text.glyphOutline.colorLayers.colrV0\",\"text.glyphOutline.colorLayers.colrV1\",\"text.glyphOutline.bitmapGlyph\",\"text.glyphOutline.svgGlyph\",\"text.glyphOutline.payloadResourceKey\",\"text.specialVisualOps\",\"text.charOverlapOp\",\"text.controlMarkOp\",\"text.tabLeaderOp\",\"text.decorationOp\",\"text.displayText\",\"text.vertical.mixedPerGlyph\"],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
+    buf.push_str("],\"knownFeatures\":[");
+    for (idx, feature) in KNOWN_TEXT_FEATURES.iter().enumerate() {
+        if idx > 0 {
+            buf.push(',');
+        }
+        buf.push_str(&json_escape(feature));
+    }
+    buf.push_str("],\"requiredFeatures\":[],\"text\":{\"defaultVariant\":\"textRun\",\"variants\":[\"textRun\"");
     if has_glyph_runs {
         buf.push_str(",\"glyphRun\"");
     }
@@ -171,6 +223,7 @@ struct TextVariantFeatureFlags {
     has_glyph_outline_bitmap: bool,
     has_glyph_outline_svg: bool,
     has_glyph_outline_payload_resource_keys: bool,
+    has_glyph_outline_payload_resource_digest_keys: bool,
     has_display_text: bool,
 }
 
@@ -180,7 +233,10 @@ impl TextVariantFeatureFlags {
     }
 }
 
-fn collect_text_variant_features(root: &LayerNode) -> TextVariantFeatureFlags {
+fn collect_text_variant_features(
+    root: &LayerNode,
+    resources: &ResourceArena,
+) -> TextVariantFeatureFlags {
     let mut features = TextVariantFeatureFlags::default();
     let mut stack = vec![root];
     while let Some(node) = stack.pop() {
@@ -212,6 +268,8 @@ fn collect_text_variant_features(root: &LayerNode) -> TextVariantFeatureFlags {
                                 matches!(outline.payload_kind, GlyphOutlinePayloadKind::SvgGlyph);
                             features.has_glyph_outline_payload_resource_keys |=
                                 outline.has_payload_resource_key();
+                            features.has_glyph_outline_payload_resource_digest_keys |=
+                                has_payload_resource_digest_key(outline, resources);
                         }
                         _ => {}
                     }
@@ -224,12 +282,35 @@ fn collect_text_variant_features(root: &LayerNode) -> TextVariantFeatureFlags {
             && features.has_glyph_outline_bitmap
             && features.has_glyph_outline_svg
             && features.has_glyph_outline_payload_resource_keys
+            && features.has_glyph_outline_payload_resource_digest_keys
             && features.has_display_text
         {
             return features;
         }
     }
     features
+}
+
+fn has_payload_resource_digest_key(
+    outline: &crate::paint::LayerGlyphOutlinePaint,
+    resources: &ResourceArena,
+) -> bool {
+    if !outline.has_payload_resource_key() {
+        return false;
+    }
+    match outline.payload_kind {
+        GlyphOutlinePayloadKind::BitmapGlyph => outline
+            .bitmap_glyph
+            .as_ref()
+            .is_some_and(|payload| resources.image_bytes(payload.image_ref).is_some()),
+        GlyphOutlinePayloadKind::SvgGlyph => outline
+            .svg_glyph
+            .as_ref()
+            .is_some_and(|payload| resources.svg_fragment(payload.svg_ref).is_some()),
+        GlyphOutlinePayloadKind::ColorLayers
+        | GlyphOutlinePayloadKind::MonochromeFill
+        | GlyphOutlinePayloadKind::MonochromeFillStroke => false,
+    }
 }
 
 fn externalized_text_visuals(root: &LayerNode) -> Vec<&'static str> {
@@ -277,7 +358,12 @@ fn externalized_text_visuals(root: &LayerNode) -> Vec<&'static str> {
 }
 
 impl LayerNode {
-    fn write_json(&self, buf: &mut String, text_sources: &mut TextSourceExportState) {
+    fn write_json(
+        &self,
+        buf: &mut String,
+        text_sources: &mut TextSourceExportState,
+        resources: &ResourceArena,
+    ) {
         buf.push('{');
         buf.push_str("\"bounds\":");
         write_bbox(buf, self.bounds);
@@ -306,7 +392,7 @@ impl LayerNode {
                     if idx > 0 {
                         buf.push(',');
                     }
-                    child.write_json(buf, text_sources);
+                    child.write_json(buf, text_sources, resources);
                 }
                 buf.push(']');
             }
@@ -323,7 +409,7 @@ impl LayerNode {
                     json_escape(clip_kind_str(*clip_kind))
                 );
                 buf.push_str(",\"child\":");
-                child.write_json(buf, text_sources);
+                child.write_json(buf, text_sources, resources);
             }
             LayerNodeKind::Leaf { ops } => {
                 buf.push_str(",\"kind\":\"leaf\",\"ops\":[");
@@ -332,7 +418,7 @@ impl LayerNode {
                     if idx > 0 {
                         buf.push(',');
                     }
-                    op.write_json(buf, text_sources, &leaf_visuals);
+                    op.write_json(buf, text_sources, &leaf_visuals, resources);
                 }
                 buf.push(']');
             }
@@ -347,6 +433,7 @@ impl PaintOp {
         buf: &mut String,
         text_sources: &mut TextSourceExportState,
         leaf_visuals: &LeafTextVisualOps,
+        resources: &ResourceArena,
     ) {
         match self {
             PaintOp::PageBackground { bbox, background } => {
@@ -504,7 +591,9 @@ impl PaintOp {
                     ",\"payloadKind\":{}",
                     json_escape(outline.payload_kind.as_str())
                 );
-                if let Some(payload_resource_key) = outline.payload_resource_key() {
+                if let Some(payload_resource_key) =
+                    outline.payload_resource_key_with_resources(Some(resources))
+                {
                     let _ = write!(
                         buf,
                         ",\"payloadResourceKey\":{}",
@@ -725,20 +814,33 @@ impl PaintOp {
                     // Task #516 Stage 5.2: overlay layer 의 <img> data URL 생성용 mime 노출.
                     // PCX 등 비표준은 PNG 변환 후 emit (CLI SVG 와 동일 정책 적용).
                     let mime = crate::renderer::svg::detect_image_mime_type(data);
-                    let (final_mime, final_data): (&str, std::borrow::Cow<[u8]>) =
-                        if mime == "image/x-pcx" {
-                            match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
-                                Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                                None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
-                            }
-                        } else if mime == "image/bmp" {
-                            match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
-                                Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                                None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
-                            }
-                        } else {
-                            (mime, std::borrow::Cow::Borrowed(data.as_slice()))
-                        };
+                    let (final_mime, final_data): (&str, std::borrow::Cow<[u8]>) = if mime
+                        == "image/x-pcx"
+                    {
+                        match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
+                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                        }
+                    } else if mime == "image/bmp" {
+                        match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
+                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                        }
+                    } else if mime == "image/tiff" {
+                        match crate::renderer::image_resolver::tiff_bytes_to_png_bytes(data) {
+                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                        }
+                    } else if mime == "image/jpeg" {
+                        match crate::renderer::image_resolver::grayscale_jpeg_bytes_to_png_bytes(
+                            data,
+                        ) {
+                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                        }
+                    } else {
+                        (mime, std::borrow::Cow::Borrowed(data.as_slice()))
+                    };
                     let base64_data =
                         base64::engine::general_purpose::STANDARD.encode(&*final_data);
                     let _ = write!(
@@ -776,12 +878,17 @@ impl PaintOp {
                     image.brightness,
                     image.contrast
                 );
+                let opacity = image.opacity.clamp(0.0, 1.0);
+                if opacity < 1.0 {
+                    let _ = write!(buf, ",\"opacity\":{:.6}", opacity);
+                }
                 // 워터마크 메타정보 (Task #516, AI 활용)
                 let attr = crate::model::image::ImageAttr {
                     brightness: image.brightness,
                     contrast: image.contrast,
                     effect: image.effect,
                     bin_data_id: image.bin_data_id,
+                    transparency: 0,
                     external_path: None,
                 };
                 if let Some(preset) = attr.watermark_preset() {
@@ -2008,8 +2115,8 @@ fn write_bitmap_glyph_payload(buf: &mut String, payload: &BitmapGlyphPayload) {
 fn write_svg_glyph_payload(buf: &mut String, payload: &SvgGlyphPayload) {
     let _ = write!(
         buf,
-        "{{\"svgRef\":{},\"sourceRangeUtf8\":",
-        payload.svg_ref.0
+        "{{\"svgRef\":{},\"vectorResourceId\":{},\"sourceRangeUtf8\":",
+        payload.svg_ref.0, payload.svg_ref.0
     );
     write_text_source_range(buf, payload.source_range_utf8);
     let _ = write!(
@@ -2382,6 +2489,7 @@ fn image_fill_mode_str(value: ImageFillMode) -> &'static str {
         ImageFillMode::TileVertLeft => "tileVertLeft",
         ImageFillMode::TileVertRight => "tileVertRight",
         ImageFillMode::FitToSize => "fitToSize",
+        ImageFillMode::Total => "total",
         ImageFillMode::Center => "center",
         ImageFillMode::CenterTop => "centerTop",
         ImageFillMode::CenterBottom => "centerBottom",
@@ -2463,10 +2571,12 @@ mod tests {
     use super::*;
     use crate::model::shape::TextWrap;
     use crate::paint::{
+        font_blob_resource_key, resource_digest_hex, BinaryResourceKind, BinaryResourceRef,
         BitmapGlyphFiltering, BitmapGlyphPayload, BitmapGlyphScalingPolicy, CacheHint, ClipKind,
         ColorGlyphFormat, ColorLayersPayload, ColorPaintGraphNode, ColorPaintGraphNodeKind,
-        ColorPaintGraphPayload, ColorPaintSolidPathNode, FontColorGlyphRef, FontFaceKey,
-        FontFallbackPolicyId, FontInstanceKey, GlyphCluster, GlyphOutlineFillRule,
+        ColorPaintGraphPayload, ColorPaintSolidPathNode, FontBlobKey, FontBlobResource,
+        FontColorGlyphRef, FontDigest, FontFaceKey, FontFaceResource, FontFallbackPolicyId,
+        FontInstanceKey, FontPortability, FontResourceSource, GlyphCluster, GlyphOutlineFillRule,
         GlyphOutlinePayloadKind, GlyphOutlineStrokeCap, GlyphOutlineStrokeJoin,
         GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation,
         GlyphRunReplayEligibility, GroupKind, ImageResourceId, LayerAffineTransform,
@@ -2474,7 +2584,7 @@ mod tests {
         LayerVector, PageLayerTree, PaintTextStyle, PaintVariantMeta, ResolvedColor, ScriptTag,
         ShapeKey, ShapingEngineId, SvgGlyphPayload, SvgResourceId, TextDecorationKind,
         TextDirection, TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind,
-        TextVariantQuality, WritingMode,
+        TextVariantQuality, WritingMode, RESOURCE_KEY_ALGORITHM,
     };
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
@@ -2486,9 +2596,9 @@ mod tests {
 
     #[test]
     fn serializes_text_and_shape_ops_for_browser_replay() {
-        let text = PaintOp::TextRun {
-            bbox: BoundingBox::new(10.0, 20.0, 80.0, 18.0),
-            run: TextRunNode {
+        let text = PaintOp::text_run(
+            BoundingBox::new(10.0, 20.0, 80.0, 18.0),
+            TextRunNode {
                 text: "가A".to_string(),
                 style: TextStyle {
                     font_family: "Noto Sans KR".to_string(),
@@ -2519,10 +2629,10 @@ mod tests {
                 baseline: 13.0,
                 field_marker: FieldMarkerType::FieldBegin,
             },
-        };
-        let rect = PaintOp::Rectangle {
-            bbox: BoundingBox::new(8.0, 18.0, 84.0, 22.0),
-            rect: crate::renderer::render_tree::RectangleNode::new(
+        );
+        let rect = PaintOp::rectangle(
+            BoundingBox::new(8.0, 18.0, 84.0, 22.0),
+            crate::renderer::render_tree::RectangleNode::new(
                 4.0,
                 ShapeStyle {
                     fill_color: Some(0x00F0F1F2),
@@ -2532,7 +2642,7 @@ mod tests {
                 },
                 None,
             ),
-        };
+        );
 
         let tree = PageLayerTree::new(
             120.0,
@@ -2629,9 +2739,9 @@ mod tests {
         let display_text = "(인)(Signature)";
         let source_positions = compute_char_positions(text, &style);
         let display_positions = compute_char_positions(display_text, &style);
-        let text_run = PaintOp::TextRun {
-            bbox: BoundingBox::new(10.0, 20.0, 80.0, 18.0),
-            run: TextRunNode {
+        let text_run = PaintOp::text_run(
+            BoundingBox::new(10.0, 20.0, 80.0, 18.0),
+            TextRunNode {
                 text: text.to_string(),
                 style: style.clone(),
                 char_shape_id: None,
@@ -2649,7 +2759,7 @@ mod tests {
                 baseline: 13.0,
                 field_marker: FieldMarkerType::None,
             },
-        };
+        );
         let tree = PageLayerTree::new(
             120.0,
             80.0,
@@ -2687,9 +2797,9 @@ mod tests {
 
     #[test]
     fn serializes_empty_display_positions_for_hidden_pua_filler() {
-        let text_run = PaintOp::TextRun {
-            bbox: BoundingBox::new(10.0, 20.0, 80.0, 18.0),
-            run: TextRunNode {
+        let text_run = PaintOp::text_run(
+            BoundingBox::new(10.0, 20.0, 80.0, 18.0),
+            TextRunNode {
                 text: "\u{F081C}".to_string(),
                 style: TextStyle {
                     font_family: "Noto Sans KR".to_string(),
@@ -2711,7 +2821,7 @@ mod tests {
                 baseline: 13.0,
                 field_marker: FieldMarkerType::None,
             },
-        };
+        );
         let tree = PageLayerTree::new(
             120.0,
             80.0,
@@ -2772,32 +2882,12 @@ mod tests {
                 BoundingBox::new(0.0, 0.0, 120.0, 80.0),
                 None,
                 vec![
-                    PaintOp::TextRun {
-                        bbox,
-                        run: run.clone(),
-                    },
-                    PaintOp::CharOverlap {
-                        bbox,
-                        run: run.clone(),
-                    },
-                    PaintOp::TextControlMark {
-                        bbox,
-                        run: run.clone(),
-                    },
-                    PaintOp::TabLeader {
-                        bbox,
-                        run: run.clone(),
-                    },
-                    PaintOp::TextDecoration {
-                        bbox,
-                        run: run.clone(),
-                        kind: TextDecorationKind::Underline,
-                    },
-                    PaintOp::TextDecoration {
-                        bbox,
-                        run,
-                        kind: TextDecorationKind::EmphasisDot,
-                    },
+                    PaintOp::text_run(bbox, run.clone()),
+                    PaintOp::char_overlap(bbox, run.clone()),
+                    PaintOp::text_control_mark(bbox, run.clone()),
+                    PaintOp::tab_leader(bbox, run.clone()),
+                    PaintOp::text_decoration(bbox, run.clone(), TextDecorationKind::Underline),
+                    PaintOp::text_decoration(bbox, run, TextDecorationKind::EmphasisDot),
                 ],
             ),
         );
@@ -2821,8 +2911,7 @@ mod tests {
         assert!(json.contains("\"legacyVisuals\":{\"charOverlap\":\"mirror\""));
     }
 
-    #[test]
-    fn serializes_optional_glyph_run_variant_with_text_run_fallback() {
+    fn optional_glyph_run_variant_tree() -> PageLayerTree {
         let source = TextSourceSpan {
             id: TextSourceId(0),
             utf8_range: TextSourceRange::new(0, 1),
@@ -2845,9 +2934,9 @@ mod tests {
             shaping_engine: ShapingEngineId("test".to_string()),
             fallback_policy: FontFallbackPolicyId("none".to_string()),
         };
-        let text_run = PaintOp::TextRun {
-            bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
-            run: TextRunNode {
+        let text_run = PaintOp::text_run(
+            BoundingBox::new(0.0, 0.0, 20.0, 20.0),
+            TextRunNode {
                 text: "A".to_string(),
                 style: TextStyle {
                     font_family: "Test".to_string(),
@@ -2870,7 +2959,7 @@ mod tests {
                 baseline: 12.0,
                 field_marker: FieldMarkerType::None,
             },
-        };
+        );
         let glyph_run = PaintOp::GlyphRun {
             bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
             run: Box::new(LayerGlyphRunPaint {
@@ -2935,7 +3024,7 @@ mod tests {
             }),
         };
 
-        let tree = PageLayerTree::new(
+        PageLayerTree::new(
             120.0,
             80.0,
             LayerNode::leaf(
@@ -2943,7 +3032,46 @@ mod tests {
                 None,
                 vec![text_run, glyph_run],
             ),
-        );
+        )
+    }
+
+    fn add_portable_font_resources(resources: &mut ResourceArena) {
+        let font_bytes = [0_u8, 1, 2, 3];
+        resources.intern_font_blob_bytes(&font_bytes);
+        let blob_key = FontBlobKey("blob-0".to_string());
+        let face_key = FontFaceKey("face-0".to_string());
+        let digest_value = resource_digest_hex(font_bytes);
+        let digest = FontDigest {
+            algorithm: RESOURCE_KEY_ALGORITHM.to_string(),
+            value: digest_value.clone(),
+        };
+        let data_ref = BinaryResourceRef {
+            kind: BinaryResourceKind::FontBlob,
+            id: font_blob_resource_key(font_bytes.len(), &digest_value),
+        };
+        resources.font_resources_mut().blobs.push(FontBlobResource {
+            id: blob_key.clone(),
+            digest: Some(digest.clone()),
+            source: FontResourceSource::Embedded,
+            data_ref: Some(data_ref.clone()),
+            portability: FontPortability::PortableBlob { digest, data_ref },
+        });
+        resources.font_resources_mut().faces.push(FontFaceResource {
+            id: face_key,
+            blob_key,
+            face_index: 0,
+            postscript_name: None,
+            family_names: Vec::new(),
+            style_names: Vec::new(),
+            weight_class: None,
+            width_class: None,
+            italic: None,
+        });
+    }
+
+    #[test]
+    fn serializes_optional_glyph_run_variant_with_text_run_fallback() {
+        let tree = optional_glyph_run_variant_tree();
         let json = tree.to_json();
 
         assert!(json.contains("\"type\":\"glyphRun\""));
@@ -2958,6 +3086,22 @@ mod tests {
         assert!(json.contains("\"replayEligibility\":\"portable\""));
         assert!(json.contains("\"strictVisualEligible\":true"));
         assert!(json.contains("\"slotDiagnostics\":[{\"paintOrderSlotId\":\"text-0\""));
+        assert!(json.contains("\"strictVariantAvailable\":false"));
+        assert!(json.contains("\"fallbackReason\":\"fontFaceMissing\""));
+    }
+
+    #[test]
+    fn serializes_strict_glyph_run_variant_when_font_resources_are_proven() {
+        let mut tree = optional_glyph_run_variant_tree();
+        add_portable_font_resources(&mut tree.resources);
+        let json = tree.to_json();
+
+        assert!(json.contains("\"type\":\"glyphRun\""));
+        assert!(json.contains("\"fontResources\":{\"blobs\":["));
+        assert!(json.contains("\"portability\":\"portableBlob\""));
+        assert!(json.contains("\"faces\":["));
+        assert!(json.contains("\"optionalFeatures\":[\"fontResources\",\"text.glyphRun\"]"));
+        assert!(json.contains("\"variants\":[\"textRun\",\"glyphRun\"]"));
         assert!(json.contains("\"strictVariantAvailable\":true"));
     }
 
@@ -2969,9 +3113,9 @@ mod tests {
             utf16_range: TextSourceRange::new(0, 1),
             stable_source_key: None,
         };
-        let text_run = PaintOp::TextRun {
-            bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
-            run: TextRunNode {
+        let text_run = PaintOp::text_run(
+            BoundingBox::new(0.0, 0.0, 20.0, 20.0),
+            TextRunNode {
                 text: "A".to_string(),
                 style: TextStyle {
                     font_family: "Test".to_string(),
@@ -2994,7 +3138,7 @@ mod tests {
                 baseline: 12.0,
                 field_marker: FieldMarkerType::None,
             },
-        };
+        );
         let outline = PaintOp::GlyphOutline {
             bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
             outline: Box::new(LayerGlyphOutlinePaint {
@@ -3124,7 +3268,7 @@ mod tests {
                 color_layers: Some(ColorLayersPayload {
                     color_format: ColorGlyphFormat::ColrV1,
                     source_font_ref: Some(FontColorGlyphRef {
-                        face_key: Some("fixture-face".to_string()),
+                        face_key: Some("fixture:resource:face".to_string()),
                         glyph_id: Some(42),
                         palette_index: Some(0),
                         color_format: Some(ColorGlyphFormat::ColrV1),
@@ -3157,7 +3301,7 @@ mod tests {
                             source_range_utf8: Some(TextSourceRange::new(0, 1)),
                             glyph_range: Some(GlyphRange::new(0, 1)),
                             source_font_ref: Some(FontColorGlyphRef {
-                                face_key: Some("fixture-face".to_string()),
+                                face_key: Some("fixture:resource:face".to_string()),
                                 glyph_id: Some(42),
                                 palette_index: Some(0),
                                 color_format: Some(ColorGlyphFormat::ColrV1),
@@ -3218,6 +3362,12 @@ mod tests {
         assert!(json.contains("\"text.glyphOutline.colorLayers\""));
         assert!(json.contains("\"text.glyphOutline.colorLayers.colrV1\""));
         assert!(json.contains("\"text.glyphOutline.payloadResourceKey\""));
+        assert_eq!(
+            json.matches("\"text.glyphOutline.payloadResourceDigestKey\"")
+                .count(),
+            1,
+            "color-layer metadata containing ':resource:' must not advertise a resource digest payload feature"
+        );
     }
 
     #[test]
@@ -3292,6 +3442,18 @@ mod tests {
         };
         assert!(!incomplete_bitmap_outline.has_payload_resource_key());
         assert!(incomplete_bitmap_outline.payload_resource_key().is_none());
+        let mut resources = ResourceArena::default();
+        let invalid_image_id = resources.intern_image_bytes(&[1, 2, 3, 4]);
+        let mut invalid_bitmap_with_resource = incomplete_bitmap_outline.clone();
+        invalid_bitmap_with_resource
+            .bitmap_glyph
+            .as_mut()
+            .unwrap()
+            .image_ref = invalid_image_id;
+        assert!(!has_payload_resource_digest_key(
+            &invalid_bitmap_with_resource,
+            &resources
+        ));
         let bitmap_outline = PaintOp::GlyphOutline {
             bbox: BoundingBox::new(0.0, 0.0, 20.0, 20.0),
             outline: Box::new(LayerGlyphOutlinePaint {
@@ -3311,7 +3473,7 @@ mod tests {
                 payload_kind: GlyphOutlinePayloadKind::BitmapGlyph,
                 color_layers: None,
                 bitmap_glyph: Some(BitmapGlyphPayload {
-                    image_ref: ImageResourceId(7),
+                    image_ref: ImageResourceId(0),
                     source_range_utf8: TextSourceRange::new(0, 1),
                     glyph_range: GlyphRange::new(0, 1),
                     placement: BoundingBox::new(0.0, 0.0, 10.0, 10.0),
@@ -3348,7 +3510,7 @@ mod tests {
                 color_layers: None,
                 bitmap_glyph: None,
                 svg_glyph: Some(SvgGlyphPayload {
-                    svg_ref: SvgResourceId(7),
+                    svg_ref: SvgResourceId(0),
                     source_range_utf8: TextSourceRange::new(0, 1),
                     glyph_range: GlyphRange::new(0, 1),
                     view_box: BoundingBox::new(0.0, 0.0, 10.0, 10.0),
@@ -3367,7 +3529,7 @@ mod tests {
                 diagnostics,
             }),
         };
-        let tree = PageLayerTree::new(
+        let mut tree = PageLayerTree::new(
             120.0,
             80.0,
             LayerNode::leaf(
@@ -3376,14 +3538,40 @@ mod tests {
                 vec![bitmap_outline, svg_outline],
             ),
         );
+        let image_bytes = [0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a];
+        let svg_fragment = "<path d=\"M0 0H10V10Z\"/>";
+        let image_id = tree.resources.intern_image_bytes(&image_bytes);
+        let svg_id = tree.resources.intern_svg_fragment(svg_fragment);
+        assert_eq!(image_id, ImageResourceId(0));
+        assert_eq!(svg_id, SvgResourceId(0));
+        let image_resource_key = tree
+            .resources
+            .image_resource_key(image_id)
+            .unwrap()
+            .to_string();
+        let svg_resource_key = tree.resources.svg_resource_key(svg_id).unwrap().to_string();
 
         let json = tree.to_json();
 
-        assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:bitmapGlyph:imageRef:7"));
-        assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:svgGlyph:svgRef:7"));
+        assert!(json.contains("\"schemaMinorVersion\":17"));
+        assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:bitmapGlyph:imageRef:0"));
+        assert!(json.contains(&format!(":resource:{image_resource_key}\"")));
+        assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:svgGlyph:svgRef:0"));
+        assert!(json.contains(&format!(":resource:{svg_resource_key}\"")));
+        assert!(json.contains("\"vectorResourceId\":0"));
         assert!(json.contains("\"strictVisualContract\":true"));
         assert!(json.contains("\"staticSanitizedContract\":true"));
         assert!(json.contains("\"text.glyphOutline.payloadResourceKey\""));
+        assert!(json.contains("\"text.glyphOutline.payloadResourceDigestKey\""));
+        assert!(json.contains("\"text.glyphOutline.svgGlyph.vectorResourceId\""));
+    }
+
+    #[test]
+    fn known_text_features_are_unique() {
+        let mut seen = std::collections::BTreeSet::new();
+        for feature in KNOWN_TEXT_FEATURES {
+            assert!(seen.insert(*feature), "duplicate known feature: {feature}");
+        }
     }
 
     #[test]
@@ -3411,18 +3599,11 @@ mod tests {
                 BoundingBox::new(0.0, 0.0, 120.0, 80.0),
                 None,
                 vec![
-                    PaintOp::Path {
-                        bbox: BoundingBox::new(1.0, 2.0, 30.0, 20.0),
-                        path,
-                    },
-                    PaintOp::Image {
-                        bbox: BoundingBox::new(3.0, 4.0, 30.0, 20.0),
-                        image,
-                        resolved: None,
-                    },
-                    PaintOp::Equation {
-                        bbox: BoundingBox::new(5.0, 6.0, 30.0, 20.0),
-                        equation: EquationNode {
+                    PaintOp::path(BoundingBox::new(1.0, 2.0, 30.0, 20.0), path),
+                    PaintOp::image(BoundingBox::new(3.0, 4.0, 30.0, 20.0), image, None),
+                    PaintOp::equation(
+                        BoundingBox::new(5.0, 6.0, 30.0, 20.0),
+                        EquationNode {
                             svg_content: "<text>x</text>".to_string(),
                             layout_box: LayoutBox {
                                 x: 0.0,
@@ -3442,21 +3623,21 @@ mod tests {
                             cell_para_index: None,
                             note_ref: None,
                         },
-                    },
-                    PaintOp::Placeholder {
-                        bbox: BoundingBox::new(7.0, 8.0, 30.0, 20.0),
-                        placeholder: PlaceholderNode {
+                    ),
+                    PaintOp::placeholder(
+                        BoundingBox::new(7.0, 8.0, 30.0, 20.0),
+                        PlaceholderNode {
                             fill_color: 0x00F0F0F0,
                             stroke_color: 0x00000000,
                             label: "OLE".to_string(),
                         },
-                    },
-                    PaintOp::RawSvg {
-                        bbox: BoundingBox::new(9.0, 10.0, 30.0, 20.0),
-                        raw: RawSvgNode {
+                    ),
+                    PaintOp::raw_svg(
+                        BoundingBox::new(9.0, 10.0, 30.0, 20.0),
+                        RawSvgNode {
                             svg: "<g><path d=\"M0 0L1 1\"/></g>".to_string(),
                         },
-                    },
+                    ),
                 ],
             ),
         );

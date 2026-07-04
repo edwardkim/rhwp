@@ -51,6 +51,12 @@ fn para_is_treat_as_char_picture_only(para: &Paragraph) -> bool {
         })
 }
 
+fn para_has_treat_as_char_table(para: &Paragraph) -> bool {
+    para.controls
+        .iter()
+        .any(|ctrl| matches!(ctrl, Control::Table(table) if table.common.treat_as_char))
+}
+
 fn compact_between_notes_gap_px(raw_gap_hu: i32, dpi: f64, use_pagination_gap: bool) -> f64 {
     if raw_gap_hu <= 0 {
         return 10.0;
@@ -93,6 +99,9 @@ pub(crate) struct HeightCursor {
     pub allow_start_height_backtrack: bool,
     /// 미주 흐름의 큰 forward vpos 점프는 단/쪽 재배치 흔적일 수 있어 순차 배치를 유지한다.
     pub suppress_large_forward_jump: bool,
+    /// HWPX 원본의 일부 LINE_SEG vpos 는 이전 쪽/단 조판 좌표가 남아 페이지 상단 본문을
+    /// 과도하게 아래로 밀 수 있다. 원본 IR은 보존하고 조판 커서에서만 제한적으로 접는다.
+    pub suppress_hwpx_stale_forward: bool,
     /// [Task #1246] 현재 섹션 미주의 between-notes 마진(HU, 0=미적용). 새 미주 제목이 forward
     /// 흐름에서 이 마진보다 작은 간격을 가지면(다줄 풀이 끝 trailing 누락=문22) 끌어올린다.
     /// 생성자는 0 으로 두고 호출자(build_single_column)가 미주 흐름 컬럼에서만 설정한다.
@@ -130,6 +139,7 @@ impl HeightCursor {
             allow_vpos_rewind,
             allow_start_height_backtrack,
             suppress_large_forward_jump,
+            suppress_hwpx_stale_forward: false,
             endnote_between_notes_hu: 0,
             prev_item_content_bottom_y: None,
             last_compacted_endnote_title_gap: false,
@@ -179,6 +189,16 @@ impl HeightCursor {
         let Some(seg) = prev_seg else {
             return y_offset;
         };
+        // [Task #1811] 합성 seg(원본 linesegarray 부재 — reflow/컨버터 생성,
+        // TAG_IMPLEMENTATION_PROPERTY)는 저장 증거가 아니다. **전방(forward)** 보정
+        // 근거로 쓰면 구세션 저장 flow 위치로 과대 전진해(+9.6px) 후속 분할 표 예산이
+        // 부족해진다 (saved_bounds_cumulative_page_break p4 컷 [2]→[3] 결손).
+        // [Task #1811 v2] 단, 되감기와 대형 재앵커 점프는 허용한다 — 전면 차단하면
+        // 파스 경로별 미세 측정차가 재동기화를 잃고 누적되어 라운드트립 쪽나눔이
+        // 갈린다 (seoul_1006 p7→p8 Group+줄 이월 회귀). 판정은 최종 result 산출 후
+        // 방향·크기로 한다 (함수 끝 SYNTH_FORWARD_REANCHOR_MIN_PX 클램프).
+        let synthetic_prev_seg =
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0;
         if seg.vertical_pos == 0 && prev_pi > 0 {
             return y_offset;
         }
@@ -243,6 +263,25 @@ impl HeightCursor {
                         .map(|p| p.text.trim_start().starts_with('문'))
                         .unwrap_or(false)
                     && seg.line_spacing > 1000;
+                let compact_zero_gap_endnote_title_boundary = self.suppress_large_forward_jump
+                    && self.endnote_between_notes_hu == 0
+                    && paragraphs
+                        .get(item_para)
+                        .map(|p| p.text.trim_start().starts_with('문'))
+                        .unwrap_or(false)
+                    && seg.line_spacing > 0
+                    && seg.line_spacing <= 800;
+                if compact_zero_gap_endnote_title_boundary {
+                    // 0/0/0 미주에서 lazy_base 역산이 무효가 되는 페이지/단 시작부는
+                    // 순차 y가 직전 문단 trailing line_spacing까지 포함한다. 한컴은
+                    // 미주 사이 0mm 경계에서는 그 trailing gap을 다음 제목 앞 간격으로
+                    // 쓰지 않으므로 한 줄 gap만 접어 문항별 +6px 누적 drift를 막는다.
+                    let prev_line_spacing_px = (seg.line_spacing.max(0) as f64) / 7200.0 * self.dpi;
+                    let compacted_y = y_offset - prev_line_spacing_px;
+                    if compacted_y >= self.col_area_y && y_offset - compacted_y <= 12.0 {
+                        return compacted_y;
+                    }
+                }
                 if compact_endnote_question_title
                     && y_offset > self.col_area_y + self.col_area_height * 0.85
                 {
@@ -339,49 +378,53 @@ impl HeightCursor {
         let prev_content_bottom_y = y_offset - prev_line_spacing_px;
         let measured_prev_content_bottom_y =
             self.prev_item_content_bottom_y.filter(|y| y.is_finite());
+        let prev_content_floor_y = measured_prev_content_bottom_y
+            .map(|bottom| bottom.max(prev_content_bottom_y))
+            .unwrap_or(prev_content_bottom_y);
         let follows_tall_inline_item = self.suppress_large_forward_jump && seg.line_height > 1500;
-        let compact_endnote_question_title = self.suppress_large_forward_jump
+        let current_is_compact_endnote_title = self.suppress_large_forward_jump
             && paragraphs
                 .get(item_para)
                 .map(|p| p.text.trim_start().starts_with('문'))
-                .unwrap_or(false)
-            && seg.line_spacing > 1000;
+                .unwrap_or(false);
+        let prev_line_carries_note_gap = seg.line_spacing > 1000;
+        let compact_endnote_question_title =
+            current_is_compact_endnote_title && prev_line_carries_note_gap;
         let bottom_new_note_gap_cap = if self.suppress_large_forward_jump
             && end_y <= self.col_area_y + self.col_area_height
             && (y_offset > self.col_area_y + self.col_area_height * 0.75
                 || compact_endnote_question_title)
         {
-            let preserved_gap_y =
-                if compact_endnote_question_title && follows_tall_inline_item && !is_page_path {
-                    // compact 미주의 display 수식 뒤 새 문항 제목은 저장 trailing
-                    // line_spacing 전체 뒤가 아니라 실제 보이는 수식 하단 뒤의 "미주 사이"
-                    // 공통 간격에 맞춘다.
-                    // 렌더러가 실제 콘텐츠 하단을 제공하면 그 값을 공통 기준으로 삼고,
-                    // height-only 경로처럼 값이 없으면 기존 LINE_SEG 추정값으로 폴백한다.
-                    let content_bottom_y = measured_prev_content_bottom_y
-                        .map(|y| y.max(prev_content_bottom_y))
-                        .unwrap_or(prev_content_bottom_y);
-                    let gap_px = compact_between_notes_gap_px(
-                        self.endnote_between_notes_hu,
-                        self.dpi,
-                        prev_para.text.trim().is_empty()
-                            || para_is_treat_as_char_equation_only(prev_para),
-                    );
-                    content_bottom_y + gap_px
-                } else if y_offset > self.col_area_y + self.col_area_height * 0.75
-                    || prev_para.text.trim().is_empty()
-                {
-                    // Empty paragraphs before the next compact endnote title already carry the
-                    // visual spacer. Adding the mid-column buffer again pushes later notes down.
-                    y_offset + prev_line_spacing_px
-                } else if prev_para.line_segs.len() > 1 && self.endnote_between_notes_hu <= 2500 {
-                    // 기본 미주 다줄 tail 뒤 새 문항은 single-line tail보다 완충이 작다.
-                    // 큰 40px buffer를 쓰면 2023-09 p19 문29처럼 뒤 풀이가 frame 밖으로 밀린다.
-                    y_offset + prev_line_spacing_px + 18.0
-                } else {
-                    y_offset + prev_line_spacing_px + 40.0
-                };
-            if compact_endnote_question_title && follows_tall_inline_item && !is_page_path {
+            let preserved_gap_y = if compact_endnote_question_title && follows_tall_inline_item {
+                // compact 미주의 display 수식 뒤 새 문항 제목은 저장 trailing
+                // line_spacing 전체 뒤가 아니라 실제 보이는 수식 하단 뒤의 "미주 사이"
+                // 공통 간격에 맞춘다.
+                // 렌더러가 실제 콘텐츠 하단을 제공하면 그 값을 공통 기준으로 삼고,
+                // height-only 경로처럼 값이 없으면 기존 LINE_SEG 추정값으로 폴백한다.
+                let content_bottom_y = measured_prev_content_bottom_y
+                    .map(|y| y.max(prev_content_bottom_y))
+                    .unwrap_or(prev_content_bottom_y);
+                let gap_px = compact_between_notes_gap_px(
+                    self.endnote_between_notes_hu,
+                    self.dpi,
+                    prev_para.text.trim().is_empty()
+                        || para_is_treat_as_char_equation_only(prev_para),
+                );
+                content_bottom_y + gap_px
+            } else if y_offset > self.col_area_y + self.col_area_height * 0.75
+                || prev_para.text.trim().is_empty()
+            {
+                // Empty paragraphs before the next compact endnote title already carry the
+                // visual spacer. Adding the mid-column buffer again pushes later notes down.
+                y_offset + prev_line_spacing_px
+            } else if prev_para.line_segs.len() > 1 && self.endnote_between_notes_hu <= 2500 {
+                // 기본 미주 다줄 tail 뒤 새 문항은 single-line tail보다 완충이 작다.
+                // 큰 40px buffer를 쓰면 2023-09 p19 문29처럼 뒤 풀이가 frame 밖으로 밀린다.
+                y_offset + prev_line_spacing_px + 18.0
+            } else {
+                y_offset + prev_line_spacing_px + 40.0
+            };
+            if compact_endnote_question_title && follows_tall_inline_item {
                 Some(preserved_gap_y)
             } else {
                 Some(preserved_gap_y.min(end_y))
@@ -474,6 +517,22 @@ impl HeightCursor {
             .get(item_para)
             .map(para_has_visible_text)
             .unwrap_or(false);
+        let current_looks_like_numbered_note = paragraphs
+            .get(item_para)
+            .map(|p| {
+                let text = p.text.trim_start();
+                let digit_len = text
+                    .as_bytes()
+                    .iter()
+                    .take_while(|b| b.is_ascii_digit())
+                    .count();
+                (1..=3).contains(&digit_len) && text.as_bytes().get(digit_len) == Some(&b')')
+            })
+            .unwrap_or(false);
+        let current_is_tac_table_host = paragraphs
+            .get(item_para)
+            .map(para_has_treat_as_char_table)
+            .unwrap_or(false);
         let compact_endnote_title_body_stale_forward = self.suppress_large_forward_jump
             && !is_page_path
             && follows_endnote_title
@@ -528,6 +587,17 @@ impl HeightCursor {
             .and_then(|p| p.line_segs.first())
             .map(|s| hwpunit_to_px((s.line_height + s.line_spacing).max(0), self.dpi))
             .unwrap_or(0.0);
+        let compact_endnote_page_no_separator_tail_pullup = self.suppress_large_forward_jump
+            && is_page_path
+            && current_has_visible_text
+            && current_looks_like_numbered_note
+            && !curr_is_equation_only_tail
+            && seg.line_spacing < 0
+            && current_line_advance_px <= 14.5
+            && end_y < y_offset - 6.0
+            && y_offset - end_y <= 18.0
+            && end_y <= self.col_area_y + self.col_area_height
+            && y_offset > self.col_area_y + self.col_area_height - 80.0;
         let current_line_height_px = paragraphs
             .get(item_para)
             .and_then(|p| p.line_segs.first())
@@ -605,6 +675,16 @@ impl HeightCursor {
             && end_y - y_offset <= 48.0
             && !compact_endnote_new_note_jump
             && y_offset <= self.col_area_y + self.col_area_height * 0.35;
+        let compact_endnote_zero_gap_title_forward = self.suppress_large_forward_jump
+            && current_is_endnote_title
+            && !vpos_rewind
+            && self.endnote_between_notes_hu == 0
+            && !prev_para.text.trim().is_empty()
+            && seg.line_spacing <= 800
+            && end_y > y_offset + 18.0
+            && end_y <= y_offset + 96.0
+            && (!follows_tall_inline_item || !prev_para.text.trim().is_empty())
+            && y_offset <= self.col_area_y + self.col_area_height * 0.35;
         let compact_endnote_equation_tail_fit = self.suppress_large_forward_jump
             && !vpos_rewind
             && paragraphs
@@ -635,13 +715,122 @@ impl HeightCursor {
         // note-gap must remain authoritative.
         let compact_endnote_safe_vpos_backtrack = self.suppress_large_forward_jump
             && !vpos_rewind
+            && !(current_is_endnote_title && self.endnote_between_notes_hu > 3000)
             && end_y < y_offset - 8.0
             && end_y >= prev_content_bottom_y
             && end_y <= self.col_area_y + self.col_area_height
             && y_offset <= self.col_area_y + self.col_area_height * 0.75;
         let stale_forward = self.suppress_large_forward_jump && end_y > y_offset + 100.0;
+        let prev_is_initial_empty_reset = prev_pi == 0
+            && seg.vertical_pos == 0
+            && !prev_has_visible_text
+            && prev_para.text.trim().is_empty()
+            && y_offset <= self.col_area_y + 48.0;
+        let current_vpos_far_from_prev =
+            matches!(curr_first_vpos, Some(v) if v - prev_vpos_end > 3200);
+        let hwpx_page_start_stale_forward = self.suppress_hwpx_stale_forward
+            && is_page_path
+            && applied
+            && !vpos_rewind
+            && y_offset <= self.col_area_y + 96.0
+            && end_y > y_offset + 48.0
+            && ((prev_is_initial_empty_reset
+                && current_has_visible_text
+                && current_vpos_far_from_prev)
+                || (current_is_tac_table_host && end_y > y_offset + 180.0));
+        let compact_endnote_large_gap_body_stale_forward = self.suppress_large_forward_jump
+            && !is_page_path
+            && !vpos_rewind
+            && self.endnote_between_notes_hu > 3000
+            && current_has_visible_text
+            && !current_is_endnote_title
+            && end_y > y_offset + 80.0
+            && end_y < y_offset + 140.0
+            && y_offset > self.col_area_y + self.col_area_height * 0.55
+            && y_offset < self.col_area_y + self.col_area_height * 0.80;
+        let compact_endnote_page_title_body_stale_forward = self.suppress_large_forward_jump
+            && is_page_path
+            && !vpos_rewind
+            && self.endnote_between_notes_hu > 3000
+            && follows_endnote_title
+            && !current_is_endnote_title
+            && current_has_visible_text
+            && end_y > y_offset + 32.0
+            && end_y < y_offset + 120.0
+            && y_offset <= self.col_area_y + self.col_area_height * 0.25;
+        let compact_endnote_page_title_mid_stale_gap = self.suppress_large_forward_jump
+            && is_page_path
+            && !vpos_rewind
+            && stale_forward
+            && current_is_endnote_title
+            && self.endnote_between_notes_hu > 0
+            && self.endnote_between_notes_hu <= 2500
+            && seg.line_spacing >= self.endnote_between_notes_hu
+            && y_offset > self.col_area_y + self.col_area_height * 0.55
+            && y_offset <= self.col_area_y + self.col_area_height * 0.85;
+        let compact_endnote_page_title_default_mid_gap = self.suppress_large_forward_jump
+            && is_page_path
+            && !vpos_rewind
+            && current_is_endnote_title
+            && self.endnote_between_notes_hu > 0
+            && self.endnote_between_notes_hu <= 2500
+            && seg.line_spacing > 0
+            && seg.line_spacing < self.endnote_between_notes_hu
+            && end_y > y_offset + 48.0
+            && end_y <= y_offset + 120.0
+            && y_offset > self.col_area_y + self.col_area_height * 0.35
+            && y_offset <= self.col_area_y + self.col_area_height * 0.55;
+        let compact_endnote_large_empty_spacer_collapse = self.suppress_large_forward_jump
+            && !is_page_path
+            && stale_forward
+            && current_is_endnote_title
+            && !vpos_rewind
+            && self.endnote_between_notes_hu > 3000
+            && seg.line_spacing >= self.endnote_between_notes_hu
+            && prev_para.line_segs.len() == 1
+            && prev_para.text.trim().is_empty()
+            && prev_para.controls.is_empty()
+            && y_offset > self.col_area_y + self.col_area_height * 0.75;
+        let compact_endnote_large_between_title_tail_backtrack = self.suppress_large_forward_jump
+            && !is_page_path
+            && current_is_endnote_title
+            && !vpos_rewind
+            && self.endnote_between_notes_hu > 3000
+            && seg.line_spacing >= self.endnote_between_notes_hu
+            && end_y < y_offset - 8.0
+            && y_offset > self.col_area_y + self.col_area_height * 0.80
+            && end_y <= col_bottom
+            && end_y >= prev_content_floor_y
+            && y_offset - end_y <= 36.0;
+        let compact_no_separator_large_title_tail_gap = self.suppress_large_forward_jump
+            && !is_page_path
+            && stale_forward
+            && current_is_endnote_title
+            && !vpos_rewind
+            && self.endnote_between_notes_hu > 3000
+            && seg.line_spacing >= self.endnote_between_notes_hu
+            && !prev_para.text.trim().is_empty()
+            && !follows_tall_inline_item
+            && y_offset > self.col_area_y + self.col_area_height * 0.90
+            && y_offset <= col_bottom;
+        let compact_endnote_zero_gap_text_floor = self.suppress_large_forward_jump
+            && is_page_path
+            && self.endnote_between_notes_hu == 0
+            && !current_is_endnote_title
+            && current_has_visible_text
+            && current_looks_like_numbered_note
+            && !curr_is_equation_only_tail
+            && measured_prev_content_bottom_y.is_some()
+            && end_y < prev_content_floor_y - 0.25
+            && y_offset >= prev_content_floor_y
+            && y_offset - end_y <= 24.0;
         if compact_endnote_stale_note_gap
             || compact_endnote_title_body_stale_forward
+            || compact_endnote_large_gap_body_stale_forward
+            || compact_endnote_page_title_body_stale_forward
+            || compact_endnote_page_title_mid_stale_gap
+            || compact_no_separator_large_title_tail_gap
+            || hwpx_page_start_stale_forward
             || (applied && (compact_endnote_new_note_jump || compact_endnote_tac_picture_gap))
         {
             // Compact endnote flow encodes visual gaps in absolute vpos.
@@ -649,6 +838,30 @@ impl HeightCursor {
             // line restores the skipped gap.
             let rendered_y = if let Some(y) = title_body_gap_y {
                 y
+            } else if compact_endnote_page_title_body_stale_forward {
+                // 구분선 없는 큰 미주 block의 page-path에서도 문항 제목 뒤
+                // 본문 첫 줄 vpos가 미주 사이만큼 stale-forward로 남는 경우가
+                // 있다. 제목 자체는 한컴 위치와 맞으므로 본문부터 순차 gap에
+                // 붙이고 후속 vpos 기준도 함께 당긴다.
+                y_offset + prev_line_spacing_px.max(10.0).min(18.0)
+            } else if compact_endnote_page_title_mid_stale_gap {
+                // 보이는 구분선 + compact 미주의 page-path 중하단 제목은 저장
+                // vpos가 이전 미주 사이를 한 번 더 포함한 채 stale-forward로
+                // 남을 수 있다. 제목을 현재 단 순차 위치에서 note gap 한 번만
+                // 접고, 뒤따르는 같은 미주 본문도 같은 base를 쓰게 한다.
+                y_offset - prev_line_spacing_px
+            } else if compact_endnote_large_gap_body_stale_forward {
+                y_offset
+            } else if compact_no_separator_large_title_tail_gap {
+                // 구분선 없는 큰 미주 block의 마지막 단에서 새 문항 제목은
+                // 저장된 20mm gap 전체보다 조금 위에 놓인다. 직전 풀이의
+                // line spacing이 이미 시각 gap을 만들었으므로 약 1/4만 접고,
+                // 뒤따르는 같은 미주 본문도 같은 기준으로 흐르게 한다.
+                // 제목 문단은 paragraph layout에서 spacing_before가 다시 더해지므로
+                // 커서 기준 y에서는 그만큼 미리 빼야 실제 첫 줄이 목표 gap에 놓인다.
+                y_offset - prev_line_spacing_px * 0.25 - curr_sb
+            } else if hwpx_page_start_stale_forward {
+                y_offset
             } else if compact_endnote_new_note_jump {
                 bottom_new_note_gap_cap.unwrap_or(y_offset)
             } else if let Some(y) = stale_note_gap_y {
@@ -693,8 +906,22 @@ impl HeightCursor {
             // 하단부 큰 수식/inline 뒤 새 문항 제목은 저장 vpos 전체를 따르면
             // 앞 문항과 겹친다. 한컴처럼 제한적으로만 당겨 뒤 풀이 줄이
             // frame 안에 들어갈 공간을 확보한다.
-            (y_offset - (y_offset - end_y).min(30.0) - curr_sb)
-                .max(prev_content_bottom_y - curr_sb - 12.0)
+            let strong_tall_tail_backtrack = measured_prev_content_bottom_y.is_some()
+                && prev_line_carries_note_gap
+                && seg.line_height >= 2000
+                && y_offset - end_y > 80.0;
+            let backtrack_limit = if strong_tall_tail_backtrack {
+                56.0
+            } else {
+                30.0
+            };
+            let prev_floor_pad = if strong_tall_tail_backtrack {
+                40.0
+            } else {
+                12.0
+            };
+            (y_offset - (y_offset - end_y).min(backtrack_limit) - curr_sb)
+                .max(prev_content_bottom_y - curr_sb - prev_floor_pad)
                 .max(self.col_area_y)
                 .min(y_offset)
         } else if compact_endnote_question_title_after_tall_mid_backtrack {
@@ -720,6 +947,66 @@ impl HeightCursor {
             // PDF/Hancom 위치와 맞는 경우가 있다. 이때 저장 vpos forward를 따르면
             // 같은 단의 뒤 문항까지 누적되어 마지막 풀이 줄이 frame 밖으로 밀린다.
             y_offset
+        } else if compact_endnote_zero_gap_title_forward {
+            // 구분선 위/미주 사이/구분선 아래가 모두 0에 가까운 미주는 새 문항
+            // 제목 앞 저장 vpos gap이 이전 단 재배치 흔적으로 남을 수 있다.
+            // 한컴처럼 직전 tail 바로 다음 순차 위치를 따르고, 후속 문항도 같은
+            // 기준으로 흐르도록 아래에서 vpos base를 함께 옮긴다.
+            y_offset
+        } else if compact_endnote_large_empty_spacer_collapse {
+            // 큰 미주 사이 문서의 단 하단에서 빈 spacer 문단이 이미 한 줄 높이를
+            // 만들었는데, 주입된 line_spacing까지 그대로 소비하면 다음 문항 제목이
+            // 한컴/PDF보다 한 note 간격만큼 내려간다. 빈 줄은 유지하고 주입된
+            // "미주 사이" trailing만 접어 현재 단의 문항 흐름을 맞춘다.
+            (y_offset - prev_line_spacing_px - 4.0)
+                .max(self.col_area_y)
+                .min(y_offset)
+        } else if compact_endnote_large_between_title_tail_backtrack {
+            // 보이는 구분선 + 큰 "미주 사이"에서 직전 spacer의 주입 gap과
+            // 저장 vpos가 동시에 존재하면 단 하단 제목/본문이 한 줄가량 내려간다.
+            // 저장 vpos가 직전 콘텐츠 바닥을 침범하지 않고 frame 안쪽을 가리키는
+            // 경우에는 그 위치를 공통 기준으로 삼아 뒤 본문도 함께 끌어올린다.
+            end_y.max(prev_content_floor_y).min(y_offset)
+        } else if compact_no_separator_large_title_tail_gap {
+            (y_offset - prev_line_spacing_px * 0.25 - curr_sb)
+                .max(prev_content_floor_y)
+                .max(self.col_area_y)
+                .min(y_offset)
+        } else if compact_endnote_zero_gap_text_floor {
+            // 0mm 미주의 일반 텍스트 연속 문단은 저장 vpos가 실제 렌더 하단보다
+            // 위를 가리키는 경우가 있다. 제목/수식 tail 특수 보정이 아닌 일반
+            // 텍스트에서는 직전 TextLine bbox 하단을 최소 시작점으로 보존한다.
+            prev_content_floor_y.max(self.col_area_y).min(y_offset)
+        } else if hwpx_page_start_stale_forward {
+            y_offset
+        } else if compact_endnote_large_gap_body_stale_forward {
+            // 큰 미주 사이 문서의 본문 중간 텍스트는 저장 vpos가 이전 제목/수식
+            // 그룹의 절대 위치 흔적으로 남아 순차 y보다 한 note 간격 이상 앞으로
+            // 튈 수 있다. 이 경우 한컴처럼 순차 흐름을 유지하고 base만 보정한다.
+            y_offset
+        } else if compact_endnote_page_title_body_stale_forward {
+            // page-path에서 새 문항 제목은 이미 올바른 tail 위치에 있고, 바로
+            // 뒤 본문만 stale-forward vpos로 내려간 경우다. 본문은 제목 뒤
+            // 순차 gap으로 붙이고 base를 옮겨 다음 풀이도 같은 기준을 따른다.
+            y_offset + prev_line_spacing_px.max(10.0).min(18.0)
+        } else if compact_endnote_page_title_mid_stale_gap {
+            // 보이는 구분선 + compact 미주의 중하단 제목은 저장 vpos의
+            // stale-forward 간격을 한컴처럼 한 note gap만 접어 배치한다.
+            (y_offset - prev_line_spacing_px)
+                .max(prev_content_floor_y)
+                .max(self.col_area_y)
+                .min(y_offset)
+        } else if compact_endnote_page_title_default_mid_gap {
+            // 직전 줄이 기본 lineSpacing만 들고 있는 page-path 중단 제목은
+            // 저장 vpos forward를 그대로 쓰면 `미주 사이`가 과대해진다.
+            // 순차 y 뒤에 공식 미주 사이에서 이미 소비된 lineSpacing만 뺀
+            // gap을 보존해 한컴/PDF의 중단 제목 위치에 맞춘다.
+            let target_gap =
+                hwpunit_to_px(self.endnote_between_notes_hu, self.dpi) - prev_line_spacing_px;
+            (y_offset + target_gap.max(0.0))
+                .max(prev_content_floor_y)
+                .max(self.col_area_y)
+                .min(end_y)
         } else if compact_endnote_page_tail_backtrack {
             // page-path 하단 tail은 frame 안에 남기기 위해 저장 vpos를 따르되,
             // 이전 텍스트 line의 실제 하단을 깊게 침범하면 문20처럼 본문/수식이
@@ -743,10 +1030,20 @@ impl HeightCursor {
             // 하단 안쪽으로 당겨 한컴/PDF처럼 제목 tail을 보존한다. 제목 바로
             // 다음 첫 줄까지 하단 frame에 걸리는 케이스가 있어 여유를 조금 둔다. 반환값은
             // paragraph top이므로 layout에서 다시 더해지는 spacing_before를 뺀다.
-            (col_bottom - current_line_height_px - 11.0 - curr_sb)
-                .max(prev_content_bottom_y - curr_sb - 4.0)
-                .max(self.col_area_y)
-                .min(y_offset)
+            if self.endnote_between_notes_hu == 0
+                && para_has_equation_only(prev_para)
+                && prev_content_bottom_y > col_bottom - 24.0
+            {
+                // 0mm 미주에서 작은 equation-only 결과식 바로 뒤 제목은 내부 여유를
+                // 더 빼면 결과식과 같은 줄처럼 붙는다. 순차 y를 유지하면 제목의
+                // 실제 visual line은 frame 안쪽에서 결과식 뒤에 놓인다.
+                y_offset
+            } else {
+                (col_bottom - current_line_height_px - 11.0 - curr_sb)
+                    .max(prev_content_bottom_y - curr_sb - 4.0)
+                    .max(self.col_area_y)
+                    .min(y_offset)
+            }
         } else if compact_endnote_equation_tail_fit {
             let prev_floor = prev_content_bottom_y - equation_tail_prev_overlap_tolerance;
             // page-path compact 미주 하단의 수식-only tail은 저장 vpos가 직전
@@ -756,12 +1053,29 @@ impl HeightCursor {
                 .max(prev_floor)
                 .max(self.col_area_y)
                 .min(y_offset)
+        } else if compact_endnote_page_no_separator_tail_pullup {
+            // 렌더용 lineSeg를 위로 당긴 page-path 한 줄 tail은 저장 end_y가
+            // 의도한 위치다. 여기서 순차 y_offset을 고르면 127~129 같은 마지막
+            // 번호 묶음이 frame 아래로 잘린다.
+            end_y.max(self.col_area_y).min(y_offset)
         } else if compact_endnote_single_line_tail_backtrack {
             end_y
         } else if compact_endnote_title_tail_backtrack {
-            y_offset - (y_offset - end_y).min(16.0)
+            // 제목 다음 본문을 너무 위로 당기면 제목 bbox와 첫 줄이 겹친다.
+            // 저장 vpos backtrack은 존중하되, 직전 제목의 실제 하단 아래에서만
+            // 시작하도록 제한한다.
+            let capped = y_offset - (y_offset - end_y).min(16.0);
+            let floor = measured_prev_content_bottom_y
+                .map(|y| y + 2.0)
+                .unwrap_or(self.col_area_y);
+            capped.max(floor).min(y_offset)
         } else if let Some(y) = title_body_gap_y {
             y
+        } else if self.suppress_large_forward_jump && vpos_rewind && end_y < prev_content_floor_y {
+            // compact 미주의 vpos rewind가 직전 줄의 실제 콘텐츠 하단을 침범하면
+            // 저장 vpos가 같은 단의 재배치 흔적으로 남은 것이다. 이 경우 순차 y를
+            // 유지해야 문항 tail 본문이나 TAC 그림이 앞줄 위로 겹치지 않는다.
+            y_offset
         } else if (applied || compact_endnote_deep_backtrack || compact_endnote_safe_vpos_backtrack)
             && !stale_forward
             && !compact_endnote_new_note_jump
@@ -775,14 +1089,86 @@ impl HeightCursor {
         } else {
             y_offset
         };
+        let title_after_equation_tail_extra_gap = if self.suppress_large_forward_jump
+            && current_is_endnote_title
+            && !vpos_rewind
+            && self.endnote_between_notes_hu > 0
+            && self.endnote_between_notes_hu <= 2500
+            && y_offset > self.col_area_y + self.col_area_height * 0.55
+            && y_offset < col_bottom - 180.0
+            && y_offset + current_line_height_px <= col_bottom - 2.0
+            && prev_line_carries_note_gap
+            && (para_is_treat_as_char_equation_only(prev_para)
+                || (prev_para.text.trim().is_empty()
+                    && prev_para.controls.iter().any(
+                        |ctrl| matches!(ctrl, Control::Equation(eq) if eq.common.treat_as_char),
+                    )))
+            && result <= y_offset + 0.5
+        {
+            // 기본 7mm 미주에서 수식 tail 뒤 새 문항 제목은 저장 vpos가
+            // 수식 visual bottom보다 살짝 위쪽으로 compact되는 경우가 있다.
+            // 이 gap floor가 없으면 문18→문19, 문19→문20처럼 뒤 문항 전체가
+            // 위로 당겨져 다음 수식 줄이 이전 본문 검색 영역에 걸린다.
+            if follows_tall_inline_item {
+                8.0
+            } else {
+                0.0
+            }
+        } else {
+            0.0
+        };
+        if title_after_equation_tail_extra_gap > 0.0 {
+            result = (result + title_after_equation_tail_extra_gap).min(col_bottom);
+            self.shift_vpos_base_for_rendered_delta(title_after_equation_tail_extra_gap);
+        }
+        if compact_endnote_zero_gap_text_floor && result > end_y + 0.5 {
+            self.shift_vpos_base_for_rendered_delta(result - end_y);
+        }
         if compact_endnote_text_after_lazy_tall_equation_floor {
             let inferred_extra =
                 hwpunit_to_px((seg.line_height - seg.line_spacing).max(0), self.dpi) * 0.4;
             result = result.max(prev_content_bottom_y + inferred_extra + 0.25);
         }
+        let compact_endnote_zero_gap_title_boundary_applied = if self.suppress_large_forward_jump
+            && current_is_endnote_title
+            && self.endnote_between_notes_hu == 0
+            && !vpos_rewind
+            && seg.line_spacing > 0
+            && seg.line_spacing <= 800
+            && (result - y_offset).abs() <= 0.5
+            && !compact_endnote_zero_gap_title_forward
+            && !compact_endnote_title_bottom_backtrack
+            && !compact_endnote_question_title_bottom_fit
+            && !compact_endnote_question_title_tail_backtrack
+            && !compact_endnote_question_title_tail_soft_backtrack
+            && !compact_endnote_question_title_after_tall_tail_backtrack
+            && !compact_endnote_question_title_after_tall_mid_backtrack
+            && !compact_endnote_question_title_after_tall_regular_gap
+            && !compact_endnote_question_title_after_tall_upper_flow
+        {
+            // 0/0/0 미주의 새 문항 경계에서는 저장 vpos가 직전 문단의
+            // trailing line_spacing을 포함한 연속값으로 기록될 수 있다. 미주
+            // 사이가 0mm이면 한컴은 이 trailing을 다음 문항 제목 앞 공백으로
+            // 쓰지 않으므로, 실제 콘텐츠 하단을 침범하지 않는 범위에서 한
+            // 줄 gap을 접고 후속 vpos 기준도 함께 이동한다.
+            let compacted = (result - prev_line_spacing_px)
+                .max(prev_content_floor_y)
+                .max(self.col_area_y);
+            if compacted < result - 0.5 {
+                result = compacted;
+                true
+            } else {
+                false
+            }
+        } else {
+            false
+        };
         if (compact_endnote_title_bottom_backtrack
             || compact_endnote_question_title_after_tall_regular_gap
-            || compact_endnote_question_title_after_tall_upper_flow)
+            || compact_endnote_question_title_after_tall_upper_flow
+            || compact_endnote_zero_gap_title_forward
+            || compact_endnote_zero_gap_title_boundary_applied
+            || compact_endnote_page_title_default_mid_gap)
             && result < end_y - 0.5
         {
             let base_delta_hu = ((end_y - result) / self.dpi * 7200.0).round() as i32;
@@ -807,16 +1193,18 @@ impl HeightCursor {
         self.last_compacted_endnote_title_gap = compact_endnote_new_note_jump
             && bottom_new_note_gap_cap
                 .map(|cap| end_y - cap > 8.0)
-                .unwrap_or(false);
+                .unwrap_or(false)
+            || compact_no_separator_large_title_tail_gap;
         if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
             let path = if is_page_path { "page" } else { "lazy" };
             eprintln!(
-                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} result={:.2} stale_forward={} current_title={} title_bottom={} page_tail={} equation_tail={} single_tail={} compact_new_note={} compact_stale_note_gap={} compact_tac_pic_gap={} compact_bottom_rewind={} compact_deep_backtrack={} compact_safe_backtrack={} applied={}",
+                "VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.2} y_in={:.2} end_y={:.2} result={:.2} stale_forward={} large_gap_body_stale={} current_title={} title_bottom={} page_tail={} equation_tail={} single_tail={} zero_gap_title={} compact_new_note={} compact_stale_note_gap={} compact_tac_pic_gap={} compact_bottom_rewind={} compact_deep_backtrack={} compact_safe_backtrack={} applied={}",
                 path, item_para, prev_pi, seg.vertical_pos, seg.line_height, seg.line_spacing,
                 vpos_end, base, self.col_area_y, y_offset, end_y, result, stale_forward,
-                current_is_endnote_title, compact_endnote_title_bottom_backtrack,
+                compact_endnote_large_gap_body_stale_forward, current_is_endnote_title, compact_endnote_title_bottom_backtrack,
                 compact_endnote_page_tail_backtrack, compact_endnote_equation_tail_fit,
                 compact_endnote_single_line_tail_backtrack,
+                compact_endnote_zero_gap_title_forward,
                 compact_endnote_new_note_jump, compact_endnote_stale_note_gap,
                 compact_endnote_tac_picture_gap, compact_endnote_bottom_rewind,
                 compact_endnote_deep_backtrack, compact_endnote_safe_vpos_backtrack,
@@ -843,6 +1231,9 @@ impl HeightCursor {
             && !compact_endnote_question_title_after_tall_mid_backtrack
             && !compact_endnote_question_title_after_tall_regular_gap
             && !compact_endnote_title_bottom_backtrack
+            && !compact_endnote_large_empty_spacer_collapse
+            && !compact_endnote_large_between_title_tail_backtrack
+            && !compact_no_separator_large_title_tail_gap
             && !vpos_rewind
             && !prev_is_multiline
             && (stored_gap_px < -0.5
@@ -875,6 +1266,27 @@ impl HeightCursor {
             && (-0.5..4.0).contains(&stored_gap_px)
         {
             return y_offset + prev_line_spacing_px;
+        }
+        // [Task #1811 v2] 합성 seg 증거의 **소폭(drift형) 전방 이동**만 차단한다.
+        // - 되감기(result < y_offset): 허용 — sequential 이 앞서 나갔을 때의 재동기화.
+        // - 대형 전방 점프(> SYNTH_FORWARD_REANCHOR_MIN_PX): 허용 — 저장 vpos 로의
+        //   구조적 재앵커. 파스 경로별 미세 측정차(예: seoul_1006 pi=41 표 +9.6px)가
+        //   누적되어도 양 경로가 같은 저장 좌표에 재앵커되어 쪽나눔 결정이 수렴한다.
+        //   전면 차단하면 누적차가 쪽 경계에서 발현해 라운드트립 pagination 이 갈린다.
+        // - 소폭 전방(≤ 임계): 차단 — 구세션 저장 flow 위치로의 과대 전진(+9.6px,
+        //   saved_bounds_cumulative_page_break p4 분할 예산 결손)이 이 대역이다.
+        const SYNTH_FORWARD_REANCHOR_MIN_PX: f64 = 48.0;
+        if synthetic_prev_seg
+            && result > y_offset + 0.5
+            && result - y_offset <= SYNTH_FORWARD_REANCHOR_MIN_PX
+        {
+            if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
+                eprintln!(
+                    "VPOS_SYNTH_FWD_SKIP: pi={} prev_pi={} y_in={:.2} result={:.2}",
+                    item_para, prev_pi, y_offset, result,
+                );
+            }
+            return y_offset;
         }
         result
     }
@@ -1058,18 +1470,32 @@ mod tests {
         assert_eq!(c.vpos_adjust(500.0, 1, &ps, &styles(0.0)), 500.0);
     }
 
-    /// Compact 미주 하단에서 VPOS가 크게 되감기면 현재 문단 first_vpos를 재앵커한다.
+    /// Compact 미주 하단 rewind가 직전 콘텐츠 하단을 침범하지 않으면 저장 vpos를 존중한다.
     #[test]
-    fn compact_endnote_bottom_rewind_uses_current_vpos() {
+    fn compact_endnote_bottom_rewind_uses_current_vpos_when_safe() {
         let mut c = compact_endnote_cursor(Some(0));
         c.prev_layout_para = Some(0);
         let ps = vec![
-            para(0, 55350, 900, 0, 5000), // prev_vpos_end=56250 → y=850
-            para(0, 45000, 900, 0, 5000), // rewind → y=700
+            para(0, 55350, 900, 12000, 5000), // prev_content_bottom≈690, rewind → y=700
+            para(0, 45000, 900, 0, 5000),     // rewind → y=700
         ];
 
         let got = c.vpos_adjust(850.0, 1, &ps, &styles(0.0));
         assert!((got - 700.0).abs() < 1e-6, "got={got}");
+    }
+
+    /// Compact 미주 하단 rewind가 직전 콘텐츠 하단 위로 올라가면 순차 y를 유지한다.
+    #[test]
+    fn compact_endnote_bottom_rewind_skips_when_crossing_previous_content() {
+        let mut c = compact_endnote_cursor(Some(0));
+        c.prev_layout_para = Some(0);
+        let ps = vec![
+            para(0, 55350, 900, 0, 5000), // prev_content_bottom=y_offset
+            para(0, 45000, 900, 0, 5000), // rewind → y=700, but crosses previous content
+        ];
+
+        let got = c.vpos_adjust(850.0, 1, &ps, &styles(0.0));
+        assert!((got - 850.0).abs() < 1e-6, "got={got}");
     }
 
     /// 같은 compact 미주 되감김이라도 단 하단부가 아니면 기존 순차 흐름을 유지한다.
@@ -1233,6 +1659,51 @@ mod tests {
         assert!((got - 980.0).abs() < 1e-6, "got={got}");
     }
 
+    /// 큰 미주 사이가 빈 spacer의 trailing line_spacing에 주입되어 있고 단 하단에서
+    /// 다음 문항 제목의 저장 vpos가 stale-forward이면, 빈 줄 높이는 유지하되
+    /// 주입된 trailing만 접어 한컴/PDF의 문항 흐름을 따른다.
+    #[test]
+    fn compact_endnote_large_empty_spacer_collapses_trailing_gap_at_bottom() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        c.vpos_lazy_base = Some(622_317);
+        c.endnote_between_notes_hu = 5669;
+        let prev = para(0, 681_069, 900, 5669, 5000);
+        let mut curr = para(0, 706_832, 900, 452, 5000);
+        curr.text = "문23)".to_string();
+
+        let y_offset = 961.65;
+        let got = c.vpos_adjust(y_offset, 1, &[prev, curr], &styles(0.0));
+        let expected = y_offset - 5669.0 / 75.0 - 4.0;
+
+        assert!(
+            (got - expected).abs() < 1e-6,
+            "got={got}, expected={expected}"
+        );
+    }
+
+    /// 보이는 구분선 + 큰 미주 사이에서 단 하단의 새 문항 제목은 직전 spacer가
+    /// 만든 trailing y를 무조건 유지하지 않는다. 저장 vpos가 frame 안쪽이고
+    /// 직전 콘텐츠 바닥을 침범하지 않으면 그 위치를 따라 제목/본문 전체를 올린다.
+    #[test]
+    fn compact_endnote_large_between_title_tail_uses_saved_vpos_at_bottom() {
+        let mut c = compact_endnote_cursor(None);
+        c.prev_layout_para = Some(0);
+        c.vpos_lazy_base = Some(0);
+        c.endnote_between_notes_hu = 5669;
+        let prev = para(0, 57_000, 900, 5669, 5000);
+        let mut curr = para(0, 62_250, 900, 452, 5000);
+        curr.text = "문16)".to_string();
+
+        let got = c.vpos_adjust(950.0, 1, &[prev, curr], &styles(0.0));
+        let expected = 930.0;
+
+        assert!(
+            (got - expected).abs() < 1e-6,
+            "got={got}, expected={expected}"
+        );
+    }
+
     /// 기본 미주 사이 간격을 가진 새 문제 제목이 단 중간에서 과도하게 전진하면
     /// 뒤쪽 TAC 그림/문단이 단 하단을 넘는다. 제목 자체는 유지하되 저장된 간격에
     /// 완충분만 더해 forward jump를 제한한다.
@@ -1254,6 +1725,24 @@ mod tests {
             (got - expected).abs() < 1e-6,
             "got={got}, expected={expected}"
         );
+    }
+
+    /// 미주 사이가 0인 문서의 새 문항 제목은 저장 vpos의 큰 제목 gap을
+    /// 그대로 쓰지 않고 직전 문단 뒤의 순차 위치를 따른다.
+    #[test]
+    fn compact_endnote_zero_between_question_title_caps_forward_gap() {
+        let mut c = compact_endnote_cursor(Some(100000));
+        c.prev_layout_para = Some(0);
+        let mut ps = vec![
+            para(0, 101000, 900, 452, 5000),
+            para(0, 106000, 900, 452, 5000),
+        ];
+        ps[0].text = "따라서".to_string();
+        ps[1].text = "문29)".to_string();
+
+        let got = c.vpos_adjust(120.0, 1, &ps, &styles(0.0));
+
+        assert!((got - 120.0).abs() < 1e-6, "got={got}");
     }
 
     /// 단 중간의 새 미주 제목에서 저장 VPOS가 페이지 하단 근처까지 크게 튀면
@@ -1716,6 +2205,37 @@ mod tests {
         let got = c.vpos_adjust(y_in, 1, &[prev, curr], &styles(0.0));
 
         assert!((got - y_in).abs() < 1e-6, "got={got} expected={y_in}");
+    }
+
+    /// 0mm 미주 일반 텍스트 연속 문단은 저장 vpos가 직전 렌더 bbox 하단보다 위를
+    /// 가리켜도 실제 콘텐츠 하단 아래에서 시작해야 글자 겹침이 생기지 않는다.
+    #[test]
+    fn compact_endnote_zero_gap_text_keeps_previous_content_floor() {
+        let mut c = compact_endnote_cursor(Some(1000));
+        c.endnote_between_notes_hu = 0;
+        c.prev_layout_para = Some(0);
+        c.prev_item_content_bottom_y = Some(115.0);
+
+        let mut prev = para(0, 1000, 800, 160, 5000);
+        prev.text = "202) 무력한 과거의 삶".to_string();
+        let mut curr = para(0, 1960, 800, 160, 5000);
+        curr.text = "203) 현실에 정면으로 맞서는 삶".to_string();
+
+        let y_offset = 118.0;
+        let got = c.vpos_adjust(y_offset, 1, &[prev, curr], &styles(0.0));
+        let expected_floor = y_offset - 160.0 / 75.0;
+        assert!(
+            (got - expected_floor).abs() < 1e-6,
+            "got={got} expected={expected_floor}"
+        );
+
+        let end_y = COL_Y + (1960.0 - 1000.0) / 75.0;
+        let expected_base = 1000 - (((got - end_y) / DPI * 7200.0).round() as i32);
+        assert_eq!(
+            c.vpos_page_base,
+            Some(expected_base),
+            "내린 만큼 vpos base를 이동해야 후속 문단이 다시 당겨지지 않음"
+        );
     }
 
     /// [Task #1256] 단일 줄 prev(빈 separator, ls=between_notes)로 끝나는 미주 제목 경계에서

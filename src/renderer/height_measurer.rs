@@ -9,7 +9,7 @@ use super::{hwpunit_to_px, DEFAULT_DPI};
 use crate::model::control::Control;
 use crate::model::footnote::{Footnote, FootnoteShape};
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::Caption;
+use crate::model::shape::{Caption, CommonObjAttr, TextWrap, VertRelTo};
 use crate::model::table::{Table, TablePageBreak};
 
 /// treat_as_char 표가 인라인(텍스트와 나란히)인지 판별
@@ -168,6 +168,59 @@ pub struct MeasuredTable {
     pub row_block_end: Vec<usize>,
 }
 
+pub fn fit_measured_table_to_declared_height(
+    measured: &MeasuredTable,
+    table: &Table,
+    dpi: f64,
+) -> MeasuredTable {
+    let mut fitted = measured.clone();
+    if fitted.row_heights.is_empty() || table.common.height == 0 {
+        return fitted;
+    }
+
+    let row_count = fitted.row_heights.len();
+    let cell_spacing_total = fitted.cell_spacing * row_count.saturating_sub(1) as f64;
+    let target_body_height = hwpunit_to_px(table.common.height as i32, dpi);
+    let target_row_sum = (target_body_height - cell_spacing_total).max(0.0);
+    let current_row_sum = fitted.row_heights.iter().sum::<f64>();
+
+    // 선언 높이 보정은 #1510처럼 측정값과 저장값이 근소하게 어긋난 fixed-size 표에만
+    // 적용한다. 콘텐츠가 선언 높이보다 훨씬 큰 표를 강제로 압축하면 행/중첩 표 분할
+    // 페이지가 앞당겨진다(#1073).
+    let min_reasonable = current_row_sum * 0.75;
+    let max_reasonable = current_row_sum * 1.35;
+    if target_row_sum < min_reasonable || target_row_sum > max_reasonable {
+        return fitted;
+    }
+
+    if target_row_sum > 0.0 && (current_row_sum - target_row_sum).abs() > 0.5 {
+        if current_row_sum > 0.0 {
+            let scale = target_row_sum / current_row_sum;
+            for row_height in &mut fitted.row_heights {
+                *row_height *= scale;
+            }
+        } else {
+            let per_row = target_row_sum / row_count as f64;
+            for row_height in &mut fitted.row_heights {
+                *row_height = per_row;
+            }
+        }
+    }
+
+    fitted.cumulative_heights = vec![0.0; row_count + 1];
+    for (idx, row_height) in fitted.row_heights.iter().enumerate() {
+        let cell_spacing = if idx > 0 { fitted.cell_spacing } else { 0.0 };
+        fitted.cumulative_heights[idx + 1] =
+            fitted.cumulative_heights[idx] + row_height + cell_spacing;
+    }
+
+    let previous_body_height =
+        current_row_sum + measured.cell_spacing * row_count.saturating_sub(1) as f64;
+    let caption_and_spacing = (measured.total_height - previous_body_height).max(0.0);
+    fitted.total_height = target_body_height + caption_and_spacing;
+    fitted
+}
+
 /// 셀의 줄 단위 측정 정보 (행 내부 분할용)
 #[derive(Debug, Clone)]
 pub struct MeasuredCell {
@@ -233,6 +286,72 @@ impl HeightMeasurer {
 
     pub fn with_default_dpi() -> Self {
         Self::new(DEFAULT_DPI)
+    }
+
+    /// 셀 안 비-TAC 자리차지 개체가 표 흐름에 요구하는 세로 범위.
+    fn non_inline_control_flow_height(&self, common: &CommonObjAttr) -> f64 {
+        if common.treat_as_char || !matches!(common.text_wrap, TextWrap::TopAndBottom) {
+            return 0.0;
+        }
+        let object_height = hwpunit_to_px(common.height as i32, self.dpi);
+        if matches!(common.vert_rel_to, VertRelTo::Para) {
+            if common.flow_with_text {
+                hwpunit_to_px((common.vertical_offset as i32).max(0), self.dpi) + object_height
+            } else {
+                0.0
+            }
+        } else {
+            object_height
+        }
+    }
+
+    fn cell_wrap_object_visual_bottom(&self, common: &CommonObjAttr) -> f64 {
+        if common.treat_as_char {
+            return 0.0;
+        }
+        if !matches!(
+            common.text_wrap,
+            TextWrap::Square | TextWrap::Tight | TextWrap::Through
+        ) {
+            return 0.0;
+        }
+
+        let object_height = hwpunit_to_px(common.height as i32, self.dpi);
+        let top_offset = if matches!(common.vert_rel_to, VertRelTo::Para) {
+            hwpunit_to_px((common.vertical_offset as i32).max(0), self.dpi)
+        } else {
+            0.0
+        };
+        top_offset + object_height
+    }
+
+    fn cell_wrap_objects_bottom_height(&self, paragraphs: &[Paragraph]) -> f64 {
+        paragraphs
+            .iter()
+            .map(|p| {
+                let para_top = p
+                    .line_segs
+                    .first()
+                    .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
+                    .unwrap_or(0.0);
+                let object_bottom = p
+                    .controls
+                    .iter()
+                    .map(|ctrl| match ctrl {
+                        Control::Picture(pic) => self.cell_wrap_object_visual_bottom(&pic.common),
+                        Control::Shape(shape) => {
+                            self.cell_wrap_object_visual_bottom(shape.common())
+                        }
+                        _ => 0.0,
+                    })
+                    .fold(0.0f64, f64::max);
+                if object_bottom > 0.0 {
+                    para_top + object_bottom
+                } else {
+                    0.0
+                }
+            })
+            .fold(0.0f64, f64::max)
     }
 
     /// 구역의 모든 콘텐츠 높이를 측정한다.
@@ -381,12 +500,14 @@ impl HeightMeasurer {
                     let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                     let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                     let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
+                    // [Task #1472] 변환본은 effective indent 불변 위해 scale 절반(2.0→1.0).
+                    let eq_scale = 2.0 * if self.is_hwp3_variant { 0.5 } else { 1.0 };
                     let effective_margin_l = crate::renderer::equation_tac_flow::
                         paragraph_effective_margin_left_with_indent_scale(
                             margin_l,
                             indent,
                             visual_line_idx,
-                            2.0,
+                            eq_scale,
                         );
                     (cw - effective_margin_l - margin_r).max(0.0)
                 })
@@ -598,22 +719,15 @@ impl HeightMeasurer {
     /// 문단들 내 비-인라인(treat_as_char가 아닌) 그림/도형의 높이 합계를 측정한다.
     /// LINE_SEG에는 비-인라인 컨트롤 높이가 포함되지 않으므로 별도 합산이 필요하다.
     fn measure_non_inline_controls_height(&self, paragraphs: &[Paragraph]) -> f64 {
-        use crate::model::shape::TextWrap;
         let mut total = 0.0;
         for para in paragraphs {
             for ctrl in &para.controls {
                 match ctrl {
-                    Control::Picture(pic)
-                        if !pic.common.treat_as_char
-                            && matches!(pic.common.text_wrap, TextWrap::TopAndBottom) =>
-                    {
-                        total += hwpunit_to_px(pic.common.height as i32, self.dpi);
+                    Control::Picture(pic) => {
+                        total += self.non_inline_control_flow_height(&pic.common);
                     }
-                    Control::Shape(shape)
-                        if !shape.common().treat_as_char
-                            && matches!(shape.common().text_wrap, TextWrap::TopAndBottom) =>
-                    {
-                        total += hwpunit_to_px(shape.common().height as i32, self.dpi);
+                    Control::Shape(shape) => {
+                        total += self.non_inline_control_flow_height(shape.common());
                     }
                     _ => {}
                 }
@@ -809,37 +923,24 @@ impl HeightMeasurer {
         for cell in &table.cells {
             if cell.row_span == 1 && (cell.row as usize) < row_count {
                 let r = cell.row as usize;
-                // 셀 패딩 — layout 의 resolve_cell_padding 과 일관성:
-                //   aim=true  → cell.padding (0 도 명시값으로 존중)
-                //   aim=false → 기본은 table.padding, 단 cell > table 인 비대칭 축만 cell 우선
-                let prefer_cell_axis = |c: i16, t: i16| -> bool {
-                    if cell.apply_inner_margin {
-                        c != 0
-                    } else {
-                        (c as i32) > (t as i32)
-                    }
-                };
-                let pad_top = if prefer_cell_axis(cell.padding.top, table.padding.top) {
-                    hwpunit_to_px(cell.padding.top as i32, self.dpi)
+                // [Task #1785] 셀 패딩 — aim=false 는 layout 의 레거시 보존값 규칙
+                // (Cell::effective_padding)과 통일: 단순 table.padding 폴백은 cell > table
+                // 보존값 케이스에서 layout 렌더와 어긋나 표 높이가 틀어진다 (36381023
+                // micro-grid 결재란 라운드트립 9.3px). aim=true 는 기존대로 cell.padding
+                // 을 0 포함 그대로 존중 — layout 의 `!= 0 → 표 기본 폴백`과 다르지만,
+                // #493 세로 Shift 리사이즈(셀보호2.hwp 셀[20] aim=true pad top/bottom=0)가
+                // 이 의미에 의존한다 (#1809 완전 통일 시도는 해당 테스트 회귀로 원복 —
+                // vertical_shift_local_height_keeps_unrelated_cells_stable).
+                let eff_pad = if cell.apply_inner_margin {
+                    cell.padding
                 } else {
-                    hwpunit_to_px(table.padding.top as i32, self.dpi)
+                    cell.effective_padding(&table.padding)
                 };
-                let pad_bottom = if prefer_cell_axis(cell.padding.bottom, table.padding.bottom) {
-                    hwpunit_to_px(cell.padding.bottom as i32, self.dpi)
-                } else {
-                    hwpunit_to_px(table.padding.bottom as i32, self.dpi)
-                };
+                let pad_top = hwpunit_to_px(eff_pad.top as i32, self.dpi);
+                let pad_bottom = hwpunit_to_px(eff_pad.bottom as i32, self.dpi);
                 // [Task #671] 좌우 패딩 — recompose_for_cell_width 의 inner_width 계산용
-                let pad_left = if prefer_cell_axis(cell.padding.left, table.padding.left) {
-                    hwpunit_to_px(cell.padding.left as i32, self.dpi)
-                } else {
-                    hwpunit_to_px(table.padding.left as i32, self.dpi)
-                };
-                let pad_right = if prefer_cell_axis(cell.padding.right, table.padding.right) {
-                    hwpunit_to_px(cell.padding.right as i32, self.dpi)
-                } else {
-                    hwpunit_to_px(table.padding.right as i32, self.dpi)
-                };
+                let pad_left = hwpunit_to_px(eff_pad.left as i32, self.dpi);
+                let pad_right = hwpunit_to_px(eff_pad.right as i32, self.dpi);
                 let cell_w_px = if cell.width < 0x80000000 {
                     hwpunit_to_px(cell.width as i32, self.dpi)
                 } else {
@@ -1001,10 +1102,12 @@ impl HeightMeasurer {
                     hwpunit_to_px(last_seg_end, self.dpi)
                         .max(text_height)
                         .max(nested_bottom)
+                        .max(self.cell_wrap_objects_bottom_height(&cell.paragraphs))
                 } else {
                     // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
                     let non_inline_h = self.measure_non_inline_controls_height(&cell.paragraphs);
-                    text_height + non_inline_h
+                    (text_height + non_inline_h)
+                        .max(self.cell_wrap_objects_bottom_height(&cell.paragraphs))
                 };
 
                 // 패딩 포함 총 필요 높이
@@ -1025,6 +1128,48 @@ impl HeightMeasurer {
                     cell_h_px
                 } else {
                     content_height + total_pad
+                };
+                // [Task #1763] 한컴 선언 셀높이 권위 — 저장 cell.height 는 trailing ls
+                // 미포함(825행 주석 원칙)인데, 다문단 셀 측정은 셀 마지막 줄 trailing ls
+                // 를 포함(#874/#1086 보존 조건)해 required 가 선언높이를 초과 확장할 수
+                // 있다(2501937 row0: 콘텐츠 10016HU + trailing 600HU + pad → 149.1px >
+                // 선언 142.2px, 한글은 선언 유지). 초과분이 전적으로 trailing ls 때문이면
+                // (trailing 제외 콘텐츠+pad 가 선언 안) 선언높이로 clamp — 콘텐츠가 진짜
+                // 초과하는 기존 보존 케이스(aift/KTX)는 조건 미충족으로 불변.
+                // RowBreak(행 단위 쪽나눔) 표는 TAC 여부와 무관하게 clamp 제외 —
+                // 분할 배치가 trailing 포함 측정에 정합 (rowbreak-problem-pages p11~13).
+                let cell_last_trailing_ls = if cell.text_direction == 0
+                    && !has_nested_table_in_cell
+                    && cell.paragraphs.len() > 1
+                    && !matches!(table.page_break, TablePageBreak::RowBreak)
+                {
+                    cell.paragraphs
+                        .last()
+                        .map(|p| {
+                            let mut comp = compose_paragraph(p);
+                            crate::renderer::composer::recompose_for_cell_width(
+                                &mut comp,
+                                p,
+                                cell_inner_width,
+                                styles,
+                            );
+                            comp.lines
+                                .last()
+                                .map(|l| hwpunit_to_px(l.line_spacing, self.dpi))
+                                .unwrap_or(0.0)
+                        })
+                        .unwrap_or(0.0)
+                } else {
+                    0.0
+                };
+                let required_height = if cell_h_px > 0.0
+                    && required_height > cell_h_px
+                    && cell_last_trailing_ls > 0.0
+                    && content_height - cell_last_trailing_ls + total_pad <= cell_h_px
+                {
+                    cell_h_px
+                } else {
+                    required_height
                 };
                 if required_height > row_heights[r] {
                     row_heights[r] = required_height;
@@ -1087,45 +1232,21 @@ impl HeightMeasurer {
             let r = cell.row as usize;
             let span = cell.row_span as usize;
             if span > 1 && r + span <= row_count {
-                let (pad_top, pad_bottom) = if !cell.apply_inner_margin {
-                    (
-                        hwpunit_to_px(table.padding.top as i32, self.dpi),
-                        hwpunit_to_px(table.padding.bottom as i32, self.dpi),
-                    )
-                } else {
-                    (
-                        if cell.padding.top != 0 {
-                            hwpunit_to_px(cell.padding.top as i32, self.dpi)
-                        } else {
-                            hwpunit_to_px(table.padding.top as i32, self.dpi)
-                        },
-                        if cell.padding.bottom != 0 {
-                            hwpunit_to_px(cell.padding.bottom as i32, self.dpi)
-                        } else {
-                            hwpunit_to_px(table.padding.bottom as i32, self.dpi)
-                        },
-                    )
-                };
+                // [#1809] aim 직접 분기 → 단일 출처(Cell::effective_padding) 통일.
+                // aim=true 인데 cell padding 이 0 인 셀은 표 기본으로 폴백해야
+                // 레이아웃(resolve_cell_padding)과 정합한다. 직접 분기가 남으면
+                // HWPX→HWP 변환의 micro-grid 계약(aim 일괄 세트)만으로 병합 셀
+                // 행높이 측정이 갈린다 (admrul_0296 행 32.37→31.60, 표 3.87px).
+                let eff_pad = cell.effective_padding(&table.padding);
+                let (pad_top, pad_bottom) = (
+                    hwpunit_to_px(eff_pad.top as i32, self.dpi),
+                    hwpunit_to_px(eff_pad.bottom as i32, self.dpi),
+                );
                 // [Task #671] 좌우 패딩 (recompose_for_cell_width inner_width 계산용)
-                let (pad_left, pad_right) = if !cell.apply_inner_margin {
-                    (
-                        hwpunit_to_px(table.padding.left as i32, self.dpi),
-                        hwpunit_to_px(table.padding.right as i32, self.dpi),
-                    )
-                } else {
-                    (
-                        if cell.padding.left != 0 {
-                            hwpunit_to_px(cell.padding.left as i32, self.dpi)
-                        } else {
-                            hwpunit_to_px(table.padding.left as i32, self.dpi)
-                        },
-                        if cell.padding.right != 0 {
-                            hwpunit_to_px(cell.padding.right as i32, self.dpi)
-                        } else {
-                            hwpunit_to_px(table.padding.right as i32, self.dpi)
-                        },
-                    )
-                };
+                let (pad_left, pad_right) = (
+                    hwpunit_to_px(eff_pad.left as i32, self.dpi),
+                    hwpunit_to_px(eff_pad.right as i32, self.dpi),
+                );
                 let cell_w_px = if cell.width < 0x80000000 {
                     hwpunit_to_px(cell.width as i32, self.dpi)
                 } else {
@@ -1268,7 +1389,9 @@ impl HeightMeasurer {
                 let non_inline_h = self.measure_non_inline_controls_height(&cell.paragraphs);
                 let nested_bottom =
                     self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth);
-                let content_height = (text_height + non_inline_h).max(nested_bottom);
+                let content_height = (text_height + non_inline_h)
+                    .max(nested_bottom)
+                    .max(self.cell_wrap_objects_bottom_height(&cell.paragraphs));
                 let required_height = content_height + pad_top + pad_bottom;
                 let combined: f64 = (r..r + span).map(|i| row_heights[i]).sum();
                 if required_height > combined {
@@ -1303,6 +1426,14 @@ impl HeightMeasurer {
         //
         // 발동 영역 sweep 진단 (187 fixture): ≤2% 7 건 면제, ≥5% 11 건 그대로.
         const TAC_SHRINK_THRESHOLD_RATIO: f64 = 0.02;
+        // [Issue #1835] 내용이 저장 높이를 크게 초과하는 TAC 표는 비례 축소하지
+        // 않는다 — 한글 2022 편집기 오라클(issue1835 fixture: common.height 를 1/1.8 로
+        // 훼손한 4×3 표를 내용 높이로 확장, 후속 문단도 그만큼 아래로 흐름) 기준.
+        // 외부 도구 생성/템플릿 값 채움으로 common.height 가 stale 한 문서에서 행이
+        // 1/1.8 로 눌려 셀 텍스트가 겹치던 결함. 경미한 초과는 종전대로
+        // 속성 높이 유지(#672 한컴 정합 — 의도적 압축 존중). 종전 상한 1.5 는
+        // 아래 TAC_SHRINK_MAX_RATIO=1.35 로 흡수된다(1.5 초과는 1.35 초과이므로
+        // 동일하게 확장).
         let shrink_threshold = (common_h * TAC_SHRINK_THRESHOLD_RATIO).max(1.0);
         // 비례 축소 상한 (TAC_SHRINK_MAX_RATIO) — 저장된 common.height 가 콘텐츠
         // 자연 높이보다 이 배율 이상 작으면 저장값을 신뢰하지 않고 콘텐츠에 맞춰
@@ -1399,16 +1530,10 @@ impl HeightMeasurer {
                 .iter()
                 .filter(|cell| (cell.row as usize) < row_count)
                 .map(|cell| {
-                    let pad_top = if cell.padding.top != 0 {
-                        hwpunit_to_px(cell.padding.top as i32, self.dpi)
-                    } else {
-                        hwpunit_to_px(table.padding.top as i32, self.dpi)
-                    };
-                    let pad_bottom = if cell.padding.bottom != 0 {
-                        hwpunit_to_px(cell.padding.bottom as i32, self.dpi)
-                    } else {
-                        hwpunit_to_px(table.padding.bottom as i32, self.dpi)
-                    };
+                    // [#1809] aim 직접 분기 → 단일 출처 통일 (위 2-c단계와 동일 근거)
+                    let eff_pad = cell.effective_padding(&table.padding);
+                    let pad_top = hwpunit_to_px(eff_pad.top as i32, self.dpi);
+                    let pad_bottom = hwpunit_to_px(eff_pad.bottom as i32, self.dpi);
 
                     let mut line_heights = Vec::new();
                     let mut para_line_counts = Vec::new();
@@ -1570,6 +1695,17 @@ impl HeightMeasurer {
                     self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth);
                 mc.total_content_height = nested_bottom.max(mc.total_content_height);
             }
+        }
+        for mc in &mut measured_cells {
+            let Some(cell) = table
+                .cells
+                .iter()
+                .find(|c| c.row as usize == mc.row && c.col as usize == mc.col)
+            else {
+                continue;
+            };
+            let wrap_bottom = self.cell_wrap_objects_bottom_height(&cell.paragraphs);
+            mc.total_content_height = mc.total_content_height.max(wrap_bottom);
         }
 
         let (row_block_start, row_block_end) = compute_row_blocks(table, row_heights.len());
@@ -2211,13 +2347,13 @@ impl HeightMeasurer {
 
         // 기본값: FootnoteShape이 없으면 기본 여백 사용
         let separator_margin_top = footnote_shape
-            .map(|s| hwpunit_to_px(s.separator_margin_top as i32, self.dpi))
+            .map(|s| hwpunit_to_px(s.separator_above_margin_hu() as i32, self.dpi))
             .unwrap_or(8.0); // 약 0.6mm
         let separator_margin_bottom = footnote_shape
-            .map(|s| hwpunit_to_px(s.separator_margin_bottom as i32, self.dpi))
+            .map(|s| hwpunit_to_px(s.separator_below_margin_hu() as i32, self.dpi))
             .unwrap_or(4.0); // 약 0.3mm
         let note_spacing = footnote_shape
-            .map(|s| hwpunit_to_px(s.note_spacing as i32, self.dpi))
+            .map(|s| hwpunit_to_px(s.between_notes_margin_hu() as i32, self.dpi))
             .unwrap_or(2.0); // 약 0.15mm
         let separator_height = 1.0; // 구분선 두께 (1px)
 

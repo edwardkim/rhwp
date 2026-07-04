@@ -42,20 +42,22 @@
 .find-dialog-input {
   flex: 1;
   height: 24px;
-  border: 1px solid #aaa;
+  border: 1px solid var(--ui-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
   padding: 0 4px;
   font-size: var(--font-size-base);
   box-sizing: border-box;
 }
 
 .find-dialog-input:focus {
-  border-color: #4a6bb5;
+  border-color: var(--color-focus-border);
   outline: none;
 }
 
 .find-dialog-status {
   margin-left: auto;
-  color: #c00;
+  color: var(--ui-danger);
   font-size: var(--font-size-sm);
 }
 

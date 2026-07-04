@@ -118,28 +118,17 @@ pub fn compose_section(section: &Section) -> Vec<ComposedParagraph> {
 ///
 /// 영향 범위: composer 내부만 (rendering pipeline). para 원본 (editor) 영향 없음.
 fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
-    // inline-visible extended ctrls 수 계산.
-    //
-    // 본문 텍스트 흐름에서 한 글자 폭(\u{FFFC} 마커)을 차지하는 컨트롤만 센다 —
-    // Shape/Table/Picture/Equation/Form. SectionDef/ColumnDef/NewNumber/PageNumberPos
-    // /Bookmark/Field/Hyperlink 같은 구조·메타 컨트롤은 폭 0 이라 마커가 없으며,
-    // 이를 inline 으로 잘못 세면 (예: 구역 첫 문단 제목 "하도급계" 앞의
-    // SectionDef+ColumnDef) leading \u{FFFC} 가 합성되어 measurer 의 글자 위치가
-    // 페인터/캐럿(`get_cursor_rect*`) 대비 밀리고, 캐럿이 삽입/삭제 위치와 어긋난다.
-    // (Header/Footer/Footnote/Endnote/HiddenComment 도 본문 흐름 글자 폭 없음.)
+    fn needs_synthesized_inline_marker(ctrl: &Control) -> bool {
+        is_render_inline_control(ctrl)
+    }
+
+    // 렌더에 실제 자리를 차지하는 TAC/개체 컨트롤 수 계산.
+    // Field/ColumnDef/SectionDef 같은 비가시 컨트롤은 char_offsets gap에 있어도
+    // 본문 텍스트 char_start를 밀면 안 된다.
     let inline_ctrl_count = para
         .controls
         .iter()
-        .filter(|c| {
-            matches!(
-                c,
-                Control::Shape(_)
-                    | Control::Table(_)
-                    | Control::Picture(_)
-                    | Control::Equation(_)
-                    | Control::Form(_)
-            )
-        })
+        .filter(|ctrl| needs_synthesized_inline_marker(ctrl))
         .count();
 
     if inline_ctrl_count == 0 {
@@ -157,11 +146,10 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
     let controls_are_tac_objects = para.controls.iter().all(|ctrl| {
         matches!(
             ctrl,
-            Control::Equation(_)
-                | Control::Picture(_)
-                | Control::Shape(_)
-                | Control::Table(_)
-                | Control::Form(_)
+            Control::Equation(eq) if eq.common.treat_as_char
+        ) || matches!(
+            ctrl,
+            Control::Picture(_) | Control::Shape(_) | Control::Table(_) | Control::Form(_)
         )
     });
     if text_has_only_layout_space && controls_are_tac_objects {
@@ -201,16 +189,7 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
         .controls
         .iter()
         .enumerate()
-        .filter(|(_, c)| {
-            !matches!(
-                c,
-                Control::Header(_)
-                    | Control::Footer(_)
-                    | Control::Footnote(_)
-                    | Control::Endnote(_)
-                    | Control::HiddenComment(_)
-            )
-        })
+        .filter(|(_, ctrl)| needs_synthesized_inline_marker(ctrl))
         .filter_map(|(i, _)| raw_positions.get(i).copied())
         .collect();
     if raw_inline_positions.iter().any(|pos| *pos > 0) {
@@ -290,7 +269,7 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
     let inline_controls = identify_inline_controls(para);
 
     // treat_as_char 컨트롤의 텍스트 위치와 HWPUNIT 너비 수집
-    let tac_positions = find_control_text_positions(para);
+    let tac_positions = find_render_inline_control_positions(para);
     let seg_width = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
     let tac_controls: Vec<(usize, i32, usize)> = para
         .controls
@@ -305,7 +284,7 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
                 Control::Shape(s) if s.common().treat_as_char => {
                     Some((pos, s.common().width as i32, i))
                 }
-                Control::Equation(eq) => {
+                Control::Equation(eq) if eq.common.treat_as_char => {
                     // HWP 저장값을 우선 사용 — 한컴 편집기가 실제 폰트로 계산한 너비.
                     // 단, 작성 툴(에이전트/MCP)이 bbox 를 0 으로 둔 수식은 advance 가
                     // 사라져 뒤 텍스트와 겹치므로, 스크립트 조판 자연폭으로 보충한다
@@ -1054,10 +1033,10 @@ fn identify_inline_controls(para: &Paragraph) -> Vec<InlineControl> {
 
     for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
         let control_type = match ctrl {
-            Control::Table(_) => InlineControlType::Table,
-            Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
-                InlineControlType::Shape
-            }
+            Control::Table(t) if t.common.treat_as_char => InlineControlType::Table,
+            Control::Shape(shape) if shape.common().treat_as_char => InlineControlType::Shape,
+            Control::Picture(pic) if pic.common.treat_as_char => InlineControlType::Shape,
+            Control::Equation(eq) if eq.common.treat_as_char => InlineControlType::Shape,
             Control::SectionDef(_) | Control::ColumnDef(_) => InlineControlType::Other,
             _ => continue,
         };
@@ -1082,6 +1061,33 @@ fn identify_inline_controls(para: &Paragraph) -> Vec<InlineControl> {
 /// → document_core::helpers::find_control_text_positions 으로 위임
 fn find_control_text_positions(para: &Paragraph) -> Vec<usize> {
     crate::document_core::find_control_text_positions(para)
+}
+
+fn is_render_inline_control(ctrl: &Control) -> bool {
+    match ctrl {
+        Control::Picture(pic) => pic.common.treat_as_char,
+        Control::Shape(shape) => shape.common().treat_as_char,
+        Control::Table(table) => table.common.treat_as_char,
+        Control::Equation(eq) => eq.common.treat_as_char,
+        Control::Form(_) => true,
+        _ => false,
+    }
+}
+
+fn find_render_inline_control_positions(para: &Paragraph) -> Vec<usize> {
+    if para.text.is_empty() && para.char_offsets.is_empty() {
+        let mut inline_seen = 0usize;
+        let mut positions = Vec::with_capacity(para.controls.len());
+        for ctrl in &para.controls {
+            positions.push(inline_seen);
+            if is_render_inline_control(ctrl) {
+                inline_seen += 1;
+            }
+        }
+        return positions;
+    }
+
+    find_control_text_positions(para)
 }
 
 /// CharOverlap 컨트롤의 글자를 조합된 텍스트에 올바른 위치로 삽입한다.
@@ -1271,17 +1277,16 @@ pub fn estimate_composed_line_width(line: &ComposedLine, styles: &ResolvedStyleS
         .sum()
 }
 
-/// [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
-/// 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할한다.
+/// [Task #671/#1811] 저장 lineSeg 가 없거나 synthetic lineSeg 만 있는 셀 paragraph 의
+/// ComposedLine 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할한다.
 ///
 /// 본질: HWP5 일부 파일은 셀 paragraph 의 PARA_LINE_SEG 를 인코딩하지 않는다
 /// (한컴이 layout 시 자동 계산). 본 환경 fallback (`compose_lines` 단일 ComposedLine
 /// 압축) 은 셀 너비를 초과하는 텍스트가 한 줄에 그려져 줄겹침 시각 결함을 발생.
 ///
 /// 본 함수는 다음 가드로 동작 영역을 좁힌다:
-/// - `para.line_segs.is_empty()` (한컴 인코딩 부재)
-/// - `composed.lines.len() == 1` (compose_lines fallback 결과)
-/// - 단일 ComposedLine 의 측정 폭이 `cell_inner_width_px` 초과
+/// - `para.line_segs.is_empty()` 또는 모든 lineSeg 가 synthetic 구현 속성
+/// - ComposedLine 전체 측정 폭이 `cell_inner_width_px` 초과
 ///
 /// 분할 전략: 단어 경계 (공백) 우선, 단어가 셀 너비 초과 시 글자 단위 break.
 pub fn recompose_for_cell_width(
@@ -1290,7 +1295,19 @@ pub fn recompose_for_cell_width(
     cell_inner_width_px: f64,
     styles: &ResolvedStyleSet,
 ) {
-    if !para.line_segs.is_empty() {
+    let has_synthetic_line_segs = !para.line_segs.is_empty()
+        && para
+            .line_segs
+            .iter()
+            .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0);
+    let has_authoritative_line_segs = !para.line_segs.is_empty() && !has_synthetic_line_segs;
+    if has_authoritative_line_segs {
+        return;
+    }
+    if para.line_segs.len() >= 2 && has_synthetic_line_segs {
+        // HWPX 로드 단계에서 셀 폭/높이/anchor 속성으로 합성한 lineSeg 경계는
+        // 이미 문서 속성 기반 보정 결과다. 여기서 다시 폭 기준으로 합치고
+        // 재분할하면 RowBreak 표의 쪽 나눔 기준 줄 수가 원본 세로 정보와 어긋난다.
         return;
     }
     if composed.lines.is_empty() {
@@ -1299,13 +1316,40 @@ pub fn recompose_for_cell_width(
     if cell_inner_width_px <= 0.0 {
         return;
     }
+    let text_width_px = if has_synthetic_line_segs {
+        styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map(|ps| {
+                let continuation_left = if ps.indent < 0.0 {
+                    ps.margin_left + ps.indent.abs()
+                } else {
+                    ps.margin_left
+                };
+                let first_left = if ps.indent > 0.0 {
+                    ps.margin_left + ps.indent
+                } else {
+                    ps.margin_left
+                };
+                let effective_left = first_left.max(continuation_left).max(0.0);
+                (cell_inner_width_px - effective_left - ps.margin_right).max(0.0)
+            })
+            .unwrap_or(cell_inner_width_px)
+    } else {
+        // lineSeg 자체가 없는 HWP/HWP3-origin fallback 은 기존 Task #671 폭 기준을
+        // 유지한다. HWP3-origin legacy bullet 은 별도 1.04 tolerance 로 정합한다.
+        cell_inner_width_px
+    };
+    if text_width_px <= 0.0 {
+        return;
+    }
     // Some HWP3-origin HWP5 files omit PARA_LINE_SEG for legacy bullet paragraphs.
     // HY신명조's embedded metrics are slightly wider than Hancom's converted reflow here,
     // so use a small tolerance only for the tight leading-body style pattern.
     let effective_width_px = if is_hwp3_hwp5_missing_lineseg_legacy_bullet(para, composed, styles) {
-        cell_inner_width_px * 1.04
+        text_width_px * 1.04
     } else {
-        cell_inner_width_px
+        text_width_px
     };
     // [Task #1042 Stage 6a] multi-line 지원 — compose_lines fallback 의 CHARS_PER_LINE=45
     // heuristic 결과가 cell width 와 일치 안 할 수 있음. 모든 lines 의 runs 를 합쳐서
@@ -1670,10 +1714,32 @@ fn pua_enclosed_border_type(ch: char) -> Option<u8> {
 fn pua_plain_text_display(ch: char) -> Option<&'static str> {
     match ch as u32 {
         0xF012B => Some("(인)"),
+        // 2025 행정업무운영 편람 p08 TOC bullet. Hancom PDF renders this
+        // private-use marker as a filled square bullet.
+        0xF031C => Some("■"),
+        // 2025 행정업무운영 편람 p15 callout bullet. Hancom PDF renders this
+        // private-use marker as a filled right-pointing pointer, not tofu.
+        0xF02FC => Some("►"),
         // [Task #1001] 한컴 변환본 (HWP3→HWP5) 의 글머리표 PUA. 한컴 viewer 는
         // 빈 체크박스 모양으로 표시. "□" (U+25A1 WHITE SQUARE) 매핑.
         // 실제 sample16-hwp5 의 PUA codepoint 는 U+F03C5 (글자 분석 결과).
         0xF03C5 => Some("□"),
+        _ => None,
+    }
+}
+
+/// 한글 방점(U+302E/U+302F)을 렌더용 spacing 가운데 점 글리프로 치환한다. (Task #1735)
+///
+/// U+302E/U+302F 는 유니코드 결합문자(combining mark)라, 유효한 base 없이
+/// (줄 시작·공백 뒤) 셰이핑되면 브라우저/엔진이 dotted-circle(U+25CC)
+/// placeholder 를 삽입하고 톤 점을 그 위에 쌓아 한컴과 다르게 표기된다.
+/// 한컴은 방점을 독립 spacing 점으로 렌더하므로, 렌더 경로에서 결합 성질이
+/// 없는 spacing 점 글리프로 치환한다. IR 텍스트는 불변(측정/캐럿/텍스트추출
+/// 보존)이며, 측정 폭 정합은 text_measurement 의 전각 분류로 맞춘다.
+fn tone_mark_display(ch: char) -> Option<char> {
+    match ch {
+        '\u{302E}' => Some('\u{00B7}'), // 방점 → · MIDDLE DOT
+        '\u{302F}' => Some('\u{205A}'), // 쌍방점 → ⁚ TWO DOT PUNCTUATION (세로 두 점)
         _ => None,
     }
 }
@@ -1695,7 +1761,9 @@ pub fn expand_pua_display_text(text: &str) -> String {
         if ch == '\u{F081C}' {
             continue;
         }
-        if let Some(replacement) = pua_plain_text_display(ch) {
+        if let Some(dot) = tone_mark_display(ch) {
+            out.push(dot);
+        } else if let Some(replacement) = pua_plain_text_display(ch) {
             out.push_str(replacement);
         } else if let Some(jamos) = map_pua_old_hangul(ch) {
             out.extend(jamos.iter().copied());

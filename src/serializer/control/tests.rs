@@ -481,3 +481,57 @@ fn test_roundtrip_group_picture_child() {
         panic!("Expected Shape control");
     }
 }
+
+#[test]
+fn issue1452_picture_transparency_updates_hwp_extra_byte() {
+    let mut pic = Picture::default();
+    pic.crop.right = 1000;
+    pic.crop.bottom = 500;
+    pic.image_attr.transparency = 50;
+
+    let bytes = serialize_picture_data(&pic);
+    assert_eq!(
+        bytes.last().copied(),
+        Some(127),
+        "HWP 그림 추가 속성의 마지막 alpha byte는 50% 투명도에서 127이어야 한다"
+    );
+
+    pic.raw_picture_extra = vec![0; 18];
+    pic.image_attr.transparency = 100;
+    let bytes = serialize_picture_data(&pic);
+    assert_eq!(
+        bytes.last().copied(),
+        Some(255),
+        "원본 raw_picture_extra가 있어도 마지막 alpha byte는 현재 투명도와 동기화되어야 한다"
+    );
+}
+
+/// [#1808] 셀 field_name 이 raw_list_extra 한컴 계약 레이아웃으로 기록되고
+/// 파서 추출(parse_cell_field_name)과 대칭인지 검증.
+#[test]
+fn test_cell_field_name_extra_roundtrip() {
+    let cell = crate::model::table::Cell {
+        width: 23984,
+        field_name: Some("발신명의".to_string()),
+        ..Default::default()
+    };
+    let extra = build_cell_list_extra(&cell);
+    // 레이아웃: width(4) + 마커(8) + 40 01 00(3) + name_len(2) + UTF-16LE(2n) + 0×8
+    let n = "발신명의".encode_utf16().count();
+    assert_eq!(extra.len(), 25 + n * 2);
+    assert_eq!(&extra[0..4], &23984u32.to_le_bytes());
+    assert_eq!(&extra[4..8], &[0xff, 0x1b, 0x02, 0x01]);
+    assert_eq!(
+        crate::parser::control::parse_cell_field_name(&extra).as_deref(),
+        Some("발신명의")
+    );
+
+    // 필드 없는 셀은 기존 13바이트 default 유지
+    let plain = crate::model::table::Cell {
+        width: 100,
+        ..Default::default()
+    };
+    let extra = build_cell_list_extra(&plain);
+    assert_eq!(extra.len(), 13);
+    assert_eq!(crate::parser::control::parse_cell_field_name(&extra), None);
+}

@@ -10,6 +10,8 @@ use super::symbols::{DecoKind, FontStyleKind};
 /// 수식 전용 font-family
 /// 순서: Latin Modern Math (LaTeX 설치 시) → STIX Two Text (Mac/STIX 설치 시) → STIX Two Math → Times New Roman (Windows 기본) → serif
 /// Cambria Math 는 Windows 에서 "볼드 인상" 을 유발해 제외. Pretendard 는 산세리프라 수식 부적합으로 제외. (Task #280)
+pub const DEFAULT_EQUATION_FONT_FAMILY_ATTR: &str =
+    "font-family=\"'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif\"";
 const EQ_FONT_FAMILY: &str = " font-family=\"'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif\"";
 
 /// 수식을 SVG 조각 문자열로 렌더링

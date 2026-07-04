@@ -17,9 +17,21 @@ pub fn local_name(name: &[u8]) -> &[u8] {
     }
 }
 
-/// 속성 값을 String으로 변환
+/// 속성 값을 String으로 변환 (XML 엔티티 unescape 포함).
+///
+/// quick-xml 은 속성값을 **원문 그대로**(`&amp;` 등 이스케이프된 형태) 보관한다.
+/// IR 은 시맨틱 값(예: `R&D`)을 저장해야 하고, 직렬화 측 writer 가 유일한 escape
+/// 권위가 되어야 대칭이 성립한다. unescape 를 빠뜨리면 폼 caption 등 문자열 속성이
+/// 저장할 때마다 한 겹씩 이중 이스케이프된다(`R&&D`→`R&amp;&amp;D`→…, Task #1534).
+///
+/// 숫자/열거형 속성은 엔티티가 없어 unescape 가 no-op 이라 무영향. 미정의 엔티티/
+/// malformed 입력은 원문 lossy 로 안전 폴백한다.
 pub fn attr_str(attr: &quick_xml::events::attributes::Attribute) -> String {
-    String::from_utf8_lossy(&attr.value).to_string()
+    let raw = String::from_utf8_lossy(&attr.value);
+    match quick_xml::escape::unescape(&raw) {
+        Ok(value) => value.into_owned(),
+        Err(_) => raw.into_owned(),
+    }
 }
 
 /// 속성 값이 특정 문자열과 일치하는지 확인 (비교용)

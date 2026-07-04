@@ -10,10 +10,12 @@ fn main() {
         Some("--version") | Some("-V") => println!("rhwp v{}", rhwp::version()),
         Some("export-svg") => export_svg(&args[2..]),
         Some("export-render-tree") => export_render_tree(&args[2..]),
+        Some("export-structure") => export_structure(&args[2..]),
         Some("export-png") => export_png(&args[2..]),
         Some("export-pdf") => export_pdf(&args[2..]),
         Some("export-text") => export_text(&args[2..]),
         Some("export-markdown") => export_markdown(&args[2..]),
+        Some("export-hwpx") => export_hwpx(&args[2..]),
         Some("info") => show_info(&args[2..]),
         Some("dump") => dump_controls(&args[2..]),
         Some("dump-note-shape") => dump_note_shape(&args[2..]),
@@ -49,6 +51,9 @@ fn main() {
         Some("test-field") => test_field_roundtrip(&args[2..]),
         Some("ir-diff") => ir_diff(&args[2..]),
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
+        Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
+        Some("render-diff") => rhwp::diagnostics::render_geom_diff::run(&args[2..]),
+        Some("bench") => rhwp::diagnostics::bench::run(&args[2..]),
         Some("thumbnail") => extract_thumbnail(&args[2..]),
         _ => {
             println!("rhwp v{}", rhwp::version());
@@ -89,6 +94,12 @@ fn print_help() {
     println!("      --show-control-codes    조판부호 보이기 상태의 트리 생성");
     println!("      --respect-vpos-reset    LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리");
     println!();
+    println!("  export-structure <파일> [--mode auto|outline|clause] [-o out.json]");
+    println!("      문서 개요/조문(편·장·절·관·조·항·호·목) 계층을 중첩 JSON 트리로 추출");
+    println!();
+    println!("      --mode <방식>           분류 방식 auto|outline|clause (기본: auto)");
+    println!("      -o, --out <파일>        출력 JSON 파일 경로 (생략 시 stdout)");
+    println!();
     println!("  export-png <파일.hwp> [옵션]   (native-skia feature 필요)");
     println!("      HWP 파일을 PNG로 내보내기 (Skia raster backend, AI 파이프라인 + VLM 연동)");
     println!();
@@ -125,8 +136,26 @@ fn print_help() {
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
     println!();
-    println!("  export-pdf <파일.hwp> [-o 출력.pdf] [-p 페이지]");
+    println!("  export-pdf <파일.hwp> [옵션]");
     println!("      HWP 파일을 PDF로 내보내기 (svg2pdf + pdf-writer)");
+    println!();
+    println!("      -o, --output <파일>      출력 PDF 파일 (기본: output/<입력명>.pdf)");
+    println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!("      --font-path <경로>      폰트 파일 탐색 경로 (여러 번 지정 가능)");
+    println!("      --fallback-serif <명>   PDF serif generic fallback family");
+    println!("      --fallback-sans <명>    PDF sans-serif generic fallback family");
+    println!("      --fallback-mono <명>    PDF monospace generic fallback family");
+    println!("      --equation-font <명>    PDF 수식 SVG 우선 font-family");
+    println!(
+        "                              <...>는 자리표시자이며, 실제 입력에는 꺾쇠괄호를 쓰지 않음"
+    );
+    println!(
+        "                              경로/폰트명에 공백이 있으면 큰따옴표 권장: --font-path \"./My Fonts\""
+    );
+    println!("                              예: --fallback-sans \"Apple SD Gothic Neo\"");
+    println!();
+    println!("  export-hwpx <입력.hwp|입력.hwpx> [출력.hwpx]");
+    println!("      HWP 문서를 HWPX(ZIP+XML)로 변환 저장. 출력 생략 시 <입력 stem>.hwpx");
     println!();
     println!("  info <파일.hwp>");
     println!("      HWP 파일 정보 표시");
@@ -199,6 +228,19 @@ fn print_help() {
     println!("      HWPX → IR → HWPX roundtrip 검증 (Task #1315 baseline)");
     println!("      재조립 .hwpx와 inventory.tsv를 출력 폴더(기본 output/poc/task1315)에 생성");
     println!("      --lineseg-report: 문단별 lineseg diff를 lineseg_diff.tsv로 산출 (#1380 측정)");
+    println!("  hwp5-roundtrip <파일.hwp | --batch 폴더> [-o <출력폴더>]");
+    println!("      HWP5 → IR → HWP5 roundtrip 무손실 검증 (Task #1552)");
+    println!("      재조립 .rt.hwp와 inventory.tsv를 출력 폴더(기본 output/poc/task1552)에 생성");
+    println!("  render-diff <파일> [--via hwpx|hwp] [-p <페이지>] [--max-disp <px>]");
+    println!("  render-diff <파일A> <파일B> [-p <페이지>] [--max-disp <px>]");
+    println!("  render-diff --batch <폴더> [--via hwpx] [-o <출력폴더>] [--max-disp <px>]");
+    println!("      라운드트립 시각 정합성 게이트 — 페이지별 RenderNode bbox 변위(px) 정량화");
+    println!("      자기 라운드트립(원본 IR vs 직렬화→재로드 IR) 또는 두 파일 직접 비교");
+    println!("      배치: geom_inventory.tsv 산출(기본 output/poc/render_diff)");
+    println!("  bench <파일...> | --batch <폴더> [-n <반복수>] [--tsv <출력.tsv>]");
+    println!("      단계별 처리 성능 계측 — parse/layout/render/serialize median(ms)");
+    println!("      워밍업 1회 후 N회(기본 3) 반복. 파일별 크기/쪽수 + total 표 + TSV");
+    println!("      주의: 절대 수치는 머신·빌드 의존, 동일 환경 상대·재현 지표로 해석");
     println!();
     println!("  thumbnail <파일.hwp> [옵션]");
     println!("      HWP 파일에서 썸네일(PrvImage) 추출");
@@ -630,6 +672,88 @@ fn export_render_tree(args: &[String]) {
     );
 }
 
+/// `export-structure` — 문서 개요/조문 계층을 중첩 JSON 트리로 추출 (조문 DB화용).
+fn export_structure(args: &[String]) {
+    use rhwp::document_core::queries::structure::{build_structure, StructureMode};
+
+    let mut file_path: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut mode = StructureMode::Auto;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "-o" | "--out" => {
+                i += 1;
+                match args.get(i) {
+                    Some(p) => out_path = Some(p.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return;
+                    }
+                }
+            }
+            "--mode" => {
+                i += 1;
+                match args.get(i).and_then(|s| StructureMode::parse(s)) {
+                    Some(m) => mode = m,
+                    None => {
+                        eprintln!("오류: --mode 는 auto|outline|clause");
+                        return;
+                    }
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return;
+            }
+            other => file_path = Some(other),
+        }
+        i += 1;
+    }
+
+    let Some(file_path) = file_path else {
+        eprintln!(
+            "사용법: rhwp export-structure <파일> [--mode auto|outline|clause] [-o out.json]"
+        );
+        return;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return;
+        }
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return;
+        }
+    };
+
+    let st = build_structure(doc.document(), mode);
+    let json = match serde_json::to_string_pretty(&st) {
+        Ok(j) => j,
+        Err(e) => {
+            eprintln!("오류: JSON 직렬화 실패 - {}", e);
+            return;
+        }
+    };
+
+    match out_path {
+        Some(p) => match fs::write(&p, &json) {
+            Ok(_) => println!(
+                "구조 추출 완료: mode={} 노드={} → {}",
+                st.mode, st.node_count, p
+            ),
+            Err(e) => eprintln!("오류: 출력 쓰기 실패 - {}: {}", p, e),
+        },
+        None => println!("{json}"),
+    }
+}
+
 fn parse_grid_mm(value: &str) -> Option<f64> {
     let trimmed = value.trim();
     let number = trimmed
@@ -997,127 +1121,234 @@ fn export_png(args: &[String]) {
 fn export_pdf(args: &[String]) {
     if args.is_empty() {
         eprintln!("오류: HWP 파일 경로를 지정해주세요.");
-        eprintln!("사용법: rhwp export-pdf <파일.hwp> [-o 출력.pdf] [-p 페이지]");
+        print_export_pdf_usage();
+        return;
+    }
+    if args[0] == "--help" || args[0] == "-h" {
+        print_export_pdf_usage();
         return;
     }
 
-    let file_path = &args[0];
-    let mut output_file = String::new();
-    let mut target_page: Option<u32> = None;
-
-    let mut i = 1;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--output" | "-o" => {
-                if i + 1 < args.len() {
-                    output_file = args[i + 1].clone();
-                    i += 2;
-                } else {
-                    eprintln!("오류: --output 뒤에 파일 경로가 필요합니다.");
-                    return;
-                }
-            }
-            "--page" | "-p" => {
-                if i + 1 < args.len() {
-                    match args[i + 1].parse::<u32>() {
-                        Ok(n) => target_page = Some(n),
-                        Err(_) => {
-                            eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
-                            return;
-                        }
-                    }
-                    i += 2;
-                } else {
-                    eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
-                    return;
-                }
-            }
-            _ => {
-                i += 1;
-            }
-        }
-    }
-
-    // 기본 출력 파일명
-    if output_file.is_empty() {
-        let stem = Path::new(file_path)
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("output");
-        output_file = format!("output/{}.pdf", stem);
-    }
-
-    let data = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
-        }
-    };
-
-    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return;
-        }
-    };
-
-    let page_count = doc.page_count();
-    println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
-
-    // 출력 디렉토리 생성
-    if let Some(parent) = Path::new(&output_file).parent() {
-        if !parent.exists() {
-            let _ = fs::create_dir_all(parent);
-        }
-    }
-
-    // 페이지 범위 결정
-    let pages: Vec<u32> = match target_page {
-        Some(p) => {
-            if p >= page_count {
-                eprintln!(
-                    "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
-                    page_count - 1
-                );
-                return;
-            }
-            vec![p]
-        }
-        None => (0..page_count).collect(),
-    };
-
-    // SVG 렌더링 → PDF 변환
-    let mut svg_pages: Vec<String> = Vec::new();
-    for page_num in &pages {
-        match doc.render_page_svg(*page_num) {
-            Ok(svg) => svg_pages.push(svg),
-            Err(e) => {
-                eprintln!("오류: 페이지 {} 렌더링 실패 - {:?}", page_num, e);
-                return;
-            }
-        }
+    #[cfg(target_arch = "wasm32")]
+    {
+        eprintln!("오류: PDF 내보내기는 native 빌드에서만 지원됩니다.");
+        return;
     }
 
     #[cfg(not(target_arch = "wasm32"))]
     {
-        use rhwp::renderer::pdf;
-        match pdf::svgs_to_pdf(&svg_pages) {
-            Ok(pdf_bytes) => match fs::write(&output_file, &pdf_bytes) {
-                Ok(_) => println!(
-                    "  → {} ({}KB, {}페이지)",
-                    output_file,
-                    pdf_bytes.len() / 1024,
-                    svg_pages.len()
-                ),
-                Err(e) => eprintln!("오류: PDF 저장 실패 - {}", e),
-            },
-            Err(e) => eprintln!("오류: PDF 변환 실패 - {}", e),
-        }
-    }
+        let file_path = &args[0];
+        let mut output_file = String::new();
+        let mut target_page: Option<u32> = None;
+        let mut pdf_options = rhwp::renderer::pdf::PdfExportOptions::default();
 
-    println!("PDF 내보내기 완료");
+        let mut i = 1;
+        while i < args.len() {
+            match args[i].as_str() {
+                "--output" | "-o" => {
+                    if i + 1 < args.len() {
+                        output_file = args[i + 1].clone();
+                        i += 2;
+                    } else {
+                        eprintln!("오류: --output 뒤에 파일 경로가 필요합니다.");
+                        return;
+                    }
+                }
+                "--page" | "-p" => {
+                    if i + 1 < args.len() {
+                        match args[i + 1].parse::<u32>() {
+                            Ok(n) => target_page = Some(n),
+                            Err(_) => {
+                                eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
+                                return;
+                            }
+                        }
+                        i += 2;
+                    } else {
+                        eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                        return;
+                    }
+                }
+                "--font-path" => {
+                    if i + 1 < args.len() {
+                        pdf_options
+                            .font_paths
+                            .push(std::path::PathBuf::from(&args[i + 1]));
+                        i += 2;
+                    } else {
+                        eprintln!("오류: --font-path 뒤에 경로가 필요합니다.");
+                        return;
+                    }
+                }
+                "--fallback-serif" => {
+                    if i + 1 < args.len() {
+                        pdf_options.fallback_serif = args[i + 1].clone();
+                        i += 2;
+                    } else {
+                        eprintln!("오류: --fallback-serif 뒤에 폰트 family가 필요합니다.");
+                        return;
+                    }
+                }
+                arg if arg.starts_with("--fallback-serif=") => {
+                    pdf_options.fallback_serif =
+                        arg.trim_start_matches("--fallback-serif=").to_string();
+                    i += 1;
+                }
+                "--fallback-sans" | "--fallback-sans-serif" => {
+                    if i + 1 < args.len() {
+                        pdf_options.fallback_sans = args[i + 1].clone();
+                        i += 2;
+                    } else {
+                        eprintln!("오류: --fallback-sans 뒤에 폰트 family가 필요합니다.");
+                        return;
+                    }
+                }
+                arg if arg.starts_with("--fallback-sans=")
+                    || arg.starts_with("--fallback-sans-serif=") =>
+                {
+                    pdf_options.fallback_sans = arg
+                        .strip_prefix("--fallback-sans=")
+                        .or_else(|| arg.strip_prefix("--fallback-sans-serif="))
+                        .unwrap_or_default()
+                        .to_string();
+                    i += 1;
+                }
+                "--fallback-mono" | "--fallback-monospace" => {
+                    if i + 1 < args.len() {
+                        pdf_options.fallback_mono = args[i + 1].clone();
+                        i += 2;
+                    } else {
+                        eprintln!("오류: --fallback-mono 뒤에 폰트 family가 필요합니다.");
+                        return;
+                    }
+                }
+                arg if arg.starts_with("--fallback-mono=")
+                    || arg.starts_with("--fallback-monospace=") =>
+                {
+                    pdf_options.fallback_mono = arg
+                        .strip_prefix("--fallback-mono=")
+                        .or_else(|| arg.strip_prefix("--fallback-monospace="))
+                        .unwrap_or_default()
+                        .to_string();
+                    i += 1;
+                }
+                "--equation-font" | "--equation-font-family" => {
+                    if i + 1 < args.len() {
+                        pdf_options.equation_font = Some(args[i + 1].clone());
+                        i += 2;
+                    } else {
+                        eprintln!("오류: --equation-font 뒤에 폰트 family가 필요합니다.");
+                        return;
+                    }
+                }
+                arg if arg.starts_with("--equation-font=")
+                    || arg.starts_with("--equation-font-family=") =>
+                {
+                    pdf_options.equation_font = Some(
+                        arg.strip_prefix("--equation-font=")
+                            .or_else(|| arg.strip_prefix("--equation-font-family="))
+                            .unwrap_or_default()
+                            .to_string(),
+                    );
+                    i += 1;
+                }
+                _ => {
+                    eprintln!("알 수 없는 옵션: {}", args[i]);
+                    print_export_pdf_usage();
+                    return;
+                }
+            }
+        }
+
+        // 기본 출력 파일명
+        if output_file.is_empty() {
+            let stem = Path::new(file_path)
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("output");
+            output_file = format!("output/{}.pdf", stem);
+        }
+
+        let data = match fs::read(file_path) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+                return;
+            }
+        };
+
+        let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("오류: HWP 파싱 실패 - {}", e);
+                return;
+            }
+        };
+
+        let page_count = doc.page_count();
+        println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+
+        // 출력 디렉토리 생성
+        if let Some(parent) = Path::new(&output_file).parent() {
+            if !parent.exists() {
+                if let Err(e) = fs::create_dir_all(parent) {
+                    eprintln!("오류: 출력 디렉토리를 만들 수 없습니다 - {}", e);
+                    return;
+                }
+            }
+        }
+
+        // 페이지 범위 결정
+        let pages: Vec<u32> = match target_page {
+            Some(p) => {
+                if p >= page_count {
+                    eprintln!(
+                        "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
+                        page_count - 1
+                    );
+                    return;
+                }
+                vec![p]
+            }
+            None => (0..page_count).collect(),
+        };
+
+        let pdf_bytes = match doc.render_pages_pdf_native_with_options(&pages, &pdf_options) {
+            Ok(bytes) => bytes,
+            Err(e) => {
+                eprintln!("오류: PDF 변환 실패 - {}", e);
+                return;
+            }
+        };
+        if let Err(e) = fs::write(&output_file, &pdf_bytes) {
+            eprintln!("오류: PDF 저장 실패 - {}", e);
+            return;
+        }
+        println!(
+            "  → {} ({}KB, {}페이지)",
+            output_file,
+            pdf_bytes.len() / 1024,
+            pages.len()
+        );
+        println!("PDF 내보내기 완료");
+    }
+}
+
+fn print_export_pdf_usage() {
+    eprintln!("사용법: rhwp export-pdf <파일.hwp|파일.hwpx> [옵션]");
+    eprintln!("  -o, --output <파일>       출력 PDF 파일");
+    eprintln!("  -p, --page <번호>        특정 페이지만 내보내기 (0부터 시작)");
+    eprintln!("      --font-path <경로>   폰트 파일 탐색 경로 (여러 번 지정 가능)");
+    eprintln!("      --fallback-serif <명>");
+    eprintln!("      --fallback-sans <명>");
+    eprintln!("      --fallback-mono <명>");
+    eprintln!("      --equation-font <명>");
+    eprintln!("  참고: <...>는 자리표시자이며, 실제 입력에는 꺾쇠괄호를 쓰지 않습니다.");
+    eprintln!("        공백 없는 값: --font-path ./ttfs");
+    eprintln!(
+        "        공백 포함 값은 큰따옴표 권장: --font-path \"./My Fonts\", --fallback-sans \"Apple SD Gothic Neo\""
+    );
+    eprintln!("        작은따옴표는 zsh/bash/PowerShell에서 literal 값이 필요할 때만 사용합니다.");
 }
 
 fn export_text(args: &[String]) {
@@ -1888,31 +2119,16 @@ fn note_shape_json(shape: &rhwp::model::footnote::FootnoteShape) -> serde_json::
             "separatorColor": format!("0x{:08x}", shape.separator_color),
             "numbering": format!("{:?}", shape.numbering),
             "placement": format!("{:?}", shape.placement),
+            "numberCodeSuperscript": shape.number_code_superscript,
+            "printInlineAfterText": shape.print_inline_after_text,
             "rawUnknown": hu_json(shape.raw_unknown as i32),
         },
         "ui": {
-            "separatorAbove": hu_json(note_shape_separator_above_margin_hu(shape) as i32),
-            "separatorBelow": hu_json(note_shape_separator_below_margin_hu(shape) as i32),
-            "betweenNotes": hu_json(note_shape_between_notes_margin_hu(shape) as i32),
+            "separatorAbove": hu_json(shape.separator_above_margin_hu() as i32),
+            "separatorBelow": hu_json(shape.separator_below_margin_hu() as i32),
+            "betweenNotes": hu_json(shape.between_notes_margin_hu() as i32),
         },
     })
-}
-
-fn note_shape_separator_above_margin_hu(shape: &rhwp::model::footnote::FootnoteShape) -> i16 {
-    let hwpx_above = shape.separator_margin_top.max(0);
-    if hwpx_above != 0 {
-        hwpx_above
-    } else {
-        shape.separator_margin_bottom.max(0)
-    }
-}
-
-fn note_shape_separator_below_margin_hu(shape: &rhwp::model::footnote::FootnoteShape) -> i16 {
-    shape.note_spacing.max(0)
-}
-
-fn note_shape_between_notes_margin_hu(shape: &rhwp::model::footnote::FootnoteShape) -> u16 {
-    shape.raw_unknown
 }
 
 fn hu_json(hu: i32) -> serde_json::Value {
@@ -3190,12 +3406,13 @@ fn dump_controls(args: &[String]) {
                                     .map(|p| p.text.chars().take(30).collect::<String>())
                                     .collect::<Vec<_>>()
                                     .join("|");
-                                println!("{}셀[{}] r={},c={} rs={},cs={} h={} w={} pad=({},{},{},{}) valign={:?} aim={} bf={} paras={} text=\"{}\"",
+                                println!("{}셀[{}] r={},c={} rs={},cs={} h={} w={} pad=({},{},{},{}) valign={:?} aim={} hdr={} bf={} paras={} text=\"{}\"",
                                     indent, ci, cell.row, cell.col, cell.row_span, cell.col_span,
                                     cell.height, cell.width,
                                     cell.padding.left, cell.padding.right, cell.padding.top, cell.padding.bottom,
                                     cell.vertical_align,
                                     cell.apply_inner_margin,
+                                    cell.is_header,
                                     cell.border_fill_id, cell.paragraphs.len(), text_preview);
                                 if let Some(ref fname) = cell.field_name {
                                     println!("{}  field=\"{}\"", indent, fname);
@@ -3791,6 +4008,77 @@ fn convert_hwp(args: &[String]) {
         },
         Err(e) => {
             eprintln!("오류: 직렬화 실패 - {}", e);
+        }
+    }
+}
+
+/// `rhwp export-hwpx <입력.hwp|입력.hwpx> [출력.hwpx]` — HWP→HWPX 직접 변환 (#1868).
+///
+/// 파서가 포맷을 자동 감지(HWP5/HWP3/HWPX)해 `Document` IR 로 읽고
+/// `export_hwpx_native()` 로 HWPX(ZIP) 직렬화한다. `convert`(배포용 해제 → .hwp 출력)와
+/// 별개의 포맷 변환 명령. 출력 생략 시 입력과 같은 폴더에 `<stem>.hwpx`.
+fn export_hwpx(args: &[String]) {
+    if args.is_empty() {
+        eprintln!("오류: 입력 파일 경로를 지정해주세요.");
+        eprintln!("사용법: rhwp export-hwpx <입력.hwp|입력.hwpx> [출력.hwpx]");
+        return;
+    }
+
+    let input_path = std::path::Path::new(&args[0]);
+    let output_path = match args.get(1) {
+        Some(p) => std::path::PathBuf::from(p),
+        None => input_path.with_extension("hwpx"),
+    };
+    if output_path
+        .extension()
+        .map(|e| !e.eq_ignore_ascii_case("hwpx"))
+        .unwrap_or(true)
+    {
+        eprintln!(
+            "경고: 출력 확장자가 .hwpx 가 아닙니다: {}",
+            output_path.display()
+        );
+    }
+    if output_path == input_path {
+        eprintln!("오류: 입력과 출력 경로가 같습니다. 원본을 덮어쓰지 않습니다.");
+        return;
+    }
+
+    let data = match fs::read(input_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!(
+                "오류: 파일을 읽을 수 없습니다 - {}: {}",
+                input_path.display(),
+                e
+            );
+            return;
+        }
+    };
+
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 문서 파싱 실패 - {}", e);
+            return;
+        }
+    };
+
+    match doc.export_hwpx_native() {
+        Ok(bytes) => match fs::write(&output_path, &bytes) {
+            Ok(_) => {
+                println!(
+                    "저장 완료: {} ({}KB)",
+                    output_path.display(),
+                    bytes.len() / 1024
+                );
+            }
+            Err(e) => {
+                eprintln!("오류: 파일 저장 실패 - {}: {}", output_path.display(), e);
+            }
+        },
+        Err(e) => {
+            eprintln!("오류: HWPX 직렬화 실패 - {}", e);
         }
     }
 }
@@ -4534,6 +4822,193 @@ fn diff_common_obj(
     }
 }
 
+/// [#1807] 글상자 문단 한 쌍의 핵심 필드 비교 — 본문 문단 비교의 축약판.
+/// 직렬화 결함(#1795: FIELD_END 갭 선점 → char_offsets 시프트)이 글상자 안에서
+/// 발생해도 ir-diff 가 검출하도록 text/cc/char_offsets/char_shapes/line_segs/
+/// field_ranges 를 비교한다.
+fn diff_textbox_paragraph_fields(
+    diffs: &mut Vec<String>,
+    prefix: &str,
+    pa: &rhwp::model::paragraph::Paragraph,
+    pb: &rhwp::model::paragraph::Paragraph,
+) {
+    if pa.text != pb.text {
+        diffs.push(format!(
+            "{} text: A={:?} vs B={:?}",
+            prefix,
+            pa.text.chars().take(30).collect::<String>(),
+            pb.text.chars().take(30).collect::<String>()
+        ));
+    }
+    if pa.char_count != pb.char_count {
+        diffs.push(format!(
+            "{} cc: A={} vs B={}",
+            prefix, pa.char_count, pb.char_count
+        ));
+    }
+    if pa.char_offsets != pb.char_offsets {
+        if pa.char_offsets.len() != pb.char_offsets.len() {
+            diffs.push(format!(
+                "{} char_offsets len: A={} vs B={}",
+                prefix,
+                pa.char_offsets.len(),
+                pb.char_offsets.len()
+            ));
+        } else if let Some((idx, (a, b))) = pa
+            .char_offsets
+            .iter()
+            .zip(pb.char_offsets.iter())
+            .enumerate()
+            .find(|(_, (a, b))| a != b)
+        {
+            diffs.push(format!(
+                "{} char_offsets[{}]: A={} vs B={}",
+                prefix, idx, a, b
+            ));
+        }
+    }
+    if pa.char_shapes.len() != pb.char_shapes.len() {
+        diffs.push(format!(
+            "{} char_shapes count: A={} vs B={}",
+            prefix,
+            pa.char_shapes.len(),
+            pb.char_shapes.len()
+        ));
+    } else if let Some((idx, (ca, cb))) = pa
+        .char_shapes
+        .iter()
+        .zip(pb.char_shapes.iter())
+        .enumerate()
+        .find(|(_, (ca, cb))| ca.start_pos != cb.start_pos || ca.char_shape_id != cb.char_shape_id)
+    {
+        diffs.push(format!(
+            "{} cs[{}]: A=({},{}) vs B=({},{})",
+            prefix, idx, ca.start_pos, ca.char_shape_id, cb.start_pos, cb.char_shape_id
+        ));
+    }
+    if pa.line_segs.len() != pb.line_segs.len() {
+        diffs.push(format!(
+            "{} line_segs count: A={} vs B={}",
+            prefix,
+            pa.line_segs.len(),
+            pb.line_segs.len()
+        ));
+    } else if let Some((idx, (la, lb))) = pa
+        .line_segs
+        .iter()
+        .zip(pb.line_segs.iter())
+        .enumerate()
+        .find(|(_, (la, lb))| la.text_start != lb.text_start || la.vertical_pos != lb.vertical_pos)
+    {
+        diffs.push(format!(
+            "{} ls[{}]: A=(ts={},vpos={}) vs B=(ts={},vpos={})",
+            prefix, idx, la.text_start, la.vertical_pos, lb.text_start, lb.vertical_pos
+        ));
+    }
+    if pa.field_ranges.len() != pb.field_ranges.len() {
+        diffs.push(format!(
+            "{} field_ranges count: A={} vs B={}",
+            prefix,
+            pa.field_ranges.len(),
+            pb.field_ranges.len()
+        ));
+    } else if let Some((idx, (fa, fb))) = pa
+        .field_ranges
+        .iter()
+        .zip(pb.field_ranges.iter())
+        .enumerate()
+        .find(|(_, (fa, fb))| {
+            fa.start_char_idx != fb.start_char_idx
+                || fa.end_char_idx != fb.end_char_idx
+                || fa.control_idx != fb.control_idx
+        })
+    {
+        diffs.push(format!(
+            "{} field_ranges[{}]: A=({}..{},c{}) vs B=({}..{},c{})",
+            prefix,
+            idx,
+            fa.start_char_idx,
+            fa.end_char_idx,
+            fa.control_idx,
+            fb.start_char_idx,
+            fb.end_char_idx,
+            fb.control_idx
+        ));
+    }
+}
+
+/// [#1807] 글상자 문단 목록 재귀 비교. 중첩 글상자(Shape in Shape)도 재귀한다.
+fn diff_textbox_paragraph_lists(
+    diffs: &mut Vec<String>,
+    prefix: &str,
+    pas: &[rhwp::model::paragraph::Paragraph],
+    pbs: &[rhwp::model::paragraph::Paragraph],
+) {
+    use rhwp::model::control::Control;
+    if pas.len() != pbs.len() {
+        diffs.push(format!(
+            "{} tb 문단 수: A={} vs B={}",
+            prefix,
+            pas.len(),
+            pbs.len()
+        ));
+    }
+    for (k, (pa, pb)) in pas.iter().zip(pbs.iter()).enumerate() {
+        let p = format!("{} tb_p[{}]", prefix, k);
+        diff_textbox_paragraph_fields(diffs, &p, pa, pb);
+        for (cj, (ca, cb)) in pa.controls.iter().zip(pb.controls.iter()).enumerate() {
+            if let (Control::Shape(sa), Control::Shape(sb)) = (ca, cb) {
+                diff_shape_textbox(diffs, &format!("{}.ctrl[{}]", p, cj), sa, sb);
+            }
+        }
+    }
+}
+
+/// [#1807] Shape 글상자 유무 + 내부 문단 재귀 비교 진입점.
+fn diff_shape_textbox(
+    diffs: &mut Vec<String>,
+    prefix: &str,
+    sa: &rhwp::model::shape::ShapeObject,
+    sb: &rhwp::model::shape::ShapeObject,
+) {
+    let ta = sa.drawing().and_then(|d| d.text_box.as_ref());
+    let tb = sb.drawing().and_then(|d| d.text_box.as_ref());
+    match (ta, tb) {
+        (Some(ta), Some(tb)) => {
+            diff_textbox_paragraph_lists(diffs, prefix, &ta.paragraphs, &tb.paragraphs);
+        }
+        (Some(_), None) | (None, Some(_)) => {
+            diffs.push(format!(
+                "{} text_box 유무: A={} vs B={}",
+                prefix,
+                ta.is_some(),
+                tb.is_some()
+            ));
+        }
+        (None, None) => {}
+    }
+}
+
+/// `tab_extended`(`[u16; 7]`) 두 인라인 탭 레코드가 **의미 있는** 필드에서 다른지 판정.
+///
+/// HWPX 파서(`parse_tab_extension`)는 인라인 탭을 `ext[0]`=width,
+/// `ext[2]`=`type<<8 | leader`(leader 는 low byte), `ext[6]`=0x0009 마커로만 채우고
+/// `ext[1]`·`ext[3]`·`ext[4]`·`ext[5]`는 0 으로 둔다. HWPX 직렬화(`render_hp_t_content`)도
+/// width/leader/type 를 오직 `ext[0]`·`ext[2]`에서만 읽는다. 반면 HWP5 인라인 탭(8 WCHAR
+/// 블록)은 `ext[1]`을 leader/fill 슬롯으로, `ext[3]`·`ext[4]`·`ext[5]`를 WCHAR 4~6 원본
+/// 바이트(보통 0x20)로 채운다 — 이들은 HWPX `<hp:tab>`에 대응 속성이 없어 HWPX 쪽이 항상
+/// 0 이라, HWPX↔HWP5 parity 비교에서 거의 모든 탭에 거짓 차이(0 vs leader, 0 vs 32)를 만들어
+/// 실제 차이(width/type/leader)를 가린다. 따라서 두 포맷이 공통으로 쓰는 필드
+/// [0]=width, [2]=type/leader 팩, [6]=마커만 비교하고 [1],[3],[4],[5]는 제외한다.
+/// (HWP5 직렬화는 [1],[3..6]을 그대로 보존하므로 self-roundtrip 충실도에는 영향 없음 —
+/// 도구 비교에서만 제외.)
+fn tab_ext_semantic_differs(a: &[u16; 7], b: &[u16; 7]) -> bool {
+    // 두 포맷 공통 필드만: [0]=width, [2]=type<<8|leader, [6]=0x0009 마커.
+    // [1](HWP5 leader/fill 슬롯, HWPX=0)·[3]·[4]·[5](HWP5 예약 바이트, HWPX=0)는 제외.
+    const SEMANTIC: [usize; 3] = [0, 2, 6];
+    SEMANTIC.iter().any(|&k| a[k] != b[k])
+}
+
 fn ir_diff(args: &[String]) {
     if args.len() < 2 {
         eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>]");
@@ -4772,7 +5247,7 @@ fn ir_diff(args: &[String]) {
                     .zip(pb.tab_extended.iter())
                     .enumerate()
                 {
-                    if ta != tb {
+                    if tab_ext_semantic_differs(ta, tb) {
                         diffs.push(format!("tab_ext[{}]: A={:?} vs B={:?}", ti, ta, tb));
                         break;
                     }
@@ -4862,6 +5337,9 @@ fn ir_diff(args: &[String]) {
                         }
                         (Control::Shape(sa), Control::Shape(sb)) => {
                             diff_common_obj(&mut diffs, ci, "shape", sa.common(), sb.common());
+                            // [#1807] 글상자 내부 문단 재귀 비교 — 직렬화 결함이
+                            // 글상자 안에서 발생해도 검출되도록 (#1795 소거망 구멍)
+                            diff_shape_textbox(&mut diffs, &format!("ctrl[{}] shape", ci), sa, sb);
                         }
                         _ if control_tag(ca) != control_tag(cb) => {
                             diffs.push(format!(
@@ -5104,5 +5582,38 @@ fn extract_thumbnail(args: &[String]) {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::tab_ext_semantic_differs;
+
+    #[test]
+    fn tab_ext_reserved_fields_ignored() {
+        // 같은 문서의 HWPX(파서가 [1],[3..6]=0) vs HWP5([1]=leader/fill 슬롯, [3..6]=원본 바이트).
+        // 이 포맷 비대칭 슬롯들은 모두 무시 → 의미 차이 없음.
+        let hwpx = [1640, 0, 256, 0, 0, 0, 9];
+        let hwp5 = [1640, 5, 256, 32, 32, 32, 9];
+        assert!(!tab_ext_semantic_differs(&hwpx, &hwp5));
+    }
+
+    #[test]
+    fn tab_ext_semantic_fields_detected() {
+        let base = [1640, 0, 256, 0, 0, 0, 9];
+        assert!(!tab_ext_semantic_differs(&base, &base));
+        // width([0]) 차이 검출
+        assert!(tab_ext_semantic_differs(&base, &[1641, 0, 256, 0, 0, 0, 9]));
+        // type([2] high byte) 차이 검출 — 256(0x0100)→512(0x0200)
+        assert!(tab_ext_semantic_differs(&base, &[1640, 0, 512, 0, 0, 0, 9]));
+        // leader([2] low byte, 두 포맷 공통) 차이 검출 — 256(0x0100)→257(0x0101)
+        assert!(tab_ext_semantic_differs(&base, &[1640, 0, 257, 0, 0, 0, 9]));
+        // HWP5 leader/fill 슬롯([1], HWPX는 항상 0)은 포맷 비대칭이라 무시 — 차이로 치지 않음
+        assert!(!tab_ext_semantic_differs(
+            &base,
+            &[1640, 1, 256, 0, 0, 0, 9]
+        ));
+        // marker([6]) 차이 검출
+        assert!(tab_ext_semantic_differs(&base, &[1640, 0, 256, 0, 0, 0, 0]));
     }
 }

@@ -86,7 +86,9 @@ pub fn write_picture<W: Write>(
     write_cur_sz(w, pic)?;
     write_flip(w, &pic.shape_attr)?;
     write_rotation_info(w, &pic.shape_attr)?;
-    write_rendering_info(w)?;
+    // [#1501] 그룹 자식 pic 의 transMatrix(render_tx/sx) 보존 — 종전 identity 고정 출력은
+    // 그룹 내 자식을 원점·고유크기로 붕괴시켰다. shape.rs 의 raw_rendering 디코더 공유.
+    super::shape::write_rendering_info(w, &pic.shape_attr)?;
     write_img_rect(w, pic)?;
     write_img_clip(w, pic)?;
     write_in_margin(w, pic)?;
@@ -166,31 +168,6 @@ fn write_rotation_info<W: Write>(
             ("centerX", &cx),
             ("centerY", &cy),
             ("rotateimage", ri),
-        ],
-    )
-}
-
-fn write_rendering_info<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
-    // 3개 행렬 (transMatrix / scaMatrix / rotMatrix) 을 identity 로 출력.
-    start_tag(w, "hp:renderingInfo")?;
-    write_matrix(w, "hc:transMatrix")?;
-    write_matrix(w, "hc:scaMatrix")?;
-    write_matrix(w, "hc:rotMatrix")?;
-    end_tag(w, "hp:renderingInfo")?;
-    Ok(())
-}
-
-fn write_matrix<W: Write>(w: &mut Writer<W>, name: &str) -> Result<(), SerializeError> {
-    empty_tag(
-        w,
-        name,
-        &[
-            ("e1", "1"),
-            ("e2", "0"),
-            ("e3", "0"),
-            ("e4", "0"),
-            ("e5", "1"),
-            ("e6", "0"),
         ],
     )
 }
@@ -275,16 +252,25 @@ fn write_img<W: Write>(
     ctx: &SerializeContext,
 ) -> Result<(), SerializeError> {
     let bin_id = p.image_attr.bin_data_id;
-    let manifest_id = ctx.resolve_bin_id(bin_id).ok_or_else(|| {
-        SerializeError::XmlError(format!(
-            "<hp:pic> binaryItemIDRef 미등록 bin_data_id={} (BinDataContent 누락)",
-            bin_id
-        ))
-    })?;
+    // #1567: bin_id==0 은 원본 `binaryItemIDRef=""`(이미지 참조 없는 placeholder pic, 표 셀
+    // 등)에 대응한다(파서 `unwrap_or(0)`). resolve 실패해도 빈 ref 를 verbatim 방출해
+    // pic 컨트롤을 보존한다(종전: Err → 호출자 section.rs:701 이 조용히 드롭 → IR_DIFF).
+    // 비-0 미해결은 진짜 BinDataContent 누락이므로 진단(Err)을 유지해 손실 은폐를 막는다.
+    let manifest_id = match ctx.resolve_bin_id(bin_id) {
+        Some(id) => id,
+        None if bin_id == 0 => "",
+        None => {
+            return Err(SerializeError::XmlError(format!(
+                "<hp:pic> binaryItemIDRef 미등록 bin_data_id={} (BinDataContent 누락)",
+                bin_id
+            )))
+        }
+    };
 
     let bright = p.image_attr.brightness.to_string();
     let contrast = p.image_attr.contrast.to_string();
     let effect = image_effect_str(p.image_attr.effect);
+    let alpha = picture_alpha_str(p.image_attr.clamped_transparency());
     empty_tag(
         w,
         "hc:img",
@@ -293,9 +279,13 @@ fn write_img<W: Write>(
             ("bright", &bright),
             ("contrast", &contrast),
             ("effect", effect),
-            ("alpha", "0"),
+            ("alpha", &alpha),
         ],
     )
+}
+
+fn picture_alpha_str(transparency: u8) -> String {
+    crate::model::image::transparency_percent_to_alpha_byte(transparency).to_string()
 }
 
 fn write_effects<W: Write>(w: &mut Writer<W>, pic: &Picture) -> Result<(), SerializeError> {
@@ -402,17 +392,20 @@ fn write_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Serial
 
 fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
     let treat = bool01(c.treat_as_char);
+    let flow_with_text = bool01(c.flow_with_text);
+    let allow_overlap = bool01(c.allow_overlap);
     let vert_offset = c.vertical_offset.to_string();
     let horz_offset = c.horizontal_offset.to_string();
+    let hold = bool01(c.prevent_page_break != 0); // [#1594] IR 보존
     empty_tag(
         w,
         "hp:pos",
         &[
             ("treatAsChar", treat),
             ("affectLSpacing", "0"),
-            ("flowWithText", "1"),
-            ("allowOverlap", "0"),
-            ("holdAnchorAndSO", "0"),
+            ("flowWithText", flow_with_text),
+            ("allowOverlap", allow_overlap),
+            ("holdAnchorAndSO", hold),
             ("vertRelTo", vert_rel_to_str(c.vert_rel_to)),
             ("horzRelTo", horz_rel_to_str(c.horz_rel_to)),
             ("vertAlign", vert_align_str(c.vert_align)),
@@ -534,6 +527,7 @@ mod tests {
             brightness: 0,
             contrast: 0,
             effect: ImageEffect::RealPic,
+            transparency: 0,
             external_path: None,
         };
         pic.common.width = 1000;
@@ -595,6 +589,27 @@ mod tests {
                 r#"<hp:imgRect><hc:pt0 x="0" y="0"/><hc:pt1 x="49380" y="0"/><hc:pt2 x="49380" y="45840"/><hc:pt3 x="0" y="45840"/></hp:imgRect>"#
             ),
             "imgRect 는 border 스칼라 레이아웃 역매핑: {xml}"
+        );
+    }
+
+    #[test]
+    fn issue1452_img_alpha_uses_hwp_alpha_byte() {
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+
+        pic.image_attr.transparency = 50;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(
+            xml.contains(r#"alpha="127""#),
+            "그림 투명도 50%는 한컴 HWPX alpha byte 127로 저장되어야 한다: {xml}"
+        );
+
+        pic.image_attr.transparency = 100;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(
+            xml.contains(r#"alpha="255""#),
+            "그림 투명도 100%는 한컴 HWPX alpha byte 255로 저장되어야 한다: {xml}"
         );
     }
 
@@ -680,6 +695,21 @@ mod tests {
             "binaryItemIDRef must resolve to manifest id image1: {}",
             xml
         );
+    }
+
+    #[test]
+    fn task1567_empty_binary_ref_pic_preserved() {
+        // #1567: bin_data_id==0(원본 binaryItemIDRef="" placeholder)은 BinDataContent 가
+        // 없어 resolve 실패해도 binaryItemIDRef="" 로 보존되어야 한다(드롭 금지).
+        let doc = Document::default(); // bin 미등록
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let pic = make_picture(0);
+        let xml = serialize(&pic, &mut ctx);
+        assert!(
+            xml.contains(r#"binaryItemIDRef="""#),
+            "빈 ref pic 은 binaryItemIDRef=\"\" 로 보존(드롭 금지): {xml}"
+        );
+        assert!(xml.contains("<hp:pic "), "pic 컨트롤 자체 보존: {xml}");
     }
 
     #[test]

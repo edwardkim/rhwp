@@ -284,9 +284,12 @@ export function renderPictureObjectSelection(this: any): void {
         }
       }
       if (minX < Infinity) {
+        const locked = refs.some((r: PictureObjectRef) => isObjectSizeProtected.call(this, r));
         this.pictureObjectRenderer.render(
           { pageIndex, x: minX, y: minY, width: maxX - minX, height: maxY - minY },
           zoom,
+          0,
+          locked,
         );
       } else {
         this.pictureObjectRenderer.clear();
@@ -358,15 +361,12 @@ export function renderPictureObjectSelection(this: any): void {
 
           // 회전각 조회 (shape + image)
           let rotAngle = 0;
-          if (ref.type === 'shape') {
-            try {
-              const props = this.wasm.getShapeProperties(ref.sec, ref.ppi, ref.ci);
-              rotAngle = (props.rotationAngle as number) ?? 0;
-            } catch { /* ignore */ }
-          } else if (ref.type === 'image') {
+          let locked = false;
+          if (ref.type !== 'equation') {
             try {
               const props = getObjectProperties.call(this, ref);
               rotAngle = (props.rotationAngle as number) ?? 0;
+              locked = !!props.sizeProtect;
             } catch { /* ignore */ }
           }
 
@@ -374,6 +374,7 @@ export function renderPictureObjectSelection(this: any): void {
             { pageIndex: p, x: bx, y: by, width: bw, height: bh },
             zoom,
             rotAngle,
+            locked,
           );
           return;
         }
@@ -460,6 +461,17 @@ export function setObjectProperties(this: any, ref: PictureObjectRef, props: Rec
   }
 }
 
+/** 크기 고정 개체인지 조회한다. 조회 실패 시 기존 조작 흐름을 막지 않는다. */
+export function isObjectSizeProtected(this: any, ref: PictureObjectRef | null | undefined): boolean {
+  if (!ref) return false;
+  try {
+    const props = getObjectProperties.call(this, ref);
+    return !!props?.sizeProtect;
+  } catch {
+    return false;
+  }
+}
+
 /** 개체를 타입에 따라 삭제한다. */
 export function deleteObjectControl(this: any, ref: PictureObjectRef): void {
   if (ref.type === 'shape' || ref.type === 'group' || ref.type === 'line') {
@@ -495,6 +507,7 @@ export function resizeSelectedPicture(this: any, key: ArrowKey): void {
     const pending: { r: PictureObjectRef; target: ObjectResizeTarget }[] = [];
     for (const r of targets) {
       const props = getObjectProperties.call(this, r);
+      if (props.sizeProtect) continue;
       const resized = computeArrowResize(key, props.width, props.height, step);
       if (!resized) continue;
       pending.push({
@@ -532,6 +545,60 @@ export function resizeSelectedPicture(this: any, key: ArrowKey): void {
 /** 1 page px = 7200/96 = 75 HWPUNIT */
 const PX_TO_HWP = 7200 / 96;
 // MIN_SIZE_HWP 는 picture-resize.ts 에서 import (드래그/키보드 리사이즈 공용 하한)
+
+function isCornerResizeDir(dir: string): boolean {
+  return dir === 'nw' || dir === 'ne' || dir === 'sw' || dir === 'se';
+}
+
+function isRotatedImageCornerResize(state: any, angleDeg: number): boolean {
+  const normalized = ((angleDeg % 360) + 360) % 360;
+  return state.ref?.type === 'image' && isCornerResizeDir(state.dir) && normalized !== 0;
+}
+
+function usesRotatedPictureFrame(state: any, angleDeg: number): boolean {
+  const normalized = ((angleDeg % 360) + 360) % 360;
+  return state.ref?.type === 'image' && normalized !== 0;
+}
+
+function frameFromActualPictureBbox(
+  bbox: { x: number; y: number; width: number; height: number },
+  angleDeg: number,
+  rotatedFrame: boolean,
+): { width: number; height: number; frameX: number; frameY: number } {
+  const actualW = Math.max(bbox.width, 1);
+  const actualH = Math.max(bbox.height, 1);
+  let frameW = actualW;
+  let frameH = actualH;
+
+  if (rotatedFrame) {
+    const rad = angleDeg * Math.PI / 180;
+    const cosA = Math.abs(Math.cos(rad));
+    const sinA = Math.abs(Math.sin(rad));
+    frameW = actualW * cosA + actualH * sinA;
+    frameH = actualW * sinA + actualH * cosA;
+  }
+
+  return {
+    width: Math.max(Math.round(frameW * PX_TO_HWP), MIN_SIZE_HWP),
+    height: Math.max(Math.round(frameH * PX_TO_HWP), MIN_SIZE_HWP),
+    frameX: bbox.x - Math.max(0, frameW - actualW) / 2,
+    frameY: bbox.y - Math.max(0, frameH - actualH) / 2,
+  };
+}
+
+function originalFrameTopLeftFromState(
+  state: any,
+  rotatedFrame: boolean,
+): { frameX: number; frameY: number } {
+  if (!rotatedFrame) return { frameX: state.bbox.x, frameY: state.bbox.y };
+
+  const frameW = Math.max((state.origWidth ?? 0) / PX_TO_HWP, state.bbox.w);
+  const frameH = Math.max((state.origHeight ?? 0) / PX_TO_HWP, state.bbox.h);
+  return {
+    frameX: state.bbox.x - Math.max(0, frameW - state.bbox.w) / 2,
+    frameY: state.bbox.y - Math.max(0, frameH - state.bbox.h) / 2,
+  };
+}
 
 /**
  * 회전각을 반영하여 리사이즈 후 새 bbox(비회전 기준)를 계산한다.
@@ -571,6 +638,16 @@ function calcResizedBboxRotated(
 
   // 최종 출력용 크기는 절대값 사용 (최소 크기는 아주 작게만 제한)
   const MIN = 1; 
+  if (isRotatedImageCornerResize(state, angleDeg)) {
+    const signX = dir.includes('e') ? 1 : -1;
+    const signY = dir.includes('s') ? 1 : -1;
+    const diagonal = Math.hypot(w0, h0) || 1;
+    const deltaAlongDiagonal = (signX * localDx * w0 + signY * localDy * h0) / diagonal;
+    const minScale = MIN / Math.max(w0, h0, MIN);
+    const scale = Math.max((diagonal + deltaAlongDiagonal) / diagonal, minScale);
+    valW = w0 * scale;
+    valH = h0 * scale;
+  }
   const newW = Math.max(Math.abs(valW), MIN);
   const newH = Math.max(Math.abs(valH), MIN);
 
@@ -597,6 +674,11 @@ export function updatePictureResizeDrag(this: any, e: MouseEvent): void {
   if (!this.pictureResizeState || !this.pictureObjectRenderer) return;
   const zoom = this.viewportManager.getZoom();
   const state = this.pictureResizeState;
+  if (isObjectSizeProtected.call(this, state.ref)) {
+    this.cleanupPictureResizeDrag();
+    this.renderPictureObjectSelection();
+    return;
+  }
 
   // 핸들은 고정, 예비 테두리만 갱신
   const rotAngle = (state.rotationAngle ?? 0) as number;
@@ -613,6 +695,11 @@ export function updatePictureResizeDrag(this: any, e: MouseEvent): void {
 
   // 다중 선택: 드래그 중 실시간으로 개체 크기/위치 반영
   if (state.multiRefs && state.multiRefs.length > 0) {
+    if (state.multiRefs.some((r: PictureObjectRef) => isObjectSizeProtected.call(this, r))) {
+      this.cleanupPictureResizeDrag();
+      this.renderPictureObjectSelection();
+      return;
+    }
     const scaleX = newBbox.width / state.bbox.w;
     const scaleY = newBbox.height / state.bbox.h;
     const origX = state.bbox.x;
@@ -635,8 +722,8 @@ export function updatePictureResizeDrag(this: any, e: MouseEvent): void {
         const newW = Math.max(Math.round(r.origWidth * sx), MIN_SIZE_HWP);
         const newH = Math.max(Math.round(r.origHeight * sy), MIN_SIZE_HWP);
         const updated: Record<string, unknown> = { width: newW, height: newH };
-        if (deltaH !== 0) updated['horzOffset'] = ((r.origHorzOffset + deltaH) >>> 0);
-        if (deltaV !== 0) updated['vertOffset'] = ((r.origVertOffset + deltaV) >>> 0);
+        if (deltaH !== 0) updated['horzOffset'] = r.origHorzOffset + deltaH;
+        if (deltaV !== 0) updated['vertOffset'] = r.origVertOffset + deltaV;
         setObjectProperties.call(this, r, updated);
       }
       this.eventBus.emit('document-changed');
@@ -645,23 +732,26 @@ export function updatePictureResizeDrag(this: any, e: MouseEvent): void {
 
   // 단일 선택 (그룹/shape/image 등): 드래그 중 실시간 크기/위치 반영
   if (!state.multiRefs && state.ref.type !== 'line') {
-    const newW = Math.max(Math.round(newBbox.width * PX_TO_HWP), MIN_SIZE_HWP);
-    const newH = Math.max(Math.round(newBbox.height * PX_TO_HWP), MIN_SIZE_HWP);
+    const rotatedFrame = usesRotatedPictureFrame(state, rotAngle);
+    const resizedFrame = frameFromActualPictureBbox(newBbox, rotAngle, rotatedFrame);
+    const originalFrame = originalFrameTopLeftFromState(state, rotatedFrame);
+    const newW = resizedFrame.width;
+    const newH = resizedFrame.height;
     // offset 은 페이지 절대값이 아니라 "저장 offset + 페이지좌표 델타"로 적용한다.
     // (중첩 picture 의 offset 은 컨테이너 상대 — 페이지 절대값이면 라이브 드래그 중
     //  이미지가 예비 테두리에서 벗어나 어긋난다. finishPictureResizeDrag 와 동일 방식.)
-    const newHorzOffset = Math.round(newBbox.x * PX_TO_HWP);
-    const newVertOffset = Math.round(newBbox.y * PX_TO_HWP);
-    const origHorzOffset = Math.round(state.bbox.x * PX_TO_HWP);
-    const origVertOffset = Math.round(state.bbox.y * PX_TO_HWP);
+    const newHorzOffset = Math.round(resizedFrame.frameX * PX_TO_HWP);
+    const newVertOffset = Math.round(resizedFrame.frameY * PX_TO_HWP);
+    const origHorzOffset = Math.round(originalFrame.frameX * PX_TO_HWP);
+    const origVertOffset = Math.round(originalFrame.frameY * PX_TO_HWP);
     const beforeHorzOffset = state.origHorzOffset ?? origHorzOffset;
     const beforeVertOffset = state.origVertOffset ?? origVertOffset;
     try {
       setObjectProperties.call(this, state.ref, {
         width: newW,
         height: newH,
-        horzOffset: ((beforeHorzOffset + (newHorzOffset - origHorzOffset)) >>> 0),
-        vertOffset: ((beforeVertOffset + (newVertOffset - origVertOffset)) >>> 0),
+        horzOffset: beforeHorzOffset + (newHorzOffset - origHorzOffset),
+        vertOffset: beforeVertOffset + (newVertOffset - origVertOffset),
       });
       this.eventBus.emit('document-changed');
     } catch { /* ignore */ }
@@ -671,6 +761,12 @@ export function updatePictureResizeDrag(this: any, e: MouseEvent): void {
 export function finishPictureResizeDrag(this: any, e: MouseEvent): void {
   const state = this.pictureResizeState;
   if (!state) { this.cleanupPictureResizeDrag(); return; }
+  if (isObjectSizeProtected.call(this, state.ref) ||
+      state.multiRefs?.some((r: PictureObjectRef) => isObjectSizeProtected.call(this, r))) {
+    this.cleanupPictureResizeDrag();
+    this.renderPictureObjectSelection();
+    return;
+  }
 
   const zoom = this.viewportManager.getZoom();
   const PX2HWP = PX_TO_HWP;
@@ -702,11 +798,11 @@ export function finishPictureResizeDrag(this: any, e: MouseEvent): void {
         const updated: Record<string, unknown> = { width: newW, height: newH };
         const before: Record<string, unknown> = { width: r.origWidth, height: r.origHeight };
         if (deltaH !== 0) {
-          updated['horzOffset'] = ((r.origHorzOffset + deltaH) >>> 0);
+          updated['horzOffset'] = r.origHorzOffset + deltaH;
           before['horzOffset'] = r.origHorzOffset;
         }
         if (deltaV !== 0) {
-          updated['vertOffset'] = ((r.origVertOffset + deltaV) >>> 0);
+          updated['vertOffset'] = r.origVertOffset + deltaV;
           before['vertOffset'] = r.origVertOffset;
         }
         const changed = Object.keys(updated).some(key => updated[key] !== before[key]);
@@ -728,12 +824,16 @@ export function finishPictureResizeDrag(this: any, e: MouseEvent): void {
 
   // 단일 선택 리사이즈 (회전 반영: pivot 고정, 위치도 갱신)
   const newBbox = calcResizedBboxRotated(state, e, zoom);
-  const newW = Math.max(Math.round(newBbox.width * PX2HWP), MIN_SIZE_HWP);
-  const newH = Math.max(Math.round(newBbox.height * PX2HWP), MIN_SIZE_HWP);
-  const newHorzOffset = Math.round(newBbox.x * PX2HWP);
-  const newVertOffset = Math.round(newBbox.y * PX2HWP);
-  const origHorzOffset = Math.round(state.bbox.x * PX2HWP);
-  const origVertOffset = Math.round(state.bbox.y * PX2HWP);
+  const rotAngle = (state.rotationAngle ?? 0) as number;
+  const rotatedFrame = usesRotatedPictureFrame(state, rotAngle);
+  const resizedFrame = frameFromActualPictureBbox(newBbox, rotAngle, rotatedFrame);
+  const originalFrame = originalFrameTopLeftFromState(state, rotatedFrame);
+  const newW = resizedFrame.width;
+  const newH = resizedFrame.height;
+  const newHorzOffset = Math.round(resizedFrame.frameX * PX2HWP);
+  const newVertOffset = Math.round(resizedFrame.frameY * PX2HWP);
+  const origHorzOffset = Math.round(originalFrame.frameX * PX2HWP);
+  const origVertOffset = Math.round(originalFrame.frameY * PX2HWP);
 
   try {
     const updated: Record<string, unknown> = {};
@@ -754,11 +854,11 @@ export function finishPictureResizeDrag(this: any, e: MouseEvent): void {
     const deltaHorz = newHorzOffset - origHorzOffset;
     const deltaVert = newVertOffset - origVertOffset;
     if (deltaHorz !== 0) {
-      updated['horzOffset'] = ((beforeHorzOffset + deltaHorz) >>> 0);
+      updated['horzOffset'] = beforeHorzOffset + deltaHorz;
       before['horzOffset'] = beforeHorzOffset;
     }
     if (deltaVert !== 0) {
-      updated['vertOffset'] = ((beforeVertOffset + deltaVert) >>> 0);
+      updated['vertOffset'] = beforeVertOffset + deltaVert;
       before['vertOffset'] = beforeVertOffset;
     }
     if (Object.keys(updated).length > 0) {
@@ -851,8 +951,8 @@ export function updatePictureMoveDrag(this: any, e: MouseEvent): void {
     for (const ref of targets) {
       const props = getObjectProperties.call(this, ref);
       setObjectProperties.call(this, ref, {
-        horzOffset: ((props.horzOffset + deltaH) >>> 0),
-        vertOffset: ((props.vertOffset + deltaV) >>> 0),
+        horzOffset: props.horzOffset + deltaH,
+        vertOffset: props.vertOffset + deltaV,
       });
     }
     this.pictureMoveState.lastPageX = px;
@@ -902,6 +1002,13 @@ export function finishPictureMoveDrag(this: any): void {
 /** 회전 드래그 중: 마우스 각도에 따라 실시간 회전 적용 */
 export function updatePictureRotateDrag(this: any, e: MouseEvent): void {
   if (!this.pictureRotateState) return;
+  if (isObjectSizeProtected.call(this, this.pictureRotateState.ref)) {
+    this.isPictureRotateDragging = false;
+    this.pictureRotateState = null;
+    this.container.style.cursor = '';
+    this.renderPictureObjectSelection();
+    return;
+  }
   const sc = this.container.querySelector('#scroll-content');
   if (!sc) return;
   const cr = sc.getBoundingClientRect();

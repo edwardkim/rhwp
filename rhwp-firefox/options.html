@@ -7,7 +7,10 @@
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 40px auto; padding: 0 20px; color: #333; }
     h1 { font-size: 20px; margin-bottom: 24px; }
     .option { margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .option.with-desc { align-items: flex-start; }
     .option label { cursor: pointer; }
+    .option-text { display: flex; flex-direction: column; gap: 3px; }
+    .option-desc { color: #6b7280; font-size: 12px; line-height: 1.45; }
     .saved { color: #16a34a; font-size: 13px; opacity: 0; transition: opacity 0.3s; }
     .saved.show { opacity: 1; }
     hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
@@ -30,6 +33,14 @@
   <div class="option">
     <input type="checkbox" id="hoverPreview" checked>
     <label for="hoverPreview" id="labelHoverPreview"></label>
+  </div>
+
+  <div class="option with-desc">
+    <input type="checkbox" id="disableExternalWebFonts">
+    <div class="option-text">
+      <label for="disableExternalWebFonts" id="labelDisableExternalWebFonts"></label>
+      <span class="option-desc" id="descDisableExternalWebFonts"></span>
+    </div>
   </div>
 
   <span class="saved" id="saved"></span>

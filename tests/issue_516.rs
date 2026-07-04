@@ -40,6 +40,7 @@ fn issue_516_image_attr_helper_watermark_by_bright_contrast() {
             brightness: b,
             contrast: c,
             effect: e,
+            transparency: 0,
             bin_data_id: 1,
             external_path: None,
         };
@@ -66,6 +67,7 @@ fn issue_516_image_attr_helper_no_watermark() {
             brightness: b,
             contrast: c,
             effect: e,
+            transparency: 0,
             bin_data_id: 0,
             external_path: None,
         };

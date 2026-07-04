@@ -240,9 +240,10 @@ fn issue_1050_hwpx_footnote_shape_contract() {
     // HWPX `<hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850">`
     assert_eq!(fs.raw_unknown, 283, "noteSpacing.betweenNotes=283");
     assert_eq!(fs.note_spacing, 567, "noteSpacing.belowLine=567");
-    assert_eq!(fs.separator_margin_bottom, 850, "noteSpacing.aboveLine=850");
-    // separator_margin_top: HWPX 미보유 → -1 default
-    assert_eq!(fs.separator_margin_top, -1, "default -1 sentinel");
+    assert_eq!(fs.separator_margin_top, 850, "noteSpacing.aboveLine=850");
+    assert_eq!(fs.between_notes_margin_hu(), 283, "공식 각주 사이");
+    assert_eq!(fs.separator_below_margin_hu(), 567, "공식 구분선 아래");
+    assert_eq!(fs.separator_above_margin_hu(), 850, "공식 구분선 위");
 }
 
 /// Stage 4-pivot: 각주 안 paragraph 의 HWP PARA_TEXT contract 정합.

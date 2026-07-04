@@ -10,8 +10,22 @@
 |------|------|
 | `scripts/metrics.sh` | 메트릭 수집 스크립트 (Bash) |
 | `scripts/dashboard.html` | Chart.js 기반 대시보드 (HTML) |
-| `output/metrics.json` | 수집된 메트릭 데이터 (자동 생성) |
-| `output/dashboard.html` | 대시보드 복사본 (자동 생성) |
+| `output/metrics.json` | 수집된 메트릭 데이터 (자동 생성, **비커밋** — `output/` 은 gitignore) |
+| `output/dashboard.html` | 대시보드 복사본 (자동 생성, 비커밋) |
+| `output/metrics_history/` | 실행별 이력 (최근 30개 롤링, 비커밋) — `metrics_history.json` 요약으로 델타 카드/추세 렌더 |
+| `mydocs/metrics/{날짜}/` | **커밋되는 스냅샷 보관소** — 의미 있는 시점의 측정 공유·추적 ([README](../metrics/README.md)) |
+
+## 스냅샷 보관 (커밋해 공유)
+
+`output/` 산출물은 gitignore 라 보존되지 않는다. **의미 있는 시점**(리팩토링 Phase 경계,
+릴리즈, 코드 리뷰)의 측정은 스냅샷으로 커밋해 컬래버레이터와 공유하고 추세를 추적한다:
+
+```bash
+./scripts/metrics.sh --snapshot   # 수집 + mydocs/metrics/{오늘날짜}/ 자동 보관
+```
+
+- 매 실행을 커밋하지 않는다 — 시점 선정 기준·목록은 `mydocs/metrics/README.md`.
+- 스냅샷 폴더는 `metrics.json` + `dashboard.html` 세트라 그 자리에서 바로 열람 가능.
 
 ## 실행 방법
 

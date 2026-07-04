@@ -662,7 +662,7 @@ export function buildBorderTab(
 
   function updateBdPreview(): void {
     const cssBorder = (st: BorderSideState) => {
-      if (st.type === 0) return '1px dashed #ccc';
+      if (st.type === 0) return '1px dashed #d0d0d0';
       const style = st.type === 8 ? 'double' : st.type === 3 ? 'dotted' : st.type === 2 ? 'dashed' : 'solid';
       const px = Math.max(1, Math.round((st.width + 1) * 0.8));
       return `${px}px ${style} ${st.color}`;

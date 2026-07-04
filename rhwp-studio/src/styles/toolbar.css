@@ -5,8 +5,8 @@
   display: flex;
   align-items: stretch;
   padding: 2px 8px;
-  background: linear-gradient(to bottom, #fafafa, #f0f0f0);
-  border-bottom: 1px solid #c8c8c8;
+  background: linear-gradient(to bottom, var(--ui-toolbar-bg-start), var(--ui-toolbar-bg-end));
+  border-bottom: 1px solid var(--ui-border);
   flex-shrink: 0;
   height: 56px;
   overflow: visible;
@@ -26,7 +26,7 @@
 .tb-sep {
   width: 1px;
   margin: 4px 4px;
-  background: #c0c0c0;
+  background: var(--ui-border);
   flex-shrink: 0;
 }
 
@@ -46,8 +46,8 @@
 }
 
 .tb-btn:hover {
-  background: #dfe4ec;
-  border-color: #b0b8c8;
+  background: var(--ui-hover-strong);
+  border-color: var(--ui-border-light);
 }
 
 /* 한컴 SVG 스프라이트 아이콘 시스템 */
@@ -55,7 +55,7 @@
   display: block;
   width: 18px;
   height: 18px;
-  background-image: url(/images/icon_small_ko.svg);
+  background-image: var(--ui-icon-sprite-url);
   background-repeat: no-repeat;
   flex-shrink: 0;
 }
@@ -78,7 +78,7 @@
   font-size: var(--font-size-lg);
   line-height: 18px;
   text-align: center;
-  color: #4a7abb;
+  color: var(--accent-light);
   font-family: serif;
 }
 
@@ -94,7 +94,7 @@
   font-size: var(--font-size-lg);
   line-height: 18px;
   text-align: center;
-  color: #4a7abb;
+  color: var(--accent-light);
   font-family: sans-serif;
 }
 .icon-grid          { background-position: calc(-40px * 13) calc(-40px * 2); }
@@ -144,7 +144,7 @@
   font-size: var(--font-size-xl);
   line-height: 18px;
   text-align: center;
-  color: #4a7abb;
+  color: var(--accent-light);
   flex-shrink: 0;
 }
 
@@ -182,7 +182,7 @@
   left: 0;
   min-width: 180px;
   background: var(--color-surface-raised);
-  border: 1px solid #b0b8c8;
+  border: 1px solid var(--ui-border-light);
   box-shadow: var(--shadow-light);
   z-index: 9000;
   padding: 2px 0;
@@ -203,7 +203,7 @@
 }
 
 .tb-split-item:hover {
-  background: #dfe4ec;
+  background: var(--ui-hover-strong);
 }
 
 .tb-split-shortcut {
@@ -215,7 +215,7 @@
 .tb-split-sep {
   height: 1px;
   margin: 2px 4px;
-  background: #d0d0d0;
+  background: var(--ui-border-light);
 }
 
 .tb-paste {
@@ -229,7 +229,7 @@
   padding: 0 12px;
   font-size: var(--font-size-md);
   font-weight: 600;
-  color: #2c5aa0;
+  color: var(--accent-strong);
   white-space: nowrap;
 }
 
@@ -240,7 +240,7 @@
   padding: 0 12px;
   font-size: var(--font-size-md);
   font-weight: 600;
-  color: #2c5aa0;
+  color: var(--accent-strong);
   white-space: nowrap;
 }
 
@@ -249,7 +249,7 @@
 }
 
 .tb-note-close .tb-icon-text {
-  color: #3f78d8;
+  color: var(--resize-handle);
   font-size: 28px;
   line-height: 18px;
 }

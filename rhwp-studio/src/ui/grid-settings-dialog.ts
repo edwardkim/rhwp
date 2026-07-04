@@ -109,17 +109,17 @@ export class GridSettingsDialog extends ModalDialog {
 
   private checkboxRow(input: HTMLInputElement, labelText: string): HTMLElement {
     const label = document.createElement('label');
-    label.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;';
+    label.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text);';
     label.append(input, document.createTextNode(labelText));
     return label;
   }
 
   private group(title: string): HTMLElement {
     const fieldset = document.createElement('fieldset');
-    fieldset.style.cssText = 'border:1px solid #d8dce5;padding:10px 12px 12px;margin:0;';
+    fieldset.style.cssText = 'border:1px solid var(--color-border-lighter);padding:10px 12px 12px;margin:0;';
     const legend = document.createElement('legend');
     legend.textContent = title;
-    legend.style.cssText = 'font-size:12px;color:#45506a;padding:0 4px;';
+    legend.style.cssText = 'font-size:12px;color:var(--color-primary-dark);padding:0 4px;';
     fieldset.appendChild(legend);
     return fieldset;
   }
@@ -132,10 +132,10 @@ export class GridSettingsDialog extends ModalDialog {
   ): HTMLElement {
     const fieldset = this.group(title);
     const row = document.createElement('div');
-    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px 14px;';
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px 14px;color:var(--color-text);';
     for (const [value, labelText] of options) {
       const label = document.createElement('label');
-      label.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:13px;';
+      label.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:13px;color:var(--color-text);';
       const input = document.createElement('input');
       input.type = 'radio';
       input.name = name;
@@ -151,14 +151,14 @@ export class GridSettingsDialog extends ModalDialog {
   private originGroup(): HTMLElement {
     const fieldset = this.group('격자 기준 위치');
     const row = document.createElement('div');
-    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px 14px;margin-bottom:8px;';
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px 14px;margin-bottom:8px;color:var(--color-text);';
 
     for (const [value, labelText] of [
       ['page', '쪽'],
       ['paper', '종이'],
     ] as [GridOrigin, string][]) {
       const label = document.createElement('label');
-      label.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:13px;';
+      label.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:13px;color:var(--color-text);';
       const input = document.createElement('input');
       input.type = 'radio';
       input.name = 'grid-origin';
@@ -188,18 +188,20 @@ export class GridSettingsDialog extends ModalDialog {
     input.max = String(max);
     input.step = '0.5';
     input.value = String(value);
+    input.className = 'dialog-input';
     input.style.cssText = 'width:78px;padding:3px 5px;';
     return input;
   }
 
   private numberRow(labelText: string, input: HTMLInputElement): HTMLElement {
     const row = document.createElement('label');
-    row.style.cssText = 'display:inline-flex;align-items:center;gap:6px;margin-right:12px;font-size:13px;';
+    row.style.cssText = 'display:inline-flex;align-items:center;gap:6px;margin-right:12px;font-size:13px;color:var(--color-text);';
     const label = document.createElement('span');
     label.textContent = labelText;
     label.style.minWidth = '56px';
     const unit = document.createElement('span');
     unit.textContent = 'mm';
+    unit.style.color = 'var(--color-text-secondary)';
     row.append(label, input, unit);
     return row;
   }

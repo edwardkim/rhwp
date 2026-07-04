@@ -1,5 +1,7 @@
 import type { EventBus } from '@/core/event-bus';
 import type { CommandDispatcher } from '@/command/dispatcher';
+import type { CommandRegistry } from '@/command/registry';
+import { syncMenuShortcutLabels } from './menu-shortcut-labels';
 
 /**
  * 메뉴바 드롭다운 컨트롤러
@@ -18,8 +20,10 @@ export class MenuBar {
     private container: HTMLElement,
     private eventBus: EventBus,
     private dispatcher: CommandDispatcher,
+    registry: CommandRegistry,
   ) {
     this.menuItems = Array.from(container.querySelectorAll('.menu-item'));
+    syncMenuShortcutLabels(container, registry);
     this.setupTitleClicks();
     this.setupTitleHover();
     this.setupItemClicks();

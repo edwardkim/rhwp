@@ -230,12 +230,24 @@ fn equation_only_tac_line_assignment(
         }
         let group_end = tac_idx;
 
-        let mut line_targets: Vec<usize> = (line_start..n_lines)
+        let group_len = group_end - group_start;
+        let all_line_targets: Vec<usize> = (line_start..n_lines)
             .filter(|&li| composed.lines[li].char_start == pos)
+            .collect();
+        let filtered_line_targets: Vec<usize> = all_line_targets
+            .iter()
+            .copied()
             .filter(|&li| {
                 !line_is_leading_empty_equation_tac_guide(para, composed, tac_offsets_px, li)
             })
             .collect();
+        let mut line_targets = if group_len > 1 && all_line_targets.len() >= group_len {
+            // 같은 char_start에 여러 TAC 수식이 있고 저장 LINE_SEG도 같은 수만큼 있으면
+            // 선행 빈 guide 줄도 한컴의 물리 수식 줄로 보존한다.
+            all_line_targets
+        } else {
+            filtered_line_targets
+        };
 
         if line_targets.is_empty() {
             let fallback = (line_start..n_lines)
