@@ -409,7 +409,7 @@ gh pr merge N --repo edwardkim/rhwp --merge --admin
 2. 후속 문서/asset 처리 필요 여부 확정
 3. 필요한 경우 문서/asset PR 생성, CI 확인, merge
 4. `devel` 을 `upstream/devel` 로 fast-forward sync
-5. 관련 이슈 close 여부 확인 및 필요한 경우 issue close/comment
+5. 관련 이슈 close 여부 확인 및 issue 후속 코멘트 작성
 6. 원 PR 또는 supersede 된 PR 에 review comment 작성
 7. 원 PR/후속 PR 의 로컬·원격 브랜치와 worktree 정리
 8. 잔여 worktree, 로컬 브랜치, 원격 head 브랜치가 없는지 검증
@@ -453,7 +453,7 @@ git merge --ff-only upstream/devel
 현재 브랜치, 미커밋 변경, 로컬 전용 커밋 여부를 확인하고 작업지시자에게 보고한다. collaborator 작업 기준
 브랜치는 로컬 `devel` 이며, `local/devel` 예시는 사용하지 않는다.
 
-### 7.3 이슈 Close 확인
+### 7.3 이슈 Close 확인 및 후속 코멘트
 
 GitHub auto-close 가 **자주 실패**한다. 후속 문서/asset PR 이 필요한 경우에는 해당 PR merge 와 devel sync 후
 수동 확인한다.
@@ -462,11 +462,26 @@ GitHub auto-close 가 **자주 실패**한다. 후속 문서/asset PR 이 필요
 gh issue view N --repo edwardkim/rhwp --json state,closedAt
 ```
 
-`state: OPEN` 이면 수동 close + 감사 코멘트:
+`state: OPEN` 이면 수동 close + 후속 코멘트:
 
 ```bash
 gh issue close N --repo edwardkim/rhwp --comment "PR #M 머지로 해결 (by @작성자). ..."
 ```
+
+`state: CLOSED` 이고 GitHub auto-close 가 이미 동작했더라도 후속 코멘트는 생략하지 않는다. 자동 close 는
+상태만 닫을 뿐, 어떤 검증과 시각 자료를 근거로 처리했는지 이슈 타임라인에 남기지 못한다. 따라서 관련 이슈가
+PR description 의 `Closes #N` 로 자동 종료된 경우에도, 해당 이슈에 다음 내용을 실제 줄바꿈이 있는
+heredoc/`--body-file` 방식으로 남긴다.
+
+- merge 된 PR 번호와 merge commit
+- GitHub Actions 및 로컬 검증 요약
+- 관련 기준 PDF/시각 검증 asset 링크
+- 남은 후속 과제 유무
+- auto-close 로 이미 `CLOSED` 상태임을 확인했다는 기록
+
+단, 이미 같은 merge commit 과 같은 검증 자료를 담은 maintainer 후속 코멘트가 해당 이슈에 있으면 중복 작성하지
+않고 기존 코멘트 URL 을 상태 보고에 남긴다. GitHub Actions bot 의 auto-close 코멘트만 있는 상태는 후속
+코멘트 완료로 보지 않는다.
 
 ### 7.4 기여자 감사 코멘트
 
