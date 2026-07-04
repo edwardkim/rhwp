@@ -104,6 +104,30 @@ fn format_endnote_marker_text(endnote: &crate::model::footnote::Endnote) -> Stri
     format!("{}{}{}", prefix, number, suffix)
 }
 
+fn is_autonum_placeholder_at(para: &Paragraph, chars: &[char], idx: usize) -> bool {
+    if chars.get(idx) != Some(&' ') {
+        return false;
+    }
+    if idx > 0 {
+        let Some(current_offset) = para.char_offsets.get(idx).copied() else {
+            return false;
+        };
+        let Some(prev_offset) = para.char_offsets.get(idx - 1).copied() else {
+            return false;
+        };
+        let prev_width = chars
+            .get(idx - 1)
+            .map(|ch| if (*ch as u32) > 0xFFFF { 2 } else { 1 })
+            .unwrap_or(1);
+        return current_offset >= prev_offset.saturating_add(prev_width).saturating_add(7);
+    }
+
+    para.char_offsets
+        .get(1)
+        .copied()
+        .is_some_and(|next_offset| next_offset >= 8)
+}
+
 fn prepend_endnote_marker_text(para: &mut Paragraph, endnote: &crate::model::footnote::Endnote) {
     use crate::model::control::Control;
     let marker = format_endnote_marker_text(endnote);
@@ -127,39 +151,38 @@ fn prepend_endnote_marker_text(para: &mut Paragraph, endnote: &crate::model::foo
         let chars: Vec<char> = para.text.chars().collect();
         // autoNum placeholder(공백 1글자)의 실제 위치: 중간 제어는 pos, 본문 끝
         // trailing 제어는 control_text_positions 가 chars.len() 를 반환하므로 pos-1.
-        let placeholder = if pos < text_len && chars.get(pos) == Some(&' ') {
+        let placeholder = if pos < text_len && is_autonum_placeholder_at(para, &chars, pos) {
             Some(pos)
-        } else if pos > 0 && chars.get(pos - 1) == Some(&' ') {
+        } else if pos > 0 && is_autonum_placeholder_at(para, &chars, pos - 1) {
             Some(pos - 1)
         } else {
             None
         };
-        let cs = placeholder
-            .and_then(|p| para.char_shape_id_at(p))
-            .or_else(|| para.char_shape_id_at(0));
-        let insert_at = match placeholder {
-            Some(p) => {
-                para.delete_text_at(p, 1); // placeholder 제거 → 번호가 그 자리 차지
-                p
+        if let Some(insert_at) = placeholder {
+            let cs = para
+                .char_shape_id_at(insert_at)
+                .or_else(|| para.char_shape_id_at(0));
+            para.delete_text_at(insert_at, 1); // placeholder 제거 → 번호가 그 자리 차지
+            para.insert_text_at(insert_at, &marker);
+            if let Some(id) = cs {
+                para.apply_char_shape_range(insert_at, marker.chars().count(), id);
             }
-            None => pos.min(text_len),
-        };
-        para.insert_text_at(insert_at, &marker);
-        if let Some(id) = cs {
-            para.apply_char_shape_range(insert_at, marker.chars().count(), id);
+            // 번호를 이미 텍스트로 렌더했으므로 제어는 소비(중복 렌더/placeholder 박스 방지).
+            if let Some(i) = para
+                .controls
+                .iter()
+                .position(|c| matches!(c, Control::AutoNumber(_)))
+            {
+                para.controls.remove(i);
+            }
+            return;
         }
-        // 번호를 이미 텍스트로 렌더했으므로 제어는 소비(중복 렌더/placeholder 박스 방지).
-        if let Some(i) = para
-            .controls
-            .iter()
-            .position(|c| matches!(c, Control::AutoNumber(_)))
-        {
-            para.controls.remove(i);
-        }
-        return;
     }
 
-    // 인라인 autoNum 제어 없음(HWP3/합성 경로): 기존 문두 prepend fallback.
+    // 인라인 autoNum 제어가 없거나 char_offsets 의 8-unit slot 으로 확인되는
+    // placeholder 공백이 없으면 기존 문두 prepend fallback 을 사용한다. 실물 HWP
+    // 미주 중에는 trailing padding 공백 뒤에 autoNum 제어가 붙은 구조가 있어, 단순
+    // 공백 여부만으로 위치 삽입하면 저장 lineSeg 폭과 marker 위치를 깨뜨린다.
     let leading_spaces = para
         .text
         .chars()
