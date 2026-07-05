@@ -1610,12 +1610,25 @@ fn render_common_shape_xml(
             let fb = writer_to_string(|w| super::shape::write_fill_brush(w, &d.fill, ctx))
                 .unwrap_or_default();
             let sh = writer_to_string(|w| super::shape::write_shadow(w, d)).unwrap_or_default();
+            // [Issue #1944] drawText(도형 내 글상자 문단) — rect 경로(shape.rs write_rect)는
+            // shadow 직후 방출하나 legacy 공용 경로(ellipse/arc/polygon/curve)는 누락해
+            // 도형 안 텍스트가 저장 시 소실됐다(순서도 마름모 라벨 등). OWPML 순서
+            // (shadow → drawText → hc:pt) 대로 shadow 와 points 사이에 방출한다.
+            let dt = d
+                .text_box
+                .as_ref()
+                .filter(|tb| !tb.paragraphs.is_empty())
+                .map(|tb| {
+                    writer_to_string(|w| super::shape::write_draw_text(w, tb, ctx))
+                        .unwrap_or_default()
+                })
+                .unwrap_or_default();
             let pts: String = points
                 .iter()
                 .map(|p| format!(r#"<hc:pt x="{}" y="{}"/>"#, p.x, p.y))
                 .collect();
             // [#1598] ellipse/arc 전용 지오메트리(center/축/시작끝점)는 hc:pt 와 상호배타.
-            format!("{ls}{fb}{sh}{pts}{geom_tail}")
+            format!("{ls}{fb}{sh}{dt}{pts}{geom_tail}")
         })
         .unwrap_or_default();
     // 태그 부수 속성 — numberingType/dropcapstyle/href/groupLevel/instid (rect/line 동형).
@@ -2032,6 +2045,47 @@ fn render_page_border_fill(ty: &str, pbf: &crate::model::page::PageBorderFill) -
 mod tests {
     use super::*;
     use crate::model::paragraph::{CharShapeRef, Paragraph};
+
+    /// [Issue #1944] legacy 공용 도형 경로(polygon/ellipse/arc/curve)가 도형 내
+    /// 글상자(drawText) 문단을 방출해야 한다 — 종전 누락으로 도형 안 텍스트 소실.
+    #[test]
+    fn common_shape_emits_draw_text_for_legacy_shapes() {
+        use crate::model::shape::{CommonObjAttr, DrawingObjAttr, TextBox};
+
+        let mut para = Paragraph::default();
+        para.text = "마름모라벨".to_string();
+
+        let drawing = DrawingObjAttr {
+            text_box: Some(TextBox {
+                paragraphs: vec![para],
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let c = CommonObjAttr::default();
+        let mut ctx = SerializeContext::default();
+
+        let xml = render_common_shape_xml("polygon", &c, &None, Some(&drawing), &[], "", &mut ctx);
+        assert!(
+            xml.contains("<hp:drawText"),
+            "polygon 도형이 drawText 를 방출해야 함: {xml}"
+        );
+        assert!(
+            xml.contains("마름모라벨"),
+            "글상자 문단 텍스트가 보존되어야 함"
+        );
+        // 빈 글상자는 미방출 (rect 경로와 동일 계약).
+        let empty = DrawingObjAttr {
+            text_box: Some(TextBox::default()),
+            ..Default::default()
+        };
+        let xml_empty =
+            render_common_shape_xml("polygon", &c, &None, Some(&empty), &[], "", &mut ctx);
+        assert!(
+            !xml_empty.contains("<hp:drawText"),
+            "빈 글상자는 drawText 를 방출하지 않아야 함"
+        );
+    }
 
     /// [Task #1627] empty-text(객체-only) 문단에서 bookmark 는 문단 시작으로 끌려가지 않고
     /// para.controls 순서대로 in-order 방출되어야 한다(원본 컨트롤 순서 보존).
