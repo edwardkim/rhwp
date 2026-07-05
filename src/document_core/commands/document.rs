@@ -276,7 +276,12 @@ impl DocumentCore {
                 .unwrap_or(layout.body_area.width);
 
             let mut body_line_seg_changed = false;
-            for para in &mut section.paragraphs {
+            // [Issue #1920] vpos 재계산(아래) 시 저장 vpos 의 새 쪽 시작 신호를 보존하기
+            // 위해, 이번 패스에서 LINE_SEG 가 합성(reflow)된 문단 — 저장 vpos 신뢰 불가 —
+            // 을 기록한다.
+            let mut reflowed_paras: std::collections::HashSet<usize> =
+                std::collections::HashSet::new();
+            for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                 // 본문 문단 reflow
                 if Self::needs_line_seg_reflow(para, include_empty) {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
@@ -285,6 +290,7 @@ impl DocumentCore {
                     let available_width = (col_width - margin_left - margin_right).max(1.0);
                     reflow_line_segs(para, available_width, styles, dpi);
                     body_line_seg_changed = true;
+                    reflowed_paras.insert(pi);
                 }
 
                 // HWPX: TAC 표가 있는 문단의 LINE_SEG lh 보정
@@ -378,7 +384,45 @@ impl DocumentCore {
             // 저장한 HWPX의 vertpos까지 덮어써 page sequence가 어긋난다 (#949 Stage 32).
             if body_line_seg_changed {
                 let mut running_vpos: i32 = 0;
-                for para in section.paragraphs.iter_mut() {
+                // [Issue #1920] 직전까지 본 "원본(비합성) lineseg 보유 문단"의 마지막 저장
+                // vpos. 결재문서류 생성기는 새 쪽 시작 문단(발신명의 틀 host)에 vpos=0 을
+                // 저장하는데, 이 재계산이 연속 좌표로 덮어쓰면 typeset 의 vpos-reset 쪽나눔
+                // (#321, paragraph_saved_vpos_reset_starts_new_page_after)이 무력화되어
+                // 한글이 다음 쪽에 두는 틀이 이전 쪽에 흡수된다(36417450 pi8, 1쪽 vs 2쪽).
+                // 원본 first vpos=0 + 직전 저장 vpos>5000(동일 임계) + 쪽 하단 고정 틀
+                // (vert=쪽·valign=Bottom, 발신명의 서명란·직인 틀) host 문단에서만
+                // running_vpos 를 0 으로 되돌려 리셋 신호를 재계산 좌표계에 보존한다.
+                // 틀 host 한정인 이유: 일반 문단의 mid-doc vpos=0 은 생성기 노이즈일 수
+                // 있어(task1749 pi2/47) 전면 보존 시 무관 문서의 배치가 흔들린다.
+                // wrap 은 불문 — 자리차지(발신명의)와 글뒤로(직인 도장, 36408321 pi12)
+                // 모두 같은 새 쪽 시그니처다.
+                let mut prev_stored_last_vpos: i32 = 0;
+                for (pi, para) in section.paragraphs.iter_mut().enumerate() {
+                    let was_reflowed = reflowed_paras.contains(&pi);
+                    let hosts_bottom_fixed_frame = para.controls.iter().any(|c| {
+                        matches!(c, Control::Table(t)
+                        if !t.common.treat_as_char
+                            && matches!(
+                                t.common.vert_rel_to,
+                                crate::model::shape::VertRelTo::Page
+                            )
+                            && matches!(
+                                t.common.vert_align,
+                                crate::model::shape::VertAlign::Bottom
+                            ))
+                    });
+                    if !was_reflowed
+                        && hosts_bottom_fixed_frame
+                        && prev_stored_last_vpos > 5000
+                        && para.line_segs.first().map(|s| s.vertical_pos) == Some(0)
+                    {
+                        running_vpos = 0;
+                    }
+                    let original_last_vpos = if was_reflowed {
+                        None
+                    } else {
+                        para.line_segs.last().map(|s| s.vertical_pos)
+                    };
                     // 문단의 첫 LINE_SEG vpos를 running_vpos로 갱신
                     if let Some(first_seg) = para.line_segs.first_mut() {
                         first_seg.vertical_pos = running_vpos;
@@ -445,6 +489,9 @@ impl DocumentCore {
                         }
                     }
                     running_vpos = inner_vpos;
+                    if let Some(v) = original_last_vpos {
+                        prev_stored_last_vpos = v;
+                    }
                 }
             }
         }
