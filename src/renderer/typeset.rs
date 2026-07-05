@@ -2432,6 +2432,16 @@ impl TypesetEngine {
                 }
             }
 
+            // [#1956] 명시적 쪽나누기 문단부터는 wrap 밴드 무효 — 새 쪽에는 anchor
+            // 개체가 없으므로 후속 문단을 옆에 흡수하면 안 된다. current_items 가 비어
+            // 있어 force_new_page 를 생략하는 경우에도 사용자 의도(새 쪽)는 동일하므로
+            // 밴드는 해제한다. (법령안 신구조문대비표: 쪽나누기 표제가 흡수되어 pi 6쪽 이탈)
+            if (force_page_break || para_style_break) && st.wrap_around_cs >= 0 {
+                st.wrap_around_cs = -1;
+                st.wrap_around_sw = -1;
+                st.wrap_around_any_seg = false;
+            }
+
             if (force_page_break || para_style_break || variant_vpos_reset_break)
                 && !st.current_items.is_empty()
             {
@@ -3287,17 +3297,29 @@ impl TypesetEngine {
                         {
                             st.wrap_around_cs = strip_cs;
                             st.wrap_around_sw = strip_sw;
+                            st.wrap_around_table_para = para_idx;
+                            st.wrap_around_any_seg = false;
                         } else {
-                            st.wrap_around_cs =
+                            let anchor_cs =
                                 para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
-                            st.wrap_around_sw = para
+                            let anchor_sw = para
                                 .line_segs
                                 .first()
                                 .map(|s| s.segment_width as i32)
                                 .unwrap_or(0);
+                            // [#1956] anchor LINE_SEG 가 단 전체 폭이면(표가 본문 폭
+                            // 이상 = 옆 공간 없음) 후속 전체 폭 문단들이 전부 오매칭
+                            // 되므로 arming 하지 않는다. sw=0 은 기존 sw0_match 담당.
+                            let col_w_hu = st.layout.column_width_hu();
+                            let band_full_width =
+                                anchor_sw > 0 && (anchor_sw - col_w_hu).abs() < 3000;
+                            if !band_full_width {
+                                st.wrap_around_cs = anchor_cs;
+                                st.wrap_around_sw = anchor_sw;
+                                st.wrap_around_table_para = para_idx;
+                                st.wrap_around_any_seg = false;
+                            }
                         }
-                        st.wrap_around_table_para = para_idx;
-                        st.wrap_around_any_seg = false;
                     }
                 }
             }
@@ -3339,7 +3361,10 @@ impl TypesetEngine {
                         .first()
                         .map(|s| s.segment_width as i32)
                         .unwrap_or(0);
-                    if anchor_cs > 0 || anchor_sw > 0 {
+                    // [#1956] 전체 폭 밴드 가드 — 옆 공간이 없으면 arming 하지 않는다.
+                    let col_w_hu = st.layout.column_width_hu();
+                    let band_full_width = anchor_sw > 0 && (anchor_sw - col_w_hu).abs() < 3000;
+                    if (anchor_cs > 0 || anchor_sw > 0) && !band_full_width {
                         st.wrap_around_cs = anchor_cs;
                         st.wrap_around_sw = anchor_sw;
                         st.wrap_around_table_para = para_idx;
