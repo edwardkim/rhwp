@@ -169,6 +169,76 @@ fn test_build_page_with_paragraph() {
     assert!(!body.children.is_empty());
 }
 
+/// [Issue #1945] PartialParagraph 의 start_line 이 조판 라인 수를 넘어도
+/// 패닉하지 않아야 한다 (실문서 크래시 — paragraph_layout.rs 슬라이스 범위 밖).
+/// 수정 전에는 `composed.lines[start_line..end]` 직접 인덱싱이
+/// "range start index N out of range" 로 패닉했다.
+#[test]
+fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
+    let engine = LayoutEngine::with_default_dpi();
+    let layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
+
+    // 조판 라인 1개짜리 문단.
+    let paragraphs = vec![Paragraph {
+        text: "한 줄".to_string(),
+        line_segs: vec![LineSeg {
+            line_height: 400,
+            baseline_distance: 320,
+            ..Default::default()
+        }],
+        ..Default::default()
+    }];
+    let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
+    let styles = ResolvedStyleSet::default();
+
+    let page_content = PageContent {
+        page_index: 0,
+        page_number: 0,
+        section_index: 0,
+        layout,
+        column_contents: vec![ColumnContent {
+            column_index: 0,
+            start_height: 0.0,
+            endnote_flow: false,
+            // start_line(5) > 조판 라인 수(1) — 이월 오버슛 재현.
+            items: vec![PageItem::PartialParagraph {
+                para_index: 0,
+                start_line: 5,
+                end_line: 6,
+            }],
+            zone_layout: None,
+            zone_y_offset: 0.0,
+            wrap_around_paras: Vec::new(),
+            used_height: 0.0,
+            wrap_anchors: std::collections::HashMap::new(),
+        }],
+        active_header: None,
+        active_footer: None,
+        page_number_pos: None,
+        page_hide: None,
+        footnotes: Vec::new(),
+        active_master_page: None,
+        extra_master_pages: Vec::new(),
+    };
+
+    // 패닉 없이 반환하면 성공 (범위 밖 조각은 빈 렌더).
+    let _tree = engine.build_render_tree(
+        &page_content,
+        &paragraphs,
+        &paragraphs,
+        &paragraphs,
+        &composed,
+        &styles,
+        &FootnoteShape::default(),
+        &[],
+        None,
+        &[],
+        None,
+        0,
+        &[],
+    );
+}
+
 #[test]
 fn test_layout_with_composed_styles() {
     use crate::renderer::style_resolver::ResolvedCharStyle;

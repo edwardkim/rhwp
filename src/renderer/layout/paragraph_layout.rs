@@ -1648,9 +1648,17 @@ impl LayoutEngine {
 
         // 문단 전체에서 모든 라인의 runs가 비어있는지 확인
         // (텍스트 없이 TAC 이미지만 있는 문단)
-        let all_runs_empty = composed.lines[start_line..end]
-            .iter()
-            .all(|l| l.runs.is_empty());
+        //
+        // [Issue #1945] `start_line` 은 PartialTable/Partial 이월 경로에서 인자로
+        // 전달되며 `end`(= end_line.min(lines.len())) 와 독립 계산이라, 이월 루프가
+        // 조판 라인 수를 넘겨 `start_line > end`(또는 > lines.len())가 되면 직접
+        // 슬라이스가 패닉했다(실문서 크래시). 아래 렌더 루프(`for line_idx in
+        // start_line..end`)는 빈 범위를 안전히 처리하므로, 여기서도 `get()` 으로
+        // 방어해 범위 밖이면 "가시 run 없음"(vacuously true)으로 본다.
+        let all_runs_empty = composed
+            .lines
+            .get(start_line..end)
+            .map_or(true, |slice| slice.iter().all(|l| l.runs.is_empty()));
 
         // 개요 번호/글머리표 마커 폭 사전 계산 (첫 줄 가용폭 차감용)
         let numbering_width = if start_line == 0 {
