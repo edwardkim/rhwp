@@ -12373,9 +12373,10 @@ impl TypesetEngine {
                 None => (f64::NAN, 0, 0.0),
             };
             eprintln!(
-                "TABLE_DRIFT: pi={} sec={} eff_h={:.1} host_sp={:.1} table_total={:.1} mt_sum={:.1} mt_rows={} cs={:.1} cur_h={:.1} tac={} rows={}",
+                "TABLE_DRIFT: pi={} sec={} eff_h={:.1} host_sp={:.1} table_total={:.1} mt_sum={:.1} mt_rows={} cs={:.1} cur_h={:.1} tac={} rows={} avail={:.1} base={:.1} fn={:.1} zone={:.1}",
                 para_idx, st.section_index, ft.effective_height, host_spacing_total, table_total,
                 mt_sum, mt_rows, mt_cs, st.current_height, table.common.treat_as_char, table.row_count,
+                available, st.base_available_height(), total_footnote, st.current_zone_y_offset,
             );
         }
         // [Task #1027 Stage E1] treat_as_char 인라인 표 advance 정합.
