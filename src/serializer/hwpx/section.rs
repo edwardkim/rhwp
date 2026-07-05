@@ -673,6 +673,30 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         // 슬롯이 아니라 fieldEnd 소유다. 슬롯 방출을 양보해 텍스트-끝 슬롯(newNum 등)이
         // fieldEnd 자리를 가로채지 못하게 한다 (0-length 필드는 아래 pre-char 경로가 처리).
         while slot_idx < slots.len() && char_pos >= expected_utf16_pos.saturating_add(8) {
+            // [Issue #1948] 이 갭(expected_utf16_pos)이 미방출 **고아(교차 문단)
+            // fieldEnd** 소유면 슬롯 방출을 양보한다. 종전엔 field_ranges 의 fieldEnd
+            // 만 갭을 지켰고(위 주석 #1407) 고아 fieldEnd 는 while 뒤(char_idx==idx)에서
+            // 방출돼, 말미 슬롯(표 등)이 고아 fieldEnd 의 8유닛 갭을 먼저 가로채
+            // char_offsets 가 +8 밀렸다(36380743 문단 0.10: 표가 fieldEnd 자리로 당겨짐).
+            // 갭 소유자인 고아 fieldEnd 를 먼저 방출하고 while 을 재평가한다.
+            if let Some(oi) = para
+                .orphan_field_ends
+                .iter()
+                .enumerate()
+                .position(|(i, ofe)| ofe.char_idx == idx && !orphan_emitted[i])
+            {
+                flush_text_fragment(
+                    &mut splitter.content,
+                    &mut text_buf,
+                    &para.tab_extended,
+                    &mut tab_idx,
+                );
+                splitter.cut_before(expected_utf16_pos);
+                emit_orphan_field_end(&mut splitter.content, &para.orphan_field_ends[oi]);
+                expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                orphan_emitted[oi] = true;
+                continue;
+            }
             flush_text_fragment(
                 &mut splitter.content,
                 &mut text_buf,
