@@ -67,6 +67,11 @@ impl HwpxReader {
     /// 지정한 경로의 파일을 UTF-8 문자열로 읽는다.
     ///
     /// 엔트리 압축 해제 크기는 [`MAX_XML_SIZE`]로 제한된다.
+    ///
+    /// [Issue #1932] UTF-8 이 부분 손상된 실문서(통계청 보도자료 계열 —
+    /// header.xml 선두부 invalid byte)를 한글은 정상 열람하므로, 엄격 변환
+    /// 실패 시 관용(lossy) 디코딩으로 폴백한다 (손상 바이트는 U+FFFD 치환,
+    /// 경고 로그). 문서 전체를 버리는 종전 동작은 한글 대비 과잉 거부였다.
     pub fn read_file(&mut self, path: &str) -> Result<String, HwpxError> {
         let mut file = self
             .archive
@@ -74,8 +79,17 @@ impl HwpxReader {
             .map_err(|e| HwpxError::MissingFile(format!("{}: {}", path, e)))?;
         let bytes = read_limited(&mut file, MAX_XML_SIZE)
             .map_err(|e| HwpxError::ZipError(format!("{} 읽기 실패: {}", path, e)))?;
-        String::from_utf8(bytes)
-            .map_err(|e| HwpxError::ZipError(format!("{} UTF-8 변환 실패: {}", path, e)))
+        match String::from_utf8(bytes) {
+            Ok(s) => Ok(s),
+            Err(e) => {
+                eprintln!(
+                    "경고: {} UTF-8 손상({}) — 관용(lossy) 디코딩 적용 (U+FFFD 치환)",
+                    path,
+                    e.utf8_error()
+                );
+                Ok(String::from_utf8_lossy(e.as_bytes()).into_owned())
+            }
+        }
     }
 
     /// 지정한 경로의 파일을 바이트 배열로 읽는다.
@@ -130,6 +144,37 @@ mod tests {
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert_eq!(err.kind(), io::ErrorKind::InvalidData);
+    }
+
+    /// [#1932] UTF-8 부분 손상 엔트리는 lossy 폴백으로 수용되어야 한다
+    /// (한글 정합 — 통계청 보도자료 header.xml invalid byte 실측 대응).
+    #[test]
+    fn test_invalid_utf8_entry_lossy_accepted() {
+        use std::io::Write;
+        use zip::write::SimpleFileOptions;
+        use zip::ZipWriter;
+
+        let mut out = Cursor::new(Vec::<u8>::new());
+        {
+            let mut zip = ZipWriter::new(&mut out);
+            let opts =
+                SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+            zip.start_file("Contents/header.xml", opts).unwrap();
+            // 유효 XML 사이에 invalid UTF-8 바이트(0x93) 삽입 — 실측 케이스 모사
+            zip.write_all(b"<hwpml>\x93</hwpml>").unwrap();
+            zip.finish().unwrap();
+        }
+        let bytes = out.into_inner();
+        let mut reader = HwpxReader::open(&bytes).unwrap();
+        let s = reader
+            .read_file("Contents/header.xml")
+            .expect("#1932: 손상 UTF-8 은 lossy 폴백으로 수용되어야 함");
+        assert!(s.starts_with("<hwpml>"));
+        assert!(
+            s.contains('\u{FFFD}'),
+            "손상 바이트는 U+FFFD 로 치환: {s:?}"
+        );
+        assert!(s.ends_with("</hwpml>"));
     }
 
     /// 해제 시 상한을 넘는 엔트리가 포함된 ZIP은 `ZipError`로 거부되어야 한다.
