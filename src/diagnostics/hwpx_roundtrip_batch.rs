@@ -95,6 +95,9 @@ struct RoundtripRow {
     /// [#1914] 매직 바이트 실체가 HWPX(ZIP)가 아닌 확장자 위장 파일 — 검출된
     /// 실체 포맷명. HWPX 구조 게이트의 범위 밖이므로 실패가 아닌 스킵으로 분류.
     format_skip: Option<&'static str>,
+    /// [#1946] ODF 암호화(비밀번호 보호) HWPX — 복호화 미지원. 게이트 범위 밖
+    /// 이므로 실패가 아닌 스킵으로 분류(FORMAT_SKIP 과 동형).
+    encrypted_skip: bool,
     /// #1380 측정 전용 — round1(원본 vs RT) lineseg diff. `--lineseg-report` 시에만 수집.
     lineseg_r1: Vec<LinesegDiff>,
     /// #1380 측정 전용 — round2(RT vs RT²) lineseg diff.
@@ -105,6 +108,8 @@ impl RoundtripRow {
     fn status(&self) -> &'static str {
         if self.format_skip.is_some() {
             "FORMAT_SKIP"
+        } else if self.encrypted_skip {
+            "ENCRYPTED_SKIP"
         } else if !self.parse_ok {
             "PARSE_FAIL"
         } else if !self.serialize_ok {
@@ -126,8 +131,8 @@ impl RoundtripRow {
 
     /// 회귀 검출용 하드 실패 (등급화 대상 분류와 별개).
     fn is_hard_fail(&self) -> bool {
-        if self.format_skip.is_some() {
-            // [#1914] 확장자 위장(실체 비-HWPX)은 게이트 범위 밖 — 실패 아님.
+        if self.format_skip.is_some() || self.encrypted_skip {
+            // [#1914/#1946] 확장자 위장(실체 비-HWPX)·암호화 문서는 게이트 범위 밖 — 실패 아님.
             return false;
         }
         !(self.parse_ok && self.serialize_ok && self.reparse_ok)
@@ -169,6 +174,7 @@ fn roundtrip_one(
         elapsed_ms: 0,
         error: String::new(),
         format_skip: None,
+        encrypted_skip: false,
         lineseg_r1: Vec::new(),
         lineseg_r2: Vec::new(),
     };
@@ -202,6 +208,10 @@ fn roundtrip_one(
     let doc1 = match parse_hwpx(&bytes) {
         Ok(d) => d,
         Err(e) => {
+            // [#1946] 암호화 HWPX 는 게이트 범위 밖 — PARSE_FAIL 대신 ENCRYPTED_SKIP.
+            if e.is_encrypted() {
+                row.encrypted_skip = true;
+            }
             row.error = format!("파싱 실패: {e}");
             return finish(row, started);
         }
@@ -401,6 +411,7 @@ fn print_summary(rows: &[RoundtripRow]) {
     println!("  PKG_FAIL       : {}", count("PKG_FAIL"));
     println!("  ROUND2_DIFF    : {}", count("ROUND2_DIFF"));
     println!("  ROUND2_FAIL    : {}", count("ROUND2_FAIL"));
+    println!("  ENCRYPTED_SKIP : {}", count("ENCRYPTED_SKIP"));
     println!("  PARSE_FAIL     : {}", count("PARSE_FAIL"));
     println!("  SERIALIZE_FAIL : {}", count("SERIALIZE_FAIL"));
     println!("  REPARSE_FAIL   : {}", count("REPARSE_FAIL"));

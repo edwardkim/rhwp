@@ -64,6 +64,16 @@ pub enum HwpxError {
     MissingFile(String),
     /// 데이터 변환 오류
     ConversionError(String),
+    /// [Issue #1946] 비밀번호 암호화 HWPX(ODF encryption-data, AES-256-CBC).
+    /// 복호화 미지원 — 암호문을 UTF-8 로 오독하는 대신 명확히 분류한다.
+    Encrypted(String),
+}
+
+impl HwpxError {
+    /// 암호화 문서 여부 — 배치 게이트의 ENCRYPTED_SKIP 분류에 사용.
+    pub fn is_encrypted(&self) -> bool {
+        matches!(self, HwpxError::Encrypted(_))
+    }
 }
 
 impl std::fmt::Display for HwpxError {
@@ -73,11 +83,38 @@ impl std::fmt::Display for HwpxError {
             HwpxError::XmlError(e) => write!(f, "XML 파싱 오류: {}", e),
             HwpxError::MissingFile(e) => write!(f, "필수 파일 누락: {}", e),
             HwpxError::ConversionError(e) => write!(f, "변환 오류: {}", e),
+            HwpxError::Encrypted(e) => write!(f, "암호화된 문서(복호화 미지원): {}", e),
         }
     }
 }
 
 impl std::error::Error for HwpxError {}
+
+/// [Issue #1946] META-INF/manifest.xml 바이트에서 ODF 암호화 표식을 감지한다.
+/// 암호화면 알고리즘 요약을, 아니면 None 을 반환한다. manifest 자체는 평문이므로
+/// UTF-8 손실 없이 검사 가능하나, 안전을 위해 lossy 로 읽어 부분 손상에도 동작한다.
+fn detect_odf_encryption(manifest_bytes: &[u8]) -> Option<String> {
+    let text = String::from_utf8_lossy(manifest_bytes);
+    if !text.contains("encryption-data") {
+        return None;
+    }
+    let algo = if text.contains("aes256-cbc") {
+        "AES-256-CBC"
+    } else if text.contains("aes128-cbc") {
+        "AES-128-CBC"
+    } else {
+        "미상 알고리즘"
+    };
+    let kdf = if text.contains("pbkdf2") {
+        " + PBKDF2"
+    } else {
+        ""
+    };
+    Some(format!(
+        "ODF encryption-data 감지 ({}{}) — 비밀번호 보호 문서",
+        algo, kdf
+    ))
+}
 
 impl From<zip::result::ZipError> for HwpxError {
     fn from(e: zip::result::ZipError) -> Self {
@@ -141,6 +178,16 @@ fn attach_hwpx_master_page(
 pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // 1. ZIP 컨테이너 열기
     let mut reader = reader::HwpxReader::open(data)?;
+
+    // [Issue #1946] 암호화 HWPX 조기 감지. META-INF/manifest.xml 은 암호화 문서에서도
+    // 평문이며, 암호화된 엔트리마다 <odf:encryption-data> 블록을 갖는다. 감지하면
+    // 암호문(Contents/*.xml)을 UTF-8 로 오독하기 전에 명확한 Encrypted 에러로 반환한다
+    // (종전엔 "UTF-8 변환 실패" 오진단). manifest 부재/평문 문서는 종전 경로 유지.
+    if let Ok(manifest) = reader.read_file_bytes("META-INF/manifest.xml") {
+        if let Some(detail) = detect_odf_encryption(&manifest) {
+            return Err(HwpxError::Encrypted(detail));
+        }
+    }
 
     // 1-1. 보조 엔트리 원본 보존 (라운드트립 무손실).
     //   IR 로 모델링되지 않는 엔트리(version.xml/settings.xml/Preview/*)는

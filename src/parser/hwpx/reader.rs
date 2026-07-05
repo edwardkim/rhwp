@@ -106,6 +106,47 @@ mod tests {
         assert!(result.is_err());
     }
 
+    /// [#1946] ODF 암호화 manifest 감지 + 비암호화 manifest 무시.
+    #[test]
+    fn test_detect_odf_encryption() {
+        use crate::parser::hwpx::{detect_odf_encryption, parse_hwpx, HwpxError};
+        use std::io::Write;
+        use zip::write::SimpleFileOptions;
+        use zip::ZipWriter;
+
+        let enc = br#"<odf:manifest><odf:file-entry full-path="Contents/header.xml"><odf:encryption-data><odf:algorithm algorithm-name="http://www.w3.org/2001/04/xmlenc#aes256-cbc"/><odf:key-derivation key-derivation-name="...#pbkdf2"/></odf:encryption-data></odf:file-entry></odf:manifest>"#;
+        let detail = detect_odf_encryption(enc).expect("암호화 감지");
+        assert!(detail.contains("AES-256-CBC"), "{detail}");
+        assert!(detail.contains("PBKDF2"), "{detail}");
+
+        let plain =
+            br#"<odf:manifest><odf:file-entry full-path="Contents/header.xml"/></odf:manifest>"#;
+        assert!(detect_odf_encryption(plain).is_none());
+
+        // parse_hwpx 진입 감지: 암호화 manifest + 암호문 header.xml → Encrypted 에러.
+        let mut out = Cursor::new(Vec::<u8>::new());
+        {
+            let mut zip = ZipWriter::new(&mut out);
+            let opts =
+                SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+            zip.start_file("mimetype", opts).unwrap();
+            zip.write_all(b"application/hwp+zip").unwrap();
+            zip.start_file("META-INF/manifest.xml", opts).unwrap();
+            zip.write_all(enc).unwrap();
+            zip.start_file("Contents/header.xml", opts).unwrap();
+            zip.write_all(&[0x93u8, 0xFF, 0x00, 0x11]).unwrap(); // 암호문(비 UTF-8) 모사
+            zip.finish().unwrap();
+        }
+        let bytes = out.into_inner();
+        match parse_hwpx(&bytes) {
+            Err(e @ HwpxError::Encrypted(_)) => {
+                assert!(e.is_encrypted());
+                assert!(e.to_string().contains("암호화된 문서"), "{e}");
+            }
+            other => panic!("expected Encrypted, got {other:?}"),
+        }
+    }
+
     #[test]
     fn test_read_limited_under_cap() {
         let data = vec![0u8; 1000];
