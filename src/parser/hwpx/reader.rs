@@ -18,9 +18,13 @@ use super::HwpxError;
 
 /// XML 엔트리(section, header, content.hpf 등) 엔트리당 압축 해제 상한.
 ///
-/// 실제 정부 보도자료·법령 HWPX에서도 section.xml이 이 한도를 넘는 경우는
-/// 없다. 초과 시 압축 해제 폭탄으로 판단해 차단한다.
-pub const MAX_XML_SIZE: usize = 32 * 1024 * 1024; // 32 MB
+/// [#1917 XML 축] 종전 32MB 는 실문서를 거부했다 — 정책연구 최종보고서
+/// (KYRBS, 1790387-202300133)의 Contents/section1.xml 이 **75.2MB**
+/// (압축 2.2MB, 압축비 35:1)로 실재하며 한글은 정상 열람한다. 정상 XML 도
+/// 압축비가 수십 배에 달해 압축비 기반 가드는 오탐 — 절대 상한을 256MB 로
+/// 상향한다 (관측 최대 ×3 여유). zip-bomb 방어(무제한 read_to_end 차단)
+/// 목적은 유지된다.
+pub const MAX_XML_SIZE: usize = 256 * 1024 * 1024; // 256 MB
 
 /// BinData(이미지·폰트 등) 엔트리당 압축 해제 상한.
 ///
@@ -130,6 +134,35 @@ mod tests {
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert_eq!(err.kind(), io::ErrorKind::InvalidData);
+    }
+
+    /// [#1917 XML 축] 실문서급 대형 XML(40MB — 종전 32MB 한도 초과, 새 256MB
+    /// 한도 이내)은 수용되어야 한다 (KYRBS section1.xml 75.2MB 실측 대응).
+    #[test]
+    fn test_large_legit_xml_entry_accepted() {
+        use std::io::Write;
+        use zip::write::SimpleFileOptions;
+        use zip::ZipWriter;
+
+        let mut out = Cursor::new(Vec::<u8>::new());
+        {
+            let mut zip = ZipWriter::new(&mut out);
+            let opts =
+                SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+            zip.start_file("Contents/section1.xml", opts).unwrap();
+            let payload = vec![b'A'; 40 * 1024 * 1024]; // 40MB — 종전 한도(32MB) 초과
+            zip.write_all(&payload).unwrap();
+            zip.finish().unwrap();
+        }
+        let bytes = out.into_inner();
+        let mut reader = HwpxReader::open(&bytes).unwrap();
+        let result = reader.read_file("Contents/section1.xml");
+        assert!(
+            result.is_ok(),
+            "40MB XML entry should be accepted: {:?}",
+            result.err()
+        );
+        assert_eq!(result.unwrap().len(), 40 * 1024 * 1024);
     }
 
     /// 해제 시 상한을 넘는 엔트리가 포함된 ZIP은 `ZipError`로 거부되어야 한다.
