@@ -12516,9 +12516,13 @@ impl TypesetEngine {
                     self.dpi,
                 );
                 let prospective_excl = st.current_bottom_fixed_exclusion.max(block_height + v_off);
-                // available 은 이미 현재 배타 영역을 차감한 값 — 이 블록 편입 후의
-                // 가용 높이로 보정해 "본문 텍스트 끝이 배타 영역을 침범하는가"를 판정.
-                let avail_after = available + st.current_bottom_fixed_exclusion - prospective_excl;
+                // available(12359)은 배타 영역 미차감 값(base - 각주 - zone)이다. 이 블록
+                // 편입 후의 배타 영역(prospective_excl)을 차감해 "본문 텍스트 끝이 배타
+                // 영역을 침범하는가"를 판정한다. [Issue #1920] 종전 `available +
+                // current_excl - prospective_excl` 은 available 이 이미 차감됐다는 잘못된
+                // 가정으로, 같은 쪽 두 번째 틀에서 기존 배타분만큼 과관용해져 한글이
+                // 다음 쪽으로 넘기는 틀을 현재 쪽에 흡수했다(36373162 pi16, 2쪽→1쪽).
+                let avail_after = available - prospective_excl;
                 if sync_h <= avail_after {
                     // 현재 쪽 하단에 배치 — 본문 흐름은 vpos 동기 위치까지만 전진.
                     st.current_height = sync_h;
@@ -12546,6 +12550,23 @@ impl TypesetEngine {
                 st.bottom_fixed_consumed_flow += consumed;
                 st.current_bottom_fixed_exclusion =
                     st.current_bottom_fixed_exclusion.max(block_height + v_off);
+                // [Issue #1920] 후속 일반 문단의 vpos 캘리브레이션(vpos_snap_current_height)은
+                // 저장 flow 좌표를 그대로 따라간다. 한글 저장 vpos 는 하단 고정 틀의 높이도
+                // 문서순 누적하므로, 스냅이 틀 높이만큼 전진한 좌표로 이동한 뒤 배타 영역
+                // 차감(available)과 이중 계산되어 문단이 다음 쪽으로 밀린다(결재문서본문
+                // 36373162 pi15: 694→935px 스냅 + 247px 배타 → 한글 p1 이 p2 로, d=+1).
+                // 롤백한 소비분만큼 활성 vpos base 를 전진시켜 후속 문단의 저장→flow 변환을
+                // 본문 흐름 좌표계에 정렬한다(후속 틀의 target_y 보정과 동일 원리).
+                if consumed > 0.0 {
+                    let consumed_hu = (consumed / self.dpi * 7200.0).round() as i32;
+                    if consumed_hu > 0 {
+                        if let Some(base) = st.vpos_page_base {
+                            st.vpos_page_base = Some(base + consumed_hu);
+                        } else if let Some(base) = st.vpos_lazy_base {
+                            st.vpos_lazy_base = Some(base + consumed_hu);
+                        }
+                    }
+                }
                 return;
             }
         }
