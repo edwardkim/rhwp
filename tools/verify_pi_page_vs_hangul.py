@@ -163,6 +163,7 @@ def main() -> int:
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--batch", type=Path, help="원본 폴더(재귀)")
     g.add_argument("--files", nargs="+", type=Path)
+    g.add_argument("--list", type=Path, help="파일 목록 텍스트(줄당 절대경로) — 표본 재현용")
     ap.add_argument("--sample", type=int, default=0)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("-o", "--out", type=Path, required=True)
@@ -181,6 +182,10 @@ def main() -> int:
     if args.batch:
         files = [p for p in sorted(args.batch.rglob("*"))
                  if p.suffix.lower() in (".hwpx", ".hwp")]
+    elif args.list:
+        # utf-8-sig: PowerShell Out-File 등이 넣는 BOM 이 첫 경로를 오염시키는 것 방지
+        files = [Path(l.strip()) for l in args.list.read_text(encoding="utf-8-sig").splitlines()
+                 if l.strip()]
     else:
         files = list(args.files)
     if args.sample and len(files) > args.sample:
