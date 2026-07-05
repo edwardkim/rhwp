@@ -278,6 +278,21 @@ impl SerializeContext {
         self.para_id_counter += 1;
         id
     }
+
+    /// [Issue #1933] 스타일 목록 밖 styleIDRef 를 기본 스타일(0)로 강등한다.
+    ///
+    /// 일부 생성기 산출물(보도자료 계열)은 header 스타일 목록에 없는 style_id 를
+    /// 문단이 참조한다(파일 자기모순). 종전에는 `assert_all_refs_resolved` 가
+    /// 하드 실패해 "열리는데 저장 불가" 상태가 됐다. 한글은 이런 문서를 기본
+    /// 스타일로 폴백해 열고 저장하므로, 미등록 참조는 0(항상 등록됨)으로 강등한다.
+    /// 등록된 참조는 그대로 반환한다.
+    pub fn effective_style_id(&self, raw: u8) -> u8 {
+        if self.style_ids.is_registered(&(raw as u16)) {
+            raw
+        } else {
+            0
+        }
+    }
 }
 
 fn mime_from_ext(ext: &str) -> &'static str {

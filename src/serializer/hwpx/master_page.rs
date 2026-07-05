@@ -57,7 +57,9 @@ pub fn render_master_page_xml(mp: &MasterPage, id: &str, ctx: &mut SerializeCont
     for p in &mp.paragraphs {
         let (runs, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
         vert_cursor = advance;
-        body.push_str(&render_hp_p_open(p, ctx.next_para_id()));
+        let pid = ctx.next_para_id();
+        let sid = ctx.effective_style_id(p.style_id);
+        body.push_str(&render_hp_p_open(p, pid, sid));
         body.push_str(&runs);
         body.push_str(&linesegs);
         body.push_str("</hp:p>");
