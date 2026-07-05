@@ -12329,8 +12329,30 @@ impl TypesetEngine {
         // 표 내 각주를 고려한 가용 높이 계산 (Paginator engine.rs:583-586 동일)
         let total_footnote =
             st.projected_footnote_height(ft.table_footnote_height, ft.table_footnote_count);
+        // [#1921 d=+1 / Task #1725 동형] tail-before-vpos-reset 표는 각주 안전마진
+        // (보수 버퍼 40px)을 완화한다. 한글은 stored vpos 상 쪽 하단에 표+각주를
+        // 여유 수 px 로 타이트하게 배치하는데(75828 pi134: 표 하단 912.2 + 각주
+        // 46.1 = 958.3 ≤ 971.3), rhwp 의 보수 버퍼가 표를 다음 쪽으로 밀어
+        // 이후 stored vpos=0 신호 연쇄로 문서 끝까지 +1쪽이 된다. 다음 문단의
+        // stored LINE_SEG 가 새 쪽 시작(vpos≤500)을 명시할 때만 완화하므로
+        // 겹침 위험은 stored 배치가 보증하는 범위로 한정된다.
+        let table_anchor_vpos = para
+            .line_segs
+            .iter()
+            .find(|ls| !is_synthetic_line_seg(ls))
+            .map(|ls| ls.vertical_pos)
+            .unwrap_or(0);
+        let next_starts_new_page = table_anchor_vpos > 0
+            && paragraphs_all
+                .get(para_idx + 1)
+                .and_then(|p| p.line_segs.iter().find(|ls| !is_synthetic_line_seg(ls)))
+                .is_some_and(|ls| ls.vertical_pos <= 500 && ls.vertical_pos < table_anchor_vpos);
         let fn_margin = if total_footnote > 0.0 {
-            st.footnote_safety_margin
+            if next_starts_new_page {
+                0.0
+            } else {
+                st.footnote_safety_margin
+            }
         } else {
             0.0
         };
