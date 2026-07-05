@@ -385,6 +385,15 @@ struct TypesetState {
     /// 비-TAC Picture/Shape Square wrap: any_seg_matches만으로 후속 문단 판정 허용.
     /// 그림의 lineseg는 첫 seg cs=0일 수 있어 전체 seg 중 하나라도 일치하면 흡수.
     wrap_around_any_seg: bool,
+    /// [#1955] 글뒤로/글앞으로(BehindText/InFrontOfText) 비-TAC 표 anchor 문단.
+    /// 이 wrap 은 본문 플로우를 소비하지 않으므로(한글: 후속 문단이 anchor 쪽에
+    /// 남음), 직후의 빈 후행 문단들을 anchor 첫 fragment 단에 소급 흡수한다.
+    /// 비어있지 않은 문단/새 표/쪽나누기를 만나면 해제.
+    behind_float_table_para: Option<usize>,
+    /// [#1955] 글뒤로 표 후행 빈 문단의 보류 흡수 목록. 표 fragment 는 지연 flush
+    /// 되므로 흡수 시점에는 anchor 첫 fragment 단을 찾을 수 없다 — 페이지 확정 후
+    /// (최종 flush 뒤) 첫 fragment 단에 일괄 부착한다.
+    behind_pending_absorbs: Vec<crate::renderer::pagination::WrapAroundPara>,
     /// [Task #362] 현재 단에서 표 옆에 배치되는 wrap-around paragraphs.
     /// flush_column 에서 ColumnContent 로 전달.
     current_column_wrap_around_paras: Vec<crate::renderer::pagination::WrapAroundPara>,
@@ -1432,6 +1441,8 @@ impl TypesetState {
             wrap_around_sw: -1,
             wrap_around_table_para: 0,
             wrap_around_any_seg: false,
+            behind_float_table_para: None,
+            behind_pending_absorbs: Vec::new(),
             current_column_wrap_around_paras: Vec::new(),
             current_column_wrap_anchors: std::collections::HashMap::new(),
             current_zone_column_type: column_type,
@@ -2441,6 +2452,10 @@ impl TypesetEngine {
                 st.wrap_around_sw = -1;
                 st.wrap_around_any_seg = false;
             }
+            // [#1955] 명시적 쪽나누기부터는 글뒤로 표 후행 흡수도 해제 (사용자 의도 새 쪽).
+            if force_page_break || para_style_break {
+                st.behind_float_table_para = None;
+            }
 
             if (force_page_break || para_style_break || variant_vpos_reset_break)
                 && !st.current_items.is_empty()
@@ -2917,6 +2932,36 @@ impl TypesetEngine {
                 }
             }
 
+            // [#1955] 글뒤로/글앞으로 표 직후의 빈 후행 문단 흡수.
+            // 이 wrap 은 본문 플로우를 소비하지 않아야 하나(한글 시멘틱) 현재
+            // 페이지네이션은 fragment 로 플로우를 소비하므로, 최소한 빈 후행 문단은
+            // anchor 첫 fragment 단에 소급 기록하여 pi-page 정합을 복원한다.
+            // (조례 [별표] 서식: 표 끝 쪽으로 밀리던 후행 빈 문단 — pi 9쪽 이탈)
+            if let Some(anchor_pi) = st.behind_float_table_para {
+                if !has_table {
+                    let is_empty_para = para
+                        .text
+                        .chars()
+                        .all(|ch| ch.is_whitespace() || ch == '\r' || ch == '\n')
+                        && para.controls.is_empty();
+                    if is_empty_para {
+                        // 표 fragment 가 지연 flush 라 지금은 anchor 단을 특정할 수
+                        // 없다 — 보류 목록에 넣고 페이지 확정 후 일괄 부착.
+                        st.behind_pending_absorbs.push(
+                            crate::renderer::pagination::WrapAroundPara {
+                                para_index: para_idx,
+                                table_para_index: anchor_pi,
+                                has_text: false,
+                            },
+                        );
+                        continue;
+                    }
+                    st.behind_float_table_para = None;
+                } else {
+                    st.behind_float_table_para = None;
+                }
+            }
+
             // [Task #362] 어울림(Square wrap) 표 옆 paragraph 흡수.
             // Paginator engine.rs:288-320 동일 시멘틱.
             // 직전에 처리한 Square wrap 표의 (cs, sw) 와 동일한 LINE_SEG 를 가진
@@ -3332,6 +3377,17 @@ impl TypesetEngine {
                     measured_tables,
                     Some(para_idx),
                 );
+                // [#1955] 글뒤로/글앞으로 비-TAC 표 anchor: 후행 빈 문단 흡수 arming.
+                let has_behind_float_table = para.controls.iter().any(|c| {
+                    matches!(c, Control::Table(t)
+                        if !t.common.treat_as_char
+                            && matches!(t.common.text_wrap,
+                                crate::model::shape::TextWrap::BehindText
+                                    | crate::model::shape::TextWrap::InFrontOfText))
+                });
+                if has_behind_float_table {
+                    st.behind_float_table_para = Some(para_idx);
+                }
             }
             // 비-TAC Picture/Shape Square wrap: engine.rs:380-397 동일 시멘틱.
             // 그림의 첫 lineseg cs가 0일 수 있어 any_seg_matches 허용 플래그 활성화.
@@ -3647,6 +3703,42 @@ impl TypesetEngine {
             st.flush_column_always();
         }
         st.ensure_page();
+
+        // [#1955] 글뒤로 표 후행 빈 문단 보류 흡수 부착 — 페이지 확정 후
+        // anchor 표의 첫 fragment 가 있는 단에 소급 기록 (한글: 글뒤로 표는
+        // 플로우를 소비하지 않으므로 후행 문단이 anchor 쪽에 남음).
+        for wrap_para in std::mem::take(&mut st.behind_pending_absorbs) {
+            let anchor = wrap_para.table_para_index;
+            let is_first_fragment = |it: &PageItem| match it {
+                PageItem::Table { para_index, .. } => *para_index == anchor,
+                PageItem::PartialTable {
+                    para_index,
+                    is_continuation,
+                    ..
+                } => *para_index == anchor && !*is_continuation,
+                _ => false,
+            };
+            let mut attached = false;
+            'outer: for page in st.pages.iter_mut() {
+                for col in page.column_contents.iter_mut() {
+                    if col.items.iter().any(is_first_fragment) {
+                        col.wrap_around_paras.push(wrap_para.clone());
+                        attached = true;
+                        break 'outer;
+                    }
+                }
+            }
+            if !attached {
+                // anchor 미발견(예: 표가 배치 제외) — 마지막 단에 부착해 문단 누락 방지
+                if let Some(col) = st
+                    .pages
+                    .last_mut()
+                    .and_then(|p| p.column_contents.last_mut())
+                {
+                    col.wrap_around_paras.push(wrap_para);
+                }
+            }
+        }
 
         // 페이지 번호 + 머리말/꼬리말 할당
         Self::finalize_pages(

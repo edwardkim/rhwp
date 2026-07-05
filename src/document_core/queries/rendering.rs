@@ -3030,7 +3030,22 @@ impl DocumentCore {
                             .unwrap_or(0.0);
                         let body_w = page.layout.body_area.width;
                         let is_wrap_zone = sw_px > 0.0 && sw_px < body_w * 0.9;
-                        let disp = if is_wrap_zone {
+                        // [#1955] 글뒤로/글앞으로 anchor 표는 플로우를 소비하지 않으므로
+                        // 후행 문단은 폭과 무관하게 **앵커 페이지** 귀속 (한글: stored
+                        // LINE_SEG vpos 가 앵커 쪽 위치를 가리킴).
+                        let anchor_behind = paragraphs
+                            .get(wp.table_para_index)
+                            .map(|p| {
+                                p.controls.iter().any(|c| {
+                                    matches!(c, Control::Table(t)
+                                        if !t.common.treat_as_char
+                                            && matches!(t.common.text_wrap,
+                                                crate::model::shape::TextWrap::BehindText
+                                                    | crate::model::shape::TextWrap::InFrontOfText))
+                                })
+                            })
+                            .unwrap_or(false);
+                        let disp = if is_wrap_zone || anchor_behind {
                             item_first_page.get(&wp.table_para_index)
                         } else {
                             item_disp_page.get(&wp.table_para_index)
