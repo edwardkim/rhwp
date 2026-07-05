@@ -2548,6 +2548,22 @@ impl TypesetEngine {
                     let para_sb_hu_for_reset = para_style
                         .map(|s| (s.spacing_before * 7200.0 / 96.0) as i32)
                         .unwrap_or(0);
+                    // [#1921 d=-1] 네이티브 HWP5/HWPX 의 비영 near-top reset:
+                    // 한글은 새 쪽 첫 줄의 stored vpos 를 0 이 아니라 해당 문단의
+                    // spacing_before 로 기록하기도 한다 (조문별/규제영향분석서 클래스,
+                    // 예: 86034 pi24 vpos=500 = sb 6.7px). cv==0 전용 트리거가 이를
+                    // 놓쳐 한 쪽을 과적한다. cv≈sb(±150HU) + 쪽 하단(prev_vpos_end
+                    // > 60_000) + 텍스트 전용 문단으로 한정해 partial-table 잔재
+                    // (#418)·표 host(#1086 주석) 케이스와 구분한다.
+                    let native_near_top_reset = !hwp3_origin_page_tolerance
+                        && cv > 0
+                        && cv <= 2000
+                        && para_sb_hu_for_reset > 0
+                        && (cv - para_sb_hu_for_reset).abs() <= 150
+                        && !shape_only_para
+                        && !has_table_control
+                        && para_has_visible_text(para)
+                        && prev_vpos_end > 60_000;
                     let next_heading_after_top_content_reset =
                         paragraphs.get(para_idx + 1).is_some_and(|next_para| {
                             let next_sb_hu = styles
@@ -2584,6 +2600,7 @@ impl TypesetEngine {
                     } else {
                         (cv == 0 && pv > 5000 && !hwp3_content_vpos_zero_reset)
                             || near_page_top_reset
+                            || native_near_top_reset
                     };
                     if trigger {
                         // [Task #724] wrap_around active 시 강제 종료 — anchor cs=0
