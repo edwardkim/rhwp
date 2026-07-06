@@ -976,6 +976,14 @@ pub struct LayoutEngine {
     /// HWPX `Preview/PrvImage.png` 원본. HMapsi OLE처럼 일반 preview stream이 없는
     /// legacy 객체의 제한적 첫 페이지 fallback에 사용한다.
     hwpx_page_preview: std::cell::RefCell<Option<PagePreviewImage>>,
+    /// [Task #1949] 셀 콘텐츠 유닛(cell_units) 메모이제이션. 거대 셀(수천 문단·중첩표)이
+    /// RowBreak 로 여러 페이지에 걸칠 때, 각 페이지의 컷 판정이 같은 셀의 units 를
+    /// 반복 재계산해 O(pages×cell) 로 폭증한다. cell_units 는 (cell,table,styles)의 순수
+    /// 함수이고 셀 폭·콘텐츠는 렌더 중 불변이므로 셀 포인터를 키로 캐시한다. 문서
+    /// 재조판(paginate) 경계에서 clear 하여 다른 IR 의 포인터 재사용을 방지한다.
+    cell_units_cache: std::cell::RefCell<
+        std::collections::HashMap<usize, std::rc::Rc<Vec<table_layout::CellUnit>>>,
+    >,
 }
 
 mod border_rendering;
@@ -1043,7 +1051,14 @@ impl LayoutEngine {
             keep_continuation_column_top_spacing_before: std::cell::Cell::new(false),
             is_hwpx_source: std::cell::Cell::new(false),
             hwpx_page_preview: std::cell::RefCell::new(None),
+            cell_units_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
         }
+    }
+
+    /// [Task #1949] 셀 단위 레이아웃 캐시를 비운다. 문서 재조판 등 IR 이 바뀌는
+    /// 경계에서 호출해 포인터 키 재사용으로 인한 오재사용을 방지한다.
+    pub fn clear_layout_caches(&self) {
+        self.cell_units_cache.borrow_mut().clear();
     }
 
     /// 기본 DPI(96)로 생성
