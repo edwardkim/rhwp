@@ -170,12 +170,12 @@ impl SerializeContext {
         // 순번(i+1) 명명은 링크 항목으로 id 에 구멍이 있는 문서(#1891 73504)에서
         // 이름과 id 가 어긋나 재파스 그림 참조가 엉킨다.
         for bd in doc.bin_data_content.iter() {
-            let ext = if bd.extension.is_empty() {
-                "bin"
-            } else {
-                bd.extension.as_str()
-            };
+            // 빈 확장자는 원본과 동일하게 확장자 없이(`image{id}.`) 재직렬화한다.
+            // 예전엔 `.bin` 기본값을 붙였으나(#1981), 원본이 확장자 없는 BinData
+            // (`BinData/image13.` 등, OLE·미상 임베드)를 담은 경우 라운드트립 확장자
+            // 멀티셋이 `bin` vs `""` 로 어긋나 PKG_FAIL 이 났다. 원본 형태를 보존한다.
             let manifest_id = format!("image{}", bd.id);
+            let ext = bd.extension.as_str();
             let href = format!("BinData/{}.{}", manifest_id, ext);
             let media_type = mime_from_ext(ext);
             ctx.bin_data_map.insert(
@@ -361,6 +361,30 @@ mod tests {
             !ctx.numbering_ids.is_registered(&0),
             "0 은 1-based 축에 없음 (회귀 가드)"
         );
+    }
+
+    #[test]
+    fn issue1981_empty_extension_bindata_keeps_no_ext() {
+        // 빈 확장자 BinData 는 `.bin` 을 붙이지 않고 원본 형태(`image{id}.`)로
+        // 재직렬화해야 한다 — 라운드트립 확장자 멀티셋 보존(#1981).
+        use crate::model::bin_data::BinDataContent;
+        let mut doc = Document::default();
+        doc.bin_data_content.push(BinDataContent {
+            id: 6,
+            data: vec![0, 1, 2],
+            extension: String::new(),
+        });
+        doc.bin_data_content.push(BinDataContent {
+            id: 7,
+            data: vec![3, 4, 5],
+            extension: "bmp".to_string(),
+        });
+        let ctx = SerializeContext::collect_from_document(&doc);
+        let e6 = &ctx.bin_data_map[&6];
+        assert_eq!(e6.href, "BinData/image6.", "빈 확장자는 .bin 금지");
+        assert_eq!(e6.media_type, "application/octet-stream");
+        let e7 = &ctx.bin_data_map[&7];
+        assert_eq!(e7.href, "BinData/image7.bmp");
     }
 
     #[test]

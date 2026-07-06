@@ -47,6 +47,11 @@ pub enum FileFormat {
     Hwp3,
     /// Legacy raw HWPML XML (미지원 — 감지만, Issue #1053)
     LegacyHwpml,
+    /// DRM/보안 컨테이너로 보호된 문서 (미지원 — 감지만, Issue #1982)
+    /// Fasoo(`\x9b DRMONE`) / SoftCamp SCDSA(`SCDSA00x`) 등. 복호화는 범위 밖.
+    DrmProtected,
+    /// 빈 파일(0 바이트) (Issue #1982)
+    Empty,
     /// 알 수 없는 포맷
     Unknown,
 }
@@ -57,9 +62,28 @@ const UNSUPPORTED_FILE_FORMAT_CODE: &str = "UNSUPPORTED_FILE_FORMAT";
 const SUPPORTED_FORMATS_HINT: &str = "현재 rhwp는 HWP 5.0, HWPX, 일부 HWP 3.0 문서만 지원합니다.";
 const UNSUPPORTED_HWPML_HINT: &str =
     "현재 rhwp는 HWP 5.0, HWPX, 일부 HWP 3.0 문서만 지원합니다. 한컴오피스에서 HWP 5.0 또는 HWPX로 다시 저장한 뒤 열어주세요.";
+const DRM_PROTECTED_CODE: &str = "DRM_PROTECTED";
+const DRM_PROTECTED_HINT: &str =
+    "DRM/보안 컨테이너로 보호된 문서입니다. 한컴오피스 등 DRM 클라이언트에서 보호를 해제한 뒤 저장해 열어주세요.";
+const EMPTY_FILE_CODE: &str = "EMPTY_FILE";
+const EMPTY_FILE_HINT: &str = "빈 파일(0 바이트)입니다.";
+
+// DRM/보안 컨테이너 시그니처 (Issue #1982 — 10k 서베이 검출).
+// Fasoo: `\x9b DRMONE  This Document is encrypted and protected by Fasoo`.
+const FASOO_DRM_SIG: &[u8] = b"\x9b DRMONE";
+// SoftCamp SCDSA(Security Content Document Security Agent): `SCDSA002`/`SCDSA004`.
+const SCDSA_SIG: &[u8] = b"SCDSA";
 
 /// 파일 데이터의 매직 바이트로 포맷을 감지한다.
 pub fn detect_format(data: &[u8]) -> FileFormat {
+    if data.is_empty() {
+        return FileFormat::Empty;
+    }
+    // DRM/보안 컨테이너(미지원 — 감지만, Issue #1982). 정상 매직보다 먼저 판별해
+    // "알 수 없는 파일 형식" 대신 명확한 안내를 준다.
+    if data.starts_with(FASOO_DRM_SIG) || data.starts_with(SCDSA_SIG) {
+        return FileFormat::DrmProtected;
+    }
     if data.len() >= 8 {
         // CFB/OLE 시그니처: D0 CF 11 E0 A1 B1 1A E1
         if data[0] == 0xD0 && data[1] == 0xCF && data[2] == 0x11 && data[3] == 0xE0 {
@@ -929,11 +953,32 @@ pub fn parse_document(data: &[u8]) -> Result<Document, ParseError> {
             format: detect_legacy_hwpml_format_name(data),
             hint: UNSUPPORTED_HWPML_HINT,
         }),
+        FileFormat::DrmProtected => Err(ParseError::UnsupportedFormat {
+            code: DRM_PROTECTED_CODE,
+            format: drm_format_name(data),
+            hint: DRM_PROTECTED_HINT,
+        }),
+        FileFormat::Empty => Err(ParseError::UnsupportedFormat {
+            code: EMPTY_FILE_CODE,
+            format: "빈 파일",
+            hint: EMPTY_FILE_HINT,
+        }),
         FileFormat::Unknown => Err(ParseError::UnsupportedFormat {
             code: UNSUPPORTED_FILE_FORMAT_CODE,
             format: "알 수 없는 파일 형식",
             hint: SUPPORTED_FORMATS_HINT,
         }),
+    }
+}
+
+/// DRM 벤더 시그니처로 사람이 읽을 이름을 고른다 (Issue #1982).
+fn drm_format_name(data: &[u8]) -> &'static str {
+    if data.starts_with(FASOO_DRM_SIG) {
+        "DRM 보호 문서 (Fasoo)"
+    } else if data.starts_with(SCDSA_SIG) {
+        "DRM 보호 문서 (SoftCamp SCDSA)"
+    } else {
+        "DRM 보호 문서"
     }
 }
 
@@ -1317,7 +1362,33 @@ mod tests {
     #[test]
     fn test_detect_format_too_short() {
         assert_eq!(detect_format(&[0x50, 0x4B]), FileFormat::Unknown);
-        assert_eq!(detect_format(&[]), FileFormat::Unknown);
+    }
+
+    #[test]
+    fn issue1982_detect_empty_file() {
+        assert_eq!(detect_format(&[]), FileFormat::Empty);
+        let err = parse_document(&[]).unwrap_err();
+        assert!(
+            matches!(&err, ParseError::UnsupportedFormat { code, .. } if *code == EMPTY_FILE_CODE),
+            "empty file → EMPTY_FILE: {err}"
+        );
+    }
+
+    #[test]
+    fn issue1982_detect_drm_containers() {
+        // Fasoo DRM
+        let fasoo = b"\x9b DRMONE  This Document is encrypted and protected by Fasoo DRM";
+        assert_eq!(detect_format(fasoo), FileFormat::DrmProtected);
+        // SoftCamp SCDSA
+        let scdsa = b"SCDSA002\x00\x00\xd0\x04";
+        assert_eq!(detect_format(scdsa), FileFormat::DrmProtected);
+        let err = parse_document(fasoo).unwrap_err();
+        assert!(
+            matches!(&err, ParseError::UnsupportedFormat { code, .. } if *code == DRM_PROTECTED_CODE),
+            "DRM → DRM_PROTECTED: {err}"
+        );
+        assert_eq!(drm_format_name(fasoo), "DRM 보호 문서 (Fasoo)");
+        assert_eq!(drm_format_name(scdsa), "DRM 보호 문서 (SoftCamp SCDSA)");
     }
 
     #[test]

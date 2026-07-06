@@ -148,6 +148,8 @@ fn detected_format_name(fmt: crate::parser::FileFormat) -> Option<&'static str> 
         FileFormat::Hwp => Some("HWP5(OLE/CFB)"),
         FileFormat::Hwp3 => Some("HWP3"),
         FileFormat::LegacyHwpml => Some("HWPML(구 XML)"),
+        FileFormat::DrmProtected => Some("DRM 보호"),
+        FileFormat::Empty => Some("빈 파일"),
         FileFormat::Hwpx | FileFormat::Unknown => None,
     }
 }

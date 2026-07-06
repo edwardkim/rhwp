@@ -996,6 +996,8 @@ fn write_para_pr<W: Write>(
     } else {
         "BREAK_WORD"
     };
+    // [#1986] breakLatinWord 는 IR 원문 보존값(없으면 KEEP_WORD 기본).
+    let break_latin = ps.break_latin_word.as_deref().unwrap_or("KEEP_WORD");
     let widow_orphan = ((ps.attr2 >> 5) & 1).to_string();
     let keep_with_next = ((ps.attr2 >> 6) & 1).to_string();
     let keep_lines = ((ps.attr2 >> 7) & 1).to_string();
@@ -1021,7 +1023,7 @@ fn write_para_pr<W: Write>(
         w,
         "hh:breakSetting",
         &[
-            ("breakLatinWord", "KEEP_WORD"),
+            ("breakLatinWord", break_latin),
             ("breakNonLatinWord", break_non_latin),
             ("widowOrphan", &widow_orphan),
             ("keepWithNext", &keep_with_next),
@@ -1734,6 +1736,7 @@ mod tests {
         // keepWithNext, keepLines, pageBreakBefore} 가 상수 하드코딩이 아니라
         // attr1/attr2 보존 비트에서 역매핑돼야 한다.
         let mut ps = ParaShape::default();
+        ps.break_latin_word = Some("HYPHENATION".to_string());
         ps.attr1 = (2 << 20) // vertical = CENTER
             & !(1 << 7); // breakNonLatinWord = BREAK_WORD (bit7=0)
         ps.attr2 = (1 << 5) // widowOrphan = 1
@@ -1746,6 +1749,10 @@ mod tests {
         assert!(
             xml.contains(r#"vertical="CENTER""#),
             "vertical 은 보존 비트(CENTER)에서 와야 함: {xml}"
+        );
+        assert!(
+            xml.contains(r#"breakLatinWord="HYPHENATION""#),
+            "breakLatinWord 는 HWPX 원문 보존값에서 와야 함: {xml}"
         );
         assert!(
             xml.contains(r#"breakNonLatinWord="BREAK_WORD""#),

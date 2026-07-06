@@ -89,6 +89,97 @@ fn replace_visibility(xml: &str, sd: &SectionDef) -> String {
     xml.replacen(TEMPLATE_VISIBILITY, &render_visibility(sd), 1)
 }
 
+/// [#1987] 템플릿 secPr 의 하드코딩 스칼라(spaceColumns, outlineShapeIDRef)를 IR 값으로 치환.
+/// 각 속성은 템플릿 secPr 여는 태그에 정확히 1회 등장하므로 replacen(1)로 안전하다.
+fn replace_secpr_scalars(xml: &str, sd: &SectionDef) -> String {
+    let out = xml.replacen(
+        r#"spaceColumns="1134""#,
+        &format!(r#"spaceColumns="{}""#, sd.column_spacing),
+        1,
+    );
+    out.replacen(
+        r#"outlineShapeIDRef="1""#,
+        &format!(r#"outlineShapeIDRef="{}""#, sd.outline_numbering_id),
+        1,
+    )
+}
+
+/// [#1984] noteLine `type` u8 → HWPX 문자열 (parser noteLine type 역매핑).
+fn note_line_type_str(t: u8) -> &'static str {
+    match t {
+        0 => "NONE",
+        2 => "DASH",
+        3 => "DOT",
+        4 => "DASH_DOT",
+        5 => "DASH_DOT_DOT",
+        6 => "LONG_DASH",
+        7 => "CIRCLE",
+        8 => "DOUBLE_SLIM",
+        9 => "SLIM_THICK",
+        10 => "THICK_SLIM",
+        11 => "SLIM_THICK_SLIM",
+        _ => "SOLID",
+    }
+}
+
+/// [#1984] separator_color(0xBBGGRR LE) → "#RRGGBB" (parser noteLine color 역매핑).
+fn note_color_hex(c: u32) -> String {
+    let r = c & 0xFF;
+    let g = (c >> 8) & 0xFF;
+    let b = (c >> 16) & 0xFF;
+    format!("#{r:02X}{g:02X}{b:02X}")
+}
+
+/// [#1984] FootnoteShape → `<hp:noteLine .../>` + `<hp:noteSpacing .../>` 두 요소.
+fn render_note_line_spacing(shape: &crate::model::footnote::FootnoteShape) -> (String, String) {
+    let note_line = format!(
+        r#"<hp:noteLine length="{}" type="{}" width="{} mm" color="{}"/>"#,
+        shape.separator_length,
+        note_line_type_str(shape.separator_line_type),
+        line_width_mm(shape.separator_line_width),
+        note_color_hex(shape.separator_color),
+    );
+    let note_spacing = format!(
+        r#"<hp:noteSpacing betweenNotes="{}" belowLine="{}" aboveLine="{}"/>"#,
+        shape.between_notes_margin_hu(),
+        shape.separator_below_margin_hu(),
+        shape.separator_above_margin_hu(),
+    );
+    (note_line, note_spacing)
+}
+
+/// [#1984] 템플릿 footNotePr/endNotePr 의 하드코딩 noteLine·noteSpacing 을 IR 값으로 치환.
+/// 미치환 시 각주 구분선 위/아래 여백·주석간격이 항상 기본값(aboveLine=850 등)으로 방출돼
+/// 각주 zone 높이가 달라지고, 각주 있는 페이지의 본문 가용높이가 어긋나 표 분할·페이지 수가
+/// 갈린다(1543000: 각주 overhead 32.83→19.39px → p141 표 1행/3행 → 192/190쪽). 파서는
+/// 값을 FootnoteShape 로 수집하나 직렬화가 템플릿 상수만 방출하던 결함.
+fn replace_footnote_shape(xml: &str, sd: &SectionDef) -> String {
+    // 템플릿: 첫 noteLine(length="-1")·noteSpacing(betweenNotes="283") = 각주,
+    // 둘째(length="14692344"·betweenNotes="0") = 미주.
+    let (fn_line, fn_spacing) = render_note_line_spacing(&sd.footnote_shape);
+    let (en_line, en_spacing) = render_note_line_spacing(&sd.endnote_shape);
+    xml.replacen(
+        r##"<hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/>"##,
+        &fn_line,
+        1,
+    )
+    .replacen(
+        r#"<hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/>"#,
+        &fn_spacing,
+        1,
+    )
+    .replacen(
+        r##"<hp:noteLine length="14692344" type="SOLID" width="0.12 mm" color="#000000"/>"##,
+        &en_line,
+        1,
+    )
+    .replacen(
+        r#"<hp:noteSpacing betweenNotes="0" belowLine="567" aboveLine="850"/>"#,
+        &en_spacing,
+        1,
+    )
+}
+
 /// 레퍼런스 기준 줄 레이아웃 파라미터.
 const VERT_STEP: u32 = 1600; // vertsize(1000) + spacing(600)
 /// 탭 기본 폭 (한컴이 열면서 재계산하지만 초기값으로 필요).
@@ -125,6 +216,16 @@ pub fn write_section(
     out = replace_page_border_fill(&out, &section.section_def);
     // [#1637] secPr visibility — 템플릿 고정값을 IR 값으로 치환(hideFirstEmptyLine 등 보존).
     out = replace_visibility(&out, &section.section_def);
+
+    // [#1987] secPr 스칼라 필드 — 템플릿 하드코딩(spaceColumns="1134", outlineShapeIDRef="1")을
+    // IR 값으로 치환한다. 미치환 시 원본이 spaceColumns=1130·outlineShapeIDRef=0 등이어도
+    // 1134/1 로 방출돼 단 간격·개요번호 문단모양 참조가 어긋난다. ir-diff 는 secPr 스칼라를
+    // 비교하지 않아 못 잡던 저장 충실도 결함.
+    out = replace_secpr_scalars(&out, &section.section_def);
+
+    // [#1984] 각주/미주 모양(구분선 여백·주석간격)을 IR 값으로 치환 — 미치환 시 각주 zone
+    // 높이가 기본값으로 고정돼 각주 있는 페이지의 표 분할·페이지 수가 갈린다.
+    out = replace_footnote_shape(&out, &section.section_def);
 
     // 바탕쪽(masterPage) — secPr 의 masterPageCnt 치환 + secPr 내부 끝에 idRef 참조 삽입.
     // 누락 시 라운드트립에서 바탕쪽 전체(그 안의 그림/표/문단 노드 포함)가 소실된다.
@@ -2168,6 +2269,47 @@ mod tests {
     }
 
     #[test]
+    fn issue1984_footnote_shape_reflects_ir() {
+        // [#1984] footNotePr 의 noteLine/noteSpacing 이 템플릿 기본값(aboveLine=850,
+        // betweenNotes=283 등)이 아니라 IR FootnoteShape 값으로 방출돼야 한다. 미치환 시
+        // 각주 zone 높이가 달라져 각주 있는 페이지의 표 분할·페이지 수가 갈린다.
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (doc, mut section) = make_doc_with_paragraph(para);
+        let fs = &mut section.section_def.footnote_shape;
+        fs.separator_margin_top = 1417; // aboveLine
+        fs.note_spacing = 850; // belowLine
+        fs.raw_unknown = 566; // betweenNotes
+        fs.separator_line_width = 9; // 0.7 mm
+        fs.separator_length = -2;
+        fs.separator_line_type = 1; // SOLID
+        fs.separator_color = 0x99_99_99; // #999999
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(
+                r#"<hp:noteSpacing betweenNotes="566" belowLine="850" aboveLine="1417"/>"#
+            ),
+            "각주 noteSpacing 이 IR 값이어야 함: {}",
+            &xml[..xml
+                .find("footNote")
+                .map(|i| i + 300)
+                .unwrap_or(600)
+                .min(xml.len())]
+        );
+        assert!(
+            xml.contains(
+                r##"<hp:noteLine length="-2" type="SOLID" width="0.7 mm" color="#999999"/>"##
+            ),
+            "각주 noteLine 이 IR 값이어야 함"
+        );
+        assert!(
+            !xml.contains(r#"betweenNotes="283""#),
+            "템플릿 기본 betweenNotes=283 잔존 금지"
+        );
+    }
+
+    #[test]
     fn hp_p_attrs_reflect_para_shape_id_and_style_id() {
         let mut para = Paragraph::default();
         para.para_shape_id = 7;
@@ -2220,6 +2362,8 @@ mod tests {
         // [Finding 14] 원본 secPr 의 tabStopVal="4000" tabStopUnit="HWPUNIT" (한컴
         // 기본 탭 폭 상수) 이 직렬화에서 누락되지 않아야 한다. 순서는
         // tabStop → tabStopVal → tabStopUnit → outlineShapeIDRef.
+        // [#1987] outlineShapeIDRef 는 이제 IR 값 치환 대상 — 기본 SectionDef 는
+        // outline_numbering_id=0 이므로 "0" 이 방출된다.
         let mut para = Paragraph::default();
         para.text = "x".to_string();
         let (doc, section) = make_doc_with_paragraph(para);
@@ -2227,10 +2371,37 @@ mod tests {
         let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
         assert!(
             xml.contains(
-                r#"tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="1""#
+                r#"tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="0""#
             ),
             "secPr 에 tabStopVal/tabStopUnit 이 정확 순서로 있어야 함: {}",
             &xml[..600.min(xml.len())]
+        );
+    }
+
+    #[test]
+    fn issue1987_secpr_scalars_reflect_ir() {
+        // [#1987] secPr 의 spaceColumns/outlineShapeIDRef 가 템플릿 하드코딩(1134/1)이
+        // 아니라 IR 값으로 방출돼야 한다. 미치환 시 멀티구역 문서 후반부 렌더 붕괴.
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (mut doc, mut section) = make_doc_with_paragraph(para);
+        section.section_def.column_spacing = 1130;
+        section.section_def.outline_numbering_id = 0;
+        doc.sections = vec![section.clone()];
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"spaceColumns="1130""#),
+            "spaceColumns=1130 방출: {}",
+            &xml[..400]
+        );
+        assert!(
+            xml.contains(r#"outlineShapeIDRef="0""#),
+            "outlineShapeIDRef=0 방출"
+        );
+        assert!(
+            !xml.contains(r#"spaceColumns="1134""#),
+            "템플릿 1134 잔존 금지"
         );
     }
 

@@ -4523,7 +4523,27 @@ impl LayoutEngine {
         row_units
     }
 
+    /// [Task #1949] `cell_units_uncached` 의 메모이즈 래퍼. 거대 셀이 RowBreak 로
+    /// 여러 페이지에 걸칠 때 각 페이지 컷 판정이 같은 셀 units 를 재계산하는 O(pages×cell)
+    /// 폭증을 제거한다. 셀 포인터를 키로 표 단위 캐시(문서 재조판 경계에서 clear).
     pub(super) fn cell_units(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> std::rc::Rc<Vec<CellUnit>> {
+        let key = cell as *const crate::model::table::Cell as usize;
+        if let Some(cached) = self.cell_units_cache.borrow().get(&key) {
+            return std::rc::Rc::clone(cached);
+        }
+        let units = std::rc::Rc::new(self.cell_units_uncached(cell, table, styles));
+        self.cell_units_cache
+            .borrow_mut()
+            .insert(key, std::rc::Rc::clone(&units));
+        units
+    }
+
+    fn cell_units_uncached(
         &self,
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,

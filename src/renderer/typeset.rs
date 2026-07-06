@@ -13190,7 +13190,16 @@ impl TypesetEngine {
                 && vert_offset_overhead > 0.0
                 && !para_has_non_whitespace_text(para);
             let page_avail = if is_continuation {
-                table_available
+                // [Task #1937] 연속 페이지는 신선 full-page 를 기준으로 한다(레퍼런스
+                // Paginator engine.rs:2502-2503 과 정합). table_available 은 표 *시작*
+                // 페이지에서 표 전체 각주(total_footnote)를 available 에서 차감한 값이라,
+                // 각주가 많은 큰 RowBreak 표(소상공인 중간보고서 pi=306: 22개 각주 820px →
+                // 시작 페이지 잔여 75.8px)가 연속 페이지마다 그 좁은 잔여를 그대로 물려받아
+                // 페이지당 ~1행으로 과분할된다(122행 → 188쪽). 표 각주는 첫 fragment fit
+                // 판정에서만 보수적으로 예약하고, 연속 페이지는 신선 본문 가용을 쓴다.
+                // zone offset·border tolerance 는 유지.
+                (base_available - st.current_zone_y_offset - st.layout.pagination_tolerance_px)
+                    .max(0.0)
             } else if is_empty_host_column_float {
                 // out-of-flow float 은 para_start + v_off 에 배치된다(#986/#1088/#157).
                 // 같은 문단의 선행 in-flow inline(예: tac 캡션 표)이 current_height 를

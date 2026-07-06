@@ -600,7 +600,12 @@ pub(crate) fn parse_paragraph_list(
                         }
                         i += 3;
                         char_offsets.push(utf16_len);
-                        utf16_len += 1;
+                        // [Task #1950] HWP5 시멘틱: 탭은 PARA_TEXT 에서 8 code-unit
+                        // (0x0009 + 확장 7)을 차지한다. char_offsets/char_count/char_shape
+                        // start_pos(hwp3_char_to_utf16_pos)를 8-unit 으로 통일해야 HWP5
+                        // 직렬화(탭 8-unit 확장) 후 char_shape 정렬이 어긋나지 않는다
+                        // (HWP3-origin 변환본 탭 run 3+1 분할·376px 이탈 방지, 2955331).
+                        utf16_len += 8;
                         text_string.push('\t');
                     }
                     18..=21 => {

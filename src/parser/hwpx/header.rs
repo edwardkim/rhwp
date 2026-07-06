@@ -978,6 +978,12 @@ fn parse_para_shape_child(
         b"breakSetting" => {
             for attr in ce.attributes().flatten() {
                 match attr.key.as_ref() {
+                    b"breakLatinWord" => {
+                        // [#1986] 값 3종(BREAK_WORD/KEEP_WORD/HYPHENATION) — 원문 보존.
+                        // 미보존 시 직렬화가 KEEP_WORD 로 고정해 꼬리말·표셀 재계산
+                        // 줄나눔이 바뀌고 레이아웃(페이지 수)이 갈린다.
+                        ps.break_latin_word = Some(attr_str(&attr));
+                    }
                     b"breakNonLatinWord" => {
                         // HWP5 ParaShape attr1 bit 7: non-Latin line-break unit.
                         //
@@ -2201,7 +2207,7 @@ mod tests {
       </hh:paraPr>
       <hh:paraPr id="2" tabPrIDRef="0" condense="0" fontLineHeight="0">
         <hh:align horizontal="JUSTIFY" vertical="BASELINE"/>
-        <hh:breakSetting breakLatinWord="KEEP_WORD" breakNonLatinWord="BREAK_WORD" widowOrphan="0" keepWithNext="0" keepLines="0" pageBreakBefore="0" lineWrap="BREAK"/>
+        <hh:breakSetting breakLatinWord="HYPHENATION" breakNonLatinWord="BREAK_WORD" widowOrphan="0" keepWithNext="0" keepLines="0" pageBreakBefore="0" lineWrap="BREAK"/>
       </hh:paraPr>
     </hh:paraProperties>
   </hh:refList>
@@ -2211,6 +2217,14 @@ mod tests {
 
         assert_eq!(doc_info.para_shapes[0].attr1 & (1 << 7), 1 << 7);
         assert_eq!(doc_info.para_shapes[1].attr1 & (1 << 7), 0);
+        assert_eq!(
+            doc_info.para_shapes[0].break_latin_word.as_deref(),
+            Some("KEEP_WORD")
+        );
+        assert_eq!(
+            doc_info.para_shapes[1].break_latin_word.as_deref(),
+            Some("HYPHENATION")
+        );
     }
 
     #[test]
