@@ -296,7 +296,7 @@ v0.7.x 배포 주기 누적 외부 기여자: [@ahnbu](https://github.com/ahnbu)
 - 전체 HWP 기능 커버리지, 접근성(a11y), 모바일 대응
 - 공공기관 실무 투입 가능 수준
 
-자세한 내용은 [로드맵 문서](mydocs/report/rhwp-milestone.md)를 참조하세요.
+자세한 내용은 [로드맵 문서](mydocs/report/archives/rhwp-milestone.md)를 참조하세요.
 
 ---
 
