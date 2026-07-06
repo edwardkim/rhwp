@@ -978,6 +978,12 @@ fn parse_para_shape_child(
         b"breakSetting" => {
             for attr in ce.attributes().flatten() {
                 match attr.key.as_ref() {
+                    b"breakLatinWord" => {
+                        // [#1984] 값 3종(BREAK_WORD/KEEP_WORD/HYPHENATION) — 원문 보존.
+                        // 미보존 시 직렬화가 KEEP_WORD 로 고정해 꼬리말·표셀 재계산
+                        // 줄나눔이 바뀌고 레이아웃(페이지 수)이 갈린다.
+                        ps.break_latin_word = Some(attr_str(&attr));
+                    }
                     b"breakNonLatinWord" => {
                         // HWP5 ParaShape attr1 bit 7: non-Latin line-break unit.
                         //

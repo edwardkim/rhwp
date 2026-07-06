@@ -996,6 +996,8 @@ fn write_para_pr<W: Write>(
     } else {
         "BREAK_WORD"
     };
+    // [#1984] breakLatinWord 는 IR 원문 보존값(없으면 KEEP_WORD 기본).
+    let break_latin = ps.break_latin_word.as_deref().unwrap_or("KEEP_WORD");
     let widow_orphan = ((ps.attr2 >> 5) & 1).to_string();
     let keep_with_next = ((ps.attr2 >> 6) & 1).to_string();
     let keep_lines = ((ps.attr2 >> 7) & 1).to_string();
@@ -1021,7 +1023,7 @@ fn write_para_pr<W: Write>(
         w,
         "hh:breakSetting",
         &[
-            ("breakLatinWord", "KEEP_WORD"),
+            ("breakLatinWord", break_latin),
             ("breakNonLatinWord", break_non_latin),
             ("widowOrphan", &widow_orphan),
             ("keepWithNext", &keep_with_next),
