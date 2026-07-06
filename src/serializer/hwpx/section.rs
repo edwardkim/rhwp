@@ -89,6 +89,21 @@ fn replace_visibility(xml: &str, sd: &SectionDef) -> String {
     xml.replacen(TEMPLATE_VISIBILITY, &render_visibility(sd), 1)
 }
 
+/// [#1987] 템플릿 secPr 의 하드코딩 스칼라(spaceColumns, outlineShapeIDRef)를 IR 값으로 치환.
+/// 각 속성은 템플릿 secPr 여는 태그에 정확히 1회 등장하므로 replacen(1)로 안전하다.
+fn replace_secpr_scalars(xml: &str, sd: &SectionDef) -> String {
+    let out = xml.replacen(
+        r#"spaceColumns="1134""#,
+        &format!(r#"spaceColumns="{}""#, sd.column_spacing),
+        1,
+    );
+    out.replacen(
+        r#"outlineShapeIDRef="1""#,
+        &format!(r#"outlineShapeIDRef="{}""#, sd.outline_numbering_id),
+        1,
+    )
+}
+
 /// 레퍼런스 기준 줄 레이아웃 파라미터.
 const VERT_STEP: u32 = 1600; // vertsize(1000) + spacing(600)
 /// 탭 기본 폭 (한컴이 열면서 재계산하지만 초기값으로 필요).
@@ -125,6 +140,12 @@ pub fn write_section(
     out = replace_page_border_fill(&out, &section.section_def);
     // [#1637] secPr visibility — 템플릿 고정값을 IR 값으로 치환(hideFirstEmptyLine 등 보존).
     out = replace_visibility(&out, &section.section_def);
+
+    // [#1987] secPr 스칼라 필드 — 템플릿 하드코딩(spaceColumns="1134", outlineShapeIDRef="1")을
+    // IR 값으로 치환한다. 미치환 시 원본이 spaceColumns=1130·outlineShapeIDRef=0 등이어도
+    // 1134/1 로 방출돼 단 간격·개요번호 문단모양 참조가 어긋난다. ir-diff 는 secPr 스칼라를
+    // 비교하지 않아 못 잡던 저장 충실도 결함.
+    out = replace_secpr_scalars(&out, &section.section_def);
 
     // 바탕쪽(masterPage) — secPr 의 masterPageCnt 치환 + secPr 내부 끝에 idRef 참조 삽입.
     // 누락 시 라운드트립에서 바탕쪽 전체(그 안의 그림/표/문단 노드 포함)가 소실된다.
@@ -2220,6 +2241,8 @@ mod tests {
         // [Finding 14] 원본 secPr 의 tabStopVal="4000" tabStopUnit="HWPUNIT" (한컴
         // 기본 탭 폭 상수) 이 직렬화에서 누락되지 않아야 한다. 순서는
         // tabStop → tabStopVal → tabStopUnit → outlineShapeIDRef.
+        // [#1987] outlineShapeIDRef 는 이제 IR 값 치환 대상 — 기본 SectionDef 는
+        // outline_numbering_id=0 이므로 "0" 이 방출된다.
         let mut para = Paragraph::default();
         para.text = "x".to_string();
         let (doc, section) = make_doc_with_paragraph(para);
@@ -2227,10 +2250,37 @@ mod tests {
         let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
         assert!(
             xml.contains(
-                r#"tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="1""#
+                r#"tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="0""#
             ),
             "secPr 에 tabStopVal/tabStopUnit 이 정확 순서로 있어야 함: {}",
             &xml[..600.min(xml.len())]
+        );
+    }
+
+    #[test]
+    fn issue1987_secpr_scalars_reflect_ir() {
+        // [#1987] secPr 의 spaceColumns/outlineShapeIDRef 가 템플릿 하드코딩(1134/1)이
+        // 아니라 IR 값으로 방출돼야 한다. 미치환 시 멀티구역 문서 후반부 렌더 붕괴.
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (mut doc, mut section) = make_doc_with_paragraph(para);
+        section.section_def.column_spacing = 1130;
+        section.section_def.outline_numbering_id = 0;
+        doc.sections = vec![section.clone()];
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"spaceColumns="1130""#),
+            "spaceColumns=1130 방출: {}",
+            &xml[..400]
+        );
+        assert!(
+            xml.contains(r#"outlineShapeIDRef="0""#),
+            "outlineShapeIDRef=0 방출"
+        );
+        assert!(
+            !xml.contains(r#"spaceColumns="1134""#),
+            "템플릿 1134 잔존 금지"
         );
     }
 
