@@ -7,11 +7,13 @@ use crate::error::HwpError;
 use crate::model::control::{Control, FieldType};
 use crate::model::event::DocumentEvent;
 use crate::model::page::ColumnDef;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::shape::{TextWrap, VertRelTo};
-use crate::renderer::composer::{compose_paragraph, reflow_line_segs, ComposedParagraph};
+use crate::renderer::composer::{
+    compose_paragraph, estimate_composed_line_width, reflow_line_segs, ComposedParagraph,
+};
 use crate::renderer::page_layout::PageLayoutInfo;
-use crate::renderer::style_resolver::resolve_styles;
+use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
 
 #[derive(Clone, Copy)]
 struct FieldEndInsertion {
@@ -499,48 +501,65 @@ impl DocumentCore {
         // 셀 문단 접근 검증 및 텍스트 삽입
         let active_field = self.active_field.clone();
         let cell_path = [(control_idx, cell_idx, cell_para_idx)];
-        let cell_para = self.get_cell_paragraph_mut(
-            section_idx,
-            parent_para_idx,
-            control_idx,
-            cell_idx,
-            cell_para_idx,
-        )?;
         let new_chars_count = text.chars().count();
-        let outside_insertions = inactive_field_end_insertions(
-            cell_para,
-            active_field.as_ref(),
-            section_idx,
-            cell_para_idx,
-            Some(&cell_path),
-            char_offset,
-        );
-        let before_insertions = inactive_field_start_insertions(
-            cell_para,
-            active_field.as_ref(),
-            section_idx,
-            cell_para_idx,
-            Some(&cell_path),
-            char_offset,
-        );
-        cell_para.insert_text_at(char_offset, text);
-        keep_inactive_field_start_outside(cell_para, &before_insertions, new_chars_count);
-        keep_inactive_field_end_outside(cell_para, &outside_insertions, new_chars_count);
-        if has_clickhere_field_range(cell_para) {
-            rebuild_char_offsets(cell_para);
+        let old_char_count;
+        {
+            let cell_para = self.get_cell_paragraph_mut(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )?;
+            old_char_count = cell_para.text.chars().count();
+            let outside_insertions = inactive_field_end_insertions(
+                cell_para,
+                active_field.as_ref(),
+                section_idx,
+                cell_para_idx,
+                Some(&cell_path),
+                char_offset,
+            );
+            let before_insertions = inactive_field_start_insertions(
+                cell_para,
+                active_field.as_ref(),
+                section_idx,
+                cell_para_idx,
+                Some(&cell_path),
+                char_offset,
+            );
+            cell_para.insert_text_at(char_offset, text);
+            keep_inactive_field_start_outside(cell_para, &before_insertions, new_chars_count);
+            keep_inactive_field_end_outside(cell_para, &outside_insertions, new_chars_count);
+            if has_clickhere_field_range(cell_para) {
+                rebuild_char_offsets(cell_para);
+            }
         }
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
         self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
 
-        // 셀 폭 기반 리플로우
-        self.reflow_cell_paragraph(
+        let preserve_tail_lines = self.can_preserve_cell_tail_append_line_segs(
             section_idx,
             parent_para_idx,
             control_idx,
             cell_idx,
             cell_para_idx,
+            char_offset,
+            old_char_count,
+            text,
         );
+
+        // 셀 폭 기반 리플로우
+        if !preserve_tail_lines {
+            self.reflow_cell_paragraph(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            );
+        }
         self.recalculate_cell_paragraph_vpos_native(
             section_idx,
             parent_para_idx,
@@ -740,6 +759,133 @@ impl DocumentCore {
         }
     }
 
+    fn cell_paragraph_final_width_px(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        use crate::renderer::hwpunit_to_px;
+
+        let para = self
+            .document
+            .sections
+            .get(section_idx)?
+            .paragraphs
+            .get(parent_para_idx)?;
+
+        let (cell_width, pad_left, pad_right) = match para.controls.get(control_idx)? {
+            Control::Table(table) => {
+                if cell_idx == 65534 {
+                    let cap = table.caption.as_ref()?;
+                    use crate::model::shape::CaptionDirection;
+                    let width = match cap.direction {
+                        CaptionDirection::Left | CaptionDirection::Right => cap.width,
+                        _ => cap.max_width,
+                    };
+                    (width, 0, 0)
+                } else {
+                    let cell = table.cells.get(cell_idx)?;
+                    let pad_left = if cell.apply_inner_margin {
+                        cell.padding.left
+                    } else {
+                        table.padding.left
+                    };
+                    let pad_right = if cell.apply_inner_margin {
+                        cell.padding.right
+                    } else {
+                        table.padding.right
+                    };
+                    (cell.width, pad_left, pad_right)
+                }
+            }
+            Control::Shape(shape) => {
+                let tb = super::super::helpers::get_textbox_from_shape(shape)?;
+                let common = shape.common();
+                (common.width as u32, tb.margin_left, tb.margin_right)
+            }
+            Control::Picture(pic) => (pic.common.width as u32, 0, 0),
+            _ => return None,
+        };
+
+        let cell_width_px = hwpunit_to_px(cell_width as i32, self.dpi);
+        let pad_left_px = hwpunit_to_px(pad_left as i32, self.dpi);
+        let pad_right_px = hwpunit_to_px(pad_right as i32, self.dpi);
+        let available_width = (cell_width_px - pad_left_px - pad_right_px).max(0.0);
+        let para_shape_id = self
+            .get_cell_paragraph_ref(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )?
+            .para_shape_id;
+        let para_style = styles.para_styles.get(para_shape_id as usize);
+        let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+        let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+        Some((available_width - margin_left - margin_right).max(0.0))
+    }
+
+    fn can_preserve_cell_tail_append_line_segs(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        old_char_count: usize,
+        inserted_text: &str,
+    ) -> bool {
+        if char_offset != old_char_count
+            || inserted_text.is_empty()
+            || inserted_text
+                .chars()
+                .any(|ch| matches!(ch, '\n' | '\r' | '\t'))
+        {
+            return false;
+        }
+
+        let styles = resolve_styles(&self.document.doc_info, self.dpi);
+        let Some(final_width) = self.cell_paragraph_final_width_px(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            &styles,
+        ) else {
+            return false;
+        };
+        let Some(para) = self.get_cell_paragraph_ref(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        ) else {
+            return false;
+        };
+        if para.line_segs.is_empty()
+            || para
+                .line_segs
+                .iter()
+                .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        {
+            return false;
+        }
+
+        let composed = compose_paragraph(para);
+        let Some(last_line) = composed.lines.last() else {
+            return false;
+        };
+        estimate_composed_line_width(last_line, &styles) <= final_width + 1.0
+    }
+
     pub(crate) fn reflow_cell_paragraph(
         &mut self,
         section_idx: usize,
@@ -748,82 +894,17 @@ impl DocumentCore {
         cell_idx: usize,
         cell_para_idx: usize,
     ) {
-        use crate::renderer::hwpunit_to_px;
-
-        // 셀/글상자 폭과 패딩 읽기 (불변 참조)
-        let (cell_width, pad_left, pad_right) = {
-            let para = &self.document.sections[section_idx].paragraphs[parent_para_idx];
-            match para.controls.get(control_idx) {
-                Some(Control::Table(table)) => {
-                    if cell_idx == 65534 {
-                        // 표 캡션 리플로우: Top/Bottom은 max_width, Left/Right는 width 사용
-                        if let Some(ref cap) = table.caption {
-                            use crate::model::shape::CaptionDirection;
-                            let w = match cap.direction {
-                                CaptionDirection::Left | CaptionDirection::Right => cap.width,
-                                _ => cap.max_width,
-                            };
-                            (w, 0, 0)
-                        } else {
-                            return;
-                        }
-                    } else if let Some(cell) = table.cells.get(cell_idx) {
-                        let pad_l = if cell.apply_inner_margin {
-                            cell.padding.left
-                        } else {
-                            table.padding.left
-                        };
-                        let pad_r = if cell.apply_inner_margin {
-                            cell.padding.right
-                        } else {
-                            table.padding.right
-                        };
-                        (cell.width, pad_l, pad_r)
-                    } else {
-                        return;
-                    }
-                }
-                Some(Control::Shape(shape)) => {
-                    if let Some(tb) = super::super::helpers::get_textbox_from_shape(shape) {
-                        let common = shape.common();
-                        // 글상자 폭 = common.width, 여백 = textbox margin
-                        (common.width as u32, tb.margin_left, tb.margin_right)
-                    } else {
-                        return;
-                    }
-                }
-                Some(Control::Picture(pic)) => {
-                    // 캡션 폭 = 그림 폭 (Bottom/Top 방향), 여백 없음
-                    (pic.common.width as u32, 0, 0)
-                }
-                _ => return,
-            }
-        };
-
         let styles = resolve_styles(&self.document.doc_info, self.dpi);
-        let cell_width_px = hwpunit_to_px(cell_width as i32, self.dpi);
-        let pad_left_px = hwpunit_to_px(pad_left as i32, self.dpi);
-        let pad_right_px = hwpunit_to_px(pad_right as i32, self.dpi);
-        let available_width = (cell_width_px - pad_left_px - pad_right_px).max(0.0);
-
-        // 문단 여백 계산
-        let para_shape_id = {
-            let cell_para = self.get_cell_paragraph_ref(
-                section_idx,
-                parent_para_idx,
-                control_idx,
-                cell_idx,
-                cell_para_idx,
-            );
-            match cell_para {
-                Some(p) => p.para_shape_id,
-                None => return,
-            }
+        let Some(final_width) = self.cell_paragraph_final_width_px(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            &styles,
+        ) else {
+            return;
         };
-        let para_style = styles.para_styles.get(para_shape_id as usize);
-        let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-        let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-        let final_width = (available_width - margin_left - margin_right).max(0.0);
 
         // 가변 참조로 리플로우 실행
         match self.document.sections[section_idx].paragraphs[parent_para_idx]
@@ -3929,6 +4010,63 @@ mod tests {
         };
         let raw_height = u32::from_le_bytes(table.raw_ctrl_data[16..20].try_into().unwrap());
         assert_eq!(raw_height, table.common.height);
+    }
+
+    #[test]
+    fn tail_append_preserves_existing_cell_line_segs_when_last_line_fits() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+
+        let created = core.create_table_native(0, 0, 0, 1, 1).unwrap();
+        let v: serde_json::Value = serde_json::from_str(&created).unwrap();
+        let para_idx = v["paraIdx"].as_u64().unwrap() as usize;
+        let ctrl_idx = v["controlIdx"].as_u64().unwrap() as usize;
+        let text = "또한 사용할 수 있습니다.";
+
+        core.insert_text_in_cell_native(0, para_idx, ctrl_idx, 0, 0, 0, text)
+            .unwrap();
+
+        {
+            let para = core
+                .get_cell_paragraph_mut(0, para_idx, ctrl_idx, 0, 0)
+                .unwrap();
+            let mut first = para.line_segs.first().cloned().unwrap_or_default();
+            first.text_start = 0;
+            first.vertical_pos = 0;
+            first.tag = LineSeg::TAG_SINGLE_SEGMENT_LINE;
+            let mut second = first.clone();
+            second.text_start = para.char_offsets[9];
+            second.vertical_pos = first.line_height + first.line_spacing;
+            para.line_segs = vec![first, second];
+        }
+
+        let before_starts = {
+            let para = core
+                .get_cell_paragraph_ref(0, para_idx, ctrl_idx, 0, 0)
+                .unwrap();
+            DocumentCore::build_line_char_starts(para)
+        };
+        assert_eq!(before_starts, vec![0, 9]);
+
+        let tail = core
+            .get_cell_paragraph_ref(0, para_idx, ctrl_idx, 0, 0)
+            .unwrap()
+            .text
+            .chars()
+            .count();
+        core.insert_text_in_cell_native(0, para_idx, ctrl_idx, 0, 0, tail, "1")
+            .unwrap();
+
+        let after_starts = {
+            let para = core
+                .get_cell_paragraph_ref(0, para_idx, ctrl_idx, 0, 0)
+                .unwrap();
+            DocumentCore::build_line_char_starts(para)
+        };
+        assert_eq!(
+            after_starts, before_starts,
+            "tail append must not reflow earlier saved cell line starts"
+        );
     }
 
     fn table_cell_and_common_height(
