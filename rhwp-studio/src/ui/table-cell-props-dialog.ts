@@ -3,6 +3,7 @@ import { appendSvgMarkup } from './dom-utils';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { CellProperties, TableProperties } from '@/core/types';
 import type { EventBus } from '@/core/event-bus';
+import type { CommandServices } from '@/command/types';
 
 const HWPUNIT_PER_MM = 7200 / 25.4;
 
@@ -126,6 +127,8 @@ export class TableCellPropsDialog extends ModalDialog {
   // 현재 속성값 캐시
   private cellProps!: CellProperties;
   private tableProps!: TableProperties;
+  /** undo 기록 라우팅용 (없으면 wasm 직접 호출 fallback). */
+  private services: CommandServices | undefined;
 
   constructor(
     wasm: WasmBridge,
@@ -133,6 +136,7 @@ export class TableCellPropsDialog extends ModalDialog {
     tableCtx: { sec: number; ppi: number; ci: number },
     cellIdx: number,
     mode: 'table' | 'cell' = 'cell',
+    services?: CommandServices,
   ) {
     super('표/셀 속성', 480);
     this.wasm = wasm;
@@ -140,6 +144,7 @@ export class TableCellPropsDialog extends ModalDialog {
     this.tableCtx = tableCtx;
     this.cellIdx = cellIdx;
     this.mode = mode;
+    this.services = services;
   }
 
   show(): void {
@@ -1374,8 +1379,6 @@ export class TableCellPropsDialog extends ModalDialog {
       }
     }
 
-    this.wasm.setCellProperties(sec, ppi, ci, this.cellIdx, newCellProps as Partial<CellProperties>);
-
     // 표 속성 수정
     const pbValue = parseInt(this.tablePageBreakSelect.value, 10);
     const newTableProps: Record<string, unknown> = {
@@ -1434,9 +1437,27 @@ export class TableCellPropsDialog extends ModalDialog {
       }
     }
 
-    this.wasm.setTableProperties(sec, ppi, ci, newTableProps as Partial<TableProperties>);
-
-    this.eventBus.emit('document-changed');
+    const applyProps = () => {
+      this.wasm.setCellProperties(sec, ppi, ci, this.cellIdx, newCellProps as Partial<CellProperties>);
+      this.wasm.setTableProperties(sec, ppi, ci, newTableProps as Partial<TableProperties>);
+    };
+    // 표/셀 속성 변경도 undo 대상이다 — 편집 라우터를 통과시켜 스냅샷으로
+    // 기록한다 (#1320 계약, picture-props-dialog(#2027)와 동일 패턴).
+    // services 미주입 환경에서만 직접 적용 fallback.
+    const ih = this.services?.getInputHandler();
+    if (ih) {
+      ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'objectProps',
+        operation: () => {
+          applyProps();
+          return ih.getCursorPosition();
+        },
+      });
+    } else {
+      applyProps();
+      this.eventBus.emit('document-changed');
+    }
   }
 
   // ─── "모두(A)" 일괄 여백 스피너 ─────────────────────

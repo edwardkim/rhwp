@@ -279,7 +279,7 @@ export const tableCommands: CommandDef[] = [
         const ref = ih.getSelectedTableRef();
         if (!ref) return;
         const tableCtx = { sec: ref.sec, ppi: ref.ppi, ci: ref.ci };
-        const dialog = new TableCellPropsDialog(services.wasm, services.eventBus, tableCtx, 0, 'table');
+        const dialog = new TableCellPropsDialog(services.wasm, services.eventBus, tableCtx, 0, 'table', services);
         dialog.show();
         return;
       }
@@ -287,7 +287,7 @@ export const tableCommands: CommandDef[] = [
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       const tableCtx = { sec: pos.sectionIndex, ppi: pos.parentParaIndex, ci: pos.controlIndex };
-      const dialog = new TableCellPropsDialog(services.wasm, services.eventBus, tableCtx, pos.cellIndex, 'cell');
+      const dialog = new TableCellPropsDialog(services.wasm, services.eventBus, tableCtx, pos.cellIndex, 'cell', services);
       dialog.show();
     },
   },
@@ -309,6 +309,7 @@ export const tableCommands: CommandDef[] = [
         pos.cellIndex,
         'each',
         selectionRange,
+        services,
       );
       dialog.show();
     },
@@ -331,6 +332,7 @@ export const tableCommands: CommandDef[] = [
         pos.cellIndex,
         'asOne',
         ih.getSelectedCellRange(),
+        services,
       );
       dialog.show();
     },
