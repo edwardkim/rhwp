@@ -2305,28 +2305,7 @@ impl TypesetEngine {
             }
 
             // 단 나누기
-            // [#2019 ②] 부동 개체 전용 빈 앵커 문단(별지 서식)의 단나누기(새 ColumnDef 없음)는
-            // 무시한다. 흐름 텍스트가 없고 개체가 절대위치 배치이므로, 단일 단에서 단나누기를
-            // 페이지 분할로 변환하면 한글과 달리 폼 요소마다 새 쪽이 생겨 과분할된다(74312).
-            // 새 ColumnDef 를 동반하는 단나누기(zone 전환)는 ③(process_multicolumn_break)에서 처리.
-            //
-            // 추가로, 별지 서식은 폼 사이를 "빈 문단 + 단나누기 + (같은 1단) ColumnDef" 구분자로
-            // 나눈다. 이 구분자는 has_diff_col_def=false(단 수 불변)라 위 branch 를 타는데, 단일
-            // 단에서 페이지 분할로 변환되어 폼마다 허위 페이지가 생긴다. 텍스트 없이 ColumnDef
-            // 만 든 단일 단 단나누기도 억제한다(한글은 이 구분자로 쪽을 나누지 않음).
-            let empty_columndef_only_break = !has_diff_col_def
-                && st.col_count <= 1
-                && para.text.trim().is_empty()
-                && !para.controls.is_empty()
-                && para
-                    .controls
-                    .iter()
-                    .all(|c| matches!(c, Control::ColumnDef(_)));
-            let suppress_floating_anchor_column_break = !has_diff_col_def
-                && (crate::renderer::layout::para_is_floating_overlay_anchor(para)
-                    || empty_columndef_only_break);
-            if para.column_type == ColumnBreakType::Column && !suppress_floating_anchor_column_break
-            {
+            if para.column_type == ColumnBreakType::Column {
                 if has_diff_col_def {
                     // [Task #702] 단나누기 + 새 ColumnDef = zone 재정의 (MultiColumn 등가 처리)
                     self.process_multicolumn_break(&mut st, para_idx, paragraphs, page_def);
@@ -9727,17 +9706,6 @@ impl TypesetEngine {
             line_spacings[1] = 0.0;
         }
 
-        // [#2019 ①] 부동 개체 전용 빈 앵커 문단(별지 서식): 위 두 경로(composed/stored LINE_SEG)가
-        // 산출한 line_height 는 개체 높이를 담고 있어(글상자 51.3mm=14545HU) 흐름에 예약하면
-        // 이중 계상 → 과분할. 개체는 절대위치 별도 렌더이므로 흐름 높이는 빈 문단 fallback 으로
-        // 대체한다. 자리차지·tac=true 는 helper 에서 제외되어 예약 유지.
-        if crate::renderer::layout::para_is_floating_overlay_anchor(para) {
-            let (lh, ls) = empty_paragraph_fallback_line_metrics(para, styles, para_style)
-                .unwrap_or((hwpunit_to_px(400, self.dpi), 0.0));
-            line_heights = vec![lh];
-            line_spacings = vec![ls];
-        }
-
         let lines_total: f64 = line_heights
             .iter()
             .zip(line_spacings.iter())
@@ -13595,33 +13563,17 @@ impl TypesetEngine {
         // 전환 시의 vpos_zone_height 만 수정).
         let vpos_zone_height = if para_idx > 0 {
             let mut max_vpos_end: i32 = 0;
-            let mut prev_is_floating_anchor = false;
             for prev_idx in (0..para_idx).rev() {
                 if let Some(last_seg) = paragraphs[prev_idx].line_segs.last() {
                     let vpos_end = last_seg.vertical_pos + last_seg.line_height;
                     if vpos_end > max_vpos_end {
                         max_vpos_end = vpos_end;
                     }
-                    prev_is_floating_anchor =
-                        crate::renderer::layout::para_is_floating_overlay_anchor(
-                            &paragraphs[prev_idx],
-                        );
                     break;
                 }
             }
-            // [#2019 ③] leaving zone 높이는 "이 페이지에서 콘텐츠가 내려간 높이"이므로 정상
-            // 문서에서는 page-상대 stored vpos(< 페이지 높이) 로 근사된다. 그러나 별지 서식처럼
-            // stored vpos 가 섹션 누적(절대) 좌표인 문서는 max_vpos_end 가 페이지 높이를 크게
-            // 넘어(74312: 2204px vs 1009px) candidate_offset 이 항상 페이지를 초과 → zone 전환
-            // (1단↔2단 71회)마다 새 페이지가 생긴다. 두 신호로 누적 vpos 를 식별해 흐름 누적값
-            // (st.current_height, page-상대)을 대신 쓴다: ⓐ 이전 문단이 부동 폼 앵커, 또는
-            // ⓑ max_vpos_end 가 본문 높이를 초과(zone 콘텐츠는 페이지보다 클 수 없음).
-            let max_vpos_px = hwpunit_to_px(max_vpos_end, self.dpi);
-            if max_vpos_end > 0
-                && !prev_is_floating_anchor
-                && max_vpos_px <= st.layout.available_body_height()
-            {
-                max_vpos_px
+            if max_vpos_end > 0 {
+                hwpunit_to_px(max_vpos_end, self.dpi)
             } else {
                 st.current_height
             }

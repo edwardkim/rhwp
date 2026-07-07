@@ -889,47 +889,6 @@ pub(crate) fn para_has_overlay_shape(para: &Paragraph) -> bool {
     })
 }
 
-/// [#2019] 문단이 "부동 개체 전용 빈 앵커"인지 — 텍스트가 없고 모든 컨트롤이 부동
-/// (자리차지 아님, tac=false) Shape/Picture/Table 인 경우.
-///
-/// 별지 서식(양식) 문단이 여기 해당한다: 부동 글상자·도형·표가 빈 앵커 문단에 매달려
-/// Paper/Para 절대위치로 배치된다. 이때 stored LINE_SEG 의 `vertical_pos`/`line_height` 는
-/// 텍스트 흐름 좌표가 아니라 **개체의 절대 위치·높이(섹션 캔버스 좌표)**를 담는다. 이 문단을
-/// 흐름 콘텐츠로 취급하면(높이 예약 / 단나누기 페이지분할 / zone 오프셋에 절대 vpos 사용)
-/// 페이지가 과분할된다(74312 별지 서식: rhwp 81p vs 한글 18p). 흐름 footprint 를 0 으로
-/// 취급하기 위한 공통 게이트.
-///
-/// 자리차지(TopAndBottom)·tac=true 는 개체가 흐름 공간을 실제로 차지하므로 제외.
-/// Shape/Picture 는 통과·글앞·글뒤만(Square 는 그림 좌우 흘림이 흔해 제외, 회귀 차단).
-/// Table 은 부동 배치가 어울림(Square) 표준이므로 어울림 포함.
-pub(crate) fn para_is_floating_overlay_anchor(para: &Paragraph) -> bool {
-    use crate::model::shape::TextWrap;
-    if !para.text.trim().is_empty() || para.controls.is_empty() {
-        return false;
-    }
-    let shape_floating = |tac: bool, wrap: TextWrap| -> bool {
-        !tac && matches!(
-            wrap,
-            TextWrap::InFrontOfText | TextWrap::BehindText | TextWrap::Through
-        )
-    };
-    para.controls.iter().all(|c| match c {
-        Control::Shape(s) => shape_floating(s.common().treat_as_char, s.common().text_wrap),
-        Control::Picture(pic) => shape_floating(pic.common.treat_as_char, pic.common.text_wrap),
-        Control::Table(t) => {
-            !t.common.treat_as_char
-                && matches!(
-                    t.common.text_wrap,
-                    TextWrap::InFrontOfText
-                        | TextWrap::BehindText
-                        | TextWrap::Through
-                        | TextWrap::Square
-                )
-        }
-        _ => false,
-    })
-}
-
 pub struct LayoutEngine {
     /// DPI
     dpi: f64,
