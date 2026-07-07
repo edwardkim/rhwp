@@ -2174,6 +2174,13 @@ impl DocumentCore {
             }
             table.common.attr = table.attr;
         }
+        // attr 비트 변경을 raw_ctrl_data FLAGS(0..4)에도 반영. HWP5 직렬화기
+        // (serialize_table)는 raw_ctrl_data 가 있으면 그대로 기록하므로, 여기
+        // 반영하지 않으면 글자처럼 취급/배치/기준/정렬/쪽영역제한/겹침 변경이
+        // 저장 파일에서 통째로 유실되고 재로드 시 원복된다. V_OFFSET/H_OFFSET/
+        // PREVENT_PAGE_BREAK/MARGIN_* 패치와 동일 규칙 (미변경 시에는 파싱
+        // 원본 attr 를 그대로 다시 쓰는 항등 연산이라 무해).
+        table.raw_ctrl_data[common_obj_offsets::FLAGS].copy_from_slice(&table.attr.to_le_bytes());
         // keepWithAnchor → prevent_page_break
         // CommonObjAttr::PREVENT_PAGE_BREAK (parse_common_obj_attr 정합)
         if let Some(v) = json_bool(json, "keepWithAnchor") {
@@ -2840,5 +2847,97 @@ mod tests {
         assert_eq!(common.width, 9000, "width at [12..16]");
         assert_eq!(common.height, 3000, "height at [16..20]");
         assert_eq!(common.horizontal_offset, 0, "h_offset at [8..12] untouched");
+    }
+}
+
+#[cfg(test)]
+mod table_attr_save_roundtrip_tests {
+    //! 표 배치 속성(attr 비트) 변경의 HWP5 저장 유실 회귀 테스트.
+    //!
+    //! set_table_properties_native 는 글자처럼 취급/배치/기준/정렬/제한/겹침을
+    //! table.attr/common 에만 반영하고 raw_ctrl_data FLAGS(0..4)를 패치하지
+    //! 않았다. HWP5 직렬화기는 raw_ctrl_data 를 그대로 기록하므로(HWP5 에서
+    //! 파싱된 표는 raw 가 항상 보존됨) 변경이 저장 파일에서 통째로 유실되고
+    //! 재로드 시 원복됐다. 화면(getter)은 common 필드로 정상 표시되어
+    //! "소리 없는" 유실이었다.
+
+    use crate::document_core::DocumentCore;
+    use crate::model::control::Control;
+    use crate::model::shape::{TextWrap, VertRelTo};
+
+    const SAMPLE: &str = "samples/calc-cell.hwp";
+
+    fn load() -> DocumentCore {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+        let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {SAMPLE}: {e}"));
+        DocumentCore::from_bytes(&bytes).unwrap_or_else(|e| panic!("load {SAMPLE}: {e}"))
+    }
+
+    fn find_first_table(core: &DocumentCore) -> (usize, usize) {
+        for (pi, para) in core.document().sections[0].paragraphs.iter().enumerate() {
+            for (ci, ctrl) in para.controls.iter().enumerate() {
+                if matches!(ctrl, Control::Table(_)) {
+                    return (pi, ci);
+                }
+            }
+        }
+        panic!("{SAMPLE}: 표 컨트롤이 필요함");
+    }
+
+    fn table_attrs(core: &DocumentCore, pi: usize, ci: usize) -> (bool, TextWrap, bool, VertRelTo) {
+        match &core.document().sections[0].paragraphs[pi].controls[ci] {
+            Control::Table(t) => (
+                t.common.treat_as_char,
+                t.common.text_wrap,
+                t.common.allow_overlap,
+                t.common.vert_rel_to,
+            ),
+            _ => unreachable!(),
+        }
+    }
+
+    #[test]
+    fn table_attr_changes_survive_hwp_save_roundtrip() {
+        let mut core = load();
+        let (pi, ci) = find_first_table(&core);
+        let (orig_tac, orig_wrap, _, _) = table_attrs(&core, pi, ci);
+
+        // 파싱 원본과 반드시 달라지는 값으로 변경
+        let new_tac = !orig_tac;
+        let new_wrap = if matches!(orig_wrap, TextWrap::TopAndBottom) {
+            "Square"
+        } else {
+            "TopAndBottom"
+        };
+        let json = format!(
+            r#"{{"treatAsChar":{new_tac},"textWrap":"{new_wrap}","vertRelTo":"Para","allowOverlap":true}}"#
+        );
+        core.set_table_properties_native(0, pi, ci, &json)
+            .expect("set_table_properties_native");
+
+        // 메모리(IR) 반영 확인
+        let (mem_tac, mem_wrap, mem_overlap, mem_vrel) = table_attrs(&core, pi, ci);
+        assert_eq!(mem_tac, new_tac);
+        assert_eq!(format!("{mem_wrap:?}"), new_wrap);
+        assert!(mem_overlap);
+        assert!(matches!(mem_vrel, VertRelTo::Para));
+
+        // HWP5 저장 → 재로드 후에도 보존되어야 한다.
+        // (수정 전에는 raw_ctrl_data FLAGS 가 파싱 원본 그대로 기록되어 전부 원복)
+        let saved = core.export_hwp_with_adapter().expect("export_hwp");
+        let reloaded = DocumentCore::from_bytes(&saved).expect("재로드");
+        let (pi2, ci2) = find_first_table(&reloaded);
+        let (tac, wrap, overlap, vrel) = table_attrs(&reloaded, pi2, ci2);
+        assert_eq!(tac, new_tac, "treatAsChar 변경이 HWP5 저장에서 유실됨");
+        assert_eq!(
+            format!("{wrap:?}"),
+            new_wrap,
+            "textWrap 변경이 HWP5 저장에서 유실됨"
+        );
+        assert!(overlap, "allowOverlap 변경이 HWP5 저장에서 유실됨");
+        assert!(
+            matches!(vrel, VertRelTo::Para),
+            "vertRelTo 변경이 HWP5 저장에서 유실됨 (실제: {vrel:?})"
+        );
     }
 }
