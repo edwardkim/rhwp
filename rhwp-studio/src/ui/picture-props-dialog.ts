@@ -2571,7 +2571,12 @@ export class PicturePropsDialog {
 
   private getSelectedWrap(): string {
     const idx = this.wrapBtns.findIndex(b => b.classList.contains('active'));
-    return idx >= 0 ? this.wrapValues[idx] : 'Square';
+    if (idx >= 0) return this.wrapValues[idx];
+    // 활성 버튼 없음 = 현재 배치가 UI 버튼에 매핑되지 않는 값('Through' 등,
+    // populateFromProps 의 indexOf = -1). 여기서 'Square' 로 대체하면 사용자가
+    // 아무것도 바꾸지 않고 확인만 눌러도 diff 가 생겨 배치가 조용히 변경·
+    // 저장되므로, 개체의 원래 배치 값을 그대로 보존한다.
+    return this.props?.textWrap ?? 'Square';
   }
 
   /** 캡션 direction + vertAlign → 3×3 그리드 인덱스 */
