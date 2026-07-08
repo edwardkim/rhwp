@@ -8,6 +8,8 @@
 
 use serde::Serialize;
 
+use crate::document_core::DocumentCore;
+use crate::error::HwpError;
 use crate::model::document::Document;
 use crate::model::style::HeadType;
 
@@ -258,6 +260,20 @@ pub fn build_structure(doc: &Document, mode: StructureMode) -> StructureDoc {
         node_count,
         preamble,
         roots,
+    }
+}
+
+impl DocumentCore {
+    /// 문서 구조(개요/조문) 트리를 JSON으로 반환한다.
+    ///
+    /// `mode`: `"auto"` | `"outline"` | `"clause"` (인식 불가 시 `auto` 폴백).
+    /// 파서/렌더 무변경의 읽기 전용 질의. 사이드바 목차 네비게이션용.
+    pub fn get_structure_native(&self, mode: &str) -> Result<String, HwpError> {
+        let mode = StructureMode::parse(mode).unwrap_or(StructureMode::Auto);
+        let st = build_structure(&self.document, mode);
+        serde_json::to_string(&st).map_err(|error| {
+            HwpError::RenderError(format!("문서 구조 JSON 직렬화에 실패했습니다: {error}"))
+        })
     }
 }
 

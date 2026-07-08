@@ -6784,6 +6784,14 @@ impl HwpDocument {
         self.core.get_bookmarks_native().map_err(|e| e.into())
     }
 
+    /// 문서 구조(개요/조문) 트리를 JSON으로 반환 (사이드바 목차 네비게이션용)
+    ///
+    /// `mode`: `"auto"` | `"outline"` | `"clause"` (인식 불가 시 `auto`).
+    #[wasm_bindgen(js_name = getStructure)]
+    pub fn get_structure(&self, mode: &str) -> Result<String, JsValue> {
+        self.core.get_structure_native(mode).map_err(|e| e.into())
+    }
+
     /// 책갈피 추가
     #[wasm_bindgen(js_name = addBookmark)]
     pub fn add_bookmark(
