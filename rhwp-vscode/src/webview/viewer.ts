@@ -145,7 +145,9 @@ window.addEventListener("message", (event) => {
 
 function updateStatusBar(): void {
   const total = pageInfos.length;
-  stbPage.textContent = total > 0 ? `${currentPage + 1} / ${total} 쪽` : "- / - 쪽";
+  if (!pageInputActive) {
+    stbPage.textContent = total > 0 ? `${currentPage + 1} / ${total} 쪽` : "- / - 쪽";
+  }
   stbZoomVal.textContent = `${Math.round(currentZoom * 100)}%`;
 }
 
@@ -327,6 +329,27 @@ function scrollToPage(pageNum: number): void {
 /** 문서 로드 후 사이드바 콘텐츠(썸네일/목차/북마크)를 갱신한다. */
 function buildSidebar(): void {
   buildThumbnails();
+  buildOutline();
+  buildBookmarks();
+}
+
+/** 빈 패널 안내 요소. */
+function navEmpty(text: string): HTMLElement {
+  const d = document.createElement("div");
+  d.className = "nav-empty";
+  d.textContent = text;
+  return d;
+}
+
+/** (섹션, 문단) 위치의 페이지로 이동한다. */
+function navigateToPosition(section: number, para: number): void {
+  if (!hwpDoc) return;
+  try {
+    const res = JSON.parse(hwpDoc.getPageOfPosition(section, para));
+    if (res?.ok && typeof res.page === "number") scrollToPage(res.page);
+  } catch {
+    /* 위치 해석 실패 시 무시 */
+  }
 }
 
 const THUMB_WIDTH = 160;
@@ -421,6 +444,132 @@ navTabs.forEach((tab) => {
 
 stbSidebarToggle.addEventListener("click", () => {
   navSidebar.classList.toggle("collapsed");
+});
+
+// ── 사이드바: 목차 ──
+
+interface StructureNode {
+  level: number;
+  kind: string;
+  marker?: string;
+  heading?: string;
+  section: number;
+  paragraph: number;
+  children?: StructureNode[];
+}
+
+/** 문서 구조(개요/조문)를 목차 패널에 트리로 렌더한다. */
+function buildOutline(): void {
+  const panel = navPanels.get("outline");
+  if (!panel || !hwpDoc) return;
+  panel.innerHTML = "";
+
+  let roots: StructureNode[] = [];
+  try {
+    roots = JSON.parse(hwpDoc.getStructure("auto")).roots ?? [];
+  } catch {
+    roots = [];
+  }
+  if (roots.length === 0) {
+    panel.appendChild(navEmpty("목차 정보가 없습니다"));
+    return;
+  }
+
+  const walk = (nodes: StructureNode[]): void => {
+    for (const n of nodes) {
+      const item = document.createElement("div");
+      item.className = "nav-item";
+      item.style.paddingLeft = `${(Math.max(1, n.level) - 1) * 12 + 6}px`;
+      const marker = n.marker ? `${n.marker} ` : "";
+      const label = `${marker}${n.heading ?? ""}`.trim() || "(제목 없음)";
+      item.textContent = label;
+      item.title = label;
+      item.addEventListener("click", () => navigateToPosition(n.section, n.paragraph));
+      panel.appendChild(item);
+      if (n.children?.length) walk(n.children);
+    }
+  };
+  walk(roots);
+}
+
+// ── 사이드바: 북마크 ──
+
+interface BookmarkItem {
+  name: string;
+  sec: number;
+  para: number;
+}
+
+/** 사용자 북마크 목록을 북마크 패널에 렌더한다. */
+function buildBookmarks(): void {
+  const panel = navPanels.get("bookmark");
+  if (!panel || !hwpDoc) return;
+  panel.innerHTML = "";
+
+  let list: BookmarkItem[] = [];
+  try {
+    list = JSON.parse(hwpDoc.getBookmarks());
+  } catch {
+    list = [];
+  }
+  if (list.length === 0) {
+    panel.appendChild(navEmpty("북마크가 없습니다"));
+    return;
+  }
+
+  for (const b of list) {
+    const item = document.createElement("div");
+    item.className = "nav-item";
+    const label = b.name || "(이름 없음)";
+    item.textContent = label;
+    item.title = label;
+    item.addEventListener("click", () => navigateToPosition(b.sec, b.para));
+    panel.appendChild(item);
+  }
+}
+
+// ── 상태 표시줄: 쪽 번호 이동 ──
+
+let pageInputActive = false;
+
+stbPage.style.cursor = "pointer";
+stbPage.title = "쪽 번호로 이동";
+stbPage.addEventListener("click", () => {
+  if (pageInputActive || pageInfos.length === 0) return;
+  pageInputActive = true;
+
+  const input = document.createElement("input");
+  input.type = "number";
+  input.min = "1";
+  input.max = String(pageInfos.length);
+  input.value = String(currentPage + 1);
+  input.style.width = "52px";
+  input.style.height = "18px";
+  input.style.fontSize = "12px";
+
+  const restore = (): void => {
+    pageInputActive = false;
+    updateStatusBar();
+  };
+  const commit = (): void => {
+    const n = parseInt(input.value, 10);
+    if (!Number.isNaN(n) && n >= 1 && n <= pageInfos.length) {
+      restore();
+      scrollToPage(n - 1);
+    } else {
+      restore();
+    }
+  };
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") commit();
+    else if (e.key === "Escape") restore();
+  });
+  input.addEventListener("blur", restore);
+
+  stbPage.textContent = "";
+  stbPage.appendChild(input);
+  input.focus();
+  input.select();
 });
 
 // ── 유틸리티 ──
