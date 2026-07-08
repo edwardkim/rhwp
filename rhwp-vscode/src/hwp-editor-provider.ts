@@ -263,6 +263,13 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       background: white;
     }
+    /* 2쪽 보기: 두 쪽을 좌우로 배치 */
+    .page-row {
+      display: flex;
+      flex-direction: row;
+      gap: 12px;
+      align-items: flex-start;
+    }
     /* 네비게이션 사이드바 (nav-) */
     #app-shell {
       flex: 1;
@@ -480,6 +487,8 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
     <span class="stb-divider"></span>
     <span id="stb-message" class="stb-message">\ubb38\uc11c\ub97c \ubd88\ub7ec\uc624\ub294 \uc911...</span>
     <span class="stb-right">
+      <button id="stb-view-mode" class="stb-btn" title="1\ucabd/2\ucabd \ubcf4\uae30">1\ucabd</button>
+      <span class="stb-divider"></span>
       <button id="stb-zoom-out" class="stb-btn" title="\ucd95\uc18c">\u2212</button>
       <span id="stb-zoom-val" class="stb-zoom-val">100%</span>
       <button id="stb-zoom-in" class="stb-btn" title="\ud655\ub300">+</button>

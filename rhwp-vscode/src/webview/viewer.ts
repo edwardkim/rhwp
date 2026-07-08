@@ -28,12 +28,14 @@ const navPanels = new Map<string, HTMLElement>(
   ])
 );
 const stbSidebarToggle = document.getElementById("stb-sidebar-toggle")!;
+const stbViewMode = document.getElementById("stb-view-mode")!;
 
 // 문서 상태
 let hwpDoc: HwpDocument | null = null;
 let pageInfos: PageInfo[] = [];
 let currentZoom = 1.0;
 let currentPage = 0;
+let viewMode: "single" | "double" = "single";
 let fileName = "";
 const PREFETCH_MARGIN = 300;
 const ZOOM_STEP = 0.1;
@@ -195,22 +197,33 @@ scrollContainer.addEventListener(
 
 // ── 페이지 레이아웃 ──
 
+function makePageWrapper(i: number): HTMLDivElement {
+  const pi = pageInfos[i];
+  const wrapper = document.createElement("div");
+  wrapper.className = "page-wrapper";
+  wrapper.style.width = `${Math.round(pi.width * currentZoom)}px`;
+  wrapper.style.height = `${Math.round(pi.height * currentZoom)}px`;
+  wrapper.dataset.page = String(i);
+  pi.element = wrapper;
+  pi.rendered = false;
+  return wrapper;
+}
+
 function buildPageLayout(): void {
   scrollContent.innerHTML = "";
-  for (let i = 0; i < pageInfos.length; i++) {
-    const pi = pageInfos[i];
-    const w = Math.round(pi.width * currentZoom);
-    const h = Math.round(pi.height * currentZoom);
-
-    const wrapper = document.createElement("div");
-    wrapper.className = "page-wrapper";
-    wrapper.style.width = `${w}px`;
-    wrapper.style.height = `${h}px`;
-    wrapper.dataset.page = String(i);
-
-    scrollContent.appendChild(wrapper);
-    pi.element = wrapper;
-    pi.rendered = false;
+  if (viewMode === "double") {
+    // 두 쪽씩 좌우로 묶어 행(.page-row)으로 배치
+    for (let i = 0; i < pageInfos.length; i += 2) {
+      const row = document.createElement("div");
+      row.className = "page-row";
+      row.appendChild(makePageWrapper(i));
+      if (i + 1 < pageInfos.length) row.appendChild(makePageWrapper(i + 1));
+      scrollContent.appendChild(row);
+    }
+  } else {
+    for (let i = 0; i < pageInfos.length; i++) {
+      scrollContent.appendChild(makePageWrapper(i));
+    }
   }
 }
 
@@ -459,6 +472,22 @@ function toggleSidebar(collapse?: boolean): void {
 stbSidebarToggle.addEventListener("click", () => toggleSidebar());
 navCollapse.addEventListener("click", () => toggleSidebar(true));
 navReopen.addEventListener("click", () => toggleSidebar(false));
+
+// ── 보기 모드: 1쪽 / 2쪽 ──
+
+function setViewMode(mode: "single" | "double"): void {
+  if (mode === viewMode) return;
+  viewMode = mode;
+  stbViewMode.textContent = mode === "double" ? "2쪽" : "1쪽";
+  const keepPage = currentPage;
+  buildPageLayout();
+  updateVisiblePages();
+  scrollToPage(keepPage);
+}
+
+stbViewMode.addEventListener("click", () => {
+  setViewMode(viewMode === "single" ? "double" : "single");
+});
 
 // ── 사이드바: 목차 ──
 
