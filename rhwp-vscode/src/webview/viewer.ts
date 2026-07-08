@@ -16,7 +16,10 @@ const stbZoomOut = document.getElementById("stb-zoom-out")!;
 const stbZoomIn = document.getElementById("stb-zoom-in")!;
 
 // 사이드바 요소
+const appShell = document.getElementById("app-shell")!;
 const navSidebar = document.getElementById("nav-sidebar")!;
+const navCollapse = document.getElementById("nav-collapse")!;
+const navReopen = document.getElementById("nav-reopen")!;
 const navTabs = Array.from(document.querySelectorAll<HTMLButtonElement>(".nav-tab"));
 const navPanels = new Map<string, HTMLElement>(
   Array.from(document.querySelectorAll<HTMLElement>(".nav-panel")).map((el) => [
@@ -445,9 +448,17 @@ navTabs.forEach((tab) => {
   tab.addEventListener("click", () => switchTab(tab.dataset.tab!));
 });
 
-stbSidebarToggle.addEventListener("click", () => {
-  navSidebar.classList.toggle("collapsed");
-});
+/** 사이드바 열기/닫기. collapse 미지정 시 현재 상태 반전. */
+function toggleSidebar(collapse?: boolean): void {
+  const next = collapse ?? !navSidebar.classList.contains("collapsed");
+  navSidebar.classList.toggle("collapsed", next);
+  appShell.classList.toggle("sidebar-collapsed", next);
+  if (!next) highlightCurrentThumb();
+}
+
+stbSidebarToggle.addEventListener("click", () => toggleSidebar());
+navCollapse.addEventListener("click", () => toggleSidebar(true));
+navReopen.addEventListener("click", () => toggleSidebar(false));
 
 // ── 사이드바: 목차 ──
 
