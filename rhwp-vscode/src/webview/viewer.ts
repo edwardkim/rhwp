@@ -1,4 +1,4 @@
-import { initSync, HwpDocument } from "@rhwp-wasm/rhwp.js";
+import init, { HwpDocument } from "@rhwp-wasm/rhwp.js";
 
 // WASM 렌더러가 호출하는 텍스트 폭 측정 콜백 등록
 installMeasureTextWidth();
@@ -40,8 +40,11 @@ const wasmUri = scrollContainer.dataset.wasmUri!;
 stbMessage.textContent = "WASM 초기화 중...";
 fetch(wasmUri)
   .then((res) => res.arrayBuffer())
-  .then((buf) => {
-    initSync({ module: buf });
+  .then(async (buf) => {
+    // 동기 initSync는 메인 스레드에서 new WebAssembly.Module()을 실행하여
+    // macOS 웹뷰에서 "4KB 초과 버퍼의 메인 스레드 컴파일 금지" 규칙에 차단된다.
+    // async init(instantiate 기반)으로 초기화하여 전 플랫폼에서 동작하도록 한다. (#2048)
+    await init({ module_or_path: buf });
     wasmReady = true;
     stbMessage.textContent = "문서를 기다리는 중...";
     vscode.postMessage({ type: "ready" });
