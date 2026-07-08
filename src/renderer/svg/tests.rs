@@ -54,6 +54,25 @@ fn test_svg_draw_text_medium_weight() {
 }
 
 #[test]
+fn test_svg_draw_text_superscript_adjusts_baseline_and_size() {
+    let mut renderer = SvgRenderer::new();
+    renderer.begin_page(800.0, 600.0);
+    renderer.draw_text(
+        "1",
+        10.0,
+        100.0,
+        &TextStyle {
+            font_size: 20.0,
+            superscript: true,
+            ..Default::default()
+        },
+    );
+    let output = renderer.output();
+    assert!(output.contains("font-size=\"14\""));
+    assert!(output.contains("y=\"94\""));
+}
+
+#[test]
 fn test_svg_draw_rect() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);

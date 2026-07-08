@@ -12083,10 +12083,27 @@ impl TypesetEngine {
         // 위해 host paragraph 의 first_vpos 만큼 cur_h 를 미리 jump 하고 표 advance 를
         // 본문 라인 만큼으로 축소.
         use crate::model::shape::{TextWrap, VertRelTo};
-        let is_paper_topbottom_block = !table.common.treat_as_char
-            && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        // [#1994] Paper(용지)-앵커 부동 표는 절대 좌표로 그려지므로 flow 를 소비하지 않고 절대
+        // 배치해야 한다. 기존에는 자리차지(TopAndBottom)만 이 경로를 탔으나, 글뒤로/글앞으로
+        // (BehindText/InFrontOfText) Paper-앵커 표도 동일하게 절대 배치 대상이다. 특히
+        // RowBreak 속성이 붙은 글뒤로 Paper-앵커 표(20200830 교회주보 pi=34 예배 스케줄,
+        // vert=용지 134mm)가 이 경로를 놓치면 아래 RowBreak 분할로 빠져 흐름 상단에 컬럼분할
+        // 배치되어 앞선 글뒤로 표(pi=33 교역자 명단)와 겹친다(#1994).
+        let is_paper_floating_block = !table.common.treat_as_char
+            && matches!(
+                table.common.text_wrap,
+                TextWrap::TopAndBottom | TextWrap::BehindText | TextWrap::InFrontOfText
+            )
             && matches!(table.common.vert_rel_to, VertRelTo::Paper);
-        if is_paper_topbottom_block && st.current_column == 0 {
+        // 글뒤로/글앞으로는 본문 위/아래에 겹쳐 그려지며 본문 텍스트를 밀어내지 않는다
+        // (자리차지와 달리 current_height sync 로 후속 흐름을 끌어내리면 안 됨).
+        let is_paper_behind_infront = !table.common.treat_as_char
+            && matches!(
+                table.common.text_wrap,
+                TextWrap::BehindText | TextWrap::InFrontOfText
+            )
+            && matches!(table.common.vert_rel_to, VertRelTo::Paper);
+        if is_paper_floating_block && st.current_column == 0 {
             if let Some(first_seg) = para.line_segs.first() {
                 let target_y =
                     crate::renderer::hwpunit_to_px(first_seg.vertical_pos as i32, self.dpi);
@@ -12104,11 +12121,16 @@ impl TypesetEngine {
                 let has_preceding_paper_float = para.controls.iter().take(ctrl_idx).any(|c| {
                     matches!(c, Control::Table(t)
                         if !t.common.treat_as_char
-                            && matches!(t.common.text_wrap, TextWrap::TopAndBottom)
+                            && matches!(t.common.text_wrap,
+                                TextWrap::TopAndBottom
+                                    | TextWrap::BehindText
+                                    | TextWrap::InFrontOfText)
                             && matches!(t.common.vert_rel_to, VertRelTo::Paper))
                 });
-                if can_sync || has_preceding_paper_float {
-                    if can_sync {
+                // 글뒤로/글앞으로는 sync 없이도 절대배치(0 flow)한다 — RowBreak 분할·flow 배치를
+                // 막아 절대 좌표(vert=용지)에 통째로 그려지게 한다.
+                if can_sync || has_preceding_paper_float || is_paper_behind_infront {
+                    if can_sync && !is_paper_behind_infront {
                         st.current_height = target_y;
                     }
                     // table_total = 0: 표 자체는 cur_h advance 에 영향 없음 (Paper-absolute).
@@ -12317,8 +12339,29 @@ impl TypesetEngine {
             let measured_fits_current = st.current_height + table_total <= available;
             let declared_overflows_current =
                 st.current_height + declared_total > available + DECLARED_FLOAT_FIT_TOLERANCE_PX;
+            // 저장된 LineSeg와 객체 높이가 현재 쪽 본문 하단 안에 들어간다고 말하면,
+            // host 줄 간격/선언 높이의 근소 초과만으로 먼저 이월하지 않는다.
+            let saved_object_bottom_fits_current = para
+                .line_segs
+                .iter()
+                .find(|ls| !is_synthetic_line_seg(ls))
+                .is_some_and(|seg| {
+                    let base = st.vpos_page_base.unwrap_or(0);
+                    let v_off = signed_hwpunit(table.common.vertical_offset);
+                    let top_hu = seg
+                        .vertical_pos
+                        .saturating_add(v_off.max(0))
+                        .saturating_sub(base);
+                    let bottom_hu =
+                        top_hu.saturating_add(table.common.height.min(i32::MAX as u32) as i32);
+                    let top_px = hwpunit_to_px(top_hu, self.dpi);
+                    let bottom_px = hwpunit_to_px(bottom_hu, self.dpi);
+                    top_px + 16.0 >= st.current_height
+                        && bottom_px <= available + DECLARED_FLOAT_FIT_TOLERANCE_PX
+                });
             if !st.current_items.is_empty()
                 && declared_overflows_current
+                && !saved_object_bottom_fits_current
                 && !single_row_object_declared_fits_current
                 && (st.has_stored_line_segs || measured_fits_current)
                 && declared_total <= available

@@ -405,6 +405,26 @@ impl LayoutEngine {
             alignment,
         );
 
+        // [Issue #2032] restrictInPage(쪽 영역 안으로 제한, HWP5 attr bit 13 = HWPX pos@flowWithText):
+        // vert=Para floating 그림의 하단이 쪽 영역을 벗어나면 쪽 영역 안으로 끌어올린다.
+        // 미적용 시 앵커+offset 조합으로 좌표가 페이지 캔버스 밖이 되어 그림이 어느
+        // 페이지에서도 보이지 않는다 (완전 소실). floating 표 동등 로직
+        // (table_layout.rs compute_table_y 의 Para 클램프) 과 동일 시멘틱.
+        // 상단(top bleed) 은 한컴도 허용하는 사례가 있어 하단 초과만 교정한다
+        // (표의 allow_para_top_bleed 예외와 동일 취지).
+        // vpos_accounts_for_height(파일 vpos 가 그림 공간을 이미 반영) 이면 그림은
+        // base_y 위쪽 gap 안에 그려지므로 (frame 하단 = base_y) 클램프 비대상.
+        let base_y = if !picture.common.treat_as_char
+            && picture.common.flow_with_text
+            && !vpos_accounts_for_height
+            && matches!(picture.common.vert_rel_to, VertRelTo::Para)
+        {
+            let body_bottom = col_area.y + col_area.height - total_height;
+            base_y.min(body_bottom.max(col_area.y))
+        } else {
+            base_y
+        };
+
         // 캡션 방향에 따라 그림 위치 오프셋 계산
         let (caption_top_offset, caption_left_offset) = if let Some(ref caption) = picture.caption {
             match caption.direction {

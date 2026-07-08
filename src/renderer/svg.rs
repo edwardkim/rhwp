@@ -2667,10 +2667,19 @@ impl Renderer for SvgRenderer {
         let text = &expand_pua_old_hangul(text);
 
         let color = color_to_svg(style.color);
-        let font_size = if style.font_size > 0.0 {
+        let base_font_size = if style.font_size > 0.0 {
             style.font_size
         } else {
             12.0
+        };
+        // 위첨자/아래첨자는 레이아웃 advance 는 원래 run 기준으로 유지하고,
+        // 실제 SVG glyph 크기와 baseline 만 Canvas/HTML 출력과 동일하게 조정한다.
+        let (font_size, y) = if style.superscript {
+            (base_font_size * 0.7, y - base_font_size * 0.3)
+        } else if style.subscript {
+            (base_font_size * 0.7, y + base_font_size * 0.15)
+        } else {
+            (base_font_size, y)
         };
         let font_family = if style.font_family.is_empty() {
             "sans-serif".to_string()
