@@ -321,6 +321,72 @@ struct RunEmitVars {
     para_index: usize,
 }
 
+fn receipt_date_stamp_shift_px(
+    cell_ctx: &Option<CellContext>,
+    comp_line: &crate::renderer::composer::ComposedLine,
+    run_idx: usize,
+    run: &crate::renderer::composer::ComposedTextRun,
+    styles: &ResolvedStyleSet,
+) -> f64 {
+    if cell_ctx.is_none() || run.text.trim() != "㊞" || run.text.chars().count() != 1 {
+        return 0.0;
+    }
+
+    if comp_line
+        .runs
+        .iter()
+        .skip(run_idx + 1)
+        .any(|r| !r.text.trim().is_empty())
+    {
+        return 0.0;
+    }
+
+    let Some(prev_run) = run_idx
+        .checked_sub(1)
+        .and_then(|idx| comp_line.runs.get(idx))
+    else {
+        return 0.0;
+    };
+    if prev_run.text.chars().count() < 8 || !prev_run.text.chars().all(|ch| ch == ' ') {
+        return 0.0;
+    }
+
+    let stamp_style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+    let r = (stamp_style.color >> 16) & 0xFF;
+    let g = (stamp_style.color >> 8) & 0xFF;
+    let b = stamp_style.color & 0xFF;
+    let rgb_red = r > 180 && g < 120 && b < 120;
+    let bgr_red = b > 180 && g < 120 && r < 120;
+    if !(rgb_red || bgr_red) {
+        return 0.0;
+    }
+
+    let prefix_text: String = comp_line
+        .runs
+        .iter()
+        .take(run_idx.saturating_sub(1))
+        .map(|r| r.text.as_str())
+        .collect();
+    let paren_groups = prefix_text.chars().filter(|&ch| ch == ')').count();
+    let non_space_count = prefix_text.chars().filter(|ch| !ch.is_whitespace()).count();
+    if paren_groups < 3 || non_space_count < 12 {
+        return 0.0;
+    }
+
+    let prev_style = resolved_to_text_style(styles, prev_run.char_style_id, prev_run.lang_index);
+    let current_gap = estimate_text_width(&prev_run.text, &prev_style);
+    let space_count = prev_run.text.chars().count() as f64;
+    let ratio = if prev_style.ratio > 0.0 {
+        prev_style.ratio
+    } else {
+        1.0
+    };
+    // 한컴은 이 접수증 날짜 행의 인장 앞 레이아웃 공백을 일반 half-em 보다
+    // 좁게 취급한다. 원 위치는 shape 절대 좌표를 따르고, ㊞ 텍스트만 왼쪽에 남는다.
+    let hancom_gap = prev_style.font_size * ratio * 0.42 * space_count;
+    (current_gap - hancom_gap).clamp(0.0, prev_style.font_size * 2.0)
+}
+
 /// [#1925 추출] `estimate_line_run_widths` 결과 — est 사전 폭 추정 산출물.
 struct LineWidthEst {
     /// 추정 종료 x (초기값 기준 누적 점유 폭 계산용)
@@ -4097,6 +4163,9 @@ impl LayoutEngine {
 
                     if run_fn_markers.is_empty() {
                         // 각주 없음: 기존 방식으로 전체 TextRun 생성
+                        let stamp_shift =
+                            receipt_date_stamp_shift_px(cell_ctx, comp_line, run_idx, run, styles);
+                        let run_x = x - stamp_shift;
                         let run_id = tree.next_id();
                         let run_node = RenderNode::new(
                             run_id,
@@ -4118,9 +4187,12 @@ impl LayoutEngine {
                                 baseline,
                                 field_marker: FieldMarkerType::None,
                             }),
-                            BoundingBox::new(x, y, full_width, line_height),
+                            BoundingBox::new(run_x, y, full_width, line_height),
                         );
                         line_node.children.push(run_node);
+                        if stamp_shift > 0.0 {
+                            x = run_x;
+                        }
                     } else {
                         // 각주 있음: run을 각주 위치에서 분할하여 TextRun + FootnoteMarker 교차 생성
                         let run_chars: Vec<char> = run.text.chars().collect();

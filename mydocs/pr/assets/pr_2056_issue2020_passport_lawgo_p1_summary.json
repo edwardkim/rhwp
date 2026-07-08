@@ -1,0 +1,95 @@
+[
+  {
+    "key": "issue2020-passport-lawgo-p1",
+    "hwp": "samples/issue2020/passport_application_lawgo.hwp",
+    "pdf": "pdf/issue2020/passport_application_lawgo-lawgo-2020.pdf",
+    "requested_pages": [
+      1
+    ],
+    "exported_svg_pages": 2,
+    "exported_render_tree_pages": 2,
+    "exported_pdf_pages": 2,
+    "svg_pages": 1,
+    "render_tree_pages": 1,
+    "pdf_pages": 1,
+    "compare_pages": 1,
+    "overlay_pages": 1,
+    "review_pages": 1,
+    "pdf_question_markers": 0,
+    "overflow_lines": [],
+    "contact_sheet": "output/issue2020/pr_prep/visual_passport_lawgo_p1/issue2020-passport-lawgo-p1/contact_sheet.png",
+    "overlay_contact_sheet": "output/issue2020/pr_prep/visual_passport_lawgo_p1/issue2020-passport-lawgo-p1/overlay_contact_sheet.png",
+    "review_contact_sheet": "output/issue2020/pr_prep/visual_passport_lawgo_p1/issue2020-passport-lawgo-p1/review_contact_sheet.png",
+    "analysis_dir": "output/issue2020/pr_prep/visual_passport_lawgo_p1/issue2020-passport-lawgo-p1/analysis",
+    "overlay_dir": "output/issue2020/pr_prep/visual_passport_lawgo_p1/issue2020-passport-lawgo-p1/overlay",
+    "review_dir": "output/issue2020/pr_prep/visual_passport_lawgo_p1/issue2020-passport-lawgo-p1/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 3.006,
+          "separatorBelowMm": 2.004,
+          "betweenNotesMm": 1.002,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 3.006,
+          "rawNoteSpacingMm": 2.004,
+          "rawUnknownMm": 1.002
+        },
+        "endnote": {
+          "separatorAboveMm": 3.048,
+          "separatorBelowMm": 2.032,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": false,
+          "separatorLengthMm": 0.0,
+          "rawSeparatorMarginTopMm": 0.0,
+          "rawSeparatorMarginBottomMm": 3.048,
+          "rawNoteSpacingMm": 2.032,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "output/issue2020/pr_prep/visual_passport_lawgo_p1/issue2020-passport-lawgo-p1/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 80.50113,
+      "worst_pixel_match_percent": 80.50113,
+      "average_ink_match_percent": 42.06503,
+      "worst_ink_match_percent": 42.06503,
+      "average_visual_accuracy_proxy_percent": 42.06503,
+      "worst_visual_accuracy_proxy_percent": 42.06503,
+      "worst_pages": [
+        1
+      ]
+    },
+    "overlay_metrics_json": "output/issue2020/pr_prep/visual_passport_lawgo_p1/issue2020-passport-lawgo-p1/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 1,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [
+        1
+      ],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "metrics_json": "/Users/tsjang/rhwp/output/issue2020/pr_prep/visual_passport_lawgo_p1/issue2020-passport-lawgo-p1/analysis/metrics.json",
+      "question_flow_json": "/Users/tsjang/rhwp/output/issue2020/pr_prep/visual_passport_lawgo_p1/issue2020-passport-lawgo-p1/analysis/question_flow.json"
+    },
+    "flagged_pages": []
+  }
+]

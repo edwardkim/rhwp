@@ -3919,7 +3919,7 @@ mod bindata_storage_id_collision_tests {
             .map(|c| c.data.as_slice())
             .collect();
         assert!(
-            datas.iter().any(|d| *d == EXISTING_IMAGE),
+            datas.contains(&EXISTING_IMAGE),
             "저장 왕복 후 기존 이미지가 소실됨 (스트림 이름 충돌): {:?}",
             reloaded
                 .document()

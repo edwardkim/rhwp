@@ -66,7 +66,7 @@ use super::composer::{
 };
 use super::form_caption::display_form_caption;
 #[cfg(target_arch = "wasm32")]
-use super::layout::{compute_char_positions, split_into_clusters};
+use super::layout::{compute_char_positions, is_halfwidth_cjk_quote, split_into_clusters};
 use crate::model::control::FormType;
 
 // 이미지 캐시: data 해시 → HtmlImageElement
@@ -2246,8 +2246,9 @@ impl Renderer for WebCanvasRenderer {
                 }
 
                 // 반각 강제 구두점: 폰트 글리프가 전각이지만 반각 공간에 배치
-                let needs_halfwidth_scale =
-                    matches!(ch, '\u{2018}'..='\u{2027}' | '\u{00B7}') && !has_ratio;
+                let needs_halfwidth_scale = (matches!(ch, '\u{2018}'..='\u{2027}' | '\u{00B7}')
+                    || is_halfwidth_cjk_quote(ch))
+                    && !has_ratio;
 
                 if needs_halfwidth_scale {
                     self.ctx.save();

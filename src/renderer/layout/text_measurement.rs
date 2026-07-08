@@ -1677,7 +1677,8 @@ fn measure_char_width_embedded(
             c == '\u{00B7}' && glyph_w >= mm.metric.em_size && !is_monospace_metric(mm.metric);
         if (is_narrow_unicode_punct && glyph_w >= mm.metric.em_size) || is_b7_notdef_artifact {
             (mm.metric.em_size as f64 * 0.3) as u16
-        } else if is_halfwidth_punct && glyph_w >= mm.metric.em_size {
+        } else if (is_halfwidth_punct || is_halfwidth_cjk_quote(c)) && glyph_w >= mm.metric.em_size
+        {
             mm.metric.em_size / 2
         } else {
             glyph_w
@@ -1830,6 +1831,14 @@ fn is_narrow_punctuation(c: char) -> bool {
         '\u{302E}' |  // 〮 HANGUL SINGLE DOT TONE MARK (방점)
         '\u{302F}' // 〯 HANGUL DOUBLE DOT TONE MARK (쌍방점)
     )
+}
+
+/// 한컴이 수평 조판에서 반각 advance 로 처리하는 CJK 낫표.
+///
+/// 일부 등록 폰트는 `「」` glyph advance 를 전각으로 제공하지만, 한컴 PDF 기준
+/// 본문 조판에서는 법령명 낫표 뒤에 전각 공백처럼 보이는 간격이 생기지 않는다.
+pub(crate) fn is_halfwidth_cjk_quote(c: char) -> bool {
+    matches!(c, '\u{300C}' | '\u{300D}')
 }
 
 /// 3 개 이상 연속하는 dash leader 시퀀스의 일부 여부 (Task #352).
@@ -2551,6 +2560,32 @@ mod tests {
             expected,
             dot_advance,
             expected / 2.0
+        );
+    }
+
+    #[test]
+    fn test_2020_corner_quote_halfwidth_in_registered_font() {
+        let m = EmbeddedTextMeasurer;
+        let style = TextStyle {
+            font_family: "돋움체".to_string(),
+            font_size: 13.333,
+            ratio: 1.0,
+            ..Default::default()
+        };
+
+        let positions = m.compute_char_positions("「여", &style);
+        let quote_advance = positions[1] - positions[0];
+        let hangul_advance = positions[2] - positions[1];
+
+        assert!(
+            quote_advance <= style.font_size * 0.6,
+            "`「` 는 등록 폰트에서도 반각 advance 로 측정되어야 함. got {:.2}",
+            quote_advance
+        );
+        assert!(
+            hangul_advance >= style.font_size * 0.9,
+            "뒤따르는 한글은 전각 advance 를 유지해야 함. got {:.2}",
+            hangul_advance
         );
     }
 

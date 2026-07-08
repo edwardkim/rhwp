@@ -1,0 +1,98 @@
+[
+  {
+    "key": "issue2020-niklp-p3",
+    "hwp": "samples/2022년 국립국어원 업무계획.hwp",
+    "pdf": "pdf/2022년 국립국어원 업무계획-2022.pdf",
+    "requested_pages": [
+      3
+    ],
+    "exported_svg_pages": 35,
+    "exported_render_tree_pages": 35,
+    "exported_pdf_pages": 35,
+    "svg_pages": 1,
+    "render_tree_pages": 1,
+    "pdf_pages": 1,
+    "compare_pages": 1,
+    "overlay_pages": 1,
+    "review_pages": 1,
+    "pdf_question_markers": 0,
+    "overflow_lines": [
+      "LAYOUT_OVERFLOW_DRAW: section=0 pi=546 line=1 y=1030.9 col_bottom=1028.0 overflow=2.8px",
+      "LAYOUT_OVERFLOW: page=26, sec=0, col=0, para=546, type=FullParagraph, first=false, y=1030.9, bottom=1028.0, overflow=2.8px"
+    ],
+    "contact_sheet": "output/issue2020/pr_prep/visual_niklp_p3/issue2020-niklp-p3/contact_sheet.png",
+    "overlay_contact_sheet": "output/issue2020/pr_prep/visual_niklp_p3/issue2020-niklp-p3/overlay_contact_sheet.png",
+    "review_contact_sheet": "output/issue2020/pr_prep/visual_niklp_p3/issue2020-niklp-p3/review_contact_sheet.png",
+    "analysis_dir": "output/issue2020/pr_prep/visual_niklp_p3/issue2020-niklp-p3/analysis",
+    "overlay_dir": "output/issue2020/pr_prep/visual_niklp_p3/issue2020-niklp-p3/overlay",
+    "review_dir": "output/issue2020/pr_prep/visual_niklp_p3/issue2020-niklp-p3/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 2.0,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 2.999,
+          "separatorEnabled": false,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.0,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 2.999
+        },
+        "endnote": {
+          "separatorAboveMm": 2.0,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 2.999,
+          "separatorEnabled": false,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.0,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 2.999
+        }
+      }
+    ],
+    "note_shape_json": "output/issue2020/pr_prep/visual_niklp_p3/issue2020-niklp-p3/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 90.2047,
+      "worst_pixel_match_percent": 90.2047,
+      "average_ink_match_percent": 35.29146,
+      "worst_ink_match_percent": 35.29146,
+      "average_visual_accuracy_proxy_percent": 35.29146,
+      "worst_visual_accuracy_proxy_percent": 35.29146,
+      "worst_pages": [
+        3
+      ]
+    },
+    "overlay_metrics_json": "output/issue2020/pr_prep/visual_niklp_p3/issue2020-niklp-p3/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 1,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [
+        3
+      ],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "metrics_json": "/Users/tsjang/rhwp/output/issue2020/pr_prep/visual_niklp_p3/issue2020-niklp-p3/analysis/metrics.json",
+      "question_flow_json": "/Users/tsjang/rhwp/output/issue2020/pr_prep/visual_niklp_p3/issue2020-niklp-p3/analysis/question_flow.json"
+    },
+    "flagged_pages": []
+  }
+]

@@ -40,7 +40,7 @@ fn expand_pua_old_hangul(text: &str) -> String {
     }
     out
 }
-use super::layout::{compute_char_positions, split_into_clusters};
+use super::layout::{compute_char_positions, is_halfwidth_cjk_quote, split_into_clusters};
 use crate::model::control::FormType;
 use crate::model::style::{ImageFillMode, UnderlineType};
 use base64::Engine;
@@ -3222,7 +3222,10 @@ fn color_to_svg(color: u32) -> String {
 }
 
 fn svg_text_length_attrs(cluster_str: &str, cluster_advance: f64, scale_x: f64) -> String {
-    if !cluster_str.chars().any(|ch| ch.is_ascii_alphanumeric()) {
+    if !cluster_str
+        .chars()
+        .any(|ch| ch.is_ascii_alphanumeric() || is_halfwidth_cjk_quote(ch))
+    {
         return String::new();
     }
     if !cluster_advance.is_finite() || cluster_advance <= 0.0 {

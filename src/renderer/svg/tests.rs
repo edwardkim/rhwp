@@ -73,6 +73,40 @@ fn test_svg_draw_text_superscript_adjusts_baseline_and_size() {
 }
 
 #[test]
+fn test_svg_draw_text_corner_quote_uses_halfwidth_text_length() {
+    let mut renderer = SvgRenderer::new();
+    renderer.begin_page(800.0, 600.0);
+    renderer.draw_text(
+        "「여",
+        10.0,
+        100.0,
+        &TextStyle {
+            font_size: 13.333,
+            font_family: "돋움체".to_string(),
+            ..Default::default()
+        },
+    );
+    let output = renderer.output();
+    let quote_line = output
+        .lines()
+        .find(|line| line.contains(">「</text>"))
+        .expect("SVG must emit the opening corner quote");
+    let hangul_line = output
+        .lines()
+        .find(|line| line.contains(">여</text>"))
+        .expect("SVG must emit the following Hangul character");
+
+    assert!(
+        quote_line.contains("textLength="),
+        "`「` glyph 는 반각 advance 에 맞춰 textLength 를 가져야 함: {quote_line}"
+    );
+    assert!(
+        !hangul_line.contains("textLength="),
+        "일반 한글 glyph 는 낫표 보정의 영향을 받으면 안 됨: {hangul_line}"
+    );
+}
+
+#[test]
 fn test_svg_draw_rect() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);

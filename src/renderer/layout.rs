@@ -55,6 +55,26 @@ struct ColumnItemCtx<'a> {
 
 const ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU: i32 = 1984;
 
+#[derive(Debug, Clone, Copy)]
+struct TacReceiptSealLine {
+    shift_px: f64,
+    line_height_px: f64,
+    baseline_px: f64,
+    vpos_hu: i32,
+    char_style_id: u32,
+    lang_index: usize,
+    para_style_id: u16,
+    filler_count: usize,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct TacPostF081cLine {
+    count: usize,
+    baseline_px: f64,
+    char_style_id: u32,
+    lang_index: usize,
+}
+
 fn effective_tac_segment_width_hu(para: &Paragraph, fallback_width_hu: i32) -> i32 {
     let seg_width = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
     if seg_width > 0 {
@@ -133,6 +153,272 @@ fn square_wrap_first_narrow_line_vpos_px(
         return None;
     }
     Some(hwpunit_to_px(narrow_vpos - base_vpos, dpi))
+}
+
+fn table_contains_receipt_title(table: &crate::model::table::Table) -> bool {
+    table.cells.iter().any(|cell| {
+        cell.paragraphs
+            .iter()
+            .any(|para| para.text.contains("Filing Receipt") || para.text.contains("접 수 증"))
+    })
+}
+
+fn tac_receipt_filler_prefix(
+    para: &Paragraph,
+    composed: Option<&ComposedParagraph>,
+    table: &crate::model::table::Table,
+    control_index: usize,
+    dpi: f64,
+) -> Option<TacReceiptSealLine> {
+    if control_index != 0
+        || !table.common.treat_as_char
+        || para.line_segs.len() < 2
+        || !table_contains_receipt_title(table)
+    {
+        return None;
+    }
+
+    let comp = composed?;
+    let first_line = comp.lines.first()?;
+    let mut filler_count = 0usize;
+    let mut first_style = None;
+    for run in &first_line.runs {
+        first_style.get_or_insert((run.char_style_id, run.lang_index));
+        for ch in run.text.chars() {
+            match ch {
+                '\u{F081C}' => filler_count += 1,
+                // 한컴 전용 날인 기호가 같이 저장된 변형도 같은 선으로 취급한다.
+                '\u{F012B}' | '\u{FFFC}' | ' ' | '\t' | '\r' | '\n' => {}
+                _ => return None,
+            }
+        }
+    }
+    if filler_count < 16 {
+        return None;
+    }
+
+    let first_seg = para.line_segs.first()?;
+    let table_seg = para.line_segs.get(1)?;
+    let delta_hu = table_seg.vertical_pos - first_seg.vertical_pos;
+    if delta_hu <= 0 {
+        return None;
+    }
+    let shift_px = hwpunit_to_px(delta_hu, dpi);
+    if shift_px < 4.0 {
+        return None;
+    }
+
+    let (char_style_id, lang_index) = first_style.unwrap_or((0, 0));
+    Some(TacReceiptSealLine {
+        shift_px,
+        line_height_px: hwpunit_to_px(first_seg.line_height, dpi),
+        baseline_px: hwpunit_to_px(first_seg.baseline_distance, dpi),
+        vpos_hu: first_seg.vertical_pos,
+        char_style_id,
+        lang_index,
+        para_style_id: comp.para_style_id,
+        filler_count,
+    })
+}
+
+fn receipt_seal_line_text(
+    filler_count: usize,
+    style: &TextStyle,
+    available_width: f64,
+) -> (String, f64) {
+    let mut side_count = (filler_count.saturating_sub(3) / 2).clamp(8, 96);
+    let build =
+        |count: usize| -> String { format!("{}(인){}", "-".repeat(count), "-".repeat(count)) };
+    let mut text = build(side_count);
+    let mut width = estimate_text_width(&text, style);
+
+    while width > available_width && side_count > 8 {
+        side_count -= 1;
+        text = build(side_count);
+        width = estimate_text_width(&text, style);
+    }
+    while width < available_width * 0.96 && side_count < 128 {
+        let next = build(side_count + 1);
+        let next_width = estimate_text_width(&next, style);
+        if next_width > available_width {
+            break;
+        }
+        side_count += 1;
+        text = next;
+        width = next_width;
+    }
+
+    (text, width)
+}
+
+fn push_tac_receipt_seal_line(
+    tree: &mut PageRenderTree,
+    col_node: &mut RenderNode,
+    section_index: usize,
+    para_index: usize,
+    line_top: f64,
+    col_area: &LayoutRect,
+    styles: &ResolvedStyleSet,
+    seal: TacReceiptSealLine,
+) {
+    let mut style = resolved_to_text_style(styles, seal.char_style_id, seal.lang_index);
+    style.available_width = col_area.width;
+    let (text, width) = receipt_seal_line_text(seal.filler_count, &style, col_area.width);
+    let line_height = seal.line_height_px.max(style.font_size * 1.2).max(1.0);
+    let baseline = seal.baseline_px.max(if style.font_size > 0.0 {
+        style.font_size * 0.85
+    } else {
+        10.0
+    });
+    let line_id = tree.next_id();
+    let mut line_node = RenderNode::new(
+        line_id,
+        RenderNodeType::TextLine(TextLineNode::with_para_vpos(
+            line_height,
+            baseline,
+            section_index,
+            para_index,
+            0,
+            seal.vpos_hu,
+        )),
+        BoundingBox::new(col_area.x, line_top, col_area.width, line_height),
+    );
+    let run_id = tree.next_id();
+    let run_node = RenderNode::new(
+        run_id,
+        RenderNodeType::TextRun(TextRunNode {
+            text,
+            style,
+            char_shape_id: Some(seal.char_style_id),
+            para_shape_id: Some(seal.para_style_id),
+            section_index: Some(section_index),
+            para_index: Some(para_index),
+            char_start: None,
+            cell_context: None,
+            is_para_end: false,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: None,
+            border_fill_id: 0,
+            baseline,
+            field_marker: FieldMarkerType::None,
+        }),
+        BoundingBox::new(
+            col_area.x + (col_area.width - width).max(0.0) / 2.0,
+            line_top,
+            width.min(col_area.width),
+            line_height,
+        ),
+    );
+    line_node.children.push(run_node);
+    col_node.children.push(line_node);
+}
+
+fn f081c_marker_count(chars: &[char]) -> Option<usize> {
+    let count = chars.len();
+    if (1..=2).contains(&count) && chars.iter().all(|ch| *ch == '\u{F081C}') {
+        Some(count)
+    } else {
+        None
+    }
+}
+
+fn tac_receipt_post_f081c_line(
+    para: &Paragraph,
+    composed: Option<&ComposedParagraph>,
+    table: &crate::model::table::Table,
+    control_index: usize,
+    dpi: f64,
+) -> Option<TacPostF081cLine> {
+    if control_index != 0
+        || !table.common.treat_as_char
+        || para.line_segs.len() < 2
+        || !table_contains_receipt_title(table)
+    {
+        return None;
+    }
+
+    let positions = crate::document_core::find_control_text_positions(para);
+    let table_pos = *positions.get(control_index)?;
+    let text_chars: Vec<char> = para.text.chars().collect();
+    if table_pos >= text_chars.len() {
+        return None;
+    }
+    let next_control_pos = positions
+        .iter()
+        .enumerate()
+        .filter_map(|(ci, pos)| {
+            (ci != control_index && *pos > table_pos).then_some((*pos).min(text_chars.len()))
+        })
+        .min()
+        .unwrap_or(text_chars.len());
+    let marker_chars = text_chars.get(table_pos..next_control_pos)?;
+    let count = f081c_marker_count(marker_chars)?;
+
+    let comp = composed?;
+    let line = comp.lines.iter().find(|line| {
+        line.char_start == table_pos
+            && line
+                .runs
+                .iter()
+                .flat_map(|run| run.text.chars())
+                .eq(marker_chars.iter().copied())
+    })?;
+    let run = line.runs.first()?;
+    Some(TacPostF081cLine {
+        count,
+        baseline_px: hwpunit_to_px(line.baseline_distance, dpi),
+        char_style_id: run.char_style_id,
+        lang_index: run.lang_index,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn push_tac_post_f081c_line(
+    tree: &mut PageRenderTree,
+    col_node: &mut RenderNode,
+    section_index: usize,
+    para_index: usize,
+    table: &crate::model::table::Table,
+    table_y_start: f64,
+    col_area: &LayoutRect,
+    styles: &ResolvedStyleSet,
+    marker: TacPostF081cLine,
+    dpi: f64,
+) {
+    let style = resolved_to_text_style(styles, marker.char_style_id, marker.lang_index);
+    let font_size = if style.font_size > 0.0 {
+        style.font_size
+    } else {
+        12.0
+    };
+    let table_width_hu: u32 = table.get_column_widths().iter().sum();
+    let marker_x = col_area.x + hwpunit_to_px(table_width_hu as i32, dpi);
+    let width = (font_size * 0.45 * marker.count as f64).max(4.0);
+    let stroke_width = (font_size * 0.055).clamp(0.5, 1.0);
+    let line_y = table_y_start + marker.baseline_px - font_size * 0.26;
+    let mut line = LineNode::new(
+        marker_x,
+        line_y,
+        marker_x + width,
+        line_y,
+        LineStyle {
+            color: style.color,
+            width: stroke_width,
+            dash: StrokeDash::Solid,
+            ..Default::default()
+        },
+    );
+    line.section_index = Some(section_index);
+    line.para_index = Some(para_index);
+
+    let id = tree.next_id();
+    col_node.children.push(RenderNode::new(
+        id,
+        RenderNodeType::Line(line),
+        BoundingBox::new(marker_x, line_y - stroke_width / 2.0, width, stroke_width),
+    ));
 }
 
 fn table_has_detached_para_flow_object(table: &crate::model::table::Table) -> bool {
@@ -1044,8 +1330,8 @@ mod utils;
 pub(crate) use paragraph_layout::ensure_min_baseline;
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
-    extract_tab_leaders_with_extended, find_next_tab_stop, is_cjk_char, resolved_to_text_style,
-    split_into_clusters,
+    extract_tab_leaders_with_extended, find_next_tab_stop, is_cjk_char, is_halfwidth_cjk_quote,
+    resolved_to_text_style, split_into_clusters,
 };
 // [Task #826] map_pua_bullet_char 는 통합 테스트 (tests/issue_826.rs) 에서 직접 검증
 // (PUA substitution 매핑 정합) — pub 노출.
@@ -5944,6 +6230,28 @@ impl LayoutEngine {
                     .map(|m| m.total_height)
                     .filter(|h| *h > 0.0)
                     .unwrap_or_else(|| hwpunit_to_px(t.common.height as i32, self.dpi));
+                let tac_receipt_seal_line = if is_tac && inline_pos.is_none() {
+                    tac_receipt_filler_prefix(
+                        para,
+                        composed.get(para_index),
+                        t,
+                        control_index,
+                        self.dpi,
+                    )
+                } else {
+                    None
+                };
+                let tac_post_f081c_line = if is_tac && inline_pos.is_none() {
+                    tac_receipt_post_f081c_line(
+                        para,
+                        composed.get(para_index),
+                        t,
+                        control_index,
+                        self.dpi,
+                    )
+                } else {
+                    None
+                };
                 // [#2019 v3] 빈 앵커에 매달린 Paper/Page 기준 Square 표는 본문 flow 표가
                 // 아니라 페이지 절대좌표 부동 표다. 표 자체는 선언 y 에 그리되, 뒤따르는
                 // 문단을 표 아래로 밀지 않는다.
@@ -6179,6 +6487,22 @@ impl LayoutEngine {
                     } else {
                         table_y_start
                     };
+                    let table_y_start = if let Some(seal_line) = tac_receipt_seal_line {
+                        let line_top = table_y_start;
+                        push_tac_receipt_seal_line(
+                            tree,
+                            col_node,
+                            page_content.section_index,
+                            para_index,
+                            line_top,
+                            col_area,
+                            styles,
+                            seal_line,
+                        );
+                        table_y_start + seal_line.shift_px
+                    } else {
+                        table_y_start
+                    };
                     let allow_para_top_bleed = is_current_visible_para_float
                         && signed_hwpunit(t.common.vertical_offset) < 0;
                     let table_visual_end = if tac_already_rendered_inline {
@@ -6217,6 +6541,20 @@ impl LayoutEngine {
                             None,
                             marker_x,
                             table_y_start,
+                        );
+                    }
+                    if let Some(marker_line) = tac_post_f081c_line {
+                        push_tac_post_f081c_line(
+                            tree,
+                            col_node,
+                            page_content.section_index,
+                            para_index,
+                            t,
+                            table_y_start,
+                            col_area,
+                            styles,
+                            marker_line,
+                            self.dpi,
                         );
                     }
                     if is_first_empty_para_float_control && !is_tac {
