@@ -15,6 +15,17 @@ const stbZoomVal = document.getElementById("stb-zoom-val")!;
 const stbZoomOut = document.getElementById("stb-zoom-out")!;
 const stbZoomIn = document.getElementById("stb-zoom-in")!;
 
+// 사이드바 요소
+const navSidebar = document.getElementById("nav-sidebar")!;
+const navTabs = Array.from(document.querySelectorAll<HTMLButtonElement>(".nav-tab"));
+const navPanels = new Map<string, HTMLElement>(
+  Array.from(document.querySelectorAll<HTMLElement>(".nav-panel")).map((el) => [
+    el.dataset.panel!,
+    el,
+  ])
+);
+const stbSidebarToggle = document.getElementById("stb-sidebar-toggle")!;
+
 // 문서 상태
 let hwpDoc: HwpDocument | null = null;
 let pageInfos: PageInfo[] = [];
@@ -85,6 +96,7 @@ window.addEventListener("message", (event) => {
       updateStatusBar();
       buildPageLayout();
       updateVisiblePages();
+      buildSidebar();
 
       vscode.postMessage({ type: "loaded", pageCount });
     } catch (err: any) {
@@ -291,11 +303,125 @@ function updateCurrentPage(containerRect: DOMRect): void {
       if (currentPage !== i) {
         currentPage = i;
         updateStatusBar();
+        highlightCurrentThumb();
       }
       break;
     }
   }
 }
+
+// ── 사이드바: 페이지 이동 ──
+
+/** 지정 페이지가 편집 영역 상단에 오도록 스크롤한다. */
+function scrollToPage(pageNum: number): void {
+  const el = pageInfos[pageNum]?.element;
+  if (!el) return;
+  const cRect = scrollContainer.getBoundingClientRect();
+  const eRect = el.getBoundingClientRect();
+  scrollContainer.scrollTop += eRect.top - cRect.top - 12;
+  updateVisiblePages();
+}
+
+// ── 사이드바: 썸네일 ──
+
+/** 문서 로드 후 사이드바 콘텐츠(썸네일/목차/북마크)를 갱신한다. */
+function buildSidebar(): void {
+  buildThumbnails();
+}
+
+const THUMB_WIDTH = 160;
+let thumbObserver: IntersectionObserver | null = null;
+
+/** 썸네일 목록을 생성한다. IntersectionObserver로 보이는 것만 지연 렌더. */
+function buildThumbnails(): void {
+  const panel = navPanels.get("thumb");
+  if (!panel) return;
+  panel.innerHTML = "";
+  thumbObserver?.disconnect();
+
+  thumbObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const thumb = entry.target as HTMLElement;
+        renderThumbnail(Number(thumb.dataset.page));
+        thumbObserver!.unobserve(thumb);
+      }
+    },
+    { root: panel, rootMargin: "200px" }
+  );
+
+  for (let i = 0; i < pageInfos.length; i++) {
+    const pi = pageInfos[i];
+    const thumb = document.createElement("div");
+    thumb.className = "nav-thumb";
+    thumb.dataset.page = String(i);
+
+    const cssH = Math.round((pi.height / pi.width) * THUMB_WIDTH);
+    const canvas = document.createElement("canvas");
+    canvas.style.width = `${THUMB_WIDTH}px`;
+    canvas.style.height = `${cssH}px`;
+
+    const label = document.createElement("div");
+    label.className = "nav-thumb-label";
+    label.textContent = String(i + 1);
+
+    thumb.appendChild(canvas);
+    thumb.appendChild(label);
+    thumb.addEventListener("click", () => scrollToPage(i));
+    panel.appendChild(thumb);
+
+    thumbObserver.observe(thumb);
+  }
+  highlightCurrentThumb();
+}
+
+function renderThumbnail(pageNum: number): void {
+  if (!hwpDoc) return;
+  const pi = pageInfos[pageNum];
+  const panel = navPanels.get("thumb");
+  const thumb = panel?.querySelector<HTMLElement>(`.nav-thumb[data-page="${pageNum}"]`);
+  const canvas = thumb?.querySelector("canvas");
+  if (!canvas) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  const scale = THUMB_WIDTH / pi.width;
+  canvas.width = Math.round(pi.width * scale * dpr);
+  canvas.height = Math.round(pi.height * scale * dpr);
+  hwpDoc.renderPageToCanvas(pageNum, canvas, scale * dpr);
+}
+
+/** 현재 페이지 썸네일을 강조하고 보이도록 스크롤한다. */
+function highlightCurrentThumb(): void {
+  const panel = navPanels.get("thumb");
+  if (!panel) return;
+  panel.querySelectorAll(".nav-thumb.current").forEach((el) => el.classList.remove("current"));
+  const cur = panel.querySelector<HTMLElement>(`.nav-thumb[data-page="${currentPage}"]`);
+  if (cur) {
+    cur.classList.add("current");
+    if (navSidebar.offsetWidth > 0 && !navPanels.get("thumb")!.hidden) {
+      cur.scrollIntoView({ block: "nearest" });
+    }
+  }
+}
+
+// ── 사이드바: 탭 전환 / 접기 ──
+
+function switchTab(name: string): void {
+  navTabs.forEach((t) => t.classList.toggle("active", t.dataset.tab === name));
+  navPanels.forEach((panel, key) => {
+    panel.hidden = key !== name;
+  });
+  if (name === "thumb") highlightCurrentThumb();
+}
+
+navTabs.forEach((tab) => {
+  tab.addEventListener("click", () => switchTab(tab.dataset.tab!));
+});
+
+stbSidebarToggle.addEventListener("click", () => {
+  navSidebar.classList.toggle("collapsed");
+});
 
 // ── 유틸리티 ──
 

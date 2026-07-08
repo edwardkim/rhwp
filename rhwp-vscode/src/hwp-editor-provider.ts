@@ -263,6 +263,95 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       background: white;
     }
+    /* 네비게이션 사이드바 (nav-) */
+    #app-shell {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      min-height: 0;
+      overflow: hidden;
+    }
+    #nav-sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--vscode-sideBar-background, #252526);
+      border-right: 1px solid var(--vscode-sideBar-border, rgba(255,255,255,0.1));
+      overflow: hidden;
+    }
+    #nav-sidebar.collapsed {
+      width: 0;
+      border-right: none;
+    }
+    #nav-tabs {
+      display: flex;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--vscode-sideBar-border, rgba(255,255,255,0.1));
+    }
+    .nav-tab {
+      flex: 1;
+      padding: 6px 4px;
+      border: none;
+      background: transparent;
+      color: var(--vscode-sideBar-foreground, #ccc);
+      cursor: pointer;
+      font-size: 12px;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+    }
+    .nav-tab.active {
+      border-bottom-color: var(--vscode-focusBorder, #007acc);
+      color: var(--vscode-foreground, #fff);
+    }
+    .nav-tab:hover { background: rgba(255,255,255,0.06); }
+    #nav-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      min-height: 0;
+    }
+    .nav-panel { padding: 8px; }
+    .nav-panel[hidden] { display: none; }
+    .nav-thumb {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 10px;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    .nav-thumb:hover { background: rgba(255,255,255,0.06); }
+    .nav-thumb.current { background: var(--vscode-list-activeSelectionBackground, rgba(0,122,204,0.35)); }
+    .nav-thumb canvas {
+      background: white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      max-width: 100%;
+      display: block;
+    }
+    .nav-thumb-label {
+      margin-top: 3px;
+      font-size: 11px;
+      color: var(--vscode-descriptionForeground, #999);
+    }
+    .nav-item {
+      padding: 4px 6px;
+      cursor: pointer;
+      font-size: 12px;
+      border-radius: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--vscode-sideBar-foreground, #ccc);
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.06); }
+    .nav-empty {
+      padding: 12px 8px;
+      font-size: 12px;
+      color: var(--vscode-descriptionForeground, #999);
+      text-align: center;
+    }
     /* 상태 표시줄 */
     #status-bar {
       display: flex;
@@ -332,8 +421,23 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
   </style>
 </head>
 <body>
-  <div id="scroll-container" data-wasm-uri="${wasmUri}"><div id="scroll-content"></div></div>
+  <div id="app-shell">
+    <div id="nav-sidebar">
+      <div id="nav-tabs">
+        <button class="nav-tab active" data-tab="thumb" title="\uc378\ub124\uc77c">\uc378\ub124\uc77c</button>
+        <button class="nav-tab" data-tab="outline" title="\ubaa9\ucc28">\ubaa9\ucc28</button>
+        <button class="nav-tab" data-tab="bookmark" title="\ubd81\ub9c8\ud06c">\ubd81\ub9c8\ud06c</button>
+      </div>
+      <div id="nav-body">
+        <div class="nav-panel" data-panel="thumb"></div>
+        <div class="nav-panel" data-panel="outline" hidden></div>
+        <div class="nav-panel" data-panel="bookmark" hidden></div>
+      </div>
+    </div>
+    <div id="scroll-container" data-wasm-uri="${wasmUri}"><div id="scroll-content"></div></div>
+  </div>
   <div id="status-bar">
+    <button id="stb-sidebar-toggle" class="stb-btn" title="\uc0ac\uc774\ub4dc\ubc14 \uc811\uae30/\ud3bc\uce58\uae30">\u2630</button>
     <span id="stb-page" class="stb-item">- / - \uca4d</span>
     <span class="stb-divider"></span>
     <span id="stb-message" class="stb-message">\ubb38\uc11c\ub97c \ubd88\ub7ec\uc624\ub294 \uc911...</span>
