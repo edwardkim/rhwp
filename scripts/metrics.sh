@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # rhwp 코드 품질 메트릭 수집 스크립트
-# 사용법: ./scripts/metrics.sh [--snapshot [라벨]] [--no-coverage]
+# 사용법: ./scripts/metrics.sh [--snapshot [라벨]] [--no-coverage] [--diff <직전 스냅샷 dir>]
 # 결과: output/metrics.json + output/dashboard.html (자동 복사)
 # --snapshot [라벨]: 수집 후 mydocs/metrics/{오늘날짜}[-라벨]/ 로 보관 (커밋해 공유 —
 #             리팩토링 Phase 경계/릴리즈/코드 리뷰 등 의미 있는 시점만).
@@ -27,6 +27,10 @@ while [ $# -gt 0 ]; do
             fi
             ;;
         --no-coverage) RUN_COVERAGE=false ;;
+        --diff)
+            DIFF_BASE="$2"
+            shift
+            ;;
         *) echo "알 수 없는 옵션: $1" >&2; exit 2 ;;
     esac
     shift

@@ -34,6 +34,7 @@ const FONT_LIST: FontEntry[] = [
   { name: '함초롱바탕', file: CDN_HAMCHOB_R, format: 'woff' },
   { name: '한컴돋움', file: CDN_HAMCHOD_R, format: 'woff' },
   { name: '한컴바탕', file: CDN_HAMCHOB_R, format: 'woff' },
+  { name: '한컴산뜻돋움', file: CDN_HAMCHOD_R, format: 'woff' },
   { name: '새돋움', file: CDN_HAMCHOD_R, format: 'woff' },
   { name: '새바탕', file: CDN_HAMCHOB_R, format: 'woff' },
   // === 한컴 HY 폰트 → 오픈소스 대체 ===
