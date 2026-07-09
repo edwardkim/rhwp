@@ -13529,22 +13529,40 @@ impl TypesetEngine {
                 .all(|item| matches!(item, PageItem::Shape { .. }));
         let fits_after_overlay_shapes =
             current_column_has_only_overlay_shapes && table_total <= available + 12.0;
-        // [#2097] 쪽나눔=None(나누지 않음) 표는 한글이 행 컷하지 않으며, 한글의 실제
-        // 행높이 합은 저장 선언 높이와 일치한다(1730000 새만금 COM 3자 비교: 저장
-        // 910.5px = 한글 910.6px vs rhwp 실측 954.1px). 셀 내용 실측 팽창으로 측정
-        // fit 이 실패해도 선언 높이가 현재 쪽에 들어가면 통째 배치해 마지막 행
-        // sliver 여분 페이지를 막는다. advance 는 측정 table_total 을 유지해 같은 쪽
-        // 후속 겹침을 차단한다.
-        let declared_none_table_whole_fits = matches!(
-            table.page_break,
-            crate::model::table::TablePageBreak::None
-        ) && !table.common.treat_as_char
+        // [#2097/#2105] 한글의 실제 행높이 합은 저장 선언 높이와 일치한다(1730000
+        // 새만금 COM 3자 비교: 저장 910.5px = 한글 910.6px vs rhwp 실측 954.1px).
+        // 셀 내용 실측 팽창으로 측정 fit 이 실패해도 선언 높이가 현재 쪽에 들어가면
+        // 통째 배치해 마지막 행 sliver 여분 페이지를 막는다. 쪽나눔=None(#2097)은
+        // 한글이 행 컷하지 않는 표, RowBreak(#2105, 19378753 밀양시 907.7px 선언
+        // vs 955.9px 실측)는 "나눔 허용"이지 강제가 아니라 선언 fit 시 한글도 나누지
+        // 않는다 — 선언이 fit 하지 않는 다쪽 표의 분할 의미론은 불변. CellBreak 는
+        // 셀 중간 컷 의미론이 별개라 비대상. advance 는 측정 table_total 을 유지해
+        // 같은 쪽 후속 겹침을 차단한다.
+        // RowBreak 는 쪽 상단(current_height≈0) 한정 — 중간-쪽 배치에서는 flowed
+        // cur_h 누적 오차와 선언 신뢰가 충돌해 한글이 실제로 분할하는 문서를 통째
+        // 배치하는 회귀가 발생한다(359문서 재검 REGRESSED 10 관측). 쪽 상단에서는
+        // available 이 정확해 "선언 fit" 판정이 깨끗하다. None 은 기존(#2097) 그대로.
+        let declared_fit_scope_ok = match table.page_break {
+            crate::model::table::TablePageBreak::None => true,
+            crate::model::table::TablePageBreak::RowBreak => st.current_height <= 0.5,
+            crate::model::table::TablePageBreak::CellBreak => false,
+        };
+        // 실측 초과가 드리프트 수준일 때만 선언을 신뢰한다 — 셀 저장 높이는 최소값
+        // 의미라 내용이 진짜로 크면 한글도 행을 팽창·분할한다 (17712219 남극서식:
+        // 선언 882.7px vs 실측 1758.6px, 한글 2쪽). #2097/#2105 대상 계열의 실측
+        // 초과는 +17~48px(≤5%) 수준.
+        let measured_excess = table_total - declared_object_total;
+        let declared_excess_within_drift =
+            measured_excess <= (declared_object_total * 0.10).min(64.0);
+        let declared_table_whole_fits = declared_fit_scope_ok
+            && declared_excess_within_drift
+            && !table.common.treat_as_char
             && declared_object_total > host_spacing_total
             && st.current_height + declared_object_total <= available;
         if st.current_height + table_total <= available
             || fits_after_overlay_shapes
             || single_row_object_height_advance.is_some()
-            || declared_none_table_whole_fits
+            || declared_table_whole_fits
         {
             self.place_table_with_text(
                 st,
