@@ -3626,17 +3626,11 @@ mod tests {
                     ),
                     PaintOp::placeholder(
                         BoundingBox::new(7.0, 8.0, 30.0, 20.0),
-                        PlaceholderNode {
-                            fill_color: 0x00F0F0F0,
-                            stroke_color: 0x00000000,
-                            label: "OLE".to_string(),
-                        },
+                        PlaceholderNode::new(0x00F0F0F0, 0x00000000, "OLE".to_string()),
                     ),
                     PaintOp::raw_svg(
                         BoundingBox::new(9.0, 10.0, 30.0, 20.0),
-                        RawSvgNode {
-                            svg: "<g><path d=\"M0 0L1 1\"/></g>".to_string(),
-                        },
+                        RawSvgNode::new("<g><path d=\"M0 0L1 1\"/></g>".to_string()),
                     ),
                 ],
             ),

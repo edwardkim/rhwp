@@ -79,3 +79,27 @@ fn issue_1842_cell_tac_only_line_keeps_stored_height() {
          (max_fs=0 축소 퇴화 회귀: 종전 ~23px)"
     );
 }
+
+/// [Issue #1842 / #2063 인계] CellBreak 초대형 표의 **저장 LINE_SEG 부재 셀** 라인높이 회귀.
+///
+/// `samples/issue2063_huge_cellbreak_table.hwp` (화성시 [별표2], 5,277행×10열 CellBreak)의
+/// 데이터 셀들은 저장 LINE_SEG 가 없어(`line_segs.is_empty()`) composer 가 placeholder
+/// (line_height=400) 로 합성한다. 종전엔 `corrected_line_height` 가 이를 `max_fs*ls%(160%)`
+/// 로 팽창(행 25px)해 rhwp 213쪽으로 과분할(한글 2022 = 162쪽). 수정: CellBreak 표의
+/// synthetic 셀 라인높이를 폰트 em(max_fs)으로 — 행 17px, 41행/쪽(한글 정합). RowBreak
+/// 규제영향분석서(76076 등)는 현행 유지(#1891 공식 PDF 쪽수 불변).
+#[test]
+fn issue_1842_cellbreak_synthetic_lineheight_em_not_inflated() {
+    let repo_root = env!("CARGO_MANIFEST_DIR");
+    let path = Path::new(repo_root).join("samples/issue2063_huge_cellbreak_table.hwp");
+    let data = fs::read(&path).unwrap_or_else(|e| panic!("read: {e}"));
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&data).expect("parse");
+    let pages = doc.page_count();
+    // 수정 전 213쪽(synthetic 셀 ×1.6 팽창), 수정 후 159쪽. 한글 2022 = 162쪽.
+    // 하한(150)은 과소, 상한(175)은 synthetic 팽창 재발(→213)을 잡는다.
+    assert!(
+        (150..=175).contains(&pages),
+        "issue1842: CellBreak synthetic 셀 페이지 수 {pages} 가 기대(150..=175, 한글 162) 밖 \
+         — 부재 LINE_SEG 셀 라인높이 팽창(수정 전 213) 회귀 의심",
+    );
+}

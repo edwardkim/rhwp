@@ -8,7 +8,7 @@ use crate::model::control::{Control, FieldType};
 use crate::model::event::DocumentEvent;
 use crate::model::page::ColumnDef;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::{TextWrap, VertRelTo};
+use crate::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use crate::renderer::composer::{compose_paragraph, reflow_line_segs, ComposedParagraph};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::resolve_styles;
@@ -25,6 +25,13 @@ struct FieldStartInsertion {
     control_idx: usize,
     start_char_idx: usize,
     end_char_idx: usize,
+}
+
+#[derive(Clone, Copy)]
+struct SquareOleWrapChainForEnter {
+    bottom_vpos: i32,
+    column_start: i32,
+    segment_width: i32,
 }
 
 fn active_field_matches(
@@ -100,6 +107,113 @@ fn is_empty_topbottom_table_anchor_for_enter(para: &Paragraph) -> bool {
         })
 }
 
+fn square_ole_anchor_wrap_chain_for_enter(para: &Paragraph) -> Option<SquareOleWrapChainForEnter> {
+    if para_has_visible_text_for_enter(para) || !para.char_offsets.is_empty() {
+        return None;
+    }
+    let line_seg = para.line_segs.first()?;
+    if line_seg.column_start <= 0 || line_seg.segment_width <= 0 {
+        return None;
+    }
+
+    para.controls.iter().find_map(|ctrl| {
+        let Control::Shape(shape) = ctrl else {
+            return None;
+        };
+        if !matches!(shape.as_ref(), ShapeObject::Ole(_))
+            || shape.common().treat_as_char
+            || !matches!(shape.common().text_wrap, TextWrap::Square)
+        {
+            return None;
+        }
+
+        let height = shape.common().height.min(i32::MAX as u32) as i32;
+        if height <= 0 {
+            return None;
+        }
+        Some(SquareOleWrapChainForEnter {
+            bottom_vpos: line_seg.vertical_pos.saturating_add(height),
+            column_start: line_seg.column_start,
+            segment_width: line_seg.segment_width,
+        })
+    })
+}
+
+fn is_empty_stored_square_wrap_line_for_enter(para: &Paragraph) -> bool {
+    !para_has_visible_text_for_enter(para)
+        && para.char_offsets.is_empty()
+        && para.controls.is_empty()
+        && para
+            .line_segs
+            .first()
+            .is_some_and(|seg| seg.column_start > 0 && seg.segment_width > 0)
+}
+
+fn is_contentless_empty_paragraph_for_merge(para: &Paragraph) -> bool {
+    para.text.is_empty() && para.char_offsets.is_empty() && para.controls.is_empty()
+}
+
+fn has_same_stored_wrap_line(lhs: &Paragraph, rhs: &Paragraph) -> bool {
+    match (lhs.line_segs.first(), rhs.line_segs.first()) {
+        (Some(a), Some(b)) => {
+            a.column_start == b.column_start && a.segment_width == b.segment_width
+        }
+        _ => false,
+    }
+}
+
+fn square_ole_wrap_chain_for_enter(
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+) -> Option<SquareOleWrapChainForEnter> {
+    let anchor = paragraphs.get(para_idx)?;
+    if let Some(chain) = square_ole_anchor_wrap_chain_for_enter(anchor) {
+        return Some(chain);
+    }
+    if !is_empty_stored_square_wrap_line_for_enter(anchor) {
+        return None;
+    }
+
+    let mut idx = para_idx;
+    while idx > 0 {
+        idx -= 1;
+        let prev = paragraphs.get(idx)?;
+        if let Some(chain) = square_ole_anchor_wrap_chain_for_enter(prev) {
+            return (chain.column_start == anchor.line_segs[0].column_start
+                && chain.segment_width == anchor.line_segs[0].segment_width)
+                .then_some(chain);
+        }
+        if is_empty_stored_square_wrap_line_for_enter(prev)
+            && has_same_stored_wrap_line(prev, anchor)
+        {
+            continue;
+        }
+        return None;
+    }
+    None
+}
+
+fn next_line_vpos_after_para_for_enter(para: &Paragraph) -> i32 {
+    para.line_segs
+        .last()
+        .map(|seg| {
+            seg.vertical_pos
+                .saturating_add(seg.line_height)
+                .saturating_add(seg.line_spacing)
+        })
+        .unwrap_or(0)
+}
+
+fn empty_paragraph_after_normal_flow(anchor: &Paragraph) -> Paragraph {
+    let mut para = empty_paragraph_after_table_anchor(anchor);
+    if let Some(seg) = para.line_segs.first_mut() {
+        seg.column_start = 0;
+        seg.segment_width = 0;
+        seg.vertical_pos = 0;
+    }
+    para
+}
+
 fn empty_paragraph_after_table_anchor(anchor: &Paragraph) -> Paragraph {
     let mut para = Paragraph::new_empty();
     para.para_shape_id = anchor.para_shape_id;
@@ -120,6 +234,16 @@ fn empty_paragraph_after_table_anchor(anchor: &Paragraph) -> Paragraph {
     raw_header_extra[4..6].copy_from_slice(&1u16.to_le_bytes());
     para.raw_header_extra = raw_header_extra;
     para.has_para_text = false;
+    para
+}
+
+fn empty_paragraph_after_square_wrap_anchor(anchor: &Paragraph) -> Paragraph {
+    let mut para = empty_paragraph_after_table_anchor(anchor);
+    if let (Some(seg), Some(anchor_seg)) = (para.line_segs.first_mut(), anchor.line_segs.first()) {
+        *seg = anchor_seg.clone();
+        seg.text_start = 0;
+        seg.vertical_pos = 0;
+    }
     para
 }
 
@@ -1188,6 +1312,53 @@ impl DocumentCore {
             )));
         }
 
+        let square_ole_enter_chain = {
+            let paragraphs = &self.document.sections[section_idx].paragraphs;
+            (char_offset == 0)
+                .then(|| square_ole_wrap_chain_for_enter(paragraphs, para_idx))
+                .flatten()
+        };
+        if let Some(chain) = square_ole_enter_chain {
+            self.document.sections[section_idx].raw_stream = None;
+            let new_para_idx = para_idx + 1;
+            let next_vpos = next_line_vpos_after_para_for_enter(
+                &self.document.sections[section_idx].paragraphs[para_idx],
+            );
+            let keep_wrap_zone = next_vpos < chain.bottom_vpos;
+            let new_para = if keep_wrap_zone {
+                empty_paragraph_after_square_wrap_anchor(
+                    &self.document.sections[section_idx].paragraphs[para_idx],
+                )
+            } else {
+                empty_paragraph_after_normal_flow(
+                    &self.document.sections[section_idx].paragraphs[para_idx],
+                )
+            };
+            self.document.sections[section_idx]
+                .paragraphs
+                .insert(new_para_idx, new_para);
+
+            if !keep_wrap_zone {
+                self.reflow_paragraph(section_idx, new_para_idx);
+            }
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[section_idx].paragraphs,
+                para_idx,
+            );
+            self.insert_composed_paragraph(section_idx, new_para_idx);
+            self.paginate_if_needed();
+
+            self.event_log.push(DocumentEvent::ParagraphSplit {
+                section: section_idx,
+                para: para_idx,
+                offset: char_offset,
+            });
+            return Ok(super::super::helpers::json_ok_with(&format!(
+                "\"paraIdx\":{},\"charOffset\":0",
+                new_para_idx
+            )));
+        }
+
         // 편집 시 raw 스트림 무효화 (재직렬화 유도)
         self.document.sections[section_idx].raw_stream = None;
 
@@ -1500,6 +1671,13 @@ impl DocumentCore {
         // 편집 시 raw 스트림 무효화 (재직렬화 유도)
         self.document.sections[section_idx].raw_stream = None;
 
+        let preserve_square_ole_wrap_line = {
+            let paragraphs = &self.document.sections[section_idx].paragraphs;
+            let prev_idx = para_idx - 1;
+            is_contentless_empty_paragraph_for_merge(&paragraphs[para_idx])
+                && square_ole_wrap_chain_for_enter(paragraphs, prev_idx).is_some()
+        };
+
         // 현재 문단을 이전 문단에 병합
         let current_para = self.document.sections[section_idx]
             .paragraphs
@@ -1507,6 +1685,25 @@ impl DocumentCore {
         let prev_idx = para_idx - 1;
         let merge_point =
             self.document.sections[section_idx].paragraphs[prev_idx].merge_from(&current_para);
+
+        if preserve_square_ole_wrap_line {
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[section_idx].paragraphs,
+                prev_idx,
+            );
+            self.remove_composed_paragraph(section_idx, para_idx);
+            self.recompose_paragraph(section_idx, prev_idx);
+            self.paginate_if_needed();
+
+            self.event_log.push(DocumentEvent::ParagraphMerged {
+                section: section_idx,
+                para: para_idx,
+            });
+            return Ok(super::super::helpers::json_ok_with(&format!(
+                "\"paraIdx\":{},\"charOffset\":{}",
+                prev_idx, merge_point
+            )));
+        }
 
         // 병합된 문단 리플로우 → vpos 재계산 → 재구성 → 재페이지네이션 + 다단 수렴 루프
         let old_col = self
@@ -2592,23 +2789,60 @@ impl DocumentCore {
             .ok_or_else(|| HwpError::RenderError(format!("문단 {} 범위 초과", parent_para_idx)))?;
 
         for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
-            let table = match para.controls.get_mut(ctrl_idx) {
-                Some(Control::Table(t)) => t.as_mut(),
+            let is_last = i == path.len() - 1;
+            let paragraphs = match para.controls.get_mut(ctrl_idx) {
+                Some(Control::Table(t)) => {
+                    let cell = t.cells.get_mut(cell_idx).ok_or_else(|| {
+                        HwpError::RenderError(format!("경로[{}]: 셀 {} 범위 초과", i, cell_idx))
+                    })?;
+                    &mut cell.paragraphs
+                }
+                Some(Control::Shape(shape)) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 글상자의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    let text_box = super::super::helpers::get_textbox_from_shape_mut(shape)
+                        .ok_or_else(|| {
+                            HwpError::RenderError(format!(
+                                "경로[{}]: controls[{}]가 텍스트 글상자가 아닙니다",
+                                i, ctrl_idx
+                            ))
+                        })?;
+                    &mut text_box.paragraphs
+                }
+                Some(Control::Picture(pic)) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 그림 캡션의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    let caption = pic.caption.as_mut().ok_or_else(|| {
+                        HwpError::RenderError(format!(
+                            "경로[{}]: controls[{}] 그림에 캡션이 없습니다",
+                            i, ctrl_idx
+                        ))
+                    })?;
+                    &mut caption.paragraphs
+                }
                 _ => {
                     return Err(HwpError::RenderError(format!(
-                        "경로[{}]: controls[{}]가 표가 아닙니다",
+                        "경로[{}]: controls[{}]가 표/글상자/그림 캡션이 아닙니다",
                         i, ctrl_idx
                     )))
                 }
             };
-            let cell = table.cells.get_mut(cell_idx).ok_or_else(|| {
-                HwpError::RenderError(format!("경로[{}]: 셀 {} 범위 초과", i, cell_idx))
-            })?;
-            if i == path.len() - 1 {
-                return Ok(&mut cell.paragraphs);
+            if is_last {
+                return Ok(paragraphs);
             }
-            para = cell.paragraphs.get_mut(cell_para_idx).ok_or_else(|| {
-                HwpError::RenderError(format!("경로[{}]: 셀문단 {} 범위 초과", i, cell_para_idx))
+            para = paragraphs.get_mut(cell_para_idx).ok_or_else(|| {
+                HwpError::RenderError(format!(
+                    "경로[{}]: 컨테이너 문단 {} 범위 초과",
+                    i, cell_para_idx
+                ))
             })?;
         }
         unreachable!()

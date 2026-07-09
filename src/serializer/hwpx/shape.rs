@@ -536,8 +536,19 @@ fn write_cur_sz<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {
-    let width = sa.current_width.to_string();
-    let height = sa.current_height.to_string();
+    // [#2017] 파싱 시 orgSz로 materialize된 dimension 은 원본 `0` sentinel 로 복원.
+    let width = if sa.current_width_was_zero {
+        0
+    } else {
+        sa.current_width
+    }
+    .to_string();
+    let height = if sa.current_height_was_zero {
+        0
+    } else {
+        sa.current_height
+    }
+    .to_string();
     empty_tag(w, "hp:curSz", &[("width", &width), ("height", &height)])
 }
 

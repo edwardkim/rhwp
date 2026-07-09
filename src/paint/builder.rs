@@ -531,18 +531,18 @@ mod tests {
                 "FormObject",
             ),
             (
-                RenderNodeType::Placeholder(PlaceholderNode {
-                    fill_color: 0x00F0F0F0,
-                    stroke_color: 0x00000000,
-                    label: "OLE".to_string(),
-                }),
+                RenderNodeType::Placeholder(PlaceholderNode::new(
+                    0x00F0F0F0,
+                    0x00000000,
+                    "OLE".to_string(),
+                )),
                 |op| matches!(op, PaintOp::Placeholder { .. }),
                 "Placeholder",
             ),
             (
-                RenderNodeType::RawSvg(RawSvgNode {
-                    svg: "<g><path d=\"M0 0L1 1\"/></g>".to_string(),
-                }),
+                RenderNodeType::RawSvg(RawSvgNode::new(
+                    "<g><path d=\"M0 0L1 1\"/></g>".to_string(),
+                )),
                 |op| matches!(op, PaintOp::RawSvg { .. }),
                 "RawSvg",
             ),

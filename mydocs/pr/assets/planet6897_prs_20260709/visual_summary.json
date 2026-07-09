@@ -1,0 +1,677 @@
+[
+  {
+    "key": "pr2088_issue2083",
+    "hwp": "samples/issue2083_hide_fill_page.hwpx",
+    "pdf": "pdf/issue2083_hide_fill_page-2020.pdf",
+    "requested_pages": null,
+    "exported_svg_pages": 4,
+    "exported_render_tree_pages": 4,
+    "exported_pdf_pages": 4,
+    "svg_pages": 4,
+    "render_tree_pages": 4,
+    "pdf_pages": 4,
+    "compare_pages": 4,
+    "overlay_pages": 4,
+    "review_pages": 4,
+    "pdf_question_markers": 0,
+    "overflow_lines": [
+      "LAYOUT_OVERFLOW_DRAW: section=2 pi=15 line=0 y=1044.1 col_bottom=1026.5 overflow=17.6px",
+      "LAYOUT_OVERFLOW: page=0, sec=2, col=0, para=15, type=FullParagraph, first=false, y=1044.1, bottom=1026.5, overflow=17.6px"
+    ],
+    "contact_sheet": "output/planet6897_prs_visual_20260709/pr2088_issue2083/contact_sheet.png",
+    "overlay_contact_sheet": "output/planet6897_prs_visual_20260709/pr2088_issue2083/overlay_contact_sheet.png",
+    "review_contact_sheet": "output/planet6897_prs_visual_20260709/pr2088_issue2083/review_contact_sheet.png",
+    "analysis_dir": "output/planet6897_prs_visual_20260709/pr2088_issue2083/analysis",
+    "overlay_dir": "output/planet6897_prs_visual_20260709/pr2088_issue2083/overlay",
+    "review_dir": "output/planet6897_prs_visual_20260709/pr2088_issue2083/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 3.006,
+          "separatorBelowMm": 2.004,
+          "betweenNotesMm": 1.002,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": 3.006,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.004,
+          "rawUnknownMm": 1.002
+        },
+        "endnote": {
+          "separatorAboveMm": 3.048,
+          "separatorBelowMm": 2.032,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": false,
+          "separatorLengthMm": 0.0,
+          "rawSeparatorMarginTopMm": 3.048,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.032,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 1,
+        "footnote": {
+          "separatorAboveMm": 3.006,
+          "separatorBelowMm": 2.004,
+          "betweenNotesMm": 1.002,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": 3.006,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.004,
+          "rawUnknownMm": 1.002
+        },
+        "endnote": {
+          "separatorAboveMm": 3.048,
+          "separatorBelowMm": 2.032,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": false,
+          "separatorLengthMm": 0.0,
+          "rawSeparatorMarginTopMm": 3.048,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.032,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 2,
+        "footnote": {
+          "separatorAboveMm": 3.006,
+          "separatorBelowMm": 2.004,
+          "betweenNotesMm": 1.002,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": 3.006,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.004,
+          "rawUnknownMm": 1.002
+        },
+        "endnote": {
+          "separatorAboveMm": 3.048,
+          "separatorBelowMm": 2.032,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": false,
+          "separatorLengthMm": 0.0,
+          "rawSeparatorMarginTopMm": 3.048,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.032,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "output/planet6897_prs_visual_20260709/pr2088_issue2083/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 4,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 87.56323,
+      "worst_pixel_match_percent": 83.35345,
+      "average_ink_match_percent": 28.73233,
+      "worst_ink_match_percent": 3.58447,
+      "average_visual_accuracy_proxy_percent": 28.73233,
+      "worst_visual_accuracy_proxy_percent": 3.58447,
+      "worst_pages": [
+        1,
+        4,
+        3,
+        2
+      ]
+    },
+    "overlay_metrics_json": "output/planet6897_prs_visual_20260709/pr2088_issue2083/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 4,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [
+        1,
+        3,
+        4
+      ],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "metrics_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/analysis/metrics.json",
+      "question_flow_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/analysis/question_flow.json"
+    },
+    "flagged_pages": []
+  },
+  {
+    "key": "pr2096_task2093",
+    "hwp": "samples/task2093/saved_single_line_spacing_after.hwpx",
+    "pdf": "pdf/task2093/saved_single_line_spacing_after-2020.pdf",
+    "requested_pages": null,
+    "exported_svg_pages": 2,
+    "exported_render_tree_pages": 2,
+    "exported_pdf_pages": 1,
+    "svg_pages": 2,
+    "render_tree_pages": 2,
+    "pdf_pages": 1,
+    "compare_pages": 1,
+    "overlay_pages": 1,
+    "review_pages": 1,
+    "pdf_question_markers": 0,
+    "overflow_lines": [],
+    "contact_sheet": "output/planet6897_prs_visual_20260709/pr2096_task2093/contact_sheet.png",
+    "overlay_contact_sheet": "output/planet6897_prs_visual_20260709/pr2096_task2093/overlay_contact_sheet.png",
+    "review_contact_sheet": "output/planet6897_prs_visual_20260709/pr2096_task2093/review_contact_sheet.png",
+    "analysis_dir": "output/planet6897_prs_visual_20260709/pr2096_task2093/analysis",
+    "overlay_dir": "output/planet6897_prs_visual_20260709/pr2096_task2093/overlay",
+    "review_dir": "output/planet6897_prs_visual_20260709/pr2096_task2093/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": 2.999,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 51.83,
+          "rawSeparatorMarginTopMm": 2.999,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "output/planet6897_prs_visual_20260709/pr2096_task2093/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.72389,
+      "worst_pixel_match_percent": 99.72389,
+      "average_ink_match_percent": 6.10221,
+      "worst_ink_match_percent": 6.10221,
+      "average_visual_accuracy_proxy_percent": 6.10221,
+      "worst_visual_accuracy_proxy_percent": 6.10221,
+      "worst_pages": [
+        1
+      ]
+    },
+    "overlay_metrics_json": "output/planet6897_prs_visual_20260709/pr2096_task2093/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 1,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "metrics_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2096_task2093/analysis/metrics.json",
+      "question_flow_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2096_task2093/analysis/question_flow.json"
+    },
+    "flagged_pages": []
+  },
+  {
+    "key": "pr2101_task2097",
+    "hwp": "samples/task2097/none_table_declared_fits.hwpx",
+    "pdf": "pdf/task2097/none_table_declared_fits-2020.pdf",
+    "requested_pages": null,
+    "exported_svg_pages": 2,
+    "exported_render_tree_pages": 2,
+    "exported_pdf_pages": 2,
+    "svg_pages": 2,
+    "render_tree_pages": 2,
+    "pdf_pages": 2,
+    "compare_pages": 2,
+    "overlay_pages": 2,
+    "review_pages": 2,
+    "pdf_question_markers": 0,
+    "overflow_lines": [
+      "LAYOUT_OVERFLOW: page=0, sec=0, col=0, para=0, type=Table, first=true, y=1040.7, bottom=1028.0, overflow=12.6px"
+    ],
+    "contact_sheet": "output/planet6897_prs_visual_20260709/pr2101_task2097/contact_sheet.png",
+    "overlay_contact_sheet": "output/planet6897_prs_visual_20260709/pr2101_task2097/overlay_contact_sheet.png",
+    "review_contact_sheet": "output/planet6897_prs_visual_20260709/pr2101_task2097/review_contact_sheet.png",
+    "analysis_dir": "output/planet6897_prs_visual_20260709/pr2101_task2097/analysis",
+    "overlay_dir": "output/planet6897_prs_visual_20260709/pr2101_task2097/overlay",
+    "review_dir": "output/planet6897_prs_visual_20260709/pr2101_task2097/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": 2.999,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 51.83,
+          "rawSeparatorMarginTopMm": 2.999,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "output/planet6897_prs_visual_20260709/pr2101_task2097/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 2,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.22078,
+      "worst_pixel_match_percent": 99.21181,
+      "average_ink_match_percent": 1.17738,
+      "worst_ink_match_percent": 0.95183,
+      "average_visual_accuracy_proxy_percent": 1.17738,
+      "worst_visual_accuracy_proxy_percent": 0.95183,
+      "worst_pages": [
+        1,
+        2
+      ]
+    },
+    "overlay_metrics_json": "output/planet6897_prs_visual_20260709/pr2101_task2097/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 2,
+      "flagged_page_count": 1,
+      "frame_overflow_pages": [
+        1
+      ],
+      "content_bottom_drift_pages": [
+        1
+      ],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [
+        1
+      ],
+      "question_marker_drift_pages": [],
+      "metrics_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2101_task2097/analysis/metrics.json",
+      "question_flow_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2101_task2097/analysis/question_flow.json"
+    },
+    "flagged_pages": [
+      {
+        "page": 1,
+        "flags": [
+          "frame_overflow_pixels",
+          "render_tree_frame_tail_overflow",
+          "content_bottom_drift"
+        ],
+        "rhwp_frame": [
+          75,
+          94,
+          608,
+          1020
+        ],
+        "pdf_frame": [
+          26,
+          75,
+          768,
+          1097
+        ],
+        "rhwp_outside_frame_pixels": 472,
+        "pdf_outside_frame_pixels": 0,
+        "rhwp_outside_frame_max_y": 1037,
+        "pdf_outside_frame_max_y": null,
+        "rhwp_outside_frame_extent_px": 17,
+        "pdf_outside_frame_extent_px": null,
+        "frame_overflow_tolerated_bleed": false,
+        "paper_size_footer_frame_bleed": false,
+        "rhwp_outside_frame_bleed_px": 17,
+        "pdf_outside_frame_bleed_px": 0,
+        "content_bottom_delta_px": 891.0,
+        "red_marker_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "line_band_drift": {
+          "rhwp_count": 3,
+          "pdf_count": 1,
+          "paired": 1,
+          "max_abs_delta_px": 16.5,
+          "p90_abs_delta_px": 16.5,
+          "mean_abs_delta_px": 16.5
+        },
+        "column_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              75,
+              94,
+              339,
+              1020
+            ],
+            "pdf_frame": [
+              26,
+              75,
+              395,
+              1097
+            ],
+            "drift": {
+              "rhwp_count": 3,
+              "pdf_count": 1,
+              "paired": 1,
+              "max_abs_delta_px": 16.5,
+              "p90_abs_delta_px": 16.5,
+              "mean_abs_delta_px": 16.5
+            },
+            "rhwp_first_band": {
+              "y0": 101,
+              "y1": 111,
+              "x0": 78,
+              "x1": 137,
+              "pixels": 266,
+              "cy": 106.0
+            },
+            "rhwp_last_band": {
+              "y0": 1010,
+              "y1": 1018,
+              "x0": 78,
+              "x1": 140,
+              "pixels": 237,
+              "cy": 1014.0
+            },
+            "pdf_first_band": {
+              "y0": 118,
+              "y1": 127,
+              "x0": 76,
+              "x1": 167,
+              "pixels": 436,
+              "cy": 122.5
+            },
+            "pdf_last_band": {
+              "y0": 118,
+              "y1": 127,
+              "x0": 76,
+              "x1": 167,
+              "pixels": 436,
+              "cy": 122.5
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              343,
+              94,
+              608,
+              1020
+            ],
+            "pdf_frame": [
+              399,
+              75,
+              768,
+              1097
+            ],
+            "drift": {
+              "rhwp_count": 1,
+              "pdf_count": 0,
+              "paired": 0,
+              "max_abs_delta_px": null,
+              "mean_abs_delta_px": null
+            },
+            "rhwp_first_band": {
+              "y0": 1000,
+              "y1": 1001,
+              "x0": 345,
+              "x1": 606,
+              "pixels": 524,
+              "cy": 1000.5
+            },
+            "rhwp_last_band": {
+              "y0": 1000,
+              "y1": 1001,
+              "x0": 345,
+              "x1": 606,
+              "pixels": 524,
+              "cy": 1000.5
+            },
+            "pdf_first_band": null,
+            "pdf_last_band": null
+          }
+        ],
+        "column_line_band_drift_candidates": [],
+        "large_ink_region_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_regions": [],
+          "pdf_regions": []
+        },
+        "endnote_shape_ui": {
+          "separator_visible": true,
+          "separator_above_mm": 2.999,
+          "between_notes_mm": 0.0,
+          "separator_below_mm": 2.0,
+          "separator_length_mm": 51.83
+        },
+        "endnote_separator_gap": {
+          "expected_separator": true,
+          "separator_below_mm": 2.0,
+          "separator_above_mm": 2.999,
+          "between_notes_mm": 0.0,
+          "separator_length_px": 195.9,
+          "rhwp": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "pdf": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "gap_delta_px": null
+        },
+        "endnote_no_separator_content_start": null,
+        "between_notes_marker_gap": {
+          "expected_between_notes_mm": 0.0,
+          "expected_between_notes_px": null,
+          "rhwp_marker_count": 0,
+          "pdf_marker_count": 0,
+          "paired_gap_count": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_marker_y": [],
+          "pdf_marker_y": [],
+          "rhwp_marker_y_by_column": [
+            []
+          ],
+          "pdf_marker_y_by_column": [
+            []
+          ],
+          "rhwp_gaps_px": [],
+          "pdf_gaps_px": [],
+          "pairs": []
+        },
+        "svg": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2101_task2097/svg/none_table_declared_fits_001.svg",
+        "render_tree_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2101_task2097/render_tree/render_tree_001.json",
+        "equation_text_overlap_candidates": [],
+        "question_title_text_overlap_candidates": [],
+        "line_order_overlap_candidates": [],
+        "render_tree_frame_tail_overflow_candidates": [
+          {
+            "path": "root/2/0/0/2/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "TAIL ROW EXPANDING",
+            "overflow_px": 22.5,
+            "frame_bottom": 1020,
+            "column": 1,
+            "bbox": [
+              77.5,
+              1026.5,
+              529.6,
+              16.0
+            ]
+          }
+        ],
+        "render_tree_frame_tail_overflow_suppressed_candidates": [],
+        "question_marker_drift_candidates": [],
+        "annotated": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2101_task2097/analysis/annotated_001.png"
+      }
+    ]
+  },
+  {
+    "key": "pr2100_issue2004",
+    "hwp": "samples/issue2004_cell_image_stack.hwp",
+    "pdf": "pdf/issue2004_cell_image_stack-2022.pdf",
+    "requested_pages": null,
+    "exported_svg_pages": 8,
+    "exported_render_tree_pages": 8,
+    "exported_pdf_pages": 8,
+    "svg_pages": 8,
+    "render_tree_pages": 8,
+    "pdf_pages": 8,
+    "compare_pages": 8,
+    "overlay_pages": 8,
+    "review_pages": 8,
+    "pdf_question_markers": 0,
+    "overflow_lines": [],
+    "contact_sheet": "output/planet6897_prs_visual_20260709/pr2100_issue2004/contact_sheet.png",
+    "overlay_contact_sheet": "output/planet6897_prs_visual_20260709/pr2100_issue2004/overlay_contact_sheet.png",
+    "review_contact_sheet": "output/planet6897_prs_visual_20260709/pr2100_issue2004/review_contact_sheet.png",
+    "analysis_dir": "output/planet6897_prs_visual_20260709/pr2100_issue2004/analysis",
+    "overlay_dir": "output/planet6897_prs_visual_20260709/pr2100_issue2004/overlay",
+    "review_dir": "output/planet6897_prs_visual_20260709/pr2100_issue2004/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 2.0,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 2.999,
+          "separatorEnabled": false,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.0,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 2.999
+        },
+        "endnote": {
+          "separatorAboveMm": 2.0,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 2.999,
+          "separatorEnabled": false,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.0,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 2.999
+        }
+      }
+    ],
+    "note_shape_json": "output/planet6897_prs_visual_20260709/pr2100_issue2004/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 8,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 83.29703,
+      "worst_pixel_match_percent": 77.22063,
+      "average_ink_match_percent": 18.95654,
+      "worst_ink_match_percent": 8.33918,
+      "average_visual_accuracy_proxy_percent": 18.95654,
+      "worst_visual_accuracy_proxy_percent": 8.33918,
+      "worst_pages": [
+        1,
+        3,
+        7,
+        8,
+        5,
+        6,
+        2,
+        4
+      ]
+    },
+    "overlay_metrics_json": "output/planet6897_prs_visual_20260709/pr2100_issue2004/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 8,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "metrics_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2100_issue2004/analysis/metrics.json",
+      "question_flow_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2100_issue2004/analysis/question_flow.json"
+    },
+    "flagged_pages": []
+  }
+]

@@ -50,7 +50,9 @@ fn para_is_floating_image_stack(para: &Paragraph, min_height_hu: i32) -> bool {
         return false;
     }
     let mut count = 0usize;
-    let mut first_voff: Option<i32> = None;
+    let mut min_voff = i32::MAX;
+    let mut max_voff = i32::MIN;
+    let mut min_pic_h = i32::MAX;
     for ctrl in &para.controls {
         let Some(common) = floating_stack_picture_common(ctrl) else {
             return false;
@@ -62,14 +64,16 @@ fn para_is_floating_image_stack(para: &Paragraph, min_height_hu: i32) -> bool {
         {
             return false;
         }
-        match first_voff {
-            Some(v) if v != common.vertical_offset as i32 => return false,
-            None => first_voff = Some(common.vertical_offset as i32),
-            _ => {}
-        }
+        let voff = common.vertical_offset as i32;
+        min_voff = min_voff.min(voff);
+        max_voff = max_voff.max(voff);
+        min_pic_h = min_pic_h.min(common.height as i32);
         count += 1;
     }
-    count >= 2
+    // [#2004] 세로오프셋이 동일하거나(#1995: 전부 0) 이미지 높이보다 작은 band 안에서
+    // varying(156714340: 0/-3360/-2940 …)이어 서로 크게 겹치면 "겹침 스택"으로 판정한다.
+    // 오프셋 spread ≥ 이미지 높이면 이미 세로로 벌어진 정상 배치이므로 제외.
+    count >= 2 && (max_voff as i64 - min_voff as i64) <= min_pic_h as i64
 }
 
 /// 문단의 그림/그림-도형을 인라인(tac=true)으로 재분류(정규화본에만 적용, 원본 무손상).
@@ -85,6 +89,66 @@ fn reclassify_floating_pictures_inline(para: &mut Paragraph) {
             _ => {}
         }
     }
+}
+
+/// [#2004] 문단이 품은 표의 셀에서 부동 이미지 스택을 "이미지 1장짜리 inline 문단 N개"로
+/// 분할·재분류한다(정규화본 전용, 원본 무손상). 156714340: 1×1 부동 표 셀에 전면 Square
+/// 이미지 5장 스택. 부동 이미지는 셀 앵커 절대배치라 겹치고, flow 에 없어 intra-cell
+/// 분할이 못 나눈다 → inline 문단 단위로 나눠 셀 흐름 유닛이 되게 한다. 변경 시 true.
+fn reclassify_cell_floating_stacks(para: &mut Paragraph, min_height_hu: i32) -> bool {
+    let mut changed = false;
+    for ctrl in para.controls.iter_mut() {
+        if let Control::Table(table) = ctrl {
+            for cell in table.cells.iter_mut() {
+                if !cell
+                    .paragraphs
+                    .iter()
+                    .any(|p| para_is_floating_image_stack(p, min_height_hu))
+                {
+                    continue;
+                }
+                let mut new_paras: Vec<Paragraph> = Vec::with_capacity(cell.paragraphs.len());
+                for cell_para in cell.paragraphs.drain(..) {
+                    if para_is_floating_image_stack(&cell_para, min_height_hu) {
+                        // [#2004 Stage1] 분할 문단에 이미지 높이를 담은 합성 line_seg 를
+                        // 부여한다. line_segs 를 비우면 셀 composition 이 placeholder
+                        // 1줄(400HWPU)로 붕괴해 셀 측정이 스택 총높이를 못 본다(3차 실증).
+                        // raw_lh(이미지 높이) ≥ font size 라 corrected_line_height 가
+                        // 줄간격 팽창 없이 그대로 반영한다.
+                        use crate::model::paragraph::LineSeg;
+                        let template = cell_para.line_segs.first().cloned().unwrap_or_default();
+                        let mut cum_vpos = template.vertical_pos;
+                        for img_ctrl in &cell_para.controls {
+                            let mut sp = cell_para.clone();
+                            sp.controls = vec![img_ctrl.clone()];
+                            let img_h = floating_stack_picture_common(img_ctrl)
+                                .map(|cm| cm.height as i32)
+                                .unwrap_or(template.line_height);
+                            sp.line_segs = vec![LineSeg {
+                                text_start: 0,
+                                vertical_pos: cum_vpos,
+                                line_height: img_h,
+                                text_height: img_h,
+                                baseline_distance: img_h,
+                                line_spacing: 0,
+                                column_start: 0,
+                                segment_width: template.segment_width,
+                                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                            }];
+                            cum_vpos = cum_vpos.saturating_add(img_h);
+                            reclassify_floating_pictures_inline(&mut sp);
+                            new_paras.push(sp);
+                        }
+                        changed = true;
+                    } else {
+                        new_paras.push(cell_para);
+                    }
+                }
+                cell.paragraphs = new_paras;
+            }
+        }
+    }
+    changed
 }
 
 fn uses_hwp3_origin_page_tolerance(document: &Document) -> bool {
@@ -1975,6 +2039,46 @@ impl DocumentCore {
                     ));
                     return;
                 }
+                RenderNodeType::RawSvg(raw_node) => {
+                    if let Some(control_ref) = raw_node
+                        .control_ref
+                        .as_ref()
+                        .filter(|control_ref| control_ref.kind == "ole")
+                    {
+                        controls.push(format!(
+                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}}}",
+                            node.bbox.x,
+                            node.bbox.y,
+                            node.bbox.width,
+                            node.bbox.height,
+                            control_ref.section_index,
+                            control_ref.para_index,
+                            control_ref.control_index,
+                            layer_str
+                        ));
+                        return;
+                    }
+                }
+                RenderNodeType::Placeholder(placeholder_node) => {
+                    if let Some(control_ref) = placeholder_node
+                        .control_ref
+                        .as_ref()
+                        .filter(|control_ref| control_ref.kind == "ole")
+                    {
+                        controls.push(format!(
+                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}}}",
+                            node.bbox.x,
+                            node.bbox.y,
+                            node.bbox.width,
+                            node.bbox.height,
+                            control_ref.section_index,
+                            control_ref.para_index,
+                            control_ref.control_index,
+                            layer_str
+                        ));
+                        return;
+                    }
+                }
                 RenderNodeType::Group(group_node) => {
                     if let (Some(si), Some(pi), Some(ci)) = (
                         group_node.section_index,
@@ -3091,11 +3195,27 @@ impl DocumentCore {
                 .filter(|(_, p)| para_is_floating_image_stack(p, min_height_hu))
                 .map(|(i, _)| i)
                 .collect();
-            if matches.is_empty() {
+            // [#2004] 표 셀 내부 부동 이미지 스택 검출(본문 스택과 별개 경로).
+            let has_cell_stack = section.paragraphs.iter().any(|p| {
+                p.controls.iter().any(|ctrl| match ctrl {
+                    Control::Table(table) => table.cells.iter().any(|cell| {
+                        cell.paragraphs
+                            .iter()
+                            .any(|cp| para_is_floating_image_stack(cp, min_height_hu))
+                    }),
+                    _ => false,
+                })
+            });
+            if matches.is_empty() && !has_cell_stack {
                 out.push(None);
                 continue;
             }
             let mut np = section.paragraphs.clone();
+            if has_cell_stack {
+                for p in np.iter_mut() {
+                    reclassify_cell_floating_stacks(p, min_height_hu);
+                }
+            }
             for &i in &matches {
                 reclassify_floating_pictures_inline(&mut np[i]);
             }

@@ -2705,12 +2705,15 @@ fn materialize_shape_current_size_from_original(
 ) {
     if shape_attr.current_width == 0 && shape_attr.original_width > 0 {
         shape_attr.current_width = shape_attr.original_width;
+        // [#2017] HWPX 재직렬화 시 원본 curSz=0 을 복원하기 위해 materialize 여부를 기록.
+        shape_attr.current_width_was_zero = true;
         if common.width == 0 {
             common.width = shape_attr.original_width;
         }
     }
     if shape_attr.current_height == 0 && shape_attr.original_height > 0 {
         shape_attr.current_height = shape_attr.original_height;
+        shape_attr.current_height_was_zero = true;
         if common.height == 0 {
             common.height = shape_attr.original_height;
         }

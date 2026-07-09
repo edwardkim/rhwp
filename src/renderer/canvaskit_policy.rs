@@ -1134,9 +1134,7 @@ mod tests {
             PaintOp::equation(bbox(), equation_node()),
             PaintOp::raw_svg(
                 bbox(),
-                RawSvgNode {
-                    svg: "<g><path d=\"M0 0H1\"/></g>".to_string(),
-                },
+                RawSvgNode::new("<g><path d=\"M0 0H1\"/></g>".to_string()),
             ),
         ]);
 
@@ -1265,11 +1263,7 @@ mod tests {
             name: "check1".to_string(),
             cell_location: None,
         };
-        let placeholder = PlaceholderNode {
-            fill_color: 0x00FF_FFFF,
-            stroke_color: 0x0000_0000,
-            label: "OLE".to_string(),
-        };
+        let placeholder = PlaceholderNode::new(0x00FF_FFFF, 0x0000_0000, "OLE".to_string());
         let tree = tree_with_ops(vec![
             PaintOp::form_object(bbox(), form),
             PaintOp::placeholder(bbox(), placeholder),

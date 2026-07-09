@@ -1049,7 +1049,7 @@ export class ResizeObjectCommand implements EditCommand {
   }
 
   private setProps(wasm: WasmBridge, target: ObjectResizeTarget, props: Record<string, unknown>): void {
-    if (target.type === 'shape' || target.type === 'line' || target.type === 'group') {
+    if (target.type === 'shape' || target.type === 'line' || target.type === 'group' || target.type === 'ole') {
       if (target.cellPath && target.cellPath.length > 0) {
         wasm.setCellShapePropertiesByPath(target.sec, target.ppi, target.cellPath, target.ci, props);
         return;
