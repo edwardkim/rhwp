@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rhwp 코드 품질 대시보드</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; }
+  .header { background: #1a1a2e; color: white; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-size: 22px; font-weight: 600; }
+  .header .timestamp { font-size: 13px; color: #8892b0; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 20px 32px; }
+  .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .card .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .card .value { font-size: 32px; font-weight: 700; }
+  .card .sub { font-size: 12px; color: #999; margin-top: 4px; }
+  .card.good .value { color: #10b981; }
+  .card.warn .value { color: #f59e0b; }
+  .card.bad .value { color: #ef4444; }
+  .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 0 32px 20px; }
+  .chart-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .chart-box h3 { font-size: 14px; color: #666; margin-bottom: 12px; }
+  .chart-box.full { grid-column: 1 / -1; }
+  .threshold-line { border-top: 2px dashed #ef4444; }
+  canvas { max-height: 400px; }
+  .no-data { text-align: center; padding: 60px; color: #999; font-size: 16px; }
+  .legend-item { display: inline-flex; align-items: center; gap: 6px; margin-right: 16px; font-size: 12px; color: #666; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .chart-desc { font-size: 12px; color: #888; margin-top: 10px; line-height: 1.6; padding: 8px 12px; background: #f8f9fa; border-radius: 6px; }
+  .delta-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 0 32px 16px; }
+  .delta-card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; }
+  .delta-card .dlabel { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .delta-card .dvalue { font-size: 24px; font-weight: 700; }
+  .delta-card .dvalue.up { color: #10b981; }
+  .delta-card .dvalue.down { color: #ef4444; }
+  .delta-card .dvalue.same { color: #999; }
+  .delta-card .dvalue.good-down { color: #10b981; }
+  .section-title { padding: 16px 32px 8px; font-size: 14px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>rhwp 코드 품질 대시보드</h1>
+  <div class="timestamp" id="timestamp">데이터 로딩 중...</div>
+</div>
+
+<div class="cards" id="cards"></div>
+<div class="section-title" id="delta-title" style="display:none">이전 대비 변동</div>
+<div class="delta-cards" id="delta-cards"></div>
+<div class="charts" id="charts"></div>
+
+<script>
+async function loadMetrics() {
+  try {
+    const resp = await fetch('./metrics.json');
+    if (!resp.ok) throw new Error('metrics.json을 찾을 수 없습니다');
+    return await resp.json();
+  } catch (e) {
+    document.getElementById('cards').innerHTML = `<div class="no-data" style="grid-column:1/-1">
+      <p><strong>metrics.json</strong>을 찾을 수 없습니다.</p>
+      <p style="margin-top:8px;font-size:14px;">먼저 <code>./scripts/metrics.sh</code>를 실행하세요.</p>
+    </div>`;
+    return null;
+  }
+}
+
+function renderCards(data) {
+  const t = data.thresholds;
+  const overLimit = data.file_lines.filter(f => f.lines > t.max_lines && !f.file.includes('font_metrics_data')).length;
+  const ccAll = data.cognitive_complexity.length;
+  const ccOver25 = data.cognitive_complexity.filter(f => f.complexity > t.warn_cognitive_complexity).length;
+  const ccMax = ccAll > 0 ? Math.max(...data.cognitive_complexity.map(f => f.complexity)) : 0;
+  const clippy = data.clippy.warnings;
+  const testTotal = data.tests.passed + data.tests.failed;
+
+  const cards = [
+    { label: '1,200줄 초과 파일', value: overLimit, sub: `전체 ${data.file_lines.length}개 파일`, cls: overLimit === 0 ? 'good' : 'bad' },
+    { label: 'Clippy 경고', value: clippy, sub: `목표: 0개`, cls: clippy === 0 ? 'good' : clippy < 50 ? 'warn' : 'bad' },
+    { label: 'CC > 25 함수', value: ccOver25, sub: `최대: ${ccMax} | 수집: ${ccAll}개`, cls: ccOver25 === 0 ? 'good' : 'bad' },
+    { label: '테스트', value: `${data.tests.passed}/${testTotal}`, sub: `실패: ${data.tests.failed}, 무시: ${data.tests.ignored}`, cls: data.tests.failed === 0 ? 'good' : 'bad' }
+  ];
+
+  document.getElementById('cards').innerHTML = cards.map(c =>
+    `<div class="card ${c.cls}"><div class="label">${c.label}</div><div class="value">${c.value}</div><div class="sub">${c.sub}</div></div>`
+  ).join('');
+}
+
+function renderFileChart(data) {
+  const t = data.thresholds;
+  // 상위 30개 파일 (font_metrics_data 제외)
+  const files = data.file_lines
+    .filter(f => !f.file.includes('font_metrics_data'))
+    .slice(0, 30);
+
+  const colors = files.map(f => f.lines > t.max_lines ? '#ef4444' : '#3b82f6');
+
+  const ctx = document.getElementById('fileChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: files.map(f => f.file.split('/').pop()),
+      datasets: [{
+        label: '줄 수',
+        data: files.map(f => f.lines),
+        backgroundColor: colors,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        annotation: {}
+      },
+      scales: {
+        x: {
+          grid: { display: true },
+          ticks: { callback: v => v.toLocaleString() }
+        },
+        y: { ticks: { font: { size: 11 } } }
+      }
+    },
+    plugins: [{
+      id: 'thresholdLine',
+      afterDraw(chart) {
+        const xScale = chart.scales.x;
+        const x = xScale.getPixelForValue(t.max_lines);
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.beginPath();
+        ctx.setLineDash([6, 4]);
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 2;
+        ctx.moveTo(x, chart.chartArea.top);
+        ctx.lineTo(x, chart.chartArea.bottom);
+        ctx.stroke();
+        ctx.fillStyle = '#ef4444';
+        ctx.font = '11px sans-serif';
+        ctx.fillText(`${t.max_lines}줄`, x + 4, chart.chartArea.top + 12);
+        ctx.restore();
+      }
+    }]
+  });
+}
+
+function renderCCChart(data) {
+  const t = data.thresholds;
+  const cc = data.cognitive_complexity.slice(0, 22);
+
+  if (cc.length === 0) {
+    const el = document.getElementById('ccChart').parentElement;
+    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#10b981;font-size:18px;font-weight:600">&#x2714; 임계값 초과 함수 없음</div>';
+    return;
+  }
+
+  const colors = cc.map(f => f.complexity > 100 ? '#991b1b' : f.complexity > t.warn_cognitive_complexity ? '#ef4444' : f.complexity > t.max_cognitive_complexity ? '#f59e0b' : '#3b82f6');
+
+  const ctx = document.getElementById('ccChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: cc.map(f => `${f.file.split('/').pop()}:${f.line}`),
+      datasets: [{
+        label: 'Cognitive Complexity',
+        data: cc.map(f => f.complexity),
+        backgroundColor: colors,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: true } },
+        y: { ticks: { font: { size: 11 } } }
+      }
+    },
+    plugins: [{
+      id: 'ccThresholds',
+      afterDraw(chart) {
+        const xScale = chart.scales.x;
+        const ctx = chart.ctx;
+        [{ val: t.max_cognitive_complexity, color: '#f59e0b', label: '목표(15)' },
+         { val: t.warn_cognitive_complexity, color: '#ef4444', label: '경고(25)' }].forEach(th => {
+          const x = xScale.getPixelForValue(th.val);
+          if (x < chart.chartArea.left || x > chart.chartArea.right) return;
+          ctx.save();
+          ctx.beginPath();
+          ctx.setLineDash([6, 4]);
+          ctx.strokeStyle = th.color;
+          ctx.lineWidth = 2;
+          ctx.moveTo(x, chart.chartArea.top);
+          ctx.lineTo(x, chart.chartArea.bottom);
+          ctx.stroke();
+          ctx.fillStyle = th.color;
+          ctx.font = '11px sans-serif';
+          ctx.fillText(th.label, x + 4, chart.chartArea.top + 12);
+          ctx.restore();
+        });
+      }
+    }]
+  });
+}
+
+function renderTestChart(data) {
+  const ctx = document.getElementById('testChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['통과', '실패', '무시'],
+      datasets: [{
+        data: [data.tests.passed, data.tests.failed, data.tests.ignored],
+        backgroundColor: ['#10b981', '#ef4444', '#9ca3af'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 12 } } }
+      }
+    }
+  });
+}
+
+function renderDistChart(data) {
+  const t = data.thresholds;
+  const bins = [
+    { label: '0-200', min: 0, max: 200 },
+    { label: '201-500', min: 201, max: 500 },
+    { label: '501-800', min: 501, max: 800 },
+    { label: '801-1200', min: 801, max: 1200 },
+    { label: '1201-2000', min: 1201, max: 2000 },
+    { label: '2001-5000', min: 2001, max: 5000 },
+    { label: '5001+', min: 5001, max: Infinity }
+  ];
+  const files = data.file_lines.filter(f => !f.file.includes('font_metrics_data'));
+  const counts = bins.map(b => files.filter(f => f.lines >= b.min && f.lines <= b.max).length);
+  const colors = bins.map(b => b.min > t.max_lines ? '#ef4444' : b.max > t.max_lines ? '#f59e0b' : '#3b82f6');
+
+  const ctx = document.getElementById('distChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: bins.map(b => b.label),
+      datasets: [{
+        label: '파일 수',
+        data: counts,
+        backgroundColor: colors,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 5 } }
+      }
+    }
+  });
+}
+
+async function loadHistory() {
+  try {
+    const resp = await fetch('./metrics_history.json');
+    if (!resp.ok) return [];
+    return await resp.json();
+  } catch { return []; }
+}
+
+function renderDeltaCards(data, history) {
+  if (history.length < 2) {
+    document.getElementById('delta-cards').innerHTML = '';
+    return;
+  }
+  document.getElementById('delta-title').style.display = '';
+  const prev = history[history.length - 2];
+  const curr = history[history.length - 1];
+
+  function delta(curr, prev, label, inverted = false) {
+    const d = curr - prev;
+    if (d === 0) return { label, value: '→ 0', cls: 'same' };
+    const arrow = d > 0 ? '↑' : '↓';
+    // inverted: 감소가 좋은 것 (clippy, CC)
+    const cls = inverted ? (d < 0 ? 'good-down' : 'down') : (d > 0 ? 'up' : 'down');
+    return { label, value: `${arrow} ${Math.abs(d)}`, cls };
+  }
+
+  const deltas = [
+    delta(curr.tests_passed, prev.tests_passed, '테스트'),
+    delta(curr.clippy_warnings, prev.clippy_warnings, 'Clippy 경고', true),
+    delta(curr.cc_count, prev.cc_count, 'CC>25 함수', true),
+    delta(curr.file_count, prev.file_count, '파일 수'),
+  ];
+
+  document.getElementById('delta-cards').innerHTML = deltas.map(d =>
+    `<div class="delta-card"><div class="dlabel">${d.label}</div><div class="dvalue ${d.cls}">${d.value}</div></div>`
+  ).join('');
+}
+
+function renderTrendChart(history) {
+  // 측정 1회 이하: 조용히 숨기지 않고 안내를 표시한다 (혼동 방지).
+  if (history.length < 2) {
+    const n = history.length;
+    return `
+    <div class="chart-box full">
+      <h3>품질 지표 추이</h3>
+      <div class="chart-desc">
+        누적 측정 ${n}회 — 추이 차트와 직전 대비 델타는 <b>측정 2회부터</b> 표시됩니다.
+        (이력은 scripts/metrics.sh 실행마다 output/metrics_history/ 에 쌓입니다)
+      </div>
+    </div>`;
+  }
+  return `
+    <div class="chart-box full">
+      <h3>품질 지표 추이</h3>
+      <div style="height:300px"><canvas id="trendChart"></canvas></div>
+      <div class="chart-desc">
+        실행 시점별 테스트 수, Clippy 경고, CC&gt;25 함수 수의 변화를 추적합니다.
+        테스트는 증가(↑), Clippy/CC는 감소(↓)가 바람직합니다.
+      </div>
+    </div>`;
+}
+
+function drawTrendChart(history) {
+  if (history.length < 2) return;
+  const labels = history.map(h => {
+    const d = new Date(h.timestamp);
+    return `${d.getMonth()+1}/${d.getDate()}`;
+  });
+  new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: '테스트 통과', data: history.map(h => h.tests_passed), borderColor: '#10b981', backgroundColor: '#10b98133', tension: 0.3, yAxisID: 'y' },
+        { label: 'Clippy 경고', data: history.map(h => h.clippy_warnings), borderColor: '#f59e0b', backgroundColor: '#f59e0b33', tension: 0.3, yAxisID: 'y1' },
+        { label: 'CC>25 함수', data: history.map(h => h.cc_count), borderColor: '#ef4444', backgroundColor: '#ef444433', tension: 0.3, yAxisID: 'y1' },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        y: { type: 'linear', position: 'left', title: { display: true, text: '테스트 수' }, beginAtZero: false },
+        y1: { type: 'linear', position: 'right', title: { display: true, text: 'Clippy / CC' }, beginAtZero: true, grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+}
+
+async function main() {
+  const data = await loadMetrics();
+  if (!data) return;
+  const history = await loadHistory();
+
+  document.getElementById('timestamp').textContent =
+    `측정일시: ${new Date(data.timestamp).toLocaleString('ko-KR')}`;
+
+  renderCards(data);
+  renderDeltaCards(data, history);
+
+  const trendHtml = renderTrendChart(history);
+
+  document.getElementById('charts').innerHTML = trendHtml + `
+    <div class="chart-box full">
+      <h3>파일 크기 분포 (상위 30, font_metrics_data 제외)</h3>
+      <div style="height:600px"><canvas id="fileChart"></canvas></div>
+      <div class="chart-desc">
+        파일별 줄 수를 내림차순으로 표시합니다. 빨간색 파선은 1,200줄 상한선이며,
+        이를 초과하는 파일은 빨간색으로 강조됩니다. 파일이 너무 크면 가독성과 유지보수성이 저하되므로
+        모듈 분리를 검토해야 합니다.
+      </div>
+    </div>
+    <div class="chart-box full">
+      <h3>Cognitive Complexity Top 22 (Clippy 기준)</h3>
+      <div style="height:500px"><canvas id="ccChart"></canvas></div>
+      <div class="chart-desc">
+        Clippy의 cognitive_complexity 린트로 측정한 함수별 인지 복잡도입니다.
+        중첩 깊이에 가중치를 부여하여 코드의 이해 난이도를 반영합니다.
+        노란 파선(15)은 목표 상한, 빨간 파선(25)은 경고 임계값입니다.
+        빨간색 바는 25 초과, 노란색은 15~25, 파란색은 15 이하입니다.
+      </div>
+    </div>
+    <div class="chart-box">
+      <h3>테스트 현황</h3>
+      <div style="height:300px"><canvas id="testChart"></canvas></div>
+      <div class="chart-desc">
+        cargo test 실행 결과입니다. 통과(초록), 실패(빨강), 무시(회색)의 비율을 보여줍니다.
+        실패 테스트가 0개여야 정상입니다.
+      </div>
+    </div>
+    <div class="chart-box">
+      <h3>파일 크기 분포 (구간별)</h3>
+      <div style="height:300px"><canvas id="distChart"></canvas></div>
+      <div class="chart-desc">
+        전체 소스 파일을 줄 수 구간별로 분류한 히스토그램입니다.
+        1,200줄 초과 구간은 빨간색, 경계 구간은 노란색으로 표시됩니다.
+        대부분의 파일이 500줄 이하에 분포하는 것이 이상적입니다.
+      </div>
+    </div>
+  `;
+
+  if (history.length >= 2) drawTrendChart(history);
+  renderFileChart(data);
+  renderCCChart(data);
+  renderTestChart(data);
+  renderDistChart(data);
+}
+
+main();
+</script>
+</body>
+</html>
