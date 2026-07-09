@@ -7509,6 +7509,59 @@ mod row_cut_tests {
     }
 
     #[test]
+    fn test_block_cut_row_offsets_absorbs_sliver_before_stored_hard_break() {
+        // [#1921] 예산 정지 지점 직후 48px 이내에 저장 hard-break(vpos 리셋)가 있으면
+        // 그 지점까지 흡수한다. 흡수하지 않으면 다음 fragment 가 극소 잔여(여기서는
+        // 16px 유닛 1개)만 담은 sliver 페이지가 된다 (59043 pi=160: 946px→22px 교대).
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        // 문단0: 3줄(vpos 0..2400) = 유닛 3개(각 16px). 문단1: vpos 1000 리셋
+        // → 유닛 3 앞 hard break.
+        let t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![visible_text_para(3, 0), visible_text_para(2, 1000)],
+        )]);
+        // 예산 40px: 유닛 0..2(32px)까지 들어가고 유닛 2(16px)에서 예산 정지 —
+        // 잔여(유닛 2, 16px) 직후가 hard break 이므로 48px 한도 내 흡수.
+        let r = eng.advance_row_block_cut_with_row_offsets(&t, 0, 1, &[], 40.0, &[0.0], &styles);
+        assert_eq!(
+            r.end_cut,
+            vec![3],
+            "예산 정지 직후 hard-break 까지 흡수 (sliver 방지)"
+        );
+        assert!(r.hit_hard_break);
+        assert!(!r.fully_consumed);
+        assert!(
+            r.consumed_height <= 40.0 + 48.0,
+            "흡수 오버플로는 48px 한도 내: {}",
+            r.consumed_height
+        );
+        // 다음 fragment: hard-break 유닛부터 잔여 전부 — sliver 없음.
+        let r2 =
+            eng.advance_row_block_cut_with_row_offsets(&t, 0, 1, &r.end_cut, 1000.0, &[0.0], &styles);
+        assert!(r2.fully_consumed);
+    }
+
+    #[test]
+    fn test_block_cut_row_offsets_no_absorb_beyond_tolerance() {
+        // [#1921] hard-break 까지 잔여가 48px 를 넘으면 흡수하지 않는다 — 정상 예산
+        // 분할 유지 (86712 공식PDF 핀 계열의 비정상 경계 강제 방지).
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        // 문단0: 8줄(128px). 예산 40px → 유닛 2에서 정지. hard break 는 유닛 8 앞
+        // → 잔여 6유닛(96px) > 48px 한도 → 흡수 없음.
+        let t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![visible_text_para(8, 0), visible_text_para(2, 1000)],
+        )]);
+        let r = eng.advance_row_block_cut_with_row_offsets(&t, 0, 1, &[], 40.0, &[0.0], &styles);
+        assert_eq!(r.end_cut, vec![2], "한도 초과 시 예산 경계 유지");
+        assert!(!r.hit_hard_break);
+    }
+
+    #[test]
     fn test_advance_row_cut_hwpx_midpage_vpos_reset_is_absorbed() {
         // HWPX 저장 LINE_SEG vpos 리셋이어도 페이지 절반 이상이 남은 중간 리셋이면
         // 로컬 좌표 재시작으로 보고 같은 쪽에 이어 담는다.
