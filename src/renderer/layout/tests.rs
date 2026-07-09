@@ -1964,3 +1964,94 @@ fn header_paper_relative_picture_uses_page_origin() {
     assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
     assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
 }
+
+// [Task #2102] 쪽 배경 이미지 채우기는 구역 첫 쪽에만 적용된다.
+// 색 채우기는 첫 쪽 여부와 무관하게 유지된다.
+
+/// 이미지 채우기 + 색 채우기를 가진 쪽 테두리/배경으로 렌더 트리를 만든 뒤
+/// 루트 자식에서 PageBackground 노드를 찾아 (background_color, image 유무) 를 반환.
+fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
+    use crate::model::bin_data::BinDataContent;
+    use crate::model::image::ImageEffect;
+    use crate::model::page::PageBorderFill;
+    use crate::model::style::ImageFillMode;
+    use crate::renderer::style_resolver::{ResolvedBorderStyle, ResolvedImageFill};
+
+    let engine = LayoutEngine::with_default_dpi();
+    let layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
+    let page_content = PageContent {
+        page_index: 0,
+        page_number: 0,
+        section_index: 0,
+        layout,
+        column_contents: Vec::new(),
+        active_header: None,
+        active_footer: None,
+        page_number_pos: None,
+        page_hide: None,
+        footnotes: Vec::new(),
+        active_master_page: None,
+        extra_master_pages: Vec::new(),
+    };
+
+    let styles = ResolvedStyleSet {
+        border_styles: vec![ResolvedBorderStyle {
+            fill_color: Some(0x00F0F0F0),
+            image_fill: Some(ResolvedImageFill {
+                bin_data_id: 1,
+                fill_mode: ImageFillMode::FitToSize,
+                brightness: 0,
+                contrast: 0,
+                effect: ImageEffect::RealPic,
+            }),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let bin_data = vec![BinDataContent {
+        id: 1,
+        data: vec![0xFF, 0xD8, 0xFF, 0xE0], // JPEG magic (내용 무관, 존재만 확인)
+        extension: "jpg".to_string(),
+    }];
+    let page_border_fill = PageBorderFill {
+        border_fill_id: 1,
+        ..Default::default()
+    };
+
+    engine.set_current_page_is_section_first(is_section_first);
+    let tree = engine.build_render_tree(
+        &page_content,
+        &[],
+        &[],
+        &[],
+        &[],
+        &styles,
+        &FootnoteShape::default(),
+        &bin_data,
+        None,
+        &[],
+        Some(&page_border_fill),
+        0,
+        &[],
+    );
+
+    let bg = tree.root.children.iter().find_map(|c| match &c.node_type {
+        RenderNodeType::PageBackground(bg) => Some(bg),
+        _ => None,
+    });
+    let bg = bg.expect("PageBackground 노드가 있어야 함");
+    (bg.background_color.is_some(), bg.image.is_some())
+}
+
+#[test]
+fn page_bg_image_only_on_section_first_page() {
+    // 구역 첫 쪽: 이미지 채우기 적용
+    let (color_first, image_first) = page_bg_color_and_image_present(true);
+    assert!(image_first, "구역 첫 쪽에는 배경 이미지가 있어야 한다");
+    assert!(color_first, "색 채우기는 유지되어야 한다");
+
+    // 구역 첫 쪽 아님: 이미지 채우기 억제, 색 채우기는 유지
+    let (color_rest, image_rest) = page_bg_color_and_image_present(false);
+    assert!(!image_rest, "구역 첫 쪽이 아니면 배경 이미지가 없어야 한다");
+    assert!(color_rest, "이미지가 억제돼도 색 채우기는 유지되어야 한다");
+}

@@ -1257,6 +1257,11 @@ pub struct LayoutEngine {
     total_pages: std::cell::Cell<u32>,
     /// 현재 페이지 번호 (바탕쪽 글상자 쪽번호 치환용)
     current_page_number: std::cell::Cell<u32>,
+    /// [Task #2102] 현재 렌더 중인 페이지가 소속 구역의 첫 쪽인지 여부.
+    /// 쪽 배경의 **이미지 채우기**는 구역 첫 쪽에만 적용한다(한컴 실측 정합).
+    /// 색/그라데이션 채우기·쪽 테두리선은 이 값과 무관하게 현행 유지.
+    /// 기본값 true(=억제 없음)로 두어 렌더 경로 밖(테스트 등)의 기존 동작을 보존한다.
+    current_page_is_section_first: std::cell::Cell<bool>,
     /// 파일 이름 (머리말/꼬리말 필드 치환용)
     file_name: std::cell::RefCell<String>,
     /// 문단 테두리/배경 범위 수집
@@ -1387,6 +1392,7 @@ impl LayoutEngine {
             hidden_header_footer: std::cell::RefCell::new(std::collections::HashSet::new()),
             total_pages: std::cell::Cell::new(0),
             current_page_number: std::cell::Cell::new(0),
+            current_page_is_section_first: std::cell::Cell::new(true),
             file_name: std::cell::RefCell::new(String::new()),
             para_border_ranges: std::cell::RefCell::new(Vec::new()),
             border_box_override: std::cell::Cell::new(None),
@@ -1797,6 +1803,12 @@ impl LayoutEngine {
     /// 총 쪽수를 설정한다 (머리말/꼬리말 필드 치환용).
     pub fn set_total_pages(&self, total: u32) {
         self.total_pages.set(total);
+    }
+
+    /// [Task #2102] 현재 렌더 페이지가 소속 구역의 첫 쪽인지 설정한다.
+    /// 쪽 배경 이미지 채우기를 구역 첫 쪽에만 적용하기 위한 페이지별 컨텍스트.
+    pub fn set_current_page_is_section_first(&self, is_first: bool) {
+        self.current_page_is_section_first.set(is_first);
     }
 
     /// 파일 이름을 설정한다 (머리말/꼬리말 필드 치환용).
@@ -2477,21 +2489,28 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         bin_data_content: &[BinDataContent],
     ) {
+        // [Task #2102] 쪽 배경 이미지 채우기는 구역 첫 쪽에만 적용한다(한컴 실측 정합).
+        // 색/그라데이션 채우기는 이 조건과 무관하게 모든 쪽에 유지한다.
+        let allow_bg_image = self.current_page_is_section_first.get();
         let (page_bg_color, page_bg_gradient, page_bg_image) = if let Some(pbf) = page_border_fill {
             if pbf.border_fill_id > 0 {
                 let bf_idx = (pbf.border_fill_id - 1) as usize;
                 if let Some(bs) = styles.border_styles.get(bf_idx) {
-                    let img = bs.image_fill.as_ref().and_then(|img_fill| {
-                        find_bin_data(bin_data_content, img_fill.bin_data_id).map(|c| {
-                            PageBackgroundImage {
-                                data: c.data.clone(),
-                                fill_mode: img_fill.fill_mode,
-                                brightness: img_fill.brightness,
-                                contrast: img_fill.contrast,
-                                effect: img_fill.effect,
-                            }
+                    let img = if allow_bg_image {
+                        bs.image_fill.as_ref().and_then(|img_fill| {
+                            find_bin_data(bin_data_content, img_fill.bin_data_id).map(|c| {
+                                PageBackgroundImage {
+                                    data: c.data.clone(),
+                                    fill_mode: img_fill.fill_mode,
+                                    brightness: img_fill.brightness,
+                                    contrast: img_fill.contrast,
+                                    effect: img_fill.effect,
+                                }
+                            })
                         })
-                    });
+                    } else {
+                        None
+                    };
                     (bs.fill_color.or(Some(0x00FFFFFF)), bs.gradient.clone(), img)
                 } else {
                     (Some(0x00FFFFFF), None, None)

@@ -3825,6 +3825,17 @@ impl DocumentCore {
         self.layout_engine.set_total_pages(total_pages);
         self.layout_engine.set_file_name(&self.file_name);
 
+        // [Task #2102] 쪽 배경 이미지 채우기는 구역 첫 쪽에만 적용한다.
+        // 현재 페이지가 소속 구역의 첫 글로벌 페이지인지 판정하여 엔진에 전달.
+        let is_section_first_page = self
+            .pagination
+            .get(page_content.section_index)
+            .and_then(|pr| pr.pages.first())
+            .map(|first| first.page_index == page_content.page_index)
+            .unwrap_or(true);
+        self.layout_engine
+            .set_current_page_is_section_first(is_section_first_page);
+
         let wrap_around_paras = self
             .pagination
             .get(sec_idx)
