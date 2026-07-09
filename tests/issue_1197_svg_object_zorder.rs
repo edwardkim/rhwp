@@ -17,9 +17,7 @@ use rhwp::renderer::svg::SvgRenderer;
 fn marker_node(id: u32, marker: &str) -> RenderNode {
     RenderNode::new(
         id,
-        RenderNodeType::RawSvg(RawSvgNode {
-            svg: format!("<!--{marker}-->\n"),
-        }),
+        RenderNodeType::RawSvg(RawSvgNode::new(format!("<!--{marker}-->\n"))),
         BoundingBox::new(0.0, 0.0, 1.0, 1.0),
     )
 }

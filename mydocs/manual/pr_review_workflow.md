@@ -113,6 +113,11 @@ PR 검토 초기에 변경 파일과 PR 설명을 보고 visual sweep 필요 여
 MCP 변환이 실패하거나 원본 HWP/HWPX 가 없어서 산출할 수 없을 때만 PR 작성자 또는 reviewer 에게 한컴
 2020/2024 등 실제 기준 프로그램에서 저장한 PDF 업로드를 요청한다.
 
+페이지 수 변화나 시각 검증이 PR 판단 근거인 경우에는 기준 PDF 뿐 아니라 원본 HWP/HWPX 도 검증 자료다.
+원본 HWP/HWPX 가 PR diff, 관련 issue 첨부, 또는 기존 `samples/` 어디에도 없으면 review 문서에 재현성
+공백으로 기록하고, merge 후 원 PR 코멘트나 후속 검토 의견에 "다음부터 페이지 수/시각 검증이 필요한 PR 은
+원본 HWP/HWPX 와 기준 PDF 를 함께 첨부해 달라"는 요청을 남긴다.
+
 ## 3. 리뷰 문서 작성
 
 maintainer 일반 경로에서는 각 PR 마다 리뷰 문서 2건을 active 경로에 작성한다.
@@ -223,6 +228,10 @@ MCP 변환 서버로 기준 PDF 를 산출한다. MCP 산출 PDF 는 Hancom Offi
 HWP/HWPX 파일이 PR diff 또는 저장소에 없어 산출할 수 없는 경우에만 maintainer 또는 collaborator 에게
 한컴 2020/2024 등 실제 기준 프로그램에서 저장한 PDF 파일 업로드를 요청한다. 기준 PDF 없이 생성한 자동
 비교 결과는 임시 참고 자료로만 기록하고 최종 시각 판정 근거로 사용하지 않는다.
+
+원본 HWP/HWPX 가 없는 상태에서는 MCP 기준 PDF 를 만들 수 없고, 페이지 수 변화나 시각 검증 주장을 장기
+재현할 수도 없다. 이 경우 review 문서에는 "원본 HWP/HWPX 미첨부로 독립 시각 검증 불가"를 명확히 적고,
+merge 후 코멘트에는 다음 PR 부터 원본 HWP/HWPX 파일을 반드시 첨부해 달라는 요청을 포함한다.
 
 PR 또는 관련 issue 본문/댓글에 첨부된 재현 문서는 review 시작 시 먼저 모두 내려받아 `samples/` 아래에
 보존한다. GitHub `user-attachments` 파일, 본문에 삽입된 스크린샷 PNG, 외부 사이트에서 추적한 HWP/HWPX/PDF,
@@ -638,7 +647,7 @@ pN visual sweep:
 
 [관련 이슈를 close 하지 않는 경우] 이 PR은 https://github.com/edwardkim/rhwp/issues/ISSUE 의 일부 발현만 처리합니다. 남은 발현/후속 과제가 있으므로 해당 이슈는 open 상태로 유지합니다.
 
-다음에 페이지 수나 시각 검증이 필요한 PR을 올려주실 때는, 가능하면 한컴 2020/2024 등에서 저장한 기준 PDF도 함께 첨부해 주세요. 첨부가 없으면 maintainer 측에서 HWP 2020 MCP 로 기준 PDF 를 산출해 검증하되, 원본 HWP/HWPX 와 기대 출력 의도를 함께 적어주시면 review와 회귀 판단을 더 빠르고 정확하게 진행할 수 있습니다.
+다음에 페이지 수나 시각 검증이 필요한 PR을 올려주실 때는, 원본 HWP/HWPX 파일과 한컴 2020/2024 등에서 저장한 기준 PDF를 함께 첨부해 주세요. 기준 PDF만 없으면 maintainer 측에서 HWP 2020 MCP 로 산출해 검증할 수 있지만, 원본 HWP/HWPX 가 없으면 페이지 수 변화와 시각 검증을 장기적으로 재현하기 어렵습니다. 기대 출력 의도도 함께 적어주시면 review와 회귀 판단을 더 빠르고 정확하게 진행할 수 있습니다.
 ```
 
 외부 contributor 의 원 코드 PR 이 최종 diff 상 문서-only / review-only fast-pass 로 판정된 경우에도 후속

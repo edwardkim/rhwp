@@ -2039,6 +2039,46 @@ impl DocumentCore {
                     ));
                     return;
                 }
+                RenderNodeType::RawSvg(raw_node) => {
+                    if let Some(control_ref) = raw_node
+                        .control_ref
+                        .as_ref()
+                        .filter(|control_ref| control_ref.kind == "ole")
+                    {
+                        controls.push(format!(
+                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}}}",
+                            node.bbox.x,
+                            node.bbox.y,
+                            node.bbox.width,
+                            node.bbox.height,
+                            control_ref.section_index,
+                            control_ref.para_index,
+                            control_ref.control_index,
+                            layer_str
+                        ));
+                        return;
+                    }
+                }
+                RenderNodeType::Placeholder(placeholder_node) => {
+                    if let Some(control_ref) = placeholder_node
+                        .control_ref
+                        .as_ref()
+                        .filter(|control_ref| control_ref.kind == "ole")
+                    {
+                        controls.push(format!(
+                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}}}",
+                            node.bbox.x,
+                            node.bbox.y,
+                            node.bbox.width,
+                            node.bbox.height,
+                            control_ref.section_index,
+                            control_ref.para_index,
+                            control_ref.control_index,
+                            layer_str
+                        ));
+                        return;
+                    }
+                }
                 RenderNodeType::Group(group_node) => {
                     if let (Some(si), Some(pi), Some(ci)) = (
                         group_node.section_index,

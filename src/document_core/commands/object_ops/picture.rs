@@ -460,14 +460,25 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         // JSON 파싱 (serde_json 사용 대신 수동 파싱 — 기존 패턴)
         // [Task #825] 픽쳐 속성 mutation 은 helper 로 분리 (머리말/꼬리말 path 와 공유).
-        let (caption_created, should_migrate_to_inline, should_migrate_to_floating) = {
+        let (
+            caption_created,
+            caption_removed,
+            should_migrate_to_inline,
+            should_migrate_to_floating,
+        ) = {
             let pic =
                 self.resolve_picture_control_mut(section_idx, parent_para_idx, control_idx)?;
             // [Task #1151 v2] tac false→true migration 검출용 snapshot.
             let was_tac = pic.common.treat_as_char;
+            let had_caption = pic.caption.is_some();
             let caption_created = Self::apply_picture_props_inner(pic, props_json);
             let now_tac = pic.common.treat_as_char;
-            (caption_created, !was_tac && now_tac, was_tac && !now_tac)
+            (
+                caption_created,
+                had_caption && pic.caption.is_none(),
+                !was_tac && now_tac,
+                was_tac && !now_tac,
+            )
         };
 
         // [Task #1151 v2] floating → inline migration (H1 정합, samples/tac-verify/).
@@ -538,9 +549,11 @@ impl DocumentCore {
                 parent_para_idx,
             );
         }
-        // 캡션 생성 시 AutoNumber 재할당 + 텍스트 생성 (본문 path 만 — 머리말/꼬리말은 별도).
-        if caption_created {
+        // 캡션 생성/삭제 시 AutoNumber 재할당. 생성 path 는 문단 placeholder 도 보강한다.
+        if caption_created || caption_removed {
             crate::parser::assign_auto_numbers(&mut self.document);
+        }
+        if caption_created {
             let pic_mut =
                 self.resolve_picture_control_mut(section_idx, parent_para_idx, control_idx)?;
             let para = &mut pic_mut.caption.as_mut().unwrap().paragraphs[0];
@@ -1133,7 +1146,8 @@ impl DocumentCore {
                     cap.include_margin = v;
                 }
             } else {
-                // 캡션 제거 — 현재는 None 처리하지 않음 (캡션에 텍스트가 있을 수 있으므로)
+                pic.caption = None;
+                pic.common.attr &= !(1 << 29);
             }
         }
 

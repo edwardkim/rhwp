@@ -331,18 +331,18 @@ mod tests {
         });
         render_tree.root.children.push(RenderNode::new(
             21,
-            RenderNodeType::RawSvg(RawSvgNode {
-                svg: "<g><circle cx=\"20\" cy=\"20\" r=\"8\" fill=\"#ff0000\"/></g>\n".to_string(),
-            }),
+            RenderNodeType::RawSvg(RawSvgNode::new(
+                "<g><circle cx=\"20\" cy=\"20\" r=\"8\" fill=\"#ff0000\"/></g>\n".to_string(),
+            )),
             BoundingBox::new(0.0, 0.0, 40.0, 40.0),
         ));
         render_tree.root.children.push(RenderNode::new(
             22,
-            RenderNodeType::Placeholder(PlaceholderNode {
-                fill_color: 0x00F8F8F8,
-                stroke_color: 0x00000000,
-                label: "OLE".to_string(),
-            }),
+            RenderNodeType::Placeholder(PlaceholderNode::new(
+                0x00F8F8F8,
+                0x00000000,
+                "OLE".to_string(),
+            )),
             BoundingBox::new(50.0, 10.0, 80.0, 50.0),
         ));
 

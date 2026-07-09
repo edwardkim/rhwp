@@ -24,7 +24,7 @@ use super::{CellContext, LayoutEngine};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::{LineSeg, Paragraph};
-use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertRelTo};
+use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertRelTo};
 use crate::model::style::{Alignment, HeadType, LineSpacingType, Numbering, UnderlineType};
 
 const CAPTION_CELL_SENTINEL: usize = 65534;
@@ -2365,6 +2365,19 @@ impl LayoutEngine {
                 })
             })
             .unwrap_or(false);
+        let has_ole_shape_square_wrap = para
+            .map(|p| {
+                p.controls.iter().any(|c| {
+                    matches!(
+                        c,
+                        Control::Shape(shape)
+                            if matches!(shape.as_ref(), ShapeObject::Ole(_))
+                                && !shape.common().treat_as_char
+                                && matches!(shape.common().text_wrap, TextWrap::Square)
+                    )
+                })
+            })
+            .unwrap_or(false);
         // [Task #1209 Stage5] 비-TAC `자리차지(TopAndBottom)` 개체가 같은 문단에
         // 있으면 한컴은 LINE_SEG.vertical_pos 로 각 줄의 실제 흐름 위치를 저장한다.
         // 첫 줄 vpos 만 한 번 더하는 fallback 으로는 “텍스트-그림-텍스트”처럼
@@ -2904,9 +2917,17 @@ impl LayoutEngine {
                     .and_then(|p| p.line_segs.get(line_idx))
                     .map(|seg| seg.is_in_wrap_zone(col_area_w_hu))
                     .unwrap_or(false);
+            let empty_stored_wrap_line = cell_ctx.is_none()
+                && para
+                    .map(|p| p.text.is_empty() && p.controls.is_empty())
+                    .unwrap_or(false)
+                && comp_line.column_start > 0
+                && comp_line.segment_width > 0
+                && comp_line.segment_width < col_area_w_hu;
             let (effective_col_x, effective_col_w) = if (has_picture_shape_square_wrap
                 || line_has_inline_tac_table
-                || precomputed_body_wrap_line)
+                || precomputed_body_wrap_line
+                || empty_stored_wrap_line)
                 && comp_line.segment_width > 0
                 && (line_avail_hu < col_area_w_hu - 200 || cs_significant)
             {
@@ -3689,6 +3710,7 @@ impl LayoutEngine {
             // Square wrap host 의 빈 guide 줄은 advance 를 건너뛰지만, 같은 줄에
             // TAC 수식/개체가 있으면 실제 콘텐츠 줄이므로 높이를 보존한다.
             let skip_advance_empty_wrap = has_picture_shape_square_wrap
+                && !has_ole_shape_square_wrap
                 && runs_all_whitespace
                 && !line_has_tac_control(composed, line_idx);
             // 촘촘한 미주 수식 문단에는 다음 줄과 char_start가 같은 선행

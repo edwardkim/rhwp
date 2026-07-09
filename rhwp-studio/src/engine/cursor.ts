@@ -7,7 +7,7 @@ type PictureSelectionRef = {
   sec: number;
   ppi: number;
   ci: number;
-  type: 'image' | 'shape' | 'equation' | 'group' | 'line';
+  type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole';
   cellIdx?: number;
   cellParaIdx?: number;
   outerTableControlIdx?: number;
@@ -1442,7 +1442,7 @@ export class CursorState {
    * [Task #825] `headerFooter` — 머리말/꼬리말 안 그림일 때 outer 위치 marker 보존. */
   enterPictureObjectSelectionDirect(
     sec: number, ppi: number, ci: number,
-    type: 'image' | 'shape' | 'equation' | 'group' | 'line' = 'image',
+    type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole' = 'image',
     cellIdx?: number, cellParaIdx?: number,
     headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number },
     outerTableControlIdx?: number,
@@ -1457,12 +1457,12 @@ export class CursorState {
 
   /** Shift+클릭: 개체를 다중 선택에 추가/제거 (토글) */
   togglePictureObjectSelection(ref: PictureSelectionRef): void;
-  togglePictureObjectSelection(sec: number, ppi: number, ci: number, type: 'image' | 'shape' | 'equation' | 'group' | 'line'): void;
+  togglePictureObjectSelection(sec: number, ppi: number, ci: number, type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole'): void;
   togglePictureObjectSelection(
     refOrSec: PictureSelectionRef | number,
     ppi?: number,
     ci?: number,
-    type?: 'image' | 'shape' | 'equation' | 'group' | 'line',
+    type?: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole',
   ): void {
     this.exitTableObjectSelection();
     this._pictureObjectSelected = true;

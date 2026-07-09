@@ -77,6 +77,34 @@ function selectTableObject(this: any, tableRef: { sec: number; ppi: number; ci: 
   this.textarea.focus();
 }
 
+function selectOleObjectFromHit(this: any, oleHit: any): void {
+  hideProtectedCellHover(this);
+  this.cursor.clearSelection();
+  this.cursor.exitCellSelectionMode();
+  this.cellSelectionRenderer?.clear();
+  this.exitPictureObjectSelectionIfNeeded();
+  this.cursor.enterPictureObjectSelectionDirect(
+    oleHit.sec,
+    oleHit.ppi,
+    oleHit.ci,
+    'ole',
+    oleHit.cellIdx,
+    oleHit.cellParaIdx,
+    oleHit.headerFooter,
+    oleHit.outerTableControlIdx,
+    oleHit.cellPath,
+    oleHit.noteRef,
+  );
+  this.active = true;
+  this.caret.hide();
+  this.fieldMarker.hide();
+  this.selectionRenderer.clear();
+  this.renderPictureObjectSelection();
+  this.eventBus.emit('picture-object-selection-changed', true);
+  this.eventBus.emit('command-state-changed');
+  this.textarea.focus();
+}
+
 function selectProtectedCell(this: any, hit: any): void {
   hideProtectedCellHover(this);
   this.cursor.clearSelection();
@@ -769,7 +797,7 @@ export function onClick(this: any, e: MouseEvent): void {
         // [Task #825] 머리말/꼬리말 편집 모드 — 그림 hit-test 우선, miss 시 텍스트 hit.
         // 머리말 그림은 ImageNode 에 header_footer_ref 동반되어 picHit 정상 반환.
         const picHit = this.findPictureAtClick(pageIdx, pageX, pageY);
-        if (picHit && (picHit.type === 'image' || picHit.type === 'shape' || picHit.type === 'line')) {
+        if (picHit && (picHit.type === 'image' || picHit.type === 'shape' || picHit.type === 'line' || picHit.type === 'ole')) {
           // 머리말 안 그림 객체 선택 → context menu 에 "개체 속성" 표시 가능
           this.cursor.clearSelection();
           this.exitPictureObjectSelectionIfNeeded();
@@ -890,6 +918,12 @@ export function onClick(this: any, e: MouseEvent): void {
         }
       }
     } catch { /* 무시 */ }
+  }
+
+  const earlyOleHit = this.findPictureAtClick(pageIdx, pageX, pageY);
+  if (earlyOleHit?.type === 'ole') {
+    selectOleObjectFromHit.call(this, earlyOleHit);
+    return;
   }
 
   try {
@@ -1139,7 +1173,7 @@ export function onClick(this: any, e: MouseEvent): void {
           // 글상자 내부 클릭이나 hit_test_native 가 textbox 매칭 안 한 케이스
           // → 일반 캐럿 배치로 fall-through (글상자 가로채기 제거)
         }
-        // 이미지/방정식 → 객체 선택 (z-order 미지원)
+        // 이미지/방정식/OLE → 객체 선택 (z-order 미지원)
         this.cursor.clearSelection();
         this.exitPictureObjectSelectionIfNeeded();
         this.cursor.enterPictureObjectSelectionDirect(
@@ -1594,7 +1628,7 @@ export function onMouseMove(this: any, e: MouseEvent): void {
       } else {
         // 회전된 도형의 경우 커서 방향도 회전시켜 표시
         let angleDeg = 0;
-        if (ref && ref.type === 'shape') {
+        if (ref && (ref.type === 'shape' || ref.type === 'ole')) {
           try {
             const props = this.getObjectProperties(ref);
             angleDeg = (props.rotationAngle ?? 0) as number;
@@ -1896,7 +1930,7 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
  * @param angleDeg 회전각 (도)
  */
 function bringShapeToFront(this: any, picHit: any): void {
-  if (picHit.type === 'shape' || picHit.type === 'line' || picHit.type === 'group') {
+  if (picHit.type === 'shape' || picHit.type === 'line' || picHit.type === 'group' || picHit.type === 'ole') {
     try {
       this.wasm.changeShapeZOrder(picHit.sec, picHit.ppi, picHit.ci, 'front');
       this.eventBus.emit('document-changed');
