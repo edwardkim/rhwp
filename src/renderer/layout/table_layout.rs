@@ -4893,14 +4893,19 @@ impl LayoutEngine {
                                 }
                             })
                             .fold(0.0f64, f64::max);
+                        // [Issue #1842] 부재 LINE_SEG 셀(HWP5 native 포함)은 em(max_fs).
+                        // [Issue #1842] 부재 LINE_SEG 셀의 placeholder(400)→corrected
+                        // max_fs*ls% 팽창(행 25px vs 한글 17px)을 em 으로 교정. **CellBreak 표
+                        // 한정** — RowBreak 규제영향분석서(76076 등)는 현행 ×1.6 이 공식 PDF
+                        // 쪽수와 정합(#1891)이라 제외. (HWPX synthetic 은 4859 가드 분기.)
                         crate::renderer::corrected_line_height_for_variant_synthetic(
                             raw_lh,
                             max_fs,
                             ps.line_spacing_type,
                             ps.line_spacing,
-                            self.is_hwp3_variant.get()
-                                && p.line_segs.is_empty()
-                                && !p.text.is_empty(),
+                            p.line_segs.is_empty()
+                                && !p.text.is_empty()
+                                && matches!(table.page_break, TablePageBreak::CellBreak),
                         )
                     }
                     None => raw_lh,

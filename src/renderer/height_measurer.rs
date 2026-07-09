@@ -971,6 +971,13 @@ impl HeightMeasurer {
                                 let cell_ls_type = para_style
                                     .map(|s| s.line_spacing_type)
                                     .unwrap_or(crate::model::style::LineSpacingType::Percent);
+                                // [Issue #1842] 저장 LINE_SEG 부재 셀 문단은 composer 가
+                                // placeholder(line_height=400) 로 합성 → corrected 가
+                                // max_fs*ls% 로 팽창(단행 박스에 줄간격 오적용). 한글은 폰트
+                                // em 으로 렌더 → synthetic 시 em(max_fs). hwp3 synthetic 선례 확장.
+                                let synthetic_line = p.line_segs.is_empty()
+                                    && !p.text.is_empty()
+                                    && matches!(table.page_break, TablePageBreak::CellBreak);
                                 let line_count = comp.lines.len();
                                 let lines_total: f64 = comp
                                     .lines
@@ -989,11 +996,12 @@ impl HeightMeasurer {
                                                     .unwrap_or(0.0)
                                             })
                                             .fold(0.0f64, f64::max);
-                                        let h = crate::renderer::corrected_line_height(
+                                        let h = crate::renderer::corrected_line_height_for_variant_synthetic(
                                             raw_lh,
                                             max_fs,
                                             cell_ls_type,
                                             cell_ls_val,
+                                            synthetic_line,
                                         );
                                         // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
                                         // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
@@ -1241,6 +1249,13 @@ impl HeightMeasurer {
                                 let cell_ls_type = para_style
                                     .map(|s| s.line_spacing_type)
                                     .unwrap_or(crate::model::style::LineSpacingType::Percent);
+                                // [Issue #1842] 저장 LINE_SEG 부재 셀 문단은 composer 가
+                                // placeholder(line_height=400) 로 합성 → corrected 가
+                                // max_fs*ls% 로 팽창(단행 박스에 줄간격 오적용). 한글은 폰트
+                                // em 으로 렌더 → synthetic 시 em(max_fs). hwp3 synthetic 선례 확장.
+                                let synthetic_line = p.line_segs.is_empty()
+                                    && !p.text.is_empty()
+                                    && matches!(table.page_break, TablePageBreak::CellBreak);
                                 let line_count = comp.lines.len();
                                 let lines_total: f64 = comp
                                     .lines
@@ -1259,11 +1274,12 @@ impl HeightMeasurer {
                                                     .unwrap_or(0.0)
                                             })
                                             .fold(0.0f64, f64::max);
-                                        let h = crate::renderer::corrected_line_height(
+                                        let h = crate::renderer::corrected_line_height_for_variant_synthetic(
                                             raw_lh,
                                             max_fs,
                                             cell_ls_type,
                                             cell_ls_val,
+                                            synthetic_line,
                                         );
                                         // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
                                         // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
@@ -1437,6 +1453,10 @@ impl HeightMeasurer {
                             let cell_ls_type = para_style
                                 .map(|s| s.line_spacing_type)
                                 .unwrap_or(crate::model::style::LineSpacingType::Percent);
+                            // [Issue #1842] 부재 LINE_SEG 셀 → em(max_fs), max_fs*ls% 팽창 방지.
+                            let synthetic_line = p.line_segs.is_empty()
+                                && !p.text.is_empty()
+                                && matches!(table.page_break, TablePageBreak::CellBreak);
                             let line_count = comp.lines.len();
                             for (li, line) in comp.lines.iter().enumerate() {
                                 let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
@@ -1451,12 +1471,14 @@ impl HeightMeasurer {
                                             .unwrap_or(0.0)
                                     })
                                     .fold(0.0f64, f64::max);
-                                let h = crate::renderer::corrected_line_height(
-                                    raw_lh,
-                                    max_fs,
-                                    cell_ls_type,
-                                    cell_ls_val,
-                                );
+                                let h =
+                                    crate::renderer::corrected_line_height_for_variant_synthetic(
+                                        raw_lh,
+                                        max_fs,
+                                        cell_ls_type,
+                                        cell_ls_val,
+                                        synthetic_line,
+                                    );
                                 let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                                 // 셀의 마지막 줄(마지막 문단의 마지막 줄)은 ls 제외
                                 let is_cell_last_line = is_last_para && li + 1 == line_count;
