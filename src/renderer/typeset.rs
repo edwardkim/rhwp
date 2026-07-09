@@ -10729,11 +10729,13 @@ impl TypesetEngine {
         let saved_single_line_bottom_fits = forced_page_break_line.is_none()
             && st.col_count == 1
             && fmt.line_heights.len() == 1
-            && fmt.spacing_after <= 0.5
             && para.controls.is_empty()
             && !st.current_items.is_empty()
             // [Task #1749] 저장 flow 가 이 줄을 페이지 마지막으로 인코딩한 경우에만
             // bounds 신뢰 — 누적좌표 문서의 쪽 경계 overfill 차단.
+            // [#2093] spacing_after 게이트(#1733) 제거: 신뢰 판정은 저장 줄의 시각
+            // 경계(vpos~vpos+lh)로 하며, 한글은 쪽 마지막 줄의 아래 간격을 쪽 하단에서
+            // 소비하지 않으므로 sa 는 배제 사유가 아니다 (1192000 해양수산 17→16쪽).
             && saved_flow_marks_page_last(paragraphs, para_idx)
             && current_page_vpos_base
                 .and_then(|base| single_line_visible_bounds_px(para, base, self.dpi))
