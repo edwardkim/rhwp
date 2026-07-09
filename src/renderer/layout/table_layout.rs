@@ -1781,6 +1781,7 @@ impl LayoutEngine {
                 self.calc_para_lines_height(
                     &comp.lines,
                     self.is_hwp3_variant.get() && p.line_segs.is_empty() && !p.text.is_empty(),
+                    !p.line_segs.is_empty(),
                     pidx,
                     cell_para_count,
                     styles.para_styles.get(p.para_shape_id as usize),
@@ -1812,6 +1813,7 @@ impl LayoutEngine {
                     self.is_hwp3_variant.get()
                         && para.line_segs.is_empty()
                         && !para.text.is_empty(),
+                    !para.line_segs.is_empty(),
                     pidx,
                     cell_para_count,
                     styles.para_styles.get(para.para_shape_id as usize),
@@ -1827,10 +1829,16 @@ impl LayoutEngine {
     /// line_segs 부재 paragraph 의 fallback line_height (400 HU = 5.33 px) 가
     /// max_fs 보다 작은 경우 ParaShape 의 line_spacing_type + line_spacing 으로
     /// 보정. height_measurer.rs:570-587 와 동일 로직 — 측정/layout 일관성 보장.
+    /// [#2112] `trust_stored_lh`: 실제 저장 LINE_SEG 를 보유한 문단은 저장 줄높이를
+    /// 그대로 신뢰한다. 한글은 압축 줄높이(lh < 글자크기)를 저장값대로 렌더하는데,
+    /// #674 보정(fs×줄간격% 대체)이 저장 줄에도 적용되어 셀 행높이가 부풀었다
+    /// (39607: 행별 +3.8~+76.8px, 표 합계 +335.5px → 다쪽 표 쪽수 밀림).
+    /// 보정은 line_segs 부재 폴백(400HU 합성 줄, #671/#674 원 목적)에만 유지.
     fn calc_para_lines_height(
         &self,
         lines: &[crate::renderer::composer::ComposedLine],
         hwp3_variant_synthetic: bool,
+        trust_stored_lh: bool,
         pidx: usize,
         total_para_count: usize,
         para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
@@ -1871,13 +1879,17 @@ impl LayoutEngine {
                                 .unwrap_or(0.0)
                         })
                         .fold(0.0f64, f64::max);
-                    let h = crate::renderer::corrected_line_height_for_variant_synthetic(
-                        raw_lh,
-                        max_fs,
-                        cell_ls_type,
-                        cell_ls_val,
-                        hwp3_variant_synthetic,
-                    );
+                    let h = if trust_stored_lh {
+                        raw_lh
+                    } else {
+                        crate::renderer::corrected_line_height_for_variant_synthetic(
+                            raw_lh,
+                            max_fs,
+                            cell_ls_type,
+                            cell_ls_val,
+                            hwp3_variant_synthetic,
+                        )
+                    };
                     let is_cell_last_line = is_last_para && i + 1 == line_count;
                     if !is_cell_last_line {
                         h + hwpunit_to_px(line.line_spacing, self.dpi)
@@ -4908,6 +4920,14 @@ impl LayoutEngine {
                 // reflow 산물이다. row cut 측정에서 다시 corrected_line_height 를 적용하면
                 // HWP 기준보다 줄 유닛이 커져 p4→p5 split 이 한 유닛 빨라진다.
                 if self.is_hwpx_source.get() && is_block_rowbreak && para_uses_synthetic_line_segs {
+                    return raw_lh;
+                }
+                // [#2112] 실제 저장 LINE_SEG 를 보유한 셀 문단은 저장 줄높이를 신뢰한다.
+                // 한글은 압축 줄높이(lh < 글자크기)를 저장값대로 렌더하는데 corrected
+                // 보정이 fs×줄간격% 로 대체해 행높이가 부풀었다(39607: 행별 +3.8~
+                // +76.8px, 표 합계 +335px → 다쪽 표 쪽수 밀림). 보정은 lineseg 부재
+                // 폴백(#674/#993 원 목적)에만 유지.
+                if p.line_segs.iter().any(|ls| !line_seg_is_synthetic(ls)) {
                     return raw_lh;
                 }
                 match para_style {

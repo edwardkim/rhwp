@@ -996,13 +996,26 @@ impl HeightMeasurer {
                                                     .unwrap_or(0.0)
                                             })
                                             .fold(0.0f64, f64::max);
-                                        let h = crate::renderer::corrected_line_height_for_variant_synthetic(
-                                            raw_lh,
-                                            max_fs,
-                                            cell_ls_type,
-                                            cell_ls_val,
-                                            synthetic_line,
-                                        );
+                                        // [#2112] 실저장 LINE_SEG(비합성, tag 0x80000000
+                                        // 미설정) 보유 문단은 저장 줄높이 신뢰 — 한글은
+                                        // 압축 줄높이(lh<글자크기)를 저장값대로 렌더한다.
+                                        // table_layout.rs 컷 측정과 동일 원칙
+                                        // (39607 +335px 팽창 소거).
+                                        let h = if p
+                                            .line_segs
+                                            .iter()
+                                            .any(|ls| ls.tag & 0x8000_0000 == 0)
+                                        {
+                                            raw_lh
+                                        } else {
+                                            crate::renderer::corrected_line_height_for_variant_synthetic(
+                                                raw_lh,
+                                                max_fs,
+                                                cell_ls_type,
+                                                cell_ls_val,
+                                                synthetic_line,
+                                            )
+                                        };
                                         // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
                                         // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
                                         // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
@@ -1274,13 +1287,26 @@ impl HeightMeasurer {
                                                     .unwrap_or(0.0)
                                             })
                                             .fold(0.0f64, f64::max);
-                                        let h = crate::renderer::corrected_line_height_for_variant_synthetic(
-                                            raw_lh,
-                                            max_fs,
-                                            cell_ls_type,
-                                            cell_ls_val,
-                                            synthetic_line,
-                                        );
+                                        // [#2112] 실저장 LINE_SEG(비합성, tag 0x80000000
+                                        // 미설정) 보유 문단은 저장 줄높이 신뢰 — 한글은
+                                        // 압축 줄높이(lh<글자크기)를 저장값대로 렌더한다.
+                                        // table_layout.rs 컷 측정과 동일 원칙
+                                        // (39607 +335px 팽창 소거).
+                                        let h = if p
+                                            .line_segs
+                                            .iter()
+                                            .any(|ls| ls.tag & 0x8000_0000 == 0)
+                                        {
+                                            raw_lh
+                                        } else {
+                                            crate::renderer::corrected_line_height_for_variant_synthetic(
+                                                raw_lh,
+                                                max_fs,
+                                                cell_ls_type,
+                                                cell_ls_val,
+                                                synthetic_line,
+                                            )
+                                        };
                                         // [Task #874 #4 / #1086] CellBreak/TAC 표는 기존
                                         // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
                                         // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
@@ -1471,14 +1497,19 @@ impl HeightMeasurer {
                                             .unwrap_or(0.0)
                                     })
                                     .fold(0.0f64, f64::max);
-                                let h =
+                                // [#2112] 실저장 LINE_SEG(비합성) 보유 문단은 저장 줄높이
+                                // 신뢰 (위 999/1277 사이트와 동일 원칙).
+                                let h = if p.line_segs.iter().any(|ls| ls.tag & 0x8000_0000 == 0) {
+                                    raw_lh
+                                } else {
                                     crate::renderer::corrected_line_height_for_variant_synthetic(
                                         raw_lh,
                                         max_fs,
                                         cell_ls_type,
                                         cell_ls_val,
                                         synthetic_line,
-                                    );
+                                    )
+                                };
                                 let ls = hwpunit_to_px(line.line_spacing, self.dpi);
                                 // 셀의 마지막 줄(마지막 문단의 마지막 줄)은 ls 제외
                                 let is_cell_last_line = is_last_para && li + 1 == line_count;
