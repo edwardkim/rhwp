@@ -2104,6 +2104,10 @@ impl Renderer for WebCanvasRenderer {
             "{}{}{:.3}px {}",
             font_style, font_weight, font_size, font_family
         );
+        let old_hangul_font = format!(
+            "{}{}{:.3}px 'Source Han Serif K Old Hangul', {}",
+            font_style, font_weight, font_size, font_family
+        );
         self.ctx.set_font(&font);
 
         // 장평 적용
@@ -2187,6 +2191,8 @@ impl Renderer for WebCanvasRenderer {
                 font_size,
                 ratio,
                 has_ratio,
+                &font,
+                &old_hangul_font,
             );
         } else {
             // 기본 렌더링 (효과 없음)
@@ -2210,6 +2216,11 @@ impl Renderer for WebCanvasRenderer {
             for (cluster_idx, (char_idx, cluster_str)) in clusters.iter().enumerate() {
                 if cluster_str == " " || cluster_str == "\t" || cluster_str == "\u{2007}" {
                     continue;
+                }
+                if super::contains_old_hangul_jamo(cluster_str) {
+                    self.ctx.set_font(&old_hangul_font);
+                } else {
+                    self.ctx.set_font(&font);
                 }
                 // dash leader 시퀀스: 글리프 스킵 (라인이 위에서 이미 그려짐)
                 if cluster_in_dash_run(cluster_idx).is_some() {
@@ -2757,6 +2768,8 @@ impl WebCanvasRenderer {
         font_size: f64,
         ratio: f64,
         has_ratio: bool,
+        font: &str,
+        old_hangul_font: &str,
     ) {
         let text_color_css = color_to_css(style.color);
 
@@ -2777,6 +2790,11 @@ impl WebCanvasRenderer {
                 let cs: &str = cluster_str;
                 if cs == " " || cs == "\t" || cs == "\u{2007}" {
                     continue;
+                }
+                if super::contains_old_hangul_jamo(cs) {
+                    ctx.set_font(old_hangul_font);
+                } else {
+                    ctx.set_font(font);
                 }
                 if cs.starts_with(|c: char| c < '\u{0020}' && !matches!(c, '\t' | '\n' | '\r')) {
                     continue;
