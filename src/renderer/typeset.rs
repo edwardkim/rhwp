@@ -1368,6 +1368,32 @@ fn internal_vpos_page_break_line(
     let sample16_tail = is_sample16_integrated_db_cluster_tail_paragraph(para);
     let hwp3_text_rewind =
         hwp3_lineseg_source && para.controls.is_empty() && para_has_visible_text(para);
+
+    // [Issue #2006] 빈-텍스트 문단에 전면(full-page) tac 이미지가 다수 스택된 경우
+    // (예: 1790387 PrEP 보고서 pi=367, tac 그림 2장 각 lh≈900px, vpos=0..0), 한글은
+    // 각 전면 이미지를 쪽당 1장으로 배치한다. rhwp 는 한 쪽에 겹쳐(2×본문 높이) 두어
+    // 과소 페이지가 된다(−16). 연속한 두 라인이 모두 전면급 tac 이미지면 그 경계에서
+    // 강제 분할한다(캐스케이드는 잔여 재처리로). sample16/hwp3 vpos-reset 과 독립 —
+    // 본 케이스는 vpos 가 0 이라 아래 first.vertical_pos>0 가드에 걸린다.
+    if para_is_treat_as_char_picture_only(para) {
+        let full_page_px = body_height_px * 0.8;
+        let break_line = para.line_segs[..line_count]
+            .windows(2)
+            .enumerate()
+            .find_map(|(prev_idx, pair)| {
+                let (prev, cur) = (&pair[0], &pair[1]);
+                if is_synthetic_line_seg(prev) || is_synthetic_line_seg(cur) {
+                    return None;
+                }
+                (hwpunit_to_px(prev.line_height, dpi) >= full_page_px
+                    && hwpunit_to_px(cur.line_height, dpi) >= full_page_px)
+                    .then_some(prev_idx + 1)
+            });
+        if break_line.is_some() {
+            return break_line;
+        }
+    }
+
     if !sample16_tail && !hwp3_text_rewind {
         return None;
     }
