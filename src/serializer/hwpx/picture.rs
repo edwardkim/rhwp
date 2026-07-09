@@ -129,12 +129,17 @@ fn write_org_sz<W: Write>(
 fn write_cur_sz<W: Write>(w: &mut Writer<W>, p: &Picture) -> Result<(), SerializeError> {
     // [#1389] 현재 크기는 shape_attr.current_width/height (IR 보존). 0 이면 common(sz)
     // 폴백 — 원본도 그 경우 sz=curSz. 종전 common 직출이라 current≠sz 인 pic 변형.
-    let cw = if p.shape_attr.current_width > 0 {
+    // [#2017] 파싱 시 orgSz로 materialize된 dimension 은 원본 `0` sentinel 로 복원.
+    let cw = if p.shape_attr.current_width_was_zero {
+        0
+    } else if p.shape_attr.current_width > 0 {
         p.shape_attr.current_width
     } else {
         p.common.width
     };
-    let ch = if p.shape_attr.current_height > 0 {
+    let ch = if p.shape_attr.current_height_was_zero {
+        0
+    } else if p.shape_attr.current_height > 0 {
         p.shape_attr.current_height
     } else {
         p.common.height

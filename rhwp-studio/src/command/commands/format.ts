@@ -468,7 +468,7 @@ export const formatCommands: CommandDef[] = [
         const ref = ih.getSelectedPictureRef();
         if (!ref) return;
         if (ref.type === 'equation') {
-          const dialog = new EquationPropertiesDialog(services.wasm, services.eventBus);
+          const dialog = new EquationPropertiesDialog(services.wasm, services.eventBus, services);
           dialog.open(ref.sec, ref.ppi, ref.ci, ref.cellIdx, ref.cellParaIdx, ref.noteRef);
           return;
         }

@@ -316,7 +316,7 @@ export const insertCommands: CommandDef[] = [
       if (!ref) return;
       if (ref.type === 'equation') {
         if (!equationPropsDialog) {
-          equationPropsDialog = new EquationPropertiesDialog(services.wasm, services.eventBus);
+          equationPropsDialog = new EquationPropertiesDialog(services.wasm, services.eventBus, services);
         }
         equationPropsDialog.open(ref.sec, ref.ppi, ref.ci, ref.cellIdx, ref.cellParaIdx, ref.noteRef);
         return;
@@ -336,7 +336,7 @@ export const insertCommands: CommandDef[] = [
           ref.cellIdx !== undefined &&
           ref.cellParaIdx !== undefined &&
           (ref as any).outerTableControlIdx !== undefined &&
-          (ref.type === 'shape' || ref.type === 'line' || ref.type === 'image')
+          (ref.type === 'shape' || ref.type === 'line' || ref.type === 'image' || ref.type === 'ole')
         )
           ? [{
               controlIdx: (ref as any).outerTableControlIdx as number,

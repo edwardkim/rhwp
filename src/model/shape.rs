@@ -208,6 +208,12 @@ pub struct ShapeComponentAttr {
     pub current_width: u32,
     /// 현재 높이
     pub current_height: u32,
+    /// [#2017] HWPX 원본이 `curSz width="0"`을 기록했고 파싱 시 orgSz로 materialize된 경우 true.
+    /// materialize는 렌더/HWP5 저장이 실크기를 필요로 하기 때문에 유지하되, HWPX 재직렬화는
+    /// 이 플래그로 원본 `0` sentinel을 복원해 roundtrip 충실도를 보존한다.
+    pub current_width_was_zero: bool,
+    /// [#2017] HWPX 원본이 `curSz height="0"`을 기록했고 파싱 시 orgSz로 materialize된 경우 true.
+    pub current_height_was_zero: bool,
     /// 뒤집기 속성 원본 값 (bit 0: 수평, bit 1: 수직, 상위 비트 보존)
     pub flip: u32,
     /// 수평 뒤집기
@@ -250,6 +256,8 @@ impl Default for ShapeComponentAttr {
             original_height: 0,
             current_width: 0,
             current_height: 0,
+            current_width_was_zero: false,
+            current_height_was_zero: false,
             flip: 0,
             horz_flip: false,
             vert_flip: false,

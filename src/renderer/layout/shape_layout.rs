@@ -18,7 +18,7 @@ use super::{CellContext, CellPathEntry};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::{CommonObjAttr, DrawingObjAttr, TextBox};
+use crate::model::shape::{Caption, CommonObjAttr, DrawingObjAttr, ShapeObject, TextBox};
 use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign, VertRelTo};
 use crate::model::style::{Alignment, FillType};
 
@@ -36,6 +36,21 @@ fn textbox_contains_non_tac_picture(text_box: &TextBox) -> bool {
             .iter()
             .any(|control| matches!(control, Control::Picture(pic) if !pic.common.treat_as_char))
     })
+}
+
+fn shape_caption_for_layout(shape: &ShapeObject) -> Option<Caption> {
+    match shape {
+        ShapeObject::Line(s) => s.drawing.caption.clone(),
+        ShapeObject::Rectangle(s) => s.drawing.caption.clone(),
+        ShapeObject::Ellipse(s) => s.drawing.caption.clone(),
+        ShapeObject::Arc(s) => s.drawing.caption.clone(),
+        ShapeObject::Polygon(s) => s.drawing.caption.clone(),
+        ShapeObject::Curve(s) => s.drawing.caption.clone(),
+        ShapeObject::Group(s) => s.caption.clone(),
+        ShapeObject::Picture(s) => s.caption.clone(),
+        ShapeObject::Chart(s) => s.caption.clone().or_else(|| s.drawing.caption.clone()),
+        ShapeObject::Ole(s) => s.caption.clone().or_else(|| s.drawing.caption.clone()),
+    }
 }
 
 fn textbox_vpos_origin_hu(common: &CommonObjAttr, matrix_positioned: bool) -> Option<i32> {
@@ -113,11 +128,38 @@ fn push_placeholder_render_node(
     let node_id = tree.next_id();
     let node = RenderNode::new(
         node_id,
-        RenderNodeType::Placeholder(crate::renderer::render_tree::PlaceholderNode {
+        RenderNodeType::Placeholder(crate::renderer::render_tree::PlaceholderNode::new(
             fill_color,
             stroke_color,
             label,
-        }),
+        )),
+        bbox,
+    );
+    parent.children.push(node);
+}
+
+fn push_ole_placeholder_render_node(
+    tree: &mut PageRenderTree,
+    parent: &mut RenderNode,
+    bbox: BoundingBox,
+    fill_color: u32,
+    stroke_color: u32,
+    label: String,
+    section_index: usize,
+    para_index: usize,
+    control_index: usize,
+) {
+    let node_id = tree.next_id();
+    let node = RenderNode::new(
+        node_id,
+        RenderNodeType::Placeholder(crate::renderer::render_tree::PlaceholderNode::ole(
+            fill_color,
+            stroke_color,
+            label,
+            section_index,
+            para_index,
+            control_index,
+        )),
         bbox,
     );
     parent.children.push(node);
@@ -132,8 +174,81 @@ fn push_raw_svg_render_node(
     let node_id = tree.next_id();
     let node = RenderNode::new(
         node_id,
-        RenderNodeType::RawSvg(crate::renderer::render_tree::RawSvgNode { svg }),
+        RenderNodeType::RawSvg(crate::renderer::render_tree::RawSvgNode::new(svg)),
         bbox,
+    );
+    parent.children.push(node);
+}
+
+fn push_ole_raw_svg_render_node(
+    tree: &mut PageRenderTree,
+    parent: &mut RenderNode,
+    bbox: BoundingBox,
+    svg: String,
+    section_index: usize,
+    para_index: usize,
+    control_index: usize,
+) {
+    let node_id = tree.next_id();
+    let node = RenderNode::new(
+        node_id,
+        RenderNodeType::RawSvg(crate::renderer::render_tree::RawSvgNode::ole(
+            svg,
+            section_index,
+            para_index,
+            control_index,
+        )),
+        bbox,
+    );
+    parent.children.push(node);
+}
+
+fn push_ole_empty_para_end_anchor(
+    tree: &mut PageRenderTree,
+    parent: &mut RenderNode,
+    anchor_x: f64,
+    anchor_y: f64,
+    para: &Paragraph,
+    section_index: usize,
+    para_index: usize,
+    styles: &ResolvedStyleSet,
+) {
+    let char_shape_id = para.char_shape_id_at(0).unwrap_or(0);
+    let style = resolved_to_text_style(styles, char_shape_id, 0);
+    let line_height = para
+        .line_segs
+        .first()
+        .map(|line| hwpunit_to_px(line.line_height, crate::renderer::DEFAULT_DPI))
+        .filter(|height| *height > 0.0)
+        .unwrap_or_else(|| (style.font_size * 1.2).max(12.0));
+    let baseline = para
+        .line_segs
+        .first()
+        .map(|line| hwpunit_to_px(line.baseline_distance, crate::renderer::DEFAULT_DPI))
+        .filter(|baseline| *baseline > 0.0)
+        .unwrap_or(style.font_size * 0.85);
+
+    let node = RenderNode::new(
+        tree.next_id(),
+        RenderNodeType::TextRun(TextRunNode {
+            text: String::new(),
+            style,
+            char_shape_id: Some(char_shape_id),
+            para_shape_id: Some(para.para_shape_id),
+            section_index: Some(section_index),
+            para_index: Some(para_index),
+            char_start: Some(0),
+            cell_context: None,
+            is_para_end: true,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: None,
+            border_fill_id: 0,
+            baseline,
+            field_marker: FieldMarkerType::None,
+        }),
+        BoundingBox::new(anchor_x, anchor_y, 0.0, line_height),
     );
     parent.children.push(node);
 }
@@ -367,7 +482,7 @@ impl LayoutEngine {
         );
         let node = RenderNode::new(
             node_id,
-            RenderNodeType::RawSvg(crate::renderer::render_tree::RawSvgNode { svg }),
+            RenderNodeType::RawSvg(crate::renderer::render_tree::RawSvgNode::new(svg)),
             bbox,
         );
         parent.children.push(node);
@@ -495,8 +610,6 @@ impl LayoutEngine {
         overflow_map: &std::collections::HashMap<(usize, usize), Vec<Paragraph>>,
         clamp_negative_para_offset: bool,
     ) {
-        use crate::model::shape::ShapeObject;
-
         let para = match paragraphs.get(para_index) {
             Some(p) => p,
             None => return,
@@ -666,14 +779,7 @@ impl LayoutEngine {
         };
 
         // 캡션 높이 및 간격 계산
-        let drawing = shape.drawing();
-        let caption_opt = drawing.and_then(|d| d.caption.clone()).or_else(|| {
-            if let ShapeObject::Group(g) = shape {
-                g.caption.clone()
-            } else {
-                None
-            }
-        });
+        let caption_opt = shape_caption_for_layout(shape);
         let caption = caption_opt.as_ref();
         let caption_height = self.calculate_caption_height(&caption_opt, styles);
         let caption_spacing = caption
@@ -694,6 +800,29 @@ impl LayoutEngine {
             }
         } else {
             (0.0, 0.0)
+        };
+        // [Issue #2075] restrictInPage(flow_with_text, HWP5 attr bit 13) 하단 클램프.
+        // layout_body_picture(PR #2033, 이슈 #2032)에는 이 클램프가 있으나 도형 경로엔
+        // 빠져 있었다("layout_body_picture와 동일 로직" 주석과 달리 미갱신). vert=Para +
+        // 큰 vertOffset + restrictInPage=on 인 floating 도형이 페이지 밖 좌표로 계산되면
+        // 어느 페이지에도 그려지지 않아 완전 소실됐다. 표/그림 동등 로직과 동일 시멘틱으로
+        // 캡션 포함 프레임 하단이 단 영역을 넘으면 안으로 끌어들인다(상단 bleed 는 유지).
+        // restrictInPage=off 는 현행 유지(한컴 정합: 쪽 영역 이탈 허용).
+        let shape_y = if !common.treat_as_char
+            && common.flow_with_text
+            && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Para)
+        {
+            let total_h = shape_h
+                + caption_height
+                + if caption_height > 0.0 {
+                    caption_spacing
+                } else {
+                    0.0
+                };
+            let body_bottom = col_area.y + col_area.height - total_h;
+            shape_y.min(body_bottom.max(col_area.y))
+        } else {
+            shape_y
         };
         let adjusted_shape_x = shape_x + caption_left_offset;
         let adjusted_shape_y = shape_y + caption_top_offset;
@@ -717,6 +846,19 @@ impl LayoutEngine {
             None, // [Task #1138] 본문 도형 — 셀 정보 없음
             false,
         );
+
+        if matches!(shape, ShapeObject::Ole(_)) && !common.treat_as_char && para.text.is_empty() {
+            push_ole_empty_para_end_anchor(
+                tree,
+                parent,
+                adjusted_shape_x + shape_w,
+                adjusted_shape_y,
+                para,
+                section_index,
+                para_index,
+                styles,
+            );
+        }
 
         // 캡션 렌더링
         if let Some(caption) = caption {
@@ -1770,11 +1912,13 @@ impl LayoutEngine {
                 let node_id = tree.next_id();
                 let node = RenderNode::new(
                     node_id,
-                    RenderNodeType::Placeholder(crate::renderer::render_tree::PlaceholderNode {
-                        fill_color: 0xFFE8F0FE,
-                        stroke_color: 0xFF4A90E2,
-                        label: "차트 (Chart)".to_string(),
-                    }),
+                    RenderNodeType::Placeholder(
+                        crate::renderer::render_tree::PlaceholderNode::new(
+                            0xFFE8F0FE,
+                            0xFF4A90E2,
+                            "차트 (Chart)".to_string(),
+                        ),
+                    ),
                     BoundingBox::new(render_x, render_y, render_w, render_h),
                 );
                 parent.children.push(node);
@@ -1788,15 +1932,15 @@ impl LayoutEngine {
                         if let Some(chart) = crate::ooxml_chart::OoxmlChart::parse(&content.data) {
                             let svg_fragment =
                                 chart.render_svg(render_x, render_y, render_w, render_h);
-                            let node_id = tree.next_id();
-                            let node = RenderNode::new(
-                                node_id,
-                                RenderNodeType::RawSvg(crate::renderer::render_tree::RawSvgNode {
-                                    svg: svg_fragment,
-                                }),
+                            push_ole_raw_svg_render_node(
+                                tree,
+                                parent,
                                 BoundingBox::new(render_x, render_y, render_w, render_h),
+                                svg_fragment,
+                                section_index,
+                                para_index,
+                                control_index,
                             );
-                            parent.children.push(node);
                             rendered = true;
                         }
                     }
@@ -1810,11 +1954,14 @@ impl LayoutEngine {
                                 {
                                     let svg_fragment =
                                         chart.render_svg(render_x, render_y, render_w, render_h);
-                                    push_raw_svg_render_node(
+                                    push_ole_raw_svg_render_node(
                                         tree,
                                         parent,
                                         BoundingBox::new(render_x, render_y, render_w, render_h),
                                         svg_fragment,
+                                        section_index,
+                                        para_index,
+                                        control_index,
                                     );
                                     rendered = true;
                                 }
@@ -1834,18 +1981,21 @@ impl LayoutEngine {
                                                     render_h,
                                                     ole.bin_data_id,
                                                 );
-                                            push_raw_svg_render_node(
+                                            push_ole_raw_svg_render_node(
                                                 tree,
                                                 parent,
                                                 BoundingBox::new(
                                                     render_x, render_y, render_w, render_h,
                                                 ),
                                                 svg_fragment,
+                                                section_index,
+                                                para_index,
+                                                control_index,
                                             );
                                             rendered = true;
                                         }
                                         Err(error) => {
-                                            push_placeholder_render_node(
+                                            push_ole_placeholder_render_node(
                                                 tree,
                                                 parent,
                                                 BoundingBox::new(
@@ -1857,6 +2007,9 @@ impl LayoutEngine {
                                                     error.stable_message(),
                                                     ole.bin_data_id,
                                                 ),
+                                                section_index,
+                                                para_index,
+                                                control_index,
                                             );
                                             rendered = true;
                                         }
@@ -1876,19 +2029,17 @@ impl LayoutEngine {
                                     if let Ok(svg_fragment) =
                                         crate::emf::convert_to_svg(emf_bytes, render_rect)
                                     {
-                                        let node_id = tree.next_id();
-                                        let node = RenderNode::new(
-                                            node_id,
-                                            RenderNodeType::RawSvg(
-                                                crate::renderer::render_tree::RawSvgNode {
-                                                    svg: svg_fragment,
-                                                },
-                                            ),
+                                        push_ole_raw_svg_render_node(
+                                            tree,
+                                            parent,
                                             BoundingBox::new(
                                                 render_x, render_y, render_w, render_h,
                                             ),
+                                            svg_fragment,
+                                            section_index,
+                                            para_index,
+                                            control_index,
                                         );
-                                        parent.children.push(node);
                                         rendered = true;
                                     }
                                 }
@@ -1922,17 +2073,15 @@ impl LayoutEngine {
                                     "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\" href=\"{}\"/>",
                                     render_x, render_y, render_w, render_h, href, href
                                 );
-                                    let node_id = tree.next_id();
-                                    let node = RenderNode::new(
-                                        node_id,
-                                        RenderNodeType::RawSvg(
-                                            crate::renderer::render_tree::RawSvgNode {
-                                                svg: svg_fragment,
-                                            },
-                                        ),
+                                    push_ole_raw_svg_render_node(
+                                        tree,
+                                        parent,
                                         BoundingBox::new(render_x, render_y, render_w, render_h),
+                                        svg_fragment,
+                                        section_index,
+                                        para_index,
+                                        control_index,
                                     );
-                                    parent.children.push(node);
                                     rendered = true;
                                 }
                             }
@@ -1953,19 +2102,17 @@ impl LayoutEngine {
                 if !rendered {
                     // 폴백: placeholder
                     let label = format!("OLE 개체 (BinData #{})", ole.bin_data_id);
-                    let node_id = tree.next_id();
-                    let node = RenderNode::new(
-                        node_id,
-                        RenderNodeType::Placeholder(
-                            crate::renderer::render_tree::PlaceholderNode {
-                                fill_color: 0xFFF0F0F0,
-                                stroke_color: 0xFF707070,
-                                label,
-                            },
-                        ),
+                    push_ole_placeholder_render_node(
+                        tree,
+                        parent,
                         BoundingBox::new(render_x, render_y, render_w, render_h),
+                        0xFFF0F0F0,
+                        0xFF707070,
+                        label,
+                        section_index,
+                        para_index,
+                        control_index,
                     );
-                    parent.children.push(node);
                 }
             }
         }

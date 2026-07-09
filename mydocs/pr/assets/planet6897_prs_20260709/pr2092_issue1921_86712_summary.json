@@ -1,0 +1,3760 @@
+[
+  {
+    "key": "pr2092_issue1921_86712",
+    "hwp": "samples/86712_regulatory_analysis.hwp",
+    "pdf": "pdf/issue1921/86712_regulatory_analysis-2024.pdf",
+    "requested_pages": null,
+    "exported_svg_pages": 65,
+    "exported_render_tree_pages": 65,
+    "exported_pdf_pages": 65,
+    "svg_pages": 65,
+    "render_tree_pages": 65,
+    "pdf_pages": 65,
+    "compare_pages": 65,
+    "overlay_pages": 65,
+    "review_pages": 65,
+    "pdf_question_markers": 0,
+    "overflow_lines": [
+      "LAYOUT_OVERFLOW: page=4, sec=0, col=0, para=15, type=PartialTable, first=true, y=1119.8, bottom=1046.9, overflow=72.9px",
+      "LAYOUT_OVERFLOW: page=5, sec=0, col=0, para=15, type=PartialTable, first=true, y=1182.2, bottom=1046.9, overflow=135.3px",
+      "LAYOUT_OVERFLOW: page=28, sec=0, col=0, para=181, type=FullParagraph, first=false, y=1053.0, bottom=1046.9, overflow=6.1px",
+      "LAYOUT_OVERFLOW: page=49, sec=0, col=0, para=349, type=PartialTable, first=false, y=1050.0, bottom=1046.9, overflow=3.1px"
+    ],
+    "contact_sheet": "output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/contact_sheet.png",
+    "overlay_contact_sheet": "output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/overlay_contact_sheet.png",
+    "review_contact_sheet": "output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/review_contact_sheet.png",
+    "analysis_dir": "output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/analysis",
+    "overlay_dir": "output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/overlay",
+    "review_dir": "output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 65,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 91.35759,
+      "worst_pixel_match_percent": 76.5004,
+      "average_ink_match_percent": 8.39303,
+      "worst_ink_match_percent": 4.08553,
+      "average_visual_accuracy_proxy_percent": 8.39303,
+      "worst_visual_accuracy_proxy_percent": 4.08553,
+      "worst_pages": [
+        51,
+        22,
+        11,
+        12,
+        37,
+        17,
+        53,
+        42,
+        54,
+        28
+      ]
+    },
+    "overlay_metrics_json": "output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 65,
+      "flagged_page_count": 9,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [
+        2,
+        34,
+        50
+      ],
+      "column_line_band_drift_pages": [
+        2,
+        27,
+        31,
+        34,
+        50
+      ],
+      "large_ink_region_drift_pages": [
+        2,
+        34,
+        50
+      ],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [
+        2,
+        4,
+        7,
+        8,
+        27,
+        31,
+        33,
+        34,
+        50
+      ],
+      "question_marker_drift_pages": [],
+      "metrics_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/analysis/metrics.json",
+      "question_flow_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/analysis/question_flow.json"
+    },
+    "flagged_pages": [
+      {
+        "page": 2,
+        "flags": [
+          "render_tree_frame_tail_overflow",
+          "line_band_drift",
+          "column_line_band_drift",
+          "large_ink_region_drift"
+        ],
+        "rhwp_frame": [
+          263,
+          285,
+          731,
+          1029
+        ],
+        "pdf_frame": [
+          77,
+          286,
+          733,
+          1042
+        ],
+        "rhwp_outside_frame_pixels": 32,
+        "pdf_outside_frame_pixels": 56,
+        "rhwp_outside_frame_max_y": 1078,
+        "pdf_outside_frame_max_y": 1079,
+        "rhwp_outside_frame_extent_px": 49,
+        "pdf_outside_frame_extent_px": 37,
+        "frame_overflow_tolerated_bleed": false,
+        "paper_size_footer_frame_bleed": false,
+        "rhwp_outside_frame_bleed_px": 49,
+        "pdf_outside_frame_bleed_px": 37,
+        "content_bottom_delta_px": -13.0,
+        "red_marker_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "line_band_drift": {
+          "rhwp_count": 34,
+          "pdf_count": 29,
+          "paired": 29,
+          "max_abs_delta_px": 119.5,
+          "p90_abs_delta_px": 113.5,
+          "mean_abs_delta_px": 73.7
+        },
+        "column_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              263,
+              285,
+              495,
+              1029
+            ],
+            "pdf_frame": [
+              77,
+              286,
+              403,
+              1042
+            ],
+            "drift": {
+              "rhwp_count": 34,
+              "pdf_count": 29,
+              "paired": 29,
+              "max_abs_delta_px": 119.5,
+              "p90_abs_delta_px": 113.5,
+              "mean_abs_delta_px": 73.9
+            },
+            "rhwp_first_band": {
+              "y0": 288,
+              "y1": 301,
+              "x0": 268,
+              "x1": 493,
+              "pixels": 1011,
+              "cy": 294.5
+            },
+            "rhwp_last_band": {
+              "y0": 1001,
+              "y1": 1017,
+              "x0": 293,
+              "x1": 462,
+              "pixels": 870,
+              "cy": 1009.0
+            },
+            "pdf_first_band": {
+              "y0": 290,
+              "y1": 302,
+              "x0": 141,
+              "x1": 399,
+              "pixels": 607,
+              "cy": 296.0
+            },
+            "pdf_last_band": {
+              "y0": 1010,
+              "y1": 1025,
+              "x0": 85,
+              "x1": 385,
+              "pixels": 1334,
+              "cy": 1017.5
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              499,
+              285,
+              731,
+              1029
+            ],
+            "pdf_frame": [
+              407,
+              286,
+              733,
+              1042
+            ],
+            "drift": {
+              "rhwp_count": 29,
+              "pdf_count": 33,
+              "paired": 29,
+              "max_abs_delta_px": 116.5,
+              "p90_abs_delta_px": 93.0,
+              "mean_abs_delta_px": 48.6
+            },
+            "rhwp_first_band": {
+              "y0": 288,
+              "y1": 301,
+              "x0": 501,
+              "x1": 726,
+              "pixels": 1129,
+              "cy": 294.5
+            },
+            "rhwp_last_band": {
+              "y0": 1004,
+              "y1": 1014,
+              "x0": 529,
+              "x1": 703,
+              "pixels": 623,
+              "cy": 1009.0
+            },
+            "pdf_first_band": {
+              "y0": 290,
+              "y1": 302,
+              "x0": 416,
+              "x1": 728,
+              "pixels": 1344,
+              "cy": 296.0
+            },
+            "pdf_last_band": {
+              "y0": 1012,
+              "y1": 1023,
+              "x0": 423,
+              "x1": 703,
+              "pixels": 895,
+              "cy": 1017.5
+            }
+          }
+        ],
+        "column_line_band_drift_candidates": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              263,
+              285,
+              495,
+              1029
+            ],
+            "pdf_frame": [
+              77,
+              286,
+              403,
+              1042
+            ],
+            "drift": {
+              "rhwp_count": 34,
+              "pdf_count": 29,
+              "paired": 29,
+              "max_abs_delta_px": 119.5,
+              "p90_abs_delta_px": 113.5,
+              "mean_abs_delta_px": 73.9
+            },
+            "rhwp_first_band": {
+              "y0": 288,
+              "y1": 301,
+              "x0": 268,
+              "x1": 493,
+              "pixels": 1011,
+              "cy": 294.5
+            },
+            "rhwp_last_band": {
+              "y0": 1001,
+              "y1": 1017,
+              "x0": 293,
+              "x1": 462,
+              "pixels": 870,
+              "cy": 1009.0
+            },
+            "pdf_first_band": {
+              "y0": 290,
+              "y1": 302,
+              "x0": 141,
+              "x1": 399,
+              "pixels": 607,
+              "cy": 296.0
+            },
+            "pdf_last_band": {
+              "y0": 1010,
+              "y1": 1025,
+              "x0": 85,
+              "x1": 385,
+              "pixels": 1334,
+              "cy": 1017.5
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              499,
+              285,
+              731,
+              1029
+            ],
+            "pdf_frame": [
+              407,
+              286,
+              733,
+              1042
+            ],
+            "drift": {
+              "rhwp_count": 29,
+              "pdf_count": 33,
+              "paired": 29,
+              "max_abs_delta_px": 116.5,
+              "p90_abs_delta_px": 93.0,
+              "mean_abs_delta_px": 48.6
+            },
+            "rhwp_first_band": {
+              "y0": 288,
+              "y1": 301,
+              "x0": 501,
+              "x1": 726,
+              "pixels": 1129,
+              "cy": 294.5
+            },
+            "rhwp_last_band": {
+              "y0": 1004,
+              "y1": 1014,
+              "x0": 529,
+              "x1": 703,
+              "pixels": 623,
+              "cy": 1009.0
+            },
+            "pdf_first_band": {
+              "y0": 290,
+              "y1": 302,
+              "x0": 416,
+              "x1": 728,
+              "pixels": 1344,
+              "cy": 296.0
+            },
+            "pdf_last_band": {
+              "y0": 1012,
+              "y1": 1023,
+              "x0": 423,
+              "x1": 703,
+              "pixels": 895,
+              "cy": 1017.5
+            }
+          }
+        ],
+        "large_ink_region_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 3,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_regions": [],
+          "pdf_regions": [
+            {
+              "x0": 141.0,
+              "y0": 414.0,
+              "x1": 253.0,
+              "y1": 494.0,
+              "w": 112.0,
+              "h": 80.0,
+              "cy": 454.0,
+              "tiles": 24.0
+            },
+            {
+              "x0": 77.0,
+              "y0": 590.0,
+              "x1": 157.0,
+              "y1": 654.0,
+              "w": 80.0,
+              "h": 64.0,
+              "cy": 622.0,
+              "tiles": 14.0
+            },
+            {
+              "x0": 141.0,
+              "y0": 894.0,
+              "x1": 253.0,
+              "y1": 942.0,
+              "w": 112.0,
+              "h": 48.0,
+              "cy": 918.0,
+              "tiles": 19.0
+            }
+          ]
+        },
+        "endnote_shape_ui": {
+          "separator_visible": true,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_below_mm": 2.0,
+          "separator_length_mm": 43.321
+        },
+        "endnote_separator_gap": {
+          "expected_separator": true,
+          "separator_below_mm": 2.0,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_length_px": 163.7,
+          "rhwp": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "pdf": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "gap_delta_px": null
+        },
+        "endnote_no_separator_content_start": null,
+        "between_notes_marker_gap": {
+          "expected_between_notes_mm": 0.0,
+          "expected_between_notes_px": null,
+          "rhwp_marker_count": 0,
+          "pdf_marker_count": 0,
+          "paired_gap_count": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_marker_y": [],
+          "pdf_marker_y": [],
+          "rhwp_marker_y_by_column": [
+            []
+          ],
+          "pdf_marker_y_by_column": [
+            []
+          ],
+          "rhwp_gaps_px": [],
+          "pdf_gaps_px": [],
+          "pairs": []
+        },
+        "svg": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/svg/86712_regulatory_analysis_002.svg",
+        "render_tree_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/render_tree/render_tree_002.json",
+        "equation_text_overlap_candidates": [],
+        "question_title_text_overlap_candidates": [],
+        "line_order_overlap_candidates": [],
+        "render_tree_frame_tail_overflow_candidates": [
+          {
+            "path": "root/3/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "-2-",
+            "overflow_px": 42.1,
+            "frame_bottom": 1029,
+            "column": 0,
+            "bbox": [
+              387.9,
+              1059.1,
+              18.0,
+              12.0
+            ]
+          }
+        ],
+        "render_tree_frame_tail_overflow_suppressed_candidates": [],
+        "question_marker_drift_candidates": [],
+        "annotated": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/analysis/annotated_002.png"
+      },
+      {
+        "page": 4,
+        "flags": [
+          "render_tree_frame_tail_overflow"
+        ],
+        "rhwp_frame": [
+          75,
+          140,
+          715,
+          1017
+        ],
+        "pdf_frame": [
+          77,
+          142,
+          717,
+          1037
+        ],
+        "rhwp_outside_frame_pixels": 35,
+        "pdf_outside_frame_pixels": 63,
+        "rhwp_outside_frame_max_y": 1078,
+        "pdf_outside_frame_max_y": 1080,
+        "rhwp_outside_frame_extent_px": 61,
+        "pdf_outside_frame_extent_px": 43,
+        "frame_overflow_tolerated_bleed": false,
+        "paper_size_footer_frame_bleed": false,
+        "rhwp_outside_frame_bleed_px": 61,
+        "pdf_outside_frame_bleed_px": 43,
+        "content_bottom_delta_px": -20.0,
+        "red_marker_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "line_band_drift": {
+          "rhwp_count": 26,
+          "pdf_count": 27,
+          "paired": 26,
+          "max_abs_delta_px": 3.0,
+          "p90_abs_delta_px": 2.5,
+          "mean_abs_delta_px": 2.2
+        },
+        "column_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              75,
+              140,
+              393,
+              1017
+            ],
+            "pdf_frame": [
+              77,
+              142,
+              395,
+              1037
+            ],
+            "drift": {
+              "rhwp_count": 2,
+              "pdf_count": 2,
+              "paired": 2,
+              "max_abs_delta_px": 3.5,
+              "p90_abs_delta_px": 3.0,
+              "mean_abs_delta_px": 3.2
+            },
+            "rhwp_first_band": {
+              "y0": 142,
+              "y1": 160,
+              "x0": 96,
+              "x1": 171,
+              "pixels": 411,
+              "cy": 151.0
+            },
+            "rhwp_last_band": {
+              "y0": 579,
+              "y1": 596,
+              "x0": 96,
+              "x1": 171,
+              "pixels": 330,
+              "cy": 587.5
+            },
+            "pdf_first_band": {
+              "y0": 146,
+              "y1": 162,
+              "x0": 98,
+              "x1": 180,
+              "pixels": 341,
+              "cy": 154.0
+            },
+            "pdf_last_band": {
+              "y0": 583,
+              "y1": 599,
+              "x0": 98,
+              "x1": 180,
+              "pixels": 341,
+              "cy": 591.0
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              397,
+              140,
+              715,
+              1017
+            ],
+            "pdf_frame": [
+              399,
+              142,
+              717,
+              1037
+            ],
+            "drift": {
+              "rhwp_count": 26,
+              "pdf_count": 28,
+              "paired": 26,
+              "max_abs_delta_px": 32.0,
+              "p90_abs_delta_px": 31.5,
+              "mean_abs_delta_px": 18.8
+            },
+            "rhwp_first_band": {
+              "y0": 142,
+              "y1": 160,
+              "x0": 399,
+              "x1": 713,
+              "pixels": 2076,
+              "cy": 151.0
+            },
+            "rhwp_last_band": {
+              "y0": 982,
+              "y1": 1000,
+              "x0": 430,
+              "x1": 514,
+              "pixels": 541,
+              "cy": 991.0
+            },
+            "pdf_first_band": {
+              "y0": 144,
+              "y1": 162,
+              "x0": 401,
+              "x1": 715,
+              "pixels": 1672,
+              "cy": 153.0
+            },
+            "pdf_last_band": {
+              "y0": 1018,
+              "y1": 1035,
+              "x0": 418,
+              "x1": 715,
+              "pixels": 1551,
+              "cy": 1026.5
+            }
+          }
+        ],
+        "column_line_band_drift_candidates": [],
+        "large_ink_region_drift": {
+          "rhwp_count": 3,
+          "pdf_count": 4,
+          "paired": 3,
+          "deltas_px": [
+            14.0,
+            214.0,
+            302.0
+          ],
+          "max_abs_delta_px": 302.0,
+          "mean_abs_delta_px": 176.7,
+          "rhwp_regions": [
+            {
+              "x0": 395.0,
+              "y0": 140.0,
+              "x1": 715.0,
+              "y1": 364.0,
+              "w": 320.0,
+              "h": 224.0,
+              "cy": 252.0,
+              "tiles": 229.0
+            },
+            {
+              "x0": 395.0,
+              "y0": 444.0,
+              "x1": 715.0,
+              "y1": 732.0,
+              "w": 320.0,
+              "h": 288.0,
+              "cy": 588.0,
+              "tiles": 246.0
+            },
+            {
+              "x0": 411.0,
+              "y0": 780.0,
+              "x1": 715.0,
+              "y1": 1004.0,
+              "w": 304.0,
+              "h": 224.0,
+              "cy": 892.0,
+              "tiles": 196.0
+            }
+          ],
+          "pdf_regions": [
+            {
+              "x0": 397.0,
+              "y0": 142.0,
+              "x1": 717.0,
+              "y1": 334.0,
+              "w": 320.0,
+              "h": 192.0,
+              "cy": 238.0,
+              "tiles": 201.0
+            },
+            {
+              "x0": 413.0,
+              "y0": 350.0,
+              "x1": 717.0,
+              "y1": 398.0,
+              "w": 304.0,
+              "h": 48.0,
+              "cy": 374.0,
+              "tiles": 34.0
+            },
+            {
+              "x0": 397.0,
+              "y0": 446.0,
+              "x1": 717.0,
+              "y1": 734.0,
+              "w": 320.0,
+              "h": 288.0,
+              "cy": 590.0,
+              "tiles": 202.0
+            },
+            {
+              "x0": 413.0,
+              "y0": 782.0,
+              "x1": 717.0,
+              "y1": 1037.0,
+              "w": 304.0,
+              "h": 255.0,
+              "cy": 909.5,
+              "tiles": 190.0
+            }
+          ]
+        },
+        "endnote_shape_ui": {
+          "separator_visible": true,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_below_mm": 2.0,
+          "separator_length_mm": 43.321
+        },
+        "endnote_separator_gap": {
+          "expected_separator": true,
+          "separator_below_mm": 2.0,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_length_px": 163.7,
+          "rhwp": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "pdf": {
+            "expected_separator": true,
+            "candidate_count": 3,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": [
+              {
+                "x0": 418.0,
+                "x1": 636.0,
+                "y0": 364.0,
+                "y1": 364.0,
+                "length": 219.0,
+                "cy": 364.0,
+                "gap_height": 1.0
+              },
+              {
+                "x0": 432.0,
+                "x1": 552.0,
+                "y0": 431.0,
+                "y1": 431.0,
+                "length": 121.0,
+                "cy": 431.0,
+                "gap_height": 1.0
+              },
+              {
+                "x0": 432.0,
+                "x1": 552.0,
+                "y0": 498.0,
+                "y1": 498.0,
+                "length": 121.0,
+                "cy": 498.0,
+                "gap_height": 1.0
+              }
+            ]
+          },
+          "gap_delta_px": null
+        },
+        "endnote_no_separator_content_start": null,
+        "between_notes_marker_gap": {
+          "expected_between_notes_mm": 0.0,
+          "expected_between_notes_px": null,
+          "rhwp_marker_count": 0,
+          "pdf_marker_count": 0,
+          "paired_gap_count": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_marker_y": [],
+          "pdf_marker_y": [],
+          "rhwp_marker_y_by_column": [
+            []
+          ],
+          "pdf_marker_y_by_column": [
+            []
+          ],
+          "rhwp_gaps_px": [],
+          "pdf_gaps_px": [],
+          "pairs": []
+        },
+        "svg": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/svg/86712_regulatory_analysis_004.svg",
+        "render_tree_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/render_tree/render_tree_004.json",
+        "equation_text_overlap_candidates": [],
+        "question_title_text_overlap_candidates": [],
+        "line_order_overlap_candidates": [],
+        "render_tree_frame_tail_overflow_candidates": [
+          {
+            "path": "root/3/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "-4-",
+            "overflow_px": 54.1,
+            "frame_bottom": 1017,
+            "column": 1,
+            "bbox": [
+              387.9,
+              1059.1,
+              18.0,
+              12.0
+            ]
+          }
+        ],
+        "render_tree_frame_tail_overflow_suppressed_candidates": [],
+        "question_marker_drift_candidates": [],
+        "annotated": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/analysis/annotated_004.png"
+      },
+      {
+        "page": 7,
+        "flags": [
+          "render_tree_frame_tail_overflow"
+        ],
+        "rhwp_frame": [
+          75,
+          108,
+          715,
+          1019
+        ],
+        "pdf_frame": [
+          77,
+          110,
+          717,
+          1038
+        ],
+        "rhwp_outside_frame_pixels": 28,
+        "pdf_outside_frame_pixels": 54,
+        "rhwp_outside_frame_max_y": 1078,
+        "pdf_outside_frame_max_y": 1080,
+        "rhwp_outside_frame_extent_px": 59,
+        "pdf_outside_frame_extent_px": 42,
+        "frame_overflow_tolerated_bleed": false,
+        "paper_size_footer_frame_bleed": false,
+        "rhwp_outside_frame_bleed_px": 59,
+        "pdf_outside_frame_bleed_px": 42,
+        "content_bottom_delta_px": -19.0,
+        "red_marker_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "line_band_drift": {
+          "rhwp_count": 27,
+          "pdf_count": 28,
+          "paired": 27,
+          "max_abs_delta_px": 4.0,
+          "p90_abs_delta_px": 3.5,
+          "mean_abs_delta_px": 2.9
+        },
+        "column_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              75,
+              108,
+              393,
+              1019
+            ],
+            "pdf_frame": [
+              77,
+              110,
+              395,
+              1038
+            ],
+            "drift": {
+              "rhwp_count": 0,
+              "pdf_count": 1,
+              "paired": 0,
+              "max_abs_delta_px": null,
+              "mean_abs_delta_px": null
+            },
+            "rhwp_first_band": null,
+            "rhwp_last_band": null,
+            "pdf_first_band": {
+              "y0": 753,
+              "y1": 768,
+              "x0": 98,
+              "x1": 180,
+              "pixels": 341,
+              "cy": 760.5
+            },
+            "pdf_last_band": {
+              "y0": 753,
+              "y1": 768,
+              "x0": 98,
+              "x1": 180,
+              "pixels": 341,
+              "cy": 760.5
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              397,
+              108,
+              715,
+              1019
+            ],
+            "pdf_frame": [
+              399,
+              110,
+              717,
+              1038
+            ],
+            "drift": {
+              "rhwp_count": 27,
+              "pdf_count": 28,
+              "paired": 27,
+              "max_abs_delta_px": 4.0,
+              "p90_abs_delta_px": 3.5,
+              "mean_abs_delta_px": 2.9
+            },
+            "rhwp_first_band": {
+              "y0": 110,
+              "y1": 128,
+              "x0": 458,
+              "x1": 644,
+              "pixels": 1319,
+              "cy": 119.0
+            },
+            "rhwp_last_band": {
+              "y0": 983,
+              "y1": 1000,
+              "x0": 416,
+              "x1": 713,
+              "pixels": 1544,
+              "cy": 991.5
+            },
+            "pdf_first_band": {
+              "y0": 112,
+              "y1": 130,
+              "x0": 432,
+              "x1": 715,
+              "pixels": 1417,
+              "cy": 121.0
+            },
+            "pdf_last_band": {
+              "y0": 1019,
+              "y1": 1035,
+              "x0": 420,
+              "x1": 653,
+              "pixels": 1011,
+              "cy": 1027.0
+            }
+          }
+        ],
+        "column_line_band_drift_candidates": [],
+        "large_ink_region_drift": {
+          "rhwp_count": 3,
+          "pdf_count": 3,
+          "paired": 3,
+          "deltas_px": [
+            -2.0,
+            30.0,
+            -2.0
+          ],
+          "max_abs_delta_px": 30.0,
+          "mean_abs_delta_px": 11.3,
+          "rhwp_regions": [
+            {
+              "x0": 411.0,
+              "y0": 108.0,
+              "x1": 715.0,
+              "y1": 332.0,
+              "w": 304.0,
+              "h": 224.0,
+              "cy": 220.0,
+              "tiles": 192.0
+            },
+            {
+              "x0": 411.0,
+              "y0": 444.0,
+              "x1": 715.0,
+              "y1": 700.0,
+              "w": 304.0,
+              "h": 256.0,
+              "cy": 572.0,
+              "tiles": 208.0
+            },
+            {
+              "x0": 395.0,
+              "y0": 748.0,
+              "x1": 715.0,
+              "y1": 1004.0,
+              "w": 320.0,
+              "h": 256.0,
+              "cy": 876.0,
+              "tiles": 243.0
+            }
+          ],
+          "pdf_regions": [
+            {
+              "x0": 413.0,
+              "y0": 110.0,
+              "x1": 717.0,
+              "y1": 334.0,
+              "w": 304.0,
+              "h": 224.0,
+              "cy": 222.0,
+              "tiles": 215.0
+            },
+            {
+              "x0": 413.0,
+              "y0": 414.0,
+              "x1": 717.0,
+              "y1": 670.0,
+              "w": 304.0,
+              "h": 256.0,
+              "cy": 542.0,
+              "tiles": 236.0
+            },
+            {
+              "x0": 413.0,
+              "y0": 750.0,
+              "x1": 717.0,
+              "y1": 1006.0,
+              "w": 304.0,
+              "h": 256.0,
+              "cy": 878.0,
+              "tiles": 243.0
+            }
+          ]
+        },
+        "endnote_shape_ui": {
+          "separator_visible": true,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_below_mm": 2.0,
+          "separator_length_mm": 43.321
+        },
+        "endnote_separator_gap": {
+          "expected_separator": true,
+          "separator_below_mm": 2.0,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_length_px": 163.7,
+          "rhwp": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "pdf": {
+            "expected_separator": true,
+            "candidate_count": 1,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": [
+              {
+                "x0": 418.0,
+                "x1": 608.0,
+                "y0": 466.0,
+                "y1": 466.0,
+                "length": 191.0,
+                "cy": 466.0,
+                "gap_height": 1.0
+              }
+            ]
+          },
+          "gap_delta_px": null
+        },
+        "endnote_no_separator_content_start": null,
+        "between_notes_marker_gap": {
+          "expected_between_notes_mm": 0.0,
+          "expected_between_notes_px": null,
+          "rhwp_marker_count": 0,
+          "pdf_marker_count": 0,
+          "paired_gap_count": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_marker_y": [],
+          "pdf_marker_y": [],
+          "rhwp_marker_y_by_column": [
+            []
+          ],
+          "pdf_marker_y_by_column": [
+            []
+          ],
+          "rhwp_gaps_px": [],
+          "pdf_gaps_px": [],
+          "pairs": []
+        },
+        "svg": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/svg/86712_regulatory_analysis_007.svg",
+        "render_tree_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/render_tree/render_tree_007.json",
+        "equation_text_overlap_candidates": [],
+        "question_title_text_overlap_candidates": [],
+        "line_order_overlap_candidates": [],
+        "render_tree_frame_tail_overflow_candidates": [
+          {
+            "path": "root/3/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "-7-",
+            "overflow_px": 52.1,
+            "frame_bottom": 1019,
+            "column": 1,
+            "bbox": [
+              387.9,
+              1059.1,
+              18.0,
+              12.0
+            ]
+          }
+        ],
+        "render_tree_frame_tail_overflow_suppressed_candidates": [],
+        "question_marker_drift_candidates": [],
+        "annotated": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/analysis/annotated_007.png"
+      },
+      {
+        "page": 8,
+        "flags": [
+          "render_tree_frame_tail_overflow"
+        ],
+        "rhwp_frame": [
+          75,
+          108,
+          715,
+          1019
+        ],
+        "pdf_frame": [
+          77,
+          110,
+          717,
+          1038
+        ],
+        "rhwp_outside_frame_pixels": 38,
+        "pdf_outside_frame_pixels": 69,
+        "rhwp_outside_frame_max_y": 1079,
+        "pdf_outside_frame_max_y": 1081,
+        "rhwp_outside_frame_extent_px": 60,
+        "pdf_outside_frame_extent_px": 43,
+        "frame_overflow_tolerated_bleed": false,
+        "paper_size_footer_frame_bleed": false,
+        "rhwp_outside_frame_bleed_px": 60,
+        "pdf_outside_frame_bleed_px": 43,
+        "content_bottom_delta_px": -19.0,
+        "red_marker_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "line_band_drift": {
+          "rhwp_count": 27,
+          "pdf_count": 28,
+          "paired": 27,
+          "max_abs_delta_px": 3.5,
+          "p90_abs_delta_px": 3.5,
+          "mean_abs_delta_px": 3.2
+        },
+        "column_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              75,
+              108,
+              393,
+              1019
+            ],
+            "pdf_frame": [
+              77,
+              110,
+              395,
+              1038
+            ],
+            "drift": {
+              "rhwp_count": 0,
+              "pdf_count": 0,
+              "paired": 0,
+              "max_abs_delta_px": null,
+              "mean_abs_delta_px": null
+            },
+            "rhwp_first_band": null,
+            "rhwp_last_band": null,
+            "pdf_first_band": null,
+            "pdf_last_band": null
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              397,
+              108,
+              715,
+              1019
+            ],
+            "pdf_frame": [
+              399,
+              110,
+              717,
+              1038
+            ],
+            "drift": {
+              "rhwp_count": 27,
+              "pdf_count": 28,
+              "paired": 27,
+              "max_abs_delta_px": 3.5,
+              "p90_abs_delta_px": 3.5,
+              "mean_abs_delta_px": 3.2
+            },
+            "rhwp_first_band": {
+              "y0": 110,
+              "y1": 127,
+              "x0": 416,
+              "x1": 713,
+              "pixels": 1980,
+              "cy": 118.5
+            },
+            "rhwp_last_band": {
+              "y0": 983,
+              "y1": 1000,
+              "x0": 431,
+              "x1": 710,
+              "pixels": 1774,
+              "cy": 991.5
+            },
+            "pdf_first_band": {
+              "y0": 112,
+              "y1": 130,
+              "x0": 418,
+              "x1": 715,
+              "pixels": 1593,
+              "cy": 121.0
+            },
+            "pdf_last_band": {
+              "y0": 1019,
+              "y1": 1034,
+              "x0": 433,
+              "x1": 713,
+              "pixels": 1181,
+              "cy": 1026.5
+            }
+          }
+        ],
+        "column_line_band_drift_candidates": [],
+        "large_ink_region_drift": {
+          "rhwp_count": 5,
+          "pdf_count": 3,
+          "paired": 3,
+          "deltas_px": [
+            -18.0,
+            -226.0,
+            -546.0
+          ],
+          "max_abs_delta_px": 546.0,
+          "mean_abs_delta_px": 263.3,
+          "rhwp_regions": [
+            {
+              "x0": 395.0,
+              "y0": 108.0,
+              "x1": 715.0,
+              "y1": 300.0,
+              "w": 320.0,
+              "h": 192.0,
+              "cy": 204.0,
+              "tiles": 166.0
+            },
+            {
+              "x0": 427.0,
+              "y0": 300.0,
+              "x1": 539.0,
+              "y1": 364.0,
+              "w": 112.0,
+              "h": 64.0,
+              "cy": 332.0,
+              "tiles": 13.0
+            },
+            {
+              "x0": 523.0,
+              "y0": 300.0,
+              "x1": 715.0,
+              "y1": 364.0,
+              "w": 192.0,
+              "h": 64.0,
+              "cy": 332.0,
+              "tiles": 27.0
+            },
+            {
+              "x0": 443.0,
+              "y0": 444.0,
+              "x1": 715.0,
+              "y1": 668.0,
+              "w": 272.0,
+              "h": 224.0,
+              "cy": 556.0,
+              "tiles": 155.0
+            },
+            {
+              "x0": 427.0,
+              "y0": 780.0,
+              "x1": 715.0,
+              "y1": 1004.0,
+              "w": 288.0,
+              "h": 224.0,
+              "cy": 892.0,
+              "tiles": 145.0
+            }
+          ],
+          "pdf_regions": [
+            {
+              "x0": 429.0,
+              "y0": 110.0,
+              "x1": 717.0,
+              "y1": 334.0,
+              "w": 288.0,
+              "h": 224.0,
+              "cy": 222.0,
+              "tiles": 191.0
+            },
+            {
+              "x0": 429.0,
+              "y0": 414.0,
+              "x1": 717.0,
+              "y1": 702.0,
+              "w": 288.0,
+              "h": 288.0,
+              "cy": 558.0,
+              "tiles": 218.0
+            },
+            {
+              "x0": 413.0,
+              "y0": 750.0,
+              "x1": 717.0,
+              "y1": 1006.0,
+              "w": 304.0,
+              "h": 256.0,
+              "cy": 878.0,
+              "tiles": 230.0
+            }
+          ]
+        },
+        "endnote_shape_ui": {
+          "separator_visible": true,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_below_mm": 2.0,
+          "separator_length_mm": 43.321
+        },
+        "endnote_separator_gap": {
+          "expected_separator": true,
+          "separator_below_mm": 2.0,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_length_px": 163.7,
+          "rhwp": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "pdf": {
+            "expected_separator": true,
+            "candidate_count": 5,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": [
+              {
+                "x0": 432.0,
+                "x1": 594.0,
+                "y0": 231.0,
+                "y1": 231.0,
+                "length": 163.0,
+                "cy": 231.0,
+                "gap_height": 1.0
+              },
+              {
+                "x0": 460.0,
+                "x1": 627.0,
+                "y0": 365.0,
+                "y1": 365.0,
+                "length": 168.0,
+                "cy": 365.0,
+                "gap_height": 1.0
+              },
+              {
+                "x0": 460.0,
+                "x1": 608.0,
+                "y0": 500.0,
+                "y1": 500.0,
+                "length": 149.0,
+                "cy": 500.0,
+                "gap_height": 1.0
+              },
+              {
+                "x0": 432.0,
+                "x1": 636.0,
+                "y0": 600.0,
+                "y1": 600.0,
+                "length": 205.0,
+                "cy": 600.0,
+                "gap_height": 1.0
+              },
+              {
+                "x0": 418.0,
+                "x1": 627.0,
+                "y0": 969.0,
+                "y1": 969.0,
+                "length": 210.0,
+                "cy": 969.0,
+                "gap_height": 1.0
+              }
+            ]
+          },
+          "gap_delta_px": null
+        },
+        "endnote_no_separator_content_start": null,
+        "between_notes_marker_gap": {
+          "expected_between_notes_mm": 0.0,
+          "expected_between_notes_px": null,
+          "rhwp_marker_count": 0,
+          "pdf_marker_count": 0,
+          "paired_gap_count": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_marker_y": [],
+          "pdf_marker_y": [],
+          "rhwp_marker_y_by_column": [
+            []
+          ],
+          "pdf_marker_y_by_column": [
+            []
+          ],
+          "rhwp_gaps_px": [],
+          "pdf_gaps_px": [],
+          "pairs": []
+        },
+        "svg": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/svg/86712_regulatory_analysis_008.svg",
+        "render_tree_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/render_tree/render_tree_008.json",
+        "equation_text_overlap_candidates": [],
+        "question_title_text_overlap_candidates": [],
+        "line_order_overlap_candidates": [],
+        "render_tree_frame_tail_overflow_candidates": [
+          {
+            "path": "root/3/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "-8-",
+            "overflow_px": 52.1,
+            "frame_bottom": 1019,
+            "column": 1,
+            "bbox": [
+              387.9,
+              1059.1,
+              18.0,
+              12.0
+            ]
+          }
+        ],
+        "render_tree_frame_tail_overflow_suppressed_candidates": [],
+        "question_marker_drift_candidates": [],
+        "annotated": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/analysis/annotated_008.png"
+      },
+      {
+        "page": 27,
+        "flags": [
+          "render_tree_frame_tail_overflow",
+          "column_line_band_drift"
+        ],
+        "rhwp_frame": [
+          204,
+          167,
+          710,
+          1026
+        ],
+        "pdf_frame": [
+          77,
+          265,
+          712,
+          1031
+        ],
+        "rhwp_outside_frame_pixels": 50,
+        "pdf_outside_frame_pixels": 83,
+        "rhwp_outside_frame_max_y": 1078,
+        "pdf_outside_frame_max_y": 1080,
+        "rhwp_outside_frame_extent_px": 52,
+        "pdf_outside_frame_extent_px": 49,
+        "frame_overflow_tolerated_bleed": false,
+        "paper_size_footer_frame_bleed": false,
+        "rhwp_outside_frame_bleed_px": 52,
+        "pdf_outside_frame_bleed_px": 49,
+        "content_bottom_delta_px": -5.0,
+        "red_marker_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "line_band_drift": {
+          "rhwp_count": 48,
+          "pdf_count": 51,
+          "paired": 48,
+          "max_abs_delta_px": 101.0,
+          "p90_abs_delta_px": 95.0,
+          "mean_abs_delta_px": 58.7
+        },
+        "column_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              204,
+              167,
+              455,
+              1026
+            ],
+            "pdf_frame": [
+              77,
+              265,
+              392,
+              1031
+            ],
+            "drift": {
+              "rhwp_count": 48,
+              "pdf_count": 51,
+              "paired": 48,
+              "max_abs_delta_px": 100.0,
+              "p90_abs_delta_px": 95.0,
+              "mean_abs_delta_px": 58.7
+            },
+            "rhwp_first_band": {
+              "y0": 170,
+              "y1": 185,
+              "x0": 235,
+              "x1": 415,
+              "pixels": 443,
+              "cy": 177.5
+            },
+            "rhwp_last_band": {
+              "y0": 991,
+              "y1": 1007,
+              "x0": 297,
+              "x1": 425,
+              "pixels": 335,
+              "cy": 999.0
+            },
+            "pdf_first_band": {
+              "y0": 270,
+              "y1": 283,
+              "x0": 206,
+              "x1": 390,
+              "pixels": 232,
+              "cy": 276.5
+            },
+            "pdf_last_band": {
+              "y0": 992,
+              "y1": 1026,
+              "x0": 206,
+              "x1": 390,
+              "pixels": 1106,
+              "cy": 1009.0
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              459,
+              167,
+              710,
+              1026
+            ],
+            "pdf_frame": [
+              396,
+              265,
+              712,
+              1031
+            ],
+            "drift": {
+              "rhwp_count": 65,
+              "pdf_count": 50,
+              "paired": 50,
+              "max_abs_delta_px": 334.0,
+              "p90_abs_delta_px": 290.0,
+              "mean_abs_delta_px": 179.0
+            },
+            "rhwp_first_band": {
+              "y0": 169,
+              "y1": 185,
+              "x0": 503,
+              "x1": 663,
+              "pixels": 726,
+              "cy": 177.0
+            },
+            "rhwp_last_band": {
+              "y0": 972,
+              "y1": 985,
+              "x0": 461,
+              "x1": 652,
+              "pixels": 634,
+              "cy": 978.5
+            },
+            "pdf_first_band": {
+              "y0": 269,
+              "y1": 283,
+              "x0": 398,
+              "x1": 664,
+              "pixels": 698,
+              "cy": 276.0
+            },
+            "pdf_last_band": {
+              "y0": 1012,
+              "y1": 1026,
+              "x0": 398,
+              "x1": 648,
+              "pixels": 968,
+              "cy": 1019.0
+            }
+          }
+        ],
+        "column_line_band_drift_candidates": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              204,
+              167,
+              455,
+              1026
+            ],
+            "pdf_frame": [
+              77,
+              265,
+              392,
+              1031
+            ],
+            "drift": {
+              "rhwp_count": 48,
+              "pdf_count": 51,
+              "paired": 48,
+              "max_abs_delta_px": 100.0,
+              "p90_abs_delta_px": 95.0,
+              "mean_abs_delta_px": 58.7
+            },
+            "rhwp_first_band": {
+              "y0": 170,
+              "y1": 185,
+              "x0": 235,
+              "x1": 415,
+              "pixels": 443,
+              "cy": 177.5
+            },
+            "rhwp_last_band": {
+              "y0": 991,
+              "y1": 1007,
+              "x0": 297,
+              "x1": 425,
+              "pixels": 335,
+              "cy": 999.0
+            },
+            "pdf_first_band": {
+              "y0": 270,
+              "y1": 283,
+              "x0": 206,
+              "x1": 390,
+              "pixels": 232,
+              "cy": 276.5
+            },
+            "pdf_last_band": {
+              "y0": 992,
+              "y1": 1026,
+              "x0": 206,
+              "x1": 390,
+              "pixels": 1106,
+              "cy": 1009.0
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              459,
+              167,
+              710,
+              1026
+            ],
+            "pdf_frame": [
+              396,
+              265,
+              712,
+              1031
+            ],
+            "drift": {
+              "rhwp_count": 65,
+              "pdf_count": 50,
+              "paired": 50,
+              "max_abs_delta_px": 334.0,
+              "p90_abs_delta_px": 290.0,
+              "mean_abs_delta_px": 179.0
+            },
+            "rhwp_first_band": {
+              "y0": 169,
+              "y1": 185,
+              "x0": 503,
+              "x1": 663,
+              "pixels": 726,
+              "cy": 177.0
+            },
+            "rhwp_last_band": {
+              "y0": 972,
+              "y1": 985,
+              "x0": 461,
+              "x1": 652,
+              "pixels": 634,
+              "cy": 978.5
+            },
+            "pdf_first_band": {
+              "y0": 269,
+              "y1": 283,
+              "x0": 398,
+              "x1": 664,
+              "pixels": 698,
+              "cy": 276.0
+            },
+            "pdf_last_band": {
+              "y0": 1012,
+              "y1": 1026,
+              "x0": 398,
+              "x1": 648,
+              "pixels": 968,
+              "cy": 1019.0
+            }
+          }
+        ],
+        "large_ink_region_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 6,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_regions": [],
+          "pdf_regions": [
+            {
+              "x0": 77.0,
+              "y0": 265.0,
+              "x1": 461.0,
+              "y1": 729.0,
+              "w": 384.0,
+              "h": 464.0,
+              "cy": 497.0,
+              "tiles": 203.0
+            },
+            {
+              "x0": 541.0,
+              "y0": 265.0,
+              "x1": 669.0,
+              "y1": 553.0,
+              "w": 128.0,
+              "h": 288.0,
+              "cy": 409.0,
+              "tiles": 83.0
+            },
+            {
+              "x0": 285.0,
+              "y0": 729.0,
+              "x1": 701.0,
+              "y1": 1031.0,
+              "w": 416.0,
+              "h": 302.0,
+              "cy": 880.0,
+              "tiles": 207.0
+            },
+            {
+              "x0": 509.0,
+              "y0": 745.0,
+              "x1": 701.0,
+              "y1": 793.0,
+              "w": 192.0,
+              "h": 48.0,
+              "cy": 769.0,
+              "tiles": 29.0
+            },
+            {
+              "x0": 509.0,
+              "y0": 841.0,
+              "x1": 701.0,
+              "y1": 889.0,
+              "w": 192.0,
+              "h": 48.0,
+              "cy": 865.0,
+              "tiles": 20.0
+            },
+            {
+              "x0": 509.0,
+              "y0": 921.0,
+              "x1": 701.0,
+              "y1": 969.0,
+              "w": 192.0,
+              "h": 48.0,
+              "cy": 945.0,
+              "tiles": 28.0
+            }
+          ]
+        },
+        "endnote_shape_ui": {
+          "separator_visible": true,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_below_mm": 2.0,
+          "separator_length_mm": 43.321
+        },
+        "endnote_separator_gap": {
+          "expected_separator": true,
+          "separator_below_mm": 2.0,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_length_px": 163.7,
+          "rhwp": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "pdf": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "gap_delta_px": null
+        },
+        "endnote_no_separator_content_start": null,
+        "between_notes_marker_gap": {
+          "expected_between_notes_mm": 0.0,
+          "expected_between_notes_px": null,
+          "rhwp_marker_count": 0,
+          "pdf_marker_count": 0,
+          "paired_gap_count": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_marker_y": [],
+          "pdf_marker_y": [],
+          "rhwp_marker_y_by_column": [
+            []
+          ],
+          "pdf_marker_y_by_column": [
+            []
+          ],
+          "rhwp_gaps_px": [],
+          "pdf_gaps_px": [],
+          "pairs": []
+        },
+        "svg": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/svg/86712_regulatory_analysis_027.svg",
+        "render_tree_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/render_tree/render_tree_027.json",
+        "equation_text_overlap_candidates": [],
+        "question_title_text_overlap_candidates": [],
+        "line_order_overlap_candidates": [],
+        "render_tree_frame_tail_overflow_candidates": [
+          {
+            "path": "root/3/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "-27-",
+            "overflow_px": 45.1,
+            "frame_bottom": 1026,
+            "column": 0,
+            "bbox": [
+              384.9,
+              1059.1,
+              24.0,
+              12.0
+            ]
+          }
+        ],
+        "render_tree_frame_tail_overflow_suppressed_candidates": [],
+        "question_marker_drift_candidates": [],
+        "annotated": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/analysis/annotated_027.png"
+      },
+      {
+        "page": 31,
+        "flags": [
+          "render_tree_frame_tail_overflow",
+          "column_line_band_drift"
+        ],
+        "rhwp_frame": [
+          263,
+          283,
+          731,
+          1038
+        ],
+        "pdf_frame": [
+          77,
+          285,
+          733,
+          1042
+        ],
+        "rhwp_outside_frame_pixels": 48,
+        "pdf_outside_frame_pixels": 80,
+        "rhwp_outside_frame_max_y": 1079,
+        "pdf_outside_frame_max_y": 1081,
+        "rhwp_outside_frame_extent_px": 41,
+        "pdf_outside_frame_extent_px": 39,
+        "frame_overflow_tolerated_bleed": false,
+        "paper_size_footer_frame_bleed": false,
+        "rhwp_outside_frame_bleed_px": 41,
+        "pdf_outside_frame_bleed_px": 39,
+        "content_bottom_delta_px": -4.0,
+        "red_marker_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "line_band_drift": {
+          "rhwp_count": 24,
+          "pdf_count": 29,
+          "paired": 24,
+          "max_abs_delta_px": 152.0,
+          "p90_abs_delta_px": 113.5,
+          "mean_abs_delta_px": 54.5
+        },
+        "column_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              263,
+              283,
+              495,
+              1038
+            ],
+            "pdf_frame": [
+              77,
+              285,
+              403,
+              1042
+            ],
+            "drift": {
+              "rhwp_count": 25,
+              "pdf_count": 30,
+              "paired": 25,
+              "max_abs_delta_px": 109.5,
+              "p90_abs_delta_px": 89.0,
+              "mean_abs_delta_px": 45.9
+            },
+            "rhwp_first_band": {
+              "y0": 286,
+              "y1": 299,
+              "x0": 266,
+              "x1": 485,
+              "pixels": 1004,
+              "cy": 292.5
+            },
+            "rhwp_last_band": {
+              "y0": 1029,
+              "y1": 1036,
+              "x0": 271,
+              "x1": 332,
+              "pixels": 238,
+              "cy": 1032.5
+            },
+            "pdf_first_band": {
+              "y0": 289,
+              "y1": 301,
+              "x0": 141,
+              "x1": 400,
+              "pixels": 611,
+              "cy": 295.0
+            },
+            "pdf_last_band": {
+              "y0": 1025,
+              "y1": 1036,
+              "x0": 141,
+              "x1": 401,
+              "pixels": 337,
+              "cy": 1030.5
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              499,
+              283,
+              731,
+              1038
+            ],
+            "pdf_frame": [
+              407,
+              285,
+              733,
+              1042
+            ],
+            "drift": {
+              "rhwp_count": 21,
+              "pdf_count": 28,
+              "paired": 21,
+              "max_abs_delta_px": 216.5,
+              "p90_abs_delta_px": 109.5,
+              "mean_abs_delta_px": 53.2
+            },
+            "rhwp_first_band": {
+              "y0": 286,
+              "y1": 299,
+              "x0": 501,
+              "x1": 729,
+              "pixels": 1079,
+              "cy": 292.5
+            },
+            "rhwp_last_band": {
+              "y0": 955,
+              "y1": 1012,
+              "x0": 501,
+              "x1": 729,
+              "pixels": 8055,
+              "cy": 983.5
+            },
+            "pdf_first_band": {
+              "y0": 289,
+              "y1": 301,
+              "x0": 416,
+              "x1": 728,
+              "pixels": 1339,
+              "cy": 295.0
+            },
+            "pdf_last_band": {
+              "y0": 1000,
+              "y1": 1024,
+              "x0": 409,
+              "x1": 717,
+              "pixels": 1287,
+              "cy": 1012.0
+            }
+          }
+        ],
+        "column_line_band_drift_candidates": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              263,
+              283,
+              495,
+              1038
+            ],
+            "pdf_frame": [
+              77,
+              285,
+              403,
+              1042
+            ],
+            "drift": {
+              "rhwp_count": 25,
+              "pdf_count": 30,
+              "paired": 25,
+              "max_abs_delta_px": 109.5,
+              "p90_abs_delta_px": 89.0,
+              "mean_abs_delta_px": 45.9
+            },
+            "rhwp_first_band": {
+              "y0": 286,
+              "y1": 299,
+              "x0": 266,
+              "x1": 485,
+              "pixels": 1004,
+              "cy": 292.5
+            },
+            "rhwp_last_band": {
+              "y0": 1029,
+              "y1": 1036,
+              "x0": 271,
+              "x1": 332,
+              "pixels": 238,
+              "cy": 1032.5
+            },
+            "pdf_first_band": {
+              "y0": 289,
+              "y1": 301,
+              "x0": 141,
+              "x1": 400,
+              "pixels": 611,
+              "cy": 295.0
+            },
+            "pdf_last_band": {
+              "y0": 1025,
+              "y1": 1036,
+              "x0": 141,
+              "x1": 401,
+              "pixels": 337,
+              "cy": 1030.5
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              499,
+              283,
+              731,
+              1038
+            ],
+            "pdf_frame": [
+              407,
+              285,
+              733,
+              1042
+            ],
+            "drift": {
+              "rhwp_count": 21,
+              "pdf_count": 28,
+              "paired": 21,
+              "max_abs_delta_px": 216.5,
+              "p90_abs_delta_px": 109.5,
+              "mean_abs_delta_px": 53.2
+            },
+            "rhwp_first_band": {
+              "y0": 286,
+              "y1": 299,
+              "x0": 501,
+              "x1": 729,
+              "pixels": 1079,
+              "cy": 292.5
+            },
+            "rhwp_last_band": {
+              "y0": 955,
+              "y1": 1012,
+              "x0": 501,
+              "x1": 729,
+              "pixels": 8055,
+              "cy": 983.5
+            },
+            "pdf_first_band": {
+              "y0": 289,
+              "y1": 301,
+              "x0": 416,
+              "x1": 728,
+              "pixels": 1339,
+              "cy": 295.0
+            },
+            "pdf_last_band": {
+              "y0": 1000,
+              "y1": 1024,
+              "x0": 409,
+              "x1": 717,
+              "pixels": 1287,
+              "cy": 1012.0
+            }
+          }
+        ],
+        "large_ink_region_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 9,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_regions": [],
+          "pdf_regions": [
+            {
+              "x0": 253.0,
+              "y0": 285.0,
+              "x1": 733.0,
+              "y1": 445.0,
+              "w": 480.0,
+              "h": 160.0,
+              "cy": 365.0,
+              "tiles": 210.0
+            },
+            {
+              "x0": 141.0,
+              "y0": 333.0,
+              "x1": 253.0,
+              "y1": 413.0,
+              "w": 112.0,
+              "h": 80.0,
+              "cy": 373.0,
+              "tiles": 23.0
+            },
+            {
+              "x0": 77.0,
+              "y0": 445.0,
+              "x1": 269.0,
+              "y1": 573.0,
+              "w": 192.0,
+              "h": 128.0,
+              "cy": 509.0,
+              "tiles": 45.0
+            },
+            {
+              "x0": 253.0,
+              "y0": 477.0,
+              "x1": 733.0,
+              "y1": 589.0,
+              "w": 480.0,
+              "h": 112.0,
+              "cy": 533.0,
+              "tiles": 175.0
+            },
+            {
+              "x0": 141.0,
+              "y0": 589.0,
+              "x1": 253.0,
+              "y1": 669.0,
+              "w": 112.0,
+              "h": 80.0,
+              "cy": 629.0,
+              "tiles": 22.0
+            },
+            {
+              "x0": 285.0,
+              "y0": 605.0,
+              "x1": 701.0,
+              "y1": 685.0,
+              "w": 416.0,
+              "h": 80.0,
+              "cy": 645.0,
+              "tiles": 70.0
+            },
+            {
+              "x0": 77.0,
+              "y0": 685.0,
+              "x1": 397.0,
+              "y1": 813.0,
+              "w": 320.0,
+              "h": 128.0,
+              "cy": 749.0,
+              "tiles": 61.0
+            },
+            {
+              "x0": 141.0,
+              "y0": 861.0,
+              "x1": 253.0,
+              "y1": 925.0,
+              "w": 112.0,
+              "h": 64.0,
+              "cy": 893.0,
+              "tiles": 15.0
+            }
+          ]
+        },
+        "endnote_shape_ui": {
+          "separator_visible": true,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_below_mm": 2.0,
+          "separator_length_mm": 43.321
+        },
+        "endnote_separator_gap": {
+          "expected_separator": true,
+          "separator_below_mm": 2.0,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_length_px": 163.7,
+          "rhwp": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "pdf": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "gap_delta_px": null
+        },
+        "endnote_no_separator_content_start": null,
+        "between_notes_marker_gap": {
+          "expected_between_notes_mm": 0.0,
+          "expected_between_notes_px": null,
+          "rhwp_marker_count": 0,
+          "pdf_marker_count": 0,
+          "paired_gap_count": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_marker_y": [],
+          "pdf_marker_y": [],
+          "rhwp_marker_y_by_column": [
+            []
+          ],
+          "pdf_marker_y_by_column": [
+            []
+          ],
+          "rhwp_gaps_px": [],
+          "pdf_gaps_px": [],
+          "pairs": []
+        },
+        "svg": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/svg/86712_regulatory_analysis_031.svg",
+        "render_tree_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/render_tree/render_tree_031.json",
+        "equation_text_overlap_candidates": [],
+        "question_title_text_overlap_candidates": [],
+        "line_order_overlap_candidates": [],
+        "render_tree_frame_tail_overflow_candidates": [
+          {
+            "path": "root/2/0/1/51/2",
+            "pi": 1,
+            "question": null,
+            "question_text": null,
+            "text": "예외기준",
+            "overflow_px": 6.4,
+            "frame_bottom": 1038,
+            "column": 0,
+            "bbox": [
+              267.0,
+              1029.7,
+              62.7,
+              14.7
+            ]
+          }
+        ],
+        "render_tree_frame_tail_overflow_suppressed_candidates": [
+          {
+            "path": "root/3/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "-31-",
+            "overflow_px": 33.1,
+            "frame_bottom": 1038,
+            "column": 0,
+            "bbox": [
+              384.9,
+              1059.1,
+              24.0,
+              12.0
+            ],
+            "suppressed_reason": "page_number_footer_bleed"
+          }
+        ],
+        "question_marker_drift_candidates": [],
+        "annotated": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/analysis/annotated_031.png"
+      },
+      {
+        "page": 33,
+        "flags": [
+          "render_tree_frame_tail_overflow"
+        ],
+        "rhwp_frame": [
+          75,
+          140,
+          715,
+          1030
+        ],
+        "pdf_frame": [
+          77,
+          142,
+          717,
+          1037
+        ],
+        "rhwp_outside_frame_pixels": 53,
+        "pdf_outside_frame_pixels": 91,
+        "rhwp_outside_frame_max_y": 1079,
+        "pdf_outside_frame_max_y": 1081,
+        "rhwp_outside_frame_extent_px": 49,
+        "pdf_outside_frame_extent_px": 44,
+        "frame_overflow_tolerated_bleed": false,
+        "paper_size_footer_frame_bleed": false,
+        "rhwp_outside_frame_bleed_px": 49,
+        "pdf_outside_frame_bleed_px": 44,
+        "content_bottom_delta_px": -7.0,
+        "red_marker_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "line_band_drift": {
+          "rhwp_count": 25,
+          "pdf_count": 29,
+          "paired": 25,
+          "max_abs_delta_px": 105.0,
+          "p90_abs_delta_px": 104.5,
+          "mean_abs_delta_px": 39.7
+        },
+        "column_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              75,
+              140,
+              393,
+              1030
+            ],
+            "pdf_frame": [
+              77,
+              142,
+              395,
+              1037
+            ],
+            "drift": {
+              "rhwp_count": 21,
+              "pdf_count": 4,
+              "paired": 4,
+              "max_abs_delta_px": 512.5,
+              "p90_abs_delta_px": 3.0,
+              "mean_abs_delta_px": 130.0
+            },
+            "rhwp_first_band": {
+              "y0": 142,
+              "y1": 158,
+              "x0": 77,
+              "x1": 376,
+              "pixels": 1345,
+              "cy": 150.0
+            },
+            "rhwp_last_band": {
+              "y0": 995,
+              "y1": 1012,
+              "x0": 96,
+              "x1": 325,
+              "pixels": 1451,
+              "cy": 1003.5
+            },
+            "pdf_first_band": {
+              "y0": 144,
+              "y1": 160,
+              "x0": 81,
+              "x1": 392,
+              "pixels": 1420,
+              "cy": 152.0
+            },
+            "pdf_last_band": {
+              "y0": 852,
+              "y1": 867,
+              "x0": 79,
+              "x1": 162,
+              "pixels": 342,
+              "cy": 859.5
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              397,
+              140,
+              715,
+              1030
+            ],
+            "pdf_frame": [
+              399,
+              142,
+              717,
+              1037
+            ],
+            "drift": {
+              "rhwp_count": 26,
+              "pdf_count": 28,
+              "paired": 26,
+              "max_abs_delta_px": 31.0,
+              "p90_abs_delta_px": 31.0,
+              "mean_abs_delta_px": 13.2
+            },
+            "rhwp_first_band": {
+              "y0": 142,
+              "y1": 158,
+              "x0": 399,
+              "x1": 697,
+              "pixels": 1332,
+              "cy": 150.0
+            },
+            "rhwp_last_band": {
+              "y0": 982,
+              "y1": 999,
+              "x0": 417,
+              "x1": 711,
+              "pixels": 1763,
+              "cy": 990.5
+            },
+            "pdf_first_band": {
+              "y0": 144,
+              "y1": 160,
+              "x0": 401,
+              "x1": 712,
+              "pixels": 1420,
+              "cy": 152.0
+            },
+            "pdf_last_band": {
+              "y0": 1018,
+              "y1": 1035,
+              "x0": 418,
+              "x1": 715,
+              "pixels": 1562,
+              "cy": 1026.5
+            }
+          }
+        ],
+        "column_line_band_drift_candidates": [],
+        "large_ink_region_drift": {
+          "rhwp_count": 7,
+          "pdf_count": 3,
+          "paired": 3,
+          "deltas_px": [
+            -50.0,
+            -274.0,
+            -337.5
+          ],
+          "max_abs_delta_px": 337.5,
+          "mean_abs_delta_px": 220.5,
+          "rhwp_regions": [
+            {
+              "x0": 75.0,
+              "y0": 172.0,
+              "x1": 299.0,
+              "y1": 236.0,
+              "w": 224.0,
+              "h": 64.0,
+              "cy": 204.0,
+              "tiles": 23.0
+            },
+            {
+              "x0": 411.0,
+              "y0": 172.0,
+              "x1": 715.0,
+              "y1": 396.0,
+              "w": 304.0,
+              "h": 224.0,
+              "cy": 284.0,
+              "tiles": 197.0
+            },
+            {
+              "x0": 411.0,
+              "y0": 444.0,
+              "x1": 715.0,
+              "y1": 700.0,
+              "w": 304.0,
+              "h": 256.0,
+              "cy": 572.0,
+              "tiles": 143.0
+            },
+            {
+              "x0": 75.0,
+              "y0": 460.0,
+              "x1": 395.0,
+              "y1": 652.0,
+              "w": 320.0,
+              "h": 192.0,
+              "cy": 556.0,
+              "tiles": 177.0
+            },
+            {
+              "x0": 123.0,
+              "y0": 732.0,
+              "x1": 251.0,
+              "y1": 780.0,
+              "w": 128.0,
+              "h": 48.0,
+              "cy": 756.0,
+              "tiles": 14.0
+            },
+            {
+              "x0": 411.0,
+              "y0": 812.0,
+              "x1": 715.0,
+              "y1": 1004.0,
+              "w": 304.0,
+              "h": 192.0,
+              "cy": 908.0,
+              "tiles": 138.0
+            },
+            {
+              "x0": 91.0,
+              "y0": 860.0,
+              "x1": 395.0,
+              "y1": 1020.0,
+              "w": 304.0,
+              "h": 160.0,
+              "cy": 940.0,
+              "tiles": 125.0
+            }
+          ],
+          "pdf_regions": [
+            {
+              "x0": 77.0,
+              "y0": 142.0,
+              "x1": 717.0,
+              "y1": 366.0,
+              "w": 640.0,
+              "h": 224.0,
+              "cy": 254.0,
+              "tiles": 227.0
+            },
+            {
+              "x0": 413.0,
+              "y0": 446.0,
+              "x1": 717.0,
+              "y1": 670.0,
+              "w": 304.0,
+              "h": 224.0,
+              "cy": 558.0,
+              "tiles": 177.0
+            },
+            {
+              "x0": 413.0,
+              "y0": 782.0,
+              "x1": 717.0,
+              "y1": 1037.0,
+              "w": 304.0,
+              "h": 255.0,
+              "cy": 909.5,
+              "tiles": 212.0
+            }
+          ]
+        },
+        "endnote_shape_ui": {
+          "separator_visible": true,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_below_mm": 2.0,
+          "separator_length_mm": 43.321
+        },
+        "endnote_separator_gap": {
+          "expected_separator": true,
+          "separator_below_mm": 2.0,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_length_px": 163.7,
+          "rhwp": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "pdf": {
+            "expected_separator": true,
+            "candidate_count": 2,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": [
+              {
+                "x0": 418.0,
+                "x1": 636.0,
+                "y0": 498.0,
+                "y1": 498.0,
+                "length": 219.0,
+                "cy": 498.0,
+                "gap_height": 1.0
+              },
+              {
+                "x0": 432.0,
+                "x1": 590.0,
+                "y0": 834.0,
+                "y1": 834.0,
+                "length": 159.0,
+                "cy": 834.0,
+                "gap_height": 1.0
+              }
+            ]
+          },
+          "gap_delta_px": null
+        },
+        "endnote_no_separator_content_start": null,
+        "between_notes_marker_gap": {
+          "expected_between_notes_mm": 0.0,
+          "expected_between_notes_px": null,
+          "rhwp_marker_count": 0,
+          "pdf_marker_count": 0,
+          "paired_gap_count": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_marker_y": [],
+          "pdf_marker_y": [],
+          "rhwp_marker_y_by_column": [
+            []
+          ],
+          "pdf_marker_y_by_column": [
+            []
+          ],
+          "rhwp_gaps_px": [],
+          "pdf_gaps_px": [],
+          "pairs": []
+        },
+        "svg": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/svg/86712_regulatory_analysis_033.svg",
+        "render_tree_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/render_tree/render_tree_033.json",
+        "equation_text_overlap_candidates": [],
+        "question_title_text_overlap_candidates": [],
+        "line_order_overlap_candidates": [],
+        "render_tree_frame_tail_overflow_candidates": [
+          {
+            "path": "root/3/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "-33-",
+            "overflow_px": 41.1,
+            "frame_bottom": 1030,
+            "column": 1,
+            "bbox": [
+              384.9,
+              1059.1,
+              24.0,
+              12.0
+            ]
+          }
+        ],
+        "render_tree_frame_tail_overflow_suppressed_candidates": [],
+        "question_marker_drift_candidates": [],
+        "annotated": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/analysis/annotated_033.png"
+      },
+      {
+        "page": 34,
+        "flags": [
+          "render_tree_frame_tail_overflow",
+          "line_band_drift",
+          "column_line_band_drift",
+          "large_ink_region_drift"
+        ],
+        "rhwp_frame": [
+          75,
+          108,
+          715,
+          1019
+        ],
+        "pdf_frame": [
+          77,
+          110,
+          717,
+          1038
+        ],
+        "rhwp_outside_frame_pixels": 51,
+        "pdf_outside_frame_pixels": 96,
+        "rhwp_outside_frame_max_y": 1079,
+        "pdf_outside_frame_max_y": 1081,
+        "rhwp_outside_frame_extent_px": 60,
+        "pdf_outside_frame_extent_px": 43,
+        "frame_overflow_tolerated_bleed": false,
+        "paper_size_footer_frame_bleed": false,
+        "rhwp_outside_frame_bleed_px": 60,
+        "pdf_outside_frame_bleed_px": 43,
+        "content_bottom_delta_px": -19.0,
+        "red_marker_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "line_band_drift": {
+          "rhwp_count": 26,
+          "pdf_count": 32,
+          "paired": 26,
+          "max_abs_delta_px": 132.0,
+          "p90_abs_delta_px": 70.5,
+          "mean_abs_delta_px": 61.8
+        },
+        "column_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              75,
+              108,
+              393,
+              1019
+            ],
+            "pdf_frame": [
+              77,
+              110,
+              395,
+              1038
+            ],
+            "drift": {
+              "rhwp_count": 7,
+              "pdf_count": 19,
+              "paired": 7,
+              "max_abs_delta_px": 205.5,
+              "p90_abs_delta_px": 205.0,
+              "mean_abs_delta_px": 189.9
+            },
+            "rhwp_first_band": {
+              "y0": 110,
+              "y1": 126,
+              "x0": 109,
+              "x1": 391,
+              "pixels": 1284,
+              "cy": 118.0
+            },
+            "rhwp_last_band": {
+              "y0": 311,
+              "y1": 328,
+              "x0": 96,
+              "x1": 367,
+              "pixels": 1258,
+              "cy": 319.5
+            },
+            "pdf_first_band": {
+              "y0": 215,
+              "y1": 231,
+              "x0": 79,
+              "x1": 162,
+              "pixels": 342,
+              "cy": 223.0
+            },
+            "pdf_last_band": {
+              "y0": 1018,
+              "y1": 1035,
+              "x0": 100,
+              "x1": 290,
+              "pixels": 781,
+              "cy": 1026.5
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              397,
+              108,
+              715,
+              1019
+            ],
+            "pdf_frame": [
+              399,
+              110,
+              717,
+              1038
+            ],
+            "drift": {
+              "rhwp_count": 26,
+              "pdf_count": 33,
+              "paired": 26,
+              "max_abs_delta_px": 132.0,
+              "p90_abs_delta_px": 70.5,
+              "mean_abs_delta_px": 61.8
+            },
+            "rhwp_first_band": {
+              "y0": 110,
+              "y1": 127,
+              "x0": 416,
+              "x1": 712,
+              "pixels": 1786,
+              "cy": 118.5
+            },
+            "rhwp_last_band": {
+              "y0": 950,
+              "y1": 967,
+              "x0": 424,
+              "x1": 713,
+              "pixels": 1613,
+              "cy": 958.5
+            },
+            "pdf_first_band": {
+              "y0": 112,
+              "y1": 130,
+              "x0": 418,
+              "x1": 715,
+              "pixels": 1559,
+              "cy": 121.0
+            },
+            "pdf_last_band": {
+              "y0": 1019,
+              "y1": 1035,
+              "x0": 434,
+              "x1": 714,
+              "pixels": 1258,
+              "cy": 1027.0
+            }
+          }
+        ],
+        "column_line_band_drift_candidates": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              75,
+              108,
+              393,
+              1019
+            ],
+            "pdf_frame": [
+              77,
+              110,
+              395,
+              1038
+            ],
+            "drift": {
+              "rhwp_count": 7,
+              "pdf_count": 19,
+              "paired": 7,
+              "max_abs_delta_px": 205.5,
+              "p90_abs_delta_px": 205.0,
+              "mean_abs_delta_px": 189.9
+            },
+            "rhwp_first_band": {
+              "y0": 110,
+              "y1": 126,
+              "x0": 109,
+              "x1": 391,
+              "pixels": 1284,
+              "cy": 118.0
+            },
+            "rhwp_last_band": {
+              "y0": 311,
+              "y1": 328,
+              "x0": 96,
+              "x1": 367,
+              "pixels": 1258,
+              "cy": 319.5
+            },
+            "pdf_first_band": {
+              "y0": 215,
+              "y1": 231,
+              "x0": 79,
+              "x1": 162,
+              "pixels": 342,
+              "cy": 223.0
+            },
+            "pdf_last_band": {
+              "y0": 1018,
+              "y1": 1035,
+              "x0": 100,
+              "x1": 290,
+              "pixels": 781,
+              "cy": 1026.5
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              397,
+              108,
+              715,
+              1019
+            ],
+            "pdf_frame": [
+              399,
+              110,
+              717,
+              1038
+            ],
+            "drift": {
+              "rhwp_count": 26,
+              "pdf_count": 33,
+              "paired": 26,
+              "max_abs_delta_px": 132.0,
+              "p90_abs_delta_px": 70.5,
+              "mean_abs_delta_px": 61.8
+            },
+            "rhwp_first_band": {
+              "y0": 110,
+              "y1": 127,
+              "x0": 416,
+              "x1": 712,
+              "pixels": 1786,
+              "cy": 118.5
+            },
+            "rhwp_last_band": {
+              "y0": 950,
+              "y1": 967,
+              "x0": 424,
+              "x1": 713,
+              "pixels": 1613,
+              "cy": 958.5
+            },
+            "pdf_first_band": {
+              "y0": 112,
+              "y1": 130,
+              "x0": 418,
+              "x1": 715,
+              "pixels": 1559,
+              "cy": 121.0
+            },
+            "pdf_last_band": {
+              "y0": 1019,
+              "y1": 1035,
+              "x0": 434,
+              "x1": 714,
+              "pixels": 1258,
+              "cy": 1027.0
+            }
+          }
+        ],
+        "large_ink_region_drift": {
+          "rhwp_count": 4,
+          "pdf_count": 6,
+          "paired": 4,
+          "deltas_px": [
+            14.0,
+            -202.0,
+            30.0,
+            286.0
+          ],
+          "max_abs_delta_px": 286.0,
+          "mean_abs_delta_px": 133.0,
+          "rhwp_regions": [
+            {
+              "x0": 139.0,
+              "y0": 108.0,
+              "x1": 715.0,
+              "y1": 364.0,
+              "w": 576.0,
+              "h": 256.0,
+              "cy": 236.0,
+              "tiles": 222.0
+            },
+            {
+              "x0": 107.0,
+              "y0": 172.0,
+              "x1": 395.0,
+              "y1": 332.0,
+              "w": 288.0,
+              "h": 160.0,
+              "cy": 252.0,
+              "tiles": 125.0
+            },
+            {
+              "x0": 411.0,
+              "y0": 444.0,
+              "x1": 715.0,
+              "y1": 700.0,
+              "w": 304.0,
+              "h": 256.0,
+              "cy": 572.0,
+              "tiles": 155.0
+            },
+            {
+              "x0": 427.0,
+              "y0": 812.0,
+              "x1": 715.0,
+              "y1": 972.0,
+              "w": 288.0,
+              "h": 160.0,
+              "cy": 892.0,
+              "tiles": 132.0
+            }
+          ],
+          "pdf_regions": [
+            {
+              "x0": 397.0,
+              "y0": 110.0,
+              "x1": 717.0,
+              "y1": 334.0,
+              "w": 320.0,
+              "h": 224.0,
+              "cy": 222.0,
+              "tiles": 189.0
+            },
+            {
+              "x0": 93.0,
+              "y0": 414.0,
+              "x1": 349.0,
+              "y1": 494.0,
+              "w": 256.0,
+              "h": 80.0,
+              "cy": 454.0,
+              "tiles": 40.0
+            },
+            {
+              "x0": 413.0,
+              "y0": 414.0,
+              "x1": 717.0,
+              "y1": 670.0,
+              "w": 304.0,
+              "h": 256.0,
+              "cy": 542.0,
+              "tiles": 192.0
+            },
+            {
+              "x0": 93.0,
+              "y0": 542.0,
+              "x1": 253.0,
+              "y1": 670.0,
+              "w": 160.0,
+              "h": 128.0,
+              "cy": 606.0,
+              "tiles": 48.0
+            },
+            {
+              "x0": 413.0,
+              "y0": 750.0,
+              "x1": 717.0,
+              "y1": 910.0,
+              "w": 304.0,
+              "h": 160.0,
+              "cy": 830.0,
+              "tiles": 125.0
+            },
+            {
+              "x0": 93.0,
+              "y0": 878.0,
+              "x1": 397.0,
+              "y1": 1038.0,
+              "w": 304.0,
+              "h": 160.0,
+              "cy": 958.0,
+              "tiles": 130.0
+            }
+          ]
+        },
+        "endnote_shape_ui": {
+          "separator_visible": true,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_below_mm": 2.0,
+          "separator_length_mm": 43.321
+        },
+        "endnote_separator_gap": {
+          "expected_separator": true,
+          "separator_below_mm": 2.0,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_length_px": 163.7,
+          "rhwp": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "pdf": {
+            "expected_separator": true,
+            "candidate_count": 6,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": [
+              {
+                "x0": 418.0,
+                "x1": 612.0,
+                "y0": 466.0,
+                "y1": 466.0,
+                "length": 195.0,
+                "cy": 466.0,
+                "gap_height": 1.0
+              },
+              {
+                "x0": 432.0,
+                "x1": 587.0,
+                "y0": 567.0,
+                "y1": 567.0,
+                "length": 156.0,
+                "cy": 567.0,
+                "gap_height": 1.0
+              },
+              {
+                "x0": 98.0,
+                "x1": 214.0,
+                "y0": 600.0,
+                "y1": 600.0,
+                "length": 117.0,
+                "cy": 600.0,
+                "gap_height": 1.0
+              },
+              {
+                "x0": 98.0,
+                "x1": 251.0,
+                "y0": 634.0,
+                "y1": 634.0,
+                "length": 154.0,
+                "cy": 634.0,
+                "gap_height": 1.0
+              },
+              {
+                "x0": 418.0,
+                "x1": 531.0,
+                "y0": 902.0,
+                "y1": 902.0,
+                "length": 114.0,
+                "cy": 902.0,
+                "gap_height": 1.0
+              },
+              {
+                "x0": 98.0,
+                "x1": 264.0,
+                "y0": 936.0,
+                "y1": 936.0,
+                "length": 167.0,
+                "cy": 936.0,
+                "gap_height": 1.0
+              }
+            ]
+          },
+          "gap_delta_px": null
+        },
+        "endnote_no_separator_content_start": null,
+        "between_notes_marker_gap": {
+          "expected_between_notes_mm": 0.0,
+          "expected_between_notes_px": null,
+          "rhwp_marker_count": 0,
+          "pdf_marker_count": 0,
+          "paired_gap_count": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_marker_y": [],
+          "pdf_marker_y": [],
+          "rhwp_marker_y_by_column": [
+            []
+          ],
+          "pdf_marker_y_by_column": [
+            []
+          ],
+          "rhwp_gaps_px": [],
+          "pdf_gaps_px": [],
+          "pairs": []
+        },
+        "svg": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/svg/86712_regulatory_analysis_034.svg",
+        "render_tree_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/render_tree/render_tree_034.json",
+        "equation_text_overlap_candidates": [],
+        "question_title_text_overlap_candidates": [],
+        "line_order_overlap_candidates": [],
+        "render_tree_frame_tail_overflow_candidates": [
+          {
+            "path": "root/3/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "-34-",
+            "overflow_px": 52.1,
+            "frame_bottom": 1019,
+            "column": 1,
+            "bbox": [
+              384.9,
+              1059.1,
+              24.0,
+              12.0
+            ]
+          }
+        ],
+        "render_tree_frame_tail_overflow_suppressed_candidates": [],
+        "question_marker_drift_candidates": [],
+        "annotated": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/analysis/annotated_034.png"
+      },
+      {
+        "page": 50,
+        "flags": [
+          "render_tree_frame_tail_overflow",
+          "line_band_drift",
+          "column_line_band_drift",
+          "large_ink_region_drift"
+        ],
+        "rhwp_frame": [
+          263,
+          283,
+          731,
+          1050
+        ],
+        "pdf_frame": [
+          77,
+          285,
+          733,
+          1042
+        ],
+        "rhwp_outside_frame_pixels": 57,
+        "pdf_outside_frame_pixels": 109,
+        "rhwp_outside_frame_max_y": 1079,
+        "pdf_outside_frame_max_y": 1081,
+        "rhwp_outside_frame_extent_px": 29,
+        "pdf_outside_frame_extent_px": 39,
+        "frame_overflow_tolerated_bleed": false,
+        "paper_size_footer_frame_bleed": false,
+        "rhwp_outside_frame_bleed_px": 29,
+        "pdf_outside_frame_bleed_px": 39,
+        "content_bottom_delta_px": 8.0,
+        "red_marker_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "line_band_drift": {
+          "rhwp_count": 25,
+          "pdf_count": 31,
+          "paired": 25,
+          "max_abs_delta_px": 215.0,
+          "p90_abs_delta_px": 180.5,
+          "mean_abs_delta_px": 67.6
+        },
+        "column_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              263,
+              283,
+              495,
+              1050
+            ],
+            "pdf_frame": [
+              77,
+              285,
+              403,
+              1042
+            ],
+            "drift": {
+              "rhwp_count": 26,
+              "pdf_count": 32,
+              "paired": 26,
+              "max_abs_delta_px": 169.0,
+              "p90_abs_delta_px": 148.5,
+              "mean_abs_delta_px": 62.0
+            },
+            "rhwp_first_band": {
+              "y0": 286,
+              "y1": 299,
+              "x0": 266,
+              "x1": 485,
+              "pixels": 1004,
+              "cy": 292.5
+            },
+            "rhwp_last_band": {
+              "y0": 1041,
+              "y1": 1048,
+              "x0": 271,
+              "x1": 332,
+              "pixels": 238,
+              "cy": 1044.5
+            },
+            "pdf_first_band": {
+              "y0": 289,
+              "y1": 301,
+              "x0": 141,
+              "x1": 400,
+              "pixels": 611,
+              "cy": 295.0
+            },
+            "pdf_last_band": {
+              "y0": 1023,
+              "y1": 1034,
+              "x0": 141,
+              "x1": 401,
+              "pixels": 330,
+              "cy": 1028.5
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              499,
+              283,
+              731,
+              1050
+            ],
+            "pdf_frame": [
+              407,
+              285,
+              733,
+              1042
+            ],
+            "drift": {
+              "rhwp_count": 18,
+              "pdf_count": 28,
+              "paired": 18,
+              "max_abs_delta_px": 274.5,
+              "p90_abs_delta_px": 238.0,
+              "mean_abs_delta_px": 89.7
+            },
+            "rhwp_first_band": {
+              "y0": 286,
+              "y1": 299,
+              "x0": 501,
+              "x1": 729,
+              "pixels": 1079,
+              "cy": 292.5
+            },
+            "rhwp_last_band": {
+              "y0": 967,
+              "y1": 1024,
+              "x0": 501,
+              "x1": 729,
+              "pixels": 8055,
+              "cy": 995.5
+            },
+            "pdf_first_band": {
+              "y0": 289,
+              "y1": 301,
+              "x0": 416,
+              "x1": 728,
+              "pixels": 1339,
+              "cy": 295.0
+            },
+            "pdf_last_band": {
+              "y0": 1022,
+              "y1": 1034,
+              "x0": 411,
+              "x1": 717,
+              "pixels": 1223,
+              "cy": 1028.0
+            }
+          }
+        ],
+        "column_line_band_drift_candidates": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              263,
+              283,
+              495,
+              1050
+            ],
+            "pdf_frame": [
+              77,
+              285,
+              403,
+              1042
+            ],
+            "drift": {
+              "rhwp_count": 26,
+              "pdf_count": 32,
+              "paired": 26,
+              "max_abs_delta_px": 169.0,
+              "p90_abs_delta_px": 148.5,
+              "mean_abs_delta_px": 62.0
+            },
+            "rhwp_first_band": {
+              "y0": 286,
+              "y1": 299,
+              "x0": 266,
+              "x1": 485,
+              "pixels": 1004,
+              "cy": 292.5
+            },
+            "rhwp_last_band": {
+              "y0": 1041,
+              "y1": 1048,
+              "x0": 271,
+              "x1": 332,
+              "pixels": 238,
+              "cy": 1044.5
+            },
+            "pdf_first_band": {
+              "y0": 289,
+              "y1": 301,
+              "x0": 141,
+              "x1": 400,
+              "pixels": 611,
+              "cy": 295.0
+            },
+            "pdf_last_band": {
+              "y0": 1023,
+              "y1": 1034,
+              "x0": 141,
+              "x1": 401,
+              "pixels": 330,
+              "cy": 1028.5
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              499,
+              283,
+              731,
+              1050
+            ],
+            "pdf_frame": [
+              407,
+              285,
+              733,
+              1042
+            ],
+            "drift": {
+              "rhwp_count": 18,
+              "pdf_count": 28,
+              "paired": 18,
+              "max_abs_delta_px": 274.5,
+              "p90_abs_delta_px": 238.0,
+              "mean_abs_delta_px": 89.7
+            },
+            "rhwp_first_band": {
+              "y0": 286,
+              "y1": 299,
+              "x0": 501,
+              "x1": 729,
+              "pixels": 1079,
+              "cy": 292.5
+            },
+            "rhwp_last_band": {
+              "y0": 967,
+              "y1": 1024,
+              "x0": 501,
+              "x1": 729,
+              "pixels": 8055,
+              "cy": 995.5
+            },
+            "pdf_first_band": {
+              "y0": 289,
+              "y1": 301,
+              "x0": 416,
+              "x1": 728,
+              "pixels": 1339,
+              "cy": 295.0
+            },
+            "pdf_last_band": {
+              "y0": 1022,
+              "y1": 1034,
+              "x0": 411,
+              "x1": 717,
+              "pixels": 1223,
+              "cy": 1028.0
+            }
+          }
+        ],
+        "large_ink_region_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 9,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_regions": [],
+          "pdf_regions": [
+            {
+              "x0": 253.0,
+              "y0": 285.0,
+              "x1": 733.0,
+              "y1": 445.0,
+              "w": 480.0,
+              "h": 160.0,
+              "cy": 365.0,
+              "tiles": 202.0
+            },
+            {
+              "x0": 141.0,
+              "y0": 333.0,
+              "x1": 253.0,
+              "y1": 397.0,
+              "w": 112.0,
+              "h": 64.0,
+              "cy": 365.0,
+              "tiles": 23.0
+            },
+            {
+              "x0": 77.0,
+              "y0": 429.0,
+              "x1": 237.0,
+              "y1": 493.0,
+              "w": 160.0,
+              "h": 64.0,
+              "cy": 461.0,
+              "tiles": 24.0
+            },
+            {
+              "x0": 141.0,
+              "y0": 493.0,
+              "x1": 733.0,
+              "y1": 637.0,
+              "w": 592.0,
+              "h": 144.0,
+              "cy": 565.0,
+              "tiles": 229.0
+            },
+            {
+              "x0": 269.0,
+              "y0": 701.0,
+              "x1": 381.0,
+              "y1": 749.0,
+              "w": 112.0,
+              "h": 48.0,
+              "cy": 725.0,
+              "tiles": 17.0
+            },
+            {
+              "x0": 77.0,
+              "y0": 717.0,
+              "x1": 269.0,
+              "y1": 797.0,
+              "w": 192.0,
+              "h": 80.0,
+              "cy": 757.0,
+              "tiles": 36.0
+            },
+            {
+              "x0": 141.0,
+              "y0": 829.0,
+              "x1": 253.0,
+              "y1": 909.0,
+              "w": 112.0,
+              "h": 80.0,
+              "cy": 869.0,
+              "tiles": 17.0
+            },
+            {
+              "x0": 285.0,
+              "y0": 829.0,
+              "x1": 397.0,
+              "y1": 877.0,
+              "w": 112.0,
+              "h": 48.0,
+              "cy": 853.0,
+              "tiles": 14.0
+            }
+          ]
+        },
+        "endnote_shape_ui": {
+          "separator_visible": true,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_below_mm": 2.0,
+          "separator_length_mm": 43.321
+        },
+        "endnote_separator_gap": {
+          "expected_separator": true,
+          "separator_below_mm": 2.0,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_length_px": 163.7,
+          "rhwp": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "pdf": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "gap_delta_px": null
+        },
+        "endnote_no_separator_content_start": null,
+        "between_notes_marker_gap": {
+          "expected_between_notes_mm": 0.0,
+          "expected_between_notes_px": null,
+          "rhwp_marker_count": 0,
+          "pdf_marker_count": 0,
+          "paired_gap_count": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_marker_y": [],
+          "pdf_marker_y": [],
+          "rhwp_marker_y_by_column": [
+            []
+          ],
+          "pdf_marker_y_by_column": [
+            []
+          ],
+          "rhwp_gaps_px": [],
+          "pdf_gaps_px": [],
+          "pairs": []
+        },
+        "svg": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/svg/86712_regulatory_analysis_050.svg",
+        "render_tree_json": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/render_tree/render_tree_050.json",
+        "equation_text_overlap_candidates": [],
+        "question_title_text_overlap_candidates": [],
+        "line_order_overlap_candidates": [],
+        "render_tree_frame_tail_overflow_candidates": [
+          {
+            "path": "root/2/0/1/51/2",
+            "pi": 1,
+            "question": null,
+            "question_text": null,
+            "text": "예외기준",
+            "overflow_px": 6.4,
+            "frame_bottom": 1050,
+            "column": 0,
+            "bbox": [
+              267.0,
+              1041.7,
+              62.7,
+              14.7
+            ]
+          }
+        ],
+        "render_tree_frame_tail_overflow_suppressed_candidates": [
+          {
+            "path": "root/3/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "-50-",
+            "overflow_px": 21.1,
+            "frame_bottom": 1050,
+            "column": 0,
+            "bbox": [
+              384.9,
+              1059.1,
+              24.0,
+              12.0
+            ],
+            "suppressed_reason": "page_number_footer_bleed"
+          }
+        ],
+        "question_marker_drift_candidates": [],
+        "annotated": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709_pr2092/pr2092_issue1921_86712/analysis/annotated_050.png"
+      }
+    ]
+  }
+]

@@ -1,0 +1,124 @@
+{
+  "summary": {
+    "compared_pages": 4,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 87.56323,
+    "worst_pixel_match_percent": 83.35345,
+    "average_ink_match_percent": 28.73233,
+    "worst_ink_match_percent": 3.58447,
+    "average_visual_accuracy_proxy_percent": 28.73233,
+    "worst_visual_accuracy_proxy_percent": 3.58447,
+    "worst_pages": [
+      1,
+      4,
+      3,
+      2
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/rhwp_png/rhwp_001.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/pdf_png/pdf-1.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 62296,
+      "diff_ratio": 0.06986504,
+      "pixel_match_percent": 93.0135,
+      "ink_union_pixels": 64612,
+      "ink_diff_pixels": 62296,
+      "ink_diff_ratio": 0.96415527,
+      "ink_match_percent": 3.58447,
+      "visual_accuracy_proxy_percent": 3.58447,
+      "mean_abs_channel_delta": 12.209,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        69,
+        101,
+        721,
+        971
+      ]
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/rhwp_png/rhwp_002.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/pdf_png/pdf-2.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/overlay/overlay_002.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 148431,
+      "diff_ratio": 0.16646554,
+      "pixel_match_percent": 83.35345,
+      "ink_union_pixels": 400071,
+      "ink_diff_pixels": 148431,
+      "ink_diff_ratio": 0.37101165,
+      "ink_match_percent": 62.89884,
+      "visual_accuracy_proxy_percent": 62.89884,
+      "mean_abs_channel_delta": 22.012,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        68,
+        122,
+        716,
+        1020
+      ]
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/rhwp_png/rhwp_003.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/pdf_png/pdf-3.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/overlay/overlay_003.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 113311,
+      "diff_ratio": 0.12707842,
+      "pixel_match_percent": 87.29216,
+      "ink_union_pixels": 190098,
+      "ink_diff_pixels": 113311,
+      "ink_diff_ratio": 0.59606624,
+      "ink_match_percent": 40.39338,
+      "visual_accuracy_proxy_percent": 40.39338,
+      "mean_abs_channel_delta": 22.121,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        64,
+        98,
+        725,
+        1070
+      ]
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/rhwp_png/rhwp_004.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/pdf_png/pdf-4.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2088_issue2083/overlay/overlay_004.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 119538,
+      "diff_ratio": 0.13406201,
+      "pixel_match_percent": 86.5938,
+      "ink_union_pixels": 130007,
+      "ink_diff_pixels": 119538,
+      "ink_diff_ratio": 0.91947357,
+      "ink_match_percent": 8.05264,
+      "visual_accuracy_proxy_percent": 8.05264,
+      "mean_abs_channel_delta": 24.698,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        64,
+        96,
+        708,
+        1021
+      ]
+    }
+  ]
+}

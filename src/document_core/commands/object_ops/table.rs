@@ -93,9 +93,29 @@ impl DocumentCore {
                         ))
                     })?
                 }
+                crate::model::control::Control::Picture(pic) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 그림 캡션의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    let caption = pic.caption.as_mut().ok_or_else(|| {
+                        HwpError::RenderError(format!(
+                            "경로[{}]: controls[{}] 그림에 캡션이 없습니다",
+                            i, ctrl_idx
+                        ))
+                    })?;
+                    caption.paragraphs.get_mut(cell_para_idx).ok_or_else(|| {
+                        HwpError::RenderError(format!(
+                            "경로[{}]: 그림 캡션문단 {} 범위 초과",
+                            i, cell_para_idx
+                        ))
+                    })?
+                }
                 _ => {
                     return Err(HwpError::RenderError(format!(
-                        "경로[{}]: controls[{}] 가 표/글상자가 아닙니다",
+                        "경로[{}]: controls[{}] 가 표/글상자/그림 캡션이 아닙니다",
                         i, ctrl_idx
                     )))
                 }
@@ -1302,7 +1322,7 @@ impl DocumentCore {
             restrict_enabled_by_this_call || json_i32(props_json, "horzOffset").is_some();
         let clamp_vert =
             restrict_enabled_by_this_call || json_i32(props_json, "vertOffset").is_some();
-        {
+        let caption_changed = {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
             })?;
@@ -1321,7 +1341,12 @@ impl DocumentCore {
                     ))
                 }
             };
-            Self::apply_picture_props_inner(pic, props_json);
+            let had_caption = pic.caption.is_some();
+            let caption_created = Self::apply_picture_props_inner(pic, props_json);
+            caption_created || (had_caption && pic.caption.is_none())
+        };
+        if caption_changed {
+            crate::parser::assign_auto_numbers(&mut self.document);
         }
         let section = &mut self.document.sections[section_idx];
         Self::clamp_direct_owner_cell_picture_offsets(
@@ -1456,7 +1481,7 @@ impl DocumentCore {
         props_json: &str,
     ) -> Result<String, HwpError> {
         let path = Self::parse_cell_path_json(cell_path_json)?;
-        {
+        let caption_changed = {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
             })?;
@@ -1475,7 +1500,10 @@ impl DocumentCore {
                     ))
                 }
             };
-            Self::apply_shape_props_inner(shape, props_json);
+            Self::apply_shape_props_inner(shape, props_json)
+        };
+        if caption_changed {
+            crate::parser::assign_auto_numbers(&mut self.document);
         }
         let section = &mut self.document.sections[section_idx];
         section.raw_stream = None;
