@@ -812,6 +812,16 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang Ext-B','함초롬바탕 확장B','HCR Batang Ext','함초롬바탕 확장','HCR Batang','함초롬바탕','Source Han Serif K Old Hangul',sans-serif"
 }
 
+pub(crate) fn contains_old_hangul_jamo(text: &str) -> bool {
+    text.chars().any(|ch| {
+        let code = ch as u32;
+        matches!(
+            code,
+            0x1100..=0x11FF | 0xA960..=0xA97F | 0xD7B0..=0xD7FF
+        )
+    })
+}
+
 // ============================================================
 // 자동 번호 매기기 (AutoNumber)
 // ============================================================

@@ -2687,16 +2687,13 @@ impl Renderer for SvgRenderer {
             let fb = super::generic_fallback(&style.font_family);
             format!("{},{}", style.font_family, fb)
         };
+        let old_hangul_font_family = format!("'Source Han Serif K Old Hangul',{}", font_family);
 
         let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
         let has_ratio = (ratio - 1.0).abs() > 0.01;
 
         // 공통 스타일 속성 구성 (fill 제외 — 그림자/원본에서 각각 설정)
-        let mut base_attrs = format!(
-            "font-family=\"{}\" font-size=\"{}\"",
-            escape_xml(&font_family),
-            font_size,
-        );
+        let mut base_attrs = format!("font-size=\"{}\"", font_size);
         if style.is_visually_bold() {
             base_attrs.push_str(" font-weight=\"bold\"");
         } else if style.is_medium_weight() {
@@ -2705,6 +2702,19 @@ impl Renderer for SvgRenderer {
         if style.italic {
             base_attrs.push_str(" font-style=\"italic\"");
         }
+        let attrs_for_cluster = |cluster_str: &str, fill: &str| {
+            let cluster_font_family = if super::contains_old_hangul_jamo(cluster_str) {
+                &old_hangul_font_family
+            } else {
+                &font_family
+            };
+            format!(
+                "font-family=\"{}\" {} fill=\"{}\"",
+                escape_xml(cluster_font_family),
+                base_attrs,
+                fill,
+            )
+        };
 
         // 클러스터 단위 렌더링: 옛한글 자모 조합 시퀀스를 하나의 <text>로 묶음
         let char_positions = compute_char_positions(text, style);
@@ -2800,7 +2810,6 @@ impl Renderer for SvgRenderer {
         // 그림자 렌더링 (원본 아래에 오프셋된 그림자색 텍스트)
         if style.shadow_type > 0 {
             let shadow_color = color_to_svg(style.shadow_color);
-            let shadow_attrs = format!("{} fill=\"{}\"", base_attrs, shadow_color);
             let dx = style.shadow_offset_x;
             let dy = style.shadow_offset_y;
             for (cluster_idx, (char_idx, cluster_str)) in clusters.iter().enumerate() {
@@ -2835,6 +2844,7 @@ impl Renderer for SvgRenderer {
                     cluster_advance(*char_idx, cluster_str),
                     ratio,
                 );
+                let shadow_attrs = attrs_for_cluster(cluster_str, &shadow_color);
                 if has_ratio {
                     self.output.push_str(&format!(
                         "<text transform=\"translate({},{}) scale({:.4},1)\" {}{}>{}</text>\n",
@@ -2859,7 +2869,6 @@ impl Renderer for SvgRenderer {
         }
 
         // 원본 텍스트 렌더링
-        let common_attrs = format!("{} fill=\"{}\"", base_attrs, color);
         for (cluster_idx, (char_idx, cluster_str)) in clusters.iter().enumerate() {
             if cluster_str == " " || cluster_str == "\t" {
                 continue;
@@ -2888,6 +2897,7 @@ impl Renderer for SvgRenderer {
             let char_x = x + char_positions[*char_idx];
             let length_attrs =
                 svg_text_length_attrs(cluster_str, cluster_advance(*char_idx, cluster_str), ratio);
+            let common_attrs = attrs_for_cluster(cluster_str, &color);
 
             if has_ratio {
                 self.output.push_str(&format!(
