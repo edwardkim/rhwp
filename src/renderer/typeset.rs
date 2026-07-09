@@ -13529,9 +13529,22 @@ impl TypesetEngine {
                 .all(|item| matches!(item, PageItem::Shape { .. }));
         let fits_after_overlay_shapes =
             current_column_has_only_overlay_shapes && table_total <= available + 12.0;
+        // [#2097] 쪽나눔=None(나누지 않음) 표는 한글이 행 컷하지 않으며, 한글의 실제
+        // 행높이 합은 저장 선언 높이와 일치한다(1730000 새만금 COM 3자 비교: 저장
+        // 910.5px = 한글 910.6px vs rhwp 실측 954.1px). 셀 내용 실측 팽창으로 측정
+        // fit 이 실패해도 선언 높이가 현재 쪽에 들어가면 통째 배치해 마지막 행
+        // sliver 여분 페이지를 막는다. advance 는 측정 table_total 을 유지해 같은 쪽
+        // 후속 겹침을 차단한다.
+        let declared_none_table_whole_fits = matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::None
+        ) && !table.common.treat_as_char
+            && declared_object_total > host_spacing_total
+            && st.current_height + declared_object_total <= available;
         if st.current_height + table_total <= available
             || fits_after_overlay_shapes
             || single_row_object_height_advance.is_some()
+            || declared_none_table_whole_fits
         {
             self.place_table_with_text(
                 st,
