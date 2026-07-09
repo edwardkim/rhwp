@@ -2396,6 +2396,128 @@ impl LayoutEngine {
         }
     }
 
+    /// [Task #2126] TAC 뒤 잔여 텍스트 run 방출 — 원본 무변경 통이동.
+    #[allow(clippy::too_many_arguments)]
+    fn emit_cell_tac_trailing_text(
+        &self,
+        tree: &mut PageRenderTree,
+        para: &Paragraph,
+        section_index: usize,
+        para_y_before_compose: f64,
+        cell_node: &mut RenderNode,
+        composed: &ComposedParagraph,
+        styles: &ResolvedStyleSet,
+        prev_tac_text_pos: usize,
+        inline_x: f64,
+    ) {
+        if prev_tac_text_pos > 0 {
+            let total_text_chars = composed
+                .lines
+                .first()
+                .map(|line| {
+                    line.runs
+                        .iter()
+                        .map(|r| r.text.chars().count())
+                        .sum::<usize>()
+                })
+                .unwrap_or(0);
+            if prev_tac_text_pos < total_text_chars {
+                let remaining_text: String = composed
+                    .lines
+                    .first()
+                    .map(|line| {
+                        let mut chars_so_far = 0usize;
+                        let mut result = String::new();
+                        for run in &line.runs {
+                            for ch in run.text.chars() {
+                                if chars_so_far >= prev_tac_text_pos {
+                                    result.push(ch);
+                                }
+                                chars_so_far += 1;
+                            }
+                        }
+                        result
+                    })
+                    .unwrap_or_default();
+                let remaining_trimmed = remaining_text.trim_end();
+                if !remaining_trimmed.is_empty() {
+                    let char_style_id = composed
+                        .lines
+                        .first()
+                        .and_then(|l| l.runs.last())
+                        .map(|r| r.char_style_id)
+                        .unwrap_or(0);
+                    let lang_index = composed
+                        .lines
+                        .first()
+                        .and_then(|l| l.runs.last())
+                        .map(|r| r.lang_index)
+                        .unwrap_or(0);
+                    let ts = resolved_to_text_style(styles, char_style_id, lang_index);
+                    // [Task #555] PUA 옛한글 char 은 자모 시퀀스로 변환 후 폭 측정.
+                    let remaining_metrics: String = {
+                        use super::super::pua_oldhangul::map_pua_old_hangul;
+                        remaining_trimmed
+                            .chars()
+                            .flat_map(|ch| {
+                                if let Some(jamos) = map_pua_old_hangul(ch) {
+                                    jamos.iter().copied().collect::<Vec<_>>()
+                                } else {
+                                    vec![ch]
+                                }
+                            })
+                            .collect()
+                    };
+                    let text_w = estimate_text_width(&remaining_metrics, &ts);
+                    let text_baseline = ts.font_size * 0.85;
+                    let text_h = ts.font_size * 1.2;
+                    // 마지막 Shape 높이 기준으로 텍스트 y 계산
+                    let last_shape_h = para
+                        .controls
+                        .iter()
+                        .rev()
+                        .find_map(|c| {
+                            if let Control::Shape(s) = c {
+                                if s.common().treat_as_char {
+                                    Some(hwpunit_to_px(s.common().height as i32, self.dpi))
+                                } else {
+                                    None
+                                }
+                            } else {
+                                None
+                            }
+                        })
+                        .unwrap_or(0.0);
+                    let text_y = para_y_before_compose + (last_shape_h - text_h).max(0.0);
+                    let text_node_id = tree.next_id();
+                    let text_node = RenderNode::new(
+                        text_node_id,
+                        RenderNodeType::TextRun(TextRunNode {
+                            text: remaining_trimmed.to_string(),
+                            style: ts,
+                            char_shape_id: Some(char_style_id),
+                            para_shape_id: Some(composed.para_style_id),
+                            section_index: Some(section_index),
+                            para_index: None,
+                            char_start: None,
+                            cell_context: None,
+                            is_para_end: false,
+                            is_line_break_end: false,
+                            rotation: 0.0,
+                            is_vertical: false,
+                            char_overlap: None,
+                            border_fill_id: 0,
+                            baseline: text_baseline,
+                            field_marker: FieldMarkerType::None,
+                        }),
+                        BoundingBox::new(inline_x, text_y, text_w, text_h),
+                    );
+                    cell_node.children.push(text_node);
+                }
+            }
+        }
+    }
+
     /// [Task #2089] 가로쓰기 셀 본문 배치 — 셀 문단/TAC/수식/중첩표 방출.
     /// 원본 무변경 통이동 (탈출은 전부 내부 루프 소속).
     #[allow(clippy::too_many_arguments)]
@@ -3500,112 +3622,17 @@ impl LayoutEngine {
             }
 
             // 마지막 인라인 Shape 이후의 남은 텍스트 렌더링 (예: "일")
-            if prev_tac_text_pos > 0 {
-                let total_text_chars = composed
-                    .lines
-                    .first()
-                    .map(|line| {
-                        line.runs
-                            .iter()
-                            .map(|r| r.text.chars().count())
-                            .sum::<usize>()
-                    })
-                    .unwrap_or(0);
-                if prev_tac_text_pos < total_text_chars {
-                    let remaining_text: String = composed
-                        .lines
-                        .first()
-                        .map(|line| {
-                            let mut chars_so_far = 0usize;
-                            let mut result = String::new();
-                            for run in &line.runs {
-                                for ch in run.text.chars() {
-                                    if chars_so_far >= prev_tac_text_pos {
-                                        result.push(ch);
-                                    }
-                                    chars_so_far += 1;
-                                }
-                            }
-                            result
-                        })
-                        .unwrap_or_default();
-                    let remaining_trimmed = remaining_text.trim_end();
-                    if !remaining_trimmed.is_empty() {
-                        let char_style_id = composed
-                            .lines
-                            .first()
-                            .and_then(|l| l.runs.last())
-                            .map(|r| r.char_style_id)
-                            .unwrap_or(0);
-                        let lang_index = composed
-                            .lines
-                            .first()
-                            .and_then(|l| l.runs.last())
-                            .map(|r| r.lang_index)
-                            .unwrap_or(0);
-                        let ts = resolved_to_text_style(styles, char_style_id, lang_index);
-                        // [Task #555] PUA 옛한글 char 은 자모 시퀀스로 변환 후 폭 측정.
-                        let remaining_metrics: String = {
-                            use super::super::pua_oldhangul::map_pua_old_hangul;
-                            remaining_trimmed
-                                .chars()
-                                .flat_map(|ch| {
-                                    if let Some(jamos) = map_pua_old_hangul(ch) {
-                                        jamos.iter().copied().collect::<Vec<_>>()
-                                    } else {
-                                        vec![ch]
-                                    }
-                                })
-                                .collect()
-                        };
-                        let text_w = estimate_text_width(&remaining_metrics, &ts);
-                        let text_baseline = ts.font_size * 0.85;
-                        let text_h = ts.font_size * 1.2;
-                        // 마지막 Shape 높이 기준으로 텍스트 y 계산
-                        let last_shape_h = para
-                            .controls
-                            .iter()
-                            .rev()
-                            .find_map(|c| {
-                                if let Control::Shape(s) = c {
-                                    if s.common().treat_as_char {
-                                        Some(hwpunit_to_px(s.common().height as i32, self.dpi))
-                                    } else {
-                                        None
-                                    }
-                                } else {
-                                    None
-                                }
-                            })
-                            .unwrap_or(0.0);
-                        let text_y = para_y_before_compose + (last_shape_h - text_h).max(0.0);
-                        let text_node_id = tree.next_id();
-                        let text_node = RenderNode::new(
-                            text_node_id,
-                            RenderNodeType::TextRun(TextRunNode {
-                                text: remaining_trimmed.to_string(),
-                                style: ts,
-                                char_shape_id: Some(char_style_id),
-                                para_shape_id: Some(composed.para_style_id),
-                                section_index: Some(section_index),
-                                para_index: None,
-                                char_start: None,
-                                cell_context: None,
-                                is_para_end: false,
-                                is_line_break_end: false,
-                                rotation: 0.0,
-                                is_vertical: false,
-                                char_overlap: None,
-                                border_fill_id: 0,
-                                baseline: text_baseline,
-                                field_marker: FieldMarkerType::None,
-                            }),
-                            BoundingBox::new(inline_x, text_y, text_w, text_h),
-                        );
-                        cell_node.children.push(text_node);
-                    }
-                }
-            }
+            self.emit_cell_tac_trailing_text(
+                tree,
+                para,
+                section_index,
+                para_y_before_compose,
+                cell_node,
+                composed,
+                styles,
+                prev_tac_text_pos,
+                inline_x,
+            );
 
             if has_table_ctrl {
                 // LINE_SEG vpos 기반으로 para_y 보정.
