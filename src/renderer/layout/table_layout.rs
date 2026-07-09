@@ -5586,6 +5586,32 @@ impl LayoutEngine {
         }
     }
 
+    /// [#1921] 예산 정지 유닛 `j` 부터 다음 저장 hard-break 유닛까지의 잔여 높이가
+    /// 소량(오버플로 한도 48px)이면 `(흡수 후 높이, hard-break 유닛 인덱스)` 를 반환한다.
+    ///
+    /// 저장 hard-break 는 한글이 실제로 페이지를 넘긴 지점이므로, 그 직전의 극소 잔여
+    /// 유닛은 한글 기준으로 현재 페이지에 담겨 있었다. 흡수하지 않으면 다음 fragment 가
+    /// 그 잔여만 담은 sliver 페이지(59043 pi=160: 22px/쪽)가 되어 과분할된다.
+    fn absorb_tail_before_stored_hard_break(
+        units: &[CellUnit],
+        j: usize,
+        h: f64,
+        avail_height: f64,
+    ) -> Option<(f64, usize)> {
+        const SLIVER_ABSORB_OVERFLOW_TOLERANCE_PX: f64 = 48.0;
+        let mut extra = 0.0f64;
+        for (k, u) in units.iter().enumerate().skip(j) {
+            if k > j && u.hard_break_before {
+                return Some((h + extra, k));
+            }
+            extra += u.height;
+            if h + extra > avail_height + SLIVER_ABSORB_OVERFLOW_TOLERANCE_PX {
+                return None;
+            }
+        }
+        None
+    }
+
     fn is_non_inline_control_flow_unit(unit: &CellUnit) -> bool {
         unit.vis_start == unit.vis_end
             && !unit.empty_spacer
@@ -5841,6 +5867,9 @@ impl LayoutEngine {
                         j += 1;
                         continue;
                     }
+                    // [#1921] sliver 흡수는 with_row_offsets 경로에만 적용한다. 이 walk 는
+                    // relaxed_hard_break(hard-break 조건부 무시) 의미론이라 다음 break 로의
+                    // 흡수가 비정상 경계를 강제한다(86712 공식PDF 65→66 회귀 실증).
                     break;
                 }
                 if j > start
@@ -6003,6 +6032,9 @@ impl LayoutEngine {
                         j += 1;
                         continue;
                     }
+                    // [#1921] sliver 흡수는 with_row_offsets 경로에만 적용한다. 이 walk 는
+                    // relaxed_hard_break(hard-break 조건부 무시) 의미론이라 다음 break 로의
+                    // 흡수가 비정상 경계를 강제한다(86712 공식PDF 65→66 회귀 실증).
                     break;
                 }
                 if j > start
@@ -6108,6 +6140,17 @@ impl LayoutEngine {
                     break;
                 }
                 if j > start && h + u.height > cell_budget {
+                    // [#1921] sliver 흡수 — advance_row_block_cut 의 예산 정지와 동일.
+                    // 직후 tolerance 안의 저장 hard-break(한글 실제 페이지 경계)까지
+                    // 흡수해, 다음 fragment 가 극소 잔여 sliver 페이지가 되는 것을 막는다.
+                    if let Some((absorbed_h, absorbed_j)) =
+                        Self::absorb_tail_before_stored_hard_break(&units, j, h, cell_budget)
+                    {
+                        h = absorbed_h;
+                        j = absorbed_j;
+                        hit_hard_break = true;
+                        break;
+                    }
                     break;
                 }
                 if j == start && !allow_force_progress && h + u.height > cell_budget {
@@ -7463,6 +7506,66 @@ mod row_cut_tests {
         let r2 = eng.advance_row_cut(&t, 0, &r.end_cut, 1000.0, &styles);
         assert_eq!(r2.end_cut, vec![5]);
         assert!(r2.fully_consumed);
+    }
+
+    #[test]
+    fn test_block_cut_row_offsets_absorbs_sliver_before_stored_hard_break() {
+        // [#1921] 예산 정지 지점 직후 48px 이내에 저장 hard-break(vpos 리셋)가 있으면
+        // 그 지점까지 흡수한다. 흡수하지 않으면 다음 fragment 가 극소 잔여(여기서는
+        // 16px 유닛 1개)만 담은 sliver 페이지가 된다 (59043 pi=160: 946px→22px 교대).
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        // 문단0: 3줄(vpos 0..2400) = 유닛 3개(각 16px). 문단1: vpos 1000 리셋
+        // → 유닛 3 앞 hard break.
+        let t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![visible_text_para(3, 0), visible_text_para(2, 1000)],
+        )]);
+        // 예산 40px: 유닛 0..2(32px)까지 들어가고 유닛 2(16px)에서 예산 정지 —
+        // 잔여(유닛 2, 16px) 직후가 hard break 이므로 48px 한도 내 흡수.
+        let r = eng.advance_row_block_cut_with_row_offsets(&t, 0, 1, &[], 40.0, &[0.0], &styles);
+        assert_eq!(
+            r.end_cut,
+            vec![3],
+            "예산 정지 직후 hard-break 까지 흡수 (sliver 방지)"
+        );
+        assert!(r.hit_hard_break);
+        assert!(!r.fully_consumed);
+        assert!(
+            r.consumed_height <= 40.0 + 48.0,
+            "흡수 오버플로는 48px 한도 내: {}",
+            r.consumed_height
+        );
+        // 다음 fragment: hard-break 유닛부터 잔여 전부 — sliver 없음.
+        let r2 = eng.advance_row_block_cut_with_row_offsets(
+            &t,
+            0,
+            1,
+            &r.end_cut,
+            1000.0,
+            &[0.0],
+            &styles,
+        );
+        assert!(r2.fully_consumed);
+    }
+
+    #[test]
+    fn test_block_cut_row_offsets_no_absorb_beyond_tolerance() {
+        // [#1921] hard-break 까지 잔여가 48px 를 넘으면 흡수하지 않는다 — 정상 예산
+        // 분할 유지 (86712 공식PDF 핀 계열의 비정상 경계 강제 방지).
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        // 문단0: 8줄(128px). 예산 40px → 유닛 2에서 정지. hard break 는 유닛 8 앞
+        // → 잔여 6유닛(96px) > 48px 한도 → 흡수 없음.
+        let t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![visible_text_para(8, 0), visible_text_para(2, 1000)],
+        )]);
+        let r = eng.advance_row_block_cut_with_row_offsets(&t, 0, 1, &[], 40.0, &[0.0], &styles);
+        assert_eq!(r.end_cut, vec![2], "한도 초과 시 예산 경계 유지");
+        assert!(!r.hit_hard_break);
     }
 
     #[test]
