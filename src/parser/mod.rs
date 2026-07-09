@@ -799,6 +799,30 @@ fn assign_auto_numbers_in_controls(
 ) {
     use crate::model::control::Control;
 
+    fn assign_caption_auto_numbers(
+        caption: &mut Option<crate::model::shape::Caption>,
+        counters: &mut [u16; 6],
+        counter_index: fn(crate::model::control::AutoNumberType) -> usize,
+    ) {
+        if let Some(caption) = caption {
+            for para in &mut caption.paragraphs {
+                assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
+            }
+        }
+    }
+
+    fn assign_text_box_auto_numbers(
+        text_box: &mut Option<crate::model::shape::TextBox>,
+        counters: &mut [u16; 6],
+        counter_index: fn(crate::model::control::AutoNumberType) -> usize,
+    ) {
+        if let Some(text_box) = text_box {
+            for para in &mut text_box.paragraphs {
+                assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
+            }
+        }
+    }
+
     for ctrl in controls.iter_mut() {
         match ctrl {
             Control::AutoNumber(an) => {
@@ -819,61 +843,125 @@ fn assign_auto_numbers_in_controls(
                     }
                 }
                 // 표 캡션 처리
-                if let Some(ref mut caption) = table.caption {
-                    for para in &mut caption.paragraphs {
-                        assign_auto_numbers_in_controls(
-                            &mut para.controls,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                }
+                assign_caption_auto_numbers(&mut table.caption, counters, counter_index);
             }
             Control::Picture(pic) => {
                 // 그림 캡션 처리
-                if let Some(ref mut caption) = pic.caption {
-                    for para in &mut caption.paragraphs {
-                        assign_auto_numbers_in_controls(
-                            &mut para.controls,
+                assign_caption_auto_numbers(&mut pic.caption, counters, counter_index);
+            }
+            Control::Shape(shape) => {
+                use crate::model::shape::ShapeObject;
+
+                match shape.as_mut() {
+                    ShapeObject::Line(s) => {
+                        assign_caption_auto_numbers(
+                            &mut s.drawing.caption,
+                            counters,
+                            counter_index,
+                        );
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
                             counters,
                             counter_index,
                         );
                     }
-                }
-            }
-            Control::Shape(shape) => {
-                // 묶음 개체(Group)의 캡션 처리
-                if let crate::model::shape::ShapeObject::Group(ref mut group) = shape.as_mut() {
-                    if let Some(ref mut caption) = group.caption {
-                        for para in &mut caption.paragraphs {
-                            assign_auto_numbers_in_controls(
-                                &mut para.controls,
-                                counters,
-                                counter_index,
-                            );
-                        }
+                    ShapeObject::Rectangle(s) => {
+                        assign_caption_auto_numbers(
+                            &mut s.drawing.caption,
+                            counters,
+                            counter_index,
+                        );
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
                     }
-                }
-                // 도형(글상자 등) 캡션 처리
-                if let Some(ref mut drawing) = shape.drawing_mut() {
-                    if let Some(ref mut caption) = drawing.caption {
-                        for para in &mut caption.paragraphs {
-                            assign_auto_numbers_in_controls(
-                                &mut para.controls,
-                                counters,
-                                counter_index,
-                            );
-                        }
+                    ShapeObject::Ellipse(s) => {
+                        assign_caption_auto_numbers(
+                            &mut s.drawing.caption,
+                            counters,
+                            counter_index,
+                        );
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
                     }
-                    // 글상자 내부 문단의 자동 번호 처리
-                    if let Some(ref mut text_box) = drawing.text_box {
-                        for para in &mut text_box.paragraphs {
-                            assign_auto_numbers_in_controls(
-                                &mut para.controls,
+                    ShapeObject::Arc(s) => {
+                        assign_caption_auto_numbers(
+                            &mut s.drawing.caption,
+                            counters,
+                            counter_index,
+                        );
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
+                    }
+                    ShapeObject::Polygon(s) => {
+                        assign_caption_auto_numbers(
+                            &mut s.drawing.caption,
+                            counters,
+                            counter_index,
+                        );
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
+                    }
+                    ShapeObject::Curve(s) => {
+                        assign_caption_auto_numbers(
+                            &mut s.drawing.caption,
+                            counters,
+                            counter_index,
+                        );
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
+                    }
+                    ShapeObject::Group(s) => {
+                        assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
+                    }
+                    ShapeObject::Picture(s) => {
+                        assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
+                    }
+                    ShapeObject::Chart(s) => {
+                        if s.caption.is_some() {
+                            assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
+                        } else {
+                            assign_caption_auto_numbers(
+                                &mut s.drawing.caption,
                                 counters,
                                 counter_index,
                             );
                         }
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
+                    }
+                    ShapeObject::Ole(s) => {
+                        if s.caption.is_some() {
+                            assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
+                        } else {
+                            assign_caption_auto_numbers(
+                                &mut s.drawing.caption,
+                                counters,
+                                counter_index,
+                            );
+                        }
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
                     }
                 }
             }

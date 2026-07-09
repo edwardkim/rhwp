@@ -127,7 +127,7 @@ type PictureDeleteRef = {
   sec: number;
   ppi: number;
   ci: number;
-  type: 'image' | 'shape' | 'equation' | 'group' | 'line';
+  type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole';
   cellPath?: CellPathLike;
 };
 
@@ -1566,9 +1566,19 @@ export function onPaste(this: any, e: ClipboardEvent): void {
   const html = clipboardData?.getData('text/html') || '';
   const text = clipboardData?.getData('text/plain') || '';
   const hasCurrentInternalMarker = hasCurrentRhwpClipboardMarker(this, html);
+  const internalClipboardText = this.wasm.getClipboardText?.() || '';
+  const hasMatchingInternalControlText =
+    this.wasm.clipboardHasControl?.() === true &&
+    !!internalClipboardText &&
+    text === internalClipboardText;
+  const useInternalClipboard =
+    this.wasm.hasInternalClipboard() &&
+    (!clipboardData || hasCurrentInternalMarker || hasMatchingInternalControlText);
 
-  // 현재 rhwp-studio 내부 복사 marker가 있을 때만 내부 클립보드 사용 (서식 보존)
-  if (this.wasm.hasInternalClipboard() && (!clipboardData || hasCurrentInternalMarker)) {
+  // 내부 복사 marker가 있으면 내부 클립보드를 사용한다.
+  // 이미지 컨트롤은 브라우저가 marker 없는 plain text만 paste 이벤트에 넘기는 경우가 있어
+  // 현재 내부 컨트롤의 표시 텍스트와 일치하면 같은 rhwp 복사로 판단한다.
+  if (useInternalClipboard) {
     // 컨트롤(개체) 붙여넣기 — 본문에서만 허용
     if (this.wasm.clipboardHasControl() && pos.parentParaIndex === undefined) {
       this.executeOperation({ kind: 'snapshot', operationType: 'pasteControl', operation: (wasm: WasmBridge) => {

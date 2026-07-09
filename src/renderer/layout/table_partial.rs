@@ -905,6 +905,32 @@ impl LayoutEngine {
                                         picture_anchor_y,
                                         para_alignment,
                                     );
+                                    // [Issue #2071] 셀 vertical_align 존중 (table_layout.rs 동일 수정).
+                                    // 한컴은 셀 앵커 자리차지 그림을 **셀 valign 으로만** 배치하고
+                                    // 그림 자체 pos vert_align 은 무시한다. compute_object_position
+                                    // 은 그림 pos vert_align 을 따르므로 콘텐츠 box·그림 높이 기준
+                                    // 셀 valign 위치를 강제한다.
+                                    let pic_y = if top_and_bottom_para
+                                        && pic.common.flow_with_text
+                                        && !unrestricted_take_place_cell_float
+                                    {
+                                        let v_off = hwpunit_to_px(
+                                            pic.common.vertical_offset as i32,
+                                            self.dpi,
+                                        );
+                                        let content_top = cell_y + pad_top;
+                                        match effective_align {
+                                            VerticalAlign::Top => content_top + v_off,
+                                            VerticalAlign::Center => {
+                                                content_top + (inner_height - pic_h + v_off) / 2.0
+                                            }
+                                            VerticalAlign::Bottom => {
+                                                content_top + inner_height - pic_h - v_off
+                                            }
+                                        }
+                                    } else {
+                                        pic_y
+                                    };
                                     let pic_area = LayoutRect {
                                         x: pic_x,
                                         y: pic_y,

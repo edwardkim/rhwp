@@ -5183,6 +5183,254 @@ fn tab_ext_semantic_differs(a: &[u16; 7], b: &[u16; 7]) -> bool {
     SEMANTIC.iter().any(|&k| a[k] != b[k])
 }
 
+/// [Task #2122] ir-diff 출력 상태 — 종전 fn-지역 macro(emit_header/emit_diff) 본문을
+/// 메서드로 이관 (동작·출력 불변, macro 확장 인라인 제거).
+struct IrDiffEmitter {
+    summary_mode: bool,
+    max_lines: Option<usize>,
+    printed_lines: usize,
+    truncated: bool,
+    summary_buckets: std::collections::BTreeMap<String, u32>,
+}
+
+impl IrDiffEmitter {
+    fn println_guarded(&mut self, line: String) {
+        match self.max_lines {
+            Some(limit) if self.printed_lines >= limit => {
+                if !self.truncated {
+                    println!("... 이하 생략 (--max-lines {} 도달)", limit);
+                    self.truncated = true;
+                }
+            }
+            _ => {
+                println!("{}", line);
+                self.printed_lines += 1;
+            }
+        }
+    }
+    /// paragraph/섹션 헤더. summary 모드에서는 출력 안 함, max_lines 초과 시 truncate.
+    fn header(&mut self, line: String) {
+        if !self.summary_mode {
+            self.println_guarded(line);
+        }
+    }
+    /// 차이 라인. summary 모드에서는 카테고리별 카운트, 일반 모드에서는 "  [차이] {}" 형식.
+    /// 카테고리 추출: ":" 앞쪽 첫 토큰. controls[N].xxx 는 ".xxx" 만 추출.
+    fn diff(&mut self, body: String) {
+        if self.summary_mode {
+            let prefix = body.split(':').next().unwrap_or(&body);
+            let cat = if let Some(pos) = prefix.rfind(']') {
+                prefix[pos + 1..].trim_start_matches('.').trim().to_string()
+            } else {
+                prefix.trim().to_string()
+            };
+            let key = if cat.is_empty() { body.clone() } else { cat };
+            *self.summary_buckets.entry(key).or_insert(0) += 1;
+        } else {
+            self.println_guarded(format!("  [차이] {}", body));
+        }
+    }
+}
+
+/// [Task #2122] ir-diff 문단 단위 필드 비교 — 차이 문자열 목록 생산 (원본 무변경 이동).
+fn ir_diff_paragraph_fields(
+    pa: &rhwp::model::paragraph::Paragraph,
+    pb: &rhwp::model::paragraph::Paragraph,
+    doc_a: &rhwp::model::document::Document,
+    doc_b: &rhwp::model::document::Document,
+) -> Vec<String> {
+    let mut diffs: Vec<String> = Vec::new();
+
+    // 텍스트 비교
+    if pa.text != pb.text {
+        diffs.push(format!(
+            "text: A={:?} vs B={:?}",
+            pa.text.chars().take(30).collect::<String>(),
+            pb.text.chars().take(30).collect::<String>()
+        ));
+    }
+
+    // char_count 비교
+    if pa.char_count != pb.char_count {
+        diffs.push(format!("cc: A={} vs B={}", pa.char_count, pb.char_count));
+    }
+
+    // char_offsets 비교
+    if pa.char_offsets != pb.char_offsets {
+        let len_a = pa.char_offsets.len();
+        let len_b = pb.char_offsets.len();
+        if len_a != len_b {
+            diffs.push(format!("char_offsets len: A={} vs B={}", len_a, len_b));
+        } else {
+            let first_diff = pa
+                .char_offsets
+                .iter()
+                .zip(pb.char_offsets.iter())
+                .enumerate()
+                .find(|(_, (a, b))| a != b);
+            if let Some((idx, (a, b))) = first_diff {
+                diffs.push(format!("char_offsets[{}]: A={} vs B={}", idx, a, b));
+            }
+        }
+    }
+
+    // para_shape_id 비교
+    if pa.para_shape_id != pb.para_shape_id {
+        diffs.push(format!(
+            "ps_id: A={} vs B={}",
+            pa.para_shape_id, pb.para_shape_id
+        ));
+    }
+
+    // tab_extended 비교
+    if pa.tab_extended.len() != pb.tab_extended.len() {
+        diffs.push(format!(
+            "tab_ext count: A={} vs B={}",
+            pa.tab_extended.len(),
+            pb.tab_extended.len()
+        ));
+    } else {
+        for (ti, (ta, tb)) in pa
+            .tab_extended
+            .iter()
+            .zip(pb.tab_extended.iter())
+            .enumerate()
+        {
+            if tab_ext_semantic_differs(ta, tb) {
+                diffs.push(format!("tab_ext[{}]: A={:?} vs B={:?}", ti, ta, tb));
+                break;
+            }
+        }
+    }
+
+    // LINE_SEG 비교
+    if pa.line_segs.len() != pb.line_segs.len() {
+        diffs.push(format!(
+            "line_segs count: A={} vs B={}",
+            pa.line_segs.len(),
+            pb.line_segs.len()
+        ));
+    } else {
+        for (li, (la, lb)) in pa.line_segs.iter().zip(pb.line_segs.iter()).enumerate() {
+            if la.text_start != lb.text_start {
+                diffs.push(format!(
+                    "ls[{}].ts: A={} vs B={}",
+                    li, la.text_start, lb.text_start
+                ));
+            }
+            if la.vertical_pos != lb.vertical_pos {
+                diffs.push(format!(
+                    "ls[{}].vpos: A={} vs B={}",
+                    li, la.vertical_pos, lb.vertical_pos
+                ));
+            }
+            if la.line_height != lb.line_height {
+                diffs.push(format!(
+                    "ls[{}].lh: A={} vs B={}",
+                    li, la.line_height, lb.line_height
+                ));
+            }
+            if la.text_height != lb.text_height {
+                diffs.push(format!(
+                    "ls[{}].th: A={} vs B={}",
+                    li, la.text_height, lb.text_height
+                ));
+            }
+            if la.baseline_distance != lb.baseline_distance {
+                diffs.push(format!(
+                    "ls[{}].bl: A={} vs B={}",
+                    li, la.baseline_distance, lb.baseline_distance
+                ));
+            }
+            if la.line_spacing != lb.line_spacing {
+                diffs.push(format!(
+                    "ls[{}].ls: A={} vs B={}",
+                    li, la.line_spacing, lb.line_spacing
+                ));
+            }
+            if la.column_start != lb.column_start {
+                diffs.push(format!(
+                    "ls[{}].cs: A={} vs B={}",
+                    li, la.column_start, lb.column_start
+                ));
+            }
+            if la.segment_width != lb.segment_width {
+                diffs.push(format!(
+                    "ls[{}].sw: A={} vs B={}",
+                    li, la.segment_width, lb.segment_width
+                ));
+            }
+        }
+    }
+
+    // 컨트롤 식별 비교
+    if pa.controls.len() != pb.controls.len() {
+        diffs.push(format!(
+            "controls count: A={} vs B={}",
+            pa.controls.len(),
+            pb.controls.len()
+        ));
+    }
+    {
+        use rhwp::model::control::Control;
+        let ctrl_count = pa.controls.len().min(pb.controls.len());
+        for ci in 0..ctrl_count {
+            let ca = &pa.controls[ci];
+            let cb = &pb.controls[ci];
+            match (ca, cb) {
+                (Control::Table(ta), Control::Table(tb)) => {
+                    diff_table(&mut diffs, ci, ta, tb);
+                }
+                (Control::Picture(pic_a), Control::Picture(pic_b)) => {
+                    diff_common_obj(&mut diffs, ci, "pic", &pic_a.common, &pic_b.common);
+                }
+                (Control::Shape(sa), Control::Shape(sb)) => {
+                    diff_common_obj(&mut diffs, ci, "shape", sa.common(), sb.common());
+                    // [#1807] 글상자 내부 문단 재귀 비교 — 직렬화 결함이
+                    // 글상자 안에서 발생해도 검출되도록 (#1795 소거망 구멍)
+                    diff_shape_textbox(&mut diffs, &format!("ctrl[{}] shape", ci), sa, sb);
+                }
+                _ if control_tag(ca) != control_tag(cb) => {
+                    diffs.push(format!(
+                        "ctrl[{}] type: A={} vs B={}",
+                        ci,
+                        control_tag(ca),
+                        control_tag(cb)
+                    ));
+                }
+                _ => {}
+            }
+        }
+    }
+
+    // char_shapes 비교
+    if pa.char_shapes.len() != pb.char_shapes.len() {
+        diffs.push(format!(
+            "char_shapes count: A={} vs B={}",
+            pa.char_shapes.len(),
+            pb.char_shapes.len()
+        ));
+    } else {
+        for (ci, (ca, cb)) in pa.char_shapes.iter().zip(pb.char_shapes.iter()).enumerate() {
+            if ca.start_pos != cb.start_pos {
+                diffs.push(format!(
+                    "cs[{}].pos: A={} vs B={}",
+                    ci, ca.start_pos, cb.start_pos
+                ));
+                break;
+            }
+            if ca.char_shape_id != cb.char_shape_id {
+                diffs.push(format!(
+                    "cs[{}].id: A={} vs B={}",
+                    ci, ca.char_shape_id, cb.char_shape_id
+                ));
+                break;
+            }
+        }
+    }
+    diffs
+}
+
 fn ir_diff(args: &[String]) {
     if args.len() < 2 {
         eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>]");
@@ -5264,71 +5512,22 @@ fn ir_diff(args: &[String]) {
         println!("=== IR 비교: {} vs {} ===", name_a, name_b);
     }
 
-    // [Task #653 보강] 출력 가드 상태
-    let mut printed_lines: usize = 0;
-    let mut truncated = false;
-    let mut summary_buckets: std::collections::BTreeMap<String, u32> =
-        std::collections::BTreeMap::new();
-
-    // emit_header: paragraph/섹션 헤더. summary 모드에서는 출력 안 함, max_lines 초과 시 truncate.
-    macro_rules! emit_header {
-        ($($arg:tt)*) => {{
-            if !summary_mode {
-                let line = format!($($arg)*);
-                match max_lines {
-                    Some(limit) if printed_lines >= limit => {
-                        if !truncated {
-                            println!("... 이하 생략 (--max-lines {} 도달)", limit);
-                            truncated = true;
-                        }
-                    }
-                    _ => {
-                        println!("{}", line);
-                        printed_lines += 1;
-                    }
-                }
-            }
-        }};
-    }
-    // emit_diff: 차이 라인. summary 모드에서는 카테고리별 카운트, 일반 모드에서는 "  [차이] {}" 형식.
-    // 카테고리 추출: ":" 앞쪽 첫 토큰. controls[N].xxx 는 ".xxx" 만 추출.
-    macro_rules! emit_diff {
-        ($($arg:tt)*) => {{
-            let body = format!($($arg)*);
-            if summary_mode {
-                let prefix = body.split(':').next().unwrap_or(&body);
-                let cat = if let Some(pos) = prefix.rfind(']') {
-                    prefix[pos + 1..].trim_start_matches('.').trim().to_string()
-                } else {
-                    prefix.trim().to_string()
-                };
-                let key = if cat.is_empty() { body.clone() } else { cat };
-                *summary_buckets.entry(key).or_insert(0) += 1;
-            } else {
-                let line = format!("  [차이] {}", body);
-                match max_lines {
-                    Some(limit) if printed_lines >= limit => {
-                        if !truncated {
-                            println!("... 이하 생략 (--max-lines {} 도달)", limit);
-                            truncated = true;
-                        }
-                    }
-                    _ => {
-                        println!("{}", line);
-                        printed_lines += 1;
-                    }
-                }
-            }
-        }};
-    }
+    // [Task #653 보강] 출력 가드 상태 — IrDiffEmitter 로 통합 (#2122)
+    let mut em = IrDiffEmitter {
+        summary_mode,
+        max_lines,
+        printed_lines: 0,
+        truncated: false,
+        summary_buckets: std::collections::BTreeMap::new(),
+    };
 
     // 구역 수 비교
     if doc_a.sections.len() != doc_b.sections.len() {
-        emit_diff!(
+        em.diff(format!(
             "구역 수: A={} vs B={}",
             doc_a.sections.len(),
             doc_b.sections.len()
-        );
+        ));
     }
 
     let sec_count = doc_a.sections.len().min(doc_b.sections.len());
@@ -5345,12 +5544,12 @@ fn ir_diff(args: &[String]) {
         let sec_b = &doc_b.sections[sec_idx];
 
         if sec_a.paragraphs.len() != sec_b.paragraphs.len() {
-            emit_diff!(
+            em.diff(format!(
                 "구역 {}: 문단 수 A={} vs B={}",
                 sec_idx,
                 sec_a.paragraphs.len(),
                 sec_b.paragraphs.len()
-            );
+            ));
             total_diffs += 1;
         }
 
@@ -5364,201 +5563,16 @@ fn ir_diff(args: &[String]) {
 
             let pa = &sec_a.paragraphs[pi];
             let pb = &sec_b.paragraphs[pi];
-            let mut diffs: Vec<String> = Vec::new();
-
-            // 텍스트 비교
-            if pa.text != pb.text {
-                diffs.push(format!(
-                    "text: A={:?} vs B={:?}",
-                    pa.text.chars().take(30).collect::<String>(),
-                    pb.text.chars().take(30).collect::<String>()
-                ));
-            }
-
-            // char_count 비교
-            if pa.char_count != pb.char_count {
-                diffs.push(format!("cc: A={} vs B={}", pa.char_count, pb.char_count));
-            }
-
-            // char_offsets 비교
-            if pa.char_offsets != pb.char_offsets {
-                let len_a = pa.char_offsets.len();
-                let len_b = pb.char_offsets.len();
-                if len_a != len_b {
-                    diffs.push(format!("char_offsets len: A={} vs B={}", len_a, len_b));
-                } else {
-                    let first_diff = pa
-                        .char_offsets
-                        .iter()
-                        .zip(pb.char_offsets.iter())
-                        .enumerate()
-                        .find(|(_, (a, b))| a != b);
-                    if let Some((idx, (a, b))) = first_diff {
-                        diffs.push(format!("char_offsets[{}]: A={} vs B={}", idx, a, b));
-                    }
-                }
-            }
-
-            // para_shape_id 비교
-            if pa.para_shape_id != pb.para_shape_id {
-                diffs.push(format!(
-                    "ps_id: A={} vs B={}",
-                    pa.para_shape_id, pb.para_shape_id
-                ));
-            }
-
-            // tab_extended 비교
-            if pa.tab_extended.len() != pb.tab_extended.len() {
-                diffs.push(format!(
-                    "tab_ext count: A={} vs B={}",
-                    pa.tab_extended.len(),
-                    pb.tab_extended.len()
-                ));
-            } else {
-                for (ti, (ta, tb)) in pa
-                    .tab_extended
-                    .iter()
-                    .zip(pb.tab_extended.iter())
-                    .enumerate()
-                {
-                    if tab_ext_semantic_differs(ta, tb) {
-                        diffs.push(format!("tab_ext[{}]: A={:?} vs B={:?}", ti, ta, tb));
-                        break;
-                    }
-                }
-            }
-
-            // LINE_SEG 비교
-            if pa.line_segs.len() != pb.line_segs.len() {
-                diffs.push(format!(
-                    "line_segs count: A={} vs B={}",
-                    pa.line_segs.len(),
-                    pb.line_segs.len()
-                ));
-            } else {
-                for (li, (la, lb)) in pa.line_segs.iter().zip(pb.line_segs.iter()).enumerate() {
-                    if la.text_start != lb.text_start {
-                        diffs.push(format!(
-                            "ls[{}].ts: A={} vs B={}",
-                            li, la.text_start, lb.text_start
-                        ));
-                    }
-                    if la.vertical_pos != lb.vertical_pos {
-                        diffs.push(format!(
-                            "ls[{}].vpos: A={} vs B={}",
-                            li, la.vertical_pos, lb.vertical_pos
-                        ));
-                    }
-                    if la.line_height != lb.line_height {
-                        diffs.push(format!(
-                            "ls[{}].lh: A={} vs B={}",
-                            li, la.line_height, lb.line_height
-                        ));
-                    }
-                    if la.text_height != lb.text_height {
-                        diffs.push(format!(
-                            "ls[{}].th: A={} vs B={}",
-                            li, la.text_height, lb.text_height
-                        ));
-                    }
-                    if la.baseline_distance != lb.baseline_distance {
-                        diffs.push(format!(
-                            "ls[{}].bl: A={} vs B={}",
-                            li, la.baseline_distance, lb.baseline_distance
-                        ));
-                    }
-                    if la.line_spacing != lb.line_spacing {
-                        diffs.push(format!(
-                            "ls[{}].ls: A={} vs B={}",
-                            li, la.line_spacing, lb.line_spacing
-                        ));
-                    }
-                    if la.column_start != lb.column_start {
-                        diffs.push(format!(
-                            "ls[{}].cs: A={} vs B={}",
-                            li, la.column_start, lb.column_start
-                        ));
-                    }
-                    if la.segment_width != lb.segment_width {
-                        diffs.push(format!(
-                            "ls[{}].sw: A={} vs B={}",
-                            li, la.segment_width, lb.segment_width
-                        ));
-                    }
-                }
-            }
-
-            // 컨트롤 식별 비교
-            if pa.controls.len() != pb.controls.len() {
-                diffs.push(format!(
-                    "controls count: A={} vs B={}",
-                    pa.controls.len(),
-                    pb.controls.len()
-                ));
-            }
-            {
-                use rhwp::model::control::Control;
-                let ctrl_count = pa.controls.len().min(pb.controls.len());
-                for ci in 0..ctrl_count {
-                    let ca = &pa.controls[ci];
-                    let cb = &pb.controls[ci];
-                    match (ca, cb) {
-                        (Control::Table(ta), Control::Table(tb)) => {
-                            diff_table(&mut diffs, ci, ta, tb);
-                        }
-                        (Control::Picture(pic_a), Control::Picture(pic_b)) => {
-                            diff_common_obj(&mut diffs, ci, "pic", &pic_a.common, &pic_b.common);
-                        }
-                        (Control::Shape(sa), Control::Shape(sb)) => {
-                            diff_common_obj(&mut diffs, ci, "shape", sa.common(), sb.common());
-                            // [#1807] 글상자 내부 문단 재귀 비교 — 직렬화 결함이
-                            // 글상자 안에서 발생해도 검출되도록 (#1795 소거망 구멍)
-                            diff_shape_textbox(&mut diffs, &format!("ctrl[{}] shape", ci), sa, sb);
-                        }
-                        _ if control_tag(ca) != control_tag(cb) => {
-                            diffs.push(format!(
-                                "ctrl[{}] type: A={} vs B={}",
-                                ci,
-                                control_tag(ca),
-                                control_tag(cb)
-                            ));
-                        }
-                        _ => {}
-                    }
-                }
-            }
-
-            // char_shapes 비교
-            if pa.char_shapes.len() != pb.char_shapes.len() {
-                diffs.push(format!(
-                    "char_shapes count: A={} vs B={}",
-                    pa.char_shapes.len(),
-                    pb.char_shapes.len()
-                ));
-            } else {
-                for (ci, (ca, cb)) in pa.char_shapes.iter().zip(pb.char_shapes.iter()).enumerate() {
-                    if ca.start_pos != cb.start_pos {
-                        diffs.push(format!(
-                            "cs[{}].pos: A={} vs B={}",
-                            ci, ca.start_pos, cb.start_pos
-                        ));
-                        break;
-                    }
-                    if ca.char_shape_id != cb.char_shape_id {
-                        diffs.push(format!(
-                            "cs[{}].id: A={} vs B={}",
-                            ci, ca.char_shape_id, cb.char_shape_id
-                        ));
-                        break;
-                    }
-                }
-            }
+            let diffs = ir_diff_paragraph_fields(pa, pb, &doc_a, &doc_b);
 
             if !diffs.is_empty() {
                 let text_preview: String = pa.text.chars().take(30).collect();
-                emit_header!("\n--- 문단 {}.{} --- \"{}\"", sec_idx, pi, text_preview);
+                em.header(format!(
+                    "\n--- 문단 {}.{} --- \"{}\"",
+                    sec_idx, pi, text_preview
+                ));
                 for d in &diffs {
-                    emit_diff!("{}", d);
+                    em.diff(format!("{}", d));
                 }
                 total_diffs += diffs.len() as u32;
             }
@@ -5570,7 +5584,11 @@ fn ir_diff(args: &[String]) {
         let ps_a = &doc_a.doc_info.para_shapes;
         let ps_b = &doc_b.doc_info.para_shapes;
         if ps_a.len() != ps_b.len() {
-            emit_diff!("ParaShape 수: A={} vs B={}", ps_a.len(), ps_b.len());
+            em.diff(format!(
+                "ParaShape 수: A={} vs B={}",
+                ps_a.len(),
+                ps_b.len()
+            ));
             total_diffs += 1;
         }
         let ps_count = ps_a.len().min(ps_b.len());
@@ -5600,7 +5618,7 @@ fn ir_diff(args: &[String]) {
                 ps_diffs.push(format!("ls: {}vs{}", a.line_spacing, b.line_spacing));
             }
             if !ps_diffs.is_empty() {
-                emit_diff!("PS[{}] {}", i, ps_diffs.join(", "));
+                em.diff(format!("PS[{}] {}", i, ps_diffs.join(", ")));
                 total_diffs += ps_diffs.len() as u32;
             }
         }
@@ -5611,7 +5629,7 @@ fn ir_diff(args: &[String]) {
         let td_a = &doc_a.doc_info.tab_defs;
         let td_b = &doc_b.doc_info.tab_defs;
         if td_a.len() != td_b.len() {
-            emit_diff!("TabDef 수: A={} vs B={}", td_a.len(), td_b.len());
+            em.diff(format!("TabDef 수: A={} vs B={}", td_a.len(), td_b.len()));
             total_diffs += 1;
         }
         let td_count = td_a.len().min(td_b.len());
@@ -5619,7 +5637,12 @@ fn ir_diff(args: &[String]) {
             let a = &td_a[i];
             let b = &td_b[i];
             if a.tabs.len() != b.tabs.len() {
-                emit_diff!("TD[{}] 탭 수: A={} vs B={}", i, a.tabs.len(), b.tabs.len());
+                em.diff(format!(
+                    "TD[{}] 탭 수: A={} vs B={}",
+                    i,
+                    a.tabs.len(),
+                    b.tabs.len()
+                ));
                 total_diffs += 1;
             } else {
                 for (ti, (ta, tb)) in a.tabs.iter().zip(b.tabs.iter()).enumerate() {
@@ -5627,7 +5650,7 @@ fn ir_diff(args: &[String]) {
                         || ta.tab_type != tb.tab_type
                         || ta.fill_type != tb.fill_type
                     {
-                        emit_diff!(
+                        em.diff(format!(
                             "TD[{}][{}] pos: {}vs{}, type: {}vs{}, fill: {}vs{}",
                             i,
                             ti,
@@ -5637,7 +5660,7 @@ fn ir_diff(args: &[String]) {
                             tb.tab_type,
                             ta.fill_type,
                             tb.fill_type
-                        );
+                        ));
                         total_diffs += 1;
                     }
                 }
@@ -5648,7 +5671,7 @@ fn ir_diff(args: &[String]) {
     // [Task #653 보강] 요약 모드 출력 — 카테고리별 카운트 (내림차순 → 알파벳)
     if summary_mode {
         println!("=== 카테고리별 차이 요약 ===");
-        let mut entries: Vec<(String, u32)> = summary_buckets.into_iter().collect();
+        let mut entries: Vec<(String, u32)> = em.summary_buckets.clone().into_iter().collect();
         entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
         for (cat, count) in &entries {
             println!("  {:>5}건  {}", count, cat);

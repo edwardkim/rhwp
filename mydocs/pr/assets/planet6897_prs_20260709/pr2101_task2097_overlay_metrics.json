@@ -1,0 +1,70 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 99.22078,
+    "worst_pixel_match_percent": 99.21181,
+    "average_ink_match_percent": 1.17738,
+    "worst_ink_match_percent": 0.95183,
+    "average_visual_accuracy_proxy_percent": 1.17738,
+    "worst_visual_accuracy_proxy_percent": 0.95183,
+    "worst_pages": [
+      1,
+      2
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2101_task2097/rhwp_png/rhwp_001.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2101_task2097/pdf_png/pdf-1.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2101_task2097/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 6868,
+      "diff_ratio": 0.00770247,
+      "pixel_match_percent": 99.22975,
+      "ink_union_pixels": 6934,
+      "ink_diff_pixels": 6868,
+      "ink_diff_ratio": 0.99048168,
+      "ink_match_percent": 0.95183,
+      "visual_accuracy_proxy_percent": 0.95183,
+      "mean_abs_channel_delta": 0.606,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        94,
+        609,
+        1037
+      ]
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2101_task2097/rhwp_png/rhwp_002.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2101_task2097/pdf_png/pdf-2.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/planet6897_prs_visual_20260709/pr2101_task2097/overlay/overlay_002.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 7028,
+      "diff_ratio": 0.00788191,
+      "pixel_match_percent": 99.21181,
+      "ink_union_pixels": 7128,
+      "ink_diff_pixels": 7028,
+      "ink_diff_ratio": 0.98597082,
+      "ink_match_percent": 1.40292,
+      "visual_accuracy_proxy_percent": 1.40292,
+      "mean_abs_channel_delta": 1.843,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        94,
+        609,
+        1036
+      ]
+    }
+  ]
+}

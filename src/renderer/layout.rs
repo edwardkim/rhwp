@@ -1334,8 +1334,10 @@ pub struct LayoutEngine {
     /// 반복 재계산해 O(pages×cell) 로 폭증한다. cell_units 는 (cell,table,styles)의 순수
     /// 함수이고 셀 폭·콘텐츠는 렌더 중 불변이므로 셀 포인터를 키로 캐시한다. 문서
     /// 재조판(paginate) 경계에서 clear 하여 다른 IR 의 포인터 재사용을 방지한다.
+    /// `Rc` 가 아니라 `Arc` 인 이유: `LayoutEngine` 은 `DocumentCore` 의 필드이고
+    /// `DocumentCore` 는 `Send` 여야 한다(native 소비자가 스레드 경계 너머로 소유).
     cell_units_cache: std::cell::RefCell<
-        std::collections::HashMap<usize, std::rc::Rc<Vec<table_layout::CellUnit>>>,
+        std::collections::HashMap<usize, std::sync::Arc<Vec<table_layout::CellUnit>>>,
     >,
     /// [Issue #2063] 표 단위 불변량 `has_visible_text_with_nested_table` 를 표 포인터로
     /// 캐시한다. 이 값은 (측정 대상 셀과 무관한) 표 전체 스캔 결과인데 셀별
@@ -1850,21 +1852,22 @@ impl LayoutEngine {
             layout.page_height,
         );
 
-        // 페이지 배경 (감추기 설정 시 건너뜀)
+        // 페이지 배경. hide_fill(쪽 배경 감추기) 시 커스텀 채우기(색/그라데이션/이미지)만
+        // 숨기고 흰 종이 바탕 pageBackground 는 유지한다. 통째로 스킵하면 raster 기본 투명
+        // clear 상태로 남아 export-png 가 RGB flatten 시 페이지 전체가 검게 나온다 (#2083).
         let hide_fill = page_content
             .page_hide
             .as_ref()
             .map(|ph| ph.hide_fill)
             .unwrap_or(false);
-        if !hide_fill {
-            self.build_page_background(
-                &mut tree,
-                layout,
-                page_border_fill,
-                styles,
-                bin_data_content,
-            );
-        }
+        self.build_page_background(
+            &mut tree,
+            layout,
+            page_border_fill,
+            styles,
+            bin_data_content,
+            hide_fill,
+        );
 
         // 쪽 테두리선 (감추기 설정 시 건너뜀)
         let hide_border = page_content
@@ -2476,8 +2479,12 @@ impl LayoutEngine {
         page_border_fill: Option<&PageBorderFill>,
         styles: &ResolvedStyleSet,
         bin_data_content: &[BinDataContent],
+        hide_fill: bool,
     ) {
-        let (page_bg_color, page_bg_gradient, page_bg_image) = if let Some(pbf) = page_border_fill {
+        // hide_fill: 커스텀 채우기(색/그라데이션/이미지)는 억제하되 흰 종이 바탕은 유지 (#2083).
+        let (page_bg_color, page_bg_gradient, page_bg_image) = if hide_fill {
+            (Some(0x00FFFFFF), None, None)
+        } else if let Some(pbf) = page_border_fill {
             if pbf.border_fill_id > 0 {
                 let bf_idx = (pbf.border_fill_id - 1) as usize;
                 if let Some(bs) = styles.border_styles.get(bf_idx) {
@@ -2503,9 +2510,13 @@ impl LayoutEngine {
             (Some(0x00FFFFFF), None, None)
         };
 
-        let fill_area = page_border_fill
-            .map(|pbf| (pbf.attr >> 3) & 0x03)
-            .unwrap_or(0);
+        let fill_area = if hide_fill {
+            0 // 종이 바탕은 페이지 전체
+        } else {
+            page_border_fill
+                .map(|pbf| (pbf.attr >> 3) & 0x03)
+                .unwrap_or(0)
+        };
         let bg_bbox = match fill_area {
             1 => BoundingBox::new(
                 layout.body_area.x,
@@ -3894,6 +3905,295 @@ impl LayoutEngine {
         y_offset
     }
 
+    /// [Task #2120] 문단 테두리/배경 연속 그룹 병합 렌더링 (Task #321 v6) —
+    /// 원본 무변경 통이동. stroke signature 병합 + 그룹 사각형/테두리 방출.
+    #[allow(clippy::too_many_arguments)]
+    fn render_para_border_groups(
+        &self,
+        tree: &mut PageRenderTree,
+        composed: &[ComposedParagraph],
+        col_node: &mut RenderNode,
+        styles: &ResolvedStyleSet,
+        col_area: &LayoutRect,
+    ) {
+        let ranges = self.para_border_ranges.borrow();
+        if !ranges.is_empty() {
+            // 연속 ranges 를 시각적 stroke signature 로 병합 (Task #321 v6 근본 수정).
+            // bf_id 가 달라도 동일한 stroke (line_type/width/color) 면 HWP/PDF 처럼 하나의
+            // 사각형으로 보이도록 병합. invisible (any_w=false) 그룹은 별개로 유지.
+            use crate::model::style::BorderLineType;
+            type StrokeSig = Option<(BorderLineType, u8, u32)>;
+            let stroke_sig = |bf_id: u16| -> StrokeSig {
+                let idx = (bf_id as usize).saturating_sub(1);
+                let bs = styles.border_styles.get(idx)?;
+                let top = &bs.borders[2];
+                let any_w = bs
+                    .borders
+                    .iter()
+                    .any(|b| !matches!(b.line_type, BorderLineType::None));
+                if any_w {
+                    Some((top.line_type, top.width, top.color))
+                } else {
+                    None
+                }
+            };
+            // 그룹 튜플: (bf_id, x, y_start, w, y_end, top_inset, bottom_inset,
+            //              is_partial_start, is_partial_end, first_para_idx, last_para_idx)
+            let mut groups: Vec<(u16, f64, f64, f64, f64, f64, f64, bool, bool, usize, usize)> =
+                Vec::new();
+            for &(
+                bf_id,
+                x,
+                y_start,
+                w,
+                y_end,
+                top_inset,
+                bottom_inset,
+                is_partial_start,
+                is_partial_end,
+                para_idx,
+            ) in ranges.iter()
+            {
+                if let Some(last) = groups.last_mut() {
+                    // bf_id 가 동일하면 기존 동작과 호환 (1차 병합).
+                    // 다른 bf_id 지만 동일한 visible stroke 인 경우에만 시각 병합 (None ≠ None 으로 처리).
+                    let last_sig = stroke_sig(last.0);
+                    let cur_sig = stroke_sig(bf_id);
+                    let same_visual = if last.0 == bf_id {
+                        true
+                    } else {
+                        last_sig.is_some() && last_sig == cur_sig
+                    };
+                    if same_visual && (y_start - last.4) < 30.0 {
+                        last.4 = y_end;
+                        last.6 = bottom_inset;
+                        // 그룹의 partial_end 는 마지막 range 의 값으로 갱신.
+                        // partial_start 는 첫 range 값(last.7)을 유지.
+                        last.8 = is_partial_end;
+                        last.10 = para_idx; // last_para_idx 갱신
+                                            // Task #463: 첫 항목이 PartialParagraph (좁은 geometry, 예: pi=50
+                                            // 우측 단 시작) 이고 후속 항목이 넓은 geometry 일 때, 박스가 좁게
+                                            // 굳어 후속 paragraph 가 박스 밖으로 튀어나오는 것을 방지하기 위해
+                                            // merge 그룹의 x/width 를 최대 범위로 확장한다.
+                        let last_right = last.1 + last.3;
+                        let cur_right = x + w;
+                        let new_x = last.1.min(x);
+                        let new_right = last_right.max(cur_right);
+                        last.1 = new_x;
+                        last.3 = new_right - new_x;
+                        continue;
+                    }
+                }
+                groups.push((
+                    bf_id,
+                    x,
+                    y_start,
+                    w,
+                    y_end,
+                    top_inset,
+                    bottom_inset,
+                    is_partial_start,
+                    is_partial_end,
+                    para_idx,
+                    para_idx,
+                ));
+            }
+
+            // Task #468: cross-column 박스 연속 검출.
+            // sequential 인접 paragraph 가 같은 stroke_sig 면 박스가 다른 컬럼/페이지로 이어진 것.
+            // [Task #471] bf_id 비교가 아닌 stroke_sig 비교 — 머지(Task #321 v6)가 visual
+            // stroke 기준으로 동작하므로 그룹의 g.0 bf_id 는 첫 range 의 bf_id 만 보존됨.
+            // 그룹의 visual sig 와 인접 paragraph 의 visual sig 비교가 정확.
+            for g in groups.iter_mut() {
+                let bf_id = g.0;
+                if bf_id == 0 {
+                    continue;
+                }
+                let first_pi = g.9;
+                let last_pi = g.10;
+                let group_sig = stroke_sig(bf_id);
+                if group_sig.is_none() {
+                    continue;
+                }
+
+                let para_bf = |pi: usize| -> u16 {
+                    composed
+                        .get(pi)
+                        .and_then(|c| styles.para_styles.get(c.para_style_id as usize))
+                        .map(|s| s.border_fill_id)
+                        .unwrap_or(0)
+                };
+
+                if !g.7 && first_pi > 0 {
+                    let prev_sig = stroke_sig(para_bf(first_pi - 1));
+                    if prev_sig.is_some() && prev_sig == group_sig {
+                        g.7 = true;
+                    }
+                }
+
+                if !g.8 {
+                    let next_sig = stroke_sig(para_bf(last_pi + 1));
+                    if next_sig.is_some() && next_sig == group_sig {
+                        g.8 = true;
+                    }
+                }
+            }
+
+            // Task #445: paragraph border 가 col_area 바닥을 넘지 않도록 클램프.
+            // vpos-reset 미지원으로 paragraph 가 col_bottom 너머에 layout 될 수 있는데,
+            // border 까지 따라가면 페이지/꼬리말 영역까지 침범 (예: exam_kor p8 의 1671px).
+            // 텍스트 자체의 overflow 처리는 별도 이슈.
+            let col_top = col_area.y;
+            let col_bot = col_area.y + col_area.height;
+            for g in groups.iter_mut() {
+                if g.2 < col_top {
+                    g.2 = col_top;
+                }
+                if g.4 > col_bot {
+                    g.4 = col_bot;
+                }
+            }
+            groups.retain(|g| g.4 > g.2);
+
+            let groups_len = groups.len();
+            for (
+                gi,
+                (
+                    bf_id,
+                    x,
+                    y_start,
+                    w,
+                    y_end,
+                    top_inset,
+                    bottom_inset,
+                    is_partial_start,
+                    is_partial_end,
+                    _,
+                    _,
+                ),
+            ) in groups.clone().into_iter().enumerate()
+            {
+                let height = y_end - y_start;
+                if height <= 0.0 {
+                    continue;
+                }
+                // 인접한 다른 border 그룹 (간격 < 4px) 과는 inset 충돌 회피.
+                let prev_touches = gi > 0 && (y_start - groups[gi - 1].4) < 4.0;
+                let next_touches = gi + 1 < groups_len && (groups[gi + 1].2 - y_end) < 4.0;
+                let idx = (bf_id as usize).saturating_sub(1);
+                let border_style = styles.border_styles.get(idx);
+                let fill_color = border_style.and_then(|bs| bs.fill_color);
+                let borders = border_style.map(|bs| bs.borders);
+                let stroke_width = borders
+                    .map(|borders| {
+                        borders
+                            .iter()
+                            .filter(|border| para_border_is_visible(border))
+                            .map(|border| {
+                                super::layout::border_rendering::border_width_to_px(border.width)
+                            })
+                            .fold(0.0, f64::max)
+                    })
+                    .unwrap_or(0.0);
+                // Task #321 v6: ParaShape::border_spacing 정식 반영 + stroke 있을 때 default 2px 최소.
+                // 인접 border 그룹과 충돌 방지를 위해 인접 경계는 inset 0.
+                const DEFAULT_MIN_INSET: f64 = 2.0;
+                let top_pad = if stroke_width > 0.0 && !prev_touches {
+                    top_inset.max(DEFAULT_MIN_INSET)
+                } else {
+                    top_inset
+                };
+                let bot_pad = if stroke_width > 0.0 && !next_touches {
+                    bottom_inset.max(DEFAULT_MIN_INSET)
+                } else {
+                    bottom_inset
+                };
+                // Task #469: cross-column / cross-page 로 이어진 partial 박스의 후속 부분은
+                // 이전/다음 컬럼에서 이미 inset 이 적용되었으므로 여기서 다시 col_top/col_bot
+                // 너머로 박스를 확장하면 안 된다 (헤더선/꼬리말선과 충돌).
+                // y_start/y_end 는 L1707 에서 col_top..col_bot 으로 이미 클램프됨.
+                let effective_top_pad = if is_partial_start { 0.0 } else { top_pad };
+                let effective_bot_pad = if is_partial_end { 0.0 } else { bot_pad };
+                let rect_y = y_start - effective_top_pad;
+                let rect_h = height + effective_top_pad + effective_bot_pad;
+                // Wrap inner edge 처리: partial_start 면 top, partial_end 면 bottom 미렌더링.
+                let skip_top = stroke_width > 0.0 && is_partial_start;
+                let skip_bottom = stroke_width > 0.0 && is_partial_end;
+                let can_use_rect_stroke = borders
+                    .map(|borders| para_border_can_use_rect_stroke(&borders, skip_top, skip_bottom))
+                    .unwrap_or(false);
+                if can_use_rect_stroke {
+                    // 기존 경로: 단일 Rectangle (fill + 4면 stroke)
+                    let stroke_border = borders.expect("can_use_rect_stroke requires borders")[0];
+                    let rect_id = tree.next_id();
+                    let rect_node = RenderNode::new(
+                        rect_id,
+                        RenderNodeType::Rectangle(super::render_tree::RectangleNode::new(
+                            0.0,
+                            super::ShapeStyle {
+                                fill_color,
+                                stroke_color: Some(stroke_border.color),
+                                stroke_width: super::layout::border_rendering::border_width_to_px(
+                                    stroke_border.width,
+                                ),
+                                ..Default::default()
+                            },
+                            None,
+                        )),
+                        super::render_tree::BoundingBox::new(x, rect_y, w, rect_h),
+                    );
+                    col_node.children.insert(0, rect_node);
+                } else {
+                    // wrap 케이스: fill 만 Rectangle 로, stroke 는 면별 LineNode 로 분해.
+                    if fill_color.is_some() {
+                        let rect_id = tree.next_id();
+                        let rect_node = RenderNode::new(
+                            rect_id,
+                            RenderNodeType::Rectangle(super::render_tree::RectangleNode::new(
+                                0.0,
+                                super::ShapeStyle {
+                                    fill_color,
+                                    stroke_color: None,
+                                    stroke_width: 0.0,
+                                    ..Default::default()
+                                },
+                                None,
+                            )),
+                            super::render_tree::BoundingBox::new(x, rect_y, w, rect_h),
+                        );
+                        col_node.children.insert(0, rect_node);
+                    }
+                    let mut push_border_line =
+                        |border: &BorderLine, x1: f64, y1: f64, x2: f64, y2: f64| {
+                            if !para_border_is_visible(border) {
+                                return;
+                            }
+                            let nodes = super::layout::border_rendering::create_border_line_nodes(
+                                tree, border, x1, y1, x2, y2,
+                            );
+                            for node in nodes {
+                                col_node.children.insert(0, node);
+                            }
+                        };
+                    let x_left = x;
+                    let x_right = x + w;
+                    let y_top = rect_y;
+                    let y_bot = rect_y + rect_h;
+                    if let Some(borders) = borders {
+                        push_border_line(&borders[0], x_left, y_top, x_left, y_bot);
+                        push_border_line(&borders[1], x_right, y_top, x_right, y_bot);
+                        if !skip_top {
+                            push_border_line(&borders[2], x_left, y_top, x_right, y_top);
+                        }
+                        if !skip_bottom {
+                            push_border_line(&borders[3], x_left, y_bot, x_right, y_bot);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     fn build_single_column(
         &self,
         tree: &mut PageRenderTree,
@@ -5087,292 +5387,8 @@ impl LayoutEngine {
             &para_start_y,
         );
 
-        // 문단 테두리/배경 연속 그룹 병합 렌더링
-        {
-            let ranges = self.para_border_ranges.borrow();
-            if !ranges.is_empty() {
-                // 연속 ranges 를 시각적 stroke signature 로 병합 (Task #321 v6 근본 수정).
-                // bf_id 가 달라도 동일한 stroke (line_type/width/color) 면 HWP/PDF 처럼 하나의
-                // 사각형으로 보이도록 병합. invisible (any_w=false) 그룹은 별개로 유지.
-                use crate::model::style::BorderLineType;
-                type StrokeSig = Option<(BorderLineType, u8, u32)>;
-                let stroke_sig = |bf_id: u16| -> StrokeSig {
-                    let idx = (bf_id as usize).saturating_sub(1);
-                    let bs = styles.border_styles.get(idx)?;
-                    let top = &bs.borders[2];
-                    let any_w = bs
-                        .borders
-                        .iter()
-                        .any(|b| !matches!(b.line_type, BorderLineType::None));
-                    if any_w {
-                        Some((top.line_type, top.width, top.color))
-                    } else {
-                        None
-                    }
-                };
-                // 그룹 튜플: (bf_id, x, y_start, w, y_end, top_inset, bottom_inset,
-                //              is_partial_start, is_partial_end, first_para_idx, last_para_idx)
-                let mut groups: Vec<(u16, f64, f64, f64, f64, f64, f64, bool, bool, usize, usize)> =
-                    Vec::new();
-                for &(
-                    bf_id,
-                    x,
-                    y_start,
-                    w,
-                    y_end,
-                    top_inset,
-                    bottom_inset,
-                    is_partial_start,
-                    is_partial_end,
-                    para_idx,
-                ) in ranges.iter()
-                {
-                    if let Some(last) = groups.last_mut() {
-                        // bf_id 가 동일하면 기존 동작과 호환 (1차 병합).
-                        // 다른 bf_id 지만 동일한 visible stroke 인 경우에만 시각 병합 (None ≠ None 으로 처리).
-                        let last_sig = stroke_sig(last.0);
-                        let cur_sig = stroke_sig(bf_id);
-                        let same_visual = if last.0 == bf_id {
-                            true
-                        } else {
-                            last_sig.is_some() && last_sig == cur_sig
-                        };
-                        if same_visual && (y_start - last.4) < 30.0 {
-                            last.4 = y_end;
-                            last.6 = bottom_inset;
-                            // 그룹의 partial_end 는 마지막 range 의 값으로 갱신.
-                            // partial_start 는 첫 range 값(last.7)을 유지.
-                            last.8 = is_partial_end;
-                            last.10 = para_idx; // last_para_idx 갱신
-                                                // Task #463: 첫 항목이 PartialParagraph (좁은 geometry, 예: pi=50
-                                                // 우측 단 시작) 이고 후속 항목이 넓은 geometry 일 때, 박스가 좁게
-                                                // 굳어 후속 paragraph 가 박스 밖으로 튀어나오는 것을 방지하기 위해
-                                                // merge 그룹의 x/width 를 최대 범위로 확장한다.
-                            let last_right = last.1 + last.3;
-                            let cur_right = x + w;
-                            let new_x = last.1.min(x);
-                            let new_right = last_right.max(cur_right);
-                            last.1 = new_x;
-                            last.3 = new_right - new_x;
-                            continue;
-                        }
-                    }
-                    groups.push((
-                        bf_id,
-                        x,
-                        y_start,
-                        w,
-                        y_end,
-                        top_inset,
-                        bottom_inset,
-                        is_partial_start,
-                        is_partial_end,
-                        para_idx,
-                        para_idx,
-                    ));
-                }
-
-                // Task #468: cross-column 박스 연속 검출.
-                // sequential 인접 paragraph 가 같은 stroke_sig 면 박스가 다른 컬럼/페이지로 이어진 것.
-                // [Task #471] bf_id 비교가 아닌 stroke_sig 비교 — 머지(Task #321 v6)가 visual
-                // stroke 기준으로 동작하므로 그룹의 g.0 bf_id 는 첫 range 의 bf_id 만 보존됨.
-                // 그룹의 visual sig 와 인접 paragraph 의 visual sig 비교가 정확.
-                for g in groups.iter_mut() {
-                    let bf_id = g.0;
-                    if bf_id == 0 {
-                        continue;
-                    }
-                    let first_pi = g.9;
-                    let last_pi = g.10;
-                    let group_sig = stroke_sig(bf_id);
-                    if group_sig.is_none() {
-                        continue;
-                    }
-
-                    let para_bf = |pi: usize| -> u16 {
-                        composed
-                            .get(pi)
-                            .and_then(|c| styles.para_styles.get(c.para_style_id as usize))
-                            .map(|s| s.border_fill_id)
-                            .unwrap_or(0)
-                    };
-
-                    if !g.7 && first_pi > 0 {
-                        let prev_sig = stroke_sig(para_bf(first_pi - 1));
-                        if prev_sig.is_some() && prev_sig == group_sig {
-                            g.7 = true;
-                        }
-                    }
-
-                    if !g.8 {
-                        let next_sig = stroke_sig(para_bf(last_pi + 1));
-                        if next_sig.is_some() && next_sig == group_sig {
-                            g.8 = true;
-                        }
-                    }
-                }
-
-                // Task #445: paragraph border 가 col_area 바닥을 넘지 않도록 클램프.
-                // vpos-reset 미지원으로 paragraph 가 col_bottom 너머에 layout 될 수 있는데,
-                // border 까지 따라가면 페이지/꼬리말 영역까지 침범 (예: exam_kor p8 의 1671px).
-                // 텍스트 자체의 overflow 처리는 별도 이슈.
-                let col_top = col_area.y;
-                let col_bot = col_area.y + col_area.height;
-                for g in groups.iter_mut() {
-                    if g.2 < col_top {
-                        g.2 = col_top;
-                    }
-                    if g.4 > col_bot {
-                        g.4 = col_bot;
-                    }
-                }
-                groups.retain(|g| g.4 > g.2);
-
-                let groups_len = groups.len();
-                for (
-                    gi,
-                    (
-                        bf_id,
-                        x,
-                        y_start,
-                        w,
-                        y_end,
-                        top_inset,
-                        bottom_inset,
-                        is_partial_start,
-                        is_partial_end,
-                        _,
-                        _,
-                    ),
-                ) in groups.clone().into_iter().enumerate()
-                {
-                    let height = y_end - y_start;
-                    if height <= 0.0 {
-                        continue;
-                    }
-                    // 인접한 다른 border 그룹 (간격 < 4px) 과는 inset 충돌 회피.
-                    let prev_touches = gi > 0 && (y_start - groups[gi - 1].4) < 4.0;
-                    let next_touches = gi + 1 < groups_len && (groups[gi + 1].2 - y_end) < 4.0;
-                    let idx = (bf_id as usize).saturating_sub(1);
-                    let border_style = styles.border_styles.get(idx);
-                    let fill_color = border_style.and_then(|bs| bs.fill_color);
-                    let borders = border_style.map(|bs| bs.borders);
-                    let stroke_width = borders
-                        .map(|borders| {
-                            borders
-                                .iter()
-                                .filter(|border| para_border_is_visible(border))
-                                .map(|border| {
-                                    super::layout::border_rendering::border_width_to_px(
-                                        border.width,
-                                    )
-                                })
-                                .fold(0.0, f64::max)
-                        })
-                        .unwrap_or(0.0);
-                    // Task #321 v6: ParaShape::border_spacing 정식 반영 + stroke 있을 때 default 2px 최소.
-                    // 인접 border 그룹과 충돌 방지를 위해 인접 경계는 inset 0.
-                    const DEFAULT_MIN_INSET: f64 = 2.0;
-                    let top_pad = if stroke_width > 0.0 && !prev_touches {
-                        top_inset.max(DEFAULT_MIN_INSET)
-                    } else {
-                        top_inset
-                    };
-                    let bot_pad = if stroke_width > 0.0 && !next_touches {
-                        bottom_inset.max(DEFAULT_MIN_INSET)
-                    } else {
-                        bottom_inset
-                    };
-                    // Task #469: cross-column / cross-page 로 이어진 partial 박스의 후속 부분은
-                    // 이전/다음 컬럼에서 이미 inset 이 적용되었으므로 여기서 다시 col_top/col_bot
-                    // 너머로 박스를 확장하면 안 된다 (헤더선/꼬리말선과 충돌).
-                    // y_start/y_end 는 L1707 에서 col_top..col_bot 으로 이미 클램프됨.
-                    let effective_top_pad = if is_partial_start { 0.0 } else { top_pad };
-                    let effective_bot_pad = if is_partial_end { 0.0 } else { bot_pad };
-                    let rect_y = y_start - effective_top_pad;
-                    let rect_h = height + effective_top_pad + effective_bot_pad;
-                    // Wrap inner edge 처리: partial_start 면 top, partial_end 면 bottom 미렌더링.
-                    let skip_top = stroke_width > 0.0 && is_partial_start;
-                    let skip_bottom = stroke_width > 0.0 && is_partial_end;
-                    let can_use_rect_stroke = borders
-                        .map(|borders| {
-                            para_border_can_use_rect_stroke(&borders, skip_top, skip_bottom)
-                        })
-                        .unwrap_or(false);
-                    if can_use_rect_stroke {
-                        // 기존 경로: 단일 Rectangle (fill + 4면 stroke)
-                        let stroke_border =
-                            borders.expect("can_use_rect_stroke requires borders")[0];
-                        let rect_id = tree.next_id();
-                        let rect_node = RenderNode::new(
-                            rect_id,
-                            RenderNodeType::Rectangle(super::render_tree::RectangleNode::new(
-                                0.0,
-                                super::ShapeStyle {
-                                    fill_color,
-                                    stroke_color: Some(stroke_border.color),
-                                    stroke_width:
-                                        super::layout::border_rendering::border_width_to_px(
-                                            stroke_border.width,
-                                        ),
-                                    ..Default::default()
-                                },
-                                None,
-                            )),
-                            super::render_tree::BoundingBox::new(x, rect_y, w, rect_h),
-                        );
-                        col_node.children.insert(0, rect_node);
-                    } else {
-                        // wrap 케이스: fill 만 Rectangle 로, stroke 는 면별 LineNode 로 분해.
-                        if fill_color.is_some() {
-                            let rect_id = tree.next_id();
-                            let rect_node = RenderNode::new(
-                                rect_id,
-                                RenderNodeType::Rectangle(super::render_tree::RectangleNode::new(
-                                    0.0,
-                                    super::ShapeStyle {
-                                        fill_color,
-                                        stroke_color: None,
-                                        stroke_width: 0.0,
-                                        ..Default::default()
-                                    },
-                                    None,
-                                )),
-                                super::render_tree::BoundingBox::new(x, rect_y, w, rect_h),
-                            );
-                            col_node.children.insert(0, rect_node);
-                        }
-                        let mut push_border_line =
-                            |border: &BorderLine, x1: f64, y1: f64, x2: f64, y2: f64| {
-                                if !para_border_is_visible(border) {
-                                    return;
-                                }
-                                let nodes =
-                                    super::layout::border_rendering::create_border_line_nodes(
-                                        tree, border, x1, y1, x2, y2,
-                                    );
-                                for node in nodes {
-                                    col_node.children.insert(0, node);
-                                }
-                            };
-                        let x_left = x;
-                        let x_right = x + w;
-                        let y_top = rect_y;
-                        let y_bot = rect_y + rect_h;
-                        if let Some(borders) = borders {
-                            push_border_line(&borders[0], x_left, y_top, x_left, y_bot);
-                            push_border_line(&borders[1], x_right, y_top, x_right, y_bot);
-                            if !skip_top {
-                                push_border_line(&borders[2], x_left, y_top, x_right, y_top);
-                            }
-                            if !skip_bottom {
-                                push_border_line(&borders[3], x_left, y_bot, x_right, y_bot);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // 문단 테두리/배경 연속 그룹 병합 렌더링 — #2120 추출
+        self.render_para_border_groups(tree, composed, &mut col_node, styles, col_area);
 
         (col_node, y_offset)
     }
@@ -8237,6 +8253,21 @@ impl LayoutEngine {
                                 } else {
                                     shape_bottom
                                 });
+                        }
+                    } else if !common.treat_as_char
+                        && matches!(shape.as_ref(), ShapeObject::Ole(_))
+                        && matches!(common.text_wrap, TextWrap::Square)
+                        && matches!(common.vert_rel_to, VertRelTo::Para)
+                    {
+                        let has_visible_text =
+                            para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+                        if !has_visible_text {
+                            let line_advance = para
+                                .line_segs
+                                .first()
+                                .map(|ls| hwpunit_to_px(ls.line_height + ls.line_spacing, self.dpi))
+                                .unwrap_or(0.0);
+                            result_y = result_y.max(y_offset + line_advance);
                         }
                     } else if !common.treat_as_char
                         && matches!(
