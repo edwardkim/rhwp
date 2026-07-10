@@ -3220,7 +3220,12 @@ impl TypesetEngine {
                     // (#418)·표 host(#1086 주석) 케이스와 구분한다.
                     let native_near_top_reset = !hwp3_origin_page_tolerance
                         && cv > 0
-                        && cv <= 2000
+                        // [#2136] 상한 2000→2500: sb=5000유닛(=2500HU) 문단의 저장
+                        // 리셋(cv=2500=sb 정확 일치)이 500HU 차로 배제되어 측정 fit
+                        // 과적(148753276 pi46: used 942px > body 933.6px, 한글 p5).
+                        // #1750 split-precheck 상한(2500)과 정합. sb 일치 ±150 조건이
+                        // 유지되어 오발동 억제.
+                        && cv <= 2500
                         && para_sb_hu_for_reset > 0
                         && (cv - para_sb_hu_for_reset).abs() <= 150
                         && !shape_only_para
