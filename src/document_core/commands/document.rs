@@ -418,6 +418,29 @@ impl DocumentCore {
                         && para.line_segs.first().map(|s| s.vertical_pos) == Some(0)
                     {
                         running_vpos = 0;
+                    } else if let (false, Some(first)) =
+                        (was_reflowed, para.line_segs.first().map(|s| s.vertical_pos))
+                    {
+                        // [#2158] #1920 예외의 일반화: 원본(비합성) lineseg 문단의 저장
+                        // first vpos 가 직전 저장 vpos(한 쪽 분량 초과, #1921 near-top
+                        // 임계 60000HU 동일) 대비 쪽 상단 좌표(<5000HU)로 급감하면
+                        // 쪽-상대 리셋(쪽나눔 인코딩)으로 보고 재계산 좌표계에 보존한다.
+                        // 미보존 시 typeset 의 vpos-reset 쪽나눔(#321/#1921)이 무력화되어
+                        // HWPX 로딩만 쪽이 당겨진다 (hwp3-sample16-hwpx pi88: 저장 568이
+                        // 208008 로 변조 → 3쪽부터 전면 당김, 63쪽 vs 한글 64쪽).
+                        // first==0 은 제외 — mid-doc vpos=0 은 생성기 노이즈일 수 있어
+                        // (task1749 pi2/27/47 실측, 흔들면 HWP 참조 컷 회귀) 쪽 하단
+                        // 고정 틀 host 한정의 기존 #1920 규칙에만 맡긴다. 정당한 텍스트
+                        // 쪽나눔 리셋은 sb 를 반영한 양수 쪽 상단 좌표(sample16
+                        // pi88=568)로 저장된다. 소폭 감소·중간 좌표 리셋도 보존하지
+                        // 않는다.
+                        if prev_stored_last_vpos > 60000
+                            && first > 0
+                            && first < 5000
+                            && first < prev_stored_last_vpos
+                        {
+                            running_vpos = first;
+                        }
                     }
                     let original_last_vpos = if was_reflowed {
                         None
