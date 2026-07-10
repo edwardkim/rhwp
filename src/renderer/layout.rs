@@ -1362,6 +1362,7 @@ mod text_measurement;
 mod utils;
 
 pub(crate) use paragraph_layout::ensure_min_baseline;
+pub(crate) use table_layout::border_style_has_diagonal;
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
     extract_tab_leaders_with_extended, find_next_tab_stop, is_cjk_char, is_halfwidth_cjk_quote,
