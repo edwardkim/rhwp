@@ -11,7 +11,101 @@ use crate::model::paragraph::Paragraph;
 use crate::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use crate::renderer::composer::{compose_paragraph, reflow_line_segs, ComposedParagraph};
 use crate::renderer::page_layout::PageLayoutInfo;
-use crate::renderer::style_resolver::resolve_styles;
+use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
+
+fn recalculate_cell_paragraph_vpos(
+    paragraphs: &mut [Paragraph],
+    start_para: usize,
+    ignore_reset_at: Option<usize>,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    is_hwp3_variant: bool,
+) {
+    if paragraphs.is_empty() || start_para >= paragraphs.len() {
+        return;
+    }
+
+    // RowBreak 거대 셀은 후속 문단 vpos를 뒤로 되돌려 다음 조각의 로컬 원점을
+    // 표현하기도 한다. 그 경계까지 선형 편집 결과를 연결하되, 경계 이후 저장
+    // 좌표는 페이지 분할 신호이므로 이동하지 않는다.
+    let stop_para = paragraphs
+        .windows(2)
+        .enumerate()
+        .skip(start_para)
+        .find_map(|(idx, pair)| {
+            let previous = pair[0].line_segs.first()?.vertical_pos;
+            let current = pair[1].line_segs.first()?.vertical_pos;
+            let reset_para = idx + 1;
+            let is_inserted_paragraph = ignore_reset_at == Some(reset_para);
+            (current < previous && !is_inserted_paragraph).then_some(reset_para)
+        })
+        .unwrap_or(paragraphs.len());
+
+    let boundary_gaps: Vec<i32> = paragraphs
+        .windows(2)
+        .map(|pair| {
+            let spacing_after = styles
+                .para_styles
+                .get(pair[0].para_shape_id as usize)
+                .map(|style| style.spacing_after)
+                .unwrap_or(0.0);
+            let spacing_before = styles
+                .para_styles
+                .get(pair[1].para_shape_id as usize)
+                .map(|style| style.spacing_before)
+                .unwrap_or(0.0);
+            let spacing_before =
+                crate::renderer::hwp3_variant_flow_spacing_before(spacing_before, is_hwp3_variant);
+            crate::renderer::px_to_hwpunit(spacing_after + spacing_before, dpi)
+        })
+        .collect();
+
+    let mut next_vpos = if start_para > 0 {
+        let previous = &paragraphs[start_para - 1];
+        previous
+            .line_segs
+            .last()
+            .map(|seg| {
+                seg.vertical_pos
+                    + seg.line_height
+                    + seg.line_spacing
+                    + boundary_gaps[start_para - 1]
+            })
+            .unwrap_or(0)
+    } else {
+        paragraphs[0]
+            .line_segs
+            .first()
+            .map(|seg| seg.vertical_pos)
+            .unwrap_or(0)
+    };
+
+    for para_idx in start_para..stop_para {
+        let para = &mut paragraphs[para_idx];
+        if let Some(first_vpos) = para.line_segs.first().map(|seg| seg.vertical_pos) {
+            let delta = next_vpos - first_vpos;
+            for seg in &mut para.line_segs {
+                seg.vertical_pos += delta;
+            }
+            if let Some(last) = para.line_segs.last() {
+                next_vpos = last.vertical_pos + last.line_height + last.line_spacing;
+            }
+        }
+        if let Some(gap) = boundary_gaps.get(para_idx) {
+            next_vpos += gap;
+        }
+    }
+}
+
+fn shift_paragraph_vpos_origin(para: &mut Paragraph, target_vpos: i32) {
+    let Some(current_vpos) = para.line_segs.first().map(|seg| seg.vertical_pos) else {
+        return;
+    };
+    let delta = target_vpos - current_vpos;
+    for seg in &mut para.line_segs {
+        seg.vertical_pos += delta;
+    }
+}
 
 #[derive(Clone, Copy)]
 struct FieldEndInsertion {
@@ -703,6 +797,14 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         );
+        self.recalculate_cell_paragraph_vpos_native(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            None,
+        );
 
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변, section dirty만 설정)
         self.document.sections[section_idx].raw_stream = None;
@@ -756,6 +858,14 @@ impl DocumentCore {
             control_idx,
             cell_idx,
             cell_para_idx,
+        );
+        self.recalculate_cell_paragraph_vpos_native(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            None,
         );
 
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변)
@@ -986,7 +1096,6 @@ impl DocumentCore {
             Some(Control::Table(table)) => {
                 if let Some(cell) = table.cells.get_mut(cell_idx) {
                     if let Some(cell_para) = cell.paragraphs.get_mut(cell_para_idx) {
-                        cell_para.line_segs.clear();
                         reflow_line_segs(cell_para, final_width, &styles, self.dpi);
                     }
                 }
@@ -994,7 +1103,6 @@ impl DocumentCore {
             Some(Control::Shape(shape)) => {
                 if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
                     if let Some(cell_para) = tb.paragraphs.get_mut(cell_para_idx) {
-                        cell_para.line_segs.clear();
                         reflow_line_segs(cell_para, final_width, &styles, self.dpi);
                     }
                 }
@@ -1002,13 +1110,67 @@ impl DocumentCore {
             Some(Control::Picture(pic)) => {
                 if let Some(ref mut cap) = pic.caption {
                     if let Some(cell_para) = cap.paragraphs.get_mut(cell_para_idx) {
-                        cell_para.line_segs.clear();
                         reflow_line_segs(cell_para, final_width, &styles, self.dpi);
                     }
                 }
             }
             _ => {}
         }
+    }
+
+    fn recalculate_cell_paragraph_vpos_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        start_para: usize,
+        ignore_reset_at: Option<usize>,
+    ) {
+        let styles = &self.styles;
+        let dpi = self.dpi;
+        let is_hwp3_variant = self.document.is_hwp3_variant;
+        let Some(control) = self.document.sections[section_idx].paragraphs[parent_para_idx]
+            .controls
+            .get_mut(control_idx)
+        else {
+            return;
+        };
+        let paragraphs = match control {
+            Control::Table(table) if cell_idx == 65534 => {
+                let Some(caption) = table.caption.as_mut() else {
+                    return;
+                };
+                &mut caption.paragraphs
+            }
+            Control::Table(table) => {
+                let Some(cell) = table.cells.get_mut(cell_idx) else {
+                    return;
+                };
+                &mut cell.paragraphs
+            }
+            Control::Shape(shape) => {
+                let Some(textbox) = super::super::helpers::get_textbox_from_shape_mut(shape) else {
+                    return;
+                };
+                &mut textbox.paragraphs
+            }
+            Control::Picture(picture) => {
+                let Some(caption) = picture.caption.as_mut() else {
+                    return;
+                };
+                &mut caption.paragraphs
+            }
+            _ => return,
+        };
+        recalculate_cell_paragraph_vpos(
+            paragraphs,
+            start_para,
+            ignore_reset_at,
+            styles,
+            dpi,
+            is_hwp3_variant,
+        );
     }
 
     // ─── Phase 3 네이티브 구현: 커서 이동 API ─────────────────
@@ -1930,6 +2092,7 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         )?;
+        let original_vpos = cell_para.line_segs.first().map(|seg| seg.vertical_pos);
         let new_para = cell_para.split_at(char_offset);
 
         // 새 문단을 셀/글상자에 삽입
@@ -1971,6 +2134,24 @@ impl DocumentCore {
             control_idx,
             cell_idx,
             new_cell_para_idx,
+        );
+        if let Some(vpos) = original_vpos {
+            let cell_para = self.get_cell_paragraph_mut(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )?;
+            shift_paragraph_vpos_origin(cell_para, vpos);
+        }
+        self.recalculate_cell_paragraph_vpos_native(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            Some(new_cell_para_idx),
         );
 
         // raw 스트림 무효화, section dirty, 재페이지네이션
@@ -2021,6 +2202,15 @@ impl DocumentCore {
 
         // 문단 제거 및 이전 문단에 병합
         let prev_idx = cell_para_idx - 1;
+        let original_vpos = self
+            .get_cell_paragraph_ref(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                prev_idx,
+            )
+            .and_then(|para| para.line_segs.first().map(|seg| seg.vertical_pos));
         let merge_point;
         match self.document.sections[section_idx].paragraphs[parent_para_idx]
             .controls
@@ -2065,6 +2255,24 @@ impl DocumentCore {
             control_idx,
             cell_idx,
             prev_idx,
+        );
+        if let Some(vpos) = original_vpos {
+            let cell_para = self.get_cell_paragraph_mut(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                prev_idx,
+            )?;
+            shift_paragraph_vpos_origin(cell_para, vpos);
+        }
+        self.recalculate_cell_paragraph_vpos_native(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            prev_idx,
+            None,
         );
 
         // raw 스트림 무효화, section dirty, 재페이지네이션
@@ -2967,6 +3175,9 @@ impl DocumentCore {
         // 마지막 path 엔트리의 cell_para_idx가 분할 대상
         let last = path.last().unwrap();
         let cell_para_idx = last.2;
+        let styles = &self.styles;
+        let dpi = self.dpi;
+        let is_hwp3_variant = self.document.is_hwp3_variant;
 
         // 셀에 접근하여 문단 분할
         let section = self
@@ -2994,8 +3205,23 @@ impl DocumentCore {
                 if cell_para_idx >= cell.paragraphs.len() {
                     return Err(HwpError::RenderError("셀문단 범위 초과".to_string()));
                 }
+                let original_vpos = cell.paragraphs[cell_para_idx]
+                    .line_segs
+                    .first()
+                    .map(|seg| seg.vertical_pos);
                 let new_para = cell.paragraphs[cell_para_idx].split_at(char_offset);
                 cell.paragraphs.insert(cell_para_idx + 1, new_para);
+                if let Some(vpos) = original_vpos {
+                    shift_paragraph_vpos_origin(&mut cell.paragraphs[cell_para_idx], vpos);
+                }
+                recalculate_cell_paragraph_vpos(
+                    &mut cell.paragraphs,
+                    cell_para_idx,
+                    Some(cell_para_idx + 1),
+                    styles,
+                    dpi,
+                    is_hwp3_variant,
+                );
                 break;
             }
             para = cell
@@ -3037,6 +3263,9 @@ impl DocumentCore {
                 "첫 문단은 병합할 수 없습니다".to_string(),
             ));
         }
+        let styles = &self.styles;
+        let dpi = self.dpi;
+        let is_hwp3_variant = self.document.is_hwp3_variant;
 
         let section = self
             .document
@@ -3062,10 +3291,26 @@ impl DocumentCore {
                 if cell_para_idx >= cell.paragraphs.len() {
                     return Err(HwpError::RenderError("셀문단 범위 초과".to_string()));
                 }
+                let prev_idx = cell_para_idx - 1;
+                let original_vpos = cell.paragraphs[prev_idx]
+                    .line_segs
+                    .first()
+                    .map(|seg| seg.vertical_pos);
                 let removed = cell.paragraphs.remove(cell_para_idx);
-                let prev = &mut cell.paragraphs[cell_para_idx - 1];
+                let prev = &mut cell.paragraphs[prev_idx];
                 merge_point = prev.text.chars().count();
                 prev.merge_from(&removed);
+                if let Some(vpos) = original_vpos {
+                    shift_paragraph_vpos_origin(prev, vpos);
+                }
+                recalculate_cell_paragraph_vpos(
+                    &mut cell.paragraphs,
+                    prev_idx,
+                    None,
+                    styles,
+                    dpi,
+                    is_hwp3_variant,
+                );
                 break;
             }
             para = cell

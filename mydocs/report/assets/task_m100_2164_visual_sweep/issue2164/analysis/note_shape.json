@@ -1,0 +1,110 @@
+{
+  "file": "/Users/tsjang/rhwp/samples/issue2164/의견제출서(양식).hwp",
+  "sections": [
+    {
+      "endnoteShape": {
+        "raw": {
+          "attr": 0,
+          "noteSpacing": {
+            "hu": 567,
+            "mm": 2.0
+          },
+          "numberCodeSuperscript": false,
+          "numberFormat": "Digit",
+          "numbering": "Continue",
+          "placement": "EachColumn",
+          "prefixChar": "\u0000",
+          "printInlineAfterText": false,
+          "rawUnknown": {
+            "hu": 0,
+            "mm": 0.0
+          },
+          "separatorColor": "0x00000000",
+          "separatorLength": {
+            "hu": 12280,
+            "mm": 43.321
+          },
+          "separatorLineType": 1,
+          "separatorLineWidth": 1,
+          "separatorMarginBottom": {
+            "hu": 850,
+            "mm": 2.999
+          },
+          "separatorMarginTop": {
+            "hu": 224,
+            "mm": 0.79
+          },
+          "startNumber": 1,
+          "suffixChar": ")",
+          "userChar": "\u0000"
+        },
+        "ui": {
+          "betweenNotes": {
+            "hu": 0,
+            "mm": 0.0
+          },
+          "separatorAbove": {
+            "hu": 224,
+            "mm": 0.79
+          },
+          "separatorBelow": {
+            "hu": 567,
+            "mm": 2.0
+          }
+        }
+      },
+      "footnoteShape": {
+        "raw": {
+          "attr": 0,
+          "noteSpacing": {
+            "hu": 567,
+            "mm": 2.0
+          },
+          "numberCodeSuperscript": false,
+          "numberFormat": "Digit",
+          "numbering": "Continue",
+          "placement": "EachColumn",
+          "prefixChar": "\u0000",
+          "printInlineAfterText": false,
+          "rawUnknown": {
+            "hu": 283,
+            "mm": 0.998
+          },
+          "separatorColor": "0x00000000",
+          "separatorLength": {
+            "hu": -1,
+            "mm": -0.004
+          },
+          "separatorLineType": 1,
+          "separatorLineWidth": 1,
+          "separatorMarginBottom": {
+            "hu": 850,
+            "mm": 2.999
+          },
+          "separatorMarginTop": {
+            "hu": -1,
+            "mm": -0.004
+          },
+          "startNumber": 1,
+          "suffixChar": ")",
+          "userChar": "\u0000"
+        },
+        "ui": {
+          "betweenNotes": {
+            "hu": 283,
+            "mm": 0.998
+          },
+          "separatorAbove": {
+            "hu": 850,
+            "mm": 2.999
+          },
+          "separatorBelow": {
+            "hu": 567,
+            "mm": 2.0
+          }
+        }
+      },
+      "section": 0
+    }
+  ]
+}

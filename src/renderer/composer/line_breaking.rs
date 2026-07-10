@@ -1161,7 +1161,18 @@ pub(crate) fn reflow_line_segs(
             }
             para.line_segs = new_line_segs;
         } else {
-            let mut seg = make_line_seg(0, 0.0);
+            // 빈 문단도 활성 글자 모양의 크기로 줄을 만든다. 앞 문단 LINE_SEG의
+            // 치수를 복사하면 TAC 그림 높이까지 상속되므로 vpos 원점만 보존한다.
+            let font_size = para
+                .char_shapes
+                .first()
+                .and_then(|char_shape| styles.char_styles.get(char_shape.char_shape_id as usize))
+                .map(|style| style.font_size)
+                .unwrap_or(12.0);
+            let mut seg = make_line_seg(0, font_size);
+            if let Some(template) = orig.as_ref() {
+                seg.vertical_pos = template.vertical_pos;
+            }
             if let Some(height_hwp) = inline_control_line_height_hwp(para) {
                 apply_inline_control_line_height(&mut seg, height_hwp);
             }
