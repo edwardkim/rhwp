@@ -76,6 +76,8 @@ def rhwp_pi_pages(path: Path):
     cur_page = 0
     cur_sec = 0
     max_pi: dict[int, int] = {}
+    # [#2136/#1757] 표 앵커 캐럿 오탐 판별용: (sec,pi) → (span_end_page, is_tac)
+    tbl_info: dict[tuple[int, int], tuple[int, bool]] = {}
     for ln in out.stdout.splitlines():
         m = PG.search(ln)
         if m:
@@ -90,10 +92,16 @@ def rhwp_pi_pages(path: Path):
             if key not in start or cur_page < start[key]:
                 start[key] = cur_page
             max_pi[cur_sec] = max(max_pi.get(cur_sec, 0), pi)
+            st = ln.lstrip()
+            if st.startswith(("Table", "PartialTable")):
+                prev = tbl_info.get(key)
+                tac = "tac=true" in ln
+                end = max(cur_page, prev[0]) if prev else cur_page
+                tbl_info[key] = (end, tac or (prev[1] if prev else False))
     if not pages:
-        return None, None, None, "rhwp:nopages"
+        return None, None, None, None, "rhwp:nopages"
     sec_counts = {s: max_pi[s] + 1 for s in max_pi}
-    return start, len(pages), sec_counts, None
+    return start, len(pages), sec_counts, tbl_info, None
 
 
 def hwp_para_pages(hwp, path: Path):
@@ -193,8 +201,39 @@ def main() -> int:
         files = sorted(rng.sample(files, args.sample))
 
     head = git_head()
-    subprocess.run(["taskkill", "/F", "/IM", "Hwp.exe"], capture_output=True)
-    hwp = Hwp(new=True, visible=False)
+
+    def fresh_hwp():
+        """[r12] taskkill 직후 즉시 CreateObject 는 COM 서버 정리 전 레이스로 실패
+        ('개체가 준비되지 않았습니다', 고부하 시 재현). kill 후 대기 + 생성 재시도,
+        얕은 probe 는 통과해도 실제 Open 이 실패하므로 실파일 open 으로 확인."""
+        import time
+
+        last = None
+        probe_doc = ROOT / "samples" / "byeolpyo1.hwp"
+        for attempt in range(4):
+            subprocess.run(["taskkill", "/F", "/IM", "Hwp.exe"], capture_output=True)
+            time.sleep(2 + attempt * 3)
+            try:
+                h = Hwp(new=True, visible=False)
+            except Exception as e:  # noqa: BLE001
+                last = e
+                continue
+            for _ in range(10):
+                try:
+                    h.open(str(probe_doc))
+                    _ = h.PageCount
+                    h.clear(option=1)
+                    return h
+                except Exception as e:  # noqa: BLE001
+                    last = e
+                    time.sleep(2)
+            try:
+                h.quit()
+            except Exception:
+                pass
+        raise last
+
+    hwp = fresh_hwp()
 
     n_match = n_mism = n_delta = n_para = n_err = n_caret = 0
     args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -205,7 +244,7 @@ def main() -> int:
         for i, f in enumerate(files):
             rel = str(f.relative_to(args.batch)) if args.batch else f.name
             rel = rel.replace("\\", "/")
-            rstart, rpages, sec_counts, rerr = rhwp_pi_pages(f)
+            rstart, rpages, sec_counts, tbl_info, rerr = rhwp_pi_pages(f)
             if rerr:
                 n_err += 1
                 w.writerow([rel, "ERR", "", "", "", rerr])
@@ -213,16 +252,21 @@ def main() -> int:
                 continue
             try:
                 hpages, htotal, hcount = hwp_para_pages(hwp, f)
-            except Exception as e:  # noqa: BLE001
-                n_err += 1
-                w.writerow([rel, "ERR", rpages, "", "", f"hwp:{type(e).__name__}"])
-                fh.flush()
+            except Exception:  # noqa: BLE001
+                # [r12] 인스턴스 재생성 후 같은 문서 1회 재시도 — 재시작 직후
+                # not-ready/dead-proxy 로 정상 문서가 ERR 로 소모되는 것을 방지.
                 try:
-                    subprocess.run(["taskkill", "/F", "/IM", "Hwp.exe"], capture_output=True)
-                    hwp = Hwp(new=True, visible=False)
-                except Exception:
-                    pass
-                continue
+                    hwp = fresh_hwp()
+                    hpages, htotal, hcount = hwp_para_pages(hwp, f)
+                except Exception as e:  # noqa: BLE001
+                    n_err += 1
+                    w.writerow([rel, "ERR", rpages, "", "", f"hwp:{type(e).__name__} {str(e)[:80]}"])
+                    fh.flush()
+                    try:
+                        hwp = fresh_hwp()
+                    except Exception:
+                        pass
+                    continue
             rcount = sum(sec_counts.values())
             if rcount != hcount:
                 n_para += 1
@@ -237,18 +281,32 @@ def main() -> int:
                 w.writerow([rel, "MATCH", rpages, htotal, 0, ""])
                 fh.flush()
                 continue
+            # [#1920] 캐럿 의미차 오탐 후보 판별: "빈 문단 + 쪽 번호 ±1"
+            # (rhwp 는 저장 lineseg 대로 배치, 한글 캐럿은 인접 쪽으로 보고 —
+            # 시각 정합 오탐 후보. #2136/r12 에서 양방향 확장 — 1220000 시각 확증.)
+            # [#1757/#2136 r12] 표 앵커 캐럿 오탐 2형:
+            #   (1) 자리차지(비TAC) 다쪽 표 — 한글 캐럿은 표가 끝나는 쪽:
+            #       rp = 표 시작쪽 < hp ≤ 표 span 끝쪽 이면 오탐.
+            #   (2) 쪽 경계 TAC 표 — 표는 양쪽 모두 다음 쪽 통째 렌더인데 한글
+            #       캐럿은 이전 쪽: hp == rp - 1 이면 오탐.
+            def _caret_like(rp, hp, sec, pi):
+                if rp is None or hp is None:
+                    return False
+                ti = tbl_info.get((sec, pi))
+                if ti is not None:
+                    end, tac = ti
+                    if not tac and rp < hp <= end:
+                        return True  # (1) 다쪽 표 anchor
+                    if tac and hp == rp - 1:
+                        return True  # (2) 쪽 경계 TAC 표
+                return abs(hp - rp) == 1 and pi_is_empty_para(f, sec, pi)
+
             verdict = "PAGE_DELTA" if rpages != htotal else "PI_MISMATCH"
             if verdict == "PAGE_DELTA":
                 n_delta += 1
             else:
-                # [#1920] 캐럿 의미차 오탐 후보 분리: 모든 불일치 PI 가
-                # "빈 문단 + rhwp 쪽 = 한글 쪽 - 1" 이면 PI_MISMATCH_CARET.
-                # (rhwp 는 저장 lineseg 대로 쪽 하단에 배치, 한글은 캐럿을
-                # 다음 쪽 상단으로 보고 — 시각 정합 오탐 후보.)
                 caret_all = all(
-                    rp is not None and hp is not None and hp == rp + 1
-                    and pi_is_empty_para(f, sec, pi)
-                    for _, rp, hp, sec, pi in mism
+                    _caret_like(rp, hp, sec, pi) for _, rp, hp, sec, pi in mism
                 )
                 if caret_all:
                     verdict = "PI_MISMATCH_CARET"
@@ -259,8 +317,7 @@ def main() -> int:
             for idx, rp, hp, sec, pi in mism[:40]:
                 tag = ""
                 if (verdict == "PI_MISMATCH_CARET"
-                        or (rp is not None and hp == (rp or 0) + 1
-                            and pi_is_empty_para(f, sec, pi))):
+                        or _caret_like(rp, hp, sec, pi)):
                     tag = "[empty-caret?]"
                 marks.append(f"pi{idx} rhwp_p{rp}|hwp_p{hp}{tag}")
             detail = " ; ".join(marks)
@@ -271,8 +328,10 @@ def main() -> int:
             if (i + 1) % args.restart_every == 0:
                 try:
                     hwp.quit()
-                    subprocess.run(["taskkill", "/F", "/IM", "Hwp.exe"], capture_output=True)
-                    hwp = Hwp(new=True, visible=False)
+                except Exception:
+                    pass
+                try:
+                    hwp = fresh_hwp()
                 except Exception:
                     pass
     try:
