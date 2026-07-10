@@ -3085,6 +3085,21 @@ impl DocumentCore {
         char_offset: usize,
         text: &str,
     ) -> Result<String, HwpError> {
+        // 깊이 1 표는 일반 셀 삽입 경로가 셀 폭 리플로우와 vpos 재계산을 이미 담당한다.
+        // IME가 cellPath를 항상 전달하더라도 같은 편집 계약을 사용해야 한다.
+        if path.len() == 1 {
+            let (control_idx, cell_idx, cell_para_idx) = path[0];
+            return self.insert_text_in_cell_native(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+                char_offset,
+                text,
+            );
+        }
+
         let new_chars_count = text.chars().count();
         let active_field = self.active_field.clone();
         let cell_para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;

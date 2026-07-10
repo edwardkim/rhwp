@@ -2248,6 +2248,8 @@ export class InputHandler {
 
   /** 셀 내부 단일 텍스트 편집 후 처리: 현재 페이지 canvas만 갱신한다. */
   private afterPageLocalEdit(): void {
+    if (this.flushDeferredPaginationForCellOverflow()) return;
+
     // 텍스트 입력은 셀 폭을 바꾸지 않으므로 눈금자 셀 bbox 캐시를 무효화하지 않는다.
     this.protectedCellHitCache = null;
     this.eventBus.emit('document-mutated', 'input-handler-edit');
@@ -2259,6 +2261,27 @@ export class InputHandler {
     }
     this.scheduleDeferredPaginationFlush();
     this.updateCaret();
+  }
+
+  /** 셀 안 새 줄이 기존 가시 높이를 넘으면 즉시 전체 표 레이아웃을 다시 계산한다. */
+  private flushDeferredPaginationForCellOverflow(): boolean {
+    if (!this.cursor.getRect()?.cellOverflowed) return false;
+
+    this.cancelDeferredPaginationFlush();
+    try {
+      this.wasm.flushDeferredPagination();
+      this.deferredPaginationPending = false;
+      this.lastCellKey = null;
+      this.protectedCellHitCache = null;
+      this.eventBus.emit('document-mutated', 'input-handler-cell-overflow');
+      this.eventBus.emit('document-changed', 'cell-overflow-pagination');
+      this.cursor.moveTo(this.cursor.getPosition());
+      this.updateCaret();
+      return true;
+    } catch (err) {
+      console.warn('[InputHandler] 셀 overflow 페이지네이션 flush 실패:', err);
+      return false;
+    }
   }
 
   private scheduleDeferredPaginationFlush(): void {

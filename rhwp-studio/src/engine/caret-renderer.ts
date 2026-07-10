@@ -60,7 +60,8 @@ export class CaretRenderer {
   /** 줌/스크롤 변경 시 위치를 갱신한다 */
   updatePosition(zoom: number): void {
     if (!this.currentRect) return;
-    const { pageIndex, x, y, height } = this.currentRect;
+    const { pageIndex } = this.currentRect;
+    const { x, y, height } = this.clampCaretRect(this.currentRect, zoom);
     const pageOffset = this.virtualScroll.getPageOffset(pageIndex);
     const pageLeft = this.calcPageLeft(pageIndex);
 
@@ -106,21 +107,22 @@ export class CaretRenderer {
     // 일반 캐럿 숨기기
     this.caretEl.style.display = 'none';
 
-    const { pageIndex, x, y, height } = startRect;
+    const { pageIndex } = startRect;
+    const box = this.clampCompositionBox(startRect, charWidth);
     const pageOffset = this.virtualScroll.getPageOffset(pageIndex);
     const pageLeft = this.calcPageLeft(pageIndex);
 
     // 블랙박스 위치/크기
-    const w = Math.max(charWidth, height * 0.6) * zoom;
-    const h = height * zoom;
-    const left = pageLeft + x * zoom;
-    const top = pageOffset + y * zoom;
+    const w = box.w * zoom;
+    const h = box.h * zoom;
+    const left = pageLeft + box.x * zoom;
+    const top = pageOffset + box.y * zoom;
 
     this.compEl.style.left = `${left}px`;
     this.compEl.style.top = `${top}px`;
     this.compEl.style.width = `${w}px`;
     this.compEl.style.height = `${h}px`;
-    this.compEl.style.fontSize = `${height * 0.85 * zoom}px`;
+    this.compEl.style.fontSize = `${box.h * 0.85 * zoom}px`;
     this.compEl.style.fontFamily = fontFamily || 'sans-serif';
     this.compEl.style.lineHeight = `${h}px`;
     this.compEl.textContent = text;
@@ -135,6 +137,43 @@ export class CaretRenderer {
     if (!this.isCompMode) return;
     this.isCompMode = false;
     this.compEl.style.display = 'none';
+  }
+
+  /** 셀 bbox가 있는 캐럿은 DOM 선 폭까지 셀 안에 남도록 보정한다. */
+  private clampCaretRect(rect: CursorRect, zoom: number): { x: number; y: number; height: number } {
+    const bounds = rect.cellBounds;
+    if (!bounds) return rect;
+
+    const caretWidth = 2 / Math.max(zoom, 0.01);
+    const height = Math.min(rect.height, Math.max(0, bounds.h));
+    const maxX = Math.max(bounds.x, bounds.x + bounds.w - caretWidth);
+    const maxY = Math.max(bounds.y, bounds.y + bounds.h - height);
+    return {
+      x: Math.min(Math.max(rect.x, bounds.x), maxX),
+      y: Math.min(Math.max(rect.y, bounds.y), maxY),
+      height,
+    };
+  }
+
+  /** IME 조합창은 Canvas clip을 받지 않으므로 셀 가시 bbox로 별도 제한한다. */
+  private clampCompositionBox(
+    rect: CursorRect,
+    charWidth: number,
+  ): { x: number; y: number; w: number; h: number } {
+    let x = rect.x;
+    let y = rect.y;
+    let w = Math.max(charWidth, rect.height * 0.6);
+    let h = rect.height;
+    const bounds = rect.cellBounds;
+    if (!bounds) return { x, y, w, h };
+
+    w = Math.min(w, Math.max(0, bounds.w));
+    h = Math.min(h, Math.max(0, bounds.h));
+    const maxX = Math.max(bounds.x, bounds.x + bounds.w - w);
+    const maxY = Math.max(bounds.y, bounds.y + bounds.h - h);
+    x = Math.min(Math.max(x, bounds.x), maxX);
+    y = Math.min(Math.max(y, bounds.y), maxY);
+    return { x, y, w, h };
   }
 
   /** 페이지의 화면 X 좌표를 계산한다 (그리드/단일 열 공통) */

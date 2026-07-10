@@ -24,6 +24,57 @@ fn effective_char_count(text_run: &TextRunNode) -> usize {
     text_run.text.chars().count()
 }
 
+/// 표 셀 안 편집 캐럿과 IME 조합창이 공유하는 가시 경계다.
+///
+/// TextRun의 실제 좌표가 고정 높이 셀 밖으로 이어져도 문서 모델의 offset은 보존한다.
+/// 대신 편집 UI가 사용할 좌표만 이 bbox 안으로 제한한다.
+#[derive(Clone, Copy)]
+struct CellCursorBounds {
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+}
+
+fn clamp_cursor_to_cell_bounds(
+    x: f64,
+    y: f64,
+    height: f64,
+    bounds: CellCursorBounds,
+) -> (f64, f64, f64, bool) {
+    let right = bounds.x + bounds.w.max(0.0);
+    let bottom = bounds.y + bounds.h.max(0.0);
+    let clamped_height = height.min(bounds.h.max(0.0));
+    let max_y = (bottom - clamped_height).max(bounds.y);
+    let clamped_x = x.clamp(bounds.x, right);
+    let clamped_y = y.clamp(bounds.y, max_y);
+    let overflowed = (x - clamped_x).abs() > 0.01
+        || (y - clamped_y).abs() > 0.01
+        || (height - clamped_height).abs() > 0.01;
+    (clamped_x, clamped_y, clamped_height, overflowed)
+}
+
+fn format_cursor_rect_json(
+    page_index: u32,
+    x: f64,
+    y: f64,
+    height: f64,
+    cell_bounds: Option<CellCursorBounds>,
+) -> String {
+    if let Some(bounds) = cell_bounds {
+        let (x, y, height, overflowed) = clamp_cursor_to_cell_bounds(x, y, height, bounds);
+        format!(
+            "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1},\"cellBounds\":{{\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}}},\"cellOverflowed\":{}}}",
+            page_index, x, y, height, bounds.x, bounds.y, bounds.w, bounds.h, overflowed
+        )
+    } else {
+        format!(
+            "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+            page_index, x, y, height
+        )
+    }
+}
+
 fn note_number_format_from_hwp_code(code: u8) -> crate::renderer::NumberFormat {
     match code {
         0 => crate::renderer::NumberFormat::Digit,
@@ -2536,6 +2587,38 @@ impl DocumentCore {
             height: f64,
         }
 
+        fn find_table_cell_bounds(
+            node: &RenderNode,
+            parent_para: usize,
+            ctrl_idx: usize,
+            c_idx: usize,
+        ) -> Option<CellCursorBounds> {
+            if let RenderNodeType::Table(ref table) = node.node_type {
+                let matches_table =
+                    table.para_index == Some(parent_para) && table.control_index == Some(ctrl_idx);
+                if matches_table {
+                    for child in &node.children {
+                        if let RenderNodeType::TableCell(ref cell) = child.node_type {
+                            if cell.model_cell_index == Some(c_idx as u32) {
+                                return Some(CellCursorBounds {
+                                    x: child.bbox.x,
+                                    y: child.bbox.y,
+                                    w: child.bbox.width,
+                                    h: child.bbox.height,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            for child in &node.children {
+                if let Some(bounds) = find_table_cell_bounds(child, parent_para, ctrl_idx, c_idx) {
+                    return Some(bounds);
+                }
+            }
+            None
+        }
+
         fn find_cursor_in_cell(
             node: &RenderNode,
             parent_para: usize,
@@ -2601,6 +2684,8 @@ impl DocumentCore {
 
         for &page_num in &pages {
             let tree = self.build_page_tree(page_num)?;
+            let cell_bounds =
+                find_table_cell_bounds(&tree.root, parent_para_idx, control_idx, cell_idx);
             if let Some(hit) = find_cursor_in_cell(
                 &tree.root,
                 parent_para_idx,
@@ -2610,9 +2695,12 @@ impl DocumentCore {
                 char_offset,
                 page_num,
             ) {
-                return Ok(format!(
-                    "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                    hit.page_index, hit.x, hit.y, hit.height
+                return Ok(format_cursor_rect_json(
+                    hit.page_index,
+                    hit.x,
+                    hit.y,
+                    hit.height,
+                    cell_bounds,
                 ));
             }
         }
@@ -2620,6 +2708,8 @@ impl DocumentCore {
         // 빈 셀 fallback: 해당 셀의 아무 TextRun을 찾아 위치 반환
         let first_page = pages[0];
         let tree = self.build_page_tree(first_page)?;
+        let first_page_cell_bounds =
+            find_table_cell_bounds(&tree.root, parent_para_idx, control_idx, cell_idx);
 
         fn find_cell_run(
             node: &RenderNode,
@@ -2654,9 +2744,12 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         ) {
-            return Ok(format!(
-                "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                first_page, x, y, h
+            return Ok(format_cursor_rect_json(
+                first_page,
+                x,
+                y,
+                h,
+                first_page_cell_bounds,
             ));
         }
 
@@ -2711,12 +2804,17 @@ impl DocumentCore {
             let pad_left = cell_pos.2;
             let pad_top = cell_pos.3;
             let caret_h = (ch - pad_top - cell_pos.4).max(10.0); // 패딩 제외한 높이
-            return Ok(format!(
-                "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
+            return Ok(format_cursor_rect_json(
                 first_page,
                 cx + pad_left,
                 cy + pad_top,
-                caret_h
+                caret_h,
+                Some(CellCursorBounds {
+                    x: cx,
+                    y: cy,
+                    w: _cw,
+                    h: ch,
+                }),
             ));
         }
 
@@ -2946,10 +3044,12 @@ impl DocumentCore {
             page: u32,
             current_table_ctx: Option<CellContext>,
             current_cell_ctx: Option<CellContext>,
-        ) -> Option<(u32, f64, f64, f64)> {
+            current_cell_bounds: Option<CellCursorBounds>,
+        ) -> Option<(u32, f64, f64, f64, Option<CellCursorBounds>)> {
             let table_ctx =
                 table_ctx_from_node(node, current_table_ctx.as_ref(), current_cell_ctx.as_ref());
             let mut child_cell_ctx = current_cell_ctx.clone();
+            let mut child_cell_bounds = current_cell_bounds;
             if let RenderNodeType::TableCell(ref tc) = node.node_type {
                 if let Some(cell_idx) = tc.model_cell_index {
                     child_cell_ctx = cell_ctx_for_table_cell(
@@ -2958,6 +3058,12 @@ impl DocumentCore {
                         0,
                         tc.text_direction,
                     );
+                    child_cell_bounds = Some(CellCursorBounds {
+                        x: node.bbox.x,
+                        y: node.bbox.y,
+                        w: node.bbox.width,
+                        h: node.bbox.height,
+                    });
                 }
             }
             if let RenderNodeType::TextRun(ref tr) = node.node_type {
@@ -2982,7 +3088,13 @@ impl DocumentCore {
                         } else {
                             0.0
                         };
-                        return Some((page, node.bbox.x + xr, node.bbox.y, node.bbox.height));
+                        return Some((
+                            page,
+                            node.bbox.x + xr,
+                            node.bbox.y,
+                            node.bbox.height,
+                            child_cell_bounds,
+                        ));
                     }
                 }
             }
@@ -2997,6 +3109,7 @@ impl DocumentCore {
                     page,
                     table_ctx.clone(),
                     child_cell_ctx.clone(),
+                    child_cell_bounds,
                 ) {
                     return Some(hit);
                 }
@@ -3006,7 +3119,7 @@ impl DocumentCore {
 
         for &page_num in &pages {
             let tree = self.build_page_tree_cached(page_num)?;
-            if let Some((pi, x, y, h)) = find_cursor_by_path(
+            if let Some((pi, x, y, h, cell_bounds)) = find_cursor_by_path(
                 self,
                 &tree.root,
                 section_idx,
@@ -3016,11 +3129,9 @@ impl DocumentCore {
                 page_num,
                 None,
                 None,
+                None,
             ) {
-                return Ok(format!(
-                    "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                    pi, x, y, h
-                ));
+                return Ok(format_cursor_rect_json(pi, x, y, h, cell_bounds));
             }
         }
 
@@ -3036,13 +3147,15 @@ impl DocumentCore {
                 page: u32,
                 current_table_ctx: Option<CellContext>,
                 current_cell_ctx: Option<CellContext>,
-            ) -> Option<(u32, f64, f64, f64)> {
+                current_cell_bounds: Option<CellCursorBounds>,
+            ) -> Option<(u32, f64, f64, f64, Option<CellCursorBounds>)> {
                 let table_ctx = table_ctx_from_node(
                     node,
                     current_table_ctx.as_ref(),
                     current_cell_ctx.as_ref(),
                 );
                 let mut child_cell_ctx = current_cell_ctx.clone();
+                let mut child_cell_bounds = current_cell_bounds;
                 if let RenderNodeType::TableCell(ref tc) = node.node_type {
                     if let Some(cell_idx) = tc.model_cell_index {
                         child_cell_ctx = cell_ctx_for_table_cell(
@@ -3051,6 +3164,12 @@ impl DocumentCore {
                             0,
                             tc.text_direction,
                         );
+                        child_cell_bounds = Some(CellCursorBounds {
+                            x: node.bbox.x,
+                            y: node.bbox.y,
+                            w: node.bbox.width,
+                            h: node.bbox.height,
+                        });
                     }
                 }
                 if let RenderNodeType::TextRun(ref tr) = node.node_type {
@@ -3060,7 +3179,13 @@ impl DocumentCore {
                         core.repair_unwrapped_wrapper_cell_context(section_idx, ctx);
                     }
                     if cell_context_matches(&cell_context, parent_para, path) {
-                        return Some((page, node.bbox.x, node.bbox.y, node.bbox.height));
+                        return Some((
+                            page,
+                            node.bbox.x,
+                            node.bbox.y,
+                            node.bbox.height,
+                            child_cell_bounds,
+                        ));
                     }
                 }
                 for child in &node.children {
@@ -3073,13 +3198,14 @@ impl DocumentCore {
                         page,
                         table_ctx.clone(),
                         child_cell_ctx.clone(),
+                        child_cell_bounds,
                     ) {
                         return Some(hit);
                     }
                 }
                 None
             }
-            if let Some((pi, x, y, h)) = find_any_run(
+            if let Some((pi, x, y, h, cell_bounds)) = find_any_run(
                 self,
                 &tree.root,
                 section_idx,
@@ -3088,11 +3214,9 @@ impl DocumentCore {
                 page_num,
                 None,
                 None,
+                None,
             ) {
-                return Ok(format!(
-                    "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                    pi, x, y, h
-                ));
+                return Ok(format_cursor_rect_json(pi, x, y, h, cell_bounds));
             }
         }
 
@@ -5049,7 +5173,19 @@ impl DocumentCore {
 
 #[cfg(test)]
 mod tests {
-    use super::{resolve_x_on_line, LineRunView};
+    use super::{clamp_cursor_to_cell_bounds, resolve_x_on_line, CellCursorBounds, LineRunView};
+
+    #[test]
+    fn cell_cursor_bounds_clamp_coordinates_and_height() {
+        let bounds = CellCursorBounds {
+            x: 10.0,
+            y: 20.0,
+            w: 30.0,
+            h: 8.0,
+        };
+        let (x, y, height, overflowed) = clamp_cursor_to_cell_bounds(50.0, 40.0, 14.0, bounds);
+        assert_eq!((x, y, height, overflowed), (40.0, 20.0, 8.0, true));
+    }
 
     // 줄 단위 x 해석(`resolve_x_on_line`)의 회귀 테스트.
     //

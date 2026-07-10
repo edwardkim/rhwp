@@ -183,6 +183,10 @@ export interface CursorRect {
   x: number;
   y: number;
   height: number;
+  /** 표 셀 내부 커서일 때만 제공되는 가시 셀 bbox */
+  cellBounds?: { x: number; y: number; w: number; h: number };
+  /** 원래 TextRun 좌표가 셀 bbox를 벗어나 보정됐는지 여부 */
+  cellOverflowed?: boolean;
 }
 
 /** WASM hitTest() 반환 타입 */
