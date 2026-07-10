@@ -1075,12 +1075,22 @@ fn test_expand_numbering_format_digit() {
         raw_para_heads: None,
     };
     let counters = [3, 2, 1, 0, 0, 0, 0];
-    let result =
-        expand_numbering_format("^1.", &counters, &numbering, &numbering.level_start_numbers);
+    let result = expand_numbering_format(
+        "^1.",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        0,
+    );
     assert_eq!(result, "3.");
 
-    let result =
-        expand_numbering_format("^2.", &counters, &numbering, &numbering.level_start_numbers);
+    let result = expand_numbering_format(
+        "^2.",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
     assert_eq!(result, "2.");
 
     let result = expand_numbering_format(
@@ -1088,6 +1098,7 @@ fn test_expand_numbering_format_digit() {
         &counters,
         &numbering,
         &numbering.level_start_numbers,
+        2,
     );
     assert_eq!(result, "(1)");
 }
@@ -1113,9 +1124,142 @@ fn test_expand_numbering_format_hangul() {
         raw_para_heads: None,
     };
     let counters = [1, 3, 0, 0, 0, 0, 0];
-    let result =
-        expand_numbering_format("^2.", &counters, &numbering, &numbering.level_start_numbers);
+    let result = expand_numbering_format(
+        "^2.",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
     assert_eq!(result, "다.");
+}
+
+#[test]
+fn test_expand_numbering_format_level_path() {
+    // ^n/^N: 레벨 경로 자동코드 (#2145). 재현 문서는 전 수준 "^N".
+    let numbering = Numbering {
+        raw_data: None,
+        heads: [NumberingHead {
+            number_format: 0,
+            ..Default::default()
+        }; 7],
+        level_formats: [
+            "^N".to_string(),
+            "^N".to_string(),
+            "^N".to_string(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+        ],
+        start_number: 0,
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        raw_para_heads: None,
+    };
+
+    // level 0: "1.", 카운터 전진 후 "2."
+    let counters = [1, 0, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^N",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        0,
+    );
+    assert_eq!(result, "1.");
+    let counters = [2, 0, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^N",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        0,
+    );
+    assert_eq!(result, "2.");
+
+    // level 1: "1.1." → "1.4."
+    let counters = [1, 1, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^N",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
+    assert_eq!(result, "1.1.");
+    let counters = [1, 4, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^N",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
+    assert_eq!(result, "1.4.");
+
+    // ^n: 후행 마침표 없음
+    let counters = [2, 3, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^n",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
+    assert_eq!(result, "2.3");
+
+    // 접두·접미 문자 보존
+    let result = expand_numbering_format(
+        "[^n]",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
+    assert_eq!(result, "[2.3]");
+
+    // 상위 수준 카운터 0이면 시작번호로 폴백
+    let counters = [0, 2, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^N",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
+    assert_eq!(result, "1.2.");
+}
+
+#[test]
+fn test_expand_numbering_format_level_path_mixed_format() {
+    // 수준별 number_format 혼합: L1=Digit, L2=HangulGaNaDa → "1.가."
+    let mut heads = [NumberingHead::default(); 7];
+    heads[1].number_format = 8; // HangulGaNaDa
+    let numbering = Numbering {
+        raw_data: None,
+        heads,
+        level_formats: [
+            "^N".to_string(),
+            "^N".to_string(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+        ],
+        start_number: 0,
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        raw_para_heads: None,
+    };
+    let counters = [1, 1, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^N",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
+    assert_eq!(result, "1.가.");
 }
 
 #[test]
