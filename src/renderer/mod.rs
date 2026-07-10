@@ -685,6 +685,14 @@ pub(crate) fn hwp3_variant_flow_spacing_before(base: f64, is_hwp3_variant: bool)
     }
 }
 
+/// [#2169] 저장 LINE_SEG 부재 판별 — 원본 NO_LS 와 자기-export HWPX 재파싱본
+/// (전부 synthetic, tag 0x8000_0000)을 동일 취급해 왕복 시멘틱을 정합한다
+/// (#1770 계열: 국소 문맥 판별).
+#[inline]
+pub(crate) fn para_has_no_stored_line_segs(p: &crate::model::paragraph::Paragraph) -> bool {
+    p.line_segs.is_empty() || p.line_segs.iter().all(|s| s.tag & 0x8000_0000 != 0)
+}
+
 /// HWPUNIT을 픽셀로 변환
 #[inline]
 pub fn hwpunit_to_px(hwpunit: i32, dpi: f64) -> f64 {

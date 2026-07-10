@@ -786,10 +786,13 @@ impl HeightMeasurer {
                     .iter()
                     .filter_map(|ctrl| {
                         if let Control::Table(nested) = ctrl {
-                            Some(
-                                self.measure_table_impl(nested, 0, 0, styles, depth + 1)
-                                    .total_height,
-                            )
+                            let mt = self.measure_table_impl(nested, 0, 0, styles, depth + 1);
+                            // [#2148 실험] NO_LS 중첩 표 선언 신뢰 — 성장 전용 max.
+                            let declared = hwpunit_to_px(nested.common.height as i32, self.dpi);
+                            // [#2169] om 가산은 additive 경로(cell_controls_height)
+                            // 전담 — vpos 기반 max 경로는 저장 vpos 가 배치를 이미
+                            // 반영하므로 미가산 (자기-export HWPX 왕복 이중가산 방지).
+                            Some(mt.total_height.max(declared))
                         } else {
                             None
                         }
@@ -964,7 +967,46 @@ impl HeightMeasurer {
                                 0.0
                             };
                             if comp.lines.is_empty() {
-                                spacing_before + hwpunit_to_px(400, self.dpi) + spacing_after
+                                // [#2169] NO_LS 순수 빈 문단 = em 줄박스 (한글 공식).
+                                let h = if crate::renderer::para_has_no_stored_line_segs(p)
+                                    && p.controls.is_empty()
+                                {
+                                    let fs = p
+                                        .char_shapes
+                                        .first()
+                                        .and_then(|cs| {
+                                            styles.char_styles.get(cs.char_shape_id as usize)
+                                        })
+                                        .map(|cs| cs.font_size)
+                                        .unwrap_or(0.0);
+                                    if fs <= 0.0 {
+                                        hwpunit_to_px(400, self.dpi)
+                                    } else if is_last_para {
+                                        fs
+                                    } else {
+                                        match para_style {
+                                            Some(ps) => crate::renderer::corrected_line_height(
+                                                hwpunit_to_px(400, self.dpi),
+                                                fs,
+                                                ps.line_spacing_type,
+                                                ps.line_spacing,
+                                            ),
+                                            None => fs,
+                                        }
+                                    }
+                                } else if crate::renderer::para_has_no_stored_line_segs(p)
+                                    && p.controls
+                                        .iter()
+                                        .any(|c| matches!(c, Control::Table(_)))
+                                {
+                                    // [#2169] TAC 중첩 표 anchor 빈 문단 몫 = 0
+                                    // (anchor 사다리: row = nested+pad 정확).
+                                    // 중첩 몫은 cell_controls_height 가산이 전담.
+                                    0.0
+                                } else {
+                                    hwpunit_to_px(400, self.dpi)
+                                };
+                                spacing_before + h + spacing_after
                             } else {
                                 let cell_ls_val =
                                     para_style.map(|s| s.line_spacing).unwrap_or(160.0);
@@ -996,6 +1038,25 @@ impl HeightMeasurer {
                                                     .unwrap_or(0.0)
                                             })
                                             .fold(0.0f64, f64::max);
+                                        let is_cell_last_line = is_last_para && i + 1 == line_count;
+                                        // [#2169] NO_LS 순수 빈 문단 — 문단 char shape fs
+                                        // 폴백 (한글은 완전한 em 줄박스로 취급).
+                                        let max_fs = if max_fs <= 0.0
+                                            && crate::renderer::para_has_no_stored_line_segs(p)
+                                            && p.controls.is_empty()
+                                        {
+                                            p.char_shapes
+                                                .first()
+                                                .and_then(|cs| {
+                                                    styles
+                                                        .char_styles
+                                                        .get(cs.char_shape_id as usize)
+                                                })
+                                                .map(|cs| cs.font_size)
+                                                .unwrap_or(0.0)
+                                        } else {
+                                            max_fs
+                                        };
                                         // [#2112] 실저장 LINE_SEG(비합성, tag 0x80000000
                                         // 미설정) 보유 문단은 저장 줄높이 신뢰 — 한글은
                                         // 압축 줄높이(lh<글자크기)를 저장값대로 렌더한다.
@@ -1020,7 +1081,6 @@ impl HeightMeasurer {
                                         // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
                                         // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
                                         // trailing 을 제외(k-water-rfp pi=180).
-                                        let is_cell_last_line = is_last_para && i + 1 == line_count;
                                         let is_block_rowbreak =
                                             matches!(table.page_break, TablePageBreak::RowBreak)
                                                 && !table.common.treat_as_char;
@@ -1046,7 +1106,34 @@ impl HeightMeasurer {
                     .paragraphs
                     .iter()
                     .any(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))));
-                let content_height = if has_nested_table_in_cell {
+                let cell_all_no_ls = cell
+                    .paragraphs
+                    .iter()
+                    .all(crate::renderer::para_has_no_stored_line_segs);
+                let content_height = if has_nested_table_in_cell && cell_all_no_ls {
+                    // [#2148 실험] NO_LS 셀은 vpos 사다리가 없어 nested_bottom 의
+                    // para_top(첫 lineseg vpos)=0 → 위 텍스트 문단이 소거된다
+                    // (80168 pi=271 r6: 텍스트 2줄 + 중첩 99.7 → max 로 99.7 과소,
+                    // 한글 160.2 는 합산 흐름). 텍스트 합 + 중첩 표 합(선언 max +
+                    // outMargin — 이 additive 경로 한정, 한글 검산 160.1)으로 가산.
+                    let nested_sum: f64 = cell
+                        .paragraphs
+                        .iter()
+                        .flat_map(|p| p.controls.iter())
+                        .filter_map(|ctrl| {
+                            if let Control::Table(nested) = ctrl {
+                                let mt = self.measure_table_impl(nested, 0, 0, styles, depth + 1);
+                                let declared = hwpunit_to_px(nested.common.height as i32, self.dpi);
+                                let om = hwpunit_to_px(nested.outer_margin_top as i32, self.dpi)
+                                    + hwpunit_to_px(nested.outer_margin_bottom as i32, self.dpi);
+                                Some(mt.total_height.max(declared) + om)
+                            } else {
+                                None
+                            }
+                        })
+                        .sum();
+                    text_height + nested_sum
+                } else if has_nested_table_in_cell {
                     // 마지막 문단의 마지막 LINE_SEG의 vpos + line_height
                     let last_seg_end: i32 = cell
                         .paragraphs
@@ -1273,7 +1360,46 @@ impl HeightMeasurer {
                                 0.0
                             };
                             if comp.lines.is_empty() {
-                                spacing_before + hwpunit_to_px(400, self.dpi) + spacing_after
+                                // [#2169] NO_LS 순수 빈 문단 = em 줄박스 (한글 공식).
+                                let h = if crate::renderer::para_has_no_stored_line_segs(p)
+                                    && p.controls.is_empty()
+                                {
+                                    let fs = p
+                                        .char_shapes
+                                        .first()
+                                        .and_then(|cs| {
+                                            styles.char_styles.get(cs.char_shape_id as usize)
+                                        })
+                                        .map(|cs| cs.font_size)
+                                        .unwrap_or(0.0);
+                                    if fs <= 0.0 {
+                                        hwpunit_to_px(400, self.dpi)
+                                    } else if is_last_para {
+                                        fs
+                                    } else {
+                                        match para_style {
+                                            Some(ps) => crate::renderer::corrected_line_height(
+                                                hwpunit_to_px(400, self.dpi),
+                                                fs,
+                                                ps.line_spacing_type,
+                                                ps.line_spacing,
+                                            ),
+                                            None => fs,
+                                        }
+                                    }
+                                } else if crate::renderer::para_has_no_stored_line_segs(p)
+                                    && p.controls
+                                        .iter()
+                                        .any(|c| matches!(c, Control::Table(_)))
+                                {
+                                    // [#2169] TAC 중첩 표 anchor 빈 문단 몫 = 0
+                                    // (anchor 사다리: row = nested+pad 정확).
+                                    // 중첩 몫은 cell_controls_height 가산이 전담.
+                                    0.0
+                                } else {
+                                    hwpunit_to_px(400, self.dpi)
+                                };
+                                spacing_before + h + spacing_after
                             } else {
                                 let cell_ls_val =
                                     para_style.map(|s| s.line_spacing).unwrap_or(160.0);
@@ -1305,6 +1431,25 @@ impl HeightMeasurer {
                                                     .unwrap_or(0.0)
                                             })
                                             .fold(0.0f64, f64::max);
+                                        let is_cell_last_line = is_last_para && i + 1 == line_count;
+                                        // [#2169] NO_LS 순수 빈 문단 — 문단 char shape fs
+                                        // 폴백 (한글은 완전한 em 줄박스로 취급).
+                                        let max_fs = if max_fs <= 0.0
+                                            && crate::renderer::para_has_no_stored_line_segs(p)
+                                            && p.controls.is_empty()
+                                        {
+                                            p.char_shapes
+                                                .first()
+                                                .and_then(|cs| {
+                                                    styles
+                                                        .char_styles
+                                                        .get(cs.char_shape_id as usize)
+                                                })
+                                                .map(|cs| cs.font_size)
+                                                .unwrap_or(0.0)
+                                        } else {
+                                            max_fs
+                                        };
                                         // [#2112] 실저장 LINE_SEG(비합성, tag 0x80000000
                                         // 미설정) 보유 문단은 저장 줄높이 신뢰 — 한글은
                                         // 압축 줄높이(lh<글자크기)를 저장값대로 렌더한다.
@@ -1329,7 +1474,6 @@ impl HeightMeasurer {
                                         // trailing geometry 를 보존(aift.hwp pi=123, KTX TOC),
                                         // block RowBreak 표는 렌더 가시 높이처럼 셀 마지막 줄
                                         // trailing 을 제외(k-water-rfp pi=180).
-                                        let is_cell_last_line = is_last_para && i + 1 == line_count;
                                         let is_block_rowbreak =
                                             matches!(table.page_break, TablePageBreak::RowBreak)
                                                 && !table.common.treat_as_char;
@@ -1515,8 +1659,26 @@ impl HeightMeasurer {
                                             .unwrap_or(0.0)
                                     })
                                     .fold(0.0f64, f64::max);
+                                // 셀의 마지막 줄(마지막 문단의 마지막 줄)은 ls 제외
+                                let is_cell_last_line = is_last_para && li + 1 == line_count;
+                                // [#2169] NO_LS 순수 빈 문단 — char shape fs 폴백.
+                                let max_fs = if max_fs <= 0.0
+                                    && crate::renderer::para_has_no_stored_line_segs(p)
+                                    && p.controls.is_empty()
+                                {
+                                    p.char_shapes
+                                        .first()
+                                        .and_then(|cs| {
+                                            styles.char_styles.get(cs.char_shape_id as usize)
+                                        })
+                                        .map(|cs| cs.font_size)
+                                        .unwrap_or(0.0)
+                                } else {
+                                    max_fs
+                                };
                                 // [#2112] 실저장 LINE_SEG(비합성) 보유 문단은 저장 줄높이
                                 // 신뢰 (위 999/1277 사이트와 동일 원칙).
+                                // [#2150/#2169] NO_LS 셀 마지막 줄 = em (한글 공식).
                                 let h = if p.line_segs.iter().any(|ls| ls.tag & 0x8000_0000 == 0) {
                                     raw_lh
                                 } else {
@@ -1529,8 +1691,6 @@ impl HeightMeasurer {
                                     )
                                 };
                                 let ls = hwpunit_to_px(line.line_spacing, self.dpi);
-                                // 셀의 마지막 줄(마지막 문단의 마지막 줄)은 ls 제외
-                                let is_cell_last_line = is_last_para && li + 1 == line_count;
                                 let mut line_h = if !is_cell_last_line { h + ls } else { h };
                                 if li == 0 {
                                     line_h += spacing_before;

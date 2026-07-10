@@ -1,6 +1,7 @@
 //! Diagnostic tooling for HWP/HWPX compatibility work.
 
 pub mod bench;
+pub mod core_pages_probe;
 pub mod hwp5_anchor_trace;
 pub mod hwp5_borderfill_diagonal_probe;
 pub mod hwp5_cell_header_probe;
