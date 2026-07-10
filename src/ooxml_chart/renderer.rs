@@ -573,7 +573,12 @@ fn category_positive_sum(chart: &OoxmlChart, ci: usize) -> f64 {
 // ---------------- Line (단일 축) ----------------
 
 fn render_line(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, ph: f64) {
-    let (vmin, vmax, vstep) = value_range(chart, VERTICAL_AXIS_TICKS);
+    let stacked = matches!(
+        chart.line_grouping,
+        BarGrouping::Stacked | BarGrouping::PercentStacked
+    );
+    let percent = chart.line_grouping == BarGrouping::PercentStacked;
+
     let max_len = chart
         .series
         .iter()
@@ -583,6 +588,19 @@ fn render_line(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, 
     if max_len < 2 {
         return;
     }
+
+    // 값축: 비누적=개별값, 누적=카테고리 합의 최대, 백프로=0~100% step 20
+    // (render_bars 누적 정책 미러 — 정답지 실측 누적 0~15 step 5. C1d #2129)
+    let (vmin, vmax, vstep) = if percent {
+        (0.0, 100.0, 20.0)
+    } else if stacked {
+        let max_sum = (0..max_len)
+            .map(|ci| category_positive_sum(chart, ci))
+            .fold(0.0_f64, f64::max);
+        nice_axis(0.0, max_sum.max(1.0), VERTICAL_AXIS_TICKS)
+    } else {
+        value_range(chart, VERTICAL_AXIS_TICKS)
+    };
 
     svg.push_str(&format!(
         "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
@@ -600,34 +618,51 @@ fn render_line(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, 
         chart.series.first().and_then(|s| s.format_code.as_deref()),
         false,
         false,
-        false,
+        percent,
         false,
     );
 
-    let step = pw / (max_len - 1).max(1) as f64;
+    // x 배치: 카테고리 슬롯 중앙 (한컴 정합, XML crossBetween=between —
+    // 첫/끝 점이 플롯 가장자리가 아닌 반 슬롯 안쪽. 카테고리 라벨과 동일 공식.
+    // 작업지시자 시각판정 반영, C1d #2129)
+    let cat_span = pw / max_len as f64;
+    let mut cum = vec![0.0_f64; max_len]; // 카테고리별 누적값 (값공간)
     for (si, ser) in chart.series.iter().enumerate() {
         let color = series_color(ser, si);
-        let mut d = String::new();
+        let mut points: Vec<(f64, f64)> = Vec::with_capacity(ser.values.len());
         for (i, &v) in ser.values.iter().enumerate() {
+            let val = if stacked {
+                cum[i] += v.max(0.0); // 음수 clamp — render_bars 누적과 동일 정책
+                if percent {
+                    let sum = category_positive_sum(chart, i);
+                    if sum > 0.0 {
+                        cum[i] / sum * 100.0
+                    } else {
+                        0.0 // 합 0 카테고리 → 0% (막대 denom=1.0 가드와 동등)
+                    }
+                } else {
+                    cum[i]
+                }
+            } else {
+                v
+            };
             let t = if vmax > vmin {
-                (v - vmin) / (vmax - vmin)
+                (val - vmin) / (vmax - vmin)
             } else {
                 0.0
             };
-            let xp = px + step * i as f64;
-            let yp = py + ph - ph * t;
-            d.push_str(&format!(
-                "{}{:.2},{:.2} ",
-                if i == 0 { "M" } else { "L" },
-                xp,
-                yp
-            ));
+            points.push((px + cat_span * (i as f64 + 0.5), py + ph - ph * t));
         }
         svg.push_str(&format!(
             "<path d=\"{}\" fill=\"none\" stroke=\"{}\" stroke-width=\"2\"/>\n",
-            d.trim(),
+            polyline_path(&points),
             color
         ));
+        if chart.line_markers {
+            for &(mx, my) in &points {
+                push_line_marker(svg, si, mx, my, &color);
+            }
+        }
     }
 
     render_category_labels(svg, chart, px, py, pw, ph, max_len, false);
@@ -706,6 +741,65 @@ fn render_scatter(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f6
             }
         }
     }
+}
+
+/// 라인 차트 표식(마커). 계열 인덱스별 한컴 기본 사이클 ◆■▲(+원 폴백) —
+/// 정답지 PDF 실측(표식이있는누적꺽은선형: 계열1 ◆/계열2 ■/계열3 ▲).
+/// 크기 상수는 근사값으로 시각판정에서 조정 여지. (C1d #2129)
+fn push_line_marker(svg: &mut String, si: usize, cx: f64, cy: f64, color: &str) {
+    let d = match si % 4 {
+        0 => {
+            // ◆ 다이아몬드
+            let r = 3.5;
+            format!(
+                "M{:.2},{:.2} L{:.2},{:.2} L{:.2},{:.2} L{:.2},{:.2} Z",
+                cx,
+                cy - r,
+                cx + r,
+                cy,
+                cx,
+                cy + r,
+                cx - r,
+                cy
+            )
+        }
+        1 => {
+            // ■ 정사각형
+            let h = 3.0;
+            format!(
+                "M{:.2},{:.2} L{:.2},{:.2} L{:.2},{:.2} L{:.2},{:.2} Z",
+                cx - h,
+                cy - h,
+                cx + h,
+                cy - h,
+                cx + h,
+                cy + h,
+                cx - h,
+                cy + h
+            )
+        }
+        2 => {
+            // ▲ 삼각형
+            let r = 3.5;
+            format!(
+                "M{:.2},{:.2} L{:.2},{:.2} L{:.2},{:.2} Z",
+                cx,
+                cy - r,
+                cx + r,
+                cy + r * 0.8,
+                cx - r,
+                cy + r * 0.8
+            )
+        }
+        _ => {
+            // 원 폴백 (계열 4+ — 코퍼스 밖, scatter 마커와 동일 반경 3)
+            format!("M{:.2},{:.2} a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0", cx - 3.0, cy)
+        }
+    };
+    svg.push_str(&format!(
+        "<path class=\"hwp-chart-marker\" d=\"{}\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
+        d, color
+    ));
 }
 
 /// 직선 폴리라인 path (`M…L…`).
@@ -1355,6 +1449,258 @@ mod tests {
             2,
             "percent도 카테고리당 단일 x"
         );
+    }
+
+    // --- C1d (#2129): 라인 누적/백프로 기하 ---
+
+    /// 데이터 라인 path(fill="none" stroke-width="2")의 d 문자열 목록 (시리즈 순서).
+    /// 마커 path(fill=색)·격자선(line)·배경(rect)은 제외됨.
+    fn data_line_paths(svg: &str) -> Vec<String> {
+        let mut out = Vec::new();
+        for chunk in svg.split("<path ").skip(1) {
+            let end = chunk.find("/>").unwrap_or(chunk.len());
+            let tag = &chunk[..end];
+            if !tag.contains("fill=\"none\"") || !tag.contains("stroke-width=\"2\"") {
+                continue;
+            }
+            if let Some(p) = tag.find("d=\"") {
+                let s = p + 3;
+                if let Some(e) = tag[s..].find('"') {
+                    out.push(tag[s..s + e].to_string());
+                }
+            }
+        }
+        out
+    }
+
+    /// path d의 (x,y) 점 목록 (`M`/`L` 접두 제거).
+    fn path_points(d: &str) -> Vec<(f64, f64)> {
+        d.split_whitespace()
+            .filter_map(|tok| {
+                let t = tok.trim_start_matches(['M', 'L']);
+                let (x, y) = t.split_once(',')?;
+                Some((x.parse().ok()?, y.parse().ok()?))
+            })
+            .collect()
+    }
+
+    /// 3계열×4카테고리, 카테고리 합 최대 12.3 (합: 8.7/8.9/8.3/12.3 — 코퍼스 라인
+    /// 샘플과 동일 스케일). 개별값 최대 5.0 → 비누적 축 0~6, 누적 축 0~15로 구분됨.
+    fn line_chart(line_grouping: BarGrouping) -> OoxmlChart {
+        OoxmlChart {
+            chart_type: OoxmlChartType::Line,
+            line_grouping,
+            // name 비움 → 범례 미렌더
+            series: vec![
+                OoxmlSeries {
+                    values: vec![4.3, 2.5, 3.5, 4.5],
+                    ..Default::default()
+                },
+                OoxmlSeries {
+                    values: vec![2.4, 4.4, 1.8, 2.8],
+                    ..Default::default()
+                },
+                OoxmlSeries {
+                    values: vec![2.0, 2.0, 3.0, 5.0],
+                    ..Default::default()
+                },
+            ],
+            categories: vec!["a".into(), "b".into(), "c".into(), "d".into()],
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_line_stacked_axis_from_category_sum() {
+        // 누적 축 = 카테고리 합 최대(12.3) 기반 0~15 step 5 — 정답지 실측.
+        // 개별값 최대(5.0) 기반 0~6이 아님.
+        let svg = render_chart_svg(&line_chart(BarGrouping::Stacked), 0.0, 0.0, 400.0, 300.0);
+        assert!(svg.contains(">15<"), "누적 축 max 15");
+        assert!(!svg.contains(">6<"), "개별값 축(0~6) 미사용");
+        assert!(!svg.contains(">14<"), "step 5 유지 (경계 headroom 미발동)");
+    }
+
+    #[test]
+    fn test_line_stacked_series_order() {
+        // 누적: 시리즈2 첫 점(누적 6.7)이 시리즈1 첫 점(4.3) 위 (화면 y 작음)
+        let svg = render_chart_svg(&line_chart(BarGrouping::Stacked), 0.0, 0.0, 400.0, 300.0);
+        let paths = data_line_paths(&svg);
+        assert_eq!(paths.len(), 3, "데이터 라인 3개");
+        let y0 = path_points(&paths[0])[0].1;
+        let y1 = path_points(&paths[1])[0].1;
+        assert!(y1 < y0, "누적이면 시리즈2(y={y1})가 시리즈1(y={y0})보다 위");
+    }
+
+    #[test]
+    fn test_line_percent_axis_labels() {
+        // 백프로: 축 0%~100% step 20% — 정답지 실측 (막대 percent와 동일 정책)
+        let svg = render_chart_svg(
+            &line_chart(BarGrouping::PercentStacked),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        assert!(svg.contains("100%"), "percent 축 100% 라벨");
+        assert!(svg.contains("20%"), "step 20%");
+    }
+
+    #[test]
+    fn test_line_percent_top_series_flat() {
+        // 최상위 시리즈 누적 = 카테고리 합 = 100% → 수평선 (정답지: 계열3이 100% 평행선)
+        let svg = render_chart_svg(
+            &line_chart(BarGrouping::PercentStacked),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        let paths = data_line_paths(&svg);
+        let pts = path_points(&paths[2]);
+        assert_eq!(pts.len(), 4);
+        assert!(
+            pts.windows(2).all(|w| (w[0].1 - w[1].1).abs() < 1e-6),
+            "최상위 시리즈 y 전부 동일해야: {pts:?}"
+        );
+    }
+
+    #[test]
+    fn test_line_percent_zero_sum_category_no_nan() {
+        // 합 0 카테고리 → cum/0 NaN 방지 가드 (0%로 렌더)
+        let mut chart = line_chart(BarGrouping::PercentStacked);
+        chart.series = vec![
+            OoxmlSeries {
+                values: vec![1.0, 0.0],
+                ..Default::default()
+            },
+            OoxmlSeries {
+                values: vec![1.0, 0.0],
+                ..Default::default()
+            },
+        ];
+        chart.categories = vec!["a".into(), "b".into()];
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        assert!(!svg.contains("NaN"), "합 0 카테고리 NaN 가드");
+    }
+
+    /// `>{label}<` 텍스트 요소의 x 좌표.
+    fn text_label_x(svg: &str, label: &str) -> f64 {
+        let i = svg
+            .find(&format!(">{label}<"))
+            .unwrap_or_else(|| panic!("라벨 {label} 없음"));
+        let start = svg[..i].rfind("<text ").expect("text 태그");
+        let tag = &svg[start..i];
+        let p = tag.find("x=\"").expect("x 속성") + 3;
+        let e = p + tag[p..].find('"').expect("닫는 따옴표");
+        tag[p..e].parse().expect("x 파싱")
+    }
+
+    #[test]
+    fn test_line_points_at_category_slot_centers() {
+        // 한컴 정합(작업지시자 시각판정 2026-07-10): 라인 점은 카테고리 슬롯 중앙 —
+        // 첫/끝 점이 플롯 가장자리에 붙지 않고 반 슬롯 안쪽 (XML crossBetween=between).
+        // 카테고리 라벨(슬롯 중앙, text-anchor=middle)과 x가 일치해야 한다.
+        let svg = render_chart_svg(&line_chart(BarGrouping::Clustered), 0.0, 0.0, 400.0, 300.0);
+        let pts = path_points(&data_line_paths(&svg)[0]);
+        assert!(
+            (pts[0].0 - text_label_x(&svg, "a")).abs() < 0.5,
+            "첫 점 x={} ≠ 첫 카테고리 라벨 x={} (슬롯 중앙 아님)",
+            pts[0].0,
+            text_label_x(&svg, "a")
+        );
+        assert!(
+            (pts[3].0 - text_label_x(&svg, "d")).abs() < 0.5,
+            "끝 점 x={} ≠ 끝 카테고리 라벨 x={} (슬롯 중앙 아님)",
+            pts[3].0,
+            text_label_x(&svg, "d")
+        );
+    }
+
+    /// `hwp-chart-marker` path의 d 문자열 목록 (시리즈×점 순서).
+    fn marker_ds(svg: &str) -> Vec<String> {
+        let mut out = Vec::new();
+        for chunk in svg.split("<path ").skip(1) {
+            let end = chunk.find("/>").unwrap_or(chunk.len());
+            let tag = &chunk[..end];
+            if !tag.contains("hwp-chart-marker") {
+                continue;
+            }
+            if let Some(p) = tag.find("d=\"") {
+                let s = p + 3;
+                if let Some(e) = tag[s..].find('"') {
+                    out.push(tag[s..s + e].to_string());
+                }
+            }
+        }
+        out
+    }
+
+    #[test]
+    fn test_line_markers_rendered() {
+        // line_markers=true → 마커 수 = 계열(3) × 점(4) = 12 (누적에서도 동일)
+        let mut chart = line_chart(BarGrouping::Stacked);
+        chart.line_markers = true;
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        assert_eq!(marker_ds(&svg).len(), 12, "3계열×4점 마커");
+    }
+
+    #[test]
+    fn test_line_marker_shape_cycle() {
+        // 계열별 기본 표식 사이클 ◆■▲ (정답지 실측 — 표식이있는누적꺽은선형)
+        let mut chart = line_chart(BarGrouping::Clustered);
+        chart.line_markers = true;
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        let ds = marker_ds(&svg);
+        assert_eq!(ds.len(), 12);
+        let skel = |d: &str| {
+            d.chars()
+                .filter(|c| c.is_ascii_alphabetic())
+                .collect::<String>()
+        };
+        // 시리즈별 첫 마커: [0]=◆, [4]=■, [8]=▲
+        assert_eq!(skel(&ds[0]), "MLLLZ", "◆ 4각형");
+        assert_eq!(skel(&ds[4]), "MLLLZ", "■ 4각형");
+        assert_eq!(skel(&ds[8]), "MLLZ", "▲ 3각형");
+        // ◆ vs ■ 구분: 첫 세그먼트가 ◆는 대각(y 변화), ■는 수평(y 동일)
+        let dia = path_points(&ds[0]);
+        assert!((dia[0].1 - dia[1].1).abs() > 1e-6, "◆ 첫 세그먼트 대각");
+        let sq = path_points(&ds[4]);
+        assert!((sq[0].1 - sq[1].1).abs() < 1e-6, "■ 첫 세그먼트 수평");
+    }
+
+    #[test]
+    fn test_line_marker_circle_fallback_series4() {
+        // 계열 4+ 는 원 폴백 (코퍼스 밖 — 사이클 재시작 대신 원)
+        let mut chart = line_chart(BarGrouping::Clustered);
+        chart.line_markers = true;
+        chart.series.push(OoxmlSeries {
+            values: vec![1.0, 1.0, 1.0, 1.0],
+            ..Default::default()
+        });
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        let ds = marker_ds(&svg);
+        assert_eq!(ds.len(), 16);
+        assert!(ds[12].contains('a'), "계열4는 원(arc) 폴백: {}", ds[12]);
+    }
+
+    #[test]
+    fn test_line_no_markers_by_default() {
+        // 기본값(line_markers=false) → 마커 없음 (꺽은선형/누적꺽은선형 무회귀)
+        let svg = render_chart_svg(&line_chart(BarGrouping::Stacked), 0.0, 0.0, 400.0, 300.0);
+        assert!(!svg.contains("hwp-chart-marker"), "기본은 무마커");
+    }
+
+    #[test]
+    fn test_line_clustered_unchanged() {
+        // 비누적(기본, 꺽은선형 무회귀 핀): 개별값 축 0~6 + 시리즈1(4.3)이 시리즈2(2.4) 위
+        let svg = render_chart_svg(&line_chart(BarGrouping::Clustered), 0.0, 0.0, 400.0, 300.0);
+        assert!(svg.contains(">6<"), "개별값 축 max 6");
+        assert!(!svg.contains(">15<"), "누적 축 미사용");
+        let paths = data_line_paths(&svg);
+        assert_eq!(paths.len(), 3);
+        let y0 = path_points(&paths[0])[0].1;
+        let y1 = path_points(&paths[1])[0].1;
+        assert!(y0 < y1, "비누적: 개별값 기준 시리즈1이 위");
     }
 
     // --- C1b (#1660): 분산형(scatter) 렌더 ---

@@ -6,7 +6,8 @@
 //!
 //! ## 지원 범위
 //! - `c:barChart` (세로/가로 막대)
-//! - `c:lineChart` (꺾은선)
+//! - `c:lineChart` (꺾은선) — 누적/백프로 누적(`c:grouping`) + 표식(plot 레벨
+//!   `c:marker`) 포함 (C1d #2129)
 //! - `c:pieChart` (원형)
 //! - `c:bar3DChart`·`c:pie3DChart`·`c:ofPieChart` — **2D 근사 라우팅** (C1a #1453):
 //!   3D막대→평면 막대, 3D원형/ofPie→단일 원형. 입체감·보조플롯은 미표현(후속 C2).
@@ -42,6 +43,14 @@ pub struct OoxmlChart {
     /// 막대(bar/bar3D) plot의 `c:grouping` (clustered/stacked/percentStacked).
     /// 막대 렌더러만 사용. line/pie 무관. (C1a #1453 막대 누적 보정)
     pub grouping: BarGrouping,
+    /// 라인(lineChart) plot의 `c:grouping` (standard/stacked/percentStacked).
+    /// 순수 라인 렌더러(render_line) 전용 — 콤보의 line 시리즈에는 미적용(코퍼스 무해당).
+    /// 막대 grouping과 별도 필드인 이유: 콤보(bar+line 공존)에서 단일 필드 공유 시
+    /// XML 문서 순서에 따라 상호 오염. (C1d #2129)
+    pub line_grouping: BarGrouping,
+    /// 라인 plot 레벨 `<c:marker val="1"/>` — 표식(마커) 표시 여부. 계열 내부
+    /// `<c:marker>`(val 없음, symbol/size 래퍼)와 구분됨. (C1d #2129)
+    pub line_markers: bool,
     /// 분산형 `c:scatterStyle` (표식/직선/곡선). scatter 렌더러만 사용. (C1b #1660)
     pub scatter_style: ScatterStyle,
     /// 범례 위치 (`c:legendPos`). 한컴 코퍼스는 전 샘플 `val="r"`. (C1c #1882 갭③)
@@ -66,7 +75,8 @@ pub enum LegendPos {
     Top,
 }
 
-/// 막대 차트 그룹화 방식 (`c:grouping`). line 누적은 미지원(C1d).
+/// 막대/라인 공용 그룹화 방식 (`c:grouping`). 막대는 `clustered`/`standard`,
+/// 라인은 `standard`를 Clustered로 흡수. 라인 누적은 `line_grouping`에 저장. (C1d #2129)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum BarGrouping {
     /// 묶은(side-by-side). `clustered`/`standard` 흡수.

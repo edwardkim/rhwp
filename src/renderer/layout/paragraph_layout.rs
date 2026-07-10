@@ -5993,8 +5993,13 @@ impl LayoutEngine {
                     return None;
                 }
 
-                let text =
-                    expand_numbering_format(format_str, &counters, numbering, &start_numbers);
+                let text = expand_numbering_format(
+                    format_str,
+                    &counters,
+                    numbering,
+                    &start_numbers,
+                    level_idx,
+                );
                 if text.is_empty() {
                     return None;
                 }

@@ -2644,7 +2644,12 @@ pub(crate) fn parse_paragraph_list(
         }
 
         let last_pgy = line_infos.last().map(|l| l.pgy).unwrap_or(0);
-        if last_pgy > 0 {
+        // pgy=0 줄(그림 호스트 등)은 기준 미갱신이 원칙이나, 이 문단이 새 페이지를
+        // 시작했다면(is_page_break) 이전 페이지의 pgy 기준을 유지하면 안 된다 —
+        // 유지 시 다음 문단의 정상 pgy(새 페이지 좌표)가 이전 페이지 기준보다 작아
+        // 거짓 페이지 경계가 재승격된다 (#2151: hwp3-sample14 pi16 그림 pgy=0 →
+        // pi17 pgy=3521 < 15441 오판, 그림만 있는 유령 페이지 생성).
+        if last_pgy > 0 || is_page_break {
             prev_last_pgy = last_pgy;
         }
         let is_top_level_body = body_height_hu > 0 && column_width_hu >= 30000;

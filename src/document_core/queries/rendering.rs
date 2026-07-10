@@ -3563,8 +3563,16 @@ impl DocumentCore {
                                 let line_seg_info =
                                     format_line_seg_brief(paragraphs.get(*para_index));
                                 let source_info = endnote_source_info(*para_index);
+                                // [#2152] 미주 문단 항목은 모든 kind 에 [미주] 라벨 —
+                                // per-pi 오라클이 본문 pi 만 세도록 하는 판별 신호.
+                                let en = if *para_index >= body_len {
+                                    "[미주]"
+                                } else {
+                                    ""
+                                };
                                 out.push_str(&format!(
-                                    "    PartialParagraph  pi={}  lines={}..{}  {}{}  {}\n",
+                                    "    PartialParagraph{}  pi={}  lines={}..{}  {}{}  {}\n",
+                                    en,
                                     para_index,
                                     start_line,
                                     end_line,
@@ -3603,8 +3611,14 @@ impl DocumentCore {
                                 let line_seg_info =
                                     format_line_seg_brief(paragraphs.get(*para_index));
                                 let source_info = endnote_source_info(*para_index);
+                                let en = if *para_index >= body_len {
+                                    "[미주]"
+                                } else {
+                                    ""
+                                };
                                 out.push_str(&format!(
-                                    "    Table          pi={} ci={}  {}  {}{}  {}\n",
+                                    "    Table{}          pi={} ci={}  {}  {}{}  {}\n",
+                                    en,
                                     para_index,
                                     control_index,
                                     table_info,
@@ -3646,8 +3660,13 @@ impl DocumentCore {
                                 } else {
                                     String::new()
                                 };
-                                out.push_str(&format!("    PartialTable   pi={} ci={}  rows={}..{}  cont={}  {}  {}{}  {}{}\n",
-                                    para_index, control_index, start_row, end_row, is_continuation, table_info, vpos_info, source_info, line_seg_info, split_info));
+                                let en = if *para_index >= body_len {
+                                    "[미주]"
+                                } else {
+                                    ""
+                                };
+                                out.push_str(&format!("    PartialTable{}   pi={} ci={}  rows={}..{}  cont={}  {}  {}{}  {}{}\n",
+                                    en, para_index, control_index, start_row, end_row, is_continuation, table_info, vpos_info, source_info, line_seg_info, split_info));
                             }
                             PageItem::Shape {
                                 para_index,
@@ -3674,8 +3693,14 @@ impl DocumentCore {
                                 let line_seg_info =
                                     format_line_seg_brief(paragraphs.get(*para_index));
                                 let source_info = endnote_source_info(*para_index);
+                                let en = if *para_index >= body_len {
+                                    "[미주]"
+                                } else {
+                                    ""
+                                };
                                 out.push_str(&format!(
-                                    "    Shape          pi={} ci={}  {}  {}{}  {}\n",
+                                    "    Shape{}          pi={} ci={}  {}  {}{}  {}\n",
+                                    en,
                                     para_index,
                                     control_index,
                                     shape_info,

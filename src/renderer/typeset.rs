@@ -1461,6 +1461,22 @@ fn para_is_page_bottom_fixed_table_anchor(para: &Paragraph) -> bool {
             .any(|c| matches!(c, Control::Table(t) if is_page_bottom_fixed_float(&t.common)))
 }
 
+/// [#2137] 문단의 컨트롤이 전부 비-TAC 자리차지(TopAndBottom, vert=문단) 그림/도형
+/// float 인가. 저장 page-last 증거가 있는 단일 줄 앵커는 개체를 하단 여백으로
+/// 스필하는 것이 한컴 정합(156618554: 앵커 저장 경계 70000 ≤ 본문 70018HU, 한글
+/// 1쪽 — 소형 글상자 49.8px 를 여백으로 흘림)이라 saved-bounds 신뢰(#2093)에
+/// 편입한다. 대형 박스를 한컴이 다음 쪽으로 넘기는 케이스(#1027-E2, AI 184p)는
+/// 앵커 저장 vpos 가 다음 쪽을 인코딩해 경계 fit 에서 자연 배제된다. 표 float 는
+/// footer 로직 소관이라 제외.
+fn para_controls_only_topbottom_floats(para: &Paragraph) -> bool {
+    !para.controls.is_empty()
+        && para.controls.iter().all(|c| match c {
+            Control::Picture(p) => is_para_topbottom_float(&p.common),
+            Control::Shape(s) => is_para_topbottom_float(s.common()),
+            _ => false,
+        })
+}
+
 fn paragraph_saved_vpos_reset_starts_new_page_after(
     current_para: &Paragraph,
     next_para: &Paragraph,
@@ -3220,7 +3236,12 @@ impl TypesetEngine {
                     // (#418)·표 host(#1086 주석) 케이스와 구분한다.
                     let native_near_top_reset = !hwp3_origin_page_tolerance
                         && cv > 0
-                        && cv <= 2000
+                        // [#2136] 상한 2000→2500: sb=5000유닛(=2500HU) 문단의 저장
+                        // 리셋(cv=2500=sb 정확 일치)이 500HU 차로 배제되어 측정 fit
+                        // 과적(148753276 pi46: used 942px > body 933.6px, 한글 p5).
+                        // #1750 split-precheck 상한(2500)과 정합. sb 일치 ±150 조건이
+                        // 유지되어 오발동 억제.
+                        && cv <= 2500
                         && para_sb_hu_for_reset > 0
                         && (cv - para_sb_hu_for_reset).abs() <= 150
                         && !shape_only_para
@@ -11256,7 +11277,9 @@ impl TypesetEngine {
         let saved_single_line_bottom_fits = forced_page_break_line.is_none()
             && st.col_count == 1
             && fmt.line_heights.len() == 1
-            && para.controls.is_empty()
+            // [#2137] 비-TAC 자리차지(TopAndBottom) float 만 가진 앵커도 저장
+            // page-last 증거가 있으면 신뢰 — 개체는 하단 여백 스필(한컴 정합).
+            && (para.controls.is_empty() || para_controls_only_topbottom_floats(para))
             && !st.current_items.is_empty()
             // [Task #1749] 저장 flow 가 이 줄을 페이지 마지막으로 인코딩한 경우에만
             // bounds 신뢰 — 누적좌표 문서의 쪽 경계 overfill 차단.
@@ -13902,7 +13925,22 @@ impl TypesetEngine {
                 // 가정으로, 같은 쪽 두 번째 틀에서 기존 배타분만큼 과관용해져 한글이
                 // 다음 쪽으로 넘기는 틀을 현재 쪽에 흡수했다(36373162 pi16, 2쪽→1쪽).
                 let avail_after = available - prospective_excl;
-                if sync_h <= avail_after {
+                // [#2098 재보정, r12] 앵커 vpos≤0(절대배치 산물)의 저장-흐름-끝 복원
+                // fit 은 경계 케이스에서 과관용 — 10k r12 재검에서 결재문서 60건이
+                // 흡수돼 한글(분할)과 어긋났다. 10k 슬랙 실측: 분할 정답군 3.4~52.1px,
+                // 흡수 정답군 {37.1, 39.6, 67.7, 72.9}px 로 **중첩** — 슬랙 스칼라로는
+                // 완전 분리 불가(진짜 판별 신호는 후속 조사). 53px 마진은 분할군
+                // 전건(≤52.1)을 한글처럼 분할하고 고슬랙 흡수(67.7/72.9)를 유지하는
+                // 순최적점. 저슬랙 흡수 2건(37.1/39.6)은 기지 한계(r11 동일).
+                // [#2138 재보정] warm PDF 권위 재확정: 분할 정답군 슬랙 3.4~61.3px
+                // (36394733 61.3 포함 — 53px 마진이 이를 흡수해 신규 회귀), 흡수
+                // 정답군 {37.1, 39.6, 67.7, 72.9}. 최적 스칼라 구간 [61.3, 67.7) 의
+                // 62px 채택 — 잔여 오류는 저슬랙 흡수 2건(36358528/36477251, r11 동일
+                // 기지 한계). 부수 발견: 한글 자체가 fresh-open/warm-open 에 따라
+                // 같은 문서를 1쪽/2쪽으로 다르게 레이아웃(PDF 포함) — 권위 판정은
+                // warm PDF 로 통일(#2138 stage1).
+                let uncertain_anchor_margin = if anchor_vpos <= 0 { 62.0 } else { 0.0 };
+                if sync_h + uncertain_anchor_margin <= avail_after {
                     // 현재 쪽 하단에 배치 — 본문 흐름은 vpos 동기 위치까지만 전진.
                     st.current_height = sync_h;
                 } else if !st.current_items.is_empty() {
