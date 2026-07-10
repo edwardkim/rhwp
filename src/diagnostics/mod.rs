@@ -15,3 +15,4 @@ pub mod hwp5_roundtrip_batch;
 pub mod hwp5_table_probe;
 pub mod hwpx_roundtrip_batch;
 pub mod render_geom_diff;
+pub mod text_width_probe;

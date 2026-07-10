@@ -1500,6 +1500,42 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
     None
 }
 
+/// [#2156] Haansoft Batang(한컴바탕, HBATANG.TTF upm=1024) ASCII advance/em.
+/// 한글은 함초롬(HCR) 계열 문서의 비한글 문자(라틴·숫자·구두점·U+00B7)를
+/// HCR hmtx 가 아닌 이 메트릭으로 렌더한다 — 문자폭 사다리 통제 프로브로
+/// 전 판별 클래스 확정 (괄호 0.32→0.50em 등, mydocs/working/task_m100_2156_*).
+/// 공백(0x20)은 useFontSpace=0 고정 0.5em 경로(기존 em/2) 유지를 위해 제외.
+const HAANSOFT_BATANG_ASCII: [f64; 95] = [
+    0.3330, 0.4160, 0.4160, 0.8330, 0.6250, 0.9160, 0.8330, 0.2500, // ` !"#$%&'`
+    0.5000, 0.5000, 0.5000, 0.8330, 0.2910, 0.8330, 0.2910, 0.3330, // `()*+,-./`
+    0.5830, 0.5830, 0.5830, 0.5830, 0.5830, 0.5830, 0.5830, 0.5830, // `01234567`
+    0.5830, 0.5830, 0.3330, 0.3330, 0.8330, 0.8330, 0.8330, 0.5000, // `89:;<=>?`
+    1.0000, 0.7500, 0.6660, 0.6660, 0.7080, 0.6660, 0.6250, 0.7080, // `@ABCDEFG`
+    0.7500, 0.3750, 0.4580, 0.7500, 0.6250, 0.9160, 0.7500, 0.7080, // `HIJKLMNO`
+    0.6250, 0.7080, 0.6660, 0.6250, 0.7500, 0.7500, 0.7080, 0.9580, // `PQRSTUVW`
+    0.6660, 0.6660, 0.6250, 0.5000, 0.3330, 0.5000, 1.0000, 0.5000, // `XYZ[\]^_`
+    0.5830, 0.5000, 0.5410, 0.5000, 0.5410, 0.5410, 0.3750, 0.5410, // '`abcdefg'
+    0.5410, 0.2910, 0.2910, 0.5410, 0.2910, 0.8330, 0.5410, 0.5410, // `hijklmno`
+    0.5410, 0.5410, 0.4160, 0.5000, 0.3750, 0.5410, 0.5410, 0.7910, // `pqrstuvw`
+    0.5830, 0.5830, 0.4580, 0.5830, 0.5830, 0.5830, 0.7910, // `xyz{|}~`
+];
+
+/// [#2156] 함초롬 계열 폰트의 비한글 문자 폭 오버라이드 (advance/em 비율).
+fn haansoft_latin_override(primary_name: &str, c: char) -> Option<f64> {
+    let is_hcr = primary_name.starts_with("함초롬") || primary_name.starts_with("HCR ");
+    if !is_hcr {
+        return None;
+    }
+    if c == '\u{00B7}' {
+        return Some(0.3330);
+    }
+    let cp = c as u32;
+    if (0x21..0x7F).contains(&cp) {
+        return Some(HAANSOFT_BATANG_ASCII[(cp - 0x20) as usize]);
+    }
+    None
+}
+
 fn measure_char_width_embedded(
     font_family: &str,
     bold: bool,
@@ -1509,6 +1545,10 @@ fn measure_char_width_embedded(
 ) -> Option<f64> {
     // CSS font-family 체인에서 첫 번째 폰트명으로 메트릭 조회
     let primary_name = font_family.split(',').next().unwrap_or(font_family).trim();
+    // [#2156] 함초롬 계열 비한글 문자 — Haansoft Batang 메트릭 대체 (한글 동작).
+    if let Some(r) = haansoft_latin_override(primary_name, c) {
+        return Some(quantize_hwp_px(r * font_size));
+    }
     if let Some(w) = kopub_char_width(primary_name, c, font_size) {
         return Some(w);
     }
@@ -1936,6 +1976,52 @@ mod tests {
             }
             positions
         }
+    }
+
+    // ── #2156 함초롬 계열 라틴 메트릭 대체 ──
+
+    /// 한글은 함초롬(HCR) 계열 문서의 비한글 문자(라틴·숫자·구두점·U+00B7)를
+    /// Haansoft Batang(한컴바탕) 메트릭으로 렌더한다 — 문자폭 사다리 통제
+    /// 프로브로 전 판별 클래스 확정 (mydocs/working/task_m100_2156_stage1/2).
+    /// 회귀 시 괄호가 HCR hmtx(0.32em)로 되돌아가 자격증 목록류 셀의 래핑
+    /// 줄수가 한글 대비 과소해진다 (21761835 r74 3줄 vs 한글 4줄).
+    #[test]
+    fn issue_2156_hcr_latin_uses_haansoft_metrics() {
+        let fs = 40.0 / 3.0; // 10pt = 13.333px
+        let w = |c: char| {
+            measure_char_width_embedded("함초롬바탕", false, false, c, fs)
+                .unwrap_or_else(|| panic!("측정 실패: {c:?}"))
+        };
+        assert!(
+            (w('(') - fs * 0.5000).abs() < 0.05,
+            "'(' {} ≠ 0.500em",
+            w('(')
+        );
+        assert!(
+            (w(',') - fs * 0.2910).abs() < 0.05,
+            "',' {} ≠ 0.291em",
+            w(',')
+        );
+        assert!(
+            (w('0') - fs * 0.5830).abs() < 0.05,
+            "'0' {} ≠ 0.583em",
+            w('0')
+        );
+        assert!(
+            (w('A') - fs * 0.7500).abs() < 0.05,
+            "'A' {} ≠ 0.750em",
+            w('A')
+        );
+        assert!(
+            (w('·') - fs * 0.3330).abs() < 0.05,
+            "'·' {} ≠ 0.333em",
+            w('·')
+        );
+        // 한글 음절·공백은 기존 경로(HCR hmtx / useFontSpace=0 em/2) 유지,
+        // 비함초롬 폰트는 오버라이드 없음.
+        assert!(haansoft_latin_override("함초롬바탕", '가').is_none());
+        assert!(haansoft_latin_override("함초롬바탕", ' ').is_none());
+        assert!(haansoft_latin_override("바탕", '(').is_none());
     }
 
     // ── MockTextMeasurer 테스트 ──

@@ -54,6 +54,7 @@ fn main() {
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
         Some("render-diff") => rhwp::diagnostics::render_geom_diff::run(&args[2..]),
+        Some("measure-width") => rhwp::diagnostics::text_width_probe::run(&args[2..]),
         Some("bench") => rhwp::diagnostics::bench::run(&args[2..]),
         Some("thumbnail") => extract_thumbnail(&args[2..]),
         _ => {
