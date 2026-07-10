@@ -1461,6 +1461,22 @@ fn para_is_page_bottom_fixed_table_anchor(para: &Paragraph) -> bool {
             .any(|c| matches!(c, Control::Table(t) if is_page_bottom_fixed_float(&t.common)))
 }
 
+/// [#2137] 문단의 컨트롤이 전부 비-TAC 자리차지(TopAndBottom, vert=문단) 그림/도형
+/// float 인가. 저장 page-last 증거가 있는 단일 줄 앵커는 개체를 하단 여백으로
+/// 스필하는 것이 한컴 정합(156618554: 앵커 저장 경계 70000 ≤ 본문 70018HU, 한글
+/// 1쪽 — 소형 글상자 49.8px 를 여백으로 흘림)이라 saved-bounds 신뢰(#2093)에
+/// 편입한다. 대형 박스를 한컴이 다음 쪽으로 넘기는 케이스(#1027-E2, AI 184p)는
+/// 앵커 저장 vpos 가 다음 쪽을 인코딩해 경계 fit 에서 자연 배제된다. 표 float 는
+/// footer 로직 소관이라 제외.
+fn para_controls_only_topbottom_floats(para: &Paragraph) -> bool {
+    !para.controls.is_empty()
+        && para.controls.iter().all(|c| match c {
+            Control::Picture(p) => is_para_topbottom_float(&p.common),
+            Control::Shape(s) => is_para_topbottom_float(s.common()),
+            _ => false,
+        })
+}
+
 fn paragraph_saved_vpos_reset_starts_new_page_after(
     current_para: &Paragraph,
     next_para: &Paragraph,
@@ -11256,7 +11272,9 @@ impl TypesetEngine {
         let saved_single_line_bottom_fits = forced_page_break_line.is_none()
             && st.col_count == 1
             && fmt.line_heights.len() == 1
-            && para.controls.is_empty()
+            // [#2137] 비-TAC 자리차지(TopAndBottom) float 만 가진 앵커도 저장
+            // page-last 증거가 있으면 신뢰 — 개체는 하단 여백 스필(한컴 정합).
+            && (para.controls.is_empty() || para_controls_only_topbottom_floats(para))
             && !st.current_items.is_empty()
             // [Task #1749] 저장 flow 가 이 줄을 페이지 마지막으로 인코딩한 경우에만
             // bounds 신뢰 — 누적좌표 문서의 쪽 경계 overfill 차단.
