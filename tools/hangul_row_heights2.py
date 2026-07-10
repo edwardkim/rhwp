@@ -27,8 +27,13 @@ HU_TO_PX = 96.0 / 7200.0
 sys.stdout.reconfigure(encoding="utf-8")
 
 
-def hangul_col0_heights(src: Path, table_index: int = 0) -> list[float] | None:
-    """한글 표 0열 걷기 세그먼트 높이(mm) — v1 과 동일 메커니즘.
+def hangul_col0_heights(
+    src: Path, table_index: int = 0, col: int = 0, anchor_pi: int | None = None
+) -> list[float] | None:
+    """한글 표 col열 걷기 세그먼트 높이(mm) — v1 과 동일 메커니즘.
+
+    col>0: 시작 셀에서 TableRightCell 로 col 회 우측 이동 후 아래로 걷는다
+    (0열 전병합 표 대응 — 80168 pi=271 24x14, c0 rs=24).
 
     taskkill 직후 CreateObject 레이스(-2146959355 '서버 실행 실패') 대비
     백오프 재시도 (verify_pi_page_vs_hangul.py fresh_hwp 선례).
@@ -55,10 +60,25 @@ def hangul_col0_heights(src: Path, table_index: int = 0) -> list[float] | None:
     tbl = None
     while ctrl is not None:
         if ctrl.CtrlID == "tbl":
-            if seen == table_index:
-                tbl = ctrl
-                break
-            seen += 1
+            # [v3 판별자] HeadCtrl 은 중첩 표도 열거 — 본문 앵커(List==0)만 센다
+            # (tools/table_row_sum_classify3.py 선례). anchor_pi 지정 시 앵커
+            # 문단(Para)==anchor_pi 인 본문 표를 직접 선택.
+            try:
+                aps = ctrl.GetAnchorPos(0)
+                lst = aps.Item("List")
+                para = aps.Item("Para")
+            except Exception:
+                lst, para = None, None
+            if lst == 0:
+                if anchor_pi is not None:
+                    if para == anchor_pi:
+                        tbl = ctrl
+                        break
+                elif seen == table_index:
+                    tbl = ctrl
+                    break
+                else:
+                    seen += 1
         ctrl = ctrl.Next
     if tbl is None:
         hwp.quit()
@@ -72,6 +92,9 @@ def hangul_col0_heights(src: Path, table_index: int = 0) -> list[float] | None:
         return None
     n = int(hwp.get_row_num())
     hwp.Cancel()
+    for _ in range(col):
+        if not hwp.TableRightCell():
+            break
     heights: list[float] = []
     for _ in range(n):
         heights.append(float(hwp.get_row_height()))
@@ -83,7 +106,9 @@ def hangul_col0_heights(src: Path, table_index: int = 0) -> list[float] | None:
     return heights
 
 
-def col0_segments(src: Path, exe: str, table_index: int = 0) -> list[tuple[int, int, float]]:
+def col0_segments(
+    src: Path, exe: str, table_index: int = 0, col: int = 0
+) -> list[tuple[int, int, float]]:
     """rhwp dump 에서 0열 셀 (row, rowspan, 선언높이px) — dump 순서(행 오름차순)."""
     r = subprocess.run([exe, "dump", str(src)], capture_output=True, text=True,
                        encoding="utf-8", errors="replace", timeout=180)
@@ -95,19 +120,21 @@ def col0_segments(src: Path, exe: str, table_index: int = 0) -> list[tuple[int, 
         if ti != table_index:
             continue
         m = re.search(r"셀\[\d+\] r=(\d+),c=(\d+) rs=(\d+),cs=\d+ h=(\d+)", line)
-        if m and int(m.group(2)) == 0:
+        if m and int(m.group(2)) == col:
             segs.append((int(m.group(1)), int(m.group(3)), int(m.group(4)) * HU_TO_PX))
     segs.sort(key=lambda s: s[0])
     return segs
 
 
-def rhwp_cut_rows(src: Path, exe: str) -> list[float] | None:
+def rhwp_cut_rows(src: Path, exe: str, pi: int | None = None) -> list[float] | None:
     import os
 
     env = dict(os.environ, RHWP_TABLE_DRIFT="1")
     r = subprocess.run([exe, "dump-pages", str(src)], capture_output=True, text=True,
                        encoding="utf-8", errors="replace", env=env, timeout=180)
-    m = re.search(r"cut_rows=\[([^\]]*)\]", r.stdout + r.stderr)
+    pat = (rf"TABLE_CUT_DRIFT: pi={pi} .*?cut_rows=\[([^\]]*)\]" if pi is not None
+           else r"cut_rows=\[([^\]]*)\]")
+    m = re.search(pat, r.stdout + r.stderr)
     if not m:
         return None
     return [float(x) for x in m.group(1).split(",") if x.strip()]
@@ -119,15 +146,17 @@ def main() -> int:
     ap.add_argument("--exe", default="C:/Users/planet/rhwp/target/release/rhwp.exe"
                     if sys.platform == "win32" else "target/release/rhwp")
     ap.add_argument("--table-index", type=int, default=0)
+    ap.add_argument("--col", type=int, default=0)
+    ap.add_argument("--pi", type=int, default=None)
     a = ap.parse_args()
 
-    hg_mm = hangul_col0_heights(a.src, a.table_index)
+    hg_mm = hangul_col0_heights(a.src, a.table_index, a.col, a.pi)
     if hg_mm is None:
         print("한글 표 추출 실패", file=sys.stderr)
         return 2
     hg_px = [h * MM_TO_PX for h in hg_mm]
-    segs = col0_segments(a.src, a.exe, a.table_index)
-    cut = rhwp_cut_rows(a.src, a.exe)
+    segs = col0_segments(a.src, a.exe, a.table_index, a.col)
+    cut = rhwp_cut_rows(a.src, a.exe, a.pi)
     if cut is None:
         print("rhwp cut_rows 추출 실패", file=sys.stderr)
         return 2
@@ -149,6 +178,8 @@ def main() -> int:
               f"{dc:>+9.1f} {dd:>+9.1f}{mark}")
     if len(hg_px) != len(segs):
         print(f"주의: 세그먼트 개수 불일치 (한글 {len(hg_px)} vs 0열 {len(segs)})")
+        print("한글 원시 걷기 높이(px):", [round(h, 1) for h in hg_px])
+        print("rhwp cut(px):", [round(c, 1) for c in cut])
     print(f"누적: cutΔ한글={tot_c:+.1f}px  선언Δ한글={tot_d:+.1f}px")
     return 0
 
