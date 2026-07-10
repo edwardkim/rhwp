@@ -99,6 +99,25 @@ function cellPathJson(pos: DocumentPosition): string {
   return JSON.stringify(pos.cellPath ?? []);
 }
 
+/** 셀 문단 구조 편집 뒤 flat/path 커서 위치를 같은 문단으로 맞춘다. */
+function cellParagraphPosition(
+  pos: DocumentPosition,
+  cellParaIndex: number,
+  charOffset: number,
+): DocumentPosition {
+  const cellPath = pos.cellPath?.map((entry, index, path) =>
+    index + 1 === path.length ? { ...entry, cellParaIndex } : entry,
+  );
+  return {
+    ...pos,
+    paragraphIndex: cellParaIndex,
+    cellParaIndex,
+    cellPath,
+    charOffset,
+    cursorRect: undefined,
+  };
+}
+
 function doInsertText(wasm: WasmBridge, pos: DocumentPosition, text: string): void {
   if (isNestedCell(pos)) {
     wasm.insertTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, text);
@@ -714,11 +733,7 @@ export class SplitParagraphInCellCommand implements EditCommand {
     } else {
       wasm.splitParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi, pos.charOffset);
     }
-    return {
-      ...pos,
-      cellParaIndex: cpi + 1,
-      charOffset: 0,
-    };
+    return cellParagraphPosition(pos, cpi + 1, 0);
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
@@ -762,11 +777,7 @@ export class MergeParagraphInCellCommand implements EditCommand {
     } else {
       wasm.mergeParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi);
     }
-    return {
-      ...pos,
-      cellParaIndex: cpi - 1,
-      charOffset: this.mergePointOffset,
-    };
+    return cellParagraphPosition(pos, cpi - 1, this.mergePointOffset);
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
