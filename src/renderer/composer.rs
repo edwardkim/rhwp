@@ -1267,6 +1267,107 @@ pub fn estimate_composed_line_width(line: &ComposedLine, styles: &ResolvedStyleS
         .sum()
 }
 
+/// [#2146] 저장 LINE_SEG 이 전혀 없고(NO_LS) 모든 문단이 1줄이며 각 줄이 셀
+/// 폭을 여유 있게 쓰는 코너-라벨 셀 중, 선언 셀높이를 신뢰할 수 있는 두 경우:
+///
+/// - (a) **사선(대각선) 셀** — 셀 BF 또는 cellzone BF(#1623)에 사선. 한글은
+///   사선 셀 문단("|직렬" 등)을 일반 텍스트 흐름으로 배치하지 않고 코너
+///   라벨로 그리므로 행높이가 저장 선언 그대로다 (21761835 r0 c0).
+/// - (b) **고정(Fixed) 줄간격 모순 셀** — 전 문단 Fixed ls 합이 선언 내부높이
+///   초과 (21761835 r0 c1 "계급|직류": 37.76px×2 > 48.6px). 저장 스타일과
+///   저장 지오메트리가 충돌하면 한글은 지오메트리(선언 행높이)를 유지한다.
+///
+/// 재합성 줄높이가 선언을 초과해도 선언높이를 신뢰한다 (#1763/#2097 계열).
+///
+/// 그 밖의 **사선 없는** 일반 라벨 셀은 제외한다 — 한글이 fresh 레이아웃으로
+/// 선언 이상 키우는 문서(#1891 76076 규제영향분석서: 구분/장점/할인율 등
+/// 클램프 시 82→79쪽 회귀 관측)가 존재하여 선언 신뢰가 성립하지 않는다.
+/// 보조 가드:
+/// - 폭 여유(85%): 한글 폰트 메트릭이 본 환경보다 넓어 한글에서만 2줄로
+///   래핑되는 셀 배제.
+/// - 선언 내부높이 ≥ 문단별 em 합: 한 줄 em 도 못 담는 스테일(생성기 기록)
+///   선언높이 배제 — 한글은 최소 em 으로 행을 키운다 (#1842 em 원칙).
+pub(crate) fn no_ls_short_label_cell(
+    cell: &crate::model::table::Cell,
+    table: &crate::model::table::Table,
+    cell_inner_width: f64,
+    cell_inner_height: f64,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    if cell.paragraphs.is_empty() || cell_inner_width <= 0.0 || cell_inner_height <= 0.0 {
+        return false;
+    }
+    let bf_has_diagonal = |bf_id: u16| {
+        bf_id != 0
+            && styles
+                .border_styles
+                .get((bf_id as usize).saturating_sub(1))
+                .is_some_and(crate::renderer::layout::border_style_has_diagonal)
+    };
+    // 사선은 셀 자체 BF 또는 셀을 덮는 cellzone BF(#1623)에 지정될 수 있다.
+    let cell_has_diagonal = bf_has_diagonal(cell.border_fill_id)
+        || table.zones.iter().any(|z| {
+            z.start_row <= cell.row
+                && cell.row <= z.end_row
+                && z.start_col <= cell.col
+                && cell.col <= z.end_col
+                && bf_has_diagonal(z.border_fill_id)
+        });
+    // 저장 고정(Fixed) 줄간격의 합이 선언 내부높이를 초과하는 모순 셀
+    // (21761835 r0 c1 "계급|직류": ps Fixed 37.76px ×2문단 > 선언 내부 48.6px).
+    // 저장 스타일과 저장 지오메트리가 충돌할 때 한글은 지오메트리(선언 행높이)
+    // 를 유지한다 — 선언 신뢰 가능한 국소 모순 신호.
+    let fixed_ls_contradicts_declared = {
+        let mut sum = 0.0f64;
+        let all_fixed = cell.paragraphs.iter().all(|p| {
+            styles
+                .para_styles
+                .get(p.para_shape_id as usize)
+                .map(|ps| {
+                    if ps.line_spacing_type == crate::model::style::LineSpacingType::Fixed {
+                        sum += ps.line_spacing;
+                        true
+                    } else {
+                        false
+                    }
+                })
+                .unwrap_or(false)
+        });
+        all_fixed && sum > cell_inner_height
+    };
+    if !cell_has_diagonal && !fixed_ls_contradicts_declared {
+        return false;
+    }
+    if !cell.paragraphs.iter().all(|p| p.line_segs.is_empty()) {
+        return false;
+    }
+    let mut em_sum = 0.0f64;
+    for p in &cell.paragraphs {
+        let mut comp = compose_paragraph(p);
+        recompose_for_cell_width(&mut comp, p, cell_inner_width, styles);
+        if comp.lines.len() > 1 {
+            return false;
+        }
+        if let Some(l) = comp.lines.first() {
+            if estimate_composed_line_width(l, styles) > cell_inner_width * 0.85 {
+                return false;
+            }
+            em_sum += l
+                .runs
+                .iter()
+                .map(|r| {
+                    styles
+                        .char_styles
+                        .get(r.char_style_id as usize)
+                        .map(|cs| cs.font_size)
+                        .unwrap_or(0.0)
+                })
+                .fold(0.0f64, f64::max);
+        }
+    }
+    cell_inner_height >= em_sum
+}
+
 /// [Task #671/#1811] 저장 lineSeg 가 없거나 synthetic lineSeg 만 있는 셀 paragraph 의
 /// ComposedLine 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할한다.
 ///

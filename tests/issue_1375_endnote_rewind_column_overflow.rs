@@ -46,7 +46,7 @@ fn issue_1375_sep2020_page17_rewind_paragraph_advances_whole_to_right_column() {
     let page17 = doc.dump_page_items(Some(16));
 
     assert!(
-        !page17.contains("PartialParagraph  pi=894"),
+        !page17.contains("PartialParagraph[미주]  pi=894"),
         "pi=894 rewind paragraph must not be split into the nearly-full left column\n{page17}"
     );
 
@@ -75,11 +75,11 @@ fn issue_1375_sep2020_page22_rewind_tail_stays_inside_body_frame() {
     let page23 = doc.dump_page_items(Some(22));
 
     assert!(
-        page22.contains("PartialParagraph  pi=1175  lines=0..10"),
+        page22.contains("PartialParagraph[미주]  pi=1175  lines=0..10"),
         "page 22 should keep only the render-safe head of pi=1175\n{page22}"
     );
     assert!(
-        page23.contains("PartialParagraph  pi=1175  lines=10..13"),
+        page23.contains("PartialParagraph[미주]  pi=1175  lines=10..13"),
         "page 23 should continue pi=1175 after the page 22 tail split\n{page23}"
     );
 

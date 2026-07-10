@@ -1129,6 +1129,24 @@ impl HeightMeasurer {
                 } else {
                     required_height
                 };
+                // [#2146] 저장 LINE_SEG 이 전혀 없고 모든 문단이 1줄(폭 여유 포함)인
+                // 라벨 셀(사선 헤더 등)은 재합성 초과가 순수 줄높이 인플레이션 —
+                // 선언 셀높이 신뢰. (21761835 r0: 선언 3928HU=52.4px = 한글 실측,
+                // 재합성 79.3px) 판정 기준은 composer::no_ls_short_label_cell 주석 참조.
+                let required_height = if cell_h_px > 0.0
+                    && cell.text_direction == 0
+                    && !has_nested_table_in_cell
+                    && crate::renderer::composer::no_ls_short_label_cell(
+                        cell,
+                        table,
+                        cell_inner_width,
+                        cell_h_px - pad_top - pad_bottom,
+                        styles,
+                    ) {
+                    cell_h_px
+                } else {
+                    required_height
+                };
                 if required_height > row_heights[r] {
                     row_heights[r] = required_height;
                 }

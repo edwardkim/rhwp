@@ -237,7 +237,7 @@ fn render_cell_box_borders(
     nodes
 }
 
-fn border_style_has_diagonal(bs: &ResolvedBorderStyle) -> bool {
+pub(crate) fn border_style_has_diagonal(bs: &ResolvedBorderStyle) -> bool {
     let slash_bits = (bs.diagonal_attr >> 2) & 0x07;
     let backslash_bits = (bs.diagonal_attr >> 5) & 0x07;
     (slash_bits != 0 || backslash_bits != 0 || bs.center_line != CenterLine::None)
@@ -6866,9 +6866,32 @@ impl LayoutEngine {
             } else {
                 0.0
             };
+            // [#2146] 저장 LINE_SEG 이 전혀 없고 모든 문단이 1줄(폭 여유 포함)인
+            // 라벨 셀(사선 헤더 등)은 재합성 초과가 순수 줄높이 인플레이션 —
+            // 선언 셀높이 신뢰. (21761835 r0: 선언 3928HU=52.4px = 한글 실측,
+            // 재합성 79.3px) 판정 기준은 composer::no_ls_short_label_cell 주석 참조.
+            let no_ls_label_cell = cell_h_px > 0.0 && {
+                let (pad_left, pad_right, _, _) = self.resolve_cell_padding(cell, table);
+                let cell_w_px = if cell.width < 0x8000_0000 {
+                    hwpunit_to_px(cell.width as i32, self.dpi)
+                } else {
+                    0.0
+                };
+                crate::renderer::composer::no_ls_short_label_cell(
+                    cell,
+                    table,
+                    (cell_w_px - pad_left - pad_right).max(0.0),
+                    cell_h_px - pad_top - pad_bottom,
+                    styles,
+                )
+            };
             let h = if is_whole_row {
-                // HeightMeasurer required_height + row 단계 1 cell.height max 정합.
-                (content + pad_cell).max(cell_h_px)
+                if no_ls_label_cell {
+                    cell_h_px
+                } else {
+                    // HeightMeasurer required_height + row 단계 1 cell.height max 정합.
+                    (content + pad_cell).max(cell_h_px)
+                }
             } else {
                 // 분할 행 — cell.height 강제 없음.
                 content + pad_cell
