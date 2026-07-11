@@ -3,6 +3,7 @@ import type {
   Canvas,
   CanvasKit,
   Color,
+  Font,
   Image as SkImage,
   Paint,
   Path,
@@ -844,11 +845,12 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderTextRun(canvas: SkCanvas, op: LayerTextRunOp): void {
-    if (!op.text) return;
+    const replayText = op.displayText ?? op.text;
+    const replayPositions = op.displayText !== undefined ? op.displayPositions : op.positions;
+    if (!replayText) return;
     const style = op.style ?? {};
     this.recordTextRunCoverageGaps(op);
     const paint = this.makeFillPaint(style.color ?? '#000000');
-    paint.setAntiAlias?.(true);
     const baseFontSize = style.fontSize ?? Math.max(1, op.bbox.height || 12);
     let fontSize = baseFontSize;
     let baselineShift = 0;
@@ -859,55 +861,75 @@ export class CanvasKitLayerRenderer {
       fontSize = baseFontSize * 0.7;
       baselineShift += baseFontSize * 0.15;
     }
-    // P16 한계: 기본 typeface 가 없으면 (로딩 실패) 비-Latin (CJK 등) 텍스트는
-    // 글리프를 만들 수 없어 조용히 skip 하고 진단(unsupportedOps)에만 남긴다.
-    // Canvas2D 로 덮지 않는 것이 P16 본질이다. fontFamily 별 typeface 매핑과
-    // 폴백 체인은 동일 컨트리뷰터의 후속 폰트 단계에서 보강한다 (Refs #536).
-    if (!this.defaultTypeface && /[^\u0000-\u00ff]/.test(op.text)) {
-      this.unsupportedOps.add('textRunFont');
-      paint.delete();
-      return;
-    }
-    const font = new this.canvasKit.Font(this.defaultTypeface, fontSize);
     const placementMatrix = this.affineToCanvasKitMatrix(op.placement?.runToPage);
     const originX = placementMatrix ? 0 : op.bbox.x;
     const originY = placementMatrix
       ? (op.placement?.baselineY ?? 0)
       : op.bbox.y + (op.baseline ?? baseFontSize);
     const rotation = op.rotation ?? 0;
-    canvas.save();
-    if (placementMatrix) {
-      canvas.concat(placementMatrix);
-    } else if (rotation !== 0) {
-      canvas.rotate(rotation, originX, originY);
-    }
-
-    const codePoints = Array.from(op.text);
+    const codePoints = Array.from(replayText);
     const needsPreservedAdvances = style.superscript || style.subscript;
-    const hasLayoutPositions = op.positions?.length === codePoints.length + 1
-      && op.positions.every(Number.isFinite);
-    if (needsPreservedAdvances && hasLayoutPositions) {
-      const glyphIds = font.getGlyphIDs(op.text, codePoints.length);
-      if (glyphIds.length === codePoints.length) {
-        const glyphPositions = new Float32Array(codePoints.length * 2);
-        for (let index = 0; index < codePoints.length; index += 1) {
-          glyphPositions[index * 2] = op.positions![index];
-          glyphPositions[index * 2 + 1] = baselineShift;
-        }
-        canvas.drawGlyphs(glyphIds, glyphPositions, originX, originY, font, paint);
-      } else {
-        this.unsupportedOps.add('textRun:glyphMapping');
-        canvas.drawText(op.text, originX, originY + baselineShift, paint, font);
+    const hasSimpleScriptText = codePoints.every((codePoint) => {
+      const code = codePoint.charCodeAt(0);
+      return codePoint.length === 1 && code >= 0x20 && code <= 0x7e;
+    });
+    const hasLayoutPositions = replayPositions?.length === codePoints.length + 1
+      && replayPositions.every(Number.isFinite);
+    let font: Font | null = null;
+    let canvasSaved = false;
+    try {
+      paint.setAntiAlias?.(true);
+      // P16 한계: 기본 typeface 가 없으면 (로딩 실패) 비-Latin (CJK 등) 텍스트는
+      // 글리프를 만들 수 없어 조용히 skip 하고 진단(unsupportedOps)에만 남긴다.
+      // Canvas2D 로 덮지 않는 것이 P16 본질이다. fontFamily 별 typeface 매핑과
+      // 폴백 체인은 동일 컨트리뷰터의 후속 폰트 단계에서 보강한다 (Refs #536).
+      if (!this.defaultTypeface && /[^\u0000-\u00ff]/.test(replayText)) {
+        this.unsupportedOps.add('textRunFont');
+        return;
       }
-    } else if (needsPreservedAdvances) {
-      this.unsupportedOps.add('textRun:layoutPositions');
-      canvas.drawText(op.text, originX, originY + baselineShift, paint, font);
-    } else {
-      canvas.drawText(op.text, originX, originY, paint, font);
+      font = new this.canvasKit.Font(this.defaultTypeface, fontSize);
+      canvas.save();
+      canvasSaved = true;
+      if (placementMatrix) {
+        canvas.concat(placementMatrix);
+      } else if (rotation !== 0) {
+        canvas.rotate(rotation, originX, originY);
+      }
+
+      if (needsPreservedAdvances && hasSimpleScriptText && hasLayoutPositions) {
+        const glyphIds = font.getGlyphIDs(replayText, codePoints.length);
+        const hasGlyphMapping = glyphIds.length === codePoints.length
+          && glyphIds.every((glyphId) => glyphId !== 0);
+        if (hasGlyphMapping) {
+          const glyphPositions = new Float32Array(codePoints.length * 2);
+          for (let index = 0; index < codePoints.length; index += 1) {
+            glyphPositions[index * 2] = replayPositions![index];
+            glyphPositions[index * 2 + 1] = baselineShift;
+          }
+          canvas.drawGlyphs(glyphIds, glyphPositions, originX, originY, font, paint);
+        } else {
+          this.unsupportedOps.add('textRun:glyphMapping');
+          canvas.drawText(replayText, originX, originY + baselineShift, paint, font);
+        }
+      } else if (needsPreservedAdvances) {
+        if (!hasSimpleScriptText) {
+          this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
+        }
+        if (!hasLayoutPositions) {
+          this.unsupportedOps.add('textRun:layoutPositions');
+        }
+        canvas.drawText(replayText, originX, originY + baselineShift, paint, font);
+      } else {
+        canvas.drawText(replayText, originX, originY, paint, font);
+      }
+    } finally {
+      try {
+        if (canvasSaved) canvas.restore();
+      } finally {
+        font?.delete?.();
+        paint.delete?.();
+      }
     }
-    canvas.restore();
-    font.delete?.();
-    paint.delete?.();
   }
 
   private renderFormObject(canvas: SkCanvas, op: LayerFormObjectOp): void {

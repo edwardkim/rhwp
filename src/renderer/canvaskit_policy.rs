@@ -9,6 +9,7 @@ use crate::paint::{
     PaintOp, PaintReplayPlane, ResolvedImageKind, ResolvedImagePayload, TextDecorationKind,
     TextVariantKind,
 };
+use crate::renderer::composer::expand_pua_display_text;
 use crate::renderer::layer_renderer::{
     analyze_text_variant_selection, TextVariantSelectionOptions, VariantSelectedReason,
     VariantSelectionBackend,
@@ -652,6 +653,15 @@ fn text_run_transition_detail(run: &TextRunNode) -> Option<&'static str> {
     if (run.style.ratio - 1.0).abs() > f64::EPSILON {
         return Some("ratioTextEffect");
     }
+    if run.style.superscript || run.style.subscript {
+        let display_text = expand_pua_display_text(&run.text);
+        if !display_text
+            .bytes()
+            .all(|byte| (0x20..=0x7e).contains(&byte))
+        {
+            return Some("scriptTextRequiresShaping");
+        }
+    }
     None
 }
 
@@ -1205,6 +1215,30 @@ mod tests {
             assert_eq!(plan.summary.direct_required_items, 1);
             assert_eq!(plan.items[0].status, CanvasKitReplayStatus::DirectRequired);
             assert_eq!(plan.items[0].detail.as_deref(), Some("charOverlap"));
+        }
+    }
+
+    #[test]
+    fn shaped_script_text_stays_policy_visible() {
+        for text in ["가", "e\u{0301}", "\u{F012B}"] {
+            let mut superscript = text_run(text);
+            superscript.style.superscript = true;
+            let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), superscript)]);
+
+            for mode in [CanvasKitReplayMode::Default, CanvasKitReplayMode::Compat] {
+                let plan = analyze_canvaskit_replay_plan(&tree, mode);
+                assert_eq!(plan.summary.direct_required_items, 1, "text={text:?}");
+                assert_eq!(
+                    plan.items[0].status,
+                    CanvasKitReplayStatus::DirectRequired,
+                    "text={text:?}"
+                );
+                assert_eq!(
+                    plan.items[0].detail.as_deref(),
+                    Some("scriptTextRequiresShaping"),
+                    "text={text:?}"
+                );
+            }
         }
     }
 

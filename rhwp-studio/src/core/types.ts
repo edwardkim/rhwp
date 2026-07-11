@@ -1012,6 +1012,7 @@ export interface LayerTextRunOp {
   type: 'textRun';
   bbox: LayerBounds;
   text: string;
+  displayText?: string;
   /** Run-local baseline offset from bbox.y when placement is absent. */
   baseline?: number;
   rotation?: number;
@@ -1019,6 +1020,7 @@ export interface LayerTextRunOp {
   style?: LayerTextStyle;
   placement?: { runToPage?: LayerAffineTransform; baselineY?: number };
   positions?: number[];
+  displayPositions?: number[];
 }
 
 export interface LayerFootnoteMarkerOp {
