@@ -313,7 +313,7 @@ export class CanvasKitLayerRenderer {
           type: 'textRun',
           bbox: op.bbox,
           text: op.text,
-          baseline: op.bbox.y + (op.fontSize ?? 7),
+          baseline: op.fontSize ?? 7,
           style: { fontFamily: op.fontFamily, fontSize: op.fontSize, color: op.color },
         });
         return;
@@ -851,13 +851,13 @@ export class CanvasKitLayerRenderer {
     paint.setAntiAlias?.(true);
     const baseFontSize = style.fontSize ?? Math.max(1, op.bbox.height || 12);
     let fontSize = baseFontSize;
-    let y = op.baseline ?? op.bbox.y + baseFontSize;
+    let baselineShift = 0;
     if (style.superscript) {
       fontSize = baseFontSize * 0.7;
-      y -= baseFontSize * 0.3;
+      baselineShift -= baseFontSize * 0.3;
     } else if (style.subscript) {
       fontSize = baseFontSize * 0.7;
-      y += baseFontSize * 0.15;
+      baselineShift += baseFontSize * 0.15;
     }
     // P16 한계: 기본 typeface 가 없으면 (로딩 실패) 비-Latin (CJK 등) 텍스트는
     // 글리프를 만들 수 없어 조용히 skip 하고 진단(unsupportedOps)에만 남긴다.
@@ -869,13 +869,42 @@ export class CanvasKitLayerRenderer {
       return;
     }
     const font = new this.canvasKit.Font(this.defaultTypeface, fontSize);
-    const x = op.bbox.x;
+    const placementMatrix = this.affineToCanvasKitMatrix(op.placement?.runToPage);
+    const originX = placementMatrix ? 0 : op.bbox.x;
+    const originY = placementMatrix
+      ? (op.placement?.baselineY ?? 0)
+      : op.bbox.y + (op.baseline ?? baseFontSize);
     const rotation = op.rotation ?? 0;
     canvas.save();
-    if (rotation !== 0) {
-      canvas.rotate(rotation, x, y);
+    if (placementMatrix) {
+      canvas.concat(placementMatrix);
+    } else if (rotation !== 0) {
+      canvas.rotate(rotation, originX, originY);
     }
-    canvas.drawText(op.text, x, y, paint, font);
+
+    const codePoints = Array.from(op.text);
+    const needsPreservedAdvances = style.superscript || style.subscript;
+    const hasLayoutPositions = op.positions?.length === codePoints.length + 1
+      && op.positions.every(Number.isFinite);
+    if (needsPreservedAdvances && hasLayoutPositions) {
+      const glyphIds = font.getGlyphIDs(op.text, codePoints.length);
+      if (glyphIds.length === codePoints.length) {
+        const glyphPositions = new Float32Array(codePoints.length * 2);
+        for (let index = 0; index < codePoints.length; index += 1) {
+          glyphPositions[index * 2] = op.positions![index];
+          glyphPositions[index * 2 + 1] = baselineShift;
+        }
+        canvas.drawGlyphs(glyphIds, glyphPositions, originX, originY, font, paint);
+      } else {
+        this.unsupportedOps.add('textRun:glyphMapping');
+        canvas.drawText(op.text, originX, originY + baselineShift, paint, font);
+      }
+    } else if (needsPreservedAdvances) {
+      this.unsupportedOps.add('textRun:layoutPositions');
+      canvas.drawText(op.text, originX, originY + baselineShift, paint, font);
+    } else {
+      canvas.drawText(op.text, originX, originY, paint, font);
+    }
     canvas.restore();
     font.delete?.();
     paint.delete?.();
@@ -902,7 +931,7 @@ export class CanvasKitLayerRenderer {
         type: 'textRun',
         bbox: { ...op.bbox, x: op.bbox.x + 4, width: Math.max(0, op.bbox.width - 8) },
         text: label,
-        baseline: op.bbox.y + Math.max(10, op.bbox.height * 0.68),
+        baseline: Math.max(10, op.bbox.height * 0.68),
         style: { fontSize: Math.max(9, Math.min(14, op.bbox.height * 0.55)), color: op.foreColor ?? '#111111' },
       });
     }
@@ -919,7 +948,7 @@ export class CanvasKitLayerRenderer {
         type: 'textRun',
         bbox: { ...op.bbox, x: op.bbox.x + 4 },
         text: op.label,
-        baseline: op.bbox.y + Math.max(10, op.bbox.height * 0.65),
+        baseline: Math.max(10, op.bbox.height * 0.65),
         style: { fontSize: Math.max(9, Math.min(14, op.bbox.height * 0.45)), color: '#555555' },
       });
     }

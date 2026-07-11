@@ -318,6 +318,7 @@ const renderEllipseBody = extractMethodBody(canvaskitSource, 'renderEllipse');
 const renderPathBody = extractMethodBody(canvaskitSource, 'renderPath');
 const renderLineBody = extractMethodBody(canvaskitSource, 'renderLine');
 const renderFormObjectBody = extractMethodBody(canvaskitSource, 'renderFormObject');
+const renderPlaceholderBody = extractMethodBody(canvaskitSource, 'renderPlaceholder');
 const renderTextRunBody = extractMethodBody(canvaskitSource, 'renderTextRun');
 const renderGlyphOutlineBody = extractMethodBody(canvaskitSource, 'renderGlyphOutline');
 const renderColorPaintGraphNodeBody = extractMethodBody(canvaskitSource, 'renderColorPaintGraphNode');
@@ -348,20 +349,42 @@ requireSnippet(
   /op\.formType === 'checkbox' \|\| op\.formType === 'radio'[\s\S]*?canvas\.drawLine[\s\S]*?const label = op\.caption \|\| op\.text[\s\S]*?this\.renderTextRun/,
   'form object replay should keep checkbox/radio mark and caption text branches explicit',
 );
+for (const [label, body, baselinePattern] of [
+  ['footnote marker', extractSwitchCaseClusterBody(renderOpBody, 'footnoteMarker'), /baseline: op\.fontSize \?\? 7/],
+  ['form object', renderFormObjectBody, /baseline: Math\.max\(10, op\.bbox\.height \* 0\.68\)/],
+  ['placeholder', renderPlaceholderBody, /baseline: Math\.max\(10, op\.bbox\.height \* 0\.65\)/],
+]) {
+  requireSnippet(body, baselinePattern, `${label} replay should declare its run-local baseline`);
+  assert.doesNotMatch(
+    body,
+    /baseline:\s*op\.bbox\.y/,
+    `${label} replay should pass a run-local baseline to renderTextRun`,
+  );
+}
 requireSnippet(
   renderTextRunBody,
-  /this\.recordTextRunCoverageGaps\(op\);[\s\S]*?canvas\.drawText\(op\.text, x, y, paint, font\)/,
-  'textRun replay should record unsupported effect diagnostics before drawing the compatibility text',
+  /this\.recordTextRunCoverageGaps\(op\);[\s\S]*?canvas\.drawGlyphs\(glyphIds, glyphPositions, originX, originY, font, paint\)/,
+  'textRun replay should record unsupported effect diagnostics before drawing positioned glyphs',
 );
 requireSnippet(
   renderTextRunBody,
-  /const rotation = op\.rotation \?\? 0;[\s\S]*?if \(rotation !== 0\) \{[\s\S]*?canvas\.rotate\(rotation, x, y\);[\s\S]*?\}/,
-  'textRun replay should keep rotation on the direct CanvasKit path',
+  /const placementMatrix = this\.affineToCanvasKitMatrix\(op\.placement\?\.runToPage\);[\s\S]*?op\.bbox\.y \+ \(op\.baseline \?\? baseFontSize\)[\s\S]*?canvas\.concat\(placementMatrix\);[\s\S]*?canvas\.rotate\(rotation, originX, originY\);/,
+  'textRun replay should use canonical run placement with a page-space fallback',
 );
 requireSnippet(
   renderTextRunBody,
-  /let fontSize = baseFontSize;[\s\S]*?let y = op\.baseline \?\? op\.bbox\.y \+ baseFontSize;[\s\S]*?style\.superscript[\s\S]*?fontSize = baseFontSize \* 0\.7;[\s\S]*?y -= baseFontSize \* 0\.3;[\s\S]*?style\.subscript[\s\S]*?fontSize = baseFontSize \* 0\.7;[\s\S]*?y \+= baseFontSize \* 0\.15;/,
-  'textRun replay should keep superscript/subscript on the direct CanvasKit path',
+  /let fontSize = baseFontSize;[\s\S]*?let baselineShift = 0;[\s\S]*?style\.superscript[\s\S]*?fontSize = baseFontSize \* 0\.7;[\s\S]*?baselineShift -= baseFontSize \* 0\.3;[\s\S]*?style\.subscript[\s\S]*?fontSize = baseFontSize \* 0\.7;[\s\S]*?baselineShift \+= baseFontSize \* 0\.15;/,
+  'textRun replay should apply superscript/subscript offsets in run-local space',
+);
+requireSnippet(
+  renderTextRunBody,
+  /const codePoints = Array\.from\(op\.text\);[\s\S]*?const needsPreservedAdvances = style\.superscript \|\| style\.subscript;[\s\S]*?op\.positions\?\.length === codePoints\.length \+ 1[\s\S]*?needsPreservedAdvances && hasLayoutPositions[\s\S]*?font\.getGlyphIDs\(op\.text, codePoints\.length\)[\s\S]*?glyphPositions\[index \* 2\] = op\.positions!\[index\];[\s\S]*?canvas\.drawGlyphs\(glyphIds, glyphPositions, originX, originY, font, paint\)/,
+  'textRun replay should preserve serialized layout advances when glyph size changes',
+);
+requireSnippet(
+  renderTextRunBody,
+  /textRun:glyphMapping[\s\S]*?textRun:layoutPositions/,
+  'textRun replay should expose malformed positioned-text fallbacks',
 );
 for (const expectedTextRunGap of [
   'textRun:verticalText',

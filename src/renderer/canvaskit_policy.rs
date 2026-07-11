@@ -784,6 +784,7 @@ mod tests {
     use crate::model::control::FormType;
     use crate::model::style::ImageFillMode;
     use crate::paint::{GroupKind, LayerNode, ResolvedImageKind, ResolvedImagePayload};
+    use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
     use crate::renderer::render_tree::{
         BoundingBox, EquationNode, FootnoteMarkerNode, FormObjectNode, ImageNode,
@@ -1187,6 +1188,24 @@ mod tests {
         assert_eq!(compat_plan.items[2].detail.as_deref(), Some("verticalText"));
         assert_eq!(compat_plan.items[3].status, CanvasKitReplayStatus::Direct);
         assert_eq!(compat_plan.items[4].status, CanvasKitReplayStatus::Direct);
+    }
+
+    #[test]
+    fn superscript_with_char_overlap_stays_policy_visible() {
+        let mut superscript = text_run("AB");
+        superscript.style.superscript = true;
+        superscript.char_overlap = Some(CharOverlapInfo {
+            border_type: 0,
+            inner_char_size: 100,
+        });
+        let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), superscript)]);
+
+        for mode in [CanvasKitReplayMode::Default, CanvasKitReplayMode::Compat] {
+            let plan = analyze_canvaskit_replay_plan(&tree, mode);
+            assert_eq!(plan.summary.direct_required_items, 1);
+            assert_eq!(plan.items[0].status, CanvasKitReplayStatus::DirectRequired);
+            assert_eq!(plan.items[0].detail.as_deref(), Some("charOverlap"));
+        }
     }
 
     #[test]
