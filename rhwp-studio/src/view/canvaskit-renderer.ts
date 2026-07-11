@@ -4,6 +4,7 @@ import type {
   CanvasKit,
   Color,
   Font,
+  FontMgr,
   Image as SkImage,
   Paint,
   Path,
@@ -78,6 +79,8 @@ export interface CanvasKitRenderDiagnostics {
 export class CanvasKitLayerRenderer {
   // Prevent pathological tiled fills from monopolizing the render loop.
   private static readonly MAX_IMAGE_TILE_DRAWS = 4096;
+  // 단일 text run은 줄바꿈 없이 문서가 지정한 위치에 재생한다.
+  private static readonly MAX_SHAPED_TEXT_WIDTH = 1_000_000;
 
   private readonly imageCache = new Map<string, SkImage>();
   private readonly unsupportedOps = new Set<string>();
@@ -90,6 +93,8 @@ export class CanvasKitLayerRenderer {
     private readonly renderMode: CanvasKitRenderMode,
     private readonly surfaceRequest: CanvasKitSurfaceRequest,
     private readonly defaultTypeface: Typeface | null,
+    private readonly defaultFontManager: FontMgr | null = null,
+    private readonly defaultFontFamily: string | null = null,
   ) {}
 
   static async create(
@@ -110,17 +115,30 @@ export class CanvasKitLayerRenderer {
     // "글자가 안 나오는" 현상이 나타날 수 있다. 이는 P16 foundation 의 알려진
     // non-goal 이며, 동일 컨트리뷰터의 후속 폰트 단계에서 다룬다 (Refs #536).
     let defaultTypeface: Typeface | null = null;
+    let defaultFontManager: FontMgr | null = null;
+    let defaultFontFamily: string | null = null;
     try {
       const response = await fetch('fonts/NotoSansKR-Regular.woff2');
       if (response.ok) {
         const bytes = await response.arrayBuffer();
         defaultTypeface = canvasKit.Typeface.MakeFreeTypeFaceFromData(bytes)
           ?? canvasKit.Typeface.MakeTypefaceFromData(bytes);
+        defaultFontManager = canvasKit.FontMgr.FromData(bytes);
+        if (defaultFontManager && defaultFontManager.countFamilies() > 0) {
+          defaultFontFamily = defaultFontManager.getFamilyName(0);
+        }
       }
     } catch (error) {
       console.warn('[CanvasKitLayerRenderer] 기본 CJK 폰트 로딩 실패:', error);
     }
-    return new CanvasKitLayerRenderer(canvasKit, renderMode, resolvedSurfaceRequest, defaultTypeface);
+    return new CanvasKitLayerRenderer(
+      canvasKit,
+      renderMode,
+      resolvedSurfaceRequest,
+      defaultTypeface,
+      defaultFontManager,
+      defaultFontFamily,
+    );
   }
 
   renderPage(tree: PageLayerTree, targetCanvas: HTMLCanvasElement, scale: number, pageInfo?: PageInfo): void {
@@ -207,6 +225,7 @@ export class CanvasKitLayerRenderer {
     }
     this.imageCache.clear();
     this.defaultTypeface?.delete();
+    this.defaultFontManager?.delete();
   }
 
   private makeSurface(targetCanvas: HTMLCanvasElement): SkSurface {
@@ -883,11 +902,10 @@ export class CanvasKitLayerRenderer {
       // 글리프를 만들 수 없어 조용히 skip 하고 진단(unsupportedOps)에만 남긴다.
       // Canvas2D 로 덮지 않는 것이 P16 본질이다. fontFamily 별 typeface 매핑과
       // 폴백 체인은 동일 컨트리뷰터의 후속 폰트 단계에서 보강한다 (Refs #536).
-      if (!this.defaultTypeface && /[^\u0000-\u00ff]/.test(replayText)) {
+      if (!this.defaultTypeface && !this.defaultFontManager && /[^\u0000-\u00ff]/.test(replayText)) {
         this.unsupportedOps.add('textRunFont');
         return;
       }
-      font = new this.canvasKit.Font(this.defaultTypeface, fontSize);
       canvas.save();
       canvasSaved = true;
       if (placementMatrix) {
@@ -896,31 +914,41 @@ export class CanvasKitLayerRenderer {
         canvas.rotate(rotation, originX, originY);
       }
 
-      if (needsPreservedAdvances && hasSimpleScriptText && hasLayoutPositions) {
-        const glyphIds = font.getGlyphIDs(replayText, codePoints.length);
-        const hasGlyphMapping = glyphIds.length === codePoints.length
-          && glyphIds.every((glyphId) => glyphId !== 0);
-        if (hasGlyphMapping) {
-          const glyphPositions = new Float32Array(codePoints.length * 2);
-          for (let index = 0; index < codePoints.length; index += 1) {
-            glyphPositions[index * 2] = replayPositions![index];
-            glyphPositions[index * 2 + 1] = baselineShift;
-          }
-          canvas.drawGlyphs(glyphIds, glyphPositions, originX, originY, font, paint);
-        } else {
-          this.unsupportedOps.add('textRun:glyphMapping');
-          canvas.drawText(replayText, originX, originY + baselineShift, paint, font);
-        }
-      } else if (needsPreservedAdvances) {
-        if (!hasSimpleScriptText) {
+      if (needsPreservedAdvances && !hasSimpleScriptText) {
+        if (!this.renderShapedScriptText(
+          canvas,
+          replayText,
+          style.color ?? '#000000',
+          fontSize,
+          originX,
+          originY,
+          baselineShift,
+        )) {
           this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
         }
-        if (!hasLayoutPositions) {
-          this.unsupportedOps.add('textRun:layoutPositions');
-        }
-        canvas.drawText(replayText, originX, originY + baselineShift, paint, font);
       } else {
-        canvas.drawText(replayText, originX, originY, paint, font);
+        font = new this.canvasKit.Font(this.defaultTypeface, fontSize);
+        if (needsPreservedAdvances && hasLayoutPositions) {
+          const glyphIds = font.getGlyphIDs(replayText, codePoints.length);
+          const hasGlyphMapping = glyphIds.length === codePoints.length
+            && glyphIds.every((glyphId) => glyphId !== 0);
+          if (hasGlyphMapping) {
+            const glyphPositions = new Float32Array(codePoints.length * 2);
+            for (let index = 0; index < codePoints.length; index += 1) {
+              glyphPositions[index * 2] = replayPositions![index];
+              glyphPositions[index * 2 + 1] = baselineShift;
+            }
+            canvas.drawGlyphs(glyphIds, glyphPositions, originX, originY, font, paint);
+          } else {
+            this.unsupportedOps.add('textRun:glyphMapping');
+            canvas.drawText(replayText, originX, originY + baselineShift, paint, font);
+          }
+        } else if (needsPreservedAdvances) {
+          this.unsupportedOps.add('textRun:layoutPositions');
+          canvas.drawText(replayText, originX, originY + baselineShift, paint, font);
+        } else {
+          canvas.drawText(replayText, originX, originY, paint, font);
+        }
       }
     } finally {
       try {
@@ -929,6 +957,41 @@ export class CanvasKitLayerRenderer {
         font?.delete?.();
         paint.delete?.();
       }
+    }
+  }
+
+  private renderShapedScriptText(
+    canvas: SkCanvas,
+    text: string,
+    color: string,
+    fontSize: number,
+    originX: number,
+    originY: number,
+    baselineShift: number,
+  ): boolean {
+    if (!this.defaultFontManager) return false;
+    const textStyle = {
+      color: this.color(color),
+      fontSize,
+      ...(this.defaultFontFamily ? { fontFamilies: [this.defaultFontFamily] } : {}),
+    };
+    const paragraphStyle = new this.canvasKit.ParagraphStyle({
+      maxLines: 1,
+      textStyle,
+    });
+    const builder = this.canvasKit.ParagraphBuilder.Make(paragraphStyle, this.defaultFontManager);
+    try {
+      builder.addText(text);
+      const paragraph = builder.build();
+      try {
+        paragraph.layout(CanvasKitLayerRenderer.MAX_SHAPED_TEXT_WIDTH);
+        canvas.drawParagraph(paragraph, originX, originY - fontSize + baselineShift);
+        return true;
+      } finally {
+        paragraph.delete?.();
+      }
+    } finally {
+      builder.delete?.();
     }
   }
 
