@@ -15032,6 +15032,9 @@ impl TypesetEngine {
                 // [Task #1025] 이번 분할이 블록 분할이거나 start_cut 이 이미 블록 인덱스.
                 is_block_split: split_block_start.is_some() || start_cut_is_block,
             });
+            // [#2238] 중간 fragment 가시높이 부기 — used_height(flush 시 current_height)
+            // 표시용. advance 직후 current_height 가 리셋되므로 흐름/기하 불변.
+            st.current_height += partial_height;
             st.advance_column_or_new_page();
 
             // 커서 전진 — [Task #993] 컷은 절대 유닛 인덱스이므로 누적 없이 대입.
