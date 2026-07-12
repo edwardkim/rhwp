@@ -2029,8 +2029,8 @@ impl LayoutEngine {
                     let h = if trust_stored_lh {
                         raw_lh
                     } else {
-                        // [정식화 보류] 셀 마지막 줄 em(#2150 공식)은 상쇄 얽힘으로
-                        // 실험 브랜치 보존 — hwp3 synthetic 만 유지.
+                        // [#2150/#2148] 셀 마지막 줄 em 공식 — #2195 축 정합 세트로
+                        // 정식화됨 (종전 "[정식화 보류]" 주석은 stage3 실험기 잔재).
                         // [#2070] NO_LS 단일 문단·단일 줄 셀 = em — 한글은 1줄 셀에서
                         // 줄간격(Percent/Fixed)을 완전 무시 (fixed_ladder 실측).
                         crate::renderer::corrected_line_height_for_variant_synthetic(
