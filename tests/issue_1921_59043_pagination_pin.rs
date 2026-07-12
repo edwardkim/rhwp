@@ -25,9 +25,9 @@ fn page_count_of(rel: &str) -> u32 {
 fn regulatory_59043_page_count_pin() {
     let pages = page_count_of("samples/issue1921/59043_regulatory_analysis.hwp");
     assert_eq!(
-        pages, 42,
-        "issue1921 59043 핀 42쪽 (한글 2022 정답지 37쪽, 잔여 +5=배치 밀도 축). \
-         실측 {}p — 43p+면 sliver/과분할 회귀, 42p 미만이면 개선이므로 핀과 \
+        pages, 41,
+        "issue1921 59043 핀 41쪽 (한글 2022 정답지 37쪽, 잔여 +4=배치 밀도 축; #2195 전각·outer margin·pad 정합으로 42→41). \
+         실측 {}p — 42p+면 sliver/과분할 회귀, 41p 미만이면 개선이므로 핀과 \
          정답지(37)를 갱신할 것.",
         pages
     );

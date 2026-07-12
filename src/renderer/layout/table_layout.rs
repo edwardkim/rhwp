@@ -2092,30 +2092,37 @@ impl LayoutEngine {
         //           aim=false → table.padding 우선.
         // 한컴은 aim=false일 때 cell.padding 원값을 파일에 보존하더라도 렌더에는 쓰지 않는다.
         // aim=true에서는 0mm도 사용자가 지정한 셀 고유 안 여백으로 존중한다.
-        let use_cell_left = Self::should_use_cell_padding_axis_for_context(
-            cell,
-            cell.padding.left,
-            table.padding.left,
-            allow_saved_small_cell_margin,
-        );
-        let use_cell_right = Self::should_use_cell_padding_axis_for_context(
-            cell,
-            cell.padding.right,
-            table.padding.right,
-            allow_saved_small_cell_margin,
-        );
-        let use_cell_top = Self::should_use_cell_padding_axis_for_context(
-            cell,
-            cell.padding.top,
-            table.padding.top,
-            allow_saved_small_cell_margin,
-        );
-        let use_cell_bottom = Self::should_use_cell_padding_axis_for_context(
-            cell,
-            cell.padding.bottom,
-            table.padding.bottom,
-            allow_saved_small_cell_margin,
-        );
+        // [#2195 stage50] 표 기본 전축 0 = 미지정 → 셀 pad (Cell::table_padding_unspecified).
+        let table_pad_unspec = !cell.apply_inner_margin
+            && crate::model::table::Cell::table_padding_unspecified(&table.padding);
+        let use_cell_left = (table_pad_unspec && cell.padding.left < 2500)
+            || Self::should_use_cell_padding_axis_for_context(
+                cell,
+                cell.padding.left,
+                table.padding.left,
+                allow_saved_small_cell_margin,
+            );
+        let use_cell_right = (table_pad_unspec && cell.padding.right < 2500)
+            || Self::should_use_cell_padding_axis_for_context(
+                cell,
+                cell.padding.right,
+                table.padding.right,
+                allow_saved_small_cell_margin,
+            );
+        let use_cell_top = (table_pad_unspec && cell.padding.top < 2500)
+            || Self::should_use_cell_padding_axis_for_context(
+                cell,
+                cell.padding.top,
+                table.padding.top,
+                allow_saved_small_cell_margin,
+            );
+        let use_cell_bottom = (table_pad_unspec && cell.padding.bottom < 2500)
+            || Self::should_use_cell_padding_axis_for_context(
+                cell,
+                cell.padding.bottom,
+                table.padding.bottom,
+                allow_saved_small_cell_margin,
+            );
 
         let pad_left = if use_cell_left {
             hwpunit_to_px(cell.padding.left as i32, self.dpi)
@@ -4301,7 +4308,7 @@ impl LayoutEngine {
     ) -> f64 {
         let measurer = super::super::height_measurer::HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(self.is_hwp3_variant.get());
-        measurer.cell_controls_height(&cell.paragraphs, styles, 0)
+        measurer.cell_controls_height(&cell.paragraphs, styles, 0, 0.0)
     }
 
     /// 중첩 표의 총 높이를 계산한다 (행 높이 합 + cell_spacing).
@@ -5357,9 +5364,9 @@ impl LayoutEngine {
                     // 42065 pi=7(8164px, 8쪽분)·2781515 별표(수쪽분)처럼 ≫ 2페이지인 거대 셀만 대상.
                     let page_avail = self.current_body_area.get().3;
                     let multi_page_px = if page_avail > 0.0 {
-                        page_avail * 2.0
+                        page_avail * 1.0
                     } else {
-                        1800.0
+                        900.0
                     };
                     let total_frag_h: f64 = frags.iter().map(|(h, _, _)| *h).sum();
                     if frags.len() > 1 && total_frag_h > multi_page_px {

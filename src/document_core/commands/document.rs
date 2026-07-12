@@ -89,7 +89,19 @@ impl DocumentCore {
         // line_height/line_spacing 을 계산해야 줄바꿈·높이가 정상 동작한다.
         // HWP5/HWP3 의 빈 line_segs 는 종전대로 reflow 하지 않는다 (페이지 수 보존).
         let include_empty = use_xml_import_semantics;
-        Self::reflow_zero_height_paragraphs(&mut document, &styles, DEFAULT_DPI, include_empty);
+        // [#2195] HWP5 native 확장은 **셀 내부의 컨트롤 없는 순수 빈 문단** 한정
+        // (86712 1pt 빈 문단 오라클). 본문 문단 확장은 기각(stage68): 본문 빈
+        // 문단은 typeset 의 em 폴백(#2070 축3)이 담당하고(80168 pi=424 오라클),
+        // 본문 텍스트 문단 합성은 흐름 소비 팽창으로 sijang 밀도 핀 -5쪽(#2070v2).
+        // HWP3 변환본은 #998 게이트(sample16-hwp5=64) 정합상 종전 유지.
+        let include_cell_empty = !document.is_hwp3_variant;
+        Self::reflow_zero_height_paragraphs(
+            &mut document,
+            &styles,
+            DEFAULT_DPI,
+            include_empty,
+            include_cell_empty,
+        );
         Self::clear_missing_lineseg_placeholders(&mut document);
 
         // XML import → HWP 라운드트립 일관성 normalize (#314):
@@ -265,11 +277,16 @@ impl DocumentCore {
     /// CharPr/ParaPr 기반으로 올바른 line_height/line_spacing을 계산한다.
     /// 본문 문단뿐 아니라 표 셀 내부 문단도 처리한다.
     /// `include_empty`: 빈 `line_segs` 도 합성 대상으로 포함 (HWPX 전용 — #1380).
+    /// `include_cell_empty`: [#2195] HWP5 native 확장 — 셀 내부의 **컨트롤 없는
+    /// 순수 빈 문단**만 CharPr 크기 기반 줄박스 합성(86712 1pt 빈 문단 오라클).
+    /// 본문 문단·셀 텍스트 문단·컨트롤 호스트 문단은 각각 em 폴백(#2070 축3)·
+    /// composer recompose·typeset 표 줄 계산이 담당하므로 제외한다(stage68).
     fn reflow_zero_height_paragraphs(
         document: &mut Document,
         styles: &ResolvedStyleSet,
         dpi: f64,
         include_empty: bool,
+        include_cell_empty: bool,
     ) {
         use crate::model::control::Control;
 
@@ -291,6 +308,11 @@ impl DocumentCore {
                 std::collections::HashSet::new();
             for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                 // 본문 문단 reflow
+                // [#2195 stage68] 본문 텍스트 NO_LS 확장(stage1)은 기각 — 후속 축
+                // (전각 폴백·pad 규칙·스트레치·after_for_fit)이 게이트 정합을 대체했고,
+                // 본문 합성 lineseg 는 흐름 소비를 문단당 ~2.7px 팽창시켜 sijang
+                // 밀도 핀 -5쪽(302 vs 307, #2070v2)만 남기는 잉여 축으로 판정.
+                // 본문 NO_LS 텍스트 문단의 실폭 래핑은 composer recompose 가 담당한다.
                 if Self::needs_line_seg_reflow(para, include_empty) {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
@@ -362,13 +384,51 @@ impl DocumentCore {
                             // recompose_for_cell_width 가드 #1 (line_segs.is_empty()) 영역 거짓 →
                             // PR #673 영역의 layout 단계 정정 미적용 → 자동보정 모드 영역 한 줄 겹침 회귀.
                             let cell_w_px = crate::renderer::hwpunit_to_px(cell.width as i32, dpi);
-                            let pad_left =
-                                crate::renderer::hwpunit_to_px(cell.padding.left as i32, dpi);
+                            // [#2195] 실효 pad 규칙(aim=false = 표 기본, pad 사다리 2종)과
+                            // 정합 — 종전 셀 저장 pad 직접 차감은 measurer/recompose 와 폭이
+                            // 어긋나 셀 reflow 줄수가 이원화된다.
+                            let eff_pad = if cell.apply_inner_margin {
+                                cell.padding
+                            } else {
+                                cell.effective_padding(&table.padding)
+                            };
+                            let pad_left = crate::renderer::hwpunit_to_px(eff_pad.left as i32, dpi);
                             let pad_right =
-                                crate::renderer::hwpunit_to_px(cell.padding.right as i32, dpi);
+                                crate::renderer::hwpunit_to_px(eff_pad.right as i32, dpi);
                             let cell_inner_width = (cell_w_px - pad_left - pad_right).max(1.0);
+                            // [#2195/#2146] 사선(대각선) 셀의 빈 문단은 코너 라벨의
+                            // 짝 — 한글은 흐름 배치하지 않으므로 합성 제외 (21761835
+                            // r0 라벨 셀 선언 52.4px 유지, 합성 시 +2.4 팽창).
+                            let bf_has_diagonal = |bf_id: u16| {
+                                bf_id != 0
+                                    && styles
+                                        .border_styles
+                                        .get((bf_id as usize).saturating_sub(1))
+                                        .is_some_and(
+                                            crate::renderer::layout::border_style_has_diagonal,
+                                        )
+                            };
+                            let cell_diagonal = bf_has_diagonal(cell.border_fill_id)
+                                || table.zones.iter().any(|z| {
+                                    z.start_row <= cell.row
+                                        && cell.row <= z.end_row
+                                        && z.start_col <= cell.col
+                                        && cell.col <= z.end_col
+                                        && bf_has_diagonal(z.border_fill_id)
+                                });
                             for cell_para in &mut cell.paragraphs {
-                                if Self::needs_line_seg_reflow(cell_para, include_empty) {
+                                // [#2195] 셀 NO_LS 확장은 **컨트롤 없는 순수 빈 문단**
+                                // 한정 — CharPr 크기 기반 줄박스 합성(86712 1pt 빈
+                                // 문단 오라클). 텍스트 셀 문단은 렌더러 recompose,
+                                // 컨트롤(중첩 표 등) 호스트 문단은 typeset 표 줄
+                                // 계산이 담당한다 — 합성 시 중첩 표 높이와 이중
+                                // 계상(80168 pi=1243 행6 264→467px, 158 회귀).
+                                let inc = include_empty
+                                    || (include_cell_empty
+                                        && cell_para.text.is_empty()
+                                        && cell_para.controls.is_empty()
+                                        && !cell_diagonal);
+                                if Self::needs_line_seg_reflow(cell_para, inc) {
                                     reflow_line_segs(cell_para, cell_inner_width, styles, dpi);
                                 }
                             }

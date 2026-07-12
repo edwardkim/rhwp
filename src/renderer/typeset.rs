@@ -351,6 +351,10 @@ struct HostSpacing {
     after: f64,
     /// spacing_after만 (마지막 fragment용 — Paginator와 동일)
     spacing_after_only: f64,
+    /// 페이지 적합 판정용 after — 빈 호스트 자리차지 표의 outer_margin_bottom 은
+    /// 흐름 전진에만 계상하고 fit 에서 제외한다 (#2195 stage58: 86712 구분선 간격
+    /// 한글 괘선 실측 vs hwpspec 178쪽 핀(#1086) 동시 충족).
+    after_for_fit: f64,
 }
 
 /// 단일 패스 조판 엔진
@@ -11790,12 +11794,27 @@ impl TypesetEngine {
         let mt = measured_tables
             .iter()
             .find(|mt| mt.para_index == para_idx && mt.control_index == ctrl_idx);
-        let fitted_visible_mt =
-            if is_para_topbottom_float(&table.common) && para_has_non_whitespace_text(para) {
-                mt.map(|measured| fit_measured_table_to_declared_height(measured, table, self.dpi))
-            } else {
-                None
-            };
+        // [#2195] 빈 앵커(자리차지 표 표준형)에도 선언높이 fit 적용 — 한글은 콘텐츠가
+        // 선언보다 작아도 표 선언높이를 유지한다 (80168 pi=419 행 걷기 151.1 = 선언,
+        // 콘텐츠 143.5 사용 시 페이지 끝 razor -1쪽). fit 자체의 0.75~1.35 가드(#1510)
+        // 가 과대 압축/팽창을 차단한다.
+        let fitted_visible_mt = if is_para_topbottom_float(&table.common) {
+            mt.map(|measured| {
+                let fitted = fit_measured_table_to_declared_height(measured, table, self.dpi);
+                // 빈 앵커는 **확대 방향만**: 한글 규칙 = max(선언, 콘텐츠) — 콘텐츠가
+                // 선언보다 큰 표(pi=15 조문대비표 929.6>928.4)를 압축하면 분할 경계가
+                // 당겨져 pi16 -1쪽. 압축(fit-down)은 종전대로 비공백 텍스트 앵커 한정.
+                let shrunk = fitted.row_heights.iter().sum::<f64>()
+                    < measured.row_heights.iter().sum::<f64>() - 0.01;
+                if shrunk && !para_has_non_whitespace_text(para) {
+                    measured.clone()
+                } else {
+                    fitted
+                }
+            })
+        } else {
+            None
+        };
         let mt = fitted_visible_mt.as_ref().or(mt);
 
         let is_tac = table.attr & 0x01 != 0;
@@ -11821,7 +11840,9 @@ impl TypesetEngine {
         let sb = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
         let sa = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
 
-        let outer_top = if is_tac {
+        // [#2195 stage50 실험] 자리차지(TopAndBottom) 표도 outer_margin_top 계상 —
+        // 86712 구분선 표(566HU) 한글 PDF 괘선 실측: 상단 마진 7.55px 포함.
+        let outer_top = if is_tac || is_para_topbottom_float(&table.common) {
             hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
         } else {
             0.0
@@ -11834,8 +11855,25 @@ impl TypesetEngine {
         // 렌더 좌표가 실제로 바뀌는 visible-host float 형상으로 한정한다.
         let is_visible_host_float =
             is_para_topbottom_float(&table.common) && para_has_non_whitespace_text(para);
+        // [#2195 stage58] 빈 호스트 자리차지 표의 bottom margin 은 **흐름 전용** —
+        // 다음 항목 간격에는 계상(86712 구분선 7.55px, 한글 괘선 실측)하되 표 자체의
+        // 페이지 적합 판정에서는 제외(trailing 간격 면제 — hwpspec 178쪽 핀 #1086).
+        let is_empty_host_float =
+            is_para_topbottom_float(&table.common) && !para_has_non_whitespace_text(para);
         let outer_bottom = if is_tac || is_visible_host_float {
             hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+        } else if is_empty_host_float {
+            hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+        } else {
+            0.0
+        };
+        // [#2195 stage59] 빈 호스트 자리차지 표의 bottom margin fit 계상 판별:
+        // 호스트가 **저장 lineseg 보유**(한컴 기계산 문서, hwpspec #1086 178쪽 핀)면
+        // 저장 기하 신뢰 - fit 제외(흐름 전용). **NO_LS**(생성계, 86712 표182)는
+        // 재계산 - fit 포함. #2195 의 저장 보존 vs NO_LS 재계산 원칙과 동일 축.
+        let outer_bottom_flow_only = if !is_tac && is_empty_host_float && !para.line_segs.is_empty()
+        {
+            outer_bottom
         } else {
             0.0
         };
@@ -11926,6 +11964,7 @@ impl TypesetEngine {
             before,
             after,
             spacing_after_only: sa,
+            after_for_fit: after - outer_bottom_flow_only,
         };
 
         let (
@@ -12755,7 +12794,7 @@ impl TypesetEngine {
 
         let v_offset_px = hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), self.dpi);
         let raw_top = (para_start_height + v_offset_px).max(para_start_height);
-        let reserved_height = ft.effective_height + ft.host_spacing.after;
+        let reserved_height = ft.effective_height + ft.host_spacing.after_for_fit;
         let lane_top = lanes.pushed_top(x_start, x_end, raw_top);
         let lane_bottom = lane_top + reserved_height;
 
@@ -13767,7 +13806,7 @@ impl TypesetEngine {
             (st.base_available_height() - total_footnote - fn_margin - st.current_zone_y_offset)
                 .max(0.0);
 
-        let host_spacing_total = ft.host_spacing.before + ft.host_spacing.after;
+        let host_spacing_total = ft.host_spacing.before + ft.host_spacing.after_for_fit;
         let mut table_total = ft.effective_height + host_spacing_total;
         let declared_object_total = raw_table_ctrl_height_px(table, self.dpi)
             .unwrap_or_else(|| hwpunit_to_px(table.common.height as i32, self.dpi).max(0.0))

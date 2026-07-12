@@ -124,8 +124,12 @@ fn issue_1100_hwpx_master_page_footer_page_number_is_preserved() {
 
     let svg = doc.render_page_svg_native(1).expect("render page 2");
 
+    // [#2195] x 486.8 → 483.77: 마스터 꼬리말 글상자(표 inMargin 283,283,0,0 +
+    // aim=false)의 실효 좌 pad 가 셀 510(#1785) → 표 기본 283(pad 사다리 규칙)으로
+    // 정정. 한글 PDF(exam_social-2022 p2) affine 대조: 483.77 예측오차 2.5px <
+    // 종전 핀 486.8 오차 5.8px.
     assert!(
-        has_text_node_at(&svg, 486.8, 1406.7600000000002, "2"),
+        has_text_node_at(&svg, 483.7733333333333, 1406.7600000000002, "2"),
         "master-page footer auto number must remain visible on page 2"
     );
 }

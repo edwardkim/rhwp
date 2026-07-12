@@ -1503,7 +1503,11 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
         return Some(quantize_hwp_px(font_size * 0.5));
     }
     if is_cjk_char(c) || is_fullwidth_symbol(c) {
-        let factor = if is_dotum { 0.84 } else { 0.94 };
+        // [#2195 stage57] KoPub 미설치 환경에서 한글은 바탕으로 치환해 **전각
+        // 1.0em** 렌더 — 86712 한컴 PDF 글리프 직독(Haansoft Batang, 12pt 한글
+        // 16px) 실측. 종전 0.84 는 r27 근거설명 25문단을 -11줄 과소(래핑 조기
+        // 종료)시키던 성분.
+        let factor = if is_dotum { 1.0 } else { 0.94 };
         return Some(quantize_hwp_px(font_size * factor));
     }
 
@@ -1770,7 +1774,11 @@ fn is_narrow_punctuation(c: char) -> bool {
         // [Task #1735] 한글 방점. 렌더 경로에서 좁은 가운데 점(·)으로 치환되므로
         // 측정 폭도 narrow 로 맞춰 측정-렌더 폭 정합 유지(0.5em 기본 폴백 방지).
         '\u{302E}' |  // 〮 HANGUL SINGLE DOT TONE MARK (방점)
-        '\u{302F}' // 〯 HANGUL DOUBLE DOT TONE MARK (쌍방점)
+        '\u{302F}' |  // 〯 HANGUL DOUBLE DOT TONE MARK (쌍방점)
+        // [#2195] 괄호 — 통제 사다리 실측: 휴먼명조 '(' = 0.31em(embedded 정합),
+        // 한양중고딕 '(' <= 317HU(0.29em). fallback 0.5em 은 과대
+        // (76076 표325 r0 '(정량)영향집단명' 11pt: 8800>8642 로 2줄, 한글 1줄).
+        '(' | ')'
     )
 }
 
@@ -2215,7 +2223,7 @@ mod tests {
     }
 
     #[test]
-    fn test_kopub_dotum_uses_narrow_publication_metrics() {
+    fn test_kopub_dotum_hangul_full_width_substitution() {
         let m = EmbeddedTextMeasurer;
         let style = TextStyle {
             font_family: "KoPub돋움체 Light".to_string(),
@@ -2223,8 +2231,11 @@ mod tests {
             ..Default::default()
         };
 
+        // [#2195 stage57] KoPub 미설치 환경에서 한글이 바탕으로 치환되어 전각
+        // 1.0em 렌더 (86712 한컴 PDF 글리프 실측: 12pt 한글 16px). 종전 0.84
+        // 핀은 r27 근거설명 25문단 -11줄 과소의 성분이었다.
         let w = m.estimate_text_width("가나", &style);
-        assert_eq!(w, 24.0);
+        assert_eq!(w, 28.0);
     }
 
     #[test]

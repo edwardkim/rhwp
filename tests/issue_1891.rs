@@ -26,16 +26,16 @@ const SAMPLE: &str = "samples/issue1891_external_bindata_link.hwpx";
 // 83/64 로 이동 — 본문 NO_LS 실폭 래핑(reflow_line_segs 정식 호출) 후속 이슈에서
 // 82/65 로 복귀시킨다. 80168/80250 은 PDF 정답 그대로.
 const HWP5_ORIGIN_SAMPLES: &[(&str, u32)] = &[
-    ("samples/76076_regulatory_analysis.hwp", 83),
+    ("samples/76076_regulatory_analysis.hwp", 82),
     ("samples/80168_regulatory_analysis.hwp", 157),
     ("samples/80250_regulatory_analysis.hwp", 17),
-    ("samples/86712_regulatory_analysis.hwp", 64),
-    ("samples/issue1891/76076_regulatory_analysis.hwpx", 83),
+    ("samples/86712_regulatory_analysis.hwp", 65),
+    ("samples/issue1891/76076_regulatory_analysis.hwpx", 82),
     ("samples/issue1891/80168_regulatory_analysis.hwpx", 157),
     ("samples/issue1891/80250_regulatory_analysis.hwpx", 17),
-    // [#2070 잠정] hwpx 픽스처만 63 — 자기-export의 HwpUnitChar intent 절반 기록
-    // 버그(serializer)로 원본과 비등가(재래핑 폭 상이). serializer 수정 후 64 복귀.
-    ("samples/issue1891/86712_regulatory_analysis.hwpx", 63),
+    // [#2197 잠정] hwpx 픽스처는 자기-export의 HwpUnitChar intent 절반 기록
+    // 버그(serializer)로 원본(.hwp=65)과 비등가(재래핑 폭 상이). serializer 수정 후 65 정렬.
+    ("samples/issue1891/86712_regulatory_analysis.hwpx", 64),
 ];
 
 fn read_sample() -> Vec<u8> {
