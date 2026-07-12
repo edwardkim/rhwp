@@ -33,9 +33,8 @@ const HWP5_ORIGIN_SAMPLES: &[(&str, u32)] = &[
     ("samples/issue1891/76076_regulatory_analysis.hwpx", 82),
     ("samples/issue1891/80168_regulatory_analysis.hwpx", 157),
     ("samples/issue1891/80250_regulatory_analysis.hwpx", 17),
-    // [#2197 잠정] hwpx 픽스처는 자기-export의 HwpUnitChar intent 절반 기록
-    // 버그(serializer)로 원본(.hwp=65)과 비등가(재래핑 폭 상이). serializer 수정 후 65 정렬.
-    ("samples/issue1891/86712_regulatory_analysis.hwpx", 64),
+    // [#2240] #2197 serializer 수정 반영 재생성 픽스처 — 원본(.hwp=65)과 등가.
+    ("samples/issue1891/86712_regulatory_analysis.hwpx", 65),
 ];
 
 fn read_sample() -> Vec<u8> {
