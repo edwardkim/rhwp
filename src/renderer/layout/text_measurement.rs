@@ -472,7 +472,7 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                 w
             } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
                 font_size
-            } else if is_narrow_punctuation(c) {
+            } else if is_narrow_punctuation(c) || is_narrow_paren_for_font(&style.font_family, c) {
                 // Task #257: 콤마·중점 등은 실제 글리프 폭이 반각보다 뚜렷이
                 // 좁음. 폴백 경로에서 font_size * 0.5 를 쓰면 PDF 대비 뒤
                 // 글자가 2~3px 우측으로 밀림. 0.3 으로 분기.
@@ -671,7 +671,7 @@ impl TextMeasurer for EmbeddedTextMeasurer {
                 w
             } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
                 font_size
-            } else if is_narrow_punctuation(c) {
+            } else if is_narrow_punctuation(c) || is_narrow_paren_for_font(&style.font_family, c) {
                 // Task #257: 콤마·중점 등 narrow glyph 폴백 폭 (0.5 → 0.3).
                 font_size * 0.3
             } else {
@@ -966,7 +966,7 @@ mod wasm_internals {
         // measure_char_width_embedded 의 is_narrow_punctuation 분기 (0.3 em) 가
         // 적용되지 못한 미등록 폰트 케이스 (예: 휴먼명조 U+2027) 에서 JS Canvas
         // 측정값 (~0.5 em) 이 그대로 들어가지 않도록 동일 폴백 적용.
-        if super::is_narrow_punctuation(c) {
+        if super::is_narrow_punctuation(c) || super::is_narrow_paren_for_font(font_family, c) {
             return font_size * 0.3;
         }
 
@@ -1499,6 +1499,12 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
     if is_narrow_punctuation(c) {
         return Some(quantize_hwp_px(font_size * 0.3));
     }
+    // [#2239] 괄호 — KoPub 경로는 86712 한컴 PDF 글리프 직독 실측(13px 문서
+    // 괄호 4px ≈ 0.3em, #2195 stage23)으로 narrow 유지. is_narrow_punctuation
+    // 의 괄호가 폰트 한정(is_narrow_paren_for_font)으로 빠지면서 여기서 보존.
+    if matches!(c, '(' | ')') {
+        return Some(quantize_hwp_px(font_size * 0.3));
+    }
     if c.is_ascii() {
         return Some(quantize_hwp_px(font_size * 0.5));
     }
@@ -1686,7 +1692,7 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
             w
         } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
             font_size
-        } else if is_narrow_punctuation(c) {
+        } else if is_narrow_punctuation(c) || is_narrow_paren_for_font(&style.font_family, c) {
             // Task #257: 콤마·중점 등 narrow glyph 폴백 폭 (0.5 → 0.3).
             font_size * 0.3
         } else {
@@ -1774,12 +1780,24 @@ fn is_narrow_punctuation(c: char) -> bool {
         // [Task #1735] 한글 방점. 렌더 경로에서 좁은 가운데 점(·)으로 치환되므로
         // 측정 폭도 narrow 로 맞춰 측정-렌더 폭 정합 유지(0.5em 기본 폴백 방지).
         '\u{302E}' |  // 〮 HANGUL SINGLE DOT TONE MARK (방점)
-        '\u{302F}' |  // 〯 HANGUL DOUBLE DOT TONE MARK (쌍방점)
-        // [#2195] 괄호 — 통제 사다리 실측: 휴먼명조 '(' = 0.31em(embedded 정합),
-        // 한양중고딕 '(' <= 317HU(0.29em). fallback 0.5em 은 과대
-        // (76076 표325 r0 '(정량)영향집단명' 11pt: 8800>8642 로 2줄, 한글 1줄).
-        '(' | ')'
+        '\u{302F}' // 〯 HANGUL DOUBLE DOT TONE MARK (쌍방점)
     )
+}
+
+/// [#2239] 괄호 '(' ')' narrow 폭(0.3em) — 사다리 실측 폰트 한정.
+///
+/// 통제 사다리 실측(#2195 stage30/31): 휴먼명조 '(' = 0.31em(embedded 정합),
+/// 한양중고딕 '(' <= 317HU(0.29em) — fallback 0.5em 은 과대
+/// (76076 표325 r0 '(정량)영향집단명' 11pt: 8800>8642 로 2줄, 한글 1줄).
+/// 단 HY신명조·바탕 계열은 0.5em(#2156 ASCII 폭 표 정합)이므로 폰트 무관
+/// `is_narrow_punctuation` 전역 분류는 금지 — 실측된 폰트에서만 좁힌다.
+/// (KoPub 계열은 `kopub_char_width` 자체 분기에서 별도 실측 근거로 유지.)
+fn is_narrow_paren_for_font(font_family: &str, c: char) -> bool {
+    if !matches!(c, '(' | ')') {
+        return false;
+    }
+    let primary = font_family.split(',').next().unwrap_or(font_family).trim();
+    primary.contains("휴먼명조") || primary.contains("한양중고딕") || primary.contains("HY중고딕")
 }
 
 /// 한컴이 수평 조판에서 반각 advance 로 처리하는 CJK 낫표.
@@ -2465,6 +2483,42 @@ mod tests {
             "narrow middle-dot advance should be ≤ font_size * 0.35 ({:.2}), got {:.2}",
             style.font_size * 0.35,
             dot_advance
+        );
+    }
+
+    /// [#2239] 괄호 narrow(0.3em)는 사다리 실측 폰트(휴먼명조/한양중고딕) 한정.
+    /// 미실측(미등록) 폰트의 괄호는 0.5em 폴백 유지 — HY신명조·바탕 계열
+    /// 0.5em(#2156 ASCII 폭 표) 회귀 방지.
+    #[test]
+    fn test_paren_narrow_is_font_conditioned() {
+        let m = EmbeddedTextMeasurer;
+        // 미등록·미실측 폰트: 괄호는 0.5em 폴백.
+        let style = TextStyle {
+            font_family: UNREGISTERED_FONT.to_string(),
+            font_size: 13.333,
+            ratio: 1.0,
+            ..Default::default()
+        };
+        let positions = m.compute_char_positions("A(B", &style);
+        let advance = positions[2] - positions[1];
+        assert!(
+            (advance - style.font_size * 0.5).abs() < 0.5,
+            "미실측 폰트 '(' 는 0.5em 폴백이어야 함, got {:.2}",
+            advance
+        );
+        // 한양중고딕(사다리 실측 '(' <= 0.29em): narrow 0.3em.
+        let style_hy = TextStyle {
+            font_family: "한양중고딕".to_string(),
+            font_size: 13.333,
+            ratio: 1.0,
+            ..Default::default()
+        };
+        let positions_hy = m.compute_char_positions("A(B", &style_hy);
+        let advance_hy = positions_hy[2] - positions_hy[1];
+        assert!(
+            advance_hy <= style_hy.font_size * 0.45,
+            "한양중고딕 '(' 는 narrow(≤0.45em)여야 함, got {:.2}",
+            advance_hy
         );
     }
 
