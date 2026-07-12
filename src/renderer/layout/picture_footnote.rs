@@ -10,9 +10,7 @@ use super::super::{
     TextStyle,
 };
 use super::border_rendering::border_width_to_px;
-use super::text_measurement::{
-    estimate_text_width, resolved_to_text_style, resolved_to_text_style_for_text,
-};
+use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::{extract_shape_transform, find_bin_data, picture_display_size_hu};
 use super::LayoutEngine;
 use crate::model::bin_data::BinDataContent;
@@ -406,6 +404,26 @@ impl LayoutEngine {
             y_offset,
             alignment,
         );
+
+        // [Issue #2032] restrictInPage(쪽 영역 안으로 제한, HWP5 attr bit 13 = HWPX pos@flowWithText):
+        // vert=Para floating 그림의 하단이 쪽 영역을 벗어나면 쪽 영역 안으로 끌어올린다.
+        // 미적용 시 앵커+offset 조합으로 좌표가 페이지 캔버스 밖이 되어 그림이 어느
+        // 페이지에서도 보이지 않는다 (완전 소실). floating 표 동등 로직
+        // (table_layout.rs compute_table_y 의 Para 클램프) 과 동일 시멘틱.
+        // 상단(top bleed) 은 한컴도 허용하는 사례가 있어 하단 초과만 교정한다
+        // (표의 allow_para_top_bleed 예외와 동일 취지).
+        // vpos_accounts_for_height(파일 vpos 가 그림 공간을 이미 반영) 이면 그림은
+        // base_y 위쪽 gap 안에 그려지므로 (frame 하단 = base_y) 클램프 비대상.
+        let base_y = if !picture.common.treat_as_char
+            && picture.common.flow_with_text
+            && !vpos_accounts_for_height
+            && matches!(picture.common.vert_rel_to, VertRelTo::Para)
+        {
+            let body_bottom = col_area.y + col_area.height - total_height;
+            base_y.min(body_bottom.max(col_area.y))
+        } else {
+            base_y
+        };
 
         // 캡션 방향에 따라 그림 위치 오프셋 계산
         let (caption_top_offset, caption_left_offset) = if let Some(ref caption) = picture.caption {
@@ -1021,12 +1039,7 @@ impl LayoutEngine {
             // 원본 TextRun들
             let mut char_offset = comp_line.char_start;
             for run in &comp_line.runs {
-                let text_style = resolved_to_text_style_for_text(
-                    styles,
-                    run.char_style_id,
-                    run.lang_index,
-                    &run.text,
-                );
+                let text_style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
                 let width = estimate_text_width(&run.text, &text_style);
 
                 let run_id = tree.next_id();
@@ -1367,10 +1380,38 @@ fn format_footnote_number(
     prefix: char,
     suffix: char,
 ) -> String {
-    // 각주 모양(footnote_shape)의 번호 서식을 렌더 형식으로 변환해 공용 포매터로 그린다.
-    // (Digit/CircledDigit/Roman/Alpha/Hangul/Hanja 등). 종전엔 Digit/CircledDigit/Alpha 만
-    // 처리하고 로마자 등은 숫자로 폴백했으나, 이제 endnote 와 동일한 포매터를 공유한다.
-    let num_str = format_number(number, NumFmt::from_footnote_shape_format(*format));
+    let num_str = match format {
+        NumberFormat::Digit => number.to_string(),
+        NumberFormat::CircledDigit => {
+            // ① ~ ⑳
+            if number >= 1 && number <= 20 {
+                char::from_u32(0x2460 + (number - 1) as u32)
+                    .map(|c| c.to_string())
+                    .unwrap_or_else(|| number.to_string())
+            } else {
+                number.to_string()
+            }
+        }
+        NumberFormat::LowerAlpha => {
+            if number >= 1 && number <= 26 {
+                char::from_u32(b'a' as u32 + (number - 1) as u32)
+                    .map(|c| c.to_string())
+                    .unwrap_or_else(|| number.to_string())
+            } else {
+                number.to_string()
+            }
+        }
+        NumberFormat::UpperAlpha => {
+            if number >= 1 && number <= 26 {
+                char::from_u32(b'A' as u32 + (number - 1) as u32)
+                    .map(|c| c.to_string())
+                    .unwrap_or_else(|| number.to_string())
+            } else {
+                number.to_string()
+            }
+        }
+        _ => number.to_string(), // 기타 형식은 숫자로 fallback
+    };
 
     let prefix_str = if prefix != '\0' {
         prefix.to_string()

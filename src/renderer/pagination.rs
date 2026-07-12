@@ -109,6 +109,8 @@ pub struct PaginationResult {
     /// PartialParagraph 로 pre-emit 된 문단 집합 — layout 의 마지막 fragment 뒤
     /// host 렌더(`render_deferred_rowbreak_host_text_after`) 이중 렌더 억제용.
     pub pre_emitted_host_paras: std::collections::HashSet<usize>,
+    /// [#2015] pre-emit 한 host 텍스트 높이(px). layout 이 vert_offset 이중계상을 보정할 때 사용.
+    pub pre_emitted_host_heights: std::collections::HashMap<usize, f64>,
     /// 섹션별 미주 목록 (문서 끝 또는 섹션 끝에 렌더)
     pub endnotes: Vec<EndnoteRef>,
     /// [Task #836] 미주 paragraphs (endnote_para_base + idx 로 lookup)

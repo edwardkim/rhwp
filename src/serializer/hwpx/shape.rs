@@ -117,44 +117,135 @@ pub fn write_rect<W: Write>(
 // <hp:line>
 // =====================================================================
 
-/// `<hp:line>` 직렬화 진입점. LineShape IR → XML.
+/// [Issue #1943] LinkLineType → HWPX `type` 속성 문자열 (parse_connect_line_type_attr 역).
+fn link_line_type_str(t: crate::model::shape::LinkLineType) -> &'static str {
+    use crate::model::shape::LinkLineType::*;
+    match t {
+        StraightNoArrow => "STRAIGHT_NOARROW",
+        StraightOneWay => "STRAIGHT_ONEWAY",
+        StraightBoth => "STRAIGHT_BOTH",
+        StrokeNoArrow => "STROKE_NOARROW",
+        StrokeOneWay => "STROKE_ONEWAY",
+        StrokeBoth => "STROKE_BOTH",
+        ArcNoArrow => "ARC_NOARROW",
+        ArcOneWay => "ARC_ONEWAY",
+        ArcBoth => "ARC_BOTH",
+    }
+}
+
+/// `<hp:line>` / `<hp:connectLine>` 직렬화 진입점. LineShape IR → XML.
+///
+/// [Issue #1943] 종전 write_line 은 골격 속성(startX/Y/endX/Y attr + sz/pos/outMargin)
+/// 만 방출해 (A) connector 보유 시에도 무조건 hp:line 으로 변질하고, (B) 컴포넌트
+/// 블록(offset/orgSz/curSz/flip/rotationInfo/renderingInfo)·lineShape(색·굵기)·
+/// fillBrush/shadow·좌표(hp:startPt/endPt 자식) 전체를 소실시켰다. 파서는 좌표를
+/// startPt/endPt **자식 요소**로만 읽으므로(startX/Y attr 무시) 종전 좌표는 dead
+/// 였다. write_rect 와 동형으로 전 구조를 방출한다.
 pub fn write_line<W: Write>(
     w: &mut Writer<W>,
     line: &LineShape,
     ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
     let c = &line.common;
+    let sa = &line.drawing.shape_attr;
+    let is_connector = line.connector.is_some();
+    let tag = if is_connector {
+        "hp:connectLine"
+    } else {
+        "hp:line"
+    };
+
     let id_str = c.instance_id.to_string();
     let z_order = c.z_order.to_string();
-    let tw = text_wrap_str(c.text_wrap);
-    let tf = text_flow_str(c.text_flow);
-    let sx = line.start.x.to_string();
-    let sy = line.start.y.to_string();
-    let ex = line.end.x.to_string();
-    let ey = line.end.y.to_string();
+    let group_level = sa.group_level.to_string();
+    let instid = if line.drawing.inst_id != 0 {
+        line.drawing.inst_id
+    } else {
+        c.instance_id
+    }
+    .to_string();
     let srb = bool01(line.started_right_or_bottom);
 
-    start_tag_attrs(
-        w,
-        "hp:line",
-        &[
-            ("id", &id_str),
-            ("zOrder", &z_order),
-            ("numberingType", numbering_type_str(c.numbering_type)),
-            ("textWrap", tw),
-            ("textFlow", tf),
-            ("lock", "0"),
-            ("dropcapstyle", "None"),
-            ("href", ""),
-            ("groupLevel", "0"),
-            ("instid", &id_str),
-            ("startX", &sx),
-            ("startY", &sy),
-            ("endX", &ex),
-            ("endY", &ey),
-            ("isReverseHV", srb),
-        ],
-    )?;
+    let mut attrs: Vec<(&str, &str)> = vec![
+        ("id", &id_str),
+        ("zOrder", &z_order),
+        ("numberingType", numbering_type_str(c.numbering_type)),
+        ("textWrap", text_wrap_str(c.text_wrap)),
+        ("textFlow", text_flow_str(c.text_flow)),
+        ("lock", "0"),
+        ("dropcapstyle", "None"),
+        ("href", ""),
+        ("groupLevel", &group_level),
+        ("instid", &instid),
+    ];
+    if let Some(conn) = &line.connector {
+        attrs.push(("type", link_line_type_str(conn.link_type)));
+    }
+    attrs.push(("isReverseHV", srb));
+    start_tag_attrs(w, tag, &attrs)?;
+
+    // 컴포넌트 블록 + 지오메트리 (write_rect 동형): offset/orgSz/curSz/flip/
+    // rotationInfo/renderingInfo → lineShape → fillBrush → shadow.
+    write_shape_component_block(w, sa)?;
+    write_line_shape(w, &line.drawing.border_line)?;
+    write_fill_brush(w, &line.drawing.fill, ctx)?;
+    write_shadow(w, &line.drawing)?;
+
+    // 좌표 — hp:startPt/hp:endPt 자식 (파서가 읽는 유일 경로). connectLine 은
+    // subjectIDRef/subjectIdx(연결 개체) 포함.
+    let (sub_start_ref, sub_start_idx, sub_end_ref, sub_end_idx) = line
+        .connector
+        .as_ref()
+        .map(|conn| {
+            (
+                conn.start_subject_id,
+                conn.start_subject_index,
+                conn.end_subject_id,
+                conn.end_subject_index,
+            )
+        })
+        .unwrap_or((0, 0, 0, 0));
+    let (sx, sy) = (line.start.x.to_string(), line.start.y.to_string());
+    let (ex, ey) = (line.end.x.to_string(), line.end.y.to_string());
+    if is_connector {
+        let (ssr, ssi) = (sub_start_ref.to_string(), sub_start_idx.to_string());
+        let (esr, esi) = (sub_end_ref.to_string(), sub_end_idx.to_string());
+        empty_tag(
+            w,
+            "hp:startPt",
+            &[
+                ("x", &sx),
+                ("y", &sy),
+                ("subjectIDRef", &ssr),
+                ("subjectIdx", &ssi),
+            ],
+        )?;
+        empty_tag(
+            w,
+            "hp:endPt",
+            &[
+                ("x", &ex),
+                ("y", &ey),
+                ("subjectIDRef", &esr),
+                ("subjectIdx", &esi),
+            ],
+        )?;
+    } else {
+        empty_tag(w, "hp:startPt", &[("x", &sx), ("y", &sy)])?;
+        empty_tag(w, "hp:endPt", &[("x", &ex), ("y", &ey)])?;
+    }
+
+    // connectLine 제어점 (꺾인/곡선 커넥터의 경로).
+    if let Some(conn) = &line.connector {
+        if !conn.control_points.is_empty() {
+            start_tag(w, "hp:controlPoints")?;
+            for p in &conn.control_points {
+                let (px, py, pt) = (p.x.to_string(), p.y.to_string(), p.point_type.to_string());
+                empty_tag(w, "hp:point", &[("x", &px), ("y", &py), ("type", &pt)])?;
+            }
+            end_tag(w, "hp:controlPoints")?;
+        }
+    }
 
     write_sz(w, c)?;
     write_pos(w, c)?;
@@ -163,11 +254,10 @@ pub fn write_line<W: Write>(
     if let Some(cap) = &line.drawing.caption {
         write_caption(w, cap, ctx)?;
     }
-    // [#1588] 도형 설명 — caption 뒤 (write_rect/container 와 동형). 누락 시 선 도형
-    // shapeComment("선입니다." 등)가 저장 시 드롭됐다.
+    // [#1588] 도형 설명 — caption 뒤 (write_rect/container 와 동형).
     write_shape_comment(w, c)?;
 
-    end_tag(w, "hp:line")?;
+    end_tag(w, tag)?;
     Ok(())
 }
 
@@ -370,11 +460,13 @@ pub fn write_draw_text<W: Write>(
     let mut vert_cursor: u32 = 0;
     for para in tb.paragraphs.iter() {
         ctx.para_shape_ids.reference(para.para_shape_id);
-        ctx.style_ids.reference(para.style_id as u16);
+        let sid = ctx.effective_style_id(para.style_id);
+        ctx.style_ids.reference(sid as u16);
 
         let (runs, linesegs, advance) = render_paragraph_parts(para, vert_cursor, ctx);
         vert_cursor = advance;
-        let mut p_xml = render_hp_p_open(para, ctx.next_para_id());
+        let pid = ctx.next_para_id();
+        let mut p_xml = render_hp_p_open(para, pid, sid);
         p_xml.push_str(&runs);
         p_xml.push_str(&linesegs);
         p_xml.push_str("</hp:p>");
@@ -444,8 +536,19 @@ fn write_cur_sz<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {
-    let width = sa.current_width.to_string();
-    let height = sa.current_height.to_string();
+    // [#2017] 파싱 시 orgSz로 materialize된 dimension 은 원본 `0` sentinel 로 복원.
+    let width = if sa.current_width_was_zero {
+        0
+    } else {
+        sa.current_width
+    }
+    .to_string();
+    let height = if sa.current_height_was_zero {
+        0
+    } else {
+        sa.current_height
+    }
+    .to_string();
     empty_tag(w, "hp:curSz", &[("width", &width), ("height", &height)])
 }
 
@@ -1157,14 +1260,61 @@ mod tests {
 
     #[test]
     fn line_emits_start_end_attrs() {
+        // [Issue #1943] 좌표는 hp:startPt/hp:endPt 자식으로 방출한다 (파서가 읽는
+        // 유일 경로). 종전 startX/Y attr 은 파서가 무시하는 dead 출력이었다.
         let mut line = LineShape::default();
         line.start = Point { x: 100, y: 200 };
         line.end = Point { x: 300, y: 400 };
         let xml = serialize_line(&line);
-        assert!(xml.contains(r#"startX="100""#));
-        assert!(xml.contains(r#"startY="200""#));
-        assert!(xml.contains(r#"endX="300""#));
-        assert!(xml.contains(r#"endY="400""#));
+        assert!(
+            xml.contains(r#"<hp:startPt x="100" y="200""#),
+            "startPt 자식 방출: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hp:endPt x="300" y="400""#),
+            "endPt 자식 방출: {xml}"
+        );
+        // 컴포넌트 블록·lineShape 보존 (#1943 (B)).
+        assert!(xml.contains("<hp:offset "), "컴포넌트 블록: {xml}");
+        assert!(xml.contains("<hp:lineShape "), "lineShape: {xml}");
+    }
+
+    /// [Issue #1943 (A)] connector 보유 LineShape 는 hp:connectLine 으로 방출하고
+    /// type/제어점을 보존한다 (종전 hp:line 변질로 커넥터 소실).
+    #[test]
+    fn connector_line_emits_connect_line_tag_and_type() {
+        use crate::model::shape::{ConnectorControlPoint, ConnectorData, LinkLineType};
+        let mut line = LineShape::default();
+        line.start = Point { x: 0, y: 0 };
+        line.end = Point { x: 1257, y: 0 };
+        line.connector = Some(ConnectorData {
+            link_type: LinkLineType::StrokeOneWay,
+            control_points: vec![
+                ConnectorControlPoint {
+                    x: 0,
+                    y: 0,
+                    point_type: 3,
+                },
+                ConnectorControlPoint {
+                    x: 100,
+                    y: 0,
+                    point_type: 26,
+                },
+            ],
+            ..Default::default()
+        });
+        let xml = serialize_line(&line);
+        assert!(xml.contains("<hp:connectLine "), "connectLine 태그: {xml}");
+        assert!(
+            xml.contains(r#"type="STROKE_ONEWAY""#),
+            "connector type: {xml}"
+        );
+        assert!(xml.contains("<hp:controlPoints>"), "제어점 방출: {xml}");
+        assert!(xml.contains(r#"<hp:point x="100" y="0" type="26"/>"#));
+        assert!(
+            !xml.contains("<hp:line "),
+            "connectLine 이 hp:line 으로 변질 금지"
+        );
     }
 
     #[test]

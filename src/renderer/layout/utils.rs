@@ -93,37 +93,61 @@ pub fn resolve_numbering_id(
     }
 }
 
-/// 번호 형식 문자열의 `^N` 제어코드를 실제 번호로 치환
+/// 번호 형식 문자열의 `^` 제어코드를 실제 번호로 치환.
+///
+/// - `^1`~`^7`: 해당 수준의 번호
+/// - `^n`: 수준 1~현재 수준의 레벨 경로 (예: `1.1.1`)
+/// - `^N`: 레벨 경로 + 후행 마침표 (예: `1.1.1.`)
+///
+/// `current_level`은 0-based 수준 인덱스(`para_level`).
 pub(crate) fn expand_numbering_format(
     format_str: &str,
     counters: &[u32; 7],
     numbering: &Numbering,
     start_numbers: &[u32; 7],
+    current_level: usize,
 ) -> String {
+    let format_level = |idx: usize| -> String {
+        let counter_val = counters[idx];
+        let start = start_numbers[idx];
+        let num = if counter_val > 0 {
+            (start - 1) + counter_val
+        } else {
+            start
+        };
+        let fmt_code = numbering.heads[idx].number_format;
+        let num_fmt = numbering_format_to_number_format(fmt_code);
+        format_number(num as u16, num_fmt)
+    };
+
     let mut result = String::new();
     let mut chars = format_str.chars().peekable();
 
     while let Some(ch) = chars.next() {
         if ch == '^' {
-            if let Some(&digit) = chars.peek() {
-                if digit.is_ascii_digit() {
+            match chars.peek() {
+                Some(&digit) if digit.is_ascii_digit() => {
                     chars.next();
                     let level_ref = (digit as u8 - b'0') as usize;
                     if level_ref >= 1 && level_ref <= 7 {
-                        let idx = level_ref - 1;
-                        let counter_val = counters[idx];
-                        let start = start_numbers[idx];
-                        let num = if counter_val > 0 {
-                            (start - 1) + counter_val
-                        } else {
-                            start
-                        };
-                        let fmt_code = numbering.heads[idx].number_format;
-                        let num_fmt = numbering_format_to_number_format(fmt_code);
-                        result.push_str(&format_number(num as u16, num_fmt));
+                        result.push_str(&format_level(level_ref - 1));
                     }
                     continue;
                 }
+                Some(&code @ ('n' | 'N')) => {
+                    chars.next();
+                    for idx in 0..=current_level.min(6) {
+                        if idx > 0 {
+                            result.push('.');
+                        }
+                        result.push_str(&format_level(idx));
+                    }
+                    if code == 'N' {
+                        result.push('.');
+                    }
+                    continue;
+                }
+                _ => {}
             }
         }
         result.push(ch);

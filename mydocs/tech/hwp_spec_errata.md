@@ -735,6 +735,42 @@ HWPX에서는 같은 값이 `<hh:paraPr>` 아래 `<hh:border>`의 `connect="1|0"
 
 ---
 
+## 33. HWPX `breakNonLatinWord` — 열거명 설명과 한컴 실동작 반전
+
+### 현상
+
+문단 모양의 한글 줄 나눔 단위는 HWP5 `ParaShape.attr1` bit 7에 저장된다. HWP5 스펙의
+계약은 `0=어절`, `1=글자`이며, 이 값은 한컴 실동작과 일치한다.
+
+반면 HWPX/OWPML의 `breakNonLatinWord` 열거명은 직관적으로 `KEEP_WORD=어절`,
+`BREAK_WORD=글자`처럼 보이지만, 한컴 202x 계열의 실제 import/export와 rhwp 통제
+실측에서는 반대로 매핑된다.
+
+### 기준 샘플
+
+- `samples/issue1949_giant_cell_nested_tables_perf.hwp`
+- `samples/issue1949_giant_cell_nested_tables_perf.hwpx`
+- PR #2194 / issue #2185 통합 회귀
+
+### 정정
+
+- renderer 내부 계약은 HWP5 bit 7과 동일하게 `0=어절`, `1=글자`로 소비한다.
+- HWPX parser/serializer는 한컴 호환성을 기준으로 `KEEP_WORD -> bit7=1`,
+  `BREAK_WORD -> bit7=0` 매핑을 유지한다.
+- HWPX 열거명만 보고 renderer의 `korean_break_unit` 의미를 뒤집으면 첫 편집 후
+  `LINE_SEG.text_start`, 다음 문단 `vpos`, pagination이 한컴 기준과 달라진다.
+- 따라서 HWPX 명칭, HWP5 저장 bit, renderer 내부 의미를 한 계층으로 섞지 않는다.
+
+### 검증
+
+- PR #2194 focused test:
+  `cargo test --profile release-test --test issue_2185_korean_break_unit -- --nocapture`
+- HWP/HWPX 양쪽에서 실제 편집, pagination flush, 원본 형식 저장, 재로드까지 수행한다.
+- 기대값: 입력 문단 `LINE_SEG.text_start=[0, 44, 84, 122]`, 다음 문단 `vpos=17160`,
+  전체 페이지 수 115쪽 유지.
+
+---
+
 ## 검증 원칙
 
 1. **바이너리 우선**: 스펙 문서보다 실제 바이너리 데이터를 신뢰한다

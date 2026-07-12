@@ -129,7 +129,12 @@ pub fn parse_content_hpf(xml: &str) -> Result<PackageInfo, HwpxError> {
     for (id, href, media_type, is_embedded) in &all_items {
         let is_image = media_type.starts_with("image/");
         let is_bin_data_path = href.starts_with("BinData/") || href.contains("/BinData/");
-        if is_image || is_bin_data_path {
+        // [#1891] 외부 참조(isEmbeded="0")는 media-type 과 무관하게 BinData 항목이다.
+        // 원본이 "image/" 같은 퇴화 값을 갖거나 직렬화기가 octet-stream 으로 쓰는 등
+        // media-type 만으로는 판별할 수 없고, 누락 시 이후 항목의 인덱스(=bin_data_id)
+        // 가 밀려 그림 참조 전체가 어긋난다.
+        let is_external_link = !*is_embedded && media_type != "application/xml";
+        if is_image || is_bin_data_path || is_external_link {
             info.bin_data_items.push(PackageItem {
                 href: href.clone(),
                 media_type: media_type.clone(),

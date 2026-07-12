@@ -278,10 +278,7 @@ impl DocumentCore {
     }
 
     /// 표의 행/열/셀 수를 반환한다 (네이티브).
-    // `pub` (not `pub(crate)`): the ehwp NIF (external crate) calls this directly for
-    // arrow Up/Down caret nav. Mirrors fork patch 5938df11. Harmless for the WASM build
-    // (its `pub fn move_vertical` wrapper is in-crate either way).
-    pub fn move_vertical_native(
+    pub(crate) fn move_vertical_native(
         &self,
         sec: usize,
         para: usize,
@@ -650,9 +647,31 @@ impl DocumentCore {
                         ))
                     })?;
                 }
+                Control::Picture(pic) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 그림 캡션의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    let caption = pic.caption.as_ref().ok_or_else(|| {
+                        HwpError::RenderError(format!(
+                            "경로[{}]: controls[{}] 그림에 캡션이 없습니다",
+                            i, ctrl_idx
+                        ))
+                    })?;
+                    para = caption.paragraphs.get(cell_para_idx).ok_or_else(|| {
+                        HwpError::RenderError(format!(
+                            "경로[{}]: 그림 캡션 paragraph {} 범위 초과 (총 {}개)",
+                            i,
+                            cell_para_idx,
+                            caption.paragraphs.len()
+                        ))
+                    })?;
+                }
                 _ => {
                     return Err(HwpError::RenderError(format!(
-                        "경로[{}]: controls[{}]가 표/글상자가 아닙니다",
+                        "경로[{}]: controls[{}]가 표/글상자/그림 캡션이 아닙니다",
                         i, ctrl_idx
                     )));
                 }
@@ -746,9 +765,31 @@ impl DocumentCore {
                         ))
                     })?
                 }
+                Some(Control::Picture(pic)) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 그림 캡션의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    let caption = pic.caption.as_ref().ok_or_else(|| {
+                        HwpError::RenderError(format!(
+                            "경로[{}]: controls[{}] 그림에 캡션이 없습니다",
+                            i, ctrl_idx
+                        ))
+                    })?;
+                    caption.paragraphs.get(cell_para_idx).ok_or_else(|| {
+                        HwpError::RenderError(format!(
+                            "경로[{}]: 그림 캡션문단 {} 범위 초과 (총 {}개)",
+                            i,
+                            cell_para_idx,
+                            caption.paragraphs.len()
+                        ))
+                    })?
+                }
                 _ => {
                     return Err(HwpError::RenderError(format!(
-                        "경로[{}]: controls[{}]가 표/글상자가 아닙니다",
+                        "경로[{}]: controls[{}]가 표/글상자/그림 캡션이 아닙니다",
                         i, ctrl_idx
                     )))
                 }
@@ -830,9 +871,29 @@ impl DocumentCore {
                         ))
                     })?
                 }
+                Some(Control::Picture(pic)) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 그림 캡션의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    let caption = pic.caption.as_ref().ok_or_else(|| {
+                        HwpError::RenderError(format!(
+                            "경로[{}]: controls[{}] 그림에 캡션이 없습니다",
+                            i, ctrl_idx
+                        ))
+                    })?;
+                    caption.paragraphs.get(cell_para_idx).ok_or_else(|| {
+                        HwpError::RenderError(format!(
+                            "경로[{}]: 그림 캡션문단 {} 범위 초과",
+                            i, cell_para_idx
+                        ))
+                    })?
+                }
                 _ => {
                     return Err(HwpError::RenderError(format!(
-                        "경로[{}]: controls[{}]가 표/글상자가 아닙니다",
+                        "경로[{}]: controls[{}]가 표/글상자/그림 캡션이 아닙니다",
                         i, ctrl_idx
                     )))
                 }
@@ -855,8 +916,21 @@ impl DocumentCore {
                     .ok_or_else(|| HwpError::RenderError("글상자가 아닙니다".to_string()))?;
                 Ok(text_box.paragraphs.len())
             }
+            Some(Control::Picture(pic)) => {
+                if last.1 != 0 {
+                    return Err(HwpError::RenderError(format!(
+                        "그림 캡션의 cell_index는 0이어야 합니다 ({})",
+                        last.1
+                    )));
+                }
+                let caption = pic
+                    .caption
+                    .as_ref()
+                    .ok_or_else(|| HwpError::RenderError("그림에 캡션이 없습니다".to_string()))?;
+                Ok(caption.paragraphs.len())
+            }
             _ => Err(HwpError::RenderError(format!(
-                "controls[{}]가 표/글상자가 아닙니다",
+                "controls[{}]가 표/글상자/그림 캡션이 아닙니다",
                 last.0
             ))),
         }
@@ -1996,22 +2070,8 @@ impl DocumentCore {
                 }
 
                 let left_hit = find_cursor!(para_idx, range_start, CursorBias::Leading);
-                // range_end가 줄바꿈 등 비렌더링 문자 위치이면 한 칸 앞으로 재시도.
-                // 줄바꿈 문자가 포함된 줄(line_range 끝 = 다음 줄 시작)에서는 trailing
-                // 탐색이 None이 아니라 "다음 줄의 시작" 히트(x = 줄 시작)로 성공해 버려
-                // 폭이 0이 되고 그 줄의 사각형이 통째로 사라졌다 — trailing 히트가
-                // left 히트와 다른 줄에 있으면 한 칸 앞으로 물러나 같은 줄 끝을 찾는다.
+                // range_end가 줄바꿈 등 비렌더링 문자 위치이면 한 칸 앞으로 재시도
                 let right_hit = find_cursor!(para_idx, range_end, CursorBias::Trailing)
-                    .and_then(|rh| {
-                        let cross_line = left_hit
-                            .as_ref()
-                            .map_or(false, |lh| rh.page != lh.page || (rh.y - lh.y).abs() > 0.5);
-                        if cross_line && range_end > range_start {
-                            find_cursor!(para_idx, range_end - 1, CursorBias::Trailing).or(Some(rh))
-                        } else {
-                            Some(rh)
-                        }
-                    })
                     .or_else(|| {
                         if range_end > range_start {
                             find_cursor!(para_idx, range_end - 1, CursorBias::Trailing)

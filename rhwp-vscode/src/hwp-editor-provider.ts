@@ -263,6 +263,138 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       background: white;
     }
+    /* 2쪽 보기: 두 쪽을 좌우로 배치 */
+    .page-row {
+      display: flex;
+      flex-direction: row;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    /* 네비게이션 사이드바 (nav-) */
+    #app-shell {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+    #nav-sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--vscode-sideBar-background, #252526);
+      border-right: 1px solid var(--vscode-sideBar-border, rgba(255,255,255,0.1));
+      overflow: hidden;
+      transition: width 0.15s ease;
+    }
+    #nav-sidebar.collapsed {
+      width: 0;
+      border-right: none;
+    }
+    /* 접혔을 때 편집영역 좌측에 나타나는 열기 버튼 */
+    #nav-reopen {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      display: none;
+      width: 18px;
+      height: 44px;
+      border: none;
+      border-radius: 0 6px 6px 0;
+      background: var(--vscode-sideBar-background, #252526);
+      color: var(--vscode-sideBar-foreground, #ccc);
+      cursor: pointer;
+      box-shadow: 1px 0 4px rgba(0,0,0,0.3);
+      font-size: 12px;
+      line-height: 44px;
+      padding: 0;
+    }
+    #nav-reopen:hover { background: rgba(255,255,255,0.12); }
+    #app-shell.sidebar-collapsed #nav-reopen { display: block; }
+    #nav-tabs {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      border-bottom: 1px solid var(--vscode-sideBar-border, rgba(255,255,255,0.1));
+    }
+    #nav-collapse {
+      flex-shrink: 0;
+      width: 26px;
+      align-self: stretch;
+      border: none;
+      background: transparent;
+      color: var(--vscode-sideBar-foreground, #999);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    #nav-collapse:hover { background: rgba(255,255,255,0.06); }
+    .nav-tab {
+      flex: 1;
+      padding: 6px 4px;
+      border: none;
+      background: transparent;
+      color: var(--vscode-sideBar-foreground, #ccc);
+      cursor: pointer;
+      font-size: 12px;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+    }
+    .nav-tab.active {
+      border-bottom-color: var(--vscode-focusBorder, #007acc);
+      color: var(--vscode-foreground, #fff);
+    }
+    .nav-tab:hover { background: rgba(255,255,255,0.06); }
+    #nav-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      min-height: 0;
+    }
+    .nav-panel { padding: 8px; }
+    .nav-panel[hidden] { display: none; }
+    .nav-thumb {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 10px;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    .nav-thumb:hover { background: rgba(255,255,255,0.06); }
+    .nav-thumb.current { background: var(--vscode-list-activeSelectionBackground, rgba(0,122,204,0.35)); }
+    .nav-thumb canvas {
+      background: white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      max-width: 100%;
+      display: block;
+    }
+    .nav-thumb-label {
+      margin-top: 3px;
+      font-size: 11px;
+      color: var(--vscode-descriptionForeground, #999);
+    }
+    .nav-item {
+      padding: 4px 6px;
+      cursor: pointer;
+      font-size: 12px;
+      border-radius: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--vscode-sideBar-foreground, #ccc);
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.06); }
+    .nav-empty {
+      padding: 12px 8px;
+      font-size: 12px;
+      color: var(--vscode-descriptionForeground, #999);
+      text-align: center;
+    }
     /* 상태 표시줄 */
     #status-bar {
       display: flex;
@@ -332,12 +464,31 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
   </style>
 </head>
 <body>
-  <div id="scroll-container" data-wasm-uri="${wasmUri}"><div id="scroll-content"></div></div>
+  <div id="app-shell">
+    <div id="nav-sidebar">
+      <div id="nav-tabs">
+        <button class="nav-tab active" data-tab="thumb" title="\uc378\ub124\uc77c">\uc378\ub124\uc77c</button>
+        <button class="nav-tab" data-tab="outline" title="\ubaa9\ucc28">\ubaa9\ucc28</button>
+        <button class="nav-tab" data-tab="bookmark" title="\ubd81\ub9c8\ud06c">\ubd81\ub9c8\ud06c</button>
+        <button id="nav-collapse" title="\uc0ac\uc774\ub4dc\ubc14 \ub2eb\uae30">\u25c0</button>
+      </div>
+      <div id="nav-body">
+        <div class="nav-panel" data-panel="thumb"></div>
+        <div class="nav-panel" data-panel="outline" hidden></div>
+        <div class="nav-panel" data-panel="bookmark" hidden></div>
+      </div>
+    </div>
+    <div id="scroll-container" data-wasm-uri="${wasmUri}"><div id="scroll-content"></div></div>
+    <button id="nav-reopen" title="\uc0ac\uc774\ub4dc\ubc14 \uc5f4\uae30">\u25b6</button>
+  </div>
   <div id="status-bar">
+    <button id="stb-sidebar-toggle" class="stb-btn" title="\uc0ac\uc774\ub4dc\ubc14 \uc811\uae30/\ud3bc\uce58\uae30">\u2630</button>
     <span id="stb-page" class="stb-item">- / - \uca4d</span>
     <span class="stb-divider"></span>
     <span id="stb-message" class="stb-message">\ubb38\uc11c\ub97c \ubd88\ub7ec\uc624\ub294 \uc911...</span>
     <span class="stb-right">
+      <button id="stb-view-mode" class="stb-btn" title="1\ucabd/2\ucabd \ubcf4\uae30">1\ucabd</button>
+      <span class="stb-divider"></span>
       <button id="stb-zoom-out" class="stb-btn" title="\ucd95\uc18c">\u2212</button>
       <span id="stb-zoom-val" class="stb-zoom-val">100%</span>
       <button id="stb-zoom-in" class="stb-btn" title="\ud655\ub300">+</button>

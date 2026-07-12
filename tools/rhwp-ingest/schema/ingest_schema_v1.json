@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "rhwp ingest schema v1",
-  "description": "Claude Code Skill (rhwp-exam-ingest)이 작성하는 JSON 중간 표현. rhwp build-from-ingest가 이를 읽어 HWPX로 변환한다. Task #660.",
+  "description": "Claude Code Skill (rhwp-exam-ingest)이 작성하는 JSON 중간 표현. rhwp build-from-ingest가 이를 읽어 HWPX로 변환한다. Task #660/#667.",
   "type": "object",
   "required": ["version", "questions"],
   "properties": {
@@ -22,12 +22,43 @@
       "default": "함초롬바탕",
       "description": "기본 폰트명 — Skill이 인식한 시험지 폰트 또는 fallback."
     },
+    "header_text": {
+      "type": "string",
+      "description": "반복 머리말 텍스트."
+    },
+    "footer_text": {
+      "type": "string",
+      "description": "반복 꼬리말 텍스트."
+    },
+    "form_label": {
+      "type": "string",
+      "description": "시험지 형식 라벨(예: 홀수형/짝수형)."
+    },
+    "passages": {
+      "type": "array",
+      "description": "여러 문제가 공유하는 지문 목록.",
+      "items": { "$ref": "#/definitions/Passage" }
+    },
     "questions": {
       "type": "array",
       "items": { "$ref": "#/definitions/Question" }
     }
   },
   "definitions": {
+    "Passage": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "공유 지문 ID. Question.passage_ref에서 참조한다."
+        },
+        "blocks": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/StemBlock" }
+        }
+      }
+    },
     "Question": {
       "type": "object",
       "required": ["number", "stem", "choices"],
@@ -36,6 +67,10 @@
         "stem": {
           "type": "string",
           "description": "지문. stem_blocks가 비어있으면 이 값을 한 단락으로 처리."
+        },
+        "passage_ref": {
+          "type": "string",
+          "description": "passages[].id를 참조한다. 같은 passage는 builder가 첫 참조 위치에 한 번만 출력한다."
         },
         "stem_blocks": {
           "type": "array",
@@ -76,6 +111,21 @@
               "description": "media[].id와 일치하는 이미지 참조."
             },
             "placement": { "$ref": "#/definitions/Placement" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": { "const": "boxed" },
+            "title": {
+              "type": "string",
+              "description": "박스 제목. 예: '<보기>'."
+            },
+            "blocks": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/StemBlock" }
+            }
           }
         }
       ]

@@ -77,6 +77,34 @@ function selectTableObject(this: any, tableRef: { sec: number; ppi: number; ci: 
   this.textarea.focus();
 }
 
+function selectOleObjectFromHit(this: any, oleHit: any): void {
+  hideProtectedCellHover(this);
+  this.cursor.clearSelection();
+  this.cursor.exitCellSelectionMode();
+  this.cellSelectionRenderer?.clear();
+  this.exitPictureObjectSelectionIfNeeded();
+  this.cursor.enterPictureObjectSelectionDirect(
+    oleHit.sec,
+    oleHit.ppi,
+    oleHit.ci,
+    'ole',
+    oleHit.cellIdx,
+    oleHit.cellParaIdx,
+    oleHit.headerFooter,
+    oleHit.outerTableControlIdx,
+    oleHit.cellPath,
+    oleHit.noteRef,
+  );
+  this.active = true;
+  this.caret.hide();
+  this.fieldMarker.hide();
+  this.selectionRenderer.clear();
+  this.renderPictureObjectSelection();
+  this.eventBus.emit('picture-object-selection-changed', true);
+  this.eventBus.emit('command-state-changed');
+  this.textarea.focus();
+}
+
 function selectProtectedCell(this: any, hit: any): void {
   hideProtectedCellHover(this);
   this.cursor.clearSelection();
@@ -131,59 +159,17 @@ function startCellSelectionDragCandidate(this: any, e: MouseEvent, cellRC: { row
 function resolveTableResizeHit(
   self: any,
   pageIdx: number,
-  pageX: number,
-  pageY: number,
-): { tableRef: { sec: number; ppi: number; ci: number }; bboxes: any[]; pageBboxes: any[] } | null {
-  const tryTableRef = (tableRef: { sec: number; ppi: number; ci: number } | null) => {
-    if (!tableRef) return null;
-    try {
-      const bboxes = self.wasm.getTableCellBboxes(tableRef.sec, tableRef.ppi, tableRef.ci);
-      const pageBboxes = bboxes.filter((b: any) => b.pageIndex === pageIdx);
-      if (pageBboxes.length === 0) return null;
-      self.cachedTableRef = tableRef;
-      self.cachedCellBboxes = bboxes;
-      return { tableRef, bboxes, pageBboxes };
-    } catch {
-      return null;
-    }
-  };
-
+  _pageX: number,
+  _pageY: number,
+): { tableRef: { sec: number; ppi: number; ci: number; pageHint?: number }; bboxes: any[]; pageBboxes: any[] } | null {
+  // 일반 클릭에서 새 bbox를 만들면 대형/중첩 표 문서가 수 초 동안 멈춘다.
+  // 리사이즈 시작은 이미 확보된 bbox 캐시가 있을 때만 판정하고, 없으면 텍스트 클릭으로 처리한다.
   if (self.cachedTableRef && self.cachedCellBboxes?.length) {
     const pageBboxes = self.cachedCellBboxes.filter((b: any) => b.pageIndex === pageIdx);
     if (pageBboxes.length > 0) {
       return { tableRef: self.cachedTableRef, bboxes: self.cachedCellBboxes, pageBboxes };
     }
   }
-
-  try {
-    const hit = self.wasm.hitTest(pageIdx, pageX, pageY);
-    if (hit.parentParaIndex !== undefined && hit.controlIndex !== undefined && !hit.isTextBox) {
-      const resolved = tryTableRef({
-        sec: hit.sectionIndex,
-        ppi: hit.parentParaIndex,
-        ci: hit.controlIndex,
-      });
-      if (resolved) return resolved;
-    }
-  } catch { /* hitTest 실패 시 layout fallback으로 진행 */ }
-
-  try {
-    const layout = self.wasm.getPageControlLayout(pageIdx);
-    const tolerance = 4;
-    const table = (layout.controls || []).find((ctrl: any) =>
-      ctrl.type === 'table' &&
-      ctrl.secIdx !== undefined &&
-      ctrl.paraIdx !== undefined &&
-      ctrl.controlIdx !== undefined &&
-      pageX >= ctrl.x - tolerance &&
-      pageX <= ctrl.x + ctrl.w + tolerance &&
-      pageY >= ctrl.y - tolerance &&
-      pageY <= ctrl.y + ctrl.h + tolerance);
-    if (table) {
-      return tryTableRef({ sec: table.secIdx, ppi: table.paraIdx, ci: table.controlIdx });
-    }
-  } catch { /* layout fallback 실패 시 표 밖으로 처리 */ }
-
   return null;
 }
 
@@ -811,7 +797,7 @@ export function onClick(this: any, e: MouseEvent): void {
         // [Task #825] 머리말/꼬리말 편집 모드 — 그림 hit-test 우선, miss 시 텍스트 hit.
         // 머리말 그림은 ImageNode 에 header_footer_ref 동반되어 picHit 정상 반환.
         const picHit = this.findPictureAtClick(pageIdx, pageX, pageY);
-        if (picHit && (picHit.type === 'image' || picHit.type === 'shape' || picHit.type === 'line')) {
+        if (picHit && (picHit.type === 'image' || picHit.type === 'shape' || picHit.type === 'line' || picHit.type === 'ole')) {
           // 머리말 안 그림 객체 선택 → context menu 에 "개체 속성" 표시 가능
           this.cursor.clearSelection();
           this.exitPictureObjectSelectionIfNeeded();
@@ -932,6 +918,12 @@ export function onClick(this: any, e: MouseEvent): void {
         }
       }
     } catch { /* 무시 */ }
+  }
+
+  const earlyOleHit = this.findPictureAtClick(pageIdx, pageX, pageY);
+  if (earlyOleHit?.type === 'ole') {
+    selectOleObjectFromHit.call(this, earlyOleHit);
+    return;
   }
 
   try {
@@ -1181,7 +1173,7 @@ export function onClick(this: any, e: MouseEvent): void {
           // 글상자 내부 클릭이나 hit_test_native 가 textbox 매칭 안 한 케이스
           // → 일반 캐럿 배치로 fall-through (글상자 가로채기 제거)
         }
-        // 이미지/방정식 → 객체 선택 (z-order 미지원)
+        // 이미지/방정식/OLE → 객체 선택 (z-order 미지원)
         this.cursor.clearSelection();
         this.exitPictureObjectSelectionIfNeeded();
         this.cursor.enterPictureObjectSelectionDirect(
@@ -1636,7 +1628,7 @@ export function onMouseMove(this: any, e: MouseEvent): void {
       } else {
         // 회전된 도형의 경우 커서 방향도 회전시켜 표시
         let angleDeg = 0;
-        if (ref && ref.type === 'shape') {
+        if (ref && (ref.type === 'shape' || ref.type === 'ole')) {
           try {
             const props = this.getObjectProperties(ref);
             angleDeg = (props.rotationAngle ?? 0) as number;
@@ -1790,17 +1782,19 @@ export function handleResizeHover(this: any, e: MouseEvent): void {
   }
 
   // 셀 bbox 캐싱 (같은 표면 재사용)
+  // passive hover 중 새 bbox를 만들면 대형/중첩 표에서 커서 이동만으로도 수 초간 멈춘다.
+  // 이미 캐시된 표만 리사이즈 marker를 갱신하고, 실제 리사이즈 시작 판정은 mousedown 경로에서 처리한다.
   if (!this.cachedTableRef ||
       this.cachedTableRef.sec !== tableRef.sec ||
       this.cachedTableRef.ppi !== tableRef.ppi ||
-      this.cachedTableRef.ci !== tableRef.ci) {
-    try {
-      this.cachedCellBboxes = this.wasm.getTableCellBboxes(tableRef.sec, tableRef.ppi, tableRef.ci);
-      this.cachedTableRef = tableRef;
-    } catch {
-      this.cachedCellBboxes = null;
-      this.cachedTableRef = null;
+      this.cachedTableRef.ci !== tableRef.ci ||
+      this.cachedTableRef.pageHint !== pageIdx) {
+    this.tableResizeRenderer.clear();
+    hideProtectedCellHover(this);
+    if (this.container.style.cursor) {
+      this.container.style.cursor = '';
     }
+    return;
   }
 
   if (!this.cachedCellBboxes || this.cachedCellBboxes.length === 0) {
@@ -1936,7 +1930,7 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
  * @param angleDeg 회전각 (도)
  */
 function bringShapeToFront(this: any, picHit: any): void {
-  if (picHit.type === 'shape' || picHit.type === 'line' || picHit.type === 'group') {
+  if (picHit.type === 'shape' || picHit.type === 'line' || picHit.type === 'group' || picHit.type === 'ole') {
     try {
       this.wasm.changeShapeZOrder(picHit.sec, picHit.ppi, picHit.ci, 'front');
       this.eventBus.emit('document-changed');

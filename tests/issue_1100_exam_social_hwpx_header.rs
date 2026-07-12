@@ -63,11 +63,7 @@ fn has_text_node_at(svg: &str, x: f64, y: f64, text: &str) -> bool {
 #[test]
 fn issue_1100_hwpx_header_negative_para_offset_clamped_to_header_origin() {
     let doc = load_doc("samples/hwpx/exam_social.hwpx");
-    // [fork] 한컴/upstream 은 4쪽이지만, fork 글리프 메트릭(대체 폰트 glyph-fit/
-    // 숫자 run 측정)의 줄높이 차이로 fork 스택은 1쪽 초과 페이지네이션(5쪽)한다
-    // — merge 이전 fork HEAD(2c0100d5)에서도 동일. 본 테스트의 주제(#1100 머리말
-    // 음수 offset 클램프/자동번호/꼬리말)는 2쪽 렌더로 검증하며 쪽수만 fork 실측을 핀.
-    assert_eq!(doc.page_count(), 5, "exam_social.hwpx page count (fork 실측)");
+    assert_eq!(doc.page_count(), 4, "exam_social.hwpx page count");
 
     let svg = doc.render_page_svg_native(1).expect("render page 2");
     let target_y = svg
@@ -99,11 +95,7 @@ fn issue_1100_hwpx_header_negative_para_offset_clamped_to_header_origin() {
 #[test]
 fn issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only() {
     let doc = load_doc("samples/hwpx/exam_social.hwpx");
-    // [fork] 한컴/upstream 은 4쪽이지만, fork 글리프 메트릭(대체 폰트 glyph-fit/
-    // 숫자 run 측정)의 줄높이 차이로 fork 스택은 1쪽 초과 페이지네이션(5쪽)한다
-    // — merge 이전 fork HEAD(2c0100d5)에서도 동일. 본 테스트의 주제(#1100 머리말
-    // 음수 offset 클램프/자동번호/꼬리말)는 2쪽 렌더로 검증하며 쪽수만 fork 실측을 핀.
-    assert_eq!(doc.page_count(), 5, "exam_social.hwpx page count (fork 실측)");
+    assert_eq!(doc.page_count(), 4, "exam_social.hwpx page count");
 
     let svg = doc.render_page_svg_native(1).expect("render page 2");
 
@@ -128,11 +120,7 @@ fn issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only() 
 #[test]
 fn issue_1100_hwpx_master_page_footer_page_number_is_preserved() {
     let doc = load_doc("samples/hwpx/exam_social.hwpx");
-    // [fork] 한컴/upstream 은 4쪽이지만, fork 글리프 메트릭(대체 폰트 glyph-fit/
-    // 숫자 run 측정)의 줄높이 차이로 fork 스택은 1쪽 초과 페이지네이션(5쪽)한다
-    // — merge 이전 fork HEAD(2c0100d5)에서도 동일. 본 테스트의 주제(#1100 머리말
-    // 음수 offset 클램프/자동번호/꼬리말)는 2쪽 렌더로 검증하며 쪽수만 fork 실측을 핀.
-    assert_eq!(doc.page_count(), 5, "exam_social.hwpx page count (fork 실측)");
+    assert_eq!(doc.page_count(), 4, "exam_social.hwpx page count");
 
     let svg = doc.render_page_svg_native(1).expect("render page 2");
 

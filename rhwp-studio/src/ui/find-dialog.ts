@@ -1,5 +1,5 @@
 import type { CommandServices } from '@/command/types';
-import type { SearchResult } from '@/core/types';
+import type { SearchResult, ReplaceResult, ReplaceAllResult } from '@/core/types';
 
 export type FindMode = 'find' | 'replace';
 
@@ -310,12 +310,26 @@ export class FindDialog {
     const newText = this.replaceInput.value;
     const hit = this.currentHit;
 
-    const result = this.services.wasm.replaceText(
-      hit.sec!, hit.para!, hit.charOffset!, hit.length!, newText,
-    );
+    // 텍스트 치환도 undo 대상 — 편집 라우터의 snapshot 명령으로 기록한다
+    // (#1320 계약, pasteImage/objectProps 와 동일 패턴). services 미주입
+    // 환경에서만 직접 적용 fallback.
+    let result: ReplaceResult = { ok: false };
+    const ih = this.services.getInputHandler();
+    if (ih) {
+      ih.executeOperation({ kind: 'snapshot', operationType: 'replaceText', operation: (wasm) => {
+        result = wasm.replaceText(
+          hit.sec!, hit.para!, hit.charOffset!, hit.length!, newText,
+        );
+        return ih.getCursorPosition();
+      }});
+    } else {
+      result = this.services.wasm.replaceText(
+        hit.sec!, hit.para!, hit.charOffset!, hit.length!, newText,
+      );
+      this.services.eventBus.emit('document-changed');
+    }
 
     if (result.ok) {
-      this.services.eventBus.emit('document-changed');
       // 바꾼 뒤 다음 검색
       this.currentHit = null;
       this.doSearch(true);
@@ -327,12 +341,24 @@ export class FindDialog {
     if (!query) return;
 
     const newText = this.replaceInput.value;
-    const result = this.services.wasm.replaceAll(
-      query, newText, this.caseSensitiveCheck.checked,
-    );
+
+    // 모두 바꾸기는 문서 전역 치환 — snapshot 으로 기록해야 Ctrl+Z 로
+    // 한 번에 되돌릴 수 있다.
+    let result: ReplaceAllResult = { ok: false };
+    const ih = this.services.getInputHandler();
+    if (ih) {
+      ih.executeOperation({ kind: 'snapshot', operationType: 'replaceAll', operation: (wasm) => {
+        result = wasm.replaceAll(query, newText, this.caseSensitiveCheck.checked);
+        return ih.getCursorPosition();
+      }});
+    } else {
+      result = this.services.wasm.replaceAll(
+        query, newText, this.caseSensitiveCheck.checked,
+      );
+      this.services.eventBus.emit('document-changed');
+    }
 
     if (result.ok) {
-      this.services.eventBus.emit('document-changed');
       this.statusLabel.textContent = `${result.count}개 바꿈`;
       this.currentHit = null;
     }

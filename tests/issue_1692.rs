@@ -366,27 +366,18 @@ fn first_picture<'a>(paragraphs: &'a [Paragraph]) -> Option<&'a rhwp::model::ima
 
 #[test]
 fn issue_1692_so_sueop_answer_endnote_pages_match_pdf_ranges() {
-    // [fork] 한컴 PDF(=upstream) 분포: page idx 42..45 에 1..58/59..129/130..191/
-    // 192..223. fork 글리프 메트릭은 이 문서를 1쪽 초과 페이지네이션(47쪽)해
-    // 미주 페이지가 한 쪽씩 밀리고 경계 번호도 소폭 이동한다 — fork 실측 pin.
-    let hwp3_expected = [
-        (43, 44, 1, 62),
-        (44, 45, 63, 130),
-        (45, 46, 131, 194),
-        (46, 47, 195, 223),
-    ];
-    let hwpx_expected = [
-        (43, 44, 1, 62),
-        (44, 45, 63, 129),
-        (45, 46, 130, 191),
-        (46, 47, 192, 223),
-    ];
     let cases = [
-        ("HWP3", load_wasm_doc("samples/SO-SUEOP.hwp"), hwp3_expected),
-        ("HWPX", load_wasm_doc("samples/SO-SUEOP.hwpx"), hwpx_expected),
+        ("HWP3", load_wasm_doc("samples/SO-SUEOP.hwp")),
+        ("HWPX", load_wasm_doc("samples/SO-SUEOP.hwpx")),
+    ];
+    let expected = [
+        (42, 43, 1, 58),
+        (43, 44, 59, 129),
+        (44, 45, 130, 191),
+        (45, 46, 192, 223),
     ];
 
-    for (label, doc, expected) in cases {
+    for (label, doc) in cases {
         for (page_index, page_number, first, last) in expected {
             let tree = page_render_tree(&doc, page_index);
             let markers = endnote_marker_numbers_on_page(&tree);
@@ -605,9 +596,8 @@ fn issue_1692_so_sueop_header_footer_page5_matches_reference_contract() {
 
     let hwp3_doc = load_wasm_doc("samples/SO-SUEOP.hwp");
     let hwpx_doc = load_wasm_doc("samples/SO-SUEOP.hwpx");
-    // [fork] 한컴/upstream 46쪽; fork 글리프 메트릭은 1쪽 초과 페이지네이션 — 실측 pin.
-    assert_eq!(hwp3_doc.page_count(), 47);
-    assert_eq!(hwpx_doc.page_count(), 47);
+    assert_eq!(hwp3_doc.page_count(), 46);
+    assert_eq!(hwpx_doc.page_count(), 46);
 
     let hwp3_tree = page_render_tree(&hwp3_doc, 4);
     let hwpx_tree = page_render_tree(&hwpx_doc, 4);

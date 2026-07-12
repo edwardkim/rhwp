@@ -7,7 +7,13 @@
 
 | 파일 | 폰트 | 라이선스 | 용도 |
 |------|------|---------|------|
+| `NotoSansKR-Regular.ttf` | Noto Sans KR Regular (wght 400, 한글+라틴+글머리/도형 subset) | SIL OFL 1.1 (`NotoSansKR-OFL.txt`) | Task #2190 — CanvasKit 기본 typeface의 KS 기호/Box Drawing coverage |
 | `NotoSansKR-ExtraLight.ttf` | Noto Sans KR ExtraLight (wght 200, 한글+라틴 서브셋) | SIL OFL 1.1 (`NotoSansKR-OFL.txt`) | Task #1224 — 한컴 돋움(Haansoft Dotum)·돋움·굴림 계열의 **획 두께 정합** 대체 |
+
+`NotoSansKR-Regular.ttf`와 대응 WOFF2는 Google Fonts `ofl/notosanskr` variable source를
+`wght=400`으로 instance화한 뒤 `tools/subset_noto_sans_kr_regular.py`로 생성한다. 기존
+Regular cmap에 `U+2500-257F`, `U+25A0-25FF`를 더해 CanvasKit에서 `■`·`▪` 글머리와
+표 테두리 문자가 tofu로 보이지 않게 한다.
 
 - 출처: Google Fonts `ofl/notosanskr` 가변폰트에서 `wght=200` 인스턴스화 후 한글+라틴 서브셋.
 - 한컴 돋움 획 두께(페이지 밀도 0.265)에 근접(rsvg 페이지 밀도 0.277). 기존 폴백

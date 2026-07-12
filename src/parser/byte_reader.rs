@@ -108,6 +108,11 @@ impl<'a> ByteReader<'a> {
     }
 
     /// UTF-16LE 문자열 읽기 (지정 글자 수)
+    ///
+    /// [Issue #1932] lone surrogate 가 섞인 실문서(별지 서식 계열 DocInfo)를
+    /// 한글은 정상 열람하므로 관용(lossy) 디코딩한다 — 손상 code unit 은
+    /// U+FFFD 로 치환되고 문서 로드는 계속된다. 엄격 실패로 DocInfo 전체를
+    /// 버리는 종전 동작은 한글 대비 과잉 거부였다.
     pub fn read_utf16_string(&mut self, char_count: usize) -> io::Result<String> {
         let byte_count = char_count * 2;
         let bytes = self.read_bytes(byte_count)?;
@@ -117,12 +122,7 @@ impl<'a> ByteReader<'a> {
             .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
             .collect();
 
-        String::from_utf16(&utf16).map_err(|e| {
-            io::Error::new(
-                io::ErrorKind::InvalidData,
-                format!("UTF-16 디코딩 실패: {}", e),
-            )
-        })
+        Ok(String::from_utf16_lossy(&utf16))
     }
 
     /// ColorRef 읽기 (4바이트, 0x00BBGGRR 형식)
@@ -175,6 +175,23 @@ mod tests {
         let data = (-7200i32).to_le_bytes();
         let mut reader = ByteReader::new(&data);
         assert_eq!(reader.read_i32().unwrap(), -7200);
+    }
+
+    /// [#1932] lone surrogate 가 섞인 UTF-16 문자열은 관용 디코딩으로 수용
+    /// (한글 정합 — 별지 서식 DocInfo lone surrogate 실측 대응).
+    #[test]
+    fn test_read_utf16_string_lone_surrogate_lossy() {
+        // "A" + lone high surrogate(0xD800) + "B"
+        let units: [u16; 3] = [0x0041, 0xD800, 0x0042];
+        let mut bytes = Vec::new();
+        for u in units {
+            bytes.extend_from_slice(&u.to_le_bytes());
+        }
+        let mut reader = ByteReader::new(&bytes);
+        let s = reader
+            .read_utf16_string(3)
+            .expect("#1932: lone surrogate 는 lossy 디코딩으로 수용되어야 함");
+        assert_eq!(s, "A\u{FFFD}B");
     }
 
     #[test]

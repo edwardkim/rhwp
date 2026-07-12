@@ -546,7 +546,15 @@ impl DocumentCore {
             char_offsets: vec![],
             char_shapes: vec![crate::model::paragraph::CharShapeRef {
                 start_pos: 0,
-                char_shape_id: para.char_shape_id_at(0).unwrap_or(0),
+                // 원본 문단 첫 글자가 아니라 컨트롤 앵커 위치의 글자모양을 복사한다.
+                char_shape_id: para
+                    .char_shape_id_at(
+                        para.control_text_positions()
+                            .get(control_idx)
+                            .copied()
+                            .unwrap_or(0),
+                    )
+                    .unwrap_or(0),
             }],
             line_segs: vec![ctrl_line_seg],
             para_shape_id: para.para_shape_id,
@@ -1013,13 +1021,9 @@ impl DocumentCore {
 
         self.document.sections[section_idx].raw_stream = None;
 
-        // 커서 위치 문단의 속성 상속 (빈 문단 생성용)
+        // 커서 위치 문단의 속성 상속 (빈 문단 생성용) — 커서 offset 의 글자모양 기준.
         let current_para = &self.document.sections[section_idx].paragraphs[para_idx];
-        let default_char_shape_id: u32 = current_para
-            .char_shapes
-            .first()
-            .map(|cs| cs.char_shape_id)
-            .unwrap_or(0);
+        let default_char_shape_id: u32 = current_para.char_shape_id_at(char_offset).unwrap_or(0);
         let default_para_shape_id: u16 = current_para.para_shape_id;
 
         // 편집 영역 폭
@@ -1701,4 +1705,97 @@ impl DocumentCore {
     }
 
     // === 클립보드 HTML 붙여넣기 ===
+}
+
+#[cfg(test)]
+mod char_shape_inherit_tests {
+    use crate::document_core::DocumentCore;
+    use crate::model::paragraph::CharShapeRef;
+
+    /// 혼합 글자모양 문단: 텍스트 20자, 글자 인덱스 0~9 는 34, 10~ 는 37.
+    fn core_with_mixed_shape_paragraph() -> DocumentCore {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "0123456789abcdefghij")
+            .unwrap();
+        let para = &mut core.document.sections[0].paragraphs[0];
+        // 컨트롤(SectionDef 등)이 UTF-16 앞자리를 차지하므로 경계는 char_offsets 로 계산.
+        let boundary = para.char_offsets[10];
+        para.char_shapes = vec![
+            CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 34,
+            },
+            CharShapeRef {
+                start_pos: boundary,
+                char_shape_id: 37,
+            },
+        ];
+        core
+    }
+
+    /// 혼합 문단 offset 12(글자모양 37 구간)에 인라인 표를 만들고 복사하면,
+    /// 클립보드 문단은 문단 첫 글자모양(34)이 아니라 컨트롤 앵커 위치의
+    /// 글자모양(37)을 가져야 한다.
+    #[test]
+    fn copy_control_uses_char_shape_at_control_anchor() {
+        let mut core = core_with_mixed_shape_paragraph();
+        let res = core
+            .create_table_ex_native(0, 0, 12, 1, 1, true, None, None)
+            .unwrap();
+        let ctrl_idx: usize = res
+            .split("\"controlIdx\":")
+            .nth(1)
+            .and_then(|s| s.split([',', '}']).next())
+            .and_then(|s| s.trim().parse().ok())
+            .unwrap();
+
+        core.copy_control_native(0, 0, &[], ctrl_idx).unwrap();
+
+        let clip_para = core
+            .clipboard
+            .as_ref()
+            .and_then(|c| c.paragraphs.first())
+            .expect("클립보드 문단");
+        assert_eq!(
+            clip_para.char_shapes.first().map(|cs| cs.char_shape_id),
+            Some(37),
+            "클립보드 문단이 컨트롤 앵커 글자모양(37)이 아닌 값을 가짐"
+        );
+    }
+
+    /// 혼합 문단 offset 10 에 컨트롤을 붙여넣으면, 컨트롤 아래에 생성되는
+    /// 빈 문단은 커서 offset 글자모양(37)을 상속해야 한다.
+    #[test]
+    fn paste_control_empty_neighbor_inherits_char_shape_at_cursor_offset() {
+        let mut core = core_with_mixed_shape_paragraph();
+        let res = core
+            .create_table_ex_native(0, 0, 12, 1, 1, true, None, None)
+            .unwrap();
+        let ctrl_idx: usize = res
+            .split("\"controlIdx\":")
+            .nth(1)
+            .and_then(|s| s.split([',', '}']).next())
+            .and_then(|s| s.trim().parse().ok())
+            .unwrap();
+        core.copy_control_native(0, 0, &[], ctrl_idx).unwrap();
+
+        let res = core.paste_control_native(0, 0, 10).unwrap();
+        let insert_para_idx: usize = res
+            .split("\"paraIdx\":")
+            .nth(1)
+            .and_then(|s| s.split([',', '}']).next())
+            .and_then(|s| s.trim().parse().ok())
+            .unwrap();
+
+        let empty_neighbor = &core.document.sections[0].paragraphs[insert_para_idx + 1];
+        assert_eq!(
+            empty_neighbor
+                .char_shapes
+                .first()
+                .map(|cs| cs.char_shape_id),
+            Some(37),
+            "붙여넣기 후 빈 이웃 문단이 커서 offset 글자모양(37)이 아닌 값을 상속"
+        );
+    }
 }

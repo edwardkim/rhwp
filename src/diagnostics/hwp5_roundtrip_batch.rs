@@ -170,11 +170,18 @@ struct RoundtripRow {
     round2_error: String,
     elapsed_ms: u128,
     error: String,
+    /// [#1914] 매직 바이트 실체가 HWP5(OLE/CFB)가 아닌 확장자 위장 파일 —
+    /// 검출된 실체 포맷명. plain serialize 게이트의 범위 밖이므로 스킵으로 분류.
+    /// (HWP3 는 어댑터(`export_hwp_with_adapter`) 경유가 제품 경로 — 여기서
+    /// 돌리면 SectionPageDef 소실 등 도구-경로 전용 IR_DIFF 가 오표기된다, #1892.)
+    format_skip: Option<&'static str>,
 }
 
 impl RoundtripRow {
     fn status(&self) -> &'static str {
-        if !self.parse_ok {
+        if self.format_skip.is_some() {
+            "FORMAT_SKIP"
+        } else if !self.parse_ok {
             "PARSE_FAIL"
         } else if !self.serialize_ok {
             "SERIALIZE_FAIL"
@@ -204,11 +211,28 @@ impl RoundtripRow {
 
     /// 회귀 검출용 하드 실패 (등급화 대상 분류와 별개).
     fn is_hard_fail(&self) -> bool {
+        if self.format_skip.is_some() {
+            // [#1914] 확장자 위장(실체 비-HWP5)은 게이트 범위 밖 — 실패 아님.
+            return false;
+        }
         !(self.parse_ok && self.serialize_ok && self.reparse_ok)
             || self.bindata_lost > 0
             || self.cfb_struct_ok == Some(false)
             || self.page_mismatch()
             || !self.round2_error.is_empty()
+    }
+}
+
+/// [#1914] 매직 바이트 실체 포맷명 (FORMAT_SKIP 사유 표기용).
+fn detected_format_name(fmt: crate::parser::FileFormat) -> Option<&'static str> {
+    use crate::parser::FileFormat;
+    match fmt {
+        FileFormat::Hwpx => Some("HWPX(ZIP)"),
+        FileFormat::Hwp3 => Some("HWP3"),
+        FileFormat::LegacyHwpml => Some("HWPML(구 XML)"),
+        FileFormat::DrmProtected => Some("DRM 보호"),
+        FileFormat::Empty => Some("빈 파일"),
+        FileFormat::Hwp | FileFormat::Unknown => None,
     }
 }
 
@@ -232,6 +256,7 @@ fn roundtrip_one(path: &Path, rel_path: &str, rt_path: &Path) -> RoundtripRow {
         round2_error: String::new(),
         elapsed_ms: 0,
         error: String::new(),
+        format_skip: None,
     };
 
     let finish = |mut row: RoundtripRow, started: Instant| -> RoundtripRow {
@@ -246,6 +271,19 @@ fn roundtrip_one(path: &Path, rel_path: &str, rt_path: &Path) -> RoundtripRow {
             return finish(row, started);
         }
     };
+
+    // [#1914] 확장자 아닌 매직 바이트로 실체 판별. HWP3/HWPX 실체는 plain
+    // serialize 게이트의 범위 밖 — HWP3 를 여기서 돌리면 어댑터 미경유
+    // SectionPageDef 소실 등 도구-경로 전용 IR_DIFF 가 오표기된다(#1892).
+    // Unknown(빈 파일/DRM 래퍼 등)은 종전대로 파싱 실패가 정당하므로 진행한다.
+    if let Some(actual) = detected_format_name(crate::parser::detect_format(&bytes)) {
+        row.format_skip = Some(actual);
+        row.error = format!(
+            "확장자 위장/포맷 불일치: 실체 {actual} — HWP5 게이트 범위 밖 \
+             (HWPX 는 hwpx-roundtrip, HWP3 저장 검증은 convert/export 경로 사용)"
+        );
+        return finish(row, started);
+    }
 
     let doc1 = match parse_document(&bytes) {
         Ok(d) => d,
@@ -604,6 +642,7 @@ mod tests {
             round2_error: String::new(),
             elapsed_ms: 0,
             error: String::new(),
+            format_skip: None,
         }
     }
 

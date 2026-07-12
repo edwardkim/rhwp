@@ -127,30 +127,6 @@ impl ResolvedCharStyle {
         &self.font_family
     }
 
-    /// run 텍스트를 고려한 폰트 이름.
-    ///
-    /// 기본은 `font_family_for_lang(lang_index)` 와 동일하나, **순수 숫자 run**
-    /// 이 영문 슬롯(lang_index==1)을 쓰는데 그 영문 슬롯과 한글(본문) 슬롯의
-    /// generic 계열이 다를 때(예: 명조 본문 + 고딕 영문)는 숫자를 한글 슬롯
-    /// 폰트로 맞춰 본문과 일관되게 그린다. 영문 글자(알파벳)·기호가 섞인 run 은
-    /// 문서가 지정한 영문 폰트를 그대로 존중한다(영문 폰트 회귀 방지).
-    pub fn font_family_for_run(&self, lang_index: usize, text: &str) -> &str {
-        let latin = self.font_family_for_lang(lang_index);
-        if lang_index != 1 || !is_pure_number_run(text) {
-            return latin;
-        }
-        let hangul = self.font_family_for_lang(0);
-        if hangul.is_empty() || hangul == latin {
-            return latin;
-        }
-        use crate::renderer::generic_font_class;
-        if generic_font_class(latin) != generic_font_class(hangul) {
-            hangul
-        } else {
-            latin
-        }
-    }
-
     /// 지정 언어 카테고리의 자간(px)을 반환한다.
     pub fn letter_spacing_for_lang(&self, lang_index: usize) -> f64 {
         if lang_index < self.letter_spacings.len() {
@@ -210,7 +186,7 @@ pub struct ResolvedParaStyle {
     pub condense_min_space: u8,
     /// 줄 나눔 기준 영어 단위 (0=단어, 1=하이픈, 2=글자) — attr1 bit 5-6
     pub english_break_unit: u8,
-    /// 줄 나눔 기준 한글 단위 (0=글자, 1=어절/KEEP_WORD) — attr1 bit 7
+    /// 줄 나눔 기준 한글 단위 (0=어절, 1=글자) — attr1 bit 7
     pub korean_break_unit: u8,
     /// 외톨이줄 보호 — attr1 bit 16
     pub widow_orphan: bool,
@@ -316,6 +292,9 @@ pub struct ResolvedStyleSet {
     pub numberings: Vec<Numbering>,
     /// 글머리표 정의 목록 (bullets[id]에 대응)
     pub bullets: Vec<Bullet>,
+    /// [#2070] HWP3 → HWP5 변환본 여부 (Document::is_hwp3_variant 전파).
+    /// 변환본 한정 레거시 폭 규칙(전체 폭) 게이트에 사용.
+    pub hwp3_variant: bool,
 }
 
 /// DocInfo 참조 테이블을 해소된 스타일 목록으로 변환한다.
@@ -343,6 +322,7 @@ pub fn resolve_styles_with_variant(
         border_styles,
         numberings,
         bullets,
+        hwp3_variant: is_hwp3_variant,
     }
 }
 
@@ -422,6 +402,12 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
 pub fn detect_lang_category(ch: char) -> usize {
     let cp = ch as u32;
     match cp {
+        // [#2070] ㆍ(아래아, U+318D)는 한컴이 USER 스크립트 폰트로 렌더한다.
+        // 80168 실문서(user=9='명조', 반각 오라클)와 사다리 v3(user=한양신명조,
+        // 전각 실측)를 동시에 만족하는 유일 분류. 호환 자모 블록이지만
+        // 한글(0)이 아니라 사용자(6)로 분류해 user 폰트를 태운다.
+        0x318D => 6,
+
         // 한국어: Hangul Jamo, Compatibility Jamo, Syllables
         0x1100..=0x11FF | 0x3130..=0x318F | 0xAC00..=0xD7AF |
         // Hangul Jamo Extended-A/B
@@ -458,26 +444,6 @@ pub fn detect_lang_category(ch: char) -> usize {
         // 호출부에서 "이전 문자의 언어를 따르는" 로직으로 처리
         _ => 0,
     }
-}
-
-/// run 이 "순수 숫자"인지 판정한다 (숫자 폰트 일관성용, `font_family_for_run`).
-///
-/// 숫자(0-9)를 하나 이상 포함하고, 그 외 문자는 숫자와 함께 쓰이는 중립
-/// 기호(공백/소수점/쉼표/괄호/퍼센트/하이픈/콜론/슬래시 등)만 허용한다.
-/// 알파벳이 하나라도 섞이면 영문 run 으로 보아 false (영문 폰트 존중).
-pub fn is_pure_number_run(text: &str) -> bool {
-    let mut has_digit = false;
-    for ch in text.chars() {
-        if ch.is_ascii_digit() {
-            has_digit = true;
-        } else if !matches!(
-            ch,
-            ' ' | '.' | ',' | '(' | ')' | '%' | '-' | ':' | '/' | '~' | '+' | '·' | '\u{00A0}'
-        ) {
-            return false;
-        }
-    }
-    has_digit
 }
 
 /// FontFace 테이블에서 폰트 이름 조회 + 폰트 치환 적용
@@ -842,9 +808,15 @@ fn resolve_single_para_style(
     dpi: f64,
     is_hwp3_variant: bool,
 ) -> ResolvedParaStyle {
+    // [#2070] 비-Percent 줄간격(Fixed/SpaceOnly/Minimum)도 여백·문단간격·탭과
+    // 동일하게 저장값이 유효 HWPUNIT 의 2배다 — 통제 사다리(#2197)로 확정한
+    // 계약과 실문서 이중 실증: 시장구조조사 본문 ps Fixed 3320HU, 한글 PDF
+    // 줄 pitch 22.1px = 3320/2 (rhwp 종전 44.3px = 2배 팽창); 편람 한컴 HWPX
+    // case FIXED=1560/default=3120 (case=유효, default=저장). HWPX 파서도
+    // case×2 적재라 양 포맷 IR 동일 스케일 — 일괄 /2 가 정합.
     let line_spacing = match ps.line_spacing_type {
         LineSpacingType::Percent => ps.line_spacing as f64,
-        _ => hwpunit_to_px(ps.line_spacing, dpi),
+        _ => hwpunit_to_px(ps.line_spacing, dpi) / 2.0,
     };
 
     // 기본 탭 간격: HWP 기본값 80pt (8000 HWPUNIT)
@@ -1220,8 +1192,9 @@ mod tests {
             LineSpacingType::Percent
         );
 
-        // 고정 타입: 1200 HWPUNIT → px 변환
-        let expected = hwpunit_to_px(1200, DEFAULT_DPI);
+        // 고정 타입: 저장값 1200 HWPUNIT 은 유효값의 2배(여백·문단간격·탭과 동일
+        // 규약, #2070/#2197) → resolve 시 /2 후 px 변환
+        let expected = hwpunit_to_px(1200, DEFAULT_DPI) / 2.0;
         assert!((styles.para_styles[1].line_spacing - expected).abs() < 0.01);
         assert_eq!(
             styles.para_styles[1].line_spacing_type,

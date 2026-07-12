@@ -41,6 +41,102 @@
 .sb-font-lang { width: 44px; font-size: var(--font-size-sm); }
 .sb-font { width: 110px; }
 
+/* 한컴형 글꼴 범주 메뉴 */
+.font-picker-menu {
+  position: fixed;
+  z-index: 1200;
+  display: grid;
+  grid-template-columns: 122px minmax(260px, 380px);
+  width: min(510px, calc(100vw - 8px));
+  height: min(350px, calc(100vh - 8px));
+  overflow: hidden;
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
+  color: var(--color-text);
+}
+
+.font-picker-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 5px 4px;
+  border-right: 1px solid var(--ui-border);
+  background: var(--ui-surface-muted);
+}
+
+.font-picker-category {
+  min-height: 28px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.font-picker-category:hover { background: var(--ui-hover); color: var(--color-text); }
+.font-picker-category.active { background: var(--ui-active); color: var(--color-text); font-weight: 600; }
+
+.font-picker-content {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.font-picker-heading {
+  min-height: 30px;
+  box-sizing: border-box;
+  padding: 7px 10px 5px;
+  border-bottom: 1px solid var(--ui-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.font-picker-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 3px;
+}
+
+.font-picker-option {
+  display: block;
+  width: 100%;
+  min-height: 27px;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 2px 9px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.font-picker-option:hover,
+.font-picker-option[aria-selected="true"] {
+  background: var(--ui-hover-strong);
+}
+
+.font-picker-empty {
+  padding: 14px 10px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 560px) {
+  .font-picker-menu { grid-template-columns: 104px minmax(0, 1fr); }
+  .font-picker-category { padding: 0 6px; }
+}
+
 /* 크기 그룹 */
 .sb-size-group {
   display: inline-flex;

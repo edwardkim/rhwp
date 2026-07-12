@@ -230,7 +230,32 @@ impl HeightCursor {
                 .text
                 .chars()
                 .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
-            let vpos_continuous = matches!(curr_first_vpos, Some(v) if v <= prev_vpos_end);
+            // [Issue #1898] 직전 문단이 "실텍스트 + 인라인(tac) 그림 호스트" 이면, 저장
+            // vpos gap 이 현재 문단 spacing_before 이하일 때 연속으로 본다. 이 gap 은 sb
+            // 인코딩이며 sb 는 vpos_corrected_end_y 가 별도로 사전 차감하므로 이미 계상된
+            // 정상 전진이다. tac 그림 PageItem 이 vpos base 를 리셋한 직후 이 gap 을
+            // 불연속으로 오판해 +trailing_ls bridge 를 더하면 그림 문단 뒤 줄 전진이
+            // gap 1회분(+11.7px) 과대해진다 (36388711 p9 참고자료: 렌더 44.8px vs
+            // layout/한컴 33.1px — 기전 1). 시그니처를 tac 그림 텍스트 호스트 직후로
+            // 한정해 일반 lazy 재역산의 bridge 는 종전 유지 (rowbreak-problem-pages
+            // 쪽나눔 무회귀). HWP3-origin 변환본(sb 사전 차감 생략 경로)도 종전 유지.
+            let prev_is_tac_picture_text_host = prev_has_text
+                && prev_para
+                    .controls
+                    .iter()
+                    .any(|c| matches!(c, Control::Picture(p) if p.common.treat_as_char));
+            let curr_sb_hu = if self.skip_spacing_before_prededuct || !prev_is_tac_picture_text_host
+            {
+                0
+            } else {
+                paragraphs
+                    .get(item_para)
+                    .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
+                    .map(|ps| ((ps.spacing_before * 7200.0 / self.dpi).round() as i32).max(0))
+                    .unwrap_or(0)
+            };
+            let vpos_continuous =
+                matches!(curr_first_vpos, Some(v) if v <= prev_vpos_end + curr_sb_hu);
             let trailing_ls_hu = if vpos_continuous && prev_has_text {
                 0
             } else {
@@ -1336,6 +1361,7 @@ mod tests {
 
     fn styles(spacing_before: f64) -> ResolvedStyleSet {
         ResolvedStyleSet {
+            hwp3_variant: false,
             para_styles: vec![ResolvedParaStyle {
                 spacing_before,
                 ..Default::default()

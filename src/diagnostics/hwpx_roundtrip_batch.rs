@@ -92,6 +92,12 @@ struct RoundtripRow {
     round2_error: String,
     elapsed_ms: u128,
     error: String,
+    /// [#1914] 매직 바이트 실체가 HWPX(ZIP)가 아닌 확장자 위장 파일 — 검출된
+    /// 실체 포맷명. HWPX 구조 게이트의 범위 밖이므로 실패가 아닌 스킵으로 분류.
+    format_skip: Option<&'static str>,
+    /// [#1946] ODF 암호화(비밀번호 보호) HWPX — 복호화 미지원. 게이트 범위 밖
+    /// 이므로 실패가 아닌 스킵으로 분류(FORMAT_SKIP 과 동형).
+    encrypted_skip: bool,
     /// #1380 측정 전용 — round1(원본 vs RT) lineseg diff. `--lineseg-report` 시에만 수집.
     lineseg_r1: Vec<LinesegDiff>,
     /// #1380 측정 전용 — round2(RT vs RT²) lineseg diff.
@@ -100,7 +106,11 @@ struct RoundtripRow {
 
 impl RoundtripRow {
     fn status(&self) -> &'static str {
-        if !self.parse_ok {
+        if self.format_skip.is_some() {
+            "FORMAT_SKIP"
+        } else if self.encrypted_skip {
+            "ENCRYPTED_SKIP"
+        } else if !self.parse_ok {
             "PARSE_FAIL"
         } else if !self.serialize_ok {
             "SERIALIZE_FAIL"
@@ -121,9 +131,26 @@ impl RoundtripRow {
 
     /// 회귀 검출용 하드 실패 (등급화 대상 분류와 별개).
     fn is_hard_fail(&self) -> bool {
+        if self.format_skip.is_some() || self.encrypted_skip {
+            // [#1914/#1946] 확장자 위장(실체 비-HWPX)·암호화 문서는 게이트 범위 밖 — 실패 아님.
+            return false;
+        }
         !(self.parse_ok && self.serialize_ok && self.reparse_ok)
             || self.pkg_ok == Some(false)
             || !self.round2_error.is_empty()
+    }
+}
+
+/// [#1914] 매직 바이트 실체 포맷명 (FORMAT_SKIP 사유 표기용).
+fn detected_format_name(fmt: crate::parser::FileFormat) -> Option<&'static str> {
+    use crate::parser::FileFormat;
+    match fmt {
+        FileFormat::Hwp => Some("HWP5(OLE/CFB)"),
+        FileFormat::Hwp3 => Some("HWP3"),
+        FileFormat::LegacyHwpml => Some("HWPML(구 XML)"),
+        FileFormat::DrmProtected => Some("DRM 보호"),
+        FileFormat::Empty => Some("빈 파일"),
+        FileFormat::Hwpx | FileFormat::Unknown => None,
     }
 }
 
@@ -148,6 +175,8 @@ fn roundtrip_one(
         round2_error: String::new(),
         elapsed_ms: 0,
         error: String::new(),
+        format_skip: None,
+        encrypted_skip: false,
         lineseg_r1: Vec::new(),
         lineseg_r2: Vec::new(),
     };
@@ -165,9 +194,26 @@ fn roundtrip_one(
         }
     };
 
+    // [#1914] 확장자 아닌 매직 바이트로 실체 판별 — .hwpx 로 유통되는 HWP5(OLE)
+    // 실체 파일(정부 보도자료 계열 다수)은 HWPX 구조 게이트의 범위 밖이다.
+    // 종전 PARSE_FAIL("ZIP EOCD") 오분류를 FORMAT_SKIP 으로 정정하고 실체와
+    // 올바른 게이트를 안내한다. Unknown(빈 파일/DRM 래퍼 등)은 종전대로
+    // 파싱 실패가 정당하므로 그대로 진행한다.
+    if let Some(actual) = detected_format_name(crate::parser::detect_format(&bytes)) {
+        row.format_skip = Some(actual);
+        row.error = format!(
+            "확장자 위장: 실체 {actual} — HWPX 게이트 범위 밖 (HWP5 는 hwp5-roundtrip 사용)"
+        );
+        return finish(row, started);
+    }
+
     let doc1 = match parse_hwpx(&bytes) {
         Ok(d) => d,
         Err(e) => {
+            // [#1946] 암호화 HWPX 는 게이트 범위 밖 — PARSE_FAIL 대신 ENCRYPTED_SKIP.
+            if e.is_encrypted() {
+                row.encrypted_skip = true;
+            }
             row.error = format!("파싱 실패: {e}");
             return finish(row, started);
         }
@@ -367,6 +413,7 @@ fn print_summary(rows: &[RoundtripRow]) {
     println!("  PKG_FAIL       : {}", count("PKG_FAIL"));
     println!("  ROUND2_DIFF    : {}", count("ROUND2_DIFF"));
     println!("  ROUND2_FAIL    : {}", count("ROUND2_FAIL"));
+    println!("  ENCRYPTED_SKIP : {}", count("ENCRYPTED_SKIP"));
     println!("  PARSE_FAIL     : {}", count("PARSE_FAIL"));
     println!("  SERIALIZE_FAIL : {}", count("SERIALIZE_FAIL"));
     println!("  REPARSE_FAIL   : {}", count("REPARSE_FAIL"));

@@ -8,6 +8,7 @@ export class ViewportManager {
   private zoom = 1.0;
   private container: HTMLElement | null = null;
   private resizeObserver: ResizeObserver | null = null;
+  private scrollAnimationFrame: number | null = null;
   private onScrollBound: () => void;
   private onWheelBound: (e: WheelEvent) => void;
 
@@ -39,6 +40,10 @@ export class ViewportManager {
     }
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
+    if (this.scrollAnimationFrame !== null) {
+      cancelAnimationFrame(this.scrollAnimationFrame);
+      this.scrollAnimationFrame = null;
+    }
     this.container = null;
   }
 
@@ -46,7 +51,13 @@ export class ViewportManager {
     if (!this.container) return;
     this.scrollY = this.container.scrollTop;
     this.scrollX = this.container.scrollLeft;
-    this.eventBus.emit('viewport-scroll', this.scrollY, this.scrollX);
+    if (this.scrollAnimationFrame !== null) return;
+
+    // 스크롤 중에는 최신 좌표만 다음 프레임에 반영해 렌더가 입력 이벤트를 막지 않게 한다.
+    this.scrollAnimationFrame = requestAnimationFrame(() => {
+      this.scrollAnimationFrame = null;
+      this.eventBus.emit('viewport-scroll', this.scrollY, this.scrollX);
+    });
   }
 
   /** Ctrl+휠: 브라우저 줌 대신 문서 줌 */

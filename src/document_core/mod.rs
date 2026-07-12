@@ -57,6 +57,15 @@ pub struct DocumentCore {
     pub(crate) styles: ResolvedStyleSet,
     /// 구역별 구성된 문단 목록
     pub(crate) composed: Vec<Vec<ComposedParagraph>>,
+    /// [#2004] 부동(tac=false) 전면 이미지 스택을 인라인(tac=true)으로 재분류한 render-전용
+    /// 문단/구성. 섹션별 Some 이면 pagination·layout 이 원본 대신 이 정규화본을 사용한다.
+    /// **원본 `document` 는 무손상** → 직렬화(save) 정합 유지. paginate 시 재계산.
+    pub(crate) render_normalized: Vec<
+        Option<(
+            Vec<crate::model::paragraph::Paragraph>,
+            Vec<ComposedParagraph>,
+        )>,
+    >,
     /// DPI
     pub(crate) dpi: f64,
     /// 대체 폰트 경로
@@ -124,6 +133,16 @@ pub struct DocumentCore {
     /// `from_bytes` 에서 자동 생성되며, 사용자 고지·선택적 reflow 에 사용 (#177).
     pub(crate) validation_report: validation::ValidationReport,
 }
+
+/// `DocumentCore` 는 스레드 경계 너머로 소유될 수 있어야 한다 — native 소비자(MCP 서버,
+/// 워커 풀)가 `Mutex<DocumentCore>` 를 다른 스레드로 보낸다. 내부 캐시 어딘가에 `Rc` 나
+/// 다른 `!Send` 타입이 들어오면 이 단언이 컴파일 타임에 깨진다.
+/// 내부 가변성(`Cell`/`RefCell`)은 `!Sync` 만 만들 뿐 `Send` 는 유지하므로 여기서 의도대로 통과한다.
+#[cfg(not(target_arch = "wasm32"))]
+const _: () = {
+    const fn assert_send<T: Send>() {}
+    assert_send::<DocumentCore>();
+};
 
 /// 활성 필드 위치 정보
 #[derive(Debug, Clone, PartialEq)]
@@ -229,6 +248,7 @@ impl DocumentCore {
             pagination: Vec::new(),
             styles: ResolvedStyleSet::default(),
             composed: Vec::new(),
+            render_normalized: Vec::new(),
             dpi: DEFAULT_DPI,
             fallback_font: DEFAULT_FALLBACK_FONT.to_string(),
             layout_engine: LayoutEngine::new(DEFAULT_DPI),

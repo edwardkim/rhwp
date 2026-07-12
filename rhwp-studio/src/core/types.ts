@@ -183,6 +183,10 @@ export interface CursorRect {
   x: number;
   y: number;
   height: number;
+  /** 표 셀 내부 커서일 때만 제공되는 가시 셀 bbox */
+  cellBounds?: { x: number; y: number; w: number; h: number };
+  /** 원래 TextRun 좌표가 셀 bbox를 벗어나 보정됐는지 여부 */
+  cellOverflowed?: boolean;
 }
 
 /** WASM hitTest() 반환 타입 */
@@ -539,7 +543,7 @@ export interface NoteControlRef {
 }
 
 export interface ControlLayoutItem {
-  type: 'table' | 'image' | 'shape' | 'equation' | 'group' | 'line';
+  type: 'table' | 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole';
   x: number;
   y: number;
   w: number;
@@ -574,7 +578,7 @@ export interface ObjectRef {
   sec: number;
   ppi: number;
   ci: number;
-  type: 'image' | 'shape' | 'equation' | 'group' | 'line';
+  type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole';
   /** 표 셀 내 수식인 경우: 셀 인덱스 */
   cellIdx?: number;
   /** 표 셀 내 수식인 경우: 셀 내 문단 인덱스 */
@@ -1008,11 +1012,15 @@ export interface LayerTextRunOp {
   type: 'textRun';
   bbox: LayerBounds;
   text: string;
+  displayText?: string;
+  /** Run-local baseline offset from bbox.y when placement is absent. */
   baseline?: number;
   rotation?: number;
   isVertical?: boolean;
   style?: LayerTextStyle;
+  placement?: { runToPage?: LayerAffineTransform; baselineY?: number };
   positions?: number[];
+  displayPositions?: number[];
 }
 
 export interface LayerFootnoteMarkerOp {

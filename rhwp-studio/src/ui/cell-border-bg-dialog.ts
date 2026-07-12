@@ -2,6 +2,7 @@ import { ModalDialog } from './dialog';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { CellBbox, CellProperties } from '@/core/types';
 import type { EventBus } from '@/core/event-bus';
+import type { CommandServices } from '@/command/types';
 
 const HWPUNIT_PER_MM = 7200 / 25.4;
 
@@ -83,6 +84,8 @@ export class CellBorderBgDialog extends ModalDialog {
   private cellIdx: number;
   private applyMode: 'each' | 'asOne';
   private selectionRange: CellRange | null;
+  /** undo 기록 라우팅용 (없으면 wasm 직접 호출 fallback). */
+  private services: CommandServices | undefined;
 
   // 탭 UI
   private tabs: HTMLButtonElement[] = [];
@@ -134,6 +137,7 @@ export class CellBorderBgDialog extends ModalDialog {
     cellIdx: number,
     applyMode: 'each' | 'asOne' = 'each',
     selectionRange: CellRange | null = null,
+    services?: CommandServices,
   ) {
     super('셀 테두리/배경', 460);
     this.wasm = wasm;
@@ -142,6 +146,7 @@ export class CellBorderBgDialog extends ModalDialog {
     this.cellIdx = cellIdx;
     this.applyMode = applyMode;
     this.selectionRange = selectionRange;
+    this.services = services;
   }
 
   show(): void {
@@ -1013,38 +1018,56 @@ export class CellBorderBgDialog extends ModalDialog {
         ? this.diagScopeRadios
         : this.borderScopeRadios;
     const scope = scopeRadios?.find(r => r.checked)?.value ?? 'selected';
-    if (this.applyMode === 'asOne') {
-      const range = scope === 'all'
-        ? (() => {
-          const dims = this.wasm.getTableDimensions(sec, ppi, ci);
-          return {
-            startRow: 0,
-            startCol: 0,
-            endRow: Math.max(0, dims.rowCount - 1),
-            endCol: Math.max(0, dims.colCount - 1),
-          };
-        })()
-        : this.selectionRange;
-      if (range) {
-        this.wasm.setCellZoneProperties(sec, ppi, ci, range, newProps as Partial<CellProperties>);
+    const applyProps = () => {
+      if (this.applyMode === 'asOne') {
+        const range = scope === 'all'
+          ? (() => {
+            const dims = this.wasm.getTableDimensions(sec, ppi, ci);
+            return {
+              startRow: 0,
+              startCol: 0,
+              endRow: Math.max(0, dims.rowCount - 1),
+              endCol: Math.max(0, dims.colCount - 1),
+            };
+          })()
+          : this.selectionRange;
+        if (range) {
+          this.wasm.setCellZoneProperties(sec, ppi, ci, range, newProps as Partial<CellProperties>);
+        } else {
+          this.wasm.setCellProperties(sec, ppi, ci, this.cellIdx, newProps as Partial<CellProperties>);
+        }
+      } else if (scope === 'all') {
+        const dims = this.wasm.getTableDimensions(sec, ppi, ci);
+        for (let i = 0; i < dims.cellCount; i++) {
+          this.wasm.setCellProperties(sec, ppi, ci, i, newProps as Partial<CellProperties>);
+        }
+      } else if (this.selectionRange) {
+        const cellIndices = this.selectedCellIndicesForRange(this.selectionRange);
+        const targetIndices = cellIndices.length > 0 ? cellIndices : [this.cellIdx];
+        for (const cellIdx of targetIndices) {
+          this.wasm.setCellProperties(sec, ppi, ci, cellIdx, newProps as Partial<CellProperties>);
+        }
       } else {
         this.wasm.setCellProperties(sec, ppi, ci, this.cellIdx, newProps as Partial<CellProperties>);
       }
-    } else if (scope === 'all') {
-      const dims = this.wasm.getTableDimensions(sec, ppi, ci);
-      for (let i = 0; i < dims.cellCount; i++) {
-        this.wasm.setCellProperties(sec, ppi, ci, i, newProps as Partial<CellProperties>);
-      }
-    } else if (this.selectionRange) {
-      const cellIndices = this.selectedCellIndicesForRange(this.selectionRange);
-      const targetIndices = cellIndices.length > 0 ? cellIndices : [this.cellIdx];
-      for (const cellIdx of targetIndices) {
-        this.wasm.setCellProperties(sec, ppi, ci, cellIdx, newProps as Partial<CellProperties>);
-      }
+    };
+    // 셀 테두리/배경 일괄 적용도 undo 대상이다 — 편집 라우터를 통과시켜
+    // 스냅샷 하나로 기록한다 (#1320 계약, picture-props-dialog(#2027)와 동일
+    // 패턴). services 미주입 환경에서만 직접 적용 fallback.
+    const ih = this.services?.getInputHandler();
+    if (ih) {
+      ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'objectProps',
+        operation: () => {
+          applyProps();
+          return ih.getCursorPosition();
+        },
+      });
     } else {
-      this.wasm.setCellProperties(sec, ppi, ci, this.cellIdx, newProps as Partial<CellProperties>);
+      applyProps();
+      this.eventBus.emit('document-changed');
     }
-    this.eventBus.emit('document-changed');
   }
 
   // ─── DOM 헬퍼 ────────────────────────────────

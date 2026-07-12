@@ -53,6 +53,13 @@ function hwpSaveCurrentHandle(
   return handle;
 }
 
+function flushDeferredPaginationBeforeExplicitOutput(
+  services: CommandServices,
+  reason: string,
+): void {
+  services.getInputHandler()?.flushDeferredPaginationIfNeeded(reason);
+}
+
 /**
  * 출력 포맷을 명시 받아 "다른 이름으로 저장"한다 (#1613).
  *
@@ -63,6 +70,7 @@ function hwpSaveCurrentHandle(
  */
 async function saveAsFormat(services: CommandServices, isHwpx: boolean): Promise<void> {
   try {
+    flushDeferredPaginationBeforeExplicitOutput(services, 'save-as');
     const saveName = saveFileNameFor(services.wasm.fileName, isHwpx);
     const bytes = isHwpx ? services.wasm.exportHwpx() : services.wasm.exportHwp();
     const blob = new Blob([bytes as unknown as BlobPart], {
@@ -118,6 +126,7 @@ export type SaveCurrentDocumentResult = 'saved' | 'cancelled' | 'failed' | 'unsu
 
 export async function saveCurrentDocument(services: CommandServices): Promise<SaveCurrentDocumentResult> {
   try {
+    flushDeferredPaginationBeforeExplicitOutput(services, 'save');
     const saveName = services.wasm.fileName;
     const sourceFormat = services.wasm.getSourceFormat();
     const isHwpx = sourceFormat === 'hwpx';
@@ -346,6 +355,7 @@ export const fileCommands: CommandDef[] = [
     shortcutLabel: 'Ctrl+P',
     canExecute: (ctx) => ctx.hasDocument,
     async execute(services) {
+      flushDeferredPaginationBeforeExplicitOutput(services, 'print');
       const wasm = services.wasm;
       const pageCount = wasm.pageCount;
       if (pageCount === 0) return;

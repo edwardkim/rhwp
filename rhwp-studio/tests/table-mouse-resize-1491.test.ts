@@ -37,6 +37,15 @@ function generalTableResizeMouseDownBlock(): string {
   return mouse.slice(start, end);
 }
 
+function resolveTableResizeHitBlock(): string {
+  const mouse = source('src/engine/input-handler-mouse.ts');
+  const start = mouse.indexOf('function resolveTableResizeHit');
+  assert.notEqual(start, -1, 'resolveTableResizeHit not found');
+  const end = mouse.indexOf('\nfunction updateCellSelectionDrag', start);
+  assert.notEqual(end, -1, 'resolveTableResizeHit end not found');
+  return mouse.slice(start, end);
+}
+
 function hitTestBorderBlock(): string {
   const renderer = source('src/engine/table-resize-renderer.ts');
   const start = renderer.indexOf('hitTestBorder(');
@@ -94,19 +103,16 @@ test('표 경계 hover는 hitTest 실패 시 직전 bbox 캐시로 경계선을 
   assert.match(block, /hitTestBorder\(pageX,\s*pageY,\s*pageBboxes\)/, 'fallback도 경계선 hitTest를 사용해야 함');
 });
 
-test('표 경계 mousedown은 hover 캐시가 없어도 현재 좌표에서 table bbox를 복구한다', () => {
-  const mouse = source('src/engine/input-handler-mouse.ts');
+test('표 경계 mousedown은 hover 캐시가 없으면 새 table bbox를 만들지 않는다', () => {
+  const helper = resolveTableResizeHitBlock();
   const block = generalTableResizeMouseDownBlock();
 
-  assert.match(mouse, /function resolveTableResizeHit/, 'mousedown 전용 table resize hit 복구 helper 필요');
-  assert.match(mouse, /self\.wasm\.hitTest\(pageIdx,\s*pageX,\s*pageY\)/, '셀 내부 hitTest로 table ref를 복구해야 함');
-  assert.match(mouse, /self\.wasm\.getPageControlLayout\(pageIdx\)/, '경계선 위 hitTest 실패 시 layout fallback이 필요');
+  assert.match(helper, /function resolveTableResizeHit/, 'mousedown 전용 table resize hit helper 필요');
+  assert.match(helper, /self\.cachedCellBboxes/, 'mousedown resize는 기존 bbox 캐시만 사용해야 함');
+  assert.doesNotMatch(helper, /self\.wasm\.hitTest\(pageIdx,\s*pageX,\s*pageY\)/, '일반 mousedown에서 표 hitTest 기반 cold lookup 금지');
+  assert.doesNotMatch(helper, /self\.wasm\.getTableCellBboxes/, '일반 mousedown에서 table bbox 생성 금지');
+  assert.doesNotMatch(helper, /self\.wasm\.getPageControlLayout\(pageIdx\)/, '일반 mousedown에서 layout fallback 기반 cold lookup 금지');
   assert.match(block, /const resizeHit = resolveTableResizeHit\(this,\s*pageIdx,\s*pageX,\s*pageY\);/, '일반 mousedown resize는 helper를 사용해야 함');
-  assert.doesNotMatch(
-    block,
-    /this\.tableResizeRenderer && this\.cachedCellBboxes && this\.cachedTableRef/,
-    'hover 캐시가 없다는 이유로 mousedown resize를 포기하면 안 됨',
-  );
 });
 
 test('표 경계 hitTest는 교차점에서 행 경계 선반환으로 컬럼 resize를 막지 않는다', () => {

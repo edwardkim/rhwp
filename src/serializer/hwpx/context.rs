@@ -68,12 +68,15 @@ impl<T: Copy + Eq + std::hash::Hash> IdPool<T> {
 pub struct BinDataEntry {
     /// content.hpf 의 `opf:item id` (예: "image1")
     pub manifest_id: String,
-    /// ZIP 엔트리 경로 (예: "BinData/image1.png")
+    /// ZIP 엔트리 경로 (예: "BinData/image1.png") 또는 외부 참조 원본 경로
+    /// (`is_embedded=false`, 예: `D:\다운로드\...`)
     pub href: String,
     /// MIME 타입 (예: "image/png")
     pub media_type: String,
     /// IR 상의 bin_data_id (storage_id) — 매핑 역추적용
     pub bin_data_id: u16,
+    /// content.hpf `isEmbeded` — false 면 외부 파일 참조(ZIP 엔트리 없음, #1891).
+    pub is_embedded: bool,
 }
 
 /// 1-pass 스캔으로 구축되는 직렬화 컨텍스트.
@@ -161,14 +164,18 @@ impl SerializeContext {
             }
         }
 
-        // BinData: bin_data_content의 storage_id → manifest 엔트리 생성
-        for (i, bd) in doc.bin_data_content.iter().enumerate() {
-            let ext = if bd.extension.is_empty() {
-                "bin"
-            } else {
-                bd.extension.as_str()
-            };
-            let manifest_id = format!("image{}", i + 1);
+        // BinData: bin_data_content의 storage_id → manifest 엔트리 생성.
+        // manifest id 는 반드시 `image{bin_data_id}` — HWPX 파서(section.rs)가
+        // binaryItemIDRef 의 숫자를 그대로 bin_data_id 로 파싱하므로(숫자 불변식),
+        // 순번(i+1) 명명은 링크 항목으로 id 에 구멍이 있는 문서(#1891 73504)에서
+        // 이름과 id 가 어긋나 재파스 그림 참조가 엉킨다.
+        for bd in doc.bin_data_content.iter() {
+            // 빈 확장자는 원본과 동일하게 확장자 없이(`image{id}.`) 재직렬화한다.
+            // 예전엔 `.bin` 기본값을 붙였으나(#1981), 원본이 확장자 없는 BinData
+            // (`BinData/image13.` 등, OLE·미상 임베드)를 담은 경우 라운드트립 확장자
+            // 멀티셋이 `bin` vs `""` 로 어긋나 PKG_FAIL 이 났다. 원본 형태를 보존한다.
+            let manifest_id = format!("image{}", bd.id);
+            let ext = bd.extension.as_str();
             let href = format!("BinData/{}.{}", manifest_id, ext);
             let media_type = mime_from_ext(ext);
             ctx.bin_data_map.insert(
@@ -178,6 +185,34 @@ impl SerializeContext {
                     href,
                     media_type: media_type.to_string(),
                     bin_data_id: bd.id,
+                    is_embedded: true,
+                },
+            );
+        }
+
+        // 외부 참조(Link) BinData: 콘텐츠가 없어도 manifest 항목과 참조는 보존해야
+        // 한다 (#1891 — 미등록이면 해당 <hp:pic> 직렬화가 실패해 그림 컨트롤이
+        // 통째로 드롭되고 레이아웃 앵커가 사라져 렌더가 갈라진다). ZIP 엔트리는
+        // 만들지 않고 content.hpf 에 isEmbeded="0" + 원본 href 로만 방출한다.
+        // 명명은 위와 같은 숫자 불변식(`image{storage_id}`)을 따른다.
+        for bd in &doc.doc_info.bin_data_list {
+            if !matches!(bd.data_type, crate::model::bin_data::BinDataType::Link) {
+                continue;
+            }
+            // storage_id=0 은 "참조 없는 placeholder pic" 센티널(#1567)과 겹치므로
+            // 등록하지 않는다 (HWP5 Link 항목은 storage_id 미부여일 수 있음).
+            if bd.storage_id == 0 || ctx.bin_data_map.contains_key(&bd.storage_id) {
+                continue;
+            }
+            let ext = bd.extension.as_deref().unwrap_or("");
+            ctx.bin_data_map.insert(
+                bd.storage_id,
+                BinDataEntry {
+                    manifest_id: format!("image{}", bd.storage_id),
+                    href: bd.abs_path.clone().unwrap_or_default(),
+                    media_type: mime_from_ext(ext).to_string(),
+                    bin_data_id: bd.storage_id,
+                    is_embedded: false,
                 },
             );
         }
@@ -242,6 +277,21 @@ impl SerializeContext {
         let id = self.para_id_counter;
         self.para_id_counter += 1;
         id
+    }
+
+    /// [Issue #1933] 스타일 목록 밖 styleIDRef 를 기본 스타일(0)로 강등한다.
+    ///
+    /// 일부 생성기 산출물(보도자료 계열)은 header 스타일 목록에 없는 style_id 를
+    /// 문단이 참조한다(파일 자기모순). 종전에는 `assert_all_refs_resolved` 가
+    /// 하드 실패해 "열리는데 저장 불가" 상태가 됐다. 한글은 이런 문서를 기본
+    /// 스타일로 폴백해 열고 저장하므로, 미등록 참조는 0(항상 등록됨)으로 강등한다.
+    /// 등록된 참조는 그대로 반환한다.
+    pub fn effective_style_id(&self, raw: u8) -> u8 {
+        if self.style_ids.is_registered(&(raw as u16)) {
+            raw
+        } else {
+            0
+        }
     }
 }
 
@@ -311,6 +361,30 @@ mod tests {
             !ctx.numbering_ids.is_registered(&0),
             "0 은 1-based 축에 없음 (회귀 가드)"
         );
+    }
+
+    #[test]
+    fn issue1981_empty_extension_bindata_keeps_no_ext() {
+        // 빈 확장자 BinData 는 `.bin` 을 붙이지 않고 원본 형태(`image{id}.`)로
+        // 재직렬화해야 한다 — 라운드트립 확장자 멀티셋 보존(#1981).
+        use crate::model::bin_data::BinDataContent;
+        let mut doc = Document::default();
+        doc.bin_data_content.push(BinDataContent {
+            id: 6,
+            data: vec![0, 1, 2],
+            extension: String::new(),
+        });
+        doc.bin_data_content.push(BinDataContent {
+            id: 7,
+            data: vec![3, 4, 5],
+            extension: "bmp".to_string(),
+        });
+        let ctx = SerializeContext::collect_from_document(&doc);
+        let e6 = &ctx.bin_data_map[&6];
+        assert_eq!(e6.href, "BinData/image6.", "빈 확장자는 .bin 금지");
+        assert_eq!(e6.media_type, "application/octet-stream");
+        let e7 = &ctx.bin_data_map[&7];
+        assert_eq!(e7.href, "BinData/image7.bmp");
     }
 
     #[test]

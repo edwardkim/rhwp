@@ -11,7 +11,7 @@
  */
 
 import { REGISTERED_FONTS } from './font-loader.ts';
-import { getDetectedLocalFonts } from './local-fonts.ts';
+import { resolveLocalFont } from './local-fonts.ts';
 
 // 치환 엔트리: [원본폰트, 원본타입, 대체폰트, 대체타입]
 // 타입: 1=TTF, 2=HFT
@@ -302,7 +302,7 @@ export function fontFamilyWithFallback(fontName: string): string {
  * 문서 원본 글꼴명을 보존하면서 표시/측정용 CSS font-family chain을 만든다.
  *
  * 순서:
- *   1. rhwp 웹폰트 또는 감지 승인 후 확인된 문서 원본 글꼴명
+ *   1. rhwp 웹폰트 또는 감지 승인 후 확인된 로컬 글꼴의 canonical CSS family
  *   2. rhwp 웹 대체 글꼴명(resolveFont 결과)
  *   3. OS/system fallback
  *   4. generic fallback
@@ -316,16 +316,21 @@ export function fontFamilyChainForDisplay(
   if (!fontName || GENERIC_FONTS.has(fontName)) return fontName;
 
   const families: string[] = [];
-  const confirmedLocalFonts = options.confirmedLocalFonts ?? getDetectedLocalFonts();
+  const confirmedLocalFonts = options.confirmedLocalFonts ?? [];
   const confirmedLocalFontSet = new Set(
     confirmedLocalFonts.map(name => name.toLocaleLowerCase('en-US')),
   );
+  const localRecord = options.confirmedLocalFonts === undefined
+    ? resolveLocalFont(fontName)
+    : null;
   const originalAllowed =
     options.includeUnconfirmedOriginal === true ||
     REGISTERED_FONTS.has(fontName) ||
     confirmedLocalFontSet.has(fontName.toLocaleLowerCase('en-US'));
 
-  if (originalAllowed) {
+  if (localRecord) {
+    pushUniqueFontFamily(families, localRecord.family);
+  } else if (originalAllowed) {
     pushUniqueFontFamily(families, fontName);
   }
 

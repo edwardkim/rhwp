@@ -469,6 +469,14 @@ impl Paginator {
                 }
             }
 
+            // [#1956] 명시적 쪽나누기 문단부터는 wrap 밴드 무효 — 새 쪽에는 anchor
+            // 개체가 없으므로 후속 문단을 옆에 흡수하면 안 된다 (typeset.rs 동형).
+            if (force_page_break || para_style_break) && wrap_around_cs >= 0 {
+                wrap_around_cs = -1;
+                wrap_around_sw = -1;
+                wrap_around_any_seg = false;
+            }
+
             if (force_page_break || para_style_break || variant_vpos_reset_break)
                 && !st.current_items.is_empty()
             {
@@ -827,14 +835,23 @@ impl Paginator {
                 if is_wrap_around {
                     // 어울림 배치: 표의 LINE_SEG (cs, sw) 쌍과 동일한 후속 문단은
                     // 표 옆에 배치되므로 높이를 소비하지 않음
-                    wrap_around_cs = para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
-                    wrap_around_sw = para
+                    let anchor_cs = para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
+                    let anchor_sw = para
                         .line_segs
                         .first()
                         .map(|s| s.segment_width as i32)
                         .unwrap_or(0);
-                    wrap_around_table_para = para_idx;
-                    wrap_around_any_seg = false;
+                    // [#1956] 밴드 폭이 단 폭과 사실상 같으면(표가 본문 폭 이상 =
+                    // 옆 공간 없음) 후속 전체 폭 문단들이 전부 오매칭되므로 arming
+                    // 하지 않는다. sw=0 케이스는 기존 sw0_match 경로가 담당.
+                    let col_w_hu = st.layout.column_width_hu();
+                    let band_full_width = anchor_sw > 0 && (anchor_sw - col_w_hu).abs() < 3000;
+                    if !band_full_width {
+                        wrap_around_cs = anchor_cs;
+                        wrap_around_sw = anchor_sw;
+                        wrap_around_table_para = para_idx;
+                        wrap_around_any_seg = false;
+                    }
                 }
             }
             // 비-TAC Picture Square wrap (어울림 그림): TABLE wrap과 동일 메커니즘.
@@ -865,7 +882,11 @@ impl Paginator {
                     .first()
                     .map(|s| s.segment_width as i32)
                     .unwrap_or(0);
-                if anchor_cs > 0 || anchor_sw > 0 {
+                // [#1956] 표와 동일한 전체 폭 밴드 가드 — 옆 공간이 없는 그림은
+                // 후속 문단을 옆으로 흘릴 수 없다.
+                let col_w_hu = st.layout.column_width_hu();
+                let band_full_width = anchor_sw > 0 && (anchor_sw - col_w_hu).abs() < 3000;
+                if (anchor_cs > 0 || anchor_sw > 0) && !band_full_width {
                     wrap_around_cs = anchor_cs;
                     wrap_around_sw = anchor_sw;
                     wrap_around_table_para = para_idx;
@@ -1003,6 +1024,7 @@ impl Paginator {
             wrap_around_paras: all_wrap_around_paras,
             hidden_empty_paras,
             pre_emitted_host_paras: std::collections::HashSet::new(),
+            pre_emitted_host_heights: std::collections::HashMap::new(),
             endnotes: Vec::new(),
             endnote_paragraphs: Vec::new(),
             endnote_para_sources: Vec::new(),
@@ -1632,12 +1654,18 @@ impl Paginator {
         for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
             match ctrl {
                 Control::Table(table) => {
-                    // 글앞으로 / 글뒤로: Shape처럼 취급 — 공간 차지 없음
-                    if matches!(
-                        table.common.text_wrap,
-                        crate::model::shape::TextWrap::InFrontOfText
-                            | crate::model::shape::TextWrap::BehindText
-                    ) {
+                    // 글앞으로 / 글뒤로: Shape처럼 취급 — 공간 차지 없음.
+                    // 단, treat_as_char(글자처럼 취급) 표는 인라인이므로 wrap 설정과
+                    // 무관하게 높이를 예약해야 한다(한컴 의미론). #1995: 전체폭 단일셀
+                    // 콜아웃 박스가 글앞으로로 저장돼도 흐름 높이를 차지해야 후속
+                    // 문단이 박스 위로 겹치지 않는다.
+                    if !table.common.treat_as_char
+                        && matches!(
+                            table.common.text_wrap,
+                            crate::model::shape::TextWrap::InFrontOfText
+                                | crate::model::shape::TextWrap::BehindText
+                        )
+                    {
                         st.current_items.push(PageItem::Shape {
                             para_index: para_idx,
                             control_index: ctrl_idx,

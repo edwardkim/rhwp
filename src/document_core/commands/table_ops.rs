@@ -662,7 +662,7 @@ impl DocumentCore {
         Some(zone_border_fill_id.unwrap_or(cell.border_fill_id))
     }
 
-    pub fn get_cell_properties_native(
+    pub(crate) fn get_cell_properties_native(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -753,7 +753,7 @@ impl DocumentCore {
     }
 
     /// 셀 속성을 수정한다 (네이티브).
-    pub fn set_cell_properties_native(
+    pub(crate) fn set_cell_properties_native(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -896,41 +896,9 @@ impl DocumentCore {
             }
         }
 
-        // BorderFill 변경: 테두리(borderLeft 등) 또는 배경 채우기(fillColor/BackgroundColor/
-        // fillType)가 요청에 포함된 경우 처리한다.
-        //
-        // HWP에서 셀 배경색은 셀의 직접 필드가 아니라, 셀의 border_fill_id가 가리키는
-        // BorderFill 레코드의 fill 정보다. 따라서 색을 칠하려면 해당 셀의 현재 BorderFill을
-        // 복제해 (테두리·3D효과 보존) fill만 교체한 새 BorderFill을 만들어 셀에 배정해야 한다.
-        // 공유 BorderFill(예: id=3)을 제자리에서 수정하면 모든 셀이 함께 칠해지므로 금지.
-        let has_border = json.contains("\"borderLeft\"")
-            || json.contains("\"borderRight\"")
-            || json.contains("\"borderTop\"")
-            || json.contains("\"borderBottom\"");
-        let has_fill = json.contains("\"fillColor\"")
-            || json.contains("\"BackgroundColor\"")
-            || json.contains("\"fillType\"");
-        // patch 형 요청 (borderFillId·diagonal·centerLine 없음, agent flow): 셀의 현재
-        // BorderFill 을 복제해 요청 키만 덮어쓴다. borderFillId 를 동반한 dialog 형 요청과
-        // diagonal/centerLine 변경은 upstream 경로 (normalize + create) 로 처리.
-        let is_patch_request = top_u32("borderFillId").unwrap_or(0) == 0
-            && !json.contains("\"diagonal")
-            && !json.contains("\"centerLine\"");
-        if has_border_fill_change || (is_patch_request && (has_border || has_fill)) {
-            let new_bf_id = if is_patch_request {
-                // 셀의 현재 BorderFill을 복제 후 요청 내용을 덮어쓴 새 BorderFill의 id를 만든다.
-                let old_bf_id = {
-                    let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-                    let cell = table.cells.get(cell_idx).ok_or_else(|| {
-                        HwpError::RenderError(format!("셀 인덱스 {} 범위 초과", cell_idx))
-                    })?;
-                    cell.border_fill_id
-                };
-                self.derive_cell_border_fill(old_bf_id, json, has_border, has_fill)
-            } else {
-                let border_fill_json = cell_border_fill_json.as_deref().unwrap_or(json);
-                self.create_border_fill_from_json(border_fill_json)
-            };
+        if has_border_fill_change {
+            let border_fill_json = cell_border_fill_json.as_deref().unwrap_or(json);
+            let new_bf_id = self.create_border_fill_from_json(border_fill_json);
             let new_bf_has_cell_diagonal = self
                 .document
                 .doc_info
@@ -985,21 +953,19 @@ impl DocumentCore {
                 )
             };
 
-            // 테두리가 변경된 경우에만 이웃 셀의 공유 엣지 테두리를 갱신
+            // 이웃 셀의 공유 엣지 테두리를 갱신
             // borders 배열: [좌(0), 우(1), 상(2), 하(3)]
-            if has_border {
-                self.update_neighbor_borders(
-                    section_idx,
-                    parent_para_idx,
-                    control_idx,
-                    cell_idx,
-                    target_row,
-                    target_col,
-                    target_col_span,
-                    target_row_span,
-                    &new_borders,
-                );
-            }
+            self.update_neighbor_borders(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                target_row,
+                target_col,
+                target_col_span,
+                target_row_span,
+                &new_borders,
+            );
         }
 
         self.document.sections[section_idx].raw_stream = None;
@@ -1007,108 +973,6 @@ impl DocumentCore {
         self.paginate_if_needed();
 
         Ok("{\"ok\":true}".to_string())
-    }
-
-    /// 셀의 현재 BorderFill(`old_bf_id`)을 복제한 뒤, JSON으로 요청된 테두리/채우기만
-    /// 덮어써서 새 BorderFill을 doc_info에 등록하고 그 id(1-based)를 반환한다.
-    ///
-    /// - 기존 BorderFill을 복제하므로 변경하지 않은 테두리·대각선·3D효과(attr)는 보존된다.
-    /// - 공유 BorderFill을 제자리 수정하지 않으므로 다른 셀에 영향이 없다.
-    /// - 동일한 BorderFill이 이미 있으면 중복 추가 없이 그 id를 재사용한다.
-    ///
-    /// 채우기 prop:
-    /// - `fillColor` 또는 별칭 `BackgroundColor`(에이전트/`@cell_props` 호환)로 색 지정
-    /// - 색이 주어지면 `fillType`은 기본 `solid`
-    /// - `fillType:"none"`이면 채우기를 제거
-    fn derive_cell_border_fill(
-        &mut self,
-        old_bf_id: u16,
-        json: &str,
-        has_border: bool,
-        has_fill: bool,
-    ) -> u16 {
-        use super::super::helpers::{
-            border_fills_equal, css_color_to_bgr, json_color, json_i32, json_object, json_str,
-            u8_to_border_line_type,
-        };
-        use crate::model::style::{BorderFill, Fill, FillType, SolidFill};
-
-        // 베이스: 셀의 현재 BorderFill 복제 (없으면 기본값)
-        let mut bf: BorderFill = old_bf_id
-            .checked_sub(1)
-            .and_then(|idx| self.document.doc_info.border_fills.get(idx as usize))
-            .cloned()
-            .unwrap_or_default();
-        // raw_data는 원본 바이트 라운드트립용 — 수정했으므로 무효화해 재직렬화 유도
-        bf.raw_data = None;
-
-        // 테두리 덮어쓰기 (지정된 방향만)
-        if has_border {
-            let dir_keys = ["borderLeft", "borderRight", "borderTop", "borderBottom"];
-            for (i, key) in dir_keys.iter().enumerate() {
-                if let Some(obj_str) = json_object(json, key) {
-                    let type_val = json_i32(&obj_str, "type").unwrap_or(0);
-                    bf.borders[i].line_type = u8_to_border_line_type(type_val as u8);
-                    bf.borders[i].width = json_i32(&obj_str, "width").unwrap_or(0) as u8;
-                    bf.borders[i].color = json_color(&obj_str, "color").unwrap_or(0);
-                }
-            }
-        }
-
-        // 채우기 덮어쓰기
-        if has_fill {
-            // 색 별칭: fillColor 우선, 없으면 BackgroundColor
-            let fill_color = json_str(json, "fillColor")
-                .or_else(|| json_str(json, "BackgroundColor"))
-                .and_then(|css| css_color_to_bgr(&css));
-            // fillType: 명시값 우선, 없고 색이 주어지면 solid 기본
-            let fill_type_str = json_str(json, "fillType");
-            let want_solid = match fill_type_str.as_deref() {
-                Some("solid") => true,
-                Some("none") => false,
-                Some(_) => fill_color.is_some(),
-                None => fill_color.is_some(),
-            };
-
-            if want_solid {
-                // 기존 solid 채우기가 있으면 그 무늬 정보를 보존
-                let existing = bf.fill.solid.unwrap_or_default();
-                let bg = fill_color.unwrap_or(existing.background_color);
-                let pat_c = json_color(json, "patternColor").unwrap_or(existing.pattern_color);
-                let pat_t = json_i32(json, "patternType")
-                    .map(|v| v as i32)
-                    .unwrap_or(existing.pattern_type);
-                bf.fill = Fill {
-                    fill_type: FillType::Solid,
-                    solid: Some(SolidFill {
-                        background_color: bg,
-                        pattern_color: pat_c,
-                        pattern_type: pat_t,
-                    }),
-                    ..Default::default()
-                };
-            } else {
-                // fillType:"none" → 채우기 제거
-                bf.fill = Fill::default();
-            }
-        }
-
-        // 동일한 BorderFill 검색/추가
-        if let Some((i, _)) = self
-            .document
-            .doc_info
-            .border_fills
-            .iter()
-            .enumerate()
-            .find(|(_, existing)| border_fills_equal(existing, &bf))
-        {
-            return (i + 1) as u16;
-        }
-        self.document.doc_info.border_fills.push(bf);
-        self.document.doc_info.raw_stream_dirty = true;
-        self.styles =
-            crate::renderer::style_resolver::resolve_styles(&self.document.doc_info, self.dpi);
-        self.document.doc_info.border_fills.len() as u16
     }
 
     fn border_fill_has_cell_diagonal(bf: &crate::model::style::BorderFill) -> bool {
@@ -1971,7 +1835,7 @@ impl DocumentCore {
     }
 
     /// 표 속성을 조회한다 (네이티브).
-    pub fn get_table_properties_native(
+    pub(crate) fn get_table_properties_native(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -2136,7 +2000,7 @@ impl DocumentCore {
     }
 
     /// 표 속성을 수정한다 (네이티브).
-    pub fn set_table_properties_native(
+    pub(crate) fn set_table_properties_native(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -2310,6 +2174,13 @@ impl DocumentCore {
             }
             table.common.attr = table.attr;
         }
+        // attr 비트 변경을 raw_ctrl_data FLAGS(0..4)에도 반영. HWP5 직렬화기
+        // (serialize_table)는 raw_ctrl_data 가 있으면 그대로 기록하므로, 여기
+        // 반영하지 않으면 글자처럼 취급/배치/기준/정렬/쪽영역제한/겹침 변경이
+        // 저장 파일에서 통째로 유실되고 재로드 시 원복된다. V_OFFSET/H_OFFSET/
+        // PREVENT_PAGE_BREAK/MARGIN_* 패치와 동일 규칙 (미변경 시에는 파싱
+        // 원본 attr 를 그대로 다시 쓰는 항등 연산이라 무해).
+        table.raw_ctrl_data[common_obj_offsets::FLAGS].copy_from_slice(&table.attr.to_le_bytes());
         // keepWithAnchor → prevent_page_break
         // CommonObjAttr::PREVENT_PAGE_BREAK (parse_common_obj_attr 정합)
         if let Some(v) = json_bool(json, "keepWithAnchor") {
@@ -2976,5 +2847,97 @@ mod tests {
         assert_eq!(common.width, 9000, "width at [12..16]");
         assert_eq!(common.height, 3000, "height at [16..20]");
         assert_eq!(common.horizontal_offset, 0, "h_offset at [8..12] untouched");
+    }
+}
+
+#[cfg(test)]
+mod table_attr_save_roundtrip_tests {
+    //! 표 배치 속성(attr 비트) 변경의 HWP5 저장 유실 회귀 테스트.
+    //!
+    //! set_table_properties_native 는 글자처럼 취급/배치/기준/정렬/제한/겹침을
+    //! table.attr/common 에만 반영하고 raw_ctrl_data FLAGS(0..4)를 패치하지
+    //! 않았다. HWP5 직렬화기는 raw_ctrl_data 를 그대로 기록하므로(HWP5 에서
+    //! 파싱된 표는 raw 가 항상 보존됨) 변경이 저장 파일에서 통째로 유실되고
+    //! 재로드 시 원복됐다. 화면(getter)은 common 필드로 정상 표시되어
+    //! "소리 없는" 유실이었다.
+
+    use crate::document_core::DocumentCore;
+    use crate::model::control::Control;
+    use crate::model::shape::{TextWrap, VertRelTo};
+
+    const SAMPLE: &str = "samples/calc-cell.hwp";
+
+    fn load() -> DocumentCore {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+        let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {SAMPLE}: {e}"));
+        DocumentCore::from_bytes(&bytes).unwrap_or_else(|e| panic!("load {SAMPLE}: {e}"))
+    }
+
+    fn find_first_table(core: &DocumentCore) -> (usize, usize) {
+        for (pi, para) in core.document().sections[0].paragraphs.iter().enumerate() {
+            for (ci, ctrl) in para.controls.iter().enumerate() {
+                if matches!(ctrl, Control::Table(_)) {
+                    return (pi, ci);
+                }
+            }
+        }
+        panic!("{SAMPLE}: 표 컨트롤이 필요함");
+    }
+
+    fn table_attrs(core: &DocumentCore, pi: usize, ci: usize) -> (bool, TextWrap, bool, VertRelTo) {
+        match &core.document().sections[0].paragraphs[pi].controls[ci] {
+            Control::Table(t) => (
+                t.common.treat_as_char,
+                t.common.text_wrap,
+                t.common.allow_overlap,
+                t.common.vert_rel_to,
+            ),
+            _ => unreachable!(),
+        }
+    }
+
+    #[test]
+    fn table_attr_changes_survive_hwp_save_roundtrip() {
+        let mut core = load();
+        let (pi, ci) = find_first_table(&core);
+        let (orig_tac, orig_wrap, _, _) = table_attrs(&core, pi, ci);
+
+        // 파싱 원본과 반드시 달라지는 값으로 변경
+        let new_tac = !orig_tac;
+        let new_wrap = if matches!(orig_wrap, TextWrap::TopAndBottom) {
+            "Square"
+        } else {
+            "TopAndBottom"
+        };
+        let json = format!(
+            r#"{{"treatAsChar":{new_tac},"textWrap":"{new_wrap}","vertRelTo":"Para","allowOverlap":true}}"#
+        );
+        core.set_table_properties_native(0, pi, ci, &json)
+            .expect("set_table_properties_native");
+
+        // 메모리(IR) 반영 확인
+        let (mem_tac, mem_wrap, mem_overlap, mem_vrel) = table_attrs(&core, pi, ci);
+        assert_eq!(mem_tac, new_tac);
+        assert_eq!(format!("{mem_wrap:?}"), new_wrap);
+        assert!(mem_overlap);
+        assert!(matches!(mem_vrel, VertRelTo::Para));
+
+        // HWP5 저장 → 재로드 후에도 보존되어야 한다.
+        // (수정 전에는 raw_ctrl_data FLAGS 가 파싱 원본 그대로 기록되어 전부 원복)
+        let saved = core.export_hwp_with_adapter().expect("export_hwp");
+        let reloaded = DocumentCore::from_bytes(&saved).expect("재로드");
+        let (pi2, ci2) = find_first_table(&reloaded);
+        let (tac, wrap, overlap, vrel) = table_attrs(&reloaded, pi2, ci2);
+        assert_eq!(tac, new_tac, "treatAsChar 변경이 HWP5 저장에서 유실됨");
+        assert_eq!(
+            format!("{wrap:?}"),
+            new_wrap,
+            "textWrap 변경이 HWP5 저장에서 유실됨"
+        );
+        assert!(overlap, "allowOverlap 변경이 HWP5 저장에서 유실됨");
+        assert!(
+            matches!(vrel, VertRelTo::Para),
+            "vertRelTo 변경이 HWP5 저장에서 유실됨 (실제: {vrel:?})"
+        );
     }
 }

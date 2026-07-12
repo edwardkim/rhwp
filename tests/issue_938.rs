@@ -235,6 +235,30 @@ fn issue_938_overlay_watermark_is_hancom_baked_png() {
         .expect("overlay images");
     let parsed: Value = serde_json::from_str(&json).expect("overlay JSON");
     let behind = parsed["behind"].as_array().expect("behind array");
+    assert_eq!(
+        parsed["hasBehind"], true,
+        "overlay summary must report the behind replay plane without parsing PageLayerTree"
+    );
+    assert!(
+        parsed["hasFront"].as_bool().is_some(),
+        "overlay summary must expose hasFront as a boolean"
+    );
+    assert!(
+        parsed["imageCount"].as_u64().unwrap_or(0) >= behind.len() as u64,
+        "overlay summary imageCount must include at least emitted behind/front images"
+    );
+    assert!(
+        parsed["rawSvgCount"].as_u64().is_some(),
+        "overlay summary must expose rawSvgCount for decode retry decisions"
+    );
+    assert!(
+        parsed["flowImageCount"].as_u64().is_some(),
+        "overlay summary must expose flowImageCount for flow-static split decisions"
+    );
+    assert!(
+        parsed["flowRawSvgCount"].as_u64().is_some(),
+        "overlay summary must expose flowRawSvgCount for flow-static split decisions"
+    );
     let watermark = behind
         .iter()
         .find(|entry| entry.get("watermark").is_some())

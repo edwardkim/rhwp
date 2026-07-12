@@ -9,6 +9,7 @@ use crate::paint::{
     PaintOp, PaintReplayPlane, ResolvedImageKind, ResolvedImagePayload, TextDecorationKind,
     TextVariantKind,
 };
+use crate::renderer::composer::expand_pua_display_text;
 use crate::renderer::layer_renderer::{
     analyze_text_variant_selection, TextVariantSelectionOptions, VariantSelectedReason,
     VariantSelectionBackend,
@@ -646,17 +647,20 @@ fn text_run_transition_detail(run: &TextRunNode) -> Option<&'static str> {
     if run.style.engrave {
         return Some("engraveTextEffect");
     }
-    if run.style.superscript {
-        return Some("superscriptTextEffect");
-    }
-    if run.style.subscript {
-        return Some("subscriptTextEffect");
-    }
     if run.style.shade_color != 0x00FF_FFFF {
         return Some("shadeTextEffect");
     }
     if (run.style.ratio - 1.0).abs() > f64::EPSILON {
         return Some("ratioTextEffect");
+    }
+    if run.style.superscript || run.style.subscript {
+        let display_text = expand_pua_display_text(&run.text);
+        if !display_text
+            .bytes()
+            .all(|byte| (0x20..=0x7e).contains(&byte))
+        {
+            return Some("scriptTextRequiresShaping");
+        }
     }
     None
 }
@@ -790,6 +794,7 @@ mod tests {
     use crate::model::control::FormType;
     use crate::model::style::ImageFillMode;
     use crate::paint::{GroupKind, LayerNode, ResolvedImageKind, ResolvedImagePayload};
+    use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
     use crate::renderer::render_tree::{
         BoundingBox, EquationNode, FootnoteMarkerNode, FormObjectNode, ImageNode,
@@ -1134,9 +1139,7 @@ mod tests {
             PaintOp::equation(bbox(), equation_node()),
             PaintOp::raw_svg(
                 bbox(),
-                RawSvgNode {
-                    svg: "<g><path d=\"M0 0H1\"/></g>".to_string(),
-                },
+                RawSvgNode::new("<g><path d=\"M0 0H1\"/></g>".to_string()),
             ),
         ]);
 
@@ -1179,34 +1182,64 @@ mod tests {
         ]);
 
         let default_plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
-        assert_eq!(default_plan.summary.direct_items, 2);
-        assert_eq!(default_plan.summary.direct_required_items, 3);
+        assert_eq!(default_plan.summary.direct_items, 4);
+        assert_eq!(default_plan.summary.direct_required_items, 1);
         assert_eq!(
             default_plan.items[2].detail.as_deref(),
             Some("verticalText")
         );
-        assert_eq!(
-            default_plan.items[3].detail.as_deref(),
-            Some("superscriptTextEffect")
-        );
-        assert_eq!(
-            default_plan.items[4].detail.as_deref(),
-            Some("subscriptTextEffect")
-        );
+        assert_eq!(default_plan.items[3].status, CanvasKitReplayStatus::Direct);
+        assert_eq!(default_plan.items[4].status, CanvasKitReplayStatus::Direct);
 
         let compat_plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Compat);
-        assert_eq!(compat_plan.summary.direct_items, 2);
-        assert_eq!(compat_plan.summary.direct_required_items, 3);
+        assert_eq!(compat_plan.summary.direct_items, 4);
+        assert_eq!(compat_plan.summary.direct_required_items, 1);
         assert_eq!(compat_plan.summary.compat_overlay_items, 0);
         assert_eq!(compat_plan.items[2].detail.as_deref(), Some("verticalText"));
-        assert_eq!(
-            compat_plan.items[3].detail.as_deref(),
-            Some("superscriptTextEffect")
-        );
-        assert_eq!(
-            compat_plan.items[4].detail.as_deref(),
-            Some("subscriptTextEffect")
-        );
+        assert_eq!(compat_plan.items[3].status, CanvasKitReplayStatus::Direct);
+        assert_eq!(compat_plan.items[4].status, CanvasKitReplayStatus::Direct);
+    }
+
+    #[test]
+    fn superscript_with_char_overlap_stays_policy_visible() {
+        let mut superscript = text_run("AB");
+        superscript.style.superscript = true;
+        superscript.char_overlap = Some(CharOverlapInfo {
+            border_type: 0,
+            inner_char_size: 100,
+        });
+        let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), superscript)]);
+
+        for mode in [CanvasKitReplayMode::Default, CanvasKitReplayMode::Compat] {
+            let plan = analyze_canvaskit_replay_plan(&tree, mode);
+            assert_eq!(plan.summary.direct_required_items, 1);
+            assert_eq!(plan.items[0].status, CanvasKitReplayStatus::DirectRequired);
+            assert_eq!(plan.items[0].detail.as_deref(), Some("charOverlap"));
+        }
+    }
+
+    #[test]
+    fn shaped_script_text_stays_policy_visible() {
+        for text in ["가", "e\u{0301}", "\u{F012B}"] {
+            let mut superscript = text_run(text);
+            superscript.style.superscript = true;
+            let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), superscript)]);
+
+            for mode in [CanvasKitReplayMode::Default, CanvasKitReplayMode::Compat] {
+                let plan = analyze_canvaskit_replay_plan(&tree, mode);
+                assert_eq!(plan.summary.direct_required_items, 1, "text={text:?}");
+                assert_eq!(
+                    plan.items[0].status,
+                    CanvasKitReplayStatus::DirectRequired,
+                    "text={text:?}"
+                );
+                assert_eq!(
+                    plan.items[0].detail.as_deref(),
+                    Some("scriptTextRequiresShaping"),
+                    "text={text:?}"
+                );
+            }
+        }
     }
 
     #[test]
@@ -1265,11 +1298,7 @@ mod tests {
             name: "check1".to_string(),
             cell_location: None,
         };
-        let placeholder = PlaceholderNode {
-            fill_color: 0x00FF_FFFF,
-            stroke_color: 0x0000_0000,
-            label: "OLE".to_string(),
-        };
+        let placeholder = PlaceholderNode::new(0x00FF_FFFF, 0x0000_0000, "OLE".to_string());
         let tree = tree_with_ops(vec![
             PaintOp::form_object(bbox(), form),
             PaintOp::placeholder(bbox(), placeholder),

@@ -110,11 +110,7 @@ fn exam_3_11_2022_hwp_endnote_drift_capped() {
 /// Task #1293 공식 미주 모양 정규화 뒤 남은 p19/p20/p22 후보는 separator 계산식이
 /// 아니라 문28 본문/그림/수식 continuation 높이 차이의 tail/cascade로 재분류했다.
 /// 옛 수백 px 회귀와 종전 ~50px 과충전은 막되 현재 잔여 29.3px에는 여유를 둔다.
-/// [fork] fork 글리프 메트릭(대체 폰트 glyph-fit/숫자 run 측정)이 같은 문28
-/// tail/cascade 잔여를 p13(4.6px)+p19(38.6px)=43.2px 로 재분배한다 — 상한을
-/// 55 로 완화하되, 옛 다단 과충전 계열(159~627px)과 separator 계산식 재과충전
-/// (잔여 +~20px → ≈64px) 은 계속 차단한다.
-const SEP2020_RESIDUAL_LIMIT_PX: f64 = 55.0;
+const SEP2020_RESIDUAL_LIMIT_PX: f64 = 40.0;
 #[test]
 fn exam_3_09_2024_sep2020_hwp_endnote_drift_capped() {
     let t = doc_total_overflow_px("samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp");

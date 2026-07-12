@@ -66,6 +66,22 @@ Foundation  Typeset   Collab    Complete
 - Web editor + hwpctl-compatible API (30 Actions, Field API)
 - 1,100+ tests
 
+#### v0.7.18 Cycle (2026-07-11)
+
+> Patch after v0.7.17 — large-scale rendering fidelity (floating/front objects, RowBreak
+> tables, page-bottom trust), huge-table performance, editor caret/undo/OLE parity,
+> lenient parsing & HWPX preservation, WMF shape rewrite
+
+**Rendering fidelity**
+- Floating/front object pagination parity with Hangul (#1994/#1995/#2004/#2006/#2007/#2019)
+- RowBreak table corrections (#1921/#1937/#1842/#2097) + page-bottom saved-bounds trust (#2093)
+
+**Performance · Editor**
+- Huge-table render timeout resolved — 52,694 cells (#2063); late-page caret 3,064ms→33ms (#2021)
+
+**Parser · Serialization · Shapes**
+- Lenient loading of partially corrupted documents (#1932), HWPX preservation, WMF rewrite (#1943)
+
 #### v0.7.17 Cycle (2026-06-23)
 
 > Patch after v0.7.16 — first OOXML chart render-fidelity work, legacy-shape shapeComment
@@ -370,7 +386,7 @@ See the [roadmap document](mydocs/eng/report/rhwp-milestone.md) for details.
 
 ## npm Packages — Use in Your Web Project
 
-Current release: `@rhwp/core` / `@rhwp/editor` v0.7.17.
+Current release: `@rhwp/core` / `@rhwp/editor` v0.7.18.
 
 ### Embed a Full Editor (3 lines)
 

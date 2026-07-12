@@ -201,8 +201,8 @@ impl RenderNode {
             RenderNodeType::Group(_) => ("Group", String::new()),
             RenderNodeType::FormObject(_) => ("Form", String::new()),
             RenderNodeType::FootnoteMarker(_) => ("FnMarker", String::new()),
-            RenderNodeType::Placeholder(_) => ("Placeholder", String::new()),
-            RenderNodeType::RawSvg(_) => ("RawSvg", String::new()),
+            RenderNodeType::Placeholder(ph) => ("Placeholder", ph.control_ref_json_extra()),
+            RenderNodeType::RawSvg(raw) => ("RawSvg", raw.control_ref_json_extra()),
         };
         buf.push_str(&format!(
             "\"type\":\"{}\",\"bbox\":{{\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}}}",
@@ -297,11 +297,67 @@ pub enum RenderNodeType {
     RawSvg(RawSvgNode),
 }
 
+/// RawSvg/placeholder가 원본 문서 개체와 연결될 때 쓰는 상호작용 메타.
+#[derive(Debug, Clone, Serialize)]
+pub struct ObjectControlRef {
+    pub section_index: usize,
+    pub para_index: usize,
+    pub control_index: usize,
+    pub kind: &'static str,
+}
+
+impl ObjectControlRef {
+    pub fn ole(section_index: usize, para_index: usize, control_index: usize) -> Self {
+        Self {
+            section_index,
+            para_index,
+            control_index,
+            kind: "ole",
+        }
+    }
+
+    fn json_extra(&self) -> String {
+        format!(
+            ",\"kind\":\"{}\",\"si\":{},\"pi\":{},\"ci\":{}",
+            self.kind, self.section_index, self.para_index, self.control_index
+        )
+    }
+}
+
 /// 미리 렌더된 SVG 조각 (Task #195 단계 8)
 #[derive(Debug, Clone, Serialize)]
 pub struct RawSvgNode {
     /// 삽입할 SVG 조각 (유효한 `<g>...</g>` 또는 개별 요소)
     pub svg: String,
+    /// 원본 개체 참조. OLE RawSvg 선택/속성 진입에 사용한다.
+    pub control_ref: Option<ObjectControlRef>,
+}
+
+impl RawSvgNode {
+    pub fn new(svg: String) -> Self {
+        Self {
+            svg,
+            control_ref: None,
+        }
+    }
+
+    pub fn ole(svg: String, section_index: usize, para_index: usize, control_index: usize) -> Self {
+        Self {
+            svg,
+            control_ref: Some(ObjectControlRef::ole(
+                section_index,
+                para_index,
+                control_index,
+            )),
+        }
+    }
+
+    fn control_ref_json_extra(&self) -> String {
+        self.control_ref
+            .as_ref()
+            .map(ObjectControlRef::json_extra)
+            .unwrap_or_default()
+    }
 }
 
 /// 차트/OLE placeholder 렌더 노드 (Task #195)
@@ -313,6 +369,46 @@ pub struct PlaceholderNode {
     pub stroke_color: u32,
     /// 표시할 라벨(중앙 정렬)
     pub label: String,
+    /// 원본 개체 참조. OLE fallback placeholder 선택/속성 진입에 사용한다.
+    pub control_ref: Option<ObjectControlRef>,
+}
+
+impl PlaceholderNode {
+    pub fn new(fill_color: u32, stroke_color: u32, label: String) -> Self {
+        Self {
+            fill_color,
+            stroke_color,
+            label,
+            control_ref: None,
+        }
+    }
+
+    pub fn ole(
+        fill_color: u32,
+        stroke_color: u32,
+        label: String,
+        section_index: usize,
+        para_index: usize,
+        control_index: usize,
+    ) -> Self {
+        Self {
+            fill_color,
+            stroke_color,
+            label,
+            control_ref: Some(ObjectControlRef::ole(
+                section_index,
+                para_index,
+                control_index,
+            )),
+        }
+    }
+
+    fn control_ref_json_extra(&self) -> String {
+        self.control_ref
+            .as_ref()
+            .map(ObjectControlRef::json_extra)
+            .unwrap_or_default()
+    }
 }
 
 /// 각주/미주 마커 렌더 노드

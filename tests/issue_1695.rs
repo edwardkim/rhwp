@@ -4,9 +4,7 @@ use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 
 const SAMPLE: &str = "samples/SO-SUEOP.hwp";
-// [fork] 한컴 PDF(=upstream) 46쪽; fork 글리프 메트릭은 1쪽 초과 페이지네이션
-// (issue_1692 pin 과 동일 실측) — 47 로 pin.
-const EXPECTED_PAGE_COUNT: u32 = 47;
+const EXPECTED_PAGE_COUNT: u32 = 46;
 
 fn load_doc() -> HwpDocument {
     let bytes = std::fs::read(SAMPLE).unwrap_or_else(|err| panic!("read {SAMPLE}: {err}"));

@@ -311,11 +311,13 @@ fn write_sub_list_paragraphs<W: Write>(
     let mut vert_cursor: u32 = 0;
     for para in paragraphs {
         ctx.para_shape_ids.reference(para.para_shape_id);
-        ctx.style_ids.reference(para.style_id as u16);
+        let sid = ctx.effective_style_id(para.style_id);
+        ctx.style_ids.reference(sid as u16);
 
         let (runs, linesegs, advance) = render_paragraph_parts(para, vert_cursor, ctx);
         vert_cursor = advance;
-        let mut p_xml = render_hp_p_open(para, ctx.next_para_id());
+        let pid = ctx.next_para_id();
+        let mut p_xml = render_hp_p_open(para, pid, sid);
         p_xml.push_str(&runs);
         p_xml.push_str(&linesegs);
         p_xml.push_str("</hp:p>");

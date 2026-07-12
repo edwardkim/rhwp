@@ -92,6 +92,7 @@ jobs:
                   filename.endsWith('.hwp')
                   || filename.endsWith('.hwpx')
                   || filename.endsWith('.pdf')
+                  || filename.endsWith('.png')
                 )
               ) || (filename.startsWith('pdf/') && filename.endsWith('.pdf'));
             }

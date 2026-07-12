@@ -29,7 +29,7 @@ pub mod writer;
 use std::collections::HashSet;
 use std::fmt::Write as _;
 
-use crate::model::document::Document;
+use crate::model::document::{Document, HWP5_ORIGIN_HWPX_MARKER_PATH};
 
 use super::SerializeError;
 use content::BinDataEntry as ContentBinDataEntry;
@@ -125,6 +125,10 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     let bin_entries = ctx.bin_data_entries();
     let mut zip_bin_entries: HashSet<String> = HashSet::new();
     for entry in &bin_entries {
+        // 외부 참조(isEmbeded=0)는 ZIP 엔트리가 없다 — manifest 항목만 방출 (#1891).
+        if !entry.is_embedded {
+            continue;
+        }
         let data = doc
             .bin_data_content
             .iter()
@@ -146,6 +150,7 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
             id: e.manifest_id.clone(),
             href: e.href.clone(),
             media_type: e.media_type.clone(),
+            is_embedded: e.is_embedded,
         })
         .collect();
     let content_hpf = content::write_content_hpf(
@@ -161,6 +166,12 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
 
     // 11. META-INF/manifest.xml
     z.write_deflated("META-INF/manifest.xml", META_INF_MANIFEST_XML.as_bytes())?;
+
+    // HWP5-origin HWPX marker — HWP5에서 HWPX로 export한 산출물은 HWPX 컨테이너라도
+    // lineSeg 부재/pagination 시멘틱을 HWP5 원본처럼 해석해야 자기정합한다.
+    if let Some(marker) = doc.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH) {
+        z.write_deflated(HWP5_ORIGIN_HWPX_MARKER_PATH, marker)?;
+    }
 
     // 참조 정합성 단언 (Stage 1+)
     ctx.assert_all_refs_resolved()?;
@@ -212,11 +223,16 @@ fn write_container_rdf(section_hrefs: &[String]) -> String {
 
 /// 3-way BinData 동기화 단언: `ctx.bin_data_entries()`, content.hpf manifest,
 /// ZIP entry 의 href 집합이 모두 일치하는지 확인.
+/// 외부 참조(isEmbeded=0) 항목은 ZIP 엔트리가 없는 것이 정상이므로 제외한다 (#1891).
 fn assert_bin_data_3way(
     bin_entries: &[context::BinDataEntry],
     zip_entries: &HashSet<String>,
 ) -> Result<(), SerializeError> {
-    let ctx_hrefs: HashSet<String> = bin_entries.iter().map(|e| e.href.clone()).collect();
+    let ctx_hrefs: HashSet<String> = bin_entries
+        .iter()
+        .filter(|e| e.is_embedded)
+        .map(|e| e.href.clone())
+        .collect();
     if ctx_hrefs != *zip_entries {
         let missing_zip: Vec<_> = ctx_hrefs.difference(zip_entries).cloned().collect();
         let orphan_zip: Vec<_> = zip_entries.difference(&ctx_hrefs).cloned().collect();
@@ -607,6 +623,60 @@ mod tests {
             }
             None => panic!("expected equation control, got {:?}", parsed_para.controls),
         }
+    }
+
+    #[test]
+    fn task1655_equation_flow_with_text_roundtrips() {
+        use crate::model::control::{Control, Equation};
+        use crate::model::shape::CommonObjAttr;
+
+        let mut doc = Document::default();
+        let mut section = crate::model::document::Section::default();
+        let mut para = crate::model::paragraph::Paragraph::default();
+        para.text = "A".to_string();
+        para.char_offsets = vec![0];
+        para.char_count = 9;
+        para.controls.push(Control::Equation(Box::new(Equation {
+            common: CommonObjAttr {
+                width: 1600,
+                height: 900,
+                treat_as_char: true,
+                flow_with_text: false,
+                ..Default::default()
+            },
+            script: "a+b".to_string(),
+            font_size: 1000,
+            ..Default::default()
+        })));
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize equation");
+        let cursor = std::io::Cursor::new(&bytes);
+        let mut archive = zip::ZipArchive::new(cursor).expect("zip");
+        let mut sec0 = archive.by_name("Contents/section0.xml").expect("section0");
+        let mut xml = String::new();
+        std::io::Read::read_to_string(&mut sec0, &mut xml).expect("read");
+        assert!(
+            xml.contains(r#"flowWithText="0""#),
+            "수식 flowWithText=false 는 0으로 방출되어야 한다: {}",
+            xml
+        );
+        drop(sec0);
+
+        let parsed = parse_hwpx(&bytes).expect("parse back");
+        let parsed_eq = parsed.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|ctrl| match ctrl {
+                Control::Equation(eq) => Some(eq),
+                _ => None,
+            })
+            .expect("equation control");
+        assert!(
+            !parsed_eq.common.flow_with_text,
+            "수식 flowWithText=false 는 재파싱 뒤에도 보존되어야 한다"
+        );
     }
 
     #[test]
@@ -1270,6 +1340,105 @@ mod tests {
         assert_eq!(parsed.bin_data_content.len(), 1);
         assert_eq!(parsed.bin_data_content[0].data, fake_png);
         assert_eq!(parsed.bin_data_content[0].extension, "png");
+    }
+
+    #[test]
+    fn issue1917_bindata_load_failure_preserves_pic_control() {
+        // [#1917] BinData 엔트리 로드 실패(압축 해제 상한 초과·엔트리 손상 등)
+        // 시에도 pic 컨트롤과 binaryItemIDRef 가 보존되어야 한다. 종전에는
+        // bin_data_content 미등록 → resolve_bin_id 실패 → <hp:pic> 드롭으로
+        // 왕복 구조 손실(IR_DIFF 하드 실패)이 발생했다.
+        use crate::model::bin_data::BinDataContent;
+        use crate::model::control::Control;
+        use crate::model::image::{ImageAttr, Picture};
+        use crate::model::shape::CommonObjAttr;
+
+        fn count_pics(doc: &Document) -> usize {
+            doc.sections
+                .iter()
+                .flat_map(|s| s.paragraphs.iter())
+                .flat_map(|p| p.controls.iter())
+                .filter(|c| matches!(c, Control::Picture(_)))
+                .count()
+        }
+
+        let mut doc = Document::default();
+        // 재직렬화 시 charPrIDRef=0 해소용 기본 글자모양 (parse_hwpx 산출 IR 동형)
+        doc.doc_info
+            .char_shapes
+            .push(crate::model::style::CharShape::default());
+        doc.bin_data_content.push(BinDataContent {
+            id: 1,
+            data: b"BMfake_bmp_data".to_vec(),
+            extension: "bmp".to_string(),
+        });
+        let mut section = crate::model::document::Section::default();
+        let mut para = crate::model::paragraph::Paragraph::default();
+        para.text = "A".to_string();
+        para.char_offsets = vec![8];
+        para.char_count = 10;
+        para.controls.push(Control::Picture(Box::new(Picture {
+            common: CommonObjAttr {
+                width: 5000,
+                height: 3000,
+                treat_as_char: true,
+                ..Default::default()
+            },
+            image_attr: ImageAttr {
+                bin_data_id: 1,
+                ..Default::default()
+            },
+            ..Default::default()
+        })));
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize picture");
+
+        // BinData 엔트리만 제거한 ZIP 재작성 — read_file_bytes 실패(Err 분기)를
+        // 유발한다. 상한 초과와 동일 분기를 실 512MB 페이로드 없이 재현.
+        let stripped = {
+            let mut archive = zip::ZipArchive::new(std::io::Cursor::new(&bytes)).expect("zip open");
+            let mut out = std::io::Cursor::new(Vec::<u8>::new());
+            let mut zw = zip::ZipWriter::new(&mut out);
+            let opts = zip::write::SimpleFileOptions::default()
+                .compression_method(zip::CompressionMethod::Deflated);
+            for i in 0..archive.len() {
+                let mut f = archive.by_index(i).expect("entry");
+                let name = f.name().to_string();
+                if name.starts_with("BinData/") {
+                    continue;
+                }
+                let mut data = Vec::new();
+                f.read_to_end(&mut data).expect("read entry");
+                zw.start_file(name, opts).expect("start_file");
+                std::io::Write::write_all(&mut zw, &data).expect("write entry");
+            }
+            zw.finish().expect("finish");
+            out.into_inner()
+        };
+
+        // 재파싱: placeholder 등록 + pic 컨트롤 보존
+        let doc2 = parse_hwpx(&stripped).expect("parse stripped");
+        assert_eq!(
+            doc2.bin_data_content.len(),
+            1,
+            "로드 실패한 BinData 도 placeholder 로 등록되어야 한다"
+        );
+        assert!(
+            doc2.bin_data_content[0].data.is_empty(),
+            "placeholder 데이터는 빈 값이어야 한다"
+        );
+        assert_eq!(
+            doc2.bin_data_content[0].extension, "bmp",
+            "placeholder 확장자는 manifest 기준으로 보존"
+        );
+        assert_eq!(count_pics(&doc2), 1, "pic 컨트롤이 보존되어야 한다");
+
+        // 재직렬화 성공(binaryItemIDRef 미등록 에러 없음) + pic 재보존
+        let bytes2 = serialize_hwpx(&doc2).expect("re-serialize with placeholder");
+        let doc3 = parse_hwpx(&bytes2).expect("parse re-serialized");
+        assert_eq!(count_pics(&doc3), 1, "재직렬화 왕복 후에도 pic 보존");
     }
 
     #[test]

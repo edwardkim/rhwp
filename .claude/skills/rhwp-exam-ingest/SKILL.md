@@ -118,14 +118,33 @@ bash .claude/skills/rhwp-exam-ingest/helpers/pdf_to_pngs.sh user_input.pdf "$TMP
   "version": "1",
   "page_size": {"width_mm": 210, "height_mm": 297},
   "default_font": "함초롬바탕",
+  "header_text": "국어 영역",
+  "footer_text": "1/20",
+  "form_label": "홀수형",
+  "passages": [
+    {
+      "id": "p1-3",
+      "blocks": [
+        {"type": "text", "text": "[1~3] 다음 글을 읽고 물음에 답하시오."},
+        {"type": "text", "text": "긴 공유 지문..."}
+      ]
+    }
+  ],
   "questions": [
     {
       "number": 1,
+      "passage_ref": "p1-3",
       "stem": "다음 글의 주제로 가장 적절한 것은?",
       "auto_number": true,
       "stem_blocks": [
         {"type": "text", "text": "다음 글의 주제로 가장 적절한 것은?"},
-        {"type": "text", "text": "긴 지문..."},
+        {
+          "type": "boxed",
+          "title": "<보기>",
+          "blocks": [
+            {"type": "text", "text": "보기 본문..."}
+          ]
+        },
         {"type": "image", "ref": "img/q1_passage.png", "placement": "between"}
       ],
       "choices": [
@@ -146,18 +165,28 @@ bash .claude/skills/rhwp-exam-ingest/helpers/pdf_to_pngs.sh user_input.pdf "$TMP
 
 `media[].id`는 `--media-dir` 기준 상대 경로. Claude가 Step 4에서 자르기 결과 PNG를 그 경로에 저장.
 
+#### 공유 지문과 보기 박스
+
+- 여러 문제가 같은 지문을 공유하면 top-level `passages[]` 에 지문을 한 번 작성하고,
+  각 문제에서 `passage_ref` 로 참조한다.
+- builder는 같은 `passage_ref` 를 처음 만나는 위치에 공유 지문을 한 번만 출력한다.
+- `<보기>`/`[보기]`처럼 테두리와 배경이 있는 보조 자료는 `stem_blocks` 안에
+  `{"type":"boxed","title":"<보기>","blocks":[...]}` 로 작성한다.
+- `header_text`, `footer_text`, `form_label` 은 시험지 반복 머리말/꼬리말 정보를 구조적으로
+  전달하는 필드다.
+
 #### `auto_number` 필드 사용법 (v2 정책 — Task #660 후속)
 
-빌더는 첫 stem 텍스트 앞에 `{number}. ` prefix를 자동으로 붙인다. 다만 다음 두 경우에는 **사용자가 stem 텍스트 자체에 명시적으로 작성**하는 편이 자연스럽다 — 이 때 `auto_number: false`를 함께 설정해 빌더의 자동 prefix를 끈다.
+빌더는 첫 stem 텍스트 앞에 `{number}. ` prefix를 자동으로 붙인다. 다만 사용자가 stem 텍스트 자체에 번호를 명시적으로 작성한 경우에는 `auto_number: false`를 함께 설정해 빌더의 자동 prefix를 끈다.
 
 | 상황 | `auto_number` | stem_blocks 첫 텍스트 예시 |
 |------|---------------|----------------------------|
 | 일반 문제 (default) | `true` 또는 미지정 | `"다음 글의 주제는?"` → 빌더가 `"1. 다음 글의 주제는?"` 생성 |
-| **공유 지문 그룹 지시문** | `false` | `"[1~3] 다음 글을 읽고 물음에 답하시오."` → 그대로 출력 |
+| **공유 지문 그룹 지시문** | `passages[]` 사용 권장 | `passages[].blocks` 에 `"[1~3] 다음 글을 읽고 물음에 답하시오."` 작성 |
 | **사용자가 명시적으로 prefix 작성** | `false` | `"2. ㉠에 해당하는 내용으로 가장 적절한 것은?"` → 그대로 출력 |
 | **`<보기>` / `[보기]` 본문** | `true` | `"[보기]를 참고하여…"` → 빌더가 `"12. [보기]를 참고하여…"` 생성 |
 
-**권장**: 가능하면 `auto_number: true`(default) + stem 텍스트는 prefix 없이 작성하는 것이 깔끔하다. 공유 지문이나 그룹 지시문 등 빌더의 자동 prefix가 어색한 경우에만 `false`로 끈다.
+**권장**: 가능하면 `auto_number: true`(default) + stem 텍스트는 prefix 없이 작성하는 것이 깔끔하다. 공유 지문은 `passages[]`/`passage_ref` 로 분리하고, 사용자가 문제 번호까지 명시적으로 작성한 경우에만 `false`로 끈다.
 
 ### Step 4: 이미지 자르기
 
@@ -186,7 +215,7 @@ rhwp build-from-ingest "$TMP/ingest.json" --media-dir "$MEDIA_DIR" -o "$OUT_HWPX
 
 - **이미지 직렬화**: rhwp의 HWPX writer가 Picture inline 직렬화 분기를 #182에서 추가 중입니다. #182 완료 전에는 이미지가 HWPX에 포함되어도 한컴이 표시 못 할 수 있습니다. 현재는 텍스트 위주 변환이 안전.
 - **수식**: 복잡 수식(LaTeX 수준)은 이미지로 캡처하여 Picture로 삽입하는 것이 안전합니다. HWP Equation IR 매핑은 후속 마일스톤.
-- **표**: 단순 표는 Picture로 캡처. Table IR 빌드는 후속 작업.
+- **표/정밀 박스**: 단순 표는 Picture로 캡처. Table/Frame IR 빌드는 후속 작업.
 
 ### Vision 분석 정확도 향상 팁
 
@@ -230,5 +259,6 @@ bash .claude/skills/rhwp-exam-ingest/helpers/check_deps.sh
 - spike 결과: `mydocs/tech/m100_neumann_spike.md`
 - JSON 스키마: `tools/rhwp-ingest/schema/ingest_schema_v1.json`
 - 샘플 입력: `tools/rhwp-ingest/schema/sample_minimal.json`
+- 확장 샘플 입력: `tools/rhwp-ingest/schema/sample_structured.json`
 - 빌더 본체: `src/document_core/builders/exam_paper.rs`
 - 관련 이슈: #660 (본 작업 1단계 완료), #182 (Picture 직렬화), #654 (사전 검증 spike)

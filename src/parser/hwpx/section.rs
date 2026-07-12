@@ -758,6 +758,20 @@ fn parse_paragraph(
     // `vertsize="0" ...` lineseg 로 방출하여 원본 무 → RT 유 비대칭을 만들었다.
     // 한컴은 lineseg 가 없으면 열 때 재계산하므로 빈 채 보존이 안전하다.
 
+    // [#2070] 전부 0 높이(lh=0, th=0)인 linesegarray 는 부재로 정규화한다.
+    // 생성계 문서(80168 등 규제영향분석서)는 lineseg 를 0 으로 채워 저장하는데,
+    // 0 높이 lineseg 는 배치 권위가 없고(한글은 열 때 재계산) 실저장 취급 시
+    // NO_LS 성장 경로가 죽어 셀/문단 높이가 선언값으로 붕괴한다 (#1380 대칭,
+    // body_text.rs parse_para_line_seg 와 동일 규칙).
+    if !para.line_segs.is_empty()
+        && para
+            .line_segs
+            .iter()
+            .all(|s| s.line_height == 0 && s.text_height == 0)
+    {
+        para.line_segs.clear();
+    }
+
     // [Task #1058 후속] HWPX `<hp:p id>` → HWP PARA_HEADER instance_id 매핑.
     // raw_header_extra 구조 (serializer 정합 — body_text.rs:241):
     //   raw_header_extra[0..6] = numCharShapes(2) + numRangeTags(2) + numLineSegs(2)
@@ -2705,12 +2719,15 @@ fn materialize_shape_current_size_from_original(
 ) {
     if shape_attr.current_width == 0 && shape_attr.original_width > 0 {
         shape_attr.current_width = shape_attr.original_width;
+        // [#2017] HWPX 재직렬화 시 원본 curSz=0 을 복원하기 위해 materialize 여부를 기록.
+        shape_attr.current_width_was_zero = true;
         if common.width == 0 {
             common.width = shape_attr.original_width;
         }
     }
     if shape_attr.current_height == 0 && shape_attr.original_height > 0 {
         shape_attr.current_height = shape_attr.original_height;
+        shape_attr.current_height_was_zero = true;
         if common.height == 0 {
             common.height = shape_attr.original_height;
         }

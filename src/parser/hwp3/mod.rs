@@ -100,7 +100,9 @@ fn hwp3_page_border_fill(
 /// serialize_common_obj_attr이 common.attr 값을 직접 기록하므로,
 /// 필드를 설정한 뒤 반드시 이 함수로 attr을 갱신해야 저장→재열기 후 속성이 유지된다.
 fn build_common_obj_attr(common: &crate::model::shape::CommonObjAttr) -> u32 {
-    use crate::model::shape::{HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
+    use crate::model::shape::{
+        HorzAlign, HorzRelTo, SizeCriterion, TextWrap, VertAlign, VertRelTo,
+    };
     let mut attr: u32 = 0;
     if common.treat_as_char {
         attr |= 0x01;
@@ -137,6 +139,22 @@ fn build_common_obj_attr(common: &crate::model::shape::CommonObjAttr) -> u32 {
         TextWrap::InFrontOfText => 3,
         _ => 0,
     }) << 21;
+    // 크기 기준 (bit 15-17 너비 / 18-19 높이). HWP3 개체 크기는 항상 HWPUNIT
+    // 절대값(IR 기본 Absolute)인데, 종전엔 이 비트를 누락해 0(Paper 퍼센트)으로
+    // 저장 → 재파스 시 종이비례 해석으로 개체가 종이×(크기/10000)배 팽창 (#1892
+    // 대법원 서식 라운드트립 5449px). 파서 디코드(parse_common_obj_attr)와 동일 매핑.
+    attr |= (match common.width_criterion {
+        SizeCriterion::Paper => 0u32,
+        SizeCriterion::Page => 1,
+        SizeCriterion::Column => 2,
+        SizeCriterion::Para => 3,
+        SizeCriterion::Absolute => 4,
+    }) << 15;
+    attr |= (match common.height_criterion {
+        SizeCriterion::Paper => 0u32,
+        SizeCriterion::Page => 1,
+        _ => 2,
+    }) << 18;
     attr
 }
 
@@ -425,6 +443,1509 @@ fn hwp3_default_body_column_def() -> crate::model::page::ColumnDef {
     }
 }
 
+/// [#2001] `parse_paragraph_list` 문자 스캔의 공유 가변 상태 — 컨트롤 코드
+/// `match ch` 의 arm 들이 공유하는 캐리오버 묶음 (문자 인덱스 i 와 utf16_len 은
+/// 값 전달 + 반환으로 처리해 본문 무변경 이동을 보장한다).
+struct Hwp3CharScan<'a> {
+    text_string: &'a mut String,
+    char_offsets: &'a mut Vec<u32>,
+    hwp3_char_to_utf16_pos: &'a mut Vec<u32>,
+    controls: &'a mut Vec<crate::model::control::Control>,
+    ctrl_data_records: &'a mut Vec<Option<Vec<u8>>>,
+}
+
+/// [#2003] `parse_object_control_char` 의 개체 파싱 캐리오버 묶음 — 개체 디스패치가
+/// 채우고 후속(인터루드·tail)이 소비한다.
+struct Hwp3DrawingCarry<'a> {
+    nested_paragraphs: &'a mut Vec<crate::model::paragraph::Paragraph>,
+    parsed_table: &'a mut Option<crate::model::table::Table>,
+    parsed_equation: &'a mut Option<crate::model::control::Equation>,
+    parsed_picture: &'a mut Option<crate::model::image::Picture>,
+    parsed_line: &'a mut Option<crate::model::shape::LineShape>,
+    parsed_drawing_object: &'a mut Option<crate::model::shape::ShapeObject>,
+    parsed_obj_type: &'a mut u16,
+    parsed_is_hypertext: &'a mut bool,
+    info_buf: &'a mut Vec<u8>,
+}
+
+/// [#2003 추출] 개체 컨트롤 디스패치 — ch==10(표/글상자/수식/버튼)·11(그리기)·
+/// 14~17·29·5~8 의 if-else 체인 전체. 원본 무변경 이동 (셀·캡션은
+/// `parse_paragraph_list` 재귀). 반환 `Some(중단여부)` = 호출자 조기 return,
+/// `None` = 후속(인터루드·tail) 진행. i/utf16_len 은 읽기 전용.
+#[allow(clippy::too_many_arguments)]
+fn parse_hwp3_object_dispatch(
+    body_cursor: &mut Cursor<&[u8]>,
+    doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
+    doc_para_shapes: &mut Vec<crate::model::style::ParaShape>,
+    doc_border_fills: &mut Vec<crate::model::style::BorderFill>,
+    doc_tab_defs: &mut Vec<crate::model::style::TabDef>,
+    pic_name_to_id: &mut std::collections::HashMap<String, u16>,
+    body_left_hu: i32,
+    column_width_hu: i32,
+    ch: u16,
+    header_val1: u32,
+    i: usize,
+    utf16_len: u32,
+    controls: &mut Vec<crate::model::control::Control>,
+    ctrl_data_records: &mut Vec<Option<Vec<u8>>>,
+    carry: &mut Hwp3DrawingCarry<'_>,
+) -> Result<Option<bool>, Hwp3Error> {
+    use byteorder::{LittleEndian, ReadBytesExt};
+    let _ = (i, utf16_len);
+    let Hwp3DrawingCarry {
+        nested_paragraphs,
+        parsed_table,
+        parsed_equation,
+        parsed_picture,
+        parsed_line,
+        parsed_drawing_object,
+        parsed_obj_type,
+        parsed_is_hypertext,
+        info_buf,
+    } = carry;
+    if ch == 10 {
+        // 표 / 글상자 / 수식 / 버튼
+        info_buf.resize(84, 0);
+        if let Err(_) = body_cursor.read_exact(info_buf.as_mut_slice()) {
+            return Ok(Some(true));
+        }
+        let obj_type = if info_buf.len() >= 80 {
+            (&info_buf[78..80]).read_u16::<LittleEndian>().unwrap_or(0)
+        } else {
+            0
+        };
+        let other_options = if info_buf.len() >= 16 {
+            (&info_buf[14..16]).read_u16::<LittleEndian>().unwrap_or(0)
+        } else {
+            0
+        };
+        **parsed_obj_type = obj_type;
+        **parsed_is_hypertext = (other_options & 0x10) != 0;
+        let cell_count = if info_buf.len() >= 82 {
+            (&info_buf[80..82]).read_u16::<LittleEndian>().unwrap_or(1)
+        } else {
+            1
+        };
+
+        // 이들은 모두 같은 구조를 가집니다: 84바이트 정보 -> 각 셀당 27바이트 -> 셀당 문단 리스트 -> 캡션 문단.
+        let mut table = crate::model::table::Table::default();
+
+        table.outer_margin_left = (&info_buf[18..20]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        table.outer_margin_right = (&info_buf[20..22]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        table.outer_margin_top = (&info_buf[22..24]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        table.outer_margin_bottom = (&info_buf[24..26]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        table.common.margin.left = table.outer_margin_left;
+        table.common.margin.right = table.outer_margin_right;
+        table.common.margin.top = table.outer_margin_top;
+        table.common.margin.bottom = table.outer_margin_bottom;
+
+        table.padding.left = (&info_buf[26..28]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        table.padding.right = (&info_buf[28..30]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        table.padding.top = (&info_buf[30..32]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        table.padding.bottom = (&info_buf[32..34]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+
+        table.common.width =
+            ((&info_buf[42..44]).read_u16::<LittleEndian>().unwrap_or(0) as u32) * 4;
+        table.common.height =
+            ((&info_buf[44..46]).read_u16::<LittleEndian>().unwrap_or(0) as u32) * 4;
+
+        let ref_pos = info_buf[8];
+        table.common.treat_as_char = ref_pos == 0;
+        match ref_pos {
+            1 => {
+                table.common.horz_rel_to = crate::model::shape::HorzRelTo::Para;
+                table.common.vert_rel_to = crate::model::shape::VertRelTo::Para;
+            }
+            2 => {
+                table.common.horz_rel_to = crate::model::shape::HorzRelTo::Page;
+                table.common.vert_rel_to = crate::model::shape::VertRelTo::Page;
+            }
+            3 => {
+                table.common.horz_rel_to = crate::model::shape::HorzRelTo::Paper;
+                table.common.vert_rel_to = crate::model::shape::VertRelTo::Paper;
+            }
+            _ => {}
+        }
+
+        // 그림 피함(offset 9): 0=자리차지(TopAndBottom), 1=투명, 2=어울림
+        let text_wrap = info_buf[9];
+        // table.common.treat_as_char remains ref_pos == 0
+        table.common.text_wrap = match text_wrap {
+            0 => crate::model::shape::TextWrap::TopAndBottom, // 자리차지
+            1 => crate::model::shape::TextWrap::BehindText,   // 투명 (글자 뒤)
+            2 => crate::model::shape::TextWrap::Square,       // 어울림
+            _ => crate::model::shape::TextWrap::Square,
+        };
+
+        let horz_align = (&info_buf[10..12]).read_i16::<LittleEndian>().unwrap_or(0);
+        if horz_align == -1 {
+            table.common.horz_align = crate::model::shape::HorzAlign::Left;
+        } else if horz_align == -2 {
+            table.common.horz_align = crate::model::shape::HorzAlign::Right;
+        } else if horz_align == -3 {
+            table.common.horz_align = crate::model::shape::HorzAlign::Center;
+        } else {
+            table.common.horz_align = crate::model::shape::HorzAlign::Left;
+            table.common.horizontal_offset = (horz_align as i32 * 4) as u32;
+        }
+
+        let vert_align = (&info_buf[12..14]).read_i16::<LittleEndian>().unwrap_or(0);
+        if vert_align == -1 {
+            table.common.vert_align = crate::model::shape::VertAlign::Top;
+        } else if vert_align == -2 {
+            table.common.vert_align = crate::model::shape::VertAlign::Bottom;
+        } else if vert_align == -3 {
+            table.common.vert_align = crate::model::shape::VertAlign::Center;
+        } else {
+            table.common.vert_align = crate::model::shape::VertAlign::Top;
+            table.common.vertical_offset = (vert_align as i32 * 4) as u32;
+        }
+        table.common.attr = build_common_obj_attr(&table.common);
+        // typeset.rs는 table.attr(=common.attr)로 is_tac/text_wrap을 판정한다.
+        // HWP5 파서도 table.attr = table.common.attr 로 동기화하므로 동일하게 설정한다.
+        table.attr = table.common.attr;
+        // HWP5 저장 시 serialize_table이 raw_ctrl_data를 그대로 기록한다.
+        // 미리 채워두면 serializer/hwpx_to_hwp 수정 없이 attr가 올바르게 저장된다.
+        table.raw_ctrl_data = build_raw_ctrl_data(&table.common);
+
+        let cell_padding_left =
+            (&info_buf[34..36]).read_i16::<LittleEndian>().unwrap_or(0) as u32 * 4;
+        let cell_padding_right =
+            (&info_buf[36..38]).read_i16::<LittleEndian>().unwrap_or(0) as u32 * 4;
+        let cell_padding_top =
+            (&info_buf[38..40]).read_i16::<LittleEndian>().unwrap_or(0) as u32 * 4;
+        let cell_padding_bottom =
+            (&info_buf[40..42]).read_i16::<LittleEndian>().unwrap_or(0) as u32 * 4;
+
+        table.padding.left = cell_padding_left as i16;
+        table.padding.right = cell_padding_right as i16;
+        table.padding.top = cell_padding_top as i16;
+        table.padding.bottom = cell_padding_bottom as i16;
+
+        let caption_width = (&info_buf[46..48]).read_u16::<LittleEndian>().unwrap_or(0) as u32 * 4;
+        let caption_pos = (&info_buf[70..72]).read_u16::<LittleEndian>().unwrap_or(0);
+
+        let mut cells = Vec::new();
+        let mut cell_buf = match alloc_record_buf(27 * (cell_count as usize)) {
+            Ok(b) => b,
+            Err(_) => return Ok(Some(true)),
+        };
+        if let Err(_) = body_cursor.read_exact(&mut cell_buf) {
+            return Ok(Some(true));
+        }
+
+        let mut xs_raw = Vec::new();
+        let mut ys_raw = Vec::new();
+
+        for i in 0..cell_count as usize {
+            let offset = i * 27;
+            let cell_info = &cell_buf[offset..offset + 27];
+            let x = (&cell_info[4..6]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+            let y = (&cell_info[6..8]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+            let w = (&cell_info[8..10]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+            let h = (&cell_info[10..12]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+            xs_raw.push(x);
+            xs_raw.push(x + w);
+            ys_raw.push(y);
+            ys_raw.push(y + h);
+        }
+
+        xs_raw.sort_unstable();
+        ys_raw.sort_unstable();
+
+        let mut xs = Vec::new();
+        for &x in &xs_raw {
+            if let Some(&last) = xs.last() {
+                if i32::abs(x - last) < 40 {
+                    continue;
+                }
+            }
+            xs.push(x);
+        }
+
+        let mut ys = Vec::new();
+        for &y in &ys_raw {
+            if let Some(&last) = ys.last() {
+                if i32::abs(y - last) < 40 {
+                    continue;
+                }
+            }
+            ys.push(y);
+        }
+
+        table.col_count = if xs.len() > 1 {
+            (xs.len() - 1) as u16
+        } else {
+            1
+        };
+        table.row_count = if ys.len() > 1 {
+            (ys.len() - 1) as u16
+        } else {
+            1
+        };
+
+        for i in 0..cell_count as usize {
+            let offset = i * 27;
+            let cell_info = &cell_buf[offset..offset + 27];
+
+            let mut cell = crate::model::table::Cell::default();
+
+            let x = (&cell_info[4..6]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+            let y = (&cell_info[6..8]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+            let w = (&cell_info[8..10]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+            let h = (&cell_info[10..12]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+
+            let c1 = xs
+                .iter()
+                .position(|&val| (val - x).abs() < 40)
+                .unwrap_or(cell_info[1] as usize);
+            let c2 = xs
+                .iter()
+                .position(|&val| (val - (x + w)).abs() < 40)
+                .unwrap_or(c1 + 1);
+            let r1 = ys
+                .iter()
+                .position(|&val| (val - y).abs() < 40)
+                .unwrap_or(cell_info[0] as usize);
+            let r2 = ys
+                .iter()
+                .position(|&val| (val - (y + h)).abs() < 40)
+                .unwrap_or(r1 + 1);
+
+            cell.row = r1 as u16;
+            cell.col = c1 as u16;
+            cell.col_span = (c2.saturating_sub(c1)).max(1) as u16;
+            cell.row_span = (r2.saturating_sub(r1)).max(1) as u16;
+
+            cell.width = w as u32;
+            cell.height = h as u32;
+
+            cell.padding.left = cell_padding_left as i16;
+            cell.padding.right = cell_padding_right as i16;
+            cell.padding.top = cell_padding_top as i16;
+            cell.padding.bottom = cell_padding_bottom as i16;
+
+            let v_align = cell_info[19];
+            cell.vertical_align = match v_align {
+                1 => crate::model::table::VerticalAlign::Center,
+                2 => crate::model::table::VerticalAlign::Bottom,
+                _ => crate::model::table::VerticalAlign::Top,
+            };
+
+            let mut border_fill = crate::model::style::BorderFill::default();
+
+            let mut hwp3_line_to_border = |line_val: u8| -> crate::model::style::BorderLine {
+                use crate::model::style::BorderLineType;
+                // HWP3 선 종류: 0=투명, 1=실선, 2=굵은 실선, 3=점선, 4=2중 실선
+                let (line_type, width) = match line_val {
+                    1 => (BorderLineType::Solid, 0),  // 0.1mm
+                    2 => (BorderLineType::Solid, 6),  // 0.4mm (굵은 실선)
+                    3 => (BorderLineType::Dot, 0),    // 0.1mm
+                    4 => (BorderLineType::Double, 6), // 0.4mm (이중선 두께 확보)
+                    _ => (BorderLineType::None, 0),
+                };
+                crate::model::style::BorderLine {
+                    line_type,
+                    width,
+                    color: 0,
+                }
+            };
+
+            border_fill.borders[0] = hwp3_line_to_border(cell_info[20]); // 왼쪽
+            border_fill.borders[1] = hwp3_line_to_border(cell_info[21]); // 오른쪽
+            border_fill.borders[2] = hwp3_line_to_border(cell_info[22]); // 위쪽
+            border_fill.borders[3] = hwp3_line_to_border(cell_info[23]); // 아래쪽
+
+            let shade = cell_info[24];
+            if shade > 0 && shade <= 100 {
+                let mut fill = crate::model::style::Fill::default();
+                fill.fill_type = crate::model::style::FillType::Solid;
+                let c = 255 - (shade as u32 * 255 / 100) as u8;
+                let color = u32::from_le_bytes([c, c, c, 0]);
+                fill.solid = Some(crate::model::style::SolidFill {
+                    background_color: color,
+                    pattern_color: 0,
+                    pattern_type: 0,
+                });
+                border_fill.fill = fill;
+            }
+
+            let diag = cell_info[25] & 0x03;
+            if diag != 0 {
+                border_fill.diagonal.diagonal_type = 1; // 실선 (BorderLineType::Solid = 1)
+                border_fill.diagonal.width = 0; // 0.1mm thickness
+                match diag {
+                    1 => {
+                        // 역슬래시 \
+                        border_fill.attr |= 0b010 << 5;
+                    }
+                    2 => {
+                        // 슬래시 /
+                        border_fill.attr |= 0b010 << 2;
+                    }
+                    3 => {
+                        // 교차 X
+                        border_fill.attr |= (0b010 << 2) | (0b010 << 5);
+                    }
+                    _ => {}
+                }
+            }
+
+            doc_border_fills.push(border_fill);
+            cell.border_fill_id = doc_border_fills.len() as u16; // 1-based (렌더러 규칙)
+
+            // 중복된 스팬 계산 제거됨
+
+            let nested = parse_paragraph_list(
+                body_cursor,
+                doc_char_shapes,
+                doc_para_shapes,
+                doc_border_fills,
+                doc_tab_defs,
+                pic_name_to_id,
+                body_left_hu,
+                column_width_hu,
+                0,
+            )?;
+            cell.paragraphs = nested;
+            cells.push(cell);
+        }
+        table.cells = cells;
+        table.rebuild_grid();
+        table.row_sizes = (0..table.row_count)
+            .map(|r| table.cells.iter().filter(|c| c.row == r).count() as i16)
+            .collect();
+        let caption_paras = parse_paragraph_list(
+            body_cursor,
+            doc_char_shapes,
+            doc_para_shapes,
+            doc_border_fills,
+            doc_tab_defs,
+            pic_name_to_id,
+            body_left_hu,
+            column_width_hu,
+            0,
+        )?;
+        let caption_direction = match caption_pos {
+            0 => crate::model::shape::CaptionDirection::Bottom,
+            1 => crate::model::shape::CaptionDirection::Top,
+            2 => crate::model::shape::CaptionDirection::Left,
+            3 => crate::model::shape::CaptionDirection::Right,
+            _ => crate::model::shape::CaptionDirection::Bottom,
+        };
+        if hwp3_paragraphs_have_renderable_content(&caption_paras) {
+            table.caption = Some(crate::model::shape::Caption {
+                direction: caption_direction,
+                width: caption_width as _,
+                paragraphs: caption_paras,
+                ..Default::default()
+            });
+        }
+
+        if obj_type == 2 {
+            let mut eq = crate::model::control::Equation::default();
+            eq.baseline = (&info_buf[76..78]).read_i16::<LittleEndian>().unwrap_or(0);
+            if let Some(cell) = table.cells.first() {
+                let mut script_text = String::new();
+                for para in &cell.paragraphs {
+                    script_text.push_str(&para.text);
+                    script_text.push('\n');
+                }
+                eq.script = script_text.trim().to_string();
+            }
+            **parsed_equation = Some(eq);
+        } else {
+            **parsed_table = Some(table);
+        }
+    } else if ch == 11 {
+        // 그림
+        info_buf.resize(348, 0);
+        if let Err(_) = body_cursor.read_exact(info_buf.as_mut_slice()) {
+            return Ok(Some(true));
+        }
+
+        let mut pic = crate::model::image::Picture::default();
+        pic.common.width = ((&info_buf[42..44]).read_u16::<LittleEndian>().unwrap_or(0) as u32) * 4;
+        pic.common.height =
+            ((&info_buf[44..46]).read_u16::<LittleEndian>().unwrap_or(0) as u32) * 4;
+
+        pic.shape_attr.original_width = pic.common.width;
+        pic.shape_attr.original_height = pic.common.height;
+        pic.shape_attr.current_width = pic.common.width;
+        pic.shape_attr.current_height = pic.common.height;
+        pic.shape_attr.render_sx = 1.0;
+        pic.shape_attr.render_sy = 1.0;
+
+        let ref_pos = info_buf[8];
+        pic.common.treat_as_char = ref_pos == 0;
+        match ref_pos {
+            0 => {
+                // [Task #877 Stage 4] Text base (treat_as_char) — paragraph 영역
+                // inline 으로 그려져야. default CommonObjAttr (Paper) 그대로 두면
+                // 페이지 좌상단에 그려지는 회귀 (sample16 paragraph 5 RFP 박스).
+                pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Para;
+                pic.common.vert_rel_to = crate::model::shape::VertRelTo::Para;
+            }
+            1 => {
+                pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Para;
+                pic.common.vert_rel_to = crate::model::shape::VertRelTo::Para;
+            }
+            2 => {
+                pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Page;
+                pic.common.vert_rel_to = crate::model::shape::VertRelTo::Page;
+            }
+            3 => {
+                pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Paper;
+                pic.common.vert_rel_to = crate::model::shape::VertRelTo::Paper;
+            }
+            _ => {}
+        }
+
+        // 그림 피함(offset 9): 0=자리차지(TopAndBottom), 1=투명(InFrontOfText), 2=어울림(Square)
+        let text_wrap = info_buf[9];
+        pic.common.text_wrap = match text_wrap {
+            0 => crate::model::shape::TextWrap::TopAndBottom, // 자리차지
+            1 => crate::model::shape::TextWrap::InFrontOfText, // 투명 (글자 앞)
+            2 => crate::model::shape::TextWrap::Square,       // 어울림
+            _ => crate::model::shape::TextWrap::Square,
+        };
+        // [Task #877 Stage 4] treat_as_char=true (ref_pos=0) 이면 wrap=Square 모순
+        // → InFrontOfText 로 강제. sample16 paragraph 394 picture (treat_as_char=true,
+        // wrap=Square) 가 paragraph 의 3 lines 마다 SVG image 중복 렌더링되는 회귀.
+        if pic.common.treat_as_char
+            && matches!(pic.common.text_wrap, crate::model::shape::TextWrap::Square)
+        {
+            pic.common.text_wrap = crate::model::shape::TextWrap::TopAndBottom;
+        }
+
+        pic.common.margin.left = (&info_buf[18..20]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        pic.common.margin.right = (&info_buf[20..22]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        pic.common.margin.top = (&info_buf[22..24]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        pic.common.margin.bottom = (&info_buf[24..26]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+
+        pic.padding.left = (&info_buf[26..28]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        pic.padding.right = (&info_buf[28..30]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        pic.padding.top = (&info_buf[30..32]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        pic.padding.bottom = (&info_buf[32..34]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+
+        let horz_align = (&info_buf[10..12]).read_i16::<LittleEndian>().unwrap_or(0);
+        if horz_align == -1 {
+            pic.common.horz_align = crate::model::shape::HorzAlign::Left;
+        } else if horz_align == -2 {
+            pic.common.horz_align = crate::model::shape::HorzAlign::Right;
+        } else if horz_align == -3 {
+            pic.common.horz_align = crate::model::shape::HorzAlign::Center;
+        } else {
+            pic.common.horz_align = crate::model::shape::HorzAlign::Left;
+            pic.common.horizontal_offset = (horz_align as i32 * 4) as u32;
+        }
+
+        let vert_align = (&info_buf[12..14]).read_i16::<LittleEndian>().unwrap_or(0);
+        if vert_align == -1 {
+            pic.common.vert_align = crate::model::shape::VertAlign::Top;
+        } else if vert_align == -2 {
+            pic.common.vert_align = crate::model::shape::VertAlign::Bottom;
+        } else if vert_align == -3 {
+            pic.common.vert_align = crate::model::shape::VertAlign::Center;
+        } else {
+            pic.common.vert_align = crate::model::shape::VertAlign::Top;
+            pic.common.vertical_offset = (vert_align as i32 * 4) as u32;
+        }
+        pic.common.attr = build_common_obj_attr(&pic.common);
+
+        let n_ext_from_buf = (&info_buf[0..4]).read_u32::<LittleEndian>().unwrap_or(0);
+        let n_ext = n_ext_from_buf;
+
+        // [Task #877] garbage length 로 인한 거대 alloc → WASM panic 방지.
+        let mut ext_buf = match alloc_record_buf(n_ext as usize) {
+            Ok(b) => b,
+            Err(_) => return Ok(Some(true)),
+        };
+        if let Err(_) = body_cursor.read_exact(&mut ext_buf) {
+            return Ok(Some(true));
+        }
+
+        let pic_type = info_buf[74];
+        if pic_type == 0 || pic_type == 1 || pic_type == 2 {
+            let pic_name_buf = &info_buf[83..83 + 256];
+            let mut pic_name = crate::parser::hwp3::encoding::decode_hwp3_string(pic_name_buf);
+            pic_name = pic_name.trim_end_matches('\0').to_string();
+
+            let _block_num = (&info_buf[62..64]).read_u16::<LittleEndian>().unwrap_or(0);
+            let _pic_info_size = (&info_buf[58..62]).read_u32::<LittleEndian>().unwrap_or(0);
+
+            if !pic_name.is_empty() {
+                // [Task #824] pic_type == 0 (외부 파일) 만 external_path
+                // 설정. pic_type == 1 (OLE) / 2 (Embedded) 는 pic_name 이
+                // 내부 참조명 (예: "E$$00000.jpg") 이므로 external_path
+                // 설정 시 그림 속성 dialog 가 외부 파일로 오표시됨
+                // (한컴오피스 2022 정합).
+                if pic_type == 0 {
+                    pic.image_attr.external_path = Some(pic_name.clone());
+                }
+                let next_id = (pic_name_to_id.len() + 1) as u16;
+                let id = *pic_name_to_id.entry(pic_name).or_insert(next_id);
+                pic.image_attr.bin_data_id = id;
+            }
+        } else if pic_type == 3 {
+            let mut ext_cursor = std::io::Cursor::new(ext_buf.as_slice());
+            match crate::parser::hwp3::drawing::parse_drawing_object_tree(
+                &mut ext_cursor,
+                doc_char_shapes,
+                doc_para_shapes,
+                doc_border_fills,
+                doc_tab_defs,
+                pic_name_to_id,
+            ) {
+                Ok(drawing_obj) => {
+                    **parsed_drawing_object = Some(drawing_obj);
+                }
+                Err(e) => {
+                    eprintln!("Failed to parse drawing object tree: {:?}", e);
+                }
+            }
+        }
+
+        let caption_pos = (&info_buf[70..72]).read_u16::<LittleEndian>().unwrap_or(0);
+        let caption_width = (&info_buf[46..48]).read_u16::<LittleEndian>().unwrap_or(0) as u32 * 4;
+        let caption_paras = parse_paragraph_list(
+            body_cursor,
+            doc_char_shapes,
+            doc_para_shapes,
+            doc_border_fills,
+            doc_tab_defs,
+            pic_name_to_id,
+            body_left_hu,
+            column_width_hu,
+            0,
+        )?;
+        let caption_direction = match caption_pos {
+            0 => crate::model::shape::CaptionDirection::Bottom,
+            1 => crate::model::shape::CaptionDirection::Top,
+            2 => crate::model::shape::CaptionDirection::Left,
+            3 => crate::model::shape::CaptionDirection::Right,
+            _ => crate::model::shape::CaptionDirection::Bottom,
+        };
+
+        let caption = hwp3_paragraphs_have_renderable_content(&caption_paras).then(|| {
+            crate::model::shape::Caption {
+                direction: caption_direction,
+                width: caption_width as _,
+                paragraphs: caption_paras,
+                ..Default::default()
+            }
+        });
+
+        if pic_type == 0 || pic_type == 1 || pic_type == 2 {
+            pic.caption = caption;
+            **parsed_picture = Some(pic);
+        } else if pic_type == 3 {
+            // For drawing objects, we might attach the caption if the root is a known shape
+            if let Some(mut drawing_obj) = parsed_drawing_object.take() {
+                match &mut drawing_obj {
+                    crate::model::shape::ShapeObject::Group(g) => {
+                        g.caption = caption.clone();
+                        pic.common.width = g.common.width;
+                        pic.common.height = g.common.height;
+                        g.common = pic.common.clone();
+                    }
+                    crate::model::shape::ShapeObject::Line(l) => {
+                        l.drawing.caption = caption.clone();
+                        pic.common.width = l.common.width;
+                        pic.common.height = l.common.height;
+                        l.common = pic.common.clone();
+                    }
+                    crate::model::shape::ShapeObject::Rectangle(r) => {
+                        r.drawing.caption = caption.clone();
+                        pic.common.width = r.common.width;
+                        pic.common.height = r.common.height;
+                        r.common = pic.common.clone();
+                    }
+                    crate::model::shape::ShapeObject::Ellipse(e) => {
+                        e.drawing.caption = caption.clone();
+                        pic.common.width = e.common.width;
+                        pic.common.height = e.common.height;
+                        e.common = pic.common.clone();
+                    }
+                    crate::model::shape::ShapeObject::Arc(a) => {
+                        a.drawing.caption = caption.clone();
+                        pic.common.width = a.common.width;
+                        pic.common.height = a.common.height;
+                        a.common = pic.common.clone();
+                    }
+                    crate::model::shape::ShapeObject::Polygon(p) => {
+                        p.drawing.caption = caption.clone();
+                        pic.common.width = p.common.width;
+                        pic.common.height = p.common.height;
+                        p.common = pic.common.clone();
+                    }
+                    crate::model::shape::ShapeObject::Curve(c) => {
+                        c.drawing.caption = caption.clone();
+                        pic.common.width = c.common.width;
+                        pic.common.height = c.common.height;
+                        c.common = pic.common.clone();
+                    }
+                    crate::model::shape::ShapeObject::Picture(p) => {
+                        p.caption = caption.clone();
+                        pic.common.width = p.common.width;
+                        pic.common.height = p.common.height;
+                        p.common = pic.common.clone();
+                    }
+                    _ => {}
+                }
+                **parsed_drawing_object = Some(drawing_obj);
+            }
+        }
+    } else if ch == 14 {
+        // 선
+        info_buf.resize(84, 0);
+        if let Err(_) = body_cursor.read_exact(info_buf.as_mut_slice()) {
+            return Ok(Some(true));
+        }
+
+        let mut line = crate::model::shape::LineShape::default();
+        let base_pos = info_buf.get(8).copied().unwrap_or(0);
+        line.common.horz_rel_to = match base_pos {
+            1 => crate::model::shape::HorzRelTo::Para,
+            2 => crate::model::shape::HorzRelTo::Page,
+            3 => crate::model::shape::HorzRelTo::Paper,
+            _ => crate::model::shape::HorzRelTo::Para, // 0 is Text (treat_as_char)
+        };
+        line.common.vert_rel_to = match base_pos {
+            1 => crate::model::shape::VertRelTo::Para,
+            2 => crate::model::shape::VertRelTo::Page,
+            3 => crate::model::shape::VertRelTo::Paper,
+            _ => crate::model::shape::VertRelTo::Para, // 0 is Text
+        };
+        line.common.treat_as_char = base_pos == 0;
+
+        line.common.horizontal_offset =
+            ((&info_buf[10..12]).read_i16::<LittleEndian>().unwrap_or(0) as i32 * 4) as u32;
+        line.common.vertical_offset =
+            ((&info_buf[12..14]).read_i16::<LittleEndian>().unwrap_or(0) as i32 * 4) as u32;
+
+        line.common.width = (&info_buf[42..44]).read_u16::<LittleEndian>().unwrap_or(0) as u32 * 4;
+        line.common.height = (&info_buf[44..46]).read_u16::<LittleEndian>().unwrap_or(0) as u32 * 4;
+
+        line.start.x = (&info_buf[70..72]).read_i16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+        line.start.y = (&info_buf[72..74]).read_i16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+        line.end.x = (&info_buf[74..76]).read_i16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+        line.end.y = (&info_buf[76..78]).read_i16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+
+        let thickness = (&info_buf[78..80]).read_u16::<LittleEndian>().unwrap_or(0);
+        let shade = (&info_buf[80..82]).read_u16::<LittleEndian>().unwrap_or(0);
+        let color = (&info_buf[82..84]).read_u16::<LittleEndian>().unwrap_or(0);
+
+        line.drawing.border_line.width = thickness as i32 * 4;
+        line.drawing.border_line.color = color as u32;
+
+        if shade > 0 && shade <= 100 {
+            let mut fill = crate::model::style::Fill::default();
+            fill.fill_type = crate::model::style::FillType::Solid;
+            let c = 255 - (shade as u32 * 255 / 100) as u8;
+            let fill_color = u32::from_le_bytes([c, c, c, 0]);
+            fill.solid = Some(crate::model::style::SolidFill {
+                background_color: fill_color,
+                pattern_color: 0,
+                pattern_type: 0,
+            });
+            line.drawing.fill = fill;
+        }
+
+        **parsed_line = Some(line);
+    } else if ch == 15 {
+        // 숨은 설명
+        info_buf.resize(8, 0);
+        if let Err(_) = body_cursor.read_exact(info_buf.as_mut_slice()) {
+            return Ok(Some(true));
+        }
+        **nested_paragraphs = parse_paragraph_list(
+            body_cursor,
+            doc_char_shapes,
+            doc_para_shapes,
+            doc_border_fills,
+            doc_tab_defs,
+            pic_name_to_id,
+            body_left_hu,
+            column_width_hu,
+            0,
+        )?;
+    } else if ch == 16 {
+        // 머리말/꼬리말
+        info_buf.resize(10, 0);
+        if let Err(_) = body_cursor.read_exact(info_buf.as_mut_slice()) {
+            return Ok(Some(true));
+        }
+        **nested_paragraphs = parse_paragraph_list(
+            body_cursor,
+            doc_char_shapes,
+            doc_para_shapes,
+            doc_border_fills,
+            doc_tab_defs,
+            pic_name_to_id,
+            body_left_hu,
+            column_width_hu,
+            0,
+        )?;
+    } else if ch == 17 {
+        // 각주/미주
+        info_buf.resize(14, 0);
+        if let Err(_) = body_cursor.read_exact(info_buf.as_mut_slice()) {
+            return Ok(Some(true));
+        }
+        let is_endnote = (&info_buf[10..12]).read_u16::<LittleEndian>().unwrap_or(0) == 1;
+        let note_column_width_hu = if is_endnote {
+            hwp3_note_column_width_hu(column_width_hu)
+        } else {
+            column_width_hu
+        };
+        **nested_paragraphs = parse_paragraph_list(
+            body_cursor,
+            doc_char_shapes,
+            doc_para_shapes,
+            doc_border_fills,
+            doc_tab_defs,
+            pic_name_to_id,
+            body_left_hu,
+            note_column_width_hu,
+            0,
+        )?;
+    } else if ch == 29 {
+        // 상호 참조
+        if header_val1 < 1000000 {
+            info_buf.resize(header_val1 as usize, 0);
+            let _ = body_cursor.read_exact(info_buf.as_mut_slice());
+        }
+    } else if ch == 5 {
+        // [Task #877] 필드 코드 (spec §10.1, 표 33): 가변 길이 8 + n bytes.
+        // header_val1 = n (필드 코드 세부 정보 길이).
+        // 현재 8 byte (ch + dword + ch close) 소비 완료, 추가 n bytes 소비.
+        if header_val1 > 0 {
+            let mut field_data = match alloc_record_buf(header_val1 as usize) {
+                Ok(b) => b,
+                Err(_) => return Ok(Some(true)),
+            };
+            if let Err(_) = body_cursor.read_exact(&mut field_data) {
+                return Ok(Some(true));
+            }
+        }
+    } else if ch == 6 {
+        // [Task #877] 책갈피 (spec §10.2, 표 36): 42 bytes total.
+        // - offset 0..2: ch=6 (begin) [outer loop 에서 read 완료]
+        // - offset 2..6: dword 자료구조 길이 = 34 [_=> else 의 header_val1 으로 read 완료]
+        // - offset 6..8: ch=6 (close) [_=> else 의 ch2 로 read 완료]
+        // - offset 8..40: hchar array[16] = 책갈피 이름 (32 bytes) — 추가 read 필요
+        // - offset 40..42: word 책갈피 종류 (2 bytes) — 추가 read 필요
+        // 총 추가 34 bytes (= header_val1 값과 동일).
+        // cc count 는 outer i+=3 으로 4 hchars (= 8 bytes) 만 차지.
+        let mut bookmark_extra = [0u8; 34];
+        if let Err(_) = body_cursor.read_exact(&mut bookmark_extra) {
+            return Ok(Some(true));
+        }
+        let name_buf = &bookmark_extra[0..32];
+        let name = crate::parser::hwp3::encoding::decode_hwp3_string(name_buf)
+            .trim_end_matches('\0')
+            .to_string();
+        let bookmark_type = (&bookmark_extra[32..34])
+            .read_u16::<LittleEndian>()
+            .unwrap_or(0);
+        let mut field = crate::model::control::Field::default();
+        field.field_type = crate::model::control::FieldType::Unknown;
+        field.command = format!("Bookmark:{}:type={}", name, bookmark_type);
+        controls.push(crate::model::control::Control::Field(field));
+        ctrl_data_records.push(None);
+    } else if ch == 7 {
+        // [Task #877] 날짜 형식 (spec §10.3, 표 37): 84 bytes total.
+        // - offset 0..2: ch=7 (begin) [outer read]
+        // - offset 2..82: hchar array[40] = 80 bytes 날짜 형식 (추가 read)
+        // - offset 82..84: ch=7 (close) (추가 read)
+        // 현재 outer loop + _=> else 에서 8 byte (ch + 6 byte header) 소비.
+        // 추가 76 byte 소비 필요.
+        let mut date_fmt = [0u8; 76];
+        if let Err(_) = body_cursor.read_exact(&mut date_fmt) {
+            return Ok(Some(true));
+        }
+    } else if ch == 8 {
+        // [Task #877] 날짜 코드 (spec §10.4, 표 38): 96 bytes total.
+        // - offset 0..2: ch=8 (begin) [outer read]
+        // - offset 2..82: hchar array[40] 형식 (80 bytes)
+        // - offset 82..90: word array[4] 날짜 (8 bytes)
+        // - offset 90..94: word array[2] 시각 (4 bytes)
+        // - offset 94..96: ch=8 (close) (2 bytes)
+        // 현재 _=> else 에서 8 byte 소비. 추가 88 byte 필요.
+        let mut date_code = [0u8; 88];
+        if let Err(_) = body_cursor.read_exact(&mut date_code) {
+            return Ok(Some(true));
+        }
+    } else {
+        // 알 수 없음 (코드 0-4, 12, 27 등 예약 문자)
+        // 8바이트 헤더(ch+field+ch2)만 소비. header_val1은 길이 필드가 아님.
+        // ch=3 실증: hex dump에서 ch2=0x2E('.')로 스펙의 반복코드와 불일치.
+        // 헤더 직후가 정상 단락 내용이므로 추가 skip 없음.
+    }
+    Ok(None)
+}
+
+/// [#2001 추출] 컨트롤 코드 catch-all(`_`) arm — GSO/개체(표·글상자·수식·버튼 등)
+/// 컨트롤 문자 파싱. 원본 arm 본문의 무변경 이동이며, 문자 루프를 향하던 `break`
+/// 17곳은 반환값 `(i, utf16_len, 문자루프중단)` 으로 치환됐다.
+#[allow(clippy::too_many_arguments)]
+fn parse_object_control_char(
+    body_cursor: &mut Cursor<&[u8]>,
+    doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
+    doc_para_shapes: &mut Vec<crate::model::style::ParaShape>,
+    doc_border_fills: &mut Vec<crate::model::style::BorderFill>,
+    doc_tab_defs: &mut Vec<crate::model::style::TabDef>,
+    pic_name_to_id: &mut std::collections::HashMap<String, u16>,
+    body_left_hu: i32,
+    column_width_hu: i32,
+    body_height_hu: i32,
+    ch: u16,
+    para_info: &Hwp3ParaInfo,
+    mut i: usize,
+    mut utf16_len: u32,
+    scan: &mut Hwp3CharScan<'_>,
+) -> Result<(usize, u32, bool), Hwp3Error> {
+    use byteorder::{LittleEndian, ReadBytesExt};
+    let Hwp3CharScan {
+        text_string,
+        char_offsets,
+        hwp3_char_to_utf16_pos,
+        controls,
+        ctrl_data_records,
+    } = scan;
+    let header_val1 = match body_cursor.read_u32::<LittleEndian>() {
+        Ok(v) => v,
+        Err(_) => return Ok((i, utf16_len, true)),
+    };
+    let _ch2 = match body_cursor.read_u16::<LittleEndian>() {
+        Ok(v) => v,
+        Err(_) => return Ok((i, utf16_len, true)),
+    };
+    for k in 0..3usize {
+        if i + k < hwp3_char_to_utf16_pos.len() {
+            hwp3_char_to_utf16_pos[i + k] = utf16_len;
+        }
+    }
+    i += 3; // 8바이트 헤더는 char_count에서 4개의 hchar를 차지합니다 (여기서 1개 읽고 3개 건너뜀)
+
+    let mut nested_paragraphs = Vec::new();
+    let mut parsed_table = None;
+    let mut parsed_equation = None;
+    let mut parsed_picture = None;
+    let mut parsed_line = None;
+    let mut parsed_drawing_object: Option<crate::model::shape::ShapeObject> = None;
+    let mut parsed_obj_type = 0;
+    let mut parsed_is_hypertext = false;
+
+    let mut info_buf = Vec::new();
+
+    let early_return = parse_hwp3_object_dispatch(
+        body_cursor,
+        doc_char_shapes,
+        doc_para_shapes,
+        doc_border_fills,
+        doc_tab_defs,
+        pic_name_to_id,
+        body_left_hu,
+        column_width_hu,
+        ch,
+        header_val1,
+        i,
+        utf16_len,
+        controls,
+        ctrl_data_records,
+        &mut Hwp3DrawingCarry {
+            nested_paragraphs: &mut nested_paragraphs,
+            parsed_table: &mut parsed_table,
+            parsed_equation: &mut parsed_equation,
+            parsed_picture: &mut parsed_picture,
+            parsed_line: &mut parsed_line,
+            parsed_drawing_object: &mut parsed_drawing_object,
+            parsed_obj_type: &mut parsed_obj_type,
+            parsed_is_hypertext: &mut parsed_is_hypertext,
+            info_buf: &mut info_buf,
+        },
+    )?;
+    if let Some(break_char_loop) = early_return {
+        return Ok((i, utf16_len, break_char_loop));
+    }
+
+    let is_non_tac_table = ch == 10
+        && parsed_table
+            .as_ref()
+            .is_some_and(|table| !table.common.treat_as_char);
+    let is_tac_picture_or_shape = ch == 11
+        && (parsed_picture
+            .as_ref()
+            .is_some_and(|pic| pic.common.treat_as_char)
+            || parsed_drawing_object
+                .as_ref()
+                .is_some_and(|shape| shape.common().treat_as_char));
+    let is_tac_line = ch == 14
+        && parsed_line
+            .as_ref()
+            .is_some_and(|line| line.common.treat_as_char);
+    let is_control_only_marker = text_string.is_empty() && i >= para_info.char_count as usize;
+    let preserve_invisible_anchor_gap = ch == 17 || is_non_tac_table;
+    // ch=15(숨은설명), ch=16(머리말/꼬리말), 비-TAC 표,
+    // 단독 TAC 그림/도형/선 자리 문단은 화면에 보이는 대체 글자를
+    // 만들지 않는다. 미주/각주와 비-TAC 표는 본문 안의 8유닛 앵커 슬롯을
+    // 별도로 보존해 컨트롤 위치를 잃지 않게 한다.
+    let omit_visible_marker = ch == 15
+        || ch == 16
+        || preserve_invisible_anchor_gap
+        || (is_control_only_marker && (is_tac_picture_or_shape || is_tac_line));
+    if omit_visible_marker {
+        if preserve_invisible_anchor_gap {
+            utf16_len += 8;
+        }
+    } else {
+        char_offsets.push(utf16_len);
+        utf16_len += 1;
+        text_string.push('\u{FFFC}');
+    }
+
+    if ch == 10 {
+        if parsed_is_hypertext {
+            let mut text = String::new();
+            if let Some(table) = &parsed_table {
+                if let Some(cell) = table.cells.first() {
+                    for para in &cell.paragraphs {
+                        text.push_str(&para.text);
+                        text.push('\n');
+                    }
+                }
+            }
+            controls.push(crate::model::control::Control::Hyperlink(
+                crate::model::control::Hyperlink {
+                    url: String::new(), // TODO: TagID 3에서 추출
+                    text: text.trim().to_string(),
+                },
+            ));
+        } else if let Some(eq) = parsed_equation {
+            controls.push(crate::model::control::Control::Equation(Box::new(eq)));
+        } else if parsed_obj_type == 1 {
+            if let Some(table) = parsed_table {
+                // HWP3 obj_type=1 글상자는 1x1 표 구조가 자리차지 흐름과
+                // 내부 여백을 이미 담고 있으므로 Table IR 그대로 보존한다.
+                controls.push(crate::model::control::Control::Table(Box::new(table)));
+            } else {
+                let mut rect = crate::model::shape::RectangleShape::default();
+                rect.drawing.text_box = Some(crate::model::shape::TextBox::default());
+                controls.push(crate::model::control::Control::Shape(Box::new(
+                    crate::model::shape::ShapeObject::Rectangle(rect),
+                )));
+            }
+        } else if parsed_obj_type == 3 {
+            let mut form = crate::model::control::FormObject::default();
+            form.form_type = crate::model::control::FormType::PushButton;
+            form.enabled = true;
+            if let Some(table) = parsed_table {
+                form.width = table.common.width;
+                form.height = table.common.height;
+                if let Some(cell) = table.cells.first() {
+                    let mut text = String::new();
+                    for para in &cell.paragraphs {
+                        text.push_str(&para.text);
+                        text.push('\n');
+                    }
+                    form.caption = text.trim().to_string();
+                    form.name = form.caption.clone();
+                    if let Some(bf) =
+                        doc_border_fills.get(cell.border_fill_id.saturating_sub(1) as usize)
+                    {
+                        if let Some(ref solid) = bf.fill.solid {
+                            form.back_color = solid.background_color;
+                        }
+                    }
+                }
+            }
+            controls.push(crate::model::control::Control::Form(Box::new(form)));
+        } else if let Some(table) = parsed_table {
+            controls.push(crate::model::control::Control::Table(Box::new(table)));
+        } else {
+            controls.push(crate::model::control::Control::Unknown(
+                crate::model::control::UnknownControl::default(),
+            ));
+        }
+    } else if ch == 11 {
+        if let Some(drawing) = parsed_drawing_object {
+            controls.push(crate::model::control::Control::Shape(Box::new(drawing)));
+        } else if let Some(pic) = parsed_picture {
+            controls.push(crate::model::control::Control::Picture(Box::new(pic)));
+        } else {
+            controls.push(crate::model::control::Control::Unknown(
+                crate::model::control::UnknownControl::default(),
+            ));
+        }
+    } else if ch == 14 {
+        if let Some(line) = parsed_line {
+            controls.push(crate::model::control::Control::Shape(Box::new(
+                crate::model::shape::ShapeObject::Line(line),
+            )));
+        } else {
+            controls.push(crate::model::control::Control::Unknown(
+                crate::model::control::UnknownControl::default(),
+            ));
+        }
+    } else if ch == 16 {
+        let apply_to = match info_buf.get(9).copied().unwrap_or(0) {
+            1 => crate::model::header_footer::HeaderFooterApply::Even,
+            2 => crate::model::header_footer::HeaderFooterApply::Odd,
+            _ => crate::model::header_footer::HeaderFooterApply::Both,
+        };
+        let is_footer = info_buf.get(8).copied().unwrap_or(0) == 1;
+
+        if is_footer {
+            let mut footer = crate::model::header_footer::Footer::default();
+            footer.paragraphs = nested_paragraphs;
+            footer.apply_to = apply_to;
+            footer.raw_ctrl_extra = info_buf.clone();
+            controls.push(crate::model::control::Control::Footer(Box::new(footer)));
+        } else {
+            let mut header = crate::model::header_footer::Header::default();
+            header.paragraphs = nested_paragraphs;
+            header.apply_to = apply_to;
+            header.raw_ctrl_extra = info_buf.clone();
+            controls.push(crate::model::control::Control::Header(Box::new(header)));
+        }
+    } else if ch == 17 {
+        let is_endnote = (&info_buf[10..12]).read_u16::<LittleEndian>().unwrap_or(0) == 1;
+
+        if is_endnote {
+            let mut endnote = crate::model::footnote::Endnote::default();
+            endnote.paragraphs = nested_paragraphs;
+            controls.push(crate::model::control::Control::Endnote(Box::new(endnote)));
+        } else {
+            let mut footnote = crate::model::footnote::Footnote::default();
+            footnote.paragraphs = nested_paragraphs;
+            controls.push(crate::model::control::Control::Footnote(Box::new(footnote)));
+        }
+    } else if ch == 29 {
+        let mut field = crate::model::control::Field::default();
+        field.field_type = crate::model::control::FieldType::CrossRef;
+
+        let kind = info_buf.first().copied().unwrap_or(0);
+        let target_name_bytes = if info_buf.len() >= 38 {
+            &info_buf[1..38]
+        } else {
+            &[]
+        };
+        let target_name = crate::parser::hwp3::encoding::decode_hwp3_string(target_name_bytes)
+            .trim_end_matches('\0')
+            .to_string();
+
+        let ref_type = if info_buf.len() >= 40 {
+            (&info_buf[38..40]).read_u16::<LittleEndian>().unwrap_or(0)
+        } else {
+            0
+        };
+        let n = if info_buf.len() >= 42 {
+            (&info_buf[40..42]).read_u16::<LittleEndian>().unwrap_or(0)
+        } else {
+            0
+        };
+
+        let ref_content_bytes = if info_buf.len() >= 46 + (n as usize) {
+            &info_buf[46..46 + (n as usize)]
+        } else if info_buf.len() > 46 {
+            &info_buf[46..]
+        } else {
+            &[]
+        };
+        let ref_content = crate::parser::hwp3::encoding::decode_hwp3_string(ref_content_bytes)
+            .trim_end_matches('\0')
+            .to_string();
+
+        // 명령어 문자열로 결합하거나 대상 이름을 사용
+        if kind == 0 {
+            field.command = format!("Target:{}", target_name);
+        } else {
+            field.command = format!(
+                "Ref:{},Target:{},Content:{}",
+                ref_type, target_name, ref_content
+            );
+        }
+        field.properties = ref_type as u32;
+        field.extra_properties = kind;
+
+        controls.push(crate::model::control::Control::Field(field));
+    } else {
+        controls.push(crate::model::control::Control::Unknown(
+            crate::model::control::UnknownControl { ctrl_id: ch as u32 },
+        ));
+    }
+    ctrl_data_records.push(None);
+    Ok((i, utf16_len, false))
+}
+
+/// [#2001 추출] 컨트롤 코드 18..=21 (필드/감추기 계열) — 원본 arm 무변경 이동.
+/// 문자 루프 break 는 반환값 (i, utf16_len, true) 로 치환.
+fn parse_field_control_char(
+    body_cursor: &mut Cursor<&[u8]>,
+    ch: u16,
+    mut i: usize,
+    mut utf16_len: u32,
+    scan: &mut Hwp3CharScan<'_>,
+) -> Result<(usize, u32, bool), Hwp3Error> {
+    use byteorder::{LittleEndian, ReadBytesExt};
+    let Hwp3CharScan {
+        text_string,
+        char_offsets,
+        hwp3_char_to_utf16_pos,
+        controls,
+        ctrl_data_records,
+    } = scan;
+    match ch {
+        18..=21 => {
+            let mut buf = [0u8; 6];
+            if let Err(_) = body_cursor.read_exact(&mut buf) {
+                return Ok((i, utf16_len, true));
+            }
+            for k in 0..3usize {
+                if i + k < hwp3_char_to_utf16_pos.len() {
+                    hwp3_char_to_utf16_pos[i + k] = utf16_len;
+                }
+            }
+            i += 3;
+            char_offsets.push(utf16_len);
+            utf16_len += 1;
+            // AutoNumber(ch=18)은 HWP5 패턴("  ")과 일치하도록 공백으로 저장
+            if ch == 18 {
+                text_string.push(' ');
+            } else {
+                text_string.push('\u{FFFC}');
+            }
+
+            let ctrl = match ch {
+                18 => {
+                    let mut auto_num = crate::model::control::AutoNumber::default();
+                    let n_type = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0);
+                    auto_num.number_type = match n_type {
+                        1 => crate::model::control::AutoNumberType::Footnote,
+                        2 => crate::model::control::AutoNumberType::Endnote,
+                        3 => crate::model::control::AutoNumberType::Picture,
+                        4 => crate::model::control::AutoNumberType::Table,
+                        5 => crate::model::control::AutoNumberType::Equation,
+                        _ => crate::model::control::AutoNumberType::Page,
+                    };
+                    auto_num.number = (&buf[2..4]).read_u16::<LittleEndian>().unwrap_or(0);
+                    crate::model::control::Control::AutoNumber(auto_num)
+                }
+                19 => {
+                    let mut new_num = crate::model::control::NewNumber::default();
+                    let n_type = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0);
+                    new_num.number_type = match n_type {
+                        1 => crate::model::control::AutoNumberType::Footnote,
+                        2 => crate::model::control::AutoNumberType::Endnote,
+                        3 => crate::model::control::AutoNumberType::Picture,
+                        4 => crate::model::control::AutoNumberType::Table,
+                        5 => crate::model::control::AutoNumberType::Equation,
+                        _ => crate::model::control::AutoNumberType::Page,
+                    };
+                    new_num.number = (&buf[2..4]).read_u16::<LittleEndian>().unwrap_or(0);
+                    crate::model::control::Control::NewNumber(new_num)
+                }
+                20 => {
+                    let mut pos = crate::model::control::PageNumberPos::default();
+                    pos.position = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0) as u8;
+                    let format_code = (&buf[2..4]).read_u16::<LittleEndian>().unwrap_or(0) as u8;
+                    match format_code {
+                        0 => pos.format = 0, // 숫자
+                        1 => pos.format = 2, // 대문자 로마자
+                        2 => pos.format = 3, // 소문자 로마자
+                        3 => {
+                            pos.format = 0;
+                            pos.dash_char = '-';
+                        }
+                        4 => {
+                            pos.format = 2;
+                            pos.dash_char = '-';
+                        }
+                        5 => {
+                            pos.format = 3;
+                            pos.dash_char = '-';
+                        }
+                        _ => pos.format = 0,
+                    }
+                    crate::model::control::Control::PageNumberPos(pos)
+                }
+                21 => {
+                    let kind = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0);
+                    if kind == 1 {
+                        let mut hide = crate::model::control::PageHide::default();
+                        let flags = (&buf[2..4]).read_u16::<LittleEndian>().unwrap_or(0);
+                        hide.hide_header = (flags & 1) != 0;
+                        hide.hide_footer = (flags & 2) != 0;
+                        hide.hide_page_num = (flags & 4) != 0;
+                        hide.hide_border = (flags & 8) != 0;
+                        crate::model::control::Control::PageHide(hide)
+                    } else {
+                        crate::model::control::Control::Unknown(
+                            crate::model::control::UnknownControl { ctrl_id: ch as u32 },
+                        )
+                    }
+                }
+                _ => {
+                    crate::model::control::Control::Unknown(crate::model::control::UnknownControl {
+                        ctrl_id: ch as u32,
+                    })
+                }
+            };
+            controls.push(ctrl);
+            ctrl_data_records.push(None);
+        }
+        _ => unreachable!("caller 가 보장하는 컨트롤 코드 범위 밖: {ch}"),
+    }
+    Ok((i, utf16_len, false))
+}
+
+/// [#2001 추출] 고정 크기 데이터 컨트롤 코드 9개 arm (탭 9, 고정폭 공백 30|31,
+/// 24|25, 26, 28, 22, 23, 7|8, TOC 참조 1) — 원본 arm 무변경 이동.
+/// 문자 루프 break 는 반환값 (i, utf16_len, true) 로 치환.
+fn parse_simple_control_char(
+    body_cursor: &mut Cursor<&[u8]>,
+    ch: u16,
+    mut i: usize,
+    mut utf16_len: u32,
+    scan: &mut Hwp3CharScan<'_>,
+) -> Result<(usize, u32, bool), Hwp3Error> {
+    use byteorder::{LittleEndian, ReadBytesExt};
+    let Hwp3CharScan {
+        text_string,
+        char_offsets,
+        hwp3_char_to_utf16_pos,
+        controls,
+        ctrl_data_records,
+    } = scan;
+    match ch {
+        30 | 31 => {
+            let mut buf = [0u8; 2];
+            if let Err(_) = body_cursor.read_exact(&mut buf) {
+                return Ok((i, utf16_len, true));
+            }
+            if i < hwp3_char_to_utf16_pos.len() {
+                hwp3_char_to_utf16_pos[i] = utf16_len;
+            }
+            i += 1;
+            char_offsets.push(utf16_len);
+            utf16_len += 1;
+            text_string.push(if ch == 30 { '\u{00A0}' } else { ' ' });
+        }
+        24 | 25 => {
+            let mut buf = [0u8; 4];
+            if let Err(_) = body_cursor.read_exact(&mut buf) {
+                return Ok((i, utf16_len, true));
+            }
+            for k in 0..2usize {
+                if i + k < hwp3_char_to_utf16_pos.len() {
+                    hwp3_char_to_utf16_pos[i + k] = utf16_len;
+                }
+            }
+            i += 2;
+            char_offsets.push(utf16_len);
+            utf16_len += 1;
+            text_string.push('-');
+        }
+        9 => {
+            // [#929] HWP3 spec §10.5 표 39: 탭 = 8 bytes 구조
+            //   offset 0: hchar(=9)  [outer read 완료]
+            //   offset 2: hunit       탭 폭
+            //   offset 4: word        점끌기 여부
+            //   offset 6: hchar(=9)  닫기
+            // char_count 단위는 hchar(2B); 8 bytes = 4 hchar 차지 → i += 3 추가.
+            let mut buf = [0u8; 6];
+            if let Err(_) = body_cursor.read_exact(&mut buf) {
+                return Ok((i, utf16_len, true));
+            }
+            for k in 0..3usize {
+                if i + k < hwp3_char_to_utf16_pos.len() {
+                    hwp3_char_to_utf16_pos[i + k] = utf16_len;
+                }
+            }
+            i += 3;
+            char_offsets.push(utf16_len);
+            // [Task #1950] HWP5 시멘틱: 탭은 PARA_TEXT 에서 8 code-unit
+            // (0x0009 + 확장 7)을 차지한다. char_offsets/char_count/char_shape
+            // start_pos(hwp3_char_to_utf16_pos)를 8-unit 으로 통일해야 HWP5
+            // 직렬화(탭 8-unit 확장) 후 char_shape 정렬이 어긋나지 않는다
+            // (HWP3-origin 변환본 탭 run 3+1 분할·376px 이탈 방지, 2955331).
+            utf16_len += 8;
+            text_string.push('\t');
+        }
+        7 | 8 => {
+            let mut buf = [0u8; 6];
+            if let Err(_) = body_cursor.read_exact(&mut buf) {
+                return Ok((i, utf16_len, true));
+            }
+            for k in 0..3usize {
+                if i + k < hwp3_char_to_utf16_pos.len() {
+                    hwp3_char_to_utf16_pos[i + k] = utf16_len;
+                }
+            }
+            i += 3;
+            char_offsets.push(utf16_len);
+            utf16_len += 1;
+            text_string.push('\u{FFFC}');
+            controls.push(crate::model::control::Control::Unknown(
+                crate::model::control::UnknownControl { ctrl_id: ch as u32 },
+            ));
+            ctrl_data_records.push(None);
+        }
+        23 => {
+            let mut buf = [0u8; 8];
+            if let Err(_) = body_cursor.read_exact(&mut buf) {
+                return Ok((i, utf16_len, true));
+            }
+            for k in 0..4usize {
+                if i + k < hwp3_char_to_utf16_pos.len() {
+                    hwp3_char_to_utf16_pos[i + k] = utf16_len;
+                }
+            }
+            i += 4;
+            char_offsets.push(utf16_len);
+            utf16_len += 1;
+            text_string.push('\u{FFFC}');
+            let mut overlap = crate::model::control::CharOverlap::default();
+            // buf[0..2] 또는 buf[2..8]은 문자와 테두리 종류를 포함할 수 있습니다.
+            // 가능한 부분을 매핑하지만, 테스트 없이 정확한 오프셋을 찾기는 까다로우므로
+            // 구조체는 유지하되 완벽하게 채우지 않을 수도 있습니다.
+            controls.push(crate::model::control::Control::CharOverlap(overlap));
+            ctrl_data_records.push(None);
+        }
+        22 => {
+            let mut buf = [0u8; 22];
+            if let Err(_) = body_cursor.read_exact(&mut buf) {
+                return Ok((i, utf16_len, true));
+            }
+            for k in 0..11usize {
+                if i + k < hwp3_char_to_utf16_pos.len() {
+                    hwp3_char_to_utf16_pos[i + k] = utf16_len;
+                }
+            }
+            i += 11;
+            char_offsets.push(utf16_len);
+            utf16_len += 1;
+            text_string.push('\u{FFFC}');
+            let name_buf = &buf[2..22];
+            let name = crate::parser::hwp3::encoding::decode_hwp3_string(name_buf)
+                .trim_end_matches('\0')
+                .to_string();
+            let mut field = crate::model::control::Field::default();
+            field.field_type = crate::model::control::FieldType::MailMerge;
+            field.command = name;
+            controls.push(crate::model::control::Control::Field(field));
+            ctrl_data_records.push(None);
+        }
+        26 => {
+            let mut buf = [0u8; 244];
+            if let Err(_) = body_cursor.read_exact(&mut buf) {
+                return Ok((i, utf16_len, true));
+            }
+            for k in 0..122usize {
+                if i + k < hwp3_char_to_utf16_pos.len() {
+                    hwp3_char_to_utf16_pos[i + k] = utf16_len;
+                }
+            }
+            i += 122;
+            char_offsets.push(utf16_len);
+            utf16_len += 1;
+            text_string.push('\u{FFFC}');
+
+            let kw1_bytes = &buf[0..120];
+            let kw2_bytes = &buf[120..240];
+
+            let mut field = crate::model::control::Field::default();
+            field.field_type = crate::model::control::FieldType::Unknown;
+            field.command = format!(
+                "IndexMark:{}:{}",
+                crate::parser::hwp3::encoding::decode_hwp3_string(kw1_bytes).trim_end_matches('\0'),
+                crate::parser::hwp3::encoding::decode_hwp3_string(kw2_bytes).trim_end_matches('\0')
+            );
+
+            controls.push(crate::model::control::Control::Field(field));
+            ctrl_data_records.push(None);
+        }
+        28 => {
+            let mut buf = [0u8; 62];
+            if let Err(_) = body_cursor.read_exact(&mut buf) {
+                return Ok((i, utf16_len, true));
+            }
+            for k in 0..31usize {
+                if i + k < hwp3_char_to_utf16_pos.len() {
+                    hwp3_char_to_utf16_pos[i + k] = utf16_len;
+                }
+            }
+            i += 31;
+            char_offsets.push(utf16_len);
+            utf16_len += 1;
+            text_string.push('\u{FFFC}');
+
+            let kind = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0);
+            let shape = buf[2];
+            let level = buf[3];
+
+            let mut field = crate::model::control::Field::default();
+            field.field_type = crate::model::control::FieldType::Unknown;
+            field.command = format!("Outline:kind={}:shape={}:level={}", kind, shape, level);
+
+            controls.push(crate::model::control::Control::Field(field));
+            ctrl_data_records.push(None);
+        }
+        1 => {
+            // [Task #741 Stage 8] HWP3 ch=1 = TOC entry inline page number reference.
+            // Format: ch=1 marker (2 bytes) + 0x0009 marker (2 bytes) + digit1 ASCII (2 bytes) + digit2 ASCII or 0x000D (2 bytes).
+            // 한컴 viewer 가 차례 (TOC) entry 의 page 번호를 inline 으로 저장하는 영역.
+            // header_val1 second u16 = digit1 ASCII, ch2 = digit2 ASCII OR 0x000D (1-digit terminator).
+            let header_val1 = match body_cursor.read_u32::<LittleEndian>() {
+                Ok(v) => v,
+                Err(_) => return Ok((i, utf16_len, true)),
+            };
+            let ch2 = match body_cursor.read_u16::<LittleEndian>() {
+                Ok(v) => v,
+                Err(_) => return Ok((i, utf16_len, true)),
+            };
+            // hchar slot count: 1 (initial read) + 3 (8 byte total per spec).
+            for k in 0..3usize {
+                if i + k < hwp3_char_to_utf16_pos.len() {
+                    hwp3_char_to_utf16_pos[i + k] = utf16_len;
+                }
+            }
+            i += 3;
+
+            // Decode page number digits.
+            let digit1_u16 = ((header_val1 >> 16) & 0xFFFF) as u16;
+            let mut page_str = String::new();
+            if (0x0030..=0x0039).contains(&digit1_u16) {
+                page_str.push(char::from_u32(digit1_u16 as u32).unwrap_or('?'));
+            }
+            if (0x0030..=0x0039).contains(&ch2) {
+                page_str.push(char::from_u32(ch2 as u32).unwrap_or('?'));
+            }
+
+            if !page_str.is_empty() {
+                for c in page_str.chars() {
+                    char_offsets.push(utf16_len);
+                    utf16_len += c.len_utf16() as u32;
+                    text_string.push(c);
+                }
+            } else {
+                // unrecognized — fall back to placeholder
+                char_offsets.push(utf16_len);
+                utf16_len += 1;
+                text_string.push('\u{FFFC}');
+                controls.push(crate::model::control::Control::Unknown(
+                    crate::model::control::UnknownControl { ctrl_id: ch as u32 },
+                ));
+                ctrl_data_records.push(None);
+            }
+        }
+        _ => unreachable!("caller 가 보장하는 컨트롤 코드 범위 밖: {ch}"),
+    }
+    Ok((i, utf16_len, false))
+}
+
 pub(crate) fn parse_paragraph_list(
     body_cursor: &mut Cursor<&[u8]>,
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
@@ -536,1443 +2057,74 @@ pub(crate) fn parse_paragraph_list(
 
             if ch > 0 && ch <= 31 && ch != 13 {
                 match ch {
-                    30 | 31 => {
-                        let mut buf = [0u8; 2];
-                        if let Err(_) = body_cursor.read_exact(&mut buf) {
+                    1 | 7 | 8 | 9 | 22 | 23 | 24 | 25 | 26 | 28 | 30 | 31 => {
+                        let (next_i, next_utf16_len, break_char_loop) = parse_simple_control_char(
+                            body_cursor,
+                            ch,
+                            i,
+                            utf16_len,
+                            &mut Hwp3CharScan {
+                                text_string: &mut text_string,
+                                char_offsets: &mut char_offsets,
+                                hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
+                                controls: &mut controls,
+                                ctrl_data_records: &mut ctrl_data_records,
+                            },
+                        )?;
+                        i = next_i;
+                        utf16_len = next_utf16_len;
+                        if break_char_loop {
                             break;
                         }
-                        if i < hwp3_char_to_utf16_pos.len() {
-                            hwp3_char_to_utf16_pos[i] = utf16_len;
-                        }
-                        i += 1;
-                        char_offsets.push(utf16_len);
-                        utf16_len += 1;
-                        text_string.push(if ch == 30 { '\u{00A0}' } else { ' ' });
-                    }
-                    24 | 25 => {
-                        let mut buf = [0u8; 4];
-                        if let Err(_) = body_cursor.read_exact(&mut buf) {
-                            break;
-                        }
-                        for k in 0..2usize {
-                            if i + k < hwp3_char_to_utf16_pos.len() {
-                                hwp3_char_to_utf16_pos[i + k] = utf16_len;
-                            }
-                        }
-                        i += 2;
-                        char_offsets.push(utf16_len);
-                        utf16_len += 1;
-                        text_string.push('-');
-                    }
-                    9 => {
-                        // [#929] HWP3 spec §10.5 표 39: 탭 = 8 bytes 구조
-                        //   offset 0: hchar(=9)  [outer read 완료]
-                        //   offset 2: hunit       탭 폭
-                        //   offset 4: word        점끌기 여부
-                        //   offset 6: hchar(=9)  닫기
-                        // char_count 단위는 hchar(2B); 8 bytes = 4 hchar 차지 → i += 3 추가.
-                        let mut buf = [0u8; 6];
-                        if let Err(_) = body_cursor.read_exact(&mut buf) {
-                            break;
-                        }
-                        for k in 0..3usize {
-                            if i + k < hwp3_char_to_utf16_pos.len() {
-                                hwp3_char_to_utf16_pos[i + k] = utf16_len;
-                            }
-                        }
-                        i += 3;
-                        char_offsets.push(utf16_len);
-                        utf16_len += 1;
-                        text_string.push('\t');
                     }
                     18..=21 => {
-                        let mut buf = [0u8; 6];
-                        if let Err(_) = body_cursor.read_exact(&mut buf) {
+                        let (next_i, next_utf16_len, break_char_loop) = parse_field_control_char(
+                            body_cursor,
+                            ch,
+                            i,
+                            utf16_len,
+                            &mut Hwp3CharScan {
+                                text_string: &mut text_string,
+                                char_offsets: &mut char_offsets,
+                                hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
+                                controls: &mut controls,
+                                ctrl_data_records: &mut ctrl_data_records,
+                            },
+                        )?;
+                        i = next_i;
+                        utf16_len = next_utf16_len;
+                        if break_char_loop {
                             break;
-                        }
-                        for k in 0..3usize {
-                            if i + k < hwp3_char_to_utf16_pos.len() {
-                                hwp3_char_to_utf16_pos[i + k] = utf16_len;
-                            }
-                        }
-                        i += 3;
-                        char_offsets.push(utf16_len);
-                        utf16_len += 1;
-                        // AutoNumber(ch=18)은 HWP5 패턴("  ")과 일치하도록 공백으로 저장
-                        if ch == 18 {
-                            text_string.push(' ');
-                        } else {
-                            text_string.push('\u{FFFC}');
-                        }
-
-                        let ctrl = match ch {
-                            18 => {
-                                let mut auto_num = crate::model::control::AutoNumber::default();
-                                let n_type = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0);
-                                auto_num.number_type = match n_type {
-                                    1 => crate::model::control::AutoNumberType::Footnote,
-                                    2 => crate::model::control::AutoNumberType::Endnote,
-                                    3 => crate::model::control::AutoNumberType::Picture,
-                                    4 => crate::model::control::AutoNumberType::Table,
-                                    5 => crate::model::control::AutoNumberType::Equation,
-                                    _ => crate::model::control::AutoNumberType::Page,
-                                };
-                                auto_num.number =
-                                    (&buf[2..4]).read_u16::<LittleEndian>().unwrap_or(0);
-                                crate::model::control::Control::AutoNumber(auto_num)
-                            }
-                            19 => {
-                                let mut new_num = crate::model::control::NewNumber::default();
-                                let n_type = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0);
-                                new_num.number_type = match n_type {
-                                    1 => crate::model::control::AutoNumberType::Footnote,
-                                    2 => crate::model::control::AutoNumberType::Endnote,
-                                    3 => crate::model::control::AutoNumberType::Picture,
-                                    4 => crate::model::control::AutoNumberType::Table,
-                                    5 => crate::model::control::AutoNumberType::Equation,
-                                    _ => crate::model::control::AutoNumberType::Page,
-                                };
-                                new_num.number =
-                                    (&buf[2..4]).read_u16::<LittleEndian>().unwrap_or(0);
-                                crate::model::control::Control::NewNumber(new_num)
-                            }
-                            20 => {
-                                let mut pos = crate::model::control::PageNumberPos::default();
-                                pos.position =
-                                    (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0) as u8;
-                                let format_code =
-                                    (&buf[2..4]).read_u16::<LittleEndian>().unwrap_or(0) as u8;
-                                match format_code {
-                                    0 => pos.format = 0, // 숫자
-                                    1 => pos.format = 2, // 대문자 로마자
-                                    2 => pos.format = 3, // 소문자 로마자
-                                    3 => {
-                                        pos.format = 0;
-                                        pos.dash_char = '-';
-                                    }
-                                    4 => {
-                                        pos.format = 2;
-                                        pos.dash_char = '-';
-                                    }
-                                    5 => {
-                                        pos.format = 3;
-                                        pos.dash_char = '-';
-                                    }
-                                    _ => pos.format = 0,
-                                }
-                                crate::model::control::Control::PageNumberPos(pos)
-                            }
-                            21 => {
-                                let kind = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0);
-                                if kind == 1 {
-                                    let mut hide = crate::model::control::PageHide::default();
-                                    let flags =
-                                        (&buf[2..4]).read_u16::<LittleEndian>().unwrap_or(0);
-                                    hide.hide_header = (flags & 1) != 0;
-                                    hide.hide_footer = (flags & 2) != 0;
-                                    hide.hide_page_num = (flags & 4) != 0;
-                                    hide.hide_border = (flags & 8) != 0;
-                                    crate::model::control::Control::PageHide(hide)
-                                } else {
-                                    crate::model::control::Control::Unknown(
-                                        crate::model::control::UnknownControl {
-                                            ctrl_id: ch as u32,
-                                        },
-                                    )
-                                }
-                            }
-                            _ => crate::model::control::Control::Unknown(
-                                crate::model::control::UnknownControl { ctrl_id: ch as u32 },
-                            ),
-                        };
-                        controls.push(ctrl);
-                        ctrl_data_records.push(None);
-                    }
-                    7 | 8 => {
-                        let mut buf = [0u8; 6];
-                        if let Err(_) = body_cursor.read_exact(&mut buf) {
-                            break;
-                        }
-                        for k in 0..3usize {
-                            if i + k < hwp3_char_to_utf16_pos.len() {
-                                hwp3_char_to_utf16_pos[i + k] = utf16_len;
-                            }
-                        }
-                        i += 3;
-                        char_offsets.push(utf16_len);
-                        utf16_len += 1;
-                        text_string.push('\u{FFFC}');
-                        controls.push(crate::model::control::Control::Unknown(
-                            crate::model::control::UnknownControl { ctrl_id: ch as u32 },
-                        ));
-                        ctrl_data_records.push(None);
-                    }
-                    23 => {
-                        let mut buf = [0u8; 8];
-                        if let Err(_) = body_cursor.read_exact(&mut buf) {
-                            break;
-                        }
-                        for k in 0..4usize {
-                            if i + k < hwp3_char_to_utf16_pos.len() {
-                                hwp3_char_to_utf16_pos[i + k] = utf16_len;
-                            }
-                        }
-                        i += 4;
-                        char_offsets.push(utf16_len);
-                        utf16_len += 1;
-                        text_string.push('\u{FFFC}');
-                        let mut overlap = crate::model::control::CharOverlap::default();
-                        // buf[0..2] 또는 buf[2..8]은 문자와 테두리 종류를 포함할 수 있습니다.
-                        // 가능한 부분을 매핑하지만, 테스트 없이 정확한 오프셋을 찾기는 까다로우므로
-                        // 구조체는 유지하되 완벽하게 채우지 않을 수도 있습니다.
-                        controls.push(crate::model::control::Control::CharOverlap(overlap));
-                        ctrl_data_records.push(None);
-                    }
-                    22 => {
-                        let mut buf = [0u8; 22];
-                        if let Err(_) = body_cursor.read_exact(&mut buf) {
-                            break;
-                        }
-                        for k in 0..11usize {
-                            if i + k < hwp3_char_to_utf16_pos.len() {
-                                hwp3_char_to_utf16_pos[i + k] = utf16_len;
-                            }
-                        }
-                        i += 11;
-                        char_offsets.push(utf16_len);
-                        utf16_len += 1;
-                        text_string.push('\u{FFFC}');
-                        let name_buf = &buf[2..22];
-                        let name = crate::parser::hwp3::encoding::decode_hwp3_string(name_buf)
-                            .trim_end_matches('\0')
-                            .to_string();
-                        let mut field = crate::model::control::Field::default();
-                        field.field_type = crate::model::control::FieldType::MailMerge;
-                        field.command = name;
-                        controls.push(crate::model::control::Control::Field(field));
-                        ctrl_data_records.push(None);
-                    }
-                    26 => {
-                        let mut buf = [0u8; 244];
-                        if let Err(_) = body_cursor.read_exact(&mut buf) {
-                            break;
-                        }
-                        for k in 0..122usize {
-                            if i + k < hwp3_char_to_utf16_pos.len() {
-                                hwp3_char_to_utf16_pos[i + k] = utf16_len;
-                            }
-                        }
-                        i += 122;
-                        char_offsets.push(utf16_len);
-                        utf16_len += 1;
-                        text_string.push('\u{FFFC}');
-
-                        let kw1_bytes = &buf[0..120];
-                        let kw2_bytes = &buf[120..240];
-
-                        let mut field = crate::model::control::Field::default();
-                        field.field_type = crate::model::control::FieldType::Unknown;
-                        field.command = format!(
-                            "IndexMark:{}:{}",
-                            crate::parser::hwp3::encoding::decode_hwp3_string(kw1_bytes)
-                                .trim_end_matches('\0'),
-                            crate::parser::hwp3::encoding::decode_hwp3_string(kw2_bytes)
-                                .trim_end_matches('\0')
-                        );
-
-                        controls.push(crate::model::control::Control::Field(field));
-                        ctrl_data_records.push(None);
-                    }
-                    28 => {
-                        let mut buf = [0u8; 62];
-                        if let Err(_) = body_cursor.read_exact(&mut buf) {
-                            break;
-                        }
-                        for k in 0..31usize {
-                            if i + k < hwp3_char_to_utf16_pos.len() {
-                                hwp3_char_to_utf16_pos[i + k] = utf16_len;
-                            }
-                        }
-                        i += 31;
-                        char_offsets.push(utf16_len);
-                        utf16_len += 1;
-                        text_string.push('\u{FFFC}');
-
-                        let kind = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0);
-                        let shape = buf[2];
-                        let level = buf[3];
-
-                        let mut field = crate::model::control::Field::default();
-                        field.field_type = crate::model::control::FieldType::Unknown;
-                        field.command =
-                            format!("Outline:kind={}:shape={}:level={}", kind, shape, level);
-
-                        controls.push(crate::model::control::Control::Field(field));
-                        ctrl_data_records.push(None);
-                    }
-                    1 => {
-                        // [Task #741 Stage 8] HWP3 ch=1 = TOC entry inline page number reference.
-                        // Format: ch=1 marker (2 bytes) + 0x0009 marker (2 bytes) + digit1 ASCII (2 bytes) + digit2 ASCII or 0x000D (2 bytes).
-                        // 한컴 viewer 가 차례 (TOC) entry 의 page 번호를 inline 으로 저장하는 영역.
-                        // header_val1 second u16 = digit1 ASCII, ch2 = digit2 ASCII OR 0x000D (1-digit terminator).
-                        let header_val1 = match body_cursor.read_u32::<LittleEndian>() {
-                            Ok(v) => v,
-                            Err(_) => break,
-                        };
-                        let ch2 = match body_cursor.read_u16::<LittleEndian>() {
-                            Ok(v) => v,
-                            Err(_) => break,
-                        };
-                        // hchar slot count: 1 (initial read) + 3 (8 byte total per spec).
-                        for k in 0..3usize {
-                            if i + k < hwp3_char_to_utf16_pos.len() {
-                                hwp3_char_to_utf16_pos[i + k] = utf16_len;
-                            }
-                        }
-                        i += 3;
-
-                        // Decode page number digits.
-                        let digit1_u16 = ((header_val1 >> 16) & 0xFFFF) as u16;
-                        let mut page_str = String::new();
-                        if (0x0030..=0x0039).contains(&digit1_u16) {
-                            page_str.push(char::from_u32(digit1_u16 as u32).unwrap_or('?'));
-                        }
-                        if (0x0030..=0x0039).contains(&ch2) {
-                            page_str.push(char::from_u32(ch2 as u32).unwrap_or('?'));
-                        }
-
-                        if !page_str.is_empty() {
-                            for c in page_str.chars() {
-                                char_offsets.push(utf16_len);
-                                utf16_len += c.len_utf16() as u32;
-                                text_string.push(c);
-                            }
-                        } else {
-                            // unrecognized — fall back to placeholder
-                            char_offsets.push(utf16_len);
-                            utf16_len += 1;
-                            text_string.push('\u{FFFC}');
-                            controls.push(crate::model::control::Control::Unknown(
-                                crate::model::control::UnknownControl { ctrl_id: ch as u32 },
-                            ));
-                            ctrl_data_records.push(None);
                         }
                     }
                     _ => {
-                        let header_val1 = match body_cursor.read_u32::<LittleEndian>() {
-                            Ok(v) => v,
-                            Err(_) => break,
-                        };
-                        let _ch2 = match body_cursor.read_u16::<LittleEndian>() {
-                            Ok(v) => v,
-                            Err(_) => break,
-                        };
-                        for k in 0..3usize {
-                            if i + k < hwp3_char_to_utf16_pos.len() {
-                                hwp3_char_to_utf16_pos[i + k] = utf16_len;
-                            }
+                        let (next_i, next_utf16_len, break_char_loop) = parse_object_control_char(
+                            body_cursor,
+                            doc_char_shapes,
+                            doc_para_shapes,
+                            doc_border_fills,
+                            doc_tab_defs,
+                            pic_name_to_id,
+                            body_left_hu,
+                            column_width_hu,
+                            body_height_hu,
+                            ch,
+                            &para_info,
+                            i,
+                            utf16_len,
+                            &mut Hwp3CharScan {
+                                text_string: &mut text_string,
+                                char_offsets: &mut char_offsets,
+                                hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
+                                controls: &mut controls,
+                                ctrl_data_records: &mut ctrl_data_records,
+                            },
+                        )?;
+                        i = next_i;
+                        utf16_len = next_utf16_len;
+                        if break_char_loop {
+                            break;
                         }
-                        i += 3; // 8바이트 헤더는 char_count에서 4개의 hchar를 차지합니다 (여기서 1개 읽고 3개 건너뜀)
-
-                        let mut nested_paragraphs = Vec::new();
-                        let mut parsed_table = None;
-                        let mut parsed_equation = None;
-                        let mut parsed_picture = None;
-                        let mut parsed_line = None;
-                        let mut parsed_drawing_object: Option<crate::model::shape::ShapeObject> =
-                            None;
-                        let mut parsed_obj_type = 0;
-                        let mut parsed_is_hypertext = false;
-
-                        let mut info_buf = Vec::new();
-
-                        if ch == 10 {
-                            // 표 / 글상자 / 수식 / 버튼
-                            info_buf.resize(84, 0);
-                            if let Err(_) = body_cursor.read_exact(&mut info_buf) {
-                                break;
-                            }
-                            let obj_type = if info_buf.len() >= 80 {
-                                (&info_buf[78..80]).read_u16::<LittleEndian>().unwrap_or(0)
-                            } else {
-                                0
-                            };
-                            let other_options = if info_buf.len() >= 16 {
-                                (&info_buf[14..16]).read_u16::<LittleEndian>().unwrap_or(0)
-                            } else {
-                                0
-                            };
-                            parsed_obj_type = obj_type;
-                            parsed_is_hypertext = (other_options & 0x10) != 0;
-                            let cell_count = if info_buf.len() >= 82 {
-                                (&info_buf[80..82]).read_u16::<LittleEndian>().unwrap_or(1)
-                            } else {
-                                1
-                            };
-
-                            // 이들은 모두 같은 구조를 가집니다: 84바이트 정보 -> 각 셀당 27바이트 -> 셀당 문단 리스트 -> 캡션 문단.
-                            let mut table = crate::model::table::Table::default();
-
-                            table.outer_margin_left =
-                                (&info_buf[18..20]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-                            table.outer_margin_right =
-                                (&info_buf[20..22]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-                            table.outer_margin_top =
-                                (&info_buf[22..24]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-                            table.outer_margin_bottom =
-                                (&info_buf[24..26]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-                            table.common.margin.left = table.outer_margin_left;
-                            table.common.margin.right = table.outer_margin_right;
-                            table.common.margin.top = table.outer_margin_top;
-                            table.common.margin.bottom = table.outer_margin_bottom;
-
-                            table.padding.left =
-                                (&info_buf[26..28]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-                            table.padding.right =
-                                (&info_buf[28..30]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-                            table.padding.top =
-                                (&info_buf[30..32]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-                            table.padding.bottom =
-                                (&info_buf[32..34]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-
-                            table.common.width =
-                                ((&info_buf[42..44]).read_u16::<LittleEndian>().unwrap_or(0)
-                                    as u32)
-                                    * 4;
-                            table.common.height =
-                                ((&info_buf[44..46]).read_u16::<LittleEndian>().unwrap_or(0)
-                                    as u32)
-                                    * 4;
-
-                            let ref_pos = info_buf[8];
-                            table.common.treat_as_char = ref_pos == 0;
-                            match ref_pos {
-                                1 => {
-                                    table.common.horz_rel_to = crate::model::shape::HorzRelTo::Para;
-                                    table.common.vert_rel_to = crate::model::shape::VertRelTo::Para;
-                                }
-                                2 => {
-                                    table.common.horz_rel_to = crate::model::shape::HorzRelTo::Page;
-                                    table.common.vert_rel_to = crate::model::shape::VertRelTo::Page;
-                                }
-                                3 => {
-                                    table.common.horz_rel_to =
-                                        crate::model::shape::HorzRelTo::Paper;
-                                    table.common.vert_rel_to =
-                                        crate::model::shape::VertRelTo::Paper;
-                                }
-                                _ => {}
-                            }
-
-                            // 그림 피함(offset 9): 0=자리차지(TopAndBottom), 1=투명, 2=어울림
-                            let text_wrap = info_buf[9];
-                            // table.common.treat_as_char remains ref_pos == 0
-                            table.common.text_wrap = match text_wrap {
-                                0 => crate::model::shape::TextWrap::TopAndBottom, // 자리차지
-                                1 => crate::model::shape::TextWrap::BehindText,   // 투명 (글자 뒤)
-                                2 => crate::model::shape::TextWrap::Square,       // 어울림
-                                _ => crate::model::shape::TextWrap::Square,
-                            };
-
-                            let horz_align =
-                                (&info_buf[10..12]).read_i16::<LittleEndian>().unwrap_or(0);
-                            if horz_align == -1 {
-                                table.common.horz_align = crate::model::shape::HorzAlign::Left;
-                            } else if horz_align == -2 {
-                                table.common.horz_align = crate::model::shape::HorzAlign::Right;
-                            } else if horz_align == -3 {
-                                table.common.horz_align = crate::model::shape::HorzAlign::Center;
-                            } else {
-                                table.common.horz_align = crate::model::shape::HorzAlign::Left;
-                                table.common.horizontal_offset = (horz_align as i32 * 4) as u32;
-                            }
-
-                            let vert_align =
-                                (&info_buf[12..14]).read_i16::<LittleEndian>().unwrap_or(0);
-                            if vert_align == -1 {
-                                table.common.vert_align = crate::model::shape::VertAlign::Top;
-                            } else if vert_align == -2 {
-                                table.common.vert_align = crate::model::shape::VertAlign::Bottom;
-                            } else if vert_align == -3 {
-                                table.common.vert_align = crate::model::shape::VertAlign::Center;
-                            } else {
-                                table.common.vert_align = crate::model::shape::VertAlign::Top;
-                                table.common.vertical_offset = (vert_align as i32 * 4) as u32;
-                            }
-                            table.common.attr = build_common_obj_attr(&table.common);
-                            // typeset.rs는 table.attr(=common.attr)로 is_tac/text_wrap을 판정한다.
-                            // HWP5 파서도 table.attr = table.common.attr 로 동기화하므로 동일하게 설정한다.
-                            table.attr = table.common.attr;
-                            // HWP5 저장 시 serialize_table이 raw_ctrl_data를 그대로 기록한다.
-                            // 미리 채워두면 serializer/hwpx_to_hwp 수정 없이 attr가 올바르게 저장된다.
-                            table.raw_ctrl_data = build_raw_ctrl_data(&table.common);
-
-                            let cell_padding_left =
-                                (&info_buf[34..36]).read_i16::<LittleEndian>().unwrap_or(0) as u32
-                                    * 4;
-                            let cell_padding_right =
-                                (&info_buf[36..38]).read_i16::<LittleEndian>().unwrap_or(0) as u32
-                                    * 4;
-                            let cell_padding_top =
-                                (&info_buf[38..40]).read_i16::<LittleEndian>().unwrap_or(0) as u32
-                                    * 4;
-                            let cell_padding_bottom =
-                                (&info_buf[40..42]).read_i16::<LittleEndian>().unwrap_or(0) as u32
-                                    * 4;
-
-                            table.padding.left = cell_padding_left as i16;
-                            table.padding.right = cell_padding_right as i16;
-                            table.padding.top = cell_padding_top as i16;
-                            table.padding.bottom = cell_padding_bottom as i16;
-
-                            let caption_width =
-                                (&info_buf[46..48]).read_u16::<LittleEndian>().unwrap_or(0) as u32
-                                    * 4;
-                            let caption_pos =
-                                (&info_buf[70..72]).read_u16::<LittleEndian>().unwrap_or(0);
-
-                            let mut cells = Vec::new();
-                            let mut cell_buf = match alloc_record_buf(27 * (cell_count as usize)) {
-                                Ok(b) => b,
-                                Err(_) => break,
-                            };
-                            if let Err(_) = body_cursor.read_exact(&mut cell_buf) {
-                                break;
-                            }
-
-                            let mut xs_raw = Vec::new();
-                            let mut ys_raw = Vec::new();
-
-                            for i in 0..cell_count as usize {
-                                let offset = i * 27;
-                                let cell_info = &cell_buf[offset..offset + 27];
-                                let x = (&cell_info[4..6]).read_u16::<LittleEndian>().unwrap_or(0)
-                                    as i32
-                                    * 4;
-                                let y = (&cell_info[6..8]).read_u16::<LittleEndian>().unwrap_or(0)
-                                    as i32
-                                    * 4;
-                                let w = (&cell_info[8..10]).read_u16::<LittleEndian>().unwrap_or(0)
-                                    as i32
-                                    * 4;
-                                let h = (&cell_info[10..12]).read_u16::<LittleEndian>().unwrap_or(0)
-                                    as i32
-                                    * 4;
-                                xs_raw.push(x);
-                                xs_raw.push(x + w);
-                                ys_raw.push(y);
-                                ys_raw.push(y + h);
-                            }
-
-                            xs_raw.sort_unstable();
-                            ys_raw.sort_unstable();
-
-                            let mut xs = Vec::new();
-                            for &x in &xs_raw {
-                                if let Some(&last) = xs.last() {
-                                    if i32::abs(x - last) < 40 {
-                                        continue;
-                                    }
-                                }
-                                xs.push(x);
-                            }
-
-                            let mut ys = Vec::new();
-                            for &y in &ys_raw {
-                                if let Some(&last) = ys.last() {
-                                    if i32::abs(y - last) < 40 {
-                                        continue;
-                                    }
-                                }
-                                ys.push(y);
-                            }
-
-                            table.col_count = if xs.len() > 1 {
-                                (xs.len() - 1) as u16
-                            } else {
-                                1
-                            };
-                            table.row_count = if ys.len() > 1 {
-                                (ys.len() - 1) as u16
-                            } else {
-                                1
-                            };
-
-                            for i in 0..cell_count as usize {
-                                let offset = i * 27;
-                                let cell_info = &cell_buf[offset..offset + 27];
-
-                                let mut cell = crate::model::table::Cell::default();
-
-                                let x = (&cell_info[4..6]).read_u16::<LittleEndian>().unwrap_or(0)
-                                    as i32
-                                    * 4;
-                                let y = (&cell_info[6..8]).read_u16::<LittleEndian>().unwrap_or(0)
-                                    as i32
-                                    * 4;
-                                let w = (&cell_info[8..10]).read_u16::<LittleEndian>().unwrap_or(0)
-                                    as i32
-                                    * 4;
-                                let h = (&cell_info[10..12]).read_u16::<LittleEndian>().unwrap_or(0)
-                                    as i32
-                                    * 4;
-
-                                let c1 = xs
-                                    .iter()
-                                    .position(|&val| (val - x).abs() < 40)
-                                    .unwrap_or(cell_info[1] as usize);
-                                let c2 = xs
-                                    .iter()
-                                    .position(|&val| (val - (x + w)).abs() < 40)
-                                    .unwrap_or(c1 + 1);
-                                let r1 = ys
-                                    .iter()
-                                    .position(|&val| (val - y).abs() < 40)
-                                    .unwrap_or(cell_info[0] as usize);
-                                let r2 = ys
-                                    .iter()
-                                    .position(|&val| (val - (y + h)).abs() < 40)
-                                    .unwrap_or(r1 + 1);
-
-                                cell.row = r1 as u16;
-                                cell.col = c1 as u16;
-                                cell.col_span = (c2.saturating_sub(c1)).max(1) as u16;
-                                cell.row_span = (r2.saturating_sub(r1)).max(1) as u16;
-
-                                cell.width = w as u32;
-                                cell.height = h as u32;
-
-                                cell.padding.left = cell_padding_left as i16;
-                                cell.padding.right = cell_padding_right as i16;
-                                cell.padding.top = cell_padding_top as i16;
-                                cell.padding.bottom = cell_padding_bottom as i16;
-
-                                let v_align = cell_info[19];
-                                cell.vertical_align = match v_align {
-                                    1 => crate::model::table::VerticalAlign::Center,
-                                    2 => crate::model::table::VerticalAlign::Bottom,
-                                    _ => crate::model::table::VerticalAlign::Top,
-                                };
-
-                                let mut border_fill = crate::model::style::BorderFill::default();
-
-                                let mut hwp3_line_to_border =
-                                    |line_val: u8| -> crate::model::style::BorderLine {
-                                        use crate::model::style::BorderLineType;
-                                        // HWP3 선 종류: 0=투명, 1=실선, 2=굵은 실선, 3=점선, 4=2중 실선
-                                        let (line_type, width) = match line_val {
-                                            1 => (BorderLineType::Solid, 0),  // 0.1mm
-                                            2 => (BorderLineType::Solid, 6),  // 0.4mm (굵은 실선)
-                                            3 => (BorderLineType::Dot, 0),    // 0.1mm
-                                            4 => (BorderLineType::Double, 6), // 0.4mm (이중선 두께 확보)
-                                            _ => (BorderLineType::None, 0),
-                                        };
-                                        crate::model::style::BorderLine {
-                                            line_type,
-                                            width,
-                                            color: 0,
-                                        }
-                                    };
-
-                                border_fill.borders[0] = hwp3_line_to_border(cell_info[20]); // 왼쪽
-                                border_fill.borders[1] = hwp3_line_to_border(cell_info[21]); // 오른쪽
-                                border_fill.borders[2] = hwp3_line_to_border(cell_info[22]); // 위쪽
-                                border_fill.borders[3] = hwp3_line_to_border(cell_info[23]); // 아래쪽
-
-                                let shade = cell_info[24];
-                                if shade > 0 && shade <= 100 {
-                                    let mut fill = crate::model::style::Fill::default();
-                                    fill.fill_type = crate::model::style::FillType::Solid;
-                                    let c = 255 - (shade as u32 * 255 / 100) as u8;
-                                    let color = u32::from_le_bytes([c, c, c, 0]);
-                                    fill.solid = Some(crate::model::style::SolidFill {
-                                        background_color: color,
-                                        pattern_color: 0,
-                                        pattern_type: 0,
-                                    });
-                                    border_fill.fill = fill;
-                                }
-
-                                let diag = cell_info[25] & 0x03;
-                                if diag != 0 {
-                                    border_fill.diagonal.diagonal_type = 1; // 실선 (BorderLineType::Solid = 1)
-                                    border_fill.diagonal.width = 0; // 0.1mm thickness
-                                    match diag {
-                                        1 => {
-                                            // 역슬래시 \
-                                            border_fill.attr |= 0b010 << 5;
-                                        }
-                                        2 => {
-                                            // 슬래시 /
-                                            border_fill.attr |= 0b010 << 2;
-                                        }
-                                        3 => {
-                                            // 교차 X
-                                            border_fill.attr |= (0b010 << 2) | (0b010 << 5);
-                                        }
-                                        _ => {}
-                                    }
-                                }
-
-                                doc_border_fills.push(border_fill);
-                                cell.border_fill_id = doc_border_fills.len() as u16; // 1-based (렌더러 규칙)
-
-                                // 중복된 스팬 계산 제거됨
-
-                                let nested = parse_paragraph_list(
-                                    body_cursor,
-                                    doc_char_shapes,
-                                    doc_para_shapes,
-                                    doc_border_fills,
-                                    doc_tab_defs,
-                                    pic_name_to_id,
-                                    body_left_hu,
-                                    column_width_hu,
-                                    0,
-                                )?;
-                                cell.paragraphs = nested;
-                                cells.push(cell);
-                            }
-                            table.cells = cells;
-                            table.rebuild_grid();
-                            table.row_sizes = (0..table.row_count)
-                                .map(|r| table.cells.iter().filter(|c| c.row == r).count() as i16)
-                                .collect();
-                            let caption_paras = parse_paragraph_list(
-                                body_cursor,
-                                doc_char_shapes,
-                                doc_para_shapes,
-                                doc_border_fills,
-                                doc_tab_defs,
-                                pic_name_to_id,
-                                body_left_hu,
-                                column_width_hu,
-                                0,
-                            )?;
-                            let caption_direction = match caption_pos {
-                                0 => crate::model::shape::CaptionDirection::Bottom,
-                                1 => crate::model::shape::CaptionDirection::Top,
-                                2 => crate::model::shape::CaptionDirection::Left,
-                                3 => crate::model::shape::CaptionDirection::Right,
-                                _ => crate::model::shape::CaptionDirection::Bottom,
-                            };
-                            if hwp3_paragraphs_have_renderable_content(&caption_paras) {
-                                table.caption = Some(crate::model::shape::Caption {
-                                    direction: caption_direction,
-                                    width: caption_width as _,
-                                    paragraphs: caption_paras,
-                                    ..Default::default()
-                                });
-                            }
-
-                            if obj_type == 2 {
-                                let mut eq = crate::model::control::Equation::default();
-                                eq.baseline =
-                                    (&info_buf[76..78]).read_i16::<LittleEndian>().unwrap_or(0);
-                                if let Some(cell) = table.cells.first() {
-                                    let mut script_text = String::new();
-                                    for para in &cell.paragraphs {
-                                        script_text.push_str(&para.text);
-                                        script_text.push('\n');
-                                    }
-                                    eq.script = script_text.trim().to_string();
-                                }
-                                parsed_equation = Some(eq);
-                            } else {
-                                parsed_table = Some(table);
-                            }
-                        } else if ch == 11 {
-                            // 그림
-                            info_buf.resize(348, 0);
-                            if let Err(_) = body_cursor.read_exact(&mut info_buf) {
-                                break;
-                            }
-
-                            let mut pic = crate::model::image::Picture::default();
-                            pic.common.width =
-                                ((&info_buf[42..44]).read_u16::<LittleEndian>().unwrap_or(0)
-                                    as u32)
-                                    * 4;
-                            pic.common.height =
-                                ((&info_buf[44..46]).read_u16::<LittleEndian>().unwrap_or(0)
-                                    as u32)
-                                    * 4;
-
-                            pic.shape_attr.original_width = pic.common.width;
-                            pic.shape_attr.original_height = pic.common.height;
-                            pic.shape_attr.current_width = pic.common.width;
-                            pic.shape_attr.current_height = pic.common.height;
-                            pic.shape_attr.render_sx = 1.0;
-                            pic.shape_attr.render_sy = 1.0;
-
-                            let ref_pos = info_buf[8];
-                            pic.common.treat_as_char = ref_pos == 0;
-                            match ref_pos {
-                                0 => {
-                                    // [Task #877 Stage 4] Text base (treat_as_char) — paragraph 영역
-                                    // inline 으로 그려져야. default CommonObjAttr (Paper) 그대로 두면
-                                    // 페이지 좌상단에 그려지는 회귀 (sample16 paragraph 5 RFP 박스).
-                                    pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Para;
-                                    pic.common.vert_rel_to = crate::model::shape::VertRelTo::Para;
-                                }
-                                1 => {
-                                    pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Para;
-                                    pic.common.vert_rel_to = crate::model::shape::VertRelTo::Para;
-                                }
-                                2 => {
-                                    pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Page;
-                                    pic.common.vert_rel_to = crate::model::shape::VertRelTo::Page;
-                                }
-                                3 => {
-                                    pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Paper;
-                                    pic.common.vert_rel_to = crate::model::shape::VertRelTo::Paper;
-                                }
-                                _ => {}
-                            }
-
-                            // 그림 피함(offset 9): 0=자리차지(TopAndBottom), 1=투명(InFrontOfText), 2=어울림(Square)
-                            let text_wrap = info_buf[9];
-                            pic.common.text_wrap = match text_wrap {
-                                0 => crate::model::shape::TextWrap::TopAndBottom, // 자리차지
-                                1 => crate::model::shape::TextWrap::InFrontOfText, // 투명 (글자 앞)
-                                2 => crate::model::shape::TextWrap::Square,       // 어울림
-                                _ => crate::model::shape::TextWrap::Square,
-                            };
-                            // [Task #877 Stage 4] treat_as_char=true (ref_pos=0) 이면 wrap=Square 모순
-                            // → InFrontOfText 로 강제. sample16 paragraph 394 picture (treat_as_char=true,
-                            // wrap=Square) 가 paragraph 의 3 lines 마다 SVG image 중복 렌더링되는 회귀.
-                            if pic.common.treat_as_char
-                                && matches!(
-                                    pic.common.text_wrap,
-                                    crate::model::shape::TextWrap::Square
-                                )
-                            {
-                                pic.common.text_wrap = crate::model::shape::TextWrap::TopAndBottom;
-                            }
-
-                            pic.common.margin.left =
-                                (&info_buf[18..20]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-                            pic.common.margin.right =
-                                (&info_buf[20..22]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-                            pic.common.margin.top =
-                                (&info_buf[22..24]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-                            pic.common.margin.bottom =
-                                (&info_buf[24..26]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-
-                            pic.padding.left =
-                                (&info_buf[26..28]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-                            pic.padding.right =
-                                (&info_buf[28..30]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-                            pic.padding.top =
-                                (&info_buf[30..32]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-                            pic.padding.bottom =
-                                (&info_buf[32..34]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-
-                            let horz_align =
-                                (&info_buf[10..12]).read_i16::<LittleEndian>().unwrap_or(0);
-                            if horz_align == -1 {
-                                pic.common.horz_align = crate::model::shape::HorzAlign::Left;
-                            } else if horz_align == -2 {
-                                pic.common.horz_align = crate::model::shape::HorzAlign::Right;
-                            } else if horz_align == -3 {
-                                pic.common.horz_align = crate::model::shape::HorzAlign::Center;
-                            } else {
-                                pic.common.horz_align = crate::model::shape::HorzAlign::Left;
-                                pic.common.horizontal_offset = (horz_align as i32 * 4) as u32;
-                            }
-
-                            let vert_align =
-                                (&info_buf[12..14]).read_i16::<LittleEndian>().unwrap_or(0);
-                            if vert_align == -1 {
-                                pic.common.vert_align = crate::model::shape::VertAlign::Top;
-                            } else if vert_align == -2 {
-                                pic.common.vert_align = crate::model::shape::VertAlign::Bottom;
-                            } else if vert_align == -3 {
-                                pic.common.vert_align = crate::model::shape::VertAlign::Center;
-                            } else {
-                                pic.common.vert_align = crate::model::shape::VertAlign::Top;
-                                pic.common.vertical_offset = (vert_align as i32 * 4) as u32;
-                            }
-                            pic.common.attr = build_common_obj_attr(&pic.common);
-
-                            let n_ext_from_buf =
-                                (&info_buf[0..4]).read_u32::<LittleEndian>().unwrap_or(0);
-                            let n_ext = n_ext_from_buf;
-
-                            // [Task #877] garbage length 로 인한 거대 alloc → WASM panic 방지.
-                            let mut ext_buf = match alloc_record_buf(n_ext as usize) {
-                                Ok(b) => b,
-                                Err(_) => break,
-                            };
-                            if let Err(_) = body_cursor.read_exact(&mut ext_buf) {
-                                break;
-                            }
-
-                            let pic_type = info_buf[74];
-                            if pic_type == 0 || pic_type == 1 || pic_type == 2 {
-                                let pic_name_buf = &info_buf[83..83 + 256];
-                                let mut pic_name =
-                                    crate::parser::hwp3::encoding::decode_hwp3_string(pic_name_buf);
-                                pic_name = pic_name.trim_end_matches('\0').to_string();
-
-                                let _block_num =
-                                    (&info_buf[62..64]).read_u16::<LittleEndian>().unwrap_or(0);
-                                let _pic_info_size =
-                                    (&info_buf[58..62]).read_u32::<LittleEndian>().unwrap_or(0);
-
-                                if !pic_name.is_empty() {
-                                    // [Task #824] pic_type == 0 (외부 파일) 만 external_path
-                                    // 설정. pic_type == 1 (OLE) / 2 (Embedded) 는 pic_name 이
-                                    // 내부 참조명 (예: "E$$00000.jpg") 이므로 external_path
-                                    // 설정 시 그림 속성 dialog 가 외부 파일로 오표시됨
-                                    // (한컴오피스 2022 정합).
-                                    if pic_type == 0 {
-                                        pic.image_attr.external_path = Some(pic_name.clone());
-                                    }
-                                    let next_id = (pic_name_to_id.len() + 1) as u16;
-                                    let id = *pic_name_to_id.entry(pic_name).or_insert(next_id);
-                                    pic.image_attr.bin_data_id = id;
-                                }
-                            } else if pic_type == 3 {
-                                let mut ext_cursor = std::io::Cursor::new(ext_buf.as_slice());
-                                match crate::parser::hwp3::drawing::parse_drawing_object_tree(
-                                    &mut ext_cursor,
-                                    doc_char_shapes,
-                                    doc_para_shapes,
-                                    doc_border_fills,
-                                    doc_tab_defs,
-                                    pic_name_to_id,
-                                ) {
-                                    Ok(drawing_obj) => {
-                                        parsed_drawing_object = Some(drawing_obj);
-                                    }
-                                    Err(e) => {
-                                        eprintln!("Failed to parse drawing object tree: {:?}", e);
-                                    }
-                                }
-                            }
-
-                            let caption_pos =
-                                (&info_buf[70..72]).read_u16::<LittleEndian>().unwrap_or(0);
-                            let caption_width =
-                                (&info_buf[46..48]).read_u16::<LittleEndian>().unwrap_or(0) as u32
-                                    * 4;
-                            let caption_paras = parse_paragraph_list(
-                                body_cursor,
-                                doc_char_shapes,
-                                doc_para_shapes,
-                                doc_border_fills,
-                                doc_tab_defs,
-                                pic_name_to_id,
-                                body_left_hu,
-                                column_width_hu,
-                                0,
-                            )?;
-                            let caption_direction = match caption_pos {
-                                0 => crate::model::shape::CaptionDirection::Bottom,
-                                1 => crate::model::shape::CaptionDirection::Top,
-                                2 => crate::model::shape::CaptionDirection::Left,
-                                3 => crate::model::shape::CaptionDirection::Right,
-                                _ => crate::model::shape::CaptionDirection::Bottom,
-                            };
-
-                            let caption = hwp3_paragraphs_have_renderable_content(&caption_paras)
-                                .then(|| crate::model::shape::Caption {
-                                    direction: caption_direction,
-                                    width: caption_width as _,
-                                    paragraphs: caption_paras,
-                                    ..Default::default()
-                                });
-
-                            if pic_type == 0 || pic_type == 1 || pic_type == 2 {
-                                pic.caption = caption;
-                                parsed_picture = Some(pic);
-                            } else if pic_type == 3 {
-                                // For drawing objects, we might attach the caption if the root is a known shape
-                                if let Some(mut drawing_obj) = parsed_drawing_object.take() {
-                                    match &mut drawing_obj {
-                                        crate::model::shape::ShapeObject::Group(g) => {
-                                            g.caption = caption.clone();
-                                            pic.common.width = g.common.width;
-                                            pic.common.height = g.common.height;
-                                            g.common = pic.common.clone();
-                                        }
-                                        crate::model::shape::ShapeObject::Line(l) => {
-                                            l.drawing.caption = caption.clone();
-                                            pic.common.width = l.common.width;
-                                            pic.common.height = l.common.height;
-                                            l.common = pic.common.clone();
-                                        }
-                                        crate::model::shape::ShapeObject::Rectangle(r) => {
-                                            r.drawing.caption = caption.clone();
-                                            pic.common.width = r.common.width;
-                                            pic.common.height = r.common.height;
-                                            r.common = pic.common.clone();
-                                        }
-                                        crate::model::shape::ShapeObject::Ellipse(e) => {
-                                            e.drawing.caption = caption.clone();
-                                            pic.common.width = e.common.width;
-                                            pic.common.height = e.common.height;
-                                            e.common = pic.common.clone();
-                                        }
-                                        crate::model::shape::ShapeObject::Arc(a) => {
-                                            a.drawing.caption = caption.clone();
-                                            pic.common.width = a.common.width;
-                                            pic.common.height = a.common.height;
-                                            a.common = pic.common.clone();
-                                        }
-                                        crate::model::shape::ShapeObject::Polygon(p) => {
-                                            p.drawing.caption = caption.clone();
-                                            pic.common.width = p.common.width;
-                                            pic.common.height = p.common.height;
-                                            p.common = pic.common.clone();
-                                        }
-                                        crate::model::shape::ShapeObject::Curve(c) => {
-                                            c.drawing.caption = caption.clone();
-                                            pic.common.width = c.common.width;
-                                            pic.common.height = c.common.height;
-                                            c.common = pic.common.clone();
-                                        }
-                                        crate::model::shape::ShapeObject::Picture(p) => {
-                                            p.caption = caption.clone();
-                                            pic.common.width = p.common.width;
-                                            pic.common.height = p.common.height;
-                                            p.common = pic.common.clone();
-                                        }
-                                        _ => {}
-                                    }
-                                    parsed_drawing_object = Some(drawing_obj);
-                                }
-                            }
-                        } else if ch == 14 {
-                            // 선
-                            info_buf.resize(84, 0);
-                            if let Err(_) = body_cursor.read_exact(&mut info_buf) {
-                                break;
-                            }
-
-                            let mut line = crate::model::shape::LineShape::default();
-                            let base_pos = info_buf.get(8).copied().unwrap_or(0);
-                            line.common.horz_rel_to = match base_pos {
-                                1 => crate::model::shape::HorzRelTo::Para,
-                                2 => crate::model::shape::HorzRelTo::Page,
-                                3 => crate::model::shape::HorzRelTo::Paper,
-                                _ => crate::model::shape::HorzRelTo::Para, // 0 is Text (treat_as_char)
-                            };
-                            line.common.vert_rel_to = match base_pos {
-                                1 => crate::model::shape::VertRelTo::Para,
-                                2 => crate::model::shape::VertRelTo::Page,
-                                3 => crate::model::shape::VertRelTo::Paper,
-                                _ => crate::model::shape::VertRelTo::Para, // 0 is Text
-                            };
-                            line.common.treat_as_char = base_pos == 0;
-
-                            line.common.horizontal_offset =
-                                ((&info_buf[10..12]).read_i16::<LittleEndian>().unwrap_or(0) as i32
-                                    * 4) as u32;
-                            line.common.vertical_offset =
-                                ((&info_buf[12..14]).read_i16::<LittleEndian>().unwrap_or(0) as i32
-                                    * 4) as u32;
-
-                            line.common.width =
-                                (&info_buf[42..44]).read_u16::<LittleEndian>().unwrap_or(0) as u32
-                                    * 4;
-                            line.common.height =
-                                (&info_buf[44..46]).read_u16::<LittleEndian>().unwrap_or(0) as u32
-                                    * 4;
-
-                            line.start.x =
-                                (&info_buf[70..72]).read_i16::<LittleEndian>().unwrap_or(0) as i32
-                                    * 4;
-                            line.start.y =
-                                (&info_buf[72..74]).read_i16::<LittleEndian>().unwrap_or(0) as i32
-                                    * 4;
-                            line.end.x = (&info_buf[74..76]).read_i16::<LittleEndian>().unwrap_or(0)
-                                as i32
-                                * 4;
-                            line.end.y = (&info_buf[76..78]).read_i16::<LittleEndian>().unwrap_or(0)
-                                as i32
-                                * 4;
-
-                            let thickness =
-                                (&info_buf[78..80]).read_u16::<LittleEndian>().unwrap_or(0);
-                            let shade = (&info_buf[80..82]).read_u16::<LittleEndian>().unwrap_or(0);
-                            let color = (&info_buf[82..84]).read_u16::<LittleEndian>().unwrap_or(0);
-
-                            line.drawing.border_line.width = thickness as i32 * 4;
-                            line.drawing.border_line.color = color as u32;
-
-                            if shade > 0 && shade <= 100 {
-                                let mut fill = crate::model::style::Fill::default();
-                                fill.fill_type = crate::model::style::FillType::Solid;
-                                let c = 255 - (shade as u32 * 255 / 100) as u8;
-                                let fill_color = u32::from_le_bytes([c, c, c, 0]);
-                                fill.solid = Some(crate::model::style::SolidFill {
-                                    background_color: fill_color,
-                                    pattern_color: 0,
-                                    pattern_type: 0,
-                                });
-                                line.drawing.fill = fill;
-                            }
-
-                            parsed_line = Some(line);
-                        } else if ch == 15 {
-                            // 숨은 설명
-                            info_buf.resize(8, 0);
-                            if let Err(_) = body_cursor.read_exact(&mut info_buf) {
-                                break;
-                            }
-                            nested_paragraphs = parse_paragraph_list(
-                                body_cursor,
-                                doc_char_shapes,
-                                doc_para_shapes,
-                                doc_border_fills,
-                                doc_tab_defs,
-                                pic_name_to_id,
-                                body_left_hu,
-                                column_width_hu,
-                                0,
-                            )?;
-                        } else if ch == 16 {
-                            // 머리말/꼬리말
-                            info_buf.resize(10, 0);
-                            if let Err(_) = body_cursor.read_exact(&mut info_buf) {
-                                break;
-                            }
-                            nested_paragraphs = parse_paragraph_list(
-                                body_cursor,
-                                doc_char_shapes,
-                                doc_para_shapes,
-                                doc_border_fills,
-                                doc_tab_defs,
-                                pic_name_to_id,
-                                body_left_hu,
-                                column_width_hu,
-                                0,
-                            )?;
-                        } else if ch == 17 {
-                            // 각주/미주
-                            info_buf.resize(14, 0);
-                            if let Err(_) = body_cursor.read_exact(&mut info_buf) {
-                                break;
-                            }
-                            let is_endnote =
-                                (&info_buf[10..12]).read_u16::<LittleEndian>().unwrap_or(0) == 1;
-                            let note_column_width_hu = if is_endnote {
-                                hwp3_note_column_width_hu(column_width_hu)
-                            } else {
-                                column_width_hu
-                            };
-                            nested_paragraphs = parse_paragraph_list(
-                                body_cursor,
-                                doc_char_shapes,
-                                doc_para_shapes,
-                                doc_border_fills,
-                                doc_tab_defs,
-                                pic_name_to_id,
-                                body_left_hu,
-                                note_column_width_hu,
-                                0,
-                            )?;
-                        } else if ch == 29 {
-                            // 상호 참조
-                            if header_val1 < 1000000 {
-                                info_buf.resize(header_val1 as usize, 0);
-                                let _ = body_cursor.read_exact(&mut info_buf);
-                            }
-                        } else if ch == 5 {
-                            // [Task #877] 필드 코드 (spec §10.1, 표 33): 가변 길이 8 + n bytes.
-                            // header_val1 = n (필드 코드 세부 정보 길이).
-                            // 현재 8 byte (ch + dword + ch close) 소비 완료, 추가 n bytes 소비.
-                            if header_val1 > 0 {
-                                let mut field_data = match alloc_record_buf(header_val1 as usize) {
-                                    Ok(b) => b,
-                                    Err(_) => break,
-                                };
-                                if let Err(_) = body_cursor.read_exact(&mut field_data) {
-                                    break;
-                                }
-                            }
-                        } else if ch == 6 {
-                            // [Task #877] 책갈피 (spec §10.2, 표 36): 42 bytes total.
-                            // - offset 0..2: ch=6 (begin) [outer loop 에서 read 완료]
-                            // - offset 2..6: dword 자료구조 길이 = 34 [_=> else 의 header_val1 으로 read 완료]
-                            // - offset 6..8: ch=6 (close) [_=> else 의 ch2 로 read 완료]
-                            // - offset 8..40: hchar array[16] = 책갈피 이름 (32 bytes) — 추가 read 필요
-                            // - offset 40..42: word 책갈피 종류 (2 bytes) — 추가 read 필요
-                            // 총 추가 34 bytes (= header_val1 값과 동일).
-                            // cc count 는 outer i+=3 으로 4 hchars (= 8 bytes) 만 차지.
-                            let mut bookmark_extra = [0u8; 34];
-                            if let Err(_) = body_cursor.read_exact(&mut bookmark_extra) {
-                                break;
-                            }
-                            let name_buf = &bookmark_extra[0..32];
-                            let name = crate::parser::hwp3::encoding::decode_hwp3_string(name_buf)
-                                .trim_end_matches('\0')
-                                .to_string();
-                            let bookmark_type = (&bookmark_extra[32..34])
-                                .read_u16::<LittleEndian>()
-                                .unwrap_or(0);
-                            let mut field = crate::model::control::Field::default();
-                            field.field_type = crate::model::control::FieldType::Unknown;
-                            field.command = format!("Bookmark:{}:type={}", name, bookmark_type);
-                            controls.push(crate::model::control::Control::Field(field));
-                            ctrl_data_records.push(None);
-                        } else if ch == 7 {
-                            // [Task #877] 날짜 형식 (spec §10.3, 표 37): 84 bytes total.
-                            // - offset 0..2: ch=7 (begin) [outer read]
-                            // - offset 2..82: hchar array[40] = 80 bytes 날짜 형식 (추가 read)
-                            // - offset 82..84: ch=7 (close) (추가 read)
-                            // 현재 outer loop + _=> else 에서 8 byte (ch + 6 byte header) 소비.
-                            // 추가 76 byte 소비 필요.
-                            let mut date_fmt = [0u8; 76];
-                            if let Err(_) = body_cursor.read_exact(&mut date_fmt) {
-                                break;
-                            }
-                        } else if ch == 8 {
-                            // [Task #877] 날짜 코드 (spec §10.4, 표 38): 96 bytes total.
-                            // - offset 0..2: ch=8 (begin) [outer read]
-                            // - offset 2..82: hchar array[40] 형식 (80 bytes)
-                            // - offset 82..90: word array[4] 날짜 (8 bytes)
-                            // - offset 90..94: word array[2] 시각 (4 bytes)
-                            // - offset 94..96: ch=8 (close) (2 bytes)
-                            // 현재 _=> else 에서 8 byte 소비. 추가 88 byte 필요.
-                            let mut date_code = [0u8; 88];
-                            if let Err(_) = body_cursor.read_exact(&mut date_code) {
-                                break;
-                            }
-                        } else {
-                            // 알 수 없음 (코드 0-4, 12, 27 등 예약 문자)
-                            // 8바이트 헤더(ch+field+ch2)만 소비. header_val1은 길이 필드가 아님.
-                            // ch=3 실증: hex dump에서 ch2=0x2E('.')로 스펙의 반복코드와 불일치.
-                            // 헤더 직후가 정상 단락 내용이므로 추가 skip 없음.
-                        }
-
-                        let is_non_tac_table = ch == 10
-                            && parsed_table
-                                .as_ref()
-                                .is_some_and(|table| !table.common.treat_as_char);
-                        let is_tac_picture_or_shape = ch == 11
-                            && (parsed_picture
-                                .as_ref()
-                                .is_some_and(|pic| pic.common.treat_as_char)
-                                || parsed_drawing_object
-                                    .as_ref()
-                                    .is_some_and(|shape| shape.common().treat_as_char));
-                        let is_tac_line = ch == 14
-                            && parsed_line
-                                .as_ref()
-                                .is_some_and(|line| line.common.treat_as_char);
-                        let is_control_only_marker =
-                            text_string.is_empty() && i >= para_info.char_count as usize;
-                        let preserve_invisible_anchor_gap = ch == 17 || is_non_tac_table;
-                        // ch=15(숨은설명), ch=16(머리말/꼬리말), 비-TAC 표,
-                        // 단독 TAC 그림/도형/선 자리 문단은 화면에 보이는 대체 글자를
-                        // 만들지 않는다. 미주/각주와 비-TAC 표는 본문 안의 8유닛 앵커 슬롯을
-                        // 별도로 보존해 컨트롤 위치를 잃지 않게 한다.
-                        let omit_visible_marker = ch == 15
-                            || ch == 16
-                            || preserve_invisible_anchor_gap
-                            || (is_control_only_marker && (is_tac_picture_or_shape || is_tac_line));
-                        if omit_visible_marker {
-                            if preserve_invisible_anchor_gap {
-                                utf16_len += 8;
-                            }
-                        } else {
-                            char_offsets.push(utf16_len);
-                            utf16_len += 1;
-                            text_string.push('\u{FFFC}');
-                        }
-
-                        if ch == 10 {
-                            if parsed_is_hypertext {
-                                let mut text = String::new();
-                                if let Some(table) = &parsed_table {
-                                    if let Some(cell) = table.cells.first() {
-                                        for para in &cell.paragraphs {
-                                            text.push_str(&para.text);
-                                            text.push('\n');
-                                        }
-                                    }
-                                }
-                                controls.push(crate::model::control::Control::Hyperlink(
-                                    crate::model::control::Hyperlink {
-                                        url: String::new(), // TODO: TagID 3에서 추출
-                                        text: text.trim().to_string(),
-                                    },
-                                ));
-                            } else if let Some(eq) = parsed_equation {
-                                controls
-                                    .push(crate::model::control::Control::Equation(Box::new(eq)));
-                            } else if parsed_obj_type == 1 {
-                                if let Some(table) = parsed_table {
-                                    // HWP3 obj_type=1 글상자는 1x1 표 구조가 자리차지 흐름과
-                                    // 내부 여백을 이미 담고 있으므로 Table IR 그대로 보존한다.
-                                    controls.push(crate::model::control::Control::Table(Box::new(
-                                        table,
-                                    )));
-                                } else {
-                                    let mut rect = crate::model::shape::RectangleShape::default();
-                                    rect.drawing.text_box =
-                                        Some(crate::model::shape::TextBox::default());
-                                    controls.push(crate::model::control::Control::Shape(Box::new(
-                                        crate::model::shape::ShapeObject::Rectangle(rect),
-                                    )));
-                                }
-                            } else if parsed_obj_type == 3 {
-                                let mut form = crate::model::control::FormObject::default();
-                                form.form_type = crate::model::control::FormType::PushButton;
-                                form.enabled = true;
-                                if let Some(table) = parsed_table {
-                                    form.width = table.common.width;
-                                    form.height = table.common.height;
-                                    if let Some(cell) = table.cells.first() {
-                                        let mut text = String::new();
-                                        for para in &cell.paragraphs {
-                                            text.push_str(&para.text);
-                                            text.push('\n');
-                                        }
-                                        form.caption = text.trim().to_string();
-                                        form.name = form.caption.clone();
-                                        if let Some(bf) = doc_border_fills
-                                            .get(cell.border_fill_id.saturating_sub(1) as usize)
-                                        {
-                                            if let Some(ref solid) = bf.fill.solid {
-                                                form.back_color = solid.background_color;
-                                            }
-                                        }
-                                    }
-                                }
-                                controls.push(crate::model::control::Control::Form(Box::new(form)));
-                            } else if let Some(table) = parsed_table {
-                                controls
-                                    .push(crate::model::control::Control::Table(Box::new(table)));
-                            } else {
-                                controls.push(crate::model::control::Control::Unknown(
-                                    crate::model::control::UnknownControl::default(),
-                                ));
-                            }
-                        } else if ch == 11 {
-                            if let Some(drawing) = parsed_drawing_object {
-                                controls
-                                    .push(crate::model::control::Control::Shape(Box::new(drawing)));
-                            } else if let Some(pic) = parsed_picture {
-                                controls
-                                    .push(crate::model::control::Control::Picture(Box::new(pic)));
-                            } else {
-                                controls.push(crate::model::control::Control::Unknown(
-                                    crate::model::control::UnknownControl::default(),
-                                ));
-                            }
-                        } else if ch == 14 {
-                            if let Some(line) = parsed_line {
-                                controls.push(crate::model::control::Control::Shape(Box::new(
-                                    crate::model::shape::ShapeObject::Line(line),
-                                )));
-                            } else {
-                                controls.push(crate::model::control::Control::Unknown(
-                                    crate::model::control::UnknownControl::default(),
-                                ));
-                            }
-                        } else if ch == 16 {
-                            let apply_to = match info_buf.get(9).copied().unwrap_or(0) {
-                                1 => crate::model::header_footer::HeaderFooterApply::Even,
-                                2 => crate::model::header_footer::HeaderFooterApply::Odd,
-                                _ => crate::model::header_footer::HeaderFooterApply::Both,
-                            };
-                            let is_footer = info_buf.get(8).copied().unwrap_or(0) == 1;
-
-                            if is_footer {
-                                let mut footer = crate::model::header_footer::Footer::default();
-                                footer.paragraphs = nested_paragraphs;
-                                footer.apply_to = apply_to;
-                                footer.raw_ctrl_extra = info_buf.clone();
-                                controls
-                                    .push(crate::model::control::Control::Footer(Box::new(footer)));
-                            } else {
-                                let mut header = crate::model::header_footer::Header::default();
-                                header.paragraphs = nested_paragraphs;
-                                header.apply_to = apply_to;
-                                header.raw_ctrl_extra = info_buf.clone();
-                                controls
-                                    .push(crate::model::control::Control::Header(Box::new(header)));
-                            }
-                        } else if ch == 17 {
-                            let is_endnote =
-                                (&info_buf[10..12]).read_u16::<LittleEndian>().unwrap_or(0) == 1;
-
-                            if is_endnote {
-                                let mut endnote = crate::model::footnote::Endnote::default();
-                                endnote.paragraphs = nested_paragraphs;
-                                controls.push(crate::model::control::Control::Endnote(Box::new(
-                                    endnote,
-                                )));
-                            } else {
-                                let mut footnote = crate::model::footnote::Footnote::default();
-                                footnote.paragraphs = nested_paragraphs;
-                                controls.push(crate::model::control::Control::Footnote(Box::new(
-                                    footnote,
-                                )));
-                            }
-                        } else if ch == 29 {
-                            let mut field = crate::model::control::Field::default();
-                            field.field_type = crate::model::control::FieldType::CrossRef;
-
-                            let kind = info_buf.first().copied().unwrap_or(0);
-                            let target_name_bytes = if info_buf.len() >= 38 {
-                                &info_buf[1..38]
-                            } else {
-                                &[]
-                            };
-                            let target_name = crate::parser::hwp3::encoding::decode_hwp3_string(
-                                target_name_bytes,
-                            )
-                            .trim_end_matches('\0')
-                            .to_string();
-
-                            let ref_type = if info_buf.len() >= 40 {
-                                (&info_buf[38..40]).read_u16::<LittleEndian>().unwrap_or(0)
-                            } else {
-                                0
-                            };
-                            let n = if info_buf.len() >= 42 {
-                                (&info_buf[40..42]).read_u16::<LittleEndian>().unwrap_or(0)
-                            } else {
-                                0
-                            };
-
-                            let ref_content_bytes = if info_buf.len() >= 46 + (n as usize) {
-                                &info_buf[46..46 + (n as usize)]
-                            } else if info_buf.len() > 46 {
-                                &info_buf[46..]
-                            } else {
-                                &[]
-                            };
-                            let ref_content = crate::parser::hwp3::encoding::decode_hwp3_string(
-                                ref_content_bytes,
-                            )
-                            .trim_end_matches('\0')
-                            .to_string();
-
-                            // 명령어 문자열로 결합하거나 대상 이름을 사용
-                            if kind == 0 {
-                                field.command = format!("Target:{}", target_name);
-                            } else {
-                                field.command = format!(
-                                    "Ref:{},Target:{},Content:{}",
-                                    ref_type, target_name, ref_content
-                                );
-                            }
-                            field.properties = ref_type as u32;
-                            field.extra_properties = kind;
-
-                            controls.push(crate::model::control::Control::Field(field));
-                        } else {
-                            controls.push(crate::model::control::Control::Unknown(
-                                crate::model::control::UnknownControl { ctrl_id: ch as u32 },
-                            ));
-                        }
-                        ctrl_data_records.push(None);
                     }
                 }
             } else if ch != 0 && ch != 13 {
@@ -2492,7 +2644,12 @@ pub(crate) fn parse_paragraph_list(
         }
 
         let last_pgy = line_infos.last().map(|l| l.pgy).unwrap_or(0);
-        if last_pgy > 0 {
+        // pgy=0 줄(그림 호스트 등)은 기준 미갱신이 원칙이나, 이 문단이 새 페이지를
+        // 시작했다면(is_page_break) 이전 페이지의 pgy 기준을 유지하면 안 된다 —
+        // 유지 시 다음 문단의 정상 pgy(새 페이지 좌표)가 이전 페이지 기준보다 작아
+        // 거짓 페이지 경계가 재승격된다 (#2151: hwp3-sample14 pi16 그림 pgy=0 →
+        // pi17 pgy=3521 < 15441 오판, 그림만 있는 유령 페이지 생성).
+        if last_pgy > 0 || is_page_break {
             prev_last_pgy = last_pgy;
         }
         let is_top_level_body = body_height_hu > 0 && column_width_hu >= 30000;

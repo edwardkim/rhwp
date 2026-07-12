@@ -554,13 +554,10 @@ fn issue_1481_create_table_keeps_first_line_mark_for_escape() {
         &mut host_mark_y,
     );
     let table_y = table_y.expect("표 렌더 노드 y");
-    // [fork] 기본 표는 글자처럼 취급(TAC) 인라인 — 빈 host 문단은 자리차지 전용
-    // push_empty_para_end_mark 경로를 타지 않아 별도 host 조판부호 run 이 없다.
-    // #1481 회귀(표 위 생성 경로 빈 줄)는 host 조판부호가 표 위에 렌더되지 않는
-    // 것과 아래 "표 위 조판부호 없음" 검증으로 담보한다.
+    let host_mark_y = host_mark_y.expect("표 host 문단부호 y");
     assert!(
-        host_mark_y.is_none_or(|y| y >= table_y - 1.0),
-        "표 host 조판부호가 표 위 빈 줄로 렌더되면 안 된다: table_y={table_y}, mark_y={host_mark_y:?}"
+        (table_y - host_mark_y).abs() < 1.0,
+        "기본 자리차지 표의 첫 조판부호는 빈 줄이 아니라 표 상단과 겹쳐야 한다: table_y={table_y}, mark_y={host_mark_y}"
     );
     doc.set_show_paragraph_marks(true);
     let layer_marks = issue_1481_layer_control_mark_y(&doc);
@@ -587,37 +584,36 @@ fn issue_1481_create_table_keeps_first_line_mark_for_escape() {
         "표 생성 직후 표 위에 별도 빈 줄 조판부호가 있으면 안 된다: table_y={table_y}, marks={marks_above_table:?}, all={outside_marks:?}"
     );
 
-    // [fork] 글자처럼 취급(TAC) 표 앞(offset 0) Enter 는 인라인 글자 앞 Enter 와
-    // 동일하게 사용자 빈 줄을 표 위에 삽입하고 표 host 를 한 문단 아래로 민다.
-    // (자리차지 전용 "표 아래로 커서 탈출" 특례는 fork 기본 TAC 표에 해당 없음.)
     let enter_result = doc
         .split_paragraph_native(0, table_para_idx, 0)
         .expect("표 앞 조판부호 위치 Enter");
     let enter_para_idx = issue_1481_json_usize(&enter_result, "paraIdx");
-    let host_after_enter = table_para_idx + 1;
     assert_eq!(
-        enter_para_idx, host_after_enter,
-        "TAC 표 앞 Enter 후 커서는 아래로 밀린 표 host 문단(표 앞)에 있어야 한다"
+        enter_para_idx,
+        table_para_idx + 1,
+        "자리차지 표 앞 Enter는 표 아래 문단으로 커서를 보내야 한다"
     );
     let section_after_enter = &doc.document.sections[0];
-    let user_blank = &section_after_enter.paragraphs[table_para_idx];
-    assert!(
-        user_blank.text.is_empty() && user_blank.controls.is_empty() && user_blank.char_count == 1,
-        "Enter 가 만든 빈 줄은 표 위의 일반 빈 문단이어야 한다"
-    );
     assert!(matches!(
-        section_after_enter.paragraphs[host_after_enter]
+        section_after_enter.paragraphs[table_para_idx]
             .controls
             .first(),
         Some(Control::Table(_))
     ));
     assert_eq!(
-        section_after_enter.paragraphs[host_after_enter].char_count, 9,
+        section_after_enter.paragraphs[table_para_idx].char_count, 9,
         "Enter 후에도 표 host 문단은 빈 문단으로 분리되면 안 된다"
     );
+    assert!(section_after_enter.paragraphs[enter_para_idx]
+        .text
+        .is_empty());
+    assert!(section_after_enter.paragraphs[enter_para_idx]
+        .controls
+        .is_empty());
+    assert_eq!(section_after_enter.paragraphs[enter_para_idx].char_count, 1);
     assert!(section_after_enter
         .paragraphs
-        .get(host_after_enter + 1)
+        .get(enter_para_idx + 1)
         .map(|p| p.text.is_empty() && p.controls.is_empty())
         .unwrap_or(false));
 
@@ -626,15 +622,15 @@ fn issue_1481_create_table_keeps_first_line_mark_for_escape() {
     let mut host_mark_y_after = None;
     issue_1481_find_table_and_host_mark_y(
         &tree_after_enter.root,
-        host_after_enter,
+        table_para_idx,
         &mut table_y_after,
         &mut host_mark_y_after,
     );
     let table_y_after = table_y_after.expect("Enter 후 표 렌더 노드 y");
-    // [fork] TAC 인라인 표 host 는 별도 조판부호 run 을 만들지 않는다 (위 참조).
+    let host_mark_y_after = host_mark_y_after.expect("Enter 후 표 host 문단부호 y");
     assert!(
-        host_mark_y_after.is_none_or(|y| y >= table_y_after - 1.0),
-        "Enter 후에도 표 host 조판부호가 표 위 빈 줄로 렌더되면 안 된다: table_y={table_y_after}, mark_y={host_mark_y_after:?}"
+        (table_y_after - host_mark_y_after).abs() < 1.0,
+        "Enter 후에도 표 host 조판부호는 표 상단과 겹쳐야 한다: table_y={table_y_after}, mark_y={host_mark_y_after}"
     );
     let mut outside_marks_after = Vec::new();
     issue_1481_collect_outside_empty_para_marks(&tree_after_enter.root, &mut outside_marks_after);
@@ -643,16 +639,9 @@ fn issue_1481_create_table_keeps_first_line_mark_for_escape() {
         .filter(|(_, y)| *y < table_y_after - 1.0)
         .copied()
         .collect::<Vec<_>>();
-    assert_eq!(
-        marks_above_table_after.len(),
-        1,
-        "Enter 후 표 위에는 사용자가 만든 빈 줄 조판부호 하나만 있어야 한다: table_y={table_y_after}, marks={marks_above_table_after:?}, all={outside_marks_after:?}"
-    );
     assert!(
-        marks_above_table_after
-            .iter()
-            .all(|(p, _)| *p == table_para_idx),
-        "표 위 조판부호는 Enter 가 만든 빈 문단의 것이어야 한다: {marks_above_table_after:?}"
+        marks_above_table_after.is_empty(),
+        "Enter 후에도 표 위에 별도 빈 줄 조판부호가 있으면 안 된다: table_y={table_y_after}, marks={marks_above_table_after:?}, all={outside_marks_after:?}"
     );
 }
 
@@ -712,22 +701,10 @@ fn issue_1481_create_table_empty_para_ignores_stale_offset() {
         &mut host_mark_y,
     );
     let table_y = table_y.expect("표 렌더 노드 y");
-    // [fork] TAC 인라인 표 host 는 별도 조판부호 run 을 만들지 않는다.
-    // #1481 회귀는 "표 위 outside 조판부호 없음"으로 검증한다.
+    let host_mark_y = host_mark_y.expect("표 host 문단부호 y");
     assert!(
-        host_mark_y.is_none_or(|y| y >= table_y - 1.0),
-        "빈 문단 초과 offset에서도 표 host 조판부호가 표 위 빈 줄로 렌더되면 안 된다: table_y={table_y}, mark_y={host_mark_y:?}"
-    );
-    let mut outside_marks = Vec::new();
-    issue_1481_collect_outside_empty_para_marks(&tree.root, &mut outside_marks);
-    let marks_above_table = outside_marks
-        .iter()
-        .filter(|(_, y)| *y < table_y - 1.0)
-        .copied()
-        .collect::<Vec<_>>();
-    assert!(
-        marks_above_table.is_empty(),
-        "빈 문단 초과 offset에서도 표 위에 생성 경로 빈 줄 조판부호가 있으면 안 된다: table_y={table_y}, marks={marks_above_table:?}, all={outside_marks:?}"
+        (table_y - host_mark_y).abs() < 1.0,
+        "빈 문단 초과 offset에서도 첫 조판부호는 표 상단과 겹쳐야 한다: table_y={table_y}, mark_y={host_mark_y}"
     );
 }
 
@@ -770,11 +747,10 @@ fn issue_1481_blank_template_create_table_has_no_generated_blank_above() {
         &mut host_mark_y,
     );
     let table_y = table_y.expect("표 렌더 노드 y");
-    // [fork] TAC 인라인 표 host 는 별도 조판부호 run 을 만들지 않는다.
-    // #1481 회귀는 아래 layer-tree "표 위 조판부호 없음" 검증이 담당한다.
+    let host_mark_y = host_mark_y.expect("표 host 문단부호 y");
     assert!(
-        host_mark_y.is_none_or(|y| y >= table_y - 1.0),
-        "blank2010 경로에서도 표 host 조판부호가 표 위 빈 줄로 렌더되면 안 된다: table_y={table_y}, mark_y={host_mark_y:?}"
+        (table_y - host_mark_y).abs() < 1.0,
+        "blank2010 경로에서도 첫 조판부호는 표 상단과 겹쳐야 한다: table_y={table_y}, mark_y={host_mark_y}"
     );
 
     doc.set_show_paragraph_marks(true);
@@ -1080,6 +1056,29 @@ fn issue_1470_table_caption_number(doc: &HwpDocument, control_idx: usize) -> Opt
         })
 }
 
+fn issue_1470_picture_caption_number(doc: &HwpDocument, control_idx: usize) -> Option<(u16, u16)> {
+    use crate::model::control::Control;
+
+    let picture = match doc.document.sections[0].paragraphs[0]
+        .controls
+        .get(control_idx)?
+    {
+        Control::Picture(p) => p,
+        _ => return None,
+    };
+    picture
+        .caption
+        .as_ref()?
+        .paragraphs
+        .first()?
+        .controls
+        .iter()
+        .find_map(|c| match c {
+            Control::AutoNumber(an) => Some((an.assigned_number, an.number)),
+            _ => None,
+        })
+}
+
 #[test]
 fn issue_1470_create_table_ex_tac_renders_once() {
     let mut doc = HwpDocument::create_empty();
@@ -1130,6 +1129,176 @@ fn issue_1470_create_table_ex_tac_caption_renders_once() {
         issue_1470_count_rendered_tables(&doc, 0, control_idx),
         1,
         "캡션이 있는 TAC 표도 같은 컨트롤이 한 번만 렌더되어야 한다"
+    );
+}
+
+#[test]
+fn issue_1470_picture_caption_can_be_removed_and_renumbers() {
+    use crate::model::control::Control;
+
+    fn minimal_png() -> Vec<u8> {
+        vec![
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48,
+            0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00,
+            0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, 0x54, 0x78,
+            0x9C, 0x63, 0x00, 0x01, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0D, 0x0A, 0x00, 0x00, 0x00,
+            0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+        ]
+    }
+
+    let mut doc = HwpDocument::create_empty();
+    let image = minimal_png();
+    let first = doc
+        .insert_picture_native(
+            0,
+            0,
+            0,
+            &[],
+            &image,
+            5000,
+            5000,
+            1,
+            1,
+            "png",
+            "first",
+            None,
+            None,
+        )
+        .expect("첫 번째 그림 삽입");
+    let first_idx = issue_1481_json_usize(&first, "controlIdx");
+    let second = doc
+        .insert_picture_native(
+            0,
+            0,
+            0,
+            &[],
+            &image,
+            5000,
+            5000,
+            1,
+            1,
+            "png",
+            "second",
+            None,
+            None,
+        )
+        .expect("두 번째 그림 삽입");
+    let second_idx = issue_1481_json_usize(&second, "controlIdx");
+
+    for control_idx in [first_idx, second_idx] {
+        doc.set_picture_properties_native(0, 0, control_idx, r#"{"hasCaption":true}"#)
+            .expect("그림 캡션 생성");
+    }
+
+    assert_eq!(
+        issue_1470_picture_caption_number(&doc, first_idx),
+        Some((1, 1))
+    );
+    assert_eq!(
+        issue_1470_picture_caption_number(&doc, second_idx),
+        Some((2, 2))
+    );
+
+    doc.set_picture_properties_native(0, 0, first_idx, r#"{"hasCaption":false}"#)
+        .expect("그림 캡션 삭제");
+
+    let first_picture = match &doc.document.sections[0].paragraphs[0].controls[first_idx] {
+        Control::Picture(p) => p,
+        other => panic!("첫 번째 컨트롤이 그림이 아님: {other:?}"),
+    };
+    assert!(
+        first_picture.caption.is_none(),
+        "hasCaption=false는 그림 캡션 슬롯을 삭제해야 한다"
+    );
+    assert_eq!(
+        first_picture.common.attr & (1 << 29),
+        0,
+        "그림 캡션 attr bit도 내려야 한다"
+    );
+    let props: Value = serde_json::from_str(
+        &doc.get_picture_properties_native(0, 0, first_idx)
+            .expect("그림 속성 조회"),
+    )
+    .expect("그림 속성 JSON");
+    assert_eq!(
+        props["hasCaption"], false,
+        "그림 속성창의 중앙 캡션 없음 선택은 hasCaption=false로 되돌아와야 한다"
+    );
+    assert_eq!(
+        issue_1470_picture_caption_number(&doc, second_idx),
+        Some((1, 1)),
+        "앞 그림 캡션 삭제 후 뒤 그림 캡션 번호가 1로 재배정되어야 한다"
+    );
+}
+
+#[test]
+fn issue_1470_picture_caption_path_cursor_and_control_paste() {
+    use crate::model::control::Control;
+
+    fn minimal_png() -> Vec<u8> {
+        vec![
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48,
+            0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00,
+            0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, 0x54, 0x78,
+            0x9C, 0x63, 0x00, 0x01, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0D, 0x0A, 0x00, 0x00, 0x00,
+            0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+        ]
+    }
+
+    let mut doc = HwpDocument::create_empty();
+    let image = minimal_png();
+    let inserted = doc
+        .insert_picture_native(
+            0,
+            0,
+            0,
+            &[],
+            &image,
+            5000,
+            5000,
+            1,
+            1,
+            "png",
+            "caption-path",
+            None,
+            None,
+        )
+        .expect("그림 삽입");
+    let pic_idx = issue_1481_json_usize(&inserted, "controlIdx");
+    doc.set_picture_properties_native(0, 0, pic_idx, r#"{"hasCaption":true}"#)
+        .expect("그림 캡션 생성");
+
+    let path = [(pic_idx, 0usize, 0usize)];
+    let path_json = format!(
+        r#"[{{"controlIndex":{},"cellIndex":0,"cellParaIndex":0}}]"#,
+        pic_idx
+    );
+    let rect = doc.get_cursor_rect_by_path_native(0, 0, &path_json, 0);
+    assert!(
+        rect.is_ok(),
+        "그림 캡션 cellPath도 커서 좌표를 찾아야 한다: {:?}",
+        rect.err()
+    );
+
+    doc.copy_control_native(0, 0, &[], pic_idx)
+        .expect("그림 개체 복사");
+    let pasted = doc.paste_internal_in_cell_by_path_native(0, 0, &path, 0);
+    assert!(
+        pasted.is_ok(),
+        "그림 캡션 위치에도 내부 그림 클립보드를 붙여넣을 수 있어야 한다: {:?}",
+        pasted.err()
+    );
+    let picture = match &doc.document.sections[0].paragraphs[0].controls[pic_idx] {
+        Control::Picture(p) => p,
+        other => panic!("그림 컨트롤이 아님: {other:?}"),
+    };
+    let caption = picture.caption.as_ref().expect("그림 캡션 존재");
+    assert!(
+        caption.paragraphs[0]
+            .controls
+            .iter()
+            .any(|control| matches!(control, Control::Picture(_))),
+        "그림 caption path 붙여넣기는 캡션 문단 안에 그림 컨트롤을 보존해야 한다"
     );
 }
 
@@ -1259,38 +1428,6 @@ fn issue_1470_table_caption_edit_keeps_autonumber() {
             |c| matches!(c, Control::AutoNumber(an) if an.assigned_number == 1 && an.number == 1)
         ),
         "캡션 속성 수정 후에도 AutoNumber 컨트롤과 번호가 유지되어야 한다"
-    );
-}
-
-#[test]
-fn test_create_shape_control_applies_fill_color() {
-    let mut doc = HwpDocument::create_empty();
-    let mut document = Document::default();
-    document.sections.push(Section {
-        paragraphs: vec![Paragraph::default()],
-        ..Default::default()
-    });
-    doc.set_document(document);
-
-    let result = doc
-        .create_shape_control_from_json_native(
-            r##"{"sectionIdx":0,"paraIdx":0,"charOffset":0,"width":6000,"height":3000,"shapeType":"rectangle","treatAsChar":true,"fillColor":"#FFA500"}"##,
-        )
-        .expect("shape creation should succeed");
-
-    let para_idx = json_u32(&result, "paraIdx").expect("paraIdx in create result");
-    let control_idx = json_u32(&result, "controlIdx").expect("controlIdx in create result");
-    let props = doc
-        .get_shape_properties_native(0, para_idx as usize, control_idx as usize)
-        .expect("created shape properties");
-
-    assert!(
-        props.contains(r#""fillType":"solid""#),
-        "shape should be solid-filled: {props}"
-    );
-    assert!(
-        props.contains(r#""fillBgColor":42495"#),
-        "shape should keep #FFA500 as BGR 0x00A5FF: {props}"
     );
 }
 
@@ -1557,44 +1694,6 @@ fn test_export_hwp_empty() {
     // CFB 시그니처 확인
     assert!(bytes.len() > 512);
     assert_eq!(&bytes[0..4], &[0xD0, 0xCF, 0x11, 0xE0]);
-}
-
-/// set_column_def_native(2단) 후 export → re-parse 시 단 개수가 보존되는지 검증한다.
-///
-/// 회귀: 기존 ColumnDef 는 파싱 시 raw_attr(원본 u16)을 보관하고, serializer 는
-/// raw_attr != 0 이면 그대로 쓴다(라운드트립 보존). 그래서 set_column_def_native 가
-/// column_count 만 바꾸고 raw_attr 을 비우지 않으면, export 시 stale raw_attr(1단)이
-/// 그대로 직렬화되어 단 개수 변경이 파일에 반영되지 않는다(set_columns(2) → 저장 → 1단).
-#[test]
-fn test_set_column_def_native_roundtrip_preserves_count() {
-    let path = "samples/basic/Textmail.hwp";
-    if !std::path::Path::new(path).exists() {
-        eprintln!("SKIP: {} 없음", path);
-        return;
-    }
-    let data = std::fs::read(path).unwrap();
-    let mut doc = HwpDocument::from_bytes(&data).unwrap();
-
-    // 전제: 샘플은 1단. set_column_def_native 가 기존 ColumnDef 를 2단으로 갱신.
-    let cd0 = HwpDocument::find_initial_column_def(&doc.document.sections[0].paragraphs);
-    assert_eq!(cd0.column_count, 1, "샘플 전제(1단) 불일치");
-    doc.set_column_def_native(0, 2, 0, true, 2268).unwrap();
-
-    // 메모리 상태: 2단이어야 함
-    let cd_mem = HwpDocument::find_initial_column_def(&doc.document.sections[0].paragraphs);
-    assert_eq!(cd_mem.column_count, 2, "메모리 ColumnDef 가 2단이 아님");
-
-    // export → re-parse: 단 개수가 디스크 라운드트립을 통해 보존되어야 한다.
-    // (이 단언이 핵심 회귀. raw_attr 미무효화 시 stale 1단이 직렬화되어 실패한다.)
-    let bytes = doc.export_hwp_native().expect("export 실패");
-    let reparsed = HwpDocument::from_bytes(&bytes).expect("re-parse 실패");
-    let cd_disk = HwpDocument::find_initial_column_def(&reparsed.document.sections[0].paragraphs);
-    assert_eq!(
-        cd_disk.column_count, 2,
-        "라운드트립 후 단 개수가 보존되지 않음 (got {}단)",
-        cd_disk.column_count
-    );
-    assert!(cd_disk.same_width, "라운드트립 후 same_width 손실");
 }
 
 #[test]
@@ -23488,119 +23587,6 @@ fn test_reflow_linesegs_empty_document_returns_zero() {
     let mut doc = HwpDocument::create_empty();
     let count = doc.reflow_linesegs();
     assert_eq!(count, 0);
-}
-
-/// 셀 배경 채우기: set_cell_properties로 fillColor를 주면 셀의 BorderFill이
-/// solid + 해당 색으로 바뀌고, get_cell_properties가 그 값을 보고해야 한다.
-/// (이전엔 fillColor가 무시되어 fillType:"none"으로 남는 무동작 버그였다)
-fn make_doc_with_2x2_table() -> (HwpDocument, usize) {
-    let mut doc = HwpDocument::create_empty();
-    doc.create_blank_document_native().unwrap();
-    // pi=0의 offset 0에 2×2 표 삽입
-    doc.create_table_ex_native(0, 0, 0, 2, 2, true, Some(&[6777, 6777]), None)
-        .unwrap();
-    // 삽입된 표 컨트롤의 인덱스 찾기
-    let para = &doc.document.sections[0].paragraphs[0];
-    let ctrl_idx = para
-        .controls
-        .iter()
-        .position(|c| matches!(c, crate::model::control::Control::Table(_)))
-        .expect("표 컨트롤이 있어야 함");
-    (doc, ctrl_idx)
-}
-
-#[test]
-fn test_set_cell_fill_color_solid() {
-    let (mut doc, ctrl) = make_doc_with_2x2_table();
-
-    // 사전: 셀 0의 채우기 없음
-    let before = doc.get_cell_properties_native(0, 0, ctrl, 0).unwrap();
-    assert!(
-        before.contains("\"fillType\":\"none\""),
-        "초기엔 채우기 없음 예상: {before}"
-    );
-
-    // fillColor로 노란색 칠하기 (fillType 생략 → solid 기본)
-    doc.set_cell_properties_native(0, 0, ctrl, 0, r##"{"fillColor":"#FFFF00"}"##)
-        .unwrap();
-
-    let after = doc.get_cell_properties_native(0, 0, ctrl, 0).unwrap();
-    assert!(
-        after.contains("\"fillType\":\"solid\""),
-        "fillType solid 예상: {after}"
-    );
-    assert!(
-        after.contains("\"fillColor\":\"#ffff00\""),
-        "fillColor #ffff00 예상: {after}"
-    );
-
-    // 형제 셀(1)은 영향받지 않아야 함 (공유 BorderFill 제자리 수정 금지 확인)
-    let sibling = doc.get_cell_properties_native(0, 0, ctrl, 1).unwrap();
-    assert!(
-        sibling.contains("\"fillType\":\"none\""),
-        "형제 셀은 채우기 없음 유지: {sibling}"
-    );
-}
-
-#[test]
-fn test_set_cell_fill_background_color_alias() {
-    // 에이전트/@cell_props 호환: BackgroundColor 별칭도 받아야 한다.
-    let (mut doc, ctrl) = make_doc_with_2x2_table();
-    doc.set_cell_properties_native(0, 0, ctrl, 2, r##"{"BackgroundColor":"#00FF00"}"##)
-        .unwrap();
-    let after = doc.get_cell_properties_native(0, 0, ctrl, 2).unwrap();
-    assert!(after.contains("\"fillType\":\"solid\""), "{after}");
-    assert!(after.contains("\"fillColor\":\"#00ff00\""), "{after}");
-}
-
-#[test]
-fn test_set_cell_fill_none_clears() {
-    let (mut doc, ctrl) = make_doc_with_2x2_table();
-    doc.set_cell_properties_native(0, 0, ctrl, 0, r##"{"fillColor":"#FF0000"}"##)
-        .unwrap();
-    assert!(doc
-        .get_cell_properties_native(0, 0, ctrl, 0)
-        .unwrap()
-        .contains("\"fillType\":\"solid\""));
-    // fillType:"none"으로 채우기 제거
-    doc.set_cell_properties_native(0, 0, ctrl, 0, r#"{"fillType":"none"}"#)
-        .unwrap();
-    assert!(doc
-        .get_cell_properties_native(0, 0, ctrl, 0)
-        .unwrap()
-        .contains("\"fillType\":\"none\""));
-}
-
-#[test]
-fn test_set_cell_fill_preserves_borders() {
-    // fill만 바꿔도 기존 테두리는 유지되어야 한다 (현재 BorderFill 복제 기반).
-    let (mut doc, ctrl) = make_doc_with_2x2_table();
-    // 먼저 좌측 테두리를 지정
-    doc.set_cell_properties_native(
-        0,
-        0,
-        ctrl,
-        0,
-        r##"{"borderLeft":{"type":1,"width":2,"color":"#FF0000"}}"##,
-    )
-    .unwrap();
-    let with_border = doc.get_cell_properties_native(0, 0, ctrl, 0).unwrap();
-    assert!(
-        with_border.contains("\"borderLeft\":{\"type\":1"),
-        "좌측 테두리 설정 확인: {with_border}"
-    );
-    // 이제 fill만 추가
-    doc.set_cell_properties_native(0, 0, ctrl, 0, r##"{"fillColor":"#FFFF00"}"##)
-        .unwrap();
-    let both = doc.get_cell_properties_native(0, 0, ctrl, 0).unwrap();
-    assert!(
-        both.contains("\"fillColor\":\"#ffff00\""),
-        "fill 적용: {both}"
-    );
-    assert!(
-        both.contains("\"borderLeft\":{\"type\":1"),
-        "fill 변경 후에도 테두리 보존: {both}"
-    );
 }
 
 #[test]

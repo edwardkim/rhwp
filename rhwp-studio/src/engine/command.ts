@@ -1,5 +1,6 @@
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike } from '@/core/types';
+import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 
 /** 편집 명령 공통 인터페이스 */
 export interface EditCommand {
@@ -13,6 +14,8 @@ export interface EditCommand {
   mergeWith(other: EditCommand): EditCommand | null;
   /** 리소스 해제 (스냅샷 명령의 메모리 반환 등). 스택에서 제거될 때 호출. */
   discard?(wasm: WasmBridge): void;
+  /** page-local refresh 판정을 위한 가벼운 텍스트 편집 payload. */
+  getPageLocalTextEditOptions?(): { insertedText?: string; deleteCount?: number };
 }
 
 // ─── 편집 작업 서술자 (라우팅 통합) ────────────────────
@@ -84,16 +87,46 @@ function isNestedCell(pos: DocumentPosition): boolean {
   return (pos.cellPath?.length ?? 0) > 1;
 }
 
+export function canUseDeferredCellTextInsert(pos: DocumentPosition, text: string): boolean {
+  if (!isCell(pos) || isNestedCell(pos)) return false;
+  if (text.length === 0 || text.length > MAX_PAGE_LOCAL_TEXT_EDIT_CHARS) return false;
+  if (/[\r\n\t]/.test(text)) return false;
+  return true;
+}
+
 /** cellPath를 WASM용 JSON 문자열로 변환 */
 function cellPathJson(pos: DocumentPosition): string {
   return JSON.stringify(pos.cellPath ?? []);
+}
+
+/** 셀 문단 구조 편집 뒤 flat/path 커서 위치를 같은 문단으로 맞춘다. */
+function cellParagraphPosition(
+  pos: DocumentPosition,
+  cellParaIndex: number,
+  charOffset: number,
+): DocumentPosition {
+  const cellPath = pos.cellPath?.map((entry, index, path) =>
+    index + 1 === path.length ? { ...entry, cellParaIndex } : entry,
+  );
+  return {
+    ...pos,
+    paragraphIndex: cellParaIndex,
+    cellParaIndex,
+    cellPath,
+    charOffset,
+    cursorRect: undefined,
+  };
 }
 
 function doInsertText(wasm: WasmBridge, pos: DocumentPosition, text: string): void {
   if (isNestedCell(pos)) {
     wasm.insertTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, text);
   } else if (isCell(pos)) {
-    wasm.insertTextInCell(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, text);
+    if (canUseDeferredCellTextInsert(pos, text)) {
+      wasm.insertTextInCellDeferredPagination(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, text);
+    } else {
+      wasm.insertTextInCell(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, text);
+    }
   } else {
     wasm.insertText(pos.sectionIndex, pos.paragraphIndex, pos.charOffset, text);
   }
@@ -136,6 +169,10 @@ export class InsertTextCommand implements EditCommand {
   execute(wasm: WasmBridge): DocumentPosition {
     doInsertText(wasm, this.position, this.text);
     return { ...this.position, charOffset: this.position.charOffset + this.text.length };
+  }
+
+  getPageLocalTextEditOptions(): { insertedText: string } {
+    return { insertedText: this.text };
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
@@ -194,6 +231,10 @@ export class DeleteTextCommand implements EditCommand {
     }
     doDeleteText(wasm, this.position, this.count);
     return { ...this.position };
+  }
+
+  getPageLocalTextEditOptions(): { deleteCount: number } {
+    return { deleteCount: this.count };
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
@@ -692,11 +733,7 @@ export class SplitParagraphInCellCommand implements EditCommand {
     } else {
       wasm.splitParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi, pos.charOffset);
     }
-    return {
-      ...pos,
-      cellParaIndex: cpi + 1,
-      charOffset: 0,
-    };
+    return cellParagraphPosition(pos, cpi + 1, 0);
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
@@ -740,11 +777,7 @@ export class MergeParagraphInCellCommand implements EditCommand {
     } else {
       wasm.mergeParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi);
     }
-    return {
-      ...pos,
-      cellParaIndex: cpi - 1,
-      charOffset: this.mergePointOffset,
-    };
+    return cellParagraphPosition(pos, cpi - 1, this.mergePointOffset);
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
@@ -1027,7 +1060,7 @@ export class ResizeObjectCommand implements EditCommand {
   }
 
   private setProps(wasm: WasmBridge, target: ObjectResizeTarget, props: Record<string, unknown>): void {
-    if (target.type === 'shape' || target.type === 'line' || target.type === 'group') {
+    if (target.type === 'shape' || target.type === 'line' || target.type === 'group' || target.type === 'ole') {
       if (target.cellPath && target.cellPath.length > 0) {
         wasm.setCellShapePropertiesByPath(target.sec, target.ppi, target.cellPath, target.ci, props);
         return;

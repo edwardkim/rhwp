@@ -244,128 +244,6 @@ impl HwpDocument {
 
         1
     }
-
-    fn shape_creation_props_json(json: &str) -> Option<String> {
-        let mut props = serde_json::Map::new();
-
-        if let Some(v) =
-            Self::shape_creation_color(json, &["fillBgColor", "fillColor", "BackgroundColor"])
-        {
-            props.insert("fillBgColor".to_string(), serde_json::json!(v));
-            props.insert("fillType".to_string(), serde_json::json!("solid"));
-            props
-                .entry("fillPatType".to_string())
-                .or_insert_with(|| serde_json::json!(-1));
-        }
-
-        for key in ["fillPatColor", "fillPatType", "fillAlpha"] {
-            if let Some(v) = json_i32(json, key) {
-                props.insert(key.to_string(), serde_json::json!(v));
-            }
-        }
-
-        if let Some(v) = json_str(json, "fillType") {
-            props.insert("fillType".to_string(), serde_json::json!(v));
-        }
-
-        if let Some(v) = Self::shape_creation_color(json, &["borderColor"]) {
-            props.insert("borderColor".to_string(), serde_json::json!(v));
-        }
-        for key in ["borderWidth", "lineType", "roundRate", "rotationAngle"] {
-            if let Some(v) = json_i32(json, key) {
-                props.insert(key.to_string(), serde_json::json!(v));
-            }
-        }
-
-        if props.is_empty() {
-            None
-        } else {
-            serde_json::to_string(&props).ok()
-        }
-    }
-
-    fn shape_creation_color(json: &str, keys: &[&str]) -> Option<u32> {
-        for key in keys {
-            if let Some(v) = json_color(json, key) {
-                return Some(v);
-            }
-            if let Some(v) = json_i32(json, key) {
-                return Some(v as u32);
-            }
-        }
-        None
-    }
-
-    fn create_shape_control_from_json_native(&mut self, json: &str) -> Result<String, HwpError> {
-        let sec = json_u32(json, "sectionIdx").unwrap_or(0) as usize;
-        let para = json_u32(json, "paraIdx").unwrap_or(0) as usize;
-        let offset = json_u32(json, "charOffset").unwrap_or(0) as usize;
-        let width = json_u32(json, "width").unwrap_or(8504);
-        let height = json_u32(json, "height").unwrap_or(8504);
-        let horz_offset = json_u32(json, "horzOffset").unwrap_or(0);
-        let vert_offset = json_u32(json, "vertOffset").unwrap_or(0);
-        let shape_type = json_str(json, "shapeType").unwrap_or_else(|| "rectangle".to_string());
-        // 글상자는 기본적으로 treat_as_char=true (한컴 기본값)
-        let default_tac = shape_type == "textbox";
-        let treat_as_char = json_bool(json, "treatAsChar").unwrap_or(default_tac);
-        let text_wrap = json_str(json, "textWrap").unwrap_or_else(|| "Square".to_string());
-        let line_flip_x = json_bool(json, "lineFlipX").unwrap_or(false);
-        let line_flip_y = json_bool(json, "lineFlipY").unwrap_or(false);
-        // 다각형 꼭짓점: "polygonPoints":[{"x":N,"y":N},...]
-        let polygon_points: Vec<crate::model::Point> = if shape_type == "polygon" {
-            Self::parse_polygon_points(json)
-        } else {
-            Vec::new()
-        };
-        let result = self.create_shape_control_native(
-            sec,
-            para,
-            offset,
-            width,
-            height,
-            horz_offset,
-            vert_offset,
-            treat_as_char,
-            &text_wrap,
-            &shape_type,
-            line_flip_x,
-            line_flip_y,
-            &polygon_points,
-        )?;
-
-        if let Some(props_json) = Self::shape_creation_props_json(json) {
-            if let (Some(pi), Some(ci)) = (
-                json_u32(&result, "paraIdx"),
-                json_u32(&result, "controlIdx"),
-            ) {
-                self.set_shape_properties_native(sec, pi as usize, ci as usize, &props_json)?;
-            }
-        }
-
-        // 연결선: SubjectID + 제어점 라우팅 설정 (생성 후)
-        if shape_type.starts_with("connector-") {
-            let ssid = json_u32(json, "startSubjectID").unwrap_or(0);
-            let ssidx = json_u32(json, "startSubjectIndex").unwrap_or(0);
-            let esid = json_u32(json, "endSubjectID").unwrap_or(0);
-            let esidx = json_u32(json, "endSubjectIndex").unwrap_or(0);
-            let pi = json_u32(&result, "paraIdx");
-            let ci = json_u32(&result, "controlIdx");
-            if let (Some(pi), Some(ci)) = (pi, ci) {
-                self.update_connector_subject_ids(
-                    sec,
-                    pi as usize,
-                    ci as usize,
-                    ssid,
-                    ssidx,
-                    esid,
-                    esidx,
-                );
-                self.recalculate_connector_routing(sec, pi as usize, ci as usize, ssidx, esidx);
-            }
-        }
-
-        Ok(result)
-    }
 }
 
 #[wasm_bindgen]
@@ -540,6 +418,8 @@ impl HwpDocument {
     /// - `"all"` → 모든 PaintOp 렌더 (기본 `renderPageToCanvas` 와 동일)
     /// - `"background"` → page background layer
     /// - `"flow"` → 본문 layer (BehindText / InFrontOfText plane 제외)
+    /// - `"flow-dynamic"` → 본문 layer 중 Image/RawSvg 제외
+    /// - `"flow-static"` → page background + 본문 Image/RawSvg layer
     /// - `"behind"` → BehindText overlay layer
     /// - `"front"` → InFrontOfText overlay layer
     ///
@@ -561,11 +441,13 @@ impl HwpDocument {
             "all" => LayerFilter::All,
             "background" => LayerFilter::BackgroundOnly,
             "flow" => LayerFilter::FlowOnly,
+            "flow-dynamic" => LayerFilter::FlowDynamic,
+            "flow-static" => LayerFilter::FlowStatic,
             "behind" => LayerFilter::WrapOnly(TextWrap::BehindText),
             "front" => LayerFilter::WrapOnly(TextWrap::InFrontOfText),
             _ => {
                 return Err(JsValue::from_str(
-                    "invalid layer_kind: 'all' | 'background' | 'flow' | 'behind' | 'front'",
+                    "invalid layer_kind: 'all' | 'background' | 'flow' | 'flow-dynamic' | 'flow-static' | 'behind' | 'front'",
                 ))
             }
         };
@@ -738,17 +620,6 @@ impl HwpDocument {
         self.core.get_document_info()
     }
 
-    /// 자연스러운 IR 트리(전체 `Control` taxonomy)를 DFS 순회하여 모든 주소 지정
-    /// 가능 요소를 평탄한 JSON 배열로 반환한다.
-    ///
-    /// `doc.find` 추상화를 위한 단일 진입점. 각 노드:
-    /// `{ "type": "<kind>", "ref": "<json-ref-string>", "text": "<text or ''>",
-    ///    "row": <n?>, "col": <n?> }`
-    #[wasm_bindgen(js_name = enumerateElements)]
-    pub fn enumerate_elements(&self) -> String {
-        self.core.enumerate_elements()
-    }
-
     /// 특정 페이지의 텍스트 레이아웃 정보를 JSON 문자열로 반환한다.
     ///
     /// 각 TextRun의 위치, 텍스트, 글자별 X 좌표 경계값을 포함한다.
@@ -784,24 +655,6 @@ impl HwpDocument {
     #[wasm_bindgen(js_name = getDpi)]
     pub fn get_dpi(&self) -> f64 {
         self.dpi
-    }
-
-    /// 픽셀 → HWPUNIT (현재 DPI 기준).
-    ///
-    /// 에디터의 이미지 이동/크기 제스처가 페이지 픽셀 좌표를 모델 좌표로
-    /// 커밋할 때 쓰는 *권위* 변환이다. 렌더 트리 bbox 가 `hwpunit_to_px(hu, dpi)`
-    /// 로 만들어지므로 그 역변환도 같은 DPI 한 개로 정확하다(줌은 `set_dpi` 로
-    /// 흡수됨). 프런트가 `7200/96 = 75` 같은 상수를 손으로 들거나 `width/px`
-    /// 비율을 추정하지 않도록 엔진이 단일 진실원을 제공한다.
-    #[wasm_bindgen(js_name = pxToHwpUnit)]
-    pub fn px_to_hwpunit_js(&self, px: f64) -> i32 {
-        crate::renderer::px_to_hwpunit(px, self.dpi)
-    }
-
-    /// HWPUNIT → 픽셀 (현재 DPI 기준). `pxToHwpUnit` 의 역변환.
-    #[wasm_bindgen(js_name = hwpUnitToPx)]
-    pub fn hwpunit_to_px_js(&self, hwpunit: i32) -> f64 {
-        crate::renderer::hwpunit_to_px(hwpunit, self.dpi)
     }
 
     /// 대체 폰트 경로를 설정한다.
@@ -971,6 +824,44 @@ impl HwpDocument {
             text,
         )
         .map_err(|e| e.into())
+    }
+
+    /// 표 셀 내부 문단에 텍스트를 삽입하되 전체 페이지네이션은 호출자가 지연한다.
+    ///
+    /// Studio의 page-local 단일 입력처럼 현재 페이지를 먼저 갱신하고 idle 시점에
+    /// 전체 페이지네이션을 한 번만 수행하는 경로에서 사용한다.
+    #[wasm_bindgen(js_name = insertTextInCellDeferredPagination)]
+    pub fn insert_text_in_cell_deferred_pagination(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        cell_idx: u32,
+        cell_para_idx: u32,
+        char_offset: u32,
+        text: &str,
+    ) -> Result<String, JsValue> {
+        self.insert_text_in_cell_native_deferred_pagination(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+            cell_idx as usize,
+            cell_para_idx as usize,
+            char_offset as usize,
+            text,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 지연된 페이지네이션을 즉시 flush하고 최신 페이지 수를 반환한다.
+    #[wasm_bindgen(js_name = flushDeferredPagination)]
+    pub fn flush_deferred_pagination(&mut self) -> Result<String, JsValue> {
+        self.invalidate_page_tree_cache();
+        self.paginate();
+        Ok(format!(
+            "{{\"ok\":true,\"pageCount\":{}}}",
+            self.page_count()
+        ))
     }
 
     /// `insertTextInCell` 의 options object 변형 (#1413).
@@ -2152,14 +2043,6 @@ impl HwpDocument {
     #[wasm_bindgen(js_name = hitTest)]
     pub fn hit_test(&self, page_num: u32, x: f64, y: f64) -> Result<String, JsValue> {
         self.hit_test_native(page_num, x, y).map_err(|e| e.into())
-    }
-
-    /// 한 점 아래의 요소를 *해석*해 doc.* ref·타입·하이라이트 rects 를 돌려준다.
-    /// `hitTest` 가 char offset 만 주는 것과 달리, 각주 마커·포함 컨트롤·셀/문단을
-    /// 우선순위대로 풀어 프런트가 손으로 하던 히트테스트(+rect 밴딩)를 일원화한다.
-    #[wasm_bindgen(js_name = pickAtPoint)]
-    pub fn pick_at_point(&self, page_num: u32, x: f64, y: f64) -> Result<String, JsValue> {
-        self.pick_at_point_native(page_num, x, y).map_err(|e| e.into())
     }
 
     /// 머리말/꼬리말 내 커서 위치의 픽셀 좌표를 반환한다.
@@ -3403,8 +3286,65 @@ impl HwpDocument {
     /// 반환: JSON `{"ok":true,"paraIdx":<N>,"controlIdx":0}`
     #[wasm_bindgen(js_name = createShapeControl)]
     pub fn create_shape_control(&mut self, json: &str) -> Result<String, JsValue> {
-        self.create_shape_control_from_json_native(json)
-            .map_err(|e| e.into())
+        let sec = json_u32(json, "sectionIdx").unwrap_or(0) as usize;
+        let para = json_u32(json, "paraIdx").unwrap_or(0) as usize;
+        let offset = json_u32(json, "charOffset").unwrap_or(0) as usize;
+        let width = json_u32(json, "width").unwrap_or(8504);
+        let height = json_u32(json, "height").unwrap_or(8504);
+        let horz_offset = json_u32(json, "horzOffset").unwrap_or(0);
+        let vert_offset = json_u32(json, "vertOffset").unwrap_or(0);
+        let shape_type = json_str(json, "shapeType").unwrap_or_else(|| "rectangle".to_string());
+        // 글상자는 기본적으로 treat_as_char=true (한컴 기본값)
+        let default_tac = shape_type == "textbox";
+        let treat_as_char = json_bool(json, "treatAsChar").unwrap_or(default_tac);
+        let text_wrap = json_str(json, "textWrap").unwrap_or_else(|| "Square".to_string());
+        let line_flip_x = json_bool(json, "lineFlipX").unwrap_or(false);
+        let line_flip_y = json_bool(json, "lineFlipY").unwrap_or(false);
+        // 다각형 꼭짓점: "polygonPoints":[{"x":N,"y":N},...]
+        let polygon_points: Vec<crate::model::Point> = if shape_type == "polygon" {
+            Self::parse_polygon_points(json)
+        } else {
+            Vec::new()
+        };
+        let result = self.create_shape_control_native(
+            sec,
+            para,
+            offset,
+            width,
+            height,
+            horz_offset,
+            vert_offset,
+            treat_as_char,
+            &text_wrap,
+            &shape_type,
+            line_flip_x,
+            line_flip_y,
+            &polygon_points,
+        )?;
+
+        // 연결선: SubjectID + 제어점 라우팅 설정 (생성 후)
+        if shape_type.starts_with("connector-") {
+            let ssid = json_u32(json, "startSubjectID").unwrap_or(0);
+            let ssidx = json_u32(json, "startSubjectIndex").unwrap_or(0);
+            let esid = json_u32(json, "endSubjectID").unwrap_or(0);
+            let esidx = json_u32(json, "endSubjectIndex").unwrap_or(0);
+            let pi = json_u32(&result, "paraIdx");
+            let ci = json_u32(&result, "controlIdx");
+            if let (Some(pi), Some(ci)) = (pi, ci) {
+                self.update_connector_subject_ids(
+                    sec,
+                    pi as usize,
+                    ci as usize,
+                    ssid,
+                    ssidx,
+                    esid,
+                    esidx,
+                );
+                self.recalculate_connector_routing(sec, pi as usize, ci as usize, ssidx, esidx);
+            }
+        }
+
+        Ok(result)
     }
 
     /// Shape(글상자) 속성을 조회한다.
@@ -3588,31 +3528,6 @@ impl HwpDocument {
             section_idx as usize,
             para_idx as usize,
             char_offset as usize,
-        )
-        .map_err(|e| e.into())
-    }
-
-    /// 표 셀 문단에 앵커된 각주를 삽입한다 (+선택적 노트 본문 텍스트).
-    #[wasm_bindgen(js_name = insertFootnoteInCell)]
-    #[allow(clippy::too_many_arguments)]
-    pub fn insert_footnote_in_cell(
-        &mut self,
-        section_idx: u32,
-        parent_para_idx: u32,
-        control_idx: u32,
-        cell_idx: u32,
-        cell_para_idx: u32,
-        char_offset: u32,
-        text: &str,
-    ) -> Result<String, JsValue> {
-        self.insert_footnote_in_cell_native(
-            section_idx as usize,
-            parent_para_idx as usize,
-            control_idx as usize,
-            cell_idx as usize,
-            cell_para_idx as usize,
-            char_offset as usize,
-            text,
         )
         .map_err(|e| e.into())
     }
@@ -4865,6 +4780,28 @@ impl HwpDocument {
             parent_para_idx as usize,
             path_json,
             char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// [#2021] 경로 기반 커서 좌표 조회 + 페이지 힌트 — 직전 캐럿 페이지를 전달하면
+    /// 해당 페이지(±1)를 먼저 탐색해, 거대 표 문서에서 캐시 무효화 직후의 선형 페이지
+    /// 재빌드 비용을 피한다. 힌트가 틀려도 종전 전체 탐색으로 fallback (좌표 불변).
+    #[wasm_bindgen(js_name = getCursorRectByPathNear)]
+    pub fn get_cursor_rect_by_path_near(
+        &self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        char_offset: u32,
+        hint_page: u32,
+    ) -> Result<String, JsValue> {
+        self.get_cursor_rect_by_path_with_hint(
+            section_idx as usize,
+            parent_para_idx as usize,
+            path_json,
+            char_offset as usize,
+            Some(hint_page),
         )
         .map_err(|e| e.into())
     }
@@ -6845,6 +6782,14 @@ impl HwpDocument {
     #[wasm_bindgen(js_name = getBookmarks)]
     pub fn get_bookmarks(&self) -> Result<String, JsValue> {
         self.core.get_bookmarks_native().map_err(|e| e.into())
+    }
+
+    /// 문서 구조(개요/조문) 트리를 JSON으로 반환 (사이드바 목차 네비게이션용)
+    ///
+    /// `mode`: `"auto"` | `"outline"` | `"clause"` (인식 불가 시 `auto`).
+    #[wasm_bindgen(js_name = getStructure)]
+    pub fn get_structure(&self, mode: &str) -> Result<String, JsValue> {
+        self.core.get_structure_native(mode).map_err(|e| e.into())
     }
 
     /// 책갈피 추가

@@ -1,0 +1,6 @@
+# task_m100_2004 Stage1 오라클 기준선 (한글 2022) + rhwp 현재
+# doc	oracle_pages	rhwp_pages	delta	variant	anchor
+1613000-청년주거정책	268	266	-2	floating(tac=false,overlap=false) FIXED	pi=1004 그림96장 182mm
+1430000-최종보고서	404	384	-20	inline(tac=true)	pi=2607 그림21장 227mm
+1790387-PrEP	146	130	-16	table-height(별개#1937)	분산
+1220000-관세사	134	125	-9	table-height(별개#1937)	분산

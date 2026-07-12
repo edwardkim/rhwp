@@ -37,9 +37,41 @@ pub fn serialize_section(section: &Section) -> Vec<u8> {
     let memo_lists = collect_memo_lists(section);
     let has_memo_tail = !memo_lists.is_empty();
     let para_count = section.paragraphs.len();
+    // [Issue #1915] IR 계약 폴백: 첫 문단에 Control::SectionDef 가 없는 IR(HWP3 파서
+    // 산출물, 외부 생성 IR)은 secd/PAGE_DEF 계열 레코드가 통째로 누락되어 재로드 시
+    // 용지·여백이 0 이 된다 (hwpdocs 10k 서베이 41건, 전부 HWP3-origin).
+    // hwpx_to_hwp 어댑터의 insert_section_def_control 보강과 동일 계약을 직렬화기
+    // 진입에서 적용한다 — 첫 문단만 SectionDef 컨트롤을 삽입한 사본으로 직렬화.
+    // 원본 스트림 경로(raw_stream)는 위에서 이미 반환되므로 영향 없음.
+    // 실질 page_def(용지 크기 보유)가 있을 때만 보강한다 — 기본값(0×0) section_def
+    // 를 가진 합성/부분 IR(유닛테스트 fixture 등)에 무의미한 secd 를 주입해 레코드
+    // 시퀀스를 바꾸지 않기 위함.
+    let has_real_page_def =
+        section.section_def.page_def.width > 0 && section.section_def.page_def.height > 0;
+    let first_para_with_secd = section.paragraphs.first().and_then(|p| {
+        if !has_real_page_def
+            || p.controls
+                .iter()
+                .any(|c| matches!(c, Control::SectionDef(_)))
+        {
+            None
+        } else {
+            let mut clone = p.clone();
+            clone.controls.insert(
+                0,
+                Control::SectionDef(Box::new(section.section_def.clone())),
+            );
+            Some(clone)
+        }
+    });
     for (i, para) in section.paragraphs.iter().enumerate() {
         let is_last = i == para_count - 1 && !has_memo_tail;
-        serialize_paragraph_with_msb(para, 0, is_last, &mut records);
+        let para_ref = if i == 0 {
+            first_para_with_secd.as_ref().unwrap_or(para)
+        } else {
+            para
+        };
+        serialize_paragraph_with_msb(para_ref, 0, is_last, &mut records);
     }
     if has_memo_tail {
         serialize_memo_tail(section, &memo_lists, &mut records);

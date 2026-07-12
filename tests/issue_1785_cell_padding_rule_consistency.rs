@@ -45,11 +45,15 @@ fn issue_1785_effective_padding_rule() {
     cell.padding = pad(2834);
     assert_eq!(cell.effective_padding(&pad(0)).top, 0);
 
-    // aim=true → 셀 값 (단, 0 은 표 기본으로 폴백)
+    // aim=true → 셀 값. [#2070] 0 도 사용자가 지정한 셀 고유 안 여백으로 존중
+    // (한글 PDF 실측: 시장구조조사 pad=0 셀의 코드 폭 37.0px > 표 폴백 inner
+    // 26.5px — 폴백이면 물리적으로 1줄 배치 불가). 음수(결측 센티널)만 표 폴백.
     cell.apply_inner_margin = true;
     cell.padding = pad(141);
     assert_eq!(cell.effective_padding(&pad(0)).top, 141);
     cell.padding = pad(0);
+    assert_eq!(cell.effective_padding(&pad(140)).top, 0);
+    cell.padding = pad(-1);
     assert_eq!(cell.effective_padding(&pad(140)).top, 140);
 }
 

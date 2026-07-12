@@ -966,12 +966,14 @@ impl DocumentCore {
             return;
         }
 
-        // BinData로 등록
+        // BinData로 등록 — bin_data_id(위치)와 storage id 분리 채번
+        // (insert_picture_native 와 동일 규칙, 기존 storage id 충돌 방지)
         let new_bin_id = (self.document.bin_data_content.len() + 1) as u16;
+        let storage_id = self.document.next_bin_data_storage_id();
         self.document
             .bin_data_content
             .push(crate::model::bin_data::BinDataContent {
-                id: new_bin_id,
+                id: storage_id,
                 data: decoded.clone(),
                 extension: detect_clipboard_image_mime(&decoded)
                     .split('/')

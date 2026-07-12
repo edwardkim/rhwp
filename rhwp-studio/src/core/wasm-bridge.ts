@@ -284,6 +284,15 @@ export class WasmBridge {
     return this.doc?.pageCount() ?? 0;
   }
 
+  flushDeferredPagination(): { ok: boolean; pageCount?: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { flushDeferredPagination?: () => string };
+    if (typeof d.flushDeferredPagination !== 'function') {
+      return { ok: true, pageCount: this.pageCount };
+    }
+    return JSON.parse(d.flushDeferredPagination());
+  }
+
   getSectionCount(): number {
     return this.doc?.getSectionCount() ?? 0;
   }
@@ -352,13 +361,15 @@ export class WasmBridge {
    *
    * @param layerKind 'all' = 모든 PaintOp, 'background' = page background layer,
    *                  'flow' = 본문 layer (BehindText/InFrontOfText 제외),
+   *                  'flow-dynamic' = 본문 layer 중 Image/RawSvg 제외,
+   *                  'flow-static' = page background + 본문 Image/RawSvg layer,
    *                  'behind' = BehindText overlay, 'front' = InFrontOfText overlay
    */
   renderPageToCanvasFiltered(
     pageNum: number,
     canvas: HTMLCanvasElement,
     scale: number,
-    layerKind: 'all' | 'background' | 'flow' | 'behind' | 'front',
+    layerKind: 'all' | 'background' | 'flow' | 'flow-dynamic' | 'flow-static' | 'behind' | 'front',
   ): void {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as {
@@ -696,6 +707,25 @@ export class WasmBridge {
 
   insertTextInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, text: string): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.insertTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, text);
+  }
+
+  insertTextInCellDeferredPagination(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, text: string): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as {
+      insertTextInCellDeferredPagination?: (
+        sec: number,
+        parentPara: number,
+        controlIdx: number,
+        cellIdx: number,
+        cellParaIdx: number,
+        charOffset: number,
+        text: string,
+      ) => string;
+    };
+    if (typeof d.insertTextInCellDeferredPagination === 'function') {
+      return d.insertTextInCellDeferredPagination(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, text);
+    }
     return this.doc.insertTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, text);
   }
 
@@ -1412,6 +1442,22 @@ export class WasmBridge {
   getCursorRectByPath(sec: number, parentPara: number, pathJson: string, charOffset: number): CursorRect {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getCursorRectByPath(sec, parentPara, pathJson, charOffset));
+  }
+
+  /** [#2021] 경로 기반 커서 좌표 + 페이지 힌트 — 직전 캐럿 페이지를 넘기면 해당
+   *  페이지(±1)를 먼저 탐색해 거대 표 문서의 선형 페이지 재빌드를 피한다.
+   *  힌트가 틀려도 전체 탐색 fallback으로 좌표는 동일하다. */
+  getCursorRectByPathNear(
+    sec: number, parentPara: number, pathJson: string, charOffset: number, hintPage: number,
+  ): CursorRect {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    if (typeof this.doc.getCursorRectByPathNear !== 'function') {
+      // 구버전 wasm 폴백
+      return JSON.parse(this.doc.getCursorRectByPath(sec, parentPara, pathJson, charOffset));
+    }
+    return JSON.parse(
+      this.doc.getCursorRectByPathNear(sec, parentPara, pathJson, charOffset, hintPage),
+    );
   }
 
   getCellInfoByPath(sec: number, parentPara: number, pathJson: string): CellInfo {

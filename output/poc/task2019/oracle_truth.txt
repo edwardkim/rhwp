@@ -1,0 +1,1 @@
+74312: rhwp_before=81 oracle=18 (한글2022 PDF)

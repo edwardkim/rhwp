@@ -7,7 +7,7 @@ type PictureSelectionRef = {
   sec: number;
   ppi: number;
   ci: number;
-  type: 'image' | 'shape' | 'equation' | 'group' | 'line';
+  type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole';
   cellIdx?: number;
   cellParaIdx?: number;
   outerTableControlIdx?: number;
@@ -1020,7 +1020,11 @@ export class CursorState {
         // cellPath가 있으면 1-depth 표/글상자도 경로 기반 API 사용
         const { sectionIndex: sec, parentParaIndex: ppi, cellPath, charOffset } = this.position;
         const pathJson = JSON.stringify(cellPath);
-        this.rect = this.wasm.getCursorRectByPath(sec, ppi!, pathJson, charOffset);
+        // [#2021] 직전 캐럿 페이지를 힌트로 — 거대 표 문서의 선형 페이지 탐색 회피
+        const hintPage = this.rect?.pageIndex;
+        this.rect = hintPage != null
+          ? this.wasm.getCursorRectByPathNear(sec, ppi!, pathJson, charOffset, hintPage)
+          : this.wasm.getCursorRectByPath(sec, ppi!, pathJson, charOffset);
       } else if (this.isInCell()) {
         const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellIndex: cei, cellParaIndex: cpi, charOffset } = this.position;
         this.rect = this.wasm.getCursorRectInCell(sec, ppi!, ci!, cei!, cpi!, charOffset);
@@ -1438,7 +1442,7 @@ export class CursorState {
    * [Task #825] `headerFooter` — 머리말/꼬리말 안 그림일 때 outer 위치 marker 보존. */
   enterPictureObjectSelectionDirect(
     sec: number, ppi: number, ci: number,
-    type: 'image' | 'shape' | 'equation' | 'group' | 'line' = 'image',
+    type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole' = 'image',
     cellIdx?: number, cellParaIdx?: number,
     headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number },
     outerTableControlIdx?: number,
@@ -1453,12 +1457,12 @@ export class CursorState {
 
   /** Shift+클릭: 개체를 다중 선택에 추가/제거 (토글) */
   togglePictureObjectSelection(ref: PictureSelectionRef): void;
-  togglePictureObjectSelection(sec: number, ppi: number, ci: number, type: 'image' | 'shape' | 'equation' | 'group' | 'line'): void;
+  togglePictureObjectSelection(sec: number, ppi: number, ci: number, type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole'): void;
   togglePictureObjectSelection(
     refOrSec: PictureSelectionRef | number,
     ppi?: number,
     ci?: number,
-    type?: 'image' | 'shape' | 'equation' | 'group' | 'line',
+    type?: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole',
   ): void {
     this.exitTableObjectSelection();
     this._pictureObjectSelected = true;

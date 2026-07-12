@@ -142,7 +142,15 @@ fn issue_850_exam_social_overlay_images_api_stays_compact_for_input_loop() {
         "flow images must still be counted for decode retry scheduling: {overlay_json}"
     );
     assert!(
-        overlay_json.len() < 128,
+        overlay["flowImageCount"].as_u64().unwrap_or(0) > 0,
+        "flow images must be exposed separately for flow-static reuse decisions: {overlay_json}"
+    );
+    assert!(
+        overlay["flowRawSvgCount"].as_u64().is_some(),
+        "flow rawSvg count must be exposed for flow-static reuse decisions: {overlay_json}"
+    );
+    assert!(
+        overlay_json.len() < 256,
         "input loop overlay JSON must remain compact: len={}, json={overlay_json}",
         overlay_json.len()
     );

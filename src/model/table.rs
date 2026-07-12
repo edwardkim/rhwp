@@ -186,7 +186,11 @@ impl Cell {
         allow_saved_small_cell_margin: bool,
     ) -> bool {
         if self.apply_inner_margin {
-            return cell_padding != 0;
+            // [#2070] aim=true 의 0 은 사용자가 지정한 셀 고유 안 여백 — 존중한다
+            // (한글 PDF 실측: 시장구조조사 c0 pad=(0,0) 코드 폭 37.0px > 표 폴백
+            // inner 26.5px — 표 패딩 폴백이면 물리적으로 1줄 불가). 음수는 결측
+            // 센티널로 보고 표 패딩 폴백 유지.
+            return cell_padding >= 0;
         }
         if cell_padding <= table_padding {
             return false;
@@ -901,10 +905,14 @@ impl Table {
                         self.cells
                             .iter()
                             .find(|cell| cell.col == c && cell.col_span == 1)
-                    });
+                    })
+                    // 열 c 가 전부 병합 셀이면 위 탐색이 모두 실패한다. 서식 0 짜리 셀을
+                    // 만드느니 표의 아무 셀이나 템플릿으로 쓴다 (주석의 "아무 셀").
+                    .or_else(|| self.cells.first());
                 let new_cell = if let Some(tpl) = template {
                     Cell::new_from_template(c, target_row, width, new_cell_height, tpl)
                 } else {
+                    // 셀이 하나도 없는 표 — 상속원이 존재하지 않는 유일한 경우
                     Cell::new_empty(c, target_row, width, new_cell_height, self.border_fill_id)
                 };
                 self.cells.push(new_cell);
@@ -990,10 +998,14 @@ impl Table {
                         self.cells
                             .iter()
                             .find(|cell| cell.row == r && cell.row_span == 1)
-                    });
+                    })
+                    // 행 r 이 전부 병합 셀이면 위 탐색이 모두 실패한다. 서식 0 짜리 셀을
+                    // 만드느니 표의 아무 셀이나 템플릿으로 쓴다 (주석의 "아무 셀").
+                    .or_else(|| self.cells.first());
                 let new_cell = if let Some(tpl) = template {
                     Cell::new_from_template(target_col, r, new_col_width, height, tpl)
                 } else {
+                    // 셀이 하나도 없는 표 — 상속원이 존재하지 않는 유일한 경우
                     Cell::new_empty(target_col, r, new_col_width, height, self.border_fill_id)
                 };
                 self.cells.push(new_cell);

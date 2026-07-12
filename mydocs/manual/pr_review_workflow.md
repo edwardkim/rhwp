@@ -12,11 +12,25 @@ rhwp 는 v0.2.1 사이클부터 외부 기여자 PR 이 급증했다. 하이퍼-
 
 운영 경로는 다음 세 가지로 구분한다.
 
-- **maintainer 일반 경로**: 메인테이너가 외부 기여자 PR 을 검토, merge, 후속 보고한다. 이 문서의 기본 절차다.
+- **maintainer 일반 경로**: 원본 저장소의 admin 또는 branch protection bypass 권한을 가진 메인테이너가
+  외부 기여자 PR 을 검토, merge, 후속 보고한다. 이 문서의 기본 절차다.
 - **collaborator self-merge 후보 예외 경로**: collaborator 가 본인 PR 을 merge 후보로 준비하면서 review 문서를 PR head 에 포함하는 경우다. 이 경로는 8장 조건을 만족할 때만 적용한다.
 - **collaborator-mediated 외부 PR 경로**: 외부 contributor PR 을 repository collaborator 가 검토·merge 준비하면서 review 문서를 PR head 에 포함하는 경우다. 이 경로는 9장 조건을 만족할 때만 적용한다.
 
 명령 예시는 원본 저장소 remote 가 `upstream` 인 현재 로컬 checkout 기준이다. 원본 저장소를 `origin` 으로 둔 maintainer checkout 에서는 같은 명령의 remote 이름만 `origin` 으로 치환한다.
+
+이 문서에서 권한 용어는 GitHub repository permission 을 기준으로 구분한다.
+
+- **maintainer**: 원본 저장소의 `admin` 또는 branch protection bypass 권한을 보유해 운영 기록을
+  `devel` 에 직접 반영할 수 있는 사용자다.
+- **collaborator**: 원본 저장소의 `write` 권한을 보유하지만 branch protection 을 우회하지 않고 PR 로
+  변경을 반영하는 사용자다.
+- **contributor**: 외부 fork 또는 contributor branch 에서 PR 을 제출하는 사용자다.
+
+메인터너의 `devel` 직접 반영은 merge 된 PR 의 review 문서, 오늘할일, `mydocs/pr/assets/` 아래 검증 자산처럼
+코드 동작을 바꾸지 않는 운영 기록에 한정한다. 소스, 테스트, CI workflow, golden/baseline, 기존 샘플 변경은
+메인터너 권한이 있어도 PR 과 GitHub Actions 검증을 기본으로 한다. admin/bypass 권한이 없는 사용자는 직책명과
+무관하게 collaborator 경로를 따른다.
 
 ## 2. PR 도착 시 확인 체크리스트
 
@@ -107,17 +121,25 @@ PR 검토 초기에 변경 파일과 PR 설명을 보고 visual sweep 필요 여
 - HWP/HWPX 샘플, 기준 PDF, golden, visual regression fixture 가 추가되거나 갱신된다.
 
 `cargo test --profile release-test --tests`, `cargo clippy`, `cargo test --test svg_snapshot` 통과는 이 판정을
-대체하지 않는다. 위 조건에 해당하면 3.5 절과 `mydocs/manual/visual_sweep_guide.md` 에 따라 기준 PDF가 있는
-대표 샘플/페이지를 골라 시각 검증을 수행한다. 기준 PDF가 없으면 review 문서에 보류 사유만 적고 끝내지
-않고, PR 작성자 또는 reviewer 에게 한컴 2020/2024 등 실제 기준 프로그램에서 저장한 PDF 업로드를 요청한다.
+대체하지 않는다. 위 조건에 해당하면 3.5 절과 `mydocs/manual/visual_sweep_guide.md` 에 따라 첨부 기준 PDF
+또는 3.5.1 절의 HWP 2020 MCP 산출 PDF 를 사용해 대표 샘플/페이지 시각 검증을 수행한다. PR 작성자가
+검증 PDF 를 첨부하지 않았다는 이유만으로 보류 사유를 적고 끝내지 않는다. 먼저 MCP 로 기준 PDF 를 산출하고,
+MCP 변환이 실패하거나 원본 HWP/HWPX 가 없어서 산출할 수 없을 때만 PR 작성자 또는 reviewer 에게 한컴
+2020/2024 등 실제 기준 프로그램에서 저장한 PDF 업로드를 요청한다.
+
+페이지 수 변화나 시각 검증이 PR 판단 근거인 경우에는 기준 PDF 뿐 아니라 원본 HWP/HWPX 도 검증 자료다.
+원본 HWP/HWPX 가 PR diff, 관련 issue 첨부, 또는 기존 `samples/` 어디에도 없으면 review 문서에 재현성
+공백으로 기록하고, merge 후 원 PR 코멘트나 후속 검토 의견에 "다음부터 페이지 수/시각 검증이 필요한 PR 은
+원본 HWP/HWPX 와 기준 PDF 를 함께 첨부해 달라"는 요청을 남긴다.
 
 ## 3. 리뷰 문서 작성
 
-maintainer 일반 경로에서는 각 PR 마다 리뷰 문서 2건을 active 경로에 작성한다.
+maintainer 일반 경로에서는 각 PR 마다 `pr_{N}_review.md` 를 active 경로에 작성한다. 메인터너 보정,
+체리픽 통합, 복잡한 후속 단계처럼 별도 실행 계획이 필요한 경우에만 `pr_{N}_review_impl.md` 를 추가한다.
 
 ```text
 mydocs/pr/pr_{N}_review.md
-mydocs/pr/pr_{N}_review_impl.md
+mydocs/pr/pr_{N}_review_impl.md   # 필요 시
 ```
 
 처리 완료 후 7.6 절에서 `mydocs/pr/archives/` 로 이동한다. collaborator self-merge 후보 또는
@@ -130,7 +152,7 @@ collaborator-mediated 외부 PR 처럼 처음부터 archive 경로에 작성하�
 
 ```text
 mydocs/pr/archives/pr_{N}_review.md
-mydocs/pr/archives/pr_{N}_review_impl.md
+mydocs/pr/archives/pr_{N}_review_impl.md   # 필요 시
 ```
 
 ### 3.1 리뷰 문서 (`pr_N_review.md`)
@@ -147,6 +169,15 @@ mydocs/pr/archives/pr_{N}_review_impl.md
 예시: `mydocs/pr/archives/pr_234_review.md` (재작업 요청), `mydocs/pr/archives/pr_251_review.md` (admin merge 권고)
 
 ### 3.2 구현 계획서 (`pr_N_review_impl.md`)
+
+다음 중 하나에 해당할 때 작성한다.
+
+- contributor 원 변경 위에 maintainer 보정 코드를 추가한다.
+- 여러 PR 을 체리픽해 통합하거나 충돌 해결 순서를 관리한다.
+- merge, 후속 PR, 이슈 분리 등 작업지시자 선택이 필요한 단계가 둘 이상이다.
+- 단순 리뷰 문서만으로 실행 순서와 롤백 범위를 명확히 설명하기 어렵다.
+
+단순·소형 PR 은 `pr_N_review.md` 안에 처리 계획을 포함하고 별도 구현 계획서를 생략할 수 있다.
 
 포함 항목:
 - 커밋별 SHA + 제목
@@ -211,13 +242,110 @@ reject 결론을 내리지 않는다.
 - 페이지 수, 쪽 경계, 표/그림 자리차지, 텍스트 wrap, clipping, 색상/밑줄처럼 눈으로 확인해야 하는 이슈
 - 코드 검증은 통과하지만 PR 설명상 기준 PDF 또는 한컴 출력과의 비교가 필요한 PR
 
-Codex 와 Claude 는 visual sweep 을 수행한 경우 `compare`, `overlay`, `review` PNG 경로와
-`visual_accuracy_proxy_percent` 를 제시하고, 검증 이미지를 확인한 뒤 작업지시자 승인 없이 시각 판정을
-최종 통과로 단정하지 않는다.
+Codex 와 Claude 는 visual sweep 을 수행한 경우 `compare`, `overlay`, `review` PNG 경로와 페이지 수,
+자동 후보 수, `pixel match`, `visual_accuracy_proxy_percent` 를 함께 제시하고, 검증 이미지를 확인한 뒤
+작업지시자 승인 없이 시각 판정을 최종 통과로 단정하지 않는다.
 
-시각 검증이 반드시 필요한 PR review 에 기준 PDF 가 첨부되어 있지 않으면, maintainer 또는 collaborator 에게
+시각 검증이 반드시 필요한 PR review 에 기준 PDF 가 첨부되어 있지 않으면, 먼저 3.5.1 절에 따라 HWP 2020
+MCP 변환 서버로 기준 PDF 를 산출한다. MCP 산출 PDF 는 Hancom Office 2020 변환 결과이므로, 원본 파일과
+변환 job 이 명확히 기록된 경우 visual sweep 의 기준 PDF 로 사용할 수 있다. MCP 변환이 실패하거나 원본
+HWP/HWPX 파일이 PR diff 또는 저장소에 없어 산출할 수 없는 경우에만 maintainer 또는 collaborator 에게
 한컴 2020/2024 등 실제 기준 프로그램에서 저장한 PDF 파일 업로드를 요청한다. 기준 PDF 없이 생성한 자동
 비교 결과는 임시 참고 자료로만 기록하고 최종 시각 판정 근거로 사용하지 않는다.
+
+원본 HWP/HWPX 가 없는 상태에서는 MCP 기준 PDF 를 만들 수 없고, 페이지 수 변화나 시각 검증 주장을 장기
+재현할 수도 없다. 이 경우 review 문서에는 "원본 HWP/HWPX 미첨부로 독립 시각 검증 불가"를 명확히 적고,
+merge 후 코멘트에는 다음 PR 부터 원본 HWP/HWPX 파일을 반드시 첨부해 달라는 요청을 포함한다.
+
+PR 또는 관련 issue 본문/댓글에 첨부된 재현 문서는 review 시작 시 먼저 모두 내려받아 `samples/` 아래에
+보존한다. GitHub `user-attachments` 파일, 본문에 삽입된 스크린샷 PNG, 외부 사이트에서 추적한 HWP/HWPX/PDF,
+이슈 작성자가 올린 비교 보고서 PDF 모두 여기에 해당한다. 권장 경로는 `samples/issue{N}/` 또는 `samples/pr{N}/` 이며, 파일명은
+출처와 역할을 알 수 있게 안정적으로 정한다. 이 원본 첨부 파일을 `output/` 에만 두거나 기준 PDF 라는 이유로
+`pdf/` 에만 두지 않는다.
+
+본문 첨부 PDF 가 visual sweep 기준 PDF 로도 쓰이면, 원본 첨부는 `samples/` 에 보존하고 기준 PDF 사본은
+`pdf/` 아래에 둔다. review 문서나 사전 처리 판단 보고서(`pr_{N}_report.md`)에는 두 경로와 SHA-256 이
+같은지, 기준 PDF 로 사용했는지, 단순 비교 보고서/참고 자료인지 구분해서 기록한다. 이렇게 해야 후속
+fast-pass PR 에서 신규 `samples/**/*.hwp`, `samples/**/*.hwpx`, `samples/**/*.pdf`,
+`samples/**/*.png`, `pdf/**/*.pdf` 를 모두 GitHub 에 보존할 수 있다.
+
+#### 3.5.1 기준 PDF 미첨부 시 HWP 2020 MCP 산출 절차
+
+PR 작성자가 검증 PDF 를 첨부하지 않았지만 PR 안에 기준으로 삼을 HWP/HWPX 원본이 있으면, review 담당자는
+`hwp2020-mcp-convert` CLI 로 PDF 를 먼저 산출한다. 이 절차는 PDF 업로드 요청보다 우선한다.
+
+MCP client tarball 위치, `.env.local` 준비, `npx --package=file:...` help 확인, CLI 인자 세부값은
+`mydocs/manual/mcp_hwp2020Convert_usage.md` 를 함께 참고한다. VS Code `hwp2020Convert` 등록은 Chat 에서
+tool 로 호출하고 싶을 때만 선택적으로 사용한다. 이 절은 PR review 에서의 저장 위치, 검증 증거 보존,
+review 문서 기록 기준을 정의한다.
+
+최종 저장 위치:
+
+```text
+pdf/{원본 stem}-2020.pdf
+```
+
+HWP 2020 MCP 산출 PDF 는 GitHub 에 남는 기준 PDF 여야 하므로 `output/` 아래에만 저장하지 않는다. 현행
+GitHub Actions fast-pass 는 신규 `pdf/**/*.pdf` 를 review 기준 PDF 로 인정하므로, 50MB 미만 MCP 산출본은
+기본적으로 `pdf/` 아래에 `{원본 stem}-2020.pdf` 이름으로 저장한다. 원본 파일이 `samples/basic/` 처럼 하위
+디렉터리에 있으면 `pdf/basic/` 처럼 같은 하위 구조를 유지한다. 50MB 이상 PDF 는 `pdf-large/` 와 Git LFS
+정책을 따르되, fast-pass 여부는 별도로 확인한다.
+
+MCP 서버 IP 주소와 인증 토큰은 공개 issue, PR 본문, review 문서, 로그에 기록하지 않는다. 이 접근 정보는
+인증된 collaborator 에게만 별도 비공개 채널로 공유한다. PR review 중 MCP 접근 정보가 필요한 경우에는
+공개 GitHub 기록에는 "MCP 접근 정보는 인증된 collaborator 에게만 공유되며, 필요 시 @jangster77 에게 서버
+URL/IP 와 토큰을 요청한다" 라고 적는다.
+
+MCP 변환을 시작하기 전에 원본 파일 크기와 예상 페이지 수를 먼저 확인한다. 이미 PR 에 기준 PDF 가 있거나
+저장소에 대응 PDF 가 있으면 `pdfinfo` 로 페이지 수를 확인하고, 기준 PDF 가 없으면 PR 설명, 샘플명,
+기존 issue 기록, `rhwp dump-pages`/렌더 결과 등으로 대략적인 규모를 파악한다. 페이지 수가 많거나
+거대 표/중첩 표/성능 검증 샘플처럼 변환 시간이 길어질 수 있는 경우에는 기본 `--timeout-seconds 240` 을
+그대로 쓰지 않는다. CLI 의 `--timeout-seconds` 를 900~1800초처럼 충분히 크게 지정한다. VS Code MCP
+tool 경로에서 `MCP error -32001: Request timed out` 이 나왔더라도 서버 job 이 성공해 PDF 를 생성했을 수
+있으므로 곧바로 변환 실패로 단정하지 않는다. 이 경우 같은 입력을 `hwp2020-mcp-convert` CLI 로 다시
+호출해 로컬 PDF 수신까지 검증한다.
+
+사전 확인 예:
+
+```bash
+ls -lh samples/example.hwp
+pdfinfo pdf/example-2024.pdf | rg '^Pages:'
+```
+
+CLI 변환 예:
+
+```bash
+/opt/homebrew/bin/npx -y \
+  --package=file:/Users/me/rhwp/tools/hwp-convert-mcp-client-20260709-231800.tar.gz \
+  -- \
+  hwp2020-mcp-convert \
+  --env-file /Users/me/Devel/hwp-convert/.env.local \
+  --input /Users/me/rhwp/samples/example.hwp \
+  --target pdf \
+  --output-dir /Users/me/rhwp/pdf \
+  --output-filename example-2020.pdf \
+  --timeout-seconds 240
+```
+
+성공 조건:
+
+- CLI result 가 `status: success` 이다.
+- 서버 결과의 `run_status` 가 `0` 이다.
+- 서버 결과의 `validation` 이 `ok` 이다.
+- 로컬 출력 PDF 가 `pdf/` 아래에 존재하고 `file` 또는 `pdfinfo` 로 PDF 임을 확인한다.
+
+review 문서에는 다음을 기록한다.
+
+- 원본 HWP/HWPX 경로와 가능하면 SHA-256
+- PR/issue 본문·댓글 첨부 파일의 원본 URL 또는 출처와 `samples/` 보존 경로
+- MCP 출력 PDF 경로와 SHA-256
+- MCP server job id
+- `run_status`, `validation`, PDF page count
+- 이 PDF 를 기준으로 실행한 visual sweep 산출물 경로와 지표
+
+MCP 산출 PDF 는 visual sweep 입력이면서 장기 재현용 기준 PDF 이므로 review 문서/asset 과 함께 커밋 대상에
+포함한다. 최종 PR/issue comment 에 보여주는 안정 증거는 3.5 절에 따라 선택한 `review_NNN.png` 를
+`mydocs/pr/assets/` 아래로 복사한 파일을 기본으로 하되, 해당 visual sweep 의 기준 PDF 경로도 함께 적는다.
 
 maintainer 또는 collaborator 가 PR review 검증을 위해 추가한 기준 PDF/HWP/HWPX 샘플이 untracked 로
 존재하면, 해당 파일은 임시 디버그 산출물이 아니라 검증 근거 샘플로 간주한다. PR review 문서, visual
@@ -225,9 +353,13 @@ asset 과 함께 커밋 대상에 포함하고, review 문서에는 샘플 경�
 코드 PR 과 검증 기록을 분리해야 하는 경우에는 원 PR 에 섞지 않고, 아래 옵션 2처럼 merge 후 별도
 문서/자산 PR 에 포함한다.
 
+이 문단의 커밋 대상 기준 PDF 에는 3.5.1 절의 MCP 산출 PDF 도 포함된다. MCP 산출 PDF 를 `output/` 아래에만
+남기면 GitHub 에 검증 기준이 보존되지 않으므로, 최종 검증에 사용한 50MB 미만 파일은 반드시 `pdf/` 아래로
+저장한다.
+
 시각 검증 PNG 를 PR 기록 자산으로 남길 때는 먼저 PR review 문서에 visual sweep 산출물의 임시 경로
-(`output/.../review/review_NNN.png` 등), 페이지 수, 자동 후보 수, `visual_accuracy_proxy_percent`, 사람
-판정 메모를 기록한다.
+(`output/.../review/review_NNN.png` 등), 페이지 수, 자동 후보 수, `pixel match`,
+`visual_accuracy_proxy_percent`, 사람 판정 메모를 기록한다.
 
 visual sweep 을 실제 리뷰 근거로 사용했다면, **merge 가능/승인 요청 전** 선택한 대표 `review_NNN.png` 를
 현재 review 작업 브랜치의 `mydocs/pr/assets/` 아래에 PR 번호가 포함된 안정 파일명으로 복사한다. 복사 직후
@@ -235,12 +367,37 @@ PR review 문서에는 임시 산출물 경로와 최종 asset 경로를 둘 다
 sweep 검증을 완료로 표시하거나 merge 가능 결론을 내리지 않는다.
 
 원시 PR comment 에서 이미지를 보여줄 예정이면 `output/...` 임시 경로만 남기고 끝내지 않는다. 이후 asset
-반영은 작업 상황에 따라 다음 두 방식 중 하나를 선택한다.
+반영은 작업자의 권한과 변경 범위에 따라 다음 세 방식 중 하나를 선택한다.
 
 여러 페이지를 검증한 경우 모든 페이지 PNG 를 기계적으로 저장할 필요는 없지만, 리뷰 결론을 증명하는 정상
 샘플 페이지와 보완 요청/후속 이슈 판단에 필요한 후보 페이지는 대표 asset 으로 남긴다. `compare`/`overlay`
 개별 이미지를 따로 남길 필요가 있으면 함께 저장할 수 있고, 기본 코멘트 첨부용 대표 이미지는 좌우 비교가
 포함된 `review_NNN.png` 를 사용한다.
+
+**옵션 M. 메인터너가 운영 기록을 `devel` 에 직접 반영**
+
+admin 또는 branch protection bypass 권한을 가진 메인터너가 원 코드 PR merge 후 review 문서,
+`mydocs/pr/assets/` 검증 자산, 오늘할일처럼 코드 동작을 바꾸지 않는 운영 기록만 반영할 때 사용한다.
+원 코드 PR merge commit 을 확인한 뒤 `devel` 을 최신 `upstream/devel` 로 fast-forward 하고, review 문서를
+archive 경로로 이동한 상태에서 운영 기록을 한 커밋으로 반영한다.
+
+```bash
+git fetch upstream devel
+git switch devel
+git merge --ff-only upstream/devel
+git diff --check
+git status --short
+git add mydocs/pr/archives/pr_N_review.md \
+  mydocs/pr/assets/pr_N_visual_review.png \
+  mydocs/orders/YYYYMMDD.md
+git commit -m "docs: PR #N 검토 기록 보존"
+git push upstream devel
+```
+
+실제 변경 파일만 `git add` 하며 존재하지 않거나 변경되지 않은 경로는 생략한다. 직접 반영 범위에 소스,
+테스트, CI workflow, golden/baseline, 기존 샘플 수정이 포함되면 옵션 M 을 사용하지 않고 원 PR head 보정 또는
+옵션 2 후속 PR 로 전환한다. 신규 HWP/HWPX/PDF 기준 자료가 포함되어 LFS·fast-pass·CI 확인이 필요할 때도
+옵션 2를 사용한다.
 
 **옵션 1. 현재 PR 에 review 문서, asset, 오늘할일을 함께 포함**
 
@@ -256,7 +413,9 @@ supersede 된 PR close/comment 시 `devel` 기준 asset 링크와 리뷰 결론�
 **옵션 2. 원 PR merge 후 docs-only 문서/asset PR 로 분리**
 
 코드 PR 과 review 기록/asset 을 분리해야 하거나 fast-pass 문서 PR 로 후속 처리하는 것이 더 안전한 경우
-사용한다. 원 코드 PR 을 먼저 merge 한 뒤, 선택한 검증 PNG 를 `mydocs/pr/assets/` 아래로 옮기고 review
+사용한다. collaborator 는 원 PR head 에 기록을 포함하지 못한 경우 이 방식을 기본으로 한다. 메인터너도
+직접 반영 허용 범위를 벗어나거나 branch protection 정책상 direct push 를 사용할 수 없으면 이 방식을 쓴다.
+원 코드 PR 을 먼저 merge 한 뒤, 선택한 검증 PNG 를 `mydocs/pr/assets/` 아래로 옮기고 review
 문서/오늘할일과 함께 별도 후속 문서/자산 PR 로 올린다. 후속 문서/자산 PR 을 merge 하여 PNG 가 `devel` 에
 존재하게 만든 다음, 원시 PR 또는 supersede 된 PR 에 review comment 를 남기며 asset 링크와 리뷰 결론을
 안내한다.
@@ -288,13 +447,14 @@ git fetch upstream pull/N/head:local/prN
 ### 4.2 Merge 시뮬레이션
 
 ```bash
-git switch -c prN-merge-test local/prN
-git merge upstream/devel --no-commit --no-ff
+git switch -c prN-merge-test upstream/devel
+git merge local/prN --no-commit --no-ff
 # 충돌 여부 확인
 git status
 ```
 
-충돌 없으면 그대로 진행, 충돌 시 해결 방침 작업지시자 결정 요청.
+실제 merge 대상인 `devel` 위에 PR head 를 합치는 방향으로 결과 tree 와 충돌 여부를 확인한다. 충돌 없으면
+그대로 진행하고, 충돌 시 해결 방침은 작업지시자 결정을 요청한다.
 
 ### 4.2.1 여러 PR 체리픽 누적 검토
 
@@ -304,7 +464,8 @@ git status
 - 체리픽 순서는 오래된 PR 번호 또는 작업지시자가 지정한 순서를 따른다.
 - PR 내부의 `Merge branch 'devel' ...` 커밋은 검토 목적 체리픽에서 제외하고, 실제 기능/문서 커밋만 적용한다.
 - 누적 브랜치는 충돌, 테스트, 시각 검증 확인용 임시 브랜치일 뿐이며 review 문서를 묶어서 한 파일로 만들지 않는다.
-- `mydocs/pr/pr_{N}_review.md`, `mydocs/pr/pr_{N}_review_impl.md` 는 각 PR 번호별로 작성한다.
+- `mydocs/pr/pr_{N}_review.md` 는 각 PR 번호별로 작성하고, `pr_{N}_review_impl.md` 는 3.2 절 조건에
+  해당하는 PR 만 번호별로 추가한다.
 - 각 review 문서에는 체리픽 순서, 적용한 커밋 SHA, 충돌 여부, 선행 PR 의존 여부를 해당 PR 기준으로 기록한다.
 - 시각 검증이 필요한 경우 3.5 절의 공통 visual sweep 및 asset 기록 규칙을 따른다.
 - 여러 PR 을 한꺼번에 로컬 검증했더라도 GitHub merge 전에는 각 PR 의 최신 head, mergeable, required checks 를 개별 확인한다.
@@ -314,6 +475,21 @@ git status
 Cargo 계열 검증은 순차 실행한다. `cargo test`, `cargo clippy`, `cargo build`, `wasm-pack build` 를
 동시에 띄우면 package cache 또는 artifact directory lock 경합으로 시간이 늘고 진행 상태가 불명확해진다.
 특히 focused test 여러 개를 확인할 때도 하나가 끝난 뒤 다음 명령을 실행한다.
+
+모든 PR 에 아래 명령을 기계적으로 전부 적용하지 않는다. 변경 범위와 blast radius 에 맞춰 검증을 선택하고,
+선택·생략한 명령과 이유를 review 문서에 기록한다.
+
+| 변경 범위 | 기본 검증 |
+|---|---|
+| `mydocs/**` 문서만 변경 | `git diff --check`, 문서 경로·링크·변경 범위 확인. cargo 검증 생략 |
+| Rust parser/model/CLI | focused test, `cargo test --profile release-test --tests`, `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings` |
+| renderer/layout/typeset/WASM | Rust 검증, `wasm-pack build --target web --out-dir pkg`, 2.6·3.5절 시각 검증 |
+| `rhwp-studio/**` frontend만 변경 | `npx tsc --noEmit`, `npm test`, 실제 브라우저 동작 확인 |
+| CI workflow 변경 | workflow 구문·변경 조건 확인과 최신 GitHub Actions 결과 확인 |
+| 기존 golden/baseline/fixture 변경 | 관련 focused test, snapshot 결정성 재확인, 최신 PR head CI |
+
+공용 API, 여러 crate, renderer와 frontend를 함께 바꾸는 대형 변경이나 작업지시자가 전체 검증을 승인한 경우에는
+다음 전체 게이트를 순차 실행한다.
 
 ```bash
 cargo build --release
@@ -340,9 +516,10 @@ cargo test --test svg_snapshot
 단독 실행에서 실패하면 `UPDATE_GOLDEN=1` 으로 재생성이 필요한지 확인해야 하지만, **PR 머지 후가 아닌
 머지 전에도 확인 필요**하다. 실패하면 작업지시자와 상의한다. 의도된 렌더 변경인지 버그인지 먼저 구분한다.
 
-2.6 절에서 visual sweep 대상으로 판정한 PR 은 cargo 검증이 모두 통과해도 여기서 끝내지 않는다. 기준 PDF가
-있는 대표 샘플/페이지에 대해 visual sweep 을 실행하고, `review_NNN.png` 확인 결과와
-`visual_accuracy_proxy_percent` 를 review 문서에 기록한 뒤 merge 판단으로 넘어간다.
+2.6 절에서 visual sweep 대상으로 판정한 PR 은 cargo 검증이 모두 통과해도 여기서 끝내지 않는다. 첨부 기준
+PDF 또는 3.5.1 절의 MCP 산출 PDF 를 사용해 대표 샘플/페이지에 대해 visual sweep 을 실행하고,
+`review_NNN.png` 확인 결과, 페이지 수, 자동 후보 수, `pixel match`, `visual_accuracy_proxy_percent` 를
+review 문서에 기록한 뒤 merge 판단으로 넘어간다.
 
 ### 4.4 정리
 
@@ -371,7 +548,7 @@ CI 대기나 작업지시자 승인 대기처럼 review 가 아직 진행 중이
 
 ## 5. 작업지시자 승인 요청
 
-리뷰 문서 2건을 근거로 승인 요청. 예시 포맷:
+3장에서 정한 필수 review 문서와 필요한 경우의 `review_impl` 을 근거로 승인 요청한다. 예시 포맷:
 
 ```
 PR #N 검토 결과 · admin merge 준비 완료.
@@ -407,15 +584,16 @@ gh pr merge N --repo edwardkim/rhwp --merge --admin
 
 1. 원 코드 PR merge 완료와 merge SHA 확인
 2. 후속 문서/asset 처리 필요 여부 확정
-3. 필요한 경우 문서/asset PR 생성, CI 확인, merge
-4. `devel` 을 `upstream/devel` 로 fast-forward sync
+3. 옵션 M 이면 `devel` sync 후 운영 기록 직접 커밋·push, 옵션 2면 문서/asset PR 생성·CI 확인·merge
+4. 최종 `devel` 을 `upstream/devel` 로 fast-forward sync
 5. 관련 이슈 close 여부 확인 및 issue 후속 코멘트 작성
 6. 원 PR 또는 supersede 된 PR 에 review comment 작성
 7. 원 PR/후속 PR 의 로컬·원격 브랜치와 worktree 정리
 8. 잔여 worktree, 로컬 브랜치, 원격 head 브랜치가 없는지 검증
 
 시각 검증 asset 링크를 PR/issue comment 에 넣어야 하는 경우에는 문서/asset PR 이 `devel` 에 merge 되어
-raw asset URL 이 유효해진 뒤에 issue close/comment 와 원 PR comment 를 남긴다.
+있거나 옵션 M 직접 반영 커밋이 `upstream/devel` 에 push 되어 raw asset URL 이 유효해진 뒤에 issue
+close/comment 와 원 PR comment 를 남긴다.
 
 ### 7.1 후속 문서 처리 여부 확정
 
@@ -428,10 +606,21 @@ PR 처리 사실이 GitHub metadata 에만 남고 `mydocs/orders/{yyyymmdd}.md`,
 - **PR head 에 이미 포함됨**: collaborator self-merge 후보 또는 collaborator-mediated 외부 PR 처럼 review 문서,
   오늘할일, report 가 merge 된 PR diff 에 함께 포함된 경우. 이때도 merge SHA, 이슈 close 여부, supersede close
   결과처럼 merge 후에야 확정되는 값이 빠졌는지 확인한다.
+- **메인터너가 `devel` 에 직접 반영**: admin 또는 branch protection bypass 권한을 가진 메인터너가
+  `mydocs/**` 운영 기록만 보강하는 경우. 원 PR merge 후 `devel` 을 동기화하고 archive review 문서,
+  `mydocs/pr/assets/`, 오늘할일을 한 커밋으로 직접 반영한다.
 - **별도 후속 기록 PR 필요**: merge 후 확정된 사실을 기존 문서에 보강해야 하거나, 오늘할일에 처리 기록이
-  빠진 경우. `mydocs/**` 와 신규 기준 샘플/PDF 만 포함하는 후속 기록 브랜치를 만들고 PR 로 반영한다.
+  빠졌지만 collaborator 권한이거나 직접 반영 허용 범위를 벗어난 경우. `mydocs/**` 와 신규 기준 샘플/PDF 만
+  포함하는 후속 기록 브랜치를 만들고 PR 로 반영한다.
 - **추가 문서 불필요**: PR review/report/오늘할일이 모두 최신이고, merge 후 확정값 누락도 없는 경우. 이 판단은
   상태 보고에 명시한다.
+
+메인터너 직접 반영 원칙:
+
+- 원 코드 PR merge SHA 를 확인하고 `devel` 을 `upstream/devel` 로 fast-forward 한 뒤 기록을 작성한다.
+- 변경 범위는 review/archive 문서, 오늘할일, `mydocs/pr/assets/` 아래 자산으로 제한한다.
+- `git diff --check` 와 실제 staged 파일 목록을 확인하고 한 운영 기록 커밋으로 push 한다.
+- 소스, 테스트, workflow, golden/baseline, 기존 샘플 수정 또는 신규 LFS 자료가 포함되면 후속 PR 로 전환한다.
 
 후속 문서 PR 을 만드는 경우 원칙:
 
@@ -455,17 +644,30 @@ git merge --ff-only upstream/devel
 
 ### 7.3 이슈 Close 확인 및 후속 코멘트
 
-GitHub auto-close 가 **자주 실패**한다. 후속 문서/asset PR 이 필요한 경우에는 해당 PR merge 와 devel sync 후
-수동 확인한다.
+GitHub auto-close 가 **자주 실패**한다. 후속 운영 기록이 필요한 경우에는 옵션 M 직접 반영 push 또는 옵션 2
+문서/asset PR merge 와 최종 devel sync 후 수동 확인한다.
 
 ```bash
 gh issue view N --repo edwardkim/rhwp --json state,closedAt
 ```
 
+단, merge 직후에는 closing keyword 처리와 GitHub Actions auto-close 코멘트 반영이 몇 초에서 수십 초 늦게
+보일 수 있다. 원 PR 이 `Closes #N` 또는 closing keyword 를 포함했다면 한 번의 즉시 조회 결과만 보고
+`OPEN` 으로 단정하지 않는다. 다음처럼 시간을 두고 2~3회 재조회한 뒤에도 `OPEN` 일 때만 수동 close 대상으로
+판단한다.
+
+```bash
+for i in 1 2 3; do
+  gh issue view N --repo edwardkim/rhwp --json state,closedAt,comments
+  sleep 10
+done
+```
+
 `state: OPEN` 이면 수동 close + 후속 코멘트:
 
 ```bash
-gh issue close N --repo edwardkim/rhwp --comment "PR #M 머지로 해결 (by @작성자). ..."
+gh issue close N --repo edwardkim/rhwp \
+  --comment "[https://github.com/edwardkim/rhwp/pull/M](https://github.com/edwardkim/rhwp/pull/M) 머지로 해결 (by @작성자). ..."
 ```
 
 `state: CLOSED` 이고 GitHub auto-close 가 이미 동작했더라도 후속 코멘트는 생략하지 않는다. 자동 close 는
@@ -497,7 +699,7 @@ heredoc/`--body-file` 방식으로 남긴다.
 - ... (구체 항목 1)
 - ... (구체 항목 2)
 
-[다음 작업 언급 — 있으면] 후속 이슈 #X 도 같은 방식으로 올려주시면 됩니다.
+[다음 작업 언급 — 있으면] 후속 이슈 [https://github.com/edwardkim/rhwp/issues/X](https://github.com/edwardkim/rhwp/issues/X)도 같은 방식으로 올려주시면 됩니다.
 
 감사합니다.
 ```
@@ -505,9 +707,18 @@ heredoc/`--body-file` 방식으로 남긴다.
 페이지 수, 레이아웃, 렌더링 위치 변화처럼 시각 검증이 merge 판단 근거인 PR 은 다음 형식을 기본으로 한다.
 검증 항목과 asset 링크는 실제 review 문서에 기록된 값만 사용한다.
 
-원 PR 코멘트에서 이슈/PR 번호를 언급할 때는 대상 유형을 먼저 확인한다. merge 된 대상은 PR 이고, 남겨둘
-대상은 issue 일 수 있으므로 open 유지 또는 후속 과제를 안내할 때는 짧은 `#ISSUE` 만 쓰지 말고
-`https://github.com/edwardkim/rhwp/issues/ISSUE` 형태의 정확한 issue URL 을 함께 적는다.
+GitHub review comment, merge 후 원 PR comment, issue 후속 comment 에서 이슈/PR 번호를 언급할 때는 대상
+유형을 먼저 확인하고 **Markdown link 형식으로 직접 링크**한다. 짧은 `#2070`, `PR #2198` 같은 평문 참조나
+링크가 아닌 URL 문자열만 남기지 않는다.
+
+```markdown
+[https://github.com/edwardkim/rhwp/issues/2070](https://github.com/edwardkim/rhwp/issues/2070)
+[https://github.com/edwardkim/rhwp/pull/2198](https://github.com/edwardkim/rhwp/pull/2198)
+```
+
+merge 된 대상은 보통 PR URL, open 유지하거나 후속 과제로 안내할 대상은 issue URL 을 사용한다. 특정
+코멘트를 증거로 인용할 때는 해당 `issuecomment-...` 또는 `discussion_r...`까지 포함된 permalink 를 같은
+Markdown link 형식으로 적는다. 여러 번호를 한 문장에 쓸 때도 각각 별도 링크로 만든다.
 
 ```markdown
 검토 및 머지 완료했습니다. 감사합니다.
@@ -518,6 +729,7 @@ heredoc/`--body-file` 방식으로 남긴다.
 - 로컬 검증: `...` 테스트, 영향권 회귀 테스트, `git diff --check` 확인
 - 페이지 수: 기준 PDF N페이지 / rhwp 렌더 결과 N페이지 확인
 - visual sweep: pN 기준으로 PR의 핵심 주장인 “...”가 해소된 것을 확인
+- 시각 검증 수치: `flagged=0/N`, pixel match `NN.NNNNN%`, 내용 픽셀 중심 자동 일치율 보조값 `NN.NNNNN%`
 
 시각 검증 자료는 아래에 함께 첨부합니다.
 
@@ -528,9 +740,9 @@ pN visual sweep:
 이번 판단은 단순히 PNG가 완전히 동일한지보다, PR 내용에서 주장한 회귀가 해결됐는지를 중심으로 봤습니다.
 [남은 세부 시각 차이/후속 후보가 있으면 명시] 이번 PR의 merge blocker로 보지는 않았습니다.
 
-[관련 이슈를 close 하지 않는 경우] 이 PR은 https://github.com/edwardkim/rhwp/issues/ISSUE 의 일부 발현만 처리합니다. 남은 발현/후속 과제가 있으므로 해당 이슈는 open 상태로 유지합니다.
+[관련 이슈를 close 하지 않는 경우] 이 PR은 [https://github.com/edwardkim/rhwp/issues/ISSUE](https://github.com/edwardkim/rhwp/issues/ISSUE)의 일부 발현만 처리합니다. 남은 발현/후속 과제가 있으므로 해당 이슈는 open 상태로 유지합니다.
 
-다음에 페이지 수나 시각 검증이 필요한 PR을 올려주실 때는, 가능하면 한컴 2020/2024 등에서 저장한 기준 PDF도 함께 첨부해 주세요. 대조 기준이 있으면 review와 회귀 판단을 훨씬 빠르고 정확하게 진행할 수 있습니다.
+다음에 페이지 수나 시각 검증이 필요한 PR을 올려주실 때는, 원본 HWP/HWPX 파일과 한컴 2020/2024 등에서 저장한 기준 PDF를 함께 첨부해 주세요. 기준 PDF만 없으면 maintainer 측에서 HWP 2020 MCP 로 산출해 검증할 수 있지만, 원본 HWP/HWPX 가 없으면 페이지 수 변화와 시각 검증을 장기적으로 재현하기 어렵습니다. 기대 출력 의도도 함께 적어주시면 review와 회귀 판단을 더 빠르고 정확하게 진행할 수 있습니다.
 ```
 
 외부 contributor 의 원 코드 PR 이 최종 diff 상 문서-only / review-only fast-pass 로 판정된 경우에도 후속
@@ -570,8 +782,12 @@ UPDATE_GOLDEN=1 cargo test --test svg_snapshot
 cargo test --test svg_snapshot   # 결정성 재확인
 git add tests/golden_svg/
 git commit -m "test(svg_snapshot): regenerate golden after #N (...)"
-git push upstream devel
+git push <PR-head-remote> HEAD:<PR-head-branch>
 ```
+
+golden 재생성은 원 PR merge 전에 PR head 의 별도 커밋으로 반영하고 최신 CI 를 다시 확인한다. 원 PR 이 이미
+merge 된 뒤 필요성이 확인됐다면 전용 후속 PR 을 만든다. golden/baseline 은 테스트 기준 파일이므로 메인터너
+권한이 있어도 옵션 M 의 `devel` 직접 반영 대상이 아니다.
 
 2회 연속 재현된 실수 (PR #221 / PR #251 사이클) 로 인해 **체크리스트 수준의 필수 절차**.
 
@@ -584,8 +800,8 @@ mv mydocs/pr/pr_N_review.md mydocs/pr/archives/
 mv mydocs/pr/pr_N_review_impl.md mydocs/pr/archives/
 ```
 
-다음 커밋에 포함하거나 오늘할일 커밋에 동반한다. collaborator self-merge 후보 예외 경로에서는
-처음부터 archive 경로에 두므로 이 이동 단계를 수행하지 않는다.
+메인터너 일반 경로의 옵션 M 에서는 오늘할일·asset 과 같은 `devel` 운영 기록 커밋에 동반한다.
+collaborator self-merge 후보 예외 경로에서는 처음부터 archive 경로에 두므로 이 이동 단계를 수행하지 않는다.
 
 후속 기록 fast-pass PR 로 review 문서를 반영하는 경우에도 별도 archive 이동 PR 을 만들지 않는다. 후속 기록
 PR 커밋에 포함할 review 문서는 처음부터 `mydocs/pr/archives/` 아래에 두거나, active 경로에 이미 작성한
@@ -671,6 +887,9 @@ git status --short --branch
 maintainer 일반 경로에서는 PR merge 와 후속 처리를 끝낸 뒤 이 절을 수행한다. collaborator 경로의
 오늘할일 생성·갱신 시점은 8.2.1 절 또는 9.2.1 절을 따른다.
 
+메인터너가 옵션 M 을 사용하는 경우 오늘할일은 archive review 문서·asset 과 같은 `devel` 운영 기록
+커밋에 포함한다. collaborator 또는 직접 반영 허용 범위를 벗어난 변경은 옵션 1 또는 옵션 2 PR 에 포함한다.
+
 `mydocs/orders/yyyymmdd.md` 에 해당 PR 처리 내역 기록:
 - PR 번호 + 제목 + 작성자
 - merge SHA
@@ -691,11 +910,12 @@ maintainer 일반 경로에서는 PR merge 와 후속 처리를 끝낸 뒤 이 �
 
 ### 8.2 문서 경로
 
-collaborator self-merge 후보에서는 처음부터 archive 경로에 review 문서 2건을 작성할 수 있다.
+collaborator self-merge 후보에서는 처음부터 archive 경로에 필수 review 문서와 필요한 경우의
+`review_impl` 을 작성할 수 있다.
 
 ```text
 mydocs/pr/archives/pr_{N}_review.md
-mydocs/pr/archives/pr_{N}_review_impl.md
+mydocs/pr/archives/pr_{N}_review_impl.md   # 3.2 절 조건에 해당할 때
 ```
 
 이 방식은 PR head 에 운영 문서를 포함해 merge 후 추가 문서 커밋을 방지하기 위한 예외다.
@@ -706,18 +926,28 @@ maintainer 일반 경로의 active 경로 작성 규칙까지 대체하지 않�
 
 ### 8.2.1 오늘할일 생성·갱신 시점
 
-collaborator self-merge 후보에서 오늘할일 갱신이 필요한 경우, PR 착수나 최초 조사 단계에서
-`mydocs/orders/{yyyymmdd}.md` 를 미리 생성하지 않는다. merge 판단과 후속 처리 계획이 확정된 최종 PR
-review 문서 묶음을 작성할 때 오늘할일을 같은 커밋으로 생성·갱신한다.
+이 절은 내부 issue/task 구현, 문서-only 변경, 외부 PR 통합 등 collaborator 가 준비하는 모든 self PR 에
+적용한다. 오늘할일 갱신이 필요하더라도 이슈 등록, 작업 브랜치 생성, 최초 조사, 계획서 작성, 구현 중간
+단계에서는 `mydocs/orders/{yyyymmdd}.md` 를 생성하거나 갱신하지 않는다.
 
-collaborator self-merge 후보에서는 오늘할일을 merge 후 별도 PR 로 늦게 만들지 않는다. 오늘할일이 필요한
-경우 PR review 문서와 함께 PR head 에 포함하고, 문서/asset/오늘할일만 바뀐 후속 커밋은 9.3.1 절의
-fast-pass 조건으로 통과시키는 것을 기본으로 한다.
+같은 날짜에 다른 contributor·collaborator PR 이 먼저 merge 되어 오늘할일 파일을 바꿀 수 있으므로, 작업
+초기에 만든 항목은 쉽게 충돌하거나 오래된 상태가 된다. 따라서 변경 범위·검증 결과·merge 판단과 PR 생성
+승인이 모두 확정된 **PR 생성 직전의 최종 준비 시점**에 최신 `devel`의 오늘할일을 먼저 반영한 뒤,
+해당 self PR 의 최종 준비 커밋에 오늘할일을 생성·갱신한다.
+
+오늘할일은 최초 remote push 및 PR 생성 전에 PR diff 에 포함되어 있어야 한다. PR 번호가 발급된 뒤 번호를
+추가하기 위해 오늘할일을 새로 만들거나 다시 갱신하지 않는다. PR 번호가 필요한 review 문서·asset 을 PR 생성
+후 추가하더라도 기존 오늘할일 항목은 그대로 유지한다. 최초 push 직전에는 최신 `upstream/devel` 기준
+오늘할일과 충돌 여부를 다시 확인한다.
+
+collaborator self-merge 후보에서는 오늘할일을 PR 생성 후 후속 커밋이나 merge 후 별도 PR 로 늦게 만들지
+않는다. PR 번호가 필요한 review 문서·asset 후속 커밋은 9.3.1 절의 fast-pass 조건으로 통과시킬 수 있지만,
+오늘할일은 그보다 앞선 최초 PR diff 에 이미 포함되어 있어야 한다.
 
 여기서 최종 PR review 문서 묶음은 다음 중 해당 PR 에 실제로 필요한 문서다.
 
 - `mydocs/pr/archives/pr_{N}_review.md`
-- `mydocs/pr/archives/pr_{N}_review_impl.md`
+- `mydocs/pr/archives/pr_{N}_review_impl.md` (3.2 절 조건에 해당할 때)
 - `mydocs/pr/archives/pr_{N}_report.md` (필요 시)
 - `mydocs/orders/{yyyymmdd}.md` (오늘할일 갱신이 필요한 경우)
 
@@ -737,7 +967,7 @@ fork 브랜치를 head 로 쓰는 방식은 권한 제약 때문에 직접 push 
 collaborator self-merge 후보라도 최종 merge 판단은 다음 조건을 모두 만족해야 한다.
 
 - PR head 최신 커밋 기준 GitHub Actions 통과
-- review 문서와 처리 계획서가 PR diff 에 포함됨
+- `pr_{N}_review.md` 와 3.2 절 조건에 해당하는 경우의 `review_impl` 이 PR diff 에 포함됨
 - 오늘할일 갱신이 필요한 경우 `mydocs/orders/{yyyymmdd}.md` 가 같은 PR diff 에 포함됨
 - 작업지시자 승인
 
@@ -800,7 +1030,7 @@ PR review 문서와 함께 PR head 에 포함하고, 문서/asset/오늘할일�
 여기서 최종 PR review 문서 묶음은 다음 중 해당 PR 에 실제로 필요한 문서다.
 
 - `mydocs/pr/archives/pr_{N}_review.md`
-- `mydocs/pr/archives/pr_{N}_review_impl.md`
+- `mydocs/pr/archives/pr_{N}_review_impl.md` (3.2 절 조건에 해당할 때)
 - `mydocs/pr/archives/pr_{N}_report.md`
 - `mydocs/orders/{yyyymmdd}.md` (오늘할일 갱신이 필요한 경우)
 
@@ -850,6 +1080,7 @@ PR 커밋 전에 archive 경로로 이동한다. archive 이동만을 위한 별
   - 신규 추가(`added`) 상태의 `samples/**/*.hwp`
   - 신규 추가(`added`) 상태의 `samples/**/*.hwpx`
   - 신규 추가(`added`) 상태의 `samples/**/*.pdf`
+  - 신규 추가(`added`) 상태의 `samples/**/*.png`
   - 신규 추가(`added`) 상태의 `pdf/**/*.pdf`
 - 기존 `samples/**` 또는 `pdf/**` 파일을 수정, 삭제, rename 한 경우 fast-pass 대상이 아니다.
 - 해당 후속 커밋들은 single-parent commit 이다.

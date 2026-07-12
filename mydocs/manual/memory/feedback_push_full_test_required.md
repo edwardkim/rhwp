@@ -19,32 +19,6 @@ cargo test --release --tests     # 2차 통합 테스트 (tests/issue_*.rs 등)
 cargo fmt --check                # 3차 fmt 검증
 ```
 
-macOS 로컬 환경에서는 `tests/*.rs` 각 파일이 별도 통합 테스트 바이너리로
-링크되고, `[profile.release]` 의 `lto = true` / `codegen-units = 1` 조합 때문에
-Darwin release LTO 링크가 매우 오래 걸릴 수 있다. release 산출물 프로필은
-유지하되, 통합 테스트 회귀 검증은 별도 캐시를 쓰는 `release-test` 프로필을
-사용한다.
-
-```bash
-cargo test --release --lib          # release 프로필 unit 회귀
-cargo test --profile release-test --tests
-cargo fmt --check
-```
-
-2026-06-09 macOS(aarch64-apple-darwin) 측정:
-
-| 명령 | 구간 | real |
-|------|------|------|
-| `cargo test --release --tests --no-run` | release LTO 통합 테스트 빌드/링크 | 886.75s |
-| `CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 cargo test --release --tests --no-run` | LTO 유지 + codegen-units만 증가 | 1102.79s |
-| `cargo test --profile release-test --tests --no-run` | LTO 없는 별도 테스트 프로필 cold build | 149.49s |
-| `cargo test --profile release-test --tests -q` | 빌드 완료 후 실행 포함 | 65.02s |
-
-`codegen-units` 증가만으로는 macOS 통합 테스트 병목을 해결하지 못했다. Cargo 진행
-카운터가 특정 번호에서 오래 머무르는 현상은 하나의 테스트 함수가 느린 것이 아니라,
-여러 `rustc --test --emit=dep-info,link -C lto ...` 프로세스가 통합 테스트 파일별로
-동시에 LTO 링크 중인 상태다.
-
 **`--lib` 만으로 충분하지 않은 이유:**
 - 통합 테스트(`tests/issue_826.rs` 등)는 `--lib` 에 포함되지 않음
 - 회귀 가드 테스트가 통합 영역에 많음 (특히 PUA 매핑, 한컴 호환)

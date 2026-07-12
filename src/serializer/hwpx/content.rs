@@ -16,6 +16,8 @@ pub struct BinDataEntry {
     pub id: String,
     pub href: String,
     pub media_type: String,
+    /// content.hpf `isEmbeded` — false 면 외부 파일 참조 (ZIP 엔트리 없음, #1891)
+    pub is_embedded: bool,
 }
 
 /// 원본 content.hpf 에서 `<opf:metadata> … </opf:metadata>` 블록(태그 포함)을
@@ -173,7 +175,7 @@ pub fn write_content_hpf(
                 ("id", entry.id.as_str()),
                 ("href", entry.href.as_str()),
                 ("media-type", entry.media_type.as_str()),
-                ("isEmbeded", "1"),
+                ("isEmbeded", if entry.is_embedded { "1" } else { "0" }),
             ],
         )?;
     }

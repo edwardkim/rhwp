@@ -52,25 +52,6 @@ fn expand_pua_old_hangul_canvas(text: &str) -> String {
     out
 }
 
-#[derive(Debug, PartialEq, Eq)]
-struct CanvasGlyphFitPolicy {
-    pin_ascii_advance: bool,
-    skip_fit: bool,
-}
-
-fn canvas_glyph_fit_policy(
-    style: &TextStyle,
-    font_substituted: bool,
-    is_ascii_alnum: bool,
-) -> CanvasGlyphFitPolicy {
-    let has_negative_spacing = style.letter_spacing + style.extra_char_spacing < -0.01;
-
-    CanvasGlyphFitPolicy {
-        pin_ascii_advance: is_ascii_alnum && !font_substituted && !has_negative_spacing,
-        skip_fit: has_negative_spacing || (font_substituted && is_ascii_alnum),
-    }
-}
-
 fn group_label_matches_replay_plane(
     active_replay_plane: Option<PaintReplayPlane>,
     layer: Option<RenderLayerInfo>,
@@ -85,7 +66,7 @@ use super::composer::{
 };
 use super::form_caption::display_form_caption;
 #[cfg(target_arch = "wasm32")]
-use super::layout::{compute_char_positions, font_family_has_metrics, split_into_clusters};
+use super::layout::{compute_char_positions, is_halfwidth_cjk_quote, split_into_clusters};
 use crate::model::control::FormType;
 
 // 이미지 캐시: data 해시 → HtmlImageElement
@@ -298,6 +279,10 @@ pub enum LayerFilter {
     BackgroundOnly,
     /// 본문 layer — BehindText / InFrontOfText plane 제외
     FlowOnly,
+    /// 본문 동적 layer — flow plane 중 Image/RawSvg 를 제외
+    FlowDynamic,
+    /// 본문 정적 layer — page background + flow plane Image/RawSvg 만
+    FlowStatic,
     /// Overlay layer — 특정 wrap plane 만 (BehindText 또는 InFrontOfText)
     WrapOnly(crate::model::shape::TextWrap),
 }
@@ -381,10 +366,13 @@ impl WebCanvasRenderer {
     /// - `LayerFilter::All`: 모든 op 렌더 (기본)
     /// - `LayerFilter::BackgroundOnly`: page background plane 만
     /// - `LayerFilter::FlowOnly`: BehindText / InFrontOfText plane 제외 (본문 layer)
+    /// - `LayerFilter::FlowDynamic`: flow plane 중 Image/RawSvg 제외
+    /// - `LayerFilter::FlowStatic`: page background + flow plane Image/RawSvg 만
     /// - `LayerFilter::WrapOnly(w)`: 해당 wrap plane 만 (overlay layer)
     fn should_render_op(&self, op: &PaintOp, layer: Option<RenderLayerInfo>) -> bool {
         use crate::model::shape::TextWrap;
         let replay_plane = paint_op_replay_plane_with_layer(op, layer);
+        let is_flow_static = matches!(op, PaintOp::Image { .. } | PaintOp::RawSvg { .. });
         if let Some(active) = self.active_replay_plane {
             return replay_plane == active;
         }
@@ -395,6 +383,11 @@ impl WebCanvasRenderer {
                 replay_plane,
                 PaintReplayPlane::BehindText | PaintReplayPlane::InFrontOfText
             ),
+            LayerFilter::FlowDynamic => replay_plane == PaintReplayPlane::Flow && !is_flow_static,
+            LayerFilter::FlowStatic => {
+                replay_plane == PaintReplayPlane::Background
+                    || (replay_plane == PaintReplayPlane::Flow && is_flow_static)
+            }
             LayerFilter::WrapOnly(TextWrap::BehindText) => {
                 replay_plane == PaintReplayPlane::BehindText
             }
@@ -425,6 +418,8 @@ impl WebCanvasRenderer {
         self.transparent_page_background = match self.layer_filter {
             LayerFilter::All => false,
             LayerFilter::BackgroundOnly => false,
+            LayerFilter::FlowDynamic => true,
+            LayerFilter::FlowStatic => false,
             LayerFilter::FlowOnly => {
                 layer_node_has_replay_plane(&tree.root, PaintReplayPlane::BehindText)
             }
@@ -2109,20 +2104,15 @@ impl Renderer for WebCanvasRenderer {
             "{}{}{:.3}px {}",
             font_style, font_weight, font_size, font_family
         );
+        let old_hangul_font = format!(
+            "{}{}{:.3}px 'Source Han Serif K Old Hangul', {}",
+            font_style, font_weight, font_size, font_family
+        );
         self.ctx.set_font(&font);
 
         // 장평 적용
         let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
         let has_ratio = (ratio - 1.0).abs() > 0.01;
-
-        // [치환 폰트 글리프 왜곡 방지] 요청 폰트가 내장 메트릭 DB 에 없으면
-        // (= 브라우저가 다른 폰트로 치환) char_positions 의 advance 는 실제
-        // 글리프 폭이 아닌 휴리스틱 폴백(0.5em 등)이다. 이 경우 ASCII 글리프를
-        // advance 에 맞춰 글리프별 가로 스케일(pin_ascii_advance)하면 치환 폰트의
-        // 좁은 글리프(l/i/t)가 과도하게 늘어난다. 치환 폰트에서는 글리프를
-        // 자연 advance 그대로 그리고, run 내 누적 x 도 측정 폭으로 재산출한다.
-        let font_substituted =
-            !font_family_has_metrics(&style.font_family, style.bold, style.italic);
 
         // 클러스터 분할
         let clusters = split_into_clusters(text);
@@ -2201,6 +2191,8 @@ impl Renderer for WebCanvasRenderer {
                 font_size,
                 ratio,
                 has_ratio,
+                &font,
+                &old_hangul_font,
             );
         } else {
             // 기본 렌더링 (효과 없음)
@@ -2224,6 +2216,11 @@ impl Renderer for WebCanvasRenderer {
             for (cluster_idx, (char_idx, cluster_str)) in clusters.iter().enumerate() {
                 if cluster_str == " " || cluster_str == "\t" || cluster_str == "\u{2007}" {
                     continue;
+                }
+                if super::contains_old_hangul_jamo(cluster_str) {
+                    self.ctx.set_font(&old_hangul_font);
+                } else {
+                    self.ctx.set_font(&font);
                 }
                 // dash leader 시퀀스: 글리프 스킵 (라인이 위에서 이미 그려짐)
                 if cluster_in_dash_run(cluster_idx).is_some() {
@@ -2260,8 +2257,9 @@ impl Renderer for WebCanvasRenderer {
                 }
 
                 // 반각 강제 구두점: 폰트 글리프가 전각이지만 반각 공간에 배치
-                let needs_halfwidth_scale =
-                    matches!(ch, '\u{2018}'..='\u{2027}' | '\u{00B7}') && !has_ratio;
+                let needs_halfwidth_scale = (matches!(ch, '\u{2018}'..='\u{2027}' | '\u{00B7}')
+                    || is_halfwidth_cjk_quote(ch))
+                    && !has_ratio;
 
                 if needs_halfwidth_scale {
                     self.ctx.save();
@@ -2278,16 +2276,9 @@ impl Renderer for WebCanvasRenderer {
                             0.0
                         }
                     };
-                    let is_ascii_alnum = cluster_str.chars().any(|ch| ch.is_ascii_alphanumeric());
-                    // [치환 폰트] ASCII 글리프를 휴리스틱 advance 에 맞춰 늘이는
-                    // pin_ascii_advance 를 끈다. char_positions 의 advance 가 실제
-                    // 글리프 폭이 아니라 0.5em 폴백이므로, 좁은 글리프(l/i/t)가
-                    // 2배까지 늘어나 왜곡되기 때문이다.
-                    let fit_policy =
-                        canvas_glyph_fit_policy(style, font_substituted, is_ascii_alnum);
-                    // 치환 폰트의 ASCII 는 자연 폭 그대로 그린다 — 늘이지도(pin),
-                    // 줄이지도(overflow shrink) 않아야 l/i/t 와 m/w 가 일관된다.
-                    let fit_scale = if cluster_advance > 0.0 && !fit_policy.skip_fit {
+                    let pin_ascii_advance =
+                        cluster_str.chars().any(|ch| ch.is_ascii_alphanumeric());
+                    let fit_scale = if cluster_advance > 0.0 {
                         self.ctx
                             .measure_text(cluster_str)
                             .ok()
@@ -2296,7 +2287,7 @@ impl Renderer for WebCanvasRenderer {
                                 let visual_w = actual_w * ratio;
                                 if visual_w <= 0.0 {
                                     None
-                                } else if fit_policy.pin_ascii_advance {
+                                } else if pin_ascii_advance {
                                     Some((cluster_advance / visual_w).clamp(0.1, 2.0))
                                 } else if visual_w > cluster_advance + 0.25 {
                                     Some((cluster_advance / visual_w).clamp(0.1, 1.0))
@@ -2777,6 +2768,8 @@ impl WebCanvasRenderer {
         font_size: f64,
         ratio: f64,
         has_ratio: bool,
+        font: &str,
+        old_hangul_font: &str,
     ) {
         let text_color_css = color_to_css(style.color);
 
@@ -2797,6 +2790,11 @@ impl WebCanvasRenderer {
                 let cs: &str = cluster_str;
                 if cs == " " || cs == "\t" || cs == "\u{2007}" {
                     continue;
+                }
+                if super::contains_old_hangul_jamo(cs) {
+                    ctx.set_font(old_hangul_font);
+                } else {
+                    ctx.set_font(font);
                 }
                 if cs.starts_with(|c: char| c < '\u{0020}' && !matches!(c, '\t' | '\n' | '\r')) {
                     continue;
@@ -3608,53 +3606,5 @@ mod tests {
         assert_eq!(color_to_css(0x00FF0000), "#0000ff"); // 파랑
         assert_eq!(color_to_css(0x00FFFFFF), "#ffffff"); // 흰색
         assert_eq!(color_to_css(0x00000000), "#000000"); // 검정
-    }
-
-    #[test]
-    fn negative_spacing_does_not_fit_glyph_to_advance() {
-        let style = TextStyle {
-            letter_spacing: -2.4,
-            extra_char_spacing: 0.0,
-            ..Default::default()
-        };
-
-        assert_eq!(
-            canvas_glyph_fit_policy(&style, false, false),
-            CanvasGlyphFitPolicy {
-                pin_ascii_advance: false,
-                skip_fit: true
-            }
-        );
-        assert_eq!(
-            canvas_glyph_fit_policy(&style, false, true),
-            CanvasGlyphFitPolicy {
-                pin_ascii_advance: false,
-                skip_fit: true
-            }
-        );
-    }
-
-    #[test]
-    fn positive_spacing_keeps_existing_ascii_fit_policy() {
-        let style = TextStyle {
-            letter_spacing: 0.0,
-            extra_char_spacing: 0.0,
-            ..Default::default()
-        };
-
-        assert_eq!(
-            canvas_glyph_fit_policy(&style, false, true),
-            CanvasGlyphFitPolicy {
-                pin_ascii_advance: true,
-                skip_fit: false
-            }
-        );
-        assert_eq!(
-            canvas_glyph_fit_policy(&style, true, true),
-            CanvasGlyphFitPolicy {
-                pin_ascii_advance: false,
-                skip_fit: true
-            }
-        );
     }
 }

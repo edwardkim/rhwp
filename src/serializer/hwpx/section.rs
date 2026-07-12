@@ -89,6 +89,97 @@ fn replace_visibility(xml: &str, sd: &SectionDef) -> String {
     xml.replacen(TEMPLATE_VISIBILITY, &render_visibility(sd), 1)
 }
 
+/// [#1987] 템플릿 secPr 의 하드코딩 스칼라(spaceColumns, outlineShapeIDRef)를 IR 값으로 치환.
+/// 각 속성은 템플릿 secPr 여는 태그에 정확히 1회 등장하므로 replacen(1)로 안전하다.
+fn replace_secpr_scalars(xml: &str, sd: &SectionDef) -> String {
+    let out = xml.replacen(
+        r#"spaceColumns="1134""#,
+        &format!(r#"spaceColumns="{}""#, sd.column_spacing),
+        1,
+    );
+    out.replacen(
+        r#"outlineShapeIDRef="1""#,
+        &format!(r#"outlineShapeIDRef="{}""#, sd.outline_numbering_id),
+        1,
+    )
+}
+
+/// [#1984] noteLine `type` u8 → HWPX 문자열 (parser noteLine type 역매핑).
+fn note_line_type_str(t: u8) -> &'static str {
+    match t {
+        0 => "NONE",
+        2 => "DASH",
+        3 => "DOT",
+        4 => "DASH_DOT",
+        5 => "DASH_DOT_DOT",
+        6 => "LONG_DASH",
+        7 => "CIRCLE",
+        8 => "DOUBLE_SLIM",
+        9 => "SLIM_THICK",
+        10 => "THICK_SLIM",
+        11 => "SLIM_THICK_SLIM",
+        _ => "SOLID",
+    }
+}
+
+/// [#1984] separator_color(0xBBGGRR LE) → "#RRGGBB" (parser noteLine color 역매핑).
+fn note_color_hex(c: u32) -> String {
+    let r = c & 0xFF;
+    let g = (c >> 8) & 0xFF;
+    let b = (c >> 16) & 0xFF;
+    format!("#{r:02X}{g:02X}{b:02X}")
+}
+
+/// [#1984] FootnoteShape → `<hp:noteLine .../>` + `<hp:noteSpacing .../>` 두 요소.
+fn render_note_line_spacing(shape: &crate::model::footnote::FootnoteShape) -> (String, String) {
+    let note_line = format!(
+        r#"<hp:noteLine length="{}" type="{}" width="{} mm" color="{}"/>"#,
+        shape.separator_length,
+        note_line_type_str(shape.separator_line_type),
+        line_width_mm(shape.separator_line_width),
+        note_color_hex(shape.separator_color),
+    );
+    let note_spacing = format!(
+        r#"<hp:noteSpacing betweenNotes="{}" belowLine="{}" aboveLine="{}"/>"#,
+        shape.between_notes_margin_hu(),
+        shape.separator_below_margin_hu(),
+        shape.separator_above_margin_hu(),
+    );
+    (note_line, note_spacing)
+}
+
+/// [#1984] 템플릿 footNotePr/endNotePr 의 하드코딩 noteLine·noteSpacing 을 IR 값으로 치환.
+/// 미치환 시 각주 구분선 위/아래 여백·주석간격이 항상 기본값(aboveLine=850 등)으로 방출돼
+/// 각주 zone 높이가 달라지고, 각주 있는 페이지의 본문 가용높이가 어긋나 표 분할·페이지 수가
+/// 갈린다(1543000: 각주 overhead 32.83→19.39px → p141 표 1행/3행 → 192/190쪽). 파서는
+/// 값을 FootnoteShape 로 수집하나 직렬화가 템플릿 상수만 방출하던 결함.
+fn replace_footnote_shape(xml: &str, sd: &SectionDef) -> String {
+    // 템플릿: 첫 noteLine(length="-1")·noteSpacing(betweenNotes="283") = 각주,
+    // 둘째(length="14692344"·betweenNotes="0") = 미주.
+    let (fn_line, fn_spacing) = render_note_line_spacing(&sd.footnote_shape);
+    let (en_line, en_spacing) = render_note_line_spacing(&sd.endnote_shape);
+    xml.replacen(
+        r##"<hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/>"##,
+        &fn_line,
+        1,
+    )
+    .replacen(
+        r#"<hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/>"#,
+        &fn_spacing,
+        1,
+    )
+    .replacen(
+        r##"<hp:noteLine length="14692344" type="SOLID" width="0.12 mm" color="#000000"/>"##,
+        &en_line,
+        1,
+    )
+    .replacen(
+        r#"<hp:noteSpacing betweenNotes="0" belowLine="567" aboveLine="850"/>"#,
+        &en_spacing,
+        1,
+    )
+}
+
 /// 레퍼런스 기준 줄 레이아웃 파라미터.
 const VERT_STEP: u32 = 1600; // vertsize(1000) + spacing(600)
 /// 탭 기본 폭 (한컴이 열면서 재계산하지만 초기값으로 필요).
@@ -125,6 +216,16 @@ pub fn write_section(
     out = replace_page_border_fill(&out, &section.section_def);
     // [#1637] secPr visibility — 템플릿 고정값을 IR 값으로 치환(hideFirstEmptyLine 등 보존).
     out = replace_visibility(&out, &section.section_def);
+
+    // [#1987] secPr 스칼라 필드 — 템플릿 하드코딩(spaceColumns="1134", outlineShapeIDRef="1")을
+    // IR 값으로 치환한다. 미치환 시 원본이 spaceColumns=1130·outlineShapeIDRef=0 등이어도
+    // 1134/1 로 방출돼 단 간격·개요번호 문단모양 참조가 어긋난다. ir-diff 는 secPr 스칼라를
+    // 비교하지 않아 못 잡던 저장 충실도 결함.
+    out = replace_secpr_scalars(&out, &section.section_def);
+
+    // [#1984] 각주/미주 모양(구분선 여백·주석간격)을 IR 값으로 치환 — 미치환 시 각주 zone
+    // 높이가 기본값으로 고정돼 각주 있는 페이지의 표 분할·페이지 수가 갈린다.
+    out = replace_footnote_shape(&out, &section.section_def);
 
     // 바탕쪽(masterPage) — secPr 의 masterPageCnt 치환 + secPr 내부 끝에 idRef 참조 삽입.
     // 누락 시 라운드트립에서 바탕쪽 전체(그 안의 그림/표/문단 노드 포함)가 소실된다.
@@ -163,7 +264,11 @@ pub fn write_section(
 
     if let Some(p) = first_para {
         // 첫 문단 `<hp:p>` 태그를 IR 기반 속성으로 교체
-        let new_p_tag = render_hp_p_open(p, ctx.next_para_id());
+        // (#1933) 본문 경로는 종전에 style_id 를 reference 하지 않았다 — emit 만
+        // 강등해 미등록 ID 방출을 막고, 참조 집합/assert 동작은 종전 유지한다.
+        let pid = ctx.next_para_id();
+        let sid = ctx.effective_style_id(p.style_id);
+        let new_p_tag = render_hp_p_open(p, pid, sid);
         out = out.replacen(TEMPLATE_FIRST_P_TAG, &new_p_tag, 1);
 
         // 섹션 첫 run(secPr/colPr 전용)의 charPrIDRef 를 첫 텍스트 run id 와 일치시킨다.
@@ -185,7 +290,9 @@ pub fn write_section(
         for p in section.paragraphs.iter().skip(1) {
             let (runs, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
             vert_cursor = advance;
-            extra.push_str(&render_hp_p_open(p, ctx.next_para_id()));
+            let pid = ctx.next_para_id();
+            let sid = ctx.effective_style_id(p.style_id);
+            extra.push_str(&render_hp_p_open(p, pid, sid));
             extra.push_str(&runs);
             extra.push_str(&linesegs);
             extra.push_str("</hp:p>");
@@ -200,7 +307,11 @@ pub fn write_section(
 ///
 /// `id` 는 문단 순서 기반(0, 1, 2, ...)로 할당한다. 한컴 샘플은 랜덤 해시도 쓰지만
 /// 파서는 id 를 무시하므로 순차값으로 충분.
-pub(crate) fn render_hp_p_open(p: &Paragraph, id: u32) -> String {
+///
+/// `style_id_ref` 는 호출자가 `ctx.effective_style_id(p.style_id)` 로 강등한 값
+/// (미등록 스타일 → 0, #1933). 전 문단 경로가 이 함수를 거치므로 여기가 단일
+/// 방출 지점이다.
+pub(crate) fn render_hp_p_open(p: &Paragraph, id: u32, style_id_ref: u8) -> String {
     let page_break = if matches!(p.column_type, ColumnBreakType::Page) {
         1
     } else {
@@ -213,7 +324,7 @@ pub(crate) fn render_hp_p_open(p: &Paragraph, id: u32) -> String {
     };
     format!(
         r#"<hp:p id="{}" paraPrIDRef="{}" styleIDRef="{}" pageBreak="{}" columnBreak="{}" merged="0">"#,
-        id, p.para_shape_id, p.style_id, page_break, column_break,
+        id, p.para_shape_id, style_id_ref, page_break, column_break,
     )
 }
 
@@ -663,6 +774,30 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         // 슬롯이 아니라 fieldEnd 소유다. 슬롯 방출을 양보해 텍스트-끝 슬롯(newNum 등)이
         // fieldEnd 자리를 가로채지 못하게 한다 (0-length 필드는 아래 pre-char 경로가 처리).
         while slot_idx < slots.len() && char_pos >= expected_utf16_pos.saturating_add(8) {
+            // [Issue #1948] 이 갭(expected_utf16_pos)이 미방출 **고아(교차 문단)
+            // fieldEnd** 소유면 슬롯 방출을 양보한다. 종전엔 field_ranges 의 fieldEnd
+            // 만 갭을 지켰고(위 주석 #1407) 고아 fieldEnd 는 while 뒤(char_idx==idx)에서
+            // 방출돼, 말미 슬롯(표 등)이 고아 fieldEnd 의 8유닛 갭을 먼저 가로채
+            // char_offsets 가 +8 밀렸다(36380743 문단 0.10: 표가 fieldEnd 자리로 당겨짐).
+            // 갭 소유자인 고아 fieldEnd 를 먼저 방출하고 while 을 재평가한다.
+            if let Some(oi) = para
+                .orphan_field_ends
+                .iter()
+                .enumerate()
+                .position(|(i, ofe)| ofe.char_idx == idx && !orphan_emitted[i])
+            {
+                flush_text_fragment(
+                    &mut splitter.content,
+                    &mut text_buf,
+                    &para.tab_extended,
+                    &mut tab_idx,
+                );
+                splitter.cut_before(expected_utf16_pos);
+                emit_orphan_field_end(&mut splitter.content, &para.orphan_field_ends[oi]);
+                expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                orphan_emitted[oi] = true;
+                continue;
+            }
             flush_text_fragment(
                 &mut splitter.content,
                 &mut text_buf,
@@ -680,8 +815,25 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                 );
             }
             render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+            let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+            // [Task #1893] 이 슬롯이 0-length 필드(start==end==idx)의 fieldBegin 이면
+            // 그 fieldEnd 를 즉시 이어서 방출 — 같은 갭의 end 몫 8유닛을 다음 슬롯이
+            // 가로채 begin 들이 연속 배치되면 재파스 LIFO 페어링이 교차된다
+            // (fr(0,0)+(50,50) → fr(0,50)+(0,0), 빈 누름틀 placeholder 소실/줄바꿈 분기).
+            for (i, fr) in para.field_ranges.iter().enumerate() {
+                if !field_end_emitted[i]
+                    && fr.start_char_idx == fr.end_char_idx
+                    && fr.end_char_idx == idx
+                    && fr.control_idx == emitted_ctrl_idx
+                {
+                    splitter.cut_before(expected_utf16_pos);
+                    emit_field_end(&mut splitter.content, para, fr.control_idx);
+                    expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                    field_end_emitted[i] = true;
+                }
+            }
         }
 
         // [Task #1556] 고아 fieldEnd (char_idx == idx): 문자 push 전에 8유닛 슬롯 방출.
@@ -803,12 +955,24 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         &mut tab_idx,
     );
 
-    // end_char_idx >= text.len() 인 경우 루프에서 감지되지 않으므로 루프 후에 처리
+    // end_char_idx >= text.len() 인 경우 루프에서 감지되지 않으므로 루프 후에 처리.
+    // [Task #1893] 단, 문단 끝의 0-length 필드(start == end == text.len())는 자기
+    // fieldBegin 슬롯이 아직 아래 잔여 슬롯 루프에 남아 있다 — 여기서 먼저 방출하면
+    // fieldEnd 가 fieldBegin 앞에 놓여 재파스가 고아 end + 미닫힘 begin 으로 해석,
+    // field_range 가 소실된다(빈 누름틀 안내문 placeholder 미렌더 → 라운드트립 렌더
+    // 분기). begin 슬롯 방출 직후로 지연한다(중간 위치 0-length 는 pre-char 경로가
+    // 동일 규칙으로 처리 — #1407).
     for (i, fr) in para.field_ranges.iter().enumerate() {
         if !field_end_emitted[i] {
+            let begin_slot_pending = fr.start_char_idx == fr.end_char_idx
+                && slot_ctrl_indices[slot_idx..].contains(&fr.control_idx);
+            if begin_slot_pending {
+                continue;
+            }
             splitter.cut_before(expected_utf16_pos);
             emit_field_end(&mut splitter.content, para, fr.control_idx);
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+            field_end_emitted[i] = true;
         }
     }
 
@@ -837,8 +1001,31 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             );
         }
         render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+        let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
         slot_idx += 1;
         expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+        // [Task #1893] 위에서 지연한 문단 끝 0-length 필드의 fieldEnd 를 자기
+        // fieldBegin 슬롯 직후에 방출 — begin→end 순서 보존.
+        for (i, fr) in para.field_ranges.iter().enumerate() {
+            if !field_end_emitted[i]
+                && fr.start_char_idx == fr.end_char_idx
+                && fr.control_idx == emitted_ctrl_idx
+            {
+                splitter.cut_before(expected_utf16_pos);
+                emit_field_end(&mut splitter.content, para, fr.control_idx);
+                expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                field_end_emitted[i] = true;
+            }
+        }
+    }
+    // [Task #1893] 방어: 지연분이 슬롯 루프에서 매칭되지 못했으면 말미에 방출(종전 동작).
+    for (i, fr) in para.field_ranges.iter().enumerate() {
+        if !field_end_emitted[i] {
+            splitter.cut_before(expected_utf16_pos);
+            emit_field_end(&mut splitter.content, para, fr.control_idx);
+            expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+            field_end_emitted[i] = true;
+        }
     }
     if bm_inorder {
         // 마지막 슬롯 뒤(컨트롤 순서 후미)의 trailing bookmark.
@@ -994,11 +1181,13 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
                     let mut vert_cursor: u32 = 0;
                     for para in &f.memo_paragraphs {
                         ctx.para_shape_ids.reference(para.para_shape_id);
-                        ctx.style_ids.reference(para.style_id as u16);
+                        let sid = ctx.effective_style_id(para.style_id);
+                        ctx.style_ids.reference(sid as u16);
                         let (runs, linesegs, advance) =
                             render_paragraph_parts(para, vert_cursor, ctx);
                         vert_cursor = advance;
-                        out.push_str(&render_hp_p_open(para, ctx.next_para_id()));
+                        let pid = ctx.next_para_id();
+                        out.push_str(&render_hp_p_open(para, pid, sid));
                         out.push_str(&runs);
                         out.push_str(&linesegs);
                         out.push_str("</hp:p>");
@@ -1243,7 +1432,9 @@ fn render_header_footer(
     for p in h.paragraphs.iter() {
         let (runs, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
         vert_cursor = advance;
-        out.push_str(&render_hp_p_open(p, ctx.next_para_id()));
+        let pid = ctx.next_para_id();
+        let sid = ctx.effective_style_id(p.style_id);
+        out.push_str(&render_hp_p_open(p, pid, sid));
         out.push_str(&runs);
         out.push_str(&linesegs);
         out.push_str("</hp:p>");
@@ -1558,12 +1749,25 @@ fn render_common_shape_xml(
             let fb = writer_to_string(|w| super::shape::write_fill_brush(w, &d.fill, ctx))
                 .unwrap_or_default();
             let sh = writer_to_string(|w| super::shape::write_shadow(w, d)).unwrap_or_default();
+            // [Issue #1944] drawText(도형 내 글상자 문단) — rect 경로(shape.rs write_rect)는
+            // shadow 직후 방출하나 legacy 공용 경로(ellipse/arc/polygon/curve)는 누락해
+            // 도형 안 텍스트가 저장 시 소실됐다(순서도 마름모 라벨 등). OWPML 순서
+            // (shadow → drawText → hc:pt) 대로 shadow 와 points 사이에 방출한다.
+            let dt = d
+                .text_box
+                .as_ref()
+                .filter(|tb| !tb.paragraphs.is_empty())
+                .map(|tb| {
+                    writer_to_string(|w| super::shape::write_draw_text(w, tb, ctx))
+                        .unwrap_or_default()
+                })
+                .unwrap_or_default();
             let pts: String = points
                 .iter()
                 .map(|p| format!(r#"<hc:pt x="{}" y="{}"/>"#, p.x, p.y))
                 .collect();
             // [#1598] ellipse/arc 전용 지오메트리(center/축/시작끝점)는 hc:pt 와 상호배타.
-            format!("{ls}{fb}{sh}{pts}{geom_tail}")
+            format!("{ls}{fb}{sh}{dt}{pts}{geom_tail}")
         })
         .unwrap_or_default();
     // 태그 부수 속성 — numberingType/dropcapstyle/href/groupLevel/instid (rect/line 동형).
@@ -1641,7 +1845,9 @@ fn render_note_sublist(
     for p in paragraphs.iter() {
         let (runs, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
         vert_cursor = advance;
-        out.push_str(&render_hp_p_open(p, ctx.next_para_id()));
+        let pid = ctx.next_para_id();
+        let sid = ctx.effective_style_id(p.style_id);
+        out.push_str(&render_hp_p_open(p, pid, sid));
         out.push_str(&runs);
         out.push_str(&linesegs);
         out.push_str("</hp:p>");
@@ -1671,6 +1877,7 @@ fn render_equation(eq: &Equation) -> String {
     let width = c.width.to_string();
     let height = c.height.to_string();
     let treat = if c.treat_as_char { "1" } else { "0" };
+    let flow_with_text = if c.flow_with_text { "1" } else { "0" };
     let vert_offset = c.vertical_offset.to_string();
     let horz_offset = c.horizontal_offset.to_string();
     let margin_left = c.margin.left.to_string();
@@ -1692,7 +1899,7 @@ fn render_equation(eq: &Equation) -> String {
     let hold = if c.prevent_page_break != 0 { "1" } else { "0" };
 
     format!(
-        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
         text_wrap_to_hwpx(c.text_wrap),
         vert_rel_to_hwpx(c.vert_rel_to),
         horz_rel_to_hwpx(c.horz_rel_to),
@@ -1801,6 +2008,10 @@ fn render_lineseg_array_from_ir(segs: &[LineSeg]) -> String {
 
 /// IR 기반 다음 문단의 vert_start 계산 — 마지막 lineseg 의 vpos + lh 사용.
 fn next_vert_cursor_from_ir(segs: &[LineSeg], vert_start: u32) -> u32 {
+    if segs.len() == 1 && segs[0].is_missing_lineseg_placeholder() {
+        return vert_start;
+    }
+
     if let Some(last) = segs.last() {
         // vertical_pos 는 섹션 시작 기준 절대값일 수도, 문단 기준 상대값일 수도 있음.
         // 현재 rhwp 는 섹션 절대값이므로 그대로 + lh 로 다음 커서 산출.
@@ -1976,6 +2187,47 @@ mod tests {
     use super::*;
     use crate::model::paragraph::{CharShapeRef, Paragraph};
 
+    /// [Issue #1944] legacy 공용 도형 경로(polygon/ellipse/arc/curve)가 도형 내
+    /// 글상자(drawText) 문단을 방출해야 한다 — 종전 누락으로 도형 안 텍스트 소실.
+    #[test]
+    fn common_shape_emits_draw_text_for_legacy_shapes() {
+        use crate::model::shape::{CommonObjAttr, DrawingObjAttr, TextBox};
+
+        let mut para = Paragraph::default();
+        para.text = "마름모라벨".to_string();
+
+        let drawing = DrawingObjAttr {
+            text_box: Some(TextBox {
+                paragraphs: vec![para],
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let c = CommonObjAttr::default();
+        let mut ctx = SerializeContext::default();
+
+        let xml = render_common_shape_xml("polygon", &c, &None, Some(&drawing), &[], "", &mut ctx);
+        assert!(
+            xml.contains("<hp:drawText"),
+            "polygon 도형이 drawText 를 방출해야 함: {xml}"
+        );
+        assert!(
+            xml.contains("마름모라벨"),
+            "글상자 문단 텍스트가 보존되어야 함"
+        );
+        // 빈 글상자는 미방출 (rect 경로와 동일 계약).
+        let empty = DrawingObjAttr {
+            text_box: Some(TextBox::default()),
+            ..Default::default()
+        };
+        let xml_empty =
+            render_common_shape_xml("polygon", &c, &None, Some(&empty), &[], "", &mut ctx);
+        assert!(
+            !xml_empty.contains("<hp:drawText"),
+            "빈 글상자는 drawText 를 방출하지 않아야 함"
+        );
+    }
+
     /// [Task #1627] empty-text(객체-only) 문단에서 bookmark 는 문단 시작으로 끌려가지 않고
     /// para.controls 순서대로 in-order 방출되어야 한다(원본 컨트롤 순서 보존).
     #[test]
@@ -2017,12 +2269,55 @@ mod tests {
     }
 
     #[test]
+    fn issue1984_footnote_shape_reflects_ir() {
+        // [#1984] footNotePr 의 noteLine/noteSpacing 이 템플릿 기본값(aboveLine=850,
+        // betweenNotes=283 등)이 아니라 IR FootnoteShape 값으로 방출돼야 한다. 미치환 시
+        // 각주 zone 높이가 달라져 각주 있는 페이지의 표 분할·페이지 수가 갈린다.
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (doc, mut section) = make_doc_with_paragraph(para);
+        let fs = &mut section.section_def.footnote_shape;
+        fs.separator_margin_top = 1417; // aboveLine
+        fs.note_spacing = 850; // belowLine
+        fs.raw_unknown = 566; // betweenNotes
+        fs.separator_line_width = 9; // 0.7 mm
+        fs.separator_length = -2;
+        fs.separator_line_type = 1; // SOLID
+        fs.separator_color = 0x99_99_99; // #999999
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(
+                r#"<hp:noteSpacing betweenNotes="566" belowLine="850" aboveLine="1417"/>"#
+            ),
+            "각주 noteSpacing 이 IR 값이어야 함: {}",
+            &xml[..xml
+                .find("footNote")
+                .map(|i| i + 300)
+                .unwrap_or(600)
+                .min(xml.len())]
+        );
+        assert!(
+            xml.contains(
+                r##"<hp:noteLine length="-2" type="SOLID" width="0.7 mm" color="#999999"/>"##
+            ),
+            "각주 noteLine 이 IR 값이어야 함"
+        );
+        assert!(
+            !xml.contains(r#"betweenNotes="283""#),
+            "템플릿 기본 betweenNotes=283 잔존 금지"
+        );
+    }
+
+    #[test]
     fn hp_p_attrs_reflect_para_shape_id_and_style_id() {
         let mut para = Paragraph::default();
         para.para_shape_id = 7;
         para.style_id = 3;
         para.text = "hi".to_string();
-        let (doc, section) = make_doc_with_paragraph(para);
+        let (mut doc, section) = make_doc_with_paragraph(para);
+        // style_id=3 이 등록되도록 스타일 4개 확보 (미등록 강등 #1933 회피).
+        doc.doc_info.styles = vec![crate::model::style::Style::default(); 4];
         let mut ctx = SerializeContext::collect_from_document(&doc);
         let bytes = write_section(&section, &doc, 0, &mut ctx).unwrap();
         let xml = std::str::from_utf8(&bytes).unwrap();
@@ -2037,11 +2332,38 @@ mod tests {
         );
     }
 
+    /// [Issue #1933] 스타일 목록 밖 styleIDRef 는 기본(0)으로 강등되어 직렬화가
+    /// 하드 실패하지 않는다 (한글 정합 — 열리는데 저장 불가 해소).
+    #[test]
+    fn out_of_range_style_id_downgraded_to_default() {
+        let mut para = Paragraph::default();
+        para.style_id = 96; // 스타일 목록(4개, idx 0..3) 밖
+        para.text = "hi".to_string();
+        let (mut doc, section) = make_doc_with_paragraph(para);
+        doc.doc_info.styles = vec![crate::model::style::Style::default(); 4];
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let bytes = write_section(&section, &doc, 0, &mut ctx).unwrap();
+        // 참조 정합 단언 — 강등 없으면 styleIDRef:[96] 미등록으로 하드 실패한다.
+        ctx.assert_all_refs_resolved()
+            .expect("#1933: 미등록 styleIDRef 강등으로 참조 정합해야 함");
+        let xml = std::str::from_utf8(&bytes).unwrap();
+        assert!(
+            xml.contains(r#"styleIDRef="0""#),
+            "미등록 style_id=96 은 0 으로 강등되어야 함"
+        );
+        assert!(
+            !xml.contains(r#"styleIDRef="96""#),
+            "미등록 style_id 는 방출되지 않아야 함"
+        );
+    }
+
     #[test]
     fn secpr_emits_tab_stop_val_and_unit() {
         // [Finding 14] 원본 secPr 의 tabStopVal="4000" tabStopUnit="HWPUNIT" (한컴
         // 기본 탭 폭 상수) 이 직렬화에서 누락되지 않아야 한다. 순서는
         // tabStop → tabStopVal → tabStopUnit → outlineShapeIDRef.
+        // [#1987] outlineShapeIDRef 는 이제 IR 값 치환 대상 — 기본 SectionDef 는
+        // outline_numbering_id=0 이므로 "0" 이 방출된다.
         let mut para = Paragraph::default();
         para.text = "x".to_string();
         let (doc, section) = make_doc_with_paragraph(para);
@@ -2049,10 +2371,37 @@ mod tests {
         let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
         assert!(
             xml.contains(
-                r#"tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="1""#
+                r#"tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="0""#
             ),
             "secPr 에 tabStopVal/tabStopUnit 이 정확 순서로 있어야 함: {}",
             &xml[..600.min(xml.len())]
+        );
+    }
+
+    #[test]
+    fn issue1987_secpr_scalars_reflect_ir() {
+        // [#1987] secPr 의 spaceColumns/outlineShapeIDRef 가 템플릿 하드코딩(1134/1)이
+        // 아니라 IR 값으로 방출돼야 한다. 미치환 시 멀티구역 문서 후반부 렌더 붕괴.
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (mut doc, mut section) = make_doc_with_paragraph(para);
+        section.section_def.column_spacing = 1130;
+        section.section_def.outline_numbering_id = 0;
+        doc.sections = vec![section.clone()];
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"spaceColumns="1130""#),
+            "spaceColumns=1130 방출: {}",
+            &xml[..400]
+        );
+        assert!(
+            xml.contains(r#"outlineShapeIDRef="0""#),
+            "outlineShapeIDRef=0 방출"
+        );
+        assert!(
+            !xml.contains(r#"spaceColumns="1134""#),
+            "템플릿 1134 잔존 금지"
         );
     }
 

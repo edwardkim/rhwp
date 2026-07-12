@@ -62,4 +62,3 @@ cargo test --test issue_1139_inline_picture_duplicate endnote_virtual -- --nocap
 cargo check
 cargo check --target wasm32-unknown-unknown --lib
 ```
-

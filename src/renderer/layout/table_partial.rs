@@ -77,23 +77,21 @@ fn block_cut_index(
 }
 
 impl LayoutEngine {
-    /// 표의 일부 행만 레이아웃한다 (페이지 분할).
-    ///
-    /// `start_row..end_row` 범위의 행만 렌더링한다.
-    /// `is_continuation`이 true이고 repeat_header인 표면 행0(제목행)을 먼저 렌더링한다.
+    /// [#2029 추출] 부분 표의 셀 방출 루프 — 셀 geometry/배경/반복 헤더와 셀
+    /// 문단 배치를 `table_node.children` 에 방출한다. 셀-간 캐리 없음(실측 muts 0,
+    /// 외부 sink = table_node 단일) — 원본 무변경 이동.
     #[allow(clippy::too_many_arguments)]
-    pub(crate) fn layout_partial_table(
+    fn layout_partial_table_cells(
         &self,
         tree: &mut PageRenderTree,
-        col_node: &mut RenderNode,
+        table_node: &mut RenderNode,
+        table: &crate::model::table::Table,
         paragraphs: &[Paragraph],
         para_index: usize,
         control_index: usize,
         section_index: usize,
         styles: &ResolvedStyleSet,
         outline_numbering_id: u16,
-        col_area: &LayoutRect,
-        y_start: f64,
         bin_data_content: &[BinDataContent],
         start_row: usize,
         end_row: usize,
@@ -101,331 +99,22 @@ impl LayoutEngine {
         start_cut: &[usize],
         end_cut: &[usize],
         is_block_split: bool,
-        host_margin_left: f64,
-        host_margin_right: f64,
+        cell_spacing: f64,
+        col_count: usize,
+        row_count: usize,
+        table_x: f64,
+        table_y: f64,
+        row_heights: &[f64],
+        resolved_row_heights: &[f64],
+        row_col_x: &[Vec<f64>],
+        header_rows: &[usize],
+        render_rows: &[usize],
+        render_row_y: &[f64],
+        h_edges: &mut Vec<Vec<Option<BorderLine>>>,
+        v_edges: &mut Vec<Vec<Option<BorderLine>>>,
         measured_table: Option<&MeasuredTable>,
         clamp_header_negative_para_offset: bool,
-    ) -> f64 {
-        let para = match paragraphs.get(para_index) {
-            Some(p) => p,
-            None => return y_start,
-        };
-        let table = match para.controls.get(control_index) {
-            Some(Control::Table(t)) => t,
-            _ => return y_start,
-        };
-
-        if table.cells.is_empty() {
-            return y_start;
-        }
-
-        // 분할 표 첫 부분: vert_offset 적용 (자리차지 표의 세로 오프셋).
-        // [Task #712] HwpUnit=u32 이라 `vertical_offset > 0` 는 음수 비트표현
-        // (예: -1796 HU = 0xFFFFF8FC = 4294965500u32) 도 양수로 통과시켜
-        // 후속 `as i32` 캐스트에서 음수가 적용 → 표가 위로 점프, 직전 인라인
-        // 표 영역 침범. 비-Partial 경로(`table_layout.rs:1069+`)는 동일 분기에
-        // `raw_y.max(y_start)` 클램프가 있어 음수 무력화. Partial 경로에는
-        // 클램프가 없으므로 게이트를 signed 비교로 정정해 동등 효과.
-        let vert_off_signed = table.common.vertical_offset as i32;
-        let y_start = if !is_continuation
-            && !table.common.treat_as_char
-            && matches!(
-                table.common.text_wrap,
-                crate::model::shape::TextWrap::TopAndBottom
-            )
-            && matches!(
-                table.common.vert_rel_to,
-                crate::model::shape::VertRelTo::Para
-            )
-            && vert_off_signed > 0
-        {
-            y_start + hwpunit_to_px(vert_off_signed, self.dpi)
-        } else {
-            y_start
-        };
-
-        let col_count = table.col_count as usize;
-        let row_count = table.row_count as usize;
-        let cell_spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
-
-        // ── 1. 열 폭 계산 + 2. 행 높이 계산 (table_layout 공유 메서드) ──
-        let col_widths = self.resolve_column_widths(table, col_count);
-        let mut row_heights =
-            self.resolve_row_heights(table, col_count, row_count, measured_table, styles);
-        // [Task #1748] 컷 걸침 rowspan 셀의 이전 프래그먼트 소비 높이 재계산용 —
-        // 2b 컷 오버라이드 이전의 원본 행 높이 (프래그먼트 무관 값).
-        let resolved_row_heights = row_heights.clone();
-
-        // ── 2b. 행 높이 오버라이드 (Task #993: 컷 기반) ──
-        // 렌더 대상 모든 행의 높이를 페이지네이터와 동일한 컷 측정
-        // (row_cut_content_height)으로 정정한다. 페이지네이터(typeset)와 렌더러가
-        // 단일 측정 공간(advance_row_cut/cell_units)을 공유해야 분할 표가
-        // 페이지를 넘지 않는다. 분할 행은 start_cut/end_cut 범위, 그 외 행은
-        // 전체 콘텐츠. rowspan 연속 행(컷 0)은 resolve_row_heights 결과 유지.
-        {
-            let split_last_row = end_row.saturating_sub(1);
-            let mut rows_to_set: std::collections::BTreeSet<usize> = (start_row..end_row).collect();
-            // 연속분 머리행 반복 — start_row 이전의 반복 제목행도 렌더된다.
-            // [Task #1716] 반복 대상은 표 상단의 연속 제목행 블록만(흩어진 하위 is_header 제외).
-            // 페이지네이터(typeset.rs header_overhead)와 동일 leading_header_rows 사용 → 정합.
-            if is_continuation && table.repeat_header && start_row > 0 {
-                for r in table.leading_header_rows() {
-                    if r < start_row {
-                        rows_to_set.insert(r);
-                    }
-                }
-            }
-            // [Task #1025] page-larger 블록 분할(is_block_split)이면 컷이 rowspan
-            // 블록-셀 인덱스 → 블록 범위(rowspan-확장)로 per-row 컷 매핑. 그 외(일반
-            // 분할)는 기존 per-row(row_span==1) 경로 유지(rowspan 행은 atomic).
-            let start_block = if is_block_split && !start_cut.is_empty() {
-                Some(rowspan_block_range(table, start_row))
-            } else {
-                None
-            };
-            let end_block = if is_block_split && !end_cut.is_empty() {
-                Some(rowspan_block_range(table, split_last_row))
-            } else {
-                None
-            };
-            for r in rows_to_set {
-                if r >= row_count {
-                    continue;
-                }
-                let rowspan_touched = table.cells.iter().any(|c| {
-                    c.row_span > 1
-                        && (c.row as usize) <= r
-                        && r < c.row as usize + c.row_span as usize
-                });
-                if is_block_split {
-                    let in_start = start_block.is_some_and(|(s, e)| s <= r && r < e);
-                    let in_end = end_block.is_some_and(|(s, e)| s <= r && r < e);
-                    // 분할 블록 밖 rowspan 행은 컷 모델 밖 — resolve_row_heights 유지.
-                    if rowspan_touched && !in_start && !in_end {
-                        continue;
-                    }
-                    // 행 r 의 row_span==1 셀(col 순)별 블록 컷 → per-row 컷 매핑.
-                    let mut rcells: Vec<&crate::model::table::Cell> = table
-                        .cells
-                        .iter()
-                        .filter(|c| c.row as usize == r && c.row_span == 1)
-                        .collect();
-                    rcells.sort_by_key(|c| c.col);
-                    let mut per_start: Vec<usize> = Vec::with_capacity(rcells.len());
-                    let mut per_end: Vec<usize> = Vec::with_capacity(rcells.len());
-                    let mut has_visible_range = false;
-                    let mut has_row_cut = false;
-                    for c in &rcells {
-                        let units = self.cell_units(c, table, styles);
-                        let su = match (in_start, start_block) {
-                            (true, Some((bs, be))) => block_cut_index(table, bs, be, c)
-                                .and_then(|i| start_cut.get(i).copied())
-                                .unwrap_or(0),
-                            _ => 0,
-                        }
-                        .min(units.len());
-                        let eu = match (in_end, end_block) {
-                            (true, Some((bs, be))) => block_cut_index(table, bs, be, c)
-                                .and_then(|i| end_cut.get(i).copied())
-                                .unwrap_or(units.len()),
-                            _ => units.len(),
-                        }
-                        .clamp(su, units.len());
-                        if eu > su {
-                            has_visible_range = true;
-                        }
-                        if su > 0 || eu < units.len() {
-                            has_row_cut = true;
-                        }
-                        per_start.push(su);
-                        per_end.push(eu);
-                    }
-                    let h = if !has_visible_range {
-                        0.0
-                    } else if has_row_cut {
-                        self.row_cut_content_height(table, r, &per_start, &per_end, styles)
-                    } else {
-                        self.row_cut_content_height(table, r, &[], &[], styles)
-                    };
-                    if h > 0.0 {
-                        row_heights[r] = h;
-                    }
-                } else {
-                    let su: &[usize] = if r == start_row { start_cut } else { &[] };
-                    let eu: &[usize] = if r == split_last_row { end_cut } else { &[] };
-                    // 기존 per-row 경로에서 rowspan 행은 기본적으로 atomic
-                    // (resolve_row_heights) 유지. 단 RowBreak 의 큰 rowspan 블록 내부
-                    // 행을 typeset 이 per-row cut 으로 분할한 split boundary 에서는
-                    // 렌더러도 같은 cut 높이를 적용해야 한다.
-                    let has_single_row_cells = table
-                        .cells
-                        .iter()
-                        .any(|c| c.row as usize == r && c.row_span == 1);
-                    if rowspan_touched && su.is_empty() && eu.is_empty() && !has_single_row_cells {
-                        continue;
-                    }
-                    let h = self.row_cut_content_height(table, r, su, eu, styles);
-                    if h > 0.0 {
-                        row_heights[r] = h;
-                    }
-                }
-            }
-        }
-
-        // ── 3. 누적 위치 계산 ──
-        let mut col_x = vec![0.0f64; col_count + 1];
-        for i in 0..col_count {
-            col_x[i + 1] =
-                col_x[i] + col_widths[i] + if i + 1 < col_count { cell_spacing } else { 0.0 };
-        }
-
-        // 행별 열 위치 계산 (셀별 독립 너비 지원)
-        let row_col_x = build_row_col_x(
-            table,
-            &col_widths,
-            col_count,
-            row_count,
-            cell_spacing,
-            self.dpi,
-        );
-
-        let table_width = row_col_x
-            .iter()
-            .map(|rx| rx.last().copied().unwrap_or(0.0))
-            .fold(col_x.last().copied().unwrap_or(0.0), f64::max);
-
-        // ── 표 수평 위치 (table_layout 공유 메서드) ──
-        let pw = self.current_paper_width.get();
-        let paper_w = if pw > 0.0 { Some(pw) } else { None };
-        let table_x = self.compute_table_x_position(
-            table,
-            table_width,
-            col_area,
-            0,
-            Alignment::Left,
-            host_margin_left,
-            host_margin_right,
-            None,
-            paper_w,
-        );
-
-        // ── 4. 렌더링할 행 목록 구성 ──
-        // is_continuation && repeat_header → start_row 이전의 반복 제목행만 반복.
-        // [Task #1716] 반복 대상은 표 상단의 연속 제목행 블록만(흩어진 하위 is_header 제외).
-        // 페이지네이터(typeset.rs header_overhead)와 동일 leading_header_rows 사용 → 정합.
-        let mut header_rows: Vec<usize> = Vec::new();
-        if is_continuation && table.repeat_header && start_row > 0 {
-            for r in table.leading_header_rows() {
-                if r < start_row && r < row_count {
-                    header_rows.push(r);
-                }
-            }
-            header_rows.sort_unstable();
-        }
-        let mut render_rows: Vec<usize> = Vec::new();
-        render_rows.extend_from_slice(&header_rows);
-        for r in start_row..end_row.min(row_count) {
-            render_rows.push(r);
-        }
-
-        // 렌더링 영역의 행별 y 위치 계산 (0부터 시작)
-        let mut render_row_y: Vec<f64> = Vec::new(); // 각 render_rows 항목의 시작 y
-        let mut y_accum = 0.0;
-        for (i, &r) in render_rows.iter().enumerate() {
-            render_row_y.push(y_accum);
-            y_accum += row_heights[r]
-                + if i + 1 < render_rows.len() {
-                    cell_spacing
-                } else {
-                    0.0
-                };
-        }
-        let partial_table_height = y_accum;
-
-        // 엣지 기반 테두리 수집을 위한 그리드 (렌더링 행 기준)
-        let render_row_count = render_rows.len();
-        let mut h_edges: Vec<Vec<Option<BorderLine>>> =
-            vec![vec![None; col_count]; render_row_count + 1];
-        let mut v_edges: Vec<Vec<Option<BorderLine>>> =
-            vec![vec![None; render_row_count]; col_count + 1];
-        let mut grid_row_y = render_row_y.clone();
-        grid_row_y.push(partial_table_height);
-
-        // ── 4b. 캡션 처리 (첫 번째 파트에서만 렌더링) ──
-        let is_first_part = start_row == 0 && !is_continuation && start_cut.is_empty();
-        let is_last_part = end_row >= row_count && end_cut.is_empty();
-        let (caption_height, caption_spacing) = if is_first_part || is_last_part {
-            let ch = self.calculate_caption_height(&table.caption, styles);
-            let cs = table
-                .caption
-                .as_ref()
-                .map(|c| hwpunit_to_px(c.spacing as i32, self.dpi))
-                .unwrap_or(0.0);
-            (ch, cs)
-        } else {
-            (0.0, 0.0)
-        };
-
-        let cap_dir = table.caption.as_ref().map(|c| c.direction);
-        let is_left_cap = cap_dir == Some(CaptionDirection::Left);
-        let is_right_cap = cap_dir == Some(CaptionDirection::Right);
-        let is_lr_cap = is_left_cap || is_right_cap;
-        let render_top_caption = is_first_part && cap_dir == Some(CaptionDirection::Top);
-        let render_bottom_caption = is_last_part && cap_dir == Some(CaptionDirection::Bottom);
-        // Left/Right 캡션은 모든 파트에서 렌더링 (표 옆에 배치)
-        let render_lr_caption = is_lr_cap;
-
-        // Left 캡션: 표를 오른쪽으로 이동
-        let cap_width_px = table
-            .caption
-            .as_ref()
-            .map(|c| hwpunit_to_px(c.width as i32, self.dpi))
-            .unwrap_or(0.0);
-        let table_x = if is_left_cap {
-            table_x + cap_width_px + caption_spacing
-        } else {
-            table_x
-        };
-
-        let table_y = if render_top_caption {
-            y_start + caption_height + caption_spacing
-        } else {
-            y_start
-        };
-
-        // ── 5. 표 노드 생성 ──
-        let table_id = tree.next_id();
-        let mut table_node = RenderNode::new(
-            table_id,
-            RenderNodeType::Table(TableNode {
-                row_count: table.row_count,
-                col_count: table.col_count,
-                border_fill_id: table.border_fill_id,
-                section_index: Some(section_index),
-                para_index: Some(para_index),
-                control_index: Some(control_index),
-            }),
-            BoundingBox::new(table_x, table_y, table_width, partial_table_height),
-        );
-
-        // ── 5-1. 표 배경 렌더링 (표 > 배경 > 색 > 면색) ──
-        if table.border_fill_id > 0 {
-            let tbl_idx = (table.border_fill_id as usize).saturating_sub(1);
-            if let Some(tbl_bs) = styles.border_styles.get(tbl_idx) {
-                self.render_cell_background(
-                    tree,
-                    &mut table_node,
-                    Some(tbl_bs),
-                    table_x,
-                    table_y,
-                    table_width,
-                    partial_table_height,
-                    bin_data_content,
-                );
-            }
-        }
-
-        // ── 6. 셀 렌더링 (render_rows 범위 내 셀만) ──
+    ) {
         for (cell_idx, cell) in table.cells.iter().enumerate() {
             let cell_row = cell.row as usize;
             let cell_col = cell.col as usize;
@@ -748,19 +437,8 @@ impl LayoutEngine {
                         total += spacing_after;
                     }
                     if start < end {
-                        total += para
-                            .controls
-                            .iter()
-                            .map(|ctrl| match ctrl {
-                                Control::Picture(pic) => {
-                                    self.cell_non_inline_control_flow_height(&pic.common)
-                                }
-                                Control::Shape(shape) => {
-                                    self.cell_non_inline_control_flow_height(shape.common())
-                                }
-                                _ => 0.0,
-                            })
-                            .sum::<f64>();
+                        total +=
+                            self.paragraph_cell_non_inline_controls_flow_height(&para.controls);
                     }
                 }
                 total
@@ -869,8 +547,8 @@ impl LayoutEngine {
                         .rposition(|&r| r >= cell_row && r < cell_end_row_idx);
                     if let (Some(fri), Some(lri)) = (first_ri, last_ri) {
                         collect_cell_borders(
-                            &mut h_edges,
-                            &mut v_edges,
+                            &mut *h_edges,
+                            &mut *v_edges,
                             cell_col,
                             fri,
                             cell.col_span as usize,
@@ -1095,6 +773,7 @@ impl LayoutEngine {
                         }
                         _ => inner_area.x,
                     };
+                    let mut rendered_top_and_bottom_non_inline = false;
 
                     for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
                         match ctrl {
@@ -1159,22 +838,30 @@ impl LayoutEngine {
                                 } else {
                                     // 비인라인 이미지: TopAndBottom+Para 는 row height 증가와
                                     // 무관하게 LINE_SEG 기준 anchor 를 유지한다.
-                                    let anchor_y = if matches!(
+                                    let top_and_bottom_para = matches!(
                                         pic.common.text_wrap,
                                         crate::model::shape::TextWrap::TopAndBottom
                                     ) && matches!(
                                         pic.common.vert_rel_to,
                                         crate::model::shape::VertRelTo::Para
-                                    ) {
-                                        para.line_segs
-                                            .first()
-                                            .filter(|seg| seg.vertical_pos >= 0)
-                                            .map(|seg| {
-                                                cell_y
-                                                    + pad_top
-                                                    + hwpunit_to_px(seg.vertical_pos, self.dpi)
-                                            })
-                                            .unwrap_or(para_y_before_compose)
+                                    );
+                                    let anchor_y = if top_and_bottom_para {
+                                        if cut_units.is_some() && visible_non_inline_controls {
+                                            // continuation 조각에 개체 flow 유닛이 실제 포함된 경우
+                                            // 원본 line_seg vertical_pos 는 전체 셀 내부 좌표다. 그대로
+                                            // 쓰면 다음 쪽 상단에 와야 할 그림이 조각 하단으로 밀린다.
+                                            para_y_before_compose
+                                        } else {
+                                            para.line_segs
+                                                .first()
+                                                .filter(|seg| seg.vertical_pos >= 0)
+                                                .map(|seg| {
+                                                    cell_y
+                                                        + pad_top
+                                                        + hwpunit_to_px(seg.vertical_pos, self.dpi)
+                                                })
+                                                .unwrap_or(para_y_before_compose)
+                                        }
                                     } else {
                                         para_y
                                     };
@@ -1218,6 +905,32 @@ impl LayoutEngine {
                                         picture_anchor_y,
                                         para_alignment,
                                     );
+                                    // [Issue #2071] 셀 vertical_align 존중 (table_layout.rs 동일 수정).
+                                    // 한컴은 셀 앵커 자리차지 그림을 **셀 valign 으로만** 배치하고
+                                    // 그림 자체 pos vert_align 은 무시한다. compute_object_position
+                                    // 은 그림 pos vert_align 을 따르므로 콘텐츠 box·그림 높이 기준
+                                    // 셀 valign 위치를 강제한다.
+                                    let pic_y = if top_and_bottom_para
+                                        && pic.common.flow_with_text
+                                        && !unrestricted_take_place_cell_float
+                                    {
+                                        let v_off = hwpunit_to_px(
+                                            pic.common.vertical_offset as i32,
+                                            self.dpi,
+                                        );
+                                        let content_top = cell_y + pad_top;
+                                        match effective_align {
+                                            VerticalAlign::Top => content_top + v_off,
+                                            VerticalAlign::Center => {
+                                                content_top + (inner_height - pic_h + v_off) / 2.0
+                                            }
+                                            VerticalAlign::Bottom => {
+                                                content_top + inner_height - pic_h - v_off
+                                            }
+                                        }
+                                    } else {
+                                        pic_y
+                                    };
                                     let pic_area = LayoutRect {
                                         x: pic_x,
                                         y: pic_y,
@@ -1235,7 +948,7 @@ impl LayoutEngine {
                                     if unrestricted_take_place_cell_float {
                                         self.layout_picture(
                                             tree,
-                                            &mut table_node,
+                                            &mut *table_node,
                                             &pic_for_layout,
                                             &pic_area,
                                             bin_data_content,
@@ -1259,7 +972,14 @@ impl LayoutEngine {
                                             Some(&cell_context),
                                         );
                                     }
-                                    para_y += self.non_inline_control_flow_height(&pic.common);
+                                    if matches!(
+                                        pic.common.text_wrap,
+                                        crate::model::shape::TextWrap::TopAndBottom
+                                    ) {
+                                        rendered_top_and_bottom_non_inline = true;
+                                    } else {
+                                        para_y += self.non_inline_control_flow_height(&pic.common);
+                                    }
                                 }
                                 has_preceding_text = true;
                             }
@@ -1354,9 +1074,17 @@ impl LayoutEngine {
                                         clamp_header_negative_para_offset,
                                         table_cell_ctx,
                                     );
+                                    let is_top_and_bottom_shape = matches!(
+                                        shape.common().text_wrap,
+                                        crate::model::shape::TextWrap::TopAndBottom
+                                    );
                                     let mut shape_flow_h =
                                         self.cell_non_inline_control_flow_height(shape.common());
-                                    if shape_flow_h <= 0.0 {
+                                    if is_top_and_bottom_shape {
+                                        rendered_top_and_bottom_non_inline = true;
+                                        shape_flow_h = 0.0;
+                                    }
+                                    if !is_top_and_bottom_shape && shape_flow_h <= 0.0 {
                                         shape_flow_h =
                                             if cut_units.is_some() && visible_non_inline_controls {
                                                 hwpunit_to_px(
@@ -1523,6 +1251,7 @@ impl LayoutEngine {
                                                 nrow,
                                                 None,
                                                 styles,
+                                                true,
                                             );
                                             let ncs = hwpunit_to_px(
                                                 nested_table.cell_spacing as i32,
@@ -1553,6 +1282,7 @@ impl LayoutEngine {
                                                 nrow,
                                                 None,
                                                 styles,
+                                                true,
                                             );
                                             let ncell_spacing = hwpunit_to_px(
                                                 nested_table.cell_spacing as i32,
@@ -1618,6 +1348,10 @@ impl LayoutEngine {
                             _ => {}
                         }
                     }
+                    if rendered_top_and_bottom_non_inline {
+                        para_y +=
+                            self.paragraph_top_and_bottom_non_inline_flow_height(&para.controls);
+                    }
                 }
 
                 if has_table_ctrl && mixed_nested_split.is_none() {
@@ -1653,8 +1387,8 @@ impl LayoutEngine {
                     .rposition(|&r| r >= cell_row && r < cell_end_row_idx);
                 if let (Some(fri), Some(lri)) = (first_ri, last_ri) {
                     collect_cell_borders(
-                        &mut h_edges,
-                        &mut v_edges,
+                        &mut *h_edges,
+                        &mut *v_edges,
                         cell_col,
                         fri,
                         cell.col_span as usize,
@@ -1666,6 +1400,409 @@ impl LayoutEngine {
 
             table_node.children.push(cell_node);
         }
+    }
+
+    /// 표의 일부 행만 레이아웃한다 (페이지 분할).
+    ///
+    /// `start_row..end_row` 범위의 행만 렌더링한다.
+    /// `is_continuation`이 true이고 repeat_header인 표면 행0(제목행)을 먼저 렌더링한다.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn layout_partial_table(
+        &self,
+        tree: &mut PageRenderTree,
+        col_node: &mut RenderNode,
+        paragraphs: &[Paragraph],
+        para_index: usize,
+        control_index: usize,
+        section_index: usize,
+        styles: &ResolvedStyleSet,
+        outline_numbering_id: u16,
+        col_area: &LayoutRect,
+        y_start: f64,
+        bin_data_content: &[BinDataContent],
+        start_row: usize,
+        end_row: usize,
+        is_continuation: bool,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        is_block_split: bool,
+        host_margin_left: f64,
+        host_margin_right: f64,
+        measured_table: Option<&MeasuredTable>,
+        clamp_header_negative_para_offset: bool,
+    ) -> f64 {
+        let para = match paragraphs.get(para_index) {
+            Some(p) => p,
+            None => return y_start,
+        };
+        let table = match para.controls.get(control_index) {
+            Some(Control::Table(t)) => t,
+            _ => return y_start,
+        };
+
+        if table.cells.is_empty() {
+            return y_start;
+        }
+
+        // 분할 표 첫 부분: vert_offset 적용 (자리차지 표의 세로 오프셋).
+        // [Task #712] HwpUnit=u32 이라 `vertical_offset > 0` 는 음수 비트표현
+        // (예: -1796 HU = 0xFFFFF8FC = 4294965500u32) 도 양수로 통과시켜
+        // 후속 `as i32` 캐스트에서 음수가 적용 → 표가 위로 점프, 직전 인라인
+        // 표 영역 침범. 비-Partial 경로(`table_layout.rs:1069+`)는 동일 분기에
+        // `raw_y.max(y_start)` 클램프가 있어 음수 무력화. Partial 경로에는
+        // 클램프가 없으므로 게이트를 signed 비교로 정정해 동등 효과.
+        let vert_off_signed = table.common.vertical_offset as i32;
+        let y_start = if !is_continuation
+            && !table.common.treat_as_char
+            && matches!(
+                table.common.text_wrap,
+                crate::model::shape::TextWrap::TopAndBottom
+            )
+            && matches!(
+                table.common.vert_rel_to,
+                crate::model::shape::VertRelTo::Para
+            )
+            && vert_off_signed > 0
+        {
+            // [#2015] host 텍스트가 pre-emit 된 경우, 진입 y_start 는 이미
+            // para_start+host_h(host 텍스트 끝) 흐름 위치다. vert_offset 은 para_start 기준
+            // 오프셋이므로 그대로 더하면 host_h 만큼 이중계상되어 표가 아래로 밀린다
+            // (부동 RowBreak 표 91.2px 오버플로우). 표의 참 상단 = para_start+vert_off =
+            // y_start+(vert_off−host_h). typeset 예산도 동일 감액을 적용한다.
+            // host pre-emit 이 아니면 host_h=0 → 종전과 동일(회귀 없음).
+            let host_h = self
+                .pre_emitted_host_heights
+                .borrow()
+                .get(&para_index)
+                .copied()
+                .unwrap_or(0.0);
+            let eff_off = (hwpunit_to_px(vert_off_signed, self.dpi) - host_h).max(0.0);
+            y_start + eff_off
+        } else {
+            y_start
+        };
+
+        let col_count = table.col_count as usize;
+        let row_count = table.row_count as usize;
+        let cell_spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
+
+        // ── 1. 열 폭 계산 + 2. 행 높이 계산 (table_layout 공유 메서드) ──
+        let col_widths = self.resolve_column_widths(table, col_count);
+        let mut row_heights = self.resolve_row_heights(
+            table,
+            col_count,
+            row_count,
+            measured_table,
+            styles,
+            table.common.treat_as_char,
+        );
+        // [Task #1748] 컷 걸침 rowspan 셀의 이전 프래그먼트 소비 높이 재계산용 —
+        // 2b 컷 오버라이드 이전의 원본 행 높이 (프래그먼트 무관 값).
+        let resolved_row_heights = row_heights.clone();
+
+        // ── 2b. 행 높이 오버라이드 (Task #993: 컷 기반) ──
+        // 렌더 대상 모든 행의 높이를 페이지네이터와 동일한 컷 측정
+        // (row_cut_content_height)으로 정정한다. 페이지네이터(typeset)와 렌더러가
+        // 단일 측정 공간(advance_row_cut/cell_units)을 공유해야 분할 표가
+        // 페이지를 넘지 않는다. 분할 행은 start_cut/end_cut 범위, 그 외 행은
+        // 전체 콘텐츠. rowspan 연속 행(컷 0)은 resolve_row_heights 결과 유지.
+        {
+            let split_last_row = end_row.saturating_sub(1);
+            let mut rows_to_set: std::collections::BTreeSet<usize> = (start_row..end_row).collect();
+            // 연속분 머리행 반복 — start_row 이전의 반복 제목행도 렌더된다.
+            // [Task #1716] 반복 대상은 표 상단의 연속 제목행 블록만(흩어진 하위 is_header 제외).
+            // 페이지네이터(typeset.rs header_overhead)와 동일 leading_header_rows 사용 → 정합.
+            if is_continuation && table.repeat_header && start_row > 0 {
+                for r in table.leading_header_rows() {
+                    if r < start_row {
+                        rows_to_set.insert(r);
+                    }
+                }
+            }
+            // [Task #1025] page-larger 블록 분할(is_block_split)이면 컷이 rowspan
+            // 블록-셀 인덱스 → 블록 범위(rowspan-확장)로 per-row 컷 매핑. 그 외(일반
+            // 분할)는 기존 per-row(row_span==1) 경로 유지(rowspan 행은 atomic).
+            let start_block = if is_block_split && !start_cut.is_empty() {
+                Some(rowspan_block_range(table, start_row))
+            } else {
+                None
+            };
+            let end_block = if is_block_split && !end_cut.is_empty() {
+                Some(rowspan_block_range(table, split_last_row))
+            } else {
+                None
+            };
+            for r in rows_to_set {
+                if r >= row_count {
+                    continue;
+                }
+                let rowspan_touched = table.cells.iter().any(|c| {
+                    c.row_span > 1
+                        && (c.row as usize) <= r
+                        && r < c.row as usize + c.row_span as usize
+                });
+                if is_block_split {
+                    let in_start = start_block.is_some_and(|(s, e)| s <= r && r < e);
+                    let in_end = end_block.is_some_and(|(s, e)| s <= r && r < e);
+                    // 분할 블록 밖 rowspan 행은 컷 모델 밖 — resolve_row_heights 유지.
+                    if rowspan_touched && !in_start && !in_end {
+                        continue;
+                    }
+                    // 행 r 의 row_span==1 셀(col 순)별 블록 컷 → per-row 컷 매핑.
+                    let mut rcells: Vec<&crate::model::table::Cell> = table
+                        .cells
+                        .iter()
+                        .filter(|c| c.row as usize == r && c.row_span == 1)
+                        .collect();
+                    rcells.sort_by_key(|c| c.col);
+                    let mut per_start: Vec<usize> = Vec::with_capacity(rcells.len());
+                    let mut per_end: Vec<usize> = Vec::with_capacity(rcells.len());
+                    let mut has_visible_range = false;
+                    let mut has_row_cut = false;
+                    for c in &rcells {
+                        let units = self.cell_units(c, table, styles);
+                        let su = match (in_start, start_block) {
+                            (true, Some((bs, be))) => block_cut_index(table, bs, be, c)
+                                .and_then(|i| start_cut.get(i).copied())
+                                .unwrap_or(0),
+                            _ => 0,
+                        }
+                        .min(units.len());
+                        let eu = match (in_end, end_block) {
+                            (true, Some((bs, be))) => block_cut_index(table, bs, be, c)
+                                .and_then(|i| end_cut.get(i).copied())
+                                .unwrap_or(units.len()),
+                            _ => units.len(),
+                        }
+                        .clamp(su, units.len());
+                        if eu > su {
+                            has_visible_range = true;
+                        }
+                        if su > 0 || eu < units.len() {
+                            has_row_cut = true;
+                        }
+                        per_start.push(su);
+                        per_end.push(eu);
+                    }
+                    let h = if !has_visible_range {
+                        0.0
+                    } else if has_row_cut {
+                        self.row_cut_content_height(table, r, &per_start, &per_end, styles)
+                    } else {
+                        self.row_cut_content_height(table, r, &[], &[], styles)
+                    };
+                    if h > 0.0 {
+                        row_heights[r] = h;
+                    }
+                } else {
+                    let su: &[usize] = if r == start_row { start_cut } else { &[] };
+                    let eu: &[usize] = if r == split_last_row { end_cut } else { &[] };
+                    // 기존 per-row 경로에서 rowspan 행은 기본적으로 atomic
+                    // (resolve_row_heights) 유지. 단 RowBreak 의 큰 rowspan 블록 내부
+                    // 행을 typeset 이 per-row cut 으로 분할한 split boundary 에서는
+                    // 렌더러도 같은 cut 높이를 적용해야 한다.
+                    let has_single_row_cells = table
+                        .cells
+                        .iter()
+                        .any(|c| c.row as usize == r && c.row_span == 1);
+                    if rowspan_touched && su.is_empty() && eu.is_empty() && !has_single_row_cells {
+                        continue;
+                    }
+                    let h = self.row_cut_content_height(table, r, su, eu, styles);
+                    if h > 0.0 {
+                        row_heights[r] = h;
+                    }
+                }
+            }
+        }
+
+        // ── 3. 누적 위치 계산 ──
+        let mut col_x = vec![0.0f64; col_count + 1];
+        for i in 0..col_count {
+            col_x[i + 1] =
+                col_x[i] + col_widths[i] + if i + 1 < col_count { cell_spacing } else { 0.0 };
+        }
+
+        // 행별 열 위치 계산 (셀별 독립 너비 지원)
+        let row_col_x = build_row_col_x(
+            table,
+            &col_widths,
+            col_count,
+            row_count,
+            cell_spacing,
+            self.dpi,
+        );
+
+        let table_width = row_col_x
+            .iter()
+            .map(|rx| rx.last().copied().unwrap_or(0.0))
+            .fold(col_x.last().copied().unwrap_or(0.0), f64::max);
+
+        // ── 표 수평 위치 (table_layout 공유 메서드) ──
+        let pw = self.current_paper_width.get();
+        let paper_w = if pw > 0.0 { Some(pw) } else { None };
+        let table_x = self.compute_table_x_position(
+            table,
+            table_width,
+            col_area,
+            0,
+            Alignment::Left,
+            host_margin_left,
+            host_margin_right,
+            None,
+            paper_w,
+        );
+
+        // ── 4. 렌더링할 행 목록 구성 ──
+        // is_continuation && repeat_header → start_row 이전의 반복 제목행만 반복.
+        // [Task #1716] 반복 대상은 표 상단의 연속 제목행 블록만(흩어진 하위 is_header 제외).
+        // 페이지네이터(typeset.rs header_overhead)와 동일 leading_header_rows 사용 → 정합.
+        let mut header_rows: Vec<usize> = Vec::new();
+        if is_continuation && table.repeat_header && start_row > 0 {
+            for r in table.leading_header_rows() {
+                if r < start_row && r < row_count {
+                    header_rows.push(r);
+                }
+            }
+            header_rows.sort_unstable();
+        }
+        let mut render_rows: Vec<usize> = Vec::new();
+        render_rows.extend_from_slice(&header_rows);
+        for r in start_row..end_row.min(row_count) {
+            render_rows.push(r);
+        }
+
+        // 렌더링 영역의 행별 y 위치 계산 (0부터 시작)
+        let mut render_row_y: Vec<f64> = Vec::new(); // 각 render_rows 항목의 시작 y
+        let mut y_accum = 0.0;
+        for (i, &r) in render_rows.iter().enumerate() {
+            render_row_y.push(y_accum);
+            y_accum += row_heights[r]
+                + if i + 1 < render_rows.len() {
+                    cell_spacing
+                } else {
+                    0.0
+                };
+        }
+        let partial_table_height = y_accum;
+
+        // 엣지 기반 테두리 수집을 위한 그리드 (렌더링 행 기준)
+        let render_row_count = render_rows.len();
+        let mut h_edges: Vec<Vec<Option<BorderLine>>> =
+            vec![vec![None; col_count]; render_row_count + 1];
+        let mut v_edges: Vec<Vec<Option<BorderLine>>> =
+            vec![vec![None; render_row_count]; col_count + 1];
+        let mut grid_row_y = render_row_y.clone();
+        grid_row_y.push(partial_table_height);
+
+        // ── 4b. 캡션 처리 (첫 번째 파트에서만 렌더링) ──
+        let is_first_part = start_row == 0 && !is_continuation && start_cut.is_empty();
+        let is_last_part = end_row >= row_count && end_cut.is_empty();
+        let (caption_height, caption_spacing) = if is_first_part || is_last_part {
+            let ch = self.calculate_caption_height(&table.caption, styles);
+            let cs = table
+                .caption
+                .as_ref()
+                .map(|c| hwpunit_to_px(c.spacing as i32, self.dpi))
+                .unwrap_or(0.0);
+            (ch, cs)
+        } else {
+            (0.0, 0.0)
+        };
+
+        let cap_dir = table.caption.as_ref().map(|c| c.direction);
+        let is_left_cap = cap_dir == Some(CaptionDirection::Left);
+        let is_right_cap = cap_dir == Some(CaptionDirection::Right);
+        let is_lr_cap = is_left_cap || is_right_cap;
+        let render_top_caption = is_first_part && cap_dir == Some(CaptionDirection::Top);
+        let render_bottom_caption = is_last_part && cap_dir == Some(CaptionDirection::Bottom);
+        // Left/Right 캡션은 모든 파트에서 렌더링 (표 옆에 배치)
+        let render_lr_caption = is_lr_cap;
+
+        // Left 캡션: 표를 오른쪽으로 이동
+        let cap_width_px = table
+            .caption
+            .as_ref()
+            .map(|c| hwpunit_to_px(c.width as i32, self.dpi))
+            .unwrap_or(0.0);
+        let table_x = if is_left_cap {
+            table_x + cap_width_px + caption_spacing
+        } else {
+            table_x
+        };
+
+        let table_y = if render_top_caption {
+            y_start + caption_height + caption_spacing
+        } else {
+            y_start
+        };
+
+        // ── 5. 표 노드 생성 ──
+        let table_id = tree.next_id();
+        let mut table_node = RenderNode::new(
+            table_id,
+            RenderNodeType::Table(TableNode {
+                row_count: table.row_count,
+                col_count: table.col_count,
+                border_fill_id: table.border_fill_id,
+                section_index: Some(section_index),
+                para_index: Some(para_index),
+                control_index: Some(control_index),
+            }),
+            BoundingBox::new(table_x, table_y, table_width, partial_table_height),
+        );
+
+        // ── 5-1. 표 배경 렌더링 (표 > 배경 > 색 > 면색) ──
+        if table.border_fill_id > 0 {
+            let tbl_idx = (table.border_fill_id as usize).saturating_sub(1);
+            if let Some(tbl_bs) = styles.border_styles.get(tbl_idx) {
+                self.render_cell_background(
+                    tree,
+                    &mut table_node,
+                    Some(tbl_bs),
+                    table_x,
+                    table_y,
+                    table_width,
+                    partial_table_height,
+                    bin_data_content,
+                );
+            }
+        }
+
+        // ── 6. 셀 렌더링 (render_rows 범위 내 셀만) ──
+        self.layout_partial_table_cells(
+            tree,
+            &mut table_node,
+            table,
+            paragraphs,
+            para_index,
+            control_index,
+            section_index,
+            styles,
+            outline_numbering_id,
+            bin_data_content,
+            start_row,
+            end_row,
+            is_continuation,
+            start_cut,
+            end_cut,
+            is_block_split,
+            cell_spacing,
+            col_count,
+            row_count,
+            table_x,
+            table_y,
+            &row_heights,
+            &resolved_row_heights,
+            &row_col_x,
+            &header_rows,
+            &render_rows,
+            &render_row_y,
+            &mut h_edges,
+            &mut v_edges,
+            measured_table,
+            clamp_header_negative_para_offset,
+        );
 
         // 엣지 기반 테두리 렌더링
         table_node.children.extend(render_edge_borders(

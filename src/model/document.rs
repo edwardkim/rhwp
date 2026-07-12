@@ -8,6 +8,13 @@ use super::paragraph::Paragraph;
 use super::style::{BorderFill, Bullet, CharShape, Font, Numbering, ParaShape, Style, TabDef};
 use super::*;
 
+/// rhwp가 HWP5 원본에서 생성한 HWPX임을 표시하는 ZIP 보조 엔트리 경로.
+///
+/// 이 마커가 있는 HWPX는 XML 컨테이너 형식이지만 pagination/lineSeg 부재 시멘틱은
+/// HWP5 원본을 따라야 한다. 한컴은 미지의 ZIP 엔트리를 무시하며, 한컴에서 다시 저장하면
+/// 마커가 사라져 native HWPX로 취급된다.
+pub const HWP5_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp5-origin";
+
 /// 파서가 모델링하지 않는 원시 레코드 (라운드트립 보존용)
 #[derive(Debug, Clone, Default)]
 pub struct RawRecord {
@@ -282,6 +289,30 @@ impl Document {
         self.bin_data_content
             .iter()
             .any(|content| content.id == bin_data_id && !content.data.is_empty())
+    }
+
+    /// 편집 중 신규 BinData 의 storage id 를 채번한다.
+    ///
+    /// `BinDataContent.id` / `BinData.storage_id` 는 저장 시 BIN%04X 스트림
+    /// 이름이 되므로 기존 값과 겹치면 안 된다. 순번(len+1) 채번은 storage id 에
+    /// 구멍이 있는 문서에서 기존 id 와 충돌해 저장 시 이미지가 뒤바뀌거나
+    /// 소실된다. 1-based 순번(위치) 의미인 `ImageAttr.bin_data_id` 와는 다른
+    /// 값이므로 분리해서 사용한다 (`renderer::layout::utils::find_bin_data` 참조).
+    pub(crate) fn next_bin_data_storage_id(&self) -> u16 {
+        let max_content = self
+            .bin_data_content
+            .iter()
+            .map(|c| c.id)
+            .max()
+            .unwrap_or(0);
+        let max_storage = self
+            .doc_info
+            .bin_data_list
+            .iter()
+            .map(|b| b.storage_id)
+            .max()
+            .unwrap_or(0);
+        max_content.max(max_storage).saturating_add(1)
     }
 
     /// 외부 이미지 바이너리를 렌더러 조회 규칙에 맞는 위치에 주입한다.

@@ -70,6 +70,23 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 - 웹 에디터 + hwpctl 호환 API (30 Actions, Field API)
 - 1,100+ 테스트
 
+#### v0.7.18 사이클 (2026-07-11)
+
+> v0.7.17 후속 patch — 렌더링 정합 대규모 보정(부동/전면 개체·RowBreak 표·쪽 하단 신뢰),
+> 초대형 표 성능, 편집기 캐럿·undo·OLE 정합, 관용 파싱·HWPX 보존 확대, WMF 도형 재작성
+
+**렌더링 정합**
+- 부동/전면 개체 페이지네이션 한글 일치 (#1994/#1995/#2004/#2006/#2007/#2019)
+- RowBreak 표 분할 보정 4종 (#1921/#1937/#1842/#2097) + 쪽 하단 saved-bounds 신뢰 (#2093)
+- 함초롬 계열 라틴/구두점 폭 Haansoft Batang 메트릭 대체 (#2156)
+
+**성능 · 편집기**
+- 초대형 표 렌더 타임아웃 해소 — 52,694셀 (#2063), 거대 셀 메모이즈 (#1949)
+- 후반 페이지 캐럿 3,064ms→33ms (#2021), undo 라우팅 일원화, OLE 정합 (#2069)
+
+**파서 · 직렬화 · 도형**
+- 부분 손상 문서 관용 로드 (#1932), HWPX 보존 5종 확대, WMF write_line 재작성 (#1943)
+
 #### v0.7.17 사이클 (2026-06-23)
 
 > v0.7.16 후속 patch — OOXML 차트 렌더 정합 첫 작업, legacy 도형 shapeComment 직렬화,
@@ -296,7 +313,7 @@ v0.7.x 배포 주기 누적 외부 기여자: [@ahnbu](https://github.com/ahnbu)
 - 전체 HWP 기능 커버리지, 접근성(a11y), 모바일 대응
 - 공공기관 실무 투입 가능 수준
 
-자세한 내용은 [로드맵 문서](mydocs/report/rhwp-milestone.md)를 참조하세요.
+자세한 내용은 [로드맵 문서](mydocs/report/archives/rhwp-milestone.md)를 참조하세요.
 
 ---
 
@@ -368,6 +385,7 @@ v0.7.x 배포 주기 누적 외부 기여자: [@ahnbu](https://github.com/ahnbu)
 - P25 widens exact font replay proof coverage for variation instances, TTC/OTC face indexes, font blob `dataRef`, and digest mismatch while keeping `TextRun` fallback for unproven construction cases.
 - P26 closes guarded Text IR v2 authority gaps for `MixedPerGlyph`, non-horizontal glyph orientation, `glyphTransforms`, and line-break telemetry while keeping `TextRun` fallback as the compatibility path.
 - P27 separates font resolver diagnostics from portable glyph replay proof. CanvasKit/native-style selection now requires matching `fontResources`, blob `dataRef`, interned bytes, and digest agreement before a `Portable` glyph run can be selected.
+- P34 keeps Canvas2D as the browser default and hardens the explicit `?renderer=canvaskit` path with page-scoped runtime diagnostics. CI runs a selected paragraph/table/image readiness corpus and requires the effective CanvasKit backend, zero unexpected replay gaps, no render failure, and a passing Canvas2D visual threshold.
 - CI covers the native Skia path with `cargo test --features native-skia skia --lib`; the feature is not available on `wasm32` targets.
 - The initial native Skia path is a PNG raster backend with core image/equation/raw-svg replay; full CanvasKit glyph replay, exact native glyph replay, real font blob extraction, complex text shaping, advanced image parity, and native form replay stay as follow-up work.
 - C ABI export is intentionally left for a later PR.
@@ -388,7 +406,7 @@ v0.7.x 배포 주기 누적 외부 기여자: [@ahnbu](https://github.com/ahnbu)
 
 ## npm 패키지 — 웹에서 바로 사용하기
 
-현재 배포 버전은 `@rhwp/core` / `@rhwp/editor` v0.7.17입니다.
+현재 배포 버전은 `@rhwp/core` / `@rhwp/editor` v0.7.18입니다.
 
 ### 에디터 임베드 (3줄)
 

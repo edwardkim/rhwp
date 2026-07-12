@@ -9,7 +9,10 @@ use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::style::{Alignment, BorderLine, CenterLine};
-use crate::model::table::VerticalAlign;
+use crate::model::table::{TablePageBreak, VerticalAlign};
+use crate::renderer::float_placement::signed_hwpunit;
+
+const ROWBREAK_OBJECT_BOTTOM_BLEED_TOLERANCE_PX: f64 = 64.0;
 
 /// [Task #548] paragraph 의 line N 에 적용되는 effective margin_left.
 /// paragraph_layout.rs 의 line_indent 산식과 동일 (단일 룰).
@@ -66,9 +69,7 @@ use super::border_rendering::{
     build_row_col_x, collect_cell_borders, create_border_line_nodes, render_cell_diagonal,
     render_edge_borders, render_transparent_borders,
 };
-use super::text_measurement::{
-    estimate_text_width, resolved_to_text_style, resolved_to_text_style_for_text,
-};
+use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::find_bin_data;
 use super::{CellContext, CellPathEntry, LayoutEngine};
 
@@ -236,7 +237,7 @@ fn render_cell_box_borders(
     nodes
 }
 
-fn border_style_has_diagonal(bs: &ResolvedBorderStyle) -> bool {
+pub(crate) fn border_style_has_diagonal(bs: &ResolvedBorderStyle) -> bool {
     let slash_bits = (bs.diagonal_attr >> 2) & 0x07;
     let backslash_bits = (bs.diagonal_attr >> 5) & 0x07;
     (slash_bits != 0 || backslash_bits != 0 || bs.center_line != CenterLine::None)
@@ -373,6 +374,7 @@ pub(super) struct CellUnit {
     mixed_nested_fragment: bool,
     mixed_nested_trailing: bool,
     mixed_nested_content_height: f64,
+    top_and_bottom_flow: bool,
     empty_spacer: bool,
 }
 
@@ -475,6 +477,31 @@ pub(crate) fn calc_nested_split_rows(
     }
 }
 
+/// [#2089] 가로쓰기 셀 본문 배치의 셀-스코프 스칼라 묶음.
+#[derive(Clone, Copy)]
+struct HorizontalCellVars {
+    cell_idx: usize,
+    r: usize,
+    cell_y: f64,
+    cell_h: f64,
+    content_cell_y: f64,
+    pad_top: f64,
+    inner_x: f64,
+    inner_width: f64,
+    inner_height: f64,
+    text_y_start: f64,
+    use_top_vpos_anchor: bool,
+    /// [Task #2211] 저장 LINE_SEG 흐름이 자체 스택 합보다 압축된 셀 —
+    /// 문단 배치를 저장 vpos 스냅으로 강제한다 (valign 무관).
+    trust_stored_cell_flow: bool,
+    has_nested_table: bool,
+    section_index: usize,
+    outline_numbering_id: u16,
+    depth: usize,
+    clamp_header_negative_para_offset: bool,
+    inline_table_flow_y_shift: f64,
+}
+
 impl LayoutEngine {
     /// 셀 안 비-TAC 자리차지 개체가 표 흐름에 요구하는 세로 범위.
     ///
@@ -485,7 +512,9 @@ impl LayoutEngine {
         if common.treat_as_char || !matches!(common.text_wrap, TextWrap::TopAndBottom) {
             return 0.0;
         }
-        let object_height = hwpunit_to_px(common.height as i32, self.dpi);
+        let object_height = hwpunit_to_px(common.height as i32, self.dpi)
+            + hwpunit_to_px(common.margin.top as i32, self.dpi)
+            + hwpunit_to_px(common.margin.bottom as i32, self.dpi);
         if matches!(common.vert_rel_to, VertRelTo::Para) {
             if common.flow_with_text {
                 hwpunit_to_px((common.vertical_offset as i32).max(0), self.dpi) + object_height
@@ -515,15 +544,63 @@ impl LayoutEngine {
             + hwpunit_to_px(common.margin.bottom as i32, self.dpi)
     }
 
-    pub(crate) fn calc_non_inline_controls_flow_height(&self, paragraphs: &[Paragraph]) -> f64 {
-        paragraphs
+    pub(crate) fn paragraph_top_and_bottom_non_inline_flow_height(
+        &self,
+        controls: &[Control],
+    ) -> f64 {
+        controls
             .iter()
-            .flat_map(|p| p.controls.iter())
             .map(|ctrl| match ctrl {
                 Control::Picture(pic) => self.non_inline_control_flow_height(&pic.common),
                 Control::Shape(shape) => self.non_inline_control_flow_height(shape.common()),
                 _ => 0.0,
             })
+            .fold(0.0, f64::max)
+    }
+
+    pub(crate) fn paragraph_cell_non_inline_controls_flow_height(
+        &self,
+        controls: &[Control],
+    ) -> f64 {
+        let (top_and_bottom_h, other_h) =
+            self.paragraph_cell_non_inline_control_flow_parts(controls);
+        top_and_bottom_h + other_h
+    }
+
+    fn paragraph_cell_non_inline_control_flow_parts(&self, controls: &[Control]) -> (f64, f64) {
+        let mut top_and_bottom_h = 0.0f64;
+        let mut other_h = 0.0f64;
+        for ctrl in controls {
+            let Some(common) = (match ctrl {
+                Control::Picture(pic) => Some(&pic.common),
+                Control::Shape(shape) => Some(shape.common()),
+                _ => None,
+            }) else {
+                continue;
+            };
+            if common.treat_as_char {
+                continue;
+            }
+            if matches!(common.text_wrap, TextWrap::TopAndBottom) {
+                top_and_bottom_h =
+                    top_and_bottom_h.max(self.non_inline_control_flow_height(common));
+            } else {
+                other_h += self.cell_non_inline_control_flow_height(common);
+            }
+        }
+        (top_and_bottom_h, other_h)
+    }
+
+    fn cell_has_top_and_bottom_non_inline_flow(&self, cell: &crate::model::table::Cell) -> bool {
+        cell.paragraphs
+            .iter()
+            .any(|para| self.paragraph_top_and_bottom_non_inline_flow_height(&para.controls) > 0.5)
+    }
+
+    pub(crate) fn calc_non_inline_controls_flow_height(&self, paragraphs: &[Paragraph]) -> f64 {
+        paragraphs
+            .iter()
+            .map(|p| self.paragraph_top_and_bottom_non_inline_flow_height(&p.controls))
             .sum()
     }
 
@@ -548,14 +625,43 @@ impl LayoutEngine {
     }
 
     pub(crate) fn calc_cell_wrap_objects_bottom_height(&self, paragraphs: &[Paragraph]) -> f64 {
+        // [Task #2226] TopAndBottom flow 개체 보유 문단의 para_top 은 사다리 기반
+        // 문단 시작 — height_measurer::cell_wrap_objects_bottom_height 와 동일 정정.
+        let mut prev_extent = 0.0f64;
         paragraphs
             .iter()
             .map(|p| {
-                let para_top = p
+                let first_vpos = p
                     .line_segs
                     .first()
                     .map(|s| hwpunit_to_px(s.vertical_pos, self.dpi))
                     .unwrap_or(0.0);
+                // 개체가 문단 시작~줄 상단 구간을 채우는 배치(줄이 개체 아래로
+                // 밀림)면 first_vpos 는 문단 시작이 아니다 — 기하 판정으로 전환.
+                let probe_object_bottom = p
+                    .controls
+                    .iter()
+                    .map(|ctrl| match ctrl {
+                        Control::Picture(pic) => self.cell_wrap_object_visual_bottom(&pic.common),
+                        Control::Shape(shape) => {
+                            self.cell_wrap_object_visual_bottom(shape.common())
+                        }
+                        _ => 0.0,
+                    })
+                    .fold(0.0f64, f64::max);
+                let objects_above_line = probe_object_bottom > 0.0
+                    && prev_extent + probe_object_bottom <= first_vpos + 0.5;
+                let para_top = if objects_above_line {
+                    prev_extent
+                } else {
+                    first_vpos
+                };
+                let para_extent = p
+                    .line_segs
+                    .iter()
+                    .map(|s| hwpunit_to_px(s.vertical_pos + s.line_height.max(0), self.dpi))
+                    .fold(prev_extent, f64::max);
+                prev_extent = para_extent;
                 let object_bottom = p
                     .controls
                     .iter()
@@ -657,9 +763,27 @@ impl LayoutEngine {
                                 .max(0),
                                 self.dpi,
                             );
+                            // [Issue #1858] valign=Bottom 하단앵커는 한컴이 **실측
+                            // 내용 높이**로 박스 하단을 anchor 하단에 밀착시킨다.
+                            // 선언높이(common.height)가 실측보다 크면(stale) 선언
+                            // 기준 top 이 위로 떠서 결재/발신명의 코퍼스 전반이
+                            // −30.5pt 상향(36389312 계열, 18건 중 13건 동일 상수).
+                            // MeasuredTable(캡션 제외 행높이 합) 사용, 부재 시 선언 유지.
+                            let effective_h = if matches!(
+                                table.common.vert_align,
+                                crate::model::shape::VertAlign::Bottom
+                                    | crate::model::shape::VertAlign::Outside
+                            ) {
+                                measured_table
+                                    .map(|mt| (mt.total_height - mt.caption_height).max(0.0))
+                                    .filter(|h| *h > 0.0)
+                                    .unwrap_or(outer_h)
+                            } else {
+                                outer_h
+                            };
                             self.compute_table_y_position(
                                 table,
-                                outer_h,
+                                effective_h,
                                 y_start,
                                 col_area,
                                 depth,
@@ -804,8 +928,14 @@ impl LayoutEngine {
 
         // ── 1. 열 폭 + 행 높이 계산 ──
         let col_widths = self.resolve_column_widths(table, col_count);
-        let row_heights =
-            self.resolve_row_heights(table, col_count, row_count, measured_table, styles);
+        let row_heights = self.resolve_row_heights(
+            table,
+            col_count,
+            row_count,
+            measured_table,
+            styles,
+            depth > 0 || table.common.treat_as_char,
+        );
 
         // ── 2. 누적 위치 계산 ──
         let mut col_x = vec![0.0f64; col_count + 1];
@@ -1459,6 +1589,7 @@ impl LayoutEngine {
         row_count: usize,
         measured_table: Option<&MeasuredTable>,
         styles: &ResolvedStyleSet,
+        relaxed_pad: bool,
     ) -> Vec<f64> {
         self.resolve_row_heights_with_common_fit(
             table,
@@ -1467,6 +1598,7 @@ impl LayoutEngine {
             measured_table,
             styles,
             true,
+            relaxed_pad,
         )
     }
 
@@ -1477,6 +1609,7 @@ impl LayoutEngine {
         row_count: usize,
         measured_table: Option<&MeasuredTable>,
         styles: &ResolvedStyleSet,
+        relaxed_pad: bool,
     ) -> Vec<f64> {
         self.resolve_row_heights_with_common_fit(
             table,
@@ -1485,7 +1618,20 @@ impl LayoutEngine {
             measured_table,
             styles,
             false,
+            relaxed_pad,
         )
+    }
+
+    /// [Task #2211] 셀의 전 문단이 저장 LINE_SEG 를 보유하는지 — 보유 셀은
+    /// 한컴이 저장 시 셀 h 를 콘텐츠에 맞춰 확정했으므로 행 성장 판정에서
+    /// 저장 지오메트리를 그대로 신뢰한다 (#2112 계보). 합성 seg(tag bit31)는
+    /// 저장으로 치지 않는다 — height_measurer 와 동일 술어.
+    fn cell_has_stored_line_segs(cell: &crate::model::table::Cell) -> bool {
+        !cell.paragraphs.is_empty()
+            && cell
+                .paragraphs
+                .iter()
+                .all(|p| !crate::renderer::para_has_no_stored_line_segs(p))
     }
 
     fn resolve_row_heights_with_common_fit(
@@ -1496,6 +1642,7 @@ impl LayoutEngine {
         measured_table: Option<&MeasuredTable>,
         styles: &ResolvedStyleSet,
         fit_common_height: bool,
+        relaxed_pad: bool,
     ) -> Vec<f64> {
         if let Some(mt) = measured_table {
             let mut rh = mt.row_heights.clone();
@@ -1533,17 +1680,36 @@ impl LayoutEngine {
                 let (pad_left, pad_right, pad_top, pad_bottom) =
                     self.resolve_cell_padding(cell, table);
 
-                let content_height = if cell.text_direction != 0 {
+                // LINE_SEG의 line_height에 이미 셀 내 중첩 표 높이가 반영되어 있으므로
+                // controls_height를 별도로 더하면 이중 계산됨
+                // [Task #2211] 저장 LINE_SEG 보유 셀의 줄 흐름은 성장 판정에 pad 를
+                // 더하지 않는다 — 한컴 저장 h 는 콘텐츠에 꽉 맞게 저장되며(빈 셀
+                // lh=h), pad 가산 시 그런 행마다 +pad 상하합(주보 p1: 행당 +282HU)씩
+                // 부풀어 하단이 절단된다. 개체 기반 지오메트리(Square bottom 등,
+                // #1486 p19)와 LINE_SEG 부재(합성 줄) 셀은 pad 포함 유지.
+                let required_height = if cell.text_direction != 0 {
                     // 세로쓰기: line_seg.segment_width가 열의 세로 길이
-                    self.calc_vertical_cell_content_height(&cell.paragraphs)
+                    self.calc_vertical_cell_content_height(&cell.paragraphs) + pad_top + pad_bottom
                 } else {
                     let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi);
                     let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
-                    self.calc_cell_paragraphs_content_height(&cell.paragraphs, styles, inner_width)
+                    let (line_based, object_based) = self.calc_cell_paragraphs_content_parts(
+                        &cell.paragraphs,
+                        styles,
+                        inner_width,
+                    );
+                    let line_req = if relaxed_pad && Self::cell_has_stored_line_segs(cell) {
+                        line_based
+                    } else {
+                        line_based + pad_top + pad_bottom
+                    };
+                    let object_req = if object_based > 0.0 {
+                        object_based + pad_top + pad_bottom
+                    } else {
+                        0.0
+                    };
+                    line_req.max(object_req)
                 };
-                // LINE_SEG의 line_height에 이미 셀 내 중첩 표 높이가 반영되어 있으므로
-                // controls_height를 별도로 더하면 이중 계산됨
-                let required_height = content_height + pad_top + pad_bottom;
                 if required_height > row_heights[r] {
                     row_heights[r] = required_height;
                 }
@@ -1615,11 +1781,23 @@ impl LayoutEngine {
                     self.resolve_cell_padding(cell, table);
                 let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi);
                 let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
-                let content_height =
-                    self.calc_cell_paragraphs_content_height(&cell.paragraphs, styles, inner_width);
                 // LINE_SEG의 line_height에 이미 셀 내 중첩 표 높이가 반영되어 있으므로
                 // controls_height를 별도로 더하면 이중 계산됨
-                let required_height = content_height + pad_top + pad_bottom;
+                // [Task #2211] 1-b 와 동일 — 저장 LINE_SEG 줄 흐름은 pad 미가산,
+                // 개체 기반 지오메트리는 pad 가산 유지.
+                let (line_based, object_based) =
+                    self.calc_cell_paragraphs_content_parts(&cell.paragraphs, styles, inner_width);
+                let line_req = if relaxed_pad && Self::cell_has_stored_line_segs(cell) {
+                    line_based
+                } else {
+                    line_based + pad_top + pad_bottom
+                };
+                let object_req = if object_based > 0.0 {
+                    object_based + pad_top + pad_bottom
+                } else {
+                    0.0
+                };
+                let required_height = line_req.max(object_req);
                 let combined: f64 = (r..r + span).map(|i| row_heights[i]).sum();
                 if required_height > combined {
                     let deficit = required_height - combined;
@@ -1671,6 +1849,21 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         cell_inner_width_px: f64,
     ) -> f64 {
+        let (line_based, object_based) =
+            self.calc_cell_paragraphs_content_parts(paragraphs, styles, cell_inner_width_px);
+        line_based.max(object_based)
+    }
+
+    /// [Task #2211] 셀 콘텐츠 높이를 (줄 기반, 개체 기반)으로 분리 반환.
+    /// 행 성장 판정에서 저장 LINE_SEG 줄 흐름은 pad 미가산, 개체(중첩 표·
+    /// TopAndBottom flow·Square bottom) 지오메트리는 pad 가산이 한컴 정합 —
+    /// 두 축의 pad 취급이 다르다 (#1486 p19 Square 그림 캘리브레이션).
+    pub(crate) fn calc_cell_paragraphs_content_parts(
+        &self,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        cell_inner_width_px: f64,
+    ) -> (f64, f64) {
         let cell_para_count = paragraphs.len();
         let line_based_height: f64 = paragraphs
             .iter()
@@ -1688,7 +1881,9 @@ impl LayoutEngine {
                 );
                 self.calc_para_lines_height(
                     &comp.lines,
+                    p,
                     self.is_hwp3_variant.get() && p.line_segs.is_empty() && !p.text.is_empty(),
+                    !p.line_segs.is_empty(),
                     pidx,
                     cell_para_count,
                     styles.para_styles.get(p.para_shape_id as usize),
@@ -1696,10 +1891,11 @@ impl LayoutEngine {
                 )
             })
             .sum();
-        line_based_height
-            .max(self.calc_nested_controls_bottom_height(paragraphs, styles))
+        let object_based = self
+            .calc_nested_controls_bottom_height(paragraphs, styles)
             .max(self.calc_non_inline_controls_flow_height(paragraphs))
-            .max(self.calc_cell_wrap_objects_bottom_height(paragraphs))
+            .max(self.calc_cell_wrap_objects_bottom_height(paragraphs));
+        (line_based_height, object_based)
     }
 
     /// pre-composed 문단들의 콘텐츠 높이 합산 (compose 생략)
@@ -1717,9 +1913,11 @@ impl LayoutEngine {
             .map(|(pidx, (comp, para))| {
                 self.calc_para_lines_height(
                     &comp.lines,
+                    para,
                     self.is_hwp3_variant.get()
                         && para.line_segs.is_empty()
                         && !para.text.is_empty(),
+                    !para.line_segs.is_empty(),
                     pidx,
                     cell_para_count,
                     styles.para_styles.get(para.para_shape_id as usize),
@@ -1735,10 +1933,17 @@ impl LayoutEngine {
     /// line_segs 부재 paragraph 의 fallback line_height (400 HU = 5.33 px) 가
     /// max_fs 보다 작은 경우 ParaShape 의 line_spacing_type + line_spacing 으로
     /// 보정. height_measurer.rs:570-587 와 동일 로직 — 측정/layout 일관성 보장.
+    /// [#2112] `trust_stored_lh`: 실제 저장 LINE_SEG 를 보유한 문단은 저장 줄높이를
+    /// 그대로 신뢰한다. 한글은 압축 줄높이(lh < 글자크기)를 저장값대로 렌더하는데,
+    /// #674 보정(fs×줄간격% 대체)이 저장 줄에도 적용되어 셀 행높이가 부풀었다
+    /// (39607: 행별 +3.8~+76.8px, 표 합계 +335.5px → 다쪽 표 쪽수 밀림).
+    /// 보정은 line_segs 부재 폴백(400HU 합성 줄, #671/#674 원 목적)에만 유지.
     fn calc_para_lines_height(
         &self,
         lines: &[crate::renderer::composer::ComposedLine],
+        para: &Paragraph,
         hwp3_variant_synthetic: bool,
+        trust_stored_lh: bool,
         pidx: usize,
         total_para_count: usize,
         para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
@@ -1756,7 +1961,35 @@ impl LayoutEngine {
             0.0
         };
         if lines.is_empty() {
-            spacing_before + hwpunit_to_px(400, self.dpi) + spacing_after
+            // [#2169] NO_LS 순수 빈 문단 = em 줄박스 (한글 공식).
+            let h = if crate::renderer::para_has_no_stored_line_segs(para)
+                && para.controls.is_empty()
+            {
+                let fs = para
+                    .char_shapes
+                    .first()
+                    .and_then(|cs| styles.char_styles.get(cs.char_shape_id as usize))
+                    .map(|cs| cs.font_size)
+                    .unwrap_or(0.0);
+                if fs <= 0.0 {
+                    hwpunit_to_px(400, self.dpi)
+                } else if is_last_para {
+                    fs
+                } else {
+                    match para_style {
+                        Some(ps) => crate::renderer::corrected_line_height(
+                            hwpunit_to_px(400, self.dpi),
+                            fs,
+                            ps.line_spacing_type,
+                            ps.line_spacing,
+                        ),
+                        None => fs,
+                    }
+                }
+            } else {
+                hwpunit_to_px(400, self.dpi)
+            };
+            spacing_before + h + spacing_after
         } else {
             let cell_ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
             let cell_ls_type = para_style
@@ -1779,14 +2012,35 @@ impl LayoutEngine {
                                 .unwrap_or(0.0)
                         })
                         .fold(0.0f64, f64::max);
-                    let h = crate::renderer::corrected_line_height_for_variant_synthetic(
-                        raw_lh,
-                        max_fs,
-                        cell_ls_type,
-                        cell_ls_val,
-                        hwp3_variant_synthetic,
-                    );
+                    // [#2169] NO_LS 순수 빈 문단 — 문단 char shape fs 폴백 (em 줄박스).
+                    let max_fs = if max_fs <= 0.0
+                        && crate::renderer::para_has_no_stored_line_segs(para)
+                        && para.controls.is_empty()
+                    {
+                        para.char_shapes
+                            .first()
+                            .and_then(|cs| styles.char_styles.get(cs.char_shape_id as usize))
+                            .map(|cs| cs.font_size)
+                            .unwrap_or(0.0)
+                    } else {
+                        max_fs
+                    };
                     let is_cell_last_line = is_last_para && i + 1 == line_count;
+                    let h = if trust_stored_lh {
+                        raw_lh
+                    } else {
+                        // [정식화 보류] 셀 마지막 줄 em(#2150 공식)은 상쇄 얽힘으로
+                        // 실험 브랜치 보존 — hwp3 synthetic 만 유지.
+                        // [#2070] NO_LS 단일 문단·단일 줄 셀 = em — 한글은 1줄 셀에서
+                        // 줄간격(Percent/Fixed)을 완전 무시 (fixed_ladder 실측).
+                        crate::renderer::corrected_line_height_for_variant_synthetic(
+                            raw_lh,
+                            max_fs,
+                            cell_ls_type,
+                            cell_ls_val,
+                            hwp3_variant_synthetic || is_cell_last_line,
+                        )
+                    };
                     if !is_cell_last_line {
                         h + hwpunit_to_px(line.line_spacing, self.dpi)
                     } else {
@@ -1951,12 +2205,7 @@ impl LayoutEngine {
             for line in &comp.lines {
                 let mut w = 0.0;
                 for run in &line.runs {
-                    let mut ts = resolved_to_text_style_for_text(
-                        styles,
-                        run.char_style_id,
-                        run.lang_index,
-                        &run.text,
-                    );
+                    let mut ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
                     if run.char_overlap.is_some() {
                         let fs = if ts.font_size > 0.0 {
                             ts.font_size
@@ -2256,6 +2505,17 @@ impl LayoutEngine {
             if matches!(vert_rel_to, crate::model::shape::VertRelTo::Para) {
                 let body_top = col_area.y;
                 let body_bottom = col_area.y + col_area.height - table_height;
+                let declared_height = hwpunit_to_px(table.common.height as i32, self.dpi).max(0.0);
+                let allow_rowbreak_object_bottom_bleed =
+                    matches!(table.page_break, TablePageBreak::RowBreak)
+                        && !table.common.treat_as_char
+                        && table.row_count == 1
+                        && table.col_count == 1
+                        && table.cells.len() == 1
+                        && signed_hwpunit(table.common.vertical_offset) <= 0
+                        && declared_height > 0.0
+                        && table_height
+                            > declared_height + ROWBREAK_OBJECT_BOTTOM_BLEED_TOLERANCE_PX;
                 let pushed =
                     if matches!(table_text_wrap, crate::model::shape::TextWrap::TopAndBottom) {
                         raw_y.max(y_start)
@@ -2267,7 +2527,11 @@ impl LayoutEngine {
                 } else {
                     body_top
                 };
-                pushed.clamp(min_y, body_bottom.max(min_y))
+                if allow_rowbreak_object_bottom_bleed {
+                    pushed.max(min_y)
+                } else {
+                    pushed.clamp(min_y, body_bottom.max(min_y))
+                }
             } else {
                 raw_y
             }
@@ -2291,6 +2555,1273 @@ impl LayoutEngine {
             // 중첩 표: outer_margin_top 적용
             let om_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
             y_start + om_top
+        }
+    }
+
+    /// [Task #2089] 가로쓰기 셀 본문 배치 — 셀 문단/TAC/수식/중첩표 방출.
+    /// 원본 무변경 통이동 (탈출은 전부 내부 루프 소속).
+    #[allow(clippy::too_many_arguments)]
+    fn layout_horizontal_cell_paragraphs(
+        &self,
+        tree: &mut PageRenderTree,
+        table_node: &mut RenderNode,
+        cell_node: &mut RenderNode,
+        cell: &crate::model::table::Cell,
+        composed_paras: &[ComposedParagraph],
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        bin_data_content: &[BinDataContent],
+        table_meta: Option<(usize, usize)>,
+        enclosing_cell_ctx: &Option<CellContext>,
+        row_filter: Option<(usize, usize)>,
+        row_y: &[f64],
+        effective_valign: VerticalAlign,
+        v: HorizontalCellVars,
+    ) {
+        let HorizontalCellVars {
+            cell_idx,
+            r,
+            cell_y,
+            cell_h,
+            content_cell_y,
+            pad_top,
+            inner_x,
+            inner_width,
+            inner_height,
+            text_y_start,
+            use_top_vpos_anchor,
+            trust_stored_cell_flow,
+            has_nested_table,
+            section_index,
+            outline_numbering_id,
+            depth,
+            clamp_header_negative_para_offset,
+            inline_table_flow_y_shift,
+        } = v;
+        let inner_area = LayoutRect {
+            x: inner_x,
+            y: text_y_start,
+            width: inner_width,
+            height: inner_height,
+        };
+
+        // 셀 내 문단 + 컨트롤 통합 레이아웃
+        let mut para_y = text_y_start;
+        let mut has_preceding_text = false;
+        for (cp_idx, (composed, para)) in composed_paras
+            .iter()
+            .zip(cell.paragraphs.iter())
+            .enumerate()
+        {
+            let cell_context = if let Some(ref ctx) = enclosing_cell_ctx {
+                let mut new_ctx = ctx.clone();
+                if let Some(last) = new_ctx.path.last_mut() {
+                    last.cell_index = cell_idx;
+                    last.cell_para_index = cp_idx;
+                    last.text_direction = cell.text_direction;
+                }
+                Some(new_ctx)
+            } else {
+                table_meta.map(|(pi, ci)| CellContext {
+                    parent_para_index: pi,
+                    path: vec![CellPathEntry {
+                        control_index: ci,
+                        cell_index: cell_idx,
+                        cell_para_index: cp_idx,
+                        text_direction: cell.text_direction,
+                    }],
+                })
+            };
+
+            let has_table_ctrl = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
+            // [Task #573] inline TAC 표(treat_as_char=true) 와 block 표(treat_as_char=false)
+            // 를 분리. 인라인 TAC 표가 있는 셀 paragraph 의 surrounding text (예: "ㄷ. ",
+            // "이다.") 가 layout_composed_paragraph 호출 미진입으로 미렌더되던 결함 정정.
+            // block 표는 별도 layout_table 호출로 배치되므로 텍스트 흐름 외부 — 기존
+            // ELSE 분기 로직 유지. inline TAC 표는 layout_composed_paragraph 의 run_tacs
+            // 에서 텍스트와 함께 배치되어야 함.
+            let has_block_table_ctrl = para
+                .controls
+                .iter()
+                .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char));
+
+            // HWP/HWPX가 셀 내부 문단의 LINE_SEG.vpos를 제공하는 경우에는
+            // 누적 y 대신 그 절대 위치를 우선한다. 조직도형 표처럼 셀 하나에
+            // 여러 짧은 문단이 있고 paraPr spacing/lineSpacing이 함께 지정된
+            // 문서는 한컴이 각 문단 top을 vpos로 고정해 둔다. 누적 y만 쓰면
+            // spacing_before가 중복되거나 음수 line_spacing이 누적되어 줄 위치가
+            // 점점 어긋난다.
+            let use_saved_cell_para_vpos = use_top_vpos_anchor
+                || trust_stored_cell_flow
+                || has_initial_tac_shape_host(&cell.paragraphs);
+            if use_saved_cell_para_vpos && !has_nested_table {
+                if let Some(first_seg) = para.line_segs.first() {
+                    if first_seg.vertical_pos >= 0 {
+                        let spacing_before = styles
+                            .para_styles
+                            .get(para.para_shape_id as usize)
+                            .map(|s| s.spacing_before)
+                            .unwrap_or(0.0);
+                        let anchored_y = cell_para_line_anchor_y(
+                            text_y_start,
+                            content_cell_y,
+                            pad_top,
+                            first_seg.vertical_pos,
+                            self.dpi,
+                            use_top_vpos_anchor,
+                        );
+                        // layout_composed_paragraph()가 spacing_before를 더하므로
+                        // 호출 전에 그 값을 빼서 최종 line top이 vpos와 일치하게 한다.
+                        para_y = anchored_y - spacing_before;
+                    }
+                }
+            }
+
+            let para_y_before_compose = para_y;
+
+            // 줄별 TAC 컨트롤 너비 합산: 각 TAC가 속한 줄을 판별하여 줄별 최대 너비 계산
+            let tac_line_widths: Vec<f64> = {
+                // 줄별 너비 합산 벡터
+                let mut line_widths = vec![0.0f64; composed.lines.len().max(1)];
+                for ctrl in &para.controls {
+                    let (is_tac, w) = match ctrl {
+                        Control::Picture(pic) if pic.common.treat_as_char => {
+                            (true, hwpunit_to_px(pic.common.width as i32, self.dpi))
+                        }
+                        Control::Shape(shape) if shape.common().treat_as_char => {
+                            (true, hwpunit_to_px(shape.common().width as i32, self.dpi))
+                        }
+                        Control::Equation(eq) => {
+                            (true, hwpunit_to_px(eq.common.width as i32, self.dpi))
+                        }
+                        Control::Table(t) if t.common.treat_as_char => {
+                            (true, hwpunit_to_px(t.common.width as i32, self.dpi))
+                        }
+                        _ => (false, 0.0),
+                    };
+                    if !is_tac {
+                        continue;
+                    }
+                    // 줄이 1개이면 무조건 0번 줄
+                    if composed.lines.len() <= 1 {
+                        line_widths[0] += w;
+                    } else {
+                        // 아직 줄 분배 전이므로 순서대로 채워넣기:
+                        // 현재 줄 너비 + 이 컨트롤 너비 > 셀 너비이면 다음 줄로
+                        let mut placed = false;
+                        for lw in line_widths.iter_mut() {
+                            if *lw == 0.0 || *lw + w <= inner_width + 0.5 {
+                                *lw += w;
+                                placed = true;
+                                break;
+                            }
+                        }
+                        if !placed {
+                            if let Some(last) = line_widths.last_mut() {
+                                *last += w;
+                            }
+                        }
+                    }
+                }
+                line_widths
+            };
+            let total_inline_width: f64 = tac_line_widths.iter().cloned().fold(0.0f64, f64::max);
+
+            if !has_block_table_ctrl {
+                let is_last_para = cp_idx + 1 == composed_paras.len();
+                // 분할 중첩 표: 셀 하단을 초과하는 줄은 렌더링하지 않음
+                let end_line = if row_filter.is_some() {
+                    let cell_bottom = cell_y + cell_h;
+                    let mut sim_y = para_y;
+                    let mut fit = composed.lines.len();
+                    for (li, line) in composed.lines.iter().enumerate() {
+                        let lh = hwpunit_to_px(line.line_height, self.dpi);
+                        if sim_y + lh > cell_bottom + 0.5 {
+                            fit = li;
+                            break;
+                        }
+                        sim_y += lh + hwpunit_to_px(line.line_spacing, self.dpi);
+                    }
+                    fit
+                } else {
+                    composed.lines.len()
+                };
+                let numbered_comp = if end_line > 0 {
+                    self.apply_paragraph_numbering(
+                        Some(composed),
+                        para,
+                        styles,
+                        outline_numbering_id,
+                    )
+                } else {
+                    None
+                };
+                let composed_for_layout = numbered_comp.as_ref().unwrap_or(composed);
+                para_y = self.layout_composed_paragraph(
+                    tree,
+                    cell_node,
+                    composed_for_layout,
+                    styles,
+                    &inner_area,
+                    para_y,
+                    0,
+                    end_line,
+                    section_index,
+                    cp_idx,
+                    cell_context.clone(),
+                    !use_top_vpos_anchor,
+                    is_last_para,
+                    0.0,
+                    None,
+                    Some(para),
+                    Some(bin_data_content),
+                    None, // 셀 컨텍스트 — wrap zone 무관
+                );
+
+                let has_visible_text = composed
+                    .lines
+                    .iter()
+                    .any(|line| line.runs.iter().any(|run| !run.text.trim().is_empty()));
+                if has_visible_text {
+                    has_preceding_text = true;
+                }
+            } else {
+                // has_table_ctrl: 표가 포함된 문단
+                // LINE_SEG vpos가 문단 위치를 정확히 지정하므로,
+                // 추가 spacing 없이 para_y를 그대로 사용.
+                // (leading spacing은 LINE_SEG vpos에 이미 반영되어 있음)
+            }
+
+            let para_alignment = styles
+                .para_styles
+                .get(para.para_shape_id as usize)
+                .map(|s| s.alignment)
+                .unwrap_or(Alignment::Left);
+            // [Task #548] paragraph margin_left + first-line indent 를 inline shape
+            // 위치에 반영. paragraph_layout 텍스트 경로와 동일한 effective_margin_left
+            // 산식을 적용해 텍스트와 shape 위치 일관성 보장.
+            let para_margin_left_px = styles
+                .para_styles
+                .get(para.para_shape_id as usize)
+                .map(|s| s.margin_left)
+                .unwrap_or(0.0);
+            let para_indent_px = styles
+                .para_styles
+                .get(para.para_shape_id as usize)
+                .map(|s| s.indent)
+                .unwrap_or(0.0);
+
+            let mut prev_tac_text_pos: usize = 0;
+            // LINE_SEG 기반 줄별 TAC 이미지 배치를 위한 상태
+            // 빈 문단(runs 없음)에서 TAC 컨트롤을 LINE_SEG에 순서대로 매핑
+            let all_runs_empty = composed.lines.iter().all(|l| l.runs.is_empty());
+            let mut tac_seq_index: usize = 0; // TAC 컨트롤 순번 (빈 문단용)
+            let mut current_tac_line: usize = 0;
+            let mut inline_x = {
+                let line_w = tac_line_widths
+                    .first()
+                    .copied()
+                    .unwrap_or(total_inline_width);
+                let line_margin =
+                    effective_margin_left_line(para_margin_left_px, para_indent_px, 0);
+                match para_alignment {
+                    Alignment::Center | Alignment::Distribute => {
+                        inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
+                    }
+                    Alignment::Right => inner_area.x + (inner_area.width - line_w).max(0.0),
+                    _ => inner_area.x + line_margin,
+                }
+            };
+            let mut tac_img_y = para_y_before_compose;
+            let mut rendered_top_and_bottom_non_inline = false;
+
+            for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
+                match ctrl {
+                    Control::Picture(pic) => {
+                        if pic.common.treat_as_char {
+                            let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
+                            // [Task #928] paragraph_layout 이 inline picture 를 emit 한
+                            // 경우 set_inline_shape_position 을 호출하므로 (paragraph_layout.rs
+                            // 라인 2019-2022), 본 가드는 inline_shape_position 등록 여부로
+                            // 판정한다. 기존 tac_controls + line_chars 기반 가드는 boundary
+                            // 케이스 (abs_pos == line_chars) 를 빠뜨려 exam_kor 5p ㉢
+                            // 그림 중복 emit 회귀가 있었다.
+                            let will_render_inline = tree
+                                .get_inline_shape_position(
+                                    section_index,
+                                    cp_idx,
+                                    ctrl_idx,
+                                    cell_context.as_ref(),
+                                )
+                                .is_some();
+                            if !will_render_inline {
+                                // LINE_SEG 기반 줄 판별
+                                let target_line = if all_runs_empty && para.line_segs.len() > 1 {
+                                    // 빈 문단: TAC 순번으로 LINE_SEG에 1:1 매핑
+                                    let li = tac_seq_index.min(para.line_segs.len() - 1);
+                                    tac_seq_index += 1;
+                                    li
+                                } else {
+                                    // 텍스트 있는 문단: char position으로 줄 판별
+                                    composed
+                                        .tac_controls
+                                        .iter()
+                                        .find(|&&(_, _, ci)| ci == ctrl_idx)
+                                        .map(|&(abs_pos, _, _)| {
+                                            composed
+                                                .lines
+                                                .iter()
+                                                .enumerate()
+                                                .rev()
+                                                .find(|(_, line)| abs_pos >= line.char_start)
+                                                .map(|(li, _)| li)
+                                                .unwrap_or(0)
+                                        })
+                                        .unwrap_or(0)
+                                };
+
+                                if target_line > current_tac_line {
+                                    // 줄이 바뀜: inline_x 리셋, y를 LINE_SEG vpos 기준으로 이동
+                                    current_tac_line = target_line;
+                                    let line_w =
+                                        tac_line_widths.get(target_line).copied().unwrap_or(0.0);
+                                    // [Task #548] target_line 의 effective_margin_left 적용
+                                    let line_margin = effective_margin_left_line(
+                                        para_margin_left_px,
+                                        para_indent_px,
+                                        target_line,
+                                    );
+                                    inline_x = match para_alignment {
+                                        Alignment::Center | Alignment::Distribute => {
+                                            inner_area.x
+                                                + (inner_area.width - line_w).max(0.0) / 2.0
+                                        }
+                                        Alignment::Right => {
+                                            inner_area.x + (inner_area.width - line_w).max(0.0)
+                                        }
+                                        _ => inner_area.x + line_margin,
+                                    };
+                                    if let Some(seg) = para.line_segs.get(target_line) {
+                                        // [Task #520 / #624 복원] LineSeg.vertical_pos 는 셀 origin 기준 절대값.
+                                        // para_y_before_compose 에 이미 ls[0].vpos 가 누적되어 있어
+                                        // 상대 오프셋(seg.vpos - ls[0].vpos)만 더해야 이중 합산을 피한다.
+                                        let first_vpos = para
+                                            .line_segs
+                                            .first()
+                                            .map(|f| f.vertical_pos)
+                                            .unwrap_or(0);
+                                        tac_img_y = para_y_before_compose
+                                            + hwpunit_to_px(
+                                                seg.vertical_pos - first_vpos,
+                                                self.dpi,
+                                            );
+                                    }
+                                }
+
+                                let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                                // [Task #477] 셀 폭 초과 시 비율 유지 클램프
+                                let clamped_w = pic_w.min(inner_area.width);
+                                let clamped_h = if pic_w > 0.0 {
+                                    pic_h * (clamped_w / pic_w)
+                                } else {
+                                    pic_h
+                                };
+                                let pic_area = LayoutRect {
+                                    x: inline_x,
+                                    y: tac_img_y,
+                                    width: clamped_w,
+                                    height: clamped_h,
+                                };
+                                // [Task #1151 v4] 셀 안 inline picture (tac=true):
+                                // outer paragraph idx + inner picture ctrl idx +
+                                // cell_ctx 전달 → ImageNode cell_index + cursor_rect
+                                // hit-test 정합.
+                                self.layout_picture(
+                                    tree,
+                                    cell_node,
+                                    pic,
+                                    &pic_area,
+                                    bin_data_content,
+                                    Alignment::Left,
+                                    Some(section_index),
+                                    cell_context.as_ref().map(|c| c.parent_para_index),
+                                    Some(ctrl_idx),
+                                    cell_context.as_ref(),
+                                );
+                                inline_x += clamped_w;
+                                continue;
+                            }
+                            inline_x += pic_w;
+                        } else {
+                            // 비-인라인(자리차지/글뒤로/글앞으로) 이미지:
+                            // 본문배치 속성(가로/세로 기준, 정렬, 오프셋) 적용
+                            let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
+                            let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                            // [Task #577] TopAndBottom + vert_rel_to=Para 인 셀 내부 이미지는
+                            // anchor 라인이 이미지에 의해 displaced 되므로, layout_composed_paragraph
+                            // 가 advance 시킨 para_y 가 아닌 anchor 시점(para_y_before_compose)을 기준
+                            // 으로 해야 cell-clip 영역 내부에 정확히 배치된다. (exam_science 2번 보기 ⑤
+                            // 등 5개 이미지에서 line_height(약 15.32px) 만큼 아래로 밀려 잘림.)
+                            let top_and_bottom_para = matches!(
+                                pic.common.text_wrap,
+                                crate::model::shape::TextWrap::TopAndBottom
+                            ) && matches!(
+                                pic.common.vert_rel_to,
+                                crate::model::shape::VertRelTo::Para
+                            );
+                            // [Task #2207] 글뒤로/글앞으로(절대 오버레이) + Para 도 앵커
+                            // 시점 기준. 오버레이 그림은 텍스트 플로우를 밀지 않으므로
+                            // compose 후 전진된 para_y 는 한 줄 아래를 가리킨다 (#577 과
+                            // 동일 원리 — Shape 경로는 이미 wrap 무관 앵커 시점 기준).
+                            let overlay_para = matches!(
+                                pic.common.text_wrap,
+                                crate::model::shape::TextWrap::BehindText
+                                    | crate::model::shape::TextWrap::InFrontOfText
+                            ) && matches!(
+                                pic.common.vert_rel_to,
+                                crate::model::shape::VertRelTo::Para
+                            );
+                            // [Task #2226] 텍스트 없는 문단에서 seg.vpos > 0 이면 그
+                            // 줄은 flow 그림에 밀려난 위치다 — 그림 오프셋의 원점은
+                            // 문단 시작이므로 앵커에 vpos 를 더하면 그림이 셀 아래로
+                            // 이탈한다 (주보 p2 로고 표 붓글씨 셀: line vpos 51.3px).
+                            let displaced_empty_line_para = para.text.trim().is_empty()
+                                && para
+                                    .line_segs
+                                    .first()
+                                    .is_some_and(|seg| seg.vertical_pos > 0);
+                            let anchor_y = if displaced_empty_line_para {
+                                // Square 포함 모든 비인라인 그림 — 원점은 문단 시작.
+                                content_cell_y + pad_top
+                            } else if top_and_bottom_para || overlay_para {
+                                para.line_segs
+                                    .first()
+                                    .filter(|seg| seg.vertical_pos >= 0)
+                                    .map(|seg| {
+                                        content_cell_y
+                                            + pad_top
+                                            + hwpunit_to_px(seg.vertical_pos, self.dpi)
+                                    })
+                                    .unwrap_or(para_y_before_compose)
+                            } else {
+                                para_y
+                            };
+                            let unrestricted_take_place_cell_float = !pic.common.flow_with_text
+                                && matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
+                                && matches!(pic.common.vert_rel_to, VertRelTo::Para);
+                            let detached_from_inline_table_flow = inline_table_flow_y_shift > 0.0
+                                && unrestricted_take_place_cell_float;
+                            let picture_anchor_y = if detached_from_inline_table_flow {
+                                anchor_y - inline_table_flow_y_shift - row_y[r].max(0.0)
+                            } else if unrestricted_take_place_cell_float {
+                                // 한컴의 셀 내부 자리차지 그림은 제한이 꺼지면
+                                // offset 지점에 그림 하단이 걸리도록 위로 빠진다.
+                                // compute_object_position 이 아래에서 vOffset 을
+                                // 다시 더하므로 여기서는 미리 vOffset+높이를 뺀다.
+                                anchor_y
+                                    - pic_h
+                                    - hwpunit_to_px(pic.common.vertical_offset as i32, self.dpi)
+                            } else {
+                                anchor_y
+                            };
+                            let cell_area = LayoutRect {
+                                y: picture_anchor_y,
+                                height: (inner_area.height - (picture_anchor_y - inner_area.y))
+                                    .max(0.0),
+                                ..inner_area
+                            };
+                            let (pic_x, pic_y) = self.compute_object_position(
+                                &pic.common,
+                                pic_w,
+                                pic_h,
+                                &cell_area,
+                                &inner_area,
+                                &inner_area,
+                                &inner_area,
+                                picture_anchor_y,
+                                para_alignment,
+                            );
+                            // [Issue #2071] 셀 앵커 floating 그림(restrict-ON,
+                            // TopAndBottom+Para)은 한컴이 **셀 vertical_align 으로만**
+                            // 배치하고 그림 자체 pos vert_align 은 무시한다. 위
+                            // compute_object_position 은 그림 pos vert_align 을 따르므로
+                            // pic≠Top 이거나 셀 valign≠Top 이면 어긋난다.
+                            // 한글 2024 편집기 오라클(ta-pic pos/cell vertAlign 변형 실측):
+                            //   셀=Center × pic=Top/Center/Bottom → 모두 362.5(셀 중앙)
+                            //   셀=Top × pic=Center → 153.8(셀 상단)  [pic 무시 확인]
+                            // 콘텐츠 box·그림 높이 기준으로 셀 valign 위치를 강제:
+                            //   TOP    = content_top + vOffset
+                            //   CENTER = content_top + (content_h − pic_h + vOffset)/2
+                            //   BOTTOM = content_bottom − pic_h − vOffset
+                            let pic_y = if top_and_bottom_para
+                                && pic.common.flow_with_text
+                                && !unrestricted_take_place_cell_float
+                                && !detached_from_inline_table_flow
+                            {
+                                let v_off =
+                                    hwpunit_to_px(pic.common.vertical_offset as i32, self.dpi);
+                                let content_top = content_cell_y + pad_top;
+                                match effective_valign {
+                                    VerticalAlign::Top => content_top + v_off,
+                                    VerticalAlign::Center => {
+                                        content_top + (inner_height - pic_h + v_off) / 2.0
+                                    }
+                                    VerticalAlign::Bottom => {
+                                        content_top + inner_height - pic_h - v_off
+                                    }
+                                }
+                            } else {
+                                pic_y
+                            };
+                            let pic_area = LayoutRect {
+                                x: pic_x,
+                                y: pic_y,
+                                width: pic_w,
+                                height: pic_h,
+                            };
+                            let mut pic_for_layout = pic.clone();
+                            pic_for_layout.common.horizontal_offset = 0;
+                            pic_for_layout.common.vertical_offset = 0;
+                            pic_for_layout.common.horz_align = crate::model::shape::HorzAlign::Left;
+                            pic_for_layout.common.vert_align = crate::model::shape::VertAlign::Top;
+                            // [Task #1151 v4] 셀 안 non-inline picture (tac=false 자리차지 등):
+                            // outer paragraph idx + inner picture ctrl idx +
+                            // cell_ctx 전달.
+                            if detached_from_inline_table_flow || unrestricted_take_place_cell_float
+                            {
+                                self.layout_picture(
+                                    tree,
+                                    table_node,
+                                    &pic_for_layout,
+                                    &pic_area,
+                                    bin_data_content,
+                                    Alignment::Left,
+                                    Some(section_index),
+                                    cell_context.as_ref().map(|c| c.parent_para_index),
+                                    Some(ctrl_idx),
+                                    cell_context.as_ref(),
+                                );
+                            } else {
+                                self.layout_picture(
+                                    tree,
+                                    cell_node,
+                                    &pic_for_layout,
+                                    &pic_area,
+                                    bin_data_content,
+                                    Alignment::Left,
+                                    Some(section_index),
+                                    cell_context.as_ref().map(|c| c.parent_para_index),
+                                    Some(ctrl_idx),
+                                    cell_context.as_ref(),
+                                );
+                            }
+                            if matches!(pic.common.text_wrap, TextWrap::TopAndBottom) {
+                                rendered_top_and_bottom_non_inline = true;
+                            } else {
+                                para_y += self.non_inline_control_flow_height(&pic.common);
+                            }
+                        }
+                        has_preceding_text = true;
+                    }
+                    Control::Shape(shape) => {
+                        if shape.common().treat_as_char {
+                            let shape_w = hwpunit_to_px(shape.common().width as i32, self.dpi);
+                            // [Task #928] paragraph_layout 의 run_tacs 처리 (라인 2026-2034)
+                            // 가 inline Shape 위치를 set_inline_shape_position 으로 등록
+                            // 하므로, 본 가드는 등록 여부로 판정한다. Picture 분기와 동일
+                            // 패턴이며 boundary 케이스에 안전.
+                            let will_render_inline = tree
+                                .get_inline_shape_position(
+                                    section_index,
+                                    cp_idx,
+                                    ctrl_idx,
+                                    cell_context.as_ref(),
+                                )
+                                .is_some();
+                            // [Task #500] Picture 분기와 정합: target_line 산출 + 줄 변경 시
+                            // inline_x/tac_img_y 리셋. multi-line paragraph 에서 사각형이
+                            // ls[1]+ 에 있을 때 paragraph 첫 줄 좌표가 잘못 사용되던 결함 정정.
+                            let target_line = if all_runs_empty && para.line_segs.len() > 1 {
+                                let li = tac_seq_index.min(para.line_segs.len() - 1);
+                                tac_seq_index += 1;
+                                li
+                            } else {
+                                composed
+                                    .tac_controls
+                                    .iter()
+                                    .find(|&&(_, _, ci)| ci == ctrl_idx)
+                                    .map(|&(abs_pos, _, _)| {
+                                        composed
+                                            .lines
+                                            .iter()
+                                            .enumerate()
+                                            .rev()
+                                            .find(|(_, line)| abs_pos >= line.char_start)
+                                            .map(|(li, _)| li)
+                                            .unwrap_or(0)
+                                    })
+                                    .unwrap_or(0)
+                            };
+                            if target_line > current_tac_line {
+                                current_tac_line = target_line;
+                                let line_w =
+                                    tac_line_widths.get(target_line).copied().unwrap_or(0.0);
+                                // [Task #548] target_line 의 effective_margin_left 적용
+                                let line_margin = effective_margin_left_line(
+                                    para_margin_left_px,
+                                    para_indent_px,
+                                    target_line,
+                                );
+                                inline_x = match para_alignment {
+                                    Alignment::Center | Alignment::Distribute => {
+                                        inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
+                                    }
+                                    Alignment::Right => {
+                                        inner_area.x + (inner_area.width - line_w).max(0.0)
+                                    }
+                                    _ => inner_area.x + line_margin,
+                                };
+                                if let Some(seg) = para.line_segs.get(target_line) {
+                                    // [Task #520] LineSeg.vertical_pos 는 셀 origin 기준 절대값.
+                                    // para_y_before_compose 에 이미 ls[0].vpos 가 누적되어 있어
+                                    // 상대 오프셋만 더해야 한다 (Picture 분기와 동일).
+                                    let first_vpos =
+                                        para.line_segs.first().map(|f| f.vertical_pos).unwrap_or(0);
+                                    tac_img_y = para_y_before_compose
+                                        + hwpunit_to_px(seg.vertical_pos - first_vpos, self.dpi);
+                                }
+                            }
+                            if !will_render_inline {
+                                // Shape 앞의 텍스트 너비 계산: tac_controls에서 이 Shape의 text_pos와
+                                // 이전 Shape의 text_pos 차이에 해당하는 텍스트 너비를 inline_x에 반영
+                                if let Some(&(tac_pos, _, _)) = composed
+                                    .tac_controls
+                                    .iter()
+                                    .find(|&&(_, _, ci)| ci == ctrl_idx)
+                                {
+                                    // [Task #495] 가드: 사각형이 paragraph 첫 줄(ls[0]) 범위 안에 있을 때만
+                                    // text_before 추출/발행. multi-line paragraph 에서 사각형이 ls[1]+ 에
+                                    // 있는 경우 composed.lines.first() 만 보던 기존 코드는 첫 줄 전체
+                                    // 텍스트를 잘못 추출해 paragraph_layout 결과와 중복 발행했음.
+                                    let in_first_line = composed
+                                        .lines
+                                        .first()
+                                        .map(|line| {
+                                            let line_chars: usize = line
+                                                .runs
+                                                .iter()
+                                                .map(|r| r.text.chars().count())
+                                                .sum();
+                                            tac_pos >= line.char_start
+                                                && tac_pos < line.char_start + line_chars
+                                        })
+                                        .unwrap_or(false);
+                                    // 이 Shape 앞에 아직 inline_x에 반영되지 않은 텍스트가 있는지 계산
+                                    let text_before: String = if in_first_line {
+                                        composed
+                                            .lines
+                                            .first()
+                                            .map(|line| {
+                                                let mut chars_so_far = 0usize;
+                                                let mut result = String::new();
+                                                for run in &line.runs {
+                                                    for ch in run.text.chars() {
+                                                        if chars_so_far >= prev_tac_text_pos
+                                                            && chars_so_far < tac_pos
+                                                        {
+                                                            result.push(ch);
+                                                        }
+                                                        chars_so_far += 1;
+                                                    }
+                                                }
+                                                result
+                                            })
+                                            .unwrap_or_default()
+                                    } else {
+                                        String::new()
+                                    };
+                                    if !text_before.is_empty() {
+                                        let char_style_id = composed
+                                            .lines
+                                            .first()
+                                            .and_then(|l| l.runs.first())
+                                            .map(|r| r.char_style_id)
+                                            .unwrap_or(0);
+                                        let lang_index = composed
+                                            .lines
+                                            .first()
+                                            .and_then(|l| l.runs.first())
+                                            .map(|r| r.lang_index)
+                                            .unwrap_or(0);
+                                        let ts = resolved_to_text_style(
+                                            styles,
+                                            char_style_id,
+                                            lang_index,
+                                        );
+                                        // [Task #555] PUA 옛한글 char 은 자모 시퀀스로 변환 후 폭 측정.
+                                        let text_before_metrics: String = {
+                                            use super::super::pua_oldhangul::map_pua_old_hangul;
+                                            text_before
+                                                .chars()
+                                                .flat_map(|ch| {
+                                                    if let Some(jamos) = map_pua_old_hangul(ch) {
+                                                        jamos.iter().copied().collect::<Vec<_>>()
+                                                    } else {
+                                                        vec![ch]
+                                                    }
+                                                })
+                                                .collect()
+                                        };
+                                        let text_w = estimate_text_width(&text_before_metrics, &ts);
+                                        let text_font_size = ts.font_size;
+                                        // 텍스트 렌더링: Shape 사이에 배치
+                                        // 텍스트 y를 Shape 하단 baseline에 맞춤
+                                        // (Shape 높이 - 폰트 줄 높이)만큼 아래로 이동
+                                        let text_baseline = text_font_size * 0.85;
+                                        let font_line_h = text_font_size * 1.2;
+                                        // 인접 Shape의 높이를 사용하여 텍스트 y를 baseline 정렬
+                                        let adjacent_shape_h = para
+                                            .controls
+                                            .iter()
+                                            .find_map(|c| {
+                                                if let Control::Shape(s) = c {
+                                                    if s.common().treat_as_char {
+                                                        Some(hwpunit_to_px(
+                                                            s.common().height as i32,
+                                                            self.dpi,
+                                                        ))
+                                                    } else {
+                                                        None
+                                                    }
+                                                } else {
+                                                    None
+                                                }
+                                            })
+                                            .unwrap_or(0.0);
+                                        let text_y = para_y_before_compose
+                                            + (adjacent_shape_h - font_line_h).max(0.0);
+                                        let text_node_id = tree.next_id();
+                                        let text_node = RenderNode::new(
+                                            text_node_id,
+                                            RenderNodeType::TextRun(TextRunNode {
+                                                text: text_before,
+                                                style: ts,
+                                                char_shape_id: Some(char_style_id),
+                                                para_shape_id: Some(composed.para_style_id),
+                                                section_index: Some(section_index),
+                                                para_index: None,
+                                                char_start: None,
+                                                cell_context: None,
+                                                is_para_end: false,
+                                                is_line_break_end: false,
+                                                rotation: 0.0,
+                                                is_vertical: false,
+                                                char_overlap: None,
+                                                border_fill_id: 0,
+                                                baseline: text_baseline,
+                                                field_marker: FieldMarkerType::None,
+                                            }),
+                                            BoundingBox::new(inline_x, text_y, text_w, font_line_h),
+                                        );
+                                        cell_node.children.push(text_node);
+                                        inline_x += text_w;
+                                    }
+                                    prev_tac_text_pos = tac_pos;
+                                }
+                            }
+                            // [Task #520 / #624 복원] target_line 기반 tac_img_y 사용 (Picture 분기와 동일).
+                            // para_y_before_compose 사용 시 multi-line paragraph 의 ls[1]+ inline TAC Shape 가
+                            // 항상 line 0 좌표에 떨어져 본문 텍스트와 겹친다 (exam_science p2 7번 글상자 ㉠).
+                            // [Task #928] will_render_inline=true 인 경우 paragraph_layout 이
+                            // 등록한 inline_shape_position 좌표를 사용해 도형 위치를
+                            // run_tacs split 에서 reserve 한 gap 과 정확히 정합시킨다.
+                            let (shape_x, shape_y) = if will_render_inline {
+                                tree.get_inline_shape_position(
+                                    section_index,
+                                    cp_idx,
+                                    ctrl_idx,
+                                    cell_context.as_ref(),
+                                )
+                                .unwrap_or((inline_x, tac_img_y))
+                            } else {
+                                (inline_x, tac_img_y)
+                            };
+                            let shape_area = LayoutRect {
+                                x: shape_x,
+                                y: shape_y,
+                                width: shape_w,
+                                height: inner_area.height,
+                            };
+                            // [Task #1138] 셀 컨텍스트 (section, outer_para, outer_table_ctrl, cell, cell_para, inner_ctrl)
+                            let table_cell_ctx = table_meta.map(|(opi, otci)| {
+                                (section_index, opi, otci, cell_idx, cp_idx, ctrl_idx)
+                            });
+                            self.layout_cell_shape(
+                                tree,
+                                cell_node,
+                                shape,
+                                &shape_area,
+                                shape_y,
+                                Alignment::Left,
+                                styles,
+                                bin_data_content,
+                                clamp_header_negative_para_offset,
+                                table_cell_ctx,
+                            );
+                            inline_x += shape_w;
+                        } else {
+                            let shape_anchor_y = if matches!(
+                                shape.common().vert_rel_to,
+                                crate::model::shape::VertRelTo::Para
+                            ) {
+                                para_y_before_compose
+                            } else {
+                                para_y
+                            };
+                            // [Task #1138] 셀 컨텍스트
+                            let table_cell_ctx = table_meta.map(|(opi, otci)| {
+                                (section_index, opi, otci, cell_idx, cp_idx, ctrl_idx)
+                            });
+                            self.layout_cell_shape(
+                                tree,
+                                cell_node,
+                                shape,
+                                &inner_area,
+                                shape_anchor_y,
+                                para_alignment,
+                                styles,
+                                bin_data_content,
+                                clamp_header_negative_para_offset,
+                                table_cell_ctx,
+                            );
+                            if matches!(shape.common().text_wrap, TextWrap::TopAndBottom) {
+                                rendered_top_and_bottom_non_inline = true;
+                            }
+                        }
+                    }
+                    Control::Equation(eq) => {
+                        // 수식 컨트롤: 글자처럼 인라인 배치
+                        let eq_w = hwpunit_to_px(eq.common.width as i32, self.dpi);
+
+                        // 수식이 텍스트 run 사이에 인라인으로 배치되는 경우
+                        // layout_composed_paragraph에서 이미 렌더링됨 → 건너뛰기
+                        let has_text_in_para =
+                            para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+                        // 빈 runs 셀 + TAC 수식: paragraph_layout(Task #287 경로)이 이미
+                        // 렌더 후 set_inline_shape_position 호출. 중복 emit 방지(Issue #301).
+                        let already_rendered_inline = tree
+                            .get_inline_shape_position(
+                                section_index,
+                                cp_idx,
+                                ctrl_idx,
+                                cell_context.as_ref(),
+                            )
+                            .is_some();
+                        if has_text_in_para || already_rendered_inline {
+                            // paragraph_layout 경로에서 이미 렌더됨
+                            inline_x += eq_w;
+                        } else {
+                            // 수식만 있는 문단: 여기서 직접 렌더링
+                            let eq_h = hwpunit_to_px(eq.common.height as i32, self.dpi);
+                            let eq_x = {
+                                let x = inline_x;
+                                inline_x += eq_w;
+                                x
+                            };
+                            let eq_y = para_y_before_compose;
+
+                            let tokens = super::super::equation::tokenizer::tokenize(&eq.script);
+                            let ast = super::super::equation::parser::EqParser::new(tokens).parse();
+                            let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
+                            let layout_box =
+                                super::super::equation::layout::EqLayout::new(font_size_px)
+                                    .layout(&ast);
+                            let color_str =
+                                super::super::equation::svg_render::eq_color_to_svg(eq.color);
+                            let svg_content =
+                                super::super::equation::svg_render::render_equation_svg(
+                                    &layout_box,
+                                    &color_str,
+                                    font_size_px,
+                                );
+
+                            let eq_node = RenderNode::new(
+                                tree.next_id(),
+                                RenderNodeType::Equation(EquationNode {
+                                    svg_content,
+                                    layout_box,
+                                    color_str,
+                                    color: eq.color,
+                                    font_size: font_size_px,
+                                    section_index: Some(section_index),
+                                    para_index: table_meta.map(|(pi, _)| pi),
+                                    control_index: Some(ctrl_idx),
+                                    cell_index: Some(cell_idx),
+                                    cell_para_index: Some(cp_idx),
+                                    note_ref: None,
+                                }),
+                                BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
+                            );
+                            cell_node.children.push(eq_node);
+                        }
+                    }
+                    Control::Table(nested_table) => {
+                        let is_tac_table = nested_table.common.treat_as_char;
+                        let nested_y = if has_preceding_text {
+                            para_y
+                        } else {
+                            inner_area.y
+                        };
+                        let nested_ctx = cell_context.as_ref().map(|ctx| {
+                            let mut new_ctx = ctx.clone();
+                            new_ctx.path.push(CellPathEntry {
+                                control_index: ctrl_idx,
+                                cell_index: 0,
+                                cell_para_index: 0,
+                                text_direction: 0,
+                            });
+                            new_ctx
+                        });
+                        if is_tac_table {
+                            // TAC 표: inline_x를 사용하여 수평 배치
+                            // [Task #573] layout_composed_paragraph 의 run_tacs 가
+                            // 인라인 TAC 표를 이미 렌더하고 set_inline_shape_position
+                            // 등록했다면 중복 emit 방지 (Equation 의 L1800 가드와 동일 패턴).
+                            let already_rendered_inline = tree
+                                .get_inline_shape_position(
+                                    section_index,
+                                    cp_idx,
+                                    ctrl_idx,
+                                    cell_context.as_ref(),
+                                )
+                                .is_some();
+                            let tac_w = hwpunit_to_px(nested_table.common.width as i32, self.dpi);
+                            if already_rendered_inline {
+                                inline_x += tac_w;
+                            } else {
+                                // [Task #1195] 표 앞에 텍스트(공백 등)가 선행하면, 한컴은
+                                // 그 textRun 너비 다음에 표를 놓되 잔여 너비가 부족하면
+                                // 다음 줄(line feed)에 조판한다. 즉 표는 문단 첫 줄이 아니라
+                                // 표가 속한 line_seg(표 앞 빈 줄 다음)에 위치한다.
+                                // 이미지 TAC 분기(L2231)와 동일하게 para_y_before_compose 에
+                                // (표 line_seg.vpos − 첫 line_seg.vpos) 상대 오프셋을 더한다.
+                                // (para_y_before_compose 에 이미 ls[0].vpos 가 누적되어 있음.)
+                                let table_anchor_y = if has_preceding_text
+                                    && para.line_segs.len() > 1
+                                {
+                                    let first_vpos =
+                                        para.line_segs.first().map(|f| f.vertical_pos).unwrap_or(0);
+                                    let tbl_vpos = para
+                                        .line_segs
+                                        .last()
+                                        .map(|s| s.vertical_pos)
+                                        .unwrap_or(first_vpos);
+                                    para_y_before_compose
+                                        + hwpunit_to_px(tbl_vpos - first_vpos, self.dpi)
+                                } else {
+                                    para_y_before_compose
+                                };
+                                let ctrl_area = LayoutRect {
+                                    x: inline_x,
+                                    y: table_anchor_y,
+                                    width: tac_w,
+                                    height: (inner_area.height - (table_anchor_y - inner_area.y))
+                                        .max(0.0),
+                                };
+                                let table_h = self.layout_table(
+                                    tree,
+                                    cell_node,
+                                    nested_table,
+                                    section_index,
+                                    styles,
+                                    outline_numbering_id,
+                                    &ctrl_area,
+                                    table_anchor_y,
+                                    bin_data_content,
+                                    None,
+                                    depth + 1,
+                                    None,
+                                    para_alignment,
+                                    nested_ctx,
+                                    0.0,
+                                    0.0,
+                                    Some(inline_x),
+                                    None,
+                                    None,
+                                    false,
+                                    clamp_header_negative_para_offset,
+                                );
+                                inline_x += tac_w;
+                                // para_y는 TAC 표 높이만큼 갱신 (같은 문단 내 다음 표도 같은 y)
+                                let new_bottom = para_y_before_compose + table_h;
+                                if new_bottom > para_y {
+                                    para_y = new_bottom;
+                                }
+                            }
+                        } else {
+                            // 비-TAC 표: 기존 수직 배치
+                            // 앞 텍스트 너비만큼 x 오프셋 적용
+                            let tac_text_offset = if nested_table.attr & 0x01 != 0 {
+                                let mut text_w = 0.0;
+                                for line in &composed.lines {
+                                    for run in &line.runs {
+                                        if !run.text.is_empty() {
+                                            let ts = resolved_to_text_style(
+                                                styles,
+                                                run.char_style_id,
+                                                run.lang_index,
+                                            );
+                                            // [Task #555] PUA 옛한글 변환 후 자모 시퀀스 폭.
+                                            text_w += estimate_text_width(
+                                                effective_text_for_metrics(run),
+                                                &ts,
+                                            );
+                                        }
+                                    }
+                                }
+                                text_w
+                            } else {
+                                0.0
+                            };
+                            // TAC 표 앞 텍스트 렌더링 (문단부호 등 표시용)
+                            if tac_text_offset > 0.0 {
+                                let line_h = composed
+                                    .lines
+                                    .first()
+                                    .map(|l| hwpunit_to_px(l.line_height, self.dpi))
+                                    .unwrap_or(12.0);
+                                let baseline = line_h * 0.85;
+                                let line_id = tree.next_id();
+                                let mut line_node = RenderNode::new(
+                                    line_id,
+                                    RenderNodeType::TextLine(TextLineNode::new(line_h, baseline)),
+                                    BoundingBox::new(
+                                        inner_area.x,
+                                        nested_y,
+                                        tac_text_offset,
+                                        line_h,
+                                    ),
+                                );
+                                let mut run_x = inner_area.x;
+                                for line in &composed.lines {
+                                    for run in &line.runs {
+                                        if run.text.is_empty() {
+                                            continue;
+                                        }
+                                        let ts = resolved_to_text_style(
+                                            styles,
+                                            run.char_style_id,
+                                            run.lang_index,
+                                        );
+                                        // [Task #555] PUA 옛한글 변환 후 자모 시퀀스 폭.
+                                        let run_w = estimate_text_width(
+                                            effective_text_for_metrics(run),
+                                            &ts,
+                                        );
+                                        let run_id = tree.next_id();
+                                        let run_node = RenderNode::new(
+                                            run_id,
+                                            RenderNodeType::TextRun(TextRunNode {
+                                                text: run.text.clone(),
+                                                style: ts,
+                                                char_shape_id: Some(run.char_style_id),
+                                                para_shape_id: Some(para.para_shape_id),
+                                                section_index: Some(section_index),
+                                                para_index: None,
+                                                char_start: None,
+                                                cell_context: cell_context.clone(),
+                                                is_para_end: false,
+                                                is_line_break_end: false,
+                                                rotation: 0.0,
+                                                is_vertical: false,
+                                                char_overlap: None,
+                                                border_fill_id: 0,
+                                                baseline,
+                                                field_marker: FieldMarkerType::None,
+                                            }),
+                                            BoundingBox::new(run_x, nested_y, run_w, line_h),
+                                        );
+                                        line_node.children.push(run_node);
+                                        run_x += run_w;
+                                    }
+                                }
+                                cell_node.children.push(line_node);
+                            }
+                            let ctrl_area = LayoutRect {
+                                x: inner_area.x + tac_text_offset,
+                                y: nested_y,
+                                width: (inner_area.width - tac_text_offset).max(0.0),
+                                height: (inner_area.height - (nested_y - inner_area.y)).max(0.0),
+                            };
+                            let table_h = self.layout_table(
+                                tree,
+                                cell_node,
+                                nested_table,
+                                section_index,
+                                styles,
+                                outline_numbering_id,
+                                &ctrl_area,
+                                nested_y,
+                                bin_data_content,
+                                None,
+                                depth + 1,
+                                None,
+                                para_alignment,
+                                nested_ctx,
+                                0.0,
+                                0.0,
+                                None,
+                                None,
+                                None,
+                                false,
+                                clamp_header_negative_para_offset,
+                            );
+                            para_y = nested_y + table_h;
+                        }
+                        has_preceding_text = true;
+                    }
+                    _ => {}
+                }
+            }
+            if rendered_top_and_bottom_non_inline {
+                para_y += self.paragraph_top_and_bottom_non_inline_flow_height(&para.controls);
+            }
+
+            // 마지막 인라인 Shape 이후의 남은 텍스트 렌더링 (예: "일")
+            if prev_tac_text_pos > 0 {
+                let total_text_chars = composed
+                    .lines
+                    .first()
+                    .map(|line| {
+                        line.runs
+                            .iter()
+                            .map(|r| r.text.chars().count())
+                            .sum::<usize>()
+                    })
+                    .unwrap_or(0);
+                if prev_tac_text_pos < total_text_chars {
+                    let remaining_text: String = composed
+                        .lines
+                        .first()
+                        .map(|line| {
+                            let mut chars_so_far = 0usize;
+                            let mut result = String::new();
+                            for run in &line.runs {
+                                for ch in run.text.chars() {
+                                    if chars_so_far >= prev_tac_text_pos {
+                                        result.push(ch);
+                                    }
+                                    chars_so_far += 1;
+                                }
+                            }
+                            result
+                        })
+                        .unwrap_or_default();
+                    let remaining_trimmed = remaining_text.trim_end();
+                    if !remaining_trimmed.is_empty() {
+                        let char_style_id = composed
+                            .lines
+                            .first()
+                            .and_then(|l| l.runs.last())
+                            .map(|r| r.char_style_id)
+                            .unwrap_or(0);
+                        let lang_index = composed
+                            .lines
+                            .first()
+                            .and_then(|l| l.runs.last())
+                            .map(|r| r.lang_index)
+                            .unwrap_or(0);
+                        let ts = resolved_to_text_style(styles, char_style_id, lang_index);
+                        // [Task #555] PUA 옛한글 char 은 자모 시퀀스로 변환 후 폭 측정.
+                        let remaining_metrics: String = {
+                            use super::super::pua_oldhangul::map_pua_old_hangul;
+                            remaining_trimmed
+                                .chars()
+                                .flat_map(|ch| {
+                                    if let Some(jamos) = map_pua_old_hangul(ch) {
+                                        jamos.iter().copied().collect::<Vec<_>>()
+                                    } else {
+                                        vec![ch]
+                                    }
+                                })
+                                .collect()
+                        };
+                        let text_w = estimate_text_width(&remaining_metrics, &ts);
+                        let text_baseline = ts.font_size * 0.85;
+                        let text_h = ts.font_size * 1.2;
+                        // 마지막 Shape 높이 기준으로 텍스트 y 계산
+                        let last_shape_h = para
+                            .controls
+                            .iter()
+                            .rev()
+                            .find_map(|c| {
+                                if let Control::Shape(s) = c {
+                                    if s.common().treat_as_char {
+                                        Some(hwpunit_to_px(s.common().height as i32, self.dpi))
+                                    } else {
+                                        None
+                                    }
+                                } else {
+                                    None
+                                }
+                            })
+                            .unwrap_or(0.0);
+                        let text_y = para_y_before_compose + (last_shape_h - text_h).max(0.0);
+                        let text_node_id = tree.next_id();
+                        let text_node = RenderNode::new(
+                            text_node_id,
+                            RenderNodeType::TextRun(TextRunNode {
+                                text: remaining_trimmed.to_string(),
+                                style: ts,
+                                char_shape_id: Some(char_style_id),
+                                para_shape_id: Some(composed.para_style_id),
+                                section_index: Some(section_index),
+                                para_index: None,
+                                char_start: None,
+                                cell_context: None,
+                                is_para_end: false,
+                                is_line_break_end: false,
+                                rotation: 0.0,
+                                is_vertical: false,
+                                char_overlap: None,
+                                border_fill_id: 0,
+                                baseline: text_baseline,
+                                field_marker: FieldMarkerType::None,
+                            }),
+                            BoundingBox::new(inline_x, text_y, text_w, text_h),
+                        );
+                        cell_node.children.push(text_node);
+                    }
+                }
+            }
+
+            if has_table_ctrl {
+                // LINE_SEG vpos 기반으로 para_y 보정.
+                // LINE_SEG.line_height에는 중첩 표 높이가 미포함될 수 있으므로
+                // layout_table 반환값과 vpos 기반 중 적절한 값을 선택한다.
+                let is_last_para = cp_idx + 1 == composed_paras.len();
+                // 다음 문단의 vpos가 있으면 그것을 기준으로 para_y 보정
+                if !is_last_para {
+                    if let Some(next_para) = cell.paragraphs.get(cp_idx + 1) {
+                        if let Some(next_seg) = next_para.line_segs.first() {
+                            let next_vpos_y =
+                                text_y_start + hwpunit_to_px(next_seg.vertical_pos, self.dpi);
+                            // layout_table 기반 para_y와 다음 문단 vpos 중
+                            // 더 큰 값 사용 (표가 LINE_SEG보다 클 수 있으므로)
+                            para_y = para_y.max(next_vpos_y);
+                        }
+                    }
+                }
+                // 음수 line_spacing 처리 (중첩 구조에서 para_y 되돌리기)
+                if !(is_last_para && enclosing_cell_ctx.is_some()) {
+                    if let Some(last_line) = composed.lines.last() {
+                        let ls = hwpunit_to_px(last_line.line_spacing, self.dpi);
+                        if ls < -0.01 {
+                            para_y += ls;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -2496,6 +4027,8 @@ impl LayoutEngine {
                     styles,
                 );
                 for para in &cell.paragraphs {
+                    text_height +=
+                        self.paragraph_top_and_bottom_non_inline_flow_height(&para.controls);
                     for ctrl in &para.controls {
                         match ctrl {
                             Control::Picture(pic) => {
@@ -2504,8 +4037,6 @@ impl LayoutEngine {
                                     if pic_h > max_inline_height {
                                         max_inline_height = pic_h;
                                     }
-                                } else {
-                                    text_height += self.non_inline_control_flow_height(&pic.common);
                                 }
                             }
                             Control::Shape(shape) => {
@@ -2514,9 +4045,6 @@ impl LayoutEngine {
                                     if shape_h > max_inline_height {
                                         max_inline_height = shape_h;
                                     }
-                                } else {
-                                    text_height +=
-                                        self.non_inline_control_flow_height(shape.common());
                                 }
                             }
                             Control::Equation(eq) => {
@@ -2600,6 +4128,41 @@ impl LayoutEngine {
                 .first()
                 .and_then(|p| p.line_segs.first())
                 .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi));
+            // [Task #2211] 저장 LINE_SEG 흐름 extent(각 seg 의 vpos+lh 최댓값)가
+            // 자체 스택 합(total_content_height)보다 작으면 — 예: 악보 셀처럼
+            // 빈 앵커 줄이 TopAndBottom 그림 높이에 흡수된 문서 — 한컴 저장
+            // 지오메트리를 신뢰한다: 정렬 기준 콘텐츠 높이를 저장 extent 로
+            // 바꾸고, 문단 배치도 저장 vpos 스냅을 강제한다 (한컴 실측:
+            // 가사 top = 셀 top + pad + 센터 오프셋(저장 extent 기준) + vpos).
+            let stored_flow_extent = if !has_nested_table
+                && !cell.paragraphs.is_empty()
+                && cell.paragraphs.iter().all(|p| !p.line_segs.is_empty())
+            {
+                cell.paragraphs
+                    .iter()
+                    .flat_map(|p| p.line_segs.iter())
+                    .filter(|s| s.vertical_pos >= 0 && s.line_height > 0)
+                    .map(|s| hwpunit_to_px(s.vertical_pos + s.line_height, self.dpi))
+                    .fold(0.0f64, f64::max)
+            } else {
+                0.0
+            };
+            // Square/중첩 표 등 비-flow 개체의 시각 bottom 은 저장 LINE_SEG 흐름에
+            // 포함되지 않으므로(#1486 p19 Square 그림), 그런 개체가 저장 extent 를
+            // 넘는 셀은 저장 흐름 신뢰 대상이 아니다 — TopAndBottom flow 개체만
+            // 저장 vpos 에 흡수된다(악보 셀).
+            let non_flow_object_extent = self
+                .calc_nested_controls_bottom_height(&cell.paragraphs, styles)
+                .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs));
+            let trust_stored_cell_flow = (depth > 0 || table.common.treat_as_char)
+                && stored_flow_extent > 0.0
+                && stored_flow_extent + 0.5 < total_content_height
+                && non_flow_object_extent <= stored_flow_extent + 0.5;
+            let total_content_height = if trust_stored_cell_flow {
+                stored_flow_extent
+            } else {
+                total_content_height
+            };
             let use_top_vpos_anchor = matches!(effective_valign, VerticalAlign::Top);
             let text_y_start = if use_top_vpos_anchor
                 && !has_nested_table
@@ -2644,1229 +4207,41 @@ impl LayoutEngine {
                     enclosing_cell_ctx.clone(),
                 );
             } else {
-                let inner_area = LayoutRect {
-                    x: inner_x,
-                    y: text_y_start,
-                    width: inner_width,
-                    height: inner_height,
-                };
-
-                // 셀 내 문단 + 컨트롤 통합 레이아웃
-                let mut para_y = text_y_start;
-                let mut has_preceding_text = false;
-                for (cp_idx, (composed, para)) in composed_paras
-                    .iter()
-                    .zip(cell.paragraphs.iter())
-                    .enumerate()
-                {
-                    let cell_context = if let Some(ref ctx) = enclosing_cell_ctx {
-                        let mut new_ctx = ctx.clone();
-                        if let Some(last) = new_ctx.path.last_mut() {
-                            last.cell_index = cell_idx;
-                            last.cell_para_index = cp_idx;
-                            last.text_direction = cell.text_direction;
-                        }
-                        Some(new_ctx)
-                    } else {
-                        table_meta.map(|(pi, ci)| CellContext {
-                            parent_para_index: pi,
-                            path: vec![CellPathEntry {
-                                control_index: ci,
-                                cell_index: cell_idx,
-                                cell_para_index: cp_idx,
-                                text_direction: cell.text_direction,
-                            }],
-                        })
-                    };
-
-                    let has_table_ctrl =
-                        para.controls.iter().any(|c| matches!(c, Control::Table(_)));
-                    // [Task #573] inline TAC 표(treat_as_char=true) 와 block 표(treat_as_char=false)
-                    // 를 분리. 인라인 TAC 표가 있는 셀 paragraph 의 surrounding text (예: "ㄷ. ",
-                    // "이다.") 가 layout_composed_paragraph 호출 미진입으로 미렌더되던 결함 정정.
-                    // block 표는 별도 layout_table 호출로 배치되므로 텍스트 흐름 외부 — 기존
-                    // ELSE 분기 로직 유지. inline TAC 표는 layout_composed_paragraph 의 run_tacs
-                    // 에서 텍스트와 함께 배치되어야 함.
-                    let has_block_table_ctrl = para
-                        .controls
-                        .iter()
-                        .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char));
-
-                    // HWP/HWPX가 셀 내부 문단의 LINE_SEG.vpos를 제공하는 경우에는
-                    // 누적 y 대신 그 절대 위치를 우선한다. 조직도형 표처럼 셀 하나에
-                    // 여러 짧은 문단이 있고 paraPr spacing/lineSpacing이 함께 지정된
-                    // 문서는 한컴이 각 문단 top을 vpos로 고정해 둔다. 누적 y만 쓰면
-                    // spacing_before가 중복되거나 음수 line_spacing이 누적되어 줄 위치가
-                    // 점점 어긋난다.
-                    let use_saved_cell_para_vpos =
-                        use_top_vpos_anchor || has_initial_tac_shape_host(&cell.paragraphs);
-                    if use_saved_cell_para_vpos && !has_nested_table {
-                        if let Some(first_seg) = para.line_segs.first() {
-                            if first_seg.vertical_pos >= 0 {
-                                let spacing_before = styles
-                                    .para_styles
-                                    .get(para.para_shape_id as usize)
-                                    .map(|s| s.spacing_before)
-                                    .unwrap_or(0.0);
-                                let anchored_y = cell_para_line_anchor_y(
-                                    text_y_start,
-                                    content_cell_y,
-                                    pad_top,
-                                    first_seg.vertical_pos,
-                                    self.dpi,
-                                    use_top_vpos_anchor,
-                                );
-                                // layout_composed_paragraph()가 spacing_before를 더하므로
-                                // 호출 전에 그 값을 빼서 최종 line top이 vpos와 일치하게 한다.
-                                para_y = anchored_y - spacing_before;
-                            }
-                        }
-                    }
-
-                    let para_y_before_compose = para_y;
-
-                    // 줄별 TAC 컨트롤 너비 합산: 각 TAC가 속한 줄을 판별하여 줄별 최대 너비 계산
-                    let tac_line_widths: Vec<f64> = {
-                        // 줄별 너비 합산 벡터
-                        let mut line_widths = vec![0.0f64; composed.lines.len().max(1)];
-                        for ctrl in &para.controls {
-                            let (is_tac, w) = match ctrl {
-                                Control::Picture(pic) if pic.common.treat_as_char => {
-                                    (true, hwpunit_to_px(pic.common.width as i32, self.dpi))
-                                }
-                                Control::Shape(shape) if shape.common().treat_as_char => {
-                                    (true, hwpunit_to_px(shape.common().width as i32, self.dpi))
-                                }
-                                Control::Equation(eq) => {
-                                    (true, hwpunit_to_px(eq.common.width as i32, self.dpi))
-                                }
-                                Control::Table(t) if t.common.treat_as_char => {
-                                    (true, hwpunit_to_px(t.common.width as i32, self.dpi))
-                                }
-                                _ => (false, 0.0),
-                            };
-                            if !is_tac {
-                                continue;
-                            }
-                            // 줄이 1개이면 무조건 0번 줄
-                            if composed.lines.len() <= 1 {
-                                line_widths[0] += w;
-                            } else {
-                                // 아직 줄 분배 전이므로 순서대로 채워넣기:
-                                // 현재 줄 너비 + 이 컨트롤 너비 > 셀 너비이면 다음 줄로
-                                let mut placed = false;
-                                for lw in line_widths.iter_mut() {
-                                    if *lw == 0.0 || *lw + w <= inner_width + 0.5 {
-                                        *lw += w;
-                                        placed = true;
-                                        break;
-                                    }
-                                }
-                                if !placed {
-                                    if let Some(last) = line_widths.last_mut() {
-                                        *last += w;
-                                    }
-                                }
-                            }
-                        }
-                        line_widths
-                    };
-                    let total_inline_width: f64 =
-                        tac_line_widths.iter().cloned().fold(0.0f64, f64::max);
-
-                    if !has_block_table_ctrl {
-                        let is_last_para = cp_idx + 1 == composed_paras.len();
-                        // 분할 중첩 표: 셀 하단을 초과하는 줄은 렌더링하지 않음
-                        let end_line = if row_filter.is_some() {
-                            let cell_bottom = cell_y + cell_h;
-                            let mut sim_y = para_y;
-                            let mut fit = composed.lines.len();
-                            for (li, line) in composed.lines.iter().enumerate() {
-                                let lh = hwpunit_to_px(line.line_height, self.dpi);
-                                if sim_y + lh > cell_bottom + 0.5 {
-                                    fit = li;
-                                    break;
-                                }
-                                sim_y += lh + hwpunit_to_px(line.line_spacing, self.dpi);
-                            }
-                            fit
-                        } else {
-                            composed.lines.len()
-                        };
-                        let numbered_comp = if end_line > 0 {
-                            self.apply_paragraph_numbering(
-                                Some(composed),
-                                para,
-                                styles,
-                                outline_numbering_id,
-                            )
-                        } else {
-                            None
-                        };
-                        let composed_for_layout = numbered_comp.as_ref().unwrap_or(composed);
-                        para_y = self.layout_composed_paragraph(
-                            tree,
-                            &mut cell_node,
-                            composed_for_layout,
-                            styles,
-                            &inner_area,
-                            para_y,
-                            0,
-                            end_line,
-                            section_index,
-                            cp_idx,
-                            cell_context.clone(),
-                            !use_top_vpos_anchor,
-                            is_last_para,
-                            0.0,
-                            None,
-                            Some(para),
-                            Some(bin_data_content),
-                            None, // 셀 컨텍스트 — wrap zone 무관
-                        );
-
-                        let has_visible_text = composed
-                            .lines
-                            .iter()
-                            .any(|line| line.runs.iter().any(|run| !run.text.trim().is_empty()));
-                        if has_visible_text {
-                            has_preceding_text = true;
-                        }
-                    } else {
-                        // has_table_ctrl: 표가 포함된 문단
-                        // LINE_SEG vpos가 문단 위치를 정확히 지정하므로,
-                        // 추가 spacing 없이 para_y를 그대로 사용.
-                        // (leading spacing은 LINE_SEG vpos에 이미 반영되어 있음)
-                    }
-
-                    let para_alignment = styles
-                        .para_styles
-                        .get(para.para_shape_id as usize)
-                        .map(|s| s.alignment)
-                        .unwrap_or(Alignment::Left);
-                    // [Task #548] paragraph margin_left + first-line indent 를 inline shape
-                    // 위치에 반영. paragraph_layout 텍스트 경로와 동일한 effective_margin_left
-                    // 산식을 적용해 텍스트와 shape 위치 일관성 보장.
-                    let para_margin_left_px = styles
-                        .para_styles
-                        .get(para.para_shape_id as usize)
-                        .map(|s| s.margin_left)
-                        .unwrap_or(0.0);
-                    let para_indent_px = styles
-                        .para_styles
-                        .get(para.para_shape_id as usize)
-                        .map(|s| s.indent)
-                        .unwrap_or(0.0);
-
-                    let mut prev_tac_text_pos: usize = 0;
-                    // LINE_SEG 기반 줄별 TAC 이미지 배치를 위한 상태
-                    // 빈 문단(runs 없음)에서 TAC 컨트롤을 LINE_SEG에 순서대로 매핑
-                    let all_runs_empty = composed.lines.iter().all(|l| l.runs.is_empty());
-                    let mut tac_seq_index: usize = 0; // TAC 컨트롤 순번 (빈 문단용)
-                    let mut current_tac_line: usize = 0;
-                    let mut inline_x = {
-                        let line_w = tac_line_widths
-                            .first()
-                            .copied()
-                            .unwrap_or(total_inline_width);
-                        let line_margin =
-                            effective_margin_left_line(para_margin_left_px, para_indent_px, 0);
-                        match para_alignment {
-                            Alignment::Center | Alignment::Distribute => {
-                                inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
-                            }
-                            Alignment::Right => inner_area.x + (inner_area.width - line_w).max(0.0),
-                            _ => inner_area.x + line_margin,
-                        }
-                    };
-                    let mut tac_img_y = para_y_before_compose;
-
-                    for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
-                        match ctrl {
-                            Control::Picture(pic) => {
-                                if pic.common.treat_as_char {
-                                    let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
-                                    // [Task #928] paragraph_layout 이 inline picture 를 emit 한
-                                    // 경우 set_inline_shape_position 을 호출하므로 (paragraph_layout.rs
-                                    // 라인 2019-2022), 본 가드는 inline_shape_position 등록 여부로
-                                    // 판정한다. 기존 tac_controls + line_chars 기반 가드는 boundary
-                                    // 케이스 (abs_pos == line_chars) 를 빠뜨려 exam_kor 5p ㉢
-                                    // 그림 중복 emit 회귀가 있었다.
-                                    let will_render_inline = tree
-                                        .get_inline_shape_position(
-                                            section_index,
-                                            cp_idx,
-                                            ctrl_idx,
-                                            cell_context.as_ref(),
-                                        )
-                                        .is_some();
-                                    if !will_render_inline {
-                                        // LINE_SEG 기반 줄 판별
-                                        let target_line = if all_runs_empty
-                                            && para.line_segs.len() > 1
-                                        {
-                                            // 빈 문단: TAC 순번으로 LINE_SEG에 1:1 매핑
-                                            let li = tac_seq_index.min(para.line_segs.len() - 1);
-                                            tac_seq_index += 1;
-                                            li
-                                        } else {
-                                            // 텍스트 있는 문단: char position으로 줄 판별
-                                            composed
-                                                .tac_controls
-                                                .iter()
-                                                .find(|&&(_, _, ci)| ci == ctrl_idx)
-                                                .map(|&(abs_pos, _, _)| {
-                                                    composed
-                                                        .lines
-                                                        .iter()
-                                                        .enumerate()
-                                                        .rev()
-                                                        .find(|(_, line)| {
-                                                            abs_pos >= line.char_start
-                                                        })
-                                                        .map(|(li, _)| li)
-                                                        .unwrap_or(0)
-                                                })
-                                                .unwrap_or(0)
-                                        };
-
-                                        if target_line > current_tac_line {
-                                            // 줄이 바뀜: inline_x 리셋, y를 LINE_SEG vpos 기준으로 이동
-                                            current_tac_line = target_line;
-                                            let line_w = tac_line_widths
-                                                .get(target_line)
-                                                .copied()
-                                                .unwrap_or(0.0);
-                                            // [Task #548] target_line 의 effective_margin_left 적용
-                                            let line_margin = effective_margin_left_line(
-                                                para_margin_left_px,
-                                                para_indent_px,
-                                                target_line,
-                                            );
-                                            inline_x = match para_alignment {
-                                                Alignment::Center | Alignment::Distribute => {
-                                                    inner_area.x
-                                                        + (inner_area.width - line_w).max(0.0) / 2.0
-                                                }
-                                                Alignment::Right => {
-                                                    inner_area.x
-                                                        + (inner_area.width - line_w).max(0.0)
-                                                }
-                                                _ => inner_area.x + line_margin,
-                                            };
-                                            if let Some(seg) = para.line_segs.get(target_line) {
-                                                // [Task #520 / #624 복원] LineSeg.vertical_pos 는 셀 origin 기준 절대값.
-                                                // para_y_before_compose 에 이미 ls[0].vpos 가 누적되어 있어
-                                                // 상대 오프셋(seg.vpos - ls[0].vpos)만 더해야 이중 합산을 피한다.
-                                                let first_vpos = para
-                                                    .line_segs
-                                                    .first()
-                                                    .map(|f| f.vertical_pos)
-                                                    .unwrap_or(0);
-                                                tac_img_y = para_y_before_compose
-                                                    + hwpunit_to_px(
-                                                        seg.vertical_pos - first_vpos,
-                                                        self.dpi,
-                                                    );
-                                            }
-                                        }
-
-                                        let pic_h =
-                                            hwpunit_to_px(pic.common.height as i32, self.dpi);
-                                        // [Task #477] 셀 폭 초과 시 비율 유지 클램프
-                                        let clamped_w = pic_w.min(inner_area.width);
-                                        let clamped_h = if pic_w > 0.0 {
-                                            pic_h * (clamped_w / pic_w)
-                                        } else {
-                                            pic_h
-                                        };
-                                        let pic_area = LayoutRect {
-                                            x: inline_x,
-                                            y: tac_img_y,
-                                            width: clamped_w,
-                                            height: clamped_h,
-                                        };
-                                        // [Task #1151 v4] 셀 안 inline picture (tac=true):
-                                        // outer paragraph idx + inner picture ctrl idx +
-                                        // cell_ctx 전달 → ImageNode cell_index + cursor_rect
-                                        // hit-test 정합.
-                                        self.layout_picture(
-                                            tree,
-                                            &mut cell_node,
-                                            pic,
-                                            &pic_area,
-                                            bin_data_content,
-                                            Alignment::Left,
-                                            Some(section_index),
-                                            cell_context.as_ref().map(|c| c.parent_para_index),
-                                            Some(ctrl_idx),
-                                            cell_context.as_ref(),
-                                        );
-                                        inline_x += clamped_w;
-                                        continue;
-                                    }
-                                    inline_x += pic_w;
-                                } else {
-                                    // 비-인라인(자리차지/글뒤로/글앞으로) 이미지:
-                                    // 본문배치 속성(가로/세로 기준, 정렬, 오프셋) 적용
-                                    let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
-                                    let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
-                                    // [Task #577] TopAndBottom + vert_rel_to=Para 인 셀 내부 이미지는
-                                    // anchor 라인이 이미지에 의해 displaced 되므로, layout_composed_paragraph
-                                    // 가 advance 시킨 para_y 가 아닌 anchor 시점(para_y_before_compose)을 기준
-                                    // 으로 해야 cell-clip 영역 내부에 정확히 배치된다. (exam_science 2번 보기 ⑤
-                                    // 등 5개 이미지에서 line_height(약 15.32px) 만큼 아래로 밀려 잘림.)
-                                    let anchor_y = if matches!(
-                                        pic.common.text_wrap,
-                                        crate::model::shape::TextWrap::TopAndBottom
-                                    ) && matches!(
-                                        pic.common.vert_rel_to,
-                                        crate::model::shape::VertRelTo::Para
-                                    ) {
-                                        para.line_segs
-                                            .first()
-                                            .filter(|seg| seg.vertical_pos >= 0)
-                                            .map(|seg| {
-                                                content_cell_y
-                                                    + pad_top
-                                                    + hwpunit_to_px(seg.vertical_pos, self.dpi)
-                                            })
-                                            .unwrap_or(para_y_before_compose)
-                                    } else {
-                                        para_y
-                                    };
-                                    let unrestricted_take_place_cell_float = !pic
-                                        .common
-                                        .flow_with_text
-                                        && matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
-                                        && matches!(pic.common.vert_rel_to, VertRelTo::Para);
-                                    let detached_from_inline_table_flow = inline_table_flow_y_shift
-                                        > 0.0
-                                        && unrestricted_take_place_cell_float;
-                                    let picture_anchor_y = if detached_from_inline_table_flow {
-                                        anchor_y - inline_table_flow_y_shift - row_y[r].max(0.0)
-                                    } else if unrestricted_take_place_cell_float {
-                                        // 한컴의 셀 내부 자리차지 그림은 제한이 꺼지면
-                                        // offset 지점에 그림 하단이 걸리도록 위로 빠진다.
-                                        // compute_object_position 이 아래에서 vOffset 을
-                                        // 다시 더하므로 여기서는 미리 vOffset+높이를 뺀다.
-                                        anchor_y
-                                            - pic_h
-                                            - hwpunit_to_px(
-                                                pic.common.vertical_offset as i32,
-                                                self.dpi,
-                                            )
-                                    } else {
-                                        anchor_y
-                                    };
-                                    let cell_area = LayoutRect {
-                                        y: picture_anchor_y,
-                                        height: (inner_area.height
-                                            - (picture_anchor_y - inner_area.y))
-                                            .max(0.0),
-                                        ..inner_area
-                                    };
-                                    let (pic_x, pic_y) = self.compute_object_position(
-                                        &pic.common,
-                                        pic_w,
-                                        pic_h,
-                                        &cell_area,
-                                        &inner_area,
-                                        &inner_area,
-                                        &inner_area,
-                                        picture_anchor_y,
-                                        para_alignment,
-                                    );
-                                    let pic_area = LayoutRect {
-                                        x: pic_x,
-                                        y: pic_y,
-                                        width: pic_w,
-                                        height: pic_h,
-                                    };
-                                    let mut pic_for_layout = pic.clone();
-                                    pic_for_layout.common.horizontal_offset = 0;
-                                    pic_for_layout.common.vertical_offset = 0;
-                                    pic_for_layout.common.horz_align =
-                                        crate::model::shape::HorzAlign::Left;
-                                    pic_for_layout.common.vert_align =
-                                        crate::model::shape::VertAlign::Top;
-                                    // [Task #1151 v4] 셀 안 non-inline picture (tac=false 자리차지 등):
-                                    // outer paragraph idx + inner picture ctrl idx +
-                                    // cell_ctx 전달.
-                                    if detached_from_inline_table_flow
-                                        || unrestricted_take_place_cell_float
-                                    {
-                                        self.layout_picture(
-                                            tree,
-                                            table_node,
-                                            &pic_for_layout,
-                                            &pic_area,
-                                            bin_data_content,
-                                            Alignment::Left,
-                                            Some(section_index),
-                                            cell_context.as_ref().map(|c| c.parent_para_index),
-                                            Some(ctrl_idx),
-                                            cell_context.as_ref(),
-                                        );
-                                    } else {
-                                        self.layout_picture(
-                                            tree,
-                                            &mut cell_node,
-                                            &pic_for_layout,
-                                            &pic_area,
-                                            bin_data_content,
-                                            Alignment::Left,
-                                            Some(section_index),
-                                            cell_context.as_ref().map(|c| c.parent_para_index),
-                                            Some(ctrl_idx),
-                                            cell_context.as_ref(),
-                                        );
-                                    }
-                                    para_y += self.non_inline_control_flow_height(&pic.common);
-                                }
-                                has_preceding_text = true;
-                            }
-                            Control::Shape(shape) => {
-                                if shape.common().treat_as_char {
-                                    let shape_w =
-                                        hwpunit_to_px(shape.common().width as i32, self.dpi);
-                                    // [Task #928] paragraph_layout 의 run_tacs 처리 (라인 2026-2034)
-                                    // 가 inline Shape 위치를 set_inline_shape_position 으로 등록
-                                    // 하므로, 본 가드는 등록 여부로 판정한다. Picture 분기와 동일
-                                    // 패턴이며 boundary 케이스에 안전.
-                                    let will_render_inline = tree
-                                        .get_inline_shape_position(
-                                            section_index,
-                                            cp_idx,
-                                            ctrl_idx,
-                                            cell_context.as_ref(),
-                                        )
-                                        .is_some();
-                                    // [Task #500] Picture 분기와 정합: target_line 산출 + 줄 변경 시
-                                    // inline_x/tac_img_y 리셋. multi-line paragraph 에서 사각형이
-                                    // ls[1]+ 에 있을 때 paragraph 첫 줄 좌표가 잘못 사용되던 결함 정정.
-                                    let target_line = if all_runs_empty && para.line_segs.len() > 1
-                                    {
-                                        let li = tac_seq_index.min(para.line_segs.len() - 1);
-                                        tac_seq_index += 1;
-                                        li
-                                    } else {
-                                        composed
-                                            .tac_controls
-                                            .iter()
-                                            .find(|&&(_, _, ci)| ci == ctrl_idx)
-                                            .map(|&(abs_pos, _, _)| {
-                                                composed
-                                                    .lines
-                                                    .iter()
-                                                    .enumerate()
-                                                    .rev()
-                                                    .find(|(_, line)| abs_pos >= line.char_start)
-                                                    .map(|(li, _)| li)
-                                                    .unwrap_or(0)
-                                            })
-                                            .unwrap_or(0)
-                                    };
-                                    if target_line > current_tac_line {
-                                        current_tac_line = target_line;
-                                        let line_w = tac_line_widths
-                                            .get(target_line)
-                                            .copied()
-                                            .unwrap_or(0.0);
-                                        // [Task #548] target_line 의 effective_margin_left 적용
-                                        let line_margin = effective_margin_left_line(
-                                            para_margin_left_px,
-                                            para_indent_px,
-                                            target_line,
-                                        );
-                                        inline_x = match para_alignment {
-                                            Alignment::Center | Alignment::Distribute => {
-                                                inner_area.x
-                                                    + (inner_area.width - line_w).max(0.0) / 2.0
-                                            }
-                                            Alignment::Right => {
-                                                inner_area.x + (inner_area.width - line_w).max(0.0)
-                                            }
-                                            _ => inner_area.x + line_margin,
-                                        };
-                                        if let Some(seg) = para.line_segs.get(target_line) {
-                                            // [Task #520] LineSeg.vertical_pos 는 셀 origin 기준 절대값.
-                                            // para_y_before_compose 에 이미 ls[0].vpos 가 누적되어 있어
-                                            // 상대 오프셋만 더해야 한다 (Picture 분기와 동일).
-                                            let first_vpos = para
-                                                .line_segs
-                                                .first()
-                                                .map(|f| f.vertical_pos)
-                                                .unwrap_or(0);
-                                            tac_img_y = para_y_before_compose
-                                                + hwpunit_to_px(
-                                                    seg.vertical_pos - first_vpos,
-                                                    self.dpi,
-                                                );
-                                        }
-                                    }
-                                    if !will_render_inline {
-                                        // Shape 앞의 텍스트 너비 계산: tac_controls에서 이 Shape의 text_pos와
-                                        // 이전 Shape의 text_pos 차이에 해당하는 텍스트 너비를 inline_x에 반영
-                                        if let Some(&(tac_pos, _, _)) = composed
-                                            .tac_controls
-                                            .iter()
-                                            .find(|&&(_, _, ci)| ci == ctrl_idx)
-                                        {
-                                            // [Task #495] 가드: 사각형이 paragraph 첫 줄(ls[0]) 범위 안에 있을 때만
-                                            // text_before 추출/발행. multi-line paragraph 에서 사각형이 ls[1]+ 에
-                                            // 있는 경우 composed.lines.first() 만 보던 기존 코드는 첫 줄 전체
-                                            // 텍스트를 잘못 추출해 paragraph_layout 결과와 중복 발행했음.
-                                            let in_first_line = composed
-                                                .lines
-                                                .first()
-                                                .map(|line| {
-                                                    let line_chars: usize = line
-                                                        .runs
-                                                        .iter()
-                                                        .map(|r| r.text.chars().count())
-                                                        .sum();
-                                                    tac_pos >= line.char_start
-                                                        && tac_pos < line.char_start + line_chars
-                                                })
-                                                .unwrap_or(false);
-                                            // 이 Shape 앞에 아직 inline_x에 반영되지 않은 텍스트가 있는지 계산
-                                            let text_before: String = if in_first_line {
-                                                composed
-                                                    .lines
-                                                    .first()
-                                                    .map(|line| {
-                                                        let mut chars_so_far = 0usize;
-                                                        let mut result = String::new();
-                                                        for run in &line.runs {
-                                                            for ch in run.text.chars() {
-                                                                if chars_so_far >= prev_tac_text_pos
-                                                                    && chars_so_far < tac_pos
-                                                                {
-                                                                    result.push(ch);
-                                                                }
-                                                                chars_so_far += 1;
-                                                            }
-                                                        }
-                                                        result
-                                                    })
-                                                    .unwrap_or_default()
-                                            } else {
-                                                String::new()
-                                            };
-                                            if !text_before.is_empty() {
-                                                let char_style_id = composed
-                                                    .lines
-                                                    .first()
-                                                    .and_then(|l| l.runs.first())
-                                                    .map(|r| r.char_style_id)
-                                                    .unwrap_or(0);
-                                                let lang_index = composed
-                                                    .lines
-                                                    .first()
-                                                    .and_then(|l| l.runs.first())
-                                                    .map(|r| r.lang_index)
-                                                    .unwrap_or(0);
-                                                let ts = resolved_to_text_style_for_text(
-                                                    styles,
-                                                    char_style_id,
-                                                    lang_index,
-                                                    &text_before,
-                                                );
-                                                // [Task #555] PUA 옛한글 char 은 자모 시퀀스로 변환 후 폭 측정.
-                                                let text_before_metrics: String = {
-                                                    use super::super::pua_oldhangul::map_pua_old_hangul;
-                                                    text_before
-                                                        .chars()
-                                                        .flat_map(|ch| {
-                                                            if let Some(jamos) =
-                                                                map_pua_old_hangul(ch)
-                                                            {
-                                                                jamos
-                                                                    .iter()
-                                                                    .copied()
-                                                                    .collect::<Vec<_>>()
-                                                            } else {
-                                                                vec![ch]
-                                                            }
-                                                        })
-                                                        .collect()
-                                                };
-                                                let text_w =
-                                                    estimate_text_width(&text_before_metrics, &ts);
-                                                let text_font_size = ts.font_size;
-                                                // 텍스트 렌더링: Shape 사이에 배치
-                                                // 텍스트 y를 Shape 하단 baseline에 맞춤
-                                                // (Shape 높이 - 폰트 줄 높이)만큼 아래로 이동
-                                                let text_baseline = text_font_size * 0.85;
-                                                let font_line_h = text_font_size * 1.2;
-                                                // 인접 Shape의 높이를 사용하여 텍스트 y를 baseline 정렬
-                                                let adjacent_shape_h = para
-                                                    .controls
-                                                    .iter()
-                                                    .find_map(|c| {
-                                                        if let Control::Shape(s) = c {
-                                                            if s.common().treat_as_char {
-                                                                Some(hwpunit_to_px(
-                                                                    s.common().height as i32,
-                                                                    self.dpi,
-                                                                ))
-                                                            } else {
-                                                                None
-                                                            }
-                                                        } else {
-                                                            None
-                                                        }
-                                                    })
-                                                    .unwrap_or(0.0);
-                                                let text_y = para_y_before_compose
-                                                    + (adjacent_shape_h - font_line_h).max(0.0);
-                                                let text_node_id = tree.next_id();
-                                                let text_node = RenderNode::new(
-                                                    text_node_id,
-                                                    RenderNodeType::TextRun(TextRunNode {
-                                                        text: text_before,
-                                                        style: ts,
-                                                        char_shape_id: Some(char_style_id),
-                                                        para_shape_id: Some(composed.para_style_id),
-                                                        section_index: Some(section_index),
-                                                        para_index: None,
-                                                        char_start: None,
-                                                        cell_context: None,
-                                                        is_para_end: false,
-                                                        is_line_break_end: false,
-                                                        rotation: 0.0,
-                                                        is_vertical: false,
-                                                        char_overlap: None,
-                                                        border_fill_id: 0,
-                                                        baseline: text_baseline,
-                                                        field_marker: FieldMarkerType::None,
-                                                    }),
-                                                    BoundingBox::new(
-                                                        inline_x,
-                                                        text_y,
-                                                        text_w,
-                                                        font_line_h,
-                                                    ),
-                                                );
-                                                cell_node.children.push(text_node);
-                                                inline_x += text_w;
-                                            }
-                                            prev_tac_text_pos = tac_pos;
-                                        }
-                                    }
-                                    // [Task #520 / #624 복원] target_line 기반 tac_img_y 사용 (Picture 분기와 동일).
-                                    // para_y_before_compose 사용 시 multi-line paragraph 의 ls[1]+ inline TAC Shape 가
-                                    // 항상 line 0 좌표에 떨어져 본문 텍스트와 겹친다 (exam_science p2 7번 글상자 ㉠).
-                                    // [Task #928] will_render_inline=true 인 경우 paragraph_layout 이
-                                    // 등록한 inline_shape_position 좌표를 사용해 도형 위치를
-                                    // run_tacs split 에서 reserve 한 gap 과 정확히 정합시킨다.
-                                    let (shape_x, shape_y) = if will_render_inline {
-                                        tree.get_inline_shape_position(
-                                            section_index,
-                                            cp_idx,
-                                            ctrl_idx,
-                                            cell_context.as_ref(),
-                                        )
-                                        .unwrap_or((inline_x, tac_img_y))
-                                    } else {
-                                        (inline_x, tac_img_y)
-                                    };
-                                    let shape_area = LayoutRect {
-                                        x: shape_x,
-                                        y: shape_y,
-                                        width: shape_w,
-                                        height: inner_area.height,
-                                    };
-                                    // [Task #1138] 셀 컨텍스트 (section, outer_para, outer_table_ctrl, cell, cell_para, inner_ctrl)
-                                    let table_cell_ctx = table_meta.map(|(opi, otci)| {
-                                        (section_index, opi, otci, cell_idx, cp_idx, ctrl_idx)
-                                    });
-                                    self.layout_cell_shape(
-                                        tree,
-                                        &mut cell_node,
-                                        shape,
-                                        &shape_area,
-                                        shape_y,
-                                        Alignment::Left,
-                                        styles,
-                                        bin_data_content,
-                                        clamp_header_negative_para_offset,
-                                        table_cell_ctx,
-                                    );
-                                    inline_x += shape_w;
-                                } else {
-                                    let shape_anchor_y = if matches!(
-                                        shape.common().vert_rel_to,
-                                        crate::model::shape::VertRelTo::Para
-                                    ) {
-                                        para_y_before_compose
-                                    } else {
-                                        para_y
-                                    };
-                                    // [Task #1138] 셀 컨텍스트
-                                    let table_cell_ctx = table_meta.map(|(opi, otci)| {
-                                        (section_index, opi, otci, cell_idx, cp_idx, ctrl_idx)
-                                    });
-                                    self.layout_cell_shape(
-                                        tree,
-                                        &mut cell_node,
-                                        shape,
-                                        &inner_area,
-                                        shape_anchor_y,
-                                        para_alignment,
-                                        styles,
-                                        bin_data_content,
-                                        clamp_header_negative_para_offset,
-                                        table_cell_ctx,
-                                    );
-                                }
-                            }
-                            Control::Equation(eq) => {
-                                // 수식 컨트롤: 글자처럼 인라인 배치
-                                let eq_w = hwpunit_to_px(eq.common.width as i32, self.dpi);
-
-                                // 수식이 텍스트 run 사이에 인라인으로 배치되는 경우
-                                // layout_composed_paragraph에서 이미 렌더링됨 → 건너뛰기
-                                let has_text_in_para =
-                                    para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
-                                // 빈 runs 셀 + TAC 수식: paragraph_layout(Task #287 경로)이 이미
-                                // 렌더 후 set_inline_shape_position 호출. 중복 emit 방지(Issue #301).
-                                let already_rendered_inline = tree
-                                    .get_inline_shape_position(
-                                        section_index,
-                                        cp_idx,
-                                        ctrl_idx,
-                                        cell_context.as_ref(),
-                                    )
-                                    .is_some();
-                                if has_text_in_para || already_rendered_inline {
-                                    // paragraph_layout 경로에서 이미 렌더됨
-                                    inline_x += eq_w;
-                                } else {
-                                    // 수식만 있는 문단: 여기서 직접 렌더링
-                                    let eq_h = hwpunit_to_px(eq.common.height as i32, self.dpi);
-                                    let eq_x = {
-                                        let x = inline_x;
-                                        inline_x += eq_w;
-                                        x
-                                    };
-                                    let eq_y = para_y_before_compose;
-
-                                    let tokens =
-                                        super::super::equation::tokenizer::tokenize(&eq.script);
-                                    let ast = super::super::equation::parser::EqParser::new(tokens)
-                                        .parse();
-                                    let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
-                                    let layout_box =
-                                        super::super::equation::layout::EqLayout::new(font_size_px)
-                                            .layout(&ast);
-                                    let color_str =
-                                        super::super::equation::svg_render::eq_color_to_svg(
-                                            eq.color,
-                                        );
-                                    let svg_content =
-                                        super::super::equation::svg_render::render_equation_svg(
-                                            &layout_box,
-                                            &color_str,
-                                            font_size_px,
-                                        );
-
-                                    let eq_node = RenderNode::new(
-                                        tree.next_id(),
-                                        RenderNodeType::Equation(EquationNode {
-                                            svg_content,
-                                            layout_box,
-                                            color_str,
-                                            color: eq.color,
-                                            font_size: font_size_px,
-                                            section_index: Some(section_index),
-                                            para_index: table_meta.map(|(pi, _)| pi),
-                                            control_index: Some(ctrl_idx),
-                                            cell_index: Some(cell_idx),
-                                            cell_para_index: Some(cp_idx),
-                                            note_ref: None,
-                                        }),
-                                        BoundingBox::new(eq_x, eq_y, eq_w, eq_h),
-                                    );
-                                    cell_node.children.push(eq_node);
-                                }
-                            }
-                            Control::Table(nested_table) => {
-                                let is_tac_table = nested_table.common.treat_as_char;
-                                let nested_y = if has_preceding_text {
-                                    para_y
-                                } else {
-                                    inner_area.y
-                                };
-                                let nested_ctx = cell_context.as_ref().map(|ctx| {
-                                    let mut new_ctx = ctx.clone();
-                                    new_ctx.path.push(CellPathEntry {
-                                        control_index: ctrl_idx,
-                                        cell_index: 0,
-                                        cell_para_index: 0,
-                                        text_direction: 0,
-                                    });
-                                    new_ctx
-                                });
-                                if is_tac_table {
-                                    // TAC 표: inline_x를 사용하여 수평 배치
-                                    // [Task #573] layout_composed_paragraph 의 run_tacs 가
-                                    // 인라인 TAC 표를 이미 렌더하고 set_inline_shape_position
-                                    // 등록했다면 중복 emit 방지 (Equation 의 L1800 가드와 동일 패턴).
-                                    let already_rendered_inline = tree
-                                        .get_inline_shape_position(
-                                            section_index,
-                                            cp_idx,
-                                            ctrl_idx,
-                                            cell_context.as_ref(),
-                                        )
-                                        .is_some();
-                                    let tac_w =
-                                        hwpunit_to_px(nested_table.common.width as i32, self.dpi);
-                                    if already_rendered_inline {
-                                        inline_x += tac_w;
-                                    } else {
-                                        // [Task #1195] 표 앞에 텍스트(공백 등)가 선행하면, 한컴은
-                                        // 그 textRun 너비 다음에 표를 놓되 잔여 너비가 부족하면
-                                        // 다음 줄(line feed)에 조판한다. 즉 표는 문단 첫 줄이 아니라
-                                        // 표가 속한 line_seg(표 앞 빈 줄 다음)에 위치한다.
-                                        // 이미지 TAC 분기(L2231)와 동일하게 para_y_before_compose 에
-                                        // (표 line_seg.vpos − 첫 line_seg.vpos) 상대 오프셋을 더한다.
-                                        // (para_y_before_compose 에 이미 ls[0].vpos 가 누적되어 있음.)
-                                        let table_anchor_y =
-                                            if has_preceding_text && para.line_segs.len() > 1 {
-                                                let first_vpos = para
-                                                    .line_segs
-                                                    .first()
-                                                    .map(|f| f.vertical_pos)
-                                                    .unwrap_or(0);
-                                                let tbl_vpos = para
-                                                    .line_segs
-                                                    .last()
-                                                    .map(|s| s.vertical_pos)
-                                                    .unwrap_or(first_vpos);
-                                                para_y_before_compose
-                                                    + hwpunit_to_px(tbl_vpos - first_vpos, self.dpi)
-                                            } else {
-                                                para_y_before_compose
-                                            };
-                                        let ctrl_area = LayoutRect {
-                                            x: inline_x,
-                                            y: table_anchor_y,
-                                            width: tac_w,
-                                            height: (inner_area.height
-                                                - (table_anchor_y - inner_area.y))
-                                                .max(0.0),
-                                        };
-                                        let table_h = self.layout_table(
-                                            tree,
-                                            &mut cell_node,
-                                            nested_table,
-                                            section_index,
-                                            styles,
-                                            outline_numbering_id,
-                                            &ctrl_area,
-                                            table_anchor_y,
-                                            bin_data_content,
-                                            None,
-                                            depth + 1,
-                                            None,
-                                            para_alignment,
-                                            nested_ctx,
-                                            0.0,
-                                            0.0,
-                                            Some(inline_x),
-                                            None,
-                                            None,
-                                            false,
-                                            clamp_header_negative_para_offset,
-                                        );
-                                        inline_x += tac_w;
-                                        // para_y는 TAC 표 높이만큼 갱신 (같은 문단 내 다음 표도 같은 y)
-                                        let new_bottom = para_y_before_compose + table_h;
-                                        if new_bottom > para_y {
-                                            para_y = new_bottom;
-                                        }
-                                    }
-                                } else {
-                                    // 비-TAC 표: 기존 수직 배치
-                                    // 앞 텍스트 너비만큼 x 오프셋 적용
-                                    let tac_text_offset = if nested_table.attr & 0x01 != 0 {
-                                        let mut text_w = 0.0;
-                                        for line in &composed.lines {
-                                            for run in &line.runs {
-                                                if !run.text.is_empty() {
-                                                    let ts = resolved_to_text_style_for_text(
-                                                        styles,
-                                                        run.char_style_id,
-                                                        run.lang_index,
-                                                        &run.text,
-                                                    );
-                                                    // [Task #555] PUA 옛한글 변환 후 자모 시퀀스 폭.
-                                                    text_w += estimate_text_width(
-                                                        effective_text_for_metrics(run),
-                                                        &ts,
-                                                    );
-                                                }
-                                            }
-                                        }
-                                        text_w
-                                    } else {
-                                        0.0
-                                    };
-                                    // TAC 표 앞 텍스트 렌더링 (문단부호 등 표시용)
-                                    if tac_text_offset > 0.0 {
-                                        let line_h = composed
-                                            .lines
-                                            .first()
-                                            .map(|l| hwpunit_to_px(l.line_height, self.dpi))
-                                            .unwrap_or(12.0);
-                                        let baseline = line_h * 0.85;
-                                        let line_id = tree.next_id();
-                                        let mut line_node = RenderNode::new(
-                                            line_id,
-                                            RenderNodeType::TextLine(TextLineNode::new(
-                                                line_h, baseline,
-                                            )),
-                                            BoundingBox::new(
-                                                inner_area.x,
-                                                nested_y,
-                                                tac_text_offset,
-                                                line_h,
-                                            ),
-                                        );
-                                        let mut run_x = inner_area.x;
-                                        for line in &composed.lines {
-                                            for run in &line.runs {
-                                                if run.text.is_empty() {
-                                                    continue;
-                                                }
-                                                let ts = resolved_to_text_style_for_text(
-                                                    styles,
-                                                    run.char_style_id,
-                                                    run.lang_index,
-                                                    &run.text,
-                                                );
-                                                // [Task #555] PUA 옛한글 변환 후 자모 시퀀스 폭.
-                                                let run_w = estimate_text_width(
-                                                    effective_text_for_metrics(run),
-                                                    &ts,
-                                                );
-                                                let run_id = tree.next_id();
-                                                let run_node = RenderNode::new(
-                                                    run_id,
-                                                    RenderNodeType::TextRun(TextRunNode {
-                                                        text: run.text.clone(),
-                                                        style: ts,
-                                                        char_shape_id: Some(run.char_style_id),
-                                                        para_shape_id: Some(para.para_shape_id),
-                                                        section_index: Some(section_index),
-                                                        para_index: None,
-                                                        char_start: None,
-                                                        cell_context: cell_context.clone(),
-                                                        is_para_end: false,
-                                                        is_line_break_end: false,
-                                                        rotation: 0.0,
-                                                        is_vertical: false,
-                                                        char_overlap: None,
-                                                        border_fill_id: 0,
-                                                        baseline,
-                                                        field_marker: FieldMarkerType::None,
-                                                    }),
-                                                    BoundingBox::new(
-                                                        run_x, nested_y, run_w, line_h,
-                                                    ),
-                                                );
-                                                line_node.children.push(run_node);
-                                                run_x += run_w;
-                                            }
-                                        }
-                                        cell_node.children.push(line_node);
-                                    }
-                                    let ctrl_area = LayoutRect {
-                                        x: inner_area.x + tac_text_offset,
-                                        y: nested_y,
-                                        width: (inner_area.width - tac_text_offset).max(0.0),
-                                        height: (inner_area.height - (nested_y - inner_area.y))
-                                            .max(0.0),
-                                    };
-                                    let table_h = self.layout_table(
-                                        tree,
-                                        &mut cell_node,
-                                        nested_table,
-                                        section_index,
-                                        styles,
-                                        outline_numbering_id,
-                                        &ctrl_area,
-                                        nested_y,
-                                        bin_data_content,
-                                        None,
-                                        depth + 1,
-                                        None,
-                                        para_alignment,
-                                        nested_ctx,
-                                        0.0,
-                                        0.0,
-                                        None,
-                                        None,
-                                        None,
-                                        false,
-                                        clamp_header_negative_para_offset,
-                                    );
-                                    para_y = nested_y + table_h;
-                                }
-                                has_preceding_text = true;
-                            }
-                            _ => {}
-                        }
-                    }
-
-                    // 마지막 인라인 Shape 이후의 남은 텍스트 렌더링 (예: "일")
-                    if prev_tac_text_pos > 0 {
-                        let total_text_chars = composed
-                            .lines
-                            .first()
-                            .map(|line| {
-                                line.runs
-                                    .iter()
-                                    .map(|r| r.text.chars().count())
-                                    .sum::<usize>()
-                            })
-                            .unwrap_or(0);
-                        if prev_tac_text_pos < total_text_chars {
-                            let remaining_text: String = composed
-                                .lines
-                                .first()
-                                .map(|line| {
-                                    let mut chars_so_far = 0usize;
-                                    let mut result = String::new();
-                                    for run in &line.runs {
-                                        for ch in run.text.chars() {
-                                            if chars_so_far >= prev_tac_text_pos {
-                                                result.push(ch);
-                                            }
-                                            chars_so_far += 1;
-                                        }
-                                    }
-                                    result
-                                })
-                                .unwrap_or_default();
-                            let remaining_trimmed = remaining_text.trim_end();
-                            if !remaining_trimmed.is_empty() {
-                                let char_style_id = composed
-                                    .lines
-                                    .first()
-                                    .and_then(|l| l.runs.last())
-                                    .map(|r| r.char_style_id)
-                                    .unwrap_or(0);
-                                let lang_index = composed
-                                    .lines
-                                    .first()
-                                    .and_then(|l| l.runs.last())
-                                    .map(|r| r.lang_index)
-                                    .unwrap_or(0);
-                                let ts = resolved_to_text_style_for_text(
-                                    styles,
-                                    char_style_id,
-                                    lang_index,
-                                    remaining_trimmed,
-                                );
-                                // [Task #555] PUA 옛한글 char 은 자모 시퀀스로 변환 후 폭 측정.
-                                let remaining_metrics: String = {
-                                    use super::super::pua_oldhangul::map_pua_old_hangul;
-                                    remaining_trimmed
-                                        .chars()
-                                        .flat_map(|ch| {
-                                            if let Some(jamos) = map_pua_old_hangul(ch) {
-                                                jamos.iter().copied().collect::<Vec<_>>()
-                                            } else {
-                                                vec![ch]
-                                            }
-                                        })
-                                        .collect()
-                                };
-                                let text_w = estimate_text_width(&remaining_metrics, &ts);
-                                let text_baseline = ts.font_size * 0.85;
-                                let text_h = ts.font_size * 1.2;
-                                // 마지막 Shape 높이 기준으로 텍스트 y 계산
-                                let last_shape_h = para
-                                    .controls
-                                    .iter()
-                                    .rev()
-                                    .find_map(|c| {
-                                        if let Control::Shape(s) = c {
-                                            if s.common().treat_as_char {
-                                                Some(hwpunit_to_px(
-                                                    s.common().height as i32,
-                                                    self.dpi,
-                                                ))
-                                            } else {
-                                                None
-                                            }
-                                        } else {
-                                            None
-                                        }
-                                    })
-                                    .unwrap_or(0.0);
-                                let text_y =
-                                    para_y_before_compose + (last_shape_h - text_h).max(0.0);
-                                let text_node_id = tree.next_id();
-                                let text_node = RenderNode::new(
-                                    text_node_id,
-                                    RenderNodeType::TextRun(TextRunNode {
-                                        text: remaining_trimmed.to_string(),
-                                        style: ts,
-                                        char_shape_id: Some(char_style_id),
-                                        para_shape_id: Some(composed.para_style_id),
-                                        section_index: Some(section_index),
-                                        para_index: None,
-                                        char_start: None,
-                                        cell_context: None,
-                                        is_para_end: false,
-                                        is_line_break_end: false,
-                                        rotation: 0.0,
-                                        is_vertical: false,
-                                        char_overlap: None,
-                                        border_fill_id: 0,
-                                        baseline: text_baseline,
-                                        field_marker: FieldMarkerType::None,
-                                    }),
-                                    BoundingBox::new(inline_x, text_y, text_w, text_h),
-                                );
-                                cell_node.children.push(text_node);
-                            }
-                        }
-                    }
-
-                    if has_table_ctrl {
-                        // LINE_SEG vpos 기반으로 para_y 보정.
-                        // LINE_SEG.line_height에는 중첩 표 높이가 미포함될 수 있으므로
-                        // layout_table 반환값과 vpos 기반 중 적절한 값을 선택한다.
-                        let is_last_para = cp_idx + 1 == composed_paras.len();
-                        // 다음 문단의 vpos가 있으면 그것을 기준으로 para_y 보정
-                        if !is_last_para {
-                            if let Some(next_para) = cell.paragraphs.get(cp_idx + 1) {
-                                if let Some(next_seg) = next_para.line_segs.first() {
-                                    let next_vpos_y = text_y_start
-                                        + hwpunit_to_px(next_seg.vertical_pos, self.dpi);
-                                    // layout_table 기반 para_y와 다음 문단 vpos 중
-                                    // 더 큰 값 사용 (표가 LINE_SEG보다 클 수 있으므로)
-                                    para_y = para_y.max(next_vpos_y);
-                                }
-                            }
-                        }
-                        // 음수 line_spacing 처리 (중첩 구조에서 para_y 되돌리기)
-                        if !(is_last_para && enclosing_cell_ctx.is_some()) {
-                            if let Some(last_line) = composed.lines.last() {
-                                let ls = hwpunit_to_px(last_line.line_spacing, self.dpi);
-                                if ls < -0.01 {
-                                    para_y += ls;
-                                }
-                            }
-                        }
-                    }
-                }
+                self.layout_horizontal_cell_paragraphs(
+                    tree,
+                    table_node,
+                    &mut cell_node,
+                    cell,
+                    &composed_paras,
+                    table,
+                    styles,
+                    bin_data_content,
+                    table_meta,
+                    &enclosing_cell_ctx,
+                    row_filter,
+                    row_y,
+                    effective_valign,
+                    HorizontalCellVars {
+                        cell_idx,
+                        r,
+                        cell_y,
+                        cell_h,
+                        content_cell_y,
+                        pad_top,
+                        inner_x,
+                        inner_width,
+                        inner_height,
+                        text_y_start,
+                        use_top_vpos_anchor,
+                        trust_stored_cell_flow,
+                        has_nested_table,
+                        section_index,
+                        outline_numbering_id,
+                        depth,
+                        clamp_header_negative_para_offset,
+                        inline_table_flow_y_shift,
+                    },
+                );
             } // else (가로쓰기)
 
             // 셀 내 각주 참조 번호 윗첨자
@@ -3938,7 +4313,7 @@ impl LayoutEngine {
     ) -> f64 {
         let col_count = table.col_count as usize;
         let row_count = table.row_count as usize;
-        let row_heights = self.resolve_row_heights(table, col_count, row_count, None, styles);
+        let row_heights = self.resolve_row_heights(table, col_count, row_count, None, styles, true);
         let cell_spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
         let om_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
         let om_bottom = hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
@@ -4502,7 +4877,47 @@ impl LayoutEngine {
         row_units
     }
 
+    /// [Issue #2063] 표에 "가시 텍스트 + 중첩 표"를 가진 셀이 하나라도 있는지(표 단위 불변량).
+    /// `cell_units_uncached` 안에서 셀마다 계산되면 O(셀²)(52,694² ≈ 28억)로 폭증하므로
+    /// 표 포인터를 키로 1회만 계산해 캐시한다(`cell_units_cache` 와 동일 조판 경계에서 clear).
+    fn table_has_visible_text_with_nested_table(&self, table: &crate::model::table::Table) -> bool {
+        let key = table as *const crate::model::table::Table as usize;
+        if let Some(&cached) = self.table_nested_text_flag_cache.borrow().get(&key) {
+            return cached;
+        }
+        let flag = table.cells.iter().any(|cell| {
+            cell.paragraphs.iter().any(|p| {
+                !p.text.trim().is_empty()
+                    && p.controls.iter().any(|c| matches!(c, Control::Table(_)))
+            })
+        });
+        self.table_nested_text_flag_cache
+            .borrow_mut()
+            .insert(key, flag);
+        flag
+    }
+
+    /// [Task #1949] `cell_units_uncached` 의 메모이즈 래퍼. 거대 셀이 RowBreak 로
+    /// 여러 페이지에 걸칠 때 각 페이지 컷 판정이 같은 셀 units 를 재계산하는 O(pages×cell)
+    /// 폭증을 제거한다. 셀 포인터를 키로 표 단위 캐시(문서 재조판 경계에서 clear).
     pub(super) fn cell_units(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> std::sync::Arc<Vec<CellUnit>> {
+        let key = cell as *const crate::model::table::Cell as usize;
+        if let Some(cached) = self.cell_units_cache.borrow().get(&key) {
+            return std::sync::Arc::clone(cached);
+        }
+        let units = std::sync::Arc::new(self.cell_units_uncached(cell, table, styles));
+        self.cell_units_cache
+            .borrow_mut()
+            .insert(key, std::sync::Arc::clone(&units));
+        units
+    }
+
+    fn cell_units_uncached(
         &self,
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
@@ -4522,12 +4937,8 @@ impl LayoutEngine {
             table.page_break,
             crate::model::table::TablePageBreak::RowBreak
         ) && !table.common.treat_as_char;
-        let has_visible_text_with_nested_table = table.cells.iter().any(|cell| {
-            cell.paragraphs.iter().any(|p| {
-                !p.text.trim().is_empty()
-                    && p.controls.iter().any(|c| matches!(c, Control::Table(_)))
-            })
-        });
+        let has_visible_text_with_nested_table =
+            self.table_has_visible_text_with_nested_table(table);
         // [Task #700] vpos 동기화 가드와 동일 — 한컴 정상 인코딩(첫 문단 vpos=0) 한정.
         let cell_first_vpos = cell
             .paragraphs
@@ -4558,16 +4969,26 @@ impl LayoutEngine {
             .iter()
             .any(|p| !p.text.trim().is_empty() || !p.controls.is_empty());
         let mut units: Vec<CellUnit> = Vec::new();
-        let append_non_inline_units =
-            |units: &mut Vec<CellUnit>, para_idx: usize, non_inline_h: f64| {
-                if non_inline_h <= 0.5 {
-                    return;
+        let split_non_inline_extra =
+            |extra_h: f64, top_and_bottom_h: f64, other_h: f64| -> (f64, f64) {
+                if extra_h <= 0.5 {
+                    return (0.0, 0.0);
                 }
-
+                if top_and_bottom_h <= 0.5 {
+                    return (0.0, extra_h);
+                }
+                if other_h <= 0.5 {
+                    return (extra_h, 0.0);
+                }
+                let total_h = top_and_bottom_h + other_h;
+                let top_extra = extra_h * (top_and_bottom_h / total_h);
+                (top_extra, extra_h - top_extra)
+            };
+        let append_fragment_units =
+            |units: &mut Vec<CellUnit>, para_idx: usize, mut non_inline_h: f64| {
                 const FILLER_UNIT_PX: f64 = 16.0;
-                let mut remaining = non_inline_h;
-                while remaining > 0.5 {
-                    let h = remaining.min(FILLER_UNIT_PX);
+                while non_inline_h > 0.5 {
+                    let h = non_inline_h.min(FILLER_UNIT_PX);
                     units.push(CellUnit {
                         height: h,
                         hard_break_before: false,
@@ -4579,28 +5000,52 @@ impl LayoutEngine {
                         mixed_nested_fragment: false,
                         mixed_nested_trailing: false,
                         mixed_nested_content_height: 0.0,
+                        top_and_bottom_flow: false,
                         empty_spacer: false,
                     });
-                    remaining -= h;
+                    non_inline_h -= h;
                 }
             };
+        let append_atomic_unit = |units: &mut Vec<CellUnit>, para_idx: usize, non_inline_h: f64| {
+            if non_inline_h <= 0.5 {
+                return;
+            }
+            units.push(CellUnit {
+                height: non_inline_h,
+                hard_break_before: false,
+                vpos_gap_before: false,
+                para_idx,
+                vis_start: 0,
+                vis_end: 0,
+                nested_row: None,
+                mixed_nested_fragment: false,
+                mixed_nested_trailing: false,
+                mixed_nested_content_height: 0.0,
+                top_and_bottom_flow: true,
+                empty_spacer: false,
+            });
+        };
+        let append_non_inline_units = |units: &mut Vec<CellUnit>,
+                                       para_idx: usize,
+                                       extra_h: f64,
+                                       top_and_bottom_h: f64,
+                                       other_h: f64| {
+            let (top_extra_h, other_extra_h) =
+                split_non_inline_extra(extra_h, top_and_bottom_h, other_h);
+            // TopAndBottom flow 는 그림/도형이 통째로 다음 조각에 넘어가야 해서 atomic 으로
+            // 유지한다. Square/Tight/Through flow 는 텍스트 박스 꼬리가 페이지를 걸쳐
+            // 이어질 수 있으므로 기존 fragment 모델을 유지한다.
+            append_fragment_units(units, para_idx, other_extra_h);
+            append_atomic_unit(units, para_idx, top_extra_h);
+        };
         for (pi, p) in cell.paragraphs.iter().enumerate() {
             let is_block_rowbreak = matches!(
                 table.page_break,
                 crate::model::table::TablePageBreak::RowBreak
             ) && !table.common.treat_as_char;
-            let para_non_inline_h: f64 = p
-                .controls
-                .iter()
-                .map(|ctrl| match ctrl {
-                    Control::Picture(pic) => self.cell_non_inline_control_flow_height(&pic.common),
-                    crate::model::control::Control::Shape(shape) => {
-                        let common = shape.common();
-                        self.cell_non_inline_control_flow_height(common)
-                    }
-                    _ => 0.0,
-                })
-                .sum();
+            let (para_top_and_bottom_h, para_other_non_inline_h) =
+                self.paragraph_cell_non_inline_control_flow_parts(&p.controls);
+            let para_non_inline_h = para_top_and_bottom_h + para_other_non_inline_h;
             let mut comp = compose_paragraph(p);
             crate::renderer::composer::recompose_for_cell_width(&mut comp, p, inner_width, styles);
             let para_style = styles.para_styles.get(p.para_shape_id as usize);
@@ -4715,12 +5160,26 @@ impl LayoutEngine {
             // corrected_line_height 를 적용한다 — raw line_height 가 폰트보다
             // 작은 폴백 케이스에서 렌더러가 키운 높이를 컷 측정이 따라가지
             // 못하면 분할 표가 페이지를 넘는다(측정 공간 불일치).
-            let corrected_h = |line: &ComposedLine, _li: usize| -> f64 {
+            // [#2070 실험] 셀 마지막 줄 인덱스 - em 공식 게이트.
+            let cell_last_line_idx = if is_last_para && !comp.lines.is_empty() {
+                Some(comp.lines.len() - 1)
+            } else {
+                None
+            };
+            let corrected_h = |line: &ComposedLine, li: usize| -> f64 {
                 let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
                 // [Task #1811] HWPX RowBreak 셀의 synthetic lineSeg 는 저장 근거가 아니라
                 // reflow 산물이다. row cut 측정에서 다시 corrected_line_height 를 적용하면
                 // HWP 기준보다 줄 유닛이 커져 p4→p5 split 이 한 유닛 빨라진다.
                 if self.is_hwpx_source.get() && is_block_rowbreak && para_uses_synthetic_line_segs {
+                    return raw_lh;
+                }
+                // [#2112] 실제 저장 LINE_SEG 를 보유한 셀 문단은 저장 줄높이를 신뢰한다.
+                // 한글은 압축 줄높이(lh < 글자크기)를 저장값대로 렌더하는데 corrected
+                // 보정이 fs×줄간격% 로 대체해 행높이가 부풀었다(39607: 행별 +3.8~
+                // +76.8px, 표 합계 +335px → 다쪽 표 쪽수 밀림). 보정은 lineseg 부재
+                // 폴백(#674/#993 원 목적)에만 유지.
+                if p.line_segs.iter().any(|ls| !line_seg_is_synthetic(ls)) {
                     return raw_lh;
                 }
                 match para_style {
@@ -4729,11 +5188,10 @@ impl LayoutEngine {
                             .runs
                             .iter()
                             .map(|r| {
-                                let ts = super::text_measurement::resolved_to_text_style_for_text(
+                                let ts = super::text_measurement::resolved_to_text_style(
                                     styles,
                                     r.char_style_id,
                                     r.lang_index,
-                                    &r.text,
                                 );
                                 if ts.font_size > 0.0 {
                                     ts.font_size
@@ -4742,20 +5200,50 @@ impl LayoutEngine {
                                 }
                             })
                             .fold(0.0f64, f64::max);
+                        // [#2169] NO_LS 순수 빈 문단(runs 없음 → max_fs=0)은 한글이
+                        // 완전한 em 줄박스로 취급(80168 r4: 한글 = 10줄×em + 9gap 정확).
+                        // 문단 char shape fs 로 폴백 — 컨트롤 앵커 문단은 제외(r6 중첩).
+                        let max_fs = if max_fs <= 0.0
+                            && crate::renderer::para_has_no_stored_line_segs(p)
+                            && p.controls.is_empty()
+                        {
+                            p.char_shapes
+                                .first()
+                                .and_then(|cs| styles.char_styles.get(cs.char_shape_id as usize))
+                                .map(|cs| cs.font_size)
+                                .unwrap_or(0.0)
+                        } else {
+                            max_fs
+                        };
+                        // [Issue #1842] 부재 LINE_SEG 셀의 placeholder(400)→corrected
+                        // max_fs*ls% 팽창을 em 으로 교정 — CellBreak 표.
+                        // [#2150/#2169] 일반화: 한글 NO_LS fresh 공식 — 비마지막 줄
+                        // fs×ls% 동치 + 셀 마지막 줄만 em (ls 사다리 + 80168 per-row 확정).
                         crate::renderer::corrected_line_height_for_variant_synthetic(
                             raw_lh,
                             max_fs,
                             ps.line_spacing_type,
                             ps.line_spacing,
-                            self.is_hwp3_variant.get()
-                                && p.line_segs.is_empty()
-                                && !p.text.is_empty(),
+                            crate::renderer::para_has_no_stored_line_segs(p)
+                                && (!p.text.is_empty() || p.controls.is_empty())
+                                && (matches!(table.page_break, TablePageBreak::CellBreak)
+                                    // [#2070 실험] 셀 마지막 줄 = em (5축 전면).
+                                    || cell_last_line_idx == Some(li)),
                         )
                     }
                     None => raw_lh,
                 }
             };
             let has_table_in_para = p.controls.iter().any(|c| matches!(c, Control::Table(_)));
+            let para_has_top_and_bottom_non_inline_control =
+                p.controls.iter().any(|control| match control {
+                    Control::Picture(pic) => matches!(pic.common.text_wrap, TextWrap::TopAndBottom),
+                    Control::Shape(shape) => {
+                        let common = shape.common();
+                        matches!(common.text_wrap, TextWrap::TopAndBottom)
+                    }
+                    _ => false,
+                });
             let line_count = comp.lines.len();
             let line_core_height: f64 = comp
                 .lines
@@ -4768,6 +5256,8 @@ impl LayoutEngine {
             } else {
                 para_non_inline_h
             };
+            let para_top_and_bottom_flow_unit =
+                para_has_top_and_bottom_non_inline_control && !para_has_visible_text;
             let mut unit_cum = units.iter().map(|u| u.height).sum::<f64>();
             // [Task #1073] 텍스트 없는 문단(가시 텍스트 없음 — 합성 줄은 placeholder)에 단일
             // 중첩 표가 있고 그 표가 2행 이상이면 per-중첩행 유닛으로 분해 — advance_row_cut 가
@@ -4790,7 +5280,18 @@ impl LayoutEngine {
                     let nrow = nt.row_count as usize;
                     // 분할 컷은 저장된 표 높이보다 실제 콘텐츠 높이를 기준으로 잡아야
                     // page-larger 중첩 표가 한컴처럼 행 단위로 이어진다.
-                    let rhs = self.resolve_row_heights_for_content(nt, ncol, nrow, None, styles);
+                    // [#2148/#2169] NO_LS 중첩 표(왕복 synthetic 포함)만 선언-fit
+                    // (fit_row_heights_to_common_height, 성장 전용) — 저장 lineseg
+                    // 문서는 #1073 콘텐츠 기준 유지 (자기-export HWPX 왕복 정합).
+                    let nt_all_no_ls = nt
+                        .cells
+                        .iter()
+                        .all(|c| c.paragraphs.iter().all(|p| p.line_segs.is_empty()));
+                    let rhs = if nt_all_no_ls {
+                        self.resolve_row_heights(nt, ncol, nrow, None, styles, true)
+                    } else {
+                        self.resolve_row_heights_for_content(nt, ncol, nrow, None, styles, true)
+                    };
                     let ncs = hwpunit_to_px(nt.cell_spacing as i32, self.dpi);
                     let om_top = hwpunit_to_px(nt.outer_margin_top as i32, self.dpi);
                     let om_bot = hwpunit_to_px(nt.outer_margin_bottom as i32, self.dpi);
@@ -4827,12 +5328,88 @@ impl LayoutEngine {
                             mixed_nested_fragment: false,
                             mixed_nested_trailing: false,
                             mixed_nested_content_height: 0.0,
+                            top_and_bottom_flow: false,
                             empty_spacer: false,
                         });
                         unit_cum += uh;
                     }
-                    append_non_inline_units(&mut units, pi, para_non_inline_extra_h);
+                    append_non_inline_units(
+                        &mut units,
+                        pi,
+                        para_non_inline_extra_h,
+                        para_top_and_bottom_h,
+                        para_other_non_inline_h,
+                    );
                     continue;
+                } else if nested_tables.len() == 1 && nested_tables[0].row_count == 1 {
+                    // [#2007] 1×1(단일 행) 중첩 표: per-중첩행 분해(row_count>=2)가 불가하나,
+                    // 그 단일 셀 콘텐츠가 페이지보다 크면(42065 pi=7: 135문단 8164px) atomic 으로
+                    // 두면 못 쪼개져 under-pagination. 텍스트+중첩표 문단에 쓰이는
+                    // nested_table_mixed_fragment_heights(단일 행 셀 문단을 페이지 분할 가능한
+                    // fragment 로 분해)를 빈-텍스트 문단에도 적용해 splittable 유닛으로 산출.
+                    let nt = nested_tables[0];
+                    let frags = self.nested_table_mixed_fragment_heights(nt, styles);
+                    // 게이트: 콘텐츠가 **명백히 여러 페이지가 필요**(≥ MULTI_PAGE_PX)할 때만
+                    // fragment 분해한다. 임계를 넉넉히(≈2 페이지) 두는 이유:
+                    // - 한 페이지에 맞는 1×1 중첩 표(서식): fragment 렌더 미세차로 회귀(form-002).
+                    // - 1~2 페이지 경계선 표(76076 규제영향분석서의 여러 ~1000px 중첩셀): fragment
+                    //   경계가 기존 배치와 ±1 어긋나 공식 PDF 쪽수(issue_1891) 회귀.
+                    // 42065 pi=7(8164px, 8쪽분)·2781515 별표(수쪽분)처럼 ≫ 2페이지인 거대 셀만 대상.
+                    let page_avail = self.current_body_area.get().3;
+                    let multi_page_px = if page_avail > 0.0 {
+                        page_avail * 2.0
+                    } else {
+                        1800.0
+                    };
+                    let total_frag_h: f64 = frags.iter().map(|(h, _, _)| *h).sum();
+                    if frags.len() > 1 && total_frag_h > multi_page_px {
+                        let om_top = hwpunit_to_px(nt.outer_margin_top as i32, self.dpi);
+                        let om_bot = hwpunit_to_px(nt.outer_margin_bottom as i32, self.dpi);
+                        let n = frags.len();
+                        for (fi, (h, trailing, content_h)) in frags.into_iter().enumerate() {
+                            let mut uh = h;
+                            let hard_break_before = reset_before && fi == 0;
+                            let mut vpos_gap_before = vpos_gap_before_para && fi == 0;
+                            if use_vpos_unit_positions && fi == 0 && !hard_break_before {
+                                if let Some(seg) = p.line_segs.first() {
+                                    let target_top = normalized_vpos_px(seg.vertical_pos);
+                                    if target_top > unit_cum {
+                                        uh += target_top - unit_cum;
+                                        vpos_gap_before = true;
+                                    }
+                                }
+                            }
+                            if fi == 0 {
+                                uh += om_top + spacing_before;
+                            }
+                            if fi + 1 == n {
+                                uh += om_bot + spacing_after;
+                            }
+                            units.push(CellUnit {
+                                height: uh,
+                                hard_break_before,
+                                vpos_gap_before,
+                                para_idx: pi,
+                                vis_start: line_count,
+                                vis_end: line_count,
+                                nested_row: None,
+                                mixed_nested_fragment: true,
+                                mixed_nested_trailing: trailing,
+                                mixed_nested_content_height: content_h,
+                                top_and_bottom_flow: false,
+                                empty_spacer: false,
+                            });
+                            unit_cum += uh;
+                        }
+                        append_non_inline_units(
+                            &mut units,
+                            pi,
+                            para_non_inline_extra_h,
+                            para_top_and_bottom_h,
+                            para_other_non_inline_h,
+                        );
+                        continue;
+                    }
                 }
             }
             if has_table_in_para && !p.text.trim().is_empty() && line_count > 0 {
@@ -4908,6 +5485,7 @@ impl LayoutEngine {
                             mixed_nested_fragment: false,
                             mixed_nested_trailing: false,
                             mixed_nested_content_height: 0.0,
+                            top_and_bottom_flow: false,
                             empty_spacer: false,
                         });
                         unit_cum += lh;
@@ -4995,12 +5573,19 @@ impl LayoutEngine {
                                 mixed_nested_fragment: true,
                                 mixed_nested_trailing: trailing,
                                 mixed_nested_content_height: content_h,
+                                top_and_bottom_flow: false,
                                 empty_spacer: false,
                             });
                             unit_cum += h;
                         }
                     }
-                    append_non_inline_units(&mut units, pi, para_non_inline_extra_h);
+                    append_non_inline_units(
+                        &mut units,
+                        pi,
+                        para_non_inline_extra_h,
+                        para_top_and_bottom_h,
+                        para_other_non_inline_h,
+                    );
                     continue;
                 }
             }
@@ -5022,6 +5607,33 @@ impl LayoutEngine {
                 } else if line_count == 0 {
                     let h = if nested_h > 0.0 {
                         nested_h
+                    } else if crate::renderer::para_has_no_stored_line_segs(p)
+                        && p.controls.is_empty()
+                    {
+                        // [#2169] NO_LS 순수 빈 문단 = 완전한 em 줄박스 (한글 공식:
+                        // 80168 r4 c2 = 10줄×em + 9gap 정확). 비마지막 문단은
+                        // fs×ls%(gap 포함 동치), 셀 마지막 문단은 em.
+                        let fs = p
+                            .char_shapes
+                            .first()
+                            .and_then(|cs| styles.char_styles.get(cs.char_shape_id as usize))
+                            .map(|cs| cs.font_size)
+                            .unwrap_or(0.0);
+                        if fs <= 0.0 {
+                            hwpunit_to_px(400, self.dpi)
+                        } else if is_last_para {
+                            fs
+                        } else {
+                            match para_style {
+                                Some(ps) => crate::renderer::corrected_line_height(
+                                    hwpunit_to_px(400, self.dpi),
+                                    fs,
+                                    ps.line_spacing_type,
+                                    ps.line_spacing,
+                                ),
+                                None => fs,
+                            }
+                        }
                     } else {
                         hwpunit_to_px(400, self.dpi)
                     };
@@ -5106,6 +5718,7 @@ impl LayoutEngine {
                     mixed_nested_fragment: false,
                     mixed_nested_trailing: false,
                     mixed_nested_content_height: 0.0,
+                    top_and_bottom_flow: para_top_and_bottom_flow_unit,
                     empty_spacer: is_empty_spacer_para,
                 });
                 unit_cum += para_h;
@@ -5190,16 +5803,95 @@ impl LayoutEngine {
                         mixed_nested_fragment: false,
                         mixed_nested_trailing: false,
                         mixed_nested_content_height: 0.0,
+                        top_and_bottom_flow: para_top_and_bottom_flow_unit,
                         empty_spacer: is_empty_spacer_para,
                     });
                     unit_cum += lh;
                 }
             }
-            append_non_inline_units(&mut units, pi, para_non_inline_extra_h);
+            append_non_inline_units(
+                &mut units,
+                pi,
+                para_non_inline_extra_h,
+                para_top_and_bottom_h,
+                para_other_non_inline_h,
+            );
         }
+
+        let units =
+            Self::delay_empty_anchor_topandbottom_flow_units_before_hard_break(units, cell, table);
 
         let _ = (pad_top, pad_bottom); // [Task #1022] cell.height 필러 제거 — row_cut_content_height 가 셀별 max(cell.height, content+pad) 로 행 단계에서 정합.
         units
+    }
+
+    fn delay_empty_anchor_topandbottom_flow_units_before_hard_break(
+        units: Vec<CellUnit>,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+    ) -> Vec<CellUnit> {
+        if !matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+        ) || table.common.treat_as_char
+        {
+            return units;
+        }
+        let mut has_future_visible_hard_break = vec![false; units.len()];
+        let mut seen_visible_hard_break = false;
+        for idx in (0..units.len()).rev() {
+            has_future_visible_hard_break[idx] = seen_visible_hard_break;
+            let unit = &units[idx];
+            if unit.hard_break_before && unit.vis_start < unit.vis_end {
+                seen_visible_hard_break = true;
+            }
+        }
+
+        let mut reordered = Vec::with_capacity(units.len());
+        let mut pending = Vec::new();
+        for (idx, unit) in units.into_iter().enumerate() {
+            if has_future_visible_hard_break[idx]
+                && Self::is_delayable_empty_anchor_topandbottom_flow_unit(cell, &unit)
+            {
+                pending.push(unit);
+                continue;
+            }
+            if unit.hard_break_before && unit.vis_start < unit.vis_end && !pending.is_empty() {
+                reordered.append(&mut pending);
+            }
+            reordered.push(unit);
+        }
+        reordered.append(&mut pending);
+        reordered
+    }
+
+    fn is_delayable_empty_anchor_topandbottom_flow_unit(
+        cell: &crate::model::table::Cell,
+        unit: &CellUnit,
+    ) -> bool {
+        if !Self::is_non_inline_control_flow_unit(unit) {
+            return false;
+        }
+        let Some(para) = cell.paragraphs.get(unit.para_idx) else {
+            return false;
+        };
+        para.text.trim().is_empty()
+            && para.controls.iter().any(|control| match control {
+                Control::Picture(pic) => {
+                    !pic.common.treat_as_char
+                        && pic.common.flow_with_text
+                        && matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
+                        && matches!(pic.common.vert_rel_to, VertRelTo::Para)
+                }
+                Control::Shape(shape) => {
+                    let common = shape.common();
+                    !common.treat_as_char
+                        && common.flow_with_text
+                        && matches!(common.text_wrap, TextWrap::TopAndBottom)
+                        && matches!(common.vert_rel_to, VertRelTo::Para)
+                }
+                _ => false,
+            })
     }
 
     pub(crate) fn cell_units_content_height(
@@ -5226,24 +5918,173 @@ impl LayoutEngine {
     /// 뒤에 가시/개체 유닛이 남아 있는 진짜 구조적 꼬리줄까지 무너뜨린다
     /// (rowbreak-problem-pages 13쪽 회귀).
     ///
-    /// 정답 판별: 오버플로 꼬리줄 다음 "첫 spacer 전까지"의 유닛을 본다.
+    /// 정답 판별: 오버플로 꼬리줄 다음 "첫 spacer 전까지"의 유닛과, spacer 뒤에
+    /// 본문이 계속되는지를 함께 본다.
     /// - spacer 가 없다 → 순수 본문 꼬리 → grace 거부.
     /// - 그 사이가 전부 가시 텍스트 줄의 끊김 없는 연속(run) → 본문 한복판 → grace 거부.
-    /// - spacer 가 바로 뒤이거나(진짜 꼬리줄) 그 사이에 비가시 유닛(개체/중첩/오브젝트
+    /// - spacer 가 바로 뒤여도 spacer run 뒤에 다시 가시 본문이 이어지면 문단 사이
+    ///   빈 줄일 뿐이므로 grace 거부.
+    /// - spacer 뒤가 문서/셀 끝이거나, 첫 spacer 전후에 비가시 유닛(개체/중첩/오브젝트
     ///   높이 등)이 끼어 있으면 → 구조적 꼬리줄 → grace 유지.
-    ///
-    /// 거대 셀 grace 후보 37건은 모두 "첫 spacer 전까지 전부 가시 run" 이라 거부되고,
-    /// 13쪽 caption 은 spacer 앞에 개체 유닛이 끼어 grace 가 유지된다.
     fn grace_visible_tail_before_spacer(units: &[CellUnit], j: usize) -> bool {
         let Some(first_spacer) = units[j + 1..].iter().position(|u| u.empty_spacer) else {
             return false;
         };
-        // 진짜 꼬리줄(first_spacer == 0, run 이 빔) 또는 spacer 전에 비가시 유닛이 끼면 grace.
-        // 전부 가시 텍스트 줄로 채워진 연속 run 이면(거대 셀 본문) grace 거부.
-        first_spacer == 0
-            || !units[j + 1..j + 1 + first_spacer]
+        if first_spacer > 0 {
+            // spacer 전에 비가시 유닛이 끼면 구조적 꼬리로 본다.
+            return !units[j + 1..j + 1 + first_spacer]
                 .iter()
-                .all(|u| u.vis_start < u.vis_end)
+                .all(|u| u.vis_start < u.vis_end);
+        }
+
+        // 오버플로 줄 바로 뒤가 spacer 인 경우에도, spacer run 뒤에 다시 일반 가시 본문이
+        // 이어지면 문단 사이 빈 줄이므로 페이지 예산을 넘겨 끌어올리지 않는다.
+        let after_spacers = units[j + 1..]
+            .iter()
+            .position(|u| !u.empty_spacer)
+            .map(|idx| j + 1 + idx);
+        match after_spacers {
+            None => true,
+            Some(idx) => {
+                let next = &units[idx];
+                !(next.vis_start < next.vis_end && !next.mixed_nested_fragment)
+            }
+        }
+    }
+
+    /// [#1921] 예산 정지 유닛 `j` 부터 다음 저장 hard-break 유닛까지의 잔여 높이가
+    /// 소량(오버플로 한도 48px)이면 `(흡수 후 높이, hard-break 유닛 인덱스)` 를 반환한다.
+    ///
+    /// 저장 hard-break 는 한글이 실제로 페이지를 넘긴 지점이므로, 그 직전의 극소 잔여
+    /// 유닛은 한글 기준으로 현재 페이지에 담겨 있었다. 흡수하지 않으면 다음 fragment 가
+    /// 그 잔여만 담은 sliver 페이지(59043 pi=160: 22px/쪽)가 되어 과분할된다.
+    fn absorb_tail_before_stored_hard_break(
+        units: &[CellUnit],
+        j: usize,
+        h: f64,
+        avail_height: f64,
+    ) -> Option<(f64, usize)> {
+        const SLIVER_ABSORB_OVERFLOW_TOLERANCE_PX: f64 = 48.0;
+        let mut extra = 0.0f64;
+        for (k, u) in units.iter().enumerate().skip(j) {
+            if k > j && u.hard_break_before {
+                return Some((h + extra, k));
+            }
+            extra += u.height;
+            if h + extra > avail_height + SLIVER_ABSORB_OVERFLOW_TOLERANCE_PX {
+                return None;
+            }
+        }
+        None
+    }
+
+    fn is_non_inline_control_flow_unit(unit: &CellUnit) -> bool {
+        unit.vis_start == unit.vis_end
+            && !unit.empty_spacer
+            && unit.nested_row.is_none()
+            && !unit.mixed_nested_fragment
+            && !unit.mixed_nested_trailing
+            && unit.mixed_nested_content_height <= 0.0
+    }
+
+    fn would_orphan_non_inline_flow_before_spacer(
+        units: &[CellUnit],
+        j: usize,
+        consumed_height: f64,
+        avail_height: f64,
+    ) -> bool {
+        let Some(next) = units.get(j + 1) else {
+            return false;
+        };
+        Self::is_non_inline_control_flow_unit(&units[j])
+            && next.empty_spacer
+            && !next.hard_break_before
+            && consumed_height + units[j].height <= avail_height
+            && consumed_height + units[j].height + next.height > avail_height
+    }
+
+    fn rewind_rowbreak_fragment_tail_before_topandbottom_flow(
+        table: &crate::model::table::Table,
+        units: &[CellUnit],
+        start: usize,
+        avail_height: f64,
+        j: &mut usize,
+        h: &mut f64,
+    ) -> bool {
+        if !matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+        ) || table.common.treat_as_char
+            || *j >= units.len()
+            || *j <= start + 1
+            || !units[*j].top_and_bottom_flow
+        {
+            return false;
+        }
+
+        let Some(prev_idx) = units[start..*j]
+            .iter()
+            .rposition(|unit| !unit.empty_spacer)
+            .map(|idx| start + idx)
+        else {
+            return false;
+        };
+        if prev_idx + 1 < *j
+            && !units[prev_idx + 1..*j]
+                .iter()
+                .all(|unit| unit.empty_spacer && !unit.hard_break_before)
+        {
+            return false;
+        }
+
+        let prev = &units[prev_idx];
+        if prev.top_and_bottom_flow || !Self::is_non_inline_control_flow_unit(prev) {
+            return false;
+        }
+        let fragment_run = prev.height <= 16.5
+            || (prev_idx > start
+                && units[prev_idx - 1].para_idx == prev.para_idx
+                && Self::is_non_inline_control_flow_unit(&units[prev_idx - 1])
+                && !units[prev_idx - 1].top_and_bottom_flow);
+        if !fragment_run {
+            return false;
+        }
+
+        let rewind_h: f64 = units[prev_idx..*j].iter().map(|unit| unit.height).sum();
+        let rewound_h = *h - rewind_h;
+        const MAX_REWIND_BLANK_PX: f64 = 96.0;
+        let max_rewind_blank = MAX_REWIND_BLANK_PX.max(units[*j].height * 0.4);
+        if avail_height - rewound_h > max_rewind_blank {
+            return false;
+        }
+        *h = rewound_h;
+        *j = prev_idx;
+        true
+    }
+
+    fn should_absorb_midpage_saved_vpos_reset(
+        &self,
+        table: &crate::model::table::Table,
+        unit: &CellUnit,
+        consumed_height: f64,
+        avail_height: f64,
+        allow_midpage_reset_absorb: bool,
+    ) -> bool {
+        // RowBreak 셀에는 한컴 저장 LINE_SEG vertical_pos 리셋이 남아 있다.
+        // 대부분은 쪽 경계 근처의 저장 페이지 경계로 보존해야 하지만, 현재 조각이
+        // 페이지 절반도 채우지 못한 중간 리셋은 같은 쪽 안의 로컬 좌표 재시작으로
+        // 보는 편이 기준 PDF와 맞다. 파일명/쪽번호가 아니라 저장 위치와 현재 예산에
+        // 근거해 구분한다.
+        allow_midpage_reset_absorb
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && !unit.empty_spacer
+            && unit.vis_start < unit.vis_end
+            && avail_height.is_finite()
+            && avail_height > 0.0
+            && (avail_height - consumed_height) > avail_height * 0.5
     }
 
     /// [Task #993] 분할 표 행 컷을 전진시킨다 — 분할 표 페이지네이션의 단일 권위 함수.
@@ -5276,10 +6117,15 @@ impl LayoutEngine {
         let mut consumed_height = 0.0f64;
         const HARD_BREAK_REMAINING_TOLERANCE_PX: f64 = 32.0;
         const ROWBREAK_VISIBLE_TAIL_OVERFLOW_TOLERANCE_PX: f64 = 120.0;
+        let row_has_top_and_bottom_flow = row_cells
+            .iter()
+            .any(|cell| self.cell_has_top_and_bottom_non_inline_flow(cell));
         let relaxed_hard_break = matches!(
             table.page_break,
             crate::model::table::TablePageBreak::RowBreak
-        ) && (table.col_count <= 2 || table.row_count > 5);
+        ) && (table.col_count <= 2 || table.row_count > 5)
+            && !row_has_top_and_bottom_flow;
+        let allow_midpage_reset_absorb = self.is_hwpx_source.get() || row_has_top_and_bottom_flow;
         let rewind_internal_hard_break_orphan = Self::row_has_prior_rowspan_cover(table, row);
         for (i, cell) in row_cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
@@ -5288,9 +6134,10 @@ impl LayoutEngine {
                     .iter()
                     .map(|u| {
                         format!(
-                            "h={:.1}{}{}v{}..{}",
+                            "h={:.1}{}{}{}v{}..{}",
                             u.height,
                             if u.empty_spacer { " sp" } else { "" },
+                            if u.top_and_bottom_flow { " tb" } else { "" },
                             if u.hard_break_before { " hb " } else { " " },
                             u.vis_start,
                             u.vis_end,
@@ -5349,6 +6196,17 @@ impl LayoutEngine {
                     && !units[start..j].iter().all(|unit| unit.empty_spacer)
                     && !tiny_fragment_waste
                 {
+                    if self.should_absorb_midpage_saved_vpos_reset(
+                        table,
+                        u,
+                        h,
+                        avail_height,
+                        allow_midpage_reset_absorb,
+                    ) {
+                        h += u.height;
+                        j += 1;
+                        continue;
+                    }
                     if rewind_internal_hard_break_orphan {
                         Self::rewind_rowbreak_orphan_before_hard_break(
                             table,
@@ -5375,10 +6233,34 @@ impl LayoutEngine {
                         j += 1;
                         continue;
                     }
+                    // [#1921] sliver 흡수는 with_row_offsets 경로에만 적용한다. 이 walk 는
+                    // relaxed_hard_break(hard-break 조건부 무시) 의미론이라 다음 break 로의
+                    // 흡수가 비정상 경계를 강제한다(86712 공식PDF 65→66 회귀 실증).
+                    break;
+                }
+                if j > start
+                    && Self::would_orphan_non_inline_flow_before_spacer(&units, j, h, avail_height)
+                {
+                    // TopAndBottom 개체만 쪽 하단에 남기고 뒤 spacer 를 다음 쪽으로 보내면
+                    // 기준 렌더러와 달리 그림이 한 쪽 앞당겨진다. 개체+spacer 묶음이 함께
+                    // 들어가지 못할 때는 개체 유닛부터 다음 조각에서 시작하게 한다.
                     break;
                 }
                 h += u.height;
                 j += 1;
+            }
+            if j < units.len()
+                && Self::rewind_rowbreak_fragment_tail_before_topandbottom_flow(
+                    table,
+                    &units,
+                    start,
+                    avail_height,
+                    &mut j,
+                    &mut h,
+                )
+            {
+                // 뒤 TopAndBottom 개체 앞의 텍스트박스 꼬리 fragment 를 다음 조각에
+                // 남겨 continuation 에서 선행 설명 박스가 사라지지 않게 한다.
             }
             if j < units.len()
                 && units[j..].iter().any(|unit| unit.hard_break_before)
@@ -5438,10 +6320,15 @@ impl LayoutEngine {
         let mut consumed_height = 0.0f64;
         const HARD_BREAK_REMAINING_TOLERANCE_PX: f64 = 32.0;
         const ROWBREAK_VISIBLE_TAIL_OVERFLOW_TOLERANCE_PX: f64 = 120.0;
+        let block_has_top_and_bottom_flow = cells
+            .iter()
+            .any(|cell| self.cell_has_top_and_bottom_non_inline_flow(cell));
         let relaxed_hard_break = matches!(
             table.page_break,
             crate::model::table::TablePageBreak::RowBreak
-        ) && (table.col_count <= 2 || table.row_count > 5);
+        ) && (table.col_count <= 2 || table.row_count > 5)
+            && !block_has_top_and_bottom_flow;
+        let allow_midpage_reset_absorb = self.is_hwpx_source.get() || block_has_top_and_bottom_flow;
         for (i, cell) in cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
             let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
@@ -5476,6 +6363,17 @@ impl LayoutEngine {
                                 || avail_height - h <= HARD_BREAK_REMAINING_TOLERANCE_PX)))
                     && !units[start..j].iter().all(|unit| unit.empty_spacer)
                 {
+                    if self.should_absorb_midpage_saved_vpos_reset(
+                        table,
+                        u,
+                        h,
+                        avail_height,
+                        allow_midpage_reset_absorb,
+                    ) {
+                        h += u.height;
+                        j += 1;
+                        continue;
+                    }
                     Self::rewind_rowbreak_orphan_before_hard_break(
                         table,
                         &units,
@@ -5500,10 +6398,32 @@ impl LayoutEngine {
                         j += 1;
                         continue;
                     }
+                    // [#1921] sliver 흡수는 with_row_offsets 경로에만 적용한다. 이 walk 는
+                    // relaxed_hard_break(hard-break 조건부 무시) 의미론이라 다음 break 로의
+                    // 흡수가 비정상 경계를 강제한다(86712 공식PDF 65→66 회귀 실증).
+                    break;
+                }
+                if j > start
+                    && Self::would_orphan_non_inline_flow_before_spacer(&units, j, h, avail_height)
+                {
+                    // `advance_row_cut` 과 같은 CellUnit 구조 판정이다. 행블록 컷에서도
+                    // TopAndBottom 개체 유닛이 뒤 spacer 와 분리되어 고립되지 않게 한다.
                     break;
                 }
                 h += u.height;
                 j += 1;
+            }
+            if j < units.len()
+                && Self::rewind_rowbreak_fragment_tail_before_topandbottom_flow(
+                    table,
+                    &units,
+                    start,
+                    avail_height,
+                    &mut j,
+                    &mut h,
+                )
+            {
+                // `advance_row_cut` 과 같은 후처리다.
             }
             if j < units.len()
                 && units[j..].iter().any(|unit| unit.hard_break_before)
@@ -5586,6 +6506,17 @@ impl LayoutEngine {
                     break;
                 }
                 if j > start && h + u.height > cell_budget {
+                    // [#1921] sliver 흡수 — advance_row_block_cut 의 예산 정지와 동일.
+                    // 직후 tolerance 안의 저장 hard-break(한글 실제 페이지 경계)까지
+                    // 흡수해, 다음 fragment 가 극소 잔여 sliver 페이지가 되는 것을 막는다.
+                    if let Some((absorbed_h, absorbed_j)) =
+                        Self::absorb_tail_before_stored_hard_break(&units, j, h, cell_budget)
+                    {
+                        h = absorbed_h;
+                        j = absorbed_j;
+                        hit_hard_break = true;
+                        break;
+                    }
                     break;
                 }
                 if j == start && !allow_force_progress && h + u.height > cell_budget {
@@ -5922,17 +6853,6 @@ impl LayoutEngine {
         let units = self.cell_units(cell, table, styles);
         let lo = start_unit.min(units.len());
         let hi = end_unit.min(units.len()).max(lo);
-        let explicit_control_unit = units.iter().take(hi).skip(lo).any(|unit| {
-            unit.para_idx == para_idx
-                && unit.vis_start == unit.vis_end
-                && !unit.empty_spacer
-                && unit.nested_row.is_none()
-                && !unit.mixed_nested_fragment
-        });
-        if explicit_control_unit {
-            return true;
-        }
-
         let has_non_inline_control = cell.paragraphs.get(para_idx).is_some_and(|para| {
             para.controls.iter().any(|control| match control {
                 Control::Picture(picture) => !picture.common.treat_as_char,
@@ -5944,13 +6864,16 @@ impl LayoutEngine {
             return false;
         }
 
-        let last_para_unit = units
-            .iter()
-            .enumerate()
-            .filter(|(_, unit)| unit.para_idx == para_idx)
-            .map(|(idx, _)| idx)
-            .max();
-        last_para_unit.is_some_and(|idx| lo > idx)
+        // 현재 컷 안에 non-inline 개체가 차지하는 명시 유닛이 실제로 포함될 때만
+        // 셀 안 non-inline 개체를 그린다. 같은 문단의 텍스트 줄만 continuation 에
+        // 남아 있는 경우까지 허용하면 이전 쪽 그림이 모든 페이지에 반복된다.
+        units.iter().take(hi).skip(lo).any(|unit| {
+            unit.para_idx == para_idx
+                && unit.vis_start == unit.vis_end
+                && !unit.empty_spacer
+                && unit.nested_row.is_none()
+                && !unit.mixed_nested_fragment
+        })
     }
 
     pub(crate) fn mixed_nested_split_from_cut(
@@ -6188,9 +7111,32 @@ impl LayoutEngine {
             } else {
                 0.0
             };
+            // [#2146] 저장 LINE_SEG 이 전혀 없고 모든 문단이 1줄(폭 여유 포함)인
+            // 라벨 셀(사선 헤더 등)은 재합성 초과가 순수 줄높이 인플레이션 —
+            // 선언 셀높이 신뢰. (21761835 r0: 선언 3928HU=52.4px = 한글 실측,
+            // 재합성 79.3px) 판정 기준은 composer::no_ls_short_label_cell 주석 참조.
+            let no_ls_label_cell = cell_h_px > 0.0 && {
+                let (pad_left, pad_right, _, _) = self.resolve_cell_padding(cell, table);
+                let cell_w_px = if cell.width < 0x8000_0000 {
+                    hwpunit_to_px(cell.width as i32, self.dpi)
+                } else {
+                    0.0
+                };
+                crate::renderer::composer::no_ls_short_label_cell(
+                    cell,
+                    table,
+                    (cell_w_px - pad_left - pad_right).max(0.0),
+                    cell_h_px - pad_top - pad_bottom,
+                    styles,
+                )
+            };
             let h = if is_whole_row {
-                // HeightMeasurer required_height + row 단계 1 cell.height max 정합.
-                (content + pad_cell).max(cell_h_px)
+                if no_ls_label_cell {
+                    cell_h_px
+                } else {
+                    // HeightMeasurer required_height + row 단계 1 cell.height max 정합.
+                    (content + pad_cell).max(cell_h_px)
+                }
             } else {
                 // 분할 행 — cell.height 강제 없음.
                 content + pad_cell
@@ -6439,7 +7385,10 @@ impl LayoutEngine {
 #[cfg(test)]
 mod row_cut_tests {
     use super::LayoutEngine;
+    use crate::model::control::Control;
+    use crate::model::image::Picture;
     use crate::model::paragraph::{LineSeg, Paragraph};
+    use crate::model::shape::{CommonObjAttr, TextWrap, VertRelTo};
     use crate::model::table::{Cell, Table};
     use crate::renderer::composer::{ComposedLine, ComposedParagraph, ComposedTextRun};
     use crate::renderer::style_resolver::ResolvedStyleSet;
@@ -6512,6 +7461,63 @@ mod row_cut_tests {
             page_break: crate::model::table::TablePageBreak::RowBreak,
             ..table(cells)
         }
+    }
+
+    fn non_inline_picture_para(vpos_start: i32) -> Paragraph {
+        let common = CommonObjAttr {
+            width: 10_000,
+            height: 8_000,
+            treat_as_char: false,
+            text_wrap: TextWrap::TopAndBottom,
+            vert_rel_to: VertRelTo::Para,
+            vertical_offset: 1_000,
+            flow_with_text: true,
+            ..Default::default()
+        };
+        Paragraph {
+            text: "그림".to_string(),
+            char_count: 2,
+            line_segs: vec![LineSeg {
+                vertical_pos: vpos_start,
+                line_height: 1200,
+                line_spacing: 0,
+                ..Default::default()
+            }],
+            controls: vec![Control::Picture(Box::new(Picture {
+                common,
+                ..Default::default()
+            }))],
+            ..Default::default()
+        }
+    }
+
+    fn empty_anchor_non_inline_picture_para(vpos_start: i32) -> Paragraph {
+        let mut para = non_inline_picture_para(vpos_start);
+        para.text.clear();
+        para.char_count = 0;
+        para
+    }
+
+    #[test]
+    fn test_topandbottom_flow_height_includes_margins() {
+        // TopAndBottom + Para + flow_with_text 그림은 실제 렌더 y가
+        // vertical_offset + margin.top부터 시작하므로, 예약 높이도
+        // vertical_offset + margin.top + height + margin.bottom이어야 한다.
+        let eng = LayoutEngine::new(96.0);
+        let mut para = non_inline_picture_para(0);
+        let Control::Picture(pic) = &mut para.controls[0] else {
+            panic!("그림 컨트롤 아님");
+        };
+        pic.common.vertical_offset = 720;
+        pic.common.height = 7200;
+        pic.common.margin.top = 720;
+        pic.common.margin.bottom = 1440;
+
+        let h = eng.paragraph_cell_non_inline_controls_flow_height(&para.controls);
+        assert!(
+            (h - 134.4).abs() < 0.01,
+            "TopAndBottom flow height에 margin이 포함되어야 함: {h}"
+        );
     }
 
     fn composed_text(text: &str) -> ComposedParagraph {
@@ -6664,6 +7670,211 @@ mod row_cut_tests {
     }
 
     #[test]
+    fn test_advance_row_cut_rowbreak_grace_denied_before_spacer_then_visible_text() {
+        // 빈 줄 spacer 뒤에 다시 일반 가시 본문이 이어지면 구조적 꼬리줄이 아니라
+        // 문단 사이 여백이므로 페이지 예산을 넘겨 끌어올리지 않는다.
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![
+                visible_text_para(4, 0),
+                empty_overlay_para(1, 4800),
+                visible_text_para(2, 6000),
+            ],
+        )]);
+        let r = eng.advance_row_cut(&t, 0, &[], 52.0, &styles);
+        assert_eq!(
+            r.end_cut,
+            vec![3],
+            "spacer 뒤 본문이 계속되면 tail-before-spacer grace 미적용"
+        );
+    }
+
+    #[test]
+    fn test_cell_cut_non_inline_controls_do_not_repeat_after_para_cut() {
+        // 셀 안 non-inline 그림은 해당 문단의 유닛이 현재 컷에 들어올 때만 렌더
+        // 후보다. 문단을 지난 뒤의 continuation 에서 되살리면 이전 쪽 그림이
+        // 모든 페이지에 반복된다.
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![non_inline_picture_para(0), visible_text_para(1, 1200)],
+        )]);
+        let cell_ref = &t.cells[0];
+        let units = eng.cell_units(cell_ref, &t, &styles);
+        let picture_unit = units
+            .iter()
+            .position(|unit| {
+                unit.para_idx == 0
+                    && unit.vis_start == unit.vis_end
+                    && !unit.empty_spacer
+                    && unit.nested_row.is_none()
+                    && !unit.mixed_nested_fragment
+            })
+            .expect("그림 전용 유닛 존재");
+        let after_picture_units = units
+            .iter()
+            .position(|unit| unit.para_idx == 1)
+            .expect("두 번째 문단 유닛 존재");
+
+        assert!(
+            !eng.cell_cut_contains_non_inline_control_units(cell_ref, &t, &styles, 0, 1, 0),
+            "그림 문단의 일반 텍스트 줄만 포함된 컷에서는 렌더하지 않음"
+        );
+        assert!(
+            eng.cell_cut_contains_non_inline_control_units(
+                cell_ref,
+                &t,
+                &styles,
+                picture_unit,
+                picture_unit + 1,
+                0
+            ),
+            "그림 전용 유닛이 포함된 컷에서만 렌더 후보"
+        );
+        assert!(
+            !eng.cell_cut_contains_non_inline_control_units(
+                cell_ref,
+                &t,
+                &styles,
+                after_picture_units,
+                after_picture_units + 1,
+                0
+            ),
+            "그림 문단을 지난 컷에서는 후속 페이지에 반복 렌더하지 않음"
+        );
+    }
+
+    #[test]
+    fn test_advance_row_cut_non_inline_flow_unit_is_atomic() {
+        // TopAndBottom non-inline 그림의 흐름 높이를 줄 높이 조각으로 쪼개면
+        // 한 그림이 여러 continuation 컷에 반복 렌더된다. 객체 흐름 유닛은
+        // 현재 쪽에 온전히 들어가지 않으면 다음 쪽에서 통째로 시작해야 한다.
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![non_inline_picture_para(0), visible_text_para(1, 1200)],
+        )]);
+
+        let r = eng.advance_row_cut(&t, 0, &[], 40.0, &styles);
+        assert_eq!(r.end_cut, vec![1], "그림 앞 텍스트 줄까지만 들어감");
+        assert!(!r.fully_consumed);
+
+        let r2 = eng.advance_row_cut(&t, 0, &r.end_cut, 1_000.0, &styles);
+        assert!(
+            r2.end_cut[0] > r.end_cut[0],
+            "다음 컷에서 그림 흐름 유닛이 전진함"
+        );
+    }
+
+    #[test]
+    fn test_advance_row_cut_non_inline_flow_unit_not_orphaned_before_spacer() {
+        // RowBreak 거대 셀에서 TopAndBottom 그림 flow 유닛만 쪽 하단에 들어가고,
+        // 바로 뒤 spacer 가 다음 쪽으로 밀리면 기준 렌더러보다 그림이 한 쪽 앞선다.
+        // 그림 유닛+뒤 spacer 묶음이 함께 들어가지 못하면 그림 유닛부터 다음 조각으로 넘긴다.
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![
+                visible_text_para(1, 0),
+                non_inline_picture_para(1200),
+                empty_overlay_para(1, 2400),
+                visible_text_para(1, 3600),
+            ],
+        )]);
+        let units = eng.cell_units(&t.cells[0], &t, &styles);
+        let picture_unit = units
+            .iter()
+            .position(|unit| {
+                unit.vis_start == unit.vis_end
+                    && !unit.empty_spacer
+                    && unit.nested_row.is_none()
+                    && !unit.mixed_nested_fragment
+            })
+            .expect("그림 flow 유닛 존재");
+        let spacer_unit = picture_unit + 1;
+        assert!(units[spacer_unit].empty_spacer, "그림 뒤 spacer 존재");
+
+        let before_picture: f64 = units[..picture_unit].iter().map(|unit| unit.height).sum();
+        let picture_height = units[picture_unit].height;
+        let spacer_height = units[spacer_unit].height;
+        let avail = before_picture + picture_height + spacer_height * 0.5;
+
+        let r = eng.advance_row_cut(&t, 0, &[], avail, &styles);
+        assert_eq!(
+            r.end_cut,
+            vec![picture_unit],
+            "그림만 들어가고 뒤 spacer 가 빠지는 컷은 만들지 않음"
+        );
+
+        let b = eng.advance_row_block_cut(&t, 0, 1, &[], avail, &styles);
+        assert_eq!(
+            b.end_cut, r.end_cut,
+            "행블록 컷도 같은 orphan 방지 조건을 적용"
+        );
+
+        let r2 = eng.advance_row_cut(&t, 0, &r.end_cut, 1_000.0, &styles);
+        assert!(
+            r2.end_cut[0] > spacer_unit,
+            "다음 조각에서는 그림과 spacer 를 함께 전진"
+        );
+    }
+
+    #[test]
+    fn test_empty_anchor_topandbottom_flow_delayed_before_hard_break() {
+        // 빈 anchor 문단의 TopAndBottom 그림은 저장 vpos hard break 직전까지 지연될 수 있다.
+        // 이렇게 해야 그림은 다음 쪽 상단으로 넘기면서도 anchor 뒤 일반 텍스트는 이전 쪽에
+        // 계속 채울 수 있다.
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![
+                visible_text_para(1, 0),
+                empty_anchor_non_inline_picture_para(1200),
+                empty_overlay_para(1, 2400),
+                visible_text_para(2, 3600),
+                visible_text_para(1, 1000),
+            ],
+        )]);
+        let units = eng.cell_units(&t.cells[0], &t, &styles);
+        let picture_unit = units
+            .iter()
+            .position(|unit| {
+                unit.vis_start == unit.vis_end
+                    && !unit.empty_spacer
+                    && unit.nested_row.is_none()
+                    && !unit.mixed_nested_fragment
+            })
+            .expect("지연된 그림 flow 유닛 존재");
+        let hard_break_unit = units
+            .iter()
+            .position(|unit| unit.hard_break_before && unit.vis_start < unit.vis_end)
+            .expect("저장 vpos hard break 유닛 존재");
+
+        assert_eq!(
+            picture_unit + 1,
+            hard_break_unit,
+            "빈 anchor 그림 flow 유닛은 다음 가시 hard break 직전에 배치"
+        );
+        assert!(
+            units[..picture_unit]
+                .iter()
+                .any(|unit| unit.para_idx == 3 && unit.vis_start < unit.vis_end),
+            "그림 anchor 뒤 일반 텍스트는 그림보다 앞서 흐를 수 있어야 함"
+        );
+    }
+
+    #[test]
     fn test_advance_row_cut_vpos_reset_hard_break() {
         // 가시 텍스트 문단0(3줄 vpos 0..2400) + 가시 문단1(2줄 vpos 1000..) — 문단1
         // 시작 vpos 가 문단0 끝(3600)보다 작아 vpos 리셋 → 문단1 앞에서 강제 분할.
@@ -6684,6 +7895,104 @@ mod row_cut_tests {
         let r2 = eng.advance_row_cut(&t, 0, &r.end_cut, 1000.0, &styles);
         assert_eq!(r2.end_cut, vec![5]);
         assert!(r2.fully_consumed);
+    }
+
+    #[test]
+    fn test_block_cut_row_offsets_absorbs_sliver_before_stored_hard_break() {
+        // [#1921] 예산 정지 지점 직후 48px 이내에 저장 hard-break(vpos 리셋)가 있으면
+        // 그 지점까지 흡수한다. 흡수하지 않으면 다음 fragment 가 극소 잔여(여기서는
+        // 16px 유닛 1개)만 담은 sliver 페이지가 된다 (59043 pi=160: 946px→22px 교대).
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        // 문단0: 3줄(vpos 0..2400) = 유닛 3개(각 16px). 문단1: vpos 1000 리셋
+        // → 유닛 3 앞 hard break.
+        let t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![visible_text_para(3, 0), visible_text_para(2, 1000)],
+        )]);
+        // 예산 40px: 유닛 0..2(32px)까지 들어가고 유닛 2(16px)에서 예산 정지 —
+        // 잔여(유닛 2, 16px) 직후가 hard break 이므로 48px 한도 내 흡수.
+        let r = eng.advance_row_block_cut_with_row_offsets(&t, 0, 1, &[], 40.0, &[0.0], &styles);
+        assert_eq!(
+            r.end_cut,
+            vec![3],
+            "예산 정지 직후 hard-break 까지 흡수 (sliver 방지)"
+        );
+        assert!(r.hit_hard_break);
+        assert!(!r.fully_consumed);
+        assert!(
+            r.consumed_height <= 40.0 + 48.0,
+            "흡수 오버플로는 48px 한도 내: {}",
+            r.consumed_height
+        );
+        // 다음 fragment: hard-break 유닛부터 잔여 전부 — sliver 없음.
+        let r2 = eng.advance_row_block_cut_with_row_offsets(
+            &t,
+            0,
+            1,
+            &r.end_cut,
+            1000.0,
+            &[0.0],
+            &styles,
+        );
+        assert!(r2.fully_consumed);
+    }
+
+    #[test]
+    fn test_block_cut_row_offsets_no_absorb_beyond_tolerance() {
+        // [#1921] hard-break 까지 잔여가 48px 를 넘으면 흡수하지 않는다 — 정상 예산
+        // 분할 유지 (86712 공식PDF 핀 계열의 비정상 경계 강제 방지).
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        // 문단0: 8줄(128px). 예산 40px → 유닛 2에서 정지. hard break 는 유닛 8 앞
+        // → 잔여 6유닛(96px) > 48px 한도 → 흡수 없음.
+        let t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![visible_text_para(8, 0), visible_text_para(2, 1000)],
+        )]);
+        let r = eng.advance_row_block_cut_with_row_offsets(&t, 0, 1, &[], 40.0, &[0.0], &styles);
+        assert_eq!(r.end_cut, vec![2], "한도 초과 시 예산 경계 유지");
+        assert!(!r.hit_hard_break);
+    }
+
+    #[test]
+    fn test_advance_row_cut_hwpx_midpage_vpos_reset_is_absorbed() {
+        // HWPX 저장 LINE_SEG vpos 리셋이어도 페이지 절반 이상이 남은 중간 리셋이면
+        // 로컬 좌표 재시작으로 보고 같은 쪽에 이어 담는다.
+        let eng = LayoutEngine::new(96.0);
+        eng.set_hwpx_source(true);
+        let styles = ResolvedStyleSet::default();
+        let t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![visible_text_para(4, 0), visible_text_para(2, 0)],
+        )]);
+        let r = eng.advance_row_cut(&t, 0, &[], 200.0, &styles);
+        assert_eq!(
+            r.end_cut,
+            vec![6],
+            "중간 vpos 리셋은 페이지 경계로 보존하지 않음"
+        );
+        assert!(r.fully_consumed);
+    }
+
+    #[test]
+    fn test_advance_row_cut_hwpx_bottom_vpos_reset_is_preserved() {
+        // 같은 HWPX 저장 리셋이라도 이미 페이지 하단 근처까지 채운 경우에는
+        // 한컴 저장 쪽 경계로 보존한다.
+        let eng = LayoutEngine::new(96.0);
+        eng.set_hwpx_source(true);
+        let styles = ResolvedStyleSet::default();
+        let t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![visible_text_para(4, 0), visible_text_para(2, 0)],
+        )]);
+        let r = eng.advance_row_cut(&t, 0, &[], 80.0, &styles);
+        assert_eq!(r.end_cut, vec![4], "하단 vpos 리셋은 저장 쪽 경계로 보존");
+        assert!(!r.fully_consumed);
     }
 
     #[test]

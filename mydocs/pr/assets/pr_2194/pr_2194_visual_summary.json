@@ -1,0 +1,102 @@
+[
+  {
+    "key": "pr2194-issue1949",
+    "hwp": "samples/issue1949_giant_cell_nested_tables_perf.hwp",
+    "pdf": "pdf/issue1949_giant_cell_nested_tables_perf-2020.pdf",
+    "requested_pages": [
+      1
+    ],
+    "exported_svg_pages": 115,
+    "exported_render_tree_pages": 115,
+    "exported_pdf_pages": 115,
+    "svg_pages": 1,
+    "render_tree_pages": 1,
+    "pdf_pages": 1,
+    "compare_pages": 1,
+    "overlay_pages": 1,
+    "review_pages": 1,
+    "pdf_question_markers": 0,
+    "overflow_lines": [
+      "LAYOUT_OVERFLOW: page=2, sec=0, col=0, para=0, type=PartialTable, first=true, y=1095.1, bottom=1084.7, overflow=10.3px",
+      "LAYOUT_OVERFLOW: page=12, sec=0, col=0, para=0, type=PartialTable, first=true, y=1089.1, bottom=1084.7, overflow=4.4px",
+      "LAYOUT_OVERFLOW: page=17, sec=0, col=0, para=0, type=PartialTable, first=true, y=1101.5, bottom=1084.7, overflow=16.7px",
+      "LAYOUT_OVERFLOW: page=21, sec=0, col=0, para=0, type=PartialTable, first=true, y=1101.5, bottom=1084.7, overflow=16.7px",
+      "LAYOUT_OVERFLOW: page=59, sec=0, col=0, para=0, type=PartialTable, first=true, y=1092.7, bottom=1084.7, overflow=8.0px",
+      "LAYOUT_OVERFLOW: page=64, sec=0, col=0, para=0, type=PartialTable, first=true, y=1093.9, bottom=1084.7, overflow=9.2px",
+      "LAYOUT_OVERFLOW: page=76, sec=0, col=0, para=0, type=PartialTable, first=true, y=1092.5, bottom=1084.7, overflow=7.8px",
+      "LAYOUT_OVERFLOW: page=106, sec=0, col=0, para=0, type=PartialTable, first=true, y=1097.0, bottom=1084.7, overflow=12.3px"
+    ],
+    "contact_sheet": "output/visual_sweep_pr2194/pr2194-issue1949/contact_sheet.png",
+    "overlay_contact_sheet": "output/visual_sweep_pr2194/pr2194-issue1949/overlay_contact_sheet.png",
+    "review_contact_sheet": "output/visual_sweep_pr2194/pr2194-issue1949/review_contact_sheet.png",
+    "analysis_dir": "output/visual_sweep_pr2194/pr2194-issue1949/analysis",
+    "overlay_dir": "output/visual_sweep_pr2194/pr2194-issue1949/overlay",
+    "review_dir": "output/visual_sweep_pr2194/pr2194-issue1949/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "output/visual_sweep_pr2194/pr2194-issue1949/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 89.79961,
+      "worst_pixel_match_percent": 89.79961,
+      "average_ink_match_percent": 11.8903,
+      "worst_ink_match_percent": 11.8903,
+      "average_visual_accuracy_proxy_percent": 11.8903,
+      "worst_visual_accuracy_proxy_percent": 11.8903,
+      "worst_pages": [
+        1
+      ]
+    },
+    "overlay_metrics_json": "output/visual_sweep_pr2194/pr2194-issue1949/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 1,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "metrics_json": "/Users/tsjang/rhwp/output/visual_sweep_pr2194/pr2194-issue1949/analysis/metrics.json",
+      "question_flow_json": "/Users/tsjang/rhwp/output/visual_sweep_pr2194/pr2194-issue1949/analysis/question_flow.json"
+    },
+    "flagged_pages": []
+  }
+]

@@ -1,6 +1,6 @@
 {
   "name": "rhwp-studio",
-  "version": "0.7.17",
+  "version": "0.7.18",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -13,16 +13,18 @@
     "e2e:clipboard-priority": "node e2e/task-871-clipboard-priority.test.mjs",
     "e2e:drag-autoscroll": "node e2e/drag-selection-autoscroll.test.mjs",
     "e2e:renderer-contract": "node e2e/renderer-contract.test.mjs",
+    "e2e:canvaskit-font-coverage": "node e2e/canvaskit-font-coverage.test.mjs",
     "e2e:baseline:headless": "node e2e/renderer-baseline.mjs --mode=headless --manifest=../scripts/renderer_baseline_manifest.json --output=../output/renderer-baseline/studio-headless",
     "e2e:render-diff": "node e2e/canvas-render-diff.test.mjs --mode=headless",
     "e2e:pdf-render-diff": "node e2e/pdf-render-diff-report.mjs --mode=headless",
-    "e2e:render-diff:ci": "node e2e/run-render-diff.mjs"
+    "e2e:render-diff:ci": "node e2e/run-render-diff.mjs",
+    "metrics:frontend": "node ../scripts/frontend-metrics.mjs"
   },
   "devDependencies": {
-    "@types/chrome": "^0.2.0",
-    "puppeteer-core": "^25.2.1",
-    "typescript": "^6.0.3",
-    "vite": "^8.1.0",
+    "@types/chrome": "^0.2.2",
+    "puppeteer-core": "^25.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.4",
     "vite-plugin-pwa": "^1.3.0",
     "workbox-window": "^7.4.1"
   },

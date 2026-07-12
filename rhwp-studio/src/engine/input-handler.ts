@@ -36,7 +36,7 @@ import * as _keyboard from './input-handler-keyboard';
 import * as _text from './input-handler-text';
 import * as _picture from './input-handler-picture';
 import { computeHangingIndentPx } from './hanging-indent';
-import { isPageLocalTextEditCommand } from './input-edit-invalidation';
+import { isPageLocalTextEditCommand, type PageLocalTextEditOptions } from './input-edit-invalidation';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
@@ -44,6 +44,8 @@ const DRAG_SCROLL_MIN_STEP_PX = 2;
 const DRAG_SCROLL_MAX_STEP_PX = 20;
 const PX_TO_RAW_2X = 150;
 const PX_TO_HWPUNIT = 75;
+const DEFERRED_PAGINATION_AUTO_FLUSH_DELAY_MS = 10_000;
+const DEFERRED_PAGINATION_AUTO_FLUSH_PAGE_LIMIT = 30;
 
 type FormatCopyState = {
   charProps: Partial<CharProperties>;
@@ -301,10 +303,12 @@ export class InputHandler {
 
   // 표 경계선 hover 상태
   private resizeHoverRafId = 0;
-  private cachedTableRef: { sec: number; ppi: number; ci: number } | null = null;
+  private cachedTableRef: { sec: number; ppi: number; ci: number; pageHint?: number } | null = null;
   private cachedCellBboxes: CellBbox[] | null = null;
   private protectedCellHitCache: { key: string; protected: boolean } | null = null;
   private protectedCellHoverEl: HTMLDivElement | null = null;
+  private deferredPaginationFlushTimer: ReturnType<typeof setTimeout> | null = null;
+  private deferredPaginationPending = false;
 
   // 표 경계선 리사이즈 드래그 상태
   private isResizeDragging = false;
@@ -375,7 +379,7 @@ export class InputHandler {
   private isPictureResizeDragging = false;
   private pictureResizeState: {
     dir: string;
-    ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group'; cellPath?: CellPathLike; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } };
+    ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole'; cellPath?: CellPathLike; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } };
     origWidth: number;
     origHeight: number;
     origHorzOffset?: number;
@@ -391,7 +395,7 @@ export class InputHandler {
   // 그림/글상자 이동 드래그 상태
   private isPictureMoveDragging = false;
   private pictureMoveState: {
-    ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group'; cellPath?: CellPathLike; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } };
+    ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole'; cellPath?: CellPathLike; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } };
     origHorzOffset: number;
     origVertOffset: number;
     startPageX: number;
@@ -408,7 +412,7 @@ export class InputHandler {
   // 그림/글상자 회전 드래그 상태
   private isPictureRotateDragging = false;
   private pictureRotateState: {
-    ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group'; cellPath?: CellPathLike; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } };
+    ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole'; cellPath?: CellPathLike; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } };
     origAngle: number;      // 드래그 시작 시 원래 회전각 (도)
     centerX: number;        // 도형 중심 (scroll-content 좌표, px)
     centerY: number;
@@ -444,6 +448,7 @@ export class InputHandler {
   // iOS 폴백: composition 이벤트 없이 input만으로 한글 조합 처리
   private _iosComposing = false;
   private _iosAnchor: DocumentPosition | null = null;
+  private _iosBeforePageIndex: number | undefined = undefined;
   private _iosLength = 0;
   private _iosPrevText = '';
   private _iosInputTimer: any = null;
@@ -757,60 +762,63 @@ export class InputHandler {
       `그림입니다.\r\n원본 그림의 이름: ${fileName}\r\n원본 그림의 크기: 가로 ${naturalWidth}pixel, 세로 ${naturalHeight}pixel`;
 
     try {
-      const result = this.wasm.insertPicture(
-        sec,
-        paraIdx,
-        hit.charOffset,
-        cellPathJson,
-        data,
-        width,
-        height,
-        naturalWidth,
-        naturalHeight,
-        ext,
-        desc,
-        undefined,
-        undefined,
-      );
-      if (!result.ok) {
-        return {
-          ok: false,
-          error: (result as any).error || '삽입 위치 또는 이미지 정보를 확인할 수 없습니다.',
-        };
-      }
-
-      const logicalOffset = typeof result.logicalOffset === 'number'
-        ? result.logicalOffset
-        : hit.charOffset + 1;
-      const cursorAfter: DocumentPosition = inTextBox
-        ? { ...hit, charOffset: logicalOffset }
-        : {
-            sectionIndex: sec,
-            paragraphIndex: result.paraIdx ?? paraIdx,
-            charOffset: logicalOffset,
-          };
-
-      if (inTextBox && cellPath.length > 0) {
-        this.wasm.setCellPicturePropertiesByPath(
+      // 삽입 + 인라인 전환을 하나의 스냅샷으로 기록 (Undo 지원, pasteImage 경로와 동일 패턴)
+      let insertError: string | null = null;
+      this.executeOperation({ kind: 'snapshot', operationType: 'insertPicture', operation: (wasm: WasmBridge) => {
+        const result = wasm.insertPicture(
           sec,
           paraIdx,
-          cellPath,
-          result.controlIdx,
-          { treatAsChar: true },
+          hit.charOffset,
+          cellPathJson,
+          data,
+          width,
+          height,
+          naturalWidth,
+          naturalHeight,
+          ext,
+          desc,
+          undefined,
+          undefined,
         );
-      } else {
-        this.wasm.setPictureProperties(
-          sec,
-          result.paraIdx ?? paraIdx,
-          result.controlIdx,
-          { treatAsChar: true },
-        );
+        if (!result.ok) {
+          insertError = (result as any).error || '삽입 위치 또는 이미지 정보를 확인할 수 없습니다.';
+          return hit;
+        }
+
+        const logicalOffset = typeof result.logicalOffset === 'number'
+          ? result.logicalOffset
+          : hit.charOffset + 1;
+        const cursorAfter: DocumentPosition = inTextBox
+          ? { ...hit, charOffset: logicalOffset }
+          : {
+              sectionIndex: sec,
+              paragraphIndex: result.paraIdx ?? paraIdx,
+              charOffset: logicalOffset,
+            };
+
+        if (inTextBox && cellPath.length > 0) {
+          wasm.setCellPicturePropertiesByPath(
+            sec,
+            paraIdx,
+            cellPath,
+            result.controlIdx,
+            { treatAsChar: true },
+          );
+        } else {
+          wasm.setPictureProperties(
+            sec,
+            result.paraIdx ?? paraIdx,
+            result.controlIdx,
+            { treatAsChar: true },
+          );
+        }
+        this.cursor.clearSelection();
+        return cursorAfter;
+      }});
+      if (insertError) {
+        return { ok: false, error: insertError };
       }
-      this.cursor.clearSelection();
-      this.cursor.moveTo(cursorAfter);
-      this.cursor.resetPreferredX();
       this.active = true;
-      this.afterEdit();
       this.focusTextarea();
       return { ok: true };
     } catch (err) {
@@ -2063,8 +2071,9 @@ export class InputHandler {
       } catch { /* 스타일 조회 실패 시 무시 */ }
 
       // 셀 영역 정보 (눈금자 셀 너비 표시용)
-      // getTableCellBboxes는 렌더 트리 전 페이지 순회 비용이 크므로:
-      // 1) 같은 셀이면 재조회 생략  2) 새 셀이면 rAF로 지연하여 클릭 응답 블로킹 방지
+      // getTableCellBboxes는 대형/중첩 표에서 수 초 동안 main thread를 막을 수 있다.
+      // 일반 커서 이동/텍스트 입력 경로에서는 새 bbox 조회를 하지 않고, 표 hover/resize 경로에서
+      // 이미 확보한 캐시가 있을 때만 재사용한다.
       if (inCell) {
         const cellKey = `${pos.sectionIndex}:${pos.parentParaIndex}:${pos.controlIndex}:${pos.cellIndex}`;
         if (cellKey !== this.lastCellKey) {
@@ -2073,18 +2082,19 @@ export class InputHandler {
           const ppi = pos.parentParaIndex!;
           const ci = pos.controlIndex!;
           const cellIdx = pos.cellIndex!;
-          const pageHint = this.cursor.getRect()?.pageIndex;
-          requestAnimationFrame(() => {
-            try {
-              const bboxes = this.wasm.getTableCellBboxes(sec, ppi, ci, pageHint);
-              const bbox = bboxes.find(b => b.cellIdx === cellIdx);
-              if (bbox) {
-                this.eventBus.emit('cursor-cell-changed', {
-                  inCell: true, cellX: bbox.x, cellWidth: bbox.w,
-                });
-              }
-            } catch { /* 무시 */ }
-          });
+          const cached = this.cachedTableRef?.sec === sec
+            && this.cachedTableRef.ppi === ppi
+            && this.cachedTableRef.ci === ci
+            ? this.cachedCellBboxes
+            : null;
+          const bbox = cached?.find(b => b.cellIdx === cellIdx);
+          if (bbox) {
+            this.eventBus.emit('cursor-cell-changed', {
+              inCell: true, cellX: bbox.x, cellWidth: bbox.w,
+            });
+          } else {
+            this.eventBus.emit('cursor-cell-changed', { inCell: false });
+          }
         }
       } else if (this.lastCellKey !== null) {
         this.lastCellKey = null;
@@ -2136,6 +2146,7 @@ export class InputHandler {
     switch (desc.kind) {
       case 'command': {
         const beforePos = this.cursor.getPosition();
+        const beforePageIndex = this.cursor.getRect()?.pageIndex;
         const keepFieldStartOutside = (desc.command.type === 'insertText' || desc.command.type === 'deleteText')
           && this.isExitedFieldStartPosition(beforePos);
         if (keepFieldStartOutside) {
@@ -2150,7 +2161,11 @@ export class InputHandler {
         if (keepFieldStartOutside) {
           this.markCurrentFieldStartOutside();
         }
-        this.refreshAfterOperation(desc.meta?.refresh, 'auto', desc.command.type, beforePos, newPos);
+        this.refreshAfterOperation(desc.meta?.refresh, 'auto', desc.command.type, beforePos, newPos, {
+          ...desc.command.getPageLocalTextEditOptions?.(),
+          beforePageIndex,
+          afterPageIndex: this.cursor.getRect()?.pageIndex,
+        });
         break;
       }
       case 'snapshot': {
@@ -2223,6 +2238,7 @@ export class InputHandler {
 
   /** 편집 후 처리: 재렌더링 + 캐럿 갱신 */
   private afterEdit(): void {
+    this.flushDeferredPaginationIfNeeded('before-full-edit', false);
     this.lastCellKey = null; // 편집 후 셀 bbox 캐시 무효화
     this.protectedCellHitCache = null;
     this.eventBus.emit('document-mutated', 'input-handler-edit');
@@ -2232,7 +2248,9 @@ export class InputHandler {
 
   /** 셀 내부 단일 텍스트 편집 후 처리: 현재 페이지 canvas만 갱신한다. */
   private afterPageLocalEdit(): void {
-    this.lastCellKey = null;
+    if (this.flushDeferredPaginationForCellOverflow()) return;
+
+    // 텍스트 입력은 셀 폭을 바꾸지 않으므로 눈금자 셀 bbox 캐시를 무효화하지 않는다.
     this.protectedCellHitCache = null;
     this.eventBus.emit('document-mutated', 'input-handler-edit');
     const pageIndex = this.cursor.getRect()?.pageIndex;
@@ -2241,12 +2259,83 @@ export class InputHandler {
     } else {
       this.eventBus.emit('document-changed');
     }
+    this.scheduleDeferredPaginationFlush();
     this.updateCaret();
   }
 
+  /** 셀 안 새 줄이 기존 가시 높이를 넘으면 즉시 전체 표 레이아웃을 다시 계산한다. */
+  private flushDeferredPaginationForCellOverflow(): boolean {
+    if (!this.cursor.getRect()?.cellOverflowed) return false;
+
+    this.cancelDeferredPaginationFlush();
+    try {
+      this.wasm.flushDeferredPagination();
+      this.deferredPaginationPending = false;
+      this.lastCellKey = null;
+      this.protectedCellHitCache = null;
+      this.eventBus.emit('document-mutated', 'input-handler-cell-overflow');
+      this.eventBus.emit('document-changed', 'cell-overflow-pagination');
+      this.cursor.moveTo(this.cursor.getPosition());
+      this.updateCaret();
+      return true;
+    } catch (err) {
+      console.warn('[InputHandler] 셀 overflow 페이지네이션 flush 실패:', err);
+      return false;
+    }
+  }
+
+  private scheduleDeferredPaginationFlush(): void {
+    this.cancelDeferredPaginationFlush();
+    this.deferredPaginationPending = true;
+    if (!this.shouldAutoFlushDeferredPagination()) {
+      return;
+    }
+    this.deferredPaginationFlushTimer = setTimeout(() => {
+      this.flushDeferredPaginationIfNeeded('idle-auto');
+    }, DEFERRED_PAGINATION_AUTO_FLUSH_DELAY_MS);
+  }
+
+  private cancelDeferredPaginationFlush(): void {
+    if (this.deferredPaginationFlushTimer) {
+      clearTimeout(this.deferredPaginationFlushTimer);
+      this.deferredPaginationFlushTimer = null;
+    }
+  }
+
+  private shouldAutoFlushDeferredPagination(): boolean {
+    return this.wasm.pageCount <= DEFERRED_PAGINATION_AUTO_FLUSH_PAGE_LIMIT;
+  }
+
+  hasDeferredPaginationPending(): boolean {
+    return this.deferredPaginationPending;
+  }
+
+  flushDeferredPaginationIfNeeded(reason = 'manual', emitChange = true): boolean {
+    const shouldFlush = this.deferredPaginationPending || this.deferredPaginationFlushTimer !== null;
+    this.cancelDeferredPaginationFlush();
+    if (!shouldFlush) return false;
+
+    try {
+      this.wasm.flushDeferredPagination();
+      this.deferredPaginationPending = false;
+      if (emitChange) {
+        this.eventBus.emit('document-changed', `deferred-pagination-flush:${reason}`);
+      }
+      return true;
+    } catch (err) {
+      this.deferredPaginationPending = true;
+      console.warn('[InputHandler] 지연 페이지네이션 flush 실패:', err);
+      return false;
+    }
+  }
+
   /** raw IME/iOS 텍스트 입력처럼 command를 거치지 않는 경로의 갱신 라우터. */
-  private afterTextInputEdit(beforePos: DocumentPosition, afterPos: DocumentPosition): void {
-    if (this.shouldUsePageLocalRefresh('insertText', beforePos, afterPos)) {
+  private afterTextInputEdit(
+    beforePos: DocumentPosition,
+    afterPos: DocumentPosition,
+    pageLocalOptions: PageLocalTextEditOptions = {},
+  ): void {
+    if (this.shouldUsePageLocalRefresh('insertText', beforePos, afterPos, pageLocalOptions)) {
       this.afterPageLocalEdit();
     } else {
       this.afterEdit();
@@ -2259,6 +2348,7 @@ export class InputHandler {
     commandType: string,
     beforePos: DocumentPosition,
     afterPos: DocumentPosition,
+    pageLocalOptions: PageLocalTextEditOptions = {},
   ): void {
     const policy = requested ?? fallback;
     switch (policy) {
@@ -2275,7 +2365,7 @@ export class InputHandler {
         return;
       case 'auto':
       default:
-        if (this.shouldUsePageLocalRefresh(commandType, beforePos, afterPos)) {
+        if (this.shouldUsePageLocalRefresh(commandType, beforePos, afterPos, pageLocalOptions)) {
           this.afterPageLocalEdit();
         } else {
           this.afterEdit();
@@ -2283,9 +2373,14 @@ export class InputHandler {
     }
   }
 
-  private shouldUsePageLocalRefresh(commandType: string, beforePos: DocumentPosition, afterPos: DocumentPosition): boolean {
+  private shouldUsePageLocalRefresh(
+    commandType: string,
+    beforePos: DocumentPosition,
+    afterPos: DocumentPosition,
+    pageLocalOptions: PageLocalTextEditOptions = {},
+  ): boolean {
     if (this.cursor.isInHeaderFooter() || this.cursor.isInFootnote()) return false;
-    return isPageLocalTextEditCommand(commandType, beforePos, afterPos);
+    return isPageLocalTextEditCommand(commandType, beforePos, afterPos, pageLocalOptions);
   }
 
   /**
@@ -2656,29 +2751,29 @@ export class InputHandler {
   /** 그림/글상자 클릭 감지 — getPageControlLayout으로 개체 bbox 겹침 확인 */
   private findPictureAtClick(
     pageIdx: number, pageX: number, pageY: number,
-  ): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; noteRef?: any; x1?: number; y1?: number; x2?: number; y2?: number } | null {
+  ): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole'; cellIdx?: number; cellParaIdx?: number; noteRef?: any; x1?: number; y1?: number; x2?: number; y2?: number } | null {
     return _picture.findPictureAtClick.call(this, pageIdx, pageX, pageY);
   }
 
   /** 선택된 그림/글상자의 bbox를 페이지 레이아웃에서 찾는다 */
   private findPictureBbox(
-    ref: { sec: number; ppi: number; ci: number; type?: 'image' | 'shape' | 'equation' },
+    ref: { sec: number; ppi: number; ci: number; type?: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole' },
   ): { pageIndex: number; x: number; y: number; w: number; h: number } | null {
     return _picture.findPictureBbox.call(this, ref);
   }
 
   /** 개체 속성을 타입에 따라 조회한다 (그림/글상자 분기) */
-  private getObjectProperties(ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' }): any {
+  private getObjectProperties(ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole' }): any {
     return _picture.getObjectProperties.call(this, ref);
   }
 
   /** 개체 속성을 타입에 따라 변경한다 (그림/글상자 분기) */
-  private setObjectProperties(ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' }, props: Record<string, unknown>): void {
+  private setObjectProperties(ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole' }, props: Record<string, unknown>): void {
     _picture.setObjectProperties.call(this, ref, props);
   }
 
   /** 개체를 타입에 따라 삭제한다 (그림/글상자 분기) */
-  private deleteObjectControl(ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' }): void {
+  private deleteObjectControl(ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole' }): void {
     _picture.deleteObjectControl.call(this, ref);
   }
 
@@ -2857,6 +2952,7 @@ export class InputHandler {
       cancelAnimationFrame(this.resizeHoverRafId);
       this.resizeHoverRafId = 0;
     }
+    this.cancelDeferredPaginationFlush();
     document.removeEventListener('keydown', this.onF11InterceptBound, true);
     this.container.removeEventListener('mousedown', this.onClickBound);
     this.container.removeEventListener('dblclick', this.onDblClickBound);
@@ -3107,7 +3203,7 @@ export class InputHandler {
   isInPictureObjectSelection(): boolean { return this.cursor.isInPictureObjectSelection(); }
 
   /** 선택된 그림/글상자 참조 반환 ([Task #825] headerFooter 동반 시 머리말/꼬리말 picture marker) */
-  getSelectedPictureRef(): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line'; cellIdx?: number; cellParaIdx?: number; outerTableControlIdx?: number; cellPath?: Array<{ controlIndex: number; cellIndex: number; cellParaIndex: number }>; noteRef?: any; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } } | null { return this.cursor.getSelectedPictureRef(); }
+  getSelectedPictureRef(): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole'; cellIdx?: number; cellParaIdx?: number; outerTableControlIdx?: number; cellPath?: Array<{ controlIndex: number; cellIndex: number; cellParaIndex: number }>; noteRef?: any; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } } | null { return this.cursor.getSelectedPictureRef(); }
 
   /** 다중 선택된 개체 목록 */
   getSelectedPictureRefs(): { sec: number; ppi: number; ci: number; type: string }[] { return this.cursor.getSelectedPictureRefs(); }
@@ -3116,7 +3212,7 @@ export class InputHandler {
   isMultiPictureSelection(): boolean { return this.cursor.isMultiPictureSelection(); }
 
   /** 지정 개체를 선택 상태로 진입 */
-  selectPictureObject(sec: number, ppi: number, ci: number, type: 'image' | 'shape' | 'equation' | 'group' | 'line'): void {
+  selectPictureObject(sec: number, ppi: number, ci: number, type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole'): void {
     this.cursor.enterPictureObjectSelectionDirect(sec, ppi, ci, type);
     this.renderPictureObjectSelection();
     this.eventBus.emit('picture-object-selection-changed', true);

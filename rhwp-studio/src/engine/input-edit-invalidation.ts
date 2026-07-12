@@ -1,6 +1,14 @@
 import type { CellPathEntry, DocumentPosition } from '@/core/types';
 
 const PAGE_LOCAL_TEXT_COMMANDS = new Set(['insertText', 'deleteText']);
+export const MAX_PAGE_LOCAL_TEXT_EDIT_CHARS = 8;
+
+export interface PageLocalTextEditOptions {
+  insertedText?: string;
+  deleteCount?: number;
+  beforePageIndex?: number | null;
+  afterPageIndex?: number | null;
+}
 
 function sameCellPath(a: CellPathEntry[] | undefined, b: CellPathEntry[] | undefined): boolean {
   const left = a ?? [];
@@ -27,8 +35,32 @@ export function isPageLocalTextEditCommand(
   commandType: string,
   beforePos: DocumentPosition,
   afterPos: DocumentPosition,
+  options: PageLocalTextEditOptions = {},
 ): boolean {
   if (!PAGE_LOCAL_TEXT_COMMANDS.has(commandType)) return false;
+  if (
+    typeof options.beforePageIndex === 'number' &&
+    typeof options.afterPageIndex === 'number' &&
+    options.beforePageIndex !== options.afterPageIndex
+  ) {
+    return false;
+  }
+  if (commandType === 'insertText') {
+    if (typeof options.insertedText === 'string') {
+      if (options.insertedText.length > MAX_PAGE_LOCAL_TEXT_EDIT_CHARS) return false;
+      if (/[\r\n\t]/.test(options.insertedText)) return false;
+    } else {
+      const insertedLength = afterPos.charOffset - beforePos.charOffset;
+      if (insertedLength > MAX_PAGE_LOCAL_TEXT_EDIT_CHARS) return false;
+    }
+  } else if (commandType === 'deleteText') {
+    if (
+      typeof options.deleteCount === 'number' &&
+      options.deleteCount > MAX_PAGE_LOCAL_TEXT_EDIT_CHARS
+    ) {
+      return false;
+    }
+  }
   if (beforePos.parentParaIndex === undefined || afterPos.parentParaIndex === undefined) return false;
   if (beforePos.sectionIndex !== afterPos.sectionIndex) return false;
   if (beforePos.parentParaIndex !== afterPos.parentParaIndex) return false;

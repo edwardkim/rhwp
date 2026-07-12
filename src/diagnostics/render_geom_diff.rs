@@ -144,6 +144,66 @@ fn count_nodes(n: &RenderNode) -> usize {
     1 + n.children.iter().map(count_nodes).sum::<usize>()
 }
 
+fn q100(v: f64) -> i64 {
+    (v * 100.0).round() as i64
+}
+
+/// [#1993] TextLine 의 자식 TextRun 들을 x-구간 합집합(병합 인터벌)으로 요약한다.
+/// 라운드트립이 같은 줄의 동일 텍스트를 **다른 경계로 재분할**(char offset/run 조성 변화)해도
+/// 커버리지(합집합)는 불변이므로, 재분할은 동일 서명을 낸다. 반대로 run 추가/삭제·이동 등
+/// **실제 텍스트 변화는 커버리지를 바꿔** 구분된다(예: 83254 run±1 = 844px 실차이).
+fn line_run_coverage(line: &RenderNode) -> Vec<(i64, i64)> {
+    let mut ivs: Vec<(i64, i64)> = line
+        .children
+        .iter()
+        .filter(|c| node_type_str(&c.node_type) == "TextRun")
+        .map(|c| (q100(c.bbox.x), q100(c.bbox.x + c.bbox.width)))
+        .collect();
+    ivs.sort_unstable();
+    let mut merged: Vec<(i64, i64)> = Vec::new();
+    for (s, e) in ivs {
+        if let Some(last) = merged.last_mut() {
+            if s <= last.1 {
+                last.1 = last.1.max(e);
+                continue;
+            }
+        }
+        merged.push((s, e));
+    }
+    merged
+}
+
+/// [#1993] 트리 노드를 위치 서명 문자열 멀티셋으로 평탄화(정렬)한다. 두 트리의 이 멀티셋이
+/// 동일하면 모든 구조 노드가 같은 위치·같은 줄 run 커버리지를 가지므로 시각적으로 동일하다.
+/// 개별 TextRun 은 서명에서 제외하고(재분할 노이즈 회피), 부모 TextLine 서명에 run 커버리지를
+/// 포함해 실제 텍스트 변화만 잡는다. 계층 LCS 매칭이 순서 뒤바뀐 동일-위치 노드를 오짝지어
+/// 내던 허위 변위(별지 370px, hwp3 변환 리오더)를 원천 차단하면서 실회귀는 보존한다.
+fn flatten_pos_set(n: &RenderNode) -> Vec<String> {
+    let mut out = Vec::new();
+    fn rec(n: &RenderNode, out: &mut Vec<String>) {
+        let t = node_type_str(&n.node_type);
+        if t != "TextRun" {
+            let mut sig = format!(
+                "{t}|{}|{}|{}|{}",
+                q100(n.bbox.x),
+                q100(n.bbox.y),
+                q100(n.bbox.width),
+                q100(n.bbox.height)
+            );
+            if t == "TextLine" {
+                sig.push_str(&format!("|cov{:?}", line_run_coverage(n)));
+            }
+            out.push(sig);
+        }
+        for c in &n.children {
+            rec(c, out);
+        }
+    }
+    rec(n, &mut out);
+    out.sort_unstable();
+    out
+}
+
 /// 노드 타입별 개수 히스토그램 (재귀).
 fn type_histogram(n: &RenderNode, acc: &mut std::collections::BTreeMap<&'static str, usize>) {
     *acc.entry(node_type_str(&n.node_type)).or_insert(0) += 1;
@@ -323,6 +383,24 @@ fn is_textrun_pm1(inserts: &[&'static str], deletes: &[&'static str]) -> bool {
 pub fn diff_page(page: u32, root_a: &RenderNode, root_b: &RenderNode) -> PageGeomDiff {
     let node_count_a = count_nodes(root_a);
     let node_count_b = count_nodes(root_b);
+
+    // [#1993] 위치 집합이 완전히 동일하면(픽셀 동일, 순서/계층만 상이) 변위·구조
+    // 불일치 없음으로 단락. 계층 LCS 매칭이 순서 뒤바뀐 동일-위치 노드를 오짝지어
+    // 내던 허위 변위(별지 370px, hwp3 변환 6건 등)를 제거한다.
+    if flatten_pos_set(root_a) == flatten_pos_set(root_b) {
+        return PageGeomDiff {
+            page,
+            node_count_a,
+            node_count_b,
+            structure_mismatch: false,
+            max_disp: 0.0,
+            mean_disp: 0.0,
+            top_deltas: Vec::new(),
+            type_deltas: Vec::new(),
+            struct_textrun_pm1: false,
+        };
+    }
+
     let mut acc = PageAccum::new();
 
     let ta = node_type_str(&root_a.node_type);
@@ -1058,5 +1136,111 @@ mod tests {
         ]);
         let sum = summarize(&d, None, 1.0);
         assert_eq!(status_str(&d, &sum, 1.0), "STRUCT_MISMATCH");
+    }
+
+    // ---- [#1993] flatten_pos_set / line_run_coverage 회귀 ----
+
+    fn run_node(x: f64, y: f64, w: f64, h: f64) -> RenderNode {
+        use crate::renderer::render_tree::TextRunNode;
+        use crate::renderer::TextStyle;
+        RenderNode::new(
+            3,
+            RenderNodeType::TextRun(TextRunNode {
+                text: "x".to_string(),
+                style: TextStyle::default(),
+                char_shape_id: None,
+                para_shape_id: None,
+                section_index: None,
+                para_index: None,
+                char_start: None,
+                cell_context: None,
+                is_para_end: false,
+                is_line_break_end: false,
+                rotation: 0.0,
+                is_vertical: false,
+                char_overlap: None,
+                border_fill_id: 0,
+                baseline: h * 0.8,
+                field_marker: Default::default(),
+            }),
+            BoundingBox::new(x, y, w, h),
+        )
+    }
+
+    fn text_line(x: f64, y: f64, w: f64, h: f64, runs: Vec<RenderNode>) -> RenderNode {
+        use crate::renderer::render_tree::TextLineNode;
+        let mut n = RenderNode::new(
+            2,
+            RenderNodeType::TextLine(TextLineNode::new(h, h * 0.8)),
+            BoundingBox::new(x, y, w, h),
+        );
+        n.children = runs;
+        n
+    }
+
+    #[test]
+    fn resegmented_runs_same_coverage_is_zero_diff() {
+        // 같은 줄의 동일 텍스트를 다른 경계로 재분할 → run 커버리지 합집합 불변 → 허위 변위 없음.
+        let a = page_root(vec![text_line(
+            0.0,
+            0.0,
+            60.0,
+            10.0,
+            vec![
+                run_node(0.0, 0.0, 30.0, 10.0),
+                run_node(30.0, 0.0, 30.0, 10.0),
+            ],
+        )]);
+        let b = page_root(vec![text_line(
+            0.0,
+            0.0,
+            60.0,
+            10.0,
+            vec![
+                run_node(0.0, 0.0, 20.0, 10.0),
+                run_node(20.0, 0.0, 40.0, 10.0),
+            ],
+        )]);
+        let pg = diff_page(0, &a, &b);
+        assert!(!pg.structure_mismatch);
+        assert_eq!(pg.max_disp, 0.0);
+    }
+
+    #[test]
+    fn reordered_sibling_lines_same_positions_is_zero_diff() {
+        // 위치 동일한 두 줄이 자식 순서만 뒤바뀜(hwp3 리오더/별지 370px 유형) → 계층 LCS 오짝지음이
+        // 내던 허위 변위가 flatten 멀티셋 사전차단으로 사라진다.
+        let la = text_line(0.0, 0.0, 60.0, 10.0, vec![run_node(0.0, 0.0, 60.0, 10.0)]);
+        let lb = text_line(0.0, 20.0, 60.0, 10.0, vec![run_node(0.0, 20.0, 60.0, 10.0)]);
+        let a = page_root(vec![la.clone(), lb.clone()]);
+        let b = page_root(vec![lb, la]); // 순서만 스왑
+        let pg = diff_page(0, &a, &b);
+        assert!(!pg.structure_mismatch);
+        assert_eq!(pg.max_disp, 0.0);
+    }
+
+    #[test]
+    fn real_run_coverage_change_is_not_masked() {
+        // run 커버리지가 실제로 달라지면(줄 폭 축소 = run 삭제) 사전차단이 발동하지 않고 검출된다.
+        let a = page_root(vec![text_line(
+            0.0,
+            0.0,
+            60.0,
+            10.0,
+            vec![
+                run_node(0.0, 0.0, 30.0, 10.0),
+                run_node(30.0, 0.0, 30.0, 10.0),
+            ],
+        )]);
+        let b = page_root(vec![text_line(
+            0.0,
+            0.0,
+            30.0,
+            10.0,
+            vec![run_node(0.0, 0.0, 30.0, 10.0)],
+        )]);
+        let pg = diff_page(0, &a, &b);
+        // 커버리지·줄폭이 다르므로 사전차단 미발동 → 구조 불일치로 검출(위양성 아님).
+        assert!(pg.structure_mismatch);
     }
 }

@@ -4,6 +4,69 @@ This document records the major changes of the rhwp project.
 
 > 한국어 버전은 [CHANGELOG.md](CHANGELOG.md) 를 참조하세요.
 
+## [0.7.18] — 2026-07-11
+
+> Patch release following v0.7.17 — large-scale rendering fidelity fixes (floating/front
+> object pagination, RowBreak tables, endnote flow), huge-table performance, editor
+> caret/undo/OLE parity, lenient parsing & expanded HWPX preservation, WMF shape rewrite.
+> Includes 21 internal refactoring rounds with zero behavioral regressions. Public API
+> remains backward compatible — PATCH.
+
+### Rendering fidelity
+- Floating/front object pagination parity: one-image-per-page splitting (#1995/#2004/#2006),
+  paper-anchored behind-text tables (#1994), floating-form over-pagination 81→18 pages
+  (#2019), nested 1×1 cell content pagination (#2007).
+- RowBreak tables: block-cut sliver absorption (#1921), footnote-heavy over-pagination
+  (#1937), missing-LINE_SEG cell line-height correction 213→159 pages (#1842),
+  declared-fit trust expansion (#2097), vert_offset double-counting (#2015).
+- Bottom saved-bounds trust (#2093), page-bottom anchored frame vpos=0 preservation
+  (#1920/#2158), Hancom-family Latin/punctuation widths mapped to Haansoft Batang
+  metrics (#2156), and more.
+
+### Performance
+- Removed O(pages×cell) re-measurement via cell_units memoization (#1949); removed O(n²)
+  cell measurement for a 52,694-cell document render timeout (#2063); DocumentCore: Send
+  restored via Rc→Arc (#2087).
+
+### Editor (rhwp-studio)
+- Caret on late pages: 3,064ms→33ms via page-hint search (#2021). Unified undo snapshot
+  routing for find&replace and picture/equation property dialogs (#2037/#2028/#2077).
+  OLE selection/caption/paste parity (#2069), table-cell Enter caret fixes (#2164/#1951).
+
+### Parser & serialization
+- Lenient decoding fallback for partially corrupted documents (#1932), unregistered
+  styleIDRef demotion (#1933), encrypted-HWPX detection (#1946), MAX_XML_SIZE 256MB
+  (#1917). HWPX preservation: note shapes (#1984), breakLatinWord (#1986), secPr fields
+  (#1987), curSz=0 sentinel (#2017). HWP5 page_def/CommonObjAttr round-trip (#1915/#1916).
+
+### WMF/Shapes
+- write_line rewrite fixing connectLine corruption (#1943), legacy drawText emission
+  (#1944), shape restrictInPage bottom clamp (#2075), cell-anchored picture
+  vertical_align (#2071).
+
+### Internal quality
+- 21 complexity-refactoring rounds: max CC 288→117 (−59%), zero behavioral regressions
+  across all rounds (#1904/#2131), metric formula v2.1 + reduction-potential scanner
+  (#2130), quality dashboard published under mydocs/metrics/.
+### Contributors
+
+268 contributor PRs merged this cycle (since v0.7.17), GitHub handles in alphabetical order:
+
+- @humdrum00001010 — HWPX package-graph serialization (#1675), endnote parity (#1875), +3
+- @jangster77 (Taesup Jang) — 130 PRs: table/editing parity, external PR integration & reviews, OLE object parity (#2103), long-input caret/IME (#2172)
+- @johndoekim — bangjeom rendering (#1738), OOXML chart C1c/C1d (#1890/#1954/#2140), +3
+- @kkyu8925 — empty-host co-anchored float table orphan control (#1767), +3 *(first contribution — welcome!)*
+- @lpaiu-cs — undo snapshot routing trilogy (#2028/#2039/#2078), restrictInPage clamps (#2033/#2076), BinData id allocation (#2040), cell-anchored picture valign (#2074) *(first contribution — welcome!)*
+- @oleg-sung — centered cell paragraph vpos after TAC shape (#1674) *(first contribution — welcome!)*
+- @physwkim — cell_units Rc→Arc Send restoration (#2087), new-paragraph format inheritance (#2095)
+- @planet6897 (Jaeook Ryu) — 74 PRs: rendering-fidelity series (RowBreak tables, floating/front object pagination, huge-table performance #2063, 10k-document surveys)
+- @postmelee (Taegyu Lee) — 28 PRs: CI release-test migration (#1739), frontend refactoring plan v2 (#2080) & Phase 0 baseline (#2174, in progress)
+- @seo-rii — CanvasKit object-gap diagnostics (#1806), +2
+- @snvtac — endnote reset-rewind column placement (#1495) *(first contribution — welcome!)*
+
+Dependencies: 6 dependabot PRs (including the quick-xml 0.41 security release).
+
+
 ## [0.7.17] — 2026-06-23
 
 > Patch following v0.7.16 — first OOXML chart render-fidelity work, legacy-shape shapeComment

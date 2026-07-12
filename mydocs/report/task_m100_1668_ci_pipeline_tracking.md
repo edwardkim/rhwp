@@ -17,6 +17,9 @@
 - #1849 최종 보고서: `mydocs/report/task_m100_1849_report.md`
 - #1667 원천 측정 문서: `mydocs/report/task_m100_1667_measurement.md`
 - #1667 최종 보고서: `mydocs/report/task_m100_1667_report.md`
+- #1665 원천 측정 문서: `mydocs/report/task_m100_1665_measurement.md`
+- #1665 최종 보고서: `mydocs/report/task_m100_1665_report.md`
+- #1668 최종 보고서: `mydocs/report/task_m100_1668_report.md`
 
 문서 PR #1701은 정책/측정 기록만 포함한다. 실제 CI workflow 변경은 후속 코드 PR #1702에서 다루며, #1702
 관측값은 draft 코드 PR run 기준 비교 자료다. #1702가 merge되기 전에는 workflow 변경이 `devel`에 반영된
@@ -48,6 +51,15 @@ failure 경고 없음이 확인됐다.
 2026-07-04 #1667 최종 관측에서는 Render Diff PR cache save 표면 제거, closed/merged PR ref 수동 cleanup,
 Build & Test 기본 feature test 중복 step 제거까지 확인했다. `Swatinem/rust-cache`는 즉시 도입하지 않고,
 현행 `actions/cache` 유지 + restore/save 분리 + cleanup 운영으로 충분하다고 판단했다.
+
+2026-07-04 #1665 최종 관측에서는 Native Skia tests 분리 + aggregate `Build & Test` gate 구조가
+PR / `devel` push 모두에서 Build & Test critical path를 줄였음을 확인했다. PR 표본 22개 기준 P50 8m47s,
+P90 9m10s이고, `devel` push 표본 19개 기준 P50 10m38s, P90 11m34s다. `devel` push checks 완료 P90
+17m39s는 runner queue 대기 영향이 크므로 critical path와 분리해 해석한다.
+
+2026-07-04 #1668 최종 보고에서는 부모 이슈 전체 before/after를 재정리했다. before는 #1702 merge 후
+#1739 merge 전의 순수 #1664 구간, after는 #1665 merge 이후 successful full CI 표본으로 삼는다. PR
+`Build & Test` 비교 wall time은 P50 22m34s에서 8m47s로, P90 23m46s에서 9m10s로 줄었다.
 
 ## 메인테이너 결정사항
 
@@ -88,7 +100,7 @@ CI 단축은 회귀 가드 구조를 보존하면서 프로필, 캐시, 병렬�
 | 2 | #1666 | PR `release-test` 프로필 전환 | 코드 PR #1739 merge 완료. PR `Build & Test`는 10m49s로 개선, merge 후 `devel` push는 release integration 비용으로 50분대 확인 |
 | 3 | #1849 | `devel` push profile 배치 재조정 | 코드 PR #1851 merge 완료. `devel` push는 release build smoke + `release-test` 전체 회귀로 전환됐고, `Build & Test`는 14m13s로 감소 |
 | 4 | #1667 | Rust 캐시 전략 검토 | CodeQL Rust #1857, Render Diff #1865, cleanup, Build & Test 기본 feature test 정리 #1872 완료. `Swatinem/rust-cache` 즉시 도입 보류 |
-| 5 | #1665 | Build & Test job 병렬 분리 | #1849에서 `devel` push profile 정책을 먼저 확정한 뒤 병렬화 효과와 runner-minutes를 재산정 |
+| 5 | #1665 | Build & Test job 병렬 분리 | 코드 PR #1877 merge 완료. PR / `devel` push P50/P90 재산정 완료. critical path 개선 확인, runner-minutes proxy는 증가했으나 +40% 재검토 기준 미만 |
 
 ## 공통 측정 기준
 
@@ -553,6 +565,61 @@ cache / 회귀 가드:
 - 남은 최적화 축은 #1665 job 병렬화다. Native Skia tests는 feature set이 달라 기본 feature test 산출물을 그대로
   재사용하기 어렵기 때문에 병렬 분리 후보로 남긴다.
 
+## #1665 관측 요약
+
+### #1877 Build & Test Native Skia 병렬 분리
+
+- PR: #1877
+- merge commit: `71e6d8ec7fb65ec91351a2545fc7d6da26baed5f`
+- 최종 측정 문서: `mydocs/report/task_m100_1665_measurement.md`
+- 최종 보고서: `mydocs/report/task_m100_1665_report.md`
+- 결론: 성공
+
+before 기준선:
+
+- #1872 merge 후 `devel` push run: <https://github.com/edwardkim/rhwp/actions/runs/28676046470>
+- 기존 `CI / Build & Test` job: 12m45s
+
+after PR 표본 22개:
+
+| 항목 | P50 | P90 | 비고 |
+|------|-----|-----|------|
+| PR checks 완료 시간 | 9m12s | 9m51s | queue 포함 |
+| Build & Test critical path | 8m47s | 9m10s | before 12m45s 대비 개선 |
+| runner-minutes proxy | 12m44s | 13m22s | P50은 before와 거의 동일 |
+| Build | 1m34s | 1m39s | PR은 `release-test` |
+| Run default-feature tests | 4m58s | 5m11s | 기본 feature 회귀 |
+| Native Skia tests | 2m16s | 2m24s | 별도 worker |
+
+after `devel` push 표본 19개:
+
+| 항목 | P50 | P90 | 비고 |
+|------|-----|-----|------|
+| checks 완료 시간 | 10m49s | 17m39s | P90은 queue 대기 영향 |
+| Build & Test critical path | 10m38s | 11m34s | before 12m45s 대비 개선 |
+| runner-minutes proxy | 14m42s | 15m50s | 별도 worker setup 비용으로 증가 |
+| Build | 3m31s | 3m46s | trusted branch `release` smoke |
+| Run default-feature tests | 4m57s | 5m11s | `release-test` 전체 회귀 |
+| Native Skia tests | 2m13s | 2m23s | 별도 worker |
+
+cache / 회귀 가드:
+
+- 대표 after run에서 cargo cache exact hit, cache size 1,637,296,893 B
+- PR save skipped 유지, Native Skia job save step 없음
+- cache reservation / read-only / save failure 경고 없음
+- `CI / Build & Test` required check 이름 유지
+- 최신 대표 run 기준 `Run default-feature tests` 192개 test harness, 2859 passed, 21 ignored
+- 최신 대표 run 기준 `Native Skia tests` 48 passed, 2112 filtered out
+- 최신 워크트리 기준 `tests/*.rs` 189개, `tests/issue*.rs` 158개
+
+판단:
+
+- #1665는 step 자체를 크게 빠르게 만든 것이 아니라 Native Skia 경로를 기본 feature 회귀 경로와 겹쳐
+  critical path를 줄인 작업이다.
+- `devel` push runner-minutes proxy는 늘었지만 수행계획서의 +40% 재검토 기준에는 미치지 않는다.
+- 추가 병렬화는 runner-minutes와 required check 표면 복잡도를 더 키울 수 있으므로, 현 단계에서는
+  1차 병렬화 구조를 유지하고 queue 대기 / runner-minutes 추이를 별도 운영 지표로 본다.
+
 ## P50/P90 상태
 
 | 구간 | 대상 | 샘플 수 | 판단 |
@@ -576,10 +643,14 @@ cache / 회귀 가드:
 | #1667 Render Diff 변경 전 | `Canvas visual diff` job 시간 | 20 | P50 3m47s, P90 3m57s |
 | #1667 Render Diff 변경 후 | `Canvas visual diff` job 시간 | 3 | P50 3m40s, P90 4m06s. n=3 보조값 |
 | #1667 Build & Test 정리 후 | trusted branch `Build & Test` job 시간 | 1 | 단일 관측값 12m45s. 직전 #1873 13m43s 대비 -58s |
+| #1665 변경 후 | PR Build & Test critical path | 22 | P50 8m47s, P90 9m10s |
+| #1665 변경 후 | PR checks 완료 시간 | 22 | P50 9m12s, P90 9m51s |
+| #1665 변경 후 | trusted branch Build & Test critical path | 19 | P50 10m38s, P90 11m34s |
+| #1665 변경 후 | trusted branch checks 완료 시간 | 19 | P50 10m49s, P90 17m39s. P90은 queue 대기 영향 |
 
 ## 다음 확인 항목
 
-1. #1667은 final report comment와 문서 PR 반영 후 close 후보로 본다.
-2. #1665에서는 #1849 / #1667 이후에도 남는 `devel` push wall time과 runner-minutes를 병렬화 효과 산정의 주요 입력으로 사용한다.
-3. OPEN PR cache는 계속 생성될 수 있으므로, cleanup은 closed/merged PR ref만 대상으로 유지한다.
-4. cleanup 자동화가 필요해지면 #1667 범위 재오픈보다 별도 이슈/PR에서 `pull_request.closed` + allowlist 정책으로 검토한다.
+1. #1668은 최종 보고 코멘트와 문서 PR 반영 후 close 후보로 본다.
+2. OPEN PR cache는 계속 생성될 수 있으므로, cleanup은 closed/merged PR ref만 대상으로 유지한다.
+3. cleanup 자동화가 필요해지면 #1667 범위 재오픈보다 별도 이슈/PR에서 `pull_request.closed` + allowlist 정책으로 검토한다.
+4. PDF/그래프 보고서는 `task_m100_1668_report.md`의 시각화용 데이터를 원천으로 별도 산출한다.

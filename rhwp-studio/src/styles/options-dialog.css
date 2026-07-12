@@ -24,6 +24,11 @@
   text-align: center;
 }
 
+.opt-interval-input {
+  width: 64px;
+  text-align: center;
+}
+
 .opt-count-label {
   font-size: var(--font-size-md);
   color: var(--color-text-secondary);
@@ -49,4 +54,8 @@
   color: var(--color-text-muted);
   margin: 6px 0 0;
   line-height: 1.4;
+}
+
+.opt-autosave-row label {
+  min-width: 112px;
 }

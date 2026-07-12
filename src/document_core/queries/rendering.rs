@@ -9,9 +9,7 @@ use crate::model::page::ColumnDef;
 use crate::model::paragraph::{ColumnBreakType, Paragraph};
 use crate::paint::{LayerBuilder, LayerOutputOptions, PageLayerTree, RenderProfile};
 use crate::renderer::canvas::CanvasRenderer;
-use crate::renderer::composer::{
-    compose_paragraph, compose_section, estimate_composed_line_width, ComposedParagraph,
-};
+use crate::renderer::composer::{compose_paragraph, compose_section, ComposedParagraph};
 use crate::renderer::height_measurer::{HeightMeasurer, MeasuredSection, MeasuredTable};
 use crate::renderer::html::HtmlRenderer;
 use crate::renderer::layer_renderer::LayerRenderer;
@@ -19,11 +17,139 @@ use crate::renderer::layout::LayoutEngine;
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::{MasterPageRef, PageContent, PaginationResult, Paginator};
 use crate::renderer::render_tree::PageRenderTree;
-use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
+use crate::renderer::style_resolver::resolve_styles;
 use crate::renderer::svg::SvgRenderer;
 use crate::renderer::svg_layer::SvgLayerRenderer;
 use std::cell::RefCell;
 use std::fmt::Write as _;
+
+// ── [#2004] 부동 전면 이미지 스택 → 인라인 재분류 (render-전용, 원본 무손상) ──
+
+/// 부동(tac=false) 그림/그림-도형의 공통 속성(읽기).
+fn floating_stack_picture_common(ctrl: &Control) -> Option<&crate::model::shape::CommonObjAttr> {
+    match ctrl {
+        Control::Picture(pic) => Some(&pic.common),
+        Control::Shape(shape) => match shape.as_ref() {
+            crate::model::shape::ShapeObject::Picture(p) => Some(&p.common),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+/// 한 문단이 "동일 위치·겹침불허·전면급 부동 그림 다수" 스택인지.
+/// 한글은 이런 그림을 쪽당 1장씩 배치하지만 rhwp 는 앵커 쪽에 겹쳐 그린다(#2004 부동 변종).
+/// 게이트를 좁혀(모든 컨트롤이 tac=false·Square·overlap=false·전면급 그림 + 동일 세로오프셋 +
+/// 개수≥2 + 가시 텍스트 없음) 일반 부동개체 문단 오검출을 차단한다.
+fn para_is_floating_image_stack(para: &Paragraph, min_height_hu: i32) -> bool {
+    use crate::model::shape::TextWrap;
+    if para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}') {
+        return false;
+    }
+    if para.controls.is_empty() {
+        return false;
+    }
+    let mut count = 0usize;
+    let mut min_voff = i32::MAX;
+    let mut max_voff = i32::MIN;
+    let mut min_pic_h = i32::MAX;
+    for ctrl in &para.controls {
+        let Some(common) = floating_stack_picture_common(ctrl) else {
+            return false;
+        };
+        if common.treat_as_char
+            || !matches!(common.text_wrap, TextWrap::Square)
+            || common.allow_overlap
+            || (common.height as i32) < min_height_hu
+        {
+            return false;
+        }
+        let voff = common.vertical_offset as i32;
+        min_voff = min_voff.min(voff);
+        max_voff = max_voff.max(voff);
+        min_pic_h = min_pic_h.min(common.height as i32);
+        count += 1;
+    }
+    // [#2004] 세로오프셋이 동일하거나(#1995: 전부 0) 이미지 높이보다 작은 band 안에서
+    // varying(156714340: 0/-3360/-2940 …)이어 서로 크게 겹치면 "겹침 스택"으로 판정한다.
+    // 오프셋 spread ≥ 이미지 높이면 이미 세로로 벌어진 정상 배치이므로 제외.
+    count >= 2 && (max_voff as i64 - min_voff as i64) <= min_pic_h as i64
+}
+
+/// 문단의 그림/그림-도형을 인라인(tac=true)으로 재분류(정규화본에만 적용, 원본 무손상).
+fn reclassify_floating_pictures_inline(para: &mut Paragraph) {
+    for ctrl in para.controls.iter_mut() {
+        match ctrl {
+            Control::Picture(pic) => pic.common.treat_as_char = true,
+            Control::Shape(shape) => {
+                if let crate::model::shape::ShapeObject::Picture(p) = shape.as_mut() {
+                    p.common.treat_as_char = true;
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+/// [#2004] 문단이 품은 표의 셀에서 부동 이미지 스택을 "이미지 1장짜리 inline 문단 N개"로
+/// 분할·재분류한다(정규화본 전용, 원본 무손상). 156714340: 1×1 부동 표 셀에 전면 Square
+/// 이미지 5장 스택. 부동 이미지는 셀 앵커 절대배치라 겹치고, flow 에 없어 intra-cell
+/// 분할이 못 나눈다 → inline 문단 단위로 나눠 셀 흐름 유닛이 되게 한다. 변경 시 true.
+fn reclassify_cell_floating_stacks(para: &mut Paragraph, min_height_hu: i32) -> bool {
+    let mut changed = false;
+    for ctrl in para.controls.iter_mut() {
+        if let Control::Table(table) = ctrl {
+            for cell in table.cells.iter_mut() {
+                if !cell
+                    .paragraphs
+                    .iter()
+                    .any(|p| para_is_floating_image_stack(p, min_height_hu))
+                {
+                    continue;
+                }
+                let mut new_paras: Vec<Paragraph> = Vec::with_capacity(cell.paragraphs.len());
+                for cell_para in cell.paragraphs.drain(..) {
+                    if para_is_floating_image_stack(&cell_para, min_height_hu) {
+                        // [#2004 Stage1] 분할 문단에 이미지 높이를 담은 합성 line_seg 를
+                        // 부여한다. line_segs 를 비우면 셀 composition 이 placeholder
+                        // 1줄(400HWPU)로 붕괴해 셀 측정이 스택 총높이를 못 본다(3차 실증).
+                        // raw_lh(이미지 높이) ≥ font size 라 corrected_line_height 가
+                        // 줄간격 팽창 없이 그대로 반영한다.
+                        use crate::model::paragraph::LineSeg;
+                        let template = cell_para.line_segs.first().cloned().unwrap_or_default();
+                        let mut cum_vpos = template.vertical_pos;
+                        for img_ctrl in &cell_para.controls {
+                            let mut sp = cell_para.clone();
+                            sp.controls = vec![img_ctrl.clone()];
+                            let img_h = floating_stack_picture_common(img_ctrl)
+                                .map(|cm| cm.height as i32)
+                                .unwrap_or(template.line_height);
+                            sp.line_segs = vec![LineSeg {
+                                text_start: 0,
+                                vertical_pos: cum_vpos,
+                                line_height: img_h,
+                                text_height: img_h,
+                                baseline_distance: img_h,
+                                line_spacing: 0,
+                                column_start: 0,
+                                segment_width: template.segment_width,
+                                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                            }];
+                            cum_vpos = cum_vpos.saturating_add(img_h);
+                            reclassify_floating_pictures_inline(&mut sp);
+                            new_paras.push(sp);
+                        }
+                        changed = true;
+                    } else {
+                        new_paras.push(cell_para);
+                    }
+                }
+                cell.paragraphs = new_paras;
+            }
+        }
+    }
+    changed
+}
 
 fn uses_hwp3_origin_page_tolerance(document: &Document) -> bool {
     let total_paragraphs: usize = document.sections.iter().map(|s| s.paragraphs.len()).sum();
@@ -34,35 +160,6 @@ fn uses_hwp3_origin_page_tolerance(document: &Document) -> bool {
     let para_shape_ratio = document.doc_info.para_shapes.len() as f64 / total_paragraphs as f64;
     let char_shape_ratio = document.doc_info.char_shapes.len() as f64 / total_paragraphs as f64;
     para_shape_ratio < 0.05 && char_shape_ratio < 0.15
-}
-
-fn stale_lineseg_starts_overflow(
-    para: &Paragraph,
-    available_width_px: f64,
-    styles: &ResolvedStyleSet,
-) -> bool {
-    if para.controls.len() > 0
-        || para.line_segs.len() < 2
-        || para.text.trim().is_empty()
-        || para.text.contains('\n')
-        || available_width_px <= 0.0
-    {
-        return false;
-    }
-
-    let has_non_increasing_start = para
-        .line_segs
-        .windows(2)
-        .any(|pair| pair[1].text_start <= pair[0].text_start);
-    if !has_non_increasing_start {
-        return false;
-    }
-
-    compose_paragraph(para)
-        .lines
-        .iter()
-        .map(|line| estimate_composed_line_width(line, styles))
-        .any(|width| width > available_width_px + 0.5)
 }
 
 fn uses_hwp3_origin_flow_spacing_before(document: &Document) -> bool {
@@ -350,7 +447,6 @@ impl DocumentCore {
 
     /// 페이지 레이어 트리를 생성하여 반환한다 (native bridge / backend replay용).
     pub fn build_page_layer_tree(&self, page_num: u32) -> Result<PageLayerTree, HwpError> {
-        let tree = self.build_page_tree_cached(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
         let output_options = LayerOutputOptions {
             show_paragraph_marks: self.show_paragraph_marks,
@@ -359,9 +455,11 @@ impl DocumentCore {
             clip_enabled: self.clip_enabled,
             debug_overlay: self.debug_overlay,
         };
-        let mut builder =
-            LayerBuilder::new(RenderProfile::Screen).with_output_options(output_options);
-        Ok(builder.build(&tree))
+        self.with_page_tree_cached(page_num, |tree| {
+            let mut builder =
+                LayerBuilder::new(RenderProfile::Screen).with_output_options(output_options);
+            Ok(builder.build(tree))
+        })
     }
 
     /// 바이너리 데이터를 0-based `bin_data_content` 인덱스로 반환한다.
@@ -793,17 +891,20 @@ impl DocumentCore {
         Ok(self.build_page_layer_tree(page_num)?.to_json())
     }
 
-    /// 페이지 overlay 이미지 정보만 작은 JSON으로 반환한다.
+    /// 페이지 overlay 이미지와 replay-plane summary만 작은 JSON으로 반환한다.
     ///
     /// Studio는 BehindText/InFrontOfText 그림 overlay 계산을 위해 전체 PageLayerTree JSON을
     /// 파싱할 필요가 없다. 특히 그림이 본문 layer에만 있는 페이지에서는 빈 overlay 배열과
-    /// imageCount만 반환하여 입력 중 대용량 JSON 직렬화/파싱을 피한다.
+    /// imageCount/rawSvgCount/flowImageCount/flowRawSvgCount/hasBehind/hasFront만
+    /// 반환하여 입력 중 대용량 JSON 직렬화/파싱을 피한다.
     pub fn get_page_overlay_images_native(&self, page_num: u32) -> Result<String, HwpError> {
         use crate::model::image::ImageEffect;
         use crate::model::shape::TextWrap;
         use crate::paint::{
-            LayerNode, LayerNodeKind, PaintOp, ResolvedImageKind, ResolvedImagePayload,
+            paint_op_replay_plane_with_layer, LayerNode, LayerNodeKind, PaintOp, PaintReplayPlane,
+            ResolvedImageKind, ResolvedImagePayload,
         };
+        use crate::renderer::render_tree::RenderLayerInfo;
         use crate::renderer::render_tree::{BoundingBox, ImageNode};
         use base64::Engine;
 
@@ -931,16 +1032,51 @@ impl DocumentCore {
             behind: &mut String,
             front: &mut String,
             image_count: &mut usize,
+            raw_svg_count: &mut usize,
+            flow_image_count: &mut usize,
+            flow_raw_svg_count: &mut usize,
+            has_behind: &mut bool,
+            has_front: &mut bool,
+            inherited_layer: Option<RenderLayerInfo>,
         ) {
+            let active_layer = node.layer.or(inherited_layer);
             match &node.kind {
                 LayerNodeKind::Group { children, .. } => {
                     for child in children {
-                        collect(child, behind, front, image_count);
+                        collect(
+                            child,
+                            behind,
+                            front,
+                            image_count,
+                            raw_svg_count,
+                            flow_image_count,
+                            flow_raw_svg_count,
+                            has_behind,
+                            has_front,
+                            active_layer,
+                        );
                     }
                 }
-                LayerNodeKind::ClipRect { child, .. } => collect(child, behind, front, image_count),
+                LayerNodeKind::ClipRect { child, .. } => collect(
+                    child,
+                    behind,
+                    front,
+                    image_count,
+                    raw_svg_count,
+                    flow_image_count,
+                    flow_raw_svg_count,
+                    has_behind,
+                    has_front,
+                    active_layer,
+                ),
                 LayerNodeKind::Leaf { ops } => {
                     for op in ops {
+                        let plane = paint_op_replay_plane_with_layer(op, active_layer);
+                        match plane {
+                            PaintReplayPlane::BehindText => *has_behind = true,
+                            PaintReplayPlane::InFrontOfText => *has_front = true,
+                            _ => {}
+                        }
                         match op {
                             PaintOp::Image {
                                 bbox,
@@ -948,8 +1084,8 @@ impl DocumentCore {
                                 resolved,
                             } => {
                                 *image_count += 1;
-                                match image.text_wrap {
-                                    Some(TextWrap::BehindText) => {
+                                match plane {
+                                    PaintReplayPlane::BehindText => {
                                         write_overlay_image(
                                             behind,
                                             *bbox,
@@ -958,7 +1094,7 @@ impl DocumentCore {
                                             TextWrap::BehindText,
                                         );
                                     }
-                                    Some(TextWrap::InFrontOfText) => {
+                                    PaintReplayPlane::InFrontOfText => {
                                         write_overlay_image(
                                             front,
                                             *bbox,
@@ -967,14 +1103,19 @@ impl DocumentCore {
                                             TextWrap::InFrontOfText,
                                         );
                                     }
-                                    _ => {}
+                                    PaintReplayPlane::Flow | PaintReplayPlane::Background => {
+                                        *flow_image_count += 1;
+                                    }
                                 }
                             }
                             // OLE/차트 미리보기 등은 RawSvg 로 emit 되며 web_canvas 의 draw_image
                             // 경로(IMAGE_CACHE 비동기 디코드)를 그대로 탄다. scheduleReRender 재시도
-                            // 발화를 위해 image_count 에 포함한다.
+                            // 발화를 위해 별도 rawSvgCount 로 노출한다.
                             PaintOp::RawSvg { .. } => {
-                                *image_count += 1;
+                                *raw_svg_count += 1;
+                                if plane == PaintReplayPlane::Flow {
+                                    *flow_raw_svg_count += 1;
+                                }
                             }
                             _ => {}
                         }
@@ -987,11 +1128,34 @@ impl DocumentCore {
         let mut behind = String::new();
         let mut front = String::new();
         let mut image_count = 0usize;
-        collect(&tree.root, &mut behind, &mut front, &mut image_count);
+        let mut raw_svg_count = 0usize;
+        let mut flow_image_count = 0usize;
+        let mut flow_raw_svg_count = 0usize;
+        let mut has_behind = false;
+        let mut has_front = false;
+        collect(
+            &tree.root,
+            &mut behind,
+            &mut front,
+            &mut image_count,
+            &mut raw_svg_count,
+            &mut flow_image_count,
+            &mut flow_raw_svg_count,
+            &mut has_behind,
+            &mut has_front,
+            None,
+        );
 
         Ok(format!(
-            "{{\"behind\":[{}],\"front\":[{}],\"imageCount\":{}}}",
-            behind, front, image_count
+            "{{\"behind\":[{}],\"front\":[{}],\"imageCount\":{},\"rawSvgCount\":{},\"flowImageCount\":{},\"flowRawSvgCount\":{},\"hasBehind\":{},\"hasFront\":{}}}",
+            behind,
+            front,
+            image_count,
+            raw_svg_count,
+            flow_image_count,
+            flow_raw_svg_count,
+            has_behind,
+            has_front
         ))
     }
 
@@ -1876,6 +2040,46 @@ impl DocumentCore {
                     ));
                     return;
                 }
+                RenderNodeType::RawSvg(raw_node) => {
+                    if let Some(control_ref) = raw_node
+                        .control_ref
+                        .as_ref()
+                        .filter(|control_ref| control_ref.kind == "ole")
+                    {
+                        controls.push(format!(
+                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}}}",
+                            node.bbox.x,
+                            node.bbox.y,
+                            node.bbox.width,
+                            node.bbox.height,
+                            control_ref.section_index,
+                            control_ref.para_index,
+                            control_ref.control_index,
+                            layer_str
+                        ));
+                        return;
+                    }
+                }
+                RenderNodeType::Placeholder(placeholder_node) => {
+                    if let Some(control_ref) = placeholder_node
+                        .control_ref
+                        .as_ref()
+                        .filter(|control_ref| control_ref.kind == "ole")
+                    {
+                        controls.push(format!(
+                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}}}",
+                            node.bbox.x,
+                            node.bbox.y,
+                            node.bbox.width,
+                            node.bbox.height,
+                            control_ref.section_index,
+                            control_ref.para_index,
+                            control_ref.control_index,
+                            layer_str
+                        ));
+                        return;
+                    }
+                }
                 RenderNodeType::Group(group_node) => {
                     if let (Some(si), Some(pi), Some(ci)) = (
                         group_node.section_index,
@@ -2200,111 +2404,23 @@ impl DocumentCore {
         self.paginate_pass(&empty_breaks);
     }
 
-    /// stale LINE_SEG metadata 를 실제 컬럼 너비로 정규화한다.
-    ///
-    /// 기존 다단 over-wide segment_width 보정에 더해, 편집 후 모든 text_start 가
-    /// 0으로 남은 body paragraph 도 overflow 가 확인될 때만 reflow 한다.
-    fn normalize_overwide_column_linesegs(&mut self) {
-        let dpi = self.dpi;
-        let styles = resolve_styles(&self.document.doc_info, dpi);
-        const OVERWIDE_SLACK_PX: f64 = 24.0;
-        let sec_count = self.document.sections.len();
-        let mut modified_sections: Vec<usize> = Vec::new();
-
-        for sec_idx in 0..sec_count {
-            let section = &mut self.document.sections[sec_idx];
-            let column_def = Self::find_initial_column_def(&section.paragraphs);
-            let page_def = &section.section_def.page_def;
-            let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
-            let col_width_px = match layout.column_areas.first() {
-                Some(a) => a.width,
-                None => continue,
-            };
-            let col_width_hu = crate::renderer::px_to_hwpunit(col_width_px, dpi);
-            let overwide_hu = col_width_hu + crate::renderer::px_to_hwpunit(OVERWIDE_SLACK_PX, dpi);
-            let mut first_modified: Option<usize> = None;
-
-            let reflow_if_needed = |para: &mut crate::model::paragraph::Paragraph,
-                                    available_width_px: f64|
-             -> bool {
-                if para.text.trim().is_empty() {
-                    return false;
-                }
-
-                let is_column_overwide = column_def.column_count.max(1) > 1
-                    && para
-                        .line_segs
-                        .iter()
-                        .any(|ls| ls.segment_width > overwide_hu);
-                let is_stale_text_start_overflow =
-                    stale_lineseg_starts_overflow(para, available_width_px, &styles);
-
-                if !is_column_overwide && !is_stale_text_start_overflow {
-                    return false;
-                }
-
-                crate::renderer::composer::reflow_line_segs(para, available_width_px, &styles, dpi);
-                true
-            };
-
-            for (p_idx, para) in section.paragraphs.iter_mut().enumerate() {
-                let para_style = styles.para_styles.get(para.para_shape_id as usize);
-                let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-                let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-                let available_width = (col_width_px - margin_left - margin_right).max(1.0);
-                let mut para_changed = reflow_if_needed(para, available_width);
-
-                for ctrl in para.controls.iter_mut() {
-                    let note_paras = match ctrl {
-                        crate::model::control::Control::Footnote(f) => Some(&mut f.paragraphs),
-                        crate::model::control::Control::Endnote(e) => Some(&mut e.paragraphs),
-                        _ => None,
-                    };
-                    if let Some(note_paras) = note_paras {
-                        for note_para in note_paras.iter_mut() {
-                            let note_style =
-                                styles.para_styles.get(note_para.para_shape_id as usize);
-                            let note_margin_left = note_style.map(|s| s.margin_left).unwrap_or(0.0);
-                            let note_margin_right =
-                                note_style.map(|s| s.margin_right).unwrap_or(0.0);
-                            let note_width =
-                                (col_width_px - note_margin_left - note_margin_right).max(1.0);
-                            if reflow_if_needed(note_para, note_width) {
-                                para_changed = true;
-                            }
-                        }
-                    }
-                }
-
-                if para_changed && first_modified.is_none() {
-                    first_modified = Some(p_idx);
-                }
-            }
-            if let Some(start_idx) = first_modified {
-                // reflow 로 line_segs 가 바뀌면 vertical_pos 누적을 재계산해야 후속
-                // 문단들의 흐름 위치가 일관된다.
-                crate::renderer::composer::recalculate_section_vpos(
-                    &mut self.document.sections[sec_idx].paragraphs,
-                    start_idx,
-                );
-                modified_sections.push(sec_idx);
-            }
-        }
-
-        for sec_idx in modified_sections {
-            self.recompose_section(sec_idx);
-        }
-    }
-
     fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
         self.invalidate_page_tree_cache();
-        self.normalize_overwide_column_linesegs();
+        // [#2004] 부동 이미지 스택 → 인라인 재분류 정규화본 재계산(원본 무손상).
+        self.compute_render_normalized();
         let paginator = Paginator::new(self.dpi);
         let hwp3_origin_flow_spacing_before = uses_hwp3_origin_flow_spacing_before(&self.document);
+        let is_hwp5_origin_hwpx = self
+            .document
+            .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+            .is_some();
         // [Issue #1770] rhwp HWPX→HWP 변환본(is_hwpx_variant, 마커 감지)은 IR 이
         // HWPX 시멘틱 그대로이므로 pagination 분기도 HWPX 로 해석한다 (roundtrip
         // 자기정합). native HWP5 는 마커가 없어 불변.
-        let is_hwpx_source = matches!(self.source_format, crate::parser::FileFormat::Hwpx)
+        // 반대로 rhwp HWP5→HWPX 산출물은 HWPX ZIP 이지만 HWP5 원본의 lineSeg 부재와
+        // pagination 시멘틱을 유지해야 하므로 HWPX 전용 분기에서 제외한다.
+        let is_hwpx_source = (matches!(self.source_format, crate::parser::FileFormat::Hwpx)
+            && !is_hwp5_origin_hwpx)
             || self.document.is_hwpx_variant;
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(self.document.is_hwp3_variant)
@@ -2344,6 +2460,7 @@ impl DocumentCore {
                 wrap_around_paras: Vec::new(),
                 hidden_empty_paras: std::collections::HashSet::new(),
                 pre_emitted_host_paras: std::collections::HashSet::new(),
+                pre_emitted_host_heights: std::collections::HashMap::new(),
                 endnotes: Vec::new(),
                 endnote_paragraphs: Vec::new(),
                 endnote_para_sources: Vec::new(),
@@ -2428,10 +2545,22 @@ impl DocumentCore {
                 continue;
             }
 
-            let composed = if idx < self.composed.len() {
-                &self.composed[idx]
-            } else {
-                continue;
+            // [#2004] render-전용 정규화본(부동 이미지 스택 인라인 재분류) 우선. 원본 무손상.
+            // 직접 필드 접근으로 disjoint-borrow 유지(이후 self.measured_* 가변 대입과 공존).
+            let norm = self.render_normalized.get(idx).and_then(|o| o.as_ref());
+            let para_src: &[Paragraph] = match norm {
+                Some((p, _)) => &p[..],
+                None => &section.paragraphs[..],
+            };
+            let composed: &[ComposedParagraph] = match norm {
+                Some((_, c)) => &c[..],
+                None => {
+                    if idx < self.composed.len() {
+                        &self.composed[idx][..]
+                    } else {
+                        continue;
+                    }
+                }
             };
 
             // 증분 측정: 이전 측정 데이터가 있으면 문단/표 수준 선택적 캐싱
@@ -2440,7 +2569,7 @@ impl DocumentCore {
                     .dirty_paragraphs
                     .get(idx)
                     .and_then(|opt| opt.as_deref());
-                let column_def_sel = Self::find_initial_column_def(&section.paragraphs);
+                let column_def_sel = Self::find_initial_column_def(para_src);
                 let layout_sel = crate::renderer::page_layout::PageLayoutInfo::from_page_def(
                     &section.section_def.page_def,
                     &column_def_sel,
@@ -2452,7 +2581,7 @@ impl DocumentCore {
                     .map(|a| a.width)
                     .unwrap_or(layout_sel.body_area.width);
                 measurer.measure_section_selective(
-                    &section.paragraphs,
+                    para_src,
                     composed,
                     &self.styles,
                     &self.measured_sections[idx],
@@ -2460,7 +2589,7 @@ impl DocumentCore {
                     Some(col_w_sel),
                 )
             } else {
-                let column_def_pre = Self::find_initial_column_def(&section.paragraphs);
+                let column_def_pre = Self::find_initial_column_def(para_src);
                 let layout_pre = crate::renderer::page_layout::PageLayoutInfo::from_page_def(
                     &section.section_def.page_def,
                     &column_def_pre,
@@ -2471,24 +2600,19 @@ impl DocumentCore {
                     .first()
                     .map(|a| a.width)
                     .unwrap_or(layout_pre.body_area.width);
-                measurer.measure_section(
-                    &section.paragraphs,
-                    composed,
-                    &self.styles,
-                    Some(col_w_pre),
-                )
+                measurer.measure_section(para_src, composed, &self.styles, Some(col_w_pre))
             };
 
             let hwp3_origin_page_tolerance =
                 self.document.is_hwp3_variant || uses_hwp3_origin_page_tolerance(&self.document);
-            let column_def = Self::find_initial_column_def(&section.paragraphs);
+            let column_def = Self::find_initial_column_def(para_src);
             // TypesetEngine을 main pagination으로 사용. RHWP_USE_PAGINATOR=1 로 fallback 가능.
             let use_paginator = std::env::var("RHWP_USE_PAGINATOR")
                 .map(|v| v == "1")
                 .unwrap_or(false);
             let mut result = if use_paginator {
                 paginator.paginate_with_measured_opts(
-                    &section.paragraphs,
+                    para_src,
                     &measured,
                     &section.section_def.page_def,
                     &column_def,
@@ -2565,7 +2689,7 @@ impl DocumentCore {
                 };
                 let typesetter = TypesetEngine::new(self.dpi);
                 typesetter.typeset_section_with_variant(
-                    &section.paragraphs,
+                    para_src,
                     composed,
                     &self.styles,
                     &section.section_def.page_def,
@@ -2581,6 +2705,7 @@ impl DocumentCore {
                     force_breaks.get(idx).unwrap_or(&empty_breaks),
                     matches!(self.source_format, crate::parser::FileFormat::Hwp3),
                     is_hwpx_source,
+                    is_hwp5_origin_hwpx,
                     endnote_deferral,
                 )
             };
@@ -3028,6 +3153,118 @@ impl DocumentCore {
     }
 
     /// 글로벌 페이지 번호로 해당 페이지와 문단/구성 목록을 찾는다.
+    /// [#2004] 섹션의 render-전용 문단 (부동 이미지 스택 재분류본, 없으면 원본).
+    pub(crate) fn section_render_paragraphs(&self, sec_idx: usize) -> &[Paragraph] {
+        match self.render_normalized.get(sec_idx).and_then(|o| o.as_ref()) {
+            Some((paras, _)) => &paras[..],
+            None => self
+                .document
+                .sections
+                .get(sec_idx)
+                .map(|s| &s.paragraphs[..])
+                .unwrap_or(&[]),
+        }
+    }
+
+    /// [#2004] 섹션의 render-전용 구성 (재분류본, 없으면 원본).
+    pub(crate) fn section_render_composed(&self, sec_idx: usize) -> &[ComposedParagraph] {
+        match self.render_normalized.get(sec_idx).and_then(|o| o.as_ref()) {
+            Some((_, comp)) => &comp[..],
+            None => self.composed.get(sec_idx).map(|c| &c[..]).unwrap_or(&[]),
+        }
+    }
+
+    /// [#2004] 부동 전면 이미지 스택 섹션의 정규화본(그림 tac=true 재분류 + 재구성)을 재계산.
+    /// 원본 `document`/`composed` 는 무손상(save 무결). paginate 시작 시 호출.
+    pub(crate) fn compute_render_normalized(&mut self) {
+        let sec_count = self.document.sections.len();
+        let mut out: Vec<Option<(Vec<Paragraph>, Vec<ComposedParagraph>)>> =
+            Vec::with_capacity(sec_count);
+        for idx in 0..sec_count {
+            let section = &self.document.sections[idx];
+            let pd = &section.section_def.page_def;
+            let body_h_hu = pd.height as i32
+                - pd.margin_top as i32
+                - pd.margin_bottom as i32
+                - pd.margin_header as i32
+                - pd.margin_footer as i32;
+            let min_height_hu = (body_h_hu / 2).max(1);
+            let matches: Vec<usize> = section
+                .paragraphs
+                .iter()
+                .enumerate()
+                .filter(|(_, p)| para_is_floating_image_stack(p, min_height_hu))
+                .map(|(i, _)| i)
+                .collect();
+            // [#2004] 표 셀 내부 부동 이미지 스택 검출(본문 스택과 별개 경로).
+            let has_cell_stack = section.paragraphs.iter().any(|p| {
+                p.controls.iter().any(|ctrl| match ctrl {
+                    Control::Table(table) => table.cells.iter().any(|cell| {
+                        cell.paragraphs
+                            .iter()
+                            .any(|cp| para_is_floating_image_stack(cp, min_height_hu))
+                    }),
+                    _ => false,
+                })
+            });
+            if matches.is_empty() && !has_cell_stack {
+                out.push(None);
+                continue;
+            }
+            let mut np = section.paragraphs.clone();
+            if has_cell_stack {
+                for p in np.iter_mut() {
+                    reclassify_cell_floating_stacks(p, min_height_hu);
+                }
+            }
+            for &i in &matches {
+                reclassify_floating_pictures_inline(&mut np[i]);
+            }
+            let base = self.composed.get(idx);
+            let nc: Vec<ComposedParagraph> = np
+                .iter()
+                .enumerate()
+                .map(|(i, p)| {
+                    if matches.binary_search(&i).is_ok() {
+                        let mut c = compose_paragraph(p);
+                        // [#2004] composer 가 line_seg 부족(HWP5 빈-문단)으로 1줄로 붕괴하면
+                        // 그림 수만큼 줄을 합성(모두 char_start 동일)해 Stage2 stacked 게이트
+                        // (comp.lines.len()==tac_controls) 가 발동하게 한다.
+                        let npics = c.tac_controls.len();
+                        if npics >= 2 && c.lines.len() != npics && !c.lines.is_empty() {
+                            let template = c.lines[0].clone();
+                            let mut lines = Vec::with_capacity(npics);
+                            for k in 0..npics {
+                                let lh_hu = p
+                                    .controls
+                                    .get(c.tac_controls[k].2)
+                                    .and_then(|ctrl| {
+                                        floating_stack_picture_common(ctrl)
+                                            .map(|cm| cm.height as i32)
+                                    })
+                                    .unwrap_or(template.line_height);
+                                let mut l = template.clone();
+                                l.runs = Vec::new();
+                                l.char_start = 0;
+                                l.line_height = lh_hu;
+                                l.has_line_break = false;
+                                lines.push(l);
+                            }
+                            c.lines = lines;
+                        }
+                        c
+                    } else {
+                        base.and_then(|c| c.get(i))
+                            .cloned()
+                            .unwrap_or_else(|| compose_paragraph(p))
+                    }
+                })
+                .collect();
+            out.push(Some((np, nc)));
+        }
+        self.render_normalized = out;
+    }
+
     pub(crate) fn find_page(
         &self,
         page_num: u32,
@@ -3043,16 +3280,9 @@ impl DocumentCore {
         for (sec_idx, pr) in self.pagination.iter().enumerate() {
             if (page_num as usize) < offset as usize + pr.pages.len() {
                 let local_idx = (page_num - offset) as usize;
-                let paragraphs = if sec_idx < self.document.sections.len() {
-                    &self.document.sections[sec_idx].paragraphs[..]
-                } else {
-                    &[][..]
-                };
-                let composed = if sec_idx < self.composed.len() {
-                    &self.composed[sec_idx][..]
-                } else {
-                    &[][..]
-                };
+                // [#2004] render-전용 정규화본 우선(부동 이미지 스택 재분류). 없으면 원본.
+                let paragraphs = self.section_render_paragraphs(sec_idx);
+                let composed = self.section_render_composed(sec_idx);
                 return Ok((&pr.pages[local_idx], paragraphs, composed));
             }
             offset += pr.pages.len() as u32;
@@ -3072,12 +3302,7 @@ impl DocumentCore {
         let mut global_page = 0u32;
 
         for (sec_idx, pr) in self.pagination.iter().enumerate() {
-            let body_paragraphs = self
-                .document
-                .sections
-                .get(sec_idx)
-                .map(|s| &s.paragraphs[..])
-                .unwrap_or(&[]);
+            let body_paragraphs = self.section_render_paragraphs(sec_idx);
             // [Task #1082] 미주 paragraphs 를 본문 뒤에 합쳐 인덱싱 정합.
             // 미주 PageItem 의 para_index = body_paragraphs.len() + 미주 로컬 인덱스
             // (typeset.rs en_para_idx 와 동일). 합치지 않으면 미주 항목이 out-of-bounds 로
@@ -3150,7 +3375,22 @@ impl DocumentCore {
                             .unwrap_or(0.0);
                         let body_w = page.layout.body_area.width;
                         let is_wrap_zone = sw_px > 0.0 && sw_px < body_w * 0.9;
-                        let disp = if is_wrap_zone {
+                        // [#1955] 글뒤로/글앞으로 anchor 표는 플로우를 소비하지 않으므로
+                        // 후행 문단은 폭과 무관하게 **앵커 페이지** 귀속 (한글: stored
+                        // LINE_SEG vpos 가 앵커 쪽 위치를 가리킴).
+                        let anchor_behind = paragraphs
+                            .get(wp.table_para_index)
+                            .map(|p| {
+                                p.controls.iter().any(|c| {
+                                    matches!(c, Control::Table(t)
+                                        if !t.common.treat_as_char
+                                            && matches!(t.common.text_wrap,
+                                                crate::model::shape::TextWrap::BehindText
+                                                    | crate::model::shape::TextWrap::InFrontOfText))
+                                })
+                            })
+                            .unwrap_or(false);
+                        let disp = if is_wrap_zone || anchor_behind {
                             item_first_page.get(&wp.table_para_index)
                         } else {
                             item_disp_page.get(&wp.table_para_index)
@@ -3324,8 +3564,16 @@ impl DocumentCore {
                                 let line_seg_info =
                                     format_line_seg_brief(paragraphs.get(*para_index));
                                 let source_info = endnote_source_info(*para_index);
+                                // [#2152] 미주 문단 항목은 모든 kind 에 [미주] 라벨 —
+                                // per-pi 오라클이 본문 pi 만 세도록 하는 판별 신호.
+                                let en = if *para_index >= body_len {
+                                    "[미주]"
+                                } else {
+                                    ""
+                                };
                                 out.push_str(&format!(
-                                    "    PartialParagraph  pi={}  lines={}..{}  {}{}  {}\n",
+                                    "    PartialParagraph{}  pi={}  lines={}..{}  {}{}  {}\n",
+                                    en,
                                     para_index,
                                     start_line,
                                     end_line,
@@ -3364,8 +3612,14 @@ impl DocumentCore {
                                 let line_seg_info =
                                     format_line_seg_brief(paragraphs.get(*para_index));
                                 let source_info = endnote_source_info(*para_index);
+                                let en = if *para_index >= body_len {
+                                    "[미주]"
+                                } else {
+                                    ""
+                                };
                                 out.push_str(&format!(
-                                    "    Table          pi={} ci={}  {}  {}{}  {}\n",
+                                    "    Table{}          pi={} ci={}  {}  {}{}  {}\n",
+                                    en,
                                     para_index,
                                     control_index,
                                     table_info,
@@ -3407,8 +3661,13 @@ impl DocumentCore {
                                 } else {
                                     String::new()
                                 };
-                                out.push_str(&format!("    PartialTable   pi={} ci={}  rows={}..{}  cont={}  {}  {}{}  {}{}\n",
-                                    para_index, control_index, start_row, end_row, is_continuation, table_info, vpos_info, source_info, line_seg_info, split_info));
+                                let en = if *para_index >= body_len {
+                                    "[미주]"
+                                } else {
+                                    ""
+                                };
+                                out.push_str(&format!("    PartialTable{}   pi={} ci={}  rows={}..{}  cont={}  {}  {}{}  {}{}\n",
+                                    en, para_index, control_index, start_row, end_row, is_continuation, table_info, vpos_info, source_info, line_seg_info, split_info));
                             }
                             PageItem::Shape {
                                 para_index,
@@ -3435,8 +3694,14 @@ impl DocumentCore {
                                 let line_seg_info =
                                     format_line_seg_brief(paragraphs.get(*para_index));
                                 let source_info = endnote_source_info(*para_index);
+                                let en = if *para_index >= body_len {
+                                    "[미주]"
+                                } else {
+                                    ""
+                                };
                                 out.push_str(&format!(
-                                    "    Shape          pi={} ci={}  {}  {}{}  {}\n",
+                                    "    Shape{}          pi={} ci={}  {}  {}{}  {}\n",
+                                    en,
                                     para_index,
                                     control_index,
                                     shape_info,
@@ -3515,6 +3780,9 @@ impl DocumentCore {
     /// 페이지 렌더 트리 캐시 전체 무효화.
     pub(crate) fn invalidate_page_tree_cache(&self) {
         self.page_tree_cache.borrow_mut().clear();
+        // [Task #1949] IR 이 바뀌는 재조판 경계에서 셀 단위 레이아웃 캐시(포인터 키)도
+        // 함께 비워 다른 IR 의 셀 포인터 재사용으로 인한 오재사용을 방지한다.
+        self.layout_engine.clear_layout_caches();
     }
 
     /// 캐시된 페이지 렌더 트리를 반환한다 (캐시 미스 시 빌드 후 캐시).
@@ -3547,6 +3815,38 @@ impl DocumentCore {
         Ok(tree)
     }
 
+    /// 캐시된 페이지 렌더 트리를 참조로 사용한다.
+    ///
+    /// 레이어 tree 생성은 페이지 tree를 소유할 필요가 없다. Canvas2D의 layer summary와
+    /// 실제 재생은 같은 페이지를 연속 조회하므로, 캐시 히트마다 큰 tree를 복제하지 않는다.
+    pub(crate) fn with_page_tree_cached<T>(
+        &self,
+        page_num: u32,
+        build: impl FnOnce(&PageRenderTree) -> Result<T, HwpError>,
+    ) -> Result<T, HwpError> {
+        let idx = page_num as usize;
+        let cached = self
+            .page_tree_cache
+            .borrow()
+            .get(idx)
+            .is_some_and(Option::is_some);
+
+        if !cached {
+            let tree = self.build_page_tree(page_num)?;
+            let mut cache = self.page_tree_cache.borrow_mut();
+            if cache.len() <= idx {
+                cache.resize_with(idx + 1, || None);
+            }
+            cache[idx] = Some(tree);
+        }
+
+        let cache = self.page_tree_cache.borrow();
+        let tree = cache[idx]
+            .as_ref()
+            .expect("페이지 tree cache는 채운 뒤에 참조해야 한다");
+        build(tree)
+    }
+
     /// 페이지 렌더 트리를 빌드한다.
     pub(crate) fn build_page_tree(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
         use crate::model::style::HeadType;
@@ -3563,9 +3863,13 @@ impl DocumentCore {
         self.layout_engine.set_hwp3_origin_flow_spacing_before(
             uses_hwp3_origin_flow_spacing_before(&self.document),
         );
+        let is_hwp5_origin_hwpx = self
+            .document
+            .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+            .is_some();
         // [Issue #1770] HWPX→HWP 변환본도 HWPX 시멘틱 (paginate_pass 와 동일 규칙).
         self.layout_engine.set_hwpx_source(
-            matches!(self.source_format, crate::parser::FileFormat::Hwpx)
+            (matches!(self.source_format, crate::parser::FileFormat::Hwpx) && !is_hwp5_origin_hwpx)
                 || self.document.is_hwpx_variant,
         );
         self.layout_engine.set_hwpx_page_preview(
@@ -3699,6 +4003,17 @@ impl DocumentCore {
         self.layout_engine.set_total_pages(total_pages);
         self.layout_engine.set_file_name(&self.file_name);
 
+        // [Task #2102] 쪽 배경 이미지 채우기는 구역 첫 쪽에만 적용한다.
+        // 현재 페이지가 소속 구역의 첫 글로벌 페이지인지 판정하여 엔진에 전달.
+        let is_section_first_page = self
+            .pagination
+            .get(page_content.section_index)
+            .and_then(|pr| pr.pages.first())
+            .map(|first| first.page_index == page_content.page_index)
+            .unwrap_or(true);
+        self.layout_engine
+            .set_current_page_is_section_first(is_section_first_page);
+
         let wrap_around_paras = self
             .pagination
             .get(sec_idx)
@@ -3712,6 +4027,9 @@ impl DocumentCore {
             // [Task #1755] pre-emit 된 host 문단 → fragment 쪽 host 렌더 억제.
             self.layout_engine
                 .set_pre_emitted_host_paras(&pr.pre_emitted_host_paras);
+            // [#2015] pre-emit host 높이 → layout vert_offset 이중계상 보정.
+            self.layout_engine
+                .set_pre_emitted_host_heights(&pr.pre_emitted_host_heights);
             self.layout_engine
                 .set_endnote_para_sources(paragraphs.len(), &pr.endnote_para_sources);
             // 섹션 미주 모양의 정규화 여백 전달 → HeightCursor min-gap 및 renderer overflow 판정.
@@ -3719,18 +4037,6 @@ impl DocumentCore {
                 pr.endnote_separator_above_hu,
                 pr.endnote_between_notes_hu,
                 pr.endnote_separator_below_hu,
-            );
-        }
-        // 미주/각주 자동 번호 서식: 구역의 footnote_shape/endnote_shape.number_format 을
-        // 권위로 본문 인라인 참조 마커가 따른다(예: 미주 LowerRoman → "i"). 미주 목록
-        // 번호는 typeset 단계에서 endnote_shape 를 직접 읽으므로, 여기서는 본문 인라인
-        // 마커가 동일 서식을 쓰도록 레이아웃 엔진에 전달한다.
-        if let Some(section) = self.document.sections.get(sec_idx) {
-            use crate::renderer::NumberFormat as RNF;
-            let sd = &section.section_def;
-            self.layout_engine.set_note_number_formats(
-                RNF::from_footnote_shape_format(sd.footnote_shape.number_format),
-                RNF::from_footnote_shape_format(sd.endnote_shape.number_format),
             );
         }
 
@@ -4363,62 +4669,6 @@ mod tests {
     use super::*;
     use crate::model::bin_data::BinDataContent;
     use crate::renderer::render_tree::RenderNodeType;
-
-    fn styles_with_font_size(font_size: f64) -> ResolvedStyleSet {
-        use crate::renderer::style_resolver::{ResolvedCharStyle, ResolvedParaStyle};
-
-        ResolvedStyleSet {
-            char_styles: vec![ResolvedCharStyle {
-                font_size,
-                ratio: 1.0,
-                ..Default::default()
-            }],
-            para_styles: vec![ResolvedParaStyle::default()],
-            ..Default::default()
-        }
-    }
-
-    #[test]
-    fn stale_lineseg_starts_overflow_detects_overwide_duplicate_starts() {
-        use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
-
-        let text = "주식회사클라우드솔루션과주식회사넥스트AI랩은계약서를각각보관한다";
-        let char_offsets: Vec<u32> = (0..text.chars().count() as u32).collect();
-        let para = Paragraph {
-            text: text.to_string(),
-            char_offsets,
-            char_count: text.chars().count() as u32 + 1,
-            char_shapes: vec![CharShapeRef {
-                start_pos: 0,
-                char_shape_id: 0,
-            }],
-            line_segs: vec![
-                LineSeg {
-                    text_start: 0,
-                    line_height: 1100,
-                    segment_width: 48_188,
-                    ..Default::default()
-                },
-                LineSeg {
-                    text_start: 0,
-                    line_height: 1100,
-                    segment_width: 48_188,
-                    ..Default::default()
-                },
-                LineSeg {
-                    text_start: 0,
-                    line_height: 1100,
-                    segment_width: 48_188,
-                    ..Default::default()
-                },
-            ],
-            ..Default::default()
-        };
-        let styles = styles_with_font_size(11.0);
-
-        assert!(stale_lineseg_starts_overflow(&para, 180.0, &styles));
-        assert!(!stale_lineseg_starts_overflow(&para, 1_000.0, &styles));
-    }
 
     /// [Task #1612] `compute_hwp_used_height` 는 per-page 높이를 내야 한다. vpos 는
     /// 다페이지에서 누적값이므로 페이지 시작 오프셋을 차감하지 않으면 page N>1 에서

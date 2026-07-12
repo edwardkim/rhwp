@@ -468,11 +468,11 @@ export const formatCommands: CommandDef[] = [
         const ref = ih.getSelectedPictureRef();
         if (!ref) return;
         if (ref.type === 'equation') {
-          const dialog = new EquationPropertiesDialog(services.wasm, services.eventBus);
+          const dialog = new EquationPropertiesDialog(services.wasm, services.eventBus, services);
           dialog.open(ref.sec, ref.ppi, ref.ci, ref.cellIdx, ref.cellParaIdx, ref.noteRef);
           return;
         }
-        const dialog = new PicturePropsDialog(services.wasm, services.eventBus);
+        const dialog = new PicturePropsDialog(services.wasm, services.eventBus, services);
         dialog.open(ref.sec, ref.ppi, ref.ci, ref.type);
         return;
       }
@@ -482,7 +482,7 @@ export const formatCommands: CommandDef[] = [
         const pos = ih.getCursorPosition();
         if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
         const tableCtx = { sec: pos.sectionIndex, ppi: pos.parentParaIndex, ci: pos.controlIndex };
-        const dialog = new TableCellPropsDialog(services.wasm, services.eventBus, tableCtx, pos.cellIndex, 'table');
+        const dialog = new TableCellPropsDialog(services.wasm, services.eventBus, tableCtx, pos.cellIndex, 'table', services);
         dialog.show();
       }
     },

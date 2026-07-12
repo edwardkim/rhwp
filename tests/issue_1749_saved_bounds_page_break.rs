@@ -72,9 +72,14 @@ fn issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference() {
     );
     let pi52_line = page4_lines[table_idx];
 
+    // [#2015] 종전 이 테스트는 HWPX end_cut=[1] 을 기대했으나, 그것은 vert_offset 이중계상
+    // (pre-emit 된 host_h 위에 vert_off 를 재차감 → page_avail=0)으로 남는 공간이 0 이라
+    // 오판된 값이었다. 이중계상을 보정하면 실제 잔여 공간(≈124px)에 3 유닛이 들어가
+    // HWPX end_cut=[3] 이 HWP 저장 LINE_SEG 참조([3] 아래) 및 한컴 PDF 와 일치한다.
     assert!(
-        pi52_line.contains("end_cut=[1]"),
-        "HWPX mixed host 텍스트를 p4 에 먼저 배치하면 첫 fragment 는 남은 공간에 맞춰 1개 유닛만 남겨야 한다\n{pi52_line}"
+        pi52_line.contains("end_cut=[3]"),
+        "HWPX mixed host 텍스트를 p4 에 먼저 배치한 뒤, vert_offset 이중계상 보정으로 첫 fragment 는 \
+         HWP 참조와 동일하게 3 유닛을 담아야 한다(#2015)\n{pi52_line}"
     );
 
     let hwp_doc = load_sample(HWP_SAMPLE);

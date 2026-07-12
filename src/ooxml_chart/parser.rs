@@ -243,17 +243,29 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             }
         }
         b"grouping" => {
-            // 막대(bar/bar3D) plot의 grouping만 채택 (line의 grouping은 C1d 후속).
-            if matches!(
-                st.cur_plot_type,
-                Some(OoxmlChartType::Column | OoxmlChartType::Bar)
-            ) {
+            // bar/bar3D → chart.grouping, line → chart.line_grouping (C1d #2129).
+            // 콤보(bar+line 공존)에서 상호 오염 방지 위해 별도 필드에 분기 저장.
+            if let Some(val) = attr_val(e, "val") {
+                let g = match val.as_str() {
+                    "stacked" => BarGrouping::Stacked,
+                    "percentStacked" => BarGrouping::PercentStacked,
+                    _ => BarGrouping::Clustered,
+                };
+                match st.cur_plot_type {
+                    Some(OoxmlChartType::Column | OoxmlChartType::Bar) => chart.grouping = g,
+                    Some(OoxmlChartType::Line) => chart.line_grouping = g,
+                    _ => {}
+                }
+            }
+        }
+        b"marker" => {
+            // plot 레벨 <c:marker val="0|1"/> (lineChart 직계 자식, Empty 이벤트)만 채택.
+            // 계열 내부 <c:marker>는 val 속성이 없는 래퍼(symbol/size)라 자연 배제되고,
+            // cur_series 게이트가 이중 방어. scatter는 scatterStyle이 담당하므로 Line 한정.
+            // 콤보의 lineChart에서도 설정될 수 있으나 render_combo는 미참조 — 무해. (C1d #2129)
+            if st.cur_plot_type == Some(OoxmlChartType::Line) && st.cur_series.is_none() {
                 if let Some(val) = attr_val(e, "val") {
-                    chart.grouping = match val.as_str() {
-                        "stacked" => BarGrouping::Stacked,
-                        "percentStacked" => BarGrouping::PercentStacked,
-                        _ => BarGrouping::Clustered,
-                    };
+                    chart.line_markers = matches!(val.as_str(), "1" | "true");
                 }
             }
         }
@@ -706,12 +718,75 @@ mod tests {
         assert_eq!(c2.grouping, BarGrouping::Clustered);
     }
 
+    // --- C1d (#2129): 라인 누적 grouping + plot 레벨 marker 파싱 ---
+
+    /// 실제 샘플(누적꺽은선형.hwpx) 구조를 본뜬 라인 XML — 계열 내부 `<c:marker>`
+    /// 래퍼(val 없음) + plot 레벨 `<c:marker val>` 공존.
+    fn line_xml(grouping: &str, marker_val: Option<&str>) -> String {
+        let plot_marker = marker_val
+            .map(|v| format!(r#"<c:marker val="{v}"/>"#))
+            .unwrap_or_default();
+        format!(
+            r#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:lineChart><c:grouping val="{grouping}"/><c:ser><c:marker><c:symbol val="none"/><c:size val="7"/></c:marker><c:val><c:numCache><c:pt idx="0"><c:v>3</c:v></c:pt></c:numCache></c:val></c:ser>{plot_marker}</c:lineChart></c:plotArea></c:chart></c:chartSpace>"#
+        )
+    }
+
     #[test]
-    fn test_parse_grouping_line_ignored() {
-        // line plot의 grouping은 막대 grouping에 반영되지 않음 (C1d 후속)
-        let xml = r#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:lineChart><c:grouping val="stacked"/><c:ser><c:val><c:numCache><c:pt idx="0"><c:v>3</c:v></c:pt></c:numCache></c:val></c:ser></c:lineChart></c:plotArea></c:chart></c:chartSpace>"#;
-        let c = parse_chart_xml(xml.as_bytes()).expect("parse OK");
+    fn test_parse_line_grouping_stacked() {
+        // line stacked → line_grouping 채택, 막대 grouping은 불변 (별도 필드)
+        let c = parse_chart_xml(line_xml("stacked", Some("0")).as_bytes()).expect("parse OK");
+        assert_eq!(c.line_grouping, BarGrouping::Stacked);
         assert_eq!(c.grouping, BarGrouping::Clustered);
+    }
+
+    #[test]
+    fn test_parse_line_grouping_percent_stacked() {
+        let c =
+            parse_chart_xml(line_xml("percentStacked", Some("0")).as_bytes()).expect("parse OK");
+        assert_eq!(c.line_grouping, BarGrouping::PercentStacked);
+    }
+
+    #[test]
+    fn test_parse_line_grouping_standard() {
+        // standard → Clustered 흡수 (꺽은선형/표식이있는꺽은선형)
+        let c = parse_chart_xml(line_xml("standard", Some("0")).as_bytes()).expect("parse OK");
+        assert_eq!(c.line_grouping, BarGrouping::Clustered);
+    }
+
+    #[test]
+    fn test_parse_combo_grouping_no_cross_contamination() {
+        // 콤보(bar stacked + line standard) — 양방향 무오염
+        let xml = r#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:barChart><c:barDir val="col"/><c:grouping val="stacked"/><c:ser><c:val><c:numCache><c:pt idx="0"><c:v>3</c:v></c:pt></c:numCache></c:val></c:ser></c:barChart><c:lineChart><c:grouping val="standard"/><c:ser><c:val><c:numCache><c:pt idx="0"><c:v>5</c:v></c:pt></c:numCache></c:val></c:ser></c:lineChart></c:plotArea></c:chart></c:chartSpace>"#;
+        let c = parse_chart_xml(xml.as_bytes()).expect("parse OK");
+        assert_eq!(c.grouping, BarGrouping::Stacked, "bar grouping 유지");
+        assert_eq!(
+            c.line_grouping,
+            BarGrouping::Clustered,
+            "line standard가 bar에 오염되지 않음"
+        );
+    }
+
+    #[test]
+    fn test_parse_line_marker_flag() {
+        // plot 레벨 <c:marker val="1"/> → true / "0"·부재 → false
+        let c1 = parse_chart_xml(line_xml("standard", Some("1")).as_bytes()).expect("parse OK");
+        assert!(c1.line_markers);
+        let c0 = parse_chart_xml(line_xml("standard", Some("0")).as_bytes()).expect("parse OK");
+        assert!(!c0.line_markers);
+        let cn = parse_chart_xml(line_xml("standard", None).as_bytes()).expect("parse OK");
+        assert!(!cn.line_markers);
+    }
+
+    #[test]
+    fn test_parse_series_marker_ignored() {
+        // 계열 내부 <c:marker>(val 없음, symbol/size 래퍼)는 line_markers에 무영향.
+        // line_xml은 계열 내부 marker를 항상 포함 — plot 레벨 부재 시 false 유지.
+        let c = parse_chart_xml(line_xml("stacked", None).as_bytes()).expect("parse OK");
+        assert!(!c.line_markers);
+        // scatterChart 내부의 <c:marker val="1"/>도 무영향 (Line plot 게이트)
+        let xml = r#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:scatterChart><c:scatterStyle val="marker"/><c:ser><c:xVal><c:numCache><c:pt idx="0"><c:v>1</c:v></c:pt></c:numCache></c:xVal><c:yVal><c:numCache><c:pt idx="0"><c:v>2</c:v></c:pt></c:numCache></c:yVal></c:ser><c:marker val="1"/></c:scatterChart></c:plotArea></c:chart></c:chartSpace>"#;
+        let s = parse_chart_xml(xml.as_bytes()).expect("parse OK");
+        assert!(!s.line_markers);
     }
 
     // --- C1b (#1660): 분산형(scatter) xVal/yVal 파싱 ---

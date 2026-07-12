@@ -1060,3 +1060,97 @@ fn test_leading_header_rows_none_and_all() {
     }
     assert_eq!(all.leading_header_rows(), vec![0, 1, 2]);
 }
+
+/// 삽입 지점의 열(행)에 비병합 셀이 하나도 없으면 insert_row / insert_column 의
+/// 템플릿 탐색이 전부 실패했고, Cell::new_empty() 로 후퇴해 para_shape_id/style_id=0,
+/// char_shapes 가 빈 셀이 만들어졌다 (저장 시 charPrIDRef="0").
+/// 이제 표의 아무 셀이나 템플릿으로 쓴다.
+fn shape_cell(mut cell: Cell) -> Cell {
+    cell.paragraphs[0].para_shape_id = 12;
+    cell.paragraphs[0].style_id = 3;
+    cell.paragraphs[0].char_shapes = vec![crate::model::paragraph::CharShapeRef {
+        start_pos: 0,
+        char_shape_id: 7,
+    }];
+    cell
+}
+
+/// 모든 셀이 가로 병합(col_span=2) — 어떤 열에도 비병합 셀이 없다.
+/// insert_row 의 템플릿 탐색(`col_span == 1`)이 전부 실패한다.
+fn col_merged_table(rows: u16) -> Table {
+    let cells = (0..rows)
+        .map(|r| {
+            let mut cell = Cell::new_empty(0, r, 7200, 1000, 1);
+            cell.col_span = 2;
+            shape_cell(cell)
+        })
+        .collect();
+    Table {
+        row_count: rows,
+        col_count: 2,
+        row_sizes: vec![1; rows as usize],
+        border_fill_id: 1,
+        cells,
+        ..Default::default()
+    }
+}
+
+/// 모든 셀이 세로 병합(row_span=2) — 어떤 행에도 비병합 셀이 없다.
+/// insert_column 의 템플릿 탐색(`row_span == 1`)이 전부 실패한다.
+fn row_merged_table(cols: u16) -> Table {
+    let cells = (0..cols)
+        .map(|c| {
+            let mut cell = Cell::new_empty(c, 0, 3600, 2000, 1);
+            cell.row_span = 2;
+            shape_cell(cell)
+        })
+        .collect();
+    Table {
+        row_count: 2,
+        col_count: cols,
+        row_sizes: vec![cols as i16, 0],
+        border_fill_id: 1,
+        cells,
+        ..Default::default()
+    }
+}
+
+fn assert_inherited(cell: &Cell, where_: &str) {
+    let p = &cell.paragraphs[0];
+    assert_eq!(p.para_shape_id, 12, "{}: para_shape_id 상속", where_);
+    assert_eq!(p.style_id, 3, "{}: style_id 상속", where_);
+    assert_eq!(
+        p.char_shapes.first().map(|cs| cs.char_shape_id),
+        Some(7),
+        "{}: char_shapes 상속 (빈 채로 두면 charPrIDRef=0)",
+        where_
+    );
+}
+
+#[test]
+fn insert_row_inherits_shape_when_column_has_only_merged_cells() {
+    let mut table = col_merged_table(2);
+    table.insert_row(1, false).unwrap();
+
+    let new_cells: Vec<&Cell> = table
+        .cells
+        .iter()
+        .filter(|c| c.row == 1 && c.col_span == 1)
+        .collect();
+    assert_eq!(new_cells.len(), 2, "새 행에 셀 2개");
+    for cell in new_cells {
+        assert_inherited(cell, "insert_row");
+    }
+}
+
+#[test]
+fn insert_column_inherits_shape_when_row_has_only_merged_cells() {
+    let mut table = row_merged_table(2);
+    table.insert_column(1, true).unwrap();
+
+    let new_cells: Vec<&Cell> = table.cells.iter().filter(|c| c.row_span == 1).collect();
+    assert!(!new_cells.is_empty(), "새 열 셀이 생성되어야 한다");
+    for cell in new_cells {
+        assert_inherited(cell, "insert_column");
+    }
+}

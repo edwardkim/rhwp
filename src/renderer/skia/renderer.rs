@@ -2931,17 +2931,11 @@ mod tests {
                 vec![
                     PaintOp::placeholder(
                         BoundingBox::new(0.0, 0.0, 14.0, 14.0),
-                        PlaceholderNode {
-                            fill_color: 0,
-                            stroke_color: 0,
-                            label: "ph".to_string(),
-                        },
+                        PlaceholderNode::new(0, 0, "ph".to_string()),
                     ),
                     PaintOp::raw_svg(
                         BoundingBox::new(16.0, 0.0, 14.0, 14.0),
-                        RawSvgNode {
-                            svg: "<invalid".to_string(),
-                        },
+                        RawSvgNode::new("<invalid".to_string()),
                     ),
                     PaintOp::form_object(BoundingBox::new(32.0, 0.0, 14.0, 14.0), form),
                 ],
@@ -2965,10 +2959,10 @@ mod tests {
                 None,
                 vec![PaintOp::raw_svg(
                     BoundingBox::new(4.0, 4.0, 18.0, 12.0),
-                    RawSvgNode {
-                        svg: "<rect x=\"0\" y=\"0\" width=\"18\" height=\"12\" fill=\"#00ff00\"/>"
+                    RawSvgNode::new(
+                        "<rect x=\"0\" y=\"0\" width=\"18\" height=\"12\" fill=\"#00ff00\"/>"
                             .to_string(),
-                    },
+                    ),
                 )],
             ),
         );
@@ -3003,12 +2997,10 @@ mod tests {
                 None,
                 vec![PaintOp::raw_svg(
                     BoundingBox::new(4.0, 4.0, 20.0, 16.0),
-                    RawSvgNode {
-                        svg: format!(
-                            "<image href=\"{}\" x=\"0\" y=\"0\" width=\"20\" height=\"16\"/>",
-                            external_href
-                        ),
-                    },
+                    RawSvgNode::new(format!(
+                        "<image href=\"{}\" x=\"0\" y=\"0\" width=\"20\" height=\"16\"/>",
+                        external_href
+                    )),
                 )],
             ),
         );

@@ -1,0 +1,93 @@
+[
+  {
+    "key": "issue2164",
+    "hwp": "samples/issue2164/의견제출서(양식).hwp",
+    "pdf": "pdf/issue2164/의견제출서(양식)-2020.pdf",
+    "requested_pages": null,
+    "exported_svg_pages": 1,
+    "exported_render_tree_pages": 1,
+    "exported_pdf_pages": 1,
+    "svg_pages": 1,
+    "render_tree_pages": 1,
+    "pdf_pages": 1,
+    "compare_pages": 1,
+    "overlay_pages": 1,
+    "review_pages": 1,
+    "pdf_question_markers": 0,
+    "overflow_lines": [
+      "LAYOUT_OVERFLOW: page=0, sec=0, col=0, para=0, type=Table, first=true, y=1070.3, bottom=1065.8, overflow=4.5px"
+    ],
+    "contact_sheet": "mydocs/report/assets/task_m100_2164_visual_sweep/issue2164/contact_sheet.png",
+    "overlay_contact_sheet": "mydocs/report/assets/task_m100_2164_visual_sweep/issue2164/overlay_contact_sheet.png",
+    "review_contact_sheet": "mydocs/report/assets/task_m100_2164_visual_sweep/issue2164/review_contact_sheet.png",
+    "analysis_dir": "mydocs/report/assets/task_m100_2164_visual_sweep/issue2164/analysis",
+    "overlay_dir": "mydocs/report/assets/task_m100_2164_visual_sweep/issue2164/overlay",
+    "review_dir": "mydocs/report/assets/task_m100_2164_visual_sweep/issue2164/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "mydocs/report/assets/task_m100_2164_visual_sweep/issue2164/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 94.26049,
+      "worst_pixel_match_percent": 94.26049,
+      "average_ink_match_percent": 7.79583,
+      "worst_ink_match_percent": 7.79583,
+      "average_visual_accuracy_proxy_percent": 7.79583,
+      "worst_visual_accuracy_proxy_percent": 7.79583,
+      "worst_pages": [
+        1
+      ]
+    },
+    "overlay_metrics_json": "mydocs/report/assets/task_m100_2164_visual_sweep/issue2164/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 1,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "metrics_json": "/Users/tsjang/rhwp/mydocs/report/assets/task_m100_2164_visual_sweep/issue2164/analysis/metrics.json",
+      "question_flow_json": "/Users/tsjang/rhwp/mydocs/report/assets/task_m100_2164_visual_sweep/issue2164/analysis/question_flow.json"
+    },
+    "flagged_pages": []
+  }
+]

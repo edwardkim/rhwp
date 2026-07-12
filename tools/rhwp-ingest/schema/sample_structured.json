@@ -1,0 +1,58 @@
+{
+  "version": "1",
+  "page_size": {"width_mm": 210.0, "height_mm": 297.0},
+  "default_font": "함초롬바탕",
+  "header_text": "국어 영역",
+  "footer_text": "1/20",
+  "form_label": "홀수형",
+  "passages": [
+    {
+      "id": "p1-2",
+      "blocks": [
+        {"type": "text", "text": "[1~2] 다음 글을 읽고 물음에 답하시오."},
+        {"type": "text", "text": "공유 지문은 여러 문제가 함께 참조하는 본문입니다."}
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "passage_ref": "p1-2",
+      "stem": "윗글의 중심 내용으로 가장 적절한 것은?",
+      "stem_blocks": [
+        {"type": "text", "text": "윗글의 중심 내용으로 가장 적절한 것은?"}
+      ],
+      "choices": [
+        {"label": "①", "text": "공유 지문의 필요성"},
+        {"label": "②", "text": "시험지의 인쇄 방식"},
+        {"label": "③", "text": "문항 번호의 역사"},
+        {"label": "④", "text": "표지 디자인의 원리"},
+        {"label": "⑤", "text": "이미지 압축 방식"}
+      ],
+      "media": []
+    },
+    {
+      "number": 2,
+      "passage_ref": "p1-2",
+      "stem": "다음 보기의 설명으로 적절한 것은?",
+      "stem_blocks": [
+        {"type": "text", "text": "다음 보기의 설명으로 적절한 것은?"},
+        {
+          "type": "boxed",
+          "title": "<보기>",
+          "blocks": [
+            {"type": "text", "text": "보기 박스는 테두리와 배경이 있는 보조 자료입니다."}
+          ]
+        }
+      ],
+      "choices": [
+        {"label": "①", "text": "보기 블록은 일반 지문과 구분된다"},
+        {"label": "②", "text": "공유 지문은 매 문제마다 중복 출력된다"},
+        {"label": "③", "text": "머리말과 꼬리말은 무시된다"},
+        {"label": "④", "text": "문항 선택지는 사용할 수 없다"},
+        {"label": "⑤", "text": "스키마 버전은 비워 둔다"}
+      ],
+      "media": []
+    }
+  ]
+}

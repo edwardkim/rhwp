@@ -175,9 +175,6 @@ fn assert_para6_tac_order(rel: &str) {
 }
 
 #[test]
-// TODO(fork/#1308): fork 글리프 메트릭 하에서 TAC 수식이 쉼표/고정탭 뒤로 렌더됨
-// (x=154.4 vs 한컴 113.4; merge 이전 fork HEAD 2c0100d5 부터 동일) — 원인 조사 필요.
-#[ignore = "pre-existing fork TAC equation x-order drift (fork HEAD 2c0100d5)"]
 fn hwp_forced_break_tac_equation_line_uses_hanging_indent() {
     let svg = render_svg("samples/eq-002.hwp");
     let x = forced_break_fraction_quarter_x(&svg);
@@ -189,9 +186,6 @@ fn hwp_forced_break_tac_equation_line_uses_hanging_indent() {
 }
 
 #[test]
-// TODO(fork/#1308): fork 글리프 메트릭 하에서 TAC 수식이 쉼표/고정탭 뒤로 렌더됨
-// (x=154.4 vs 한컴 113.4; merge 이전 fork HEAD 2c0100d5 부터 동일) — 원인 조사 필요.
-#[ignore = "pre-existing fork TAC equation x-order drift (fork HEAD 2c0100d5)"]
 fn hwpx_forced_break_tac_equation_line_uses_hanging_indent() {
     let svg = render_svg("samples/hwpx/eq-002.hwpx");
     let x = forced_break_fraction_quarter_x(&svg);
@@ -203,9 +197,6 @@ fn hwpx_forced_break_tac_equation_line_uses_hanging_indent() {
 }
 
 #[test]
-// TODO(fork/#1308): fork 글리프 메트릭 하에서 TAC 수식이 쉼표/고정탭 뒤로 렌더됨
-// (x=154.4 vs 한컴 113.4; merge 이전 fork HEAD 2c0100d5 부터 동일) — 원인 조사 필요.
-#[ignore = "pre-existing fork TAC equation x-order drift (fork HEAD 2c0100d5)"]
 fn hwp_tac_equation_text_and_fixed_tabs_keep_editor_order() {
     assert_para6_tac_order("samples/eq-002.hwp");
 
@@ -218,9 +209,6 @@ fn hwp_tac_equation_text_and_fixed_tabs_keep_editor_order() {
 }
 
 #[test]
-// TODO(fork/#1308): fork 글리프 메트릭 하에서 TAC 수식이 쉼표/고정탭 뒤로 렌더됨
-// (x=154.4 vs 한컴 113.4; merge 이전 fork HEAD 2c0100d5 부터 동일) — 원인 조사 필요.
-#[ignore = "pre-existing fork TAC equation x-order drift (fork HEAD 2c0100d5)"]
 fn hwpx_tac_equation_text_and_fixed_tabs_keep_editor_order() {
     assert_para6_tac_order("samples/hwpx/eq-002.hwpx");
 

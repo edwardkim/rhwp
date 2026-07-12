@@ -4,6 +4,7 @@
 import { MoveTableCommand, MovePictureCommand, MoveShapeCommand } from './command';
 import { getObjectProperties, setObjectProperties } from './input-handler-picture';
 import type { CellBbox } from '@/core/types';
+import type { WasmBridge } from '@/core/wasm-bridge';
 import type { BorderEdge } from './table-resize-renderer';
 import { showToast } from '@/ui/toast';
 
@@ -1218,21 +1219,25 @@ export function finishImagePlacement(this: any, e: MouseEvent): void {
   // 개체 설명문 생성 (한컴 기본 패턴)
   const desc = `그림입니다.\r\n원본 그림의 이름: ${imgData.fileName}\r\n원본 그림의 크기: 가로 ${imgData.naturalWidth}pixel, 세로 ${imgData.naturalHeight}pixel`;
 
-  // WASM 호출
+  // WASM 호출 — 스냅샷으로 기록 (Undo 지원, pasteImage 경로와 동일 패턴)
   try {
-    const result = this.wasm.insertPicture(
-      sec, paraIdx, charOffset, cellPathJson, imgData.data,
-      wHwp, hHwp, imgData.naturalWidth, imgData.naturalHeight,
-      imgData.ext, desc,
-      paperOffsetXHu, paperOffsetYHu,
-    );
-    if (result.ok) {
-      this.eventBus.emit('document-changed');
-    } else {
-      const msg = (result as any).error || '삽입 위치 또는 이미지 정보를 확인할 수 없습니다.';
-      console.warn('[InputHandler] 그림 삽입 실패:', result);
+    let insertFailedMsg: string | null = null;
+    this.executeOperation({ kind: 'snapshot', operationType: 'insertPicture', operation: (wasm: WasmBridge) => {
+      const result = wasm.insertPicture(
+        sec, paraIdx, charOffset, cellPathJson, imgData.data,
+        wHwp, hHwp, imgData.naturalWidth, imgData.naturalHeight,
+        imgData.ext, desc,
+        paperOffsetXHu, paperOffsetYHu,
+      );
+      if (!result.ok) {
+        insertFailedMsg = (result as any).error || '삽입 위치 또는 이미지 정보를 확인할 수 없습니다.';
+        console.warn('[InputHandler] 그림 삽입 실패:', result);
+      }
+      return this.cursor.getPosition();
+    }});
+    if (insertFailedMsg) {
       showToast({
-        message: `그림 삽입에 실패했습니다.\n${msg}`,
+        message: `그림 삽입에 실패했습니다.\n${insertFailedMsg}`,
         durationMs: 6000,
       });
     }

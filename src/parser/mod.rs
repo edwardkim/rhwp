@@ -47,6 +47,11 @@ pub enum FileFormat {
     Hwp3,
     /// Legacy raw HWPML XML (미지원 — 감지만, Issue #1053)
     LegacyHwpml,
+    /// DRM/보안 컨테이너로 보호된 문서 (미지원 — 감지만, Issue #1982)
+    /// Fasoo(`\x9b DRMONE`) / SoftCamp SCDSA(`SCDSA00x`) 등. 복호화는 범위 밖.
+    DrmProtected,
+    /// 빈 파일(0 바이트) (Issue #1982)
+    Empty,
     /// 알 수 없는 포맷
     Unknown,
 }
@@ -57,9 +62,28 @@ const UNSUPPORTED_FILE_FORMAT_CODE: &str = "UNSUPPORTED_FILE_FORMAT";
 const SUPPORTED_FORMATS_HINT: &str = "현재 rhwp는 HWP 5.0, HWPX, 일부 HWP 3.0 문서만 지원합니다.";
 const UNSUPPORTED_HWPML_HINT: &str =
     "현재 rhwp는 HWP 5.0, HWPX, 일부 HWP 3.0 문서만 지원합니다. 한컴오피스에서 HWP 5.0 또는 HWPX로 다시 저장한 뒤 열어주세요.";
+const DRM_PROTECTED_CODE: &str = "DRM_PROTECTED";
+const DRM_PROTECTED_HINT: &str =
+    "DRM/보안 컨테이너로 보호된 문서입니다. 한컴오피스 등 DRM 클라이언트에서 보호를 해제한 뒤 저장해 열어주세요.";
+const EMPTY_FILE_CODE: &str = "EMPTY_FILE";
+const EMPTY_FILE_HINT: &str = "빈 파일(0 바이트)입니다.";
+
+// DRM/보안 컨테이너 시그니처 (Issue #1982 — 10k 서베이 검출).
+// Fasoo: `\x9b DRMONE  This Document is encrypted and protected by Fasoo`.
+const FASOO_DRM_SIG: &[u8] = b"\x9b DRMONE";
+// SoftCamp SCDSA(Security Content Document Security Agent): `SCDSA002`/`SCDSA004`.
+const SCDSA_SIG: &[u8] = b"SCDSA";
 
 /// 파일 데이터의 매직 바이트로 포맷을 감지한다.
 pub fn detect_format(data: &[u8]) -> FileFormat {
+    if data.is_empty() {
+        return FileFormat::Empty;
+    }
+    // DRM/보안 컨테이너(미지원 — 감지만, Issue #1982). 정상 매직보다 먼저 판별해
+    // "알 수 없는 파일 형식" 대신 명확한 안내를 준다.
+    if data.starts_with(FASOO_DRM_SIG) || data.starts_with(SCDSA_SIG) {
+        return FileFormat::DrmProtected;
+    }
     if data.len() >= 8 {
         // CFB/OLE 시그니처: D0 CF 11 E0 A1 B1 1A E1
         if data[0] == 0xD0 && data[1] == 0xCF && data[2] == 0x11 && data[3] == 0xE0 {
@@ -314,7 +338,10 @@ fn parse_hwp_with_cfb(
     // [Task #1001] HwpSummary HWP3 시대 년 AND PS/CS 비율 작음 → 변환본 확정.
     // 두 신호 결합으로 false positive 차단 (exam_eng 등 일반 HWP5 가 본문에
     // HWP3 시대 텍스트만 인용한 경우).
-    if summary_hwp3_era {
+    // [#1880 v2] rhwp HWPX→HWP 변환본 제외 — 원본 HWPX 가 HWP3-계보 요약정보를
+    // 승계해도 rhwp 변환본 IR 은 HWPX 시멘틱이므로 spacing 반감 보정이 오발동
+    // 하면 안 된다 (위 apply_hwp3_origin_fixup 게이트와 동일 근거).
+    if summary_hwp3_era && !doc.is_hwpx_variant {
         let total_paras: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
         if total_paras > 50 {
             let ps_r = doc.doc_info.para_shapes.len() as f64 / total_paras as f64;
@@ -441,6 +468,14 @@ fn fixup_line_segs_for_variant(paragraphs: &mut [crate::model::paragraph::Paragr
 }
 
 fn apply_hwp3_origin_fixup(doc: &mut Document) {
+    // [#1880 v2] rhwp HWPX→HWP 변환본(is_hwpx_variant, #1886 마커)은 한컴
+    // HWP3→HWP5 변환본이 아니다 — 결정론 마커가 비율 휴리스틱에 우선한다.
+    // 미게이트 시 저-스타일 대형 문서(2959953)가 비율에 걸려 margin_bottom
+    // -1600 이 오발동, HWPX 렌더와 페이지 기하가 21.3px 어긋나 PI_MOVED 유발
+    // (HWPX 파스는 #1608 에서 동종 감지 제거됨).
+    if doc.is_hwpx_variant {
+        return;
+    }
     let total_paragraphs: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
     if total_paragraphs <= 50 {
         return;
@@ -764,6 +799,30 @@ fn assign_auto_numbers_in_controls(
 ) {
     use crate::model::control::Control;
 
+    fn assign_caption_auto_numbers(
+        caption: &mut Option<crate::model::shape::Caption>,
+        counters: &mut [u16; 6],
+        counter_index: fn(crate::model::control::AutoNumberType) -> usize,
+    ) {
+        if let Some(caption) = caption {
+            for para in &mut caption.paragraphs {
+                assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
+            }
+        }
+    }
+
+    fn assign_text_box_auto_numbers(
+        text_box: &mut Option<crate::model::shape::TextBox>,
+        counters: &mut [u16; 6],
+        counter_index: fn(crate::model::control::AutoNumberType) -> usize,
+    ) {
+        if let Some(text_box) = text_box {
+            for para in &mut text_box.paragraphs {
+                assign_auto_numbers_in_controls(&mut para.controls, counters, counter_index);
+            }
+        }
+    }
+
     for ctrl in controls.iter_mut() {
         match ctrl {
             Control::AutoNumber(an) => {
@@ -784,61 +843,125 @@ fn assign_auto_numbers_in_controls(
                     }
                 }
                 // 표 캡션 처리
-                if let Some(ref mut caption) = table.caption {
-                    for para in &mut caption.paragraphs {
-                        assign_auto_numbers_in_controls(
-                            &mut para.controls,
-                            counters,
-                            counter_index,
-                        );
-                    }
-                }
+                assign_caption_auto_numbers(&mut table.caption, counters, counter_index);
             }
             Control::Picture(pic) => {
                 // 그림 캡션 처리
-                if let Some(ref mut caption) = pic.caption {
-                    for para in &mut caption.paragraphs {
-                        assign_auto_numbers_in_controls(
-                            &mut para.controls,
+                assign_caption_auto_numbers(&mut pic.caption, counters, counter_index);
+            }
+            Control::Shape(shape) => {
+                use crate::model::shape::ShapeObject;
+
+                match shape.as_mut() {
+                    ShapeObject::Line(s) => {
+                        assign_caption_auto_numbers(
+                            &mut s.drawing.caption,
+                            counters,
+                            counter_index,
+                        );
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
                             counters,
                             counter_index,
                         );
                     }
-                }
-            }
-            Control::Shape(shape) => {
-                // 묶음 개체(Group)의 캡션 처리
-                if let crate::model::shape::ShapeObject::Group(ref mut group) = shape.as_mut() {
-                    if let Some(ref mut caption) = group.caption {
-                        for para in &mut caption.paragraphs {
-                            assign_auto_numbers_in_controls(
-                                &mut para.controls,
-                                counters,
-                                counter_index,
-                            );
-                        }
+                    ShapeObject::Rectangle(s) => {
+                        assign_caption_auto_numbers(
+                            &mut s.drawing.caption,
+                            counters,
+                            counter_index,
+                        );
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
                     }
-                }
-                // 도형(글상자 등) 캡션 처리
-                if let Some(ref mut drawing) = shape.drawing_mut() {
-                    if let Some(ref mut caption) = drawing.caption {
-                        for para in &mut caption.paragraphs {
-                            assign_auto_numbers_in_controls(
-                                &mut para.controls,
-                                counters,
-                                counter_index,
-                            );
-                        }
+                    ShapeObject::Ellipse(s) => {
+                        assign_caption_auto_numbers(
+                            &mut s.drawing.caption,
+                            counters,
+                            counter_index,
+                        );
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
                     }
-                    // 글상자 내부 문단의 자동 번호 처리
-                    if let Some(ref mut text_box) = drawing.text_box {
-                        for para in &mut text_box.paragraphs {
-                            assign_auto_numbers_in_controls(
-                                &mut para.controls,
+                    ShapeObject::Arc(s) => {
+                        assign_caption_auto_numbers(
+                            &mut s.drawing.caption,
+                            counters,
+                            counter_index,
+                        );
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
+                    }
+                    ShapeObject::Polygon(s) => {
+                        assign_caption_auto_numbers(
+                            &mut s.drawing.caption,
+                            counters,
+                            counter_index,
+                        );
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
+                    }
+                    ShapeObject::Curve(s) => {
+                        assign_caption_auto_numbers(
+                            &mut s.drawing.caption,
+                            counters,
+                            counter_index,
+                        );
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
+                    }
+                    ShapeObject::Group(s) => {
+                        assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
+                    }
+                    ShapeObject::Picture(s) => {
+                        assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
+                    }
+                    ShapeObject::Chart(s) => {
+                        if s.caption.is_some() {
+                            assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
+                        } else {
+                            assign_caption_auto_numbers(
+                                &mut s.drawing.caption,
                                 counters,
                                 counter_index,
                             );
                         }
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
+                    }
+                    ShapeObject::Ole(s) => {
+                        if s.caption.is_some() {
+                            assign_caption_auto_numbers(&mut s.caption, counters, counter_index);
+                        } else {
+                            assign_caption_auto_numbers(
+                                &mut s.drawing.caption,
+                                counters,
+                                counter_index,
+                            );
+                        }
+                        assign_text_box_auto_numbers(
+                            &mut s.drawing.text_box,
+                            counters,
+                            counter_index,
+                        );
                     }
                 }
             }
@@ -918,11 +1041,32 @@ pub fn parse_document(data: &[u8]) -> Result<Document, ParseError> {
             format: detect_legacy_hwpml_format_name(data),
             hint: UNSUPPORTED_HWPML_HINT,
         }),
+        FileFormat::DrmProtected => Err(ParseError::UnsupportedFormat {
+            code: DRM_PROTECTED_CODE,
+            format: drm_format_name(data),
+            hint: DRM_PROTECTED_HINT,
+        }),
+        FileFormat::Empty => Err(ParseError::UnsupportedFormat {
+            code: EMPTY_FILE_CODE,
+            format: "빈 파일",
+            hint: EMPTY_FILE_HINT,
+        }),
         FileFormat::Unknown => Err(ParseError::UnsupportedFormat {
             code: UNSUPPORTED_FILE_FORMAT_CODE,
             format: "알 수 없는 파일 형식",
             hint: SUPPORTED_FORMATS_HINT,
         }),
+    }
+}
+
+/// DRM 벤더 시그니처로 사람이 읽을 이름을 고른다 (Issue #1982).
+fn drm_format_name(data: &[u8]) -> &'static str {
+    if data.starts_with(FASOO_DRM_SIG) {
+        "DRM 보호 문서 (Fasoo)"
+    } else if data.starts_with(SCDSA_SIG) {
+        "DRM 보호 문서 (SoftCamp SCDSA)"
+    } else {
+        "DRM 보호 문서"
     }
 }
 
@@ -1207,6 +1351,51 @@ fn load_bin_data_content(
 mod tests {
     use super::*;
 
+    /// [#1880 v2] HWP3-origin 비율 휴리스틱 대상 문서(문단>50, 저-스타일 비율)
+    /// 를 합성해, HWPX-변환본 마커(is_hwpx_variant) 유무에 따라 margin_bottom
+    /// 보정(-1600)이 갈리는지 확인한다. 마커 있으면 보정 오발동 금지.
+    fn hwp3_ratio_suspect_doc() -> Document {
+        let mut doc = Document::default();
+        doc.doc_info
+            .para_shapes
+            .push(crate::model::style::ParaShape::default()); // ps_ratio = 1/60
+        doc.doc_info
+            .char_shapes
+            .push(crate::model::style::CharShape::default()); // cs_ratio = 1/60
+        let mut section = crate::model::document::Section::default();
+        section.section_def.page_def.margin_bottom = 4252;
+        for _ in 0..60 {
+            section
+                .paragraphs
+                .push(crate::model::paragraph::Paragraph::default());
+        }
+        doc.sections.push(section);
+        doc
+    }
+
+    #[test]
+    fn issue1880v2_hwp3_fixup_applies_to_native() {
+        let mut doc = hwp3_ratio_suspect_doc();
+        assert!(!doc.is_hwpx_variant);
+        apply_hwp3_origin_fixup(&mut doc);
+        assert_eq!(
+            doc.sections[0].section_def.page_def.margin_bottom,
+            4252 - 1600,
+            "native HWP5 의심본은 종전대로 margin_bottom 보정"
+        );
+    }
+
+    #[test]
+    fn issue1880v2_hwp3_fixup_skipped_for_hwpx_variant() {
+        let mut doc = hwp3_ratio_suspect_doc();
+        doc.is_hwpx_variant = true;
+        apply_hwp3_origin_fixup(&mut doc);
+        assert_eq!(
+            doc.sections[0].section_def.page_def.margin_bottom, 4252,
+            "rhwp HWPX→HWP 변환본(마커)은 HWP3-origin 보정 오발동 금지 (#1880 v2, 2959953)"
+        );
+    }
+
     #[test]
     fn test_parse_hwp_too_small() {
         let result = parse_hwp(&[0u8; 10]);
@@ -1261,7 +1450,33 @@ mod tests {
     #[test]
     fn test_detect_format_too_short() {
         assert_eq!(detect_format(&[0x50, 0x4B]), FileFormat::Unknown);
-        assert_eq!(detect_format(&[]), FileFormat::Unknown);
+    }
+
+    #[test]
+    fn issue1982_detect_empty_file() {
+        assert_eq!(detect_format(&[]), FileFormat::Empty);
+        let err = parse_document(&[]).unwrap_err();
+        assert!(
+            matches!(&err, ParseError::UnsupportedFormat { code, .. } if *code == EMPTY_FILE_CODE),
+            "empty file → EMPTY_FILE: {err}"
+        );
+    }
+
+    #[test]
+    fn issue1982_detect_drm_containers() {
+        // Fasoo DRM
+        let fasoo = b"\x9b DRMONE  This Document is encrypted and protected by Fasoo DRM";
+        assert_eq!(detect_format(fasoo), FileFormat::DrmProtected);
+        // SoftCamp SCDSA
+        let scdsa = b"SCDSA002\x00\x00\xd0\x04";
+        assert_eq!(detect_format(scdsa), FileFormat::DrmProtected);
+        let err = parse_document(fasoo).unwrap_err();
+        assert!(
+            matches!(&err, ParseError::UnsupportedFormat { code, .. } if *code == DRM_PROTECTED_CODE),
+            "DRM → DRM_PROTECTED: {err}"
+        );
+        assert_eq!(drm_format_name(fasoo), "DRM 보호 문서 (Fasoo)");
+        assert_eq!(drm_format_name(scdsa), "DRM 보호 문서 (SoftCamp SCDSA)");
     }
 
     #[test]

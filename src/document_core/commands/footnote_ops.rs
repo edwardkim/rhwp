@@ -208,96 +208,6 @@ impl DocumentCore {
         ))
     }
 
-    /// 본문 미주 컨트롤을 삭제한다.
-    ///
-    /// `delete_footnote_native` 의 미주(Endnote) 짝. 본문 마커(8 char-unit 갭)와
-    /// 미주 내부 내용을 함께 제거하고, 남은 각주/미주 번호를 문서 순서대로 재계산한다.
-    /// `delete_footnote_native` 가 `Control::Footnote` 만 매칭하므로 미주에는
-    /// "컨트롤 N은 각주가 아닙니다" 로 실패한다 — 그래서 별도 deleter 가 필요하다.
-    pub fn delete_endnote_native(
-        &mut self,
-        section_idx: usize,
-        para_idx: usize,
-        control_idx: usize,
-    ) -> Result<String, HwpError> {
-        let (marker_pos, deleted_number) = {
-            let section = self.document.sections.get(section_idx).ok_or_else(|| {
-                HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
-            })?;
-            let para = section.paragraphs.get(para_idx).ok_or_else(|| {
-                HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx))
-            })?;
-            let ctrl = para.controls.get(control_idx).ok_or_else(|| {
-                HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
-            })?;
-            let Control::Endnote(endnote) = ctrl else {
-                return Err(HwpError::RenderError(format!(
-                    "컨트롤 {}은 미주가 아닙니다",
-                    control_idx
-                )));
-            };
-            let positions = crate::document_core::helpers::find_control_text_positions(para);
-            let marker_pos = positions.get(control_idx).copied().ok_or_else(|| {
-                HwpError::RenderError(format!(
-                    "미주 컨트롤 {}의 본문 위치를 찾을 수 없습니다",
-                    control_idx
-                ))
-            })?;
-            (marker_pos, endnote.number)
-        };
-
-        {
-            let section = &mut self.document.sections[section_idx];
-            let para = &mut section.paragraphs[para_idx];
-
-            for offset in para.char_offsets.iter_mut().skip(marker_pos) {
-                if *offset >= 8 {
-                    *offset -= 8;
-                }
-            }
-
-            para.controls.remove(control_idx);
-            if control_idx < para.ctrl_data_records.len() {
-                para.ctrl_data_records.remove(control_idx);
-            }
-            if para.char_count >= 8 {
-                para.char_count -= 8;
-            }
-            if !para
-                .controls
-                .iter()
-                .any(|c| matches!(c, Control::Footnote(_) | Control::Endnote(_)))
-            {
-                para.control_mask &= !(1u32 << 0x0011);
-            }
-
-            Self::reflow_paragraph_line_segs_after_control_delete(para, &self.styles, self.dpi);
-            section.raw_stream = None;
-        }
-
-        self.renumber_footnotes_in_section(section_idx);
-        self.mark_section_dirty(section_idx);
-        self.recompose_section(section_idx);
-        self.paginate_if_needed();
-        self.invalidate_page_tree_cache();
-
-        // 미주 전용 이벤트는 없으므로 FootnoteDeleted 를 재사용 (내부 이벤트 로그 전용).
-        self.event_log.push(DocumentEvent::FootnoteDeleted {
-            section: section_idx,
-            para: para_idx,
-            ctrl: control_idx,
-        });
-
-        Ok(format!(
-            "{{\"ok\":true,\"sectionIndex\":{},\"paragraphIndex\":{},\"controlIndex\":{},\"charOffset\":{},\"deletedNumber\":{}}}",
-            section_idx,
-            para_idx,
-            control_idx,
-            marker_pos,
-            deleted_number,
-        ))
-    }
-
     /// 각주 컨트롤 내부 문단의 가변 참조를 얻는다.
     fn get_footnote_paragraph_mut(
         &mut self,
@@ -372,36 +282,13 @@ impl DocumentCore {
     ) {
         use crate::renderer::hwpunit_to_px;
 
-        // 각주/미주 영역 폭. 단일 단이면 페이지 텍스트 영역 폭, 다단이면 단 너비.
-        // [FIX 2] 2단 이상 문서에서 각주/미주 본문은 단 폭 안에서 줄바꿈해야 하므로
-        // (편집 후 re-wrap 도 렌더 경로 normalize_overwide_column_linesegs 와 동일한
-        // 단 너비를 사용해야 일관된다) 단 정의가 다단이면 첫 단 너비로 reflow 한다.
+        // 각주 영역 폭 = 페이지 텍스트 영역 폭
         let available_width = {
             let section = &self.document.sections[section_idx];
             let page_def = &section.section_def.page_def;
-            let column_def = Self::find_initial_column_def(&section.paragraphs);
-            if column_def.column_count.max(1) > 1 {
-                let layout = crate::renderer::page_layout::PageLayoutInfo::from_page_def(
-                    page_def,
-                    &column_def,
-                    self.dpi,
-                );
-                layout
-                    .column_areas
-                    .first()
-                    .map(|a| a.width)
-                    .unwrap_or_else(|| {
-                        let text_width = page_def.width as i32
-                            - page_def.margin_left as i32
-                            - page_def.margin_right as i32;
-                        hwpunit_to_px(text_width, self.dpi)
-                    })
-            } else {
-                let text_width = page_def.width as i32
-                    - page_def.margin_left as i32
-                    - page_def.margin_right as i32;
-                hwpunit_to_px(text_width, self.dpi)
-            }
+            let text_width =
+                page_def.width as i32 - page_def.margin_left as i32 - page_def.margin_right as i32;
+            hwpunit_to_px(text_width, self.dpi)
         };
 
         // 문단 여백 적용

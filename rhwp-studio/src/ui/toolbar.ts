@@ -6,6 +6,23 @@ import { userSettings } from '@/core/user-settings';
 import type { FontSet } from '@/core/user-settings';
 import { getLocalFonts } from '@/core/local-fonts';
 
+type FontMenuCategory = 'all' | 'current' | 'document' | 'fontSets' | 'system';
+
+interface FontMenuEntry {
+  value: string;
+  label: string;
+}
+
+const BASE_FONTS = ['함초롬바탕', '함초롬돋움', '맑은 고딕', '나눔고딕', '바탕', '돋움', '궁서'];
+
+const FONT_MENU_CATEGORIES: ReadonlyArray<{ id: FontMenuCategory; label: string }> = [
+  { id: 'all', label: '모든 글꼴' },
+  { id: 'current', label: '현재 글꼴' },
+  { id: 'document', label: '문서 글꼴' },
+  { id: 'fontSets', label: '대표 글꼴' },
+  { id: 'system', label: '시스템 글꼴' },
+];
+
 /** 서식 도구 모음 (style-bar) 컨트롤러 */
 export class Toolbar {
   private styleName: HTMLSelectElement;
@@ -35,6 +52,11 @@ export class Toolbar {
 
   private enabled = false;
   private styleDropdownInitialized = false;
+  /** 한컴형 글꼴 메뉴. native select는 선택값/접근성 호환 상태로 유지한다. */
+  private fontMenu: HTMLElement | null = null;
+  private fontMenuCategory: FontMenuCategory = 'document';
+  private fontMenuDocumentFonts: string[] = [];
+  private fontMenuCleanup: (() => void) | null = null;
   /** 마지막으로 받은 fontFamilies (언어별 7개 배열) */
   private lastFontFamilies?: string[];
 
@@ -225,7 +247,20 @@ export class Toolbar {
   /** 글꼴 선택 + 크기 변경 이벤트 */
   private setupFontControls(): void {
     this.populateFontSetOptions();
-    this.populateLocalFontOptions();
+
+    // native select는 선택값과 기존 자동화 호환에만 사용한다. 실제 목록은 범주형 메뉴로 연다.
+    this.fontName.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      this.toggleFontMenu();
+    });
+    this.fontName.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        this.openFontMenu();
+      } else if (event.key === 'Escape') {
+        this.closeFontMenu();
+      }
+    });
 
     this.fontName.addEventListener('change', () => {
       const name = this.fontName.value;
@@ -483,33 +518,25 @@ export class Toolbar {
   /** 문서 로드 시 글꼴 드롭다운을 초기화한다 (기본 글꼴 + 문서 글꼴 + 대표/로컬) */
   initFontDropdown(docFonts?: string[]): void {
     this.lastFontFamilies = docFonts ? [...docFonts] : undefined;
-    const BASE_FONTS = ['함초롬바탕', '함초롬돋움', '맑은 고딕', '나눔고딕', '바탕', '돋움', '궁서'];
+    this.fontMenuDocumentFonts = this.normalizeFontNames(docFonts ?? []);
+    this.fontMenuCategory = this.fontMenuDocumentFonts.length > 0 ? 'document' : 'current';
+    this.closeFontMenu();
     this.fontName.replaceChildren();
     for (const name of BASE_FONTS) {
-      const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      this.fontName.appendChild(opt);
+      this.ensureFontOption(name);
     }
     if (docFonts?.length) {
-      const seen = new Set(BASE_FONTS);
       for (const name of docFonts) {
-        if (!seen.has(name)) {
-          const opt = document.createElement('option');
-          opt.value = name;
-          opt.textContent = name;
-          this.fontName.appendChild(opt);
-          seen.add(name);
-        }
+        this.ensureFontOption(name);
       }
     }
     this.populateFontSetOptions();
-    this.populateLocalFontOptions();
   }
 
   private refreshFontDropdown(): void {
     const previousValue = this.fontName.value;
-    this.initFontDropdown(this.lastFontFamilies);
+    // 재감지는 현재 캐럿의 7개 언어 글꼴이 아니라 문서 전체 글꼴 목록을 유지해야 한다.
+    this.initFontDropdown(this.fontMenuDocumentFonts);
     if (previousValue && this.fontName.querySelector(`option[value="${CSS.escape(previousValue)}"]`)) {
       this.fontName.value = previousValue;
     }
@@ -579,12 +606,7 @@ export class Toolbar {
     // 글꼴명 — 선택된 언어 카테고리에 따라 표시
     const displayFont = this.getDisplayFontFamily(props);
     if (displayFont) {
-      if (!this.fontName.querySelector(`option[value="${CSS.escape(displayFont)}"]`)) {
-        const opt = document.createElement('option');
-        opt.value = displayFont;
-        opt.textContent = displayFont;
-        this.fontName.appendChild(opt);
-      }
+      this.ensureFontOption(displayFont);
       this.fontName.value = displayFont;
     }
 
@@ -641,12 +663,7 @@ export class Toolbar {
       }
     }
     if (displayFont) {
-      if (!this.fontName.querySelector(`option[value="${CSS.escape(displayFont)}"]`)) {
-        const opt = document.createElement('option');
-        opt.value = displayFont;
-        opt.textContent = displayFont;
-        this.fontName.appendChild(opt);
-      }
+      this.ensureFontOption(displayFont);
       this.fontName.value = displayFont;
     }
   }
@@ -676,31 +693,187 @@ export class Toolbar {
     this.fontName.insertBefore(group, this.fontName.firstChild);
   }
 
-  /** 로컬 글꼴 optgroup을 #font-name 드롭다운에 추가 */
-  private populateLocalFontOptions(): void {
-    const localFonts = getLocalFonts();
-    if (localFonts.length === 0) return;
+  /** native select에 없는 글꼴은 상태 동기화용 option만 추가한다. */
+  private ensureFontOption(name: string): void {
+    const normalized = name.trim();
+    if (!normalized || Array.from(this.fontName.options).some(option => option.value === normalized)) return;
+    const opt = document.createElement('option');
+    opt.value = normalized;
+    opt.textContent = normalized;
+    this.fontName.appendChild(opt);
+  }
 
-    // 기존 로컬 글꼴 optgroup 제거 (재호출 대비)
-    this.fontName.querySelectorAll('optgroup[label="로컬 글꼴"]').forEach(g => g.remove());
-
-    const group = document.createElement('optgroup');
-    group.label = '로컬 글꼴';
-
-    for (const name of localFonts) {
-      const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      group.appendChild(opt);
+  private normalizeFontNames(names: readonly string[]): string[] {
+    const seen = new Set<string>();
+    const normalized: string[] = [];
+    for (const candidate of names) {
+      const name = candidate.trim();
+      if (!name || seen.has(name)) continue;
+      seen.add(name);
+      normalized.push(name);
     }
+    return normalized;
+  }
 
-    // 대표 글꼴 optgroup 다음에 삽입
-    const fontSetGroup = this.fontName.querySelector('optgroup[label="대표 글꼴"]');
-    if (fontSetGroup?.nextSibling) {
-      this.fontName.insertBefore(group, fontSetGroup.nextSibling);
+  private toggleFontMenu(): void {
+    if (this.fontMenu) {
+      this.closeFontMenu();
     } else {
-      this.fontName.insertBefore(group, this.fontName.firstChild);
+      this.openFontMenu();
     }
+  }
+
+  /** 한컴처럼 범주를 먼저 고르는 글꼴 메뉴를 연다. */
+  private openFontMenu(): void {
+    if (this.fontMenu) return;
+    const menu = document.createElement('div');
+    menu.className = 'font-picker-menu';
+    menu.setAttribute('role', 'dialog');
+    menu.setAttribute('aria-label', '글꼴 목록');
+
+    const categories = document.createElement('div');
+    categories.className = 'font-picker-categories';
+    categories.setAttribute('role', 'tablist');
+    for (const category of FONT_MENU_CATEGORIES) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'font-picker-category';
+      button.dataset.category = category.id;
+      button.textContent = category.label;
+      button.setAttribute('role', 'tab');
+      button.addEventListener('click', () => {
+        this.fontMenuCategory = category.id;
+        this.renderFontMenu(menu);
+      });
+      categories.appendChild(button);
+    }
+
+    const content = document.createElement('div');
+    content.className = 'font-picker-content';
+    const heading = document.createElement('div');
+    heading.className = 'font-picker-heading';
+    heading.dataset.role = 'heading';
+    const list = document.createElement('div');
+    list.className = 'font-picker-list';
+    list.dataset.role = 'list';
+    list.setAttribute('role', 'listbox');
+    content.append(heading, list);
+    menu.append(categories, content);
+
+    const rect = this.fontName.getBoundingClientRect();
+    menu.style.left = `${Math.max(4, Math.min(rect.left, window.innerWidth - 510))}px`;
+    menu.style.top = `${Math.min(rect.bottom + 2, window.innerHeight - 360)}px`;
+    document.body.appendChild(menu);
+    this.fontMenu = menu;
+    this.fontName.setAttribute('aria-expanded', 'true');
+    this.renderFontMenu(menu);
+
+    const closeOnPointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Node && (menu.contains(target) || this.fontName.contains(target))) return;
+      this.closeFontMenu();
+    };
+    const closeOnKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') this.closeFontMenu();
+    };
+    document.addEventListener('pointerdown', closeOnPointerDown, true);
+    window.addEventListener('keydown', closeOnKeyDown, true);
+    window.addEventListener('resize', this.closeFontMenu);
+    this.fontMenuCleanup = () => {
+      document.removeEventListener('pointerdown', closeOnPointerDown, true);
+      window.removeEventListener('keydown', closeOnKeyDown, true);
+      window.removeEventListener('resize', this.closeFontMenu);
+    };
+  }
+
+  private closeFontMenu = (): void => {
+    this.fontMenuCleanup?.();
+    this.fontMenuCleanup = null;
+    this.fontMenu?.remove();
+    this.fontMenu = null;
+    this.fontName.setAttribute('aria-expanded', 'false');
+  };
+
+  private renderFontMenu(menu: HTMLElement): void {
+    const heading = menu.querySelector<HTMLElement>('[data-role="heading"]');
+    const list = menu.querySelector<HTMLElement>('[data-role="list"]');
+    if (!heading || !list) return;
+    const category = FONT_MENU_CATEGORIES.find(item => item.id === this.fontMenuCategory)!;
+    const entries = this.getFontMenuEntries(this.fontMenuCategory);
+    heading.textContent = `${category.label} (${entries.length})`;
+    for (const button of menu.querySelectorAll<HTMLButtonElement>('.font-picker-category')) {
+      const active = button.dataset.category === this.fontMenuCategory;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', String(active));
+    }
+
+    const fragment = document.createDocumentFragment();
+    if (entries.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'font-picker-empty';
+      empty.textContent = '표시할 글꼴이 없습니다.';
+      fragment.appendChild(empty);
+    } else {
+      for (const entry of entries) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'font-picker-option';
+        button.setAttribute('role', 'option');
+        button.setAttribute('aria-selected', String(entry.value === this.fontName.value));
+        button.textContent = entry.label;
+        button.title = entry.label;
+        button.addEventListener('click', () => this.selectFontMenuEntry(entry.value));
+        fragment.appendChild(button);
+      }
+    }
+    list.replaceChildren(fragment);
+  }
+
+  private getFontMenuEntries(category: FontMenuCategory): FontMenuEntry[] {
+    const current = this.fontName.value && !this.fontName.value.startsWith('__fontset__')
+      ? [{ value: this.fontName.value, label: this.fontName.value }]
+      : [];
+    const documentFonts = this.fontMenuDocumentFonts.map(name => ({ value: name, label: name }));
+    const baseFonts = BASE_FONTS.map(name => ({ value: name, label: name }));
+    const fontSets = userSettings.getAllFontSets().map(fontSet => ({
+      value: `__fontset__${fontSet.name}`,
+      label: `◆ ${fontSet.name}`,
+    }));
+    switch (category) {
+      case 'current':
+        return current;
+      case 'document':
+        return documentFonts;
+      case 'fontSets':
+        return fontSets;
+      case 'system':
+        return getLocalFonts().map(name => ({ value: name, label: name }));
+      case 'all':
+        return this.uniqueFontMenuEntries([
+          ...current,
+          ...documentFonts,
+          ...baseFonts,
+          ...fontSets,
+          ...getLocalFonts().map(name => ({ value: name, label: name })),
+        ]);
+    }
+  }
+
+  private uniqueFontMenuEntries(entries: readonly FontMenuEntry[]): FontMenuEntry[] {
+    const seen = new Set<string>();
+    return entries.filter((entry) => {
+      if (seen.has(entry.value)) return false;
+      seen.add(entry.value);
+      return true;
+    });
+  }
+
+  private selectFontMenuEntry(value: string): void {
+    if (!value) return;
+    this.ensureFontOption(value);
+    this.fontName.value = value;
+    this.fontName.dispatchEvent(new Event('change', { bubbles: true }));
+    this.closeFontMenu();
   }
 
   /** 대표 글꼴 세트 이름으로 FontSet 검색 */

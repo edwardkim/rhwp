@@ -29,17 +29,34 @@ fn for_both_exts(stem: &str, f: impl Fn(&str, &str)) {
 
 #[test]
 fn chart_auto_title_rendered() {
-    // ① 코퍼스는 제목 텍스트가 없어도 한컴처럼 "차트 제목"을 렌더 (regular weight).
-    for stem in [
-        "세로막대형/묶은세로막대형",
-        "라인/꺽은선형",
-        "원형/2차원원형",
-    ] {
+    // ① 다계열: 제목 텍스트가 없으면 한컴처럼 "차트 제목"을 렌더 (regular weight).
+    for stem in ["세로막대형/묶은세로막대형", "라인/꺽은선형"] {
         for_both_exts(stem, |rel, svg| {
             assert!(svg.contains("차트 제목"), "{rel}: 자동 제목 미렌더");
             assert!(
                 !svg.contains("font-weight=\"600\""),
                 "{rel}: 제목이 bold(600) — 한컴은 regular",
+            );
+        });
+    }
+    // ① v2: 단일 시리즈는 자동 제목 = 시리즈 이름 (한컴 실측 — 원형 5종 "판매",
+    //    단일 시리즈 가로막대 "계열 1"; 차트 종류 불문 시리즈 수 기준).
+    for (stem, name) in [
+        ("원형/2차원원형", "판매"),
+        ("원형/원형대원형", "판매"),
+        (
+            "특이케이스/가로막대형_하나만있을떄_단일시리즈제목",
+            "계열 1",
+        ),
+    ] {
+        for_both_exts(stem, |rel, svg| {
+            assert!(
+                svg.contains(&format!(">{name}<")),
+                "{rel}: 단일 시리즈 이름({name}) 제목 미렌더"
+            );
+            assert!(
+                !svg.contains("차트 제목"),
+                "{rel}: 단일 시리즈인데 placeholder 렌더"
             );
         });
     }

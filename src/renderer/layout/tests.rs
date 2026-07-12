@@ -169,6 +169,76 @@ fn test_build_page_with_paragraph() {
     assert!(!body.children.is_empty());
 }
 
+/// [Issue #1945] PartialParagraph 의 start_line 이 조판 라인 수를 넘어도
+/// 패닉하지 않아야 한다 (실문서 크래시 — paragraph_layout.rs 슬라이스 범위 밖).
+/// 수정 전에는 `composed.lines[start_line..end]` 직접 인덱싱이
+/// "range start index N out of range" 로 패닉했다.
+#[test]
+fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
+    let engine = LayoutEngine::with_default_dpi();
+    let layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
+
+    // 조판 라인 1개짜리 문단.
+    let paragraphs = vec![Paragraph {
+        text: "한 줄".to_string(),
+        line_segs: vec![LineSeg {
+            line_height: 400,
+            baseline_distance: 320,
+            ..Default::default()
+        }],
+        ..Default::default()
+    }];
+    let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
+    let styles = ResolvedStyleSet::default();
+
+    let page_content = PageContent {
+        page_index: 0,
+        page_number: 0,
+        section_index: 0,
+        layout,
+        column_contents: vec![ColumnContent {
+            column_index: 0,
+            start_height: 0.0,
+            endnote_flow: false,
+            // start_line(5) > 조판 라인 수(1) — 이월 오버슛 재현.
+            items: vec![PageItem::PartialParagraph {
+                para_index: 0,
+                start_line: 5,
+                end_line: 6,
+            }],
+            zone_layout: None,
+            zone_y_offset: 0.0,
+            wrap_around_paras: Vec::new(),
+            used_height: 0.0,
+            wrap_anchors: std::collections::HashMap::new(),
+        }],
+        active_header: None,
+        active_footer: None,
+        page_number_pos: None,
+        page_hide: None,
+        footnotes: Vec::new(),
+        active_master_page: None,
+        extra_master_pages: Vec::new(),
+    };
+
+    // 패닉 없이 반환하면 성공 (범위 밖 조각은 빈 렌더).
+    let _tree = engine.build_render_tree(
+        &page_content,
+        &paragraphs,
+        &paragraphs,
+        &paragraphs,
+        &composed,
+        &styles,
+        &FootnoteShape::default(),
+        &[],
+        None,
+        &[],
+        None,
+        0,
+        &[],
+    );
+}
+
 #[test]
 fn test_layout_with_composed_styles() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
@@ -201,6 +271,7 @@ fn test_layout_with_composed_styles() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
 
     let styles = ResolvedStyleSet {
+        hwp3_variant: false,
         char_styles: vec![
             ResolvedCharStyle {
                 font_family: "함초롬돋움".to_string(),
@@ -332,6 +403,7 @@ fn test_layout_multi_run_x_position() {
 
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     let styles = ResolvedStyleSet {
+        hwp3_variant: false,
         char_styles: vec![
             ResolvedCharStyle {
                 font_size: 16.0,
@@ -413,6 +485,7 @@ fn test_resolved_to_text_style() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        hwp3_variant: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "나눔고딕".to_string(),
             font_size: 14.0,
@@ -445,6 +518,7 @@ fn test_resolved_to_text_style_with_ratio() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        hwp3_variant: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "함초롬돋움".to_string(),
             font_size: 16.0,
@@ -714,6 +788,7 @@ fn test_layout_table_basic() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     // border_fill_id=1은 styles.border_styles[0]을 참조 (1-indexed)
     let styles = ResolvedStyleSet {
+        hwp3_variant: false,
         border_styles: vec![ResolvedBorderStyle::default()],
         ..Default::default()
     };
@@ -1005,12 +1080,22 @@ fn test_expand_numbering_format_digit() {
         raw_para_heads: None,
     };
     let counters = [3, 2, 1, 0, 0, 0, 0];
-    let result =
-        expand_numbering_format("^1.", &counters, &numbering, &numbering.level_start_numbers);
+    let result = expand_numbering_format(
+        "^1.",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        0,
+    );
     assert_eq!(result, "3.");
 
-    let result =
-        expand_numbering_format("^2.", &counters, &numbering, &numbering.level_start_numbers);
+    let result = expand_numbering_format(
+        "^2.",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
     assert_eq!(result, "2.");
 
     let result = expand_numbering_format(
@@ -1018,6 +1103,7 @@ fn test_expand_numbering_format_digit() {
         &counters,
         &numbering,
         &numbering.level_start_numbers,
+        2,
     );
     assert_eq!(result, "(1)");
 }
@@ -1043,9 +1129,142 @@ fn test_expand_numbering_format_hangul() {
         raw_para_heads: None,
     };
     let counters = [1, 3, 0, 0, 0, 0, 0];
-    let result =
-        expand_numbering_format("^2.", &counters, &numbering, &numbering.level_start_numbers);
+    let result = expand_numbering_format(
+        "^2.",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
     assert_eq!(result, "다.");
+}
+
+#[test]
+fn test_expand_numbering_format_level_path() {
+    // ^n/^N: 레벨 경로 자동코드 (#2145). 재현 문서는 전 수준 "^N".
+    let numbering = Numbering {
+        raw_data: None,
+        heads: [NumberingHead {
+            number_format: 0,
+            ..Default::default()
+        }; 7],
+        level_formats: [
+            "^N".to_string(),
+            "^N".to_string(),
+            "^N".to_string(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+        ],
+        start_number: 0,
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        raw_para_heads: None,
+    };
+
+    // level 0: "1.", 카운터 전진 후 "2."
+    let counters = [1, 0, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^N",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        0,
+    );
+    assert_eq!(result, "1.");
+    let counters = [2, 0, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^N",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        0,
+    );
+    assert_eq!(result, "2.");
+
+    // level 1: "1.1." → "1.4."
+    let counters = [1, 1, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^N",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
+    assert_eq!(result, "1.1.");
+    let counters = [1, 4, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^N",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
+    assert_eq!(result, "1.4.");
+
+    // ^n: 후행 마침표 없음
+    let counters = [2, 3, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^n",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
+    assert_eq!(result, "2.3");
+
+    // 접두·접미 문자 보존
+    let result = expand_numbering_format(
+        "[^n]",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
+    assert_eq!(result, "[2.3]");
+
+    // 상위 수준 카운터 0이면 시작번호로 폴백
+    let counters = [0, 2, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^N",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
+    assert_eq!(result, "1.2.");
+}
+
+#[test]
+fn test_expand_numbering_format_level_path_mixed_format() {
+    // 수준별 number_format 혼합: L1=Digit, L2=HangulGaNaDa → "1.가."
+    let mut heads = [NumberingHead::default(); 7];
+    heads[1].number_format = 8; // HangulGaNaDa
+    let numbering = Numbering {
+        raw_data: None,
+        heads,
+        level_formats: [
+            "^N".to_string(),
+            "^N".to_string(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+        ],
+        start_number: 0,
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        raw_para_heads: None,
+    };
+    let counters = [1, 1, 0, 0, 0, 0, 0];
+    let result = expand_numbering_format(
+        "^N",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        1,
+    );
+    assert_eq!(result, "1.가.");
 }
 
 #[test]
@@ -1207,18 +1426,16 @@ fn test_square_bullet_with_space_preserves_layout() {
         "positions[1] expected 18.4, got {}",
         positions[1]
     );
-    // 공백: 반각(10) + 반각 스케일 자간(-1.6 × 10/20 = -0.8) = advance 9.2
-    // (effective_letter_spacing — 반각 글리프는 base_width/font_size 비율로
-    //  자간을 축소 적용. test_negative_letter_spacing_scales_with_halfwidth_glyphs 참조)
+    // 공백: 반각(10) + 자간(-1.6) = advance 8.4 (min_clamp 5.0 미작동)
     assert!(
-        (positions[2] - 27.6).abs() < 0.01,
-        "positions[2] expected 27.6, got {}",
+        (positions[2] - 26.8).abs() < 0.01,
+        "positions[2] expected 26.8, got {}",
         positions[2]
     );
     // 가: 전각(20) + 자간(-1.6) = advance 18.4
     assert!(
-        (positions[3] - 46.0).abs() < 0.01,
-        "positions[3] expected 46.0, got {}",
+        (positions[3] - 45.2).abs() < 0.01,
+        "positions[3] expected 45.2, got {}",
         positions[3]
     );
 }
@@ -1256,6 +1473,7 @@ fn test_tac_leading_width_block_table_full_line() {
         tab_extended: Vec::new(),
     };
     let styles = ResolvedStyleSet {
+        hwp3_variant: false,
         char_styles: vec![ResolvedCharStyle {
             font_size: 20.0,
             letter_spacing: -1.6,
@@ -1264,9 +1482,8 @@ fn test_tac_leading_width_block_table_full_line() {
         ..Default::default()
     };
     let width = super::compute_tac_leading_width(&composed, 0, &styles);
-    // 4 spaces × (10 base - 반각 스케일 자간 0.8) = 36.8 → estimate_text_width
-    // 말미 round 로 37 (effective_letter_spacing: 반각 자간 = -1.6 × 10/20)
-    assert!((width - 37.0).abs() < 0.5, "expected ~37, got {}", width);
+    // 4 spaces × (10 base - 1.6 lspc) = 33.6 (min_clamp 5.0 미작동)
+    assert!((width - 33.6).abs() < 0.5, "expected ~33.6, got {}", width);
 }
 
 #[test]
@@ -1350,6 +1567,7 @@ fn test_tac_leading_width_inline_table_partial() {
         tab_extended: Vec::new(),
     };
     let styles = ResolvedStyleSet {
+        hwp3_variant: false,
         char_styles: vec![ResolvedCharStyle {
             font_size: 20.0,
             ..Default::default()
@@ -1896,4 +2114,96 @@ fn header_paper_relative_picture_uses_page_origin() {
     });
     assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
     assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
+}
+
+// [Task #2102] 쪽 배경 이미지 채우기는 구역 첫 쪽에만 적용된다.
+// 색 채우기는 첫 쪽 여부와 무관하게 유지된다.
+
+/// 이미지 채우기 + 색 채우기를 가진 쪽 테두리/배경으로 렌더 트리를 만든 뒤
+/// 루트 자식에서 PageBackground 노드를 찾아 (background_color, image 유무) 를 반환.
+fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
+    use crate::model::bin_data::BinDataContent;
+    use crate::model::image::ImageEffect;
+    use crate::model::page::PageBorderFill;
+    use crate::model::style::ImageFillMode;
+    use crate::renderer::style_resolver::{ResolvedBorderStyle, ResolvedImageFill};
+
+    let engine = LayoutEngine::with_default_dpi();
+    let layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
+    let page_content = PageContent {
+        page_index: 0,
+        page_number: 0,
+        section_index: 0,
+        layout,
+        column_contents: Vec::new(),
+        active_header: None,
+        active_footer: None,
+        page_number_pos: None,
+        page_hide: None,
+        footnotes: Vec::new(),
+        active_master_page: None,
+        extra_master_pages: Vec::new(),
+    };
+
+    let styles = ResolvedStyleSet {
+        hwp3_variant: false,
+        border_styles: vec![ResolvedBorderStyle {
+            fill_color: Some(0x00F0F0F0),
+            image_fill: Some(ResolvedImageFill {
+                bin_data_id: 1,
+                fill_mode: ImageFillMode::FitToSize,
+                brightness: 0,
+                contrast: 0,
+                effect: ImageEffect::RealPic,
+            }),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let bin_data = vec![BinDataContent {
+        id: 1,
+        data: vec![0xFF, 0xD8, 0xFF, 0xE0], // JPEG magic (내용 무관, 존재만 확인)
+        extension: "jpg".to_string(),
+    }];
+    let page_border_fill = PageBorderFill {
+        border_fill_id: 1,
+        ..Default::default()
+    };
+
+    engine.set_current_page_is_section_first(is_section_first);
+    let tree = engine.build_render_tree(
+        &page_content,
+        &[],
+        &[],
+        &[],
+        &[],
+        &styles,
+        &FootnoteShape::default(),
+        &bin_data,
+        None,
+        &[],
+        Some(&page_border_fill),
+        0,
+        &[],
+    );
+
+    let bg = tree.root.children.iter().find_map(|c| match &c.node_type {
+        RenderNodeType::PageBackground(bg) => Some(bg),
+        _ => None,
+    });
+    let bg = bg.expect("PageBackground 노드가 있어야 함");
+    (bg.background_color.is_some(), bg.image.is_some())
+}
+
+#[test]
+fn page_bg_image_only_on_section_first_page() {
+    // 구역 첫 쪽: 이미지 채우기 적용
+    let (color_first, image_first) = page_bg_color_and_image_present(true);
+    assert!(image_first, "구역 첫 쪽에는 배경 이미지가 있어야 한다");
+    assert!(color_first, "색 채우기는 유지되어야 한다");
+
+    // 구역 첫 쪽 아님: 이미지 채우기 억제, 색 채우기는 유지
+    let (color_rest, image_rest) = page_bg_color_and_image_present(false);
+    assert!(!image_rest, "구역 첫 쪽이 아니면 배경 이미지가 없어야 한다");
+    assert!(color_rest, "이미지가 억제돼도 색 채우기는 유지되어야 한다");
 }

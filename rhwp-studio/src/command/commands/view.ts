@@ -47,6 +47,24 @@ export function syncTextMarkMenu(showControlCodes: boolean, showParagraphMarks: 
   });
 }
 
+/**
+ * view:toggle-clip 내부 상태(clipEnabled). true=잘림 적용, false=오버플로 표시(짤림보기 켜짐).
+ * 저장된 짤림보기 설정(clipView)에서 초기화한다. clipEnabled = !clipView.
+ */
+let clipEnabled = !userSettings.getViewSettings().clipView;
+
+/**
+ * 짤림보기(잘림 보기) 메뉴 활성 상태와 내부 상태를 동기화한다.
+ * 버튼 active = 잘림 미적용(오버플로 보임) = !enabled.
+ * 문서 로드 시 저장된 설정 적용에도 사용한다.
+ */
+export function syncClipMenu(enabled: boolean): void {
+  clipEnabled = enabled;
+  document.querySelectorAll('[data-cmd="view:toggle-clip"]').forEach(el => {
+    el.classList.toggle('active', !enabled);
+  });
+}
+
 function refreshCaretAfterViewChange(services: Parameters<CommandDef['execute']>[0]): void {
   const inputHandler = services.getInputHandler() as any;
   inputHandler?.updateCaret?.(true);
@@ -244,22 +262,18 @@ export const viewCommands: CommandDef[] = [
       services.eventBus.emit('document-view-changed');
     },
   },
-  (() => {
-    let clipEnabled = true; // 기본: 잘림 적용 (편집용지 클립)
-    return {
-      id: 'view:toggle-clip',
-      label: '잘림 보기',
-      canExecute: (ctx) => ctx.hasDocument,
-      execute(services) {
-        clipEnabled = !clipEnabled;
-        services.wasm.setClipEnabled(clipEnabled);
-        document.querySelectorAll('[data-cmd="view:toggle-clip"]').forEach(el => {
-          el.classList.toggle('active', !clipEnabled);
-        });
-        services.eventBus.emit('document-view-changed');
-      },
-    } satisfies CommandDef;
-  })(),
+  {
+    id: 'view:toggle-clip',
+    label: '잘림 보기',
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      const next = !clipEnabled;
+      services.wasm.setClipEnabled(next);
+      userSettings.setClipView(!next); // 짤림보기 켜짐(clipView) = 잘림 미적용(!clipEnabled)
+      syncClipMenu(next);
+      services.eventBus.emit('document-view-changed');
+    },
+  } satisfies CommandDef,
   {
     id: 'view:toggle-grid',
     label: '격자 보기',

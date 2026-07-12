@@ -129,12 +129,17 @@ fn write_org_sz<W: Write>(
 fn write_cur_sz<W: Write>(w: &mut Writer<W>, p: &Picture) -> Result<(), SerializeError> {
     // [#1389] 현재 크기는 shape_attr.current_width/height (IR 보존). 0 이면 common(sz)
     // 폴백 — 원본도 그 경우 sz=curSz. 종전 common 직출이라 current≠sz 인 pic 변형.
-    let cw = if p.shape_attr.current_width > 0 {
+    // [#2017] 파싱 시 orgSz로 materialize된 dimension 은 원본 `0` sentinel 로 복원.
+    let cw = if p.shape_attr.current_width_was_zero {
+        0
+    } else if p.shape_attr.current_width > 0 {
         p.shape_attr.current_width
     } else {
         p.common.width
     };
-    let ch = if p.shape_attr.current_height > 0 {
+    let ch = if p.shape_attr.current_height_was_zero {
+        0
+    } else if p.shape_attr.current_height > 0 {
         p.shape_attr.current_height
     } else {
         p.common.height
@@ -686,13 +691,16 @@ mod tests {
 
     #[test]
     fn img_uses_manifest_id() {
+        // [#1891] manifest id 는 `image{bin_data_id}` 숫자 불변식을 따라야 한다.
+        // 파서(section.rs)가 binaryItemIDRef 의 숫자를 그대로 bin_data_id 로 읽으므로,
+        // 종전 순번 명명(id=5 → "image1")은 재파스에서 참조가 1 로 어긋났다.
         let doc = make_doc_with_bin(5, "jpg");
         let mut ctx = SerializeContext::collect_from_document(&doc);
         let pic = make_picture(5);
         let xml = serialize(&pic, &mut ctx);
         assert!(
-            xml.contains(r#"binaryItemIDRef="image1""#),
-            "binaryItemIDRef must resolve to manifest id image1: {}",
+            xml.contains(r#"binaryItemIDRef="image5""#),
+            "binaryItemIDRef must resolve to manifest id image5 (숫자 불변식): {}",
             xml
         );
     }

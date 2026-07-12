@@ -223,10 +223,9 @@ pub(crate) fn tokenize_paragraph(
         }
 
         // 한글 어절 또는 글자.
-        // HWPX breakNonLatinWord="KEEP_WORD" is preserved as attr1 bit 7,
-        // which resolves to korean_break_unit == 1.
+        // HWP/HWPX attr1 bit 7의 모델 의미는 0=어절, 1=글자이다.
         if is_hangul(ch) {
-            if korean_break_unit == 1 {
+            if korean_break_unit == 0 {
                 // 어절 모드: 연속 한글 + 후행 금칙 문자를 하나의 토큰으로
                 let start = i;
                 let mut max_fs = 0.0f64;
@@ -766,7 +765,7 @@ fn fill_lines(
                 if *end_idx - *start_idx == 1 && *start_idx > line_start_idx {
                     let c = text_chars[*start_idx];
                     let allow_break = if is_hangul(c) {
-                        korean_break_unit == 0
+                        korean_break_unit == 1
                     } else {
                         is_cjk_ideograph(c)
                     };
@@ -1161,7 +1160,18 @@ pub(crate) fn reflow_line_segs(
             }
             para.line_segs = new_line_segs;
         } else {
-            let mut seg = make_line_seg(0, 0.0);
+            // 빈 문단도 활성 글자 모양의 크기로 줄을 만든다. 앞 문단 LINE_SEG의
+            // 치수를 복사하면 TAC 그림 높이까지 상속되므로 vpos 원점만 보존한다.
+            let font_size = para
+                .char_shapes
+                .first()
+                .and_then(|char_shape| styles.char_styles.get(char_shape.char_shape_id as usize))
+                .map(|style| style.font_size)
+                .unwrap_or(12.0);
+            let mut seg = make_line_seg(0, font_size);
+            if let Some(template) = orig.as_ref() {
+                seg.vertical_pos = template.vertical_pos;
+            }
             if let Some(height_hwp) = inline_control_line_height_hwp(para) {
                 apply_inline_control_line_height(&mut seg, height_hwp);
             }

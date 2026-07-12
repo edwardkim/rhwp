@@ -464,11 +464,11 @@ fn issue_1274_2022_nov_page11_partial_endnote_tail_stays_in_page_frame() {
     let page11 = doc.dump_page_items(Some(10));
     let page12 = doc.dump_page_items(Some(11));
     assert!(
-        page11.contains("PartialParagraph  pi=553  lines=0..8"),
+        page11.contains("PartialParagraph[미주]  pi=553  lines=0..8"),
         "한컴/PDF 기준 문14) 꼬리 첫 조각은 11쪽 끝에 남아야 함\n{page11}"
     );
     assert!(
-        page12.contains("PartialParagraph  pi=553  lines=8..11"),
+        page12.contains("PartialParagraph[미주]  pi=553  lines=8..11"),
         "문14) 꼬리 나머지는 12쪽 첫머리에서 이어져야 함\n{page12}"
     );
 
@@ -1125,7 +1125,7 @@ fn issue_1139_exam_2022_page_count_matches_hancom_after_endnotes() {
     let page9 = doc.dump_page_items(Some(8));
     let page10 = doc.dump_page_items(Some(9));
     assert!(
-        page9.contains("PartialParagraph  pi=522  lines=0..4"),
+        page9.contains("PartialParagraph[미주]  pi=522  lines=0..4"),
         "9쪽에는 문7 미주 마지막 문단의 앞부분 pi=522 lines=0..4가 남아야 함\n{page9}"
     );
     assert!(
@@ -1137,7 +1137,7 @@ fn issue_1139_exam_2022_page_count_matches_hancom_after_endnotes() {
         "한컴오피스 기준 문8 미주 pi=523은 9쪽에 들어가면 안 됨\n{page9}"
     );
     assert!(
-        page10.contains("PartialParagraph  pi=522  lines=4..5"),
+        page10.contains("PartialParagraph[미주]  pi=522  lines=4..5"),
         "한컴오피스 기준 문7 미주 마지막 수식 줄은 10쪽 첫 줄로 넘어가야 함\n{page10}"
     );
     assert!(
@@ -1187,8 +1187,8 @@ fn issue_1139_page17_endnote_question30_starts_on_right_column() {
         "문30 앞부분(pi=928..930)이 18쪽으로 이월되면 17쪽 하단 배치가 한컴 기준보다 일찍 끊김\n{page18}"
     );
     assert!(
-        page17.contains("PartialParagraph  pi=931  lines=0..4")
-            && page18.contains("PartialParagraph  pi=931  lines=4..9")
+        page17.contains("PartialParagraph[미주]  pi=931  lines=0..4")
+            && page18.contains("PartialParagraph[미주]  pi=931  lines=4..9")
             && !page17.contains("FullParagraph[미주]  pi=931")
             && !page18.contains("FullParagraph[미주]  pi=931"),
         "문30 본문은 17/18쪽에서 줄 단위로 이어져야 함\n{page17}\n{page18}"
@@ -1415,7 +1415,7 @@ fn issue_1139_page19_question29_starts_on_right_column() {
     let page20 = doc.dump_page_items(Some(19));
 
     assert!(
-        page19.contains("PartialParagraph  pi=992  lines=1..3"),
+        page19.contains("PartialParagraph[미주]  pi=992  lines=1..3"),
         "한컴오피스 기준 pi=992의 reset 이후 줄은 19쪽 우측 단으로 이어져야 함\n{page19}"
     );
     assert!(
@@ -1487,15 +1487,15 @@ fn issue_1139_page22_question29_intro_moves_to_previous_page() {
         "문29 제목/출제의도가 22쪽 첫머리에 남으면 22쪽 렌더링이 한컴보다 늦게 시작함\n{page22}"
     );
     assert!(
-        page22.contains("Shape          pi=1131 ci=0  그림 tac=true"),
+        page22.contains("Shape[미주]          pi=1131 ci=0  그림 tac=true"),
         "한컴오피스 기준 22쪽은 문29의 큰 구 그림(pi=1131)부터 시작해야 함\n{page22}"
     );
     assert!(
-        page22.contains("Table          pi=1169 ci=0"),
+        page22.contains("Table[미주]          pi=1169 ci=0"),
         "한컴오피스 기준 문30 그래프 표(pi=1169)는 22쪽 우측 단에 렌더되어야 함\n{page22}"
     );
     assert!(
-        page22.contains("PartialParagraph  pi=1175  lines=0..10"),
+        page22.contains("PartialParagraph[미주]  pi=1175  lines=0..10"),
         "PDF 기준 22쪽 끝에는 문30 (i) 풀이의 마지막 텍스트 줄까지 남아야 함\n{page22}"
     );
 
@@ -1515,7 +1515,7 @@ fn issue_1139_page23_question30_picture_line_is_rendered() {
 
     let page23 = doc.dump_page_items(Some(22));
     assert!(
-        page23.contains("PartialParagraph  pi=1175  lines=10..13"),
+        page23.contains("PartialParagraph[미주]  pi=1175  lines=10..13"),
         "PDF 기준 23쪽은 문30 (ii) 그림 줄부터 시작해야 함\n{page23}"
     );
 
@@ -1674,7 +1674,7 @@ fn issue_1139_2023_pages12_13_endnote_boundary_matches_pdf() {
     assert!(
         page12.contains("FullParagraph[미주]  pi=635")
             && page12.contains("FullParagraph[미주]  pi=636")
-            && !page12.contains("Shape          pi=637 ci=0"),
+            && !page12.contains("Shape[미주]          pi=637 ci=0"),
         "PDF 기준 문14 tail(pi=635/636)은 12쪽에 남고 그래프(pi=637)는 13쪽에서 시작해야 함\n{page12}"
     );
     assert!(
@@ -1684,7 +1684,7 @@ fn issue_1139_2023_pages12_13_endnote_boundary_matches_pdf() {
     );
 
     let graph = page13
-        .find("Shape          pi=637 ci=0  그림 tac=true")
+        .find("Shape[미주]          pi=637 ci=0  그림 tac=true")
         .expect("page 13 starts with question 14 graph");
     let q15_title = page13
         .find("FullParagraph[미주]  pi=638")
@@ -1702,11 +1702,11 @@ fn issue_1189_2023_page19_question29_tail_matches_pdf() {
 
     let page19 = doc.dump_page_items(Some(18));
     assert!(
-        page19.contains("PartialParagraph  pi=935  lines=0..2")
-            && page19.contains("PartialParagraph  pi=935  lines=2..3")
+        page19.contains("PartialParagraph[미주]  pi=935  lines=0..2")
+            && page19.contains("PartialParagraph[미주]  pi=935  lines=2..3")
             && page19.contains("FullParagraph[미주]  pi=946")
             && page19.contains("FullParagraph[미주]  pi=952")
-            && page19.contains("PartialParagraph  pi=953  lines=0..1"),
+            && page19.contains("PartialParagraph[미주]  pi=953  lines=0..1"),
         "PDF 기준 19쪽 우측 단에는 문29 제목, 첫 그림, 그림 아래 첫 문단이 함께 남고, 앞쪽 pi=935 분배는 기존 위치를 유지해야 함\n{page19}"
     );
 
@@ -1741,16 +1741,16 @@ fn issue_1189_2022_nov_page17_internal_rewind_keeps_formula_tail_on_next_page() 
         page14.contains("FullParagraph[미주]  pi=632")
             && page14.contains("FullParagraph[미주]  pi=650")
             && page14.contains("FullParagraph[미주]  pi=669")
-            && page14.contains("PartialParagraph  pi=671  lines=0..2"),
+            && page14.contains("PartialParagraph[미주]  pi=671  lines=0..2"),
         "PDF 기준 14쪽은 문22~문27 시작 흐름이 같은 페이지에 유지되어야 함\n{page14}"
     );
     assert!(
-        page16.contains("PartialParagraph  pi=786  lines=0..1")
-            && !page16.contains("PartialParagraph  pi=786  lines=0..2"),
+        page16.contains("PartialParagraph[미주]  pi=786  lines=0..1")
+            && !page16.contains("PartialParagraph[미주]  pi=786  lines=0..2"),
         "한컴/PDF 기준 16쪽 하단에는 문26 수식 문단의 첫 줄만 남아야 함\n{page16}"
     );
     assert!(
-        page17.contains("PartialParagraph  pi=786  lines=1..5")
+        page17.contains("PartialParagraph[미주]  pi=786  lines=1..5")
             && page17.contains("FullParagraph[미주]  pi=787")
             && page17.contains("FullParagraph[미주]  pi=801"),
         "한컴/PDF 기준 17쪽은 문26 수식 나머지 줄 뒤에 문27/문28이 이어져야 함\n{page17}"
@@ -1927,16 +1927,13 @@ fn issue_1261_2024_sep_page10_question12_tail_stays_inside_column() {
         (614.0..624.0).contains(&question11_y),
         "문11 제목은 한컴 PDF bbox(약 618.5px)와 맞아야 함: q11={question11_y}"
     );
-    // [fork] 한컴 PDF bbox 약 995.6px; fork 글리프 메트릭 drift 로 실측 1017.9px.
     assert!(
-        (1012.0..1023.0).contains(&question12_y),
-        "문12 제목은 fork 실측 bbox(약 1017.9px)와 맞아야 함: q12={question12_y}"
+        (991.0..1001.0).contains(&question12_y),
+        "문12 제목은 한컴 PDF bbox(약 995.6px)와 맞아야 함: q12={question12_y}"
     );
-    // [fork] fork 메트릭에서 문12 꼬리 bbox 가 단 하단(1092.3px)을 14.4px
-    // 넘는다(실측 1106.7px) — 실측 잔여를 상한으로 pin, 더 커지면 실패.
     assert!(
-        question12_tail_bottom < 1108.0,
-        "문12 꼬리는 10쪽 오른쪽 단 하단 fork 실측 bleed 안에 남아야 함: bottom={question12_tail_bottom}"
+        question12_tail_bottom < 1092.5,
+        "문12 꼬리는 10쪽 오른쪽 단 하단 안에 남아야 함: bottom={question12_tail_bottom}"
     );
 }
 
@@ -2132,11 +2129,9 @@ fn issue_1284_2023_sep_page16_question27_title_matches_pdf_tail() {
         q25_tail_bottom,
         q26_title
     );
-    // [fork] fork 메트릭에서 문26 꼬리 수식 bbox 가 문27 제목 bbox 와 12.8px
-    // 겹친다(merge 이전 fork HEAD 동일). 실측 잔여를 상한으로 pin — 더 커지면 실패.
     assert!(
-        q26_tail_bottom <= q27_title.y + 13.5,
-        "문26 마지막 수식과 문27 제목의 겹침이 fork 실측 잔여(12.8px)를 넘으면 안 됨: 문26 bottom={:.1}, 문27={:?}",
+        q26_tail_bottom <= q27_title.y - 6.0,
+        "문26 마지막 수식이 문27 제목과 겹치면 안 됨: 문26 bottom={:.1}, 문27={:?}",
         q26_tail_bottom,
         q27_title
     );
@@ -2263,12 +2258,12 @@ fn issue_1284_2024_between20_page18_late_question_titles_match_pdf() {
     let page17 = doc.dump_page_items(Some(16));
     let page18 = doc.dump_page_items(Some(17));
     assert!(
-        page17.contains("PartialParagraph  pi=894  lines=0..4")
+        page17.contains("PartialParagraph[미주]  pi=894  lines=0..4")
             && !page17.contains("FullParagraph[미주]  pi=894"),
         "PDF 기준 page17 오른쪽 단 하단에는 문28 (ⅰ) 풀이의 마지막 줄 직전까지 남아야 함\n{page17}"
     );
     assert!(
-        page18.contains("PartialParagraph  pi=894  lines=4..5")
+        page18.contains("PartialParagraph[미주]  pi=894  lines=4..5")
             && !page18.contains("FullParagraph[미주]  pi=894"),
         "PDF 기준 page18 왼쪽 단은 문28 (ⅰ) 풀이 마지막 줄부터 시작해야 함\n{page18}"
     );
@@ -2286,10 +2281,9 @@ fn issue_1284_2024_between20_page18_late_question_titles_match_pdf() {
         (330.0..=352.0).contains(&question30_y),
         "page18 오른쪽 단 문30 제목은 현재 sweep 기준 위치 근처여야 함: y={question30_y}"
     );
-    // [fork] 종전 sweep 852..878; fork 메트릭 drift 로 실측 886.5px.
     assert!(
-        (878.0..=895.0).contains(&question23_y),
-        "page18 오른쪽 단 다음 회차 문23 제목은 q30 tail 뒤 fork 실측 위치여야 함: y={question23_y}"
+        (852.0..=878.0).contains(&question23_y),
+        "page18 오른쪽 단 다음 회차 문23 제목은 q30 tail 뒤 현재 sweep 기준 위치여야 함: y={question23_y}"
     );
 }
 
@@ -2371,7 +2365,7 @@ fn issue_1293_2024_zero_endnote_spacing_page19_tail_moves_to_page20() {
     assert!(
         page19.contains("FullParagraph[미주]  pi=909")
             && page19.contains("FullParagraph[미주]  pi=955")
-            && page19.contains("PartialParagraph  pi=960  lines=0..3"),
+            && page19.contains("PartialParagraph[미주]  pi=960  lines=0..3"),
         "PDF 기준 page 19는 문25 tail pi=909에서 시작해 문29 pi=960 앞 3줄까지 이어져야 함\n{page19}"
     );
     assert!(
@@ -2380,7 +2374,7 @@ fn issue_1293_2024_zero_endnote_spacing_page19_tail_moves_to_page20() {
     );
 
     let p20_tail = page20
-        .find("PartialParagraph  pi=960  lines=3..4")
+        .find("PartialParagraph[미주]  pi=960  lines=3..4")
         .expect("page 20 starts with 문29 final text tail");
     let p20_formula = page20
         .find("FullParagraph[미주]  pi=961")
@@ -2581,7 +2575,7 @@ fn issue_1293_2024_visible_separator_shape987_page17_rewind_para_stays_whole() {
         .expect("page 17 문28 제목");
 
     assert!(
-        !page17.contains("PartialParagraph  pi=786"),
+        !page17.contains("PartialParagraph[미주]  pi=786"),
         "새 쪽 왼쪽 단 상단에 들어온 문26 rewind 문단(pi=786)을 다시 2/3줄로 쪼개면 page 수가 22쪽으로 밀림\n{page17}"
     );
     assert!(
@@ -2695,7 +2689,7 @@ fn issue_1293_2024_no_separator_20mm_page11_question12_tail_stays_in_frame() {
         .find("FullParagraph[미주]  pi=526")
         .expect("page 11 문12 제목");
     let q12_graph = page11
-        .find("Shape          pi=537")
+        .find("Shape[미주]          pi=537")
         .expect("page 11 문12 그래프");
     let q12_tail = page11
         .find("FullParagraph[미주]  pi=538")
@@ -2836,17 +2830,14 @@ fn issue_1293_2024_no_separator_20mm_page12_question15_tail_keeps_page13_aligned
         "문26 본문은 제목 뒤에 미주 사이가 중복 적용되지 않아야 함: {:?}",
         q26_body
     );
-    // [fork] upstream pin 620..660; fork 메트릭 drift 로 실측 669.7px.
     assert!(
-        q27_title.x > 390.0 && (660.0..=678.0).contains(&q27_title.y),
-        "문27 제목은 문26 본문 보정 후 fork 실측 위치 근처에서 시작해야 함: {:?}",
+        q27_title.x > 390.0 && (620.0..=660.0).contains(&q27_title.y),
+        "문27 제목은 문26 본문 보정 후 PDF 위치 근처에서 시작해야 함: {:?}",
         q27_title
     );
-    // [fork] fork 메트릭에서 문27 마지막 줄 bbox 가 frame 을 11px 넘는다
-    // (실측 bottom 1107.0px) — 실측 잔여를 상한으로 pin, 더 커지면 실패.
     assert!(
-        q27_tail.y + q27_tail.height <= 1108.0 && q27_last.y + q27_last.height <= 1108.0,
-        "문27 마지막 줄은 page15 frame fork 실측 bleed 안에 남아야 함: {:?}",
+        q27_tail.y + q27_tail.height <= 1096.0 && q27_last.y + q27_last.height <= 1096.0,
+        "문27 마지막 줄은 page15 frame 아래로 흘러나가면 안 됨: {:?}",
         q27_last
     );
 
@@ -2862,19 +2853,16 @@ fn issue_1293_2024_no_separator_20mm_page12_question15_tail_keeps_page13_aligned
     let q26_title = find_text_line_bbox(&page17_tree.root, 785, 0).expect("page17 문26 제목");
     let q26_first_formula =
         find_text_line_bbox(&page17_tree.root, 786, 0).expect("page17 문26 첫 수식 줄");
-    // [fork] upstream pin 1030..1050; fork 메트릭 drift 실측 1060.4px.
     assert!(
-        q26_title.x > 390.0 && (1050.0..=1070.0).contains(&q26_title.y),
-        "문26 제목은 page17 오른쪽 단 하단 fork 실측 위치에 남아야 함: {:?}",
+        q26_title.x > 390.0 && (1030.0..=1050.0).contains(&q26_title.y),
+        "문26 제목은 PDF처럼 page17 오른쪽 단 하단에 남아야 함: {:?}",
         q26_title
     );
-    // [fork] upstream pin y 1045..1065 / bottom<=1096; fork 메트릭 drift 실측
-    // y=1072.4, bottom=1109.8 (수식 bbox bleed) — 실측 pin, 더 커지면 실패.
     assert!(
         q26_first_formula.x > 390.0
-            && (1065.0..=1082.0).contains(&q26_first_formula.y)
-            && q26_first_formula.y + q26_first_formula.height <= 1111.0,
-        "문26 첫 수식은 page17 하단 fork 실측 bleed 안에 보여야 함: {:?}",
+            && (1045.0..=1065.0).contains(&q26_first_formula.y)
+            && q26_first_formula.y + q26_first_formula.height <= 1096.0,
+        "문26 첫 수식은 page17 하단 frame 안에 보여야 함: {:?}",
         q26_first_formula
     );
 
@@ -3028,11 +3016,9 @@ fn issue_1284_2024_between20_page21_question23_title_stays_in_left_tail() {
         (812.0..=842.0).contains(&question26_y),
         "문26 제목은 PDF bbox(약 818.5px) 근처에서 시작해야 함: y={question26_y}"
     );
-    // [fork] fork 메트릭에서 tail bbox 가 frame(1092.3px)을 1.5px 넘는다
-    // (실측 1093.8px) — 소수점 bleed 만 허용, 더 커지면 실패.
     assert!(
-        question26_tail_bottom <= 1095.0,
-        "문26 tail은 page 21 오른쪽 단 frame(허용 bleed 포함) 안에서 끝나야 함: bottom={question26_tail_bottom}"
+        question26_tail_bottom <= 1092.3,
+        "문26 tail은 page 21 오른쪽 단 frame 안에서 끝나야 함: bottom={question26_tail_bottom}"
     );
 }
 
@@ -3106,10 +3092,8 @@ fn issue_1274_2022_sep_page18_question26_equation_paragraph_reserves_height() {
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
     let tree = doc.build_page_render_tree(17).expect("page 18 render tree");
 
-    // [fork] fork 메트릭에서 문26 하단 수식이 upstream pin 영역(y 1020..1095)
-    // 보다 위에서 끝난다 — 탐색 y 범위만 실측에 맞춰 넓히고 겹침 불변식은 유지.
     let equation_bottom =
-        max_equation_visual_bottom_in_region(&tree.root, 20.0, 300.0, 940.0, 1130.0)
+        max_equation_visual_bottom_in_region(&tree.root, 20.0, 300.0, 1020.0, 1095.0)
             .expect("문26 하단 수식");
     let next_text = find_text_line_bbox(&tree.root, 949, 0).expect("문26 다음 본문");
 
@@ -3131,17 +3115,13 @@ fn issue_1189_2022_oct_page11_endnote_question_gaps_match_pdf() {
     let gap18_to_19 = question19_y - question18_y;
     let gap19_to_20 = question20_y - question19_y;
 
-    // [fork] 한컴/PDF 흐름은 gap ~215px. fork 글리프 메트릭의 수식/본문 높이
-    // 차이가 문18 tail 블록을 키워 실측 309.5px — fork 실측 pin (merge 이전
-    // fork HEAD 부터 동일 계열 drift).
     assert!(
-        (300.0..320.0).contains(&gap18_to_19),
-        "11쪽 문18→문19 미주 간격은 tail frame을 유지하면서 fork 실측 흐름을 따라야 함: q18={question18_y}, q19={question19_y}, gap={gap18_to_19}"
+        (198.0..235.0).contains(&gap18_to_19),
+        "11쪽 문18→문19 미주 간격은 tail frame을 유지하면서 한컴/PDF 흐름을 따라야 함: q18={question18_y}, q19={question19_y}, gap={gap18_to_19}"
     );
-    // [fork] 한컴/PDF gap ~195px; fork 메트릭 drift 실측 168.5px.
     assert!(
-        (160.0..185.0).contains(&gap19_to_20),
-        "11쪽 문19→문20 미주 간격도 fork 실측 흐름을 유지해야 함: q19={question19_y}, q20={question20_y}, gap={gap19_to_20}"
+        (180.0..210.0).contains(&gap19_to_20),
+        "11쪽 문19→문20 미주 간격도 한컴/PDF 흐름을 유지해야 함: q19={question19_y}, q20={question20_y}, gap={gap19_to_20}"
     );
 }
 
@@ -3154,15 +3134,13 @@ fn issue_1274_2022_oct_page11_question20_equation_tail_keeps_pdf_bleed() {
     let equation_bottom =
         max_equation_visual_bottom_in_region(&tree.root, 395.0, 700.0, 1020.0, 1100.0)
             .expect("문20 하단 수식");
-    // [fork] upstream sweep 은 PDF bleed(~1121px)를 pin 했지만 fork 메트릭
-    // 에서는 tail 이 23px 위(1095.2px)에서 끝난다 — frame(1092.3) 근처 실측 pin.
     assert!(
-        equation_bottom <= 1100.0,
-        "문20 하단 수식-only tail은 fork 실측 허용 bleed 안에 남아야 함: bottom={equation_bottom}"
+        equation_bottom <= 1124.0,
+        "문20 하단 수식-only tail은 현재 sweep 기준 허용 bleed 안에 남아야 함: bottom={equation_bottom}"
     );
     assert!(
-        equation_bottom >= 1090.0,
-        "문20 수식 tail을 과도하게 끌어올리면 fork 실측 하단 잔여 흐름과 달라짐: bottom={equation_bottom}"
+        equation_bottom >= 1118.0,
+        "문20 수식 tail을 과도하게 끌어올리면 현재 sweep의 하단 잔여 흐름과 달라짐: bottom={equation_bottom}"
     );
 }
 
@@ -3291,16 +3269,14 @@ fn issue_1284_2022_nov_practice_page19_question25_tail_matches_pdf_frame() {
         "문24 제목은 PDF page 19 왼쪽 단 bbox(약 y=832.0px)와 맞아야 함: {:?}",
         question24_title
     );
-    // [fork] 한컴 PDF bbox 약 y=971.2px; fork 메트릭 drift 로 실측 983.0px.
     assert!(
-        question25_title.x < 100.0 && (977.0..=990.0).contains(&question25_title.y),
-        "문25 제목은 fork 실측 bbox(약 y=983.0px)와 맞아야 함: {:?}",
+        question25_title.x < 100.0 && (965.0..=977.0).contains(&question25_title.y),
+        "문25 제목은 PDF page 19 왼쪽 단 bbox(약 y=971.2px)와 맞아야 함: {:?}",
         question25_title
     );
-    // [fork] fork 메트릭 실측 1098.6px — 종전 상한(1097)을 1.6px 넘는 bleed pin.
     assert!(
-        question25_tail_bottom <= 1100.0,
-        "문25 tail은 page 19 frame(허용 bleed 포함) 안에서 끝나야 함: tail={:?}, bottom={question25_tail_bottom}",
+        question25_tail_bottom <= 1097.0,
+        "문25 tail은 한컴/PDF처럼 page 19 frame 안에서 끝나야 함: tail={:?}, bottom={question25_tail_bottom}",
         question25_tail
     );
 }
@@ -3367,13 +3343,13 @@ fn issue_1189_2022_nov_pages10_12_rewind_tail_and_equation_scale_match_pdf() {
         "10쪽 문6 꼬리 수식은 본문 하단을 넘겨 문단끼리 겹치면 안 됨: bottom={question6_tail_bottom}"
     );
     assert!(
-        page11.contains("PartialParagraph  pi=553  lines=0..8")
+        page11.contains("PartialParagraph[미주]  pi=553  lines=0..8")
             && !page11.contains("FullParagraph[미주]  pi=553"),
         "문14 tail은 11쪽에서 내부 vpos 리셋 직전까지만 렌더되어야 함\n{page11}"
     );
     assert!(
-        page12.contains("PartialParagraph  pi=553  lines=8..11")
-            && page12.contains("Shape          pi=554 ci=0  그림 tac=true")
+        page12.contains("PartialParagraph[미주]  pi=553  lines=8..11")
+            && page12.contains("Shape[미주]          pi=554 ci=0  그림 tac=true")
             && page12.contains("FullParagraph[미주]  pi=555"),
         "12쪽은 문14 tail 텍스트 뒤 그래프와 문15가 이어져야 함\n{page12}"
     );

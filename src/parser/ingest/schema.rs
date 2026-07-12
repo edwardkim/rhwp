@@ -18,6 +18,22 @@ pub struct IngestDocument {
     #[serde(default = "default_font")]
     pub default_font: String,
 
+    /// 반복 머리말 텍스트.
+    #[serde(default)]
+    pub header_text: Option<String>,
+
+    /// 반복 꼬리말 텍스트.
+    #[serde(default)]
+    pub footer_text: Option<String>,
+
+    /// 시험지 형식 라벨(예: 홀수형/짝수형).
+    #[serde(default)]
+    pub form_label: Option<String>,
+
+    /// 여러 문제가 공유하는 지문 목록.
+    #[serde(default)]
+    pub passages: Vec<Passage>,
+
     /// 시험문제 목록.
     pub questions: Vec<Question>,
 }
@@ -40,6 +56,16 @@ pub struct PageSize {
     pub height_mm: f32,
 }
 
+/// 여러 문제가 공유하는 지문.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Passage {
+    /// 지문 ID. `Question.passage_ref` 에서 참조한다.
+    pub id: String,
+    /// 공유 지문 블록.
+    #[serde(default)]
+    pub blocks: Vec<StemBlock>,
+}
+
 /// 한 문제 단위.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Question {
@@ -48,6 +74,10 @@ pub struct Question {
 
     /// 지문 — 첫 줄 또는 전체 (stem_blocks가 있으면 stem_blocks가 우선, stem은 fallback).
     pub stem: String,
+
+    /// 공유 지문 ID 참조. 같은 passage는 builder가 첫 참조 위치에 한 번만 출력한다.
+    #[serde(default)]
+    pub passage_ref: Option<String>,
 
     /// 지문을 텍스트/이미지 블록 시퀀스로 표현 (선택사항).
     /// 비어있으면 stem 한 줄로 처리.
@@ -87,6 +117,15 @@ pub enum StemBlock {
         /// 위치 힌트 (선택).
         #[serde(default)]
         placement: Placement,
+    },
+    /// 테두리/배경이 있는 보기 박스.
+    Boxed {
+        /// 박스 제목. 예: `<보기>`.
+        #[serde(default)]
+        title: Option<String>,
+        /// 박스 내부 블록.
+        #[serde(default)]
+        blocks: Vec<StemBlock>,
     },
 }
 
@@ -141,12 +180,32 @@ mod tests {
             "version": "1",
             "page_size": {"width_mm": 210.0, "height_mm": 297.0},
             "default_font": "함초롬바탕",
+            "header_text": "국어 영역",
+            "footer_text": "1/20",
+            "form_label": "홀수형",
+            "passages": [
+                {
+                    "id": "p1-2",
+                    "blocks": [
+                        {"type": "text", "text": "[1~2] 다음 글을 읽고 물음에 답하시오."},
+                        {"type": "text", "text": "공유 지문입니다."}
+                    ]
+                }
+            ],
             "questions": [
                 {
                     "number": 1,
+                    "passage_ref": "p1-2",
                     "stem": "다음 글의 주제로 가장 적절한 것은?",
                     "stem_blocks": [
-                        {"type": "text", "text": "다음 글의 주제로 가장 적절한 것은?"}
+                        {"type": "text", "text": "다음 글의 주제로 가장 적절한 것은?"},
+                        {
+                            "type": "boxed",
+                            "title": "<보기>",
+                            "blocks": [
+                                {"type": "text", "text": "보기 본문"}
+                            ]
+                        }
                     ],
                     "choices": [
                         {"label": "①", "text": "환경 보호"},
@@ -165,10 +224,42 @@ mod tests {
     fn test_parse_minimal() {
         let doc: IngestDocument = serde_json::from_str(sample_minimal_json()).unwrap();
         assert_eq!(doc.version, "1");
+        assert_eq!(doc.header_text.as_deref(), Some("국어 영역"));
+        assert_eq!(doc.footer_text.as_deref(), Some("1/20"));
+        assert_eq!(doc.form_label.as_deref(), Some("홀수형"));
+        assert_eq!(doc.passages.len(), 1);
+        assert_eq!(doc.passages[0].id, "p1-2");
         assert_eq!(doc.questions.len(), 1);
         assert_eq!(doc.questions[0].number, 1);
+        assert_eq!(doc.questions[0].passage_ref.as_deref(), Some("p1-2"));
         assert_eq!(doc.questions[0].choices.len(), 5);
         assert_eq!(doc.questions[0].choices[0].label, "①");
+        assert!(matches!(
+            &doc.questions[0].stem_blocks[1],
+            StemBlock::Boxed { .. }
+        ));
+    }
+
+    #[test]
+    fn test_parse_legacy_minimal_defaults() {
+        let json = r#"{
+            "version": "1",
+            "questions": [{
+                "number": 1,
+                "stem": "기존 입력",
+                "choices": [{"label": "①", "text": "A"}]
+            }]
+        }"#;
+        let doc: IngestDocument = serde_json::from_str(json).unwrap();
+
+        assert!(doc.header_text.is_none());
+        assert!(doc.footer_text.is_none());
+        assert!(doc.form_label.is_none());
+        assert!(doc.passages.is_empty());
+        assert!(doc.questions[0].passage_ref.is_none());
+        assert!(doc.questions[0].stem_blocks.is_empty());
+        assert!(doc.questions[0].media.is_empty());
+        assert!(doc.questions[0].auto_number);
     }
 
     #[test]
@@ -183,6 +274,7 @@ mod tests {
         let doc2: IngestDocument = serde_json::from_str(&s).unwrap();
         assert_eq!(doc.questions.len(), doc2.questions.len());
         assert_eq!(doc.questions[0].stem, doc2.questions[0].stem);
+        assert_eq!(doc.passages.len(), doc2.passages.len());
     }
 
     #[test]

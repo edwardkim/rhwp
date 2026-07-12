@@ -9,8 +9,7 @@ use super::border_rendering::{
     build_row_col_x, collect_cell_borders, render_edge_borders, render_transparent_borders,
 };
 use super::text_measurement::{
-    is_cjk_char, is_vertical_rotate_char, resolved_to_text_style, resolved_to_text_style_for_text,
-    vertical_substitute_char,
+    is_cjk_char, is_vertical_rotate_char, resolved_to_text_style, vertical_substitute_char,
 };
 use super::utils::{extract_shape_transform, find_bin_data};
 use super::{CellContext, CellPathEntry, LayoutEngine};
@@ -119,12 +118,8 @@ impl LayoutEngine {
                 let mut col_height = 0.0;
 
                 for run in &line.runs {
-                    let text_style = resolved_to_text_style_for_text(
-                        styles,
-                        run.char_style_id,
-                        run.lang_index,
-                        &run.text,
-                    );
+                    let text_style =
+                        resolved_to_text_style(styles, run.char_style_id, run.lang_index);
                     for ch in run.text.chars() {
                         if ch == '\n' || ch == '\r' {
                             char_offset += 1;
@@ -471,7 +466,7 @@ impl LayoutEngine {
         }
 
         // 행 높이 계산 (layout_table과 동일한 resolve_row_heights 사용)
-        let row_heights = self.resolve_row_heights(table, col_count, row_count, None, styles);
+        let row_heights = self.resolve_row_heights(table, col_count, row_count, None, styles, true);
 
         // 누적 위치 계산
         let mut col_x = vec![0.0f64; col_count + 1];

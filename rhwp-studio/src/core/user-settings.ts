@@ -48,6 +48,20 @@ export interface ViewSettings {
   showParagraphMarks: boolean;
   /** 조판부호 표시 여부 */
   showControlCodes: boolean;
+  /** 짤림보기(잘림 보기) 켜짐 여부. true = 편집용지 경계 밖 오버플로 내용을 보임(잘림 미적용). */
+  clipView: boolean;
+}
+
+/** 복구용 자동저장 설정 */
+export interface AutosaveSettings {
+  /** 복구용 자동저장 사용 여부 */
+  recoveryEnabled: boolean;
+  /** 복구용 자동저장 간격(분) */
+  recoveryIntervalMinutes: number;
+  /** 입력이 멈췄을 때 자동저장 사용 여부 */
+  idleSaveEnabled: boolean;
+  /** 입력이 멈춘 뒤 자동저장까지 기다릴 시간(초) */
+  idleDelaySeconds: number;
 }
 
 /** 전체 설정 구조 */
@@ -57,6 +71,7 @@ export interface AppSettings {
   theme: ThemeSettings;
   dialog: DialogSettings;
   view: ViewSettings;
+  autosave: AutosaveSettings;
 }
 
 /** 언어 인덱스 상수 (HWP 7개 언어) */
@@ -121,6 +136,13 @@ function defaultSettings(): AppSettings {
     view: {
       showParagraphMarks: false,
       showControlCodes: false,
+      clipView: true,
+    },
+    autosave: {
+      recoveryEnabled: true,
+      recoveryIntervalMinutes: 10,
+      idleSaveEnabled: true,
+      idleDelaySeconds: 10,
     },
   };
 }
@@ -131,6 +153,12 @@ function normalizeThemeMode(value: unknown): ThemeMode {
 
 function normalizeBoolean(value: unknown, fallback: boolean): boolean {
   return typeof value === 'boolean' ? value : fallback;
+}
+
+function normalizeNumber(value: unknown, fallback: number, min: number, max: number): number {
+  const number = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(number)));
 }
 
 /** 사용자 환경설정 서비스 (싱글턴) */
@@ -150,6 +178,7 @@ class UserSettingsService {
       const defaults = defaultSettings();
       const dialog: Partial<DialogSettings> = parsed.dialog ?? {};
       const view: Partial<ViewSettings> = parsed.view ?? {};
+      const autosave: Partial<AutosaveSettings> = parsed.autosave ?? {};
       return {
         version: parsed.version ?? defaults.version,
         font: {
@@ -179,6 +208,34 @@ class UserSettingsService {
           showControlCodes: normalizeBoolean(
             view.showControlCodes,
             defaults.view.showControlCodes,
+          ),
+          clipView: normalizeBoolean(
+            view.clipView,
+            defaults.view.clipView,
+          ),
+        },
+        autosave: {
+          ...defaults.autosave,
+          ...autosave,
+          recoveryEnabled: normalizeBoolean(
+            autosave.recoveryEnabled,
+            defaults.autosave.recoveryEnabled,
+          ),
+          recoveryIntervalMinutes: normalizeNumber(
+            autosave.recoveryIntervalMinutes,
+            defaults.autosave.recoveryIntervalMinutes,
+            1,
+            120,
+          ),
+          idleSaveEnabled: normalizeBoolean(
+            autosave.idleSaveEnabled,
+            defaults.autosave.idleSaveEnabled,
+          ),
+          idleDelaySeconds: normalizeNumber(
+            autosave.idleDelaySeconds,
+            defaults.autosave.idleDelaySeconds,
+            5,
+            600,
           ),
         },
       };
@@ -248,6 +305,46 @@ class UserSettingsService {
   /** 조판부호 표시 설정 */
   setShowControlCodes(value: boolean): void {
     this.data.view.showControlCodes = value;
+    this.save();
+  }
+
+  /** 짤림보기(잘림 보기) 켜짐 설정. true = 오버플로 내용 표시(잘림 미적용). */
+  setClipView(value: boolean): void {
+    this.data.view.clipView = value;
+    this.save();
+  }
+
+  /** 복구용 자동저장 설정 반환 */
+  getAutosaveSettings(): AutosaveSettings {
+    return this.data.autosave;
+  }
+
+  /** 복구용 자동저장 설정 */
+  updateAutosaveSettings(partial: Partial<AutosaveSettings>): void {
+    this.data.autosave = {
+      ...this.data.autosave,
+      ...partial,
+      recoveryEnabled: normalizeBoolean(
+        partial.recoveryEnabled,
+        this.data.autosave.recoveryEnabled,
+      ),
+      recoveryIntervalMinutes: normalizeNumber(
+        partial.recoveryIntervalMinutes,
+        this.data.autosave.recoveryIntervalMinutes,
+        1,
+        120,
+      ),
+      idleSaveEnabled: normalizeBoolean(
+        partial.idleSaveEnabled,
+        this.data.autosave.idleSaveEnabled,
+      ),
+      idleDelaySeconds: normalizeNumber(
+        partial.idleDelaySeconds,
+        this.data.autosave.idleDelaySeconds,
+        5,
+        600,
+      ),
+    };
     this.save();
   }
 

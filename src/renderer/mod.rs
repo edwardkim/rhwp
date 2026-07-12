@@ -685,6 +685,14 @@ pub(crate) fn hwp3_variant_flow_spacing_before(base: f64, is_hwp3_variant: bool)
     }
 }
 
+/// [#2169] 저장 LINE_SEG 부재 판별 — 원본 NO_LS 와 자기-export HWPX 재파싱본
+/// (전부 synthetic, tag 0x8000_0000)을 동일 취급해 왕복 시멘틱을 정합한다
+/// (#1770 계열: 국소 문맥 판별).
+#[inline]
+pub(crate) fn para_has_no_stored_line_segs(p: &crate::model::paragraph::Paragraph) -> bool {
+    p.line_segs.is_empty() || p.line_segs.iter().all(|s| s.tag & 0x8000_0000 != 0)
+}
+
 /// HWPUNIT을 픽셀로 변환
 #[inline]
 pub fn hwpunit_to_px(hwpunit: i32, dpi: f64) -> f64 {
@@ -695,44 +703,6 @@ pub fn hwpunit_to_px(hwpunit: i32, dpi: f64) -> f64 {
 #[inline]
 pub fn px_to_hwpunit(px: f64, dpi: f64) -> i32 {
     (px * HWPUNIT_PER_INCH / dpi) as i32
-}
-
-/// 폰트의 CSS generic 계열 (serif / sans-serif / monospace).
-///
-/// [숫자 폰트 일관성] HWP 의 글자 모양은 한글/영문(숫자)/한자… 언어별 폰트
-/// 슬롯을 따로 가진다. 숫자는 영문 슬롯을 쓰므로, 본문(한글) 슬롯이 명조(serif)
-/// 인데 영문 슬롯이 고딕(sans)인 문서에서는 숫자만 고딕으로 튀어 보인다
-/// (예: HY신명조 본문 속 HY중고딕 숫자). 이 계열 분류로 두 슬롯이 다른 계열
-/// 인지 판정하여, 다를 때만 숫자를 본문 슬롯에 맞춘다 (`font_family_for_run`).
-pub fn generic_font_class(font_family: &str) -> &'static str {
-    if font_family.is_empty() {
-        return "sans-serif";
-    }
-    let lower = font_family.to_ascii_lowercase();
-    if font_family.contains("굴림체")
-        || font_family.contains("바탕체")
-        || lower.contains("gulimche")
-        || lower.contains("batangche")
-        || lower.contains("coding")
-        || lower.contains("courier")
-        || lower.contains("mono")
-    {
-        return "monospace";
-    }
-    if font_family.contains("바탕")
-        || font_family.contains("명조")
-        || font_family.contains("궁서")
-        || lower.contains("times")
-        || lower.contains("hymjre")
-        || lower.contains("palatino")
-        || lower.contains("georgia")
-        || lower.contains("batang")
-        || lower.contains("gungsuh")
-        || (lower.contains("serif") && !lower.contains("sans"))
-    {
-        return "serif";
-    }
-    "sans-serif"
 }
 
 /// [Task #1745] 텍스트 혼합 anchor 문단의 Square wrap 표 우측 wrap 띠 (cs, sw) HU 도출.
@@ -848,6 +818,16 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     // 'Noto Sans KR ExtraLight' (Task #1224): 무거운 Noto CJK Regular 폴백 직전에 삽입해
     // 한컴 돋움 획 두께에 근접시킴. 시스템 고딕 우선 → 부재 시에만 ExtraLight 매칭.
     "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang Ext-B','함초롬바탕 확장B','HCR Batang Ext','함초롬바탕 확장','HCR Batang','함초롬바탕','Source Han Serif K Old Hangul',sans-serif"
+}
+
+pub(crate) fn contains_old_hangul_jamo(text: &str) -> bool {
+    text.chars().any(|ch| {
+        let code = ch as u32;
+        matches!(
+            code,
+            0x1100..=0x11FF | 0xA960..=0xA97F | 0xD7B0..=0xD7FF
+        )
+    })
 }
 
 // ============================================================
@@ -966,31 +946,6 @@ impl NumberFormat {
             6 => NumberFormat::HangulGaNaDa,
             7 => NumberFormat::HangulNumber,
             8 => NumberFormat::HanjaNumber,
-            _ => NumberFormat::Digit,
-        }
-    }
-
-    /// 각주/미주 모양(FootnoteShape)의 번호 서식을 렌더용 NumberFormat 으로 변환.
-    ///
-    /// 모델 `footnote::NumberFormat` 은 한컴이 지원하는 모든 변형(원문자/한글/한자
-    /// 등)을 담지만, 렌더러는 그중 실제 글리프 생성기를 가진 형식만 직접 그린다.
-    /// 매칭되는 형식은 정확히 매핑하고, 아직 전용 생성기가 없는 형식은 Digit 로
-    /// 폴백한다. 미주/각주 자동 번호를 구역의 `endnote_shape`/`footnote_shape`
-    /// 에서 직접 읽어 렌더(예: LowerRoman → "i")할 때 사용한다.
-    pub fn from_footnote_shape_format(format: crate::model::footnote::NumberFormat) -> Self {
-        use crate::model::footnote::NumberFormat as M;
-        match format {
-            M::Digit => NumberFormat::Digit,
-            M::CircledDigit => NumberFormat::CircledDigit,
-            M::UpperRoman => NumberFormat::RomanUpper,
-            M::LowerRoman => NumberFormat::RomanLower,
-            M::UpperAlpha => NumberFormat::LatinUpper,
-            M::LowerAlpha => NumberFormat::LatinLower,
-            M::HangulSyllable => NumberFormat::HangulGaNaDa,
-            M::HangulDigit => NumberFormat::HangulNumber,
-            M::HanjaDigit => NumberFormat::HanjaNumber,
-            // 아직 전용 글리프 생성기가 없는 형식(원문자 알파벳/자모, 한자 갑을 등)은
-            // 표준 숫자로 폴백한다.
             _ => NumberFormat::Digit,
         }
     }

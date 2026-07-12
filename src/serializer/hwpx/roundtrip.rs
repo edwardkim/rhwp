@@ -1168,6 +1168,15 @@ fn diff_paragraph_char_shapes(
                         detail,
                     });
                 }
+                // [#1655] 수식 flowWithText 보존 게이트.
+                if let Some(detail) = diff_flow_with_text(&ea.common, &eb.common) {
+                    diff.push(IrDifference::ObjectFlowWithText {
+                        section,
+                        paragraph,
+                        path: format!("{path}/ctrl[{ci}]eq"),
+                        detail,
+                    });
+                }
             }
             (Control::Shape(sa), Control::Shape(sb)) => {
                 let p = format!("{path}/ctrl[{ci}]shape");
@@ -2174,6 +2183,25 @@ mod tests {
                 .iter()
                 .any(|d| matches!(d, IrDifference::ObjectFlowWithText { .. })),
             "표 flowWithText 차이는 게이트에서 검출되어야 한다: {:?}",
+            diff.differences
+        );
+    }
+
+    #[test]
+    fn task1655_equation_flow_with_text_in_gate() {
+        // 수식 flowWithText 차이도 diff_documents(게이트)에서 ObjectFlowWithText 로 검출.
+        let mut ea = crate::model::control::Equation::default();
+        ea.common.flow_with_text = false;
+        let mut eb = crate::model::control::Equation::default();
+        eb.common.flow_with_text = true;
+        let a = doc_with_control(crate::model::control::Control::Equation(Box::new(ea)));
+        let b = doc_with_control(crate::model::control::Control::Equation(Box::new(eb)));
+        let diff = diff_documents(&a, &b);
+        assert!(
+            diff.differences
+                .iter()
+                .any(|d| matches!(d, IrDifference::ObjectFlowWithText { .. })),
+            "수식 flowWithText 차이는 게이트에서 검출되어야 한다: {:?}",
             diff.differences
         );
     }

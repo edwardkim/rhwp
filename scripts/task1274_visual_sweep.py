@@ -57,11 +57,20 @@ ENDNOTE_SEPARATOR_MIN_RUN_PX = 70
 ENDNOTE_SEPARATOR_GAP_DRIFT_LIMIT_PX = 18.0
 QUESTION_TITLE_RE = re.compile(r"^\s*문\s*(\d+)")
 CHOICE_MARKER_ONLY_RE = re.compile(r"^[①-⑳]+$")
+PAGE_NUMBER_FOOTER_RE = re.compile(r"^\s*-\s*\d+\s*-\s*$")
+PAPER_SIZE_FOOTER_RE = re.compile(
+    r"^\s*\d+(?:\.\d+)?mm[×x]\d+(?:\.\d+)?mm\[.+\]\s*$"
+)
 PDF_PAGE_RE = re.compile(r'<page\s+[^>]*width="([0-9.]+)"\s+height="([0-9.]+)"')
 PDF_WORD_RE = re.compile(
     r'<word\s+[^>]*xMin="([0-9.]+)"\s+yMin="([0-9.]+)"\s+'
     r'xMax="([0-9.]+)"\s+yMax="([0-9.]+)"[^>]*>(.*?)</word>'
 )
+RENDER_TREE_INVISIBLE_TEXT = "\U000f081c"
+
+
+def strip_render_tree_invisible_text(text: str) -> str:
+    return "".join(ch for ch in text if ch not in RENDER_TREE_INVISIBLE_TEXT)
 
 
 @dataclass(frozen=True)
@@ -1581,14 +1590,15 @@ def collect_render_tree_text_lines(
         bbox = render_tree_bbox(node)
         if bbox is not None and node.get("type") == "TextLine":
             text = line_text(node)
+            visible_text = strip_render_tree_invisible_text(text)
             visual_empty = include_visual_empty and not text.strip() and bbox[3] >= 20.0
-            if text.strip() or visual_empty:
+            if visible_text.strip() or visual_empty:
                 lines.append(
                     {
                         "path": path,
                         "bbox": bbox,
                         "pi": node.get("pi"),
-                        "text": text[:96] if text.strip() else "[VISUAL]",
+                        "text": visible_text[:96] if visible_text.strip() else "[VISUAL]",
                     }
                 )
         children = node.get("children")
@@ -1885,7 +1895,7 @@ def render_tree_equation_overlap_candidates(
             )
         elif bbox is not None and node_type == "TextRun":
             text = node.get("text")
-            if isinstance(text, str) and text.strip():
+            if isinstance(text, str) and strip_render_tree_invisible_text(text).strip():
                 text_runs.append(
                     {
                         "path": path,
@@ -1894,7 +1904,7 @@ def render_tree_equation_overlap_candidates(
                         "line_text": next_line_text,
                         "pi": node.get("pi"),
                         "line_pi": next_line_pi,
-                        "text": text[:32],
+                        "text": strip_render_tree_invisible_text(text)[:32],
                     }
                 )
 
@@ -2114,7 +2124,7 @@ def render_tree_frame_tail_candidates(
         if overflow_px < FRAME_TAIL_LINE_OVERFLOW_MIN_PX:
             continue
         text = str(line.get("text") or "")
-        stripped = text.replace("\ufffc", "").strip()
+        stripped = strip_render_tree_invisible_text(text).replace("\ufffc", "").strip()
         if not stripped and "[EQ]" not in text:
             continue
         candidates.append(
@@ -2179,13 +2189,35 @@ def suppress_tolerated_frame_tail_candidates(
             and actual_bottom_extent_is_tolerated
             and (content_bottom_delta is None or abs(content_bottom_delta) < CONTENT_BOTTOM_DELTA_LIMIT_PX)
         )
+        paper_size_footer_bleed = (
+            PAPER_SIZE_FOOTER_RE.match(text) is not None
+            and line_height > 0.0
+            and overflow <= line_height + FRAME_BOTTOM_GLYPH_BLEED_TOLERANCE_PX
+            and abs(rhwp_outside_frame_bleed_px - pdf_outside_frame_bleed_px) <= 2
+            and (content_bottom_delta is None or abs(content_bottom_delta) < 16.0)
+        )
+        page_number_footer_bleed = (
+            PAGE_NUMBER_FOOTER_RE.match(text) is not None
+            and line_height > 0.0
+            and overflow <= 64.0
+            and pdf_outside_frame_bleed_px >= rhwp_outside_frame_bleed_px - 2
+            and (content_bottom_delta is None or abs(content_bottom_delta) < 16.0)
+            and rhwp_out_pixels <= 128
+        )
 
         if marker_is_stable and (
             (bottom_is_close and (small_bottom_bleed or equation_line_height_bleed))
             or equation_logical_box_bleed
             or text_logical_box_bleed
+            or paper_size_footer_bleed
+            or page_number_footer_bleed
         ):
-            suppressed.append({**item, "suppressed_reason": "small_visual_tail_bleed"})
+            reason = "small_visual_tail_bleed"
+            if paper_size_footer_bleed:
+                reason = "paper_size_footer_bleed"
+            elif page_number_footer_bleed:
+                reason = "page_number_footer_bleed"
+            suppressed.append({**item, "suppressed_reason": reason})
         else:
             active.append(item)
 
@@ -2348,6 +2380,15 @@ def analyze_page(
         rhwp_out_extent = int(rhwp_out_max_y - rb)
     if pdf_out_max_y is not None:
         pdf_out_extent = int(pdf_out_max_y - pb)
+    paper_size_footer_frame_bleed = any(
+        item.get("suppressed_reason") == "paper_size_footer_bleed"
+        for item in suppressed_frame_tail_overflows
+    ) and (
+        abs(rhwp_outside_frame_bleed_px - pdf_outside_frame_bleed_px) <= 2
+        and content_bottom_delta is not None
+        and abs(content_bottom_delta) <= FRAME_BOTTOM_GLYPH_BLEED_TOLERANCE_PX
+        and rhwp_out_pixels <= pdf_out_pixels + 64
+    )
     tolerated_rhwp_frame_bleed = (
         rhwp_out_extent is not None
         and 0 < rhwp_out_extent <= FRAME_OVERFLOW_TOLERATED_BLEED_PX
@@ -2369,6 +2410,7 @@ def analyze_page(
         rhwp_out_pixels > max(FRAME_OVERFLOW_PIXEL_LIMIT, pdf_out_pixels + FRAME_OVERFLOW_EXTRA_PIXEL_LIMIT)
         and not tolerated_rhwp_frame_bleed
         and not minor_rhwp_glyph_bleed
+        and not paper_size_footer_frame_bleed
     ):
         flags.append("frame_overflow_pixels")
     content_bottom_drift = content_bottom_delta is not None and abs(content_bottom_delta) >= CONTENT_BOTTOM_DELTA_LIMIT_PX
@@ -2484,6 +2526,7 @@ def analyze_page(
         "rhwp_outside_frame_extent_px": rhwp_out_extent,
         "pdf_outside_frame_extent_px": pdf_out_extent,
         "frame_overflow_tolerated_bleed": tolerated_rhwp_frame_bleed,
+        "paper_size_footer_frame_bleed": paper_size_footer_frame_bleed,
         "rhwp_outside_frame_bleed_px": rhwp_outside_frame_bleed_px,
         "pdf_outside_frame_bleed_px": pdf_outside_frame_bleed_px,
         "content_bottom_delta_px": content_bottom_delta,

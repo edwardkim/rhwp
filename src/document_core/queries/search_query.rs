@@ -6,7 +6,6 @@ use crate::document_core::helpers::get_textbox_from_shape;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
-use std::collections::BTreeMap;
 
 /// 검색 결과 위치 정보
 #[derive(Debug, Clone)]
@@ -17,20 +16,6 @@ struct SearchHit {
     length: usize,
     /// 표 셀 등 중첩 컨텍스트: (parent_para, ctrl_idx, cell_idx, cell_para)
     cell_context: Option<(usize, usize, usize, usize)>,
-    /// 각주/미주 내부 매치: (anchor_ctrl_idx, note_para_idx, is_endnote).
-    /// anchor_ctrl_idx 는 앵커 컨트롤 인덱스 — cell_context 가 없으면 본문
-    /// para.controls 기준, 있으면 그 셀/글상자 문단의 controls 기준.
-    /// char_offset 은 노트 내부 문단 텍스트 기준. 노트 매치가 아니면 None.
-    note_context: Option<(usize, usize, bool)>,
-}
-
-/// 컨트롤이 각주/미주면 (내부 문단들, is_endnote)를 반환
-fn note_paragraphs(ctrl: &Control) -> Option<(&Vec<crate::model::paragraph::Paragraph>, bool)> {
-    match ctrl {
-        Control::Footnote(fn_ctrl) => Some((&fn_ctrl.paragraphs, false)),
-        Control::Endnote(en_ctrl) => Some((&en_ctrl.paragraphs, true)),
-        _ => None,
-    }
 }
 
 /// 문단 텍스트에서 query를 검색하여 모든 매치 오프셋을 반환
@@ -81,7 +66,6 @@ fn search_first_body(doc: &DocumentCore, query: &str, case_sensitive: bool) -> O
                     char_offset: offset,
                     length: qlen,
                     cell_context: None,
-                    note_context: None,
                 });
             }
         }
@@ -104,11 +88,10 @@ fn search_all(doc: &DocumentCore, query: &str, case_sensitive: bool) -> Vec<Sear
                     char_offset: offset,
                     length: qlen,
                     cell_context: None,
-                    note_context: None,
                 });
             }
 
-            // 표 셀 / 글상자 / 각주·미주
+            // 표 셀
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
                 match ctrl {
                     Control::Table(table) => {
@@ -126,33 +109,7 @@ fn search_all(doc: &DocumentCore, query: &str, case_sensitive: bool) -> Vec<Sear
                                             cell_idx,
                                             cell_para_idx,
                                         )),
-                                        note_context: None,
                                     });
-                                }
-
-                                // 셀 문단에 앵커된 각주/미주 내부 텍스트
-                                for (cc_idx, cc) in cell_para.controls.iter().enumerate() {
-                                    if let Some((note_paras, endnote)) = note_paragraphs(cc) {
-                                        for (np_idx, np) in note_paras.iter().enumerate() {
-                                            for offset in
-                                                find_in_text(&np.text, query, case_sensitive)
-                                            {
-                                                results.push(SearchHit {
-                                                    sec: sec_idx,
-                                                    para: para_idx,
-                                                    char_offset: offset,
-                                                    length: qlen,
-                                                    cell_context: Some((
-                                                        para_idx,
-                                                        ctrl_idx,
-                                                        cell_idx,
-                                                        cell_para_idx,
-                                                    )),
-                                                    note_context: Some((cc_idx, np_idx, endnote)),
-                                                });
-                                            }
-                                        }
-                                    }
                                 }
                             }
                         }
@@ -167,56 +124,12 @@ fn search_all(doc: &DocumentCore, query: &str, case_sensitive: bool) -> Vec<Sear
                                         char_offset: offset,
                                         length: qlen,
                                         cell_context: Some((para_idx, ctrl_idx, 0, tb_para_idx)),
-                                        note_context: None,
-                                    });
-                                }
-
-                                // 글상자 문단에 앵커된 각주/미주 내부 텍스트
-                                for (cc_idx, cc) in tb_para.controls.iter().enumerate() {
-                                    if let Some((note_paras, endnote)) = note_paragraphs(cc) {
-                                        for (np_idx, np) in note_paras.iter().enumerate() {
-                                            for offset in
-                                                find_in_text(&np.text, query, case_sensitive)
-                                            {
-                                                results.push(SearchHit {
-                                                    sec: sec_idx,
-                                                    para: para_idx,
-                                                    char_offset: offset,
-                                                    length: qlen,
-                                                    cell_context: Some((
-                                                        para_idx,
-                                                        ctrl_idx,
-                                                        0,
-                                                        tb_para_idx,
-                                                    )),
-                                                    note_context: Some((cc_idx, np_idx, endnote)),
-                                                });
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // 본문 문단에 앵커된 각주/미주 내부 텍스트 — 에이전트가
-                    // insert_footnote 직후 doc.find 로 검증할 때 노트 본문이
-                    // 검색에 잡혀야 한다 (이전에는 영원히 "[]").
-                    _ => {
-                        if let Some((note_paras, endnote)) = note_paragraphs(ctrl) {
-                            for (np_idx, np) in note_paras.iter().enumerate() {
-                                for offset in find_in_text(&np.text, query, case_sensitive) {
-                                    results.push(SearchHit {
-                                        sec: sec_idx,
-                                        para: para_idx,
-                                        char_offset: offset,
-                                        length: qlen,
-                                        cell_context: None,
-                                        note_context: Some((ctrl_idx, np_idx, endnote)),
                                     });
                                 }
                             }
                         }
                     }
+                    _ => {}
                 }
             }
         }
@@ -251,10 +164,10 @@ impl DocumentCore {
             return Ok(r#"{"found":false}"#.to_string());
         }
 
-        // 본문 결과만 필터 (셀/글상자/각주 내부 제외 — 커서 이동 불가)
+        // 본문 결과만 필터 (셀/글상자 내부 제외 — 커서 이동 불가)
         let body_hits: Vec<&SearchHit> = all_hits
             .iter()
-            .filter(|h| h.cell_context.is_none() && h.note_context.is_none())
+            .filter(|h| h.cell_context.is_none())
             .collect();
         if body_hits.is_empty() {
             return Ok(r#"{"found":false}"#.to_string());
@@ -309,7 +222,7 @@ impl DocumentCore {
         } else {
             all_hits
                 .iter()
-                .filter(|h| h.cell_context.is_none() && h.note_context.is_none())
+                .filter(|h| h.cell_context.is_none())
                 .collect()
         };
 
@@ -322,22 +235,9 @@ impl DocumentCore {
                 ),
                 None => String::new(),
             };
-            // 각주/미주 내부 매치: 앵커 컨트롤(ctrlIdx — cellContext 가 없으면
-            // 본문 para.controls, 있으면 그 셀/글상자 문단 controls 기준)과
-            // 노트 내부 문단 인덱스. charOffset 은 노트 문단 텍스트 기준이라
-            // insertTextInFootnote/deleteTextInFootnote 의 좌표와 그대로 맞는다.
-            let note_ctx = match &h.note_context {
-                Some((ctrl, np, endnote)) => format!(
-                    ",\"noteContext\":{{\"ctrlIdx\":{},\"notePara\":{},\"kind\":\"{}\"}}",
-                    ctrl,
-                    np,
-                    if *endnote { "endnote" } else { "footnote" }
-                ),
-                None => String::new(),
-            };
             json_parts.push(format!(
-                "{{\"sec\":{},\"para\":{},\"charOffset\":{},\"length\":{}{}{}}}",
-                h.sec, h.para, h.char_offset, h.length, cell_ctx, note_ctx
+                "{{\"sec\":{},\"para\":{},\"charOffset\":{},\"length\":{}{}}}",
+                h.sec, h.para, h.char_offset, h.length, cell_ctx
             ));
         }
 
@@ -467,64 +367,17 @@ impl DocumentCore {
             }
         }
 
-        // [ecrits #148] 치환으로 길이가 바뀐 문단의 줄나눔(line_segs)을 재계산한다.
-        // delete_text_at/insert_text_at 은 line_segs.text_start 를 시프트만 하고
-        // 줄나눔 경계는 재계산하지 않으므로, 새 값이 길어지면 마지막 줄이 컬럼/셀
-        // 폭을 넘어 오른쪽 여백 밖으로 흘러나간다. recompose 전에 reflow 한다.
-        // (한 문단에 여러 매치가 있어도 reflow 는 멱등이므로 중복 dedup 한다.)
-        if count > 0 {
-            let mut body_paras: Vec<(usize, usize)> = Vec::new();
-            let mut cell_paras: Vec<(usize, usize, usize, usize, usize)> = Vec::new();
-            for hit in &all_hits {
-                if let Some((parent_para, ctrl_idx, cell_idx, cell_para_idx)) = hit.cell_context {
-                    cell_paras.push((hit.sec, parent_para, ctrl_idx, cell_idx, cell_para_idx));
-                } else {
-                    body_paras.push((hit.sec, hit.para));
-                }
-            }
-            body_paras.sort_unstable();
-            body_paras.dedup();
-            let mut body_vpos_start: BTreeMap<usize, usize> = BTreeMap::new();
-            for (sec, para) in body_paras {
-                self.reflow_paragraph(sec, para);
-                body_vpos_start
-                    .entry(sec)
-                    .and_modify(|start| *start = (*start).min(para))
-                    .or_insert(para);
-            }
-            for (sec, start_para) in body_vpos_start {
-                if let Some(section) = self.document.sections.get_mut(sec) {
-                    crate::renderer::composer::recalculate_section_vpos(
-                        &mut section.paragraphs,
-                        start_para,
-                    );
-                }
-            }
-            cell_paras.sort_unstable();
-            cell_paras.dedup();
-            for (sec, pp, ci, cell, cp) in cell_paras {
-                self.reflow_cell_paragraph(sec, pp, ci, cell, cp);
-                self.mark_cell_control_dirty(sec, pp, ci);
-            }
-        }
-
         // 변경된 섹션들 recompose
         if count > 0 {
             let mut affected_sections: Vec<usize> = all_hits.iter().map(|h| h.sec).collect();
             affected_sections.sort();
             affected_sections.dedup();
-            for sec_idx in &affected_sections {
-                if let Some(section) = self.document.sections.get_mut(*sec_idx) {
-                    section.raw_stream = None;
-                }
-            }
             for sec_idx in affected_sections {
                 // 편집 시 raw 스트림 무효화 (재직렬화 유도) — 캐시가 남으면 export_hwp가
                 // 원본 바이트를 그대로 반환해 치환 결과가 저장에서 유실된다 (#1385)
                 self.document.sections[sec_idx].raw_stream = None;
                 self.recompose_section(sec_idx);
             }
-            self.paginate_if_needed();
         }
 
         Ok(format!("{{\"ok\":true,\"count\":{}}}", count))

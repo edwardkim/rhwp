@@ -13,7 +13,7 @@ import { CommandDispatcher } from '@/command/dispatcher';
 import type { EditorContext, CommandServices, EditorEditMode } from '@/command/types';
 import { confirmSaveBeforeReplacingDocument, fileCommands } from '@/command/commands/file';
 import { editCommands } from '@/command/commands/edit';
-import { syncTextMarkMenu, viewCommands } from '@/command/commands/view';
+import { syncClipMenu, syncTextMarkMenu, viewCommands } from '@/command/commands/view';
 import { formatCommands } from '@/command/commands/format';
 import { insertCommands } from '@/command/commands/insert';
 import { tableCommands } from '@/command/commands/table';
@@ -32,7 +32,7 @@ import { initThemeSync, setThemeMode, getThemeMode, getEffectiveTheme } from '@/
 import { analyzeDocumentFonts } from '@/core/document-font-status';
 import { detectLocalFonts, getLocalFontState, loadStoredLocalFonts } from '@/core/local-fonts';
 import { userSettings } from '@/core/user-settings';
-import { AutosaveManager } from '@/recovery/autosave-manager';
+import { AutosaveManager, type AutosaveScheduleSettings, type AutosaveStatus } from '@/recovery/autosave-manager';
 import { clearAutosaveDrafts, deleteAutosaveDraft, listAutosaveDrafts, type AutosaveDraft } from '@/recovery/autosave-store';
 import { recoveryFileName } from '@/recovery/recovery-format';
 import { showAutosaveRecoveryDialog } from '@/recovery/recovery-ui';
@@ -42,10 +42,11 @@ import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
 import type { CanvasKitLayerRenderer } from '@/view/canvaskit-renderer';
 import {
-  resolveCanvasKitRenderMode,
+  resolveCanvasKitRenderModeRequest,
   resolveCanvasKitSurfaceRequest,
   resolveRenderBackendRequest,
   resolveRenderProfile,
+  type RenderBackendFallbackReason,
 } from '@/view/render-backend';
 
 const wasm = new WasmBridge();
@@ -54,6 +55,8 @@ const documentState = new DocumentDirtyState(eventBus);
 documentState.installBeforeUnload(window);
 const autosaveManager = new AutosaveManager({
   exportBytes: () => wasm.exportHwp(),
+  schedule: autosaveScheduleFromUserSettings(),
+  onStatus: handleAutosaveStatus,
 });
 autosaveManager.connect(eventBus);
 initThemeSync((effective, mode) => {
@@ -74,7 +77,17 @@ let canvasView: CanvasView | null = null;
 let inputHandler: InputHandler | null = null;
 let toolbar: Toolbar | null = null;
 let ruler: Ruler | null = null;
+let canvaskitRenderer: CanvasKitLayerRenderer | null = null;
 let editMode: EditorEditMode = 'normal';
+let rendererRuntimeRequest: {
+  backend: ReturnType<typeof resolveRenderBackendRequest>;
+  canvaskitMode: ReturnType<typeof resolveCanvasKitRenderModeRequest>;
+  canvaskitSurface: ReturnType<typeof resolveCanvasKitSurfaceRequest>;
+  renderProfile: ReturnType<typeof resolveRenderProfile>;
+} | null = null;
+let renderBackendFallbackReason: RenderBackendFallbackReason | null = null;
+let rendererInitializationError: string | null = null;
+let rendererInitialized = false;
 let extensionViewerSettings: ExtensionViewerSettings = {
   disableExternalWebFonts: false,
 };
@@ -151,6 +164,96 @@ const sbMessage = () => document.getElementById('sb-message')!;
 const sbPage = () => document.getElementById('sb-page')!;
 const sbSection = () => document.getElementById('sb-section')!;
 const sbZoomVal = () => document.getElementById('sb-zoom-val')!;
+let autosaveStatusRestoreTimer: ReturnType<typeof setTimeout> | null = null;
+let autosavePreviousMessage: string | null = null;
+
+function autosaveScheduleFromUserSettings(): AutosaveScheduleSettings {
+  const settings = userSettings.getAutosaveSettings();
+  return {
+    recoveryEnabled: settings.recoveryEnabled,
+    recoveryIntervalMs: settings.recoveryIntervalMinutes * 60_000,
+    idleEnabled: settings.idleSaveEnabled,
+    idleDelayMs: settings.idleDelaySeconds * 1_000,
+  };
+}
+
+function handleAutosaveStatus(status: AutosaveStatus): void {
+  const message = document.getElementById('sb-message');
+  if (!message) return;
+  if (autosaveStatusRestoreTimer) {
+    clearTimeout(autosaveStatusRestoreTimer);
+    autosaveStatusRestoreTimer = null;
+  }
+
+  if (status.state === 'saving') {
+    if (autosavePreviousMessage === null) {
+      autosavePreviousMessage = message.textContent ?? '';
+    }
+    message.textContent = '복구용 자동 저장 중...';
+    return;
+  }
+
+  const restoreTarget = autosavePreviousMessage;
+  autosavePreviousMessage = null;
+  const nextMessage = status.state === 'saved'
+    ? `복구용 자동 저장 완료 (${formatBytes(status.byteLength)})`
+    : '복구용 자동 저장 실패';
+  message.textContent = nextMessage;
+  if (restoreTarget !== null) {
+    autosaveStatusRestoreTimer = setTimeout(() => {
+      if (message.textContent === nextMessage) {
+        message.textContent = restoreTarget;
+      }
+      autosaveStatusRestoreTimer = null;
+    }, status.state === 'saved' ? 1_600 : 4_000);
+  }
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  const kib = bytes / 1024;
+  if (kib < 1024) return `${kib.toFixed(1)} KiB`;
+  return `${(kib / 1024).toFixed(1)} MiB`;
+}
+
+function waitForNextPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      resolve();
+    };
+    window.setTimeout(finish, 50);
+    requestAnimationFrame(() => requestAnimationFrame(finish));
+  });
+}
+
+async function updateLoadProgress(percent: number, label: string): Promise<void> {
+  const safePercent = Math.max(0, Math.min(100, Math.round(percent)));
+  sbMessage().textContent = `파일 로딩 ${safePercent}% - ${label}`;
+  await waitForNextPaint();
+}
+
+/**
+ * CanvasKit은 browser CSS font fallback을 사용하지 않는다. 초기 페이지를 먼저 표시한 뒤,
+ * 저장된 권한 범위 안에서 필요한 local face를 준비하고 등록된 경우에만 다시 그린다.
+ */
+function prepareCanvasKitLocalFonts(fontNames: readonly string[] | undefined): void {
+  const renderer = canvaskitRenderer;
+  if (!renderer || !fontNames?.length) return;
+  const requestedFonts = [...fontNames];
+  void (async () => {
+    await loadStoredLocalFonts();
+    const registered = await renderer.prepareLocalFonts(requestedFonts);
+    if (registered > 0 && renderer === canvaskitRenderer) {
+      // 글꼴 face만 바뀌므로 문서와 편집 위치는 유지한 채 현재 페이지를 다시 그린다.
+      eventBus.emit('document-view-changed');
+    }
+  })().catch((error) => {
+    console.warn('[CanvasKit] 로컬 Typeface 준비 실패, 기본 fallback으로 계속 표시합니다:', error);
+  });
+}
 
 async function initialize(): Promise<void> {
   const msg = sbMessage();
@@ -169,17 +272,28 @@ async function initialize(): Promise<void> {
       initRhwpDev(wasm);
     }
     const renderBackendRequest = resolveRenderBackendRequest(window.location.search);
-    const canvaskitMode = resolveCanvasKitRenderMode(window.location.search);
+    const canvaskitModeRequest = resolveCanvasKitRenderModeRequest(window.location.search);
+    const canvaskitMode = canvaskitModeRequest.mode;
     const canvaskitSurfaceRequest = resolveCanvasKitSurfaceRequest(window.location.search);
     const renderProfile = resolveRenderProfile(window.location.search);
+    rendererRuntimeRequest = {
+      backend: renderBackendRequest,
+      canvaskitMode: canvaskitModeRequest,
+      canvaskitSurface: canvaskitSurfaceRequest,
+      renderProfile,
+    };
     if (renderBackendRequest.unsupportedReason) {
       console.warn(
         `[main] 지원하지 않는 renderer 값입니다: ${renderBackendRequest.requested}; Canvas2D를 사용합니다.`,
       );
     }
+    if (canvaskitModeRequest.unsupportedReason) {
+      console.warn(
+        `[main] 지원하지 않는 CanvasKit mode입니다: ${canvaskitModeRequest.requested}; default를 사용합니다.`,
+      );
+    }
     let renderBackend = renderBackendRequest.backend;
-    let canvaskitRenderer: CanvasKitLayerRenderer | null = null;
-
+    renderBackendFallbackReason = renderBackendRequest.unsupportedReason ?? null;
     if (renderBackend === 'canvaskit') {
       msg.textContent = 'CanvasKit 로딩 중...';
       try {
@@ -188,6 +302,7 @@ async function initialize(): Promise<void> {
       } catch (error) {
         console.error('[main] CanvasKit 초기화 실패, Canvas2D로 폴백합니다:', error);
         renderBackend = 'canvas2d';
+        renderBackendFallbackReason = 'canvaskitInitializationFailed';
       }
     }
     msg.textContent = 'HWP 파일을 선택해주세요.';
@@ -316,11 +431,16 @@ async function initialize(): Promise<void> {
       (window as any).__inputHandler = inputHandler;
       (window as any).__canvasView = canvasView;
       (window as any).__renderBackend = renderBackend;
+      (window as any).__renderBackendRequest = renderBackendRequest;
+      (window as any).__rendererRuntimeRequest = rendererRuntimeRequest;
+      (window as any).__renderBackendFallbackReason = renderBackendFallbackReason;
       (window as any).__canvaskitRenderMode = canvaskitMode;
       (window as any).__canvaskitSurfaceRequest = canvaskitSurfaceRequest;
       (window as any).__renderProfile = renderProfile;
     }
+    rendererInitialized = true;
   } catch (error) {
+    rendererInitializationError = error instanceof Error ? error.message : String(error);
     msg.textContent = `WASM 초기화 실패: ${error}`;
     console.error('[main] WASM 초기화 실패:', error);
   }
@@ -552,10 +672,8 @@ function setupEventListeners(): void {
     eventBus.emit('command-state-changed');
   });
 
-  eventBus.on('local-fonts-changed', () => {
-    if (wasm.pageCount > 0) {
-      canvasView?.loadDocument();
-    }
+  eventBus.on('autosave-settings-changed', () => {
+    autosaveManager.updateSchedule(autosaveScheduleFromUserSettings());
   });
 
   // 필드 정보 표시
@@ -634,6 +752,10 @@ function applySavedTextMarkSettings(): void {
   wasm.setShowControlCodes(view.showControlCodes);
   wasm.setShowParagraphMarks(view.showParagraphMarks);
   syncTextMarkMenu(view.showControlCodes, view.showParagraphMarks);
+  // #2204: 짤림보기(잘림 보기) 저장 설정 복원. clipView=켜짐 => clip 미적용(clipEnabled=false).
+  const clipEnabled = !view.clipView;
+  wasm.setClipEnabled(clipEnabled);
+  syncClipMenu(clipEnabled);
 }
 
 async function initializeDocument(docInfo: DocumentInfo, displayName: string): Promise<void> {
@@ -641,28 +763,32 @@ async function initializeDocument(docInfo: DocumentInfo, displayName: string): P
   let normalizedDuringLoad = false;
   try {
     console.log('[initDoc] 1. 폰트 로딩 시작');
+    await updateLoadProgress(55, '폰트 준비 중...');
     if (docInfo.fontsUsed?.length) {
       await loadWebFonts(docInfo.fontsUsed, (loaded, total) => {
-        msg.textContent = `폰트 로딩 중... (${loaded}/${total})`;
+        const fontPercent = total > 0 ? 55 + Math.round((loaded / total) * 20) : 65;
+        msg.textContent = `파일 로딩 ${fontPercent}% - 폰트 로딩 중... (${loaded}/${total})`;
       }, extensionViewerSettings);
     }
     console.log('[initDoc] 2. 폰트 로딩 완료');
-    msg.textContent = displayName;
+    await updateLoadProgress(75, '문서 상태 적용 중...');
     totalSections = docInfo.sectionCount ?? 1;
     sbSection().textContent = `구역: 1 / ${totalSections}`;
     applySavedTextMarkSettings();
     console.log('[initDoc] 3. inputHandler deactivate');
     inputHandler?.deactivate();
     console.log('[initDoc] 4. canvasView loadDocument');
+    await updateLoadProgress(82, '페이지 렌더 준비 중...');
     canvasView?.loadDocument();
+    prepareCanvasKitLocalFonts(docInfo.fontsUsed);
     console.log('[initDoc] 5. toolbar setEnabled');
+    await updateLoadProgress(90, '도구 모음 준비 중...');
     toolbar?.setEnabled(true);
     console.log('[initDoc] 6. toolbar initFontDropdown + initStyleDropdown');
     toolbar?.initFontDropdown(docInfo.fontsUsed);
     toolbar?.initStyleDropdown();
-    console.log('[initDoc] 7. inputHandler activateWithCaretPosition');
-    inputHandler?.activateWithCaretPosition();
-    console.log('[initDoc] 8. 완료');
+    console.log('[initDoc] 7. 사전 검증 및 로컬 글꼴 확인');
+    await updateLoadProgress(94, '문서 검증 및 글꼴 확인 중...');
 
     // #177: HWPX 비표준 lineseg 감지 → 경고 있으면 모달로 사용자 선택 요청
     try {
@@ -689,6 +815,14 @@ async function initializeDocument(docInfo: DocumentInfo, displayName: string): P
     }
 
     await promptLocalFontsIfNeeded(docInfo, displayName);
+
+    // 로컬 글꼴 감지 결과가 뷰를 갱신한 뒤에 캐럿을 연결해야 입력 포커스가 재설정과 경합하지 않는다.
+    console.log('[initDoc] 8. inputHandler activateWithCaretPosition');
+    await updateLoadProgress(96, '편집 상태 초기화 중...');
+    inputHandler?.activateWithCaretPosition();
+    // 최종 단계 뒤에는 비동기 작업이 없으므로 100% progress paint를 기다리지 않는다.
+    msg.textContent = displayName;
+    console.log('[initDoc] 9. 완료');
 
     if (normalizedDuringLoad) {
       documentState.markDirty('validation-auto-fix');
@@ -723,6 +857,7 @@ async function promptLocalFontsIfNeeded(docInfo: DocumentInfo, displayName: stri
     });
     const nextReport = analyzeDocumentFonts(docInfo.fontsUsed);
     eventBus.emit('local-fonts-changed', { fonts, report: nextReport });
+    prepareCanvasKitLocalFonts(docInfo.fontsUsed);
     const state = getLocalFontState();
     const resultLabel = state.source === 'font-presence-probe' ? '확인됨' : '감지됨';
     msg.textContent = `${displayName} (로컬 글꼴 ${fonts.length}개 ${resultLabel})`;
@@ -741,16 +876,16 @@ async function promptLocalFontsIfNeeded(docInfo: DocumentInfo, displayName: stri
 }
 
 async function loadFile(file: File, options: { skipUnsavedGuard?: boolean } = {}): Promise<boolean> {
-  const msg = sbMessage();
   try {
     if (!options.skipUnsavedGuard) {
       const canReplace = await confirmSaveBeforeReplacingDocument(commandServices);
       if (!canReplace) return false;
     }
-    msg.textContent = '파일 로딩 중...';
     const startTime = performance.now();
+    await updateLoadProgress(0, '파일 읽는 중...');
     const data = new Uint8Array(await file.arrayBuffer());
-    await loadBytes(data, file.name, null, startTime);
+    await updateLoadProgress(15, '파일 읽기 완료');
+    await loadBytes(data, file.name, null, startTime, { dataReadProgressShown: true });
     return true;
   } catch (error) {
     showLoadError(error);
@@ -763,13 +898,20 @@ async function loadBytes(
   fileName: string,
   fileHandle: typeof wasm.currentFileHandle,
   startTime = performance.now(),
+  options: { dataReadProgressShown?: boolean } = {},
 ): Promise<void> {
+  if (!options.dataReadProgressShown) {
+    await updateLoadProgress(0, '문서 데이터 준비 중...');
+  }
+  await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
   const docInfo = wasm.loadDocument(data, fileName);
+  await updateLoadProgress(45, '자동 저장 준비 중...');
   wasm.currentFileHandle = fileHandle;
   await autosaveManager.beginDocument(
     { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
     { discardPreviousDraft: true },
   );
+  await updateLoadProgress(50, '문서 초기화 중...');
   const elapsed = performance.now() - startTime;
   await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`);
 }
@@ -1057,6 +1199,26 @@ window.addEventListener('message', async (e) => {
         await initPromise;
         reply(wasm.pageCount);
         break;
+      case 'getRendererDiagnostics': {
+        await initPromise;
+        const pageIndex = Number(params?.page ?? 0);
+        if (!Number.isInteger(pageIndex) || pageIndex < 0) {
+          reply(undefined, 'page must be a non-negative integer');
+          break;
+        }
+        reply({
+          request: rendererRuntimeRequest,
+          initialized: rendererInitialized,
+          initializationError: rendererInitializationError,
+          effectiveBackend: rendererInitialized ? canvasView?.getRenderBackend() ?? null : null,
+          backendFallbackReason: renderBackendFallbackReason,
+          page: {
+            index: pageIndex,
+            canvaskit: canvasView?.getCanvasKitRenderDiagnostics(pageIndex) ?? null,
+          },
+        });
+        break;
+      }
       case 'getPageSvg':
         await initPromise;
         reply(wasm.renderPageSvg(params.page ?? 0));

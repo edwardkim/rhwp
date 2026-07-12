@@ -325,15 +325,24 @@ fn read_entry_string(
 ///
 /// content.hpf 는 자체 writer 산출물이므로 따옴표 이스케이프 변형이 없다.
 fn extract_hrefs(xml: &str) -> Vec<String> {
+    // [#1891] isEmbeded="0"(외부 파일 참조) 항목의 href 는 ZIP 엔트리가 아니므로
+    // 실재 검사 대상에서 제외한다. href/isEmbeded 속성 순서에 의존하지 않도록
+    // 태그 단위로 스캔한다.
     let mut hrefs = Vec::new();
     let mut rest = xml;
-    while let Some(pos) = rest.find("href=\"") {
-        rest = &rest[pos + "href=\"".len()..];
-        if let Some(end) = rest.find('"') {
-            hrefs.push(rest[..end].to_string());
-            rest = &rest[end + 1..];
-        } else {
-            break;
+    while let Some(pos) = rest.find('<') {
+        rest = &rest[pos + 1..];
+        let Some(end) = rest.find('>') else { break };
+        let tag = &rest[..end];
+        rest = &rest[end + 1..];
+        if tag.contains("isEmbeded=\"0\"") {
+            continue;
+        }
+        if let Some(hpos) = tag.find("href=\"") {
+            let after = &tag[hpos + "href=\"".len()..];
+            if let Some(hend) = after.find('"') {
+                hrefs.push(after[..hend].to_string());
+            }
         }
     }
     hrefs

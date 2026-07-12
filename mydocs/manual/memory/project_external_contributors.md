@@ -1,27 +1,42 @@
 ---
-name: 외부 컨트리뷰터 명단 (v0.7.x 누적, 2026-05-05 기준)
-description: rhwp 첫 PR 인식 + 누적 20명, 신규 응대 패턴 참조
-type: project
-originSessionId: 4861649d-834a-43c6-a262-9f08333360e8
+name: project_external_contributors
+description: "외부 컨트리뷰터 누적 명단 (32명, 2026-07-04 기준) — 첫 PR/재기여 식별용"
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 2560b31a-9f1c-4764-bbf1-7ba5fc27c7ce
 ---
-**v0.7.x 누적 외부 컨트리뷰터 (23명, 2026-05-14 기준):**
 
-ahnbu / bapdodi / cskwork (donga-csk) / DanMeon / dragonnite1221-lgtm (Lee doyun) / dreamworker0 / dyjung150605 / ggoban / johndoekim / jangster77 (Taesup Jang) / marsimon / metahan88-droid / nameofSEOKWONHONG (홍석원) / oksure / planet6897 / postmelee / seanshin / seo-rii / seunghan91 / ubermensch1218 (강정석) / xogh3198 / yl-star7
+**외부 컨트리뷰터 누적 (약 32명, 2026-07-04 기준).** 작업지시자(edwardkim)는 이 프로젝트의
+메인테이너다([[user_role_identity]]).
 
-**Why**: PR 검토/처리 시 "rhwp 첫 PR" 여부 식별이 보고서 표현/처리 패턴에 영향. 4월 19일~5월 5일 사이 13명→20명으로 가속 (5월 1~5일 4일 만에 5명 신규).
+**활동 상위 (머지 PR 기준, 2026-07-04 집계)**:
+planet6897(82건, 페이지네이션·한글 오라클·측정 인프라) / postmelee(45건, 확장·CI 캐시·측정) /
+oksure(12) / seo-rii(10, CanvasKit P-시리즈) / johndoekim(8) / seanshin(5) / seunghan91(5) /
+kkyu8925(4, float 표 레이아웃) / humdrum00001010(4, Skia perf·fidelity) / oleg-sung(2, 러시아,
+셀 레이아웃)
+
+**그 외 누적**: ahnbu / bapdodi / cskwork(donga-csk) / DanMeon / dragonnite1221-lgtm /
+dreamworker0 / dyjung150605 / ggoban / marsimon / metahan88-droid / nameofSEOKWONHONG /
+ubermensch1218 / xogh3198 / yl-star7 / Mireutale / HaimLee-4869 / snvtac / physwkim / mrshinds /
+Martinel2 / chkwon
+
+**5/14→7/4 신규 진입(10명)**: kkyu8925, humdrum00001010, oleg-sung, Mireutale, HaimLee-4869,
+snvtac, physwkim, mrshinds, Martinel2, chkwon — 증가세 지속.
+
+**Why**: PR 처리 시 "첫 PR vs 재기여" 식별이 환영 표현·응대 패턴에 영향. 2026-06-30 oleg-sung을
+"첫 러시아 기여자"로 잘못 표기했다가 정정한 사례(#1489 선행 머지 존재) — 환영 표현 전 누적
+이력 확인 필수([[feedback_contributor_cycle_check]]).
 
 **How to apply**:
-- PR 처리 보고서 작성 시 위 목록과 대조하여 첫 PR 여부 명시
-- 첫 기여자: "rhwp 첫 PR" 환영 표현 + base 동기화 안내 강조
-- 누적 기여자: 직전 PR 처리 보고서 참고하여 일관 응대
+- PR 처리 보고서에 첫 PR 여부 명시. 첫 기여: 환영+base 동기화 안내([[feedback_first_pr_courtesy]]).
+  재기여: 직전 처리 보고서 참고해 일관 응대.
+- **머지 PR 집계만으로 첫 PR 판단 금지** — cherry-pick 통합/close 된 기여(구 명단 cskwork·DanMeon·
+  ggoban 등)는 merged 집계에 안 잡힌다. `gh pr list --author X --state all` + 본 명단 대조.
+- **jangster77(Taesup Jang)·postmelee(Taegyu Lee)는 외부 기여자에서 출발했으나 현재 write 권한
+  collaborator 2명으로 분업**([[project_pr_merge_collaborator]], 2026-07-04 API 확인) — 외부
+  컨트리뷰터 응대 패턴(첫 PR 환영 등) 대상 아님. 명단 집계에선 기여 이력으로 포함하되 역할 구분.
+- 이슈 assignee 지정은 edwardkim/jangster77/postmelee 3계정만 가능 — planet6897도 2026-07-01
+  기준 assign 불가였음(#1728).
 
-**주요 활동 영역**:
-- @planet6897: PR #221 OLE/Chart/EMF (Task #195, 14 stage), PR #587 HWP 5.0 spec swap
-- @postmelee: PR #209/#214/#224 Firefox 확장
-- @seo-rii: PR #165 skia renderer (보류, 별도 사이클)
-- @jskang/@yl-star7: PR #213 HWPX char offsets
-- @nameofSEOKWONHONG: PR #586 FFI C# binding (Issue #403 첫 사용)
-- @xogh3198: PR #571 base skew 옵션 C 처리 사례
-
-**보안 제보 기여자**:
-- Dangel: Chrome/Firefox 확장 service worker URL fetch 보안 취약성 책임 제보 (#1307). 공개 문서에는 이메일, PoC 링크, 로컬 경로, 재현 명령 없이 `Dangel` 표기만 사용한다.
+관련: [[feedback_contributor_cycle_check]] [[feedback_first_pr_courtesy]] [[project_pr_merge_collaborator]] [[user_role_identity]]
