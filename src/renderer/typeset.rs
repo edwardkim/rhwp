@@ -13739,6 +13739,17 @@ impl TypesetEngine {
                     end_row = r;
                     continue;
                 }
+                // [#2236 진단] rowspan 행 경계 정지 — 동작 불변.
+                if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                    eprintln!(
+                        "DIAG_SCAN RSPAN_STOP r={} consumed={:.1} h={:.1} avail={:.1} rest={:.1}",
+                        r,
+                        consumed,
+                        h,
+                        avail_for_rows,
+                        avail_for_rows - consumed
+                    );
+                }
                 end_row = r;
                 break;
             }
@@ -13809,6 +13820,16 @@ impl TypesetEngine {
             // [Task #77] 분할 불가 행(이미지 셀 등)은 통째 배치 / 다음 페이지.
             let splittable = can_intra_split && mt.is_row_splittable(r);
             if !splittable {
+                // [#2236 진단] 분할 불가 정지 — 동작 불변.
+                if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                    eprintln!(
+                        "DIAG_SCAN UNSPLITTABLE r={} consumed={:.1} row_total={:.1} rest={:.1}",
+                        r,
+                        consumed,
+                        row_total,
+                        avail_for_rows - consumed
+                    );
+                }
                 if r == cursor_row {
                     // 페이지 시작 행 — 강제 통째 배치(오버플로 감수).
                     consumed += cs_before + row_total;
@@ -13825,7 +13846,40 @@ impl TypesetEngine {
             };
             let budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
             let res = layout_engine.advance_row_cut(table, r, row_start_cut, budget, styles);
+            // [#2236 진단] 인트라 컷 시도 결과 — 동작 불변.
+            if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                eprintln!(
+                    "DIAG_SCAN CUT_TRY r={} budget={:.1} padding={:.1} consumed_h={:.1} fully={} end_cut={:?}",
+                    r, budget, padding, res.consumed_height, res.fully_consumed, res.end_cut
+                );
+            }
             if res.fully_consumed {
+                // [#2236] rowspan 블록 중간 행 밴드 컷: 행 자체 콘텐츠는 예산 안에
+                // 전부 들어가지만(fully_consumed) 행 높이가 rowspan 이웃/선언으로
+                // 늘어나 행 전체는 예산 초과인 경우, 한글은 쪽 경계에서 행 밴드를
+                // 컷해 페이지를 본문 높이 끝까지 채운다 (21761835 p1/p3/p5 경계
+                // 낭비 157/37/39px, 한글 PDF는 매 경계 만충). 콘텐츠-소진 컷을
+                // 밴드 컷으로 수용 — RowBreak + rowspan 걸침 행 한정.
+                let band_cut_ok = rowspan_touched[r]
+                    && mt.allows_row_break_split()
+                    && r > cursor_row
+                    && !res.end_cut.is_empty()
+                    && res.consumed_height >= MIN_TOP_KEEP_PX
+                    && budget >= MIN_TOP_KEEP_PX
+                    && row_total > budget + 0.5;
+                if band_cut_ok {
+                    end_row = r + 1;
+                    split_end_cut = res.end_cut.clone();
+                    split_end_limit = budget.max(res.consumed_height);
+                    consumed += cs_before + split_end_limit;
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SCAN BAND_CUT r={} limit={:.1} content={:.1} row_total={:.1}",
+                            r, split_end_limit, res.consumed_height, row_total
+                        );
+                    }
+                    break;
+                }
                 // 단일 유닛 행 — 분할 불가, 페이지 시작이면 강제, 아니면 다음으로.
                 if r == cursor_row {
                     consumed += cs_before + row_total;
