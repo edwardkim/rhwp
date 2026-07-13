@@ -11073,6 +11073,16 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         is_last_in_section: bool,
     ) {
+        // [#2243 진단] 문단 진입 시 누적 높이 — 항목별 실소비 델타 추적용. 동작 불변.
+        if std::env::var("RHWP_DIAG_FLOW").is_ok() {
+            eprintln!(
+                "DIAG_FLOW pi={} cur_h={:.1} page={} items={}",
+                para_idx,
+                st.current_height,
+                st.pages.len(),
+                st.current_items.len()
+            );
+        }
         // Task #332 Stage 4a: layout drift 안전 마진.
         // typeset 의 fit 추정과 layout 의 실측 진행은 폰트 메트릭/표 측정 다중성 등으로
         // 미세하게 어긋날 수 있다 (~수 px). 마진을 빼서 보수적으로 fit 을 판정해
@@ -13082,6 +13092,19 @@ impl TypesetEngine {
             st.current_height += table_total_height;
         } else {
             st.current_height += pre_height + table_total_height;
+        }
+        // [#2243 진단] TAC 표 라인 회계 분해 — 동작 불변.
+        if std::env::var("RHWP_DIAG_TAC").is_ok() {
+            eprintln!(
+                "DIAG_TAC pi={} tac={} pre_h={:.1} table_total={:.1} fmt_total={:.1} fmt_fit={:.1} stored_ls={}",
+                para_idx,
+                table.common.treat_as_char,
+                pre_height,
+                table_total_height,
+                fmt.total_height,
+                fmt.height_for_fit,
+                !para.line_segs.is_empty(),
+            );
         }
 
         // post-table 텍스트
