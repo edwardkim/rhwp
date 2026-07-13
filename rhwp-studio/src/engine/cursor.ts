@@ -14,6 +14,8 @@ type PictureSelectionRef = {
   cellPath?: CellPathEntry[];
   noteRef?: any;
   headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
+  /** [Task #2230] 그림 미지정 placeholder — 더블클릭 시 그림 지정 진입. */
+  missing?: boolean;
 };
 
 /** 커서 상태를 관리한다 */
@@ -1448,10 +1450,11 @@ export class CursorState {
     outerTableControlIdx?: number,
     cellPath?: CellPathEntry[],
     noteRef?: any,
+    missing?: boolean,
   ): void {
     this.exitTableObjectSelection();
     this._pictureObjectSelected = true;
-    this.selectedPictureRef = { sec, ppi, ci, type, cellIdx, cellParaIdx, outerTableControlIdx, cellPath, noteRef, headerFooter };
+    this.selectedPictureRef = { sec, ppi, ci, type, cellIdx, cellParaIdx, outerTableControlIdx, cellPath, noteRef, headerFooter, missing };
     this.selectedPictureRefs = [{ ...this.selectedPictureRef }];
   }
 

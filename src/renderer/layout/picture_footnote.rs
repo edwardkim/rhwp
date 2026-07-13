@@ -165,6 +165,29 @@ impl LayoutEngine {
         // BinData에서 이미지 데이터 찾기 (bin_data_id는 1-indexed 순번)
         let bin_data_id = picture.image_attr.bin_data_id;
         let image_data = find_bin_data(bin_data_content, bin_data_id).map(|c| c.data.clone());
+        // [Task #2225] 그림 미지정(bin 참조 실패 + 외부 경로 없음): 한컴은 편집기
+        // 에서만 점선 테두리+그림-없음 아이콘으로 표시하고 인쇄 등가 출력은
+        // 미출력 — 의미 노드(MissingPicture)로 방출해 백엔드별 분기를 일원화.
+        if image_data.as_ref().is_none_or(|d| d.is_empty())
+            && picture.image_attr.external_path.is_none()
+        {
+            let ph_id = tree.next_id();
+            parent_node.children.push(RenderNode::new(
+                ph_id,
+                RenderNodeType::Placeholder(
+                    // [Task #2230] 문서 좌표 + 셀 경로 배선 — 편집 뷰 클릭
+                    // 선택·그림 지정의 대상 특정에 사용.
+                    crate::renderer::render_tree::PlaceholderNode::missing_picture(
+                        section_index,
+                        para_index,
+                        control_index,
+                        cell_ctx.cloned(),
+                    ),
+                ),
+                BoundingBox::new(pic_x, pic_y, pic_width, pic_height),
+            ));
+            return;
+        }
 
         // 그림 자르기: crop 좌표를 그대로 저장 (렌더러에서 이미지 px 크기와 비교)
         let crop = {
@@ -452,6 +475,26 @@ impl LayoutEngine {
         // BinData에서 이미지 데이터 찾기 (bin_data_id는 1-indexed 순번)
         let bin_data_id = picture.image_attr.bin_data_id;
         let image_data = find_bin_data(bin_data_content, bin_data_id).map(|c| c.data.clone());
+        // [Task #2225] 그림 미지정 — layout_picture_full 과 동일 분기.
+        if image_data.as_ref().is_none_or(|d| d.is_empty())
+            && picture.image_attr.external_path.is_none()
+        {
+            let ph_id = tree.next_id();
+            parent_node.children.push(RenderNode::new(
+                ph_id,
+                RenderNodeType::Placeholder(
+                    // [Task #2230] 본문 picture — 셀 경로 없음(None).
+                    crate::renderer::render_tree::PlaceholderNode::missing_picture(
+                        Some(section_index),
+                        Some(para_index),
+                        Some(control_index),
+                        None,
+                    ),
+                ),
+                BoundingBox::new(adjusted_pic_x, pic_y, pic_width, pic_height),
+            ));
+            return total_height;
+        }
 
         // 그림 자르기
         let crop = {

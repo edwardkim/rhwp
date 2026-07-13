@@ -49,6 +49,7 @@ jobs:
     name: CI preflight
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
       checks: read
       pull-requests: read
@@ -56,6 +57,8 @@ jobs:
       fast_pass: ${{ steps.detect.outputs.fast_pass || 'false' }}
       reason: ${{ steps.detect.outputs.reason || 'preflight-unavailable' }}
       candidate_sha: ${{ steps.detect.outputs.candidate_sha || '' }}
+      frontend_required: ${{ steps.frontend-impact.outputs.frontend_required || 'true' }}
+      frontend_reason: ${{ steps.frontend-impact.outputs.frontend_reason || 'frontend-detection-unavailable' }}
 
     steps:
       - name: Detect review-only fast pass
@@ -195,14 +198,57 @@ jobs:
                 ref: candidateSha,
                 per_page: 100,
               });
-              const buildRun = latestRun(checkRuns.filter((run) => (
+              let buildSource = 'check-run';
+              let buildRun = latestRun(checkRuns.filter((run) => (
                 run.name === 'Build & Test'
                 && run.app?.slug === 'github-actions'
               )));
 
               if (!buildRun) {
-                setResult(false, `missing-build-and-test:${candidateSha}`, candidateSha);
-                return;
+                // Fork pull_request runs may expose the head SHA through Actions jobs while
+                // returning no check-runs for that same SHA. The Actions head_sha server filter
+                // can omit fork runs too, so narrow by the PR branch and compare head_sha locally.
+                // Still require the exact CI workflow, head SHA, and aggregate job.
+                const workflowRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                  owner,
+                  repo,
+                  workflow_id: 'ci.yml',
+                  event: 'pull_request',
+                  branch: pr.head.ref,
+                  per_page: 100,
+                });
+                const workflowRun = latestRun(workflowRuns.filter((run) => (
+                  run.path === '.github/workflows/ci.yml'
+                  && run.event === 'pull_request'
+                  && run.head_sha === candidateSha
+                )));
+
+                if (!workflowRun) {
+                  setResult(false, `missing-build-and-test:${candidateSha}`, candidateSha);
+                  return;
+                }
+                if (workflowRun.status !== 'completed') {
+                  setResult(
+                    false,
+                    `build-and-test-workflow-not-completed:${workflowRun.status}`,
+                    candidateSha,
+                  );
+                  return;
+                }
+
+                const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                  owner,
+                  repo,
+                  run_id: workflowRun.id,
+                  filter: 'latest',
+                  per_page: 100,
+                });
+                buildRun = latestRun(jobs.filter((job) => job.name === 'Build & Test'));
+                if (!buildRun) {
+                  setResult(false, `missing-build-and-test-job:${candidateSha}`, candidateSha);
+                  return;
+                }
+                buildSource = 'actions-job';
               }
               if (buildRun.status !== 'completed') {
                 setResult(false, `build-and-test-not-completed:${buildRun.status}`, candidateSha);
@@ -213,10 +259,119 @@ jobs:
                 return;
               }
 
-              setResult(true, `build-and-test-green:${buildRun.conclusion}`, candidateSha);
+              const successReason = buildSource === 'check-run'
+                ? `build-and-test-green:${buildRun.conclusion}`
+                : `build-and-test-job-green:${buildRun.conclusion}`;
+              setResult(true, successReason, candidateSha);
             } catch (error) {
               core.warning(`CI preflight failed; running full CI. ${error.message}`);
               setResult(false, 'preflight-error');
+            }
+
+      - name: Detect frontend impact
+        id: frontend-impact
+        continue-on-error: true
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const directoryPrefixes = [
+              'rhwp-studio/',
+              'rhwp-chrome/',
+              'rhwp-firefox/',
+              'rhwp-safari/',
+              'rhwp-vscode/',
+              'rhwp-shared/',
+              'npm/editor/',
+              'web/',
+            ];
+
+            function setResult(required, reason) {
+              core.setOutput('frontend_required', required ? 'true' : 'false');
+              core.setOutput('frontend_reason', reason);
+              core.info(`frontend_required=${required} frontend_reason=${reason}`);
+            }
+
+            function isFrontendPath(filename) {
+              if (directoryPrefixes.some((prefix) => filename.startsWith(prefix))) {
+                return true;
+              }
+              if (
+                filename === 'Cargo.lock'
+                || filename === 'src/wasm_api.rs'
+                || filename === '.github/workflows/ci.yml'
+              ) {
+                return true;
+              }
+              return filename.startsWith('scripts/frontend-') && filename.endsWith('.mjs');
+            }
+
+            function evaluateFiles(files) {
+              for (const file of files) {
+                for (const filename of [file.filename, file.previous_filename]) {
+                  if (filename && isFrontendPath(filename)) {
+                    setResult(true, `frontend-path:${filename}`);
+                    return;
+                  }
+                }
+              }
+              setResult(false, 'no-frontend-path');
+            }
+
+            try {
+              if (context.eventName === 'pull_request') {
+                const files = await github.paginate(github.rest.pulls.listFiles, {
+                  owner,
+                  repo,
+                  pull_number: context.payload.pull_request.number,
+                  per_page: 100,
+                });
+                // The API documents at most 3,000 PR files. Treat the boundary as truncated.
+                if (files.length === 0 || files.length >= 3000) {
+                  setResult(true, 'pr-file-list-empty-or-unusable');
+                  return;
+                }
+                evaluateFiles(files);
+                return;
+              }
+
+              if (context.eventName === 'push') {
+                if (context.ref.startsWith('refs/tags/')) {
+                  setResult(true, 'manual-or-tag');
+                  return;
+                }
+
+                const before = context.payload.before || '';
+                const after = context.payload.after || context.sha;
+                if (!before || /^0+$/.test(before)) {
+                  setResult(true, 'push-zero-before');
+                  return;
+                }
+
+                const { data: comparison } = await github.rest.repos.compareCommitsWithBasehead({
+                  owner,
+                  repo,
+                  basehead: `${before}...${after}`,
+                });
+                const files = comparison.files || [];
+                // Compare exposes at most 300 files. The boundary may be truncated.
+                if (files.length === 0 || files.length >= 300) {
+                  setResult(true, 'push-file-list-empty-or-unusable');
+                  return;
+                }
+                evaluateFiles(files);
+                return;
+              }
+
+              if (context.eventName === 'workflow_dispatch') {
+                setResult(true, 'manual-or-tag');
+                return;
+              }
+
+              setResult(true, `unsupported-event:${context.eventName}`);
+            } catch (error) {
+              core.warning(`Frontend impact detection failed; running frontend gates. ${error.message}`);
+              setResult(true, 'detection-error');
             }
 
   build-default-feature-tests:
@@ -360,6 +515,95 @@ jobs:
             cargo test --release --features native-skia skia --lib --verbose
           fi
 
+  frontend-package-gates:
+    name: Frontend package gates
+    runs-on: ubuntu-latest
+    needs: preflight
+    if: ${{ always() && needs.preflight.result == 'success' && needs.preflight.outputs.fast_pass != 'true' && needs.preflight.outputs.frontend_required == 'true' }}
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.93.1
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Restore frontend WASM cargo cache
+        id: frontend_wasm_cargo_cache_restore
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-frontend-wasm-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-frontend-wasm-cargo-
+
+      - name: Build fresh WASM package for frontend gates
+        run: wasm-pack build --target web --dev
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            rhwp-studio/package-lock.json
+            rhwp-chrome/package-lock.json
+            rhwp-firefox/package-lock.json
+            rhwp-vscode/package-lock.json
+
+      - name: Install frontend package dependencies
+        run: |
+          npm --prefix rhwp-studio ci
+          npm --prefix rhwp-chrome ci
+          npm --prefix rhwp-firefox ci
+          npm --prefix rhwp-vscode ci
+
+      - name: Verify WASM bindings and editor embed contract
+        run: node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
+
+      - name: Run editor package tests when declared
+        run: npm --prefix npm/editor test --if-present
+
+      - name: Run shared and extension service worker tests
+        run: node --test rhwp-shared/sw/*.test.js rhwp-chrome/sw/*.test.mjs rhwp-firefox/sw/*.test.mjs
+
+      - name: Run Studio unit tests
+        run: npm --prefix rhwp-studio run test
+
+      - name: Build Studio
+        run: npm --prefix rhwp-studio run build
+
+      - name: Build browser extensions
+        run: |
+          npm --prefix rhwp-chrome run build
+          npm --prefix rhwp-firefox run build
+
+      - name: Verify extension distributions
+        run: node --test scripts/frontend-extension-dist.test.mjs
+
+      - name: Compile VS Code extension
+        run: npm --prefix rhwp-vscode run compile
+
+      - name: Save frontend WASM cargo cache
+        if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.frontend_wasm_cargo_cache_restore.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-frontend-wasm-cargo-${{ hashFiles('**/Cargo.lock') }}
+
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
@@ -367,35 +611,56 @@ jobs:
       - preflight
       - build-default-feature-tests
       - native-skia-tests
+      - frontend-package-gates
     if: ${{ always() }}
     permissions:
       contents: read
 
     steps:
       - name: Check Build & Test worker results
+        env:
+          PREFLIGHT_RESULT: ${{ needs.preflight.result }}
+          FAST_PASS: ${{ needs.preflight.outputs.fast_pass }}
+          FRONTEND_REQUIRED: ${{ needs.preflight.outputs.frontend_required }}
+          FRONTEND_REASON: ${{ needs.preflight.outputs.frontend_reason }}
+          BUILD_DEFAULT_RESULT: ${{ needs['build-default-feature-tests'].result }}
+          NATIVE_SKIA_RESULT: ${{ needs['native-skia-tests'].result }}
+          FRONTEND_RESULT: ${{ needs['frontend-package-gates'].result }}
         run: |
-          echo "preflight=${{ needs.preflight.result }}"
-          echo "fast_pass=${{ needs.preflight.outputs.fast_pass }}"
-          echo "build_default=${{ needs['build-default-feature-tests'].result }}"
-          echo "native_skia=${{ needs['native-skia-tests'].result }}"
+          printf 'preflight=%s\n' "${PREFLIGHT_RESULT}"
+          printf 'fast_pass=%s\n' "${FAST_PASS}"
+          printf 'frontend_required=%s\n' "${FRONTEND_REQUIRED}"
+          printf 'frontend_reason=%s\n' "${FRONTEND_REASON}"
+          printf 'build_default=%s\n' "${BUILD_DEFAULT_RESULT}"
+          printf 'native_skia=%s\n' "${NATIVE_SKIA_RESULT}"
+          printf 'frontend=%s\n' "${FRONTEND_RESULT}"
 
-          if [[ "${{ needs.preflight.result }}" != "success" ]]; then
-            echo "::error::CI preflight did not succeed: ${{ needs.preflight.result }}"
+          if [[ "${PREFLIGHT_RESULT}" != "success" ]]; then
+            echo "::error::CI preflight did not succeed: ${PREFLIGHT_RESULT}"
             exit 1
           fi
 
-          if [[ "${{ needs.preflight.outputs.fast_pass }}" == "true" ]]; then
+          if [[ "${FAST_PASS}" == "true" ]]; then
             echo "CI preflight fast-pass accepted."
             exit 0
           fi
 
           failed=0
-          if [[ "${{ needs['build-default-feature-tests'].result }}" != "success" ]]; then
-            echo "::error::Build default-feature tests result: ${{ needs['build-default-feature-tests'].result }}"
+          if [[ "${BUILD_DEFAULT_RESULT}" != "success" ]]; then
+            echo "::error::Build default-feature tests result: ${BUILD_DEFAULT_RESULT}"
             failed=1
           fi
-          if [[ "${{ needs['native-skia-tests'].result }}" != "success" ]]; then
-            echo "::error::Native Skia tests result: ${{ needs['native-skia-tests'].result }}"
+          if [[ "${NATIVE_SKIA_RESULT}" != "success" ]]; then
+            echo "::error::Native Skia tests result: ${NATIVE_SKIA_RESULT}"
+            failed=1
+          fi
+          if [[ "${FRONTEND_REQUIRED}" == "false" ]]; then
+            if [[ "${FRONTEND_RESULT}" != "skipped" ]]; then
+              echo "::error::Frontend gates should be skipped, got: ${FRONTEND_RESULT}"
+              failed=1
+            fi
+          elif [[ "${FRONTEND_RESULT}" != "success" ]]; then
+            echo "::error::Frontend package gates result: ${FRONTEND_RESULT}"
             failed=1
           fi
           exit "${failed}"

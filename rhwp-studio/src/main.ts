@@ -48,6 +48,7 @@ import {
   resolveRenderProfile,
   type RenderBackendFallbackReason,
 } from '@/view/render-backend';
+import { installEmbedRuntime } from '@/embed/runtime';
 
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
@@ -1145,100 +1146,55 @@ function showLoadError(error: unknown): void {
 
 const initPromise = initialize();
 
-// ── iframe 연동 API (postMessage) ──
-// 부모 페이지에서 postMessage로 에디터를 제어할 수 있다.
-// 요청: { type: 'rhwp-request', id, method, params }
-// 응답: { type: 'rhwp-response', id, result?, error? }
-window.addEventListener('message', async (e) => {
-  const msg = e.data;
-  if (!msg || typeof msg !== 'object') return;
-
-  // 기존 hwpctl-load 호환
-  if (msg.type === 'hwpctl-load' && msg.data) {
-    try {
+installEmbedRuntime({
+  hostWindow: window,
+  parentWindow: window.parent,
+  handlers: {
+    async ready() {
       await initPromise;
-      if (!await canReplaceCurrentDocument(Boolean(msg.skipUnsavedGuard))) {
-        e.source?.postMessage({ type: 'rhwp-response', id: msg.id, error: '문서 열기가 취소되었습니다.' }, { targetOrigin: '*' });
-        return;
+      return true;
+    },
+    async loadFile(data, fileName, skipUnsavedGuard) {
+      await initPromise;
+      if (!await canReplaceCurrentDocument(skipUnsavedGuard)) {
+        throw new Error('문서 열기가 취소되었습니다.');
       }
-      const bytes = new Uint8Array(msg.data);
-      await loadBytes(bytes, msg.fileName || 'document.hwp', null);
-      e.source?.postMessage({ type: 'rhwp-response', id: msg.id, result: { pageCount: wasm.pageCount } }, { targetOrigin: '*' });
-    } catch (err: any) {
-      e.source?.postMessage({ type: 'rhwp-response', id: msg.id, error: err.message || String(err) }, { targetOrigin: '*' });
-    }
-    return;
-  }
-
-  // rhwp-request: 범용 API
-  if (msg.type !== 'rhwp-request' || !msg.method) return;
-  const { id, method, params } = msg;
-  const reply = (result?: any, error?: string) => {
-    e.source?.postMessage({ type: 'rhwp-response', id, result, error }, { targetOrigin: '*' });
-  };
-
-  try {
-    switch (method) {
-      case 'ready':
-        // wasm 초기화 완료 후에만 true 응답 — race condition 방지 (#522)
-        await initPromise;
-        reply(true);
-        break;
-      case 'loadFile': {
-        await initPromise;
-        if (!await canReplaceCurrentDocument(Boolean(params?.skipUnsavedGuard))) {
-          reply(undefined, '문서 열기가 취소되었습니다.');
-          break;
-        }
-        const bytes = new Uint8Array(params.data);
-        await loadBytes(bytes, params.fileName || 'document.hwp', null);
-        reply({ pageCount: wasm.pageCount });
-        break;
-      }
-      case 'pageCount':
-        await initPromise;
-        reply(wasm.pageCount);
-        break;
-      case 'getRendererDiagnostics': {
-        await initPromise;
-        const pageIndex = Number(params?.page ?? 0);
-        if (!Number.isInteger(pageIndex) || pageIndex < 0) {
-          reply(undefined, 'page must be a non-negative integer');
-          break;
-        }
-        reply({
-          request: rendererRuntimeRequest,
-          initialized: rendererInitialized,
-          initializationError: rendererInitializationError,
-          effectiveBackend: rendererInitialized ? canvasView?.getRenderBackend() ?? null : null,
-          backendFallbackReason: renderBackendFallbackReason,
-          page: {
-            index: pageIndex,
-            canvaskit: canvasView?.getCanvasKitRenderDiagnostics(pageIndex) ?? null,
-          },
-        });
-        break;
-      }
-      case 'getPageSvg':
-        await initPromise;
-        reply(wasm.renderPageSvg(params.page ?? 0));
-        break;
-      case 'exportHwp':
-        await initPromise;
-        reply(Array.from(wasm.exportHwp()));
-        break;
-      case 'exportHwpx':
-        await initPromise;
-        reply(Array.from(wasm.exportHwpx()));
-        break;
-      case 'exportHwpVerify':
-        await initPromise;
-        reply(JSON.parse(wasm.exportHwpVerify()));
-        break;
-      default:
-        reply(undefined, `Unknown method: ${method}`);
-    }
-  } catch (err: any) {
-    reply(undefined, err.message || String(err));
-  }
+      await loadBytes(data, fileName, null);
+      return { pageCount: wasm.pageCount };
+    },
+    async pageCount() {
+      await initPromise;
+      return wasm.pageCount;
+    },
+    async getRendererDiagnostics(pageIndex) {
+      await initPromise;
+      return {
+        request: rendererRuntimeRequest,
+        initialized: rendererInitialized,
+        initializationError: rendererInitializationError,
+        effectiveBackend: rendererInitialized ? canvasView?.getRenderBackend() ?? null : null,
+        backendFallbackReason: renderBackendFallbackReason,
+        page: {
+          index: pageIndex,
+          canvaskit: canvasView?.getCanvasKitRenderDiagnostics(pageIndex) ?? null,
+        },
+      };
+    },
+    async getPageSvg(page) {
+      await initPromise;
+      return wasm.renderPageSvg(page);
+    },
+    async exportHwp() {
+      await initPromise;
+      return wasm.exportHwp();
+    },
+    async exportHwpx() {
+      await initPromise;
+      return wasm.exportHwpx();
+    },
+    async exportHwpVerify() {
+      await initPromise;
+      return JSON.parse(wasm.exportHwpVerify());
+    },
+  },
 });

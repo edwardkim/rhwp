@@ -18,6 +18,7 @@ const canvaskitParityPlanDocPath = path.join(repoRoot, 'docs/canvaskit-parity-im
 const rendererBaselinePath = path.join(studioRoot, 'e2e/renderer-baseline.mjs');
 const rendererBaselineManifestPath = path.join(repoRoot, 'scripts/renderer_baseline_manifest.json');
 const mainPath = path.join(studioRoot, 'src/main.ts');
+const embedRpcRouterPath = path.join(studioRoot, 'src/embed/rpc-router.ts');
 const renderBackendPath = path.join(studioRoot, 'src/view/render-backend.ts');
 const pageRendererPath = path.join(studioRoot, 'src/view/page-renderer.ts');
 const canvasViewPath = path.join(studioRoot, 'src/view/canvas-view.ts');
@@ -31,6 +32,7 @@ const canvaskitParityPlanDocSource = fs.readFileSync(canvaskitParityPlanDocPath,
 const rendererBaselineSource = fs.readFileSync(rendererBaselinePath, 'utf8');
 const rendererBaselineManifest = JSON.parse(fs.readFileSync(rendererBaselineManifestPath, 'utf8'));
 const mainSource = fs.readFileSync(mainPath, 'utf8');
+const embedRpcRouterSource = fs.readFileSync(embedRpcRouterPath, 'utf8');
 const renderBackendSource = fs.readFileSync(renderBackendPath, 'utf8');
 const pageRendererSource = fs.readFileSync(pageRendererPath, 'utf8');
 const canvasViewSource = fs.readFileSync(canvasViewPath, 'utf8');
@@ -328,8 +330,13 @@ requireSnippet(
 );
 requireSnippet(
   mainSource,
-  /rendererInitialized = true;[\s\S]*?case 'getRendererDiagnostics':[\s\S]*?initialized: rendererInitialized[\s\S]*?initializationError:[\s\S]*?effectiveBackend: rendererInitialized \?[\s\S]*?backendFallbackReason:[\s\S]*?getCanvasKitRenderDiagnostics\(pageIndex\)/,
+  /async getRendererDiagnostics\(pageIndex\)[\s\S]*?initialized: rendererInitialized[\s\S]*?initializationError:[\s\S]*?effectiveBackend: rendererInitialized \?[\s\S]*?backendFallbackReason:[\s\S]*?getCanvasKitRenderDiagnostics\(pageIndex\)/,
   'Studio iframe API should expose backend selection and page-scoped renderer diagnostics',
+);
+requireSnippet(
+  embedRpcRouterSource,
+  /case 'getRendererDiagnostics':[\s\S]*?Number\(params\.page \?\? 0\)[\s\S]*?page must be a non-negative integer[\s\S]*?handlers\.getRendererDiagnostics\(page\)/,
+  'Embed router should preserve renderer diagnostics and reject invalid page indexes',
 );
 assert.doesNotMatch(
   mainSource,

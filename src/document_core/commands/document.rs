@@ -130,6 +130,7 @@ impl DocumentCore {
             dirty_paragraphs: Vec::new(),
             para_column_map: Vec::new(),
             page_tree_cache: RefCell::new(Vec::new()),
+            layer_tree_json_cache: RefCell::new(Vec::new()),
             batch_mode: false,
             event_log: Vec::new(),
             overflow_links_cache: RefCell::new(HashMap::new()),

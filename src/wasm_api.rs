@@ -2772,6 +2772,47 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// [Task #2230] 기존 Picture 컨트롤에 이미지를 지정한다 — 그림 미지정
+    /// placeholder(missing image 컨트롤)의 편집 뷰 그림 삽입.
+    ///
+    /// `cell_path_json` 이 빈 문자열 또는 `"[]"` 면 본문 문단의 컨트롤,
+    /// 그 외에는 셀/글상자 안 문단의 컨트롤을 대상으로 한다. 개체 틀 크기는
+    /// 유지되고(한컴 placeholder 는 틀에 그림을 맞춤) BinData 등록 규칙은
+    /// insertPicture 와 공유한다.
+    ///
+    /// 반환: `{"ok":true,"binDataId":<N>}`
+    #[wasm_bindgen(js_name = assignPictureImage)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn assign_picture_image(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        cell_path_json: &str,
+        control_idx: u32,
+        image_data: &[u8],
+        natural_width_px: u32,
+        natural_height_px: u32,
+        extension: &str,
+    ) -> Result<String, JsValue> {
+        let cell_path: Vec<(usize, usize, usize)> =
+            if cell_path_json.is_empty() || cell_path_json == "[]" {
+                Vec::new()
+            } else {
+                DocumentCore::parse_cell_path(cell_path_json).map_err(JsValue::from)?
+            };
+        self.assign_picture_image_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &cell_path,
+            control_idx as usize,
+            image_data,
+            natural_width_px,
+            natural_height_px,
+            extension,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// [Task #1142] 외부 file path 그림 reference 목록을 구조화된 JSON 배열로 반환한다.
     ///
     /// 반환: JSON 배열 `[{ key, binDataId, originalPath, basename, extension, loaded }, ...]`

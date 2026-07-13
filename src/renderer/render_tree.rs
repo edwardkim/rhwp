@@ -316,6 +316,16 @@ impl ObjectControlRef {
         }
     }
 
+    /// [Task #2230] 그림 미지정 placeholder 의 원본 Picture 컨트롤 참조.
+    pub fn picture(section_index: usize, para_index: usize, control_index: usize) -> Self {
+        Self {
+            section_index,
+            para_index,
+            control_index,
+            kind: "picture",
+        }
+    }
+
     fn json_extra(&self) -> String {
         format!(
             ",\"kind\":\"{}\",\"si\":{},\"pi\":{},\"ci\":{}",
@@ -371,6 +381,25 @@ pub struct PlaceholderNode {
     pub label: String,
     /// 원본 개체 참조. OLE fallback placeholder 선택/속성 진입에 사용한다.
     pub control_ref: Option<ObjectControlRef>,
+    /// [Task #2225] placeholder 종류 — 한컴은 그림 미지정 placeholder 를
+    /// 편집기에서만(점선 테두리+그림-없음 아이콘) 표시하고 인쇄·인쇄 등가
+    /// 출력에서는 미출력한다. 종류별로 백엔드가 표시/억제를 분기한다.
+    pub kind: PlaceholderKind,
+    /// [Task #2230] 셀 안 placeholder 의 다단계 경로 — 컨트롤 레이아웃
+    /// (hit-test 소스)의 cellPath 방출에 사용. 레이어 JSON 에는 불필요하므로
+    /// 직렬화 제외.
+    #[serde(skip)]
+    pub cell_context: Option<crate::renderer::layout::CellContext>,
+}
+
+/// [Task #2225] placeholder 의미 구분.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize)]
+pub enum PlaceholderKind {
+    /// 차트/OLE 등 폴백 표시 (기존 동작 — 전 컨텍스트 표시).
+    #[default]
+    Ole,
+    /// 그림 미지정 (bin 참조 실패, 외부 경로 없음) — 편집 뷰 전용 표시.
+    MissingPicture,
 }
 
 impl PlaceholderNode {
@@ -380,6 +409,36 @@ impl PlaceholderNode {
             stroke_color,
             label,
             control_ref: None,
+            kind: PlaceholderKind::default(),
+            cell_context: None,
+        }
+    }
+
+    /// [Task #2225] 그림 미지정 placeholder — 한컴 편집기식 점선 테두리 +
+    /// 그림-없음 아이콘으로 표시되고, 인쇄 등가 출력(svg/png/pdf)에서는
+    /// 미출력된다.
+    ///
+    /// [Task #2230] 원본 Picture 컨트롤 좌표(kind="picture")와 셀 경로를
+    /// 배선해 편집 뷰에서 클릭 선택·그림 지정이 가능하다. 문서 좌표가 없는
+    /// 호출처(머리말 등 좌표 미전파 경로)는 None 전달 — 표시만 되고 선택은
+    /// 불가(기존 #2225 동작 유지).
+    pub fn missing_picture(
+        section_index: Option<usize>,
+        para_index: Option<usize>,
+        control_index: Option<usize>,
+        cell_context: Option<crate::renderer::layout::CellContext>,
+    ) -> Self {
+        let control_ref = match (section_index, para_index, control_index) {
+            (Some(si), Some(pi), Some(ci)) => Some(ObjectControlRef::picture(si, pi, ci)),
+            _ => None,
+        };
+        Self {
+            fill_color: 0x00FFFFFF,
+            stroke_color: 0x00999999,
+            label: String::new(),
+            control_ref,
+            kind: PlaceholderKind::MissingPicture,
+            cell_context,
         }
     }
 
@@ -400,6 +459,8 @@ impl PlaceholderNode {
                 para_index,
                 control_index,
             )),
+            kind: PlaceholderKind::default(),
+            cell_context: None,
         }
     }
 

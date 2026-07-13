@@ -5,6 +5,7 @@
 
 use serde::Serialize;
 
+use crate::model::control::Control;
 use crate::model::style::{LineSpacingType, UnderlineType};
 
 pub mod canvas;
@@ -627,6 +628,152 @@ pub fn corrected_line_metrics(
     }
 }
 
+/// 구역 첫 문단의 저장 줄 metrics를 재조판할 수 있는 구조인가.
+///
+/// `SectionDef`와 `ColumnDef`가 함께 들어 있는 문단은 본문 첫 줄을 선언하는
+/// HWPX 구조다. task2093처럼 해당 첫 줄의 저장 좌표계 전체가 오래된 경우에만
+/// 줄 높이와 baseline을 글꼴 기준으로 다시 계산한다. 일반 본문/미주 문단의 큰
+/// 줄 높이는 의도된 조판일 수 있으므로 이 보정 대상이 아니다.
+#[inline]
+pub(crate) fn controls_mark_section_start(controls: &[Control]) -> bool {
+    let mut has_section_def = false;
+    let mut has_column_def = false;
+
+    for control in controls {
+        match control {
+            Control::SectionDef(_) => has_section_def = true,
+            Control::ColumnDef(_) => has_column_def = true,
+            Control::Bookmark(_) => {}
+            _ => return false,
+        }
+    }
+
+    has_section_def && has_column_def
+}
+
+const STALE_SOURCE_LINE_ADVANCE_MULTIPLIER: f64 = 40.0;
+
+/// 조합 줄의 최대 글꼴 크기를 구한다.
+///
+/// 문단 선두의 구역/단 정의처럼 가시 문자가 아닌 control이 UTF-16 stream offset을
+/// 앞당기면, 조합 과정에서 줄 run의 글자 모양을 해소하지 못하는 문서가 있다. 이때도
+/// 해당 줄 시작 위치의 `CharShapeRef`는 원본 문단에 남아 있으므로 이를 보조 근거로
+/// 사용한다. run에서 얻은 유효한 크기가 있으면 그것을 항상 우선한다.
+pub(crate) fn composed_line_max_font_size(
+    line: &composer::ComposedLine,
+    para: &crate::model::paragraph::Paragraph,
+    styles: &style_resolver::ResolvedStyleSet,
+) -> f64 {
+    let run_max = line
+        .runs
+        .iter()
+        .filter_map(|run| {
+            styles
+                .char_styles
+                .get(run.char_style_id as usize)
+                .map(|style| style.font_size)
+        })
+        .fold(0.0f64, f64::max);
+
+    if run_max > 0.0 {
+        return run_max;
+    }
+
+    para.char_shape_id_at(line.char_start)
+        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))
+        .and_then(|shape_id| styles.char_styles.get(shape_id as usize))
+        .map(|style| style.font_size)
+        .unwrap_or(0.0)
+}
+
+/// 순수 텍스트 줄의 저장 metrics가 글자와 문단 스타일로부터 가능한 줄 advance보다
+/// 현저히 크면 한컴처럼 재조판한다. 개체가 없는 줄에서 `line_height`와
+/// `text_height`가 모두 비정상적으로 큰 값이면 저장 조판 정보가 현재 텍스트와 맞지
+/// 않는다. 원본 IR은 보존하고 렌더/조판용 metrics만 바꾼다.
+///
+/// 40배는 10pt/160% 줄이 A4 본문 한 쪽에 가까운 높이를 단일 줄에 기록한 경우만
+/// 잡는다. 이보다 작은 큰 줄은 하단 고정 틀의 fit 경계처럼 의도된 저장 조판일 수 있다.
+#[inline]
+pub(crate) fn source_line_metrics_need_reflow(
+    raw_lh: f64,
+    raw_text_height: f64,
+    max_fs: f64,
+    ls_type: LineSpacingType,
+    ls_val: f64,
+    source_metrics_reflow_eligible: bool,
+) -> bool {
+    if !source_metrics_reflow_eligible || max_fs <= 0.0 || raw_lh <= 0.0 || raw_text_height <= 0.0 {
+        return false;
+    }
+
+    let (expected_lh, expected_ls) = corrected_line_metrics(0.0, 0.0, max_fs, ls_type, ls_val);
+    let expected_advance = (expected_lh + expected_ls).max(max_fs);
+
+    raw_lh > expected_advance * STALE_SOURCE_LINE_ADVANCE_MULTIPLIER
+        && raw_text_height > expected_advance * STALE_SOURCE_LINE_ADVANCE_MULTIPLIER
+}
+
+/// 저장 줄 metrics를 재조판하는 경우의 baseline을 글꼴 기준으로 복원한다.
+///
+/// 원본 `baseline_distance`도 손상된 `line_height` 좌표계에 기록되므로, 줄 높이만
+/// 낮추고 baseline을 그대로 두면 SVG/Canvas 텍스트가 페이지 하단으로 이탈한다.
+#[inline]
+pub(crate) fn corrected_line_baseline_for_source(
+    raw_baseline: f64,
+    max_fs: f64,
+    source_metrics_reflowed: bool,
+) -> f64 {
+    if source_metrics_reflowed {
+        max_fs * 0.85
+    } else {
+        raw_baseline
+    }
+}
+
+/// 문단의 단일 저장 줄이 현재 글꼴/문단 스타일 기준으로 재조판 대상인지 판별한다.
+///
+/// 이 판정은 HWPX의 손상된 첫 줄이 이후 문단의 `vertical_pos`까지 크게 밀어 둔
+/// 경우에만 사용한다. 원본 줄 배열은 바꾸지 않고, 페이지네이터와 렌더러가 같은
+/// 조판 커서 보정 여부를 결정하는 데 쓴다.
+pub(crate) fn paragraph_source_line_metrics_need_reflow(
+    para: &crate::model::paragraph::Paragraph,
+    styles: &style_resolver::ResolvedStyleSet,
+    dpi: f64,
+) -> bool {
+    if !controls_mark_section_start(&para.controls)
+        || !para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}')
+    {
+        return false;
+    }
+
+    let [line] = para.line_segs.as_slice() else {
+        return false;
+    };
+    let max_fs = para
+        .char_shape_id_at(0)
+        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))
+        .and_then(|shape_id| styles.char_styles.get(shape_id as usize))
+        .map(|style| style.font_size)
+        .unwrap_or(0.0);
+    let (ls_type, ls_val) = styles
+        .para_styles
+        .get(para.para_shape_id as usize)
+        .map(|style| (style.line_spacing_type, style.line_spacing))
+        .unwrap_or((LineSpacingType::Percent, 160.0));
+
+    source_line_metrics_need_reflow(
+        hwpunit_to_px(line.line_height, dpi),
+        hwpunit_to_px(line.text_height, dpi),
+        max_fs,
+        ls_type,
+        ls_val,
+        true,
+    )
+}
+
 /// 저장된 순수 텍스트 줄은 `vertsize`에 내부 여백이 포함되어도 한컴의 줄 진행이
 /// `textheight + spacing`에 맞춰지는 사례가 있다. IR 값은 보존하고 렌더/조판용
 /// line height만 낮춘다.
@@ -639,7 +786,19 @@ pub fn corrected_line_metrics_for_source(
     ls_type: LineSpacingType,
     ls_val: f64,
     use_stored_text_height: bool,
+    source_metrics_reflow_eligible: bool,
 ) -> (f64, f64) {
+    if source_line_metrics_need_reflow(
+        raw_lh,
+        raw_text_height,
+        max_fs,
+        ls_type,
+        ls_val,
+        source_metrics_reflow_eligible,
+    ) {
+        return corrected_line_metrics(0.0, 0.0, max_fs, ls_type, ls_val);
+    }
+
     let (lh, ls) = corrected_line_metrics(raw_lh, raw_ls, max_fs, ls_type, ls_val);
     if use_stored_text_height
         && raw_text_height > 0.0
@@ -1158,6 +1317,79 @@ mod tests {
     fn test_px_to_hwpunit() {
         let hu = px_to_hwpunit(96.0, 96.0);
         assert_eq!(hu, 7200);
+    }
+
+    #[test]
+    fn test_source_line_metrics_reflow_when_text_height_is_implausible() {
+        let max_fs = hwpunit_to_px(1000, 96.0);
+        let raw_h = hwpunit_to_px(68800, 96.0);
+        let (line_height, line_spacing) = corrected_line_metrics_for_source(
+            raw_h,
+            raw_h,
+            0.0,
+            max_fs,
+            LineSpacingType::Percent,
+            160.0,
+            true,
+            true,
+        );
+
+        assert!((line_height - max_fs).abs() < 0.01);
+        assert!((line_spacing - max_fs * 0.6).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_source_line_metrics_keep_normal_stored_height() {
+        let max_fs = hwpunit_to_px(1000, 96.0);
+        let stored_h = hwpunit_to_px(3000, 96.0);
+        let (line_height, line_spacing) = corrected_line_metrics_for_source(
+            stored_h,
+            stored_h,
+            0.0,
+            max_fs,
+            LineSpacingType::Percent,
+            160.0,
+            true,
+            false,
+        );
+
+        assert!((line_height - stored_h).abs() < 0.01);
+        assert_eq!(line_spacing, 0.0);
+    }
+
+    #[test]
+    fn test_source_line_metrics_preserve_intentional_tall_section_line() {
+        let max_fs = hwpunit_to_px(1000, 96.0);
+        let intentional_tall_line = hwpunit_to_px(55000, 96.0);
+
+        assert!(!source_line_metrics_need_reflow(
+            intentional_tall_line,
+            intentional_tall_line,
+            max_fs,
+            LineSpacingType::Percent,
+            160.0,
+            true,
+        ));
+    }
+
+    #[test]
+    fn test_source_line_metrics_reflow_replaces_stale_baseline() {
+        let max_fs = hwpunit_to_px(1000, 96.0);
+        let stale_baseline = hwpunit_to_px(58480, 96.0);
+
+        let baseline = corrected_line_baseline_for_source(stale_baseline, max_fs, true);
+
+        assert!((baseline - max_fs * 0.85).abs() < 0.01);
+        assert!(baseline < stale_baseline / 10.0);
+    }
+
+    #[test]
+    fn test_structural_controls_mark_section_start() {
+        assert!(controls_mark_section_start(&[
+            Control::SectionDef(Box::default()),
+            Control::ColumnDef(Default::default()),
+        ]));
+        assert!(!controls_mark_section_start(&[]));
     }
 
     #[test]

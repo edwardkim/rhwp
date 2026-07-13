@@ -2777,6 +2777,11 @@ export class InputHandler {
     _picture.deleteObjectControl.call(this, ref);
   }
 
+  /** [Task #2230] 그림 미지정 placeholder 에 그림 지정 (파일 선택 → assignPictureImage) */
+  private promptAssignPictureImage(ref: { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole'; cellPath?: any }): void {
+    _picture.promptAssignPictureImage.call(this, ref);
+  }
+
   /** 그림 객체 선택 시 외곽선 + 핸들을 렌더링한다 */
   private renderPictureObjectSelection(): void {
     _picture.renderPictureObjectSelection.call(this);

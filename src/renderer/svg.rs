@@ -515,6 +515,14 @@ impl SvgRenderer {
                 self.output.push_str(&r.svg);
             }
             RenderNodeType::Placeholder(ph) => {
+                // [Task #2225] 그림 미지정 placeholder 는 인쇄 등가 출력(SVG)에서
+                // 미출력 — 한컴 인쇄 동작 정합 (편집 뷰는 web_canvas 가 표시).
+                if matches!(
+                    ph.kind,
+                    crate::renderer::render_tree::PlaceholderKind::MissingPicture
+                ) {
+                    return;
+                }
                 // Task #195: 차트/OLE placeholder (점선 테두리 + 중앙 라벨)
                 let cx = node.bbox.x + node.bbox.width / 2.0;
                 let cy = node.bbox.y + node.bbox.height / 2.0;

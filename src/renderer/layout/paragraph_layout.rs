@@ -2815,28 +2815,38 @@ impl LayoutEngine {
                 max_fs,
                 self.dpi,
             );
-            let (line_height, line_spacing_px) = {
-                let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
-                let ls_type = para_style
-                    .map(|s| s.line_spacing_type)
-                    .unwrap_or(LineSpacingType::Percent);
-                let raw_text_height = para
-                    .and_then(|p| p.line_segs.get(line_idx))
-                    .map(|seg| hwpunit_to_px(seg.text_height, self.dpi))
-                    .unwrap_or(0.0);
-                let is_plain_text_para = para.map(|p| p.controls.is_empty()).unwrap_or(false);
-                let use_stored_text_height =
-                    is_plain_text_para && (self.is_hwpx_source.get() || cell_ctx.is_none());
-                crate::renderer::corrected_line_metrics_for_source(
-                    raw_lh,
-                    raw_text_height,
-                    hwpunit_to_px(comp_line.line_spacing, self.dpi),
-                    max_fs,
-                    ls_type,
-                    ls_val,
-                    use_stored_text_height,
-                )
-            };
+            let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
+            let ls_type = para_style
+                .map(|s| s.line_spacing_type)
+                .unwrap_or(LineSpacingType::Percent);
+            let raw_text_height = para
+                .and_then(|p| p.line_segs.get(line_idx))
+                .map(|seg| hwpunit_to_px(seg.text_height, self.dpi))
+                .unwrap_or(0.0);
+            let use_stored_text_height = para.map(|p| p.controls.is_empty()).unwrap_or(false)
+                && (self.is_hwpx_source.get() || cell_ctx.is_none());
+            let source_metrics_reflow_eligible = para
+                .map(|p| crate::renderer::controls_mark_section_start(&p.controls))
+                .unwrap_or(false)
+                && self.is_hwpx_source.get();
+            let source_metrics_reflowed = crate::renderer::source_line_metrics_need_reflow(
+                raw_lh,
+                raw_text_height,
+                max_fs,
+                ls_type,
+                ls_val,
+                source_metrics_reflow_eligible,
+            );
+            let (line_height, line_spacing_px) = crate::renderer::corrected_line_metrics_for_source(
+                raw_lh,
+                raw_text_height,
+                hwpunit_to_px(comp_line.line_spacing, self.dpi),
+                max_fs,
+                ls_type,
+                ls_val,
+                use_stored_text_height,
+                source_metrics_reflow_eligible,
+            );
             // 인라인 Shape(글상자)가 있는 줄: line_height에 Shape 높이가 포함됨
             // Shape는 별도 패스에서 para_y 기준으로 렌더링되므로,
             // 텍스트의 y와 line_height를 폰트 기반으로 보정하여 baseline 정렬
@@ -2889,7 +2899,11 @@ impl LayoutEngine {
                 (
                     line_height,
                     ensure_min_baseline(
-                        hwpunit_to_px(comp_line.baseline_distance, self.dpi),
+                        crate::renderer::corrected_line_baseline_for_source(
+                            hwpunit_to_px(comp_line.baseline_distance, self.dpi),
+                            max_fs,
+                            source_metrics_reflowed,
+                        ),
                         max_fs,
                     ),
                 )

@@ -5,6 +5,7 @@ import { MovePictureCommand, MoveShapeCommand, ResizeObjectCommand } from './com
 import type { ObjectResizeTarget } from './command';
 import { computeArrowResize, MIN_SIZE_HWP, type ArrowKey } from './picture-resize';
 import type { CellPathLike } from '@/core/types';
+import { showToast } from '@/ui/toast';
 
 type PictureObjectRef = {
   sec: number;
@@ -21,6 +22,8 @@ type PictureObjectRef = {
   x2?: number;
   y2?: number;
   headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
+  /** [Task #2230] 그림 미지정 placeholder — 더블클릭 시 그림 지정 진입. */
+  missing?: boolean;
 };
 
 function hasCellPath(ref: { cellPath?: CellPathLike } | null | undefined): ref is { cellPath: CellPathLike } {
@@ -118,7 +121,7 @@ function controlToRef(ctrl: any): PictureObjectRef {
   }
   return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: ctrl.type,
     cellIdx: ctrl.cellIdx, cellParaIdx: ctrl.cellParaIdx, outerTableControlIdx: ctrl.outerTableControlIdx,
-    cellPath: ctrl.cellPath, noteRef: ctrl.noteRef, headerFooter: ctrl.headerFooter };
+    cellPath: ctrl.cellPath, noteRef: ctrl.noteRef, headerFooter: ctrl.headerFooter, missing: ctrl.missing };
 }
 
 /** 클릭 좌표에서 그림, 글상자, 수식, OLE 개체를 찾는다. */
@@ -130,6 +133,64 @@ function pointToSegmentDist(px: number, py: number, x1: number, y1: number, x2: 
   let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
   t = Math.max(0, Math.min(1, t));
   return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+
+/**
+ * [Task #2230] 그림 미지정 placeholder 에 그림 지정 — 파일 선택 후
+ * assignPictureImage 커맨드를 스냅샷(Undo 지원)으로 실행한다.
+ * 개체 틀 크기는 유지된다 (한컴 placeholder 는 틀에 그림을 맞춤).
+ */
+export function promptAssignPictureImage(this: any, ref: PictureObjectRef): void {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/png,image/jpeg,image/gif,image/bmp,image/webp';
+  input.onchange = async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    let objectUrl = '';
+    try {
+      const data = new Uint8Array(await file.arrayBuffer());
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+      const img = new Image();
+      objectUrl = URL.createObjectURL(file);
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => {
+          if (img.naturalWidth <= 0 || img.naturalHeight <= 0) {
+            reject(new Error('이미지 크기를 확인할 수 없습니다.'));
+            return;
+          }
+          resolve();
+        };
+        img.onerror = () => reject(new Error('브라우저가 이 이미지 파일을 읽지 못했습니다.'));
+        img.src = objectUrl;
+      });
+      const cellPathJson = hasCellPath(ref) ? JSON.stringify(ref.cellPath) : '';
+      // 지정 후에는 실그림이므로 placeholder 선택 상태를 먼저 해제한다
+      // (스냅샷 실행의 full refresh 가 stale 선택 표시를 남기지 않도록).
+      this.cursor.exitPictureObjectSelection();
+      this.pictureObjectRenderer?.clear();
+      this.eventBus.emit('picture-object-selection-changed', false);
+      // 스냅샷 경로의 refreshAfterOperation('full') 이 전면 재렌더를 수행한다.
+      this.executeOperation({ kind: 'snapshot', operationType: 'assignPictureImage', operation: (wasm: any) => {
+        wasm.assignPictureImage(
+          ref.sec, ref.ppi, cellPathJson, ref.ci,
+          data, img.naturalWidth, img.naturalHeight, ext,
+        );
+        return this.cursor.getPosition();
+      }});
+      this.textarea.focus();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn('[promptAssignPictureImage] 그림 지정 실패:', err);
+      showToast({
+        message: `그림을 지정할 수 없습니다.\n${msg}`,
+        durationMs: 6000,
+      });
+    } finally {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    }
+  };
+  input.click();
 }
 
 export function findPictureAtClick(this: any,
@@ -157,7 +218,7 @@ export function findPictureAtClick(this: any,
         }
       }
       if (shapeHit && nestedPic) {
-        return { sec: nestedPic.secIdx, ppi: nestedPic.paraIdx, ci: nestedPic.controlIdx, type: nestedPic.type, cellIdx: nestedPic.cellIdx, cellParaIdx: nestedPic.cellParaIdx, outerTableControlIdx: nestedPic.outerTableControlIdx, cellPath: nestedPic.cellPath, noteRef: nestedPic.noteRef, headerFooter: nestedPic.headerFooter };
+        return { sec: nestedPic.secIdx, ppi: nestedPic.paraIdx, ci: nestedPic.controlIdx, type: nestedPic.type, cellIdx: nestedPic.cellIdx, cellParaIdx: nestedPic.cellParaIdx, outerTableControlIdx: nestedPic.outerTableControlIdx, cellPath: nestedPic.cellPath, noteRef: nestedPic.noteRef, headerFooter: nestedPic.headerFooter, missing: nestedPic.missing };
       }
     }
     // Task #516 결함 3 (옵션 3-C): BehindText 그림은 텍스트 영역 위에서는 후순위.
@@ -253,7 +314,7 @@ export function findPictureAtClick(this: any,
         for (const ctrl of behindCtrls) {
           if (pageX >= ctrl.x && pageX <= ctrl.x + ctrl.w &&
               pageY >= ctrl.y && pageY <= ctrl.y + ctrl.h) {
-            return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: ctrl.type, cellIdx: ctrl.cellIdx, cellParaIdx: ctrl.cellParaIdx, outerTableControlIdx: ctrl.outerTableControlIdx, cellPath: ctrl.cellPath, noteRef: ctrl.noteRef, headerFooter: ctrl.headerFooter };
+            return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: ctrl.type, cellIdx: ctrl.cellIdx, cellParaIdx: ctrl.cellParaIdx, outerTableControlIdx: ctrl.outerTableControlIdx, cellPath: ctrl.cellPath, noteRef: ctrl.noteRef, headerFooter: ctrl.headerFooter, missing: ctrl.missing };
           }
         }
       }

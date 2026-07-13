@@ -1088,6 +1088,23 @@ export class WasmBridge {
     ));
   }
 
+  /**
+   * [Task #2230] 기존 Picture 컨트롤에 이미지를 지정한다 — 그림 미지정
+   * placeholder(missing image 컨트롤)의 편집 뷰 그림 삽입.
+   * 개체 틀 크기는 유지된다 (한컴 placeholder 는 틀에 그림을 맞춤).
+   * cellPathJson 규약은 insertPicture 와 동일 (빈 문자열/"[]" = 본문).
+   */
+  assignPictureImage(sec: number, parentParaIdx: number, cellPathJson: string,
+                     controlIdx: number, imageData: Uint8Array,
+                     naturalWidthPx: number, naturalHeightPx: number,
+                     extension: string): { ok: boolean; binDataId: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).assignPictureImage(
+      sec, parentParaIdx, cellPathJson, controlIdx, imageData,
+      naturalWidthPx, naturalHeightPx, extension,
+    ));
+  }
+
   // ── 그림 속성 API ─────────────────────────────────────
   getPageControlLayout(pageNum: number): { controls: import('./types').ControlLayoutItem[] } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');

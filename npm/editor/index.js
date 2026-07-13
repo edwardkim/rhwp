@@ -9,9 +9,9 @@
  * 본 제품은 한글과컴퓨터의 한글 문서 파일(.hwp) 공개 문서를 참고하여 개발하였습니다.
  */
 
-const DEFAULT_STUDIO_URL = 'https://edwardkim.github.io/rhwp/';
+import { EditorTransport } from './transport.js';
 
-let requestId = 0;
+const DEFAULT_STUDIO_URL = 'https://edwardkim.github.io/rhwp/';
 
 /**
  * HWP 에디터를 생성하여 지정된 컨테이너에 마운트합니다.
@@ -53,9 +53,21 @@ export async function createEditor(container, options = {}) {
   });
 
   // WASM 초기화 대기 (ready 메서드로 확인)
-  const editor = new RhwpEditor(iframe);
-  await editor._waitReady();
-  return editor;
+  let transport;
+  try {
+    transport = new EditorTransport(iframe, studioUrl, {
+      requestTimeoutMs: options.requestTimeoutMs,
+      handshakeTimeoutMs: options.handshakeTimeoutMs,
+    });
+    await transport.connect();
+    const editor = new RhwpEditor(iframe, transport);
+    await editor._waitReady();
+    return editor;
+  } catch (error) {
+    transport?.destroy();
+    iframe.remove();
+    throw error;
+  }
 }
 
 /**
@@ -64,24 +76,9 @@ export async function createEditor(container, options = {}) {
  * iframe 내부의 rhwp-studio와 postMessage로 통신합니다.
  */
 class RhwpEditor {
-  constructor(iframe) {
+  constructor(iframe, transport) {
     this._iframe = iframe;
-    this._pending = new Map();
-
-    // 응답 수신 리스너
-    window.addEventListener('message', (e) => {
-      if (e.data?.type === 'rhwp-response' && e.data.id != null) {
-        const resolver = this._pending.get(e.data.id);
-        if (resolver) {
-          this._pending.delete(e.data.id);
-          if (e.data.error) {
-            resolver.reject(new Error(e.data.error));
-          } else {
-            resolver.resolve(e.data.result);
-          }
-        }
-      }
-    });
+    this._transport = transport;
   }
 
   /**
@@ -89,21 +86,7 @@ class RhwpEditor {
    * @internal
    */
   _request(method, params = {}) {
-    return new Promise((resolve, reject) => {
-      const id = ++requestId;
-      this._pending.set(id, { resolve, reject });
-      this._iframe.contentWindow.postMessage(
-        { type: 'rhwp-request', id, method, params },
-        '*'
-      );
-      // 10초 타임아웃
-      setTimeout(() => {
-        if (this._pending.has(id)) {
-          this._pending.delete(id);
-          reject(new Error(`Request timeout: ${method}`));
-        }
-      }, 10000);
-    });
+    return this._transport.request(method, params);
   }
 
   /** WASM 초기화 완료 대기 @internal */
@@ -136,8 +119,7 @@ class RhwpEditor {
    * ```
    */
   async loadFile(data, fileName = 'document.hwp') {
-    const bytes = data instanceof ArrayBuffer ? Array.from(new Uint8Array(data)) : Array.from(data);
-    return this._request('loadFile', { data: bytes, fileName });
+    return this._request('loadFile', { data, fileName });
   }
 
   /**
@@ -197,7 +179,7 @@ class RhwpEditor {
    * 에디터를 제거합니다.
    */
   destroy() {
+    this._transport.destroy();
     this._iframe.remove();
-    this._pending.clear();
   }
 }

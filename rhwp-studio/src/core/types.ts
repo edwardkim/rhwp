@@ -571,6 +571,11 @@ export interface ControlLayoutItem {
   stableIndex?: number;
   /** [Task #1280 v2] 텍스트 어울림 모드(이미지뿐 아니라 shape/line/group에도 노출). */
   wrap?: string;
+  /**
+   * [Task #2230] 그림 미지정 placeholder(bin 참조 실패 + 외부 경로 없음).
+   * 더블클릭 시 그림 지정(파일 선택) 진입 분기 근거.
+   */
+  missing?: boolean;
 }
 
 /** 개체 참조 (그림/글상자 공용) */

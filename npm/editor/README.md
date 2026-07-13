@@ -8,6 +8,11 @@
 웹 페이지에 HWP 에디터를 통째로 임베드합니다.
 메뉴, 툴바, 서식, 표 편집 — rhwp-studio의 모든 기능을 그대로 사용할 수 있습니다.
 
+SDK는 지원되는 Studio와 `MessageChannel` v1을 협상해 binary를 transferable로 전송합니다.
+구버전 Studio에는 기존 `postMessage` protocol로 자동 전환되며 공개 API는 동일합니다.
+호스트와 `studioUrl`은 HTTP(S) origin만 지원합니다. `file:`, `data:`, 브라우저 확장처럼
+origin이 `null`이거나 불투명한 환경의 연결은 SDK와 Studio 양쪽에서 거부합니다.
+
 > **[온라인 데모](https://edwardkim.github.io/rhwp/)** 에서 먼저 체험해보세요.
 
 ## 설치
@@ -72,9 +77,11 @@ const editor = await createEditor(document.getElementById('editor'));
 
 | 옵션 | 기본값 | 설명 |
 |------|--------|------|
-| `studioUrl` | `https://edwardkim.github.io/rhwp/` | rhwp-studio URL |
+| `studioUrl` | `https://edwardkim.github.io/rhwp/` | rhwp-studio HTTP(S) URL. opaque origin은 지원하지 않음 |
 | `width` | `'100%'` | iframe 너비 |
 | `height` | `'100%'` | iframe 높이 |
+| `requestTimeoutMs` | method별 기본값 | 모든 method 제한 시간 override(ms). 일반 10초, load/export 60초 |
+| `handshakeTimeoutMs` | `1000` | v1 협상 후 legacy 전환까지의 제한 시간(ms) |
 
 ### editor.loadFile(data, fileName?)
 

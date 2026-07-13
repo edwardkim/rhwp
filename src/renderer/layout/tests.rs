@@ -1985,7 +1985,12 @@ fn master_page_paper_relative_picture_uses_page_origin() {
     )));
 
     let bbox = first_master_child_bbox(&tree, |node_type| {
-        matches!(node_type, RenderNodeType::Image(_))
+        // [Task #2225] 데이터 없는 픽스처 그림은 MissingPicture placeholder 로
+        // 방출된다 — 위치 검증 프로브이므로 두 형태 모두 수용 (bbox 동일).
+        matches!(
+            node_type,
+            RenderNodeType::Image(_) | RenderNodeType::Placeholder(_)
+        )
     });
     assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
     assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
@@ -2110,7 +2115,12 @@ fn header_paper_relative_picture_uses_page_origin() {
         })));
 
     let bbox = first_header_child_bbox(&tree, |node_type| {
-        matches!(node_type, RenderNodeType::Image(_))
+        // [Task #2225] 데이터 없는 픽스처 그림은 MissingPicture placeholder 로
+        // 방출된다 — 위치 검증 프로브이므로 두 형태 모두 수용 (bbox 동일).
+        matches!(
+            node_type,
+            RenderNodeType::Image(_) | RenderNodeType::Placeholder(_)
+        )
     });
     assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
     assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);

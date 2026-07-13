@@ -937,9 +937,16 @@ impl PaintOp {
                 buf.push('{');
                 buf.push_str("\"type\":\"placeholder\",\"bbox\":");
                 write_bbox(buf, *bbox);
+                let kind = match placeholder.kind {
+                    crate::renderer::render_tree::PlaceholderKind::Ole => "ole",
+                    crate::renderer::render_tree::PlaceholderKind::MissingPicture => {
+                        "missingPicture"
+                    }
+                };
                 let _ = write!(
                     buf,
-                    ",\"fillColor\":{},\"strokeColor\":{},\"label\":{}",
+                    ",\"kind\":\"{}\",\"fillColor\":{},\"strokeColor\":{},\"label\":{}",
+                    kind,
                     json_escape(&color_ref_to_css(placeholder.fill_color)),
                     json_escape(&color_ref_to_css(placeholder.stroke_color)),
                     json_escape(&placeholder.label),

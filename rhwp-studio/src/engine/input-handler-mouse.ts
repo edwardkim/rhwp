@@ -807,6 +807,8 @@ export function onClick(this: any, e: MouseEvent): void {
             (picHit as any).headerFooter,
             (picHit as any).outerTableControlIdx,
             (picHit as any).cellPath,
+            undefined,
+            (picHit as any).missing,
           );
           this.active = true;
           this.caret.hide();
@@ -1065,6 +1067,7 @@ export function onClick(this: any, e: MouseEvent): void {
           (tbPic as any).outerTableControlIdx,
           (tbPic as any).cellPath,
           (tbPic as any).noteRef,
+          (tbPic as any).missing,
         );
         this.active = true;
         this.caret.hide();
@@ -1182,6 +1185,7 @@ export function onClick(this: any, e: MouseEvent): void {
           (picHit as any).outerTableControlIdx,
           (picHit as any).cellPath,
           (picHit as any).noteRef,
+          (picHit as any).missing,
         );
         this.active = true;
         this.caret.hide();
@@ -1310,6 +1314,12 @@ export function onDblClick(this: any, e: MouseEvent): void {
   // 객체 선택 중 더블클릭
   if (this.cursor.isInPictureObjectSelection()) {
     const ref = this.cursor.getSelectedPictureRef();
+    // [Task #2230] 그림 미지정 placeholder → 그림 지정 (파일 선택)
+    if (ref && ref.type === 'image' && ref.missing) {
+      e.preventDefault();
+      this.promptAssignPictureImage(ref);
+      return;
+    }
     // 수식 객체 → 수식 편집 대화상자
     if (ref && ref.type === 'equation') {
       e.preventDefault();

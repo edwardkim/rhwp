@@ -20,7 +20,12 @@ export default defineConfig({
     port: 7700,
     fs: {
       // [Task #741 후속] 외부 file path 그림 영역 영역 samples/ dir 영역 영역 fetch 가능 영역.
-      allow: [__dirname, resolve(__dirname, '..', 'pkg'), resolve(__dirname, '..', 'samples')],
+      allow: [
+        __dirname,
+        resolve(__dirname, '..', 'pkg'),
+        resolve(__dirname, '..', 'samples'),
+        resolve(__dirname, '..', 'npm', 'editor'),
+      ],
     },
   },
   plugins: [

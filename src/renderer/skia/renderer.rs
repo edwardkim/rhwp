@@ -1102,7 +1102,13 @@ impl SkiaLayerRenderer {
                             self.draw_form_control(canvas, *bbox, form);
                         }
                         PaintOp::Placeholder { bbox, placeholder } => {
-                            draw_placeholder(*bbox, placeholder.label.as_str());
+                            // [Task #2225] 그림 미지정 placeholder 는 인쇄 등가
+                            // 출력에서 미출력 (한컴 인쇄 동작 정합).
+                            if placeholder.kind
+                                != crate::renderer::render_tree::PlaceholderKind::MissingPicture
+                            {
+                                draw_placeholder(*bbox, placeholder.label.as_str());
+                            }
                         }
                         PaintOp::RawSvg { bbox, raw } => {
                             if !draw_svg_fragment(

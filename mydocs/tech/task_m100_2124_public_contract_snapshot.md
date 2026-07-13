@@ -282,3 +282,23 @@ Phase 0/Phase A에서 유지해야 할 금지선:
 | Stage 4 extension security snapshot | CSP, WAR, sender validation, URL/file validation, byte shape 차이 |
 | #2125 assets/fonts canonical 이전 | build copy source와 symlink/source path 전체 갱신 필요 |
 | Phase B 구조 리팩터링 | 이 문서의 message/API contract를 변경하지 않는 내부 분리부터 시작 |
+
+## 10. #2186 이후 embed contract delta
+
+#2124 Phase 0 snapshot은 당시 구현 기록으로 보존한다. #2186 이후에도 `createEditor(container,
+options?)`, public method 이름과 반환 type, `@rhwp/editor`의 zero runtime dependency 계약은 바뀌지
+않는다. 변경된 표면은 iframe transport와 lifecycle에 한정한다.
+
+| 표면 | #2186 이후 계약 |
+|------|-----------------|
+| bootstrap | `studioUrl`에서 계산한 exact HTTP(S) origin으로 `rhwp-connect`를 보낸다. |
+| v1 negotiation | `version: 1`, session ID, `transferable-array-buffer` capability와 단일 `MessagePort`를 사용한다. |
+| request/response | v1 envelope는 version/session/id를 검증하며 malformed 또는 다른 session 응답을 무시한다. |
+| binary | `loadFile`은 caller bytes를 복사한 `Uint8Array`를 transferable로 보내 원본 buffer를 detach하지 않는다. HWP/HWPX 응답도 transferable bytes로 받는다. |
+| timeout | 일반 method는 기본 10초, load/export는 기본 60초다. timeout, send 실패, `destroy()`에서 pending timer와 port/listener를 정리한다. |
+| legacy | v1 handshake timeout 전까지만 기존 `rhwp-request`/`rhwp-response` fallback을 허용한다. Studio의 `hwpctl-load`와 number-array 입력/응답 호환도 유지한다. |
+
+`loadFile(): Promise<{ pageCount: number }>`, `pageCount(): Promise<number>`,
+`getPageSvg(): Promise<string>`, `exportHwp()`/`exportHwpx(): Promise<Uint8Array>`,
+`exportHwpVerify(): Promise<HwpVerifyResult>` 반환 계약은 그대로다. exact origin binding은 host 인증이나
+allowlist/JWT를 뜻하지 않으며, 그 정책은 #2186 범위 밖이다.

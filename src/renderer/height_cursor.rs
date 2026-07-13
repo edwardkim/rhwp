@@ -753,6 +753,10 @@ impl HeightCursor {
             && y_offset <= self.col_area_y + 48.0;
         let current_vpos_far_from_prev =
             matches!(curr_first_vpos, Some(v) if v - prev_vpos_end > 3200);
+        let previous_has_stale_hwpx_line_metrics = self.suppress_hwpx_stale_forward
+            && crate::renderer::paragraph_source_line_metrics_need_reflow(
+                prev_para, styles, self.dpi,
+            );
         let hwpx_page_start_stale_forward = self.suppress_hwpx_stale_forward
             && is_page_path
             && applied
@@ -762,7 +766,11 @@ impl HeightCursor {
             && ((prev_is_initial_empty_reset
                 && current_has_visible_text
                 && current_vpos_far_from_prev)
-                || (current_is_tac_table_host && end_y > y_offset + 180.0));
+                || (current_is_tac_table_host && end_y > y_offset + 180.0)
+                // 손상된 단일 줄의 저장 높이가 이후 문단의 절대 vpos까지 밀어 둔
+                // HWPX는 순차 조판 위치를 유지한다. 그렇지 않으면 앞 줄을 재조판해도
+                // 다음 문단에서 동일한 빈 공간이 다시 복원된다.
+                || (previous_has_stale_hwpx_line_metrics && current_has_visible_text));
         let compact_endnote_large_gap_body_stale_forward = self.suppress_large_forward_jump
             && !is_page_path
             && !vpos_rewind

@@ -3785,6 +3785,7 @@ impl TypesetEngine {
                     para,
                     &formatted,
                     paragraphs,
+                    styles,
                     is_last_in_section,
                 );
             } else {
@@ -10864,17 +10865,7 @@ impl TypesetEngine {
                     .get(line_idx)
                     .map(|seg| hwpunit_to_px(seg.text_height, self.dpi))
                     .unwrap_or(0.0);
-                let max_fs = line
-                    .runs
-                    .iter()
-                    .map(|r| {
-                        styles
-                            .char_styles
-                            .get(r.char_style_id as usize)
-                            .map(|cs| cs.font_size)
-                            .unwrap_or(0.0)
-                    })
-                    .fold(0.0f64, f64::max);
+                let max_fs = crate::renderer::composed_line_max_font_size(line, para, styles);
                 let text_before_picture_line =
                     text_line_is_picture_lead_in(para, comp, line_idx, raw_lh, max_fs, self.dpi);
                 let tac_picture_height = para.controls.iter().find_map(|ctrl| {
@@ -10944,6 +10935,7 @@ impl TypesetEngine {
                         ls_type,
                         ls_val,
                         para.controls.is_empty(),
+                        crate::renderer::controls_mark_section_start(&para.controls),
                     )
                 };
                 let extra_rows =
@@ -11074,6 +11066,7 @@ impl TypesetEngine {
         para: &Paragraph,
         fmt: &FormattedParagraph,
         paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
         is_last_in_section: bool,
     ) {
         // Task #332 Stage 4a: layout drift 안전 마진.
@@ -11543,8 +11536,25 @@ impl TypesetEngine {
         // 첫 줄이 이전 쪽 말미에 남는다 (3024019 pi22: ls[0] vpos=700, 한글도
         // 문단 전체를 새 쪽 배치). 전체 배치가 이미 실패한 분할 직전에만 적용해
         // 일반 흐름(#418/#321 보수 기준)은 건드리지 않는다.
+        let current_page_has_stale_hwpx_line_metrics = st.is_hwpx_source
+            && st
+                .current_items
+                .iter()
+                .filter_map(page_item_para_index)
+                .any(|placed_para_idx| {
+                    paragraphs.get(placed_para_idx).is_some_and(|placed_para| {
+                        crate::renderer::paragraph_source_line_metrics_need_reflow(
+                            placed_para,
+                            styles,
+                            self.dpi,
+                        )
+                    })
+                });
         let stored_whole_para_reset = st.col_count == 1
             && para_idx > 0
+            // 앞 문단의 손상 HWPX 줄을 순차 조판으로 접은 경우, 그 뒤 문단의
+            // 작은 vpos는 새 쪽이 아니라 같은 손상 좌표계의 잔여값이다.
+            && !current_page_has_stale_hwpx_line_metrics
             && para
                 .line_segs
                 .first()

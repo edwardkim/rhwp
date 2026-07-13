@@ -5,9 +5,13 @@
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "transport.js"
   ],
   "keywords": [
     "hwp",

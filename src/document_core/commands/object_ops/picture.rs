@@ -1264,6 +1264,129 @@ impl DocumentCore {
         });
         Ok("{\"ok\":true}".to_string())
     }
+    /// [Task #2230] 임베디드 BinData 등록 (콘텐츠 + 메타데이터) — 반환값은
+    /// bin_data_id(위치, 1-based 순번).
+    ///
+    /// bin_data_id 와 storage id(BIN%04X 스트림 이름)는 다른 의미다. 위치는
+    /// 배열 순번으로 유지하고, storage id 는 기존 id 와 충돌하지 않게
+    /// 최댓값+1 로 채번한다 — 순번 채번은 storage id 에 구멍이 있는 문서에서
+    /// 기존 이미지와 스트림 이름이 충돌해 저장 시 이미지가 뒤바뀌거나
+    /// 소실된다. (insert_picture_native 와 그림 지정이 규칙 공유.)
+    fn register_embedded_bin_data(&mut self, image_data: &[u8], extension: &str) -> u16 {
+        use crate::model::bin_data::{
+            BinData, BinDataCompression, BinDataContent, BinDataStatus, BinDataType,
+        };
+        let position_id = self.document.bin_data_content.len() as u16 + 1;
+        let storage_id = self.document.next_bin_data_storage_id();
+        self.document.bin_data_content.push(BinDataContent {
+            id: storage_id,
+            data: image_data.to_vec(),
+            extension: extension.to_string(),
+        });
+        // attr: bits 0-3=1(Embedding), bits 4-5=0(Default), bits 8-9=1(Success)
+        let bin_attr: u16 = 0x0101;
+        self.document.doc_info.bin_data_list.push(BinData {
+            raw_data: None,
+            attr: bin_attr,
+            data_type: BinDataType::Embedding,
+            compression: BinDataCompression::Default,
+            status: BinDataStatus::Success,
+            abs_path: None,
+            rel_path: None,
+            storage_id,
+            extension: Some(extension.to_string()),
+        });
+        self.document.doc_info.raw_stream = None; // DocInfo 재직렬화
+        position_id
+    }
+
+    /// [Task #2230] 기존 Picture 컨트롤에 이미지를 지정한다 — 그림 미지정
+    /// placeholder(bin 참조 실패 + 외부 경로 없음)의 편집 뷰 그림 삽입.
+    ///
+    /// - BinData 등록 규칙은 insert_picture_native 와 공유
+    ///   (register_embedded_bin_data).
+    /// - 개체 틀 크기(common.width/height)와 배치 속성은 유지한다 — 한컴
+    ///   placeholder 는 틀에 그림을 맞추므로 레이아웃 불변.
+    /// - crop 은 insert_picture_native 와 동일하게 원본 전체
+    ///   (natural px × 75 = HWPUNIT@96dpi) 로 설정한다.
+    /// - `cell_path` 가 비어있으면 본문/각주 문단의 컨트롤, 있으면 셀/글상자
+    ///   안 문단의 컨트롤을 대상으로 한다.
+    pub fn assign_picture_image_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path: &[(usize, usize, usize)],
+        control_idx: usize,
+        image_data: &[u8],
+        natural_width_px: u32,
+        natural_height_px: u32,
+        extension: &str,
+    ) -> Result<String, HwpError> {
+        if image_data.is_empty() {
+            return Err(HwpError::RenderError(
+                "이미지 데이터가 비어 있습니다".to_string(),
+            ));
+        }
+        // 대상 존재 검증을 BinData 등록보다 먼저 수행 — 실패 시 문서 무변형.
+        if cell_path.is_empty() {
+            self.resolve_picture_control_ref(section_idx, parent_para_idx, control_idx)?;
+        } else {
+            let para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, cell_path)?;
+            let ctrl = para.controls.get(control_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("셀 내 컨트롤 {} 범위 초과", control_idx))
+            })?;
+            if !matches!(ctrl, Control::Picture(_)) {
+                return Err(HwpError::RenderError(
+                    "지정된 셀 내 컨트롤이 그림이 아닙니다".to_string(),
+                ));
+            }
+        }
+
+        let position_id = self.register_embedded_bin_data(image_data, extension);
+
+        {
+            let pic = if cell_path.is_empty() {
+                self.resolve_picture_control_mut(section_idx, parent_para_idx, control_idx)?
+            } else {
+                let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+                    HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+                })?;
+                let para = Self::resolve_cell_paragraph_mut(section, parent_para_idx, cell_path)?;
+                let ctrl = para.controls.get_mut(control_idx).ok_or_else(|| {
+                    HwpError::RenderError(format!("셀 내 컨트롤 {} 범위 초과", control_idx))
+                })?;
+                match ctrl {
+                    Control::Picture(p) => p,
+                    _ => {
+                        return Err(HwpError::RenderError(
+                            "지정된 셀 내 컨트롤이 그림이 아닙니다".to_string(),
+                        ))
+                    }
+                }
+            };
+            pic.image_attr.bin_data_id = position_id;
+            pic.image_attr.external_path = None;
+            pic.crop = crate::model::image::CropInfo {
+                left: 0,
+                top: 0,
+                right: (natural_width_px * 75) as i32,
+                bottom: (natural_height_px * 75) as i32,
+            };
+        }
+
+        let section = &mut self.document.sections[section_idx];
+        section.raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+        self.event_log.push(DocumentEvent::PictureResized {
+            section: section_idx,
+            para: parent_para_idx,
+            ctrl: control_idx,
+        });
+        Ok(format!("{{\"ok\":true,\"binDataId\":{}}}", position_id))
+    }
+
     /// 커서 위치에 그림을 삽입한다 (네이티브).
     ///
     /// - `cell_path` 가 비어있으면 본문 paragraph 에 inline (treat_as_char=true) 삽입.
@@ -1293,9 +1416,6 @@ impl DocumentCore {
         paper_offset_x_hu: Option<i32>,
         paper_offset_y_hu: Option<i32>,
     ) -> Result<String, HwpError> {
-        use crate::model::bin_data::{
-            BinData, BinDataCompression, BinDataContent, BinDataStatus, BinDataType,
-        };
         use crate::model::image::{CropInfo, ImageAttr, ImageEffect, Picture};
         use crate::model::paragraph::{CharShapeRef, LineSeg};
         use crate::model::shape::{CommonObjAttr, HorzRelTo, ShapeComponentAttr, VertRelTo};
@@ -1335,35 +1455,10 @@ impl DocumentCore {
             false
         };
 
-        // --- 1. BinDataContent 추가 ---
-        // bin_data_id(위치, 1-based 순번)와 storage id(BIN%04X 스트림 이름)는
-        // 다른 의미다. 위치는 배열 순번으로 유지하고, storage id 는 기존 id 와
-        // 충돌하지 않게 최댓값+1 로 채번한다 — 순번 채번은 storage id 에 구멍이
-        // 있는 문서에서 기존 이미지와 스트림 이름이 충돌해 저장 시 이미지가
-        // 뒤바뀌거나 소실된다.
-        let position_id = self.document.bin_data_content.len() as u16 + 1;
-        let storage_id = self.document.next_bin_data_storage_id();
-        self.document.bin_data_content.push(BinDataContent {
-            id: storage_id,
-            data: image_data.to_vec(),
-            extension: extension.to_string(),
-        });
-
-        // --- 2. BinData 메타데이터 추가 ---
-        // attr: bits 0-3=1(Embedding), bits 4-5=0(Default), bits 8-9=1(Success)
-        let bin_attr: u16 = 0x0101;
-        self.document.doc_info.bin_data_list.push(BinData {
-            raw_data: None,
-            attr: bin_attr,
-            data_type: BinDataType::Embedding,
-            compression: BinDataCompression::Default,
-            status: BinDataStatus::Success,
-            abs_path: None,
-            rel_path: None,
-            storage_id,
-            extension: Some(extension.to_string()),
-        });
-        self.document.doc_info.raw_stream = None; // DocInfo 재직렬화
+        // --- 1·2. BinData 등록 (콘텐츠 + 메타데이터) ---
+        // [Task #2230] 그림 지정(assign_picture_image_native)과 규칙 공유를 위해
+        // register_embedded_bin_data 로 추출.
+        let position_id = self.register_embedded_bin_data(image_data, extension);
 
         // --- 공통 자원 ---
         let shape_attr = ShapeComponentAttr {

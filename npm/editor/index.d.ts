@@ -3,12 +3,16 @@
  */
 
 export interface EditorOptions {
-  /** rhwp-studio URL (기본: https://edwardkim.github.io/rhwp/) */
+  /** rhwp-studio HTTP(S) URL. file:, data:, browser extension 등 opaque origin은 지원하지 않음 */
   studioUrl?: string;
   /** iframe 너비 (기본: '100%') */
   width?: string;
   /** iframe 높이 (기본: '100%') */
   height?: string;
+  /** 모든 method 요청 제한 시간 override(ms, 기본: 일반 10000, load/export 60000) */
+  requestTimeoutMs?: number;
+  /** v1 협상 제한 시간(ms, 기본: 1000) */
+  handshakeTimeoutMs?: number;
 }
 
 export interface LoadResult {

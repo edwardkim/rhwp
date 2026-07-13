@@ -4,55 +4,136 @@ import test from 'node:test';
 
 import { createEditor } from '../npm/editor/index.js';
 
-test('@rhwp/editor iframe message contract', async (t) => {
-  const packageJson = JSON.parse(readFileSync(new URL('../npm/editor/package.json', import.meta.url), 'utf8'));
+test('@rhwp/editor public API uses exact-origin MessageChannel v1 binary transport', async (t) => {
+  const packageJson = JSON.parse(readFileSync(
+    new URL('../npm/editor/package.json', import.meta.url),
+    'utf8',
+  ));
   assert.deepEqual(packageJson.dependencies ?? {}, {});
 
+  let server;
+  let sessionId;
+  const requests = [];
+  const harness = installDom(t, ({ message, targetOrigin, transfer }) => {
+    assert.equal(targetOrigin, 'https://studio.example');
+    assert.equal(message.type, 'rhwp-connect');
+    assert.equal(message.version, 1);
+    assert.deepEqual(message.capabilities, ['transferable-array-buffer']);
+    assert.equal(transfer.length, 1);
+    sessionId = message.sessionId;
+    server = transfer[0];
+    server.onmessage = ({ data }) => {
+      requests.push(data);
+      const result = responseFor(data);
+      const response = {
+        type: 'rhwp-response', version: 1, sessionId, id: data.id, result,
+      };
+      const responseTransfer = result instanceof Uint8Array ? [result.buffer] : [];
+      server.postMessage(response, responseTransfer);
+    };
+    server.start();
+    server.postMessage({
+      type: 'rhwp-connected', version: 1, sessionId,
+      capabilities: ['transferable-array-buffer'],
+    });
+  });
+  t.after(() => server?.close());
+
+  const editor = await createEditor('#editor', editorOptions());
+  assertEditorFrame(harness);
+  assert.ok(requests.every((request) => request.type === 'rhwp-request'
+    && request.version === 1 && request.sessionId === sessionId));
+
+  assert.equal(await editor.pageCount(), 3);
+  assert.equal(await editor.getPageSvg(2), '<svg data-page="2"/>');
+
+  const input = new Uint8Array([1, 2, 3]);
+  assert.deepEqual(await editor.loadFile(input, 'sample.hwp'), { pageCount: 3 });
+  const loadRequest = requests.find((request) => request.method === 'loadFile');
+  assert.ok(ArrayBuffer.isView(loadRequest.params.data));
+  assert.equal(Array.isArray(loadRequest.params.data), false);
+  assert.deepEqual([...loadRequest.params.data], [1, 2, 3]);
+  assert.deepEqual([...input], [1, 2, 3]);
+
+  assert.deepEqual([...await editor.exportHwp()], [4, 5, 6]);
+  assert.deepEqual([...await editor.exportHwpx()], [7, 8, 9]);
+  assert.deepEqual(await editor.exportHwpVerify(), verifyResult());
+
+  editor.destroy();
+  assert.equal(harness.iframe.removed, true);
+});
+
+test('@rhwp/editor keeps the bounded legacy request/response fallback', async (t) => {
+  const requests = [];
+  const harness = installDom(t, ({ message, targetOrigin, transfer, dispatch }) => {
+    assert.equal(targetOrigin, 'https://studio.example');
+    if (message.type === 'rhwp-connect') {
+      transfer[0]?.close();
+      return;
+    }
+    requests.push({ message, transfer });
+    queueMicrotask(() => dispatch({
+      data: { type: 'rhwp-response', id: message.id, result: responseFor(message, true) },
+      origin: 'https://studio.example',
+      source: harness.contentWindow,
+    }));
+  });
+
+  const editor = await createEditor('#editor', {
+    ...editorOptions(),
+    handshakeTimeoutMs: 0,
+  });
+  assert.equal(await editor.pageCount(), 3);
+
+  const input = new Uint8Array([1, 2, 3]);
+  assert.deepEqual(await editor.loadFile(input, 'legacy.hwp'), { pageCount: 3 });
+  const loadRequest = requests.find(({ message }) => message.method === 'loadFile');
+  assert.equal('version' in loadRequest.message, false);
+  assert.equal('sessionId' in loadRequest.message, false);
+  assert.equal(loadRequest.transfer.length, 1);
+  assert.ok(ArrayBuffer.isView(loadRequest.message.params.data));
+  assert.deepEqual([...input], [1, 2, 3]);
+  assert.deepEqual([...await editor.exportHwp()], [4, 5, 6]);
+
+  editor.destroy();
+  assert.equal(harness.iframe.removed, true);
+});
+
+function installDom(t, postMessage) {
   const originalDocument = globalThis.document;
   const originalWindow = globalThis.window;
-  const originalSetTimeout = globalThis.setTimeout;
-  const requests = [];
   const messageListeners = new Set();
-
   const contentWindow = {
-    postMessage(message, targetOrigin) {
-      requests.push({ message, targetOrigin });
-      const result = responseFor(message);
-      queueMicrotask(() => {
-        for (const listener of messageListeners) {
-          listener({
-            data: { type: 'rhwp-response', id: message.id, result },
-            origin: 'https://studio.example',
-            source: contentWindow,
-          });
-        }
+    postMessage(message, targetOrigin, transfer = []) {
+      postMessage({
+        message,
+        targetOrigin,
+        transfer,
+        contentWindow,
+        dispatch(event) {
+          for (const listener of messageListeners) listener(event);
+        },
       });
     },
   };
-
   const iframe = {
-    allow: '',
-    contentWindow,
-    removed: false,
-    src: '',
-    style: {},
+    allow: '', contentWindow, removed: false, src: '', style: {},
     addEventListener(type, listener) {
       if (type === 'load') queueMicrotask(listener);
     },
-    remove() {
-      this.removed = true;
-    },
+    remove() { this.removed = true; },
   };
   const container = {
     child: null,
-    appendChild(child) {
-      this.child = child;
-    },
+    appendChild(child) { this.child = child; },
   };
 
   globalThis.window = {
     addEventListener(type, listener) {
       if (type === 'message') messageListeners.add(listener);
+    },
+    removeEventListener(type, listener) {
+      if (type === 'message') messageListeners.delete(listener);
     },
   };
   globalThis.document = {
@@ -65,71 +146,49 @@ test('@rhwp/editor iframe message contract', async (t) => {
       return container;
     },
   };
-  globalThis.setTimeout = () => 0;
-
   t.after(() => {
     globalThis.document = originalDocument;
     globalThis.window = originalWindow;
-    globalThis.setTimeout = originalSetTimeout;
   });
+  return { container, contentWindow, iframe };
+}
 
-  const editor = await createEditor('#editor', {
-    studioUrl: 'https://studio.example/',
+function editorOptions() {
+  return {
+    studioUrl: 'https://studio.example/app',
     width: '640px',
     height: '480px',
-  });
+    requestTimeoutMs: 100,
+    handshakeTimeoutMs: 100,
+  };
+}
 
+function assertEditorFrame({ container, iframe }) {
   assert.equal(container.child, iframe);
-  assert.equal(iframe.src, 'https://studio.example/');
+  assert.equal(iframe.src, 'https://studio.example/app');
   assert.equal(iframe.style.width, '640px');
   assert.equal(iframe.style.height, '480px');
   assert.equal(iframe.allow, 'clipboard-read; clipboard-write');
-  assert.equal(requests[0].message.method, 'ready');
-  assert.equal(requests[0].targetOrigin, '*');
+}
 
-  assert.equal(await editor.pageCount(), 3);
-  assert.equal(await editor.getPageSvg(2), '<svg data-page="2"/>');
+function responseFor(message, legacy = false) {
+  switch (message.method) {
+    case 'ready': return true;
+    case 'pageCount': return 3;
+    case 'getPageSvg': return `<svg data-page="${message.params.page}"/>`;
+    case 'loadFile': return { pageCount: 3 };
+    case 'exportHwp': return legacy ? [4, 5, 6] : new Uint8Array([4, 5, 6]);
+    case 'exportHwpx': return legacy ? [7, 8, 9] : new Uint8Array([7, 8, 9]);
+    case 'exportHwpVerify': return verifyResult();
+    default: throw new Error(`Unexpected method: ${message.method}`);
+  }
+}
 
-  const input = new Uint8Array([1, 2, 3]);
-  assert.deepEqual(await editor.loadFile(input, 'sample.hwp'), { pageCount: 3 });
-  const loadRequest = requests.find(({ message }) => message.method === 'loadFile').message;
-  assert.deepEqual(loadRequest.params, { data: [1, 2, 3], fileName: 'sample.hwp' });
-
-  assert.deepEqual([...await editor.exportHwp()], [4, 5, 6]);
-  assert.deepEqual([...await editor.exportHwpx()], [7, 8, 9]);
-  assert.deepEqual(await editor.exportHwpVerify(), {
+function verifyResult() {
+  return {
     bytesLen: 3,
     pageCountBefore: 3,
     pageCountAfter: 3,
     recovered: false,
-  });
-
-  editor.destroy();
-  assert.equal(iframe.removed, true);
-});
-
-function responseFor(message) {
-  switch (message.method) {
-    case 'ready':
-      return true;
-    case 'pageCount':
-      return 3;
-    case 'getPageSvg':
-      return `<svg data-page="${message.params.page}"/>`;
-    case 'loadFile':
-      return { pageCount: 3 };
-    case 'exportHwp':
-      return [4, 5, 6];
-    case 'exportHwpx':
-      return [7, 8, 9];
-    case 'exportHwpVerify':
-      return {
-        bytesLen: 3,
-        pageCountBefore: 3,
-        pageCountAfter: 3,
-        recovered: false,
-      };
-    default:
-      throw new Error(`Unexpected method: ${message.method}`);
-  }
+  };
 }

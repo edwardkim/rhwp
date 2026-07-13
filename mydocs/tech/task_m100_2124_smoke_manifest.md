@@ -129,3 +129,21 @@ metrics schema v2 JSON parse와 자체 비교도 통과했다: aggregate delta 0
 repository Docker fresh WASM, binding/editor/extension/shared contract, Studio unit/build, Chrome/Firefox build,
 VS Code compile까지 로컬 자동 gate가 모두 통과했다. #2124는 maintainer/collaborator 리뷰 승인 전까지
 진행 중이며, 그 전에 체크리스트 완료·close 또는 #2125 착수를 하지 않는다.
+
+## 11. #2186 이후 embed transport delta gate
+
+#2124의 실행 결과와 metrics snapshot은 다시 생성하지 않는다. #2186처럼 `@rhwp/editor` transport를
+바꾸는 PR은 다음 delta gate를 추가로 실행한다.
+
+| 명령 | 검증 표면 |
+|------|-----------|
+| `node --test scripts/frontend-editor-embed.test.mjs` | 공개 `createEditor` API, zero runtime dependency, exact-origin v1 binary, 제한된 legacy fallback |
+| `npm --prefix npm/editor test` | origin/source/session, malformed envelope, transferable, timeout와 destroy cleanup |
+| `npm --prefix rhwp-studio test` | Studio protocol guard, RPC router, `hwpctl-load`와 legacy request/response |
+| `npm --prefix rhwp-studio run build` | TypeScript/Vite consumer 계약 |
+| `npm --prefix rhwp-studio run e2e:embed` | 실제 browser에서 public SDK load/export/destroy와 legacy flow |
+| `npm --prefix npm/editor pack --dry-run --json` | `index.js`, `index.d.ts`, `transport.js` package surface |
+
+frontend metrics는 공식 `mydocs/metrics/frontend/2026-07-11/metrics.json`을 `--compare`로만 읽고
+`output/frontend-metrics/task2186/`에 임시 결과를 만든다. 따라서 Phase 0 snapshot hash와 내용은
+변하지 않는다.
