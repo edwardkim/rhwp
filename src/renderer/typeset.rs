@@ -11198,6 +11198,13 @@ impl TypesetEngine {
             0.0
         } else if prev_is_partial_table {
             0.0
+        } else if st.vpos_page_base_stored && st.vpos_page_base.is_some() {
+            // [#2243] 현재 위치가 **저장** lineseg page-path 앵커로 스냅된 상태면
+            // 누적 drift 가 정의상 없으므로 safety 마진을 면제한다 (#361 의
+            // PartialTable 정밀 누적 면제와 동일 근거). 156631374: stored 정위치
+            // 881.3 + fit 49.6 = 930.9 ≤ 933.6 인데 마진 4px 가 razor 를 기각해
+            // 1쪽 문서가 2쪽으로 밀리던 회귀.
+            0.0
         } else {
             layout_drift_safety_px
         };

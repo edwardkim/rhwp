@@ -242,7 +242,11 @@ impl HeightCursor {
                         if !t.common.treat_as_char
                             && matches!(t.common.text_wrap, TextWrap::TopAndBottom))
                 });
-            if prev_is_empty_float_table_host {
+            // 전방 재가산 형상(저장 갭 존재 = curr_v0 > prev_end)만 차단 — 갭이
+            // 없으면 정상 lazy 역산을 유지해 sequential 과대의 역방향 보정을
+            // 살린다 (156631374: 무차별 차단 시 1→2쪽 회귀).
+            let stored_gap_exists = matches!(curr_first_vpos, Some(v) if v > prev_vpos_end);
+            if prev_is_empty_float_table_host && stored_gap_exists {
                 return y_offset;
             }
             // [Issue #1898] 직전 문단이 "실텍스트 + 인라인(tac) 그림 호스트" 이면, 저장
