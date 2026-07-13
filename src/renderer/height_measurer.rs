@@ -1442,6 +1442,26 @@ impl HeightMeasurer {
                 } else {
                     required_height
                 };
+                // [#2097 진단] 셀별 선언/측정/trailing 분해 — 동작 불변.
+                if std::env::var("RHWP_DIAG_ROWH").is_ok() && depth == 0 {
+                    let all_stored = !cell.paragraphs.is_empty()
+                        && cell
+                            .paragraphs
+                            .iter()
+                            .all(|p| !crate::renderer::para_has_no_stored_line_segs(p));
+                    eprintln!(
+                        "DIAG_ROWH r={} c={} decl={:.1} req={:.1} content={:.1} pad={:.1} trail={:.1} stored={} nested={}",
+                        cell.row,
+                        cell.col,
+                        cell_h_px,
+                        required_height,
+                        content_height,
+                        total_pad,
+                        cell_last_trailing_ls,
+                        all_stored,
+                        has_nested_table_in_cell,
+                    );
+                }
                 if required_height > row_heights[r] {
                     row_heights[r] = required_height;
                 }
