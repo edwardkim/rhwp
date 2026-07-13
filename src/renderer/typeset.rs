@@ -14062,6 +14062,30 @@ impl TypesetEngine {
                             retried = true;
                         }
                     }
+                    // [#2097] 쪽 하단 압축 컷 수용: 재시도까지 실패해도 초과분이
+                    // 압축 허용치 이내면 한글은 첫 유닛을 압축해 컷한다
+                    // (21298295 p1: 잔여 32.5px 에 첫 줄 36.8px 를 압축 배치 —
+                    // 재저장 사다리 실측 p2 시작 831.8 = row13 부분 컷 후 잔여).
+                    // 행/블록 squeeze 와 동일한 쪽 끝자락 한정.
+                    if !retried
+                        && mt.allows_row_break_split()
+                        && split_candidate_rows_height
+                            <= avail_for_rows + BOTTOM_SQUEEZE_TOLERANCE_PX
+                        && (avail_for_rows - consumed) <= BOTTOM_SQUEEZE_MAX_REST_PX
+                        && res.consumed_height >= MIN_TOP_KEEP_PX
+                    {
+                        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                            eprintln!(
+                                "DIAG_SCAN SQUEEZE_CUT r={} cand={:.1} avail={:.1} cut_h={:.1}",
+                                r, split_candidate_rows_height, avail_for_rows, res.consumed_height
+                            );
+                        }
+                        end_row = r + 1;
+                        split_end_cut = res.end_cut.clone();
+                        split_end_limit = res.consumed_height;
+                        consumed += cs_before + split_total;
+                        retried = true;
+                    }
                     if !retried {
                         end_row = r;
                     }
