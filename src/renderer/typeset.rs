@@ -528,6 +528,13 @@ struct TypesetState {
     /// current_height 상대공간(col_area_y=0)에서 HeightCursor 를 구동한다.
     vpos_page_base: Option<i32>,
     vpos_lazy_base: Option<i32>,
+    /// [#2243] page_base 가 **저장**(비합성) lineseg 에서 왔는지. 저장-앵커 사다리는
+    /// 저장 lineseg 없는 문단(생성기 누락 — 한글 fresh 재계산으로 성장 가능)을
+    /// 만나면 연속성이 깨지므로 dirty 판단에 쓴다.
+    vpos_page_base_stored: bool,
+    /// [#2243] 저장-앵커 사다리에 저장 lineseg 없는 문단이 끼어 dirty — 이후
+    /// 사다리 역스냅(backward)은 fresh 성장분을 뭉갤 수 있어 금지(전방만 허용).
+    vpos_ladder_dirty: bool,
     vpos_prev_layout_para: Option<usize>,
     vpos_prev_partial_table: bool,
     /// 컬럼 시작 시점의 current_height (page_path anchor — 렌더러 col_anchor_y 대응).
@@ -1755,6 +1762,8 @@ impl TypesetState {
             current_zone_design_spacing_px: 0.0,
             vpos_page_base: None,
             vpos_lazy_base: None,
+            vpos_page_base_stored: false,
+            vpos_ladder_dirty: false,
             vpos_prev_layout_para: None,
             vpos_prev_partial_table: false,
             vpos_col_anchor: 0.0,
@@ -1768,6 +1777,8 @@ impl TypesetState {
     fn reset_vpos_cursor(&mut self) {
         self.vpos_page_base = None;
         self.vpos_lazy_base = None;
+        self.vpos_page_base_stored = false;
+        self.vpos_ladder_dirty = false;
         self.vpos_prev_layout_para = None;
         self.vpos_prev_partial_table = false;
         self.vpos_col_anchor = self.current_height;
@@ -3814,6 +3825,21 @@ impl TypesetEngine {
             // 반영 못 해 drift 유발 → 직후 paragraph 는 lazy 역산으로 재산출). 단단 전용.
             if st.col_count == 1 {
                 st.vpos_prev_layout_para = Some(para_idx);
+                // [#2243] 저장-앵커 사다리 dirty 태깅: 저장 lineseg 없는 문단(생성기
+                // 누락)은 한글이 fresh 재계산으로 키울 수 있어, 그 뒤 기계 사다리
+                // v0 로의 **역스냅**은 성장분을 뭉갠다 (36398599: p33~36 누락 구간
+                // fresh +4320HU → 한글 4쪽 vs 역스냅 3쪽). dirty 이후 스냅은 전방만
+                // 허용한다. 합성-앵커(전면 NO_LS 문서)는 자기정합이므로 무관.
+                if st.vpos_page_base_stored
+                    && paragraphs.get(para_idx).is_some_and(|p| {
+                        p.line_segs.first().map_or(true, |s| {
+                            s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                != 0
+                        })
+                    })
+                {
+                    st.vpos_ladder_dirty = true;
+                }
                 let last = st.current_items.last();
                 st.vpos_prev_partial_table = matches!(last, Some(PageItem::PartialTable { .. }));
                 if matches!(
@@ -3824,9 +3850,48 @@ impl TypesetEngine {
                             | PageItem::Shape { .. }
                     )
                 ) {
-                    // Para-float TopAndBottom 표 예외(렌더러 2513)는 Stage E.
-                    st.vpos_page_base = None;
-                    st.vpos_lazy_base = None;
+                    // [#2243] 예외: 표 호스트의 **저장** lineseg lh 가 개체 높이를 온전히
+                    // 포함(기계생성 결재문서: lh = 표 + outMargin)하면 저장 사다리가 표
+                    // 라인을 관통해 연속이므로 base 를 유지한다. 무효화하면 후속 문단
+                    // 스냅이 드리프트를 역산한 lazy base 로 고착 (36395325 p2 +10.7px,
+                    // p4 +16.6px 팬텀 → sliver 쪽 +2). lh 가 개체를 못 담는 일반
+                    // 케이스는 종전대로 무효화. HWPX(기계생성 결재문서 계열) 한정 —
+                    // HWP5 native 는 종전 핀 보존 (issue_1418 2026_oss_rst 6쪽).
+                    let host_line_covers_object = st.is_hwpx_source
+                        && matches!(last, Some(PageItem::Table { .. }))
+                        && para.line_segs.first().is_some_and(|s| {
+                            s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                        })
+                        && {
+                            // lh 는 표 + outMargin×2 까지 담아야 사다리 연속이 보장된다
+                            // (lh = 표높이만인 기계 사다리는 om 만큼 역스냅 과소 —
+                            // 36398599 -1쪽 회귀 차단).
+                            let max_tbl_h = para
+                                .controls
+                                .iter()
+                                .filter_map(|c| match c {
+                                    Control::Table(t) => Some(
+                                        t.common.height as i64
+                                            + t.outer_margin_top as i64
+                                            + t.outer_margin_bottom as i64,
+                                    ),
+                                    _ => None,
+                                })
+                                .max()
+                                .unwrap_or(i64::MAX);
+                            para.line_segs
+                                .iter()
+                                .map(|s| s.line_height as i64)
+                                .max()
+                                .unwrap_or(0)
+                                >= max_tbl_h
+                        };
+                    if !host_line_covers_object {
+                        // Para-float TopAndBottom 표 예외(렌더러 2513)는 Stage E.
+                        st.vpos_page_base = None;
+                        st.vpos_lazy_base = None;
+                    }
                 }
             }
 
@@ -10654,6 +10719,14 @@ impl TypesetEngine {
                 .and_then(|p| p.line_segs.first())
                 .map(|s| s.vertical_pos);
             st.vpos_lazy_base = None;
+            // [#2243] 저장 여부 태깅 — dirty 역스냅 금지 판단용.
+            st.vpos_page_base_stored = paragraphs
+                .get(para_idx)
+                .and_then(|p| p.line_segs.first())
+                .is_some_and(|s| {
+                    s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                });
+            st.vpos_ladder_dirty = false;
         }
         let mut hc = HeightCursor {
             dpi: self.dpi,
@@ -10673,7 +10746,24 @@ impl TypesetEngine {
             prev_item_content_bottom_y: None,
             last_compacted_endnote_title_gap: false,
         };
-        let y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
+        let mut y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
+        // [#2243] dirty 저장-앵커 사다리의 역스냅 금지 — 저장 lineseg 누락 문단의
+        // fresh 재계산 성장분을 낡은 기계 v0 가 되돌리지 못하게 한다(전방만 허용).
+        if st.vpos_ladder_dirty && st.vpos_page_base_stored && y < st.current_height {
+            y = st.current_height;
+        }
+        // [#2243 진단] snap 입출력 — 동작 불변.
+        if std::env::var("RHWP_DIAG_TAC").is_ok() && (y - st.current_height).abs() > 0.05 {
+            eprintln!(
+                "DIAG_SNAP pi={} y_in={:.1} y_out={:.1} page_base={:?} lazy={:?} anchor={:.1}",
+                para_idx,
+                st.current_height,
+                y,
+                st.vpos_page_base,
+                hc.vpos_lazy_base,
+                st.vpos_col_anchor,
+            );
+        }
         // lazy_base 는 지연 산출 시 갱신될 수 있으므로 회수.
         st.vpos_lazy_base = hc.vpos_lazy_base;
         st.current_height = y;
@@ -12247,6 +12337,17 @@ impl TypesetEngine {
         paragraphs_all: &[Paragraph],
         composed_all: &[ComposedParagraph],
     ) {
+        // [#2243 진단] 표 문단 진입 누적 — 동작 불변.
+        if std::env::var("RHWP_DIAG_TAC").is_ok() {
+            eprintln!(
+                "DIAG_TBLP pi={} cur_h={:.1} items={} page_base={:?} anchor={:.1}",
+                para_idx,
+                st.current_height,
+                st.current_items.len(),
+                st.vpos_page_base,
+                st.vpos_col_anchor,
+            );
+        }
         // 호스트 문단 format (TAC 표의 높이 보정용)
         let host_col_w = st
             .layout
@@ -13028,6 +13129,32 @@ impl TypesetEngine {
         };
 
         // 표 배치
+        // [#2243] 표가 컬럼 첫 항목이면 vpos 앵커 확립 — 표 경로는
+        // vpos_snap_current_height 를 거치지 않아 page_base 가 미확립으로 남고,
+        // 후속 문단 스냅이 드리프트 역산 lazy base(-796HU 등)로 고착되던 결함.
+        // 저장 lineseg 가 개체 높이를 온전히 포함하는 호스트(기계생성 결재문서
+        // lh = 표 + outMargin)로 한정한다.
+        if st.is_hwpx_source
+            && st.col_count == 1
+            && st.current_items.is_empty()
+            && pre_height <= 0.5
+        {
+            if let Some(s0) = para.line_segs.first() {
+                let stored =
+                    s0.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0;
+                let covers = s0.line_height as i64
+                    >= table.common.height as i64
+                        + table.outer_margin_top as i64
+                        + table.outer_margin_bottom as i64;
+                if stored && covers {
+                    st.vpos_col_anchor = st.current_height;
+                    st.vpos_page_base = Some(s0.vertical_pos);
+                    st.vpos_lazy_base = None;
+                    st.vpos_page_base_stored = true;
+                    st.vpos_ladder_dirty = false;
+                }
+            }
+        }
         st.current_items.push(PageItem::Table {
             para_index: para_idx,
             control_index: ctrl_idx,
@@ -13096,7 +13223,7 @@ impl TypesetEngine {
         // [#2243 진단] TAC 표 라인 회계 분해 — 동작 불변.
         if std::env::var("RHWP_DIAG_TAC").is_ok() {
             eprintln!(
-                "DIAG_TAC pi={} tac={} pre_h={:.1} table_total={:.1} fmt_total={:.1} fmt_fit={:.1} stored_ls={}",
+                "DIAG_TAC pi={} tac={} pre_h={:.1} table_total={:.1} fmt_total={:.1} fmt_fit={:.1} stored_ls={} cur_h_after={:.1} page={}",
                 para_idx,
                 table.common.treat_as_char,
                 pre_height,
@@ -13104,6 +13231,8 @@ impl TypesetEngine {
                 fmt.total_height,
                 fmt.height_for_fit,
                 !para.line_segs.is_empty(),
+                st.current_height,
+                st.pages.len(),
             );
         }
 
@@ -13168,6 +13297,16 @@ impl TypesetEngine {
         let is_tac = self.is_effective_tac_table(para, table, fmt);
         if is_tac && fmt.total_height > fmt.height_for_fit && !has_post_text {
             st.current_height += fmt.total_height - fmt.height_for_fit;
+        }
+        // [#2243 진단] 배치 종료 시 누적 — 동작 불변.
+        if std::env::var("RHWP_DIAG_TAC").is_ok() {
+            eprintln!(
+                "DIAG_TAC_END pi={} cur_h={:.1} trailing_fired={} has_post_text={}",
+                para_idx,
+                st.current_height,
+                is_tac && fmt.total_height > fmt.height_for_fit && !has_post_text,
+                has_post_text,
+            );
         }
     }
 
