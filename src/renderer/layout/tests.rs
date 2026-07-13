@@ -1825,6 +1825,84 @@ fn master_page_controls_sort_by_render_layer_z_order() {
     );
 }
 
+/// Task #348: 사각형 모서리 곡률(round_rate)은 짧은 변 기준 백분율 (50% = 반원).
+/// 한컴은 반지름 = rate% × min(w,h)로 그린다 — ÷2 하면 편람 TOC 헤더 밴드(ratio=5)와
+/// 알약 라벨(ratio=50)이 한컴 대비 절반 곡률로 렌더링된다.
+#[test]
+fn rectangle_round_rate_maps_to_short_side_percentage_radius() {
+    fn rounded_rect_control(round_rate: u8) -> Control {
+        Control::Shape(Box::new(ShapeObject::Rectangle(RectangleShape {
+            common: CommonObjAttr {
+                width: 10_000,
+                height: 4_000,
+                text_wrap: TextWrap::InFrontOfText,
+                horz_rel_to: HorzRelTo::Paper,
+                vert_rel_to: VertRelTo::Paper,
+                ..Default::default()
+            },
+            round_rate,
+            ..Default::default()
+        })))
+    }
+
+    fn find_rect(node: &RenderNode) -> Option<(f64, f64, f64)> {
+        if let RenderNodeType::Rectangle(rect) = &node.node_type {
+            return Some((rect.corner_radius, node.bbox.width, node.bbox.height));
+        }
+        node.children.iter().find_map(find_rect)
+    }
+
+    fn radius_for(round_rate: u8) -> (f64, f64, f64) {
+        let engine = LayoutEngine::with_default_dpi();
+        let layout = PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default());
+        let mut tree = PageRenderTree::new(0, layout.page_width, layout.page_height);
+        let master_page = MasterPage {
+            paragraphs: vec![Paragraph {
+                controls: vec![rounded_rect_control(round_rate)],
+                ..Default::default()
+            }],
+            text_width: 10_000,
+            text_height: 10_000,
+            ..Default::default()
+        };
+        engine.build_master_page_into(
+            &mut tree,
+            Some(&master_page),
+            &layout,
+            &[],
+            &ResolvedStyleSet::default(),
+            &[],
+            0,
+            1,
+        );
+        find_rect(&tree.root).expect("rounded rect should be rendered")
+    }
+
+    // ratio=5 (편람 TOC 헤더 밴드): 반지름 = 짧은 변의 5% (÷2 없이).
+    let (radius, w, h) = radius_for(5);
+    let short_side = w.min(h);
+    assert!(
+        (radius - short_side * 0.05).abs() < 1e-6,
+        "ratio=5 → 반지름은 짧은 변의 5%여야 함: radius={radius}, short={short_side}"
+    );
+
+    // ratio=50 (알약 라벨): 반지름 = 짧은 변의 절반 = 반원(스타디움).
+    let (radius, w, h) = radius_for(50);
+    let short_side = w.min(h);
+    assert!(
+        (radius - short_side / 2.0).abs() < 1e-6,
+        "ratio=50 → 반원: radius={radius}, short={short_side}"
+    );
+
+    // ratio>50 은 기하학적 최대치(짧은 변의 절반)로 클램프.
+    let (radius, w, h) = radius_for(80);
+    let short_side = w.min(h);
+    assert!(
+        (radius - short_side / 2.0).abs() < 1e-6,
+        "ratio=80 → 반원으로 클램프: radius={radius}, short={short_side}"
+    );
+}
+
 fn first_master_child_layer<F>(tree: &PageRenderTree, predicate: F) -> RenderLayerInfo
 where
     F: Fn(&RenderNodeType) -> bool + Copy,

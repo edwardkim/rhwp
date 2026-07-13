@@ -1220,8 +1220,13 @@ impl LayoutEngine {
                     style.stroke_color = None;
                     style.stroke_width = 0.0;
                 }
+                // 모서리 곡률(round_rate)은 짧은 변 기준 백분율: 50% = 반원 (한글 스펙).
+                // 반지름 = rate% × min(w,h), 기하학적 최대치인 짧은 변의 절반으로 클램프.
+                // (예: ratio=50 인 알약 모양 → 반지름 = 높이/2, ratio=5 인 TOC 헤더 밴드
+                //  → 반지름 = 짧은 변의 5%. 이전의 ÷2 는 한컴 대비 절반 크기로 렌더링됨.)
                 let round_px = if rect.round_rate > 0 {
-                    (rect.round_rate as f64 / 100.0) * render_w.min(render_h) / 2.0
+                    let short_side = render_w.min(render_h);
+                    ((rect.round_rate as f64 / 100.0) * short_side).min(short_side / 2.0)
                 } else {
                     0.0
                 };
