@@ -559,7 +559,9 @@ impl SkiaLayerRenderer {
                           fill_mode,
                           original_size,
                           crop,
-                          effect| {
+                          effect,
+                          brightness: i8,
+                          contrast: i8| {
             draw_image_bytes(
                 canvas,
                 data,
@@ -571,6 +573,8 @@ impl SkiaLayerRenderer {
                 original_size,
                 crop,
                 effect,
+                brightness,
+                contrast,
                 ImageSampling::linear(),
             );
         };
@@ -762,6 +766,14 @@ impl SkiaLayerRenderer {
                                     let alpha = (255.0 * wm_opacity).round() as u32;
                                     canvas.save_layer_alpha(Some(rect), alpha);
                                 }
+                                // RealPic 톤 프리셋 워터마크는 opacity 합성으로 대체하므로
+                                // 밝기/대비 필터를 건너뛴다 (svg.rs preserve_color 경로 정합).
+                                let (bg_brightness, bg_contrast) =
+                                    if image.is_real_picture_watermark_tone_preset() {
+                                        (0, 0)
+                                    } else {
+                                        (image.brightness, image.contrast)
+                                    };
                                 draw_image(
                                     &image.data,
                                     *bbox,
@@ -769,6 +781,8 @@ impl SkiaLayerRenderer {
                                     None,
                                     None,
                                     image.effect,
+                                    bg_brightness,
+                                    bg_contrast,
                                 );
                                 if is_watermark {
                                     canvas.restore();
@@ -1027,13 +1041,22 @@ impl SkiaLayerRenderer {
                                 .map(|payload| payload.data.as_slice())
                                 .or(image.data.as_deref());
                             if let Some(data) = data {
-                                let effect = if resolved
+                                let suppress_effects = resolved
                                     .as_deref()
-                                    .is_some_and(|payload| payload.suppress_effects)
-                                {
+                                    .is_some_and(|payload| payload.suppress_effects);
+                                let effect = if suppress_effects {
                                     ImageEffect::RealPic
                                 } else {
                                     image.effect
+                                };
+                                // baked 워터마크(suppress_effects)와 RealPic 톤 프리셋
+                                // 워터마크는 밝기/대비 필터를 건너뛴다 (svg.rs 정합).
+                                let (brightness, contrast) = if suppress_effects
+                                    || image.is_real_picture_watermark_tone_preset()
+                                {
+                                    (0, 0)
+                                } else {
+                                    (image.brightness, image.contrast)
                                 };
                                 let opacity = image.opacity.clamp(0.0, 1.0);
                                 if opacity < 1.0 {
@@ -1053,6 +1076,8 @@ impl SkiaLayerRenderer {
                                     image.original_size,
                                     image.crop,
                                     effect,
+                                    brightness,
+                                    contrast,
                                 );
                                 if opacity < 1.0 {
                                     canvas.restore();

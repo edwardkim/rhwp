@@ -31,6 +31,20 @@ impl ImageSampling {
     }
 }
 
+fn brightness_contrast_matrix(brightness: i8, contrast: i8) -> Option<[f32; 20]> {
+    let brightness = brightness.clamp(-100, 100);
+    let contrast = contrast.clamp(-100, 100);
+    if brightness == 0 && contrast == 0 {
+        return None;
+    }
+    let slope = (100.0 + contrast as f32) / 100.0;
+    let intercept = (0.5 - 0.5 * slope) + brightness as f32 / 100.0;
+    Some([
+        slope, 0.0, 0.0, 0.0, intercept, 0.0, slope, 0.0, 0.0, intercept, 0.0, 0.0, slope, 0.0,
+        intercept, 0.0, 0.0, 0.0, 1.0, 0.0,
+    ])
+}
+
 pub fn draw_svg_fragment(
     canvas: &skia_safe::Canvas,
     svg_fragment: &str,
@@ -54,6 +68,8 @@ pub fn draw_svg_fragment(
         None,
         None,
         ImageEffect::RealPic,
+        0,
+        0,
         sampling,
     );
     true
@@ -70,6 +86,8 @@ pub fn draw_image_bytes(
     original_size: Option<(f64, f64)>,
     crop: Option<(i32, i32, i32, i32)>,
     effect: ImageEffect,
+    brightness: i8,
+    contrast: i8,
     sampling: ImageSampling,
 ) {
     let is_valid_destination_rect = |x: f32, y: f32, width: f32, height: f32| {
@@ -101,6 +119,10 @@ pub fn draw_image_bytes(
         ImageEffect::BlackWhite => Some(grayscale_filter(255.0, -127.5)),
         ImageEffect::Pattern8x8 => Some(grayscale_filter(1.0, 0.0)),
     };
+    // 밝기/대비 (HWP 스펙 -100..=100) — svg.rs ensure_brightness_contrast_filter 와
+    // 동일한 선형식: out = slope*in + intercept,
+    // slope = (100+contrast)/100, intercept = (0.5 - 0.5*slope) + brightness/100.
+    // (한컴 밝기는 加算式: 편람 3쪽 발간사 패널 bright=8 → 206/255 + 0.08 = 226/255.)
     let resolve_image_placement = |fill_mode: ImageFillMode,
                                    x: f32,
                                    y: f32,
@@ -162,7 +184,18 @@ pub fn draw_image_bytes(
     let dst = Rect::from_xywh(x, y, width, height);
     let mut paint = Paint::default();
     paint.set_anti_alias(true);
-    if let Some(color_filter) = image_effect_filter(effect) {
+    // SVG 백엔드의 중첩 순서와 동일: 밝기/대비 필터 먼저, 그 결과에 효과 필터 적용.
+    let combined_filter = match (
+        image_effect_filter(effect),
+        brightness_contrast_matrix(brightness, contrast)
+            .map(|matrix| color_filters::matrix_row_major(&matrix, None)),
+    ) {
+        (Some(effect_filter), Some(bc_filter)) => effect_filter.composed(bc_filter),
+        (Some(effect_filter), None) => Some(effect_filter),
+        (None, Some(bc_filter)) => Some(bc_filter),
+        (None, None) => None,
+    };
+    if let Some(color_filter) = combined_filter {
         paint.set_color_filter(color_filter);
     }
 
@@ -390,4 +423,28 @@ fn svg_fontdb() -> Arc<usvg::fontdb::Database> {
             Arc::new(fontdb)
         })
         .clone()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::brightness_contrast_matrix;
+
+    #[test]
+    fn brightness_contrast_identity_needs_no_filter() {
+        assert_eq!(brightness_contrast_matrix(0, 0), None);
+    }
+
+    #[test]
+    fn brightness_contrast_matches_the_svg_linear_transform() {
+        let matrix = brightness_contrast_matrix(8, 20).expect("matrix");
+        let expected_slope = 1.2;
+        let expected_intercept = -0.02;
+        for index in [0, 6, 12] {
+            assert!((matrix[index] - expected_slope).abs() < 0.0001);
+        }
+        for index in [4, 9, 14] {
+            assert!((matrix[index] - expected_intercept).abs() < 0.0001);
+        }
+        assert_eq!(matrix[18], 1.0);
+    }
 }

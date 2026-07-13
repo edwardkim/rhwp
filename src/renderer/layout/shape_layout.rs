@@ -78,6 +78,50 @@ fn textbox_vpos_px(vertical_pos: i32, origin_hu: Option<i32>, dpi: f64) -> f64 {
     hwpunit_to_px(normalize_textbox_vpos_hu(vertical_pos, origin_hu), dpi)
 }
 
+/// 문단 말미 "유령 빈 lineseg"가 차지한 수직 스텝(HWPUNIT)을 계산한다.
+///
+/// 한컴 편집 화면은 문단 끝 공백/문단부호가 다음 줄로 넘어간 빈 lineseg 를 그대로
+/// 저장하지만(예: 2025 행정업무운영 편람 3쪽 발간사 — 마지막 lineseg text_start ==
+/// 텍스트 길이), 한컴 인쇄(=관보 PDF) 레이아웃은 그 빈 줄을 접어 다음 문단을 한 줄
+/// 위로 배치한다. 글상자 문단의 저장 vertical_pos 를 위치 클램프로 쓸 때 이 유령 줄
+/// 높이를 차감해야 캐노니컬 인쇄 결과와 일치한다.
+///
+/// 조건 (모두 만족 시 마지막 lineseg 를 유령 줄로 판정):
+/// - lineseg 2개 이상이고 마지막 lineseg 가 이전 lineseg 보다 아래 줄에 있다
+///   (같은 vertical_pos 는 wrap 분절 세그먼트이므로 제외)
+/// - 마지막 lineseg 이후 텍스트가 없거나 공백(스페이스/탭/전각공백)뿐이다
+/// - 직전 문자가 강제 줄바꿈('\n')이 아니다 (Shift+Enter 빈 줄은 의도된 것)
+fn trailing_phantom_lineseg_height(para: &Paragraph) -> i32 {
+    let segs = &para.line_segs;
+    if segs.len() < 2 {
+        return 0;
+    }
+    let last = &segs[segs.len() - 1];
+    let prev = &segs[segs.len() - 2];
+    if last.vertical_pos <= prev.vertical_pos {
+        return 0;
+    }
+    // last.text_start (UTF-16 code unit) 이후 tail 과 직전 문자 검사
+    let start = last.text_start as usize;
+    let mut utf16_pos = 0usize;
+    let mut prev_char: Option<char> = None;
+    for ch in para.text.chars() {
+        if utf16_pos >= start {
+            // tail: 공백류만 허용 ('\n' 은 의도된 빈 줄이므로 유령 줄이 아님)
+            if !matches!(ch, ' ' | '\t' | '\u{3000}') {
+                return 0;
+            }
+        } else {
+            prev_char = Some(ch);
+        }
+        utf16_pos += ch.len_utf16();
+    }
+    if prev_char == Some('\n') {
+        return 0;
+    }
+    (last.vertical_pos - prev.vertical_pos).max(0)
+}
+
 /// 평탄화된 HWPX 그룹(matrix group) 자식의 "글상자 보조선"(검정 얇은 SOLID 테두리)은
 /// 한컴 실물에서 인쇄되지 않는다(편람 장 표지 "행정업무 운영 개요" 제목/목록 글상자).
 /// 오탐 방지를 위해 매우 좁게 한정: 그룹 자식(group_level>0) + 회전/전단 없음 + 검정
@@ -434,6 +478,84 @@ fn reflow_matrix_textbox_para(
     }
 
     reflow_line_segs(para, available_width, styles, dpi);
+}
+
+#[cfg(test)]
+mod phantom_lineseg_tests {
+    use super::*;
+    use crate::model::paragraph::{CharShapeRef, LineSeg};
+    use crate::renderer::style_resolver::{ResolvedCharStyle, ResolvedParaStyle};
+
+    fn line_seg(text_start: u32, vertical_pos: i32) -> LineSeg {
+        LineSeg {
+            text_start,
+            vertical_pos,
+            line_height: 2000,
+            text_height: 2000,
+            baseline_distance: 1700,
+            line_spacing: 1200,
+            segment_width: 16856,
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn matrix_textbox_para_collapses_imported_lines_that_overflow_height() {
+        let mut para = Paragraph {
+            char_count: 2,
+            text: "AB".to_string(),
+            char_offsets: vec![0, 1],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![line_seg(0, 0), line_seg(1, 3200)],
+            ..Default::default()
+        };
+        let mut styles = ResolvedStyleSet::default();
+        styles.char_styles.push(ResolvedCharStyle {
+            font_family: "Arial".to_string(),
+            font_families: vec!["Arial".to_string(); 7],
+            font_size: 20.0,
+            ..Default::default()
+        });
+        styles.para_styles.push(ResolvedParaStyle::default());
+
+        reflow_matrix_textbox_para(&mut para, 80.0, 30.0, &styles, 96.0);
+
+        assert_eq!(para.line_segs.len(), 1);
+        assert_eq!(para.line_segs[0].text_start, 0);
+        assert_eq!(para.line_segs[0].segment_width, px_to_hwpunit(80.0, 96.0));
+    }
+
+    #[test]
+    fn trailing_blank_lineseg_contributes_only_its_vertical_step() {
+        let para = Paragraph {
+            text: "발간사 ".to_string(),
+            line_segs: vec![line_seg(0, 1000), line_seg(3, 3200)],
+            ..Default::default()
+        };
+
+        assert_eq!(trailing_phantom_lineseg_height(&para), 2200);
+    }
+
+    #[test]
+    fn trailing_lineseg_with_content_or_forced_break_is_preserved() {
+        let content = Paragraph {
+            text: "발간사 본문".to_string(),
+            line_segs: vec![line_seg(0, 1000), line_seg(3, 3200)],
+            ..Default::default()
+        };
+        let forced_break = Paragraph {
+            text: "발간사\n".to_string(),
+            line_segs: vec![line_seg(0, 1000), line_seg(4, 3200)],
+            ..Default::default()
+        };
+
+        assert_eq!(trailing_phantom_lineseg_height(&content), 0);
+        assert_eq!(trailing_phantom_lineseg_height(&forced_break), 0);
+    }
 }
 
 impl LayoutEngine {
@@ -2369,17 +2491,20 @@ impl LayoutEngine {
                     .map(|p| compose_paragraph(p))
                     .collect();
                 let mut para_y = inner_area.y;
+                let mut phantom_vpos_hu: i32 = 0;
                 for (tb_para_idx, composed) in composed_paras.iter().enumerate() {
                     let para = &overflow_paras[tb_para_idx];
                     if let Some(first_ls) = para.line_segs.first() {
                         let vpos_y = inner_area.y
                             + textbox_vpos_px(
-                                first_ls.vertical_pos,
+                                first_ls.vertical_pos.saturating_sub(phantom_vpos_hu),
                                 textbox_vpos_origin_hu,
                                 self.dpi,
                             );
                         para_y = vpos_y.max(para_y);
                     }
+                    phantom_vpos_hu =
+                        phantom_vpos_hu.saturating_add(trailing_phantom_lineseg_height(para));
                     let para_col_area = LayoutRect {
                         y: para_y,
                         ..inner_area
@@ -2574,6 +2699,9 @@ impl LayoutEngine {
         };
 
         let mut para_y = inner_area.y + vert_offset;
+        // 선행 문단들의 "유령 빈 lineseg" 누적 높이 — 저장 vpos 클램프에서 차감
+        // (한컴 인쇄 레이아웃은 문단 끝 공백이 만든 빈 줄을 접는다).
+        let mut phantom_vpos_hu: i32 = 0;
         for (tb_para_idx, composed) in composed_paras.iter().enumerate() {
             // vpos 기반 수직 위치: 원본 HWP 파일에서는 vertical_pos가 누적 절대값,
             // 편집 후 reflow된 문단은 vertical_pos=0이므로 incremental para_y와 비교하여
@@ -2582,9 +2710,14 @@ impl LayoutEngine {
             if let Some(first_ls) = para.line_segs.first() {
                 let vpos_y = inner_area.y
                     + vert_offset
-                    + textbox_vpos_px(first_ls.vertical_pos, textbox_vpos_origin_hu, self.dpi);
+                    + textbox_vpos_px(
+                        first_ls.vertical_pos.saturating_sub(phantom_vpos_hu),
+                        textbox_vpos_origin_hu,
+                        self.dpi,
+                    );
                 para_y = vpos_y.max(para_y);
             }
+            phantom_vpos_hu = phantom_vpos_hu.saturating_add(trailing_phantom_lineseg_height(para));
             // 인라인(treat_as_char) 컨트롤의 총 폭 계산
             let tb_inline_width: f64 = para
                 .controls
@@ -2644,19 +2777,29 @@ impl LayoutEngine {
         // 오버플로우된 문단은 제외 (다른 텍스트박스에서 처리)
         use crate::model::shape::ShapeObject;
         let mut inline_y = inner_area.y + vert_offset; // 텍스트 영역 시작 위치
+        let mut inline_phantom_vpos_hu: i32 = 0;
         for (pi, para) in textbox_paragraphs[..para_count].iter().enumerate() {
             // 이 문단에 해당하는 composed 문단의 시작 y 위치 계산
+            // (텍스트 문단 루프와 동일하게 유령 빈 lineseg 누적 높이를 차감)
             let para_start_y = if pi < composed_paras.len() {
                 if let Some(first_seg) = para.line_segs.first() {
                     inner_area.y
                         + vert_offset
-                        + textbox_vpos_px(first_seg.vertical_pos, textbox_vpos_origin_hu, self.dpi)
+                        + textbox_vpos_px(
+                            first_seg
+                                .vertical_pos
+                                .saturating_sub(inline_phantom_vpos_hu),
+                            textbox_vpos_origin_hu,
+                            self.dpi,
+                        )
                 } else {
                     inline_y
                 }
             } else {
                 inline_y
             };
+            inline_phantom_vpos_hu =
+                inline_phantom_vpos_hu.saturating_add(trailing_phantom_lineseg_height(para));
 
             // 문단 정렬 조회
             let para_alignment = if pi < composed_paras.len() {
