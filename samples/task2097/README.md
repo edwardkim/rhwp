@@ -92,6 +92,23 @@
   렌더 하단 좌표 1068~1079px 로 한글과 정합.
 - 검증: `cargo test --test issue_2097_band_fill`
 
+## 17809123_jawonbongsa.hwpx (실문서 — 나란히 TopAndBottom float union 예약 핀)
+
+- 출처: hwpdocs 코퍼스 `ordin_downloads/강서구/17809123_[별표 2] 자원봉사증
+  종류(제12조제2항 관련)(서울특별시 강서구 자원봉사활동 지원 조례 시행규칙).hwp`
+  (자치법규 별표, 원본 그대로 복사, 420KB — 자원봉사증 예시 그림 4장 포함).
+- OVER+ORPHAN_PAGE 계열 대표: 한 문단(pi=8)에 wrap=TopAndBottom vert=문단 그림
+  2장이 좌우로 나란히(단 오프셋 82.9mm/3.8mm, 세로 오프셋 31/35px, 높이 359/335px,
+  세로 band 겹침) 앵커된다. 페이지네이터 pushdown 이 두 그림 높이를 **합산** 예약해
+  page1 used 를 1226px(본문 905.6px 초과)로 부풀려 trailing 빈 문단 pi=9 를 여분
+  페이지로 밀었다(2쪽). 렌더는 두 그림을 정상적으로 나란히 배치(SVG bottom 958/979px,
+  본문 이내) — 회계만 이중 예약. 한글 PDF/COM 은 전부 1쪽.
+- 수정: 같은 문단의 TopAndBottom float pushdown 을 band `[off, off+extra]` 의
+  union span 으로 예약. 겹치는 2번째+ float 은 증분만 가산(세로 스택=비겹침
+  float 은 종전대로 합산, 단일 float 은 union=extra 라 동작 불변). 수정 후 2→**1쪽**
+  (커밋 사본 COM PageCount 1 재확증), PI↔페이지 전수 일치.
+- 검증: `cargo test --test issue_2097_band_fill`
+
 ## 3080901_pii_ledger.hwp (실문서 — 중간-쪽 RowBreak 한글 정합 권위 검증)
 - 출처: hwpdocs 코퍼스 `admrul_downloads/지식재산처/3080901_[별지 2] 개인정보의
   목적 외 이용 및 제3자 제공 대장(지식재산처 개인정보보호 세부지침).hwp`

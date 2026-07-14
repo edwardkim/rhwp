@@ -4030,6 +4030,10 @@ impl TypesetEngine {
             };
             let is_multi_fullpage_img_para = fullpage_img_ctrls.len() >= 2;
 
+            // [#2097] 이 문단의 TopAndBottom 자리차지 float pushdown 가로 컬럼
+            // (h_left, h_right, 스택_높이) px — 가로 겹침으로 스택/나란히 판별.
+            let mut topbottom_cols: Vec<(f64, f64, f64)> = Vec::new();
+
             // 인라인 컨트롤 처리: 도형/그림/수식/각주 (Paginator engine.rs:509-525 동일)
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
                 // [#1995] 다수 전면 이미지: 각 전면 그림을 새 페이지에 단독 배치.
@@ -4124,8 +4128,8 @@ impl TypesetEngine {
                             // overflow 로 잘림). pagination 측에서도 layout 과 동일하게
                             // 개체 높이를 current_height 에 누적.
                             use crate::model::shape::{TextWrap, VertRelTo};
-                            // (obj_h, extra=obj_h+margin_bottom)
-                            let pushdown_h: Option<(f64, f64)> = match ctrl {
+                            // (obj_h, extra=obj_h+margin_bottom, h_left, h_right px)
+                            let pushdown_h: Option<(f64, f64, f64, f64)> = match ctrl {
                                 Control::Picture(pic)
                                     if !pic.common.treat_as_char
                                         && matches!(
@@ -4137,7 +4141,12 @@ impl TypesetEngine {
                                     let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                                     let mb =
                                         hwpunit_to_px(pic.common.margin.bottom as i32, self.dpi);
-                                    Some((h, h + mb))
+                                    let hl = hwpunit_to_px(
+                                        pic.common.horizontal_offset as i32,
+                                        self.dpi,
+                                    );
+                                    let hr = hl + hwpunit_to_px(pic.common.width as i32, self.dpi);
+                                    Some((h, h + mb, hl, hr))
                                 }
                                 Control::Shape(s)
                                     if !s.common().treat_as_char
@@ -4150,11 +4159,13 @@ impl TypesetEngine {
                                     let cm = s.common();
                                     let h = hwpunit_to_px(cm.height as i32, self.dpi);
                                     let mb = hwpunit_to_px(cm.margin.bottom as i32, self.dpi);
-                                    Some((h, h + mb))
+                                    let hl = hwpunit_to_px(cm.horizontal_offset as i32, self.dpi);
+                                    let hr = hl + hwpunit_to_px(cm.width as i32, self.dpi);
+                                    Some((h, h + mb, hl, hr))
                                 }
                                 _ => None,
                             };
-                            if let Some((obj_h, extra)) = pushdown_h {
+                            if let Some((obj_h, extra, h_left, h_right)) = pushdown_h {
                                 // [Task #1079] 파일 vpos 가 이미 그림 공간을 반영(그림 para 줄
                                 // 앞 gap ≥ 그림 높이)하면 VPOS_CORR sync 가 그 공간을 따르므로
                                 // pushdown 가산은 이중 계상. gap 이 그림 높이 미만(파일 vpos
@@ -4175,7 +4186,47 @@ impl TypesetEngine {
                                     }
                                 };
                                 if !already_accounted {
-                                    st.current_height += extra;
+                                    // [#2097] 같은 문단의 TopAndBottom float pushdown 을 가로
+                                    // 컬럼 모델로 예약한다. 판별 축은 세로 offset 이 아니라 가로
+                                    // 겹침 — 가로로 겹치는 float 은 세로로 스택되어 합산
+                                    // (1342000 취업정책연구: 큰 그림 4장이 같은 단 off≈0 에 스택,
+                                    // 세로 offset 은 작아 offset-union 은 오병합), 가로로 분리된
+                                    // float 은 나란히라 같은 세로 band 를 공유해 max 예약
+                                    // (17809123 자원봉사증: 좌우 그림 2장 h-range 분리). 예약
+                                    // 총량 = max(컬럼별 스택 높이). 새 float 이 겹치는 컬럼(들)에
+                                    // 스택되면 그 컬럼 높이에 extra 가산, 안 겹치면 새 컬럼. 단일
+                                    // float 은 컬럼 1개=extra 라 동작 불변.
+                                    let overlapping: Vec<usize> = topbottom_cols
+                                        .iter()
+                                        .enumerate()
+                                        .filter(|(_, c)| c.1 > h_left && c.0 < h_right)
+                                        .map(|(i, _)| i)
+                                        .collect();
+                                    let applied_before =
+                                        topbottom_cols.iter().map(|c| c.2).fold(0.0_f64, f64::max);
+                                    if overlapping.is_empty() {
+                                        topbottom_cols.push((h_left, h_right, extra));
+                                    } else {
+                                        let base = overlapping
+                                            .iter()
+                                            .map(|&i| topbottom_cols[i].2)
+                                            .fold(0.0_f64, f64::max);
+                                        let new_l = overlapping
+                                            .iter()
+                                            .map(|&i| topbottom_cols[i].0)
+                                            .fold(h_left, f64::min);
+                                        let new_r = overlapping
+                                            .iter()
+                                            .map(|&i| topbottom_cols[i].1)
+                                            .fold(h_right, f64::max);
+                                        for &i in overlapping.iter().rev() {
+                                            topbottom_cols.remove(i);
+                                        }
+                                        topbottom_cols.push((new_l, new_r, base + extra));
+                                    }
+                                    let applied_after =
+                                        topbottom_cols.iter().map(|c| c.2).fold(0.0_f64, f64::max);
+                                    st.current_height += (applied_after - applied_before).max(0.0);
                                 }
                             }
                         }
