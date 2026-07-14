@@ -68,6 +68,55 @@ public enum RhwpError: Error, LocalizedError, Equatable {
 }
 
 public enum Rhwp {
+    /// 문서의 페이지 수.
+    public static func pageCount(inputFile: URL) throws -> Int {
+        let count = inputFile.path.withCString { rhwp_page_count($0) }
+        guard count >= 0 else {
+            throw RhwpError.exportFailed("페이지 수를 읽을 수 없습니다: \(inputFile.path)")
+        }
+        return Int(count)
+    }
+
+    /// 문서를 PDF 로 렌더링한다.
+    ///
+    /// [Task #2267] Quick Look 확장이 쓰는 진입점.
+    ///
+    /// - Parameters:
+    ///   - firstPage: 0-based 시작 페이지
+    ///   - maxPages: 렌더할 최대 페이지 수. `nil` 이면 문서 끝까지.
+    ///     **확장은 메모리·시간 한도가 있으므로 반드시 제한을 건다** (썸네일 1, 미리보기 소수).
+    ///   - fontDirectory: 폰트 탐색 절대경로. 코어의 기본 폰트 탐색은 작업디렉터리
+    ///     상대경로라 샌드박스된 확장에서는 잡히지 않는다. 번들 Resources 경로를 넘긴다.
+    ///   - embedText: `false` 면 글리프를 path 로 변환한다. 메모리를 크게 줄이는 대신
+    ///     PDF 의 텍스트 선택·검색을 잃는다.
+    public static func renderPDF(
+        inputFile: URL,
+        firstPage: UInt32 = 0,
+        maxPages: Int32? = nil,
+        fontDirectory: URL? = nil,
+        embedText: Bool = true
+    ) throws -> Data {
+        let buffer: RhwpBuffer = inputFile.path.withCString { input in
+            let render: (UnsafePointer<CChar>?) -> RhwpBuffer = { fontDir in
+                rhwp_render_pdf(input, firstPage, maxPages ?? 0, fontDir, embedText ? 1 : 0)
+            }
+            if let fontDirectory {
+                return fontDirectory.path.withCString { render($0) }
+            }
+            return render(nil)
+        }
+
+        defer { rhwp_buffer_free(buffer) }
+
+        if let error = buffer.error {
+            throw RhwpError.exportFailed(String(cString: error))
+        }
+        guard let data = buffer.data, buffer.len > 0 else {
+            throw RhwpError.nativeReturnedNull
+        }
+        return Data(bytes: data, count: buffer.len)
+    }
+
     public static func readText(
         inputFile: URL,
         page: RhwpPage = .all

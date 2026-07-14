@@ -66,6 +66,150 @@ pub extern "C" fn rhwp_string_free(ptr: *mut c_char) {
     }
 }
 
+/// 바이너리 결과 버퍼 (PDF 등).
+///
+/// [Task #2267] 기존 FFI 는 UTF-8 JSON 문자열만 반환했으나, PDF 는 바이너리이므로
+/// 포인터 + 길이 규약이 필요하다. `data` 가 null 이면 실패이며 `error` 에 사유가 담긴다.
+/// 성공/실패와 무관하게 **반드시 `rhwp_buffer_free` 로 해제**해야 한다.
+#[repr(C)]
+pub struct RhwpBuffer {
+    /// 바이트 포인터. 실패 시 null.
+    pub data: *mut u8,
+    /// 바이트 길이. 실패 시 0.
+    pub len: usize,
+    /// 실패 사유 (UTF-8 C 문자열). 성공 시 null.
+    pub error: *mut c_char,
+}
+
+impl RhwpBuffer {
+    fn ok(mut bytes: Vec<u8>) -> Self {
+        bytes.shrink_to_fit();
+        let len = bytes.len();
+        let data = bytes.as_mut_ptr();
+        std::mem::forget(bytes);
+        RhwpBuffer {
+            data,
+            len,
+            error: std::ptr::null_mut(),
+        }
+    }
+
+    fn err(message: &str) -> Self {
+        let error = CString::new(message)
+            .unwrap_or_else(|_| CString::new("알 수 없는 오류").unwrap())
+            .into_raw();
+        RhwpBuffer {
+            data: std::ptr::null_mut(),
+            len: 0,
+            error,
+        }
+    }
+}
+
+/// `RhwpBuffer` 를 해제한다. 성공/실패 모두 호출해야 한다. 이중 해제 금지.
+#[no_mangle]
+pub extern "C" fn rhwp_buffer_free(buffer: RhwpBuffer) {
+    if !buffer.data.is_null() && buffer.len > 0 {
+        unsafe {
+            drop(Vec::from_raw_parts(buffer.data, buffer.len, buffer.len));
+        }
+    }
+    if !buffer.error.is_null() {
+        unsafe {
+            drop(CString::from_raw(buffer.error));
+        }
+    }
+}
+
+/// 문서의 페이지 수를 반환한다. 실패 시 -1.
+#[no_mangle]
+pub extern "C" fn rhwp_page_count(input_path: *const c_char) -> i32 {
+    let result = std::panic::catch_unwind(|| -> Result<i32, String> {
+        let input_path = read_utf8(input_path, "input_path")?;
+        let data = fs::read(&input_path)
+            .map_err(|e| format!("파일을 읽을 수 없습니다 - {}: {}", input_path, e))?;
+        let doc = HwpDocument::from_bytes(&data).map_err(|e| format!("HWP 파싱 실패 - {}", e))?;
+        Ok(doc.page_count() as i32)
+    });
+
+    match result {
+        Ok(Ok(n)) => n,
+        _ => -1,
+    }
+}
+
+/// 문서를 PDF 로 렌더링해 바이트 버퍼로 반환한다.
+///
+/// [Task #2267] macOS Quick Look 확장이 쓰는 진입점.
+///
+/// - `first_page`: 0-based 시작 페이지
+/// - `max_pages`: 렌더할 최대 페이지 수. 0 이하면 문서 끝까지.
+///   **확장은 메모리·시간 한도가 있으므로 반드시 제한을 건다** (썸네일 1, 미리보기 소수).
+/// - `font_dir`: 폰트 탐색 절대경로. null 이면 지정하지 않음.
+///   코어의 기본 폰트 탐색은 **작업디렉터리 상대경로**(`ttfs` 등)라 샌드박스된 확장에서는
+///   잡히지 않는다. 호출자가 번들 Resources 의 절대경로를 넘겨야 한다.
+/// - `embed_text`: 0 이면 글리프를 path 로 변환한다. 폰트 서브셋 경로를 건너뛰어
+///   메모리를 크게 줄이는 대신 PDF 의 텍스트 선택·검색을 잃는다 (#2264).
+///
+/// 반환된 버퍼는 반드시 `rhwp_buffer_free` 로 해제한다.
+#[no_mangle]
+pub extern "C" fn rhwp_render_pdf(
+    input_path: *const c_char,
+    first_page: u32,
+    max_pages: i32,
+    font_dir: *const c_char,
+    embed_text: i32,
+) -> RhwpBuffer {
+    let result = std::panic::catch_unwind(|| -> Result<Vec<u8>, String> {
+        let input_path = read_utf8(input_path, "input_path")?;
+        let font_dir = if font_dir.is_null() {
+            None
+        } else {
+            Some(read_utf8(font_dir, "font_dir")?)
+        };
+
+        let data = fs::read(&input_path)
+            .map_err(|e| format!("파일을 읽을 수 없습니다 - {}: {}", input_path, e))?;
+        let doc = HwpDocument::from_bytes(&data).map_err(|e| format!("HWP 파싱 실패 - {}", e))?;
+
+        let page_count = doc.page_count();
+        if page_count == 0 {
+            return Err("페이지가 없습니다.".to_string());
+        }
+        if first_page >= page_count {
+            return Err(format!(
+                "first_page가 범위를 벗어났습니다 (0~{}): {}",
+                page_count - 1,
+                first_page
+            ));
+        }
+
+        let end = if max_pages <= 0 {
+            page_count
+        } else {
+            page_count.min(first_page.saturating_add(max_pages as u32))
+        };
+        let pages: Vec<u32> = (first_page..end).collect();
+
+        let mut options = rhwp_core::renderer::pdf::PdfExportOptions {
+            embed_text: embed_text != 0,
+            ..Default::default()
+        };
+        if let Some(dir) = font_dir {
+            options.font_paths.push(PathBuf::from(dir));
+        }
+
+        doc.render_pages_pdf_native_with_options(&pages, &options)
+            .map_err(|e| format!("PDF 렌더링 실패 - {:?}", e))
+    });
+
+    match result {
+        Ok(Ok(bytes)) => RhwpBuffer::ok(bytes),
+        Ok(Err(error)) => RhwpBuffer::err(&error),
+        Err(_) => RhwpBuffer::err("FFI 호출 중 panic이 발생했습니다."),
+    }
+}
+
 fn export_text_to_dir(
     input_path: &Path,
     output_dir: &Path,
@@ -212,9 +356,13 @@ fn extract_image_data(
     bin_data_id: u16,
 ) -> Result<Option<(String, Vec<u8>)>, String> {
     if let (Some(si), Some(pi), Some(ci)) = (sec_idx, para_idx, control_idx) {
+        // [Task #2267] 코어가 cell_path 인자를 추가(Task #1161)했으나 본 FFI 크레이트는
+        // 워크스페이스 밖이라 CI 가 컴파일하지 않아 갱신이 누락되어 있었다.
+        // 본문 문단이므로 빈 경로를 넘긴다 (셀/글상자 내부가 아님).
+        const BODY_PARA: &[(usize, usize, usize)] = &[];
         if let (Ok(mime), Ok(data)) = (
-            doc.get_control_image_mime_native(si, pi, ci),
-            doc.get_control_image_data_native(si, pi, ci),
+            doc.get_control_image_mime_native(si, pi, BODY_PARA, ci),
+            doc.get_control_image_data_native(si, pi, BODY_PARA, ci),
         ) {
             return Ok(Some((mime, data)));
         }
@@ -343,13 +491,7 @@ fn error_json(error: &str) -> String {
 fn text_json(page_count: u32, pages: &[(u32, String)]) -> String {
     let pages_json = pages
         .iter()
-        .map(|(index, text)| {
-            format!(
-                "{{\"index\":{},\"text\":\"{}\"}}",
-                index,
-                json_escape(text)
-            )
-        })
+        .map(|(index, text)| format!("{{\"index\":{},\"text\":\"{}\"}}", index, json_escape(text)))
         .collect::<Vec<_>>()
         .join(",");
 
@@ -373,4 +515,76 @@ fn json_escape(s: &str) -> String {
         }
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// 저장소 루트 기준 샘플 경로. 이 크레이트는 `bindings/Native` 에 있다.
+    fn sample(rel: &str) -> Option<CString> {
+        let path = Path::new("../../").join(rel);
+        if !path.exists() {
+            eprintln!("샘플 없음, 건너뜀: {}", path.display());
+            return None;
+        }
+        Some(CString::new(path.to_string_lossy().as_ref()).unwrap())
+    }
+
+    #[test]
+    fn page_count_reads_document() {
+        let Some(path) = sample("samples/aift.hwp") else {
+            return;
+        };
+        let count = rhwp_page_count(path.as_ptr());
+        assert!(count > 0, "페이지 수가 양수여야 한다: {}", count);
+    }
+
+    #[test]
+    fn page_count_rejects_missing_file() {
+        let path = CString::new("존재하지_않는_파일.hwp").unwrap();
+        assert_eq!(rhwp_page_count(path.as_ptr()), -1);
+    }
+
+    /// [Task #2267] Quick Look 확장이 타는 경로 그대로: 1페이지 PDF 를 렌더한다.
+    #[test]
+    fn render_pdf_produces_valid_single_page_pdf() {
+        let Some(path) = sample("samples/aift.hwp") else {
+            return;
+        };
+
+        let buffer = rhwp_render_pdf(path.as_ptr(), 0, 1, std::ptr::null(), 0);
+        assert!(buffer.error.is_null(), "렌더 실패");
+        assert!(!buffer.data.is_null() && buffer.len > 0, "빈 버퍼");
+
+        let bytes = unsafe { std::slice::from_raw_parts(buffer.data, buffer.len) };
+        assert!(bytes.starts_with(b"%PDF-"), "PDF 매직이 아니다");
+        assert!(
+            bytes.windows(5).rev().take(64).any(|w| w == b"%%EOF"),
+            "PDF 트레일러가 없다"
+        );
+
+        rhwp_buffer_free(buffer);
+    }
+
+    #[test]
+    fn render_pdf_rejects_out_of_range_page() {
+        let Some(path) = sample("samples/aift.hwp") else {
+            return;
+        };
+
+        let buffer = rhwp_render_pdf(path.as_ptr(), 100_000, 1, std::ptr::null(), 0);
+        assert!(buffer.data.is_null(), "범위 밖 페이지는 실패해야 한다");
+        assert!(!buffer.error.is_null(), "실패 사유가 있어야 한다");
+        rhwp_buffer_free(buffer);
+    }
+
+    #[test]
+    fn render_pdf_reports_error_for_missing_file() {
+        let path = CString::new("존재하지_않는_파일.hwp").unwrap();
+        let buffer = rhwp_render_pdf(path.as_ptr(), 0, 1, std::ptr::null(), 0);
+        assert!(buffer.data.is_null());
+        assert!(!buffer.error.is_null());
+        rhwp_buffer_free(buffer);
+    }
 }
