@@ -1,0 +1,103 @@
+name: RhwpQuickLook
+
+options:
+  bundleIdPrefix: com.rhwp
+  deploymentTarget:
+    macOS: "12.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    # 서명 인증서가 없는 환경에서도 빌드되도록 ad-hoc 서명을 기본으로 둔다.
+    # 실제 배포에는 Developer ID + notarization 이 필요하다.
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGNING_ALLOWED: "YES"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "12.0"
+    ENABLE_HARDENED_RUNTIME: "YES"
+
+packages: {}
+
+targets:
+  RhwpQuickLook:
+    type: application
+    platform: macOS
+    sources:
+      - App
+    dependencies:
+      - target: RhwpPreviewExtension
+        embed: true
+        codeSign: true
+      - target: RhwpThumbnailExtension
+        embed: true
+        codeSign: true
+    settings:
+      base:
+        INFOPLIST_FILE: App/Info.plist
+        CODE_SIGN_ENTITLEMENTS: App/App.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: com.rhwp.quicklook
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+
+  RhwpPreviewExtension:
+    type: app-extension
+    platform: macOS
+    sources:
+      - PreviewExtension
+      - Shared
+      # 한글 폰트 번들. 샌드박스된 확장은 코어의 CWD 상대경로(`ttfs/`)를 찾지 못하므로
+      # 번들 Resources 의 절대경로를 렌더러에 넘겨야 한다 (RhwpRenderer.fontDirectory).
+      - path: ../ttfs/opensource
+        name: Fonts
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - framework: ../dist/swift/build/RhwpNative.xcframework
+        embed: false
+      - sdk: PDFKit.framework
+      - sdk: QuickLookUI.framework
+    settings:
+      base:
+        INFOPLIST_FILE: PreviewExtension/Info.plist
+        CODE_SIGN_ENTITLEMENTS: PreviewExtension/PreviewExtension.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: com.rhwp.quicklook.preview
+        SWIFT_OBJC_BRIDGING_HEADER: Shared/RhwpBridging.h
+        # XCFramework 는 정적 라이브러리 + C 헤더만 담고 modulemap 이 없으므로
+        # bridging header 로 노출한다.
+        HEADER_SEARCH_PATHS:
+          - $(inherited)
+          - $(PROJECT_DIR)/../dist/swift/build/RhwpNative.xcframework/macos-arm64_x86_64/Headers
+        OTHER_LDFLAGS:
+          - $(inherited)
+          - -lc++
+
+  RhwpThumbnailExtension:
+    type: app-extension
+    platform: macOS
+    sources:
+      - ThumbnailExtension
+      - Shared
+      - path: ../ttfs/opensource
+        name: Fonts
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - framework: ../dist/swift/build/RhwpNative.xcframework
+        embed: false
+      - sdk: PDFKit.framework
+      - sdk: QuickLookThumbnailing.framework
+    settings:
+      base:
+        INFOPLIST_FILE: ThumbnailExtension/Info.plist
+        CODE_SIGN_ENTITLEMENTS: ThumbnailExtension/ThumbnailExtension.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: com.rhwp.quicklook.thumbnail
+        SWIFT_OBJC_BRIDGING_HEADER: Shared/RhwpBridging.h
+        HEADER_SEARCH_PATHS:
+          - $(inherited)
+          - $(PROJECT_DIR)/../dist/swift/build/RhwpNative.xcframework/macos-arm64_x86_64/Headers
+        OTHER_LDFLAGS:
+          - $(inherited)
+          - -lc++

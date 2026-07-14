@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key><string>ko</string>
+	<key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleName</key><string>rhwp Preview</string>
+	<key>CFBundlePackageType</key><string>XPC!</string>
+	<key>CFBundleShortVersionString</key><string>0.1.0</string>
+	<key>CFBundleVersion</key><string>1</string>
+	<key>NSExtension</key>
+	<dict>
+		<!-- 데이터 기반 미리보기: 뷰가 아니라 PDF 데이터를 반환한다 -->
+		<key>NSExtensionPointIdentifier</key><string>com.apple.quicklook.preview</string>
+		<key>NSExtensionPrincipalClass</key><string>$(PRODUCT_MODULE_NAME).PreviewProvider</string>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<key>QLSupportedContentTypes</key><array><string>kr.co.hancom.hwp</string><string>kr.co.hancom.hwpx</string><string>kr.co.hancom.hml</string></array>
+			<key>QLSupportsSearchableItems</key><false/>
+		</dict>
+	</dict>
+</dict>
+</plist>

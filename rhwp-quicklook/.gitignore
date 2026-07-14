@@ -1,0 +1,4 @@
+# XcodeGen 이 project.yml 에서 생성한다. 커밋하지 않는다.
+RhwpQuickLook.xcodeproj/
+build/
+DerivedData/
