@@ -20,6 +20,14 @@ DEVICE_TARGET="aarch64-apple-ios"
 SIM_TARGETS=("aarch64-apple-ios-sim")
 MACOS_TARGETS=("aarch64-apple-darwin" "x86_64-apple-darwin")
 
+# [Task #2267] 배포 타깃을 명시한다. 지정하지 않으면 rustc/cc 가 **빌드 머신의 SDK
+# 버전**으로 오브젝트를 만들어, `Package.swift` 가 선언한 지원 범위(macOS 12 / iOS 13)
+# 보다 높은 버전을 요구하게 된다. 그 결과 구버전 OS 를 타깃하는 소비자가 링크할 때
+# "object file was built for newer 'macOS' version" 경고와 함께 깨진다.
+# Package.swift 의 platforms 선언과 반드시 일치시킨다.
+export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-12.0}"
+export IPHONEOS_DEPLOYMENT_TARGET="${IPHONEOS_DEPLOYMENT_TARGET:-13.0}"
+
 if [[ "$(uname -s)" != "Darwin" ]]; then
   echo "error: XCFramework packaging requires macOS."
   exit 1
