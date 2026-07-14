@@ -248,7 +248,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
 
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        uses: ./.github/actions/install-wasm-pack
 
       # [Task #1667] Render Diff is PR-heavy; pull_request caches are scoped to
       # refs/pull/* and are not reused by other PRs. Keep PR runs restore-only,
