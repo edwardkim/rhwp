@@ -49,6 +49,22 @@ pub(crate) fn ensure_min_baseline(raw_baseline: f64, max_font_size: f64) -> f64 
     raw_baseline.max(min_baseline)
 }
 
+/// 인라인으로 이미 분류된 TAC 표의 줄바꿈 여부만 판단한다.
+///
+/// 인라인 분류 자체는 상류 게이트 `height_measurer::is_tac_table_inline_in_para`
+/// (앵커 양쪽 실제 텍스트 요구, 더 엄격)가 담당하므로, 여기서는 위치·폭 조건만 본다.
+fn should_wrap_middle_anchored_table(
+    control_position: Option<usize>,
+    text_len: usize,
+    occupied_width: f64,
+    table_footprint: f64,
+    line_width: f64,
+) -> bool {
+    control_position.is_some_and(|position| position > 0 && position < text_len)
+        && occupied_width > 1.0
+        && occupied_width + table_footprint > line_width + 0.5
+}
+
 fn paragraph_active_text_style(
     styles: &ResolvedStyleSet,
     para: Option<&Paragraph>,
@@ -1435,6 +1451,7 @@ impl LayoutEngine {
         let mut wrapped_below_table = false; // 텍스트가 표 아래로 줄바꿈되었는지
                                              // [Task #518] 다음 break 인덱스 (line_break_char_indices 안에서)
         let mut next_break: usize = 0;
+        let control_positions = para.control_text_positions();
 
         for (s, e) in &segments {
             // 텍스트 세그먼트 렌더링 (줄바꿈 지원)
@@ -1701,6 +1718,24 @@ impl LayoutEngine {
                 let tbl_h = mt
                     .map(|m| m.total_height)
                     .unwrap_or_else(|| hwpunit_to_px(tbl.common.height as i32, self.dpi));
+                let table_footprint = tw.max(
+                    hwpunit_to_px(tbl.common.width as i32, self.dpi)
+                        + hwpunit_to_px(
+                            tbl.outer_margin_left as i32 + tbl.outer_margin_right as i32,
+                            self.dpi,
+                        ),
+                );
+                let table_wrapped = should_wrap_middle_anchored_table(
+                    control_positions.get(*ctrl_idx).copied(),
+                    text_chars.len(),
+                    inline_x - line_start_x,
+                    table_footprint,
+                    right_margin - line_start_x,
+                );
+                if table_wrapped {
+                    current_y += line_step;
+                    inline_x = line_start_x;
+                }
                 let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
                 let tbl_y = (current_y + baseline_dist + om_bottom - tbl_h).max(current_y);
 
@@ -1731,7 +1766,13 @@ impl LayoutEngine {
                     max_table_bottom = table_bottom;
                 }
 
-                inline_x += tw;
+                if table_wrapped {
+                    current_y = table_bottom;
+                    inline_x = line_start_x;
+                    wrapped_below_table = true;
+                } else {
+                    inline_x += tw;
+                }
                 table_idx += 1;
             }
         }
@@ -1957,8 +1998,7 @@ impl LayoutEngine {
                             }
                             let img_y = (y + baseline - pic_h).max(y);
                             let bin_data_id = pic.image_attr.bin_data_id;
-                            let image_data =
-                                find_bin_data(bdc, bin_data_id).map(|c| c.data.clone());
+                            let image_data = find_bin_data(bdc, bin_data_id).map(|c| c.data.load());
                             let crop = {
                                 let c = &pic.crop;
                                 if c.right > c.left
@@ -4701,7 +4741,7 @@ impl LayoutEngine {
                                 let img_y = base_img_y + sibling_reserved_px;
                                 let bin_data_id = pic.image_attr.bin_data_id;
                                 let image_data =
-                                    find_bin_data(bdc, bin_data_id).map(|c| c.data.clone());
+                                    find_bin_data(bdc, bin_data_id).map(|c| c.data.load());
                                 let crop = {
                                     let c = &pic.crop;
                                     if c.right > c.left
@@ -4899,11 +4939,8 @@ impl LayoutEngine {
                                 px_to_hwpunit(col_area.width, self.dpi)
                             };
                             let should_render_inline = cell_ctx.is_some()
-                                || crate::renderer::height_measurer::is_tac_table_inline(
-                                    t,
-                                    seg_width,
-                                    &p.text,
-                                    &p.controls,
+                                || crate::renderer::height_measurer::is_tac_table_inline_in_para(
+                                    t, seg_width, p,
                                 );
                             let already_rendered = tree
                                 .get_inline_shape_position(
@@ -5826,8 +5863,7 @@ impl LayoutEngine {
                             };
                             let img_y = base_img_y + sibling_reserved_px;
                             let bin_data_id = pic.image_attr.bin_data_id;
-                            let image_data =
-                                find_bin_data(bdc, bin_data_id).map(|c| c.data.clone());
+                            let image_data = find_bin_data(bdc, bin_data_id).map(|c| c.data.load());
                             let crop = {
                                 let c = &pic.crop;
                                 if c.right > c.left

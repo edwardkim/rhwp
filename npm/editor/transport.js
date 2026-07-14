@@ -1,6 +1,8 @@
 const PROTOCOL_VERSION = 1;
-const CAPABILITIES = ['transferable-array-buffer'];
-const LONG_RUNNING_METHODS = new Set(['loadFile', 'exportHwp', 'exportHwpVerify', 'exportHwpx']);
+const CAPABILITIES = ['transferable-array-buffer', 'hml-export'];
+const LONG_RUNNING_METHODS = new Set([
+  'loadFile', 'exportHwp', 'exportHwpVerify', 'exportHwpx', 'exportHml',
+]);
 
 export function requestTimeoutFor(method, configuredTimeout) {
   if (configuredTimeout != null) return configuredTimeout;

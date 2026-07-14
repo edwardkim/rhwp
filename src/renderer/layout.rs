@@ -2508,7 +2508,7 @@ impl LayoutEngine {
                         bs.image_fill.as_ref().and_then(|img_fill| {
                             find_bin_data(bin_data_content, img_fill.bin_data_id).map(|c| {
                                 PageBackgroundImage {
-                                    data: c.data.clone(),
+                                    data: c.data.load(),
                                     fill_mode: img_fill.fill_mode,
                                     brightness: img_fill.brightness,
                                     contrast: img_fill.contrast,
@@ -5513,7 +5513,7 @@ impl LayoutEngine {
                     let has_block_table = para.controls.iter()
                         .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char
                             || (t.common.treat_as_char
-                                && !crate::renderer::height_measurer::is_tac_table_inline(t, seg_width, &para.text, &para.controls))));
+                                && !crate::renderer::height_measurer::is_tac_table_inline_in_para(t, seg_width, para))));
                     if has_block_table {
                         if para_is_empty_topbottom_table_anchor(para) {
                             // 빈 기본 표 host 문단은 별도 빈 줄로 소비하지 않는다.
@@ -5603,7 +5603,7 @@ impl LayoutEngine {
 
                     let has_inline_tables = para.controls.iter()
                         .any(|c| matches!(c, Control::Table(t) if t.common.treat_as_char
-                            && crate::renderer::height_measurer::is_tac_table_inline(t, seg_width, &para.text, &para.controls)));
+                            && crate::renderer::height_measurer::is_tac_table_inline_in_para(t, seg_width, para)));
 
                     // [Task #565] 인라인 표 + 다른 인라인 컨트롤(수식/treat_as_char Picture/Shape)
                     // 이 같이 있는 문단은 layout_inline_table_paragraph 가 인라인 수식 등을
@@ -5752,8 +5752,8 @@ impl LayoutEngine {
                         );
                         let has_tac_block = para.controls.iter().any(|c| {
                             matches!(c, Control::Table(t) if t.common.treat_as_char
-                                && !crate::renderer::height_measurer::is_tac_table_inline(
-                                    t, seg_width, &para.text, &para.controls))
+                                && !crate::renderer::height_measurer::is_tac_table_inline_in_para(
+                                    t, seg_width, para))
                         });
                         if has_tac_block {
                             let pp_text_only_ws = if let Some(comp) = composed.get(*para_index) {
@@ -7071,11 +7071,8 @@ impl LayoutEngine {
                     }
                     if let Control::Table(inline_t) = ctrl {
                         if inline_t.common.treat_as_char
-                            && crate::renderer::height_measurer::is_tac_table_inline(
-                                inline_t,
-                                seg_width,
-                                &para.text,
-                                &para.controls,
+                            && crate::renderer::height_measurer::is_tac_table_inline_in_para(
+                                inline_t, seg_width, para,
                             )
                         {
                             let mt = measured_tables
@@ -7759,8 +7756,8 @@ impl LayoutEngine {
 
                         if !already_registered && !has_full_para_item {
                             let bin_data_id = pic.image_attr.bin_data_id;
-                            let image_data = find_bin_data(bin_data_content, bin_data_id)
-                                .map(|c| c.data.clone());
+                            let image_data =
+                                find_bin_data(bin_data_content, bin_data_id).map(|c| c.data.load());
                             let crop = {
                                 let c = &pic.crop;
                                 if c.right > c.left && c.bottom > c.top {

@@ -54,8 +54,10 @@ impl DocumentCore {
 
     pub fn from_bytes(data: &[u8]) -> Result<DocumentCore, HwpError> {
         let source_format = crate::parser::detect_format(data);
-        let mut document = crate::parser::parse_document(data)
+        let parsed = crate::parser::parse_document_with_metadata(data)
             .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
+        let mut document = parsed.document;
+        let hml_metadata = parsed.hml_metadata;
 
         // [Task #1001] HWP3 변환본의 ParaShape 단위 1/2 추가 보정
         let styles = crate::renderer::style_resolver::resolve_styles_with_variant(
@@ -68,31 +70,46 @@ impl DocumentCore {
             && document
                 .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
                 .is_some();
-        let use_hwpx_lineseg_semantics =
-            matches!(source_format, crate::parser::FileFormat::Hwpx) && !hwp5_origin_hwpx;
+        let use_xml_import_semantics = matches!(
+            source_format,
+            crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
+        ) && !hwp5_origin_hwpx;
 
         // 비표준 lineseg 감지 — reflow 이전 시점에 IR을 그대로 검증.
         // 경고는 사용자에게 고지되며, 자동 reflow 는 `needs_line_seg_reflow` 조건에만 한정.
         // 사용자 명시 reflow 는 `reflow_linesegs_on_demand()` 를 통해서만 수행 (#177).
-        // LinesegTextRunReflow는 HWPX 전용 비표준 패턴. HWP3/HWP5는 1 line_info = 1 lineseg가 정상.
-        let check_textrun_reflow = use_hwpx_lineseg_semantics;
+        // LinesegTextRunReflow는 HWPX textRun 전용 패턴. HWP3/HWP5/HML에는 확대 적용하지 않는다.
+        let check_textrun_reflow =
+            matches!(source_format, crate::parser::FileFormat::Hwpx) && !hwp5_origin_hwpx;
         let validation_report = Self::validate_linesegs(&document, check_textrun_reflow);
 
         // lineSegArray가 없는 문단에 대해 합성 LineSeg 생성.
-        // HWPX 파서는 linesegarray 부재 문단의 line_segs 를 빈 채 보존하므로(#1380)
-        // HWPX 에서만 빈 line_segs 를 합성 대상에 포함한다 — compose 전에 올바른
+        // XML 파서는 linesegarray 부재 문단의 line_segs 를 빈 채 보존하므로(#1380)
+        // XML import 에서 빈 line_segs 를 합성 대상에 포함한다 — compose 전에 올바른
         // line_height/line_spacing 을 계산해야 줄바꿈·높이가 정상 동작한다.
         // HWP5/HWP3 의 빈 line_segs 는 종전대로 reflow 하지 않는다 (페이지 수 보존).
-        let include_empty = use_hwpx_lineseg_semantics;
-        Self::reflow_zero_height_paragraphs(&mut document, &styles, DEFAULT_DPI, include_empty);
+        let include_empty = use_xml_import_semantics;
+        // [#2195] HWP5 native 확장은 **셀 내부의 컨트롤 없는 순수 빈 문단** 한정
+        // (86712 1pt 빈 문단 오라클). 본문 문단 확장은 기각(stage68): 본문 빈
+        // 문단은 typeset 의 em 폴백(#2070 축3)이 담당하고(80168 pi=424 오라클),
+        // 본문 텍스트 문단 합성은 흐름 소비 팽창으로 sijang 밀도 핀 -5쪽(#2070v2).
+        // HWP3 변환본은 #998 게이트(sample16-hwp5=64) 정합상 종전 유지.
+        let include_cell_empty = !document.is_hwp3_variant;
+        Self::reflow_zero_height_paragraphs(
+            &mut document,
+            &styles,
+            DEFAULT_DPI,
+            include_empty,
+            include_cell_empty,
+        );
         Self::clear_missing_lineseg_placeholders(&mut document);
 
-        // HWPX → HWP 라운드트립 일관성 normalize (#314):
-        // HWPX 파서가 채우지 않는 paragraph 필드를 HWP 직렬화/파싱 라운드트립 결과와 일치시킨다.
+        // XML import → HWP 라운드트립 일관성 normalize (#314):
+        // XML 파서가 채우지 않는 paragraph 필드를 HWP 직렬화/파싱 라운드트립 결과와 일치시킨다.
         // 1) char_shapes 빈 paragraph 에 default [(0,0)] 추가 (HWP 스펙상 최소 1개 요구)
         // 2) control_mask 를 controls 기반으로 재계산
-        if use_hwpx_lineseg_semantics {
-            Self::normalize_hwpx_paragraphs(&mut document);
+        if use_xml_import_semantics {
+            Self::normalize_xml_import_paragraphs(&mut document);
         }
 
         // 초기 상태(properties bit 15 == 0) 누름틀의 안내문 텍스트를 삭제하여 빈 필드로 정규화
@@ -141,6 +158,7 @@ impl DocumentCore {
             active_field: None,
             para_offset: Vec::new(),
             source_format,
+            hml_metadata,
             validation_report,
         };
 
@@ -148,7 +166,7 @@ impl DocumentCore {
         Ok(doc)
     }
 
-    /// HWPX 비표준 lineseg 감지 (#177).
+    /// 비표준 lineseg 감지 (#177).
     ///
     /// `reflow_zero_height_paragraphs` 호출 **이전** 상태의 IR을 기준으로 검증한다.
     /// reflow 이후에 호출하면 이미 line_height 가 채워져 감지 불가.
@@ -157,7 +175,7 @@ impl DocumentCore {
     /// - 텍스트가 있는데 `line_segs` 가 비어있음 → `LinesegArrayEmpty`
     /// - `line_segs.len() == 1 && line_height == 0` → `LinesegUncomputed`
     /// - `check_textrun_reflow=true` 일 때만: 긴 텍스트 + lineseg 1개 → `LinesegTextRunReflow`
-    ///   (HWPX 전용 패턴. HWP3/HWP5는 1 line_info → 1 lineseg가 정상이므로 건너뜀.)
+    ///   (HWPX 전용 패턴. HWP3/HWP5/HML에는 확대 적용하지 않음.)
     ///
     /// 표 셀 내부 문단도 재귀 검사한다.
     pub(crate) fn validate_linesegs(
@@ -259,11 +277,16 @@ impl DocumentCore {
     /// CharPr/ParaPr 기반으로 올바른 line_height/line_spacing을 계산한다.
     /// 본문 문단뿐 아니라 표 셀 내부 문단도 처리한다.
     /// `include_empty`: 빈 `line_segs` 도 합성 대상으로 포함 (HWPX 전용 — #1380).
+    /// `include_cell_empty`: [#2195] HWP5 native 확장 — 셀 내부의 **컨트롤 없는
+    /// 순수 빈 문단**만 CharPr 크기 기반 줄박스 합성(86712 1pt 빈 문단 오라클).
+    /// 본문 문단·셀 텍스트 문단·컨트롤 호스트 문단은 각각 em 폴백(#2070 축3)·
+    /// composer recompose·typeset 표 줄 계산이 담당하므로 제외한다(stage68).
     fn reflow_zero_height_paragraphs(
         document: &mut Document,
         styles: &ResolvedStyleSet,
         dpi: f64,
         include_empty: bool,
+        include_cell_empty: bool,
     ) {
         use crate::model::control::Control;
 
@@ -285,6 +308,11 @@ impl DocumentCore {
                 std::collections::HashSet::new();
             for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                 // 본문 문단 reflow
+                // [#2195 stage68] 본문 텍스트 NO_LS 확장(stage1)은 기각 — 후속 축
+                // (전각 폴백·pad 규칙·스트레치·after_for_fit)이 게이트 정합을 대체했고,
+                // 본문 합성 lineseg 는 흐름 소비를 문단당 ~2.7px 팽창시켜 sijang
+                // 밀도 핀 -5쪽(302 vs 307, #2070v2)만 남기는 잉여 축으로 판정.
+                // 본문 NO_LS 텍스트 문단의 실폭 래핑은 composer recompose 가 담당한다.
                 if Self::needs_line_seg_reflow(para, include_empty) {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
@@ -356,13 +384,51 @@ impl DocumentCore {
                             // recompose_for_cell_width 가드 #1 (line_segs.is_empty()) 영역 거짓 →
                             // PR #673 영역의 layout 단계 정정 미적용 → 자동보정 모드 영역 한 줄 겹침 회귀.
                             let cell_w_px = crate::renderer::hwpunit_to_px(cell.width as i32, dpi);
-                            let pad_left =
-                                crate::renderer::hwpunit_to_px(cell.padding.left as i32, dpi);
+                            // [#2195] 실효 pad 규칙(aim=false = 표 기본, pad 사다리 2종)과
+                            // 정합 — 종전 셀 저장 pad 직접 차감은 measurer/recompose 와 폭이
+                            // 어긋나 셀 reflow 줄수가 이원화된다.
+                            let eff_pad = if cell.apply_inner_margin {
+                                cell.padding
+                            } else {
+                                cell.effective_padding(&table.padding)
+                            };
+                            let pad_left = crate::renderer::hwpunit_to_px(eff_pad.left as i32, dpi);
                             let pad_right =
-                                crate::renderer::hwpunit_to_px(cell.padding.right as i32, dpi);
+                                crate::renderer::hwpunit_to_px(eff_pad.right as i32, dpi);
                             let cell_inner_width = (cell_w_px - pad_left - pad_right).max(1.0);
+                            // [#2195/#2146] 사선(대각선) 셀의 빈 문단은 코너 라벨의
+                            // 짝 — 한글은 흐름 배치하지 않으므로 합성 제외 (21761835
+                            // r0 라벨 셀 선언 52.4px 유지, 합성 시 +2.4 팽창).
+                            let bf_has_diagonal = |bf_id: u16| {
+                                bf_id != 0
+                                    && styles
+                                        .border_styles
+                                        .get((bf_id as usize).saturating_sub(1))
+                                        .is_some_and(
+                                            crate::renderer::layout::border_style_has_diagonal,
+                                        )
+                            };
+                            let cell_diagonal = bf_has_diagonal(cell.border_fill_id)
+                                || table.zones.iter().any(|z| {
+                                    z.start_row <= cell.row
+                                        && cell.row <= z.end_row
+                                        && z.start_col <= cell.col
+                                        && cell.col <= z.end_col
+                                        && bf_has_diagonal(z.border_fill_id)
+                                });
                             for cell_para in &mut cell.paragraphs {
-                                if Self::needs_line_seg_reflow(cell_para, include_empty) {
+                                // [#2195] 셀 NO_LS 확장은 **컨트롤 없는 순수 빈 문단**
+                                // 한정 — CharPr 크기 기반 줄박스 합성(86712 1pt 빈
+                                // 문단 오라클). 텍스트 셀 문단은 렌더러 recompose,
+                                // 컨트롤(중첩 표 등) 호스트 문단은 typeset 표 줄
+                                // 계산이 담당한다 — 합성 시 중첩 표 높이와 이중
+                                // 계상(80168 pi=1243 행6 264→467px, 158 회귀).
+                                let inc = include_empty
+                                    || (include_cell_empty
+                                        && cell_para.text.is_empty()
+                                        && cell_para.controls.is_empty()
+                                        && !cell_diagonal);
+                                if Self::needs_line_seg_reflow(cell_para, inc) {
                                     reflow_line_segs(cell_para, cell_inner_width, styles, dpi);
                                 }
                             }
@@ -1049,6 +1115,95 @@ impl DocumentCore {
         serialized.map_err(|e| HwpError::RenderError(e.to_string()))
     }
 
+    /// HML 원본의 공통 IR을 HWPML 2.91 UTF-8 XML로 직렬화한다.
+    pub fn export_hml_native(&self) -> Result<Vec<u8>, crate::serializer::hml::HmlExportError> {
+        self.hml_export_preflight()?;
+        let metadata = self
+            .hml_metadata
+            .as_ref()
+            .ok_or_else(Self::hml_metadata_missing_error)?;
+        crate::serializer::hml::serialize_hml(&self.document, metadata)
+    }
+
+    /// HML 저장 가능 여부를 직렬화 없이 검사하고 동일한 차단 진단을 반환한다.
+    pub fn hml_export_preflight(&self) -> Result<(), crate::serializer::hml::HmlExportError> {
+        use crate::serializer::hml::{HmlExportError, HmlSaveBlocker};
+
+        if self.source_format != crate::parser::FileFormat::Hml {
+            return Err(HmlExportError::UnsupportedSourceFormat {
+                actual: self.source_format,
+                blockers: vec![HmlSaveBlocker {
+                    code: "HML_SOURCE_REQUIRED",
+                    xml_path: "/HWPML".to_string(),
+                    message: "HML 원본 문서만 HML로 저장할 수 있습니다".to_string(),
+                }],
+            });
+        }
+        let metadata = self
+            .hml_metadata
+            .as_ref()
+            .ok_or_else(Self::hml_metadata_missing_error)?;
+        let mut import_blockers = Self::hml_import_blockers(metadata);
+        let ir_blockers = crate::serializer::hml::collect_blockers(&self.document, metadata);
+        match (import_blockers.is_empty(), ir_blockers.is_empty()) {
+            (false, false) => {
+                import_blockers.extend(ir_blockers);
+                Err(HmlExportError::LossyImportAndUnsupportedIr {
+                    blockers: import_blockers,
+                })
+            }
+            (false, true) => Err(HmlExportError::LossyImport {
+                blockers: import_blockers,
+            }),
+            (true, false) => Err(HmlExportError::UnsupportedIr {
+                blockers: ir_blockers,
+            }),
+            (true, true) => Ok(()),
+        }
+    }
+
+    fn hml_metadata_missing_error() -> crate::serializer::hml::HmlExportError {
+        crate::serializer::hml::HmlExportError::UnsupportedIr {
+            blockers: vec![crate::serializer::hml::HmlSaveBlocker {
+                code: "HML_METADATA_MISSING",
+                xml_path: "/HWPML".to_string(),
+                message: "HML 가져오기 메타데이터가 없습니다".to_string(),
+            }],
+        }
+    }
+
+    fn hml_import_blockers(
+        metadata: &crate::parser::HmlImportMetadata,
+    ) -> Vec<crate::serializer::hml::HmlSaveBlocker> {
+        metadata
+            .warnings
+            .iter()
+            .filter(|warning| !warning.preserved)
+            .map(Self::hml_warning_blocker)
+            .collect()
+    }
+
+    fn hml_warning_blocker(
+        warning: &crate::parser::hml::HmlWarning,
+    ) -> crate::serializer::hml::HmlSaveBlocker {
+        use crate::parser::hml::HmlWarningCode;
+
+        let code = match warning.code {
+            HmlWarningCode::UnsupportedElement => "UNSUPPORTED_ELEMENT",
+            HmlWarningCode::UnsupportedAttribute => "UNSUPPORTED_ATTRIBUTE",
+            HmlWarningCode::UnsupportedEquationSemantics => "HML_UNSUPPORTED_EQUATION_SEMANTICS",
+            HmlWarningCode::MissingResource => "MISSING_RESOURCE",
+            HmlWarningCode::ExternalResourceBlocked => "EXTERNAL_RESOURCE_BLOCKED",
+            HmlWarningCode::InvalidReference => "INVALID_REFERENCE",
+            HmlWarningCode::LossyConversion => "LOSSY_CONVERSION",
+        };
+        crate::serializer::hml::HmlSaveBlocker {
+            code,
+            xml_path: warning.xml_path.clone(),
+            message: warning.message.clone(),
+        }
+    }
+
     /// HWP5 원본에서 LineSeg가 없던 문단을 HWPX 재파스에서도 일반 HWPX 누락 문단으로
     /// reflow하지 않도록 명시 LineSeg marker로 materialize한다.
     fn materialize_hwp5_missing_linesegs_for_hwpx_export(document: &mut Document) {
@@ -1368,12 +1523,12 @@ impl DocumentCore {
         ))
     }
 
-    /// HWPX → HWP 라운드트립 일관성 normalize.
+    /// XML import → HWP 라운드트립 일관성 normalize.
     ///
-    /// HWPX 파서가 채우지 않는 paragraph 필드를 HWP 직렬화/파싱 라운드트립 결과와 일치시킨다.
+    /// XML 파서가 채우지 않는 paragraph 필드를 HWP 직렬화/파싱 라운드트립 결과와 일치시킨다.
     /// - char_shapes 빈 paragraph 에 default `[(0, 0)]` 추가 (HWP 스펙: 최소 1개 PARA_CHAR_SHAPE 요구)
     /// - control_mask 를 controls + field_ranges + text 기반으로 재계산 (HWP 직렬화기와 동일 로직)
-    fn normalize_hwpx_paragraphs(document: &mut Document) {
+    fn normalize_xml_import_paragraphs(document: &mut Document) {
         use crate::model::control::Control;
         use crate::model::paragraph::{CharShapeRef, Paragraph};
 
@@ -1594,6 +1749,20 @@ mod validate_linesegs_tests {
     use super::*;
     use crate::model::document::{Document, Section};
     use crate::model::paragraph::{LineSeg, Paragraph};
+
+    #[test]
+    fn from_bytes_retains_hml_import_metadata_outside_document_ir() {
+        let core =
+            DocumentCore::from_bytes(include_bytes!("../../../samples/hml/formatting_table.hml"))
+                .expect("real HML fixture should open");
+        let metadata = core
+            .hml_metadata()
+            .expect("HML metadata should survive document normalization");
+
+        assert_eq!(metadata.hwpml_version.as_deref(), Some("2.91"));
+        assert_eq!(metadata.resource_count, 0);
+        assert!(!metadata.warnings.is_empty());
+    }
 
     /// [Task #1620] `clear_initial_field_texts`: 같은 텍스트 범위를 가리키는 다중 ClickHere
     /// field_range 처리 시, 첫 removal 이 `para.text` 를 비우면 이후 removal 이 stale 인덱스로

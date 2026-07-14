@@ -192,6 +192,15 @@
   background: var(--accent-light);
 }
 
+.dialog-btn-primary.hml-save-format-primary {
+  background: #2563eb;
+  border-color: #1d4ed8;
+}
+
+.dialog-btn-primary.hml-save-format-primary:hover {
+  background: #1d4ed8;
+}
+
 .page-border-side-btn {
   width: 26px;
   height: 24px;

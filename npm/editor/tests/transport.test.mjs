@@ -10,7 +10,7 @@ test('EditorTransport는 exact origin의 v1 port로 binary를 caller detach 없�
     postMessage(message, targetOrigin, ports) {
       assert.equal(targetOrigin, 'https://studio.example');
       assert.equal(message.type, 'rhwp-connect');
-      assert.deepEqual(message.capabilities, ['transferable-array-buffer']);
+      assert.deepEqual(message.capabilities, ['transferable-array-buffer', 'hml-export']);
       const server = ports[0];
       server.onmessage = ({ data }) => {
         received = data;
@@ -158,6 +158,7 @@ test('EditorTransport는 일반 요청 10초와 load/export 60초 기본 timeout
   assert.equal(requestTimeoutFor('loadFile'), 60_000);
   assert.equal(requestTimeoutFor('exportHwp'), 60_000);
   assert.equal(requestTimeoutFor('exportHwpx'), 60_000);
+  assert.equal(requestTimeoutFor('exportHml'), 60_000);
 });
 
 test('EditorTransport session은 randomUUID가 없을 때도 안전한 난수만 사용한다', () => {

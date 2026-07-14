@@ -143,14 +143,10 @@ impl DocumentCore {
     }
     pub(crate) fn apply_equation_properties(
         eq: &mut crate::model::control::Equation,
-        dpi: f64,
+        _dpi: f64,
         props_json: &str,
     ) {
         use crate::document_core::helpers::{json_i32, json_str, json_u32};
-        use crate::renderer::equation::layout::EqLayout;
-        use crate::renderer::equation::parser::EqParser;
-        use crate::renderer::equation::tokenizer::tokenize;
-        use crate::renderer::hwpunit_to_px;
 
         if let Some(s) = json_str(props_json, "script") {
             eq.script = s;
@@ -169,14 +165,10 @@ impl DocumentCore {
         }
         Self::apply_common_obj_attr_from_json(&mut eq.common, props_json);
 
-        let font_size_px = hwpunit_to_px(eq.font_size as i32, dpi);
-        let tokens = tokenize(&eq.script);
-        let ast = EqParser::new(tokens).parse();
-        let layout_box = EqLayout::new(font_size_px).layout(&ast);
-        let new_w = crate::renderer::px_to_hwpunit(layout_box.width, dpi).max(0) as u32;
-        let new_h = crate::renderer::px_to_hwpunit(layout_box.height, dpi).max(0) as u32;
-        eq.common.width = new_w;
-        eq.common.height = new_h;
+        let (width, height) =
+            crate::renderer::equation::intrinsic_size_hwp(&eq.script, eq.font_size);
+        eq.common.width = width;
+        eq.common.height = height;
     }
     pub fn get_equation_properties_native(
         &self,
@@ -393,12 +385,13 @@ impl DocumentCore {
             )));
         }
 
+        let (width, height) = crate::renderer::equation::intrinsic_size_hwp(script, font_size);
         let equation = Equation {
             common: CommonObjAttr {
                 ctrl_id: CTRL_EQUATION,
                 treat_as_char: true,
-                width: 0,
-                height: 0,
+                width,
+                height,
                 ..Default::default()
             },
             script: script.to_string(),

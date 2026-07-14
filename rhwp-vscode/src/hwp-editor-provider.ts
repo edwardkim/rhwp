@@ -461,6 +461,62 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
       text-align: center;
       line-height: 26px;
     }
+    /* 통합 배율 메뉴 */
+    .stb-zoom-menu-wrap {
+      position: relative;
+      display: inline-flex;
+    }
+    .stb-caret {
+      font-size: 9px;
+      opacity: 0.8;
+    }
+    .stb-popup {
+      position: absolute;
+      right: 0;
+      bottom: 28px;
+      z-index: 10;
+      min-width: 180px;
+      padding: 4px 0;
+      border: 1px solid var(--vscode-menu-border, rgba(255,255,255,0.2));
+      border-radius: 4px;
+      background: var(--vscode-menu-background, #252526);
+      color: var(--vscode-menu-foreground, #ccc);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+    }
+    .stb-popup[hidden] {
+      display: none;
+    }
+    .stb-popup-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      padding: 4px 10px;
+      border: none;
+      background: transparent;
+      color: inherit;
+      font-size: 12px;
+      line-height: 20px;
+      text-align: left;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .stb-popup-item:hover {
+      background: var(--vscode-menu-selectionBackground, #04395e);
+      color: var(--vscode-menu-selectionForeground, #fff);
+    }
+    .stb-check {
+      width: 12px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+    .stb-popup-sep {
+      height: 1px;
+      margin: 4px 0;
+      background: var(--vscode-menu-separatorBackground, rgba(255,255,255,0.2));
+    }
   </style>
 </head>
 <body>
@@ -487,10 +543,23 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
     <span class="stb-divider"></span>
     <span id="stb-message" class="stb-message">\ubb38\uc11c\ub97c \ubd88\ub7ec\uc624\ub294 \uc911...</span>
     <span class="stb-right">
-      <button id="stb-view-mode" class="stb-btn" title="1\ucabd/2\ucabd \ubcf4\uae30">1\ucabd</button>
-      <span class="stb-divider"></span>
       <button id="stb-zoom-out" class="stb-btn" title="\ucd95\uc18c">\u2212</button>
-      <span id="stb-zoom-val" class="stb-zoom-val">100%</span>
+      <span class="stb-zoom-menu-wrap">
+        <button id="stb-zoom-menu" class="stb-btn stb-zoom-val" title="\ubcf4\uae30 \ubc30\uc728" aria-haspopup="true" aria-expanded="false">
+          <span id="stb-zoom-label">100%</span> <span class="stb-caret">\u25be</span>
+        </button>
+        <div id="stb-zoom-popup" class="stb-popup" role="menu" hidden>
+          <button class="stb-popup-item" role="menuitem" data-mode="fitWidth"><span class="stb-check"></span>\ud3ed \ub9de\ucda4</button>
+          <button class="stb-popup-item" role="menuitem" data-mode="fitPage"><span class="stb-check"></span>\ucabd \ub9de\ucda4 (\uc804\uccb4 \ubcf4\uae30)</button>
+          <button class="stb-popup-item" role="menuitem" data-mode="fitSpread"><span class="stb-check"></span>\ub450 \ucabd \ub9de\ucda4</button>
+          <div class="stb-popup-sep"></div>
+          <button class="stb-popup-item" role="menuitem" data-zoom="0.5"><span class="stb-check"></span>50%</button>
+          <button class="stb-popup-item" role="menuitem" data-zoom="0.75"><span class="stb-check"></span>75%</button>
+          <button class="stb-popup-item" role="menuitem" data-zoom="1"><span class="stb-check"></span>100%</button>
+          <button class="stb-popup-item" role="menuitem" data-zoom="1.5"><span class="stb-check"></span>150%</button>
+          <button class="stb-popup-item" role="menuitem" data-zoom="2"><span class="stb-check"></span>200%</button>
+        </div>
+      </span>
       <button id="stb-zoom-in" class="stb-btn" title="\ud655\ub300">+</button>
     </span>
   </div>

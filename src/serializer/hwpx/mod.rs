@@ -139,7 +139,7 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
                     entry.bin_data_id
                 ))
             })?;
-        z.write_deflated(&entry.href, &data.data)?;
+        z.write_deflated(&entry.href, &data.data.load())?;
         zip_bin_entries.insert(entry.href.clone());
     }
 
@@ -1269,7 +1269,7 @@ mod tests {
         let mut doc = Document::default();
         doc.bin_data_content.push(BinDataContent {
             id: 1,
-            data: fake_png.to_vec(),
+            data: fake_png.to_vec().into(),
             extension: "png".to_string(),
         });
 
@@ -1338,7 +1338,7 @@ mod tests {
         // 라운드트립: BinData 보존 확인
         let parsed = parse_hwpx(&bytes).expect("parse back");
         assert_eq!(parsed.bin_data_content.len(), 1);
-        assert_eq!(parsed.bin_data_content[0].data, fake_png);
+        assert_eq!(parsed.bin_data_content[0].data.load(), fake_png);
         assert_eq!(parsed.bin_data_content[0].extension, "png");
     }
 
@@ -1369,7 +1369,7 @@ mod tests {
             .push(crate::model::style::CharShape::default());
         doc.bin_data_content.push(BinDataContent {
             id: 1,
-            data: b"BMfake_bmp_data".to_vec(),
+            data: b"BMfake_bmp_data".to_vec().into(),
             extension: "bmp".to_string(),
         });
         let mut section = crate::model::document::Section::default();
@@ -1459,7 +1459,7 @@ mod tests {
         let mut doc = Document::default();
         doc.bin_data_content.push(BinDataContent {
             id: 1,
-            data: alpha_png.clone(),
+            data: alpha_png.clone().into(),
             extension: "png".to_string(),
         });
 

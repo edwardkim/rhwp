@@ -1345,7 +1345,7 @@ mod tests {
         doc.bin_data_content
             .push(crate::model::bin_data::BinDataContent {
                 id: 1,
-                data: vec![0u8; 4],
+                data: vec![0u8; 4].into(),
                 extension: "png".to_string(),
             });
         let mut ctx = SerializeContext::collect_from_document(&doc);

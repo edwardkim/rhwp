@@ -25,7 +25,7 @@
 
 ---
 
-Open **HWP/HWPX files anywhere**. Free, no installation required.
+Open **HWP/HWPX files and supported HML documents anywhere**. Free, no installation required.
 
 **HWP** is the dominant document format in South Korea — used by government agencies, schools, courts, and most organizations. Until now, there has been no viable open-source solution to read or edit these files.
 
@@ -61,10 +61,15 @@ Foundation  Typeset   Collab    Complete
 > Reverse-engineering complete, read/write foundation established
 
 - HWP 5.0 / HWPX parser, rendering for paragraphs, tables, equations, images, charts
+- HML (HWPML 2.9/2.91) import: text, formatting, tables, rectangle text boxes, and supported equations; loss-safe HML/HWP/HWPX save
 - Pagination (multi-column split, table row split), headers/footers, master pages, footnotes
 - SVG export (CLI) + Canvas rendering (WASM/Web)
 - Web editor + hwpctl-compatible API (30 Actions, Field API)
 - 1,100+ tests
+
+> HML support is limited to HWPML 2.9/2.91 structures verified by the current real-file corpus.
+> Supported equations can be imported and edited; HML-origin documents can be saved back to HML
+> after a preservation preflight. Pictures and embedded/external resources remain blocked from lossy save.
 
 #### v0.7.18 Cycle (2026-07-11)
 

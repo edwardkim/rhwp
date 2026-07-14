@@ -3,6 +3,8 @@ use std::fs;
 use std::path::Path;
 use std::process;
 
+mod atomic_file;
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -17,6 +19,7 @@ fn main() {
         Some("export-text") => export_text(&args[2..]),
         Some("export-markdown") => export_markdown(&args[2..]),
         Some("export-hwpx") => export_hwpx(&args[2..]),
+        Some("export-hml") => export_hml(&args[2..]),
         Some("info") => show_info(&args[2..]),
         Some("dump") => dump_controls(&args[2..]),
         Some("dump-note-shape") => dump_note_shape(&args[2..]),
@@ -72,8 +75,8 @@ fn print_help() {
     println!("사용법: rhwp <명령> [옵션]");
     println!();
     println!("명령:");
-    println!("  export-svg <파일.hwp> [옵션]");
-    println!("      HWP 파일을 SVG로 내보내기");
+    println!("  export-svg <파일.hwp|파일.hwpx|파일.hml> [옵션]");
+    println!("      HWP/HWPX/HML 문서를 SVG로 내보내기");
     println!();
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
@@ -139,8 +142,8 @@ fn print_help() {
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
     println!();
-    println!("  export-pdf <파일.hwp> [옵션]");
-    println!("      HWP 파일을 PDF로 내보내기 (svg2pdf + pdf-writer)");
+    println!("  export-pdf <파일.hwp|파일.hwpx|파일.hml> [옵션]");
+    println!("      HWP/HWPX/HML 문서를 PDF로 내보내기 (svg2pdf + pdf-writer)");
     println!();
     println!("      -o, --output <파일>      출력 PDF 파일 (기본: output/<입력명>.pdf)");
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
@@ -149,6 +152,8 @@ fn print_help() {
     println!("      --fallback-sans <명>    PDF sans-serif generic fallback family");
     println!("      --fallback-mono <명>    PDF monospace generic fallback family");
     println!("      --equation-font <명>    PDF 수식 SVG 우선 font-family");
+    println!("      --text-as-paths         텍스트를 폰트 임베드 대신 path로 변환");
+    println!("                              (메모리 대폭 절감, 텍스트 선택·검색 불가)");
     println!(
         "                              <...>는 자리표시자이며, 실제 입력에는 꺾쇠괄호를 쓰지 않음"
     );
@@ -164,10 +169,14 @@ fn print_help() {
     );
     println!("      --verify-pages        변환 전/후 렌더 페이지 수를 비교 (불일치 시 exit 4)");
     println!();
-    println!("  info <파일.hwp>");
-    println!("      HWP 파일 정보 표시");
+    println!("  export-hml <입력.hml> -o <출력.hml>");
+    println!("      HML 원본 문서를 의미 보존 HWPML 2.91 XML로 저장");
+    println!("      -o, --output <파일>    출력 HML 파일 (필수, 원본 덮어쓰기 금지)");
     println!();
-    println!("  dump <파일.hwp> [--section <번호>] [--para <번호>]");
+    println!("  info <파일.hwp|파일.hwpx|파일.hml>");
+    println!("      HWP/HWPX/HML 문서 정보 표시");
+    println!();
+    println!("  dump <파일.hwp|파일.hwpx|파일.hml> [--section <번호>] [--para <번호>]");
     println!("      문서 조판부호 구조 덤프 (디버깅용)");
     println!();
     println!("  dump-note-shape <파일.hwp|파일.hwpx>");
@@ -270,10 +279,17 @@ fn print_help() {
     println!("  -V, --version   버전 표시");
 }
 
+fn allows_implicit_sibling_resources(format: rhwp::parser::FileFormat) -> bool {
+    // HML sibling paths are untrusted input and require an explicit resolver policy.
+    !matches!(format, rhwp::parser::FileFormat::Hml)
+}
+
 fn export_svg(args: &[String]) {
     if args.is_empty() {
-        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
-        eprintln!("사용법: rhwp export-svg <파일.hwp> [옵션] (rhwp --help 참조)");
+        eprintln!("오류: 문서 파일 경로를 지정해주세요.");
+        eprintln!(
+            "사용법: rhwp export-svg <파일.hwp|파일.hwpx|파일.hml> [옵션] (rhwp --help 참조)"
+        );
         return;
     }
 
@@ -418,19 +434,23 @@ fn export_svg(args: &[String]) {
         }
     };
 
+    let source_format = rhwp::parser::detect_format(&data);
+
     // 문서 로드
     let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
         Ok(d) => d,
         Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            eprintln!("오류: 문서 파싱 실패 - {}", e);
             return;
         }
     };
 
     // [Task #741 후속] 외부 file path 그림 영역 영역 HWP file 영역 영역 같은 dir 영역
     // 영역 image 영역 영역 자동 load (basename 매칭).
-    if let Some(parent) = std::path::Path::new(file_path).parent() {
-        let _loaded = doc.populate_external_images_from_dir(parent);
+    if allows_implicit_sibling_resources(source_format) {
+        if let Some(parent) = std::path::Path::new(file_path).parent() {
+            let _loaded = doc.populate_external_images_from_dir(parent);
+        }
     }
 
     if show_para_marks {
@@ -601,6 +621,7 @@ fn export_render_tree(args: &[String]) {
             return;
         }
     };
+    let source_format = rhwp::parser::detect_format(&data);
 
     let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
         Ok(d) => d,
@@ -610,8 +631,10 @@ fn export_render_tree(args: &[String]) {
         }
     };
 
-    if let Some(parent) = std::path::Path::new(file_path).parent() {
-        let _loaded = doc.populate_external_images_from_dir(parent);
+    if allows_implicit_sibling_resources(source_format) {
+        if let Some(parent) = std::path::Path::new(file_path).parent() {
+            let _loaded = doc.populate_external_images_from_dir(parent);
+        }
     }
 
     if show_para_marks {
@@ -1129,7 +1152,7 @@ fn export_png(args: &[String]) {
 
 fn export_pdf(args: &[String]) {
     if args.is_empty() {
-        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("오류: 문서 파일 경로를 지정해주세요.");
         print_export_pdf_usage();
         return;
     }
@@ -1241,6 +1264,13 @@ fn export_pdf(args: &[String]) {
                         .to_string();
                     i += 1;
                 }
+                // [Task #2264] 텍스트를 PDF 폰트로 임베드하지 않고 path 로 변환한다.
+                // 폰트 서브셋 경로를 건너뛰어 메모리를 크게 줄이는 대신,
+                // PDF 의 텍스트 선택·검색 기능을 잃는다 (시각적 출력은 동일).
+                "--text-as-paths" => {
+                    pdf_options.embed_text = false;
+                    i += 1;
+                }
                 "--equation-font" | "--equation-font-family" => {
                     if i + 1 < args.len() {
                         pdf_options.equation_font = Some(args[i + 1].clone());
@@ -1289,7 +1319,7 @@ fn export_pdf(args: &[String]) {
         let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
             Ok(d) => d,
             Err(e) => {
-                eprintln!("오류: HWP 파싱 실패 - {}", e);
+                eprintln!("오류: 문서 파싱 실패 - {}", e);
                 return;
             }
         };
@@ -1344,7 +1374,7 @@ fn export_pdf(args: &[String]) {
 }
 
 fn print_export_pdf_usage() {
-    eprintln!("사용법: rhwp export-pdf <파일.hwp|파일.hwpx> [옵션]");
+    eprintln!("사용법: rhwp export-pdf <파일.hwp|파일.hwpx|파일.hml> [옵션]");
     eprintln!("  -o, --output <파일>       출력 PDF 파일");
     eprintln!("  -p, --page <번호>        특정 페이지만 내보내기 (0부터 시작)");
     eprintln!("      --font-path <경로>   폰트 파일 탐색 경로 (여러 번 지정 가능)");
@@ -1770,7 +1800,7 @@ fn export_markdown(args: &[String]) {
 
 fn show_info(args: &[String]) {
     if args.is_empty() {
-        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("오류: 문서 파일 경로를 지정해주세요.");
         return;
     }
 
@@ -1786,51 +1816,84 @@ fn show_info(args: &[String]) {
     };
 
     let file_size = data.len();
+    let detected_format = rhwp::parser::detect_format(&data);
 
-    // HWP 파싱
+    // 문서 파싱
     let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
         Ok(d) => d,
         Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            eprintln!("오류: 문서 파싱 실패 - {}", e);
             return;
         }
     };
 
     let document = doc.document();
 
+    if detected_format == rhwp::parser::FileFormat::Hml {
+        println!("format: HML");
+        println!(
+            "hwpml_version: {}",
+            document
+                .doc_info
+                .hwpml_version
+                .as_deref()
+                .unwrap_or("unknown")
+        );
+        println!("sections: {}", document.sections.len());
+        println!("pages: {}", doc.page_count());
+        if let Some(metadata) = doc.hml_metadata() {
+            let encoding = match metadata.encoding {
+                rhwp::parser::hml::HmlEncoding::Utf8 => "UTF-8",
+                rhwp::parser::hml::HmlEncoding::Utf16Le => "UTF-16LE",
+                rhwp::parser::hml::HmlEncoding::Utf16Be => "UTF-16BE",
+            };
+            println!("encoding: {encoding}");
+            println!("resources: {}", metadata.resource_count);
+            println!("warnings: {}", metadata.warnings.len());
+            for warning in &metadata.warnings {
+                eprintln!(
+                    "warning [{:?}] {}: {}",
+                    warning.code, warning.xml_path, warning.message
+                );
+            }
+        }
+    }
+
     println!("파일: {}", file_path);
     println!("크기: {} bytes", file_size);
-    println!(
-        "버전: {}.{}.{}.{}",
-        document.header.version.major,
-        document.header.version.minor,
-        document.header.version.build,
-        document.header.version.revision,
-    );
-    println!(
-        "압축: {}",
-        if document.header.compressed {
-            "예"
-        } else {
-            "아니오"
-        }
-    );
-    println!(
-        "암호화: {}",
-        if document.header.encrypted {
-            "예"
-        } else {
-            "아니오"
-        }
-    );
-    println!(
-        "배포용: {}",
-        if document.header.distribution {
-            "예"
-        } else {
-            "아니오"
-        }
-    );
+    if detected_format != rhwp::parser::FileFormat::Hml {
+        println!(
+            "버전: {}.{}.{}.{}",
+            document.header.version.major,
+            document.header.version.minor,
+            document.header.version.build,
+            document.header.version.revision,
+        );
+        println!(
+            "압축: {}",
+            if document.header.compressed {
+                "예"
+            } else {
+                "아니오"
+            }
+        );
+        println!(
+            "암호화: {}",
+            if document.header.encrypted {
+                "예"
+            } else {
+                "아니오"
+            }
+        );
+        println!(
+            "배포용: {}",
+            if document.header.distribution {
+                "예"
+            } else {
+                "아니오"
+            }
+        );
+    }
     println!("구역 수: {}", document.sections.len());
     println!("페이지 수: {}", doc.page_count());
 
@@ -2628,8 +2691,10 @@ fn brief_text(text: &str, max_chars: usize) -> String {
 
 fn dump_controls(args: &[String]) {
     if args.is_empty() {
-        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
-        eprintln!("사용법: rhwp dump <파일.hwp> [--section <번호>] [--para <번호>]");
+        eprintln!("오류: 문서 파일 경로를 지정해주세요.");
+        eprintln!(
+            "사용법: rhwp dump <파일.hwp|파일.hwpx|파일.hml> [--section <번호>] [--para <번호>]"
+        );
         return;
     }
 
@@ -2673,7 +2738,7 @@ fn dump_controls(args: &[String]) {
     let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
         Ok(d) => d,
         Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            eprintln!("오류: 문서 파싱 실패 - {}", e);
             return;
         }
     };
@@ -4259,6 +4324,116 @@ fn export_hwpx(args: &[String]) {
     }
 }
 
+struct HmlExportArgs {
+    input: std::path::PathBuf,
+    output: std::path::PathBuf,
+}
+
+fn parse_hml_export_args(args: &[String]) -> Result<HmlExportArgs, String> {
+    let usage = "rhwp export-hml <입력.hml> -o <출력.hml>";
+    let mut input = None;
+    let mut output = None;
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "-o" | "--output" => {
+                let value = args
+                    .get(index + 1)
+                    .ok_or_else(|| format!("출력 경로가 필요합니다\n사용법: {usage}"))?;
+                if value.starts_with('-') {
+                    return Err(format!("출력 경로가 필요합니다\n사용법: {usage}"));
+                }
+                if output.replace(std::path::PathBuf::from(value)).is_some() {
+                    return Err(format!("출력 경로를 한 번만 지정하세요\n사용법: {usage}"));
+                }
+                index += 2;
+            }
+            value if value.starts_with('-') => {
+                return Err(format!("알 수 없는 옵션: {value}\n사용법: {usage}"));
+            }
+            value => {
+                if input.replace(std::path::PathBuf::from(value)).is_some() {
+                    return Err(format!("입력 파일을 하나만 지정하세요\n사용법: {usage}"));
+                }
+                index += 1;
+            }
+        }
+    }
+    Ok(HmlExportArgs {
+        input: input.ok_or_else(|| format!("입력 파일이 필요합니다\n사용법: {usage}"))?,
+        output: output.ok_or_else(|| format!("출력 경로가 필요합니다\n사용법: {usage}"))?,
+    })
+}
+
+fn paths_refer_to_same_file(input: &Path, output: &Path) -> bool {
+    input == output
+        || paths_have_same_file_identity(input, output)
+        || match (input.canonicalize(), output.canonicalize()) {
+            (Ok(input), Ok(output)) => input == output,
+            _ => false,
+        }
+}
+
+#[cfg(unix)]
+fn paths_have_same_file_identity(input: &Path, output: &Path) -> bool {
+    use std::os::unix::fs::MetadataExt;
+
+    match (input.metadata(), output.metadata()) {
+        (Ok(input), Ok(output)) => input.dev() == output.dev() && input.ino() == output.ino(),
+        _ => false,
+    }
+}
+
+#[cfg(not(unix))]
+fn paths_have_same_file_identity(_input: &Path, _output: &Path) -> bool {
+    false
+}
+
+fn print_hml_export_error(error: &rhwp::serializer::hml::HmlExportError) {
+    eprintln!("오류: {error}");
+    for blocker in error.blockers() {
+        eprintln!(
+            "  [{}] {}: {}",
+            blocker.code, blocker.xml_path, blocker.message
+        );
+    }
+}
+
+fn export_hml(args: &[String]) {
+    let paths = parse_hml_export_args(args).unwrap_or_else(|message| {
+        eprintln!("{message}");
+        process::exit(2);
+    });
+    if paths_refer_to_same_file(&paths.input, &paths.output) {
+        eprintln!("오류: 입력과 출력 경로가 같습니다. 원본을 덮어쓰지 않습니다.");
+        process::exit(2);
+    }
+    let data = fs::read(&paths.input).unwrap_or_else(|error| {
+        eprintln!(
+            "오류: 파일을 읽을 수 없습니다 - {}: {error}",
+            paths.input.display()
+        );
+        process::exit(1);
+    });
+    let core = rhwp::document_core::DocumentCore::from_bytes(&data).unwrap_or_else(|error| {
+        eprintln!("오류: 문서 파싱 실패 - {error}");
+        process::exit(1);
+    });
+    let bytes = core.export_hml_native().unwrap_or_else(|error| {
+        print_hml_export_error(&error);
+        process::exit(1);
+    });
+    atomic_file::write_atomically(&paths.output, &bytes).unwrap_or_else(|error| {
+        eprintln!("오류: 파일 저장 실패 - {}: {error}", paths.output.display());
+        process::exit(1);
+    });
+    println!(
+        "저장 완료: {} ({}KB)",
+        paths.output.display(),
+        bytes.len() / 1024
+    );
+}
+
 /// `rhwp build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>`
 ///
 /// Claude Code Skill (`rhwp-exam-ingest`)이 생성한 JSON 중간 표현을 HWPX로 변환한다.
@@ -5786,7 +5961,15 @@ fn extract_thumbnail(args: &[String]) {
 
 #[cfg(test)]
 mod tests {
-    use super::tab_ext_semantic_differs;
+    use super::{allows_implicit_sibling_resources, tab_ext_semantic_differs};
+    use rhwp::parser::FileFormat;
+
+    #[test]
+    fn hml_does_not_implicitly_load_sibling_resources() {
+        assert!(!allows_implicit_sibling_resources(FileFormat::Hml));
+        assert!(allows_implicit_sibling_resources(FileFormat::Hwp));
+        assert!(allows_implicit_sibling_resources(FileFormat::Hwpx));
+    }
 
     #[test]
     fn tab_ext_reserved_fields_ignored() {

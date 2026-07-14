@@ -1,5 +1,11 @@
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
 import type { DocumentInfo, PageInfo, PageDef, SectionDef, PageBorderFillSettings, EndnoteShapeSettings, NoteEditInfo, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, CellPathLike, NavContextEntry, FieldInfoResult, BookmarkInfo, LayerRenderProfile, PageLayerTree } from './types';
+import {
+  normalizeHmlSaveState,
+  parseHmlSaveState,
+  type HmlSaveBlocker,
+  type HmlSaveState,
+} from './hml-save-capability';
 
 /** HWPX 비표준 감지 경고 리포트 (#177). */
 export interface ValidationReport {
@@ -13,6 +19,32 @@ export interface ValidationReport {
     paragraph: number;
     kind: 'LinesegArrayEmpty' | 'LinesegUncomputed' | 'LinesegTextRunReflow';
     cell: { ctrl: number; row: number; col: number; innerPara: number } | null;
+  }>;
+}
+
+export type HmlWarningCode =
+  | 'UnsupportedElement'
+  | 'UnsupportedAttribute'
+  | 'UnsupportedEquationSemantics'
+  | 'MissingResource'
+  | 'ExternalResourceBlocked'
+  | 'InvalidReference'
+  | 'LossyConversion';
+
+export interface HmlOpenMetadata {
+  format: 'hml';
+  hwpmlVersion?: string;
+  encoding: 'utf-8' | 'utf-16le' | 'utf-16be';
+  resourceCount: number;
+  /** HML로 다시 저장 가능한지 여부 (보존 불가 요소가 있으면 false). */
+  hmlSavable: boolean;
+  /** hmlSavable이 false일 때, 보존할 수 없는 요소의 경로 목록. */
+  saveBlockers: HmlSaveBlocker[];
+  warnings: Array<{
+    code: HmlWarningCode;
+    xmlPath: string;
+    message: string;
+    preserved: boolean;
   }>;
 }
 
@@ -252,6 +284,27 @@ export class WasmBridge {
     return this.doc.exportHwpx();
   }
 
+  /** HML로 저장 (보존 불가 요소가 있으면 던진다). 현재 WASM 빌드가 지원하지 않으면 던진다. */
+  exportHml(): Uint8Array {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const exportFn = (this.doc as any).exportHml?.bind(this.doc);
+    if (!exportFn) throw new Error('현재 WASM 빌드는 HML 저장을 지원하지 않습니다');
+    return exportFn();
+  }
+
+  hasHmlExportCapability(): boolean {
+    return typeof (this.doc as any)?.exportHml === 'function';
+  }
+
+  getHmlSaveState(): HmlSaveState {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const raw = (this.doc as any).getHmlSaveState?.();
+    if (typeof raw !== 'string') throw new Error('HML 저장 정보를 확인할 수 없습니다');
+    const saveState = parseHmlSaveState(JSON.parse(raw));
+    if (!saveState) throw new Error('HML 저장 정보를 확인할 수 없습니다');
+    return saveState;
+  }
+
   /** HWP 직렬화 + 자기 재로드 검증 메타데이터를 JSON 문자열로 반환 (#178). */
   exportHwpVerify(): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
@@ -260,6 +313,27 @@ export class WasmBridge {
 
   getSourceFormat(): string {
     return this.doc?.getSourceFormat?.() ?? 'hwp';
+  }
+
+  getHmlOpenMetadata(): HmlOpenMetadata | null {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const raw = (this.doc as any).getHmlOpenMetadata?.();
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw) as unknown;
+      const saveState = normalizeHmlSaveState(parsed);
+      if (!saveState) return null;
+      return {
+        ...(parsed as HmlOpenMetadata),
+        hmlSavable: saveState.hmlSavable,
+        saveBlockers: saveState.saveBlockers,
+        warnings: Array.isArray((parsed as HmlOpenMetadata).warnings)
+          ? (parsed as HmlOpenMetadata).warnings
+          : [],
+      };
+    } catch {
+      return null;
+    }
   }
 
   /** HWPX 비표준 감지 경고 조회 (#177). */

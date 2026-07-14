@@ -544,7 +544,7 @@ mod tests {
         let mut doc = Document::default();
         doc.bin_data_content.push(BinDataContent {
             id: bin_data_id,
-            data: vec![0u8; 4],
+            data: vec![0u8; 4].into(),
             extension: ext.to_string(),
         });
         doc

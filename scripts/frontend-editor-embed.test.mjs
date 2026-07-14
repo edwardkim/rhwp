@@ -18,7 +18,7 @@ test('@rhwp/editor public API uses exact-origin MessageChannel v1 binary transpo
     assert.equal(targetOrigin, 'https://studio.example');
     assert.equal(message.type, 'rhwp-connect');
     assert.equal(message.version, 1);
-    assert.deepEqual(message.capabilities, ['transferable-array-buffer']);
+    assert.deepEqual(message.capabilities, ['transferable-array-buffer', 'hml-export']);
     assert.equal(transfer.length, 1);
     sessionId = message.sessionId;
     server = transfer[0];
@@ -34,7 +34,7 @@ test('@rhwp/editor public API uses exact-origin MessageChannel v1 binary transpo
     server.start();
     server.postMessage({
       type: 'rhwp-connected', version: 1, sessionId,
-      capabilities: ['transferable-array-buffer'],
+      capabilities: ['transferable-array-buffer', 'hml-export'],
     });
   });
   t.after(() => server?.close());
@@ -57,6 +57,15 @@ test('@rhwp/editor public API uses exact-origin MessageChannel v1 binary transpo
 
   assert.deepEqual([...await editor.exportHwp()], [4, 5, 6]);
   assert.deepEqual([...await editor.exportHwpx()], [7, 8, 9]);
+  assert.deepEqual([...await editor.exportHml()], [10, 11, 12]);
+  assert.deepEqual(await editor.getHmlSaveState(), {
+    sourceFormat: 'hwp',
+    hmlSavable: false,
+    blockers: [{
+      code: 'HML_SOURCE_REQUIRED', xmlPath: '/HWPML',
+      message: 'HML source metadata is required', preserved: false,
+    }],
+  });
   assert.deepEqual(await editor.exportHwpVerify(), verifyResult());
 
   editor.destroy();
@@ -179,6 +188,15 @@ function responseFor(message, legacy = false) {
     case 'loadFile': return { pageCount: 3 };
     case 'exportHwp': return legacy ? [4, 5, 6] : new Uint8Array([4, 5, 6]);
     case 'exportHwpx': return legacy ? [7, 8, 9] : new Uint8Array([7, 8, 9]);
+    case 'exportHml': return legacy ? [10, 11, 12] : new Uint8Array([10, 11, 12]);
+    case 'getHmlSaveState': return {
+      sourceFormat: 'hwp',
+      hmlSavable: false,
+      blockers: [{
+        code: 'HML_SOURCE_REQUIRED', xmlPath: '/HWPML',
+        message: 'HML source metadata is required', preserved: false,
+      }],
+    };
     case 'exportHwpVerify': return verifyResult();
     default: throw new Error(`Unexpected method: ${message.method}`);
   }

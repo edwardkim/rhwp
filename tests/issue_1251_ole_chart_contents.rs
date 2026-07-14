@@ -63,9 +63,9 @@ fn bin_data_2_raw_contents() -> Vec<u8> {
         .find(|content| content.id == 2)
         .expect("loaded BinData #2 content");
     assert_eq!(content.extension, "OLE");
-    assert!(content.data.starts_with(&[0xD0, 0xCF, 0x11, 0xE0]));
+    assert!(content.data.load().starts_with(&[0xD0, 0xCF, 0x11, 0xE0]));
 
-    let container = parse_ole_container(&content.data).expect("nested OLE container");
+    let container = parse_ole_container(&content.data.load()).expect("nested OLE container");
     assert!(
         container.ooxml_chart.is_none(),
         "fixture has no OOXMLChartContents"
@@ -99,9 +99,9 @@ fn hwpx_bin_data_3_raw_contents() -> Vec<u8> {
         .find(|content| content.id == 3)
         .expect("loaded HWPX BinData #3 content");
     assert_eq!(content.extension, "OLE");
-    assert!(content.data.starts_with(&[0xD0, 0xCF, 0x11, 0xE0]));
+    assert!(content.data.load().starts_with(&[0xD0, 0xCF, 0x11, 0xE0]));
 
-    let container = parse_ole_container(&content.data).expect("nested HWPX OLE container");
+    let container = parse_ole_container(&content.data.load()).expect("nested HWPX OLE container");
     assert!(
         container.ooxml_chart.is_none(),
         "fixture has no OOXMLChartContents"
@@ -300,7 +300,7 @@ fn issue_1283_hwpx_to_hwp_save_keeps_ole_as_storage() {
         .find(|content| content.id == 2)
         .expect("exported OLE BinData #2 content");
     assert_eq!(content.extension, "OLE");
-    assert!(content.data.starts_with(&[0xD0, 0xCF, 0x11, 0xE0]));
+    assert!(content.data.load().starts_with(&[0xD0, 0xCF, 0x11, 0xE0]));
 
     let ole_stream = read_cfb_stream(&hwp, "/BinData/BIN0002.OLE");
     let ole_payload =
@@ -376,7 +376,8 @@ fn issue_1283_hwpx_to_hwp_save_keeps_ole_as_storage() {
     assert_eq!(&shape_component.data[28..32], &7200u32.to_le_bytes());
     assert_eq!(&shape_component.data[32..36], &7200u32.to_le_bytes());
 
-    let container = parse_ole_container(&content.data).expect("exported nested OLE container");
+    let container =
+        parse_ole_container(&content.data.load()).expect("exported nested OLE container");
     let raw_contents = container.raw_contents.expect("exported Contents stream");
     let chart = parse_ole_chart_contents(&raw_contents).expect("parse exported chart contents");
     assert_eq!(chart.title.as_deref(), Some("연금 재정 전망"));

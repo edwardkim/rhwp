@@ -769,6 +769,49 @@ HWPX에서는 같은 값이 `<hh:paraPr>` 아래 `<hh:border>`의 `connect="1|0"
 - 기대값: 입력 문단 `LINE_SEG.text_start=[0, 44, 84, 122]`, 다음 문단 `vpos=17160`,
   전체 페이지 수 115쪽 유지.
 
+## 34. CharShape attr bit 18~20 취소선 여부 — 비트만으로 판정 불가 (모양이 실판별자)
+
+### 스펙 기술 (4.2.5 글자 모양, 표 33 속성)
+
+- `bit 18~20`: "취소선 여부" — 0/비0 로 유무를 나타내는 것처럼 기술.
+- `bit 26~29`: "취소선 모양 (표 25 참조)" — 테두리선 종류.
+
+### 실제 동작 (PR #2258, yeonic 실증)
+
+한컴은 **취소선이 없는 문자에도 bit 18~20 에 1 을 기본값으로 기록**한다.
+따라서 비트만으로는 취소선 유무를 판정할 수 없고, 실판별자는 취소선
+모양(bit 26~29)이다:
+
+- 취소선 없음: 모양에 표 25 의 **3D 계열 placeholder** (실측 15 = "3D 단선",
+  13 = "두꺼운 3D" 등)가 들어온다.
+- 실제 취소선: 모양이 **선 종류 0~12** (실선~물결 2중선 13종 — HWPX
+  `SOLID`~`DOUBLE_WAVE` 와 1:1).
+
+HWPX 는 같은 현상을 `strikeout shape="3D"` placeholder 로 드러내며, PR #154
+에서 이름 화이트리스트(`is_real_strike_shape`)로 해소된 것과 동일 구조다.
+
+### 기준 샘플
+
+- `samples/issue1949_giant_cell_nested_tables_perf.hwp` — 취소선 없는
+  CharShape 다수가 bits=1 + 모양 15, 실제 취소선 4개는 모양 0(SOLID)·7(DOUBLE_SLIM)
+- 같은 문서 `.hwpx` 쌍과 자기정합 (111쪽 "843℃" 뒤 취소 문자)
+- 비공개 실무 문서 189건 집계(작성자 제공, 참고): bits!=0 만 쓰면 3개 문서
+  300 runs 오탐, 모양 화이트리스트 적용 시 4개 문서 76 runs 정탐
+
+### 정정
+
+- 취소선 판정: `bits != 0 && strike_shape <= 12` (fail-closed — 미지 모양은
+  no-strike). `strikethrough_bits > 1` 휴리스틱(구현 이력)은 실제 취소선
+  (bits=1)도 버리므로 오답.
+- 스펙의 "취소선 여부" 서술은 placeholder 기본값 관행을 누락 — 비트 단독
+  해석 금지.
+
+### 검증
+
+- `cargo test --profile release-test --test hwp5_strikeout_shape_parity`
+  (HWP5↔HWPX 자기정합, 수정 전 실패)
+- `parse_char_shape` 유닛: bits 0/1/3 × 모양 0/1/12/13/15 경계 전수
+
 ---
 
 ## 검증 원칙

@@ -1,0 +1,197 @@
+- iframe [active] [ref=e3] [box=8,8,1440,1000]:
+  - generic [ref=f2e1] [box=0,0,1440,1000]:
+    - generic [ref=f2e2] [box=0,0,1440,1000]:
+      - generic [ref=f2e3] [box=0,0,1440,28]:
+        - generic [ref=f2e5] [cursor=pointer] [box=8,-1,52,30]: 파일
+        - generic [ref=f2e7] [cursor=pointer] [box=60,-1,52,30]: 편집
+        - generic [ref=f2e8] [box=113,-1,52,30]:
+          - generic [ref=f2e9] [cursor=pointer] [box=113,-1,52,30]: 보기
+          - text: ¶ ↵
+        - generic [ref=f2e11] [cursor=pointer] [box=165,-1,52,30]: 입력
+        - generic [ref=f2e13] [cursor=pointer] [box=218,-1,52,30]: 서식
+        - generic [ref=f2e15] [cursor=pointer] [box=270,-1,41,30]: 쪽
+        - generic [ref=f2e17] [cursor=pointer] [box=312,-1,41,30]: 표
+        - generic [ref=f2e19] [cursor=pointer] [box=353,-1,52,30]: 도구
+      - generic [ref=f2e20] [box=0,28,1440,56]:
+        - generic [ref=f2e21] [box=8,30,182,51]:
+          - button "오려 두기" [ref=f2e22] [cursor=pointer] [box=8,30,44,51]:
+            - generic [ref=f2e24] [box=21,54,17,22]:
+              - text: 오려
+              - text: 두기
+          - button "복사 하기" [ref=f2e25] [cursor=pointer] [box=52,30,44,51]:
+            - generic [ref=f2e27] [box=65,54,17,22]:
+              - text: 복사
+              - text: 하기
+          - button "붙이기" [ref=f2e28] [cursor=pointer] [box=96,30,50,51]:
+            - generic [ref=f2e30] [box=108,60,26,11]: 붙이기
+          - button "모양 복사" [ref=f2e31] [cursor=pointer] [box=146,30,44,51]:
+            - generic [ref=f2e33] [box=159,54,17,22]:
+              - text: 모양
+              - text: 복사
+        - generic [ref=f2e35] [box=199,30,132,51]:
+          - button "¶ 조판 부호" [ref=f2e36] [cursor=pointer] [box=199,30,44,51]:
+            - generic [ref=f2e37] [box=212,35,18,18]: ¶
+            - generic [ref=f2e38] [box=212,54,17,22]:
+              - text: 조판
+              - text: 부호
+          - button "↵ 문단 부호" [ref=f2e39] [cursor=pointer] [box=243,30,44,51]:
+            - generic [ref=f2e40] [box=256,35,18,18]: ↵
+            - generic [ref=f2e41] [box=256,54,17,22]:
+              - text: 문단
+              - text: 부호
+          - button "격자 보기" [ref=f2e42] [cursor=pointer] [box=287,30,44,51]:
+            - generic [ref=f2e44] [box=300,54,17,22]:
+              - text: 격자
+              - text: 보기
+        - generic [ref=f2e46] [box=340,30,88,51]:
+          - button "글자 모양" [ref=f2e47] [cursor=pointer] [box=340,30,44,51]:
+            - generic [ref=f2e49] [box=353,54,17,22]:
+              - text: 글자
+              - text: 모양
+          - button "문단 모양" [ref=f2e50] [cursor=pointer] [box=384,30,44,51]:
+            - generic [ref=f2e52] [box=397,54,17,22]:
+              - text: 문단
+              - text: 모양
+        - generic [ref=f2e54] [box=437,30,176,51]:
+          - button "1. 문단 번호" [ref=f2e55] [cursor=pointer] [box=437,30,44,51]:
+            - generic [ref=f2e56] [box=450,35,18,18]: "1."
+            - generic [ref=f2e57] [box=450,54,17,22]:
+              - text: 문단
+              - text: 번호
+          - button "● 글머리 표" [ref=f2e58] [cursor=pointer] [box=481,30,44,51]:
+            - generic [ref=f2e59] [box=494,35,18,18]: ●
+            - generic [ref=f2e60] [box=490,54,26,22]:
+              - text: 글머리
+              - text: 표
+          - button "⇤ 수준▲" [ref=f2e61] [cursor=pointer] [box=525,30,44,51]:
+            - generic [ref=f2e62] [box=538,41,18,18]: ⇤
+            - generic [ref=f2e63] [box=533,60,27,11]: 수준▲
+          - button "⇥ 수준▼" [ref=f2e64] [cursor=pointer] [box=569,30,44,51]:
+            - generic [ref=f2e65] [box=582,41,18,18]: ⇥
+            - generic [ref=f2e66] [box=577,60,27,11]: 수준▼
+        - generic [ref=f2e68] [box=622,30,132,51]:
+          - button "표 ▾" [ref=f2e69] [cursor=pointer] [box=622,30,44,51]:
+            - generic [ref=f2e71] [box=635,60,18,11]: 표 ▾
+          - button "도형 ▾" [ref=f2e72] [cursor=pointer] [box=666,30,44,51]:
+            - generic [ref=f2e74] [box=675,60,26,11]: 도형 ▾
+          - button "그림" [ref=f2e75] [cursor=pointer] [box=710,30,44,51]:
+            - generic [ref=f2e77] [box=723,60,17,11]: 그림
+        - generic [ref=f2e79] [box=763,30,132,51]:
+          - button "개체 속성" [ref=f2e80] [cursor=pointer] [box=763,30,44,51]:
+            - generic [ref=f2e82] [box=776,54,17,22]:
+              - text: 개체
+              - text: 속성
+          - button "문자표" [ref=f2e83] [cursor=pointer] [box=807,30,44,51]:
+            - generic [ref=f2e85] [box=816,60,26,11]: 문자표
+          - button "하이퍼 링크" [ref=f2e86] [cursor=pointer] [box=851,30,44,51]:
+            - generic [ref=f2e88] [box=860,54,26,22]:
+              - text: 하이퍼
+              - text: 링크
+        - generic [ref=f2e91] [box=913,30,314,51]:
+          - button "머리말" [ref=f2e92] [cursor=pointer] [box=913,30,44,51]:
+            - generic [ref=f2e94] [box=922,60,26,11]: 머리말
+          - button "꼬리말" [ref=f2e95] [cursor=pointer] [box=957,30,44,51]:
+            - generic [ref=f2e97] [box=966,60,26,11]: 꼬리말
+          - button "각주" [ref=f2e98] [cursor=pointer] [box=1001,30,44,51]:
+            - generic [ref=f2e100] [box=1014,60,17,11]: 각주
+          - button "미주" [ref=f2e101] [cursor=pointer] [box=1045,30,44,51]:
+            - generic [ref=f2e103] [box=1058,60,17,11]: 미주
+          - generic [ref=f2e104] [box=1089,30,50,51]:
+            - button "찾기" [ref=f2e105] [cursor=pointer] [box=1089,30,36,51]:
+              - generic [ref=f2e107] [box=1099,60,17,11]: 찾기
+            - button "▾" [ref=f2e108] [cursor=pointer] [box=1125,30,14,51]:
+              - generic [ref=f2e109] [box=1129,52,5,8]: ▾
+          - button "⧉ 이력 관리" [ref=f2e110] [cursor=pointer] [box=1139,30,44,51]:
+            - generic [ref=f2e111] [box=1152,35,18,18]: ⧉
+            - generic [ref=f2e112] [box=1152,54,17,22]:
+              - text: 이력
+              - text: 관리
+          - button "≍ 문서 비교" [ref=f2e113] [cursor=pointer] [box=1183,30,44,51]:
+            - generic [ref=f2e114] [box=1196,35,18,18]: ≍
+            - generic [ref=f2e115] [box=1196,54,17,22]:
+              - text: 문서
+              - text: 비교
+      - generic [ref=f2e116] [box=0,84,1440,28]:
+        - combobox "스타일" [ref=f2e117] [box=8,87,60,22]:
+          - option "바탕글" [selected] [box=0,0,0,0]
+          - option "머리말" [box=0,0,0,0]
+        - combobox "글꼴 적용 언어" [ref=f2e118] [box=70,87,44,22]:
+          - option "대표" [selected] [box=0,0,0,0]
+          - option "한글" [box=0,0,0,0]
+          - option "영문" [box=0,0,0,0]
+          - option "한자" [box=0,0,0,0]
+          - option "일어" [box=0,0,0,0]
+          - option "외국어" [box=0,0,0,0]
+          - option "기호" [box=0,0,0,0]
+          - option "사용자" [box=0,0,0,0]
+        - combobox "글꼴" [ref=f2e119] [box=116,87,110,22]:
+          - option "◆ 함초롬" [box=0,0,0,0]
+          - option "◆ 함초롬돋움" [box=0,0,0,0]
+          - option "◆ 맑은 고딕" [box=0,0,0,0]
+          - option "◆ 바탕" [box=0,0,0,0]
+          - option "함초롬바탕" [box=0,0,0,0]
+          - option "함초롬돋움" [box=0,0,0,0]
+          - option "맑은 고딕" [box=0,0,0,0]
+          - option "나눔고딕" [box=0,0,0,0]
+          - option "바탕" [selected] [box=0,0,0,0]
+          - option "돋움" [box=0,0,0,0]
+          - option "궁서" [box=0,0,0,0]
+        - generic [ref=f2e120] [box=232,87,67,22]:
+          - textbox "글자 크기 (pt)" [ref=f2e121] [box=232,87,36,22]: "10.0"
+          - generic [ref=f2e122] [box=268,87,17,22]: pt
+          - generic [ref=f2e123] [box=285,87,14,22]:
+            - button "▲" [ref=f2e124] [cursor=pointer] [box=285,87,14,11]
+            - button "▼" [ref=f2e125] [cursor=pointer] [box=285,98,14,11]
+        - button "가" [ref=f2e127] [cursor=pointer] [box=312,86,24,24]:
+          - generic [ref=f2e128] [box=318,91,12,14]: 가
+        - button "가" [ref=f2e129] [cursor=pointer] [box=338,86,24,24]:
+          - generic [ref=f2e130] [box=344,91,12,14]: 가
+        - button "간" [ref=f2e131] [cursor=pointer] [box=364,86,24,24]:
+          - generic [ref=f2e132] [box=370,91,12,14]: 간
+        - button "가 ▾" [ref=f2e133] [cursor=pointer] [box=390,86,32,24]:
+          - generic [ref=f2e134] [box=397,91,12,14]: 가
+          - generic [ref=f2e135] [box=410,94,5,8]: ▾
+        - button "가 ▾" [ref=f2e137] [cursor=pointer] [box=424,86,32,24]:
+          - generic [ref=f2e138] [box=431,91,12,14]: 가
+          - generic [ref=f2e139] [box=444,94,5,8]: ▾
+        - generic [ref=f2e140] [box=458,86,32,24]:
+          - button "간 ▾" [ref=f2e141] [cursor=pointer] [box=458,86,32,24]:
+            - generic [ref=f2e142] [box=468,87,12,14]: 간
+            - generic [ref=f2e143] [box=472,101,5,8]: ▾
+          - textbox [box=458,110,0,0]: "#000000"
+        - button "✏ ▾" [ref=f2e146] [cursor=pointer] [box=503,86,32,24]:
+          - generic [ref=f2e147] [box=504,90,13,16]: ✏
+          - generic [ref=f2e149] [box=529,94,5,8]: ▾
+        - button "왼쪽 정렬" [ref=f2e151] [cursor=pointer] [box=548,86,24,24]
+        - button "가운데 정렬" [ref=f2e153] [cursor=pointer] [box=574,86,24,24]
+        - button "오른쪽 정렬" [ref=f2e155] [cursor=pointer] [box=600,86,24,24]
+        - button "양쪽 정렬" [ref=f2e157] [cursor=pointer] [box=626,86,24,24]
+        - button "배분 정렬" [ref=f2e159] [cursor=pointer] [box=652,86,24,24]
+        - button "나눔 정렬" [ref=f2e161] [cursor=pointer] [box=678,86,24,24]
+        - generic [ref=f2e164] [box=715,87,70,22]:
+          - combobox "줄 간격" [ref=f2e165] [cursor=pointer] [box=715,87,56,22]:
+            - option "0 %" [selected] [box=0,0,0,0]
+            - option "100 %" [box=0,0,0,0]
+            - option "130 %" [box=0,0,0,0]
+            - option "160 %" [box=0,0,0,0]
+            - option "180 %" [box=0,0,0,0]
+            - option "200 %" [box=0,0,0,0]
+            - option "300 %" [box=0,0,0,0]
+          - generic [ref=f2e166] [box=771,87,14,22]:
+            - button "▲" [ref=f2e167] [cursor=pointer] [box=771,87,14,11]
+            - button "▼" [ref=f2e168] [cursor=pointer] [box=771,98,14,11]
+      - generic [ref=f2e176] [box=0,978,1440,22]:
+        - generic [ref=f2e177] [box=10,979,31,22]: 1 / 1 쪽
+        - generic [ref=f2e179] [box=61,979,43,22]: "구역: 1 / 1"
+        - generic [ref=f2e181] [box=125,979,19,22]: 삽입
+        - generic [ref=f2e182] [box=144,979,1119,22]: roundtrip.hml — 1페이지 (101.6ms)
+        - generic [ref=f2e183] [box=1263,978,167,24]:
+          - button "폭 맞춤" [ref=f2e184] [cursor=pointer] [box=1263,978,24,24]
+          - button "쪽 맞춤" [ref=f2e186] [cursor=pointer] [box=1287,978,24,24]
+          - generic [ref=f2e189] [box=1331,980,35,20]: 100%
+          - button "축소" [ref=f2e190] [cursor=pointer] [box=1374,978,24,24]
+          - button "확대" [ref=f2e192] [cursor=pointer] [box=1406,978,24,24]
+    - textbox [active] [ref=f2e194] [box=-9999,0,2,2]
+    - status [ref=f2e195] [box=1024,16,400,122]:
+      - generic [ref=f2e196] [box=1038,28,314,98]: "HML 2.91 문서를 열었습니다. HML로 의미를 보존해 저장할 수 있지만 원본 바이트와 동일하지는 않습니다. 지원하지 않거나 변환된 요소 1건이 있습니다. /HWPML/TAIL/BINDATASTORAGE: 지원하지 않는 HML 요소를 건너뛰었습니다: BINDATASTORAGE"
+      - button "확인" [ref=f2e197] [cursor=pointer] [box=1364,28,47,28]

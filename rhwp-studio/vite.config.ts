@@ -66,7 +66,7 @@ export default defineConfig({
       manifest: {
         name: 'rhwp-studio',
         short_name: 'rhwp',
-        description: 'HWP/HWPX 뷰어·에디터 — 알(R), 모두의 한글',
+        description: 'HWP/HWPX/HML 뷰어·에디터 — 알(R), 모두의 한글',
         lang: 'ko',
         theme_color: '#2b6cb0',
         background_color: '#ffffff',
@@ -79,6 +79,8 @@ export default defineConfig({
             accept: {
               'application/x-hwp': ['.hwp'],
               'application/hwp+zip': ['.hwpx'],
+              'application/xml': ['.hml'],
+              'text/xml': ['.hml'],
             },
           },
         ],

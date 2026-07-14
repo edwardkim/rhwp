@@ -121,6 +121,19 @@ test('handlePwaLaunchFiles는 HWPX 파일도 허용하고 다중 파일은 첫 �
   assert.equal(opened[0].fileHandle, first);
 });
 
+test('handlePwaLaunchFiles는 HML 파일도 연다', async () => {
+  const { callbacks, opened, unsupported, errors } = createCallbacks();
+  const handle = createHandle('opened.hml', '<?xml version="1.0"?><HWPML />');
+
+  await handlePwaLaunchFiles({ files: [handle] }, callbacks);
+
+  assert.equal(unsupported.length, 0);
+  assert.equal(errors.length, 0);
+  assert.equal(opened.length, 1);
+  assert.equal(opened[0].fileName, 'opened.hml');
+  assert.equal(opened[0].fileHandle, handle);
+});
+
 test('handlePwaLaunchFiles는 getFile 실패를 notifyError로 전달한다', async () => {
   const { callbacks, opened, unsupported, errors } = createCallbacks();
   const boom = new Error('permission denied');

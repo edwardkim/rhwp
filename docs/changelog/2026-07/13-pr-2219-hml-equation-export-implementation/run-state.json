@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "mode": "LEGACY",
+  "intent_gate": {
+    "intent": "Add loss-safe HML equation import/edit/export and embed exportHml to PR 2219",
+    "confidence": "high",
+    "mode": "LEGACY",
+    "capability_refs": ["HmlImportMetadata", "Control::Equation", "export_hml", "MessageChannel v1"],
+    "uncertainty": "Full HWPML format coverage remains outside P0"
+  },
+  "branches": {
+    "source_base_branch": "origin/pr/2219@3f1db67d",
+    "target_integration_branch": "origin/feature/hml-document-open",
+    "run_branch": "codex/pr2219-hml-equation-export",
+    "worktree_path": "/Users/chaeseong-gug/Documents/PARA/Resource/rhwp/.codex-worktrees/pr2219-hml-equation-export",
+    "refs_verified": true
+  },
+  "plan_approval": "auto",
+  "completion_promise": {
+    "promised_outcome": "Verified HML equation round-trip and embed HML export included in upstream PR 2219",
+    "required_proof": ["Rust tests", "frontend test/build", "browser load/edit/export/reload", "adversarial review", "PR head SHA"],
+    "stop_condition": "All GOAL criteria green or a grounded external blocker is recorded",
+    "max_iterations": 8,
+    "status": "verified-precommit"
+  },
+  "phase": "Exact Verify/QA complete",
+  "iteration": 1,
+  "unresolved_gates": [
+    "P1 decision: missing SCRIPT semantics",
+    "P1 decision: evidenced numeric domains",
+    "Residual API decision: public SDK negotiated-capability visibility"
+  ],
+  "regression_ledger": [
+    "hml_parser 34/34",
+    "hml_serializer 29/29",
+    "equation lib slice 160/160",
+    "rhwp-studio/npm editor 270/270",
+    "clippy all-targets/all-features green",
+    "fresh optimized WASM and frontend build green",
+    "playwright-cli canvas/dialog/undo-redo/public-RPC round-trip green; 4 visible regions"
+  ],
+  "blockers": [],
+  "last_proof_command": "playwright-cli -s=pr2219-verify run-code --filename=docs/changelog/2026-07/13-pr-2219-hml-equation-export-implementation/qa/hml-equation-flow.js",
+  "next_action": "Run commit gate; commit, rebuild from committed SHA, non-force push, and verify upstream PR head/checks",
+  "forced_reflection": {
+    "required_when_iteration_cap_hit": true,
+    "what_keeps_failing": "",
+    "likely_root_cause": "",
+    "unproven_requirement": "",
+    "regressed_previously_green": "",
+    "smallest_next_action": ""
+  },
+  "updated_at": "2026-07-13T03:20:16Z"
+}

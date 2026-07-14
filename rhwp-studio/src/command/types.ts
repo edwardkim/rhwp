@@ -49,7 +49,7 @@ export interface EditorContext {
   /** 저장되지 않은 문서 변경사항이 있는가? */
   isDirty: boolean;
   /** 원본 파일 형식 — 저장 시 출처 포맷 유지(HWPX→HWPX, HWP→HWP). 다른 포맷 저장은 별도 메뉴(#1613). */
-  sourceFormat?: 'hwp' | 'hwpx';
+  sourceFormat?: 'hwp' | 'hwpx' | 'hml';
 }
 
 /** 개별 커맨드 정의 */

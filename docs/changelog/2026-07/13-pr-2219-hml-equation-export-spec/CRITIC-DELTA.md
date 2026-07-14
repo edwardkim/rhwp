@@ -1,0 +1,6 @@
+## Critic Delta
+
+- [Blocker] unknown equation semantics의 손실 차단은 아직 end-to-end 데이터 경로가 없다. `REQ-HML-EQ-001/003`은 unknown 속성/자식을 import metadata warning으로 남기고, `REQ-HML-EQ-004`는 adapter에서 `raw_ctrl_data`/`unknown`을 기본값으로 만들며, `REQ-HML-EQ-006`은 나중에 그 metadata를 preflight가 읽는다고만 한다. 이 warning이 parser 결과에서 document/save state까지 어떤 필드로 이동하고 편집 후에도 유지되는지 없으므로 adapter 이후 진단이 사라지면 export가 다시 조용한 손실을 허용한다. durable document-level 진단의 저장·전파·삭제 조건을 요구사항으로 고정하고, unknown attribute 문서를 편집한 뒤 `getHmlSaveState`와 `exportHml`을 호출하는 통합 RED를 추가해야 한다.
+- [Gap] required `getHmlSaveState.blockers` 타입은 `{ code, xmlPath, message }`만 제공해 NFR-07이 blocker의 최소 필드로 요구하는 `preserved`를 누락한다. `preserved: boolean`을 wire contract와 T-RPC-06 expected assertion에 추가하거나 NFR-07의 적용 범위를 명시적으로 축소해야 한다.
+- [Gap] 새 traceability tests와 validation gates가 Implementation Slices의 exit criteria에 반영되지 않았다. Slice A는 여전히 T-EQ-01~04, Slice B는 T-EQ-05~09, Slice C는 T-RPC-01~04만 요구해 T-EQ-10~17, T-RPC-05~07, VG-01~05가 실패해도 각 slice를 완료 처리할 수 있다. 각 slice exit를 해당 requirement-to-test 행과 일치시켜야 한다.
+- [Gap] Hosted canary의 observation window와 rollback trigger는 생겼지만 “host error log”의 실제 source/query와 24시간 관찰 책임자는 정해지지 않았다. deploy operator의 canary 승인과 사후 로그 관찰은 다른 행위다. 로그 위치·실패 패턴·관찰 owner를 명시해야 rollout measurement가 실행 가능하다.

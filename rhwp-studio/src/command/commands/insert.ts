@@ -155,7 +155,7 @@ export const insertCommands: CommandDef[] = [
         if (result.ok) {
           services.eventBus.emit('document-changed');
           if (!equationEditorDialog) {
-            equationEditorDialog = new EquationEditorDialog(services.wasm, services.eventBus);
+            equationEditorDialog = new EquationEditorDialog(services.wasm, services.eventBus, services);
           }
           equationEditorDialog.open(pos.sectionIndex, result.paraIdx, result.controlIdx);
         }
@@ -361,7 +361,7 @@ export const insertCommands: CommandDef[] = [
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'equation') return;
       if (!equationEditorDialog) {
-        equationEditorDialog = new EquationEditorDialog(services.wasm, services.eventBus);
+        equationEditorDialog = new EquationEditorDialog(services.wasm, services.eventBus, services);
       }
       equationEditorDialog.open(ref.sec, ref.ppi, ref.ci, ref.cellIdx, ref.cellParaIdx, ref.noteRef);
     },

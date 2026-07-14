@@ -442,7 +442,7 @@ fn issue_1143_basename_injection_respects_index_first_loaded_state() {
 
     doc.document_mut().bin_data_content[0] = BinDataContent {
         id: 99,
-        data: vec![b'G', b'I', b'F'],
+        data: vec![b'G', b'I', b'F'].into(),
         extension: "gif".to_string(),
     };
     let before = doc.document().bin_data_content[0].clone();
@@ -453,7 +453,10 @@ fn issue_1143_basename_injection_respects_index_first_loaded_state() {
         "already-loaded detection must follow bin_data_content[binDataId - 1]"
     );
     assert_eq!(doc.document().bin_data_content[0].id, before.id);
-    assert_eq!(doc.document().bin_data_content[0].data, before.data);
+    assert_eq!(
+        doc.document().bin_data_content[0].data.load(),
+        before.data.load()
+    );
     assert_eq!(
         doc.document().bin_data_content[0].extension,
         before.extension

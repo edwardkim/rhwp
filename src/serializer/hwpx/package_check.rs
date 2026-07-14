@@ -439,7 +439,7 @@ mod tests {
         let mut doc_bin = Document::default();
         doc_bin.bin_data_content.push(BinDataContent {
             id: 1,
-            data: vec![1, 2, 3],
+            data: vec![1, 2, 3].into(),
             extension: "png".to_string(),
         });
         let report = check_package(&bytes, &doc_bin);

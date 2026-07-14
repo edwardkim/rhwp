@@ -157,6 +157,17 @@ class RhwpEditor {
     return result instanceof Uint8Array ? result : new Uint8Array(result || []);
   }
 
+  /** 현재 문서를 HML(XML) 바이너리로 내보냅니다. */
+  async exportHml() {
+    const result = await this._request('exportHml');
+    return result instanceof Uint8Array ? result : new Uint8Array(result || []);
+  }
+
+  /** 현재 문서의 HML 저장 가능 여부와 blocker를 반환합니다. */
+  async getHmlSaveState() {
+    return this._request('getHmlSaveState');
+  }
+
   /**
    * HWP 직렬화 + 자기 재로드 검증 메타데이터를 반환합니다 (#178).
    *

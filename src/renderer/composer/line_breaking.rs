@@ -223,7 +223,10 @@ pub(crate) fn tokenize_paragraph(
         }
 
         // 한글 어절 또는 글자.
-        // HWP/HWPX attr1 bit 7의 모델 의미는 0=어절, 1=글자이다.
+        // [#2185] bit7=1(KEEP_WORD)이 **글자 단위**, bit7=0(BREAK_WORD)이
+        // 어절 단위 — 스키마 명목과 반대 (한컴 통제 실측 3중 확증: #2169
+        // kbu 사다리, 80168 r10, #2185 giant-cell LINE_SEG [0,44,84,122]
+        // 보존 대조). 종전 == 1 어절 분기는 역해석 (0da18bbc 회귀).
         if is_hangul(ch) {
             if korean_break_unit == 0 {
                 // 어절 모드: 연속 한글 + 후행 금칙 문자를 하나의 토큰으로
@@ -765,6 +768,7 @@ fn fill_lines(
                 if *end_idx - *start_idx == 1 && *start_idx > line_start_idx {
                     let c = text_chars[*start_idx];
                     let allow_break = if is_hangul(c) {
+                        // [#2185] bit7=1 = 글자 단위 break 허용 (위 주석 참조)
                         korean_break_unit == 1
                     } else {
                         is_cjk_ideograph(c)

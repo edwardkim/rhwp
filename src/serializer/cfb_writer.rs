@@ -132,18 +132,19 @@ fn write_hwp_cfb(
         // 선두 4-byte LE size prefix 를 제거(`drain(..4)`)한다. 직렬화 시 이를 다시 붙이지
         // 않으면 한컴이 CFB 매직(D0CF11E0)을 OLE 개체 크기(~3.75GB)로 오인하여
         // "메모리 부족" 오류가 발생한다. 파서의 strip 조건을 그대로 미러링한다.
-        let is_ole_storage = content.data.len() >= 8
-            && content.data[..8] == CFB_MAGIC
+        let bytes = content.data.load();
+        let is_ole_storage = bytes.len() >= 8
+            && bytes[..8] == CFB_MAGIC
             && bin_data_list
                 .iter()
                 .any(|bd| bd.data_type == BinDataType::Storage && bd.storage_id == content.id);
         let payload: Vec<u8> = if is_ole_storage {
-            let mut v = Vec::with_capacity(content.data.len() + 4);
-            v.extend_from_slice(&(content.data.len() as u32).to_le_bytes());
-            v.extend_from_slice(&content.data);
+            let mut v = Vec::with_capacity(bytes.len() + 4);
+            v.extend_from_slice(&(bytes.len() as u32).to_le_bytes());
+            v.extend_from_slice(&bytes);
             v
         } else {
-            content.data.clone()
+            bytes
         };
 
         let data = if should_compress {

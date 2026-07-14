@@ -30,6 +30,19 @@ export interface HwpVerifyResult {
   recovered: boolean;
 }
 
+export interface HmlSaveBlocker {
+  code: string;
+  xmlPath: string;
+  message: string;
+  preserved: false;
+}
+
+export interface HmlSaveState {
+  sourceFormat: string;
+  hmlSavable: boolean;
+  blockers: HmlSaveBlocker[];
+}
+
 export declare class RhwpEditor {
   /** HWP 파일을 로드합니다 */
   loadFile(data: ArrayBuffer | Uint8Array, fileName?: string): Promise<LoadResult>;
@@ -41,6 +54,10 @@ export declare class RhwpEditor {
   exportHwp(): Promise<Uint8Array>;
   /** 현재 문서를 HWPX(ZIP+XML) 바이너리로 내보냅니다 */
   exportHwpx(): Promise<Uint8Array>;
+  /** 현재 문서를 HML(XML) 바이너리로 내보냅니다 */
+  exportHml(): Promise<Uint8Array>;
+  /** 현재 문서의 HML 저장 가능 여부와 blocker를 반환합니다 */
+  getHmlSaveState(): Promise<HmlSaveState>;
   /** HWP 직렬화 + 자기 재로드 검증 메타데이터 (#178) */
   exportHwpVerify(): Promise<HwpVerifyResult>;
   /** iframe 엘리먼트를 반환합니다 */

@@ -643,7 +643,7 @@ fn issue_1692_so_sueop_hwpx_title_ole_renders_from_embedded_preview() {
         .first()
         .expect("SO-SUEOP HWPX must load ole1.ole as BinData #1");
     assert!(
-        is_hmapsi_ole_container(&ole_content.data),
+        is_hmapsi_ole_container(&ole_content.data.load()),
         "SO-SUEOP title OLE must be identified as HMapsi fallback content"
     );
 

@@ -1,6 +1,7 @@
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { EventBus } from '@/core/event-bus';
 import type { EquationProperties, NoteControlRef } from '@/core/types';
+import type { CommandServices } from '@/command/types';
 import { appendSvgMarkup } from './dom-utils';
 import { enableDialogDrag } from './dialog-drag';
 
@@ -240,7 +241,11 @@ export class EquationEditorDialog {
   // debounce 타이머
   private previewTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(wasm: WasmBridge, eventBus: EventBus) {
+  constructor(
+    wasm: WasmBridge,
+    eventBus: EventBus,
+    private services?: CommandServices,
+  ) {
     this.wasm = wasm;
     this.eventBus = eventBus;
   }
@@ -696,13 +701,35 @@ export class EquationEditorDialog {
     if (color !== this.origProps.color) updated.color = color;
 
     if (Object.keys(updated).length > 0) {
-      try {
+      const applyProps = () => {
         if (this.noteRef) {
           this.wasm.setNoteEquationProperties(this.noteRef, updated);
         } else {
-          this.wasm.setEquationProperties(this.sec, this.para, this.ci, this.cellIdx, this.cellParaIdx, updated);
+          this.wasm.setEquationProperties(
+            this.sec,
+            this.para,
+            this.ci,
+            this.cellIdx,
+            this.cellParaIdx,
+            updated,
+          );
         }
-        this.eventBus.emit('document-changed');
+      };
+      try {
+        const inputHandler = this.services?.getInputHandler();
+        if (inputHandler) {
+          inputHandler.executeOperation({
+            kind: 'snapshot',
+            operationType: 'equationEdit',
+            operation: () => {
+              applyProps();
+              return inputHandler.getCursorPosition();
+            },
+          });
+        } else {
+          applyProps();
+          this.eventBus.emit('document-changed');
+        }
       } catch (err) {
         console.warn('[EquationEditor] 수식 속성 설정 실패:', err);
       }

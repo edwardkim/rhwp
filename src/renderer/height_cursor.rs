@@ -230,6 +230,25 @@ impl HeightCursor {
                 .text
                 .chars()
                 .any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+            // [#2243] 직전 문단이 **빈 앵커 자리차지(TopAndBottom, 비-TAC) 표 host** 면
+            // prev_end→curr 저장 vpos 갭은 표의 흐름 공간 인코딩이다. sequential y 는
+            // 표 소비를 이미 포함하므로 lazy 역산이 이 갭을 재가산하면 표 높이만큼
+            // 이중 계상된다 (36382819 pi=31: lazy_base 역산 +12971HU → 페이지3
+            // +184.9px → 4쪽 sliver, 한글 3쪽). 보정 없이 sequential 을 신뢰한다.
+            // page_base 경로(절대 좌표)는 정상 동작하므로 lazy 역산 한정.
+            let prev_is_empty_float_table_host = !prev_has_text
+                && prev_para.controls.iter().any(|c| {
+                    matches!(c, Control::Table(t)
+                        if !t.common.treat_as_char
+                            && matches!(t.common.text_wrap, TextWrap::TopAndBottom))
+                });
+            // 전방 재가산 형상(저장 갭 존재 = curr_v0 > prev_end)만 차단 — 갭이
+            // 없으면 정상 lazy 역산을 유지해 sequential 과대의 역방향 보정을
+            // 살린다 (156631374: 무차별 차단 시 1→2쪽 회귀).
+            let stored_gap_exists = matches!(curr_first_vpos, Some(v) if v > prev_vpos_end);
+            if prev_is_empty_float_table_host && stored_gap_exists {
+                return y_offset;
+            }
             // [Issue #1898] 직전 문단이 "실텍스트 + 인라인(tac) 그림 호스트" 이면, 저장
             // vpos gap 이 현재 문단 spacing_before 이하일 때 연속으로 본다. 이 gap 은 sb
             // 인코딩이며 sb 는 vpos_corrected_end_y 가 별도로 사전 차감하므로 이미 계상된

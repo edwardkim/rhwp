@@ -889,6 +889,7 @@ fn test_tokenize_korean_eojeol() {
         char_shape_id: 0,
     }];
 
+    // [#2185] bit7=0 = 어절 단위 (한컴 통제 실측 3중 확증 — 종전 ==1 역해석 정정)
     let tokens = tokenize_paragraph(&text, &offsets, &shapes, &styles, 0, 0);
     // "가나" (Text) + " " (Space) + "다라" (Text) = 3 tokens
     assert_eq!(tokens.len(), 3);

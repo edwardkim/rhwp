@@ -1569,8 +1569,9 @@ impl DocumentCore {
         };
 
         if let Some(bdc) = image_data {
-            let base64_data = base64::engine::general_purpose::STANDARD.encode(&bdc.data);
-            let mime_type = detect_clipboard_image_mime(&bdc.data);
+            let bytes = bdc.data.load();
+            let base64_data = base64::engine::general_purpose::STANDARD.encode(&bytes);
+            let mime_type = detect_clipboard_image_mime(&bytes);
 
             // 크기 계산 (HWPUNIT → px)
             let w = crate::renderer::hwpunit_to_px(pic.common.width as i32, self.dpi);
@@ -1625,7 +1626,7 @@ impl DocumentCore {
                 HwpError::RenderError(format!("바이너리 데이터 {} 범위 초과", bin_data_id))
             })?;
 
-        Ok(bdc.data.clone())
+        Ok(bdc.data.load())
     }
 
     /// 컨트롤의 이미지 MIME 타입을 반환한다.
@@ -1667,7 +1668,7 @@ impl DocumentCore {
                 HwpError::RenderError(format!("바이너리 데이터 {} 범위 초과", bin_data_id))
             })?;
 
-        Ok(detect_clipboard_image_mime(&bdc.data).to_string())
+        Ok(detect_clipboard_image_mime(&bdc.data.load()).to_string())
     }
 
     /// BinData ID(1-based)로 이미지 바이너리 데이터를 반환한다.
@@ -1684,7 +1685,7 @@ impl DocumentCore {
             .ok_or_else(|| {
                 HwpError::RenderError(format!("바이너리 데이터 {} 범위 초과", bin_data_id))
             })?;
-        Ok(bdc.data.clone())
+        Ok(bdc.data.load())
     }
 
     /// BinData ID(1-based)로 이미지 MIME 타입을 반환한다.
@@ -1701,7 +1702,7 @@ impl DocumentCore {
             .ok_or_else(|| {
                 HwpError::RenderError(format!("바이너리 데이터 {} 범위 초과", bin_data_id))
             })?;
-        Ok(detect_clipboard_image_mime(&bdc.data).to_string())
+        Ok(detect_clipboard_image_mime(&bdc.data.load()).to_string())
     }
 
     // === 클립보드 HTML 붙여넣기 ===

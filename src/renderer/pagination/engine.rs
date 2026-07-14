@@ -1705,11 +1705,8 @@ impl Paginator {
                         } else {
                             tac_seg_width_fallback_hu.max(0)
                         };
-                        if crate::renderer::height_measurer::is_tac_table_inline(
-                            table,
-                            seg_w,
-                            &para.text,
-                            &para.controls,
+                        if crate::renderer::height_measurer::is_tac_table_inline_in_para(
+                            table, seg_w, para,
                         ) {
                             continue;
                         }

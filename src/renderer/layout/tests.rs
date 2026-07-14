@@ -2176,7 +2176,7 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     };
     let bin_data = vec![BinDataContent {
         id: 1,
-        data: vec![0xFF, 0xD8, 0xFF, 0xE0], // JPEG magic (내용 무관, 존재만 확인)
+        data: vec![0xFF, 0xD8, 0xFF, 0xE0].into(), // JPEG magic (내용 무관, 존재만 확인)
         extension: "jpg".to_string(),
     }];
     let page_border_fill = PageBorderFill {

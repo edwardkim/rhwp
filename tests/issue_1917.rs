@@ -46,7 +46,7 @@ fn issue_1917_large_bindata_survives_hwpx_roundtrip() {
     doc.sections.push(section);
     doc.bin_data_content.push(BinDataContent {
         id: 1,
-        data: vec![0u8; BIG], // ZIP 으로는 소형 압축 — 압축 해제 상한 검증에 적합
+        data: vec![0u8; BIG].into(), // ZIP 으로는 소형 압축 — 압축 해제 상한 검증에 적합
         extension: "bmp".to_string(),
     });
 

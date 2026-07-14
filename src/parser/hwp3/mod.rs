@@ -3081,7 +3081,7 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
                 let content = crate::model::bin_data::BinDataContent {
                     id,
                     extension: ext.clone(),
-                    data: img_data,
+                    data: img_data.into(),
                 };
                 let bin_data = crate::model::bin_data::BinData {
                     storage_id: id,
@@ -3137,7 +3137,7 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
         .map(|_| crate::model::bin_data::BinDataContent {
             id: 0,
             extension: String::new(),
-            data: Vec::new(),
+            data: Vec::new().into(),
         })
         .collect();
 

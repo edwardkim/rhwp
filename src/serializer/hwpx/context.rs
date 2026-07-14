@@ -371,12 +371,12 @@ mod tests {
         let mut doc = Document::default();
         doc.bin_data_content.push(BinDataContent {
             id: 6,
-            data: vec![0, 1, 2],
+            data: vec![0, 1, 2].into(),
             extension: String::new(),
         });
         doc.bin_data_content.push(BinDataContent {
             id: 7,
-            data: vec![3, 4, 5],
+            data: vec![3, 4, 5].into(),
             extension: "bmp".to_string(),
         });
         let ctx = SerializeContext::collect_from_document(&doc);

@@ -23,7 +23,7 @@ MCP client tarball은 rhwp 저장소의 `tools/` 아래에 둔다. 서버 URL/to
 
 ```text
 /Users/me/rhwp/
-  tools/hwp-convert-mcp-client-20260709-231800.tar.gz
+  tools/hwp-convert-mcp-client-20260713-075145.tar.gz
 
 /Users/me/Devel/hwp-convert/
   .env.local
@@ -46,7 +46,7 @@ HWP2020_MCP_AUTH_TOKEN=<token>
 
 ```bash
 /opt/homebrew/bin/npx -y \
-  --package=file:/Users/me/rhwp/tools/hwp-convert-mcp-client-20260709-231800.tar.gz \
+  --package=file:/Users/me/rhwp/tools/hwp-convert-mcp-client-20260713-075145.tar.gz \
   -- \
   hwp2020-mcp-convert --help
 ```
@@ -55,7 +55,7 @@ HWP2020_MCP_AUTH_TOKEN=<token>
 
 ```bash
 /opt/homebrew/bin/npx -y \
-  --package=file:/Users/me/rhwp/tools/hwp-convert-mcp-client-20260709-231800.tar.gz \
+  --package=file:/Users/me/rhwp/tools/hwp-convert-mcp-client-20260713-075145.tar.gz \
   -- \
   hwp2020-mcp-convert \
   --env-file /Users/me/Devel/hwp-convert/.env.local \
@@ -68,7 +68,7 @@ HWP2020_MCP_AUTH_TOKEN=<token>
 
 성공하면 JSON으로 `status`, `output_path`, `size`, `sha256`, `server.job_id`, `server.validation` 등이 출력된다.
 
-페이지 수가 많거나 거대 표/중첩 표/성능 검증 샘플처럼 오래 걸릴 수 있는 문서는 `--timeout-seconds`를 900~1800초 범위로 충분히 크게 잡는다.
+페이지 수가 많거나 거대 표/중첩 표/성능 검증 샘플처럼 오래 걸릴 수 있는 문서는 `--timeout-seconds`를 900~1800초 범위로 충분히 크게 잡는다. `20260713-075145` client부터 이 값은 서버 변환 옵션뿐 아니라 MCP SDK 요청 대기 시간에도 120초 여유를 더해 적용되므로, SDK 기본 60초 timeout으로 먼저 종료되지 않는다.
 
 ## 선택: VS Code MCP 등록
 

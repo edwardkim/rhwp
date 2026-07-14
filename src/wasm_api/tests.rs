@@ -3343,7 +3343,7 @@ fn test_web_saved_vs_original_detailed() {
         let saved_bc = saved_doc.bin_data_content.iter().find(|c| c.id == bc.id);
         match saved_bc {
             Some(sbc) => {
-                if bc.data.len() == sbc.data.len() && bc.data == sbc.data {
+                if bc.data.len() == sbc.data.len() && bc.data.load() == sbc.data.load() {
                     eprintln!(
                         "  ID {}: 동일 ({}B, ext={})",
                         bc.id,
@@ -14885,7 +14885,7 @@ fn test_analyze_reference_picture() {
             bc.data.len()
         );
         if bc.data.len() >= 8 {
-            let sig = &bc.data[..8];
+            let sig = &bc.data.load()[..8];
             let format = if sig[0..2] == [0xFF, 0xD8] {
                 "JPEG"
             } else if sig[0..4] == [0x89, 0x50, 0x4E, 0x47] {
@@ -23507,12 +23507,8 @@ fn test_create_inline_tac_table() {
     // is_tac_table_inline 확인
     let seg_w = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
     if let crate::model::control::Control::Table(t) = &para.controls[0] {
-        let is_inline = crate::renderer::height_measurer::is_tac_table_inline(
-            t,
-            seg_w,
-            &para.text,
-            &para.controls,
-        );
+        let is_inline =
+            crate::renderer::height_measurer::is_tac_table_inline_in_para(t, seg_w, para);
         eprintln!("  is_tac_table_inline: {} (seg_w={})", is_inline, seg_w);
         assert!(is_inline, "인라인 TAC 표로 판별되어야 함");
     }
@@ -23611,6 +23607,260 @@ fn test_create_blank_document_clears_previous_hwpx_validation_warnings() {
         "새 문서는 이전 HWPX warning을 물려받으면 안 됨: {after}"
     );
     assert_eq!(doc.get_source_format(), "hwp");
+}
+
+#[test]
+fn test_hml_source_format_is_reported_without_reusing_hwp_save_path() {
+    let bytes = br#"<?xml version="1.0" encoding="UTF-8"?>
+<HWPML Style="embed" SubVersion="9.0.1.0" Version="2.9">
+  <HEAD SecCnt="1" />
+  <BODY><SECTION Id="0"><P ParaShape="0" Style="0"><TEXT CharShape="0"><CHAR>HML</CHAR></TEXT></P></SECTION></BODY>
+  <TAIL />
+</HWPML>"#;
+    let doc = HwpDocument::new(bytes).expect("HML 문서를 열어야 한다");
+
+    assert_eq!(doc.get_source_format(), "hml");
+}
+
+#[test]
+fn test_hml_save_state_is_one_canonical_dto_for_hml_non_hml_and_unknown_equation() {
+    let lawful = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P><TEXT><CHAR>ok</CHAR></TEXT></P></SECTION></BODY><TAIL/></HWPML>"#;
+    let mut doc = HwpDocument::new(lawful).expect("lawful HML");
+    let state: Value = serde_json::from_str(&doc.get_hml_save_state()).expect("save state JSON");
+    assert_eq!(
+        state,
+        serde_json::json!({
+            "sourceFormat": "hml",
+            "hmlSavable": true,
+            "blockers": [],
+        })
+    );
+
+    doc.create_blank_document_native()
+        .expect("non-HML blank document");
+    let state: Value = serde_json::from_str(&doc.get_hml_save_state()).expect("save state JSON");
+    assert_eq!(
+        state,
+        serde_json::json!({
+            "sourceFormat": "hwp",
+            "hmlSavable": false,
+            "blockers": [{
+                "code": "HML_SOURCE_REQUIRED",
+                "xmlPath": "/HWPML",
+                "message": "HML 원본 문서만 HML로 저장할 수 있습니다",
+                "preserved": false,
+            }],
+        })
+    );
+
+    let unknown = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P><TEXT><EQUATION FutureAttr="1"><SCRIPT>x</SCRIPT><FUTURE/></EQUATION></TEXT></P></SECTION></BODY><TAIL/></HWPML>"#;
+    let doc = HwpDocument::new(unknown).expect("unknown equation semantics remain readable");
+    let state: Value = serde_json::from_str(&doc.get_hml_save_state()).expect("save state JSON");
+    assert_eq!(state["hmlSavable"], false);
+    assert_eq!(state["sourceFormat"], "hml");
+    assert_eq!(state["blockers"].as_array().map(Vec::len), Some(2));
+    for blocker in state["blockers"].as_array().unwrap() {
+        assert_eq!(blocker["code"], "HML_UNSUPPORTED_EQUATION_SEMANTICS");
+        assert_eq!(blocker["preserved"], false);
+    }
+}
+
+#[test]
+fn test_unknown_equation_values_survive_edit_undo_redo_and_save_state() {
+    let unknown = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P><TEXT><EQUATION><SCRIPT>x</SCRIPT><FUTURE Mode="matrix&amp;inline">secret &lt; value</FUTURE></EQUATION></TEXT></P></SECTION></BODY><TAIL/></HWPML>"#;
+    let mut doc = HwpDocument::new(unknown).expect("unknown equation semantics remain readable");
+    let before_snapshot = doc.save_snapshot_native();
+
+    doc.set_equation_properties_native(0, 0, 0, None, None, r#"{"script":"x^2 + 2"}"#)
+        .expect("equation edit should apply");
+    let after_snapshot = doc.save_snapshot_native();
+
+    let assert_values = |doc: &HwpDocument| {
+        let state: Value =
+            serde_json::from_str(&doc.get_hml_save_state()).expect("save state JSON");
+        let blockers = state["blockers"].as_array().expect("blocker array");
+        assert!(blockers.iter().any(|blocker| {
+            blocker["xmlPath"] == "/HWPML/BODY/SECTION/P/TEXT/EQUATION/FUTURE/@Mode"
+                && blocker["message"]
+                    .as_str()
+                    .is_some_and(|message| message.contains("Mode=matrix&inline"))
+                && blocker["preserved"] == false
+        }));
+        assert!(blockers.iter().any(|blocker| {
+            blocker["xmlPath"] == "/HWPML/BODY/SECTION/P/TEXT/EQUATION/FUTURE/#text"
+                && blocker["message"]
+                    .as_str()
+                    .is_some_and(|message| message.contains("#text=secret < value"))
+                && blocker["preserved"] == false
+        }));
+    };
+
+    assert_values(&doc);
+    doc.restore_snapshot_native(before_snapshot)
+        .expect("undo snapshot should restore");
+    assert_values(&doc);
+    doc.restore_snapshot_native(after_snapshot)
+        .expect("redo snapshot should restore");
+    assert_values(&doc);
+}
+
+#[test]
+fn test_hml_open_metadata_exposes_import_warnings() {
+    let bytes = include_bytes!("../../samples/hml/formatting_table.hml");
+    let doc = HwpDocument::new(bytes).expect("real HML fixture should open");
+    let metadata: Value =
+        serde_json::from_str(&doc.get_hml_open_metadata()).expect("HML metadata JSON");
+
+    assert_eq!(metadata["format"], "hml");
+    assert_eq!(metadata["hwpmlVersion"], "2.91");
+    assert_eq!(metadata["encoding"], "utf-8");
+    assert_eq!(metadata["resourceCount"], 0);
+    assert_eq!(metadata["hmlSavable"], true);
+    assert_eq!(metadata["saveBlockers"], serde_json::json!([]));
+    assert!(metadata["warnings"].as_array().is_some_and(|items| {
+        items
+            .iter()
+            .any(|warning| warning["xmlPath"] == "/HWPML/TAIL/SCRIPTCODE")
+    }));
+}
+
+#[test]
+fn test_hml_open_metadata_escapes_special_characters_as_valid_json() {
+    let bytes = include_bytes!("../../samples/hml/formatting_table.hml");
+    let mut doc = HwpDocument::new(bytes).expect("real HML fixture should open");
+    let special = "2.91\"\\\n한글\t";
+    let metadata = doc
+        .core
+        .hml_metadata
+        .as_mut()
+        .expect("HML metadata should exist");
+    metadata.hwpml_version = Some(special.to_string());
+    metadata.warnings[0].message = special.to_string();
+
+    let json: Value = serde_json::from_str(&doc.get_hml_open_metadata())
+        .expect("metadata must remain valid JSON");
+
+    assert_eq!(json["hwpmlVersion"], special);
+    assert_eq!(json["warnings"][0]["message"], special);
+}
+
+#[test]
+fn test_export_hml_binding_preserves_edit_and_fragment() {
+    let bytes = include_bytes!("../../samples/hml/formatting_table.hml");
+    let mut doc = HwpDocument::new(bytes).expect("real HML fixture should open");
+    let (section_index, paragraph_index) = doc
+        .document()
+        .sections
+        .iter()
+        .enumerate()
+        .find_map(|(section_index, section)| {
+            section
+                .paragraphs
+                .iter()
+                .position(|paragraph| !paragraph.text.is_empty())
+                .map(|paragraph_index| (section_index, paragraph_index))
+        })
+        .expect("fixture should contain text");
+    doc.insert_text_native(section_index, paragraph_index, 0, "WASM_EDIT_")
+        .expect("apply public edit");
+
+    let exported = doc.export_hml().expect("exportHml should succeed");
+
+    assert_eq!(
+        crate::parser::detect_format(&exported),
+        crate::parser::FileFormat::Hml
+    );
+    assert!(String::from_utf8_lossy(&exported).contains("<SCRIPTCODE"));
+    let reparsed = DocumentCore::from_bytes(&exported).expect("exportHml output should reparse");
+    assert!(
+        reparsed.document().sections[section_index].paragraphs[paragraph_index]
+            .text
+            .starts_with("WASM_EDIT_")
+    );
+}
+
+#[test]
+fn test_export_hml_error_message_exposes_blocker_codes() {
+    let fixture = std::str::from_utf8(include_bytes!("../../samples/hml/formatting_table.hml"))
+        .expect("fixture is UTF-8");
+    let lossy = fixture.replacen("Type=\"None\"", "Type=\"Dash\"", 1);
+    let doc = HwpDocument::new(lossy.as_bytes()).expect("lossy HML should import");
+    let error = doc
+        .core
+        .export_hml_native()
+        .expect_err("lossy import must block exportHml");
+    let blocker = &error.blockers()[0];
+
+    let message = super::format_hml_export_error(&error);
+
+    assert!(message.contains(blocker.code), "{message}");
+    assert!(message.contains(&blocker.xml_path), "{message}");
+    assert!(message.contains(&blocker.message), "{message}");
+}
+
+#[test]
+fn test_hml_open_metadata_uses_shared_preflight_for_import_and_ir_loss() {
+    let fixture = std::str::from_utf8(include_bytes!("../../samples/hml/formatting_table.hml"))
+        .expect("fixture is UTF-8");
+    let lossy = fixture.replacen("Type=\"None\"", "Type=\"Dash\"", 1);
+    let import_loss = HwpDocument::new(lossy.as_bytes()).expect("lossy HML should import");
+    let import_json: Value =
+        serde_json::from_str(&import_loss.get_hml_open_metadata()).expect("metadata JSON");
+    assert_eq!(import_json["hmlSavable"], false);
+    assert!(import_json["saveBlockers"]
+        .as_array()
+        .is_some_and(|blockers| {
+            blockers.iter().any(|blocker| {
+                blocker["code"] == "UNSUPPORTED_ATTRIBUTE"
+                    && blocker["xmlPath"]
+                        == "/HWPML/HEAD/MAPPINGTABLE/BORDERFILLLIST/BORDERFILL/LEFTBORDER"
+                    && blocker["message"]
+                        .as_str()
+                        .is_some_and(|message| !message.is_empty())
+            })
+        }));
+
+    let mut edited_ir = HwpDocument::new(fixture.as_bytes()).expect("lawful HML should import");
+    edited_ir.document_mut().sections[0].paragraphs[0].column_type =
+        crate::model::paragraph::ColumnBreakType::Section;
+    let ir_json: Value =
+        serde_json::from_str(&edited_ir.get_hml_open_metadata()).expect("metadata JSON");
+    assert_eq!(ir_json["hmlSavable"], false);
+    assert!(ir_json["saveBlockers"].as_array().is_some_and(|blockers| {
+        blockers.iter().any(|blocker| {
+            blocker["code"] == "HML_UNSUPPORTED_IR"
+                && blocker["xmlPath"]
+                    .as_str()
+                    .is_some_and(|path| !path.is_empty())
+                && blocker["message"]
+                    .as_str()
+                    .is_some_and(|message| !message.is_empty())
+        })
+    }));
+}
+
+#[test]
+fn test_hml_open_metadata_reports_mixed_import_and_ir_loss() {
+    let fixture = std::str::from_utf8(include_bytes!("../../samples/hml/formatting_table.hml"))
+        .expect("fixture is UTF-8");
+    let lossy = fixture.replacen("Type=\"None\"", "Type=\"Dash\"", 1);
+    let mut doc = HwpDocument::new(lossy.as_bytes()).expect("lossy HML should import");
+    doc.document_mut().sections[0].paragraphs[0].column_type =
+        crate::model::paragraph::ColumnBreakType::Section;
+
+    let metadata: Value =
+        serde_json::from_str(&doc.get_hml_open_metadata()).expect("metadata JSON");
+    let blockers = metadata["saveBlockers"]
+        .as_array()
+        .expect("save blockers array");
+
+    assert_eq!(metadata["hmlSavable"], false);
+    assert!(blockers
+        .iter()
+        .any(|blocker| blocker["code"] == "UNSUPPORTED_ATTRIBUTE"));
+    assert!(blockers
+        .iter()
+        .any(|blocker| blocker["code"] == "HML_UNSUPPORTED_IR"));
 }
 
 #[test]

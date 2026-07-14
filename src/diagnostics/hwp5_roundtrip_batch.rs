@@ -229,7 +229,7 @@ fn detected_format_name(fmt: crate::parser::FileFormat) -> Option<&'static str> 
     match fmt {
         FileFormat::Hwpx => Some("HWPX(ZIP)"),
         FileFormat::Hwp3 => Some("HWP3"),
-        FileFormat::LegacyHwpml => Some("HWPML(구 XML)"),
+        FileFormat::Hml => Some("HWPML(구 XML)"),
         FileFormat::DrmProtected => Some("DRM 보호"),
         FileFormat::Empty => Some("빈 파일"),
         FileFormat::Hwp | FileFormat::Unknown => None,

@@ -17,6 +17,7 @@ test('embed protocol은 capability를 포함한 v1 connect와 session-bound requ
   assert.equal(isConnectMessage({ type: 'rhwp-connect', version: 1, sessionId: 's-1' }), false);
   assert.equal(isConnectMessage({ type: 'rhwp-connect', version: 2, sessionId: 's-1' }), false);
   assert.equal(isConnectMessage({ type: 'rhwp-connect', version: 1, sessionId: '' }), false);
+  assert.deepEqual(EMBED_CAPABILITIES, ['transferable-array-buffer', 'hml-export']);
 
   assert.equal(isRequestEnvelope({
     type: 'rhwp-request', version: 1, sessionId: 's-1', id: 1, method: 'ready', params: {},
@@ -41,6 +42,8 @@ test('embed router는 binary load와 unknown method를 공개 동작으로 처�
     getPageSvg: async () => '<svg/>',
     exportHwp: async () => new Uint8Array([1]),
     exportHwpx: async () => new Uint8Array([2]),
+    exportHml: async () => new Uint8Array([3]),
+    getHmlSaveState: async () => ({ sourceFormat: 'hml', hmlSavable: true, blockers: [] }),
     exportHwpVerify: async () => ({ recovered: true }),
   };
 
@@ -58,6 +61,12 @@ test('embed router는 binary load와 unknown method를 공개 동작으로 처�
     /page must be a non-negative integer/,
   );
   await assert.rejects(() => routeEmbedRequest('missing', {}, handlers), /Unknown method: missing/);
+  assert.deepEqual(await routeEmbedRequest('exportHml', {}, handlers), new Uint8Array([3]));
+  assert.deepEqual(await routeEmbedRequest('getHmlSaveState', {}, handlers), {
+    sourceFormat: 'hml',
+    hmlSavable: true,
+    blockers: [],
+  });
   await assert.rejects(
     () => routeEmbedRequest('loadFile', { data: [3, 4], fileName: 'legacy.hwp' }, handlers),
     /binary data/,
@@ -79,6 +88,8 @@ test('embed runtime은 parent의 exact origin에서 v1 port session을 설치한
     getPageSvg: async () => '<svg/>',
     exportHwp: async () => new Uint8Array([1]),
     exportHwpx: async () => new Uint8Array([2]),
+    exportHml: async () => new Uint8Array([3]),
+    getHmlSaveState: async () => ({ sourceFormat: 'hml', hmlSavable: true, blockers: [] }),
     exportHwpVerify: async () => ({ recovered: true }),
   };
   const cleanup = installEmbedRuntime({
@@ -106,7 +117,7 @@ test('embed runtime은 parent의 exact origin에서 v1 port session을 설치한
   messageListener({
     data: {
       type: 'rhwp-connect', version: 1, sessionId: 'session-a',
-      capabilities: ['transferable-array-buffer'],
+      capabilities: ['transferable-array-buffer', 'hml-export'],
     },
     source: parentWindow,
     origin: 'https://host.example',
@@ -117,12 +128,115 @@ test('embed runtime은 parent의 exact origin에서 v1 port session을 설치한
   assert.deepEqual(messages, [
     {
       type: 'rhwp-connected', version: 1, sessionId: 'session-a',
-      capabilities: ['transferable-array-buffer'],
+      capabilities: ['transferable-array-buffer', 'hml-export'],
     },
     { type: 'rhwp-response', version: 1, sessionId: 'session-a', id: 4, result: 7 },
   ]);
   cleanup();
   channel.port1.close();
+});
+
+test('exportHml transferable 응답은 WASM 소유 bytes를 detach하지 않는다', async () => {
+  let messageListener: (event: MessageEvent) => void = () => {};
+  const hostWindow = {
+    addEventListener(_type: string, listener: (event: MessageEvent) => void) {
+      messageListener = listener;
+    },
+    removeEventListener() {},
+  };
+  const parentWindow = { postMessage() {} };
+  const source = new Uint8Array([10, 20, 30]);
+  const handlers = {
+    exportHml: async () => source,
+  } as EmbedRpcHandlers;
+  const cleanup = installEmbedRuntime({
+    hostWindow: hostWindow as unknown as Window,
+    parentWindow: parentWindow as unknown as Window,
+    handlers,
+  });
+  const channel = new MessageChannel();
+  const response = new Promise<unknown>((resolve) => {
+    channel.port1.onmessage = ({ data }) => {
+      if (data.type === 'rhwp-connected') {
+        channel.port1.postMessage({
+          type: 'rhwp-request', version: 1, sessionId: 'hml-transfer',
+          id: 1, method: 'exportHml', params: {},
+        });
+      } else {
+        resolve(data);
+      }
+    };
+    channel.port1.start();
+  });
+
+  try {
+    messageListener({
+      data: {
+        type: 'rhwp-connect', version: 1, sessionId: 'hml-transfer',
+        capabilities: ['transferable-array-buffer', 'hml-export'],
+      },
+      source: parentWindow, origin: 'https://host.example', ports: [channel.port2],
+    } as unknown as MessageEvent);
+    const message = await response as { result: Uint8Array };
+
+    assert.deepEqual([...message.result], [10, 20, 30]);
+    assert.deepEqual([...source], [10, 20, 30]);
+    assert.equal(source.buffer.byteLength, 3);
+  } finally {
+    cleanup();
+    channel.port1.close();
+  }
+});
+
+test('exportHml 실패는 bytes 없이 error-only envelope를 반환한다', async () => {
+  let messageListener: (event: MessageEvent) => void = () => {};
+  const hostWindow = {
+    addEventListener(_type: string, listener: (event: MessageEvent) => void) {
+      messageListener = listener;
+    },
+    removeEventListener() {},
+  };
+  const parentWindow = { postMessage() {} };
+  const cleanup = installEmbedRuntime({
+    hostWindow: hostWindow as unknown as Window,
+    parentWindow: parentWindow as unknown as Window,
+    handlers: {
+      exportHml: async () => { throw new Error('HML_SOURCE_REQUIRED: blocked'); },
+    } as EmbedRpcHandlers,
+  });
+  const channel = new MessageChannel();
+  const response = new Promise<Record<string, unknown>>((resolve) => {
+    channel.port1.onmessage = ({ data }) => {
+      if (data.type === 'rhwp-connected') {
+        channel.port1.postMessage({
+          type: 'rhwp-request', version: 1, sessionId: 'hml-error',
+          id: 2, method: 'exportHml', params: {},
+        });
+      } else {
+        resolve(data);
+      }
+    };
+    channel.port1.start();
+  });
+
+  try {
+    messageListener({
+      data: {
+        type: 'rhwp-connect', version: 1, sessionId: 'hml-error',
+        capabilities: ['transferable-array-buffer', 'hml-export'],
+      },
+      source: parentWindow, origin: 'https://host.example', ports: [channel.port2],
+    } as unknown as MessageEvent);
+    const message = await response;
+
+    assert.equal(Object.hasOwn(message, 'result'), false);
+    assert.deepEqual(message.error, {
+      code: 'RPC_ERROR', message: 'HML_SOURCE_REQUIRED: blocked',
+    });
+  } finally {
+    cleanup();
+    channel.port1.close();
+  }
 });
 
 test('embed runtime은 bound session의 malformed request에만 구조화된 오류를 반환한다', async () => {

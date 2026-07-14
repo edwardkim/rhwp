@@ -49,6 +49,39 @@ pub fn is_tac_table_inline(
     false
 }
 
+/// treat_as_char 표가 문단 문맥에서 인라인인지 판별
+///
+/// 앵커 양쪽에 실제 텍스트(Letter/Number 가시 글자)가 있으면 텍스트 순서를
+/// 보존하기 위해 인라인으로 판정하고, 그 외에는 [`is_tac_table_inline`] 규칙을
+/// 따른다. HWP TAC 필러(U+F081C 등 PUA)·공백·오브젝트마커만 있는 문단
+/// (예: 복학원서.hwp pi=16)은 실제 텍스트가 아니므로 여기서 제외된다.
+pub fn is_tac_table_inline_in_para(table: &Table, seg_width: i32, para: &Paragraph) -> bool {
+    let chars: Vec<char> = para.text.chars().collect();
+    let control_positions = para.control_text_positions();
+    let has_middle_anchor = para
+        .controls
+        .iter()
+        .enumerate()
+        .any(|(control_index, control)| {
+            matches!(control, Control::Table(candidate) if std::ptr::eq(candidate.as_ref(), table))
+                && control_positions
+                    .get(control_index)
+                    .is_some_and(|&position| {
+                        chars
+                            .get(..position)
+                            .is_some_and(|before| before.iter().any(|ch| ch.is_alphanumeric()))
+                            && chars
+                                .get(position..)
+                                .is_some_and(|after| after.iter().any(|ch| ch.is_alphanumeric()))
+                    })
+        });
+    if has_middle_anchor {
+        return true;
+    }
+
+    is_tac_table_inline(table, seg_width, &para.text, &para.controls)
+}
+
 fn empty_paragraph_fallback_line_metrics(
     para: &Paragraph,
     styles: &ResolvedStyleSet,
@@ -400,9 +433,10 @@ impl HeightMeasurer {
 
             // 블록 표 컨트롤 감지 (일반 표 + treat_as_char 블록형)
             let seg_width = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
-            let has_table = para.controls.iter()
-                .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char
-                    || (t.common.treat_as_char && !is_tac_table_inline(t, seg_width, &para.text, &para.controls))));
+            let has_table = para.controls.iter().any(|c| {
+                matches!(c, Control::Table(t) if !t.common.treat_as_char
+                    || (t.common.treat_as_char && !is_tac_table_inline_in_para(t, seg_width, para)))
+            });
 
             // 그림 컨트롤 감지 및 높이 측정
             let has_picture = para
@@ -761,7 +795,7 @@ impl HeightMeasurer {
         control_index: usize,
         styles: &ResolvedStyleSet,
     ) -> MeasuredTable {
-        self.measure_table_impl(table, para_index, control_index, styles, 0)
+        self.measure_table_impl(table, para_index, control_index, styles, 0, 1.0)
     }
 
     /// 재귀적 높이 제한
@@ -773,6 +807,8 @@ impl HeightMeasurer {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
         depth: usize,
+        // [#2195] 부모 셀 전폭(px, 스트레치 기준). 0.0 = 미적용.
+        parent_cell_w: f64,
     ) -> f64 {
         if depth >= Self::MAX_NESTED_DEPTH {
             return 0.0;
@@ -784,7 +820,10 @@ impl HeightMeasurer {
                     .iter()
                     .filter_map(|ctrl| {
                         if let Control::Table(nested) = ctrl {
-                            let mt = self.measure_table_impl(nested, 0, 0, styles, depth + 1);
+                            let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi);
+                            let stretch = 1.0; // [#2195] 스트레치는 render_normalized 로 일원화
+                            let mt =
+                                self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch);
                             Some(mt.total_height)
                         } else {
                             None
@@ -805,6 +844,8 @@ impl HeightMeasurer {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
         depth: usize,
+        // [#2195] 부모 셀 전폭(px, 스트레치 기준). 0.0 = 미적용.
+        parent_cell_w: f64,
     ) -> f64 {
         if depth >= Self::MAX_NESTED_DEPTH {
             return 0.0;
@@ -817,7 +858,10 @@ impl HeightMeasurer {
                     .iter()
                     .filter_map(|ctrl| {
                         if let Control::Table(nested) = ctrl {
-                            let mt = self.measure_table_impl(nested, 0, 0, styles, depth + 1);
+                            let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi);
+                            let stretch = 1.0; // [#2195] 스트레치는 render_normalized 로 일원화
+                            let mt =
+                                self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch);
                             // [#2148 실험] NO_LS 중첩 표 선언 신뢰 — 성장 전용 max.
                             let declared = hwpunit_to_px(nested.common.height as i32, self.dpi);
                             // [#2169] om 가산은 additive 경로(cell_controls_height)
@@ -851,6 +895,10 @@ impl HeightMeasurer {
         control_index: usize,
         styles: &ResolvedStyleSet,
         depth: usize,
+        // [#2195] 중첩 표 스트레치 배율: 부모 셀 inner / 중첩 표 저장 폭 (>=1.0).
+        // 한글은 내부 표를 부모 셀 inner 폭으로 확장 배치한다 (76076 표325 r6:
+        // 저장 487.6px vs 실효 ~506px, 근거설명 셀 41줄 오라클 + 휴먼명조 사다리).
+        width_scale: f64,
     ) -> MeasuredTable {
         if depth >= Self::MAX_NESTED_DEPTH {
             let rc = table.row_count as usize;
@@ -898,6 +946,7 @@ impl HeightMeasurer {
                             control_index,
                             styles,
                             depth + 1,
+                            width_scale,
                         );
                     }
                 }
@@ -944,7 +993,7 @@ impl HeightMeasurer {
                 let pad_left = hwpunit_to_px(eff_pad.left as i32, self.dpi);
                 let pad_right = hwpunit_to_px(eff_pad.right as i32, self.dpi);
                 let cell_w_px = if cell.width < 0x80000000 {
-                    hwpunit_to_px(cell.width as i32, self.dpi)
+                    hwpunit_to_px(cell.width as i32, self.dpi) * width_scale
                 } else {
                     0.0
                 };
@@ -1026,14 +1075,44 @@ impl HeightMeasurer {
                                         }
                                     }
                                 } else if crate::renderer::para_has_no_stored_line_segs(p)
+                                    && !p.controls.is_empty()
                                     && p.controls
                                         .iter()
-                                        .any(|c| matches!(c, Control::Table(_)))
+                                        .all(|c| matches!(c, Control::Table(_)))
                                 {
                                     // [#2169] TAC 중첩 표 anchor 빈 문단 몫 = 0
                                     // (anchor 사다리: row = nested+pad 정확).
                                     // 중첩 몫은 cell_controls_height 가산이 전담.
                                     0.0
+                                } else if crate::renderer::para_has_no_stored_line_segs(p)
+                                    && p.controls
+                                        .iter()
+                                        .any(|c| matches!(c, Control::Table(_)))
+                                {
+                                    // [#2195] 표+타 컨트롤(누름틀 필드 등) 동반 anchor 빈
+                                    // 문단은 자체 줄박스 계상 - 86712 근거설명 괘선 회계:
+                                    // 호스트(15pt ls120) = 24px 가 자연 행높이 성분.
+                                    let fs = p
+                                        .char_shapes
+                                        .first()
+                                        .and_then(|cs| {
+                                            styles.char_styles.get(cs.char_shape_id as usize)
+                                        })
+                                        .map(|cs| cs.font_size)
+                                        .unwrap_or(0.0);
+                                    if fs <= 0.0 {
+                                        hwpunit_to_px(400, self.dpi)
+                                    } else {
+                                        match para_style {
+                                            Some(ps) => crate::renderer::corrected_line_height(
+                                                hwpunit_to_px(400, self.dpi),
+                                                fs,
+                                                ps.line_spacing_type,
+                                                ps.line_spacing,
+                                            ),
+                                            None => fs,
+                                        }
+                                    }
                                 } else {
                                     hwpunit_to_px(400, self.dpi)
                                 };
@@ -1163,7 +1242,19 @@ impl HeightMeasurer {
                         .flat_map(|p| p.controls.iter())
                         .filter_map(|ctrl| {
                             if let Control::Table(nested) = ctrl {
-                                let mt = self.measure_table_impl(nested, 0, 0, styles, depth + 1);
+                                let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi);
+                                // 한글 실효폭은 부모 셀 **전폭**(pad 미차감, 76076
+                                // 근거설명 셀: 유효 ~504px = 부모 w 506.2, inner 492.6
+                                // 으로는 L0 40자 수용 불가) 기준.
+                                let stretch = 1.0; // [#2195] 스트레치는 render_normalized 로 일원화
+                                let mt = self.measure_table_impl(
+                                    nested,
+                                    0,
+                                    0,
+                                    styles,
+                                    depth + 1,
+                                    stretch,
+                                );
                                 let declared = hwpunit_to_px(nested.common.height as i32, self.dpi);
                                 let om = hwpunit_to_px(nested.outer_margin_top as i32, self.dpi)
                                     + hwpunit_to_px(nested.outer_margin_bottom as i32, self.dpi);
@@ -1183,8 +1274,12 @@ impl HeightMeasurer {
                         .map(|s| s.vertical_pos + s.line_height)
                         .max()
                         .unwrap_or(0);
-                    let nested_bottom =
-                        self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth);
+                    let nested_bottom = self.cell_nested_controls_bottom(
+                        &cell.paragraphs,
+                        styles,
+                        depth,
+                        cell_w_px,
+                    );
                     hwpunit_to_px(last_seg_end, self.dpi)
                         .max(text_height)
                         .max(nested_bottom)
@@ -1347,6 +1442,26 @@ impl HeightMeasurer {
                 } else {
                     required_height
                 };
+                // [#2097 진단] 셀별 선언/측정/trailing 분해 — 동작 불변.
+                if std::env::var("RHWP_DIAG_ROWH").is_ok() && depth == 0 {
+                    let all_stored = !cell.paragraphs.is_empty()
+                        && cell
+                            .paragraphs
+                            .iter()
+                            .all(|p| !crate::renderer::para_has_no_stored_line_segs(p));
+                    eprintln!(
+                        "DIAG_ROWH r={} c={} decl={:.1} req={:.1} content={:.1} pad={:.1} trail={:.1} stored={} nested={}",
+                        cell.row,
+                        cell.col,
+                        cell_h_px,
+                        required_height,
+                        content_height,
+                        total_pad,
+                        cell_last_trailing_ls,
+                        all_stored,
+                        has_nested_table_in_cell,
+                    );
+                }
                 if required_height > row_heights[r] {
                     row_heights[r] = required_height;
                 }
@@ -1424,7 +1539,7 @@ impl HeightMeasurer {
                     hwpunit_to_px(eff_pad.right as i32, self.dpi),
                 );
                 let cell_w_px = if cell.width < 0x80000000 {
-                    hwpunit_to_px(cell.width as i32, self.dpi)
+                    hwpunit_to_px(cell.width as i32, self.dpi) * width_scale
                 } else {
                     0.0
                 };
@@ -1501,14 +1616,44 @@ impl HeightMeasurer {
                                         }
                                     }
                                 } else if crate::renderer::para_has_no_stored_line_segs(p)
+                                    && !p.controls.is_empty()
                                     && p.controls
                                         .iter()
-                                        .any(|c| matches!(c, Control::Table(_)))
+                                        .all(|c| matches!(c, Control::Table(_)))
                                 {
                                     // [#2169] TAC 중첩 표 anchor 빈 문단 몫 = 0
                                     // (anchor 사다리: row = nested+pad 정확).
                                     // 중첩 몫은 cell_controls_height 가산이 전담.
                                     0.0
+                                } else if crate::renderer::para_has_no_stored_line_segs(p)
+                                    && p.controls
+                                        .iter()
+                                        .any(|c| matches!(c, Control::Table(_)))
+                                {
+                                    // [#2195] 표+타 컨트롤(누름틀 필드 등) 동반 anchor 빈
+                                    // 문단은 자체 줄박스 계상 - 86712 근거설명 괘선 회계:
+                                    // 호스트(15pt ls120) = 24px 가 자연 행높이 성분.
+                                    let fs = p
+                                        .char_shapes
+                                        .first()
+                                        .and_then(|cs| {
+                                            styles.char_styles.get(cs.char_shape_id as usize)
+                                        })
+                                        .map(|cs| cs.font_size)
+                                        .unwrap_or(0.0);
+                                    if fs <= 0.0 {
+                                        hwpunit_to_px(400, self.dpi)
+                                    } else {
+                                        match para_style {
+                                            Some(ps) => crate::renderer::corrected_line_height(
+                                                hwpunit_to_px(400, self.dpi),
+                                                fs,
+                                                ps.line_spacing_type,
+                                                ps.line_spacing,
+                                            ),
+                                            None => fs,
+                                        }
+                                    }
                                 } else {
                                     hwpunit_to_px(400, self.dpi)
                                 };
@@ -1621,7 +1766,7 @@ impl HeightMeasurer {
                 // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
                 let non_inline_h = self.measure_non_inline_controls_height(&cell.paragraphs);
                 let nested_bottom =
-                    self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth);
+                    self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth, cell_w_px);
                 let wrap_bottom = self.cell_wrap_objects_bottom_height(&cell.paragraphs);
                 // [Task #2221] 단일행과 동일 — 중첩/TAC 표의 저장 LINE_SEG 텍스트
                 // 셀은 pad 미가산 (layout 2-b relaxed_pad 미러).
@@ -1719,7 +1864,10 @@ impl HeightMeasurer {
                 }
                 let declared_rows_sum: f64 = per_row.iter().sum::<f64>()
                     + cell_spacing * (row_count.saturating_sub(1) as f64);
-                declared_rows_sum < common_h * 0.5
+                // [#2195] stale-min(x0.5) 한정을 일반 발동으로 완화 — 한글은 콘텐츠가
+                // 선언보다 작아도 표 선언높이를 유지한다 (80168 pi=419). #2070 당시 전면
+                // 발동의 163쪽 폭발은 타 축 미정합 상태의 결과.
+                declared_rows_sum < common_h * 0.5 || raw_table_height + 0.5 < common_h
             }
         {
             // [#2070] 비-TAC 표는 선언 표높이(size.height)가 최소 높이다 — 한글은
@@ -1944,8 +2092,13 @@ impl HeightMeasurer {
                     .iter()
                     .find(|c| c.row as usize == mc.row && c.col as usize == mc.col)
                     .unwrap();
+                let mc_cell_w = if cell.width < 0x80000000 {
+                    hwpunit_to_px(cell.width as i32, self.dpi) * width_scale
+                } else {
+                    0.0
+                };
                 let nested_bottom =
-                    self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth);
+                    self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth, mc_cell_w);
                 mc.total_content_height = nested_bottom.max(mc.total_content_height);
             }
         }
@@ -2001,9 +2154,10 @@ impl HeightMeasurer {
 
             // 블록 표 컨트롤 감지 (일반 표 + treat_as_char 블록형)
             let seg_width_r = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
-            let has_table = para.controls.iter()
-                .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char
-                    || (t.common.treat_as_char && !is_tac_table_inline(t, seg_width_r, &para.text, &para.controls))));
+            let has_table = para.controls.iter().any(|c| {
+                matches!(c, Control::Table(t) if !t.common.treat_as_char
+                    || (t.common.treat_as_char && !is_tac_table_inline_in_para(t, seg_width_r, para)))
+            });
             let has_picture = para
                 .controls
                 .iter()
@@ -2101,9 +2255,10 @@ impl HeightMeasurer {
             let comp = composed.get(para_idx);
             // 블록 표 컨트롤 감지 (일반 표 + treat_as_char 블록형)
             let seg_width_r = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
-            let has_table = para.controls.iter()
-                .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char
-                    || (t.common.treat_as_char && !is_tac_table_inline(t, seg_width_r, &para.text, &para.controls))));
+            let has_table = para.controls.iter().any(|c| {
+                matches!(c, Control::Table(t) if !t.common.treat_as_char
+                    || (t.common.treat_as_char && !is_tac_table_inline_in_para(t, seg_width_r, para)))
+            });
             let has_picture = para
                 .controls
                 .iter()
@@ -2664,6 +2819,78 @@ mod tests {
     use super::*;
     use crate::model::paragraph::{LineSeg, Paragraph};
     use crate::model::table::{Cell, Table};
+
+    fn wide_tac_table(width: u32) -> Box<Table> {
+        Box::new(Table {
+            common: CommonObjAttr {
+                treat_as_char: true,
+                width,
+                ..Default::default()
+            },
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                row_span: 1,
+                col_span: 1,
+                width,
+                ..Default::default()
+            }],
+            ..Default::default()
+        })
+    }
+
+    #[test]
+    fn wide_tac_table_stays_block_at_text_boundaries() {
+        let leading = Paragraph {
+            text: "abc".to_string(),
+            char_offsets: vec![8, 9, 10],
+            controls: vec![Control::Table(wide_tac_table(950))],
+            ..Default::default()
+        };
+        let Control::Table(leading_table) = &leading.controls[0] else {
+            unreachable!()
+        };
+        assert!(!is_tac_table_inline_in_para(leading_table, 1000, &leading));
+
+        let trailing = Paragraph {
+            text: "abc".to_string(),
+            char_offsets: vec![0, 1, 2],
+            controls: vec![Control::Table(wide_tac_table(950))],
+            ..Default::default()
+        };
+        let Control::Table(trailing_table) = &trailing.controls[0] else {
+            unreachable!()
+        };
+        assert!(!is_tac_table_inline_in_para(
+            trailing_table,
+            1000,
+            &trailing
+        ));
+    }
+
+    #[test]
+    fn wide_tac_table_uses_unicode_middle_anchor_for_only_that_table() {
+        let para = Paragraph {
+            text: "A🎉B".to_string(),
+            // A(1 UTF-16) + 🎉(2 UTF-16) + control gap(8) + B.
+            char_offsets: vec![0, 1, 11],
+            controls: vec![
+                Control::Table(wide_tac_table(950)),
+                Control::Table(wide_tac_table(950)),
+            ],
+            ..Default::default()
+        };
+        assert_eq!(para.control_text_positions(), [2, 3]);
+
+        let Control::Table(middle_table) = &para.controls[0] else {
+            unreachable!()
+        };
+        let Control::Table(trailing_table) = &para.controls[1] else {
+            unreachable!()
+        };
+        assert!(is_tac_table_inline_in_para(middle_table, 1000, &para));
+        assert!(!is_tac_table_inline_in_para(trailing_table, 1000, &para));
+    }
 
     #[test]
     fn test_measure_empty_section() {

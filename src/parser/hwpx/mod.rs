@@ -41,8 +41,19 @@ fn hwpx_bin_data_extension(item: &content::PackageItem) -> String {
     }
 }
 
-fn normalize_internal_ole_data(item: &content::PackageItem, mut data: Vec<u8>) -> Vec<u8> {
-    if !is_internal_ole_package_item(item) || data.len() <= 12 {
+fn normalize_internal_ole_data(item: &content::PackageItem, data: Vec<u8>) -> Vec<u8> {
+    if !is_internal_ole_package_item(item) {
+        return data;
+    }
+    normalize_ole_bytes(data)
+}
+
+/// 내부 OLE 바이트에서 선두 4-byte LE size prefix 를 제거한다.
+///
+/// [Task #2263] 지연 로딩 시점에도 동일 정규화를 적용해야 하므로
+/// `PackageItem` 의존 없는 바이트 전용 함수로 분리했다.
+fn normalize_ole_bytes(mut data: Vec<u8>) -> Vec<u8> {
+    if data.len() <= 12 {
         return data;
     }
 
@@ -51,6 +62,53 @@ fn normalize_internal_ole_data(item: &content::PackageItem, mut data: Vec<u8>) -
         data.drain(..4);
     }
     data
+}
+
+/// [Task #2263] HWPX ZIP 원본을 보유하고 요청 시점에 BinData 엔트리를 압축 해제한다.
+///
+/// 파싱 시점에 모든 내장 이미지를 풀어 IR 에 상주시키면 원본 파일 크기의
+/// 수십 배 메모리를 쓰게 된다 (무손실 비트맵 다수 내장 시 특히). ZIP 안의
+/// 이미지는 deflate 압축 상태이므로, 원본 컨테이너만 들고 있다가 실제로
+/// 렌더·직렬화되는 항목만 그때 푼다.
+struct HwpxBinResolver {
+    reader: std::sync::Mutex<reader::HwpxReader>,
+    /// 선두 size prefix 정규화가 필요한 내부 OLE 엔트리 경로
+    ole_hrefs: HashSet<String>,
+}
+
+impl std::fmt::Debug for HwpxBinResolver {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("HwpxBinResolver")
+            .field("ole_hrefs", &self.ole_hrefs.len())
+            .finish()
+    }
+}
+
+impl crate::model::bin_data::BinDataResolver for HwpxBinResolver {
+    fn resolve(&self, key: &str) -> Vec<u8> {
+        let mut reader = match self.reader.lock() {
+            Ok(r) => r,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        match reader.read_file_bytes(key) {
+            Ok(data) => {
+                if self.ole_hrefs.contains(key) {
+                    normalize_ole_bytes(data)
+                } else {
+                    data
+                }
+            }
+            Err(e) => {
+                // [#1917] 로드 실패 시에도 엔트리는 등록된 상태를 유지한다
+                // (manifest·binaryItemIDRef 보존). 이미지 데이터만 소실.
+                eprintln!(
+                    "경고: BinData '{}' 로드 실패: {} — 이미지 데이터 소실",
+                    key, e
+                );
+                Vec::new()
+            }
+        }
+    }
 }
 
 /// HWPX 파싱 에러
@@ -313,7 +371,25 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // head version == "1.4" 오탐지로 네이티브 HWPX 전반에 부당 적용되어 삭제했다.
     // 상세 사유는 위 hwpml_version 파싱부 주석 참조.
 
-    // 5. BinData 이미지 로딩
+    // 5. BinData 이미지 등록 (지연 로딩)
+    //
+    // [Task #2263] 여기서 바이트를 미리 풀지 않는다. ZIP 원본을 보유한
+    // 리졸버만 등록하고, 실제로 렌더·직렬화되는 항목만 그 시점에 압축을 푼다.
+    // 로드 실패(상한 초과·엔트리 손상 등) 시에도 엔트리 자체는 등록되므로
+    // [#1917] 의 manifest·binaryItemIDRef 보존 의미는 그대로 유지된다
+    // (리졸버가 빈 바이트를 반환 → 이미지 데이터만 소실).
+    let ole_hrefs: HashSet<String> = package_info
+        .bin_data_items
+        .iter()
+        .filter(|item| is_internal_ole_package_item(item))
+        .map(|item| item.href.clone())
+        .collect();
+    let bin_resolver: std::sync::Arc<dyn crate::model::bin_data::BinDataResolver> =
+        std::sync::Arc::new(HwpxBinResolver {
+            reader: std::sync::Mutex::new(reader::HwpxReader::open(data)?),
+            ole_hrefs,
+        });
+
     let mut bin_data_content = Vec::new();
     for (i, item) in package_info.bin_data_items.iter().enumerate() {
         // [Task #873] isEmbeded="0" (외부 file 참조) 는 ZIP 영역 영역 부재. skip.
@@ -325,32 +401,14 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         if !item.is_embedded && !is_internal_ole_package_item(item) {
             continue;
         }
-        match reader.read_file_bytes(&item.href) {
-            Ok(data) => {
-                let data = normalize_internal_ole_data(item, data);
-                let ext = hwpx_bin_data_extension(item);
-                bin_data_content.push(BinDataContent {
-                    id: (i + 1) as u16,
-                    data,
-                    extension: ext,
-                });
-            }
-            Err(e) => {
-                // [#1917] 로드 실패(상한 초과·엔트리 손상 등) 시에도 빈 데이터
-                // placeholder를 등록해 manifest·binaryItemIDRef를 보존한다.
-                // 미등록 시 직렬화기가 <hp:pic>를 통째로 드롭해 왕복 구조
-                // 손실(IR_DIFF 하드 실패)이 발생한다. 이미지 데이터만 손실.
-                eprintln!(
-                    "경고: BinData '{}' 로드 실패: {} — placeholder 등록(이미지 데이터 소실)",
-                    item.href, e
-                );
-                bin_data_content.push(BinDataContent {
-                    id: (i + 1) as u16,
-                    data: Vec::new(),
-                    extension: hwpx_bin_data_extension(item),
-                });
-            }
-        }
+        bin_data_content.push(BinDataContent {
+            id: (i + 1) as u16,
+            data: crate::model::bin_data::BinDataBytes::Lazy {
+                resolver: bin_resolver.clone(),
+                key: item.href.clone(),
+            },
+            extension: hwpx_bin_data_extension(item),
+        });
     }
 
     // 5-1. Chart/*.xml (OOXML 차트) 로딩 — bin_data_id = 60000+N, extension="ooxml_chart"
@@ -361,7 +419,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
             Ok(data) => {
                 bin_data_content.push(BinDataContent {
                     id: 60000 + n,
-                    data,
+                    data: data.into(),
                     extension: "ooxml_chart".to_string(),
                 });
             }

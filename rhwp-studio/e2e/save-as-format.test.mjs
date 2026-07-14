@@ -17,8 +17,8 @@ async function installSaveHooks(page) {
     window.alert = (m) => { window.__alerts.push(String(m)); };
     window.__savedBlob = null;
     // FS Access picker 를 가짜 핸들로 모킹: createWritable().write(blob) 에서 blob 캡처.
-    window.showSaveFilePicker = async () => ({
-      name: 'saved.bin',
+    window.showSaveFilePicker = async (options) => ({
+      name: options?.suggestedName || 'saved.hwp',
       async createWritable() {
         return {
           async write(blob) { window.__savedBlob = blob; },

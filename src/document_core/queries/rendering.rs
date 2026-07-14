@@ -463,11 +463,12 @@ impl DocumentCore {
     }
 
     /// 바이너리 데이터를 0-based `bin_data_content` 인덱스로 반환한다.
-    pub fn get_bin_data(&self, index: usize) -> Option<&[u8]> {
+    /// [Task #2263] 지연 로딩 도입으로 바이트를 빌려줄 수 없어 소유값을 반환한다.
+    pub fn get_bin_data(&self, index: usize) -> Option<Vec<u8>> {
         self.document
             .bin_data_content
             .get(index)
-            .map(|b| b.data.as_slice())
+            .map(|b| b.data.load())
     }
 
     pub fn render_page_svg_native(&self, page_num: u32) -> Result<String, HwpError> {
@@ -3294,7 +3295,28 @@ impl DocumentCore {
                     _ => false,
                 })
             });
-            if matches.is_empty() && !has_cell_stack {
+            // [#2195] 중첩 표 스트레치 대상 검출 — 한글은 내부 표를 부모 셀
+            // 전폭으로 확장 배치한다 (76076 표325 근거설명 셀 오라클 + pad 사다리).
+            // 렌더 전용 사본에서 폭을 확장해 measure/cut/render 전 경로 일원 정합.
+            let has_nested_stretch = section.paragraphs.iter().any(|p| {
+                p.controls.iter().any(|ctrl| match ctrl {
+                    Control::Table(table) => table.cells.iter().any(|cell| {
+                        cell.width < 0x8000_0000
+                            && cell.paragraphs.iter().any(|cp| {
+                                cp.controls.iter().any(|c2| match c2 {
+                                    Control::Table(nested) => {
+                                        !nested.common.treat_as_char
+                                            && nested.common.width > 0
+                                            && (nested.common.width as u64) < cell.width as u64
+                                    }
+                                    _ => false,
+                                })
+                            })
+                    }),
+                    _ => false,
+                })
+            });
+            if matches.is_empty() && !has_cell_stack && !has_nested_stretch {
                 out.push(None);
                 continue;
             }
@@ -3302,6 +3324,11 @@ impl DocumentCore {
             if has_cell_stack {
                 for p in np.iter_mut() {
                     reclassify_cell_floating_stacks(p, min_height_hu);
+                }
+            }
+            if has_nested_stretch {
+                for p in np.iter_mut() {
+                    stretch_nested_tables_to_parent_cell(p);
                 }
             }
             for &i in &matches {
@@ -4756,6 +4783,45 @@ fn format_line_seg_brief(para: Option<&Paragraph>) -> String {
     }
 }
 
+/// [#2195] 중첩 표를 부모 셀 전폭으로 스트레치 (렌더 전용 사본에서만 호출).
+/// 한글은 내부 표의 저장 폭이 부모 셀보다 좁아도 부모 셀 전폭 기준으로 재래핑한다.
+fn stretch_nested_tables_to_parent_cell(p: &mut Paragraph) {
+    for ctrl in p.controls.iter_mut() {
+        if let Control::Table(table) = ctrl {
+            for cell in table.cells.iter_mut() {
+                if cell.width >= 0x8000_0000 {
+                    continue;
+                }
+                let parent_w = cell.width as u64;
+                for cp in cell.paragraphs.iter_mut() {
+                    for c2 in cp.controls.iter_mut() {
+                        if let Control::Table(nested) = c2 {
+                            // [#2195 stage60] TAC(글자처럼) 중첩 표는 인라인 개체 —
+                            // 스트레치 제외. hcar-001 4x1 동의 표 한컴 PDF 590.7px
+                            // = 원폭 유지(#1195 rect 오라클); 스트레치 대상(근거설명
+                            // 계열)은 비-TAC.
+                            if nested.common.treat_as_char {
+                                continue;
+                            }
+                            let nw = nested.common.width as u64;
+                            if nw == 0 || nw >= parent_w {
+                                continue;
+                            }
+                            let scale = parent_w as f64 / nw as f64;
+                            nested.common.width = parent_w as u32;
+                            for nc in nested.cells.iter_mut() {
+                                if nc.width < 0x8000_0000 {
+                                    nc.width = (nc.width as f64 * scale).round() as u32;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -4916,17 +4982,17 @@ mod tests {
         let mut core = DocumentCore::new_empty();
         core.document.bin_data_content.push(BinDataContent {
             id: 1,
-            data: vec![0x01, 0x02, 0x03],
+            data: vec![0x01, 0x02, 0x03].into(),
             extension: "png".to_string(),
         });
         core.document.bin_data_content.push(BinDataContent {
             id: 2,
-            data: vec![0xAA, 0xBB],
+            data: vec![0xAA, 0xBB].into(),
             extension: "jpg".to_string(),
         });
 
-        assert_eq!(core.get_bin_data(0), Some(&[0x01, 0x02, 0x03][..]));
-        assert_eq!(core.get_bin_data(1), Some(&[0xAA, 0xBB][..]));
+        assert_eq!(core.get_bin_data(0), Some(vec![0x01, 0x02, 0x03]));
+        assert_eq!(core.get_bin_data(1), Some(vec![0xAA, 0xBB]));
         assert_eq!(core.get_bin_data(2), None);
     }
 

@@ -375,7 +375,7 @@ export class EquationPropertiesDialog {
 
   private openEditor(): void {
     this.hide();
-    const editor = new EquationEditorDialog(this.wasm, this.eventBus);
+    const editor = new EquationEditorDialog(this.wasm, this.eventBus, this.services);
     editor.open(this.sec, this.para, this.ci, this.cellIdx, this.cellParaIdx, this.noteRef);
   }
 

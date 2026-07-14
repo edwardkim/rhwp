@@ -291,11 +291,8 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
                 Control::Form(f) => Some((pos, f.width as i32, i)),
                 Control::Table(t)
                     if t.common.treat_as_char
-                        && super::height_measurer::is_tac_table_inline(
-                            t,
-                            seg_width,
-                            &para.text,
-                            &para.controls,
+                        && super::height_measurer::is_tac_table_inline_in_para(
+                            t, seg_width, para,
                         ) =>
                 {
                     let table_width: u32 = t.get_column_widths().iter().sum();

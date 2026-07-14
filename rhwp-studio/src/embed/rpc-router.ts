@@ -1,3 +1,5 @@
+import type { HmlSaveState } from '../core/hml-save-capability.ts';
+
 export interface EmbedRpcHandlers {
   ready(): Promise<boolean>;
   loadFile(
@@ -10,6 +12,8 @@ export interface EmbedRpcHandlers {
   getPageSvg(page: number): Promise<string>;
   exportHwp(): Promise<Uint8Array>;
   exportHwpx(): Promise<Uint8Array>;
+  exportHml(): Promise<Uint8Array>;
+  getHmlSaveState(): Promise<HmlSaveState>;
   exportHwpVerify(): Promise<unknown>;
 }
 
@@ -52,6 +56,8 @@ export async function routeEmbedRequest(
     );
     case 'exportHwp': return handlers.exportHwp();
     case 'exportHwpx': return handlers.exportHwpx();
+    case 'exportHml': return handlers.exportHml();
+    case 'getHmlSaveState': return handlers.getHmlSaveState();
     case 'exportHwpVerify': return handlers.exportHwpVerify();
     default: throw new Error(`Unknown method: ${method}`);
   }

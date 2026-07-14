@@ -485,7 +485,7 @@ mod tests {
     fn mk(id: u16, ext: &str) -> BinDataContent {
         BinDataContent {
             id,
-            data: vec![],
+            data: vec![].into(),
             extension: ext.to_string(),
         }
     }

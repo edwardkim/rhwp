@@ -515,6 +515,16 @@ pub(crate) fn parse_fill(r: &mut ByteReader) -> Fill {
     fill
 }
 
+/// 취소선 모양 id(bit 26-29)가 표 27 선 종류 13종에 해당하는지 판정한다.
+///
+/// 한컴은 취소선이 없는 문자에도 취소선 비트(bit 18-20)에 1을 넣으므로 비트만으로는
+/// 판정할 수 없고, 취소선이 없으면 모양 id에 선 종류가 아닌 placeholder(15 등)가
+/// 들어온다. HWPX의 `shape="3D"`와 같은 역할이다 (`hwpx::header::is_real_strike_shape`).
+/// 알 수 없는 값은 fail-closed로 no-strike 처리한다.
+fn is_real_strike_shape_id(shape: u8) -> bool {
+    shape <= 12
+}
+
 fn parse_char_shape(data: &[u8]) -> Result<CharShape, DocInfoError> {
     let mut r = ByteReader::new(data);
 
@@ -596,19 +606,15 @@ fn parse_char_shape(data: &[u8]) -> Result<CharShape, DocInfoError> {
     // HWP 스펙 표 37: bit 15 = 위첨자, bit 16 = 아래첨자 (개별 플래그)
     let superscript = (attr & (1 << 15)) != 0;
     let subscript = (attr & (1 << 16)) != 0;
-    // 취소선 종류 (bit 18-20)
-    // 0 = 없음 (이론상)
-    // 1 = 없음 (실제로 많은 문서에서 기본값으로 사용됨)
-    // 2 이상 = 취소선 있음
-    let strikethrough_bits = (attr >> 18) & 0x07;
-    let strikethrough = strikethrough_bits > 1;
-
     // 밑줄 모양 (bit 4-7, 표 27 선 종류)
     let underline_shape = ((attr >> 4) & 0x0F) as u8;
     // 강조점 종류 (bit 21-24)
     let emphasis_dot = ((attr >> 21) & 0x0F) as u8;
     // 취소선 모양 (bit 26-29, 표 27 선 종류)
     let strike_shape = ((attr >> 26) & 0x0F) as u8;
+    // 취소선 여부 (bit 18-20). 비트만으로는 판정할 수 없어 모양 id를 함께 본다
+    // (is_real_strike_shape_id 참고).
+    let strikethrough = (attr >> 18) & 0x07 != 0 && is_real_strike_shape_id(strike_shape);
     // 커닝 여부 (bit 30)
     let kerning = (attr & (1 << 30)) != 0;
     // 글꼴에 어울리는 빈칸 사용 여부 (bit 25)
@@ -1090,6 +1096,55 @@ mod tests {
         let cs = parse_char_shape(&make_data((1 << 30) | (1 << 25))).unwrap();
         assert!(cs.kerning);
         assert!(cs.use_font_space);
+    }
+
+    #[test]
+    fn test_parse_char_shape_strikethrough() {
+        fn make_data(strike_bits: u32, strike_shape: u32) -> Vec<u8> {
+            let attr = (strike_bits << 18) | (strike_shape << 26);
+            let mut data = Vec::new();
+            for _ in 0..7 {
+                data.extend_from_slice(&0u16.to_le_bytes());
+            }
+            for _ in 0..7 {
+                data.push(100);
+            }
+            for _ in 0..7 {
+                data.push(0i8 as u8);
+            }
+            for _ in 0..7 {
+                data.push(100);
+            }
+            for _ in 0..7 {
+                data.push(0i8 as u8);
+            }
+            data.extend_from_slice(&1000i32.to_le_bytes());
+            data.extend_from_slice(&attr.to_le_bytes());
+            data.push(0); // shadow_offset_x
+            data.push(0); // shadow_offset_y
+            data.extend_from_slice(&0u32.to_le_bytes()); // text_color
+            data.extend_from_slice(&0u32.to_le_bytes()); // underline_color
+            data.extend_from_slice(&0x00FFFFFFu32.to_le_bytes()); // shade_color
+            data.extend_from_slice(&0x00B2B2B2u32.to_le_bytes()); // shadow_color
+            data
+        }
+
+        // 취소선 없는 평범한 본문
+        assert!(!parse_char_shape(&make_data(0, 0)).unwrap().strikethrough);
+
+        // 한컴이 취소선 없는 문자에 넣는 기본값: 비트는 1, 모양은 placeholder
+        assert!(!parse_char_shape(&make_data(1, 15)).unwrap().strikethrough);
+        assert!(!parse_char_shape(&make_data(1, 13)).unwrap().strikethrough);
+
+        // 실제 취소선 — 비트가 1이어도 모양이 선 종류면 취소선이다
+        let cs = parse_char_shape(&make_data(1, 0)).unwrap();
+        assert!(cs.strikethrough);
+        assert_eq!(cs.strike_shape, 0);
+        assert!(parse_char_shape(&make_data(1, 12)).unwrap().strikethrough);
+        assert!(parse_char_shape(&make_data(3, 1)).unwrap().strikethrough);
+
+        // 비트가 0이면 모양과 무관하게 취소선이 아니다
+        assert!(!parse_char_shape(&make_data(0, 1)).unwrap().strikethrough);
     }
 
     #[test]

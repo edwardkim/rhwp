@@ -107,7 +107,7 @@ fn issue_1142_loaded_detection_uses_bin_data_index_before_storage_id() {
 
     doc.document_mut().bin_data_content[0] = BinDataContent {
         id: 99,
-        data: vec![b'G', b'I', b'F'],
+        data: vec![b'G', b'I', b'F'].into(),
         extension: "gif".to_string(),
     };
 

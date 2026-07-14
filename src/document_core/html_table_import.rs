@@ -974,7 +974,7 @@ impl DocumentCore {
             .bin_data_content
             .push(crate::model::bin_data::BinDataContent {
                 id: storage_id,
-                data: decoded.clone(),
+                data: decoded.clone().into(),
                 extension: detect_clipboard_image_mime(&decoded)
                     .split('/')
                     .nth(1)
