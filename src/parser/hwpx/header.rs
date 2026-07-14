@@ -16,6 +16,132 @@ use super::utils::{
 };
 use super::HwpxError;
 
+/// HWPX layoutCompatibility group attributes in HWP 5.0 dword/bit order.
+/// The fifth (`field`) dword currently has no named attributes in the pinned
+/// schema but remains preserved by the binary model.
+pub(crate) const LAYOUT_COMPATIBILITY_ATTRIBUTES: [&[&str]; 5] = [
+    &[
+        "applyFontWeightToBold",
+        "useInnerUnderline",
+        "fixedUnderlineWidth",
+        "doNotApplyStrikeoutWithUnderline",
+        "useLowercaseStrikeout",
+        "extendLineheightToOffset",
+        "applyFontspaceToLatin",
+        "treatQuotationAsLatin",
+        "doNotApplyDiacSymMarkOfNoneAndSix",
+    ],
+    &[
+        "doNotAlignWhitespaceOnRight",
+        "doNotAdjustWordInJustify",
+        "baseCharUnitOnEAsian",
+        "baseCharUnitOfIndentOnFirstChar",
+        "adjustLineheightToFont",
+        "adjustBaselineInFixedLinespacing",
+        "applyPrevspacingBeneathObject",
+        "applyNextspacingOfLastPara",
+        "applyAtLeastToPercent100Pct",
+        "doNotApplyAutoSpaceEAsianEng",
+        "doNotApplyAutoSpaceEAsianNum",
+        "adjustParaBorderfillToSpacing",
+        "connectParaBorderfillOfEqualBorder",
+        "adjustParaBorderOffsetWithBorder",
+        "extendLineheightToParaBorderOffset",
+        "applyParaBorderToOutside",
+        "applyMinColumnWidthTo1mm",
+        "applyTabPosBasedOnSegment",
+        "breakTabOverLine",
+        "adjustVertPosOfLine",
+        "doNotApplyWhiteSpaceHeight",
+        "doNotAlignLastPeriod",
+        "doNotAlignLastForbidden",
+        "adjustMarginFromAdjustLineheight",
+    ],
+    &[
+        "baseLineSpacingOnLineGrid",
+        "applyCharSpacingToCharGrid",
+        "doNotApplyGridInHeaderFooter",
+        "applyExtendHeaderFooterEachSection",
+        "doNotApplyHeaderFooterAtNoSpace",
+        "doNotApplyColSeparatorAtNoGap",
+        "doNotApplyLinegridAtNoLinespacing",
+    ],
+    &[
+        "doNotApplyImageEffect",
+        "doNotApplyShapeComment",
+        "doNotAdjustEmptyAnchorLine",
+        "overlapBothAllowOverlap",
+        "doNotApplyVertOffsetOfForward",
+        "extendVertLimitToPageMargins",
+        "doNotHoldAnchorOfTable",
+        "doNotFormattingAtBeneathAnchor",
+        "adjustBaselineOfObjectToBottom",
+        "doNotApplyExtensionCharCompose",
+    ],
+    &[],
+];
+
+fn layout_compatibility_group(local: &[u8]) -> Option<usize> {
+    match local {
+        b"char" => Some(0),
+        b"paragraph" => Some(1),
+        b"section" => Some(2),
+        b"object" => Some(3),
+        b"field" => Some(4),
+        _ => None,
+    }
+}
+
+fn parse_layout_compatibility_group(
+    e: &quick_xml::events::BytesStart,
+    group: usize,
+    doc_info: &mut DocInfo,
+) {
+    let Some(names) = LAYOUT_COMPATIBILITY_ATTRIBUTES.get(group) else {
+        return;
+    };
+    for attr in e.attributes().flatten() {
+        let Ok(name) = std::str::from_utf8(attr.key.as_ref()) else {
+            continue;
+        };
+        if let Some(bit) = names.iter().position(|candidate| *candidate == name) {
+            doc_info
+                .layout_compatibility
+                .set_bit(group, bit as u32, parse_bool(&attr));
+        }
+    }
+}
+
+fn sync_layout_compatibility_records(doc_info: &mut DocInfo) {
+    if !doc_info
+        .extra_records
+        .iter()
+        .any(|record| record.tag_id == tags::HWPTAG_COMPATIBLE_DOCUMENT)
+    {
+        doc_info.extra_records.push(RawRecord {
+            tag_id: tags::HWPTAG_COMPATIBLE_DOCUMENT,
+            level: 0,
+            data: vec![0; 4],
+        });
+    }
+
+    let bytes = doc_info.layout_compatibility.to_bytes().to_vec();
+    let mut found = false;
+    for record in &mut doc_info.extra_records {
+        if record.tag_id == tags::HWPTAG_LAYOUT_COMPATIBILITY {
+            record.data = bytes.clone();
+            found = true;
+        }
+    }
+    if !found {
+        doc_info.extra_records.push(RawRecord {
+            tag_id: tags::HWPTAG_LAYOUT_COMPATIBILITY,
+            level: 1,
+            data: bytes,
+        });
+    }
+}
+
 /// `<hh:strikeout shape="..."/>` 의 shape 값이 실제 렌더링되는 취소선인지
 /// 판정한다 (화이트리스트).
 ///
@@ -105,6 +231,8 @@ pub fn parse_hwpx_header(xml: &str) -> Result<(DocInfo, DocProperties), HwpxErro
     // 현재 <fontface lang="..."> 컨텍스트 추적
     // HANGUL=0, LATIN=1, HANJA=2, JAPANESE=3, OTHER=4, SYMBOL=5, USER=6
     let mut current_font_group: usize = 0;
+    let mut in_layout_compatibility = false;
+    let mut saw_compatible_document = false;
 
     loop {
         match reader.read_event_into(&mut buf) {
@@ -112,6 +240,16 @@ pub fn parse_hwpx_header(xml: &str) -> Result<(DocInfo, DocProperties), HwpxErro
                 let name = e.name();
                 let local = local_name(name.as_ref());
                 match local {
+                    b"compatibleDocument" => saw_compatible_document = true,
+                    b"layoutCompatibility" => {
+                        saw_compatible_document = true;
+                        in_layout_compatibility = true;
+                    }
+                    _ if in_layout_compatibility => {
+                        if let Some(group) = layout_compatibility_group(local) {
+                            parse_layout_compatibility_group(e, group, &mut doc_info);
+                        }
+                    }
                     b"fontface" => {
                         // <hh:fontface lang="HANGUL"> → 언어 그룹 설정
                         for attr in e.attributes().flatten() {
@@ -169,6 +307,14 @@ pub fn parse_hwpx_header(xml: &str) -> Result<(DocInfo, DocProperties), HwpxErro
                 let name = e.name();
                 let local = local_name(name.as_ref());
                 match local {
+                    b"compatibleDocument" | b"layoutCompatibility" => {
+                        saw_compatible_document = true;
+                    }
+                    _ if in_layout_compatibility => {
+                        if let Some(group) = layout_compatibility_group(local) {
+                            parse_layout_compatibility_group(e, group, &mut doc_info);
+                        }
+                    }
                     b"beginNum" => parse_begin_num(e, &mut doc_props),
                     b"font" => {
                         parse_font(e, &mut reader, &mut doc_info, current_font_group, false)?;
@@ -195,6 +341,11 @@ pub fn parse_hwpx_header(xml: &str) -> Result<(DocInfo, DocProperties), HwpxErro
                     _ => {}
                 }
             }
+            Ok(Event::End(ref e)) => {
+                if local_name(e.name().as_ref()) == b"layoutCompatibility" {
+                    in_layout_compatibility = false;
+                }
+            }
             Ok(Event::Eof) => break,
             Err(e) => return Err(HwpxError::XmlError(format!("header.xml: {}", e))),
             _ => {}
@@ -204,9 +355,13 @@ pub fn parse_hwpx_header(xml: &str) -> Result<(DocInfo, DocProperties), HwpxErro
 
     doc_props.section_count = 1; // content.hpf에서 갱신됨
 
+    if saw_compatible_document {
+        sync_layout_compatibility_records(&mut doc_info);
+    }
+
     // 문서 설정 tail(`</hh:refList>` ~ `</hh:head>`)을 원본 그대로 보존.
-    // compatibleDocument/docOption/trackchageConfig 등은 본문과 무관한 전역
-    // 설정이라 헤더 재생성 시 splice 로 무손실 복원한다.
+    // compatibility 값은 실제 geometry 입력이므로 위에서 구조화한다. 동시에
+    // 알 수 없는 속성까지 잃지 않도록 원문 tail도 splice용으로 보존한다.
     doc_info.hwpx_head_tail = extract_head_tail(xml);
 
     Ok((doc_info, doc_props))
@@ -979,10 +1134,19 @@ fn parse_para_shape_child(
             for attr in ce.attributes().flatten() {
                 match attr.key.as_ref() {
                     b"breakLatinWord" => {
-                        // [#1986] 값 3종(BREAK_WORD/KEEP_WORD/HYPHENATION) — 원문 보존.
-                        // 미보존 시 직렬화가 KEEP_WORD 로 고정해 꼬리말·표셀 재계산
-                        // 줄나눔이 바뀌고 레이아웃(페이지 수)이 갈린다.
-                        ps.break_latin_word = Some(attr_str(&attr));
+                        // [#1986] Preserve the source token and project its
+                        // HWP 5.0 table-44 value into attr1 bits 5..6. Layout
+                        // consumes those bits; preserving only the XML token
+                        // would round-trip correctly while rendering with the
+                        // wrong line-break policy.
+                        let value = attr_str(&attr);
+                        ps.break_latin_word = Some(value.clone());
+                        ps.attr1 &= !(0x03 << 5);
+                        ps.attr1 |= match value.as_str() {
+                            "HYPHENATION" => 1 << 5,
+                            "BREAK_WORD" => 2 << 5,
+                            _ => 0,
+                        };
                     }
                     b"breakNonLatinWord" => {
                         // HWP5 ParaShape attr1 bit 7: non-Latin line-break unit.
@@ -2093,6 +2257,40 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_layout_compatibility_projects_named_attributes_and_hwp5_words() {
+        let xml = r##"<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:compatibleDocument targetProgram="HWP201X">
+    <hh:layoutCompatibility>
+      <hh:char applyFontWeightToBold="1"/>
+      <hh:paragraph doNotAlignLastForbidden="1"/>
+      <hh:section applyCharSpacingToCharGrid="1"/>
+      <hh:object adjustBaselineOfObjectToBottom="1"/>
+      <hh:field/>
+    </hh:layoutCompatibility>
+  </hh:compatibleDocument>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        assert_eq!(
+            doc_info.layout_compatibility.words,
+            [1, 1 << 22, 1 << 1, 1 << 8, 0]
+        );
+        assert!(doc_info
+            .layout_compatibility
+            .adjust_baseline_of_object_to_bottom());
+
+        let record = doc_info
+            .extra_records
+            .iter()
+            .find(|record| record.tag_id == tags::HWPTAG_LAYOUT_COMPATIBILITY)
+            .expect("layout compatibility record");
+        assert_eq!(
+            record.data,
+            doc_info.layout_compatibility.to_bytes().to_vec()
+        );
+    }
+
+    #[test]
     fn test_parse_hwpx_numbering_para_head_text_body() {
         let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
 <hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
@@ -2200,7 +2398,7 @@ mod tests {
         let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
 <hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
   <hh:refList>
-    <hh:paraProperties itemCnt="2">
+    <hh:paraProperties itemCnt="3">
       <hh:paraPr id="1" tabPrIDRef="0" condense="0" fontLineHeight="0">
         <hh:align horizontal="JUSTIFY" vertical="BASELINE"/>
         <hh:breakSetting breakLatinWord="KEEP_WORD" breakNonLatinWord="KEEP_WORD" widowOrphan="0" keepWithNext="0" keepLines="0" pageBreakBefore="0" lineWrap="BREAK"/>
@@ -2208,6 +2406,10 @@ mod tests {
       <hh:paraPr id="2" tabPrIDRef="0" condense="0" fontLineHeight="0">
         <hh:align horizontal="JUSTIFY" vertical="BASELINE"/>
         <hh:breakSetting breakLatinWord="HYPHENATION" breakNonLatinWord="BREAK_WORD" widowOrphan="0" keepWithNext="0" keepLines="0" pageBreakBefore="0" lineWrap="BREAK"/>
+      </hh:paraPr>
+      <hh:paraPr id="3" tabPrIDRef="0" condense="0" fontLineHeight="0">
+        <hh:align horizontal="JUSTIFY" vertical="BASELINE"/>
+        <hh:breakSetting breakLatinWord="BREAK_WORD" breakNonLatinWord="KEEP_WORD" widowOrphan="0" keepWithNext="0" keepLines="0" pageBreakBefore="0" lineWrap="BREAK"/>
       </hh:paraPr>
     </hh:paraProperties>
   </hh:refList>
@@ -2217,6 +2419,9 @@ mod tests {
 
         assert_eq!(doc_info.para_shapes[0].attr1 & (1 << 7), 1 << 7);
         assert_eq!(doc_info.para_shapes[1].attr1 & (1 << 7), 0);
+        assert_eq!((doc_info.para_shapes[0].attr1 >> 5) & 0x03, 0);
+        assert_eq!((doc_info.para_shapes[1].attr1 >> 5) & 0x03, 1);
+        assert_eq!((doc_info.para_shapes[2].attr1 >> 5) & 0x03, 2);
         assert_eq!(
             doc_info.para_shapes[0].break_latin_word.as_deref(),
             Some("KEEP_WORD")
@@ -2224,6 +2429,10 @@ mod tests {
         assert_eq!(
             doc_info.para_shapes[1].break_latin_word.as_deref(),
             Some("HYPHENATION")
+        );
+        assert_eq!(
+            doc_info.para_shapes[2].break_latin_word.as_deref(),
+            Some("BREAK_WORD")
         );
     }
 

@@ -295,6 +295,9 @@ pub struct ResolvedStyleSet {
     /// [#2070] HWP3 → HWP5 변환본 여부 (Document::is_hwp3_variant 전파).
     /// 변환본 한정 레거시 폭 규칙(전체 폭) 게이트에 사용.
     pub hwp3_variant: bool,
+    /// HWPX `object@adjustBaselineOfObjectToBottom` / HWP5 fourth dword bit 8.
+    /// Inline object가 text metric보다 클 때 line box와 baseline을 재조합한다.
+    pub adjust_baseline_of_object_to_bottom: bool,
 }
 
 /// DocInfo 참조 테이블을 해소된 스타일 목록으로 변환한다.
@@ -323,6 +326,9 @@ pub fn resolve_styles_with_variant(
         numberings,
         bullets,
         hwp3_variant: is_hwp3_variant,
+        adjust_baseline_of_object_to_bottom: doc_info
+            .layout_compatibility
+            .adjust_baseline_of_object_to_bottom(),
     }
 }
 

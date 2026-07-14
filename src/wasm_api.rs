@@ -2723,7 +2723,7 @@ impl HwpDocument {
     ///
     /// options JSON 키 (positional 과 동일 의미, camelCase):
     /// `{ sectionIdx, paraIdx, charOffset?, cellPath?: string, width, height,
-    ///    naturalWidthPx, naturalHeightPx, extension?, description?,
+    ///    naturalWidthPx, naturalHeightPx, extension?, description?, inlineInCell?,
     ///    paperOffsetXHu?: number|null, paperOffsetYHu?: number|null }`
     /// - `cellPath` 는 cell_path_json 문자열(빈 문자열/`"[]"` 이면 본문 inline).
     /// - 반환값은 `insertPicture` 와 동일.
@@ -2733,7 +2733,7 @@ impl HwpDocument {
         options_json: &str,
         image_data: &[u8],
     ) -> Result<String, JsValue> {
-        use crate::document_core::helpers::{json_i32, json_str, json_u32};
+        use crate::document_core::helpers::{json_bool, json_i32, json_str, json_u32};
         let section_idx = json_u32(options_json, "sectionIdx").unwrap_or(0);
         let para_idx = json_u32(options_json, "paraIdx").unwrap_or(0);
         let char_offset = json_u32(options_json, "charOffset").unwrap_or(0);
@@ -2744,6 +2744,7 @@ impl HwpDocument {
         let natural_height_px = json_u32(options_json, "naturalHeightPx").unwrap_or(0);
         let extension = json_str(options_json, "extension").unwrap_or_default();
         let description = json_str(options_json, "description").unwrap_or_default();
+        let inline_in_cell = json_bool(options_json, "inlineInCell").unwrap_or(false);
         // paperOffset 은 키 부재 시 None(셀 좌상단 default) — positional 의 Option 동작과 동일.
         let paper_offset_x_hu = json_i32(options_json, "paperOffsetXHu");
         let paper_offset_y_hu = json_i32(options_json, "paperOffsetYHu");
@@ -2754,7 +2755,7 @@ impl HwpDocument {
             } else {
                 DocumentCore::parse_cell_path(&cell_path_json).map_err(JsValue::from)?
             };
-        self.insert_picture_native(
+        self.insert_picture_native_with_mode(
             section_idx as usize,
             para_idx as usize,
             char_offset as usize,
@@ -2768,6 +2769,7 @@ impl HwpDocument {
             &description,
             paper_offset_x_hu,
             paper_offset_y_hu,
+            inline_in_cell,
         )
         .map_err(|e| e.into())
     }

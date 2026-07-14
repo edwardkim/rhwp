@@ -23699,6 +23699,57 @@ fn task1413_insert_picture_ex_equivalent_to_positional() {
     assert_eq!(count_images(&svg_ex), 1, "그림 1개 삽입");
 }
 
+#[test]
+fn insert_picture_ex_inline_in_cell_routes_to_cell_owned_tac_mode() {
+    use crate::model::control::Control;
+
+    let png = vec![
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44,
+        0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1F,
+        0x15, 0xC4, 0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00,
+        0x01, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0D, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E,
+        0x44, 0xAE, 0x42, 0x60, 0x82,
+    ];
+    let cell_path = serde_json::to_string(&serde_json::json!([{
+        "controlIndex": 0,
+        "cellIndex": 0,
+        "cellParaIndex": 0
+    }]))
+    .expect("cell path JSON");
+    let options = serde_json::json!({
+        "sectionIdx": 0,
+        "paraIdx": 0,
+        "charOffset": 0,
+        "cellPath": cell_path,
+        "width": 5000,
+        "height": 2500,
+        "naturalWidthPx": 2,
+        "naturalHeightPx": 1,
+        "extension": "png",
+        "description": "wasm-inline-cell",
+        "inlineInCell": true
+    })
+    .to_string();
+
+    let mut doc = create_doc_with_table();
+    doc.insert_picture_ex(&options, &png)
+        .expect("insertPictureEx inlineInCell");
+
+    let parent = &doc.document.sections[0].paragraphs[0];
+    assert_eq!(parent.controls.len(), 1, "must not append a parent sibling");
+    let table = match &parent.controls[0] {
+        Control::Table(table) => table,
+        _ => panic!("expected table"),
+    };
+    let picture = match table.cells[0].paragraphs[0].controls.last() {
+        Some(Control::Picture(picture)) => picture,
+        _ => panic!("expected cell-owned picture"),
+    };
+    assert!(picture.common.treat_as_char);
+    assert_eq!(picture.common.horizontal_offset, 0);
+    assert_eq!(picture.common.vertical_offset, 0);
+}
+
 /// options JSON 의 키 누락 시 positional default 와 동일 처리 (description/extension/
 /// paperOffset 부재).
 #[test]

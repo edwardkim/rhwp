@@ -79,6 +79,7 @@ mod tests {
 
         let styles = ResolvedStyleSet {
             hwp3_variant: false,
+            adjust_baseline_of_object_to_bottom: false,
             char_styles: vec![ResolvedCharStyle::default()],
             para_styles: vec![ResolvedParaStyle {
                 border_fill_id: 1,

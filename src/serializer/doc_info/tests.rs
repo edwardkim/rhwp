@@ -648,3 +648,29 @@ fn test_serialize_bullet_layout_and_roundtrip() {
     assert_eq!(parsed_info.bullets[0].char_shape_id, 2);
     assert_eq!(parsed_info.bullets[0].text_distance, 50);
 }
+
+#[test]
+fn test_serialize_layout_compatibility_materializes_binary_records() {
+    let mut doc_info = DocInfo::default();
+    doc_info.font_faces = vec![Vec::new(); 7];
+    doc_info.layout_compatibility.set_bit(3, 8, true);
+    doc_info.layout_compatibility.set_bit(1, 22, true);
+
+    let stream = serialize_doc_info(&doc_info, &DocProperties::default());
+    let records = Record::read_all(&stream).unwrap();
+    let compatible = records
+        .iter()
+        .find(|record| record.tag_id == tags::HWPTAG_COMPATIBLE_DOCUMENT)
+        .expect("compatible document record");
+    assert_eq!(compatible.level, 0);
+
+    let layout = records
+        .iter()
+        .find(|record| record.tag_id == tags::HWPTAG_LAYOUT_COMPATIBILITY)
+        .expect("layout compatibility record");
+    assert_eq!(layout.level, 1);
+    assert_eq!(layout.data, doc_info.layout_compatibility.to_bytes());
+
+    let (parsed, _) = parse_doc_info(&stream).unwrap();
+    assert_eq!(parsed.layout_compatibility, doc_info.layout_compatibility);
+}

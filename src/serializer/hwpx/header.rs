@@ -15,13 +15,14 @@ use std::io::Write;
 
 use quick_xml::Writer;
 
-use crate::model::document::{DocInfo, DocProperties, Document};
+use crate::model::document::{DocInfo, DocProperties, Document, LayoutCompatibility};
 use crate::model::style::{
     border_width_mm_str, Alignment, BorderFill, BorderLine, BorderLineType, CenterLine, CharShape,
     DiagonalLine, FillType, Font, HeadType, LineSpacingType, Numbering, ParaShape, Style,
     SubstFont, TabDef,
 };
 use crate::model::ColorRef;
+use crate::parser::hwpx::header::LAYOUT_COMPATIBILITY_ATTRIBUTES;
 
 use super::canonical_defaults::FONTFACE_LANG_NAMES;
 use super::context::SerializeContext;
@@ -96,7 +97,7 @@ pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, S
                 .map_err(|e| SerializeError::XmlError(format!("head tail splice: {e}")))?;
         }
         None => {
-            write_compatible_document(&mut w)?;
+            write_compatible_document(&mut w, doc.doc_info.layout_compatibility)?;
             write_doc_option(&mut w)?;
             write_track_change_config(&mut w)?;
         }
@@ -988,7 +989,7 @@ fn write_para_pr<W: Write>(
     // keepWithNext, keepLines, pageBreakBefore} 를 상수로 하드코딩해, 파서가
     // attr1/attr2 비트로 보존한 값을 직렬화에서 모두 잃었다(예: vertical=CENTER →
     // BASELINE, breakNonLatinWord=BREAK_WORD → KEEP_WORD). 이제 보존 비트에서
-    // 역매핑한다. (breakLatinWord/lineWrap 은 파서가 아직 미수집 → 상수 유지.)
+    // 역매핑한다. (lineWrap 은 파서가 아직 미수집 → 상수 유지.)
     let vertical = vertical_alignment_str((ps.attr1 >> 20) & 0x03);
     // attr1 bit7: KEEP_WORD=1, BREAK_WORD=0 (parse_para_shape_child 와 정합).
     let break_non_latin = if (ps.attr1 >> 7) & 1 == 1 {
@@ -1243,14 +1244,24 @@ fn write_style<W: Write>(w: &mut Writer<W>, id: u16, st: &Style) -> Result<(), S
 // =====================================================================
 // <hh:compatibleDocument>, <hh:docOption>, <hh:trackchageConfig>
 // =====================================================================
-fn write_compatible_document<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
+fn write_compatible_document<W: Write>(
+    w: &mut Writer<W>,
+    compatibility: LayoutCompatibility,
+) -> Result<(), SerializeError> {
     start_tag_attrs(w, "hh:compatibleDocument", &[("targetProgram", "HWP201X")])?;
     super::utils::start_tag(w, "hh:layoutCompatibility")?;
-    empty_tag(w, "hh:char", &[])?;
-    empty_tag(w, "hh:paragraph", &[])?;
-    empty_tag(w, "hh:section", &[])?;
-    empty_tag(w, "hh:object", &[])?;
-    empty_tag(w, "hh:field", &[])?;
+    for (group, tag) in ["char", "paragraph", "section", "object", "field"]
+        .iter()
+        .enumerate()
+    {
+        let attrs = LAYOUT_COMPATIBILITY_ATTRIBUTES[group]
+            .iter()
+            .enumerate()
+            .filter_map(|(bit, name)| compatibility.bit(group, bit as u32).then_some((*name, "1")))
+            .collect::<Vec<_>>();
+        let qualified = format!("hh:{tag}");
+        empty_tag(w, &qualified, &attrs)?;
+    }
     end_tag(w, "hh:layoutCompatibility")?;
     end_tag(w, "hh:compatibleDocument")?;
     Ok(())
@@ -1382,6 +1393,20 @@ mod tests {
             "원본 부재 시 하드코딩 폴백: {xml}"
         );
         assert!(xml.contains(r#"<hh:trackchageConfig flags="0"/>"#));
+    }
+
+    #[test]
+    fn write_header_projects_layout_compatibility_when_raw_tail_is_absent() {
+        let bytes = include_bytes!("../../../samples/hwpx/ref/ref_empty.hwpx");
+        let mut doc = parse_hwpx(bytes).expect("parse");
+        doc.doc_info.hwpx_head_tail = None;
+        doc.doc_info.layout_compatibility.set_bit(3, 8, true);
+        doc.doc_info.layout_compatibility.set_bit(1, 22, true);
+
+        let ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_header(&doc, &ctx).unwrap()).unwrap();
+        assert!(xml.contains(r#"<hh:paragraph doNotAlignLastForbidden="1"/>"#));
+        assert!(xml.contains(r#"<hh:object adjustBaselineOfObjectToBottom="1"/>"#));
     }
 
     #[test]

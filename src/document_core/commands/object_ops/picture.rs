@@ -1416,6 +1416,49 @@ impl DocumentCore {
         paper_offset_x_hu: Option<i32>,
         paper_offset_y_hu: Option<i32>,
     ) -> Result<String, HwpError> {
+        self.insert_picture_native_with_mode(
+            section_idx,
+            para_idx,
+            char_offset,
+            cell_path,
+            image_data,
+            width,
+            height,
+            natural_width_px,
+            natural_height_px,
+            extension,
+            description,
+            paper_offset_x_hu,
+            paper_offset_y_hu,
+            false,
+        )
+    }
+
+    /// `insert_picture_native` with an explicit table-cell placement mode.
+    ///
+    /// When `inline_in_cell` is true and `cell_path` addresses a table cell, the
+    /// picture is owned by that cell paragraph and participates in its inline
+    /// flow (`treat_as_char=true`, Para-relative, zero offsets). The legacy
+    /// entrypoint above deliberately keeps the existing floating-sibling
+    /// behavior by passing false.
+    #[allow(clippy::too_many_arguments)]
+    pub fn insert_picture_native_with_mode(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        cell_path: &[(usize, usize, usize)],
+        image_data: &[u8],
+        width: u32,
+        height: u32,
+        natural_width_px: u32,
+        natural_height_px: u32,
+        extension: &str,
+        description: &str,
+        paper_offset_x_hu: Option<i32>,
+        paper_offset_y_hu: Option<i32>,
+        inline_in_cell: bool,
+    ) -> Result<String, HwpError> {
         use crate::model::image::{CropInfo, ImageAttr, ImageEffect, Picture};
         use crate::model::paragraph::{CharShapeRef, LineSeg};
         use crate::model::shape::{CommonObjAttr, HorzRelTo, ShapeComponentAttr, VertRelTo};
@@ -1489,6 +1532,79 @@ impl DocumentCore {
         };
 
         if !cell_path.is_empty() {
+            if inline_in_cell && !cell_path_is_textbox {
+                // A projection-level picture payload immediately after a cell
+                // belongs to the cell paragraph itself. This is distinct from
+                // the interactive Hancom-compatible floating placement used by
+                // the legacy path below.
+                let common_attr: u32 = 0x01 | (2 << 3) | (3 << 8) | (4 << 15) | (2 << 18);
+                let common = CommonObjAttr {
+                    ctrl_id: 0x67736F20,
+                    attr: common_attr,
+                    treat_as_char: true,
+                    vert_rel_to: VertRelTo::Para,
+                    horz_rel_to: HorzRelTo::Para,
+                    text_wrap: crate::model::shape::TextWrap::Square,
+                    horizontal_offset: 0,
+                    vertical_offset: 0,
+                    width,
+                    height,
+                    z_order: 1,
+                    description: description.to_string(),
+                    ..Default::default()
+                };
+                let mut pic = Picture {
+                    common,
+                    shape_attr,
+                    border_x: bx,
+                    border_y: by,
+                    crop,
+                    image_attr,
+                    ..Default::default()
+                };
+
+                let (new_ctrl_idx, logical_after) = {
+                    let section = &mut self.document.sections[section_idx];
+                    section.raw_stream = None;
+                    let target_para =
+                        Self::resolve_cell_paragraph_mut(section, para_idx, cell_path)?;
+                    Self::migrate_picture_floating_to_inline(&mut target_para.line_segs, &mut pic);
+                    let new_ctrl_idx = target_para.controls.len();
+                    target_para.controls.push(Control::Picture(Box::new(pic)));
+                    target_para.ctrl_data_records.push(None);
+                    target_para.control_mask |= 0x00000800;
+                    let logical_positions =
+                        crate::document_core::helpers::find_logical_control_positions(target_para);
+                    let logical_after = logical_positions
+                        .get(new_ctrl_idx)
+                        .copied()
+                        .unwrap_or_else(|| target_para.text.chars().count())
+                        + 1;
+                    (new_ctrl_idx, logical_after)
+                };
+
+                let outer_ctrl = cell_path[0].0;
+                if let Some(Control::Table(table)) = self.document.sections[section_idx].paragraphs
+                    [para_idx]
+                    .controls
+                    .get_mut(outer_ctrl)
+                {
+                    table.dirty = true;
+                }
+                self.mark_section_dirty(section_idx);
+                self.recompose_section(section_idx);
+                self.paginate_if_needed();
+                self.invalidate_page_tree_cache();
+                self.event_log.push(DocumentEvent::PictureInserted {
+                    section: section_idx,
+                    para: para_idx,
+                });
+                return Ok(crate::document_core::helpers::json_ok_with(&format!(
+                    "\"paraIdx\":{},\"controlIdx\":{},\"logicalOffset\":{}",
+                    para_idx, new_ctrl_idx, logical_after
+                )));
+            }
+
             if cell_path_is_textbox {
                 // === 글상자 내부 picture 분기 (#1322 maintainer fix) ===
                 // hitTest 의 글상자 sentinel path (`cellIdx=0`) 가 넘어온 경우에는
@@ -1931,6 +2047,147 @@ mod issue_1151_cell_picture_insert_tests {
             "floating picture wrap=Square (어울림) 이어야 한다. got: {:?}",
             picture.common.text_wrap
         );
+    }
+
+    #[test]
+    fn inline_cell_mode_inserts_tac_picture_in_target_cell_paragraph() {
+        let mut core = make_test_core();
+        let table_res = core
+            .create_table_native(0, 0, 0, 1, 1)
+            .expect("create 1x1 table");
+        let table_para_idx = parse_idx(&table_res, "paraIdx");
+        let table_ctrl_idx = parse_idx(&table_res, "controlIdx");
+        let cell_path = vec![(table_ctrl_idx, 0, 0)];
+
+        let inserted = core
+            .insert_picture_native_with_mode(
+                0,
+                table_para_idx,
+                0,
+                &cell_path,
+                &minimal_png(),
+                5000,
+                2500,
+                2,
+                1,
+                "png",
+                "inline-cell",
+                None,
+                None,
+                true,
+            )
+            .expect("insert inline picture in cell");
+        assert_eq!(parse_idx(&inserted, "controlIdx"), 0);
+
+        let parent = &core.document.sections[0].paragraphs[table_para_idx];
+        assert!(
+            parent
+                .controls
+                .iter()
+                .all(|control| !matches!(control, Control::Picture(_))),
+            "inline cell picture must not be appended beside the table"
+        );
+
+        let table = match &parent.controls[table_ctrl_idx] {
+            Control::Table(table) => table,
+            _ => panic!("expected table control"),
+        };
+        let cell_para = &table.cells[0].paragraphs[0];
+        let picture = match &cell_para.controls[0] {
+            Control::Picture(picture) => picture.as_ref(),
+            _ => panic!("expected picture owned by target cell paragraph"),
+        };
+
+        assert!(picture.common.treat_as_char);
+        assert_eq!(picture.common.attr & 0x01, 0x01);
+        assert!(matches!(
+            picture.common.horz_rel_to,
+            crate::model::shape::HorzRelTo::Para
+        ));
+        assert!(matches!(
+            picture.common.vert_rel_to,
+            crate::model::shape::VertRelTo::Para
+        ));
+        assert_eq!(picture.common.horizontal_offset, 0);
+        assert_eq!(picture.common.vertical_offset, 0);
+        assert_eq!(cell_para.line_segs[0].line_height, 2500);
+    }
+
+    #[test]
+    fn inline_cell_mode_renders_with_cell_context_and_coordinates() {
+        use crate::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
+
+        fn collect(
+            node: &RenderNode,
+            cells: &mut Vec<BoundingBox>,
+            pictures: &mut Vec<(BoundingBox, usize, Vec<(usize, usize, usize)>)>,
+        ) {
+            match &node.node_type {
+                RenderNodeType::TableCell(_) => cells.push(node.bbox),
+                RenderNodeType::Image(image) => {
+                    if let Some(context) = &image.cell_context {
+                        pictures.push((
+                            node.bbox,
+                            context.parent_para_index,
+                            context
+                                .path
+                                .iter()
+                                .map(|step| {
+                                    (step.control_index, step.cell_index, step.cell_para_index)
+                                })
+                                .collect(),
+                        ));
+                    }
+                }
+                _ => {}
+            }
+            for child in &node.children {
+                collect(child, cells, pictures);
+            }
+        }
+
+        let mut core = make_test_core();
+        let table_res = core
+            .create_table_native(0, 0, 0, 1, 1)
+            .expect("create 1x1 table");
+        let table_para_idx = parse_idx(&table_res, "paraIdx");
+        let table_ctrl_idx = parse_idx(&table_res, "controlIdx");
+        let cell_path = vec![(table_ctrl_idx, 0, 0)];
+        core.insert_picture_native_with_mode(
+            0,
+            table_para_idx,
+            0,
+            &cell_path,
+            &minimal_png(),
+            22_000,
+            2_000,
+            11,
+            1,
+            "png",
+            "contextual-inline-cell",
+            None,
+            None,
+            true,
+        )
+        .expect("insert inline picture in cell");
+
+        let tree = core.build_page_tree_cached(0).expect("build render tree");
+        let mut cells = Vec::new();
+        let mut pictures = Vec::new();
+        collect(&tree.root, &mut cells, &mut pictures);
+
+        assert_eq!(cells.len(), 1);
+        assert_eq!(pictures.len(), 1);
+        let (picture_bbox, parent_para, path) = &pictures[0];
+        assert_eq!(*parent_para, table_para_idx);
+        assert_eq!(path, &vec![(table_ctrl_idx, 0, 0)]);
+
+        let cell_bbox = cells[0];
+        assert!(cell_bbox.intersects(picture_bbox));
+        assert!(picture_bbox.x >= cell_bbox.x);
+        assert!(picture_bbox.y >= cell_bbox.y);
+        assert!(picture_bbox.width <= cell_bbox.width);
+        assert!(picture_bbox.x + picture_bbox.width <= cell_bbox.x + cell_bbox.width + 0.5);
     }
 
     #[test]

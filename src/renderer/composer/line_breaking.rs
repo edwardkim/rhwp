@@ -1041,11 +1041,29 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
     }
 }
 
-fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
+fn apply_inline_control_line_height(
+    seg: &mut LineSeg,
+    height_hwp: i32,
+    adjust_baseline_to_object_bottom: bool,
+) {
     if height_hwp > seg.line_height {
-        seg.line_height = height_hwp;
-        seg.text_height = height_hwp;
-        seg.baseline_distance = (height_hwp as f64 * 0.85).round() as i32;
+        if adjust_baseline_to_object_bottom {
+            // Native HwpApp keeps the ordinary-text height/baseline metrics
+            // separate from the all-unit maximum, then computes:
+            //   object_max + text_height - text_baseline
+            // This puts the inline object's bottom on the text baseline while
+            // retaining the text descent below it.
+            let text_height = seg.line_height.max(0);
+            let text_baseline = seg.baseline_distance.clamp(0, text_height);
+            let text_descent = text_height - text_baseline;
+            seg.line_height = height_hwp.saturating_add(text_descent);
+            seg.text_height = text_height;
+            seg.baseline_distance = height_hwp;
+        } else {
+            seg.line_height = height_hwp;
+            seg.text_height = height_hwp;
+            seg.baseline_distance = (height_hwp as f64 * 0.85).round() as i32;
+        }
     }
 }
 
@@ -1149,7 +1167,11 @@ pub(crate) fn reflow_line_segs(
                         seg.tag
                     };
                 }
-                apply_inline_control_line_height(&mut seg, height_hwp);
+                apply_inline_control_line_height(
+                    &mut seg,
+                    height_hwp,
+                    styles.adjust_baseline_of_object_to_bottom,
+                );
                 new_line_segs.push(seg);
             }
 
@@ -1173,7 +1195,11 @@ pub(crate) fn reflow_line_segs(
                 seg.vertical_pos = template.vertical_pos;
             }
             if let Some(height_hwp) = inline_control_line_height_hwp(para) {
-                apply_inline_control_line_height(&mut seg, height_hwp);
+                apply_inline_control_line_height(
+                    &mut seg,
+                    height_hwp,
+                    styles.adjust_baseline_of_object_to_bottom,
+                );
             }
             para.line_segs = vec![seg];
         }
@@ -1244,7 +1270,11 @@ pub(crate) fn reflow_line_segs(
     {
         if let Some(height_hwp) = inline_control_line_height_hwp(para) {
             if let Some(seg) = new_line_segs.first_mut() {
-                apply_inline_control_line_height(seg, height_hwp);
+                apply_inline_control_line_height(
+                    seg,
+                    height_hwp,
+                    styles.adjust_baseline_of_object_to_bottom,
+                );
             }
         }
     }
@@ -1358,5 +1388,42 @@ fn compute_line_spacing_hwp(
             let min_hwp = px_to_hwpunit(ls_value, dpi);
             (min_hwp - line_height_hwp).max(0)
         }
+    }
+}
+
+#[cfg(test)]
+mod compatibility_tests {
+    use super::*;
+
+    #[test]
+    fn adjust_baseline_of_object_to_bottom_retains_text_descent() {
+        let mut seg = LineSeg {
+            line_height: 1200,
+            text_height: 1200,
+            baseline_distance: 1020,
+            ..Default::default()
+        };
+
+        apply_inline_control_line_height(&mut seg, 2000, true);
+
+        assert_eq!(seg.line_height, 2180);
+        assert_eq!(seg.text_height, 1200);
+        assert_eq!(seg.baseline_distance, 2000);
+    }
+
+    #[test]
+    fn default_inline_object_metric_keeps_existing_behavior() {
+        let mut seg = LineSeg {
+            line_height: 1200,
+            text_height: 1200,
+            baseline_distance: 1020,
+            ..Default::default()
+        };
+
+        apply_inline_control_line_height(&mut seg, 2000, false);
+
+        assert_eq!(seg.line_height, 2000);
+        assert_eq!(seg.text_height, 2000);
+        assert_eq!(seg.baseline_distance, 1700);
     }
 }

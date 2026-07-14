@@ -137,6 +137,18 @@ pub fn parse_doc_info(data: &[u8]) -> Result<(DocInfo, DocProperties), DocInfoEr
                 style.raw_data = Some(record.data.clone());
                 doc_info.styles.push(style);
             }
+            tags::HWPTAG_LAYOUT_COMPATIBILITY => {
+                // Five dwords are layout input, not opaque metadata. Keep the
+                // raw record for byte-preserving round-trip while projecting
+                // the words into the document model for rendering/conversion.
+                doc_info.layout_compatibility =
+                    crate::model::document::LayoutCompatibility::from_bytes(&record.data);
+                doc_info.extra_records.push(RawRecord {
+                    tag_id: record.tag_id,
+                    level: record.level,
+                    data: record.data.clone(),
+                });
+            }
             // 미지원 태그: 원시 데이터 보존 (라운드트립용)
             _ => {
                 doc_info.extra_records.push(RawRecord {
@@ -732,6 +744,14 @@ fn parse_para_shape(data: &[u8]) -> Result<ParaShape, DocInfoError> {
         _ => crate::model::style::HeadType::None,
     };
     let para_level = ((attr1 >> 25) & 0x07) as u8;
+    let break_latin_word = match (attr1 >> 5) & 0x03 {
+        0 => Some("KEEP_WORD".to_string()),
+        1 => Some("HYPHENATION".to_string()),
+        2 => Some("BREAK_WORD".to_string()),
+        // HWP 5.0 table 44 defines only values 0..2. Keep the reserved value
+        // unnamed instead of inventing an HWPX token for it.
+        _ => None,
+    };
 
     Ok(ParaShape {
         raw_data: None,
@@ -753,9 +773,7 @@ fn parse_para_shape(data: &[u8]) -> Result<ParaShape, DocInfoError> {
         line_spacing_v2,
         head_type,
         para_level,
-        // HWP5 는 breakLatinWord 를 attr1 비트로 갖지만 HWPX 원문 보존 필드는 미사용
-        // (None → 직렬화 KEEP_WORD 기본, 기존 동작 유지). (#1986)
-        break_latin_word: None,
+        break_latin_word,
     })
 }
 
@@ -1097,6 +1115,57 @@ mod tests {
         assert_eq!(ps.line_spacing, 160);
         assert!(matches!(ps.alignment, Alignment::Justify));
         assert!(matches!(ps.line_spacing_type, LineSpacingType::Percent));
+        assert_eq!(ps.break_latin_word.as_deref(), Some("KEEP_WORD"));
+    }
+
+    #[test]
+    fn test_parse_para_shape_break_latin_word_modes() {
+        fn shape_data(mode: u32) -> Vec<u8> {
+            let mut data = Vec::new();
+            data.extend_from_slice(&(mode << 5).to_le_bytes());
+            for _ in 0..6 {
+                data.extend_from_slice(&0i32.to_le_bytes());
+            }
+            for _ in 0..3 {
+                data.extend_from_slice(&0u16.to_le_bytes());
+            }
+            for _ in 0..4 {
+                data.extend_from_slice(&0i16.to_le_bytes());
+            }
+            data
+        }
+
+        for (mode, expected) in [
+            (0, Some("KEEP_WORD")),
+            (1, Some("HYPHENATION")),
+            (2, Some("BREAK_WORD")),
+            (3, None),
+        ] {
+            let ps = parse_para_shape(&shape_data(mode)).unwrap();
+            assert_eq!(ps.break_latin_word.as_deref(), expected, "mode={mode}");
+        }
+    }
+
+    #[test]
+    fn test_parse_layout_compatibility_projects_all_five_words() {
+        let words = [1u32, 2, 4, 0x100, 0x8000_0000];
+        let mut payload = Vec::new();
+        for word in words {
+            payload.extend_from_slice(&word.to_le_bytes());
+        }
+        let stream = crate::serializer::record_writer::write_record(
+            tags::HWPTAG_LAYOUT_COMPATIBILITY,
+            1,
+            &payload,
+        );
+
+        let (doc_info, _) = parse_doc_info(&stream).unwrap();
+        assert_eq!(doc_info.layout_compatibility.words, words);
+        assert!(doc_info
+            .layout_compatibility
+            .adjust_baseline_of_object_to_bottom());
+        assert_eq!(doc_info.extra_records.len(), 1);
+        assert_eq!(doc_info.extra_records[0].data, payload);
     }
 
     #[test]

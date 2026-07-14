@@ -253,8 +253,9 @@ pub struct ParaShape {
     /// 문단 수준 (0~6 → 1~7수준, attr1 bit 25~27)
     pub para_level: u8,
     /// [#1986] HWPX breakSetting@breakLatinWord 원문 보존
-    /// (BREAK_WORD/KEEP_WORD/HYPHENATION). 파서 미수집 시 None → 직렬화 기본값
-    /// KEEP_WORD. 값이 3가지라 attr1 비트 인코딩 대신 원문 보존으로 무손실 방출.
+    /// (BREAK_WORD/KEEP_WORD/HYPHENATION). HWP5에서는 attr1 bits 5..6의
+    /// 정의된 값 0..2를 같은 토큰으로 투영한다. None은 HWP5 예약값 3이나
+    /// 실제로 속성이 없는 합성 IR을 뜻하며 직렬화 기본값은 KEEP_WORD이다.
     /// 꼬리말·표셀 등 재계산 경로에서 줄나눔이 달라져 레이아웃이 갈리는 것을 막는다.
     pub break_latin_word: Option<String>,
 }

@@ -120,9 +120,39 @@ pub fn serialize_doc_info(doc_info: &DocInfo, doc_props: &DocProperties) -> Vec<
         stream.extend(write_record(tags::HWPTAG_STYLE, 1, &data));
     }
 
-    // 미지원 레코드 원본 보존
+    // 추가 레코드 원본 보존. LayoutCompatibility는 구조화 모델이 geometry의
+    // source of truth이므로 해당 20바이트만 현재 words로 동기화한다.
+    let mut wrote_compatible_document = false;
+    let mut wrote_layout_compatibility = false;
     for record in &doc_info.extra_records {
-        stream.extend(write_record(record.tag_id, record.level, &record.data));
+        if record.tag_id == tags::HWPTAG_COMPATIBLE_DOCUMENT {
+            wrote_compatible_document = true;
+        }
+        let data = if record.tag_id == tags::HWPTAG_LAYOUT_COMPATIBILITY {
+            wrote_layout_compatibility = true;
+            doc_info.layout_compatibility.to_bytes().to_vec()
+        } else {
+            record.data.clone()
+        };
+        stream.extend(write_record(record.tag_id, record.level, &data));
+    }
+
+    if doc_info
+        .layout_compatibility
+        .words
+        .iter()
+        .any(|word| *word != 0)
+    {
+        if !wrote_compatible_document {
+            stream.extend(write_record(tags::HWPTAG_COMPATIBLE_DOCUMENT, 0, &[0; 4]));
+        }
+        if !wrote_layout_compatibility {
+            stream.extend(write_record(
+                tags::HWPTAG_LAYOUT_COMPATIBILITY,
+                1,
+                &doc_info.layout_compatibility.to_bytes(),
+            ));
+        }
     }
 
     stream

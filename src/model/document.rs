@@ -26,6 +26,63 @@ pub struct RawRecord {
     pub data: Vec<u8>,
 }
 
+/// 문서 전역 레이아웃 호환성 비트 (`HWPTAG_LAYOUT_COMPATIBILITY`).
+///
+/// HWP 5.0은 다섯 개의 little-endian dword로 저장한다. HWPX에서는 같은
+/// dword가 `char`, `paragraph`, `section`, `object`, `field` 속성 그룹으로
+/// 투영된다. 아직 의미를 해석하지 않는 비트도 변환 과정에서 잃지 않도록 원시
+/// word 단위로 보존한다.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct LayoutCompatibility {
+    pub words: [u32; 5],
+}
+
+impl LayoutCompatibility {
+    pub const BYTE_LEN: usize = 20;
+
+    pub fn from_bytes(data: &[u8]) -> Self {
+        let mut words = [0u32; 5];
+        for (index, word) in words.iter_mut().enumerate() {
+            let start = index * 4;
+            if let Some(bytes) = data.get(start..start + 4) {
+                *word = u32::from_le_bytes(bytes.try_into().expect("four-byte word"));
+            }
+        }
+        Self { words }
+    }
+
+    pub fn to_bytes(self) -> [u8; Self::BYTE_LEN] {
+        let mut bytes = [0u8; Self::BYTE_LEN];
+        for (index, word) in self.words.iter().enumerate() {
+            bytes[index * 4..index * 4 + 4].copy_from_slice(&word.to_le_bytes());
+        }
+        bytes
+    }
+
+    pub fn bit(self, word: usize, bit: u32) -> bool {
+        self.words
+            .get(word)
+            .is_some_and(|value| value & (1u32 << bit) != 0)
+    }
+
+    pub fn set_bit(&mut self, word: usize, bit: u32, enabled: bool) {
+        let Some(value) = self.words.get_mut(word) else {
+            return;
+        };
+        let mask = 1u32 << bit;
+        if enabled {
+            *value |= mask;
+        } else {
+            *value &= !mask;
+        }
+    }
+
+    /// HWPX `object@adjustBaselineOfObjectToBottom` / fourth dword bit 8.
+    pub fn adjust_baseline_of_object_to_bottom(self) -> bool {
+        self.bit(3, 8)
+    }
+}
+
 /// HWP 문서 전체를 나타내는 최상위 구조체
 #[derive(Debug, Clone, Default)]
 pub struct Document {
@@ -166,6 +223,9 @@ pub struct DocInfo {
     pub para_shapes: Vec<ParaShape>,
     /// 스타일 목록
     pub styles: Vec<Style>,
+    /// 문서 전역 레이아웃 호환성 비트. 줄 너비, grid, header/footer,
+    /// inline-object baseline 등 실제 geometry를 바꾸는 항목을 포함한다.
+    pub layout_compatibility: LayoutCompatibility,
     /// 파서가 모델링하지 않는 추가 레코드 (DOC_DATA, FORBIDDEN_CHAR 등)
     pub extra_records: Vec<RawRecord>,
     /// 원본 DocInfo 레코드 스트림 바이트 (직렬화 시 원본 복원용)
@@ -180,8 +240,8 @@ pub struct DocInfo {
     pub raw_stream_dirty: bool,
     /// HWPX 헤더의 `</hh:refList>` 와 `</hh:head>` 사이 문서 설정 블록
     /// (compatibleDocument/docOption/trackchageConfig)을 원본 그대로 보존한다.
-    /// 본문과 무관한 문서 전역 설정이라 헤더를 재생성해도 이 구간만은 원본을
-    /// splice 해 무손실을 보장한다(content.hpf metadata 보존과 동일 전략).
+    /// 일부 compatibility 값은 실제 layout geometry를 바꾸므로 구조화 모델과
+    /// 별개로 원문도 splice 해 HWPX 무편집 라운드트립을 보장한다.
     /// 원본 HWPX가 없으면(HWP5 경로 등) None → serializer가 하드코딩 폴백.
     pub hwpx_head_tail: Option<String>,
     /// HWPX `<hh:head version="X.Y">` 의 HWPML 스키마 버전. 문서별로 다르므로

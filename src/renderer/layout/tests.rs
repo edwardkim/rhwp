@@ -272,6 +272,7 @@ fn test_layout_with_composed_styles() {
 
     let styles = ResolvedStyleSet {
         hwp3_variant: false,
+        adjust_baseline_of_object_to_bottom: false,
         char_styles: vec![
             ResolvedCharStyle {
                 font_family: "함초롬돋움".to_string(),
@@ -404,6 +405,7 @@ fn test_layout_multi_run_x_position() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     let styles = ResolvedStyleSet {
         hwp3_variant: false,
+        adjust_baseline_of_object_to_bottom: false,
         char_styles: vec![
             ResolvedCharStyle {
                 font_size: 16.0,
@@ -486,6 +488,7 @@ fn test_resolved_to_text_style() {
 
     let styles = ResolvedStyleSet {
         hwp3_variant: false,
+        adjust_baseline_of_object_to_bottom: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "나눔고딕".to_string(),
             font_size: 14.0,
@@ -519,6 +522,7 @@ fn test_resolved_to_text_style_with_ratio() {
 
     let styles = ResolvedStyleSet {
         hwp3_variant: false,
+        adjust_baseline_of_object_to_bottom: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "함초롬돋움".to_string(),
             font_size: 16.0,
