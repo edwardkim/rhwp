@@ -82,6 +82,7 @@ fn print_help() {
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
     println!("      --show-para-marks       문단부호(↵/↓) 표시");
     println!("      --show-control-codes    조판부호 보이기 (문단부호 + 개체 마커 등)");
+    println!("      --show-memos            메모 표시 (우측 여백 메모 박스 + 연결선)");
     println!("      --debug-overlay         디버그 오버레이 (문단/표 경계 + 인덱스 라벨)");
     println!("      --respect-vpos-reset    LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리");
     println!("      --show-grid[=Nmm]       격자 오버레이 (기본: 1mm, 예: --show-grid=3mm)");
@@ -298,6 +299,7 @@ fn export_svg(args: &[String]) {
     let mut target_page: Option<u32> = None;
     let mut show_para_marks = false;
     let mut show_control_codes = false;
+    let mut show_memos = false;
     let mut debug_overlay = false;
     let mut grid_mm: Option<f64> = None;
     let mut grid_origin = GridOriginOption::Fixed((0.0_f64, 0.0_f64));
@@ -338,6 +340,10 @@ fn export_svg(args: &[String]) {
             }
             "--show-control-codes" => {
                 show_control_codes = true;
+                i += 1;
+            }
+            "--show-memos" => {
+                show_memos = true;
                 i += 1;
             }
             "--debug-overlay" => {
@@ -458,6 +464,9 @@ fn export_svg(args: &[String]) {
     }
     if show_control_codes {
         doc.set_show_control_codes(true);
+    }
+    if show_memos {
+        doc.set_show_memos(true);
     }
     if debug_overlay {
         doc.set_debug_overlay(true);

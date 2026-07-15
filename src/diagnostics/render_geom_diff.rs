@@ -121,6 +121,7 @@ fn node_type_str(t: &RenderNodeType) -> &'static str {
         RenderNodeType::Body { .. } => "Body",
         RenderNodeType::Column(_) => "Column",
         RenderNodeType::FootnoteArea => "FootnoteArea",
+        RenderNodeType::MemoArea => "MemoArea",
         RenderNodeType::TextLine(_) => "TextLine",
         RenderNodeType::TextRun(_) => "TextRun",
         RenderNodeType::Table(_) => "Table",

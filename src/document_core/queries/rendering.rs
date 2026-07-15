@@ -3977,6 +3977,11 @@ impl DocumentCore {
         self.layout_engine.set_clip_enabled(self.clip_enabled);
         self.layout_engine
             .set_show_control_codes(self.show_control_codes);
+        self.layout_engine.set_show_memos(self.show_memos);
+        if self.show_memos {
+            self.layout_engine
+                .set_memo_shapes(self.document.doc_info.memo_shapes());
+        }
         self.layout_engine
             .set_hwp3_variant(self.document.is_hwp3_variant);
         self.layout_engine.set_hwp3_origin_flow_spacing_before(

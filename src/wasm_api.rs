@@ -399,6 +399,19 @@ impl HwpDocument {
         self.invalidate_page_tree_cache();
     }
 
+    /// 메모 표시 여부를 반환한다.
+    #[wasm_bindgen(js_name = getShowMemos)]
+    pub fn get_show_memos(&self) -> bool {
+        self.show_memos
+    }
+
+    /// 메모 표시 여부를 설정한다 (우측 여백 메모 박스 + 연결선).
+    #[wasm_bindgen(js_name = setShowMemos)]
+    pub fn set_show_memos(&mut self, enabled: bool) {
+        self.show_memos = enabled;
+        self.invalidate_page_tree_cache();
+    }
+
     /// 투명선 표시 여부를 반환한다.
     #[wasm_bindgen(js_name = getShowTransparentBorders)]
     pub fn get_show_transparent_borders(&self) -> bool {

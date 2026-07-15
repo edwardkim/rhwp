@@ -5193,6 +5193,37 @@ impl LayoutEngine {
 
         for fr in &p.field_ranges {
             if let Some(Control::Field(field)) = p.controls.get(fr.control_idx) {
+                // 메모 앵커 수집 (--show-memos): 필드 시작이 이 줄에 있을 때만.
+                // 박스 배치는 페이지 마지막의 build_memo_areas 가 담당한다.
+                if field.field_type == crate::model::control::FieldType::Memo {
+                    if self.show_memos.get()
+                        && fr.start_char_idx >= line_char_start
+                        && fr.start_char_idx <= line_char_end
+                    {
+                        let anchor_x = find_x_for_char(fr.start_char_idx);
+                        // 앵커 표시 범위: 필드 끝이 같은 줄이면 끝 문자까지, 아니면 줄 끝까지
+                        let end_x = if fr.end_char_idx <= line_char_end {
+                            find_x_for_char(fr.end_char_idx)
+                        } else {
+                            char_x_map.last().map(|&(_, xv)| xv).unwrap_or(anchor_x)
+                        };
+                        self.memo_anchors
+                            .borrow_mut()
+                            .push(super::memo_layout::MemoAnchor {
+                                section_index,
+                                para_index,
+                                control_idx: fr.control_idx,
+                                x: anchor_x,
+                                end_x: end_x.max(anchor_x),
+                                y,
+                                line_height,
+                                memo_index: field.memo_index,
+                                author: field.memo_author().map(str::to_string),
+                                paragraphs: field.memo_paragraphs.clone(),
+                            });
+                    }
+                    continue;
+                }
                 if field.field_type != crate::model::control::FieldType::ClickHere {
                     continue;
                 }

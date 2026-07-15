@@ -103,6 +103,10 @@ pub struct SvgRenderer {
     pub font_paths: Vec<std::path::PathBuf>,
     /// 사용된 폰트별 codepoint 수집 (font_family → codepoints)
     font_codepoints: std::collections::HashMap<String, std::collections::HashSet<char>>,
+    /// 메모 박스(--show-memos)가 페이지 우측 밖으로 나가는 폭 (px).
+    /// render_tree 가 MemoArea 노드 범위에서 계산하며, begin_page 가 SVG
+    /// width/viewBox 를 이만큼 넓혀 메모가 잘리지 않게 한다. 페이지 좌표계는 불변.
+    memo_gutter_extra: f64,
 }
 
 /// 디버그 오버레이용 문단 경계 정보
@@ -174,6 +178,7 @@ impl SvgRenderer {
             font_embed_mode: FontEmbedMode::None,
             font_paths: Vec::new(),
             font_codepoints: std::collections::HashMap::new(),
+            memo_gutter_extra: 0.0,
         }
     }
 
@@ -191,6 +196,19 @@ impl SvgRenderer {
 
     /// 렌더 트리를 SVG로 렌더링
     pub fn render_tree(&mut self, tree: &PageRenderTree) {
+        // 메모 박스(--show-memos)가 있으면 SVG 캔버스를 우측으로 확장한다.
+        let page_right = tree.root.bbox.width;
+        let memo_right = tree
+            .root
+            .children
+            .iter()
+            .filter(|c| matches!(c.node_type, RenderNodeType::MemoArea))
+            .map(|c| c.bbox.x + c.bbox.width)
+            .fold(page_right, f64::max);
+        self.memo_gutter_extra = (memo_right - page_right).max(0.0).ceil();
+        if self.memo_gutter_extra > 0.0 {
+            self.memo_gutter_extra += 4.0; // 테두리 선폭 여유
+        }
         self.render_node(&tree.root);
     }
 
@@ -703,11 +721,12 @@ impl SvgRenderer {
                         }
                     }
                 }
-                // 머리말/꼬리말/바탕쪽/각주/텍스트박스/그룹: body 외 영역 제외
+                // 머리말/꼬리말/바탕쪽/각주/메모/텍스트박스/그룹: body 외 영역 제외
                 RenderNodeType::Header
                 | RenderNodeType::Footer
                 | RenderNodeType::MasterPage
                 | RenderNodeType::FootnoteArea
+                | RenderNodeType::MemoArea
                 | RenderNodeType::TextBox
                 | RenderNodeType::Group(_) => {
                     self.overlay_skip_depth += 1;
@@ -743,6 +762,7 @@ impl SvgRenderer {
                 | RenderNodeType::Footer
                 | RenderNodeType::MasterPage
                 | RenderNodeType::FootnoteArea
+                | RenderNodeType::MemoArea
                 | RenderNodeType::TextBox
                 | RenderNodeType::Group(_) => {
                     self.overlay_skip_depth = self.overlay_skip_depth.saturating_sub(1);
@@ -2633,9 +2653,12 @@ impl Renderer for SvgRenderer {
         self.overlay_page_section = -1;
         // xmlns:xlink 필수: SVG 가 <img> 로 로드될 때(예: blob URL 미리보기)
         // 엄격한 XML 파싱으로 인해 xmlns:xlink 미선언 시 <image xlink:href=...> 가 무시됨.
+        // 메모 박스(--show-memos)가 있으면 우측으로만 캔버스를 넓힌다.
+        // viewBox 원점은 그대로라 페이지 좌표계는 변하지 않는다.
+        let canvas_width = width + self.memo_gutter_extra;
         self.output.push_str(&format!(
             "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"{}\" height=\"{}\" viewBox=\"0 0 {} {}\">\n",
-            width, height, width, height,
+            canvas_width, height, canvas_width, height,
         ));
         self.defs_insert_pos = self.output.len();
     }

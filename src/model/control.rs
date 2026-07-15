@@ -313,6 +313,28 @@ impl Field {
         self.extract_wstring_value("HelpState:")
     }
 
+    /// 메모(MEMO) command 에서 작성자 이름을 추출한다.
+    ///
+    /// command 형식: `MEMO/{shapeIdRef}/{number}/{timestamp}/{magic}/{author}/\;;`
+    /// (마지막 `\;;` 는 종결자). 형식이 다르면 None.
+    pub fn memo_author(&self) -> Option<&str> {
+        if self.field_type != FieldType::Memo {
+            return None;
+        }
+        let parts: Vec<&str> = self.command.split('/').collect();
+        if parts.len() < 7 || parts[0] != "MEMO" {
+            return None;
+        }
+        // author 는 6번째 성분부터 마지막 종결자 앞까지 (이름에 '/' 포함 대비)
+        let author_start = self.command.splitn(6, '/').last()?;
+        let author = author_start.rsplit_once('/').map(|(a, _)| a)?;
+        if author.is_empty() {
+            None
+        } else {
+            Some(author)
+        }
+    }
+
     /// 양식 모드에서 편집 가능 여부 (properties bit 0)
     pub fn is_editable_in_form(&self) -> bool {
         self.properties & 1 != 0
@@ -508,6 +530,39 @@ mod tests {
             body.chars().count() - 1,
             "set 길이 = inner 글자수 − 1 (trailing 공백 제외): {cmd}"
         );
+    }
+
+    /// 메모 command 에서 작성자 추출 (실측: aift.hwpx / 첫사랑 원고 형식)
+    #[test]
+    fn memo_author_extracts_from_command() {
+        let field = Field {
+            field_type: FieldType::Memo,
+            command: "MEMO/65535/1/1517431184/31247371/user/\\;;".to_string(),
+            ..Default::default()
+        };
+        assert_eq!(field.memo_author(), Some("user"));
+
+        // 작성자 이름에 공백·한글 포함
+        let field2 = Field {
+            field_type: FieldType::Memo,
+            command: "MEMO/65535/57/3349832816/31233629/이젤 출판사_김민지 PD/\\;;".to_string(),
+            ..Default::default()
+        };
+        assert_eq!(field2.memo_author(), Some("이젤 출판사_김민지 PD"));
+
+        // Memo 타입이 아니거나 형식이 다르면 None
+        let field3 = Field {
+            field_type: FieldType::ClickHere,
+            command: "MEMO/65535/1/1/1/user/\\;;".to_string(),
+            ..Default::default()
+        };
+        assert_eq!(field3.memo_author(), None);
+        let field4 = Field {
+            field_type: FieldType::Memo,
+            command: "not-a-memo-command".to_string(),
+            ..Default::default()
+        };
+        assert_eq!(field4.memo_author(), None);
     }
 
     #[test]

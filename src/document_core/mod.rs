@@ -89,6 +89,9 @@ pub struct DocumentCore {
     pub(crate) clip_enabled: bool,
     /// 디버그 오버레이 표시 여부 (문단/표 경계 + pi/ci 라벨)
     pub(crate) debug_overlay: bool,
+    /// 메모 표시 여부 (우측 여백 메모 박스 + 연결선). 한컴 편집기의 "메모 보기"
+    /// 대응 — 한컴 PDF 변환본에는 메모가 출력되지 않으므로 기본값 false (옵트인).
+    pub(crate) show_memos: bool,
     /// LINE_SEG vpos-reset 강제 분리 적용 여부 (페이지네이션 옵션)
     pub(crate) respect_vpos_reset: bool,
     /// 구역별 표 측정 데이터 (페이지네이션 결과 보존)
@@ -266,6 +269,7 @@ impl DocumentCore {
             show_transparent_borders: false,
             clip_enabled: true,
             debug_overlay: false,
+            show_memos: false,
             respect_vpos_reset: false,
             measured_tables: Vec::new(),
             dirty_sections: Vec::new(),

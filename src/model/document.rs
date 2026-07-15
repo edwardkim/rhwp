@@ -553,6 +553,84 @@ impl Document {
     }
 }
 
+/// HWPTAG_MEMO_SHAPE 태그 ID (= HWPTAG_BEGIN(0x10) + 76).
+/// model → parser 역의존을 피하기 위해 값을 복제한다 (parser::tags 와 동기화 테스트 존재).
+pub const MEMO_SHAPE_TAG_ID: u16 = 0x010 + 76;
+
+/// 메모 모양 (HWPTAG_MEMO_SHAPE 레코드 / HWPX `hh:memoPr`)
+///
+/// 메모 렌더링(`--show-memos`)에 사용한다. DocInfo 는 이 레코드를 roundtrip 용
+/// raw 레코드(`extra_records`)로만 보존하므로, 렌더 시점에 [`DocInfo::memo_shapes`]로
+/// 구조화해 읽는다.
+#[derive(Debug, Clone, PartialEq)]
+pub struct MemoShape {
+    /// 메모 박스 폭 (HWPUNIT)
+    pub width: u32,
+    /// 테두리 선 종류 (0=없음, 1=SOLID, …)
+    pub line_type: u8,
+    /// 테두리 선 굵기
+    pub line_width: u8,
+    /// 테두리 색 (ColorRef 0x00BBGGRR)
+    pub line_color: u32,
+    /// 채움 색 (ColorRef 0x00BBGGRR)
+    pub fill_color: u32,
+    /// 활성 메모 색 (ColorRef 0x00BBGGRR)
+    pub active_color: u32,
+    /// 메모 종류 (0=NORMAL)
+    pub memo_type: u32,
+}
+
+impl Default for MemoShape {
+    /// 한컴 기본 메모 모양. memoPr 미등록 문서와 `MemoShapeIDRef=65535`
+    /// (모양 미지정 sentinel) 폴백에 사용한다.
+    fn default() -> Self {
+        Self {
+            width: 15591, // ≈ 55 mm
+            line_type: 1, // SOLID
+            line_width: 3,
+            line_color: 0x00A9A9A9,   // #A9A9A9
+            fill_color: 0x0099FFCB,   // #CBFF99
+            active_color: 0x00DDBCFD, // #FDBCDD
+            memo_type: 0,
+        }
+    }
+}
+
+impl MemoShape {
+    /// HWPTAG_MEMO_SHAPE 레코드 바이트를 파싱한다.
+    ///
+    /// 레이아웃(22B): width u32 | line_type u8 | line_width u8 |
+    /// line_color u32 | fill_color u32 | active_color u32 | memo_type u32
+    pub fn from_record_data(data: &[u8]) -> Option<Self> {
+        if data.len() < 22 {
+            return None;
+        }
+        let u32_at =
+            |i: usize| u32::from_le_bytes([data[i], data[i + 1], data[i + 2], data[i + 3]]);
+        Some(Self {
+            width: u32_at(0),
+            line_type: data[4],
+            line_width: data[5],
+            line_color: u32_at(6),
+            fill_color: u32_at(10),
+            active_color: u32_at(14),
+            memo_type: u32_at(18),
+        })
+    }
+}
+
+impl DocInfo {
+    /// extra_records 에 보존된 HWPTAG_MEMO_SHAPE 레코드를 구조화해 반환한다.
+    /// (HWP5 파서·HWPX 파서 모두 이 레코드를 extra_records 로 보존한다.)
+    pub fn memo_shapes(&self) -> Vec<MemoShape> {
+        self.extra_records
+            .iter()
+            .filter(|r| r.tag_id == MEMO_SHAPE_TAG_ID)
+            .filter_map(|r| MemoShape::from_record_data(&r.data))
+            .collect()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -562,6 +640,51 @@ mod tests {
         let doc = Document::default();
         assert_eq!(doc.sections.len(), 0);
         assert_eq!(doc.doc_properties.section_count, 0);
+    }
+
+    #[test]
+    fn memo_shape_tag_id_matches_parser_tags() {
+        // model → parser 역의존을 피하려 복제한 상수의 동기화 검증
+        assert_eq!(MEMO_SHAPE_TAG_ID, crate::parser::tags::HWPTAG_MEMO_SHAPE);
+    }
+
+    #[test]
+    fn memo_shapes_parses_memo_shape_record() {
+        // aift.hwpx 의 memoPr: width=15591 lineWidth=3 lineType=SOLID
+        // lineColor=#A9A9A9 fillColor=#CBFF99 activeColor=#FDBCDD
+        let mut data = Vec::new();
+        data.extend_from_slice(&15591u32.to_le_bytes());
+        data.push(1); // line_type SOLID
+        data.push(3); // line_width
+        data.extend_from_slice(&0x00A9A9A9u32.to_le_bytes());
+        data.extend_from_slice(&0x0099FFCBu32.to_le_bytes());
+        data.extend_from_slice(&0x00DDBCFDu32.to_le_bytes());
+        data.extend_from_slice(&0u32.to_le_bytes());
+
+        let doc_info = DocInfo {
+            extra_records: vec![RawRecord {
+                tag_id: MEMO_SHAPE_TAG_ID,
+                level: 1,
+                data,
+            }],
+            ..Default::default()
+        };
+        let shapes = doc_info.memo_shapes();
+        assert_eq!(shapes.len(), 1);
+        assert_eq!(shapes[0], MemoShape::default());
+    }
+
+    #[test]
+    fn memo_shapes_skips_short_record() {
+        let doc_info = DocInfo {
+            extra_records: vec![RawRecord {
+                tag_id: MEMO_SHAPE_TAG_ID,
+                level: 1,
+                data: vec![0u8; 10],
+            }],
+            ..Default::default()
+        };
+        assert!(doc_info.memo_shapes().is_empty());
     }
 
     #[test]

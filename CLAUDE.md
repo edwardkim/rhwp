@@ -141,6 +141,7 @@ rhwp export-svg sample.hwp -o my_dir/              # 지정 폴더에 출력
 rhwp export-svg sample.hwp -p 0                    # 특정 페이지만 출력 (0부터)
 rhwp export-svg sample.hwp --show-para-marks       # 문단부호(↵/↓) 표시
 rhwp export-svg sample.hwp --show-control-codes    # 조판부호 표시 (문단부호+개체마커)
+rhwp export-svg sample.hwp --show-memos            # 메모 표시 (우측 여백 메모 박스+연결선)
 rhwp export-svg sample.hwp --debug-overlay         # 디버그 오버레이 (문단/표 경계+인덱스)
 rhwp export-svg sample.hwp --font-style            # @font-face local() 참조 삽입
 rhwp export-svg sample.hwp --embed-fonts           # 폰트 서브셋 임베딩 (사용 글자만)

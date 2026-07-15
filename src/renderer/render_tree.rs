@@ -160,6 +160,7 @@ impl RenderNode {
             RenderNodeType::Body { .. } => ("Body", String::new()),
             RenderNodeType::Column(c) => ("Column", format!(",\"col\":{}", c)),
             RenderNodeType::FootnoteArea => ("FootnoteArea", String::new()),
+            RenderNodeType::MemoArea => ("MemoArea", String::new()),
             RenderNodeType::TextLine(tl) => (
                 "TextLine",
                 format!(",\"pi\":{}", tl.para_index.unwrap_or(0)),
@@ -263,6 +264,8 @@ pub enum RenderNodeType {
     Column(u16),
     /// 각주 영역
     FootnoteArea,
+    /// 메모 박스 (--show-memos, 페이지 우측 여백 바깥 영역)
+    MemoArea,
     /// 텍스트 줄
     TextLine(TextLineNode),
     /// 텍스트 런 (동일 글자 모양의 텍스트 조각)

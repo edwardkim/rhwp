@@ -1315,6 +1315,13 @@ pub struct LayoutEngine {
         std::cell::RefCell<Option<(usize, usize, usize, Option<Vec<(usize, usize, usize)>>)>>,
     /// 조판부호 표시 여부
     show_control_codes: std::cell::Cell<bool>,
+    /// 메모 표시 여부 (우측 여백 메모 박스 + 연결선, --show-memos)
+    show_memos: std::cell::Cell<bool>,
+    /// 문서의 메모 모양 목록 (HWPTAG_MEMO_SHAPE). 비어 있으면 기본 모양.
+    memo_shapes: std::cell::RefCell<Vec<crate::model::document::MemoShape>>,
+    /// 현재 페이지에서 수집된 메모 앵커. build_render_tree 시작 시 비우고,
+    /// 본문 조판 중 수집 → 페이지 마지막에 build_memo_areas 가 소비한다.
+    memo_anchors: std::cell::RefCell<Vec<memo_layout::MemoAnchor>>,
     /// 현재 페이지 용지 너비 (표 HorzRelTo::Paper 위치 계산용)
     current_paper_width: std::cell::Cell<f64>,
     /// 현재 페이지 본문 영역 (표 HorzRelTo::Page / VertRelTo::Page 위치 계산용)
@@ -1352,6 +1359,7 @@ pub struct LayoutEngine {
 }
 
 mod border_rendering;
+mod memo_layout;
 mod paragraph_layout;
 mod picture_footnote;
 mod shape_layout;
@@ -1412,6 +1420,9 @@ impl LayoutEngine {
             endnote_separator_below_hu: std::cell::Cell::new(0),
             active_field: std::cell::RefCell::new(None),
             show_control_codes: std::cell::Cell::new(false),
+            show_memos: std::cell::Cell::new(false),
+            memo_shapes: std::cell::RefCell::new(Vec::new()),
+            memo_anchors: std::cell::RefCell::new(Vec::new()),
             current_paper_width: std::cell::Cell::new(0.0),
             current_body_area: std::cell::Cell::new((0.0, 0.0, 0.0, 0.0)),
             is_hwp3_variant: std::cell::Cell::new(false),
@@ -1832,6 +1843,16 @@ impl LayoutEngine {
         self.show_control_codes.set(enabled);
     }
 
+    /// 메모 표시 여부 설정
+    pub fn set_show_memos(&self, enabled: bool) {
+        self.show_memos.set(enabled);
+    }
+
+    /// 문서의 메모 모양 목록 설정 (DocInfo::memo_shapes 결과)
+    pub fn set_memo_shapes(&self, shapes: Vec<crate::model::document::MemoShape>) {
+        *self.memo_shapes.borrow_mut() = shapes;
+    }
+
     /// 자동 번호 카운터 초기화
     pub fn reset_auto_counter(&self) {
         self.auto_counter.borrow_mut().reset();
@@ -1864,6 +1885,9 @@ impl LayoutEngine {
             layout.page_width,
             layout.page_height,
         );
+
+        // 메모 앵커는 페이지 단위로 수집한다 (본문 조판 중 채워짐).
+        self.memo_anchors.borrow_mut().clear();
 
         // 페이지 배경. hide_fill(쪽 배경 감추기) 시 커스텀 채우기(색/그라데이션/이미지)만
         // 숨기고 흰 종이 바탕 pageBackground 는 유지한다. 통째로 스킵하면 raster 기본 투명
@@ -2058,6 +2082,10 @@ impl LayoutEngine {
             page_border_fill,
         );
         tree.root.children.push(footer_node);
+
+        // 메모 박스 (--show-memos): 본문 조판 중 수집된 앵커를 우측 여백 밖에 배치.
+        // 모든 콘텐츠 위에 그려지도록 마지막에 추가한다.
+        self.build_memo_areas(&mut tree, styles, layout);
 
         tree
     }

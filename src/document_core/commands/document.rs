@@ -140,6 +140,7 @@ impl DocumentCore {
             show_transparent_borders: false,
             clip_enabled: true,
             debug_overlay: false,
+            show_memos: false,
             respect_vpos_reset: false,
             measured_tables: Vec::new(),
             dirty_sections: vec![true; sec_count],
