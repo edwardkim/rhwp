@@ -8,7 +8,10 @@ on:
       - 'mydocs/**'
       - 'docs/**'
       - 'samples/**'
-      - 'assets/**'
+      - 'assets/chrome/**'
+      - 'assets/edge/**'
+      - 'assets/logo/**'
+      - 'assets/screenshots/**'
       - '*.md'
       - 'LICENSE'
       - '.github/ISSUE_TEMPLATE/**'
@@ -23,7 +26,10 @@ on:
     paths-ignore:
       - 'docs/**'
       - 'samples/**'
-      - 'assets/**'
+      - 'assets/chrome/**'
+      - 'assets/edge/**'
+      - 'assets/logo/**'
+      - 'assets/screenshots/**'
       - '*.md'
       - 'LICENSE'
       - '.github/ISSUE_TEMPLATE/**'
@@ -283,6 +289,7 @@ jobs:
               'rhwp-vscode/',
               'rhwp-shared/',
               'npm/editor/',
+              'assets/fonts/',
               'web/',
             ];
 
@@ -593,6 +600,9 @@ jobs:
 
       - name: Compile VS Code extension
         run: npm --prefix rhwp-vscode run compile
+
+      - name: Verify font asset contracts
+        run: node --test scripts/frontend-font-assets.test.mjs
 
       - name: Save frontend WASM cargo cache
         if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.frontend_wasm_cargo_cache_restore.outputs.cache-hit != 'true' }}

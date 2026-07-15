@@ -670,6 +670,7 @@ function fontReferences(files) {
   const refs = [];
   const patterns = [
     /web\/fonts/g,
+    /assets\/fonts/g,
     /fonts\//g,
     /\.woff2\b/g,
     /FONTS\.md/g,
@@ -703,20 +704,25 @@ function fontReferences(files) {
 
 function fontAssetInventory(files) {
   const fontFiles = files
-    .filter((file) => file.startsWith('web/fonts/') && file.endsWith('.woff2'))
+    .filter((file) => file.startsWith('assets/fonts/') && file.endsWith('.woff2'))
     .map((file) => ({ file, ...fileFingerprint(file) }));
   const licenseFiles = [
-    'web/fonts/FONTS.md',
+    'assets/fonts/FONTS.md',
     'THIRD_PARTY_LICENSES.md',
-    'web/fonts/SourceHanSerifK-OFL.txt',
+    'assets/fonts/SourceHanSerifK-OFL.txt',
   ].map((file) => ({ file, ...fileFingerprint(file) }));
   const studioLink = path.join(ROOT, 'rhwp-studio/public/fonts');
+  const legacyWebLink = path.join(ROOT, 'web/fonts');
 
   return {
-    canonicalDirectory: 'web/fonts',
+    canonicalDirectory: 'assets/fonts',
     studioPublicLink: {
       file: 'rhwp-studio/public/fonts',
       target: normalizePath(readlinkSync(studioLink)),
+    },
+    legacyWebLink: {
+      file: 'web/fonts',
+      target: normalizePath(readlinkSync(legacyWebLink)),
     },
     files: fontFiles,
     fileCount: fontFiles.length,

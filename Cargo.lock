@@ -1231,8 +1231,7 @@ dependencies = [
 [[package]]
 name = "svg2pdf"
 version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e50dc062439cc1a396181059c80932a6e6bd731b130e674c597c0c8874b6df22"
+source = "git+https://github.com/planet6897/svg2pdf?branch=determinism-0.13#2caeb0a038f9128b79833d803b94c2667565c4da"
 dependencies = [
  "fontdb",
  "image",

@@ -31,21 +31,21 @@ Thumbs.db
 /ttfs/windows/
 /ttfs/hamchob-r.ttf
 /ttfs/hamchod-r.ttf
-/web/fonts/hamchob-r.woff2
-/web/fonts/hamchod-r.woff2
-/web/fonts/h2hdrm.woff2
-/web/fonts/hygprm.woff2
-/web/fonts/hygtre.woff2
-/web/fonts/hymjre.woff2
-/web/fonts/ArialW05-Regular.woff2
-/web/fonts/Calibri.woff2
-/web/fonts/CourierNewW05-Regular.woff2
-/web/fonts/TahomaW05-Regular.woff2
-/web/fonts/TimesNewRomanW05-Regular.woff2
-/web/fonts/VerdanaW05-Regular.woff2
-/web/fonts/MalgunGothicW35-Regular.woff2
-/web/fonts/WebdingsW95-Regular.woff2
-/web/fonts/WingdingsW95-3.woff2
+/assets/fonts/hamchob-r.woff2
+/assets/fonts/hamchod-r.woff2
+/assets/fonts/h2hdrm.woff2
+/assets/fonts/hygprm.woff2
+/assets/fonts/hygtre.woff2
+/assets/fonts/hymjre.woff2
+/assets/fonts/ArialW05-Regular.woff2
+/assets/fonts/Calibri.woff2
+/assets/fonts/CourierNewW05-Regular.woff2
+/assets/fonts/TahomaW05-Regular.woff2
+/assets/fonts/TimesNewRomanW05-Regular.woff2
+/assets/fonts/VerdanaW05-Regular.woff2
+/assets/fonts/MalgunGothicW35-Regular.woff2
+/assets/fonts/WebdingsW95-Regular.woff2
+/assets/fonts/WingdingsW95-3.woff2
 
 # 외부 참조
 /webhwp/

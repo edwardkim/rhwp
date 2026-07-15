@@ -161,3 +161,10 @@ strip = "debuginfo"
 inherits = "release"
 lto = false
 codegen-units = 16
+
+# #2269 PDF 채번 비결정 근본 정정 — svg2pdf 0.13 의 HashMap 반복(폰트 객체 방출·
+# 리소스 딕셔너리 순서)을 결정화한 벤더 패치. 업스트림(typst/svg2pdf)이 2026-07
+# 아카이브되어 기여 불가, 포크 브랜치로 대체 (Cargo.lock 이 정확한 rev 를 고정).
+# krilla-svg 마이그레이션 시 이 패치는 제거한다.
+[patch.crates-io]
+svg2pdf = { git = "https://github.com/planet6897/svg2pdf", branch = "determinism-0.13" }

@@ -109,12 +109,12 @@ copy(resolve(ROOT, 'pkg', 'rhwp.d.ts'), resolve(DIST, 'wasm', 'rhwp.d.ts'));
 copy(resolve(ROOT, 'pkg', 'rhwp_bg.wasm'), resolve(DIST, 'wasm', 'rhwp_bg.wasm'));
 copy(resolve(ROOT, 'pkg', 'rhwp_bg.wasm.d.ts'), resolve(DIST, 'wasm', 'rhwp_bg.wasm.d.ts'));
 
-// 4. 폰트 복사 (web/fonts 전체 woff2)
+// 4. 폰트 복사 (assets/fonts 전체 woff2)
 // FontLoader(rhwp-studio)가 참조하는 폰트와 자동 일치시키기 위해 하드코딩 목록 대신
-// web/fonts 의 woff2 전부를 복사한다. 목록을 고정하면 폴백 폰트 추가 시 누락된다 (#1484).
+// assets/fonts 의 woff2 전부를 복사한다. 목록을 고정하면 폴백 폰트 추가 시 누락된다 (#1484).
 console.log('\n[4/4] 폰트 복사...');
 mkdirSync(resolve(DIST, 'fonts'), { recursive: true });
-const fontDir = resolve(ROOT, 'web', 'fonts');
+const fontDir = resolve(ROOT, 'assets', 'fonts');
 const fontFiles = readdirSync(fontDir).filter((f) => f.endsWith('.woff2'));
 for (const font of fontFiles) {
   copy(resolve(fontDir, font), resolve(DIST, 'fonts', font));

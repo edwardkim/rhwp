@@ -5,7 +5,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const FONT_FILES = readdirSync(path.join(ROOT, 'web/fonts'))
+const FONT_FILES = readdirSync(path.join(ROOT, 'assets/fonts'))
   .filter((file) => file.endsWith('.woff2'))
   .sort();
 

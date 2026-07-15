@@ -11,7 +11,7 @@ on:
       - 'src/document_core/queries/rendering.rs'
       - 'src/wasm_api.rs'
       - 'src/main.rs'
-      - 'web/fonts/**'
+      - 'assets/fonts/**'
       - 'scripts/renderer_baseline.py'
       - 'scripts/renderer_baseline_manifest.json'
       - 'docs/canvaskit-parity-implementation.md'

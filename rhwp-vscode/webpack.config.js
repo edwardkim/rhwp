@@ -90,7 +90,7 @@ const webviewConfig = {
           "NanumGothic-Regular.woff2", "NanumMyeongjo-Regular.woff2",
           "GowunBatang-Regular.woff2", "GowunDodum-Regular.woff2",
         ].map(f => ({
-          from: path.resolve(__dirname, "..", "web", "fonts", f),
+          from: path.resolve(__dirname, "..", "assets", "fonts", f),
           to: path.resolve(__dirname, "dist", "media", "fonts", f),
         })),
       ],
