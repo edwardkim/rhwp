@@ -2294,6 +2294,20 @@ impl DocumentCore {
             .map_or_else(Paragraph::new_empty, Paragraph::new_empty_like);
         paragraphs.insert(para_idx, new_para);
 
+        // 구역의 첫 문단은 "여기서 구역이 시작한다"는 나누기 표식을 지닌다. 이 표식은 문단
+        // 내용이 아니라 **자리**에 딸린 속성이므로, 그 앞에 문단을 끼우면 새 첫 문단으로
+        // 옮겨야 한다. 그대로 두면 밀려난 문단이 1번에서 계속 구역 시작을 주장해 거기서
+        // 쪽이 끊기고, 새 문단만 홀로 남은 빈 쪽이 생긴다.
+        //
+        // 0번이 아닌 자리는 옮기지 않는다 — 그쪽 표식은 사용자가 그 문단에 직접 넣은
+        // 쪽/단 나누기이므로 문단을 따라가는 게 맞다.
+        if para_idx == 0 {
+            if let [new_first, displaced, ..] = &mut paragraphs[..] {
+                new_first.column_type = std::mem::take(&mut displaced.column_type);
+                new_first.raw_break_type = std::mem::take(&mut displaced.raw_break_type);
+            }
+        }
+
         let reflow_target = if para_idx > 0 { para_idx - 1 } else { para_idx };
         let old_col = self
             .para_column_map
