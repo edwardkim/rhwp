@@ -516,26 +516,58 @@ fn render_bars(
         }
     };
 
-    svg.push_str(&format!(
-        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
-        px, py, pw, ph
-    ));
+    // 3D 압출 깊이 — 막대 두께 기반 고정 근사 (c:view3D/gapDepth 미파싱, 이슈 #2278
+    // 확정식 0.45/3~9 → 시각판정 보정 2026-07-16: 0.30/2.5~9 — 한컴 깊이/두께 비
+    // 실측 ~0.25-0.3). 두께 = 누적: 슬롯 막대폭 / 묶음: 계열별 막대폭.
+    let bar_thickness = {
+        let span = (if horizontal { ph } else { pw }) / cat_count as f64 * 0.7;
+        if stacked {
+            span
+        } else {
+            span / ser_count as f64
+        }
+    };
+    let d3 = (bar_thickness * 0.30).clamp(2.5, 9.0);
 
-    render_value_grid(
-        svg,
-        px,
-        py,
-        pw,
-        ph,
-        vmin,
-        vmax,
-        vstep,
-        chart.series.first().and_then(|s| s.format_code.as_deref()),
-        horizontal,
-        false,
-        percent,
-        false,
-    );
+    if chart.is_3d {
+        // 3D 방(뒷벽 격자 + 눈금 커넥터 + 바닥)이 배경·격자를 대체 — 라벨은 2D와
+        // 동일 유지(#1882 앵커). 시각판정 보정 2026-07-16 범위 추가.
+        render_value_grid_3d(
+            svg,
+            px,
+            py,
+            pw,
+            ph,
+            d3,
+            vmin,
+            vmax,
+            vstep,
+            chart.series.first().and_then(|s| s.format_code.as_deref()),
+            horizontal,
+            percent,
+        );
+    } else {
+        svg.push_str(&format!(
+            "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
+            px, py, pw, ph
+        ));
+
+        render_value_grid(
+            svg,
+            px,
+            py,
+            pw,
+            ph,
+            vmin,
+            vmax,
+            vstep,
+            chart.series.first().and_then(|s| s.format_code.as_deref()),
+            horizontal,
+            false,
+            percent,
+            false,
+        );
+    }
 
     let (cat_span, bar_span_total) = if horizontal {
         let span = ph / cat_count as f64;
@@ -551,11 +583,6 @@ fn render_bars(
         let idx = if horizontal { cat_count - 1 - ci } else { ci };
         cat_span * idx as f64
     };
-
-    // 3D 압출 깊이 — 막대 두께 기반 고정 근사 (c:view3D/gapDepth 미파싱, 이슈
-    // #2278 확정식). 축 계산(#1882 앵커) 무접촉: 아래에서 rect 방출만 3면
-    // 방출(push_bar_3d)로 대체된다.
-    let depth3d = |thickness: f64| (thickness * 0.45).clamp(3.0, 9.0);
 
     if stacked {
         // 누적: 카테고리당 단일 막대, 시리즈를 아래/왼쪽부터 쌓음.
@@ -584,15 +611,7 @@ fn render_bars(
                     let seg = pw * (v / denom);
                     if chart.is_3d {
                         let rgb = ser.color.unwrap_or_else(|| palette(si));
-                        push_bar_3d(
-                            svg,
-                            base + acc,
-                            cell,
-                            seg.max(0.0),
-                            bar_span_total,
-                            depth3d(bar_span_total),
-                            rgb,
-                        );
+                        push_bar_3d(svg, base + acc, cell, seg.max(0.0), bar_span_total, d3, rgb);
                     } else {
                         svg.push_str(&format!(
                             "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
@@ -605,15 +624,7 @@ fn render_bars(
                     let by = py + ph - acc - seg;
                     if chart.is_3d {
                         let rgb = ser.color.unwrap_or_else(|| palette(si));
-                        push_bar_3d(
-                            svg,
-                            cell,
-                            by,
-                            bar_span_total,
-                            seg.max(0.0),
-                            depth3d(bar_span_total),
-                            rgb,
-                        );
+                        push_bar_3d(svg, cell, by, bar_span_total, seg.max(0.0), d3, rgb);
                     } else {
                         svg.push_str(&format!(
                             "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
@@ -645,7 +656,7 @@ fn render_bars(
                     let bw = pw * t;
                     if chart.is_3d {
                         let rgb = ser.color.unwrap_or_else(|| palette(si));
-                        push_bar_3d(svg, px, cy, bw.max(0.0), bar_w * 0.95, depth3d(bar_w), rgb);
+                        push_bar_3d(svg, px, cy, bw.max(0.0), bar_w * 0.95, d3, rgb);
                     } else {
                         svg.push_str(&format!(
                             "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
@@ -659,7 +670,7 @@ fn render_bars(
                     let by = py + ph - bh;
                     if chart.is_3d {
                         let rgb = ser.color.unwrap_or_else(|| palette(si));
-                        push_bar_3d(svg, cx, by, bar_w * 0.95, bh.max(0.0), depth3d(bar_w), rgb);
+                        push_bar_3d(svg, cx, by, bar_w * 0.95, bh.max(0.0), d3, rgb);
                     } else {
                         svg.push_str(&format!(
                             "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
@@ -1370,6 +1381,120 @@ fn render_value_grid(
             ));
         }
     }
+}
+
+/// 3D 막대 전용 값축 격자 — "3D 방" 근사: 뒷벽(격자 포함) + 눈금 사선 커넥터 +
+/// 바닥 평행사변형 (정답지 4종 공통 표현, 시각판정 보정 2026-07-16 범위 추가).
+/// 라벨 문자열·위치·축 계산은 render_value_grid와 동일(#1882 앵커 무접촉) —
+/// 격자선만 뒷벽으로 (+d,-d) 오프셋. 2D 경로는 이 함수를 쓰지 않는다. (C2b #2278)
+#[allow(clippy::too_many_arguments)]
+fn render_value_grid_3d(
+    svg: &mut String,
+    px: f64,
+    py: f64,
+    pw: f64,
+    ph: f64,
+    d: f64,
+    vmin: f64,
+    vmax: f64,
+    step: f64,
+    format_code: Option<&str>,
+    horizontal: bool,
+    percent: bool,
+) {
+    // 방 표면: 뒷벽(흰 면) → 바닥(연회색 평행사변형) → 앞면 좌측 축선
+    svg.push_str(&format!(
+        "<g class=\"hwp-bar3d-room\">\n<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
+        px + d,
+        py - d,
+        pw,
+        ph
+    ));
+    svg.push_str(&format!(
+        "<polygon points=\"{:.2},{:.2} {:.2},{:.2} {:.2},{:.2} {:.2},{:.2}\" fill=\"#f2f2f2\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
+        px,
+        py + ph,
+        px + d,
+        py + ph - d,
+        px + pw + d,
+        py + ph - d,
+        px + pw,
+        py + ph
+    ));
+    svg.push_str(&format!(
+        "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
+        px,
+        py,
+        px,
+        py + ph
+    ));
+
+    // 라벨 규칙은 render_value_grid와 동일 (#1882 라벨 앵커)
+    let decimal = (step - step.round()).abs() > 1e-9;
+    let label = |v: f64| -> String {
+        if percent {
+            format!("{}%", v.round() as i64)
+        } else if decimal {
+            format_axis_num(v)
+        } else {
+            format_num(v, format_code)
+        }
+    };
+    let span = (vmax - vmin).max(1e-9);
+    let step = if step > 0.0 { step } else { span / 5.0 };
+    let grid_lines = (span / step).round().max(1.0) as usize;
+    for i in 0..=grid_lines {
+        let t = (step * i as f64) / span;
+        let v = vmin + step * i as f64;
+        if horizontal {
+            let gx = px + pw * t;
+            // 앞 하단 눈금 → 뒷벽 사선 커넥터 + 뒷벽 세로 격자
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
+                gx,
+                py + ph,
+                gx + d,
+                py + ph - d
+            ));
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#e8e8e8\" stroke-width=\"0.5\"/>\n",
+                gx + d,
+                py + ph - d,
+                gx + d,
+                py - d
+            ));
+            svg.push_str(&format!(
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"10\" fill=\"#666\" text-anchor=\"middle\">{}</text>\n",
+                gx,
+                py + ph + 12.0,
+                xml_escape(&label(v))
+            ));
+        } else {
+            let gy = py + ph - ph * t;
+            // 앞 좌측 눈금 → 뒷벽 사선 커넥터 + 뒷벽 수평 격자
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
+                px,
+                gy,
+                px + d,
+                gy - d
+            ));
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#e8e8e8\" stroke-width=\"0.5\"/>\n",
+                px + d,
+                gy - d,
+                px + pw + d,
+                gy - d
+            ));
+            svg.push_str(&format!(
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"10\" fill=\"#666\" text-anchor=\"end\">{}</text>\n",
+                px - 4.0,
+                gy + 3.0,
+                xml_escape(&label(v))
+            ));
+        }
+    }
+    svg.push_str("</g>\n");
 }
 
 fn render_category_labels(
@@ -3120,7 +3245,8 @@ mod tests {
 
     #[test]
     fn test_bar3d_depth_clamp() {
-        // 깊이 = (두께*0.45).clamp(3,9) — top 폴리곤의 x-delta(첫 두 점)로 검증.
+        // 깊이 = (두께*0.30).clamp(2.5,9) — top 폴리곤의 x-delta(첫 두 점)로 검증.
+        // (0.45→0.30, 3→2.5: 시각판정 보정 2026-07-16 — 한컴 깊이/두께 비 실측 ~0.25-0.3)
         let top_dx = |svg: &str| -> f64 {
             let chunk = svg.split("hwp-bar3d-top").nth(1).expect("top 폴리곤");
             let pts = &chunk[chunk.find("points=\"").expect("points") + 8..];
@@ -3140,9 +3266,62 @@ mod tests {
         );
         let narrow = render_chart_svg(&chart, 0.0, 0.0, 90.0, 300.0);
         assert!(
-            (top_dx(&narrow) - 3.0).abs() < 1e-6,
-            "좁은 플롯은 하한 3.0: {}",
+            (top_dx(&narrow) - 2.5).abs() < 1e-6,
+            "좁은 플롯은 하한 2.5: {}",
             top_dx(&narrow)
+        );
+    }
+
+    #[test]
+    fn test_bar3d_room_only_when_3d() {
+        // 3D 방(뒷벽+바닥+커넥터)은 is_3d 막대에만 1회 — 2D는 부재 (시각판정 보정
+        // 2026-07-16: 방 표현 추가, 정답지 4종 공통).
+        for chart_type in [OoxmlChartType::Column, OoxmlChartType::Bar] {
+            for grouping in [BarGrouping::Clustered, BarGrouping::Stacked] {
+                let chart = bars3d_chart(chart_type, grouping);
+                let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+                assert_eq!(
+                    svg.matches("hwp-bar3d-room").count(),
+                    1,
+                    "{chart_type:?}/{grouping:?}: 방 1회"
+                );
+                // 방 그룹 안: 바닥 평행사변형(#f2f2f2) + 커넥터/뒷벽 격자 라인
+                let room = &svg[svg.find("hwp-bar3d-room").unwrap()..];
+                let room = &room[..room.find("</g>").expect("방 그룹 닫힘")];
+                assert!(room.contains("#f2f2f2"), "바닥 평행사변형");
+                assert!(room.matches("<line").count() >= 5, "커넥터+뒷벽 격자");
+            }
+        }
+        let svg2d = render_chart_svg(&bars_chart(BarGrouping::Clustered), 0.0, 0.0, 400.0, 300.0);
+        assert!(!svg2d.contains("hwp-bar3d-room"), "2D에 방 없음");
+    }
+
+    #[test]
+    fn test_bar3d_room_grid_on_back_wall() {
+        // 뒷벽 격자선은 (+d,-d) 오프셋 — 세로 차트의 격자 y가 앞면 눈금보다 d만큼
+        // 위(작음). 라벨 텍스트/위치는 2D와 동일(#1882 — test_axis_3d_*가 문자열 핀).
+        let chart = bars3d_chart(OoxmlChartType::Column, BarGrouping::Clustered);
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        let room = &svg[svg.find("hwp-bar3d-room").unwrap()..];
+        let room = &room[..room.find("</g>").unwrap()];
+        // 뒷벽 수평 격자(x1≠x2, y1==y2)의 x1 = px+d — 앞면(px)보다 오른쪽
+        let grid_line = room
+            .split("<line ")
+            .skip(1)
+            .find(|l| {
+                let y1 = attr_f64_of(l, "y1=\"");
+                let y2 = attr_f64_of(l, "y2=\"");
+                let x1 = attr_f64_of(l, "x1=\"");
+                let x2 = attr_f64_of(l, "x2=\"");
+                y1.is_some() && y1 == y2 && x1 != x2
+            })
+            .expect("뒷벽 수평 격자선");
+        let gx1 = attr_f64_of(grid_line, "x1=\"").unwrap();
+        // 방 뒷벽 rect의 x와 격자 x1 일치 (= px+d)
+        let wall_x = attr_f64_of(&room[room.find("<rect").expect("뒷벽")..], "x=\"").unwrap();
+        assert!(
+            (gx1 - wall_x).abs() < 1e-6,
+            "뒷벽 격자 x1({gx1}) == 뒷벽 x({wall_x})"
         );
     }
 }

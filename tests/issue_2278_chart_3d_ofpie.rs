@@ -40,6 +40,9 @@ fn bar3d_charts_emit_extrusion_faces_with_stable_axis() {
             assert_eq!(tops, 12, "{rel}: top 면 12개 (3계열×4카테고리)");
             assert_eq!(sides, 12, "{rel}: side 면 12개");
 
+            // 3D 방(뒷벽+바닥+커넥터) 1회 — 시각판정 보정(2026-07-16) 범위 추가
+            assert_eq!(svg.matches("hwp-bar3d-room").count(), 1, "{rel}: 3D 방 1회");
+
             // #1882 3D 축 앵커 불변 (압출은 rect 방출만 대체 — 축 계산 무접촉)
             for want in *present {
                 assert!(
