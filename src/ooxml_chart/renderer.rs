@@ -31,6 +31,61 @@ fn color_hex(c: u32) -> String {
     format!("#{:06x}", c & 0xFFFFFF)
 }
 
+/// RGB 음영 — factor>0 은 흰색 방향 lighten, factor<0 은 검정 방향 darken.
+/// 채널별 선형 보간, 상위(알파) 바이트는 보존. 3D 면 음영용. (C2b #2278)
+fn shade(rgb: u32, factor: f64) -> u32 {
+    let f = factor.clamp(-1.0, 1.0);
+    let ch = |c: u32| -> u32 {
+        let c = c as f64;
+        let v = if f >= 0.0 {
+            c + (255.0 - c) * f
+        } else {
+            c * (1.0 + f)
+        };
+        v.round().clamp(0.0, 255.0) as u32
+    };
+    (rgb & 0xFF00_0000)
+        | (ch((rgb >> 16) & 0xFF) << 16)
+        | (ch((rgb >> 8) & 0xFF) << 8)
+        | ch(rgb & 0xFF)
+}
+
+/// 3D 막대 면 음영 계수 — 정답지 4종 판독 근사(윗면 밝게/우측면 어둡게,
+/// stage1 실측 기록), 시각판정 보정 대상. (C2b #2278)
+const BAR3D_TOP_SHADE: f64 = 0.25;
+const BAR3D_SIDE_SHADE: f64 = -0.25;
+
+/// 3D 막대 1개(또는 누적 세그먼트 1개) — 우상 45° 사선 압출 3면:
+/// top 평행사변형(밝게) + right 평행사변형(어둡게) + front rect(원색).
+/// 우상 압출에서 보이는 면은 세로/가로 막대가 동일해 방향 플래그 불필요.
+/// 은면 제거는 호출측 페인트 순서(누적: 아래→위/왼→오른쪽)가 담당하므로
+/// 루프 순서 변경 금지. w/h ≤ 0(0값 세그먼트)이면 무방출 — 누적에서 이웃
+/// 세그먼트의 캡 재도색 방지. (C2b #2278)
+fn push_bar_3d(svg: &mut String, x: f64, y: f64, w: f64, h: f64, depth: f64, color: u32) {
+    if w <= 0.0 || h <= 0.0 {
+        return;
+    }
+    let d = depth;
+    svg.push_str(&format!(
+        "<polygon class=\"hwp-bar3d-top\" points=\"{:.2},{:.2} {:.2},{:.2} {:.2},{:.2} {:.2},{:.2}\" fill=\"{}\"/>\n",
+        x, y, x + d, y - d, x + w + d, y - d, x + w, y,
+        color_hex(shade(color, BAR3D_TOP_SHADE))
+    ));
+    svg.push_str(&format!(
+        "<polygon class=\"hwp-bar3d-side\" points=\"{:.2},{:.2} {:.2},{:.2} {:.2},{:.2} {:.2},{:.2}\" fill=\"{}\"/>\n",
+        x + w, y, x + w + d, y - d, x + w + d, y + h - d, x + w, y + h,
+        color_hex(shade(color, BAR3D_SIDE_SHADE))
+    ));
+    svg.push_str(&format!(
+        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
+        x,
+        y,
+        w,
+        h,
+        color_hex(color)
+    ));
+}
+
 fn xml_escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for ch in s.chars() {
@@ -497,6 +552,11 @@ fn render_bars(
         cat_span * idx as f64
     };
 
+    // 3D 압출 깊이 — 막대 두께 기반 고정 근사 (c:view3D/gapDepth 미파싱, 이슈
+    // #2278 확정식). 축 계산(#1882 앵커) 무접촉: 아래에서 rect 방출만 3면
+    // 방출(push_bar_3d)로 대체된다.
+    let depth3d = |thickness: f64| (thickness * 0.45).clamp(3.0, 9.0);
+
     if stacked {
         // 누적: 카테고리당 단일 막대, 시리즈를 아래/왼쪽부터 쌓음.
         // percent → 카테고리 합으로 정규화(전체 길이 = 100%), stacked → vmax로 정규화.
@@ -522,18 +582,44 @@ fn render_bars(
                     + (cat_span - bar_span_total) / 2.0;
                 if horizontal {
                     let seg = pw * (v / denom);
-                    svg.push_str(&format!(
-                        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
-                        base + acc, cell, seg.max(0.0), bar_span_total, color
-                    ));
+                    if chart.is_3d {
+                        let rgb = ser.color.unwrap_or_else(|| palette(si));
+                        push_bar_3d(
+                            svg,
+                            base + acc,
+                            cell,
+                            seg.max(0.0),
+                            bar_span_total,
+                            depth3d(bar_span_total),
+                            rgb,
+                        );
+                    } else {
+                        svg.push_str(&format!(
+                            "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
+                            base + acc, cell, seg.max(0.0), bar_span_total, color
+                        ));
+                    }
                     acc += seg;
                 } else {
                     let seg = ph * (v / denom);
                     let by = py + ph - acc - seg;
-                    svg.push_str(&format!(
-                        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
-                        cell, by, bar_span_total, seg.max(0.0), color
-                    ));
+                    if chart.is_3d {
+                        let rgb = ser.color.unwrap_or_else(|| palette(si));
+                        push_bar_3d(
+                            svg,
+                            cell,
+                            by,
+                            bar_span_total,
+                            seg.max(0.0),
+                            depth3d(bar_span_total),
+                            rgb,
+                        );
+                    } else {
+                        svg.push_str(&format!(
+                            "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
+                            cell, by, bar_span_total, seg.max(0.0), color
+                        ));
+                    }
                     acc += seg;
                 }
             }
@@ -557,19 +643,29 @@ fn render_bars(
                         + (cat_span - bar_span_total) / 2.0
                         + bar_w * (ser_count - 1 - si) as f64;
                     let bw = pw * t;
-                    svg.push_str(&format!(
-                        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
-                        px, cy, bw.max(0.0), bar_w * 0.95, color
-                    ));
+                    if chart.is_3d {
+                        let rgb = ser.color.unwrap_or_else(|| palette(si));
+                        push_bar_3d(svg, px, cy, bw.max(0.0), bar_w * 0.95, depth3d(bar_w), rgb);
+                    } else {
+                        svg.push_str(&format!(
+                            "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
+                            px, cy, bw.max(0.0), bar_w * 0.95, color
+                        ));
+                    }
                 } else {
                     let cx =
                         px + cat_slot(ci) + (cat_span - bar_span_total) / 2.0 + bar_w * si as f64;
                     let bh = ph * t;
                     let by = py + ph - bh;
-                    svg.push_str(&format!(
-                        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
-                        cx, by, bar_w * 0.95, bh.max(0.0), color
-                    ));
+                    if chart.is_3d {
+                        let rgb = ser.color.unwrap_or_else(|| palette(si));
+                        push_bar_3d(svg, cx, by, bar_w * 0.95, bh.max(0.0), depth3d(bar_w), rgb);
+                    } else {
+                        svg.push_str(&format!(
+                            "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
+                            cx, by, bar_w * 0.95, bh.max(0.0), color
+                        ));
+                    }
                 }
             }
         }
@@ -2947,5 +3043,106 @@ mod tests {
         for want in [">0.5<", ">2.5<", ">3<"] {
             assert!(svg.contains(want), "X축 {want} 있어야 (0~3, step 0.5)");
         }
+    }
+
+    // --- C2b (#2278) Stage 1: 3D 막대 압출 ---
+
+    fn bars3d_chart(chart_type: OoxmlChartType, grouping: BarGrouping) -> OoxmlChart {
+        let mut chart = bars_chart(grouping);
+        chart.chart_type = chart_type;
+        chart.is_3d = true;
+        chart
+    }
+
+    #[test]
+    fn test_shade_lighten_darken() {
+        // 채널별 선형 보간: +0.25 = 흰색 방향 25%, -0.25 = 검정 방향 25%
+        assert_eq!(shade(0x006183D7, 0.25), 0x0089A2E1);
+        assert_eq!(shade(0x006183D7, -0.25), 0x004962A1);
+        // 극단값 클램프
+        assert_eq!(shade(0x00123456, 1.0), 0x00FFFFFF);
+        assert_eq!(shade(0x00123456, -1.0), 0x00000000);
+        // factor 0 항등 + 상위(알파) 바이트 보존
+        assert_eq!(shade(0xFF6183D7, 0.0), 0xFF6183D7);
+        assert_eq!(shade(0xFF6183D7, 0.25) >> 24, 0xFF);
+    }
+
+    #[test]
+    fn test_bar3d_clustered_faces_both_orientations() {
+        // 3D 묶은: 막대(2cat×3ser=6)마다 top/side 면 1쌍 (정답지: 윗면 밝게 +
+        // 우측면 어둡게 사선 압출). 2D는 면 없음.
+        for chart_type in [OoxmlChartType::Column, OoxmlChartType::Bar] {
+            let chart = bars3d_chart(chart_type, BarGrouping::Clustered);
+            let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+            assert_eq!(
+                svg.matches("hwp-bar3d-top").count(),
+                6,
+                "{chart_type:?}: top 면 6개"
+            );
+            assert_eq!(
+                svg.matches("hwp-bar3d-side").count(),
+                6,
+                "{chart_type:?}: side 면 6개"
+            );
+        }
+        let svg2d = render_chart_svg(&bars_chart(BarGrouping::Clustered), 0.0, 0.0, 400.0, 300.0);
+        assert!(!svg2d.contains("hwp-bar3d-"), "2D 묶은막대에 3D 면 없어야");
+    }
+
+    #[test]
+    fn test_bar3d_stacked_all_segments_extrude() {
+        // 3D 누적: 모든 세그먼트가 자기 색 top/side를 그림 (2cat×3ser=6쌍).
+        // 은면 제거는 페인트 순서(세로: 아래→위 = 계열1 먼저)가 담당 — 순서 핀.
+        let chart = bars3d_chart(OoxmlChartType::Column, BarGrouping::Stacked);
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        assert_eq!(svg.matches("hwp-bar3d-top").count(), 6, "top 면 6개");
+        assert_eq!(svg.matches("hwp-bar3d-side").count(), 6, "side 면 6개");
+        let s1 = color_hex(shade(palette(0), BAR3D_SIDE_SHADE));
+        let s3 = color_hex(shade(palette(2), BAR3D_SIDE_SHADE));
+        assert!(
+            svg.find(&s1).expect("계열1 side 색") < svg.find(&s3).expect("계열3 side 색"),
+            "누적 페인트 순서: 계열1(아래) 먼저 → 계열3(위) 나중"
+        );
+    }
+
+    #[test]
+    fn test_bar3d_zero_segment_skipped() {
+        // 0값 세그먼트는 면 무방출 — 이웃 세그먼트의 캡(top) 재도색 방지.
+        let mut chart = bars3d_chart(OoxmlChartType::Column, BarGrouping::Stacked);
+        chart.series[1].values = vec![0.0, 1.0]; // 카테고리 a의 계열2 = 0
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        assert_eq!(
+            svg.matches("hwp-bar3d-top").count(),
+            5,
+            "0값 세그먼트는 스킵 (6-1)"
+        );
+    }
+
+    #[test]
+    fn test_bar3d_depth_clamp() {
+        // 깊이 = (두께*0.45).clamp(3,9) — top 폴리곤의 x-delta(첫 두 점)로 검증.
+        let top_dx = |svg: &str| -> f64 {
+            let chunk = svg.split("hwp-bar3d-top").nth(1).expect("top 폴리곤");
+            let pts = &chunk[chunk.find("points=\"").expect("points") + 8..];
+            let pts = &pts[..pts.find('"').expect("닫는 따옴표")];
+            let xs: Vec<f64> = pts
+                .split_whitespace()
+                .map(|p| p.split(',').next().unwrap().parse::<f64>().unwrap())
+                .collect();
+            xs[1] - xs[0]
+        };
+        let chart = bars3d_chart(OoxmlChartType::Column, BarGrouping::Clustered);
+        let wide = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        assert!(
+            (top_dx(&wide) - 9.0).abs() < 1e-6,
+            "넓은 플롯은 상한 9.0: {}",
+            top_dx(&wide)
+        );
+        let narrow = render_chart_svg(&chart, 0.0, 0.0, 90.0, 300.0);
+        assert!(
+            (top_dx(&narrow) - 3.0).abs() < 1e-6,
+            "좁은 플롯은 하한 3.0: {}",
+            top_dx(&narrow)
+        );
     }
 }
