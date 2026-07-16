@@ -374,7 +374,7 @@ ctx.font = 'italic 14px "Latin Modern Math", "STIX Two Math", "Cambria Math", se
 
 ### 10.3 웹 폰트 로딩 (`rhwp-studio/`)
 
-- `web/fonts/` 디렉토리에 `latinmodern-math.woff2` 추가
+- `assets/fonts/` canonical source에 `LatinModernMath-Regular.woff2` 추가
 - CSS 또는 JS에서 `@font-face` 선언
 - 기존 `font-loader.ts` 구조에 통합
 
@@ -392,7 +392,7 @@ ctx.font = 'italic 14px "Latin Modern Math", "STIX Two Math", "Cambria Math", se
 |----------|----------|----------|
 | `svg_render.rs` | 모든 `<text>` 요소에 EQ_FONT_FAMILY 추가 | 소 (~20줄) |
 | `canvas_render.rs` | `ctx.font`에 수식 폰트 반영 | 소 (~15줄) |
-| `web/fonts/` | woff2 파일 추가 | 파일 1개 |
+| `assets/fonts/` | `LatinModernMath-Regular.woff2` 추가 | 파일 1개 |
 | `rhwp-studio/` | `@font-face` 선언 | 소 (~10줄) |
 | 테스트 | 기존 수식 테스트 + SVG 시각 비교 | 중 |
 

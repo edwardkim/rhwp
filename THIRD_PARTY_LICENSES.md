@@ -9,7 +9,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 - `rhwp-chrome/package.json` / `rhwp-chrome/package-lock.json`
 - `rhwp-firefox/package.json` / `rhwp-firefox/package-lock.json`
 - `rhwp-vscode/package.json` / `rhwp-vscode/package-lock.json`
-- `web/fonts/FONTS.md`
+- `assets/fonts/FONTS.md`
 
 ---
 
@@ -123,14 +123,14 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 ## 웹 폰트 및 폰트 리소스
 
-`web/fonts/`에 포함된 폰트 목록이다. 저작권 보호가 필요한 한컴/Microsoft 폰트는 Git에 포함하지 않으며,
-세부 파일 목록과 폴백 관계는 `web/fonts/FONTS.md`를 참조한다.
+`assets/fonts/`에 포함된 canonical 폰트 목록이다. 저작권 보호가 필요한 한컴/Microsoft 폰트는 Git에
+포함하지 않으며, 세부 파일 목록과 폴백 관계는 `assets/fonts/FONTS.md`를 참조한다.
 
 | 폰트/리소스 | 라이선스 | 출처 | 비고 |
 |-------------|---------|------|------|
 | Pretendard (9종) | SIL Open Font License 1.1 | github.com/orioncactus/pretendard | Sans-serif fallback |
 | Noto Serif KR (2종) | SIL Open Font License 1.1 | Google Fonts | Serif fallback |
-| Noto Sans KR (2종) | SIL Open Font License 1.1 | Google Fonts | Sans-serif fallback |
+| Noto Sans KR (3종) | SIL Open Font License 1.1 | Google Fonts | Sans-serif fallback |
 | Nanum Myeongjo (3종) | SIL Open Font License 1.1 | Google Fonts | Serif fallback |
 | Nanum Gothic (3종) | SIL Open Font License 1.1 | Google Fonts | Sans-serif fallback |
 | Nanum Gothic Coding (2종) | SIL Open Font License 1.1 | Google Fonts | Monospace fallback |
@@ -178,8 +178,8 @@ rhwp는 **MIT 라이선스**로 배포된다.
 - `encoding_rs`의 BSD-3-Clause 조항은 고지 의무를 요구하며, 이 문서로 충족
 - `pcx`는 WTFPL 대체 선택지를 포함하지만 MIT/Apache-2.0 선택지가 있어 rhwp MIT 배포와 호환
 - 오픈 폰트는 SIL OFL 1.1 또는 GUST Font License 등 재배포 가능한 라이선스만 Git에 포함
-- 저작권 보호 대상 폰트(한컴, Microsoft 등)는 Git에 포함하지 않으며 `ttfs/FONTS.md`, `web/fonts/FONTS.md`에서 목록과 폴백만 관리
+- 저작권 보호 대상 폰트(한컴, Microsoft 등)는 Git에 포함하지 않으며 `ttfs/FONTS.md`, `assets/fonts/FONTS.md`에서 목록과 폴백만 관리
 
 ---
 
-*이 문서는 `Cargo.toml`, `Cargo.lock`, 각 `package.json`/`package-lock.json`, `web/fonts/FONTS.md` 기준으로 현행화되었으며, 의존성 업데이트 시 함께 갱신해야 한다.*
+*이 문서는 `Cargo.toml`, `Cargo.lock`, 각 `package.json`/`package-lock.json`, `assets/fonts/FONTS.md` 기준으로 현행화되었으며, 의존성 업데이트 시 함께 갱신해야 한다.*

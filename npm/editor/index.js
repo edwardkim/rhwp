@@ -75,7 +75,7 @@ export async function createEditor(container, options = {}) {
  *
  * iframe 내부의 rhwp-studio와 postMessage로 통신합니다.
  */
-class RhwpEditor {
+export class RhwpEditor {
   constructor(iframe, transport) {
     this._iframe = iframe;
     this._transport = transport;
@@ -137,6 +137,24 @@ class RhwpEditor {
    */
   async getPageSvg(page = 0) {
     return this._request('getPageSvg', { page });
+  }
+
+  /**
+   * 선택된 renderer와 페이지별 CanvasKit readiness 진단을 반환합니다.
+   * @param page - 0부터 시작하는 페이지 번호
+   */
+  async getRendererDiagnostics(page = 0) {
+    if (!Number.isSafeInteger(page) || page < 0) {
+      throw new TypeError('page must be a non-negative safe integer');
+    }
+    if (!this._transport.supports('renderer-diagnostics-v1')) {
+      throw new Error('Renderer diagnostics v1 is not supported by this Studio');
+    }
+    const result = await this._request('getRendererDiagnostics', { page });
+    if (result?.schemaVersion !== 1 || result?.page?.index !== page) {
+      throw new Error('Studio returned invalid renderer diagnostics v1');
+    }
+    return result;
   }
 
   /**

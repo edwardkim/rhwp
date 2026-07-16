@@ -13,11 +13,13 @@
 //!   3D막대→평면 막대, 3D원형/ofPie→단일 원형. 입체감·보조플롯은 미표현(후속 C2).
 //! - `c:scatterChart` (분산형) — `c:xVal`/`c:yVal` (x,y) 쌍, 2개 수치축,
 //!   `c:scatterStyle`로 표식/직선/곡선 구분 (C1b #1660).
+//! - `c:stockChart` (주식형) — `c:hiLowLines` 고저선 + `c:upDownBars` 캔들,
+//!   계열 역할은 XML 순서 규약(3계열=고/저/종, 4계열=시/고/저/종) (C2a #2277).
 //! - **콤보 차트** (barChart + lineChart 혼합) — 시리즈별 타입 보존
 //! - **이중 Y축** (primary + secondary) — 시리즈별 축 그룹 매핑
 //!
 //! ## 범위 외
-//! - 3D 입체감·ofPie 보조플롯, 영역형, stock(HLC), 추세선, 애니메이션, 세밀 스타일
+//! - 3D 입체감·ofPie 보조플롯(C2b #2278), 영역형, 추세선, 애니메이션, 세밀 스타일
 
 pub mod parser;
 pub mod renderer;
@@ -57,8 +59,30 @@ pub struct OoxmlChart {
     pub legend_pos: LegendPos,
     /// 3D plot(`bar3DChart`/`pie3DChart`) 여부. 렌더는 2D 근사(C1a)지만 한컴 3D
     /// 엔진의 축 정책이 2D와 달라(묶은 0~5 무헤드룸/누적세로 과헤드룸) 축 계산에
-    /// 사용. 입체감 렌더는 후속(C2). (C1c #1882 시각판정 반영)
+    /// 사용. 입체감 렌더는 후속(C2b #2278). (C1c #1882 시각판정 반영)
     pub is_3d: bool,
+    /// stock plot의 `<c:hiLowLines/>` 존재 — 고저선. HLC/OHLC 공통. (C2a #2277)
+    pub has_hi_low_lines: bool,
+    /// stock plot의 `<c:upDownBars>` 존재 — 시가↔종가 캔들. OHLC만. (C2a #2277)
+    pub has_up_down_bars: bool,
+    /// `<c:upDownBars><c:gapWidth val>` — 캔들 폭 = cat_span/(1+gap/100).
+    /// 미지정 시 렌더러가 150(정답지 실측) 폴백. (C2a #2277)
+    pub up_down_gap_width: Option<f64>,
+}
+
+/// 계열 내부 `<c:marker>` 상태 — stock 종가 마커 판별용. plot 레벨
+/// `<c:marker val>`(`line_markers`)과 별개. (C2a #2277)
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub enum SeriesMarker {
+    /// `<c:marker>` 요소 없음
+    #[default]
+    NotSpecified,
+    /// `<c:symbol val="none"/>` — 표식 억제 (stock 시/고/저 실측)
+    None,
+    /// `<c:marker>` 래퍼 존재·symbol 부재 — 자동 표식 (stock 종가 실측)
+    Auto,
+    /// 명시 심볼 (diamond/square/triangle/x 등 — 코퍼스 밖, 사이클 폴백과 병행)
+    Named(String),
 }
 
 /// 범례 위치 (`c:legendPos`). C1c #1882 갭③.
@@ -129,6 +153,8 @@ pub enum OoxmlChartType {
     Pie,
     /// 분산형 (x,y 산점도) (C1b #1660)
     Scatter,
+    /// 주식형 (hiLowLines 고저선 / upDownBars 캔들) (C2a #2277)
+    Stock,
     #[default]
     Unknown,
 }
@@ -141,6 +167,7 @@ impl OoxmlChartType {
             Self::Line => "꺾은선",
             Self::Pie => "원형",
             Self::Scatter => "분산형",
+            Self::Stock => "주식형",
             Self::Unknown => "미지원",
         }
     }
@@ -164,6 +191,8 @@ pub struct OoxmlSeries {
     pub axis_group: u8,
     /// 숫자 포맷 코드 (예: "#,##0")
     pub format_code: Option<String>,
+    /// 계열 내부 `<c:marker>` 상태 — stock 종가 마커 판별용. (C2a #2277)
+    pub marker_symbol: SeriesMarker,
 }
 
 impl OoxmlChart {

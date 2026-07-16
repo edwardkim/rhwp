@@ -4,6 +4,7 @@ use crate::paint::layer_tree::{
 };
 use crate::paint::paint_op::{PaintOp, TextDecorationKind};
 use crate::paint::profile::RenderProfile;
+use crate::paint::{lower_font_native_glyph_sidecars, EmbeddedFontFace};
 use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
 
 /// semantic render tree를 visual layer tree로 내린다.
@@ -26,6 +27,14 @@ impl LayerBuilder {
     }
 
     pub fn build(&mut self, tree: &PageRenderTree) -> PageLayerTree {
+        self.build_with_embedded_fonts(tree, &[])
+    }
+
+    pub fn build_with_embedded_fonts(
+        &mut self,
+        tree: &PageRenderTree,
+        fonts: &[EmbeddedFontFace<'_>],
+    ) -> PageLayerTree {
         let (page_width, page_height) = match &tree.root.node_type {
             RenderNodeType::Page(page) => (page.width, page.height),
             _ => (tree.root.bbox.width, tree.root.bbox.height),
@@ -40,8 +49,11 @@ impl LayerBuilder {
         )
         .with_layer(tree.root.layer);
 
-        PageLayerTree::with_profile(page_width, page_height, root, self.profile)
-            .with_output_options(self.output_options)
+        let mut layer_tree =
+            PageLayerTree::with_profile(page_width, page_height, root, self.profile)
+                .with_output_options(self.output_options);
+        lower_font_native_glyph_sidecars(&mut layer_tree.root, &mut layer_tree.resources, fonts);
+        layer_tree
     }
 
     fn build_children(&mut self, node: &RenderNode) -> Vec<LayerNode> {
@@ -321,6 +333,47 @@ mod tests {
             }
             other => panic!("expected root group, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn normal_builder_export_keeps_text_fallback_and_font_native_sidecar_resources() {
+        let bbox = BoundingBox::new(10.0, 20.0, 16.0, 16.0);
+        let mut run = text_run("\u{E100}");
+        run.char_shape_id = Some(2);
+        run.style.font_size = 16.0;
+        run.baseline = 12.0;
+        let mut tree = PageRenderTree::new(0, 100.0, 100.0);
+        tree.root
+            .children
+            .push(RenderNode::new(1, RenderNodeType::TextRun(run), bbox));
+        let font = include_bytes!("../../tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf");
+        let mut builder = LayerBuilder::new(RenderProfile::Screen);
+
+        let layer_tree = builder.build_with_embedded_fonts(
+            &tree,
+            &[EmbeddedFontFace {
+                char_shape_id: 2,
+                language_index: 0,
+                family: "RHWP Bitmap SVG Glyph Smoke",
+                alternate_family: None,
+                bytes: font,
+                face_index: 0,
+            }],
+        );
+
+        let LayerNodeKind::Group { children, .. } = &layer_tree.root.kind else {
+            panic!("expected root group");
+        };
+        let LayerNodeKind::Leaf { ops } = &children[0].kind else {
+            panic!("expected text leaf");
+        };
+        assert!(matches!(
+            ops.as_slice(),
+            [PaintOp::TextRun { .. }, PaintOp::GlyphOutline { .. }]
+        ));
+        assert_eq!(layer_tree.resources.image_count(), 1);
+        assert!(layer_tree.resources.font_resources().blobs.is_empty());
+        assert!(layer_tree.resources.font_resources().faces.is_empty());
     }
 
     #[test]

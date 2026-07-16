@@ -17,7 +17,11 @@ test('embed protocol은 capability를 포함한 v1 connect와 session-bound requ
   assert.equal(isConnectMessage({ type: 'rhwp-connect', version: 1, sessionId: 's-1' }), false);
   assert.equal(isConnectMessage({ type: 'rhwp-connect', version: 2, sessionId: 's-1' }), false);
   assert.equal(isConnectMessage({ type: 'rhwp-connect', version: 1, sessionId: '' }), false);
-  assert.deepEqual(EMBED_CAPABILITIES, ['transferable-array-buffer', 'hml-export']);
+  assert.deepEqual(EMBED_CAPABILITIES, [
+    'transferable-array-buffer',
+    'hml-export',
+    'renderer-diagnostics-v1',
+  ]);
 
   assert.equal(isRequestEnvelope({
     type: 'rhwp-request', version: 1, sessionId: 's-1', id: 1, method: 'ready', params: {},
@@ -38,7 +42,7 @@ test('embed router는 binary load와 unknown method를 공개 동작으로 처�
       return { pageCount: 2 };
     },
     pageCount: async () => 2,
-    getRendererDiagnostics: async (page) => ({ page }),
+    getRendererDiagnostics: async (page) => rendererDiagnostics(page),
     getPageSvg: async () => '<svg/>',
     exportHwp: async () => new Uint8Array([1]),
     exportHwpx: async () => new Uint8Array([2]),
@@ -54,12 +58,18 @@ test('embed router는 binary load와 unknown method를 공개 동작으로 처�
   assert.deepEqual([...(loaded ?? [])], [3, 4]);
   assert.deepEqual(
     await routeEmbedRequest('getRendererDiagnostics', { page: 3 }, handlers),
-    { page: 3 },
+    rendererDiagnostics(3),
   );
   await assert.rejects(
     () => routeEmbedRequest('getRendererDiagnostics', { page: -1 }, handlers),
-    /page must be a non-negative integer/,
+    /page must be a non-negative safe integer/,
   );
+  for (const page of ['', false, [], '3', Number.MAX_SAFE_INTEGER + 1]) {
+    await assert.rejects(
+      () => routeEmbedRequest('getRendererDiagnostics', { page }, handlers),
+      /page must be a non-negative safe integer/,
+    );
+  }
   await assert.rejects(() => routeEmbedRequest('missing', {}, handlers), /Unknown method: missing/);
   assert.deepEqual(await routeEmbedRequest('exportHml', {}, handlers), new Uint8Array([3]));
   assert.deepEqual(await routeEmbedRequest('getHmlSaveState', {}, handlers), {
@@ -84,7 +94,7 @@ test('embed runtime은 parent의 exact origin에서 v1 port session을 설치한
     ready: async () => true,
     loadFile: async () => ({ pageCount: 1 }),
     pageCount: async () => 7,
-    getRendererDiagnostics: async (page) => ({ page }),
+    getRendererDiagnostics: async (page) => rendererDiagnostics(page),
     getPageSvg: async () => '<svg/>',
     exportHwp: async () => new Uint8Array([1]),
     exportHwpx: async () => new Uint8Array([2]),
@@ -128,7 +138,7 @@ test('embed runtime은 parent의 exact origin에서 v1 port session을 설치한
   assert.deepEqual(messages, [
     {
       type: 'rhwp-connected', version: 1, sessionId: 'session-a',
-      capabilities: ['transferable-array-buffer', 'hml-export'],
+      capabilities: EMBED_CAPABILITIES,
     },
     { type: 'rhwp-response', version: 1, sessionId: 'session-a', id: 4, result: 7 },
   ]);
@@ -238,6 +248,18 @@ test('exportHml 실패는 bytes 없이 error-only envelope를 반환한다', asy
     channel.port1.close();
   }
 });
+
+function rendererDiagnostics(page: number) {
+  return {
+    schemaVersion: 1 as const,
+    request: null,
+    initialized: true,
+    initializationError: null,
+    effectiveBackend: 'canvaskit' as const,
+    backendFallbackReason: null,
+    page: { index: page, canvaskit: null },
+  };
+}
 
 test('embed runtime은 bound session의 malformed request에만 구조화된 오류를 반환한다', async () => {
   let messageListener: (event: MessageEvent) => void = () => {};

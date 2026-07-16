@@ -228,6 +228,7 @@ export async function createNewDocument(page) {
 export async function loadHwpFile(page, filename) {
   const fetchPath = sampleFetchPath(filename);
   const result = await page.evaluate(async ({ fname, url }) => {
+    const startedAt = performance.now();
     try {
       const resp = await fetch(url);
       if (!resp.ok) return { error: `HTTP ${resp.status}` };
@@ -235,7 +236,10 @@ export async function loadHwpFile(page, filename) {
       const docInfo = window.__wasm?.loadDocument(new Uint8Array(buf), fname);
       if (!docInfo) return { error: 'loadDocument returned null' };
       window.__canvasView?.loadDocument?.();
-      return { pageCount: docInfo.pageCount };
+      return {
+        pageCount: docInfo.pageCount,
+        documentLoadAndInitialRenderMs: performance.now() - startedAt,
+      };
     } catch (e) {
       return { error: e.message || String(e) };
     }

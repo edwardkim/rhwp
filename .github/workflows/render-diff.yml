@@ -11,9 +11,15 @@ on:
       - 'src/document_core/queries/rendering.rs'
       - 'src/wasm_api.rs'
       - 'src/main.rs'
-      - 'web/fonts/**'
+      - 'assets/fonts/**'
       - 'scripts/renderer_baseline.py'
       - 'scripts/renderer_baseline_manifest.json'
+      - 'scripts/generate_font_glyph_payload_fixture.py'
+      - 'scripts/generate_exact_face_collection_fixture.py'
+      - 'scripts/generate_font_native_hwpx_fixture.py'
+      - 'scripts/requirements-font-fixtures.txt'
+      - 'samples/render-p35-font-native-bitmap.hwpx'
+      - 'tests/fixtures/fonts/**'
       - 'docs/canvaskit-parity-implementation.md'
       - 'docs/text-ir-v2.md'
       - 'rhwp-studio/**'
@@ -283,7 +289,7 @@ jobs:
           key: ${{ runner.os }}-render-diff-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
 

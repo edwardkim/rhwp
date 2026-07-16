@@ -40,7 +40,11 @@ pub fn draw_svg_fragment(
     height: f32,
     sampling: ImageSampling,
 ) -> bool {
-    let Some(png) = rasterize_svg_fragment_to_png(svg_fragment, width, height) else {
+    // [Issue #2292] RawSvg 조각은 페이지 절대 좌표로 방출된다(SVG 백엔드
+    // 직접 삽입·web_canvas 와 동일 계약). viewBox 원점에 조각의 페이지
+    // 위치(x, y)를 넘겨 bbox 창만 래스터한다 — (0,0) 가정 시 창 밖 콘텐츠
+    // 전부 클리핑 + bbox 재배치 이중 오프셋으로 차트가 잘렸다.
+    let Some(png) = rasterize_svg_fragment_to_png(svg_fragment, x, y, width, height) else {
         return false;
     };
     draw_image_bytes(
@@ -331,9 +335,17 @@ pub fn draw_image_bytes(
     canvas.restore();
 }
 
-fn rasterize_svg_fragment_to_png(svg_fragment: &str, width: f32, height: f32) -> Option<Vec<u8>> {
+fn rasterize_svg_fragment_to_png(
+    svg_fragment: &str,
+    src_x: f32,
+    src_y: f32,
+    width: f32,
+    height: f32,
+) -> Option<Vec<u8>> {
     if svg_fragment.is_empty()
         || svg_fragment.len() > MAX_SVG_FRAGMENT_BYTES
+        || !src_x.is_finite()
+        || !src_y.is_finite()
         || !width.is_finite()
         || !height.is_finite()
         || width <= 0.0
@@ -350,8 +362,10 @@ fn rasterize_svg_fragment_to_png(svg_fragment: &str, width: f32, height: f32) ->
         return None;
     }
 
+    // [Issue #2292] 조각은 페이지 절대 좌표 — viewBox 를 조각의 페이지 좌표
+    // 창(src_x, src_y 원점)으로 지정해 bbox 영역만 (0,0) 래스터로 사상한다.
     let svg = format!(
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{width:.2}\" height=\"{height:.2}\" viewBox=\"0 0 {width:.2} {height:.2}\">{svg_fragment}</svg>"
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{width:.2}\" height=\"{height:.2}\" viewBox=\"{src_x:.2} {src_y:.2} {width:.2} {height:.2}\">{svg_fragment}</svg>"
     );
     let options = svg_parse_options();
     let tree = usvg::Tree::from_str(&svg, &options).ok()?;
@@ -382,12 +396,90 @@ fn svg_fontdb() -> Arc<usvg::fontdb::Database> {
 
     SVG_FONTDB
         .get_or_init(|| {
+            // [Issue #2293] PDF 경로(renderer/pdf.rs::create_fontdb)와 동일
+            // 규약: 시스템 폰트 + 프로젝트 ttfs/(재귀) + WSL 윈도우 폰트.
+            // 종전에는 시스템 폰트만 로드하고 generic 폴백을 존재 확인 없이
+            // 하드 고정("Noto Sans CJK KR")해, 해당 폰트가 없는 환경에서
+            // resvg 가 조각의 텍스트를 통째로 드롭했다.
             let mut fontdb = usvg::fontdb::Database::new();
             fontdb.load_system_fonts();
-            fontdb.set_sans_serif_family("Noto Sans CJK KR");
-            fontdb.set_serif_family("Noto Serif CJK KR");
-            fontdb.set_monospace_family("D2Coding");
+            for dir in &["ttfs", "ttfs/windows", "ttfs/hwp"] {
+                if std::path::Path::new(dir).exists() {
+                    fontdb.load_fonts_dir(dir);
+                }
+            }
+            if std::path::Path::new("/mnt/c/Windows/Fonts").exists() {
+                fontdb.load_fonts_dir("/mnt/c/Windows/Fonts");
+            }
+
+            // generic 폴백은 실존하는 첫 후보로 (매칭 실패 = 텍스트 드롭 방지).
+            let sans = first_existing_family(
+                &fontdb,
+                &[
+                    "Noto Sans CJK KR",
+                    "Noto Sans KR",
+                    "함초롬돋움",
+                    "HCR Dotum",
+                    "맑은 고딕",
+                    "Malgun Gothic",
+                    "NanumGothic",
+                    "나눔고딕",
+                    "DejaVu Sans",
+                ],
+            );
+            // [작업지시자 권고] 폴백은 한국어 가용 폰트를 우선한다 — 스타일
+            // (serif/mono) 정합보다 한글이 보이는 것이 우선이므로, 라틴 전용
+            // 최후 폴백(DejaVu) 앞에 한국어 sans 를 둔다. 저장소 체크아웃에는
+            // ttfs/opensource/NotoSansKR 이 항상 있어 한국어 폴백이 보장된다.
+            let serif = first_existing_family(
+                &fontdb,
+                &[
+                    "Noto Serif CJK KR",
+                    "Noto Serif KR",
+                    "함초롬바탕",
+                    "HCR Batang",
+                    "바탕",
+                    "Batang",
+                    "NanumMyeongjo",
+                    "나눔명조",
+                    "Noto Sans KR",
+                    "DejaVu Serif",
+                ],
+            );
+            let mono = first_existing_family(
+                &fontdb,
+                &[
+                    "D2Coding",
+                    "D2Coding ligature",
+                    "Noto Sans KR",
+                    "DejaVu Sans Mono",
+                ],
+            );
+            if let Some(f) = sans {
+                fontdb.set_sans_serif_family(f);
+            }
+            if let Some(f) = serif {
+                fontdb.set_serif_family(f);
+            }
+            if let Some(f) = mono {
+                fontdb.set_monospace_family(f);
+            }
             Arc::new(fontdb)
         })
         .clone()
+}
+
+/// [Issue #2293] fontdb 에 실존하는 첫 패밀리 — 후보가 전부 없으면 None
+/// (usvg 기본 generic 매핑 유지, 폴백 지정으로 오히려 드롭되는 것을 방지).
+fn first_existing_family(fontdb: &usvg::fontdb::Database, candidates: &[&str]) -> Option<String> {
+    let mut families = std::collections::HashSet::new();
+    for face in fontdb.faces() {
+        for (name, _) in &face.families {
+            families.insert(name.clone());
+        }
+    }
+    candidates
+        .iter()
+        .find(|c| families.contains(**c))
+        .map(|c| c.to_string())
 }

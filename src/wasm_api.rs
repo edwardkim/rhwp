@@ -607,6 +607,27 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    #[wasm_bindgen(js_name = getPageLayerTreeWithProfile)]
+    pub fn get_page_layer_tree_with_profile(
+        &self,
+        page_num: u32,
+        profile: &str,
+    ) -> Result<String, JsValue> {
+        let profile = match profile.trim() {
+            "fastPreview" => crate::paint::RenderProfile::FastPreview,
+            "screen" | "" => crate::paint::RenderProfile::Screen,
+            "print" => crate::paint::RenderProfile::Print,
+            "highQuality" => crate::paint::RenderProfile::HighQuality,
+            value => {
+                return Err(JsValue::from_str(&format!(
+                    "unsupported render profile: {value}"
+                )))
+            }
+        };
+        self.get_page_layer_tree_with_profile_native(page_num, profile)
+            .map_err(|error| error.into())
+    }
+
     /// CanvasKit direct replay 정책 진단을 JSON 문자열로 반환한다.
     ///
     /// `mode` 는 `"default"` 또는 `"compat"` 를 받는다. 빈 문자열은 `"default"` 로 처리한다.

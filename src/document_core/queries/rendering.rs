@@ -7,7 +7,10 @@ use crate::model::control::Control;
 use crate::model::document::{Document, Section};
 use crate::model::page::ColumnDef;
 use crate::model::paragraph::{ColumnBreakType, Paragraph};
-use crate::paint::{LayerBuilder, LayerOutputOptions, PageLayerTree, RenderProfile};
+use crate::paint::{
+    resolve_embedded_font_face_index, EmbeddedFontFace, LayerBuilder, LayerOutputOptions,
+    PageLayerTree, RenderProfile,
+};
 use crate::renderer::canvas::CanvasRenderer;
 use crate::renderer::composer::{compose_paragraph, compose_section, ComposedParagraph};
 use crate::renderer::height_measurer::{HeightMeasurer, MeasuredSection, MeasuredTable};
@@ -447,6 +450,14 @@ impl DocumentCore {
 
     /// 페이지 레이어 트리를 생성하여 반환한다 (native bridge / backend replay용).
     pub fn build_page_layer_tree(&self, page_num: u32) -> Result<PageLayerTree, HwpError> {
+        self.build_page_layer_tree_with_profile(page_num, RenderProfile::Screen)
+    }
+
+    pub fn build_page_layer_tree_with_profile(
+        &self,
+        page_num: u32,
+        profile: RenderProfile,
+    ) -> Result<PageLayerTree, HwpError> {
         let _overflows = self.layout_engine.take_overflows();
         let output_options = LayerOutputOptions {
             show_paragraph_marks: self.show_paragraph_marks,
@@ -456,9 +467,132 @@ impl DocumentCore {
             debug_overlay: self.debug_overlay,
         };
         self.with_page_tree_cached(page_num, |tree| {
-            let mut builder =
-                LayerBuilder::new(RenderProfile::Screen).with_output_options(output_options);
-            Ok(builder.build(tree))
+            let mut used_font_slots = Vec::new();
+            let mut nodes = vec![&tree.root];
+            while let Some(node) = nodes.pop() {
+                if !node.visible {
+                    continue;
+                }
+                nodes.extend(node.children.iter());
+                let crate::renderer::render_tree::RenderNodeType::TextRun(run) = &node.node_type
+                else {
+                    continue;
+                };
+                let mut characters = run.text.chars();
+                let (Some(character), None, Some(char_shape_id)) =
+                    (characters.next(), characters.next(), run.char_shape_id)
+                else {
+                    continue;
+                };
+                let language_index =
+                    crate::renderer::style_resolver::detect_lang_category(character);
+                let slot = (char_shape_id, language_index);
+                if !used_font_slots.contains(&slot) {
+                    used_font_slots.push(slot);
+                }
+            }
+
+            let load_font_bytes = |id: u16| {
+                self.document
+                    .bin_data_content
+                    .iter()
+                    .find(|content| content.id == id)
+                    .map(|content| content.data.load())
+                    .unwrap_or_default()
+            };
+            let mut font_bytes_by_id = std::collections::HashMap::<u16, Vec<u8>>::new();
+            let mut resolved_fonts = Vec::new();
+            for (char_shape_id, language_index) in used_font_slots {
+                let Some(font_id) = self
+                    .document
+                    .doc_info
+                    .char_shapes
+                    .get(char_shape_id as usize)
+                    .and_then(|shape| shape.font_ids.get(language_index))
+                    .copied()
+                else {
+                    continue;
+                };
+                let Some(font) = self
+                    .document
+                    .doc_info
+                    .font_faces
+                    .get(language_index)
+                    .and_then(|fonts| fonts.get(font_id as usize))
+                else {
+                    continue;
+                };
+
+                let mut resolved = None;
+                if font.is_embedded {
+                    if let Some(bin_data_id) = font.resolved_bin_data_id {
+                        let bytes = font_bytes_by_id
+                            .entry(bin_data_id)
+                            .or_insert_with(|| load_font_bytes(bin_data_id));
+                        if !bytes.is_empty() {
+                            resolved = resolve_embedded_font_face_index(bytes, &font.name, None)
+                                .map(|face_index| (bin_data_id, None, face_index));
+                        }
+                    }
+                }
+                if resolved.is_none() {
+                    if let Some(substitute) = font
+                        .subst_font
+                        .as_ref()
+                        .filter(|substitute| substitute.is_embedded)
+                    {
+                        if let Some(bin_data_id) = substitute.resolved_bin_data_id {
+                            let bytes = font_bytes_by_id
+                                .entry(bin_data_id)
+                                .or_insert_with(|| load_font_bytes(bin_data_id));
+                            if !bytes.is_empty() {
+                                resolved = resolve_embedded_font_face_index(
+                                    bytes,
+                                    substitute.face.as_str(),
+                                    None,
+                                )
+                                .map(|face_index| {
+                                    (bin_data_id, Some(substitute.face.as_str()), face_index)
+                                });
+                            }
+                        }
+                    }
+                }
+                if let Some((bin_data_id, alternate_family, face_index)) = resolved {
+                    resolved_fonts.push((
+                        char_shape_id,
+                        language_index,
+                        font.name.as_str(),
+                        alternate_family,
+                        bin_data_id,
+                        face_index,
+                    ));
+                }
+            }
+            let embedded_fonts = resolved_fonts
+                .iter()
+                .filter_map(
+                    |&(
+                        char_shape_id,
+                        language_index,
+                        family,
+                        alternate_family,
+                        bin_data_id,
+                        face_index,
+                    )| {
+                        Some(EmbeddedFontFace {
+                            char_shape_id,
+                            language_index,
+                            family,
+                            alternate_family,
+                            bytes: font_bytes_by_id.get(&bin_data_id)?.as_slice(),
+                            face_index,
+                        })
+                    },
+                )
+                .collect::<Vec<_>>();
+            let mut builder = LayerBuilder::new(profile).with_output_options(output_options);
+            Ok(builder.build_with_embedded_fonts(tree, &embedded_fonts))
         })
     }
 
@@ -889,17 +1023,27 @@ impl VlmTarget {
 
 impl DocumentCore {
     pub fn get_page_layer_tree_native(&self, page_num: u32) -> Result<String, HwpError> {
+        self.get_page_layer_tree_with_profile_native(page_num, RenderProfile::Screen)
+    }
+
+    pub fn get_page_layer_tree_with_profile_native(
+        &self,
+        page_num: u32,
+        profile: RenderProfile,
+    ) -> Result<String, HwpError> {
         // [Task #2222] 직렬화 JSON 캐시 — 트리 캐시(#2227 with_page_tree_cached)가
         // 있어도 1MB 급 재직렬화가 renderPage 마다 렌더 비용과 맞먹게 반복된다
         // (주보 p2 실측: 15.2ms/회, JSON 1.05MB). 출력옵션 지문이 다르면 미스.
         let idx = page_num as usize;
-        let fp = self.layer_output_options_fingerprint();
+        let fp = self.layer_output_options_fingerprint(profile);
         if let Some(variants) = self.layer_tree_json_cache.borrow().get(idx) {
             if let Some((_, json)) = variants.iter().find(|(f, _)| *f == fp) {
                 return Ok(json.clone());
             }
         }
-        let json = self.build_page_layer_tree(page_num)?.to_json();
+        let json = self
+            .build_page_layer_tree_with_profile(page_num, profile)?
+            .to_json();
         {
             // 토글(투명선/잘림보기 등) 왕복이 매번 미스가 되지 않도록 페이지당
             // 옵션 변형 4개까지 보관 (초과 시 가장 오래된 변형 제거).
@@ -917,13 +1061,20 @@ impl DocumentCore {
         Ok(json)
     }
 
-    /// [Task #2222] 레이어 출력옵션 5종의 비트 지문 — JSON 캐시 키.
-    fn layer_output_options_fingerprint(&self) -> u8 {
+    /// [Task #2222] 레이어 출력옵션 5종과 profile의 비트 지문 — JSON 캐시 키.
+    fn layer_output_options_fingerprint(&self, profile: RenderProfile) -> u8 {
+        let profile_bits = match profile {
+            RenderProfile::FastPreview => 0,
+            RenderProfile::Screen => 1,
+            RenderProfile::Print => 2,
+            RenderProfile::HighQuality => 3,
+        };
         u8::from(self.show_paragraph_marks)
             | (u8::from(self.show_control_codes) << 1)
             | (u8::from(self.show_transparent_borders) << 2)
             | (u8::from(self.clip_enabled) << 3)
             | (u8::from(self.debug_overlay) << 4)
+            | (profile_bits << 5)
     }
 
     /// 페이지 overlay 이미지와 replay-plane summary만 작은 JSON으로 반환한다.
@@ -4889,6 +5040,148 @@ mod tests {
             }
             other => panic!("root should be Page node, got {:?}", other),
         }
+    }
+
+    #[test]
+    fn normal_page_layer_export_selects_verified_embedded_bitmap_glyph_sidecar() {
+        use crate::model::bin_data::{BinDataBytes, BinDataResolver};
+        use crate::model::document::{Document, Section, SectionDef};
+        use crate::model::page::PageDef;
+        use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+        use crate::model::style::{CharShape, Font};
+        use crate::renderer::canvaskit_policy::{
+            analyze_canvaskit_replay_plan, CanvasKitReplayMode,
+        };
+
+        #[derive(Debug)]
+        struct UnexpectedFontResolver;
+
+        impl BinDataResolver for UnexpectedFontResolver {
+            fn resolve(&self, key: &str) -> Vec<u8> {
+                panic!("unused embedded font must remain lazy: {key}")
+            }
+        }
+
+        let mut document = Document::default();
+        document.doc_info.font_faces = vec![Vec::new(); 7];
+        document.doc_info.font_faces[0].push(Font {
+            name: "RHWP Bitmap SVG Glyph Smoke".to_string(),
+            alt_type: 1,
+            is_embedded: true,
+            bin_item_id_ref: "font-smoke".to_string(),
+            resolved_bin_data_id: Some(1),
+            ..Default::default()
+        });
+        document.doc_info.font_faces[0].push(Font {
+            name: "Unused embedded font".to_string(),
+            alt_type: 1,
+            is_embedded: true,
+            bin_item_id_ref: "font-unused".to_string(),
+            resolved_bin_data_id: Some(2),
+            ..Default::default()
+        });
+        document.doc_info.char_shapes.push(CharShape {
+            font_ids: [0; 7],
+            ratios: [100; 7],
+            relative_sizes: [100; 7],
+            base_size: 1200,
+            text_color: 0x0000_0000,
+            shade_color: 0x00FF_FFFF,
+            ..Default::default()
+        });
+        document.bin_data_content.push(BinDataContent {
+            id: 1,
+            data: include_bytes!("../../../tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf")
+                .to_vec()
+                .into(),
+            extension: "ttf".to_string(),
+        });
+        document.bin_data_content.push(BinDataContent {
+            id: 2,
+            data: BinDataBytes::Lazy {
+                resolver: std::sync::Arc::new(UnexpectedFontResolver),
+                key: "font-unused".to_string(),
+            },
+            extension: "ttf".to_string(),
+        });
+        document.sections.push(Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59_528,
+                    height: 84_188,
+                    margin_left: 8_504,
+                    margin_right: 8_504,
+                    margin_top: 5_668,
+                    margin_bottom: 4_252,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![Paragraph {
+                char_count: 2,
+                text: "\u{E100}".to_string(),
+                char_offsets: vec![0],
+                char_shapes: vec![CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: 0,
+                }],
+                line_segs: vec![LineSeg {
+                    text_start: 0,
+                    line_height: 1_500,
+                    text_height: 1_200,
+                    baseline_distance: 1_200,
+                    segment_width: 40_000,
+                    ..Default::default()
+                }],
+                has_para_text: true,
+                ..Default::default()
+            }],
+            raw_stream: None,
+        });
+
+        let mut core = DocumentCore::new_empty();
+        core.set_document(document);
+        let tree = core
+            .build_page_layer_tree_with_profile(0, RenderProfile::Screen)
+            .expect("normal page layer export succeeds");
+        let json = tree.to_json();
+        assert!(json.contains("\"type\":\"textRun\""));
+        assert!(json.contains("\"payloadKind\":\"bitmapGlyph\""));
+        assert!(json.contains("\"imageKeys\":[\"img:blake3:"));
+
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert_eq!(plan.text_variants.len(), 1);
+        assert_eq!(
+            plan.text_variants[0].selected_variant_kind,
+            Some("glyphOutline")
+        );
+        assert!(!plan.text_variants[0].fallback_required);
+    }
+
+    #[test]
+    fn hwpx_font_native_fixture_reaches_public_layer_export() {
+        use crate::renderer::canvaskit_policy::{
+            analyze_canvaskit_replay_plan, CanvasKitReplayMode,
+        };
+
+        let bytes = include_bytes!("../../../samples/render-p35-font-native-bitmap.hwpx");
+        let mut core = DocumentCore::from_bytes(bytes).expect("font-native HWPX fixture parses");
+        core.paginate();
+
+        let tree = core
+            .build_page_layer_tree_with_profile(0, RenderProfile::Screen)
+            .expect("public layer export succeeds");
+        let json = tree.to_json();
+        assert!(json.contains("\"payloadKind\":\"bitmapGlyph\""));
+        assert!(json.contains("\"imageKeys\":[\"img:blake3:"));
+
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert_eq!(plan.text_variants.len(), 1);
+        assert_eq!(
+            plan.text_variants[0].selected_variant_kind,
+            Some("glyphOutline")
+        );
+        assert!(!plan.text_variants[0].fallback_required);
     }
 
     /// [Task #1280 v2] 레이아웃 쿼리가 컨트롤별 plane/zOrder/stableIndex 를 노출하고,

@@ -18,6 +18,9 @@ use crate::paint::{
     TextSourceRange, TextSourceSpan, TextSourceTable, TextV2Diagnostics, LAYER_TREE_SCHEMA,
 };
 use crate::renderer::composer::expand_pua_display_text;
+use crate::renderer::equation::ast::MatrixStyle;
+use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
+use crate::renderer::equation::symbols::{DecoKind, FontStyleKind};
 use crate::renderer::layout::compute_char_positions;
 use crate::renderer::render_tree::{
     BoundingBox, FieldMarkerType, RenderLayerInfo, ShapeTransform, TextRunNode,
@@ -96,6 +99,8 @@ impl PageLayerTree {
         write_text_source_entries(&mut buf, &self.text_sources);
         buf.push_str(",\"fontResources\":");
         write_font_resources(&mut buf, self.resources.font_resources());
+        buf.push_str(",\"resources\":");
+        write_visual_resources(&mut buf, &self.resources);
         write_text_export_metadata(&mut buf, &self.root, &self.resources);
         buf.push_str(",\"textV2\":");
         TextV2Diagnostics::from_layer_tree(self).write_json(&mut buf);
@@ -122,8 +127,11 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &Re
     if has_display_text {
         buf.push_str(",\"text.displayText\"");
     }
+    if has_glyph_runs || has_glyph_outlines {
+        buf.push_str(",\"fontResources\"");
+    }
     if has_glyph_runs {
-        buf.push_str(",\"fontResources\",\"text.glyphRun\"");
+        buf.push_str(",\"text.glyphRun\"");
     }
     if has_glyph_outlines {
         buf.push_str(",\"text.glyphOutline\",\"text.glyphOutline.strictSidecar\"");
@@ -160,8 +168,10 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &Re
         buf.push_str(",\"text.decorationOp\"");
     }
     let mut optional_features = Vec::new();
-    if has_glyph_runs {
+    if has_glyph_runs || has_glyph_outlines {
         optional_features.push("fontResources");
+    }
+    if has_glyph_runs {
         optional_features.push("text.glyphRun");
     }
     if has_glyph_outlines {
@@ -909,11 +919,12 @@ impl PaintOp {
                 write_bbox(buf, *bbox);
                 let _ = write!(
                     buf,
-                    ",\"svgContent\":{},\"color\":{},\"fontSize\":{:.3}",
+                    ",\"svgContent\":{},\"color\":{},\"fontSize\":{:.3},\"layoutBox\":",
                     json_escape(&equation.svg_content),
                     json_escape(&equation.color_str),
                     equation.font_size
                 );
+                write_equation_layout_box(buf, &equation.layout_box);
                 buf.push('}');
             }
             PaintOp::FormObject { bbox, form } => {
@@ -1129,6 +1140,49 @@ fn write_font_resources(buf: &mut String, table: &FontResourceTable) {
             let _ = write!(buf, ",\"italic\":{}", italic);
         }
         buf.push('}');
+    }
+    buf.push_str("]}");
+}
+
+fn write_visual_resources(buf: &mut String, resources: &ResourceArena) {
+    let _ = write!(
+        buf,
+        "{{\"tableId\":{},\"images\":[",
+        LAYER_TREE_SCHEMA.resource_table_version
+    );
+    for (index, (_, bytes)) in resources.image_resources().enumerate() {
+        if index > 0 {
+            buf.push(',');
+        }
+        let encoded = base64::engine::general_purpose::STANDARD.encode(bytes);
+        buf.push_str(&json_escape(&encoded));
+    }
+    buf.push_str("],\"imageKeys\":[");
+    for index in 0..resources.image_count() {
+        if index > 0 {
+            buf.push(',');
+        }
+        let key = resources
+            .image_resource_key(crate::paint::ImageResourceId(index))
+            .unwrap_or("");
+        buf.push_str(&json_escape(key));
+    }
+    buf.push_str("],\"svgFragments\":[");
+    for (index, (_, fragment)) in resources.svg_resources().enumerate() {
+        if index > 0 {
+            buf.push(',');
+        }
+        buf.push_str(&json_escape(fragment));
+    }
+    buf.push_str("],\"svgKeys\":[");
+    for index in 0..resources.svg_count() {
+        if index > 0 {
+            buf.push(',');
+        }
+        let key = resources
+            .svg_resource_key(crate::paint::SvgResourceId(index))
+            .unwrap_or("");
+        buf.push_str(&json_escape(key));
     }
     buf.push_str("]}");
 }
@@ -2446,6 +2500,250 @@ fn write_path_commands(buf: &mut String, commands: &[PathCommand]) {
     buf.push(']');
 }
 
+fn write_equation_layout_box(buf: &mut String, layout: &LayoutBox) {
+    let _ = write!(
+        buf,
+        "{{\"x\":{:.6},\"y\":{:.6},\"width\":{:.6},\"height\":{:.6},\"baseline\":{:.6},\"kind\":",
+        layout.x, layout.y, layout.width, layout.height, layout.baseline,
+    );
+    write_equation_layout_kind(buf, &layout.kind);
+    buf.push('}');
+}
+
+fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
+    match kind {
+        LayoutKind::Row(children) => {
+            buf.push_str("{\"type\":\"row\",\"children\":[");
+            for (index, child) in children.iter().enumerate() {
+                if index > 0 {
+                    buf.push(',');
+                }
+                write_equation_layout_box(buf, child);
+            }
+            buf.push_str("]}");
+        }
+        LayoutKind::Text(text) => write_equation_text_kind(buf, "text", text),
+        LayoutKind::Number(text) => write_equation_text_kind(buf, "number", text),
+        LayoutKind::Symbol(text) => write_equation_text_kind(buf, "symbol", text),
+        LayoutKind::MathSymbol(text) => write_equation_text_kind(buf, "mathSymbol", text),
+        LayoutKind::Function(name) => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"function\",\"name\":{}}}",
+                json_escape(name)
+            );
+        }
+        LayoutKind::Fraction { numer, denom } => {
+            buf.push_str("{\"type\":\"fraction\",\"numer\":");
+            write_equation_layout_box(buf, numer);
+            buf.push_str(",\"denom\":");
+            write_equation_layout_box(buf, denom);
+            buf.push('}');
+        }
+        LayoutKind::Atop { top, bottom } => {
+            buf.push_str("{\"type\":\"atop\",\"top\":");
+            write_equation_layout_box(buf, top);
+            buf.push_str(",\"bottom\":");
+            write_equation_layout_box(buf, bottom);
+            buf.push('}');
+        }
+        LayoutKind::Sqrt { index, body } => {
+            buf.push_str("{\"type\":\"sqrt\"");
+            if let Some(index) = index {
+                buf.push_str(",\"index\":");
+                write_equation_layout_box(buf, index);
+            }
+            buf.push_str(",\"body\":");
+            write_equation_layout_box(buf, body);
+            buf.push('}');
+        }
+        LayoutKind::Superscript { base, sup } => {
+            write_equation_binary_kind(buf, "superscript", "base", base, "sup", sup);
+        }
+        LayoutKind::Subscript { base, sub } => {
+            write_equation_binary_kind(buf, "subscript", "base", base, "sub", sub);
+        }
+        LayoutKind::SubSup { base, sub, sup } => {
+            buf.push_str("{\"type\":\"subSup\",\"base\":");
+            write_equation_layout_box(buf, base);
+            buf.push_str(",\"sub\":");
+            write_equation_layout_box(buf, sub);
+            buf.push_str(",\"sup\":");
+            write_equation_layout_box(buf, sup);
+            buf.push('}');
+        }
+        LayoutKind::BigOp { symbol, sub, sup } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"bigOp\",\"symbol\":{}",
+                json_escape(symbol)
+            );
+            write_optional_equation_box(buf, "sub", sub.as_deref());
+            write_optional_equation_box(buf, "sup", sup.as_deref());
+            buf.push('}');
+        }
+        LayoutKind::Limit { is_upper, sub } => {
+            let _ = write!(buf, "{{\"type\":\"limit\",\"isUpper\":{}", is_upper);
+            write_optional_equation_box(buf, "sub", sub.as_deref());
+            buf.push('}');
+        }
+        LayoutKind::Matrix { cells, style } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"matrix\",\"style\":{},\"cells\":[",
+                json_escape(equation_matrix_style(*style))
+            );
+            for (row_index, row) in cells.iter().enumerate() {
+                if row_index > 0 {
+                    buf.push(',');
+                }
+                buf.push('[');
+                for (cell_index, cell) in row.iter().enumerate() {
+                    if cell_index > 0 {
+                        buf.push(',');
+                    }
+                    write_equation_layout_box(buf, cell);
+                }
+                buf.push(']');
+            }
+            buf.push_str("]}");
+        }
+        LayoutKind::Rel { arrow, over, under } => {
+            buf.push_str("{\"type\":\"rel\",\"arrow\":");
+            write_equation_layout_box(buf, arrow);
+            buf.push_str(",\"over\":");
+            write_equation_layout_box(buf, over);
+            write_optional_equation_box(buf, "under", under.as_deref());
+            buf.push('}');
+        }
+        LayoutKind::EqAlign { rows } => {
+            buf.push_str("{\"type\":\"eqAlign\",\"rows\":[");
+            for (index, (left, right)) in rows.iter().enumerate() {
+                if index > 0 {
+                    buf.push(',');
+                }
+                buf.push_str("{\"left\":");
+                write_equation_layout_box(buf, left);
+                buf.push_str(",\"right\":");
+                write_equation_layout_box(buf, right);
+                buf.push('}');
+            }
+            buf.push_str("]}");
+        }
+        LayoutKind::Paren { left, right, body } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"paren\",\"left\":{},\"right\":{},\"body\":",
+                json_escape(left),
+                json_escape(right),
+            );
+            write_equation_layout_box(buf, body);
+            buf.push('}');
+        }
+        LayoutKind::Decoration { kind, body } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"decoration\",\"decoration\":{},\"body\":",
+                json_escape(equation_decoration(*kind))
+            );
+            write_equation_layout_box(buf, body);
+            buf.push('}');
+        }
+        LayoutKind::FontStyle { style, body } => {
+            let _ = write!(
+                buf,
+                "{{\"type\":\"fontStyle\",\"fontStyle\":{},\"body\":",
+                json_escape(equation_font_style(*style))
+            );
+            write_equation_layout_box(buf, body);
+            buf.push('}');
+        }
+        LayoutKind::Space(width) => {
+            let _ = write!(buf, "{{\"type\":\"space\",\"width\":{width:.6}}}");
+        }
+        LayoutKind::Newline => buf.push_str("{\"type\":\"newline\"}"),
+        LayoutKind::Empty => buf.push_str("{\"type\":\"empty\"}"),
+    }
+}
+
+fn write_equation_text_kind(buf: &mut String, kind: &str, text: &str) {
+    let _ = write!(
+        buf,
+        "{{\"type\":{},\"text\":{}}}",
+        json_escape(kind),
+        json_escape(text)
+    );
+}
+
+fn write_equation_binary_kind(
+    buf: &mut String,
+    kind: &str,
+    left_name: &str,
+    left: &LayoutBox,
+    right_name: &str,
+    right: &LayoutBox,
+) {
+    let _ = write!(
+        buf,
+        "{{\"type\":{},{}:",
+        json_escape(kind),
+        json_escape(left_name)
+    );
+    write_equation_layout_box(buf, left);
+    let _ = write!(buf, ",{}:", json_escape(right_name));
+    write_equation_layout_box(buf, right);
+    buf.push('}');
+}
+
+fn write_optional_equation_box(buf: &mut String, name: &str, layout: Option<&LayoutBox>) {
+    if let Some(layout) = layout {
+        let _ = write!(buf, ",{}:", json_escape(name));
+        write_equation_layout_box(buf, layout);
+    }
+}
+
+fn equation_matrix_style(style: MatrixStyle) -> &'static str {
+    match style {
+        MatrixStyle::Plain => "plain",
+        MatrixStyle::Paren => "paren",
+        MatrixStyle::Bracket => "bracket",
+        MatrixStyle::Vert => "vert",
+    }
+}
+
+fn equation_decoration(kind: DecoKind) -> &'static str {
+    match kind {
+        DecoKind::Hat => "hat",
+        DecoKind::Check => "check",
+        DecoKind::Tilde => "tilde",
+        DecoKind::Acute => "acute",
+        DecoKind::Grave => "grave",
+        DecoKind::Dot => "dot",
+        DecoKind::DDot => "dDot",
+        DecoKind::Bar => "bar",
+        DecoKind::Vec => "vec",
+        DecoKind::Dyad => "dyad",
+        DecoKind::Under => "under",
+        DecoKind::Arch => "arch",
+        DecoKind::Underline => "underline",
+        DecoKind::Overline => "overline",
+        DecoKind::StrikeThrough => "strikeThrough",
+    }
+}
+
+fn equation_font_style(style: FontStyleKind) -> &'static str {
+    match style {
+        FontStyleKind::Roman => "roman",
+        FontStyleKind::Italic => "italic",
+        FontStyleKind::Bold => "bold",
+        FontStyleKind::Blackboard => "blackboard",
+        FontStyleKind::Calligraphy => "calligraphy",
+        FontStyleKind::Fraktur => "fraktur",
+        FontStyleKind::SansSerif => "sansSerif",
+        FontStyleKind::Monospace => "monospace",
+    }
+}
+
 fn underline_type_str(value: UnderlineType) -> &'static str {
     match value {
         UnderlineType::None => "none",
@@ -2694,9 +2992,19 @@ mod tests {
             "\"schema\":{{\"major\":{},\"minor\":{}}}",
             LAYER_TREE_SCHEMA.schema_version, LAYER_TREE_SCHEMA.schema_minor_version
         )));
-        assert!(json.contains("\"resourceTableVersion\":1"));
-        assert!(json.contains("\"resourceTableMinorVersion\":4"));
-        assert!(json.contains("\"resourceTable\":{\"major\":1,\"minor\":4}"));
+        assert!(json.contains(&format!(
+            "\"resourceTableVersion\":{}",
+            LAYER_TREE_SCHEMA.resource_table_version
+        )));
+        assert!(json.contains(&format!(
+            "\"resourceTableMinorVersion\":{}",
+            LAYER_TREE_SCHEMA.resource_table_minor_version
+        )));
+        assert!(json.contains(&format!(
+            "\"resourceTable\":{{\"major\":{},\"minor\":{}}}",
+            LAYER_TREE_SCHEMA.resource_table_version,
+            LAYER_TREE_SCHEMA.resource_table_minor_version
+        )));
         assert!(json.contains("\"unit\":\"px\""));
         assert!(json.contains("\"coordinateSystem\":\"page-top-left-y-down\""));
         assert!(json.contains("\"profile\":\"screen\""));
@@ -3483,7 +3791,7 @@ mod tests {
                     image_ref: ImageResourceId(0),
                     source_range_utf8: TextSourceRange::new(0, 1),
                     glyph_range: GlyphRange::new(0, 1),
-                    placement: BoundingBox::new(0.0, 0.0, 10.0, 10.0),
+                    placement: BoundingBox::new(0.1234, 0.5678, 10.9876, 10.5432),
                     alpha_premultiplied: true,
                     scaling_policy: BitmapGlyphScalingPolicy::SourceExact,
                     filtering: BitmapGlyphFiltering::Linear,
@@ -3520,7 +3828,7 @@ mod tests {
                     svg_ref: SvgResourceId(0),
                     source_range_utf8: TextSourceRange::new(0, 1),
                     glyph_range: GlyphRange::new(0, 1),
-                    view_box: BoundingBox::new(0.0, 0.0, 10.0, 10.0),
+                    view_box: BoundingBox::new(0.1234, 0.5678, 10.9876, 10.5432),
                     intrinsic_size: Some(LayerVector { dx: 10.0, dy: 10.0 }),
                     static_sanitized: true,
                     script_allowed: false,
@@ -3560,10 +3868,12 @@ mod tests {
 
         let json = tree.to_json();
 
-        assert!(json.contains("\"schemaMinorVersion\":17"));
+        assert!(json.contains("\"schemaMinorVersion\":18"));
         assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:bitmapGlyph:imageRef:0"));
+        assert!(json.contains("placement:0.123,0.568,10.988,10.543"));
         assert!(json.contains(&format!(":resource:{image_resource_key}\"")));
         assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:svgGlyph:svgRef:0"));
+        assert!(json.contains("viewBox:0.123,0.568,10.988,10.543"));
         assert!(json.contains(&format!(":resource:{svg_resource_key}\"")));
         assert!(json.contains("\"vectorResourceId\":0"));
         assert!(json.contains("\"strictVisualContract\":true"));
@@ -3571,6 +3881,13 @@ mod tests {
         assert!(json.contains("\"text.glyphOutline.payloadResourceKey\""));
         assert!(json.contains("\"text.glyphOutline.payloadResourceDigestKey\""));
         assert!(json.contains("\"text.glyphOutline.svgGlyph.vectorResourceId\""));
+        assert!(json.contains("\"usedFeatures\":[\"text.paintStyle\""));
+        assert!(json.contains("\"fontResources\""));
+        assert!(json.contains("\"optionalFeatures\":[\"fontResources\""));
+        assert!(json.contains("\"resources\":{\"tableId\":1,\"images\":[\"iVBORw0KGgo=\"]"));
+        assert!(json.contains(&format!("\"imageKeys\":[\"{image_resource_key}\"]")));
+        assert!(json.contains(&format!("\"svgKeys\":[\"{svg_resource_key}\"]")));
+        assert!(json.contains("\"svgFragments\":[\"<path d=\\\"M0 0H10V10Z\\\"/>\"]"));
     }
 
     #[test]
@@ -3651,6 +3968,8 @@ mod tests {
         assert!(json.contains("\"brightness\":-50"));
         assert!(json.contains("\"contrast\":70"));
         assert!(json.contains("\"svgContent\":\"<text>x</text>\""));
+        assert!(json.contains("\"layoutBox\":{\"x\":0.000000"));
+        assert!(json.contains("\"kind\":{\"type\":\"text\",\"text\":\"x\"}"));
         assert!(json.contains("\"type\":\"placeholder\""));
         assert!(json.contains("\"label\":\"OLE\""));
         assert!(json.contains("\"type\":\"rawSvg\""));

@@ -42,6 +42,17 @@ const BROWSER_PARITY_ALLOWED_THRESHOLDS = new Set([
   'inkMaskNeighborhoodRadius',
 ]);
 const ALLOWED_CANVASKIT_SURFACES = new Set(['auto', 'webgpu', 'webgl', 'software']);
+const CANVASKIT_PERFORMANCE_BUDGET_KEYS = new Set([
+  'maxColdDocumentLoadAndInitialRenderMs',
+  'maxWarmReplayMs',
+  'maxWarmRendererDurationMs',
+  'maxImageCachePixels',
+]);
+const CANVASKIT_READINESS_EXPECTATION_KEYS = new Set([
+  'glyphOutlinePayloadKinds',
+  'minWarmImageCacheHits',
+]);
+const CANVASKIT_GLYPH_RESOURCE_PAYLOAD_KINDS = new Set(['bitmapGlyph', 'svgGlyph']);
 const BACKENDS = [
   {
     key: 'canvas2d',
@@ -119,6 +130,49 @@ function browserParityThresholdsForSample(sample) {
     thresholds[key] = value;
   }
   return thresholds;
+}
+
+function canvaskitPerformanceBudgetForSample(sample) {
+  const budget = sample?.canvaskitPerformanceBudget;
+  if (!budget || typeof budget !== 'object') return null;
+  for (const [key, value] of Object.entries(budget)) {
+    if (!CANVASKIT_PERFORMANCE_BUDGET_KEYS.has(key)) {
+      throw new Error(`unsupported CanvasKit performance budget for ${sample.id}: ${key}`);
+    }
+    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+      throw new Error(`CanvasKit performance budget ${key} for ${sample.id} must be positive`);
+    }
+  }
+  if ([...CANVASKIT_PERFORMANCE_BUDGET_KEYS].some((key) => budget[key] === undefined)) {
+    throw new Error(`CanvasKit performance budget for ${sample.id} must define every budget key`);
+  }
+  return { ...budget };
+}
+
+function canvaskitReadinessExpectationsForSample(sample) {
+  const expectations = sample?.canvaskitReadinessExpectations;
+  if (expectations === undefined) return null;
+  if (!expectations || typeof expectations !== 'object' || Array.isArray(expectations)) {
+    throw new Error(`CanvasKit readiness expectations for ${sample.id} must be an object`);
+  }
+  for (const key of Object.keys(expectations)) {
+    if (!CANVASKIT_READINESS_EXPECTATION_KEYS.has(key)) {
+      throw new Error(`unsupported CanvasKit readiness expectation for ${sample.id}: ${key}`);
+    }
+  }
+  const payloadKinds = expectations.glyphOutlinePayloadKinds ?? [];
+  if (!Array.isArray(payloadKinds)
+    || payloadKinds.some((kind) => !CANVASKIT_GLYPH_RESOURCE_PAYLOAD_KINDS.has(kind))) {
+    throw new Error(`CanvasKit glyph payload expectations for ${sample.id} are invalid`);
+  }
+  const minWarmImageCacheHits = expectations.minWarmImageCacheHits ?? 0;
+  if (!Number.isInteger(minWarmImageCacheHits) || minWarmImageCacheHits < 0) {
+    throw new Error(`CanvasKit warm image cache expectation for ${sample.id} must be non-negative`);
+  }
+  return {
+    glyphOutlinePayloadKinds: [...new Set(payloadKinds)],
+    minWarmImageCacheHits,
+  };
 }
 
 function parseArgs() {
@@ -228,11 +282,18 @@ function normalizeSamples(manifest, filterText, readinessOnly) {
       page: sample.page ?? 0,
     };
     const normalizedThresholds = browserParityThresholdsForSample(normalizedSample);
+    normalizedSample.canvaskitPerformanceBudget = canvaskitPerformanceBudgetForSample(normalizedSample);
+    normalizedSample.canvaskitReadinessExpectations = canvaskitReadinessExpectationsForSample(normalizedSample);
     if (readinessOnly
       && normalizedSample.canvaskitReadinessGate === true
       && (!Number.isInteger(normalizedThresholds.minimumInkPixels)
         || normalizedThresholds.minimumInkPixels <= 0)) {
       throw new Error(`readiness sample ${id} requires a positive minimumInkPixels threshold`);
+    }
+    if (readinessOnly
+      && normalizedSample.canvaskitReadinessGate === true
+      && normalizedSample.canvaskitPerformanceBudget === null) {
+      throw new Error(`readiness sample ${id} requires a CanvasKit performance budget`);
     }
     return normalizedSample;
   }).filter((sample) => {
@@ -278,6 +339,54 @@ async function readRendererDiagnostics(page, pageIndex) {
       },
       surfaceDiagnostics,
       canvaskitRender,
+    };
+  }, pageIndex);
+}
+
+async function readLayerFeatureProbe(page, pageIndex, profile) {
+  return await page.evaluate(([targetPageIndex, targetProfile]) => {
+    const layerProfile = targetProfile === 'high-quality'
+      ? 'highQuality'
+      : targetProfile === 'fast-preview'
+        ? 'fastPreview'
+        : targetProfile;
+    const tree = window.__wasm?.getPageLayerTreeObject?.(targetPageIndex, layerProfile);
+    if (!tree?.root) return null;
+    const glyphOutlinePayloadCounts = {};
+    const stack = [tree.root];
+    while (stack.length > 0) {
+      const node = stack.pop();
+      if (node?.kind === 'group') {
+        stack.push(...(node.children ?? []));
+      } else if (node?.kind === 'clipRect') {
+        if (node.child) stack.push(node.child);
+      } else if (node?.kind === 'leaf') {
+        for (const op of node.ops ?? []) {
+          if (op?.type !== 'glyphOutline' || typeof op.payloadKind !== 'string') continue;
+          glyphOutlinePayloadCounts[op.payloadKind] = (glyphOutlinePayloadCounts[op.payloadKind] ?? 0) + 1;
+        }
+      }
+    }
+    return { glyphOutlinePayloadCounts };
+  }, [pageIndex, profile]);
+}
+
+async function measureWarmCanvasKitReplay(page, pageIndex) {
+  return await page.evaluate(async (targetPageIndex) => {
+    const view = window.__canvasView;
+    const before = view?.getCurrentCanvasKitRenderDiagnostics?.() ?? null;
+    const startedAt = performance.now();
+    const rerendered = view?.rerenderPageForDiagnostics?.(targetPageIndex) === true;
+    const replayMs = performance.now() - startedAt;
+    const after = view?.getCurrentCanvasKitRenderDiagnostics?.() ?? null;
+    return {
+      replayMs,
+      rerendered,
+      rendererDurationMs: after?.lastRenderDurationMs ?? null,
+      renderCountDelta: before && after ? after.renderCount - before.renderCount : null,
+      imageCacheHitDelta: before && after ? after.imageCacheHits - before.imageCacheHits : null,
+      imageCacheMissDelta: before && after ? after.imageCacheMisses - before.imageCacheMisses : null,
+      imageCachePixels: after?.imageCachePixels ?? null,
     };
   }, pageIndex);
 }
@@ -346,9 +455,14 @@ try {
         const appLoadMs = performance.now() - appLoadStartedAt;
 
         await resetRendererDiagnostics(page);
-        const documentLoadStartedAt = performance.now();
-        await loadHwpFile(page, sample.file);
-        const documentLoadAndInitialRenderMs = performance.now() - documentLoadStartedAt;
+        const loadResult = await loadHwpFile(page, sample.file);
+        const documentLoadAndInitialRenderMs = loadResult.documentLoadAndInitialRenderMs;
+        const layerFeatureProbe = backend.key.startsWith('canvaskit')
+          ? await readLayerFeatureProbe(page, sample.page, profile)
+          : null;
+        const warmReplay = backend.key.startsWith('canvaskit')
+          ? await measureWarmCanvasKitReplay(page, sample.page)
+          : null;
 
         const sampleDir = path.join(options.output, sample.id);
         const outputPath = path.join(sampleDir, backend.filenameForProfile(profile));
@@ -372,10 +486,14 @@ try {
           timings: {
             appLoadMs,
             documentLoadAndInitialRenderMs,
+            warmReplayMs: warmReplay?.replayMs ?? null,
+            warmRendererDurationMs: warmReplay?.rendererDurationMs ?? null,
             screenshotMs,
             totalMs: performance.now() - totalStartedAt,
           },
           diagnostics,
+          layerFeatureProbe,
+          warmReplay,
         });
       }
     }
@@ -606,6 +724,9 @@ for (const result of results.filter((entry) => entry.readinessGateRequired)) {
       && entry.targetBackend === result.backend
   ));
   const blockers = [];
+  const sample = samples.find((entry) => entry.id === result.sampleId);
+  const performanceBudget = sample?.canvaskitPerformanceBudget ?? null;
+  const readinessExpectations = sample?.canvaskitReadinessExpectations ?? null;
   if (runtime.activeBackend !== 'canvaskit') {
     blockers.push('backendNotActive');
   }
@@ -652,6 +773,47 @@ for (const result of results.filter((entry) => entry.readinessGateRequired)) {
   } else if (comparison.diff?.passed !== true) {
     blockers.push('visualParityFailed');
   }
+  if (performanceBudget === null) {
+    blockers.push('performanceBudgetMissing');
+  } else {
+    if (typeof result.timings.documentLoadAndInitialRenderMs !== 'number'
+      || !Number.isFinite(result.timings.documentLoadAndInitialRenderMs)) {
+      blockers.push('performanceColdMissing');
+    } else if (result.timings.documentLoadAndInitialRenderMs
+      > performanceBudget.maxColdDocumentLoadAndInitialRenderMs) {
+      blockers.push('performanceColdExceeded');
+    }
+    if (result.warmReplay?.rerendered !== true
+      || typeof result.warmReplay?.replayMs !== 'number'
+      || !Number.isFinite(result.warmReplay.replayMs)
+      || result.warmReplay?.renderCountDelta !== 1) {
+      blockers.push('warmReplayMissing');
+    } else if (result.warmReplay.replayMs > performanceBudget.maxWarmReplayMs) {
+      blockers.push('performanceWarmExceeded');
+    }
+    if (typeof result.warmReplay?.rendererDurationMs !== 'number') {
+      blockers.push('warmRendererDurationMissing');
+    } else if (result.warmReplay.rendererDurationMs
+      > performanceBudget.maxWarmRendererDurationMs) {
+      blockers.push('performanceRendererWarmExceeded');
+    }
+    if (typeof result.warmReplay?.imageCachePixels !== 'number') {
+      blockers.push('imageCachePixelsMissing');
+    } else if (result.warmReplay.imageCachePixels > performanceBudget.maxImageCachePixels) {
+      blockers.push('imageCachePixelBudgetExceeded');
+    }
+  }
+  if (readinessExpectations !== null) {
+    for (const payloadKind of readinessExpectations.glyphOutlinePayloadKinds) {
+      if ((result.layerFeatureProbe?.glyphOutlinePayloadCounts?.[payloadKind] ?? 0) < 1) {
+        blockers.push(`glyphOutlinePayloadMissing:${payloadKind}`);
+      }
+    }
+    if ((result.warmReplay?.imageCacheHitDelta ?? 0)
+      < readinessExpectations.minWarmImageCacheHits) {
+      blockers.push('warmImageCacheHitMissing');
+    }
+  }
 
   canvaskitReadinessChecks.push({
     sampleId: result.sampleId,
@@ -677,6 +839,11 @@ for (const result of results.filter((entry) => entry.readinessGateRequired)) {
     actualInkPixels: comparison?.diff?.actualInkPixels ?? null,
     minimumInkPixels: comparison?.diff?.minimumInkPixels ?? null,
     minimumInkBudgetPassed: comparison?.diff?.minimumInkBudgetPassed ?? false,
+    performanceBudget,
+    readinessExpectations,
+    layerFeatureProbe: result.layerFeatureProbe ?? null,
+    coldDocumentLoadAndInitialRenderMs: result.timings.documentLoadAndInitialRenderMs,
+    warmReplay: result.warmReplay ?? null,
   });
 }
 const missingReadinessChecks = options.readinessOnly
@@ -694,6 +861,7 @@ const canvaskitReadinessGate = {
     requireActiveBackend: true,
     requireRuntimeReadiness: true,
     requireVisualParity: true,
+    requireColdAndWarmPerformanceBudget: true,
   },
   summary: {
     total: options.readinessOnly ? samples.length : 0,

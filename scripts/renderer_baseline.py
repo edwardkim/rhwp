@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import shutil
 import socket
@@ -154,6 +155,58 @@ def load_manifest(
             raise SystemExit(
                 f"readiness sample {sample_id} requires a positive minimumInkPixels threshold"
             )
+        if readiness_only:
+            performance_budget = sample.get("canvaskitPerformanceBudget")
+            required_budget_keys = {
+                "maxColdDocumentLoadAndInitialRenderMs",
+                "maxWarmReplayMs",
+                "maxWarmRendererDurationMs",
+                "maxImageCachePixels",
+            }
+            if not isinstance(performance_budget, dict) or set(performance_budget) != required_budget_keys:
+                raise SystemExit(
+                    f"readiness sample {sample_id} requires a complete CanvasKit performance budget"
+                )
+            if any(
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+                or not math.isfinite(value)
+                or value <= 0
+                for value in performance_budget.values()
+            ):
+                raise SystemExit(
+                    f"readiness sample {sample_id} CanvasKit performance budgets must be positive"
+                )
+            readiness_expectations = sample.get("canvaskitReadinessExpectations")
+            if readiness_expectations is not None:
+                allowed_expectation_keys = {
+                    "glyphOutlinePayloadKinds",
+                    "minWarmImageCacheHits",
+                }
+                if (
+                    not isinstance(readiness_expectations, dict)
+                    or not set(readiness_expectations).issubset(allowed_expectation_keys)
+                ):
+                    raise SystemExit(
+                        f"readiness sample {sample_id} has invalid CanvasKit expectations"
+                    )
+                payload_kinds = readiness_expectations.get("glyphOutlinePayloadKinds", [])
+                if (
+                    not isinstance(payload_kinds, list)
+                    or any(kind not in {"bitmapGlyph", "svgGlyph"} for kind in payload_kinds)
+                ):
+                    raise SystemExit(
+                        f"readiness sample {sample_id} has invalid glyph payload expectations"
+                    )
+                min_cache_hits = readiness_expectations.get("minWarmImageCacheHits", 0)
+                if (
+                    not isinstance(min_cache_hits, int)
+                    or isinstance(min_cache_hits, bool)
+                    or min_cache_hits < 0
+                ):
+                    raise SystemExit(
+                        f"readiness sample {sample_id} has invalid warm image cache expectations"
+                    )
         if filter_text and not (
             filter_text in str(sample_id).lower()
             or filter_text in str(file_name).lower()
@@ -739,8 +792,8 @@ def write_reports(
                 "",
                 "## Browser Performance",
                 "",
-                "| Sample | Backend | Profile | App Load ms | Document Load + Initial Render ms | Screenshot ms | Total ms | Effect Pixels | Effect Cache Hits | Effect Cache Misses | Effect Failures |",
-                "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+                "| Sample | Backend | Profile | App Load ms | Document Load + Initial Render ms | Warm Replay ms | Warm Renderer ms | Screenshot ms | Total ms | Effect Pixels | Effect Cache Hits | Effect Cache Misses | Effect Failures |",
+                "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
             ]
         )
         for item in browser_data["results"]:
@@ -761,6 +814,8 @@ def write_reports(
                         item.get("profile", "-"),
                         format_ms(timings.get("appLoadMs")),
                         format_ms(timings.get("documentLoadAndInitialRenderMs")),
+                        format_ms(timings.get("warmReplayMs")),
+                        format_ms(timings.get("warmRendererDurationMs")),
                         format_ms(timings.get("screenshotMs")),
                         format_ms(timings.get("totalMs")),
                         format_count(effect_diagnostics.get("preprocessedPixels")),
@@ -860,8 +915,8 @@ def write_reports(
                 f"- failed: {summary.get('failed', 0)}",
                 f"- missing: {summary.get('missing', 0)}",
                 "",
-                "| Sample | Category | Backend | Profile | Active Backend | Canvas Owned | Surface Backend | Surface Fallback | Passed | Blockers | Expected Gaps | Unexpected Gaps | Diff Ratio | Expected Ink | Actual Ink | Min Ink | Ink Floor |",
-                "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- |",
+                "| Sample | Category | Backend | Profile | Active Backend | Canvas Owned | Surface Backend | Surface Fallback | Passed | Blockers | Expected Gaps | Unexpected Gaps | Diff Ratio | Expected Ink | Actual Ink | Min Ink | Ink Floor | Cold ms | Warm Replay ms | Warm Renderer ms | Image Cache Pixels |",
+                "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- | ---: | ---: | ---: | ---: |",
             ]
         )
         for item in browser_canvaskit_readiness.get("checks", []):
@@ -889,6 +944,10 @@ def write_reports(
                         format_count(item.get("actualInkPixels")),
                         format_count(item.get("minimumInkPixels")),
                         "yes" if item.get("minimumInkBudgetPassed") else "no",
+                        format_ms(item.get("coldDocumentLoadAndInitialRenderMs")),
+                        format_ms((item.get("warmReplay") or {}).get("replayMs")),
+                        format_ms((item.get("warmReplay") or {}).get("rendererDurationMs")),
+                        format_count((item.get("warmReplay") or {}).get("imageCachePixels")),
                     ]
                 )
                 + " |"

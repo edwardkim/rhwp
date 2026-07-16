@@ -4,6 +4,7 @@
 
 pub mod builder;
 pub mod font;
+pub mod font_glyph;
 mod json;
 pub mod layer_tree;
 pub mod paint_op;
@@ -22,6 +23,12 @@ pub use font::{
     FontPortability, FontPortabilityKind, FontResourceSource, FontResourceTable,
     GlyphRunReplayEligibility, LanguageTag, LocalizedName, OpenTypeFeatureSetting, ScriptTag,
     ShapeKey, ShapingEngineId, TextDirection, VariationAxisValue, WritingMode,
+};
+pub use font_glyph::{
+    decode_font_bitmap_glyph_payload, decode_font_svg_glyph_payload,
+    lower_font_native_glyph_sidecars, resolve_embedded_font_face_index, EmbeddedFontFace,
+    FontBitmapGlyphDecodeError, FontBitmapGlyphDecodeOptions, FontGlyphLoweringReport,
+    FontSvgGlyphDecodeError, FontSvgGlyphDecodeOptions,
 };
 pub use layer_tree::{
     CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree,

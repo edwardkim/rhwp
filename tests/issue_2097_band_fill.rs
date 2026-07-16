@@ -31,6 +31,11 @@ const PINS: &[(&str, u32)] = &[
     // 본문 933.5px 인 표 2건을 한글은 각 1쪽 통째 + 하단 오버플로로 렌더
     // (한글 PDF 실측) — rhwp 는 각 3조각(헤더/본체/꼬리 sliver)으로 분할했다.
     ("samples/task2097/3023771_wichokjang.hwpx", 2),
+    // 나란히 TopAndBottom float union 예약 (2→1쪽). 좌우 배치 그림 2개
+    // (off 31/35px, h 359/335px, 세로 band 겹침)를 각자 높이 합산 예약해
+    // 페이지 1226px 이중 예약 → trailing 빈 문단이 여분 페이지로. 렌더는
+    // 두 그림 나란히 정상. union 예약으로 pi=9 가 1쪽에 남는다.
+    ("samples/task2097/17809123_jawonbongsa.hwpx", 1),
 ];
 
 #[test]

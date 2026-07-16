@@ -4,6 +4,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
 import { PNG } from 'pngjs';
+import { blake3 } from '@noble/hashes/blake3.js';
+import { bytesToHex } from '@noble/hashes/utils.js';
 
 import { comparePngBuffers } from './helpers.mjs';
 
@@ -252,6 +254,20 @@ assert.deepEqual(
   layerOpTypes,
   'CanvasKit renderOp must explicitly mention every LayerPaintOp variant',
 );
+for (const sample of rendererBaselineManifest.samples.filter(
+  (entry) => entry.canvaskitReadinessGate === true,
+)) {
+  assert.deepEqual(
+    Object.keys(sample.canvaskitPerformanceBudget ?? {}).sort(),
+    [
+      'maxColdDocumentLoadAndInitialRenderMs',
+      'maxImageCachePixels',
+      'maxWarmRendererDurationMs',
+      'maxWarmReplayMs',
+    ],
+    `readiness sample ${sample.id} should define the complete cold/warm performance budget`,
+  );
+}
 assert.deepEqual(
   layerNodeKindSet,
   ['clipRect', 'group', 'leaf'],
@@ -270,7 +286,7 @@ requireSnippet(
 );
 requireSnippet(
   renderNodeBody,
-  /this\.renderLeaf\(canvas, node, replayPlane, activeLayer\);/,
+  /this\.renderLeaf\(canvas, node, profile, replayPlane, activeLayer\);/,
   'leaf nodes should go through renderLeaf',
 );
 requireSnippet(
@@ -335,7 +351,7 @@ requireSnippet(
 );
 requireSnippet(
   embedRpcRouterSource,
-  /case 'getRendererDiagnostics':[\s\S]*?Number\(params\.page \?\? 0\)[\s\S]*?page must be a non-negative integer[\s\S]*?handlers\.getRendererDiagnostics\(page\)/,
+  /case 'getRendererDiagnostics':[\s\S]*?params\.page \?\? 0[\s\S]*?Number\.isSafeInteger\(page\)[\s\S]*?page must be a non-negative safe integer[\s\S]*?handlers\.getRendererDiagnostics\(page as number\)/,
   'Embed router should preserve renderer diagnostics and reject invalid page indexes',
 );
 assert.doesNotMatch(
@@ -356,6 +372,7 @@ assert.doesNotMatch(
 
 const directReplayOps = [
   ['ellipse', 'renderEllipse'],
+  ['equation', 'renderEquation'],
   ['footnoteMarker', 'renderTextRun'],
   ['formObject', 'renderFormObject'],
   ['image', 'renderImage'],
@@ -374,7 +391,6 @@ const textRunFallbackOps = [
   'textDecoration',
 ];
 const objectFragmentFallbackOps = [
-  ['equation', 'equation:unsupportedDirectReplay'],
   ['rawSvg', 'rawSvg:unsupportedDirectReplay'],
 ];
 
@@ -446,6 +462,10 @@ for (const expectedUnsupportedToken of [
   );
 }
 assert.ok(
+  !expectedUnsupportedSetBody.includes("'equation:invalidLayout'"),
+  'malformed semantic equation layouts should block CanvasKit readiness',
+);
+assert.ok(
   !expectedUnsupportedSetBody.includes("'renderPage'"),
   'CanvasKit render failures should stay unexpected readiness diagnostics',
 );
@@ -461,12 +481,14 @@ assert.ok(
 const glyphOutlineCaseBody = extractSwitchCaseClusterBody(renderOpBody, 'glyphOutline');
 requireSnippet(
   glyphOutlineCaseBody,
-  /const status = glyphOutlinePayloadStatus\(op,[\s\S]*?if \(status\.supported && op\.payloadKind === 'colorLayers'\) \{[\s\S]*?this\.renderGlyphOutline\(canvas, op\);\s*return;\s*\}[\s\S]*?this\.unsupportedOps\.add\(status\.reason \? `glyphOutline:\$\{status\.reason\}` : 'glyphOutline'\);\s*return;/,
+  /const status = glyphOutlinePayloadStatus\(op,[\s\S]*?allowBitmapGlyph: true[\s\S]*?allowSvgGlyph: true[\s\S]*?if \(status\.supported && this\.glyphOutlineVariantReplayable\(op\)\) \{[\s\S]*?this\.renderGlyphOutline\(canvas, op\);\s*return;\s*\}[\s\S]*?this\.unsupportedOps\.add\(status\.reason \? `glyphOutline:\$\{status\.reason\}` : 'glyphOutline'\);\s*return;/,
   'glyphOutline should stay guarded by payload status before direct replay',
 );
 
 const renderRectangleBody = extractMethodBody(canvaskitSource, 'renderRectangle');
 const renderEllipseBody = extractMethodBody(canvaskitSource, 'renderEllipse');
+const renderEquationBody = extractMethodBody(canvaskitSource, 'renderEquation');
+const renderEquationBoxBody = extractMethodBody(canvaskitSource, 'renderEquationBox');
 const renderPathBody = extractMethodBody(canvaskitSource, 'renderPath');
 const renderLineBody = extractMethodBody(canvaskitSource, 'renderLine');
 const renderFormObjectBody = extractMethodBody(canvaskitSource, 'renderFormObject');
@@ -484,10 +506,13 @@ const vite = await createServer({
   logLevel: 'silent',
 });
 let CanvasKitLayerRendererRuntime;
+let glyphOutlinePayloadResourceKeyRuntime;
 try {
   ({ CanvasKitLayerRenderer: CanvasKitLayerRendererRuntime } = await vite.ssrLoadModule(
     '/src/view/canvaskit-renderer.ts',
   ));
+  ({ glyphOutlinePayloadResourceKey: glyphOutlinePayloadResourceKeyRuntime }
+    = await vite.ssrLoadModule('/src/view/glyph-outline-payload-status.ts'));
 } finally {
   await vite.close();
 }
@@ -614,6 +639,239 @@ function runExecutableTextReplay(op, {
   }
   return { error, events, unsupportedOps };
 }
+
+function runExecutableFontNativeGlyphReplay() {
+  const events = [];
+  class FakePaint {
+    setAntiAlias() {}
+    setStyle() {}
+    setColor() {}
+    setStrokeWidth() {}
+    setStrokeJoin() {}
+    setStrokeCap() {}
+    setStrokeMiter() {}
+    setPathEffect() {}
+    delete() { events.push('paint.delete'); }
+  }
+  const fakeImage = {
+    width: () => 1,
+    height: () => 1,
+    delete() { events.push('image.delete'); },
+  };
+  const fakePath = () => ({
+    setFillType() {},
+    delete() { events.push('path.delete'); },
+  });
+  const canvasKit = {
+    MakeImageFromEncoded(bytes) {
+      events.push(`image.decode:${bytes.byteLength}`);
+      return fakeImage;
+    },
+    Path: {
+      MakeFromSVGString(pathData) {
+        events.push(`path.parse:${pathData}`);
+        return fakePath();
+      },
+    },
+    Paint: FakePaint,
+    PaintStyle: { Fill: 0, Stroke: 1 },
+    FillType: { EvenOdd: 0, Winding: 1 },
+    StrokeJoin: { Round: 0, Bevel: 1, Miter: 2 },
+    StrokeCap: { Round: 0, Square: 1, Butt: 2 },
+    PathEffect: { MakeDash: () => null },
+    ClipOp: { Intersect: 0 },
+    Color: (r, g, b, a) => [r, g, b, a],
+    XYWHRect: (x, y, width, height) => ({ x, y, width, height }),
+  };
+  const canvas = {
+    save() { events.push('canvas.save'); },
+    restore() { events.push('canvas.restore'); },
+    concat() { events.push('canvas.concat'); },
+    translate() { events.push('canvas.translate'); },
+    scale() { events.push('canvas.scale'); },
+    drawImageRect() { events.push('canvas.drawImageRect'); },
+    drawPath() { events.push('canvas.drawPath'); },
+  };
+  const renderer = new CanvasKitLayerRendererRuntime(
+    canvasKit,
+    'default',
+    { preference: 'software', requested: 'software' },
+    null,
+  );
+  const textFallback = {
+    type: 'textRun',
+    bbox: { x: 0, y: 0, width: 16, height: 16 },
+    text: '\ue100',
+    variant: {
+      equivalenceGroup: 'font-native-0',
+      variantId: 'textRun',
+      variantKind: 'textRun',
+      isDefaultFallback: true,
+    },
+  };
+  const bitmapBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB';
+  const bitmapBytes = new Uint8Array(Buffer.from(bitmapBase64, 'base64'));
+  const bitmapResourceKey = `img:blake3:${bitmapBytes.byteLength}:${bytesToHex(blake3(bitmapBytes))}`;
+  const bitmap = {
+    type: 'glyphOutline',
+    bbox: { x: 0, y: 0, width: 16, height: 16 },
+    payloadKind: 'bitmapGlyph',
+    bitmapGlyph: {
+      imageRef: 0,
+      placement: { x: 0, y: 0, width: 16, height: 16 },
+      scalingPolicy: 'sourceExact',
+    },
+    diagnostics: { strictVisualEligible: true },
+    variant: {
+      equivalenceGroup: 'font-native-0',
+      variantId: 'glyphOutline',
+      variantKind: 'glyphOutline',
+      isDefaultFallback: false,
+    },
+  };
+  bitmap.payloadResourceKey = `${glyphOutlinePayloadResourceKeyRuntime(bitmap)}:resource:${bitmapResourceKey}`;
+  const svgFragment = '<svg viewBox="0 0 16 16"><path d="M0 0H16V16H0Z"/></svg>';
+  const svgBytes = new TextEncoder().encode(svgFragment);
+  const svgResourceKey = `svg:blake3:${svgBytes.byteLength}:${bytesToHex(blake3(svgBytes))}`;
+  renderer.currentResources = {
+    images: [bitmapBase64],
+    imageKeys: [bitmapResourceKey],
+    svgFragments: [svgFragment],
+    svgKeys: [svgResourceKey],
+  };
+  renderer.selectTextVariants({
+    kind: 'leaf',
+    bounds: bitmap.bbox,
+    ops: [textFallback, bitmap],
+  });
+  assert.equal(renderer.selectedTextVariantOps.has(bitmap), true);
+  assert.equal(renderer.selectedTextVariantOps.has(textFallback), false);
+  renderer.renderGlyphOutline(canvas, bitmap);
+
+  const svg = {
+    ...bitmap,
+    payloadKind: 'svgGlyph',
+    payloadResourceKey: undefined,
+    bitmapGlyph: undefined,
+    svgGlyph: {
+      svgRef: 0,
+      viewBox: { x: 0, y: 0, width: 16, height: 16 },
+      staticSanitized: true,
+      scriptAllowed: false,
+      animationAllowed: false,
+      externalResourcesAllowed: false,
+      interactivityAllowed: false,
+    },
+  };
+  svg.payloadResourceKey = `${glyphOutlinePayloadResourceKeyRuntime(svg)}:resource:${svgResourceKey}`;
+  assert.equal(renderer.glyphOutlineVariantReplayable(svg), true);
+  renderer.renderGlyphOutline(canvas, svg);
+
+  const corrupt = { ...bitmap, payloadResourceKey: 'glyphPayload:bitmapGlyph:resource:img:missing' };
+  assert.equal(renderer.glyphOutlineVariantReplayable(corrupt), false);
+  renderer.lastRenderCompleted = true;
+  renderer.localTypefacePending.set('pending:test-face', 1);
+  assert.ok(renderer.diagnostics().readinessBlockers.includes('localFontsPending'));
+  renderer.localTypefacePending.clear();
+  return events;
+}
+
+function runExecutableEquationFallback() {
+  const events = [];
+  class FakeFont {
+    getGlyphIDs(text) { return Uint16Array.from(Array.from(text), () => 1); }
+    getGlyphWidths(glyphIds) { return Array.from(glyphIds, () => 8); }
+    setScaleX(scale) { events.push(`font.scale:${scale}`); }
+    setEmbolden() {}
+    setSkewX() {}
+    delete() { events.push('font.delete'); }
+  }
+  class FakePaint {
+    setAntiAlias() {}
+    setStyle() {}
+    setColor() {}
+    setStrokeWidth() {}
+    delete() { events.push('paint.delete'); }
+  }
+  const recordingCanvas = {
+    save() { events.push('recording.save'); },
+    restore() { events.push('recording.restore'); },
+    translate() { events.push('recording.translate'); },
+    scale() { events.push('recording.scale'); },
+    drawLine() { events.push('canvas.drawLine'); },
+    drawText() { events.push('canvas.drawText'); },
+  };
+  const picture = { delete() { events.push('picture.delete'); } };
+  class FakePictureRecorder {
+    beginRecording() { return recordingCanvas; }
+    finishRecordingAsPicture() { return picture; }
+    delete() { events.push('recorder.delete'); }
+  }
+  const renderer = new CanvasKitLayerRendererRuntime({
+    Font: FakeFont,
+    Paint: FakePaint,
+    PictureRecorder: FakePictureRecorder,
+    PaintStyle: { Fill: 0, Stroke: 1 },
+    Color: (r, g, b, a) => [r, g, b, a],
+    XYWHRect: (x, y, width, height) => ({ x, y, width, height }),
+  }, 'default', {}, {});
+  const canvas = {
+    drawPicture() { events.push('canvas.drawPicture'); },
+  };
+  renderer.unsupportedOps = new Set();
+  renderer.renderEquation(canvas, {
+    type: 'equation',
+    bbox: { x: 10, y: 20, width: 100, height: 30 },
+    svgContent: '<svg><script>invalid</script></svg>',
+    color: '#000000',
+    fontSize: 12,
+    layoutBox: {
+      x: 0,
+      y: 0,
+      width: 40,
+      height: 20,
+      baseline: 10,
+      kind: {
+        type: 'fraction',
+        numer: { x: 2, y: 0, width: 8, height: 8, baseline: 7, kind: { type: 'text', text: 'x' } },
+        denom: { x: 2, y: 12, width: 8, height: 8, baseline: 7, kind: { type: 'number', text: '2' } },
+      },
+    },
+  });
+  assert.equal(renderer.unsupportedOps.size, 0, 'invalid equation SVG should use the semantic layout fallback');
+  assert.ok(events.includes('canvas.drawLine'));
+  assert.equal(events.filter((event) => event === 'canvas.drawText').length, 2);
+
+  renderer.renderEquation(canvas, {
+    type: 'equation',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    layoutBox: {
+      x: Number.NaN,
+      y: 0,
+      width: 10,
+      height: 10,
+      baseline: 8,
+      kind: { type: 'text', text: 'x' },
+    },
+  });
+  assert.ok(renderer.unsupportedOps.has('equation:invalidLayout'));
+}
+
+const fontNativeGlyphReplayEvents = runExecutableFontNativeGlyphReplay();
+assert.ok(fontNativeGlyphReplayEvents.includes('canvas.drawImageRect'));
+assert.ok(fontNativeGlyphReplayEvents.includes('canvas.drawPath'));
+runExecutableEquationFallback();
+
+requireSnippet(
+  renderEquationBody,
+  /op\.layoutBox[\s\S]*?PictureRecorder[\s\S]*?this\.renderEquationBox[\s\S]*?equation:invalidLayout/,
+  'equation replay should commit a bounded semantic layout only after complete recording',
+);
+requireSnippet(
+  renderEquationBoxBody,
+  /MAX_EQUATION_LAYOUT_DEPTH[\s\S]*?remainingNodes[\s\S]*?equationBoxIsFinite/,
+  'equation layout replay should bound recursion and reject non-finite geometry',
+);
 
 requireSnippet(
   renderRectangleBody,
@@ -1014,8 +1272,8 @@ assert.deepEqual(
     .filter((sample) => sample.canvaskitReadinessGate === true)
     .map((sample) => sample.id)
     .sort(),
-  ['image-crop', 'paragraph-line-basic', 'table-core'],
-  'CanvasKit readiness gate should stay limited to the representative paragraph/table/image corpus',
+  ['font-batang-hancom', 'font-native-bitmap', 'image-crop', 'paragraph-line-basic', 'table-core'],
+  'CanvasKit readiness gate should cover paragraph/table/image/font and font-native resources',
 );
 requireSnippet(
   rendererBaselineSource,
@@ -1039,6 +1297,14 @@ for (const readinessGuard of [
   'runtime:readinessGateFailed',
   'visualThresholdMissing',
   'visualParityFailed',
+  'performanceBudgetMissing',
+  'performanceColdExceeded',
+  'performanceWarmExceeded',
+  'performanceRendererWarmExceeded',
+  'imageCachePixelBudgetExceeded',
+  'warmReplayMissing',
+  'glyphOutlinePayloadMissing:',
+  'warmImageCacheHitMissing',
 ]) {
   assert.ok(
     rendererBaselineSource.includes(readinessGuard),
@@ -1066,6 +1332,27 @@ assert.ok(
 assert.ok(
   rendererBaselineSource.includes('requires a positive minimumInkPixels threshold'),
   'CanvasKit readiness samples should require an explicit positive ink floor',
+);
+assert.ok(
+  rendererBaselineSource.includes('measureWarmCanvasKitReplay')
+    && rendererBaselineSource.includes('requireColdAndWarmPerformanceBudget')
+    && rendererBaselineSource.includes('readLayerFeatureProbe'),
+  'CanvasKit readiness should gate cold/warm replay and declared layer features',
+);
+requireSnippet(
+  rendererBaselineSource,
+  /getCurrentCanvasKitRenderDiagnostics\?\.\(\)[\s\S]*?rerenderPageForDiagnostics\?\.\(targetPageIndex\)[\s\S]*?getCurrentCanvasKitRenderDiagnostics\?\.\(\)[\s\S]*?renderCountDelta/,
+  'CanvasKit warm replay should report whether the existing page canvas was rerendered',
+);
+requireSnippet(
+  canvasViewSource,
+  /rerenderPageForDiagnostics\(pageIdx: number\)[\s\S]*?canvasPool\.getCanvas\(pageIdx\)[\s\S]*?this\.renderCanvas\(pageIdx, canvas\)/,
+  'diagnostic warm replay should reuse the canvas already owned by the pool',
+);
+assert.doesNotMatch(
+  rendererBaselineSource,
+  /view\?\.renderPage\?\.\(targetPageIndex\)/,
+  'warm replay must not acquire a second canvas for an already rendered page',
 );
 requireSnippet(
   renderDiffWorkflowSource,

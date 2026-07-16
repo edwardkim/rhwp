@@ -279,6 +279,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // 3. header.xml → DocInfo, DocProperties
     let header_xml = reader.read_file("Contents/header.xml")?;
     let (mut doc_info, doc_properties) = header::parse_hwpx_header(&header_xml)?;
+    resolve_embedded_font_references(&mut doc_info, &package_info.bin_data_items);
 
     // [Task #1608] head version("1.4")은 HWPML **스키마 버전**일 뿐 HWP3→HWPX 변환 지표가
     // 아니다. 네이티브 한글2022 HWPX(version.xml: major=5 minor=1 "Hancom Office Hangul")도
@@ -473,6 +474,34 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     Ok(doc)
 }
 
+fn resolve_embedded_font_references(
+    doc_info: &mut crate::model::document::DocInfo,
+    items: &[content::PackageItem],
+) {
+    let item_ids = items
+        .iter()
+        .enumerate()
+        .filter_map(|(index, item)| {
+            u16::try_from(index + 1)
+                .ok()
+                .map(|id| (item.id.as_str(), id))
+        })
+        .collect::<HashMap<_, _>>();
+
+    for font in doc_info.font_faces.iter_mut().flatten() {
+        font.resolved_bin_data_id = font
+            .is_embedded
+            .then(|| item_ids.get(font.bin_item_id_ref.as_str()).copied())
+            .flatten();
+        if let Some(substitute) = font.subst_font.as_mut() {
+            substitute.resolved_bin_data_id = substitute
+                .is_embedded
+                .then(|| item_ids.get(substitute.bin_item_id_ref.as_str()).copied())
+                .flatten();
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -520,5 +549,49 @@ mod tests {
             vec!["Contents/masterpage0.xml", "Contents/masterpage1.xml"]
         );
         assert_eq!(missing_refs, vec!["missing"]);
+    }
+
+    #[test]
+    fn embedded_font_reference_uses_exact_manifest_id() {
+        let mut parent = crate::model::style::Font {
+            name: "Embedded Parent".to_string(),
+            is_embedded: true,
+            bin_item_id_ref: "font-resource-alpha".to_string(),
+            ..Default::default()
+        };
+        parent.subst_font = Some(crate::model::style::SubstFont {
+            face: "Embedded Substitute".to_string(),
+            is_embedded: true,
+            bin_item_id_ref: "font-resource-beta".to_string(),
+            ..Default::default()
+        });
+        let mut doc_info = crate::model::document::DocInfo {
+            font_faces: vec![vec![parent]],
+            ..Default::default()
+        };
+        let items = vec![
+            content::PackageItem {
+                id: "font-resource-beta".to_string(),
+                href: "BinData/beta.ttf".to_string(),
+                media_type: "application/x-font-ttf".to_string(),
+                is_embedded: true,
+            },
+            content::PackageItem {
+                id: "font-resource-alpha".to_string(),
+                href: "BinData/alpha.ttf".to_string(),
+                media_type: "application/x-font-ttf".to_string(),
+                is_embedded: true,
+            },
+        ];
+
+        resolve_embedded_font_references(&mut doc_info, &items);
+
+        let font = &doc_info.font_faces[0][0];
+        assert_eq!(font.resolved_bin_data_id, Some(2));
+        assert_eq!(
+            font.subst_font.as_ref().unwrap().resolved_bin_data_id,
+            Some(1)
+        );
+        assert_eq!(font.bin_item_id_ref, "font-resource-alpha");
     }
 }

@@ -524,9 +524,7 @@ export class WasmBridge {
     if (rootKind !== 'group' && rootKind !== 'clipRect' && rootKind !== 'leaf') {
       throw new Error(`[WasmBridge] PageLayerTree JSON shape 오류 (page=${pageNum}): 알 수 없는 root.kind=${String(rootKind)}`);
     }
-    if (!tree.profile) {
-      tree.profile = profile;
-    }
+    tree.profile = profile;
     const outputOptions = tree.outputOptions ?? {};
     const buildOptions = tree.buildOptions ?? {};
     buildOptions.showTransparentBorders ??= outputOptions.showTransparentBorders ?? false;

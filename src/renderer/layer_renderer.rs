@@ -5,7 +5,14 @@ use crate::paint::{
     LayerGlyphOutlinePaint, LayerGlyphRunPaint, LayerNode, LayerNodeKind, PageLayerTree, PaintOp,
     ResourceArena, TextVariantKind, TextVariantQuality,
 };
+use crate::renderer::static_svg::static_svg_fragment_has_path_layer;
+use image::{ImageReader, Limits};
 use std::collections::{BTreeMap, BTreeSet};
+use std::io::Cursor;
+
+const MAX_CANVASKIT_BITMAP_RESOURCE_BYTES: usize = 4 * 1024 * 1024;
+const MAX_CANVASKIT_BITMAP_DIMENSION: u32 = 8192;
+const MAX_CANVASKIT_BITMAP_PIXELS: u64 = 32 * 1024 * 1024;
 
 pub type LayerRenderResult<T> = Result<T, HwpError>;
 
@@ -686,10 +693,15 @@ fn collect_glyph_outline_reject_reasons(
             Some(_) if !options.allow_bitmap_glyph => {
                 reasons.insert(VariantRejectReason::UnsupportedBitmapGlyph);
             }
-            Some(bitmap_glyph) if resources.image_bytes(bitmap_glyph.image_ref).is_none() => {
-                reasons.insert(VariantRejectReason::MissingGlyphPayloadResource);
-            }
-            Some(_) => {}
+            Some(bitmap_glyph) => match resources.image_bytes(bitmap_glyph.image_ref) {
+                None => {
+                    reasons.insert(VariantRejectReason::MissingGlyphPayloadResource);
+                }
+                Some(bytes) if !canvaskit_bitmap_resource_is_decodable(bytes) => {
+                    reasons.insert(VariantRejectReason::UnsupportedBitmapGlyph);
+                }
+                Some(_) => {}
+            },
             None => {
                 reasons.insert(VariantRejectReason::UnsupportedBitmapGlyph);
             }
@@ -701,16 +713,41 @@ fn collect_glyph_outline_reject_reasons(
             Some(_) if !options.allow_svg_glyph => {
                 reasons.insert(VariantRejectReason::UnsupportedSvgGlyph);
             }
-            Some(svg_glyph) if resources.svg_fragment(svg_glyph.svg_ref).is_none() => {
-                reasons.insert(VariantRejectReason::MissingGlyphPayloadResource);
-            }
-            Some(_) => {}
+            Some(svg_glyph) => match resources.svg_fragment(svg_glyph.svg_ref) {
+                None => {
+                    reasons.insert(VariantRejectReason::MissingGlyphPayloadResource);
+                }
+                Some(fragment) if !static_svg_fragment_has_path_layer(fragment) => {
+                    reasons.insert(VariantRejectReason::UnsupportedSvgGlyph);
+                }
+                Some(_) => {}
+            },
             None => {
                 reasons.insert(VariantRejectReason::UnsupportedSvgGlyph);
             }
         },
     }
     collect_text_variant_diagnostics_reject_reasons(&outline.diagnostics, options, reasons);
+}
+
+fn canvaskit_bitmap_resource_is_decodable(bytes: &[u8]) -> bool {
+    if bytes.is_empty() || bytes.len() > MAX_CANVASKIT_BITMAP_RESOURCE_BYTES {
+        return false;
+    }
+    let Ok(format) = image::guess_format(bytes) else {
+        return false;
+    };
+    let mut reader = ImageReader::with_format(Cursor::new(bytes), format);
+    let mut limits = Limits::default();
+    limits.max_image_width = Some(MAX_CANVASKIT_BITMAP_DIMENSION);
+    limits.max_image_height = Some(MAX_CANVASKIT_BITMAP_DIMENSION);
+    limits.max_alloc = Some(MAX_CANVASKIT_BITMAP_PIXELS * 4);
+    reader.limits(limits);
+    let Ok(image) = reader.decode() else {
+        return false;
+    };
+    let pixels = u64::from(image.width()) * u64::from(image.height());
+    pixels > 0 && pixels <= MAX_CANVASKIT_BITMAP_PIXELS
 }
 
 fn collect_text_variant_diagnostics_reject_reasons(
@@ -778,6 +815,8 @@ mod tests {
     };
     use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
     use crate::renderer::{PathCommand, TextStyle};
+
+    const FIXTURE_PNG: &[u8] = include_bytes!("../../assets/logo/logo-32.png");
 
     fn bbox() -> BoundingBox {
         BoundingBox::new(0.0, 0.0, 24.0, 24.0)
@@ -1924,7 +1963,7 @@ mod tests {
             },
             |resources| {
                 assert_eq!(
-                    resources.intern_image_bytes(&[1, 2, 3, 4]),
+                    resources.intern_image_bytes(FIXTURE_PNG),
                     ImageResourceId(0)
                 );
             },
@@ -1942,7 +1981,10 @@ mod tests {
                 ..TextVariantSelectionOptions::canvaskit_strict_outline()
             },
             |resources| {
-                assert_eq!(resources.intern_svg_fragment("<path/>"), SvgResourceId(0));
+                assert_eq!(
+                    resources.intern_svg_fragment("<path d=\"M0 0H10V10Z\"/>"),
+                    SvgResourceId(0)
+                );
             },
         );
         assert_eq!(
@@ -1950,6 +1992,45 @@ mod tests {
             Some(TextVariantKind::GlyphOutline)
         );
         assert!(svg_report.rejected_variants.is_empty());
+    }
+
+    #[test]
+    fn canvaskit_resource_glyphs_reject_corrupt_payload_bytes() {
+        let bitmap_report = first_report_with_resource_setup(
+            vec![text_op(), bitmap_glyph_outline()],
+            TextVariantSelectionOptions {
+                allow_bitmap_glyph: true,
+                ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            },
+            |resources| {
+                resources.intern_image_bytes(b"not-an-image");
+            },
+        );
+        assert_eq!(
+            bitmap_report.selected_variant_kind,
+            Some(TextVariantKind::TextRun)
+        );
+        assert!(bitmap_report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::UnsupportedBitmapGlyph));
+
+        let svg_report = first_report_with_resource_setup(
+            vec![text_op(), svg_glyph_outline()],
+            TextVariantSelectionOptions {
+                allow_svg_glyph: true,
+                ..TextVariantSelectionOptions::canvaskit_strict_outline()
+            },
+            |resources| {
+                resources.intern_svg_fragment("<path d=\"not-a-path\"/>");
+            },
+        );
+        assert_eq!(
+            svg_report.selected_variant_kind,
+            Some(TextVariantKind::TextRun)
+        );
+        assert!(svg_report.rejected_variants[0]
+            .reasons
+            .contains(&VariantRejectReason::UnsupportedSvgGlyph));
     }
 
     #[test]

@@ -42,5 +42,6 @@ fontconfig 로 해석):
 cp ttfs/opensource/NotoSansKR-ExtraLight.ttf ~/.fonts/ && fc-cache -f
 ```
 
-웹(rhwp-studio)은 `rhwp-studio/public/fonts/NotoSansKR-ExtraLight.woff2` + `font-loader.ts`
-의 `@font-face` 등록으로 자동 적용된다(별도 설치 불요).
+웹 canonical source는 `assets/fonts/NotoSansKR-ExtraLight.woff2`다. rhwp-studio build는
+`rhwp-studio/public/fonts` 링크를 통해 이를 runtime `fonts/`에 포함하고, `font-loader.ts`의
+`@font-face` 등록으로 자동 적용한다(별도 설치 불요).

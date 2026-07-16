@@ -105,6 +105,16 @@ export class CanvasView {
     console.log(`[CanvasView] ${this.pages.length}/${pageCount}페이지 로드, 총 높이: ${this.virtualScroll.getTotalHeight()}px`);
   }
 
+  resetRendererDiagnostics(): void {
+    this.pageRenderer.releaseAllPageDiagnostics();
+  }
+
+  /** DEV baseline이 pool 소유권을 바꾸지 않고 현재 페이지를 즉시 다시 그린다. */
+  rerenderPageForDiagnostics(pageIdx: number): boolean {
+    const canvas = this.canvasPool.getCanvas(pageIdx);
+    return canvas ? this.renderCanvas(pageIdx, canvas) : false;
+  }
+
   /** 레이아웃을 재계산한다 (줌/리사이즈 공통) */
   private recalcLayout(): void {
     const zoom = this.viewportManager.getZoom();
@@ -134,6 +144,7 @@ export class CanvasView {
         this.cancelTextEditStaticLayerVerification(pageIdx);
         this.pageRenderer.cancelReRender(pageIdx);
         this.pageRenderer.removePageLayers(this.scrollContent, pageIdx);
+        this.pageRenderer.releasePageDiagnostics(pageIdx);
         this.removeGridOverlay(pageIdx);
         this.canvasPool.release(pageIdx);
       }
@@ -565,6 +576,10 @@ export class CanvasView {
 
   getCanvasKitRenderDiagnostics(pageIndex: number): CanvasKitRenderDiagnostics | null {
     return this.pageRenderer.getCanvasKitRenderDiagnostics(pageIndex);
+  }
+
+  getCurrentCanvasKitRenderDiagnostics(): CanvasKitRenderDiagnostics | null {
+    return this.pageRenderer.getCurrentCanvasKitRenderDiagnostics();
   }
 
   getCoordinateSystem(): CoordinateSystem {

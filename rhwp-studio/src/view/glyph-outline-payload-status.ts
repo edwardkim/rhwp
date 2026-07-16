@@ -475,7 +475,7 @@ function textRangeKey(range: { start?: number; end?: number } | undefined): stri
 }
 
 function boundsKey(bounds: { x?: number; y?: number; width?: number; height?: number } | undefined): string {
-  return bounds ? [bounds.x, bounds.y, bounds.width, bounds.height].map(fixed).join(',') : '-';
+  return bounds ? [bounds.x, bounds.y, bounds.width, bounds.height].map(fixedBounds).join(',') : '-';
 }
 
 function affineKey(transform: { a?: number; b?: number; c?: number; d?: number; e?: number; f?: number } | undefined): string {
@@ -484,6 +484,10 @@ function affineKey(transform: { a?: number; b?: number; c?: number; d?: number; 
 
 function fixed(value: number | undefined): string {
   return Number.isFinite(value) ? (value ?? 0).toFixed(6) : '-';
+}
+
+function fixedBounds(value: number | undefined): string {
+  return Number.isFinite(value) ? (value ?? 0).toFixed(3) : '-';
 }
 
 function isPositiveBounds(bounds: { width?: number; height?: number }): boolean {

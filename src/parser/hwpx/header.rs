@@ -546,6 +546,8 @@ fn parse_font(
 ) -> Result<(), HwpxError> {
     let mut name = String::new();
     let mut font_type = 0u8;
+    let mut is_embedded = false;
+    let mut bin_item_id_ref = String::new();
     let mut type_info = None;
     let mut subst_font = None;
 
@@ -559,6 +561,8 @@ fn parse_font(
                     _ => 0,
                 };
             }
+            b"isEmbedded" => is_embedded = attr_str(&attr) == "1",
+            b"binaryItemIDRef" => bin_item_id_ref = attr_str(&attr),
             _ => {}
         }
     }
@@ -594,6 +598,9 @@ fn parse_font(
         let font = Font {
             name,
             alt_type: font_type,
+            is_embedded,
+            bin_item_id_ref,
+            resolved_bin_data_id: None,
             type_info,
             default_name,
             subst_font,
@@ -2649,6 +2656,7 @@ mod tests {
                 font_type: 1,
                 is_embedded: false,
                 bin_item_id_ref: String::new(),
+                resolved_bin_data_id: None,
             })
         );
         assert_eq!(hft.type_info, None);
@@ -2661,6 +2669,7 @@ mod tests {
                 font_type: 1,
                 is_embedded: false,
                 bin_item_id_ref: String::new(),
+                resolved_bin_data_id: None,
             })
         );
         assert_eq!(ttf.type_info, Some([2, 3, 6, 0, 0, 1, 1, 1, 1, 1]));

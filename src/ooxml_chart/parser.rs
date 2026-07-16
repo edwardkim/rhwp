@@ -9,7 +9,9 @@
 //! - `<c:valAx>`에서 `<c:axId>`와 `<c:axPos>` 수집 → axId→primary/secondary 매핑 생성
 //! - 파싱 완료 시 시리즈의 axis_ids를 primary/secondary 집합과 비교해 axis_group 지정
 
-use super::{BarGrouping, LegendPos, OoxmlChart, OoxmlChartType, OoxmlSeries, ScatterStyle};
+use super::{
+    BarGrouping, LegendPos, OoxmlChart, OoxmlChartType, OoxmlSeries, ScatterStyle, SeriesMarker,
+};
 use quick_xml::events::Event;
 use quick_xml::Reader;
 use std::collections::HashMap;
@@ -223,6 +225,47 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             st.cur_plot_ax_ids.clear();
             st.cur_plot_series_start = chart.series.len();
         }
+        b"stockChart" => {
+            // 주식형 (C2a #2277). 계열 역할은 XML 순서 규약(3계열=고/저/종,
+            // 4계열=시/고/저/종 — 코퍼스 실측), 표현은 hiLowLines/upDownBars로 결정.
+            chart.chart_type = OoxmlChartType::Stock;
+            st.cur_plot_type = Some(OoxmlChartType::Stock);
+            st.cur_plot_ax_ids.clear();
+            st.cur_plot_series_start = chart.series.len();
+        }
+        b"line3DChart" => {
+            // 코퍼스 27종에 없음 — 방어적 라우팅(placeholder 방지, C1a bar3D/pie3D
+            // 선례). 입체 표현은 C2b(#2278), 여기서는 2D 라인 근사 + is_3d(축 정책)만.
+            // lineChart와 동일하게 콤보의 주 타입은 덮지 않음. (C2a #2277 stage5)
+            if chart.chart_type == OoxmlChartType::Unknown {
+                chart.chart_type = OoxmlChartType::Line;
+            }
+            chart.is_3d = true;
+            st.cur_plot_type = Some(OoxmlChartType::Line);
+            st.cur_plot_ax_ids.clear();
+            st.cur_plot_series_start = chart.series.len();
+        }
+        b"hiLowLines" => {
+            // stock 고저선. lineChart에도 올 수 있는 요소라 Stock 게이트. (C2a #2277)
+            if st.cur_plot_type == Some(OoxmlChartType::Stock) {
+                chart.has_hi_low_lines = true;
+            }
+        }
+        b"upDownBars" => {
+            // stock 시가↔종가 캔들 (OHLC). (C2a #2277)
+            if st.cur_plot_type == Some(OoxmlChartType::Stock) {
+                chart.has_up_down_bars = true;
+            }
+        }
+        b"gapWidth" => {
+            // <c:upDownBars> 내부 캔들 폭. barChart의 동명 요소(막대 간격)는 미사용이라
+            // Stock 게이트로 격리. (C2a #2277)
+            if st.cur_plot_type == Some(OoxmlChartType::Stock) {
+                if let Some(v) = attr_val(e, "val").and_then(|s| s.parse::<f64>().ok()) {
+                    chart.up_down_gap_width = Some(v);
+                }
+            }
+        }
         b"scatterStyle" => {
             if let Some(val) = attr_val(e, "val") {
                 chart.scatter_style = match val.as_str() {
@@ -259,13 +302,32 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             }
         }
         b"marker" => {
-            // plot 레벨 <c:marker val="0|1"/> (lineChart 직계 자식, Empty 이벤트)만 채택.
-            // 계열 내부 <c:marker>는 val 속성이 없는 래퍼(symbol/size)라 자연 배제되고,
-            // cur_series 게이트가 이중 방어. scatter는 scatterStyle이 담당하므로 Line 한정.
-            // 콤보의 lineChart에서도 설정될 수 있으나 render_combo는 미참조 — 무해. (C1d #2129)
-            if st.cur_plot_type == Some(OoxmlChartType::Line) && st.cur_series.is_none() {
+            if let Some(ser) = st.cur_series.as_mut() {
+                // 계열 내부 <c:marker> 래퍼 — symbol 자식이 없으면 자동 표식
+                // (stock 종가 실측: <c:marker><c:size val="7"/> 만). symbol이 오면
+                // 아래 b"symbol" arm이 None/Named로 덮어씀. (C2a #2277)
+                if ser.marker_symbol == SeriesMarker::NotSpecified {
+                    ser.marker_symbol = SeriesMarker::Auto;
+                }
+            } else if st.cur_plot_type == Some(OoxmlChartType::Line) {
+                // plot 레벨 <c:marker val="0|1"/> (lineChart 직계 자식, Empty 이벤트).
+                // scatter는 scatterStyle이 담당하므로 Line 한정. 콤보의 lineChart에서도
+                // 설정될 수 있으나 render_combo는 미참조 — 무해. (C1d #2129)
                 if let Some(val) = attr_val(e, "val") {
                     chart.line_markers = matches!(val.as_str(), "1" | "true");
+                }
+            }
+        }
+        b"symbol" => {
+            // 계열 내부 <c:marker><c:symbol val>. "none"=표식 억제(stock 시/고/저 실측),
+            // 그 외 명시 심볼. (C2a #2277)
+            if let Some(ser) = st.cur_series.as_mut() {
+                if let Some(val) = attr_val(e, "val") {
+                    ser.marker_symbol = if val == "none" {
+                        SeriesMarker::None
+                    } else {
+                        SeriesMarker::Named(val)
+                    };
                 }
             }
         }
@@ -446,7 +508,7 @@ fn handle_end(name: &[u8], chart: &mut OoxmlChart, st: &mut ParseState) {
             }
         }
         b"barChart" | b"lineChart" | b"pieChart" | b"bar3DChart" | b"pie3DChart"
-        | b"ofPieChart" | b"scatterChart" => {
+        | b"ofPieChart" | b"scatterChart" | b"stockChart" | b"line3DChart" => {
             // plot 종료 — 이 plot에 속한 시리즈에 axIds 복사
             let start = st.cur_plot_series_start;
             for ser in chart.series.iter_mut().skip(start) {
@@ -591,6 +653,119 @@ mod tests {
         // legend/legendPos 미존재 → 기본 Bottom (현행 하단 배치 유지)
         let c = parse_chart_xml(titleless_bar_xml("0").as_bytes()).expect("parse OK");
         assert_eq!(c.legend_pos, LegendPos::Bottom);
+    }
+
+    // --- C2a (#2277): stock (주식형) 파싱 ---
+
+    /// 코퍼스 stock XML 미러: 시/고/저 계열은 `<c:marker><c:symbol val="none"/>`,
+    /// 종가만 marker 래퍼(size만, symbol 부재). HLC=hiLowLines만,
+    /// OHLC=+upDownBars(gapWidth 150).
+    fn stock_xml(with_up_down_bars: bool) -> String {
+        let open_ser = if with_up_down_bars {
+            r#"<c:ser><c:tx><c:strRef><c:strCache><c:pt idx="0"><c:v>시가</c:v></c:pt></c:strCache></c:strRef></c:tx>
+<c:marker><c:symbol val="none"/></c:marker>
+<c:val><c:numRef><c:numCache><c:pt idx="0"><c:v>44</c:v></c:pt><c:pt idx="1"><c:v>32</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>"#
+        } else {
+            ""
+        };
+        let up_down = if with_up_down_bars {
+            r#"<c:upDownBars><c:gapWidth val="150"/><c:upBars/><c:downBars/></c:upDownBars>"#
+        } else {
+            ""
+        };
+        format!(
+            r#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea>
+<c:stockChart>
+{open_ser}
+<c:ser><c:tx><c:strRef><c:strCache><c:pt idx="0"><c:v>고가</c:v></c:pt></c:strCache></c:strRef></c:tx>
+<c:marker><c:symbol val="none"/></c:marker>
+<c:cat><c:strRef><c:strCache><c:pt idx="0"><c:v>1월</c:v></c:pt><c:pt idx="1"><c:v>2월</c:v></c:pt></c:strCache></c:strRef></c:cat>
+<c:val><c:numRef><c:numCache><c:pt idx="0"><c:v>55</c:v></c:pt><c:pt idx="1"><c:v>57</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>
+<c:ser><c:tx><c:strRef><c:strCache><c:pt idx="0"><c:v>저가</c:v></c:pt></c:strCache></c:strRef></c:tx>
+<c:marker><c:symbol val="none"/></c:marker>
+<c:val><c:numRef><c:numCache><c:pt idx="0"><c:v>11</c:v></c:pt><c:pt idx="1"><c:v>12</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>
+<c:ser><c:tx><c:strRef><c:strCache><c:pt idx="0"><c:v>종가</c:v></c:pt></c:strCache></c:strRef></c:tx>
+<c:marker><c:size val="7"/></c:marker>
+<c:val><c:numRef><c:numCache><c:pt idx="0"><c:v>32</c:v></c:pt><c:pt idx="1"><c:v>35</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>
+<c:hiLowLines/>
+{up_down}
+<c:axId val="AX1"/><c:axId val="AX2"/>
+</c:stockChart>
+</c:plotArea></c:chart></c:chartSpace>"#
+        )
+    }
+
+    #[test]
+    fn test_parse_stock_hlc() {
+        let c = parse_chart_xml(stock_xml(false).as_bytes()).expect("parse OK");
+        assert_eq!(c.chart_type, OoxmlChartType::Stock);
+        assert!(c.has_hi_low_lines);
+        assert!(!c.has_up_down_bars);
+        assert_eq!(c.up_down_gap_width, None);
+        assert_eq!(c.series.len(), 3);
+        assert_eq!(c.series[0].name, "고가");
+        assert_eq!(c.series[0].series_type, OoxmlChartType::Stock);
+        assert_eq!(c.series[0].marker_symbol, SeriesMarker::None);
+        assert_eq!(c.series[1].marker_symbol, SeriesMarker::None);
+        assert_eq!(
+            c.series[2].marker_symbol,
+            SeriesMarker::Auto,
+            "종가 = marker 래퍼만(symbol 부재) → Auto"
+        );
+        assert_eq!(c.categories, vec!["1월", "2월"]);
+    }
+
+    #[test]
+    fn test_parse_stock_ohlc_up_down_bars() {
+        let c = parse_chart_xml(stock_xml(true).as_bytes()).expect("parse OK");
+        assert_eq!(c.chart_type, OoxmlChartType::Stock);
+        assert!(c.has_hi_low_lines);
+        assert!(c.has_up_down_bars);
+        assert_eq!(c.up_down_gap_width, Some(150.0));
+        assert_eq!(c.series.len(), 4);
+        assert_eq!(c.series[0].name, "시가");
+        assert_eq!(c.series[0].marker_symbol, SeriesMarker::None);
+        assert_eq!(c.series[3].marker_symbol, SeriesMarker::Auto);
+    }
+
+    #[test]
+    fn test_parse_line3d_routing() {
+        // line3DChart — 코퍼스 27종에 없음. 방어 라우팅(placeholder 방지, C1a
+        // bar3D/pie3D 선례): Line + is_3d(축 정책). 입체 표현은 C2b·2D 근사.
+        let xml = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:line3DChart><c:grouping val="stacked"/><c:ser><c:val><c:numRef><c:numCache><c:pt idx="0"><c:v>3</c:v></c:pt><c:pt idx="1"><c:v>4</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser><c:axId val="A1"/></c:line3DChart></c:plotArea></c:chart></c:chartSpace>"#;
+        let c = parse_chart_xml(xml).expect("parse OK");
+        assert_eq!(c.chart_type, OoxmlChartType::Line);
+        assert!(c.is_3d);
+        assert_eq!(c.series.len(), 1);
+        assert_eq!(c.series[0].series_type, OoxmlChartType::Line);
+        assert_eq!(
+            c.line_grouping,
+            BarGrouping::Stacked,
+            "line3D의 grouping도 line_grouping 채택"
+        );
+        assert_eq!(
+            c.series[0].axis_ids,
+            vec!["A1".to_string()],
+            "plot 종료 시 axId 복사"
+        );
+    }
+
+    #[test]
+    fn test_parse_stock_no_line_marker_cross_talk() {
+        // 계열 내부 <c:marker>가 plot 레벨 line_markers를 오염하지 않음
+        let c = parse_chart_xml(stock_xml(true).as_bytes()).expect("parse OK");
+        assert!(!c.line_markers);
+    }
+
+    #[test]
+    fn test_parse_bar_gap_width_not_captured() {
+        // barChart의 <c:gapWidth>는 stock 캔들 폭(up_down_gap_width)과 무관 — Stock 게이트
+        let xml = r#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart>
+<c:plotArea><c:barChart><c:barDir val="col"/><c:gapWidth val="150"/><c:ser>
+  <c:val><c:numRef><c:numCache><c:pt idx="0"><c:v>3</c:v></c:pt></c:numCache></c:numRef></c:val>
+</c:ser></c:barChart></c:plotArea></c:chart></c:chartSpace>"#;
+        let c = parse_chart_xml(xml.as_bytes()).expect("parse OK");
+        assert_eq!(c.up_down_gap_width, None);
     }
 
     #[test]

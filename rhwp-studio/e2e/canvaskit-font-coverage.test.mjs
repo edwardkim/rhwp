@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import CanvasKitInit from 'canvaskit-wasm/bin/full/canvaskit.js';
 
 const studioRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const fontPath = path.resolve(studioRoot, '../web/fonts/NotoSansKR-Regular.woff2');
+const fontPath = path.resolve(studioRoot, '../assets/fonts/NotoSansKR-Regular.woff2');
 const canvasKitBundle = path.resolve(studioRoot, 'node_modules/canvaskit-wasm/bin/full');
 const CanvasKit = await CanvasKitInit({
   locateFile: (file) => path.join(canvasKitBundle, file),

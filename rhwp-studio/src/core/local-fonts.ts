@@ -127,7 +127,7 @@ let cachedFontRecords: LocalFontRecord[] = [];
 let cachedFontLookup: LocalFontLookup = emptyLocalFontLookup();
 let storageLoaded = false;
 let lastStorageError: string | null = null;
-/** 현재 페이지 수명 동안만 유지하는 CanvasKit용 SFNT 바이트 조회 캐시. */
+/** 동시에 들어온 CanvasKit SFNT 바이트 조회만 합치는 in-flight cache. */
 const localFontBytesByPostscriptName = new Map<string, Promise<ArrayBuffer | null>>();
 
 /** Local Font Access API 지원 여부 */
@@ -910,7 +910,8 @@ async function readLocalFontBytesBatch(records: readonly LocalFontRecord[]): Pro
 
 /**
  * CanvasKit이 현재 문서의 local face를 등록할 때만 원본 SFNT 바이트를 일괄 조회한다.
- * 바이트는 localStorage에 저장하지 않고, 같은 PostScript face는 현재 페이지에서 한 번만 읽는다.
+ * 바이트는 localStorage나 session cache에 보존하지 않고, 동시에 들어온 같은
+ * PostScript face 요청만 하나의 조회로 합친다.
  */
 export async function loadLocalFontBytesFor(fontNames: readonly string[]): Promise<Map<string, ArrayBuffer>> {
   const recordsByPostscriptName = new Map<string, LocalFontRecord>();
@@ -926,16 +927,34 @@ export async function loadLocalFontBytesFor(fontNames: readonly string[]): Promi
     const records = missing.map(([, record]) => record);
     const batch = readLocalFontBytesBatch(records);
     for (const [postscriptName] of missing) {
-      localFontBytesByPostscriptName.set(
-        postscriptName,
-        batch.then(bytesByPostscriptName => bytesByPostscriptName.get(postscriptName) ?? null),
+      const pending = batch.then(
+        bytesByPostscriptName => bytesByPostscriptName.get(postscriptName) ?? null,
+      );
+      localFontBytesByPostscriptName.set(postscriptName, pending);
+      void pending.then(
+        () => {
+          if (localFontBytesByPostscriptName.get(postscriptName) === pending) {
+            localFontBytesByPostscriptName.delete(postscriptName);
+          }
+        },
+        () => {
+          if (localFontBytesByPostscriptName.get(postscriptName) === pending) {
+            localFontBytesByPostscriptName.delete(postscriptName);
+          }
+        },
       );
     }
   }
 
+  const pendingByPostscriptName = new Map(
+    Array.from(recordsByPostscriptName.keys(), postscriptName => [
+      postscriptName,
+      localFontBytesByPostscriptName.get(postscriptName),
+    ] as const),
+  );
   const result = new Map<string, ArrayBuffer>();
   for (const [postscriptName, record] of recordsByPostscriptName) {
-    const bytes = await localFontBytesByPostscriptName.get(postscriptName);
+    const bytes = await pendingByPostscriptName.get(postscriptName);
     if (bytes) result.set(localFontFaceKey(record), bytes);
   }
   return result;

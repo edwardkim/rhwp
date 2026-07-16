@@ -34,6 +34,7 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
       await new Promise((delay) => setTimeout(delay, 100));
     }
     const loaded = await loadPromise;
+    const publicDiagnostics = await editor.getRendererDiagnostics(0);
     const callerBytesPreserved = sampleBuffer.byteLength === initialLength
       && sampleBefore.every((byte, index) => new Uint8Array(sampleBuffer)[index] === byte);
     const hwp = await editor.exportHwp();
@@ -48,6 +49,8 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
     const legacy = await legacyReadyResult();
     return {
       pageCount: loaded.pageCount,
+      publicDiagnosticsSchema: publicDiagnostics.schemaVersion,
+      publicDiagnosticsPage: publicDiagnostics.page?.index,
       callerBytesPreserved,
       hwpLength: hwp.byteLength,
       hwpxLength: hwpx.byteLength,
@@ -142,6 +145,8 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
 
   console.log(`  result: ${JSON.stringify(result)}`);
   assert(result.pageCount >= 1, 'public loadFile이 transferable HWP buffer를 Studio에 로드한다');
+  assert(result.publicDiagnosticsSchema === 1 && result.publicDiagnosticsPage === 0,
+    'public getRendererDiagnostics가 versioned page snapshot을 반환한다');
   assert(result.callerBytesPreserved, 'loadFile에 넘긴 동일 caller ArrayBuffer가 detach·변경되지 않는다');
   assert(result.hwpLength > 0, 'public exportHwp가 transferable bytes를 반환한다');
   assert(result.hwpxLength > 0, 'public exportHwpx가 transferable bytes를 반환한다');

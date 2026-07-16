@@ -311,7 +311,7 @@ impl<'a> TextShapeLowerer<'a> {
                             variant: glyph_variant,
                             paint_style: paint_style.clone(),
                             shape_key: shaped.shape_key.clone(),
-                            placement: fallback_placement(bbox, run),
+                            placement: text_run_placement(bbox, run),
                             glyph_ids: shaped.glyph_ids,
                             positions: shaped.positions,
                             advances: shaped.advances,
@@ -345,7 +345,7 @@ impl<'a> TextShapeLowerer<'a> {
     }
 }
 
-fn fallback_placement(bbox: BoundingBox, run: &TextRunNode) -> TextRunPlacement {
+pub(crate) fn text_run_placement(bbox: BoundingBox, run: &TextRunNode) -> TextRunPlacement {
     let radians = run.rotation.to_radians();
     let (sin, cos) = radians.sin_cos();
     let local_origin_x = -bbox.width / 2.0;

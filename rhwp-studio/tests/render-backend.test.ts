@@ -157,6 +157,34 @@ test('CanvasKit renderer source does not introduce Canvas2D overlay replay', () 
   assert.equal(source.includes('rhwpOverlay'), false);
 });
 
+test('CanvasKit contains malformed images and bounds both decode caches', () => {
+  const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
+  assert.match(source, /try \{\s*image = this\.canvasKit\.MakeImageFromEncoded/);
+  assert.match(source, /image:decodeFailed/);
+  assert.match(source, /MAX_IMAGE_CACHE_ENTRIES = 128/);
+  assert.match(source, /MAX_IMAGE_FAILURE_CACHE_ENTRIES = 128/);
+  assert.match(source, /encodedImageDimensions\(bytes\)/);
+  assert.match(source, /MAX_DECODED_IMAGE_PIXELS = 32 \* 1024 \* 1024/);
+  assert.match(source, /MAX_IMAGE_CACHE_PIXELS = 64 \* 1024 \* 1024/);
+  assert.match(source, /oldest\?\.image\.delete\?\.\(\)/);
+  assert.match(source, /generation !== this\.documentGeneration/);
+  assert.match(source, /resetDocumentResources\(\): void/);
+});
+
+test('CanvasKit distinguishes missing-picture editor and print replay', () => {
+  const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
+  assert.match(source, /op\.kind === 'missingPicture'/);
+  assert.match(source, /profile === 'print' \|\| profile === 'highQuality'/);
+  assert.match(source, /MAX_PLACEHOLDER_DASH_SEGMENTS_PER_AXIS = 2048/);
+  assert.match(source, /\.every\(Number\.isFinite\)/);
+});
+
+test('PageLayerTree bridge keeps the requested profile authoritative', () => {
+  const source = readFileSync(new URL('../src/core/wasm-bridge.ts', import.meta.url), 'utf8');
+  assert.match(source, /tree\.profile = profile/);
+  assert.doesNotMatch(source, /if \(!tree\.profile\)/);
+});
+
 test('CanvasKit replay planes match native Skia direct z-order contract', () => {
   assert.deepEqual(
     [...CANVASKIT_REPLAY_PLANES],
@@ -516,7 +544,7 @@ test('GlyphOutline payload resource keys keep payload families and palettes disj
       imageRef: 7,
       sourceRangeUtf8: { start: 0, end: 1 },
       glyphRange: { start: 0, end: 1 },
-      placement: { x: 0, y: 0, width: 10, height: 10 },
+      placement: { x: 0.1234, y: 0.5678, width: 10.9876, height: 10.5432 },
       scalingPolicy: 'sourceExact',
       filtering: 'linear',
     },
@@ -529,7 +557,7 @@ test('GlyphOutline payload resource keys keep payload families and palettes disj
       svgRef: 7,
       sourceRangeUtf8: { start: 0, end: 1 },
       glyphRange: { start: 0, end: 1 },
-      viewBox: { x: 0, y: 0, width: 10, height: 10 },
+      viewBox: { x: 0.1234, y: 0.5678, width: 10.9876, height: 10.5432 },
       staticSanitized: true,
       scriptAllowed: false,
       animationAllowed: false,
@@ -541,7 +569,9 @@ test('GlyphOutline payload resource keys keep payload families and palettes disj
   assert.ok(colorKey?.includes('palette:id:document-palette:index:0:digest:'));
   assert.notEqual(colorKey, alternatePaletteKey);
   assert.ok(bitmapKey?.startsWith('glyphPayload:bitmapGlyph:imageRef:7'));
+  assert.ok(bitmapKey?.includes('placement:0.123,0.568,10.988,10.543'));
   assert.ok(svgKey?.startsWith('glyphPayload:svgGlyph:svgRef:7'));
+  assert.ok(svgKey?.includes('viewBox:0.123,0.568,10.988,10.543'));
   assert.notEqual(colorKey, bitmapKey);
   assert.notEqual(colorKey, svgKey);
   assert.notEqual(bitmapKey, svgKey);
@@ -647,6 +677,9 @@ test('GlyphOutline COLRv1 gradient graph subset can pass the explicit gate', () 
 
 test('CanvasKit renderer diagnostics keep GlyphOutline payload reject reasons visible', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
-  assert.match(source, /glyphOutlinePayloadStatus\(op, \{ allowColrv1Stage1ColorGraph: true \}\)/);
+  assert.match(source, /allowColrv1Stage1ColorGraph: true/);
+  assert.match(source, /allowBitmapGlyph: true/);
+  assert.match(source, /allowSvgGlyph: true/);
+  assert.match(source, /selectLayerTextVariantsForLeaf/);
   assert.match(source, /glyphOutline:\$\{status\.reason\}/);
 });

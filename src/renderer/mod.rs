@@ -32,6 +32,7 @@ pub mod render_tree;
 pub mod scheduler;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub mod skia;
+pub(crate) mod static_svg;
 pub mod style_resolver;
 pub mod svg;
 pub mod svg_fragment;

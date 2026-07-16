@@ -43,13 +43,58 @@ export interface HmlSaveState {
   blockers: HmlSaveBlocker[];
 }
 
+export interface CanvasKitRendererDiagnostics {
+  mode: 'default' | 'compat';
+  surfacePreference: 'auto' | 'webgpu' | 'webgl' | 'software';
+  surfaceBackend: 'default' | 'software' | null;
+  surfaceFallbackReason: string | null;
+  lastRenderCompleted: boolean;
+  lastUnsupportedOps: string[];
+  lastExpectedUnsupportedOps: string[];
+  lastUnexpectedUnsupportedOps: string[];
+  lastRenderError: string | null;
+  passesRuntimeReadinessGate: boolean;
+  readinessBlockers: Array<'renderNotCompleted' | 'renderError' | 'unexpectedUnsupportedOps' | 'localFontsPending'>;
+  hiddenCanvas2dOverlayUsed: false;
+  lastRenderDurationMs: number | null;
+  renderCount: number;
+  imageCacheEntries: number;
+  imageCacheLimit: number;
+  imageCachePixels: number;
+  imageCachePixelLimit: number;
+  imageCacheHits: number;
+  imageCacheMisses: number;
+  imageCacheEvictions: number;
+  localTypefaceCount: number;
+  localTypefaceLoadFailureCount: number;
+  localTypefacePendingCount: number;
+}
+
+export interface RendererDiagnosticsV1 {
+  schemaVersion: 1;
+  request: {
+    backend: { backend: 'canvas2d' | 'canvaskit'; source: 'default' | 'url'; requested?: string; unsupportedReason?: string };
+    canvaskitMode: { mode: 'default' | 'compat'; source: 'default' | 'storage' | 'url'; requested?: string; unsupportedReason?: string };
+    canvaskitSurface: { preference: 'auto' | 'webgpu' | 'webgl' | 'software'; requested: string; unsupportedReason?: string };
+    renderProfile: 'fastPreview' | 'screen' | 'print' | 'highQuality';
+  } | null;
+  initialized: boolean;
+  initializationError: string | null;
+  effectiveBackend: 'canvas2d' | 'canvaskit' | null;
+  backendFallbackReason: string | null;
+  page: { index: number; canvaskit: CanvasKitRendererDiagnostics | null };
+}
+
 export declare class RhwpEditor {
+  private constructor();
   /** HWP 파일을 로드합니다 */
   loadFile(data: ArrayBuffer | Uint8Array, fileName?: string): Promise<LoadResult>;
   /** 현재 문서의 페이지 수를 반환합니다 */
   pageCount(): Promise<number>;
   /** 특정 페이지를 SVG 문자열로 렌더링합니다 */
   getPageSvg(page?: number): Promise<string>;
+  /** 선택된 renderer와 페이지별 readiness 진단을 반환합니다 */
+  getRendererDiagnostics(page?: number): Promise<RendererDiagnosticsV1>;
   /** 현재 문서를 HWP 바이너리로 내보냅니다 */
   exportHwp(): Promise<Uint8Array>;
   /** 현재 문서를 HWPX(ZIP+XML) 바이너리로 내보냅니다 */

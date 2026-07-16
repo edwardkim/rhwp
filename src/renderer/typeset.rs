@@ -404,6 +404,11 @@ struct TypesetState {
     /// [Task #1082] 현재 단에서 마지막으로 배치된 본문 FullParagraph 의 bottom vpos (HU,
     /// 섹션 절대값). 미주 vpos-delta 누적의 첫 항목 base 시드용. 단 advance 시 None.
     prev_body_bottom_vpos: Option<i32>,
+    /// [#2279] 현재 단의 flow 과소 누계 (px) — 문단 place 시 flow_advance_height 가
+    /// spacing_after/trailing ls 를 트림한 차액(total_height − advance)의 합.
+    /// 렌더러(layout)와 한글은 이 성분을 가산하므로, footer(발신명의) fit 판정의
+    /// 렌더-정합 좌표 복원용. 단 advance 시 0.
+    flow_underrun: f64,
     /// 현재 단 인덱스
     current_column: u16,
     /// 단 수
@@ -1722,6 +1727,7 @@ impl TypesetState {
             current_start_height: 0.0,
             current_endnote_flow: false,
             prev_body_bottom_vpos: None,
+            flow_underrun: 0.0,
             current_column: 0,
             col_count,
             layout,
@@ -1891,6 +1897,8 @@ impl TypesetState {
         }
         // [Task #1082] 단 flush 시 본문 last bottom vpos 리셋(미주 vpos-delta 시드 정합).
         self.prev_body_bottom_vpos = None;
+        // [#2279] flow 과소 누계도 단 단위 — 리셋.
+        self.flow_underrun = 0.0;
     }
 
     /// [Task #1745] 흡수된 어울림 문단 기록 — 다쪽 분할 표는 첫 fragment column 에 소급.
@@ -4030,6 +4038,10 @@ impl TypesetEngine {
             };
             let is_multi_fullpage_img_para = fullpage_img_ctrls.len() >= 2;
 
+            // [#2097] 이 문단의 TopAndBottom 자리차지 float pushdown 가로 컬럼
+            // (h_left, h_right, 스택_높이) px — 가로 겹침으로 스택/나란히 판별.
+            let mut topbottom_cols: Vec<(f64, f64, f64)> = Vec::new();
+
             // 인라인 컨트롤 처리: 도형/그림/수식/각주 (Paginator engine.rs:509-525 동일)
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
                 // [#1995] 다수 전면 이미지: 각 전면 그림을 새 페이지에 단독 배치.
@@ -4124,8 +4136,8 @@ impl TypesetEngine {
                             // overflow 로 잘림). pagination 측에서도 layout 과 동일하게
                             // 개체 높이를 current_height 에 누적.
                             use crate::model::shape::{TextWrap, VertRelTo};
-                            // (obj_h, extra=obj_h+margin_bottom)
-                            let pushdown_h: Option<(f64, f64)> = match ctrl {
+                            // (obj_h, extra=obj_h+margin_bottom, h_left, h_right px)
+                            let pushdown_h: Option<(f64, f64, f64, f64)> = match ctrl {
                                 Control::Picture(pic)
                                     if !pic.common.treat_as_char
                                         && matches!(
@@ -4137,7 +4149,12 @@ impl TypesetEngine {
                                     let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                                     let mb =
                                         hwpunit_to_px(pic.common.margin.bottom as i32, self.dpi);
-                                    Some((h, h + mb))
+                                    let hl = hwpunit_to_px(
+                                        pic.common.horizontal_offset as i32,
+                                        self.dpi,
+                                    );
+                                    let hr = hl + hwpunit_to_px(pic.common.width as i32, self.dpi);
+                                    Some((h, h + mb, hl, hr))
                                 }
                                 Control::Shape(s)
                                     if !s.common().treat_as_char
@@ -4150,11 +4167,13 @@ impl TypesetEngine {
                                     let cm = s.common();
                                     let h = hwpunit_to_px(cm.height as i32, self.dpi);
                                     let mb = hwpunit_to_px(cm.margin.bottom as i32, self.dpi);
-                                    Some((h, h + mb))
+                                    let hl = hwpunit_to_px(cm.horizontal_offset as i32, self.dpi);
+                                    let hr = hl + hwpunit_to_px(cm.width as i32, self.dpi);
+                                    Some((h, h + mb, hl, hr))
                                 }
                                 _ => None,
                             };
-                            if let Some((obj_h, extra)) = pushdown_h {
+                            if let Some((obj_h, extra, h_left, h_right)) = pushdown_h {
                                 // [Task #1079] 파일 vpos 가 이미 그림 공간을 반영(그림 para 줄
                                 // 앞 gap ≥ 그림 높이)하면 VPOS_CORR sync 가 그 공간을 따르므로
                                 // pushdown 가산은 이중 계상. gap 이 그림 높이 미만(파일 vpos
@@ -4175,7 +4194,47 @@ impl TypesetEngine {
                                     }
                                 };
                                 if !already_accounted {
-                                    st.current_height += extra;
+                                    // [#2097] 같은 문단의 TopAndBottom float pushdown 을 가로
+                                    // 컬럼 모델로 예약한다. 판별 축은 세로 offset 이 아니라 가로
+                                    // 겹침 — 가로로 겹치는 float 은 세로로 스택되어 합산
+                                    // (1342000 취업정책연구: 큰 그림 4장이 같은 단 off≈0 에 스택,
+                                    // 세로 offset 은 작아 offset-union 은 오병합), 가로로 분리된
+                                    // float 은 나란히라 같은 세로 band 를 공유해 max 예약
+                                    // (17809123 자원봉사증: 좌우 그림 2장 h-range 분리). 예약
+                                    // 총량 = max(컬럼별 스택 높이). 새 float 이 겹치는 컬럼(들)에
+                                    // 스택되면 그 컬럼 높이에 extra 가산, 안 겹치면 새 컬럼. 단일
+                                    // float 은 컬럼 1개=extra 라 동작 불변.
+                                    let overlapping: Vec<usize> = topbottom_cols
+                                        .iter()
+                                        .enumerate()
+                                        .filter(|(_, c)| c.1 > h_left && c.0 < h_right)
+                                        .map(|(i, _)| i)
+                                        .collect();
+                                    let applied_before =
+                                        topbottom_cols.iter().map(|c| c.2).fold(0.0_f64, f64::max);
+                                    if overlapping.is_empty() {
+                                        topbottom_cols.push((h_left, h_right, extra));
+                                    } else {
+                                        let base = overlapping
+                                            .iter()
+                                            .map(|&i| topbottom_cols[i].2)
+                                            .fold(0.0_f64, f64::max);
+                                        let new_l = overlapping
+                                            .iter()
+                                            .map(|&i| topbottom_cols[i].0)
+                                            .fold(h_left, f64::min);
+                                        let new_r = overlapping
+                                            .iter()
+                                            .map(|&i| topbottom_cols[i].1)
+                                            .fold(h_right, f64::max);
+                                        for &i in overlapping.iter().rev() {
+                                            topbottom_cols.remove(i);
+                                        }
+                                        topbottom_cols.push((new_l, new_r, base + extra));
+                                    }
+                                    let applied_after =
+                                        topbottom_cols.iter().map(|c| c.2).fold(0.0_f64, f64::max);
+                                    st.current_height += (applied_after - applied_before).max(0.0);
                                 }
                             }
                         }
@@ -10814,7 +10873,9 @@ impl TypesetEngine {
                 let inner = (cw - margin_l - margin_r).max(0.0);
                 if inner > 0.0 {
                     let mut cloned = c.clone();
-                    crate::renderer::composer::recompose_for_cell_width(
+                    // [#2279] 본문 NO_LS 는 글자모양 재분할 포함 래퍼 사용 —
+                    // paragraph_layout(렌더)와 동일 (측정/렌더 줄수·pitch 정합).
+                    crate::renderer::composer::recompose_for_body_width(
                         &mut cloned,
                         para,
                         inner,
@@ -11470,8 +11531,9 @@ impl TypesetEngine {
             //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)
             // 다단에서는 layout 이 vpos 기반으로 항목을 단별로 stacking 하므로
             // typeset 누적 시 trailing_ls 인플레이션이 단을 조기 종료시킴.
-            st.current_height +=
-                fmt.flow_advance_height(para, st.col_count, trim_spacing_before_for_flow);
+            let advance = fmt.flow_advance_height(para, st.col_count, trim_spacing_before_for_flow);
+            st.current_height += advance;
+            st.flow_underrun += (fmt.total_height - advance).max(0.0);
             if let Some(v) = body_bottom_vpos {
                 st.prev_body_bottom_vpos = Some(v);
             }
@@ -11518,8 +11580,10 @@ impl TypesetEngine {
                 st.current_items.push(PageItem::FullParagraph {
                     para_index: para_idx,
                 });
-                st.current_height +=
+                let advance =
                     fmt.flow_advance_height(para, st.col_count, trim_spacing_before_for_flow);
+                st.current_height += advance;
+                st.flow_underrun += (fmt.total_height - advance).max(0.0);
                 if let Some(v) = body_bottom_vpos {
                     st.prev_body_bottom_vpos = Some(v);
                 }
@@ -11626,8 +11690,9 @@ impl TypesetEngine {
             //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)
             // 다단에서는 layout 이 vpos 기반으로 항목을 단별로 stacking 하므로
             // typeset 누적 시 trailing_ls 인플레이션이 단을 조기 종료시킴.
-            st.current_height +=
-                fmt.flow_advance_height(para, st.col_count, trim_spacing_before_for_flow);
+            let advance = fmt.flow_advance_height(para, st.col_count, trim_spacing_before_for_flow);
+            st.current_height += advance;
+            st.flow_underrun += (fmt.total_height - advance).max(0.0);
             if let Some(v) = body_bottom_vpos {
                 st.prev_body_bottom_vpos = Some(v);
             }
@@ -14498,7 +14563,33 @@ impl TypesetEngine {
                 // 기지 한계). 부수 발견: 한글 자체가 fresh-open/warm-open 에 따라
                 // 같은 문서를 1쪽/2쪽으로 다르게 레이아웃(PDF 포함) — 권위 판정은
                 // warm PDF 로 통일(#2138 stage1).
-                let uncertain_anchor_margin = if anchor_vpos <= 0 { 62.0 } else { 0.0 };
+                // [#2279 성분②] 재구성 사다리의 host 줄박스 정합으로 본문 흐름
+                // 좌표가 om_bottom(~11.4px)만큼 전진 — 압축-사다리 좌표계 기준이던
+                // 62px 를 같은 폭만큼 하향(50). 코호트 재판정: 분할 정답 최대 슬랙
+                // 42.5(36395825) < 50 < 흡수 정답 최소 슬랙 56.4(36376848) 로
+                // 62 시절의 기지 한계(저슬랙 흡수 2건) 외 오분류 없음.
+                let uncertain_anchor_margin = if anchor_vpos <= 0 { 50.0 } else { 0.0 };
+                // [#2279 진단] footer 흡수/분할 판정 변수 분해 — 동작 불변.
+                // underrun = 이 단의 문단 place 가 트림한 (total_height − advance) 누계
+                // (렌더/한글 좌표와의 발산 중 문단-sa 성분; 표 place 성분은 미포함).
+                if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                    eprintln!(
+                        "DIAG_SCAN FOOTER pi={} anchor_vpos={} cur_h={:.2} target_y={:.2} sync_h={:.2} \
+                         block_h={:.2} v_off={:.2} avail={:.2} avail_after={:.2} slack_code={:.2} margin={:.1} underrun={:.2}",
+                        para_idx,
+                        anchor_vpos,
+                        st.current_height,
+                        target_y,
+                        sync_h,
+                        block_height,
+                        v_off,
+                        available,
+                        avail_after,
+                        avail_after - sync_h,
+                        uncertain_anchor_margin,
+                        st.flow_underrun,
+                    );
+                }
                 if sync_h + uncertain_anchor_margin <= avail_after {
                     // 현재 쪽 하단에 배치 — 본문 흐름은 vpos 동기 위치까지만 전진.
                     st.current_height = sync_h;
@@ -14654,12 +14745,18 @@ impl TypesetEngine {
                     saved_anchor_splits_here
                 );
             }
+            // [#2279 5축] 선언-이월의 저장 증거는 **host 문단 단위**(saved_span)로
+            // 판정한다. 종전 구역 전역 st.has_stored_line_segs 는 구역 내 다른
+            // 문단의 LS 만으로 no-LS host 의 RowBreak float 까지 통째 이월시켰다
+            // — 한글은 이 형상(86712 pi=30: 4×3 RowBreak, saved=None, 측정 비적합
+            // 980.8>971.3)을 행 분할해 현재 쪽에 머리 행들을 남긴다(p10/p11).
+            // 위 주석의 원 의도("LS 없는 계열은 측정 fit 일 때만 선언 이월")와 정합.
             if !st.current_items.is_empty()
                 && declared_overflows_current
                 && !saved_object_bottom_fits_current
                 && !saved_anchor_splits_here
                 && !single_row_object_declared_fits_current
-                && (st.has_stored_line_segs || measured_fits_current)
+                && (saved_span.is_some() || measured_fits_current)
                 && declared_total <= available
             {
                 st.advance_column_or_new_page();

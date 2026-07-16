@@ -692,7 +692,12 @@ fn glyph_outline_fallback_reason(outline: &LayerGlyphOutlinePaint) -> Option<Str
     if let Some(reason) = glyph_run_diagnostics_fallback_reason(&outline.diagnostics) {
         return Some(reason);
     }
-    if outline.paths.is_empty() {
+    if outline.paths.is_empty()
+        && matches!(
+            outline.payload_kind,
+            GlyphOutlinePayloadKind::MonochromeFill | GlyphOutlinePayloadKind::MonochromeFillStroke
+        )
+    {
         return Some("emptyGlyphOutline".to_string());
     }
     if !outline.paint_style.is_fill_only_glyph_replay() {
@@ -1148,6 +1153,25 @@ mod tests {
         assert_eq!(
             diagnostics.slot_diagnostics[0].fallback_reason.as_deref(),
             Some("emptyGlyphOutline")
+        );
+    }
+
+    #[test]
+    fn resource_glyph_fallback_reason_is_not_masked_by_empty_paths() {
+        let mut op = glyph_outline_op();
+        let PaintOp::GlyphOutline { outline, .. } = &mut op else {
+            panic!("expected glyph outline");
+        };
+        outline.paths.clear();
+        outline.payload_kind = GlyphOutlinePayloadKind::BitmapGlyph;
+        assert_eq!(
+            glyph_outline_fallback_reason(outline).as_deref(),
+            Some("unsupportedBitmapGlyph")
+        );
+        outline.payload_kind = GlyphOutlinePayloadKind::SvgGlyph;
+        assert_eq!(
+            glyph_outline_fallback_reason(outline).as_deref(),
+            Some("unsupportedSvgGlyph")
         );
     }
 

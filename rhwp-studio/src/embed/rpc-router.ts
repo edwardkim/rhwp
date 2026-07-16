@@ -8,13 +8,23 @@ export interface EmbedRpcHandlers {
     skipUnsavedGuard: boolean,
   ): Promise<{ pageCount: number }>;
   pageCount(): Promise<number>;
-  getRendererDiagnostics(page: number): Promise<unknown>;
+  getRendererDiagnostics(page: number): Promise<EmbedRendererDiagnosticsV1>;
   getPageSvg(page: number): Promise<string>;
   exportHwp(): Promise<Uint8Array>;
   exportHwpx(): Promise<Uint8Array>;
   exportHml(): Promise<Uint8Array>;
   getHmlSaveState(): Promise<HmlSaveState>;
   exportHwpVerify(): Promise<unknown>;
+}
+
+export interface EmbedRendererDiagnosticsV1 {
+  schemaVersion: 1;
+  request: unknown;
+  initialized: boolean;
+  initializationError: string | null;
+  effectiveBackend: 'canvas2d' | 'canvaskit' | null;
+  backendFallbackReason: string | null;
+  page: { index: number; canvaskit: unknown };
 }
 
 function asParams(value: unknown): Record<string, unknown> {
@@ -45,11 +55,11 @@ export async function routeEmbedRequest(
       );
     case 'pageCount': return handlers.pageCount();
     case 'getRendererDiagnostics': {
-      const page = Number(params.page ?? 0);
-      if (!Number.isInteger(page) || page < 0) {
-        throw new Error('page must be a non-negative integer');
+      const page = params.page ?? 0;
+      if (!Number.isSafeInteger(page) || (page as number) < 0) {
+        throw new Error('page must be a non-negative safe integer');
       }
-      return handlers.getRendererDiagnostics(page);
+      return handlers.getRendererDiagnostics(page as number);
     }
     case 'getPageSvg': return handlers.getPageSvg(
       typeof params.page === 'number' ? params.page : 0,

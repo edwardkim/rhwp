@@ -997,6 +997,8 @@ impl HeightMeasurer {
                 } else {
                     0.0
                 };
+                // [#2279 axis B 보류] 측정 shrink 폭은 80168 r7(한글 8줄) 회귀로 보류
+                // — table_layout::cell_units_uncached 의 [#2279 axis B 보류] 참조.
                 let cell_inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
 
                 // 셀 내 문단들의 실제 높이 합산

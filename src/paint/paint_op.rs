@@ -597,7 +597,7 @@ fn glyph_range_key(range: GlyphRange) -> String {
 
 fn bbox_key(bbox: BoundingBox) -> String {
     format!(
-        "{:.6},{:.6},{:.6},{:.6}",
+        "{:.3},{:.3},{:.3},{:.3}",
         bbox.x, bbox.y, bbox.width, bbox.height
     )
 }

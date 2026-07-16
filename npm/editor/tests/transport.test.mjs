@@ -10,7 +10,11 @@ test('EditorTransport는 exact origin의 v1 port로 binary를 caller detach 없�
     postMessage(message, targetOrigin, ports) {
       assert.equal(targetOrigin, 'https://studio.example');
       assert.equal(message.type, 'rhwp-connect');
-      assert.deepEqual(message.capabilities, ['transferable-array-buffer', 'hml-export']);
+      assert.deepEqual(message.capabilities, [
+        'transferable-array-buffer',
+        'hml-export',
+        'renderer-diagnostics-v1',
+      ]);
       const server = ports[0];
       server.onmessage = ({ data }) => {
         received = data;

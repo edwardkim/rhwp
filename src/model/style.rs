@@ -56,6 +56,15 @@ pub struct Font {
     pub name: String,
     /// 글꼴 유형 (0: 알 수 없음, 1: TTF, 2: HFT)
     pub alt_type: u8,
+    /// HWPX 부모 `<hh:font>`가 embedded font resource를 가리키는지 여부.
+    pub is_embedded: bool,
+    /// HWPX 부모 `<hh:font>`의 embedded binary item reference.
+    pub bin_item_id_ref: String,
+    /// HWPX package manifest에서 해소된 BinData storage ID.
+    ///
+    /// 원본 `binaryItemIDRef`는 round-trip을 위해 그대로 보존하고, renderer는 이
+    /// 필드만 사용해 임베디드 font bytes를 찾는다.
+    pub resolved_bin_data_id: Option<u16>,
     /// 대체 글꼴 이름
     pub alt_name: Option<String>,
     /// 글꼴 유형 정보 (HWP5 FACE_NAME type info 10바이트)
@@ -82,6 +91,8 @@ pub struct SubstFont {
     pub is_embedded: bool,
     /// 임베드 바이너리 아이템 ID 참조 (비임베드 시 빈 문자열; 항상 존재)
     pub bin_item_id_ref: String,
+    /// HWPX package manifest에서 해소된 BinData storage ID.
+    pub resolved_bin_data_id: Option<u16>,
 }
 
 /// 글자 모양 (HWPTAG_CHAR_SHAPE)

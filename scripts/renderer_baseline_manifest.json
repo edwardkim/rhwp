@@ -8,6 +8,12 @@
       "category": "paragraph",
       "page": 0,
       "canvaskitReadinessGate": true,
+      "canvaskitPerformanceBudget": {
+        "maxColdDocumentLoadAndInitialRenderMs": 30000,
+        "maxWarmReplayMs": 5000,
+        "maxWarmRendererDurationMs": 4000,
+        "maxImageCachePixels": 67108864
+      },
       "notes": "Basic line segmentation sample from the existing CanvasKit representative suite.",
       "browserParityThresholds": {
         "maxDiffRatio": 0.03,
@@ -65,13 +71,43 @@
       "file": "re-font-batang-hancom.hwp",
       "category": "font",
       "page": 0,
+      "canvaskitReadinessGate": true,
+      "canvaskitPerformanceBudget": {
+        "maxColdDocumentLoadAndInitialRenderMs": 30000,
+        "maxWarmReplayMs": 5000,
+        "maxWarmRendererDurationMs": 4000,
+        "maxImageCachePixels": 67108864
+      },
       "notes": "Batang/Hancom font mapping sample for CanvasKit text fallback parity.",
       "browserParityThresholds": {
         "maxDiffRatio": null,
+        "minimumInkPixels": 1000,
         "inkMaskNeighborhoodRadius": 3,
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.008
+      }
+    },
+    {
+      "id": "font-native-bitmap",
+      "file": "render-p35-font-native-bitmap.hwpx",
+      "category": "font-native-glyph",
+      "page": 0,
+      "canvaskitReadinessGate": true,
+      "canvaskitPerformanceBudget": {
+        "maxColdDocumentLoadAndInitialRenderMs": 30000,
+        "maxWarmReplayMs": 5000,
+        "maxWarmRendererDurationMs": 4000,
+        "maxImageCachePixels": 67108864
+      },
+      "canvaskitReadinessExpectations": {
+        "glyphOutlinePayloadKinds": ["bitmapGlyph"],
+        "minWarmImageCacheHits": 1
+      },
+      "notes": "Embedded font fixture that must produce and warm-replay the strict bitmap glyph sidecar.",
+      "browserParityThresholds": {
+        "maxDiffRatio": 0.01,
+        "minimumInkPixels": 50
       }
     },
     {
@@ -80,6 +116,12 @@
       "category": "table",
       "page": 0,
       "canvaskitReadinessGate": true,
+      "canvaskitPerformanceBudget": {
+        "maxColdDocumentLoadAndInitialRenderMs": 30000,
+        "maxWarmReplayMs": 5000,
+        "maxWarmRendererDurationMs": 4000,
+        "maxImageCachePixels": 67108864
+      },
       "notes": "Baseline table layout, borders, and cell clipping.",
       "browserParityThresholds": {
         "maxDiffRatio": 0.045,
@@ -110,6 +152,12 @@
       "category": "image",
       "page": 0,
       "canvaskitReadinessGate": true,
+      "canvaskitPerformanceBudget": {
+        "maxColdDocumentLoadAndInitialRenderMs": 30000,
+        "maxWarmReplayMs": 5000,
+        "maxWarmRendererDurationMs": 4000,
+        "maxImageCachePixels": 67108864
+      },
       "notes": "Image crop and fill semantics.",
       "browserParityThresholds": {
         "maxDiffRatio": 0.02,

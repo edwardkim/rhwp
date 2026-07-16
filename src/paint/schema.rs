@@ -15,9 +15,9 @@ pub struct LayerTreeSchema {
 
 pub const LAYER_TREE_SCHEMA: LayerTreeSchema = LayerTreeSchema {
     schema_version: 1,
-    schema_minor_version: 17,
+    schema_minor_version: 18,
     resource_table_version: 1,
-    resource_table_minor_version: 4,
+    resource_table_minor_version: 5,
     unit: "px",
     coordinate_system: "page-top-left-y-down",
 };

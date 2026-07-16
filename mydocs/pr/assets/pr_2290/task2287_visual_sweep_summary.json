@@ -1,0 +1,1689 @@
+[
+  {
+    "key": "task2287-pr",
+    "hwp": "samples/task2287/1342000_edu_curriculum_map.hwp",
+    "pdf": "pdf/task2287/1342000_edu_curriculum_map-2020.pdf",
+    "requested_pages": [
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+    ],
+    "exported_svg_pages": 381,
+    "exported_render_tree_pages": 381,
+    "exported_pdf_pages": 415,
+    "svg_pages": 11,
+    "render_tree_pages": 11,
+    "pdf_pages": 11,
+    "compare_pages": 11,
+    "overlay_pages": 11,
+    "review_pages": 11,
+    "pdf_question_markers": 0,
+    "overflow_lines": [
+      "LAYOUT_OVERFLOW: page=17, sec=0, col=0, para=218, type=PartialTable, first=false, y=1066.0, bottom=1046.9, overflow=19.1px",
+      "LAYOUT_OVERFLOW: page=0, sec=1, col=0, para=0, type=PartialTable, first=true, y=2599.5, bottom=718.1, overflow=1881.3px",
+      "LAYOUT_OVERFLOW: page=2, sec=1, col=0, para=0, type=PartialTable, first=true, y=2486.9, bottom=718.1, overflow=1768.7px",
+      "LAYOUT_OVERFLOW: page=3, sec=1, col=0, para=0, type=PartialTable, first=true, y=2486.9, bottom=718.1, overflow=1768.7px",
+      "LAYOUT_OVERFLOW: page=4, sec=1, col=0, para=0, type=PartialTable, first=true, y=2486.9, bottom=718.1, overflow=1768.7px",
+      "LAYOUT_OVERFLOW: page=5, sec=1, col=0, para=0, type=PartialTable, first=true, y=2813.1, bottom=718.1, overflow=2094.9px",
+      "LAYOUT_OVERFLOW: page=51, sec=1, col=0, para=9, type=PartialTable, first=true, y=831.9, bottom=718.1, overflow=113.8px",
+      "LAYOUT_OVERFLOW: page=52, sec=1, col=0, para=9, type=PartialTable, first=true, y=1274.3, bottom=718.1, overflow=556.1px",
+      "LAYOUT_OVERFLOW: page=3, sec=2, col=0, para=1, type=PartialTable, first=true, y=778.3, bottom=718.1, overflow=60.2px",
+      "LAYOUT_OVERFLOW: page=4, sec=2, col=0, para=1, type=PartialTable, first=true, y=1328.3, bottom=718.1, overflow=610.2px",
+      "LAYOUT_OVERFLOW: page=11, sec=4, col=0, para=15, type=PartialTable, first=true, y=1051.1, bottom=1046.9, overflow=4.1px",
+      "LAYOUT_OVERFLOW: page=1, sec=5, col=0, para=8, type=PartialTable, first=true, y=950.0, bottom=718.1, overflow=231.9px",
+      "LAYOUT_OVERFLOW: page=2, sec=5, col=0, para=8, type=PartialTable, first=true, y=795.1, bottom=718.1, overflow=76.9px",
+      "LAYOUT_OVERFLOW: page=3, sec=5, col=0, para=8, type=PartialTable, first=true, y=954.2, bottom=718.1, overflow=236.1px",
+      "LAYOUT_OVERFLOW: page=4, sec=5, col=0, para=8, type=PartialTable, first=true, y=961.1, bottom=718.1, overflow=243.0px",
+      "LAYOUT_OVERFLOW: page=5, sec=5, col=0, para=8, type=PartialTable, first=true, y=743.1, bottom=718.1, overflow=25.0px",
+      "LAYOUT_OVERFLOW: page=6, sec=5, col=0, para=8, type=PartialTable, first=true, y=985.7, bottom=718.1, overflow=267.5px",
+      "LAYOUT_OVERFLOW: page=7, sec=5, col=0, para=8, type=PartialTable, first=true, y=941.3, bottom=718.1, overflow=223.2px",
+      "LAYOUT_OVERFLOW: page=8, sec=5, col=0, para=8, type=PartialTable, first=true, y=989.4, bottom=718.1, overflow=271.3px",
+      "LAYOUT_OVERFLOW: page=9, sec=5, col=0, para=8, type=PartialTable, first=true, y=942.3, bottom=718.1, overflow=224.2px",
+      "LAYOUT_OVERFLOW: page=10, sec=5, col=0, para=8, type=PartialTable, first=true, y=801.3, bottom=718.1, overflow=83.1px",
+      "LAYOUT_OVERFLOW: page=11, sec=5, col=0, para=8, type=PartialTable, first=true, y=797.9, bottom=718.1, overflow=79.7px",
+      "LAYOUT_OVERFLOW: page=12, sec=5, col=0, para=8, type=PartialTable, first=true, y=961.7, bottom=718.1, overflow=243.5px",
+      "LAYOUT_OVERFLOW: page=13, sec=5, col=0, para=8, type=PartialTable, first=true, y=946.9, bottom=718.1, overflow=228.8px",
+      "LAYOUT_OVERFLOW: page=14, sec=5, col=0, para=8, type=PartialTable, first=true, y=950.2, bottom=718.1, overflow=232.0px",
+      "LAYOUT_OVERFLOW: page=15, sec=5, col=0, para=8, type=PartialTable, first=true, y=870.1, bottom=718.1, overflow=152.0px",
+      "LAYOUT_OVERFLOW: page=16, sec=5, col=0, para=8, type=PartialTable, first=true, y=857.6, bottom=718.1, overflow=139.5px",
+      "LAYOUT_OVERFLOW: page=17, sec=5, col=0, para=8, type=PartialTable, first=true, y=939.1, bottom=718.1, overflow=221.0px",
+      "LAYOUT_OVERFLOW: page=18, sec=5, col=0, para=8, type=PartialTable, first=true, y=841.7, bottom=718.1, overflow=123.5px",
+      "LAYOUT_OVERFLOW: page=18, sec=5, col=0, para=9, type=FullParagraph, first=false, y=841.7, bottom=718.1, overflow=123.5px",
+      "LAYOUT_OVERFLOW: page=20, sec=5, col=0, para=11, type=PartialTable, first=true, y=966.6, bottom=718.1, overflow=248.5px",
+      "LAYOUT_OVERFLOW: page=21, sec=5, col=0, para=11, type=PartialTable, first=true, y=926.7, bottom=718.1, overflow=208.6px",
+      "LAYOUT_OVERFLOW: page=22, sec=5, col=0, para=11, type=PartialTable, first=true, y=920.2, bottom=718.1, overflow=202.1px",
+      "LAYOUT_OVERFLOW: page=23, sec=5, col=0, para=11, type=PartialTable, first=true, y=761.0, bottom=718.1, overflow=42.9px",
+      "LAYOUT_OVERFLOW: page=25, sec=5, col=0, para=11, type=PartialTable, first=true, y=965.8, bottom=718.1, overflow=247.7px",
+      "LAYOUT_OVERFLOW: page=29, sec=5, col=0, para=14, type=PartialTable, first=true, y=968.0, bottom=718.1, overflow=249.9px",
+      "LAYOUT_OVERFLOW: page=32, sec=5, col=0, para=14, type=PartialTable, first=true, y=783.9, bottom=718.1, overflow=65.8px",
+      "LAYOUT_OVERFLOW: page=33, sec=5, col=0, para=14, type=PartialTable, first=true, y=953.5, bottom=718.1, overflow=235.4px",
+      "LAYOUT_OVERFLOW: page=34, sec=5, col=0, para=14, type=PartialTable, first=true, y=965.1, bottom=718.1, overflow=247.0px",
+      "LAYOUT_OVERFLOW: page=36, sec=5, col=0, para=14, type=PartialTable, first=true, y=977.9, bottom=718.1, overflow=259.7px",
+      "LAYOUT_OVERFLOW: page=1, sec=7, col=0, para=2, type=PartialTable, first=true, y=916.3, bottom=718.1, overflow=198.2px",
+      "LAYOUT_OVERFLOW: page=2, sec=7, col=0, para=2, type=PartialTable, first=true, y=798.3, bottom=718.1, overflow=80.2px",
+      "LAYOUT_OVERFLOW: page=3, sec=7, col=0, para=2, type=PartialTable, first=true, y=809.6, bottom=718.1, overflow=91.5px",
+      "LAYOUT_OVERFLOW: page=4, sec=7, col=0, para=2, type=PartialTable, first=true, y=765.3, bottom=718.1, overflow=47.2px",
+      "LAYOUT_OVERFLOW: page=5, sec=7, col=0, para=2, type=PartialTable, first=true, y=899.7, bottom=718.1, overflow=181.5px",
+      "LAYOUT_OVERFLOW: page=0, sec=9, col=0, para=3, type=PartialTable, first=false, y=1092.4, bottom=1046.9, overflow=45.5px",
+      "LAYOUT_OVERFLOW: page=1, sec=9, col=0, para=3, type=PartialTable, first=true, y=1067.8, bottom=1046.9, overflow=20.9px",
+      "LAYOUT_OVERFLOW: page=3, sec=9, col=0, para=3, type=PartialTable, first=true, y=1053.2, bottom=1046.9, overflow=6.2px",
+      "LAYOUT_OVERFLOW: page=5, sec=9, col=0, para=5, type=PartialTable, first=false, y=1051.8, bottom=1046.9, overflow=4.9px",
+      "LAYOUT_OVERFLOW: page=7, sec=9, col=0, para=7, type=PartialTable, first=false, y=1055.4, bottom=1046.9, overflow=8.5px",
+      "LAYOUT_OVERFLOW: page=1, sec=10, col=0, para=1, type=PartialTable, first=true, y=874.1, bottom=718.1, overflow=155.9px",
+      "LAYOUT_OVERFLOW: page=3, sec=10, col=0, para=1, type=PartialTable, first=true, y=958.8, bottom=718.1, overflow=240.7px",
+      "LAYOUT_OVERFLOW: page=4, sec=10, col=0, para=1, type=PartialTable, first=true, y=944.1, bottom=718.1, overflow=225.9px",
+      "LAYOUT_OVERFLOW: page=5, sec=10, col=0, para=1, type=PartialTable, first=true, y=958.2, bottom=718.1, overflow=240.0px",
+      "LAYOUT_OVERFLOW: page=6, sec=10, col=0, para=1, type=PartialTable, first=true, y=941.2, bottom=718.1, overflow=223.1px",
+      "LAYOUT_OVERFLOW: page=7, sec=10, col=0, para=1, type=PartialTable, first=true, y=861.8, bottom=718.1, overflow=143.6px",
+      "LAYOUT_OVERFLOW: page=8, sec=10, col=0, para=1, type=PartialTable, first=true, y=731.3, bottom=718.1, overflow=13.2px",
+      "LAYOUT_OVERFLOW: page=9, sec=10, col=0, para=1, type=PartialTable, first=true, y=738.8, bottom=718.1, overflow=20.7px",
+      "LAYOUT_OVERFLOW: page=10, sec=10, col=0, para=1, type=PartialTable, first=true, y=952.2, bottom=718.1, overflow=234.0px",
+      "LAYOUT_OVERFLOW: page=11, sec=10, col=0, para=1, type=PartialTable, first=true, y=807.8, bottom=718.1, overflow=89.7px",
+      "LAYOUT_OVERFLOW: page=12, sec=10, col=0, para=1, type=PartialTable, first=true, y=783.0, bottom=718.1, overflow=64.8px",
+      "LAYOUT_OVERFLOW: page=1, sec=12, col=0, para=2, type=PartialTable, first=true, y=830.1, bottom=718.1, overflow=112.0px",
+      "LAYOUT_OVERFLOW: page=2, sec=12, col=0, para=2, type=PartialTable, first=true, y=973.1, bottom=718.1, overflow=255.0px",
+      "LAYOUT_OVERFLOW: page=3, sec=12, col=0, para=2, type=PartialTable, first=true, y=973.3, bottom=718.1, overflow=255.1px",
+      "LAYOUT_OVERFLOW: page=4, sec=12, col=0, para=2, type=PartialTable, first=true, y=940.9, bottom=718.1, overflow=222.8px",
+      "LAYOUT_OVERFLOW: page=5, sec=12, col=0, para=2, type=PartialTable, first=true, y=824.1, bottom=718.1, overflow=106.0px",
+      "LAYOUT_OVERFLOW: page=6, sec=12, col=0, para=2, type=PartialTable, first=true, y=929.1, bottom=718.1, overflow=211.0px",
+      "LAYOUT_OVERFLOW: page=7, sec=12, col=0, para=2, type=PartialTable, first=true, y=941.6, bottom=718.1, overflow=223.5px",
+      "LAYOUT_OVERFLOW: page=8, sec=12, col=0, para=2, type=PartialTable, first=true, y=937.7, bottom=718.1, overflow=219.5px",
+      "LAYOUT_OVERFLOW: page=9, sec=12, col=0, para=2, type=PartialTable, first=true, y=977.7, bottom=718.1, overflow=259.6px",
+      "LAYOUT_OVERFLOW: page=10, sec=12, col=0, para=2, type=PartialTable, first=true, y=958.7, bottom=718.1, overflow=240.6px",
+      "LAYOUT_OVERFLOW: page=1, sec=14, col=0, para=2, type=PartialTable, first=true, y=810.3, bottom=718.1, overflow=92.2px",
+      "LAYOUT_OVERFLOW: page=2, sec=14, col=0, para=2, type=PartialTable, first=true, y=971.9, bottom=718.1, overflow=253.7px",
+      "LAYOUT_OVERFLOW: page=3, sec=14, col=0, para=2, type=PartialTable, first=true, y=958.7, bottom=718.1, overflow=240.6px",
+      "LAYOUT_OVERFLOW: page=4, sec=14, col=0, para=2, type=PartialTable, first=true, y=910.7, bottom=718.1, overflow=192.6px",
+      "LAYOUT_OVERFLOW: page=5, sec=14, col=0, para=2, type=PartialTable, first=true, y=960.1, bottom=718.1, overflow=241.9px",
+      "LAYOUT_OVERFLOW: page=6, sec=14, col=0, para=2, type=PartialTable, first=true, y=929.3, bottom=718.1, overflow=211.1px",
+      "LAYOUT_OVERFLOW: page=7, sec=14, col=0, para=2, type=PartialTable, first=true, y=780.9, bottom=718.1, overflow=62.7px",
+      "LAYOUT_OVERFLOW: page=8, sec=14, col=0, para=2, type=PartialTable, first=true, y=808.8, bottom=718.1, overflow=90.7px",
+      "LAYOUT_OVERFLOW: page=9, sec=14, col=0, para=2, type=PartialTable, first=true, y=881.9, bottom=718.1, overflow=163.7px",
+      "LAYOUT_OVERFLOW: page=10, sec=14, col=0, para=2, type=PartialTable, first=true, y=729.0, bottom=718.1, overflow=10.9px",
+      "LAYOUT_OVERFLOW: page=11, sec=14, col=0, para=2, type=PartialTable, first=true, y=757.8, bottom=718.1, overflow=39.7px",
+      "LAYOUT_OVERFLOW: page=1, sec=16, col=0, para=2, type=PartialTable, first=true, y=977.7, bottom=718.1, overflow=259.6px",
+      "LAYOUT_OVERFLOW: page=2, sec=16, col=0, para=2, type=PartialTable, first=true, y=899.0, bottom=718.1, overflow=180.9px",
+      "LAYOUT_OVERFLOW: page=3, sec=16, col=0, para=2, type=PartialTable, first=true, y=760.5, bottom=718.1, overflow=42.4px",
+      "LAYOUT_OVERFLOW: page=1, sec=18, col=0, para=2, type=PartialTable, first=true, y=792.5, bottom=718.1, overflow=74.3px",
+      "LAYOUT_OVERFLOW: page=2, sec=18, col=0, para=2, type=PartialTable, first=true, y=955.3, bottom=718.1, overflow=237.2px",
+      "LAYOUT_OVERFLOW: page=3, sec=18, col=0, para=2, type=PartialTable, first=true, y=953.4, bottom=718.1, overflow=235.3px",
+      "LAYOUT_OVERFLOW: page=4, sec=18, col=0, para=2, type=PartialTable, first=true, y=933.9, bottom=718.1, overflow=215.7px",
+      "LAYOUT_OVERFLOW: page=1, sec=20, col=0, para=2, type=PartialTable, first=true, y=964.3, bottom=718.1, overflow=246.2px",
+      "LAYOUT_OVERFLOW: page=2, sec=20, col=0, para=2, type=PartialTable, first=true, y=962.5, bottom=718.1, overflow=244.4px",
+      "LAYOUT_OVERFLOW: page=3, sec=20, col=0, para=2, type=PartialTable, first=true, y=952.9, bottom=718.1, overflow=234.7px",
+      "LAYOUT_OVERFLOW: page=5, sec=21, col=0, para=12, type=PartialTable, first=true, y=1059.1, bottom=1046.9, overflow=12.1px",
+      "LAYOUT_OVERFLOW: page=1, sec=22, col=0, para=2, type=PartialTable, first=true, y=892.0, bottom=718.1, overflow=173.9px",
+      "LAYOUT_OVERFLOW: page=2, sec=22, col=0, para=2, type=PartialTable, first=true, y=973.9, bottom=718.1, overflow=255.7px",
+      "LAYOUT_OVERFLOW: page=3, sec=22, col=0, para=2, type=PartialTable, first=true, y=826.1, bottom=718.1, overflow=108.0px",
+      "LAYOUT_OVERFLOW: page=4, sec=22, col=0, para=2, type=PartialTable, first=true, y=882.9, bottom=718.1, overflow=164.8px",
+      "LAYOUT_OVERFLOW: page=11, sec=23, col=0, para=12, type=PartialTable, first=true, y=1051.6, bottom=1046.9, overflow=4.7px",
+      "LAYOUT_OVERFLOW: page=1, sec=24, col=0, para=2, type=PartialTable, first=true, y=976.5, bottom=718.1, overflow=258.4px",
+      "LAYOUT_OVERFLOW: page=2, sec=24, col=0, para=2, type=PartialTable, first=true, y=721.9, bottom=718.1, overflow=3.7px",
+      "LAYOUT_OVERFLOW: page=3, sec=24, col=0, para=2, type=PartialTable, first=true, y=843.4, bottom=718.1, overflow=125.3px",
+      "LAYOUT_OVERFLOW: page=5, sec=24, col=0, para=2, type=PartialTable, first=true, y=930.4, bottom=718.1, overflow=212.3px",
+      "LAYOUT_OVERFLOW: page=6, sec=24, col=0, para=2, type=PartialTable, first=true, y=939.6, bottom=718.1, overflow=221.5px",
+      "LAYOUT_OVERFLOW: page=7, sec=24, col=0, para=2, type=PartialTable, first=true, y=729.1, bottom=718.1, overflow=10.9px",
+      "LAYOUT_OVERFLOW: page=8, sec=24, col=0, para=2, type=PartialTable, first=true, y=955.8, bottom=718.1, overflow=237.6px",
+      "LAYOUT_OVERFLOW: page=9, sec=24, col=0, para=2, type=PartialTable, first=true, y=929.8, bottom=718.1, overflow=211.7px",
+      "LAYOUT_OVERFLOW: page=10, sec=24, col=0, para=2, type=PartialTable, first=true, y=949.2, bottom=718.1, overflow=231.0px",
+      "LAYOUT_OVERFLOW: page=11, sec=24, col=0, para=2, type=PartialTable, first=true, y=946.0, bottom=718.1, overflow=227.9px",
+      "LAYOUT_OVERFLOW: page=12, sec=24, col=0, para=2, type=PartialTable, first=true, y=732.8, bottom=718.1, overflow=14.7px",
+      "LAYOUT_OVERFLOW: page=1, sec=26, col=0, para=0, type=PartialTable, first=true, y=960.7, bottom=718.1, overflow=242.6px",
+      "LAYOUT_OVERFLOW: page=2, sec=26, col=0, para=0, type=PartialTable, first=true, y=965.8, bottom=718.1, overflow=247.7px",
+      "LAYOUT_OVERFLOW: page=3, sec=26, col=0, para=0, type=PartialTable, first=true, y=954.6, bottom=718.1, overflow=236.4px",
+      "LAYOUT_OVERFLOW: page=4, sec=26, col=0, para=0, type=PartialTable, first=true, y=889.0, bottom=718.1, overflow=170.9px",
+      "LAYOUT_OVERFLOW: page=5, sec=26, col=0, para=0, type=PartialTable, first=true, y=963.4, bottom=718.1, overflow=245.2px",
+      "LAYOUT_OVERFLOW: page=6, sec=26, col=0, para=0, type=PartialTable, first=true, y=821.3, bottom=718.1, overflow=103.2px",
+      "LAYOUT_OVERFLOW: page=8, sec=26, col=0, para=0, type=PartialTable, first=true, y=937.9, bottom=718.1, overflow=219.8px",
+      "LAYOUT_OVERFLOW: page=9, sec=26, col=0, para=0, type=PartialTable, first=true, y=817.1, bottom=718.1, overflow=99.0px",
+      "LAYOUT_OVERFLOW: page=10, sec=26, col=0, para=0, type=PartialTable, first=true, y=955.1, bottom=718.1, overflow=237.0px",
+      "LAYOUT_OVERFLOW: page=1, sec=30, col=0, para=2, type=PartialTable, first=true, y=777.0, bottom=718.1, overflow=58.9px",
+      "LAYOUT_OVERFLOW: page=3, sec=30, col=0, para=2, type=PartialTable, first=true, y=789.0, bottom=718.1, overflow=70.9px",
+      "LAYOUT_OVERFLOW: page=1, sec=32, col=0, para=2, type=PartialTable, first=true, y=901.3, bottom=718.1, overflow=183.2px",
+      "LAYOUT_OVERFLOW: page=2, sec=32, col=0, para=2, type=PartialTable, first=true, y=927.0, bottom=718.1, overflow=208.9px",
+      "LAYOUT_OVERFLOW: page=3, sec=32, col=0, para=2, type=PartialTable, first=true, y=755.7, bottom=718.1, overflow=37.5px",
+      "LAYOUT_OVERFLOW: page=4, sec=32, col=0, para=2, type=PartialTable, first=true, y=736.6, bottom=718.1, overflow=18.5px"
+    ],
+    "contact_sheet": "target/visual-sweep-pr2290/task2287-pr/contact_sheet.png",
+    "overlay_contact_sheet": "target/visual-sweep-pr2290/task2287-pr/overlay_contact_sheet.png",
+    "review_contact_sheet": "target/visual-sweep-pr2290/task2287-pr/review_contact_sheet.png",
+    "analysis_dir": "target/visual-sweep-pr2290/task2287-pr/analysis",
+    "overlay_dir": "target/visual-sweep-pr2290/task2287-pr/overlay",
+    "review_dir": "target/visual-sweep-pr2290/task2287-pr/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 1,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 2,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 3,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 4,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 5,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 6,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 7,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 8,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 9,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.007,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 10,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.007,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 11,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 12,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 13,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 14,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 15,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 16,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 17,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 18,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 19,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 20,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 21,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 22,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 0.907,
+          "rawSeparatorMarginTopMm": 0.0,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 23,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 0.907,
+          "rawSeparatorMarginTopMm": 0.0,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 24,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 25,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 26,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 0.907,
+          "rawSeparatorMarginTopMm": 0.0,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 27,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 0.907,
+          "rawSeparatorMarginTopMm": 0.0,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 28,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 29,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 30,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 31,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 32,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      },
+      {
+        "section": 33,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "target/visual-sweep-pr2290/task2287-pr/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 11,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 90.50482,
+      "worst_pixel_match_percent": 87.53429,
+      "average_ink_match_percent": 9.78247,
+      "worst_ink_match_percent": 7.32715,
+      "average_visual_accuracy_proxy_percent": 9.78247,
+      "worst_visual_accuracy_proxy_percent": 7.32715,
+      "worst_pages": [
+        33,
+        35,
+        34,
+        29,
+        32,
+        27,
+        28,
+        31,
+        26,
+        30
+      ]
+    },
+    "overlay_metrics_json": "target/visual-sweep-pr2290/task2287-pr/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 11,
+      "flagged_page_count": 1,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [
+        30
+      ],
+      "column_line_band_drift_pages": [
+        30
+      ],
+      "large_ink_region_drift_pages": [
+        30
+      ],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [
+        30
+      ],
+      "question_marker_drift_pages": [],
+      "metrics_json": "/private/tmp/rhwp-pr2290-review/target/visual-sweep-pr2290/task2287-pr/analysis/metrics.json",
+      "question_flow_json": "/private/tmp/rhwp-pr2290-review/target/visual-sweep-pr2290/task2287-pr/analysis/question_flow.json"
+    },
+    "flagged_pages": [
+      {
+        "page": 30,
+        "flags": [
+          "render_tree_frame_tail_overflow",
+          "line_band_drift",
+          "column_line_band_drift",
+          "large_ink_region_drift"
+        ],
+        "rhwp_frame": [
+          163,
+          132,
+          1038,
+          776
+        ],
+        "pdf_frame": [
+          258,
+          133,
+          1040,
+          776
+        ],
+        "rhwp_outside_frame_pixels": 0,
+        "pdf_outside_frame_pixels": 0,
+        "rhwp_outside_frame_max_y": null,
+        "pdf_outside_frame_max_y": null,
+        "rhwp_outside_frame_extent_px": null,
+        "pdf_outside_frame_extent_px": null,
+        "frame_overflow_tolerated_bleed": false,
+        "paper_size_footer_frame_bleed": false,
+        "rhwp_outside_frame_bleed_px": 0,
+        "pdf_outside_frame_bleed_px": 0,
+        "content_bottom_delta_px": 6.0,
+        "red_marker_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "line_band_drift": {
+          "rhwp_count": 15,
+          "pdf_count": 39,
+          "paired": 15,
+          "max_abs_delta_px": 381.5,
+          "p90_abs_delta_px": 41.5,
+          "mean_abs_delta_px": 62.6
+        },
+        "column_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              163,
+              132,
+              598,
+              776
+            ],
+            "pdf_frame": [
+              258,
+              133,
+              647,
+              776
+            ],
+            "drift": {
+              "rhwp_count": 14,
+              "pdf_count": 40,
+              "paired": 14,
+              "max_abs_delta_px": 399.0,
+              "p90_abs_delta_px": 28.0,
+              "mean_abs_delta_px": 66.6
+            },
+            "rhwp_first_band": {
+              "y0": 134,
+              "y1": 146,
+              "x0": 171,
+              "x1": 596,
+              "pixels": 1917,
+              "cy": 140.0
+            },
+            "rhwp_last_band": {
+              "y0": 740,
+              "y1": 740,
+              "x0": 556,
+              "x1": 565,
+              "pixels": 8,
+              "cy": 740.0
+            },
+            "pdf_first_band": {
+              "y0": 138,
+              "y1": 150,
+              "x0": 263,
+              "x1": 549,
+              "pixels": 1491,
+              "cy": 144.0
+            },
+            "pdf_last_band": {
+              "y0": 728,
+              "y1": 733,
+              "x0": 542,
+              "x1": 581,
+              "pixels": 59,
+              "cy": 730.5
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              602,
+              132,
+              1038,
+              776
+            ],
+            "pdf_frame": [
+              651,
+              133,
+              1040,
+              776
+            ],
+            "drift": {
+              "rhwp_count": 10,
+              "pdf_count": 19,
+              "paired": 10,
+              "max_abs_delta_px": 105.0,
+              "p90_abs_delta_px": 101.0,
+              "mean_abs_delta_px": 69.8
+            },
+            "rhwp_first_band": {
+              "y0": 134,
+              "y1": 146,
+              "x0": 604,
+              "x1": 890,
+              "pixels": 1126,
+              "cy": 140.0
+            },
+            "rhwp_last_band": {
+              "y0": 379,
+              "y1": 379,
+              "x0": 873,
+              "x1": 890,
+              "pixels": 18,
+              "cy": 379.0
+            },
+            "pdf_first_band": {
+              "y0": 156,
+              "y1": 167,
+              "x0": 653,
+              "x1": 893,
+              "pixels": 975,
+              "cy": 161.5
+            },
+            "pdf_last_band": {
+              "y0": 714,
+              "y1": 714,
+              "x0": 653,
+              "x1": 1038,
+              "pixels": 386,
+              "cy": 714.0
+            }
+          }
+        ],
+        "column_line_band_drift_candidates": [
+          {
+            "column": 1,
+            "rhwp_frame": [
+              602,
+              132,
+              1038,
+              776
+            ],
+            "pdf_frame": [
+              651,
+              133,
+              1040,
+              776
+            ],
+            "drift": {
+              "rhwp_count": 10,
+              "pdf_count": 19,
+              "paired": 10,
+              "max_abs_delta_px": 105.0,
+              "p90_abs_delta_px": 101.0,
+              "mean_abs_delta_px": 69.8
+            },
+            "rhwp_first_band": {
+              "y0": 134,
+              "y1": 146,
+              "x0": 604,
+              "x1": 890,
+              "pixels": 1126,
+              "cy": 140.0
+            },
+            "rhwp_last_band": {
+              "y0": 379,
+              "y1": 379,
+              "x0": 873,
+              "x1": 890,
+              "pixels": 18,
+              "cy": 379.0
+            },
+            "pdf_first_band": {
+              "y0": 156,
+              "y1": 167,
+              "x0": 653,
+              "x1": 893,
+              "pixels": 975,
+              "cy": 161.5
+            },
+            "pdf_last_band": {
+              "y0": 714,
+              "y1": 714,
+              "x0": 653,
+              "x1": 1038,
+              "pixels": 386,
+              "cy": 714.0
+            }
+          }
+        ],
+        "large_ink_region_drift": {
+          "rhwp_count": 1,
+          "pdf_count": 1,
+          "paired": 1,
+          "deltas_px": [
+            -193.0
+          ],
+          "max_abs_delta_px": 193.0,
+          "mean_abs_delta_px": 193.0,
+          "rhwp_regions": [
+            {
+              "x0": 163.0,
+              "y0": 132.0,
+              "x1": 899.0,
+              "y1": 356.0,
+              "w": 736.0,
+              "h": 224.0,
+              "cy": 244.0,
+              "tiles": 456.0
+            }
+          ],
+          "pdf_regions": [
+            {
+              "x0": 258.0,
+              "y0": 133.0,
+              "x1": 898.0,
+              "y1": 741.0,
+              "w": 640.0,
+              "h": 608.0,
+              "cy": 437.0,
+              "tiles": 912.0
+            }
+          ]
+        },
+        "endnote_shape_ui": {
+          "separator_visible": true,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_below_mm": 2.0,
+          "separator_length_mm": 43.321
+        },
+        "endnote_separator_gap": {
+          "expected_separator": true,
+          "separator_below_mm": 2.0,
+          "separator_above_mm": 0.79,
+          "between_notes_mm": 0.0,
+          "separator_length_px": 163.7,
+          "rhwp": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "pdf": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "gap_delta_px": null
+        },
+        "endnote_no_separator_content_start": null,
+        "between_notes_marker_gap": {
+          "expected_between_notes_mm": 0.0,
+          "expected_between_notes_px": null,
+          "rhwp_marker_count": 0,
+          "pdf_marker_count": 0,
+          "paired_gap_count": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_marker_y": [],
+          "pdf_marker_y": [],
+          "rhwp_marker_y_by_column": [
+            []
+          ],
+          "pdf_marker_y_by_column": [
+            []
+          ],
+          "rhwp_gaps_px": [],
+          "pdf_gaps_px": [],
+          "pairs": []
+        },
+        "svg": "/private/tmp/rhwp-pr2290-review/target/visual-sweep-pr2290/task2287-pr/svg/1342000_edu_curriculum_map_030.svg",
+        "render_tree_json": "/private/tmp/rhwp-pr2290-review/target/visual-sweep-pr2290/task2287-pr/render_tree/render_tree_030.json",
+        "equation_text_overlap_candidates": [],
+        "question_title_text_overlap_candidates": [],
+        "line_order_overlap_candidates": [],
+        "render_tree_frame_tail_overflow_candidates": [
+          {
+            "path": "root/2/0/0/35/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "대구",
+            "overflow_px": 2032.0,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              167.5,
+              2794.7,
+              85.0,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/36/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "없음",
+            "overflow_px": 2032.0,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              262.7,
+              2794.7,
+              604.3,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/31/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "부산",
+            "overflow_px": 2009.8,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              167.5,
+              2772.5,
+              85.0,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/32/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "없음",
+            "overflow_px": 2009.8,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              262.7,
+              2772.5,
+              604.3,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/26/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "서울",
+            "overflow_px": 1988.1,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              167.5,
+              2750.8,
+              85.0,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/27/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "없음",
+            "overflow_px": 1988.1,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              262.7,
+              2750.8,
+              604.3,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/14/12",
+            "pi": 8,
+            "question": null,
+            "question_text": null,
+            "text": "교육활동 전반에 거쳐 통합적으로 다루도록 하되, 월 2회 이상 실시",
+            "overflow_px": 1951.2,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              185.9,
+              2713.9,
+              680.7,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/14/11",
+            "pi": 8,
+            "question": null,
+            "question_text": null,
+            "text": " -(식품안전 및 영양․식생활교육 강화) 식품안전 및 영양․식생활교육 추진계획을 수립하고 관련교과 및 창의적 체험활동 시간 등 ",
+            "overflow_px": 1933.8,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              170.5,
+              2696.5,
+              696.1,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/14/10",
+            "pi": 7,
+            "question": null,
+            "question_text": null,
+            "text": "교육이 지속적으로 이루어질 수 있도록 계획 수립․추진",
+            "overflow_px": 1916.5,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              185.9,
+              2679.2,
+              680.7,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/14/9",
+            "pi": 7,
+            "question": null,
+            "question_text": null,
+            "text": "모형을 통한 학년별 15시간 이상 계획 수립․추진 / 학교급별 최소한 1개 학년 이상은 연간 17차시 이상 정규교육과정에서 보건",
+            "overflow_px": 1899.2,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              185.9,
+              2661.9,
+              680.7,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/14/8",
+            "pi": 7,
+            "question": null,
+            "question_text": null,
+            "text": " -(학교 성교육 및 보건교육 내실화) 학교 성교육 표준안 적용을 위한 학교교육과정에서 체계적․포괄적이고 지속적인 성교육 운영",
+            "overflow_px": 1881.8,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              170.5,
+              2644.5,
+              696.1,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/14/7",
+            "pi": 6,
+            "question": null,
+            "question_text": null,
+            "text": "실시",
+            "overflow_px": 1864.5,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              185.9,
+              2627.2,
+              680.7,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/14/6",
+            "pi": 6,
+            "question": null,
+            "question_text": null,
+            "text": " -(학생자살 예방 및 위기관리 체계 확립) 학생자살 발생 비율이 높은 학기 초(3, 9월)에 생명존중 및 자살예방 교육을 연간 4시간 ",
+            "overflow_px": 1847.2,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              170.5,
+              2609.9,
+              696.1,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/14/5",
+            "pi": 5,
+            "question": null,
+            "question_text": null,
+            "text": " -(학교 안전교육 내실화) 학교안전사고 예방 학교계획 수립 및 안전교육 7대 표준안에 따른 안전교육 실시 ",
+            "overflow_px": 1829.8,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              170.5,
+              2592.5,
+              696.1,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/14/4",
+            "pi": 4,
+            "question": null,
+            "question_text": null,
+            "text": "2018년도 교육정책(교육부)",
+            "overflow_px": 1812.5,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              170.5,
+              2575.2,
+              696.1,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/14/3",
+            "pi": 3,
+            "question": null,
+            "question_text": null,
+            "text": "교육부 학생자살 예방대책 시행계획(2017.1)",
+            "overflow_px": 1795.2,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              170.5,
+              2557.9,
+              696.1,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/14/2",
+            "pi": 2,
+            "question": null,
+            "question_text": null,
+            "text": "교육부 성교육 내실화 방안 ",
+            "overflow_px": 1777.8,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              170.5,
+              2540.5,
+              696.1,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/14/1",
+            "pi": 1,
+            "question": null,
+            "question_text": null,
+            "text": "교육부 학생건강증진 정책방향(2018.1)",
+            "overflow_px": 1760.5,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              170.5,
+              2523.2,
+              696.1,
+              13.3
+            ]
+          },
+          {
+            "path": "root/2/0/0/14/0",
+            "pi": 0,
+            "question": null,
+            "question_text": null,
+            "text": "교육부 학교안전사고 예방 기본계획(2015.12): 3년 마다 수립 시행",
+            "overflow_px": 1743.2,
+            "frame_bottom": 776,
+            "column": 0,
+            "bbox": [
+              170.5,
+              2505.9,
+              696.1,
+              13.3
+            ]
+          }
+        ],
+        "render_tree_frame_tail_overflow_suppressed_candidates": [],
+        "question_marker_drift_candidates": [],
+        "annotated": "/private/tmp/rhwp-pr2290-review/target/visual-sweep-pr2290/task2287-pr/analysis/annotated_030.png"
+      }
+    ]
+  }
+]

@@ -26,6 +26,7 @@ base64 = "0.22"
 blake3 = "1"
 zip = { version = "8.5", default-features = false, features = ["deflate"] }
 quick-xml = "0.41"
+svgtypes = "0.16"
 codepage = "0.1.2"
 embedded-io = "0.7.1"
 encoding_rs = "0.8.35"
@@ -38,6 +39,7 @@ image = { version = "0.25", default-features = false, features = ["bmp", "jpeg",
 pcx = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+ttf-parser = "0.25"
 
 console_error_panic_hook = { version = "0.1", optional = true }
 
@@ -52,7 +54,6 @@ usvg = "0.45"
 resvg = { version = "0.47", optional = true }
 pdf-writer = "0.12"
 subsetter = "0.2"
-ttf-parser = "0.25"
 skia-safe = { version = "0.99.0", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
@@ -161,3 +162,10 @@ strip = "debuginfo"
 inherits = "release"
 lto = false
 codegen-units = 16
+
+# #2269 PDF 채번 비결정 근본 정정 — svg2pdf 0.13 의 HashMap 반복(폰트 객체 방출·
+# 리소스 딕셔너리 순서)을 결정화한 벤더 패치. 업스트림(typst/svg2pdf)이 2026-07
+# 아카이브되어 기여 불가, 포크 브랜치로 대체 (Cargo.lock 이 정확한 rev 를 고정).
+# krilla-svg 마이그레이션 시 이 패치는 제거한다.
+[patch.crates-io]
+svg2pdf = { git = "https://github.com/planet6897/svg2pdf", branch = "determinism-0.13" }

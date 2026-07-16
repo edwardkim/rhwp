@@ -128,6 +128,45 @@ sidecar payloads, and replay-plane choices that can change pixels.
 This is the right place for image resource identity, static SVG resource
 identity, exact font blob proof, and cache invalidation fixtures.
 
+P35 connects the first font-native resource producers to normal layer export.
+HWPX `binaryItemIDRef` values are resolved by exact package manifest ID and
+kept separately from the original round-trip string. A single-scalar,
+horizontal, unstyled text run may receive a bitmap glyph sidecar only when its
+`charShapeId` and Unicode language slot select that embedded face. Multi-face
+collections additionally require one unambiguous internal family-name match.
+The anchored `TextRun` remains present whenever parsing, face selection, glyph
+lookup, or payload limits fail. Multi-scalar, vertical, rotated, stretched,
+bold, and italic runs remain on the text fallback in this phase.
+
+The static-SVG font decoder and strict resource contract remain available for
+explicit proof fixtures, but normal font lowering does not yet label an SVG
+document as an exact sidecar. That requires preserving the OpenType SVG em-box
+and baseline geometry in the paint payload; treating the fragment alone as
+page-positioned output would overstate parity.
+
+The additive JSON contract advances to layer schema `1.18` and resource table
+`1.5`. Bitmap and SVG sidecar IDs are accompanied by the encoded image bytes,
+static SVG fragments, and content-addressed keys in `resources`, so a consumer
+never receives an arena-local reference without its corresponding payload.
+CanvasKit validates that key, decodes bitmap headers under the same pixel
+limits as ordinary images, and parses every static SVG path before selecting
+the sidecar. Selection is exclusive per `equivalenceGroup`: a verified sidecar
+suppresses its `TextRun`, while missing, corrupt, oversized, or unparseable
+resources keep only the anchored text fallback.
+
+CanvasKit image decoding is page-failure-contained. Encoded size and decoded
+pixel limits reject pathological payloads, decode failures use a bounded
+negative cache, and the native `SkImage` cache is a bounded LRU that deletes
+evicted objects. `missingPicture` placeholders are editor visuals for screen
+profiles and are suppressed for print-equivalent profiles; OLE placeholders
+keep the existing static replay.
+
+Equation ops now carry their bounded semantic `layoutBox` in the layer JSON.
+CanvasKit replays that tree directly, so a missing or malformed equation SVG
+does not require a DOM/SVG overlay and cannot abort the page. Non-finite,
+over-deep, oversized, or unsupported layout trees stop at an explicit readiness
+blocker instead of being reported as completed direct replay.
+
 ### 5. Visual And Artifact Diff Widening
 
 Use render-diff CI to compare Canvas2D and CanvasKit output on focused
@@ -158,7 +197,37 @@ they are added to the exact allowlist with a fixture and review.
 Diagnostics are snapshotted by page so viewport prefetch cannot replace the
 result for the page under test. Studio exposes the request, effective backend,
 fallback reason, and page snapshot through `getRendererDiagnostics` on the
-existing `rhwp-request` API.
+existing `rhwp-request` API. The public `@rhwp/editor` wrapper exposes the same
+operation as `getRendererDiagnostics(page)` with `schemaVersion: 1` after the
+peer advertises `renderer-diagnostics-v1`. Older protocol-v1 peers fail this
+new operation explicitly instead of returning the pre-versioned shape. CanvasKit
+snapshots include bounded image-cache counters and the last render duration so
+cold resource preparation and warm replay can be compared without inspecting
+private renderer state.
+The selected readiness corpus records both document-load/initial-render time
+and one immediate warm replay. Every readiness sample declares cold, warm,
+renderer-duration, and image-cache-pixel budgets; a missing measurement or
+budget fails the gate, and the values remain in the JSON and Markdown
+artifacts for regression analysis. The generated
+`render-p35-font-native-bitmap.hwpx` sample additionally requires a
+`bitmapGlyph` sidecar in the exported layer tree and at least one warm image
+cache hit, so the producer and CanvasKit resource replay path cannot pass by
+rendering only the text fallback.
+
+The hard readiness set covers paragraph, table, image, font fallback, and
+font-native bitmap cases. It checks requested mode/surface, page canvas
+ownership, expected/unexpected diagnostics, visual thresholds, declared layer
+payloads, warm cache hits, decoded-image pixel limits, synchronous warm replay,
+and the document load plus initial render interval. Browser scheduling and the
+post-load screenshot stabilization delay are not part of the performance
+budgets.
+
+The generated font fixtures use the pinned dependency in
+`scripts/requirements-font-fixtures.txt`. Regenerate them in order with
+`generate_font_glyph_payload_fixture.py`,
+`generate_exact_face_collection_fixture.py`, and
+`generate_font_native_hwpx_fixture.py`; the checked-in outputs and Render Diff
+path filters keep generator, font, and HWPX changes under the same review gate.
 If renderer initialization fails at any stage, this API reports
 `initialized: false`, a null effective backend, and the initialization error
 instead of implying that Canvas2D is active.

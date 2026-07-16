@@ -36,7 +36,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--woff2-output",
         type=Path,
-        default=Path("web/fonts/NotoSansKR-Regular.woff2"),
+        default=Path("assets/fonts/NotoSansKR-Regular.woff2"),
         help="웹 번들 WOFF2 출력 경로",
     )
     return parser.parse_args()
