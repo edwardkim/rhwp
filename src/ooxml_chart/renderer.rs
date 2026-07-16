@@ -516,16 +516,21 @@ fn render_bars(
         }
     };
 
+    // 슬롯 점유 비율 — 2D·3D묶은형 0.7 유지. 3D 누적은 한컴 실측 두께(슬롯 ~0.4,
+    // gapWidth 150 상당 1/(1+1.5))로 얇게 — 시각판정 보정 v3 2026-07-16.
+    let bar_frac = if chart.is_3d && stacked { 0.4 } else { 0.7 };
+    let (cat_span, bar_span_total) = {
+        let span = (if horizontal { ph } else { pw }) / cat_count as f64;
+        (span, span * bar_frac)
+    };
+
     // 3D 압출 깊이 — 막대 두께 기반 고정 근사 (c:view3D/gapDepth 미파싱, 이슈 #2278
     // 확정식 0.45/3~9 → 시각판정 보정 2026-07-16: 0.30/2.5~9 — 한컴 깊이/두께 비
     // 실측 ~0.25-0.3). 두께 = 누적: 슬롯 막대폭 / 묶음: 계열별 막대폭.
-    let bar_thickness = {
-        let span = (if horizontal { ph } else { pw }) / cat_count as f64 * 0.7;
-        if stacked {
-            span
-        } else {
-            span / ser_count as f64
-        }
+    let bar_thickness = if stacked {
+        bar_span_total
+    } else {
+        bar_span_total / ser_count as f64
     };
     let d3 = (bar_thickness * 0.30).clamp(2.5, 9.0);
 
@@ -568,14 +573,6 @@ fn render_bars(
             false,
         );
     }
-
-    let (cat_span, bar_span_total) = if horizontal {
-        let span = ph / cat_count as f64;
-        (span, span * 0.7)
-    } else {
-        let span = pw / cat_count as f64;
-        (span, span * 0.7)
-    };
 
     // 가로 막대는 카테고리를 아래→위로 배치 (한컴 실측: 항목 1이 맨 아래).
     // 세로는 왼→오른쪽 그대로.
@@ -3322,6 +3319,52 @@ mod tests {
         assert!(
             (gx1 - wall_x).abs() < 1e-6,
             "뒷벽 격자 x1({gx1}) == 뒷벽 x({wall_x})"
+        );
+    }
+
+    #[test]
+    fn test_bar3d_stacked_thinner_bar() {
+        // 3D 누적 막대 두께 = 슬롯 ~0.4 (한컴 실측 — gapWidth 150 상당 1/(1+1.5)).
+        // 2D 누적(0.7)·묶은형은 불변. 시각판정 보정 v3 2026-07-16.
+        // 파랑(계열1) front rect의 (x, width)를 카테고리별로 추출해 슬롯 대비 비율 검증.
+        let blue_fronts = |svg: &str| -> Vec<(f64, f64)> {
+            let parts: Vec<&str> = svg.split("fill=\"#6183d7\"").collect();
+            parts[..parts.len() - 1]
+                .iter()
+                .filter_map(|chunk| {
+                    let tag = &chunk[chunk.rfind("<rect ")?..];
+                    // 범례 swatch(10×10) 제외 — data_bar_xs와 동일 규칙
+                    if tag.contains("width=\"10\" height=\"10\"") {
+                        return None;
+                    }
+                    Some((attr_f64_of(tag, "x=\"")?, attr_f64_of(tag, "width=\"")?))
+                })
+                .collect()
+        };
+        let ratio_of = |svg: &str| -> f64 {
+            let f = blue_fronts(svg);
+            assert_eq!(f.len(), 2, "카테고리 2개 = 파랑 front rect 2개");
+            let cat_span = (f[1].0 - f[0].0).abs();
+            f[0].1 / cat_span
+        };
+        let svg3d = render_chart_svg(
+            &bars3d_chart(OoxmlChartType::Column, BarGrouping::Stacked),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        let r3 = ratio_of(&svg3d);
+        assert!(
+            (r3 - 0.4).abs() < 0.02,
+            "3D 누적 두께/슬롯 ≈ 0.4, 실제 {r3}"
+        );
+        // 2D 대조군: 0.7 유지 (바이트 불변 가드)
+        let svg2d = render_chart_svg(&bars_chart(BarGrouping::Stacked), 0.0, 0.0, 400.0, 300.0);
+        let r2 = ratio_of(&svg2d);
+        assert!(
+            (r2 - 0.7).abs() < 0.02,
+            "2D 누적 두께/슬롯 = 0.7 유지, 실제 {r2}"
         );
     }
 }
