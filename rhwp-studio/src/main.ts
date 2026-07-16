@@ -28,6 +28,7 @@ import { showValidationModalIfNeeded } from '@/ui/validation-modal';
 import { showHmlImportWarning } from '@/ui/hml-import-warning';
 import { showLocalFontsModalIfNeeded } from '@/ui/local-fonts-modal';
 import { showToast } from '@/ui/toast';
+import { addRecentDoc, listRecentDocs } from '@/recent/recent-store';
 import { showDropConfirmDialog } from '@/ui/drop-confirm-dialog';
 import { initRhwpDev } from '@/core/rhwp-dev';
 import { DocumentDirtyState } from '@/core/document-dirty-state';
@@ -359,7 +360,11 @@ async function initialize(): Promise<void> {
       new TableObjectRenderer(container, canvasView.getVirtualScroll(), true),
     );
 
-    new MenuBar(document.getElementById('menu-bar')!, eventBus, dispatcher, registry);
+    new MenuBar(document.getElementById('menu-bar')!, eventBus, dispatcher, registry, {
+      onMenuOpen: (menuName) => {
+        if (menuName === 'file') void renderRecentSubmenu();
+      },
+    });
 
     // 툴바 내 data-cmd 버튼 클릭 → 커맨드 디스패치
     document.querySelectorAll('.tb-btn[data-cmd]').forEach(btn => {
@@ -909,7 +914,7 @@ async function loadBytes(
   fileName: string,
   fileHandle: typeof wasm.currentFileHandle,
   startTime = performance.now(),
-  options: { dataReadProgressShown?: boolean } = {},
+  options: { dataReadProgressShown?: boolean; skipRecent?: boolean } = {},
 ): Promise<void> {
   if (!options.dataReadProgressShown) {
     await updateLoadProgress(0, '문서 데이터 준비 중...');
@@ -920,6 +925,19 @@ async function loadBytes(
   await updateLoadProgress(45, '자동 저장 준비 중...');
   forgetConvertedHmlSaveHandle(fileHandle);
   wasm.currentFileHandle = fileHandle;
+
+  // 최근 문서 기록 — 문서 로드 성공 직후, 폰트/모달 등 블로킹 UI 단계 이전에 기록한다.
+  // 핸들이 있으면 라이브 재열기용으로 함께 기록하고, 없으면(드롭/input/URL 로드)
+  // 메타-only 로 기록한다 — 목록에는 남기되 자동 재열기는 핸들 있는 항목만 가능하다.
+  // 자동저장 복구본은 options.skipRecent 로 제외.
+  if (!options.skipRecent) {
+    void addRecentDoc({
+      fileName: wasm.fileName,
+      sourceFormat: wasm.getSourceFormat(),
+      handle: fileHandle,
+    }).catch((err) => console.warn('[recent] 최근 문서 기록 실패:', err));
+  }
+
   await autosaveManager.beginDocument(
     { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
     { discardPreviousDraft: true },
@@ -927,6 +945,74 @@ async function loadBytes(
   await updateLoadProgress(50, '문서 초기화 중...');
   const elapsed = performance.now() - startTime;
   await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`);
+}
+
+/** 파일 메뉴 "최근 문서" 서브패널을 최신 목록으로 다시 렌더한다(메뉴 open 시 호출). */
+async function renderRecentSubmenu(): Promise<void> {
+  const panel = document.getElementById('recent-docs-panel');
+  if (!panel) return;
+
+  let recents;
+  try {
+    recents = await listRecentDocs();
+  } catch (err) {
+    console.warn('[recent] 최근 문서 조회 실패:', err);
+    return;
+  }
+
+  const makeItem = (opts: {
+    label: string;
+    cmd?: string;
+    id?: string;
+    right?: string;
+    disabled?: boolean;
+    title?: string;
+  }): HTMLElement => {
+    const item = document.createElement('div');
+    item.className = opts.disabled ? 'md-item disabled' : 'md-item';
+    if (opts.cmd) item.dataset.cmd = opts.cmd;
+    if (opts.id) item.dataset.id = opts.id;
+    if (opts.title) item.title = opts.title;
+    const icon = document.createElement('span');
+    icon.className = 'md-icon';
+    const label = document.createElement('span');
+    label.className = 'md-label';
+    label.textContent = opts.label;
+    item.append(icon, label);
+    if (opts.right) {
+      const right = document.createElement('span');
+      right.className = 'md-shortcut';
+      right.textContent = opts.right;
+      item.append(right);
+    }
+    return item;
+  };
+
+  const frag = document.createDocumentFragment();
+  if (recents.length === 0) {
+    frag.append(makeItem({ label: '(최근 문서 없음)', disabled: true }));
+  } else {
+    for (const doc of recents) {
+      frag.append(
+        makeItem({
+          label: doc.fileName,
+          cmd: 'file:open-recent',
+          id: doc.id,
+          right: doc.sourceFormat.toUpperCase(),
+          title: doc.fileName,
+        }),
+      );
+    }
+    const sep = document.createElement('div');
+    sep.className = 'md-sep';
+    frag.append(sep);
+    frag.append(makeItem({ label: '최근 문서 목록 지우기', cmd: 'file:clear-recent' }));
+  }
+
+  panel.replaceChildren(frag);
+  // 목록이 비면 서브메뉴 자체를 비활성(hover 열림 차단). updateMenuStates가
+  // 렌더 이전(스테일) 내용으로 판정하므로 여기서 직접 갱신한다.
+  panel.closest('.md-sub')?.classList.toggle('disabled', recents.length === 0);
 }
 
 function shouldSkipInitialAutosaveRecovery(): boolean {
@@ -964,7 +1050,7 @@ async function offerAutosaveRecoveryIfIdle(): Promise<void> {
 
 async function restoreAutosaveDraft(draft: AutosaveDraft): Promise<void> {
   const fileName = recoveryFileName(draft.fileName, draft.sourceFormat);
-  await loadBytes(new Uint8Array(draft.data), fileName, null);
+  await loadBytes(new Uint8Array(draft.data), fileName, null, performance.now(), { skipRecent: true });
   await deleteAutosaveDraft(draft.id);
   documentState.markDirty('autosave-recovered');
   showToast({

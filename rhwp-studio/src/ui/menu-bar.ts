@@ -12,16 +12,25 @@ import { syncMenuShortcutLabels } from './menu-shortcut-labels';
  * - 항목 클릭 → CommandDispatcher 경유 실행
  * - 드롭다운 열릴 때 컨텍스트 감응 활성/비활성 갱신
  */
+/** MenuBar 옵션 */
+export interface MenuBarOptions {
+  /** 드롭다운 메뉴가 열릴 때 호출 (동적 하위 항목 렌더 등). menuName = data-menu 값. */
+  onMenuOpen?: (menuName: string, menuEl: HTMLElement) => void;
+}
+
 export class MenuBar {
   private menuItems: HTMLElement[];
   private openMenu: HTMLElement | null = null;
+  private onMenuOpen?: (menuName: string, menuEl: HTMLElement) => void;
 
   constructor(
     private container: HTMLElement,
     private eventBus: EventBus,
     private dispatcher: CommandDispatcher,
     registry: CommandRegistry,
+    options: MenuBarOptions = {},
   ) {
+    this.onMenuOpen = options.onMenuOpen;
     this.menuItems = Array.from(container.querySelectorAll('.menu-item'));
     syncMenuShortcutLabels(container, registry);
     this.setupTitleClicks();
@@ -45,6 +54,7 @@ export class MenuBar {
           item.classList.add('open');
           this.openMenu = item;
           this.updateMenuStates(item);
+          this.onMenuOpen?.(item.dataset.menu ?? '', item);
         }
       });
     }
@@ -61,6 +71,7 @@ export class MenuBar {
           item.classList.add('open');
           this.openMenu = item;
           this.updateMenuStates(item);
+          this.onMenuOpen?.(item.dataset.menu ?? '', item);
         }
       });
     }

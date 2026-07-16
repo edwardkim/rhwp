@@ -512,6 +512,12 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             }
             let line_text: String = chars[offset..end].iter().collect();
             let is_last_line = end >= total;
+            // [#2279] 주의: 이 폴백은 문단의 CharShapeRef 를 무시하고 단일
+            // default_style run 을 만든다(혼합 크기 문단이 전 줄 최대 크기로
+            // 측정·렌더). 본문 경로는 recompose_for_body_width 가
+            // restyle_fallback_runs_by_char_shapes 로 정합한다 — 셀 경로는 기존
+            // 폭 보정망(#2070 사다리)이 이 단일 스타일 위에서 교정돼 있어
+            // 전면 교체 시 80168 pi=1056/1245 급 회귀(#2279 실측).
             lines.push(ComposedLine {
                 runs: split_runs_by_lang(vec![ComposedTextRun {
                     text: line_text,
@@ -1377,6 +1383,49 @@ pub(crate) fn no_ls_short_label_cell(
 /// - ComposedLine 전체 측정 폭이 `cell_inner_width_px` 초과
 ///
 /// 분할 전략: 단어 경계 (공백) 우선, 단어가 셀 너비 초과 시 글자 단위 break.
+/// [#2279] NO_LS 폴백 줄들의 단일-스타일 run 을 CharShapeRef 경계로 재분할한다.
+///
+/// compose_lines 폴백은 문단 글자모양을 무시한 단일 default_style run 을 만든다
+/// (86712 pi=20: "ㅇ "=15pt + 본문 14pt 가 전 줄 15pt 로 측정·렌더 → 폭 +7% 과대
+/// 래핑, pitch 32.0 vs 한글 29.9, 측정/렌더 줄수 불일치로 렌더 꼬리 텍스트 소실).
+/// 본문(column) 경로에서만 호출한다 — 셀 측정은 기존 폭 보정망(#2070 사다리)이
+/// 단일 스타일 전제 위에서 교정돼 있어 전면 적용 시 80168 157→156 회귀(실측).
+pub(crate) fn restyle_fallback_runs_by_char_shapes(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+) {
+    if para.char_shapes.is_empty() || !para.line_segs.is_empty() {
+        return;
+    }
+    for line in composed.lines.iter_mut() {
+        let text: String = line.runs.iter().map(|r| r.text.as_str()).collect();
+        if text.is_empty() {
+            continue;
+        }
+        let start = line.char_start;
+        let end = start + text.chars().count();
+        let restyled =
+            split_by_char_shapes(&text, start, end, &para.char_offsets, &para.char_shapes);
+        if !restyled.is_empty() {
+            line.runs = restyled;
+        }
+    }
+}
+
+/// [#2279] 본문(column) 폭 재래핑 — 글자모양 재분할 후 recompose.
+///
+/// typeset(format_paragraph)·render(layout_partial_paragraph) 의 본문 NO_LS
+/// 문단 전용. 셀 경로는 recompose_for_cell_width 를 그대로 사용한다.
+pub fn recompose_for_body_width(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    column_inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+) {
+    restyle_fallback_runs_by_char_shapes(composed, para);
+    recompose_for_cell_width(composed, para, column_inner_width_px, styles);
+}
+
 pub fn recompose_for_cell_width(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
@@ -1560,7 +1609,153 @@ pub fn recompose_for_cell_width(
                 last.has_line_break = true;
             }
         }
+        // [#2279] 분할 줄의 줄높이 per-line 재산정 — 한글은 줄마다 **그 줄의 최대
+        // 글자 크기**로 pitch 를 정한다. 종전에는 분할 줄이 원본 압축줄의 lh/ls
+        // (= 문단 최대 fs 기준)를 상속해, 큰 글자가 첫 줄에만 있는 문단(86712
+        // pi=20: "ㅇ "=15pt + 본문 14pt)에서 후속 줄 pitch 가 +2.1px/줄 과대
+        // (rhwp 32.0 vs 한글 실측 29.9 = 14pt×4/3×160%). 페이지당 ~20줄 누적 시
+        // -40px 급 fit 오차(86712 p10 pi=30 밀림)의 본체. Percent 줄간격 한정,
+        // lh/ls/bl 을 줄 최대 fs 비율로 축소(확대 없음 — 원본 상속이 상한).
+        if composed.lines.len() > start {
+            let is_percent = styles
+                .para_styles
+                .get(para.para_shape_id as usize)
+                .map(|ps| {
+                    matches!(
+                        ps.line_spacing_type,
+                        crate::model::style::LineSpacingType::Percent
+                    )
+                })
+                .unwrap_or(false);
+            if is_percent {
+                let group_max_fs = composed.lines[start..]
+                    .iter()
+                    .flat_map(|l| l.runs.iter())
+                    .map(|r| {
+                        resolved_to_text_style(styles, r.char_style_id, r.lang_index).font_size
+                    })
+                    .fold(0.0f64, f64::max);
+                if group_max_fs > 0.0 {
+                    for line in composed.lines[start..].iter_mut() {
+                        let line_max_fs = line
+                            .runs
+                            .iter()
+                            .map(|r| {
+                                resolved_to_text_style(styles, r.char_style_id, r.lang_index)
+                                    .font_size
+                            })
+                            .fold(0.0f64, f64::max);
+                        if line_max_fs > 0.0 && line_max_fs < group_max_fs - 0.01 {
+                            let factor = line_max_fs / group_max_fs;
+                            line.line_height = ((line.line_height as f64) * factor).round() as i32;
+                            line.line_spacing =
+                                ((line.line_spacing as f64) * factor).round() as i32;
+                            line.baseline_distance =
+                                ((line.baseline_distance as f64) * factor).round() as i32;
+                        }
+                    }
+                }
+            }
+        }
     }
+    // [#2279 진단] 측정/렌더 경로별 재래핑 폭·줄수 대조 — 동작 불변.
+    if let Ok(pat) = std::env::var("RHWP_DIAG_RECOMP") {
+        if para.text.contains(&pat) {
+            eprintln!(
+                "DIAG_RECOMP width={:.2} first={:.2} cont={:.2} lines={} text={:?}",
+                cell_inner_width_px,
+                first_width_px,
+                cont_width_px,
+                composed.lines.len(),
+                para.text.chars().take(20).collect::<String>(),
+            );
+        }
+    }
+}
+
+/// [#2279 axis B] 셀 텍스트 오버플로 시 좌우 패딩 축소 — 렌더/측정 공용 코어.
+///
+/// 렌더(`layout_table_cells`)는 단일줄 오버플로 셀의 좌우 패딩을 축소한 뒤
+/// `recompose_for_cell_width` 로 재래핑한다. 측정(cut `cell_units` / mt
+/// `HeightMeasurer`)이 원 패딩 폭(더 좁음)으로 래핑하면 같은 문단이
+/// 렌더 4줄/측정 5줄로 갈라져 행높이가 과대해진다 (86712 pi=172 산식 셀
+/// 106.5px vs 한글 86.3px, #2237 axis B). 규칙 본체를 단일 출처로 공유한다.
+/// 의미는 종전 `LayoutEngine::shrink_cell_padding_for_overflow` 와 동일.
+pub(crate) fn shrunk_cell_horizontal_padding(
+    pad_left: f64,
+    pad_right: f64,
+    cell_w: f64,
+    composed_paras: &[ComposedParagraph],
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    preserve_cell_padding: bool,
+) -> (f64, f64) {
+    if preserve_cell_padding {
+        return (pad_left, pad_right);
+    }
+
+    // [Task #617] 다중 줄(2 줄 이상) 단락이 line_segs 로 분배 완료된 경우,
+    // HWP 가 가용 폭에 맞춰 자간을 분배하고 줄바꿈을 확정한 상태이므로
+    // 자연 폭 추정으로 다시 깎으면 오버 페인팅. 단일 줄 셀(좁은 수치 셀
+    // 등에서 오버플로우 가능성 있음) 은 종전 휴리스틱으로 보호한다.
+    let any_multiline_distributed = paragraphs.iter().any(|p| p.line_segs.len() >= 2);
+    if any_multiline_distributed {
+        return (pad_left, pad_right);
+    }
+
+    let mut max_line_w = 0.0f64;
+    for comp in composed_paras {
+        for line in &comp.lines {
+            let mut w = 0.0;
+            for run in &line.runs {
+                let mut ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                if run.char_overlap.is_some() {
+                    let fs = if ts.font_size > 0.0 {
+                        ts.font_size
+                    } else {
+                        12.0
+                    };
+                    let chars: Vec<char> = run.text.chars().collect();
+                    w += fs * char_overlap_advance_units(&chars) as f64;
+                    continue;
+                }
+                // 자연 폭 측정: 음수 자간을 제거하여 글리프가 서로 겹치지 않는 최소 폭을 얻음
+                if ts.letter_spacing < 0.0 {
+                    ts.letter_spacing = 0.0;
+                }
+                // [Task #555] PUA 옛한글 변환 후 자모 시퀀스 폭 사용.
+                // (estimate_text_width 는 ts.ratio 를 자체 반영함.)
+                w += estimate_text_width(effective_text_for_metrics(run), &ts);
+            }
+            if w > max_line_w {
+                max_line_w = w;
+            }
+        }
+    }
+    let available = (cell_w - pad_left - pad_right).max(0.0);
+    // Task #347: estimate_text_width는 영어 본문(Times New Roman 등) 자연 폭을
+    // 5~15%까지 과대 추정할 수 있어, HWP가 이미 줄바꿈한 본문에서도
+    // padding 축소가 잘못 트리거됨. 15% 이내 초과는 정상으로 보고 미축소.
+    let overflow_threshold = available * 1.15;
+    if max_line_w <= overflow_threshold || cell_w <= 2.0 {
+        return (pad_left, pad_right);
+    }
+    let min_pad = 1.0;
+    let total_pad = pad_left + pad_right;
+    let max_reducible = (total_pad - 2.0 * min_pad).max(0.0);
+    if max_reducible <= 0.0 {
+        return (pad_left, pad_right);
+    }
+    let deficit = max_line_w - available;
+    let reduction = deficit.min(max_reducible);
+    let new_total = total_pad - reduction;
+    let new_left = if total_pad > 0.0 {
+        pad_left * new_total / total_pad
+    } else {
+        new_total / 2.0
+    };
+    let new_right = new_total - new_left;
+    (new_left, new_right)
 }
 
 fn is_hwp3_hwp5_missing_lineseg_legacy_bullet(

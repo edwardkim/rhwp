@@ -32,6 +32,63 @@ import {
   type SaveDocumentResult,
   type FileSystemWindowLike,
 } from '@/command/file-system-access';
+import { showToast } from '@/ui/toast';
+import { clearRecentDocs, listRecentDocs, removeRecentDoc } from '@/recent/recent-store';
+import { openRecentEntry } from '@/recent/recent-open';
+
+/**
+ * 파일 열기 대화상자(File System Access picker, 미지원 시 숨김 input 폴백)를 열어
+ * 문서를 로드한다. `file:open` 커맨드와 "최근 문서" 메타-only 항목 재열기가 공유한다.
+ */
+async function openFileViaPicker(services: CommandServices): Promise<void> {
+  try {
+    const canReplace = await confirmSaveBeforeReplacingDocument(services);
+    if (!canReplace) return;
+
+    const windowLike = window as FileSystemWindowLike;
+    const nativeOpenPickerAvailable = canUseOpenFilePicker(windowLike);
+    const handle = await pickOpenFileHandle(windowLike);
+    if (!handle) {
+      // File System Access API picker가 있었다면 null은 사용자 취소(예: Esc)다.
+      // 이때 숨김 input fallback을 다시 열면 파일 선택창이 곧바로 재오픈된다.
+      if (nativeOpenPickerAvailable) return;
+      const fileInput = document.getElementById('file-input') as HTMLInputElement | null;
+      if (fileInput) {
+        fileInput.dataset.skipUnsavedGuard = 'true';
+        fileInput.click();
+      }
+      return;
+    }
+
+    const { bytes, name } = await readFileFromHandle(handle);
+    services.eventBus.emit('open-document-bytes', {
+      bytes,
+      fileName: name,
+      fileHandle: handle,
+      skipUnsavedGuard: true,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[file:open] 열기 실패:', msg);
+    alert(`파일 열기에 실패했습니다:\n${msg}`);
+  }
+}
+
+/** 최근 문서 핸들의 읽기 권한을 확인/요청한다. 최종 'granted' 여부 반환. */
+async function ensureReadPermission(handle: FileSystemFileHandleLike): Promise<boolean> {
+  try {
+    if (typeof handle.queryPermission === 'function') {
+      if ((await handle.queryPermission({ mode: 'read' })) === 'granted') return true;
+    }
+    if (typeof handle.requestPermission === 'function') {
+      return (await handle.requestPermission({ mode: 'read' })) === 'granted';
+    }
+    // 권한 API 미지원 브라우저 → getFile() 시도로 위임(여기선 통과).
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /** [Task #833] 사용자 명시 cancel 에러 검출.
  * - AbortError: showSaveFilePicker / showOpenFilePicker 다이얼로그 취소
@@ -313,38 +370,44 @@ export const fileCommands: CommandDef[] = [
   {
     id: 'file:open',
     label: '열기',
-    async execute(services) {
-      try {
-        const canReplace = await confirmSaveBeforeReplacingDocument(services);
-        if (!canReplace) return;
-
-        const windowLike = window as FileSystemWindowLike;
-        const nativeOpenPickerAvailable = canUseOpenFilePicker(windowLike);
-        const handle = await pickOpenFileHandle(windowLike);
-        if (!handle) {
-          // File System Access API picker가 있었다면 null은 사용자 취소(예: Esc)다.
-          // 이때 숨김 input fallback을 다시 열면 파일 선택창이 곧바로 재오픈된다.
-          if (nativeOpenPickerAvailable) return;
-          const fileInput = document.getElementById('file-input') as HTMLInputElement | null;
-          if (fileInput) {
-            fileInput.dataset.skipUnsavedGuard = 'true';
-            fileInput.click();
-          }
-          return;
-        }
-
-        const { bytes, name } = await readFileFromHandle(handle);
-        services.eventBus.emit('open-document-bytes', {
-          bytes,
-          fileName: name,
-          fileHandle: handle,
-          skipUnsavedGuard: true,
-        });
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error('[file:open] 열기 실패:', msg);
-        alert(`파일 열기에 실패했습니다:\n${msg}`);
+    execute: openFileViaPicker,
+  },
+  {
+    // 최근 문서 재열기 — 저장된 핸들 권한 재확인 후 라이브 파일 로드. params.id로 레코드 지정.
+    // #2285 범위: 바이트 스냅샷 폴백 없음. 권한 거부는 항목 유지(다음에 다시 시도 가능),
+    // 파일 이동/삭제(getFile 실패)는 항목 제거 + 안내. 결과 규칙은
+    // recent-open.ts(openRecentEntry) — 테스트 가능한 순수 로직으로 분리.
+    id: 'file:open-recent',
+    label: '최근 문서 열기',
+    async execute(services, params) {
+      const id = typeof params?.id === 'string' ? params.id : undefined;
+      if (!id) return;
+      const recents = await listRecentDocs();
+      const entry = recents.find((r) => r.id === id);
+      if (!entry) {
+        showToast({ message: '최근 문서 정보를 찾을 수 없습니다.', durationMs: 2500 });
+        return;
       }
+
+      await openRecentEntry(entry, {
+        ensurePermission: ensureReadPermission,
+        readFile: readFileFromHandle,
+        remove: removeRecentDoc,
+        toast: (message, durationMs) => showToast({ message, durationMs }),
+        emitOpen: (payload) => services.eventBus.emit('open-document-bytes', payload),
+        // 메타-only 항목: 핸들이 없어 자동 재열기 불가 → 열기 대화상자를 다시 연다.
+        requestReopen: () => { void openFileViaPicker(services); },
+      });
+    },
+  },
+  {
+    // 최근 문서 목록 전체 삭제.
+    id: 'file:clear-recent',
+    label: '최근 문서 목록 지우기',
+    async execute() {
+      if (!confirm('최근 문서 목록을 모두 지우시겠습니까?')) return;
+      await clearRecentDocs();
+      showToast({ message: '최근 문서 목록을 지웠습니다.', durationMs: 2200 });
     },
   },
   {

@@ -29,10 +29,14 @@ fn sijang_rowbreak_density_pin() {
     let pages = page_count_of(
         "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
     );
+    // [#2287] RowBreak rowspan 블록 연속 조각의 잔여 증발 보정으로 307→309
+    // (정답 315 방향 +2, 잔여 −6). 연속 조각 구간(p72 전후) 오버플로 부재
+    // SVG 실측 (ymax ≤ 975 < 페이지). 잠정 핀 갱신.
     assert_eq!(
-        pages, 307,
-        "시장구조조사 잠정 307쪽 (PDF 정답 315, 잔여 −8 — #2070). 실측 {pages}p: \
-         증가 시 행미 공백 hanging/aim 패딩 0 존중/비-Percent 줄간격 스케일 회귀."
+        pages, 309,
+        "시장구조조사 잠정 309쪽 (PDF 정답 315, 잔여 −6 — #2070/#2287). 실측 {pages}p: \
+         310p+면 행미 공백 hanging/aim 패딩 0 존중/비-Percent 줄간격 스케일 회귀, \
+         309p 미만이면 #2287 잔여 증발 재발 의심."
     );
 }
 

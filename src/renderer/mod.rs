@@ -853,6 +853,60 @@ pub(crate) fn para_has_no_stored_line_segs(p: &crate::model::paragraph::Paragrap
     p.line_segs.is_empty() || p.line_segs.iter().all(|s| s.tag & 0x8000_0000 != 0)
 }
 
+/// [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC(글자처럼) 그림/도형 플로우
+/// 줄 메트릭 합성. 컨트롤 폭을 가용 폭에 greedy wrap 하여 줄별 (최대 높이, 0)
+/// 을 돌려준다.
+///
+/// 한글은 글자처럼 개체를 줄박스로 취급해 그림 높이만큼 본문 흐름을 전진시키나,
+/// rhwp 는 composed lines 가 비면(빈 텍스트 + 컨트롤) 문단 높이가 0 으로 붕괴해
+/// 차트/스캔 그림 수십 장이 한 쪽에 응축된다 (미래부 정서분석 88 vs 한글 129쪽,
+/// 농촌 S-OJT 꼬리 26쪽 응축 — 10k 서베이 r14 대형 음수 델타 지배 성분).
+/// 호출부는 pairs 가 빈 경우(합성 폴백 실패 후)에만 사용한다.
+pub(crate) fn tac_object_stack_line_metrics(
+    para: &crate::model::paragraph::Paragraph,
+    dpi: f64,
+    available_width_px: Option<f64>,
+) -> Option<Vec<(f64, f64)>> {
+    use crate::model::control::Control;
+    if !para_has_no_stored_line_segs(para) {
+        return None;
+    }
+    let objs: Vec<(f64, f64)> = para
+        .controls
+        .iter()
+        .filter_map(|c| {
+            let common = match c {
+                Control::Picture(pic) if pic.common.treat_as_char => &pic.common,
+                Control::Shape(s) if s.common().treat_as_char => s.common(),
+                _ => return None,
+            };
+            let w = hwpunit_to_px(common.width as i32, dpi);
+            let h = hwpunit_to_px(common.height as i32, dpi);
+            (h > 0.5).then_some((w, h))
+        })
+        .collect();
+    if objs.is_empty() {
+        return None;
+    }
+    let avail = available_width_px.unwrap_or(f64::INFINITY).max(1.0);
+    let mut lines: Vec<(f64, f64)> = Vec::new();
+    let mut line_w = 0.0f64;
+    let mut line_h = 0.0f64;
+    for (w, h) in objs {
+        if line_w > 0.0 && line_w + w > avail + 0.5 {
+            lines.push((line_h, 0.0));
+            line_w = 0.0;
+            line_h = 0.0;
+        }
+        line_w += w;
+        line_h = line_h.max(h);
+    }
+    if line_h > 0.0 {
+        lines.push((line_h, 0.0));
+    }
+    (!lines.is_empty()).then_some(lines)
+}
+
 /// HWPUNIT을 픽셀로 변환
 #[inline]
 pub fn hwpunit_to_px(hwpunit: i32, dpi: f64) -> f64 {
@@ -1312,6 +1366,58 @@ mod tests {
         // 1인치 = 7200 HWPUNIT, 96 DPI → 96px
         let px = hwpunit_to_px(7200, 96.0);
         assert!((px - 96.0).abs() < 0.01);
+    }
+
+    // [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC 그림 줄 메트릭 합성.
+    fn tac_picture_para(sizes_hu: &[(i32, i32)]) -> crate::model::paragraph::Paragraph {
+        use crate::model::control::Control;
+        let mut para = crate::model::paragraph::Paragraph::default();
+        for (w, h) in sizes_hu {
+            let mut pic = crate::model::image::Picture::default();
+            pic.common.treat_as_char = true;
+            pic.common.width = *w as u32;
+            pic.common.height = *h as u32;
+            para.controls.push(Control::Picture(Box::new(pic)));
+        }
+        para
+    }
+
+    #[test]
+    fn test_tac_object_stack_single_picture_line() {
+        // 590×387px 그림 1장 (미래부 정서분석 pi854 형상) — 1줄, 그림 높이.
+        let para = tac_picture_para(&[(44222, 29069)]);
+        let lines = tac_object_stack_line_metrics(&para, 96.0, Some(661.0)).unwrap();
+        assert_eq!(lines.len(), 1);
+        assert!((lines[0].0 - hwpunit_to_px(29069, 96.0)).abs() < 0.01);
+        assert_eq!(lines[0].1, 0.0);
+    }
+
+    #[test]
+    fn test_tac_object_stack_wraps_by_width() {
+        // 590px 그림 3장, 가용 661px — 줄당 1장씩 3줄 (농촌 S-OJT 스택 형상).
+        let para = tac_picture_para(&[(44222, 29069); 3]);
+        let lines = tac_object_stack_line_metrics(&para, 96.0, Some(661.0)).unwrap();
+        assert_eq!(lines.len(), 3);
+        // 300px 그림 2장, 가용 661px — 한 줄 수용.
+        let para2 = tac_picture_para(&[(22000, 10000), (22000, 12000)]);
+        let lines2 = tac_object_stack_line_metrics(&para2, 96.0, Some(661.0)).unwrap();
+        assert_eq!(lines2.len(), 1);
+        assert!((lines2[0].0 - hwpunit_to_px(12000, 96.0)).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_tac_object_stack_rejects_stored_ls_and_non_tac() {
+        // 저장 LINE_SEG 보유 문단 제외 (이중 계상 방지).
+        let mut para = tac_picture_para(&[(44222, 29069)]);
+        para.line_segs
+            .push(crate::model::paragraph::LineSeg::default());
+        assert!(tac_object_stack_line_metrics(&para, 96.0, Some(661.0)).is_none());
+        // 비-TAC 그림 제외 (PageItem::Shape 오버레이 경로 유지).
+        let mut para2 = tac_picture_para(&[(44222, 29069)]);
+        if let crate::model::control::Control::Picture(pic) = &mut para2.controls[0] {
+            pic.common.treat_as_char = false;
+        }
+        assert!(tac_object_stack_line_metrics(&para2, 96.0, Some(661.0)).is_none());
     }
 
     #[test]

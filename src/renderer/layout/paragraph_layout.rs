@@ -1902,7 +1902,9 @@ impl LayoutEngine {
                 let column_inner_width = (col_area.width - margin_l - margin_r).max(0.0);
                 if column_inner_width > 0.0 {
                     let mut cloned = comp.clone();
-                    crate::renderer::composer::recompose_for_cell_width(
+                    // [#2279] 본문 NO_LS 는 글자모양 재분할 포함 래퍼 사용 —
+                    // typeset(format_paragraph)과 동일 (측정/렌더 줄수·pitch 정합).
+                    crate::renderer::composer::recompose_for_body_width(
                         &mut cloned,
                         para,
                         column_inner_width,
@@ -1916,7 +1918,16 @@ impl LayoutEngine {
                 None
             };
             let comp_ref = recomposed.as_ref().unwrap_or(comp);
-            let end_line_adjusted = end_line.min(comp_ref.lines.len()).max(start_line);
+            // [#2279] 전체-문단 요청(start=0, end=원본 줄수 이상)은 재래핑 후 줄수로
+            // 확장한다. 종전에는 재래핑이 줄수를 늘린 문단(45자 폴백 3줄 → 실폭 4줄,
+            // 86712 pi=22)에서 원본 줄수로 클램프되어 마지막 줄이 렌더에서 소실됐다
+            // (측정 4줄 fit vs 렌더 3줄 — maintainer PR #2284 리뷰 p10 픽셀 하락과
+            // 정합). 분할(partial) 요청의 라인 범위는 종전 클램프 유지.
+            let end_line_adjusted = if start_line == 0 && end_line >= comp.lines.len() {
+                comp_ref.lines.len()
+            } else {
+                end_line.min(comp_ref.lines.len()).max(start_line)
+            };
             return self.layout_composed_paragraph(
                 tree,
                 col_node,
@@ -2887,6 +2898,21 @@ impl LayoutEngine {
                 use_stored_text_height,
                 source_metrics_reflow_eligible,
             );
+            // [#2279 진단] 줄별 pitch 분해 — 동작 불변.
+            if let Ok(pat) = std::env::var("RHWP_DIAG_PITCH") {
+                if para.map(|p| p.text.contains(&pat)).unwrap_or(false) {
+                    eprintln!(
+                        "DIAG_PITCH li={} raw_lh={:.2} raw_ls={:.2} max_fs={:.2} -> lh={:.2} ls={:.2} stored_ls_cnt={}",
+                        line_idx,
+                        raw_lh,
+                        hwpunit_to_px(comp_line.line_spacing, self.dpi),
+                        max_fs,
+                        line_height,
+                        line_spacing_px,
+                        para.map(|p| p.line_segs.len()).unwrap_or(0),
+                    );
+                }
+            }
             // 인라인 Shape(글상자)가 있는 줄: line_height에 Shape 높이가 포함됨
             // Shape는 별도 패스에서 para_y 기준으로 렌더링되므로,
             // 텍스트의 y와 line_height를 폰트 기반으로 보정하여 baseline 정렬

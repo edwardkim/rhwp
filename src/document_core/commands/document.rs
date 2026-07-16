@@ -465,6 +465,33 @@ impl DocumentCore {
                 // wrap 은 불문 — 자리차지(발신명의)와 글뒤로(직인 도장, 36408321 pi12)
                 // 모두 같은 새 쪽 시그니처다.
                 let mut prev_stored_last_vpos: i32 = 0;
+                // [#2279 성분②] 원본(비합성) 문단의 저장 (first vpos, last end)
+                // 스냅샷 — TopAndBottom 개체 host 의 저장 관례(개체-선행 vs
+                // lh-포함)를 lead = host_first − prev_last_end 로 판별하기 위한
+                // 사전 수집 (재구성 루프가 vpos 를 덮어쓰기 전).
+                let orig_span: Vec<Option<(i32, i32)>> = section
+                    .paragraphs
+                    .iter()
+                    .enumerate()
+                    .map(|(i, p)| {
+                        if reflowed_paras.contains(&i) {
+                            return None;
+                        }
+                        let first = p.line_segs.first()?;
+                        let last = p.line_segs.last()?;
+                        let synthetic = |s: &crate::model::paragraph::LineSeg| {
+                            s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                != 0
+                        };
+                        if synthetic(first) || synthetic(last) {
+                            return None;
+                        }
+                        Some((
+                            first.vertical_pos,
+                            last.vertical_pos + last.line_height + last.line_spacing,
+                        ))
+                    })
+                    .collect();
                 for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                     let was_reflowed = reflowed_paras.contains(&pi);
                     let hosts_bottom_fixed_frame = para.controls.iter().any(|c| {
@@ -575,7 +602,37 @@ impl DocumentCore {
                             .iter()
                             .map(|s| s.line_height + s.line_spacing)
                             .sum();
-                        if obj_total > seg_lh_total {
+                        // [#2279 성분②] 한글 저장 관례는 두 가지가 혼재한다
+                        // (같은 문서 안에서도, 36372309 실측):
+                        //   (a) 개체-선행: host_first = prev_end + obj_total,
+                        //       host 줄박스는 개체 **아래** 별도 (결재 코호트:
+                        //       host_v 17640 = 표+om, gap 1920 = lh+ls)
+                        //   (b) lh-포함: host lh 가 개체를 포함 (TAC/#2243 앵커)
+                        // 종전 max 모델(초과분만 가산)은 (a)의 host 줄박스를
+                        // 흡수해 사다리를 -lh-ls 압축, 후속 vpos-snap 이 그만큼
+                        // 과소 좌표로 고착됐다(footer 오차 성분②). 판별은
+                        // lead = 저장 host_first − 직전 원본 문단의 저장 last_end:
+                        // lead ≈ obj_total → (a) → obj_total 별도 가산 / 그 외
+                        // (판별 불가·합성 이웃 포함) → 종전 max 모델(보수).
+                        let lead = if !was_reflowed {
+                            let host_first = orig_span.get(pi).copied().flatten().map(|s| s.0);
+                            let prev_end = if pi == 0 {
+                                Some(0)
+                            } else {
+                                orig_span.get(pi - 1).copied().flatten().map(|s| s.1)
+                            };
+                            match (host_first, prev_end) {
+                                (Some(h), Some(p)) => Some(h - p),
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        };
+                        let object_precedes_host_line =
+                            lead.is_some_and(|l| (l - obj_total).abs() <= 60);
+                        if object_precedes_host_line {
+                            inner_vpos += obj_total;
+                        } else if obj_total > seg_lh_total {
                             inner_vpos += obj_total - seg_lh_total;
                         }
                     }
