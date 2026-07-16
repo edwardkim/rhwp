@@ -10,6 +10,7 @@
     "test": "node --test tests/*.test.ts ../npm/editor/tests/*.test.mjs",
     "e2e": "node e2e/text-flow.test.mjs",
     "e2e:unsaved-guard": "node e2e/unsaved-changes-guard.test.mjs",
+    "e2e:undo": "node e2e/undo-contracts.test.mjs",
     "e2e:clipboard-priority": "node e2e/task-871-clipboard-priority.test.mjs",
     "e2e:drag-autoscroll": "node e2e/drag-selection-autoscroll.test.mjs",
     "e2e:renderer-contract": "node e2e/renderer-contract.test.mjs",
