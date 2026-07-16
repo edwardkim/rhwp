@@ -115,6 +115,30 @@ pub(crate) fn pack_common_attr_bits(common: &CommonObjAttr) -> u32 {
     a
 }
 
+/// tac/rel_to 마이그레이션 후 stale packed `attr` 동기화.
+///
+/// 배경 (Issue #3781 실측): `insert_picture_native` 가 `attr` 비트를 seed 하고
+/// `migrate_picture_floating_to_inline` 은 **enum 필드만** 갱신한다. 직렬화는
+/// `attr != 0` 이면 packed 값을 우선하므로(라운드트립 보존 계약), 마이그레이션된
+/// 그림이 HWP 바이너리 왕복에서 floating(Paper) 앵커로 되살아나
+/// `treatAsChar=1 + vertRelTo=PAPER` 모순 산출물이 된다 (한글 렌더 깨짐).
+/// 앵커 관련 비트(tac bit0 · vert_rel 3-4 · horz_rel 8-9)만 enum 에서 재기입하고,
+/// criterion/wrap/flow 등 나머지 비트는 보존한다 (전체 재패킹은 enum 미동기
+/// 필드의 정보 손실 위험).
+pub(crate) fn sync_anchor_bits(common: &mut CommonObjAttr) {
+    if common.attr == 0 {
+        return; // 직렬화가 pack_common_attr_bits 로 전량 재패킹 — 손댈 것 없음.
+    }
+    let mut a = common.attr;
+    a &= !(0x01 | (0x03 << 3) | (0x03 << 8));
+    if common.treat_as_char {
+        a |= 0x01;
+    }
+    a |= (vert_rel_to_to_bits(common.vert_rel_to) & 0x03) << 3;
+    a |= (horz_rel_to_to_bits(common.horz_rel_to) & 0x03) << 8;
+    common.attr = a;
+}
+
 fn vert_rel_to_to_bits(v: VertRelTo) -> u32 {
     match v {
         VertRelTo::Paper => 0,
@@ -423,5 +447,53 @@ mod tests {
         let bytes = serialize_common_obj_attr(&original);
         let parsed = parse_common_obj_attr(&bytes);
         assert_eq!(parsed.text_flow, TextFlow::BothSides);
+    }
+}
+
+#[cfg(test)]
+mod sync_anchor_bits_tests {
+    use super::*;
+    use crate::model::shape::{HorzRelTo, VertRelTo};
+
+    /// Issue #3781 실측 회귀: insert 가 seed 한 floating attr
+    /// ((4<<15)|(2<<18) — tac=0·rel=Paper) 위에서 inline 마이그레이션(enum 갱신) 후
+    /// sync 하면 tac/rel 비트만 Para 로 바뀌고 criterion 비트는 보존된다.
+    #[test]
+    fn sync_anchor_bits_updates_stale_floating_seed() {
+        let mut common = CommonObjAttr {
+            attr: (4 << 15) | (2 << 18),
+            treat_as_char: false,
+            vert_rel_to: VertRelTo::Paper,
+            horz_rel_to: HorzRelTo::Paper,
+            ..Default::default()
+        };
+        // 마이그레이션이 하는 일 (enum 갱신).
+        common.treat_as_char = true;
+        common.vert_rel_to = VertRelTo::Para;
+        common.horz_rel_to = HorzRelTo::Para;
+        sync_anchor_bits(&mut common);
+        assert_eq!(common.attr & 0x01, 0x01, "tac bit");
+        assert_eq!((common.attr >> 3) & 0x03, 2, "vert_rel_to = Para");
+        assert_eq!(
+            (common.attr >> 8) & 0x03,
+            3,
+            "horz_rel_to = Para (Paper0/Page1/Column2/Para3)"
+        );
+        assert_eq!((common.attr >> 15) & 0x07, 4, "width criterion 보존");
+        assert_eq!((common.attr >> 18) & 0x03, 2, "height criterion 보존");
+    }
+
+    /// attr=0(합성 경로) 은 무접촉 — 직렬화가 전량 재패킹한다.
+    #[test]
+    fn sync_anchor_bits_leaves_zero_attr_untouched() {
+        let mut common = CommonObjAttr {
+            attr: 0,
+            treat_as_char: true,
+            vert_rel_to: VertRelTo::Para,
+            horz_rel_to: HorzRelTo::Para,
+            ..Default::default()
+        };
+        sync_anchor_bits(&mut common);
+        assert_eq!(common.attr, 0);
     }
 }

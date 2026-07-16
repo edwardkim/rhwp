@@ -473,6 +473,11 @@ impl DocumentCore {
             let had_caption = pic.caption.is_some();
             let caption_created = Self::apply_picture_props_inner(pic, props_json);
             let now_tac = pic.common.treat_as_char;
+            // tac 토글이 enum 에만 반영되고 packed attr 이 낡으면 직렬화가 옛 앵커를
+            // 되살린다 — 여기서 즉시 동기화 (migrate 경로는 rel_to 갱신 후 재동기화).
+            crate::document_core::converters::common_obj_attr_writer::sync_anchor_bits(
+                &mut pic.common,
+            );
             (
                 caption_created,
                 had_caption && pic.caption.is_none(),
@@ -669,6 +674,11 @@ impl DocumentCore {
             let was_tac = pic.common.treat_as_char;
             caption_created = Self::apply_picture_props_inner(pic, props_json);
             let now_tac = pic.common.treat_as_char;
+            // 본문 setter 와 같은 이유로 여기서도 packed attr 을 동기화한다 —
+            // 머리말/꼬리말 경로도 같은 tac 토글 마이그레이션을 수행한다 (Issue #3781).
+            crate::document_core::converters::common_obj_attr_writer::sync_anchor_bits(
+                &mut pic.common,
+            );
             if !was_tac && now_tac {
                 if let crate::model::control::Control::Picture(pic_box) =
                     &mut inner_para.controls[inner_control_idx]
@@ -725,6 +735,9 @@ impl DocumentCore {
         pic.common.vert_rel_to = VertRelTo::Para;
         pic.common.horizontal_offset = 0;
         pic.common.vertical_offset = 0;
+        // stale packed attr 동기화 — 없으면 바이너리 왕복에서 Paper 앵커 부활
+        // (treatAsChar=1 + PAPER 모순 → 한글 렌더 깨짐, Issue #3781 실측).
+        crate::document_core::converters::common_obj_attr_writer::sync_anchor_bits(&mut pic.common);
 
         let picture_height_hu = pic.common.height as i32;
         let baseline = (picture_height_hu as f64 * 0.85).round() as i32;
