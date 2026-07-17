@@ -11,6 +11,7 @@
 
 use super::{
     BarGrouping, LegendPos, OoxmlChart, OoxmlChartType, OoxmlSeries, ScatterStyle, SeriesMarker,
+    View3D,
 };
 use quick_xml::events::Event;
 use quick_xml::Reader;
@@ -194,18 +195,22 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             st.cur_plot_series_start = chart.series.len();
         }
         b"bar3DChart" => {
-            // 3D 막대 — 2D 근사(C1a #1453). barDir 핸들러가 col/bar를 그대로 채워
-            // 파싱 종료 후처리가 Column↔Bar를 확정한다. is_3d는 축 정책용(C1c).
+            // 3D 막대 — barDir 핸들러가 col/bar를 그대로 채워 파싱 종료 후처리가
+            // Column↔Bar를 확정한다. is_3d는 축 정책(C1c) + 투영 렌더(C2b v2).
             chart.chart_type = OoxmlChartType::Column;
             chart.is_3d = true;
+            // view3D 요소 없는 3D 차트 폴백 — view3D는 plotArea보다 앞이라
+            // 이미 파싱됐으면 덮어쓰지 않는다. (C2b #2278 v2)
+            chart.view3d.get_or_insert_with(View3D::default);
             st.cur_plot_type = Some(OoxmlChartType::Column);
             st.cur_plot_ax_ids.clear();
             st.cur_plot_series_start = chart.series.len();
         }
         b"pie3DChart" => {
-            // 3D 원형 — 단일 원형으로 2D 근사(C1a #1453). 입체감은 후속(C2).
+            // 3D 원형 — 투영 렌더(C2b v2). 타원비는 view3d.rot_x에서 유도.
             chart.chart_type = OoxmlChartType::Pie;
             chart.is_3d = true;
+            chart.view3d.get_or_insert_with(View3D::default);
             st.cur_plot_type = Some(OoxmlChartType::Pie);
             st.cur_plot_ax_ids.clear();
             st.cur_plot_series_start = chart.series.len();
@@ -241,9 +246,57 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
                 chart.chart_type = OoxmlChartType::Line;
             }
             chart.is_3d = true;
+            chart.view3d.get_or_insert_with(View3D::default);
             st.cur_plot_type = Some(OoxmlChartType::Line);
             st.cur_plot_ax_ids.clear();
             st.cur_plot_series_start = chart.series.len();
+        }
+        b"view3D" => {
+            // c:plotArea보다 먼저 온다(ECMA CT_Chart 시퀀스, 코퍼스 바이트 실측
+            // 908 < 1059) — 여기서 초기화해야 자식 rotX/rotY/…가 유실되지 않음.
+            // (C2b #2278 v2 설계 리뷰: plot arm 초기화는 값 전량 폐기 은폐 버그)
+            chart.view3d = Some(View3D::default());
+        }
+        b"rotX" => {
+            if let (Some(v3), Some(v)) = (chart.view3d.as_mut(), attr_f64(e)) {
+                v3.rot_x = v;
+            }
+        }
+        b"rotY" => {
+            if let (Some(v3), Some(v)) = (chart.view3d.as_mut(), attr_f64(e)) {
+                v3.rot_y = v;
+            }
+        }
+        b"perspective" => {
+            if let (Some(v3), Some(v)) = (chart.view3d.as_mut(), attr_f64(e)) {
+                v3.perspective = v;
+            }
+        }
+        b"rAngAx" => {
+            if let (Some(v3), Some(val)) = (chart.view3d.as_mut(), attr_val(e, "val")) {
+                v3.r_ang_ax = !matches!(val.as_str(), "0" | "false");
+            }
+        }
+        b"hPercent" => {
+            if let (Some(v3), Some(v)) = (chart.view3d.as_mut(), attr_f64(e)) {
+                v3.h_percent = v;
+            }
+        }
+        b"depthPercent" => {
+            if let (Some(v3), Some(v)) = (chart.view3d.as_mut(), attr_f64(e)) {
+                v3.depth_percent = v;
+            }
+        }
+        b"gapDepth" => {
+            // bar3D 전용 — 방(씬) 깊이 = 막대 깊이×(1+gap/100). (C2b #2278 v2)
+            if matches!(
+                st.cur_plot_type,
+                Some(OoxmlChartType::Column | OoxmlChartType::Bar)
+            ) {
+                if let Some(v) = attr_f64(e) {
+                    chart.gap_depth = Some(v);
+                }
+            }
         }
         b"hiLowLines" => {
             // stock 고저선. lineChart에도 올 수 있는 요소라 Stock 게이트. (C2a #2277)
@@ -258,11 +311,19 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             }
         }
         b"gapWidth" => {
-            // <c:upDownBars> 내부 캔들 폭. barChart의 동명 요소(막대 간격)는 미사용이라
-            // Stock 게이트로 격리. (C2a #2277)
+            // <c:upDownBars> 내부 캔들 폭(Stock 게이트) — C2a #2277.
+            // bar/bar3D plot의 동명 요소는 3D 두께 규칙 slot/(n_eff+gap/100)용
+            // 별도 필드로 저장(2D는 미사용) — C2b #2278 v2.
             if st.cur_plot_type == Some(OoxmlChartType::Stock) {
-                if let Some(v) = attr_val(e, "val").and_then(|s| s.parse::<f64>().ok()) {
+                if let Some(v) = attr_f64(e) {
                     chart.up_down_gap_width = Some(v);
+                }
+            } else if matches!(
+                st.cur_plot_type,
+                Some(OoxmlChartType::Column | OoxmlChartType::Bar)
+            ) {
+                if let Some(v) = attr_f64(e) {
+                    chart.bar_gap_width = Some(v);
                 }
             }
         }
@@ -530,6 +591,11 @@ fn attr_val(e: &quick_xml::events::BytesStart, key: &str) -> Option<String> {
     None
 }
 
+/// `val` 속성을 f64로. view3D/gapDepth 등 수치 단일 속성 요소용. (C2b #2278 v2)
+fn attr_f64(e: &quick_xml::events::BytesStart) -> Option<f64> {
+    attr_val(e, "val").and_then(|s| s.parse().ok())
+}
+
 fn parse_rgb_hex(s: &str) -> Option<u32> {
     let t = s.trim().trim_start_matches('#');
     if t.len() != 6 {
@@ -653,6 +719,63 @@ mod tests {
         // legend/legendPos 미존재 → 기본 Bottom (현행 하단 배치 유지)
         let c = parse_chart_xml(titleless_bar_xml("0").as_bytes()).expect("parse OK");
         assert_eq!(c.legend_pos, LegendPos::Bottom);
+    }
+
+    // --- C2b (#2278) v2: view3D / gapWidth / gapDepth 파싱 ---
+
+    #[test]
+    fn test_parse_view3d_fields() {
+        // 문서 순서 미러: c:view3D는 c:plotArea보다 **앞** (코퍼스 바이트 실측
+        // 908 < 1059). 값은 기본값과 다른 원형 코퍼스(rAngAx=0/rotX=30/rotY=0) —
+        // 막대 값(15/20)은 View3D::default()와 같아 초기화 순서 버그가 공허
+        // 통과한다 (v2 설계 리뷰 확정).
+        let xml = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart>
+<c:view3D><c:rAngAx val="0"/><c:rotX val="30"/><c:rotY val="0"/><c:perspective val="30"/><c:hPercent val="100"/><c:depthPercent val="100"/></c:view3D>
+<c:plotArea><c:pie3DChart><c:ser>
+  <c:val><c:numRef><c:numCache><c:pt idx="0"><c:v>3</c:v></c:pt></c:numCache></c:numRef></c:val>
+</c:ser></c:pie3DChart></c:plotArea></c:chart></c:chartSpace>"#;
+        let c = parse_chart_xml(xml).expect("parse OK");
+        let v = c.view3d.expect("view3D 파싱");
+        assert!(!v.r_ang_ax, "rAngAx=0 → false");
+        assert_eq!(v.rot_x, 30.0);
+        assert_eq!(v.rot_y, 0.0);
+        assert_eq!(v.perspective, 30.0);
+        assert_eq!(v.h_percent, 100.0);
+        assert_eq!(v.depth_percent, 100.0);
+    }
+
+    #[test]
+    fn test_parse_view3d_defaults_when_absent() {
+        // view3D 요소 없는 bar3D → plot arm 폴백(get_or_insert)으로 Office 관례
+        // 기본값(MS-OE376: 15/20/30/rAngAx=1 — XSD 기본 아님).
+        let xml3d = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:bar3DChart><c:barDir val="col"/><c:ser><c:val><c:numCache><c:pt idx="0"><c:v>3</c:v></c:pt></c:numCache></c:val></c:ser></c:bar3DChart></c:plotArea></c:chart></c:chartSpace>"#;
+        let c = parse_chart_xml(xml3d).expect("parse OK");
+        let v = c.view3d.expect("3D plot이면 view3d Some");
+        assert!(v.r_ang_ax);
+        assert_eq!(v.rot_x, 15.0);
+        assert_eq!(v.rot_y, 20.0);
+        assert_eq!(v.perspective, 30.0);
+        // 2D 차트는 view3d 없음
+        let c2d = parse_chart_xml(BAR_XML.as_bytes()).expect("parse OK");
+        assert!(c2d.view3d.is_none(), "2D는 view3d None");
+    }
+
+    #[test]
+    fn test_parse_bar_gap_width_and_depth() {
+        // bar3DChart의 gapWidth/gapDepth → bar_gap_width/gap_depth.
+        // stock의 upDownBars>gapWidth(up_down_gap_width)와 필드 분리 — 무오염은
+        // 기존 test_parse_stock_ohlc(150 저장)와 본 테스트의 None 단언이 상호 가드.
+        let xml = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart>
+<c:view3D><c:rotX val="15"/><c:rotY val="20"/><c:perspective val="30"/><c:rAngAx val="1"/></c:view3D>
+<c:plotArea><c:bar3DChart><c:barDir val="col"/>
+<c:ser><c:val><c:numRef><c:numCache><c:pt idx="0"><c:v>3</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>
+<c:gapWidth val="150"/><c:gapDepth val="150"/>
+</c:bar3DChart></c:plotArea></c:chart></c:chartSpace>"#;
+        let c = parse_chart_xml(xml).expect("parse OK");
+        assert_eq!(c.bar_gap_width, Some(150.0));
+        assert_eq!(c.gap_depth, Some(150.0));
+        assert_eq!(c.up_down_gap_width, None, "stock 필드 무오염");
+        assert!(c.view3d.expect("view3d").r_ang_ax);
     }
 
     // --- C2a (#2277): stock (주식형) 파싱 ---
