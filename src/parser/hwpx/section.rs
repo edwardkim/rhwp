@@ -2464,6 +2464,9 @@ fn parse_picture(
                                         "REAL_PIC" => ImageEffect::RealPic,
                                         "GRAY_SCALE" => ImageEffect::GrayScale,
                                         "BLACK_WHITE" => ImageEffect::BlackWhite,
+                                        // 방출측 image_effect_str 은 Pattern8x8 을 이 문자열로
+                                        // 낸다. 안 받으면 무늬(패턴) 효과가 왕복 시 RealPic 유실.
+                                        "PATTERN_8_8" => ImageEffect::Pattern8x8,
                                         _ => ImageEffect::RealPic,
                                     };
                                 }
