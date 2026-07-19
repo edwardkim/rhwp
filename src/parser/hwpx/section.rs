@@ -2363,6 +2363,12 @@ fn parse_picture(
                                 }
                                 b"flowWithText" => common.flow_with_text = parse_bool(&attr),
                                 b"allowOverlap" => common.allow_overlap = parse_bool(&attr),
+                                // holdAnchorAndSO(쪽나눔 방지). 방출측은 모든 개체에 내지만
+                                // 종전엔 표 파서만 되읽어, 그림/도형/차트/OLE 는 prevent_page_break
+                                // 이 0 으로 유실됐다(표 파서와 동형으로 보강).
+                                b"holdAnchorAndSO" => {
+                                    common.prevent_page_break = if parse_bool(&attr) { 1 } else { 0 };
+                                }
                                 b"vertRelTo" => {
                                     common.vert_rel_to = match attr_str(&attr).as_str() {
                                         "PAPER" => VertRelTo::Paper,
@@ -2919,6 +2925,11 @@ fn parse_object_layout_child(
                     }
                     b"flowWithText" => common.flow_with_text = parse_bool(&attr),
                     b"allowOverlap" => common.allow_overlap = parse_bool(&attr),
+                    // holdAnchorAndSO(쪽나눔 방지). 방출측은 모든 개체에 내지만
+                    // 종전엔 표 파서만 되읽어 개체 배치에선 prevent_page_break 이 유실됐다.
+                    b"holdAnchorAndSO" => {
+                        common.prevent_page_break = if parse_bool(&attr) { 1 } else { 0 };
+                    }
                     b"vertRelTo" => {
                         common.vert_rel_to = match attr_str(&attr).as_str() {
                             "PAPER" => VertRelTo::Paper,
@@ -5887,6 +5898,12 @@ fn parse_common_shape_children(
                                 b"treatAsChar" => common.treat_as_char = parse_bool(&attr),
                                 b"flowWithText" => common.flow_with_text = parse_bool(&attr),
                                 b"allowOverlap" => common.allow_overlap = parse_bool(&attr),
+                                // holdAnchorAndSO(쪽나눔 방지). 방출측은 모든 개체에 내지만
+                                // 종전엔 표 파서만 되읽어, 그림/도형/차트/OLE 는 prevent_page_break
+                                // 이 0 으로 유실됐다(표 파서와 동형으로 보강).
+                                b"holdAnchorAndSO" => {
+                                    common.prevent_page_break = if parse_bool(&attr) { 1 } else { 0 };
+                                }
                                 _ => {}
                             }
                         }
@@ -7244,7 +7261,7 @@ mod tests {
           </hp:subList>
         </hp:drawText>
         <hp:sz width="2600" height="2600" protect="1"/>
-        <hp:pos treatAsChar="0" flowWithText="1" allowOverlap="1" vertRelTo="PARA" horzRelTo="PARA"/>
+        <hp:pos treatAsChar="0" flowWithText="1" allowOverlap="1" holdAnchorAndSO="1" vertRelTo="PARA" horzRelTo="PARA"/>
       </hp:rect>
       <hp:t/>
     </hp:run>
@@ -7261,6 +7278,8 @@ mod tests {
         assert!(rect.common.size_protect);
         assert!(rect.common.flow_with_text);
         assert!(rect.common.allow_overlap);
+        // holdAnchorAndSO="1" → prevent_page_break 이 비표 개체에서도 되읽혀야 한다.
+        assert_eq!(rect.common.prevent_page_break, 1);
         assert_eq!(
             rect.common.text_flow,
             crate::model::shape::TextFlow::RightOnly
