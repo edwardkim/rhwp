@@ -4,8 +4,8 @@
 (() => {
   'use strict';
 
-  const HWP_EXTENSIONS = /\.(hwp|hwpx)(\?.*)?$/i;
-  const DOCUMENT_PATH_EXTENSIONS = /\.(hwp|hwpx)$/i;
+  const HWP_EXTENSIONS = /\.(hwp|hwpx|hml)(\?.*)?$/i;
+  const DOCUMENT_PATH_EXTENSIONS = /\.(hwp|hwpx|hml)$/i;
   const GITHUB_NON_DOCUMENT_MARKERS = new Set(['edit', 'commits', 'blame', 'tree']);
   const BADGE_CLASS = 'rhwp-badge';
   const HOVER_CLASS = 'rhwp-hover-card';

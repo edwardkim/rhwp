@@ -3,7 +3,7 @@
 // "링크 URL"과 "실제 파일 바이트 URL"이 다른 서비스(provider)를
 // 호출부에서 직접 분기하지 않도록 이 모듈에서 정규화한다.
 
-const DOCUMENT_EXTENSION_RE = /\.(hwp|hwpx)$/i;
+const DOCUMENT_EXTENSION_RE = /\.(hwp|hwpx|hml)$/i;
 const GITHUB_NON_DOCUMENT_MARKERS = new Set(['edit', 'commits', 'blame', 'tree']);
 
 function classification(status, reason, resolvedUrl) {

@@ -5,8 +5,8 @@
 (() => {
   'use strict';
 
-  const HWP_EXTENSIONS = /\.(hwp|hwpx)(\?.*)?$/i;
-  const DOCUMENT_PATH_EXTENSIONS = /\.(hwp|hwpx)$/i;
+  const HWP_EXTENSIONS = /\.(hwp|hwpx|hml)(\?.*)?$/i;
+  const DOCUMENT_PATH_EXTENSIONS = /\.(hwp|hwpx|hml)$/i;
   const GITHUB_NON_DOCUMENT_MARKERS = new Set(['edit', 'commits', 'blame', 'tree']);
   const BADGE_CLASS = 'rhwp-badge';
   const HOVER_CLASS = 'rhwp-hover-card';
@@ -296,7 +296,7 @@
         card.appendChild(createDiv('rhwp-hover-desc', truncate(description, 500)));
       }
     } else {
-      const ext = filename.match(/\.(hwp|hwpx)$/i)?.[1]?.toUpperCase() || 'HWP';
+      const ext = filename.match(/\.(hwp|hwpx|hml)$/i)?.[1]?.toUpperCase() || 'HWP';
       card.appendChild(createDiv('rhwp-hover-title', truncate(filename, 200)));
       card.appendChild(createDiv('rhwp-hover-meta', `${ext} \uBB38\uC11C`));
     }
