@@ -1199,7 +1199,11 @@ mod tests {
                     let x = parts.next().and_then(|s| s.trim().parse::<f64>().ok());
                     let y = parts.next().and_then(|s| s.trim().parse::<f64>().ok());
                     if let (Some(x), Some(y)) = (x, y) {
-                        if (140.0..=540.0).contains(&x) && (250.0..=400.0).contains(&y) {
+                        // y 하한 250→200: #1098 들여쓰기 폭 정정으로 페이지 9 상단
+                        // 문단들이 정확한(넓은) 폭으로 재조판되어 pi=181/182 구간이
+                        // 약 1줄 위로 이동('더' y≈246, 직전줄 y≈222). 페이지 수는
+                        // 15쪽 불변(한컴 2020 정합) — gap 불변식(24.21px)만 검증한다.
+                        if (140.0..=540.0).contains(&x) && (200.0..=400.0).contains(&y) {
                             points.push((y, x, content.to_string()));
                         }
                     }

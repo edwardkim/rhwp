@@ -515,29 +515,8 @@ impl HeightMeasurer {
         );
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
 
-        // [Task #1042 Stage 6c] line_segs.empty paragraph 의 compose_lines fallback
-        // 결과를 단 너비 기반으로 recompose — paragraph_layout (Stage 6b) 와 동일.
-        let recomposed: Option<ComposedParagraph> = match (composed, column_width_px) {
-            (Some(c), Some(cw)) if para.line_segs.is_empty() && cw > 0.0 => {
-                let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-                let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-                let inner = (cw - margin_l - margin_r).max(0.0);
-                if inner > 0.0 {
-                    let mut cloned = c.clone();
-                    crate::renderer::composer::recompose_for_cell_width(
-                        &mut cloned,
-                        para,
-                        inner,
-                        styles,
-                    );
-                    Some(cloned)
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        };
-        let composed = recomposed.as_ref().or(composed);
+        // reflow 가 모든 문단의 line_segs 를 채우므로 본문 NO_LS 폴백 recompose 분기는
+        // 제거됐다 — composed 를 그대로 측정에 사용한다. (셀 측정 recompose 는 유지.)
 
         // 줄별 높이 계산: 콘텐츠 높이(line_height)와 줄간격(line_spacing)을 분리 저장
         // line_height = 줄의 콘텐츠 영역 높이

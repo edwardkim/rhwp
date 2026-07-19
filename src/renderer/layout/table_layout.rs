@@ -3956,14 +3956,18 @@ impl LayoutEngine {
             // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
             // 한컴이 PARA_LINE_SEG 를 인코딩하지 않은 케이스 (samples/계획서.hwp) 의
             // 줄겹침 시각 결함 정정. 정상 line_segs 인코딩된 paragraph 는 무영향.
-            for (cpi, para) in cell.paragraphs.iter().enumerate() {
-                if let Some(comp) = composed_paras.get_mut(cpi) {
-                    crate::renderer::composer::recompose_for_cell_width(
-                        comp,
-                        para,
-                        inner_width,
-                        styles,
-                    );
+            // [Task #81] 세로쓰기 셀(text_direction != 0)은 제외 (한 ComposedLine =
+            // 한 세로 컬럼 — 가로 재분할 시 세로 컬럼이 쪼개져 글자 y 비단조).
+            if cell.text_direction == 0 {
+                for (cpi, para) in cell.paragraphs.iter().enumerate() {
+                    if let Some(comp) = composed_paras.get_mut(cpi) {
+                        crate::renderer::composer::recompose_for_cell_width(
+                            comp,
+                            para,
+                            inner_width,
+                            styles,
+                        );
+                    }
                 }
             }
 
@@ -5060,9 +5064,16 @@ impl LayoutEngine {
         // 깨 7줄로 과소(157→156 회귀) — shrink 는 폰트 폭 오차의 문서별 보상재로,
         // 일반화 불가(#2279 코멘트). 측정 폭은 원 패딩 유지.
         let inner_width = (cell_w - pad_left - pad_right).max(0.0);
-        let line_seg_is_synthetic = |seg: &crate::model::paragraph::LineSeg| {
-            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-        };
+        // [reflow 무조건화 대응] 종전에는 `tag & TAG_IMPLEMENTATION_PROPERTY` 로
+        // "reflow 가 합성한(=저장 파일 근거 없는) seg" 를 식별해, vpos 리셋/갭/하드
+        // 브레이크 판정에서 그 seg 의 세로 좌표를 신뢰하지 않았다. 이제 reflow 가
+        // 모든 문단의 line_segs 를 계산하고 그 결과가 곧 레이아웃 진실이므로, 존재하는
+        // seg 는 전부 위치 권위를 가진다(document.rs::fit_hwpx_rowbreak_synthetic_cell_lines
+        // 가 태그-합성 판정을 "reflow 된 텍스트 문단 = 텍스트+계산된 line_segs" 라는
+        // 구조 판정으로 대체한 것과 같은 계약). 별도로 걸러야 할 per-seg 합성 신호는
+        // 남지 않았다(missing-lineseg placeholder 는 로드시 clear 되어 여기 도달 못함).
+        // 따라서 구조적으로 "합성이라 무시할 seg" 는 없다 → 상수 false.
+        let line_seg_is_synthetic = |_: &crate::model::paragraph::LineSeg| false;
         let is_block_rowbreak_table = matches!(
             table.page_break,
             crate::model::table::TablePageBreak::RowBreak
@@ -7723,42 +7734,69 @@ mod row_cut_tests {
     use crate::renderer::style_resolver::ResolvedStyleSet;
 
     /// line_height=1200 HU (=16 px @96dpi), line_spacing=0 인 N줄 텍스트 문단.
-    /// vpos 는 vpos_start 부터 1200 HU 간격. `.text` 가 비어 있어 [Task #1488]
-    /// 가시성 게이트 기준으로 **비가시(빈)** 문단으로 취급된다.
+    /// vpos 는 vpos_start 부터 1200 HU 간격.
+    ///
+    /// [reflow 무조건화 대응] 종전에는 짧은 텍스트("x"×N) + N개 저장 line_seg 로
+    /// N줄을 표현했다. 저장 seg 를 레이아웃 소스로 신뢰하던 시절엔 이 짧은 텍스트가
+    /// 그대로 N줄로 배치됐다. 이제 `recompose_for_cell_width` 가 셀 폭 기준으로 항상
+    /// 재래핑하므로 짧은 텍스트는 1줄로 합쳐진다(N개 유닛→1개). 그래서 각 줄을 실제
+    /// `\n` 경계로 분리해, compose_lines(seg 별 `text_start` 범위)와 recompose(진짜
+    /// `\n` 그룹 경계) 양쪽이 정확히 N줄을 만들도록 텍스트를 구성한다. 유닛 수는 저장
+    /// seg 유무와 무관하게 재래핑 결과에서 N 으로 나온다(무조건 reflow 계약 정합).
+    /// 저장 seg 는 vpos 리셋/갭 판정용으로만 유지되며 그 개수(N)는 composed 줄 수와
+    /// 1:1 로 정렬된다.
     fn text_para(n_lines: usize, vpos_start: i32) -> Paragraph {
-        Paragraph {
-            text: "x".repeat(n_lines.max(1)),
-            char_count: n_lines.max(1) as u32,
-            line_segs: (0..n_lines)
-                .map(|i| LineSeg {
-                    vertical_pos: vpos_start + i as i32 * 1200,
-                    line_height: 1200,
-                    line_spacing: 0,
-                    ..Default::default()
-                })
-                .collect(),
-            ..Default::default()
-        }
+        newline_line_para("x", n_lines, vpos_start)
     }
 
-    /// `text_para` 와 동일한 line_seg 구조에 가시 텍스트를 더한 문단. [Task #1488]
-    /// 가시성 게이트가 가시 문단으로 인식하므로 vpos 리셋이 하드 브레이크로 보존된다.
-    /// line_seg 가 있으면 compose 가 line_seg 수만큼 줄을 만들므로 유닛 수는 보존된다.
+    /// `text_para` 와 동일한 N줄 구조에 가시 텍스트("가")를 준 문단. 가시성 게이트가
+    /// 가시 문단으로 인식하므로 vpos 리셋이 하드 브레이크로 보존된다.
     fn visible_text_para(n_lines: usize, vpos_start: i32) -> Paragraph {
-        Paragraph {
-            text: "가나다".to_string(),
-            ..text_para(n_lines, vpos_start)
-        }
+        newline_line_para("가", n_lines, vpos_start)
     }
 
-    /// [Task #1488] 비가시(빈 텍스트) 오버레이 스페이서 문단 — line_seg 만 갖고 가시
-    /// 텍스트는 없다. `text_para` 가 (#stabilize-rowbreak 이후) 가시 "x" 를 갖게 되어,
-    /// 빈-오버레이 게이트 검증용으로 빈 텍스트 문단을 별도 헬퍼로 분리한다.
+    /// [Task #1488] 비가시(빈 텍스트) 오버레이 스페이서 문단 — 가시 글자 없이 N개의
+    /// 빈 줄만 갖는다. 각 줄은 `\n` 으로 분리되어 재래핑 후에도 N개 유닛을 유지한다.
+    /// 텍스트는 개행뿐이라 가시성 게이트(`c > U+001F`)에는 비가시(빈 스페이서)로
+    /// 판정된다.
     fn empty_overlay_para(n_lines: usize, vpos_start: i32) -> Paragraph {
+        newline_line_para("", n_lines, vpos_start)
+    }
+
+    /// N줄 셀 문단 헬퍼 — 줄마다 `glyph`(빈 문자열이면 개행뿐인 빈 줄) 하나를 실제
+    /// `\n` 경계로 분리해 배치한다. 저장 line_seg 는 vpos 간격 1200 HU 로 N개 두며,
+    /// 각 seg 의 `text_start` 를 줄 경계에 맞춰 compose_lines 가 정확히 N줄을 만들게
+    /// 한다. `recompose_for_cell_width` 는 진짜 `\n` 그룹 경계를 보존하므로 셀 폭에
+    /// 무관하게 N줄→N유닛이 유지된다(무조건 reflow 계약).
+    fn newline_line_para(glyph: &str, n_lines: usize, vpos_start: i32) -> Paragraph {
+        let n = n_lines.max(1);
+        // 줄당 UTF-16 폭: glyph 코드유닛 수 + 개행 1. 마지막 줄은 개행 없음.
+        let glyph_units = glyph.encode_utf16().count() as u32;
+        let per_line = glyph_units + 1; // glyph + '\n'
+        let text: String = (0..n)
+            .map(|i| {
+                if i + 1 < n {
+                    format!("{glyph}\n")
+                } else {
+                    glyph.to_string()
+                }
+            })
+            .collect();
+        let char_count = text.encode_utf16().count() as u32;
+        let line_segs = (0..n)
+            .map(|i| LineSeg {
+                vertical_pos: vpos_start + i as i32 * 1200,
+                line_height: 1200,
+                line_spacing: 0,
+                text_start: i as u32 * per_line,
+                ..Default::default()
+            })
+            .collect();
         Paragraph {
-            text: String::new(),
-            char_count: 0,
-            ..text_para(n_lines, vpos_start)
+            text,
+            char_count,
+            line_segs,
+            ..Default::default()
         }
     }
 
@@ -8355,16 +8393,21 @@ mod row_cut_tests {
         let styles = ResolvedStyleSet::default();
         // [Task #1488] 가시 텍스트 문단으로 구성 — 가시 문단 사이 리셋은 하드 브레이크
         // 보존(Task #993 의도)이라 rewind-orphan 로직이 그대로 검증된다.
+        // 두 줄 모두 vpos=0(줄 2에서 내부 vpos 리셋). 각 줄을 실제 `\n` 으로 분리해
+        // 재래핑 후에도 2개 유닛을 유지한다(무조건 reflow 계약).
         let internal_reset = Paragraph {
-            text: "가나다".to_string(),
+            text: "가\n가".to_string(),
+            char_count: 3,
             line_segs: vec![
                 LineSeg {
+                    text_start: 0,
                     vertical_pos: 0,
                     line_height: 1200,
                     line_spacing: 0,
                     ..Default::default()
                 },
                 LineSeg {
+                    text_start: 2,
                     vertical_pos: 0,
                     line_height: 1200,
                     line_spacing: 0,

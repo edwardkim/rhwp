@@ -11136,62 +11136,12 @@ impl TypesetEngine {
         let para_style_id = composed.map(|c| c.para_style_id as usize).unwrap_or(0);
         let para_style = styles.para_styles.get(para_style_id);
 
-        // [Task #1042 Stage 6c] line_segs.empty paragraph 의 typeset/layout 측정 정합 —
-        // paragraph_layout (렌더링 path) 는 Stage 6b 에서 recompose_for_cell_width 로 column
-        // 기반 wrap 을 적용하지만, format_paragraph (typeset/measurement path) 는 원본
-        // compose_lines fallback (CHARS_PER_LINE=45) 결과로 측정 → 두 path 의 line_count 불일치
-        // 발생 (e.g. sample16 변환기 pi=417: typeset 2 lines / layout 1 line, +10.4 px gap).
-        // 동일 recompose 를 typeset 측에도 적용해 paragraph height 측정 정합.
-        let recomposed: Option<ComposedParagraph> = match (composed, column_width_px) {
-            (Some(c), Some(cw)) if cw > 0.0 => {
-                let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-                let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-                let inner = (cw - margin_l - margin_r).max(0.0);
-                if inner > 0.0 && para.line_segs.is_empty() {
-                    let mut cloned = c.clone();
-                    // [#2279] 본문 NO_LS 는 글자모양 재분할 포함 래퍼 사용 —
-                    // paragraph_layout(렌더)와 동일 (측정/렌더 줄수·pitch 정합).
-                    crate::renderer::composer::recompose_for_body_width(
-                        &mut cloned,
-                        para,
-                        inner,
-                        styles,
-                    );
-                    Some(cloned)
-                } else if inner > 0.0
-                    && crate::renderer::composer::stored_lines_overflow(c, para, inner, styles)
-                {
-                    // [#2279] 마스킹 저장분할 실폭-모순 본문 문단 fresh 재래핑 —
-                    // paragraph_layout(렌더)와 동일.
-                    let mut cloned = c.clone();
-                    crate::renderer::composer::recompose_stored_lines_if_overflowing_body(
-                        &mut cloned,
-                        para,
-                        inner,
-                        styles,
-                    );
-                    Some(cloned)
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        };
-        let composed = recomposed.as_ref().or(composed);
+        // reflow 가 모든 문단의 line_segs 를 채우므로 line_segs 부재 폴백 recompose
+        // (CHARS_PER_LINE) 분기는 제거됐다 — 측정/렌더 정합은 reflow 된 seg 로 이미 성립.
         let raw_spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
 
-        // [Task #998 실험] spacing_before=0 으로 강제 — 효과 측정용
-        // [#2279 실험 전용] RHWP_EXP_BODY_FRESH 시 NO_LS 문단도 sb 를 보존한다
-        // (한글 fresh 는 sb 를 가산 — 생성기 사다리 sb-누락 모사 우회 계측).
-        let spacing_before = if para.line_segs.is_empty()
-            && !para.text.is_empty()
-            && std::env::var("RHWP_EXP_BODY_FRESH").is_err()
-        {
-            0.0
-        } else {
-            raw_spacing_before
-        };
+        let spacing_before = raw_spacing_before;
         // [Task #874 Case 3] `<...>` 단독 paragraph 의 paragraph-level extra spacing 제거.
         // 이전 #866 Stage 2 는 paragraph 위·아래 각 +20px (총 +40px) 을 paragraph 자체 height
         // 에 포함시켰으나, typeset 의 zone 전환 패딩(solo_zone_pad +16px enter +16px leave)
@@ -11655,19 +11605,27 @@ impl TypesetEngine {
             && !para_has_visible_text(para)
             && para.line_segs.len() == 1
         {
+            // [Task #21/sample2] always-compute reflow 가 vpos 를 monotonic 하게
+            // 재누적하여 저장 vpos-reset 신호(curr > next+2000)가 소멸했다. RowBreak
+            // 표 조각 직후의 빈 guide 문단은 구조적 artifact 로, 한컴은 그 flow 높이를
+            // 누적하지 않는다(누적 시 다음 RowBreak 표가 한컴/PDF보다 늦게 시작 →
+            // hwpx_sample2 pi=75/78 빈 문단이 pi=77/81 표를 밀어 +1쪽=30). 저장
+            // vpos-reset 이 없는 always-compute 하에선 구조 조건만으로 감춘다.
             let curr_vpos = para.line_segs.first().map(|s| s.vertical_pos);
             let next_anchor_vpos = paragraphs
                 .iter()
                 .skip(para_idx + 1)
                 .find(|p| para_has_visible_text(p) || !p.controls.is_empty())
                 .and_then(|p| p.line_segs.first().map(|s| s.vertical_pos));
-            if let (Some(curr), Some(next)) = (curr_vpos, next_anchor_vpos) {
-                const EMPTY_GUIDE_RESET_GAP_HU: i32 = 2000;
-                if curr > next + EMPTY_GUIDE_RESET_GAP_HU {
-                    st.hidden_empty_paras.insert(para_idx);
-                    return;
-                }
-            }
+            const EMPTY_GUIDE_RESET_GAP_HU: i32 = 2000;
+            let stored_reset = matches!(
+                (curr_vpos, next_anchor_vpos),
+                (Some(curr), Some(next)) if curr > next + EMPTY_GUIDE_RESET_GAP_HU
+            );
+            // 저장 vpos-reset(구식) 또는 monotonic(always-compute) 둘 다 감춘다.
+            let _ = stored_reset;
+            st.hidden_empty_paras.insert(para_idx);
+            return;
         }
 
         // 다단 레이아웃에서 문단 내 단 경계 감지

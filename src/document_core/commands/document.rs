@@ -87,33 +87,17 @@ impl DocumentCore {
             crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
         ) && !hwp5_origin_hwpx;
 
-        // 비표준 lineseg 감지 — reflow 이전 시점에 IR을 그대로 검증.
-        // 경고는 사용자에게 고지되며, 자동 reflow 는 `needs_line_seg_reflow` 조건에만 한정.
-        // 사용자 명시 reflow 는 `reflow_linesegs_on_demand()` 를 통해서만 수행 (#177).
+        // 비표준 lineseg 감지 — reflow 이전 시점의 저장 IR 을 그대로 검증한다
+        // (저장 line_segs 는 레이아웃 소스가 아니라 검증·라운드트립 전용이다).
+        // 경고는 사용자에게 고지되며, 이후 로드 경로는 모든 문단을 무조건 reflow 한다.
         // LinesegTextRunReflow는 HWPX textRun 전용 패턴. HWP3/HWP5/HML에는 확대 적용하지 않는다.
         let check_textrun_reflow =
             matches!(source_format, crate::parser::FileFormat::Hwpx) && !hwp5_origin_hwpx;
         let validation_report = Self::validate_linesegs(&document, check_textrun_reflow);
 
-        // lineSegArray가 없는 문단에 대해 합성 LineSeg 생성.
-        // XML 파서는 linesegarray 부재 문단의 line_segs 를 빈 채 보존하므로(#1380)
-        // XML import 에서 빈 line_segs 를 합성 대상에 포함한다 — compose 전에 올바른
-        // line_height/line_spacing 을 계산해야 줄바꿈·높이가 정상 동작한다.
-        // HWP5/HWP3 의 빈 line_segs 는 종전대로 reflow 하지 않는다 (페이지 수 보존).
-        let include_empty = use_xml_import_semantics;
-        // [#2195] HWP5 native 확장은 **셀 내부의 컨트롤 없는 순수 빈 문단** 한정
-        // (86712 1pt 빈 문단 오라클). 본문 문단 확장은 기각(stage68): 본문 빈
-        // 문단은 typeset 의 em 폴백(#2070 축3)이 담당하고(80168 pi=424 오라클),
-        // 본문 텍스트 문단 합성은 흐름 소비 팽창으로 sijang 밀도 핀 -5쪽(#2070v2).
-        // HWP3 변환본은 #998 게이트(sample16-hwp5=64) 정합상 종전 유지.
-        let include_cell_empty = !document.layout_profile().hwp3_layout();
-        Self::reflow_zero_height_paragraphs(
-            &mut document,
-            &styles,
-            DEFAULT_DPI,
-            include_empty,
-            include_cell_empty,
-        );
+        // rhwp 는 저장 line_segs 를 레이아웃 소스로 쓰지 않고 로드 시 **모든** 문단의
+        // line_segs 를 스스로 계산한다. (저장 seg 는 파서 보존·검증 전용.)
+        Self::reflow_zero_height_paragraphs(&mut document, &styles, DEFAULT_DPI);
         Self::clear_missing_lineseg_placeholders(&mut document);
 
         // XML import → HWP 라운드트립 일관성 normalize (#314):
@@ -282,25 +266,21 @@ impl DocumentCore {
         }
     }
 
-    /// lineSegArray가 없는(line_height=0) 문단에 대해 합성 LineSeg를 생성한다.
+    /// 문서 로드 직후 **모든** 본문·셀 문단의 line_segs 를 CharPr/ParaPr 기반으로
+    /// 재계산한다 (rhwp 는 저장 line_segs 를 레이아웃 소스로 쓰지 않는다).
     ///
-    /// HWPX 파일에서 `<hp:lineSegArray>`가 누락된 문단은 모든 LineSeg 필드가 0으로
-    /// 설정되어 줄바꿈·문단 높이 계산이 불가능하다. 이 함수는 문서 로드 직후
-    /// CharPr/ParaPr 기반으로 올바른 line_height/line_spacing을 계산한다.
-    /// 본문 문단뿐 아니라 표 셀 내부 문단도 처리한다.
-    /// `include_empty`: 빈 `line_segs` 도 합성 대상으로 포함 (HWPX 전용 — #1380).
-    /// `include_cell_empty`: [#2195] HWP5 native 확장 — 셀 내부의 **컨트롤 없는
-    /// 순수 빈 문단**만 CharPr 크기 기반 줄박스 합성(86712 1pt 빈 문단 오라클).
-    /// 본문 문단·셀 텍스트 문단·컨트롤 호스트 문단은 각각 em 폴백(#2070 축3)·
-    /// composer recompose·typeset 표 줄 계산이 담당하므로 제외한다(stage68).
+    /// 본문은 단 폭(또는 wrap zone 문단은 밴드 폭)으로, 표 셀은 셀 inner 폭으로
+    /// reflow 하며, 이후 문단 간 vertical_pos 를 순차 재누적한다. HWP5→HWPX export
+    /// 의 원본 LineSeg 부재 placeholder marker 만 예외로 두어 후속
+    /// `clear_missing_lineseg_placeholders` 가 HWP5 원본과 동일한 빈 line_segs
+    /// 경로로 되돌린다.
     fn reflow_zero_height_paragraphs(
         document: &mut Document,
         styles: &ResolvedStyleSet,
         dpi: f64,
-        include_empty: bool,
-        include_cell_empty: bool,
     ) {
         use crate::model::control::Control;
+        let is_hwp3 = document.layout_profile().hwp3_layout();
 
         for section in &mut document.sections {
             let page_def = &section.section_def.page_def;
@@ -312,33 +292,53 @@ impl DocumentCore {
                 .map(|a| a.width)
                 .unwrap_or(layout.body_area.width);
 
-            let mut body_line_seg_changed = false;
-            // [Issue #1920] vpos 재계산(아래) 시 저장 vpos 의 새 쪽 시작 신호를 보존하기
-            // 위해, 이번 패스에서 LINE_SEG 가 합성(reflow)된 문단 — 저장 vpos 신뢰 불가 —
-            // 을 기록한다.
-            let mut reflowed_paras: std::collections::HashSet<usize> =
-                std::collections::HashSet::new();
-            for (pi, para) in section.paragraphs.iter_mut().enumerate() {
-                // 본문 문단 reflow
-                // [#2195 stage68] 본문 텍스트 NO_LS 확장(stage1)은 기각 — 후속 축
-                // (전각 폴백·pad 규칙·스트레치·after_for_fit)이 게이트 정합을 대체했고,
-                // 본문 합성 lineseg 는 흐름 소비를 문단당 ~2.7px 팽창시켜 sijang
-                // 밀도 핀 -5쪽(302 vs 307, #2070v2)만 남기는 잉여 축으로 판정.
-                // 본문 NO_LS 텍스트 문단의 실폭 래핑은 composer recompose 가 담당한다.
-                if Self::needs_line_seg_reflow(para, include_empty) {
+            // rhwp 는 저장 line_segs 를 레이아웃 소스로 쓰지 않고 **항상** 스스로
+            // reflow 한다. 아래 vpos 재계산은 모든 본문 문단을 대상으로 무조건 수행한다.
+            let col_w_hu = px_to_hwpunit(col_width, dpi);
+            for para in section.paragraphs.iter_mut() {
+                // 본문 문단 reflow — 무조건.
+                // HWP5→HWPX export 의 원본 LineSeg 부재 marker(placeholder)만 예외:
+                // 이 marker 는 reflow 후 clear_missing_lineseg_placeholders 가 제거하여
+                // HWP5 원본과 동일한 line_segs.is_empty() 경로를 타야 하므로 건드리지 않는다.
+                let is_placeholder = para.line_segs.len() == 1
+                    && para.line_segs[0].is_missing_lineseg_placeholder();
+                if !is_placeholder {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                     let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-                    let available_width = (col_width - margin_left - margin_right).max(1.0);
-                    reflow_line_segs(para, available_width, styles, dpi);
-                    body_line_seg_changed = true;
-                    reflowed_paras.insert(pi);
+                    // THE WRAP CRUX: 저장 첫 seg 가 wrap zone(그림/표 옆 좁은 띠)인
+                    // 문단은 그 **띠 폭**으로 reflow 하고 cs/sw 를 재-각인해 wrap 프레임을
+                    // 보존한다. 이로써 typeset 의 activate_square_picture_wrap_for_para
+                    // arming 이 계속 동작해 래핑 텍스트가 그림과 겹치지 않는다.
+                    let __wzf = Self::wrap_zone_frame(para, col_w_hu);
+                    if let Some((cs_hu, sw_hu)) = __wzf {
+                        let band_width_px = crate::renderer::hwpunit_to_px(sw_hu, dpi);
+                        // 순수 들여쓰기 문단은 sw 가 이미 여백 제외폭이라 그대로,
+                        // 진짜 어울림 띠만 여백을 추가 차감한다(#1098).
+                        let available_width = if Self::is_pure_indent_band(para, col_w_hu) {
+                            band_width_px.max(1.0)
+                        } else {
+                            (band_width_px - margin_left - margin_right).max(1.0)
+                        };
+                        reflow_line_segs(para, available_width, styles, dpi);
+                        for seg in para.line_segs.iter_mut() {
+                            seg.column_start = cs_hu;
+                            seg.segment_width = sw_hu;
+                        }
+                    } else {
+                        // 일반(비-wrap) 문단은 단 전체 폭으로 reflow.
+                        let available_width =
+                            (col_width - margin_left - margin_right).max(1.0);
+                        reflow_line_segs(para, available_width, styles, dpi);
+                    }
                 }
 
                 // HWPX: TAC 표가 있는 문단의 LINE_SEG lh 보정
                 // HWPX에서 linesegarray가 없으면 기본 lh=100이 생성되지만,
                 // HWP에서는 TAC 표 높이가 lh에 포함됨 → HWPX에서도 동일하게 확대
                 {
+                    // 표줄 합성은 reflow_line_segs(line_breaking) 가 포맷 무관하게 수행한다.
+                    // 이 문단의 boost 는 HWPX(linesegarray 부재) 전용 잔재 — 게이트 유지.
                     let mut max_tac_h: i32 = 0;
                     for ctrl in para.controls.iter() {
                         if let Control::Table(t) = ctrl {
@@ -369,20 +369,23 @@ impl DocumentCore {
                         // 위한 임시 표식이므로 여기서 표 높이로 오염시키면 안 된다.
                         // 이 marker 는 reflow gate 후 clear_missing_lineseg_placeholders 에서
                         // 제거되어 HWP5 원본과 같은 line_segs.is_empty() 경로를 타야 한다.
+                        // 표줄 합성(블록 TAC = 표줄+본문줄, 공백만 = 표줄 흡수)은
+                        // reflow_line_segs 안에서 수행한다(거기서 inline TAC 높이 boost 가
+                        // 일어나 already_covered 가 참이 되므로 여기선 중복). 이 블록은
+                        // reflow 가 이미 표 높이를 담았는지 보수적으로 재확인만 한다.
                         let already_covered =
                             para.line_segs.iter().any(|s| s.line_height >= max_tac_h);
                         if !already_covered {
                             if let Some(seg) = para.line_segs.first_mut() {
                                 if seg.line_height < max_tac_h {
                                     seg.line_height = max_tac_h;
-                                    body_line_seg_changed = true;
                                 }
                             }
                         }
                     }
                 }
 
-                // 표 셀 내부 문단 reflow
+                // 표 셀 내부 문단 reflow — 무조건 (셀도 저장 seg 를 소스로 쓰지 않음).
                 for ctrl in &mut para.controls {
                     if let Control::Table(ref mut table) = ctrl {
                         let is_rowbreak_table = matches!(
@@ -390,15 +393,11 @@ impl DocumentCore {
                             crate::model::table::TablePageBreak::RowBreak
                         );
                         for cell in &mut table.cells {
-                            // [Task #671 후속 / Issue #671 자동보정 영역 정정]
-                            // 셀 폭 (cell.width) 에서 좌우 padding 차감하여 셀 inner 폭 계산.
-                            // col_width 사용 시 셀 너비 영역 밖으로 LINE_SEG 가 채워져
-                            // recompose_for_cell_width 가드 #1 (line_segs.is_empty()) 영역 거짓 →
-                            // PR #673 영역의 layout 단계 정정 미적용 → 자동보정 모드 영역 한 줄 겹침 회귀.
+                            // [Task #671 후속] 셀 폭에서 좌우 padding 을 차감한 inner 폭으로
+                            // 셀 문단을 reflow 한다 (col_width 를 쓰면 셀 밖으로 넘쳐 줄겹침).
                             let cell_w_px = crate::renderer::hwpunit_to_px(cell.width as i32, dpi);
                             // [#2195] 실효 pad 규칙(aim=false = 표 기본, pad 사다리 2종)과
-                            // 정합 — 종전 셀 저장 pad 직접 차감은 measurer/recompose 와 폭이
-                            // 어긋나 셀 reflow 줄수가 이원화된다.
+                            // 정합 — measurer/recompose 와 동일 폭.
                             let eff_pad = if cell.apply_inner_margin {
                                 cell.padding
                             } else {
@@ -408,156 +407,58 @@ impl DocumentCore {
                             let pad_right =
                                 crate::renderer::hwpunit_to_px(eff_pad.right as i32, dpi);
                             let cell_inner_width = (cell_w_px - pad_left - pad_right).max(1.0);
-                            // [#2195/#2146] 사선(대각선) 셀의 빈 문단은 코너 라벨의
-                            // 짝 — 한글은 흐름 배치하지 않으므로 합성 제외 (21761835
-                            // r0 라벨 셀 선언 52.4px 유지, 합성 시 +2.4 팽창).
-                            let bf_has_diagonal = |bf_id: u16| {
-                                bf_id != 0
-                                    && styles
-                                        .border_styles
-                                        .get((bf_id as usize).saturating_sub(1))
-                                        .is_some_and(
-                                            crate::renderer::layout::border_style_has_diagonal,
-                                        )
-                            };
-                            let cell_diagonal = bf_has_diagonal(cell.border_fill_id)
-                                || table.zones.iter().any(|z| {
-                                    z.start_row <= cell.row
-                                        && cell.row <= z.end_row
-                                        && z.start_col <= cell.col
-                                        && cell.col <= z.end_col
-                                        && bf_has_diagonal(z.border_fill_id)
-                                });
+                            // 세로쓰기 셀(text_direction != 0)은 가로 줄바꿈 엔진의
+                            // 대상이 아니다. reflow_line_segs 는 셀 inner **폭** 기준으로
+                            // 글자를 가로로 채워 줄을 나누지만, 세로쓰기에서는 각 line_seg
+                            // 가 하나의 "열"이며 글자는 셀 **높이**를 따라 아래로 흐른다.
+                            // 가로 폭으로 재계산하면 한 열이 여러 열로 쪼개져 열 y진행이
+                            // 뒤집힌다. 저장 seg 를 레이아웃 소스로 쓰는 게 아니라, 가로
+                            // 엔진이 표현할 수 없는 세로 축이므로 원래 열 구성을 보존한다.
+                            let is_vertical_cell = cell.text_direction != 0;
                             for cell_para in &mut cell.paragraphs {
-                                // [#2195] 셀 NO_LS 확장은 **컨트롤 없는 순수 빈 문단**
-                                // 한정 — CharPr 크기 기반 줄박스 합성(86712 1pt 빈
-                                // 문단 오라클). 텍스트 셀 문단은 렌더러 recompose,
-                                // 컨트롤(중첩 표 등) 호스트 문단은 typeset 표 줄
-                                // 계산이 담당한다 — 합성 시 중첩 표 높이와 이중
-                                // 계상(80168 pi=1243 행6 264→467px, 158 회귀).
-                                let inc = include_empty
-                                    || (include_cell_empty
-                                        && cell_para.text.is_empty()
-                                        && cell_para.controls.is_empty()
-                                        && !cell_diagonal);
-                                if Self::needs_line_seg_reflow(cell_para, inc) {
+                                // placeholder marker 만 예외 (본문과 동일 사유).
+                                let is_placeholder = cell_para.line_segs.len() == 1
+                                    && cell_para.line_segs[0].is_missing_lineseg_placeholder();
+                                if !is_placeholder && !is_vertical_cell {
                                     reflow_line_segs(cell_para, cell_inner_width, styles, dpi);
                                 }
                             }
-                            if include_empty && is_rowbreak_table {
-                                Self::fit_hwpx_rowbreak_synthetic_cell_lines(
-                                    cell,
-                                    styles,
-                                    dpi,
-                                    table.common.treat_as_char,
-                                );
-                            }
+                            // 셀 내부 문단 간 vpos 를 셀-로컬 원점(0)부터 재누적한다.
+                            // reflow 가 각 문단 vpos 를 0 원점으로 다시 놓았으므로,
+                            // RowBreak 셀의 vpos-reset 오발화를 막으려면 여기서 셀 안에서
+                            // 한 번 더 순차 누적해야 한다.
+                            crate::renderer::composer::recalculate_section_vpos(&mut cell.paragraphs, 0, None, None, styles, dpi, is_hwp3);
+                            // [Task #21/sample2] fit_hwpx_rowbreak_synthetic_cell_lines 는
+                            // 저장 seg 불완전(synthetic) 가정하에 셀을 declared 높이로
+                            // 채우려 이미 1줄에 맞는 문단(p[4] 10자 등)을 인위 분할한다.
+                            // always-compute reflow 는 실제 line_segs 를 계산하므로 이
+                            // 채우기는 (1) fit 문단을 over-break 하고 (2) on-demand reflow
+                            // (fill 미실행)와 셀 seg 가 어긋나 idempotency(reflowed=0) 를
+                            // 깬다. always-compute 하에서 obsolete 이므로 비활성화한다.
+                            let _ = is_rowbreak_table;
                         }
                     }
                 }
             }
 
-            // HWPX: LINE_SEG를 실제로 합성/보정한 경우에만 문단 간 vpos를 재계산한다.
-            //
-            // 명시적인 lineSegArray가 이미 계산 완료 상태인 문서는 source의 vertpos를 보존해야 한다.
-            // 비-TAC TopAndBottom 표/그림이 있다는 이유만으로 section vpos를 다시 계산하면, 한컴이
-            // 저장한 HWPX의 vertpos까지 덮어써 page sequence가 어긋난다 (#949 Stage 32).
-            if body_line_seg_changed {
+            // reflow 후 문단 간 vpos 를 **무조건** 순차 재누적한다. 모든 문단이
+            // reflow 로 문단-로컬 원점(0)에서 다시 계산됐으므로, 저장 vpos 를 신뢰·보존
+            // 하는 분기(#1920/#2158/#2279 성분②)는 전부 제거한다 — 저장 vpos 는 더 이상
+            // 레이아웃 소스가 아니다.
+            {
                 let mut running_vpos: i32 = 0;
-                // [Issue #1920] 직전까지 본 "원본(비합성) lineseg 보유 문단"의 마지막 저장
-                // vpos. 결재문서류 생성기는 새 쪽 시작 문단(발신명의 틀 host)에 vpos=0 을
-                // 저장하는데, 이 재계산이 연속 좌표로 덮어쓰면 typeset 의 vpos-reset 쪽나눔
-                // (#321, paragraph_saved_vpos_reset_starts_new_page_after)이 무력화되어
-                // 한글이 다음 쪽에 두는 틀이 이전 쪽에 흡수된다(36417450 pi8, 1쪽 vs 2쪽).
-                // 원본 first vpos=0 + 직전 저장 vpos>5000(동일 임계) + 쪽 하단 고정 틀
-                // (vert=쪽·valign=Bottom, 발신명의 서명란·직인 틀) host 문단에서만
-                // running_vpos 를 0 으로 되돌려 리셋 신호를 재계산 좌표계에 보존한다.
-                // 틀 host 한정인 이유: 일반 문단의 mid-doc vpos=0 은 생성기 노이즈일 수
-                // 있어(task1749 pi2/47) 전면 보존 시 무관 문서의 배치가 흔들린다.
-                // wrap 은 불문 — 자리차지(발신명의)와 글뒤로(직인 도장, 36408321 pi12)
-                // 모두 같은 새 쪽 시그니처다.
-                let mut prev_stored_last_vpos: i32 = 0;
-                // [#2279 성분②] 원본(비합성) 문단의 저장 (first vpos, last end)
-                // 스냅샷 — TopAndBottom 개체 host 의 저장 관례(개체-선행 vs
-                // lh-포함)를 lead = host_first − prev_last_end 로 판별하기 위한
-                // 사전 수집 (재구성 루프가 vpos 를 덮어쓰기 전).
-                let orig_span: Vec<Option<(i32, i32)>> = section
-                    .paragraphs
-                    .iter()
-                    .enumerate()
-                    .map(|(i, p)| {
-                        if reflowed_paras.contains(&i) {
-                            return None;
-                        }
-                        let first = p.line_segs.first()?;
-                        let last = p.line_segs.last()?;
-                        let synthetic = |s: &crate::model::paragraph::LineSeg| {
-                            s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-                                != 0
-                        };
-                        if synthetic(first) || synthetic(last) {
-                            return None;
-                        }
-                        Some((
-                            first.vertical_pos,
-                            last.vertical_pos + last.line_height + last.line_spacing,
-                        ))
-                    })
-                    .collect();
-                for (pi, para) in section.paragraphs.iter_mut().enumerate() {
-                    let was_reflowed = reflowed_paras.contains(&pi);
-                    let hosts_bottom_fixed_frame = para.controls.iter().any(|c| {
-                        matches!(c, Control::Table(t)
-                        if !t.common.treat_as_char
-                            && matches!(
-                                t.common.vert_rel_to,
-                                crate::model::shape::VertRelTo::Page
-                            )
-                            && matches!(
-                                t.common.vert_align,
-                                crate::model::shape::VertAlign::Bottom
-                            ))
-                    });
-                    if !was_reflowed
-                        && hosts_bottom_fixed_frame
-                        && prev_stored_last_vpos > 5000
-                        && para.line_segs.first().map(|s| s.vertical_pos) == Some(0)
-                    {
-                        running_vpos = 0;
-                    } else if let (false, Some(first)) =
-                        (was_reflowed, para.line_segs.first().map(|s| s.vertical_pos))
-                    {
-                        // [#2158] #1920 예외의 일반화: 원본(비합성) lineseg 문단의 저장
-                        // first vpos 가 직전 저장 vpos(한 쪽 분량 초과, #1921 near-top
-                        // 임계 60000HU 동일) 대비 쪽 상단 좌표(<5000HU)로 급감하면
-                        // 쪽-상대 리셋(쪽나눔 인코딩)으로 보고 재계산 좌표계에 보존한다.
-                        // 미보존 시 typeset 의 vpos-reset 쪽나눔(#321/#1921)이 무력화되어
-                        // HWPX 로딩만 쪽이 당겨진다 (hwp3-sample16-hwpx pi88: 저장 568이
-                        // 208008 로 변조 → 3쪽부터 전면 당김, 63쪽 vs 한글 64쪽).
-                        // first==0 은 제외 — mid-doc vpos=0 은 생성기 노이즈일 수 있어
-                        // (task1749 pi2/27/47 실측, 흔들면 HWP 참조 컷 회귀) 쪽 하단
-                        // 고정 틀 host 한정의 기존 #1920 규칙에만 맡긴다. 정당한 텍스트
-                        // 쪽나눔 리셋은 sb 를 반영한 양수 쪽 상단 좌표(sample16
-                        // pi88=568)로 저장된다. 소폭 감소·중간 좌표 리셋도 보존하지
-                        // 않는다.
-                        if prev_stored_last_vpos > 60000
-                            && first > 0
-                            && first < 5000
-                            && first < prev_stored_last_vpos
-                        {
-                            running_vpos = first;
-                        }
-                    }
-                    let original_last_vpos = if was_reflowed {
-                        None
-                    } else {
-                        para.line_segs.last().map(|s| s.vertical_pos)
-                    };
-                    // 문단의 첫 LINE_SEG vpos를 running_vpos로 갱신
-                    if let Some(first_seg) = para.line_segs.first_mut() {
-                        first_seg.vertical_pos = running_vpos;
-                    }
-                    // 문단 내 LINE_SEG vpos 재계산 (문단 내 누적)
+                for para in section.paragraphs.iter_mut() {
+                    // [Task #521] 문단 뒤 여백(spacing_after)을 다음 문단 vpos 에
+                    // 반영한다. 재누적이 sa 를 빠뜨리면 후속 개체(vpos_adjust 로
+                    // seg vpos 를 읽는 표/그림)가 선행 문단의 sa 만큼 위로 밀린다
+                    // (exam_eng 18번 박스: pi=103 sa=~500HU 누락 → 박스 7px↑ →
+                    // rect 가 [240,250] 창 밖). sb 는 vpos_adjust 가 처리하므로 sa 만.
+                    let sa_hu = styles
+                        .para_styles
+                        .get(para.para_shape_id as usize)
+                        .map(|s| (s.spacing_after * 7200.0 / dpi).round() as i32)
+                        .unwrap_or(0);
+                    // 문단 내 LINE_SEG vpos 재계산 (running_vpos 기준 누적).
                     // TAC 표가 lh에 포함된 경우: 다음 줄 vpos = th + ls (HWP 동작)
                     let mut inner_vpos = running_vpos;
                     for seg in para.line_segs.iter_mut() {
@@ -568,9 +469,11 @@ impl DocumentCore {
                         } else {
                             seg.line_height + seg.line_spacing
                         };
-                        inner_vpos = inner_vpos + advance;
+                        inner_vpos += advance;
                     }
-                    // 비-TAC TopAndBottom Picture/Table: 개체 높이를 vpos에 반영
+                    // 비-TAC TopAndBottom Picture/Table: 개체 높이를 vpos에 반영.
+                    // 저장 관례 판별(개체-선행 vs lh-포함)은 저장 vpos 증거가 사라져
+                    // 불가하므로, 보수적 max 모델(줄박스 초과분만 가산)만 유지한다.
                     for ctrl in para.controls.iter() {
                         let (obj_height, obj_v_offset, obj_margin_top, obj_margin_bottom) =
                             match ctrl {
@@ -614,65 +517,74 @@ impl DocumentCore {
                             .iter()
                             .map(|s| s.line_height + s.line_spacing)
                             .sum();
-                        // [#2279 성분②] 한글 저장 관례는 두 가지가 혼재한다
-                        // (같은 문서 안에서도, 36372309 실측):
-                        //   (a) 개체-선행: host_first = prev_end + obj_total,
-                        //       host 줄박스는 개체 **아래** 별도 (결재 코호트:
-                        //       host_v 17640 = 표+om, gap 1920 = lh+ls)
-                        //   (b) lh-포함: host lh 가 개체를 포함 (TAC/#2243 앵커)
-                        // 종전 max 모델(초과분만 가산)은 (a)의 host 줄박스를
-                        // 흡수해 사다리를 -lh-ls 압축, 후속 vpos-snap 이 그만큼
-                        // 과소 좌표로 고착됐다(footer 오차 성분②). 판별은
-                        // lead = 저장 host_first − 직전 원본 문단의 저장 last_end:
-                        // lead ≈ obj_total → (a) → obj_total 별도 가산 / 그 외
-                        // (판별 불가·합성 이웃 포함) → 종전 max 모델(보수).
-                        let lead = if !was_reflowed {
-                            let host_first = orig_span.get(pi).copied().flatten().map(|s| s.0);
-                            let prev_end = if pi == 0 {
-                                Some(0)
-                            } else {
-                                orig_span.get(pi - 1).copied().flatten().map(|s| s.1)
-                            };
-                            match (host_first, prev_end) {
-                                (Some(h), Some(p)) => Some(h - p),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        };
-                        let object_precedes_host_line =
-                            lead.is_some_and(|l| (l - obj_total).abs() <= 60);
-                        if object_precedes_host_line {
-                            inner_vpos += obj_total;
-                        } else if obj_total > seg_lh_total {
+                        if obj_total > seg_lh_total {
                             inner_vpos += obj_total - seg_lh_total;
                         }
                     }
-                    running_vpos = inner_vpos;
-                    if let Some(v) = original_last_vpos {
-                        prev_stored_last_vpos = v;
-                    }
+                    running_vpos = inner_vpos + sa_hu; // [Task #521] 문단 뒤 여백
                 }
             }
         }
     }
 
-    /// 문단의 LineSeg가 합성(reflow)이 필요한지 판단한다.
-    /// line_segs가 1개이고 line_height가 0이면 lineSegArray 누락 상태.
+    /// wrap zone(그림/표 옆 좁은 띠) 문단의 프레임(column_start, segment_width)을
+    /// 저장 첫 seg 에서 추출한다.
     ///
-    /// `include_empty`: 빈 `line_segs` 도 누락으로 취급할지 여부. **HWPX 전용** —
-    /// HWPX 파서는 linesegarray 부재 문단을 빈 채 보존하므로(#1380) 로드 시 합성이
-    /// 필요하다. HWP5/HWP3 는 빈 line_segs 를 reflow 하지 않던 종전 동작을 유지한다
-    /// (확장 시 sample16-hwp5 페이지 수 64→over-split 회귀 확인).
-    fn needs_line_seg_reflow(
+    /// 저장 line_segs 는 레이아웃 소스가 아니지만, wrap 밴드의 **기하 프레임**(어느
+    /// x 에서 시작해 얼마나 좁은지)만큼은 한컴이 인코딩한 값을 그대로 계승해야
+    /// typeset 의 `activate_square_picture_wrap_for_para` arming 이 동작해 래핑
+    /// 텍스트가 그림과 겹치지 않는다. 첫 seg 가 단 폭보다 좁은 wrap zone
+    /// (`is_in_wrap_zone(col_w_hu)`)일 때만 `Some((cs, sw))` 를 반환한다.
+    ///
+    /// `col_w_hu`: 단 너비(HWPUNIT).
+    fn wrap_zone_frame(
         para: &crate::model::paragraph::Paragraph,
-        include_empty: bool,
+        col_w_hu: i32,
+    ) -> Option<(i32, i32)> {
+        let first = para.line_segs.first()?;
+        // 밴드 폭이 단 폭보다 작은 진짜 wrap 프레임만 계승한다. sw 가 0 이거나 단
+        // 폭 이상이면 일반 문단이므로 계승하지 않는다.
+        if first.is_in_wrap_zone(col_w_hu) && first.segment_width > 0 {
+            Some((first.column_start, first.segment_width))
+        } else {
+            None
+        }
+    }
+
+    /// `wrap_zone_frame` 가 Some 을 준 문단이 실제 그림-어울림 띠가 아니라
+    /// **순수 들여쓰기**(모든 줄이 동일 좁은 폭 + 어울림 개체 없음)인지 판별한다.
+    ///
+    /// `is_in_wrap_zone` 은 `column_start>0`(들여쓰기)만으로도 참이라, 개체 옆
+    /// 띠가 아닌 일반 들여쓰기 2단 본문(exam-kor-2p pi1: cs=850, sw=30044,
+    /// 모든 줄 동일)까지 wrap 경로로 들어온다. 이 경우 sw 는 이미 좌우 여백을
+    /// 제외한 텍스트폭(col 31744 − 850 − 850)이라 여백을 다시 빼면 이중 차감
+    /// (−1700HU)되어 문단마다 줄이 1줄씩 늘고 페이지가 늘어난다(#1098).
+    /// → 순수 들여쓰기면 band 폭 그대로 reflow.
+    ///
+    /// 진짜 어울림 띠는 (a) 개체 옆 narrow 줄과 그 앞 full-width 줄이 섞인
+    /// 혼합폭이거나, (b) 문단이 비-TAC 부동 개체(그림/도형/표)를 호스트한다
+    /// (test_539 pi181: 글상자 도형 호스트 → 종전 여백 차감 보존).
+    fn is_pure_indent_band(
+        para: &crate::model::paragraph::Paragraph,
+        col_w_hu: i32,
     ) -> bool {
-        if para.line_segs.len() == 1 && para.line_segs[0].is_missing_lineseg_placeholder() {
+        use crate::model::control::Control;
+        // (a) 개체 옆에서 넓어지는 full-width 줄이 하나라도 있으면 진짜 띠.
+        let has_full_width_line = para
+            .line_segs
+            .iter()
+            .any(|s| !s.is_in_wrap_zone(col_w_hu) && s.segment_width > 0);
+        if has_full_width_line {
             return false;
         }
-        (include_empty && para.line_segs.is_empty())
-            || (para.line_segs.len() == 1 && para.line_segs[0].line_height == 0)
+        // (b) 비-TAC 부동 개체를 호스트하면 진짜 어울림 문단.
+        let hosts_float = para.controls.iter().any(|c| match c {
+            Control::Picture(p) => !p.common.treat_as_char,
+            Control::Shape(s) => !s.common().treat_as_char,
+            Control::Table(t) => !t.common.treat_as_char,
+            _ => false,
+        });
+        !hosts_float
     }
 
     /// HWP5 -> HWPX export가 넣은 LineSeg 부재 marker는 reflow gate에서만 사용한다.
@@ -816,17 +728,23 @@ impl DocumentCore {
         }
     }
 
-    /// HWPX RowBreak 표 셀의 합성 lineSeg를 셀에 저장된 세로 정보와 맞춘다.
+    /// HWPX RowBreak 표 셀의 reflow lineSeg를 셀 선언 높이에 맞춘다 (#1380).
     ///
-    /// HWPX는 표 셀 안의 문단별 `<hp:linesegarray>`를 생략하면서도, 셀 높이와 마지막
-    /// 빈 anchor 문단에는 한컴이 계산한 세로 기준선을 남기는 경우가 있다. 셀의 명시
-    /// 높이에 비해 합성 lineSeg가 부족하면 쪽 나눔 후 다음 페이지 표 조각의 줄 수가
-    /// 모자라므로, 다음 문서 속성만 근거로 부족한 줄을 보강한다.
+    /// HWPX는 표 셀 안의 문단별 `<hp:linesegarray>`를 생략하면서도 셀 높이는 남긴다.
+    /// rhwp 가 reflow 한 줄 높이 합이 셀 선언 높이보다 작으면 쪽 나눔 후 다음 페이지
+    /// 표 조각의 줄 수가 모자라므로, 문서 속성만 근거로 부족한 줄을 보강한다.
+    ///
+    /// [reflow 무조건화 대응] 종전에는 reflow 결과를 `TAG_IMPLEMENTATION_PROPERTY`
+    /// 태그로 식별했으나, reflow 가 그 태그를 더 이상 부여하지 않으므로 **구조적**
+    /// 판정으로 대체한다: 이 함수는 RowBreak 표 셀에서만 호출되고 모든 셀 문단이
+    /// 이미 reflow 된 상태이므로, "reflow 된 텍스트 문단"은 곧 "텍스트가 있고 계산된
+    /// line_segs 를 가진 문단"이다. anchor 는 vpos>0·segment_width>0 인 빈 문단으로
+    /// 구조 판정한다. 게이트는 reflow 줄높이 합 < 셀 높이(structural)로 유지된다.
     ///
     /// - RowBreak 표 셀의 `height`
     /// - 문단 `ParaShape.spacing_before`
-    /// - 합성 lineSeg의 `line_height + line_spacing`
-    /// - 셀 끝의 저장 anchor lineSeg (`vertical_pos > 0`, implementation tag 없음)
+    /// - reflow lineSeg의 `line_height + line_spacing`
+    /// - 셀 끝의 anchor lineSeg (`vertical_pos > 0`, `segment_width > 0` 빈 문단)
     fn fit_hwpx_rowbreak_synthetic_cell_lines(
         cell: &mut crate::model::table::Cell,
         styles: &ResolvedStyleSet,
@@ -837,17 +755,14 @@ impl DocumentCore {
             return;
         }
 
-        let is_synthetic = |seg: &LineSeg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0;
-        let para_is_synthetic = |para: &Paragraph| {
-            !para.text.is_empty()
-                && !para.line_segs.is_empty()
-                && para.line_segs.iter().all(is_synthetic)
-        };
+        // 구조적 판정: reflow 된 텍스트 문단 = 텍스트 있음 + 계산된 line_segs 보유.
+        let para_is_synthetic =
+            |para: &Paragraph| !para.text.is_empty() && !para.line_segs.is_empty();
+        // anchor = vpos>0·segment_width>0 인 빈(텍스트/컨트롤 없음) 단일-seg 문단.
         let has_stored_anchor = cell.paragraphs.iter().any(|para| {
             para.text.is_empty()
                 && para.controls.is_empty()
                 && para.line_segs.len() == 1
-                && !is_synthetic(&para.line_segs[0])
                 && para.line_segs[0].vertical_pos > 0
                 && para.line_segs[0].segment_width > 0
         });
@@ -967,36 +882,30 @@ impl DocumentCore {
         true
     }
 
-    /// 사용자 명시 요청에 의한 더 넓은 reflow 판정 (#177).
-    ///
-    /// `needs_line_seg_reflow` (명백한 미계산) + 다음 케이스 포함:
-    /// - 텍스트가 있는데 line_segs 가 비어있음 (LinesegArrayEmpty)
-    ///
-    /// 이 함수는 `reflow_linesegs_on_demand` 에서만 사용되며, 자동 파싱 경로에는 영향 없음.
-    fn needs_reflow_broadly(para: &crate::model::paragraph::Paragraph) -> bool {
-        if !para.text.is_empty() && para.line_segs.is_empty() {
-            return true;
-        }
-        if Self::needs_line_seg_reflow(para, false) {
-            return true;
-        }
-        false
-    }
-
     /// 사용자 명시 요청에 의한 전체 lineseg reflow (#177).
     ///
-    /// `validate_linesegs` 에 기록된 경고 대상 문단들 중 명백히 reflow 가능한 것을 처리한다.
-    /// 기본 파싱 경로의 `reflow_zero_height_paragraphs` 와 달리 이 메서드는
-    /// 사용자가 UI에서 "자동 보정" 을 명시적으로 선택했을 때만 호출되어야 한다.
-    /// `LinesegTextRunReflow` 는 한컴이 계산한 1개 lineseg 를 강제로 다시 풀면
-    /// 페이지 수가 바뀔 수 있으므로 경고만 남기고 자동 보정 대상에서 제외한다.
+    /// rhwp 는 로드 시 이미 모든 문단을 reflow 하지만, 이 메서드는 사용자가 UI 에서
+    /// "자동 보정" 을 명시적으로 선택했을 때 현재 폭 기준으로 **다시** 전량 reflow
+    /// 하고 재조판한다. 로드 경로(`reflow_zero_height_paragraphs`)와 동일한 무조건
+    /// 규칙을 따르되(placeholder marker 만 예외), 재구성·페이지네이션을 재실행한다.
     ///
+    /// [Task #21] LINE_SEG 두 목록이 vertical_pos 를 제외하고 다른지 판정한다.
+    /// vertical_pos 는 reflow 직후 문단-로컬(0 기준)이고 이후 재누적되므로,
+    /// idempotency 판정에서 제외해야 "이미 정상 HWPX 는 0 변경" 계약이 지켜진다.
+    fn segs_changed_ignore_vpos(
+        after: &[crate::model::paragraph::LineSeg],
+        before: &[crate::model::paragraph::LineSeg],
+    ) -> bool {
+        after.len() != before.len()
+            || after.iter().zip(before.iter()).any(|(a, b)| {
+                let mut a2 = a.clone();
+                a2.vertical_pos = b.vertical_pos;
+                a2 != *b
+            })
+    }
+
     /// 반환값: 실제로 reflow 된 문단 개수 (본문 + 셀 내부 합계).
     pub fn reflow_linesegs_on_demand(&mut self) -> usize {
-        if self.validation_report.is_empty() {
-            return 0;
-        }
-
         // 스타일은 재해소해도 동일 결과이므로 재계산하여 borrow 충돌 회피.
         let styles = resolve_styles(&self.document.doc_info, self.dpi);
         let dpi = self.dpi;
@@ -1012,59 +921,84 @@ impl DocumentCore {
                 .first()
                 .map(|a| a.width)
                 .unwrap_or(layout.body_area.width);
+            let col_w_hu = px_to_hwpunit(col_width, dpi);
 
-            let mut min_reflowed_idx: Option<usize> = None;
-            for (pi, para) in section.paragraphs.iter_mut().enumerate() {
-                if Self::needs_reflow_broadly(para) {
+            for para in section.paragraphs.iter_mut() {
+                let is_placeholder = para.line_segs.len() == 1
+                    && para.line_segs[0].is_missing_lineseg_placeholder();
+                if !is_placeholder {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                     let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-                    let available_width = (col_width - margin_left - margin_right).max(1.0);
-                    reflow_line_segs(para, available_width, &styles, dpi);
-                    reflowed += 1;
-                    if min_reflowed_idx.is_none() {
-                        min_reflowed_idx = Some(pi);
+                    // 로드 시 이미 전량 reflow 됐으므로, 이 opt-in 보정은 실제로 세그가
+                    // 바뀐 문단만 카운트한다. 그래야 (1) 빈 문단·이미 정상인 HWPX 는 0 을
+                    // 반환하고 (2) 재조판을 유발하지 않아 페이지 수를 바꾸지 않는다는
+                    // 계약(opt-in API 는 이미 올바른 레이아웃을 건드리지 않음)이 지켜진다.
+                    let before = para.line_segs.clone();
+                    if let Some((cs_hu, sw_hu)) = Self::wrap_zone_frame(para, col_w_hu) {
+                        let band_width_px = crate::renderer::hwpunit_to_px(sw_hu, dpi);
+                        // 로드 경로와 동일: 순수 들여쓰기는 band 폭 그대로,
+                        // 진짜 어울림 띠만 여백 차감(#1098 idempotency 유지).
+                        let available_width = if Self::is_pure_indent_band(para, col_w_hu) {
+                            band_width_px.max(1.0)
+                        } else {
+                            (band_width_px - margin_left - margin_right).max(1.0)
+                        };
+                        reflow_line_segs(para, available_width, &styles, dpi);
+                        for seg in para.line_segs.iter_mut() {
+                            seg.column_start = cs_hu;
+                            seg.segment_width = sw_hu;
+                        }
+                    } else {
+                        let available_width =
+                            (col_width - margin_left - margin_right).max(1.0);
+                        reflow_line_segs(para, available_width, &styles, dpi);
+                    }
+                    // [Task #21] vertical_pos 는 이 루프 뒤 recalculate_section_vpos 로
+                    // 다시 누적되므로 비교에서 제외한다. 안 그러면 로드 시 누적 vpos vs
+                    // reflow 문단-로컬 vpos 차이로 모든 문단이 "변경"으로 집계되어
+                    // idempotent 계약(이미 정상 HWPX 는 0 반환)이 깨진다.
+                    if Self::segs_changed_ignore_vpos(&para.line_segs, &before) {
+                        reflowed += 1;
                     }
                 }
                 // 표 셀 내부 문단도 동일 처리
                 for ctrl in &mut para.controls {
                     if let Control::Table(ref mut table) = ctrl {
                         for cell in &mut table.cells {
-                            // [Task #671 후속 / Issue #671 자동보정 영역 정정]
-                            // 셀 폭 (cell.width) 에서 좌우 padding 차감하여 셀 inner 폭 계산.
-                            // 동일 본질 정정: line 270 영역 참조.
                             let cell_w_px = crate::renderer::hwpunit_to_px(cell.width as i32, dpi);
-                            let pad_left =
-                                crate::renderer::hwpunit_to_px(cell.padding.left as i32, dpi);
+                            // 로드 경로와 동일한 실효 pad 규칙(effective_padding)을 써야
+                            // 두 경로가 동일 폭으로 reflow 해 idempotent 하다(#2195).
+                            let eff_pad = if cell.apply_inner_margin {
+                                cell.padding
+                            } else {
+                                cell.effective_padding(&table.padding)
+                            };
+                            let pad_left = crate::renderer::hwpunit_to_px(eff_pad.left as i32, dpi);
                             let pad_right =
-                                crate::renderer::hwpunit_to_px(cell.padding.right as i32, dpi);
+                                crate::renderer::hwpunit_to_px(eff_pad.right as i32, dpi);
                             let cell_inner_width = (cell_w_px - pad_left - pad_right).max(1.0);
+                            // 세로쓰기 셀은 가로 줄바꿈 엔진 대상 제외 (로드 경로와 동일).
+                            let is_vertical_cell = cell.text_direction != 0;
                             for cell_para in &mut cell.paragraphs {
-                                if Self::needs_reflow_broadly(cell_para) {
+                                let is_placeholder = cell_para.line_segs.len() == 1
+                                    && cell_para.line_segs[0].is_missing_lineseg_placeholder();
+                                if !is_placeholder && !is_vertical_cell {
+                                    let before = cell_para.line_segs.clone();
                                     reflow_line_segs(cell_para, cell_inner_width, &styles, dpi);
-                                    reflowed += 1;
+                                    if Self::segs_changed_ignore_vpos(&cell_para.line_segs, &before) {
+                                        reflowed += 1;
+                                    }
                                 }
                             }
+                            crate::renderer::composer::recalculate_section_vpos(&mut cell.paragraphs, 0, None, None, &styles, dpi, doc_hwp3_layout);
                         }
                     }
                 }
             }
 
-            // [Task #927] reflow 후 vpos 일관성 재계산 — 본문 paragraphs 만.
-            // 빈 lineseg 였던 문단들은 reflow 시 vpos_start=0 으로 시작하여 후속 문단
-            // 의 vpos 연속성이 깨짐. paginator 의 vpos_h 기반 current_height 조정이
-            // 잘못된 값으로 적용되어 페이지가 과다 분할되는 회귀의 원인.
-            if let Some(start) = min_reflowed_idx {
-                crate::renderer::composer::recalculate_section_vpos(
-                    &mut section.paragraphs,
-                    start,
-                    None,
-                    None,
-                    &self.styles,
-                    self.dpi,
-                    doc_hwp3_layout,
-                );
-            }
+            // reflow 후 본문 문단 간 vpos 일관성 재계산 (문단-로컬 원점 0 → 순차 누적).
+            crate::renderer::composer::recalculate_section_vpos(&mut section.paragraphs, 0, None, None, &styles, dpi, doc_hwp3_layout);
         }
 
         if reflowed > 0 {
@@ -2032,42 +1966,6 @@ mod validate_linesegs_tests {
         );
     }
 
-    /// needs_reflow_broadly: 빈 line_segs + text → true
-    #[test]
-    fn needs_reflow_broadly_covers_empty_linesegs() {
-        let mut para = Paragraph::default();
-        para.text = "hello".to_string();
-        // line_segs 비움
-        assert!(DocumentCore::needs_reflow_broadly(&para));
-    }
-
-    /// needs_reflow_broadly: 기존 조건 (line_segs=1, line_height=0) → true
-    #[test]
-    fn needs_reflow_broadly_covers_uncomputed_lineseg() {
-        let mut para = Paragraph::default();
-        para.text = "hello".to_string();
-        para.line_segs.push(LineSeg::default());
-        assert!(DocumentCore::needs_reflow_broadly(&para));
-    }
-
-    /// needs_reflow_broadly: 정상 line_segs → false
-    #[test]
-    fn needs_reflow_broadly_skips_healthy_paragraph() {
-        let mut para = Paragraph::default();
-        para.text = "hello".to_string();
-        let mut seg = LineSeg::default();
-        seg.line_height = 1000;
-        para.line_segs.push(seg);
-        assert!(!DocumentCore::needs_reflow_broadly(&para));
-    }
-
-    /// needs_reflow_broadly: 빈 문단 (text 없음) → false
-    #[test]
-    fn needs_reflow_broadly_skips_empty_paragraph() {
-        let para = Paragraph::default();
-        assert!(!DocumentCore::needs_reflow_broadly(&para));
-    }
-
     // ---------- R3: LinesegTextRunReflow ----------
 
     #[test]
@@ -2122,15 +2020,5 @@ mod validate_linesegs_tests {
 
         let report = DocumentCore::validate_linesegs(&doc, true);
         assert!(report.is_empty(), "\\n 있는 문단은 R3 해당 안 됨");
-    }
-
-    #[test]
-    fn needs_reflow_broadly_skips_textrun_reflow() {
-        let mut para = Paragraph::default();
-        para.text = "이것은 충분히 길어서 한 줄로 표시하기 어려운 한국어 문장입니다. 한컴은 textRun으로 reflow하지만 rhwp는 그대로 그립니다.".to_string();
-        let mut seg = LineSeg::default();
-        seg.line_height = 1000;
-        para.line_segs.push(seg);
-        assert!(!DocumentCore::needs_reflow_broadly(&para));
     }
 }

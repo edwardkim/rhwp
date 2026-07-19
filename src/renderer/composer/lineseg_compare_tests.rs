@@ -458,17 +458,25 @@ mod tests {
         use crate::renderer::layout::{estimate_text_width, resolved_to_text_style};
         use crate::renderer::style_resolver::detect_lang_category;
 
-        let Some((document, styles)) = load_raw("samples/lseg-01-basic.hwp") else {
-            return;
-        };
         let dpi = 96.0;
-        let section = &document.sections[0];
-        let page_def = &section.section_def.page_def;
-        let column_def = find_column_def_for_paragraph(&section.paragraphs, 0);
-        let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
-        let col_area = &layout.column_areas[0];
+        for sample in [
+            "samples/lseg-01-basic.hwp",
+            "samples/re-03-latin-only-hancom.hwp",
+            "samples/re-04-digit-only-hancom.hwp",
+            "samples/re-05-mixed-koen-hancom.hwp",
+            "samples/re-06-punctuation-hancom.hwp",
+        ] {
+            let Some((document, styles)) = load_raw(sample) else {
+                continue;
+            };
+            eprintln!("\n########## SAMPLE: {} ##########", sample);
+            let section = &document.sections[0];
+            let page_def = &section.section_def.page_def;
+            let column_def = find_column_def_for_paragraph(&section.paragraphs, 0);
+            let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
+            let col_area = &layout.column_areas[0];
 
-        for (pi, para) in section.paragraphs.iter().enumerate() {
+            for (pi, para) in section.paragraphs.iter().enumerate() {
             if para.line_segs.is_empty() || para.text.is_empty() {
                 continue;
             }
@@ -645,6 +653,7 @@ mod tests {
                     ls.text_start,
                     orig_ts.map(|t| t.to_string()).unwrap_or("없음".into())
                 );
+            }
             }
         }
     }

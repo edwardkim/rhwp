@@ -471,80 +471,14 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
 /// 문단의 텍스트를 줄별로 분할하고, 각 줄 내에서 CharShapeRef 경계에 따라 분할한다.
 fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
     if para.line_segs.is_empty() {
-        // LineSeg가 없으면 텍스트를 ComposedLine 으로 분할
-        if para.text.is_empty() {
-            return Vec::new();
-        }
-        let default_style_id = para
-            .char_shapes
-            .first()
-            .map(|cs| cs.char_shape_id)
-            .unwrap_or(0);
-        // [Task #994] HWP5 변환본의 일부 paragraph (sample16 의 󰏅 PUA bullet 들)
-        // 는 PARA_LINE_SEG 누락 → 기존 fallback 이 단일 ComposedLine 생성 →
-        // layout 이 wrap 없이 한 y 좌표에 모든 텍스트 그림 → 시각 겹침.
-        // 임시 휴리스틱: 공백 기준 word wrap, ~45 chars/line (Korean 13pt 표준) 한도.
-        // 정확한 line_height 는 corrected_line_height 가 layout 에서 보정 (max_fs * 1.6).
-        // 향후 reflow_line_segs 정식 호출 시 본 휴리스틱 대체.
-        // [Task #998] HWP3 reference (sample16 pi=443 등) 의 line_segs 측정 결과
-        // 평균 43~46 chars/line. 기존 35 는 conservative — 매 paragraph +1 line
-        // 발생 → 페이지 수 inflate (sample16-hwp5.hwp: 64 reference 대비 +3).
-        // 45 로 조정하여 HWP3 정합 개선 (+1 까지 축소, 잔존 ParaShape 데이터 차이).
-        let chars: Vec<char> = para.text.chars().collect();
-        const CHARS_PER_LINE: usize = 45;
-        let mut lines = Vec::new();
-        let total = chars.len();
-        let mut offset = 0;
-        while offset < total {
-            let max_end = (offset + CHARS_PER_LINE).min(total);
-            // 자연스러운 break 위치 찾기 (공백 후) — Justify 정렬 시 mid-word 분할
-            // 로 chars 사이 spacing 부풀림 회피.
-            let mut end = max_end;
-            if end < total {
-                // max_end 위치에서 뒤로 가며 공백 검색 (offset+10 까지 허용)
-                let min_acceptable = offset + (CHARS_PER_LINE / 2);
-                for i in (min_acceptable..max_end).rev() {
-                    if chars[i] == ' ' || chars[i] == '\t' {
-                        end = i + 1; // 공백 포함하여 line 끝
-                        break;
-                    }
-                }
-            }
-            let line_text: String = chars[offset..end].iter().collect();
-            let is_last_line = end >= total;
-            // [#2279] 주의: 이 폴백은 문단의 CharShapeRef 를 무시하고 단일
-            // default_style run 을 만든다(혼합 크기 문단이 전 줄 최대 크기로
-            // 측정·렌더). 본문 경로는 recompose_for_body_width 가
-            // restyle_fallback_runs_by_char_shapes 로 정합한다 — 셀 경로는 기존
-            // 폭 보정망(#2070 사다리)이 이 단일 스타일 위에서 교정돼 있어
-            // 전면 교체 시 80168 pi=1056/1245 급 회귀(#2279 실측).
-            lines.push(ComposedLine {
-                runs: split_runs_by_lang(vec![ComposedTextRun {
-                    text: line_text,
-                    char_style_id: default_style_id,
-                    lang_index: 0,
-                    char_overlap: None,
-                    footnote_marker: None,
-                    display_text: None,
-                }]),
-                line_height: 400,
-                baseline_distance: 320,
-                segment_width: 0,
-                column_start: 0,
-                line_spacing: 0,
-                // [Task #994] non-last synth wrap line 은 has_line_break=true 로 marking —
-                // Justify 정렬 비활성화 (line 의 chars 가 column width 만큼 spread 되지 않음).
-                // 마지막 line 은 false (기존 paragraph 동작 유지).
-                has_line_break: !is_last_line,
-                char_start: offset,
-            });
-            offset = end;
-        }
-        return lines;
+        // rhwp 는 로드 시 모든 문단의 line_segs 를 reflow 로 채우므로 여기서 빈
+        // line_segs 는 곧 빈 문단이다. CHARS_PER_LINE 휴리스틱 폴백은 제거됐다 —
+        // 저장 seg 부재를 레이아웃 소스로 대체하지 않는다.
+        return Vec::new();
     }
 
     let mut lines = Vec::new();
-    let line_seg_count = effective_line_seg_count(para);
+    let line_seg_count = para.line_segs.len();
 
     for line_idx in 0..line_seg_count {
         let line_seg = &para.line_segs[line_idx];
@@ -707,30 +641,6 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
     }
 
     lines
-}
-
-fn effective_line_seg_count(para: &Paragraph) -> usize {
-    if is_sample16_2022_bcp_orphan_tail_lineseg(para) {
-        para.line_segs.len().saturating_sub(1)
-    } else {
-        para.line_segs.len()
-    }
-}
-
-fn is_sample16_2022_bcp_orphan_tail_lineseg(para: &Paragraph) -> bool {
-    if para.line_segs.len() != 2 {
-        return false;
-    }
-    if !para.text.contains("BCP:Business Continuity Planning) 수립") {
-        return false;
-    }
-
-    let first = &para.line_segs[0];
-    let last = &para.line_segs[1];
-    if last.text_start < para.char_count.saturating_sub(2) {
-        return false;
-    }
-    last.vertical_pos == first.vertical_pos + first.line_height + first.line_spacing
 }
 
 /// UTF-16 위치 범위를 텍스트 문자 인덱스 범위로 변환한다.
@@ -1547,27 +1457,35 @@ pub fn recompose_for_cell_width(
     cell_inner_width_px: f64,
     styles: &ResolvedStyleSet,
 ) {
-    let has_synthetic_line_segs = !para.line_segs.is_empty()
-        && para
-            .line_segs
-            .iter()
-            .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0);
-    let has_authoritative_line_segs = !para.line_segs.is_empty() && !has_synthetic_line_segs;
-    if has_authoritative_line_segs {
-        return;
-    }
-    if para.line_segs.len() >= 2 && has_synthetic_line_segs {
-        // HWPX 로드 단계에서 셀 폭/높이/anchor 속성으로 합성한 lineSeg 경계는
-        // 이미 문서 속성 기반 보정 결과다. 여기서 다시 폭 기준으로 합치고
-        // 재분할하면 RowBreak 표의 쪽 나눔 기준 줄 수가 원본 세로 정보와 어긋난다.
-        return;
-    }
+    // reflow 가 line_segs 를 항상 계산하므로 provenance(합성 vs 실측) 분기는 제거한다.
+    // 저장 seg 유무·태그와 무관하게 셀 폭 기준 순수 재래핑을 수행한다.
     if composed.lines.is_empty() {
         return;
     }
     if cell_inner_width_px <= 0.0 {
         return;
     }
+    // [Task #624] 셀 문단의 treat_as_char 인라인 개체 (anchor char idx, 폭 px).
+    // split_composed_line_by_width 가 개체 anchor 에서 그 폭을 예약해 개체 앞에서
+    // 줄바꿈하도록 한다(㉠ 사각형이 Line1 대신 Line2 로). 인라인 개체 없는 셀은
+    // 빈 목록 → 동작 불변.
+    let inline_obj_dims: Vec<(usize, f64, i32)> = {
+        let positions = find_control_text_positions(para);
+        para.controls
+            .iter()
+            .enumerate()
+            .filter_map(|(i, c)| {
+                let (w_hu, h_hu) = line_breaking::inline_control_size_hwp(c)?;
+                Some((
+                    *positions.get(i)?,
+                    crate::renderer::hwpunit_to_px(w_hu, crate::renderer::DEFAULT_DPI),
+                    h_hu,
+                ))
+            })
+            .collect()
+    };
+    let inline_obj_widths_px: Vec<(usize, f64)> =
+        inline_obj_dims.iter().map(|(a, w, _)| (*a, *w)).collect();
     // [#2070] lineSeg 부재 fallback 도 문단 여백/들여쓰기 반영 폭을 쓰되,
     // 내어쓰기(intent<0)의 본질대로 **첫 줄 폭과 연속 줄 폭을 분리**한다.
     // 종전 전체 폭 단일 사용은 조문 문단(80168 pi=362, ps intent=-3120)에서
@@ -1703,6 +1621,7 @@ pub fn recompose_for_cell_width(
                 styles,
                 char_break,
                 space_condense,
+                &inline_obj_widths_px,
             );
             // 분할 결과의 공백-단독 조각도 hanging — 직전 조각에 흡수한다.
             let mut folded: Vec<ComposedLine> = Vec::with_capacity(frags.len());
@@ -1770,6 +1689,37 @@ pub fn recompose_for_cell_width(
                         }
                     }
                 }
+            }
+        }
+    }
+    // [Task #624] 분할 줄별 높이를 그 줄에 실제 놓인 개체 높이로 재계산한다.
+    // 셀 압축→재분할이 문단 최대 높이(개체 boost 포함)를 모든 줄에 상속시켜,
+    // 개체 없는 줄까지 boost 되어 뒤 줄을 밀어낸다(㉠ 가 line1 인데 line0 도
+    // lh=1716 → line1·㉠ 이 ~7px 아래로). 각 줄 높이 = max(텍스트 기준높이,
+    // 그 줄 개체들의 높이). 텍스트 기준 = reflow seg 중 최소 lh(개체 없는 줄).
+    // 축소 방향만 적용(개체 있는 줄은 boost 유지).
+    if !inline_obj_dims.is_empty() && !para.line_segs.is_empty() {
+        let text_base = para
+            .line_segs
+            .iter()
+            .map(|s| s.line_height)
+            .filter(|h| *h > 0)
+            .min()
+            .unwrap_or(0);
+        for line in composed.lines.iter_mut() {
+            let len = line.runs.iter().flat_map(|r| r.text.chars()).count();
+            let line_end = line.char_start + len;
+            let max_obj_h = inline_obj_dims
+                .iter()
+                .filter(|(a, _, _)| *a >= line.char_start && *a < line_end)
+                .map(|(_, _, h)| *h)
+                .max()
+                .unwrap_or(0);
+            let target = text_base.max(max_obj_h);
+            if target > 0 && target < line.line_height {
+                let ratio = line.baseline_distance as f64 / line.line_height.max(1) as f64;
+                line.line_height = target;
+                line.baseline_distance = (target as f64 * ratio).round() as i32;
             }
         }
     }
@@ -1915,6 +1865,10 @@ fn split_composed_line_by_width(
     styles: &ResolvedStyleSet,
     char_break: bool,
     space_condense: f64,
+    // [Task #624] treat_as_char 인라인 개체 (문단내 anchor char idx, 폭 px). 개체는
+    // 텍스트 run 이 없어 폭이 안 잡히므로, 분할이 anchor 에 도달하면 그 폭을
+    // current_width 에 더해 개체 앞에서 줄바꿈되게 한다. 빈 slice → 동작 불변.
+    inline_obj_widths_px: &[(usize, f64)],
 ) -> Vec<ComposedLine> {
     let mut result: Vec<ComposedLine> = Vec::new();
     // [#2070] 내어쓰기(intent<0) 이중 폭: 첫 출력 줄은 first_width, 이후 연속
@@ -2014,8 +1968,17 @@ fn split_composed_line_by_width(
                         ts.font_family.split(',').next().unwrap_or("")
                     );
                 }
+                // [Task #624] 이 글자 앞에 놓인 인라인 개체 폭을 예약한다.
+                let obj_reserve: f64 = {
+                    let pos = current_char_start + chars_in_line;
+                    inline_obj_widths_px
+                        .iter()
+                        .filter(|(a, _)| *a == pos)
+                        .map(|(_, w)| *w)
+                        .sum()
+                };
                 let eff = current_width - space_w * space_condense;
-                let over = eff + ch_width > limit(&result) && chars_in_line > 0;
+                let over = eff + ch_width + obj_reserve > limit(&result) && chars_in_line > 0;
                 if over && ch == ' ' && !hung {
                     // 줄끝 초과 공백 1개 hang — 줄바꿈 없이 현재 줄에 계상.
                     hung = true;
@@ -2064,6 +2027,8 @@ fn split_composed_line_by_width(
                         chars_in_line += 1;
                     }
                 }
+                // 개체는 글자가 놓이는 줄(분할 후 새 줄일 수 있음)에 폭 계상.
+                current_width += obj_reserve;
                 current_run_text.push(ch);
                 current_width += ch_width;
                 if ch == ' ' {

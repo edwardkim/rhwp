@@ -292,17 +292,13 @@ impl LayoutEngine {
 
             // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
             // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
-            for (cpi, para) in cell.paragraphs.iter().enumerate() {
-                if let Some(comp) = composed_paras.get_mut(cpi) {
-                    crate::renderer::composer::recompose_for_cell_width(
-                        comp,
-                        para,
-                        inner_width,
-                        styles,
-                    );
-                    // [#2291] 부실 저장(ls==1·실폭 초과) 재분할 — 가로쓰기 셀 한정.
-                    if cell.text_direction == 0 {
-                        crate::renderer::composer::recompose_stored_single_line_if_overflowing(
+            // [Task #81] 세로쓰기 셀(text_direction != 0)은 제외: 한 ComposedLine =
+            // 한 세로 컬럼이라, 셀 폭으로 가로 재분할하면 세로 컬럼이 여러 개로
+            // 쪼개져 layout_vertical_cell_text 에서 글자 y 가 비단조가 된다.
+            if cell.text_direction == 0 {
+                for (cpi, para) in cell.paragraphs.iter().enumerate() {
+                    if let Some(comp) = composed_paras.get_mut(cpi) {
+                        crate::renderer::composer::recompose_for_cell_width(
                             comp,
                             para,
                             inner_width,

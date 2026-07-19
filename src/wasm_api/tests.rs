@@ -23760,11 +23760,15 @@ fn test_get_validation_warnings_json_shape() {
 }
 
 #[test]
-fn test_reflow_linesegs_empty_document_returns_zero() {
-    // 빈 문서에선 reflow 대상 없음 → 0 반환.
+fn test_reflow_linesegs_empty_document_recomputes_placeholder_seg() {
+    // always-compute 이후: create_empty 의 빈 문단은 하드코딩된 placeholder seg
+    // (Paragraph::new_empty 의 text_height=1000 등)를 갖는데, reflow_linesegs 는
+    // 이를 폰트 기반 실측 치수로 재계산한다 → 세그가 실제로 바뀌므로 1 을 반환한다.
+    // (로드된 문서는 로드 시 이미 reflow 됐으므로 재-reflow 시 0 을 반환한다 —
+    //  sample2 테스트가 그 계약을 검증한다.)
     let mut doc = HwpDocument::create_empty();
     let count = doc.reflow_linesegs();
-    assert_eq!(count, 0);
+    assert_eq!(count, 1);
 }
 
 #[test]
@@ -24067,6 +24071,10 @@ fn test_reflow_linesegs_keeps_hwpx_sample2_page_count_for_textrun_warnings() {
         "권장 보정으로 HWPX 페이지 수가 바뀌면 안 됨"
     );
 }
+
+
+
+
 
 // ---------- #1413: insertPictureEx(options object) 동치 ----------
 

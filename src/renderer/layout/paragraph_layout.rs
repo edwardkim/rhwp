@@ -23,7 +23,7 @@ use super::utils::{
 use super::{CellContext, LayoutEngine};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
-use crate::model::paragraph::{LineSeg, Paragraph};
+use crate::model::paragraph::Paragraph;
 use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertRelTo};
 use crate::model::style::{Alignment, HeadType, LineSpacingType, Numbering, UnderlineType};
 
@@ -1891,54 +1891,9 @@ impl LayoutEngine {
         wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
     ) -> f64 {
         if let Some(comp) = composed {
-            // [Task #1042 Stage 6b] 본문 paragraph 의 line_segs.empty case 의 wrap 정합 —
-            // compose_lines fallback (CHARS_PER_LINE=45 heuristic) 결과를 column inner width
-            // 기반으로 re-split. cell paragraph (Stage 6a 의 height_measurer 호출) 와 동일
-            // recompose path 사용.
-            let recomposed: Option<ComposedParagraph> = {
-                let para_style = styles.para_styles.get(comp.para_style_id as usize);
-                let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-                let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-                let column_inner_width = (col_area.width - margin_l - margin_r).max(0.0);
-                if column_inner_width > 0.0 && para.line_segs.is_empty() {
-                    let mut cloned = comp.clone();
-                    // [#2279] 본문 NO_LS 는 글자모양 재분할 포함 래퍼 사용 —
-                    // typeset(format_paragraph)과 동일 (측정/렌더 줄수·pitch 정합).
-                    crate::renderer::composer::recompose_for_body_width(
-                        &mut cloned,
-                        para,
-                        column_inner_width,
-                        styles,
-                    );
-                    Some(cloned)
-                } else if column_inner_width > 0.0
-                    && crate::renderer::composer::stored_lines_overflow(
-                        comp,
-                        para,
-                        column_inner_width,
-                        styles,
-                    )
-                {
-                    // [#2279] 마스킹 저장분할 실폭-모순 본문 문단 fresh 재래핑 —
-                    // typeset(format_paragraph)과 동일.
-                    let mut cloned = comp.clone();
-                    crate::renderer::composer::recompose_stored_lines_if_overflowing_body(
-                        &mut cloned,
-                        para,
-                        column_inner_width,
-                        styles,
-                    );
-                    Some(cloned)
-                } else {
-                    None
-                }
-            };
-            let comp_ref = recomposed.as_ref().unwrap_or(comp);
-            // [#2279] 전체-문단 요청(start=0, end=원본 줄수 이상)은 재래핑 후 줄수로
-            // 확장한다. 종전에는 재래핑이 줄수를 늘린 문단(45자 폴백 3줄 → 실폭 4줄,
-            // 86712 pi=22)에서 원본 줄수로 클램프되어 마지막 줄이 렌더에서 소실됐다
-            // (측정 4줄 fit vs 렌더 3줄 — maintainer PR #2284 리뷰 p10 픽셀 하락과
-            // 정합). 분할(partial) 요청의 라인 범위는 종전 클램프 유지.
+            // reflow 가 모든 문단의 line_segs 를 채우므로 본문 NO_LS 폴백 recompose
+            // (CHARS_PER_LINE 재래핑) 분기는 제거됐다 — comp 를 그대로 사용한다.
+            let comp_ref = comp;
             let end_line_adjusted = if start_line == 0 && end_line >= comp.lines.len() {
                 comp_ref.lines.len()
             } else {
@@ -2551,9 +2506,10 @@ impl LayoutEngine {
                 // 밀려 visual sweep 이중상), 트림한 문서는 vpos=0 이다. #853 의
                 // para_index==0 클램프를 저장 증거 기반으로 일반화하되, 누적축 vpos
                 // 인코딩(vpos ≫ sb)은 쪽-상대 증거가 아니므로 종전(트림) 유지.
+                // reflow 가 vpos 를 항상 계산하므로 합성/실측 구분(구현속성 태그) 필터는
+                // 제거한다 — 첫 seg 의 vpos 를 무조건 신뢰한다.
                 let vpos0_px = para
                     .and_then(|p| p.line_segs.first())
-                    .filter(|ls| ls.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
                     .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi))
                     .unwrap_or(0.0);
                 if vpos0_px > 0.0 && vpos0_px <= spacing_before + 0.5 {
@@ -3141,9 +3097,12 @@ impl LayoutEngine {
             // outer margin_right (HU) 만큼 cs 에 더해 text 시작 x 결정. sw 에서 동일량
             // 차감하여 가용 폭 정합. WrapAnchorRef.anchor_image_margin_right 활용.
             let (line_cs_offset, line_avail_w_override) = if let Some(anchor) = wrap_anchor {
-                let seg = para.and_then(|p| p.line_segs.get(line_idx));
-                let cs = seg.map(|s| s.column_start as i32).unwrap_or(0);
-                let sw = seg.map(|s| s.segment_width as i32).unwrap_or(0);
+                // wrap zone 프레임(cs/sw)은 저장 per-line seg 가 아니라 anchor 메타데이터
+                // (WrapAnchorRef.anchor_cs/anchor_sw)에서 가져온다 — reflow 는 wrap 문단의
+                // cs/sw 를 밴드 폭으로 재-각인하지만, 렌더 x 오프셋/가용폭은 typeset 이
+                // 매칭한 anchor 의 wrap zone 값을 단일 소스로 삼는다.
+                let cs = anchor.anchor_cs;
+                let sw = anchor.anchor_sw;
                 let mr = anchor.anchor_image_margin_right;
                 let cs_px = crate::renderer::hwpunit_to_px(cs + mr, self.dpi);
                 let sw_px = if sw > 0 {

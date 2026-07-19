@@ -135,7 +135,10 @@ pub struct CharShapeRef {
 ///
 /// **표준**: `mydocs/tech/document_ir_lineseg_standard.md` (Task #604)
 /// 모든 i32 필드는 HWPUNIT (1 inch = 7200 HWPUNIT).
-#[derive(Debug, Clone, Default)]
+///
+/// `PartialEq`: reflow 전후 세그 변화 감지(`reflow_linesegs_on_demand` 의 "실제로
+/// 바뀐 문단만 카운트")에 사용. 모든 필드가 정수이므로 정확 비교가 안전하다.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct LineSeg {
     /// 본 줄이 차지하는 텍스트 시작 위치 (UTF-16 code unit, 문단 시작 기준)
     pub text_start: u32,

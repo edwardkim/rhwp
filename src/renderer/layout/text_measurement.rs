@@ -1591,6 +1591,57 @@ fn haansoft_latin_override(primary_name: &str, c: char) -> Option<f64> {
     None
 }
 
+/// [#2156 fit-split] 함초롬바탕(HCR Batang) 비한글 ASCII 의 **줄나눔(fit) 전용** 폭.
+///
+/// 한컴은 이 글자들을 비례 advance(HAANSOFT_BATANG_ASCII)로 **렌더**하지만
+/// (권위 PDF 실측: 렌더 advance 0.241~0.867em 비례), 줄나눔 fit 판정은 **균일
+/// 0.50em 반각 셀**로 수행한다 — re-03 라틴/re-04 숫자 공히 42520 HWPUNIT 컬럼
+/// 에서 85 글자/줄(85×500=42500 ≤ 42520 < 43000). 렌더 폭(haansoft_latin_override)
+/// 은 손대지 않고 이 함수는 fit 경로(estimate_text_width_unrounded)에서만 쓴다.
+/// 커버리지는 render 오버라이드와 동일(0x21..0x7F, U+00B7).
+fn haansoft_latin_fit_override(primary_name: &str, c: char, font_size: f64) -> Option<f64> {
+    if !matches!(primary_name, "함초롬바탕" | "HCR Batang") {
+        return None;
+    }
+    let cp = c as u32;
+    if c == '\u{00B7}' || (0x21..0x7F).contains(&cp) {
+        return Some(quantize_hwp_px(font_size * 0.5)); // 균일 반각 셀 (10pt → 500 HWPUNIT)
+    }
+    None
+}
+
+/// [#22xx P] 함초롬바탕(HCR Batang) 비한글 ASCII 의 **줄나눔(fit) natural 폭**.
+///
+/// 한글/CJK 가 섞인 no-space run 은 half-em 반각 셀을 쓰지 않고 실측 HCR Batang
+/// hmtx 자연폭으로 fit 한다(re-05 라틴, re-06 구두점). measure_char_width_embedded
+/// 는 haansoft_latin_override(렌더 메트릭)가 ASCII 를 먼저 가로채 find_metric 까지
+/// 도달하지 못하므로, 여기서 실측 HCR DB(find_metric)를 직접 조회해 그 렌더
+/// 오버라이드를 우회한다. 렌더 경로(haansoft_latin_override / compute_char_positions)
+/// 는 무변경 — 이 함수는 fit(estimate_text_width_unrounded_scoped) 에서만 쓴다.
+/// 커버리지는 half-em 오버라이드와 동일(0x21..0x7F, U+00B7). 글리프 부재 시 None
+/// 을 반환해 상위 사다리(measure_char_width_embedded 등)로 폴백한다.
+fn haansoft_latin_natural_override(
+    primary_name: &str,
+    bold: bool,
+    italic: bool,
+    c: char,
+    font_size: f64,
+) -> Option<f64> {
+    if !matches!(primary_name, "함초롬바탕" | "HCR Batang") {
+        return None;
+    }
+    let cp = c as u32;
+    if c != '\u{00B7}' && !(0x21..0x7F).contains(&cp) {
+        return None;
+    }
+    // 실측 HCR Batang hmtx 직독 — haansoft_latin_override(렌더용) 우회.
+    // measure_char_width_embedded 의 find_metric 분기와 동일 양자화.
+    let mm = font_metrics_data::find_metric(primary_name, bold, italic)?;
+    let glyph_w = mm.metric.get_width(c)?;
+    let em = mm.metric.em_size as f64;
+    Some(quantize_hwp_px(glyph_w as f64 * font_size / em))
+}
+
 /// [#2070] ㆍ(U+318D) 폭은 SYMBOL 폰트별: 한양신명조 = 전각(사다리 v3 실측),
 /// 명조(HY견명조 치환) 등 여타 = 반각 (80168 개정안{{7}} p9/p13 '시ㆍ도조례'
 /// 1줄 오라클, 개정안{{1}} P21 마크와 반각 양립 검증). embedded 메트릭
@@ -1700,8 +1751,31 @@ pub(crate) fn estimate_text_width(text: &str, style: &TextStyle) -> f64 {
 /// 줄바꿈 엔진 전용. 단일 문자 토큰의 반올림 누적 오차를 방지한다.
 /// 한컴은 HWPUNIT 정수로 폭을 누적하므로, round 없이 px를 합산한 뒤
 /// 줄바꿈 비교 시점에서 available_width와 비교하는 것이 더 정확하다.
+///
+/// 기존 공개 시그니처 보존 래퍼 — half_em_ascii=true 로 위임하여 종전과
+/// **바이트 동일**하게 동작한다(composer.rs / text_width_probe.rs / layout.rs
+/// 호출부 무회귀). 스코프 인지가 필요한 토크나이저만
+/// estimate_text_width_unrounded_scoped 를 직접 호출한다.
 pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f64 {
-    let measurer = EmbeddedTextMeasurer;
+    estimate_text_width_unrounded_scoped(text, style, true)
+}
+
+/// [#22xx P] 줄나눔 fit 폭 (run 스코프 인지, round 없이 raw px 반환).
+///
+/// `half_em_ascii`:
+///   · true  → 함초롬바탕 ASCII 를 균일 0.50em 반각 셀로(재현: re-03/re-04
+///             85 글자/줄). = 종전 estimate_text_width_unrounded 동작.
+///   · false → 함초롬바탕 ASCII 를 **natural**(실측 HCR hmtx)로. 한글/CJK 가
+///             섞인 no-space run 전용(re-05 라틴, re-06 구두점).
+///
+/// 토크나이저가 maximal no-space run 이 순수 ASCII 인지로 이 플래그를 정한다.
+/// base_w_raw 산출 **첫 분기만** half_em_ascii 로 갈라지고, 나머지 사다리·자간·
+/// 리더·탭 로직은 단일 본문으로 유지한다(유지보수 단일 진실원 — 본문 중복 없음).
+pub(crate) fn estimate_text_width_unrounded_scoped(
+    text: &str,
+    style: &TextStyle,
+    half_em_ascii: bool,
+) -> f64 {
     let (font_size, ratio, tab_w) = style_params(style);
     let chars: Vec<char> = text.chars().collect();
     let cluster_len = build_cluster_len(&chars);
@@ -1722,7 +1796,21 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         if c == '\u{F081C}' {
             return 0.0;
         }
-        let base_w_raw = if let Some(w) = (c == '\u{318D}')
+        let primary_name = style.font_family.split(',').next().unwrap_or("").trim();
+        // [#22xx P] 함초롬바탕 ASCII fit 폭 — run 스코프로 half-em / natural 선택.
+        //   half_em_ascii=true  : 균일 0.50em 반각 셀 (전부-ASCII run: re-03/04).
+        //   half_em_ascii=false : 실측 HCR hmtx natural (한글 섞인 run: re-05/06).
+        // 첫 분기만 갈라지고 이하 사다리는 공통 — 본문 중복 없음.
+        let hcr_ascii_fit = if half_em_ascii {
+            haansoft_latin_fit_override(primary_name, c, font_size)
+        } else {
+            haansoft_latin_natural_override(primary_name, style.bold, style.italic, c, font_size)
+        };
+        let base_w_raw = if let Some(w) = hcr_ascii_fit {
+            // [#2156 fit-split] 함초롬바탕 ASCII 는 줄나눔(fit)에서만 특례 폭.
+            // 렌더(compute_char_positions)는 비례 폭 유지 → #2156 무회귀.
+            w
+        } else if let Some(w) = (c == '\u{318D}')
             .then(|| area_dot_fallback_width(&style.font_family, font_size))
             .flatten()
         {

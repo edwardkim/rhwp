@@ -8,7 +8,8 @@ use crate::model::control::Control;
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::style::LineSpacingType;
 use crate::renderer::layout::{
-    estimate_text_width, estimate_text_width_unrounded, is_cjk_char, resolved_to_text_style,
+    estimate_text_width_unrounded, estimate_text_width_unrounded_scoped, is_cjk_char,
+    resolved_to_text_style,
 };
 use crate::renderer::px_to_hwpunit;
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
@@ -148,6 +149,48 @@ fn is_cjk_ideograph(ch: char) -> bool {
     lang == 2 || lang == 3 // Chinese or Japanese
 }
 
+/// [#22xx P] 각 글자의 maximal no-space run 이 순수 ASCII(비한글/비CJK)인지.
+///
+/// 함초롬바탕 ASCII 의 half-em(0.50em) 반각 셀 fit 은 이 값이 true 인 run 에만
+/// 적용한다. run 경계는 공백/탭/개행이며, run 안에 한글/CJK 한자·일본어가 하나
+/// 라도 있으면 그 run 전체 글자를 false 로 표시(natural HCR hmtx 로 fit).
+/// per-glyph-INDEX 로 계산하므로 토큰 폭·char_widths 가 동일 스코프를 공유한다.
+///   · 라틴/숫자/구두점만 있는 run → true  (re-03/04: 85 글자/줄 반각 셀)
+///   · 한글 포함 run              → false (re-05 라틴 natural, re-06 구두점 natural)
+fn compute_ascii_run_mask(text_chars: &[char]) -> Vec<bool> {
+    let n = text_chars.len();
+    let mut mask = vec![true; n];
+    let mut i = 0;
+    while i < n {
+        let c = text_chars[i];
+        if c == ' ' || c == '\t' || c == '\n' {
+            mask[i] = true; // 공백류는 스코프 무관(측정도 half-em 대상 아님)
+            i += 1;
+            continue;
+        }
+        // no-space run [start, j) 스캔
+        let start = i;
+        let mut j = i;
+        let mut all_ascii = true;
+        while j < n {
+            let cj = text_chars[j];
+            if cj == ' ' || cj == '\t' || cj == '\n' {
+                break;
+            }
+            // 한글/CJK 한자·일본어가 하나라도 있으면 run 은 non-ASCII.
+            if is_hangul(cj) || is_cjk_ideograph(cj) {
+                all_ascii = false;
+            }
+            j += 1;
+        }
+        for m in mask.iter_mut().take(j).skip(start) {
+            *m = all_ascii;
+        }
+        i = j;
+    }
+    mask
+}
+
 /// 문단 텍스트를 줄 나눔 토큰으로 분할한다.
 pub(crate) fn tokenize_paragraph(
     text_chars: &[char],
@@ -161,6 +204,11 @@ pub(crate) fn tokenize_paragraph(
     if text_len == 0 {
         return Vec::new();
     }
+
+    // [#22xx P] no-space run 별 "전부 ASCII" 판정을 글자 인덱스 단위로 1 회 계산.
+    // 이후 모든 단일-글자 fit 측정(토큰 폭·char_widths)이 동일 스코프를 공유해
+    // half-em(re-03/04) vs natural(re-05/06) 을 일관되게 고른다.
+    let ascii_run_mask = compute_ascii_run_mask(text_chars);
 
     let mut tokens = Vec::new();
     let mut i = 0;
@@ -310,48 +358,190 @@ pub(crate) fn tokenize_paragraph(
                 }
 
                 if !token_text.is_empty() {
-                    let width = measure_token_width(
-                        &token_text,
+                    // [#22xx P] 토큰 폭·per-glyph 폭 모두 run 스코프(ascii_run_mask)로.
+                    let width = measure_token_width_scoped(
                         start,
+                        i,
+                        text_chars,
                         char_offsets,
                         char_shapes,
                         styles,
-                        current_lang,
+                        &ascii_run_mask,
                     );
+                    // per-glyph 폭 수집 (누적-핏 엔진 + char_level_break 용)
+                    let cw: Vec<f64> = (start..i)
+                        .map(|ci| {
+                            let c = text_chars[ci];
+                            let u16p = if ci < char_offsets.len() {
+                                char_offsets[ci]
+                            } else {
+                                ci as u32
+                            };
+                            let sid = find_active_char_shape(char_shapes, u16p);
+                            let lang = if is_lang_neutral(c) {
+                                token_lang
+                            } else {
+                                detect_lang_category(c)
+                            };
+                            let ts = resolved_to_text_style(styles, sid, lang);
+                            estimate_text_width_unrounded_scoped(&c.to_string(), &ts, ascii_run_mask[ci])
+                        })
+                        .collect();
                     tokens.push(BreakToken::Text {
                         start_idx: start,
                         end_idx: i,
                         width,
                         max_font_size: max_fs,
-                        char_widths: vec![],
+                        char_widths: cw,
                     });
                 }
                 continue;
             } else {
-                // 글자 모드: 한글 개별 분할
-                let utf16_pos = if i < char_offsets.len() {
-                    char_offsets[i]
-                } else {
-                    i as u32
+                // 글자 모드: 한글 개별 분할.
+                // [#22xx P] 한글→라틴 바인딩: 한글 바로 뒤(i+1)가 라틴이면 단독
+                // 토큰으로 내보내지 않고 뒤따르는 라틴 어절과 묶어 [한글][라틴-단어]
+                // 한 개의 분할불가 Text 토큰으로 만든다(re-05: "글English" 가 한
+                // 토큰 → 줄끝에서 분리 금지). 한글 뒤가 한글이면 종전대로 단독 토큰
+                // (한글↔한글 브레이크 자유). 바인딩은 korean_break_unit==1(글자 모드)
+                // + "한글 바로 뒤 라틴" 에만 발화 — 순수 한글/순수 라틴 문단 무영향.
+                // 폰트 게이트: 바탕/돋움/맑은 등 타 폰트의 한영 무공백 혼합
+                // (re-eng-mixed)은 한컴이 바인딩 없이 저장하므로, 함초롬바탕
+                // (HCR Batang) 문서에만 바인딩을 발화시켜 오발화 회귀를 막는다.
+                let bind_font_is_hcr = {
+                    let u16p = if i < char_offsets.len() {
+                        char_offsets[i]
+                    } else {
+                        i as u32
+                    };
+                    let sid = find_active_char_shape(char_shapes, u16p);
+                    let ts = resolved_to_text_style(styles, sid, detect_lang_category(ch));
+                    let fam = ts.font_family.split(',').next().unwrap_or("").trim();
+                    matches!(fam, "함초롬바탕" | "HCR Batang")
                 };
-                let style_id = find_active_char_shape(char_shapes, utf16_pos);
-                current_lang = detect_lang_category(ch);
-                let ts = resolved_to_text_style(styles, style_id, current_lang);
-                let fs = if ts.font_size > 0.0 {
-                    ts.font_size
+                let bind_to_latin =
+                    bind_font_is_hcr && i + 1 < text_len && is_latin(text_chars[i + 1]);
+
+                if bind_to_latin {
+                    // 선두 한글 + 후속 연속 라틴을 하나의 토큰으로 수집.
+                    let start = i;
+                    let mut max_fs = 0.0f64;
+
+                    // 선두 한글 1 글자.
+                    {
+                        let utf16_pos = if i < char_offsets.len() {
+                            char_offsets[i]
+                        } else {
+                            i as u32
+                        };
+                        let style_id = find_active_char_shape(char_shapes, utf16_pos);
+                        current_lang = detect_lang_category(ch);
+                        let ts = resolved_to_text_style(styles, style_id, current_lang);
+                        let fs = if ts.font_size > 0.0 { ts.font_size } else { 12.0 };
+                        if fs > max_fs {
+                            max_fs = fs;
+                        }
+                        i += 1;
+                    }
+
+                    // 후속 연속 라틴(언어중립 포함) 흡수 — 공백/개행/탭/한글/CJK 에서 정지.
+                    // 언어중립 문자는 current_lang(직전 확정 언어)을 이어받아 분류를
+                    // 오염시키지 않는다(re-05 라틴 run 유지).
+                    while i < text_len {
+                        let c = text_chars[i];
+                        if c == ' ' || c == '\n' || c == '\t' {
+                            break;
+                        }
+                        if !is_latin(c) && !is_lang_neutral(c) {
+                            break;
+                        }
+                        let utf16_pos = if i < char_offsets.len() {
+                            char_offsets[i]
+                        } else {
+                            i as u32
+                        };
+                        let style_id = find_active_char_shape(char_shapes, utf16_pos);
+                        let lang = if is_lang_neutral(c) {
+                            current_lang
+                        } else {
+                            current_lang = 1; // English
+                            1
+                        };
+                        let ts = resolved_to_text_style(styles, style_id, lang);
+                        let fs = if ts.font_size > 0.0 { ts.font_size } else { 12.0 };
+                        if fs > max_fs {
+                            max_fs = fs;
+                        }
+                        i += 1;
+                    }
+
+                    // 토큰 폭·per-glyph 폭 (run 스코프: 한글 섞인 run 이므로 natural).
+                    let width = measure_token_width_scoped(
+                        start,
+                        i,
+                        text_chars,
+                        char_offsets,
+                        char_shapes,
+                        styles,
+                        &ascii_run_mask,
+                    );
+                    let cw: Vec<f64> = (start..i)
+                        .map(|ci| {
+                            let c = text_chars[ci];
+                            let u16p = if ci < char_offsets.len() {
+                                char_offsets[ci]
+                            } else {
+                                ci as u32
+                            };
+                            let sid = find_active_char_shape(char_shapes, u16p);
+                            // 언어중립 글자는 선두 한글 언어(0) 기준 — run 오염 방지.
+                            let lang = if is_lang_neutral(c) {
+                                detect_lang_category(text_chars[start])
+                            } else {
+                                detect_lang_category(c)
+                            };
+                            let ts = resolved_to_text_style(styles, sid, lang);
+                            estimate_text_width_unrounded_scoped(&c.to_string(), &ts, ascii_run_mask[ci])
+                        })
+                        .collect();
+                    tokens.push(BreakToken::Text {
+                        start_idx: start,
+                        end_idx: i,
+                        width,
+                        max_font_size: max_fs,
+                        char_widths: cw,
+                    });
+                    continue;
                 } else {
-                    12.0
-                };
-                let w = estimate_text_width_unrounded(&ch.to_string(), &ts);
-                tokens.push(BreakToken::Text {
-                    start_idx: i,
-                    end_idx: i + 1,
-                    width: w,
-                    max_font_size: fs,
-                    char_widths: vec![],
-                });
-                i += 1;
-                continue;
+                    // 종전 경로: 한글 단독 분할 토큰.
+                    let utf16_pos = if i < char_offsets.len() {
+                        char_offsets[i]
+                    } else {
+                        i as u32
+                    };
+                    let style_id = find_active_char_shape(char_shapes, utf16_pos);
+                    current_lang = detect_lang_category(ch);
+                    let ts = resolved_to_text_style(styles, style_id, current_lang);
+                    let fs = if ts.font_size > 0.0 {
+                        ts.font_size
+                    } else {
+                        12.0
+                    };
+                    // 한글 섞인 run → natural(970). (전부-ASCII 아님 → mask=false)
+                    let w = estimate_text_width_unrounded_scoped(
+                        &ch.to_string(),
+                        &ts,
+                        ascii_run_mask[i],
+                    );
+                    tokens.push(BreakToken::Text {
+                        start_idx: i,
+                        end_idx: i + 1,
+                        width: w,
+                        max_font_size: fs,
+                        char_widths: vec![],
+                    });
+                    i += 1;
+                    continue;
+                }
             }
         }
 
@@ -420,13 +610,15 @@ pub(crate) fn tokenize_paragraph(
                 }
 
                 if !token_text.is_empty() {
-                    let width = measure_token_width(
-                        &token_text,
+                    // [#22xx P] 토큰 폭·per-glyph 폭 모두 run 스코프(ascii_run_mask)로.
+                    let width = measure_token_width_scoped(
                         start,
+                        i,
+                        text_chars,
                         char_offsets,
                         char_shapes,
                         styles,
-                        current_lang,
+                        &ascii_run_mask,
                     );
                     // 개별 글자 폭 수집 (char_level_break용)
                     let cw: Vec<f64> = (start..i)
@@ -440,7 +632,7 @@ pub(crate) fn tokenize_paragraph(
                             let sid = find_active_char_shape(char_shapes, u16p);
                             let lang = if is_lang_neutral(c) { current_lang } else { 1 };
                             let ts = resolved_to_text_style(styles, sid, lang);
-                            estimate_text_width_unrounded(&c.to_string(), &ts)
+                            estimate_text_width_unrounded_scoped(&c.to_string(), &ts, ascii_run_mask[ci])
                         })
                         .collect();
                     tokens.push(BreakToken::Text {
@@ -467,7 +659,7 @@ pub(crate) fn tokenize_paragraph(
                 } else {
                     12.0
                 };
-                let w = estimate_text_width_unrounded(&ch.to_string(), &ts);
+                let w = estimate_text_width_unrounded_scoped(&ch.to_string(), &ts, ascii_run_mask[i]);
                 tokens.push(BreakToken::Text {
                     start_idx: i,
                     end_idx: i + 1,
@@ -495,7 +687,7 @@ pub(crate) fn tokenize_paragraph(
             } else {
                 12.0
             };
-            let w = estimate_text_width_unrounded(&ch.to_string(), &ts);
+            let w = estimate_text_width_unrounded_scoped(&ch.to_string(), &ts, ascii_run_mask[i]);
             tokens.push(BreakToken::Text {
                 start_idx: i,
                 end_idx: i + 1,
@@ -528,7 +720,7 @@ pub(crate) fn tokenize_paragraph(
             } else {
                 12.0
             };
-            let w = estimate_text_width_unrounded(&ch.to_string(), &ts);
+            let w = estimate_text_width_unrounded_scoped(&ch.to_string(), &ts, ascii_run_mask[i]);
             tokens.push(BreakToken::Text {
                 start_idx: i,
                 end_idx: i + 1,
@@ -543,19 +735,35 @@ pub(crate) fn tokenize_paragraph(
     tokens
 }
 
-/// 토큰 텍스트의 폭을 글자별 언어 인식 측정으로 합산한다.
-fn measure_token_width(
-    text: &str,
-    start_char_idx: usize,
+/// [#22xx P] 토큰 [start, end) 의 폭을 글자별 언어 인식 + run 스코프로 합산한다.
+///
+/// 기존 measure_token_width 대체(문자열 기반 → 인덱스 범위 기반). 각 글자의
+/// ascii_run_mask[idx] 로 half-em(전부-ASCII run) vs natural(한글 섞인 run) 을
+/// 골라 char_widths 수집과 **동일 스코프**를 공유한다. 선두 글자 언어를 중립
+/// 문자 기본값으로 사용하는 것(default_lang 세맨틱)은 종전과 동일.
+fn measure_token_width_scoped(
+    start: usize,
+    end: usize,
+    text_chars: &[char],
     char_offsets: &[u32],
     char_shapes: &[CharShapeRef],
     styles: &ResolvedStyleSet,
-    default_lang: usize,
+    ascii_run_mask: &[bool],
 ) -> f64 {
     let mut total = 0.0;
-    let mut current_lang = default_lang;
-    for (offset, ch) in text.chars().enumerate() {
-        let idx = start_char_idx + offset;
+    // 선두 글자 언어를 중립 문자 기본값으로 사용(기존 default_lang 세맨틱: 0).
+    let mut current_lang = if start < text_chars.len() {
+        let c0 = text_chars[start];
+        if is_lang_neutral(c0) {
+            0
+        } else {
+            detect_lang_category(c0)
+        }
+    } else {
+        0
+    };
+    for idx in start..end {
+        let ch = text_chars[idx];
         let utf16_pos = if idx < char_offsets.len() {
             char_offsets[idx]
         } else {
@@ -570,7 +778,7 @@ fn measure_token_width(
             detected
         };
         let ts = resolved_to_text_style(styles, style_id, lang);
-        total += estimate_text_width_unrounded(&ch.to_string(), &ts);
+        total += estimate_text_width_unrounded_scoped(&ch.to_string(), &ts, ascii_run_mask[idx]);
     }
     total
 }
@@ -609,8 +817,22 @@ fn condense_fit_can_pull_next_token(
     remaining_hwp >= min_remaining_hwp
 }
 
-/// 토큰을 줄에 배치하는 Greedy 알고리즘
-/// 한컴과 동일한 결과를 위해 HWPUNIT 정수로 폭을 누적한다.
+/// 토큰을 줄에 배치하는 한컴 네이티브 누적-펜 종결 엔진.
+///
+/// §4.2: 라인폭을 라인 시작점(origin) 기준 **정수 HWPUNIT 펜**으로 누적한다
+/// (`cumulative[]` = `Σ to_hwp(advance)`). 각 토큰의 advance 를 `to_hwp` 로
+/// **토큰마다** 절삭해 정수 누적한다 — 이는 한컴 실측(§4.2 정수 누적 펜)이자
+/// 검증된 65/82 baseline 의 greedy 누적(`lw += to_hwp(width)`)과 동일하다.
+/// 종전 연속 px 펜(`to_hwp(Σpx)`)은 탭 문단(lseg-05-tab)에서 정지점이 어긋나
+/// 회귀했으므로 정수 누적으로 되돌린다.
+///
+/// §4.8: 자연폭은 이미 HWPUNIT 정수이므로 `to_hwp(pen)` 재양자화 없이 그대로
+/// 정확 `≤` (tolerance 없음) 로 fit 판정한다.
+///
+/// condense(공백 압축)는 종전 greedy 와 **정수 바이트 동일**하게 유지한다:
+/// `line_space_savings` 를 공백마다 `condense_space_savings_hwp(to_hwp(width), …)`
+/// 로 정수 누적하고, 압축 라인폭·인입 게이트(`condense_fit_can_pull_next_token`)를
+/// greedy 그대로 쓴다.
 fn fill_lines(
     tokens: &[BreakToken],
     text_chars: &[char],
@@ -619,6 +841,10 @@ fn fill_lines(
     default_tab_width: f64,
     korean_break_unit: u8,
     condense_min_space: u8,
+    // [Task #624] treat_as_char 인라인 개체의 (anchor char idx, 폭 HWPUNIT). anchor
+    // 순 정렬. 개체는 char 를 갖지 않아 토큰이 없으므로 그 폭을 pen 에 예약해
+    // 개체 앞에서 줄바꿈되게 한다. 인라인 개체 없는 문단은 빈 slice → 동작 불변.
+    inline_obj_widths_hwp: &[(usize, i32)],
 ) -> Vec<LineBreakResult> {
     if tokens.is_empty() {
         return vec![LineBreakResult {
@@ -629,29 +855,31 @@ fn fill_lines(
         }];
     }
 
-    let tab_w_hwp = to_hwp(if default_tab_width > 0.0 {
-        default_tab_width
-    } else {
-        48.0
-    });
     let tab_w_px = if default_tab_width > 0.0 {
         default_tab_width
     } else {
         48.0
     };
+
+    // ── 라인-로컬 상태 ──────────────────────────────────────────────
+    // pen: 라인 origin 기준 정수 HWPUNIT 펜 위치. §4.2 cumulative[] =
+    //      Σ to_hwp(advance) — 토큰마다 to_hwp 절삭 후 정수 누적.
+    // line_space_savings: 압축 가능 공백 폭(HWPUNIT 정수) — greedy 와 동일.
     let mut results = Vec::new();
     let mut line_start_idx = 0usize;
-    let mut lw = 0i32; // HWPUNIT 정수 누적
-    let mut line_space_savings = 0i32;
+    let mut pen = 0i32; // §4.2 cumulative[] (라인-로컬 HWPUNIT)
+    // [Task #624] 현재 라인에서 이미 폭을 예약한 개체 anchor 상한(중복 예약 방지).
+    let mut reserved_upto = 0usize;
+    let mut line_space_savings = 0i32; // greedy 와 정수 동일
     let mut line_max_fs = 0.0f64;
     let mut is_first_line = true;
 
-    let mut last_break_token_idx: Option<usize> = None;
-    let mut last_break_char_idx: usize = 0;
-    let mut width_at_last_break = 0i32;
-    let mut space_savings_at_last_break = 0i32;
-    let mut fs_at_last_break = 0.0f64;
+    // 마지막 줄바꿈 가능 지점(공백/탭/단일글자 경계)의 스냅샷.
+    let mut has_break: bool = false;
+    let mut break_char_idx: usize = 0;
+    let mut fs_at_break = 0.0f64;
 
+    // 라인 origin 기준 가용폭(HWPUNIT). 첫 줄 들여쓰기(양수)·내어쓰기(음수) 반영.
     let eff_w = |first: bool| -> i32 {
         if indent_px > 0.0 {
             if first {
@@ -670,68 +898,82 @@ fn fill_lines(
         }
     };
 
+    // 라인 커밋 헬퍼: [line_start_idx, end) 를 한 줄로 확정.
+    macro_rules! commit {
+        ($end:expr, $fs:expr, $brk:expr) => {{
+            results.push(LineBreakResult {
+                start_idx: line_start_idx,
+                end_idx: $end,
+                max_font_size: $fs,
+                has_line_break: $brk,
+            });
+        }};
+    }
+
     for (ti, token) in tokens.iter().enumerate() {
         match token {
+            // ── 강제 줄바꿈(\n) ──────────────────────────────────────
             BreakToken::LineBreak { idx } => {
-                results.push(LineBreakResult {
-                    start_idx: line_start_idx,
-                    end_idx: *idx + 1,
-                    max_font_size: line_max_fs,
-                    has_line_break: true,
-                });
+                commit!(*idx + 1, line_max_fs, true);
                 line_start_idx = *idx + 1;
-                lw = 0;
+                reserved_upto = line_start_idx; // [Task #624]
+                pen = 0;
                 line_space_savings = 0;
                 line_max_fs = 0.0;
                 is_first_line = false;
-                last_break_token_idx = None;
+                has_break = false;
             }
+
+            // ── 탭: 다음 탭 정지점까지 펜 전진(동적 폭) ───────────────
             BreakToken::Tab { idx, max_font_size } => {
-                // 탭 계산은 px로 수행 후 HWPUNIT 변환 (정밀도 유지)
-                let lw_px = lw as f64 / 75.0;
-                let next_tab_px = ((lw_px / tab_w_px).floor() + 1.0) * tab_w_px;
-                let next_tab_hwp = to_hwp(next_tab_px);
                 if *max_font_size > line_max_fs {
                     line_max_fs = *max_font_size;
                 }
+                // §4.2: 탭 정지점은 정수 HWPUNIT 펜을 px 로 환산해 산출한다
+                // (한컴과 동일). 펜이 이미 정수 HWPUNIT 이므로 /75.0 만 하면 된다.
+                let pen_px = pen as f64 / 75.0;
+                let next_tab_px = ((pen_px / tab_w_px).floor() + 1.0) * tab_w_px;
 
-                if next_tab_hwp > eff_w(is_first_line) && line_start_idx < *idx {
-                    if let Some(_) = last_break_token_idx {
-                        results.push(LineBreakResult {
-                            start_idx: line_start_idx,
-                            end_idx: last_break_char_idx,
-                            max_font_size: fs_at_last_break,
-                            has_line_break: false,
-                        });
-                        line_start_idx = last_break_char_idx;
-                        lw = lw - width_at_last_break;
-                        line_space_savings -= space_savings_at_last_break;
+                // 탭 정지점이 가용폭을 넘고, 라인에 이미 내용이 있으면 종결.
+                if to_hwp(next_tab_px) > eff_w(is_first_line) && line_start_idx < *idx {
+                    if has_break {
+                        // 마지막 브레이크 지점에서 종결, 잔여를 다음 줄로 이월.
+                        // 선행 공백은 흡수(줄 시작에서 제외) — Text 경로와 대칭.
+                        commit!(break_char_idx, fs_at_break, false);
+                        let mut next_start = break_char_idx;
+                        while next_start < text_chars.len() && text_chars[next_start] == ' ' {
+                            next_start += 1;
+                        }
+                        line_start_idx = next_start;
+                        reserved_upto = line_start_idx; // [Task #624]
+                        let (carry_pen, carry_saving) =
+                            carryover(tokens, ti, next_start, condense_min_space);
+                        pen = carry_pen;
+                        line_space_savings = carry_saving;
                     } else {
-                        results.push(LineBreakResult {
-                            start_idx: line_start_idx,
-                            end_idx: *idx,
-                            max_font_size: line_max_fs,
-                            has_line_break: false,
-                        });
+                        // 브레이크 지점 없음 → 탭 직전에서 강제 종결.
+                        commit!(*idx, line_max_fs, false);
                         line_start_idx = *idx;
-                        lw = 0;
+                        reserved_upto = line_start_idx; // [Task #624]
+                        pen = 0;
                         line_space_savings = 0;
                         line_max_fs = *max_font_size;
                     }
                     is_first_line = false;
-                    last_break_token_idx = None;
-                    let lw_px2 = lw as f64 / 75.0;
-                    let next_tab2 = ((lw_px2 / tab_w_px).floor() + 1.0) * tab_w_px;
-                    lw = to_hwp(next_tab2);
+                    has_break = false;
+                    // 새 줄에서 탭 정지점 재계산(정수 펜 → px 환산).
+                    let pen_px = pen as f64 / 75.0;
+                    pen = to_hwp(((pen_px / tab_w_px).floor() + 1.0) * tab_w_px);
                 } else {
-                    last_break_token_idx = Some(ti);
-                    last_break_char_idx = *idx;
-                    width_at_last_break = lw;
-                    space_savings_at_last_break = line_space_savings;
-                    fs_at_last_break = line_max_fs;
-                    lw = next_tab_hwp;
+                    // 탭은 줄바꿈 가능 지점 — 스냅샷 후 펜 전진.
+                    has_break = true;
+                    break_char_idx = *idx;
+                    fs_at_break = line_max_fs;
+                    pen = to_hwp(next_tab_px);
                 }
             }
+
+            // ── 공백: 줄바꿈 가능 지점(줄 끝에서 흡수) ─────────────────
             BreakToken::Space {
                 idx,
                 width,
@@ -740,15 +982,19 @@ fn fill_lines(
                 if *max_font_size > line_max_fs {
                     line_max_fs = *max_font_size;
                 }
-                last_break_token_idx = Some(ti);
-                last_break_char_idx = *idx;
-                width_at_last_break = lw;
-                space_savings_at_last_break = line_space_savings;
-                fs_at_last_break = line_max_fs;
+                // 공백은 '들어가기 전'이 브레이크 지점 — 폭 반영 전에 스냅샷.
+                has_break = true;
+                break_char_idx = *idx;
+                fs_at_break = line_max_fs;
+                // §4.2: 자연폭은 to_hwp 절삭 후 정수 HWPUNIT 로 누적.
                 let space_hwp = to_hwp(*width);
-                lw += space_hwp;
+                pen += space_hwp;
+                // §4.8 condense: 공백 압축 가능분은 greedy 와 동일하게 공백마다
+                // to_hwp 절삭 후 정수 누적(바이트 동일).
                 line_space_savings += condense_space_savings_hwp(space_hwp, condense_min_space);
             }
+
+            // ── 텍스트 조각(어절/단어/단일글자) ──────────────────────
             BreakToken::Text {
                 start_idx,
                 end_idx,
@@ -760,109 +1006,110 @@ fn fill_lines(
                     line_max_fs = *max_font_size;
                 }
 
-                let w_hwp = to_hwp(*width);
+                // [Task #624] 이 토큰 시작(start_idx) 이전에 놓인 인라인 개체의 폭을
+                // pen 에 예약한다. 개체는 char 를 갖지 않아(gap-anchored) 자연폭에
+                // 안 잡히므로, 개체 폭만큼 라인을 미리 채워 개체 앞에서 넘치게 한다.
+                for &(anchor, w_hwp) in inline_obj_widths_hwp {
+                    if anchor > line_start_idx && anchor <= *start_idx && anchor >= reserved_upto {
+                        pen += w_hwp;
+                    }
+                }
+                reserved_upto = reserved_upto.max(*start_idx + 1);
 
-                // 단일 문자 CJK/한글 토큰의 줄바꿈 가능 지점 처리
-                // 이 글자를 포함한 후 break point 갱신 (end_idx 사용)
-                // → 초과 시 이 글자까지 L0에 포함하고 다음 토큰부터 다음 줄
+                let eff = eff_w(is_first_line);
+                // §4.2: 이 토큰의 advance 를 to_hwp 로 절삭해 정수 펜에 더한 후보.
+                //       cand 자체가 라인 origin 기준 자연폭(HWPUNIT)이다.
+                let cand = pen + to_hwp(*width);
+                let cand_condensed = condensed_line_width_hwp(cand, line_space_savings);
+
+                // (1) 단일글자 CJK/한글 토큰: 글자 경계 자체가 줄바꿈 가능 지점.
+                //     이 글자를 포함해도 압축 후 fit 이면 브레이크 지점을 '이 글자
+                //     다음'으로 전진(§4.9 CJK 경량 경로 — 위치별 endpoint 커밋).
                 if *end_idx - *start_idx == 1 && *start_idx > line_start_idx {
                     let c = text_chars[*start_idx];
                     let allow_break = if is_hangul(c) {
-                        // [#2185] bit7=1 = 글자 단위 break 허용 (위 주석 참조)
-                        korean_break_unit == 1
+                        korean_break_unit == 1 // [#2185] bit7=1 = 글자 단위
                     } else {
                         is_cjk_ideograph(c)
                     };
-                    let candidate_w = lw + w_hwp;
-                    // 이 글자가 줄에 들어가는 경우에만 break point 갱신
-                    if allow_break
-                        && condensed_line_width_hwp(candidate_w, line_space_savings)
-                            <= eff_w(is_first_line) + LINE_BREAK_TOLERANCE
-                    {
-                        last_break_token_idx = Some(ti);
-                        last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
-                        width_at_last_break = candidate_w; // 이 글자 폭 포함
-                        space_savings_at_last_break = line_space_savings;
-                        fs_at_last_break = line_max_fs;
+                    if allow_break && cand_condensed <= eff {
+                        has_break = true;
+                        break_char_idx = *end_idx; // 이 글자 포함
+                        fs_at_break = line_max_fs;
                     }
                 }
-                // 한컴은 HWPUNIT 정수 양자화 시 미세한 반올림 차이를 허용
-                // 12 HU(~0.17mm) 이내의 초과는 줄에 포함 (경험적 허용 오차)
-                const LINE_BREAK_TOLERANCE: i32 = 15;
-                let effective_width = eff_w(is_first_line);
-                let natural_candidate = lw + w_hwp;
-                let condensed_candidate =
-                    condensed_line_width_hwp(natural_candidate, line_space_savings);
-                let needs_condense_to_fit = natural_candidate
-                    > effective_width + LINE_BREAK_TOLERANCE
-                    && condensed_candidate <= effective_width + LINE_BREAK_TOLERANCE;
+
+                // (2) fit 판정 — greedy 와 동일한 condense 게이트 세맨틱을 정확 재현.
+                //     · needs_condense_to_fit: 자연폭은 넘치되 압축하면 들어감
+                //     · 이때만 인입 게이트(condense_fit_can_pull_next_token)를 본다.
+                //       (한컴은 이미 빡빡한 줄엔 다음 어절을 끌어들이지 않음 — p03
+                //        PDF 서문 민감; 종전 greedy 실측과 동일)
+                let needs_condense_to_fit = cand > eff && cand_condensed <= eff;
                 let condense_pull_allowed = !needs_condense_to_fit
                     || condense_fit_can_pull_next_token(
-                        lw,
+                        pen, // 현재 라인폭(HWPUNIT 정수)
                         line_space_savings,
-                        effective_width,
+                        eff,
                         *max_font_size,
                     );
-                if condensed_candidate > effective_width + LINE_BREAK_TOLERANCE
-                    || !condense_pull_allowed
-                {
-                    if *start_idx > line_start_idx {
-                        if let Some(_) = last_break_token_idx {
-                            results.push(LineBreakResult {
-                                start_idx: line_start_idx,
-                                end_idx: last_break_char_idx,
-                                max_font_size: fs_at_last_break,
-                                has_line_break: false,
-                            });
-                            let mut next_start = last_break_char_idx;
-                            while next_start < text_chars.len() && text_chars[next_start] == ' ' {
-                                next_start += 1;
-                            }
-                            line_start_idx = next_start;
-                            lw = recalc_width_hwp(tokens, ti, next_start);
-                            line_space_savings = recalc_space_savings_hwp(
-                                tokens,
-                                ti,
-                                next_start,
-                                condense_min_space,
-                            );
-                            lw += w_hwp;
-                            line_max_fs = *max_font_size;
-                            is_first_line = false;
-                            last_break_token_idx = None;
-                            continue;
-                        }
-                    }
-                    // 토큰에 저장된 개별 글자 폭을 HWPUNIT로 변환
-                    let cw_hwp: Vec<i32> = char_widths.iter().map(|w| to_hwp(*w)).collect();
-                    let (results_part, remaining_w, remaining_fs) = char_level_break_hwp(
-                        text_chars,
-                        *start_idx,
-                        *end_idx,
-                        &mut line_start_idx,
-                        lw,
-                        line_max_fs,
-                        eff_w(is_first_line),
-                        eff_w(false),
-                        is_first_line,
-                        &cw_hwp,
-                    );
-                    for r in results_part {
-                        results.push(r);
-                        is_first_line = false;
-                    }
-                    lw = remaining_w;
-                    line_space_savings = 0;
-                    line_max_fs = remaining_fs;
-                    last_break_token_idx = None;
+                if cand_condensed <= eff && condense_pull_allowed {
+                    pen = cand; // 들어감
                     continue;
-                } else {
-                    lw += w_hwp;
                 }
+
+                // (3) 넘침 — 라인 종결이 필요하다.
+                if *start_idx > line_start_idx && has_break {
+                    // 3a. 마지막 브레이크 지점에서 종결. 새 줄 origin 기준으로
+                    //     이월분을 정수 HWPUNIT 로 재-누적하고 선행 공백을 흡수.
+                    commit!(break_char_idx, fs_at_break, false);
+                    let mut next_start = break_char_idx;
+                    while next_start < text_chars.len() && text_chars[next_start] == ' ' {
+                        next_start += 1;
+                    }
+                    line_start_idx = next_start;
+                    reserved_upto = line_start_idx; // [Task #624]
+                    let (carry_pen, carry_saving) =
+                        carryover(tokens, ti, next_start, condense_min_space);
+                    pen = carry_pen + to_hwp(*width);
+                    line_space_savings = carry_saving;
+                    line_max_fs = *max_font_size;
+                    is_first_line = false;
+                    has_break = false;
+                    continue;
+                }
+
+                // 3b. 브레이크 지점 없음(라인 첫 토큰이 홀로 넘침) → 글자 단위
+                //     폴백(§4.9 워드 경로 finalizer). 펜이 이미 HWPUNIT 정수이므로
+                //     그대로 넘기고 토큰 내 per-glyph 폭으로 라인을 쪼갠다.
+                let cw_hwp: Vec<i32> = char_widths.iter().map(|w| to_hwp(*w)).collect();
+                let (parts, remaining_w, remaining_fs) = char_level_break_hwp(
+                    text_chars,
+                    *start_idx,
+                    *end_idx,
+                    &mut line_start_idx,
+                    pen, // 현재 라인-로컬 펜(HWPUNIT 정수)
+                    line_max_fs,
+                    eff_w(is_first_line),
+                    eff_w(false),
+                    is_first_line,
+                    &cw_hwp,
+                );
+                for r in parts {
+                    results.push(r);
+                    is_first_line = false;
+                }
+                // 폴백 핸드오프: char_level_break 는 HWPUNIT 정수 도메인이므로
+                // 잔여 폭(정수 HWPUNIT)을 그대로 펜에 되돌린다(왕복 절삭 무추가).
+                pen = remaining_w;
+                line_space_savings = 0;
+                line_max_fs = remaining_fs;
+                has_break = false;
+                reserved_upto = line_start_idx; // [Task #624]
             }
         }
     }
 
+    // 마지막 줄 커밋.
     let last_end = tokens
         .last()
         .map(|t| match t {
@@ -874,12 +1121,7 @@ fn fill_lines(
         .unwrap_or(text_chars.len());
 
     if line_start_idx <= last_end {
-        results.push(LineBreakResult {
-            start_idx: line_start_idx,
-            end_idx: last_end,
-            max_font_size: line_max_fs,
-            has_line_break: false,
-        });
+        commit!(last_end, line_max_fs, false);
     }
 
     if results.is_empty() {
@@ -891,50 +1133,75 @@ fn fill_lines(
         });
     }
 
+    // 줄 꼬리 금칙(line-end kinsoku): 한컴 endpoint 후퇴로 정합.
+    apply_line_end_kinsoku(&mut results, text_chars);
+
     results
 }
 
-/// 줄 바꿈 지점 이후 토큰의 누적 폭 재계산 (HWPUNIT)
-fn recalc_width_hwp(tokens: &[BreakToken], current_token_idx: usize, new_line_start: usize) -> i32 {
-    let mut w = 0i32;
+/// 라인 이월(carryover) — 새 줄 origin([new_line_start, ·)) 기준으로 아직 처리
+/// 안 된 선행 토큰들의 누적 펜(HWPUNIT 정수 자연폭)과 압축 가능 공백(HWPUNIT
+/// 정수)을 되살린다. 종전 greedy 의 `recalc_width_hwp`+`recalc_space_savings_hwp`
+/// 를 하나로 융합 — §4.2 정수 누적 펜(`Σ to_hwp(advance)`)과 정확히 일치한다.
+fn carryover(
+    tokens: &[BreakToken],
+    current_token_idx: usize,
+    new_line_start: usize,
+    condense_min_space: u8,
+) -> (i32, i32) {
+    let mut pen = 0i32;
+    let mut saving = 0i32;
     for t in &tokens[..current_token_idx] {
         match t {
             BreakToken::Text {
                 start_idx, width, ..
             } if *start_idx >= new_line_start => {
-                w += to_hwp(*width);
+                pen += to_hwp(*width);
             }
             BreakToken::Space { idx, width, .. } if *idx >= new_line_start => {
-                w += to_hwp(*width);
+                let space_hwp = to_hwp(*width);
+                pen += space_hwp;
+                saving += condense_space_savings_hwp(space_hwp, condense_min_space);
             }
             _ => {}
         }
     }
-    w
+    (pen, saving)
 }
 
-/// 줄 바꿈 지점 이후 공백 압축 가능 폭 재계산 (HWPUNIT)
-fn recalc_space_savings_hwp(
-    tokens: &[BreakToken],
-    current_token_idx: usize,
-    new_line_start: usize,
-    condense_min_space: u8,
-) -> i32 {
-    let mut w = 0i32;
-    for t in &tokens[..current_token_idx] {
-        match t {
-            BreakToken::Space {
-                idx,
-                width,
-                max_font_size,
-            } if *idx >= new_line_start => {
-                let space_hwp = to_hwp(*width);
-                w += condense_space_savings_hwp(space_hwp, condense_min_space);
+/// 줄 꼬리 금칙(line-end kinsoku): 줄이 여는 괄호/통화기호 등 줄 끝에 올 수
+/// 없는 문자로 끝나면 그 클러스터를 다음 줄로 후퇴시킨다(한컴 endpoint 후퇴,
+/// 최대 2 클러스터). 여는/닫는 따옴표('/")는 줄머리·줄꼬리 금칙에 겹치므로
+/// 오검출 방지 위해 제외한다.
+fn apply_line_end_kinsoku(results: &mut [LineBreakResult], text_chars: &[char]) {
+    let n = results.len();
+    if n < 2 {
+        return;
+    }
+    for k in 0..n - 1 {
+        if results[k].has_line_break {
+            continue; // 강제 줄바꿈(\n)으로 끝나는 줄은 후퇴 대상 아님
+        }
+        let start = results[k].start_idx;
+        let orig_end = results[k].end_idx;
+        let mut end = orig_end;
+        let mut retreats = 0;
+        while retreats < 2 && end > start + 1 {
+            let last = text_chars[end - 1];
+            if is_line_end_forbidden(last) && !is_line_start_forbidden(last) {
+                end -= 1;
+                retreats += 1;
+            } else {
+                break;
             }
-            _ => {}
+        }
+        if end != orig_end {
+            results[k].end_idx = end;
+            if results[k + 1].start_idx > end {
+                results[k + 1].start_idx = end; // 후퇴 클러스터를 다음 줄 시작으로
+            }
         }
     }
-    w
 }
 
 /// 긴 단어 폴백: 글자 단위 분할 (HWPUNIT)
@@ -1014,7 +1281,7 @@ fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
         .max()
 }
 
-fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
+pub(crate) fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
     let (width, height) = match ctrl {
         Control::Picture(pic) if pic.common.treat_as_char => {
             (pic.common.width as i32, pic.common.height as i32)
@@ -1077,10 +1344,11 @@ pub(crate) fn reflow_line_segs(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
-    // 기존 LineSeg에서 dimension 값 보존 (원본 HWP 호환성 유지)
+    // rhwp 는 line_segs 를 **항상** 여기서 스스로 계산한다. 저장된 line_segs 는
+    // 레이아웃 소스가 아니라 파서 보존·검증(round-trip) 전용이므로 dimension·tag·
+    // vpos 를 저장 seg 에서 상속하지 않는다. 절대 vpos 는 recalculate_section_vpos
+    // 가 문단 간 누적으로 결정한다 (여기서는 0 으로 시작).
     let seg_width_hwp = px_to_hwpunit(available_width_px, dpi);
-    let orig = para.line_segs.first().cloned();
-    let has_valid_orig = orig.as_ref().map(|ls| ls.line_height > 0).unwrap_or(false);
 
     // ParaPr의 줄간격 설정 (합성 LineSeg에서 line_spacing 계산에 사용)
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
@@ -1101,13 +1369,9 @@ pub(crate) fn reflow_line_segs(
         let text_height_hwp = line_height_hwp;
         let baseline_distance_hwp = (line_height_hwp as f64 * 0.85) as i32;
         let line_spacing_hwp = compute_line_spacing_hwp(ls_type, ls_value, line_height_hwp, dpi);
-        // [Task #1811] 원본 linesegarray 부재(orig=None) 시 합성 seg 에 구현속성
-        // 태그를 부여 — vpos 보정 등에서 실제 저장 증거와 구분한다 (컨버터의
-        // 합성 lineseg flags=0x8000_0000 관례와 정합).
-        let orig_tag = orig
-            .as_ref()
-            .map(|ls| ls.tag)
-            .unwrap_or(LineSeg::TAG_SINGLE_SEGMENT_LINE | LineSeg::TAG_IMPLEMENTATION_PROPERTY);
+        // reflow 는 언제나 자기 계산 결과이므로 tag 는 단일 세그먼트 라인으로
+        // 고정한다. 구현속성(TAG_IMPLEMENTATION_PROPERTY) 표식은 더 이상 부여하지
+        // 않는다 — 저장 seg 와의 구분(합성 vs 실측)이 레이아웃 판단에서 제거됐다.
         LineSeg {
             text_start: utf16_start,
             line_height: line_height_hwp,
@@ -1115,11 +1379,7 @@ pub(crate) fn reflow_line_segs(
             baseline_distance: baseline_distance_hwp,
             line_spacing: line_spacing_hwp,
             segment_width: seg_width_hwp,
-            tag: if orig_tag != 0 {
-                orig_tag
-            } else {
-                LineSeg::TAG_SINGLE_SEGMENT_LINE
-            },
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
             ..Default::default()
         }
     };
@@ -1149,28 +1409,11 @@ pub(crate) fn reflow_line_segs(
             }
             line_specs.push((line_start, line_width, line_height));
 
-            let orig_line_segs = para.line_segs.clone();
+            // 인라인 개체 줄박스: 치수는 make_line_seg(폰트/줄간격)와 개체 높이에서
+            // 계산한다. 저장 template 을 참조하지 않는다 (레이아웃 소스 금지).
             let mut new_line_segs = Vec::with_capacity(line_specs.len());
-            for (line_idx, (start_pos, _line_width, height_hwp)) in
-                line_specs.into_iter().enumerate()
-            {
+            for (start_pos, _line_width, height_hwp) in line_specs.into_iter() {
                 let mut seg = make_line_seg(start_pos as u32, 0.0);
-                if let Some(template) = orig_line_segs
-                    .get(line_idx)
-                    .or_else(|| orig_line_segs.first())
-                {
-                    seg.line_spacing = template.line_spacing;
-                    seg.segment_width = if template.segment_width > 0 {
-                        template.segment_width
-                    } else {
-                        seg_width_hwp
-                    };
-                    seg.tag = if template.tag != 0 {
-                        template.tag
-                    } else {
-                        seg.tag
-                    };
-                }
                 apply_inline_control_line_height(
                     &mut seg,
                     height_hwp,
@@ -1179,15 +1422,16 @@ pub(crate) fn reflow_line_segs(
                 new_line_segs.push(seg);
             }
 
-            let mut vpos = orig.as_ref().map(|ls| ls.vertical_pos).unwrap_or(0);
+            // vpos 는 문단 내 0 원점부터 누적(절대 vpos 는 recalculate_section_vpos).
+            let mut vpos = 0;
             for seg in &mut new_line_segs {
                 seg.vertical_pos = vpos;
                 vpos += seg.line_height + seg.line_spacing;
             }
             para.line_segs = new_line_segs;
         } else {
-            // 빈 문단도 활성 글자 모양의 크기로 줄을 만든다. 앞 문단 LINE_SEG의
-            // 치수를 복사하면 TAC 그림 높이까지 상속되므로 vpos 원점만 보존한다.
+            // 빈 문단도 활성 글자 모양의 크기로 줄을 만든다. 저장 seg 치수/vpos 를
+            // 상속하지 않는다 — 절대 vpos 는 recalculate_section_vpos 가 결정한다.
             let font_size = para
                 .char_shapes
                 .first()
@@ -1195,9 +1439,6 @@ pub(crate) fn reflow_line_segs(
                 .map(|style| style.font_size)
                 .unwrap_or(12.0);
             let mut seg = make_line_seg(0, font_size);
-            if let Some(template) = orig.as_ref() {
-                seg.vertical_pos = template.vertical_pos;
-            }
             if let Some(height_hwp) = inline_control_line_height_hwp(para) {
                 apply_inline_control_line_height(
                     &mut seg,
@@ -1230,6 +1471,24 @@ pub(crate) fn reflow_line_segs(
         english_break_unit,
         korean_break_unit,
     );
+    // [Task #624] treat_as_char 인라인 개체의 (anchor char idx, 폭 HWPUNIT) 목록.
+    // 개체는 텍스트 char 가 없어 tokenize 에 안 잡히므로 fill_lines 가 그 폭을
+    // 예약해 개체 앞에서 줄바꿈하도록 한다. inline_control_size_hwp 는 TAC 개체만
+    // Some → 인라인 개체 없는 문단은 빈 목록 → 동작 불변.
+    let inline_obj_widths_hwp: Vec<(usize, i32)> = {
+        // recompose_for_cell_width 와 동일한 anchor 함수를 써야 reflow 와 셀 재래핑의
+        // 줄바꿈 위치가 일치한다 (control_text_positions 와 결과가 다르면 reflow 가
+        // 개체를 엉뚱한 줄에 두고 boost → 셀 재래핑이 그 boost 를 상속).
+        let positions = crate::document_core::find_control_text_positions(para);
+        let mut v: Vec<(usize, i32)> = para
+            .controls
+            .iter()
+            .enumerate()
+            .filter_map(|(i, c)| Some((*positions.get(i)?, inline_control_size_hwp(c)?.0)))
+            .collect();
+        v.sort_by_key(|(p, _)| *p);
+        v
+    };
     let line_breaks = fill_lines(
         &tokens,
         &text_chars,
@@ -1238,6 +1497,7 @@ pub(crate) fn reflow_line_segs(
         tab_width,
         korean_break_unit,
         condense_min_space,
+        &inline_obj_widths_hwp,
     );
     let mut new_line_segs: Vec<LineSeg> = Vec::new();
     for lb in &line_breaks {
@@ -1270,9 +1530,53 @@ pub(crate) fn reflow_line_segs(
         new_line_segs.push(make_line_seg(0, 12.0));
     }
 
-    // 인라인 TAC 개체의 높이 반영: 개체가 포함된 줄의 line_height를 개체 높이 이상으로 보정
+    // TAC 개체 높이 반영. 한컴 저장 구조(diag_table_height_ground_truth 실증):
+    //  - 블록형 TAC 표(전폭, is_tac_table_inline_in_para=false): 표는 **자기 줄**
+    //    (lh=표높이)을 갖고, 실제 본문 텍스트가 있으면 그 다음 줄(ls[1]+)에 온다.
+    //    공백만 있는 문단은 표줄 하나로 흡수(추가 줄 없음 — B-A 회귀의 원인 제거).
+    //  - 인라인 TAC 개체(수식·작은 그림 등): 종전대로 그 줄의 높이만 확대.
     {
-        if let Some(height_hwp) = inline_control_line_height_hwp(para) {
+        let block_table_h = para.controls.iter().find_map(|ctrl| match ctrl {
+            Control::Table(t)
+                if t.common.treat_as_char
+                    && t.common.height > 0
+                    && !crate::renderer::height_measurer::is_tac_table_inline_in_para(
+                        t,
+                        seg_width_hwp,
+                        para,
+                    ) =>
+            {
+                Some(t.common.height as i32)
+            }
+            _ => None,
+        });
+        if let Some(h) = block_table_h {
+            if para.text.trim().is_empty() {
+                // 공백만 → 표줄 하나로 흡수.
+                if let Some(seg) = new_line_segs.first_mut() {
+                    apply_inline_control_line_height(
+                        seg,
+                        h,
+                        styles.adjust_baseline_of_object_to_bottom,
+                    );
+                }
+            } else {
+                // 실제 본문 → 표줄(ts=0, lh=표높이)을 맨 앞에 삽입, 본문줄 유지.
+                // 본문 첫 줄의 text_start 를 첫 본문 글자 오프셋으로 재-각인.
+                let mut table_seg = make_line_seg(0, 0.0);
+                apply_inline_control_line_height(
+                    &mut table_seg,
+                    h,
+                    styles.adjust_baseline_of_object_to_bottom,
+                );
+                if let Some(first_body) = para.char_offsets.first().copied() {
+                    if let Some(seg0) = new_line_segs.first_mut() {
+                        seg0.text_start = first_body;
+                    }
+                }
+                new_line_segs.insert(0, table_seg);
+            }
+        } else if let Some(height_hwp) = inline_control_line_height_hwp(para) {
             if let Some(seg) = new_line_segs.first_mut() {
                 apply_inline_control_line_height(
                     seg,
@@ -1283,11 +1587,9 @@ pub(crate) fn reflow_line_segs(
         }
     }
 
-    // vertical_pos 누적 계산 (각 줄의 문단 내 Y 오프셋)
-    // 원본 첫 LineSeg의 vertical_pos를 보존하여 vpos 체계 연속성 유지
-    // (layout.rs의 vpos 보정이 문단 간 vpos 연속성을 가정하므로)
-    let vpos_start = orig.as_ref().map(|ls| ls.vertical_pos).unwrap_or(0);
-    let mut vpos = vpos_start;
+    // vertical_pos 누적 계산 (각 줄의 문단 내 Y 오프셋). 문단 내 원점은 0 —
+    // 절대 vpos 는 recalculate_section_vpos 가 문단 간 누적으로 채운다.
+    let mut vpos = 0;
     for i in 0..new_line_segs.len() {
         new_line_segs[i].vertical_pos = vpos;
         vpos += new_line_segs[i].line_height + new_line_segs[i].line_spacing;
