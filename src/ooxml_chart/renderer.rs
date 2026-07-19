@@ -1380,11 +1380,22 @@ fn render_value_grid(
     }
 }
 
+/// 3D 방 선 스타일 — 정답지 임베드(2702px) 픽셀 실측: 축선·조그·격자·틱 전부
+/// #808080 균일(gray 126~148)·0.72pt≈0.75. 2D의 축/격자 명암 구분(#e8e8e8)과
+/// 다른 3D 전용 실측 규칙 (시각판정 피드백 2026-07-19).
+const ROOM_LINE_STYLE: &str = "stroke=\"#808080\" stroke-width=\"0.75\"";
+/// 값·카테고리 좌측 틱 길이(pt) — 실측 44/38px ÷ 8.34px/pt ≈ 5.3/4.6
+const ROOM_TICK_LEFT: f64 = 5.0;
+/// 하단 틱 길이(pt) — 실측 31~37px ≈ 3.7~4.4
+const ROOM_TICK_DOWN: f64 = 4.0;
+
 /// 3D 방 + 값축 격자·라벨 — 시어 투영 기반: 뒷벽(z=D, 격자 포함) + 눈금별
-/// 바닥 조그 + 바닥 평행사변형. 격자는 `<line>` 2개(조그+뒷벽)로 방출
-/// (`<polyline>` 미사용 — room 테스트 어휘 유지). 라벨 문자열·포맷은
+/// 바닥 조그 + 바닥 평행사변형 + 값·카테고리 틱. 격자는 `<line>` 2개(조그+뒷벽)로
+/// 방출(`<polyline>` 미사용 — room 테스트 어휘 유지). 라벨 문자열·포맷은
 /// render_value_grid와 동일(#1882 라벨 앵커) — 위치는 fit 후 앞면 rect 기준.
-/// 2D 경로는 이 함수를 쓰지 않는다. (C2b #2278 v2)
+/// 한컴 실측(2026-07-19): 벽 테두리·바닥 채움 없음, 바닥 외곽선·틱은 격자와
+/// 동일 스타일. 2D 경로는 이 함수를 쓰지 않는다. (C2b #2278 v2)
+#[allow(clippy::too_many_arguments)]
 fn render_value_grid_3d(
     svg: &mut String,
     proj: &ShearProj,
@@ -1394,19 +1405,21 @@ fn render_value_grid_3d(
     format_code: Option<&str>,
     horizontal: bool,
     percent: bool,
+    cat_count: usize,
 ) {
     let (fx, fy, fw, fh) = (proj.fx, proj.fy, proj.fw, proj.fh);
     let (dxf, dyf) = (proj.dxf, proj.dyf);
-    // 방 표면: 뒷벽(흰 면) → 바닥(연회색 평행사변형) → 앞면 좌측 축선
+    // 방 표면: 뒷벽(흰 면, 무테두리 — 한컴: 벽 모서리선 없음) → 바닥(흰 면 +
+    // #808080 외곽선; 뒷모서리·좌측 대각은 0 눈금 격자/조그와 겹침) → 앞면 좌측 축선
     svg.push_str(&format!(
-        "<g class=\"hwp-bar3d-room\">\n<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
+        "<g class=\"hwp-bar3d-room\">\n<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\"/>\n",
         fx + dxf,
         fy - dyf,
         fw,
         fh
     ));
     svg.push_str(&format!(
-        "<polygon points=\"{:.2},{:.2} {:.2},{:.2} {:.2},{:.2} {:.2},{:.2}\" fill=\"#f2f2f2\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
+        "<polygon points=\"{:.2},{:.2} {:.2},{:.2} {:.2},{:.2} {:.2},{:.2}\" fill=\"#ffffff\" {ROOM_LINE_STYLE}/>\n",
         fx,
         fy + fh,
         fx + dxf,
@@ -1417,7 +1430,7 @@ fn render_value_grid_3d(
         fy + fh
     ));
     svg.push_str(&format!(
-        "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
+        "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
         fx,
         fy,
         fx,
@@ -1444,20 +1457,27 @@ fn render_value_grid_3d(
         let v = vmin + step * i as f64;
         if horizontal {
             let gx = fx + fw * t;
-            // 바닥 조그(앞 눈금 → 뒷벽, 깊이 D) + 뒷벽 세로 격자
+            // 바닥 조그(앞 눈금 → 뒷벽, 깊이 D) + 뒷벽 세로 격자 + 하단 값 틱
             svg.push_str(&format!(
-                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
                 gx,
                 fy + fh,
                 gx + dxf,
                 fy + fh - dyf
             ));
             svg.push_str(&format!(
-                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#e8e8e8\" stroke-width=\"0.5\"/>\n",
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
                 gx + dxf,
                 fy + fh - dyf,
                 gx + dxf,
                 fy - dyf
+            ));
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
+                gx,
+                fy + fh,
+                gx,
+                fy + fh + ROOM_TICK_DOWN
             ));
             svg.push_str(&format!(
                 "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"10\" fill=\"#666\" text-anchor=\"middle\">{}</text>\n",
@@ -1467,26 +1487,56 @@ fn render_value_grid_3d(
             ));
         } else {
             let gy = fy + fh - fh * t;
-            // 바닥 조그(앞 좌측 눈금 → 뒷벽) + 뒷벽 수평 격자
+            // 바닥 조그(앞 좌측 눈금 → 뒷벽) + 뒷벽 수평 격자 + 좌측 값 틱
             svg.push_str(&format!(
-                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
                 fx,
                 gy,
                 fx + dxf,
                 gy - dyf
             ));
             svg.push_str(&format!(
-                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#e8e8e8\" stroke-width=\"0.5\"/>\n",
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
                 fx + dxf,
                 gy - dyf,
                 fx + fw + dxf,
                 gy - dyf
             ));
             svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
+                fx - ROOM_TICK_LEFT,
+                gy,
+                fx,
+                gy
+            ));
+            svg.push_str(&format!(
                 "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"10\" fill=\"#666\" text-anchor=\"end\">{}</text>\n",
-                fx - 4.0,
+                fx - ROOM_TICK_LEFT - 1.0,
                 gy + 3.0,
                 xml_escape(&label(v))
+            ));
+        }
+    }
+    // 카테고리 경계 틱 — 경계+양끝 = cat_count+1개 (한컴 실측: 세로형은 바닥
+    // 앞모서리 아래로, 가로형은 축선 왼쪽으로; k=0 틱이 축선 연장 역할)
+    for k in 0..=cat_count {
+        if horizontal {
+            let by = fy + fh * k as f64 / cat_count.max(1) as f64;
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
+                fx - ROOM_TICK_LEFT,
+                by,
+                fx,
+                by
+            ));
+        } else {
+            let bx = fx + fw * k as f64 / cat_count.max(1) as f64;
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
+                bx,
+                fy + fh,
+                bx,
+                fy + fh + ROOM_TICK_DOWN
             ));
         }
     }
@@ -1551,6 +1601,7 @@ fn render_bars_3d(
         chart.series.first().and_then(|s| s.format_code.as_deref()),
         horizontal,
         percent,
+        cat_count,
     );
 
     // 배치는 fit 후 앞면 rect 기준
@@ -1645,7 +1696,8 @@ fn render_bars_3d(
         }
     }
 
-    render_category_labels(svg, chart, fx, fy, fw, fh, cat_count, horizontal);
+    // 가로형 라벨은 좌측 카테고리 틱(5pt) 바깥 — 한컴 실측 간격(2D는 4.0 유지)
+    render_category_labels_at(svg, chart, fx, fy, fw, fh, cat_count, horizontal, 6.0);
 }
 
 fn render_category_labels(
@@ -1657,6 +1709,23 @@ fn render_category_labels(
     ph: f64,
     cat_count: usize,
     horizontal: bool,
+) {
+    render_category_labels_at(svg, chart, px, py, pw, ph, cat_count, horizontal, 4.0);
+}
+
+/// 카테고리 라벨 — `left_gap`: 가로형 라벨의 축선~라벨 간격(2D 4.0 불변,
+/// 3D는 좌측 틱 밖 6.0). 세로형 위치는 공통.
+#[allow(clippy::too_many_arguments)]
+fn render_category_labels_at(
+    svg: &mut String,
+    chart: &OoxmlChart,
+    px: f64,
+    py: f64,
+    pw: f64,
+    ph: f64,
+    cat_count: usize,
+    horizontal: bool,
+    left_gap: f64,
 ) {
     let cat_span = if horizontal {
         ph / cat_count as f64
@@ -1673,7 +1742,7 @@ fn render_category_labels(
             let cy = py + cat_span * row as f64 + cat_span / 2.0 + 3.0;
             svg.push_str(&format!(
                 "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"10\" fill=\"#333\" text-anchor=\"end\">{}</text>\n",
-                px - 4.0, cy, xml_escape(cat)
+                px - left_gap, cy, xml_escape(cat)
             ));
         } else {
             let cx = px + cat_span * ci as f64 + cat_span / 2.0;
@@ -3418,13 +3487,11 @@ mod tests {
             .collect()
     }
 
-    /// 방 바닥 폴리곤(#f2f2f2) 4점: p1=(fx,fyb) p2=(fx+dxf,fyb−dyf)
+    /// 방 바닥 폴리곤(room 첫 polygon) 4점: p1=(fx,fyb) p2=(fx+dxf,fyb−dyf)
     /// p3=(fx+fw+dxf,·) p4=(fx+fw,fyb) — 씬 파라미터를 SVG에서 역산하는 기준
     fn floor_points(svg: &str) -> Vec<(f64, f64)> {
         let room = room_slice(svg);
-        let f = room.find("#f2f2f2").expect("바닥");
-        let chunk = &room[..f];
-        let start = chunk.rfind("<polygon").expect("바닥 폴리곤");
+        let start = room.find("<polygon").expect("바닥 폴리곤");
         poly_points(&room[start..])
     }
 
@@ -3644,10 +3711,10 @@ mod tests {
                     1,
                     "{chart_type:?}/{grouping:?}: 방 1회"
                 );
-                // 방 그룹 안: 바닥 평행사변형(#f2f2f2) + 커넥터/뒷벽 격자 라인
+                // 방 그룹 안: 바닥 평행사변형(첫 polygon) + 커넥터/뒷벽 격자 라인
                 let room = &svg[svg.find("hwp-bar3d-room").unwrap()..];
                 let room = &room[..room.find("</g>").expect("방 그룹 닫힘")];
-                assert!(room.contains("#f2f2f2"), "바닥 평행사변형");
+                assert!(room.contains("<polygon"), "바닥 평행사변형");
                 assert!(room.matches("<line").count() >= 5, "커넥터+뒷벽 격자");
             }
         }
@@ -3682,5 +3749,121 @@ mod tests {
             (gx1 - wall_x).abs() < 1e-6,
             "뒷벽 격자 x1({gx1}) == 뒷벽 x({wall_x})"
         );
+    }
+
+    // --- Stage 1R v2: 방 선 처리 한컴 정합 (시각판정 피드백 2026-07-19) ---
+
+    /// room 내 `<line>`들의 (x1,y1,x2,y2) 목록
+    fn room_lines(room: &str) -> Vec<(f64, f64, f64, f64)> {
+        room.split("<line ")
+            .skip(1)
+            .map(|l| {
+                (
+                    attr_f64_of(l, "x1=\"").unwrap(),
+                    attr_f64_of(l, "y1=\"").unwrap(),
+                    attr_f64_of(l, "x2=\"").unwrap(),
+                    attr_f64_of(l, "y2=\"").unwrap(),
+                )
+            })
+            .collect()
+    }
+
+    #[test]
+    fn test_bar3d_room_hancom_line_style() {
+        // 정답지 임베드(2702px) 픽셀 실측: 축선·조그·격자·틱 전부 #808080 균일
+        // (실측 gray 126~148)·0.72pt≈0.75 — 2D의 축/격자 명암 구분과 다름.
+        // 뒷벽 테두리·바닥 채움 없음(흰 면 + #808080 외곽선만).
+        for chart_type in [OoxmlChartType::Column, OoxmlChartType::Bar] {
+            let chart = bars3d_chart(chart_type, BarGrouping::Stacked);
+            let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+            let room = room_slice(&svg);
+            for stale in ["#cccccc", "#e8e8e8", "#f2f2f2"] {
+                assert!(
+                    !room.contains(stale),
+                    "{chart_type:?}: 연회색 어휘 잔존 {stale}"
+                );
+            }
+            for l in room.split("<line ").skip(1) {
+                let l = &l[..l.find("/>").expect("line 닫힘")];
+                assert!(
+                    l.contains("stroke=\"#808080\"") && l.contains("stroke-width=\"0.75\""),
+                    "{chart_type:?}: 균일 선 스타일 아님: {l}"
+                );
+            }
+            let wall = &room[room.find("<rect").expect("뒷벽")..];
+            let wall = &wall[..wall.find("/>").unwrap()];
+            assert!(!wall.contains("stroke"), "{chart_type:?}: 뒷벽 무테두리");
+            let floor = &room[room.find("<polygon").expect("바닥")..];
+            let floor = &floor[..floor.find("/>").unwrap()];
+            assert!(
+                floor.contains("fill=\"#ffffff\"") && floor.contains("stroke=\"#808080\""),
+                "{chart_type:?}: 바닥 흰 면 + #808080 외곽선"
+            );
+        }
+    }
+
+    #[test]
+    fn test_bar3d_axis_ticks_vertical() {
+        // 세로형: 값 눈금마다 좌측 틱(fx−5→fx, 길이 실측 44px≈5.3pt) + 카테고리
+        // 경계 하단 틱(fyb→fyb+4, 실측 31px≈3.7pt) — 경계+양끝 = cat_count+1개.
+        let chart = bars3d_chart(OoxmlChartType::Column, BarGrouping::Stacked);
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        let room = room_slice(&svg);
+        let fl = floor_points(&svg);
+        let (fx, fyb) = fl[0];
+        let lines = room_lines(room);
+        let left_ticks = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2)| {
+                (y1 - y2).abs() < 1e-6 && (x2 - fx).abs() < 1e-6 && (fx - x1 - 5.0).abs() < 1e-6
+            })
+            .count();
+        let back_grids = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2)| (y1 - y2).abs() < 1e-6 && (x2 - x1) > 10.0)
+            .count();
+        assert!(back_grids >= 2, "뒷벽 수평 격자 존재");
+        assert_eq!(left_ticks, back_grids, "값 눈금마다 좌측 틱");
+        let down_ticks = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2)| {
+                (x1 - x2).abs() < 1e-6 && (y1 - fyb).abs() < 1e-6 && (y2 - fyb - 4.0).abs() < 1e-6
+            })
+            .count();
+        assert_eq!(down_ticks, 3, "카테고리 경계 하단 틱 = cat_count(2)+1");
+    }
+
+    #[test]
+    fn test_bar3d_axis_ticks_horizontal() {
+        // 가로형: 값 눈금마다 하단 틱 + 카테고리 경계 좌측 틱(cat_count+1) —
+        // 한컴 실측(누적가로: 하단 값틱 8개 등간격 225px, 좌측 경계틱 5개).
+        let chart = bars3d_chart(OoxmlChartType::Bar, BarGrouping::Stacked);
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        let room = room_slice(&svg);
+        let fl = floor_points(&svg);
+        let (fx, fyb) = fl[0];
+        let lines = room_lines(room);
+        let down_ticks = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2)| {
+                (x1 - x2).abs() < 1e-6 && (y1 - fyb).abs() < 1e-6 && (y2 - fyb - 4.0).abs() < 1e-6
+            })
+            .count();
+        // 뒷벽 세로 격자(x1==x2, 앞면 축선(x==fx)보다 오른쪽, 길이 > 틱)
+        let back_grids = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2)| {
+                (x1 - x2).abs() < 1e-6 && *x1 > fx + 1e-6 && (y1 - y2).abs() > 10.0
+            })
+            .count();
+        assert!(back_grids >= 2, "뒷벽 세로 격자 존재");
+        assert_eq!(down_ticks, back_grids, "값 눈금마다 하단 틱");
+        let left_ticks = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2)| {
+                (y1 - y2).abs() < 1e-6 && (x2 - fx).abs() < 1e-6 && (fx - x1 - 5.0).abs() < 1e-6
+            })
+            .count();
+        assert_eq!(left_ticks, 3, "카테고리 경계 좌측 틱 = cat_count(2)+1");
     }
 }
