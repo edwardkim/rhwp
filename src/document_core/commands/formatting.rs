@@ -1311,11 +1311,33 @@ impl DocumentCore {
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
             let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
             let available_width = (col_width - margin_left - margin_right).max(1.0);
+            // [회귀 수정] apply_para_format_native 는 지금까지 reflow 만 하고 절대
+            // vpos 를 재누적하지 않았다. reflow_line_segs 는 문단-로컬 원점 0 에서
+            // seg.vertical_pos 를 매기고(절대 vpos 는 recalculate_section_vpos 소관),
+            // TypesetEngine 은 흐름 누적에 seg.vertical_pos 를 사용하므로, 이 재누적을
+            // 빠뜨리면 편집된 문단 이후의 절대 위치가 어긋나 늘어난 줄간격이 페이지
+            // 수에 반영되지 않았다(줄간격 증가에도 30→30). 다른 모든 편집·로드 경로와
+            // 동일하게 reflow 직후 recalculate_section_vpos 로 절대 vpos 를 재누적한다.
+            // stored_end_for_reset 은 reflow 이전 흐름 end 를 캡처해 저장 vpos-reset 을
+            // 보존한다([Task #2299] 편집 경로 규약).
+            let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+                &self.document.sections[sec_idx].paragraphs[para_idx],
+            );
             reflow_line_segs(
                 &mut self.document.sections[sec_idx].paragraphs[para_idx],
                 available_width,
                 &styles,
                 self.dpi,
+            );
+            let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[sec_idx].paragraphs,
+                para_idx,
+                None,
+                stored_end_for_reset,
+                &styles,
+                self.dpi,
+                doc_hwp3_layout,
             );
         }
 

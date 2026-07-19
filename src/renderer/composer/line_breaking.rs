@@ -1742,8 +1742,16 @@ pub(crate) fn recalculate_section_vpos(
         } else {
             orig_prev_end
         };
+        // [회귀 수정] 편집으로 방금 reflow 된 문단(pi == start_para)은 그 vertical_pos
+        // 가 문단-로컬 원점 0 으로 재계산돼 있어(reflow 계약), 이를 직전 문단의 저장
+        // end 와 비교하면 항상 0 < end 라 가짜 리셋으로 오판된다 → 편집 문단이 흐름에
+        // 누적되지 못하고 매번 페이지 상단(vpos 0)에 고정 → 문단마다 새 페이지(줄간격
+        // 증가가 페이지 수에 무반영). 편집 문단은 명시적 쪽/단 나누기(column_type)로만
+        // 페이지 경계를 가지므로, 저장 vpos 리셋 판정에서 제외하고 항상 흐름에 잇는다.
+        // (후속 문단 pi > start_para 의 리셋 보존은 그대로 유지 — Task #2299 불변.)
         let is_reset = is_original_lineseg
             && !is_ignored(pi)
+            && pi != start_para
             && prev_stored_bound.is_some_and(|bound| current_start < bound);
 
         let delta = if is_reset {
