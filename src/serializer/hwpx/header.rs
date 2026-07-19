@@ -837,6 +837,11 @@ fn tab_leader_str(f: u8) -> &'static str {
         6 => "LONG_DASH",
         7 => "CIRCLE",
         8 => "DOUBLE_SLIM",
+        // 종전엔 9/10/11 이 _ => "NONE" 으로 떨어져 이중/삼중선 탭 리더가 저장 시 유실됐다.
+        // 파서(parse_tab_item)는 이 문자열들을 각각 9/10/11 로 받으므로 왕복 보존된다.
+        9 => "THIN_THICK",
+        10 => "THICK_THIN",
+        11 => "TRIM",
         _ => "NONE",
     }
 }
@@ -2039,5 +2044,14 @@ mod tests {
 
         assert_eq!(xml.matches("<hh:paraHead").count(), 10);
         assert!(xml.starts_with(r#"<hh:numbering id="1" start="0">"#));
+    }
+
+    #[test]
+    fn tab_leader_str_emits_double_and_triple_line_types() {
+        // fill_type 9/10/11 이 "NONE" 으로 유실되지 않고 파서가 받는 문자열로 방출돼야 한다.
+        assert_eq!(tab_leader_str(9), "THIN_THICK");
+        assert_eq!(tab_leader_str(10), "THICK_THIN");
+        assert_eq!(tab_leader_str(11), "TRIM");
+        assert_eq!(tab_leader_str(8), "DOUBLE_SLIM");
     }
 }
