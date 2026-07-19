@@ -41,6 +41,14 @@ updates:
           - "vite"
           - "vite-plugin-pwa"
 
+  # GitHub Actions 워크플로우도 Dependabot이 추적하도록 추가.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "devel"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+
   # [#1649] 확장(chrome/firefox)도 vite 를 추적한다. studio 가 vite 8 까지 따라온
   # 사이 확장만 vite 6 에 방치되어 있었다(고정 의도 아님). 확장 빌드는 build.mjs 가
   # cwd:rhwp-studio 에서 npx vite 를 호출해 이미 studio vite 를 쓰므로, 확장의 vite 는
@@ -55,6 +63,20 @@ updates:
 
   - package-ecosystem: "npm"
     directory: "/rhwp-firefox"
+    target-branch: "devel"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: "npm"
+    directory: "/npm/editor"
+    target-branch: "devel"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: "npm"
+    directory: "/rhwp-vscode"
     target-branch: "devel"
     schedule:
       interval: "weekly"
