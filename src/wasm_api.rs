@@ -6330,6 +6330,70 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    #[wasm_bindgen(js_name = applyCharFormatInCellByPath)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn apply_char_format_in_cell_by_path_api(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        start_offset: u32,
+        end_offset: u32,
+        props_json: &str,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.apply_char_format_in_cell_by_path(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            start_offset as usize,
+            end_offset as usize,
+            props_json,
+        )
+        .map_err(|e| e.into())
+    }
+
+    #[wasm_bindgen(js_name = getCellCharPropertiesAtByPath)]
+    pub fn get_cell_char_properties_at_by_path_api(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.get_cell_char_properties_at_by_path(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    #[wasm_bindgen(js_name = setCharShapeIdInCellByPath)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn set_char_shape_id_in_cell_by_path_api(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        start_offset: u32,
+        end_offset: u32,
+        char_shape_id: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.set_char_shape_id_in_cell_by_path(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            start_offset as usize,
+            end_offset as usize,
+            char_shape_id,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 글자 서식 ID를 직접 복원한다 (셀 내 문단).
     #[wasm_bindgen(js_name = setCharShapeIdInCell)]
     pub fn set_char_shape_id_in_cell(

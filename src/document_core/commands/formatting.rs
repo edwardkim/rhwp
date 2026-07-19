@@ -1167,6 +1167,99 @@ impl DocumentCore {
         Ok("{\"ok\":true}".to_string())
     }
 
+    /// `applyCharFormatInCell` 의 cellPath 변형 (중첩 표 지원).
+    ///
+    /// flat 변형은 controlIndex/cellIndex 를 최외곽(cellPath[0]) 축으로 받아 중첩 셀에서
+    /// 바깥 셀에 서식을 적용한다. 이 변형은 path 로 최내곽 셀 문단을 해석해 적용하고,
+    /// 셀별 리플로우는 rebuild_section 의 전체 재조판이 담당한다(delete_range_in_cell_by_path 동형).
+    #[allow(clippy::too_many_arguments)]
+    pub fn apply_char_format_in_cell_by_path(
+        &mut self,
+        sec_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        start_offset: usize,
+        end_offset: usize,
+        props_json: &str,
+    ) -> Result<String, HwpError> {
+        let mut mods = parse_char_shape_mods(props_json);
+        if json_has_border_keys(props_json) {
+            let bf_id = self.create_border_fill_from_json(props_json);
+            mods.border_fill_id = Some(bf_id);
+        }
+        let base_id = {
+            let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
+            para.char_shape_id_at(start_offset).unwrap_or(0)
+        };
+        let new_id = self.document.find_or_create_char_shape(base_id, &mods);
+        {
+            let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
+            para.apply_char_shape_range(start_offset, end_offset, new_id);
+        }
+        let outer_ctrl = path[0].0;
+        self.mark_cell_control_dirty(sec_idx, parent_para_idx, outer_ctrl);
+        self.document.sections[sec_idx].raw_stream = None;
+        self.rebuild_section(sec_idx);
+        self.event_log.push(DocumentEvent::CharFormatChanged {
+            section: sec_idx,
+            para: parent_para_idx,
+            start: start_offset,
+            end: end_offset,
+        });
+        Ok("{\"ok\":true}".to_string())
+    }
+
+    /// `getCellCharPropertiesAt` 의 cellPath 변형. 커맨드는 charShapeId 만 쓰므로
+    /// shape 기준 속성(build_char_properties_json_by_id)으로 충분하다.
+    pub fn get_cell_char_properties_at_by_path(
+        &mut self,
+        sec_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        char_offset: usize,
+    ) -> Result<String, HwpError> {
+        let char_shape_id = {
+            let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
+            para.char_shape_id_at(char_offset).unwrap_or(0)
+        };
+        Ok(self.build_char_properties_json_by_id(char_shape_id as u16))
+    }
+
+    /// `setCharShapeIdInCell` 의 cellPath 변형 (중첩 표 지원, undo용).
+    #[allow(clippy::too_many_arguments)]
+    pub fn set_char_shape_id_in_cell_by_path(
+        &mut self,
+        sec_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        start_offset: usize,
+        end_offset: usize,
+        char_shape_id: u32,
+    ) -> Result<String, HwpError> {
+        if char_shape_id as usize >= self.document.doc_info.char_shapes.len() {
+            return Err(HwpError::RenderError(format!(
+                "글자 모양 ID {} 범위 초과 (총 {}개)",
+                char_shape_id,
+                self.document.doc_info.char_shapes.len()
+            )));
+        }
+        {
+            let cell_para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
+            cell_para.apply_char_shape_range(start_offset, end_offset, char_shape_id);
+        }
+        let outer_ctrl = path[0].0;
+        self.mark_cell_control_dirty(sec_idx, parent_para_idx, outer_ctrl);
+        self.document.sections[sec_idx].raw_stream = None;
+        self.rebuild_section(sec_idx);
+        self.event_log.push(DocumentEvent::CharFormatChanged {
+            section: sec_idx,
+            para: parent_para_idx,
+            start: start_offset,
+            end: end_offset,
+        });
+        Ok("{\"ok\":true}".to_string())
+    }
+
     /// 글자 서식 ID 직접 복원 (네이티브) — 셀 내 문단.
     pub fn set_char_shape_id_in_cell_native(
         &mut self,

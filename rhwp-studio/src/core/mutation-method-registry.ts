@@ -51,7 +51,8 @@ export const MUTATING_METHODS: readonly string[] = [
   'pasteInternal', 'pasteInternalInCell', 'pasteInternalInCellByPath', 'pasteControl',
   'pasteHtml', 'pasteHtmlInCell', 'pasteHtmlInCellByPath',
   // 글자/문단 모양
-  'applyCharFormat', 'setCharShapeId', 'applyCharFormatInCell', 'setCharShapeIdInCell',
+  'applyCharFormat', 'setCharShapeId', 'applyCharFormatInCell', 'applyCharFormatInCellByPath',
+  'setCharShapeIdInCell', 'setCharShapeIdInCellByPath',
   'applyParaFormat', 'setParaShapeId', 'applyParaFormatInCell', 'setCellParaShapeId',
   // 스타일/번호 정의 (DocInfo 변이 포함)
   'updateStyle', 'updateStyleShapes', 'createStyle', 'deleteStyle', 'applyStyle',

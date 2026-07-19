@@ -1824,6 +1824,12 @@ export class WasmBridge {
     return JSON.parse(this.doc.getCellCharPropertiesAt(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset));
   }
 
+  /** getCellCharPropertiesAt 의 cellPath 변형 — 중첩 셀의 charShapeId 조회. */
+  getCellCharPropertiesAtByPath(sec: number, parentPara: number, pathJson: string, charOffset: number): CharProperties {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).getCellCharPropertiesAtByPath(sec, parentPara, pathJson, charOffset));
+  }
+
   applyCharFormat(sec: number, para: number, startOffset: number, endOffset: number, propsJson: string): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.applyCharFormat(sec, para, startOffset, endOffset, propsJson);
@@ -1839,9 +1845,21 @@ export class WasmBridge {
     return this.doc.applyCharFormatInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, startOffset, endOffset, propsJson);
   }
 
+  /** applyCharFormatInCell 의 cellPath 변형 — 중첩 셀 선택에 서식을 적용한다. */
+  applyCharFormatInCellByPath(sec: number, parentPara: number, pathJson: string, startOffset: number, endOffset: number, propsJson: string): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).applyCharFormatInCellByPath(sec, parentPara, pathJson, startOffset, endOffset, propsJson);
+  }
+
   setCharShapeIdInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, startOffset: number, endOffset: number, charShapeId: number): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return (this.doc as any).setCharShapeIdInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, startOffset, endOffset, charShapeId);
+  }
+
+  /** setCharShapeIdInCell 의 cellPath 변형 — 중첩 셀 서식 undo 복원. */
+  setCharShapeIdInCellByPath(sec: number, parentPara: number, pathJson: string, startOffset: number, endOffset: number, charShapeId: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).setCharShapeIdInCellByPath(sec, parentPara, pathJson, startOffset, endOffset, charShapeId);
   }
 
   findOrCreateFontId(name: string): number {
