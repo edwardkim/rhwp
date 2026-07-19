@@ -1148,7 +1148,7 @@ fn render_pie(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, p
         let large = if sweep > std::f64::consts::PI { 1 } else { 0 };
         let color = color_hex(first.color.unwrap_or_else(|| palette(i)));
         svg.push_str(&format!(
-            "<path d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
+            "<path d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\"/>\n",
             cx, cy, x1, y1, r, r, large, x2, y2, color
         ));
         start_angle = end_angle;
@@ -1219,7 +1219,7 @@ fn render_of_pie(
         let (x2, y2) = (cx1 + r1 * end_angle.cos(), cy + r1 * end_angle.sin());
         let large = if sweep > std::f64::consts::PI { 1 } else { 0 };
         svg.push_str(&format!(
-            "<path class=\"hwp-ofpie-main\" d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
+            "<path class=\"hwp-ofpie-main\" d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\"/>\n",
             cx1, cy, x1, y1, r1, r1, large, x2, y2, color_hex(*rgb)
         ));
         start_angle = end_angle;
@@ -1239,7 +1239,7 @@ fn render_of_pie(
                     let large = if sweep > std::f64::consts::PI { 1 } else { 0 };
                     let rgb = first.color.unwrap_or_else(|| palette(n - k + j));
                     svg.push_str(&format!(
-                        "<path class=\"hwp-ofpie-second\" d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
+                        "<path class=\"hwp-ofpie-second\" d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\"/>\n",
                         cx2, cy, x1, y1, r2, r2, large, x2, y2, color_hex(rgb)
                     ));
                     s = e;
@@ -1256,7 +1256,7 @@ fn render_of_pie(
                     let seg = v / combined * bar_h;
                     let rgb = first.color.unwrap_or_else(|| palette(n - k + j));
                     svg.push_str(&format!(
-                        "<rect class=\"hwp-ofpie-second\" x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
+                        "<rect class=\"hwp-ofpie-second\" x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
                         bx,
                         top + acc,
                         bar_w,
@@ -1376,7 +1376,7 @@ fn render_pie_3d(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64
                 let (xa, ya) = (cx + rx * a.cos(), cy + ry * a.sin());
                 let (xb, yb) = (cx + rx * b.cos(), cy + ry * b.sin());
                 svg.push_str(&format!(
-                    "<path class=\"hwp-pie3d-wall\" d=\"M{:.2},{:.2} A{:.2},{:.2} 0 0 1 {:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 0 0 {:.2},{:.2} Z\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
+                    "<path class=\"hwp-pie3d-wall\" d=\"M{:.2},{:.2} A{:.2},{:.2} 0 0 1 {:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 0 0 {:.2},{:.2} Z\" fill=\"{}\"/>\n",
                     xa,
                     ya,
                     rx,
@@ -1406,7 +1406,7 @@ fn render_pie_3d(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64
         let large = if sweep > PI { 1 } else { 0 };
         let color = color_hex(first.color.unwrap_or_else(|| palette(i)));
         svg.push_str(&format!(
-            "<path class=\"hwp-pie3d-top\" d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
+            "<path class=\"hwp-pie3d-top\" d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\"/>\n",
             cx, cy, x1, y1, rx, ry, large, x2, y2, color
         ));
         start_angle = end_angle;
@@ -4450,6 +4450,40 @@ mod tests {
         chart.categories = vec!["a".into(), "b".into()];
         let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
         assert!(!svg.contains("hwp-ofpie"), "n<3은 일반 원형 폴백");
+    }
+
+    #[test]
+    fn test_pie_slices_butt_joined_no_white_border() {
+        // 시각판정 확정(2026-07-19): 한컴 원형 계열은 슬라이스 밀착 — 2D/3D/ofPie
+        // 정답지 원주 전수 스캔 흰 run 0건 → 흰 테두리 미방출 (마커/라인 할로 무관)
+        let pie2d = OoxmlChart {
+            chart_type: OoxmlChartType::Pie,
+            series: vec![OoxmlSeries {
+                values: vec![4.0, 3.0, 2.0],
+                ..Default::default()
+            }],
+            categories: vec!["a".into(), "b".into(), "c".into()],
+            ..Default::default()
+        };
+        let charts = [
+            pie2d,
+            pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0),
+            ofpie_chart(OfPieInfo {
+                has_ser_lines: true,
+                ..Default::default()
+            }),
+            ofpie_chart(OfPieInfo {
+                of_pie_type: OfPieType::Bar,
+                ..Default::default()
+            }),
+        ];
+        for (i, chart) in charts.iter().enumerate() {
+            let svg = render_chart_svg(chart, 0.0, 0.0, 400.0, 300.0);
+            assert!(
+                !svg.contains("stroke=\"#ffffff\""),
+                "원형 계열 {i}: 슬라이스 흰 테두리 잔존"
+            );
+        }
     }
 
     #[test]
