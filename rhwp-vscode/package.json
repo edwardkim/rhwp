@@ -41,6 +41,9 @@
           },
           {
             "filenamePattern": "*.hwpx"
+          },
+          {
+            "filenamePattern": "*.hml"
           }
         ],
         "priority": "default"
