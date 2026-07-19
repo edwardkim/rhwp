@@ -43,12 +43,6 @@
 
   // ─── 유틸리티 ───
 
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
   function extractFilename(anchor) {
     // URL에서 파일명 추출
     try {
