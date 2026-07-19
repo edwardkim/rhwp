@@ -1163,6 +1163,31 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    #[wasm_bindgen(js_name = deleteRangeInCellByPath)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn delete_range_in_cell_by_path_api(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        start_para: u32,
+        start_offset: u32,
+        end_para: u32,
+        end_offset: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.delete_range_in_cell_by_path(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            start_para as usize,
+            start_offset as usize,
+            end_para as usize,
+            end_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     #[wasm_bindgen(js_name = splitParagraphInCellByPath)]
     pub fn split_paragraph_in_cell_by_path_api(
         &mut self,

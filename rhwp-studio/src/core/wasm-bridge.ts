@@ -922,6 +922,12 @@ export class WasmBridge {
     return (this.doc as any).deleteTextInCellByPath(sec, parentPara, pathJson, charOffset, count);
   }
 
+  /** deleteRangeInCell 의 cellPath 변형 — 중첩 표 셀의 선택 삭제가 최내곽 셀을 대상으로 한다. */
+  deleteRangeInCellByPath(sec: number, parentPara: number, pathJson: string, startPara: number, startOffset: number, endPara: number, endOffset: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).deleteRangeInCellByPath(sec, parentPara, pathJson, startPara, startOffset, endPara, endOffset);
+  }
+
   splitParagraphInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return (this.doc as any).splitParagraphInCellByPath(sec, parentPara, pathJson, charOffset);

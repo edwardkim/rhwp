@@ -179,6 +179,14 @@ function cellPathJson(pos: DocumentPosition): string {
   return JSON.stringify(pos.cellPath ?? []);
 }
 
+/** cellPath 의 최내곽(마지막) 엔트리의 cellParaIndex 를 지정 값으로 바꾼 pathJson.
+ *  중첩 셀 선택 삭제의 undo 저장에서 각 문단 텍스트를 ...ByPath 로 읽을 때 사용한다. */
+function cellPathJsonForPara(pos: DocumentPosition, cellParaIndex: number): string {
+  const path = (pos.cellPath ?? []).map((e) => ({ ...e }));
+  if (path.length > 0) path[path.length - 1].cellParaIndex = cellParaIndex;
+  return JSON.stringify(path);
+}
+
 /**
  * 셀 문단 인덱스 — cellPath 가 있으면 마지막(가장 안쪽) 엔트리에서 읽는다.
  *
@@ -538,24 +546,27 @@ export class DeleteSelectionCommand implements EditCommand {
     // 삭제 전 텍스트 보존 (undo용)
     this.savedTexts = [];
     if (isCell(start)) {
+      // 중첩 셀 좌표 축 정합: flat controlIndex/cellIndex 는 cellPath[0](최외곽)이라
+      // 중첩 셀에서 바깥 셀을 삭제한다. 최내곽 셀을 대상으로 ...ByPath 로 라우팅하고,
+      // 셀 문단 인덱스는 cellPath[last] 에서 읽는다(cellParaIndexOf). undo 는 이미
+      // doInsertTextImmediate 가 cellPath 로 최내곽 셀에 삽입하므로 축이 일치한다.
       const sec = start.sectionIndex;
       const ppi = start.parentParaIndex!;
-      const ci = start.controlIndex!;
-      const cei = start.cellIndex!;
-      const startPara = start.cellParaIndex!;
-      const endPara = end.cellParaIndex!;
+      const startPara = cellParaIndexOf(start);
+      const endPara = cellParaIndexOf(end);
       this.multiPara = startPara !== endPara;
       for (let p = startPara; p <= endPara; p++) {
-        const pLen = wasm.getCellParagraphLength(sec, ppi, ci, cei, p);
+        const pathP = cellPathJsonForPara(start, p);
+        const pLen = wasm.getCellParagraphLengthByPath(sec, ppi, pathP);
         const from = p === startPara ? start.charOffset : 0;
         const to = p === endPara ? end.charOffset : pLen;
         if (to > from) {
-          this.savedTexts.push(wasm.getTextInCell(sec, ppi, ci, cei, p, from, to - from));
+          this.savedTexts.push(wasm.getTextInCellByPath(sec, ppi, pathP, from, to - from));
         } else {
           this.savedTexts.push('');
         }
       }
-      wasm.deleteRangeInCell(sec, ppi, ci, cei, startPara, start.charOffset, endPara, end.charOffset);
+      wasm.deleteRangeInCellByPath(sec, ppi, cellPathJson(start), startPara, start.charOffset, endPara, end.charOffset);
     } else {
       const sec = start.sectionIndex;
       this.multiPara = start.paragraphIndex !== end.paragraphIndex;

@@ -3488,6 +3488,77 @@ impl DocumentCore {
         )))
     }
 
+    /// path 기반 셀 내 범위 삭제 (중첩 표 지원). `deleteRangeInCell`(flat)의 cellPath 변형.
+    ///
+    /// flat deleteRangeInCell 은 controlIndex/cellIndex 를 최외곽(cellPath[0]) 축으로 받아
+    /// 중첩 셀에서 바깥 셀을 삭제한다. 이 변형은 path 로 최내곽 셀을 해석해 그 셀의
+    /// 문단 목록에 직접 범위 삭제를 적용한다. start_para/end_para 는 최내곽 셀 내부 인덱스다.
+    #[allow(clippy::too_many_arguments)]
+    pub fn delete_range_in_cell_by_path(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        start_para: usize,
+        start_offset: usize,
+        end_para: usize,
+        end_offset: usize,
+    ) -> Result<String, HwpError> {
+        {
+            let paras = self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
+            if start_para == end_para {
+                let count = end_offset.saturating_sub(start_offset);
+                if count > 0 {
+                    if let Some(p) = paras.get_mut(start_para) {
+                        p.delete_text_at(start_offset, count);
+                    }
+                }
+            } else {
+                // 1) 마지막 문단 앞부분 삭제
+                if end_offset > 0 {
+                    if let Some(p) = paras.get_mut(end_para) {
+                        p.delete_text_at(0, end_offset);
+                    }
+                }
+                // 2) 중간 문단 역순 제거
+                for mid in (start_para + 1..end_para).rev() {
+                    if mid < paras.len() {
+                        paras.remove(mid);
+                    }
+                }
+                // 3) 첫 문단 뒷부분 삭제
+                if let Some(p) = paras.get_mut(start_para) {
+                    let para_len = p.text.chars().count();
+                    if start_offset < para_len {
+                        p.delete_text_at(start_offset, para_len - start_offset);
+                    }
+                }
+                // 4) 첫-마지막 문단 병합 (마지막이 이제 start_para+1)
+                if start_para + 1 < paras.len() {
+                    let next = paras.remove(start_para + 1);
+                    paras[start_para].merge_from(&next);
+                }
+            }
+        }
+
+        // dirty/이벤트는 delete_text_in_cell_by_path 와 동형(최외곽 컨트롤 기준).
+        let outer_ctrl = path[0].0;
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
+        self.document.sections[section_idx].raw_stream = None;
+        self.mark_section_dirty(section_idx);
+        self.paginate_if_needed();
+        self.event_log.push(DocumentEvent::CellTextChanged {
+            section: section_idx,
+            para: parent_para_idx,
+            ctrl: outer_ctrl,
+            cell: path[0].1,
+        });
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"paraIdx\":{},\"charOffset\":{}",
+            start_para, start_offset
+        )))
+    }
+
     /// path 기반 셀 문단 분할 (중첩 표 지원)
     pub fn split_paragraph_in_cell_by_path(
         &mut self,
@@ -3733,6 +3804,43 @@ mod tests {
         set_shape(&mut core, 0, 12, 3, 7);
         set_shape(&mut core, 1, 14, 5, 9);
         core
+    }
+
+    #[test]
+    fn delete_range_in_cell_by_path_deletes_within_resolved_cell() {
+        use crate::model::control::Control;
+        use crate::model::table::{Cell, Table};
+
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+
+        let mut cell_para = Paragraph::default();
+        cell_para.text = "ABCDE".to_string();
+        cell_para.char_count = 5;
+        cell_para.char_offsets = vec![0, 1, 2, 3, 4];
+        let table = Table {
+            cells: vec![Cell {
+                paragraphs: vec![cell_para],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        core.document.sections[0].paragraphs[0]
+            .controls
+            .push(Control::Table(Box::new(table)));
+        let ctrl_idx = core.document.sections[0].paragraphs[0].controls.len() - 1;
+
+        // 셀 문단 offset 1..3(BC) 삭제. path 로 최내곽 셀을 해석해야 한다.
+        core.delete_range_in_cell_by_path(0, 0, &[(ctrl_idx, 0, 0)], 0, 1, 0, 3)
+            .unwrap();
+
+        let Control::Table(t) = &core.document.sections[0].paragraphs[0].controls[ctrl_idx] else {
+            panic!("expected table");
+        };
+        assert_eq!(
+            t.cells[0].paragraphs[0].text, "ADE",
+            "path 로 해석한 셀에서 BC 가 삭제돼야 한다"
+        );
     }
 
     #[test]
