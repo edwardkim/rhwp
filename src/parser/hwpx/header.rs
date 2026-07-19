@@ -944,7 +944,12 @@ fn parse_para_shape_child(
                         ps.line_spacing_type = match val.as_str() {
                             "PERCENT" => LineSpacingType::Percent,
                             "FIXED" => LineSpacingType::Fixed,
-                            "SPACEONLY" | "SPACE_ONLY" => LineSpacingType::SpaceOnly,
+                            // 방출측 line_spacing_type_str 은 SpaceOnly 를 "BETWEEN_LINES" 로
+                            // 낸다. 이를 안 받으면 rhwp 가 저장한 SpaceOnly 줄간격이 재로드 시
+                            // Percent 로 유실된다(_ => Percent). SPACEONLY/SPACE_ONLY 는 leniency 유지.
+                            "SPACEONLY" | "SPACE_ONLY" | "BETWEEN_LINES" => {
+                                LineSpacingType::SpaceOnly
+                            }
                             "MINIMUM" | "AT_LEAST" => LineSpacingType::Minimum,
                             _ => LineSpacingType::Percent,
                         };
@@ -1190,7 +1195,9 @@ fn parse_para_shape_switch(
                                         ls_type = Some(match attr_str(&attr).as_str() {
                                             "PERCENT" => LineSpacingType::Percent,
                                             "FIXED" => LineSpacingType::Fixed,
-                                            "SPACEONLY" | "SPACE_ONLY" => {
+                                            // 방출측이 SpaceOnly 를 "BETWEEN_LINES" 로 내므로
+                                            // 되읽기도 이를 받아야 왕복 보존(SPACE_ONLY 는 leniency).
+                                            "SPACEONLY" | "SPACE_ONLY" | "BETWEEN_LINES" => {
                                                 LineSpacingType::SpaceOnly
                                             }
                                             "MINIMUM" | "AT_LEAST" => LineSpacingType::Minimum,
@@ -2200,6 +2207,29 @@ mod tests {
         assert_eq!(ps.head_type, HeadType::Number);
         assert_eq!(ps.numbering_id, 3);
         assert_eq!(ps.para_level, 0);
+    }
+
+    #[test]
+    fn para_shape_linespacing_between_lines_parses_as_space_only() {
+        // 방출측 line_spacing_type_str 은 SpaceOnly 를 "BETWEEN_LINES" 로 낸다. 파서가 이를
+        // 안 받으면(_ => Percent) rhwp 저장 SpaceOnly 줄간격이 재로드 시 Percent 로 유실된다.
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head" xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hh:refList>
+    <hh:paraProperties itemCnt="1">
+      <hh:paraPr id="1" tabPrIDRef="0">
+        <hh:align horizontal="JUSTIFY" vertical="BASELINE"/>
+        <hh:lineSpacing type="BETWEEN_LINES" value="200" unit="HWPUNIT"/>
+      </hh:paraPr>
+    </hh:paraProperties>
+  </hh:refList>
+</hh:head>"##;
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        assert_eq!(
+            doc_info.para_shapes[0].line_spacing_type,
+            crate::model::style::LineSpacingType::SpaceOnly,
+            "type=BETWEEN_LINES 가 SpaceOnly 로 파싱돼야 함(Percent 유실 방지)"
+        );
     }
 
     #[test]
