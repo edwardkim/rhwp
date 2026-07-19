@@ -1948,8 +1948,9 @@ fn render_equation(eq: &Equation) -> String {
     let hold = if c.prevent_page_break != 0 { "1" } else { "0" };
 
     format!(
-        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="0" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
         text_wrap_to_hwpx(c.text_wrap),
+        text_flow_to_hwpx(c.text_flow),
         vert_rel_to_hwpx(c.vert_rel_to),
         horz_rel_to_hwpx(c.horz_rel_to),
         vert_align_to_hwpx(c.vert_align),
@@ -1991,6 +1992,16 @@ fn text_wrap_to_hwpx(wrap: TextWrap) -> &'static str {
         TextWrap::TopAndBottom => "TOP_AND_BOTTOM",
         TextWrap::BehindText => "BEHIND_TEXT",
         TextWrap::InFrontOfText => "IN_FRONT_OF_TEXT",
+    }
+}
+
+fn text_flow_to_hwpx(flow: crate::model::shape::TextFlow) -> &'static str {
+    use crate::model::shape::TextFlow;
+    match flow {
+        TextFlow::BothSides => "BOTH_SIDES",
+        TextFlow::LeftOnly => "LEFT_ONLY",
+        TextFlow::RightOnly => "RIGHT_ONLY",
+        TextFlow::LargestOnly => "LARGEST_ONLY",
     }
 }
 
@@ -2235,6 +2246,25 @@ fn render_page_border_fill(ty: &str, pbf: &crate::model::page::PageBorderFill) -
 mod tests {
     use super::*;
     use crate::model::paragraph::{CharShapeRef, Paragraph};
+
+    #[test]
+    fn equation_text_flow_reflects_ir() {
+        use crate::model::control::Equation;
+        use crate::model::shape::TextFlow;
+        // 수식의 textFlow 가 IR(common.text_flow)에서 방출돼야 한다.
+        // 종전엔 "BOTH_SIDES" 하드코딩으로 왕복 시 유실됐다(textWrap 은 이미 IR 구동).
+        let mut eq = Equation::default();
+        eq.common.text_flow = TextFlow::LeftOnly;
+        let xml = render_equation(&eq);
+        assert!(
+            xml.contains(r#"textFlow="LEFT_ONLY""#),
+            "수식 textFlow 이 IR 값이어야 함: {xml}"
+        );
+        assert!(
+            !xml.contains(r#"textFlow="BOTH_SIDES""#),
+            "BOTH_SIDES 하드코딩 잔존 금지"
+        );
+    }
 
     /// [Issue #1944] legacy 공용 도형 경로(polygon/ellipse/arc/curve)가 도형 내
     /// 글상자(drawText) 문단을 방출해야 한다 — 종전 누락으로 도형 안 텍스트 소실.
