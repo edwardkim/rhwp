@@ -18,7 +18,7 @@ PR은 `verify_pi_page_vs_hangul.py`의 알려진 한계를 문서화한다.
 - `tools/verify_pi_page_vs_hangul.py`
   - 모듈 docstring에 캐럿-개체 분리 오탐 2유형을 추가한다.
   - 실행 로직 변경은 없다.
-- `mydocs/manual/verify_pi_page_vs_hangul.md`
+- `mydocs/manual/verification/verify_pi_page_vs_hangul.md`
   - 도구 사용법, 판정 의미, 캐럿-개체 분리 오탐 판별 절차를 문서화한다.
 - `mydocs/plans/task_m100_1757.md`
   - 작업 배경과 게이트를 기록한다.

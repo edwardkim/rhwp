@@ -127,7 +127,7 @@
 **목표**: 구현 결과를 바탕으로 아키텍처 설계 문서 정리
 
 **작업 내용**:
-- `mydocs/tech/vscode_extension_design.md` — 기술 설계 문서
+- `mydocs/tech/archive/vscode_extension_design.md` — 기술 설계 문서
   - 아키텍처 다이어그램 (Extension Host ↔ Webview ↔ WASM)
   - 메시지 프로토콜 명세
   - WASM 로딩 전략 및 CSP 설정

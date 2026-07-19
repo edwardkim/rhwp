@@ -10,6 +10,8 @@ import { showShapePicker } from '@/ui/shape-picker';
 import { showToast } from '@/ui/toast';
 import type { ShapeType } from '@/ui/shape-picker';
 import type { CellPathLike } from '@/core/types';
+import type { WasmBridge } from '@/core/wasm-bridge';
+import type { InputHandler } from '@/engine/input-handler';
 
 /** 스텁 커맨드 생성 헬퍼 */
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
@@ -176,21 +178,25 @@ export const insertCommands: CommandDef[] = [
       fieldInsertDialog = new FieldInsertDialog();
       fieldInsertDialog.onApply = (props) => {
         try {
-          const result = services.wasm.insertClickHereField(
-            pos,
-            props.guide,
-            props.memo,
-            props.name,
-            props.editable,
-          );
-          if (result.ok) {
-            const insertedPos = { ...pos, charOffset: result.charOffset ?? pos.charOffset };
-            ih.moveCursorTo(insertedPos);
-            ih.markCurrentFieldEndOutside();
-            services.wasm.clearActiveField();
-            services.eventBus.emit('document-mutated', 'insert-field');
-            services.eventBus.emit('document-changed');
-          }
+          // [Task #2377] 누름틀 삽입은 안내문 텍스트를 문서에 넣는다(문자 수 변경) —
+          // 미기록 시 undo 불가 + 후속 undo 오프셋 오염. snapshot 으로 라우팅한다(이 커맨드는
+          // 일반 모드 전용이라 게이트 드롭 없음). 실패 시 throw 로 엔트리 생성을 막는다.
+          ih.executeOperation({
+            kind: 'snapshot',
+            operationType: 'insertField',
+            operation: (wasm) => {
+              const result = wasm.insertClickHereField(pos, props.guide, props.memo, props.name, props.editable);
+              if (!result.ok) throw new Error('insertClickHereField not ok');
+              return { ...pos, charOffset: result.charOffset ?? pos.charOffset };
+            },
+          });
+          // 커서는 라우터가 삽입 위치로 이동시킨다 — 필드 끝 밖 마킹·활성 필드 해제는 기존대로.
+          ih.markCurrentFieldEndOutside();
+          services.wasm.clearActiveField();
+          services.eventBus.emit('document-mutated', 'insert-field');
+          // 모달 확인 버튼으로 옮겨간 포커스를 편집기로 복원 — 종전엔 moveCursorTo 끝의
+          // focusTextarea 가 담당했으나 라우터 경로엔 없다(field:edit 의 onClose 복원과 동형).
+          ih.focus();
         } catch (err) {
           console.warn('[insert:field] 누름틀 삽입 실패:', err);
         }
@@ -275,7 +281,7 @@ export const insertCommands: CommandDef[] = [
     execute(services) {
       const pos = services.getInputHandler()?.getPosition();
       const sectionIdx = pos?.sectionIndex ?? 0;
-      endnoteShapeDialog = new EndnoteShapeDialog(services.wasm, services.eventBus, sectionIdx);
+      endnoteShapeDialog = new EndnoteShapeDialog(services.wasm, services.eventBus, sectionIdx, services);
       endnoteShapeDialog.show();
     },
   },
@@ -418,7 +424,7 @@ export const insertCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'shape') return;
-      services.wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, 'front');
+      recordObjectMutation(ih, 'changeZOrder', (wasm) => wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, 'front'));
       ih.exitPictureObjectSelectionAndAfterEdit();
     },
   },
@@ -431,7 +437,7 @@ export const insertCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'shape') return;
-      services.wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, 'forward');
+      recordObjectMutation(ih, 'changeZOrder', (wasm) => wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, 'forward'));
       ih.exitPictureObjectSelectionAndAfterEdit();
     },
   },
@@ -444,7 +450,7 @@ export const insertCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'shape') return;
-      services.wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, 'backward');
+      recordObjectMutation(ih, 'changeZOrder', (wasm) => wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, 'backward'));
       ih.exitPictureObjectSelectionAndAfterEdit();
     },
   },
@@ -457,7 +463,7 @@ export const insertCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'shape') return;
-      services.wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, 'back');
+      recordObjectMutation(ih, 'changeZOrder', (wasm) => wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, 'back'));
       ih.exitPictureObjectSelectionAndAfterEdit();
     },
   },
@@ -470,15 +476,17 @@ export const insertCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
       if (!ref) return;
-      if (ref.type === 'shape' || ref.type === 'line' || ref.type === 'group') {
-        services.wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
-      } else if (ref.type === 'equation') {
-        services.wasm.deleteEquationControl(ref.sec, ref.ppi, ref.ci);
-      } else if (ref.cellPath && ref.cellPath.length > 0) {
-        services.wasm.deleteCellPictureControlByPath(ref.sec, ref.ppi, ref.cellPath, ref.ci);
-      } else {
-        services.wasm.deletePictureControl(ref.sec, ref.ppi, ref.ci);
-      }
+      recordObjectMutation(ih, 'deleteObject', (wasm) => {
+        if (ref.type === 'shape' || ref.type === 'line' || ref.type === 'group') {
+          wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
+        } else if (ref.type === 'equation') {
+          wasm.deleteEquationControl(ref.sec, ref.ppi, ref.ci);
+        } else if (ref.cellPath && ref.cellPath.length > 0) {
+          wasm.deleteCellPictureControlByPath(ref.sec, ref.ppi, ref.cellPath, ref.ci);
+        } else {
+          wasm.deletePictureControl(ref.sec, ref.ppi, ref.ci);
+        }
+      });
       ih.exitPictureObjectSelectionAndAfterEdit();
     },
   },
@@ -495,10 +503,11 @@ export const insertCommands: CommandDef[] = [
       const sec = refs[0].sec;
       const targets = refs.map(r => ({ paraIdx: r.ppi, controlIdx: r.ci }));
       try {
-        const result = services.wasm.groupShapes(sec, targets);
+        let result: ReturnType<typeof services.wasm.groupShapes> | undefined;
+        recordObjectMutation(ih, 'groupShapes', (wasm) => { result = wasm.groupShapes(sec, targets); });
         ih.exitPictureObjectSelectionAndAfterEdit();
         // 생성된 GroupShape를 선택
-        ih.selectPictureObject(sec, result.paraIdx, result.controlIdx, 'group');
+        if (result) ih.selectPictureObject(sec, result.paraIdx, result.controlIdx, 'group');
       } catch (err) {
         console.warn('[group-shapes] 개체 묶기 실패:', err);
       }
@@ -514,7 +523,7 @@ export const insertCommands: CommandDef[] = [
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'group') return;
       try {
-        services.wasm.ungroupShape(ref.sec, ref.ppi, ref.ci);
+        recordObjectMutation(ih, 'ungroupShape', (wasm) => wasm.ungroupShape(ref.sec, ref.ppi, ref.ci));
         ih.exitPictureObjectSelectionAndAfterEdit();
       } catch (err) {
         console.warn('[ungroup-shapes] 개체 풀기 실패:', err);
@@ -591,6 +600,29 @@ function getProps(services: import('../types').CommandServices, ref: PictureRef)
   return services.wasm.getPictureProperties(ref.sec, ref.ppi, ref.ci) as unknown as Record<string, unknown>;
 }
 
+/**
+ * [계급 1 이관] 개체 조작 뮤테이션을 snapshot 으로 기록해 undo/redo 를 보장한다.
+ * 메뉴/도구상자 커맨드가 `services.wasm.*` 를 직접 호출하면 히스토리를 우회한다(같은
+ * 삭제라도 Delete 키 경로는 이미 `executeOperation({kind:'snapshot'})` 로 기록됨,
+ * input-handler-keyboard.ts). 그 경로와 동형으로 위임한다 — 뮤테이션만 기록하고 선택
+ * 해제·afterEdit·재선택 등 UI 후처리는 호출부가 기존대로 수행한다.
+ */
+function recordObjectMutation(
+  ih: InputHandler,
+  operationType: string,
+  mutate: (wasm: WasmBridge) => void,
+): void {
+  const pos = ih.getCursorPosition();
+  ih.executeOperation({
+    kind: 'snapshot',
+    operationType,
+    operation: (wasm) => {
+      mutate(wasm);
+      return pos;
+    },
+  });
+}
+
 function setProps(services: import('../types').CommandServices, ref: PictureRef, props: Record<string, unknown>): any {
   if (ref.type === 'shape') {
     if (ref.cellPath && ref.cellPath.length > 0) {
@@ -628,7 +660,7 @@ function applyRotationDelta(services: import('../types').CommandServices, delta:
   // -180 ~ 180 범위로 정규화
   next = ((next % 360) + 360) % 360;
   if (next > 180) next -= 360;
-  setProps(services, ref, { rotationAngle: next });
+  recordObjectMutation(ih, 'rotateObject', () => setProps(services, ref, { rotationAngle: next }));
   services.eventBus.emit('document-changed');
 }
 
@@ -641,6 +673,6 @@ function toggleFlip(services: import('../types').CommandServices, key: 'horzFlip
   const props = getProps(services, ref);
   if (props.sizeProtect) return;
   const cur = !!props[key];
-  setProps(services, ref, { [key]: !cur });
+  recordObjectMutation(ih, 'flipObject', () => setProps(services, ref, { [key]: !cur }));
   services.eventBus.emit('document-changed');
 }

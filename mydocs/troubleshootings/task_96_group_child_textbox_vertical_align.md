@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 그룹 자식 TextBox 세로 정렬 미적용 문제
 
 ## 날짜

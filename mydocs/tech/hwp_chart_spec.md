@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/hwp_spec_errata.md
+last_verified: 2026-07-17
+---
+
 # HWP 차트(CHART_DATA) 바이너리 스펙 정리
 
 > Task #195 단계 1 산출물. 구현 전 스펙 조사 및 IR 설계 문서.

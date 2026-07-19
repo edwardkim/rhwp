@@ -4,6 +4,110 @@ This document records the major changes of the rhwp project.
 
 > 한국어 버전은 [CHANGELOG.md](CHANGELOG.md) 를 참조하세요.
 
+## [0.7.19] — 2026-07-17
+
+> Patch following v0.7.18 — honoring stored geometry signals (intra-paragraph vpos
+> reset/rewind) across both render and edit paths, table pagination precision
+> (rowspan declared-residual, machine-generated form under-splitting), memory /
+> PDF determinism improvements, HML format support, and legacy /web decoupling.
+> Public API stays backward compatible — PATCH.
+
+### Rendering fidelity — stored-signal trust lineage
+- Promote mid-paragraph vpos 0-reset (page-boundary encoding) to a split point for
+  paragraphs starting in non-zero columns — fixes bottom clipping / content loss in
+  treatise p2 right column, plus the same defect on p4 (#2320).
+- Honor intra-para reset for full-page tac picture + trailing tac table paragraphs and
+  remove ghost height accounting — poster attachment document 5→3 pages, matching
+  Hangul (#2311).
+- Fix tac table height collapse in machine-generated documents without stored
+  LINE_SEGs — Jinan form 1→2 pages, market-survey pin 309→312 (toward 315) (#2319).
+- Fix under-splitting of two-full-page form-table documents — consume float exclusion
+  zones in the table-paragraph path + correct inline misclassification of full-page-scale
+  (≥30000HU) TAC tables (#2322).
+- Spill small tac TopAndBottom object lines into the bottom page margin — extends the
+  stored page-last trust path, r12 OVER+SHAPE oracle +3 (#2137, partial).
+- Cap master-page objects at the BehindText plane via master_page provenance —
+  master-page content no longer covers body text in studio/skia (#2318).
+
+### Table pagination precision
+- Add rowspan merged-cell declared-residual to the last spanned row — convention
+  confirmed by measuring Hangul row rules; curriculum-map 380→385 pages. Also re-wrap
+  under-stored (single-lineseg over-width) cell paragraphs and port relaxed hard-break
+  into the rowspan block offset walk (giant cells only) (#2291/#2237).
+- Fix two under-splitting defects in table-dense documents — RowBreak rowspan block
+  continuation-residual evaporation + TAC picture paragraph height accounting (#2287),
+  plus bottom band-fill offset cut retry (#2097).
+- Five fresh-layout measurement fixes matching Hangul + footer lead/margin error
+  attribution and instrumentation (#2279).
+- 80168 regulatory-analysis 157-page alignment — seven-axis decomposition of the
+  cancellation network (#2070); RowBreak large-table density (trailing-space ghost
+  lines + aim padding-0) and non-Percent line-spacing 2× scale fix (#2070).
+- KBU=1 (character-unit line breaking) line-start prohibition retraction — prevents
+  isolated periods at line starts, matching a Hangul 2024 oracle (#2244). Fix inverted
+  Korean break-unit semantics (#2185). Recompose abnormal HWPX line metrics (#2093).
+
+### Editing fidelity (rhwp-studio)
+- Preserve stored resets (column/page-boundary encodings) and paragraph gaps in the
+  edit-path vpos recalculation — fixes multi-column band loss / page-count drift and
+  removes 60 spurious page-count changes across a 574-sample edit sweep (#2299).
+- Fix invisible continuous input in giant-cell (115-page) documents — targeted
+  normalized-state cache coherence invalidation (#2214).
+- Clear stale object/table selection refs after undo/redo (#2303); add a real-key
+  Ctrl+Z smoke to the undo contract e2e plus a harness modal-residue fix (#2317).
+- Preserve table cell clip in the static picture layer (#2228). Overflow view enabled
+  by default (#2205 line). File menu "Recent Documents" submenu with meta-only
+  records (#2285).
+
+### Render pipeline & fonts
+- CanvasKit readiness gate and hardened public opt-in (#2224), proof-gated resource
+  replay with failure containment (#2248), refreshed cross-backend diagnostics /
+  regression corpus with generalized render-profile plumbing (export-png defaults to
+  print-equivalent) (#2297 line).
+- Local font multilingual matching with CanvasKit registration (#2227), CanvasKit
+  bullet font correction (#2190).
+- skia PNG: fix chart RawSvg fragment double-offset clipping via viewBox (#2292) and
+  prefer Korean-capable fonts in the fallback chain — restores missing chart text
+  (#2293).
+- OOXML chart C2a stock HLC rendering with 2D fidelity (#2277, #1431 Track C).
+- HWP5 strikeout: whitelist strike shapes instead of trusting bits — avoids
+  misreading the 3D-placeholder convention (#2258, spec errata #34).
+
+### Performance, memory, determinism
+- Lazy BinData loading — embedded images no longer fully resident at parse time,
+  RSS 244MB→49MB (#2263).
+- `--text-as-paths` option for the PDF memory dominator (svg2pdf text embedding)
+  (#2264); vendored svg2pdf determinism patch for byte-reproducible export-pdf
+  (#2269, with font-numbering nondeterminism attribution and a normalize-compare tool).
+
+### Format support
+- HML (HWPML) document open + semantics-preserving save (#1157).
+- @rhwp/editor MessageChannel embed transport v1 (#2186).
+
+### Frontend infrastructure
+- Remove the legacy `/web` dev app (18 entries, 616KB) and its coupling in the CI
+  detector / metrics / font contract; non-legacy neutrality proven with function-level
+  metrics (#2313).
+- assets/fonts as the canonical font root (#2254 line), frontend package build/test CI
+  gate (#2183), Phase 0 baseline freeze (#2124, ongoing).
+
+### Tools & docs
+- HWP 2020 MCP client long-document timeout sync (#2253), 13th 10k-sample validation
+  report (#2262), row-anchor comparison tool (tools/task2287), print-mode CLI manual
+  refresh, ongoing PR-review record keeping (jangster77's review-doc series).
+
+### Contributors
+
+55 contributor PRs merged in this cycle (since v0.7.18; GitHub handles, alphabetical):
+
+- @cskwork — HML open/semantics-preserving save (#2219), @rhwp/editor MessageChannel embed transport v1 (#2187)
+- @jangster77 (Taesup Jang) — 17 PRs of external-PR integration and review records: local font multilingual matching (#2227), cell clip preservation (#2229), abnormal HWPX line recomposition (#2231), CanvasKit bullet fonts (#2196), MCP timeout (#2255), etc.
+- @johndoekim — OOXML chart C2a stock HLC rendering (#2288)
+- @lpaiu-cs — edit-path stored-reset preservation (#2314), stale selection refs after undo/redo (#2304), real-key undo e2e smoke (#2324)
+- @planet6897 (Jaeook Ryu) — 21 PRs of rendering/pagination fidelity: rowspan declared-residual convention (#2309), the r15 form-stack trilogy (#2315/#2321/#2323), lazy BinData (#2265), svg2pdf determinism (#2281), 10k sample validation (#2262), etc.
+- @postmelee (Taegyu Lee) — legacy /web removal (#2316), giant-cell edit cache coherence (#2241), break-unit semantics fix (#2194), canonical font root (#2254), frontend CI gate (#2216/#2235), Phase 0 freeze (#2174)
+- @seo-rii — CanvasKit readiness gate (#2224), proof-gated resource replay (#2248), cross-backend diagnostics/profile plumbing (#2297)
+- @yeonic (Jongyeon Kim) — HWP5 strikeout strike-shape whitelist (#2258) *(welcome, first contribution!)*
+
 ## [0.7.18] — 2026-07-11
 
 > Patch release following v0.7.17 — large-scale rendering fidelity fixes (floating/front

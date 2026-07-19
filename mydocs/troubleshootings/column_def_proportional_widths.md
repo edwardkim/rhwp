@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # HWP 5.0 단 정의(cold) 너비/간격 비례값 인코딩
 
 ## 증상

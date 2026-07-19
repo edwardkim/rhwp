@@ -85,4 +85,4 @@ Phase 1에서는 **문단(비-표) 요소**의 조판을 단일 패스로 처리
 
 ## 참고 문서
 
-- [단일 패스 레이아웃 설계서](../tech/single_pass_layout_design.md)
+- [단일 패스 레이아웃 설계서](../../tech/archive/single_pass_layout_design.md)

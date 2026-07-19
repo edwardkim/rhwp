@@ -1,5 +1,6 @@
 import { WasmBridge } from '@/core/wasm-bridge';
 import type { LayerRenderProfile } from '@/core/types';
+import { layerPaintOpReplayPlane } from './canvaskit/replay-plane';
 import type { CanvasKitLayerRenderer, CanvasKitRenderDiagnostics } from './canvaskit-renderer';
 import {
   collectFlowImagePaintOps,
@@ -65,6 +66,33 @@ export class PageRenderer {
     private canvaskitRenderer: CanvasKitLayerRenderer | null = null,
   ) {}
 
+  configure(
+    backend: RenderBackend,
+    renderProfile: LayerRenderProfile,
+    canvaskitRenderer: CanvasKitLayerRenderer | null,
+    preserveCanvasKitDiagnostics = false,
+  ): boolean {
+    const changed =
+      this.backend !== backend
+      || this.renderProfile !== renderProfile
+      || this.canvaskitRenderer !== canvaskitRenderer;
+    if (!changed) return false;
+
+    this.cancelAll();
+    if (!preserveCanvasKitDiagnostics) this.releaseAllPageDiagnostics();
+    this.layerSummaryCache.clear();
+    this.backend = backend;
+    this.renderProfile = renderProfile;
+    this.canvaskitRenderer = canvaskitRenderer;
+    return true;
+  }
+
+  invalidateDocumentRevision(): void {
+    this.cancelAll();
+    this.releaseAllPageDiagnostics();
+    this.layerSummaryCache.clear();
+  }
+
   /** 페이지를 Canvas에 렌더링한다 (renderScale = zoom × DPR) */
   renderPage(
     pageIdx: number,
@@ -113,7 +141,7 @@ export class PageRenderer {
       this.flowSplitSupported = false;
       canvas.parentElement && this.removeOverlayLayer(canvas.parentElement, pageIdx, 'flow-static');
       reuseStaticFlow = false;
-      this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow');
+      this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow', this.renderProfile);
       this.drawMarginGuides(pageIdx, canvas, renderScale);
       overlays = this.applyOverlays(pageIdx, canvas, renderScale, dpr, context, layers, false, []);
     }
@@ -486,7 +514,13 @@ export class PageRenderer {
     // lower background/behind layers.
     layer.style.background = 'transparent';
     if (renderImmediately) {
-      this.wasm.renderPageToCanvasFiltered(pageIdx, layer, renderScale, layerKind);
+      this.wasm.renderPageToCanvasFiltered(
+        pageIdx,
+        layer,
+        renderScale,
+        layerKind,
+        this.renderProfile,
+      );
     }
     return layer;
   }
@@ -567,7 +601,7 @@ export class PageRenderer {
    * BehindText / InFrontOfText plane 은 제외 — overlay canvas 로 별도 표시.
    */
   renderPageFlow(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
-    this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, scale, 'flow');
+    this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, scale, 'flow', this.renderProfile);
     this.drawMarginGuides(pageIdx, canvas, scale);
     this.scheduleReRender(pageIdx, canvas, scale, 0, {
       retrySignature: 'flow-only',
@@ -609,17 +643,23 @@ export class PageRenderer {
     preferStaticFlow: boolean,
   ): boolean {
     if (!preferStaticFlow) {
-      this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow');
+      this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow', this.renderProfile);
       return false;
     }
     try {
-      this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow-dynamic');
+      this.wasm.renderPageToCanvasFiltered(
+        pageIdx,
+        canvas,
+        renderScale,
+        'flow-dynamic',
+        this.renderProfile,
+      );
       this.flowSplitSupported = true;
       return true;
     } catch (error) {
       this.flowSplitSupported = false;
       console.warn('[PageRenderer] flow-dynamic 렌더 미지원, 기존 flow 렌더로 fallback:', error);
-      this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow');
+      this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow', this.renderProfile);
       return false;
     }
   }
@@ -851,7 +891,13 @@ export class PageRenderer {
         flowStatic.width = flowCanvas.width;
         flowStatic.height = flowCanvas.height;
         try {
-          this.wasm.renderPageToCanvasFiltered(pageIdx, flowStatic, renderScale, 'flow-static');
+          this.wasm.renderPageToCanvasFiltered(
+            pageIdx,
+            flowStatic,
+            renderScale,
+            'flow-static',
+            this.renderProfile,
+          );
           renderedStaticFlow = true;
         } catch (error) {
           this.flowSplitSupported = false;
@@ -862,7 +908,13 @@ export class PageRenderer {
     }
 
     if (!renderedStaticFlow) {
-      this.wasm.renderPageToCanvasFiltered(pageIdx, flowCanvas, renderScale, 'flow');
+      this.wasm.renderPageToCanvasFiltered(
+        pageIdx,
+        flowCanvas,
+        renderScale,
+        'flow',
+        this.renderProfile,
+      );
       this.drawMarginGuides(pageIdx, flowCanvas, renderScale);
     }
 
@@ -875,7 +927,13 @@ export class PageRenderer {
       if (kind === 'background' || kind === 'behind' || kind === 'front') {
         layerCanvas.width = flowCanvas.width;
         layerCanvas.height = flowCanvas.height;
-        this.wasm.renderPageToCanvasFiltered(pageIdx, layerCanvas, renderScale, kind);
+        this.wasm.renderPageToCanvasFiltered(
+          pageIdx,
+          layerCanvas,
+          renderScale,
+          kind,
+          this.renderProfile,
+        );
       }
     });
   }
@@ -958,7 +1016,6 @@ export class PageRenderer {
     this.cancelAll();
     this.layerSummaryCache.clear();
     this.canvaskitDiagnosticsByPage.clear();
-    this.canvaskitRenderer?.dispose();
     this.canvaskitRenderer = null;
   }
 }
@@ -1022,21 +1079,10 @@ function collectLayerPlaneSummary(
   }
 }
 
+// #2318: 로컬 중복 구현을 제거하고 공유 분류기(replay-plane.ts)로 통일 —
+// masterPage provenance cap 을 포함한 단일 진실 원천.
 function layerReplayPlane(op: any, layer: any): 'background' | 'behindText' | 'flow' | 'inFrontOfText' {
-  if (op?.type === 'pageBackground') {
-    return 'background';
-  }
-  if (layer?.textWrap === 'behindText') {
-    return 'behindText';
-  }
-  if (layer?.textWrap === 'inFrontOfText') {
-    return 'inFrontOfText';
-  }
-  if (op?.type === 'image') {
-    if (op.wrap === 'behindText') return 'behindText';
-    if (op.wrap === 'inFrontOfText') return 'inFrontOfText';
-  }
-  return 'flow';
+  return layerPaintOpReplayPlane(op, layer);
 }
 
 function applyFlowImageCrop(

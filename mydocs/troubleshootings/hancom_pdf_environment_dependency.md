@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 한컴 PDF 출력의 환경 의존성 — 정답지로 사용 불가
 
 ## 발견 정황

@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # rhwp-studio 본문 외곽 클릭 fallback 한컴 mismatch 결함
 
 ## 본질

@@ -57,7 +57,7 @@
 - `mydocs/plans/task_m100_311{,_impl}.md` `task_m100_312{,_impl}.md`
 - `mydocs/working/task_m100_311_stage{1,2,3}.md` `task_m100_312_stage{1,2,3}.md`
 - `mydocs/report/task_m100_311_report.md` `task_m100_312_report.md`
-- `mydocs/tech/line_seg_vpos_analysis.md` 부록 A 추가
+- `mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md` 부록 A 추가
 
 ## Investigation/Spike PR 패턴 정착
 

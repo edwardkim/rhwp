@@ -177,7 +177,7 @@ export const pageCommands: CommandDef[] = [
       const ih = services.getInputHandler();
       const cursor = ih ? (ih as any).cursor : null;
       const sectionIdx = cursor?.getPosition()?.sectionIndex ?? 0;
-      const dialog = new PageSetupDialog(services.wasm, services.eventBus, sectionIdx);
+      const dialog = new PageSetupDialog(services.wasm, services.eventBus, sectionIdx, services);
       dialog.show();
     },
   },
@@ -189,7 +189,7 @@ export const pageCommands: CommandDef[] = [
       const ih = services.getInputHandler();
       const cursor = ih ? (ih as any).cursor : null;
       const sectionIdx = cursor?.getPosition()?.sectionIndex ?? 0;
-      const dialog = new PageBorderDialog(services.wasm, services.eventBus, sectionIdx);
+      const dialog = new PageBorderDialog(services.wasm, services.eventBus, sectionIdx, services);
       dialog.show();
     },
   },
@@ -297,7 +297,7 @@ export const pageCommands: CommandDef[] = [
       if (!wasm || !eventBus) return;
       const dlg = new NewNumberDialog(wasm, eventBus, {
         sec: pos.sectionIndex, para: pos.paragraphIndex, offset: pos.charOffset,
-      });
+      }, services);
       dlg.show();
     },
   },
@@ -417,22 +417,23 @@ export const pageCommands: CommandDef[] = [
       if (!ih) return;
       const pos = ih.getPosition();
       try {
-        // 현재 문단의 감추기 상태 조회
-        const result = JSON.parse((services.wasm as any).doc.getPageHide(pos.sectionIndex, pos.paragraphIndex));
-        if (result.exists) {
-          // 이미 감추기 있음 → 토글 (제거)
-          (services.wasm as any).doc.setPageHide(
-            pos.sectionIndex, pos.paragraphIndex,
-            false, false, false, false, false, false,
-          );
-        } else {
-          // 감추기 없음 → 쪽 번호 감추기 기본 적용
-          (services.wasm as any).doc.setPageHide(
-            pos.sectionIndex, pos.paragraphIndex,
-            false, false, false, false, false, true,
-          );
-        }
-        services.eventBus.emit('document-changed');
+        // 현재 문단의 감추기 상태 조회(읽기) 후 토글값 결정.
+        const cur = JSON.parse((services.wasm as any).doc.getPageHide(pos.sectionIndex, pos.paragraphIndex));
+        // exists → 제거(false), 없음 → 쪽 번호 감추기 적용(true). 나머지 5플래그는 양쪽 모두 false.
+        const applyPageNumHide = !cur.exists;
+        // [page-hide 이관] 문단 감추기 변경을 snapshot 으로 라우팅(기존 emit-only → undo 불가였음).
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'pageHide',
+          operation: (wasm) => {
+            (wasm as any).doc.setPageHide(
+              pos.sectionIndex, pos.paragraphIndex,
+              false, false, false, false, false, applyPageNumHide,
+            );
+            return pos;
+          },
+          meta: { actionId: 'page:hide', domain: 'page', refresh: 'full', dirtyScope: 'document' },
+        });
       } catch (err) {
         console.warn('[page:hide] 감추기 실패:', err);
       }
@@ -483,9 +484,16 @@ export const pageCommands: CommandDef[] = [
       if (!ih) return;
       const pos = ih.getPosition();
       try {
-        // 일반 다단(0), 같은 너비(1), 간격 8mm=2268HU
-        services.wasm.setColumnDef(pos.sectionIndex, def.cols, 0, 1, 2268);
-        services.eventBus.emit('document-changed');
+        // 일반 다단(0), 같은 너비(1), 간격 8mm=2268HU. snapshot 으로 라우팅해 undo 가능.
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'setColumnDef',
+          operation: (wasm) => {
+            wasm.setColumnDef(pos.sectionIndex, def.cols, 0, 1, 2268);
+            return pos;
+          },
+          meta: { actionId: def.id, domain: 'page', refresh: 'full', dirtyScope: 'document' },
+        });
       } catch (err) {
         console.warn(`[${def.id}] 다단 설정 실패:`, err);
       }
@@ -498,9 +506,17 @@ export const pageCommands: CommandDef[] = [
     execute(services) {
       const ih = services.getInputHandler();
       if (!ih) return;
+      const pos = ih.getPosition();
       try {
-        services.wasm.setColumnDef(ih.getPosition().sectionIndex, 2, 0, 0, 2268);
-        services.eventBus.emit('document-changed');
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'setColumnDef',
+          operation: (wasm) => {
+            wasm.setColumnDef(pos.sectionIndex, 2, 0, 0, 2268);
+            return pos;
+          },
+          meta: { actionId: 'page:col-left', domain: 'page', refresh: 'full', dirtyScope: 'document' },
+        });
       } catch (err) { console.warn('[page:col-left]', err); }
     },
   },
@@ -511,9 +527,17 @@ export const pageCommands: CommandDef[] = [
     execute(services) {
       const ih = services.getInputHandler();
       if (!ih) return;
+      const pos = ih.getPosition();
       try {
-        services.wasm.setColumnDef(ih.getPosition().sectionIndex, 2, 0, 0, 2268);
-        services.eventBus.emit('document-changed');
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'setColumnDef',
+          operation: (wasm) => {
+            wasm.setColumnDef(pos.sectionIndex, 2, 0, 0, 2268);
+            return pos;
+          },
+          meta: { actionId: 'page:col-right', domain: 'page', refresh: 'full', dirtyScope: 'document' },
+        });
       } catch (err) { console.warn('[page:col-right]', err); }
     },
   },
@@ -526,7 +550,7 @@ export const pageCommands: CommandDef[] = [
       const ih = services.getInputHandler();
       if (!ih) return;
       const pos = ih.getPosition();
-      const dlg = new ColumnSettingsDialog(services.wasm, services.eventBus, pos.sectionIndex);
+      const dlg = new ColumnSettingsDialog(services.wasm, services.eventBus, pos.sectionIndex, services);
       dlg.show();
     },
   },
@@ -540,7 +564,7 @@ export const pageCommands: CommandDef[] = [
       if (!ih) return;
       const cursor = (ih as any).cursor;
       const sectionIdx = cursor?.getPosition()?.sectionIndex ?? 0;
-      const dialog = new SectionSettingsDialog(services.wasm, services.eventBus, sectionIdx);
+      const dialog = new SectionSettingsDialog(services.wasm, services.eventBus, sectionIdx, services);
       dialog.show();
     },
   },

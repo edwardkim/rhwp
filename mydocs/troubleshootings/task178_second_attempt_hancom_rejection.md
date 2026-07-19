@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # #178 두 번째 시도 — 한컴 호환 실패
 
 - **일자**: 2026-04-19

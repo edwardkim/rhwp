@@ -39,7 +39,7 @@ git merge-base --is-ancestor a7e43f9 devel   # NOT in devel
 - `src/renderer/layout/paragraph_layout.rs` 의 `layout_debug_enabled()` 헬퍼 부재
 - `layout_inline_table_paragraph` 의 `RHWP_LAYOUT_DEBUG` 진단 로깅 부재
 - `scripts/svg_regression_diff.sh` 파일 부재
-- `mydocs/manual/svg_regression_diff.md` 부재
+- `mydocs/manual/verification/svg_regression_diff.md` 부재
 
 **선례**: PR #620 (Task #519, Issue #618) 가 동일 패턴 — Picture flip/rotation 누락 회귀 정정 (`c80d2272` merge).
 
@@ -53,7 +53,7 @@ git merge-base --is-ancestor a7e43f9 devel   # NOT in devel
 |------|------|------|
 | 디버그 로깅 | `src/renderer/layout/paragraph_layout.rs` | +32 (env-var-checked) |
 | 회귀 비교 도구 | `scripts/svg_regression_diff.sh` | +154 |
-| 매뉴얼 | `mydocs/manual/svg_regression_diff.md` | +85 |
+| 매뉴얼 | `mydocs/manual/verification/svg_regression_diff.md` | +85 |
 | 거버넌스 | `mydocs/plans/`, `mydocs/working/`, `mydocs/report/` | +257 |
 
 총 +528 / -0 LOC, 7 files.

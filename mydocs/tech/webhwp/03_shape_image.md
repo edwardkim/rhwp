@@ -1,3 +1,10 @@
+---
+kind: investigation
+status: historical
+canonical: mydocs/tech/webhwp/README.md
+last_verified: 2026-07-17
+---
+
 # webhwp 분석: 도형(Shape) 및 이미지 컨트롤
 
 > 분석 대상: `webhwp/js/hwpApp.*.chunk.js` (5.17MB minified)

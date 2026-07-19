@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: rhwp 자기 검증 ≠ 한컴 호환
 description: rhwp 자기 직렬화 → 자기 재로드 일치는 한컴 호환을 보장하지 않음. HWP 저장 작업 시 작업지시자 한컴2020 수동 검증을 게이트로 삼아야 함
 type: feedback

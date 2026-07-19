@@ -2,7 +2,7 @@
   "name": "rhwp-vscode",
   "displayName": "HWP Viewer",
   "description": "HWP/HWPX 문서 뷰어 — rhwp 기반",
-  "version": "0.7.18",
+  "version": "0.7.19",
   "publisher": "edwardkim",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -102,6 +102,10 @@
     "watch": "webpack --mode development --watch",
     "vscode:prepublish": "npm run compile",
     "package": "vsce package"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.2.0",
+    "canvaskit-wasm": "^0.41.1"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

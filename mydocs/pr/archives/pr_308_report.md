@@ -28,7 +28,7 @@
 작성자가 정직하게 "수정 미완" 으로 표기하셨지만, 본 PR 은 다음과 같은 실질적 산출물을 갖춘 **Investigation/Spike PR** 모범 사례:
 
 ### 1. 조사 결과 영구 보존
-- `mydocs/tech/line_seg_vpos_analysis.md` — 4샘플 비교 분석 (영구 자료)
+- `mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md` — 4샘플 비교 분석 (영구 자료)
 - `mydocs/working/task_m100_306_analysis.md` — 가설 4개 + 휴리스틱 실험 결과
 - 동일한 함정 반복 방지 (Column break 비활성화 → exam_math 회귀 등)
 
@@ -73,7 +73,7 @@
 - `mydocs/plans/task_m100_310{,_impl}.md`
 - `mydocs/working/task_m100_310_stage{1,2,3}.md`
 - `mydocs/report/task_m100_310_report.md`
-- `mydocs/tech/line_seg_vpos_analysis.md` (영구 자료)
+- `mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md` (영구 자료)
 - `mydocs/orders/20260425.md`
 
 ## 후속 작업 (Epic #309)

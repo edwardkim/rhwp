@@ -1,6 +1,6 @@
 # 프로젝트 코드 리뷰 
 
-[프로젝트 비전](../tech/project_vision.md) 
+[프로젝트 비전](../tech/archive/project_vision.md)
 
 [프로젝트 진행 정보](../../CLAUDE.md)
 
@@ -13,4 +13,3 @@ SOLID 원칙을 기준으로 현재 rust 코드의 평가를 10점 만점을 기
 평가 보고서는 다음 폴더에 생성할 것: mydocs/feedback/
 
 보고서는 한국어로 작성할 것.
-

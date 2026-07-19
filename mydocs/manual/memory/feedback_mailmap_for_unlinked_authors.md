@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: github-author-mailmap
 description: "컨트리뷰터 커밋이 GitHub 계정 미연결 author(이메일에 @ 없음 등)로 박힌 경우, history rewrite 금지 — .mailmap 으로 비파괴 매핑"
 metadata: 

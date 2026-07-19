@@ -1,3 +1,10 @@
+---
+kind: snapshot
+status: historical
+canonical: mydocs/manual/branding_strategy.md
+last_verified: 2026-07-17
+---
+
 # rhwp 로고 생성 AI 프롬프트
 
 ## 브랜드 핵심 키워드

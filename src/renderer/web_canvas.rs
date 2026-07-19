@@ -31,7 +31,7 @@ use crate::model::style::UnderlineType;
 use crate::paint::replay_order::layer_node_has_replay_plane;
 use crate::paint::{
     paint_op_replay_plane_with_layer, render_layer_replay_plane, ClipKind, GroupKind, LayerNode,
-    LayerNodeKind, PageLayerTree, PaintOp, PaintReplayPlane,
+    LayerNodeKind, PageLayerTree, PaintOp, PaintReplayPlane, RenderProfile,
 };
 
 const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
@@ -327,6 +327,7 @@ pub struct WebCanvasRenderer {
     /// `LayerFilter::All` renders the layer tree in logical replay-plane order,
     /// independent of raw tree child order.
     active_replay_plane: Option<PaintReplayPlane>,
+    render_profile: RenderProfile,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -348,6 +349,7 @@ impl WebCanvasRenderer {
             layer_filter: LayerFilter::All,
             transparent_page_background: false,
             active_replay_plane: None,
+            render_profile: RenderProfile::Screen,
         })
     }
 
@@ -1084,9 +1086,11 @@ impl WebCanvasRenderer {
     fn render_placeholder(&mut self, bbox: &BoundingBox, ph: &PlaceholderNode) {
         // [Task #2225] 그림 미지정 placeholder — 한컴 편집기식 표시:
         // 개체 영역 점선 테두리 + 중앙의 작은 그림-없음 아이콘(사선 그어진
-        // 그림 픽토그램). 편집자 정보 제공용이며 인쇄 등가 출력에서는
-        // svg/skia 백엔드가 미출력한다.
+        // 그림 픽토그램). 편집자 정보 제공용이며 인쇄 등가 profile에서는 미출력한다.
         if ph.kind == crate::renderer::render_tree::PlaceholderKind::MissingPicture {
+            if !self.render_profile.shows_editor_visuals() {
+                return;
+            }
             self.set_line_dash(&StrokeDash::Dash);
             self.ctx.set_stroke_style_str("#999999");
             self.ctx.set_line_width(1.0);
@@ -2083,6 +2087,7 @@ impl WebCanvasRenderer {
 #[cfg(target_arch = "wasm32")]
 impl LayerRenderer for WebCanvasRenderer {
     fn render_page(&mut self, tree: &PageLayerTree) -> LayerRenderResult<()> {
+        self.render_profile = tree.profile;
         self.render_layer_tree(tree);
         Ok(())
     }

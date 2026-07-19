@@ -377,6 +377,40 @@ mod tests {
     }
 
     #[test]
+    fn builder_keeps_oversized_compact_image_unresolved() {
+        let mut bmp = vec![0u8; 58];
+        bmp[..2].copy_from_slice(b"BM");
+        bmp[2..6].copy_from_slice(&58u32.to_le_bytes());
+        bmp[10..14].copy_from_slice(&54u32.to_le_bytes());
+        bmp[14..18].copy_from_slice(&40u32.to_le_bytes());
+        bmp[18..22].copy_from_slice(&8193i32.to_le_bytes());
+        bmp[22..26].copy_from_slice(&8193i32.to_le_bytes());
+        bmp[26..28].copy_from_slice(&1u16.to_le_bytes());
+        bmp[28..30].copy_from_slice(&8u16.to_le_bytes());
+        bmp[30..34].copy_from_slice(&1u32.to_le_bytes());
+        bmp[54..58].copy_from_slice(&[0, 1, 0, 1]);
+        let mut tree = PageRenderTree::new(0, 100.0, 100.0);
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::Image(ImageNode::new(1, Some(bmp))),
+            BoundingBox::new(0.0, 0.0, 10.0, 10.0),
+        ));
+
+        let layer_tree = LayerBuilder::new(RenderProfile::Screen).build(&tree);
+
+        let LayerNodeKind::Group { children, .. } = &layer_tree.root.kind else {
+            panic!("expected root group");
+        };
+        let LayerNodeKind::Leaf { ops } = &children[0].kind else {
+            panic!("expected image leaf");
+        };
+        assert!(matches!(
+            ops.as_slice(),
+            [PaintOp::Image { resolved: None, .. }]
+        ));
+    }
+
+    #[test]
     fn copies_render_layer_metadata_to_layer_node() {
         let mut tree = PageRenderTree::new(0, 100.0, 100.0);
         let layer = RenderLayerInfo::new(Some(TextWrap::BehindText), 7, 42);

@@ -59,14 +59,14 @@
 |-----------|------|
 | `mydocs/metrics/frontend/2026-07-11/metrics.json` | 공식 frontend metrics snapshot |
 | `mydocs/metrics/frontend/2026-07-11/summary.md` | 리뷰용 요약 |
-| `mydocs/tech/task_m100_2124_frontend_metrics_scope.md` | 공식 모집단/제외군 |
-| `mydocs/tech/task_m100_2124_baseline_manifest.md` | 기준 commit, OS, Node/npm, 브라우저, 폰트 경로, 제외군 |
-| `mydocs/tech/task_m100_2124_public_contract_snapshot.md` | `@rhwp/editor`, `@rhwp/core`, VS Code, extension message 계약 |
-| `mydocs/tech/task_m100_2124_wasm_json_schema_snapshot.md` | frontend advisory ownership과 Rust 계획 상호 참조 |
-| `mydocs/tech/task_m100_2124_font_inventory.md` | `web/fonts` 파일, 참조 경로, license 문서 |
-| `mydocs/tech/task_m100_2124_extension_security_snapshot.md` | CSP, WAR, sender/URL/file 검증 상태 |
-| `mydocs/tech/task_m100_2124_smoke_manifest.md` | 표면별 무변동 게이트와 실행 가능 조건 |
-| `mydocs/tech/task_m100_2124_frontend_solid_anchors.md` | 미채점 SOLID evidence와 reviewer 채점 절차 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_frontend_metrics_scope.md` | 공식 모집단/제외군 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_baseline_manifest.md` | 기준 commit, OS, Node/npm, 브라우저, 폰트 경로, 제외군 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_public_contract_snapshot.md` | `@rhwp/editor`, `@rhwp/core`, VS Code, extension message 계약 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_wasm_json_schema_snapshot.md` | frontend advisory ownership과 Rust 계획 상호 참조 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_font_inventory.md` | `web/fonts` 파일, 참조 경로, license 문서 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_extension_security_snapshot.md` | CSP, WAR, sender/URL/file 검증 상태 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_smoke_manifest.md` | 표면별 무변동 게이트와 실행 가능 조건 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_frontend_solid_anchors.md` | 미채점 SOLID evidence와 reviewer 채점 절차 |
 | `mydocs/working/task_m100_2124_stage{N}.md` | 단계별 완료 보고 |
 | `mydocs/report/task_m100_2124_report.md` | 최종 보고서 |
 | `mydocs/orders/20260710.md` | 진행 상태 갱신 |
@@ -80,7 +80,7 @@
 - `scripts/frontend-metrics/package.json`에 ESLint/sonarjs/parser와 호환 TypeScript를 고정하고 lockfile을 생성한다.
 - `scripts/frontend-metrics.mjs`를 추가한다.
 - 스크립트는 공식 include/exclude를 코드 상수로 두고, 출력 JSON에 같은 내용을 기록한다.
-- `mydocs/tech/task_m100_2124_frontend_metrics_scope.md`를 작성한다.
+- `mydocs/tech/investigations/issue-2124/task_m100_2124_frontend_metrics_scope.md`를 작성한다.
 
 수집 최소 항목:
 
@@ -115,7 +115,7 @@ node scripts/frontend-metrics.mjs --compare output/frontend-metrics/metrics.json
 - 기준 커밋 `3077f96d`의 measured source가 clean인 상태에서 Stage 1 metrics 명령을 실행한다.
 - `mydocs/metrics/frontend/2026-07-11/metrics.json`을 저장한다.
 - `mydocs/metrics/frontend/2026-07-11/summary.md`를 저장한다.
-- `mydocs/tech/task_m100_2124_baseline_manifest.md`에 OS, Node/npm, 브라우저 후보, font path, 제외군,
+- `mydocs/tech/investigations/issue-2124/task_m100_2124_baseline_manifest.md`에 OS, Node/npm, 브라우저 후보, font path, 제외군,
   기준 커밋을 기록한다.
 
 검증:
@@ -136,13 +136,13 @@ npm --version
 
 작업:
 
-- `mydocs/tech/task_m100_2124_public_contract_snapshot.md`를 작성한다.
+- `mydocs/tech/investigations/issue-2124/task_m100_2124_public_contract_snapshot.md`를 작성한다.
 - `@rhwp/editor` package metadata, `index.js`, `index.d.ts`, README API를 snapshot으로 정리한다.
 - `@rhwp/core` README 중심 계약을 정리한다.
 - local ignored `pkg`를 기준 commit의 권위 자료로 간주하지 않고 Rust `wasm_api.rs`와 fresh WASM 생성물을 구분한다.
 - VS Code webview message, WASM/font media path, CSP/localResourceRoots 계약을 정리한다.
 - Chrome/Firefox/Safari extension message 계약과 build copy 계약을 정리한다.
-- `mydocs/tech/task_m100_2124_wasm_json_schema_snapshot.md`에 frontend 소비자 관점의 JSON boundary와
+- `mydocs/tech/investigations/issue-2124/task_m100_2124_wasm_json_schema_snapshot.md`에 frontend 소비자 관점의 JSON boundary와
   Rust 리팩터링 계획 상호 참조를 남긴다.
 
 검증:
@@ -163,12 +163,12 @@ node --test scripts/frontend-wasm-bindings.test.mjs
 
 작업:
 
-- `mydocs/tech/task_m100_2124_font_inventory.md`를 작성한다.
+- `mydocs/tech/investigations/issue-2124/task_m100_2124_font_inventory.md`를 작성한다.
 - `web/fonts` 파일 hash, `web/fonts/FONTS.md`, 루트 `THIRD_PARTY_LICENSES.md`, 참조 경로를 정리한다.
-- `mydocs/tech/task_m100_2124_extension_security_snapshot.md`를 작성한다.
+- `mydocs/tech/investigations/issue-2124/task_m100_2124_extension_security_snapshot.md`를 작성한다.
 - Chrome/Firefox/Safari CSP, `web_accessible_resources`, sender/URL/file signature/size 검증을 정리한다.
-- `mydocs/tech/task_m100_2124_smoke_manifest.md`를 작성한다.
-- `mydocs/tech/task_m100_2124_frontend_solid_anchors.md`를 작성한다.
+- `mydocs/tech/investigations/issue-2124/task_m100_2124_smoke_manifest.md`를 작성한다.
+- `mydocs/tech/investigations/issue-2124/task_m100_2124_frontend_solid_anchors.md`를 작성한다.
 
 검증 후보:
 

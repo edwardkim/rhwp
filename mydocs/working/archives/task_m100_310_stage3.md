@@ -4,7 +4,7 @@
 
 ## 산출물
 
-- `mydocs/tech/line_seg_vpos_analysis.md` — 4개 샘플 vpos 패턴 비교 분석 보고서
+- `mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md` — 4개 샘플 vpos 패턴 비교 분석 보고서
 - Epic #309 코멘트 게시 (분석 핵심 요약)
 
 ## 핵심 발견

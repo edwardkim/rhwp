@@ -1,3 +1,10 @@
+---
+kind: memory
+status: historical
+canonical: mydocs/manual/pr_review_workflow.md
+last_verified: 2026-07-17
+---
+
 # PR 생성은 별도 승인 후 진행
 
 - 날짜: 2026-05-25

@@ -26,6 +26,43 @@ use crate::renderer::svg_layer::SvgLayerRenderer;
 use std::cell::RefCell;
 use std::fmt::Write as _;
 
+const MAX_EMBEDDED_FONT_BYTES: usize = 32 * 1024 * 1024;
+const MAX_EMBEDDED_FONT_BYTES_PER_PAGE: usize = 64 * 1024 * 1024;
+
+fn load_bounded_embedded_font_bytes(
+    contents: &[crate::model::bin_data::BinDataContent],
+    font_ids: &[u16],
+    per_font_limit: usize,
+    page_limit: usize,
+) -> std::collections::HashMap<u16, Vec<u8>> {
+    let mut bytes_by_id = std::collections::HashMap::new();
+    let mut attempted_ids = std::collections::HashSet::new();
+    let mut loaded_bytes = 0usize;
+
+    for &font_id in font_ids {
+        if !attempted_ids.insert(font_id) {
+            continue;
+        }
+        let remaining = page_limit.saturating_sub(loaded_bytes);
+        let load_limit = per_font_limit.min(remaining);
+        if load_limit == 0 {
+            break;
+        }
+        let Some(bytes) = contents
+            .iter()
+            .find(|content| content.id == font_id)
+            .and_then(|content| content.data.load_limited(load_limit))
+            .filter(|bytes| !bytes.is_empty())
+        else {
+            continue;
+        };
+        loaded_bytes = loaded_bytes.saturating_add(bytes.len());
+        bytes_by_id.insert(font_id, bytes);
+    }
+
+    bytes_by_id
+}
+
 // ── [#2004] 부동 전면 이미지 스택 → 인라인 재분류 (render-전용, 원본 무손상) ──
 
 /// 부동(tac=false) 그림/그림-도형의 공통 속성(읽기).
@@ -169,7 +206,7 @@ fn uses_hwp3_origin_flow_spacing_before(document: &Document) -> bool {
     // HWP3-origin HWP5 변환본은 parser 단계에서 ParaShape spacing 계열을 절반으로
     // 정규화하므로, 본문 흐름 계산에서는 원래 spacing_before를 복원한다.
     // 원본 HWP3는 HWP3 parser가 만든 spacing 값을 기준으로 삼아 여기서 재확대하지 않는다.
-    document.is_hwp3_variant
+    document.layout_profile().hwp3_layout()
 }
 
 fn should_insert_hwp3_title_filler_page(
@@ -492,15 +529,47 @@ impl DocumentCore {
                 }
             }
 
-            let load_font_bytes = |id: u16| {
-                self.document
-                    .bin_data_content
-                    .iter()
-                    .find(|content| content.id == id)
-                    .map(|content| content.data.load())
-                    .unwrap_or_default()
-            };
-            let mut font_bytes_by_id = std::collections::HashMap::<u16, Vec<u8>>::new();
+            let mut embedded_font_ids = Vec::new();
+            for &(char_shape_id, language_index) in &used_font_slots {
+                let Some(font_id) = self
+                    .document
+                    .doc_info
+                    .char_shapes
+                    .get(char_shape_id as usize)
+                    .and_then(|shape| shape.font_ids.get(language_index))
+                    .copied()
+                else {
+                    continue;
+                };
+                let Some(font) = self
+                    .document
+                    .doc_info
+                    .font_faces
+                    .get(language_index)
+                    .and_then(|fonts| fonts.get(font_id as usize))
+                else {
+                    continue;
+                };
+                if font.is_embedded {
+                    if let Some(bin_data_id) = font.resolved_bin_data_id {
+                        embedded_font_ids.push(bin_data_id);
+                    }
+                }
+                if let Some(bin_data_id) = font
+                    .subst_font
+                    .as_ref()
+                    .filter(|substitute| substitute.is_embedded)
+                    .and_then(|substitute| substitute.resolved_bin_data_id)
+                {
+                    embedded_font_ids.push(bin_data_id);
+                }
+            }
+            let font_bytes_by_id = load_bounded_embedded_font_bytes(
+                &self.document.bin_data_content,
+                &embedded_font_ids,
+                MAX_EMBEDDED_FONT_BYTES,
+                MAX_EMBEDDED_FONT_BYTES_PER_PAGE,
+            );
             let mut resolved_fonts = Vec::new();
             for (char_shape_id, language_index) in used_font_slots {
                 let Some(font_id) = self
@@ -526,10 +595,7 @@ impl DocumentCore {
                 let mut resolved = None;
                 if font.is_embedded {
                     if let Some(bin_data_id) = font.resolved_bin_data_id {
-                        let bytes = font_bytes_by_id
-                            .entry(bin_data_id)
-                            .or_insert_with(|| load_font_bytes(bin_data_id));
-                        if !bytes.is_empty() {
+                        if let Some(bytes) = font_bytes_by_id.get(&bin_data_id) {
                             resolved = resolve_embedded_font_face_index(bytes, &font.name, None)
                                 .map(|face_index| (bin_data_id, None, face_index));
                         }
@@ -542,10 +608,7 @@ impl DocumentCore {
                         .filter(|substitute| substitute.is_embedded)
                     {
                         if let Some(bin_data_id) = substitute.resolved_bin_data_id {
-                            let bytes = font_bytes_by_id
-                                .entry(bin_data_id)
-                                .or_insert_with(|| load_font_bytes(bin_data_id));
-                            if !bytes.is_empty() {
+                            if let Some(bytes) = font_bytes_by_id.get(&bin_data_id) {
                                 resolved = resolve_embedded_font_face_index(
                                     bytes,
                                     substitute.face.as_str(),
@@ -627,7 +690,15 @@ impl DocumentCore {
     }
 
     pub fn render_page_svg_layer_native(&self, page_num: u32) -> Result<String, HwpError> {
-        let layer_tree = self.build_page_layer_tree(page_num)?;
+        self.render_page_svg_layer_with_profile_native(page_num, RenderProfile::Screen)
+    }
+
+    pub fn render_page_svg_layer_with_profile_native(
+        &self,
+        page_num: u32,
+        profile: RenderProfile,
+    ) -> Result<String, HwpError> {
+        let layer_tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
         let mut renderer = SvgLayerRenderer::new();
         renderer.inner_mut().show_paragraph_marks = self.show_paragraph_marks;
         renderer.inner_mut().show_control_codes = self.show_control_codes;
@@ -677,6 +748,28 @@ impl DocumentCore {
             .map_err(HwpError::RenderError)
     }
 
+    /// PDF export using the layered SVG compatibility path for an explicit output profile.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn render_pages_pdf_native_with_profile_and_options(
+        &self,
+        page_nums: &[u32],
+        profile: RenderProfile,
+        options: &crate::renderer::pdf::PdfExportOptions,
+    ) -> Result<Vec<u8>, HwpError> {
+        if page_nums.is_empty() {
+            return Err(HwpError::RenderError(
+                "PDF export requires at least one page".to_string(),
+            ));
+        }
+
+        let mut svg_pages = Vec::with_capacity(page_nums.len());
+        for &page_num in page_nums {
+            svg_pages.push(self.render_page_svg_layer_with_profile_native(page_num, profile)?);
+        }
+        crate::renderer::pdf::svgs_to_pdf_with_options(&svg_pages, options)
+            .map_err(HwpError::RenderError)
+    }
+
     /// PDF export for the full document.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn render_document_pdf_native(&self) -> Result<Vec<u8>, HwpError> {
@@ -692,6 +785,79 @@ impl DocumentCore {
     ) -> Result<Vec<u8>, HwpError> {
         let pages: Vec<u32> = (0..self.page_count()).collect();
         self.render_pages_pdf_native_with_options(&pages, options)
+    }
+
+    /// Direct PageLayerTree PDF export for one page.
+    ///
+    /// This opt-in backend requires `native-skia`. The default print profile
+    /// excludes editor-only overlays from exported documents.
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_page_pdf_direct_native(&self, page_num: u32) -> Result<Vec<u8>, HwpError> {
+        self.render_pages_pdf_direct_native(&[page_num])
+    }
+
+    /// Direct PageLayerTree PDF export for an explicit 0-based page selection.
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_pages_pdf_direct_native(&self, page_nums: &[u32]) -> Result<Vec<u8>, HwpError> {
+        self.render_pages_pdf_direct_native_with_profile_and_options(
+            page_nums,
+            RenderProfile::Print,
+            &crate::renderer::pdf::DirectPdfExportOptions::default(),
+        )
+    }
+
+    /// Direct PageLayerTree PDF export with native Skia recording options.
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_pages_pdf_direct_native_with_options(
+        &self,
+        page_nums: &[u32],
+        options: &crate::renderer::pdf::DirectPdfExportOptions,
+    ) -> Result<Vec<u8>, HwpError> {
+        self.render_pages_pdf_direct_native_with_profile_and_options(
+            page_nums,
+            RenderProfile::Print,
+            options,
+        )
+    }
+
+    /// Direct PageLayerTree PDF export with an explicit output profile.
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_pages_pdf_direct_native_with_profile_and_options(
+        &self,
+        page_nums: &[u32],
+        profile: RenderProfile,
+        options: &crate::renderer::pdf::DirectPdfExportOptions,
+    ) -> Result<Vec<u8>, HwpError> {
+        if page_nums.is_empty() {
+            return Err(HwpError::RenderError(
+                "PDF export requires at least one page".to_string(),
+            ));
+        }
+
+        let mut layer_trees = Vec::with_capacity(page_nums.len());
+        for &page_num in page_nums {
+            layer_trees.push(self.build_page_layer_tree_with_profile(page_num, profile)?);
+        }
+        crate::renderer::pdf::layer_trees_to_pdf_with_options(&layer_trees, options)
+            .map_err(HwpError::RenderError)
+    }
+
+    /// Direct PageLayerTree PDF export for the full document.
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_document_pdf_direct_native(&self) -> Result<Vec<u8>, HwpError> {
+        self.render_document_pdf_direct_native_with_options(
+            &crate::renderer::pdf::DirectPdfExportOptions::default(),
+        )
+    }
+
+    /// Direct PageLayerTree PDF export for the full document with recording options.
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_document_pdf_direct_native_with_options(
+        &self,
+        options: &crate::renderer::pdf::DirectPdfExportOptions,
+    ) -> Result<Vec<u8>, HwpError> {
+        let pages: Vec<u32> = (0..self.page_count()).collect();
+        self.render_pages_pdf_direct_native_with_options(&pages, options)
     }
 
     /// SVG 렌더링 (폰트 임베딩 옵션 포함)
@@ -759,6 +925,15 @@ impl DocumentCore {
         page_num: u32,
         mode: &str,
     ) -> Result<String, HwpError> {
+        self.get_canvaskit_replay_plan_with_profile_native(page_num, mode, RenderProfile::Screen)
+    }
+
+    pub fn get_canvaskit_replay_plan_with_profile_native(
+        &self,
+        page_num: u32,
+        mode: &str,
+        profile: RenderProfile,
+    ) -> Result<String, HwpError> {
         use crate::renderer::canvaskit_policy::{
             analyze_canvaskit_replay_plan, CanvasKitReplayMode,
         };
@@ -768,11 +943,54 @@ impl DocumentCore {
                 "지원하지 않는 CanvasKit replay mode입니다: {mode}. allowed modes: default, compat"
             ))
         })?;
-        let tree = self.build_page_layer_tree(page_num)?;
+        let tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
         let plan = analyze_canvaskit_replay_plan(&tree, mode);
         serde_json::to_string(&plan).map_err(|error| {
             HwpError::RenderError(format!(
                 "CanvasKit replay plan JSON 직렬화에 실패했습니다: {error}"
+            ))
+        })
+    }
+
+    pub fn get_canvaskit_document_preflight_native(
+        &self,
+        mode: &str,
+        profile: RenderProfile,
+    ) -> Result<String, HwpError> {
+        use crate::renderer::canvaskit_policy::{
+            analyze_canvaskit_document_preflight, estimate_canvaskit_page_lowering_work,
+            CanvasKitBoundedWorkCount, CanvasKitPreflightPageBuild, CanvasKitReplayMode,
+        };
+
+        let mode = CanvasKitReplayMode::from_str(mode).ok_or_else(|| {
+            HwpError::RenderError(format!(
+                "지원하지 않는 CanvasKit replay mode입니다: {mode}. allowed modes: default, compat"
+            ))
+        })?;
+        let preflight = analyze_canvaskit_document_preflight(
+            self.page_count(),
+            mode,
+            profile,
+            |page_index, remaining_work_units| -> Result<CanvasKitPreflightPageBuild, HwpError> {
+                let prelower_work = self.with_page_tree_cached(page_index, |tree| {
+                    Ok(estimate_canvaskit_page_lowering_work(
+                        tree,
+                        remaining_work_units,
+                    ))
+                })?;
+                let CanvasKitBoundedWorkCount::Complete(prelower_work_units) = prelower_work else {
+                    return Ok(CanvasKitPreflightPageBuild::WorkLimitExceeded);
+                };
+                let tree = self.build_page_layer_tree_with_profile(page_index, profile)?;
+                Ok(CanvasKitPreflightPageBuild::Complete {
+                    tree: Box::new(tree),
+                    prelower_work_units,
+                })
+            },
+        );
+        serde_json::to_string(&preflight).map_err(|error| {
+            HwpError::RenderError(format!(
+                "CanvasKit document preflight JSON 직렬화에 실패했습니다: {error}"
             ))
         })
     }
@@ -811,10 +1029,24 @@ impl DocumentCore {
         page_num: u32,
         options: &PngExportOptions,
     ) -> Result<Vec<u8>, HwpError> {
+        self.render_page_png_native_with_profile_and_export_options(
+            page_num,
+            RenderProfile::Screen,
+            options,
+        )
+    }
+
+    #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+    pub fn render_page_png_native_with_profile_and_export_options(
+        &self,
+        page_num: u32,
+        profile: RenderProfile,
+        options: &PngExportOptions,
+    ) -> Result<Vec<u8>, HwpError> {
         use crate::renderer::layer_renderer::{LayerRasterRenderer, RasterRenderOptions};
         use crate::renderer::skia::SkiaLayerRenderer;
 
-        let layer_tree = self.build_page_layer_tree(page_num)?;
+        let layer_tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
 
         // 페이지 크기에서 effective scale + max_dimension 결정
         let mut raster_options = RasterRenderOptions::default();
@@ -2649,20 +2881,11 @@ impl DocumentCore {
         self.compute_render_normalized();
         let paginator = Paginator::new(self.dpi);
         let hwp3_origin_flow_spacing_before = uses_hwp3_origin_flow_spacing_before(&self.document);
-        let is_hwp5_origin_hwpx = self
-            .document
-            .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
-            .is_some();
-        // [Issue #1770] rhwp HWPX→HWP 변환본(is_hwpx_variant, 마커 감지)은 IR 이
-        // HWPX 시멘틱 그대로이므로 pagination 분기도 HWPX 로 해석한다 (roundtrip
-        // 자기정합). native HWP5 는 마커가 없어 불변.
-        // 반대로 rhwp HWP5→HWPX 산출물은 HWPX ZIP 이지만 HWP5 원본의 lineSeg 부재와
-        // pagination 시멘틱을 유지해야 하므로 HWPX 전용 분기에서 제외한다.
-        let is_hwpx_source = (matches!(self.source_format, crate::parser::FileFormat::Hwpx)
-            && !is_hwp5_origin_hwpx)
-            || self.document.is_hwpx_variant;
+        // [#2403] 소스분기 파생 일원화 — HWPX 시멘틱/HWP5→HWPX 마커/HWP3 변환본
+        // 판단은 Document::layout_profile 이 단일 소유 (Issue #1770 규칙 승계).
+        let profile = self.document.layout_profile();
         let measurer = HeightMeasurer::new(self.dpi)
-            .with_hwp3_variant(self.document.is_hwp3_variant)
+            .with_hwp3_variant(profile.hwp3_layout())
             .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before);
 
         if self.document.sections.is_empty() {
@@ -2842,8 +3065,8 @@ impl DocumentCore {
                 measurer.measure_section(para_src, composed, &self.styles, Some(col_w_pre))
             };
 
-            let hwp3_origin_page_tolerance =
-                self.document.is_hwp3_variant || uses_hwp3_origin_page_tolerance(&self.document);
+            let hwp3_origin_page_tolerance = self.document.layout_profile().hwp3_layout()
+                || uses_hwp3_origin_page_tolerance(&self.document);
             let column_def = Self::find_initial_column_def(para_src);
             // TypesetEngine을 main pagination으로 사용. RHWP_USE_PAGINATOR=1 로 fallback 가능.
             let use_paginator = std::env::var("RHWP_USE_PAGINATOR")
@@ -2860,7 +3083,7 @@ impl DocumentCore {
                     crate::renderer::pagination::PaginationOpts {
                         hide_empty_line: section.section_def.hide_empty_line,
                         respect_vpos_reset: self.respect_vpos_reset,
-                        is_hwp3_variant: self.document.is_hwp3_variant,
+                        is_hwp3_variant: self.document.layout_profile().hwp3_layout(),
                         footnote_shape: Some(section.section_def.footnote_shape.clone()),
                     },
                 )
@@ -2936,15 +3159,12 @@ impl DocumentCore {
                     idx,
                     &measured.tables,
                     section.section_def.hide_empty_line,
-                    self.document.is_hwp3_variant,
+                    profile,
                     hwp3_origin_flow_spacing_before,
                     hwp3_origin_page_tolerance,
                     Some(&section.section_def.footnote_shape),
                     Some(&section.section_def.endnote_shape),
                     force_breaks.get(idx).unwrap_or(&empty_breaks),
-                    matches!(self.source_format, crate::parser::FileFormat::Hwp3),
-                    is_hwpx_source,
-                    is_hwp5_origin_hwpx,
                     endnote_deferral,
                 )
             };
@@ -3528,6 +3748,89 @@ impl DocumentCore {
             out.push(Some((np, nc)));
         }
         self.render_normalized = out;
+    }
+
+    /// [#2214/#2195] deferred 셀 편집 뒤 render 전용 정규화본의 동일 문단을 갱신한다.
+    ///
+    /// `render_normalized`는 pagination 시 원본 문단을 복제하므로 pagination을 지연하는
+    /// 편집에서는 별도 coherence가 필요하다. 상위 문단/소유 표/셀의 주소는 보존하고
+    /// 편집된 내부 문단만 교체해 unrelated cell cache를 유지한다. 새 문단에 포함된
+    /// 비-TAC 중첩 표에는 #2195 stretch를 다시 적용한다.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn refresh_render_normalized_cell_paragraph_after_edit(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        source_para: Paragraph,
+        local_contribution_before: bool,
+        local_contribution_after: bool,
+    ) {
+        let Some(Some((paragraphs, _))) = self.render_normalized.get_mut(section_idx) else {
+            return;
+        };
+        let Some(parent_para) = paragraphs.get_mut(parent_para_idx) else {
+            return;
+        };
+        let Some(control) = parent_para.controls.get_mut(control_idx) else {
+            return;
+        };
+
+        match control {
+            Control::Table(table) if cell_idx == 65534 => {
+                let Some(caption) = table.caption.as_mut() else {
+                    return;
+                };
+                let Some(target_para) = caption.paragraphs.get_mut(cell_para_idx) else {
+                    return;
+                };
+                *target_para = source_para;
+            }
+            Control::Table(table) => {
+                {
+                    let Some(cell) = table.cells.get_mut(cell_idx) else {
+                        return;
+                    };
+                    let Some(target_para) = cell.paragraphs.get_mut(cell_para_idx) else {
+                        return;
+                    };
+                    *target_para = source_para;
+                }
+                let cell = &table.cells[cell_idx];
+                self.layout_engine.invalidate_cell_units_after_text_insert(
+                    cell,
+                    table,
+                    local_contribution_before,
+                    local_contribution_after,
+                );
+            }
+            Control::Shape(shape) => {
+                let Some(textbox) = super::super::helpers::get_textbox_from_shape_mut(shape) else {
+                    return;
+                };
+                let Some(target_para) = textbox.paragraphs.get_mut(cell_para_idx) else {
+                    return;
+                };
+                *target_para = source_para;
+            }
+            Control::Picture(picture) => {
+                let Some(caption) = picture.caption.as_mut() else {
+                    return;
+                };
+                let Some(target_para) = caption.paragraphs.get_mut(cell_para_idx) else {
+                    return;
+                };
+                *target_para = source_para;
+            }
+            _ => return,
+        }
+
+        // 교체한 원본 문단 안의 nested table은 아직 저장 폭이므로 정규화본의 나머지와
+        // 동일하게 #2195 비-TAC stretch를 재적용한다. 이미 stretch된 sibling은 폭 비교
+        // 가드로 그대로 유지된다.
+        stretch_nested_tables_to_parent_cell(parent_para);
     }
 
     pub(crate) fn find_page(
@@ -4128,19 +4431,13 @@ impl DocumentCore {
         self.layout_engine.set_clip_enabled(self.clip_enabled);
         self.layout_engine
             .set_show_control_codes(self.show_control_codes);
+        // [#2403] 소스분기 파생 일원화 — paginate_pass 와 동일하게 layout_profile
+        // 단일 소유 (Issue #1770 규칙 승계). set_layout_profile 의 결합 부수효과
+        // (variant → flow spacing_before)는 다음 줄이 종전 순서대로 덮어쓴다.
         self.layout_engine
-            .set_hwp3_variant(self.document.is_hwp3_variant);
+            .set_layout_profile(self.document.layout_profile());
         self.layout_engine.set_hwp3_origin_flow_spacing_before(
             uses_hwp3_origin_flow_spacing_before(&self.document),
-        );
-        let is_hwp5_origin_hwpx = self
-            .document
-            .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
-            .is_some();
-        // [Issue #1770] HWPX→HWP 변환본도 HWPX 시멘틱 (paginate_pass 와 동일 규칙).
-        self.layout_engine.set_hwpx_source(
-            (matches!(self.source_format, crate::parser::FileFormat::Hwpx) && !is_hwp5_origin_hwpx)
-                || self.document.is_hwpx_variant,
         );
         self.layout_engine.set_hwpx_page_preview(
             self.document
@@ -4978,6 +5275,74 @@ mod tests {
     use super::*;
     use crate::model::bin_data::BinDataContent;
     use crate::renderer::render_tree::RenderNodeType;
+
+    #[test]
+    fn embedded_font_loading_enforces_per_page_cumulative_limit() {
+        let contents = vec![
+            BinDataContent {
+                id: 1,
+                data: vec![1; 4].into(),
+                extension: "ttf".to_string(),
+            },
+            BinDataContent {
+                id: 2,
+                data: vec![2; 4].into(),
+                extension: "ttf".to_string(),
+            },
+            BinDataContent {
+                id: 3,
+                data: vec![3; 2].into(),
+                extension: "ttf".to_string(),
+            },
+        ];
+
+        let loaded = load_bounded_embedded_font_bytes(&contents, &[1, 2, 3, 1], 4, 6);
+
+        assert_eq!(loaded.len(), 2);
+        assert_eq!(loaded.get(&1).map(Vec::len), Some(4));
+        assert!(!loaded.contains_key(&2));
+        assert_eq!(loaded.get(&3).map(Vec::len), Some(2));
+        assert_eq!(loaded.values().map(Vec::len).sum::<usize>(), 6);
+    }
+
+    #[test]
+    fn embedded_font_loading_rejects_oversized_lazy_data_without_unbounded_load() {
+        use crate::model::bin_data::{BinDataBytes, BinDataResolver};
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        #[derive(Debug)]
+        struct OversizedLazyFontResolver {
+            bounded_limit: AtomicUsize,
+        }
+
+        impl BinDataResolver for OversizedLazyFontResolver {
+            fn resolve(&self, key: &str) -> Vec<u8> {
+                panic!("font loading must remain bounded: {key}")
+            }
+
+            fn resolve_limited(&self, _key: &str, max_bytes: usize) -> Option<Vec<u8>> {
+                self.bounded_limit.store(max_bytes, Ordering::SeqCst);
+                None
+            }
+        }
+
+        let resolver = std::sync::Arc::new(OversizedLazyFontResolver {
+            bounded_limit: AtomicUsize::new(0),
+        });
+        let contents = vec![BinDataContent {
+            id: 1,
+            data: BinDataBytes::Lazy {
+                resolver: resolver.clone(),
+                key: "compressed-oversized-font".to_string(),
+            },
+            extension: "ttf".to_string(),
+        }];
+
+        let loaded = load_bounded_embedded_font_bytes(&contents, &[1, 1], 32, 24);
+
+        assert!(loaded.is_empty());
+        assert_eq!(resolver.bounded_limit.load(Ordering::SeqCst), 24);
+    }
 
     /// [Task #1612] `compute_hwp_used_height` 는 per-page 높이를 내야 한다. vpos 는
     /// 다페이지에서 누적값이므로 페이지 시작 오프셋을 차감하지 않으면 page N>1 에서

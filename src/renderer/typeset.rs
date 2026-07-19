@@ -360,11 +360,9 @@ struct HostSpacing {
 /// 단일 패스 조판 엔진
 pub struct TypesetEngine {
     dpi: f64,
-    /// 현재 조판 중인 입력이 HWPX 원본인지 여부.
-    is_hwpx_source: std::cell::Cell<bool>,
-    /// [Task #1472] HWP3-origin 변환본 여부 — format_paragraph 의 미주 TAC 수식
-    /// indent_scale 보정(effective indent 불변)에 사용. typeset 진입 시 set.
-    is_hwp3_variant: std::cell::Cell<bool>,
+    /// [#2403] 현재 조판 입력의 레이아웃 호환 프로파일 — typeset 진입 시 set.
+    /// (HWPX 저장 시멘틱·HWP3 변환본 판단 등 소스분기의 단일 질의 표면.)
+    profile: std::cell::Cell<crate::model::provenance::LayoutCompatibilityProfile>,
 }
 
 /// 조판 중 현재 페이지/단 상태
@@ -409,6 +407,16 @@ struct TypesetState {
     /// 렌더러(layout)와 한글은 이 성분을 가산하므로, footer(발신명의) fit 판정의
     /// 렌더-정합 좌표 복원용. 단 advance 시 0.
     flow_underrun: f64,
+    /// [#2279 pi78] 이 문서에서 저장 ladder 의 host spacing 누락 서명(OMIT)이
+    /// 검출됐는가 — 기계생성 압축 ladder 문서군 판별(문서 단위, 리셋 없음).
+    /// 분할 진입 첫 줄 full-advance 요구는 이 문서군에만 적용한다.
+    stored_ladder_spacing_omitted: bool,
+    /// [#2279 OMIT-eager] 구역 시작 사전 스캔으로 확정한 fresh-재계산 문서군
+    /// (spacing-누락 스텝 + 본문 텍스트 쪽 리셋 + segless 본문 문단 동시 보유).
+    /// 페이지말 빈 문단 재배치·sa 스냅 보존 규칙은 이 판별에만 발동한다 —
+    /// lazy(#2383) 공유 플래그에 얹으면 저장 흐름 신뢰 문서(sample16 #2158 핀)
+    /// 까지 번져 +1 회귀.
+    omit_fresh_recalc_doc: bool,
     /// 현재 단 인덱스
     current_column: u16,
     /// 단 수
@@ -470,17 +478,13 @@ struct TypesetState {
     /// 페이지가 수 px over-fill 되어 tail 이 밀리는 케이스(국제고속선기준 pi=718/995/1789/2128).
     /// 한글은 tail 을 본문 하단(여백 침범 무시)에 배치하므로 tail 에 한해 소량 초과를 허용한다.
     tail_overflow_tolerance_once: f64,
-    /// [Task #1007] HWP3-origin HWP5 변환본 여부 — widow 방지 등 variant-specific
-    /// behavior 분기에 사용.
-    is_hwp3_variant: bool,
-    /// 원본 HWP3 파일 여부 — HWP5 변환본 휴리스틱과 분리해 HWP3 저장 LINE_SEG 계약에 사용.
-    is_hwp3_source: bool,
-    /// [Task #1147] HWPX 원본 여부 — HWPX 의 LINE_SEG 시멘틱은 빈 앵커 TopAndBottom 표에서
-    /// host_line_spacing 을 표 다음 갭으로 더하지 않음. HWP5/HWP3 와 분리.
-    is_hwpx_source: bool,
-    /// rhwp가 HWP5 원본에서 내보낸 HWPX 여부. HWPX 컨테이너라도 HWP5 원본의
-    /// 저장 행 높이와 pagination marker를 보존해야 한다.
-    is_hwp5_origin_hwpx: bool,
+    /// [#2403] 소스분기 질의 표면 — 단일 소유, typeset 진입 시 set. 종전 4필드의
+    /// 시멘틱 승계: hwp3_layout()=HWP3→HWP5 변환본(widow 방지 등 variant 분기,
+    /// Task #1007) / hwp3_native_layout()=원본 HWP3 (저장 LINE_SEG 계약) /
+    /// hwpx_stored_layout()=HWPX 원본 (빈 앵커 TAC 표 host_line_spacing 미가산,
+    /// Task #1147) / hwp5_origin_hwpx()=rhwp HWP5→HWPX 산출물 (HWP5 저장 행높이·
+    /// pagination marker 보존).
+    profile: crate::model::provenance::LayoutCompatibilityProfile,
     /// 문서 전체에 실제 저장 LineSeg가 있는지 여부. HWP5-origin CFB라도 LineSeg가 전부
     /// 비어 있으면 저장 vpos 기반 흐름이 아니라 재조판 흐름으로 취급한다.
     has_stored_line_segs: bool,
@@ -1510,6 +1514,25 @@ fn para_controls_only_topbottom_floats(para: &Paragraph) -> bool {
         })
 }
 
+/// [#2137] 단일 줄의 treat_as_char TopAndBottom 그림/도형만 가진 문단.
+/// 한컴은 이런 소형 개체 줄을 쪽 하단 여백으로 스필해 현재 쪽에 유지한다
+/// (156637323 pi=19 실측). 저장 page-last 증거와 결합해서만 신뢰한다 —
+/// 대형 박스는 저장 vpos 가 다음 쪽을 인코딩해 bounds 검사에서 자연 배제
+/// (#1027-E2 push 정합 유지).
+fn para_controls_only_tac_topbottom_objects(para: &Paragraph) -> bool {
+    use crate::model::shape::TextWrap;
+    !para.controls.is_empty()
+        && para.controls.iter().all(|c| match c {
+            Control::Picture(p) => {
+                p.common.treat_as_char && matches!(p.common.text_wrap, TextWrap::TopAndBottom)
+            }
+            Control::Shape(s) => {
+                s.common().treat_as_char && matches!(s.common().text_wrap, TextWrap::TopAndBottom)
+            }
+            _ => false,
+        })
+}
+
 fn paragraph_saved_vpos_reset_starts_new_page_after(
     current_para: &Paragraph,
     next_para: &Paragraph,
@@ -1728,6 +1751,8 @@ impl TypesetState {
             current_endnote_flow: false,
             prev_body_bottom_vpos: None,
             flow_underrun: 0.0,
+            stored_ladder_spacing_omitted: false,
+            omit_fresh_recalc_doc: false,
             current_column: 0,
             col_count,
             layout,
@@ -1751,10 +1776,7 @@ impl TypesetState {
             skip_safety_margin_once: false,
             skip_footnote_margin_once: false,
             tail_overflow_tolerance_once: 0.0,
-            is_hwp3_variant: false,
-            is_hwp3_source: false,
-            is_hwpx_source: false,
-            is_hwp5_origin_hwpx: false,
+            profile: Default::default(),
             has_stored_line_segs: false,
             hide_empty_line: false,
             hidden_empty_lines: 0,
@@ -2012,7 +2034,7 @@ impl TypesetState {
             return;
         }
 
-        let use_overlap_probe = self.is_hwpx_source && probe_height > 0.0;
+        let use_overlap_probe = self.profile.hwpx_stored_layout() && probe_height > 0.0;
         self.visible_float_exclusions
             .retain(|zone| self.current_height < zone.bottom - 0.5);
 
@@ -2050,7 +2072,7 @@ impl TypesetState {
 }
 
 /// 문단 format() 결과: 문단의 실제 렌더링 높이 정보
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct FormattedParagraph {
     /// 총 높이 (spacing 포함)
     total_height: f64,
@@ -2086,14 +2108,45 @@ impl FormattedParagraph {
         para: &Paragraph,
         col_count: u16,
         allow_spacing_before_only: bool,
+        ladder_dirty: bool,
+        lazy_base: bool,
     ) -> f64 {
         if col_count > 1 {
             return self.height_for_fit;
         }
+        // [#2279 ①] spacing 트림은 **비합성(authoritative) 저장 lineseg** 문단에만.
+        // 저장 ladder 가 spacing 을 이미 반영하고 vpos-snap 이 좌표를 복원하는
+        // 전제의 트림이므로, 합성(reflow) lineseg 문단은 ladder 가 없어 트림하면
+        // sb·ls 가 흐름에서 그냥 소실된다 (한글 fresh 는 가산 — 기계생성 결재
+        // 문서 −1쪽 계열, DIAG_ADV 실측 문단당 4~33px).
+        // [#2279 ①-2] dirty(합성 혼합) ladder 구간도 동일 — #2243 전방-스냅만
+        // 허용되어 트림분이 복원되지 않으므로 full advance 를 쓴다
+        // (36398700 pi6..9 구간 −60px 폐합, 한글 재저장 anchor 실측).
+        let has_authoritative_seg = para.line_segs.iter().any(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        });
+        // [#2279 ①-4] lazy-base(page_base 미확립) 사다리에서는 sb-형 트림의
+        // 복원(스냅)이 성립하지 않는다 — sb-형만 차단, sa-형 트림은 유지
+        // (36398700 pi31/35 −13.5px 미복원 실측 vs issue_1853 캡션 문서의
+        // sa-형 트림은 정상 복원되어 전면 차단 시 +1쪽 과다 반증).
+        let sa_trim = self.spacing_after > 0.5;
+        let sb_trim =
+            allow_spacing_before_only && self.spacing_before > 0.5 && !(lazy_base && !sa_trim);
+        if std::env::var("RHWP_DIAG_LAZYBLK").is_ok()
+            && allow_spacing_before_only
+            && self.spacing_before > 0.5
+            && lazy_base
+            && !sa_trim
+        {
+            eprintln!(
+                "DIAG_LAZYBLK sb={:.1} total={:.1} h4f={:.1}",
+                self.spacing_before, self.total_height, self.height_for_fit
+            );
+        }
         if para.controls.is_empty()
-            && !para.line_segs.is_empty()
-            && (self.spacing_after > 0.5
-                || (allow_spacing_before_only && self.spacing_before > 0.5))
+            && has_authoritative_seg
+            && !ladder_dirty
+            && (sa_trim || sb_trim)
             && self.height_for_fit > 0.0
             && self.height_for_fit + 0.5 < self.total_height
         {
@@ -2101,6 +2154,151 @@ impl FormattedParagraph {
         }
         self.total_height
     }
+}
+
+/// [#2279 ①-3] spacing 트림의 복원 가능성 전방 판정.
+///
+/// 트림은 다음 authoritative(비합성 lineseg) anchor 에서 vpos-snap 이 좌표를
+/// 복원한다는 전제다. 현 문단과 다음 anchor 사이에 합성/NO_LS 텍스트 문단이
+/// 끼어 있으면 dirty 규칙(#2243 전방-스냅만)으로 복원이 차단되므로 트림하면
+/// 그 spacing 이 흐름에서 소실된다 (36398700 pi6: 다음 anchor pi10 앞에
+/// 합성 pi7~9 → −35.7px 소실 실측). 표 컨트롤 문단은 재앵커(#2243) 지점이라
+/// 복원 가능으로 본다. 탐색은 32문단 한도(초과 시 보수적으로 복원 불가).
+fn spacing_trim_restorable(paragraphs: &[Paragraph], para_idx: usize) -> bool {
+    use crate::model::paragraph::LineSeg;
+    for para in paragraphs.iter().skip(para_idx + 1).take(32) {
+        if !para.controls.is_empty() {
+            return true; // 표/개체 재앵커 지점
+        }
+        match para.line_segs.first() {
+            Some(seg) if seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 => {
+                return true; // authoritative anchor 도달 — 복원 가능
+            }
+            _ => {
+                if !para.text.is_empty() {
+                    return false; // 합성/NO_LS 텍스트 문단이 먼저 — 복원 불가
+                }
+                // 빈 문단은 계속 탐색
+            }
+        }
+    }
+    false
+}
+
+/// [#2279 OMIT-eager] 저장 ladder 의 spacing-누락(OMIT) 서명 사전 판별.
+///
+/// #2383 의 lazy 판별(빈 host 문단의 표 성장 시점)은 첫 검출 지점 이전의
+/// 페이지말 fit 에 문서군 규칙을 적용하지 못한다(36392557: 판별 pi27, 실제
+/// 경계 pi14). 같은 서명 — 연속 문단쌍의 저장 스텝이 bare lh+ls 와 일치
+/// (±2px)하면서 그 경계의 paraPr spacing(cur.sa + next.sb)을 반영하지 않음 —
+/// 을 구역 시작 시점에 전방 스캔으로 검출한다. 2쌍 이상 요구(단발 우연 일치
+/// 배제). 정상(스텝이 spacing 포함) 문서는 스텝이 lh+ls 보다 spacing 만큼
+/// 길어 불일치한다.
+fn ladder_spacing_omitted_signature(
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> bool {
+    use crate::model::paragraph::LineSeg;
+    // [#2279 OMIT-eager 판별 3요건] lineseg 가 통째로 드롭된 본문 문단(마스킹·
+    // 생성기 드롭)이 **다수 비율**로 존재 — 한글이 저장 흐름을 신뢰하지 못하고
+    // fresh 재계산하는 문서군의 본질 신호다. 실측 분리: 재계산 문서군은
+    // 0.39~0.80(36475730/36360680/36392557), 저장 흐름 신뢰 문서는 0(보도자료
+    // 156652332)~0.10(sample16 #2158 핀) — 임계 25% + 4문단, 이하는 국소
+    // 드롭으로 보고 저장 흐름 신뢰를 유지한다(+1 회귀 실측).
+    let mut text_paras = 0usize;
+    let mut segless_text_paras = 0usize;
+    for p in paragraphs {
+        if p.text.trim().is_empty() {
+            continue;
+        }
+        text_paras += 1;
+        if !p
+            .line_segs
+            .iter()
+            .any(|s| s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        {
+            segless_text_paras += 1;
+        }
+    }
+    if segless_text_paras < 4 || segless_text_paras * 4 < text_paras {
+        return false;
+    }
+    let mut hits = 0usize;
+    let mut spacing_omitted = false;
+    // [#2279 OMIT-eager 판별 2요건] 누적좌표 ladder 문서(리셋 없음, 예: 36386907)
+    // 는 저장 좌표가 한글 fresh 와 일치하는 신뢰 문서군이라 spacing-누락 스텝이
+    // 있어도 페이지말 fit 신뢰 철회 대상이 아니다(트림 수용이 정답 — 92셋 실측
+    // 2건 +1 반증). 페이지별 vpos 리셋(재배치 사다리, 예: 36392557 pi14→pi15)
+    // 을 함께 요구한다.
+    let mut has_page_reset = false;
+    for pair in paragraphs.windows(2) {
+        let (cur, next) = (&pair[0], &pair[1]);
+        let (Some(cur_last), Some(next_first)) = (cur.line_segs.last(), next.line_segs.first())
+        else {
+            continue;
+        };
+        if cur_last.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || next_first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        {
+            continue;
+        }
+        if next_first.vertical_pos <= cur_last.vertical_pos {
+            // vpos 리셋/역행 경계 — 스텝 판정 불가. 쪽 하단→상단 리셋만 인정.
+            // 개체(표/그림) host 문단의 v=0 은 TAC 장식·footer 표의 좌표 관례라
+            // 쪽 리셋이 아니다(156652332 담당부서 표 오인 → +1 회귀 실측) —
+            // 개체 없는 본문 텍스트 문단으로의 리셋만 페이지 재배치 신호로 본다.
+            if cur_last.vertical_pos > 5000
+                && next_first.vertical_pos < 5000
+                && next.controls.is_empty()
+                && para_has_visible_text(next)
+            {
+                has_page_reset = true;
+            }
+            continue;
+        }
+        if spacing_omitted {
+            if has_page_reset {
+                return true;
+            }
+            continue;
+        }
+        let sa = styles
+            .para_styles
+            .get(cur.para_shape_id as usize)
+            .map(|s| s.spacing_after)
+            .unwrap_or(0.0);
+        let sb = styles
+            .para_styles
+            .get(next.para_shape_id as usize)
+            .map(|s| s.spacing_before)
+            .unwrap_or(0.0);
+        let spacing_around = sa + sb;
+        if spacing_around <= 2.5 {
+            continue;
+        }
+        let step = hwpunit_to_px(next_first.vertical_pos - cur_last.vertical_pos, dpi);
+        let bare = hwpunit_to_px(cur_last.line_height + cur_last.line_spacing, dpi);
+        if step <= 0.0 || bare <= 0.0 {
+            continue;
+        }
+        if (step - bare).abs() < 2.0 && step + 1.0 < bare + spacing_around {
+            hits += 1;
+            if std::env::var("RHWP_DIAG_OMITSIG").is_ok() {
+                eprintln!(
+                    "DIAG_OMITSIG hit step={:.1} bare={:.1} sa={:.1} sb={:.1} cur_v={} next_v={}",
+                    step, bare, sa, sb, cur_last.vertical_pos, next_first.vertical_pos
+                );
+            }
+            if hits >= 2 {
+                spacing_omitted = true;
+                if has_page_reset {
+                    return true;
+                }
+            }
+        }
+    }
+    spacing_omitted && has_page_reset
 }
 
 fn debug_brief_line_text(text: &str, max_chars: usize) -> String {
@@ -2252,8 +2450,7 @@ impl TypesetEngine {
     pub fn new(dpi: f64) -> Self {
         Self {
             dpi,
-            is_hwpx_source: std::cell::Cell::new(false),
-            is_hwp3_variant: std::cell::Cell::new(false),
+            profile: std::cell::Cell::new(Default::default()),
         }
     }
 
@@ -2428,15 +2625,12 @@ impl TypesetEngine {
             section_index,
             measured_tables,
             hide_empty_line,
-            false,
+            Default::default(),
             false,
             false,
             None,
             None,
             force_break_before,
-            false,
-            false,
-            false,
             EndnoteDeferral::None,
         )
     }
@@ -2945,19 +3139,17 @@ impl TypesetEngine {
         section_index: usize,
         measured_tables: &[MeasuredTable],
         hide_empty_line: bool,
-        is_hwp3_variant: bool,
+        profile: crate::model::provenance::LayoutCompatibilityProfile,
         skip_spacing_before_prededuct: bool,
         hwp3_origin_page_tolerance: bool,
         footnote_shape: Option<&FootnoteShape>,
         endnote_shape: Option<&FootnoteShape>,
         force_break_before: &std::collections::HashSet<usize>,
-        is_hwp3_source: bool,
-        is_hwpx_source: bool,
-        is_hwp5_origin_hwpx: bool,
         endnote_deferral: EndnoteDeferral<'_>,
     ) -> PaginationResult {
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
-        self.is_hwpx_source.set(is_hwpx_source);
+        // [#2403] 소스분기 프로파일 — 엔진(Cell)과 state 에 한 번에 배선.
+        self.profile.set(profile);
         let col_count = column_def.column_count.max(1);
         let default_footnote_shape = FootnoteShape::default();
         let footnote_shape = footnote_shape.unwrap_or(&default_footnote_shape);
@@ -2966,7 +3158,7 @@ impl TypesetEngine {
             footnote_between_notes_margin_px(footnote_shape, self.dpi);
         let footnote_safety_margin = hwpunit_to_px(3000, self.dpi);
         // [Task #1007] variant cross-paragraph vpos reset THRESHOLD 계산용 body height (HU)
-        let body_height_hu_for_variant: i32 = if is_hwp3_variant {
+        let body_height_hu_for_variant: i32 = if profile.hwp3_layout() {
             page_def.height.saturating_sub(
                 page_def
                     .margin_top
@@ -2990,16 +3182,36 @@ impl TypesetEngine {
             column_def.column_type,
         );
         st.hide_empty_line = hide_empty_line;
-        st.is_hwp3_variant = is_hwp3_variant;
-        st.is_hwp3_source = is_hwp3_source;
-        // [Task #1472] format_paragraph 의 미주 수식 indent_scale 보정용.
-        self.is_hwp3_variant.set(is_hwp3_variant);
-        st.is_hwpx_source = is_hwpx_source;
-        st.is_hwp5_origin_hwpx = is_hwp5_origin_hwpx;
+        st.profile = profile;
         st.has_stored_line_segs = paragraphs
             .iter()
             .any(|p| p.line_segs.iter().any(|ls| !is_synthetic_line_seg(ls)));
         st.skip_spacing_before_prededuct = skip_spacing_before_prededuct;
+        // [#2279 OMIT-eager] 기계생성 압축 ladder 문서군 사전 판별 — lazy 판별
+        // (#2383, 빈 host 표 성장 시점)보다 앞서 페이지말 fit 규칙에 적용되도록
+        // 구역 시작 시점에 확정한다. lazy 경로는 사전 스캔 미검출 형상의
+        // fallback 으로 유지. HWP3-origin 계열(변환본·page tolerance 문서)은
+        // 변환기 좌표 관례가 달라 저장 흐름 신뢰가 정답 — 대상이 아니다
+        // (sample16 64→65 +1 실측, #2158 핀).
+        if profile.hwpx_stored_layout()
+            && !profile.hwp3_layout()
+            && !profile.hwp3_native_layout()
+            && !hwp3_origin_page_tolerance
+        {
+            st.omit_fresh_recalc_doc =
+                ladder_spacing_omitted_signature(paragraphs, styles, self.dpi);
+            if std::env::var("RHWP_DIAG_OMITSIG").is_ok() {
+                eprintln!(
+                    "DIAG_OMITSIG sec={} eager={}",
+                    section_index, st.omit_fresh_recalc_doc
+                );
+            }
+            // 사전 판별 문서군은 #2391 분할 진입 full-advance 계보도 동일하게
+            // 적용 대상 — lazy 판별(#2383)의 상위 집합으로 승격만 한다.
+            if st.omit_fresh_recalc_doc {
+                st.stored_ladder_spacing_omitted = true;
+            }
+        }
         st.current_zone_design_spacing_px = column_def_design_spacing_px(column_def, self.dpi);
 
         // 머리말/꼬리말/쪽 번호/새 번호/감추기 컨트롤 수집
@@ -3031,6 +3243,9 @@ impl TypesetEngine {
             }
             // 표 컨트롤 감지
             let has_table = self.paragraph_has_table(para);
+            if std::env::var("RHWP_DIAG_FLOW").is_ok() {
+                eprintln!("DIAG_ROUTE pi={} has_table={}", para_idx, has_table);
+            }
 
             // [Task #702] 새 ColumnDef 검출. shortcut.hwp p2/p3 파일/미리보기/편집 등은
             // [쪽나누기]+단정의:1단 (header) → [단나누기]+단정의:2단 (content) 패턴 사용.
@@ -3153,7 +3368,7 @@ impl TypesetEngine {
             // sample16-2022 pi=87 (빈 문단, text_len=0) skip ✓
             // sample16-2022 pi=118 (content, sb=284) skip ✓
             // sample16-2022 pi=316 (content, sb=0) skip ✓
-            let variant_vpos_reset_break = is_hwp3_variant
+            let variant_vpos_reset_break = profile.hwp3_layout()
                 && self.judge_hwp3_variant_vpos_reset_break(
                     para,
                     paragraphs,
@@ -3318,7 +3533,7 @@ impl TypesetEngine {
                                 && para_has_visible_text(next_para)
                                 && next_sb_hu >= 500
                         });
-                    let hwp3_content_vpos_zero_reset = is_hwp3_variant
+                    let hwp3_content_vpos_zero_reset = profile.hwp3_layout()
                         && st.col_count == 1
                         && cv == 0
                         && prev_vpos_end > body_height_hu_for_variant * 70 / 100
@@ -3340,6 +3555,18 @@ impl TypesetEngine {
                             || near_page_top_reset
                             || native_near_top_reset
                     };
+                    // [#2279 OMIT-fit] spacing-누락 문서군에서 fresh 재계산이 직전
+                    // 쪽에서 밀어낸 빈 문단만 담긴 쪽에는 저장 리셋 경계를 적용하지
+                    // 않는다 — 한글 fresh 는 그 빈 문단을 다음 쪽 상단에 두고
+                    // 본문을 이어 붙인다 (36392557 pi14+pi15: 한글 PDF p3 상단
+                    // 36px = pi14 자리, 단독 쪽 아님).
+                    let omit_pushed_empty_page = st.omit_fresh_recalc_doc
+                        && st.current_items.iter().all(|item| {
+                            page_item_para_index(item)
+                                .and_then(|idx| paragraphs.get(idx))
+                                .is_some_and(|p| p.controls.is_empty() && p.text.trim().is_empty())
+                        });
+                    let trigger = trigger && !omit_pushed_empty_page;
                     if trigger {
                         // [Task #724] wrap_around active 시 강제 종료 — anchor cs=0
                         // (HWP5 변환본 caption-style) 한정. 일반 wrap_around (anchor cs>0)
@@ -3380,7 +3607,7 @@ impl TypesetEngine {
                         para,
                         next_para,
                         st.col_count,
-                        st.is_hwp3_variant,
+                        st.profile.hwp3_layout(),
                     )
                 }
             } else {
@@ -3407,7 +3634,7 @@ impl TypesetEngine {
                             mid,
                             after,
                             st.col_count,
-                            st.is_hwp3_variant,
+                            st.profile.hwp3_layout(),
                         )
                 };
             if tail_before_break_through_empty {
@@ -3451,7 +3678,7 @@ impl TypesetEngine {
                                 prev,
                                 next_para,
                                 st.col_count,
-                                st.is_hwp3_variant,
+                                st.profile.hwp3_layout(),
                             );
                         let high_tail_heading_then_reset = para_has_visible_text(next_para)
                             && next_para.controls.is_empty()
@@ -3469,7 +3696,7 @@ impl TypesetEngine {
                                         next_para,
                                         after,
                                         st.col_count,
-                                        st.is_hwp3_variant,
+                                        st.profile.hwp3_layout(),
                                     )
                             });
 
@@ -3822,7 +4049,13 @@ impl TypesetEngine {
                     self.format_paragraph(para, composed.get(para_idx), styles, Some(col_w));
                 let is_last_in_section = para_idx + 1 == paragraphs.len();
                 // [Task #1027 Stage D] fit 직전 vpos 스냅으로 누적 drift 제거 (렌더러 정합).
-                self.vpos_snap_current_height(&mut st, para_idx, paragraphs, styles);
+                self.vpos_snap_current_height(
+                    &mut st,
+                    para_idx,
+                    paragraphs,
+                    styles,
+                    formatted.spacing_before,
+                );
                 self.typeset_paragraph(
                     &mut st,
                     para_idx,
@@ -3886,7 +4119,7 @@ impl TypesetEngine {
                     // p4 +16.6px 팬텀 → sliver 쪽 +2). lh 가 개체를 못 담는 일반
                     // 케이스는 종전대로 무효화. HWPX(기계생성 결재문서 계열) 한정 —
                     // HWP5 native 는 종전 핀 보존 (issue_1418 2026_oss_rst 6쪽).
-                    let host_line_covers_object = st.is_hwpx_source
+                    let host_line_covers_object = st.profile.hwpx_stored_layout()
                         && matches!(last, Some(PageItem::Table { .. }))
                         && para.line_segs.first().is_some_and(|s| {
                             s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
@@ -10786,6 +11019,7 @@ impl TypesetEngine {
         para_idx: usize,
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
+        spacing_before_px: f64,
     ) {
         if st.col_count != 1 {
             return; // 다단은 Stage E
@@ -10821,7 +11055,7 @@ impl TypesetEngine {
             allow_vpos_rewind: false,
             allow_start_height_backtrack: false,
             suppress_large_forward_jump: false,
-            suppress_hwpx_stale_forward: st.is_hwpx_source,
+            suppress_hwpx_stale_forward: st.profile.hwpx_stored_layout(),
             endnote_between_notes_hu: 0,
             prev_item_content_bottom_y: None,
             last_compacted_endnote_title_gap: false,
@@ -10829,7 +11063,49 @@ impl TypesetEngine {
         let mut y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
         // [#2243] dirty 저장-앵커 사다리의 역스냅 금지 — 저장 lineseg 누락 문단의
         // fresh 재계산 성장분을 낡은 기계 v0 가 되돌리지 못하게 한다(전방만 허용).
-        if st.vpos_ladder_dirty && st.vpos_page_base_stored && y < st.current_height {
+        // [#2279 OMIT-sa] spacing-누락 문서군은 합성(비저장) base 사다리도 동일 —
+        // 사다리 자체가 spacing 을 누락하므로 dirty 성장분의 역스냅을 base 저장
+        // 여부와 무관하게 금지한다 (36392557 p4: pi61 저장 anchor 로의 역스냅이
+        // sa 성장분 +20.1px 를 되감아 페이지 경계를 한 문단 뒤로 밀던 형상).
+        if st.vpos_ladder_dirty
+            && (st.vpos_page_base_stored || st.omit_fresh_recalc_doc)
+            && y < st.current_height
+        {
+            y = st.current_height;
+        }
+        // [#2279 OMIT-sa] 합성(비저장) lineseg 경계의 후방 스냅량이 직전 문단의
+        // spacing_after 와 일치(±2px)하면 합성 사다리의 sa-누락이다 — 한글
+        // fresh 는 sa 를 가산하므로 되감지 않는다 (36392557 p4 pi42/43/44
+        // sa 6.7px ×3, 한글 PDF 절대좌표 +20.1px 실측). OMIT 문서군 + 합성
+        // seg 직전 문단 한정. 이후 저장 anchor 역스냅이 성장분을 되돌리지
+        // 못하게 dirty 처리(위 #2243 확장과 짝).
+        if st.omit_fresh_recalc_doc && y < st.current_height && para_idx > 0 {
+            let prev = &paragraphs[para_idx - 1];
+            let prev_synthetic = !prev.line_segs.is_empty()
+                && prev.line_segs.iter().all(|s| {
+                    s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                });
+            let prev_sa = styles
+                .para_styles
+                .get(prev.para_shape_id as usize)
+                .map(|s| s.spacing_after)
+                .unwrap_or(0.0);
+            if prev_synthetic && prev_sa > 0.5 && (st.current_height - y - prev_sa).abs() < 2.0 {
+                y = st.current_height;
+                st.vpos_ladder_dirty = true;
+            }
+        }
+        // [#2279 ladder-sb] 후방 스냅량이 이 문단의 spacing_before 와 정확히
+        // 일치(±2px)하고, **저장 ladder 스텝 자체가 sb 를 누락**했으면 생성기
+        // ladder 의 sb-누락이다 — 한글 fresh 는 sb 를 가산하므로(서브픽셀
+        // 하니스 실측: 36398709 문단당 −5.0pt 균일 = sb 6.7px) 스냅으로 되감지
+        // 않는다. 스텝-검사 없이 ±2px 우연 일치만으로 스킵하면 sb-포함 정상
+        // ladder 에서 이중 가산(+1쪽 과다, issue_1853 실측 반증)이 난다.
+        if st.profile.hwpx_stored_layout()
+            && spacing_before_px > 0.5
+            && y < st.current_height
+            && (st.current_height - y - spacing_before_px).abs() < 2.0
+        {
             y = st.current_height;
         }
         // [#2243 진단] snap 입출력 — 동작 불변.
@@ -10867,15 +11143,28 @@ impl TypesetEngine {
         // 발생 (e.g. sample16 변환기 pi=417: typeset 2 lines / layout 1 line, +10.4 px gap).
         // 동일 recompose 를 typeset 측에도 적용해 paragraph height 측정 정합.
         let recomposed: Option<ComposedParagraph> = match (composed, column_width_px) {
-            (Some(c), Some(cw)) if para.line_segs.is_empty() && cw > 0.0 => {
+            (Some(c), Some(cw)) if cw > 0.0 => {
                 let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                 let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                 let inner = (cw - margin_l - margin_r).max(0.0);
-                if inner > 0.0 {
+                if inner > 0.0 && para.line_segs.is_empty() {
                     let mut cloned = c.clone();
                     // [#2279] 본문 NO_LS 는 글자모양 재분할 포함 래퍼 사용 —
                     // paragraph_layout(렌더)와 동일 (측정/렌더 줄수·pitch 정합).
                     crate::renderer::composer::recompose_for_body_width(
+                        &mut cloned,
+                        para,
+                        inner,
+                        styles,
+                    );
+                    Some(cloned)
+                } else if inner > 0.0
+                    && crate::renderer::composer::stored_lines_overflow(c, para, inner, styles)
+                {
+                    // [#2279] 마스킹 저장분할 실폭-모순 본문 문단 fresh 재래핑 —
+                    // paragraph_layout(렌더)와 동일.
+                    let mut cloned = c.clone();
+                    crate::renderer::composer::recompose_stored_lines_if_overflowing_body(
                         &mut cloned,
                         para,
                         inner,
@@ -10893,7 +11182,12 @@ impl TypesetEngine {
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
 
         // [Task #998 실험] spacing_before=0 으로 강제 — 효과 측정용
-        let spacing_before = if para.line_segs.is_empty() && !para.text.is_empty() {
+        // [#2279 실험 전용] RHWP_EXP_BODY_FRESH 시 NO_LS 문단도 sb 를 보존한다
+        // (한글 fresh 는 sb 를 가산 — 생성기 사다리 sb-누락 모사 우회 계측).
+        let spacing_before = if para.line_segs.is_empty()
+            && !para.text.is_empty()
+            && std::env::var("RHWP_EXP_BODY_FRESH").is_err()
+        {
             0.0
         } else {
             raw_spacing_before
@@ -10955,7 +11249,12 @@ impl TypesetEngine {
                 })
             };
             // [Task #1472] 변환본은 미주 수식 effective indent 불변 위해 scale 절반(2.0→1.0).
-            let eq_indent_scale = 2.0 * if self.is_hwp3_variant.get() { 0.5 } else { 1.0 };
+            let eq_indent_scale = 2.0
+                * if self.profile.get().hwp3_layout() {
+                    0.5
+                } else {
+                    1.0
+                };
             let equation_line_available_width_px = |visual_line_idx: usize| {
                 column_width_px.map(|cw| {
                     let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
@@ -11094,7 +11393,12 @@ impl TypesetEngine {
                     } else {
                         match ls_type {
                             LineSpacingType::Percent => {
-                                let extra = (max_fs * (ls_val - 100.0) / 100.0).max(0.0);
+                                // [#2279] sub-100% 퍼센트 음수 gap 존중 (line_breaking 정합)
+                                let extra = if ls_val > 0.0 {
+                                    max_fs * (ls_val - 100.0) / 100.0
+                                } else {
+                                    0.0
+                                };
                                 (max_fs, extra)
                             }
                             LineSpacingType::Fixed => (ls_val.max(max_fs), 0.0),
@@ -11134,9 +11438,21 @@ impl TypesetEngine {
                     para,
                     styles,
                     para_style,
-                    self.is_hwp3_variant.get(),
+                    self.profile.get().hwp3_layout(),
                 ) {
                     pairs.push(metric);
+                }
+            }
+            // [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC 그림/도형 —
+            // composed lines 가 비어 문단 플로우가 0 으로 붕괴하는 것을
+            // 개체 폭 greedy wrap 줄 메트릭 합성으로 방지.
+            if pairs.is_empty() {
+                if let Some(metrics) = crate::renderer::tac_object_stack_line_metrics(
+                    para,
+                    self.dpi,
+                    line_available_width_px(0),
+                ) {
+                    pairs.extend(metrics);
                 }
             }
             pairs.into_iter().unzip()
@@ -11154,7 +11470,7 @@ impl TypesetEngine {
             para,
             styles,
             para_style,
-            self.is_hwp3_variant.get(),
+            self.profile.get().hwp3_layout(),
         ) {
             (vec![lh], vec![ls])
         } else {
@@ -11179,7 +11495,7 @@ impl TypesetEngine {
                 para,
                 styles,
                 para_style,
-                self.is_hwp3_variant.get(),
+                self.profile.get().hwp3_layout(),
             )
             .unwrap_or((hwpunit_to_px(400, self.dpi), 0.0));
             line_heights = vec![lh];
@@ -11290,7 +11606,7 @@ impl TypesetEngine {
         } else {
             layout_drift_safety_px
         };
-        let exclusion_probe_height = if st.is_hwpx_source {
+        let exclusion_probe_height = if st.profile.hwpx_stored_layout() {
             fmt.line_heights
                 .first()
                 .zip(fmt.line_spacings.first())
@@ -11357,8 +11673,16 @@ impl TypesetEngine {
         // 다단 레이아웃에서 문단 내 단 경계 감지
         // [Task #459] on_first_multicolumn_page 가드 제거: 다단 구역이 여러 페이지에 걸칠 때
         // 후속 페이지에서도 LINE_SEG vpos-reset 으로 인코딩된 단 경계를 인식해야 함.
+        // [Task #2320] current_column == 0 한정 해제: 비-0 단(마지막 단 포함)에서 시작하는
+        // 문단의 문단 내 vpos 되감김은 단/쪽 경계 인코딩이다 — 마지막 단이면 "다음 쪽
+        // 단 0 으로 계속" (treatise p2 pi=29 라인1 되감김 67050→4926, 한컴 2022 PDF 정합).
+        // 가드 2종: ①미주 흐름은 한 단 안에서도 vpos 가 크게 되감기므로 제외
+        // (ColumnContent.endnote_flow 계약) ②되감김 목표가 단 상단 근방일 때만 인정
+        // (detect_near_top_rewind_breaks — 페이지 중간 되감김은 어울림 흐름 잔재).
         let col_breaks = if st.col_count > 1 && st.current_column == 0 {
             Self::detect_column_breaks_in_paragraph(para)
+        } else if st.col_count > 1 && st.current_column > 0 && !st.current_endnote_flow {
+            Self::detect_near_top_rewind_breaks(para, st.layout.available_body_height(), self.dpi)
         } else {
             vec![0]
         };
@@ -11445,7 +11769,7 @@ impl TypesetEngine {
             fmt.line_heights.len(),
             st.layout.body_area.height,
             self.dpi,
-            st.is_hwp3_source,
+            st.profile.hwp3_native_layout(),
         )
         .or_else(|| {
             sample16_missing_lineseg_tail_break_line(
@@ -11471,19 +11795,44 @@ impl TypesetEngine {
         // HWP3-origin 변환본은 spacing_before 누적을 보존해야 dump-pages 요약과
         // 실제 한컴 줄 흐름이 유지된다(#1116).
         let trim_spacing_before_for_flow =
-            !st.is_hwp3_variant && !para_near_rowbreak_table(paragraphs, para_idx);
+            !st.profile.hwp3_layout() && !para_near_rowbreak_table(paragraphs, para_idx);
 
         let current_page_vpos_base = st.vpos_page_base.or_else(|| {
             st.current_items
                 .first()
                 .and_then(|item| page_item_vpos_base(item, paragraphs))
         });
+        // [#2279 OMIT-fit] spacing-누락 문서군에서 **저장 리셋 직전의 페이지말
+        // 빈 문단**은 다음 쪽 상단 귀속이다 — 한글 fresh 는 누락 spacing 을
+        // 재가산해 이 빈 문단을 다음 쪽으로 넘긴다(36392557 pi14: 저장 bottom
+        // 910.6px 는 본문 안이지만 한글 PDF 는 p3 상단 36px 로 실측). 저장
+        // page-last 신뢰와 h4f 트림을 함께 철회한다. 리셋이 뒤따르지 않는
+        // 빈 문단(156652332 pi22 누적 구간)과 본문/개체 문단(156577742 footer
+        // 표·그림)의 저장 증거·트림은 유지 — 전면 철회는 +1 회귀 실측.
+        let omit_untrusted_empty = st.omit_fresh_recalc_doc
+            && para.controls.is_empty()
+            && !para_has_visible_text(para)
+            && para
+                .line_segs
+                .last()
+                .filter(|cs| {
+                    cs.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                })
+                .zip(paragraphs.get(para_idx + 1).and_then(|next| {
+                    next.line_segs.first().filter(|ns| {
+                        ns.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    })
+                }))
+                .is_some_and(|(cs, ns)| ns.vertical_pos < cs.vertical_pos);
         let saved_single_line_bottom_fits = forced_page_break_line.is_none()
+            && !omit_untrusted_empty
             && st.col_count == 1
             && fmt.line_heights.len() == 1
             // [#2137] 비-TAC 자리차지(TopAndBottom) float 만 가진 앵커도 저장
             // page-last 증거가 있으면 신뢰 — 개체는 하단 여백 스필(한컴 정합).
-            && (para.controls.is_empty() || para_controls_only_topbottom_floats(para))
+            && (para.controls.is_empty()
+                || para_controls_only_topbottom_floats(para)
+                || para_controls_only_tac_topbottom_objects(para))
             && !st.current_items.is_empty()
             // [Task #1749] 저장 flow 가 이 줄을 페이지 마지막으로 인코딩한 경우에만
             // bounds 신뢰 — 누적좌표 문서의 쪽 경계 overfill 차단.
@@ -11494,9 +11843,21 @@ impl TypesetEngine {
             && current_page_vpos_base
                 .and_then(|base| single_line_visible_bounds_px(para, base, self.dpi))
                 .is_some_and(|bounds| {
-                    saved_bounds_fit_at_flow_tail(bounds, st.current_height, st.available_height())
+                    // [#2137] tac TopAndBottom 소형 개체 줄은 한컴이 하단 여백으로
+                    // 스필해 현재 쪽에 유지한다 (156637323 pi=19: 저장 vpos+lh
+                    // 956.6 > 본문 933.6 인데 한글 1쪽). 저장 page-last 증거가
+                    // 있을 때만 발동하므로 스필 허용폭은 하단 여백 급(40px)로 한정.
+                    let spill = if para_controls_only_tac_topbottom_objects(para) {
+                        40.0
+                    } else {
+                        0.0
+                    };
+                    let (top, bottom) = bounds;
+                    top + 16.0 >= st.current_height
+                        && bottom <= st.available_height() + 0.5 + spill
                 });
         let saved_list_tail_body_vpos_fits = forced_page_break_line.is_none()
+            && !omit_untrusted_empty
             && st.col_count == 1
             && fmt.line_heights.len() == 1
             && fmt.spacing_after <= 0.5
@@ -11517,8 +11878,16 @@ impl TypesetEngine {
                     )
                 });
 
+        // 위 omit_untrusted_empty(저장 리셋 직전 빈 문단)는 트림 혜택도 잃는다
+        // — 전량(lh+ls) 부족 시 다음 쪽 상단으로 넘긴다(36392557 pi14 36px).
+        // 텍스트 문단은 종전 h4f 트림 유지(36392757 pi19: 전량 요구 시 +1 실측).
+        let page_end_fit_height = if omit_untrusted_empty {
+            fmt.total_height.max(fmt.height_for_fit)
+        } else {
+            fmt.height_for_fit
+        };
         if forced_page_break_line.is_none()
-            && (st.current_height + fmt.height_for_fit <= available
+            && (st.current_height + page_end_fit_height <= available
                 || saved_single_line_bottom_fits
                 || saved_list_tail_body_vpos_fits)
         {
@@ -11531,7 +11900,25 @@ impl TypesetEngine {
             //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)
             // 다단에서는 layout 이 vpos 기반으로 항목을 단별로 stacking 하므로
             // typeset 누적 시 trailing_ls 인플레이션이 단을 조기 종료시킴.
-            let advance = fmt.flow_advance_height(para, st.col_count, trim_spacing_before_for_flow);
+            let advance = fmt.flow_advance_height(
+                para,
+                st.col_count,
+                trim_spacing_before_for_flow,
+                st.vpos_ladder_dirty || !spacing_trim_restorable(paragraphs, para_idx),
+                st.vpos_page_base.is_none() && st.vpos_lazy_base.is_some(),
+            );
+            if std::env::var("RHWP_DIAG_ADV").is_ok() {
+                eprintln!(
+                    "DIAG_ADV pi={} adv={:.1} total={:.1} h4f={:.1} sb={:.1} sa={:.1} cur={:.1}",
+                    para_idx,
+                    advance,
+                    fmt.total_height,
+                    fmt.height_for_fit,
+                    fmt.spacing_before,
+                    fmt.spacing_after,
+                    st.current_height,
+                );
+            }
             st.current_height += advance;
             st.flow_underrun += (fmt.total_height - advance).max(0.0);
             if let Some(v) = body_bottom_vpos {
@@ -11580,8 +11967,13 @@ impl TypesetEngine {
                 st.current_items.push(PageItem::FullParagraph {
                     para_index: para_idx,
                 });
-                let advance =
-                    fmt.flow_advance_height(para, st.col_count, trim_spacing_before_for_flow);
+                let advance = fmt.flow_advance_height(
+                    para,
+                    st.col_count,
+                    trim_spacing_before_for_flow,
+                    st.vpos_ladder_dirty || !spacing_trim_restorable(paragraphs, para_idx),
+                    false,
+                );
                 st.current_height += advance;
                 st.flow_underrun += (fmt.total_height - advance).max(0.0);
                 if let Some(v) = body_bottom_vpos {
@@ -11618,7 +12010,7 @@ impl TypesetEngine {
                     prior_para,
                     next_para,
                     st.col_count,
-                    st.is_hwp3_variant,
+                    st.profile.hwp3_layout(),
                 ) {
                     forced = true;
                     break;
@@ -11690,7 +12082,13 @@ impl TypesetEngine {
             //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)
             // 다단에서는 layout 이 vpos 기반으로 항목을 단별로 stacking 하므로
             // typeset 누적 시 trailing_ls 인플레이션이 단을 조기 종료시킴.
-            let advance = fmt.flow_advance_height(para, st.col_count, trim_spacing_before_for_flow);
+            let advance = fmt.flow_advance_height(
+                para,
+                st.col_count,
+                trim_spacing_before_for_flow,
+                st.vpos_ladder_dirty || !spacing_trim_restorable(paragraphs, para_idx),
+                false,
+            );
             st.current_height += advance;
             st.flow_underrun += (fmt.total_height - advance).max(0.0);
             if let Some(v) = body_bottom_vpos {
@@ -11703,7 +12101,20 @@ impl TypesetEngine {
         let base_available = (st.base_available_height() - layout_drift_safety_px).max(0.0);
 
         // 남은 공간이 없거나 첫 줄도 못 넣으면 먼저 다음 단/페이지로
-        let first_line_h = fmt.line_heights[0];
+        // [#2279 pi78] 다중 줄 문단의 분할 진입 첫 줄은 full advance(lh+ls)를
+        // 요구한다 — 한글 COM 하단여백 18단 사다리 실측(36399374 pi78):
+        // 슬랙 < lh+ls(22.5pt)면 첫 줄을 넣지 않고 통째 이월, [lh+ls, h4f)
+        // 구간 1+1 분할, ≥ h4f 전체 수용 — 곡선 전체가 이 규칙과 일치.
+        // 트레일링 ls 트림(#359 h4f)은 문단 마지막 줄에만 해당하므로 단일 줄
+        // 문단은 종전 lh-만 유지.
+        let first_line_h = if line_count > 1 && st.stored_ladder_spacing_omitted {
+            // 적용 대상은 spacing-누락 서명이 검출된 기계생성 문서군뿐이다 —
+            // 전역/HWPX-전체 적용은 각각 2572521 별지6(HWP5, 한글 6쪽 +1)과
+            // 1733 국제고속선기준(한글-저장 HWPX, 242쪽 +2) 회귀 실측.
+            fmt.line_advance(0)
+        } else {
+            fmt.line_heights[0]
+        };
         let remaining = (available - st.current_height).max(0.0);
         // [Task #1086] 단일 단에서도 HWP가 paragraph 내부 page reset 을
         // LINE_SEG(vpos=0) 로 인코딩하는 케이스가 있다(k-water-rfp pi=66).
@@ -11733,7 +12144,7 @@ impl TypesetEngine {
         // 첫 줄이 이전 쪽 말미에 남는다 (3024019 pi22: ls[0] vpos=700, 한글도
         // 문단 전체를 새 쪽 배치). 전체 배치가 이미 실패한 분할 직전에만 적용해
         // 일반 흐름(#418/#321 보수 기준)은 건드리지 않는다.
-        let current_page_has_stale_hwpx_line_metrics = st.is_hwpx_source
+        let current_page_has_stale_hwpx_line_metrics = st.profile.hwpx_stored_layout()
             && st
                 .current_items
                 .iter()
@@ -12019,7 +12430,7 @@ impl TypesetEngine {
         // oracle p13→p12). 의미 필드 + 소스 게이트로 교체: native 는 비트⇔열거형
         // 전단사(shape.rs:394)로 불변, 순수 HWPX 는 종전에도 미진입으로 불변,
         // convert-HWP 만 HWPX 렌더 경로로 정합된다(#1886 origin 전달의 연장).
-        let table_wrap_take_place = !self.is_hwpx_source.get()
+        let table_wrap_take_place = !self.profile.get().hwpx_stored_layout()
             && matches!(
                 table.common.text_wrap,
                 crate::model::shape::TextWrap::TopAndBottom
@@ -12441,6 +12852,12 @@ impl TypesetEngine {
                 st.vpos_col_anchor,
             );
         }
+        // [#2322] 자리차지 float(양수 v_off) 표가 만든 배타 영역을 표 문단 경로도
+        // 소비한다 — 종전에는 텍스트 경로(typeset_paragraph)만 소비해, 후속 표
+        // 문단의 블록 표 fit 이 존 위에 겹쳐 배치됐다 (19439117: 870px 서식 표
+        // 존 [31..902] 위에 866px 표가 y≈36 에 통배치 → 1쪽, 한글 2쪽).
+        st.apply_visible_float_exclusions(0.0);
+
         // 호스트 문단 format (TAC 표의 높이 보정용)
         let host_col_w = st
             .layout
@@ -12502,6 +12919,40 @@ impl TypesetEngine {
             false
         };
 
+        // [#2311] 단일 TAC 표가 후행 줄(ctrl 1:1 lineseg, vpos==0 저장 리셋)에 있고
+        // 선행 줄이 전부 TAC 그림/도형이면, 표는 아래 #1152 intra-para reset 가드가
+        // 자체적으로 새 쪽 이동한다. 이때 pre-flush 를 문단 전체 높이로 판정하면
+        // 잔여 공간에 들어가는 선행 전면 그림까지 통째로 밀려 한글 대비 +1쪽씩
+        // 벌어진다 (10k r15 156744475: 붙임 포스터+차기 붙임 헤더 표 문단 ×2 →
+        // rhwp 5쪽 vs 한글 3쪽, 저장 ls[0] vpos=5435 는 같은 쪽 배치를 명시).
+        // 리셋 이전 줄들의 높이만 fit 기준으로 삼는다.
+        let pre_reset_height_for_fit = if has_tac
+            && tac_count == 1
+            && first_line_tac_height.is_none()
+            && para.text.is_empty()
+            && para.line_segs.len() == para.controls.len()
+        {
+            para.controls
+                .iter()
+                .position(|c| {
+                    matches!(c, Control::Table(t) if self.is_effective_tac_table(para, t, &fmt))
+                })
+                .filter(|&ti| {
+                    ti > 0
+                        && ti <= fmt.line_heights.len()
+                        && para.line_segs.get(ti).map(|s| s.vertical_pos) == Some(0)
+                        && para.controls[..ti].iter().all(|c| match c {
+                            Control::Picture(p) => p.common.treat_as_char,
+                            Control::Shape(s) => s.common().treat_as_char,
+                            _ => false,
+                        })
+                })
+                .map(|ti| (0..ti).map(|li| fmt.line_advance(li)).sum::<f64>())
+        } else {
+            None
+        };
+        let height_for_fit = pre_reset_height_for_fit.unwrap_or(height_for_fit);
+
         // 넘치면 flush (단일 TAC 표만)
         if st.current_height + height_for_fit > st.available_height()
             && !st.current_items.is_empty()
@@ -12545,8 +12996,21 @@ impl TypesetEngine {
                         && signed_hwpunit(t.common.vertical_offset) < 0
             )
         });
-        let should_sort_para_float_tables =
-            !para_has_non_whitespace_text(para) && !has_negative_para_float;
+        // [#2287 후속/1.hwpx p58] 문단 내부 저장 vpos 리셋(ls[k] vpos<=0, 직전
+        // vpos>5000)이 있는 host 는 컨트롤이 서로 다른 쪽의 저장 줄에 앉는
+        // 구조 — v_off 오름차순 정렬(#986/#1088)이 저장 줄 순서를 뒤집으면
+        // (1.hwpx pi=322: TAC(v_off 0)가 자리차지(v_off 1768) 앞으로) 리셋
+        // 경계 배치가 무너져 두 표가 같은 쪽에 겹친다. #1639 음수-혼재와
+        // 동일하게 정렬을 끄고 배열(저장) 순서를 보존한다.
+        let has_mid_para_vpos_reset = para.line_segs.windows(2).any(|w| {
+            (w[0].tag | w[1].tag) & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                == 0
+                && w[1].vertical_pos <= 0
+                && w[0].vertical_pos > 5000
+        });
+        let should_sort_para_float_tables = !para_has_non_whitespace_text(para)
+            && !has_negative_para_float
+            && !has_mid_para_vpos_reset;
         let float_table_voffset = |ctrl: &Control| -> i32 {
             match ctrl {
                 Control::Table(t)
@@ -12588,6 +13052,37 @@ impl TypesetEngine {
             let ctrl = &para.controls[ctrl_idx];
             match ctrl {
                 Control::Table(table) => {
+                    // [#2287 후속/1.hwpx p58] 문단 **내부** 저장 vpos 리셋 경계:
+                    // 한 문단에 표 여러 개가 서로 다른 저장 줄(ls)에 앉고, TAC 표의
+                    // 소속 줄 ls[k](k>=1)가 쪽 리셋(vpos<=0, 직전 줄 vpos>5000 —
+                    // #1920 임계 동일)이면 한글은 그 표를 **다음 쪽 상단**에 둔다.
+                    // 기존 vpos-reset 처리는 문단 간(next_para first)만 다뤄, 이
+                    // 형상(1.hwpx pi=322: ls[0] 23676 자리차지 표 + ls[1] vpos=0
+                    // TAC 표 917px)에서 두 표가 같은 쪽 같은 y 대역에 겹쳐 렌더되고
+                    // (PMR-004/PM-005) 후속 조각이 페이지 밖(+865.8px)으로 밀렸다.
+                    // TAC 표의 소속 줄 판정은 place_table_with_text 의 표 줄 매칭
+                    // (lh ≈ 표높이+outer margins)과 동일식.
+                    if order_pos > 0 && table.common.treat_as_char && !st.current_items.is_empty() {
+                        let tbl_line_h = hwpunit_to_px(
+                            table.common.height as i32
+                                + table.outer_margin_top as i32
+                                + table.outer_margin_bottom as i32,
+                            self.dpi,
+                        );
+                        let reset_line = para.line_segs.windows(2).any(|w| {
+                            let stored = (w[0].tag | w[1].tag)
+                                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0;
+                            stored
+                                && w[1].vertical_pos <= 0
+                                && w[0].vertical_pos > 5000
+                                && (hwpunit_to_px(w[1].line_height, self.dpi) - tbl_line_h).abs()
+                                    < 2.0
+                        });
+                        if reset_line {
+                            st.advance_column_or_new_page();
+                        }
+                    }
                     // [Issue #703] 글앞으로 / 글뒤로 표는 Shape처럼 취급 — 본문 흐름 공간 차지 없음.
                     // pagination/engine.rs:976-981 와 동일 시멘틱: 데코레이션 표는 절대 좌표로 배치되며
                     // current_height 누적에 영향을 주지 않는다.
@@ -12693,6 +13188,7 @@ impl TypesetEngine {
                             tac_count,
                             is_first_placed,
                             is_last_placed,
+                            styles,
                         );
                     } else if self.try_typeset_empty_para_float_table(
                         st,
@@ -12893,8 +13389,16 @@ impl TypesetEngine {
         }
 
         // TAC 표 높이 보정 (Paginator engine.rs:123-179 동일)
-        if has_tac && fmt.total_height > 0.0 && st.pages.len() == page_count_before {
-            let height_added = st.current_height - height_before;
+        // [#2319] 저장 lineseg 없는(기계생성) 문단은 스킵 — cap 의 두 축(tac_seg_total
+        // 의 seg.lh, fallback 의 fmt.total_height)이 모두 lineseg/컴포즈에 표 높이가
+        // 반영돼 있음을 전제한다. lineseg 없는 텍스트-host 문단에서는 fmt 가 표를
+        // 모르므로 cap 이 측정 높이(예: 858px)를 텍스트 줄합(34.7px)으로 되감아
+        // 서식 문서 과소분할을 만든다 (20544835 r15 재검증 −1 계열).
+        if has_tac
+            && fmt.total_height > 0.0
+            && !para.line_segs.is_empty()
+            && st.pages.len() == page_count_before
+        {
             // tac_seg_total 계산: 각 TAC 표의 max(seg.lh, 실측높이) + ls/2
             let mut tac_seg_total = 0.0;
             let mut tac_idx = 0;
@@ -12933,8 +13437,96 @@ impl TypesetEngine {
             } else {
                 fmt.total_height
             };
-            if height_added > cap {
-                st.current_height = height_before + cap;
+            // [#2279 누적Δ] 저장 ladder 가 host paraPr spacing 을 누락한 기계생성
+            // 결재문서(HWPX, 빈 host TAC 표): 저장 스텝(다음 문단 vpos−현 vpos)이
+            // fmt.total_height(sb+lh+ls+sa)보다 짧으면 생성기가 sa/sb 를 좌표에
+            // 반영하지 않은 것이다 — 한글 fresh 는 전량 순수 가산(36399374 재저장
+            // 오라클: pi4 +500(sa)+300(sb), pi5 +300(sb), fmt.total 과 HU 단위
+            // 일치). 이때 cap 을 fmt.total 로 올리고 ladder 를 dirty 로 표시해
+            // 후속 스냅이 성장분을 압축 anchor 로 되감지 못하게 한다. 스텝이
+            // fmt.total 과 일치(±1px)하는 정상 생성기 ladder 는 불변.
+            let stored_step_px = if st.profile.hwpx_stored_layout() && para.text.is_empty() {
+                para.line_segs
+                    .first()
+                    .filter(|s| {
+                        s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    })
+                    .zip(next_para.and_then(|np| np.line_segs.first()).filter(|s| {
+                        s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    }))
+                    .map(|(cur, next)| {
+                        hwpunit_to_px(
+                            (next.vertical_pos as i64 - cur.vertical_pos as i64) as i32,
+                            self.dpi,
+                        )
+                    })
+                    .filter(|&s| s > 0.0)
+            } else {
+                None
+            };
+            // 저장 스텝이 fmt.total(sb+lh+ls+sa)보다 짧고 그 부족분이 host
+            // paraPr spacing(sb+sa)과 정확히 일치하면, 생성기가 sb/sa 를 좌표에
+            // 반영하지 않은 ladder 다 — 한글 fresh 는 전량 순수 가산한다
+            // (36399374 재저장 오라클: pi4 부족분 6.7px=sa, pi5 4.0px=sb, HU
+            // 단위 일치). cap 을 fmt.total 로 올리고 ladder 를 dirty 로 표시해
+            // 후속 스냅이 성장분을 압축 anchor 로 되감지 못하게 한다.
+            // 부족분이 sb/sa 서명과 다른 ladder(#2352 host 줄박스 계열,
+            // 36392557 pi27 부족분 13.3px)는 대상이 아니다 — 그 경로의 별도
+            // 가산과 이중 성장(+1쪽 회귀 실측)한다.
+            let ladder_omits_spacing = stored_step_px
+                .filter(|&step| step + 1.0 < fmt.total_height && cap + 1.0 < fmt.total_height)
+                .map(|step| {
+                    let shortfall = fmt.total_height - step;
+                    let sig = fmt.spacing_before + fmt.spacing_after;
+                    sig > 0.5 && (shortfall - sig).abs() < 2.0
+                })
+                .unwrap_or(false);
+            if ladder_omits_spacing {
+                st.stored_ladder_spacing_omitted = true;
+                if std::env::var("RHWP_DIAG_LADSP").is_ok() {
+                    eprintln!(
+                        "DIAG_LADSP pi={} OMIT step={:.1} cap={:.1} fmt_total={:.1} sb={:.1} sa={:.1}",
+                        para_idx,
+                        stored_step_px.unwrap_or(0.0),
+                        cap,
+                        fmt.total_height,
+                        fmt.spacing_before,
+                        fmt.spacing_after
+                    );
+                }
+                st.vpos_ladder_dirty = true;
+            }
+            // 성장 전에 저장 anchor 로 전방 사전-스냅 — 직전 표들이 cap
+            // (lh+ls/2)으로 ladder 보다 짧게 전진한 잔차(36399374 pi3 −3.1px)를
+            // 표→표 연쇄(스냅 부재 구간)에서 회수한다. 전방·소폭 한정.
+            let snapped_base = if ladder_omits_spacing {
+                para.line_segs
+                    .first()
+                    .zip(st.vpos_page_base)
+                    .map(|(seg0, base)| {
+                        let implied = st.vpos_col_anchor
+                            + hwpunit_to_px(
+                                (seg0.vertical_pos as i64 - base as i64) as i32,
+                                self.dpi,
+                            );
+                        let delta = implied - height_before;
+                        if delta > 0.0 && delta < 24.0 {
+                            implied
+                        } else {
+                            height_before
+                        }
+                    })
+                    .unwrap_or(height_before)
+            } else {
+                height_before
+            };
+            let cap = if ladder_omits_spacing {
+                fmt.total_height
+            } else {
+                cap
+            };
+            if st.current_height - snapped_base > cap {
+                st.current_height = snapped_base + cap;
             }
         }
     }
@@ -13040,6 +13632,7 @@ impl TypesetEngine {
         tac_count: usize,
         is_first_placed: bool,
         is_last_placed: bool,
+        styles: &ResolvedStyleSet,
     ) {
         // [Task #1152] 호스트 문단의 intra-paragraph vpos-reset 가드.
         // empty-text host paragraph 가 N controls + N line_segs 1:1 매핑이고,
@@ -13047,8 +13640,37 @@ impl TypesetEngine {
         // 새 페이지 상단부터" 라고 명시한 신호. fit 검사는 표 크기가 잔여 영역에
         // 들어가면 통과시키지만 명시 신호를 존중하려면 fit 이전에 advance.
         // 케이스: 2022년 국립국어원 업무계획.hwp pi=586 ci=1 (별첨 박스).
-        if !st.current_items.is_empty()
-            && ctrl_idx > 0
+        let tac_table_line_idx = self.tac_table_line_index(para, table, fmt);
+        let prior_tac = para
+            .controls
+            .iter()
+            .take(ctrl_idx)
+            .filter(|c| matches!(c, Control::Table(t) if self.is_effective_tac_table(para, t, fmt)))
+            .count();
+        let tac_seg_idx = if tac_count > 1 {
+            // [#2322] 텍스트-host 다중 TAC: 선행 텍스트 줄 수만큼 lineseg 매핑을
+            // 오프셋한다. 종전 count 기반 매핑은 제목 줄이 있는 문단에서 표1을
+            // 텍스트 줄(예: 16px)에 매핑해 851px 표가 16px 로 계상됐다 (20862337
+            // r15 재검증 −1 서식 계열). 빈-host 1:1 문서는 오프셋 0 으로 불변.
+            let leading_offset = para
+                .controls
+                .iter()
+                .find_map(|c| match c {
+                    Control::Table(t) if self.is_effective_tac_table(para, t, fmt) => Some(t),
+                    _ => None,
+                })
+                .and_then(|t| self.tac_table_line_index(para, t, fmt))
+                .unwrap_or(0);
+            leading_offset + prior_tac
+        } else {
+            tac_table_line_idx.unwrap_or(0)
+        };
+
+        // [Task #1152] 호스트 문단의 intra-paragraph vpos-reset 가드 —
+        // (a) 빈-host ctrl 1:1 매핑(원형), (b) [#2322] 텍스트-host 포함 일반형:
+        // 표의 매핑 lineseg(tac_seg_idx>0)가 저장 vpos==0 이면 "이 표를 새 쪽
+        // 상단부터"라는 명시 신호다. fit 이전에 advance 로 존중한다.
+        let ctrl_reset = ctrl_idx > 0
             && para.text.is_empty()
             && para.line_segs.len() == para.controls.len()
             && para
@@ -13056,26 +13678,23 @@ impl TypesetEngine {
                 .get(ctrl_idx)
                 .map(|s| s.vertical_pos)
                 .unwrap_or(-1)
-                == 0
-        {
+                == 0;
+        let seg_reset = tac_seg_idx > 0
+            && para
+                .line_segs
+                .get(tac_seg_idx)
+                .filter(|s| !is_synthetic_line_seg(s))
+                .map(|s| s.vertical_pos)
+                == Some(0);
+        let intra_para_reset = ctrl_reset || seg_reset;
+        if intra_para_reset && !st.current_items.is_empty() {
             st.advance_column_or_new_page();
         }
-
-        let tac_table_line_idx = self.tac_table_line_index(para, table, fmt);
-        let tac_seg_idx = if tac_count > 1 {
-            para.controls
-                .iter()
-                .take(ctrl_idx)
-                .filter(
-                    |c| matches!(c, Control::Table(t) if self.is_effective_tac_table(para, t, fmt)),
-                )
-                .count()
-        } else {
-            tac_table_line_idx.unwrap_or(0)
-        };
         // 다중 TAC 표: LINE_SEG 기반 개별 높이 계산
         let table_height = if tac_count > 1 {
-            let is_last_tac = tac_seg_idx + 1 == tac_count;
+            // [#2322] 마지막 TAC 판정은 개수 기반(prior_tac) — tac_seg_idx 는
+            // 선행 텍스트 줄 오프셋을 포함하므로 count 비교에 쓰지 않는다.
+            let is_last_tac = prior_tac + 1 == tac_count;
             para.line_segs
                 .get(tac_seg_idx)
                 .map(|seg| {
@@ -13099,11 +13718,29 @@ impl TypesetEngine {
             // 분리된 문서에서, 표 자체는 남은 영역에 들어가는데도 spacing 때문에
             // 표가 다음 페이지로 밀린다(2025 donations HWPX pi=25).
             fmt.line_heights[0]
+        } else if intra_para_reset && tac_seg_idx < fmt.line_heights.len() {
+            // [#2311] intra-para reset(저장 vpos==0)으로 새 쪽에 온 표는 자신의
+            // 줄(매핑 lineseg)부터만 계상한다. 문단 전체 height_for_fit 을
+            // 쓰면 이전 쪽에 남은 선행 줄(전면 tac 그림 등)의 높이가 새 쪽에
+            // 유령 계상되어 후속 문단을 한 쪽 더 밀어낸다 (156744475 4쪽→3쪽).
+            (tac_seg_idx..fmt.line_heights.len())
+                .map(|li| fmt.line_advance(li))
+                .sum::<f64>()
         } else if fmt.total_height > 0.0 {
             // 단일 TAC: 호스트 문단의 height_for_fit 사용
             fmt.height_for_fit
         } else {
             ft.total_height
+        };
+        // [#2319] 저장 lineseg 없는(기계생성) 문단은 fresh 컴포즈가 tac 표 높이를
+        // 줄에 반영하지 못해, 위 fmt 기반 분기가 텍스트 줄높이(예: 17.3px)를
+        // 858px 표의 높이로 채택한다 — 서식 문서 과소분할(−1쪽 계열 26건, r15
+        // 재검증). 측정 높이보다 작으면 측정 높이로 보정한다. 저장 lineseg 보유
+        // 문서는 불변 (#2237 측정-저장 발산 축과 격리).
+        let table_height = if para.line_segs.is_empty() && table_height + 0.5 < ft.total_height {
+            ft.total_height
+        } else {
+            table_height
         };
 
         // TAC 표는 분할하지 않고 통째로 배치
@@ -13144,7 +13781,41 @@ impl TypesetEngine {
             table_height,
             is_first_placed,
             is_last_placed,
+            styles,
         );
+    }
+
+    /// [#2279 TAC host] 모순 조합(treat_as_char=true + wrap=자리차지) 표의
+    /// host 빈 줄박스 높이 (한글 fresh 가 표 위에 별도 배치하는 성분).
+    ///
+    /// 정상 문서의 TAC 표는 줄박스에 포함되어 별도 가산이 없다 — 본 판정은
+    /// 기계생성 결재문서 특유의 모순 조합 + 빈 host 문단에만 발동한다.
+    /// 반환 = host 첫 글자모양의 폰트 크기(px) — 한글 PDF 괘선 실측
+    /// (36392557 pi27: 진입 22px ≈ om_top 1.9 + 15pt 줄박스 20px)과 정합.
+    fn tac_topbottom_conflict_host_line_px(
+        &self,
+        para: &Paragraph,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        if !table.common.treat_as_char
+            || !matches!(
+                table.common.text_wrap,
+                crate::model::shape::TextWrap::TopAndBottom
+            )
+            || para_has_non_whitespace_text(para)
+        {
+            return None;
+        }
+        let cs_id = para
+            .char_shape_id_at(0)
+            .or_else(|| para.char_shapes.first().map(|cs| cs.char_shape_id))?
+            as usize;
+        let font_size = styles.char_styles.get(cs_id)?.font_size;
+        if font_size <= 0.0 {
+            return None;
+        }
+        Some(font_size)
     }
 
     /// 표를 pre-text/table/post-text와 함께 배치한다 (Paginator place_table_fits 동일).
@@ -13161,6 +13832,7 @@ impl TypesetEngine {
         table_total_height: f64,
         is_first_placed: bool,
         is_last_placed: bool,
+        styles: &ResolvedStyleSet,
     ) {
         let vertical_offset = Self::get_table_vertical_offset(table);
         let is_visible_para_float =
@@ -13227,7 +13899,7 @@ impl TypesetEngine {
         // 후속 문단 스냅이 드리프트 역산 lazy base(-796HU 등)로 고착되던 결함.
         // 저장 lineseg 가 개체 높이를 온전히 포함하는 호스트(기계생성 결재문서
         // lh = 표 + outMargin)로 한정한다.
-        if st.is_hwpx_source
+        if st.profile.hwpx_stored_layout()
             && st.col_count == 1
             && st.current_items.is_empty()
             && pre_height <= 0.5
@@ -13274,7 +13946,7 @@ impl TypesetEngine {
             let outer_top_px = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
             let table_top = if signed_vertical_offset > 0 {
                 para_start_height + outer_top_px + v_off_px
-            } else if st.is_hwpx_source {
+            } else if st.profile.hwpx_stored_layout() {
                 // HWPX visible float 는 같은 문단 안의 앞선 float 뒤에 이어 쌓인다.
                 // B/C처럼 둘 다 non-positive offset 이면 문단 시작점이 아니라 현재 흐름
                 // 높이를 기준으로 reserve 해야 layout 의 세로 stacking 과 page break 가 맞는다.
@@ -13301,7 +13973,7 @@ impl TypesetEngine {
             } else {
                 let following_non_positive =
                     has_following_non_positive_visible_float(para, ctrl_idx);
-                let inter_float_gap = if st.is_hwpx_source && following_non_positive {
+                let inter_float_gap = if st.profile.hwpx_stored_layout() && following_non_positive {
                     para_line_spacing_px(para, self.dpi)
                 } else {
                     0.0
@@ -13310,6 +13982,32 @@ impl TypesetEngine {
             }
         } else if tac_wrap_split {
             st.current_height += table_total_height;
+        } else if let Some(host_line_px) = if st.profile.hwpx_stored_layout()
+            && is_last_placed
+            && total_lines <= pre_table_end_line + 1
+        {
+            // [#2279 10k] host 빈 줄박스는 **문단당 1개** — 다중 표 문단에서
+            // 표마다 가산하면 중간 표 배치의 fit 이 과대해져 후속 표가 조기
+            // 개행된다 (156767148 보도자료 pi7: 표2개 문단, 한글 1쪽 vs +1쪽,
+            // 10k 회귀 +29건 군집의 지배 형상). 마지막 표 배치 시점으로 이연
+            // — 단일 표 문단(36392557 pi27 장제목)은 종전과 동일.
+            // [#2279 sec0] host 문단에 표 줄 외 추가 줄박스(트레일러 빈 줄)가
+            // 이미 있으면 host 줄박스가 그 줄로 실체화된 것 — 별도 가산하면
+            // 이중 계상으로 분할 유발(36392557 sec0 표지: 표 892.5 + 트레일러
+            // 25.6 = 918.1 로 한글 1쪽인데 +16 가산 시 934.1 > 930.5 분할).
+            self.tac_topbottom_conflict_host_line_px(para, table, styles)
+        } else {
+            None
+        } {
+            // [#2279 TAC host] 기계생성 결재문서의 모순 조합(treat_as_char=true +
+            // wrap=자리차지) 장제목/결재표: 한글 fresh 는 host 빈 줄박스(호스트
+            // CS 크기)를 표 **위에** 별도 배치한다 — 36392557 pi27 한글 PDF
+            // 괘선 실측: 표 top = 흐름 + om_top(1.9px) + host 줄박스(20px=15pt).
+            // rhwp 는 lh-포함형(host lh = 표+om)으로만 소비해 표당 ~20px 과소
+            // (92셋 −1쪽 계열의 "TAC host +15~21px" 성분). 가산 후에는 생성기
+            // 압축 anchor 로의 후방 스냅이 성장분을 되돌리지 못하게 dirty 처리.
+            st.current_height += host_line_px + pre_height + table_total_height;
+            st.vpos_ladder_dirty = true;
         } else {
             // [#2097 프로브 기록] 빈 host 자리차지 float(v_off>0)의 흐름 전진에
             // v_off + outer_bottom 을 더하는 기하 정합(82802 pi75: 저장 322.6 =
@@ -13423,6 +14121,20 @@ impl TypesetEngine {
         let om_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
         let om_bot = hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
         let table_line_h = hwpunit_to_px(table.common.height as i32, self.dpi) + om_top + om_bot;
+
+        // [#2287 후속/1.hwpx p58] text_height(th) 매칭 우선 — 한컴은 문단의
+        // 모든 줄에 최대 줄높이를 lh 로 저장하는 관례가 있어(1.hwpx pi=322:
+        // 텍스트 줄 ls[0] lh=69085/th=1300, 표 줄 ls[1] lh=th=69085), lh 만으로
+        // 는 텍스트 줄이 먼저 오매칭되어 917px TAC 표의 소비가 17.3px 로
+        // 붕괴(fmt.line_heights[0] 채택)했다. th 가 표 높이와 일치하는 줄이
+        // 있으면 그 줄이 표 줄의 확정 증거이고, 없으면 종전 lh 매칭 유지.
+        let th_match = para.line_segs.iter().enumerate().find_map(|(idx, seg)| {
+            let th = hwpunit_to_px(seg.text_height, self.dpi);
+            ((th - table_line_h).abs() < 1.0).then_some(idx)
+        });
+        if th_match.is_some() {
+            return th_match;
+        }
 
         para.line_segs.iter().enumerate().find_map(|(idx, seg)| {
             let line_h = hwpunit_to_px(seg.line_height, self.dpi);
@@ -13543,7 +14255,7 @@ impl TypesetEngine {
         // [Task #1811] HWPX 의 누적좌표 RowBreak 문서는 host 줄 pre-emit 자체를
         // 저장 vpos 가드보다 먼저 수행한다. 쪽 내부 vpos 를 가진 HWP/HWP3/일반 HWPX
         // 경로는 기존처럼 같은 쪽 저장 flow 확인 뒤에만 pre-emit 한다.
-        let pre_emit_before_vpos_check = st.is_hwpx_source && host_vpos > body_h_hu;
+        let pre_emit_before_vpos_check = st.profile.hwpx_stored_layout() && host_vpos > body_h_hu;
         if pre_emit_before_vpos_check
             && !self.pre_emit_visible_rowbreak_host_text(st, para_idx, para, composed_all, styles)
         {
@@ -13584,11 +14296,17 @@ impl TypesetEngine {
                 break;
             }
             let trim_sb =
-                !st.is_hwp3_variant && !para_near_rowbreak_table(paragraphs_all, next_idx);
+                !st.profile.hwp3_layout() && !para_near_rowbreak_table(paragraphs_all, next_idx);
             st.current_items.push(PageItem::FullParagraph {
                 para_index: next_idx,
             });
-            st.current_height += fmt_n.flow_advance_height(next, st.col_count, trim_sb);
+            st.current_height += fmt_n.flow_advance_height(
+                next,
+                st.col_count,
+                trim_sb,
+                st.vpos_ladder_dirty || !spacing_trim_restorable(paragraphs_all, next_idx),
+                false,
+            );
             st.prefilled_paras.insert(next_idx);
         }
     }
@@ -13727,7 +14445,28 @@ impl TypesetEngine {
                         (b_start..b_end).map(|x| cut_row_h[x]).sum::<f64>()
                             + cs * block_size.saturating_sub(1) as f64
                     } else if rowbreak_use_row_offsets {
-                        block_fragment_height(b_end, blk_start_cut, &[])
+                        // [#2287] 연속분(start_cut)의 per-row 합산은 row_span==1
+                        // 셀만 집계해, 걸친 rowspan 셀의 잔여 유닛이 0 으로
+                        // 평가된다 — 블록이 즉시 "fits" 로 종료되어 선언 잔여가
+                        // 통째로 증발(교육부 연결맵 47×9: 잔여 1904px → 표마다
+                        // 누적, 표 밀집 문서 -40~-64쪽 + 렌더 y=3026 오버플로).
+                        // spacer-트림 잔여(rowspan 셀 포함, 컷 워크 의미론 미러)로
+                        // 하한을 잡는다. per-row 합산이 유의한 높이를 주는 부분
+                        // 계상 사례(59043 병리 표: 음수 패딩 + 측정/렌더 발산,
+                        // #2237 계열)는 기존 동작 보존 — **완전 증발(=0)** 만 보정.
+                        // start_cut 없는 첫 조각(#1486)은 불변.
+                        let frag_h = block_fragment_height(b_end, blk_start_cut, &[]);
+                        if blk_start_cut.is_empty() || frag_h > 0.5 {
+                            frag_h
+                        } else {
+                            frag_h.max(layout_engine.row_block_cut_remaining_height(
+                                table,
+                                b_start,
+                                b_end,
+                                blk_start_cut,
+                                styles,
+                            ))
+                        }
                     } else {
                         layout_engine.row_block_content_height(
                             table,
@@ -13876,7 +14615,25 @@ impl TypesetEngine {
                     split_end_limit = cut_res.consumed_height;
                     split_block_start = Some(b_start);
                     let split_total = if use_offsets {
-                        block_fragment_height(end_row, blk_start_cut, &cut_res.end_cut)
+                        // [#2287] 오프셋(밴드) 컷의 페이지 소비 권위는 컷 워크의
+                        // consumed_height(예산 내 가시 밴드)다. per-row 합산
+                        // (block_fragment_height)은 rowspan 걸침 셀의 유닛을 행
+                        // 단위로 배분하지 못해 양방향으로 발산한다:
+                        // - 연속분(start_cut)에서 row_span==1 필터로 **0 평가**
+                        //   (완전 증발 — 표 밀집 -40~-64쪽의 결함 1), 또는
+                        // - 첫 조각에서 걸침 셀 유닛 전량이 계상되어 **블록 전체로
+                        //   과대** (교육부 47×9 r2..4: frag 2354.6 vs 컷 450.7 —
+                        //   p25 가 2396px 로 만재되어 p26 sliver + p30 tail
+                        //   overflow, PR #2290 P1 리뷰).
+                        // frag_total 은 렌더 조각 표시용 참고값으로만 두고, 소비는
+                        // 컷 워크와 발산할 때 consumed_height 로 정정한다.
+                        let frag_total =
+                            block_fragment_height(end_row, blk_start_cut, &cut_res.end_cut);
+                        if (frag_total - cut_res.consumed_height).abs() <= 0.5 {
+                            frag_total
+                        } else {
+                            cut_res.consumed_height
+                        }
                     } else {
                         layout_engine.row_block_content_height(
                             table,
@@ -14072,6 +14829,13 @@ impl TypesetEngine {
                 end_row = r;
                 continue;
             }
+            // [#2291] landscape RowBreak 연속 페이지 bleed 는 순수 rs=1 행에만
+            // 적용한다. rowspan 걸침 행(세로 병합 라벨이 확정한 행 그리드)은
+            // 한글이 병합 셀 높이 배분으로 정한 행 경계를 지켜 예산을 넘겨
+            // 적재하지 않는다 — 교육과정 연결맵(244×10, rs=176 세로 라벨)에서
+            // 이 bleed 가 쪽당 ~260px(≈5행) 과다 적재를 누적해 s5 표를 24→19쪽
+            // 으로 과소분할(문서 전체 −30쪽)했다. task #1672 편람(순수 rs=1
+            // 행)의 과다분할 완화 대상은 rs_touched=false 라 그대로 보존된다.
             if landscape_rowbreak_bleed
                 && mt.allows_row_break_split()
                 && is_continuation
@@ -14092,6 +14856,7 @@ impl TypesetEngine {
                 && header_overhead > 0.5
                 && row_start_cut.is_empty()
                 && r > cursor_row
+                && !rowspan_touched[r]
                 && row_total <= landscape_short_row_max_height
                 && consumed + cs_before + row_total
                     <= avail_for_rows + landscape_short_row_tolerance
@@ -14336,7 +15101,7 @@ impl TypesetEngine {
         let declared_object_total = raw_table_ctrl_height_px(table, self.dpi)
             .unwrap_or_else(|| hwpunit_to_px(table.common.height as i32, self.dpi).max(0.0))
             + host_spacing_total;
-        let declared_empty_para_float_total = if !st.is_hwpx_source
+        let declared_empty_para_float_total = if !st.profile.hwpx_stored_layout()
             && !table.common.treat_as_char
             && is_para_topbottom_float(&table.common)
             && !para_has_visible_text(para)
@@ -14455,6 +15220,7 @@ impl TypesetEngine {
                         0.0,
                         is_first_placed,
                         is_last_placed,
+                        styles,
                     );
                     return;
                 }
@@ -14609,6 +15375,7 @@ impl TypesetEngine {
                     block_height,
                     is_first_placed,
                     is_last_placed,
+                    styles,
                 );
                 // 배타 모델: 블록은 flow 를 소비하지 않는다(하단 절대배치) — 소비 롤백
                 // 후 하단 배타 영역으로 예약. 저장-flow 소비 누계는 후속 틀 vpos 보정용.
@@ -14866,6 +15633,7 @@ impl TypesetEngine {
                 },
                 is_first_placed,
                 is_last_placed,
+                styles,
             );
             return;
         }
@@ -14894,6 +15662,7 @@ impl TypesetEngine {
                 table_total,
                 is_first_placed,
                 is_last_placed,
+                styles,
             );
             return;
         }
@@ -14950,6 +15719,7 @@ impl TypesetEngine {
                 table_total,
                 is_first_placed,
                 is_last_placed,
+                styles,
             );
             return;
         }
@@ -14984,6 +15754,7 @@ impl TypesetEngine {
                 table_total,
                 is_first_placed,
                 is_last_placed,
+                styles,
             );
             return;
         }
@@ -15000,8 +15771,7 @@ impl TypesetEngine {
         // [Task #993] advance_row_cut 호출용 LayoutEngine — 컷 측정은 dpi 와
         // 셀 패딩/중첩 표 높이 계산에만 의존하므로 ad hoc 인스턴스로 충분하다.
         let layout_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
-        layout_engine.set_hwp3_variant(st.is_hwp3_variant);
-        layout_engine.set_hwpx_source(st.is_hwpx_source);
+        layout_engine.set_layout_profile(st.profile);
         // [Task #993] rowspan(row_span>1) 셀이 걸친 행 — 컷 모델(advance_row_cut)은
         // row_span==1 셀만 다루므로 rowspan 셀 높이를 측정하지 못한다. 구현계획서
         // §4대로 rowspan 행은 MeasuredTable 행 높이를 권위로 쓴다(렌더러도 동일).
@@ -15310,7 +16080,7 @@ impl TypesetEngine {
                 seg.vertical_pos
                     > crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi)
             });
-        if st.is_hwpx_source
+        if st.profile.hwpx_stored_layout()
             && host_vpos_is_cumulative
             && !table.common.treat_as_char
             && is_para_topbottom_float(&table.common)
@@ -15518,23 +16288,23 @@ impl TypesetEngine {
             const HWPX_LANDSCAPE_ROWBREAK_SHORT_ROW_TOLERANCE_PX: f64 = 320.0;
             const HWPX_LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX: f64 = 320.0;
             let landscape_rowbreak_bleed = st.layout.body_area.height < 700.0;
-            let landscape_whole_row_tolerance = if st.is_hwpx_source {
+            let landscape_whole_row_tolerance = if st.profile.hwpx_stored_layout() {
                 HWPX_LANDSCAPE_ROWBREAK_WHOLE_ROW_TOLERANCE_PX
             } else {
                 LANDSCAPE_ROWBREAK_WHOLE_ROW_TOLERANCE_PX
             };
-            let landscape_short_row_tolerance = if st.is_hwpx_source {
+            let landscape_short_row_tolerance = if st.profile.hwpx_stored_layout() {
                 HWPX_LANDSCAPE_ROWBREAK_SHORT_ROW_TOLERANCE_PX
             } else {
                 LANDSCAPE_ROWBREAK_SHORT_ROW_TOLERANCE_PX
             };
-            let landscape_short_row_max_height = if st.is_hwpx_source {
+            let landscape_short_row_max_height = if st.profile.hwpx_stored_layout() {
                 HWPX_LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX
             } else {
                 LANDSCAPE_ROWBREAK_SHORT_ROW_MAX_HEIGHT_PX
             };
             let rowbreak_split_row_overflow_tolerance =
-                if st.is_hwpx_source || !st.has_stored_line_segs {
+                if st.profile.hwpx_stored_layout() || !st.has_stored_line_segs {
                     HWPX_ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
                 } else {
                     ROWBREAK_SPLIT_ROW_OVERFLOW_TOLERANCE_PX
@@ -15814,6 +16584,37 @@ impl TypesetEngine {
     // 다단 문단 처리
     // ========================================================
 
+    /// [Task #2320] 비-0 단 시작 문단의 쪽/단 경계 되감김 감지.
+    ///
+    /// 마지막 단에서 시작하는 문단의 문단 내 되감김은 "다음 쪽 단 0 으로 계속"의
+    /// 쪽 경계 인코딩이다 — 단, **되감김 목표가 단 상단 근방**일 때만 인정한다
+    /// (treatise pi=29: 4926HU ≈ 본문 높이 7%). 목표가 페이지 중간에 머무는
+    /// 되감김(143E 신문 스크랩 pi=9: ≈40%)은 경계가 아니라 개체 어울림 흐름의
+    /// 잔재이므로 제외한다. 단 0 시작 경로(`detect_column_breaks_in_paragraph`,
+    /// 임계값 없는 any-decrease)는 건드리지 않는다.
+    fn detect_near_top_rewind_breaks(
+        para: &Paragraph,
+        body_height_px: f64,
+        dpi: f64,
+    ) -> Vec<usize> {
+        const NEAR_TOP_RATIO: f64 = 0.15;
+        let mut breaks = vec![0usize];
+        if para.line_segs.len() <= 1 {
+            return breaks;
+        }
+        for i in 1..para.line_segs.len() {
+            let prev = &para.line_segs[i - 1];
+            let curr = &para.line_segs[i];
+            if curr.vertical_pos < prev.vertical_pos
+                && crate::renderer::hwpunit_to_px(curr.vertical_pos, dpi)
+                    <= body_height_px * NEAR_TOP_RATIO
+            {
+                breaks.push(i);
+            }
+        }
+        breaks
+    }
+
     /// 다단 레이아웃에서 문단 내 단 경계를 감지한다.
     fn detect_column_breaks_in_paragraph(para: &Paragraph) -> Vec<usize> {
         let mut breaks = vec![0usize];
@@ -15864,12 +16665,17 @@ impl TypesetEngine {
             }
             st.current_height += part_height;
 
-            // 마지막 단이 아니면 다음 단으로 flush
+            // 마지막 조각이 아니면 다음 단으로 진행.
+            // [Task #2320] 마지막 단에서의 분할은 새 페이지 단 0 으로 진행한다
+            // (advance_column_or_new_page). 종전 코드는 마지막 단에서 flush 만 하고
+            // 단/높이를 갱신하지 않아 잔여 조각이 같은 단 좌표에 눌러앉았다.
             if bi + 1 < col_breaks.len() {
-                st.flush_column();
                 if st.current_column + 1 < st.col_count {
+                    st.flush_column();
                     st.current_column += 1;
                     st.current_height = 0.0;
+                } else {
+                    st.advance_column_or_new_page();
                 }
             }
         }
@@ -16921,15 +17727,12 @@ mod tests {
             0,
             &[],
             false,
-            false,
+            Default::default(),
             false,
             false,
             Some(&shape),
             None,
             &std::collections::HashSet::new(),
-            false,
-            false,
-            false,
             EndnoteDeferral::None,
         );
 

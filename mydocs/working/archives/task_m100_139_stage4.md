@@ -8,7 +8,7 @@
 
 ## 산출물
 
-- `mydocs/tech/equation_layout_spec.md` (8개 장)
+- `mydocs/tech/investigations/issue-139/equation_layout_spec.md` (8개 장)
 
 ## 완료 내용
 

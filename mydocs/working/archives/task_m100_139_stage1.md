@@ -8,7 +8,7 @@
 
 ## 산출물
 
-- `mydocs/tech/equation_latex_comparison.md` (10개 장, 약 650줄)
+- `mydocs/tech/investigations/issue-139/equation_latex_comparison.md` (10개 장, 약 650줄)
 
 ## 완료 내용
 
@@ -55,4 +55,4 @@
 
 ## 다음 단계
 
-2단계: 수식 폰트 조사 및 선정 → `mydocs/tech/equation_font_selection.md`
+2단계: 수식 폰트 조사 및 선정 → `mydocs/tech/investigations/issue-139/equation_font_selection.md`

@@ -2,7 +2,7 @@
 
 - **이슈**: edwardkim/rhwp#1248
 - **단계**: Stage 1 / 3 (현황 맵)
-- **산출물**: `mydocs/tech/trailing_model_render_vs_pagination_1248.md` §1
+- **산출물**: `mydocs/tech/investigations/issue-1248/trailing_model_render_vs_pagination_1248.md` §1
 - **코드 변경**: 없음 (조사 전용)
 
 ## 한 일

@@ -444,7 +444,7 @@ impl LayoutEngine {
         bbox: BoundingBox,
         cfb_data: &[u8],
     ) -> bool {
-        if !self.is_hwpx_source.get()
+        if !self.profile.get().hwpx_stored_layout()
             || !crate::parser::ole_container::is_hmapsi_ole_container(cfb_data)
         {
             return false;

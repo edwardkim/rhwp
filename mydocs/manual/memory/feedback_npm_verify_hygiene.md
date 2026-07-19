@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: feedback_npm_verify_hygiene
 description: "PR 브랜치 npm 검증 위생 — 검증 전 npm ci 선행, 브랜치 이탈 후 untracked node_modules 잔류 정리, 신설 패키지 디렉터리는 개별 .gitignore 필요 (2026-07-11)"
 metadata: 

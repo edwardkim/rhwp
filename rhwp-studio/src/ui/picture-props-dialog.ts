@@ -16,15 +16,19 @@ import type { EventBus } from '@/core/event-bus';
 import type { CommandServices } from '@/command/types';
 import { userSettings } from '@/core/user-settings';
 import { enableDialogDrag } from './dialog-drag';
+import {
+  buildPicturePropsPatch,
+  resolvePicturePropsApplyTarget,
+  type PicturePropsApplyForm,
+  type PicturePropsApplyTarget,
+  type PicturePropsPatch,
+} from './picture-props-apply-model';
 
 /** HWPUNIT ↔ mm 변환 상수 (1 inch = 25.4 mm = 7200 HWPUNIT) */
 const HWP_PER_MM = 7200 / 25.4; // ≈ 283.46
 
 function hwpToMm(hwp: number): number {
   return hwp / HWP_PER_MM;
-}
-function mmToHwp(mm: number): number {
-  return Math.round(mm * HWP_PER_MM);
 }
 
 /** HWP ColorRef (BGR u32) → HTML hex (#rrggbb) */
@@ -33,15 +37,6 @@ function colorRefToHex(c: number): string {
   const g = (c >> 8) & 0xFF;
   const r = c & 0xFF;
   return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
-}
-
-/** HTML hex (#rrggbb) → HWP ColorRef (BGR u32) */
-function hexToColorRef(hex: string): number {
-  const h = hex.replace('#', '');
-  const r = parseInt(h.substring(0, 2), 16);
-  const g = parseInt(h.substring(2, 4), 16);
-  const b = parseInt(h.substring(4, 6), 16);
-  return (b << 16) | (g << 8) | r;
 }
 
 /** 탭 이름 — 그림용 */
@@ -1927,385 +1922,187 @@ export class PicturePropsDialog {
   //  설정/취소
   // ════════════════════════════════════════════════════════
 
+  private captureApplyForm(): PicturePropsApplyForm {
+    return {
+      common: {
+        sizeProtect: this.sizeFixedCheck.checked,
+        width: this.widthInput.value,
+        height: this.heightInput.value,
+        treatAsChar: this.treatAsCharCheck.checked,
+        textWrap: this.getSelectedWrap(),
+        horzRelTo: this.horzRelSelect.value,
+        horzAlign: this.horzAlignSelect.value,
+        horzOffset: this.horzOffsetInput.value,
+        vertRelTo: this.vertRelSelect.value,
+        vertAlign: this.vertAlignSelect.value,
+        vertOffset: this.vertOffsetInput.value,
+        restrictInPage: this.pageAreaLimitCheck.checked,
+        allowOverlap: this.overlapAllowCheck.checked,
+        description: this.descInput.value,
+      },
+      transform: {
+        rotation: this.rotationInput
+          ? { value: this.rotationInput.value, disabled: this.rotationInput.disabled }
+          : undefined,
+        horzFlip: this.horzFlipCheck
+          ? { value: this.horzFlipCheck.checked, disabled: this.horzFlipCheck.disabled }
+          : undefined,
+        vertFlip: this.vertFlipCheck
+          ? { value: this.vertFlipCheck.checked, disabled: this.vertFlipCheck.disabled }
+          : undefined,
+      },
+      outerMargin: {
+        left: this.outerMarginLeftInput?.value,
+        top: this.outerMarginTopInput?.value,
+        right: this.outerMarginRightInput?.value,
+        bottom: this.outerMarginBottomInput?.value,
+      },
+      caption: {
+        present: this.captionBtns.length > 0,
+        activeIndex: this.captionBtns.findIndex(b => b.classList.contains('active')),
+        size: this.captionSizeInput?.value ?? '',
+        gap: this.captionGapInput?.value ?? '',
+        includeMargin: this.captionExpandCheck?.checked ?? false,
+      },
+      line: {
+        color: this.lineColorInput?.value,
+        width: this.lineWidthInput?.value,
+        type: this.lineTypeSelect?.value,
+        end: this.lineEndSelect?.value,
+        arrowStart: this.arrowStartSelect?.value,
+        arrowEnd: this.arrowEndSelect?.value,
+        arrowStartSize: this.arrowStartSizeSelect?.value,
+        arrowEndSize: this.arrowEndSizeSelect?.value,
+      },
+      shapeTextBox: {
+        marginLeft: this.tbMarginLeftInput?.value,
+        marginTop: this.tbMarginTopInput?.value,
+        marginRight: this.tbMarginRightInput?.value,
+        marginBottom: this.tbMarginBottomInput?.value,
+        verticalAlign: this.tbVertAlignBtns.find(b => b.classList.contains('active'))?.dataset.value,
+      },
+      shapeCorner: {
+        customChecked: this.cornerCustomRadio?.checked ?? false,
+        customValue: this.cornerCustomInput?.value,
+        activeIndex: this.cornerBtns.findIndex(b => b.classList.contains('active')),
+      },
+      shapeFill: {
+        solidChecked: this.fillSolidRadio?.checked,
+        gradientChecked: this.fillGradientRadio?.checked,
+        solidColors: this.solidFaceColor
+          ? { face: this.solidFaceColor.value, pattern: this.solidPatColor?.value ?? '' }
+          : undefined,
+        patternType: this.solidPatternSelect?.value,
+        gradientType: this.gradTypeSelect?.value,
+        gradientAngle: this.gradTiltInput?.value,
+        gradientCenterX: this.gradCenterXInput?.value,
+        gradientCenterY: this.gradCenterYInput?.value,
+        gradientBlur: this.gradBlurInput?.value,
+        transparency: this.fillTransInput?.value,
+      },
+      shapeShadow: {
+        present: this.shadowTypeBtns.length > 0,
+        activeIndex: this.shadowTypeBtns.findIndex(b => b.classList.contains('active')),
+        color: this.shadowColorInput?.value ?? '',
+        offsetX: this.shadowHInput?.value ?? '',
+        offsetY: this.shadowVInput?.value ?? '',
+      },
+      image: {
+        scale: this.picScaleXInput
+          ? { x: this.picScaleXInput.value, y: this.picScaleYInput?.value ?? '' }
+          : undefined,
+        crop: this.picCropLeftInput
+          ? {
+              left: this.picCropLeftInput.value,
+              top: this.picCropTopInput?.value ?? '',
+              right: this.picCropRightInput?.value ?? '',
+              bottom: this.picCropBottomInput?.value ?? '',
+            }
+          : undefined,
+        padding: this.picPadLeftInput
+          ? {
+              left: this.picPadLeftInput.value,
+              top: this.picPadTopInput?.value ?? '',
+              right: this.picPadRightInput?.value ?? '',
+              bottom: this.picPadBottomInput?.value ?? '',
+            }
+          : undefined,
+        effectControlsPresent: this.picEffectRadios.length > 0,
+        selectedEffect: this.picEffectRadios.find(r => r.checked)?.value,
+        brightness: this.picBrightnessInput?.value,
+        contrast: this.picContrastInput?.value,
+        transparency: this.picTransparencyInput?.value,
+      },
+    };
+  }
+
+  private applyPropertyPatchToWasm(
+    target: PicturePropsApplyTarget,
+    patch: PicturePropsPatch,
+  ): void {
+    switch (target.kind) {
+      case 'cell-shape':
+        this.wasm.setCellShapePropertiesByPath(
+          target.sec, target.para, target.cellPath, target.innerControlIdx, patch,
+        );
+        return;
+      case 'body-shape':
+        this.wasm.setShapeProperties(target.sec, target.para, target.ci, patch);
+        return;
+      case 'header-footer-picture':
+        // 캡션 신규 생성은 native API에서 미지원이며 기존 속성 변경만 허용한다.
+        this.wasm.setHeaderFooterPictureProperties(
+          target.sec, target.outerParaIdx, target.outerControlIdx,
+          target.para, target.ci, patch,
+        );
+        return;
+      case 'cell-picture':
+        this.wasm.setCellPicturePropertiesByPath(
+          target.sec, target.para, target.cellPath, target.innerControlIdx, patch,
+        );
+        return;
+      case 'body-picture':
+        this.wasm.setPictureProperties(target.sec, target.para, target.ci, patch);
+    }
+  }
+
+  private applyPropertyPatch(patch: PicturePropsPatch): void {
+    const target = resolvePicturePropsApplyTarget(this.objectType, {
+      sec: this.sec,
+      para: this.para,
+      ci: this.ci,
+      headerFooter: this.headerFooter,
+      cellPath: this.cellPath,
+      innerControlIdx: this.innerControlIdx,
+    });
+    const applyProps = () => this.applyPropertyPatchToWasm(target, patch);
+
+    // 개체 속성 변경도 undo 대상이다. services 미주입 환경에서만 직접 적용한다.
+    const ih = this.services?.getInputHandler();
+    if (ih) {
+      ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'objectProps',
+        operation: () => {
+          applyProps();
+          return ih.getCursorPosition();
+        },
+      });
+    } else {
+      applyProps();
+      this.eventBus.emit('document-changed');
+    }
+  }
+
   private handleOk(): void {
     if (!this.props) { this.hide(); return; }
-    const updated: Record<string, unknown> = {};
-    const sizeProtect = this.sizeFixedCheck.checked;
-
-    if (sizeProtect !== (this.props.sizeProtect ?? false)) {
-      updated['sizeProtect'] = sizeProtect;
-    }
-
-    // 크기
-    if (!sizeProtect) {
-      const newW = mmToHwp(parseFloat(this.widthInput.value) || 0);
-      const newH = mmToHwp(parseFloat(this.heightInput.value) || 0);
-      if (newW !== this.props.width) updated['width'] = newW;
-      if (newH !== this.props.height) updated['height'] = newH;
-    }
-
-    // 위치
-    const tac = this.treatAsCharCheck.checked;
-    if (tac !== this.props.treatAsChar) updated['treatAsChar'] = tac;
-
-    if (!tac) {
-      let tw = this.getSelectedWrap();
-      const hr = this.horzRelSelect.value;
-      if (hr === 'TakePlace') tw = 'TopAndBottom';
-      if (tw !== this.props.textWrap) updated['textWrap'] = tw;
-      if (hr !== 'TakePlace' && hr !== this.props.horzRelTo) updated['horzRelTo'] = hr;
-      const ha = this.horzAlignSelect.value;
-      if (ha !== this.props.horzAlign) updated['horzAlign'] = ha;
-      const ho = mmToHwp(parseFloat(this.horzOffsetInput.value) || 0);
-      if (ho !== this.props.horzOffset) updated['horzOffset'] = ho;
-      const vr = this.vertRelSelect.value;
-      if (vr !== this.props.vertRelTo) updated['vertRelTo'] = vr;
-      const va = this.vertAlignSelect.value;
-      if (va !== this.props.vertAlign) updated['vertAlign'] = va;
-      const vo = mmToHwp(parseFloat(this.vertOffsetInput.value) || 0);
-      if (vo !== this.props.vertOffset) updated['vertOffset'] = vo;
-      const restrictInPage = this.pageAreaLimitCheck.checked;
-      if (restrictInPage !== (this.props.restrictInPage ?? true)) {
-        updated['restrictInPage'] = restrictInPage;
-      }
-      const allowOverlap = this.overlapAllowCheck.checked;
-      if (allowOverlap !== (this.props.allowOverlap ?? false)) {
-        updated['allowOverlap'] = allowOverlap;
-      }
-    }
-
-    // 기타
-    const desc = this.descInput.value;
-    if (desc !== this.props.description) updated['description'] = desc;
-
-    // Shape(글상자) 전용 속성
-    if ((this.objectType === 'shape' || this.objectType === 'line' || this.objectType === 'group' || this.objectType === 'ole') && this.shapeProps) {
-      const isOle = this.objectType === 'ole';
-
-      // OLE는 한컴처럼 여백/캡션과 선 범위만 저장한다.
-      if (isOle) {
-        if (this.outerMarginLeftInput) {
-          const ml = mmToHwp(parseFloat(this.outerMarginLeftInput.value) || 0);
-          if (ml !== (this.props.outerMarginLeft ?? 0)) updated['outerMarginLeft'] = ml;
-        }
-        if (this.outerMarginRightInput) {
-          const mr = mmToHwp(parseFloat(this.outerMarginRightInput.value) || 0);
-          if (mr !== (this.props.outerMarginRight ?? 0)) updated['outerMarginRight'] = mr;
-        }
-        if (this.outerMarginTopInput) {
-          const mt = mmToHwp(parseFloat(this.outerMarginTopInput.value) || 0);
-          if (mt !== (this.props.outerMarginTop ?? 0)) updated['outerMarginTop'] = mt;
-        }
-        if (this.outerMarginBottomInput) {
-          const mb = mmToHwp(parseFloat(this.outerMarginBottomInput.value) || 0);
-          if (mb !== (this.props.outerMarginBottom ?? 0)) updated['outerMarginBottom'] = mb;
-        }
-        if (this.captionBtns.length > 0) {
-          const activeIdx = this.captionBtns.findIndex(b => b.classList.contains('active'));
-          const hasCaption = activeIdx >= 0 && activeIdx !== 4;
-          updated['hasCaption'] = hasCaption;
-          if (hasCaption) {
-            const { direction, vertAlign } = this.gridIndexToCaption(activeIdx);
-            updated['captionDirection'] = direction;
-            updated['captionVertAlign'] = vertAlign;
-            updated['captionWidth'] = mmToHwp(parseFloat(this.captionSizeInput.value) || 0);
-            updated['captionSpacing'] = mmToHwp(parseFloat(this.captionGapInput.value) || 0);
-            updated['captionIncludeMargin'] = this.captionExpandCheck.checked;
-          }
-        }
-      } else {
-        // 글상자 여백
-        const ml = mmToHwp(parseFloat(this.tbMarginLeftInput?.value) || 0);
-        const mr = mmToHwp(parseFloat(this.tbMarginRightInput?.value) || 0);
-        const mt = mmToHwp(parseFloat(this.tbMarginTopInput?.value) || 0);
-        const mb = mmToHwp(parseFloat(this.tbMarginBottomInput?.value) || 0);
-        if (ml !== (this.shapeProps.tbMarginLeft ?? 0)) updated['tbMarginLeft'] = ml;
-        if (mr !== (this.shapeProps.tbMarginRight ?? 0)) updated['tbMarginRight'] = mr;
-        if (mt !== (this.shapeProps.tbMarginTop ?? 0)) updated['tbMarginTop'] = mt;
-        if (mb !== (this.shapeProps.tbMarginBottom ?? 0)) updated['tbMarginBottom'] = mb;
-
-        // 세로 정렬 (아이콘 버튼)
-        const activeVa = this.tbVertAlignBtns.find(b => b.classList.contains('active'));
-        const vaVal = activeVa?.dataset.value ?? 'Top';
-        if (vaVal !== (this.shapeProps.tbVerticalAlign ?? 'Top')) updated['tbVerticalAlign'] = vaVal;
-
-        // 회전
-        if (this.rotationInput && !this.rotationInput.disabled) {
-          const rot = parseInt(this.rotationInput.value) || 0;
-          if (rot !== (this.shapeProps.rotationAngle ?? 0)) updated['rotationAngle'] = rot;
-        }
-        // 대칭
-        if (this.horzFlipCheck && !this.horzFlipCheck.disabled) {
-          const hf = this.horzFlipCheck.checked;
-          if (hf !== !!this.shapeProps.horzFlip) updated['horzFlip'] = hf;
-        }
-        if (this.vertFlipCheck && !this.vertFlipCheck.disabled) {
-          const vf = this.vertFlipCheck.checked;
-          if (vf !== !!this.shapeProps.vertFlip) updated['vertFlip'] = vf;
-        }
-      }
-
-      // 선 (색/굵기/종류/끝모양/화살표)
-      if (this.lineColorInput) {
-        const bc = hexToColorRef(this.lineColorInput.value);
-        if (bc !== (this.shapeProps.borderColor ?? 0)) updated['borderColor'] = bc;
-      }
-      if (this.lineWidthInput) {
-        const bw = mmToHwp(parseFloat(this.lineWidthInput.value) || 0);
-        if (bw !== (this.shapeProps.borderWidth ?? 0)) updated['borderWidth'] = bw;
-      }
-      if (this.lineTypeSelect) {
-        const lt = parseInt(this.lineTypeSelect.value) || 0;
-        if (lt !== (this.shapeProps.lineType ?? 1)) updated['lineType'] = lt;
-      }
-      if (this.lineEndSelect) {
-        const le = parseInt(this.lineEndSelect.value) || 0;
-        if (le !== (this.shapeProps.lineEndShape ?? 0)) updated['lineEndShape'] = le;
-      }
-      if (!isOle && this.arrowStartSelect) {
-        const as_ = parseInt(this.arrowStartSelect.value) || 0;
-        if (as_ !== (this.shapeProps.arrowStart ?? 0)) updated['arrowStart'] = as_;
-      }
-      if (!isOle && this.arrowEndSelect) {
-        const ae = parseInt(this.arrowEndSelect.value) || 0;
-        if (ae !== (this.shapeProps.arrowEnd ?? 0)) updated['arrowEnd'] = ae;
-      }
-      if (!isOle && this.arrowStartSizeSelect) {
-        const ass = parseInt(this.arrowStartSizeSelect.value) || 0;
-        if (ass !== (this.shapeProps.arrowStartSize ?? 0)) updated['arrowStartSize'] = ass;
-      }
-      if (!isOle && this.arrowEndSizeSelect) {
-        const aes = parseInt(this.arrowEndSizeSelect.value) || 0;
-        if (aes !== (this.shapeProps.arrowEndSize ?? 0)) updated['arrowEndSize'] = aes;
-      }
-
-      // 모서리 곡률
-      if (!isOle && this.cornerCustomRadio?.checked && this.cornerCustomInput) {
-        const rr = parseInt(this.cornerCustomInput.value) || 0;
-        if (rr !== (this.shapeProps.roundRate ?? 0)) updated['roundRate'] = rr;
-      } else if (!isOle) {
-        const activeCorner = this.cornerBtns.findIndex(b => b.classList.contains('active'));
-        let rr = 0;
-        if (activeCorner === 1) rr = 20;       // 둥근 모양
-        else if (activeCorner === 2) rr = 50;   // 반원
-        if (rr !== (this.shapeProps.roundRate ?? 0)) updated['roundRate'] = rr;
-      }
-
-      // 채우기
-      if (!isOle) {
-        let fillType = 'none';
-        if (this.fillSolidRadio?.checked) fillType = 'solid';
-        else if (this.fillGradientRadio?.checked) fillType = 'gradient';
-        if (fillType !== (this.shapeProps.fillType ?? 'none')) updated['fillType'] = fillType;
-
-        if (fillType === 'solid' && this.solidFaceColor) {
-          // 항상 전송 — SolidFill이 없을 수 있으므로 비교 생략
-          updated['fillBgColor'] = hexToColorRef(this.solidFaceColor.value);
-          updated['fillPatColor'] = hexToColorRef(this.solidPatColor.value);
-          if (this.solidPatternSelect) {
-            updated['fillPatType'] = parseInt(this.solidPatternSelect.value) || -1;
-          }
-        }
-
-        if (fillType === 'gradient') {
-          if (this.gradTypeSelect) updated['gradientType'] = parseInt(this.gradTypeSelect.value) || 1;
-          if (this.gradTiltInput) updated['gradientAngle'] = parseInt(this.gradTiltInput.value) || 0;
-          if (this.gradCenterXInput) updated['gradientCenterX'] = parseInt(this.gradCenterXInput.value) || 0;
-          if (this.gradCenterYInput) updated['gradientCenterY'] = parseInt(this.gradCenterYInput.value) || 0;
-          if (this.gradBlurInput) updated['gradientBlur'] = parseInt(this.gradBlurInput.value) || 0;
-        }
-
-        // 채우기 투명도 (한컴 호환: alpha=0 → 불투명, alpha=255 → 완전 투명)
-        if (this.fillTransInput && (fillType === 'solid' || fillType === 'gradient')) {
-          const transPct = parseInt(this.fillTransInput.value) || 0;
-          const alpha = Math.round(transPct * 255 / 100);
-          updated['fillAlpha'] = alpha;
-        }
-      }
-
-      // 그림자
-      if (!isOle && this.shadowTypeBtns.length > 0) {
-        const activeIdx = this.shadowTypeBtns.findIndex(b => b.classList.contains('active'));
-        const shadowType = activeIdx > 0 ? activeIdx : 0;
-        updated['shadowType'] = shadowType;
-        if (shadowType > 0) {
-          updated['shadowColor'] = hexToColorRef(this.shadowColorInput.value);
-          updated['shadowOffsetX'] = mmToHwp(parseFloat(this.shadowHInput.value) || 0);
-          updated['shadowOffsetY'] = mmToHwp(parseFloat(this.shadowVInput.value) || 0);
-        } else {
-          updated['shadowOffsetX'] = 0;
-          updated['shadowOffsetY'] = 0;
-        }
-      }
-    }
-
-    // Picture(그림) 전용 속성
-    if (this.objectType === 'image' && this.props) {
-      const pp = this.props;
-
-      // 회전/대칭
-      if (this.rotationInput && !this.rotationInput.disabled) {
-        const rot = parseInt(this.rotationInput.value) || 0;
-        if (rot !== (pp.rotationAngle ?? 0)) updated['rotationAngle'] = rot;
-      }
-      if (this.horzFlipCheck && !this.horzFlipCheck.disabled) {
-        const hf = this.horzFlipCheck.checked;
-        if (hf !== !!pp.horzFlip) updated['horzFlip'] = hf;
-      }
-      if (this.vertFlipCheck && !this.vertFlipCheck.disabled) {
-        const vf = this.vertFlipCheck.checked;
-        if (vf !== !!pp.vertFlip) updated['vertFlip'] = vf;
-      }
-
-      // 바깥 여백
-      if (this.outerMarginLeftInput) {
-        const ml = mmToHwp(parseFloat(this.outerMarginLeftInput.value) || 0);
-        if (ml !== (pp.outerMarginLeft ?? 0)) updated['outerMarginLeft'] = ml;
-      }
-      if (this.outerMarginRightInput) {
-        const mr = mmToHwp(parseFloat(this.outerMarginRightInput.value) || 0);
-        if (mr !== (pp.outerMarginRight ?? 0)) updated['outerMarginRight'] = mr;
-      }
-      if (this.outerMarginTopInput) {
-        const mt = mmToHwp(parseFloat(this.outerMarginTopInput.value) || 0);
-        if (mt !== (pp.outerMarginTop ?? 0)) updated['outerMarginTop'] = mt;
-      }
-      if (this.outerMarginBottomInput) {
-        const mb = mmToHwp(parseFloat(this.outerMarginBottomInput.value) || 0);
-        if (mb !== (pp.outerMarginBottom ?? 0)) updated['outerMarginBottom'] = mb;
-      }
-
-      // 캡션
-      if (this.captionBtns.length > 0) {
-        const activeIdx = this.captionBtns.findIndex(b => b.classList.contains('active'));
-        const hasCaption = activeIdx >= 0 && activeIdx !== 4; // 4 = 중앙(개체 자리)은 캡션 없음
-        updated['hasCaption'] = hasCaption; // 항상 전달 — Rust 캡션 분기 진입 보장
-        if (hasCaption) {
-          const { direction, vertAlign } = this.gridIndexToCaption(activeIdx);
-          updated['captionDirection'] = direction;
-          updated['captionVertAlign'] = vertAlign;
-          updated['captionWidth'] = mmToHwp(parseFloat(this.captionSizeInput.value) || 0);
-          updated['captionSpacing'] = mmToHwp(parseFloat(this.captionGapInput.value) || 0);
-          updated['captionIncludeMargin'] = this.captionExpandCheck.checked;
-        }
-      }
-
-      // 테두리
-      if (this.lineColorInput) {
-        const bc = hexToColorRef(this.lineColorInput.value);
-        if (bc !== (pp.borderColor ?? 0)) updated['borderColor'] = bc;
-      }
-      if (this.lineWidthInput) {
-        const bw = mmToHwp(parseFloat(this.lineWidthInput.value) || 0);
-        if (bw !== (pp.borderWidth ?? 0)) updated['borderWidth'] = bw;
-      }
-
-      // 그림 탭 — 확대/축소 → 크기 변환
-      if (!sizeProtect && this.picScaleXInput && pp.originalWidth > 0) {
-        const scaleX = parseFloat(this.picScaleXInput.value) || 100;
-        const scaleY = parseFloat(this.picScaleYInput.value) || 100;
-        const newW = Math.round(pp.originalWidth * scaleX / 100);
-        const newH = Math.round(pp.originalHeight * scaleY / 100);
-        if (newW !== pp.width) updated['width'] = newW;
-        if (newH !== pp.height) updated['height'] = newH;
-      }
-
-      // 그림 탭 — 자르기
-      if (this.picCropLeftInput) {
-        const cl = mmToHwp(parseFloat(this.picCropLeftInput.value) || 0);
-        if (cl !== (pp.cropLeft ?? 0)) updated['cropLeft'] = cl;
-        const ct = mmToHwp(parseFloat(this.picCropTopInput.value) || 0);
-        if (ct !== (pp.cropTop ?? 0)) updated['cropTop'] = ct;
-        const cr = mmToHwp(parseFloat(this.picCropRightInput.value) || 0);
-        if (cr !== (pp.cropRight ?? 0)) updated['cropRight'] = cr;
-        const cb = mmToHwp(parseFloat(this.picCropBottomInput.value) || 0);
-        if (cb !== (pp.cropBottom ?? 0)) updated['cropBottom'] = cb;
-      }
-
-      // 그림 탭 — 안쪽 여백
-      if (this.picPadLeftInput) {
-        const pl = mmToHwp(parseFloat(this.picPadLeftInput.value) || 0);
-        if (pl !== (pp.paddingLeft ?? 0)) updated['paddingLeft'] = pl;
-        const pt_ = mmToHwp(parseFloat(this.picPadTopInput.value) || 0);
-        if (pt_ !== (pp.paddingTop ?? 0)) updated['paddingTop'] = pt_;
-        const pr = mmToHwp(parseFloat(this.picPadRightInput.value) || 0);
-        if (pr !== (pp.paddingRight ?? 0)) updated['paddingRight'] = pr;
-        const pb = mmToHwp(parseFloat(this.picPadBottomInput.value) || 0);
-        if (pb !== (pp.paddingBottom ?? 0)) updated['paddingBottom'] = pb;
-      }
-
-      // 그림 탭 — 효과
-      if (this.picEffectRadios.length > 0) {
-        const selected = this.picEffectRadios.find(r => r.checked);
-        if (selected) {
-          let effectVal = selected.value;
-          if (effectVal === 'Original') effectVal = 'RealPic';
-          if (effectVal !== (pp.effect ?? 'RealPic')) updated['effect'] = effectVal;
-        }
-      }
-      if (this.picBrightnessInput) {
-        const br = parseInt(this.picBrightnessInput.value) || 0;
-        if (br !== (pp.brightness ?? 0)) updated['brightness'] = br;
-      }
-      if (this.picContrastInput) {
-        const ct = parseInt(this.picContrastInput.value) || 0;
-        if (ct !== (pp.contrast ?? 0)) updated['contrast'] = ct;
-      }
-      if (this.picTransparencyInput) {
-        const transparency = Math.max(0, Math.min(100, parseInt(this.picTransparencyInput.value) || 0));
-        if (transparency !== (pp.transparency ?? 0)) updated['transparency'] = transparency;
-      }
-    }
-
-    if (Object.keys(updated).length > 0) {
-      // setter 분기:
-      // - shape/line/group/ole: cellPath > 외부
-      // - picture: headerFooter > cellPath > 외부
-      //   [Task #1151 v4] 셀 안 inline picture 는 setCellPicturePropertiesByPath
-      //   wasm API 호출. 본문 picture (cellPath 없음) 는 기존 setPictureProperties.
-      const applyProps = () => {
-        if (this.objectType === 'shape' || this.objectType === 'line' || this.objectType === 'group' || this.objectType === 'ole') {
-          if (this.cellPath) {
-            this.wasm.setCellShapePropertiesByPath(
-              this.sec, this.para, this.cellPath, this.innerControlIdx, updated,
-            );
-          } else {
-            this.wasm.setShapeProperties(this.sec, this.para, this.ci, updated);
-          }
-        } else if (this.headerFooter) {
-          // [Task #825] 머리말/꼬리말 그림은 별도 API — 5-tuple lookup. 캡션 신규
-          // 생성은 미지원 (set_header_footer_picture_properties_native 가 NotSupported
-          // 에러 반환 — 본 dialog 에서는 일반 속성 변경만 허용).
-          this.wasm.setHeaderFooterPictureProperties(
-            this.sec, this.headerFooter.outerParaIdx, this.headerFooter.outerControlIdx,
-            this.para, this.ci, updated,
-          );
-        } else if (this.cellPath) {
-          // [Task #1151 v4] 셀 안 inline picture — by_path API 호출.
-          this.wasm.setCellPicturePropertiesByPath(
-            this.sec, this.para, this.cellPath, this.innerControlIdx, updated,
-          );
-        } else {
-          this.wasm.setPictureProperties(this.sec, this.para, this.ci, updated);
-        }
-      };
-      // 개체 속성 변경도 undo 대상이다 — 편집 라우터를 통과시켜 스냅샷으로
-      // 기록한다 (#1320 계약). services 미주입 환경에서만 직접 적용 fallback.
-      const ih = this.services?.getInputHandler();
-      if (ih) {
-        ih.executeOperation({
-          kind: 'snapshot',
-          operationType: 'objectProps',
-          operation: () => {
-            applyProps();
-            return ih.getCursorPosition();
-          },
-        });
-      } else {
-        applyProps();
-        this.eventBus.emit('document-changed');
-      }
-    }
+    const patch = buildPicturePropsPatch(
+      this.objectType,
+      this.props,
+      this.shapeProps,
+      this.captureApplyForm(),
+    );
+    if (Object.keys(patch).length > 0) this.applyPropertyPatch(patch);
     this.hide();
   }
 
@@ -2660,16 +2457,6 @@ export class PicturePropsDialog {
       ? (vAlign === 'Top' ? 0 : vAlign === 'Bottom' ? 2 : 1)
       : (dir === 'Top' ? 0 : 2);
     return row * 3 + col;
-  }
-
-  /** 3×3 그리드 인덱스 → { direction, vertAlign } */
-  private gridIndexToCaption(idx: number): { direction: string; vertAlign: string } {
-    const col = idx % 3;
-    const row = Math.floor(idx / 3);
-    if (col === 0) return { direction: 'Left', vertAlign: row === 0 ? 'Top' : row === 1 ? 'Center' : 'Bottom' };
-    if (col === 2) return { direction: 'Right', vertAlign: row === 0 ? 'Top' : row === 1 ? 'Center' : 'Bottom' };
-    // col === 1 (중앙열)
-    return { direction: row <= 1 ? 'Top' : 'Bottom', vertAlign: 'Top' };
   }
 
   /**

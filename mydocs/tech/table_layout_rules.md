@@ -1,3 +1,10 @@
+---
+kind: canonical
+status: active
+canonical: mydocs/tech/table_layout_rules.md
+last_verified: 2026-07-16
+---
+
 # 문단 내 표의 본문배치 및 페이지 조판 규칙
 
 ## 개요

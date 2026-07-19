@@ -118,10 +118,14 @@ try {
     await runNpmScript('e2e:render-diff', serverUrl);
   }
   if (process.env.RHWP_RENDER_DIFF_PDF === '1') {
-    try {
+    if (process.env.RHWP_RENDER_DIFF_DIRECT_PDF_GATE === '1') {
       await runNpmScript('e2e:pdf-render-diff', serverUrl);
-    } catch (error) {
-      console.error(`PDF render diff report failed without gating CI: ${error.message || error}`);
+    } else {
+      try {
+        await runNpmScript('e2e:pdf-render-diff', serverUrl);
+      } catch (error) {
+        console.error(`PDF render diff report failed without gating CI: ${error.message || error}`);
+      }
     }
   }
 } finally {

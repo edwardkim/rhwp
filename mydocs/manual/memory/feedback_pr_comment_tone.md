@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: PR 댓글 톤 — 과도한 표현 자제
 description: 외부 컨트리뷰터 PR 댓글에서 "정말 감사합니다", "정성스러운" 등 과도한 표현 금지. 차분하고 사실 중심으로 작성.
 type: feedback

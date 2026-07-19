@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/cli_commands.md
+last_verified: 2026-07-16
+---
+
 # rhwp-cli Skill 사용 가이드 (사람용)
 
 Claude Code 에서 `rhwp-cli` skill 로 HWP/HWPX 문서를 분석·내보내기·디버깅하는 방법을 예제와

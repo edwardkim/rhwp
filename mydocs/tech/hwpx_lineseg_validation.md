@@ -1,3 +1,10 @@
+---
+kind: decision
+status: active
+canonical: mydocs/tech/document_ir_lineseg_standard.md
+last_verified: 2026-07-17
+---
+
 # HWPX lineseg 비표준 감지 · 고지 · 보정 (#177)
 
 - **작성일**: 2026-04-18

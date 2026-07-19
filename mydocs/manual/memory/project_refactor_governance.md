@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: project_refactor_governance
 description: "리팩토링 기본 거버넌스 2원칙 — SOLID + 복잡도 (작업지시자 확정, 2026-07-04)"
 metadata: 

@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 편집 용지 영역 계산 오류 (페이지 여백)
 
 ## 증상

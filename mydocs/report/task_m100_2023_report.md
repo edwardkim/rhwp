@@ -21,8 +21,8 @@
 이번 이슈에서는 코드 변경을 하지 않았고, 다음 산출물만 작성했다.
 
 - 수행계획서: `mydocs/plans/task_m100_2023.md`
-- 공개 계약·금지 목록 인벤토리: `mydocs/tech/task_m100_2023_frontend_contract_guardrails.md`
-- SOLID·복잡도 재진단: `mydocs/tech/task_m100_2023_frontend_diagnosis.md`
+- 공개 계약·금지 목록 인벤토리: `mydocs/tech/investigations/issue-2023/task_m100_2023_frontend_contract_guardrails.md`
+- SOLID·복잡도 재진단: `mydocs/tech/investigations/issue-2023/task_m100_2023_frontend_diagnosis.md`
 - 프론트 웹 리팩터링 계획 초안: `mydocs/plans/task_m100_2023_frontend_refactoring_plan.md`
 
 ## 2. 핵심 결론

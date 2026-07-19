@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 오늘할일 문서 작업일지 갱신 필수
 description: 작업한 내용은 반드시 mydocs/orders/yyyymmdd.md에 기록해야 함
 type: feedback

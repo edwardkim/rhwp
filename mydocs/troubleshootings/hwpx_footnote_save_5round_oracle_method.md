@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # HWPX 각주 저장 — 5 라운드 정답지 oracle 방법론 (Task #1058)
 
 | 항목 | 내용 |

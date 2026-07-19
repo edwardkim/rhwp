@@ -23,7 +23,7 @@
 | `scripts/frontend-metrics/package.json` | ESLint/SonarJS/parser와 호환 TypeScript 고정 |
 | `scripts/frontend-metrics/package-lock.json` | 측정 도구 버전 고정 |
 | `scripts/frontend-metrics.mjs` | schema v2 frontend metrics 수집·비교 도구 |
-| `mydocs/tech/task_m100_2124_frontend_metrics_scope.md` | 공식 모집단, 제외군, 산식 문서화 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_frontend_metrics_scope.md` | 공식 모집단, 제외군, 산식 문서화 |
 
 루트 `package.json`이나 `@rhwp/editor` runtime dependency는 추가하지 않았다.
 

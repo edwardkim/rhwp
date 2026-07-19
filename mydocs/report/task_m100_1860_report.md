@@ -47,7 +47,7 @@ pi=371 ci=1 은 **#1855 지연 co-anchored 경로**(is_deferred_coanchored_rowbr
 - p44: 짧은 fragment 중앙 → 라벨 −23pt
 - p45: 밀려난 3줄 → 이하 균일 +40.8pt
 
-상세 계측: `mydocs/tech/task_m100_1860_split_budget.md`.
+상세 계측: `mydocs/troubleshootings/deferred_rowbreak_table_split_budget.md`.
 
 ## 3. 수정 내용
 
@@ -153,5 +153,5 @@ para_start 583.8 을 차감해 예산 −584px → 조기 분할 → +1쪽. 참 
 - `src/renderer/typeset.rs` (예산 교정)
 - `src/renderer/layout/table_partial.rs` (노드-자식 포섭 불변)
 - `mydocs/plans/task_m100_1860.md`, `_impl.md`
-- `mydocs/tech/task_m100_1860_split_budget.md`
+- `mydocs/troubleshootings/deferred_rowbreak_table_split_budget.md`
 - `mydocs/report/task_m100_1860_report.md`

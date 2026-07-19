@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 작업 문서 네이밍 규칙
 description: mydocs/working/ 완료 보고서 파일명에 마일스톤 접두사 필수 — task_m100_76_stage1.md 패턴
 type: feedback

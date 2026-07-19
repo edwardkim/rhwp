@@ -2,7 +2,7 @@
 
 ## 산출물
 - `tools/object_visual_regression.py` (356줄) — 개체 단위 rhwp vs 한글 대조 + baseline 회귀 하니스.
-- `mydocs/manual/object_visual_regression.md` — 사용 매뉴얼.
+- `mydocs/manual/verification/object_visual_regression.md` — 사용 매뉴얼.
 
 ## 구성
 | 단계 | 방법 | 상태 |

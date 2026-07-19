@@ -106,8 +106,8 @@ cp $SRC/samples/public/* $DST/samples/
 ### Self-Authored (Can Include)
 - `mydocs/tech/hwp_spec_errata.md` — Spec errata summary (self-authored)
 - `mydocs/tech/hwp_table_rendering.md` — Table rendering guide (self-authored)
-- `mydocs/tech/equation_support_status.md` — Equation support status (self-authored)
-- `mydocs/tech/dev_roadmap.md` ��� Development roadmap (self-authored)
+- `mydocs/tech/investigations/issue-139/equation_support_status.md` — Equation support status (self-authored)
+- `mydocs/tech/archive/dev_roadmap_20260324.md` ��� Development roadmap (self-authored)
 - `mydocs/tech/rendering_engine_design.md` ��� Rendering engine design (self-authored)
 
 ## Sub-Task Breakdown

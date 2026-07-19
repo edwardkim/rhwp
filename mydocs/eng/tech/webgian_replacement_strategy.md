@@ -49,7 +49,7 @@
 - **Within the scope we have reviewed, this appears to be the first publicly available WebAssembly-based client-only (no server required) HWP save implementation** -- Hancom depends on servers; some commercial web offices offer WASM editing but a programmatic generation API for AI agents is not confirmed
 - **Publicly available HWP generation tools targeting AI Agents are scarce** (commercial or open source) -- a differentiated position
 - This represents both a high technical entry barrier and a source of competitive advantage
-- For detailed vision and roadmap, see [project_vision.md](mydocs/tech/project_vision.md)
+- For detailed vision and roadmap, see [project_vision.md](../../tech/archive/project_vision.md)
 
 ### 1.4 Business Model
 - **License Type**: Annual subscription model (SaaS/On-premise)
@@ -157,7 +157,7 @@ Additional comparison using `KTX.hwp`, another Hancom HWP default example file.
 | **Printing** | **Browser/server-dependent printing** | **Direct PS/PCL generation printing** |
 
 > [!TIP]
-> For detailed architecture, refer to [direct_printing_guideline.md](file:///home/edward/vsworks/rhwp/mydocs/tech/direct_printing_guideline.md).
+> For detailed architecture, refer to [direct_printing_guideline.md](file:///home/edward/vsworks/rhwp/mydocs/tech/archive/direct_printing_guideline.md).
 
 ## 3. Interoperability Strategy
 

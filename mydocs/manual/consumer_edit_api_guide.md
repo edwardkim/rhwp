@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/manual/consumer_edit_api_guide.md
+last_verified: 2026-07-17
+---
+
 # @rhwp/core 편집 API 가이드 (소비자용)
 
 `@rhwp/core`(WASM) 를 앱에 임베드해 HWP 문서를 **생성·편집**하는 개발자를 위한 안내다.

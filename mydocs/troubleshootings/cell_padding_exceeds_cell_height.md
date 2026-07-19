@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 셀 padding 이 cell.height 를 초과하는 비정상 IR 처리
 
 ## 날짜

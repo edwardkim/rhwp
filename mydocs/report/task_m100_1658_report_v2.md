@@ -90,5 +90,5 @@ remainder)이 컷을 다르게 적용**하는 구조적 불일치 → 단일 함
 - 도구: `tools/{hangul_row_heights,clipping_gate,hangul_pdf_baseline}.py`,
   `tools/detect_table_clipping.py`(norm_path 강건화)
 - 픽스처: `tests/fixtures/clipping_baseline.tsv`(controlset 92)
-- 문서: `mydocs/tech/task_m100_1658_{com_rowheight,giantcell_residual,capacity,clipping_capacity_unified}.md`,
+- 문서: `mydocs/tech/investigations/issue-1658/task_m100_1658_{com_rowheight,giantcell_residual,capacity,clipping_capacity_unified}.md`,
   `manual/{visual_clipping_detector,hangul_pdf_baseline}.md`, 본 보고서

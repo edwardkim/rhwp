@@ -61,12 +61,14 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 1. Fork (GitHub UI)
    edwardkim/rhwp → myid/rhwp
 
-2. Clone
+2. Clone + upstream 등록 (최초 1회)
    git clone https://github.com/myid/rhwp.git
    cd rhwp
+   git remote add upstream https://github.com/edwardkim/rhwp.git
 
-3. 브랜치 생성 + 작업
-   git checkout -b fix/issue-123
+3. 브랜치 생성 + 작업 — 반드시 최신 upstream/devel 기준
+   git fetch upstream
+   git switch -c fix/issue-123 upstream/devel
    (코드 수정 + 테스트)
 
 4. Push (본인 Fork에)
@@ -90,7 +92,7 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 
 ```bash
 cargo fmt --all -- --check                   # 포맷 정책 준수
-cargo test --profile release-test --tests    # 통합 테스트 포함 전체 (2,800+)
+cargo test --profile release-test --tests    # 통합 테스트 포함 전체 (3,300+)
 cargo clippy -- -D warnings                  # 린트 경고 0건
 ```
 
@@ -98,6 +100,26 @@ cargo clippy -- -D warnings                  # 린트 경고 0건
 
 - `release-test` 프로필은 CI와 같은 기준이며 debug 대비 수 배 빠릅니다.
 - `cargo test --lib` 만으로는 통합 테스트 회귀를 잡지 못합니다 — `--tests` 를 포함해주세요.
+
+### 회귀 테스트 가이드
+
+버그 수정 PR 에서 리뷰가 가장 먼저 확인하는 항목입니다. 아래 관례를 따르면 검토와 merge 가
+크게 빨라집니다.
+
+1. **red→green 회귀 테스트 동봉** — 수정 전 결함을 재현·고정하는 테스트를 함께 제출합니다.
+   파일명 관례: `tests/issue_{이슈번호}_{짧은_설명}.rs`. 수정을 되돌리면 실패하고, 수정을
+   적용하면 통과해야 합니다.
+2. **수정 전 실패 증명 (권장)** — "수정 커밋만 원복한 상태에서 신규 테스트가 실제로 FAIL"
+   함을 PR 본문에 기록해주세요. 테스트가 결함을 판별한다는 증명이 되어 리뷰 신뢰도가
+   높아집니다.
+3. **기존 기대값(잠정 핀) 변경 시** — 페이지 수 등 잠정 핀 수치를 바꾸는 PR 은 다음을
+   지켜주세요. 임의 갱신은 받지 않습니다.
+   - 정답지 방향 근거 명시 (예: "PDF 정답 315 방향 +3, 잔여 −3")
+   - 테스트 주석에 갱신 이력을 누적 (어떤 이슈의 어떤 정정으로 값이 왜 변했는지 —
+     `tests/issue_2070_rowbreak_density.rs` 의 3단 이력 주석이 모범 사례)
+   - "핀 미만/초과 시 의심 지점" 안내 메시지 유지
+4. **인접 핀 무회귀 확인** — 수정 영역 주변의 알려진 핀 테스트(예: 페이지네이션이면
+   byeolpyo 계열)가 유지되는지 `--no-fail-fast` 로 전체 실행하여 확인해주세요.
 
 ### 포맷 정책
 
@@ -141,7 +163,7 @@ cargo fmt --all -- --check       # CI와 같은 포맷 검증
 
 1. PR 본문에 검증 환경 명시 (한컴 버전, OS, 폰트, 출력 방법)
 2. 메인테이너 환경 재검증 후 머지 결정 (작업지시자가 직접 확인)
-3. 회귀 테스트 (`tests/page_number_propagation.rs` 같은 패턴) 포함 권장
+3. 회귀 테스트 동봉 — 위 "회귀 테스트 가이드" 절의 관례를 따라주세요
 
 ### 렌더링 PR 자가 검증 도구 (한컴 없이 가능)
 
@@ -164,7 +186,7 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir out/r
 - OVR(개체 시각 회귀)로 "변경 범위 밖 문서의 개체가 움직이지 않았음"을 결과와 함께
   PR 본문에 적어주시면 리뷰가 빨라집니다.
 - 어떤 PR 에 어떤 시각 증거가 필요한지는
-  [시각 검증 거버넌스](mydocs/manual/visual_verification_governance.md)를 참고하세요 —
+  [시각 검증 거버넌스](mydocs/manual/verification/visual_verification_governance.md)를 참고하세요 —
   시각 검증은 전수 절차가 아니라 **PR 의 수정 목적과 사용자에게 보이는 동작 기준으로 선택**합니다.
 - 전체 CLI 도구는 [cli_commands.md](mydocs/manual/cli_commands.md) 참조.
 - 자가 검증 통과는 회귀 없음의 증명이며, 한컴 정합의 최종 판정은 메인테이너 환경에서
@@ -232,12 +254,27 @@ rhwp-studio/        ← 웹 에디터 (TypeScript + Vite)
 - `cargo clippy -- -D warnings` 경고 0건 (CI에서 강제)
 - `unwrap()` 최소화
 - 모든 문서는 한국어로 작성
+- **소스 포맷 분기**: HWP3/HWPX 등 원본 포맷에 따른 레이아웃 분기가 필요하면
+  boolean 전달이나 포맷 이름 비교 대신 `Document::layout_profile()` 질의를
+  사용합니다 (`mydocs/tech/parser_architecture.md` 의 "소스 출처와 레이아웃
+  호환 정책" 참조). 새 판별이 필요하면 profile 질의를 추가하는 방식으로
+  엽니다.
 
 ## 문서 작성 규칙
 
 rhwp는 코드뿐 아니라 **작업 과정의 기록**도 프로젝트의 일부입니다(Hyper-Waterfall 방법론). PR에 문서를 포함하시는 경우 아래 규칙을 지켜주세요.
 
+> **문서 거버넌스**: 절차의 권위는 canonical 문서에 단일 기록됩니다 — 진입점은
+> [`mydocs/README.md`](mydocs/README.md)(문서 지도·manifest)이고, 이 문서의 표는 요약입니다.
+> 충돌 시 canonical 문서가 우선합니다.
+>
+> **AI 도구를 쓰신다면**: 저장소 루트의 [`AGENTS.md`](AGENTS.md)가 에이전트 부트스트랩
+> 파일입니다 (CLAUDE.md는 이를 가리키는 부트로더). 에이전트가 AGENTS.md 의 로딩 순서를
+> 따르면 이 저장소의 절차와 검증 규칙을 그대로 파악합니다.
+
 ### 폴더 구조 (`mydocs/` 하위)
+
+> 폴더 역할의 canonical 은 [`docs_and_git_workflow.md`](mydocs/manual/codex/docs_and_git_workflow.md) 의 Folder Roles 입니다. 아래 표는 기여자 관점 요약입니다.
 
 | 폴더 | 용도 |
 |------|------|
@@ -250,6 +287,29 @@ rhwp는 코드뿐 아니라 **작업 과정의 기록**도 프로젝트의 일�
 | `manual/` | 사용자/개발자 매뉴얼 |
 | `troubleshootings/` | 트러블슈팅 (재발 방지용 해결 기록) |
 | `pr/` | **외부 기여자 PR 검토 기록** (메인테이너가 관리, 기여자는 작성 불필요) |
+
+### 문서 메타데이터 (front matter)
+
+`mydocs/manual/`, `mydocs/tech/`, `mydocs/troubleshootings/` 에 문서를 추가·수정할 때는
+**front matter 4필드가 필수**입니다:
+
+```markdown
+---
+kind: investigation        # canonical | guide | reference | investigation | decision | snapshot | memory
+status: active             # active | historical | superseded
+canonical: mydocs/manual/codex/docs_and_git_workflow.md   # 이 문서가 따르는 권위 문서 경로
+last_verified: 2026-07-17  # 역할·canonical 관계를 마지막으로 확인한 날짜
+---
+```
+
+로컬 검사 (CI 미실행 — 필요 시 실행):
+
+```bash
+python3 scripts/check_document_metadata.py   # front matter 4필드 검사
+python3 scripts/check_markdown_links.py      # 상대 링크 검사
+```
+
+`plans/`, `working/`, `report/`, `orders/` 의 타스크 문서에는 front matter가 필요 없습니다.
 
 ### 파일명 규칙
 

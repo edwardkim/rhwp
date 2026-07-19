@@ -2,6 +2,15 @@ name: Full Renderer Sweep
 
 on:
   workflow_dispatch:
+    inputs:
+      corpus:
+        description: Renderer baseline corpus tier
+        required: true
+        default: representative
+        type: choice
+        options:
+          - representative
+          - full
 
 env:
   CARGO_TERM_COLOR: always
@@ -91,14 +100,14 @@ jobs:
           RHWP_RENDER_DIFF_ALL: "1"
         run: npm run e2e:render-diff:ci
 
-      - name: Capture representative multi-profile baseline
-        run: python3 scripts/renderer_baseline.py --profiles screen,print,high-quality,fast-preview --browser-mode headless --output output/renderer-baseline/workflow-dispatch
+      - name: Capture selected multi-profile baseline
+        run: python3 scripts/renderer_baseline.py --scope ${{ inputs.corpus }} --profiles screen,print,high-quality,fast-preview --include-pdf --browser-mode headless --output output/renderer-baseline/workflow-dispatch
 
       - name: Capture WebGPU-preferred CanvasKit baseline
-        run: python3 scripts/renderer_baseline.py --profiles screen --browser-mode headless --canvaskit-surface webgpu --skip-native --output output/renderer-baseline/workflow-dispatch-webgpu
+        run: python3 scripts/renderer_baseline.py --scope representative --profiles screen --browser-mode headless --canvaskit-surface webgpu --skip-native --output output/renderer-baseline/workflow-dispatch-webgpu
 
       - name: Capture software CanvasKit baseline
-        run: python3 scripts/renderer_baseline.py --profiles screen --browser-mode headless --canvaskit-surface software --skip-native --output output/renderer-baseline/workflow-dispatch-software
+        run: python3 scripts/renderer_baseline.py --scope representative --profiles screen --browser-mode headless --canvaskit-surface software --skip-native --output output/renderer-baseline/workflow-dispatch-software
 
       - name: Upload full renderer sweep artifacts
         if: always()

@@ -88,6 +88,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 | 패키지 | Lock 버전 | 라이선스 | 용도 |
 |--------|-----------|---------|------|
 | canvaskit-wasm | 0.41.1 | BSD-3-Clause | CanvasKit 렌더링 backend |
+| @noble/hashes | 2.2.0 | MIT | 렌더 리소스 키와 문서 digest |
 | @types/chrome | 0.1.42 | MIT | Chrome API 타입 |
 | puppeteer-core | 25.0.4 | Apache-2.0 | E2E 테스트 / CDP 연결 |
 | typescript | 6.0.3 | Apache-2.0 | TypeScript 컴파일 |
@@ -114,6 +115,8 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 | typescript | 5.9.3 | Apache-2.0 | TypeScript 컴파일 |
 | webpack | 5.105.4 | MIT | 번들러 |
 | webpack-cli | 6.0.1 | MIT | Webpack CLI |
+| @noble/hashes | 2.2.0 | MIT | 문서 digest |
+| canvaskit-wasm | 0.41.1 | BSD-3-Clause | 자동 선택 CanvasKit backend |
 
 ### rhwp-shared
 

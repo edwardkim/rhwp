@@ -1,3 +1,10 @@
+---
+kind: decision
+status: historical
+canonical: README.md
+last_verified: 2026-07-17
+---
+
 # rhwp 브랜딩 전략
 
 ## 브랜드 정체성

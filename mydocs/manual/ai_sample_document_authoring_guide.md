@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/ai_sample_document_authoring_guide.md
+last_verified: 2026-07-17
+---
+
 # AI 샘플 문서 작성 가이드
 
 이 문서는 AI가 rhwp 프로젝트에서 샘플 문서, 회귀 fixture, 첨부 템플릿 기반 문서를 만들 때 따라야 할 절차를 정리한다.

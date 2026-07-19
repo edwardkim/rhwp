@@ -59,7 +59,7 @@ PR 생성 전 clean 브랜치 기준으로 다음 검증을 완료했다.
 
 ## 시각 검증
 
-`mydocs/manual/visual_sweep_guide.md` 기준으로 `samples/task1749/saved_bounds_cumulative_page_break.hwpx` 와
+`mydocs/manual/verification/visual_sweep_guide.md` 기준으로 `samples/task1749/saved_bounds_cumulative_page_break.hwpx` 와
 `samples/task1749/saved_bounds_cumulative_page_break-2024.pdf` 를 비교했다.
 
 ### p4

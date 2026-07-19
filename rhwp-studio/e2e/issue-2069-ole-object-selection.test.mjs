@@ -18,9 +18,9 @@ const MINIMAL_PNG = [
 ];
 
 async function showParagraphMarks(page) {
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     window.__wasm.setShowParagraphMarks(true);
-    window.__canvasView.loadDocument();
+    await window.__canvasView.loadDocument();
   });
 }
 
@@ -221,7 +221,7 @@ async function removeOleCaptionAndReadBack(page) {
 }
 
 async function exercisePictureCopyPasteAfterCaretMove(page) {
-  return await page.evaluate((bytes) => {
+  return await page.evaluate(async (bytes) => {
     window.__wasm.insertText(0, 0, 0, '붙여넣기 위치');
     const targetOffset = window.__wasm.getParagraphLength(0, 0);
     const inserted = window.__wasm.insertPicture(
@@ -265,7 +265,7 @@ async function exercisePictureCopyPasteAfterCaretMove(page) {
       },
     });
     window.__inputHandler.onPaste(pasteEvent);
-    window.__canvasView.loadDocument();
+    await window.__canvasView.loadDocument();
 
     const afterImages = window.__wasm
       .getPageControlLayout(0)

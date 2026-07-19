@@ -32,7 +32,7 @@
    각 실패가 어느 분기에서 갈라지는지 확정.
 3. 재보정 그룹 확정(수행계획 ①~④ 잠정안 검증·조정).
 
-**산출물**: `mydocs/tech/task_m100_1370_divergence_catalog.md` (13×{기대/실제/책임게이트/그룹}),
+**산출물**: `mydocs/tech/investigations/issue-1370/task_m100_1370_divergence_catalog.md` (13×{기대/실제/책임게이트/그룹}),
 `mydocs/working/task_m100_1370_stage1.md`. **코드 변경 없음** → 커밋은 문서만.
 
 **완료 기준**: 13건 전부 책임 게이트가 1개 이상 매핑되고, Stage 2~4 그룹·순서가 확정.

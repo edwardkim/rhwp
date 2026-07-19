@@ -37,4 +37,4 @@
 ## 6. 산출물
 - 소스: `src/document_core/queries/rendering.rs` (compute_hwp_used_height)
 - 테스트: `task1612_hwp_used_height_is_per_page_not_cumulative`
-- 문서: `_stage1~3`, 본 보고서, `mydocs/tech/render_minus1_page_gap.md` 갱신
+- 문서: `_stage1~3`, 본 보고서, `mydocs/tech/investigations/issue-1600/render_minus1_page_gap.md` 갱신

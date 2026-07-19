@@ -109,7 +109,7 @@ $ rhwp dump-pages "samples/21_언어_기출_편집가능본.hwp" -p 2
 2. **부정 자체가 가치** — Epic #309 의 진로를 명확히 함
 3. **의외의 발견** — TypesetEngine 이 이미 작동 중. 다음 단계 `#313` 으로 분리
 4. **회귀 위험 0** — 모든 변경이 옵트인/진단 출력
-5. **영구 자료** — `mydocs/tech/line_seg_vpos_analysis.md` 부록 A 추가
+5. **영구 자료** — `mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md` 부록 A 추가
 
 ## 후속 PR 흐름
 

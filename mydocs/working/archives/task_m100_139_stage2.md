@@ -8,7 +8,7 @@
 
 ## 산출물
 
-- `mydocs/tech/equation_font_selection.md` (10개 장)
+- `mydocs/tech/investigations/issue-139/equation_font_selection.md` (10개 장)
 
 ## 완료 내용
 
@@ -71,4 +71,4 @@
 
 ## 다음 단계
 
-4단계: 수식 레이아웃 정밀화 방안 설계 → `mydocs/tech/equation_layout_spec.md`
+4단계: 수식 레이아웃 정밀화 방안 설계 → `mydocs/tech/investigations/issue-139/equation_layout_spec.md`

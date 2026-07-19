@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: jangster77-pr-collaborator
 description: "collaborator 2명(jangster77, postmelee)이 외부 PR 머지 게이트 분담 — origin/devel의 모르는 머지는 누락 아닌 분업"
 metadata: 

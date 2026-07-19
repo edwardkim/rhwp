@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: HWPX switch/case와 줄간격 유형
 description: HWPX의 switch/case 네임스페이스 분기가 문단 간격 유형(글자에따라 vs 고정값)과 관련됨
 type: project

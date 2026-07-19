@@ -1,8 +1,15 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/hwpx_dvc_reference.md
+last_verified: 2026-07-17
+---
+
 # 한컴 DVC (Document Validation Checker) 참조 가이드
 
 - **작성일**: 2026-04-17
 - **대상 프로젝트**: [hancom-io/dvc](https://github.com/hancom-io/dvc)
-- **로컬 경로**: `/home/edward/mygithub/dvc/`
+- **원본 저장소**: <https://github.com/hancom-io/dvc>
 - **라이선스**: Apache License 2.0 (© 2022 Hancom Inc.)
 - **관련 문서**: `mydocs/tech/hwpx_hancom_reference.md` (OWPML 모델 참조 가이드)
 

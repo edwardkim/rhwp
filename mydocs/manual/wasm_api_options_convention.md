@@ -1,3 +1,10 @@
+---
+kind: decision
+status: active
+canonical: mydocs/manual/wasm_api_options_convention.md
+last_verified: 2026-07-17
+---
+
 # WASM API 설계 관행 — options object(*Ex) (#1413)
 
 `@rhwp/core` 의 WASM public API 설계 규약. downstream(앱·라이브러리) 의 업그레이드 비용을

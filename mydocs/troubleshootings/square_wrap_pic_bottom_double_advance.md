@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # Square wrap 그림 하단 보정의 double advance 함정
 
 ## 한 줄 요약

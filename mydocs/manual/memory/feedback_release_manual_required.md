@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 릴리즈/배포 작업 시 매뉴얼 정독 필수
 description: 빌드/배포/버전 갱신 작업 시작 시 mydocs/manual/ 의 관련 매뉴얼 전체 정독 필수. 부분 검색만으로 진행 금지
 type: feedback

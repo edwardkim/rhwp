@@ -96,6 +96,8 @@ pub trait LayerRasterRenderer {
 pub enum VariantSelectionBackend {
     NativeSkia,
     CanvasKit,
+    /// JSON LayerTree replayed by the browser CanvasKit implementation.
+    CanvasKitBrowser,
     Canvas2D,
     Svg,
 }
@@ -105,6 +107,7 @@ impl VariantSelectionBackend {
         match self {
             Self::NativeSkia => "nativeSkia",
             Self::CanvasKit => "canvasKit",
+            Self::CanvasKitBrowser => "canvasKitBrowser",
             Self::Canvas2D => "canvas2d",
             Self::Svg => "svg",
         }
@@ -1283,6 +1286,30 @@ mod tests {
         );
         assert!(!report.fallback_required);
         assert!(report.rejected_variants.is_empty());
+    }
+
+    #[test]
+    fn canvaskit_browser_selects_the_outline_replayed_by_the_json_runtime() {
+        let report = first_report(
+            vec![text_op(), glyph_run(diagnostics(), 42), glyph_outline(None)],
+            TextVariantSelectionOptions {
+                backend: VariantSelectionBackend::CanvasKitBrowser,
+                prefer_strict_outline: true,
+                ..TextVariantSelectionOptions::canvaskit()
+            },
+        );
+
+        assert_eq!(
+            report.selected_variant_kind,
+            Some(TextVariantKind::GlyphOutline)
+        );
+        assert_eq!(report.selected_variant_id.as_deref(), Some("glyphOutline"));
+        assert!(report.rejected_variants.iter().any(|rejected| {
+            rejected.variant_kind == TextVariantKind::GlyphRun
+                && rejected
+                    .reasons
+                    .contains(&VariantRejectReason::BackendDoesNotSupportVariant)
+        }));
     }
 
     #[test]

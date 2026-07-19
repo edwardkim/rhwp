@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: project_lfs_quota_full
 description: pdf-large/ LFS 파일이 git status에 M으로 뜨는 건 LFS 10GB 쿼터 초과로 객체 미수신 — 건드리지 말 것
 metadata: 

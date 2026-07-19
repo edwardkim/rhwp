@@ -29,7 +29,7 @@ PR #396 (#175/#174 정정) 이 다루지 못한 **CASES+EQALIGN 중첩 토폴로
 
 ### 2.2 전략 수립 + 우선순위
 
-`mydocs/tech/all_in_one_parser_fidelity_strategy.md` 작성 — 5 Phase 전략 (Baseline → Diff → Cluster → Fix → Gate). 작업지시자 결정으로 **EQALIGN-related 영역 (#175 후속) 우선 정정** 채택.
+`mydocs/tech/archive/all_in_one_parser_fidelity_strategy.md` 작성 — 5 Phase 전략 (Baseline → Diff → Cluster → Fix → Gate). 작업지시자 결정으로 **EQALIGN-related 영역 (#175 후속) 우선 정정** 채택.
 
 ### 2.3 잘못된 방향 식별 → 재조정
 

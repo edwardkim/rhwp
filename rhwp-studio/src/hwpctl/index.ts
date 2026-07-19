@@ -192,6 +192,16 @@ export class HwpCtrl {
   SetCellText(tableParaIdx: number, row: number, col: number, text: string, colCount: number, controlIdx = 0): boolean {
     try {
       const cellIdx = row * colCount + col;
+      // Set 의미이므로 기존 셀 내용을 지우고 덮어쓴다. delete 없이 offset 0 에 삽입하면
+      // 기존 텍스트 앞에 붙어 누적된다(같은 셀에 두 번 호출 시 "2010" 형태). #2344 계열.
+      const len = this.wasmDoc.getCellParagraphLength(
+        this.cursorSection, tableParaIdx, controlIdx, cellIdx, 0,
+      );
+      if (len > 0) {
+        this.wasmDoc.deleteTextInCell(
+          this.cursorSection, tableParaIdx, controlIdx, cellIdx, 0, 0, len,
+        );
+      }
       const result = this.wasmDoc.insertTextInCell(
         this.cursorSection, tableParaIdx, controlIdx, cellIdx, 0, 0, text,
       );
@@ -207,8 +217,17 @@ export class HwpCtrl {
   GetCellText(tableParaIdx: number, row: number, col: number, colCount: number, controlIdx = 0): string {
     try {
       const cellIdx = row * colCount + col;
-      const path = `s${this.cursorSection}:p${tableParaIdx}:c${controlIdx}:cell${cellIdx}:p0`;
-      const result = this.wasmDoc.getTextInCellByPath(path);
+      // getTextInCellByPath 는 (sec, parentPara, pathJson, charOffset, count) 5 인자 API 이고
+      // pathJson 은 셀 경로 JSON 이다. 단일 "s0:p1:c0:cell2:p0" 문자열 하나만 넘기던 기존
+      // 호출은 어떤 WASM 시그니처와도 맞지 않아 항상 예외로 떨어져 '' 를 반환했다.
+      // SetCellText 와 동일한 인덱스 기반 API 로 맞춘다.
+      const len = this.wasmDoc.getCellParagraphLength(
+        this.cursorSection, tableParaIdx, controlIdx, cellIdx, 0,
+      );
+      if (len <= 0) return '';
+      const result = this.wasmDoc.getTextInCell(
+        this.cursorSection, tableParaIdx, controlIdx, cellIdx, 0, 0, len,
+      );
       return result || '';
     } catch (e) {
       console.error(`[hwpctl] GetCellText(pi=${tableParaIdx}, r=${row}, c=${col}) 실패:`, e);

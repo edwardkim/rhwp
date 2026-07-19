@@ -43,4 +43,4 @@ SVG 시각: page1 본문 / page2 발신명의 단독.
 - fixture: `samples/hwpx/opengov/36387725_footer_page_bottom.hwpx`
 - 테스트: `tests/issue_1611_footer_page_bottom_pagination.rs`
 - 측정: `output/poc/task1611_after.tsv`, `output/poc/task1611_svg/`
-- 문서: `_impl`, `_stage1~4`, 본 보고서, `mydocs/tech/render_minus1_page_gap.md` 갱신
+- 문서: `_impl`, `_stage1~4`, 본 보고서, `mydocs/tech/investigations/issue-1600/render_minus1_page_gap.md` 갱신

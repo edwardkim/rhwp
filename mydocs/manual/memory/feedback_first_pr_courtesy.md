@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: "rhwp 첫 PR" 컨트리뷰터 환영 + 일관 처리 의식
 description: 외부 첫 기여자 보고서에 "rhwp 첫 PR" 표현 명시, fork base 동기화 권장
 type: feedback

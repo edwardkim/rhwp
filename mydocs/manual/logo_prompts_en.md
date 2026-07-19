@@ -1,3 +1,10 @@
+---
+kind: snapshot
+status: historical
+canonical: mydocs/manual/branding_strategy.md
+last_verified: 2026-07-17
+---
+
 # rhwp Logo Generation — AI Prompts
 
 ## Brand Core

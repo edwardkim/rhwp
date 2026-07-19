@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 그림 crop scale 룰 — HWP 표준 75 HU/px
 
 ## 결함 정황

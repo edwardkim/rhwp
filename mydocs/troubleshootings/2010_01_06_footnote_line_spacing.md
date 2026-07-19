@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # `samples/2010-01-06.hwp` 페이지 1 각주 1) 줄 간격 좁음
 
 | 항목 | 내용 |
@@ -67,7 +74,7 @@ p[1]→p[2]는 일치하는데, p[2]의 ParaShape(ps_id=11)에 추가 spacing_be
 2. 한컴 PDF 200dpi 비교 (보조 ref)
 3. ParaShape 7, 11의 line_spacing/spacing_before 정확한 값 확인 (현재 dump에는 line_segs의 ls 값만 표시)
 
-(메모리 가이드 [PDF 비교 결과는 절대 기준이 아님](feedback_pdf_not_authoritative.md): 한컴 환경 함께 점검 필수.)
+(메모리 가이드 [PDF 비교 결과는 절대 기준이 아님](../manual/memory/feedback_pdf_not_authoritative.md): 한컴 환경 함께 점검 필수.)
 
 ## 관련 이슈
 

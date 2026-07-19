@@ -1,8 +1,15 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/hwpx_hancom_reference.md
+last_verified: 2026-07-17
+---
+
 # 한컴 공식 OWPML 모델 참조 가이드
 
 - **작성일**: 2026-04-17
 - **대상 프로젝트**: [hancom-io/hwpx-owpml-model](https://github.com/hancom-io/hwpx-owpml-model)
-- **로컬 경로**: `/home/edward/mygithub/hwpx-owpml-model/`
+- **원본 저장소**: <https://github.com/hancom-io/hwpx-owpml-model>
 - **라이선스**: Apache License 2.0
 
 ## 1. 프로젝트 정체
@@ -58,7 +65,8 @@ OWPML/
 
 ### 3.1 `enumdef.h` — HWPX enum 값의 정답
 
-`/home/edward/mygithub/hwpx-owpml-model/OWPML/Class/enumdef.h` (2,245줄)
+[`OWPML/Class/enumdef.h`](https://github.com/hancom-io/hwpx-owpml-model/blob/main/OWPML/Class/enumdef.h)
+(2,245줄)
 
 HWPX 속성 값에 쓰이는 **모든 enum의 공식 정의**. rhwp의 `src/model/*.rs`에 있는 enum들이 이와 일치하는지 검증하는 기준.
 

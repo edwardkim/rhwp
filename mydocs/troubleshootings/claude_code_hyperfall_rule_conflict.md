@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 트러블슈팅: 클로드 코드 기본 동작과 하이퍼-워터폴 규칙 충돌
 
 > **작성일**: 2026-04-10
@@ -87,6 +94,6 @@ mydocs/
 
 ## 관련 메모리
 
-- [최종 보고서 위치 규칙](../../.claude/projects/-home-edward-mygithub-rhwp/memory/feedback_report_location.md)
-- [타스크 프로세스 반드시 준수](../../.claude/projects/-home-edward-mygithub-rhwp/memory/feedback_process_must_follow.md)
-- [이슈 클로즈는 작업지시자 승인 필수](../../.claude/projects/-home-edward-mygithub-rhwp/memory/feedback_no_close_without_approval.md)
+- [최종 보고서 위치 규칙](../manual/memory/feedback_report_location.md)
+- [타스크 프로세스 반드시 준수](../manual/memory/feedback_process_must_follow.md)
+- [이슈 클로즈는 작업지시자 승인 필수](../manual/memory/feedback_no_close_without_approval.md)

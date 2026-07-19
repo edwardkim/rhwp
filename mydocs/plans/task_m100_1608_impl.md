@@ -56,7 +56,7 @@ if is_hwp3_origin {                                              // ← 부당 t
 3. HWP3 변환본 시각 회귀: `samples/hwp3-sample*` export-svg / 페이지수 점검.
 4. #1589 붕괴 회귀 0, visual_roundtrip 회귀 0.
 5. `cargo test`(라이브러리) + `cargo clippy`(수정 범위) 무경고.
-6. `_stage3.md` + `_report.md` + `mydocs/tech/render_minus1_page_gap.md` 갱신(요인 A 해소 기록).
+6. `_stage3.md` + `_report.md` + `mydocs/tech/investigations/issue-1600/render_minus1_page_gap.md` 갱신(요인 A 해소 기록).
 
 ## 산출물
 
@@ -66,7 +66,7 @@ if is_hwp3_origin {                                              // ← 부당 t
 | 테스트 | `tests/issue_1608_hwpx_native_no_hwp3_tolerance.rs` (또는 mod 내부) |
 | 측정 | `output/poc/task1608_baseline.tsv`, `output/poc/task1608_after.tsv` |
 | 보고 | `_stage1.md`, `_stage2.md`, `_stage3.md`, `_report.md` |
-| 갱신 | `mydocs/tech/render_minus1_page_gap.md` |
+| 갱신 | `mydocs/tech/investigations/issue-1600/render_minus1_page_gap.md` |
 
 ## 회귀 위험
 

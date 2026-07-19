@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # BinData ID 매핑 오류 — 배경 이미지 잘못 연결
 
 ## 날짜

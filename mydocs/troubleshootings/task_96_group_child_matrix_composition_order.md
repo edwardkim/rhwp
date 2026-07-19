@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 트러블슈팅: 그룹(객체 묶음) 자식 도형 좌표 변환 오류
 
 ## 문제 상황

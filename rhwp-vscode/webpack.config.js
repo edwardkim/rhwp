@@ -50,11 +50,34 @@ const webviewConfig = {
   output: {
     path: path.resolve(__dirname, "dist", "webview"),
     filename: "viewer.js",
+    clean: true,
   },
   resolve: {
     extensions: [".ts", ".js"],
+    extensionAlias: {
+      ".js": [".js", ".ts"],
+    },
+    fallback: {
+      fs: false,
+      path: false,
+    },
     alias: {
       "@rhwp-wasm": path.resolve(__dirname, "..", "pkg"),
+      "@/view/canvaskit-wasm-url$": path.resolve(
+        __dirname,
+        "src",
+        "webview",
+        "canvaskit-wasm-url.ts"
+      ),
+      "canvaskit-wasm$": path.resolve(
+        __dirname,
+        "node_modules",
+        "canvaskit-wasm",
+        "bin",
+        "canvaskit.js"
+      ),
+      "@noble/hashes": path.resolve(__dirname, "node_modules", "@noble", "hashes"),
+      "@": path.resolve(__dirname, "..", "rhwp-studio", "src"),
     },
   },
   module: {
@@ -69,6 +92,15 @@ const webviewConfig = {
       },
       {
         test: /\.wasm$/,
+        resourceQuery: /url/,
+        type: "asset/resource",
+        generator: {
+          filename: "assets/[name].[contenthash][ext]",
+        },
+      },
+      {
+        test: /\.wasm$/,
+        resourceQuery: { not: [/url/] },
         type: "javascript/auto",
         loader: "null-loader",
       },
@@ -81,10 +113,18 @@ const webviewConfig = {
           from: path.resolve(__dirname, "..", "pkg", "rhwp_bg.wasm"),
           to: path.resolve(__dirname, "dist", "media", "rhwp_bg.wasm"),
         },
+        {
+          from: path.resolve(__dirname, "node_modules", "canvaskit-wasm", "LICENSE"),
+          to: path.resolve(__dirname, "dist", "licenses", "canvaskit-wasm-LICENSE.txt"),
+        },
+        {
+          from: path.resolve(__dirname, "node_modules", "@noble", "hashes", "LICENSE"),
+          to: path.resolve(__dirname, "dist", "licenses", "noble-hashes-LICENSE.txt"),
+        },
         // 필수 오픈소스 폰트만 번들 (크기 최적화)
         ...[
           "NotoSerifKR-Regular.woff2", "NotoSerifKR-Bold.woff2",
-          "NotoSansKR-Regular.woff2", "NotoSansKR-Bold.woff2",
+          "NotoSansKR-Regular.woff2", "NotoSansKR-Bold.woff2", "NotoSansKR-ExtraLight.woff2",
           "Pretendard-Regular.woff2", "Pretendard-Bold.woff2",
           "D2Coding-Regular.woff2",
           "NanumGothic-Regular.woff2", "NanumMyeongjo-Regular.woff2",

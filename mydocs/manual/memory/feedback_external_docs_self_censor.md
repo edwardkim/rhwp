@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 외부 공개 문서 자기검열 체크리스트
 description: rhwp 외부 노출 문서 (README, mydocs/, Discussions, 릴리즈 노트, 스토어 설명 등) 작성·수정 시 자기검열 필수 항목. 관계자 불쾌·법적 리스크·평판 훼손을 사전 차단한다.
 type: feedback

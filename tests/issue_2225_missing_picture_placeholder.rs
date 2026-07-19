@@ -10,6 +10,8 @@
 use rhwp::renderer::render_tree::{PlaceholderKind, RenderNode, RenderNodeType};
 use std::fs;
 use std::path::Path;
+#[cfg(feature = "native-skia")]
+use std::process::Command;
 
 const SAMPLE: &str =
     "samples/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177).hwpx";
@@ -53,4 +55,85 @@ fn issue_2225_missing_picture_placeholder_split() {
     );
     // 정상 그림 이미지는 방출 유지.
     assert!(svg.contains("<image"), "export SVG 에서 정상 그림이 사라짐");
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn issue_2225_export_png_defaults_to_print_equivalent_skia_profile() {
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let sample_path = repo_root.join(SAMPLE);
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("system time")
+        .as_nanos();
+    let output_root =
+        std::env::temp_dir().join(format!("rhwp-issue-2225-{}-{nonce}", std::process::id()));
+    let default_dir = output_root.join("default");
+    let screen_dir = output_root.join("screen");
+
+    let default_output = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .arg("export-png")
+        .arg(&sample_path)
+        .args(["--page", "0", "--output"])
+        .arg(&default_dir)
+        .output()
+        .expect("run default export-png");
+    assert!(
+        default_output.status.success(),
+        "default export-png failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&default_output.stdout),
+        String::from_utf8_lossy(&default_output.stderr)
+    );
+
+    let screen_output = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .arg("export-png")
+        .arg(&sample_path)
+        .args(["--page", "0", "--output"])
+        .arg(&screen_dir)
+        .args(["--profile", "screen"])
+        .output()
+        .expect("run screen export-png");
+    assert!(
+        screen_output.status.success(),
+        "screen export-png failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&screen_output.stdout),
+        String::from_utf8_lossy(&screen_output.stderr)
+    );
+
+    let file_name = format!(
+        "{}.png",
+        sample_path
+            .file_stem()
+            .and_then(|value| value.to_str())
+            .expect("UTF-8 sample stem")
+    );
+    let default_image = image::open(default_dir.join(&file_name))
+        .expect("decode default PNG")
+        .to_rgba8();
+    let screen_image = image::open(screen_dir.join(&file_name))
+        .expect("decode screen PNG")
+        .to_rgba8();
+    assert!(default_image.width() >= 722 && default_image.height() >= 131);
+    assert_eq!(default_image.dimensions(), screen_image.dimensions());
+
+    let count_placeholder_ink = |image: &image::RgbaImage| {
+        (55..131)
+            .flat_map(|y| (646..722).map(move |x| image.get_pixel(x, y)))
+            .filter(|pixel| {
+                pixel.0[3] > 0 && (pixel.0[0] < 250 || pixel.0[1] < 250 || pixel.0[2] < 250)
+            })
+            .count()
+    };
+    let default_ink = count_placeholder_ink(&default_image);
+    let screen_ink = count_placeholder_ink(&screen_image);
+    let _ = fs::remove_dir_all(&output_root);
+
+    assert_eq!(
+        default_ink, 0,
+        "default export-png emitted print-equivalent missingPicture ink"
+    );
+    assert!(
+        screen_ink > 1_000,
+        "explicit screen profile did not emit the missingPicture editor visual: {screen_ink}"
+    );
 }

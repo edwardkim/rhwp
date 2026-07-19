@@ -17,7 +17,7 @@
 
 ## 산출물
 
-- `mydocs/tech/between_notes_multiline_1238.md` (실측 표 + 분기 + 회귀 게이트 설계).
+- `mydocs/tech/investigations/issue-1238/between_notes_multiline_1238.md` (실측 표 + 분기 + 회귀 게이트 설계).
 
 ## Stage 2 방향 (승인 요청)
 

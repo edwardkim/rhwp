@@ -695,6 +695,10 @@ export function onClick(this: any, e: MouseEvent): void {
             const contentX = e.clientX - contentRect.left;
             const contentY = e.clientY - contentRect.top;
             const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
+            // hover 경로(handleMouseMove)의 캐시 일치 판정이 pageHint 를 비교하므로 여기서
+            // 채워준다. 비워두면 `undefined !== pageIdx` 가 항상 참이라 hover 가 매번
+            // early return 해 표 리사이즈 marker 가 한 번도 표시되지 않는다.
+            this.cachedTableRef.pageHint = pageIdx;
             const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
             const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
             const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);

@@ -1,3 +1,10 @@
+---
+kind: canonical
+status: active
+canonical: mydocs/manual/cli_commands.md
+last_verified: 2026-07-16
+---
+
 # rhwp CLI 명령어 매뉴얼
 
 `rhwp` 바이너리의 전체 명령을 정리한다. 권위 출처는 `src/main.rs` 의 명령 디스패치이며,
@@ -15,6 +22,18 @@ rhwp --version     # 버전
 공통 옵션(다수 export 명령):
 - `-o, --output <폴더>` — 출력 폴더 (기본 `output/`)
 - `-p, --page <번호>` — 특정 페이지만 (0부터). 생략 시 전체
+- `--profile <프로필>` — 출력 프로필: `screen` | `print` | `high-quality` | `fast-preview`
+  (export-svg / export-png / export-pdf 지원, #2297)
+
+**프로필 의미론** — 편집 시각 요소(#2225 그림 미지정 placeholder 등)의 표시 여부를 가른다:
+
+| 프로필 | 편집 시각 요소 | 용도 |
+|--------|---------------|------|
+| `screen`, `fast-preview` | **표시** — 그림 미지정 placeholder 를 점선 테두리+아이콘으로 렌더 | 편집기/미리보기 등가 |
+| `print`, `high-quality` | **억제** — 한컴 인쇄 동작과 동일하게 미출력 | 인쇄 등가 산출물 |
+
+> 한컴은 그림 미지정 placeholder 를 편집기에서만 표시하고 인쇄(및 인쇄 등가
+> 출력)에서는 미출력한다 — rhwp 의 인쇄 등가 프로필이 이 계약을 따른다.
 
 ---
 
@@ -33,12 +52,18 @@ HWP/HWPX → SVG.
 - `--embed-fonts` — 폰트 서브셋 임베딩(사용 글자만 base64)
 - `--embed-fonts=full` — 폰트 전체 임베딩
 - `--font-path <경로>` — 폰트 탐색 경로(여러 번 지정 가능)
+- `--profile <프로필>` — layer 출력 프로필(공통 옵션 참조). 생략 시 기존
+  (legacy) 경로 — 인쇄 등가 억제 동작.
+  **제약**: `--font-style`/`--embed-fonts` 와 함께 사용할 수 없다(오류 종료).
 
 ### `export-png <파일> [옵션]` *(native-skia feature 필요)*
 HWP/HWPX → PNG(Skia raster, AI 파이프라인/VLM 연동). 상세: [export_png_command.md](export_png_command.md)
 - `-o`, `-p`, `--font-path` (공통/폰트)
 - `--scale <배율>` (기본 1.0), `--dpi <값>`(pHYs 메타 + scale 자동), `--max-dimension <픽셀>`(longest edge)
 - `--vlm-target <프리셋>` — claude / gpt4v-low / gpt4v-high(gpt4v) / gemini / qwen-vl(qwen) / llava
+- `--profile <프로필>` — 출력 프로필. **기본 `high-quality`(인쇄 등가)** —
+  그림 미지정 placeholder 는 억제된다. 편집기식 표시가 필요하면
+  `--profile screen` 을 명시한다 (#2297, #2225 계약).
 
 ### `export-pdf <파일> [옵션]`
 HWP/HWPX → PDF (svg2pdf + pdf-writer).
@@ -49,6 +74,12 @@ HWP/HWPX → PDF (svg2pdf + pdf-writer).
 - `--fallback-sans <family>` — PDF sans-serif generic fallback family
 - `--fallback-mono <family>` — PDF monospace generic fallback family
 - `--equation-font <family>` — PDF 수식 SVG의 우선 font-family
+- `--text-as-paths` — 텍스트를 폰트 임베드 대신 path 로 변환 (#2266).
+  폰트 서브셋 경로를 건너뛰어 **메모리를 크게 절감**(실측 예: 124→78 MB)
+  하는 대신 **PDF 의 텍스트 선택·검색 기능을 잃는다** (시각 출력 동일,
+  파일 크기는 증가). 저메모리 환경(Quick Look 등)용 옵트아웃.
+- `--profile <프로필>` — layer 출력 프로필(공통 옵션 참조). 생략 시 기존
+  (legacy) 경로.
 - `<파일>`, `<경로>`, `<family>`는 자리표시자이며 실제 입력에는 꺾쇠괄호를 쓰지 않는다.
 - 공백이 없는 값은 그대로 입력한다. 예: `--font-path ./ttfs`
 - 공백이 있는 경로/폰트명은 큰따옴표를 권장한다. 예:
@@ -144,6 +175,12 @@ HWP 문서를 HWPX(ZIP+XML)로 변환 저장. `convert`(배포용 해제)와 별
   불일치하면 산출물은 남기고 종료 코드 4로 실패한다.
 - 더 넓은 시각 정합은 `tools/roundtrip_fidelity_harness.py` 또는 `render-diff`로 별도 대조한다.
 
+### `export-hml <입력.hml> -o <출력.hml>`
+HML 원본 문서를 의미 보존 HWPML 2.91 XML로 저장한다.
+- `-o`, `--output <파일>`은 필수다.
+- 입력과 출력이 같은 경로이면 원본 보호를 위해 거부한다.
+- 이 명령은 HWP/HWPX 변환 명령이 아니며 입력은 `.hml`만 받는다.
+
 ### `ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>] [--summary] [--max-lines N]`
 두 파일의 IR 비교(HWPX↔HWP 불일치 검출). 상세: [ir_diff_command.md](ir_diff_command.md)
 - 비교: text, char_count/offsets/shapes, line_segs, controls, tab_extended, ParaShape, TabDef,
@@ -188,7 +225,7 @@ rhwp export-svg output/poc/ingest/sample_minimal.hwpx \
 - `export-svg` 는 산출 HWPX 가 렌더러에서 SVG 로 변환 가능한지 확인하는 smoke test 로
   사용할 수 있다. 이것만으로 원본 PDF 와 시각적으로 일치한다고 판정하지 않는다.
 - 원본 PDF 와의 시각 검증이 필요하면 PDF 기준 비교를
-  [visual_sweep_guide.md](visual_sweep_guide.md)에 따라 별도로 수행한다.
+  [visual_sweep_guide.md](verification/visual_sweep_guide.md)에 따라 별도로 수행한다.
 - 수식/도형/손글씨처럼 PDF 텍스트 레이어가 의미 정보를 잃는 항목은 `build-from-ingest` 단독으로
   복원할 수 없다. 이 경우 ingest 단계에서 이미지/media 또는 전용 구조로 분류하고,
   결함 유형을 hotfix/follow-up 으로 나누어 기록한다.
@@ -280,36 +317,6 @@ record 를 축별로 비교한다.
 6. (정밀 좌표) `export-render-tree -p N` → bbox JSON 직접 비교
 
 ---
-
-## 4. HWP5 조사 프로브 (HWPX→HWP contract 분석용)
-
-일회성 조사·역공학 도구 묶음. 온보딩·활용법: [hwpx2hwp_probe_onboarding.md](hwpx2hwp_probe_onboarding.md)
-
-### `hwp5-inventory <파일.hwp> [--format jsonl|md] [--section N] [--out <path>]`
-HWP5 DocInfo/BodyText record inventory 생성.
-
-### `hwp5-inventory-diff <oracle.hwp> <generated.hwp> [옵션]`
-두 inventory 비교 + contract 후보 힌트/bundle 생성.
-옵션: `--align index|lcs` `--report diff|hints|bundles|table-fields|table-probe-plan`
-`--focus all|table|shape|ctrl|missing|docinfo` `--window N` `--format jsonl|md` `--out <path>`
-
-### 개별 프로브/트레이스 (한 줄 요약)
-- `hwp5-anchor-trace` — 앵커(배치 기준) 레코드 추적
-- `hwp5-ctrl-data-trace` — CTRL_DATA 레코드 추적
-- `hwp5-contract-probe` / `hwp5-contract-analyze` — 직렬화 contract 후보 탐침/분석
-- `hwp5-table-probe` — 표 레코드 구조 탐침
-- `hwp5-cell-header-probe` — 셀 헤더(ListHeader) 탐침
-- `hwp5-borderfill-diagonal-probe` — 테두리/대각선 속성 탐침
-- `hwp5-first-para-control-probe` — 첫 문단 컨트롤 탐침
-- `hwp5-mel-personnel-probe` — 특정 실문서(인사 양식) 케이스 탐침
-
-## 5. 내부 개발·회귀 도구 (일반 사용자 대상 아님)
-
-- `test-caption <파일.hwp>` — 캡션 라운드트립 검증
-- `test-field <파일.hwp>` — 필드 라운드트립 검증
-- `test-shape <입력.hwp> <출력.hwp>` — 도형 라운드트립 검증
-- `gen-table` — 표 테스트 HWP 생성
-- `gen-pua` — PUA 문자 테스트 HWP 생성
 
 ## 단위 환산
 - 1인치 = 7200 HWPUNIT = 25.4mm = 96px(DPI 96)

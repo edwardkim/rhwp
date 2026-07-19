@@ -1,3 +1,10 @@
+---
+kind: decision
+status: active
+canonical: mydocs/tech/rendering_engine_design.md
+last_verified: 2026-07-17
+---
+
 # 설계: 공유 측정 엔진 (페이지네이터 ↔ 렌더러 y-advance 정합)
 
 - 관련: #1027 Stage 3 결론. #1022(측정 정합), #993(분할 표) 후속.

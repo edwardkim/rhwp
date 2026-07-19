@@ -1,4 +1,14 @@
+---
+kind: decision
+status: historical
+canonical: mydocs/tech/ci_cache_policy_1664.md
+last_verified: 2026-07-17
+---
+
 # CI cache 정책 결정 기록 — #1664
+
+> 이 문서는 #1664 당시 채택한 cache 정책과 판단 근거를 보존한다. 현재 workflow의 실제 명령과 job 구성은
+> `.github/workflows/ci.yml`을 다시 확인한다.
 
 ## 목적
 

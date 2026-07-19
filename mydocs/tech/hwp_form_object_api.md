@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/hwp_form_object_api.md
+last_verified: 2026-07-17
+---
+
 # HWP 양식 개체 API 기술 자료
 
 ## 개요

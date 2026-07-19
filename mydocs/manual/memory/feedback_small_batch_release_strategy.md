@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 작은 단위 PATCH 회전 운영 철학
 description: 활발한 컨트리뷰션 사이클에서 큰 묶음으로 완성도를 높이려는 시도가 위험을 키움. 작은 단위 PATCH 빠른 회전 유지
 type: feedback

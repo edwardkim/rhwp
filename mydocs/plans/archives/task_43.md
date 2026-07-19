@@ -75,6 +75,6 @@
 | 한컴 개발자 포털 | https://developer.hancom.com/webhwp | 웹기안기 공식 문서 |
 | 웹기안기 예제 | https://webhwpctrl-example.cloud.hancom.com/webhwp-example | API 활용 예제 (React SPA) |
 | webhwp 구현 분석 | `mydocs/feedback/webhwp_anal_001.md` | 한컴 웹HWP JS 번들 역공학 분석 |
-| 아키텍처 비교 | `mydocs/tech/webhwp_vs_rhwp_parsing.md` | 한컴 webhwp vs rhwp 비교 |
-| 프로젝트 비전 | `mydocs/tech/project_vision.md` | 전략 방향 |
-| 개발 로드맵 | `mydocs/tech/dev_roadmap.md` | 제품화 로드맵 |
+| 아키텍처 비교 | `mydocs/tech/webhwp/parsing_comparison.md` | 한컴 webhwp vs rhwp 비교 |
+| 프로젝트 비전 | `mydocs/tech/archive/project_vision.md` | 전략 방향 |
+| 개발 로드맵 | `mydocs/tech/archive/dev_roadmap_20260324.md` | 제품화 로드맵 |

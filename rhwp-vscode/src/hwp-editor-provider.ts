@@ -179,6 +179,15 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
     const fontsBase = webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, "dist", "media", "fonts")
     );
+    const canvasKitDefaultFontUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        this.context.extensionUri,
+        "dist",
+        "media",
+        "fonts",
+        "NotoSansKR-Regular.woff2"
+      )
+    );
 
     const nonce = getNonce();
     const cspSource = webview.cspSource;
@@ -207,11 +216,12 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
       ['HY신명조', `${fontsBase}/NotoSerifKR-Regular.woff2`, 'woff2'],
       ['HY그래픽', `${fontsBase}/NotoSansKR-Regular.woff2`, 'woff2'],
       ['휴먼명조', `${fontsBase}/NotoSerifKR-Regular.woff2`, 'woff2'],
+      ['한컴 윤고딕 230', `${fontsBase}/NotoSansKR-ExtraLight.woff2`, 'woff2'],
       // 시스템 폰트 → 오픈소스 대체
       ['맑은 고딕', `${fontsBase}/Pretendard-Regular.woff2`, 'woff2'],
       ['바탕', `${fontsBase}/NotoSerifKR-Regular.woff2`, 'woff2'],
-      ['돋움', `${fontsBase}/NotoSansKR-Regular.woff2`, 'woff2'],
-      ['굴림', `${fontsBase}/NotoSansKR-Regular.woff2`, 'woff2'],
+      ['돋움', `${fontsBase}/NotoSansKR-ExtraLight.woff2`, 'woff2'],
+      ['굴림', `${fontsBase}/NotoSansKR-ExtraLight.woff2`, 'woff2'],
       ['굴림체', `${fontsBase}/D2Coding-Regular.woff2`, 'woff2'],
       ['바탕체', `${fontsBase}/D2Coding-Regular.woff2`, 'woff2'],
       ['궁서', `${fontsBase}/GowunBatang-Regular.woff2`, 'woff2'],
@@ -230,7 +240,7 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
              style-src 'nonce-${nonce}' ${cspSource};
              img-src ${cspSource} data:;
              font-src ${cspSource} https://cdn.jsdelivr.net;
-             connect-src ${cspSource}">
+             connect-src ${cspSource} https://cdn.jsdelivr.net">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HWP Viewer</title>
   <style nonce="${nonce}">
@@ -534,7 +544,7 @@ export class HwpEditorProvider implements vscode.CustomReadonlyEditorProvider {
         <div class="nav-panel" data-panel="bookmark" hidden></div>
       </div>
     </div>
-    <div id="scroll-container" data-wasm-uri="${wasmUri}"><div id="scroll-content"></div></div>
+    <div id="scroll-container" data-wasm-uri="${wasmUri}" data-canvaskit-font-uri="${canvasKitDefaultFontUri}" data-canvaskit-fonts-base-uri="${fontsBase}"><div id="scroll-content"></div></div>
     <button id="nav-reopen" title="\uc0ac\uc774\ub4dc\ubc14 \uc5f4\uae30">\u25b6</button>
   </div>
   <div id="status-bar">

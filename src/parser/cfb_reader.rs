@@ -25,6 +25,8 @@ pub enum CfbError {
     StreamNotFound(String),
     /// 압축 해제 실패
     DecompressError(String),
+    /// 스트림 또는 압축 해제 결과가 호출부 상한을 초과함
+    LimitExceeded(usize),
 }
 
 impl std::fmt::Display for CfbError {
@@ -34,6 +36,9 @@ impl std::fmt::Display for CfbError {
             CfbError::StreamError(e) => write!(f, "스트림 읽기 실패: {}", e),
             CfbError::StreamNotFound(name) => write!(f, "스트림 없음: {}", name),
             CfbError::DecompressError(e) => write!(f, "압축 해제 실패: {}", e),
+            CfbError::LimitExceeded(limit) => {
+                write!(f, "스트림이 {} 바이트 상한을 초과했습니다", limit)
+            }
         }
     }
 }
@@ -140,6 +145,32 @@ impl CfbReader {
     pub fn read_bin_data(&mut self, storage_name: &str) -> Result<Vec<u8>, CfbError> {
         let path = format!("/BinData/{}", storage_name);
         self.read_stream_raw(&path)
+    }
+
+    /// BinData 스트림을 `max_bytes` 바이트까지만 읽는다.
+    pub fn read_bin_data_limited(
+        &mut self,
+        storage_name: &str,
+        max_bytes: usize,
+    ) -> Result<Vec<u8>, CfbError> {
+        let path = format!("/BinData/{}", storage_name);
+        if !self.compound.is_stream(&path) {
+            return Err(CfbError::StreamNotFound(path));
+        }
+        let mut stream = self
+            .compound
+            .open_stream(&path)
+            .map_err(|error| CfbError::StreamError(format!("{}: {}", path, error)))?;
+        let mut data = Vec::new();
+        stream
+            .by_ref()
+            .take((max_bytes as u64).saturating_add(1))
+            .read_to_end(&mut data)
+            .map_err(|error| CfbError::StreamError(format!("{}: {}", path, error)))?;
+        if data.len() > max_bytes {
+            return Err(CfbError::LimitExceeded(max_bytes));
+        }
+        Ok(data)
     }
 
     /// 본문 섹션 수 계산
@@ -657,6 +688,34 @@ pub fn decompress_stream(data: &[u8]) -> Result<Vec<u8>, CfbError> {
     }
 }
 
+/// zlib/raw-deflate 데이터를 `max_bytes` 바이트까지만 압축 해제한다.
+pub fn decompress_stream_limited(data: &[u8], max_bytes: usize) -> Result<Vec<u8>, CfbError> {
+    fn decode_limited<R: Read>(reader: R, max_bytes: usize) -> Result<Vec<u8>, CfbError> {
+        let mut output = Vec::new();
+        reader
+            .take((max_bytes as u64).saturating_add(1))
+            .read_to_end(&mut output)
+            .map_err(|error| CfbError::DecompressError(error.to_string()))?;
+        if output.len() > max_bytes {
+            return Err(CfbError::LimitExceeded(max_bytes));
+        }
+        Ok(output)
+    }
+
+    let raw_result = decode_limited(flate2::read::DeflateDecoder::new(data), max_bytes);
+    if let Ok(output) = raw_result {
+        return Ok(output);
+    }
+    let raw_exceeded = matches!(raw_result, Err(CfbError::LimitExceeded(_)));
+
+    match decode_limited(flate2::read::ZlibDecoder::new(data), max_bytes) {
+        Ok(output) => Ok(output),
+        Err(CfbError::LimitExceeded(_)) => Err(CfbError::LimitExceeded(max_bytes)),
+        Err(_) if raw_exceeded => Err(CfbError::LimitExceeded(max_bytes)),
+        Err(error) => Err(error),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -690,6 +749,28 @@ mod tests {
 
         let decompressed = decompress_stream(&compressed).unwrap();
         assert_eq!(decompressed, original);
+    }
+
+    #[test]
+    fn test_limited_decompression_rejects_compact_oversized_output() {
+        use flate2::write::DeflateEncoder;
+        use flate2::Compression;
+        use std::io::Write;
+
+        let original = vec![b'A'; 4096];
+        let mut encoder = DeflateEncoder::new(Vec::new(), Compression::best());
+        encoder.write_all(&original).unwrap();
+        let compressed = encoder.finish().unwrap();
+        assert!(compressed.len() < 1024);
+
+        assert!(matches!(
+            decompress_stream_limited(&compressed, 1024),
+            Err(CfbError::LimitExceeded(1024))
+        ));
+        assert_eq!(
+            decompress_stream_limited(&compressed, original.len()).unwrap(),
+            original
+        );
     }
 
     #[test]

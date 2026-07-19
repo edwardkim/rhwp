@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: Hyper-Waterfall 워크플로우 필수 준수
 description: 타스크 진행 시 수행계획서→구현계획서→단계별 보고 승인 절차를 반드시 거쳐야 함
 type: feedback

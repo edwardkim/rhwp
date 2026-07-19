@@ -48,21 +48,42 @@ pub fn paint_op_replay_plane_with_layer(
         return render_layer_replay_plane(layer);
     }
 
-    match op {
+    let plane = match op {
         PaintOp::Image { image, .. } => match image.text_wrap {
             Some(TextWrap::BehindText) => PaintReplayPlane::BehindText,
             Some(TextWrap::InFrontOfText) => PaintReplayPlane::InFrontOfText,
             _ => PaintReplayPlane::Flow,
         },
         _ => PaintReplayPlane::Flow,
-    }
+    };
+    cap_master_page_plane(plane, layer)
 }
 
 pub fn render_layer_replay_plane(layer: Option<RenderLayerInfo>) -> PaintReplayPlane {
-    match layer.and_then(|layer| layer.text_wrap) {
+    let plane = match layer.and_then(|layer| layer.text_wrap) {
         Some(TextWrap::BehindText) => PaintReplayPlane::BehindText,
         Some(TextWrap::InFrontOfText) => PaintReplayPlane::InFrontOfText,
         _ => PaintReplayPlane::Flow,
+    };
+    cap_master_page_plane(plane, layer)
+}
+
+/// 바탕쪽 유래 op 의 replay plane 상한 (#2318).
+///
+/// 한컴 의미론: 바탕쪽 개체의 text_wrap 은 바탕쪽 **내부** 개체 간 순서에만
+/// 적용되고, 바탕쪽 전체는 항상 본문 뒤에 깔린다. SVG 의 `node_z_plane` 계약
+/// (페이지 배경 → 바탕쪽 → BehindText → Flow → InFrontOfText, #1167)과 동일
+/// 의미를 plane 재생 backend(web_canvas/skia/canvaskit)에 적용한다.
+/// BehindText plane 내에서 바탕쪽 그룹은 트리 순서상 본문 개체보다 먼저
+/// 재생되므로 더 깊게 깔린다.
+fn cap_master_page_plane(
+    plane: PaintReplayPlane,
+    layer: Option<RenderLayerInfo>,
+) -> PaintReplayPlane {
+    if plane != PaintReplayPlane::Background && layer.is_some_and(|layer| layer.master_page) {
+        PaintReplayPlane::BehindText
+    } else {
+        plane
     }
 }
 

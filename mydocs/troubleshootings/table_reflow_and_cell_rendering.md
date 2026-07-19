@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 표 페이지 분할 렌더링 및 셀 내 렌더링 수정
 
 ## 날짜

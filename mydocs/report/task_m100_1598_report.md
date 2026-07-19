@@ -40,7 +40,7 @@ HWPX 파서가 ellipse/arc 전용 지오메트리(`<hc:center>/<hc:ax1>/<hc:ax2>
 | `tests/issue_1598_ellipse_geometry_roundtrip.rs` | 신규 단위 게이트 |
 | `samples/hwpx/opengov/36385226_…hwpx` | 가드 샘플 |
 | `tests/fixtures/opengov_snapshot.tsv` | 36385226 PASS/0 행 |
-| `mydocs/tech/hwpx_page_collapse_cluster.md` | §7 확정 기록 |
+| `mydocs/tech/investigations/issue-1589/hwpx_page_collapse_cluster.md` | §7 확정 기록 |
 
 ## 5. 검증 결과 (회귀 0)
 

@@ -1,11 +1,17 @@
+---
+kind: canonical
+status: active
+canonical: mydocs/tech/font_fallback_strategy.md
+last_verified: 2026-07-16
+---
+
 # CJK 폰트 폴백 전략 보고서
 
 작성일: 2026-04-07
 
-> 2026-07-13 현행화: canonical 웹폰트 source는 `assets/fonts/`이며, Git 추적 WOFF2는 36개
-> (22,651,296 bytes)다. Studio와 legacy `/web`의 runtime `fonts/...` URL 및 이 문서의 fallback
-> 정책은 변경하지 않았다. 아래 2026-04-07 로드맵·권장안의 `web/fonts` 표현은 당시 구현 경로를
-> 설명하는 기록으로 보존한다.
+> 2026-07-17 현행화: canonical 웹폰트 source는 `assets/fonts/`이며, Git 추적 WOFF2는 36개
+> (22,651,296 bytes)다. Studio의 runtime `fonts/...` URL과 이 문서의 fallback 정책은 변경하지 않았다.
+> 아래 2026-04-07 로드맵·권장안의 `web/fonts` 표현은 당시 구현 경로를 설명하는 기록으로 보존한다.
 
 ## 목차
 
@@ -36,8 +42,7 @@ rhwp는 두 가지 렌더링 경로에서 폰트를 사용한다:
 
 canonical source `assets/fonts/`에는 재배포 가능한 WOFF2 36개가 Git으로 추적된다. 전체 filename,
 라이선스와 fallback 관계는 `assets/fonts/FONTS.md`가 authority다. Studio는
-`rhwp-studio/public/fonts -> ../../assets/fonts`, legacy `/web`은 `web/fonts -> ../assets/fonts`
-compatibility link를 사용하며 runtime URL은 모두 `fonts/...`를 유지한다.
+`rhwp-studio/public/fonts -> ../../assets/fonts`를 통해 runtime URL `fonts/...`를 유지한다.
 
 다음은 **2026-04-07 조사 당시**의 17개 inventory와 문제 정의다.
 

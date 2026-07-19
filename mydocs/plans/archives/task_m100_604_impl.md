@@ -549,4 +549,4 @@ Task #604 Stage 4: 광범위 회귀 검증 + 시각 판정 + 최종 보고서
 
 - 수행계획서: `mydocs/plans/task_m100_604.md`
 - Issue: #604
-- 분석 자료: `mydocs/tech/document_ir_parser_relationship_analysis.md` (16KB)
+- 분석 자료: `mydocs/tech/investigations/issue-511/document_ir_parser_relationship_analysis.md` (16KB)

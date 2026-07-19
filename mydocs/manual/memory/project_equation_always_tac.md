@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 수식 컨트롤은 항상 TAC
 description: 한컴의 수식 컨트롤은 모두 treat_as_char(TAC)로 처리됨. 독립 수식 개념 없음.
 type: project

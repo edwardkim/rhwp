@@ -20,7 +20,7 @@
   - overlay diff PNG와 metric 생성
   - compare/overlay 나란히 보기 review PNG 생성
   - overlay 바로 아래 내용 픽셀 중심 자동 일치율 보조값 표시
-- `mydocs/manual/visual_sweep_guide.md`
+- `mydocs/manual/verification/visual_sweep_guide.md`
   - 일반 파일과 특정 페이지 사용법 문서화
   - Codex 보고 규칙 문서화
   - `visual_accuracy_proxy_percent` 해석 문서화

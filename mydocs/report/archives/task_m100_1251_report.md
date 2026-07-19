@@ -20,7 +20,7 @@
 - `src/ole_chart/svg_renderer.rs`: canonical Rust SVG renderer
 - `src/renderer/layout/shape_layout.rs`: OLE render priority에 legacy `/Contents` chart 경로 추가
 - `tests/issue_1251_ole_chart_contents.rs`: fixture 기반 회귀 테스트
-- `mydocs/tech/hwp_ole_chart_visual_diff_against_hancom_pdf_1251.md`: 정답 PDF 대비 시각 차이 분석
+- `mydocs/tech/investigations/issue-1251/hwp_ole_chart_visual_diff_against_hancom_pdf_1251.md`: 정답 PDF 대비 시각 차이 분석
 - `mydocs/tech/hwp_ole_chart_renderer_architecture_decision_1251.md`: Rust SVG canonical renderer 결정 기록과 `charming` 검토 결과
 - `mydocs/report/task_m100_1251_pr_draft.md`: 공식 문서, 결정 배경, 구현 결정, known gap을 포함한 PR 본문 초안
 
@@ -79,7 +79,7 @@ rhwp-studio 결과:
 
 상세 문서:
 
-- `mydocs/tech/hwp_ole_chart_visual_diff_against_hancom_pdf_1251.md`
+- `mydocs/tech/investigations/issue-1251/hwp_ole_chart_visual_diff_against_hancom_pdf_1251.md`
 - `mydocs/tech/hwp_ole_chart_renderer_architecture_decision_1251.md`
 - `mydocs/report/task_m100_1251_pr_draft.md`
 

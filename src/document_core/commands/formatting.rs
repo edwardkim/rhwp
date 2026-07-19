@@ -742,8 +742,8 @@ impl DocumentCore {
         let (raw_left_hu, raw_right_hu, raw_indent_hu) = raw_ps
             .map(|r| (r.margin_left, r.margin_right, r.indent))
             .unwrap_or((0, 0, 0));
-        let is_hwp3_native =
-            self.document.header.version.major == 3 && !self.document.is_hwp3_variant;
+        let is_hwp3_native = self.document.header.version.major == 3
+            && !self.document.layout_profile().hwp3_layout();
         let effective_left_hu = if is_hwp3_native {
             raw_left_hu + raw_indent_hu.min(0)
         } else {

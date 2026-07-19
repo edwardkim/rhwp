@@ -15,7 +15,12 @@ fn main() {
         Some("export-render-tree") => export_render_tree(&args[2..]),
         Some("export-structure") => export_structure(&args[2..]),
         Some("export-png") => export_png(&args[2..]),
-        Some("export-pdf") => export_pdf(&args[2..]),
+        Some("export-pdf") => {
+            let exit_code = export_pdf(&args[2..]);
+            if exit_code != 0 {
+                process::exit(exit_code);
+            }
+        }
         Some("export-text") => export_text(&args[2..]),
         Some("export-markdown") => export_markdown(&args[2..]),
         Some("export-hwpx") => export_hwpx(&args[2..]),
@@ -80,6 +85,9 @@ fn print_help() {
     println!();
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!(
+        "      --profile <프로필>      layer 출력 프로필: screen|print|high-quality|fast-preview"
+    );
     println!("      --show-para-marks       문단부호(↵/↓) 표시");
     println!("      --show-control-codes    조판부호 보이기 (문단부호 + 개체 마커 등)");
     println!("      --debug-overlay         디버그 오버레이 (문단/표 경계 + 인덱스 라벨)");
@@ -111,6 +119,9 @@ fn print_help() {
     println!();
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!(
+        "      --profile <프로필>      출력 프로필: screen|print|high-quality|fast-preview (기본: high-quality)"
+    );
     println!("      --font-path <경로>      폰트 파일 탐색 경로 (여러 번 지정 가능)");
     println!("                              한컴 전용 폰트 (HY견명조 등) 가 시스템에 없을 때 ttfs 디렉토리 지정");
     println!("      --scale <배율>          렌더링 배율 (기본: 1.0)");
@@ -143,10 +154,15 @@ fn print_help() {
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
     println!();
     println!("  export-pdf <파일.hwp|파일.hwpx|파일.hml> [옵션]");
-    println!("      HWP/HWPX/HML 문서를 PDF로 내보내기 (svg2pdf + pdf-writer)");
+    println!("      HWP/HWPX/HML 문서를 PDF로 내보내기 (기본: SVG 호환 backend)");
     println!();
     println!("      -o, --output <파일>      출력 PDF 파일 (기본: output/<입력명>.pdf)");
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!("      --backend <svg|direct>  PDF backend (기본값: svg)");
+    println!(
+        "      --profile <프로필>      layer 출력 프로필: screen|print|high-quality|fast-preview"
+    );
+    println!("      --raster-dpi <DPI>      direct backend fallback raster DPI (기본값: 144)");
     println!("      --font-path <경로>      폰트 파일 탐색 경로 (여러 번 지정 가능)");
     println!("      --fallback-serif <명>   PDF serif generic fallback family");
     println!("      --fallback-sans <명>    PDF sans-serif generic fallback family");
@@ -304,6 +320,7 @@ fn export_svg(args: &[String]) {
     let mut respect_vpos_reset = false;
     let mut font_embed_mode = rhwp::renderer::svg::FontEmbedMode::None;
     let mut font_paths: Vec<std::path::PathBuf> = Vec::new();
+    let mut render_profile: Option<rhwp::paint::RenderProfile> = None;
 
     let mut i = 1;
     while i < args.len() {
@@ -329,6 +346,21 @@ fn export_svg(args: &[String]) {
                     i += 2;
                 } else {
                     eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                    return;
+                }
+            }
+            "--profile" => {
+                if i + 1 < args.len() {
+                    render_profile = rhwp::paint::RenderProfile::parse(&args[i + 1]);
+                    if render_profile.is_none() {
+                        eprintln!(
+                            "오류: --profile 값이 올바르지 않습니다 (screen|print|high-quality|fast-preview)."
+                        );
+                        return;
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("오류: --profile 뒤에 프로필 이름이 필요합니다.");
                     return;
                 }
             }
@@ -425,6 +457,11 @@ fn export_svg(args: &[String]) {
         }
     }
 
+    if render_profile.is_some() && font_embed_mode != rhwp::renderer::svg::FontEmbedMode::None {
+        eprintln!("오류: --profile은 --font-style/--embed-fonts와 함께 사용할 수 없습니다.");
+        return;
+    }
+
     // 파일 읽기
     let data = match fs::read(file_path) {
         Ok(d) => d,
@@ -503,7 +540,9 @@ fn export_svg(args: &[String]) {
         .unwrap_or("page");
 
     for page_num in &pages {
-        let svg_result = if font_embed_mode != rhwp::renderer::svg::FontEmbedMode::None {
+        let svg_result = if let Some(profile) = render_profile {
+            doc.render_page_svg_layer_with_profile_native(*page_num, profile)
+        } else if font_embed_mode != rhwp::renderer::svg::FontEmbedMode::None {
             doc.render_page_svg_with_fonts(*page_num, font_embed_mode, &font_paths)
         } else {
             doc.render_page_svg_native(*page_num)
@@ -938,6 +977,8 @@ fn export_png(args: &[String]) {
     let mut max_dimension: Option<i32> = None;
     let mut vlm_target: Option<VlmTarget> = None;
     let mut dpi: Option<f64> = None;
+    // PNG export is print-equivalent output. Editor visuals require an explicit screen profile.
+    let mut render_profile = rhwp::paint::RenderProfile::HighQuality;
 
     let mut i = 1;
     while i < args.len() {
@@ -963,6 +1004,21 @@ fn export_png(args: &[String]) {
                     i += 2;
                 } else {
                     eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                    return;
+                }
+            }
+            "--profile" => {
+                if i + 1 < args.len() {
+                    let Some(profile) = rhwp::paint::RenderProfile::parse(&args[i + 1]) else {
+                        eprintln!(
+                            "오류: --profile 값이 올바르지 않습니다 (screen|print|high-quality|fast-preview)."
+                        );
+                        return;
+                    };
+                    render_profile = profile;
+                    i += 2;
+                } else {
+                    eprintln!("오류: --profile 뒤에 프로필 이름이 필요합니다.");
                     return;
                 }
             }
@@ -1112,9 +1168,14 @@ fn export_png(args: &[String]) {
         let has_options = png_options.scale.is_some()
             || png_options.max_dimension.is_some()
             || png_options.vlm_target.is_some()
-            || png_options.dpi.is_some();
+            || png_options.dpi.is_some()
+            || render_profile != rhwp::paint::RenderProfile::Screen;
         let result = if has_options {
-            core.render_page_png_native_with_export_options(*page_num, &png_options)
+            core.render_page_png_native_with_profile_and_export_options(
+                *page_num,
+                render_profile,
+                &png_options,
+            )
         } else if !font_paths.is_empty() {
             core.render_page_png_native_with_fonts(*page_num, &font_paths)
         } else {
@@ -1150,21 +1211,21 @@ fn export_png(args: &[String]) {
     );
 }
 
-fn export_pdf(args: &[String]) {
+fn export_pdf(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("오류: 문서 파일 경로를 지정해주세요.");
         print_export_pdf_usage();
-        return;
+        return 2;
     }
     if args[0] == "--help" || args[0] == "-h" {
         print_export_pdf_usage();
-        return;
+        return 0;
     }
 
     #[cfg(target_arch = "wasm32")]
     {
         eprintln!("오류: PDF 내보내기는 native 빌드에서만 지원됩니다.");
-        return;
+        return 1;
     }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -1172,7 +1233,12 @@ fn export_pdf(args: &[String]) {
         let file_path = &args[0];
         let mut output_file = String::new();
         let mut target_page: Option<u32> = None;
+        let mut pdf_backend = rhwp::renderer::pdf::PdfBackend::default();
         let mut pdf_options = rhwp::renderer::pdf::PdfExportOptions::default();
+        let mut direct_pdf_options = rhwp::renderer::pdf::DirectPdfExportOptions::default();
+        let mut render_profile: Option<rhwp::paint::RenderProfile> = None;
+        let mut compatibility_only_options = Vec::new();
+        let mut direct_raster_dpi_was_set = false;
 
         let mut i = 1;
         while i < args.len() {
@@ -1183,7 +1249,7 @@ fn export_pdf(args: &[String]) {
                         i += 2;
                     } else {
                         eprintln!("오류: --output 뒤에 파일 경로가 필요합니다.");
-                        return;
+                        return 2;
                     }
                 }
                 "--page" | "-p" => {
@@ -1192,14 +1258,85 @@ fn export_pdf(args: &[String]) {
                             Ok(n) => target_page = Some(n),
                             Err(_) => {
                                 eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
-                                return;
+                                return 2;
                             }
                         }
                         i += 2;
                     } else {
                         eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
-                        return;
+                        return 2;
                     }
+                }
+                "--profile" => {
+                    if i + 1 < args.len() {
+                        render_profile = rhwp::paint::RenderProfile::parse(&args[i + 1]);
+                        if render_profile.is_none() {
+                            eprintln!(
+                                "오류: --profile 값이 올바르지 않습니다 (screen|print|high-quality|fast-preview)."
+                            );
+                            return 2;
+                        }
+                        i += 2;
+                    } else {
+                        eprintln!("오류: --profile 뒤에 프로필 이름이 필요합니다.");
+                        return 2;
+                    }
+                }
+                "--backend" => {
+                    if i + 1 < args.len() {
+                        let Some(backend) = rhwp::renderer::pdf::PdfBackend::parse(&args[i + 1])
+                        else {
+                            eprintln!("오류: --backend 값이 올바르지 않습니다 (svg|direct).");
+                            return 2;
+                        };
+                        pdf_backend = backend;
+                        i += 2;
+                    } else {
+                        eprintln!("오류: --backend 뒤에 backend 이름이 필요합니다.");
+                        return 2;
+                    }
+                }
+                arg if arg.starts_with("--backend=") => {
+                    let Some(backend) = rhwp::renderer::pdf::PdfBackend::parse(
+                        arg.trim_start_matches("--backend="),
+                    ) else {
+                        eprintln!("오류: --backend 값이 올바르지 않습니다 (svg|direct).");
+                        return 2;
+                    };
+                    pdf_backend = backend;
+                    i += 1;
+                }
+                "--raster-dpi" => {
+                    if i + 1 < args.len() {
+                        let Ok(raster_dpi) = args[i + 1].parse::<f32>() else {
+                            eprintln!("오류: --raster-dpi 값은 양수여야 합니다.");
+                            return 2;
+                        };
+                        if !raster_dpi.is_finite() || raster_dpi <= 0.0 {
+                            eprintln!("오류: --raster-dpi 값은 양수여야 합니다.");
+                            return 2;
+                        }
+                        direct_pdf_options.raster_dpi = raster_dpi;
+                        direct_raster_dpi_was_set = true;
+                        i += 2;
+                    } else {
+                        eprintln!("오류: --raster-dpi 뒤에 DPI 값이 필요합니다.");
+                        return 2;
+                    }
+                }
+                arg if arg.starts_with("--raster-dpi=") => {
+                    let Ok(raster_dpi) = arg.trim_start_matches("--raster-dpi=").parse::<f32>()
+                    else {
+                        eprintln!("오류: --raster-dpi 값은 양수여야 합니다.");
+                        return 2;
+                    };
+                    if !raster_dpi.is_finite() || raster_dpi <= 0.0 {
+                        eprintln!("오류: --raster-dpi 값은 양수여야 합니다.");
+                        return 2;
+                    }
+                    direct_pdf_options.raster_dpi = raster_dpi;
+                    direct_raster_dpi_was_set = true;
+                    i += 1;
                 }
                 "--font-path" => {
                     if i + 1 < args.len() {
@@ -1209,35 +1346,39 @@ fn export_pdf(args: &[String]) {
                         i += 2;
                     } else {
                         eprintln!("오류: --font-path 뒤에 경로가 필요합니다.");
-                        return;
+                        return 2;
                     }
                 }
                 "--fallback-serif" => {
+                    compatibility_only_options.push("--fallback-serif");
                     if i + 1 < args.len() {
                         pdf_options.fallback_serif = args[i + 1].clone();
                         i += 2;
                     } else {
                         eprintln!("오류: --fallback-serif 뒤에 폰트 family가 필요합니다.");
-                        return;
+                        return 2;
                     }
                 }
                 arg if arg.starts_with("--fallback-serif=") => {
+                    compatibility_only_options.push("--fallback-serif");
                     pdf_options.fallback_serif =
                         arg.trim_start_matches("--fallback-serif=").to_string();
                     i += 1;
                 }
                 "--fallback-sans" | "--fallback-sans-serif" => {
+                    compatibility_only_options.push("--fallback-sans");
                     if i + 1 < args.len() {
                         pdf_options.fallback_sans = args[i + 1].clone();
                         i += 2;
                     } else {
                         eprintln!("오류: --fallback-sans 뒤에 폰트 family가 필요합니다.");
-                        return;
+                        return 2;
                     }
                 }
                 arg if arg.starts_with("--fallback-sans=")
                     || arg.starts_with("--fallback-sans-serif=") =>
                 {
+                    compatibility_only_options.push("--fallback-sans");
                     pdf_options.fallback_sans = arg
                         .strip_prefix("--fallback-sans=")
                         .or_else(|| arg.strip_prefix("--fallback-sans-serif="))
@@ -1246,17 +1387,19 @@ fn export_pdf(args: &[String]) {
                     i += 1;
                 }
                 "--fallback-mono" | "--fallback-monospace" => {
+                    compatibility_only_options.push("--fallback-mono");
                     if i + 1 < args.len() {
                         pdf_options.fallback_mono = args[i + 1].clone();
                         i += 2;
                     } else {
                         eprintln!("오류: --fallback-mono 뒤에 폰트 family가 필요합니다.");
-                        return;
+                        return 2;
                     }
                 }
                 arg if arg.starts_with("--fallback-mono=")
                     || arg.starts_with("--fallback-monospace=") =>
                 {
+                    compatibility_only_options.push("--fallback-mono");
                     pdf_options.fallback_mono = arg
                         .strip_prefix("--fallback-mono=")
                         .or_else(|| arg.strip_prefix("--fallback-monospace="))
@@ -1268,21 +1411,24 @@ fn export_pdf(args: &[String]) {
                 // 폰트 서브셋 경로를 건너뛰어 메모리를 크게 줄이는 대신,
                 // PDF 의 텍스트 선택·검색 기능을 잃는다 (시각적 출력은 동일).
                 "--text-as-paths" => {
+                    compatibility_only_options.push("--text-as-paths");
                     pdf_options.embed_text = false;
                     i += 1;
                 }
                 "--equation-font" | "--equation-font-family" => {
+                    compatibility_only_options.push("--equation-font");
                     if i + 1 < args.len() {
                         pdf_options.equation_font = Some(args[i + 1].clone());
                         i += 2;
                     } else {
                         eprintln!("오류: --equation-font 뒤에 폰트 family가 필요합니다.");
-                        return;
+                        return 2;
                     }
                 }
                 arg if arg.starts_with("--equation-font=")
                     || arg.starts_with("--equation-font-family=") =>
                 {
+                    compatibility_only_options.push("--equation-font");
                     pdf_options.equation_font = Some(
                         arg.strip_prefix("--equation-font=")
                             .or_else(|| arg.strip_prefix("--equation-font-family="))
@@ -1294,9 +1440,27 @@ fn export_pdf(args: &[String]) {
                 _ => {
                     eprintln!("알 수 없는 옵션: {}", args[i]);
                     print_export_pdf_usage();
-                    return;
+                    return 2;
                 }
             }
+        }
+
+        compatibility_only_options.sort_unstable();
+        compatibility_only_options.dedup();
+        if pdf_backend == rhwp::renderer::pdf::PdfBackend::DirectLayer
+            && !compatibility_only_options.is_empty()
+        {
+            eprintln!(
+                "오류: direct PDF backend는 다음 SVG 호환 옵션을 지원하지 않습니다: {}",
+                compatibility_only_options.join(", ")
+            );
+            return 2;
+        }
+        if pdf_backend == rhwp::renderer::pdf::PdfBackend::CompatibilitySvg
+            && direct_raster_dpi_was_set
+        {
+            eprintln!("오류: --raster-dpi는 direct PDF backend에서만 사용할 수 있습니다.");
+            return 2;
         }
 
         // 기본 출력 파일명
@@ -1312,7 +1476,7 @@ fn export_pdf(args: &[String]) {
             Ok(d) => d,
             Err(e) => {
                 eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-                return;
+                return 1;
             }
         };
 
@@ -1320,19 +1484,23 @@ fn export_pdf(args: &[String]) {
             Ok(d) => d,
             Err(e) => {
                 eprintln!("오류: 문서 파싱 실패 - {}", e);
-                return;
+                return 1;
             }
         };
 
         let page_count = doc.page_count();
         println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+        if page_count == 0 {
+            eprintln!("오류: PDF로 내보낼 페이지가 없습니다.");
+            return 1;
+        }
 
         // 출력 디렉토리 생성
         if let Some(parent) = Path::new(&output_file).parent() {
             if !parent.exists() {
                 if let Err(e) = fs::create_dir_all(parent) {
                     eprintln!("오류: 출력 디렉토리를 만들 수 없습니다 - {}", e);
-                    return;
+                    return 1;
                 }
             }
         }
@@ -1345,23 +1513,51 @@ fn export_pdf(args: &[String]) {
                         "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
                         page_count - 1
                     );
-                    return;
+                    return 2;
                 }
                 vec![p]
             }
             None => (0..page_count).collect(),
         };
 
-        let pdf_bytes = match doc.render_pages_pdf_native_with_options(&pages, &pdf_options) {
+        let pdf_result = match pdf_backend {
+            rhwp::renderer::pdf::PdfBackend::CompatibilitySvg => match render_profile {
+                Some(profile) => doc.render_pages_pdf_native_with_profile_and_options(
+                    &pages,
+                    profile,
+                    &pdf_options,
+                ),
+                None => doc.render_pages_pdf_native_with_options(&pages, &pdf_options),
+            },
+            rhwp::renderer::pdf::PdfBackend::DirectLayer => {
+                #[cfg(feature = "native-skia")]
+                {
+                    direct_pdf_options.font_paths = pdf_options.font_paths.clone();
+                    doc.render_pages_pdf_direct_native_with_profile_and_options(
+                        &pages,
+                        render_profile.unwrap_or(rhwp::paint::RenderProfile::Print),
+                        &direct_pdf_options,
+                    )
+                }
+                #[cfg(not(feature = "native-skia"))]
+                {
+                    Err(rhwp::error::HwpError::RenderError(
+                        "direct PDF backend requires a build with the native-skia feature"
+                            .to_string(),
+                    ))
+                }
+            }
+        };
+        let pdf_bytes = match pdf_result {
             Ok(bytes) => bytes,
             Err(e) => {
                 eprintln!("오류: PDF 변환 실패 - {}", e);
-                return;
+                return 1;
             }
         };
         if let Err(e) = fs::write(&output_file, &pdf_bytes) {
             eprintln!("오류: PDF 저장 실패 - {}", e);
-            return;
+            return 1;
         }
         println!(
             "  → {} ({}KB, {}페이지)",
@@ -1369,7 +1565,11 @@ fn export_pdf(args: &[String]) {
             pdf_bytes.len() / 1024,
             pages.len()
         );
+        if pdf_backend == rhwp::renderer::pdf::PdfBackend::DirectLayer {
+            println!("PDF backend: direct");
+        }
         println!("PDF 내보내기 완료");
+        0
     }
 }
 
@@ -1377,11 +1577,17 @@ fn print_export_pdf_usage() {
     eprintln!("사용법: rhwp export-pdf <파일.hwp|파일.hwpx|파일.hml> [옵션]");
     eprintln!("  -o, --output <파일>       출력 PDF 파일");
     eprintln!("  -p, --page <번호>        특정 페이지만 내보내기 (0부터 시작)");
+    eprintln!("      --backend <svg|direct> PDF backend (기본값: svg)");
+    eprintln!(
+        "      --profile <프로필>   layer 출력 프로필 (screen|print|high-quality|fast-preview)"
+    );
+    eprintln!("      --raster-dpi <DPI>    direct backend fallback raster DPI (기본값: 144)");
     eprintln!("      --font-path <경로>   폰트 파일 탐색 경로 (여러 번 지정 가능)");
     eprintln!("      --fallback-serif <명>");
     eprintln!("      --fallback-sans <명>");
     eprintln!("      --fallback-mono <명>");
     eprintln!("      --equation-font <명>");
+    eprintln!("  direct backend는 native-skia feature로 빌드한 native CLI가 필요합니다.");
     eprintln!("  참고: <...>는 자리표시자이며, 실제 입력에는 꺾쇠괄호를 쓰지 않습니다.");
     eprintln!("        공백 없는 값: --font-path ./ttfs");
     eprintln!(

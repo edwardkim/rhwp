@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # #178 첫 시도 실패 — HWPX→HWP 강제 저장으로 사용자 경험 개선 시도
 
 - **일자**: 2026-04-19

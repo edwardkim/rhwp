@@ -48,7 +48,7 @@
 
 ## visual_sweep_guide 적용
 
-- `mydocs/manual/visual_sweep_guide.md` 기준으로 `scripts/task1274_visual_sweep.py`를 SO-SUEOP HWP3/HWPX 대상에 직접 적용했다.
+- `mydocs/manual/verification/visual_sweep_guide.md` 기준으로 `scripts/task1274_visual_sweep.py`를 SO-SUEOP HWP3/HWPX 대상에 직접 적용했다.
 - 수정 전 산출물:
   - `output/task1692_visual_sweep/so-sueop-hwp3/compare/compare_043.png`
   - `output/task1692_visual_sweep/so-sueop-hwp3/compare/compare_045.png`

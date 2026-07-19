@@ -1,3 +1,10 @@
+---
+kind: decision
+status: active
+canonical: mydocs/tech/thorvg_decision.md
+last_verified: 2026-07-16
+---
+
 # ThorVG 기술 검토 결정 기록
 
 ## 문서 정보
@@ -80,7 +87,8 @@ Docker 개발 환경에 추가 설치가 필요하다. 기존 순수 Rust 빌드
 1. **ThorVG 코드 제거**: 타스크 112~115에서 추가된 모든 ThorVG 관련 코드를 롤백
 2. **Canvas 2D 유지**: 실시간 편집의 기본 렌더링 백엔드로 Canvas 2D를 계속 사용
 3. **렌더 트리 구조 유지**: 렌더 트리(JSON) 추상화는 SVG 내보내기 등에서 이미 활용 중이므로 유지
-4. **ThorVG 코드 보존**: `local/task112`~`local/task115` 브랜치에 코드가 보존되어 있으므로, 서버사이드 렌더링이나 내보내기 기능이 필요할 때 참조 가능
+4. **POC 이력 보존**: 제거된 ThorVG 구현은 특정 로컬 브랜치의 존속을 전제로 하지 않는다. 재검토 시 이
+   결정 기록과 Git commit 이력을 기준으로 당시 POC를 확인한다.
 
 ## 향후 ThorVG 재검토 조건
 
@@ -92,6 +100,5 @@ Docker 개발 환경에 추가 설치가 필요하다. 기존 순수 Rust 빌드
 
 ## 참조 문서
 
-- [thorvg_poc_insights.md](thorvg_poc_insights.md) — POC 상세 인사이트 보고서
-- [mydocs/plans/task_112.md](../plans/task_112.md) ~ [task_115.md](../plans/task_115.md) — 각 타스크 수행계획서
+- [ThorVG PoC 인사이트](investigations/issue-112/thorvg_poc_insights.md) — 타스크 112~115의 보존된 POC 요약과 기술 근거
 - [mydocs/feedback/font-metrics.md](../feedback/font-metrics.md) — 폰트 메트릭 관련 피드백

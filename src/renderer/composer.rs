@@ -1426,6 +1426,121 @@ pub fn recompose_for_body_width(
     recompose_for_cell_width(composed, para, column_inner_width_px, styles);
 }
 
+/// [#2291/#2287] 부실 저장 예외 — 기계생성 문서는 다줄 문단에도 저장 lineseg 를
+/// 1개만 남기는 관례가 있어(연결맵 s5 244×10 r183 c8: 76자 문단 ls 1개 → 1줄
+/// 렌더 + "…실천 계획 세" 절단), 셀 재래핑의 "저장 lineseg 신뢰" 가드가 이런
+/// 문단의 텍스트를 segment_width 클립으로 절단한다. 저장 ls==1 이고 그 줄의
+/// 추정 실폭이 셀 내폭을 명백히 초과(×1.05)하면 저장을 불신하고 fresh
+/// 재래핑한다. **가로쓰기 셀 전용** — 세로쓰기 셀은 글자를 세로로 쌓아 가로
+/// 실폭 판정이 무의미하므로 호출부(셀 방향을 아는 곳)에서 걸러야 한다
+/// (task81 세로쓰기 회귀 실측). 정상 1줄(실폭 ≤ 내폭)·다줄 저장(ls≥2)은 불변.
+pub fn recompose_stored_single_line_if_overflowing(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    cell_inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+) {
+    let stored_single = para.line_segs.len() == 1
+        && para
+            .line_segs
+            .iter()
+            .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+    if !stored_single || composed.lines.len() != 1 || cell_inner_width_px <= 0.0 {
+        return;
+    }
+    let over = composed
+        .lines
+        .first()
+        .map(|l| estimate_composed_line_width(l, styles) > cell_inner_width_px * 1.05)
+        .unwrap_or(false);
+    if !over {
+        return;
+    }
+    // 저장 seg 를 일시적으로 무시하고 NO_LS 폴백과 동일 경로로 재분할한다.
+    let mut para_no_ls = para.clone();
+    para_no_ls.line_segs.clear();
+    recompose_for_cell_width(composed, &para_no_ls, cell_inner_width_px, styles);
+}
+
+/// [#2279] 저장 lineseg 분할의 실폭-과잉 판정 (본문 판, 줄수 무관).
+///
+/// 저장(비합성) 분할의 어떤 줄이든 추정 실폭이 단 내폭을 명백히(×1.05)
+/// 초과하면 그 분할은 물리적으로 성립하지 않는 부실 저장이다 — 마스킹('*'
+/// 치환) 결재문서는 원문 기준의 저장 분할을 남겨 실폭과 모순인 경우가 있고,
+/// 한글은 항상 fresh 재계산하므로 더 많은 줄로 배치한다 (36392557 pi34
+/// 실측: '*'×164 저장 2줄, 줄0 90자 ≈ 내폭 1.4× vs 한글 PDF 3줄 80/68/16).
+/// [정밀화] 마스킹 문단('*' 비중 ≥ 50%) 한정 — 일반 텍스트 문단은 rhwp
+/// 폭 추정 오차가 1.05×를 넘는 사례(prep_1790387/온새미로 실측 회귀)가
+/// 있어 재래핑하지 않는다. 마스킹 치환은 원문과 글자폭이 달라지는 유일한
+/// 물리적 근거가 있는 계열이다.
+pub fn stored_lines_overflow(
+    composed: &ComposedParagraph,
+    para: &Paragraph,
+    inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    let stored = !para.line_segs.is_empty()
+        && para
+            .line_segs
+            .iter()
+            .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+    if !stored || composed.lines.is_empty() || inner_width_px <= 0.0 {
+        return false;
+    }
+    if composed.lines.len() != para.line_segs.len() {
+        return false;
+    }
+    // 마스킹 판별: 공백 제외 글자의 절반 이상이 '*'
+    let (mut stars, mut others) = (0usize, 0usize);
+    for c in para.text.chars() {
+        if c == '*' {
+            stars += 1;
+        } else if !c.is_whitespace() {
+            others += 1;
+        }
+    }
+    if stars < 8 || stars < others {
+        return false;
+    }
+    let fired = composed
+        .lines
+        .iter()
+        .any(|l| estimate_composed_line_width(l, styles) > inner_width_px * 1.05);
+    if fired && std::env::var("RHWP_DIAG_REWRAP").is_ok() {
+        let widths: Vec<String> = composed
+            .lines
+            .iter()
+            .map(|l| format!("{:.0}", estimate_composed_line_width(l, styles)))
+            .collect();
+        eprintln!(
+            "DIAG_REWRAP fire inner={:.0} lines={} widths={:?} text='{}'",
+            inner_width_px,
+            composed.lines.len(),
+            widths,
+            para.text.chars().take(24).collect::<String>(),
+        );
+    }
+    fired
+}
+
+/// [#2279] 본문(column) 판 부실-저장 예외 — 저장 분할이 실폭 모순이면
+/// 저장을 불신하고 본문 경로(`recompose_for_body_width` — 글자모양 재분할
+/// 포함)로 fresh 재래핑한다. 셀 판(#2291, 1줄 한정)과 같은 원리의 다중줄
+/// 일반화 + 마스킹 한정. 정상 분할(전 줄 실폭 ≤ 내폭×1.05)은 불변.
+pub fn recompose_stored_lines_if_overflowing_body(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    column_inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+) {
+    if !stored_lines_overflow(composed, para, column_inner_width_px, styles) {
+        return;
+    }
+    let mut para_no_ls = para.clone();
+    para_no_ls.line_segs.clear();
+    recompose_for_body_width(composed, &para_no_ls, column_inner_width_px, styles);
+}
+
 pub fn recompose_for_cell_width(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
@@ -1905,6 +2020,30 @@ fn split_composed_line_by_width(
                     // 줄끝 초과 공백 1개 hang — 줄바꿈 없이 현재 줄에 계상.
                     hung = true;
                 } else if over {
+                    // [#2244] 행두 금칙: 새 줄이 금칙 문자(마침표 등)로 시작하지
+                    // 않도록 직전 글자를 함께 다음 줄로 이월한다 — 한컴 2024 저장
+                    // 오라클 정합 ("적용한 | 다.111…", LINE_SEG [...,128]).
+                    // 직전 글자가 같은 run 안에 있고(스타일 경계 아님) 공백이
+                    // 아니며 줄에 2자 이상 남을 때만 1자 retraction.
+                    let carried: Option<(char, f64)> = if is_line_start_forbidden(ch)
+                        && chars_in_line > 1
+                        && current_run_text
+                            .chars()
+                            .last()
+                            .is_some_and(|p| p != ' ' && !is_line_start_forbidden(p))
+                    {
+                        current_run_text.pop().map(|prev| {
+                            let prev_str: String = std::iter::once(prev).collect();
+                            let prev_w = crate::renderer::layout::estimate_text_width_unrounded(
+                                &prev_str, &ts,
+                            );
+                            current_width -= prev_w;
+                            chars_in_line -= 1;
+                            (prev, prev_w)
+                        })
+                    } else {
+                        None
+                    };
                     flush_run(
                         &mut current_runs,
                         &mut current_run_text,
@@ -1919,6 +2058,11 @@ fn split_composed_line_by_width(
                     );
                     space_w = 0.0;
                     hung = false;
+                    if let Some((pch, pw)) = carried {
+                        current_run_text.push(pch);
+                        current_width += pw;
+                        chars_in_line += 1;
+                    }
                 }
                 current_run_text.push(ch);
                 current_width += ch_width;
@@ -2346,8 +2490,8 @@ mod line_breaking;
 pub mod lineseg_compare;
 
 pub(crate) use line_breaking::{
-    is_line_end_forbidden, is_line_start_forbidden, recalculate_section_vpos, reflow_line_segs,
-    tokenize_paragraph, BreakToken,
+    is_line_end_forbidden, is_line_start_forbidden, paragraph_flow_end, recalculate_section_vpos,
+    reflow_line_segs, tokenize_paragraph, BreakToken,
 };
 
 #[cfg(test)]

@@ -2,7 +2,7 @@
 
 - **이슈**: #1370 (M100) / 브랜치 `local/task1370`
 - **단계**: Stage 1 (진단 카탈로그, **코드 무수정**)
-- **산출물**: `mydocs/tech/task_m100_1370_divergence_catalog.md`
+- **산출물**: `mydocs/tech/investigations/issue-1370/task_m100_1370_divergence_catalog.md`
 
 ## 1. 수행 내용
 

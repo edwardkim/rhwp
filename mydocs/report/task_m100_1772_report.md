@@ -6,7 +6,7 @@ Issue #1772(11.36px 이동 군집 50건+ 등 파스 경로별 렌더 차이)의 
 **HWPX 파서의 IR 계약 위반**(표 outMargin 을 `table.common.margin` 에 미동기화)으로
 확정하고, parse_table 종료 시 동기화 4줄로 수정했다. 이슈 제목의 가설(saved-vpos
 신뢰 로직 차이)은 조사 과정에서 기각되었다 — 조사 상세:
-`mydocs/tech/task_m100_1772_root_cause.md`.
+`mydocs/troubleshootings/hwpx_table_out_margin_common_margin_sync.md`.
 
 ## 변경 사항
 

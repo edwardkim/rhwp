@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/PUBLIC_WEB_ADMIN_GUIDE.md
+last_verified: 2026-07-17
+---
+
 # HWP 웹 통합 가이드 — 웹 관리자/개발자용
 
 ## 개요

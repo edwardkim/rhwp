@@ -11,7 +11,7 @@
 | Extension Host | `rhwp-vscode/src/extension.ts` | Entry point |
 | Editor Provider | `rhwp-vscode/src/hwp-editor-provider.ts` | CustomReadonlyEditorProvider |
 | Webview viewer | `rhwp-vscode/src/webview/viewer.ts` | WASM initialization + virtual scroll + Canvas rendering |
-| Design document | `mydocs/tech/vscode_extension_design.md` | Architecture, protocol, build pipeline |
+| Design document | `mydocs/tech/archive/vscode_extension_design.md` | Architecture, protocol, build pipeline |
 
 ### Stage-by-Stage Progress Summary
 

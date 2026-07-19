@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/parser_architecture.md
+last_verified: 2026-07-17
+---
+
 # HWP ↔ HWPX IR 차이점 정리
 
 HWPX 파싱 시 HWP 바이너리와 동일한 IR(중간 표현)을 생성하기 위해 주의해야 할 차이점을 기록한다.

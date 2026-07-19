@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: project_v080_hwpx_save_milestone
 description: 다음 릴리즈는 0.7→0.8 MINOR 분기점 — HWPX 직접 저장+양방향 포맷 선택이 근거
 metadata: 

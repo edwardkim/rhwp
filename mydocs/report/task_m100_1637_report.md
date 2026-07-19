@@ -2,7 +2,7 @@
 
 - 마일스톤: M100 / 브랜치: local/task1637 (devel d3627f55 분기)
 - 일자: 2026-06-29
-- 선행: Task #1636 v3 전수 검증에서 발견(T-PI), 근본원인 조사 `mydocs/tech/task1637_pagination_hidefirstemptyline.md`
+- 선행: Task #1636 v3 전수 검증에서 발견(T-PI), 근본원인 조사 `mydocs/troubleshootings/hwpx_visibility_and_flow_with_text_serialization.md`
 
 ## 1. 문제
 
@@ -70,5 +70,5 @@ lib **1984 passed**, baseline 4 passed, IR_DIFF 5→5(신규 회귀 0), fmt/clip
 ## 6. 산출물
 
 - 소스: `src/serializer/hwpx/section.rs`, `src/serializer/hwpx/roundtrip.rs`
-- 근본원인: `mydocs/tech/task1637_pagination_hidefirstemptyline.md`
+- 근본원인: `mydocs/troubleshootings/hwpx_visibility_and_flow_with_text_serialization.md`
 - 검증 데이터: `output/poc/fidelity3/pi_page_fixed_shift23.tsv`, `pi_page_fixed_full.tsv`, `hwpx_fixed/`

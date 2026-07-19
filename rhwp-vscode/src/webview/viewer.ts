@@ -1,4 +1,17 @@
 import init, { HwpDocument } from "@rhwp-wasm/rhwp.js";
+import { blake3 } from "@noble/hashes/blake3.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
+
+import {
+  parseCanvasKitDocumentPreflight,
+  withCanvasKitSurfaceBlockers,
+} from "@/core/canvaskit-document-preflight";
+import { resolveCanvasKitFontPlan } from "@/core/font-loader";
+import type { PageLayerTree } from "@/core/types";
+import {
+  RendererSession,
+  type RendererSessionSelection,
+} from "@/view/renderer-session";
 
 // WASM 렌더러가 호출하는 텍스트 폭 측정 콜백 등록
 installMeasureTextWidth();
@@ -42,6 +55,9 @@ let zoomMode: ZoomMode = "manual";
 let currentPage = 0;
 let viewMode: "single" | "double" = "single";
 let fileName = "";
+let documentLoadGeneration = 0;
+let rendererSelection: RendererSessionSelection | null = null;
+let rendererFallbackScheduled = false;
 const PREFETCH_MARGIN = 300;
 const ZOOM_STEP = 0.1;
 const ZOOM_MIN = 0.25;
@@ -52,6 +68,64 @@ const ROW_GAP = 12;
 const CONTENT_PADDING = 12;
 /** 맞춤 배율에서 쪽 좌우로 남겨 두는 여백. */
 const SIDE_MARGIN = 12;
+
+const canvasKitDefaultFontUri = scrollContainer.dataset.canvaskitFontUri ?? "";
+const canvasKitFontsBaseUri = scrollContainer.dataset.canvaskitFontsBaseUri ?? "";
+const vscodeBundledFontFiles = new Set([
+  "NotoSerifKR-Regular.woff2",
+  "NotoSerifKR-Bold.woff2",
+  "NotoSansKR-Regular.woff2",
+  "NotoSansKR-Bold.woff2",
+  "NotoSansKR-ExtraLight.woff2",
+  "Pretendard-Regular.woff2",
+  "Pretendard-Bold.woff2",
+  "D2Coding-Regular.woff2",
+  "NanumGothic-Regular.woff2",
+  "NanumMyeongjo-Regular.woff2",
+  "GowunBatang-Regular.woff2",
+  "GowunDodum-Regular.woff2",
+]);
+const canvasKitFontPlan = (requiredFontFamilies: readonly string[]) => resolveCanvasKitFontPlan(
+  requiredFontFamilies,
+  {
+    localFontBaseUrl: canvasKitFontsBaseUri,
+    availableLocalFiles: vscodeBundledFontFiles,
+    disableExternalWebFonts: true,
+  },
+);
+const rendererSession = new RendererSession(
+  { backend: "canvas2d", source: "default" },
+  { mode: "default", source: "default" },
+  { preference: "auto", requested: "auto" },
+  "screen",
+  async (mode, surface) => {
+    const { CanvasKitLayerRenderer } = await import("@/view/canvaskit-renderer");
+    return CanvasKitLayerRenderer.create(
+      mode,
+      surface,
+      {
+        ...(canvasKitDefaultFontUri ? { defaultFontUrl: canvasKitDefaultFontUri } : {}),
+        requirePreparedFontFamilies: true,
+      },
+    );
+  },
+  {
+    transformCanvasKitPreflight(report) {
+      const plan = canvasKitFontPlan(report.requiredFontFamilies);
+      return withCanvasKitSurfaceBlockers(
+        report,
+        plan.unavailableFonts.map(font => `fontUnavailable:${font}`),
+      );
+    },
+    async prepareCanvasKitDocument(renderer, report) {
+      const plan = canvasKitFontPlan(report.requiredFontFamilies);
+      if (plan.unavailableFonts.length > 0) {
+        throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${plan.unavailableFonts.join(", ")}`);
+      }
+      await renderer.prepareBundledFonts(plan.sources);
+    },
+  },
+);
 
 interface PageInfo {
   width: number;
@@ -85,43 +159,8 @@ window.addEventListener("message", (event) => {
   const msg = event.data;
 
   if (msg.type === "load") {
-    if (!wasmReady) {
-      stbMessage.textContent = "오류: WASM이 아직 초기화되지 않았습니다";
-      return;
-    }
-    try {
-      fileName = msg.fileName;
-      stbMessage.textContent = `${fileName} 로딩 중...`;
-
-      const fileBytes = toUint8Array(msg.fileData);
-      hwpDoc = new HwpDocument(fileBytes);
-      hwpDoc.setClipEnabled(false);
-
-      const docInfo = JSON.parse(hwpDoc.getDocumentInfo());
-      const pageCount: number = docInfo.page_count ?? docInfo.pageCount ?? 0;
-
-      pageInfos = [];
-      for (let i = 0; i < pageCount; i++) {
-        const pi = JSON.parse(hwpDoc.getPageInfo(i));
-        pageInfos.push({
-          width: pi.width,
-          height: pi.height,
-          rendered: false,
-          element: null,
-        });
-      }
-
-      stbMessage.textContent = fileName;
-      updateStatusBar();
-      buildPageLayout();
-      updateVisiblePages();
-      buildSidebar();
-
-      vscode.postMessage({ type: "loaded", pageCount });
-    } catch (err: any) {
-      stbMessage.textContent = `오류: ${err.message ?? err}`;
-      console.error("HWP 로드 실패:", err);
-    }
+    void loadDocument(msg);
+    return;
   }
 
   if (msg.type === "exportSvg") {
@@ -159,6 +198,94 @@ window.addEventListener("message", (event) => {
     }
   }
 });
+
+async function loadDocument(msg: { fileName: string; fileData: unknown }): Promise<void> {
+  if (!wasmReady) {
+    stbMessage.textContent = "오류: WASM이 아직 초기화되지 않았습니다";
+    return;
+  }
+
+  const generation = ++documentLoadGeneration;
+  let nextDocument: HwpDocument | null = null;
+  try {
+    fileName = msg.fileName;
+    stbMessage.textContent = `${fileName} 로딩 중...`;
+    releaseRenderedDocument();
+    const previousDocument = hwpDoc;
+    hwpDoc = null;
+    rendererSelection = null;
+    delete document.documentElement.dataset.rendererBackend;
+    delete document.documentElement.dataset.rendererDecisionKey;
+    previousDocument?.free();
+
+    const fileBytes = toUint8Array(msg.fileData);
+    const digest = `blake3:${bytesToHex(blake3(fileBytes))}`;
+    rendererSession.beginDocument(digest);
+    nextDocument = new HwpDocument(fileBytes);
+    nextDocument.setClipEnabled(false);
+
+    hwpDoc = nextDocument;
+
+    const selection = await rendererSession.resolve({
+      getCanvasKitDocumentPreflight(mode, profile) {
+        return parseCanvasKitDocumentPreflight(
+          nextDocument!.getCanvasKitDocumentPreflight(mode, profile),
+          "[VS Code] CanvasKit document preflight",
+        );
+      },
+    });
+    if (
+      generation !== documentLoadGeneration
+      || hwpDoc !== nextDocument
+      || !rendererSession.isCurrent(selection)
+    ) return;
+    applyRendererSelection(selection);
+
+    const docInfo = JSON.parse(nextDocument.getDocumentInfo());
+    const pageCount: number = docInfo.page_count ?? docInfo.pageCount ?? 0;
+
+    pageInfos = [];
+    for (let i = 0; i < pageCount; i++) {
+      const pi = JSON.parse(nextDocument.getPageInfo(i));
+      pageInfos.push({
+        width: pi.width,
+        height: pi.height,
+        rendered: false,
+        element: null,
+      });
+    }
+
+    stbMessage.textContent = fileName;
+    updateStatusBar();
+    buildPageLayout();
+    updateVisiblePages();
+    buildSidebar();
+    await Promise.resolve();
+    if (generation !== documentLoadGeneration || hwpDoc !== nextDocument) return;
+    const activeSelection = rendererSelection ?? selection;
+
+    vscode.postMessage({
+      type: "loaded",
+      pageCount,
+      renderer: activeSelection.diagnostics,
+    });
+  } catch (err: any) {
+    if (generation !== documentLoadGeneration) return;
+    if (hwpDoc === nextDocument) {
+      hwpDoc = null;
+      nextDocument?.free();
+    }
+    rendererSelection = null;
+    stbMessage.textContent = `오류: ${err.message ?? err}`;
+    console.error("HWP 로드 실패:", err);
+  }
+}
+
+function applyRendererSelection(selection: RendererSessionSelection): void {
+  rendererSelection = selection;
+  document.documentElement.dataset.rendererBackend = selection.backend;
+  document.documentElement.dataset.rendererDecisionKey = selection.diagnostics.decisionKey;
+}
 
 // ── 상태 표시줄 업데이트 ──
 
@@ -453,21 +580,151 @@ function renderPage(pageNum: number): void {
   wrapper.appendChild(canvas);
 
   const scale = currentZoom * dpr;
-  hwpDoc.renderPageToCanvas(pageNum, canvas, scale);
+  let renderedCanvas: HTMLCanvasElement;
+  try {
+    renderedCanvas = renderDocumentPage(pageNum, canvas, scale);
+  } catch (error) {
+    pi.rendered = false;
+    stbMessage.textContent = `렌더링 오류: ${error instanceof Error ? error.message : String(error)}`;
+    console.error(`HWP 페이지 렌더링 실패 (page=${pageNum}):`, error);
+    return;
+  }
+  renderedCanvas.style.width = `${cssW}px`;
+  renderedCanvas.style.height = `${cssH}px`;
   pi.rendered = true;
 
   cancelReRender(pageNum);
+  if (rendererSelection?.backend === "canvaskit") return;
   const timers: ReturnType<typeof setTimeout>[] = [];
   for (const delay of [200, 600]) {
     timers.push(
       setTimeout(() => {
-        if (pi.rendered && hwpDoc && canvas.isConnected) {
-          hwpDoc.renderPageToCanvas(pageNum, canvas, scale);
+        if (
+          pi.rendered
+          && hwpDoc
+          && renderedCanvas.isConnected
+          && rendererSelection?.backend === "canvas2d"
+        ) {
+          hwpDoc.renderPageToCanvas(pageNum, renderedCanvas, scale);
         }
       }, delay)
     );
   }
   reRenderTimers.set(pageNum, timers);
+}
+
+function renderDocumentPage(
+  pageNum: number,
+  targetCanvas: HTMLCanvasElement,
+  scale: number,
+): HTMLCanvasElement {
+  const documentAtRender = hwpDoc;
+  if (!documentAtRender) throw new Error("문서가 로드되지 않았습니다");
+  const selection = rendererSelection;
+  if (selection?.backend !== "canvaskit" || !selection.canvaskitRenderer) {
+    documentAtRender.renderPageToCanvas(pageNum, targetCanvas, scale);
+    return targetCanvas;
+  }
+
+  const decisionKey = selection.diagnostics.decisionKey;
+  let tree: PageLayerTree;
+  try {
+    tree = parsePageLayerTree(
+      documentAtRender.getPageLayerTreeWithProfile(pageNum, "screen"),
+      pageNum,
+    );
+  } catch (error) {
+    if (!scheduleRendererFallback(error, decisionKey, "resource")) throw error;
+    documentAtRender.renderPageToCanvas(pageNum, targetCanvas, scale);
+    return targetCanvas;
+  }
+
+  const originalParent = targetCanvas.parentElement;
+  const originalIndex = originalParent
+    ? Array.prototype.indexOf.call(originalParent.children, targetCanvas)
+    : -1;
+  let renderedCanvas = targetCanvas;
+  try {
+    renderedCanvas = selection.canvaskitRenderer.renderPage(tree, targetCanvas, scale);
+    const diagnostics = selection.canvaskitRenderer.diagnostics();
+    if (!diagnostics.passesRuntimeReadinessGate) {
+      throw new Error(
+        `CanvasKit runtime readiness 실패: ${diagnostics.readinessBlockers.join(", ")}`,
+      );
+    }
+    return renderedCanvas;
+  } catch (error) {
+    if (!scheduleRendererFallback(error, decisionKey, "runtime")) throw error;
+    renderedCanvas = currentCanvasAt(originalParent, originalIndex, renderedCanvas);
+    const canvas2d = replaceCanvas(renderedCanvas);
+    documentAtRender.renderPageToCanvas(pageNum, canvas2d, scale);
+    return canvas2d;
+  }
+}
+
+function parsePageLayerTree(json: string, pageNum: number): PageLayerTree {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json);
+  } catch (error) {
+    throw new Error(`PageLayerTree parse 실패 (page=${pageNum}): ${error}`);
+  }
+  if (!parsed || typeof parsed !== "object") {
+    throw new Error(`PageLayerTree shape 오류 (page=${pageNum}): object가 아닙니다`);
+  }
+  const tree = parsed as Partial<PageLayerTree>;
+  if (
+    !tree.root
+    || !Number.isFinite(tree.pageWidth)
+    || !Number.isFinite(tree.pageHeight)
+    || tree.pageWidth! <= 0
+    || tree.pageHeight! <= 0
+  ) {
+    throw new Error(`PageLayerTree shape 오류 (page=${pageNum}): 필수 필드가 없습니다`);
+  }
+  return tree as PageLayerTree;
+}
+
+function currentCanvasAt(
+  parent: HTMLElement | null,
+  childIndex: number,
+  fallback: HTMLCanvasElement,
+): HTMLCanvasElement {
+  const current = parent && childIndex >= 0 ? parent.children.item(childIndex) : null;
+  return current instanceof HTMLCanvasElement ? current : fallback;
+}
+
+function replaceCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  const parent = canvas.parentElement;
+  if (!parent) return canvas;
+  const replacement = canvas.cloneNode(true) as HTMLCanvasElement;
+  parent.replaceChild(replacement, canvas);
+  return replacement;
+}
+
+function scheduleRendererFallback(
+  error: unknown,
+  expectedDecisionKey: string,
+  kind: "resource" | "runtime",
+): boolean {
+  if (rendererSelection?.backend === "canvas2d") return true;
+  const fallback = kind === "resource"
+    ? rendererSession.fallbackFromResourceFailure(error, expectedDecisionKey)
+    : rendererSession.fallbackFromRuntimeFailure(error, expectedDecisionKey);
+  if (!fallback) return false;
+
+  applyRendererSelection(fallback);
+  vscode.postMessage({ type: "rendererSelectionChanged", renderer: fallback.diagnostics });
+  if (rendererFallbackScheduled) return true;
+  rendererFallbackScheduled = true;
+  queueMicrotask(() => {
+    rendererFallbackScheduled = false;
+    if (!rendererSession.isCurrent(fallback)) return;
+    for (let pageNum = 0; pageNum < pageInfos.length; pageNum++) releasePage(pageNum);
+    buildThumbnails();
+    updateVisiblePages();
+  });
+  return true;
 }
 
 function cancelReRender(pageNum: number): void {
@@ -603,7 +860,11 @@ function renderThumbnail(pageNum: number): void {
   const scale = THUMB_WIDTH / pi.width;
   canvas.width = Math.round(pi.width * scale * dpr);
   canvas.height = Math.round(pi.height * scale * dpr);
-  hwpDoc.renderPageToCanvas(pageNum, canvas, scale * dpr);
+  try {
+    renderDocumentPage(pageNum, canvas, scale * dpr);
+  } catch (error) {
+    console.error(`HWP 썸네일 렌더링 실패 (page=${pageNum}):`, error);
+  }
 }
 
 /** 현재 페이지 썸네일을 강조하고 보이도록 스크롤한다. */
@@ -786,9 +1047,24 @@ function toUint8Array(data: unknown): Uint8Array {
   throw new Error(`Uint8Array로 변환할 수 없는 데이터: ${typeof data}`);
 }
 
+function releaseRenderedDocument(): void {
+  for (let pageNum = 0; pageNum < pageInfos.length; pageNum++) releasePage(pageNum);
+  pageInfos = [];
+  scrollContent.innerHTML = "";
+  thumbObserver?.disconnect();
+  const thumbPanel = navPanels.get("thumb");
+  if (thumbPanel) thumbPanel.innerHTML = "";
+}
+
 // 기본 컨텍스트 메뉴 억제
 document.addEventListener("contextmenu", (e) => {
   e.preventDefault();
+});
+
+window.addEventListener("unload", () => {
+  rendererSession.dispose();
+  hwpDoc?.free();
+  hwpDoc = null;
 });
 
 function installMeasureTextWidth(): void {

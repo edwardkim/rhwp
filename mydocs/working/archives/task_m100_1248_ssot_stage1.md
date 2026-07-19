@@ -2,7 +2,7 @@
 
 - **작성일**: 2026-06-03
 - **관련 문서**:
-  - `mydocs/tech/trailing_model_render_vs_pagination_1248.md`
+  - `mydocs/tech/investigations/issue-1248/trailing_model_render_vs_pagination_1248.md`
   - `mydocs/tech/document_ir_lineseg_standard.md`
   - `mydocs/tech/hwp_save_guide.md`
 - **성격**: 조사 전용. 코드 수정 없음.

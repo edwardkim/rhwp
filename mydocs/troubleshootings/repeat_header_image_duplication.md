@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 표 제목행 반복 시 이미지 중복 렌더링 문제
 
 > 발견일: 2026-02-10

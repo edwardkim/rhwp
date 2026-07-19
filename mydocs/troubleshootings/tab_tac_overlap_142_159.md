@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 트러블슈팅: 탭+TAC 수식 겹침 문제 (#142, #159)
 
 작성일: 2026-04-16

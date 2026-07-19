@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/hwp_spec_errata.md
+last_verified: 2026-07-17
+---
+
 # HWP 저장 기술 가이드
 
 ## 1. 편집 영역 좌표계
@@ -350,7 +357,7 @@ LIST_HEADER (level L+2) ← 셀별 반복
 
 4. **SHAPE_COMPONENT_PICTURE (tag=85)**: 82바이트 (level=L+3)
    - border_color(4) + border_width(4) + border_attr(4)
-   - border_x[4](16) + border_y[4](16) — 사각형 좌표
+   - border_x[4] (16) + border_y[4] (16) — 사각형 좌표
    - crop(16) + padding(8) + image_attr(5) + raw_picture_extra(9)
 
 5. **border 좌표 패턴**: W=너비, H=높이일 때

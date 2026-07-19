@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # GitHub Actions runner 디스크 부족 — `No space left on device` (Task #1109)
 
 | 항목 | 내용 |

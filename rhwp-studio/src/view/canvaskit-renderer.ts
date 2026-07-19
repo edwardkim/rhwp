@@ -13,7 +13,7 @@ import type {
   Surface,
   Typeface,
 } from 'canvaskit-wasm';
-import canvaskitWasmUrl from 'canvaskit-wasm/bin/canvaskit.wasm?url';
+import canvaskitWasmUrl from '@/view/canvaskit-wasm-url';
 
 import type {
   LayerBounds,
@@ -73,11 +73,18 @@ import {
 } from './glyph-outline-payload-status';
 import { parseStaticSvgPathLayers, type StaticSvgPathLayer } from './static-svg-path-layers';
 import { loadLocalFontBytesFor, localFontFaceKey, resolveLocalFont, type LocalFontRecord } from '@/core/local-fonts';
+import type { CanvasKitBundledFontSource } from '@/core/font-loader';
+import { readBoundedResponseArrayBuffer } from './canvaskit/bounded-response';
 
 type CanvasKitApi = CanvasKit;
 type SkCanvas = Canvas;
 type SkPaint = Paint;
 type SkSurface = Surface;
+
+export interface CanvasKitLayerRendererOptions {
+  defaultFontUrl?: string;
+  requirePreparedFontFamilies?: boolean;
+}
 type MutablePath = Path & Pick<PathBuilder, 'arcToRotated' | 'close' | 'cubicTo' | 'lineTo' | 'moveTo'>;
 type LayerColorGraph = NonNullable<NonNullable<LayerGlyphOutlineOp['colorLayers']>['paintGraph']>;
 type LayerColorGraphNode = NonNullable<LayerColorGraph['nodes']>[number];
@@ -90,6 +97,22 @@ interface CanvasKitLocalTypeface {
   typeface: Typeface | null;
   fontManager: FontMgr | null;
   fontFamily: string | null;
+}
+
+function primaryFontFamily(value: string | null | undefined): string {
+  return (value ?? '')
+    .split(',')[0]
+    .trim()
+    .replace(/^(["'])|(["'])$/g, '');
+}
+
+function normalizedFontFamily(value: string | null | undefined): string {
+  return primaryFontFamily(value)
+    .replace(/\u0000/g, '')
+    .normalize('NFC')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLocaleLowerCase('en-US');
 }
 
 interface EquationRenderBudget {
@@ -121,6 +144,8 @@ export interface CanvasKitRenderDiagnostics {
   localTypefaceCount: number;
   localTypefaceLoadFailureCount: number;
   localTypefacePendingCount: number;
+  bundledTypefaceCount: number;
+  bundledTypefaceLoadFailureCount: number;
 }
 
 export type CanvasKitReadinessBlocker =
@@ -146,6 +171,7 @@ export class CanvasKitLayerRenderer {
   private static readonly MAX_EQUATION_TEXT_LENGTH = 4096;
   // 단일 text run은 줄바꿈 없이 문서가 지정한 위치에 재생한다.
   private static readonly MAX_SHAPED_TEXT_WIDTH = 1_000_000;
+  private static readonly MAX_BUNDLED_FONT_BYTES = 32 * 1024 * 1024;
 
   private readonly imageCache = new Map<string, { image: SkImage; pixels: number }>();
   private readonly imageDecodeFailures = new Set<string>();
@@ -154,6 +180,10 @@ export class CanvasKitLayerRenderer {
   private readonly localTypefaces = new Map<string, CanvasKitLocalTypeface>();
   private readonly localTypefaceLoadFailures = new Set<string>();
   private readonly localTypefacePending = new Map<string, number>();
+  private readonly bundledTypefaces = new Map<string, CanvasKitLocalTypeface>();
+  private readonly bundledTypefaceAliases = new Map<string, CanvasKitLocalTypeface>();
+  private readonly bundledTypefaceLoadFailures = new Set<string>();
+  private readonly bundledFontRequests = new Set<AbortController>();
   private readonly unsupportedOps = new Set<string>();
   private surfaceBackend: 'default' | 'software' | null = null;
   private surfaceFallbackReason: string | null = null;
@@ -177,11 +207,14 @@ export class CanvasKitLayerRenderer {
     private readonly defaultTypeface: Typeface | null,
     private readonly defaultFontManager: FontMgr | null = null,
     private readonly defaultFontFamily: string | null = null,
+    private readonly defaultFontUrl: string = 'fonts/NotoSansKR-Regular.woff2',
+    private readonly requirePreparedFontFamilies: boolean = false,
   ) {}
 
   static async create(
     renderMode: CanvasKitRenderMode = 'default',
     surfaceRequest: CanvasKitSurfaceRequest | CanvasKitSurfacePreference = DEFAULT_CANVASKIT_SURFACE_REQUEST,
+    options: CanvasKitLayerRendererOptions = {},
   ): Promise<CanvasKitLayerRenderer> {
     const canvasKit = await CanvasKitInit({
       locateFile: (file) => file === 'canvaskit.wasm' ? canvaskitWasmUrl : file,
@@ -193,10 +226,13 @@ export class CanvasKitLayerRenderer {
     let defaultTypeface: Typeface | null = null;
     let defaultFontManager: FontMgr | null = null;
     let defaultFontFamily: string | null = null;
+    const defaultFontUrl = options.defaultFontUrl ?? 'fonts/NotoSansKR-Regular.woff2';
     try {
-      const response = await fetch('fonts/NotoSansKR-Regular.woff2');
+      const response = await fetch(defaultFontUrl);
       if (response.ok) {
-        const bytes = await response.arrayBuffer();
+        const bytes = await readBoundedResponseArrayBuffer(response, {
+          maxBytes: CanvasKitLayerRenderer.MAX_BUNDLED_FONT_BYTES,
+        });
         defaultTypeface = canvasKit.Typeface.MakeFreeTypeFaceFromData(bytes)
           ?? canvasKit.Typeface.MakeTypefaceFromData(bytes);
         defaultFontManager = canvasKit.FontMgr.FromData(bytes);
@@ -214,7 +250,84 @@ export class CanvasKitLayerRenderer {
       defaultTypeface,
       defaultFontManager,
       defaultFontFamily,
+      defaultFontUrl,
+      options.requirePreparedFontFamilies ?? false,
     );
+  }
+
+  /** Auto selection에서 승인된 문서 폰트를 첫 replay 전에 native Typeface로 등록한다. */
+  async prepareBundledFonts(sources: readonly CanvasKitBundledFontSource[]): Promise<number> {
+    if (this.disposed || sources.length === 0) return 0;
+    const generation = this.documentGeneration;
+    let registered = 0;
+    for (const source of sources) {
+      if (!source.url || source.aliases.length === 0) continue;
+      let prepared = source.url === this.defaultFontUrl
+        && (this.defaultTypeface || this.defaultFontManager)
+        ? {
+            typeface: this.defaultTypeface,
+            fontManager: this.defaultFontManager,
+            fontFamily: this.defaultFontFamily,
+          }
+        : this.bundledTypefaces.get(source.url) ?? null;
+      if (!prepared) {
+        if (this.bundledTypefaceLoadFailures.has(source.url)) {
+          throw new Error(`CanvasKit font source 준비 실패: ${source.url}`);
+        }
+        let typeface: Typeface | null = null;
+        let fontManager: FontMgr | null = null;
+        const request = new AbortController();
+        this.bundledFontRequests.add(request);
+        try {
+          if (this.disposed || generation !== this.documentGeneration) {
+            throw new Error('문서 교체로 CanvasKit font 준비가 취소되었습니다');
+          }
+          const response = await fetch(source.url, { signal: request.signal });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const bytes = await readBoundedResponseArrayBuffer(response, {
+            maxBytes: CanvasKitLayerRenderer.MAX_BUNDLED_FONT_BYTES,
+            signal: request.signal,
+            isCancelled: () => this.disposed || generation !== this.documentGeneration,
+            cancelledMessage: '문서 교체로 CanvasKit font 준비가 취소되었습니다',
+          });
+          if (this.disposed || generation !== this.documentGeneration) {
+            throw new Error('문서 교체로 CanvasKit font 준비가 취소되었습니다');
+          }
+          typeface = this.canvasKit.Typeface.MakeFreeTypeFaceFromData(bytes)
+            ?? this.canvasKit.Typeface.MakeTypefaceFromData(bytes);
+          fontManager = this.canvasKit.FontMgr.FromData(bytes.slice(0));
+          if (!typeface && !fontManager) {
+            throw new Error('CanvasKit이 font payload를 해석하지 못했습니다');
+          }
+          const fontFamily = fontManager && fontManager.countFamilies() > 0
+            ? fontManager.getFamilyName(0)
+            : source.aliases[0];
+          prepared = { typeface, fontManager, fontFamily };
+          this.bundledTypefaces.set(source.url, prepared);
+          registered += 1;
+          typeface = null;
+          fontManager = null;
+        } catch (error) {
+          typeface?.delete?.();
+          fontManager?.delete?.();
+          if (!request.signal.aborted
+            && !this.disposed && generation === this.documentGeneration) {
+            this.bundledTypefaceLoadFailures.add(source.url);
+          }
+          throw new Error(`CanvasKit font source 준비 실패 (${source.url}): ${error}`);
+        } finally {
+          this.bundledFontRequests.delete(request);
+        }
+      }
+      for (const alias of source.aliases) {
+        const key = normalizedFontFamily(alias);
+        if (key) this.bundledTypefaceAliases.set(key, prepared);
+      }
+      await Promise.resolve();
+    }
+    return registered;
   }
 
   /** 현재 문서가 실제로 사용하는 설치 글꼴만 CanvasKit native 객체로 등록한다. */
@@ -357,6 +470,7 @@ export class CanvasKitLayerRenderer {
 
   resetDocumentResources(): void {
     this.documentGeneration += 1;
+    this.cancelDocumentPreparation();
     for (const entry of this.imageCache.values()) entry.image?.delete?.();
     this.imageCache.clear();
     this.imageCachePixels = 0;
@@ -372,11 +486,25 @@ export class CanvasKitLayerRenderer {
     this.localTypefaces.clear();
     this.localTypefaceLoadFailures.clear();
     this.localTypefacePending.clear();
+    for (const { typeface, fontManager } of this.bundledTypefaces.values()) {
+      typeface?.delete?.();
+      fontManager?.delete?.();
+    }
+    this.bundledTypefaces.clear();
+    this.bundledTypefaceAliases.clear();
+    this.bundledTypefaceLoadFailures.clear();
     this.imageCacheHits = 0;
     this.imageCacheMisses = 0;
     this.imageCacheEvictions = 0;
     this.renderCount = 0;
     this.lastRenderDurationMs = null;
+  }
+
+  cancelDocumentPreparation(): void {
+    for (const request of this.bundledFontRequests) {
+      request.abort(new Error('문서 교체로 CanvasKit font 준비가 취소되었습니다'));
+    }
+    this.bundledFontRequests.clear();
   }
 
   diagnostics(): CanvasKitRenderDiagnostics {
@@ -416,6 +544,8 @@ export class CanvasKitLayerRenderer {
       localTypefaceCount: this.localTypefaces.size,
       localTypefaceLoadFailureCount: this.localTypefaceLoadFailures.size,
       localTypefacePendingCount: this.localTypefacePending.size,
+      bundledTypefaceCount: this.bundledTypefaces.size,
+      bundledTypefaceLoadFailureCount: this.bundledTypefaceLoadFailures.size,
     };
   }
 
@@ -1453,10 +1583,14 @@ export class CanvasKitLayerRenderer {
     });
     const hasLayoutPositions = replayPositions?.length === codePoints.length + 1
       && replayPositions.every(Number.isFinite);
-    const localTypeface = this.findLocalTypeface(style.fontFamily);
-    const typeface = localTypeface?.typeface ?? this.defaultTypeface;
-    const fontManager = localTypeface?.fontManager ?? this.defaultFontManager;
-    const fontFamily = localTypeface?.fontFamily ?? this.defaultFontFamily;
+    const requestedFontFamily = primaryFontFamily(style.fontFamily);
+    const preparedTypeface = this.findPreparedTypeface(requestedFontFamily);
+    if (requestedFontFamily && !preparedTypeface && this.requirePreparedFontFamilies) {
+      throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${requestedFontFamily}`);
+    }
+    const typeface = preparedTypeface?.typeface ?? this.defaultTypeface;
+    const fontManager = preparedTypeface?.fontManager ?? this.defaultFontManager;
+    const fontFamily = preparedTypeface?.fontFamily ?? this.defaultFontFamily;
     let font: Font | null = null;
     let canvasSaved = false;
     try {
@@ -1484,12 +1618,20 @@ export class CanvasKitLayerRenderer {
           baselineShift,
           fontManager,
           fontFamily,
+          style.bold === true,
+          style.italic === true,
         )) {
           this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
         }
       } else {
         font = new this.canvasKit.Font(typeface, fontSize);
-        if (needsPreservedAdvances && hasLayoutPositions) {
+        const adjustableFont = font as Font & {
+          setEmbolden?: (enabled: boolean) => void;
+          setSkewX?: (skew: number) => void;
+        };
+        adjustableFont.setEmbolden?.(style.bold === true);
+        adjustableFont.setSkewX?.(style.italic === true ? -0.2 : 0);
+        if (hasLayoutPositions) {
           const glyphIds = font.getGlyphIDs(replayText, codePoints.length);
           const hasGlyphMapping = glyphIds.length === codePoints.length
             && glyphIds.every((glyphId) => glyphId !== 0);
@@ -1501,7 +1643,7 @@ export class CanvasKitLayerRenderer {
             }
             canvas.drawGlyphs(glyphIds, glyphPositions, originX, originY, font, paint);
           } else {
-            this.unsupportedOps.add('textRun:glyphMapping');
+            if (needsPreservedAdvances) this.unsupportedOps.add('textRun:glyphMapping');
             canvas.drawText(replayText, originX, originY + baselineShift, paint, font);
           }
         } else if (needsPreservedAdvances) {
@@ -1531,12 +1673,20 @@ export class CanvasKitLayerRenderer {
     baselineShift: number,
     fontManager: FontMgr | null,
     fontFamily: string | null,
+    bold: boolean,
+    italic: boolean,
   ): boolean {
     if (!fontManager) return false;
     const textStyle = {
       color: this.color(color),
       fontSize,
       ...(fontFamily ? { fontFamilies: [fontFamily] } : {}),
+      ...(this.canvasKit.FontWeight && this.canvasKit.FontSlant ? {
+        fontStyle: {
+          weight: bold ? this.canvasKit.FontWeight.Bold : this.canvasKit.FontWeight.Normal,
+          slant: italic ? this.canvasKit.FontSlant.Italic : this.canvasKit.FontSlant.Upright,
+        },
+      } : {}),
     };
     const paragraphStyle = new this.canvasKit.ParagraphStyle({
       maxLines: 1,
@@ -1558,10 +1708,24 @@ export class CanvasKitLayerRenderer {
     }
   }
 
-  private findLocalTypeface(fontFamily: string | undefined): CanvasKitLocalTypeface | null {
-    if (!fontFamily) return null;
-    const record = resolveLocalFont(fontFamily);
-    return record ? this.localTypefaces.get(localFontFaceKey(record)) ?? null : null;
+  private findPreparedTypeface(fontFamily: string | undefined): CanvasKitLocalTypeface | null {
+    const key = normalizedFontFamily(fontFamily);
+    if (!key) return null;
+    const record = resolveLocalFont(primaryFontFamily(fontFamily));
+    const local = record ? this.localTypefaces.get(localFontFaceKey(record)) ?? null : null;
+    if (local) return local;
+    const bundled = this.bundledTypefaceAliases.get(key);
+    if (bundled) return bundled;
+    if (key === normalizedFontFamily(this.defaultFontFamily) || key === 'noto sans kr') {
+      return this.defaultTypeface || this.defaultFontManager
+        ? {
+            typeface: this.defaultTypeface,
+            fontManager: this.defaultFontManager,
+            fontFamily: this.defaultFontFamily,
+          }
+        : null;
+    }
+    return null;
   }
 
   private renderEquation(canvas: SkCanvas, op: LayerEquationOp): void {
@@ -1989,7 +2153,12 @@ export class CanvasKitLayerRenderer {
       strokeWidth: 1,
       opacity: op.enabled === false ? 0.55 : 1,
     }, (paint) => canvas.drawRect(this.rect(op.bbox), paint));
-    if (op.value && (op.formType === 'checkbox' || op.formType === 'radio')) {
+    if (op.value && (
+      op.formType === 'checkBox'
+      || op.formType === 'radioButton'
+      || op.formType === 'checkbox'
+      || op.formType === 'radio'
+    )) {
       const paint = this.makeStrokePaint(op.foreColor ?? '#111111', 1.5);
       const b = op.bbox;
       canvas.drawLine(b.x + b.width * 0.25, b.y + b.height * 0.55, b.x + b.width * 0.45, b.y + b.height * 0.75, paint);

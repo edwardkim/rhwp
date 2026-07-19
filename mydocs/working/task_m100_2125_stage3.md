@@ -52,7 +52,7 @@ fresh build에서 측정한다.
 다음 경로는 diff가 없음을 확인했다.
 
 - `mydocs/metrics/frontend/2026-07-11/**`
-- `mydocs/tech/task_m100_2124_font_inventory.md`
+- `mydocs/tech/investigations/issue-2124/task_m100_2124_font_inventory.md`
 - `mydocs/report/task_m100_2190_report.md`
 - archive와 과거 feedback 문서
 

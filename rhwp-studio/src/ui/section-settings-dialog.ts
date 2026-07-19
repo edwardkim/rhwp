@@ -2,6 +2,7 @@ import { ModalDialog } from './dialog';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { SectionDef } from '@/core/types';
 import type { EventBus } from '@/core/event-bus';
+import type { CommandServices } from '@/command/types';
 
 const HWPUNIT_PER_PT = 100; // 1pt = 100 HWPUNIT (HWP 내부 단위)
 
@@ -41,7 +42,7 @@ export class SectionSettingsDialog extends ModalDialog {
   private defaultTabSpacingInput!: HTMLInputElement;
   private applyScopeSelect!: HTMLSelectElement;
 
-  constructor(wasm: WasmBridge, eventBus: EventBus, sectionIdx: number) {
+  constructor(wasm: WasmBridge, eventBus: EventBus, sectionIdx: number, private services?: CommandServices) {
     super('구역 설정', 400);
     this.wasm = wasm;
     this.eventBus = eventBus;
@@ -153,14 +154,19 @@ export class SectionSettingsDialog extends ModalDialog {
     };
 
     const scope = this.applyScopeSelect.value;
-    let result: { ok: boolean };
-    if (scope === 'all') {
-      result = this.wasm.setSectionDefAll(newDef);
-    } else {
-      // 'current' 또는 'selection' (선택 문자열은 현재 구역과 동일하게 처리)
-      result = this.wasm.setSectionDef(this.sectionIdx, newDef);
-    }
-    if (result.ok) {
+    // 'current'/'selection' 은 현재 구역과 동일 처리. all=전 구역(전문서 효과).
+    const apply = () => scope === 'all'
+      ? this.wasm.setSectionDefAll(newDef)
+      : this.wasm.setSectionDef(this.sectionIdx, newDef);
+    // [구역 설정 이관] snapshot 으로 라우팅(#2077 동형). services 미주입 시 직접 적용 fallback.
+    const ih = this.services?.getInputHandler();
+    if (ih) {
+      ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'sectionSettings',
+        operation: () => { apply(); return ih.getCursorPosition(); },
+      });
+    } else if (apply().ok) {
       this.eventBus.emit('document-changed');
     }
   }

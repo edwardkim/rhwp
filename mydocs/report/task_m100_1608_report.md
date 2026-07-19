@@ -47,4 +47,4 @@ HWP3 변환본(hwp3-sample-hwpx) 16→16 무변동.
 - 소스: `src/parser/hwpx/mod.rs`, `src/parser/hwpx/header.rs`
 - 테스트: `tests/issue_1608_hwpx_native_no_hwp3_tolerance.rs`
 - 측정: `output/poc/task1608_baseline.tsv`, `output/poc/task1608_after.tsv`
-- 문서: `_impl`, `_stage1~3`, 본 보고서, `mydocs/tech/render_minus1_page_gap.md` 갱신
+- 문서: `_impl`, `_stage1~3`, 본 보고서, `mydocs/tech/investigations/issue-1600/render_minus1_page_gap.md` 갱신

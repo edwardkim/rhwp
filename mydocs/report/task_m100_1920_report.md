@@ -30,7 +30,7 @@
 - 기지 한계에 **유형 (3) 쪽 하단 빈 문단** 추가: 불일치 PI 전부가 빈 문단 ∧
   rhwp 쪽 = 한글 쪽−1 이면 verdict **`PI_MISMATCH_CARET`** 분리 + detail
   `[empty-caret?]` 태그. 종료코드 실패로 계상하지 않음(시각 확정 전 후보 등급).
-- 매뉴얼(`mydocs/manual/verify_pi_page_vs_hangul.md`) 동기 갱신.
+- 매뉴얼(`mydocs/manual/verification/verify_pi_page_vs_hangul.md`) 동기 갱신.
 - 도구 실행 검증은 한글 인스턴스 점유 해제 후 (도구가 시작 시 Hwp.exe 를
   taskkill 하므로 동시 세션 중 실행 금지) — 구문 검사 + 판별 로직은 분류
   스크립트(동일 로직)로 72건 실증 완료.

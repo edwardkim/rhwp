@@ -18,9 +18,9 @@ CI 전부 pass + py 구문 OK + 자기검열 통과.
 | 파일 | 내용 |
 |---|---|
 | `tools/hangul_pdf_baseline.py` | +153 — pyhwpx `save_as(PDF)` + PyMuPDF(fitz) 로 한글 텍스트 줄높이 baseline 추출(pt→px, 다단 클러스터링), `rhwp export-svg` baseline 과 pitch 대조(`--compare`), PageCount 가드 |
-| `mydocs/tech/task_m100_1658_capacity.md` | +52 — capacity 결손 분석 |
-| `mydocs/tech/task_m100_1658_clipping_capacity_unified.md` | +36 — 클리핑≡capacity 통합 |
-| `mydocs/manual/hangul_pdf_baseline.md` | +54 — 도구 매뉴얼 |
+| `mydocs/tech/investigations/issue-1658/task_m100_1658_capacity.md` | +52 — capacity 결손 분석 |
+| `mydocs/tech/investigations/issue-1658/task_m100_1658_clipping_capacity_unified.md` | +36 — 클리핑≡capacity 통합 |
+| `mydocs/manual/verification/hangul_pdf_baseline.md` | +54 — 도구 매뉴얼 |
 | `mydocs/report/task_m100_1658_report.md` | 라운드 1 최종 보고서(±) |
 
 ## 3. 검토

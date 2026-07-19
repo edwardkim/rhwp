@@ -13,7 +13,7 @@
 
 ## 변경 범위
 
-- `mydocs/tech/task_m100_1772_residual_over28.md` 를 추가/보강한다.
+- `mydocs/tech/investigations/issue-1772/task_m100_1772_residual_over28.md` 를 추가/보강한다.
 - #1772 잔여 OVER 28건의 유형 분류와 후속 이슈 분리를 기록한다.
 - 코드 변경은 없다.
 

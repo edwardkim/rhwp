@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # TypesetEngine page_num NewNumber 적용 + PartialTable fit 안전마진 — 트러블슈팅 (Task #361)
 
 ## 증상

@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # HWPX to HWP Hancom Compatibility Rules
 
 ## 1. 목적

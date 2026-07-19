@@ -9,12 +9,17 @@ export interface FileSystemWritableFileStreamLike {
   close(): Promise<void>;
 }
 
+/** File System Access 권한 상태 (queryPermission/requestPermission 반환). */
+export type FileSystemPermissionState = 'granted' | 'denied' | 'prompt';
+
 export interface FileSystemFileHandleLike {
   kind?: 'file';
   name: string;
   getFile(): Promise<File>;
   createWritable(): Promise<FileSystemWritableFileStreamLike>;
   isSameEntry?(other: FileSystemFileHandleLike): Promise<boolean>;
+  queryPermission?(descriptor?: { mode?: 'read' | 'readwrite' }): Promise<FileSystemPermissionState>;
+  requestPermission?(descriptor?: { mode?: 'read' | 'readwrite' }): Promise<FileSystemPermissionState>;
 }
 
 export interface FileSystemWindowLike {

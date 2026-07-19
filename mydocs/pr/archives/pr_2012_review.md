@@ -39,7 +39,7 @@
 이 PR은 렌더링 결과를 기준 PDF와 맞추는 수정이 아니라 Studio 편집 중 상호작용 지연을 줄이는 성능/UX PR이다.
 WASM API와 command 경로가 추가되지만 사용자-visible 수용 기준은 입력 직후 긴 block task가 사라지는지이다.
 
-따라서 `mydocs/manual/visual_sweep_guide.md` 기준의 PDF/SVG visual sweep은 merge blocker로 보지 않는다.
+따라서 `mydocs/manual/verification/visual_sweep_guide.md` 기준의 PDF/SVG visual sweep은 merge blocker로 보지 않는다.
 대표 PNG asset도 만들지 않는다. 대신 실제 115쪽 샘플을 Studio에서 열고 Chrome 계측으로 입력 경로를 확인했다.
 
 확인 샘플:

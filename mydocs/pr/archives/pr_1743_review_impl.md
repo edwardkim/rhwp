@@ -90,7 +90,7 @@
 
 완료.
 
-- `mydocs/manual/visual_sweep_guide.md` 기준 sweep 사용
+- `mydocs/manual/verification/visual_sweep_guide.md` 기준 sweep 사용
 - HWP3/HWPX/PDF 모두 SO-SUEOP 46쪽 확인
 - p22 관계도/미주 표지/선문자 확인
 - p43~p46 미주 범위 확인

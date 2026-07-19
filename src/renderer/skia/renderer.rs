@@ -415,21 +415,7 @@ impl SkiaLayerRenderer {
             canvas.scale((options.scale as f32, options.scale as f32));
         }
 
-        let mut next_text_source_id = 0_u32;
-        for replay_plane in PaintReplayPlane::ORDERED {
-            if !layer_node_has_replay_plane(&tree.root, replay_plane) {
-                continue;
-            }
-            self.render_node(
-                canvas,
-                &tree.root,
-                &tree.output_options,
-                &tree.resources,
-                replay_plane,
-                None,
-                &mut next_text_source_id,
-            );
-        }
+        self.render_page_to_canvas_with_options(canvas, tree, options.scale as f32, false)?;
 
         let image = surface.image_snapshot();
         let mut png_options = png_encoder::Options::default();
@@ -452,6 +438,54 @@ impl SkiaLayerRenderer {
         })
     }
 
+    /// Replay a page into an existing Skia canvas.
+    ///
+    /// Raster surfaces and vector recording surfaces must consume the same
+    /// replay-plane, clip, text-variant, and fallback policy. Surface setup
+    /// such as clearing, CSS-pixel scaling, and page finalization remains the
+    /// caller's responsibility.
+    pub(crate) fn render_page_to_canvas_strict(
+        &self,
+        canvas: &Canvas,
+        tree: &PageLayerTree,
+        fallback_raster_scale: f32,
+    ) -> LayerRenderResult<()> {
+        self.render_page_to_canvas_with_options(canvas, tree, fallback_raster_scale, true)
+    }
+
+    fn render_page_to_canvas_with_options(
+        &self,
+        canvas: &Canvas,
+        tree: &PageLayerTree,
+        fallback_raster_scale: f32,
+        strict_resource_failures: bool,
+    ) -> LayerRenderResult<()> {
+        if !fallback_raster_scale.is_finite() || fallback_raster_scale <= 0.0 {
+            return Err(HwpError::RenderError(format!(
+                "invalid Skia fallback raster scale: {fallback_raster_scale}"
+            )));
+        }
+        let mut next_text_source_id = 0_u32;
+        for replay_plane in PaintReplayPlane::ORDERED {
+            if !layer_node_has_replay_plane(&tree.root, replay_plane) {
+                continue;
+            }
+            self.render_node(
+                canvas,
+                &tree.root,
+                &tree.output_options,
+                &tree.resources,
+                replay_plane,
+                None,
+                tree.profile.shows_editor_visuals(),
+                &mut next_text_source_id,
+                fallback_raster_scale,
+                strict_resource_failures,
+            )?;
+        }
+        Ok(())
+    }
+
     fn render_node(
         &self,
         canvas: &Canvas,
@@ -460,8 +494,11 @@ impl SkiaLayerRenderer {
         resources: &ResourceArena,
         replay_plane: PaintReplayPlane,
         inherited_layer: Option<RenderLayerInfo>,
+        show_editor_placeholders: bool,
         next_text_source_id: &mut u32,
-    ) {
+        fallback_raster_scale: f32,
+        strict_resource_failures: bool,
+    ) -> LayerRenderResult<()> {
         let active_layer = node.layer.or(inherited_layer);
         let clip_enabled = output_options.clip_enabled;
         let apply_dash = |paint: &mut Paint, dash: StrokeDash| {
@@ -572,7 +609,7 @@ impl SkiaLayerRenderer {
                 crop,
                 effect,
                 ImageSampling::linear(),
-            );
+            )
         };
         let text_replay = SkiaTextReplay {
             canvas,
@@ -610,22 +647,27 @@ impl SkiaLayerRenderer {
                         resources,
                         replay_plane,
                         active_layer,
+                        show_editor_placeholders,
                         next_text_source_id,
-                    );
+                        fallback_raster_scale,
+                        strict_resource_failures,
+                    )?;
                 }
             }
             LayerNodeKind::ClipRect { clip, child, .. } => {
                 if !clip_enabled {
-                    self.render_node(
+                    return self.render_node(
                         canvas,
                         child,
                         output_options,
                         resources,
                         replay_plane,
                         active_layer,
+                        show_editor_placeholders,
                         next_text_source_id,
+                        fallback_raster_scale,
+                        strict_resource_failures,
                     );
-                    return;
                 }
                 canvas.save();
                 canvas.clip_rect(
@@ -638,16 +680,20 @@ impl SkiaLayerRenderer {
                     None,
                     Some(true),
                 );
-                self.render_node(
+                let result = self.render_node(
                     canvas,
                     child,
                     output_options,
                     resources,
                     replay_plane,
                     active_layer,
+                    show_editor_placeholders,
                     next_text_source_id,
+                    fallback_raster_scale,
+                    strict_resource_failures,
                 );
                 canvas.restore();
+                result?;
             }
             LayerNodeKind::Leaf { ops } => {
                 let mut variant_order = 0usize;
@@ -762,7 +808,7 @@ impl SkiaLayerRenderer {
                                     let alpha = (255.0 * wm_opacity).round() as u32;
                                     canvas.save_layer_alpha(Some(rect), alpha);
                                 }
-                                draw_image(
+                                let rendered = draw_image(
                                     &image.data,
                                     *bbox,
                                     Some(image.fill_mode),
@@ -772,6 +818,11 @@ impl SkiaLayerRenderer {
                                 );
                                 if is_watermark {
                                     canvas.restore();
+                                }
+                                if !rendered && strict_resource_failures {
+                                    return Err(HwpError::RenderError(
+                                        "Skia page background image decode failed".to_string(),
+                                    ));
                                 }
                             }
                             if let Some(color) = background.border_color {
@@ -1019,8 +1070,9 @@ impl SkiaLayerRenderer {
                             image,
                             resolved,
                         } => {
+                            let effective_bbox = image.transform.effective_image_bbox(bbox);
                             if image.transform.has_transform() {
-                                open_shape_transform(image.transform, bbox);
+                                open_shape_transform(image.transform, &effective_bbox);
                             }
                             let data = resolved
                                 .as_deref()
@@ -1038,17 +1090,17 @@ impl SkiaLayerRenderer {
                                 let opacity = image.opacity.clamp(0.0, 1.0);
                                 if opacity < 1.0 {
                                     let rect = Rect::from_xywh(
-                                        bbox.x as f32,
-                                        bbox.y as f32,
-                                        bbox.width as f32,
-                                        bbox.height as f32,
+                                        effective_bbox.x as f32,
+                                        effective_bbox.y as f32,
+                                        effective_bbox.width as f32,
+                                        effective_bbox.height as f32,
                                     );
                                     let alpha = (255.0 * opacity).round() as u32;
                                     canvas.save_layer_alpha(Some(rect), alpha);
                                 }
-                                draw_image(
+                                let rendered = draw_image(
                                     data,
-                                    *bbox,
+                                    effective_bbox,
                                     image.fill_mode,
                                     image.original_size,
                                     image.crop,
@@ -1057,11 +1109,29 @@ impl SkiaLayerRenderer {
                                 if opacity < 1.0 {
                                     canvas.restore();
                                 }
+                                if image.transform.has_transform() {
+                                    canvas.restore();
+                                }
+                                if !rendered && strict_resource_failures {
+                                    return Err(HwpError::RenderError(format!(
+                                        "Skia image decode failed for binData {}",
+                                        image.bin_data_id
+                                    )));
+                                }
                             } else {
-                                draw_placeholder(*bbox, "image");
-                            }
-                            if image.transform.has_transform() {
-                                canvas.restore();
+                                if strict_resource_failures {
+                                    if image.transform.has_transform() {
+                                        canvas.restore();
+                                    }
+                                    return Err(HwpError::RenderError(format!(
+                                        "Skia image data is missing for binData {}",
+                                        image.bin_data_id
+                                    )));
+                                }
+                                draw_placeholder(effective_bbox, "image");
+                                if image.transform.has_transform() {
+                                    canvas.restore();
+                                }
                             }
                         }
                         PaintOp::Equation { bbox, equation } => {
@@ -1102,10 +1172,10 @@ impl SkiaLayerRenderer {
                             self.draw_form_control(canvas, *bbox, form);
                         }
                         PaintOp::Placeholder { bbox, placeholder } => {
-                            // [Task #2225] 그림 미지정 placeholder 는 인쇄 등가
-                            // 출력에서 미출력 (한컴 인쇄 동작 정합).
+                            // [Task #2225] 그림 미지정 placeholder 는 편집 profile에서만 표시.
                             if placeholder.kind
                                 != crate::renderer::render_tree::PlaceholderKind::MissingPicture
+                                || show_editor_placeholders
                             {
                                 draw_placeholder(*bbox, placeholder.label.as_str());
                             }
@@ -1119,7 +1189,13 @@ impl SkiaLayerRenderer {
                                 bbox.width as f32,
                                 bbox.height as f32,
                                 ImageSampling::linear(),
+                                fallback_raster_scale,
                             ) {
+                                if strict_resource_failures {
+                                    return Err(HwpError::RenderError(
+                                        "Skia raw SVG raster fallback failed".to_string(),
+                                    ));
+                                }
                                 draw_placeholder(*bbox, "svg");
                             }
                         }
@@ -1131,6 +1207,7 @@ impl SkiaLayerRenderer {
                 }
             }
         }
+        Ok(())
     }
 }
 
@@ -1423,8 +1500,8 @@ mod tests {
         CacheHint, FontBlobKey, FontBlobResource, FontDigest, FontFaceKey, FontFaceResource,
         FontFallbackPolicyId, FontInstanceKey, FontPortability, FontResourceSource, GlyphCluster,
         GlyphRange, GroupKind, LayerAffineTransform, LayerNode, LayerOutputOptions, LayerPoint,
-        PaintTextStyle, PaintVariantMeta, ScriptTag, ShapeKey, ShapingEngineId, TextDirection,
-        TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind, WritingMode,
+        PaintTextStyle, PaintVariantMeta, RenderProfile, ScriptTag, ShapeKey, ShapingEngineId,
+        TextDirection, TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind, WritingMode,
     };
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::ast::EqNode;
@@ -2364,6 +2441,66 @@ mod tests {
     }
 
     #[test]
+    fn renders_perpendicular_images_with_effective_bounds() {
+        let mut image = ImageNode::new(1, Some(solid_png([0, 0, 255, 255])));
+        image.transform = crate::renderer::render_tree::ShapeTransform {
+            rotation: 90.0,
+            ..Default::default()
+        };
+        let tree = PageLayerTree::new(
+            20.0,
+            20.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 20.0, 20.0),
+                None,
+                vec![PaintOp::image(
+                    BoundingBox::new(5.0, 7.0, 10.0, 4.0),
+                    image,
+                    None,
+                )],
+            ),
+        );
+
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render perpendicular image");
+        let rendered = decode_rgba(&output.bytes);
+
+        assert_channel(*rendered.get_pixel(6, 9), 2, 220, 255);
+        assert_eq!(rendered.get_pixel(10, 5)[3], 0);
+    }
+
+    #[test]
+    fn missing_perpendicular_image_placeholder_uses_transformed_bounds() {
+        let mut image = ImageNode::new(1, None);
+        image.transform = crate::renderer::render_tree::ShapeTransform {
+            rotation: 90.0,
+            ..Default::default()
+        };
+        let tree = PageLayerTree::new(
+            20.0,
+            20.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 20.0, 20.0),
+                None,
+                vec![PaintOp::image(
+                    BoundingBox::new(5.0, 7.0, 10.0, 4.0),
+                    image,
+                    None,
+                )],
+            ),
+        );
+
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(&tree, RasterRenderOptions::default())
+            .expect("render transformed missing image placeholder");
+        let rendered = decode_rgba(&output.bytes);
+
+        assert!(rendered.get_pixel(6, 9)[3] > 0);
+        assert_eq!(rendered.get_pixel(10, 5)[3], 0);
+    }
+
+    #[test]
     fn behind_text_image_replays_below_flow_across_tree_branches() {
         let bbox = BoundingBox::new(0.0, 0.0, 12.0, 12.0);
         let flow = LayerNode::leaf(bbox, None, vec![solid_rect_op(bbox, 0x000000ff)]);
@@ -2953,6 +3090,31 @@ mod tests {
         let image = decode_rgba(&output.bytes);
 
         assert!(count_ink(&image) > 40);
+    }
+
+    #[test]
+    fn missing_picture_placeholder_follows_render_profile() {
+        let root = LayerNode::leaf(
+            BoundingBox::new(0.0, 0.0, 32.0, 24.0),
+            None,
+            vec![PaintOp::placeholder(
+                BoundingBox::new(4.0, 4.0, 20.0, 14.0),
+                PlaceholderNode::missing_picture(None, None, None, None),
+            )],
+        );
+        let screen_tree =
+            PageLayerTree::with_profile(32.0, 24.0, root.clone(), RenderProfile::Screen);
+        let print_tree = PageLayerTree::with_profile(32.0, 24.0, root, RenderProfile::Print);
+        let renderer = SkiaLayerRenderer::new();
+        let screen = renderer
+            .render_raster_with_options(&screen_tree, RasterRenderOptions::default())
+            .expect("render screen placeholder");
+        let print = renderer
+            .render_raster_with_options(&print_tree, RasterRenderOptions::default())
+            .expect("render print placeholder");
+
+        assert!(count_ink(&decode_rgba(&screen.bytes)) > 40);
+        assert_eq!(count_ink(&decode_rgba(&print.bytes)), 0);
     }
 
     #[test]

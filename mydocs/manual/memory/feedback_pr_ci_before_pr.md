@@ -1,3 +1,10 @@
+---
+kind: memory
+status: historical
+canonical: mydocs/manual/pr_review_workflow.md
+last_verified: 2026-07-17
+---
+
 # PR 전 로컬 CI급 검증 필수
 
 - 내부 타스크 PR을 만들거나 PR 브랜치에 최종 푸시하기 전에는 먼저 로컬에서 CI에 준하는 검증을 실행한다.

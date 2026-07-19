@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 한국어 단어 선택 + 자기검열 규칙
 description: "산수" 금지, 외부 공개 시 비교/최상급/공공기관 오인 표현 회피
 type: feedback

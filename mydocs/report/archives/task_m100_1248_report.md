@@ -3,7 +3,7 @@
 - **이슈**: edwardkim/rhwp#1248
 - **브랜치**: `local/task1248` (base `stream/devel`)
 - **성격**: 조사·설계 전용 — **코드 0줄 수정**
-- **조사 문서**: [`mydocs/tech/trailing_model_render_vs_pagination_1248.md`](../tech/trailing_model_render_vs_pagination_1248.md)
+- **조사 문서**: [`mydocs/tech/investigations/issue-1248/trailing_model_render_vs_pagination_1248.md`](../../tech/investigations/issue-1248/trailing_model_render_vs_pagination_1248.md)
 
 > **현행화 메모 (2026-06-03)**: 본 보고서는 #1247/#1259 반영 전 조사 스냅샷을
 > 보존한다. 현재 `devel`에는 관련 PR이 이미 반영되어, 문서의 "PR #1247 그대로 머지"
@@ -52,7 +52,7 @@ trailing 처리가 render/pagination 에 분산돼 누적 복잡도가 한계라
 
 | 파일 | 내용 |
 |------|------|
-| `mydocs/tech/trailing_model_render_vs_pagination_1248.md` | 조사 본문 §1~§4 + 검증 로그 |
+| `mydocs/tech/investigations/issue-1248/trailing_model_render_vs_pagination_1248.md` | 조사 본문 §1~§4 + 검증 로그 |
 | `mydocs/plans/task_m100_1248.md` / `_impl.md` | 수행·구현 계획서 |
 | `mydocs/working/task_m100_1248_stage{1,2,3}.md` | 단계별 보고서 |
 | 본 문서 | 최종 결과보고서 |

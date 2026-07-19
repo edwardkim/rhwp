@@ -18,7 +18,7 @@
 | 파일 | 내용 |
 |---|---|
 | `mydocs/report/hwpx_lossless_3axis_20260627.md` | 무손실 검증 — roundtrip 99.97% PASS, 페이지 붕괴율 0%(이전 ~16%, #1597 효과), 렌더 90.7% 정합 |
-| `mydocs/tech/render_minus1_page_gap.md` | -1쪽 갭 다요인 조사(요인 A is_hwp3_origin 오탐지 → #1608, 요인 B footer ~60px 부족) |
+| `mydocs/tech/investigations/issue-1600/render_minus1_page_gap.md` | -1쪽 갭 다요인 조사(요인 A is_hwp3_origin 오탐지 → #1608, 요인 B footer ~60px 부족) |
 | `mydocs/plans/task_m100_1600.md`, `mydocs/working/task_m100_1600_stage1.md` | 계획/단계 |
 | `tests/fixtures/render_page_controlset.tsv` | 통제셋 92건(한글 PageCount 정답지) |
 | `tools/render_page_gate.py` | rhwp vs 정답지 confusion matrix 게이트 |

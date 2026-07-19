@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # Task #103 (#157) 1차 시도 폐기 — 포스트모템
 
 **시도 기간**: 2026-04-22 ~ 2026-04-23
@@ -146,7 +153,7 @@ HWP `wrap=위아래` 표는:
 
 ### 샘플 파일
 
-- 경로: [samples/hwpx/issue_157.hwpx](samples/hwpx/issue_157.hwpx)
+- 경로: [samples/hwpx/issue_157.hwpx](../../samples/hwpx/issue_157.hwpx)
 - 출처: 리포터 [@SBKIM9704](https://github.com/SBKIM9704) 가 Issue #157 에 첨부 (2026-04-22)
 - 크기: 35,641 bytes
 
@@ -230,10 +237,10 @@ vert_rel=Para, vertical_offset=0
 
 ## 보존된 작업물
 
-- [samples/hwpx/issue_157.hwpx](samples/hwpx/issue_157.hwpx) — 회귀 테스트용 영구 샘플
-- [mydocs/plans/task_m100_157.md](mydocs/plans/task_m100_157.md) — #157 선행 조사 기록 (2페이지 y 좌표 분석, IR 속성 덤프)
-- [mydocs/plans/task_m100_103.md](mydocs/plans/task_m100_103.md) — 2026-04-12 원본 계획서
-- [mydocs/plans/task_m100_103_impl.md](mydocs/plans/task_m100_103_impl.md) — 2026-04-12 원본 구현 계획서
+- [samples/hwpx/issue_157.hwpx](../../samples/hwpx/issue_157.hwpx) — 회귀 테스트용 영구 샘플
+- [mydocs/plans/archives/task_m100_157.md](../plans/archives/task_m100_157.md) — #157 선행 조사 기록 (2페이지 y 좌표 분석, IR 속성 덤프)
+- [mydocs/plans/archives/task_m100_103.md](../plans/archives/task_m100_103.md) — 2026-04-12 원본 계획서
+- [mydocs/plans/archives/task_m100_103_impl.md](../plans/archives/task_m100_103_impl.md) — 2026-04-12 원본 구현 계획서
 
 ## 결론
 

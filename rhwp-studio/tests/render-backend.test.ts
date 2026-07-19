@@ -26,8 +26,9 @@ import { isExpectedCanvasKitUnsupportedOp } from '../src/view/canvaskit/diagnost
 import type { LayerInfo, LayerPaintOp } from '../src/core/types.ts';
 import { glyphOutlinePayloadResourceKey, glyphOutlinePayloadStatus } from '../src/view/glyph-outline-payload-status.ts';
 
-test('render backend resolver keeps Canvas2D as the default and accepts skia aliases', () => {
+test('render backend resolver keeps Canvas2D as the compatibility default and accepts explicit aliases', () => {
   assert.equal(resolveRenderBackend(''), 'canvas2d');
+  assert.equal(resolveRenderBackend('?renderer=auto'), 'auto');
   assert.equal(resolveRenderBackend('?renderer=canvas'), 'canvas2d');
   assert.equal(resolveRenderBackend('?renderer=canvas2d'), 'canvas2d');
   assert.equal(resolveRenderBackend('?renderer=canvaskit'), 'canvaskit');
@@ -45,6 +46,11 @@ test('render backend resolver reports invalid explicit values and keeps URL opt-
     assert.deepEqual(resolveRenderBackendRequest(''), {
       backend: 'canvas2d',
       source: 'default',
+    });
+    assert.deepEqual(resolveRenderBackendRequest('?renderer=auto'), {
+      backend: 'auto',
+      source: 'url',
+      requested: 'auto',
     });
     assert.deepEqual(resolveRenderBackendRequest('?renderer=canvaskit'), {
       backend: 'canvaskit',
@@ -157,6 +163,12 @@ test('CanvasKit renderer source does not introduce Canvas2D overlay replay', () 
   assert.equal(source.includes('rhwpOverlay'), false);
 });
 
+test('CanvasKit text replay preserves LayerTree positions for regular runs', () => {
+  const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
+  assert.match(source, /if \(hasLayoutPositions\) \{[\s\S]*?canvas\.drawGlyphs\(/);
+  assert.doesNotMatch(source, /needsPreservedAdvances && hasLayoutPositions/);
+});
+
 test('CanvasKit contains malformed images and bounds both decode caches', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
   assert.match(source, /try \{\s*image = this\.canvasKit\.MakeImageFromEncoded/);
@@ -179,10 +191,17 @@ test('CanvasKit distinguishes missing-picture editor and print replay', () => {
   assert.match(source, /\.every\(Number\.isFinite\)/);
 });
 
-test('PageLayerTree bridge keeps the requested profile authoritative', () => {
+test('CanvasKit form replay accepts the canonical LayerTree form type names', () => {
+  const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
+  assert.match(source, /op\.formType === 'checkBox'/);
+  assert.match(source, /op\.formType === 'radioButton'/);
+});
+
+test('PageLayerTree bridge verifies the returned profile instead of relabeling it', () => {
   const source = readFileSync(new URL('../src/core/wasm-bridge.ts', import.meta.url), 'utf8');
-  assert.match(source, /tree\.profile = profile/);
-  assert.doesNotMatch(source, /if \(!tree\.profile\)/);
+  assert.match(source, /if \(tree\.profile !== profile\)/);
+  assert.match(source, /PageLayerTree profile 불일치/);
+  assert.doesNotMatch(source, /tree\.profile = profile/);
 });
 
 test('CanvasKit replay planes match native Skia direct z-order contract', () => {
@@ -221,6 +240,38 @@ test('CanvasKit replay plane helper lets LayerNode metadata override non-image o
   assert.equal(renderLayerReplayPlane(flow), 'flow');
   assert.equal(layerPaintOpReplayPlane(rect, behind), 'behindText');
   assert.equal(layerPaintOpReplayPlane(rect, front), 'inFrontOfText');
+});
+
+test('CanvasKit replay plane caps master-page layers at behindText (#2318)', () => {
+  // 한컴 의미론: 바탕쪽 개체의 textWrap 은 바탕쪽 내부 순서에만 적용되고
+  // 바탕쪽 전체는 본문 뒤에 깔린다. masterPage provenance 가 있으면
+  // front/flow 분류를 behindText 로 상한 고정한다 (rust cap_master_page_plane 동일 계약).
+  const bbox = { x: 0, y: 0, width: 10, height: 10 };
+  const rect: LayerPaintOp = { type: 'rectangle', bbox, style: { fillColor: '#ff0000' } };
+  const image: LayerPaintOp = { type: 'image', bbox, wrap: 'inFrontOfText' };
+  const pageBg: LayerPaintOp = { type: 'pageBackground', bbox };
+
+  const masterFront: LayerInfo = {
+    textWrap: 'inFrontOfText', zOrder: 1, stableIndex: 1, masterPage: true,
+  };
+  const masterPlain: LayerInfo = { textWrap: null, zOrder: 0, stableIndex: 0, masterPage: true };
+  const masterBehind: LayerInfo = {
+    textWrap: 'behindText', zOrder: 1, stableIndex: 1, masterPage: true,
+  };
+
+  // 바탕쪽 글상자(글 앞으로) → behindText 로 cap (shortcut.hwp 재현 형상)
+  assert.equal(renderLayerReplayPlane(masterFront), 'behindText');
+  assert.equal(layerPaintOpReplayPlane(rect, masterFront), 'behindText');
+  assert.equal(layerPaintOpReplayPlane(image, masterFront), 'behindText');
+  // 바탕쪽 텍스트(layer 상속, wrap 없음) → flow 가 아니라 behindText
+  assert.equal(layerPaintOpReplayPlane(rect, masterPlain), 'behindText');
+  // 이미 behindText 인 바탕쪽 개체는 그대로
+  assert.equal(renderLayerReplayPlane(masterBehind), 'behindText');
+  // pageBackground 는 cap 대상 아님
+  assert.equal(layerPaintOpReplayPlane(pageBg, masterFront), 'background');
+  // masterPage 미표시 layer 는 기존 분류 유지
+  const bodyFront: LayerInfo = { textWrap: 'inFrontOfText', zOrder: 1, stableIndex: 1 };
+  assert.equal(renderLayerReplayPlane(bodyFront), 'inFrontOfText');
 });
 
 test('CanvasKit renderer source replays the root once per replay plane', () => {
@@ -326,7 +377,10 @@ test('PageRenderer splits flow static images before the first Canvas2D flow rend
   assert.match(source, /shouldSplitStaticFlow\(layers\)/);
   assert.match(source, /layers\.flowStaticCount > 0/);
   assert.match(source, /!layers\.hasBehind/);
-  assert.match(source, /renderPageToCanvasFiltered\(pageIdx,\s*canvas,\s*renderScale,\s*'flow-dynamic'\)/);
+  assert.match(
+    source,
+    /renderPageToCanvasFiltered\(\s*pageIdx,\s*canvas,\s*renderScale,\s*'flow-dynamic',\s*this\.renderProfile,\s*\)/,
+  );
   assert.match(source, /createOrReuseFilteredCanvasLayer\(\s*pageIdx,\s*canvas,\s*renderScale,\s*'flow-static'/);
   assert.match(source, /this\.flowSplitSupported = false/);
   assert.match(source, /flow-dynamic 렌더 미지원/);
@@ -362,6 +416,20 @@ test('CanvasView renders visible pages before deferred prefetch work', () => {
   assert.match(source, /this\.schedulePrefetchPages\(prefetchPages\.filter/);
   assert.match(source, /requestIdleCallback\(run, \{ timeout: 1000 \}\)/);
   assert.match(source, /cancelPendingPrefetch\(\)/);
+});
+
+test('CanvasView falls back from failed CanvasKit readiness only for auto requests', () => {
+  const source = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
+  assert.match(
+    source,
+    /canvaskitDiagnostics[\s\S]*?!canvaskitDiagnostics\.passesRuntimeReadinessGate[\s\S]*?rendererSession\.isAutoRequest\(\)/,
+  );
+  assert.match(source, /readinessBlockers\.join\(','\)/);
+  assert.match(source, /lastRenderError[\s\S]*?lastUnexpectedUnsupportedOps/);
+  assert.doesNotMatch(
+    source,
+    /getCanvasKitRenderDiagnostics\(pageIdx\)\?\.lastRenderError/,
+  );
 });
 
 test('ViewportManager coalesces scroll events to one animation frame', () => {

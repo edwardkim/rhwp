@@ -83,7 +83,7 @@ Systematizing the typesetting system is needed, and the first step is analyzing 
 
 ## Deliverables
 
-- `mydocs/tech/text_layout_review.md` — Technical review report
+- `mydocs/tech/investigations/issue-397/text_layout_review.md` — Technical review report
 - `mydocs/working/task_397_step{N}.md` — Per-step completion reports
 
 ## Notes

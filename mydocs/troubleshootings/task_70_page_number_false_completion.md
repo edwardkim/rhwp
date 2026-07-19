@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 타스크 70 미완료 상태 완료 처리 — 트러블슈팅
 
 ## 개요

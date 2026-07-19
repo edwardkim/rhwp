@@ -6,7 +6,7 @@
 
 당초 계획(default on 전환)은 보류. 3단계는 다음으로 변경 수행:
 
-- `mydocs/tech/line_seg_vpos_analysis.md` 부록 A 추가 — Task #310 가설의 검증 결과
+- `mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md` 부록 A 추가 — Task #310 가설의 검증 결과
 - `mydocs/report/task_m100_311_report.md` 최종 보고서 — 부정적 결과 + 다음 작업 후보
 - `mydocs/orders/20260425.md` 갱신 (다음 커밋)
 - Epic #309 코멘트 게시 (다음 커밋)

@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 한 문단 내 다중 TAC 표 페이지네이션 오류
 
 ## 발견 경위

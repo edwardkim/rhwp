@@ -215,9 +215,9 @@ PR #589 (Task #511 v2 + #554) 머지 후 시각 판정 중 발견:
 - 단계별 보고서: `mydocs/working/task_m100_604_stage{1,2,2b,3}.md`
 
 ### 분석 자료
-- `mydocs/tech/document_ir_parser_relationship_analysis.md` (16KB)
-- `mydocs/tech/hwp5_wrap_precomputed_analysis.md`
-- `mydocs/tech/document_ir_wrap_zone_standard_review.md`
+- `mydocs/tech/investigations/issue-511/document_ir_parser_relationship_analysis.md` (16KB)
+- `mydocs/tech/investigations/issue-511/hwp5_wrap_precomputed_analysis.md`
+- `mydocs/tech/investigations/issue-511/document_ir_wrap_zone_standard_review.md`
 
 ### 시각 판정 자료
 - `output/svg/task604_after/hwp3-sample5/hwp3-sample5_{004,008,016,022,027}.svg` — Stage 1~6 영역

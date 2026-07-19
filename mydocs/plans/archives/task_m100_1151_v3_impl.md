@@ -1,12 +1,12 @@
 # Task #1151 v3 구현계획서
 
-수행계획서: [task_m100_1151_v3.md](task_m100_1151_v3.md) · v3 root cause 분석: [topandbottom_table_inline_picture_layout.md](../tech/topandbottom_table_inline_picture_layout.md)
+수행계획서: [task_m100_1151_v3.md](task_m100_1151_v3.md) · v3 root cause 분석: [topandbottom_table_inline_picture_layout.md](../../tech/investigations/issue-1151/topandbottom_table_inline_picture_layout.md)
 
 ## 0. 설계 결정
 
 ### 0-1. 진입점 — `paragraph_layout.rs` 의 tac picture y 결정
 
-Fix #2 (`mydocs/tech/topandbottom_table_inline_picture_layout.md` §5) 채택. 본 fix 는 `paragraph_layout.rs` 의 inline tac picture 자리 결정 직전에 sibling TopAndBottom 표 reserved 영역을 picture y 에 가산.
+Fix #2 (`mydocs/tech/investigations/issue-1151/topandbottom_table_inline_picture_layout.md` §5) 채택. 본 fix 는 `paragraph_layout.rs` 의 inline tac picture 자리 결정 직전에 sibling TopAndBottom 표 reserved 영역을 picture y 에 가산.
 
 진입점 후보 (Stage 3 의 첫 작업으로 확정):
 - `paragraph_layout.rs:994-1003` (`tac_offsets_px` 수집 직후) — picture y 자체에 가산하기엔 너무 이름.

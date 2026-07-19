@@ -228,7 +228,7 @@ PR 본문 보고 산출물:
 - 구현 계획서: `mydocs/plans/task_m100_505_impl.md`
 - 단계별 보고서: `mydocs/working/task_m100_505_stage{1-4}.md` (4 파일)
 - 최종 보고서: `mydocs/report/task_m100_505_report.md`
-- 1:1 정합화 전략: `mydocs/tech/all_in_one_parser_fidelity_strategy.md`
+- 1:1 정합화 전략: `mydocs/tech/archive/all_in_one_parser_fidelity_strategy.md`
 
 ✅ 외부 컨트리뷰터로서 내부 워크플로우 (수행 → 구현 → 단계 → 보고) 를 정합하게 준수. 매우 정합.
 

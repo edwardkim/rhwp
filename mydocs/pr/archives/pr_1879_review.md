@@ -18,7 +18,7 @@
 |---|---|
 | `tools/roundtrip_fidelity_harness.py` (+152) | HWPX→`rhwp convert`→HWP 후 양쪽 `dump-pages`의 `(sec,pi)→첫 페이지` 대조. SAME/PI_MOVED/PAGE_DELTA/ERR 판정, TSV 산출, `PI_MOVED+PAGE_DELTA>0 → exit 1` |
 | `tools/roundtrip_fidelity_diff.py` (+82) | 기준 vs 후보 바이너리 TSV 전이 분류(IMPROVED/REGRESSED/STILL_*), `REGRESSED>0 → exit 1` |
-| `mydocs/manual/roundtrip_fidelity_harness.md` (+63) | 사용 가이드 + oracle 아님 명시 |
+| `mydocs/manual/verification/roundtrip_fidelity_harness.md` (+63) | 사용 가이드 + oracle 아님 명시 |
 
 ## 3. 검증 (로컬, Linux — pyhwpx 불필요라 직접 실행 가능)
 

@@ -58,7 +58,23 @@ impl DocumentCore {
                 new_chars,
             );
 
+            // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
+            let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+                &self.document.sections[section_idx].paragraphs[para_idx],
+            );
             self.reflow_paragraph(section_idx, para_idx);
+            // [Task #2299] 삽입/변경 문단들의 vpos 를 흐름에 연결한다 — placeholder 를
+            // 방치하면 이후 편집의 vpos 재계산이 저장 단/쪽 리셋으로 오인해 고착시킨다.
+            let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[section_idx].paragraphs,
+                para_idx,
+                None,
+                stored_end_for_reset,
+                &self.styles,
+                self.dpi,
+                doc_hwp3_layout,
+            );
             self.recompose_paragraph(section_idx, para_idx);
             self.paginate_if_needed();
 
@@ -126,6 +142,20 @@ impl DocumentCore {
             for i in para_idx..=last_para_idx {
                 self.reflow_paragraph(section_idx, i);
             }
+            // [Task #2299] 삽입 문단들의 vpos 를 흐름에 연결한다 — 클론/placeholder
+            // 좌표를 방치하면 이후 편집의 vpos 재계산이 저장 단/쪽 리셋으로 오인해
+            // 고착시킨다. left_empty 면 host 자체가 클론이라 신규 구간에 포함한다.
+            let fresh_start = if left_empty { para_idx } else { para_idx + 1 };
+            let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[section_idx].paragraphs,
+                para_idx,
+                Some(fresh_start..last_para_idx + 1),
+                None,
+                &self.styles,
+                self.dpi,
+                doc_hwp3_layout,
+            );
 
             // 선택적 재구성: 원본 문단 재구성 + 삽입 문단 composed 추가
             self.recompose_paragraph(section_idx, para_idx);
@@ -165,6 +195,18 @@ impl DocumentCore {
         for i in para_idx..=last_para_idx {
             self.reflow_paragraph(section_idx, i);
         }
+        // [Task #2299] 삽입/변경 문단들의 vpos 를 흐름에 연결한다 — placeholder 를
+        // 방치하면 이후 편집의 vpos 재계산이 저장 단/쪽 리셋으로 오인해 고착시킨다.
+        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            Some(para_idx + 1..last_para_idx + 1),
+            None,
+            &self.styles,
+            self.dpi,
+            doc_hwp3_layout,
+        );
 
         // 선택적 재구성: 원본 문단 재구성 + 삽입 문단 composed 추가
         self.recompose_paragraph(section_idx, para_idx);

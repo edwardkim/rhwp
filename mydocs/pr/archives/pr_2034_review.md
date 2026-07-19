@@ -58,7 +58,7 @@ merge commit `e5f9e00864f2b0423c9292fc170a2477b2882504` 로 병합되었고, #19
 
 ## 시각 검증
 
-`mydocs/manual/visual_sweep_guide.md` 에 따라 PR fixture 와 issue 댓글 첨부 PDF 를 비교했다.
+`mydocs/manual/verification/visual_sweep_guide.md` 에 따라 PR fixture 와 issue 댓글 첨부 PDF 를 비교했다.
 
 ```bash
 python3 scripts/task1274_visual_sweep.py \

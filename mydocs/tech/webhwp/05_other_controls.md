@@ -1,3 +1,10 @@
+---
+kind: investigation
+status: historical
+canonical: mydocs/tech/webhwp/README.md
+last_verified: 2026-07-17
+---
+
 # webhwp 분석: 기타 컨트롤 (수식, 하이퍼링크, OLE 등)
 
 > 분석 대상: `webhwp/js/hwpApp.*.chunk.js` (5.17MB minified)

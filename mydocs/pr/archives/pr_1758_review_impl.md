@@ -15,7 +15,7 @@
 완료.
 
 - `tools/verify_pi_page_vs_hangul.py`는 docstring만 보강한다.
-- `mydocs/manual/verify_pi_page_vs_hangul.md`는 도구 매뉴얼 신설이다.
+- `mydocs/manual/verification/verify_pi_page_vs_hangul.md`는 도구 매뉴얼 신설이다.
 - `mydocs/plans/task_m100_1757.md`는 작업 계획 기록이다.
 - 실행 로직, Rust 렌더링 코드, workflow 변경은 없다.
 

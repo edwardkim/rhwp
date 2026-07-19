@@ -18,7 +18,7 @@ schema v2 공식 frontend metrics snapshot과 재현성 manifest를 저장했다
 |------|------|
 | `mydocs/metrics/frontend/2026-07-11/metrics.json` | 함수별 evidence와 환경을 포함한 공식 JSON |
 | `mydocs/metrics/frontend/2026-07-11/summary.md` | reviewer용 요약 |
-| `mydocs/tech/task_m100_2124_baseline_manifest.md` | commit, scope, 도구 hash, font inventory, 검증 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_baseline_manifest.md` | commit, scope, 도구 hash, font inventory, 검증 |
 
 ## 3. 핵심 수치
 

@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # rhwp-studio 그리드 모드 (zoom ≤ 0.5) click 좌표 단일 컬럼 가정 결함
 
 ## 본질

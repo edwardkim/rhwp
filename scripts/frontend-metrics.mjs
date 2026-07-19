@@ -65,28 +65,16 @@ const INCLUDE_GROUPS = [
     patterns: ['npm/editor/**/*.{js,ts}'],
     test: (file) => file.startsWith('npm/editor/') && isCodeFile(file),
   },
-  {
-    id: 'legacy-web',
-    label: 'legacy /web',
-    patterns: ['web/*.{js,mjs,css,html}'],
-    test: (file) => file.startsWith('web/') && isLegacyWebFile(file),
-    legacy: true,
-  },
 ];
 
 const EXCLUDE_RULES = [
   'node_modules/',
   'dist/',
   'pkg/',
-  'web/rhwp.js',
-  'web/rhwp.d.ts',
-  'web/rhwp_bg.wasm.d.ts',
   '*.min.js',
   'vendored/generated data',
   '**/{test,tests,e2e}/',
   '*.{test,spec}.{js,mjs,ts,tsx}',
-  'web/clipboard_test.html',
-  'web/fonts/',
   'assets/fonts/',
   'icons/',
   '_locales/',
@@ -146,19 +134,13 @@ function isCodeFile(file) {
   return /\.(ts|tsx|js|mjs)$/i.test(file);
 }
 
-function isLegacyWebFile(file) {
-  const relative = file.replace(/^web\//, '');
-  return /\.(js|mjs|css|html)$/i.test(file) && !relative.includes('/');
-}
-
 function hasExcludedSegment(file, segment) {
   return file === segment || file.startsWith(`${segment}/`) || file.includes(`/${segment}/`);
 }
 
 function isTestFile(file) {
   return /(^|\/)(tests?|e2e)(\/|$)/i.test(file)
-    || /\.(test|spec)\.(js|mjs|ts|tsx)$/i.test(file)
-    || file === 'web/clipboard_test.html';
+    || /\.(test|spec)\.(js|mjs|ts|tsx)$/i.test(file);
 }
 
 function isExcluded(file) {
@@ -169,9 +151,8 @@ function isExcluded(file) {
   if (hasExcludedSegment(file, 'cache')) return true;
   if (hasExcludedSegment(file, 'snapshots')) return true;
   if (file.endsWith('.min.js')) return true;
-  if (file === 'web/rhwp.js' || file === 'web/rhwp.d.ts' || file === 'web/rhwp_bg.wasm.d.ts') return true;
   if (isTestFile(file)) return true;
-  if (file.startsWith('web/fonts/') || file.startsWith('assets/fonts/')) return true;
+  if (file.startsWith('assets/fonts/')) return true;
   if (file.includes('/icons/') || file.startsWith('icons/')) return true;
   if (file.includes('/_locales/') || file.startsWith('_locales/')) return true;
   if (file.includes('/certs/') || file.startsWith('certs/')) return true;
@@ -669,7 +650,6 @@ function fontReferences(files) {
 
   const refs = [];
   const patterns = [
-    /web\/fonts/g,
     /assets\/fonts/g,
     /fonts\//g,
     /\.woff2\b/g,
@@ -712,17 +692,12 @@ function fontAssetInventory(files) {
     'assets/fonts/SourceHanSerifK-OFL.txt',
   ].map((file) => ({ file, ...fileFingerprint(file) }));
   const studioLink = path.join(ROOT, 'rhwp-studio/public/fonts');
-  const legacyWebLink = path.join(ROOT, 'web/fonts');
 
   return {
     canonicalDirectory: 'assets/fonts',
     studioPublicLink: {
       file: 'rhwp-studio/public/fonts',
       target: normalizePath(readlinkSync(studioLink)),
-    },
-    legacyWebLink: {
-      file: 'web/fonts',
-      target: normalizePath(readlinkSync(legacyWebLink)),
     },
     files: fontFiles,
     fileCount: fontFiles.length,

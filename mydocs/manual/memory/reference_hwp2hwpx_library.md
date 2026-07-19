@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: hwp2hwpx Java 라이브러리 (매핑 권위 자료)
 description: HWP↔HWPX 변환 작업 시 매핑 명세 권위 자료. Apache 2.0, hwplib/hwpxlib 저자 (neolord0/dogfoot)
 type: reference

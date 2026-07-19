@@ -1,3 +1,10 @@
+---
+kind: investigation
+status: historical
+canonical: mydocs/tech/webhwp/README.md
+last_verified: 2026-07-17
+---
+
 # webhwp 분석: 툴바 및 메뉴 시스템
 
 > 분석 대상: `webhwp/js/hwpApp.*.chunk.js` 외 7개 JS/CSS 파일

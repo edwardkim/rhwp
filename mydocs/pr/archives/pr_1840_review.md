@@ -13,7 +13,7 @@
 
 ## 변경 범위
 
-- `mydocs/tech/task_m100_1773_record_only_encoding.md` 를 추가한다.
+- `mydocs/tech/investigations/issue-1773/task_m100_1773_record_only_encoding.md` 를 추가한다.
 - #1773 원 인코딩 보존 구현은 HWP3 재판별로 철회하고, 계약/설계 기록을 보존한다.
 - 코드 변경은 없다.
 

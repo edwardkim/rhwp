@@ -6,7 +6,8 @@ import { CanvasView } from '@/view/canvas-view';
 import { InputHandler } from '@/engine/input-handler';
 import { Toolbar } from '@/ui/toolbar';
 import { MenuBar } from '@/ui/menu-bar';
-import { loadWebFonts } from '@/core/font-loader';
+import { loadWebFonts, resolveCanvasKitFontPlan } from '@/core/font-loader';
+import { withCanvasKitSurfaceBlockers } from '@/core/canvaskit-document-preflight';
 import { loadExtensionViewerSettings, type ExtensionViewerSettings } from '@/core/extension-settings';
 import { CommandRegistry } from '@/command/registry';
 import { CommandDispatcher } from '@/command/dispatcher';
@@ -28,6 +29,7 @@ import { showValidationModalIfNeeded } from '@/ui/validation-modal';
 import { showHmlImportWarning } from '@/ui/hml-import-warning';
 import { showLocalFontsModalIfNeeded } from '@/ui/local-fonts-modal';
 import { showToast } from '@/ui/toast';
+import { addRecentDoc, listRecentDocs } from '@/recent/recent-store';
 import { showDropConfirmDialog } from '@/ui/drop-confirm-dialog';
 import { initRhwpDev } from '@/core/rhwp-dev';
 import { DocumentDirtyState } from '@/core/document-dirty-state';
@@ -43,7 +45,7 @@ import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
-import type { CanvasKitLayerRenderer } from '@/view/canvaskit-renderer';
+import { RendererSession, type RendererSessionDiagnostics } from '@/view/renderer-session';
 import {
   resolveCanvasKitRenderModeRequest,
   resolveCanvasKitSurfaceRequest,
@@ -52,6 +54,7 @@ import {
   type RenderBackendFallbackReason,
 } from '@/view/render-backend';
 import { installEmbedRuntime } from '@/embed/runtime';
+import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
 
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
@@ -81,14 +84,9 @@ let canvasView: CanvasView | null = null;
 let inputHandler: InputHandler | null = null;
 let toolbar: Toolbar | null = null;
 let ruler: Ruler | null = null;
-let canvaskitRenderer: CanvasKitLayerRenderer | null = null;
+let rendererSession: RendererSession | null = null;
 let editMode: EditorEditMode = 'normal';
-let rendererRuntimeRequest: {
-  backend: ReturnType<typeof resolveRenderBackendRequest>;
-  canvaskitMode: ReturnType<typeof resolveCanvasKitRenderModeRequest>;
-  canvaskitSurface: ReturnType<typeof resolveCanvasKitSurfaceRequest>;
-  renderProfile: ReturnType<typeof resolveRenderProfile>;
-} | null = null;
+let rendererRuntimeRequest: EmbedRendererRuntimeRequestV1 | null = null;
 let renderBackendFallbackReason: RenderBackendFallbackReason | null = null;
 let rendererInitializationError: string | null = null;
 let rendererInitialized = false;
@@ -244,13 +242,18 @@ async function updateLoadProgress(percent: number, label: string): Promise<void>
  * 저장된 권한 범위 안에서 필요한 local face를 준비하고 등록된 경우에만 다시 그린다.
  */
 function prepareCanvasKitLocalFonts(fontNames: readonly string[] | undefined): void {
-  const renderer = canvaskitRenderer;
+  const renderer = canvasView?.getRenderBackend() === 'canvaskit'
+    ? rendererSession?.getCanvasKitRenderer() ?? null
+    : null;
   if (!renderer || !fontNames?.length) return;
   const requestedFonts = [...fontNames];
   void (async () => {
     await loadStoredLocalFonts();
     await renderer.prepareLocalFonts(requestedFonts);
-    if (renderer === canvaskitRenderer) {
+    if (
+      renderer === rendererSession?.getCanvasKitRenderer()
+      && canvasView?.getRenderBackend() === 'canvaskit'
+    ) {
       // 등록 성공 여부와 관계없이 pending 진단이 끝난 상태를 page snapshot에 반영한다.
       eventBus.emit('document-view-changed');
     }
@@ -280,8 +283,12 @@ async function initialize(): Promise<void> {
     const canvaskitMode = canvaskitModeRequest.mode;
     const canvaskitSurfaceRequest = resolveCanvasKitSurfaceRequest(window.location.search);
     const renderProfile = resolveRenderProfile(window.location.search);
+    const diagnosticsBackendRequest: EmbedRendererRuntimeRequestV1['backend'] =
+      renderBackendRequest.backend === 'auto'
+        ? { ...renderBackendRequest, backend: 'canvas2d' }
+        : { ...renderBackendRequest, backend: renderBackendRequest.backend };
     rendererRuntimeRequest = {
-      backend: renderBackendRequest,
+      backend: diagnosticsBackendRequest,
       canvaskitMode: canvaskitModeRequest,
       canvaskitSurface: canvaskitSurfaceRequest,
       renderProfile,
@@ -296,19 +303,45 @@ async function initialize(): Promise<void> {
         `[main] 지원하지 않는 CanvasKit mode입니다: ${canvaskitModeRequest.requested}; default를 사용합니다.`,
       );
     }
-    let renderBackend = renderBackendRequest.backend;
     renderBackendFallbackReason = renderBackendRequest.unsupportedReason ?? null;
-    if (renderBackend === 'canvaskit') {
-      msg.textContent = 'CanvasKit 로딩 중...';
-      try {
+    rendererSession = new RendererSession(
+      renderBackendRequest,
+      canvaskitModeRequest,
+      canvaskitSurfaceRequest,
+      renderProfile,
+      async (mode, surface) => {
+        msg.textContent = 'CanvasKit 로딩 중...';
         const { CanvasKitLayerRenderer } = await import('@/view/canvaskit-renderer');
-        canvaskitRenderer = await CanvasKitLayerRenderer.create(canvaskitMode, canvaskitSurfaceRequest);
-      } catch (error) {
-        console.error('[main] CanvasKit 초기화 실패, Canvas2D로 폴백합니다:', error);
-        renderBackend = 'canvas2d';
-        renderBackendFallbackReason = 'canvaskitInitializationFailed';
-      }
-    }
+        return CanvasKitLayerRenderer.create(mode, surface, {
+          requirePreparedFontFamilies: renderBackendRequest.backend === 'auto',
+        });
+      },
+      {
+        transformCanvasKitPreflight(report) {
+          const plan = resolveCanvasKitFontPlan(
+            report.requiredFontFamilies,
+            extensionViewerSettings,
+          );
+          const blockers = plan.unavailableFonts.map(font => `fontUnavailable:${font}`);
+          if (wasm.getShowParagraphMarks()) blockers.push('viewOption:showParagraphMarks');
+          if (wasm.getShowControlCodes()) blockers.push('viewOption:showControlCodes');
+          return withCanvasKitSurfaceBlockers(
+            report,
+            blockers,
+          );
+        },
+        async prepareCanvasKitDocument(renderer, report) {
+          const plan = resolveCanvasKitFontPlan(
+            report.requiredFontFamilies,
+            extensionViewerSettings,
+          );
+          if (plan.unavailableFonts.length > 0) {
+            throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${plan.unavailableFonts.join(', ')}`);
+          }
+          await renderer.prepareBundledFonts(plan.sources);
+        },
+      },
+    );
     msg.textContent = 'HWP 파일을 선택해주세요.';
 
     const container = document.getElementById('scroll-container')!;
@@ -316,9 +349,7 @@ async function initialize(): Promise<void> {
       container,
       wasm,
       eventBus,
-      renderBackend,
-      renderProfile,
-      canvaskitRenderer,
+      rendererSession,
     );
 
     // 눈금자 초기화
@@ -359,7 +390,11 @@ async function initialize(): Promise<void> {
       new TableObjectRenderer(container, canvasView.getVirtualScroll(), true),
     );
 
-    new MenuBar(document.getElementById('menu-bar')!, eventBus, dispatcher, registry);
+    new MenuBar(document.getElementById('menu-bar')!, eventBus, dispatcher, registry, {
+      onMenuOpen: (menuName) => {
+        if (menuName === 'file') void renderRecentSubmenu();
+      },
+    });
 
     // 툴바 내 data-cmd 버튼 클릭 → 커맨드 디스패치
     document.querySelectorAll('.tb-btn[data-cmd]').forEach(btn => {
@@ -434,7 +469,7 @@ async function initialize(): Promise<void> {
     if (import.meta.env.DEV) {
       (window as any).__inputHandler = inputHandler;
       (window as any).__canvasView = canvasView;
-      (window as any).__renderBackend = renderBackend;
+      (window as any).__renderBackend = null;
       (window as any).__renderBackendRequest = renderBackendRequest;
       (window as any).__rendererRuntimeRequest = rendererRuntimeRequest;
       (window as any).__renderBackendFallbackReason = renderBackendFallbackReason;
@@ -671,6 +706,16 @@ function setupEventListeners(): void {
     documentState.markDirty(typeof reason === 'string' ? reason : 'document-changed');
   });
 
+  eventBus.on('renderer-selection-changed', (payload) => {
+    const diagnostics = payload as RendererSessionDiagnostics;
+    renderBackendFallbackReason = diagnostics.fallbackReason;
+    if (import.meta.env.DEV) {
+      (window as any).__renderBackend = diagnostics.effectiveBackend;
+      (window as any).__renderBackendFallbackReason = diagnostics.fallbackReason;
+      (window as any).__rendererSelection = diagnostics;
+    }
+  });
+
   eventBus.on('document-dirty-changed', () => {
     eventBus.emit('command-state-changed');
   });
@@ -761,7 +806,11 @@ function applySavedTextMarkSettings(): void {
   syncClipMenu(clipEnabled);
 }
 
-async function initializeDocument(docInfo: DocumentInfo, displayName: string): Promise<void> {
+async function initializeDocument(
+  docInfo: DocumentInfo,
+  displayName: string,
+  options: { suppressDialogs?: boolean } = {},
+): Promise<void> {
   const msg = sbMessage();
   let normalizedDuringLoad = false;
   try {
@@ -782,7 +831,7 @@ async function initializeDocument(docInfo: DocumentInfo, displayName: string): P
     inputHandler?.deactivate();
     console.log('[initDoc] 4. canvasView loadDocument');
     await updateLoadProgress(82, '페이지 렌더 준비 중...');
-    canvasView?.loadDocument();
+    await canvasView?.loadDocument();
     prepareCanvasKitLocalFonts(docInfo.fontsUsed);
     console.log('[initDoc] 5. toolbar setEnabled');
     await updateLoadProgress(90, '도구 모음 준비 중...');
@@ -799,14 +848,18 @@ async function initializeDocument(docInfo: DocumentInfo, displayName: string): P
         const report = wasm.getValidationWarnings();
         console.log(`[validation] ${report.count} warnings`, report.summary);
         if (report.count > 0) {
-          const choice = await showValidationModalIfNeeded(report);
-          console.log(`[validation] user choice: ${choice}`);
+          // embed 등 비대화형 로드에서는 모달 없이 '그대로 열기'로 진행한다 —
+          // 모달 await가 loadFile 응답을 막아 임베더가 교착되는 것을 방지 (suppressDialogs).
+          const choice = options.suppressDialogs
+            ? 'as-is'
+            : await showValidationModalIfNeeded(report);
+          console.log(`[validation] user choice: ${choice}${options.suppressDialogs ? ' (dialogs suppressed)' : ''}`);
           if (choice === 'auto-fix') {
             const n = wasm.reflowLinesegs();
             console.log(`[validation] reflowed ${n} paragraphs`);
             if (n > 0) {
               // 렌더 재계산
-              canvasView?.loadDocument();
+              await canvasView?.loadDocument();
               msg.textContent = `${displayName} (비표준 lineseg ${n}건 자동 보정됨)`;
               normalizedDuringLoad = true;
             }
@@ -820,7 +873,9 @@ async function initializeDocument(docInfo: DocumentInfo, displayName: string): P
       console.warn('[validation] 감지/보정 실패 (치명적이지 않음):', e);
     }
 
-    await promptLocalFontsIfNeeded(docInfo, displayName);
+    if (!options.suppressDialogs) {
+      await promptLocalFontsIfNeeded(docInfo, displayName);
+    }
 
     // 로컬 글꼴 감지 결과가 뷰를 갱신한 뒤에 캐럿을 연결해야 입력 포커스가 재설정과 경합하지 않는다.
     console.log('[initDoc] 8. inputHandler activateWithCaretPosition');
@@ -899,9 +954,8 @@ async function loadFile(file: File, options: { skipUnsavedGuard?: boolean } = {}
   }
 }
 
-function resetCanvasKitDocumentState(): void {
-  canvaskitRenderer?.resetDocumentResources();
-  canvasView?.resetRendererDiagnostics();
+function prepareCanvasRendererDocument(): void {
+  canvasView?.prepareDocumentLoad();
 }
 
 async function loadBytes(
@@ -909,24 +963,107 @@ async function loadBytes(
   fileName: string,
   fileHandle: typeof wasm.currentFileHandle,
   startTime = performance.now(),
-  options: { dataReadProgressShown?: boolean } = {},
+  options: { dataReadProgressShown?: boolean; skipRecent?: boolean; suppressDialogs?: boolean } = {},
 ): Promise<void> {
   if (!options.dataReadProgressShown) {
     await updateLoadProgress(0, '문서 데이터 준비 중...');
   }
   await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
   const docInfo = wasm.loadDocument(data, fileName);
-  resetCanvasKitDocumentState();
+  prepareCanvasRendererDocument();
   await updateLoadProgress(45, '자동 저장 준비 중...');
   forgetConvertedHmlSaveHandle(fileHandle);
   wasm.currentFileHandle = fileHandle;
+
+  // 최근 문서 기록 — 문서 로드 성공 직후, 폰트/모달 등 블로킹 UI 단계 이전에 기록한다.
+  // 핸들이 있으면 라이브 재열기용으로 함께 기록하고, 없으면(드롭/input/URL 로드)
+  // 메타-only 로 기록한다 — 목록에는 남기되 자동 재열기는 핸들 있는 항목만 가능하다.
+  // 자동저장 복구본은 options.skipRecent 로 제외.
+  if (!options.skipRecent) {
+    void addRecentDoc({
+      fileName: wasm.fileName,
+      sourceFormat: wasm.getSourceFormat(),
+      handle: fileHandle,
+    }).catch((err) => console.warn('[recent] 최근 문서 기록 실패:', err));
+  }
+
   await autosaveManager.beginDocument(
     { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
     { discardPreviousDraft: true },
   );
   await updateLoadProgress(50, '문서 초기화 중...');
   const elapsed = performance.now() - startTime;
-  await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`);
+  await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`, {
+    suppressDialogs: options.suppressDialogs,
+  });
+}
+
+/** 파일 메뉴 "최근 문서" 서브패널을 최신 목록으로 다시 렌더한다(메뉴 open 시 호출). */
+async function renderRecentSubmenu(): Promise<void> {
+  const panel = document.getElementById('recent-docs-panel');
+  if (!panel) return;
+
+  let recents;
+  try {
+    recents = await listRecentDocs();
+  } catch (err) {
+    console.warn('[recent] 최근 문서 조회 실패:', err);
+    return;
+  }
+
+  const makeItem = (opts: {
+    label: string;
+    cmd?: string;
+    id?: string;
+    right?: string;
+    disabled?: boolean;
+    title?: string;
+  }): HTMLElement => {
+    const item = document.createElement('div');
+    item.className = opts.disabled ? 'md-item disabled' : 'md-item';
+    if (opts.cmd) item.dataset.cmd = opts.cmd;
+    if (opts.id) item.dataset.id = opts.id;
+    if (opts.title) item.title = opts.title;
+    const icon = document.createElement('span');
+    icon.className = 'md-icon';
+    const label = document.createElement('span');
+    label.className = 'md-label';
+    label.textContent = opts.label;
+    item.append(icon, label);
+    if (opts.right) {
+      const right = document.createElement('span');
+      right.className = 'md-shortcut';
+      right.textContent = opts.right;
+      item.append(right);
+    }
+    return item;
+  };
+
+  const frag = document.createDocumentFragment();
+  if (recents.length === 0) {
+    frag.append(makeItem({ label: '(최근 문서 없음)', disabled: true }));
+  } else {
+    for (const doc of recents) {
+      frag.append(
+        makeItem({
+          label: doc.fileName,
+          cmd: 'file:open-recent',
+          id: doc.id,
+          right: doc.sourceFormat.toUpperCase(),
+          title: doc.fileName,
+        }),
+      );
+    }
+    const sep = document.createElement('div');
+    sep.className = 'md-sep';
+    frag.append(sep);
+    frag.append(makeItem({ label: '최근 문서 목록 지우기', cmd: 'file:clear-recent' }));
+  }
+
+  panel.replaceChildren(frag);
+  // 목록이 비면 서브메뉴 자체를 비활성(hover 열림 차단). updateMenuStates가
+  // 렌더 이전(스테일) 내용으로 판정하므로 여기서 직접 갱신한다.
+  panel.closest('.md-sub')?.classList.toggle('disabled', recents.length === 0);
 }
 
 function shouldSkipInitialAutosaveRecovery(): boolean {
@@ -964,7 +1101,7 @@ async function offerAutosaveRecoveryIfIdle(): Promise<void> {
 
 async function restoreAutosaveDraft(draft: AutosaveDraft): Promise<void> {
   const fileName = recoveryFileName(draft.fileName, draft.sourceFormat);
-  await loadBytes(new Uint8Array(draft.data), fileName, null);
+  await loadBytes(new Uint8Array(draft.data), fileName, null, performance.now(), { skipRecent: true });
   await deleteAutosaveDraft(draft.id);
   documentState.markDirty('autosave-recovered');
   showToast({
@@ -979,7 +1116,7 @@ async function createNewDocument(): Promise<void> {
   try {
     msg.textContent = '새 문서 생성 중...';
     const docInfo = wasm.createNewDocument();
-    resetCanvasKitDocumentState();
+    prepareCanvasRendererDocument();
     await autosaveManager.beginDocument(
       { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
       { discardPreviousDraft: true },
@@ -1167,12 +1304,12 @@ installEmbedRuntime({
       await initPromise;
       return true;
     },
-    async loadFile(data, fileName, skipUnsavedGuard) {
+    async loadFile(data, fileName, skipUnsavedGuard, suppressDialogs) {
       await initPromise;
       if (!await canReplaceCurrentDocument(skipUnsavedGuard)) {
         throw new Error('문서 열기가 취소되었습니다.');
       }
-      await loadBytes(data, fileName, null);
+      await loadBytes(data, fileName, null, undefined, { suppressDialogs });
       return { pageCount: wasm.pageCount };
     },
     async pageCount() {
@@ -1181,13 +1318,15 @@ installEmbedRuntime({
     },
     async getRendererDiagnostics(pageIndex) {
       await initPromise;
+      const selection = canvasView?.getRendererSessionDiagnostics() ?? null;
       return {
         schemaVersion: 1 as const,
         request: rendererRuntimeRequest,
         initialized: rendererInitialized,
         initializationError: rendererInitializationError,
-        effectiveBackend: rendererInitialized ? canvasView?.getRenderBackend() ?? null : null,
-        backendFallbackReason: renderBackendFallbackReason,
+        effectiveBackend: selection?.effectiveBackend ?? null,
+        backendFallbackReason: selection?.fallbackReason ?? renderBackendFallbackReason,
+        selection,
         page: {
           index: pageIndex,
           canvaskit: canvasView?.getCanvasKitRenderDiagnostics(pageIndex) ?? null,

@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: rhwp 자체 시각 해석 권위 — IR 충실보다 시각 본질 우선 가능
 description: 한컴 출력은 권위 미입증 (feedback_pdf_not_authoritative). 같은 IR 값에 대한 한컴 시각이 환경/버전별로 다를 때, rhwp 가 자체 시각 해석을 정의 가능. IR 데이터 충실보다 시각 본질 보장 우선.
 type: feedback

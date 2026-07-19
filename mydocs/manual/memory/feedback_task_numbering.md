@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 타스크 번호는 GitHub Issues로 채번
 description: 수동 번호 할당 대신 gh issue create로 자동 채번. 중복 방지 및 협업 지원.
 type: feedback

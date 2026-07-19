@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/pua_oldhangul_mapping_sources.md
+last_verified: 2026-07-17
+---
+
 # Hanyang-PUA 옛한글 매핑 표 — 자료원 정리
 
 **작성일**: 2026-05-02

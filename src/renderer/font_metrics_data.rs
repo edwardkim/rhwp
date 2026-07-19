@@ -81,9 +81,14 @@ pub struct MetricMatch {
 /// 실무 허용. 정식 DB 엔트리 추가는 별도 이슈.
 fn resolve_metric_alias(name: &str) -> &str {
     match name {
-        "함초롬돋움" | "한컴돋움" => "HCR Dotum",
+        "함초롬돋움" => "HCR Dotum",
+        // [#2279] 한컴돋움/한컴바탕의 실체는 Haansoft Dotum/Batang
+        // (HDOTUM.TTF/HBATANG.TTF name table). HCR(함초롬) 계열과 메트릭이
+        // 다르므로 ('*' 0.583 vs 0.498em, 한글 음절 1.0 vs 0.97em) 별도 연결.
+        "한컴돋움" => "Haansoft Dotum",
         "돋움" => "Dotum",
-        "함초롬바탕" | "한컴바탕" => "HCR Batang",
+        "함초롬바탕" => "HCR Batang",
+        "한컴바탕" => "Haansoft Batang",
         "바탕" => "Batang", // 윈도우 TTF 바탕
         "맑은 고딕" => "Malgun Gothic",
         "나눔고딕" => "NanumGothic",

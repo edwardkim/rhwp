@@ -38,3 +38,23 @@ fn issue_2137_small_float_anchor_stays_on_page_1() {
         page1
     );
 }
+
+/// [#2137 후속] tac(글자처럼) TopAndBottom 도형 변형 — 156637323 통일교육원 보도자료.
+/// 문서 마지막 pi19 = 빈 문단 + 소형 tac TopAndBottom 도형(배너, 61.4px).
+/// 저장 lineseg vpos 895.2 + lh 61.4 = 956.6 > 본문 933.6 — 한글은 하단 여백으로
+/// 스필해 1쪽 유지. 수정 전 rhwp 는 tac 개체가 신뢰 경로(controls 게이트)와
+/// #409 atomic top-fit(#1027-E2 의 TopAndBottom Shape 제외) 양쪽에서 배제되어
+/// 2쪽으로 밀었다 (10k r12 OVER+SHAPE 대표 잔존).
+#[test]
+fn issue_2137_small_tac_topbottom_shape_spills_on_page_1() {
+    const SAMPLE2: &str = "samples/task2137/156637323_unification_lecture.hwpx";
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE2);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", SAMPLE2, e));
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
+        .unwrap_or_else(|e| panic!("parse {}: {}", SAMPLE2, e));
+    assert_eq!(
+        doc.page_count(),
+        1,
+        "저장 page-last 증거가 있는 소형 tac TopAndBottom 도형은 1쪽 하단 스필 (#2137)"
+    );
+}

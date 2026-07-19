@@ -6,8 +6,8 @@
 - 문서 PR 기준 커밋: 2026-07-09 fetch 기준 `upstream/devel` `3728abfb`
 - 상태: **리뷰 반영 v2 — 재리뷰 요청 완료**
 - v1 문서: `mydocs/plans/task_m100_2023_frontend_refactoring_plan.md`
-- 관련 진단: `mydocs/tech/task_m100_2023_frontend_diagnosis.md`
-- 관련 guardrail: `mydocs/tech/task_m100_2023_frontend_contract_guardrails.md`
+- 관련 진단: `mydocs/tech/investigations/issue-2023/task_m100_2023_frontend_diagnosis.md`
+- 관련 guardrail: `mydocs/tech/investigations/issue-2023/task_m100_2023_frontend_contract_guardrails.md`
 - GitHub v2 리뷰 요청 댓글: https://github.com/edwardkim/rhwp/issues/2023#issuecomment-4917066612
 - GitHub 문서 전용 PR: https://github.com/edwardkim/rhwp/pull/2080
 
@@ -45,7 +45,7 @@ maintainer와 collaborator 리뷰는 같은 방향으로 수렴했다.
 
 ## 2. v1 예비 수치의 지위
 
-`mydocs/tech/task_m100_2023_frontend_diagnosis.md`의 수치는 공식 baseline이 아니라
+`mydocs/tech/investigations/issue-2023/task_m100_2023_frontend_diagnosis.md`의 수치는 공식 baseline이 아니라
 **heuristic baseline**이다.
 
 이유:

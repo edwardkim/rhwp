@@ -59,7 +59,7 @@ closes #1151
 
 ### 자료
 - `samples/tac-verify/scenario-{a,b,c,d}-{before,after}.hwp` (v2 한컴 정합 검증 산출물 8 개)
-- `mydocs/tech/hancom_picture_tac_toggle.md` — Scenario A~D dump 분석 (v2 H1 확정 근거)
+- `mydocs/tech/investigations/issue-1151/hancom_picture_tac_toggle.md` — Scenario A~D dump 분석 (v2 H1 확정 근거)
 - `mydocs/plans/task_m100_1151_{,v2,v3,v4}{,_impl}.md` — 4 phase 계획서
 - `mydocs/working/task_m100_1151_{stage1, stage2, stage3, v2_stage1, v2_stage2, v3_stage3, v3_stage4, v4_stage6, v4_stage7, v5_stage9, v6_stage10}.md` — 11 단계별 보고서
 - `mydocs/report/task_m100_1151_{report, v6_report}.md` — v1 최종 + v6 통합 최종

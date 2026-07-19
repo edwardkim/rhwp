@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 작업 시간 제한 금지
 description: 클로드가 임의로 작업 종료를 제안하거나 시간을 한정하지 않는다. 작업 시간은 작업지시자가 결정.
 type: feedback

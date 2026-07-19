@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/cli_commands.md
+last_verified: 2026-07-16
+---
+
 # rhwp ir-diff 명령 매뉴얼
 
 ## 개요

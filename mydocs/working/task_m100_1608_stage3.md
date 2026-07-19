@@ -26,4 +26,4 @@ net +6 으로 통제 게이트 충족. 산출물: `output/poc/task1608_baseline.
 ## 잔여 사항
 
 - −1쪽 갭의 요인 B(footer 콘텐츠 누적 부족, 21건)는 본 이슈 범위 밖 — 별도 layout-fidelity
-  조사 대상으로 `mydocs/tech/render_minus1_page_gap.md` 에 보존.
+  조사 대상으로 `mydocs/tech/investigations/issue-1600/render_minus1_page_gap.md` 에 보존.

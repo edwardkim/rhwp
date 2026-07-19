@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/browser_extension_dev_guide.md
+last_verified: 2026-07-17
+---
+
 # 브라우저 확장 빌드 및 배포 매뉴얼 (Chrome/Edge/Firefox/Safari)
 
 > 2026-04-23 확장: 원래 Chrome/Edge 전용이었으나 v0.2.1 사이클에서 Firefox (PR #169) 와 기존 Safari 가 합류하여 통합 매뉴얼로 재구성. 각 브라우저별 빌드·배포 경로는 공유 부분(WASM/폰트/Vite)과 고유 부분으로 나뉜다.

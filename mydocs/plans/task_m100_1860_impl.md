@@ -32,7 +32,7 @@
   발생하는지 확정: (a) v_extra 중복차감, (b) caption/host_extra 과다,
   (c) max_padding 과다, (d) split_end_limit→줄 환산 반올림/여유(MIN_SPLIT/…),
   (e) layout 컷과 pagination 예산 불일치.
-- **산출물**: `mydocs/tech/task_m100_1860_split_budget.md` (계측표 + 특정 결론).
+- **산출물**: `mydocs/troubleshootings/deferred_rowbreak_table_split_budget.md` (계측표 + 특정 결론).
   이 결과로 Stage 2 수정 범위 확정. (본 단계는 계측 only, 로직 불변.)
 
 ### Stage 2 — 교정 설계

@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 단어 선택 — "산수" 대신 "계산"
 description: 기술 문서 / 코드 주석 / 보고서에서 "산수" 표현 금지. "계산" 사용
 type: feedback

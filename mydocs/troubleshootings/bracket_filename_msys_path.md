@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 대괄호 파일명 "읽기 실패" — Git Bash/MSYS 경로 변환 quirk (rhwp 버그 아님)
 
 ## 증상

@@ -1,3 +1,10 @@
+---
+kind: memory
+status: historical
+canonical: mydocs/manual/pr_review_workflow.md
+last_verified: 2026-07-17
+---
+
 # PR 본문 한국어 작성 필수
 
 내부 타스크 PR의 제목과 본문은 한국어로 작성한다.

@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 보고서는 타스크 브랜치에서 커밋
 description: 단계별 완료보고서, 최종 보고서, 오늘할일 갱신은 타스크 브랜치에서 소스와 함께 커밋해야 함
 type: feedback

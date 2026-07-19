@@ -6,13 +6,18 @@ import { CanvasPool } from './canvas-pool';
 import { PageRenderer, type PageRenderContext, type PageRenderResult } from './page-renderer';
 import { ViewportManager } from './viewport-manager';
 import { CoordinateSystem } from './coordinate-system';
-import type { CanvasKitLayerRenderer, CanvasKitRenderDiagnostics } from './canvaskit-renderer';
+import type { CanvasKitRenderDiagnostics } from './canvaskit-renderer';
 import { clampRenderScale, type RenderBackend } from './render-backend';
-import type { LayerRenderProfile } from '@/core/types';
+import {
+  RendererSession,
+  type RendererSessionDiagnostics,
+  type RendererSessionSelection,
+} from './renderer-session';
 import { applyGridOverlayBox, createGridClipCornerOverlay, createGridOverlay } from './grid-overlay';
 import { getGridViewSettings } from './grid-settings';
 
 const TEXT_EDIT_STATIC_LAYER_VERIFY_DELAY_MS = 800;
+const AUTO_RENDERER_RESELECTION_DELAY_MS = 300;
 
 type DeferredPrefetchTask =
   | { kind: 'idle'; id: number }
@@ -39,18 +44,22 @@ export class CanvasView {
   private textEditStaticLayerVerifyTimers = new Map<number, ReturnType<typeof setTimeout>>();
   private pendingPrefetchPages = new Set<number>();
   private deferredPrefetchTask: DeferredPrefetchTask | null = null;
+  private rendererSelectionEpoch = 0;
+  private rendererFallbackScheduled = false;
+  private activeRendererDecisionKey: string | null = null;
+  private autoRendererReselectionTimer: ReturnType<typeof setTimeout> | null = null;
+  private documentLoadPrepared = false;
+  private disposed = false;
 
   constructor(
     private container: HTMLElement,
     private wasm: WasmBridge,
     private eventBus: EventBus,
-    renderBackend: RenderBackend = 'canvas2d',
-    renderProfile: LayerRenderProfile = 'screen',
-    canvaskitRenderer: CanvasKitLayerRenderer | null = null,
+    private rendererSession: RendererSession,
   ) {
     this.virtualScroll = new VirtualScroll();
     this.canvasPool = new CanvasPool();
-    this.pageRenderer = new PageRenderer(wasm, renderBackend, renderProfile, canvaskitRenderer);
+    this.pageRenderer = new PageRenderer(wasm);
     this.viewportManager = new ViewportManager(eventBus);
     this.coordinateSystem = new CoordinateSystem(this.virtualScroll);
 
@@ -61,16 +70,33 @@ export class CanvasView {
       eventBus.on('viewport-scroll', () => this.updateVisiblePages()),
       eventBus.on('viewport-resize', () => this.onViewportResize()),
       eventBus.on('zoom-changed', (zoom) => this.onZoomChanged(zoom as number)),
-      eventBus.on('document-page-invalidated', (payload) => this.refreshInvalidatedPage(payload)),
-      eventBus.on('document-changed', () => this.refreshPages()),
-      eventBus.on('document-view-changed', () => this.refreshPages()),
+      eventBus.on('document-page-invalidated', (payload) => {
+        void this.refreshInvalidatedPageForMutation(payload);
+      }),
+      eventBus.on('document-changed', () => {
+        void this.refreshPagesForMutation();
+      }),
+      eventBus.on('document-view-changed', () => {
+        void this.refreshPagesForRevision();
+      }),
       eventBus.on('grid-view-changed', () => this.refreshGridOverlays()),
     );
   }
 
   /** 문서 로드 후 호출 — 페이지 정보 수집 및 가상 스크롤 초기화 */
-  loadDocument(): void {
-    this.reset();
+  async loadDocument(): Promise<void> {
+    if (this.disposed) return;
+    if (!this.documentLoadPrepared) this.prepareDocumentLoad();
+    const epoch = this.rendererSelectionEpoch;
+    this.documentLoadPrepared = false;
+    if (this.disposed) return;
+    const selection = await this.rendererSession.resolve(this.wasm);
+    if (
+      this.disposed
+      || epoch !== this.rendererSelectionEpoch
+      || !this.rendererSession.isCurrent(selection)
+    ) return;
+    this.applyRendererSelection(selection);
 
     const pageCount = this.wasm.pageCount;
     this.pages = [];
@@ -101,12 +127,122 @@ export class CanvasView {
 
     this.container.scrollTop = 0;
     this.updateVisiblePages();
+    // 초기 replay가 예약한 document fallback을 load 완료 전에 확정한다.
+    await Promise.resolve();
 
     console.log(`[CanvasView] ${this.pages.length}/${pageCount}페이지 로드, 총 높이: ${this.virtualScroll.getTotalHeight()}px`);
   }
 
+  /** WASM 문서 교체 직후 호출하여 이전 문서의 renderer와 canvas를 동기적으로 분리한다. */
+  prepareDocumentLoad(): void {
+    if (this.disposed) return;
+    this.rendererSelectionEpoch += 1;
+    this.documentLoadPrepared = true;
+    this.cancelAutoRendererReselection();
+    this.rendererFallbackScheduled = false;
+    this.rendererSession.beginDocument(this.wasm.documentDigest);
+    this.activeRendererDecisionKey = null;
+    this.reset();
+  }
+
   resetRendererDiagnostics(): void {
     this.pageRenderer.releaseAllPageDiagnostics();
+  }
+
+  private async refreshPagesForRevision(): Promise<void> {
+    const selected = await this.selectNextDocumentRevision(false);
+    if (!selected) return;
+    this.refreshPages();
+  }
+
+  private async refreshPagesForMutation(): Promise<void> {
+    const selected = await this.selectMutationRevision();
+    if (!selected || !this.rendererSession.isCurrent(selected.selection)) return;
+    this.refreshPages();
+  }
+
+  private async refreshInvalidatedPageForMutation(payload: unknown): Promise<void> {
+    const selected = await this.selectMutationRevision();
+    if (!selected || !this.rendererSession.isCurrent(selected.selection)) return;
+    if (selected.backendChanged) {
+      this.refreshPages();
+      return;
+    }
+    this.refreshInvalidatedPage(payload);
+  }
+
+  private async selectMutationRevision(): Promise<{
+    selection: RendererSessionSelection;
+    backendChanged: boolean;
+  } | null> {
+    if (this.disposed) return null;
+    const pinned = this.rendererSession.pinAutoMutationRevision();
+    if (!pinned) return this.selectNextDocumentRevision();
+
+    this.rendererSelectionEpoch += 1;
+    const selected = {
+      selection: pinned,
+      backendChanged: this.applyRendererSelection(pinned),
+    };
+    this.scheduleAutoRendererReselection();
+    return selected;
+  }
+
+  private scheduleAutoRendererReselection(): void {
+    this.cancelAutoRendererReselection();
+    this.autoRendererReselectionTimer = setTimeout(() => {
+      this.autoRendererReselectionTimer = null;
+      void this.selectNextDocumentRevision().then((selected) => {
+        if (!selected || this.disposed) return;
+        if (selected.backendChanged) this.refreshPages();
+      });
+    }, AUTO_RENDERER_RESELECTION_DELAY_MS);
+  }
+
+  private cancelAutoRendererReselection(): void {
+    if (this.autoRendererReselectionTimer === null) return;
+    clearTimeout(this.autoRendererReselectionTimer);
+    this.autoRendererReselectionTimer = null;
+  }
+
+  private async selectNextDocumentRevision(resetResources = true): Promise<{
+    selection: RendererSessionSelection;
+    backendChanged: boolean;
+  } | null> {
+    if (this.disposed) return null;
+    const epoch = ++this.rendererSelectionEpoch;
+    this.rendererSession.invalidateDocument({ resetResources });
+    await Promise.resolve();
+    if (this.disposed || epoch !== this.rendererSelectionEpoch) return null;
+
+    const selection = await this.rendererSession.resolve(this.wasm);
+    if (
+      this.disposed
+      || epoch !== this.rendererSelectionEpoch
+      || !this.rendererSession.isCurrent(selection)
+    ) return null;
+    return {
+      selection,
+      backendChanged: this.applyRendererSelection(selection),
+    };
+  }
+
+  private applyRendererSelection(selection: RendererSessionSelection): boolean {
+    const decisionChanged = this.activeRendererDecisionKey !== selection.diagnostics.decisionKey;
+    const changed = this.pageRenderer.configure(
+      selection.backend,
+      selection.diagnostics.renderProfile,
+      selection.canvaskitRenderer,
+      selection.backend === 'canvas2d'
+        && (
+          selection.diagnostics.fallbackReason === 'canvaskitResourcePreparationFailed'
+          || selection.diagnostics.fallbackReason === 'canvaskitRuntimeFailed'
+        ),
+    );
+    if (decisionChanged && !changed) this.pageRenderer.invalidateDocumentRevision();
+    this.activeRendererDecisionKey = selection.diagnostics.decisionKey;
+    this.eventBus.emit('renderer-selection-changed', selection.diagnostics);
+    return changed;
   }
 
   /** DEV baseline이 pool 소유권을 바꾸지 않고 현재 페이지를 즉시 다시 그린다. */
@@ -264,16 +400,47 @@ export class CanvasView {
     // WASM이 Canvas 크기를 자동 설정한다 (물리 픽셀 = 페이지크기 × zoom × DPR)
     let renderResult: PageRenderResult = { needsTextEditStaticLayerVerification: false };
     let renderedCanvas = canvas;
+    const rendererDecisionKey = this.activeRendererDecisionKey;
     try {
       renderResult = this.pageRenderer.renderPage(pageIdx, canvas, renderScale, zoom, dpr, renderContext);
       if (renderResult.renderedCanvas && renderResult.renderedCanvas !== canvas) {
         renderedCanvas = renderResult.renderedCanvas;
         this.canvasPool.replace(pageIdx, canvas, renderedCanvas);
       }
+      const canvaskitDiagnostics = this.pageRenderer.getBackend() === 'canvaskit'
+        ? this.pageRenderer.getCanvasKitRenderDiagnostics(pageIdx)
+        : null;
+      if (
+        canvaskitDiagnostics
+        && !canvaskitDiagnostics.passesRuntimeReadinessGate
+        && rendererDecisionKey
+        && this.rendererSession.isAutoRequest()
+      ) {
+        const details = [
+          `blockers=${canvaskitDiagnostics.readinessBlockers.join(',') || 'unknown'}`,
+          canvaskitDiagnostics.lastRenderError
+            ? `error=${canvaskitDiagnostics.lastRenderError}`
+            : null,
+          canvaskitDiagnostics.lastUnexpectedUnsupportedOps.length > 0
+            ? `unexpectedOps=${canvaskitDiagnostics.lastUnexpectedUnsupportedOps.join(',')}`
+            : null,
+        ].filter((detail): detail is string => detail !== null).join('; ');
+        this.pageRenderer.removePageLayers(this.scrollContent, pageIdx);
+        this.removeGridOverlay(pageIdx);
+        this.scheduleCanvasKitFallback(
+          new Error(`CanvasKit runtime readiness gate failed (${details})`),
+          rendererDecisionKey,
+          'runtime',
+        );
+        return false;
+      }
     } catch (e) {
       console.error(`[CanvasView] 페이지 ${pageIdx} 렌더링 실패:`, e);
       this.pageRenderer.removePageLayers(this.scrollContent, pageIdx);
       this.removeGridOverlay(pageIdx);
+      if (this.pageRenderer.getBackend() === 'canvaskit' && rendererDecisionKey) {
+        this.scheduleCanvasKitFallback(e, rendererDecisionKey, 'resource');
+      }
       return false;
     }
 
@@ -287,6 +454,29 @@ export class CanvasView {
       this.cancelTextEditStaticLayerVerification(pageIdx);
     }
     return true;
+  }
+
+  private scheduleCanvasKitFallback(
+    error: unknown,
+    expectedDecisionKey: string,
+    kind: 'resource' | 'runtime',
+  ): void {
+    if (this.rendererFallbackScheduled) return;
+    const selection = kind === 'resource'
+      ? this.rendererSession.fallbackFromResourceFailure(error, expectedDecisionKey)
+      : this.rendererSession.fallbackFromRuntimeFailure(error, expectedDecisionKey);
+    if (!selection) return;
+    this.rendererFallbackScheduled = true;
+    queueMicrotask(() => {
+      this.rendererFallbackScheduled = false;
+      if (this.disposed || !this.rendererSession.isCurrent(selection)) return;
+      this.applyRendererSelection(selection);
+      this.cancelPendingTextEditRefresh();
+      this.cancelTextEditStaticLayerVerification();
+      this.releaseAllRenderedPages();
+      this.pageRenderer.cancelAll();
+      this.updateVisiblePages();
+    });
   }
 
   /** 뷰포트 리사이즈 처리 */
@@ -553,8 +743,14 @@ export class CanvasView {
 
   /** 전체 정리 */
   dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.rendererSelectionEpoch += 1;
+    this.documentLoadPrepared = false;
+    this.cancelAutoRendererReselection();
     this.reset();
     this.pageRenderer.dispose();
+    this.rendererSession.dispose();
     this.viewportManager.detach();
     for (const unsub of this.unsubscribers) {
       unsub();
@@ -572,6 +768,10 @@ export class CanvasView {
 
   getRenderBackend(): RenderBackend {
     return this.pageRenderer.getBackend();
+  }
+
+  getRendererSessionDiagnostics(): RendererSessionDiagnostics | null {
+    return this.rendererSession.diagnostics();
   }
 
   getCanvasKitRenderDiagnostics(pageIndex: number): CanvasKitRenderDiagnostics | null {

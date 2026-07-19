@@ -96,10 +96,20 @@ impl DocumentCore {
             )?
         };
 
+        // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
+        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
         self.reflow_paragraph(section_idx, para_idx);
+        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
         crate::renderer::composer::recalculate_section_vpos(
             &mut self.document.sections[section_idx].paragraphs,
             para_idx,
+            None,
+            stored_end_for_reset,
+            &self.styles,
+            self.dpi,
+            doc_hwp3_layout,
         );
         self.recompose_paragraph(section_idx, para_idx);
         self.paginate_if_needed();

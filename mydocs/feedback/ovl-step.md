@@ -1,7 +1,7 @@
 2026년 7월 4일 
 
 일반 PR review, collaborator-mediated review, 여러 PR 체리픽 누적 검토 모두에서 PR 내용상 렌더링 결과
-확인이 필요하면 [PDF/SVG visual sweep 가이드](visual_sweep_guide.md)를 사용한다. 시각 검증은 모든
+확인이 필요하면 [PDF/SVG visual sweep 가이드](../manual/verification/visual_sweep_guide.md)를 사용한다. 시각 검증은 모든
 샘플 PR 에 기계적으로 수행하는 절차가 아니라, PR 의 수정 목적과 검증해야 할 사용자-visible 동작에 맞춰
 선택한다.
 

@@ -48,7 +48,7 @@ PR #1764 최신 head 기준 GitHub Actions는 Build & Test, Render Diff, CodeQL 
 
 ## 시각 검증
 
-`mydocs/manual/visual_sweep_guide.md` 기준으로 PR 재현 샘플을 한컴 2024 PDF와 비교했다.
+`mydocs/manual/verification/visual_sweep_guide.md` 기준으로 PR 재현 샘플을 한컴 2024 PDF와 비교했다.
 
 ```bash
 python3 scripts/task1274_visual_sweep.py \

@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: HWPX→HWP 단순 어댑터의 한계
 description: HWPX 출처 IR 을 HWP 직렬화기에 그대로 넣을 수 없음. 어댑터 (필드 보강) 로 부족한 의미적 영역이 광범위
 type: project

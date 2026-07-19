@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 이슈 초안: BMP 임베딩 HWP 문서가 SVG에서 렌더링되지 않음
 
 > 작성일: 2026-04-22

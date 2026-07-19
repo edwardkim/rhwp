@@ -1107,3 +1107,53 @@ fn test_expand_hancom_relationship_line_pua_to_box_drawing() {
         "한컴 관계도 PUA 선문자는 공개 폰트 환경에서 두부가 아닌 box drawing 문자로 표시되어야 함"
     );
 }
+
+/// [#2244] KBU=1(글자 단위) 줄바꿈에서 행두 금칙 문자 retraction —
+/// 새 줄이 마침표로 시작하지 않도록 직전 글자를 함께 이월한다.
+/// 한컴 2024 저장 오라클: "…하여 적용한 | 다.111…" (LINE_SEG [...,128] —
+/// '다'(128) 앞에서 분리, '.'(129) 고립 금지).
+#[test]
+fn test_kbu1_line_start_forbidden_retraction() {
+    let styles = make_styles_with_font_size(16.0);
+    let line = ComposedLine {
+        runs: vec![ComposedTextRun {
+            text: "적용한다.111111".to_string(),
+            char_style_id: 0,
+            lang_index: 0,
+            char_overlap: None,
+            footnote_marker: None,
+            display_text: None,
+        }],
+        line_height: 400,
+        baseline_distance: 320,
+        segment_width: 0,
+        column_start: 0,
+        line_spacing: 0,
+        has_line_break: false,
+        char_start: 0,
+    };
+    // 한글 4자(64px)는 들어가고 '.'에서 초과하는 폭 → 수정 전엔 둘째 줄이
+    // "."로 시작 ("적용한다 | .111111"), 수정 후엔 '다' 동반 이월.
+    let frags = split_composed_line_by_width(&line, 68.0, 68.0, &styles, true, 0.0);
+    assert!(
+        frags.len() >= 2,
+        "두 줄 이상으로 분할되어야 함: {:?}",
+        frags.len()
+    );
+    let line2_text: String = frags[1].runs.iter().map(|r| r.text.as_str()).collect();
+    assert!(
+        !line2_text.starts_with('.'),
+        "새 줄이 행두 금칙 '.'로 시작하면 안 됨 (한컴: 직전 글자 동반 이월): {:?}",
+        line2_text
+    );
+    assert!(
+        line2_text.starts_with("다."),
+        "한컴 오라클 정합: 둘째 줄은 '다.'로 시작해야 함: {:?}",
+        line2_text
+    );
+    // char_start 정합: 둘째 줄 시작 = '다' 위치(3)
+    assert_eq!(
+        frags[1].char_start, 3,
+        "retraction 후 char_start 는 '다' 위치"
+    );
+}

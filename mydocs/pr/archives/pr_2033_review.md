@@ -64,7 +64,7 @@ first-time contributor PR 이므로 공개 코멘트는 환영 인사와 함께,
 
 ## 시각 검증
 
-`mydocs/manual/visual_sweep_guide.md` 에 따라 PR 본문이 한컴 동작 근거로 든 ta-pic on/off 쌍을 확인했다.
+`mydocs/manual/verification/visual_sweep_guide.md` 에 따라 PR 본문이 한컴 동작 근거로 든 ta-pic on/off 쌍을 확인했다.
 
 ```bash
 python3 scripts/task1274_visual_sweep.py \

@@ -5,7 +5,7 @@
 #1772 수정 후 잔여 9.25px 이동 군집(#1785)의 원인은 **height_measurer 와 레이아웃
 (resolve_cell_padding)의 셀 안 여백 선택 규칙 불일치**였다. 규칙 본체를
 `Cell::use_cell_padding_axis`/`effective_padding` 으로 추출해 두 소비자가 공유하도록
-통일했다. 조사 상세: `mydocs/tech/task_m100_1785_root_cause.md` (+ 본 보고서의 접근 변경).
+통일했다. 조사 상세: `mydocs/troubleshootings/microgrid_cell_margin_roundtrip.md` (+ 본 보고서의 접근 변경).
 
 ## 결함 메커니즘 (최종)
 

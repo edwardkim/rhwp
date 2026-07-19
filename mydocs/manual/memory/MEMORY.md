@@ -1,3 +1,17 @@
+---
+kind: memory
+status: historical
+canonical: mydocs/manual/codex/docs_and_git_workflow.md
+last_verified: 2026-07-17
+---
+
+# Claude memory dump 색인
+
+이 디렉터리는 과거 사용자 피드백과 프로젝트 메모리의 출처를 보존한다. 항목에 적힌 개인 경로, 브랜치,
+도구 상태와 작업 순서는 현재 절차가 아니며, 현행 정책과 충돌하면
+[`docs_and_git_workflow.md`](../codex/docs_and_git_workflow.md),
+[`pr_review_workflow.md`](../pr_review_workflow.md) 및 작업별 canonical 문서를 따른다.
+
 ## user
 - [작업지시자 정체성 + 역할](user_role_identity.md) — edwardkim, rhwp 메인테이너, Windows + WSL2 + macOS(ios/devel)
 - [기술 스택 + 협업 분배](user_tech_stack.md) — 본인 보유(Rust/WASM) vs Claude 위임(문서/cherry-pick) vs 직접 결정(시각 판정)
@@ -50,7 +64,7 @@
 - [렌더링 의미는 추정 금지 — 권위 자료로 확정](feedback_no_inference_authoritative_spec.md) — 한컴 스펙+대비 샘플+편집기 UI 교차검증 (#1156)
 - [v0.7.6 회귀의 origin](feedback_v076_regression_origin.md) — 컨트리뷰터 PDF 정답지 사용 → 회귀. 시각 검증 게이트
 - [시각 회귀 비중 증가](feedback_visual_regression_grows.md) — 페이지 수 비교만으로 검출 불가, 시각 판정이 핵심
-- [시각 검증 선택 적용 (OVL-step)](feedback_visual_verification_selective.md) — 기계적 전수 금지, PR 목적 기준 선택, manual/visual_verification_governance.md 준수
+- [시각 검증 선택 적용 (OVL-step)](feedback_visual_verification_selective.md) — 기계적 전수 금지, PR 목적 기준 선택, manual/verification/visual_verification_governance.md 준수
 
 ## feedback — 코드/렌더링 관련
 - [렌더링 보정 하드코딩 금지](feedback_no_hardcoded_render_tuning.md) — 샘플명·페이지·임의계수 분기 금지, 근거는 문서 속성/스펙 필드만 (백업에서 복원)
@@ -67,6 +81,7 @@
 - [CI 진행중 수치 보고 금지](feedback_no_metrics_from_inprogress_ci.md) — in_progress run의 step 시간으로 성능 보고 금지 (#1192)
 
 ## project
+- [거버넌스 부트로더화](project_governance_bootloader.md) — 2026-07-17 이후 CLAUDE.md=38줄 부트로더, 절차는 canonical 문서 단일 기록
 - [0.8.0 분기점 — HWPX 저장 마일스톤](project_v080_hwpx_save_milestone.md) — 다음 릴리즈 0.7→0.8 MINOR, studio pkg 재빌드 필수
 - [#1582 리팩토링 umbrella](project_1582_refactor_umbrella.md) — 0.8/v1.0 구조 정리 기준 이슈, 1단계 SourceProvenance+LayoutCompatibilityProfile, freeze 선행
 - [리팩토링 거버넌스 2원칙](project_refactor_governance.md) — SOLID + 복잡도, 계획·평가·PR 검토의 기준 축

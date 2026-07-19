@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: feedback_pr_maintainer_comment_required
 description: PR 머지/close 후 PR 자체에 메인테이너 코멘트(처리 결과+검증 요약+감사)를 반드시 등록
 metadata: 

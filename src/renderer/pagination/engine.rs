@@ -1230,7 +1230,11 @@ impl Paginator {
         // 다단 레이아웃에서 문단 내 단 경계 감지
         // [Task #459] on_first_multicolumn_page 가드 제거: 다단 구역이 여러 페이지에 걸칠 때
         // 후속 페이지에서도 LINE_SEG vpos-reset 으로 인코딩된 단 경계를 인식해야 함.
-        let col_breaks = if st.col_count > 1 && st.current_column == 0 {
+        // [Task #2320] current_column == 0 가드 제거: 마지막 단에서 시작하는 문단의
+        // 문단 내 vpos 되감김은 "다음 페이지 단 0 으로 계속"의 쪽 경계 인코딩이다.
+        // 되감김 없는 문단은 breaks=[0] 으로 기존 경로 그대로 흐른다. 분할의 단/쪽
+        // 진행은 advance_column_or_new_page 가 처리한다.
+        let col_breaks = if st.col_count > 1 {
             Self::detect_column_breaks_in_paragraph(para)
         } else {
             vec![0]

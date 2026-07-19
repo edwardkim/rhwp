@@ -127,7 +127,7 @@ Double-click .hwp file
 **Goal**: Document the architecture based on implementation results
 
 **Work**:
-- `mydocs/tech/vscode_extension_design.md` — Technical design document
+- `mydocs/tech/archive/vscode_extension_design.md` — Technical design document
   - Architecture diagram (Extension Host ↔ Webview ↔ WASM)
   - Message protocol specification
   - WASM loading strategy and CSP configuration

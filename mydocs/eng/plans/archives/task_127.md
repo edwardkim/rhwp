@@ -24,7 +24,7 @@ Task 125 embedded metrics for 582 fonts in WASM, so most characters are handled 
 
 ### Hancom webhwp Reference
 
-Hancom webhwp uses an LRU cache (128 entries) (`mydocs/tech/webhwp_text_measurement.md`):
+Hancom webhwp uses an LRU cache (128 entries) (`mydocs/tech/webhwp/text_measurement.md`):
 - Cache key: `char + fontName + (4096 * sizeCode + variant)`
 - On capacity overflow: remove oldest 25%
 - Estimated hit rate: 80~90%

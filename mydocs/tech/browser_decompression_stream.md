@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/browser_decompression_stream.md
+last_verified: 2026-07-17
+---
+
 # 브라우저 네이티브 DecompressionStream API
 
 ## 개요
