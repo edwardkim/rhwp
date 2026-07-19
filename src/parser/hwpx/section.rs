@@ -2094,14 +2094,24 @@ fn parse_table_cell(
                         }
                     }
                     b"subList" => {
-                        // subList: vertAlign 속성 파싱
+                        // subList: vertAlign + textDirection 속성 파싱
                         for attr in ce.attributes().flatten() {
-                            if attr.key.as_ref() == b"vertAlign" {
-                                cell.vertical_align = match attr_str(&attr).as_str() {
-                                    "CENTER" => VerticalAlign::Center,
-                                    "BOTTOM" => VerticalAlign::Bottom,
-                                    _ => VerticalAlign::Top,
-                                };
+                            match attr.key.as_ref() {
+                                b"vertAlign" => {
+                                    cell.vertical_align = match attr_str(&attr).as_str() {
+                                        "CENTER" => VerticalAlign::Center,
+                                        "BOTTOM" => VerticalAlign::Bottom,
+                                        _ => VerticalAlign::Top,
+                                    };
+                                }
+                                // 세로쓰기 셀(textDirection). serializer 는 셀 <hp:subList>
+                                // 에 방출하지만 종전엔 vertAlign 만 읽어 세로쓰기가 왕복 시
+                                // 유실됐다(cellPr 경로는 serializer 가 방출하지 않음).
+                                b"textDirection" => {
+                                    cell.text_direction =
+                                        if attr_str(&attr) == "VERTICAL" { 1 } else { 0 };
+                                }
+                                _ => {}
                             }
                         }
                     }
