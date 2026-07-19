@@ -45,7 +45,7 @@ jobs:
         run: wasm-pack build --target web --release
 
       - name: Upload WASM artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wasm-pkg
           path: pkg/
@@ -60,7 +60,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Download WASM artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: wasm-pkg
           path: pkg/
@@ -121,7 +121,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Download WASM artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: wasm-pkg
           path: pkg/
