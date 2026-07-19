@@ -1612,10 +1612,12 @@ fn parse_tab_item(ce: &quick_xml::events::BytesStart) -> TabItem {
                     "DASH_DOT_DOT" => 5, // 이점쇄선
                     "LONG_DASH" => 6,    // 긴파선
                     "CIRCLE" => 7,       // 원형점선
-                    "DOUBLE_LINE" => 8,  // 이중실선
-                    "THIN_THICK" => 9,   // 얇고 굵은 이중선
-                    "THICK_THIN" => 10,  // 굵고 얇은 이중선
-                    "TRIM" => 11,        // 얇고 굵고 얇은 삼중선
+                    // 방출측 tab_leader_str 은 fill_type 8 을 "DOUBLE_SLIM" 으로 낸다
+                    // (border 명명과 동일). 안 받으면 이중실선 탭 리더가 왕복 시 NONE(0)으로 유실.
+                    "DOUBLE_LINE" | "DOUBLE_SLIM" => 8, // 이중실선
+                    "THIN_THICK" => 9,                  // 얇고 굵은 이중선
+                    "THICK_THIN" => 10,                 // 굵고 얇은 이중선
+                    "TRIM" => 11,                       // 얇고 굵고 얇은 삼중선
                     _ => 0,
                 };
             }
@@ -2287,6 +2289,21 @@ mod tests {
                     assert_eq!(parse_color(&attr), 0xFFFFFFFF);
                 }
             }
+        }
+    }
+
+    #[test]
+    fn parse_tab_item_leader_double_slim_maps_to_8() {
+        // 방출측 tab_leader_str 이 fill_type 8 을 "DOUBLE_SLIM" 으로 내므로 파서도 8 로
+        // 받아야 이중실선 탭 리더가 왕복 보존된다(종전엔 _ => 0/NONE 유실).
+        let xml = r#"<hh:tabItem pos="1000" type="LEFT" leader="DOUBLE_SLIM"/>"#;
+        let mut reader = Reader::from_str(xml);
+        let mut buf = Vec::new();
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Empty(ref e)) => {
+                assert_eq!(parse_tab_item(e).fill_type, 8, "DOUBLE_SLIM → fill_type 8");
+            }
+            other => panic!("tabItem not parsed: {other:?}"),
         }
     }
 
