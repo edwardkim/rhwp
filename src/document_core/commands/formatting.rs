@@ -742,8 +742,12 @@ impl DocumentCore {
         let (raw_left_hu, raw_right_hu, raw_indent_hu) = raw_ps
             .map(|r| (r.margin_left, r.margin_right, r.indent))
             .unwrap_or((0, 0, 0));
-        let is_hwp3_native = self.document.header.version.major == 3
-            && !self.document.layout_profile().hwp3_layout();
+        // parser_architecture.md §47: 공통 편집 레이어에서 header.version 직접
+        // 비교를 새로 만들지 않고 layout_profile() 질의로 판정한다.
+        // `version.major==3 && !hwp3_layout()` 은 hwp3_native_layout() 과 동치다:
+        // native HWP3 는 format=Hwp3·hwp3_lineage=false·major=3, 변환본은
+        // format=Hwp5·hwp3_lineage=true·major=5 이므로 4개 출처 모두 결과가 같다.
+        let is_hwp3_native = self.document.layout_profile().hwp3_native_layout();
         let effective_left_hu = if is_hwp3_native {
             raw_left_hu + raw_indent_hu.min(0)
         } else {

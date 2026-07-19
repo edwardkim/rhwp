@@ -587,6 +587,37 @@ mod tests {
     }
 
     #[test]
+    fn hwp3_native_layout_matches_legacy_version_and_lineage_expression() {
+        use crate::model::provenance::SourceFormat;
+
+        // formatting.rs 의 종전 판정식 `version.major==3 && !hwp3_layout()` 이
+        // hwp3_native_layout() 과 4개 출처에서 모두 일치함을 고정한다.
+        let build = |format: SourceFormat, hwp3_lineage: bool, major: u8| {
+            let mut doc = Document::default();
+            doc.provenance.format = format;
+            doc.provenance.hwp3_lineage = hwp3_lineage;
+            doc.header.version.major = major;
+            doc
+        };
+
+        let cases = [
+            // (format, hwp3_lineage, major, 기대 native 여부)
+            (SourceFormat::Hwp3, false, 3, true), // native HWP3
+            (SourceFormat::Hwp5, true, 5, false), // HWP3→HWP5 변환본
+            (SourceFormat::Hwp5, false, 5, false), // 일반 HWP5
+            (SourceFormat::Hwpx, false, 5, false), // HWPX
+        ];
+
+        for (format, lineage, major, expected) in cases {
+            let doc = build(format, lineage, major);
+            let legacy = doc.header.version.major == 3 && !doc.layout_profile().hwp3_layout();
+            let refactored = doc.layout_profile().hwp3_native_layout();
+            assert_eq!(legacy, refactored, "{format:?}/{lineage}/{major}");
+            assert_eq!(refactored, expected, "{format:?}/{lineage}/{major}");
+        }
+    }
+
+    #[test]
     fn test_hwp_version() {
         let ver = HwpVersion {
             major: 5,
