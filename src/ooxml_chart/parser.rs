@@ -10,8 +10,8 @@
 //! - 파싱 완료 시 시리즈의 axis_ids를 primary/secondary 집합과 비교해 axis_group 지정
 
 use super::{
-    BarGrouping, LegendPos, OoxmlChart, OoxmlChartType, OoxmlSeries, ScatterStyle, SeriesMarker,
-    View3D,
+    BarGrouping, LegendPos, OfPieInfo, OfPieType, OoxmlChart, OoxmlChartType, OoxmlSeries,
+    ScatterStyle, SeriesMarker, View3D,
 };
 use quick_xml::events::Event;
 use quick_xml::Reader;
@@ -216,9 +216,11 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             st.cur_plot_series_start = chart.series.len();
         }
         b"ofPieChart" => {
-            // ofPie — 단일 원형으로 2D 근사(C1a #1453).
-            // 보조플롯(원형대원형의 2차 원, 원형대막대의 막대)은 후속(C2).
+            // ofPie — 주 원 + 보조플롯(원형대원형의 2차 원, 원형대가로막대형의
+            // 누적 막대) 렌더(C2b #2278 Stage 3). chart_type은 Pie 유지(#1453
+            // 라우팅 앵커), of_pie 필드 유무로 render_of_pie 분기.
             chart.chart_type = OoxmlChartType::Pie;
+            chart.of_pie = Some(OfPieInfo::default());
             st.cur_plot_type = Some(OoxmlChartType::Pie);
             st.cur_plot_ax_ids.clear();
             st.cur_plot_series_start = chart.series.len();
@@ -335,6 +337,32 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
                     "smooth" | "smoothMarker" => ScatterStyle::SmoothMarker,
                     _ => ScatterStyle::Marker, // "marker"/"none"/미상
                 };
+            }
+        }
+        b"ofPieType" => {
+            if let (Some(of), Some(val)) = (chart.of_pie.as_mut(), attr_val(e, "val")) {
+                if val == "bar" {
+                    of.of_pie_type = OfPieType::Bar;
+                }
+            }
+        }
+        b"splitPos" => {
+            if let (Some(of), Some(v)) = (chart.of_pie.as_mut(), attr_f64(e)) {
+                of.split_pos = Some(v);
+            }
+        }
+        b"secondPieSize" => {
+            if let (Some(of), Some(v)) = (chart.of_pie.as_mut(), attr_f64(e)) {
+                of.second_pie_size = v;
+            }
+        }
+        b"serLines" => {
+            // barChart(누적 계열선)에도 오는 요소 — Pie plot + of_pie 이중 게이트
+            // (hiLowLines의 Stock 게이트 선례)
+            if st.cur_plot_type == Some(OoxmlChartType::Pie) {
+                if let Some(of) = chart.of_pie.as_mut() {
+                    of.has_ser_lines = true;
+                }
             }
         }
         b"barDir" => {
@@ -976,11 +1004,48 @@ mod tests {
 
     #[test]
     fn test_parse_ofpie() {
-        // ofPieChart → Pie (원형대원형/원형대막대 → 단일 원형 근사)
+        // ofPieChart → Pie (chart_type 앵커 유지 — #1453 라우팅)
         let xml = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:ofPieChart><c:ofPieType val="pie"/><c:ser><c:val><c:numCache><c:pt idx="0"><c:v>40</c:v></c:pt><c:pt idx="1"><c:v>25</c:v></c:pt><c:pt idx="2"><c:v>35</c:v></c:pt></c:numCache></c:val></c:ser></c:ofPieChart></c:plotArea></c:chart></c:chartSpace>"#;
         let c = parse_chart_xml(xml).expect("parse OK");
         assert_eq!(c.chart_type, OoxmlChartType::Pie);
         assert_eq!(c.series[0].values, vec![40.0, 25.0, 35.0]);
+    }
+
+    // --- C2b Stage 3 (#2278): ofPie 보조플롯 파라미터 ---
+
+    #[test]
+    fn test_parse_ofpie_info() {
+        // secondPieSize/serLines 포함 → of_pie Some + chart_type Pie 재확인
+        let xml = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:ofPieChart><c:ofPieType val="pie"/><c:ser><c:val><c:numCache><c:pt idx="0"><c:v>40</c:v></c:pt><c:pt idx="1"><c:v>25</c:v></c:pt><c:pt idx="2"><c:v>35</c:v></c:pt></c:numCache></c:val></c:ser><c:serLines/><c:secondPieSize val="75"/></c:ofPieChart></c:plotArea></c:chart></c:chartSpace>"#;
+        let c = parse_chart_xml(xml).expect("parse OK");
+        assert_eq!(c.chart_type, OoxmlChartType::Pie);
+        let of = c.of_pie.expect("of_pie Some");
+        assert_eq!(of.of_pie_type, OfPieType::Pie);
+        assert_eq!(of.split_pos, None);
+        assert_eq!(of.second_pie_size, 75.0);
+        assert!(of.has_ser_lines);
+    }
+
+    #[test]
+    fn test_parse_ofpie_bar_type() {
+        let xml = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:ofPieChart><c:ofPieType val="bar"/><c:ser><c:val><c:numCache><c:pt idx="0"><c:v>4</c:v></c:pt></c:numCache></c:val></c:ser></c:ofPieChart></c:plotArea></c:chart></c:chartSpace>"#;
+        let c = parse_chart_xml(xml).expect("parse OK");
+        assert_eq!(c.of_pie.expect("of_pie").of_pie_type, OfPieType::Bar);
+    }
+
+    #[test]
+    fn test_parse_ofpie_split_pos() {
+        let xml = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:ofPieChart><c:ofPieType val="pie"/><c:splitPos val="3"/><c:ser><c:val><c:numCache><c:pt idx="0"><c:v>4</c:v></c:pt></c:numCache></c:val></c:ser></c:ofPieChart></c:plotArea></c:chart></c:chartSpace>"#;
+        let c = parse_chart_xml(xml).expect("parse OK");
+        assert_eq!(c.of_pie.expect("of_pie").split_pos, Some(3.0));
+    }
+
+    #[test]
+    fn test_parse_serlines_not_leaked_to_barchart() {
+        // barChart의 c:serLines(누적 계열선)는 of_pie로 새지 않음 (이중 게이트)
+        let xml = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:barChart><c:barDir val="col"/><c:serLines/><c:ser><c:val><c:numCache><c:pt idx="0"><c:v>3</c:v></c:pt></c:numCache></c:val></c:ser></c:barChart></c:plotArea></c:chart></c:chartSpace>"#;
+        let c = parse_chart_xml(xml).expect("parse OK");
+        assert!(c.of_pie.is_none(), "barChart serLines가 of_pie 생성 금지");
     }
 
     // --- C1a Part B (#1453): 막대 누적 grouping 파싱 ---

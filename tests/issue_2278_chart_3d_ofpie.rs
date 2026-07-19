@@ -7,8 +7,12 @@
 //! Stage 2 — 3D 원형: pie3DChart(코퍼스 rotX=30/persp=30)가 타원 top 슬라이스
 //! (`hwp-pie3d-top`)와 하반부 측벽(`hwp-pie3d-wall`)을 방출함을 가드.
 //!
+//! Stage 3 — ofPie 보조플롯: 원형대원형/원형대가로막대형이 주 원 + 보조 플롯 +
+//! serLines(`hwp-ofpie-*`)를 방출하고, 결합 슬라이스가 실측 팔레트 [4]
+//! (#27a172)를 사용함을 가드.
+//!
 //! 주의: 페이지 SVG 전역에는 도형/WMF `<polygon>`이 존재할 수 있으므로
-//! 면 계수는 반드시 `hwp-bar3d-*`/`hwp-pie3d-*` 클래스 기준으로 한다.
+//! 면 계수는 반드시 `hwp-bar3d-*`/`hwp-pie3d-*`/`hwp-ofpie-*` 클래스 기준으로 한다.
 
 use std::fs;
 use std::path::Path;
@@ -56,6 +60,45 @@ fn bar3d_charts_emit_extrusion_faces_with_stable_axis() {
             for no in *absent {
                 assert!(!svg.contains(no), "{rel}: 축 라벨 {no} 출현 (#1882 앵커)");
             }
+        }
+    }
+}
+
+#[test]
+fn ofpie_charts_emit_secondary_plot_and_serlines() {
+    // 코퍼스 [10, 3.5, 1.5, 1.2] → 주 원 3(2+결합) + 보조 2 (기본 k=2)
+    for (stem, second_is_rect) in [("원형대원형", false), ("원형대가로막대형", true)] {
+        for ext in ["hwpx", "hwp"] {
+            let rel = format!("samples/chart/원형/{stem}.{ext}");
+            let svg = render_page0_svg(&rel);
+
+            assert_eq!(
+                svg.matches("hwp-ofpie-main").count(),
+                3,
+                "{rel}: 주 원 슬라이스 3"
+            );
+            assert_eq!(
+                svg.matches("hwp-ofpie-second").count(),
+                2,
+                "{rel}: 보조 플롯 2"
+            );
+            assert_eq!(
+                svg.matches("hwp-ofpie-serline").count(),
+                2,
+                "{rel}: serLines 2"
+            );
+            // 결합 슬라이스 = 실측 팔레트 [4] 초록계
+            assert!(svg.contains("#27a172"), "{rel}: 결합 슬라이스 실측색");
+            if second_is_rect {
+                assert!(
+                    svg.contains("<rect class=\"hwp-ofpie-second\""),
+                    "{rel}: 가로막대형 보조는 rect"
+                );
+            }
+            assert!(
+                !svg.contains("hwp-ooxml-chart-fallback"),
+                "{rel}: placeholder 잔존"
+            );
         }
     }
 }

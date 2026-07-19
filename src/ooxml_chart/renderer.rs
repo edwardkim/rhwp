@@ -5,22 +5,22 @@
 //! - **콤보 차트** (bar + line) 및 **이중 Y축** 지원
 
 use super::{
-    BarGrouping, LegendPos, OoxmlChart, OoxmlChartType, OoxmlSeries, ScatterStyle, SeriesMarker,
-    View3D,
+    BarGrouping, LegendPos, OfPieInfo, OfPieType, OoxmlChart, OoxmlChartType, OoxmlSeries,
+    ScatterStyle, SeriesMarker, View3D,
 };
 
 /// 기본 시리즈 색상 팔레트 (시리즈 색상 미지정 시 순환 사용)
 ///
-/// 한컴 2022 기본 팔레트(`hncChartStyle colorIndex="0"`) — 앞 4색은 `pdf/chart/` 정답지
-/// PDF 픽셀 실측(막대 3시리즈 + 원형 4슬라이스), 5번째 이후는 코퍼스에 4시리즈 초과
-/// 샘플이 없어 미실측(Office 유사색 순서로 유추 배치).
+/// 한컴 2022 기본 팔레트(`hncChartStyle colorIndex="0"`) — 앞 5색은 `pdf/chart/` 정답지
+/// PDF 픽셀 실측(막대 3시리즈 + 원형 4슬라이스 + ofPie 결합 슬라이스), 6번째 이후는
+/// 코퍼스에 초과 샘플이 없어 미실측(Office 유사색 순서로 유추 배치).
 const DEFAULT_PALETTE: &[u32] = &[
     0xFF6183D7, // 파랑 (실측)
     0xFFFE813B, // 주황 (실측)
     0xFFB0B0B0, // 회색 (실측)
     0xFFFCD801, // 노랑 (실측)
-    0xFF5B9BD5, // 하늘 (유추)
-    0xFF70AD47, // 초록 (유추)
+    0xFF27A172, // 초록계 (실측 — ofPie 결합 슬라이스, 원형대원형·가로막대 교차 일치)
+    0xFF5B9BD5, // 하늘 (유추 — [4]에서 강등)
     0xFF9013FE, 0xFF50E3C2,
 ];
 
@@ -258,9 +258,11 @@ pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> S
         ));
     }
 
-    // 파이 차트는 단독 경로 (3D는 타원+측벽 — 2D 경로 무접촉)
+    // 파이 차트는 단독 경로 (ofPie 보조플롯 / 3D 타원+측벽 — 2D 경로 무접촉)
     if chart.chart_type == OoxmlChartType::Pie {
-        if chart.is_3d {
+        if let Some(of) = &chart.of_pie {
+            render_of_pie(&mut svg, chart, of, plot_x, plot_y, plot_w, plot_h);
+        } else if chart.is_3d {
             render_pie_3d(&mut svg, chart, plot_x, plot_y, plot_w, plot_h);
         } else {
             render_pie(&mut svg, chart, plot_x, plot_y, plot_w, plot_h);
@@ -1150,6 +1152,174 @@ fn render_pie(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, p
             cx, cy, x1, y1, r, r, large, x2, y2, color
         ));
         start_angle = end_angle;
+    }
+}
+
+/// ofPie — 주 원(앞 n−k 카테고리 + 결합 슬라이스) + 보조 플롯(pie|bar) + serLines.
+/// k = split_pos(반올림, 1..=n−1 클램프) 없으면 2. n < 3 → 일반 원형 폴백.
+/// 주 원은 결합 슬라이스 중앙이 보조 플롯(3시 방향)을 향하도록 회전. 결합 슬라이스
+/// 색 = palette(n)(정답지 실측 초록계 [4]), 보조 플롯 색 = palette(n−k+j)
+/// (범례의 카테고리 정순 색과 일치). (C2b #2278 Stage 3)
+fn render_of_pie(
+    svg: &mut String,
+    chart: &OoxmlChart,
+    of: &OfPieInfo,
+    px: f64,
+    py: f64,
+    pw: f64,
+    ph: f64,
+) {
+    use std::f64::consts::TAU;
+    let first = match chart.series.first() {
+        Some(s) => s,
+        None => return,
+    };
+    let n = first.values.len();
+    if n < 3 {
+        render_pie(svg, chart, px, py, pw, ph);
+        return;
+    }
+    let total: f64 = first.values.iter().sum();
+    if total <= 0.0 {
+        return;
+    }
+    let k = of
+        .split_pos
+        .map(|v| (v.round() as usize).clamp(1, n - 1))
+        .unwrap_or(2)
+        .min(n - 1);
+    let combined: f64 = first.values[n - k..].iter().sum();
+
+    // 레이아웃 — 정답지(원형대원형-2022 임베드 2702×1577) 픽셀 실측 캘리브레이션:
+    // 주 원 중심 x≈0.23·플롯폭, 보조 중심 x≈0.80, r1≈0.38·플롯높이(가로는 캡),
+    // r2/r1 실측 0.754 = secondPieSize(75)/100 ✓ (스키마 의미 그대로)
+    let cx1 = px + pw * 0.23;
+    let cy = py + ph / 2.0;
+    let r1 = (pw * 0.46).min(ph * 0.76) / 2.0;
+    let cx2 = px + pw * 0.80;
+    let r2 = r1 * (of.second_pie_size.max(0.0) / 100.0);
+
+    // 주 원 — 값 시퀀스 = values[..n−k] + [combined]. 결합 슬라이스 중앙이 3시(θ=0)
+    let sweep_c = combined / total * TAU;
+    let start_main = -sweep_c / 2.0 - (total - combined) / total * TAU;
+    let main_vals: Vec<(f64, u32)> = first.values[..n - k]
+        .iter()
+        .enumerate()
+        .map(|(ci, &v)| (v, first.color.unwrap_or_else(|| palette(ci))))
+        .chain(std::iter::once((
+            combined,
+            first.color.unwrap_or_else(|| palette(n)),
+        )))
+        .collect();
+    let mut start_angle = start_main;
+    for (v, rgb) in &main_vals {
+        let sweep = v / total * TAU;
+        let end_angle = start_angle + sweep;
+        let (x1, y1) = (cx1 + r1 * start_angle.cos(), cy + r1 * start_angle.sin());
+        let (x2, y2) = (cx1 + r1 * end_angle.cos(), cy + r1 * end_angle.sin());
+        let large = if sweep > std::f64::consts::PI { 1 } else { 0 };
+        svg.push_str(&format!(
+            "<path class=\"hwp-ofpie-main\" d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
+            cx1, cy, x1, y1, r1, r1, large, x2, y2, color_hex(*rgb)
+        ));
+        start_angle = end_angle;
+    }
+
+    if combined > 0.0 {
+        match of.of_pie_type {
+            OfPieType::Pie => {
+                // 보조 원 — 시작각 = +sweep_c/2 (결합 슬라이스 아래 모서리 각도와
+                // 정렬, 정답지 실측 경계 26°≈유도 30°; 12시 시작 아님)
+                let mut s = sweep_c / 2.0;
+                for (j, &v) in first.values[n - k..].iter().enumerate() {
+                    let sweep = v / combined * TAU;
+                    let e = s + sweep;
+                    let (x1, y1) = (cx2 + r2 * s.cos(), cy + r2 * s.sin());
+                    let (x2, y2) = (cx2 + r2 * e.cos(), cy + r2 * e.sin());
+                    let large = if sweep > std::f64::consts::PI { 1 } else { 0 };
+                    let rgb = first.color.unwrap_or_else(|| palette(n - k + j));
+                    svg.push_str(&format!(
+                        "<path class=\"hwp-ofpie-second\" d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
+                        cx2, cy, x1, y1, r2, r2, large, x2, y2, color_hex(rgb)
+                    ));
+                    s = e;
+                }
+            }
+            OfPieType::Bar => {
+                // 보조 누적 막대 — 첫 분할 카테고리가 맨 위, 위→아래 누적
+                let bar_h = 2.0 * r2;
+                let bar_w = bar_h * 0.45;
+                let bx = cx2 - bar_w / 2.0;
+                let top = cy - bar_h / 2.0;
+                let mut acc = 0.0;
+                for (j, &v) in first.values[n - k..].iter().enumerate() {
+                    let seg = v / combined * bar_h;
+                    let rgb = first.color.unwrap_or_else(|| palette(n - k + j));
+                    svg.push_str(&format!(
+                        "<rect class=\"hwp-ofpie-second\" x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
+                        bx,
+                        top + acc,
+                        bar_w,
+                        seg,
+                        color_hex(rgb)
+                    ));
+                    acc += seg;
+                }
+            }
+        }
+
+        // serLines — 결합 슬라이스 양 모서리 → 보조 플롯. 색은 검정(정답지 실측
+        // 코어 (8,8,8)). Pie는 보조 원 **접선점**(실측: 원 상/하단 아님 —
+        // 모서리에서 원에 접하는 선), Bar는 막대 좌변 상/하단.
+        if of.has_ser_lines {
+            let (ux, uy) = (
+                cx1 + r1 * (-sweep_c / 2.0).cos(),
+                cy + r1 * (-sweep_c / 2.0).sin(),
+            );
+            let (lx, ly) = (
+                cx1 + r1 * (sweep_c / 2.0).cos(),
+                cy + r1 * (sweep_c / 2.0).sin(),
+            );
+            // 외부점 P → 원(cx2, cy, r2) 접점: 중심→P 각 α, β=acos(r2/d), α±β 중
+            // 위 연결선은 위쪽(작은 y) 접점 선택. d ≤ r2 퇴화 시 원 좌측점 폴백.
+            let tangent = |pxp: f64, pyp: f64, upper: bool| -> (f64, f64) {
+                let (dx, dy) = (pxp - cx2, pyp - cy);
+                let d = (dx * dx + dy * dy).sqrt();
+                if d <= r2 {
+                    return (cx2 - r2, cy);
+                }
+                let alpha = dy.atan2(dx);
+                let beta = (r2 / d).acos();
+                let p1 = (
+                    cx2 + r2 * (alpha + beta).cos(),
+                    cy + r2 * (alpha + beta).sin(),
+                );
+                let p2 = (
+                    cx2 + r2 * (alpha - beta).cos(),
+                    cy + r2 * (alpha - beta).sin(),
+                );
+                if (p1.1 < p2.1) == upper {
+                    p1
+                } else {
+                    p2
+                }
+            };
+            let ((tx, ty), (bx2, by2)) = match of.of_pie_type {
+                OfPieType::Pie => (tangent(ux, uy, true), tangent(lx, ly, false)),
+                OfPieType::Bar => {
+                    let bar_h = 2.0 * r2;
+                    let bar_w = bar_h * 0.45;
+                    let bx = cx2 - bar_w / 2.0;
+                    ((bx, cy - r2), (bx, cy + r2))
+                }
+            };
+            for ((x1, y1), (x2, y2)) in [((ux, uy), (tx, ty)), ((lx, ly), (bx2, by2))] {
+                svg.push_str(&format!(
+                    "<line class=\"hwp-ofpie-serline\" x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#000000\" stroke-width=\"0.75\"/>\n",
+                    x1, y1, x2, y2
+                ));
+            }
+        }
     }
 }
 
@@ -4143,6 +4313,143 @@ mod tests {
         chart.view3d = None;
         let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
         assert!(!svg.contains("hwp-pie3d"), "2D에 3D 어휘 없음");
+    }
+
+    // --- C2b (#2278) Stage 3: ofPie 보조플롯 + 팔레트 #5 ---
+
+    fn ofpie_chart(of: OfPieInfo) -> OoxmlChart {
+        OoxmlChart {
+            chart_type: OoxmlChartType::Pie,
+            of_pie: Some(of),
+            series: vec![OoxmlSeries {
+                values: vec![10.0, 3.5, 1.5, 1.2],
+                ..Default::default()
+            }],
+            categories: vec!["a".into(), "b".into(), "c".into(), "d".into()],
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_palette_index4_measured() {
+        // [4] = ofPie 결합 슬라이스 실측 초록계 #27A172 (원형대원형·원형대가로막대형
+        // 정답지 임베드 픽셀 히스토그램 최빈값 — 두 파일 교차 일치)
+        assert_eq!(palette(4), 0xFF27A172, "팔레트 [4] 실측 고정");
+    }
+
+    #[test]
+    fn test_ofpie_pie_secondary_and_serlines() {
+        // 주 원 3(= n−k+1 = 4−2+1) + 보조 원 2(= k) + serLines 2
+        let svg = render_chart_svg(
+            &ofpie_chart(OfPieInfo {
+                has_ser_lines: true,
+                ..Default::default()
+            }),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        assert_eq!(svg.matches("hwp-ofpie-main").count(), 3, "주 원 슬라이스 3");
+        assert_eq!(
+            svg.matches("hwp-ofpie-second").count(),
+            2,
+            "보조 원 슬라이스 2"
+        );
+        assert_eq!(svg.matches("hwp-ofpie-serline").count(), 2, "serLines 2");
+        // has_ser_lines=false → serline 0
+        let svg2 = render_chart_svg(&ofpie_chart(OfPieInfo::default()), 0.0, 0.0, 400.0, 300.0);
+        assert_eq!(
+            svg2.matches("hwp-ofpie-serline").count(),
+            0,
+            "serLines 부재"
+        );
+    }
+
+    #[test]
+    fn test_ofpie_combined_slice_uses_palette4() {
+        // 결합 슬라이스 = palette(n) (n=4 → 실측 초록계) — hex 하드코딩 대신 참조
+        let svg = render_chart_svg(&ofpie_chart(OfPieInfo::default()), 0.0, 0.0, 400.0, 300.0);
+        let main = svg.split("hwp-ofpie-main").nth(3).expect("결합 슬라이스");
+        let main = &main[..main.find("/>").unwrap()];
+        assert!(
+            main.contains(&color_hex(palette(4))),
+            "결합 슬라이스 fill = palette(4)"
+        );
+    }
+
+    #[test]
+    fn test_ofpie_bar_secondary_first_split_cat_on_top() {
+        // Bar형 보조: rect 2개, 첫 분할 카테고리(palette(2))가 맨 위
+        let svg = render_chart_svg(
+            &ofpie_chart(OfPieInfo {
+                of_pie_type: OfPieType::Bar,
+                ..Default::default()
+            }),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        let rects: Vec<&str> = svg.split("hwp-ofpie-second").skip(1).collect();
+        assert_eq!(rects.len(), 2, "보조 rect 2");
+        let y_of = |chunk: &str| attr_f64_of(&chunk[..chunk.find("/>").unwrap()], "y=\"").unwrap();
+        let c_of =
+            |chunk: &str, rgb: u32| chunk[..chunk.find("/>").unwrap()].contains(&color_hex(rgb));
+        assert!(
+            c_of(rects[0], palette(2)) && c_of(rects[1], palette(3)),
+            "보조 색 [2],[3]"
+        );
+        assert!(y_of(rects[0]) < y_of(rects[1]), "첫 분할 카테고리가 맨 위");
+    }
+
+    #[test]
+    fn test_ofpie_split_pos_respected() {
+        // split_pos=3 → 주 원 2(= 4−3+1) + 보조 3
+        let svg = render_chart_svg(
+            &ofpie_chart(OfPieInfo {
+                split_pos: Some(3.0),
+                ..Default::default()
+            }),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        assert_eq!(svg.matches("hwp-ofpie-main").count(), 2, "주 원 2");
+        assert_eq!(svg.matches("hwp-ofpie-second").count(), 3, "보조 3");
+    }
+
+    #[test]
+    fn test_ofpie_legend_categories_in_order_no_combined() {
+        // 범례: 카테고리 4개 정순(palette 0..3), 결합 슬라이스(palette 4) 부재
+        let svg = render_chart_svg(&ofpie_chart(OfPieInfo::default()), 0.0, 0.0, 400.0, 300.0);
+        let legend = &svg[svg.find("hwp-chart-legend").expect("범례")..];
+        let mut last = 0usize;
+        for i in 0..4 {
+            let p = legend
+                .find(&color_hex(palette(i)))
+                .unwrap_or_else(|| panic!("범례 스와치 {i}"));
+            assert!(p >= last, "범례 정순 위반 ({i})");
+            last = p;
+        }
+        assert!(
+            !legend.contains(&color_hex(palette(4))),
+            "범례에 결합 슬라이스 없음"
+        );
+    }
+
+    #[test]
+    fn test_ofpie_two_values_plain_pie_fallback() {
+        // n=2 < 3 → 일반 원형 폴백 (ofpie 어휘·serline 부재)
+        let mut chart = ofpie_chart(OfPieInfo {
+            has_ser_lines: true,
+            ..Default::default()
+        });
+        chart.series[0].values = vec![7.0, 3.0];
+        chart.categories = vec!["a".into(), "b".into()];
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        assert!(!svg.contains("hwp-ofpie"), "n<3은 일반 원형 폴백");
     }
 
     #[test]

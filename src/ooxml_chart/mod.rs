@@ -11,8 +11,10 @@
 //! - `c:pieChart` (원형)
 //! - `c:bar3DChart` — **시어 투영 3D 렌더** (C2b #2278 v2): `c:view3D` 카메라
 //!   파싱 + 압출 3면(top/side/front) + 방(뒷벽·바닥·격자). 두께는 gapWidth 규칙.
-//! - `c:pie3DChart`·`c:ofPieChart` — **2D 근사 라우팅** (C1a #1453): 단일 원형.
-//!   3D 원형 입체·ofPie 보조플롯은 C2b Stage 2·3에서 투영 기반 지원 예정.
+//! - `c:pie3DChart` — **타원+측벽 3D 렌더** (C2b #2278 Stage 2): 타원비
+//!   `sin(rotX)·cos(perspective/2°)`(정답지 실측 캘리브레이션) + 하반부 측벽.
+//! - `c:ofPieChart` — **보조플롯 렌더** (C2b #2278 Stage 3): 주 원(결합 슬라이스
+//!   포함) + 보조 원(pie)/누적 막대(bar) + `c:serLines` 연결선.
 //! - `c:scatterChart` (분산형) — `c:xVal`/`c:yVal` (x,y) 쌍, 2개 수치축,
 //!   `c:scatterStyle`로 표식/직선/곡선 구분 (C1b #1660).
 //! - `c:stockChart` (주식형) — `c:hiLowLines` 고저선 + `c:upDownBars` 캔들,
@@ -21,7 +23,7 @@
 //! - **이중 Y축** (primary + secondary) — 시리즈별 축 그룹 매핑
 //!
 //! ## 범위 외
-//! - 3D 입체감·ofPie 보조플롯(C2b #2278), 영역형, 추세선, 애니메이션, 세밀 스타일
+//! - 영역형, 추세선, 애니메이션, 세밀 스타일
 
 pub mod parser;
 pub mod renderer;
@@ -81,6 +83,42 @@ pub struct OoxmlChart {
     /// bar3D plot의 `c:gapDepth` — 방(씬) 깊이 = 막대 깊이×(1+gap/100).
     /// 미지정 시 렌더러가 150 폴백. (C2b #2278 v2)
     pub gap_depth: Option<f64>,
+    /// ofPie(원형대원형/원형대가로막대형) 보조플롯 정보. chart_type은 Pie를 유지하고
+    /// (#1453 라우팅 앵커) 이 필드 유무로 render_of_pie를 분기. (C2b #2278)
+    pub of_pie: Option<OfPieInfo>,
+}
+
+/// `c:ofPieChart` 보조플롯 파라미터 (C2b #2278)
+#[derive(Debug, Clone, PartialEq)]
+pub struct OfPieInfo {
+    /// `c:ofPieType val` — pie=원형대원형(보조 원), bar=원형대가로막대형(누적 막대)
+    pub of_pie_type: OfPieType,
+    /// `c:splitPos val` — 보조 플롯으로 보낼 마지막 카테고리 수. 코퍼스 부재 →
+    /// None → 기본 2. (스키마상 double — f64 파싱, 사용 시 반올림·클램프)
+    pub split_pos: Option<f64>,
+    /// `c:secondPieSize val` (% — 스키마 기본 75) — 보조 플롯 크기 / 주 원 대비
+    pub second_pie_size: f64,
+    /// `c:serLines` 존재 — 결합 슬라이스→보조 플롯 연결선 2줄
+    pub has_ser_lines: bool,
+}
+
+impl Default for OfPieInfo {
+    fn default() -> Self {
+        Self {
+            of_pie_type: OfPieType::Pie,
+            split_pos: None,
+            second_pie_size: 75.0,
+            has_ser_lines: false,
+        }
+    }
+}
+
+/// ofPie 보조 플롯 종류 (C2b #2278)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum OfPieType {
+    #[default]
+    Pie,
+    Bar,
 }
 
 /// `c:view3D` 3D 카메라 파라미터 (C2b #2278 v2).
