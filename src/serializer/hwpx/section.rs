@@ -146,11 +146,25 @@ fn replace_secpr_scalars(xml: &str, sd: &SectionDef) -> String {
     out.replacen(
         r#"<hp:startNum pageStartsOn="BOTH" page="0" pic="0" tbl="0" equation="0"/>"#,
         &format!(
-            r#"<hp:startNum pageStartsOn="BOTH" page="{}" pic="{}" tbl="{}" equation="{}"/>"#,
-            sd.page_num, sd.picture_num, sd.table_num, sd.equation_num
+            r#"<hp:startNum pageStartsOn="{}" page="{}" pic="{}" tbl="{}" equation="{}"/>"#,
+            page_starts_on_str(sd.page_num_type),
+            sd.page_num,
+            sd.picture_num,
+            sd.table_num,
+            sd.equation_num
         ),
         1,
     )
+}
+
+/// 쪽 번호 시작 종류(SectionDef.page_num_type, 0/1/2) → HWPX `pageStartsOn` 토큰.
+/// 파서 `parse_start_num` 의 역매핑. 0(이어서)=BOTH, 1(홀수)=ODD, 2(짝수)=EVEN.
+fn page_starts_on_str(page_num_type: u8) -> &'static str {
+    match page_num_type {
+        1 => "ODD",
+        2 => "EVEN",
+        _ => "BOTH",
+    }
 }
 
 /// [#1984] noteLine `type` u8 → HWPX 문자열 (parser noteLine type 역매핑).
@@ -3708,6 +3722,25 @@ mod tests {
         assert_eq!(
             coldef_count, 2,
             "본문 첫 문단의 ColumnDef 2개가 roundtrip 후 모두 보존돼야 한다 (템플릿1 + 인라인1): {coldef_count}"
+        );
+    }
+
+    #[test]
+    fn page_starts_on_odd_survives_hwpx_roundtrip() {
+        // pageStartsOn(홀수 시작)이 HWPX 왕복에서 보존돼야 한다. 종전엔 파서 미독 +
+        // serializer 의 pageStartsOn="BOTH" 고정으로 page_num_type 이 0 으로 유실됐다.
+        let mut section = Section::default();
+        section.section_def.page_num_type = 1; // 홀수 시작
+        section.section_def.page_num = 1;
+        section.paragraphs.push(Paragraph::default());
+        let mut doc = Document::default();
+        doc.sections.push(section);
+
+        let bytes = crate::serializer::hwpx::serialize_hwpx(&doc).expect("serialize");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse");
+        assert_eq!(
+            doc2.sections[0].section_def.page_num_type, 1,
+            "홀수 쪽 시작(pageStartsOn=ODD)이 왕복에서 보존돼야 함"
         );
     }
 

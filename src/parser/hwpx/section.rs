@@ -1237,6 +1237,15 @@ fn parse_start_num(e: &quick_xml::events::BytesStart, sec_def: &mut SectionDef) 
             b"pic" => sec_def.picture_num = parse_u16(&attr),
             b"tbl" => sec_def.table_num = parse_u16(&attr),
             b"equation" => sec_def.equation_num = parse_u16(&attr),
+            // 쪽 번호 시작 종류(0=이어서/1=홀수/2=짝수, flags bit20-21). 종전엔
+            // 미독이라 HWPX 왕복 시 홀/짝 시작이 유실됐다(serializer 는 BOTH 고정).
+            b"pageStartsOn" => {
+                sec_def.page_num_type = match attr_str(&attr).as_str() {
+                    "ODD" => 1,
+                    "EVEN" => 2,
+                    _ => 0,
+                };
+            }
             _ => {}
         }
     }
