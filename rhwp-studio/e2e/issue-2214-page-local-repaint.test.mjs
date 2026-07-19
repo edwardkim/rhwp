@@ -12,6 +12,8 @@
  *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --diagnose
  *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --diagnose \
  *     --formats=hwp --runs=1
+ *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --profile-2193 \
+ *     --runs=10
  */
 
 import assert from 'node:assert/strict';
@@ -33,6 +35,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../..');
 const OUTPUT_ROOT = process.env.ISSUE2214_OUTPUT_ROOT
   ?? path.join(REPO_ROOT, 'output/poc/task2214/stage4');
+const PROFILE_2193_OUTPUT_ROOT = process.env.ISSUE2193_OUTPUT_ROOT
+  ?? path.join(REPO_ROOT, 'output/poc/task2193/stage3');
 const TARGET = Object.freeze({
   sectionIndex: 0,
   paragraphIndex: 5,
@@ -1397,6 +1401,279 @@ async function runRawBoundarySmoke(page, format, bytes, kind) {
   };
 }
 
+function absoluteEventTiming(trace, event) {
+  const endAt = trace.startedAt + event.atMs;
+  const durationMs = event.durationMs ?? 0;
+  return { startAt: endAt - durationMs, endAt, durationMs };
+}
+
+function issue2193ProfileSample(format, caseConfig, runNumber, trace, clocks, state) {
+  const prefix = `${format} ${caseConfig.name} run ${runNumber}`;
+  const eventsOf = (type) => trace.events.filter((event) => event.type === type);
+  const oneEvent = (type) => {
+    const events = eventsOf(type);
+    assert.equal(events.length, 1, `${prefix}: ${type} count`);
+    return events[0];
+  };
+  const operation = oneEvent('InputHandler.executeOperation');
+  const mutation = oneEvent('wasm.insertTextInCellDeferredPagination');
+  const effect = oneEvent('InputHandler.prepareTextMutationBeforeCursor');
+  const cursor = oneEvent('wasm.getCursorRectByPathNear');
+  const flushes = eventsOf('wasm.flushDeferredPagination');
+  const invalidations = eventsOf('event.document-page-invalidated');
+  const documentChanges = eventsOf('event.document-changed');
+  const refreshes = eventsOf('CanvasView.refreshInvalidatedPageNow');
+  const pageRenders = eventsOf('PageRenderer.renderPage');
+  const filteredRenders = eventsOf('wasm.renderPageToCanvasFiltered');
+
+  assert.equal(mutation.cellFlowChanged, caseConfig.boundary, `${prefix}: flow signal`);
+  assert.equal(effect.cellFlowChanged, caseConfig.boundary, `${prefix}: consumed flow signal`);
+  assert.equal(flushes.length, caseConfig.boundary ? 1 : 0, `${prefix}: full pagination count`);
+  assert.ok(pageRenders.length >= 1, `${prefix}: page render count`);
+
+  const operationTiming = absoluteEventTiming(trace, operation);
+  const mutationTiming = absoluteEventTiming(trace, mutation);
+  const cursorTiming = absoluteEventTiming(trace, cursor);
+  const flushTiming = flushes.length ? absoluteEventTiming(trace, flushes[0]) : null;
+  const pageRenderTimings = pageRenders.map((event) => absoluteEventTiming(trace, event));
+  const filteredRenderTimings = filteredRenders.map((event) => absoluteEventTiming(trace, event));
+  const refreshTimings = refreshes.map((event) => absoluteEventTiming(trace, event));
+  const firstRenderAt = Math.min(...pageRenderTimings.map((timing) => timing.startAt));
+  const lastRenderAt = Math.max(...pageRenderTimings.map((timing) => timing.endAt));
+
+  assert.ok(operationTiming.startAt >= clocks.inputStartedAt, `${prefix}: operation start clock`);
+  assert.ok(mutationTiming.endAt <= cursorTiming.startAt, `${prefix}: mutation before cursor`);
+  if (flushTiming) {
+    assert.ok(mutationTiming.endAt <= flushTiming.startAt, `${prefix}: mutation before flush`);
+    assert.ok(flushTiming.endAt <= cursorTiming.startAt, `${prefix}: flush before cursor`);
+  }
+  assert.ok(clocks.syncCompletedAt <= clocks.displayCompletedAt, `${prefix}: sync before display`);
+  assert.ok(lastRenderAt <= clocks.displayCompletedAt, `${prefix}: render before 2 rAF completion`);
+
+  const eventAtFromInput = (event) => (
+    event ? trace.startedAt + event.atMs - clocks.inputStartedAt : null
+  );
+  const sumDuration = (timings) => timings.reduce((total, timing) => total + timing.durationMs, 0);
+  return {
+    run: runNumber,
+    clocks: {
+      inputStartedAt: clocks.inputStartedAt,
+      syncCompletedAt: clocks.syncCompletedAt,
+      displayCompletedAt: clocks.displayCompletedAt,
+    },
+    timing: {
+      inputToSyncMs: clocks.syncCompletedAt - clocks.inputStartedAt,
+      inputToTwoRafMs: clocks.displayCompletedAt - clocks.inputStartedAt,
+      syncToTwoRafMs: clocks.displayCompletedAt - clocks.syncCompletedAt,
+      operationMs: operationTiming.durationMs,
+      mutationMs: mutationTiming.durationMs,
+      mutationEndFromInputMs: mutationTiming.endAt - clocks.inputStartedAt,
+      flushMs: flushTiming?.durationMs ?? 0,
+      flushEndFromInputMs: flushTiming ? flushTiming.endAt - clocks.inputStartedAt : null,
+      cursorMs: cursorTiming.durationMs,
+      cursorEndFromInputMs: cursorTiming.endAt - clocks.inputStartedAt,
+      invalidationFromInputMs: eventAtFromInput(invalidations[0]),
+      documentChangedFromInputMs: eventAtFromInput(documentChanges[0]),
+      firstRenderFromInputMs: firstRenderAt - clocks.inputStartedAt,
+      lastRenderFromInputMs: lastRenderAt - clocks.inputStartedAt,
+      renderSpanMs: lastRenderAt - firstRenderAt,
+      pageRenderTotalMs: sumDuration(pageRenderTimings),
+      filteredRenderTotalMs: sumDuration(filteredRenderTimings),
+      refreshNowTotalMs: sumDuration(refreshTimings),
+    },
+    counts: {
+      invalidation: invalidations.length,
+      documentChanged: documentChanges.length,
+      refreshNow: refreshes.length,
+      pageRender: pageRenders.length,
+      filteredRender: filteredRenders.length,
+      flush: flushes.length,
+    },
+    accuracy: {
+      length: state.model.length,
+      lineCount: state.model.lineCount,
+      pageCount: state.pagination.pageCount,
+      pending: state.pagination.pending,
+      cursorOffset: state.cursor.position.charOffset,
+      cellOverflowed: state.cursor.rect?.cellOverflowed,
+      layerTextLength: state.layerTree.targetText.length,
+      layoutTextLength: state.pageTextLayout.targetText.length,
+    },
+    events: trace.events,
+  };
+}
+
+async function runIssue2193ProfileCase(page, format, bytes, caseConfig, runNumber) {
+  await restoreTrace(page);
+  const load = await openDocumentThroughApp(page, format, bytes);
+  await moveToTarget(page);
+  const initial = await readFocusedSnapshot(page);
+  const initialText = initial.model.text;
+  assert.equal(initialText.length, TARGET.charOffset, `${format} ${caseConfig.name}: initial text`);
+
+  await typeKeyboardOnes(page, caseConfig.targetInput - 1);
+  await waitTwoRafs(page);
+  await installTrace(page);
+
+  const inputStartedAt = await page.evaluate(() => performance.now());
+  await page.keyboard.type('1');
+  const syncCompletedAt = await page.evaluate(() => performance.now());
+  await waitTwoRafs(page);
+  const displayCompletedAt = await page.evaluate(() => performance.now());
+  const state = await collectState(
+    page,
+    `${caseConfig.name}-run-${runNumber}-after-2raf`,
+    inputStartedAt,
+  );
+  const expectedText = `${initialText}${'1'.repeat(caseConfig.targetInput)}`;
+  assertExactFocusedState(
+    format,
+    `${caseConfig.name}-${runNumber}`,
+    state,
+    expectedText,
+    caseConfig.boundary ? 5 : 4,
+    945.9,
+    !caseConfig.boundary,
+  );
+  const trace = await collectTrace(page);
+  const sample = issue2193ProfileSample(
+    format,
+    caseConfig,
+    runNumber,
+    trace,
+    { inputStartedAt, syncCompletedAt, displayCompletedAt },
+    state,
+  );
+  return { load, sample };
+}
+
+function summarizeIssue2193Profile(samples) {
+  const metrics = [
+    'inputToSyncMs',
+    'inputToTwoRafMs',
+    'syncToTwoRafMs',
+    'operationMs',
+    'mutationMs',
+    'mutationEndFromInputMs',
+    'flushMs',
+    'cursorMs',
+    'cursorEndFromInputMs',
+    'firstRenderFromInputMs',
+    'lastRenderFromInputMs',
+    'renderSpanMs',
+    'pageRenderTotalMs',
+    'filteredRenderTotalMs',
+    'refreshNowTotalMs',
+  ];
+  return Object.fromEntries(metrics.map((metric) => [
+    metric,
+    summarizeDurations(samples.map((sample) => sample.timing[metric])),
+  ]));
+}
+
+async function runIssue2193ProfileMain() {
+  const formats = cliValue('formats', 'hwp,hwpx')
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+  const runs = Number(cliValue('runs', '10'));
+  assert.ok(Number.isInteger(runs) && runs > 0, '--runs must be a positive integer');
+  for (const format of formats) assert.ok(SAMPLES[format], `unsupported format: ${format}`);
+  const selectedCaseNames = new Set(cliValue('cases', 'stable-28,boundary-44')
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean));
+  const caseConfigs = [
+    { name: 'stable-28', targetInput: 28, boundary: false },
+    { name: 'boundary-44', targetInput: 44, boundary: true },
+  ].filter((caseConfig) => selectedCaseNames.has(caseConfig.name));
+  assert.ok(caseConfigs.length > 0, '--cases must select stable-28 and/or boundary-44');
+  const fixtures = Object.fromEntries(formats.map((format) => {
+    const bytes = readFileSync(SAMPLES[format]);
+    return [format, {
+      path: SAMPLES[format],
+      bytes,
+      size: bytes.length,
+      sha256: sha256(bytes),
+    }];
+  }));
+
+  const browser = await launchBrowser();
+  const browserVersion = await browser.version().catch(() => null);
+  const page = await createPage(browser, 1280, 900);
+  page.on('console', (message) => {
+    if (message.type() === 'error' || message.type() === 'warning') {
+      console.log(`  [browser:${message.type()}] ${message.text()}`);
+    }
+  });
+  page.on('pageerror', (error) => console.log(`  [browser:pageerror] ${error.message}`));
+  const startedAt = new Date().toISOString();
+  const cases = [];
+  try {
+    await loadApp(page);
+    for (const format of formats) {
+      for (const caseConfig of caseConfigs) {
+        console.log(`\n[#2193 ${format}/${caseConfig.name}] ${runs} runs`);
+        const samples = [];
+        const loads = [];
+        for (let runNumber = 1; runNumber <= runs; runNumber += 1) {
+          const result = await runIssue2193ProfileCase(
+            page,
+            format,
+            fixtures[format].bytes,
+            caseConfig,
+            runNumber,
+          );
+          samples.push(result.sample);
+          loads.push(result.load);
+          console.log(
+            `  run ${runNumber}: operation=${result.sample.timing.operationMs.toFixed(2)}ms, `
+              + `flush=${result.sample.timing.flushMs.toFixed(2)}ms, `
+              + `2raf=${result.sample.timing.inputToTwoRafMs.toFixed(2)}ms`,
+          );
+        }
+        cases.push({
+          format,
+          case: caseConfig.name,
+          targetInput: caseConfig.targetInput,
+          boundary: caseConfig.boundary,
+          summary: summarizeIssue2193Profile(samples),
+          loads,
+          samples,
+        });
+      }
+    }
+  } finally {
+    await restoreTrace(page).catch(() => {});
+    await closePage(page).catch(() => {});
+    await closeBrowser(browser).catch(() => {});
+  }
+
+  const summary = {
+    issue: 2193,
+    stage: 3,
+    mode: 'studio-input-to-display-profile',
+    percentileMethod: 'nearest-rank: ceil(count * quantile) - 1',
+    startedAt,
+    finishedAt: new Date().toISOString(),
+    environment: {
+      viteUrl: process.env.VITE_URL ?? 'http://localhost:7700',
+      chromePath: process.env.CHROME_PATH ?? process.env.PUPPETEER_EXECUTABLE_PATH ?? null,
+      browserVersion,
+      viewport: { width: 1280, height: 900, deviceScaleFactor: 1 },
+      runs,
+    },
+    fixtures: Object.fromEntries(Object.entries(fixtures).map(([format, value]) => [format, {
+      path: value.path,
+      size: value.size,
+      sha256: value.sha256,
+    }])),
+    cases,
+  };
+  writeJson(path.join(PROFILE_2193_OUTPUT_ROOT, 'studio-profile.json'), summary);
+  console.log(`\nIssue #2193 Studio profile written to ${PROFILE_2193_OUTPUT_ROOT}`);
+}
+
 async function runFocusedMain() {
   const formats = cliValue('formats', 'hwp,hwpx')
     .split(',')
@@ -1541,7 +1818,11 @@ async function runDiagnosticMain() {
   console.log(JSON.stringify(summary.formats, null, 2));
 }
 
-const selectedMain = process.argv.includes('--diagnose') ? runDiagnosticMain : runFocusedMain;
+const selectedMain = process.argv.includes('--profile-2193')
+  ? runIssue2193ProfileMain
+  : process.argv.includes('--diagnose')
+    ? runDiagnosticMain
+    : runFocusedMain;
 selectedMain().catch((error) => {
   console.error(error);
   process.exitCode = 1;

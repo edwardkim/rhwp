@@ -7,6 +7,7 @@
 - **신규 자산**: `tests/issue_2193_input_pagination_perf.rs` ignored diagnostic
 - **측정 범위**: HWP/HWPX × cold/warm × stable/boundary 8 case
 - **최종 반복**: case별 warm-up 1회 + 측정 20회
+- **최신 재실증**: `upstream/devel@62bcae43`, #2412 typeset 변경 포함
 - **정확성**: 115쪽, target tree/cursor exact, flow signal, line starts와 후속 문단 vpos 모두 통과
 - **핵심 결과**: mutation p50 약 0.08~0.13ms, full pagination p50 약 1.15~1.23초
 - **다음 단계**: Studio input-to-display에서 flush 외 render/표시 비용을 분리
@@ -59,29 +60,29 @@ RHWP_2193_WARMUPS=1 RHWP_2193_REPEATS=20 cargo test \
 두 파일은 raw sample, 환경, fixture 크기·SHA-256과 percentile 방식을 포함하는 ignored local
 evidence다.
 
-## 3. 20회 기준선
+## 3. 최신 devel 20회 기준선
 
 | 형식 | case | mutation p50/p95 | pre-tree p50 | pre-cursor p50 | flush p50/p95 |
 |------|------|-----------------:|-------------:|---------------:|--------------:|
-| HWP | cold stable | 0.076 / 0.086ms | 32.7ms | 19.7ms | 1,154.6 / 1,229.3ms |
-| HWP | warm stable | 0.122 / 0.152ms | 33.9ms | 20.9ms | 1,196.0 / 1,362.1ms |
-| HWP | cold boundary | 0.086 / 0.119ms | 33.6ms | 20.9ms | 1,201.2 / 1,301.7ms |
-| HWP | warm boundary | 0.126 / 0.148ms | 32.2ms | 20.2ms | 1,191.7 / 1,272.1ms |
-| HWPX | cold stable 재측정 | 0.078 / 0.108ms | 32.4ms | 20.0ms | 1,154.8 / 1,186.8ms |
-| HWPX | warm stable | 0.118 / 0.137ms | 33.3ms | 20.6ms | 1,230.2 / 1,325.2ms |
-| HWPX | cold boundary | 0.086 / 0.094ms | 33.0ms | 20.3ms | 1,217.3 / 1,382.9ms |
-| HWPX | warm boundary | 0.126 / 0.137ms | 32.8ms | 20.3ms | 1,194.1 / 1,262.1ms |
+| HWP | cold stable | 0.077 / 0.083ms | 32.9ms | 20.1ms | 1,146.8 / 1,197.1ms |
+| HWP | warm stable | 0.117 / 0.131ms | 32.3ms | 19.9ms | 1,140.4 / 1,193.1ms |
+| HWP | cold boundary | 0.084 / 0.088ms | 32.5ms | 19.8ms | 1,137.9 / 1,175.4ms |
+| HWP | warm boundary | 0.125 / 0.182ms | 32.5ms | 19.7ms | 1,142.5 / 1,154.1ms |
+| HWPX | cold stable | 0.076 / 0.086ms | 32.4ms | 19.9ms | 1,137.8 / 1,190.7ms |
+| HWPX | warm stable | 0.114 / 0.123ms | 32.2ms | 19.9ms | 1,144.1 / 1,173.0ms |
+| HWPX | cold boundary | 0.085 / 0.088ms | 32.7ms | 20.1ms | 1,143.2 / 1,154.1ms |
+| HWPX | warm boundary | 0.124 / 0.140ms | 32.3ms | 19.9ms | 1,139.1 / 1,151.5ms |
 
-HWPX cold stable은 전체 run 도중 mutation, tree/cursor, load와 flush가 모두 약 2배 이상 느려진
-일시적 구간을 보였다. 바로 뒤 case가 정상 범위로 복귀했고 선택 20회 재측정도 위 표의 정상
-분포를 재현했다. 따라서 전체 run의 해당 원본 값은 삭제하지 않고 환경 교란 근거로 보존하되,
-case 비교에는 선택 재측정 값을 사용한다.
+최초 기준 commit의 HWPX cold stable에서 일시적 환경 교란이 한 번 있었지만 선택 재측정과
+최신 devel 전체 20회 재실증에서는 재현되지 않았다. 최신 run은 HWP/HWPX 여덟 case가 모두
+비슷한 분포로 수렴했으며 #2412 typeset 변경도 이 fixture의 정확성이나 지배 구간을 바꾸지
+않았다. 최초 원본과 선택 재측정 JSON은 환경 민감도 근거로 계속 보존한다.
 
 ## 4. 해석
 
 ### 4.1 실제 지배 구간
 
-정상 run의 full pagination p50은 target mutation p50보다 약 9천~1만5천 배 크다. pre-flush
+최신 run의 full pagination p50은 target mutation p50보다 약 9천~1만5천 배 크다. pre-flush
 page-tree와 cursor를 합쳐도 p50 약 52~55ms로 full pagination의 약 4~5%다. post-flush
 tree/cursor도 같은 수준이었다.
 
