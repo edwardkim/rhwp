@@ -197,6 +197,37 @@ fn render_note_line_spacing(shape: &crate::model::footnote::FootnoteShape) -> (S
     (note_line, note_spacing)
 }
 
+/// FootnoteNumbering → HWPX `type` 토큰. 템플릿 계열(CONTINUOUS/EACH_COLUMN/DIGIT)과
+/// 동일한 UPPER_SNAKE 표기를 쓰며, 파서도 이 토큰을 수용한다.
+fn note_numbering_str(numbering: crate::model::footnote::FootnoteNumbering) -> &'static str {
+    use crate::model::footnote::FootnoteNumbering::*;
+    match numbering {
+        Continue => "CONTINUOUS",
+        RestartSection => "RESTART_SECTION",
+        RestartPage => "RESTART_PAGE",
+    }
+}
+
+fn render_note_numbering(shape: &crate::model::footnote::FootnoteShape) -> String {
+    format!(
+        r#"<hp:numbering type="{}" newNum="{}"/>"#,
+        note_numbering_str(shape.numbering),
+        shape.start_number,
+    )
+}
+
+/// `needle` 의 처음 두 출현을 각각 `first`/`second` 로 치환한다. 치환 결과가 needle
+/// 과 같아도 안전하다(연쇄 replacen 은 replacement==needle 일 때 두 번째가 첫 슬롯을
+/// 다시 잡는 버그가 있어 각주/미주 numbering 처럼 fn/en 템플릿 문자열이 동일한 경우
+/// 위치 기반 분할이 필요하다). needle 이 2회 미만이면 원본을 반환한다.
+fn replace_first_two(haystack: &str, needle: &str, first: &str, second: &str) -> String {
+    let mut parts = haystack.splitn(3, needle);
+    match (parts.next(), parts.next(), parts.next()) {
+        (Some(a), Some(b), Some(c)) => format!("{a}{first}{b}{second}{c}"),
+        _ => haystack.to_string(),
+    }
+}
+
 /// [#1984] 템플릿 footNotePr/endNotePr 의 하드코딩 noteLine·noteSpacing 을 IR 값으로 치환.
 /// 미치환 시 각주 구분선 위/아래 여백·주석간격이 항상 기본값(aboveLine=850 등)으로 방출돼
 /// 각주 zone 높이가 달라지고, 각주 있는 페이지의 본문 가용높이가 어긋나 표 분할·페이지 수가
@@ -207,25 +238,36 @@ fn replace_footnote_shape(xml: &str, sd: &SectionDef) -> String {
     // 둘째(length="14692344"·betweenNotes="0") = 미주.
     let (fn_line, fn_spacing) = render_note_line_spacing(&sd.footnote_shape);
     let (en_line, en_spacing) = render_note_line_spacing(&sd.endnote_shape);
-    xml.replacen(
-        r##"<hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/>"##,
-        &fn_line,
-        1,
-    )
-    .replacen(
-        r#"<hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/>"#,
-        &fn_spacing,
-        1,
-    )
-    .replacen(
-        r##"<hp:noteLine length="14692344" type="SOLID" width="0.12 mm" color="#000000"/>"##,
-        &en_line,
-        1,
-    )
-    .replacen(
-        r#"<hp:noteSpacing betweenNotes="0" belowLine="567" aboveLine="850"/>"#,
-        &en_spacing,
-        1,
+    let out = xml
+        .replacen(
+            r##"<hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/>"##,
+            &fn_line,
+            1,
+        )
+        .replacen(
+            r#"<hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/>"#,
+            &fn_spacing,
+            1,
+        )
+        .replacen(
+            r##"<hp:noteLine length="14692344" type="SOLID" width="0.12 mm" color="#000000"/>"##,
+            &en_line,
+            1,
+        )
+        .replacen(
+            r#"<hp:noteSpacing betweenNotes="0" belowLine="567" aboveLine="850"/>"#,
+            &en_spacing,
+            1,
+        );
+    // 번호 매기기(각주 번호 종류 + 시작 번호). 템플릿은 fn/en 모두
+    // `type="CONTINUOUS" newNum="1"` 로 동일해, 미치환 시 페이지/구역마다
+    // 새로 매기거나 시작 번호가 1이 아닌 문서가 저장 때 연속·1로 되돌아간다.
+    // fn/en 템플릿 문자열이 같으므로 위치 기반 2회 치환을 쓴다.
+    replace_first_two(
+        &out,
+        r#"<hp:numbering type="CONTINUOUS" newNum="1"/>"#,
+        &render_note_numbering(&sd.footnote_shape),
+        &render_note_numbering(&sd.endnote_shape),
     )
 }
 
@@ -2355,6 +2397,37 @@ mod tests {
         assert!(
             !xml.contains(r#"betweenNotes="283""#),
             "템플릿 기본 betweenNotes=283 잔존 금지"
+        );
+    }
+
+    #[test]
+    fn footnote_endnote_numbering_and_start_reflect_ir() {
+        // 템플릿 기본(type="CONTINUOUS" newNum="1")이 아니라 IR FootnoteShape 의
+        // 번호 종류·시작 번호로 방출돼야 한다(각주/미주 각각). fn/en 템플릿 문자열이
+        // 동일하므로 위치 기반 치환이 정확히 각 슬롯을 채우는지도 함께 검증한다.
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (doc, mut section) = make_doc_with_paragraph(para);
+        section.section_def.footnote_shape.numbering =
+            crate::model::footnote::FootnoteNumbering::RestartPage;
+        section.section_def.footnote_shape.start_number = 3;
+        section.section_def.endnote_shape.numbering =
+            crate::model::footnote::FootnoteNumbering::RestartSection;
+        section.section_def.endnote_shape.start_number = 5;
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hp:numbering type="RESTART_PAGE" newNum="3"/>"#),
+            "각주 numbering 이 IR 값이어야 함"
+        );
+        assert!(
+            xml.contains(r#"<hp:numbering type="RESTART_SECTION" newNum="5"/>"#),
+            "미주 numbering 이 IR 값이어야 함"
+        );
+        assert!(
+            !xml.contains(r#"<hp:numbering type="CONTINUOUS" newNum="1"/>"#),
+            "템플릿 기본 numbering 잔존 금지"
         );
     }
 
