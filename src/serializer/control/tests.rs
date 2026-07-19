@@ -506,6 +506,21 @@ fn issue1452_picture_transparency_updates_hwp_extra_byte() {
     );
 }
 
+#[test]
+fn picture_border_attr_word_serialized_from_ir() {
+    // 그림 테두리 속성 워드(선 종류/끝모양 비트)가 IR 에서 방출돼야 한다.
+    // 레이아웃: border_color(4) + border_width(4) + border_attr(4).
+    // 종전엔 이 워드를 0 으로 고정 방출해 스타일 테두리가 저장 시 유실됐다.
+    let mut pic = Picture::default();
+    pic.border_attr.attr = 0x0000_00A5;
+    let bytes = serialize_picture_data(&pic);
+    assert_eq!(
+        &bytes[8..12],
+        &0x0000_00A5u32.to_le_bytes(),
+        "그림 테두리 속성 워드가 IR(border_attr.attr)에서 방출돼야 함"
+    );
+}
+
 /// [#1808] 셀 field_name 이 raw_list_extra 한컴 계약 레이아웃으로 기록되고
 /// 파서 추출(parse_cell_field_name)과 대칭인지 검증.
 #[test]

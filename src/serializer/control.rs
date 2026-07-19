@@ -1034,7 +1034,9 @@ fn serialize_picture_data(pic: &Picture) -> Vec<u8> {
     let mut w = ByteWriter::new();
     w.write_color_ref(pic.border_color).unwrap();
     w.write_i32(pic.border_width).unwrap();
-    w.write_u32(0).unwrap(); // border_attr
+    // 테두리 속성 워드(선 종류/끝모양 등, 표 87). 파서는 pic.border_attr.attr 로
+    // 읽지만 종전엔 0 을 고정 방출해 스타일 테두리가 저장 시 유실됐다.
+    w.write_u32(pic.border_attr.attr).unwrap(); // border_attr
 
     for &x in &pic.border_x {
         w.write_i32(x).unwrap();
