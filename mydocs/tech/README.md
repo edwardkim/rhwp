@@ -19,6 +19,7 @@ last_verified: 2026-07-17
 | HWPX와 HWP IR 차이 | [HWP/HWPX IR 차이](hwp_hwpx_ir_differences.md) | [HWPX 한컴 참조](hwpx_hancom_reference.md), [HWPX DVC 참조](hwpx_dvc_reference.md), [로컬 OWPML XML 스키마](../manual/owpml_schema_reference.md) |
 | Document IR와 LineSeg 계약 | [Document IR LineSeg 표준](document_ir_lineseg_standard.md) | [Issue #310 LineSeg vpos 조사](investigations/issue-310/README.md), [HWPX LineSeg 검증](hwpx_lineseg_validation.md) |
 | 렌더링 엔진 | [렌더링 엔진 설계](rendering_engine_design.md) | [Issue #516 다층 렌더링 후보 조사](investigations/issue-516/README.md), [Issue #124 캔버스·폰트 측정 조사](investigations/issue-124/README.md) |
+| 한컴 네이티브 레이아웃 형식 모델 | [한컴 레이아웃 형식 모델 인덱스](hancom_model/README.md) | [엔드포인트·라인 종결](hancom_model/endpoint_line_closure_semantics.md), [흐름·페이지네이션](hancom_model/flow_pagination_semantics.md), [객체 배치](hancom_model/object_placement_semantics.md), [통합 레이아웃](hancom_model/unified_layout_semantics.md), [라인 레이아웃 findings](hancom_model/line_layout_findings.md), [네이티브 렌더링 시맨틱](hancom_native_rendering_semantics.md) |
 | 표 레이아웃 | [표 레이아웃 규칙](table_layout_rules.md) | [HWP 표 렌더링](hwp_table_rendering.md), [Issue #101 부분 표 흐름 조사](investigations/issue-101/README.md) |
 | 폰트 대체와 충실도 | [폰트 fallback 전략](font_fallback_strategy.md) | [Issue #124 캔버스·폰트 측정 조사](investigations/issue-124/README.md), [Issue #2125 font ownership 조사](investigations/issue-2125/README.md) |
 | 편집 undo/redo | [편집 action undo/redo 아키텍처](edit_action_undo_redo_architecture.md) | 이슈별 실동작 조사 문서 |
