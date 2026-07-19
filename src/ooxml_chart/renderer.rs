@@ -258,9 +258,13 @@ pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> S
         ));
     }
 
-    // 파이 차트는 단독 경로
+    // 파이 차트는 단독 경로 (3D는 타원+측벽 — 2D 경로 무접촉)
     if chart.chart_type == OoxmlChartType::Pie {
-        render_pie(&mut svg, chart, plot_x, plot_y, plot_w, plot_h);
+        if chart.is_3d {
+            render_pie_3d(&mut svg, chart, plot_x, plot_y, plot_w, plot_h);
+        } else {
+            render_pie(&mut svg, chart, plot_x, plot_y, plot_w, plot_h);
+        }
         if legend_right {
             render_legend_right(&mut svg, chart, x + w - legend_w + 4.0, plot_y, plot_h);
         } else {
@@ -1144,6 +1148,96 @@ fn render_pie(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, p
         svg.push_str(&format!(
             "<path d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
             cx, cy, x1, y1, r, r, large, x2, y2, color
+        ));
+        start_angle = end_angle;
+    }
+}
+
+/// 3D 원형 측벽 높이 / rx — 정답지(3차원원형-2022, rotX=30/persp=30) 픽셀 실측
+/// 175px/846.5px. 한컴 스펙 표 43 Pie.ThicknessRatio(반지름의 백분율) 구조 채택,
+/// 비율값은 실측 캘리브레이션. hPercent(기본 100)로 스케일.
+const PIE3D_WALL_RATIO: f64 = 0.207;
+
+/// 3D 원형 — 타원(top) 슬라이스 + 하반부 측벽 밴드 (rAngAx=0 회전+원근).
+///
+/// 타원비 `ry/rx = sin(rotX)·cos(perspective/2°)` — 정답지 실측 0.480과 유도
+/// 0.483이 0.5% 이내 정합(캘리브레이션 1점). 앞/뒤 반타원이 실측 대칭(407.5px
+/// 동일)이라 원근 나눗셈(비대칭) 모델은 기각 — 대칭 타원 유지. rotY는 시작각
+/// 오프셋. 벽 전체를 먼저, top을 나중에 그린다(은면 제거 — 페인트 순서).
+/// 2D `render_pie`는 무접촉(바이트 불변). (C2b #2278 Stage 2)
+fn render_pie_3d(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, ph: f64) {
+    let first = match chart.series.first() {
+        Some(s) => s,
+        None => return,
+    };
+    let total: f64 = first.values.iter().sum();
+    if total <= 0.0 {
+        return;
+    }
+    let view = chart.view3d.clone().unwrap_or_default();
+    // 정의역 방어: rotX 5..90 클램프(0° 타원 퇴화 차단), perspective 0..90 클램프
+    // (perspective/2 > 90° → cos 음수 차단) — 코퍼스(30/30) 밖 카메라 방어
+    let tilt = view.rot_x.clamp(5.0, 90.0).to_radians().sin();
+    let persp = (view.perspective.clamp(0.0, 90.0) / 2.0).to_radians().cos();
+    let ratio = tilt * persp;
+    let wall_k = PIE3D_WALL_RATIO * (view.h_percent.max(0.0) / 100.0);
+    // 반경: 타원+벽 블록(가로 2rx, 세로 (2·타원비+벽비)·rx)이 플롯에 맞는 최대 —
+    // 2D의 원 fit(min(pw,ph))과 달리 납작한 타원의 세로 여유를 사용 (한컴 실측:
+    // rx=846.5 ≈ 플롯 절반폭 × 0.85, 세로는 비구속)
+    let rx = (pw / 2.0).min(ph / (2.0 * ratio + wall_k).max(1e-6)) * 0.9;
+    let ry = rx * ratio;
+    let wall_h = rx * wall_k;
+    let cx = px + pw / 2.0;
+    let cy = py + (ph - wall_h) / 2.0;
+
+    use std::f64::consts::{FRAC_PI_2, PI, TAU};
+    let start0 = -FRAC_PI_2 + view.rot_y.to_radians();
+
+    // 1차 루프 — 하반부(θ∈(0,π), SVG y-down에서 벽 노출면) 측벽. rotY 오프셋으로
+    // 각도가 τ를 넘을 수 있어 (0,π)와 (τ,τ+π) 두 윈도우 클립 — 랩어라운드 불요.
+    let mut s = start0;
+    for (i, &v) in first.values.iter().enumerate() {
+        let e = s + v / total * TAU;
+        let rgb = first.color.unwrap_or_else(|| palette(i));
+        for (w0, w1) in [(0.0, PI), (TAU, TAU + PI)] {
+            let a = s.max(w0);
+            let b = e.min(w1);
+            if b - a > 1e-6 {
+                let (xa, ya) = (cx + rx * a.cos(), cy + ry * a.sin());
+                let (xb, yb) = (cx + rx * b.cos(), cy + ry * b.sin());
+                svg.push_str(&format!(
+                    "<path class=\"hwp-pie3d-wall\" d=\"M{:.2},{:.2} A{:.2},{:.2} 0 0 1 {:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 0 0 {:.2},{:.2} Z\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
+                    xa,
+                    ya,
+                    rx,
+                    ry,
+                    xb,
+                    yb,
+                    xb,
+                    yb + wall_h,
+                    rx,
+                    ry,
+                    xa,
+                    ya + wall_h,
+                    color_hex(shade(rgb, BAR3D_SIDE_SHADE))
+                ));
+            }
+        }
+        s = e;
+    }
+
+    // 2차 루프 — top 타원 슬라이스 (2D render_pie 로직의 타원호 버전)
+    let mut start_angle = start0;
+    for (i, &v) in first.values.iter().enumerate() {
+        let sweep = v / total * TAU;
+        let end_angle = start_angle + sweep;
+        let (x1, y1) = (cx + rx * start_angle.cos(), cy + ry * start_angle.sin());
+        let (x2, y2) = (cx + rx * end_angle.cos(), cy + ry * end_angle.sin());
+        let large = if sweep > PI { 1 } else { 0 };
+        let color = color_hex(first.color.unwrap_or_else(|| palette(i)));
+        svg.push_str(&format!(
+            "<path class=\"hwp-pie3d-top\" d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
+            cx, cy, x1, y1, rx, ry, large, x2, y2, color
         ));
         start_angle = end_angle;
     }
@@ -3865,5 +3959,213 @@ mod tests {
             })
             .count();
         assert_eq!(left_ticks, 3, "카테고리 경계 좌측 틱 = cat_count(2)+1");
+    }
+
+    // --- C2b (#2278) Stage 2: 3D 원형 (rAngAx=0 회전+원근) ---
+
+    fn pie3d_chart(values: Vec<f64>, rot_x: f64, perspective: f64) -> OoxmlChart {
+        OoxmlChart {
+            chart_type: OoxmlChartType::Pie,
+            is_3d: true,
+            view3d: Some(View3D {
+                rot_x,
+                rot_y: 0.0,
+                perspective,
+                r_ang_ax: false,
+                ..View3D::default()
+            }),
+            series: vec![OoxmlSeries {
+                values,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    /// 첫 top 타원호의 (cx, cy, rx, ry) — "M{cx},{cy} … A{rx},{ry}" 파싱
+    fn pie3d_top_geom(svg: &str) -> (f64, f64, f64, f64) {
+        let chunk = svg.split("hwp-pie3d-top").nth(1).expect("top 경로");
+        let d = &chunk[chunk.find("d=\"M").expect("M") + 4..];
+        let (cx, rest) = d.split_once(',').unwrap();
+        let (cy, _) = rest.split_once(' ').unwrap();
+        let a = &chunk[chunk.find(" A").expect("타원호") + 2..];
+        let (rx, rest) = a.split_once(',').unwrap();
+        let (ry, _) = rest.split_once(' ').unwrap();
+        (
+            cx.parse().unwrap(),
+            cy.parse().unwrap(),
+            rx.parse().unwrap(),
+            ry.parse().unwrap(),
+        )
+    }
+
+    /// 벽 경로의 좌표쌍 목록 — 순서: M점, A반지름, 호끝, L점, A반지름, 호끝
+    /// (인덱스 0=시작점, 2=1차 호 끝, 3=벽 하단, 5=복귀 호 끝)
+    fn wall_pairs(chunk: &str) -> Vec<(f64, f64)> {
+        let d = &chunk[chunk.find("d=\"").unwrap() + 3..];
+        let d = &d[..d.find('"').unwrap()];
+        d.split_whitespace()
+            .filter_map(|t| {
+                let t = t.trim_start_matches(['M', 'A', 'L', 'Z']);
+                let (x, y) = t.split_once(',')?;
+                Some((x.parse().ok()?, y.parse().ok()?))
+            })
+            .collect()
+    }
+
+    #[test]
+    fn test_pie3d_ellipse_ratio_follows_rotx() {
+        // 타원비 = sin(rotX)·cos(perspective/2°) — 정답지(rotX=30/persp=30) 실측
+        // ry/rx=0.480, 유도 0.483 (0.5% 이내). 앞뒤 반타원 대칭(원근 비대칭 부재).
+        let svg = render_chart_svg(
+            &pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        let (_, _, rx, ry) = pie3d_top_geom(&svg);
+        let expected = 30f64.to_radians().sin() * 15f64.to_radians().cos();
+        assert!(
+            (ry / rx - expected).abs() < 2e-3,
+            "rotX=30/persp=30 → ry/rx≈{expected:.4}, 실제 {}",
+            ry / rx
+        );
+        let svg = render_chart_svg(
+            &pie3d_chart(vec![25.0, 25.0, 50.0], 60.0, 30.0),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        let (_, _, rx, ry) = pie3d_top_geom(&svg);
+        let expected = 60f64.to_radians().sin() * 15f64.to_radians().cos();
+        assert!(
+            (ry / rx - expected).abs() < 2e-3,
+            "rotX=60 → ry/rx≈{expected:.4}, 실제 {}",
+            ry / rx
+        );
+    }
+
+    #[test]
+    fn test_pie3d_wall_height_measured() {
+        // 측벽 높이 = rx × 0.207 × hPercent/100 — 정답지 실측 175px/846.5px
+        let svg = render_chart_svg(
+            &pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        let (_, _, rx, _) = pie3d_top_geom(&svg);
+        let wall = svg.split("hwp-pie3d-wall").nth(1).expect("벽");
+        let pts = wall_pairs(wall);
+        // 복귀 호 끝(xa, ya+wall) − 시작점(xa, ya)
+        let wall_h = pts[5].1 - pts[0].1;
+        assert!(
+            (wall_h / rx - 0.207).abs() < 5e-3,
+            "벽 높이/rx ≈ 0.207, 실제 {}",
+            wall_h / rx
+        );
+    }
+
+    #[test]
+    fn test_pie3d_wall_lower_half_only() {
+        // 하반부(θ∈(0,π))만 벽: [25,25,50] → 슬라이스1(우상) 벽 없음, 2·3만 —
+        // 벽 색 = shade(팔레트, SIDE) (윗면은 원색)
+        let svg = render_chart_svg(
+            &pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        assert_eq!(svg.matches("hwp-pie3d-wall").count(), 2, "벽 2개");
+        assert_eq!(svg.matches("hwp-pie3d-top").count(), 3, "top 3개");
+        let w1 = svg.split("hwp-pie3d-wall").nth(1).unwrap();
+        let w2 = svg.split("hwp-pie3d-wall").nth(2).unwrap();
+        assert!(
+            w1.contains(&color_hex(shade(palette(1), BAR3D_SIDE_SHADE))),
+            "벽1 = 팔레트1 음영"
+        );
+        assert!(
+            w2.contains(&color_hex(shade(palette(2), BAR3D_SIDE_SHADE))),
+            "벽2 = 팔레트2 음영"
+        );
+    }
+
+    #[test]
+    fn test_pie3d_wall_clipped_at_boundaries() {
+        // 첫 벽 시작 = θ=0 클립(cx+rx, cy), 마지막 벽 호 끝 = θ=π 클립(cx−rx, cy)
+        let svg = render_chart_svg(
+            &pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        let (cx, cy, rx, _) = pie3d_top_geom(&svg);
+        let w1 = wall_pairs(svg.split("hwp-pie3d-wall").nth(1).unwrap());
+        assert!(
+            (w1[0].0 - (cx + rx)).abs() < 0.05 && (w1[0].1 - cy).abs() < 0.05,
+            "첫 벽 시작 (cx+rx, cy), 실제 {:?}",
+            w1[0]
+        );
+        let w2 = wall_pairs(svg.split("hwp-pie3d-wall").nth(2).unwrap());
+        assert!(
+            (w2[2].0 - (cx - rx)).abs() < 0.05 && (w2[2].1 - cy).abs() < 0.05,
+            "마지막 벽 호 끝 (cx−rx, cy), 실제 {:?}",
+            w2[2]
+        );
+    }
+
+    #[test]
+    fn test_pie3d_walls_before_tops() {
+        // 페인트 순서: 벽 전체 → top 전체 (은면 제거)
+        let svg = render_chart_svg(
+            &pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        assert!(
+            svg.rfind("hwp-pie3d-wall").unwrap() < svg.find("hwp-pie3d-top").unwrap(),
+            "벽이 top보다 선행"
+        );
+    }
+
+    #[test]
+    fn test_pie_2d_no_pie3d_vocab() {
+        // 2D 원형 가드: is_3d=false → 3D 어휘 부재 (2D 바이트 불변의 방증)
+        let mut chart = pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0);
+        chart.is_3d = false;
+        chart.view3d = None;
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        assert!(!svg.contains("hwp-pie3d"), "2D에 3D 어휘 없음");
+    }
+
+    #[test]
+    fn test_pie3d_degenerate_cameras() {
+        // 정의역 방어: rotX=0(타원 퇴화)·90(정원)·perspective=240(cos 음수 위험)
+        for (rx_deg, persp) in [(0.0, 30.0), (90.0, 30.0), (30.0, 240.0), (-15.0, 0.0)] {
+            let svg = render_chart_svg(
+                &pie3d_chart(vec![25.0, 25.0, 50.0], rx_deg, persp),
+                0.0,
+                0.0,
+                400.0,
+                300.0,
+            );
+            assert!(
+                !svg.contains("NaN"),
+                "rotX={rx_deg}/persp={persp}: NaN 없음"
+            );
+            let (_, _, rx, ry) = pie3d_top_geom(&svg);
+            assert!(
+                ry > 0.0 && ry <= rx + 1e-6,
+                "타원비 (0,1] 유지: {}",
+                ry / rx
+            );
+        }
     }
 }

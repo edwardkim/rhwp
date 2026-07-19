@@ -4,8 +4,11 @@
 //! 압출 면(`hwp-bar3d-top`/`hwp-bar3d-side` 폴리곤)을 방출하고, 축 라벨
 //! (#1882 3D 축 앵커)은 불변임을 가드.
 //!
+//! Stage 2 — 3D 원형: pie3DChart(코퍼스 rotX=30/persp=30)가 타원 top 슬라이스
+//! (`hwp-pie3d-top`)와 하반부 측벽(`hwp-pie3d-wall`)을 방출함을 가드.
+//!
 //! 주의: 페이지 SVG 전역에는 도형/WMF `<polygon>`이 존재할 수 있으므로
-//! 면 계수는 반드시 `hwp-bar3d-*` 클래스 기준으로 한다.
+//! 면 계수는 반드시 `hwp-bar3d-*`/`hwp-pie3d-*` 클래스 기준으로 한다.
 
 use std::fs;
 use std::path::Path;
@@ -54,5 +57,29 @@ fn bar3d_charts_emit_extrusion_faces_with_stable_axis() {
                 assert!(!svg.contains(no), "{rel}: 축 라벨 {no} 출현 (#1882 앵커)");
             }
         }
+    }
+}
+
+#[test]
+fn pie3d_chart_emits_ellipse_tops_and_lower_walls() {
+    for ext in ["hwpx", "hwp"] {
+        let rel = format!("samples/chart/원형/3차원원형.{ext}");
+        let svg = render_page0_svg(&rel);
+
+        // 코퍼스 4슬라이스 — top 4개, 하반부 노출 슬라이스만 벽(≥1)
+        assert_eq!(
+            svg.matches("hwp-pie3d-top").count(),
+            4,
+            "{rel}: top 타원 슬라이스 4개"
+        );
+        assert!(
+            svg.matches("hwp-pie3d-wall").count() >= 1,
+            "{rel}: 하반부 측벽 ≥ 1"
+        );
+        // placeholder 미출현 (렌더 전환 완료)
+        assert!(
+            !svg.contains("hwp-ooxml-chart-fallback"),
+            "{rel}: placeholder 잔존"
+        );
     }
 }
