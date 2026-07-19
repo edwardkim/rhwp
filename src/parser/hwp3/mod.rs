@@ -278,6 +278,10 @@ pub(crate) fn convert_char_shape(
     };
     cs.outline_type = if hwp3_cs.is_outline() { 1 } else { 0 };
     cs.shadow_type = if hwp3_cs.is_shadow() { 1 } else { 0 };
+    // 위첨자(attr 0x20)/아래첨자(attr 0x40). 접근자는 있었으나 매핑이 빠져
+    // 렌더러(글자 축소·baseline 이동)가 소비하는 IR 필드가 항상 false 였다.
+    cs.superscript = hwp3_cs.is_superscript();
+    cs.subscript = hwp3_cs.is_subscript();
     cs
 }
 
@@ -3971,6 +3975,26 @@ mod tests {
         let cs = convert_char_shape(&hwp3_cs);
 
         assert_eq!(cs.text_color, 0x00FF0000);
+    }
+
+    #[test]
+    fn convert_char_shape_maps_superscript_and_subscript() {
+        // attr 0x20=위첨자, 0x40=아래첨자. 종전엔 매핑이 빠져 항상 false.
+        let sup = crate::parser::hwp3::records::Hwp3CharShape {
+            attr: 0x20,
+            ..Default::default()
+        };
+        let cs = convert_char_shape(&sup);
+        assert!(cs.superscript);
+        assert!(!cs.subscript);
+
+        let sub = crate::parser::hwp3::records::Hwp3CharShape {
+            attr: 0x40,
+            ..Default::default()
+        };
+        let cs = convert_char_shape(&sub);
+        assert!(cs.subscript);
+        assert!(!cs.superscript);
     }
 
     #[test]
