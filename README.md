@@ -69,7 +69,7 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 - 페이지네이션 (다단 분할, 표 행 분할), 머리말/꼬리말/바탕쪽/각주
 - SVG/PNG/PDF 내보내기 (CLI) + Canvas/CanvasKit 렌더링 (WASM/Web)
 - 웹 에디터 + hwpctl 호환 API (30 Actions, Field API)
-- 3,300+ Rust 테스트 + studio 단위/e2e/시각 회귀 CI
+- 5,500+ Rust 테스트 + studio 단위/e2e/시각 회귀 CI
 
 > HML은 실제 corpus로 확인된 HWPML 2.9/2.91 구조만 제한 지원합니다. 지원 범위의 수식은
 > 가져와 편집할 수 있고, 보존 불가 요소가 없는 HML 원본은 preflight 검사 후 HML로 다시
@@ -201,7 +201,7 @@ document.getElementById('viewer').innerHTML = doc.renderPageSvg(0);
 ```bash
 cargo build                    # Development build
 cargo build --release          # Release build
-cargo test                     # Run tests (3,300+ tests)
+cargo test                     # Run tests (5,500+ tests)
 ```
 
 ### WASM Build
@@ -329,7 +329,7 @@ scripts/                       # Build & quality tools
 |--|-----------|-----------|
 | **사람의 역할** | AI 출력 수락 | 지시, 검토, 결정 |
 | **계획** | 없음 — "그냥 만들어" | 계획서 작성 → 승인 → 실행 |
-| **품질 관문** | 동작하길 바람 | 3,300+ 테스트 + Clippy + CI + 코드 리뷰 |
+| **품질 관문** | 동작하길 바람 | 5,500+ 테스트 + Clippy + CI + 코드 리뷰 |
 | **디버깅** | AI에게 AI 버그 수정 요청 | 사람이 진단, AI가 구현 |
 | **아키텍처** | 우연히 형성 | 의도적 설계 (CQRS, 의존성 방향) |
 | **문서** | 없음 | 10,000+개 파일의 프로세스 기록 |

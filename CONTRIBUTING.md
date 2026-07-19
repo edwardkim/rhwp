@@ -92,7 +92,7 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 
 ```bash
 cargo fmt --all -- --check                   # 포맷 정책 준수
-cargo test --profile release-test --tests    # 통합 테스트 포함 전체 (3,300+)
+cargo test --profile release-test --tests    # 통합 테스트 포함 전체 (5,500+)
 cargo clippy -- -D warnings                  # 린트 경고 0건
 ```
 

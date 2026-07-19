@@ -71,7 +71,7 @@ Foundation  Typeset   Collab    Complete
 - Pagination (multi-column split, table row split), headers/footers, master pages, footnotes
 - SVG/PNG/PDF export (CLI) + Canvas/CanvasKit rendering (WASM/Web)
 - Web editor + hwpctl-compatible API (30 Actions, Field API)
-- 3,300+ Rust tests + studio unit/e2e/visual-regression CI
+- 5,500+ Rust tests + studio unit/e2e/visual-regression CI
 
 > HML support is limited to HWPML 2.9/2.91 structures verified by the current real-file corpus.
 > Supported equations can be imported and edited; HML-origin documents can be saved back to HML
@@ -206,7 +206,7 @@ New contributors: start with the [onboarding guide](mydocs/eng/manual/onboarding
 ```bash
 cargo build                    # Development build
 cargo build --release          # Release build
-cargo test                     # Run tests (3,300+ tests)
+cargo test                     # Run tests (5,500+ tests)
 ```
 
 ### WASM Build
@@ -335,7 +335,7 @@ This project takes the opposite approach. A human **task director** maintains fu
 |--|-------------|-------------|
 | **Human role** | Accept AI output | Direct, review, decide |
 | **Planning** | None — "just build it" | Written plan → approval → execution |
-| **Quality gate** | Hope it works | 3,300+ tests + Clippy + CI + code review |
+| **Quality gate** | Hope it works | 5,500+ tests + Clippy + CI + code review |
 | **Debugging** | Ask AI to fix AI's bugs | Human diagnoses, AI implements fix |
 | **Architecture** | Emergent (accidental) | Deliberate (CQRS, dependency direction) |
 | **Documentation** | None | 10,000+ files of process records |
