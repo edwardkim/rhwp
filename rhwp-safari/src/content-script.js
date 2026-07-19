@@ -37,7 +37,7 @@
   if (shouldAnnounce) {
     document.documentElement.setAttribute('data-hwp-extension', 'rhwp');
     window.dispatchEvent(new CustomEvent('hwp-extension-ready', {
-      detail: { name: 'rhwp', capabilities: ['preview'] }
+      detail: { name: 'rhwp', capabilities: ['preview', 'edit', 'print'] }
     }));
   }
 
