@@ -2883,6 +2883,13 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     // 1. 문서 정보 파싱 (128 바이트)
     let doc_info = Hwp3DocInfo::read(&mut cursor)?;
 
+    // 쪽 시작 번호 / 각주 시작 번호를 공용 IR(DocProperties)로 매핑한다.
+    // 소비처(assign_auto_numbers, fixup_hwp3_notes)는 이미 이 필드를 읽지만
+    // 종전엔 HWP3 파서가 doc_properties 를 전혀 채우지 않아 항상 0(→1)로 시작했다.
+    // HWP5(doc_info.rs)·HWPX(hwpx/header.rs)는 이미 매핑하는 필드다.
+    doc.doc_properties.page_start_num = doc_info.start_page_number;
+    doc.doc_properties.footnote_start_num = doc_info.footnote_start_number;
+
     // 2. 문서 요약 파싱 (1008 바이트)
     let doc_summary = Hwp3DocSummary::read(&mut cursor)?;
 
@@ -3971,6 +3978,28 @@ mod tests {
         let cs = convert_char_shape(&hwp3_cs);
 
         assert_eq!(cs.text_color, 0x00FF0000);
+    }
+
+    #[test]
+    fn hwp3_maps_page_and_footnote_start_numbers() {
+        // HWP3 doc_info 의 쪽 시작 번호 / 각주 시작 번호가 DocProperties 로 매핑돼야
+        // 한다. 종전엔 HWP3 파서가 doc_properties 를 전혀 채우지 않아 0 이었다.
+        // 정상 문서는 두 값이 1 이므로 0(미매핑) → 1(매핑) 로 red→green.
+        let path = "samples/hwp3-sample.hwp";
+        if !std::path::Path::new(path).exists() {
+            return;
+        }
+        let mut data = Vec::new();
+        File::open(path).unwrap().read_to_end(&mut data).unwrap();
+        let doc = parse_hwp3(&data).expect("hwp3-sample parse failed");
+        assert_eq!(
+            doc.doc_properties.page_start_num, 1,
+            "쪽 시작 번호가 doc_info 에서 매핑돼야 함(미매핑 시 0)"
+        );
+        assert_eq!(
+            doc.doc_properties.footnote_start_num, 1,
+            "각주 시작 번호가 doc_info 에서 매핑돼야 함(미매핑 시 0)"
+        );
     }
 
     #[test]
