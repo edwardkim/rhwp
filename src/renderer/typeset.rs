@@ -13525,7 +13525,74 @@ impl TypesetEngine {
             } else {
                 cap
             };
-            if st.current_height - snapped_base > cap {
+            // [#2373] 저장 스텝 신뢰 — 빈 host TAC 문단의 흐름 전진을 저장 ladder
+            // 스텝(다음 문단 vpos − 현 vpos)으로 양방향 정합한다. 한글 재저장
+            // 오라클 실측(36399374·36392557·보도자료 10건): 한글 fresh 스텝은
+            // 저장 스텝과 일치(보도자료 d=0)하거나 spacing 누락 서명으로만
+            // 초과한다. 종전 cap(lh+ls/2)은 과소, #2352 host_px 가산은 과대로
+            // 각각 92셋 −1 / 모집단 +1 회귀를 만들던 knife-edge 를 제거한다.
+            // spacing 누락 ladder(36399374 계열)는 종전 경로(cap=fmt.total) 유지.
+            // 신뢰 범위: cap ≤ step ≤ fmt.total+ε. 상한 초과분은 다음 문단 몫의
+            // 간격(sb)이 ladder 스텝에 섞인 것 — 신뢰하면 다음 문단 배치와 이중
+            // 계상돼 +1 회귀(156686650 pi28 step 70.1 vs fmt 56.8 실측). 하한
+            // 미달(쪽 경계 관통 스텝)은 과소 전진 −1 을 만들므로 종전 cap 폴백.
+            // 실측 근거 형상 한정: 모순 TAC(treat_as_char=true) 표만. 비-TAC
+            // TopAndBottom float(82830 pi165)은 배치 기하가 달라 스텝 신뢰가
+            // 페이지 경계 근처에서 +1 을 만든다 (재저장 오라클 미실측 형상).
+            let mut n_conflict_tac = 0usize;
+            let all_conflict_tac = para.controls.iter().all(|c| match c {
+                Control::Table(t) if self.is_effective_tac_table(para, t, &fmt) => {
+                    let conflict = t.common.treat_as_char
+                        && matches!(
+                            t.common.text_wrap,
+                            crate::model::shape::TextWrap::TopAndBottom
+                        );
+                    n_conflict_tac += usize::from(conflict);
+                    conflict
+                }
+                _ => true,
+            }) && n_conflict_tac > 0;
+            // 상한: 기본은 fmt.total(+ε). 저장 스텝이 이를 초과하는 잉여는 다음
+            // 문단 sb 가 ladder 스텝에 섞인 것인데(실측 Δ==next_sb, 두 문서군
+            // 공통), follower 가 sb 를 **트림**하는 형상(authoritative lineseg +
+            // 복원 가능 — flow_advance_height 의 sb-트림 전제)에서는 그 sb 를
+            // 아무도 흐름에 더하지 않아 host 가 스텝 전량을 소비해야 한다
+            // (1790387 pi272 계열, 미소비 시 −3쪽). follower 가 sb 를 그대로
+            // 더하는 형상이면 host 소비는 이중 계상 — 엄격 상한 유지
+            // (156686650 pi28 계열, 소비 시 +1쪽).
+            let step_upper = fmt.total_height + 1.0;
+            let trusted_step = if ladder_omits_spacing || !all_conflict_tac {
+                None
+            } else {
+                stored_step_px.filter(|&s| s >= cap - 0.5 && s <= step_upper)
+            };
+            if std::env::var("RHWP_DIAG_STEPTRUST").is_ok() {
+                let next_sb = next_para
+                    .and_then(|np| styles.para_styles.get(np.para_shape_id as usize))
+                    .map(|s| s.spacing_before)
+                    .unwrap_or(-1.0);
+                eprintln!(
+                    "DIAG_STEPTRUST pi={} step={:?} cap={:.1} fmt_total={:.1} cur_adv={:.1} conflict={} omits={} trusted={} next_sb={:.1}",
+                    para_idx,
+                    stored_step_px,
+                    cap,
+                    fmt.total_height,
+                    st.current_height - snapped_base,
+                    all_conflict_tac,
+                    ladder_omits_spacing,
+                    trusted_step.is_some(),
+                    next_sb,
+                );
+                eprintln!(
+                    "  .. step_upper={:.1} dirty={}",
+                    step_upper, st.vpos_ladder_dirty
+                );
+            }
+            if let Some(step) = trusted_step {
+                if (st.current_height - (snapped_base + step)).abs() > 0.5 {
+                    st.current_height = snapped_base + step;
+                }
+            } else if st.current_height - snapped_base > cap {
                 st.current_height = snapped_base + cap;
             }
         }
@@ -13792,32 +13859,6 @@ impl TypesetEngine {
     /// 기계생성 결재문서 특유의 모순 조합 + 빈 host 문단에만 발동한다.
     /// 반환 = host 첫 글자모양의 폰트 크기(px) — 한글 PDF 괘선 실측
     /// (36392557 pi27: 진입 22px ≈ om_top 1.9 + 15pt 줄박스 20px)과 정합.
-    fn tac_topbottom_conflict_host_line_px(
-        &self,
-        para: &Paragraph,
-        table: &crate::model::table::Table,
-        styles: &ResolvedStyleSet,
-    ) -> Option<f64> {
-        if !table.common.treat_as_char
-            || !matches!(
-                table.common.text_wrap,
-                crate::model::shape::TextWrap::TopAndBottom
-            )
-            || para_has_non_whitespace_text(para)
-        {
-            return None;
-        }
-        let cs_id = para
-            .char_shape_id_at(0)
-            .or_else(|| para.char_shapes.first().map(|cs| cs.char_shape_id))?
-            as usize;
-        let font_size = styles.char_styles.get(cs_id)?.font_size;
-        if font_size <= 0.0 {
-            return None;
-        }
-        Some(font_size)
-    }
-
     /// 표를 pre-text/table/post-text와 함께 배치한다 (Paginator place_table_fits 동일).
     #[allow(clippy::too_many_arguments)]
     fn place_table_with_text(
@@ -13982,33 +14023,12 @@ impl TypesetEngine {
             }
         } else if tac_wrap_split {
             st.current_height += table_total_height;
-        } else if let Some(host_line_px) = if st.profile.hwpx_stored_layout()
-            && is_last_placed
-            && total_lines <= pre_table_end_line + 1
-        {
-            // [#2279 10k] host 빈 줄박스는 **문단당 1개** — 다중 표 문단에서
-            // 표마다 가산하면 중간 표 배치의 fit 이 과대해져 후속 표가 조기
-            // 개행된다 (156767148 보도자료 pi7: 표2개 문단, 한글 1쪽 vs +1쪽,
-            // 10k 회귀 +29건 군집의 지배 형상). 마지막 표 배치 시점으로 이연
-            // — 단일 표 문단(36392557 pi27 장제목)은 종전과 동일.
-            // [#2279 sec0] host 문단에 표 줄 외 추가 줄박스(트레일러 빈 줄)가
-            // 이미 있으면 host 줄박스가 그 줄로 실체화된 것 — 별도 가산하면
-            // 이중 계상으로 분할 유발(36392557 sec0 표지: 표 892.5 + 트레일러
-            // 25.6 = 918.1 로 한글 1쪽인데 +16 가산 시 934.1 > 930.5 분할).
-            self.tac_topbottom_conflict_host_line_px(para, table, styles)
         } else {
-            None
-        } {
-            // [#2279 TAC host] 기계생성 결재문서의 모순 조합(treat_as_char=true +
-            // wrap=자리차지) 장제목/결재표: 한글 fresh 는 host 빈 줄박스(호스트
-            // CS 크기)를 표 **위에** 별도 배치한다 — 36392557 pi27 한글 PDF
-            // 괘선 실측: 표 top = 흐름 + om_top(1.9px) + host 줄박스(20px=15pt).
-            // rhwp 는 lh-포함형(host lh = 표+om)으로만 소비해 표당 ~20px 과소
-            // (92셋 −1쪽 계열의 "TAC host +15~21px" 성분). 가산 후에는 생성기
-            // 압축 anchor 로의 후방 스냅이 성장분을 되돌리지 못하게 dirty 처리.
-            st.current_height += host_line_px + pre_height + table_total_height;
-            st.vpos_ladder_dirty = true;
-        } else {
+            // [#2373] 종전 #2352 host 줄박스 가산(빈 host TAC 모순 문단에 호스트
+            // CS 크기를 표 위에 별도 가산)은 제거 — 한글 재저장 오라클 실측에서
+            // 한글 fresh 스텝이 저장 ladder 와 일치(보도자료 계열 d=0, 모집단
+            // +1 회귀 10건)했고, 92셋 정합(36392557·36399374)은 저장 스텝 신뢰
+            // (typeset_table_paragraph 의 cap 블록)로 대체 달성된다.
             // [#2097 프로브 기록] 빈 host 자리차지 float(v_off>0)의 흐름 전진에
             // v_off + outer_bottom 을 더하는 기하 정합(82802 pi75: 저장 322.6 =
             // v_off 21.6 + outer 3.8 + 표 297.2, rhwp 299.1)은 격리 수정으로
