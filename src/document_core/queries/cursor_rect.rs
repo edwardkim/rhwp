@@ -4167,6 +4167,17 @@ impl DocumentCore {
 
     /// 각주 영역 히트테스트
     ///
+    /// 페이지에 각주 영역이 존재하는지 빠르게 확인.
+    /// 페이지네이션 메타데이터(footnotes Vec)만 조회하므로 render tree build가 필요 없다.
+    /// hitTestFootnote fast-reject (#2428) 전용.
+    pub fn page_has_footnote_footholds_native(&self, page_num: u32) -> bool {
+        let (page_content, _, _) = match self.find_page(page_num) {
+            Ok(result) => result,
+            Err(_) => return false,
+        };
+        !page_content.footnotes.is_empty()
+    }
+
     /// 페이지 좌표가 각주 영역에 해당하는지 판별.
     /// 반환: JSON `{"hit":true,"footnoteIndex":N}` 또는 `{"hit":false}`
     pub fn hit_test_footnote_native(

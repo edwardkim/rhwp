@@ -3930,6 +3930,13 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 페이지에 각주 영역이 있는지 빠르게 확인 (hitTestFootnote fast-reject).
+    /// 페이지네이션 메타데이터만 조회하므로 render tree build가 필요 없다 (#2428).
+    #[wasm_bindgen(js_name = pageHasFootnoteFootholds)]
+    pub fn page_has_footnote_footholds(&self, page_num: u32) -> bool {
+        self.page_has_footnote_footholds_native(page_num)
+    }
+
     /// 각주 영역 히트테스트
     #[wasm_bindgen(js_name = hitTestFootnote)]
     pub fn hit_test_footnote(&self, page_num: u32, x: f64, y: f64) -> Result<String, JsValue> {
