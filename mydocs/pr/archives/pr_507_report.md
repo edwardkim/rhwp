@@ -41,7 +41,7 @@ cherry-pick 의 default 동작으로 author = @cskwork 유지, committer = edwar
 | `mydocs/plans/task_m100_505{,_impl}.md` (신규) | 컨트리뷰터의 절차 문서 |
 | `mydocs/working/task_m100_505_stage{1-4}.md` (신규) | 단계별 보고서 |
 | `mydocs/report/task_m100_505_report.md` (신규) | 최종 보고서 |
-| `mydocs/tech/all_in_one_parser_fidelity_strategy.md` (신규) | 1:1 정합화 전략 |
+| `mydocs/tech/archive/all_in_one_parser_fidelity_strategy.md` (신규) | 1:1 정합화 전략 |
 | `mydocs/orders/20260501.md` | +12 (auto-merge 정합) |
 
 ## 3. 검증 결과

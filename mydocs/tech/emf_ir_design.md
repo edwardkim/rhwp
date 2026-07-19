@@ -1,3 +1,10 @@
+---
+kind: decision
+status: active
+canonical: mydocs/tech/emf_spec.md
+last_verified: 2026-07-17
+---
+
 # EMF IR (Intermediate Representation) 설계 — rhwp `src/emf/`
 
 > Task #195 단계 9 산출물

@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/browser_extension_dev_guide.md
+last_verified: 2026-07-17
+---
+
 # 브라우저 확장 프로그램 개발 가이드 (Safari/Chrome/Edge/Firefox)
 
 **작성일**: 2026-04-09 · **최종 갱신**: 2026-04-23

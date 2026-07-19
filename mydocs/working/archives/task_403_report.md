@@ -11,7 +11,7 @@
 | Extension Host | `rhwp-vscode/src/extension.ts` | 진입점 |
 | Editor Provider | `rhwp-vscode/src/hwp-editor-provider.ts` | CustomReadonlyEditorProvider |
 | Webview 뷰어 | `rhwp-vscode/src/webview/viewer.ts` | WASM 초기화 + 가상 스크롤 + Canvas 렌더링 |
-| 설계 문서 | `mydocs/tech/vscode_extension_design.md` | 아키텍처, 프로토콜, 빌드 파이프라인 |
+| 설계 문서 | `mydocs/tech/archive/vscode_extension_design.md` | 아키텍처, 프로토콜, 빌드 파이프라인 |
 
 ### 단계별 진행 요약
 

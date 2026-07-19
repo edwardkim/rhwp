@@ -1,10 +1,14 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 프로젝트 브랜치 정책 + iOS 분기
 description: main/devel/local-devel/local-task{N} + ios/devel(맥북 전용) 장기 분리
 type: project
 originSessionId: 4861649d-834a-43c6-a262-9f08333360e8
 ---
-**브랜치 정책 (CLAUDE.md 정합):**
+**브랜치 정책 (canonical: `mydocs/manual/codex/docs_and_git_workflow.md` — 구 CLAUDE.md에서 이관, 2026-07-17):**
 
 | 브랜치 | 역할 | 비고 |
 |--------|------|------|

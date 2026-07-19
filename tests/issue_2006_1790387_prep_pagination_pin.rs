@@ -26,10 +26,13 @@ fn page_count_of(rel: &str) -> u32 {
 fn prep_1790387_page_count_pin() {
     let pages = page_count_of("samples/issue2006/1790387_prep_final_report.hwpx");
     assert_eq!(
-        pages, 141,
-        "issue2006 1790387 핀 141쪽 (한글 2022 정답지 146쪽, 잔여 -5=줄-채움 누적 축). \
-         실측 {}p — 130p 부근이면 tac 이미지 스택 미분할(#2006) 회귀, 141p 초과 개선 시 \
-         핀과 정답지(146)를 갱신할 것.",
+        pages, 144,
+        "issue2006 1790387 핀 144쪽 (한글 2022 정답지 146쪽, 잔여 -2). \
+         141→144 는 #2279 TAC host 가산, 144→145 는 자간 글자폭-비례 landing, \
+         145→144 는 host 가산의 sb+sa 정확 모델 전환(#2279 sb+α 종결) — sb=0 \
+         host 의 font_size 근사 box 가 별건 결손(#1921 텍스트 채움 계열)을 우연 \
+         보정하던 몫이 걷힘. 실측 {}p — 130p 부근이면 tac 이미지 스택 \
+         미분할(#2006) 회귀, 144p 초과 개선 시 핀과 정답지(146)를 갱신할 것.",
         pages
     );
 }

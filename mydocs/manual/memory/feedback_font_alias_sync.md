@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 한글 폰트 추가 시 resolve_metric_alias 동기화 필수
 description: 새 한글 폰트를 지원할 때 style_resolver 외에도 font_metrics_data의 resolve_metric_alias에 매핑을 등록하지 않으면 SVG 글자 겹침 발생
 type: feedback

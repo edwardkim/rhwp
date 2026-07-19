@@ -349,6 +349,11 @@ fn compute_control_mask(para: &Paragraph) -> u32 {
     if para.text.contains('\n') {
         mask |= 1u32 << 0x000A;
     }
+    // 묶음 빈칸 (0x001E, NBSP): serialize_para_text 가 U+00A0 마다 코드 0x1E 를 방출하므로
+    // (#1793) control_mask 비트 30 도 세워 PARA_HEADER 를 PARA_TEXT 와 일치시킨다.
+    if para.text.contains('\u{00A0}') {
+        mask |= 1u32 << 0x001E;
+    }
     // FIXED_WIDTH_SPACE (0x001F): HWPX에서 들어온 일부 문맥은 U+2007을
     // literal code point가 아니라 HWP5 fixed blank control로 저장해야 한다.
     if should_serialize_figure_space_as_hwp_fixed_blank(para) {
@@ -1174,6 +1179,23 @@ mod tests {
         let bytes = test_serialize_para_text(&para);
 
         assert_eq!(&bytes[2..4], &0x001E_u16.to_le_bytes());
+    }
+
+    /// [NBSP mask] U+00A0 은 PARA_TEXT 에 코드 0x1E 로 방출되므로 PARA_HEADER control_mask
+    /// 비트 30 도 서야 한다(안 서면 한컴에서 헤더/텍스트 불일치).
+    #[test]
+    fn test_nbsp_sets_control_mask_bit_30() {
+        let para = Paragraph {
+            char_count: 4,
+            text: "가\u{00A0}나".to_string(),
+            char_offsets: vec![0, 1, 2],
+            ..Default::default()
+        };
+        assert_ne!(
+            compute_control_mask(&para) & (1u32 << 0x001E),
+            0,
+            "U+00A0 포함 시 control_mask 비트 30 이 서야 PARA_TEXT(0x1E)와 일치한다"
+        );
     }
 
     /// 컨트롤 문자 코드 매핑 테스트

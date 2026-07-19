@@ -97,9 +97,9 @@ bdb51a4 Task #460 Stage 9 보완6: HWP3 wrap zone x 위치 수정 (wrap_precompu
 - `mydocs/report/task_m100_604_report.md` (+325) — 최종 보고서
 - `mydocs/working/task_m100_604_{stage1,stage2,stage2b,stage3,stage6,stageAD,stageD2}.md` (+810 누적) — 단계별 보고서 7개
 - `mydocs/tech/document_ir_lineseg_standard.md` (+195) — IR 표준 명문화
-- `mydocs/tech/document_ir_parser_relationship_analysis.md` (+430) — IR ↔ 각 파서 관계 분석
-- `mydocs/tech/document_ir_wrap_zone_standard_review.md` (+209) — wrap zone 표준 review
-- `mydocs/tech/hwp5_wrap_precomputed_analysis.md` (+185) — HWP5/HWPX 미적용 분석
+- `mydocs/tech/investigations/issue-511/document_ir_parser_relationship_analysis.md` (+430) — IR ↔ 각 파서 관계 분석
+- `mydocs/tech/investigations/issue-511/document_ir_wrap_zone_standard_review.md` (+209) — wrap zone 표준 review
+- `mydocs/tech/investigations/issue-511/hwp5_wrap_precomputed_analysis.md` (+185) — HWP5/HWPX 미적용 분석
 - `mydocs/orders/20260505.md` (+6) — Task #604 entry
 
 #### 샘플 (2 files)

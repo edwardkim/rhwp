@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/hwp_spec_errata.md
+last_verified: 2026-07-17
+---
+
 # HWPTAG_CTRL_DATA 분석 (hwplib 크로스 체크)
 
 ## 개요

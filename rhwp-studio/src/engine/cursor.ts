@@ -1,5 +1,5 @@
 import type { DocumentPosition, CursorRect, LineInfo, CellPathEntry, NavContextEntry, CellBbox } from '@/core/types';
-import { WasmBridge } from '@/core/wasm-bridge';
+import type { WasmBridge } from '@/core/wasm-bridge';
 
 type CellSelectionReason = 'manual' | 'protected';
 
@@ -263,6 +263,24 @@ export class CursorState {
     this.position = { ...pos };
     this.atLineEnd = false;
     this.updateRect();
+  }
+
+  /**
+   * 방금 수행한 pointer hit-test 위치로 커서를 이동한다.
+   *
+   * 경로 기반 좌표 조회는 한 페이지에 같은 셀 문단의 여러 continuation run이 있으면
+   * 같은 page의 다른 run을 고를 수 있다. pointer hit-test가 제공한 좌표를 최종 기하로
+   * 직접 사용하고, 좌표가 없는 호환 경로에서만 기존 경로 기반 조회로 보완한다.
+   * 편집·키보드 이동에는 오래된 hit 좌표가 남을 수 있으므로 이 메서드를 사용하지 않는다.
+   */
+  moveToHit(pos: DocumentPosition): void {
+    this.position = { ...pos };
+    this.atLineEnd = false;
+    if (pos.cursorRect) {
+      this.rect = { ...pos.cursorRect };
+    } else {
+      this.updateRect();
+    }
   }
 
   /** preferredX 초기화 (수평 이동/클릭/편집 시) */

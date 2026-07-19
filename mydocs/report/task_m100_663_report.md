@@ -56,5 +56,5 @@ git diff --check
 - Vision 기반 ingest 산출물까지 확보되면 동일 CLI 흐름으로 전수 비교한다.
 - 수식/도형/이미지 문제는 텍스트 라인 보존과 별도로 `media` 또는 전용 구조를 ingest
   스키마에 반영하는 후속 이슈로 다룬다.
-- 원본 PDF 와의 시각 정합이 목표라면 `mydocs/manual/visual_sweep_guide.md` 기준으로
+- 원본 PDF 와의 시각 정합이 목표라면 `mydocs/manual/verification/visual_sweep_guide.md` 기준으로
   별도 visual sweep 을 수행하고, 그 결과는 텍스트 보존 검증과 분리해 판정한다.

@@ -23,7 +23,7 @@
 
 작업지시자 결정으로 **다층 레이어 아키텍처** 를 별도 task 로 분리. 후보 3 안 (Multi-Canvas / WebGPU / HTML Hybrid) 비교 보고서 작성:
 
-- **로컬 보고서**: `mydocs/tech/multi_layer_rendering_strategy.md`
+- **로컬 보고서**: `mydocs/tech/investigations/issue-516/multi_layer_rendering_strategy.md`
 - **GitHub Discussion**: [#529](https://github.com/edwardkim/rhwp/discussions/529) — Ideas 카테고리
 - **목적**: 후보 결정 과정 기록 (의사결정 권위 자료)
 
@@ -72,7 +72,7 @@
 - `mydocs/plans/task_m100_516.md` (수행 계획서)
 - `mydocs/plans/task_m100_516_impl.md` (구현 계획서)
 - `mydocs/working/task_m100_516_stage{1,3,4,5}.md` (단계별 보고서)
-- `mydocs/tech/multi_layer_rendering_strategy.md` (다층 레이어 후보 3 안 기술 조사)
+- `mydocs/tech/investigations/issue-516/multi_layer_rendering_strategy.md` (다층 레이어 후보 3 안 기술 조사)
 - GitHub Discussion [#529](https://github.com/edwardkim/rhwp/discussions/529) (Ideas 카테고리)
 
 ## 다음 단계

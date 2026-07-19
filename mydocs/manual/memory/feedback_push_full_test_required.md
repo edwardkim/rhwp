@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: push-cargo-test-tests-fmt-check
 description: cargo test --lib만으로는 통합 테스트(tests/issue_*.rs) 회귀를 못 잡음. push/머지 전 --tests 전체 + fmt --check 동시 검증 필수
 metadata: 

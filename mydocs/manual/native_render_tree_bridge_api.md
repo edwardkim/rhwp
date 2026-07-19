@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/manual/native_render_tree_bridge_api.md
+last_verified: 2026-07-17
+---
+
 # Native Render Tree Bridge API
 
 ## 목적

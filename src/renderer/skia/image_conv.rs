@@ -39,12 +39,14 @@ pub fn draw_svg_fragment(
     width: f32,
     height: f32,
     sampling: ImageSampling,
+    raster_scale: f32,
 ) -> bool {
     // [Issue #2292] RawSvg 조각은 페이지 절대 좌표로 방출된다(SVG 백엔드
     // 직접 삽입·web_canvas 와 동일 계약). viewBox 원점에 조각의 페이지
     // 위치(x, y)를 넘겨 bbox 창만 래스터한다 — (0,0) 가정 시 창 밖 콘텐츠
     // 전부 클리핑 + bbox 재배치 이중 오프셋으로 차트가 잘렸다.
-    let Some(png) = rasterize_svg_fragment_to_png(svg_fragment, x, y, width, height) else {
+    let Some(png) = rasterize_svg_fragment_to_png(svg_fragment, x, y, width, height, raster_scale)
+    else {
         return false;
     };
     draw_image_bytes(
@@ -59,8 +61,7 @@ pub fn draw_svg_fragment(
         None,
         ImageEffect::RealPic,
         sampling,
-    );
-    true
+    )
 }
 
 pub fn draw_image_bytes(
@@ -75,7 +76,7 @@ pub fn draw_image_bytes(
     crop: Option<(i32, i32, i32, i32)>,
     effect: ImageEffect,
     sampling: ImageSampling,
-) {
+) -> bool {
     let is_valid_destination_rect = |x: f32, y: f32, width: f32, height: f32| {
         x.is_finite()
             && y.is_finite()
@@ -149,7 +150,7 @@ pub fn draw_image_bytes(
     };
 
     if !is_valid_destination_rect(x, y, width, height) {
-        return;
+        return false;
     }
     let normalized_bytes = if detect_image_mime_type(bytes) == "image/jpeg" {
         grayscale_jpeg_bytes_to_png_bytes(bytes)
@@ -160,7 +161,7 @@ pub fn draw_image_bytes(
 
     let Some(image) = Image::from_encoded(Data::new_copy(encoded_bytes)) else {
         draw_missing_image_placeholder(x, y, width, height);
-        return;
+        return false;
     };
 
     let dst = Rect::from_xywh(x, y, width, height);
@@ -219,7 +220,7 @@ pub fn draw_image_bytes(
 
     if matches!(mode, ImageFillMode::FitToSize | ImageFillMode::None) {
         draw_image_rect(crop_src, dst);
-        return;
+        return true;
     }
 
     let image_width = original_size
@@ -230,7 +231,7 @@ pub fn draw_image_bytes(
         .unwrap_or_else(|| image.height() as f32);
     if !is_valid_image_size(image_width, image_height) {
         draw_missing_image_placeholder(x, y, width, height);
-        return;
+        return false;
     }
 
     canvas.save();
@@ -293,7 +294,7 @@ pub fn draw_image_bytes(
             && draw_tiled_shader(dst, x, y)
         {
             canvas.restore();
-            return;
+            return true;
         }
         if matches!(
             mode,
@@ -306,7 +307,7 @@ pub fn draw_image_bytes(
             };
             if draw_tiled_shader(Rect::from_xywh(x, tile_y, width, image_height), x, tile_y) {
                 canvas.restore();
-                return;
+                return true;
             }
         }
         if matches!(
@@ -320,9 +321,11 @@ pub fn draw_image_bytes(
             };
             if draw_tiled_shader(Rect::from_xywh(tile_x, y, image_width, height), tile_x, y) {
                 canvas.restore();
-                return;
+                return true;
             }
         }
+        canvas.restore();
+        return false;
     } else {
         let (image_x, image_y) =
             resolve_image_placement(mode, x, y, width, height, image_width, image_height);
@@ -333,6 +336,7 @@ pub fn draw_image_bytes(
     }
 
     canvas.restore();
+    true
 }
 
 fn rasterize_svg_fragment_to_png(
@@ -341,6 +345,7 @@ fn rasterize_svg_fragment_to_png(
     src_y: f32,
     width: f32,
     height: f32,
+    raster_scale: f32,
 ) -> Option<Vec<u8>> {
     if svg_fragment.is_empty()
         || svg_fragment.len() > MAX_SVG_FRAGMENT_BYTES
@@ -348,13 +353,17 @@ fn rasterize_svg_fragment_to_png(
         || !src_y.is_finite()
         || !width.is_finite()
         || !height.is_finite()
+        || !raster_scale.is_finite()
         || width <= 0.0
         || height <= 0.0
+        || raster_scale <= 0.0
     {
         return None;
     }
-    let raster_width = width.ceil() as u64;
-    let raster_height = height.ceil() as u64;
+    let output_width = width * raster_scale;
+    let output_height = height * raster_scale;
+    let raster_width = output_width.ceil() as u64;
+    let raster_height = output_height.ceil() as u64;
     if raster_width
         .checked_mul(raster_height)
         .is_none_or(|pixels| pixels > MAX_SVG_RASTER_PIXELS)
@@ -365,7 +374,7 @@ fn rasterize_svg_fragment_to_png(
     // [Issue #2292] 조각은 페이지 절대 좌표 — viewBox 를 조각의 페이지 좌표
     // 창(src_x, src_y 원점)으로 지정해 bbox 영역만 (0,0) 래스터로 사상한다.
     let svg = format!(
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{width:.2}\" height=\"{height:.2}\" viewBox=\"{src_x:.2} {src_y:.2} {width:.2} {height:.2}\">{svg_fragment}</svg>"
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{output_width:.2}\" height=\"{output_height:.2}\" viewBox=\"{src_x:.2} {src_y:.2} {width:.2} {height:.2}\">{svg_fragment}</svg>"
     );
     let options = svg_parse_options();
     let tree = usvg::Tree::from_str(&svg, &options).ok()?;

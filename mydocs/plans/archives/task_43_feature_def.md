@@ -1620,6 +1620,6 @@ impl HwpDocument {
 | 한컴 개발자 포털 | https://developer.hancom.com/webhwp |
 | 웹기안기 예제 | https://webhwpctrl-example.cloud.hancom.com/webhwp-example |
 | webhwp 구현 분석 | `mydocs/feedback/webhwp_anal_001.md` |
-| 아키텍처 비교 | `mydocs/tech/webhwp_vs_rhwp_parsing.md` |
-| 프로젝트 비전 | `mydocs/tech/project_vision.md` |
-| 개발 로드맵 | `mydocs/tech/dev_roadmap.md` |
+| 아키텍처 비교 | `mydocs/tech/webhwp/parsing_comparison.md` |
+| 프로젝트 비전 | `mydocs/tech/archive/project_vision.md` |
+| 개발 로드맵 | `mydocs/tech/archive/dev_roadmap_20260324.md` |

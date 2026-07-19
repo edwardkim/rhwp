@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/hwpx2hwp_probe_onboarding.md
+last_verified: 2026-07-17
+---
+
 # HWPX2HWP Probe 추적 온보딩
 
 이 문서는 HWPX를 IR로 읽은 뒤 HWP로 저장할 때 발생하는 한컴 호환성 문제를 추적하는 방법을 설명한다.

@@ -6,8 +6,8 @@
 - 상태: **초안 — maintainer/collaborator 리뷰 요청 전**
 - 거버넌스: **SOLID + 복잡도**
   - SOLID: `mydocs/manual/solid_scoring_guide.md`를 프론트 구조에 맞게 재해석
-  - 복잡도: `mydocs/tech/task_m100_2023_frontend_diagnosis.md`의 예비 baseline 사용
-  - guardrail: `mydocs/tech/task_m100_2023_frontend_contract_guardrails.md`
+  - 복잡도: `mydocs/tech/investigations/issue-2023/task_m100_2023_frontend_diagnosis.md`의 예비 baseline 사용
+  - guardrail: `mydocs/tech/investigations/issue-2023/task_m100_2023_frontend_contract_guardrails.md`
 
 ## 0. 대원칙 — 프론트도 빅뱅 리팩터링 금지
 
@@ -28,7 +28,7 @@
 
 ## 1. 현재 영점
 
-상세 수치: `mydocs/tech/task_m100_2023_frontend_diagnosis.md`
+상세 수치: `mydocs/tech/investigations/issue-2023/task_m100_2023_frontend_diagnosis.md`
 
 | 항목 | 측정값 | 판정 |
 |------|-------:|------|

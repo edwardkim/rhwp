@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # typeset / layout drift 분석 — Task #331 revert 회고
 
 - **관련 이슈**: #331 (문단 trailing line_spacing 누적 drift)

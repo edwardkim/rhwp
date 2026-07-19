@@ -543,10 +543,20 @@ impl DocumentCore {
             }
         }
         if reflow_text_para_after_floating {
+            // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
+            let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+                &self.document.sections[section_idx].paragraphs[parent_para_idx],
+            );
             self.reflow_paragraph(section_idx, parent_para_idx);
+            let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
             crate::renderer::composer::recalculate_section_vpos(
                 &mut self.document.sections[section_idx].paragraphs,
                 parent_para_idx,
+                None,
+                stored_end_for_reset,
+                &self.styles,
+                self.dpi,
+                doc_hwp3_layout,
             );
         }
         // 캡션 생성/삭제 시 AutoNumber 재할당. 생성 path 는 문단 placeholder 도 보강한다.
@@ -674,7 +684,7 @@ impl DocumentCore {
     ///
     /// 한컴 2022 산출물 (`samples/tac-verify/scenario-{a,b,c,d}-after.hwp`) 분석
     /// 결과: floating picture 의 `treat_as_char` 가 false→true 로 토글될 때
-    /// 한컴은 다음만 갱신한다 (자세한 분석: `mydocs/tech/hancom_picture_tac_toggle.md`).
+    /// 한컴은 다음만 갱신한다 (자세한 분석: `mydocs/tech/investigations/issue-1151/hancom_picture_tac_toggle.md`).
     ///
     /// Picture 자체: `horz_rel_to = Para`, `vert_rel_to = Para`,
     /// `horizontal_offset = 0`, `vertical_offset = 0`. (`treat_as_char = true` 와 attr

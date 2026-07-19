@@ -1,4 +1,17 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/hwp_spec_errata.md
+last_verified: 2026-07-17
+---
+
 # HWP 저장 기술 가이드
+
+> **전제조건 주의.** 이 문서는 "IR → 바이트" 직렬화 방식을 설명한다. 그러나 편집한 IR이 이 직렬화
+> 경로에 **도달하려면** 먼저 원본 바이트 passthrough를 무효화해야 한다. 무효화하지 않으면 직렬화기는
+> 현재 IR을 무시하고 원본 바이트를 그대로 돌려주며, 편집은 저장에서 사라진다. 세 계층의 게이트와
+> 뮤테이터 무효화 의무는 [직렬화 passthrough·무효화 계약](serialization_passthrough_contract.md)을
+> 따른다.
 
 ## 1. 편집 영역 좌표계
 
@@ -350,7 +363,7 @@ LIST_HEADER (level L+2) ← 셀별 반복
 
 4. **SHAPE_COMPONENT_PICTURE (tag=85)**: 82바이트 (level=L+3)
    - border_color(4) + border_width(4) + border_attr(4)
-   - border_x[4](16) + border_y[4](16) — 사각형 좌표
+   - border_x[4] (16) + border_y[4] (16) — 사각형 좌표
    - crop(16) + padding(8) + image_attr(5) + raw_picture_extra(9)
 
 5. **border 좌표 패턴**: W=너비, H=높이일 때

@@ -101,7 +101,7 @@ if opts.respect_vpos_reset {
 ### 검증
 - 기본 동작에서 21_언어 15쪽
 - `cargo test` 992 passed 유지
-- 분석 보고서 갱신: `mydocs/tech/line_seg_vpos_analysis.md` 에 결과 추가
+- 분석 보고서 갱신: `mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md` 에 결과 추가
 
 ### 산출물
 - 단계 보고서 `task_m100_311_stage3.md`

@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/dashboard.md
+last_verified: 2026-07-17
+---
+
 # 코드 품질 대시보드 매뉴얼
 
 ## 개요

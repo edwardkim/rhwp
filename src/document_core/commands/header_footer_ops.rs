@@ -315,6 +315,10 @@ impl DocumentCore {
         }
 
         let hf_para = self.get_hf_paragraph_mut(section_idx, is_header, apply_to, hf_para_idx)?;
+        // [Task #2337] undo 재삽입용으로 삭제될 텍스트를 먼저 확보한다. char 단위 슬라이스는
+        // delete_text_at 의 클램핑(text_len - char_offset)과 동일 범위이며, Rust char 경계로
+        // 잘라 studio(UTF-16) 측 조인 모호성을 피한다. 역연산 삭제 커맨드가 재삽입에 쓴다.
+        let deleted_text: String = hf_para.text.chars().skip(char_offset).take(count).collect();
         hf_para.delete_text_at(char_offset, count);
 
         // 리플로우
@@ -332,8 +336,9 @@ impl DocumentCore {
             count,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"charOffset\":{}",
-            char_offset
+            "\"charOffset\":{},\"deletedText\":\"{}\"",
+            char_offset,
+            super::super::helpers::json_escape(&deleted_text)
         )))
     }
 

@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 이슈 클로즈는 작업지시자 승인 필수
 description: 이슈를 작업지시자 승인 없이 임의로 클로즈하지 않는다. #62에서 미해결 상태로 클로즈한 위반 사례.
 type: feedback

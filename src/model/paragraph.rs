@@ -457,6 +457,52 @@ impl Paragraph {
     }
 
     /// char_offset 위치에 텍스트를 삽입한다.
+    /// 인라인 컨트롤(각주/미주/수식/새 번호 등, 8 code unit)을 char_offset 위치에 삽입할 때
+    /// 문단 메타데이터를 일괄 시프트한다.
+    ///
+    /// `char_offsets[safe_offset..]` 를 +8 하고, 삽입 지점(UTF-16) 이후의
+    /// `char_shapes.start_pos` 와 `range_tags.start/end` 도 +8 시프트한다. 종전에는
+    /// 각 삽입 경로가 char_offsets 만 밀고 char_shapes/range_tags 를 그대로 둬서, 삽입
+    /// 지점 이후 글자모양 run 경계가 텍스트와 어긋났다(글자모양 오염). `insert_text_at`
+    /// 의 시프트 규약과 동형이다.
+    pub(crate) fn shift_for_inline_control_insert(&mut self, char_offset: usize) {
+        if self.char_offsets.is_empty() {
+            return;
+        }
+        let text_len = self.text.chars().count();
+        let safe_offset = char_offset.min(text_len);
+        // 컨트롤이 삽입되는 UTF-16 위치 — char_offsets 시프트 전에 계산한다.
+        let insert_pos: u32 = if safe_offset < self.char_offsets.len() {
+            self.char_offsets[safe_offset]
+        } else {
+            let last_idx = self.char_offsets.len() - 1;
+            let last_w = self
+                .text
+                .chars()
+                .nth(last_idx)
+                .map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 })
+                .unwrap_or(1);
+            self.char_offsets[last_idx] + last_w
+        };
+        for co in self.char_offsets[safe_offset..].iter_mut() {
+            *co += 8;
+        }
+        // 문단 시작(pos 0)에 고정된 첫 스타일은 유지(insert_text_at 과 동일).
+        for cs in &mut self.char_shapes {
+            if cs.start_pos > insert_pos || (cs.start_pos == insert_pos && cs.start_pos > 0) {
+                cs.start_pos += 8;
+            }
+        }
+        for rt in &mut self.range_tags {
+            if rt.start >= insert_pos {
+                rt.start += 8;
+            }
+            if rt.end >= insert_pos {
+                rt.end += 8;
+            }
+        }
+    }
+
     ///
     /// char_offset은 Rust 문자(char) 인덱스이다 (바이트 인덱스가 아님).
     /// 삽입 후 char_offsets, char_shapes, line_segs, char_count가 자동 갱신된다.
@@ -813,8 +859,15 @@ impl Paragraph {
             tag,
             ..Default::default()
         }];
+        // [Task #2299] 앞 절반은 원본 첫 LineSeg 의 vertical_pos 를 유지한다 —
+        // 분할해도 문단의 첫 줄 위치는 변하지 않고, 저장 vpos 가 단/쪽 리셋 인코딩인
+        // 문단(예: 다단 col1 첫 문단)을 분할해도 그 신호가 살아남아야 한다.
+        // 새 절반의 vpos=0 은 배치 전 placeholder 로, 호출측 recalc 가
+        // ignore_reset_at 으로 흐름에 연결한다.
+        let orig_vpos = orig_line_seg.as_ref().map(|o| o.vertical_pos).unwrap_or(0);
         self.line_segs = vec![LineSeg {
             text_start: 0,
+            vertical_pos: orig_vpos,
             line_height: lh,
             text_height: th,
             baseline_distance: bd,
@@ -983,8 +1036,14 @@ impl Paragraph {
             ),
             _ => (400, 400, 320, 0, 0, LineSeg::TAG_SINGLE_SEGMENT_LINE),
         };
+        // [Task #2299] split_at 과 동일하게 호스트(self)의 원본 vertical_pos 를
+        // 유지한다 — 병합해도 문단 첫 줄 위치는 변하지 않으며, 0 placeholder 로
+        // 재생성하면 편집발 vpos 재계산이 이를 저장 단/쪽 리셋으로 오인해 병합
+        // 문단을 구역 상단 좌표에 동결시킨다 (밴드 내 range-delete 시 +1 팬텀 쪽).
+        let orig_vpos = orig_line_seg.as_ref().map(|o| o.vertical_pos).unwrap_or(0);
         self.line_segs = vec![LineSeg {
             text_start: 0,
+            vertical_pos: orig_vpos,
             line_height: lh,
             text_height: th,
             baseline_distance: bd,

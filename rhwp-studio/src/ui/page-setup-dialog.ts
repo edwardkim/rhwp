@@ -3,6 +3,7 @@ import { appendSvgMarkup } from './dom-utils';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { PageDef } from '@/core/types';
 import type { EventBus } from '@/core/event-bus';
+import type { CommandServices } from '@/command/types';
 
 const HWPUNIT_PER_MM = 7200 / 25.4; // ≈283.46
 const PAPER_PRESET_TOLERANCE_HU = 3;
@@ -68,7 +69,7 @@ export class PageSetupDialog extends ModalDialog {
   private marginInputs!: Record<string, HTMLInputElement>;
   private scopeSelect!: HTMLSelectElement;
 
-  constructor(wasm: WasmBridge, eventBus: EventBus, sectionIdx: number) {
+  constructor(wasm: WasmBridge, eventBus: EventBus, sectionIdx: number, private services?: CommandServices) {
     super('편집 용지', 440);
     this.wasm = wasm;
     this.eventBus = eventBus;
@@ -226,8 +227,17 @@ export class PageSetupDialog extends ModalDialog {
       binding: parseInt(this.bindingRadios.find(r => r.checked)?.value ?? '0'),
     };
 
-    const result = this.wasm.setPageDef(this.sectionIdx, newDef);
-    if (result.ok) {
+    // [편집 용지 이관] 쪽 정의 변경을 snapshot 으로 라우팅해 undo 가능(#2077 수식 속성 동형).
+    // services 미주입 환경(구 호출부)에서만 직접 적용 fallback.
+    const apply = () => this.wasm.setPageDef(this.sectionIdx, newDef);
+    const ih = this.services?.getInputHandler();
+    if (ih) {
+      ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'pageSetup',
+        operation: () => { apply(); return ih.getCursorPosition(); },
+      });
+    } else if (apply().ok) {
       this.eventBus.emit('document-changed');
     }
   }

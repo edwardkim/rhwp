@@ -114,7 +114,7 @@ function selectProtectedCell(this: any, hit: any): void {
     this.tableObjectRenderer?.clear();
     this.eventBus.emit('table-object-selection-changed', false);
   }
-  this.cursor.moveTo(hit);
+  this.cursor.moveToHit(hit);
   this.cursor.resetPreferredX();
   if (!this.cursor.enterCellSelectionMode('protected')) return;
   this.active = true;
@@ -211,7 +211,7 @@ function finishCellSelectionDrag(this: any, e: MouseEvent): void {
       this.cursor.exitCellSelectionMode();
       this.cellSelectionRenderer?.clear();
       this.cursor.clearSelection();
-      this.cursor.moveTo(hit);
+      this.cursor.moveToHit(hit);
       this.cursor.resetPreferredX();
       this.cursor.setAnchor();
       this.active = true;
@@ -399,11 +399,11 @@ export function onClick(this: any, e: MouseEvent): void {
                 hit.sectionIndex === ref.sec &&
                 hit.parentParaIndex === ref.ppi &&
                 hit.controlIndex === ref.ci &&
-                !this.isTableBorderClick(px, py, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
+                !this.isTableBorderClick(pi, px, py, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
               enterCellHit = hit;
             }
           }
-          const bbox = this.wasm.getTableBBox(ref.sec, ref.ppi, ref.ci);
+          const bbox = this.wasm.getTableBBoxAtPage(ref.sec, ref.ppi, ref.ci, pi);
           if (px >= bbox.x && px <= bbox.x + bbox.width &&
               py >= bbox.y && py <= bbox.y + bbox.height) {
             clickedInsideSelectedTable = true;
@@ -695,6 +695,10 @@ export function onClick(this: any, e: MouseEvent): void {
             const contentX = e.clientX - contentRect.left;
             const contentY = e.clientY - contentRect.top;
             const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
+            // hover 경로(handleMouseMove)의 캐시 일치 판정이 pageHint 를 비교하므로 여기서
+            // 채워준다. 비워두면 `undefined !== pageIdx` 가 항상 참이라 hover 가 매번
+            // early return 해 표 리사이즈 marker 가 한 번도 표시되지 않는다.
+            this.cachedTableRef.pageHint = pageIdx;
             const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
             const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
             const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
@@ -939,9 +943,9 @@ export function onClick(this: any, e: MouseEvent): void {
 
     // 표 경계선 클릭 감지 → 표 객체 선택 (셀 내부에서 외곽 클릭)
     if (hit.parentParaIndex !== undefined && hit.controlIndex !== undefined && !hit.isTextBox) {
-      if (this.isTableBorderClick(pageX, pageY, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
+      if (this.isTableBorderClick(pageIdx, pageX, pageY, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
         this.cursor.clearSelection();
-        this.cursor.moveTo(hit); // 셀 위치로 이동 (유효한 렌더링 위치)
+        this.cursor.moveToHit(hit); // 셀 위치로 이동 (유효한 렌더링 위치)
         this.cursor.enterTableObjectSelectionDirect(hit.sectionIndex, hit.parentParaIndex, hit.controlIndex);
         this.active = true;
         this.caret.hide();
@@ -999,7 +1003,7 @@ export function onClick(this: any, e: MouseEvent): void {
         this.pictureObjectRenderer?.clear();
         this.eventBus.emit('picture-object-selection-changed', false);
         this.cursor.clearSelection();
-        this.cursor.moveTo(hit);
+        this.cursor.moveToHit(hit);
         this.cursor.resetPreferredX();
         this.cursor.setAnchor();
         this.active = true;
@@ -1084,7 +1088,7 @@ export function onClick(this: any, e: MouseEvent): void {
     if (hit.isTextBox) {
       this.exitPictureObjectSelectionIfNeeded();
       this.cursor.clearSelection();
-      this.cursor.moveTo(hit);
+      this.cursor.moveToHit(hit);
       this.cursor.resetPreferredX();
       this.cursor.setAnchor();
       this.active = true;
@@ -1138,7 +1142,7 @@ export function onClick(this: any, e: MouseEvent): void {
             const pos = this.cursor.getPosition();
             if (pos.parentParaIndex === picHit.ppi && pos.controlIndex === picHit.ci) {
               this.cursor.clearSelection();
-              this.cursor.moveTo(hit);
+              this.cursor.moveToHit(hit);
               this.cursor.resetPreferredX();
               this.cursor.setAnchor();
               this.active = true;
@@ -1210,7 +1214,7 @@ export function onClick(this: any, e: MouseEvent): void {
     if (e.shiftKey) {
       // Shift+클릭: 현재 위치에서 클릭 위치까지 선택 확장
       this.cursor.setAnchor(); // anchor가 없으면 현재 커서 위치를 anchor로
-      this.cursor.moveTo(hit);
+      this.cursor.moveToHit(hit);
       this.active = true;
       this.updateCaret();
       this.textarea.focus();
@@ -1219,7 +1223,7 @@ export function onClick(this: any, e: MouseEvent): void {
 
     // 일반 클릭: 커서 배치 + 드래그 시작
     this.cursor.clearSelection();
-    this.cursor.moveTo(hit);
+    this.cursor.moveToHit(hit);
     this.cursor.resetPreferredX();
     this.prepareClickHerePointerEntry?.(pageX);
     this.cursor.setAnchor(); // 드래그 시작점(anchor) 설정
@@ -1710,7 +1714,7 @@ export function onMouseMove(this: any, e: MouseEvent): void {
         const px = (x - pl) / zoom;
         const py = (y - po) / zoom;
         try {
-          const bbox = this.wasm.getTableBBox(ref.sec, ref.ppi, ref.ci);
+          const bbox = this.wasm.getTableBBoxAtPage(ref.sec, ref.ppi, ref.ci, pi);
           if (px >= bbox.x && px <= bbox.x + bbox.width &&
               py >= bbox.y && py <= bbox.y + bbox.height) {
             this.container.style.cursor = 'move';

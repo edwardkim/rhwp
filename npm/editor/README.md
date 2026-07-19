@@ -81,17 +81,34 @@ const editor = await createEditor(document.getElementById('editor'));
 | `studioUrl` | `https://edwardkim.github.io/rhwp/` | rhwp-studio HTTP(S) URL. opaque origin은 지원하지 않음 |
 | `width` | `'100%'` | iframe 너비 |
 | `height` | `'100%'` | iframe 높이 |
+| `renderer` | `'canvas2d'` | 문서 단위 renderer 요청. `auto`, `canvas2d`, `canvaskit` 중 하나 |
 | `requestTimeoutMs` | method별 기본값 | 모든 method 제한 시간 override(ms). 일반 10초, load/export 60초 |
 | `handshakeTimeoutMs` | `1000` | v1 협상 후 legacy 전환까지의 제한 시간(ms) |
 
-### editor.loadFile(data, fileName?)
+### editor.loadFile(data, fileName?, options?)
 
 HWP 파일을 로드합니다.
 
 ```javascript
 const result = await editor.loadFile(buffer, 'sample.hwp');
 // result = { pageCount: 5 }
+
+// 임베드 환경 권장: 로드 후 안내창 없이 열기
+await editor.loadFile(buffer, 'sample.hwpx', { suppressDialogs: true });
 ```
+
+**options:**
+
+| 옵션 | 기본값 | 설명 |
+|------|--------|------|
+| `skipUnsavedGuard` | `false` | 미저장 변경 확인 없이 문서 교체 |
+| `suppressDialogs` | `false` | 로드 후 안내창(HWPX 검증, 로컬 글꼴 감지) 없이 열기 |
+
+> **임베드 환경에서는 `suppressDialogs: true`를 권장합니다.** 스튜디오는 문서 로드 후
+> 안내창(HWPX 비표준 lineseg 검증, 로컬 글꼴 감지)의 사용자 선택을 기다린 뒤에
+> `loadFile` 응답을 보냅니다. iframe이 가려져 있거나 사용자가 안내창을 인지하지 못하면
+> 응답이 오지 않아 타임아웃처럼 보일 수 있습니다. `suppressDialogs: true`면 검증 경고는
+> '그대로 열기'로 처리하고 글꼴은 웹 대체 글꼴로 표시하여 즉시 응답합니다.
 
 ### editor.pageCount()
 
@@ -113,6 +130,14 @@ const svg = await editor.getPageSvg(0); // 첫 페이지
 
 선택된 renderer와 0부터 시작하는 페이지별 readiness 진단을 반환합니다.
 Studio가 `renderer-diagnostics-v1` capability를 제공하지 않으면 명시적으로 실패합니다.
+`auto`에서는 문서 capability preflight, 실제 선택 이유, fallback 이유, 문서 revision과
+resource generation을 `selection`에서 확인할 수 있습니다. 현재 Studio는 `selection`을
+반환하지만, 같은 v1 capability를 제공하는 이전 Studio와의 additive 호환을 위해 이 필드는
+없을 수도 있습니다. `selectionError`는 preflight/리소스/replay 실패를, top-level
+`initializationError`는 Studio 앱 초기화 실패를 나타냅니다. preflight의
+`requiredFontFamilies`는 자동 선택에서 첫 replay 전에 준비해야 하는 문서 폰트 목록입니다.
+기존 v1 소비자 호환을 위해 top-level `request.backend.backend`는 계속 `canvas2d` 또는
+`canvaskit`만 반환하며, `auto` 요청과 실제 선택 과정은 additive `selection`에서 확인합니다.
 
 ```javascript
 const diagnostics = await editor.getRendererDiagnostics(0);

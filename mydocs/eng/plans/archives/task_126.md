@@ -16,7 +16,7 @@ canvas.style.width = pageWidthPx * zoom -> CSS scale
 
 ### Commercial Product Analysis Results
 
-Commercial product canvas rendering analysis (`mydocs/tech/canvas_rendering_analysis.md`) shows Hancom web viewer, Google Docs, and a commercial web office all use the same DPR pattern:
+Commercial product canvas rendering analysis (`mydocs/tech/investigations/issue-124/canvas_rendering_analysis.md`) shows Hancom web viewer, Google Docs, and a commercial web office all use the same DPR pattern:
 
 ```
 canvas.width  = pageWidth  * zoom * DPR    (physical pixels)

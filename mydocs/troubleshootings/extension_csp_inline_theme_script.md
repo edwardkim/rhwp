@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 확장 viewer CSP 인라인 스크립트 차단 + public 자산 누락 (Task #1444)
 
 ## 증상

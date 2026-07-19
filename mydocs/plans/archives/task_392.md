@@ -106,8 +106,8 @@ cp $SRC/samples/public/* $DST/samples/
 ### 자체 작성 (포함 가능)
 - `mydocs/tech/hwp_spec_errata.md` — 스펙 오류 정리 (자체 작성)
 - `mydocs/tech/hwp_table_rendering.md` — 표 렌더링 가이드 (자체 작성)
-- `mydocs/tech/equation_support_status.md` — 수식 지원 현황 (자체 작성)
-- `mydocs/tech/dev_roadmap.md` — 개발 로드맵 (자체 작성)
+- `mydocs/tech/investigations/issue-139/equation_support_status.md` — 수식 지원 현황 (자체 작성)
+- `mydocs/tech/archive/dev_roadmap_20260324.md` — 개발 로드맵 (자체 작성)
 - `mydocs/tech/rendering_engine_design.md` — 렌더링 엔진 설계 (자체 작성)
 
 ## 단계별 타스크 분할

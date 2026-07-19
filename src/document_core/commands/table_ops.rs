@@ -1311,6 +1311,14 @@ impl DocumentCore {
 
             let mut new_bf = self.document.doc_info.border_fills[bf_idx].clone();
             new_bf.borders[dir] = new_border;
+            // 파싱된 문서의 BorderFill 은 원본 BORDER_FILL 레코드 바이트를 raw_data 로
+            // 들고 있고(parser/doc_info.rs), 직렬화기는 raw_data 가 있으면 필드 대신 그
+            // 바이트를 그대로 쓴다(serializer/doc_info.rs). 비우지 않으면 위에서 바꾼
+            // borders[dir] 이 저장 시 사라져 이웃 셀의 공유 변이 옛 테두리로 되돌아간다.
+            // border_fills_equal(helpers.rs)이 raw_data 를 비교에서 제외하므로 아래
+            // 중복 검색도 이를 걸러내지 못한다. 같은 커맨드의 형제
+            // create_border_fill_from_json(html_table_import.rs)은 이미 raw_data 를 비운다.
+            new_bf.raw_data = None;
 
             // 동일한 BorderFill 검색/추가
             let bf_id = {
@@ -2377,16 +2385,12 @@ impl DocumentCore {
         }
     }
 
-    /// 표 전체의 바운딩박스를 반환한다 (네이티브).
-    pub(crate) fn get_table_bbox_native(
+    fn validate_table_bbox_ref(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
         control_idx: usize,
-    ) -> Result<String, HwpError> {
-        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
-
-        // 해당 문단에 표 컨트롤이 실제로 있는지 사전 확인 (전체 페이지 순회 방지)
+    ) -> Result<(), HwpError> {
         let has_table = self
             .document
             .sections
@@ -2401,6 +2405,17 @@ impl DocumentCore {
                 section_idx, parent_para_idx, control_idx
             )));
         }
+        Ok(())
+    }
+
+    fn find_table_bbox_on_page(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        page_idx: usize,
+    ) -> Result<Option<String>, HwpError> {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         fn find_table_bbox(
             node: &RenderNode,
@@ -2429,16 +2444,33 @@ impl DocumentCore {
             None
         }
 
+        let tree = self.build_page_tree_cached(page_idx as u32)?;
+        Ok(find_table_bbox(
+            &tree.root,
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            page_idx,
+        ))
+    }
+
+    /// 표 전체의 첫 번째 fragment 바운딩박스를 반환한다 (네이티브).
+    ///
+    /// page 를 모르는 기존 호출자의 호환 계약이다. pointer 처럼 현재 page 를 아는 호출자는
+    /// `get_table_bbox_at_page_native` 를 사용해야 한다.
+    pub(crate) fn get_table_bbox_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<String, HwpError> {
+        self.validate_table_bbox_ref(section_idx, parent_para_idx, control_idx)?;
+
         let total_pages = self.page_count() as usize;
         for page_num in 0..total_pages {
-            let tree = self.build_page_tree_cached(page_num as u32)?;
-            if let Some(result) = find_table_bbox(
-                &tree.root,
-                section_idx,
-                parent_para_idx,
-                control_idx,
-                page_num,
-            ) {
+            if let Some(result) =
+                self.find_table_bbox_on_page(section_idx, parent_para_idx, control_idx, page_num)?
+            {
                 return Ok(result);
             }
         }
@@ -2447,6 +2479,35 @@ impl DocumentCore {
             "표 노드를 찾을 수 없습니다 (sec={}, ppi={}, ci={})",
             section_idx, parent_para_idx, control_idx
         )))
+    }
+
+    /// 지정 page 에 배치된 표 fragment 의 바운딩박스를 반환한다 (네이티브).
+    ///
+    /// 다른 page 의 첫 fragment 로 fallback 하지 않는다. page-local pointer 좌표와 다른
+    /// fragment bbox 를 비교하면 텍스트 클릭이 표 경계로 오인될 수 있기 때문이다 (#2400).
+    pub(crate) fn get_table_bbox_at_page_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        page_idx: usize,
+    ) -> Result<String, HwpError> {
+        self.validate_table_bbox_ref(section_idx, parent_para_idx, control_idx)?;
+        let total_pages = self.page_count() as usize;
+        if page_idx >= total_pages {
+            return Err(HwpError::RenderError(format!(
+                "페이지 인덱스 {} 범위 초과 (pageCount={})",
+                page_idx, total_pages
+            )));
+        }
+
+        self.find_table_bbox_on_page(section_idx, parent_para_idx, control_idx, page_idx)?
+            .ok_or_else(|| {
+                HwpError::RenderError(format!(
+                    "페이지 {}에서 표 노드를 찾을 수 없습니다 (sec={}, ppi={}, ci={})",
+                    page_idx, section_idx, parent_para_idx, control_idx
+                ))
+            })
     }
 
     /// [Task #919] 글상자/도형 컨트롤의 페이지 좌표 바운딩박스를 반환한다 (네이티브).
@@ -2639,10 +2700,20 @@ impl DocumentCore {
             section.raw_stream = None;
         }
 
+        // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
+        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[parent_para_idx],
+        );
         self.reflow_paragraph(section_idx, parent_para_idx);
+        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
         crate::renderer::composer::recalculate_section_vpos(
             &mut self.document.sections[section_idx].paragraphs,
             parent_para_idx,
+            None,
+            stored_end_for_reset,
+            &self.styles,
+            self.dpi,
+            doc_hwp3_layout,
         );
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -2939,5 +3010,119 @@ mod table_attr_save_roundtrip_tests {
             matches!(vrel, VertRelTo::Para),
             "vertRelTo 변경이 HWP5 저장에서 유실됨 (실제: {vrel:?})"
         );
+    }
+}
+
+#[cfg(test)]
+mod neighbor_border_raw_data_tests {
+    //! 이웃 셀 테두리 갱신의 raw_data 유실 회귀 테스트.
+    //!
+    //! update_neighbor_borders 는 이웃 셀의 BorderFill 을 clone 해 한 방향만 바꾸는데,
+    //! 파싱된 문서에서 물려온 raw_data 를 비우지 않으면 직렬화기가 원본 바이트를 그대로
+    //! 써서 방금 바꾼 방향이 저장 시 사라진다. 이웃 셀의 공유 변이 옛 테두리로 되돌아간다.
+    //! 같은 커맨드의 형제 create_border_fill_from_json 은 이미 raw_data 를 비운다.
+
+    use crate::document_core::DocumentCore;
+    use crate::model::control::Control;
+    use crate::model::document::{Document, Section};
+    use crate::model::paragraph::Paragraph;
+    use crate::model::style::{BorderFill, BorderLine, BorderLineType};
+    use crate::model::table::{Cell, Table};
+
+    /// 2 칸짜리 표 한 줄. 셀 0(target)과 셀 1(neighbor)이 세로 변을 공유한다.
+    fn core_with_two_cell_row() -> DocumentCore {
+        let mut doc = Document::default();
+
+        // border_fills[0] (id=1): target 셀(0)의 fill — 이 테스트에서는 무관.
+        let mut bf_target = BorderFill::default();
+        bf_target.raw_data = Some(vec![0xAA; 39]);
+        doc.doc_info.border_fills.push(bf_target);
+
+        // border_fills[1] (id=2): 이웃 셀(1)의 fill — clone 되어 갱신되는 대상.
+        let mut bf_neighbor = BorderFill::default();
+        bf_neighbor.raw_data = Some(vec![0xBB; 39]);
+        doc.doc_info.border_fills.push(bf_neighbor);
+
+        let mut table = Table::default();
+        table.row_count = 1;
+        table.col_count = 2;
+        table.cells = vec![
+            Cell {
+                row: 0,
+                col: 0,
+                col_span: 1,
+                row_span: 1,
+                border_fill_id: 1,
+                ..Default::default()
+            },
+            Cell {
+                row: 0,
+                col: 1,
+                col_span: 1,
+                row_span: 1,
+                border_fill_id: 2,
+                ..Default::default()
+            },
+        ];
+
+        let mut para = Paragraph::default();
+        para.controls.push(Control::Table(Box::new(table)));
+
+        let mut section = Section::default();
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let mut core = DocumentCore::new_empty();
+        core.document = doc;
+        core
+    }
+
+    #[test]
+    fn neighbor_border_update_drops_stale_raw_data() {
+        let mut core = core_with_two_cell_row();
+        let new_border = BorderLine {
+            line_type: BorderLineType::Double,
+            width: 3,
+            color: 0x00FF0000,
+        };
+        // target = 셀 0, 우측 엣지(target_col=0, span=1)를 셀 1 이 공유 → 셀 1 의 좌측(dir=0)
+        // 이 new_borders[1] 로 갱신된다("대상 셀의 우측 엣지 공유 → 이웃 좌측").
+        core.update_neighbor_borders(
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            &[
+                BorderLine::default(),
+                new_border,
+                BorderLine::default(),
+                BorderLine::default(),
+            ],
+        );
+
+        let table = match &core.document.sections[0].paragraphs[0].controls[0] {
+            Control::Table(t) => t,
+            _ => panic!("표 컨트롤이어야 함"),
+        };
+        let updated_bf_id = table.cells[1].border_fill_id;
+        assert_ne!(
+            updated_bf_id, 2,
+            "테두리가 바뀌었으니 새 BorderFill 이 push 돼야 함"
+        );
+
+        let bf = &core.document.doc_info.border_fills[(updated_bf_id as usize) - 1];
+        assert!(
+            bf.raw_data.is_none(),
+            "raw_data 가 남으면 저장 시 이웃 셀의 공유 변이 옛 테두리로 되돌아간다"
+        );
+        assert_eq!(
+            bf.borders[0].width, 3,
+            "이웃 셀 기준 좌측 테두리가 갱신돼야 함"
+        );
+        assert!(matches!(bf.borders[0].line_type, BorderLineType::Double));
     }
 }

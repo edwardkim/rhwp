@@ -358,7 +358,7 @@ Web Canvas 의 CSS filter 적용은 native cargo test 로는 검증 불가 (`#[c
 
 Stage 4 까지의 정정 (CSS filter) 후 작업지시자 시각 판정에서 3 결함 식별 (배경 투명/hit-test/multiply blend). 이는 **단일 Canvas 평면의 구조적 한계** 로, 본질 정정에 다층 레이어 인프라 필요.
 
-기술 조사 보고서 [`mydocs/tech/multi_layer_rendering_strategy.md`](../tech/multi_layer_rendering_strategy.md) + Discussion [#529](https://github.com/edwardkim/rhwp/discussions/529) 의 후보 3 안 비교 결과:
+기술 조사 보고서 [`mydocs/tech/investigations/issue-516/multi_layer_rendering_strategy.md`](../../tech/investigations/issue-516/multi_layer_rendering_strategy.md) + Discussion [#529](https://github.com/edwardkim/rhwp/discussions/529) 의 후보 3 안 비교 결과:
 
 - **본 task #516 의 Stage 5+: 후보 C (HTML Hybrid) 도입 ✅ 확정**
 - **M200 v2.0.0: 후보 B (WebGPU) 단계적 도입 ✅ 확정** (별도 사이클, DTP 정체성 본격화)

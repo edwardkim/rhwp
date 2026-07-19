@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/keyboard_shortcut_guide.md
+last_verified: 2026-07-17
+---
+
 # 키보드 단축키 추가 가이드
 
 ## 단축키 추가 방법

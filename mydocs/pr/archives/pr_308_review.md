@@ -53,7 +53,7 @@ PR 제목/본문은 "**#306 조사 (수정 미완)**" 으로 표현되어 있으
 - `mydocs/plans/task_m100_310{,_impl}.md` — Task #310 수행/구현 계획서
 - `mydocs/working/task_m100_310_stage{1,2,3}.md` — 단계별 보고서
 - `mydocs/report/task_m100_310_report.md` — 최종 보고서
-- `mydocs/tech/line_seg_vpos_analysis.md` — 4샘플 비교 분석 (영구 자료)
+- `mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md` — 4샘플 비교 분석 (영구 자료)
 - `mydocs/orders/20260425.md` — orders 갱신
 
 ## 메인테이너 검증 결과
@@ -100,7 +100,7 @@ PartialParagraph  pi=50  lines=9..12  vpos=0..3632   [vpos-reset@line9]
 
 1. **조사 → Epic 분리 → 범위 축소** 의 모범 — Task #306 조사로 "전면 재설계 필요" 결론 → Task #310 진단 도구로 **4샘플 패턴 분석** → "단일 조건 분기로 축소 가능" 입증
 2. **무위해 디버그 도구** — 일반 출력 동작 변경 0. `dump-pages` 와 `--debug-overlay` 만 보강
-3. **영구 자료 등록** — `mydocs/tech/line_seg_vpos_analysis.md` 4샘플 비교 분석 저장
+3. **영구 자료 등록** — `mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md` 4샘플 비교 분석 저장
 4. **이슈 흐름 명확** — #306 OPEN 유지 (실제 수정은 미완), #310 CLOSED (도구 등록), #309 OPEN (다음 단계)
 5. **검증 도구의 가치** — vpos-reset 마커 자동 표시로 Epic #309 후속 작업 시 회귀 검증 즉시 가능
 

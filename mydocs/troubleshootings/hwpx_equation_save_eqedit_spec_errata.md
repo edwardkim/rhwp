@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # HWPX 수식 저장 — EQEDIT spec errata + Stage 4-pivot oracle (Task #1061)
 
 | 항목 | 내용 |

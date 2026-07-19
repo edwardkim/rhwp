@@ -7,7 +7,7 @@
 거버넌스 2축(SOLID·복잡도)으로 마지막 리팩토링(4차 리뷰, 2026-03-23) 이후 상태를 실측.
 **복잡도의 공식 측정은 코드 품질 대시보드(`scripts/metrics.sh`)를 사용** (작업지시자 지시 반영).
 
-## 핵심 결과 (상세: `mydocs/tech/task_m100_1883_diagnosis.md`)
+## 핵심 결과 (상세: `mydocs/tech/investigations/issue-1883/task_m100_1883_diagnosis.md`)
 
 | 축 | 발견 |
 |---|---|

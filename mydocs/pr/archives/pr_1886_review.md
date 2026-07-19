@@ -90,7 +90,7 @@ target 정리 후 macOS 로컬에서 실행했다.
 
 ## 시각 검증
 
-`mydocs/manual/visual_sweep_guide.md` 기준으로 한컴 PDF 와 비교했다.
+`mydocs/manual/verification/visual_sweep_guide.md` 기준으로 한컴 PDF 와 비교했다.
 
 ### HWPX 원본 vs 기준 PDF
 

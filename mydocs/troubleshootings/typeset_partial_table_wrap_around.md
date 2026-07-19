@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # TypesetEngine PartialTable + Square wrap 처리 누락 — 트러블슈팅 (Task #362)
 
 ## 증상

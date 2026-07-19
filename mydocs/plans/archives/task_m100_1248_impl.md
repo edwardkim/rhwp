@@ -21,7 +21,7 @@
 3. `src/renderer/typeset.rs`, `src/renderer/layout.rs` 에 trailing 주입/배선 지점 있으면 포함
 
 **산출물**:
-- `mydocs/tech/trailing_model_render_vs_pagination_1248.md` §1 "현황 맵" 표 초안
+- `mydocs/tech/investigations/issue-1248/trailing_model_render_vs_pagination_1248.md` §1 "현황 맵" 표 초안
 - `mydocs/working/task_m100_1248_stage1.md` (단계 완료 보고서)
 
 **완료 기준**: 양쪽 trailing 처리 지점이 누락 없이 표로 정리됨. → 승인 요청.
@@ -56,7 +56,7 @@
 3. 조사 문서 완결 + 최종 결과보고서 작성
 
 **산출물**:
-- `mydocs/tech/trailing_model_render_vs_pagination_1248.md` 완성본
+- `mydocs/tech/investigations/issue-1248/trailing_model_render_vs_pagination_1248.md` 완성본
 - `mydocs/report/task_m100_1248_report.md` (최종 결과보고서)
 - `mydocs/working/task_m100_1248_stage3.md`
 

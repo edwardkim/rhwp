@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/table_layout_rules.md
+last_verified: 2026-07-17
+---
+
 # 다단(multicolumn) 객체 단 이동 + 텍스트 back-fill 알고리즘 (한컴 정합)
 
 - 관련 이슈: #1156

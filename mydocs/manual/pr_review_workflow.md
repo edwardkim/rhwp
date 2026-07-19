@@ -1,3 +1,10 @@
+---
+kind: canonical
+status: active
+canonical: mydocs/manual/pr_review_workflow.md
+last_verified: 2026-07-16
+---
+
 # PR 리뷰 · 통합 워크플로우 매뉴얼
 
 **작성일**: 2026-04-23
@@ -121,7 +128,18 @@ PR 검토 초기에 변경 파일과 PR 설명을 보고 visual sweep 필요 여
 - HWP/HWPX 샘플, 기준 PDF, golden, visual regression fixture 가 추가되거나 갱신된다.
 
 `cargo test --profile release-test --tests`, `cargo clippy`, `cargo test --test svg_snapshot` 통과는 이 판정을
-대체하지 않는다. 위 조건에 해당하면 3.5 절과 `mydocs/manual/visual_sweep_guide.md` 에 따라 첨부 기준 PDF
+대체하지 않는다.
+
+개체(표·그림 프레임) geometry 무회귀의 재실증은 원커맨드를 사용한다 (#2356/#2449):
+
+```bash
+python tools/object_visual_regression.py --preset ovr5 -o output/poc/ovr --diff-against devel
+```
+
+출력 md 표의 **개체 수 열이 0→0 인 샘플은 그 행이 공허 판정**이므로 무회귀 근거로 쓰지
+않는다 — 추적 개체가 있는 샘플의 회귀 0 만 근거로 삼는다
+([개체 시각 회귀 하니스](verification/object_visual_regression.md) 참조). 이 도구는 geometry
+전용이며 한컴 대조·픽셀 판정을 대체하지 않는다. 위 조건에 해당하면 3.5 절과 `mydocs/manual/verification/visual_sweep_guide.md` 에 따라 첨부 기준 PDF
 또는 3.5.1 절의 HWP 2020 MCP 산출 PDF 를 사용해 대표 샘플/페이지 시각 검증을 수행한다. PR 작성자가
 검증 PDF 를 첨부하지 않았다는 이유만으로 보류 사유를 적고 끝내지 않는다. 먼저 MCP 로 기준 PDF 를 산출하고,
 MCP 변환이 실패하거나 원본 HWP/HWPX 가 없어서 산출할 수 없을 때만 PR 작성자 또는 reviewer 에게 한컴
@@ -226,7 +244,7 @@ reject 사유로 보지 않는다. PR 의 목적이 "처음 가설대로 고치�
 ### 3.5 시각 검증 및 asset 기록 규칙
 
 일반 PR review, collaborator-mediated review, 여러 PR 체리픽 누적 검토 모두에서 PR 내용상 렌더링 결과
-확인이 필요하면 [PDF/SVG visual sweep 가이드](visual_sweep_guide.md)를 사용한다. 시각 검증은 모든
+확인이 필요하면 [PDF/SVG visual sweep 가이드](verification/visual_sweep_guide.md)를 사용한다. 시각 검증은 모든
 샘플 PR 에 기계적으로 수행하는 절차가 아니라, PR 의 수정 목적과 검증해야 할 사용자-visible 동작에 맞춰
 선택한다.
 

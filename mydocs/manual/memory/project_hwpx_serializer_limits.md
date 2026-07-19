@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: HWPX serializer fidelity 한계 (#1315 확정)
 description: HWPX 저장 시 문단 run 평탄화·셀/글상자 컨트롤 소실·합성 lineseg — 작업지시자가 부족 판정, 후속 이슈 대상
 type: project

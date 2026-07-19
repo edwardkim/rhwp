@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: project_1582_refactor_umbrella
 description: "#1582 = 0.8/v1.0 아키텍처 리팩토링 umbrella 이슈 — 첫 단계 SourceProvenance+LayoutCompatibilityProfile, feature freeze 선행"
 metadata: 

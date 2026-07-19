@@ -33,6 +33,6 @@ inventory 와 직접 연동.
   별도 이슈(측정도구 고도화 2·3순위).
 
 ## 6. 변경 파일
-- 신규: `tools/verify_hangul_pages.py`, `mydocs/manual/hangul_page_oracle.md`
+- 신규: `tools/verify_hangul_pages.py`, `mydocs/manual/verification/hangul_page_oracle.md`
 - 계획/보고: `mydocs/plans/task_m100_1560{,_impl}.md`, `mydocs/working/task_m100_1560_stage{1..3}.md`
 - rhwp 소스 무변경(순수 도구/문서).

@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 트러블슈팅: 이미지 배치 로직 불일치로 인한 회귀 반복
 
 ## 문제 상황

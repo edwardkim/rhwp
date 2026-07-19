@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 빈 문단 + TAC Picture 이중 emit 회귀
 
 ## 결함 패턴

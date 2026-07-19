@@ -16,7 +16,7 @@ canvas.style.width = pageWidthPx × zoom → CSS 확대/축소
 
 ### 일부 상용 제품 분석 결과
 
-일부 상용 제품 캔버스 렌더링 분석(`mydocs/tech/canvas_rendering_analysis.md`)에서 한컴 웹기안기, 구글 독스, 일부 상용 웹오피스 모두 동일한 DPR 패턴을 사용한다:
+일부 상용 제품 캔버스 렌더링 분석(`mydocs/tech/investigations/issue-124/canvas_rendering_analysis.md`)에서 한컴 웹기안기, 구글 독스, 일부 상용 웹오피스 모두 동일한 DPR 패턴을 사용한다:
 
 ```
 canvas.width  = pageWidth  × zoom × DPR    (물리 픽셀)

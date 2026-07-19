@@ -4,6 +4,95 @@
 
 ## [Unreleased]
 
+## [0.7.19] — 2026-07-17
+
+> v0.7.18 후속 patch — 저장 지오메트리 신호(intra-para vpos 리셋/되감김) 존중 계보의
+> 렌더·편집 양 경로 정합, 표 페이지네이션 정밀도(rowspan 선언-잔여·서식 문서 과소분할),
+> 메모리·PDF 결정성 개선, HML 포맷 지원, 프론트 legacy /web 결합 제거.
+> 공개 API 하위 호환 유지 — PATCH.
+
+### 렌더링 정합 — 저장 신호 존중 계보
+- 문단 중간 vpos 0-리셋(쪽 경계 인코딩)을 비-0 단 시작 문단에서도 분할점으로 승격 —
+  treatise p2 오른쪽 단 하단 잘림·내용 소실 해소, p4 동종 결함 동반 정정(#2320).
+- 전면 tac 그림 + 후행 tac 표 문단의 intra-para 리셋 존중 + 유령 높이 계상 제거 —
+  붙임 포스터 문서 5→3쪽 한글 정합(#2311).
+- 저장 LINE_SEG 없는 기계생성 문서의 텍스트-host tac 표 높이 붕괴 수정 — 진안군 서식
+  1→2쪽, 시장구조조사 핀 309→312(정답 315 방향)(#2319).
+- 전면 서식 표 2장 문서 과소분할 2결함 — 표 문단 경로의 float 배타영역 소비 +
+  전면급(≥30000HU) TAC 표 인라인 오판 정정(#2322).
+- tac TopAndBottom 소형 개체 줄의 쪽 하단 여백 스필 — 저장 page-last 신뢰 확장,
+  r12 OVER+SHAPE 오라클 +3(#2137 부분).
+- 바탕쪽 개체의 wrap(글 앞으로)을 본문 기준 plane 으로 승격하던 결함 — master_page
+  provenance 로 BehindText 상한 고정, studio·skia 에서 바탕쪽이 본문 텍스트를 가리던
+  현상 해소(#2318).
+
+### 표 페이지네이션 정밀도
+- rowspan 병합 셀 선언-잔여를 마지막 걸침 행에 가산 — 한글 행 괘선 실측 관례 확정,
+  연결맵 380→385쪽. 부실 저장(ls==1 폭 초과) 셀 문단 재래핑 + rowspan 블록 offset
+  walk 의 relaxed hard-break(거대 셀 한정)(#2291/#2237).
+- 표 밀집 문서 과소분할 2결함 — RowBreak rowspan 블록 연속 조각 잔여 증발 +
+  TAC 그림 문단 높이 계상(#2287), 쪽 하단 밴드 필 오프셋 컷 재시도(#2097).
+- 한글 fresh 레이아웃 측정 정합 5수정 + footer lead/margin 오차 규명·계측(#2279).
+- 80168 규제영향분석서 157쪽 정합 — 상쇄망 축 분해 7축 세트(#2070), RowBreak 대형 표
+  밀도(행미 공백 유령 줄 + aim 패딩 0 존중) + 비-Percent 줄간격 2×스케일 정정(#2070).
+- KBU=1(글자 단위 줄바꿈) 행두 금칙 retraction — 마침표 줄머리 고립 방지, 한컴 2024
+  오라클 정합(#2244). 한글 줄 나눔 단위 의미 반전 정정(#2185). HWPX 비정상 줄
+  metrics 재조판(#2093).
+
+### 편집 정합 (rhwp-studio)
+- 편집 vpos 재계산이 저장 리셋(단/쪽 경계 인코딩)과 문단 간격을 보존 — 다단 단-밴드
+  소멸·쪽수 이탈 수정, 편집-스윕 574건에서 가짜 페이지 변동 60건 해소(#2299).
+- 거대 셀(115쪽) 연속 입력 미표시 — normalized-state cache coherence 표적 무효화(#2214).
+- undo/redo 후 stale 개체·표 선택 ref 정리 — 개체 속성 실행 실패 해소(#2303),
+  undo 계약 e2e 실키 Ctrl+Z smoke + 하네스 모달 잔존 수정(#2317).
+- 표 셀 clip 을 정적 그림 레이어에 보존(#2228). 짤림보기 기본값 켜짐(#2205 계열).
+- 파일 메뉴 '최근 문서' 서브메뉴 — meta-only 기록 + 재열기(#2285).
+
+### 렌더 파이프라인·폰트
+- CanvasKit readiness gate + public opt-in 강화(#2224), proof-gated 리소스 replay 와
+  실패 격리(#2248), cross-backend 진단·회귀 코퍼스 갱신 + render profile 전달
+  일반화(export-png 기본 인쇄 등가)(#2297 계열).
+- 로컬 글꼴 다국어 매칭과 CanvasKit 등록(#2227), CanvasKit 글머리 기호 폰트 보정(#2190).
+- skia PNG: 차트 RawSvg 조각 viewBox 이중 오프셋 잘림 수정(#2292), 폰트 폴백을
+  한국어 가용 폰트 우선으로 정정 — 차트 텍스트 소실 해소(#2293).
+- OOXML 차트 C2a stock HLC 렌더 + 2D fidelity 정합(#2277, #1431 Track C).
+- HWP5 취소선: bit 추정 대신 strike shape whitelist — 3D placeholder 관행 오판 차단
+  (#2258, 스펙 정오표 34 등재).
+
+### 성능·메모리·결정성
+- BinData 지연 로딩 — 파싱 시 내장 이미지 전량 상주 제거, RSS 244MB→49MB(#2263).
+- PDF 메모리 지배항(svg2pdf 텍스트 임베드)에 `--text-as-paths` 옵션(#2264),
+  svg2pdf 결정화 벤더 패치로 export-pdf 바이트 재현성 확보(#2269, 폰트 채번 비결정
+  규명 + 정규화 비교 도구 동반).
+
+### 포맷 지원
+- HML(HWPML) 문서 열기 + 의미 보존 저장(#1157).
+- @rhwp/editor MessageChannel 임베드 transport v1(#2186).
+
+### 프론트 인프라
+- legacy `/web` 개발 앱 제거(18 entries, 616KB) — CI detector·metrics·font contract 의
+  결합 정리, non-legacy 무영향을 함수 단위 metrics 로 실증(#2313).
+- assets/fonts canonical font root 이전(#2254 계열), 프론트 패키지 변경 시
+  build/test CI gate(#2183), Phase 0 baseline freeze(#2124 진행).
+
+### 도구·문서
+- HWP 2020 MCP client 장문서 timeout 동기화(#2253), hwpdocs 10k 표본 검증 13차
+  보고(#2262), 행 앵커 대조 도구(tools/task2287), cli_commands 인쇄 모드 현행화,
+  PR 검토 기록 보존 체계 지속(jangster77 검토 문서 연작).
+
+### 기여자
+
+이번 사이클(v0.7.18 이후)에 머지된 기여자 PR 55건 (GitHub 핸들, 알파벳순):
+
+- @cskwork — HML 문서 열기·의미 보존 저장(#2219), @rhwp/editor MessageChannel 임베드 transport v1(#2187)
+- @jangster77 (Taesup Jang) — 외부 PR 통합·검토 기록 연작 17건: 로컬 글꼴 다국어 매칭(#2227), 표 셀 clip 정적 레이어 보존(#2229), HWPX 비정상 줄 재조판(#2231), CanvasKit 글머리 기호 폰트(#2196), MCP timeout(#2255) 등
+- @johndoekim — OOXML 차트 C2a stock HLC 렌더 정합(#2288)
+- @lpaiu-cs — 편집 vpos 저장 리셋 보존(#2314), undo/redo stale 선택 ref 정리(#2304), undo 계약 실키 e2e smoke(#2324)
+- @planet6897 (Jaeook Ryu) — 렌더링·페이지네이션 정합 연작 21건: rowspan 선언-잔여 관례(#2309), r15 서식 스택 3부작(#2315/#2321/#2323), BinData 지연 로딩(#2265), svg2pdf 결정화(#2281), 10k 표본 검증(#2262) 등
+- @postmelee (Taegyu Lee) — legacy /web 제거(#2316), 거대 셀 편집 cache coherence(#2241), 줄 나눔 단위 반전 정정(#2194), canonical font root(#2254), frontend CI gate(#2216/#2235), Phase 0 freeze(#2174)
+- @seo-rii — CanvasKit readiness gate(#2224), proof-gated 리소스 replay(#2248), cross-backend 진단·profile 전달(#2297)
+- @yeonic (Jongyeon Kim) — HWP5 취소선 strike shape whitelist(#2258) *(첫 기여 환영!)*
+
 ## [0.7.18] — 2026-07-11
 
 > v0.7.17 후속 patch — 렌더링 정합 대규모 보정(부동/전면 개체 페이지네이션, RowBreak 표,

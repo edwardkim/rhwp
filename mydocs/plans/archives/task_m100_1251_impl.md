@@ -240,7 +240,7 @@ Docker compose는 로컬 Docker daemon 미실행으로 사용할 수 없어, 로
 
 완료 조건:
 
-- `mydocs/tech/hwp_ole_chart_visual_diff_against_hancom_pdf_1251.md` 작성
+- `mydocs/tech/investigations/issue-1251/hwp_ole_chart_visual_diff_against_hancom_pdf_1251.md` 작성
 - `mydocs/tech/hwp_ole_chart_renderer_architecture_decision_1251.md` 작성
 - `mydocs/working/task_m100_1251_stage7.md` 작성
 - 최종 보고서에 known visual gap과 후속 작업 후보 반영

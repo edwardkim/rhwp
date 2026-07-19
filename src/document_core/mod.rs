@@ -224,7 +224,7 @@ impl DocumentCore {
             self.document.sections.len(),
             self.page_count(),
             self.document.header.encrypted,
-            self.document.is_hwp3_variant,
+            self.document.layout_profile().hwp3_layout(),
             escaped_fallback,
             fonts_json.join(","),
         )
@@ -242,7 +242,7 @@ impl DocumentCore {
         self.styles = resolve_styles_with_variant(
             &self.document.doc_info,
             dpi,
-            self.document.is_hwp3_variant,
+            self.document.layout_profile().hwp3_layout(),
         );
         self.paginate();
     }

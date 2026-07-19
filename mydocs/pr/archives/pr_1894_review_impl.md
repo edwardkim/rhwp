@@ -37,7 +37,7 @@ git merge upstream/devel --no-commit --no-ff
 
 - `src/renderer/layout/table_layout.rs`
 - `tests/issue_1858_bottom_anchor_flush.rs`
-- `mydocs/tech/task_1858_manifestation2_investigation.md`
+- `mydocs/troubleshootings/bottom_anchor_declared_vs_rendered_height.md`
 
 중점 확인:
 

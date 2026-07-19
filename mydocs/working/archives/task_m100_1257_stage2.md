@@ -1,7 +1,7 @@
 # Stage 2 보고서 (증분 1) — Task #1257/#1184: 순차-flow 골격 + 진단
 
 - 이슈: edwardkim/rhwp#1257 · 브랜치: `local/task1257`
-- 설계: `mydocs/tech/endnote_seq_flow_redesign.md`
+- 설계: `mydocs/tech/archive/endnote_seq_flow_redesign.md`
 
 ## 증분 1 — note-metrics 헬퍼 + 진단 (동작 무변경)
 

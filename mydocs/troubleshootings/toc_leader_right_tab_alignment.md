@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 목차 리더 도트 + 페이지번호 right tab 정렬
 
 ## 발견일

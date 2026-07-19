@@ -11,7 +11,7 @@
 
 ## 변경 범위
 
-- `mydocs/tech/floating_object_family_rca.md` 추가.
+- `mydocs/tech/investigations/issue-2004/floating_object_family_rca.md` 추가.
 - 코드/테스트/샘플 변경 없음.
 
 ## 체리픽 검토

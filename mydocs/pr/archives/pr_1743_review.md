@@ -45,7 +45,7 @@
 
 ## 시각 검증
 
-`mydocs/manual/visual_sweep_guide.md` 기준으로 SO-SUEOP 샘플을 페이지 단위로 재확인했다.
+`mydocs/manual/verification/visual_sweep_guide.md` 기준으로 SO-SUEOP 샘플을 페이지 단위로 재확인했다.
 
 - 기준 PDF: `pdf/SO-SUEOP-2024.pdf`, 46쪽
 - HWP3 샘플: `samples/SO-SUEOP.hwp`, 46쪽

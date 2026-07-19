@@ -2845,6 +2845,9 @@ fn write_render_layer_info(buf: &mut String, layer: RenderLayerInfo) {
         ",\"zOrder\":{},\"stableIndex\":{}",
         layer.z_order, layer.stable_index
     );
+    if layer.master_page {
+        buf.push_str(",\"masterPage\":true");
+    }
     buf.push('}');
 }
 

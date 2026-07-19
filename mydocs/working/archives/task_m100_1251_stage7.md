@@ -42,7 +42,7 @@ categories: 2010년, 2020년, 2030년, 2040년
 
 ## 4. 산출물
 
-- `mydocs/tech/hwp_ole_chart_visual_diff_against_hancom_pdf_1251.md`
+- `mydocs/tech/investigations/issue-1251/hwp_ole_chart_visual_diff_against_hancom_pdf_1251.md`
 - `mydocs/tech/hwp_ole_chart_renderer_architecture_decision_1251.md`
 
 ## 5. 후속 작업 후보

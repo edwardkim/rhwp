@@ -19,6 +19,11 @@ pub(crate) fn into_document(mut source: HmlSource) -> Result<Document, HmlError>
             },
             ..Default::default()
         },
+        provenance: crate::model::provenance::SourceProvenance {
+            format: crate::model::provenance::SourceFormat::Hml,
+            hwp3_lineage: false,
+            hwpx_lineage: false,
+        },
         ..Default::default()
     };
     document.doc_info.hwpml_version = Some(source.version.clone());

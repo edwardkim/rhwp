@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # `samples/2010-01-06.hwp` 자동 보정(reflow) 후 빈 페이지 4 삽입
 
 | 항목 | 내용 |
@@ -95,7 +102,7 @@ reflow 누적 영향:
 2. 한컴이 paragraph 37을 1 line으로 표시하는지 2 lines로 표시하는지
 3. `section.section_def.hide_empty_line` 값 확인
 
-(메모리 가이드 [PDF 비교 결과는 절대 기준이 아님](feedback_pdf_not_authoritative.md): PDF 200dpi 보조 ref. 한컴 2010/2020 정답지 함께 점검 필수.)
+(메모리 가이드 [PDF 비교 결과는 절대 기준이 아님](../manual/memory/feedback_pdf_not_authoritative.md): PDF 200dpi 보조 ref. 한컴 2010/2020 정답지 함께 점검 필수.)
 
 ## 임시 회피책
 

@@ -16,6 +16,6 @@
 
 ## 잔여 (범위 밖, 보존)
 razor-thin 본문 누적 갭(8건 ~20~43px) — 고위험·저마진. 통제셋 게이트(net>0) 없이는 대량 +1
-회귀 우려로 본 태스크에서 코드 수정 안 함. `mydocs/tech/render_minus1_page_gap.md` 에 특성 보존.
+회귀 우려로 본 태스크에서 코드 수정 안 함. `mydocs/tech/investigations/issue-1600/render_minus1_page_gap.md` 에 특성 보존.
 
 산출물: `output/poc/task1612_after.tsv`(=task1611 동일), `output/poc/char1611_residual.py`.

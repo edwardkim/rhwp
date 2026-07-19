@@ -51,6 +51,8 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
       pageCount: loaded.pageCount,
       publicDiagnosticsSchema: publicDiagnostics.schemaVersion,
       publicDiagnosticsPage: publicDiagnostics.page?.index,
+      publicDiagnosticsRequestBackend: publicDiagnostics.request?.backend?.backend,
+      publicDiagnosticsSelectionRequestBackend: publicDiagnostics.selection?.requestedBackend,
       callerBytesPreserved,
       hwpLength: hwp.byteLength,
       hwpxLength: hwpx.byteLength,
@@ -147,6 +149,10 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
   assert(result.pageCount >= 1, 'public loadFile이 transferable HWP buffer를 Studio에 로드한다');
   assert(result.publicDiagnosticsSchema === 1 && result.publicDiagnosticsPage === 0,
     'public getRendererDiagnostics가 versioned page snapshot을 반환한다');
+  assert(result.publicDiagnosticsRequestBackend === 'canvas2d',
+    'renderer-diagnostics-v1 request backend enum은 기존 canvas2d 기본값을 유지한다');
+  assert(result.publicDiagnosticsSelectionRequestBackend === 'auto',
+    'additive selection diagnostics가 실제 auto 요청을 보존한다');
   assert(result.callerBytesPreserved, 'loadFile에 넘긴 동일 caller ArrayBuffer가 detach·변경되지 않는다');
   assert(result.hwpLength > 0, 'public exportHwp가 transferable bytes를 반환한다');
   assert(result.hwpxLength > 0, 'public exportHwpx가 transferable bytes를 반환한다');

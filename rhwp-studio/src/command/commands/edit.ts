@@ -240,13 +240,23 @@ export const editCommands: CommandDef[] = [
       };
       dialog.onApply = (newProps) => {
         console.log('[field:edit] apply:', newProps);
-        const result = services.wasm.updateClickHereProps(
-          fi.fieldId, newProps.guide, newProps.memo, newProps.name, newProps.editable,
-        );
-        console.log('[field:edit] updateResult:', result);
-        if (result.ok) {
+        try {
+          // [Task #2377] 누름틀 속성 갱신은 안내문 텍스트를 바꿀 수 있다(문자 수 변경) —
+          // snapshot 으로 라우팅(일반 모드 전용 커맨드). 실패 시 throw 로 엔트리 생성을 막는다.
+          ih.executeOperation({
+            kind: 'snapshot',
+            operationType: 'updateFieldProps',
+            operation: (wasm) => {
+              const result = wasm.updateClickHereProps(
+                fi.fieldId, newProps.guide, newProps.memo, newProps.name, newProps.editable,
+              );
+              if (!result.ok) throw new Error('updateClickHereProps not ok');
+              return ih.getCursorPosition();
+            },
+          });
           services.eventBus.emit('document-mutated', 'field-edit');
-          services.eventBus.emit('document-changed', 'field-edit');
+        } catch (err) {
+          console.warn('[field:edit] 누름틀 고치기 실패:', err);
         }
       };
       dialog.onClose = restoreEditorFocus;

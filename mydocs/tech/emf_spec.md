@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/emf_spec.md
+last_verified: 2026-07-17
+---
+
 # EMF (Enhanced Metafile) 스펙 정리 — rhwp 1차 구현 범위
 
 > 참조: [MS-EMF] Enhanced Metafile Format (v20180912), Microsoft Open Specifications

@@ -523,7 +523,23 @@ impl HwpDocument {
         scale: f64,
         layer_kind: &str,
     ) -> Result<(), JsValue> {
+        self.render_page_to_canvas_filtered_with_profile(
+            page_num, canvas, scale, layer_kind, "screen",
+        )
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = renderPageToCanvasFilteredWithProfile)]
+    pub fn render_page_to_canvas_filtered_with_profile(
+        &self,
+        page_num: u32,
+        canvas: &HtmlCanvasElement,
+        scale: f64,
+        layer_kind: &str,
+        profile: &str,
+    ) -> Result<(), JsValue> {
         use crate::model::shape::TextWrap;
+        use crate::paint::RenderProfile;
         use crate::renderer::layer_renderer::LayerRenderer;
         use crate::renderer::web_canvas::{LayerFilter, WebCanvasRenderer};
 
@@ -542,8 +558,10 @@ impl HwpDocument {
             }
         };
 
+        let profile = RenderProfile::parse(profile)
+            .ok_or_else(|| JsValue::from_str(&format!("unsupported render profile: {profile}")))?;
         let tree = self
-            .build_page_layer_tree(page_num)
+            .build_page_layer_tree_with_profile(page_num, profile)
             .map_err(JsValue::from)?;
 
         let scale = normalize_canvas_scale(tree.page_width, tree.page_height, scale)
@@ -613,17 +631,8 @@ impl HwpDocument {
         page_num: u32,
         profile: &str,
     ) -> Result<String, JsValue> {
-        let profile = match profile.trim() {
-            "fastPreview" => crate::paint::RenderProfile::FastPreview,
-            "screen" | "" => crate::paint::RenderProfile::Screen,
-            "print" => crate::paint::RenderProfile::Print,
-            "highQuality" => crate::paint::RenderProfile::HighQuality,
-            value => {
-                return Err(JsValue::from_str(&format!(
-                    "unsupported render profile: {value}"
-                )))
-            }
-        };
+        let profile = crate::paint::RenderProfile::parse(profile)
+            .ok_or_else(|| JsValue::from_str(&format!("unsupported render profile: {profile}")))?;
         self.get_page_layer_tree_with_profile_native(page_num, profile)
             .map_err(|error| error.into())
     }
@@ -637,6 +646,32 @@ impl HwpDocument {
     pub fn get_canvaskit_replay_plan(&self, page_num: u32, mode: &str) -> Result<String, JsValue> {
         self.get_canvaskit_replay_plan_native(page_num, mode)
             .map_err(|e| e.into())
+    }
+
+    #[wasm_bindgen(js_name = getCanvasKitReplayPlanWithProfile)]
+    pub fn get_canvaskit_replay_plan_with_profile(
+        &self,
+        page_num: u32,
+        mode: &str,
+        profile: &str,
+    ) -> Result<String, JsValue> {
+        let profile = crate::paint::RenderProfile::parse(profile)
+            .ok_or_else(|| JsValue::from_str(&format!("unsupported render profile: {profile}")))?;
+        self.get_canvaskit_replay_plan_with_profile_native(page_num, mode, profile)
+            .map_err(|error| error.into())
+    }
+
+    /// 문서 전체의 bounded CanvasKit direct replay capability를 compact JSON으로 반환한다.
+    #[wasm_bindgen(js_name = getCanvasKitDocumentPreflight)]
+    pub fn get_canvaskit_document_preflight(
+        &self,
+        mode: &str,
+        profile: &str,
+    ) -> Result<String, JsValue> {
+        let profile = crate::paint::RenderProfile::parse(profile)
+            .ok_or_else(|| JsValue::from_str(&format!("unsupported render profile: {profile}")))?;
+        self.get_canvaskit_document_preflight_native(mode, profile)
+            .map_err(|error| error.into())
     }
 
     /// 페이지 overlay 이미지 정보만 JSON 문자열로 반환한다.
@@ -941,6 +976,7 @@ impl HwpDocument {
     ///
     /// Studio의 page-local 단일 입력처럼 현재 페이지를 먼저 갱신하고 idle 시점에
     /// 전체 페이지네이션을 한 번만 수행하는 경로에서 사용한다.
+    /// 결과 JSON은 `charOffset`과 상대 cell-flow 변화 신호 `cellFlowChanged`를 포함한다.
     #[wasm_bindgen(js_name = insertTextInCellDeferredPagination)]
     pub fn insert_text_in_cell_deferred_pagination(
         &mut self,
@@ -2650,6 +2686,26 @@ impl HwpDocument {
             section_idx as usize,
             parent_para_idx as usize,
             control_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 지정 page 에 배치된 표 fragment 의 바운딩박스를 반환한다 (#2400).
+    ///
+    /// 반환: JSON `{"pageIndex":<N>,"x":<f>,"y":<f>,"width":<f>,"height":<f>}`
+    #[wasm_bindgen(js_name = getTableBBoxAtPage)]
+    pub fn get_table_bbox_at_page(
+        &self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        page_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.get_table_bbox_at_page_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+            page_idx as usize,
         )
         .map_err(|e| e.into())
     }
@@ -5053,6 +5109,7 @@ impl HwpDocument {
             end_para_idx as usize,
             end_char_offset as usize,
             None,
+            None,
         )
         .map_err(|e| e.into())
     }
@@ -5083,6 +5140,7 @@ impl HwpDocument {
                 control_idx as usize,
                 cell_idx as usize,
             )),
+            None,
         )
         .map_err(|e| e.into())
     }
@@ -5090,7 +5148,8 @@ impl HwpDocument {
     /// `getSelectionRectsInCell` 의 options object 변형 (#1413).
     ///
     /// options JSON 키: `{ sectionIdx, parentParaIdx, controlIdx, cellIdx, startCellParaIdx,
-    /// startCharOffset, endCellParaIdx, endCharOffset }`. positional 과 동일 동작.
+    /// startCharOffset, endCellParaIdx, endCharOffset, startPageHint?, endPageHint? }`.
+    /// page hint가 누락되거나 유효하지 않으면 positional 과 동일한 전체 탐색을 사용한다.
     #[wasm_bindgen(js_name = getSelectionRectsInCellEx)]
     pub fn get_selection_rects_in_cell_ex(&self, options_json: &str) -> Result<String, JsValue> {
         use crate::document_core::helpers::json_u32;
@@ -5105,6 +5164,7 @@ impl HwpDocument {
                 json_u32(options_json, "controlIdx").unwrap_or(0) as usize,
                 json_u32(options_json, "cellIdx").unwrap_or(0) as usize,
             )),
+            json_u32(options_json, "startPageHint").zip(json_u32(options_json, "endPageHint")),
         )
         .map_err(|e| e.into())
     }
@@ -5612,6 +5672,10 @@ impl HwpDocument {
         }
         // raw_data 무효화 (수정됨)
         style.raw_data = None;
+        // DocInfo 스트림 무효화. serialize_doc_info 는 raw_stream_dirty 가 false 이면
+        // 원본 스트림을 그대로 반환하고(레코드 raw_data 는 그 이전에 단락됨), 이름/nextStyleId
+        // 변경이 .hwp 저장에서 유실된다. 형제 update_style_shapes 는 이미 이 플래그를 세운다.
+        self.core.document.doc_info.raw_stream_dirty = true;
         true
     }
 
@@ -5858,6 +5922,13 @@ impl HwpDocument {
             &self.core.document.doc_info,
             self.core.dpi,
         );
+        // DocInfo(styles 목록)와 문단 style_id 가 함께 바뀌었으므로 저장 스트림을 무효화한다.
+        // raw_stream_dirty 미설정 시 DocInfo 가, 섹션 raw_stream 잔존 시 본문이 각각 원본
+        // 바이트로 재방출돼 스타일 삭제·문단 재배정이 .hwp 저장에서 유실된다.
+        self.core.document.doc_info.raw_stream_dirty = true;
+        for section in &mut self.core.document.sections {
+            section.raw_stream = None;
+        }
         true
     }
 

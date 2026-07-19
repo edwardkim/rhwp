@@ -16,8 +16,8 @@ frontend external/package/message/build surface와 Rust-owned WASM JSON boundary
 
 | 파일 | 내용 |
 |------|------|
-| `mydocs/tech/task_m100_2124_public_contract_snapshot.md` | editor, iframe, core, VS Code, browser extension, legacy web 계약 |
-| `mydocs/tech/task_m100_2124_wasm_json_schema_snapshot.md` | Rust schema ownership과 frontend parse/stringify 경계 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_public_contract_snapshot.md` | editor, iframe, core, VS Code, browser extension, legacy web 계약 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_wasm_json_schema_snapshot.md` | Rust schema ownership과 frontend parse/stringify 경계 |
 | `scripts/frontend-editor-embed.test.mjs` | editor package/message/byte contract test |
 | `scripts/frontend-wasm-bindings.test.mjs` | Rust explicit export와 fresh declaration 일치 test |
 

@@ -148,7 +148,11 @@ fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Seria
             // treatAsChar 표의 1→0 케이스에서 0→1 드롭으로 표 partial-split 임계를 흔들어
             // 페이지네이션이 달라졌다(IR-invisible). #1594 holdAnchorAndSO 와 동형.
             ("flowWithText", bool01(c.flow_with_text)),
-            ("allowOverlap", "0"),
+            // allowOverlap 는 IR(allow_overlap)을 보존한다. 이웃 flowWithText(#1637)·
+            // holdAnchorAndSO(#1594)는 이미 IR 보존으로 고쳐졌는데 그 사이 allowOverlap 만
+            // "0" 하드코딩으로 남아, "개체 겹침 허용"이 켜진 플로팅 표가 저장 시 1→0 으로
+            // 드롭됐다(IR-invisible). shape.rs·picture.rs 의 write_pos 와 동형으로 방출.
+            ("allowOverlap", bool01(c.allow_overlap)),
             ("holdAnchorAndSO", hold),
             ("vertRelTo", vert_rel_to_str(c.vert_rel_to)),
             ("horzRelTo", horz_rel_to_str(c.horz_rel_to)),
@@ -579,6 +583,34 @@ mod tests {
         let xml = serialize(&t);
         assert!(
             xml.contains(r#"holdAnchorAndSO="0""#),
+            "기본 0: {}",
+            &xml[..xml.len().min(300)]
+        );
+    }
+
+    // ---------- allowOverlap 보존 ----------
+
+    #[test]
+    fn allow_overlap_preserved() {
+        // allowOverlap 는 IR(common.allow_overlap)을 보존해야 한다. 종전 "0" 하드코딩은
+        // 개체 겹침 허용이 켜진 플로팅 표에서 1→0 드롭으로 저장 시 설정을 유실시켰다. RED.
+        let mut t = empty_table(1, 1);
+        t.common.allow_overlap = true;
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r#"allowOverlap="1""#),
+            "allowOverlap 가 IR 값(1)으로 방출돼야 한다(종전 0 하드코딩): {}",
+            &xml[..xml.len().min(500)]
+        );
+    }
+
+    #[test]
+    fn allow_overlap_zero_when_unset() {
+        // allow_overlap=false 이면 allowOverlap="0" (기존 동작 보존).
+        let t = empty_table(1, 1);
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r#"allowOverlap="0""#),
             "기본 0: {}",
             &xml[..xml.len().min(300)]
         );

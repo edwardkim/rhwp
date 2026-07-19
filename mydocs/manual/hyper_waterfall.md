@@ -1,3 +1,10 @@
+---
+kind: decision
+status: historical
+canonical: mydocs/manual/codex/docs_and_git_workflow.md
+last_verified: 2026-07-17
+---
+
 # Hyper-Waterfall: AI 시대의 소프트웨어 개발 방법론
 
 > AI가 없던 시대에는 불가능했던 방법론.

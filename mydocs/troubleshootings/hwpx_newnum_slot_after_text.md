@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # HWPX serializer — newNum 슬롯이 텍스트 뒤가 아니라 앞으로 방출 (Task #1407)
 
 ## 증상

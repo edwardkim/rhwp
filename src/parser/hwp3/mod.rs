@@ -2860,6 +2860,7 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
 
     // 기본 Document 껍데기를 생성한다.
     let mut doc = Document::default();
+    doc.provenance.format = crate::model::provenance::SourceFormat::Hwp3;
     // version.major=3: assign_auto_numbers()가 HWP3 문단 카운팅 방식을 사용하도록 표시.
     // 직렬화(serialize_file_header)는 raw_data가 Some이면 개별 필드 대신 raw_data를 사용.
     // → raw_data에 HWP5 헤더를 설정하면 저장 시 올바른 HWP5 CFB 파일이 생성된다.

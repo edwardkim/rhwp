@@ -279,16 +279,25 @@ export class BookmarkDialog {
     if (!ih) return;
     const pos = ih.getCursorPosition();
 
-    const result = this.services.wasm.addBookmark(
-      pos.sectionIndex, pos.paragraphIndex, pos.charOffset, name,
-    );
+    // [책갈피 이관] 추가를 snapshot 으로 라우팅해 undo 가능(기존 emit-only → 되돌릴 수 없었음).
+    let ok = false;
+    let errMsg: string | undefined;
+    ih.executeOperation({
+      kind: 'snapshot',
+      operationType: 'addBookmark',
+      operation: (wasm) => {
+        const r = wasm.addBookmark(pos.sectionIndex, pos.paragraphIndex, pos.charOffset, name);
+        ok = r.ok;
+        errMsg = r.error;
+        return pos;
+      },
+    });
 
-    if (result.ok) {
-      this.services.eventBus.emit('document-changed');
+    if (ok) {
       this.hide();
     } else {
       this.statusLabel.style.color = '#c00';
-      this.statusLabel.textContent = result.error ?? '책갈피 추가 실패';
+      this.statusLabel.textContent = errMsg ?? '책갈피 추가 실패';
     }
   }
 
@@ -318,9 +327,19 @@ export class BookmarkDialog {
 
     if (!confirm(`선택한 책갈피 '${bm.name}'를 지울까요?`)) return;
 
-    const result = this.services.wasm.deleteBookmark(bm.sec, bm.para, bm.ctrlIdx);
-    if (result.ok) {
-      this.services.eventBus.emit('document-changed');
+    const ih = this.services.getInputHandler();
+    if (!ih) return;
+    // [책갈피 이관] 삭제를 snapshot 으로 라우팅.
+    let ok = false;
+    ih.executeOperation({
+      kind: 'snapshot',
+      operationType: 'deleteBookmark',
+      operation: (wasm) => {
+        ok = wasm.deleteBookmark(bm.sec, bm.para, bm.ctrlIdx).ok;
+        return ih.getCursorPosition();
+      },
+    });
+    if (ok) {
       this.refreshList();
       this.statusLabel.textContent = '';
     }
@@ -332,13 +351,26 @@ export class BookmarkDialog {
     const newName = prompt('새 책갈피 이름:', bm.name);
     if (!newName || newName.trim() === '' || newName === bm.name) return;
 
-    const result = this.services.wasm.renameBookmark(bm.sec, bm.para, bm.ctrlIdx, newName.trim());
-    if (result.ok) {
-      this.services.eventBus.emit('document-changed');
+    const ih = this.services.getInputHandler();
+    if (!ih) return;
+    // [책갈피 이관] 이름 변경을 snapshot 으로 라우팅.
+    let ok = false;
+    let errMsg: string | undefined;
+    ih.executeOperation({
+      kind: 'snapshot',
+      operationType: 'renameBookmark',
+      operation: (wasm) => {
+        const r = wasm.renameBookmark(bm.sec, bm.para, bm.ctrlIdx, newName.trim());
+        ok = r.ok;
+        errMsg = r.error;
+        return ih.getCursorPosition();
+      },
+    });
+    if (ok) {
       this.refreshList();
     } else {
       this.statusLabel.style.color = '#c00';
-      this.statusLabel.textContent = result.error ?? '이름 변경 실패';
+      this.statusLabel.textContent = errMsg ?? '이름 변경 실패';
     }
   }
 }

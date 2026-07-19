@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 기술 스택 + 숙련도 + 협업 분배
 description: 작업지시자 본인 보유 영역 / Claude 위임 영역 / 본인 직접 결정 영역
 type: user

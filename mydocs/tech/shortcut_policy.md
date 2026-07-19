@@ -1,3 +1,10 @@
+---
+kind: decision
+status: active
+canonical: mydocs/tech/shortcut_policy.md
+last_verified: 2026-07-17
+---
+
 # rhwp 단축키 정책 문서
 
 **작성일**: 2026-04-13

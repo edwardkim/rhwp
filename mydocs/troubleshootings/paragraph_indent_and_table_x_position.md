@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 문단 들여쓰기/내어쓰기 모델 및 표 x 위치 수정
 
 ## 날짜

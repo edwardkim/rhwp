@@ -20,7 +20,7 @@
 - 산출: `task_m100_1560_stage2.md` + 커밋.
 
 ## Stage 3 — 매뉴얼 + 검증 + 임시 스크립트 대체 + 최종 보고
-- `mydocs/manual/hangul_page_oracle.md`(사용법·등급·한계).
+- `mydocs/manual/verification/hangul_page_oracle.md`(사용법·등급·한계).
 - 알려진 케이스 재현: v3 표본(~2% 붕괴, 36387103) 동일 재현 + 종료코드 확인.
 - `output/poc/fidelity*/t3_*.py` 대체 안내(도구로 일원화).
 - `mydocs/report/task_m100_1560_report.md` + 커밋.

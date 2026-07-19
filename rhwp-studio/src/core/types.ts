@@ -861,6 +861,54 @@ export interface BookmarkInfo {
 
 export type LayerRenderProfile = 'fastPreview' | 'screen' | 'print' | 'highQuality';
 
+export type CanvasKitDocumentPreflightStatus = 'eligible' | 'ineligible' | 'incomplete';
+
+export interface CanvasKitReplaySummary {
+  totalItems: number;
+  directItems: number;
+  directRequiredItems: number;
+  compatOverlayItems: number;
+  textFallbackItems: number;
+  unsupportedItems: number;
+  hiddenOverlayViolations: number;
+}
+
+export interface CanvasKitDocumentPreflightBlocker {
+  code:
+    | 'pageLimitExceeded'
+    | 'workLimitExceeded'
+    | 'pageBuildFailed'
+    | 'hiddenCanvas2dOverlayRequired'
+    | 'unsupported'
+    | 'textFallback'
+    | 'compatOverlay';
+  pageIndex: number;
+  opType?: string;
+  detail?: string;
+}
+
+export interface CanvasKitDocumentPreflight {
+  schemaVersion: 1;
+  mode: 'default' | 'compat';
+  profile: LayerRenderProfile;
+  status: CanvasKitDocumentPreflightStatus;
+  eligible: boolean;
+  complete: boolean;
+  pageCount: number;
+  scannedPages: number;
+  scannedWorkUnits: number;
+  limits: {
+    maxPages: number;
+    maxWorkUnits: number;
+    maxBlockers: number;
+    maxRequiredFontFamilies: number;
+  };
+  summary: CanvasKitReplaySummary;
+  blockers: CanvasKitDocumentPreflightBlocker[];
+  requiredFontFamilies: string[];
+  capabilityDigest: string;
+}
+
 export interface LayerBounds {
   x: number;
   y: number;
@@ -924,6 +972,8 @@ export interface LayerInfo {
   textWrap?: string | null;
   zOrder: number;
   stableIndex: number;
+  /** 바탕쪽 유래 여부 (#2318). true 면 replay plane 이 behindText 로 상한 고정된다. */
+  masterPage?: boolean;
 }
 
 export type LayerNode = LayerGroupNode | LayerClipNode | LayerLeafNode;

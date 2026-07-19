@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 표 셀 렌더링의 암묵지 — 한컴 `letter_spacing` 보정, narrow glyph 역진, 자연폭 가드
 
 ## 문서 성격
@@ -48,7 +55,7 @@ rhwp는 **편집기 보정 케이스에서만 반대 방향(양수 자간)으로
 
 이 가드를 빼거나 약화시키면 `form-002.hwpx` 같은 일반 문서의 기존 레이아웃이 깨진다.
 
-**소스 위치**: [src/renderer/layout/paragraph_layout.rs](src/renderer/layout/paragraph_layout.rs) — underflow 자간 확장 분기 (주석 `// 자연 폭(ls=0) > available_width` 근처).
+**소스 위치**: [src/renderer/layout/paragraph_layout.rs](../../src/renderer/layout/paragraph_layout.rs) — underflow 자간 확장 분기 (주석 `// 자연 폭(ls=0) > available_width` 근처).
 
 ## 암묵지 2 — narrow glyph 역진
 
@@ -77,7 +84,7 @@ if style.letter_spacing + style.extra_char_spacing < 0.0 {
 
 ### 클램프를 적용할 5곳
 
-[src/renderer/layout/text_measurement.rs](src/renderer/layout/text_measurement.rs) 의 `char_width` 클로저 **5곳 전부에 일관되게** 적용해야 한다. 한두 곳만 고치면 측정 경로와 배치 경로가 어긋나 수렴 반복이 실패한다.
+[src/renderer/layout/text_measurement.rs](../../src/renderer/layout/text_measurement.rs) 의 `char_width` 클로저 **5곳 전부에 일관되게** 적용해야 한다. 한두 곳만 고치면 측정 경로와 배치 경로가 어긋나 수렴 반복이 실패한다.
 
 1. `EmbeddedTextMeasurer::estimate_text_width`
 2. `EmbeddedTextMeasurer::compute_char_positions`
@@ -89,7 +96,7 @@ if style.letter_spacing + style.extra_char_spacing < 0.0 {
 
 **양수 자간 또는 0 케이스에는 절대 클램프를 적용하지 않는다.** 과거에 무조건 클램프했던 커밋(`8c9b366`)을 되돌린 커밋(`21a02ec`)이 있었고, 그 이유는 비-오버플로우 셀의 측정까지 영향을 받아 정상 문서의 레이아웃이 깨졌기 때문이다.
 
-**회귀 방지 테스트**: `test_non_compression_width_unchanged_by_fix` ([src/renderer/layout/text_measurement.rs](src/renderer/layout/text_measurement.rs) 의 test 모듈)이 이 가드를 지키는지 확인한다.
+**회귀 방지 테스트**: `test_non_compression_width_unchanged_by_fix` ([src/renderer/layout/text_measurement.rs](../../src/renderer/layout/text_measurement.rs) 의 test 모듈)이 이 가드를 지키는지 확인한다.
 
 ## 암묵지 3 — 수렴 반복 3회
 
@@ -99,7 +106,7 @@ narrow glyph per-char 클램프가 들어가면, 선형 1회 분배로 계산한
 
 ### 처방
 
-[src/renderer/layout/paragraph_layout.rs](src/renderer/layout/paragraph_layout.rs) 의 underflow 확장 분기에서 **최대 3회 수렴 반복**으로 `extra_char_spacing`을 재계산한다.
+[src/renderer/layout/paragraph_layout.rs](../../src/renderer/layout/paragraph_layout.rs) 의 underflow 확장 분기에서 **최대 3회 수렴 반복**으로 `extra_char_spacing`을 재계산한다.
 
 이 3회는 실험적으로 결정된 값이다. 1회로는 수렴하지 않는 경우가 있고, 4회 이상은 대부분 의미 없음. 수정 시 수렴 기준을 임의로 낮추지 않는다.
 
@@ -134,18 +141,18 @@ let effective_text_width = if extra_char_sp > 0.0 && cell_ctx.is_some() && ... {
 
 ## 재현 샘플
 
-- [samples/hwpx/table-text.hwpx](samples/hwpx/table-text.hwpx) — 긴 숫자 셀 + 음수 자간 (주 재현 샘플)
-- [samples/hwpx/form-002.hwpx](samples/hwpx/form-002.hwpx) — 장식적 tightening 비회귀 가드 (자연폭 ≤ 셀폭 케이스)
+- [samples/hwpx/table-text.hwpx](../../samples/hwpx/table-text.hwpx) — 긴 숫자 셀 + 음수 자간 (주 재현 샘플)
+- [samples/hwpx/form-002.hwpx](../../samples/hwpx/form-002.hwpx) — 장식적 tightening 비회귀 가드 (자연폭 ≤ 셀폭 케이스)
 
 ## 회귀 테스트
 
 | 테스트 | 위치 | 역할 |
 |--------|------|------|
-| `test_overflow_compression_positions_monotonic_comma` | [src/renderer/layout/text_measurement.rs](src/renderer/layout/text_measurement.rs) | `extra_char_spacing=-2.88` 콤마 단조성 |
+| `test_overflow_compression_positions_monotonic_comma` | [src/renderer/layout/text_measurement.rs](../../src/renderer/layout/text_measurement.rs) | `extra_char_spacing=-2.88` 콤마 단조성 |
 | `test_overflow_compression_positions_monotonic_period` | 동일 | 마침표 단조성 |
 | `test_charshape_negative_letter_spacing_no_reverse` | 동일 | 실제 문서 재현 단조성 |
 | `test_non_compression_width_unchanged_by_fix` | 동일 | 비-압축 경로 비회귀 가드 |
-| `table_text_page_0` | [tests/svg_snapshot.rs](tests/svg_snapshot.rs) | 골든 SVG 스냅샷 |
+| `table_text_page_0` | [tests/svg_snapshot.rs](../../tests/svg_snapshot.rs) | 골든 SVG 스냅샷 |
 | `form_002_page_0` | 동일 | 장식적 tightening 비회귀 가드 |
 
 ## 역사
@@ -158,9 +165,9 @@ let effective_text_width = if extra_char_sp > 0.0 && cell_ctx.is_some() && ... {
 
 ## 관련 문서
 
-- [mydocs/plans/task_m100_229.md](mydocs/plans/task_m100_229.md) — 수행 계획서
-- [mydocs/plans/task_m100_229_impl.md](mydocs/plans/task_m100_229_impl.md) — 구현 계획서
-- [mydocs/report/task_m100_229_report.md](mydocs/report/task_m100_229_report.md) — 최종 보고서
+- [mydocs/plans/archives/task_m100_229.md](../plans/archives/task_m100_229.md) — 수행 계획서
+- [mydocs/plans/archives/task_m100_229_impl.md](../plans/archives/task_m100_229_impl.md) — 구현 계획서
+- [mydocs/report/archives/task_m100_229_report.md](../report/archives/task_m100_229_report.md) — 최종 보고서
 - [PR #235](https://github.com/edwardkim/rhwp/pull/235)
 - [Issue #229](https://github.com/edwardkim/rhwp/issues/229)
 

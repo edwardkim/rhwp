@@ -39,7 +39,7 @@
 
 ### 3단계: 보고서 + 가설 검증 결과 문서화 (본 커밋)
 
-- `mydocs/tech/line_seg_vpos_analysis.md` 부록 A 추가 (가설 검증 결과)
+- `mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md` 부록 A 추가 (가설 검증 결과)
 - 본 최종 보고서 작성
 - Epic #309 코멘트로 결과 게시 + 다음 sub-issue 후보 제안
 

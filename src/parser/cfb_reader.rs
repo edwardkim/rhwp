@@ -25,6 +25,8 @@ pub enum CfbError {
     StreamNotFound(String),
     /// 압축 해제 실패
     DecompressError(String),
+    /// 스트림 또는 압축 해제 결과가 호출부 상한을 초과함
+    LimitExceeded(usize),
 }
 
 impl std::fmt::Display for CfbError {
@@ -34,6 +36,9 @@ impl std::fmt::Display for CfbError {
             CfbError::StreamError(e) => write!(f, "스트림 읽기 실패: {}", e),
             CfbError::StreamNotFound(name) => write!(f, "스트림 없음: {}", name),
             CfbError::DecompressError(e) => write!(f, "압축 해제 실패: {}", e),
+            CfbError::LimitExceeded(limit) => {
+                write!(f, "스트림이 {} 바이트 상한을 초과했습니다", limit)
+            }
         }
     }
 }
@@ -140,6 +145,32 @@ impl CfbReader {
     pub fn read_bin_data(&mut self, storage_name: &str) -> Result<Vec<u8>, CfbError> {
         let path = format!("/BinData/{}", storage_name);
         self.read_stream_raw(&path)
+    }
+
+    /// BinData 스트림을 `max_bytes` 바이트까지만 읽는다.
+    pub fn read_bin_data_limited(
+        &mut self,
+        storage_name: &str,
+        max_bytes: usize,
+    ) -> Result<Vec<u8>, CfbError> {
+        let path = format!("/BinData/{}", storage_name);
+        if !self.compound.is_stream(&path) {
+            return Err(CfbError::StreamNotFound(path));
+        }
+        let mut stream = self
+            .compound
+            .open_stream(&path)
+            .map_err(|error| CfbError::StreamError(format!("{}: {}", path, error)))?;
+        let mut data = Vec::new();
+        stream
+            .by_ref()
+            .take((max_bytes as u64).saturating_add(1))
+            .read_to_end(&mut data)
+            .map_err(|error| CfbError::StreamError(format!("{}: {}", path, error)))?;
+        if data.len() > max_bytes {
+            return Err(CfbError::LimitExceeded(max_bytes));
+        }
+        Ok(data)
     }
 
     /// 본문 섹션 수 계산
@@ -316,9 +347,28 @@ impl LenientCfbReader {
             return Err(CfbError::OpenError("CFB 매직 넘버 불일치".into()));
         }
 
+        // 섹터 크기 지수는 파일에서 온 값(0~65535)이라 검증 없이 shift 하면 안 된다.
+        // - power >= 64(wasm32 에서는 >= 32): `1usize << power` 가 shift overflow.
+        //   debug 는 패닉, release 는 마스킹돼 엉뚱한 sector_size 가 된다.
+        // - power 가 0·1 이면 sector_size 가 1·2 라 아래 DIFAT 순회의
+        //   `sector_size / 4 - 1` 이 언더플로한다(debug 패닉, release 는 usize::MAX 로
+        //   감싸져 곧바로 슬라이스 범위 초과 패닉).
+        // CFB 사양상 섹터 크기는 512B(9) 또는 4096B(12)이므로 그 범위를 벗어나면
+        // 해석을 포기하고 Err 를 돌려준다. 패닉은 WASM 모듈 전체를 죽여 편집 중인
+        // 다른 문서까지 잃게 하므로, 열기 실패로 처리하는 편이 언제나 낫다.
         let sector_size_power = u16::from_le_bytes([data[30], data[31]]) as usize;
+        if !(9..=12).contains(&sector_size_power) {
+            return Err(CfbError::OpenError(format!(
+                "CFB 섹터 크기 지수가 사양 범위를 벗어남: {sector_size_power}"
+            )));
+        }
         let sector_size = 1usize << sector_size_power;
         let mini_sector_size_power = u16::from_le_bytes([data[32], data[33]]) as usize;
+        if mini_sector_size_power >= usize::BITS as usize {
+            return Err(CfbError::OpenError(format!(
+                "CFB 미니 섹터 크기 지수가 사양 범위를 벗어남: {mini_sector_size_power}"
+            )));
+        }
         let _mini_sector_size = 1usize << mini_sector_size_power;
 
         let fat_sectors_count =
@@ -402,7 +452,12 @@ impl LenientCfbReader {
         let n_entries = dir_data.len() / entry_size;
         for i in 0..n_entries {
             let eoff = i * entry_size;
-            let name_len = u16::from_le_bytes([dir_data[eoff + 64], dir_data[eoff + 65]]) as usize;
+            // name_len 도 파일에서 온 값(0~65535)이다. 이름 필드는 엔트리 선두 64바이트이므로
+            // 그보다 큰 값은 손상으로 보고 잘라낸다. 잘라내지 않으면 아래 슬라이스가
+            // dir_data(= n_entries * 128 바이트) 범위를 넘어 패닉한다 — 슬라이스 경계 검사는
+            // release 에서도 켜져 있어 배포 WASM 에서도 그대로 터진다.
+            let name_len =
+                (u16::from_le_bytes([dir_data[eoff + 64], dir_data[eoff + 65]]) as usize).min(64);
             let name = if name_len > 2 {
                 let name_bytes = &dir_data[eoff..eoff + name_len - 2]; // UTF-16LE, exclude null
                 String::from_utf16_lossy(
@@ -657,9 +712,109 @@ pub fn decompress_stream(data: &[u8]) -> Result<Vec<u8>, CfbError> {
     }
 }
 
+/// zlib/raw-deflate 데이터를 `max_bytes` 바이트까지만 압축 해제한다.
+pub fn decompress_stream_limited(data: &[u8], max_bytes: usize) -> Result<Vec<u8>, CfbError> {
+    fn decode_limited<R: Read>(reader: R, max_bytes: usize) -> Result<Vec<u8>, CfbError> {
+        let mut output = Vec::new();
+        reader
+            .take((max_bytes as u64).saturating_add(1))
+            .read_to_end(&mut output)
+            .map_err(|error| CfbError::DecompressError(error.to_string()))?;
+        if output.len() > max_bytes {
+            return Err(CfbError::LimitExceeded(max_bytes));
+        }
+        Ok(output)
+    }
+
+    let raw_result = decode_limited(flate2::read::DeflateDecoder::new(data), max_bytes);
+    if let Ok(output) = raw_result {
+        return Ok(output);
+    }
+    let raw_exceeded = matches!(raw_result, Err(CfbError::LimitExceeded(_)));
+
+    match decode_limited(flate2::read::ZlibDecoder::new(data), max_bytes) {
+        Ok(output) => Ok(output),
+        Err(CfbError::LimitExceeded(_)) => Err(CfbError::LimitExceeded(max_bytes)),
+        Err(_) if raw_exceeded => Err(CfbError::LimitExceeded(max_bytes)),
+        Err(error) => Err(error),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // ── LenientCfbReader 헤더 필드 검증 ──────────────────────────────────
+    //
+    // LenientCfbReader 는 엄격 파서가 실패한 뒤에만 쓰인다(parser/mod.rs). 즉 입력 모집단이
+    // "이미 손상이 확인된 파일"이라, 헤더 필드에 쓰레기 값이 들어있을 확률이 가장 높은
+    // 자리다. 그런데 파일에서 온 값을 검증 없이 shift/슬라이스에 쓰고 있었다.
+    // WASM 에서 패닉은 모듈 전체를 트랩시켜 편집 중이던 다른 문서까지 잃게 하므로,
+    // 해석 불가한 헤더는 패닉이 아니라 Err 로 돌려줘야 한다.
+
+    /// 최소 CFB 헤더(512B). 섹터 크기 512B, DIFAT/디렉터리 없음.
+    fn minimal_header() -> Vec<u8> {
+        let mut d = vec![0u8; 512];
+        d[0..8].copy_from_slice(&[0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1]);
+        d[30..32].copy_from_slice(&9u16.to_le_bytes()); // sector size = 1 << 9
+        d[32..34].copy_from_slice(&6u16.to_le_bytes()); // mini sector size = 1 << 6
+        d[68..72].copy_from_slice(&0xFFFF_FFFEu32.to_le_bytes()); // first DIFAT = EOC
+        d
+    }
+
+    #[test]
+    fn lenient_open_rejects_out_of_range_sector_size_power() {
+        // power >= 64 는 `1usize << power` 가 shift overflow(debug 패닉 / release 마스킹).
+        let mut d = minimal_header();
+        d[30..32].copy_from_slice(&64u16.to_le_bytes());
+        assert!(
+            LenientCfbReader::open(&d).is_err(),
+            "shift overflow 대신 Err 이어야 함"
+        );
+
+        // power 0·1 은 sector_size 가 1·2 라 DIFAT 순회의 `sector_size / 4 - 1` 이 언더플로.
+        for bad in [0u16, 1u16] {
+            let mut d = minimal_header();
+            d[30..32].copy_from_slice(&bad.to_le_bytes());
+            d[68..72].copy_from_slice(&0u32.to_le_bytes()); // DIFAT 체인 진입
+            d[72..76].copy_from_slice(&1u32.to_le_bytes());
+            assert!(
+                LenientCfbReader::open(&d).is_err(),
+                "sector_size_power={bad} 에서 언더플로 대신 Err 이어야 함"
+            );
+        }
+    }
+
+    #[test]
+    fn lenient_open_rejects_out_of_range_mini_sector_size_power() {
+        let mut d = minimal_header();
+        d[32..34].copy_from_slice(&64u16.to_le_bytes());
+        assert!(
+            LenientCfbReader::open(&d).is_err(),
+            "shift overflow 대신 Err 이어야 함"
+        );
+    }
+
+    #[test]
+    fn lenient_open_survives_oversized_directory_entry_name_len() {
+        // 디렉터리 섹터까지 도달하는 최소 컨테이너.
+        // 레이아웃: [0]=헤더 512B, [512]=FAT 섹터, [1024]=디렉터리 섹터
+        let mut d = minimal_header();
+        d[44..48].copy_from_slice(&1u32.to_le_bytes()); // FAT 섹터 1개
+        d[48..52].copy_from_slice(&1u32.to_le_bytes()); // 디렉터리 시작 = 섹터 1
+        d[76..80].copy_from_slice(&0u32.to_le_bytes()); // DIFAT[0] = FAT 은 섹터 0
+        d.resize(512 * 3, 0);
+
+        // FAT(섹터 0): 엔트리 1 = END_OF_CHAIN → 디렉터리 체인은 한 섹터로 끝난다.
+        d[512 + 4..512 + 8].copy_from_slice(&0xFFFF_FFFEu32.to_le_bytes());
+
+        // 디렉터리(섹터 1)의 첫 엔트리 name_len 을 최대값으로 손상시킨다.
+        // 잘라내지 않으면 dir_data(512B) 범위를 한참 넘겨 슬라이스해 패닉한다.
+        d[1024 + 64..1024 + 66].copy_from_slice(&0xFFFFu16.to_le_bytes());
+
+        let r = LenientCfbReader::open(&d);
+        assert!(r.is_ok(), "손상된 name_len 에서 패닉 없이 열려야 함");
+    }
 
     #[test]
     fn test_decompress_empty() {
@@ -690,6 +845,28 @@ mod tests {
 
         let decompressed = decompress_stream(&compressed).unwrap();
         assert_eq!(decompressed, original);
+    }
+
+    #[test]
+    fn test_limited_decompression_rejects_compact_oversized_output() {
+        use flate2::write::DeflateEncoder;
+        use flate2::Compression;
+        use std::io::Write;
+
+        let original = vec![b'A'; 4096];
+        let mut encoder = DeflateEncoder::new(Vec::new(), Compression::best());
+        encoder.write_all(&original).unwrap();
+        let compressed = encoder.finish().unwrap();
+        assert!(compressed.len() < 1024);
+
+        assert!(matches!(
+            decompress_stream_limited(&compressed, 1024),
+            Err(CfbError::LimitExceeded(1024))
+        ));
+        assert_eq!(
+            decompress_stream_limited(&compressed, original.len()).unwrap(),
+            original
+        );
     }
 
     #[test]

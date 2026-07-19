@@ -31,7 +31,7 @@
 | legacy target | `web/fonts -> ../assets/fonts` compatibility link |
 
 전체 manifest와 dependency graph는
-`mydocs/tech/task_m100_2125_font_ownership.md`에 기록했다.
+`mydocs/tech/investigations/issue-2125/task_m100_2125_font_ownership.md`에 기록했다.
 
 ## 3. 추가 발견
 

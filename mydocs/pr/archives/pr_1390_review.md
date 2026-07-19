@@ -34,7 +34,7 @@
   devel 미반영(보류 결정과 일치). v2_impl 이 가리키는 코드 위치(`paragraph_layout.rs` 미주
   trailing 분기)와 헬퍼(`endnote_para_has_same_endnote_successor`, `endnote_between_notes_hu`,
   `measure_endnote_para_advance`)는 devel 에 실재 — 진단 정확. clamp 미적용(보류) 상태와 정합.
-- **참조 자료 실재**: `mydocs/tech/trailing_model_render_vs_pagination_1248.md` 존재. 메모리
+- **참조 자료 실재**: `mydocs/tech/investigations/issue-1248/trailing_model_render_vs_pagination_1248.md` 존재. 메모리
   `tech_trailing_model_no_ssot`(#1246 입력 모호성) 정합.
 - **merge 정합**: BEHIND 이나 PR 에 devel 동기화 merge 가 포함돼 GitHub 3-way merge 결과가
   깨끗(12 문서 +682, 비문서·무관 변경 0, 충돌 없음). 로컬 시뮬레이션으로 확인.

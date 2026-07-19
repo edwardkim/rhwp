@@ -7,11 +7,13 @@ on:
       - 'Cargo.toml'
       - 'Cargo.lock'
       - 'src/paint/**'
+      - 'src/model/**'
       - 'src/renderer/**'
       - 'src/document_core/queries/rendering.rs'
       - 'src/wasm_api.rs'
       - 'src/main.rs'
       - 'assets/fonts/**'
+      - 'ttfs/**'
       - 'scripts/renderer_baseline.py'
       - 'scripts/renderer_baseline_manifest.json'
       - 'scripts/generate_font_glyph_payload_fixture.py'
@@ -61,8 +63,8 @@ jobs:
     name: Render Diff preflight
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
-      checks: read
       pull-requests: read
     outputs:
       fast_pass: ${{ steps.detect.outputs.fast_pass || 'false' }}
@@ -76,7 +78,6 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            const allowedConclusions = new Set(['success', 'skipped', 'neutral']);
             const { owner, repo } = context.repo;
 
             function setResult(fastPass, reason, candidateSha = '') {
@@ -201,31 +202,76 @@ jobs:
                 return;
               }
 
-              const checkRuns = await github.paginate(github.rest.checks.listForRef, {
+              const workflowRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
                 owner,
                 repo,
-                ref: candidateSha,
+                workflow_id: 'render-diff.yml',
+                event: 'pull_request',
+                status: 'completed',
+                head_sha: candidateSha,
                 per_page: 100,
               });
-              const renderDiffRun = latestRun(checkRuns.filter((run) => (
-                run.name === 'Canvas visual diff'
-                && run.app?.slug === 'github-actions'
+              const renderDiffRun = latestRun(workflowRuns.filter((run) => (
+                run.path === '.github/workflows/render-diff.yml'
+                && run.event === 'pull_request'
+                && run.head_sha === candidateSha
               )));
 
               if (!renderDiffRun) {
-                setResult(false, `missing-canvas-visual-diff:${candidateSha}`, candidateSha);
+                setResult(false, `missing-completed-render-diff-workflow:${candidateSha}`, candidateSha);
                 return;
               }
-              if (renderDiffRun.status !== 'completed') {
-                setResult(false, `canvas-visual-diff-not-completed:${renderDiffRun.status}`, candidateSha);
+              if (renderDiffRun.conclusion !== 'success') {
+                setResult(
+                  false,
+                  `latest-render-diff-workflow-not-success:${renderDiffRun.conclusion}`,
+                  candidateSha,
+                );
                 return;
               }
-              if (!allowedConclusions.has(renderDiffRun.conclusion)) {
-                setResult(false, `canvas-visual-diff-not-green:${renderDiffRun.conclusion}`, candidateSha);
+              const runCreatedAt = Date.parse(renderDiffRun.created_at);
+              const pullCreatedAt = Date.parse(pr.created_at);
+              if (!Number.isFinite(runCreatedAt)
+                || !Number.isFinite(pullCreatedAt)
+                || renderDiffRun.head_branch !== pr.head.ref
+                || renderDiffRun.head_repository?.id !== pr.head.repo?.id
+                || runCreatedAt < pullCreatedAt) {
+                setResult(false, 'render-diff-workflow-pr-identity-mismatch', candidateSha);
                 return;
               }
 
-              setResult(true, `canvas-visual-diff-green:${renderDiffRun.conclusion}`, candidateSha);
+              const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                owner,
+                repo,
+                run_id: renderDiffRun.id,
+                filter: 'latest',
+                per_page: 100,
+              });
+              const renderDiffJob = latestRun(jobs.filter((job) => (
+                job.name === 'Canvas visual diff'
+              )));
+              if (!renderDiffJob) {
+                setResult(false, `missing-canvas-visual-diff-job:${candidateSha}`, candidateSha);
+                return;
+              }
+              if (renderDiffJob.status !== 'completed' || renderDiffJob.conclusion !== 'success') {
+                setResult(
+                  false,
+                  `canvas-visual-diff-not-success:${renderDiffJob.status}:${renderDiffJob.conclusion}`,
+                  candidateSha,
+                );
+                return;
+              }
+              const expectedIdentityStep = `Render Diff identity PR #${pr.number} base ${pr.base.sha}`;
+              const identityStep = (renderDiffJob.steps || []).find((step) => (
+                step.name === expectedIdentityStep
+              ));
+              if (identityStep?.status !== 'completed' || identityStep.conclusion !== 'success') {
+                setResult(false, 'canvas-visual-diff-identity-mismatch', candidateSha);
+                return;
+              }
+
+              setResult(true, 'canvas-visual-diff-success', candidateSha);
             } catch (error) {
               core.warning(`Render Diff preflight failed; running full Render Diff. ${error.message}`);
               setResult(false, 'preflight-error');
@@ -242,6 +288,10 @@ jobs:
       RHWP_CHROMIUM_BUILD_ID: '1660786'
 
     steps:
+      - name: "Render Diff identity PR #${{ github.event.pull_request.number }} base ${{ github.event.pull_request.base.sha }}"
+        if: ${{ github.event_name == 'pull_request' }}
+        run: printf '%s\n' 'Render Diff identity recorded'
+
       - uses: actions/checkout@v5
 
       - name: Install Rust toolchain
@@ -250,11 +300,16 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install PDF raster tools
-        continue-on-error: true
-        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            fonts-dejavu-core \
+            libfontconfig1-dev \
+            libfreetype6-dev \
+            poppler-utils
 
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        uses: ./.github/actions/install-wasm-pack
 
       # [Task #1667] Render Diff is PR-heavy; pull_request caches are scoped to
       # refs/pull/* and are not reused by other PRs. Keep PR runs restore-only,
@@ -275,8 +330,7 @@ jobs:
         run: wasm-pack build --target web --dev
 
       - name: Build native CLI for PDF report
-        continue-on-error: true
-        run: cargo build --bin rhwp
+        run: cargo build --features native-skia --bin rhwp
 
       - name: Save cargo registry & build cache
         if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.render_diff_cargo_cache_restore.outputs.cache-hit != 'true' }}
@@ -308,10 +362,13 @@ jobs:
         working-directory: rhwp-studio
         run: |
           node --check e2e/renderer-contract.test.mjs
+          node --check e2e/issue-2214-page-local-repaint.test.mjs
           node --check e2e/canvaskit-font-coverage.test.mjs
           node --check e2e/canvas-render-diff.test.mjs
           node --check e2e/pdf-render-diff-report.mjs
           node --check e2e/renderer-baseline.mjs
+          node --check e2e/renderer-baseline-native-diff.mjs
+          node e2e/renderer-baseline-native-diff.mjs --self-test
           node --check e2e/run-render-diff.mjs
           python3 -m py_compile ../scripts/renderer_baseline.py
           npm run e2e:renderer-contract
@@ -327,6 +384,10 @@ jobs:
           RHWP_RENDER_DIFF_WRITE_IMAGES: ${{ inputs['write-images'] == true && '1' || '0' }}
           RHWP_RENDER_DIFF_PDF: '1'
           RHWP_RENDER_DIFF_PDF_WRITE_IMAGES: '1'
+          RHWP_RENDER_DIFF_DIRECT_PDF: '1'
+          RHWP_RENDER_DIFF_DIRECT_PDF_GATE: '1'
+          RHWP_RENDER_DIFF_DIRECT_PDF_MAX_RATIO: '0.02'
+          RHWP_RENDER_DIFF_DIRECT_PDF_RASTER_DPI: '144'
           RHWP_RENDER_DIFF_RHWP_BIN: ../target/debug/rhwp
         run: npm run e2e:render-diff:ci
 

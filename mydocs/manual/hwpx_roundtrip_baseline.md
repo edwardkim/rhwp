@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/hwpx_roundtrip_baseline.md
+last_verified: 2026-07-17
+---
+
 # HWPX Roundtrip Baseline 가이드 (Task #1315, #1378·#1379·#1380 게이트 강화)
 
 `samples/hwpx/` 전수에 대한 HWPX→IR→HWPX roundtrip 검증 체계의 사용·유지보수 매뉴얼.
@@ -44,7 +51,9 @@ secPr 템플릿 고정값 방출에 의한 여백·제본 변형을 검출) +
 | **제외** | 샘플 자체가 HWPX가 아님 (serializer 결함 아님) | `EXCLUDED` 상수 |
 | **C (oracle 부적합)** | A이지만 full visual fidelity oracle 금지 (복합 실문서) | `ORACLE_UNFIT` 상수 |
 
-현황 (2026-06-14, .hwpx 54건): **A=53, B=0**, 제외=1(`hwpx-01.hwpx`), C=13.
+현재 `XFAIL`은 0건이고 형식 불일치 제외는 `hwpx-01.hwpx` 1건, full visual fidelity oracle로
+사용하지 않는 `ORACLE_UNFIT`은 13건이다. 전체 A등급 수는 샘플 추가에 따라 달라지므로 문서에
+고정하지 않고 `tests/hwpx_roundtrip_baseline.rs`의 재귀 수집 결과를 권위로 삼는다.
 
 - **B=0**: #1384 해소(borderFill 등록 1-based 정정)로 마지막 xfail 4건(`exam_kor`/
   `exam_social`/`exam_social-p1`/`issue_1133`)이 승격됨 (task_m100_1384_stage2.md).

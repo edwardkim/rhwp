@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 안드로이드 IME 테스트 완료
 description: 안드로이드 태블릿에서 한글 IME 정상 동작 확인 (2026-04-06). iOS도 해결 완료.
 type: project

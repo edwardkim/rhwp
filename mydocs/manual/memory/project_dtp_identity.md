@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: rhwp 정체성 — 한국형 DTP 엔진 + 워드프로세서
 description: 아래아한글의 개발 의도 = 쿽 익스프레스 (QuarkXPress) 대체. 단순 워드프로세서가 아닌 DTP 도구 정체성. 다층 레이어 / WebGPU / 마스터 페이지 등은 DTP 인프라 토대.
 type: project
@@ -23,4 +27,4 @@ originSessionId: b2ba0b26-0926-49a2-a3fb-6ff2062a8527
 - M150 / M200 단계의 작업 우선순위 결정 시 DTP 영역 (마스터 페이지 / 출판 layer / 협업 편집) 을 워드프로세서 기능과 동등한 가치로 평가
 - 본 정체성에 따라 다층 레이어 (Task #516 옵션 C → M200 후보 B) 단계적 마이그레이션 경로는 단순 비용 회피가 아니라 **rhwp 본질 실현의 길**
 
-**상세**: `mydocs/tech/multi_layer_rendering_strategy.md` Appendix A + GitHub Discussion [#529](https://github.com/edwardkim/rhwp/discussions/529) 참조.
+**상세**: `mydocs/tech/investigations/issue-516/multi_layer_rendering_strategy.md` Appendix A + GitHub Discussion [#529](https://github.com/edwardkim/rhwp/discussions/529) 참조.

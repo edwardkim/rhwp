@@ -14,7 +14,7 @@ Phase 2~4 (본질 정정) 의 선결 인프라 추가.
 |------|------|
 | `src/renderer/layout/paragraph_layout.rs` | `layout_debug_enabled()` + `layout_inline_table_paragraph` 진단 로깅 (env-var-checked) |
 | `scripts/svg_regression_diff.sh` | 신규 (130 LOC) — build/diff 두 모드 |
-| `mydocs/manual/svg_regression_diff.md` | 사용 매뉴얼 |
+| `mydocs/manual/verification/svg_regression_diff.md` | 사용 매뉴얼 |
 | `mydocs/plans/task_m100_517.md` | 수행계획서 |
 | `mydocs/working/task_m100_517_stage{1,2}.md` | 단계별 보고서 |
 | 본 보고서 | |

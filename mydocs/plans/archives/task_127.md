@@ -24,7 +24,7 @@ measure_char_width_hwp() (layout.rs:6848)
 
 ### 한컴 webhwp 참조
 
-한컴 webhwp는 LRU 캐시(128 엔트리)를 사용한다 (`mydocs/tech/webhwp_text_measurement.md`):
+한컴 webhwp는 LRU 캐시(128 엔트리)를 사용한다 (`mydocs/tech/webhwp/text_measurement.md`):
 - 캐시 키: `char + fontName + (4096 × sizeCode + variant)`
 - 용량 초과 시 가장 오래된 25% 제거
 - 추정 히트율: 80~90%

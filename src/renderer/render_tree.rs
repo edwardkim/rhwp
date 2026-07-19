@@ -59,6 +59,11 @@ pub struct RenderLayerInfo {
     pub z_order: i32,
     /// Stable tie-breaker within the same z-order.
     pub stable_index: u32,
+    /// 바탕쪽(master page) 유래 여부. 한컴 의미론에서 바탕쪽 개체의 text_wrap 은
+    /// 바탕쪽 내부 순서에만 적용되고 바탕쪽 전체는 본문 뒤에 깔리므로, replay plane
+    /// 분류는 이 플래그로 BehindText 상한을 적용한다 (#2318, SVG node_z_plane 계약).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub master_page: bool,
 }
 
 impl RenderLayerInfo {
@@ -67,7 +72,14 @@ impl RenderLayerInfo {
             text_wrap,
             z_order,
             stable_index,
+            master_page: false,
         }
+    }
+
+    /// 바탕쪽 유래 표시를 부여한 사본을 반환한다 (#2318).
+    pub fn for_master_page(mut self) -> Self {
+        self.master_page = true;
+        self
     }
 }
 

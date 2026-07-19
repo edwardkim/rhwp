@@ -1,4 +1,15 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/manual/codex/docs_and_git_workflow.md
+last_verified: 2026-07-17
+---
+
 # AI 페어프로그래밍 가이드
+
+> 이 문서는 작성 당시의 도구 수치와 `local/*` 브랜치 운용 경험을 보존한 historical reference다.
+> 현재 작업 절차는 [문서·Git 워크플로](codex/docs_and_git_workflow.md)와
+> [PR 리뷰·통합 워크플로우](pr_review_workflow.md)를 따른다.
 
 ## 개요
 

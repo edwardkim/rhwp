@@ -329,16 +329,19 @@ impl Field {
     /// - 필드 이름(Name)은 command 에 넣지 않는다 — CTRL_DATA 레코드(0x57) 전담.
     ///   (이전엔 Name 키를 넣어 한컴이 Direction 범위를 잘못 잘라 안내문 바인딩 실패.)
     pub fn build_clickhere_command(guide: &str, memo: &str) -> String {
-        let guide_len = guide.chars().count();
-        let memo_len = memo.chars().count();
+        // §4.5: wstring {n} 은 UTF-16 code unit(WCHAR) 수다. chars().count()(스칼라 수)는
+        // BMP 밖 문자(이모지·CJK 확장한자 등)를 문자당 1개 적게 세어, 한컴이 안내문/메모
+        // 범위를 잘못 해석한다.
+        let guide_len = guide.encode_utf16().count();
+        let memo_len = memo.encode_utf16().count();
 
         // HelpState 값 뒤 공백 2개 (한컴 정답지 동형).
         let inner = format!(
             "Direction:wstring:{}:{} HelpState:wstring:{}:{}  ",
             guide_len, guide, memo_len, memo
         );
-        // set 길이는 마지막 trailing 공백 1개를 제외한 inner 글자수.
-        let set_len = inner.chars().count() - 1;
+        // set 길이도 WCHAR 수 기준. 마지막 trailing 공백 1개 제외(-1) — 공백은 BMP 라 유지.
+        let set_len = inner.encode_utf16().count() - 1;
         format!("Clickhere:set:{}:{}", set_len, inner)
     }
 
@@ -507,6 +510,27 @@ mod tests {
             set_len,
             body.chars().count() - 1,
             "set 길이 = inner 글자수 − 1 (trailing 공백 제외): {cmd}"
+        );
+    }
+
+    /// §4.5: wstring {n}·set {N} 은 UTF-16 code unit(WCHAR) 수여야 한다.
+    /// BMP 밖 문자(U+20000)는 2 WCHAR 이므로 chars().count() 로는 1개 적게 세어진다.
+    #[test]
+    fn clickhere_wstring_len_counts_utf16_wchars() {
+        // guide "a𠀀b": a(1) + U+20000(2 WCHAR) + b(1) = 4 WCHAR (chars().count()=3)
+        let cmd = Field::build_clickhere_command("a\u{20000}b", "");
+        assert!(
+            cmd.contains("Direction:wstring:4:a\u{20000}b "),
+            "guide {{n}} 은 UTF-16 code unit 수(4)여야 한다(chars().count()=3 이면 RED): {cmd}"
+        );
+        // set 길이도 WCHAR 기준 (inner 의 UTF-16 수 − 1).
+        let body = cmd.strip_prefix("Clickhere:set:").unwrap();
+        let (set_str, inner) = body.split_once(':').unwrap();
+        let set_len: usize = set_str.parse().unwrap();
+        assert_eq!(
+            set_len,
+            inner.encode_utf16().count() - 1,
+            "set {{N}} 은 WCHAR 수: {cmd}"
         );
     }
 

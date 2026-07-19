@@ -85,6 +85,14 @@ pub trait BinDataResolver:
     /// 원본이 손상되었거나 엔트리가 없으면 빈 벡터를 반환한다
     /// (파싱 시점의 placeholder 의미를 그대로 유지한다).
     fn resolve(&self, key: &str) -> Vec<u8>;
+
+    /// 최대 `max_bytes` 바이트까지만 materialize하여 반환한다.
+    ///
+    /// 기본 구현은 안전하게 실패한다. 컨테이너별 리졸버가 압축 해제 경계에서
+    /// 상한을 보장할 수 있을 때만 이 메서드를 구현해야 한다.
+    fn resolve_limited(&self, _key: &str, _max_bytes: usize) -> Option<Vec<u8>> {
+        None
+    }
 }
 
 /// BinData 바이트의 보관 방식.
@@ -114,6 +122,20 @@ impl BinDataBytes {
         match self {
             BinDataBytes::Loaded(v) => v.clone(),
             BinDataBytes::Lazy { resolver, key } => resolver.resolve(key),
+        }
+    }
+
+    /// 최대 `max_bytes` 바이트까지만 로드한다.
+    ///
+    /// `Loaded` 는 복제 전에 길이를 확인하고, `Lazy` 는 리졸버가 제공하는
+    /// bounded read/decompression 경로만 사용한다.
+    pub fn load_limited(&self, max_bytes: usize) -> Option<Vec<u8>> {
+        match self {
+            BinDataBytes::Loaded(v) if v.len() <= max_bytes => Some(v.clone()),
+            BinDataBytes::Loaded(_) => None,
+            BinDataBytes::Lazy { resolver, key } => resolver
+                .resolve_limited(key, max_bytes)
+                .filter(|bytes| bytes.len() <= max_bytes),
         }
     }
 
@@ -155,6 +177,7 @@ impl From<Vec<u8>> for BinDataBytes {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::atomic::{AtomicUsize, Ordering};
 
     #[test]
     fn test_bin_data_default() {
@@ -174,5 +197,35 @@ mod tests {
         };
         assert_eq!(bd.data_type, BinDataType::Embedding);
         assert_eq!(bd.extension.as_deref(), Some("jpg"));
+    }
+
+    #[test]
+    fn limited_lazy_load_never_falls_back_to_unbounded_resolution() {
+        #[derive(Debug)]
+        struct LimitedOnlyResolver {
+            requested_limit: AtomicUsize,
+        }
+
+        impl BinDataResolver for LimitedOnlyResolver {
+            fn resolve(&self, key: &str) -> Vec<u8> {
+                panic!("bounded load must not call unbounded resolver: {key}")
+            }
+
+            fn resolve_limited(&self, _key: &str, max_bytes: usize) -> Option<Vec<u8>> {
+                self.requested_limit.store(max_bytes, Ordering::SeqCst);
+                Some(vec![0; max_bytes + 1])
+            }
+        }
+
+        let resolver = std::sync::Arc::new(LimitedOnlyResolver {
+            requested_limit: AtomicUsize::new(0),
+        });
+        let bytes = BinDataBytes::Lazy {
+            resolver: resolver.clone(),
+            key: "compressed-font".to_string(),
+        };
+
+        assert!(bytes.load_limited(16).is_none());
+        assert_eq!(resolver.requested_limit.load(Ordering::SeqCst), 16);
     }
 }

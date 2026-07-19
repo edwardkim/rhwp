@@ -53,7 +53,7 @@ fn normalize_internal_ole_data(item: &content::PackageItem, data: Vec<u8>) -> Ve
 /// [Task #2263] 지연 로딩 시점에도 동일 정규화를 적용해야 하므로
 /// `PackageItem` 의존 없는 바이트 전용 함수로 분리했다.
 fn normalize_ole_bytes(mut data: Vec<u8>) -> Vec<u8> {
-    if data.len() <= 12 {
+    if data.len() < 12 {
         return data;
     }
 
@@ -106,6 +106,24 @@ impl crate::model::bin_data::BinDataResolver for HwpxBinResolver {
                     key, e
                 );
                 Vec::new()
+            }
+        }
+    }
+
+    fn resolve_limited(&self, key: &str, max_bytes: usize) -> Option<Vec<u8>> {
+        let mut reader = match self.reader.lock() {
+            Ok(reader) => reader,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        match reader.read_file_bytes_limited(key, max_bytes) {
+            Ok(data) => Some(if self.ole_hrefs.contains(key) {
+                normalize_ole_bytes(data)
+            } else {
+                data
+            }),
+            Err(error) => {
+                eprintln!("경고: BinData '{}' bounded 로드 실패: {}", key, error);
+                None
             }
         }
     }
@@ -464,6 +482,11 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         hwpx_aux_entries,
         is_hwp3_variant: false,
         is_hwpx_variant: false,
+        provenance: crate::model::provenance::SourceProvenance {
+            format: crate::model::provenance::SourceFormat::Hwpx,
+            hwp3_lineage: false,
+            hwpx_lineage: false,
+        },
     };
 
     // [Task #873] BinData Link 타입 의 외부 file path 영역 영역 Picture.external_path 영역

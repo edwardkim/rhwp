@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/hwpx2hwp-01.md
+last_verified: 2026-07-17
+---
+
 # HWPX to HWP 저장 기술 노트 01
 
 ## 목적

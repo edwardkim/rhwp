@@ -1,3 +1,10 @@
+---
+kind: decision
+status: active
+canonical: mydocs/tech/hwp_ole_chart_renderer_architecture_decision_1251.md
+last_verified: 2026-07-17
+---
+
 # Task M100-1251 렌더러 선택 결정 기록
 
 - **이슈**: [#1251](https://github.com/edwardkim/rhwp/issues/1251)

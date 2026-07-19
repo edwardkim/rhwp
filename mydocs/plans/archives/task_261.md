@@ -20,7 +20,7 @@
 - **Task 142**: Break Token 자료구조 도입
 - **Task 198**: vpos 보정을 page_index==0 전용에서 전체 페이지로 확장 (vpos_page_base / vpos_lazy_base)
 - **Task 215**: typeset_block_table() Break Token 기반 행 분할
-- **연구 문서**: `mydocs/tech/layout_engine_research.md` — MS Word, LibreOffice, Chromium LayoutNG, Typst 분석
+- **연구 문서**: `mydocs/tech/investigations/issue-397/layout_engine_research.md` — MS Word, LibreOffice, Chromium LayoutNG, Typst 분석
 
 이미 Break Token 패턴을 도입하여 측정-배치 불일치를 해소한 경험이 있으므로,
 동일한 패턴을 vpos 문제에도 적용하는 것이 일관성 있는 접근이다.

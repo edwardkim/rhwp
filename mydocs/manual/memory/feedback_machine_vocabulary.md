@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 기계적 어휘 회피
 description: "본질", "본질적", "정합 영역" 같은 기계적·반복적 표현 과다 사용 금지
 type: feedback

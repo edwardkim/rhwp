@@ -14,7 +14,7 @@ runTest('양식 컨트롤 셀 커서 진입 및 체크박스 토글', async ({ p
 
   // ── TC-1: form-002.hwpx 로드 ──────────────────────────────
   setTestCase('TC-1: 문서 로드');
-  const { pageCount } = await loadHwpFile(page, 'form-002.hwpx');
+  const { pageCount } = await loadHwpFile(page, 'hwpx/form-002.hwpx');
   assert(pageCount >= 1, `form-002.hwpx 로드 성공 (${pageCount}페이지)`);
   await screenshot(page, 'form-01-loaded');
 

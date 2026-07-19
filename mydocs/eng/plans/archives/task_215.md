@@ -20,7 +20,7 @@ Implement **Break Token based table typesetting** in TypesetEngine to structural
 3. **MS Word/OOXML**: cantSplit, tblHeader — row split rules and header row repetition
 4. **Common**: Do not separate measurement and placement — **measure while placing**
 
-Details: `mydocs/tech/layout_engine_research.md`
+Details: `mydocs/tech/investigations/issue-397/layout_engine_research.md`
 
 ---
 

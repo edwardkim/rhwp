@@ -18,10 +18,10 @@ VS Code package gate를 같은 output에서 검증했다.
 
 | 파일 | 내용 |
 |------|------|
-| `mydocs/tech/task_m100_2124_font_inventory.md` | 36 fonts, 정확한 hash/size 위치, license와 consumer 경로 |
-| `mydocs/tech/task_m100_2124_extension_security_snapshot.md` | manifest/CSP/WAR/sender/URL/file 기준선과 잔여 위험 |
-| `mydocs/tech/task_m100_2124_smoke_manifest.md` | local/manual gate와 변경 유형별 최소 검증 |
-| `mydocs/tech/task_m100_2124_frontend_solid_anchors.md` | 미채점 SOLID evidence와 reviewer 채점 절차 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_font_inventory.md` | 36 fonts, 정확한 hash/size 위치, license와 consumer 경로 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_extension_security_snapshot.md` | manifest/CSP/WAR/sender/URL/file 기준선과 잔여 위험 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_smoke_manifest.md` | local/manual gate와 변경 유형별 최소 검증 |
+| `mydocs/tech/investigations/issue-2124/task_m100_2124_frontend_solid_anchors.md` | 미채점 SOLID evidence와 reviewer 채점 절차 |
 | `scripts/frontend-extension-dist.test.mjs` | browser extension dist 계약 test |
 
 ## 3. 핵심 판단

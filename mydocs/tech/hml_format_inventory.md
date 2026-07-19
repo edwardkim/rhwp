@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/hml_format_inventory.md
+last_verified: 2026-07-17
+---
+
 # HML format inventory
 
 ## 목적과 판정 기준

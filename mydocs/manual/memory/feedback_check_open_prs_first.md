@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 이슈 작업 시작 전 열린 PR 확인 필수
 description: 동일 이슈를 해결하는 외부 기여자의 PR이 이미 열려 있는지 확인하지 않고 내부 작업을 시작하면 기여자의 노력이 무의미해지고 프로젝트 신뢰가 손상됨
 type: feedback

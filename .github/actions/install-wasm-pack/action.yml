@@ -1,0 +1,20 @@
+name: Install wasm-pack
+description: >-
+  Install a pinned wasm-pack version from the prebuilt release binary.
+  Single source of truth for the CI wasm-pack version (#2233). Keep in sync
+  with the Dockerfile `cargo install wasm-pack@<version>` pin.
+
+runs:
+  using: composite
+  steps:
+    - name: Install pinned wasm-pack
+      shell: bash
+      run: |
+        set -euo pipefail
+        # [#2233] 버전 변경은 여기 한 곳 + Dockerfile 만 갱신한다.
+        WASM_PACK_VERSION=0.15.0
+        TARBALL="wasm-pack-v${WASM_PACK_VERSION}-x86_64-unknown-linux-musl"
+        URL="https://github.com/rustwasm/wasm-pack/releases/download/v${WASM_PACK_VERSION}/${TARBALL}.tar.gz"
+        curl -sSfL "$URL" | tar -xzf - -C /tmp
+        sudo mv "/tmp/${TARBALL}/wasm-pack" /usr/local/bin/wasm-pack
+        wasm-pack --version

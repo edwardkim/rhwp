@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 누름틀(ClickHere) 안내문이 한컴에서 바인딩 안 됨 — command 포맷 어긋남 (Task #1434)
 
 ## 증상

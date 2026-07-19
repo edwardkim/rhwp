@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: ""
 description: 워터마크 등 시각 의미를 brightness/contrast 패턴 매칭으로 추정하지 말 것. 한컴 스펙 + 대비 샘플 + 편집기 UI 교차검증으로 비트/속성 확정 후 구현
 metadata: 

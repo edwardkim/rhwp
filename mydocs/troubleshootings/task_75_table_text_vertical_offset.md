@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 트러블슈팅: 표 앞 텍스트가 표 아래에 렌더링되는 문제
 
 ## 문제 상황

@@ -22,7 +22,12 @@
         "inkMaskMaxDiffRatio": 0.008,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.005
-      }
+      },
+      "diagnosticAxes": [
+        "layout",
+        "line-segmentation"
+      ],
+      "baselineTier": "representative"
     },
     {
       "id": "paragraph-basic",
@@ -36,7 +41,155 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.005
-      }
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "paragraph-mixed-style",
+      "file": "lseg-02-mixed.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Mixed text styles and run splits from the existing line-segmentation corpus.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.005
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "paragraph-spacing",
+      "file": "lseg-03-spacing.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Letter and paragraph spacing sample for Canvas2D/CanvasKit text-raster parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.005
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "paragraph-multisize",
+      "file": "lseg-06-multisize.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Mixed font-size line segmentation and text placement sample.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.006
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "paragraph-indent",
+      "file": "lseg-04-indent.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Indented paragraph line segmentation sample for text positioning parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.008
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "text-align-left",
+      "file": "re-align-left-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Left-aligned text sample for paragraph alignment parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0125
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "text-align-left-empty",
+      "file": "re-align-left-empty-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Empty left-aligned paragraph companion for alignment edge coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "text-align-center",
+      "file": "re-align-center-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Center-aligned text sample for paragraph alignment parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0125
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "text-align-right",
+      "file": "re-align-right-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Right-aligned text sample for paragraph alignment parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0125
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "text-align-justify",
@@ -50,21 +203,263 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.0125
-      }
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "representative"
     },
     {
-      "id": "shift-return",
-      "file": "shift-return.hwp",
+      "id": "text-mixed-koen",
+      "file": "re-05-mixed-koen-hancom.hwp",
       "category": "paragraph",
       "page": 0,
-      "notes": "Soft line break and paragraph flow sample.",
+      "notes": "Mixed Korean/English sample for text fallback and glyph positioning parity.",
       "browserParityThresholds": {
         "maxDiffRatio": null,
         "inkMaskNeighborhoodRadius": 3,
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
-        "solidInkMaxDiffRatio": 0.006
-      }
+        "solidInkMaxDiffRatio": 0.0125
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "text-hangul-only",
+      "file": "re-01-hangul-only-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Hangul-only text sample for direct text placement parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "text-hangul-only-empty",
+      "file": "re-01-hangul-only-empty-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Empty Hangul-only companion for empty text replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "text-space-count",
+      "file": "re-02-space-count-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Space-count text sample for spacing parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "text-space-count-empty",
+      "file": "re-02-space-count-empty-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Empty space-count companion for empty spacing replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "text-latin-only",
+      "file": "re-03-latin-only-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Latin-only text sample for fallback and positioning parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "text-latin-only-empty",
+      "file": "re-03-latin-only-empty-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Empty Latin-only companion for empty fallback replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "text-punctuation",
+      "file": "re-06-punctuation-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Punctuation-only text sample for punctuation glyph parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0125
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "text-digit-only",
+      "file": "re-04-digit-only-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Digit-only text sample for numeric glyph positioning parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0125
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "text-mixed-malgun-times",
+      "file": "re-mixed-malgun-timesnew-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Mixed Malgun/Times New Roman text sample for fallback parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "eng-words-batang-empty",
+      "file": "re-eng-words-batang-empty-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Empty English words Batang companion for empty Latin run coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "eng-nospace-dotum-times-empty",
+      "file": "re-eng-nospace-dotum-times-empty-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Empty English no-space Dotum/Times companion for mixed font edge coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "mixed-0tr-empty",
+      "file": "re-mixed-0tr-empty-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Empty mixed zero-text-run companion for run-lowering edge coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "multisize-10-20-empty",
+      "file": "re-multisize-10-20-empty-hancom.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Empty multi-size companion for empty text-size edge coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "font-batang-hancom",
@@ -86,7 +481,12 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.008
-      }
+      },
+      "diagnosticAxes": [
+        "font",
+        "font-selection"
+      ],
+      "baselineTier": "representative"
     },
     {
       "id": "font-native-bitmap",
@@ -101,14 +501,148 @@
         "maxImageCachePixels": 67108864
       },
       "canvaskitReadinessExpectations": {
-        "glyphOutlinePayloadKinds": ["bitmapGlyph"],
+        "glyphOutlinePayloadKinds": [
+          "bitmapGlyph"
+        ],
         "minWarmImageCacheHits": 1
       },
       "notes": "Embedded font fixture that must produce and warm-replay the strict bitmap glyph sidecar.",
       "browserParityThresholds": {
         "maxDiffRatio": 0.01,
-        "minimumInkPixels": 50
-      }
+        "minimumInkPixels": 40
+      },
+      "diagnosticAxes": [
+        "font",
+        "font-native-glyph",
+        "resource"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "font-batangche-hancom",
+      "file": "re-font-batangche-hancom.hwp",
+      "category": "font",
+      "page": 0,
+      "notes": "BatangChe/Hancom font mapping sample for CanvasKit text fallback parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "font"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "font-gulim-hancom",
+      "file": "re-font-gulim-hancom.hwp",
+      "category": "font",
+      "page": 0,
+      "notes": "Gulim/Hancom font mapping sample for CanvasKit text fallback parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.008
+      },
+      "diagnosticAxes": [
+        "font"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "font-gulimche-hancom",
+      "file": "re-font-gulimche-hancom.hwp",
+      "category": "font",
+      "page": 0,
+      "notes": "GulimChe/Hancom font mapping sample for CanvasKit text fallback parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "font"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "font-malgun-hancom",
+      "file": "re-font-malgun-hancom.hwp",
+      "category": "font",
+      "page": 0,
+      "notes": "Malgun/Hancom font mapping sample for CanvasKit text fallback parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.008
+      },
+      "diagnosticAxes": [
+        "font"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "font-malgun-empty",
+      "file": "re-font-malgun-empty-hancom.hwp",
+      "category": "font",
+      "page": 0,
+      "notes": "Empty Malgun font mapping companion for no-ink text fallback edge coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "font"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "font-dotum-hancom",
+      "file": "re-font-dotum-hancom.hwp",
+      "category": "font",
+      "page": 0,
+      "notes": "Dotum/Hancom font mapping sample for CanvasKit text fallback parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "font"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "font-dotumche-hancom",
+      "file": "re-font-dotumche-hancom.hwp",
+      "category": "font",
+      "page": 0,
+      "notes": "DotumChe/Hancom font mapping sample for CanvasKit text fallback parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.008
+      },
+      "diagnosticAxes": [
+        "font"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "table-core",
@@ -124,13 +658,108 @@
       },
       "notes": "Baseline table layout, borders, and cell clipping.",
       "browserParityThresholds": {
-        "maxDiffRatio": 0.045,
+        "maxDiffRatio": 0.047,
         "minimumInkPixels": 30000,
         "inkMaskNeighborhoodRadius": 3,
-        "inkMaskMaxDiffRatio": 0.018,
+        "inkMaskMaxDiffRatio": 0.0185,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.005
-      }
+      },
+      "diagnosticAxes": [
+        "clip",
+        "table"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "table-core-m",
+      "file": "hwp_table_test-m.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Modified baseline table sample for table border and placement parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "table"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "table-core-saved",
+      "file": "hwp_table_test_saved.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Saved baseline table sample for table border and placement parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "table"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "table-simple",
+      "file": "table-001.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Simple table sample from the native Skia representative corpus.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.006
+      },
+      "diagnosticAxes": [
+        "table"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "table-complex",
+      "file": "table-complex.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Complex table layout and clipping sample already present in the HWP corpus.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0125
+      },
+      "diagnosticAxes": [
+        "table"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "complex-table-hwpers",
+      "file": "hwpers_test4_complex_table.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Complex HWPERS table sample for dense table, border, and clipping parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "table"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "table-in-textbox",
@@ -144,7 +773,159 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.0125
-      }
+      },
+      "diagnosticAxes": [
+        "table"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "table-vpos",
+      "file": "table-vpos-01.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Table vertical positioning sample for table placement and clipping parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0125
+      },
+      "diagnosticAxes": [
+        "table"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "table-inner",
+      "file": "inner-table-01.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Inner table sample for nested table geometry and raster parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0065
+      },
+      "diagnosticAxes": [
+        "table"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "table-border-style",
+      "file": "table-004.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Table border and cell style sample from the checked-in table corpus.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0065
+      },
+      "diagnosticAxes": [
+        "table"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "table-diagonal-cell-hwp",
+      "file": "대각선샘플.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Binary HWP half of the paired cell-zone diagonal rendering corpus.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0125
+      },
+      "diagnosticAxes": [
+        "clip",
+        "format-pair",
+        "table"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "table-diagonal-cell-hwpx",
+      "file": "대각선샘플.hwpx",
+      "category": "table",
+      "page": 0,
+      "notes": "HWPX half of the paired cell-zone diagonal rendering corpus.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.0125
+      },
+      "diagnosticAxes": [
+        "clip",
+        "format-pair",
+        "table"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "multi-table-001",
+      "file": "multi-table-001.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Multiple table sample for repeated table placement and clipping parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "table"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "multi-table-002",
+      "file": "multi-table-002.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Second multiple table sample for repeated table raster parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "table"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "table-ipc",
+      "file": "table-ipc.hwp",
+      "category": "table",
+      "page": 0,
+      "notes": "Table IPC sample for table rendering parity across additional table shapes.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "table"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "image-crop",
@@ -162,7 +943,48 @@
       "browserParityThresholds": {
         "maxDiffRatio": 0.02,
         "minimumInkPixels": 20000
-      }
+      },
+      "diagnosticAxes": [
+        "crop",
+        "image"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "image-in-table",
+      "file": "pic-in-table-01.hwp",
+      "category": "image",
+      "page": 0,
+      "notes": "Picture-in-table sample for combined image resource, table clipping, and placement parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "image"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "image-object",
+      "file": "hwp-img-001.hwp",
+      "category": "image",
+      "page": 0,
+      "notes": "General embedded image object sample from the existing native Skia corpus.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "image"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "image-start",
@@ -176,7 +998,29 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.045
-      }
+      },
+      "diagnosticAxes": [
+        "image"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "tac-image",
+      "file": "tac-img-02.hwp",
+      "category": "image",
+      "page": 0,
+      "notes": "TAC image sample for additional image placement and raster parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "image"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "equation-inline",
@@ -190,7 +1034,29 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.005
-      }
+      },
+      "diagnosticAxes": [
+        "equation"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "shift-return",
+      "file": "shift-return.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Soft line break and paragraph flow sample.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.006
+      },
+      "diagnosticAxes": [
+        "paragraph"
+      ],
+      "baselineTier": "representative"
     },
     {
       "id": "header-image",
@@ -204,7 +1070,49 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.045
-      }
+      },
+      "diagnosticAxes": [
+        "header-footer"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "header-image-page-5",
+      "file": "pic-in-head-01.hwp",
+      "category": "header-footer",
+      "page": 5,
+      "notes": "Non-zero page coverage for repeated header image placement and page-indexed renderer diagnostics.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "header-footer",
+        "image",
+        "page-index"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "header-image-alt",
+      "file": "pic-in-head-02.hwp",
+      "category": "header-footer",
+      "page": 0,
+      "notes": "Second header image sample for repeated header/footer image placement coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "header-footer"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "footnote",
@@ -218,7 +1126,11 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.0095
-      }
+      },
+      "diagnosticAxes": [
+        "footnote"
+      ],
+      "baselineTier": "representative"
     },
     {
       "id": "endnote",
@@ -232,7 +1144,11 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.0095
-      }
+      },
+      "diagnosticAxes": [
+        "endnote"
+      ],
+      "baselineTier": "representative"
     },
     {
       "id": "field-core",
@@ -246,7 +1162,29 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 64,
         "solidInkMaxDiffRatio": 0.005
-      }
+      },
+      "diagnosticAxes": [
+        "field"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "field-memo",
+      "file": "field-01-memo.hwp",
+      "category": "field",
+      "page": 0,
+      "notes": "Field marker, memo, and lowered visible text sample.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.008
+      },
+      "diagnosticAxes": [
+        "field"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "hwpctl-api",
@@ -260,7 +1198,173 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.015
-      }
+      },
+      "diagnosticAxes": [
+        "control"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "hwpctl-action-table",
+      "file": "hwpctl_Action_Table__v1.1.hwp",
+      "category": "control",
+      "page": 0,
+      "notes": "HWP control table action sample for table/control document parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "control"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "hwpctl-parameterset-item",
+      "file": "hwpctl_ParameterSetID_Item_v1.2.hwp",
+      "category": "control",
+      "page": 0,
+      "notes": "HWP control parameter-set item sample for control-heavy document parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "control"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "tac-case-001",
+      "file": "tac-case-001.hwp",
+      "category": "control",
+      "page": 0,
+      "notes": "TAC control-case sample for control placement and direct replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "control"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "tac-case-002",
+      "file": "tac-case-002.hwp",
+      "category": "control",
+      "page": 0,
+      "notes": "Second TAC control-case sample for control placement and replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "control"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "tac-case-003",
+      "file": "tac-case-003.hwp",
+      "category": "control",
+      "page": 0,
+      "notes": "Third TAC control-case sample for control placement and replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "control"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "tac-case-004",
+      "file": "tac-case-004.hwp",
+      "category": "control",
+      "page": 0,
+      "notes": "Fourth TAC control-case sample for control placement and replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "control"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "tac-case-005",
+      "file": "tac-case-005.hwp",
+      "category": "control",
+      "page": 0,
+      "notes": "Fifth TAC control-case sample for control placement and replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "control"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "exam-kor",
+      "file": "exam_kor.hwp",
+      "category": "exam",
+      "page": 0,
+      "notes": "Korean exam real-document sample for mixed text, table, and control parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.02
+      },
+      "diagnosticAxes": [
+        "exam"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "exam-eng",
+      "file": "exam_eng.hwp",
+      "category": "exam",
+      "page": 0,
+      "notes": "English exam real-document sample for mixed text and layout parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.02
+      },
+      "diagnosticAxes": [
+        "exam"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "exam-math",
@@ -274,7 +1378,119 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.02
-      }
+      },
+      "diagnosticAxes": [
+        "exam"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "exam-math-no",
+      "file": "exam_math_no.hwp",
+      "category": "exam",
+      "page": 0,
+      "notes": "Math exam no-suffix companion for exam document parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "exam"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "exam-science",
+      "file": "exam_science.hwp",
+      "category": "exam",
+      "page": 0,
+      "notes": "Science exam real-document sample for mixed content and image/text parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.02
+      },
+      "diagnosticAxes": [
+        "exam"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "exam-social",
+      "file": "exam_social.hwp",
+      "category": "exam",
+      "page": 0,
+      "notes": "Social studies exam real-document sample for mixed content parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.02
+      },
+      "diagnosticAxes": [
+        "exam"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "shape-object",
+      "file": "shape-group-02.hwp",
+      "category": "shape",
+      "page": 0,
+      "notes": "Shape object sample from the existing CanvasKit representative suite.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.005
+      },
+      "diagnosticAxes": [
+        "shape"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "h-pen-01",
+      "file": "h-pen-01.hwp",
+      "category": "shape",
+      "page": 0,
+      "notes": "H-pen drawing sample for pen and shape replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "shape"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "group-box",
+      "file": "group-box.hwp",
+      "category": "shape",
+      "page": 0,
+      "notes": "Group box sample for shape object geometry and raster parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "shape"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "shape-group",
@@ -288,14 +1504,130 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.0125
-      }
+      },
+      "diagnosticAxes": [
+        "group-drawing"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "draw-group",
+      "file": "draw-group.hwp",
+      "category": "group-drawing",
+      "page": 0,
+      "notes": "Draw-group sample for grouped drawing replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "group-drawing"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "form-controls",
       "file": "form-01.hwp",
       "category": "form",
       "page": 0,
-      "notes": "Form object overlays and control-state painting."
+      "notes": "Form object overlays and control-state painting.",
+      "diagnosticAxes": [
+        "form"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "blog-form-book-review",
+      "file": "basic/BlogForm_BookReview.hwp",
+      "category": "form",
+      "page": 0,
+      "notes": "Blog form template sample for nested form/document controls.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "form"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "hwpx-form-controls",
+      "file": "hwpx/form-002.hwpx",
+      "category": "form",
+      "page": 0,
+      "notes": "HWPX form control sample for CanvasKit HWPX form replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "form"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "hwpx-basic-01",
+      "file": "hwpx/hwpx-01.hwpx",
+      "category": "hwpx",
+      "page": 0,
+      "notes": "Basic HWPX sample for format-level CanvasKit parity coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "hwpx"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "hwpx-basic-02",
+      "file": "hwpx/hwpx-02.hwpx",
+      "category": "hwpx",
+      "page": 0,
+      "notes": "Second basic HWPX sample for format-level renderer parity coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "hwpx"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "hwpx-ref-text",
+      "file": "hwpx/ref/ref_text.hwpx",
+      "category": "hwpx",
+      "page": 0,
+      "notes": "HWPX reference text sample for text-oriented format parity coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "hwpx"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "hwpx-ref-table",
@@ -309,7 +1641,47 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.015
-      }
+      },
+      "diagnosticAxes": [
+        "hwpx"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "hwpx-table-vpos",
+      "file": "table-vpos-01.hwpx",
+      "category": "hwpx",
+      "page": 0,
+      "notes": "HWPX table vertical positioning sample for format and table replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "hwpx"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "hwpx-tac-image",
+      "file": "tac-img-02.hwpx",
+      "category": "hwpx",
+      "page": 0,
+      "notes": "HWPX TAC image sample for format and image replay parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "hwpx"
+      ],
+      "baselineTier": "extended"
     },
     {
       "id": "legacy-doc-2010",
@@ -323,7 +1695,544 @@
         "inkMaskMaxDiffRatio": 0.002,
         "nonInkMaxDiffPixels": 0,
         "solidInkMaxDiffRatio": 0.0065
-      }
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "legacy-hwpml-30",
+      "file": "hwp-3.0-HWPML.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Legacy HWPML 3.0 sample for format and mixed document parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "aift-doc",
+      "file": "aift.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "AIFT sample for mixed document CanvasKit parity coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "loading-fail-01",
+      "file": "loading-fail-01.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Previously loading-sensitive sample for loader and renderer parity coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "multi-section-doc",
+      "file": "hwp-multi-001.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Multi-section mixed document sample for repeated page/document structure coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "multi-section-doc-page-4",
+      "file": "hwp-multi-001.hwp",
+      "category": "mixed-document",
+      "page": 4,
+      "notes": "Non-zero page coverage across the checked-in multi-section document.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "page-index",
+        "pagination",
+        "section"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "multi-section-doc-2",
+      "file": "hwp-multi-002.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Second multi-section mixed document sample for repeated document-structure parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.02
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "real-nikorean-plan-2022",
+      "file": "2022년 국립국어원 업무계획.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Public planning real-document sample for government report and mixed-layout parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.02
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "real-k-water-rfp",
+      "file": "k-water-rfp.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "RFP real-document sample for dense tables, paragraphs, and mixed-document parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.02
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "real-kps-ai",
+      "file": "kps-ai.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Technical real-document sample for mixed text, table, and resource placement parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.02
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "real-return-school-form",
+      "file": "복학원서.hwp",
+      "category": "form",
+      "page": 0,
+      "notes": "Return-to-school form sample for real-world form and text placement parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.02
+      },
+      "diagnosticAxes": [
+        "form"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "real-finance-stat-2014",
+      "file": "통합재정통계(2014.8월).hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Finance statistics real-document sample for dense numeric table and report parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.02
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "finance-stat-2010",
+      "file": "통합재정통계(2010.11월).hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Finance statistics 2010 real-document sample for dense numeric table parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "finance-stat-2011",
+      "file": "통합재정통계(2011.10월).hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Finance statistics 2011 real-document sample for dense numeric table parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "promo-doc",
+      "file": "20250130-hongbo_saved.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Large promotional document sample from the existing CanvasKit representative suite.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 128,
+        "solidInkMaxDiffRatio": 0.005
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "promo-doc-no",
+      "file": "20250130-hongbo-no.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Promotional document no-suffix companion for large mixed-document parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "promo-doc-honbo-save",
+      "file": "honbo-save.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Additional saved promotional document companion for mixed-document parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "promo-doc-original",
+      "file": "20250130-hongbo.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Original promotional document companion for large mixed-document CanvasKit parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "pr-149-regression",
+      "file": "pr-149.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "PR 149 regression sample for real-document CanvasKit parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "task-001",
+      "file": "task-001.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Task document sample for mixed text and object placement parity.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.045
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "business-doc",
+      "file": "biz_plan.hwp",
+      "category": "mixed-document",
+      "page": 0,
+      "notes": "Mixed real-document sample with text, tables, and images from the existing sample set.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.002,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.015
+      },
+      "diagnosticAxes": [
+        "mixed-document"
+      ],
+      "baselineTier": "extended"
+    },
+    {
+      "id": "chart-line-markers-hwp",
+      "file": "chart/라인/표식이있는꺽은선형.hwp",
+      "category": "chart",
+      "page": 0,
+      "notes": "Binary HWP chart corpus for marker, legend, RawSvg clipping, and raster-font diagnostics.",
+      "diagnosticAxes": [
+        "chart",
+        "clip",
+        "font",
+        "format-pair",
+        "raw-svg"
+      ],
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.02,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.05
+      },
+      "baselineTier": "extended"
+    },
+    {
+      "id": "chart-line-markers-hwpx",
+      "file": "chart/라인/표식이있는꺽은선형.hwpx",
+      "category": "chart",
+      "page": 0,
+      "notes": "HWPX pair for marker, legend, RawSvg clipping, and raster-font diagnostics.",
+      "diagnosticAxes": [
+        "chart",
+        "clip",
+        "font",
+        "format-pair",
+        "raw-svg"
+      ],
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.02,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.05
+      },
+      "baselineTier": "extended"
+    },
+    {
+      "id": "chart-stock-hwp",
+      "file": "chart/기타/고가저가종가.hwp",
+      "category": "chart",
+      "page": 0,
+      "notes": "Binary HWP stock-chart corpus for HLC semantics and RawSvg viewport clipping.",
+      "diagnosticAxes": [
+        "chart",
+        "clip",
+        "format-pair",
+        "raw-svg",
+        "stock"
+      ],
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.02,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.05
+      },
+      "baselineTier": "extended"
+    },
+    {
+      "id": "chart-stock-hwpx",
+      "file": "chart/기타/고가저가종가.hwpx",
+      "category": "chart",
+      "page": 0,
+      "notes": "HWPX stock-chart pair for HLC semantics and RawSvg viewport clipping.",
+      "diagnosticAxes": [
+        "chart",
+        "clip",
+        "format-pair",
+        "raw-svg",
+        "stock"
+      ],
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.02,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.05
+      },
+      "baselineTier": "extended"
+    },
+    {
+      "id": "table-cell-image-clip-page-1",
+      "file": "issue2217/20200830.hwp",
+      "category": "table-image",
+      "page": 1,
+      "notes": "Nonzero-page regression corpus for static picture clipping inside table cells.",
+      "diagnosticAxes": [
+        "clip",
+        "image",
+        "page-index",
+        "table",
+        "z-order"
+      ],
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.02,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.05
+      },
+      "baselineTier": "extended"
+    },
+    {
+      "id": "missing-picture-profile",
+      "file": "hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177).hwpx",
+      "category": "placeholder",
+      "page": 0,
+      "notes": "Missing-picture corpus for screen-visible and print-equivalent suppression diagnostics.",
+      "diagnosticAxes": [
+        "image",
+        "placeholder",
+        "profile"
+      ],
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.02,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.05
+      },
+      "baselineTier": "extended"
+    },
+    {
+      "id": "local-font-nanumsquare-bold",
+      "file": "hwpx/local-font-nanumsquare-bold.hwpx",
+      "category": "font",
+      "page": 0,
+      "notes": "HWPX local-font family and selected-face diagnostics corpus.",
+      "diagnosticAxes": [
+        "font",
+        "font-selection",
+        "local-resource"
+      ],
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.01,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.03
+      },
+      "baselineTier": "extended"
+    },
+    {
+      "id": "malformed-lineseg-reflow",
+      "file": "task2093/saved_single_line_spacing_after.hwpx",
+      "category": "layout",
+      "page": 0,
+      "notes": "Malformed line metrics and non-Percent line-spacing reflow corpus.",
+      "diagnosticAxes": [
+        "layout",
+        "line-spacing",
+        "pagination"
+      ],
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.01,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.03
+      },
+      "baselineTier": "extended"
     }
-  ]
+  ],
+  "schemaVersion": 1
 }

@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 시각 결함 정정 시 모든 renderer 경로 점검 필수
 description: rhwp 의 image MIME 감지 / 변환 / paint 적용 코드는 renderer 마다 별도 사본을 사용. 한 곳만 정정하면 다른 경로 누락. 시각 결함 정정 시 모든 경로 sweep 필요.
 type: feedback

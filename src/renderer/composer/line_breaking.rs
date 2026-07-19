@@ -1270,57 +1270,201 @@ pub(crate) fn reflow_line_segs(
 ///
 /// `start_para`부터 구역 끝까지 각 문단의 vpos를 이전 문단의 vpos_end 기준으로 재계산.
 /// 표 등 특수 문단의 line_height는 보존하고 vpos만 갱신한다.
-pub(crate) fn recalculate_section_vpos(paragraphs: &mut [Paragraph], start_para: usize) {
+///
+/// [Task #2299] 저장 vpos 리셋(단/쪽 경계 인코딩) 보존: 편집발 재계산이 구역 전체를
+/// 선형 누적 좌표로 이어붙이면 다단 zone 의 단-상대 리셋(급감)이 소멸해
+/// typeset(#321/#470/#702)·pagination 의 단/쪽 진행 신호가 무력화된다
+/// (shortcut.hwp 앞문단 편집 시 col=[0,1]→[0], 7→9쪽). 현재 문단의 저장 first 가
+/// 직전 문단의 "이동 전(저장)" end 보다 감소하면 경계 인코딩으로 보고 delta=0 으로
+/// 보존한다. 저장 좌표는 밴드 내 정상 흐름에서 단조 증가하므로 감소 감지에 임계가
+/// 필요 없다.
+///
+/// 좌표 갱신은 경계 성격별로 셋으로 나뉜다.
+///
+/// - **리셋 경계**: delta=0 보존.
+/// - **변조 인접 경계**(현재 문단이 편집 대상 `start_para` 이거나 신규
+///   문단(`ignore_reset_range`)이거나, 직전 문단이 그중 하나): 직전 이동 후 end 에
+///   문단 여백 gap(spacing_after + spacing_before, 셀 recalc `boundary_gaps` 동일
+///   산식)을 더해 다시 잇는다. reflow/신규 생성으로 저장 gap 이 소실된 경계라
+///   스타일에서 재유도한다. gap 없는 abutment 는 문단 간격을 압축해 near-top
+///   리셋(#1086/#1921)의 `prev_vpos_end > 60000` 임계를 무너뜨렸다
+///   (SO-SUEOP.hwpx 46→44).
+/// - **미변조 연속 경계**: 직전 문단의 delta 를 그대로 캐리해 저장(또는 로드 합성
+///   #927) 문단 간격을 정확히 보존한다. 스타일 gap 재유도는 저장 gap 과의
+///   오차(px 왕복 절삭 ±1HU, 스타일-저장 불일치)를 밴드 전체에 누적시키고 로드
+///   합성 gap-less 체인과도 어긋나므로 쓰지 않는다. delta==0 이면 순수 no-op.
+///
+/// 리셋 감지는 저장 좌표끼리의 비교여야 한다. 직전 문단이 변조 대상이면 그 end 는
+/// 저장 좌표가 아니므로(성장 편집이 다음 문단을 가짜 리셋으로 동결시키고,
+/// placeholder 는 기준을 붕괴시킨다) reflow 가 보존하는 **first** 로 비교한다.
+/// 미변조 경계는 end 기준을 유지한다(연속 0-first 밴드 감지에 필요).
+///
+/// placeholder 저지선 2종: ① split/insert/paste 가 방금 만든 신규 문단의 vpos=0 은
+/// 경계 인코딩이 아니다 — 보존하면 문단마다 가짜 쪽나눔이 생긴다
+/// (test_page_boundary_with_incremental_spacing_increase 핀). 호출자가 신규 구간을
+/// `ignore_reset_range` 로 지정하면 보존 없이 흐름에 연결한다(셀 경로
+/// `recalculate_cell_paragraph_vpos` 의 ignore_reset_at 과 동일 취지, 다중 삽입을
+/// 위해 범위형). ② lineseg 부재였다가 on-demand reflow(#177/#927)로 합성된
+/// seg(TAG_IMPLEMENTATION_PROPERTY, #1811)도 보존하지 않는다.
+///
+/// 줄 전진량은 로드 경로(document.rs 의 vpos 체인)와 동일하게 TAC 호스트
+/// 줄(lh>th)을 th 기준으로 센다 — lh 기준이면 인라인 개체 호스트의 end 가 저장
+/// 후속 first 를 넘어서 가짜 리셋을 만든다.
+pub(crate) fn recalculate_section_vpos(
+    paragraphs: &mut [Paragraph],
+    start_para: usize,
+    ignore_reset_range: Option<std::ops::Range<usize>>,
+    start_stored_end: Option<i32>,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    is_hwp3_variant: bool,
+) {
     if paragraphs.is_empty() || start_para >= paragraphs.len() {
         return;
     }
 
-    // 시작 문단의 초기 vpos 결정
-    let mut next_vpos = if start_para > 0 {
-        // 이전 문단의 마지막 LineSeg에서 vpos_end 계산
-        let prev = &paragraphs[start_para - 1];
-        if let Some(last_seg) = prev.line_segs.last() {
-            last_seg.vertical_pos + last_seg.line_height + last_seg.line_spacing
+    // 문단 경계 gap (HWPUNIT) = 앞 문단 spacing_after + 뒤 문단 spacing_before.
+    // recalculate_cell_paragraph_vpos 의 boundary_gaps 와 동일 산식.
+    let boundary_gap = |prev: &Paragraph, curr: &Paragraph| -> i32 {
+        let spacing_after = styles
+            .para_styles
+            .get(prev.para_shape_id as usize)
+            .map(|style| style.spacing_after)
+            .unwrap_or(0.0);
+        let spacing_before = styles
+            .para_styles
+            .get(curr.para_shape_id as usize)
+            .map(|style| style.spacing_before)
+            .unwrap_or(0.0);
+        let spacing_before =
+            crate::renderer::hwp3_variant_flow_spacing_before(spacing_before, is_hwp3_variant);
+        px_to_hwpunit(spacing_after + spacing_before, dpi)
+    };
+
+    // 줄 전진량 — 로드 경로와 동일한 TAC th-관례. saturating: 조작 파일의 극단
+    // spacing/좌표로 i32 가 넘치지 않게 한다 (release wasm 은 overflow-check 가
+    // 없어 무음 랩 → 전 문단 오판으로 이어진다).
+    let seg_advance = |ls: &LineSeg| -> i32 {
+        let height = if ls.line_height > ls.text_height && ls.text_height > 0 {
+            ls.text_height
         } else {
-            0
-        }
-    } else {
+            ls.line_height
+        };
+        height.saturating_add(ls.line_spacing)
+    };
+    let seg_end = |p: &Paragraph| -> Option<i32> {
+        p.line_segs
+            .last()
+            .map(|ls| ls.vertical_pos.saturating_add(seg_advance(ls)))
+    };
+    let is_ignored = |pi: usize| {
+        ignore_reset_range
+            .as_ref()
+            .is_some_and(|range| range.contains(&pi))
+    };
+
+    // 직전 문단(마지막 비어있지 않은 lineseg 보유 문단) 인덱스.
+    // start_para 이전 문단들은 이 호출에서 이동하지 않으므로 현재 좌표가 곧 저장 좌표다.
+    let mut prev_idx: Option<usize> = paragraphs[..start_para]
+        .iter()
+        .rposition(|p| !p.line_segs.is_empty());
+    let mut next_vpos = match prev_idx {
+        Some(pp) => seg_end(&paragraphs[pp]).unwrap_or(0),
         // 첫 문단: 기존 vpos 유지
-        paragraphs[0]
+        None => paragraphs[start_para]
             .line_segs
             .first()
             .map(|ls| ls.vertical_pos)
-            .unwrap_or(0)
+            .unwrap_or(0),
     };
+    // 리셋 감지 기준 — 직전 문단의 "이동 전(저장)" first/end.
+    let mut orig_prev_first: Option<i32> = prev_idx
+        .and_then(|pp| paragraphs[pp].line_segs.first())
+        .map(|ls| ls.vertical_pos);
+    let mut orig_prev_end: Option<i32> = prev_idx.and_then(|pp| seg_end(&paragraphs[pp]));
+    // 직전 문단이 이번 편집의 변조 대상이었는가 + 직전 문단에 적용된 delta.
+    let mut prev_modified = false;
+    let mut prev_delta: i32 = 0;
 
     for pi in start_para..paragraphs.len() {
-        let para = &mut paragraphs[pi];
-        if para.line_segs.is_empty() {
+        if paragraphs[pi].line_segs.is_empty() {
             continue;
         }
 
-        // 현재 문단의 vpos 시작값과의 차이 계산
-        let current_start = para.line_segs[0].vertical_pos;
-        let delta = next_vpos - current_start;
+        let para_modified = pi == start_para || is_ignored(pi);
+        let current_start = paragraphs[pi].line_segs[0].vertical_pos;
+        let is_original_lineseg =
+            paragraphs[pi].line_segs[0].tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0;
 
-        // 변화 없으면 건너뛰기 (성능 최적화)
-        if delta == 0 {
-            if let Some(last_seg) = para.line_segs.last() {
-                next_vpos = last_seg.vertical_pos + last_seg.line_height + last_seg.line_spacing;
+        // 리셋 감지: 신규 문단(placeholder)·합성 seg 는 제외. 기준은 직전 문단의
+        // "저장" 좌표여야 한다 — 직전이 편집 문단(start_para)이면 reflow 로 end 가
+        // 이미 변조됐으므로 호출자가 캡처해 준 reflow 이전 저장 end 를 쓰고(성장
+        // 편집의 가짜 리셋과 저장-겹침 문서의 정당한 리셋을 모두 정확히 판별),
+        // 없으면 reflow 가 보존하는 first 로 보수적으로 비교한다. 신규 문단이
+        // 직전이면 placeholder 라 first(=0) 기준. 미변조 경계는 end 기준을
+        // 유지한다(연속 0-first 밴드 감지에 필요).
+        let prev_stored_bound = if prev_idx == Some(start_para) && !is_ignored(start_para) {
+            start_stored_end.or(orig_prev_first)
+        } else if prev_modified {
+            orig_prev_first
+        } else {
+            orig_prev_end
+        };
+        let is_reset = is_original_lineseg
+            && !is_ignored(pi)
+            && prev_stored_bound.is_some_and(|bound| current_start < bound);
+
+        let delta = if is_reset {
+            // 단/쪽 리셋 경계 — 저장 좌표 유지.
+            0
+        } else if para_modified || prev_modified {
+            // 변조 인접 경계 — 이동 후 흐름에 스타일 여백 gap 으로 다시 잇는다.
+            let gap = prev_idx
+                .map(|pp| boundary_gap(&paragraphs[pp], &paragraphs[pi]))
+                .unwrap_or(0);
+            next_vpos.saturating_add(gap) - current_start
+        } else {
+            // 미변조 연속 경계 — 직전 delta 캐리로 기존 간격을 정확히 보존.
+            prev_delta
+        };
+
+        // 다음 문단의 리셋 감지 기준은 "이동 전(저장)" first/end 로 기록한다.
+        let orig_first = current_start;
+        let orig_end = seg_end(&paragraphs[pi]);
+
+        if delta != 0 {
+            // 모든 LineSeg의 vpos를 delta만큼 이동
+            for seg in &mut paragraphs[pi].line_segs {
+                seg.vertical_pos = seg.vertical_pos.saturating_add(delta);
             }
-            continue;
         }
 
-        // 모든 LineSeg의 vpos를 delta만큼 이동
-        for seg in &mut para.line_segs {
-            seg.vertical_pos += delta;
+        // 다음 문단의 시작 vpos 계산 (이동 후 end = 저장 end + delta)
+        if let Some(end) = orig_end {
+            next_vpos = end.saturating_add(delta);
         }
-
-        // 다음 문단의 시작 vpos 계산
-        if let Some(last_seg) = para.line_segs.last() {
-            next_vpos = last_seg.vertical_pos + last_seg.line_height + last_seg.line_spacing;
-        }
+        orig_prev_first = Some(orig_first);
+        orig_prev_end = orig_end;
+        prev_modified = para_modified;
+        prev_delta = delta;
+        prev_idx = Some(pi);
     }
+}
+
+/// [Task #2299] 문단의 흐름 end (마지막 LineSeg 의 vpos + 전진량, TAC th-관례).
+/// 편집 호출자가 reflow 이전에 캡처해 `recalculate_section_vpos` 의
+/// `start_stored_end` 로 전달하기 위한 헬퍼 — reflow 가 end 를 덮은 뒤에는 저장
+/// 좌표를 복원할 수 없다.
+pub(crate) fn paragraph_flow_end(para: &Paragraph) -> Option<i32> {
+    para.line_segs.last().map(|ls| {
+        let height = if ls.line_height > ls.text_height && ls.text_height > 0 {
+            ls.text_height
+        } else {
+            ls.line_height
+        };
+        ls.vertical_pos
+            .saturating_add(height.saturating_add(ls.line_spacing))
+    })
 }
 
 /// font_size(px)를 LineSeg의 line_height(HWPUNIT)로 변환한다.
@@ -1345,7 +1489,16 @@ fn compute_line_spacing_hwp(
             // ls_value = 비율값 (예: 160 = 160%)
             // 전체 줄 피치 = line_height * percent / 100
             // line_spacing = 전체 줄 피치 - line_height
-            (line_height_hwp as f64 * (ls_value - 100.0) / 100.0).max(0.0) as i32
+            // [#2279] sub-100% 퍼센트는 음수 gap(압축)으로 존중 — 한글은
+            // line=60% 를 advance 13.6px(=lh×0.6)로 렌더한다 (36398700 pi20
+            // 한글 재저장 anchor 1020HU 실측). 종전 .max(0) 클램프는 fresh
+            // 합성을 lh 그대로(+9px/문단) 팽창시켰다.
+            // ls_value<=0 은 결손 데이터(속성 미지정 파싱 0) — 음수 적용 금지.
+            if ls_value > 0.0 {
+                (line_height_hwp as f64 * (ls_value - 100.0) / 100.0) as i32
+            } else {
+                0
+            }
         }
         LineSpacingType::Fixed => {
             // ls_value = 고정 줄 피치 (px, resolver가 HWPUNIT→px 변환 완료)

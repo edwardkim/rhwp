@@ -63,7 +63,7 @@
 | `mydocs/working/task_m100_257_stage{1,2,3}.md` | 단계별 보고서 완료 |
 | `mydocs/working/task_m100_257_stage4.md` | **본 보고서** |
 | `mydocs/report/task_m100_257_report.md` | **최종 결과보고서** 신규 |
-| `mydocs/tech/text_align_2_svg_pdf_compare.md` | 사전 조사 (단계 1 갱신) |
+| `mydocs/tech/investigations/issue-257/text_align_2_svg_pdf_compare.md` | 사전 조사 (단계 1 갱신) |
 | `mydocs/orders/20260423.md` | Task #257 진행 상태 추가 |
 
 ## 5. 요청 사항

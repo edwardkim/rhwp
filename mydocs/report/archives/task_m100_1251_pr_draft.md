@@ -124,7 +124,7 @@ Pixel-level chart fidelity should be handled in follow-up work by parsing more o
 ## Additional Analysis Documents
 
 - Renderer decision record: `mydocs/tech/hwp_ole_chart_renderer_architecture_decision_1251.md`
-- Hancom PDF visual diff analysis: `mydocs/tech/hwp_ole_chart_visual_diff_against_hancom_pdf_1251.md`
+- Hancom PDF visual diff analysis: `mydocs/tech/investigations/issue-1251/hwp_ole_chart_visual_diff_against_hancom_pdf_1251.md`
 - Final task report: `mydocs/report/task_m100_1251_report.md`
 
 ## Review Notes

@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: feedback_no_hardcoded_render_tuning
 description: "렌더링/파서/레이아웃 보정 하드코딩 금지 — 샘플명·페이지번호·issue번호 분기, 임의 계수 금지. 근거는 문서 속성/스펙 필드만"
 metadata:

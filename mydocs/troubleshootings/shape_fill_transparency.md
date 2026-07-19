@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 도형 채우기 투명도(alpha) 미처리 문제
 
 ## 날짜

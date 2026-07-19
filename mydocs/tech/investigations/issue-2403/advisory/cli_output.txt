@@ -1,0 +1,195 @@
+===== biz_plan.hwp : info =====
+파일: samples/biz_plan.hwp
+크기: 33792 bytes
+버전: 5.1.0.1
+압축: 예
+암호화: 아니오
+배포용: 아니오
+구역 수: 1
+페이지 수: 6
+구역0 용지: 59528×84188 HWPUNIT, 방향=세로 (여백: 좌5102 우5102 상5668 하4252)
+  머리말여백=4252 꼬리말여백=4252 제본여백=0
+폰트(한글): [0]굴림, [1]맑은 고딕, [2]한컴바탕, [3]함초롬돋움, [4]함초롬바탕, [5]휴먼명조, [6]HY헤드라인M, [7]나눔명조
+폰트(영어): [0]굴림, [1]맑은 고딕, [2]한컴바탕, [3]함초롬돋움, [4]함초롬바탕, [5]휴먼명조, [6]HY헤드라인M, [7]나눔명조
+폰트(한자): [0]굴림, [1]맑은 고딕, [2]한컴바탕, [3]함초롬돋움, [4]함초롬바탕, [5]휴먼명조, [6]HY헤드라인M
+폰트(일어): [0]굴림, [1]맑은 고딕, [2]한컴바탕, [3]함초롬돋움, [4]함초롬바탕, [5]휴먼명조, [6]HY헤드라인M
+폰트(기타): [0]굴림, [1]맑은 고딕, [2]한컴바탕, [3]함초롬돋움, [4]함초롬바탕, [5]휴먼명조, [6]HY헤드라인M
+폰트(기호): [0]굴림, [1]맑은 고딕, [2]한컴바탕, [3]함초롬돋움, [4]함초롬바탕, [5]휴먼명조, [6]HY헤드라인M
+폰트(사용자): [0]굴림, [1]맑은 고딕, [2]한컴바탕, [3]함초롬돋움, [4]함초롬바탕, [5]휴먼명조, [6]HY헤드라인M
+스타일: 바탕글, 새 스타일, 본문, 개요 1, 개요 2, 개요 3, 개요 4, 개요 5, 개요 6, 개요 7, 쪽 번호, 머리말, 각주, 미주, 메모, xl1488, xl1485, xl1492, xl1487, xl66, xl65, xl70, xl71, xl73, xl68, 표본문
+총 문단 수: 93
+ParaShape: 47 (PS/문단 = 0.505)
+CharShape: 29 (CS/문단 = 0.312)
+Origin 추정: 한컴 한글 직접 작성 추정
+표1 [구역0:문단2]: 2행×1열, 셀 2개, 쪽나눔=나눔(행 단위) (attr=0x04000006), 제목반복=true
+표2 [구역0:문단70]: 5행×6열, 셀 30개, 쪽나눔=나눔(행 단위) (attr=0x04000006), 제목반복=true
+표3 [구역0:문단79]: 4행×2열, 셀 8개, 쪽나눔=나눔(행 단위) (attr=0x04000006), 제목반복=true
+표4 [구역0:문단83]: 3행×4열, 셀 12개, 쪽나눔=나눔(행 단위) (attr=0x04000006), 제목반복=true
+표5 [구역0:문단85]: 6행×2열, 셀 12개, 쪽나눔=나눔(행 단위) (attr=0x04000006), 제목반복=true
+표6 [구역0:문단87]: 6행×2열, 셀 12개, 쪽나눔=나눔(행 단위) (attr=0x04000006), 제목반복=true
+표7 [구역0:문단89]: 5행×2열, 셀 10개, 쪽나눔=나눔(행 단위) (attr=0x04000006), 제목반복=true
+표8 [구역0:문단92]: 5행×2열, 셀 10개, 쪽나눔=나눔(행 단위) (attr=0x04000006), 제목반복=true
+===== biz_plan.hwp : dump-pages =====
+문서 로드: samples/biz_plan.hwp (6페이지)
+
+=== 페이지 1 (global_idx=0, section=0, page_num=1) ===
+  body_area: x=68.0 y=132.3 w=657.7 h=876.9
+  단 0 (items=28, used=727.0px, hwp_used≈860.9px, diff=-133.9px)
+    FullParagraph  pi=0  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=0  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=1  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=1600  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    Table          pi=2 ci=0  2x1  653.7x141.9px  wrap=TopAndBottom tac=true  vpos=3200  ls=1[ts=0 lh=10925 th=10925 bl=9286 gap=1800 cs=0 sw=49324]
+    FullParagraph  pi=3  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=15925  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=4  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=17525  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=5  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=19125  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=6  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=20725  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=7  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=22325  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=8  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=23925  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=9  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=25525  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=10  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=27125  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=11  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=28725  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=12  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=30325  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=13  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=31925  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=14  h=38.4 (sb=0.0 lines=38.4 lh=24.0 ls=14.4 sa=0.0)  vpos=33525  ls=1[ts=0 lh=1800 th=1800 bl=1530 gap=1080 cs=0 sw=49324]  "20XX. 1."
+    FullParagraph  pi=15  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=36405  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=16  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=38005  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=17  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=39605  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=18  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=41205  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=19  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=42805  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=20  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=44405  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=21  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=46005  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=22  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=47605  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=23  h=40.5 (sb=0.0 lines=40.5 lh=25.3 ls=15.2 sa=0.0)  vpos=49205  ls=1[ts=0 lh=1900 th=1900 bl=1615 gap=1140 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=24  h=40.5 (sb=0.0 lines=40.5 lh=25.3 ls=15.2 sa=0.0)  vpos=52245  ls=1[ts=0 lh=1900 th=1900 bl=1615 gap=1140 cs=0 sw=49324]  "주식회사 OOO소O트"
+    FullParagraph  pi=25  h=40.5 (sb=0.0 lines=40.5 lh=25.3 ls=15.2 sa=0.0)  vpos=55285  ls=1[ts=0 lh=1900 th=1900 bl=1615 gap=1140 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=26  h=40.5 (sb=0.0 lines=40.5 lh=25.3 ls=15.2 sa=0.0)  vpos=58325  ls=1[ts=0 lh=1900 th=1900 bl=1615 gap=1140 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=27  h=42.7 (sb=0.0 lines=42.7 lh=26.7 ls=16.0 sa=0.0)  vpos=61365  ls=1[ts=0 lh=2000 th=2000 bl=1700 gap=1200 cs=0 sw=49324]  "(빈)"
+
+=== 페이지 2 (global_idx=1, section=0, page_num=2) ===
+  body_area: x=68.0 y=132.3 w=657.7 h=876.9
+  단 0 (items=19, used=632.5px, hwp_used≈865.9px, diff=-233.3px)
+    FullParagraph  pi=28  h=42.7 (sb=0.0 lines=42.7 lh=26.7 ls=16.0 sa=0.0)  vpos=0  ls=1[ts=0 lh=2000 th=2000 bl=1700 gap=1200 cs=0 sw=49324]  "- 목    차 -"
+    FullParagraph  pi=29  h=29.9 (sb=0.0 lines=29.9 lh=18.7 ls=11.2 sa=0.0)  vpos=3200  ls=1[ts=0 lh=1400 th=1400 bl=1190 gap=840 cs=0 sw=49324]  "(빈)"
+    FullParagraph  pi=30  h=46.7 (sb=0.0 lines=46.7 lh=18.7 ls=28.0 sa=0.0)  vpos=5440  ls=1[ts=0 lh=1400 th=1400 bl=1190 gap=2100 cs=0 sw=49324]  "사 업 명···································"
+===== hwp3-sample.hwp : info =====
+파일: samples/hwp3-sample.hwp
+크기: 88880 bytes
+버전: 3.0.0.0
+압축: 아니오
+암호화: 아니오
+배포용: 아니오
+구역 수: 1
+페이지 수: 16
+구역0 용지: 59528×84188 HWPUNIT, 방향=세로 (여백: 좌8504 우8504 상5668 하4252)
+  머리말여백=4252 꼬리말여백=4252 제본여백=0
+폰트(한글): [0]HY신명조, [1]HY중고딕, [2]HY견고딕, [3]타이프, [4]휴먼옛체
+폰트(영어): [0]HY신명조, [1]HY중고딕, [2]HY견고딕, [3]궁서, [4]타이프
+폰트(한자): [0]HY신명조, [1]HY중고딕, [2]신명 중명조
+폰트(일어): [0]HY신명조, [1]HY중고딕, [2]신명 태명조
+폰트(기타): [0]HY신명조
+폰트(기호): [0]HY신명조, [1]HY중고딕, [2]#태명조
+폰트(사용자): [0]명조
+스타일: 바탕글, 본문(신명조10), 본문(중고딕10), 작은제목(중고딕15), 중간제목(옛체20), 큰제목(견고딕20), 큰제목(견고딕30), 머리말(신명조9), 머리말(중고딕9), 각주내용(신명조9), 쪽번호
+총 문단 수: 195
+ParaShape: 119 (PS/문단 = 0.610)
+CharShape: 747 (CS/문단 = 3.831)
+Origin 추정: 한컴 한글 직접 작성 추정
+BinData:
+  [0] Embedding (ID: 1, ext: jpg, loaded: 1808 bytes)
+  [1] Embedding (ID: 2, ext: gif, loaded: 9149 bytes)
+  [2] Embedding (ID: 3, ext: gif, loaded: 9602 bytes)
+  [3] Embedding (ID: 4, ext: gif, loaded: 4228 bytes)
+  [4] Embedding (ID: 5, ext: gif, loaded: 10079 bytes)
+그림1 [구역0:문단41]: bin_data_id=2, size=40020×35580
+그림2 [구역0:문단76]: bin_data_id=3, size=38940×36300
+그림3 [구역0:문단78]: bin_data_id=4, size=23340×19920
+표1 [구역0:문단80]: 5행×6열, 셀 22개, 쪽나눔=나누지 않음 (attr=0x00000000), 제목반복=false
+표2 [구역0:문단85]: 1행×4열, 셀 4개, 쪽나눔=나누지 않음 (attr=0x00000000), 제목반복=false
+표3 [구역0:문단87]: 1행×4열, 셀 4개, 쪽나눔=나누지 않음 (attr=0x00000000), 제목반복=false
+표4 [구역0:문단89]: 1행×4열, 셀 4개, 쪽나눔=나누지 않음 (attr=0x00000000), 제목반복=false
+표5 [구역0:문단91]: 1행×4열, 셀 4개, 쪽나눔=나누지 않음 (attr=0x00000000), 제목반복=false
+그림4 [구역0:문단97]: bin_data_id=5, size=41460×39540
+표6 [구역0:문단194]: 17행×2열, 셀 34개, 쪽나눔=나누지 않음 (attr=0x00000000), 제목반복=false
+===== hwp3-sample.hwp : dump-pages =====
+문서 로드: samples/hwp3-sample.hwp (16페이지)
+
+=== 페이지 1 (global_idx=0, section=0, page_num=1) ===
+  body_area: x=113.4 y=132.3 w=566.9 h=876.9
+  단 0 (items=28, used=857.6px, hwp_used≈878.9px, diff=-21.3px)
+    FullParagraph  pi=0  h=38.4 (sb=0.0 lines=38.4 lh=24.0 ls=14.4 sa=0.0)  vpos=0  ls=1[ts=0 lh=1800 th=1800 bl=1530 gap=1080 cs=0 sw=42520]  "￼Creating Linux Virtual Servers"
+    FullParagraph  pi=1  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=2880  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=2  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=4480  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=3  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=6080  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "Wensong Zhang, Shiyao Jin, Quanyuan Wu"
+    FullParagraph  pi=4  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=7680  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "National Laboratory for Parallel & Distr"
+    FullParagraph  pi=5  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=9280  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "Changsha, Hunan 410073, China"
+    FullParagraph  pi=6  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=10880  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "wensong@iinchina.net"
+    FullParagraph  pi=7  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=12480  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "http://proxy.iinchina.net/~wensong"
+    FullParagraph  pi=8  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=14080  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=9  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=15680  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=10  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=17280  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=11  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=18880  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=12  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=20480  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=13  h=29.9 (sb=0.0 lines=29.9 lh=18.7 ls=11.2 sa=0.0)  vpos=22080  ls=1[ts=0 lh=1400 th=1400 bl=1190 gap=840 cs=0 sw=42520]  "개  요"
+    FullParagraph  pi=14  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=24320  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=15  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=25920  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=16  h=106.7 (sb=0.0 lines=106.7 lh=66.7 ls=40.0 sa=0.0)  vpos=27520..33920  ls=5[first ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520; last ts=227 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "  빠른 넷트웍에 연결된 서버(server)들의 클러스터(cluster)"
+    FullParagraph  pi=17  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=35520  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=18  h=192.0 (sb=0.0 lines=192.0 lh=120.0 ls=72.0 sa=0.0)  vpos=37120..49920  ls=9[first ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520; last ts=442 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "  이 글은 어떻게 리눅스 가상 서버들을 만드는지 설명하고 있다. 가상 "
+    FullParagraph  pi=19  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=51520  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=20  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=53120  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=21  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=54720  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=22  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=56320  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=23  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=57920  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=24  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=59520  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=25  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=61120  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=26  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=62720  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "번역 : 리눅스코리아(주) 개발팀 이선중"
+    FullParagraph  pi=27  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=64320  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+
+=== 페이지 2 (global_idx=1, section=0, page_num=2) ===
+  body_area: x=113.4 y=132.3 w=566.9 h=876.9
+  단 0 (items=13, used=763.7px, hwp_used≈763.7px, diff=+0.0px)
+    FullParagraph  pi=28  h=38.4 (sb=0.0 lines=38.4 lh=24.0 ls=14.4 sa=0.0)  vpos=0  ls=1[ts=0 lh=1800 th=1800 bl=1530 gap=1080 cs=0 sw=42520]  "1. 소개"
+    FullParagraph  pi=29  h=21.3 (sb=0.0 lines=21.3 lh=13.3 ls=8.0 sa=0.0)  vpos=2880  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "(빈)"
+    FullParagraph  pi=30  h=213.3 (sb=0.0 lines=213.3 lh=133.3 ls=80.0 sa=0.0)  vpos=4480..18880  ls=10[first ts=0 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520; last ts=464 lh=1000 th=1000 bl=850 gap=600 cs=0 sw=42520]  "인터넷의 폭발적 성장과 인터넷이 우리 생활에서 차지하는 중요도가 커짐에 "
+===== issue_2148_degenerate_cell_vpos.hwpx : info =====
+파일: samples/issue_2148_degenerate_cell_vpos.hwpx
+크기: 7067222 bytes
+버전: 5.1.0.0
+압축: 아니오
+암호화: 아니오
+배포용: 아니오
+구역 수: 1
+페이지 수: 1
+구역0 용지: 59528×84188 HWPUNIT, 방향=세로 (여백: 좌5102 우5102 상3600 하3600)
+  머리말여백=3600 꼬리말여백=3600 제본여백=0
+폰트(한글): [0]굴림체, [1]맑은 고딕, [2]바탕체, [3]한컴돋움, [4]함초롬바탕, [5]휴먼명조, [6]HY견고딕, [7]HY견명조, [8]HY신명조, [9]HY중고딕, [10]HY헤드라인M
+폰트(영어): [0]굴림체, [1]궁서, [2]맑은 고딕, [3]바탕체, [4]한컴돋움, [5]함초롬바탕, [6]휴먼명조, [7]HY견고딕, [8]HY견명조, [9]HY신명조, [10]HY중고딕, [11]HY헤드라인M, [12]Times New Roman
+폰트(한자): [0]굴림체, [1]맑은 고딕, [2]바탕체, [3]한컴돋움, [4]함초롬바탕, [5]휴먼명조, [6]HY견고딕, [7]HY견명조, [8]HY신명조, [9]HY중고딕, [10]HY헤드라인M
+폰트(일어): [0]굴림체, [1]맑은 고딕, [2]바탕체, [3]한컴돋움, [4]함초롬바탕, [5]휴먼명조, [6]HY견고딕, [7]HY견명조, [8]HY신명조, [9]HY중고딕, [10]HY헤드라인M
+폰트(기타): [0]굴림체, [1]맑은 고딕, [2]바탕체, [3]한컴돋움, [4]한컴바탕, [5]함초롬바탕, [6]휴먼명조, [7]HY견고딕, [8]HY견명조, [9]HY신명조, [10]HY중고딕, [11]HY헤드라인M
+폰트(기호): [0]굴림체, [1]맑은 고딕, [2]바탕체, [3]한컴돋움, [4]함초롬바탕, [5]휴먼명조, [6]HY견고딕, [7]HY견명조, [8]HY신명조, [9]HY중고딕, [10]HY헤드라인M
+폰트(사용자): [0]굴림체, [1]맑은 고딕, [2]바탕체, [3]한컴돋움, [4]함초롬바탕, [5]휴먼명조, [6]HY견고딕, [7]HY견명조, [8]HY중고딕, [9]HY헤드라인M
+스타일: 바탕글, 본문(신명조10), 본문(중고딕10), 작은제목(중고딕15), 중간제목(옛체20), 큰제목(견고딕20), 큰제목(견고딕30), 머리말(신명조9), 머리말(중고딕9), 각주내용(신명조9), 본문(신견고 28), 본문(신태고14), 본문(신견명20), 신명 중고딕13, xl65
+총 문단 수: 2
+ParaShape: 55 (PS/문단 = 27.500)
+CharShape: 134 (CS/문단 = 67.000)
+Origin 추정: 판정 불가 (문단 수 ≤ 50, 비율 왜곡 회피)
+BinData:
+  [0] Embedding (ID: 1, ext: png, loaded: 18776 bytes)
+  [1] Embedding (ID: 2, ext: jpg, loaded: 78917 bytes)
+  [2] Embedding (ID: 3, ext: bmp, loaded: 198351 bytes)
+  [3] Embedding (ID: 4, ext: bmp, loaded: 443382 bytes)
+  [4] Embedding (ID: 5, ext: bmp, loaded: 170256 bytes)
+  [5] Embedding (ID: 6, ext: jpg, loaded: 1068628 bytes)
+  [6] Embedding (ID: 7, ext: jpg, loaded: 1127407 bytes)
+  [7] Embedding (ID: 8, ext: jpg, loaded: 1499442 bytes)
+  [8] Embedding (ID: 9, ext: jpg, loaded: 1350209 bytes)
+  [9] Embedding (ID: 10, ext: jpg, loaded: 1112857 bytes)
+표1 [구역0:문단1]: 3행×3열, 셀 6개, 쪽나눔=나눔(행 단위) (attr=0x04000006), 제목반복=true
+===== issue_2148_degenerate_cell_vpos.hwpx : dump-pages =====
+문서 로드: samples/issue_2148_degenerate_cell_vpos.hwpx (1페이지)
+
+=== 페이지 1 (global_idx=0, section=0, page_num=1) ===
+  body_area: x=68.0 y=96.0 w=657.7 h=930.5
+  단 0 (items=2, used=378.4px)
+    FullParagraph  pi=0  h=17.3 (sb=0.0 lines=17.3 lh=13.3 ls=4.0 sa=0.0)  vpos=0  ls=1[ts=0 lh=1000 th=1000 bl=850 gap=300 cs=0 sw=49324]  "(빈)"
+    Table          pi=1 ci=0  3x3  644.4x348.0px  wrap=TopAndBottom tac=true  vpos=1300  ls=1[ts=0 lh=26098 th=26098 bl=22183 gap=360 cs=0 sw=49324]

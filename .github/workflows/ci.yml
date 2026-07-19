@@ -290,7 +290,6 @@ jobs:
               'rhwp-shared/',
               'npm/editor/',
               'assets/fonts/',
-              'web/',
             ];
 
             function setResult(required, reason) {
@@ -381,21 +380,25 @@ jobs:
               setResult(true, 'detection-error');
             }
 
-  build-default-feature-tests:
-    name: Build default-feature tests
+  # [#2393] 기본 테스트 병렬화 — 테스트 바이너리를 한 번 빌드해 아카이브하고
+  # 8개 샤드가 컴파일 없이 나눠 실행한다. 빌드/테스트/린트가 각각 임계 경로에서
+  # 분리되어 wall-clock 이 단축된다. required check 는 집계 job "Build & Test" 로 불변.
+  build-test-archive:
+    name: Build test archive
     runs-on: ubuntu-latest
     needs: preflight
     if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
     permissions:
       contents: read
+    outputs:
+      cargo_profile: ${{ steps.profile.outputs.cargo_profile }}
+      runnable_tests: ${{ steps.count.outputs.runnable_tests }}
 
     steps:
       - uses: actions/checkout@v5
 
       # [Task #1109 / #1192 C] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
       # 테스트 빌드 시 디스크 한도 초과를 줄인다.
-      # [#1192] 캐시 정상 작동 확인 후 "크고 빠른" 항목(android/dotnet)만 남기고 축소.
-      # 느린 docker prune --all / apt clean / ghc / CodeQL 정리는 제거. df -h 로 여유 확인.
       - name: Free disk space (remove unused pre-installed toolchains)
         run: |
           sudo rm -rf /usr/local/lib/android
@@ -406,65 +409,161 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.1
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
+
+      # [#2393] 수동 restore/save 캐시 → rust-cache (적중률·정리 자동화).
+      # 저장 정책은 종전과 동일하게 devel/main push 로 한정.
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: test-archive
+          save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
+
+      # [Task #1849] PR/devel push 는 release-test 전체 회귀, main/tag/manual 은 release.
+      - name: Select cargo profile
+        id: profile
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]] || [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/devel" ]]; then
+            echo "cargo_profile=release-test" >> "$GITHUB_OUTPUT"
+          else
+            echo "cargo_profile=release" >> "$GITHUB_OUTPUT"
+          fi
+
+      # [Task #1667] nextest archive 는 default-feature test=true 전 타깃(rhwp lib
+      # 테스트 실행 파일 포함)과 CLI 테스트가 쓰는 비테스트 바이너리(rhwp)까지 담는다.
+      - name: Build and archive default-feature tests
+        run: |
+          echo "profile=${{ steps.profile.outputs.cargo_profile }} event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
+          cargo nextest archive \
+            --cargo-profile "${{ steps.profile.outputs.cargo_profile }}" \
+            --archive-file tests.tar.zst
+
+      # [#2393] 샤드 합계 대조의 기대치 — 비-ignored(runnable) 테스트 수.
+      # nextest Summary 의 skipped 는 파티션 제외분과 #[ignore] 를 합산하므로
+      # run 합계의 기준은 total 이 아니라 runnable 이다 (3차 PR CI 실측: 23 ignored).
+      - name: Count runnable tests
+        id: count
+        run: |
+          runnable=$(cargo nextest list \
+            --cargo-profile "${{ steps.profile.outputs.cargo_profile }}" \
+            --message-format json \
+            | jq '[."rust-suites"[].testcases | to_entries[] | select(.value.ignored | not)] | length')
+          if [[ -z "$runnable" || "$runnable" == "0" ]]; then
+            echo "::error::runnable test count unavailable"; exit 1
+          fi
+          echo "runnable_tests=$runnable" >> "$GITHUB_OUTPUT"
+          echo "runnable_tests=$runnable"
+
+      - name: Upload test archive
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-archive-${{ github.run_id }}
+          path: tests.tar.zst
+          retention-days: 1
+          if-no-files-found: error
+
+  test-shard:
+    name: Default-feature tests (shard ${{ matrix.shard }}/8)
+    runs-on: ubuntu-latest
+    needs: [preflight, build-test-archive]
+    if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' && needs['build-test-archive'].result == 'success' }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+
+    steps:
+      # 테스트가 samples/ pdf/ 등 저장소 픽스처를 읽으므로 checkout 필요.
+      - uses: actions/checkout@v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.93.1
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
+
+      - name: Download test archive
+        uses: actions/download-artifact@v8
+        with:
+          name: test-archive-${{ github.run_id }}
+
+      # [#2393] 공허 통과 방지: Summary 의 run/skipped 를 파싱해 샤드별
+      # `<run> <total>` 을 아티팩트로 남긴다. 집계 job 이 8샤드 합계 = 전체
+      # 테스트 수를 대조한다 (샤드 누락·파티션 중복이 green 으로 위장 불가).
+      - name: Run shard ${{ matrix.shard }}/8
+        run: |
+          set -o pipefail
+          # --extract-to . : CLI 테스트의 env!("CARGO_BIN_EXE_rhwp") 는 빌드
+          # 러너 절대 경로가 컴파일 타임에 박힌다. GitHub 러너는 job 간
+          # workspace 경로가 동일하므로 워크스페이스에 풀어 target/ 경로를
+          # 그대로 복원한다 (임시 디렉터리 추출 시 NotFound — PR CI 실측).
+          cargo nextest run \
+            --archive-file tests.tar.zst \
+            --workspace-remap . \
+            --extract-to . \
+            --partition "hash:${{ matrix.shard }}/8" \
+            2>&1 | tee nextest-shard.log
+          # CARGO_TERM_COLOR=always 로 Summary 라인에 ANSI 색코드가 섞이므로
+          # 스트립 후 파싱한다 (2차 PR CI 실측 — 376 run green 인데 파싱 실패).
+          summary=$(sed 's/\x1b\[[0-9;]*m//g' nextest-shard.log | grep -E "Summary \[" | tail -1)
+          run=$(echo "$summary" | grep -oE "[0-9]+ tests run" | grep -oE "^[0-9]+")
+          skipped=$(echo "$summary" | grep -oE "[0-9]+ skipped" | grep -oE "^[0-9]+" || echo 0)
+          if [[ -z "$run" ]]; then
+            echo "::error::shard summary parse failed"; exit 1
+          fi
+          echo "$run $((run + skipped))" > "shard-count-${{ matrix.shard }}.txt"
+          cat "shard-count-${{ matrix.shard }}.txt"
+
+      - name: Upload shard count
+        uses: actions/upload-artifact@v7
+        with:
+          name: shard-count-${{ matrix.shard }}
+          path: shard-count-${{ matrix.shard }}.txt
+          retention-days: 1
+          if-no-files-found: error
+
+  lint:
+    name: Lint (fmt, clippy, WASM check)
+    runs-on: ubuntu-latest
+    needs: preflight
+    if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.93.1
           components: clippy, rustfmt
           targets: wasm32-unknown-unknown
 
-      - name: Restore cargo registry & build cache
-        id: cargo_cache_restore
-        uses: actions/cache/restore@v5
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+          shared-key: lint
+          save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
       - name: Format check
         run: cargo fmt --all -- --check
 
-      # [Task #1849] PR is release-test full regression. devel push keeps this Build
-      # step as release smoke, while test steps below use release-test. main/tag/manual
-      # keep full release tests.
-      - name: Build
-        run: |
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-            echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
-            cargo build --profile release-test --verbose
-          else
-            echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF} role=release-smoke-or-full"
-            cargo build --release --verbose
-          fi
-
-      # [Task #1667] `cargo test --tests` covers all default-feature test=true
-      # targets, including the rhwp lib test executable. Keep one default-feature
-      # test step here so the same lib tests are not rerun by a separate --lib step.
-      - name: Run default-feature tests
-        run: |
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]] || [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/devel" ]]; then
-            echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
-            cargo test --profile release-test --tests --verbose
-          else
-            echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
-            cargo test --release --tests --verbose
-          fi
-
-      - name: Check WASM target
-        run: cargo check --target wasm32-unknown-unknown --lib
-
       - name: Clippy
         run: cargo clippy -- -D warnings
 
-      - name: Save cargo registry & build cache
-        if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.cargo_cache_restore.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Check WASM target
+        run: cargo check --target wasm32-unknown-unknown --lib
 
   native-skia-tests:
     name: Native Skia tests
@@ -517,9 +616,13 @@ jobs:
           if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]] || [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/devel" ]]; then
             echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
             cargo test --profile release-test --features native-skia skia --lib --verbose
+            cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder --verbose
+            cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export --verbose
           else
             echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
             cargo test --release --features native-skia skia --lib --verbose
+            cargo test --release --features native-skia --test issue_2225_missing_picture_placeholder --verbose
+            cargo test --release --features native-skia --test render_p37_direct_pdf_export --verbose
           fi
 
   frontend-package-gates:
@@ -540,7 +643,7 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        uses: ./.github/actions/install-wasm-pack
 
       - name: Restore frontend WASM cargo cache
         id: frontend_wasm_cargo_cache_restore
@@ -619,7 +722,9 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - preflight
-      - build-default-feature-tests
+      - build-test-archive
+      - test-shard
+      - lint
       - native-skia-tests
       - frontend-package-gates
     if: ${{ always() }}
@@ -627,13 +732,57 @@ jobs:
       contents: read
 
     steps:
+      # [#2393] 샤드 합계 대조 — 8샤드의 `<run> <total>` 을 모아 합계가 전체
+      # 테스트 수와 일치하는지 검증한다 (fast-pass 시 샤드 미실행이라 생략).
+      - name: Download shard counts
+        if: ${{ needs.preflight.outputs.fast_pass != 'true' }}
+        uses: actions/download-artifact@v8
+        with:
+          pattern: shard-count-*
+          merge-multiple: true
+
+      - name: Verify shard totals
+        if: ${{ needs.preflight.outputs.fast_pass != 'true' }}
+        env:
+          EXPECTED_RUNNABLE: ${{ needs['build-test-archive'].outputs.runnable_tests }}
+        run: |
+          shards=$(ls shard-count-*.txt 2>/dev/null | wc -l)
+          if [[ "$shards" != "8" ]]; then
+            echo "::error::expected 8 shard count files, found ${shards}"
+            exit 1
+          fi
+          if [[ -z "${EXPECTED_RUNNABLE}" ]]; then
+            echo "::error::expected runnable test count missing from build-test-archive"
+            exit 1
+          fi
+          sum=0; total=""
+          for f in shard-count-*.txt; do
+            read -r run t < "$f"
+            sum=$((sum + run))
+            if [[ -z "$total" ]]; then total="$t"; fi
+            if [[ "$t" != "$total" ]]; then
+              echo "::error::shard total mismatch: ${f} says ${t}, expected ${total}"
+              exit 1
+            fi
+            echo "${f}: run=${run} total=${t}"
+          done
+          # 기대치는 runnable(비-ignored) — Summary 의 skipped 는 파티션 제외분과
+          # #[ignore] 합산이라 total 과의 직접 비교는 성립하지 않는다 (3차 실측).
+          echo "sum(run)=${sum} expected runnable=${EXPECTED_RUNNABLE} (listed total=${total})"
+          if [[ "$sum" != "${EXPECTED_RUNNABLE}" ]]; then
+            echo "::error::shard run sum ${sum} != runnable tests ${EXPECTED_RUNNABLE} (누락 또는 중복)"
+            exit 1
+          fi
+
       - name: Check Build & Test worker results
         env:
           PREFLIGHT_RESULT: ${{ needs.preflight.result }}
           FAST_PASS: ${{ needs.preflight.outputs.fast_pass }}
           FRONTEND_REQUIRED: ${{ needs.preflight.outputs.frontend_required }}
           FRONTEND_REASON: ${{ needs.preflight.outputs.frontend_reason }}
-          BUILD_DEFAULT_RESULT: ${{ needs['build-default-feature-tests'].result }}
+          BUILD_ARCHIVE_RESULT: ${{ needs['build-test-archive'].result }}
+          TEST_SHARD_RESULT: ${{ needs['test-shard'].result }}
+          LINT_RESULT: ${{ needs['lint'].result }}
           NATIVE_SKIA_RESULT: ${{ needs['native-skia-tests'].result }}
           FRONTEND_RESULT: ${{ needs['frontend-package-gates'].result }}
         run: |
@@ -641,7 +790,9 @@ jobs:
           printf 'fast_pass=%s\n' "${FAST_PASS}"
           printf 'frontend_required=%s\n' "${FRONTEND_REQUIRED}"
           printf 'frontend_reason=%s\n' "${FRONTEND_REASON}"
-          printf 'build_default=%s\n' "${BUILD_DEFAULT_RESULT}"
+          printf 'build_archive=%s\n' "${BUILD_ARCHIVE_RESULT}"
+          printf 'test_shard=%s\n' "${TEST_SHARD_RESULT}"
+          printf 'lint=%s\n' "${LINT_RESULT}"
           printf 'native_skia=%s\n' "${NATIVE_SKIA_RESULT}"
           printf 'frontend=%s\n' "${FRONTEND_RESULT}"
 
@@ -656,8 +807,16 @@ jobs:
           fi
 
           failed=0
-          if [[ "${BUILD_DEFAULT_RESULT}" != "success" ]]; then
-            echo "::error::Build default-feature tests result: ${BUILD_DEFAULT_RESULT}"
+          if [[ "${BUILD_ARCHIVE_RESULT}" != "success" ]]; then
+            echo "::error::Build test archive result: ${BUILD_ARCHIVE_RESULT}"
+            failed=1
+          fi
+          if [[ "${TEST_SHARD_RESULT}" != "success" ]]; then
+            echo "::error::Default-feature test shards result: ${TEST_SHARD_RESULT}"
+            failed=1
+          fi
+          if [[ "${LINT_RESULT}" != "success" ]]; then
+            echo "::error::Lint result: ${LINT_RESULT}"
             failed=1
           fi
           if [[ "${NATIVE_SKIA_RESULT}" != "success" ]]; then
@@ -700,7 +859,7 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        uses: ./.github/actions/install-wasm-pack
 
       - name: Cache cargo registry & build
         uses: actions/cache@v5
@@ -717,7 +876,7 @@ jobs:
         run: wasm-pack build --target web --release
 
       - name: Upload WASM artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: rhwp-wasm-pkg
           path: pkg/

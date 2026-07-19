@@ -219,7 +219,12 @@ export async function waitForCanvas(page, timeout = 10000) {
 
 /** 새 빈 문서 생성 + 캔버스 대기 */
 export async function createNewDocument(page) {
-  await page.evaluate(() => window.__eventBus?.emit('create-new-document'));
+  // [Task #2317] skipUnsavedGuard: 직전 케이스가 문서를 dirty 로 남기면 미저장
+  // 가드 모달이 응답 대기 상태로 잔존해 ① 새 문서가 실제로 생성되지 않고
+  // ② 모달의 document-capture 키 핸들러가 이후 모든 실키 입력을 삼킨다
+  // (실키 Ctrl+Z smoke 가 검출). e2e 셋업은 가드를 명시적으로 우회한다 —
+  // 가드 동작 자체는 unsaved-changes-guard.test.mjs 가 자체 emit 으로 검증.
+  await page.evaluate(() => window.__eventBus?.emit('create-new-document', { skipUnsavedGuard: true }));
   await page.waitForSelector(CANVAS_SELECTOR, { timeout: 10000 });
   await page.evaluate(() => new Promise(r => setTimeout(r, 1000)));
 }
@@ -235,7 +240,7 @@ export async function loadHwpFile(page, filename) {
       const buf = await resp.arrayBuffer();
       const docInfo = window.__wasm?.loadDocument(new Uint8Array(buf), fname);
       if (!docInfo) return { error: 'loadDocument returned null' };
-      window.__canvasView?.loadDocument?.();
+      await window.__canvasView?.loadDocument?.();
       return {
         pageCount: docInfo.pageCount,
         documentLoadAndInitialRenderMs: performance.now() - startedAt,
@@ -334,14 +339,19 @@ export async function screenshot(page, name) {
   return path;
 }
 
-/** 편집 영역의 첫 번째 페이지 캔버스를 지정 경로로 캡처한다 */
-export async function captureCanvasScreenshot(page, outputPath, logLabel = 'Canvas Screenshot') {
+/** 지정한 편집 영역 요소를 캡처한다. selector 기본값은 첫 번째 페이지 캔버스다. */
+export async function captureCanvasScreenshot(
+  page,
+  outputPath,
+  logLabel = 'Canvas Screenshot',
+  selector = CANVAS_SELECTOR,
+) {
   const { mkdirSync, existsSync } = await import('fs');
   const outputDir = path.dirname(outputPath);
   if (!existsSync(outputDir)) mkdirSync(outputDir, { recursive: true });
-  const canvas = await page.$(CANVAS_SELECTOR);
-  if (!canvas) throw new Error('편집 영역 캔버스를 찾을 수 없습니다');
-  const buffer = await canvas.screenshot({ path: outputPath });
+  const element = await page.$(selector);
+  if (!element) throw new Error(`캡처할 편집 영역 요소를 찾을 수 없습니다: ${selector}`);
+  const buffer = await element.screenshot({ path: outputPath });
   console.log(`  ${logLabel}: ${outputPath}`);
   _lastScreenshot = path.basename(outputPath);
   return { path: outputPath, buffer };

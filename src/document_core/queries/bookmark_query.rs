@@ -94,6 +94,13 @@ impl DocumentCore {
             paragraph.char_offsets.insert(insert_idx, raw_offset);
         }
 
+        // 원본 스트림 무효화 — serialize_section 은 raw_stream 이 있으면 IR 을 무시하고
+        // 원본 바이트를 그대로 반환하므로(serializer/body_text.rs), 비우지 않으면 방금
+        // 삽입한 책갈피 컨트롤이 저장 시 통째로 사라진다. recompose_section 은 화면(구성)만
+        // 갱신할 뿐 raw_stream 을 건드리지 않는다. 누름틀·양식 쪽과 동일한 불변식이다.
+        if let Some(s) = self.document.sections.get_mut(sec) {
+            s.raw_stream = None;
+        }
         self.recompose_section(sec);
 
         Ok(r#"{"ok":true}"#.to_string())
@@ -133,6 +140,10 @@ impl DocumentCore {
             paragraph.char_offsets.remove(ctrl_idx);
         }
 
+        // 원본 스트림 무효화 — 비우지 않으면 삭제한 책갈피가 저장 시 원본 바이트로 되살아난다.
+        if let Some(s) = self.document.sections.get_mut(sec) {
+            s.raw_stream = None;
+        }
         self.recompose_section(sec);
 
         Ok(r#"{"ok":true}"#.to_string())
@@ -181,6 +192,13 @@ impl DocumentCore {
             if ctrl_idx < paragraph.ctrl_data_records.len() {
                 paragraph.ctrl_data_records[ctrl_idx] = Some(build_bookmark_ctrl_data(new_name));
             }
+            // 원본 스트림 무효화 — 비우지 않으면 이름 변경이 저장 시 옛 이름으로 되돌아간다.
+            // add/delete 와 달리 이 함수는 recompose_section 도 호출하지 않았다 — 무효화와
+            // 함께 추가한다(다른 뮤테이터와 동일하게 편집 후 구성/커서를 갱신).
+            if let Some(s) = self.document.sections.get_mut(sec) {
+                s.raw_stream = None;
+            }
+            self.recompose_section(sec);
             Ok(r#"{"ok":true}"#.to_string())
         } else {
             Ok(r#"{"ok":false,"error":"해당 컨트롤이 책갈피가 아닙니다."}"#.to_string())
@@ -359,4 +377,116 @@ fn json_escape(s: &str) -> String {
     }
     out.push('"');
     out
+}
+
+#[cfg(test)]
+mod tests {
+    //! 책갈피 추가/삭제/이름변경의 raw_stream 무효화 회귀 테스트.
+    //!
+    //! serialize_section(serializer/body_text.rs)은 raw_stream 이 Some 이면 IR 을 무시하고
+    //! 원본 바이트를 그대로 반환한다. HWP5 파서는 모든 섹션에 raw_stream 을 채우므로
+    //! (parser/mod.rs), 세 뮤테이터가 raw_stream 을 비우지 않으면 — 책갈피 추가·삭제·
+    //! 이름변경만 하고 저장하는 워크플로에서 — 편집이 저장 시 통째로 유실된다.
+    //! recompose_section 은 화면만 갱신할 뿐 raw_stream 을 건드리지 않는다.
+    //! 누름틀 set_field_value_*(field_query.rs)·양식 set_form_value_*(form_query.rs)는
+    //! 같은 불변식을 이미 지킨다.
+
+    use crate::document_core::DocumentCore;
+    use crate::model::control::{Bookmark, Control};
+    use crate::model::document::{Document, Section};
+    use crate::model::paragraph::Paragraph;
+    use crate::serializer::body_text::serialize_section;
+
+    const SENTINEL: u8 = 0xAB;
+
+    fn core_from(doc: Document) -> DocumentCore {
+        let mut core = DocumentCore::new_empty();
+        core.document = doc;
+        core.composed = vec![Vec::new()];
+        core.dirty_sections = vec![true];
+        core.dirty_paragraphs = vec![None];
+        core
+    }
+
+    /// 파싱된 문서를 흉내낸다 — 섹션이 원본 스트림 바이트를 물고 있는 상태.
+    fn doc_with_raw_stream(paragraphs: Vec<Paragraph>) -> Document {
+        let mut doc = Document::default();
+        doc.sections.push(Section {
+            paragraphs,
+            raw_stream: Some(vec![SENTINEL; 64]),
+            ..Default::default()
+        });
+        doc
+    }
+
+    fn text_para(text: &str) -> Paragraph {
+        let mut p = Paragraph {
+            text: text.to_string(),
+            char_offsets: (0..text.chars().count() as u32).collect(),
+            char_count: text.chars().count() as u32,
+            ..Default::default()
+        };
+        p.has_para_text = true;
+        p
+    }
+
+    fn para_with_bookmark(name: &str) -> Paragraph {
+        let mut p = Paragraph::default();
+        p.controls.push(Control::Bookmark(Bookmark {
+            name: name.to_string(),
+        }));
+        p
+    }
+
+    #[test]
+    fn add_bookmark_invalidates_raw_stream() {
+        let mut core = core_from(doc_with_raw_stream(vec![text_para("안녕하세요")]));
+        let r = core
+            .add_bookmark_native(0, 0, 2, "중간지점")
+            .expect("호출 성공");
+        assert!(r.contains(r#""ok":true"#), "전제: 책갈피 추가 성공 ({r})");
+
+        assert!(
+            core.document.sections[0].raw_stream.is_none(),
+            "raw_stream 이 남으면 추가한 책갈피가 저장 시 사라진다"
+        );
+        let out = serialize_section(&core.document.sections[0]);
+        assert_ne!(
+            out,
+            vec![SENTINEL; 64],
+            "직렬화가 원본 바이트를 반환하면 유실"
+        );
+    }
+
+    #[test]
+    fn delete_bookmark_invalidates_raw_stream() {
+        let mut core = core_from(doc_with_raw_stream(vec![para_with_bookmark("삭제대상")]));
+        let r = core.delete_bookmark_native(0, 0, 0).expect("호출 성공");
+        assert!(r.contains(r#""ok":true"#), "전제: 책갈피 삭제 성공 ({r})");
+
+        assert!(
+            core.document.sections[0].raw_stream.is_none(),
+            "raw_stream 이 남으면 삭제한 책갈피가 저장 시 되살아난다"
+        );
+    }
+
+    #[test]
+    fn rename_bookmark_invalidates_raw_stream() {
+        let mut core = core_from(doc_with_raw_stream(vec![para_with_bookmark("옛이름")]));
+        let r = core
+            .rename_bookmark_native(0, 0, 0, "새이름")
+            .expect("호출 성공");
+        assert!(r.contains(r#""ok":true"#), "전제: 이름 변경 성공 ({r})");
+
+        // 이름은 IR 에 반영됐고,
+        match &core.document.sections[0].paragraphs[0].controls[0] {
+            Control::Bookmark(b) => assert_eq!(b.name, "새이름"),
+            _ => panic!("책갈피여야 함"),
+        }
+        // raw_stream 은 무효화돼야 한다 — 남으면 저장 시 옛 이름으로 되돌아간다.
+        assert!(
+            core.document.sections[0].raw_stream.is_none(),
+            "raw_stream 이 남으면 이름 변경이 저장 시 옛 이름으로 되돌아간다"
+        );
+    }
 }

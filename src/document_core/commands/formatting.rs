@@ -742,8 +742,8 @@ impl DocumentCore {
         let (raw_left_hu, raw_right_hu, raw_indent_hu) = raw_ps
             .map(|r| (r.margin_left, r.margin_right, r.indent))
             .unwrap_or((0, 0, 0));
-        let is_hwp3_native =
-            self.document.header.version.major == 3 && !self.document.is_hwp3_variant;
+        let is_hwp3_native = self.document.header.version.major == 3
+            && !self.document.layout_profile().hwp3_layout();
         let effective_left_hu = if is_hwp3_native {
             raw_left_hu + raw_indent_hu.min(0)
         } else {
@@ -1139,39 +1139,21 @@ impl DocumentCore {
         }
 
         // 텍스트 폭/높이에 영향을 주는 글자 모양 변경 시 셀 내 LineSeg 재계산.
+        //
+        // [자체 발견] 예전에는 여기서 페이지 본문 단(column) 폭을 셀 리플로우에 그대로
+        // 썼다 — 셀 폭은 보통 그 1/3~1/5 라 텍스트가 한 줄로 뭉쳐졌다 붙었다 하며 셀
+        // 경계를 넘어 그려졌다. 같은 파일의 undo 형제 set_char_shape_id_in_cell_native
+        // (:1219)는 이미 reflow_cell_paragraph 로 셀/글상자/캡션 폭을 올바르게 계산해서,
+        // 서식 적용(do)과 undo 사이에 눈에 보이는 비대칭이 있었다. 그 헬퍼로 통일한다.
         if char_shape_mods_affect_text_flow(&mods) {
-            let dpi = self.dpi;
-            let styles = resolve_styles(&self.document.doc_info, dpi);
-            let section = &self.document.sections[sec_idx];
-            let page_def = &section.section_def.page_def;
-            let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
-            let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
-            let col_width = layout
-                .column_areas
-                .first()
-                .map(|a| a.width)
-                .unwrap_or(layout.body_area.width);
-            let cell_para = self.get_cell_paragraph_mut(
+            self.reflow_cell_paragraph(
                 sec_idx,
                 parent_para_idx,
                 control_idx,
                 cell_idx,
                 cell_para_idx,
-            )?;
-            let para_shape_id = cell_para.para_shape_id;
-            let para_style = styles.para_styles.get(para_shape_id as usize);
-            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-            let available_width = (col_width - margin_left - margin_right).max(1.0);
-            cell_para.line_segs.clear();
-            reflow_line_segs(cell_para, available_width, &styles, dpi);
-
-            // 표 dirty 마킹 — 셀 높이 재계산 필요
-            if let Control::Table(ref mut t) =
-                self.document.sections[sec_idx].paragraphs[parent_para_idx].controls[control_idx]
-            {
-                t.dirty = true;
-            }
+            );
+            self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
         }
 
         self.document.sections[sec_idx].raw_stream = None;
@@ -1460,42 +1442,23 @@ impl DocumentCore {
             cell_para.para_shape_id = new_id;
         }
 
-        // 줄간격 변경 시 셀 내 문단 LineSeg 재계산
+        // 줄간격 변경 시 셀 내 문단 LineSeg 재계산.
+        //
+        // [자체 발견] apply_char_format_in_cell_native 와 동일한 결함 — 페이지 본문 단 폭을
+        // 셀 리플로우에 썼다. undo 형제 set_cell_para_shape_id_native(:1538)는 이미
+        // reflow_cell_paragraph 를 쓴다. 그 헬퍼로 통일해 폭 계산과 dirty 마킹을 함께 맞춘다.
         if mods.line_spacing.is_some() || mods.line_spacing_type.is_some() {
-            let dpi = self.dpi;
-            let styles = resolve_styles(&self.document.doc_info, dpi);
-            let section = &self.document.sections[sec_idx];
-            let page_def = &section.section_def.page_def;
-            let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
-            let layout = PageLayoutInfo::from_page_def(page_def, &column_def, dpi);
-            let col_width = layout
-                .column_areas
-                .first()
-                .map(|a| a.width)
-                .unwrap_or(layout.body_area.width);
-            let para_style = styles.para_styles.get(new_id as usize);
-            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-            let available_width = (col_width - margin_left - margin_right).max(1.0);
-            let cell_para = self.get_cell_paragraph_mut(
+            self.reflow_cell_paragraph(
                 sec_idx,
                 parent_para_idx,
                 control_idx,
                 cell_idx,
                 cell_para_idx,
-            )?;
-            reflow_line_segs(cell_para, available_width, &styles, dpi);
+            );
         }
 
         // 표 dirty 마킹 — measure_section_incremental이 셀 높이를 재계산하도록
-        {
-            use crate::model::control::Control;
-            if let Control::Table(ref mut t) =
-                self.document.sections[sec_idx].paragraphs[parent_para_idx].controls[control_idx]
-            {
-                t.dirty = true;
-            }
-        }
+        self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
 
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
@@ -2108,5 +2071,127 @@ mod tests {
             ..Default::default()
         };
         assert!(!char_shape_mods_affect_text_flow(&mods));
+    }
+}
+
+#[cfg(test)]
+mod cell_reflow_width_tests {
+    //! 셀 서식 적용의 리플로우 폭 회귀 테스트.
+    //!
+    //! apply_char_format_in_cell_native / apply_para_format_in_cell_native 는 예전에
+    //! 페이지 본문 단(column) 폭으로 셀 문단을 리플로우했다 — 셀 폭은 보통 그보다 훨씬
+    //! 좁아 텍스트가 한 줄로 뭉쳐졌다 셀 경계를 넘어 그려졌다. 같은 파일의 undo 형제
+    //! set_char_shape_id_in_cell_native/set_cell_para_shape_id_native 는 이미
+    //! reflow_cell_paragraph(셀/글상자 폭 기준)를 썼다 — do/undo 사이의 눈에 보이는 비대칭.
+    //!
+    //! 페이지 본문 폭(수만 HWPUNIT)과 셀 폭(200 HWPUNIT)을 극단적으로 벌려, 어떤 폰트
+    //! 폭 추정치를 쓰든 "페이지 폭 사용" 과 "셀 폭 사용" 이 줄 수로 갈리게 한다.
+
+    use crate::document_core::DocumentCore;
+    use crate::model::control::Control;
+    use crate::model::document::{Document, Section, SectionDef};
+    use crate::model::page::PageDef;
+    use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+    use crate::model::table::{Cell, Table};
+
+    fn core_with_narrow_cell(text: &str) -> DocumentCore {
+        let mut doc = Document::default();
+
+        let mut cell_para = Paragraph {
+            text: text.to_string(),
+            char_offsets: (0..text.chars().count() as u32).collect(),
+            char_count: text.chars().count() as u32,
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        cell_para.has_para_text = true;
+
+        let mut table = Table::default();
+        table.row_count = 1;
+        table.col_count = 1;
+        table.cells = vec![Cell {
+            row: 0,
+            col: 0,
+            col_span: 1,
+            row_span: 1,
+            width: 200, // 셀 폭 — 페이지 본문 폭(수만 HWPUNIT)의 1% 미만
+            paragraphs: vec![cell_para],
+            ..Default::default()
+        }];
+
+        let mut para = Paragraph::default();
+        para.controls.push(Control::Table(Box::new(table)));
+
+        let mut section = Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    margin_left: 8504,
+                    margin_right: 8504,
+                    margin_top: 5668,
+                    margin_bottom: 4252,
+                    margin_header: 4252,
+                    margin_footer: 4252,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let mut core = DocumentCore::new_empty();
+        core.document = doc;
+        core.composed = vec![Vec::new()];
+        core.dirty_sections = vec![true];
+        core.dirty_paragraphs = vec![None];
+        core
+    }
+
+    #[test]
+    fn char_format_reflow_uses_cell_width_not_page_column_width() {
+        let text = "A".repeat(40);
+        let mut core = core_with_narrow_cell(&text);
+
+        core.apply_char_format_in_cell_native(0, 0, 0, 0, 0, 0, 40, r#"{"fontSize":2000}"#)
+            .expect("서식 적용이 성공해야 함");
+
+        let table = match &core.document.sections[0].paragraphs[0].controls[0] {
+            Control::Table(t) => t,
+            _ => panic!("표 컨트롤이어야 함"),
+        };
+        let line_count = table.cells[0].paragraphs[0].line_segs.len();
+        assert!(
+            line_count > 1,
+            "셀 폭(200 HWPUNIT)으로 리플로우했다면 40자가 여러 줄로 나뉘어야 함              (실제 {line_count}줄 — 페이지 본문 폭을 쓰면 1줄로 뭉친다)"
+        );
+    }
+
+    #[test]
+    fn para_format_reflow_uses_cell_width_not_page_column_width() {
+        let text = "A".repeat(40);
+        let mut core = core_with_narrow_cell(&text);
+
+        core.apply_para_format_in_cell_native(0, 0, 0, 0, 0, r#"{"lineSpacing":150}"#)
+            .expect("서식 적용이 성공해야 함");
+
+        let table = match &core.document.sections[0].paragraphs[0].controls[0] {
+            Control::Table(t) => t,
+            _ => panic!("표 컨트롤이어야 함"),
+        };
+        let line_count = table.cells[0].paragraphs[0].line_segs.len();
+        assert!(
+            line_count > 1,
+            "셀 폭(200 HWPUNIT)으로 리플로우했다면 40자가 여러 줄로 나뉘어야 함              (실제 {line_count}줄 — 페이지 본문 폭을 쓰면 1줄로 뭉친다)"
+        );
     }
 }

@@ -5,6 +5,8 @@
 export interface EditorOptions {
   /** rhwp-studio HTTP(S) URL. file:, data:, browser extension 등 opaque origin은 지원하지 않음 */
   studioUrl?: string;
+  /** 문서 단위 renderer 요청. 기본값은 canvas2d이며 auto/CanvasKit 명시 선택도 지원함 */
+  renderer?: 'auto' | 'canvas2d' | 'canvaskit';
   /** iframe 너비 (기본: '100%') */
   width?: string;
   /** iframe 높이 (기본: '100%') */
@@ -68,11 +70,61 @@ export interface CanvasKitRendererDiagnostics {
   localTypefaceCount: number;
   localTypefaceLoadFailureCount: number;
   localTypefacePendingCount: number;
+  bundledTypefaceCount: number;
+  bundledTypefaceLoadFailureCount: number;
+}
+
+export interface CanvasKitDocumentPreflightV1 {
+  schemaVersion: 1;
+  mode: 'default' | 'compat';
+  profile: 'fastPreview' | 'screen' | 'print' | 'highQuality';
+  status: 'eligible' | 'ineligible' | 'incomplete';
+  eligible: boolean;
+  complete: boolean;
+  pageCount: number;
+  scannedPages: number;
+  scannedWorkUnits: number;
+  limits: {
+    maxPages: number;
+    maxWorkUnits: number;
+    maxBlockers: number;
+    maxRequiredFontFamilies: number;
+  };
+  summary: {
+    totalItems: number;
+    directItems: number;
+    directRequiredItems: number;
+    compatOverlayItems: number;
+    textFallbackItems: number;
+    unsupportedItems: number;
+    hiddenOverlayViolations: number;
+  };
+  blockers: Array<{ pageIndex: number; code: string; opType?: string; detail?: string }>;
+  requiredFontFamilies: string[];
+  capabilityDigest: string;
+}
+
+export interface RendererSelectionV1 {
+  schemaVersion: 1;
+  request: { backend: 'auto' | 'canvas2d' | 'canvaskit'; source: 'default' | 'url'; requested?: string; unsupportedReason?: string };
+  requestedBackend: 'auto' | 'canvas2d' | 'canvaskit';
+  effectiveBackend: 'canvas2d' | 'canvaskit';
+  selectionReason: string;
+  fallbackReason: string | null;
+  documentRevision: number;
+  resourceGeneration: number;
+  renderProfile: 'fastPreview' | 'screen' | 'print' | 'highQuality';
+  documentDigest: string | null;
+  decisionKey: string;
+  preflight: CanvasKitDocumentPreflightV1 | null;
+  initializationError: string | null;
+  selectionError: string | null;
 }
 
 export interface RendererDiagnosticsV1 {
   schemaVersion: 1;
   request: {
+    /** Legacy v1 request snapshot. Automatic intent is exposed additively through selection. */
     backend: { backend: 'canvas2d' | 'canvaskit'; source: 'default' | 'url'; requested?: string; unsupportedReason?: string };
     canvaskitMode: { mode: 'default' | 'compat'; source: 'default' | 'storage' | 'url'; requested?: string; unsupportedReason?: string };
     canvaskitSurface: { preference: 'auto' | 'webgpu' | 'webgl' | 'software'; requested: string; unsupportedReason?: string };
@@ -82,13 +134,26 @@ export interface RendererDiagnosticsV1 {
   initializationError: string | null;
   effectiveBackend: 'canvas2d' | 'canvaskit' | null;
   backendFallbackReason: string | null;
+  /** Added additively to renderer-diagnostics-v1; older Studio builds may omit it. */
+  selection?: RendererSelectionV1 | null;
   page: { index: number; canvaskit: CanvasKitRendererDiagnostics | null };
+}
+
+export interface LoadFileOptions {
+  /** 미저장 변경 확인 없이 문서 교체 */
+  skipUnsavedGuard?: boolean;
+  /**
+   * 로드 후 안내창(HWPX 검증, 로컬 글꼴 감지) 없이 열기.
+   * 임베드 환경에서 안내창의 사용자 선택을 기다리느라 loadFile 응답이
+   * 지연/교착되는 것을 방지한다.
+   */
+  suppressDialogs?: boolean;
 }
 
 export declare class RhwpEditor {
   private constructor();
   /** HWP 파일을 로드합니다 */
-  loadFile(data: ArrayBuffer | Uint8Array, fileName?: string): Promise<LoadResult>;
+  loadFile(data: ArrayBuffer | Uint8Array, fileName?: string, options?: LoadFileOptions): Promise<LoadResult>;
   /** 현재 문서의 페이지 수를 반환합니다 */
   pageCount(): Promise<number>;
   /** 특정 페이지를 SVG 문자열로 렌더링합니다 */

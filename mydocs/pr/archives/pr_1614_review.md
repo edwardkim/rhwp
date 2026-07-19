@@ -17,7 +17,7 @@
 ## 2. 충돌
 
 #1611 신규 커밋은 단일 커밋이며 #1610/#1609 스택 중복 없음. 충돌은
-`mydocs/tech/render_minus1_page_gap.md` add/add 1건뿐. PR판이 devel판의 **완전한 상위집합**
+`mydocs/tech/investigations/issue-1600/render_minus1_page_gap.md` add/add 1건뿐. PR판이 devel판의 **완전한 상위집합**
 (devel 고유 0줄, PR 추가 13줄 = 요인 B 해소 섹션) → PR판 채택으로 무손실 해소. 소스
 (typeset/parser/test)는 충돌 없이 적용.
 

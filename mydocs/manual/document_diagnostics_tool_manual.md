@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/document_diagnostics_tool_manual.md
+last_verified: 2026-07-17
+---
+
 # 문서 진단 도구 매뉴얼
 
 ## 1. 목적

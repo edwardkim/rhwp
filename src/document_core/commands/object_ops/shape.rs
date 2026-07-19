@@ -1516,26 +1516,43 @@ impl DocumentCore {
                 .insert(insert_idx, Control::Shape(Box::new(shape_obj)));
             paragraph.ctrl_data_records.insert(insert_idx, None);
 
-            // char_offsets에 raw offset 삽입
+            // char_offsets: 컨트롤은 텍스트축 배열에 원소로 들어가지 않고 "8 code unit 갭"으로
+            // 표현된다. insert_idx 는 controls 축 인덱스이므로, 이를 char_offsets(텍스트축,
+            // 길이 = text.chars().count())에 원소로 끼워넣으면 배열이 1 늘어나 불변이 깨진다
+            // (control_text_positions 등이 char_offsets[i]↔text char i 대응을 가정). 각주/수식
+            // 삽입 경로처럼 텍스트 인덱스 기준으로 삽입 지점 이후만 +8 시프트한다.
             if !paragraph.char_offsets.is_empty() {
-                let raw_offset = if insert_idx > 0 && insert_idx <= paragraph.char_offsets.len() {
-                    paragraph.char_offsets[insert_idx - 1] + 8
-                } else if !paragraph.char_offsets.is_empty() {
-                    let first = paragraph.char_offsets[0];
-                    if first >= 8 {
-                        first - 8
-                    } else {
-                        0
-                    }
+                let text_len = paragraph.text.chars().count();
+                let safe_offset = char_offset.min(text_len);
+                let insert_pos: u32 = if safe_offset < paragraph.char_offsets.len() {
+                    paragraph.char_offsets[safe_offset]
                 } else {
-                    (char_offset * 2) as u32
+                    let last_idx = paragraph.char_offsets.len() - 1;
+                    let last_w = paragraph
+                        .text
+                        .chars()
+                        .nth(last_idx)
+                        .map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 })
+                        .unwrap_or(1);
+                    paragraph.char_offsets[last_idx] + last_w
                 };
-                paragraph.char_offsets.insert(insert_idx, raw_offset);
-            }
-
-            // 삽입된 컨트롤 이후의 char_offsets를 8만큼 증가 (텍스트 매핑 유지)
-            for co in paragraph.char_offsets.iter_mut().skip(insert_idx + 1) {
-                *co += 8;
+                for co in paragraph.char_offsets[safe_offset..].iter_mut() {
+                    *co += 8;
+                }
+                for cs in &mut paragraph.char_shapes {
+                    if cs.start_pos > insert_pos || (cs.start_pos == insert_pos && cs.start_pos > 0)
+                    {
+                        cs.start_pos += 8;
+                    }
+                }
+                for rt in &mut paragraph.range_tags {
+                    if rt.start >= insert_pos {
+                        rt.start += 8;
+                    }
+                    if rt.end >= insert_pos {
+                        rt.end += 8;
+                    }
+                }
             }
 
             // char_count 갱신 (확장 컨트롤 = 8 code units)
@@ -2778,6 +2795,37 @@ mod char_shape_inherit_tests {
             },
         ];
         core
+    }
+
+    /// [index-axis 회귀] 도형 삽입이 char_offsets(텍스트축, 길이=글자수)에 controls축 인덱스로
+    /// 원소를 끼워넣어 char_offsets.len() 이 text.chars().count() 와 어긋나던 결함.
+    #[test]
+    fn create_shape_preserves_char_offsets_length_invariant() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "AB").unwrap();
+        core.create_shape_control_native(
+            0,
+            0,
+            1,
+            9000,
+            6750,
+            0,
+            0,
+            false,
+            "InFrontOfText",
+            "textbox",
+            false,
+            false,
+            &[],
+        )
+        .unwrap();
+        let para = &core.document.sections[0].paragraphs[0];
+        assert_eq!(
+            para.char_offsets.len(),
+            para.text.chars().count(),
+            "도형 삽입 후 char_offsets 길이가 텍스트 글자 수와 일치해야 함(컨트롤은 갭으로 표현)"
+        );
     }
 
     #[test]

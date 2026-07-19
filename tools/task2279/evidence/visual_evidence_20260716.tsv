@@ -1,0 +1,10 @@
+doc	page	side	pixel_match_pct	sim_pct	ink_iou_pct	note
+86712	p10	base(devel c8116777)	90.16959	93.502	5.339	p10 표(대안명) 부재 - 기준PDF와 구조 불일치
+86712	p10	head(pr-task2279)	89.45848	93.351	3.039	p10 표(대안명) 존재 = 기준PDF 구조 일치; 픽셀 하락은 공통 잔여(첫 본문 y 145.1 vs 기준 163.6, -18.5px 전역 시프트) 위에서 pitch 32->29.9 변경으로 base의 우연 위상 정렬이 깨진 것
+86712	p65	base(devel c8116777)	93.39498	95.703	9.046	-
+86712	p65	head(pr-task2279)	93.39498	95.703	9.046	base와 byte-동일 렌더
+# 기준 PDF: pdf/issue1921/86712_regulatory_analysis-2024.pdf (producer=Hancom PDF 1.3.0.550, 65p)
+# 렌더: rhwp export-pdf --font-path ttfs / 환경: Windows 11 + 한컴오피스 폰트 설치(함초롬바탕/한컴돋움 계열), 96dpi 그레이 래스터
+# 지표: pixel_match=임계(>200) 이진화 일치율, sim=평균절대차 유사도, ink_iou=잉크 교집합/합집합
+# 구조 대조(기준 PDF p10): 표 '대안명' 존재=True / base=False / head=True (fitz 텍스트 추출)
+# 재현: python tools/task2279/visual_evidence.py <base_exe> <head_exe> <out_dir> 9 64

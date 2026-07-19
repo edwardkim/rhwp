@@ -2,7 +2,7 @@
 
 - 이슈: #1921 (59043 +11), #2004 잔여 (156714340 −4)
 - 브랜치: `local/task1921-float-table-pagination` (base: local/devel 통합 = origin/devel c1ed5407 + 열린 PR 4건)
-- 선행: `mydocs/tech/floating_object_family_rca.md` (PR #2090) — 이미지/셀 레벨 무효경로 3종 배제
+- 선행: `mydocs/tech/investigations/issue-2004/floating_object_family_rca.md` (PR #2090) — 이미지/셀 레벨 무효경로 3종 배제
 
 ## 1. 계측으로 확정된 두 트랙 (2026-07-09, RHWP_TABLE_DRIFT)
 

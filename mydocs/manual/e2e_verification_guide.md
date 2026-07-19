@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/e2e_verification_guide.md
+last_verified: 2026-07-17
+---
+
 # E2E 조판 자동 검증 가이드
 
 ## 개요
@@ -10,7 +17,7 @@
 
 ## 사전 조건
 
-1. WASM 빌드 완료 (`docker compose --env-file .env.docker run --rm wasm`)
+1. WASM 빌드 완료 (`wasm-pack build --target web --out-dir pkg`)
 2. Vite dev server 실행 중 (`cd rhwp-studio && npx vite --host 0.0.0.0 --port 7700`)
 3. Chrome CDP 연결 가능 (호스트 또는 headless)
 

@@ -1,11 +1,19 @@
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
-import type { DocumentInfo, PageInfo, PageDef, SectionDef, PageBorderFillSettings, EndnoteShapeSettings, NoteEditInfo, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, CellPathLike, NavContextEntry, FieldInfoResult, BookmarkInfo, LayerRenderProfile, PageLayerTree } from './types';
+import { blake3 } from '@noble/hashes/blake3.js';
+import { bytesToHex } from '@noble/hashes/utils.js';
+import type { DocumentInfo, PageInfo, PageDef, SectionDef, PageBorderFillSettings, EndnoteShapeSettings, NoteEditInfo, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, CellPathLike, NavContextEntry, FieldInfoResult, BookmarkInfo, LayerRenderProfile, PageLayerTree, CanvasKitDocumentPreflight } from './types';
+import { parseCanvasKitDocumentPreflight } from './canvaskit-document-preflight';
 import {
   normalizeHmlSaveState,
   parseHmlSaveState,
   type HmlSaveBlocker,
   type HmlSaveState,
 } from './hml-save-capability';
+import {
+  getSelectionRectsInCellWithPageHints,
+  type CellSelectionRectDocument,
+  type SelectionPageHints,
+} from './selection-page-hints';
 
 /** HWPX 비표준 감지 경고 리포트 (#177). */
 export interface ValidationReport {
@@ -67,6 +75,14 @@ export interface TableTransposeResult {
   targetCols: number;
 }
 
+/** deferred cell text insert의 pagination 경계 결과 (#2214). */
+export interface DeferredCellTextInsertResult {
+  ok: boolean;
+  charOffset: number;
+  paginationDeferred: boolean;
+  cellFlowChanged: boolean;
+}
+
 import { fontFamilyChainForDisplay } from './font-substitution';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
 
@@ -118,6 +134,7 @@ export class WasmBridge {
   private initialized = false;
   private _fileName = 'document.hwp';
   private _currentFileHandle: FileSystemFileHandleLike | null = null;
+  private _documentDigest: string | null = null;
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
@@ -160,17 +177,20 @@ export class WasmBridge {
       this.doc = null;
     }
     this._currentFileHandle = null;
+    this._documentDigest = null;
   }
 
   loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
     this.releaseDocument();
     const nextFileName = fileName ?? 'document.hwp';
+    const nextDocumentDigest = `blake3:${bytesToHex(blake3(data))}`;
     let nextDoc: HwpDocument | null = null;
 
     try {
       nextDoc = new HwpDocument(data);
       this.doc = nextDoc;
       this._fileName = nextFileName;
+      this._documentDigest = nextDocumentDigest;
       this.doc.convertToEditable();
       this.ensureParagraphStableIds();
       this.doc.setFileName(this._fileName);
@@ -196,6 +216,7 @@ export class WasmBridge {
       }
       this._fileName = 'document.hwp';
       this._currentFileHandle = null;
+      this._documentDigest = null;
       throw error;
     }
   }
@@ -249,12 +270,21 @@ export class WasmBridge {
     this._fileName = '새 문서.hwp';
     this._currentFileHandle = null;
     this.doc.setFileName(this._fileName);
+    try {
+      this._documentDigest = `blake3:${bytesToHex(blake3(this.doc.exportHwp()))}`;
+    } catch {
+      this._documentDigest = null;
+    }
     console.log(`[WasmBridge] 새 문서 생성: ${info.pageCount}페이지`);
     return info;
   }
 
   get fileName(): string {
     return this._fileName;
+  }
+
+  get documentDigest(): string | null {
+    return this._documentDigest;
   }
 
   set fileName(name: string) {
@@ -444,11 +474,26 @@ export class WasmBridge {
     canvas: HTMLCanvasElement,
     scale: number,
     layerKind: 'all' | 'background' | 'flow' | 'flow-dynamic' | 'flow-static' | 'behind' | 'front',
+    profile: LayerRenderProfile = 'screen',
   ): void {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as {
       renderPageToCanvasFiltered?: (p: number, c: HTMLCanvasElement, s: number, k: string) => void;
+      renderPageToCanvasFilteredWithProfile?: (
+        p: number,
+        c: HTMLCanvasElement,
+        s: number,
+        k: string,
+        profile: string,
+      ) => void;
     };
+    if (typeof d.renderPageToCanvasFilteredWithProfile === 'function') {
+      d.renderPageToCanvasFilteredWithProfile(pageNum, canvas, scale, layerKind, profile);
+      return;
+    }
+    if (profile !== 'screen') {
+      throw new Error('[WasmBridge] 현재 WASM은 profile별 Canvas2D 렌더링을 지원하지 않습니다');
+    }
     if (typeof d.renderPageToCanvasFiltered === 'function') {
       d.renderPageToCanvasFiltered(pageNum, canvas, scale, layerKind);
       return;
@@ -477,8 +522,12 @@ export class WasmBridge {
       getPageLayerTreeWithProfile?: (p: number, profile: string) => string;
       getPageLayerTree?: (p: number) => string;
     };
-    const json = typeof d.getPageLayerTreeWithProfile === 'function'
-      ? d.getPageLayerTreeWithProfile(pageNum, profile)
+    const hasProfileApi = typeof d.getPageLayerTreeWithProfile === 'function';
+    if (!hasProfileApi && profile !== 'screen') {
+      throw new Error('[WasmBridge] 현재 WASM은 profile별 PageLayerTree를 지원하지 않습니다');
+    }
+    const json = hasProfileApi
+      ? d.getPageLayerTreeWithProfile!(pageNum, profile)
       : this.getPageLayerTree(pageNum);
     let parsed: unknown;
     try {
@@ -524,7 +573,11 @@ export class WasmBridge {
     if (rootKind !== 'group' && rootKind !== 'clipRect' && rootKind !== 'leaf') {
       throw new Error(`[WasmBridge] PageLayerTree JSON shape 오류 (page=${pageNum}): 알 수 없는 root.kind=${String(rootKind)}`);
     }
-    tree.profile = profile;
+    if (tree.profile !== profile) {
+      throw new Error(
+        `[WasmBridge] PageLayerTree profile 불일치 (page=${pageNum}): requested=${profile}, actual=${String(tree.profile)}`,
+      );
+    }
     const outputOptions = tree.outputOptions ?? {};
     const buildOptions = tree.buildOptions ?? {};
     buildOptions.showTransparentBorders ??= outputOptions.showTransparentBorders ?? false;
@@ -546,11 +599,22 @@ export class WasmBridge {
     /* Reserved for JS-value resource transport builds. JSON export is self-contained. */
   }
 
-  getCanvasKitReplayPlan(pageNum: number, mode: 'default' | 'compat' = 'default'): string {
+  getCanvasKitReplayPlan(
+    pageNum: number,
+    mode: 'default' | 'compat' = 'default',
+    profile: LayerRenderProfile = 'screen',
+  ): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as {
       getCanvasKitReplayPlan?: (p: number, mode: string) => string;
+      getCanvasKitReplayPlanWithProfile?: (p: number, mode: string, profile: string) => string;
     };
+    if (typeof d.getCanvasKitReplayPlanWithProfile === 'function') {
+      return d.getCanvasKitReplayPlanWithProfile(pageNum, mode, profile);
+    }
+    if (profile !== 'screen') {
+      throw new Error('[WasmBridge] 현재 WASM은 profile별 CanvasKit replay plan을 지원하지 않습니다');
+    }
     if (typeof d.getCanvasKitReplayPlan === 'function') {
       return d.getCanvasKitReplayPlan(pageNum, mode);
     }
@@ -569,7 +633,26 @@ export class WasmBridge {
       },
       items: [],
       textVariants: [],
+      requiredFontFamilies: [],
+      requiredFontFamiliesComplete: true,
     });
+  }
+
+  getCanvasKitDocumentPreflight(
+    mode: 'default' | 'compat' = 'default',
+    profile: LayerRenderProfile = 'screen',
+  ): CanvasKitDocumentPreflight {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as {
+      getCanvasKitDocumentPreflight?: (mode: string, profile: string) => string;
+    };
+    if (typeof d.getCanvasKitDocumentPreflight !== 'function') {
+      throw new Error('[WasmBridge] 현재 WASM은 CanvasKit document preflight를 지원하지 않습니다');
+    }
+    return parseCanvasKitDocumentPreflight(
+      d.getCanvasKitDocumentPreflight(mode, profile),
+      '[WasmBridge] CanvasKit document preflight',
+    );
   }
 
   getPageOverlayImages(pageNum: number): string {
@@ -782,7 +865,7 @@ export class WasmBridge {
     return this.doc.insertTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, text);
   }
 
-  insertTextInCellDeferredPagination(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, text: string): string {
+  insertTextInCellDeferredPagination(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, text: string): DeferredCellTextInsertResult {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as {
       insertTextInCellDeferredPagination?: (
@@ -795,10 +878,31 @@ export class WasmBridge {
         text: string,
       ) => string;
     };
+    let raw: string;
+    let paginationDeferred = false;
     if (typeof d.insertTextInCellDeferredPagination === 'function') {
-      return d.insertTextInCellDeferredPagination(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, text);
+      raw = d.insertTextInCellDeferredPagination(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, text);
+      paginationDeferred = true;
+    } else {
+      raw = this.doc.insertTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, text);
     }
-    return this.doc.insertTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, text);
+    const parsed = JSON.parse(raw) as Partial<DeferredCellTextInsertResult>;
+    const parsedCharOffset = parsed.charOffset;
+    if (
+      parsed.ok !== true ||
+      typeof parsedCharOffset !== 'number' ||
+      !Number.isInteger(parsedCharOffset)
+    ) {
+      throw new Error('잘못된 deferred cell text insert 결과');
+    }
+    return {
+      ok: true,
+      charOffset: parsedCharOffset,
+      paginationDeferred,
+      // Stage 3 이전 deferred API는 신호가 없다. mutation 후 예외로
+      // history/cursor를 놓치지 않도록 누락 시 보수적 경계 flush로 복구한다.
+      cellFlowChanged: paginationDeferred && parsed.cellFlowChanged !== false,
+    };
   }
 
   deleteTextInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, count: number): string {
@@ -902,6 +1006,12 @@ export class WasmBridge {
   getTableBBox(sec: number, parentPara: number, controlIdx: number): { pageIndex: number; x: number; y: number; width: number; height: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getTableBBox(sec, parentPara, controlIdx));
+  }
+
+  /** 지정 page 에 배치된 표 fragment 의 페이지 좌표 bbox (#2400). */
+  getTableBBoxAtPage(sec: number, parentPara: number, controlIdx: number, pageIdx: number): { pageIndex: number; x: number; y: number; width: number; height: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(this.doc.getTableBBoxAtPage(sec, parentPara, controlIdx, pageIdx));
   }
 
   /** [Task #919] 글상자/도형 컨트롤의 페이지 좌표 바운딩박스 */
@@ -1435,7 +1545,7 @@ export class WasmBridge {
     return JSON.parse((this.doc as any).insertTextInFootnote(sec, para, controlIdx, fnParaIdx, charOffset, text));
   }
 
-  deleteTextInFootnote(sec: number, para: number, controlIdx: number, fnParaIdx: number, charOffset: number, count: number): { ok: boolean; charOffset: number } {
+  deleteTextInFootnote(sec: number, para: number, controlIdx: number, fnParaIdx: number, charOffset: number, count: number): { ok: boolean; charOffset: number; deletedText: string } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse((this.doc as any).deleteTextInFootnote(sec, para, controlIdx, fnParaIdx, charOffset, count));
   }
@@ -1581,9 +1691,22 @@ export class WasmBridge {
     return JSON.parse(this.doc.getSelectionRects(sec, startPara, startOffset, endPara, endOffset));
   }
 
-  getSelectionRectsInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, startCellPara: number, startOffset: number, endCellPara: number, endOffset: number): SelectionRect[] {
+  getSelectionRectsInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, startCellPara: number, startOffset: number, endCellPara: number, endOffset: number, pageHints?: SelectionPageHints): SelectionRect[] {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse(this.doc.getSelectionRectsInCell(sec, parentPara, controlIdx, cellIdx, startCellPara, startOffset, endCellPara, endOffset));
+    return getSelectionRectsInCellWithPageHints(
+      this.doc as unknown as CellSelectionRectDocument,
+      {
+        sectionIdx: sec,
+        parentParaIdx: parentPara,
+        controlIdx,
+        cellIdx,
+        startCellParaIdx: startCellPara,
+        startCharOffset: startOffset,
+        endCellParaIdx: endCellPara,
+        endCharOffset: endOffset,
+      },
+      pageHints,
+    );
   }
 
   getSelectionRectsInFootnote(pageNum: number, footnoteIndex: number, startFnPara: number, startOffset: number, endFnPara: number, endOffset: number): SelectionRect[] {

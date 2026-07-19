@@ -1895,14 +1895,34 @@ impl LayoutEngine {
             // compose_lines fallback (CHARS_PER_LINE=45 heuristic) 결과를 column inner width
             // 기반으로 re-split. cell paragraph (Stage 6a 의 height_measurer 호출) 와 동일
             // recompose path 사용.
-            let recomposed: Option<ComposedParagraph> = if para.line_segs.is_empty() {
+            let recomposed: Option<ComposedParagraph> = {
                 let para_style = styles.para_styles.get(comp.para_style_id as usize);
                 let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                 let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                 let column_inner_width = (col_area.width - margin_l - margin_r).max(0.0);
-                if column_inner_width > 0.0 {
+                if column_inner_width > 0.0 && para.line_segs.is_empty() {
                     let mut cloned = comp.clone();
-                    crate::renderer::composer::recompose_for_cell_width(
+                    // [#2279] 본문 NO_LS 는 글자모양 재분할 포함 래퍼 사용 —
+                    // typeset(format_paragraph)과 동일 (측정/렌더 줄수·pitch 정합).
+                    crate::renderer::composer::recompose_for_body_width(
+                        &mut cloned,
+                        para,
+                        column_inner_width,
+                        styles,
+                    );
+                    Some(cloned)
+                } else if column_inner_width > 0.0
+                    && crate::renderer::composer::stored_lines_overflow(
+                        comp,
+                        para,
+                        column_inner_width,
+                        styles,
+                    )
+                {
+                    // [#2279] 마스킹 저장분할 실폭-모순 본문 문단 fresh 재래핑 —
+                    // typeset(format_paragraph)과 동일.
+                    let mut cloned = comp.clone();
+                    crate::renderer::composer::recompose_stored_lines_if_overflowing_body(
                         &mut cloned,
                         para,
                         column_inner_width,
@@ -1912,11 +1932,18 @@ impl LayoutEngine {
                 } else {
                     None
                 }
-            } else {
-                None
             };
             let comp_ref = recomposed.as_ref().unwrap_or(comp);
-            let end_line_adjusted = end_line.min(comp_ref.lines.len()).max(start_line);
+            // [#2279] 전체-문단 요청(start=0, end=원본 줄수 이상)은 재래핑 후 줄수로
+            // 확장한다. 종전에는 재래핑이 줄수를 늘린 문단(45자 폴백 3줄 → 실폭 4줄,
+            // 86712 pi=22)에서 원본 줄수로 클램프되어 마지막 줄이 렌더에서 소실됐다
+            // (측정 4줄 fit vs 렌더 3줄 — maintainer PR #2284 리뷰 p10 픽셀 하락과
+            // 정합). 분할(partial) 요청의 라인 범위는 종전 클램프 유지.
+            let end_line_adjusted = if start_line == 0 && end_line >= comp.lines.len() {
+                comp_ref.lines.len()
+            } else {
+                end_line.min(comp_ref.lines.len()).max(start_line)
+            };
             return self.layout_composed_paragraph(
                 tree,
                 col_node,
@@ -2864,11 +2891,11 @@ impl LayoutEngine {
                 .map(|seg| hwpunit_to_px(seg.text_height, self.dpi))
                 .unwrap_or(0.0);
             let use_stored_text_height = para.map(|p| p.controls.is_empty()).unwrap_or(false)
-                && (self.is_hwpx_source.get() || cell_ctx.is_none());
+                && (self.profile.get().hwpx_stored_layout() || cell_ctx.is_none());
             let source_metrics_reflow_eligible = para
                 .map(|p| crate::renderer::controls_mark_section_start(&p.controls))
                 .unwrap_or(false)
-                && self.is_hwpx_source.get();
+                && self.profile.get().hwpx_stored_layout();
             let source_metrics_reflowed = crate::renderer::source_line_metrics_need_reflow(
                 raw_lh,
                 raw_text_height,
@@ -2887,6 +2914,21 @@ impl LayoutEngine {
                 use_stored_text_height,
                 source_metrics_reflow_eligible,
             );
+            // [#2279 진단] 줄별 pitch 분해 — 동작 불변.
+            if let Ok(pat) = std::env::var("RHWP_DIAG_PITCH") {
+                if para.map(|p| p.text.contains(&pat)).unwrap_or(false) {
+                    eprintln!(
+                        "DIAG_PITCH li={} raw_lh={:.2} raw_ls={:.2} max_fs={:.2} -> lh={:.2} ls={:.2} stored_ls_cnt={}",
+                        line_idx,
+                        raw_lh,
+                        hwpunit_to_px(comp_line.line_spacing, self.dpi),
+                        max_fs,
+                        line_height,
+                        line_spacing_px,
+                        para.map(|p| p.line_segs.len()).unwrap_or(0),
+                    );
+                }
+            }
             // 인라인 Shape(글상자)가 있는 줄: line_height에 Shape 높이가 포함됨
             // Shape는 별도 패스에서 para_y 기준으로 렌더링되므로,
             // 텍스트의 y와 line_height를 폰트 기반으로 보정하여 baseline 정렬
@@ -3170,7 +3212,11 @@ impl LayoutEngine {
             // available_width 의 effective indent 를 불변 유지: 변환본은 scale 을 절반으로.
             // (종전: IR(half)×2.0=full → 현재: IR(full)×1.0=full)
             let equation_indent_scale = (if cell_ctx.is_some() { 1.0 } else { 2.0 })
-                * if self.is_hwp3_variant.get() { 0.5 } else { 1.0 };
+                * if self.profile.get().hwp3_layout() {
+                    0.5
+                } else {
+                    1.0
+                };
             let equation_first_effective_margin_left =
                 crate::renderer::equation_tac_flow::paragraph_effective_margin_left_with_indent_scale(
                     margin_left,
@@ -3700,7 +3746,11 @@ impl LayoutEngine {
                     is_last_line_of_para,
                     defer_empty_line_control_marker,
                     equation_tac_extra_rows,
-                    hwp3_indent_scale: if self.is_hwp3_variant.get() { 0.5 } else { 1.0 },
+                    hwp3_indent_scale: if self.profile.get().hwp3_layout() {
+                        0.5
+                    } else {
+                        1.0
+                    },
                     section_index,
                     para_index,
                 },
@@ -6216,7 +6266,7 @@ impl LayoutEngine {
 /// paragraph 의 sibling controls 중 `wrap=TopAndBottom` +
 /// `treat_as_char=false` 인 개체가 차지하는 vertical 영역 (HWPUNIT) 합산.
 ///
-/// 한컴 layout 정합 (`mydocs/tech/topandbottom_table_inline_picture_layout.md` H1):
+/// 한컴 layout 정합 (`mydocs/tech/investigations/issue-1151/topandbottom_table_inline_picture_layout.md` H1):
 /// 같은 paragraph 의 sibling tac picture 가 표 아래 영역에 그려지도록 picture
 /// 의 y 위치 보정값을 계산한다. 예약 개체가 없으면 0 반환 (회귀 0 보장).
 ///

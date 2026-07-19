@@ -98,11 +98,11 @@ SVG 디버그 오버레이에 LINE_SEG `vpos=0` 리셋 위치를 시각 표시. 
    - **HWP 의도 페이지 경계 목록**: vpos=0 리셋이 발생한 (섹션, pi, line) 위치
    - **현 엔진 페이지 경계 목록**: 페이지 첫 항목의 (섹션, pi)
    - **불일치 분석**: 21_언어에서 어긋남 시작 지점, exam_math에서 일치 패턴
-3. 보고서: `mydocs/tech/line_seg_vpos_analysis.md`
+3. 보고서: `mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md`
 4. Epic #309에 핵심 요약 코멘트 게시
 
 ### 산출
-- `mydocs/tech/line_seg_vpos_analysis.md`
+- `mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md`
 - `mydocs/working/task_m100_310_stage3.md`
 - 최종 보고서 `mydocs/report/task_m100_310_report.md`
 

@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/solid_scoring_guide.md
+last_verified: 2026-07-17
+---
+
 # SOLID 리팩토링 관점 + 100점 채점 기준 가이드
 
 > 대상: 컬래버레이터·컨트리뷰터. 리팩토링 거버넌스 2원칙(SOLID·복잡도) 중 **SOLID 축의

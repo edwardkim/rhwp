@@ -45,7 +45,7 @@ PR 문서 기준 재현 케이스:
 | `src/renderer/layout.rs` | `prev_endnote_title_gap_px` 산출 시 `line_height <= 1500` 필터 제거 |
 | `mydocs/plans/task_m100_1257.md` | 작업 계획 |
 | `mydocs/plans/task_m100_1257_impl.md` | 구현 계획 |
-| `mydocs/tech/endnote_seq_flow_redesign.md` | 미주 sequential flow 후속 설계 문서 |
+| `mydocs/tech/archive/endnote_seq_flow_redesign.md` | 미주 sequential flow 후속 설계 문서 |
 | `mydocs/working/task_m100_1257_stage*.md` | 단계별 분석/검증 기록 |
 
 ## 3. 타당한 부분
@@ -70,7 +70,7 @@ prev_endnote_title_gap_from_continued_partial || y_offset > y_before_vpos + 0.5
 
 ### 3.3 넓은 sequential-flow 재설계는 후속으로 분리했다
 
-`mydocs/tech/endnote_seq_flow_redesign.md`는 #1184/#1257 계열의 더 큰 구조 개선 방향을
+`mydocs/tech/archive/endnote_seq_flow_redesign.md`는 #1184/#1257 계열의 더 큰 구조 개선 방향을
 정리하지만, 이번 PR 코드 변경은 국소 필터 수정 1건으로 제한한다.
 
 ## 4. 위험 및 주의 사항

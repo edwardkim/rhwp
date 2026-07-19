@@ -33,7 +33,7 @@ reset 직전 orphan 페이지가 생기는 케이스를 완화한다.
 - 요약 출력에 `ERR/없음`, `baseline누락` 표시
 
 또한 `byeolpyo4.hwp`의 현 head 재현값이 과거 문서의 27쪽/23.5px가 아니라 26쪽/6클립/90.7px임을
-확인했고, `mydocs/tech/task_m100_1658_giantcell_residual.md` 상단에 현행화 안내가 추가됐다.
+확인했고, `mydocs/tech/investigations/issue-1658/task_m100_1658_giantcell_residual.md` 상단에 현행화 안내가 추가됐다.
 
 ## 로컬 검증
 

@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # HWPX LINE_SEG reflow 함정
 
 ## 발견일: 2026-03-31

@@ -25,7 +25,7 @@
 
 폴라리스 건과 같은 성격. 비교·경쟁 문맥에서 거명.
 
-## 1.1 `mydocs/tech/webgian_replacement_strategy.md`
+## 1.1 `mydocs/tech/archive/webgian_replacement_strategy.md`
 
 ### [1.1.1] line 30 · 표 항목
 
@@ -45,7 +45,7 @@
 **권고**: **수정** — "일부 상용 문서 뷰어 솔루션은 뷰어/변환에 강하나 HWP 바이너리 생성 API는 미제공"
 **결정**: [ 수정 ] "미제공" 을 "확인못함"
 
-## 1.2 `mydocs/tech/project_vision.md`
+## 1.2 `mydocs/tech/archive/project_vision.md`
 
 ### [1.2.1] line 83 · 생태계 표
 
@@ -85,7 +85,7 @@
 
 ## 2A. **반드시 재검토 권고** (외부 공개 강한 문서)
 
-### [2A.1] `mydocs/tech/webgian_replacement_strategy.md:47`
+### [2A.1] `mydocs/tech/archive/webgian_replacement_strategy.md:47`
 
 ```
 - 오픈소스는 구조 파싱/텍스트 추출 수준이며, **편집+재조판+렌더링 구현체는 전무**
@@ -94,7 +94,7 @@
 **권고**: **수정** — "공개된 범위에서 확인한 오픈소스 구현 중 편집+재조판+렌더링을 아우르는 사례는 드물다"
 **결정**: [ 수정 ]
 
-### [2A.2] `mydocs/tech/webgian_replacement_strategy.md:49`
+### [2A.2] `mydocs/tech/archive/webgian_replacement_strategy.md:49`
 
 ```
 - **WebAssembly 기반 클라이언트 전용(서버 불필요) HWP 저장은 세계 최초**
@@ -103,7 +103,7 @@
 **권고**: **수정** — "우리가 확인한 범위 안에서 공개된 WebAssembly 기반 클라이언트 전용 HWP 저장 구현은 본 제품이 처음"
 **결정**: [ 수정 ]
 
-### [2A.3] `mydocs/tech/webgian_replacement_strategy.md:50`
+### [2A.3] `mydocs/tech/archive/webgian_replacement_strategy.md:50`
 
 ```
 - **AI Agent용 HWP 생성 도구는 전무** (상용/오픈소스 모두) — 유일한 포지션
@@ -112,7 +112,7 @@
 **권고**: **수정** — "공개된 범위에서 AI Agent 대상 HWP 생성 도구는 드물다 — 차별화된 포지션"
 **결정**: [수정 ]
 
-### [2A.4] `mydocs/tech/webgian_replacement_strategy.md:86`
+### [2A.4] `mydocs/tech/archive/webgian_replacement_strategy.md:86`
 
 ```
 - 현재 AI가 HWP를 직접 생성할 수 있는 도구는 **전무**
@@ -121,7 +121,7 @@
 **권고**: **수정** — "공개된 범위에서 확인된 도구는 거의 없음"
 **결정**: [수정 ]
 
-### [2A.5] `mydocs/tech/webgian_replacement_strategy.md:87`
+### [2A.5] `mydocs/tech/archive/webgian_replacement_strategy.md:87`
 
 ```
 Rust 라이브러리 + WASM = AI 에이전트가 호출 가능한 유일한 HWP 생성 도구
@@ -130,7 +130,7 @@ Rust 라이브러리 + WASM = AI 에이전트가 호출 가능한 유일한 HWP 
 **권고**: **수정** — "Rust 라이브러리 + WASM 조합은 AI 에이전트가 직접 호출할 수 있는 드문 HWP 생성 도구"
 **결정**: [수정 ]
 
-### [2A.6] `mydocs/tech/webgian_replacement_strategy.md:142`
+### [2A.6] `mydocs/tech/archive/webgian_replacement_strategy.md:142`
 
 ```
 - **HWP 네이티브 호환** — 한컴 이외 유일한 HWP 네이티브 파싱/렌더링/편집 엔진
@@ -139,7 +139,7 @@ Rust 라이브러리 + WASM = AI 에이전트가 호출 가능한 유일한 HWP 
 **권고**: **수정** — "한컴 외 HWP 바이너리를 원격 서버 없이 파싱/렌더링/편집하는 드문 엔진"
 **결정**: [수정 ]
 
-### [2A.7] `mydocs/tech/project_vision.md:60`
+### [2A.7] `mydocs/tech/archive/project_vision.md:60`
 
 ```
 > **"AI가 쓴 글을 HWP로 완성하는 유일한 도구"**
@@ -148,7 +148,7 @@ Rust 라이브러리 + WASM = AI 에이전트가 호출 가능한 유일한 HWP 
 **권고**: **수정** — "AI가 쓴 글을 HWP로 바로 완성하는 희소한 도구" 또는 슬로건 자체 재검토
 **결정**: [수정 ]
 
-### [2A.8] `mydocs/tech/project_vision.md:667`
+### [2A.8] `mydocs/tech/archive/project_vision.md:667`
 
 ```
 - **hwp_semantic + rhwp**: HWP 읽기(시맨틱 파싱) + 쓰기(네이티브 생성) 양쪽을 모두 갖춘 유일한 생태계
@@ -157,7 +157,7 @@ Rust 라이브러리 + WASM = AI 에이전트가 호출 가능한 유일한 HWP 
 **권고**: **수정** — "... 양쪽을 모두 갖춘 드문 생태계"
 **결정**: [수정 ]
 
-### [2A.9] `mydocs/tech/hwp_errata_public_comparison.md:325`
+### [2A.9] `mydocs/tech/archive/hwp_errata_public_comparison.md:325`
 
 ```
 rhwp는 정밀 렌더링(...)과 에디터 기능(...)을 모두 지원하는 **유일한 오픈소스 HWP 뷰어/에디터**이다.
@@ -186,7 +186,7 @@ rhwp는 정밀 렌더링(...)과 에디터 기능(...)을 모두 지원하는 **
 
 ## 2B. **기술적 내부 문맥 (외부 노출 약함)**
 
-### [2B.1] `mydocs/tech/vscode_extension_design.md:157`
+### [2B.1] `mydocs/tech/archive/vscode_extension_design.md:157`
 
 ```
 - 유일한 공통 의존성: `pkg/` (WASM 빌드 출력)
@@ -204,7 +204,7 @@ m_bSnapToGrid(true), // ← 유일한 true 기본값
 **권고**: **보류** (C++ 구조체 필드 주석, 역공학 기록)
 **결정**: [유지 ]
 
-### [2B.3] `mydocs/tech/layout_engine_research.md:286`
+### [2B.3] `mydocs/tech/investigations/issue-397/layout_engine_research.md:286`
 
 ```
 - Phase 3에서 Paginator 표 로직 제거, TypesetEngine이 유일한 경로
@@ -241,7 +241,7 @@ m_bSnapToGrid(true), // ← 유일한 true 기본값
 **권고**: **보류** (디버깅 로그)
 **결정**: [ 유지]
 
-### [2B.7] `mydocs/tech/equation_font_selection.md:91, 149`
+### [2B.7] `mydocs/tech/investigations/issue-139/equation_font_selection.md:91, 149`
 
 ```
 시각적 일관성 최고
@@ -251,7 +251,7 @@ m_bSnapToGrid(true), // ← 유일한 true 기본값
 **권고**: **보류** (내부 표 평가, 기술 선택지 비교)
 **결정**: [유지 ]
 
-### [2B.8] `mydocs/tech/equation_latex_comparison.md:108`
+### [2B.8] `mydocs/tech/investigations/issue-139/equation_latex_comparison.md:108`
 
 ```
 | **명령어 자동완성** | LyX, VS Code + LaTeX | 숙련자에게 최고 속도 | 명령어 암기 필요 |
@@ -323,7 +323,7 @@ rhwp delivers Hancom-level accuracy for free.
 
 아래는 타스크 계획서·구현 목표 서술로, 외부 홍보 문구가 아니므로 보류 권장:
 
-- `mydocs/tech/incremental_relayout_design.md:144, 148, 155` — v1.0.0 목표 전략 서술
+- `mydocs/tech/investigations/issue-397/incremental_relayout_design.md:144, 148, 155` — v1.0.0 목표 전략 서술
 - `mydocs/plans/task_246.md:1` — "한컴 수준 도형 완성" (타스크 제목)
 - `mydocs/plans/archives/task_191.md:83` — 한컴 수준 고도화 목표
 - `mydocs/plans/archives/task_199.md, task_199_impl.md, task_242.md` — 타스크 제목

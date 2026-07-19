@@ -1,3 +1,10 @@
+---
+kind: canonical
+status: active
+canonical: mydocs/tech/rendering_engine_design.md
+last_verified: 2026-07-16
+---
+
 # RHWP 렌더링 엔진 아키텍처 설계서
 
 ## 1. 렌더링 백엔드 최종 선정

@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 셀 분할 시 중첩 표 (atomic) 가시성 결정
 
 ## 발견일

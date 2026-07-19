@@ -7,7 +7,7 @@
 ## 1. 변경 내용
 
 - `scripts/svg_regression_diff.sh` (신규, 약 130 LOC bash)
-- `mydocs/manual/svg_regression_diff.md` (사용 매뉴얼)
+- `mydocs/manual/verification/svg_regression_diff.md` (사용 매뉴얼)
 
 ## 2. 기능
 

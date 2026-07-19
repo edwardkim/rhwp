@@ -527,7 +527,11 @@ pub fn serialize_char_shape(cs: &CharShape) -> Vec<u8> {
 
 pub fn serialize_tab_def(td: &TabDef) -> Vec<u8> {
     let mut w = ByteWriter::new();
-    w.write_u32(td.attr).unwrap();
+    // auto tab 비트(bit0=left, bit1=right)를 불리언에서 재인코딩한다. 파서는 이 두
+    // 불리언을 attr 하위 2비트로만 복원하므로(parser/doc_info.rs), HWPX 유래/IR 생성
+    // TabDef(attr=0 이고 불리언만 세팅)를 그대로 쓰면 자동 탭 설정이 저장 시 유실된다.
+    let attr = (td.attr & !0x03) | (td.auto_tab_left as u32) | ((td.auto_tab_right as u32) << 1);
+    w.write_u32(attr).unwrap();
     w.write_u32(td.tabs.len() as u32).unwrap();
     for tab in &td.tabs {
         w.write_u32(tab.position).unwrap();
@@ -544,7 +548,12 @@ fn serialize_numbering(numbering: &Numbering) -> Vec<u8> {
     // 수준별(1~7) 문단 머리 정보 + 번호 형식 문자열
     for level in 0..7 {
         let head = &numbering.heads[level];
-        w.write_u32(head.attr).unwrap();
+        // number_format(문단 번호 형식)을 attr 비트 5~8 로 재인코딩한다. 파서는 number_format
+        // 을 (attr>>5)&0xF 로만 복원하므로(parser/doc_info.rs), IR 로 생성된 번호(WASM
+        // create_numbering)처럼 attr=0 이고 number_format 만 세팅된 경우 이를 반영하지 않으면
+        // 저장·재로드 시 모든 수준이 DIGIT(0)로 유실된다. serialize_para_shape 의 attr1 재인코딩과 동형.
+        let attr = (head.attr & !(0x0f << 5)) | ((head.number_format as u32 & 0x0f) << 5);
+        w.write_u32(attr).unwrap();
         w.write_i16(head.width_adjust).unwrap();
         w.write_i16(head.text_distance).unwrap();
         w.write_u32(head.char_shape_id).unwrap();

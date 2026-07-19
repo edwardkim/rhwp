@@ -1420,22 +1420,24 @@ fn test_square_bullet_with_space_preserves_layout() {
     };
     let positions = compute_char_positions("□ 가", &style);
     assert_eq!(positions.len(), 4);
-    // □: 전각(20) + 자간(-1.6) = advance 18.4
+    // [#2279] 자간은 글자폭 비례 (통제 사다리 실측): 전각은 fs-비례와 동일,
+    // 반각(공백)은 절반만 압축된다.
+    // □: 전각(20) + 자간(20×-8%) = advance 18.4
     assert!(
         (positions[1] - 18.4).abs() < 0.01,
         "positions[1] expected 18.4, got {}",
         positions[1]
     );
-    // 공백: 반각(10) + 자간(-1.6) = advance 8.4 (min_clamp 5.0 미작동)
+    // 공백: 반각(10) + 자간(10×-8% = -0.8) = advance 9.2 (min_clamp 5.0 미작동)
     assert!(
-        (positions[2] - 26.8).abs() < 0.01,
-        "positions[2] expected 26.8, got {}",
+        (positions[2] - 27.6).abs() < 0.01,
+        "positions[2] expected 27.6, got {}",
         positions[2]
     );
     // 가: 전각(20) + 자간(-1.6) = advance 18.4
     assert!(
-        (positions[3] - 45.2).abs() < 0.01,
-        "positions[3] expected 45.2, got {}",
+        (positions[3] - 46.0).abs() < 0.01,
+        "positions[3] expected 46.0, got {}",
         positions[3]
     );
 }
@@ -1482,8 +1484,9 @@ fn test_tac_leading_width_block_table_full_line() {
         ..Default::default()
     };
     let width = super::compute_tac_leading_width(&composed, 0, &styles);
-    // 4 spaces × (10 base - 1.6 lspc) = 33.6 (min_clamp 5.0 미작동)
-    assert!((width - 33.6).abs() < 0.5, "expected ~33.6, got {}", width);
+    // [#2279] 자간 글자폭 비례: 4 spaces × (10 base + 10×-8% = 9.2) = 36.8
+    // (min_clamp 5.0 미작동)
+    assert!((width - 36.8).abs() < 0.5, "expected ~36.8, got {}", width);
 }
 
 #[test]

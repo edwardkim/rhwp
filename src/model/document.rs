@@ -59,6 +59,10 @@ pub struct Document {
     /// tolerance 2.0 vs 64.0px 등)를 HWPX 로 해석해야 같은 IR 이 같은 쪽수가 된다
     /// (roundtrip 자기정합). native HWP5 는 마커가 없어 불변.
     pub is_hwpx_variant: bool,
+    /// [#2403 Stage 1] 문서 출처 서명 — 파서가 확정하는 단일 진실.
+    /// `is_hwp3_variant`/`is_hwpx_variant` 는 shim 으로 존치하며 파서의 같은
+    /// 쓰기 지점에서 동기된다. 레이아웃 분기는 [`Self::layout_profile`] 경유.
+    pub provenance: crate::model::provenance::SourceProvenance,
 }
 
 /// 미리보기 데이터 (PrvImage, PrvText 스트림)
@@ -270,6 +274,24 @@ impl Document {
             .iter()
             .find(|(p, _)| p == path)
             .map(|(_, d)| d.as_slice())
+    }
+
+    /// [#2403 Stage 1] 레이아웃 호환 정책 질의 표면.
+    ///
+    /// 기존 분기의 1:1 파생 — `hwp3_layout` = `is_hwp3_variant`,
+    /// `hwpx_stored_layout` = (HWPX 컨테이너 && rhwp HWP5→HWPX 산출물 마커
+    /// 없음) || rhwp HWPX→HWP 변환본. HWP5→HWPX 마커는 세션 중 부착될 수
+    /// 있어 저장 값이 아닌 현재 문서 상태에서 파생한다.
+    pub fn layout_profile(&self) -> crate::model::provenance::LayoutCompatibilityProfile {
+        use crate::model::provenance::SourceFormat;
+        let hwp5_origin_hwpx = self.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH).is_some();
+        crate::model::provenance::LayoutCompatibilityProfile::new(
+            self.provenance.hwp3_lineage,
+            self.provenance.format == SourceFormat::Hwp3,
+            (self.provenance.format == SourceFormat::Hwpx && !hwp5_origin_hwpx)
+                || self.provenance.hwpx_lineage,
+            hwp5_origin_hwpx,
+        )
     }
 
     /// 외부 이미지 binDataId가 이미 로드되었는지 확인한다.

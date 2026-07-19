@@ -1,7 +1,7 @@
 ﻿# Task #1560 Stage 3 완료보고서 — 매뉴얼 + 검증 + 최종 보고
 
 ## 변경
-- 신규 `mydocs/manual/hangul_page_oracle.md` (사용법·판정·종료코드·한계·워크플로 연동).
+- 신규 `mydocs/manual/verification/hangul_page_oracle.md` (사용법·판정·종료코드·한계·워크플로 연동).
 - 최종 보고서 `mydocs/report/task_m100_1560_report.md`.
 - 임시 스크립트(`output/poc/fidelity*/t3_*.py`)를 본 도구로 대체(매뉴얼에 명시).
 

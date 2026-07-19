@@ -390,6 +390,9 @@ fn collect_bin_order_from_control(
             for cell in &table.cells {
                 collect_bin_order_from_paragraphs(&cell.paragraphs, bin_count, order, seen);
             }
+            if let Some(caption) = &table.caption {
+                collect_bin_order_from_paragraphs(&caption.paragraphs, bin_count, order, seen);
+            }
         }
         Control::Header(header) => {
             collect_bin_order_from_paragraphs(&header.paragraphs, bin_count, order, seen);
@@ -437,6 +440,9 @@ fn collect_bin_order_from_shape(
         if let Some(text_box) = &drawing.text_box {
             collect_bin_order_from_paragraphs(&text_box.paragraphs, bin_count, order, seen);
         }
+        if let Some(caption) = &drawing.caption {
+            collect_bin_order_from_paragraphs(&caption.paragraphs, bin_count, order, seen);
+        }
     }
 }
 
@@ -471,6 +477,9 @@ fn remap_bin_refs_in_control(ctrl: &mut Control, remap: &[u16]) {
             for cell in &mut table.cells {
                 remap_bin_refs_in_paragraphs(&mut cell.paragraphs, remap);
             }
+            if let Some(caption) = &mut table.caption {
+                remap_bin_refs_in_paragraphs(&mut caption.paragraphs, remap);
+            }
         }
         Control::Header(header) => remap_bin_refs_in_paragraphs(&mut header.paragraphs, remap),
         Control::Footer(footer) => remap_bin_refs_in_paragraphs(&mut footer.paragraphs, remap),
@@ -504,6 +513,9 @@ fn remap_bin_refs_in_shape(shape: &mut ShapeObject, remap: &[u16]) {
         remap_bin_ref_in_fill(&mut drawing.fill, remap);
         if let Some(text_box) = &mut drawing.text_box {
             remap_bin_refs_in_paragraphs(&mut text_box.paragraphs, remap);
+        }
+        if let Some(caption) = &mut drawing.caption {
+            remap_bin_refs_in_paragraphs(&mut caption.paragraphs, remap);
         }
     }
 }
@@ -2740,5 +2752,41 @@ mod tests {
         );
         assert_eq!(para.char_shapes[1].start_pos, 9);
         assert_eq!(para.char_shapes[2].start_pos, 16);
+    }
+
+    /// [bin remap 회귀] HWPX→HWP 변환의 BinData 재정렬 시 표 캡션 문단 안의 그림
+    /// bin_data_id 가 remap 되지 않아 캡션 그림이 엉뚱한 이미지로 해석되던 결함.
+    #[test]
+    fn table_caption_picture_bin_ref_is_remapped() {
+        use crate::model::image::Picture;
+        use crate::model::shape::Caption;
+        use crate::model::table::Table;
+
+        let mut pic = Picture::default();
+        pic.image_attr.bin_data_id = 1;
+        let mut cap_para = Paragraph::default();
+        cap_para.controls.push(Control::Picture(Box::new(pic)));
+        let mut table = Table::default();
+        table.caption = Some(Caption {
+            paragraphs: vec![cap_para],
+            ..Default::default()
+        });
+        let mut ctrl = Control::Table(Box::new(table));
+
+        // remap: bin id 1 → 2
+        let remap = vec![0u16, 2, 1];
+        remap_bin_refs_in_control(&mut ctrl, &remap);
+
+        let Control::Table(table) = &ctrl else {
+            panic!("expected table");
+        };
+        let caption = table.caption.as_ref().unwrap();
+        let Control::Picture(pic) = &caption.paragraphs[0].controls[0] else {
+            panic!("expected caption picture");
+        };
+        assert_eq!(
+            pic.image_attr.bin_data_id, 2,
+            "표 캡션 그림의 bin_data_id 가 remap 되지 않음(캡션 문단 미방문)"
+        );
     }
 }

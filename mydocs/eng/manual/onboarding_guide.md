@@ -270,7 +270,7 @@ Converted in code using the `hwpunit_to_px(hu, dpi)` function.
 - `mydocs/tech/hwp_spec_5.0.md` — HWP 5.0 file format (note: contains spec errors)
 - `mydocs/tech/hwp_spec_equation.md` — Equation spec
 - `mydocs/tech/table_layout_rules.md` — Table layout rules
-- `mydocs/tech/equation_support_status.md` — Equation support status
+- `mydocs/tech/investigations/issue-139/equation_support_status.md` — Equation support status
 
 > **Important**: The HWP spec documents contain errors. Always verify against actual binary data.
 > Known errors are listed in the "Known Spec Errors" section of CLAUDE.md.

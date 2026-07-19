@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # 글상자/셀 중첩 그림 마우스 드래그 조작 실패 — 드래그 상태 staging ref 소비처 누락 (#1273)
 
 - **작성일**: 2026-06-03

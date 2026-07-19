@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 페이지 총 수 검증의 한계 — 시각 회귀 테스트 비중 증가
 description: 컨트리뷰터 머지/체리픽 시 페이지 총 수 byte 비교만으로는 셀 안 그림 클램프 같은 시각 결함 검출 불가. 작업지시자 시각 검증이 누적
 type: feedback

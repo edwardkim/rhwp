@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # Issue #352 원인 확정 보고서
 
 > 2026-04-28 | Branch: `local/task352`

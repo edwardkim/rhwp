@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # Typeset fit 누적 drift + 단독 항목 페이지 — 트러블슈팅 (Task #359)
 
 ## 증상

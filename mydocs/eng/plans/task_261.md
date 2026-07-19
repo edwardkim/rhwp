@@ -20,7 +20,7 @@ Inconsistency in the `vertical_pos` (vpos) system:
 - **Task 142**: Introduced Break Token data structure
 - **Task 198**: Extended vpos correction from page_index==0 only to all pages (vpos_page_base / vpos_lazy_base)
 - **Task 215**: typeset_block_table() Break Token-based row splitting
-- **Research document**: `mydocs/tech/layout_engine_research.md` — Analysis of MS Word, LibreOffice, Chromium LayoutNG, Typst
+- **Research document**: `mydocs/tech/investigations/issue-397/layout_engine_research.md` — Analysis of MS Word, LibreOffice, Chromium LayoutNG, Typst
 
 Since the Break Token pattern was already introduced to resolve measurement-layout mismatches,
 applying the same pattern to the vpos issue is a consistent approach.

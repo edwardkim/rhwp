@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/opengov_corpus.md
+last_verified: 2026-07-17
+---
+
 # opengov 고정 실문서 회귀 말뭉치 가이드 (Task #1564)
 
 `samples/hwpx/opengov/` — 서울 정보소통광장 정보공개 결재문서 클래스별 대표를 동결한
@@ -44,4 +51,4 @@ python tools/verify_hangul_pages.py --batch samples/hwpx/opengov out/rt -o out/h
 - 계획/보고: `mydocs/plans/task_m100_1564{,_impl}.md`, `mydocs/working/task_m100_1564_stage{1..3}.md`,
   `mydocs/report/task_m100_1564_report.md`
 - 말뭉치 README: `samples/hwpx/opengov/README.md`
-- 한글 오라클: `mydocs/manual/hangul_page_oracle.md`(#1560)
+- 한글 오라클: `mydocs/manual/verification/hangul_page_oracle.md`(#1560)

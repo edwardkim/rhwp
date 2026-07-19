@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 타스크 프로세스 반드시 준수
 description: 이슈 등록 → 브랜치 → 오늘할일 → 계획서 → 구현 순서를 절대 건너뛰지 않는다
 type: feedback

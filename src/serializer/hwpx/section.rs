@@ -97,9 +97,58 @@ fn replace_secpr_scalars(xml: &str, sd: &SectionDef) -> String {
         &format!(r#"spaceColumns="{}""#, sd.column_spacing),
         1,
     );
-    out.replacen(
+    // 구역 세로쓰기: 파서는 textDirection="VERTICAL" → text_direction=1 로 읽지만
+    // (parser/hwpx/section.rs) 직렬화기는 이 필드를 재출력하지 않아, 세로쓰기 구역이
+    // .hwpx 저장 시 HORIZONTAL 로 유실됐다. text_direction==1 일 때만 치환한다
+    // (기본 0 문서는 템플릿 HORIZONTAL 유지). 템플릿엔 secPr 에만 등장하므로 replacen(1) 안전.
+    let out = if sd.text_direction == 1 {
+        out.replacen(
+            r#"textDirection="HORIZONTAL""#,
+            r#"textDirection="VERTICAL""#,
+            1,
+        )
+    } else {
+        out
+    };
+    let out = out.replacen(
         r#"outlineShapeIDRef="1""#,
         &format!(r#"outlineShapeIDRef="{}""#, sd.outline_numbering_id),
+        1,
+    );
+
+    // 기본 탭 폭. HWPX 파서는 secPr 의 tabStop 속성을 default_tab_spacing 으로 읽는다
+    // (parser/hwpx/section.rs). 치환하지 않으면 열었던 값과 무관하게 늘 템플릿 상수
+    // 8000 으로 저장돼, 탭 정렬이 원본과 어긋난다.
+    //
+    // 다만 SectionDef 는 derive(Default) 라 파싱을 거치지 않은 문서(신규 작성 등)에서는
+    // 0 이다. 0 을 그대로 내보내면 탭 폭이 0 이 되어 지금보다 나빠지므로, 값이 있을 때만
+    // 치환하고 없으면 템플릿 기본값을 유지한다.
+    let out = if sd.default_tab_spacing != 0 {
+        out.replacen(
+            r#"tabStop="8000""#,
+            &format!(r#"tabStop="{}""#, sd.default_tab_spacing),
+            1,
+        )
+    } else {
+        out
+    };
+
+    // 구역 그리드와 시작 번호. 템플릿 상수가 모두 0 이고 SectionDef 기본값도 0 이라
+    // 기본 문서의 출력은 그대로이며, 파싱된 문서에서만 실제 값이 살아난다.
+    let out = out.replacen(
+        r#"<hp:grid lineGrid="0" charGrid="0" wonggojiFormat="0"/>"#,
+        &format!(
+            r#"<hp:grid lineGrid="{}" charGrid="{}" wonggojiFormat="0"/>"#,
+            sd.line_grid, sd.char_grid
+        ),
+        1,
+    );
+    out.replacen(
+        r#"<hp:startNum pageStartsOn="BOTH" page="0" pic="0" tbl="0" equation="0"/>"#,
+        &format!(
+            r#"<hp:startNum pageStartsOn="BOTH" page="{}" pic="{}" tbl="{}" equation="{}"/>"#,
+            sd.page_num, sd.picture_num, sd.table_num, sd.equation_num
+        ),
         1,
     )
 }
@@ -2354,6 +2403,98 @@ mod tests {
         assert!(
             !xml.contains(r#"styleIDRef="96""#),
             "미등록 style_id 는 방출되지 않아야 함"
+        );
+    }
+
+    #[test]
+    fn secpr_emits_ir_text_direction_vertical() {
+        // 파서는 textDirection="VERTICAL" → text_direction=1 로 읽지만 직렬화기가 재출력하지
+        // 않아 세로쓰기 구역이 .hwpx 저장 시 HORIZONTAL 로 유실됐다. 1 이면 VERTICAL 방출.
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (mut doc, _) = make_doc_with_paragraph(para);
+        doc.sections[0].section_def.text_direction = 1;
+        let section = doc.sections[0].clone();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"textDirection="VERTICAL""#),
+            "세로쓰기 구역은 textDirection=VERTICAL 로 방출돼야 함: {xml:.400}"
+        );
+        assert!(
+            !xml.contains(r#"textDirection="HORIZONTAL""#),
+            "secPr 의 HORIZONTAL 이 남아있으면 안 됨: {xml:.400}"
+        );
+    }
+
+    #[test]
+    fn secpr_keeps_horizontal_when_text_direction_unset() {
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (doc, _) = make_doc_with_paragraph(para);
+        let section = doc.sections[0].clone();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"textDirection="HORIZONTAL""#),
+            "기본(text_direction=0) 은 HORIZONTAL 유지: {xml:.400}"
+        );
+    }
+
+    #[test]
+    fn secpr_emits_ir_tab_stop_grid_and_start_num() {
+        // 템플릿 secPr 의 grid / startNum / tabStop 은 [#1987] 의 spaceColumns·
+        // outlineShapeIDRef 치환에서 빠져 있어, IR 값과 무관하게 늘 템플릿 상수로
+        // 나갔다. 열었다 저장하면 구역 그리드·시작 번호·기본 탭 폭이 사라진다.
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (mut doc, _) = make_doc_with_paragraph(para);
+        {
+            let sd = &mut doc.sections[0].section_def;
+            sd.default_tab_spacing = 4000;
+            sd.line_grid = 1200;
+            sd.char_grid = 900;
+            sd.page_num = 47;
+            sd.picture_num = 3;
+            sd.table_num = 5;
+            sd.equation_num = 7;
+        }
+        let section = doc.sections[0].clone();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(r#"tabStop="4000""#),
+            "기본 탭 폭이 IR 값이어야 함: {xml:.600}"
+        );
+        assert!(
+            xml.contains(r#"<hp:grid lineGrid="1200" charGrid="900" wonggojiFormat="0"/>"#),
+            "구역 그리드가 IR 값이어야 함: {xml:.600}"
+        );
+        assert!(
+            xml.contains(
+                r#"<hp:startNum pageStartsOn="BOTH" page="47" pic="3" tbl="5" equation="7"/>"#
+            ),
+            "시작 번호가 IR 값이어야 함: {xml:.600}"
+        );
+    }
+
+    #[test]
+    fn secpr_keeps_template_tab_stop_when_ir_unset() {
+        // SectionDef 는 derive(Default) 라 파싱을 거치지 않은 문서에서 0 이다.
+        // 0 을 그대로 내보내면 탭 폭이 0 이 되어 지금보다 나빠지므로 템플릿 기본값을 유지한다.
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (doc, section) = make_doc_with_paragraph(para);
+        assert_eq!(
+            section.section_def.default_tab_spacing, 0,
+            "전제: 기본값은 0"
+        );
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"tabStop="8000""#),
+            "IR 미설정 시 템플릿 상수 유지: {xml:.600}"
         );
     }
 

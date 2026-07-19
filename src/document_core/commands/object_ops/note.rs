@@ -496,13 +496,7 @@ impl DocumentCore {
         // char_offsets[i]는 텍스트 i번째 문자의 UTF-16 오프셋 (컨트롤은 갭으로 표현)
         // 주의: char_offset은 텍스트 기준 인덱스이지만, char_offsets 배열 길이는 text.chars().count()
         // text에 포함되지 않는 제어 문자(cc - text_len 차이)가 있을 수 있으므로 범위 확인
-        if !paragraph.char_offsets.is_empty() {
-            let text_len = paragraph.text.chars().count();
-            let safe_offset = char_offset.min(text_len);
-            for co in paragraph.char_offsets[safe_offset..].iter_mut() {
-                *co += 8;
-            }
-        }
+        paragraph.shift_for_inline_control_insert(char_offset);
         paragraph.char_count += 8;
         paragraph.control_mask |= 1u32 << 0x0011; // 각주/미주 비트
         paragraph.has_para_text = true;
@@ -724,13 +718,7 @@ impl DocumentCore {
             .insert(insert_idx, Control::Endnote(Box::new(endnote)));
         paragraph.ctrl_data_records.insert(insert_idx, None);
 
-        if !paragraph.char_offsets.is_empty() {
-            let text_len = paragraph.text.chars().count();
-            let safe_offset = char_offset.min(text_len);
-            for co in paragraph.char_offsets[safe_offset..].iter_mut() {
-                *co += 8;
-            }
-        }
+        paragraph.shift_for_inline_control_insert(char_offset);
         paragraph.char_count += 8;
         paragraph.control_mask |= 1u32 << 0x0011;
         paragraph.has_para_text = true;
@@ -850,6 +838,39 @@ mod char_shape_inherit_tests {
             inner.char_shapes.first().map(|cs| cs.char_shape_id),
             Some(37),
             "미주 내부 문단이 커서 offset 글자모양(37)이 아닌 값을 상속"
+        );
+    }
+
+    /// [index-axis 회귀] 인라인 각주 삽입이 char_offsets 는 +8 시프트하면서
+    /// char_shapes.start_pos 는 시프트하지 않아 글자모양 run 경계가 텍스트와 어긋나던 결함.
+    /// text="abcd", char_offsets=[0,1,2,3], run [{0→id5},{2→id6}]. offset 1 에 각주 삽입 후
+    /// 원래 'b'(char idx 1)는 여전히 id 5 여야 한다(결함 시 run1(id6)이 덮어 6 반환).
+    #[test]
+    fn insert_footnote_shifts_char_shapes_with_char_offsets() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "abcd").unwrap();
+        {
+            let para = &mut core.document.sections[0].paragraphs[0];
+            para.text = "abcd".to_string();
+            para.char_offsets = vec![0, 1, 2, 3];
+            para.char_shapes = vec![
+                CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: 5,
+                },
+                CharShapeRef {
+                    start_pos: 2,
+                    char_shape_id: 6,
+                },
+            ];
+        }
+        core.insert_footnote_native(0, 0, 1).unwrap();
+        let para = &core.document.sections[0].paragraphs[0];
+        assert_eq!(
+            para.char_shape_id_at(1),
+            Some(5),
+            "각주 삽입 후 원래 'b'(char idx 1) 글자모양이 오염됨 — char_shapes.start_pos 미시프트"
         );
     }
 }

@@ -2,7 +2,7 @@
 
 ## 결과: 발신명의(vert_rel_to=PAGE) 블록 배치 차이
 
-상세: `mydocs/tech/render_minus1_page_gap.md`.
+상세: `mydocs/tech/investigations/issue-1600/render_minus1_page_gap.md`.
 
 - 권위 PDF(한글 2022, 36387725): 페이지 2는 **발신명의 블록만** 단독 배치.
 - rhwp: 발신명의 블록(`field="발신명의"`, `vert=쪽`=PAGE 앵커)을 본문 직후 **inline** 배치 →

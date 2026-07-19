@@ -8,7 +8,7 @@
 
 | 산출물 | 내용 |
 |---|---|
-| `mydocs/tech/task_m100_1883_diagnosis.md` | 현황 재진단 — 거버넌스 2축(SOLID·복잡도) 정량. **복잡도 공식 측정 = 코드 품질 대시보드**(`scripts/metrics.sh`) |
+| `mydocs/tech/investigations/issue-1883/task_m100_1883_diagnosis.md` | 현황 재진단 — 거버넌스 2축(SOLID·복잡도) 정량. **복잡도 공식 측정 = 코드 품질 대시보드**(`scripts/metrics.sh`) |
 | `mydocs/plans/refactoring_plan_2026.md` | 마스터 플랜 초안 v1 — Phase 0~4, freeze 전략, 게이트 배치, 정량 성공 기준, 리뷰 안건 5 |
 
 ## 2. 핵심 진단 (영점)

@@ -17,7 +17,7 @@
 
 **목표**: 한컴 방식과 LaTeX 방식의 체계적 비교를 통해 수식 입력 개선 방향을 수립한다.
 
-**산출물**: `mydocs/tech/equation_latex_comparison.md`
+**산출물**: `mydocs/tech/investigations/issue-139/equation_latex_comparison.md`
 
 **작업 내용**:
 
@@ -41,7 +41,7 @@
 
 **목표**: 오픈 라이선스 수식 폰트를 비교 평가하여 최적 폰트를 선정한다.
 
-**산출물**: `mydocs/tech/equation_font_selection.md`
+**산출물**: `mydocs/tech/investigations/issue-139/equation_font_selection.md`
 
 **작업 내용**:
 
@@ -72,7 +72,7 @@
 
 **목표**: 선정된 폰트를 SVG/Canvas 렌더러에 적용하기 위한 구체적 설계를 수립한다.
 
-**산출물**: `mydocs/tech/equation_font_selection.md` 내 적용 방안 섹션 추가
+**산출물**: `mydocs/tech/investigations/issue-139/equation_font_selection.md` 내 적용 방안 섹션 추가
 
 **작업 내용**:
 
@@ -96,7 +96,7 @@
 
 **목표**: 매트릭스/분수/첨자 등 수식 요소의 치수를 한컴 편집기와 동일하게 맞추기 위한 기준값을 조사하고 설계를 수립한다.
 
-**산출물**: `mydocs/tech/equation_layout_spec.md`
+**산출물**: `mydocs/tech/investigations/issue-139/equation_layout_spec.md`
 
 **작업 내용**:
 

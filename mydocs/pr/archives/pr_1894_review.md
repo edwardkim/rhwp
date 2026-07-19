@@ -22,7 +22,7 @@
   - 실측 높이가 없거나 0 이하이면 기존 선언 높이를 유지한다.
 - `tests/issue_1858_bottom_anchor_flush.rs`
   - `samples/hwpx/opengov/36389312_...hwpx` 의 하단앵커 표 pi=5/pi=6 하단이 body 하단에 밀착하는지 회귀 테스트를 추가했다.
-- `mydocs/tech/task_1858_manifestation2_investigation.md`
+- `mydocs/troubleshootings/bottom_anchor_declared_vs_rendered_height.md`
   - #1858 발현 2 조사 기록과 PR #1894 보정 결과를 문서화했다.
 
 ## 렌더 영향 및 visual sweep 판정

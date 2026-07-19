@@ -2,7 +2,7 @@
 
 - 수행계획서: `mydocs/plans/task_m100_1921_float_table.md` (트랙 B sliver 는 PR #2092 완료, 59043 48→42)
 - 브랜치: `local/task1921-float-table-pagination` (base: local/devel 통합 = origin/devel 27b3461f R11 + PR #2073/#2082/#2086/#2088/#2090/#2092)
-- 선행 RCA: `mydocs/tech/floating_object_family_rca.md` — 이미지/셀 레벨 단독 수정 3종 무효 배제, 유효 = 표 레벨 결합
+- 선행 RCA: `mydocs/tech/investigations/issue-2004/floating_object_family_rca.md` — 이미지/셀 레벨 단독 수정 3종 무효 배제, 유효 = 표 레벨 결합
 
 ## 0. 실측 기준선 (2026-07-09, 통합 브랜치)
 

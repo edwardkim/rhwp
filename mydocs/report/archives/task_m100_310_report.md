@@ -12,7 +12,7 @@
 
 - [x] `dump-pages` 출력에 LINE_SEG vpos 컬럼 + `[vpos-reset@line{n}]` 마커
 - [x] `--debug-overlay`에 vpos=0 리셋 위치 시각 표시 (앰버 가로 점선)
-- [x] 4개 샘플 vpos 패턴 분석 보고서 (`mydocs/tech/line_seg_vpos_analysis.md`)
+- [x] 4개 샘플 vpos 패턴 분석 보고서 (`mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md`)
 - [x] Epic #309 코멘트 게시 (다음 단계에서)
 - [x] `cargo test`: 992 passed, 0 failed (회귀 0)
 
@@ -41,7 +41,7 @@
 - 옵트인: `--debug-overlay` 미사용 시 SVG 출력 무변동
 
 ### 3단계: 4개 샘플 분석 보고서 (본 커밋)
-- `mydocs/tech/line_seg_vpos_analysis.md`
+- `mydocs/tech/investigations/issue-310/line_seg_vpos_analysis.md`
 
 ## 권장 후속 작업
 

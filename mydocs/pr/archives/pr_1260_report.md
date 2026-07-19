@@ -28,7 +28,7 @@ PR 문서는 #1247/#1259 반영 전 `stream/devel` 기준으로 작성된 조사
 
 | 파일 | 보강 |
 |---|---|
-| `mydocs/tech/trailing_model_render_vs_pagination_1248.md` | #1247/#1259 반영 전 기준 조사 스냅샷임을 명시 |
+| `mydocs/tech/investigations/issue-1248/trailing_model_render_vs_pagination_1248.md` | #1247/#1259 반영 전 기준 조사 스냅샷임을 명시 |
 | `mydocs/report/task_m100_1248_report.md` | 현재 `devel` 기준 재검증 결과와 당시 권장 행동의 해석 기준 명시 |
 | `mydocs/pr/pr_1260_review.md` | 수용 판단, 위험, 검증 결과, 권장 절차 기록 |
 

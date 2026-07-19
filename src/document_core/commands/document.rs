@@ -59,11 +59,23 @@ impl DocumentCore {
         let mut document = parsed.document;
         let hml_metadata = parsed.hml_metadata;
 
+        // [#2279 실험 전용] 본문 저장 lineseg 전면 무시 → fresh 재계산.
+        // 기계생성 결재문서의 부분-사다리 불신 실험 계측용 (기본 no-op).
+        // 주의: 92셋 전수 실측(2026-07-18)에서 전면 fresh 는 88→76 광역 회귀 —
+        // 부분 사다리의 정합을 fresh 가 아직 대체하지 못함. 판별-자동화 금지.
+        if std::env::var("RHWP_EXP_BODY_FRESH").is_ok() {
+            for sec in document.sections.iter_mut() {
+                for para in sec.paragraphs.iter_mut() {
+                    para.line_segs.clear();
+                }
+            }
+        }
+
         // [Task #1001] HWP3 변환본의 ParaShape 단위 1/2 추가 보정
         let styles = crate::renderer::style_resolver::resolve_styles_with_variant(
             &document.doc_info,
             DEFAULT_DPI,
-            document.is_hwp3_variant,
+            document.layout_profile().hwp3_layout(),
         );
 
         let hwp5_origin_hwpx = matches!(source_format, crate::parser::FileFormat::Hwpx)
@@ -94,7 +106,7 @@ impl DocumentCore {
         // 문단은 typeset 의 em 폴백(#2070 축3)이 담당하고(80168 pi=424 오라클),
         // 본문 텍스트 문단 합성은 흐름 소비 팽창으로 sijang 밀도 핀 -5쪽(#2070v2).
         // HWP3 변환본은 #998 게이트(sample16-hwp5=64) 정합상 종전 유지.
-        let include_cell_empty = !document.is_hwp3_variant;
+        let include_cell_empty = !document.layout_profile().hwp3_layout();
         Self::reflow_zero_height_paragraphs(
             &mut document,
             &styles,
@@ -465,6 +477,33 @@ impl DocumentCore {
                 // wrap 은 불문 — 자리차지(발신명의)와 글뒤로(직인 도장, 36408321 pi12)
                 // 모두 같은 새 쪽 시그니처다.
                 let mut prev_stored_last_vpos: i32 = 0;
+                // [#2279 성분②] 원본(비합성) 문단의 저장 (first vpos, last end)
+                // 스냅샷 — TopAndBottom 개체 host 의 저장 관례(개체-선행 vs
+                // lh-포함)를 lead = host_first − prev_last_end 로 판별하기 위한
+                // 사전 수집 (재구성 루프가 vpos 를 덮어쓰기 전).
+                let orig_span: Vec<Option<(i32, i32)>> = section
+                    .paragraphs
+                    .iter()
+                    .enumerate()
+                    .map(|(i, p)| {
+                        if reflowed_paras.contains(&i) {
+                            return None;
+                        }
+                        let first = p.line_segs.first()?;
+                        let last = p.line_segs.last()?;
+                        let synthetic = |s: &crate::model::paragraph::LineSeg| {
+                            s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                != 0
+                        };
+                        if synthetic(first) || synthetic(last) {
+                            return None;
+                        }
+                        Some((
+                            first.vertical_pos,
+                            last.vertical_pos + last.line_height + last.line_spacing,
+                        ))
+                    })
+                    .collect();
                 for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                     let was_reflowed = reflowed_paras.contains(&pi);
                     let hosts_bottom_fixed_frame = para.controls.iter().any(|c| {
@@ -575,7 +614,37 @@ impl DocumentCore {
                             .iter()
                             .map(|s| s.line_height + s.line_spacing)
                             .sum();
-                        if obj_total > seg_lh_total {
+                        // [#2279 성분②] 한글 저장 관례는 두 가지가 혼재한다
+                        // (같은 문서 안에서도, 36372309 실측):
+                        //   (a) 개체-선행: host_first = prev_end + obj_total,
+                        //       host 줄박스는 개체 **아래** 별도 (결재 코호트:
+                        //       host_v 17640 = 표+om, gap 1920 = lh+ls)
+                        //   (b) lh-포함: host lh 가 개체를 포함 (TAC/#2243 앵커)
+                        // 종전 max 모델(초과분만 가산)은 (a)의 host 줄박스를
+                        // 흡수해 사다리를 -lh-ls 압축, 후속 vpos-snap 이 그만큼
+                        // 과소 좌표로 고착됐다(footer 오차 성분②). 판별은
+                        // lead = 저장 host_first − 직전 원본 문단의 저장 last_end:
+                        // lead ≈ obj_total → (a) → obj_total 별도 가산 / 그 외
+                        // (판별 불가·합성 이웃 포함) → 종전 max 모델(보수).
+                        let lead = if !was_reflowed {
+                            let host_first = orig_span.get(pi).copied().flatten().map(|s| s.0);
+                            let prev_end = if pi == 0 {
+                                Some(0)
+                            } else {
+                                orig_span.get(pi - 1).copied().flatten().map(|s| s.1)
+                            };
+                            match (host_first, prev_end) {
+                                (Some(h), Some(p)) => Some(h - p),
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        };
+                        let object_precedes_host_line =
+                            lead.is_some_and(|l| (l - obj_total).abs() <= 60);
+                        if object_precedes_host_line {
+                            inner_vpos += obj_total;
+                        } else if obj_total > seg_lh_total {
                             inner_vpos += obj_total - seg_lh_total;
                         }
                     }
@@ -932,6 +1001,7 @@ impl DocumentCore {
         let styles = resolve_styles(&self.document.doc_info, self.dpi);
         let dpi = self.dpi;
         let mut reflowed = 0usize;
+        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
 
         for section in &mut self.document.sections {
             let page_def = &section.section_def.page_def;
@@ -985,7 +1055,15 @@ impl DocumentCore {
             // 의 vpos 연속성이 깨짐. paginator 의 vpos_h 기반 current_height 조정이
             // 잘못된 값으로 적용되어 페이지가 과다 분할되는 회귀의 원인.
             if let Some(start) = min_reflowed_idx {
-                crate::renderer::composer::recalculate_section_vpos(&mut section.paragraphs, start);
+                crate::renderer::composer::recalculate_section_vpos(
+                    &mut section.paragraphs,
+                    start,
+                    None,
+                    None,
+                    &self.styles,
+                    self.dpi,
+                    doc_hwp3_layout,
+                );
             }
         }
 
@@ -1404,7 +1482,11 @@ impl DocumentCore {
         let id = self.next_snapshot_id;
         self.next_snapshot_id += 1;
         self.snapshot_store.push((id, self.document.clone()));
-        // 최대 100개 제한 — 초과 시 가장 오래된 스냅샷 제거
+        // 최대 100개 제한 — 초과 시 가장 오래된 스냅샷 제거.
+        // [Task #2328] studio 히스토리(rhwp-studio/src/engine/history.ts 의
+        // WASM_MAX_SNAPSHOTS)와 양방향 결합. 이 값을 studio 예산(MAX-2)보다 낮추면
+        // studio 가 참조 중인 오래된 undo 스냅샷이 무통보 축출돼 undo 예외가
+        // 재발한다. 변경 시 반드시 studio 상수도 함께 갱신한다.
         const MAX_SNAPSHOTS: usize = 100;
         while self.snapshot_store.len() > MAX_SNAPSHOTS {
             self.snapshot_store.remove(0);

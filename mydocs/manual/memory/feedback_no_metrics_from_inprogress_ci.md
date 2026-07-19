@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: feedback_no_metrics_from_inprogress_ci
 description: CI 진행 중(in_progress) run 에서 step 시간/성능 수치를 측정·보고하지 말 것. 완료 후 측정
 metadata: 

@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: project_extension_publicdir_false
 description: 확장 빌드는 vite publicDir:false라 public/ 자산이 자동 복사 안 됨 — build.mjs에 개별 copy 필수. 인라인 script는 확장 CSP가 차단
 metadata: 

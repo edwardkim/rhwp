@@ -114,9 +114,9 @@
 
 ### Document IR 표준 명문화
 - `mydocs/tech/document_ir_lineseg_standard.md` (+195) — LineSeg 필드별 단위/원점/0 의미 + HWP5/HWPX/HWP3 각 파서 인코딩 책임 명시
-- `mydocs/tech/document_ir_parser_relationship_analysis.md` (+430) — IR ↔ 각 파서 관계
-- `mydocs/tech/document_ir_wrap_zone_standard_review.md` (+209) — wrap zone 표준 review
-- `mydocs/tech/hwp5_wrap_precomputed_analysis.md` (+185) — HWP5/HWPX 미적용 분석
+- `mydocs/tech/investigations/issue-511/document_ir_parser_relationship_analysis.md` (+430) — IR ↔ 각 파서 관계
+- `mydocs/tech/investigations/issue-511/document_ir_wrap_zone_standard_review.md` (+209) — wrap zone 표준 review
+- `mydocs/tech/investigations/issue-511/hwp5_wrap_precomputed_analysis.md` (+185) — HWP5/HWPX 미적용 분석
 
 ## 10. 후속 task 영역 (PR 본문 §잔존)
 

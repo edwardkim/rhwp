@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/mcp_hwp2020Convert_usage.md
+last_verified: 2026-07-16
+---
+
 # HWP 2020 변환 client 사용법
 
 이 문서는 rhwp 작업에서 로컬 HWP/HWPX 파일을 원격 한컴 변환 서버로 보내고, 변환 결과를 다시 로컬에 저장하는 절차를 정리한다.

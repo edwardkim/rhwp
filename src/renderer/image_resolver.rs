@@ -2,6 +2,9 @@ use std::io::Cursor;
 
 use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
+use crate::renderer::image_header::{
+    canvaskit_encoded_image_header, CANVASKIT_MAX_IMAGE_DIMENSION, CANVASKIT_MAX_IMAGE_PIXELS,
+};
 use crate::renderer::render_tree::{
     ImageNode, REAL_PICTURE_WATERMARK_BRIGHTNESS, REAL_PICTURE_WATERMARK_CHROMA_GAIN,
     REAL_PICTURE_WATERMARK_CONTRAST, REAL_PICTURE_WATERMARK_CORRECTION_BIAS,
@@ -76,9 +79,9 @@ fn is_watermark_image(image: &ImageNode) -> bool {
 /// 브라우저는 SVG `<image>` 내부의 `data:image/bmp` URI를 표준 지원하지 않으므로,
 /// SVG 임베딩 전에 PNG로 변환해 호환성을 확보한다.
 pub(crate) fn bmp_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
-    use image::{load_from_memory_with_format, ImageFormat};
+    use image::ImageFormat;
 
-    let img = load_from_memory_with_format(data, ImageFormat::Bmp).ok()?;
+    let img = decode_image_with_format_limited(data, ImageFormat::Bmp)?;
     let mut out = Vec::new();
     img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
         .ok()?;
@@ -90,9 +93,9 @@ pub(crate) fn bmp_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
 /// 브라우저와 rsvg는 SVG `<image>` 내부의 `data:image/tiff` URI를 안정적으로
 /// 렌더링하지 못하므로, SVG/Canvas/HTML 임베딩 전에 PNG로 변환한다.
 pub(crate) fn tiff_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
-    use image::{load_from_memory_with_format, ImageFormat};
+    use image::ImageFormat;
 
-    let img = load_from_memory_with_format(data, ImageFormat::Tiff).ok()?;
+    let img = decode_image_with_format_limited(data, ImageFormat::Tiff)?;
     let mut out = Vec::new();
     img.write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
         .ok()?;
@@ -103,15 +106,13 @@ pub(crate) fn tiff_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
 /// grayscale JPEGs. Re-encode only visually gray JPEGs to PNG so color photos
 /// keep the compact JPEG path.
 pub(crate) fn grayscale_jpeg_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
-    use image::{load_from_memory_with_format, ImageFormat};
+    use image::ImageFormat;
 
     if detect_image_mime_type(data) != "image/jpeg" {
         return None;
     }
 
-    let mut img = load_from_memory_with_format(data, ImageFormat::Jpeg)
-        .ok()?
-        .to_rgba8();
+    let mut img = decode_image_with_format_limited(data, ImageFormat::Jpeg)?.to_rgba8();
     if img.width() == 0 || img.height() == 0 {
         return None;
     }
@@ -164,11 +165,17 @@ pub(crate) fn pcx_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
     let mut reader = pcx::Reader::new(Cursor::new(data)).ok()?;
     let width = reader.width() as u32;
     let height = reader.height() as u32;
-    if width == 0 || height == 0 {
+    let pixels = u64::from(width).checked_mul(u64::from(height))?;
+    if width == 0
+        || height == 0
+        || width > CANVASKIT_MAX_IMAGE_DIMENSION
+        || height > CANVASKIT_MAX_IMAGE_DIMENSION
+        || pixels > CANVASKIT_MAX_IMAGE_PIXELS
+    {
         return None;
     }
-    let pixel_count = (width as usize) * (height as usize);
-    let mut rgba = vec![0u8; pixel_count * 4];
+    let pixel_count = usize::try_from(pixels).ok()?;
+    let mut rgba = vec![0u8; pixel_count.checked_mul(4)?];
     if reader.is_paletted() {
         let row_bytes = width as usize;
         let mut indices = vec![0u8; row_bytes * height as usize];
@@ -303,9 +310,10 @@ fn real_picture_watermark_bytes_to_tone_png_bytes(
     data: &[u8],
     tone: fn(u8, u8, u8) -> [u8; 3],
 ) -> Option<Vec<u8>> {
-    use image::{load_from_memory, ImageFormat};
+    use image::ImageFormat;
 
-    let mut img = load_from_memory(data).ok()?.to_rgba8();
+    let format = image::guess_format(data).ok()?;
+    let mut img = decode_image_with_format_limited(data, format)?.to_rgba8();
     for px in img.pixels_mut() {
         let [r, g, b] = tone(px.0[0], px.0[1], px.0[2]);
         px.0 = [r, g, b, px.0[3]];
@@ -319,11 +327,9 @@ fn real_picture_watermark_bytes_to_tone_png_bytes(
 
 /// 워터마크 JPEG 를 한컴 PDF 정답지에 가까운 회색 톤 PNG 로 변환한다.
 pub(crate) fn watermark_jpeg_bytes_to_hancom_baked_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
-    use image::{load_from_memory_with_format, ImageFormat};
+    use image::ImageFormat;
 
-    let mut img = load_from_memory_with_format(data, ImageFormat::Jpeg)
-        .ok()?
-        .to_rgba8();
+    let mut img = decode_image_with_format_limited(data, ImageFormat::Jpeg)?.to_rgba8();
     let width = img.width();
     let height = img.height();
     if width == 0 || height == 0 {
@@ -428,15 +434,53 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
             return "image/tiff";
         }
     }
+    if data.len() >= 12 && data.starts_with(b"RIFF") && &data[8..12] == b"WEBP" {
+        return "image/webp";
+    }
     if data.len() >= 2 && data.starts_with(&[0x0A, 0x05]) {
         return "image/x-pcx";
     }
     "application/octet-stream"
 }
 
+fn decode_image_with_format_limited(
+    data: &[u8],
+    format: image::ImageFormat,
+) -> Option<image::DynamicImage> {
+    if matches!(
+        format,
+        image::ImageFormat::Png | image::ImageFormat::Jpeg | image::ImageFormat::Bmp
+    ) && !canvaskit_encoded_image_header(data).is_some_and(|header| {
+        header.is_within_decode_limits()
+            && matches!(
+                (format, header.format),
+                (
+                    image::ImageFormat::Png,
+                    crate::renderer::image_header::CanvasKitEncodedImageFormat::Png
+                ) | (
+                    image::ImageFormat::Jpeg,
+                    crate::renderer::image_header::CanvasKitEncodedImageFormat::Jpeg
+                ) | (
+                    image::ImageFormat::Bmp,
+                    crate::renderer::image_header::CanvasKitEncodedImageFormat::Bmp
+                )
+            )
+    }) {
+        return None;
+    }
+
+    let mut reader = image::ImageReader::with_format(Cursor::new(data), format);
+    let mut limits = image::Limits::default();
+    limits.max_image_width = Some(CANVASKIT_MAX_IMAGE_DIMENSION);
+    limits.max_image_height = Some(CANVASKIT_MAX_IMAGE_DIMENSION);
+    limits.max_alloc = Some(CANVASKIT_MAX_IMAGE_PIXELS.saturating_mul(4));
+    reader.limits(limits);
+    reader.decode().ok()
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{grayscale_jpeg_bytes_to_png_bytes, resolve_image_payload};
+    use super::{bmp_bytes_to_png_bytes, grayscale_jpeg_bytes_to_png_bytes, resolve_image_payload};
     use crate::paint::ResolvedImageKind;
     use crate::renderer::render_tree::ImageNode;
     use image::{DynamicImage, ImageFormat, Rgb, RgbImage};
@@ -501,5 +545,23 @@ mod tests {
         assert_eq!(resolved.kind, ResolvedImageKind::FormatConverted);
         assert!(resolved.data.starts_with(b"\x89PNG\r\n\x1a\n"));
         assert!(!resolved.suppress_effects);
+    }
+
+    #[test]
+    fn oversized_compact_bmp_is_rejected_before_layer_conversion() {
+        let mut bmp = vec![0u8; 58];
+        bmp[..2].copy_from_slice(b"BM");
+        bmp[2..6].copy_from_slice(&58u32.to_le_bytes());
+        bmp[10..14].copy_from_slice(&54u32.to_le_bytes());
+        bmp[14..18].copy_from_slice(&40u32.to_le_bytes());
+        bmp[18..22].copy_from_slice(&8193i32.to_le_bytes());
+        bmp[22..26].copy_from_slice(&8193i32.to_le_bytes());
+        bmp[26..28].copy_from_slice(&1u16.to_le_bytes());
+        bmp[28..30].copy_from_slice(&8u16.to_le_bytes());
+        bmp[30..34].copy_from_slice(&1u32.to_le_bytes());
+        bmp[54..58].copy_from_slice(&[0, 1, 0, 1]);
+
+        assert!(bmp_bytes_to_png_bytes(&bmp).is_none());
+        assert!(resolve_image_payload(&ImageNode::new(1, Some(bmp))).is_none());
     }
 }

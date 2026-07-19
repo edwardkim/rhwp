@@ -1,3 +1,10 @@
+---
+kind: reference
+status: historical
+canonical: mydocs/troubleshootings/README.md
+last_verified: 2026-07-16
+---
+
 # iOS Safari/Chrome 한글 IME 조합 문제 해결
 
 > 2026-04-01 | Task #22 모바일 대응 중 발견

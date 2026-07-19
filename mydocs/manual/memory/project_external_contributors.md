@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: project_external_contributors
 description: "외부 컨트리뷰터 누적 명단 (32명, 2026-07-04 기준) — 첫 PR/재기여 식별용"
 metadata: 

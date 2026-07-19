@@ -169,6 +169,12 @@ impl DocumentCore {
             crate::renderer::equation::intrinsic_size_hwp(&eq.script, eq.font_size);
         eq.common.width = width;
         eq.common.height = height;
+
+        // raw_ctrl_data 무효화: serialize_equation_control 은 raw_ctrl_data 가 비어있지 않으면
+        // 원본 CTRL_HEADER 바이트를 그대로 방출한다. 편집한 eq.common(크기/위치/treat_as_char)이
+        // .hwp 저장에 반영되도록 원본 passthrough 를 비운다(table_ops 셀 편집 가드, adapt_equation
+        // 의 hwpx→hwp 변환과 동형). EQEDIT 자식 레코드(script/font)는 IR 로 재생성되므로 무관.
+        eq.raw_ctrl_data.clear();
     }
     pub fn get_equation_properties_native(
         &self,
@@ -421,13 +427,7 @@ impl DocumentCore {
             .insert(insert_idx, Control::Equation(Box::new(equation)));
         paragraph.ctrl_data_records.insert(insert_idx, None);
 
-        if !paragraph.char_offsets.is_empty() {
-            let text_len = paragraph.text.chars().count();
-            let safe_offset = char_offset.min(text_len);
-            for co in paragraph.char_offsets[safe_offset..].iter_mut() {
-                *co += 8;
-            }
-        }
+        paragraph.shift_for_inline_control_insert(char_offset);
         paragraph.char_count += 8;
         paragraph.control_mask |= 1u32 << 11;
         paragraph.has_para_text = true;
@@ -462,5 +462,29 @@ impl DocumentCore {
             "{{\"ok\":true,\"paraIdx\":{},\"controlIdx\":{}}}",
             para_idx, insert_idx
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::document_core::DocumentCore;
+    use crate::model::control::Equation;
+
+    /// .hwp 저장 시 serialize_equation_control 은 raw_ctrl_data 가 비어있지 않으면 원본
+    /// CTRL_HEADER 를 그대로 방출한다. 속성 편집 후 raw_ctrl_data 가 비워지지 않으면
+    /// 크기/위치 편집이 저장에서 원복된다.
+    #[test]
+    fn apply_equation_properties_clears_raw_ctrl_data() {
+        let mut eq = Equation {
+            script: "1 over 2".to_string(),
+            font_size: 1000,
+            raw_ctrl_data: vec![0xAB; 16],
+            ..Default::default()
+        };
+        DocumentCore::apply_equation_properties(&mut eq, 96.0, r#"{"width":5000,"height":4000}"#);
+        assert!(
+            eq.raw_ctrl_data.is_empty(),
+            "apply_equation_properties 후 raw_ctrl_data 가 비워져야 편집이 .hwp 저장에 반영된다"
+        );
     }
 }

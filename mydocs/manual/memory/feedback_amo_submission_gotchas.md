@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: AMO (Firefox Add-ons) 제출 시 마주치는 4대 함정
 description: rhwp-firefox v0.2.1 제출 시 연속으로 마주친 AMO 에러와 해결책. 다음 확장 등록 또는 다음 버전 재제출 시 동일 실수 반복 방지를 위한 체크리스트.
 type: feedback

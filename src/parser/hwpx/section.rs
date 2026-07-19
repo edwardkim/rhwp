@@ -4392,12 +4392,14 @@ fn parse_field_type(s: &str) -> FieldType {
         "CROSSREF" => FieldType::CrossRef,
         "FORMULA" => FieldType::Formula,
         "CLICK_HERE" | "CLICKHERE" => FieldType::ClickHere,
-        "SUMMARY" => FieldType::Summary,
+        "SUMMARY" | "SUMMERY" => FieldType::Summary,
         "USER_INFO" | "USERINFO" => FieldType::UserInfo,
         "HYPERLINK" => FieldType::Hyperlink,
         "MEMO" => FieldType::Memo,
         "PRIVATE_INFO" | "PRIVATEINFO" => FieldType::PrivateInfoSecurity,
-        "TABLE_OF_CONTENTS" | "TABLEOFCONTENTS" => FieldType::TableOfContents,
+        // 직렬화기(serializer/hwpx/field.rs)는 TableOfContents 를 "TOC" 로 방출하므로
+        // 파서도 이를 받아야 hwpx 왕복에서 차례 필드 타입이 Unknown 으로 유실되지 않는다.
+        "TABLE_OF_CONTENTS" | "TABLEOFCONTENTS" | "TOC" => FieldType::TableOfContents,
         _ => FieldType::Unknown,
     }
 }
@@ -4741,7 +4743,6 @@ fn parse_field_parameters(
     raw.push('>');
 
     // 현재 열린 파라미터 요소 태그(닫을 때 사용).
-    let mut open_param: Option<String> = None;
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref ce)) => {
@@ -4758,7 +4759,6 @@ fn parse_field_parameters(
                     raw.push('"');
                 }
                 raw.push('>');
-                open_param = Some(tag);
                 if local == b"stringParam" {
                     for attr in ce.attributes().flatten() {
                         if attr.key.as_ref() == b"name" && attr_str(&attr) == "Command" {
@@ -4820,11 +4820,13 @@ fn parse_field_parameters(
                     raw.push_str("</hp:parameters>");
                     break;
                 }
-                if let Some(tag) = open_param.take() {
-                    raw.push_str("</");
-                    raw.push_str(&tag);
-                    raw.push('>');
-                }
+                // 임의 깊이 중첩(listParam 안의 stringParam 등)에서도 균형 잡힌 XML 을
+                // 재조립하도록, 단일 open_param 추적 대신 End 이벤트 자신의 정규화 이름으로 닫는다.
+                // 종전엔 open_param 이 마지막 Start 로 덮여, 바깥 태그의 닫는 태그가 누락됐다.
+                let qn = String::from_utf8_lossy(eename.as_ref());
+                raw.push_str("</");
+                raw.push_str(&qn);
+                raw.push('>');
                 if local == b"stringParam" {
                     in_command = false;
                 } else if local == b"integerParam" {
@@ -6858,6 +6860,37 @@ mod tests {
     }
 
     #[test]
+    fn parse_field_parameters_reassembles_nested_params_balanced() {
+        // 중첩 파라미터(listParam 안의 stringParam). 종전엔 open_param 이 마지막 Start 로
+        // 덮여 바깥 </hp:listParam> 닫는 태그가 누락돼 raw_parameters_xml 이 불균형이었다.
+        let xml = r#"<hp:parameters xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" cnt="1" name=""><hp:listParam cnt="1" name="L"><hp:stringParam name="A">x</hp:stringParam></hp:listParam></hp:parameters>"#;
+        let mut reader = Reader::from_str(xml);
+        let mut buf = Vec::new();
+        let mut field = Field::default();
+
+        loop {
+            match reader.read_event_into(&mut buf).unwrap() {
+                Event::Start(ref e) if local_name(e.name().as_ref()) == b"parameters" => {
+                    let start = e.to_owned();
+                    parse_field_parameters(&start, &mut reader, &mut field).unwrap();
+                    break;
+                }
+                Event::Eof => panic!("parameters not found"),
+                _ => {}
+            }
+            buf.clear();
+        }
+
+        let raw = field.raw_parameters_xml.expect("raw_parameters_xml");
+        assert!(raw.contains("</hp:stringParam>"), "inner close: {raw}");
+        assert!(
+            raw.contains("</hp:listParam>"),
+            "바깥 </hp:listParam> 누락(중첩 불균형): {raw}"
+        );
+        assert!(raw.ends_with("</hp:parameters>"), "params close: {raw}");
+    }
+
+    #[test]
     fn test_parse_memo_field_begin_uses_id_as_hwp5_field_id() {
         let xml = r#"<hp:fieldBegin xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" type="MEMO" id="2135782115" fieldid="623209829" />"#;
         let mut reader = Reader::from_str(xml);
@@ -7322,5 +7355,16 @@ mod tests {
         let xml = r#"<?xml version="1.0"?><hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"/>"#;
         let section = parse_hwpx_section(xml).unwrap();
         assert!(section.paragraphs.is_empty());
+    }
+
+    #[test]
+    fn parse_field_type_accepts_toc() {
+        // 직렬화기(hwpx/field.rs)가 방출하는 "TOC" 가 TableOfContents 로 파싱돼야
+        // hwpx 왕복에서 차례 필드 타입이 Unknown 으로 유실되지 않는다.
+        assert_eq!(parse_field_type("TOC"), FieldType::TableOfContents);
+        assert_eq!(
+            parse_field_type("TABLE_OF_CONTENTS"),
+            FieldType::TableOfContents
+        );
     }
 }

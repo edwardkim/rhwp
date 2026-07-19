@@ -1,4 +1,8 @@
 ---
+kind: memory
+status: historical
+canonical: mydocs/manual/memory/MEMORY.md
+last_verified: 2026-07-17
 name: 시각 판정은 작업지시자 직접 결정 영역
 description: 한컴 2022 편집기 / 브라우저 시각 검증은 Claude가 단정 회피, 정량 측정만 보조
 type: feedback

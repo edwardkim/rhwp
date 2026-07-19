@@ -1,3 +1,10 @@
+---
+kind: canonical
+status: active
+canonical: mydocs/tech/document_ir_lineseg_standard.md
+last_verified: 2026-07-16
+---
+
 # Document IR — LineSeg 필드 표준
 
 ## 본 문서의 본질
@@ -212,7 +219,7 @@ HWP3 → HWP5 IR 변환. 다음을 정합화 책임:
 - **PR #589** (Task #511 v2 + #554) — `wrap_precomputed` 플래그 도입 (본 표준 정정 대상)
 
 ### 분석 자료
-- `mydocs/tech/document_ir_parser_relationship_analysis.md` (16KB) — IR ↔ 각 파서 관계 종합 분석
+- `mydocs/tech/investigations/issue-511/document_ir_parser_relationship_analysis.md` (16KB) — IR ↔ 각 파서 관계 종합 분석
 
 ### 권위 자료
 - `mydocs/tech/한글문서파일형식_5.0_revision1.3.md` — HWP5 PARA_LINE_SEG spec
