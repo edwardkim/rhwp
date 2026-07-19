@@ -14,7 +14,6 @@ const PRIVATE_IP_PATTERNS = [
 ];
 const HWP_SIGNATURE = [0xD0, 0xCF, 0x11, 0xE0];
 const HWPX_SIGNATURE = [0x50, 0x4B, 0x03, 0x04];
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 function isPrivateHost(hostname) {
   return PRIVATE_IP_PATTERNS.some(re => re.test(hostname));
