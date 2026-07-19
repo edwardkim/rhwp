@@ -360,9 +360,12 @@ fn serialize_fill(w: &mut ByteWriter, fill: &crate::model::style::Fill) {
                 w.write_color_ref(solid.pattern_color).unwrap();
                 w.write_i32(solid.pattern_type).unwrap();
             }
-            // 추가 채우기 속성: size(u32) + alpha(u8)
-            w.write_u32(1).unwrap();
-            w.write_u8(0).unwrap(); // alpha
+            // 추가 채우기 속성: size(u32) = 0, 이어서 미확인 바이트로 alpha(u8).
+            // hwplib 및 parse_fill(additional_size 만큼 skip 후 종류별 1바이트를
+            // alpha 로 읽음)과 정합. 종전엔 size=1·0x00 을 내보내 skip 이 alpha
+            // 자리를 먹고 alpha 가 항상 0 으로 되읽혔다.
+            w.write_u32(0).unwrap();
+            w.write_u8(fill.alpha).unwrap();
         }
         FillType::Gradient => {
             if let Some(ref grad) = fill.gradient {
@@ -394,8 +397,11 @@ fn serialize_fill(w: &mut ByteWriter, fill: &crate::model::style::Fill) {
                 w.write_u8(img.effect).unwrap();
                 w.write_u16(img.bin_data_id).unwrap();
             }
-            // 추가 채우기 속성: size(u32)
+            // 추가 채우기 속성: size(u32) = 0, 이어서 미확인 바이트로 alpha(u8).
+            // parse_fill 의 image(0x02) 경로가 종류별 1바이트를 alpha 로 읽으므로
+            // 이 바이트가 없으면 EOF 로 alpha 가 0 이 됐다.
             w.write_u32(0).unwrap();
+            w.write_u8(fill.alpha).unwrap();
         }
         FillType::None => {
             // 추가 채우기 속성: size(u32) = 0
