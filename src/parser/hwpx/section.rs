@@ -4397,7 +4397,9 @@ fn parse_field_type(s: &str) -> FieldType {
         "HYPERLINK" => FieldType::Hyperlink,
         "MEMO" => FieldType::Memo,
         "PRIVATE_INFO" | "PRIVATEINFO" => FieldType::PrivateInfoSecurity,
-        "TABLE_OF_CONTENTS" | "TABLEOFCONTENTS" => FieldType::TableOfContents,
+        // 직렬화기(serializer/hwpx/field.rs)는 TableOfContents 를 "TOC" 로 방출하므로
+        // 파서도 이를 받아야 hwpx 왕복에서 차례 필드 타입이 Unknown 으로 유실되지 않는다.
+        "TABLE_OF_CONTENTS" | "TABLEOFCONTENTS" | "TOC" => FieldType::TableOfContents,
         _ => FieldType::Unknown,
     }
 }
@@ -7322,5 +7324,16 @@ mod tests {
         let xml = r#"<?xml version="1.0"?><hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"/>"#;
         let section = parse_hwpx_section(xml).unwrap();
         assert!(section.paragraphs.is_empty());
+    }
+
+    #[test]
+    fn parse_field_type_accepts_toc() {
+        // 직렬화기(hwpx/field.rs)가 방출하는 "TOC" 가 TableOfContents 로 파싱돼야
+        // hwpx 왕복에서 차례 필드 타입이 Unknown 으로 유실되지 않는다.
+        assert_eq!(parse_field_type("TOC"), FieldType::TableOfContents);
+        assert_eq!(
+            parse_field_type("TABLE_OF_CONTENTS"),
+            FieldType::TableOfContents
+        );
     }
 }
