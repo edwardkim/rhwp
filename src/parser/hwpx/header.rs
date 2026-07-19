@@ -1944,7 +1944,9 @@ fn parse_alignment(attr: &quick_xml::events::attributes::Attribute) -> Alignment
         "RIGHT" => Alignment::Right,
         "CENTER" => Alignment::Center,
         "DISTRIBUTE" => Alignment::Distribute,
-        "DISTRIBUTE_SPACE" => Alignment::Justify,
+        // 방출측 alignment_str 은 Split(나눔, HWP5 정렬 bit 5) 을 "DISTRIBUTE_SPACE" 로 낸다.
+        // 종전엔 이를 Justify 로 되읽어 나눔 정렬이 hwpx 왕복 시 양쪽정렬로 유실됐다.
+        "DISTRIBUTE_SPACE" => Alignment::Split,
         _ => Alignment::Justify,
     }
 }
@@ -2295,7 +2297,8 @@ mod tests {
         let cases = [
             ("CENTER", Alignment::Center),
             ("DISTRIBUTE", Alignment::Distribute),
-            ("DISTRIBUTE_SPACE", Alignment::Justify),
+            // 방출측이 Split 을 "DISTRIBUTE_SPACE" 로 내므로 되읽기도 Split 이어야 왕복 보존.
+            ("DISTRIBUTE_SPACE", Alignment::Split),
         ];
 
         for (value, expected) in cases {
