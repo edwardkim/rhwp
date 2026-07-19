@@ -1,7 +1,7 @@
 {
   "name": "rhwp-vscode",
   "displayName": "HWP Viewer",
-  "description": "HWP/HWPX 문서 뷰어 — rhwp 기반",
+  "description": "HWP/HWPX/HML 문서 뷰어 — rhwp 기반",
   "version": "0.7.19",
   "publisher": "edwardkim",
   "license": "MIT",
@@ -17,6 +17,7 @@
   "keywords": [
     "hwp",
     "hwpx",
+    "hml",
     "한글",
     "viewer",
     "document"
