@@ -81,8 +81,8 @@ GREEN:
 - ooxml_chart 유닛: **131 passed / 0 failed** (Stage2 120 + 파서 4 + 렌더러 7)
 - 차트 통합·앵커 8스위트(1453 ofPie 2종 포함): **전부 통과**
 - `cargo clippy --all-targets -- -D warnings`: 무경고
-- `cargo test` 전체: **exit 0, 269 스위트 전부 ok, 3,256 passed / 0 failed**
-  (로그: `$TMPDIR/c2b_stage3_full_test.log`)
+- `cargo test` 전체(v3 최종): **exit 0, 269 스위트 전부 ok, 3,259 passed / 0 failed**
+  (로그: `$TMPDIR/c2b_stage3v3_full_test.log`; v1 3,256 → v2 밀착 가드 +1 → v3 explosion +2)
 - fmt: 수정 파일 한정 (mod/parser/renderer/issue_2278 테스트)
 - 시각판정 산출물: ofPie 2종 + 3D 5종 재산출 → `output/poc/chart_c2b/` +
   대조 합성 `output/poc/chart_c2b/compare/`
@@ -100,7 +100,22 @@ GREEN:
 - 2D 원형(2차원원형·쪼개진원형)도 동일 적용 — C1c 기승인 영역이나 당시 경계는
   쟁점이 아니었고 실측·작업지시자 확정에 따름.
 
-## 7. 위험·잔여
+## 7. 시각판정 보정 v3 — 쪼개진원형 explosion (2026-07-19, 작업지시자 편입 승인)
+
+작업지시자 쪼개진원형 재검 요청 → 대조에서 **explosion 미구현** 확정: 한컴은
+샘플 XML의 계열 레벨 `<c:explosion val="25"/>`(dPt 0개)를 반영해 전 슬라이스가
+중심각 방향으로 벌어지는데 rhwp는 일반 원형으로 렌더. (앞선 "흰색 경계 분리"
+논의의 실체 — 테두리가 아닌 explode.)
+
+- 모델: `OoxmlSeries.explosion: Option<f64>` / 파서: 계열 컨텍스트 `explosion` arm
+- 렌더(`render_pie`): 슬라이스 꼭짓점·호를 중심각 방향으로 `r×e/100` 이동,
+  벌어진 extent가 기존 fit과 같도록 반지름 `1/(1+e/100)` 축소.
+  **explosion 부재 시 산식·출력 불변** (2D 원형 무회귀)
+- dPt 단위 explosion·3D/ofPie explosion: 코퍼스 부재 — 범위 외 기록
+- TDD: `test_parse_pie_explosion` / `test_pie_exploded_slices_offset`
+  (오프셋 = r×0.25·반지름 축소·슬라이스별 방향 분리 — RED→GREEN)
+
+## 8. 위험·잔여
 
 - 레이아웃 상수(cx1 0.30/cx2 0.78/r1 0.85 등)는 정답지 근사 초기값 — 시각판정
   보정 여지 (보정은 레이아웃 상수로만, 슬라이스별 상수 금지)

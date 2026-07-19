@@ -282,6 +282,10 @@ pub struct OoxmlSeries {
     pub format_code: Option<String>,
     /// 계열 내부 `<c:marker>` 상태 — stock 종가 마커 판별용. (C2a #2277)
     pub marker_symbol: SeriesMarker,
+    /// 계열 레벨 `<c:explosion val>` (%) — 쪼개진원형: 전 슬라이스를 중심각
+    /// 방향으로 반지름×값/100 만큼 이동(코퍼스 25). dPt 단위 explosion은
+    /// 코퍼스 부재로 범위 외. (C2b #2278 Stage 3 v3)
+    pub explosion: Option<f64>,
 }
 
 impl OoxmlChart {

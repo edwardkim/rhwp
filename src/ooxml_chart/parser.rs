@@ -420,6 +420,12 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
                 }
             }
         }
+        b"explosion" => {
+            // 계열 레벨 쪼개진원형 (%) — 렌더는 2D 원형 경로만 반영. (C2b #2278)
+            if let (Some(ser), Some(v)) = (st.cur_series.as_mut(), attr_f64(e)) {
+                ser.explosion = Some(v);
+            }
+        }
         b"ser" => {
             let mut ser = OoxmlSeries::default();
             if let Some(t) = st.cur_plot_type {
@@ -1038,6 +1044,20 @@ mod tests {
         let xml = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:ofPieChart><c:ofPieType val="pie"/><c:splitPos val="3"/><c:ser><c:val><c:numCache><c:pt idx="0"><c:v>4</c:v></c:pt></c:numCache></c:val></c:ser></c:ofPieChart></c:plotArea></c:chart></c:chartSpace>"#;
         let c = parse_chart_xml(xml).expect("parse OK");
         assert_eq!(c.of_pie.expect("of_pie").split_pos, Some(3.0));
+    }
+
+    #[test]
+    fn test_parse_pie_explosion() {
+        // 쪼개진원형: 계열 레벨 c:explosion val="25" (코퍼스 dPt 0개)
+        let xml = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:pieChart><c:ser><c:explosion val="25"/><c:val><c:numCache><c:pt idx="0"><c:v>4</c:v></c:pt><c:pt idx="1"><c:v>3</c:v></c:pt></c:numCache></c:val></c:ser></c:pieChart></c:plotArea></c:chart></c:chartSpace>"#;
+        let c = parse_chart_xml(xml).expect("parse OK");
+        assert_eq!(c.series[0].explosion, Some(25.0));
+        // 부재 시 None (2차원원형 등)
+        let xml2 = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:pieChart><c:ser><c:val><c:numCache><c:pt idx="0"><c:v>4</c:v></c:pt></c:numCache></c:val></c:ser></c:pieChart></c:plotArea></c:chart></c:chartSpace>"#;
+        assert_eq!(
+            parse_chart_xml(xml2).expect("parse OK").series[0].explosion,
+            None
+        );
     }
 
     #[test]

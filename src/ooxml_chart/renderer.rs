@@ -1137,19 +1137,25 @@ fn render_pie(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, p
     }
     let cx = px + pw / 2.0;
     let cy = py + ph / 2.0;
-    let r = (pw.min(ph) / 2.0) * 0.9;
+    // 쪼개진원형: 계열 explosion(%)만큼 슬라이스를 중심각 방향으로 이동 —
+    // 벌어진 extent(r×(1+e))가 기존 fit과 같도록 반지름 축소. explosion 부재
+    // (e=0) 시 기존 산식·출력 그대로. (C2b #2278 Stage 3 v3, 정답지 쪼개진원형)
+    let explode = first.explosion.unwrap_or(0.0).max(0.0) / 100.0;
+    let r = (pw.min(ph) / 2.0) * 0.9 / (1.0 + explode);
 
     let mut start_angle = -std::f64::consts::FRAC_PI_2;
     for (i, &v) in first.values.iter().enumerate() {
         let sweep = v / total * std::f64::consts::TAU;
         let end_angle = start_angle + sweep;
-        let (x1, y1) = (cx + r * start_angle.cos(), cy + r * start_angle.sin());
-        let (x2, y2) = (cx + r * end_angle.cos(), cy + r * end_angle.sin());
+        let mid = start_angle + sweep / 2.0;
+        let (ox, oy) = (cx + r * explode * mid.cos(), cy + r * explode * mid.sin());
+        let (x1, y1) = (ox + r * start_angle.cos(), oy + r * start_angle.sin());
+        let (x2, y2) = (ox + r * end_angle.cos(), oy + r * end_angle.sin());
         let large = if sweep > std::f64::consts::PI { 1 } else { 0 };
         let color = color_hex(first.color.unwrap_or_else(|| palette(i)));
         svg.push_str(&format!(
             "<path d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\"/>\n",
-            cx, cy, x1, y1, r, r, large, x2, y2, color
+            ox, oy, x1, y1, r, r, large, x2, y2, color
         ));
         start_angle = end_angle;
     }
@@ -4450,6 +4456,74 @@ mod tests {
         chart.categories = vec!["a".into(), "b".into()];
         let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
         assert!(!svg.contains("hwp-ofpie"), "n<3은 일반 원형 폴백");
+    }
+
+    #[test]
+    fn test_pie_exploded_slices_offset() {
+        // 쪼개진원형(계열 explosion 25): 각 슬라이스 꼭짓점이 중심에서 중심각
+        // 방향으로 r×0.25 이동, 반지름은 1/(1+0.25)로 축소(벌어진 만큼 fit).
+        // 정답지: 한컴 쪼개진원형-2022 — 전 슬라이스 균일 벌어짐.
+        let mut plain = OoxmlChart {
+            chart_type: OoxmlChartType::Pie,
+            series: vec![OoxmlSeries {
+                values: vec![4.0, 3.0, 2.0],
+                ..Default::default()
+            }],
+            categories: vec!["a".into(), "b".into(), "c".into()],
+            ..Default::default()
+        };
+        let svg_plain = render_chart_svg(&plain, 0.0, 0.0, 400.0, 300.0);
+        // 2D 원형 슬라이스 path: "M{cx},{cy} L..." — 전 슬라이스 동일 꼭짓점 = 중심
+        let apex = |chunk: &str| -> (f64, f64) {
+            let d = &chunk[chunk.find("d=\"M").unwrap() + 4..];
+            let (x, rest) = d.split_once(',').unwrap();
+            let (y, _) = rest.split_once(' ').unwrap();
+            (x.parse().unwrap(), y.parse().unwrap())
+        };
+        let arc_r = |chunk: &str| -> f64 {
+            let a = &chunk[chunk.find(" A").unwrap() + 2..];
+            a.split_once(',').unwrap().0.parse().unwrap()
+        };
+        // plain 중심/반지름
+        let plain_slices: Vec<String> = svg_plain
+            .split("<path ")
+            .skip(1)
+            .filter(|c| c.starts_with("d=\"M"))
+            .map(|c| c[..c.find("/>").unwrap()].to_string())
+            .collect();
+        assert_eq!(plain_slices.len(), 3, "2D 원형 3슬라이스");
+        let (cx, cy) = apex(&plain_slices[0]);
+        let r_plain = arc_r(&plain_slices[0]);
+
+        plain.series[0].explosion = Some(25.0);
+        let svg_ex = render_chart_svg(&plain, 0.0, 0.0, 400.0, 300.0);
+        let ex_slices: Vec<String> = svg_ex
+            .split("<path ")
+            .skip(1)
+            .filter(|c| c.starts_with("d=\"M"))
+            .map(|c| c[..c.find("/>").unwrap()].to_string())
+            .collect();
+        assert_eq!(ex_slices.len(), 3);
+        let r_ex = arc_r(&ex_slices[0]);
+        assert!(
+            (r_ex - r_plain / 1.25).abs() < 0.05,
+            "반지름 fit 축소: {r_ex} vs {}",
+            r_plain / 1.25
+        );
+        let off = r_ex * 0.25;
+        for (i, s) in ex_slices.iter().enumerate() {
+            let (ax, ay) = apex(s);
+            let d = ((ax - cx).powi(2) + (ay - cy).powi(2)).sqrt();
+            assert!(
+                (d - off).abs() < 0.05,
+                "슬라이스 {i} 꼭짓점 오프셋 {d} ≠ {off}"
+            );
+        }
+        // 서로 다른 방향으로 벌어짐 (꼭짓점 전부 상이)
+        let a0 = apex(&ex_slices[0]);
+        let a1 = apex(&ex_slices[1]);
+        let a2 = apex(&ex_slices[2]);
+        assert!(a0 != a1 && a1 != a2 && a0 != a2, "슬라이스별 방향 분리");
     }
 
     #[test]
