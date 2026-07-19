@@ -842,6 +842,19 @@ fn adapt_paragraph_with_context(
             }
             Control::Shape(shape) => adapt_shape_with_context(shape, report, context),
             Control::Equation(eq) => adapt_equation(eq, report),
+            // 각주/미주/숨은설명 문단도 body 문단과 동일하게 보강해야 한다.
+            // bin 참조 수집·리맵 워크(collect_bin_order/remap_bin_refs)는 이미 이들을
+            // 재귀하므로 adapt 워크만 빠져 있으면, 이 안의 그림 href·표 ctrl_data 등이
+            // 물질화되지 않고 HWPX→HWP 변환 시 유실된다.
+            Control::Footnote(footnote) => {
+                adapt_paragraphs_with_context(&mut footnote.paragraphs, report, context)
+            }
+            Control::Endnote(endnote) => {
+                adapt_paragraphs_with_context(&mut endnote.paragraphs, report, context)
+            }
+            Control::HiddenComment(comment) => {
+                adapt_paragraphs_with_context(&mut comment.paragraphs, report, context)
+            }
             _ => {}
         }
     }
@@ -1426,6 +1439,12 @@ fn adapt_table_with_context(
         for cpara in &mut cell.paragraphs {
             adapt_paragraph_with_context(cpara, report, context);
         }
+    }
+
+    // 표 캡션 문단도 보강한다(#2443 에서 캡션이 bin 리맵 대상임이 확인됨).
+    // 누락 시 캡션 안의 그림 href·중첩 표 ctrl_data 등이 물질화되지 않는다.
+    if let Some(caption) = &mut table.caption {
+        adapt_paragraphs_with_context(&mut caption.paragraphs, report, context);
     }
 }
 
@@ -2012,6 +2031,67 @@ mod tests {
         let mut second = AdapterReport::new();
         adapt_paragraph(&mut para, &mut second);
         assert_eq!(second.picture_href_ctrl_data_materialized, 0);
+    }
+
+    #[test]
+    fn picture_href_materializes_inside_footnote_and_caption() {
+        use crate::model::footnote::Footnote;
+        use crate::model::shape::Caption;
+
+        // 각주 문단 안의 그림 href 가 물질화되어야 한다(종전엔 adapt 워크가
+        // 각주를 재귀하지 않아 유실).
+        let mut fn_inner = Paragraph::default();
+        fn_inner.controls.push(Control::Picture(Box::new(Picture {
+            href: Some("http://www.korea.kr;1;0;0;".to_string()),
+            ..Default::default()
+        })));
+        let mut footnote = Footnote::default();
+        footnote.paragraphs.push(fn_inner);
+        let mut para = Paragraph::default();
+        para.controls.push(Control::Footnote(Box::new(footnote)));
+
+        let mut report = AdapterReport::new();
+        adapt_paragraph(&mut para, &mut report);
+        assert_eq!(report.picture_href_ctrl_data_materialized, 1);
+        let Control::Footnote(fnote) = &para.controls[0] else {
+            panic!("expected footnote control");
+        };
+        assert_eq!(
+            fnote.paragraphs[0].ctrl_data_records[0]
+                .as_ref()
+                .unwrap()
+                .len(),
+            76
+        );
+
+        // 표 캡션 문단 안의 그림 href 도 물질화되어야 한다.
+        let mut cap_inner = Paragraph::default();
+        cap_inner.controls.push(Control::Picture(Box::new(Picture {
+            href: Some("http://www.korea.kr;1;0;0;".to_string()),
+            ..Default::default()
+        })));
+        let mut caption = Caption::default();
+        caption.paragraphs.push(cap_inner);
+        let mut tpara = Paragraph::default();
+        tpara.controls.push(Control::Table(Box::new(Table {
+            caption: Some(caption),
+            ..Default::default()
+        })));
+
+        let mut treport = AdapterReport::new();
+        adapt_paragraph(&mut tpara, &mut treport);
+        assert_eq!(treport.picture_href_ctrl_data_materialized, 1);
+        let Control::Table(tbl) = &tpara.controls[0] else {
+            panic!("expected table control");
+        };
+        let cap = tbl.caption.as_ref().unwrap();
+        assert_eq!(
+            cap.paragraphs[0].ctrl_data_records[0]
+                .as_ref()
+                .unwrap()
+                .len(),
+            76
+        );
     }
 
     #[test]
