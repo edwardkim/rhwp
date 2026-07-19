@@ -171,15 +171,15 @@ fn field_type_str(t: FieldType) -> &'static str {
     match t {
         Unknown => "UNKNOWN",
         Date => "DATE",
-        DocDate => "DOCDATE",
+        DocDate => "DOC_DATE",
         Path => "PATH",
         Bookmark => "BOOKMARK",
         MailMerge => "MAILMERGE",
         CrossRef => "CROSSREF",
         Formula => "FORMULA",
         ClickHere => "CLICK_HERE",
-        Summary => "SUMMARY",
-        UserInfo => "USERINFO",
+        Summary => "SUMMERY", // OWPML 스키마의 실제 표기(한컴 오탈자). schema.xml:2707
+        UserInfo => "USER_INFO",
         Hyperlink => "HYPERLINK",
         Memo => "MEMO",
         PrivateInfoSecurity => "PRIVATE_INFO",
@@ -253,5 +253,14 @@ mod tests {
         assert_eq!(field_type_str(FieldType::Bookmark), "BOOKMARK");
         assert_eq!(field_type_str(FieldType::Date), "DATE");
         assert_eq!(field_type_str(FieldType::TableOfContents), "TOC");
+    }
+
+    #[test]
+    fn field_type_str_matches_owpml_schema() {
+        // OWPML ParaList schema.xml(2707-2710)의 실제 enum 표기와 일치해야 한컴이 인식한다.
+        // (종전 DOCDATE/USERINFO/SUMMARY 는 스키마에 없어 한컴이 필드 타입을 잃었다.)
+        assert_eq!(field_type_str(FieldType::DocDate), "DOC_DATE");
+        assert_eq!(field_type_str(FieldType::UserInfo), "USER_INFO");
+        assert_eq!(field_type_str(FieldType::Summary), "SUMMERY");
     }
 }

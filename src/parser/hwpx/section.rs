@@ -4392,7 +4392,7 @@ fn parse_field_type(s: &str) -> FieldType {
         "CROSSREF" => FieldType::CrossRef,
         "FORMULA" => FieldType::Formula,
         "CLICK_HERE" | "CLICKHERE" => FieldType::ClickHere,
-        "SUMMARY" => FieldType::Summary,
+        "SUMMARY" | "SUMMERY" => FieldType::Summary,
         "USER_INFO" | "USERINFO" => FieldType::UserInfo,
         "HYPERLINK" => FieldType::Hyperlink,
         "MEMO" => FieldType::Memo,
