@@ -11,7 +11,8 @@
   "files": [
     "index.js",
     "index.d.ts",
-    "transport.js"
+    "transport.js",
+    "README.md"
   ],
   "keywords": [
     "hwp",
@@ -33,5 +34,8 @@
     "url": "https://github.com/edwardkim/rhwp/issues"
   },
   "license": "MIT",
-  "author": "Edward Kim"
+  "author": "Edward Kim",
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }
