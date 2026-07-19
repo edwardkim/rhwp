@@ -79,6 +79,9 @@ pub struct MasterPage {
     pub replace_base: bool,
     /// 확장 플래그 raw 값 (LIST_HEADER byte 18-19)
     pub ext_flags: u16,
+    /// HWPX `masterPage@pageFront` — 첫 쪽(표지) 전용 바탕쪽 여부.
+    /// HWP5에서 읽은 바탕쪽은 해당 XML 속성이 없으므로 기본 false.
+    pub page_front: bool,
     /// 문단 리스트
     pub paragraphs: Vec<Paragraph>,
     /// 텍스트 영역 폭 (HWPUNIT)

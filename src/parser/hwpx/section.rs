@@ -218,6 +218,9 @@ fn parse_master_page_start(e: &quick_xml::events::BytesStart, master_page: &mut 
                 master_page.overlap = duplicate;
             }
             b"pageNumber" => master_page.hwpx_page_number = Some(parse_u16(&attr)),
+            // 표지(첫 쪽) 전용 바탕쪽. serializer 는 방출하나 종전엔 미독 →
+            // pageFront="1" 바탕쪽이 왕복 시 "0" 으로 적용 범위가 바뀌었다.
+            b"pageFront" => master_page.page_front = attr_str(&attr) != "0",
             _ => {}
         }
     }
