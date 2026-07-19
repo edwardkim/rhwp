@@ -573,9 +573,19 @@ fn parse_char_shape(
             b"shadeColor" => cs.shade_color = parse_color(&attr),
             b"useFontSpace" => cs.use_font_space = parse_bool(&attr),
             b"useKerning" => cs.kerning = parse_bool(&attr),
-            // symMark(강조점)은 현재 코퍼스에서 항상 "NONE" 이라 emphasis_dot 기본값
-            // (NONE)과 일치 → 무손실. 비-NONE 값이 발견되면 별도 수집 필요.
-            b"symMark" => {}
+            // symMark(강조점): 방출측 sym_mark_str(cs.emphasis_dot)의 역함수로 파싱한다.
+            // 종전엔 no-op 이라 강조점이 설정된 문서가 hwpx 재로드 시 NONE 으로 유실됐다.
+            b"symMark" => {
+                cs.emphasis_dot = match attr_str(&attr).as_str() {
+                    "DOT_ABOVE" => 1,
+                    "RING_ABOVE" => 2,
+                    "TILDE" => 3,
+                    "CARON" => 4,
+                    "SIDE" => 5,
+                    "COLON" => 6,
+                    _ => 0, // NONE
+                };
+            }
             b"borderFillIDRef" => cs.border_fill_id = parse_u16(&attr),
             _ => {}
         }
@@ -2543,6 +2553,27 @@ mod tests {
         assert_eq!(cs.shadow_color, 0x00C0C0C0);
         assert_eq!(cs.shadow_offset_x, 10);
         assert_eq!(cs.shadow_offset_y, 10);
+    }
+
+    #[test]
+    fn parse_char_pr_captures_sym_mark() {
+        // symMark(강조점)은 종전에 파서가 no-op 으로 무시해 hwpx 재로드 시 NONE 으로 유실됐다
+        // (useKerning[Finding 20]과 동형). 방출측 sym_mark_str 의 역함수로 emphasis_dot 를 보존한다.
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:charProperties itemCnt="1">
+      <hh:charPr id="0" height="1000" textColor="#000000" shadeColor="none" useFontSpace="0" useKerning="0" symMark="DOT_ABOVE">
+        <hh:fontRef hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>
+      </hh:charPr>
+    </hh:charProperties>
+  </hh:refList>
+</hh:head>"##;
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        assert_eq!(
+            doc_info.char_shapes[0].emphasis_dot, 1,
+            "symMark=DOT_ABOVE 가 emphasis_dot=1 로 파싱돼야 함(NONE 유실 방지)"
+        );
     }
 
     #[test]
