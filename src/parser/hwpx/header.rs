@@ -1975,6 +1975,12 @@ fn parse_border_line_type(attr: &quick_xml::events::attributes::Attribute) -> Bo
         "SLIM_THICK_SLIM" => BorderLineType::ThinThickThinTriple,
         "WAVE" => BorderLineType::Wave,
         "DOUBLE_WAVE" => BorderLineType::DoubleWave,
+        // 방출측 border_line_type_str 은 3D 계열을 이 문자열들로 낸다. 파서가 안 받으면
+        // (_ => Solid) 3D 테두리가 .hwpx 왕복 시 실선으로 유실된다. 변형은 이미 model 에 존재.
+        "THICK3D" => BorderLineType::Thick3D,
+        "THICKREV3D" => BorderLineType::Thick3DReverse,
+        "3D" => BorderLineType::Thin3D,
+        "REV3D" => BorderLineType::Thin3DReverse,
         _ => BorderLineType::Solid,
     }
 }
@@ -2285,6 +2291,30 @@ mod tests {
             for attr in e.attributes().flatten() {
                 if attr.key.as_ref() == b"color" {
                     assert_eq!(parse_color(&attr), 0xFFFFFFFF);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn parse_border_line_type_accepts_3d_styles() {
+        use crate::model::style::BorderLineType;
+        // 방출측 border_line_type_str 이 내는 3D 계열 문자열이 Solid 로 유실되지 않아야 한다.
+        let cases = [
+            ("THICK3D", BorderLineType::Thick3D),
+            ("THICKREV3D", BorderLineType::Thick3DReverse),
+            ("3D", BorderLineType::Thin3D),
+            ("REV3D", BorderLineType::Thin3DReverse),
+        ];
+        for (value, expected) in cases {
+            let xml = format!(r#"<e type="{value}"/>"#);
+            let mut reader = Reader::from_str(&xml);
+            let mut buf = Vec::new();
+            if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
+                for attr in e.attributes().flatten() {
+                    if attr.key.as_ref() == b"type" {
+                        assert_eq!(parse_border_line_type(&attr), expected, "{value}");
+                    }
                 }
             }
         }
