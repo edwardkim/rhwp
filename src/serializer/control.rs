@@ -786,12 +786,11 @@ fn serialize_footnote(fn_: &Footnote, level: u16, records: &mut Vec<Record>) {
     let mut w = ByteWriter::new();
     w.write_u32(fn_.number as u32).unwrap();
     w.write_u16(fn_.before_decoration_letter).unwrap();
-    let after = if fn_.after_decoration_letter == 0 {
-        0x0029 // ')' default
-    } else {
-        fn_.after_decoration_letter
-    };
-    w.write_u16(after).unwrap();
+    // after_decoration_letter 를 IR 값 그대로 방출한다. 종전엔 0 을 ')'(0x0029)로
+    // 치환해, 닫는 장식이 없는(0) HWP5 각주가 저장 시 ')' 로 오염됐다. 생성 경로
+    // (insert_footnote_native, HWPX 파서)는 항상 0x0029/실제값을 명시 설정하므로
+    // 이 치환은 불필요하고, before_decoration_letter 방출과도 비대칭이었다.
+    w.write_u16(fn_.after_decoration_letter).unwrap();
     w.write_u32(fn_.number_shape).unwrap();
     w.write_u32(fn_.instance_id).unwrap();
     records.push(make_ctrl_record(tags::CTRL_FOOTNOTE, level, w.as_bytes()));
@@ -809,12 +808,8 @@ fn serialize_endnote(en: &Endnote, level: u16, records: &mut Vec<Record>) {
     let mut w = ByteWriter::new();
     w.write_u32(en.number as u32).unwrap();
     w.write_u16(en.before_decoration_letter).unwrap();
-    let after = if en.after_decoration_letter == 0 {
-        0x0029
-    } else {
-        en.after_decoration_letter
-    };
-    w.write_u16(after).unwrap();
+    // after_decoration_letter 를 IR 값 그대로 방출(footnote 와 동일 근거).
+    w.write_u16(en.after_decoration_letter).unwrap();
     w.write_u32(en.number_shape).unwrap();
     w.write_u32(en.instance_id).unwrap();
     records.push(make_ctrl_record(tags::CTRL_ENDNOTE, level, w.as_bytes()));

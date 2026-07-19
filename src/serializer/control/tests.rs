@@ -348,6 +348,60 @@ fn test_roundtrip_footnote() {
     }
 }
 
+#[test]
+fn footnote_after_decoration_zero_is_not_forced_to_paren() {
+    use crate::model::footnote::Footnote;
+    // 닫는 장식이 없는(after_decoration_letter=0) 각주는 저장 후에도 0 이어야 한다.
+    // 종전엔 serializer 가 0 을 ')'(0x0029)로 치환해 오염됐다.
+    let fn_ = Footnote {
+        number: 1,
+        before_decoration_letter: 0,
+        after_decoration_letter: 0,
+        paragraphs: vec![Paragraph {
+            char_count: 3,
+            text: "주".to_string(),
+            char_offsets: vec![0],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let para = Paragraph {
+        char_count: 2,
+        text: "".to_string(),
+        char_offsets: vec![],
+        controls: vec![Control::Footnote(Box::new(fn_))],
+        ..Default::default()
+    };
+    let section = Section {
+        paragraphs: vec![para],
+        raw_stream: None,
+        ..Default::default()
+    };
+
+    let bytes = serialize_section(&section);
+    let parsed = parse_body_text_section(&bytes).unwrap();
+    let Some(Control::Footnote(fn_)) = parsed.paragraphs[0]
+        .controls
+        .iter()
+        .find(|c| matches!(c, Control::Footnote(_)))
+    else {
+        panic!("Expected Footnote control");
+    };
+    assert_eq!(
+        fn_.after_decoration_letter, 0,
+        "닫는 장식 없음(0)이 ')'(0x0029)로 오염되면 안 됨"
+    );
+}
+
 /// Header 라운드트립
 #[test]
 fn test_roundtrip_header() {
