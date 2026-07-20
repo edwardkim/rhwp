@@ -302,6 +302,7 @@ export class PageRenderer {
         flowImageLayer.style.zIndex = '0';
         parent.insertBefore(flowImageLayer, canvas);
       } else {
+        // RawSvg 차트/OLE는 첫 Canvas2D 렌더가 이미지 디코드를 시작해야 지연 재렌더에서 보인다.
         const flowStatic = this.createOrReuseFilteredCanvasLayer(
           pageIdx,
           canvas,
@@ -309,7 +310,6 @@ export class PageRenderer {
           'flow-static',
           layers,
           allowReuse,
-          false,
         );
         this.applyPageLayerBox(flowStatic, top, left, transform, cssWidth, cssHeight);
         flowStatic.style.zIndex = '0';

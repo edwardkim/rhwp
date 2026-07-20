@@ -385,7 +385,9 @@ test('PageRenderer splits flow static images before the first Canvas2D flow rend
   assert.match(source, /this\.flowSplitSupported = false/);
   assert.match(source, /flow-dynamic 렌더 미지원/);
   assert.match(source, /flow-static 지연 재렌더 실패/);
-  assert.match(source, /'flow-static',\s*layers,\s*allowReuse,\s*false/);
+  // RawSvg 차트/OLE는 첫 Canvas2D 렌더에서 이미지 디코드를 시작해야 다음 재렌더에서 보인다.
+  assert.match(source, /'flow-static',\s*layers,\s*allowReuse,\s*\)/);
+  assert.doesNotMatch(source, /'flow-static',\s*layers,\s*allowReuse,\s*false/);
   assert.match(source, /createOrReuseFlowImageLayer\(/);
   assert.match(source, /usesDomFlowImages \? overlays\.rawSvgCount/);
   assert.match(source, /element\.src = `data:\$\{image\.mime\};base64,\$\{image\.base64\}`/);
