@@ -121,6 +121,7 @@ export class RhwpEditor {
    * @param options.suppressDialogs - 로드 후 안내창(HWPX 검증, 로컬 글꼴 감지) 없이 열기.
    *   임베드 환경에서 안내창의 사용자 선택을 기다리느라 loadFile 응답이 지연/교착되는
    *   것을 방지한다. 검증 경고는 '그대로 열기'로 처리되고, 글꼴은 웹 대체 글꼴로 표시된다.
+   *   기본값 true. 명시적으로 false를 주면 안내창을 표시한다.
    * @returns { pageCount: number }
    *
    * @example
@@ -136,7 +137,7 @@ export class RhwpEditor {
       data,
       fileName,
       skipUnsavedGuard: options.skipUnsavedGuard === true,
-      suppressDialogs: options.suppressDialogs === true,
+      suppressDialogs: options.suppressDialogs !== false,
     });
   }
 
