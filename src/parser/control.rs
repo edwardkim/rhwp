@@ -487,7 +487,13 @@ fn parse_header_control(ctrl_data: &[u8], child_records: &[Record]) -> Control {
         }
     }
 
-    header.paragraphs = find_list_header_paragraphs(child_records);
+    let (layout, paragraphs) = find_list_header_layout_and_paragraphs(child_records);
+    header.list_attr = layout.list_attr;
+    header.text_width = layout.text_width;
+    header.text_height = layout.text_height;
+    header.text_ref = layout.text_ref;
+    header.num_ref = layout.num_ref;
+    header.paragraphs = paragraphs;
 
     Control::Header(Box::new(header))
 }
@@ -511,7 +517,13 @@ fn parse_footer_control(ctrl_data: &[u8], child_records: &[Record]) -> Control {
         }
     }
 
-    footer.paragraphs = find_list_header_paragraphs(child_records);
+    let (layout, paragraphs) = find_list_header_layout_and_paragraphs(child_records);
+    footer.list_attr = layout.list_attr;
+    footer.text_width = layout.text_width;
+    footer.text_height = layout.text_height;
+    footer.text_ref = layout.text_ref;
+    footer.num_ref = layout.num_ref;
+    footer.paragraphs = paragraphs;
 
     Control::Footer(Box::new(footer))
 }
@@ -774,6 +786,55 @@ fn find_list_header_paragraphs(
         idx += 1;
     }
     Vec::new()
+}
+
+/// 머리말/꼬리말 LIST_HEADER 레코드 페이로드.
+///
+/// [#2648] `find_list_header_paragraphs` 는 레코드 뒤의 문단만 파싱하고 레코드
+/// 자체의 페이로드(list_attr/text_width/text_height/text_ref/num_ref)는 읽지
+/// 않았다. 직렬화(`build_header_footer_list_header`, serializer/control.rs)는
+/// 이 값들을 무조건 사용하므로 저장 왕복마다 0 으로 뭉개졌다. 바이트 레이아웃은
+/// 그 직렬화 함수의 역이다:
+/// u16 para_count | u32 list_attr | u16(예약) | u32 text_width | u32 text_height
+/// | u8 text_ref | u8 num_ref | u16 ext_flags | [u8;14] 예약
+struct HeaderFooterListLayoutFields {
+    list_attr: u32,
+    text_width: u32,
+    text_height: u32,
+    text_ref: u8,
+    num_ref: u8,
+}
+
+fn find_list_header_layout_and_paragraphs(
+    child_records: &[Record],
+) -> (
+    HeaderFooterListLayoutFields,
+    Vec<crate::model::paragraph::Paragraph>,
+) {
+    let mut layout = HeaderFooterListLayoutFields {
+        list_attr: 0,
+        text_width: 0,
+        text_height: 0,
+        text_ref: 0,
+        num_ref: 0,
+    };
+    let mut idx = 0;
+    while idx < child_records.len() {
+        if child_records[idx].tag_id == tags::HWPTAG_LIST_HEADER {
+            let mut r = ByteReader::new(&child_records[idx].data);
+            let _para_count = r.read_u16().unwrap_or(0);
+            layout.list_attr = r.read_u32().unwrap_or(0);
+            let _reserved = r.read_u16().unwrap_or(0);
+            layout.text_width = r.read_u32().unwrap_or(0);
+            layout.text_height = r.read_u32().unwrap_or(0);
+            layout.text_ref = r.read_u8().unwrap_or(0);
+            layout.num_ref = r.read_u8().unwrap_or(0);
+            let paragraphs = parse_paragraph_list(&child_records[idx + 1..]);
+            return (layout, paragraphs);
+        }
+        idx += 1;
+    }
+    (layout, Vec::new())
 }
 
 // ============================================================
