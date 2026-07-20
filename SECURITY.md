@@ -7,8 +7,7 @@ rhwp 프로젝트의 보안 취약점을 발견해 주셔서 감사합니다.
 
 보안 취약점은 **공개 이슈로 등록하지 말고** 아래 채널로 제보해 주세요:
 
-- **이메일**: `petaflo.com@gmail.com`
-- **GitHub Security Advisory**: 저장소 `Security` 탭에서 `Advisory` 제출
+- **GitHub Security Advisory**: 저장소 `Security` 탭 → `Report a vulnerability`로 비공개 제보
 
 ## 예상 응답 시간
 

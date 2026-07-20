@@ -14,10 +14,16 @@ GitHub는 SECURITY.md가 있으면 저장소 페이지에 Security 탭을
 ## 변경
 
 저장소 루트에 `SECURITY.md` 신규 생성:
-- 제보 방법 (이메일 및 Security Advisory)
+- 제보 방법 (GitHub Security Advisory 비공개 제보)
 - 예상 응답 시간 (7일)
 - 책임 있는 공개 정책
 
+이메일 채널은 두지 않는다 — 메인테이너의 공개 연락처가 없어
+개인 이메일 대신 저장소 관리자에게 직접 전달되는 Security Advisory
+비공개 제보로 일원화했다.
+
 ## 결과
 - 저장소에 Security 탭 활성화
+- 후속: 비공개 제보 수신은 메인테이너가 저장소 설정에서
+  `Private vulnerability reporting`을 켜야 활성화됨
 - Closes #2641
