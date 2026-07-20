@@ -60,6 +60,62 @@ CHROME_PATH=.../chrome VITE_URL=http://127.0.0.1:7700 \
 
 증적 PNG(studio/cli/diff)는 `<scratch>/compare/<id>.{studio,cli,diff}.png`.
 
+> **위 요약표의 B~E 는 아래 「방법론 정정」으로 갱신됨.** 최초 스윕의 "CLI 기준"은 rsvg-convert
+> 래스터라 신뢰 불가(SVG 필터·폰트·텍스트 오처리). chrome 재래스터 기준이 정본이다.
+
+---
+
+## 방법론 정정 및 B~E 재검증 (chrome 래스터, 2026-07-20)
+
+**정정 배경**: 최초 스윕은 rhwp SVG 를 `rsvg-convert`(resvg)로 래스터해 studio 와 비교했다. 그런데
+resvg 는 (a) SVG `<filter>`(이미지 회색조/흑백 효과)를 제대로 렌더하지 못하고, (b) 미임베딩 폰트를
+폴백으로 대체하며, (c) 텍스트 글리프 배치가 blink 와 달라, **B·C·D 판정을 오염**시켰다. 같은 SVG 를
+**chrome(=studio 와 동일한 blink 엔진 계열)**로 재래스터하면 결과가 달라진다. **벡터라 래스터라이저에
+무관한 A(차트) 만 최초 판정이 그대로 유효**하다(그래서 A 는 studio 자연 렌더로 독립 확인까지 마침).
+
+| # | chrome 재래스터 기준 사실 | 재판정 | 수정 대상 |
+|---|---------------------------|--------|-----------|
+| B | rhwp SVG 는 이미지 3개 + 회색조/흑백 **효과까지 정확히 렌더**(chrome 확인). studio(canvas2d)는 3개를 **모두 컬러**로 렌더 = **효과 미적용**. (최초 "SVG 누락" 은 rsvg 아티팩트, **정반대로 정정**) | studio 결함 | **studio** (이미지 색효과/필터 미적용) |
+| C | native bitmap 폰트: rhwp SVG 를 chrome 로 열면 **□□ 두부(글리프 누락)**, rsvg 는 폴백 "건", studio 는 작은 "건". 래스터라이저/폰트 임베딩마다 상이 | 니치·판정난해 | 보류(폰트 임베딩) |
+| D | rhwp SVG 텍스트가 chrome 에서 **글리프 겹침/뭉개짐**(숫자·라틴 어드밴스 오류), studio 는 정상 간격 | 이번엔 **SVG 쪽** 의심 | 진짜 기준(한컴/PDF) 필요 |
+| E | exam_kor 정상 로드·렌더(20p, canvas 존재, 무에러, ~1.2s). 스윕 "canvas 타임아웃" 은 하니스 일시 오류 | **오탐** | 없음 |
+
+**증적(chrome 래스터)**: `compare/pr149-CHROME-raster.png`(B: 원본/회색조/흑백 효과 정상),
+`compare/hwpx02-CHROME-raster.png`(D: SVG 텍스트 겹침), `compare/natbitmap-CHROME-raster.png`(C: 두부),
+studio 자연 렌더 `compare/verify-{B-pr149,C-natbitmap,D-hwpx02}-VERIFY-natural.png`.
+
+**결론**:
+- **A**: 확정 실건(studio 차트 미렌더) — 수정·PR 완료(#2522). 유일하게 방법론 무관하게 견고.
+- **B**: 확정 실건(정정) — **studio 가 이미지 색효과/필터 미적용**. 수정=studio. **국소화·수정 완료(아래)**.
+- **C/D**: rsvg 아티팩트 제거 후에도 남는 차이가 있으나 **진짜 정본(한컴 편집기/기준 PDF) 대조 없이는
+  어느 쪽이 옳은지 단정 불가**(D 는 오히려 SVG 결함으로 뒤집힘). 시각 검증 거버넌스상 작업지시자 판정 영역.
+- **E**: 오탐, 종결.
+- **재발 방지**: 향후 studio↔SVG 비교는 **SVG 를 chrome 로 래스터**(또는 한컴/PDF 기준)해야 한다.
+  rsvg-convert 래스터는 신뢰 불가.
+
+### B 국소화·수정 (2026-07-20) — studio DOM flow-image 색효과 미적용
+
+**근본 원인**: studio canvas2d 는 이미지를 두 경로로 그린다 — (1) WASM `web_canvas.rs render_image` 는
+`compose_image_filter(effect,brightness,contrast)` → `ctx.set_filter` 로 색효과를 적용하지만, (2) **DOM
+flow-image 경로**(`usesDomFlowImages`: `getFlowImagePaintOps`→ `<img>` 합성)는 필터를 적용하지 않았다.
+pr-149 는 3개 flow 이미지(회색조/흑백 효과)라 DOM 경로를 타 **효과가 누락**(모두 원본 컬러)됐다.
+- 실측: pr-149 DOM `<img>` 3개 모두 `style.filter = "none"`, `naturalWidth=1000`(원본).
+- layer JSON(`paint/json.rs`)은 **이미 `effect`/`brightness`/`contrast` 를 emit** 하는데(라인 884~890)
+  TS `FlowImagePaintOp` 가 이를 파싱·적용하지 않았다 → **순수 TS 수정으로 충분**(wasm 재빌드 불필요).
+
+**수정(TS-only)**:
+- `rhwp-studio/src/view/flow-image-clip.ts`: `FlowImagePaintOp.filter` 추가 + `composeImageFilter()`
+  헬퍼(= Rust `compose_image_filter` 와 동일 CSS: `grayscale(100%)`, 흑백은 `+contrast(1000%)`,
+  밝기/명암 linear). `bakedWatermark` 는 픽셀 baked 이므로 제외. `collectFlowImagePaintOps` 에서 산출.
+- `rhwp-studio/src/view/page-renderer.ts`: DOM flow `<img>` 생성 시 `element.style.filter = image.filter`.
+
+**검증(headless canvas2d 기본)**: pr-149 DOM `<img>` filter 가 `none`(원본) / `grayscale(100%)`(회색조) /
+`grayscale(100%) contrast(1000%)`(흑백) 로 정확히 적용(수정 전 3개 모두 `none`). 자연 렌더 시각 확인 —
+원본 컬러·회색조·흑백 정상(chrome-raster 한 rhwp SVG 기준과 일치). 비-효과 이미지(RealPic)는 `filter:none`
+무회귀, `npx tsc --noEmit` 0 errors.
+- 증적: 수정 전 `compare/verify-B-pr149-VERIFY-natural.png`(3개 컬러), 수정 후
+  `compare/pr149-POSTFIX-VERIFY-natural.png`(원본/회색조/흑백), 기준 `compare/pr149-CHROME-raster.png`.
+
 ---
 
 ## A. 차트 개체가 studio(CanvasKit)에서 렌더되지 않음 — 최우선
