@@ -2434,11 +2434,20 @@ fn dump_pages(args: &[String]) {
     while i < args.len() {
         match args[i].as_str() {
             "--page" | "-p" => {
+                // [#2551] 형제 명령(export-svg/png/text)과 동일하게 파싱 실패를
+                // 조용히 삼키지 않는다 — 오타로 문서 전체가 덤프되던 무성 버그.
                 if i + 1 < args.len() {
-                    target_page = args[i + 1].parse().ok();
+                    match args[i + 1].parse::<u32>() {
+                        Ok(n) => target_page = Some(n),
+                        Err(_) => {
+                            eprintln!("오류: 페이지 번호가 올바르지 않습니다: {}", args[i + 1]);
+                            return;
+                        }
+                    }
                     i += 2;
                 } else {
-                    i += 1;
+                    eprintln!("오류: {} 뒤에 페이지 번호가 필요합니다.", args[i]);
+                    return;
                 }
             }
             "--respect-vpos-reset" => {
@@ -2446,7 +2455,8 @@ fn dump_pages(args: &[String]) {
                 i += 1;
             }
             _ => {
-                i += 1;
+                eprintln!("알 수 없는 옵션: {}", args[i]);
+                return;
             }
         }
     }
@@ -2469,6 +2479,19 @@ fn dump_pages(args: &[String]) {
 
     if respect_vpos_reset {
         doc.set_respect_vpos_reset(true);
+    }
+
+    // [#2551] 문서 로드 후 페이지 범위 검사 — 범위 밖 -p 는 빈 출력이 아니라 오류.
+    // page_filter 는 0-기반(global_page==pf), export-svg 와 동일 규약.
+    if let Some(p) = target_page {
+        let total = doc.page_count();
+        if p >= total {
+            eprintln!(
+                "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
+                total.saturating_sub(1)
+            );
+            return;
+        }
     }
 
     println!("문서 로드: {} ({}페이지)", file_path, doc.page_count());
