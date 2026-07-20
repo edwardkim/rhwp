@@ -449,6 +449,11 @@ struct TypesetState {
     footnote_between_notes_margin: f64,
     /// 각주 안전 여백
     footnote_safety_margin: f64,
+    /// [#2559] 현재 구역에 꼬리말 정의가 없는가 — 참이면 본문/각주가 빈 꼬리말
+    /// 밴드(footer_area)까지 내려쓸 수 있다. 한글은 꼬리말이 없는 문서에서 본문을
+    /// 꼬리말 여백 밴드 하단(=아래 여백 상단)까지 채운다(연구보고서 계열 실측:
+    /// body 바닥 1009px vs 한글 본문 바닥 1065px = footer_area 56.7px 차).
+    section_has_no_footer: bool,
     /// 존(zone) y 오프셋 (다단 나누기 시 누적)
     current_zone_y_offset: f64,
     /// 현재 존의 레이아웃 오버라이드
@@ -1771,6 +1776,7 @@ impl TypesetState {
             footnote_separator_overhead,
             footnote_between_notes_margin,
             footnote_safety_margin,
+            section_has_no_footer: false,
             current_zone_y_offset: 0.0,
             current_zone_layout: None,
             on_first_multicolumn_page: false,
@@ -1831,18 +1837,33 @@ impl TypesetState {
 
     /// 사용 가능한 본문 높이 (각주, 존 오프셋 차감)
     fn available_height(&self) -> f64 {
-        let base = self.layout.available_body_height();
+        let base = self.base_available_height();
         let fn_margin = if self.current_footnote_height > 0.0 {
             self.footnote_safety_margin
         } else {
             0.0
         };
+        // [#2559] 각주는 빈 꼬리말 밴드(footer_area)를 먼저 소비하고, 밴드를
+        // 초과하는 분만 본문 영역을 줄인다 — 한글은 꼬리말 콘텐츠가 없으면 각주를
+        // 꼬리말 여백 밴드에 배치해 본문을 침범하지 않는다(연구보고서 계열 실측:
+        // 각주 31~62px 이 밴드 56.7px 안에 들어가 본문 무침범). 각주가 없는
+        // 문서(결재문서 등 92셋)는 penalty=0 로 완전 불변.
+        let footnote_penalty = (self.current_footnote_height - self.footer_band_reclaim()).max(0.0);
         (base
-            - self.current_footnote_height
+            - footnote_penalty
             - fn_margin
             - self.current_zone_y_offset
             - self.current_bottom_fixed_exclusion)
             .max(0.0)
+    }
+
+    /// [#2559] 각주가 소비 가능한 빈 꼬리말 밴드 높이. 꼬리말 정의가 없는 구역만.
+    fn footer_band_reclaim(&self) -> f64 {
+        if self.section_has_no_footer && self.current_footnote_height > 0.0 {
+            self.layout.footer_area.height.max(0.0)
+        } else {
+            0.0
+        }
     }
 
     /// 기본 가용 높이 (각주/존 미차감)
@@ -3225,6 +3246,10 @@ impl TypesetEngine {
         // 머리말/꼬리말/쪽 번호/새 번호/감추기 컨트롤 수집
         let (hf_entries, page_number_pos, new_page_numbers, page_hides) =
             Self::collect_header_footer_controls(paragraphs, section_index);
+        // [#2559] 구역에 꼬리말 정의가 하나도 없으면 본문이 빈 꼬리말 밴드까지
+        // 내려쓸 수 있다(한글 정합). 조건부(Even/Odd) 포함 어떤 꼬리말이라도
+        // 있으면 밴드가 점유될 수 있으므로 회수하지 않는다(보수적).
+        st.section_has_no_footer = !hf_entries.iter().any(|(_, _, is_header, _)| !is_header);
 
         // 가시 콘텐츠(텍스트 또는 컨트롤 보유)를 가진 마지막 문단 인덱스. 이 뒤의 빈 문단들은
         // 문서 말미의 trailing 빈 문단이라, co-anchored 자리차지 표가 페이지를 채운 경우에 한해
