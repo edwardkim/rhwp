@@ -3456,13 +3456,23 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                         let mut img = ImageFill::default();
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
+                                // [#2563] 헤더(borderFill) 파서와 동일한 12종 매핑.
+                                // 종전엔 4종만 받아 TOTAL 등 8종이 TILE 로 붕괴했다.
                                 b"mode" => {
                                     img.fill_mode = match attr_str(&attr).as_str() {
                                         "TILE" | "TILE_ALL" => ImageFillMode::TileAll,
+                                        "TILE_HORZ_TOP" => ImageFillMode::TileHorzTop,
+                                        "TILE_HORZ_BOTTOM" => ImageFillMode::TileHorzBottom,
+                                        "TILE_VERT_LEFT" => ImageFillMode::TileVertLeft,
+                                        "TILE_VERT_RIGHT" => ImageFillMode::TileVertRight,
+                                        "CENTER" => ImageFillMode::Center,
+                                        "CENTER_TOP" => ImageFillMode::CenterTop,
+                                        "CENTER_BOTTOM" => ImageFillMode::CenterBottom,
                                         "FIT" | "FIT_TO_SIZE" | "STRETCH" => {
                                             ImageFillMode::FitToSize
                                         }
-                                        "CENTER" => ImageFillMode::Center,
+                                        "TOTAL" => ImageFillMode::Total,
+                                        "TOP_LEFT_ALIGN" => ImageFillMode::LeftTop,
                                         _ => ImageFillMode::TileAll,
                                     };
                                 }
@@ -3470,6 +3480,35 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                             }
                         }
                         fill.image = Some(img);
+                    }
+                    // [#2563] <hc:imgBrush> 의 <hc:img> 자식. 종전엔 이 arm 이 없어
+                    // binaryItemIDRef/bright/contrast/effect 가 전부 버려졌고,
+                    // bin_data_id 가 0 이라 직렬화가 <hc:img> 를 아예 못 내
+                    // 이미지로 채운 도형이 왕복 후 빈 도형이 됐다.
+                    // 헤더(borderFill) 파서 header.rs 의 b"img" arm 과 동형.
+                    b"img" | b"image" => {
+                        if let Some(ref mut img_fill) = fill.image {
+                            for attr in ce.attributes().flatten() {
+                                match attr.key.as_ref() {
+                                    b"binaryItemIDRef" => {
+                                        let val = attr_str(&attr);
+                                        let num: String =
+                                            val.chars().filter(|c| c.is_ascii_digit()).collect();
+                                        img_fill.bin_data_id = num.parse().unwrap_or(0);
+                                    }
+                                    b"bright" => img_fill.brightness = parse_i8(&attr),
+                                    b"contrast" => img_fill.contrast = parse_i8(&attr),
+                                    b"effect" => {
+                                        img_fill.effect = match attr_str(&attr).as_str() {
+                                            "GRAY_SCALE" => 1,
+                                            "BLACK_WHITE" => 2,
+                                            _ => 0, // REAL_PIC
+                                        };
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        }
                     }
                     _ => {}
                 }
@@ -7431,6 +7470,57 @@ mod tests {
         assert!(
             line.started_right_or_bottom,
             "isReverseHV=\"1\" 이 started_right_or_bottom 로 되읽혀야 함"
+        );
+    }
+
+    #[test]
+    fn test_shape_img_brush_preserves_image_ref_and_mode() {
+        // [#2563] 도형 <hc:imgBrush> 의 <hc:img> 자식과 12종 mode 매핑.
+        // 종전엔 mode 4종만 받아 TOTAL 이 TILE 로 붕괴했고, <hc:img> arm 이 없어
+        // binaryItemIDRef/bright/contrast/effect 가 전부 버려졌다. bin_data_id 가
+        // 0 이면 직렬화가 <hc:img> 를 못 내므로 이미지 도형이 빈 도형이 된다.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:rect id="1" zOrder="0" textWrap="SQUARE">
+        <hp:sz width="2600" height="2600"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"/>
+        <hc:fillBrush>
+          <hc:imgBrush mode="TOTAL">
+            <hc:img binaryItemIDRef="image3" bright="10" contrast="-5" effect="GRAY_SCALE"/>
+          </hc:imgBrush>
+        </hc:fillBrush>
+      </hp:rect>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Rectangle(rect) = shape.as_ref() else {
+            panic!("expected rectangle shape");
+        };
+        let img = rect
+            .drawing
+            .fill
+            .image
+            .as_ref()
+            .expect("imgBrush 는 ImageFill 을 남겨야 함");
+
+        assert_eq!(img.bin_data_id, 3, "binaryItemIDRef 가 보존돼야 함");
+        assert_eq!(img.brightness, 10, "bright 가 보존돼야 함");
+        assert_eq!(img.contrast, -5, "contrast 가 보존돼야 함");
+        assert_eq!(img.effect, 1, "effect=GRAY_SCALE 가 보존돼야 함");
+        assert_eq!(
+            img.fill_mode,
+            crate::model::style::ImageFillMode::Total,
+            "mode=TOTAL 이 TILE 로 붕괴하면 안 됨"
         );
     }
 
