@@ -1,0 +1,49 @@
+{
+  "extName": {
+    "message": "rhwp - HWP Document Viewer & Editor"
+  },
+  "extDescription": {
+    "message": "Open and edit HWP/HWPX files directly in your browser. No installation, no ads, free."
+  },
+  "actionTitle": {
+    "message": "rhwp - HWP Viewer"
+  },
+  "contextMenuOpen": {
+    "message": "Open with rhwp"
+  },
+  "badgeTooltip": {
+    "message": "Open with rhwp"
+  },
+  "badgeTooltipWithInfo": {
+    "message": "$TITLE$ ($PAGES$ pages) $SIZE$",
+    "placeholders": {
+      "title": { "content": "$1" },
+      "pages": { "content": "$2" },
+      "size": { "content": "$3" }
+    }
+  },
+  "optionsTitle": {
+    "message": "rhwp Settings"
+  },
+  "optionsAutoOpen": {
+    "message": "Automatically open HWP/HWPX files in viewer when downloaded"
+  },
+  "optionsShowBadges": {
+    "message": "Show icon badge next to HWP links on web pages"
+  },
+  "optionsHoverPreview": {
+    "message": "Show preview when hovering over HWP links"
+  },
+  "optionsDisableExternalWebFonts": {
+    "message": "Do not use external web fonts"
+  },
+  "optionsDisableExternalWebFontsDesc": {
+    "message": "Recommended for intranet/offline environments. Some documents may show different fonts, line breaks, or page layout."
+  },
+  "optionsSaved": {
+    "message": "Saved"
+  },
+  "optionsPrivacy": {
+    "message": "Files are never sent to any server. All processing happens locally in your browser."
+  }
+}

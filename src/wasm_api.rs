@@ -1163,6 +1163,31 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    #[wasm_bindgen(js_name = deleteRangeInCellByPath)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn delete_range_in_cell_by_path_api(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        start_para: u32,
+        start_offset: u32,
+        end_para: u32,
+        end_offset: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.delete_range_in_cell_by_path(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            start_para as usize,
+            start_offset as usize,
+            end_para as usize,
+            end_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     #[wasm_bindgen(js_name = splitParagraphInCellByPath)]
     pub fn split_paragraph_in_cell_by_path_api(
         &mut self,
@@ -3930,6 +3955,13 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 페이지에 각주 영역이 있는지 빠르게 확인 (hitTestFootnote fast-reject).
+    /// 페이지네이션 메타데이터만 조회하므로 render tree build가 필요 없다 (#2428).
+    #[wasm_bindgen(js_name = pageHasFootnoteFootholds)]
+    pub fn page_has_footnote_footholds(&self, page_num: u32) -> bool {
+        self.page_has_footnote_footholds_native(page_num)
+    }
+
     /// 각주 영역 히트테스트
     #[wasm_bindgen(js_name = hitTestFootnote)]
     pub fn hit_test_footnote(&self, page_num: u32, x: f64, y: f64) -> Result<String, JsValue> {
@@ -6357,6 +6389,70 @@ impl HwpDocument {
             json_u32(options_json, "startOffset").unwrap_or(0) as usize,
             json_u32(options_json, "endOffset").unwrap_or(0) as usize,
             &props_json,
+        )
+        .map_err(|e| e.into())
+    }
+
+    #[wasm_bindgen(js_name = applyCharFormatInCellByPath)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn apply_char_format_in_cell_by_path_api(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        start_offset: u32,
+        end_offset: u32,
+        props_json: &str,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.apply_char_format_in_cell_by_path(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            start_offset as usize,
+            end_offset as usize,
+            props_json,
+        )
+        .map_err(|e| e.into())
+    }
+
+    #[wasm_bindgen(js_name = getCellCharPropertiesAtByPath)]
+    pub fn get_cell_char_properties_at_by_path_api(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.get_cell_char_properties_at_by_path(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    #[wasm_bindgen(js_name = setCharShapeIdInCellByPath)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn set_char_shape_id_in_cell_by_path_api(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        start_offset: u32,
+        end_offset: u32,
+        char_shape_id: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.set_char_shape_id_in_cell_by_path(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            start_offset as usize,
+            end_offset as usize,
+            char_shape_id,
         )
         .map_err(|e| e.into())
     }

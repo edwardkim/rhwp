@@ -573,9 +573,19 @@ fn parse_char_shape(
             b"shadeColor" => cs.shade_color = parse_color(&attr),
             b"useFontSpace" => cs.use_font_space = parse_bool(&attr),
             b"useKerning" => cs.kerning = parse_bool(&attr),
-            // symMark(강조점)은 현재 코퍼스에서 항상 "NONE" 이라 emphasis_dot 기본값
-            // (NONE)과 일치 → 무손실. 비-NONE 값이 발견되면 별도 수집 필요.
-            b"symMark" => {}
+            // symMark(강조점): 방출측 sym_mark_str(cs.emphasis_dot)의 역함수로 파싱한다.
+            // 종전엔 no-op 이라 강조점이 설정된 문서가 hwpx 재로드 시 NONE 으로 유실됐다.
+            b"symMark" => {
+                cs.emphasis_dot = match attr_str(&attr).as_str() {
+                    "DOT_ABOVE" => 1,
+                    "RING_ABOVE" => 2,
+                    "TILDE" => 3,
+                    "CARON" => 4,
+                    "SIDE" => 5,
+                    "COLON" => 6,
+                    _ => 0, // NONE
+                };
+            }
             b"borderFillIDRef" => cs.border_fill_id = parse_u16(&attr),
             _ => {}
         }
@@ -944,7 +954,12 @@ fn parse_para_shape_child(
                         ps.line_spacing_type = match val.as_str() {
                             "PERCENT" => LineSpacingType::Percent,
                             "FIXED" => LineSpacingType::Fixed,
-                            "SPACEONLY" | "SPACE_ONLY" => LineSpacingType::SpaceOnly,
+                            // 방출측 line_spacing_type_str 은 SpaceOnly 를 "BETWEEN_LINES" 로
+                            // 낸다. 이를 안 받으면 rhwp 가 저장한 SpaceOnly 줄간격이 재로드 시
+                            // Percent 로 유실된다(_ => Percent). SPACEONLY/SPACE_ONLY 는 leniency 유지.
+                            "SPACEONLY" | "SPACE_ONLY" | "BETWEEN_LINES" => {
+                                LineSpacingType::SpaceOnly
+                            }
                             "MINIMUM" | "AT_LEAST" => LineSpacingType::Minimum,
                             _ => LineSpacingType::Percent,
                         };
@@ -1190,7 +1205,9 @@ fn parse_para_shape_switch(
                                         ls_type = Some(match attr_str(&attr).as_str() {
                                             "PERCENT" => LineSpacingType::Percent,
                                             "FIXED" => LineSpacingType::Fixed,
-                                            "SPACEONLY" | "SPACE_ONLY" => {
+                                            // 방출측이 SpaceOnly 를 "BETWEEN_LINES" 로 내므로
+                                            // 되읽기도 이를 받아야 왕복 보존(SPACE_ONLY 는 leniency).
+                                            "SPACEONLY" | "SPACE_ONLY" | "BETWEEN_LINES" => {
                                                 LineSpacingType::SpaceOnly
                                             }
                                             "MINIMUM" | "AT_LEAST" => LineSpacingType::Minimum,
@@ -1612,10 +1629,12 @@ fn parse_tab_item(ce: &quick_xml::events::BytesStart) -> TabItem {
                     "DASH_DOT_DOT" => 5, // 이점쇄선
                     "LONG_DASH" => 6,    // 긴파선
                     "CIRCLE" => 7,       // 원형점선
-                    "DOUBLE_LINE" => 8,  // 이중실선
-                    "THIN_THICK" => 9,   // 얇고 굵은 이중선
-                    "THICK_THIN" => 10,  // 굵고 얇은 이중선
-                    "TRIM" => 11,        // 얇고 굵고 얇은 삼중선
+                    // 방출측 tab_leader_str 은 fill_type 8 을 "DOUBLE_SLIM" 으로 낸다
+                    // (border 명명과 동일). 안 받으면 이중실선 탭 리더가 왕복 시 NONE(0)으로 유실.
+                    "DOUBLE_LINE" | "DOUBLE_SLIM" => 8, // 이중실선
+                    "THIN_THICK" => 9,                  // 얇고 굵은 이중선
+                    "THICK_THIN" => 10,                 // 굵고 얇은 이중선
+                    "TRIM" => 11,                       // 얇고 굵고 얇은 삼중선
                     _ => 0,
                 };
             }
@@ -1944,7 +1963,8 @@ fn parse_alignment(attr: &quick_xml::events::attributes::Attribute) -> Alignment
         "RIGHT" => Alignment::Right,
         "CENTER" => Alignment::Center,
         "DISTRIBUTE" => Alignment::Distribute,
-        "DISTRIBUTE_SPACE" => Alignment::Justify,
+        // OWPML의 DISTRIBUTE_SPACE는 나눔 정렬(공백에만 배분)이다.
+        "DISTRIBUTE_SPACE" => Alignment::Split,
         _ => Alignment::Justify,
     }
 }
@@ -1975,6 +1995,12 @@ fn parse_border_line_type(attr: &quick_xml::events::attributes::Attribute) -> Bo
         "SLIM_THICK_SLIM" => BorderLineType::ThinThickThinTriple,
         "WAVE" => BorderLineType::Wave,
         "DOUBLE_WAVE" => BorderLineType::DoubleWave,
+        // 방출측 border_line_type_str 은 3D 계열을 이 문자열들로 낸다. 파서가 안 받으면
+        // (_ => Solid) 3D 테두리가 .hwpx 왕복 시 실선으로 유실된다. 변형은 이미 model 에 존재.
+        "THICK3D" => BorderLineType::Thick3D,
+        "THICKREV3D" => BorderLineType::Thick3DReverse,
+        "3D" => BorderLineType::Thin3D,
+        "REV3D" => BorderLineType::Thin3DReverse,
         _ => BorderLineType::Solid,
     }
 }
@@ -2203,6 +2229,29 @@ mod tests {
     }
 
     #[test]
+    fn para_shape_linespacing_between_lines_parses_as_space_only() {
+        // 방출측 line_spacing_type_str 은 SpaceOnly 를 "BETWEEN_LINES" 로 낸다. 파서가 이를
+        // 안 받으면(_ => Percent) rhwp 저장 SpaceOnly 줄간격이 재로드 시 Percent 로 유실된다.
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head" xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hh:refList>
+    <hh:paraProperties itemCnt="1">
+      <hh:paraPr id="1" tabPrIDRef="0">
+        <hh:align horizontal="JUSTIFY" vertical="BASELINE"/>
+        <hh:lineSpacing type="BETWEEN_LINES" value="200" unit="HWPUNIT"/>
+      </hh:paraPr>
+    </hh:paraProperties>
+  </hh:refList>
+</hh:head>"##;
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        assert_eq!(
+            doc_info.para_shapes[0].line_spacing_type,
+            crate::model::style::LineSpacingType::SpaceOnly,
+            "type=BETWEEN_LINES 가 SpaceOnly 로 파싱돼야 함(Percent 유실 방지)"
+        );
+    }
+
+    #[test]
     fn test_parse_hwpx_para_shape_break_non_latin_word_bit() {
         let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
 <hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
@@ -2291,11 +2340,50 @@ mod tests {
     }
 
     #[test]
+    fn parse_border_line_type_accepts_3d_styles() {
+        use crate::model::style::BorderLineType;
+        // 방출측 border_line_type_str 이 내는 3D 계열 문자열이 Solid 로 유실되지 않아야 한다.
+        let cases = [
+            ("THICK3D", BorderLineType::Thick3D),
+            ("THICKREV3D", BorderLineType::Thick3DReverse),
+            ("3D", BorderLineType::Thin3D),
+            ("REV3D", BorderLineType::Thin3DReverse),
+        ];
+        for (value, expected) in cases {
+            let xml = format!(r#"<e type="{value}"/>"#);
+            let mut reader = Reader::from_str(&xml);
+            let mut buf = Vec::new();
+            if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
+                for attr in e.attributes().flatten() {
+                    if attr.key.as_ref() == b"type" {
+                        assert_eq!(parse_border_line_type(&attr), expected, "{value}");
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn parse_tab_item_leader_double_slim_maps_to_8() {
+        // 방출측 tab_leader_str 이 fill_type 8 을 "DOUBLE_SLIM" 으로 내므로 파서도 8 로
+        // 받아야 이중실선 탭 리더가 왕복 보존된다(종전엔 _ => 0/NONE 유실).
+        let xml = r#"<hh:tabItem pos="1000" type="LEFT" leader="DOUBLE_SLIM"/>"#;
+        let mut reader = Reader::from_str(xml);
+        let mut buf = Vec::new();
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Empty(ref e)) => {
+                assert_eq!(parse_tab_item(e).fill_type, 8, "DOUBLE_SLIM → fill_type 8");
+            }
+            other => panic!("tabItem not parsed: {other:?}"),
+        }
+    }
+
+    #[test]
     fn test_parse_alignment() {
         let cases = [
             ("CENTER", Alignment::Center),
             ("DISTRIBUTE", Alignment::Distribute),
-            ("DISTRIBUTE_SPACE", Alignment::Justify),
+            ("DISTRIBUTE_SPACE", Alignment::Split),
         ];
 
         for (value, expected) in cases {
@@ -2543,6 +2631,39 @@ mod tests {
         assert_eq!(cs.shadow_color, 0x00C0C0C0);
         assert_eq!(cs.shadow_offset_x, 10);
         assert_eq!(cs.shadow_offset_y, 10);
+    }
+
+    #[test]
+    fn parse_char_pr_captures_sym_mark() {
+        // symMark(강조점)은 종전에 파서가 no-op 으로 무시해 hwpx 재로드 시 NONE 으로 유실됐다.
+        // 방출측 sym_mark_str 의 모든 유효 문자열을 역방향으로 보존한다.
+        for (sym_mark, expected) in [
+            ("NONE", 0),
+            ("DOT_ABOVE", 1),
+            ("RING_ABOVE", 2),
+            ("TILDE", 3),
+            ("CARON", 4),
+            ("SIDE", 5),
+            ("COLON", 6),
+        ] {
+            let xml = format!(
+                r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:charProperties itemCnt="1">
+      <hh:charPr id="0" height="1000" textColor="#000000" shadeColor="none" useFontSpace="0" useKerning="0" symMark="{sym_mark}">
+        <hh:fontRef hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>
+      </hh:charPr>
+    </hh:charProperties>
+  </hh:refList>
+</hh:head>"##
+            );
+            let (doc_info, _) = parse_hwpx_header(&xml).unwrap();
+            assert_eq!(
+                doc_info.char_shapes[0].emphasis_dot, expected,
+                "symMark={sym_mark} 가 emphasis_dot={expected} 로 파싱돼야 함"
+            );
+        }
     }
 
     #[test]

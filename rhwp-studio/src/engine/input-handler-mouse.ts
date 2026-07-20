@@ -840,7 +840,9 @@ export function onClick(this: any, e: MouseEvent): void {
   // 각주 편집 모드에서 클릭 처리
   if (this.cursor.isInFootnote()) {
     try {
-      const fnHit = this.wasm.hitTestFootnote(pageIdx, pageX, pageY);
+      const fnHit = this.wasm.pageHasFootnoteFootholds(pageIdx)
+        ? this.wasm.hitTestFootnote(pageIdx, pageX, pageY)
+        : { hit: false };
       if (!fnHit.hit) {
         // 본문 영역 클릭 → 각주 편집 모드 탈출
         this.cursor.exitFootnoteMode();
@@ -897,7 +899,9 @@ export function onClick(this: any, e: MouseEvent): void {
   // 각주 영역 클릭 → 각주 편집 모드 진입
   if (!this.cursor.isInFootnote()) {
     try {
-      const fnHit = this.wasm.hitTestFootnote(pageIdx, pageX, pageY);
+      const fnHit = this.wasm.pageHasFootnoteFootholds(pageIdx)
+        ? this.wasm.hitTestFootnote(pageIdx, pageX, pageY)
+        : { hit: false };
       if (fnHit.hit) {
         // hitTestInFootnote로 정확한 footnoteIndex와 커서 위치를 얻기
         const inFnHit = this.wasm.hitTestInFootnote(pageIdx, pageX, pageY);

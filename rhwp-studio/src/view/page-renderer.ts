@@ -453,6 +453,9 @@ export class PageRenderer {
       element.src = `data:${image.mime};base64,${image.base64}`;
       element.style.position = 'absolute';
       element.style.pointerEvents = 'none';
+      // 그림 효과(회색조/흑백/밝기/명암) — WASM canvas 경로(render_image)와 달리
+      // DOM flow-image 경로는 필터가 누락돼 원본 컬러로 렌더되던 문제를 고친다.
+      if (image.filter) element.style.filter = image.filter;
       const applyCrop = () => applyFlowImageCrop(element, image, displayScale);
       element.addEventListener('load', applyCrop, { once: true });
       applyCrop();

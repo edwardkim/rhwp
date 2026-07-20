@@ -590,8 +590,8 @@ fn issue_1692_so_sueop_header_footer_page5_matches_reference_contract() {
     );
     assert_eq!(
         hwpx_model.doc_info.para_shapes[hwpx_header.para_shape_id as usize].alignment,
-        Alignment::Justify,
-        "HWPX DISTRIBUTE_SPACE 머리말 문단은 공백 기반 Justify로 파싱되어야 한다"
+        Alignment::Split,
+        "HWPX DISTRIBUTE_SPACE 머리말 문단은 나눔(Split)으로 보존되어야 한다"
     );
 
     let hwp3_doc = load_wasm_doc("samples/SO-SUEOP.hwp");

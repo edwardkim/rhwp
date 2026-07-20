@@ -11167,10 +11167,10 @@ impl TypesetEngine {
                     );
                     Some(cloned)
                 } else if inner > 0.0
-                    && crate::renderer::composer::stored_lines_overflow(c, para, inner, styles)
+                    && crate::renderer::composer::masked_stored_lines_stale(c, para, inner, styles)
                 {
-                    // [#2279] 마스킹 저장분할 실폭-모순 본문 문단 fresh 재래핑 —
-                    // paragraph_layout(렌더)와 동일.
+                    // [#2279] 마스킹 저장분할 stale(실폭-과잉/줄수-과소) 본문 문단
+                    // fresh 재래핑 — paragraph_layout(렌더)와 동일.
                     let mut cloned = c.clone();
                     crate::renderer::composer::recompose_stored_lines_if_overflowing_body(
                         &mut cloned,
@@ -13746,6 +13746,22 @@ impl TypesetEngine {
         // 재검증). 측정 높이보다 작으면 측정 높이로 보정한다. 저장 lineseg 보유
         // 문서는 불변 (#2237 측정-저장 발산 축과 격리).
         let table_height = if para.line_segs.is_empty() && table_height + 0.5 < ft.total_height {
+            ft.total_height
+        } else {
+            table_height
+        };
+        // [#2279 stale-lh] 마스킹 도구가 셀 내용·cellSz 를 축소하고 표 선언
+        // 높이(common.height)와 host lineseg lh 를 갱신하지 않은 생성기 잔존:
+        // 저장 lh 기반 table_height 가 실측(ft)의 2배 이상이고 선언 표높이도
+        // 같은 배율로 모순이면 실측을 신뢰한다 — 36382471 pi10 현황사진 표:
+        // 선언=lh 154.2px vs 셀 실측 25px(재저장 fresh 24.6px 정합), 잔존
+        // 154px 소비가 말미 2문단을 밀어 +1쪽. 정상 host 줄박스(표<글자줄,
+        // 배율 ~1.1x)와 실측-이상 lh(#2243 커버형, 배율 ~1x)는 불변.
+        let table_height = if !para.line_segs.is_empty()
+            && ft.total_height > 1.0
+            && table_height > ft.total_height * 2.0
+            && hwpunit_to_px(table.common.height as i32, self.dpi) > ft.total_height * 2.0
+        {
             ft.total_height
         } else {
             table_height

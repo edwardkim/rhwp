@@ -26,7 +26,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'insertPageBreak', 'insertColumnBreak', 'insertNewNumber', 'setNumberingRestart',
   // 셀 텍스트/문단
   'insertTextInCell', 'insertTextInCellDeferredPagination', 'deleteTextInCell',
-  'deleteRangeInCell', 'insertTextInCellByPath', 'deleteTextInCellByPath',
+  'deleteRangeInCell', 'insertTextInCellByPath', 'deleteTextInCellByPath', 'deleteRangeInCellByPath',
   'splitParagraphInCell', 'mergeParagraphInCell', 'splitParagraphInCellByPath',
   'mergeParagraphInCellByPath',
   // 표 구조/속성
@@ -51,7 +51,8 @@ export const MUTATING_METHODS: readonly string[] = [
   'pasteInternal', 'pasteInternalInCell', 'pasteInternalInCellByPath', 'pasteControl',
   'pasteHtml', 'pasteHtmlInCell', 'pasteHtmlInCellByPath',
   // 글자/문단 모양
-  'applyCharFormat', 'setCharShapeId', 'applyCharFormatInCell', 'setCharShapeIdInCell',
+  'applyCharFormat', 'setCharShapeId', 'applyCharFormatInCell', 'applyCharFormatInCellByPath',
+  'setCharShapeIdInCell', 'setCharShapeIdInCellByPath',
   'applyParaFormat', 'setParaShapeId', 'applyParaFormatInCell', 'setCellParaShapeId',
   // 스타일/번호 정의 (DocInfo 변이 포함)
   'updateStyle', 'updateStyleShapes', 'createStyle', 'deleteStyle', 'applyStyle',

@@ -1912,15 +1912,15 @@ impl LayoutEngine {
                     );
                     Some(cloned)
                 } else if column_inner_width > 0.0
-                    && crate::renderer::composer::stored_lines_overflow(
+                    && crate::renderer::composer::masked_stored_lines_stale(
                         comp,
                         para,
                         column_inner_width,
                         styles,
                     )
                 {
-                    // [#2279] 마스킹 저장분할 실폭-모순 본문 문단 fresh 재래핑 —
-                    // typeset(format_paragraph)과 동일.
+                    // [#2279] 마스킹 저장분할 stale(실폭-과잉/줄수-과소) 본문 문단
+                    // fresh 재래핑 — typeset(format_paragraph)과 동일.
                     let mut cloned = comp.clone();
                     crate::renderer::composer::recompose_stored_lines_if_overflowing_body(
                         &mut cloned,
@@ -3343,13 +3343,13 @@ impl LayoutEngine {
             // 정렬별 간격 분배 계산
             let has_forced_break = comp_line.has_line_break;
             // 머리말/꼬리말은 내부 문단 인덱스를 `usize::MAX - i`로 넘긴다.
-            // HWP3 머리말 단일 줄 Justify도 한컴처럼 머리말 폭까지 공간을 벌려야 한다.
+            // HWP3 Justify와 HWPX DISTRIBUTE_SPACE/HWP5 Split은 모두 공백에만 배분한다.
+            // 머리말/꼬리말 단일 줄도 한컴처럼 영역 폭까지 공백을 벌려야 한다.
             let is_header_footer_para = para_index >= usize::MAX - 1024;
-            let needs_justify = alignment == Alignment::Justify
+            let needs_justify = matches!(alignment, Alignment::Justify | Alignment::Split)
                 && (!is_last_line_of_para || is_header_footer_para)
                 && !has_forced_break;
-            let needs_distribute = alignment == Alignment::Distribute
-                || (alignment == Alignment::Split && !is_last_line_of_para && !has_forced_break);
+            let needs_distribute = alignment == Alignment::Distribute;
 
             let has_tabs = comp_line.runs.iter().any(|r| r.text.contains('\t'));
             let total_char_count: usize = comp_line

@@ -742,8 +742,12 @@ impl DocumentCore {
         let (raw_left_hu, raw_right_hu, raw_indent_hu) = raw_ps
             .map(|r| (r.margin_left, r.margin_right, r.indent))
             .unwrap_or((0, 0, 0));
-        let is_hwp3_native = self.document.header.version.major == 3
-            && !self.document.layout_profile().hwp3_layout();
+        // parser_architecture.md §47: 공통 편집 레이어에서 header.version 직접
+        // 비교를 새로 만들지 않고 layout_profile() 질의로 판정한다.
+        // `version.major==3 && !hwp3_layout()` 은 hwp3_native_layout() 과 동치다:
+        // native HWP3 는 format=Hwp3·hwp3_lineage=false·major=3, 변환본은
+        // format=Hwp5·hwp3_lineage=true·major=5 이므로 4개 출처 모두 결과가 같다.
+        let is_hwp3_native = self.document.layout_profile().hwp3_native_layout();
         let effective_left_hu = if is_hwp3_native {
             raw_left_hu + raw_indent_hu.min(0)
         } else {
@@ -1156,6 +1160,99 @@ impl DocumentCore {
             self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
         }
 
+        self.document.sections[sec_idx].raw_stream = None;
+        self.rebuild_section(sec_idx);
+        self.event_log.push(DocumentEvent::CharFormatChanged {
+            section: sec_idx,
+            para: parent_para_idx,
+            start: start_offset,
+            end: end_offset,
+        });
+        Ok("{\"ok\":true}".to_string())
+    }
+
+    /// `applyCharFormatInCell` 의 cellPath 변형 (중첩 표 지원).
+    ///
+    /// flat 변형은 controlIndex/cellIndex 를 최외곽(cellPath[0]) 축으로 받아 중첩 셀에서
+    /// 바깥 셀에 서식을 적용한다. 이 변형은 path 로 최내곽 셀 문단을 해석해 적용하고,
+    /// 셀별 리플로우는 rebuild_section 의 전체 재조판이 담당한다(delete_range_in_cell_by_path 동형).
+    #[allow(clippy::too_many_arguments)]
+    pub fn apply_char_format_in_cell_by_path(
+        &mut self,
+        sec_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        start_offset: usize,
+        end_offset: usize,
+        props_json: &str,
+    ) -> Result<String, HwpError> {
+        let mut mods = parse_char_shape_mods(props_json);
+        if json_has_border_keys(props_json) {
+            let bf_id = self.create_border_fill_from_json(props_json);
+            mods.border_fill_id = Some(bf_id);
+        }
+        let base_id = {
+            let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
+            para.char_shape_id_at(start_offset).unwrap_or(0)
+        };
+        let new_id = self.document.find_or_create_char_shape(base_id, &mods);
+        {
+            let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
+            para.apply_char_shape_range(start_offset, end_offset, new_id);
+        }
+        let outer_ctrl = path[0].0;
+        self.mark_cell_control_dirty(sec_idx, parent_para_idx, outer_ctrl);
+        self.document.sections[sec_idx].raw_stream = None;
+        self.rebuild_section(sec_idx);
+        self.event_log.push(DocumentEvent::CharFormatChanged {
+            section: sec_idx,
+            para: parent_para_idx,
+            start: start_offset,
+            end: end_offset,
+        });
+        Ok("{\"ok\":true}".to_string())
+    }
+
+    /// `getCellCharPropertiesAt` 의 cellPath 변형. 커맨드는 charShapeId 만 쓰므로
+    /// shape 기준 속성(build_char_properties_json_by_id)으로 충분하다.
+    pub fn get_cell_char_properties_at_by_path(
+        &mut self,
+        sec_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        char_offset: usize,
+    ) -> Result<String, HwpError> {
+        let char_shape_id = {
+            let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
+            para.char_shape_id_at(char_offset).unwrap_or(0)
+        };
+        Ok(self.build_char_properties_json_by_id(char_shape_id as u16))
+    }
+
+    /// `setCharShapeIdInCell` 의 cellPath 변형 (중첩 표 지원, undo용).
+    #[allow(clippy::too_many_arguments)]
+    pub fn set_char_shape_id_in_cell_by_path(
+        &mut self,
+        sec_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        start_offset: usize,
+        end_offset: usize,
+        char_shape_id: u32,
+    ) -> Result<String, HwpError> {
+        if char_shape_id as usize >= self.document.doc_info.char_shapes.len() {
+            return Err(HwpError::RenderError(format!(
+                "글자 모양 ID {} 범위 초과 (총 {}개)",
+                char_shape_id,
+                self.document.doc_info.char_shapes.len()
+            )));
+        }
+        {
+            let cell_para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
+            cell_para.apply_char_shape_range(start_offset, end_offset, char_shape_id);
+        }
+        let outer_ctrl = path[0].0;
+        self.mark_cell_control_dirty(sec_idx, parent_para_idx, outer_ctrl);
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
         self.event_log.push(DocumentEvent::CharFormatChanged {
@@ -2046,8 +2143,11 @@ impl DocumentCore {
 
 #[cfg(test)]
 mod tests {
-    use super::char_shape_mods_affect_text_flow;
+    use super::{char_shape_mods_affect_text_flow, DocumentCore};
+    use crate::model::control::Control;
+    use crate::model::paragraph::{CharShapeRef, Paragraph};
     use crate::model::style::CharShapeMods;
+    use crate::model::table::{Cell, Table};
 
     #[test]
     fn char_ratio_and_spacing_changes_require_text_reflow() {
@@ -2071,6 +2171,109 @@ mod tests {
             ..Default::default()
         };
         assert!(!char_shape_mods_affect_text_flow(&mods));
+    }
+
+    #[test]
+    fn apply_char_format_in_nested_cell_by_path_preserves_outer_cell() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        if core.document.doc_info.char_shapes.is_empty() {
+            // 실제 문서는 기본 글자 모양을 보유한다. 새 서식이 0번을 재사용하지 않게 맞춘다.
+            core.document.doc_info.char_shapes.push(Default::default());
+        }
+
+        let inner_para = Paragraph {
+            text: "INNER".to_string(),
+            char_count: 5,
+            char_offsets: vec![0, 1, 2, 3, 4],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            ..Default::default()
+        };
+        let nested_table = Table {
+            cells: vec![Cell {
+                paragraphs: vec![inner_para],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        let mut outer_para = Paragraph {
+            text: "OUTER".to_string(),
+            char_count: 5,
+            char_offsets: vec![0, 1, 2, 3, 4],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            ..Default::default()
+        };
+        outer_para
+            .controls
+            .push(Control::Table(Box::new(nested_table)));
+        let nested_ctrl_idx = outer_para.controls.len() - 1;
+        let outer_table = Table {
+            cells: vec![Cell {
+                paragraphs: vec![outer_para],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        core.document.sections[0].paragraphs[0]
+            .controls
+            .push(Control::Table(Box::new(outer_table)));
+        let outer_ctrl_idx = core.document.sections[0].paragraphs[0].controls.len() - 1;
+        let path = [(outer_ctrl_idx, 0, 0), (nested_ctrl_idx, 0, 0)];
+
+        // 안쪽 셀에만 굵게 적용한다. 바깥 셀의 글자 모양 ID는 그대로여야 한다.
+        core.apply_char_format_in_cell_by_path(0, 0, &path, 0, 5, r#"{"bold":true}"#)
+            .unwrap();
+
+        let inner_shape_id = {
+            let Control::Table(outer) =
+                &core.document.sections[0].paragraphs[0].controls[outer_ctrl_idx]
+            else {
+                panic!("expected outer table");
+            };
+            assert_eq!(
+                outer.cells[0].paragraphs[0].char_shape_id_at(0),
+                Some(0),
+                "바깥 셀에는 서식이 적용되면 안 된다"
+            );
+            let Control::Table(inner) = &outer.cells[0].paragraphs[0].controls[nested_ctrl_idx]
+            else {
+                panic!("expected nested table");
+            };
+            let inner_shape_id = inner.cells[0].paragraphs[0].char_shape_id_at(0);
+            assert_ne!(
+                inner_shape_id,
+                Some(0),
+                "안쪽 셀에는 새 글자 서식이 적용돼야 한다"
+            );
+            inner_shape_id
+        };
+
+        // undo가 쓰는 ByPath 복원도 안쪽 셀만 기본 글자 모양으로 되돌려야 한다.
+        core.set_char_shape_id_in_cell_by_path(0, 0, &path, 0, 5, 0)
+            .unwrap();
+
+        let Control::Table(outer) =
+            &core.document.sections[0].paragraphs[0].controls[outer_ctrl_idx]
+        else {
+            panic!("expected outer table");
+        };
+        assert_eq!(outer.cells[0].paragraphs[0].char_shape_id_at(0), Some(0));
+        let Control::Table(inner) = &outer.cells[0].paragraphs[0].controls[nested_ctrl_idx] else {
+            panic!("expected nested table");
+        };
+        assert_eq!(inner.cells[0].paragraphs[0].char_shape_id_at(0), Some(0));
+        assert_ne!(
+            inner_shape_id,
+            Some(0),
+            "복원 전에는 안쪽 셀만 새 ID여야 한다"
+        );
     }
 }
 

@@ -25,7 +25,6 @@ import { isSupportedDocumentFileName } from '@/command/file-system-access';
 import { forgetConvertedHmlSaveHandle } from '@/command/save-target';
 import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
-import { showValidationModalIfNeeded } from '@/ui/validation-modal';
 import { showHmlImportWarning } from '@/ui/hml-import-warning';
 import { showLocalFontsModalIfNeeded } from '@/ui/local-fonts-modal';
 import { showToast } from '@/ui/toast';
@@ -812,7 +811,6 @@ async function initializeDocument(
   options: { suppressDialogs?: boolean } = {},
 ): Promise<void> {
   const msg = sbMessage();
-  let normalizedDuringLoad = false;
   try {
     console.log('[initDoc] 1. 폰트 로딩 시작');
     await updateLoadProgress(55, '폰트 준비 중...');
@@ -842,35 +840,22 @@ async function initializeDocument(
     console.log('[initDoc] 7. 사전 검증 및 로컬 글꼴 확인');
     await updateLoadProgress(94, '문서 검증 및 글꼴 확인 중...');
 
-    // #177: HWPX 비표준 lineseg 감지 → 경고 있으면 모달로 사용자 선택 요청
+    // #177: HWPX 비표준 lineseg 감지 (진단 로그).
+    // #2527: 자동 보정(reflowLinesegs)이 빈-lineseg 문서에서 글리프 좌표를 붕괴시켜
+    // 글자가 대량으로 겹치므로, 모달을 띄우지 않고 항상 '그대로 보기'로 연다.
+    // reflow 근본 수정 후 모달/자동 보정 재도입을 검토한다.
     try {
       if (wasm.getSourceFormat() === 'hwpx') {
         const report = wasm.getValidationWarnings();
-        console.log(`[validation] ${report.count} warnings`, report.summary);
         if (report.count > 0) {
-          // embed 등 비대화형 로드에서는 모달 없이 '그대로 열기'로 진행한다 —
-          // 모달 await가 loadFile 응답을 막아 임베더가 교착되는 것을 방지 (suppressDialogs).
-          const choice = options.suppressDialogs
-            ? 'as-is'
-            : await showValidationModalIfNeeded(report);
-          console.log(`[validation] user choice: ${choice}${options.suppressDialogs ? ' (dialogs suppressed)' : ''}`);
-          if (choice === 'auto-fix') {
-            const n = wasm.reflowLinesegs();
-            console.log(`[validation] reflowed ${n} paragraphs`);
-            if (n > 0) {
-              // 렌더 재계산
-              await canvasView?.loadDocument();
-              msg.textContent = `${displayName} (비표준 lineseg ${n}건 자동 보정됨)`;
-              normalizedDuringLoad = true;
-            }
-          }
+          console.log(`[validation] ${report.count} warnings — 그대로 보기 (#2527)`, report.summary);
         }
       } else if (wasm.getSourceFormat() === 'hml') {
         const metadata = wasm.getHmlOpenMetadata();
         if (metadata) showHmlImportWarning(metadata);
       }
     } catch (e) {
-      console.warn('[validation] 감지/보정 실패 (치명적이지 않음):', e);
+      console.warn('[validation] 감지 실패 (치명적이지 않음):', e);
     }
 
     if (!options.suppressDialogs) {
@@ -885,11 +870,8 @@ async function initializeDocument(
     msg.textContent = displayName;
     console.log('[initDoc] 9. 완료');
 
-    if (normalizedDuringLoad) {
-      documentState.markDirty('validation-auto-fix');
-    } else {
-      documentState.markClean('document-initialized');
-    }
+    // #2527: 자동 보정을 하지 않으므로 로드 직후 문서는 항상 clean.
+    documentState.markClean('document-initialized');
   } catch (error) {
     console.error('[initDoc] 오류:', error);
     if (window.innerWidth < 768) alert(`초기화 오류: ${error}`);

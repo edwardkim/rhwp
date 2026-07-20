@@ -827,6 +827,95 @@ fn test_split_and_merge_roundtrip() {
 }
 
 #[test]
+fn test_undo_split_moves_merged_clickhere_field_to_restored_paragraph() {
+    // 문단 병합 뒤 undo가 split_at(병합 지점)을 호출하는 경로를 재현한다.
+    // 두 번째 문단의 Field와 FieldRange는 복원된 새 문단에 함께 남아야 한다.
+    let mut merged = Paragraph {
+        text: "AB".to_string(),
+        char_count: 3,
+        char_offsets: vec![0, 1],
+        has_para_text: true,
+        ..Default::default()
+    };
+    let field_paragraph = Paragraph {
+        text: "CD".to_string(),
+        char_count: 11,
+        // Field 하나가 첫 텍스트 앞의 8 code unit을 점유한다.
+        char_offsets: vec![8, 9],
+        controls: vec![Control::Field(crate::model::control::Field {
+            field_type: crate::model::control::FieldType::ClickHere,
+            ..Default::default()
+        })],
+        ctrl_data_records: vec![Some(vec![0x24, 0x17])],
+        field_ranges: vec![FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 2,
+            control_idx: 0,
+        }],
+        has_para_text: true,
+        ..Default::default()
+    };
+
+    let merge_pos = merged.merge_from(&field_paragraph);
+    assert_eq!(merge_pos, 2);
+
+    let restored = merged.split_at(merge_pos);
+
+    assert!(merged.field_ranges.is_empty());
+    assert!(merged.controls.is_empty());
+    assert_eq!(restored.text, "CD");
+    assert!(matches!(restored.controls.as_slice(), [Control::Field(_)]));
+    assert_eq!(restored.ctrl_data_records, vec![Some(vec![0x24, 0x17])]);
+    assert_eq!(
+        restored
+            .field_ranges
+            .iter()
+            .map(|range| (range.start_char_idx, range.end_char_idx, range.control_idx))
+            .collect::<Vec<_>>(),
+        vec![(0, 2, 0)]
+    );
+    assert_ne!(restored.control_mask & (1 << 0x0003), 0);
+    assert_ne!(restored.control_mask & (1 << 0x0004), 0);
+}
+
+#[test]
+fn test_split_moves_field_with_range_without_consuming_visible_offset() {
+    let mut para = Paragraph {
+        text: "AABB".to_string(),
+        char_count: 13,
+        char_offsets: vec![0, 1, 2, 3],
+        controls: vec![Control::Field(crate::model::control::Field {
+            field_type: crate::model::control::FieldType::ClickHere,
+            ..Default::default()
+        })],
+        field_ranges: vec![FieldRange {
+            start_char_idx: 2,
+            end_char_idx: 4,
+            control_idx: 0,
+        }],
+        has_para_text: true,
+        ..Default::default()
+    };
+
+    // Field는 새 문단으로 이관되지만, split offset 2는 보이는 "AA" 뒤여야 한다.
+    let restored = para.split_at(2);
+
+    assert_eq!(para.text, "AA");
+    assert!(para.controls.is_empty());
+    assert!(para.field_ranges.is_empty());
+    assert_eq!(restored.text, "BB");
+    assert!(matches!(restored.controls.as_slice(), [Control::Field(_)]));
+    assert_eq!(
+        restored
+            .field_ranges
+            .iter()
+            .map(|range| (range.start_char_idx, range.end_char_idx, range.control_idx))
+            .collect::<Vec<_>>(),
+        vec![(0, 2, 0)]
+    );
+}
+
+#[test]
 fn test_char_shape_id_at() {
     let para = Paragraph {
         text: "ABCDE".to_string(),

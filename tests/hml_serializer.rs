@@ -561,6 +561,41 @@ fn edited_hml_text_is_present_after_export_and_reparse() {
 }
 
 #[test]
+fn table_text_wrap_is_read_back_from_hml() {
+    // 표 SHAPEOBJECT 에 TextWrap 을 주입한 HML 을 파싱하면 표 common.text_wrap 으로
+    // 되읽혀야 한다. 종전엔 reader 의 capture_shape_object 가 표를 처리하지 않아
+    // (rectangle 만) 외부(한컴) HML 의 부동 표 TextWrap 이 기본값 Square 로 유실됐다.
+    let fixture = include_str!("../samples/hml/formatting_table.hml");
+    let injected = fixture.replacen(
+        r#"NumberingType="Table" TextFlow="BothSides" ZOrder="1""#,
+        r#"NumberingType="Table" TextFlow="BothSides" TextWrap="TopAndBottom" ZOrder="1""#,
+        1,
+    );
+    assert_ne!(
+        injected, fixture,
+        "fixture 의 표 SHAPEOBJECT 태그를 찾지 못함"
+    );
+
+    let core = DocumentCore::from_bytes(injected.as_bytes()).expect("주입 HML 은 파싱되어야 함");
+    let table = core
+        .document()
+        .sections
+        .iter()
+        .flat_map(|section| section.paragraphs.iter())
+        .flat_map(|paragraph| paragraph.controls.iter())
+        .find_map(|control| match control {
+            Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("표가 있어야 함");
+    assert_eq!(
+        table.common.text_wrap,
+        rhwp::model::shape::TextWrap::TopAndBottom,
+        "표 TextWrap 이 HML 되읽기에서 유실됨"
+    );
+}
+
+#[test]
 fn stale_offsets_after_unequal_direct_text_mutation_block_export() {
     let mut core = DocumentCore::from_bytes(include_bytes!("../samples/hml/formatting_table.hml"))
         .expect("fixture should import");

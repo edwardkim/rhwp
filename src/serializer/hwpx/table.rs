@@ -545,6 +545,54 @@ mod tests {
         t
     }
 
+    #[test]
+    fn cell_text_direction_survives_hwpx_roundtrip() {
+        use crate::model::control::Control;
+        // 세로쓰기 셀(text_direction=1)이 HWPX 왕복에서 보존돼야 한다. serializer 는
+        // 셀 <hp:subList> 에 textDirection 을 방출하지만, 종전엔 파서가 subList 에서
+        // vertAlign 만 읽어 세로쓰기가 유실됐다. (유효한 DocInfo 를 위해 표 샘플 사용.)
+        let find_first_table = |doc: &Document| -> usize {
+            doc.sections
+                .iter()
+                .flat_map(|s| &s.paragraphs)
+                .flat_map(|p| &p.controls)
+                .filter(|c| matches!(c, Control::Table(_)))
+                .count()
+        };
+
+        let bytes0 = std::fs::read("samples/hwpx/basic-table-01.hwpx").expect("샘플 읽기");
+        let mut doc = crate::parser::hwpx::parse_hwpx(&bytes0).expect("샘플 파싱");
+        assert!(find_first_table(&doc) >= 1, "샘플에 표가 있어야 함");
+
+        // 첫 표의 첫 셀을 세로쓰기로 설정
+        for section in &mut doc.sections {
+            for para in &mut section.paragraphs {
+                for control in &mut para.controls {
+                    if let Control::Table(table) = control {
+                        table.cells[0].text_direction = 1;
+                    }
+                }
+            }
+        }
+
+        let bytes = crate::serializer::hwpx::serialize_hwpx(&doc).expect("직렬화");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("재파싱");
+        let table2 = doc2
+            .sections
+            .iter()
+            .flat_map(|s| &s.paragraphs)
+            .flat_map(|p| &p.controls)
+            .find_map(|c| match c {
+                Control::Table(t) => Some(t),
+                _ => None,
+            })
+            .expect("표");
+        assert_eq!(
+            table2.cells[0].text_direction, 1,
+            "세로쓰기 셀 방향(textDirection)이 HWPX 왕복에서 보존돼야 함"
+        );
+    }
+
     fn serialize(table: &Table) -> String {
         let doc = Document::default();
         let mut ctx = SerializeContext::collect_from_document(&doc);

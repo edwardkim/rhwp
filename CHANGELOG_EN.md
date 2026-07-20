@@ -4,6 +4,8 @@ This document records the major changes of the rhwp project.
 
 > 한국어 버전은 [CHANGELOG.md](CHANGELOG.md) 를 참조하세요.
 
+## [Unreleased]
+
 ## [0.7.19] — 2026-07-17
 
 > Patch following v0.7.18 — honoring stored geometry signals (intra-paragraph vpos

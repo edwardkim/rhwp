@@ -6,7 +6,7 @@ import {
   screenshot, assert, getPageCount, getParagraphCount, getParaText,
 } from './helpers.mjs';
 
-runTest('텍스트 플로우 테스트', async ({ page }) => {
+await runTest('텍스트 플로우 테스트', async ({ page }) => {
   // 1. 새 문서 생성
   console.log('[1] 앱 로드 및 새 문서 생성...');
   await createNewDocument(page);

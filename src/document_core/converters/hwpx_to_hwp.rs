@@ -717,6 +717,14 @@ fn collect_object_border_fill_refs(doc: &Document) -> std::collections::HashSet<
         for para in &section.paragraphs {
             collect_object_border_fill_refs_from_paragraph(para, &mut refs);
         }
+        // 바탕쪽(master page) 문단 안 개체 참조도 수집한다. bin 워크
+        // (materialize_hwp5_bin_data_order, remap_bin_refs_in_doc)와 adapt 워크가
+        // 이미 바탕쪽을 순회하는데 이 collect 워크만 빠져 있었다.
+        for master_page in &section.section_def.master_pages {
+            for para in &master_page.paragraphs {
+                collect_object_border_fill_refs_from_paragraph(para, &mut refs);
+            }
+        }
     }
     refs
 }
@@ -729,6 +737,36 @@ fn collect_object_border_fill_refs_from_paragraph(
         match ctrl {
             Control::Table(table) => collect_table_border_fill_refs(table, refs),
             Control::Shape(shape) => collect_object_border_fill_refs_from_shape(shape, refs),
+            // 각주/미주/숨은설명 문단 안의 개체도 border_fill 을 참조할 수 있다.
+            // 이 참조가 수집되지 않으면 normalize_paragraph_char_border_fills 의
+            // 가드가 실패해, 문단 char-border 와 공유된 border_fill 이 no-fill 로
+            // 정규화되어 컨테이너 안 개체의 채우기가 유실된다(#2467 adapt 워크와 동형).
+            Control::Footnote(footnote) => {
+                for p in &footnote.paragraphs {
+                    collect_object_border_fill_refs_from_paragraph(p, refs);
+                }
+            }
+            Control::Endnote(endnote) => {
+                for p in &endnote.paragraphs {
+                    collect_object_border_fill_refs_from_paragraph(p, refs);
+                }
+            }
+            Control::HiddenComment(comment) => {
+                for p in &comment.paragraphs {
+                    collect_object_border_fill_refs_from_paragraph(p, refs);
+                }
+            }
+            // 머리말/꼬리말 문단 안 개체도 다른 워크(bin order/remap, adapt)와 동일하게 순회.
+            Control::Header(header) => {
+                for p in &header.paragraphs {
+                    collect_object_border_fill_refs_from_paragraph(p, refs);
+                }
+            }
+            Control::Footer(footer) => {
+                for p in &footer.paragraphs {
+                    collect_object_border_fill_refs_from_paragraph(p, refs);
+                }
+            }
             _ => {}
         }
     }
@@ -741,6 +779,13 @@ fn collect_object_border_fill_refs_from_shape(
     if let Some(drawing) = shape.drawing() {
         if let Some(text_box) = &drawing.text_box {
             for para in &text_box.paragraphs {
+                collect_object_border_fill_refs_from_paragraph(para, refs);
+            }
+        }
+        // 도형 캡션 문단 안 개체 참조도 수집(bin order/remap 워크와 동형).
+        // #2483 은 표 캡션을 다뤘고, 이 도형 drawing.caption 은 별개 경로다.
+        if let Some(caption) = &drawing.caption {
+            for para in &caption.paragraphs {
                 collect_object_border_fill_refs_from_paragraph(para, refs);
             }
         }
@@ -767,6 +812,12 @@ fn collect_table_border_fill_refs(table: &Table, refs: &mut std::collections::Ha
             refs.insert(cell.border_fill_id);
         }
         for para in &cell.paragraphs {
+            collect_object_border_fill_refs_from_paragraph(para, refs);
+        }
+    }
+    // 표 캡션 문단 안의 개체 참조도 수집(#2467 과 동일 근거).
+    if let Some(caption) = &table.caption {
+        for para in &caption.paragraphs {
             collect_object_border_fill_refs_from_paragraph(para, refs);
         }
     }
@@ -842,6 +893,19 @@ fn adapt_paragraph_with_context(
             }
             Control::Shape(shape) => adapt_shape_with_context(shape, report, context),
             Control::Equation(eq) => adapt_equation(eq, report),
+            // 각주/미주/숨은설명 문단도 body 문단과 동일하게 보강해야 한다.
+            // bin 참조 수집·리맵 워크(collect_bin_order/remap_bin_refs)는 이미 이들을
+            // 재귀하므로 adapt 워크만 빠져 있으면, 이 안의 그림 href·표 ctrl_data 등이
+            // 물질화되지 않고 HWPX→HWP 변환 시 유실된다.
+            Control::Footnote(footnote) => {
+                adapt_paragraphs_with_context(&mut footnote.paragraphs, report, context)
+            }
+            Control::Endnote(endnote) => {
+                adapt_paragraphs_with_context(&mut endnote.paragraphs, report, context)
+            }
+            Control::HiddenComment(comment) => {
+                adapt_paragraphs_with_context(&mut comment.paragraphs, report, context)
+            }
             _ => {}
         }
     }
@@ -1427,6 +1491,12 @@ fn adapt_table_with_context(
             adapt_paragraph_with_context(cpara, report, context);
         }
     }
+
+    // 표 캡션 문단도 보강한다(#2443 에서 캡션이 bin 리맵 대상임이 확인됨).
+    // 누락 시 캡션 안의 그림 href·중첩 표 ctrl_data 등이 물질화되지 않는다.
+    if let Some(caption) = &mut table.caption {
+        adapt_paragraphs_with_context(&mut caption.paragraphs, report, context);
+    }
 }
 
 fn table_requires_cell_width_ref_contract(table: &Table) -> bool {
@@ -1624,6 +1694,116 @@ pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> 
 mod tests {
     use super::*;
     use crate::model::paragraph::CharShapeRef;
+
+    #[test]
+    fn border_fill_refs_collected_inside_footnote_and_caption() {
+        use crate::model::footnote::Footnote;
+        use crate::model::shape::Caption;
+
+        // 각주 문단 안 표의 border_fill 이 수집돼야 한다(종전엔 각주 미재귀로 누락).
+        let mut fn_para = Paragraph::default();
+        fn_para.controls.push(Control::Table(Box::new(Table {
+            border_fill_id: 7,
+            ..Default::default()
+        })));
+        let mut footnote = Footnote::default();
+        footnote.paragraphs.push(fn_para);
+        let mut para = Paragraph::default();
+        para.controls.push(Control::Footnote(Box::new(footnote)));
+        let mut doc = Document::default();
+        doc.sections.push(Section {
+            paragraphs: vec![para],
+            ..Default::default()
+        });
+        let refs = collect_object_border_fill_refs(&doc);
+        assert!(refs.contains(&7), "각주 안 표의 border_fill 이 수집돼야 함");
+
+        // 표 캡션 문단 안 표의 border_fill 도 수집돼야 한다.
+        let mut cap_para = Paragraph::default();
+        cap_para.controls.push(Control::Table(Box::new(Table {
+            border_fill_id: 9,
+            ..Default::default()
+        })));
+        let mut caption = Caption::default();
+        caption.paragraphs.push(cap_para);
+        let mut tpara = Paragraph::default();
+        tpara.controls.push(Control::Table(Box::new(Table {
+            border_fill_id: 1,
+            caption: Some(caption),
+            ..Default::default()
+        })));
+        let mut doc2 = Document::default();
+        doc2.sections.push(Section {
+            paragraphs: vec![tpara],
+            ..Default::default()
+        });
+        let refs2 = collect_object_border_fill_refs(&doc2);
+        assert!(
+            refs2.contains(&9),
+            "표 캡션 안 표의 border_fill 이 수집돼야 함"
+        );
+    }
+
+    #[test]
+    fn border_fill_refs_collected_inside_header_masterpage_and_shape_caption() {
+        use crate::model::header_footer::{Header, MasterPage};
+        use crate::model::shape::{Caption, RectangleShape, ShapeObject};
+
+        let table_para = |bf: u16| {
+            let mut p = Paragraph::default();
+            p.controls.push(Control::Table(Box::new(Table {
+                border_fill_id: bf,
+                ..Default::default()
+            })));
+            p
+        };
+
+        // 머리말 안 표
+        let mut header = Header::default();
+        header.paragraphs.push(table_para(11));
+        let mut hpara = Paragraph::default();
+        hpara.controls.push(Control::Header(Box::new(header)));
+        let mut doc = Document::default();
+        doc.sections.push(Section {
+            paragraphs: vec![hpara],
+            ..Default::default()
+        });
+        assert!(
+            collect_object_border_fill_refs(&doc).contains(&11),
+            "머리말 안 표의 border_fill 이 수집돼야 함"
+        );
+
+        // 바탕쪽(master page) 안 표
+        let mut mp = MasterPage::default();
+        mp.paragraphs.push(table_para(13));
+        let mut sec = Section::default();
+        sec.section_def.master_pages.push(mp);
+        let mut doc2 = Document::default();
+        doc2.sections.push(sec);
+        assert!(
+            collect_object_border_fill_refs(&doc2).contains(&13),
+            "바탕쪽 안 표의 border_fill 이 수집돼야 함"
+        );
+
+        // 도형 캡션 안 표
+        let mut caption = Caption::default();
+        caption.paragraphs.push(table_para(15));
+        let mut rect = RectangleShape::default();
+        rect.drawing.caption = Some(caption);
+        let mut spara = Paragraph::default();
+        spara
+            .controls
+            .push(Control::Shape(Box::new(ShapeObject::Rectangle(rect))));
+        let mut doc3 = Document::default();
+        doc3.sections.push(Section {
+            paragraphs: vec![spara],
+            ..Default::default()
+        });
+        assert!(
+            collect_object_border_fill_refs(&doc3).contains(&15),
+            "도형 캡션 안 표의 border_fill 이 수집돼야 함"
+        );
+    }
 
     #[test]
     fn empty_doc_normalizes_file_header_once() {
@@ -2012,6 +2192,67 @@ mod tests {
         let mut second = AdapterReport::new();
         adapt_paragraph(&mut para, &mut second);
         assert_eq!(second.picture_href_ctrl_data_materialized, 0);
+    }
+
+    #[test]
+    fn picture_href_materializes_inside_footnote_and_caption() {
+        use crate::model::footnote::Footnote;
+        use crate::model::shape::Caption;
+
+        // 각주 문단 안의 그림 href 가 물질화되어야 한다(종전엔 adapt 워크가
+        // 각주를 재귀하지 않아 유실).
+        let mut fn_inner = Paragraph::default();
+        fn_inner.controls.push(Control::Picture(Box::new(Picture {
+            href: Some("http://www.korea.kr;1;0;0;".to_string()),
+            ..Default::default()
+        })));
+        let mut footnote = Footnote::default();
+        footnote.paragraphs.push(fn_inner);
+        let mut para = Paragraph::default();
+        para.controls.push(Control::Footnote(Box::new(footnote)));
+
+        let mut report = AdapterReport::new();
+        adapt_paragraph(&mut para, &mut report);
+        assert_eq!(report.picture_href_ctrl_data_materialized, 1);
+        let Control::Footnote(fnote) = &para.controls[0] else {
+            panic!("expected footnote control");
+        };
+        assert_eq!(
+            fnote.paragraphs[0].ctrl_data_records[0]
+                .as_ref()
+                .unwrap()
+                .len(),
+            76
+        );
+
+        // 표 캡션 문단 안의 그림 href 도 물질화되어야 한다.
+        let mut cap_inner = Paragraph::default();
+        cap_inner.controls.push(Control::Picture(Box::new(Picture {
+            href: Some("http://www.korea.kr;1;0;0;".to_string()),
+            ..Default::default()
+        })));
+        let mut caption = Caption::default();
+        caption.paragraphs.push(cap_inner);
+        let mut tpara = Paragraph::default();
+        tpara.controls.push(Control::Table(Box::new(Table {
+            caption: Some(caption),
+            ..Default::default()
+        })));
+
+        let mut treport = AdapterReport::new();
+        adapt_paragraph(&mut tpara, &mut treport);
+        assert_eq!(treport.picture_href_ctrl_data_materialized, 1);
+        let Control::Table(tbl) = &tpara.controls[0] else {
+            panic!("expected table control");
+        };
+        let cap = tbl.caption.as_ref().unwrap();
+        assert_eq!(
+            cap.paragraphs[0].ctrl_data_records[0]
+                .as_ref()
+                .unwrap()
+                .len(),
+            76
+        );
     }
 
     #[test]

@@ -59,7 +59,7 @@ async function capturedBlobInfo(page) {
   });
 }
 
-runTest('HWP 문서 → HWPX 형식으로 저장 (file:save-as-hwpx)', async ({ page }) => {
+await runTest('HWP 문서 → HWPX 형식으로 저장 (file:save-as-hwpx)', async ({ page }) => {
   await loadHwpFile(page, 'biz_plan.hwp');
   const fmt = await page.evaluate(() => window.__wasm?.getSourceFormat?.());
   assert(fmt === 'hwp', `HWP 출처여야 함 (current: ${fmt})`);
@@ -78,7 +78,7 @@ runTest('HWP 문서 → HWPX 형식으로 저장 (file:save-as-hwpx)', async ({ 
   assert((r.reopenPages ?? 0) >= 1, `재오픈 페이지 1 이상 (current: ${r.reopenPages})`);
 });
 
-runTest('HWPX 문서 → HWP 형식으로 저장 (file:save-as-hwp)', async ({ page }) => {
+await runTest('HWPX 문서 → HWP 형식으로 저장 (file:save-as-hwp)', async ({ page }) => {
   await loadHwpFile(page, 'hwpx/footnote-01.hwpx');
   const fmt = await page.evaluate(() => window.__wasm?.getSourceFormat?.());
   assert(fmt === 'hwpx', `HWPX 출처여야 함 (current: ${fmt})`);

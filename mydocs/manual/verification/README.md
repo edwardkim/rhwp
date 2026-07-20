@@ -16,6 +16,7 @@ last_verified: 2026-07-16
 | 시각 검증 적용 판단과 증적 규약 | [시각 검증 거버넌스](visual_verification_governance.md) | [PR 리뷰·통합 워크플로우](../pr_review_workflow.md) |
 | PDF/SVG overlay·drift 후보 탐색 | [PDF/SVG visual sweep 가이드](visual_sweep_guide.md) | [SVG 회귀 diff](svg_regression_diff.md) |
 | 표·그림 geometry 무회귀 | [개체 시각 회귀 하니스](object_visual_regression.md) | [페이지·PI 매칭 오라클](verify_pi_page_vs_hangul.md) |
+| 편집 전후 페이지 수 무회귀 | [편집-스윕 하니스](edit_sweep.md) | [개체 시각 회귀 하니스](object_visual_regression.md) |
 | HWPX→HWP 페이지네이션 정합 | [roundtrip fidelity 하니스](roundtrip_fidelity_harness.md) | [한글 페이지 충실도 오라클](hangul_page_oracle.md) |
 | 한글 PDF 줄 baseline 대조 | [한글 PDF baseline](hangul_pdf_baseline.md) | [시각 클리핑 검출기](visual_clipping_detector.md) |
 
