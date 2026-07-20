@@ -35,13 +35,14 @@ test('핸들 없는 열기는 메타-only 로 기록된다 (드롭/input/URL)', 
   await clearRecentDocs();
   await addRecentDoc({ fileName: '드롭.hwp', sourceFormat: 'hwp' });
   await addRecentDoc({ fileName: '인풋.hwpx', sourceFormat: 'hwpx', handle: null });
+  await addRecentDoc({ fileName: '문서.hml', sourceFormat: 'hml' });
   const docs = await listRecentDocs();
-  assert.equal(docs.length, 2, '핸들 없는 열기도 목록에 남는다');
+  assert.equal(docs.length, 3, '핸들 없는 열기도 목록에 남는다');
   for (const d of docs) {
     assert.equal(d.handle, undefined, '메타-only 항목은 핸들을 갖지 않는다');
     assert.ok(!('bytes' in d), '바이트 스냅샷을 보관하면 안 된다');
   }
-  assert.deepEqual(docs.map((d) => d.fileName).sort(), ['드롭.hwp', '인풋.hwpx']);
+  assert.deepEqual(docs.map((d) => d.fileName).sort(), ['드롭.hwp', '문서.hml', '인풋.hwpx']);
 });
 
 test('같은 파일명은 핸들 유무와 무관하게 파일명 폴백으로 최신화된다 (메타-only)', async () => {
@@ -60,6 +61,16 @@ test('저장 항목은 핸들+메타만 보관하고 바이트를 갖지 않는�
   assert.ok(doc.handle);
   assert.equal(doc.fileName, 'a.hwp');
   assert.ok(!('bytes' in doc), '바이트 스냅샷을 보관하면 안 된다 (#2285 보존 정책)');
+});
+
+test('HML 문서 recent doc 추가 및 조회', async () => {
+  await clearRecentDocs();
+  await addRecentDoc({ fileName: 'report.hml', sourceFormat: 'hml', handle: makeHandle('report') });
+  const docs = await listRecentDocs();
+  assert.equal(docs.length, 1);
+  assert.equal(docs[0].fileName, 'report.hml');
+  assert.equal(docs[0].sourceFormat, 'hml');
+  assert.ok(await docs[0].handle?.isSameEntry?.(docs[0].handle), 'HML 핸들이 보존된다');
 });
 
 test('같은 파일명이라도 isSameEntry=false면 별도 항목으로 공존한다', async () => {
@@ -89,14 +100,16 @@ test('동일 핸들(isSameEntry=true) 재열기는 중복 없이 최신화된다
 test('최대 8개 상한 — 가장 오래된 항목부터 밀려난다', async () => {
   await clearRecentDocs();
   for (let i = 0; i < 10; i++) {
-    await addRecentDoc({ fileName: `f${i}.hwp`, sourceFormat: 'hwp', handle: makeHandle(`f${i}`) });
+    const fmt = i % 3 === 0 ? 'hml' : i % 3 === 1 ? 'hwpx' : 'hwp';
+    const ext = fmt === 'hml' ? 'hml' : fmt === 'hwpx' ? 'hwpx' : 'hwp';
+    await addRecentDoc({ fileName: `f${i}.${ext}`, sourceFormat: fmt, handle: makeHandle(`f${i}`) });
     await new Promise((r) => setTimeout(r, 2));
   }
   const docs = await listRecentDocs();
   assert.equal(docs.length, 8);
-  assert.equal(docs[0].fileName, 'f9.hwp', '최신이 맨 앞');
+  assert.equal(docs[0].fileName, 'f9.hml', '최신이 맨 앞');
   const names = docs.map((d) => d.fileName);
-  assert.ok(!names.includes('f0.hwp') && !names.includes('f1.hwp'), '가장 오래된 2개 제거');
+  assert.ok(!names.includes('f0.hml') && !names.includes('f1.hwpx'), '가장 오래된 2개 제거');
 });
 
 test('removeRecentDoc / clearRecentDocs', async () => {
