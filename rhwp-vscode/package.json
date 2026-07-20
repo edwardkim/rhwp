@@ -68,34 +68,34 @@
       "explorer/context": [
         {
           "command": "rhwp.exportSvg",
-          "when": "resourceExtname == .hwp || resourceExtname == .hwpx",
+          "when": "resourceExtname == .hwp || resourceExtname == .hwpx || resourceExtname == .hml",
           "group": "rhwp@1"
         },
         {
           "command": "rhwp.debugOverlay",
-          "when": "resourceExtname == .hwp || resourceExtname == .hwpx",
+          "when": "resourceExtname == .hwp || resourceExtname == .hwpx || resourceExtname == .hml",
           "group": "rhwp@2"
         },
         {
           "command": "rhwp.dumpParagraph",
-          "when": "resourceExtname == .hwp || resourceExtname == .hwpx",
+          "when": "resourceExtname == .hwp || resourceExtname == .hwpx || resourceExtname == .hml",
           "group": "rhwp@3"
         }
       ],
       "editor/title/context": [
         {
           "command": "rhwp.exportSvg",
-          "when": "resourceExtname == .hwp || resourceExtname == .hwpx",
+          "when": "resourceExtname == .hwp || resourceExtname == .hwpx || resourceExtname == .hml",
           "group": "rhwp@1"
         },
         {
           "command": "rhwp.debugOverlay",
-          "when": "resourceExtname == .hwp || resourceExtname == .hwpx",
+          "when": "resourceExtname == .hwp || resourceExtname == .hwpx || resourceExtname == .hml",
           "group": "rhwp@2"
         },
         {
           "command": "rhwp.dumpParagraph",
-          "when": "resourceExtname == .hwp || resourceExtname == .hwpx",
+          "when": "resourceExtname == .hwp || resourceExtname == .hwpx || resourceExtname == .hml",
           "group": "rhwp@3"
         }
       ]
