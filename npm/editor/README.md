@@ -102,7 +102,7 @@ await editor.loadFile(buffer, 'sample.hwpx', { suppressDialogs: true });
 | 옵션 | 기본값 | 설명 |
 |------|--------|------|
 | `skipUnsavedGuard` | `false` | 미저장 변경 확인 없이 문서 교체 |
-| `suppressDialogs` | `false` | 로드 후 안내창(HWPX 검증, 로컬 글꼴 감지) 없이 열기 |
+| `suppressDialogs` | `true` | 로드 후 안내창(HWPX 검증, 로컬 글꼴 감지) 없이 열기 |
 
 > **임베드 환경에서는 `suppressDialogs: true`를 권장합니다.** 스튜디오는 문서 로드 후
 > 안내창(HWPX 비표준 lineseg 검증, 로컬 글꼴 감지)의 사용자 선택을 기다린 뒤에
