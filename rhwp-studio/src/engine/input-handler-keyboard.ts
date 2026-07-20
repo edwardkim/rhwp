@@ -1200,10 +1200,15 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       const vpSize = this.viewportManager.getViewportSize();
       const scrollY = this.viewportManager.getScrollY();
       const vpCenter = scrollY + vpSize.height / 2;
-      const currentPage = this.virtualScroll.getPageAtY(vpCenter);
+      // [#2560] 그리드 모드에서는 한 행의 쪽들이 같은 offset 을 갖는다. 행의
+      // 마지막 쪽에서 ±1 하면 같은 행에 머물러 스크롤이 움직이지 않으므로
+      // (PageUp 이 무동작), 행의 첫 쪽 기준으로 행 단위(±열수)로 이동한다.
+      // 단일 컬럼에서는 pagesPerRow=1 이라 종전 동작과 동일하다.
+      const currentPage = this.virtualScroll.getRowFirstPageAtY(vpCenter);
+      const step = this.virtualScroll.pagesPerRow;
       const targetPage = e.key === 'PageUp'
-        ? Math.max(0, currentPage - 1)
-        : Math.min(this.virtualScroll.pageCount - 1, currentPage + 1);
+        ? Math.max(0, currentPage - step)
+        : Math.min(this.virtualScroll.pageCount - 1, currentPage + step);
       if (targetPage !== currentPage) {
         const targetOffset = this.virtualScroll.getPageOffset(targetPage);
         this.viewportManager.setScrollTop(targetOffset - this.virtualScroll.gap);
