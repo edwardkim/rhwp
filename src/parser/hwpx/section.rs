@@ -5756,7 +5756,8 @@ fn parse_hp_chart_element(
         }
     }
 
-    parse_common_shape_children(reader, &mut common, b"chart")?;
+    let mut extent: Option<(i32, i32)> = None;
+    parse_common_shape_children(reader, &mut common, b"chart", &mut extent)?;
     if numbering_type_picture {
         common.hwp5_gen_shape_attr_bit28 = true;
     }
@@ -5769,8 +5770,10 @@ fn parse_hp_chart_element(
     let mut ole = OleShape::default();
     ole.common = common;
     ole.bin_data_id = 60000u32 + chart_num as u32;
-    ole.extent_x = 7200;
-    ole.extent_y = 7200;
+    // <hc:extent> 가 있으면 원본 개체 크기를 보존한다(없으면 종전 기본값 7200).
+    let (ext_x, ext_y) = extent.unwrap_or((7200, 7200));
+    ole.extent_x = if ext_x > 0 { ext_x } else { 7200 };
+    ole.extent_y = if ext_y > 0 { ext_y } else { 7200 };
     apply_hwpx_ole_shape_component_contract(&mut ole);
     Ok(Some(Control::Shape(Box::new(ShapeObject::Ole(Box::new(
         ole,
@@ -5784,15 +5787,28 @@ fn parse_hp_ole_element(
 ) -> Result<Option<Control>, HwpxError> {
     use crate::model::shape::OleShape;
 
+    use crate::model::shape::OleDrawingAspect;
+
     let mut common = CommonObjAttr::default();
     common.hwp5_gen_shape_attr_bit26 = true;
     let mut bin_id: u32 = 0;
     let mut numbering_type_picture = false;
+    let mut draw_aspect = OleDrawingAspect::default();
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
             b"numberingType" => {
                 numbering_type_picture = attr_str(&attr).eq_ignore_ascii_case("PICTURE");
+            }
+            // 표시 방식(아이콘/썸네일/인쇄용/내용). serializer 는 방출하나 종전엔
+            // 파서가 읽지 않아 ICON 등이 왕복 시 CONTENT 로 바뀌었다.
+            b"drawAspect" => {
+                draw_aspect = match attr_str(&attr).as_str() {
+                    "ICON" => OleDrawingAspect::Icon,
+                    "THUMBNAIL" => OleDrawingAspect::Thumbnail,
+                    "DOCPRINT" => OleDrawingAspect::DocPrint,
+                    _ => OleDrawingAspect::Content,
+                };
             }
             b"zOrder" => common.z_order = parse_i32(&attr),
             b"textWrap" => {
@@ -5824,7 +5840,8 @@ fn parse_hp_ole_element(
         }
     }
 
-    parse_common_shape_children(reader, &mut common, b"ole")?;
+    let mut extent: Option<(i32, i32)> = None;
+    parse_common_shape_children(reader, &mut common, b"ole", &mut extent)?;
     if numbering_type_picture {
         common.hwp5_gen_shape_attr_bit28 = true;
     }
@@ -5833,8 +5850,11 @@ fn parse_hp_ole_element(
     let mut ole = OleShape::default();
     ole.common = common;
     ole.bin_data_id = bin_id;
-    ole.extent_x = 7200;
-    ole.extent_y = 7200;
+    ole.drawing_aspect = draw_aspect;
+    // <hc:extent> 가 있으면 원본 개체 크기를 보존한다(없으면 종전 기본값 7200).
+    let (ext_x, ext_y) = extent.unwrap_or((7200, 7200));
+    ole.extent_x = if ext_x > 0 { ext_x } else { 7200 };
+    ole.extent_y = if ext_y > 0 { ext_y } else { 7200 };
     apply_hwpx_ole_shape_component_contract(&mut ole);
     Ok(Some(Control::Shape(Box::new(ShapeObject::Ole(Box::new(
         ole,
@@ -5877,6 +5897,9 @@ fn parse_common_shape_children(
     reader: &mut Reader<&[u8]>,
     common: &mut CommonObjAttr,
     end_tag: &[u8],
+    // OLE 전용 `<hc:extent>`(원본 개체 크기) 수집용. 호출자(ole/chart)만 사용한다.
+    // 종전엔 이 자식을 무시하고 호출자가 7200 을 하드코딩해 개체 크기가 유실됐다.
+    extent_out: &mut Option<(i32, i32)>,
 ) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
     loop {
@@ -5885,6 +5908,18 @@ fn parse_common_shape_children(
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
                 match local {
+                    b"extent" => {
+                        let mut x = 0i32;
+                        let mut y = 0i32;
+                        for attr in ce.attributes().flatten() {
+                            match attr.key.as_ref() {
+                                b"x" => x = parse_i32(&attr),
+                                b"y" => y = parse_i32(&attr),
+                                _ => {}
+                            }
+                        }
+                        *extent_out = Some((x, y));
+                    }
                     b"sz" => {
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
@@ -7431,6 +7466,43 @@ mod tests {
         assert!(
             line.started_right_or_bottom,
             "isReverseHV=\"1\" 이 started_right_or_bottom 로 되읽혀야 함"
+        );
+    }
+
+    #[test]
+    fn test_parse_ole_preserves_extent_and_draw_aspect() {
+        // <hc:extent> 원본 개체 크기와 drawAspect(표시 방식)가 IR 로 되읽혀야 한다.
+        // 종전엔 extent 를 7200 으로 하드코딩하고 drawAspect 를 읽지 않아,
+        // 모든 OLE 이 7200x7200 / CONTENT 로 왕복에서 뭉개졌다.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="1" zOrder="0" drawAspect="ICON" binaryItemIDRef="ole1">
+        <hp:sz width="2600" height="2600"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"/>
+        <hc:extent x="12345" y="6789"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected ole shape");
+        };
+        assert_eq!(ole.extent_x, 12345, "hc:extent x 가 보존돼야 함");
+        assert_eq!(ole.extent_y, 6789, "hc:extent y 가 보존돼야 함");
+        assert_eq!(
+            ole.drawing_aspect,
+            crate::model::shape::OleDrawingAspect::Icon,
+            "drawAspect=ICON 이 보존돼야 함"
         );
     }
 
