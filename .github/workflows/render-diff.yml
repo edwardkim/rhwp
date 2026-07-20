@@ -104,6 +104,7 @@ jobs:
                 && (
                   filename.endsWith('.hwp')
                   || filename.endsWith('.hwpx')
+                  || filename.endsWith('.hml')
                   || filename.endsWith('.pdf')
                   || filename.endsWith('.png')
                 )
