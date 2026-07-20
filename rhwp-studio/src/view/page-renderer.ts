@@ -982,6 +982,19 @@ export class PageRenderer {
     while ((d = dataUrlRe.exec(json)) !== null) {
       enqueue(`data:${d[1]};base64,${d[2]}`);
     }
+    // 벡터 rawSvg(차트/OLE 미리보기)는 내부 raster data URL 이 없어 위 정규식으로
+    // 잡히지 않는다. web_canvas.render_raw_svg 와 동일하게 조각을 wrap 한 SVG data URL
+    // 을 프리페치해야 비동기 로드 완료 신호를 얻어 지연 재렌더(finish)가 발동하고,
+    // WASM 캐시의 SVG 이미지가 로드 완료 상태로 flow-static overlay 에 그려진다.
+    if (json.includes('"type":"rawSvg"')) {
+      try {
+        const vectorRawSvgUrls: string[] = [];
+        collectVectorRawSvgDataUrls(JSON.parse(json), vectorRawSvgUrls);
+        for (const dataUrl of vectorRawSvgUrls) enqueue(dataUrl);
+      } catch {
+        // 파싱 실패 시 raster 프리페치 결과만 사용한다.
+      }
+    }
     if (tasks.length === 0) return false;
     await Promise.all(tasks);
     return true;
@@ -1036,6 +1049,72 @@ function emptyLayerPlaneSummary(): LayerPlaneSummary {
 function finiteCount(value: unknown): number {
   const n = Number(value);
   return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
+}
+
+/** UTF-8 바이트 기준 base64 (Rust base64::STANDARD 과 동일 산출). */
+function utf8ToBase64(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(binary);
+}
+
+/**
+ * 벡터 rawSvg 조각을 `src/renderer/svg_fragment.rs::wrap_svg_fragment` 와
+ * **바이트 동일**하게 감싼 SVG data URL 로 변환한다. web_canvas.render_raw_svg 가
+ * draw_image 에 넘기는 것과 같은 data URL 이어야 브라우저 이미지 캐시를 공유해
+ * WASM 측 HtmlImageElement 가 로드 완료 상태로 재렌더에 잡힌다.
+ */
+function rawSvgFragmentToDataUrl(
+  fragment: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): string {
+  const f = (v: number): string => v.toFixed(3);
+  const svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
+    + `width="${f(w)}" height="${f(h)}" viewBox="${f(x)} ${f(y)} ${f(w)} ${f(h)}">\n`
+    + `${fragment}\n</svg>`;
+  return `data:image/svg+xml;base64,${utf8ToBase64(svg)}`;
+}
+
+/** 레이어 트리에서 벡터 rawSvg(내부 raster data URL 이 없는) op 을 수집한다. */
+function collectVectorRawSvgDataUrls(node: unknown, out: string[]): void {
+  if (!node || typeof node !== 'object') return;
+  const record = node as Record<string, unknown>;
+  if (
+    record.type === 'rawSvg'
+    && typeof record.svg === 'string'
+    && !record.svg.includes('data:image/')
+  ) {
+    const bbox = record.bbox as
+      | { x?: unknown; y?: unknown; width?: unknown; height?: unknown }
+      | undefined;
+    if (
+      bbox
+      && typeof bbox.x === 'number'
+      && typeof bbox.y === 'number'
+      && typeof bbox.width === 'number'
+      && typeof bbox.height === 'number'
+    ) {
+      out.push(
+        rawSvgFragmentToDataUrl(record.svg, bbox.x, bbox.y, bbox.width, bbox.height),
+      );
+    }
+  }
+  for (const key in record) {
+    const value = record[key];
+    if (Array.isArray(value)) {
+      for (const child of value) collectVectorRawSvgDataUrls(child, out);
+    } else if (value && typeof value === 'object') {
+      collectVectorRawSvgDataUrls(value, out);
+    }
+  }
 }
 
 function collectLayerPlaneSummary(
