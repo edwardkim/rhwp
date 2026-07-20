@@ -6,7 +6,7 @@ function baseNameWithoutKnownExtension(fileName: string): string {
   if (dot <= 0) return trimmed;
 
   const ext = trimmed.slice(dot).toLowerCase();
-  if (ext === '.hwp' || ext === '.hwpx') {
+  if (ext === '.hwp' || ext === '.hwpx' || ext === '.hml') {
     return trimmed.slice(0, dot);
   }
   return trimmed;
@@ -34,6 +34,6 @@ export function formatDraftSize(byteLength: number): string {
 
 export function describeDraft(draft: AutosaveDraft): string {
   const format = draft.sourceFormat.toUpperCase();
-  const suffix = draft.sourceFormat.toLowerCase() === 'hwpx' ? ' → HWP 복구본' : '';
+  const suffix = ['hwpx', 'hml'].includes(draft.sourceFormat.toLowerCase()) ? ' → HWP 복구본' : '';
   return `${formatDraftSavedAt(draft.savedAt)} · ${formatDraftSize(draft.byteLength)} · ${format}${suffix}`;
 }
