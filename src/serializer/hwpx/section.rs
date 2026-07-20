@@ -277,11 +277,34 @@ fn replace_footnote_shape(xml: &str, sd: &SectionDef) -> String {
     // `type="CONTINUOUS" newNum="1"` 로 동일해, 미치환 시 페이지/구역마다
     // 새로 매기거나 시작 번호가 1이 아닌 문서가 저장 때 연속·1로 되돌아간다.
     // fn/en 템플릿 문자열이 같으므로 위치 기반 2회 치환을 쓴다.
-    replace_first_two(
+    let out = replace_first_two(
         &out,
         r#"<hp:numbering type="CONTINUOUS" newNum="1"/>"#,
         &render_note_numbering(&sd.footnote_shape),
         &render_note_numbering(&sd.endnote_shape),
+    );
+
+    // beneathText(본문 아래 바로 이어 출력). placement 의 `place` 열거형은 각주/
+    // 미주 의미를 conflate 해 무손실 역매핑이 어렵지만, beneathText 는 같은 요소의
+    // 독립 bool 이라 역매핑이 명확하다. 파서는 이 값을
+    // FootnoteShape.print_inline_after_text(HWP 바이너리 attr bit13)로 읽는데
+    // 템플릿이 "0" 으로 고정돼 저장 때마다 꺼졌다.
+    // 각주/미주 앵커의 place 값이 서로 달라 replacen(1) 충돌이 없다.
+    out.replacen(
+        r#"<hp:placement place="EACH_COLUMN" beneathText="0"/>"#,
+        &format!(
+            r#"<hp:placement place="EACH_COLUMN" beneathText="{}"/>"#,
+            u8::from(sd.footnote_shape.print_inline_after_text)
+        ),
+        1,
+    )
+    .replacen(
+        r#"<hp:placement place="END_OF_DOCUMENT" beneathText="0"/>"#,
+        &format!(
+            r#"<hp:placement place="END_OF_DOCUMENT" beneathText="{}"/>"#,
+            u8::from(sd.endnote_shape.print_inline_after_text)
+        ),
+        1,
     )
 }
 
@@ -2401,6 +2424,32 @@ mod tests {
         let mut doc = Document::default();
         doc.sections.push(section.clone());
         (doc, section)
+    }
+
+    #[test]
+    fn footnote_endnote_beneath_text_reflects_ir() {
+        // beneathText(본문 아래 바로 이어 출력)가 IR 에서 방출돼야 한다.
+        // 종전엔 템플릿 "0" 고정이라 저장할 때마다 이 설정이 꺼졌다.
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (doc, mut section) = make_doc_with_paragraph(para);
+        section.section_def.footnote_shape.print_inline_after_text = true;
+        section.section_def.endnote_shape.print_inline_after_text = true;
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hp:placement place="EACH_COLUMN" beneathText="1"/>"#),
+            "각주 beneathText 가 IR 값이어야 함"
+        );
+        assert!(
+            xml.contains(r#"<hp:placement place="END_OF_DOCUMENT" beneathText="1"/>"#),
+            "미주 beneathText 가 IR 값이어야 함"
+        );
+        assert!(
+            !xml.contains(r#"beneathText="0""#),
+            "템플릿 기본 beneathText=0 잔존 금지"
+        );
     }
 
     #[test]
