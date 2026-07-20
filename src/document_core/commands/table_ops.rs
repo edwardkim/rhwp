@@ -1335,6 +1335,13 @@ impl DocumentCore {
                     Some(id) => id,
                     None => {
                         self.document.doc_info.border_fills.push(new_bf);
+                        // [#2638] DocInfo passthrough 무효화. 형제 호출부(html_table_import.rs,
+                        // object_ops/table.rs)는 모두 push 직후 이를 설정하는데 여기만 빠져
+                        // 있었다 — !raw_stream_dirty && raw_stream.is_some() 이면 직렬화가
+                        // 원본 DocInfo 스트림을 그대로 반환해(serializer/doc_info.rs:24-33)
+                        // 방금 push 한 BORDER_FILL 이 저장에서 통째로 사라지고, 이 새 id 를
+                        // 참조하는 이웃 셀은 저장 후 재로드 시 dangling id 를 갖게 된다.
+                        self.document.doc_info.raw_stream_dirty = true;
                         self.document.doc_info.border_fills.len() as u16
                     }
                 }
@@ -3124,5 +3131,49 @@ mod neighbor_border_raw_data_tests {
             "이웃 셀 기준 좌측 테두리가 갱신돼야 함"
         );
         assert!(matches!(bf.borders[0].line_type, BorderLineType::Double));
+    }
+
+    /// [#2638] 새 BorderFill push 는 DocInfo passthrough 를 무효화해야 한다.
+    /// 무효화 없이 !raw_stream_dirty && raw_stream.is_some() 상태로 남으면,
+    /// serializer 가 원본 DocInfo 스트림을 그대로 반환해 방금 push 한 레코드가
+    /// 저장에서 통째로 사라지고 이웃 셀은 dangling border_fill_id 를 갖게 된다.
+    #[test]
+    fn neighbor_border_push_invalidates_doc_info_passthrough() {
+        let mut core = core_with_two_cell_row();
+        // 파싱된 문서를 흉내: DocInfo 원본 스트림이 있고 아직 dirty 아님.
+        core.document.doc_info.raw_stream = Some(vec![0u8; 16]);
+        core.document.doc_info.raw_stream_dirty = false;
+
+        let before_count = core.document.doc_info.border_fills.len();
+        core.update_neighbor_borders(
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            &[
+                BorderLine::default(),
+                BorderLine {
+                    line_type: BorderLineType::Double,
+                    width: 3,
+                    color: 0x00FF0000,
+                },
+                BorderLine::default(),
+                BorderLine::default(),
+            ],
+        );
+
+        assert!(
+            core.document.doc_info.border_fills.len() > before_count,
+            "새 BorderFill 이 push 됐어야 함(테스트 전제)"
+        );
+        assert!(
+            core.document.doc_info.raw_stream_dirty,
+            "새 BorderFill push 후 raw_stream_dirty 가 서지 않으면 저장 시 \
+             DocInfo 원본이 그대로 방출돼 새 레코드가 유실된다"
+        );
     }
 }
