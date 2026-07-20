@@ -47,6 +47,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-2069-ole-object-selection.test.mjs` | 상시 | active | E2E: 한셀 OLE 미리보기는 표처럼 보이더라도 셀 내부 편집으로 진입하지 않는다. | 한셀OLE.hwp | 수동 |  |
 | `issue-2214-page-local-repaint.test.mjs` | 상시 | active | Issue #2214 focused GREEN regression and optional diagnostic. | — | npm+CI |  |
 | `issue-2318-master-page-zorder.test.mjs` | 상시 | active | Issue #2318: 바탕쪽 개체가 본문 텍스트를 가림 — studio 다층 canvas 합성 검증. /  / sho | basic/shortcut.hwp | 수동 |  |
+| `issue-2635-rawsvg-first-paint.test.mjs` | 상시 | active | Issue #2635: 순수 RawSvg 차트가 첫 화면에 늦게 표시되는 회귀 | chart/원형/쪼개진원형.hwp | 수동 |  |
 | `issue-270-set-field-persist.test.mjs` | 상시 | active | 이슈 #270 — set_field 후 저장/재오픈 시 필드 값 유실 회귀 | field-01.hwp | 수동 |  |
 | `issue-595.test.mjs` | 진단 | hold | Issue #595 진단 e2e | exam_math.hwp | 수동 | legacy-name · #595 진단 (assertion 0) |
 | `line-spacing.test.mjs` | 상시 | active | 줄간격 변경에 따른 페이지 넘김 검증 | — | 수동 |  |

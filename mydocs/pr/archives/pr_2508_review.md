@@ -24,3 +24,11 @@
 ## 리스크와 권고
 - 기존 author history를 rewrite하지 않고 표시용 alias만 정규화한다.
 - **권고**: 누적 통합 PR에 수용. 최신 통합 PR head의 CI가 성공한 뒤에만 merge한다.
+
+## 후속 정정 (2026-07-20)
+- merge 뒤 [PR #2508의 인라인 검토](https://github.com/edwardkim/rhwp/pull/2508#discussion_r3611951113)에서
+  `99919585`가 `lpaiu-cs` 계정 ID가 아니라는 지적이 제기됐다.
+- 실제 author 이력은 `lpaiu-cs <lpaiu.cs@gmail.com>` 40건과 같은 이메일의
+  `김준영 (Juneyoung, Kim)` 2건이다. 따라서 잘못된 noreply canonical 두 줄을 제거하고,
+  이름 표기만 실이메일 canonical로 통합한다.
+- `git check-mailmap`과 전체 author 이력 집계로 정정 결과를 확인한다.

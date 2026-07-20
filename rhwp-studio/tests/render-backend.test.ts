@@ -401,9 +401,12 @@ test('PageRenderer deferred image rerender preserves static layer reuse policy',
   assert.match(source, /retrySignature: overlays\.signature/);
   assert.match(source, /reuseStaticFlow/);
   assert.match(source, /reuseStaticOverlay/);
-  assert.match(source, /const retryKey = `\$\{imageCount\}:\$\{policy\.retrySignature\}`/);
+  assert.match(source, /const retryKey = `\$\{imageCount\}:\$\{rawSvgCount\}:\$\{policy\.retrySignature\}`/);
   assert.match(source, /IMAGE_RE_RENDER_FALLBACK_DELAY_MS = 1500/);
+  assert.match(source, /RAW_SVG_EARLY_RE_RENDER_DELAYS_MS = \[0, 32, 96, 240\]/);
   assert.match(source, /const job: ReRenderJob/);
+  assert.match(source, /if \(rawSvgCount > 0\)/);
+  assert.match(source, /earlyRawSvgTimers/);
   assert.match(source, /this\.prefetchLayerImages\(pageIdx\)/);
   assert.match(source, /if \(decoded\) finish\(\)/);
   assert.equal(source.includes('const delays = [200, 600, 1500]'), false);

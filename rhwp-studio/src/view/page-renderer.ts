@@ -46,10 +46,14 @@ interface LayerSummaryCacheEntry {
 
 interface ReRenderJob {
   fallbackTimer: ReturnType<typeof setTimeout>;
+  earlyRawSvgTimers: ReturnType<typeof setTimeout>[];
   completed: boolean;
 }
 
 const IMAGE_RE_RENDER_FALLBACK_DELAY_MS = 1500;
+// 순수 SVG 차트/OLE는 prefetch 대상 data URL이 없을 수 있다. 첫 paint가 시작한
+// 이미지 decode를 빠르게 반영하되, 일반 이미지처럼 전역 반복 재렌더는 피한다.
+const RAW_SVG_EARLY_RE_RENDER_DELAYS_MS = [0, 32, 96, 240] as const;
 const HWP_UNITS_PER_CSS_PIXEL = 75;
 
 export class PageRenderer {
@@ -153,6 +157,7 @@ export class PageRenderer {
       canvas,
       renderScale,
       usesDomFlowImages ? overlays.rawSvgCount : overlays.imageCount + overlays.rawSvgCount,
+      overlays.rawSvgCount,
       {
         retrySignature: overlays.signature,
         reuseStaticFlow,
@@ -606,7 +611,7 @@ export class PageRenderer {
   renderPageFlow(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
     this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, scale, 'flow', this.renderProfile);
     this.drawMarginGuides(pageIdx, canvas, scale);
-    this.scheduleReRender(pageIdx, canvas, scale, 0, {
+    this.scheduleReRender(pageIdx, canvas, scale, 0, 0, {
       retrySignature: 'flow-only',
       reuseStaticFlow: false,
       reuseStaticOverlay: false,
@@ -839,6 +844,7 @@ export class PageRenderer {
     canvas: HTMLCanvasElement,
     renderScale: number,
     imageCount: number,
+    rawSvgCount: number,
     policy: ReRenderPolicy,
   ): void {
     if (imageCount <= 0) {
@@ -846,7 +852,7 @@ export class PageRenderer {
       this.imageRetryCounts.delete(pageIdx);
       return;
     }
-    const retryKey = `${imageCount}:${policy.retrySignature}`;
+    const retryKey = `${imageCount}:${rawSvgCount}:${policy.retrySignature}`;
     if (this.imageRetryCounts.get(pageIdx) === retryKey) return;
 
     this.cancelReRender(pageIdx);
@@ -854,12 +860,14 @@ export class PageRenderer {
 
     const job: ReRenderJob = {
       fallbackTimer: 0 as unknown as ReturnType<typeof setTimeout>,
+      earlyRawSvgTimers: [],
       completed: false,
     };
     const finish = () => {
       if (job.completed || this.reRenderJobs.get(pageIdx) !== job) return;
       job.completed = true;
       clearTimeout(job.fallbackTimer);
+      for (const timer of job.earlyRawSvgTimers) clearTimeout(timer);
       this.reRenderJobs.delete(pageIdx);
       if (canvas.parentElement) {
         this.reRenderPageCanvases(pageIdx, canvas, renderScale, policy);
@@ -867,6 +875,18 @@ export class PageRenderer {
     };
     job.fallbackTimer = setTimeout(finish, IMAGE_RE_RENDER_FALLBACK_DELAY_MS);
     this.reRenderJobs.set(pageIdx, job);
+
+    if (rawSvgCount > 0) {
+      for (const delay of RAW_SVG_EARLY_RE_RENDER_DELAYS_MS) {
+        const timer = setTimeout(() => {
+          if (job.completed || this.reRenderJobs.get(pageIdx) !== job) return;
+          if (canvas.parentElement) {
+            this.reRenderPageCanvases(pageIdx, canvas, renderScale, policy);
+          }
+        }, delay);
+        job.earlyRawSvgTimers.push(timer);
+      }
+    }
 
     // 자체 prefetch로 실제 decode를 마친 경우에만 fallback보다 먼저 다시 그린다.
     queueMicrotask(() => {
@@ -996,6 +1016,7 @@ export class PageRenderer {
     if (job) {
       job.completed = true;
       clearTimeout(job.fallbackTimer);
+      for (const timer of job.earlyRawSvgTimers) clearTimeout(timer);
       this.reRenderJobs.delete(pageIdx);
     }
   }
@@ -1005,6 +1026,7 @@ export class PageRenderer {
     for (const job of this.reRenderJobs.values()) {
       job.completed = true;
       clearTimeout(job.fallbackTimer);
+      for (const timer of job.earlyRawSvgTimers) clearTimeout(timer);
     }
     this.reRenderJobs.clear();
   }
