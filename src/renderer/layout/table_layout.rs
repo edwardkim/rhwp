@@ -5064,16 +5064,20 @@ impl LayoutEngine {
         // 깨 7줄로 과소(157→156 회귀) — shrink 는 폰트 폭 오차의 문서별 보상재로,
         // 일반화 불가(#2279 코멘트). 측정 폭은 원 패딩 유지.
         let inner_width = (cell_w - pad_left - pad_right).max(0.0);
-        // [reflow 무조건화 대응] 종전에는 `tag & TAG_IMPLEMENTATION_PROPERTY` 로
-        // "reflow 가 합성한(=저장 파일 근거 없는) seg" 를 식별해, vpos 리셋/갭/하드
-        // 브레이크 판정에서 그 seg 의 세로 좌표를 신뢰하지 않았다. 이제 reflow 가
-        // 모든 문단의 line_segs 를 계산하고 그 결과가 곧 레이아웃 진실이므로, 존재하는
-        // seg 는 전부 위치 권위를 가진다(document.rs::fit_hwpx_rowbreak_synthetic_cell_lines
-        // 가 태그-합성 판정을 "reflow 된 텍스트 문단 = 텍스트+계산된 line_segs" 라는
-        // 구조 판정으로 대체한 것과 같은 계약). 별도로 걸러야 할 per-seg 합성 신호는
-        // 남지 않았다(missing-lineseg placeholder 는 로드시 clear 되어 여기 도달 못함).
-        // 따라서 구조적으로 "합성이라 무시할 seg" 는 없다 → 상수 false.
+        // reflow 파생 vpos 는 셀 레이아웃의 진실이다(vpos-gap 주입·corrected_h 는 이를
+        // 신뢰) → 그 용도에서는 "합성 아님"(false)로 둔다. [#1811 재정합 계약]
         let line_seg_is_synthetic = |_: &crate::model::paragraph::LineSeg| false;
+        // [회귀 수정] RowBreak 셀의 vpos 리셋/하드브레이크/갭 검출은 **파일이 인코딩한 저장
+        // vpos 신호**(단/쪽 경계·간격)에만 유효하다. always-compute 로드 경로가 모든 셀 문단을
+        // reflow 해 vpos 를 문단-로컬 0 에서 단조 재누적하므로(document.rs) 저장 신호가 사라진다.
+        // reflow 파생 seg(TAG_REFLOW_COMPUTED)에 이 검출을 켜두면 문단 여백/합성 좌표가 가짜
+        // 리셋·갭으로 오인돼 셀을 과분할한다(hwpx_sample2 +1쪽 30→29, issue1949 거대표 2배
+        // 217→115쪽). 따라서 reflow 파생 seg 는 검출에서 제외한다. 유닛테스트가 직접 구성한
+        // seg(태그 없음)·파일 저장 seg 는 검출 대상으로 남아 저장 리셋을 보존한다(row_cut 계약).
+        // 주입/corrected_h 는 별개로 reflow vpos 를 신뢰(line_seg_is_synthetic=false — page12 정합).
+        let seg_is_reflow_derived = |seg: &crate::model::paragraph::LineSeg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_REFLOW_COMPUTED != 0
+        };
         let is_block_rowbreak_table = matches!(
             table.page_break,
             crate::model::table::TablePageBreak::RowBreak
@@ -5251,7 +5255,7 @@ impl LayoutEngine {
                 let prev = &cell.paragraphs[pi - 1];
                 match (prev.line_segs.last(), p.line_segs.first()) {
                     (Some(prev_seg), Some(cur_seg))
-                        if !line_seg_is_synthetic(prev_seg) && !line_seg_is_synthetic(cur_seg) =>
+                        if !seg_is_reflow_derived(prev_seg) && !seg_is_reflow_derived(cur_seg) =>
                     {
                         let prev_end = prev_seg.vertical_pos + prev_seg.line_height;
                         cur_seg.vertical_pos >= 0 && prev_end > 0 && cur_seg.vertical_pos < prev_end
@@ -5274,7 +5278,7 @@ impl LayoutEngine {
                 let prev = &cell.paragraphs[pi - 1];
                 match (prev.line_segs.last(), p.line_segs.first()) {
                     (Some(prev_seg), Some(cur_seg))
-                        if !line_seg_is_synthetic(prev_seg) && !line_seg_is_synthetic(cur_seg) =>
+                        if !seg_is_reflow_derived(prev_seg) && !seg_is_reflow_derived(cur_seg) =>
                     {
                         let prev_end =
                             prev_seg.vertical_pos + prev_seg.line_height + prev_seg.line_spacing;
@@ -5300,7 +5304,7 @@ impl LayoutEngine {
                 let Some(cur) = p.line_segs.get(li) else {
                     return false;
                 };
-                if line_seg_is_synthetic(prev) || line_seg_is_synthetic(cur) {
+                if seg_is_reflow_derived(prev) || seg_is_reflow_derived(cur) {
                     return false;
                 }
                 let prev_end = prev.vertical_pos + prev.line_height;
@@ -5602,8 +5606,8 @@ impl LayoutEngine {
                         } else if use_vpos_unit_positions && cell_first_vpos == 0 {
                             match (p.line_segs.get(li - 1), p.line_segs.get(li)) {
                                 (Some(prev), Some(cur))
-                                    if !line_seg_is_synthetic(prev)
-                                        && !line_seg_is_synthetic(cur) =>
+                                    if !seg_is_reflow_derived(prev)
+                                        && !seg_is_reflow_derived(cur) =>
                                 {
                                     cur.vertical_pos
                                         > prev.vertical_pos
@@ -5902,7 +5906,7 @@ impl LayoutEngine {
                     } else if use_vpos_unit_positions && cell_first_vpos == 0 {
                         match (p.line_segs.get(li - 1), p.line_segs.get(li)) {
                             (Some(prev), Some(cur))
-                                if !line_seg_is_synthetic(prev) && !line_seg_is_synthetic(cur) =>
+                                if !seg_is_reflow_derived(prev) && !seg_is_reflow_derived(cur) =>
                             {
                                 cur.vertical_pos
                                     > prev.vertical_pos

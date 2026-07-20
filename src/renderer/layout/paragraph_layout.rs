@@ -3038,6 +3038,8 @@ impl LayoutEngine {
             } else {
                 (col_area.x, col_area.width)
             };
+            // [#1230] 어울림(Square wrap) 그림 옆으로 좁혀진 저장 밴드를 쓰는 줄인지.
+            let used_wrap_band = effective_col_w + 1.0 < col_area.width;
 
             // 인라인 Shape가 있는 줄: 텍스트 y를 Shape 하단 baseline에 맞춤
             let text_y = if has_tac_shape
@@ -3563,6 +3565,36 @@ impl LayoutEngine {
             pending_right_leader_digit_render = emit_state.pending_right_leader_digit_render;
             current_line_reserved_tac_picture_height =
                 emit_state.current_line_reserved_tac_picture_height;
+
+            // [#1230] 어울림 그림 옆 줄의 시각 끝 TextRun 후행 공백은 렌더 폭(bbox)에서
+            // 제외한다. 후행 공백은 보이는 글리프가 없으므로 시각 범위에 포함되면 안 되는데,
+            // 저장 밴드 우측에 딱 붙은 줄에서는 그 공백 bbox 가 그림 좌측을 침범한다
+            // (per-glyph 검사 test_489 는 통과하나 run-bbox 검사 test_1230 은 실패). 밴드
+            // 축소 줄에 한해 마지막 TextRun 의 후행 공백 폭만큼 bbox 폭을 줄인다.
+            if used_wrap_band {
+                let last_run = line_node
+                    .children
+                    .iter()
+                    .enumerate()
+                    .rev()
+                    .find_map(|(i, n)| {
+                        if let RenderNodeType::TextRun(tr) = &n.node_type {
+                            Some((i, tr.text.clone(), tr.style.clone()))
+                        } else {
+                            None
+                        }
+                    });
+                if let Some((idx, text, style)) = last_run {
+                    let chars: Vec<char> = text.chars().collect();
+                    let trailing = chars.iter().rev().take_while(|c| c.is_whitespace()).count();
+                    if trailing > 0 && trailing < chars.len() {
+                        let trailing_str: String = chars[chars.len() - trailing..].iter().collect();
+                        let tw = estimate_text_width(&trailing_str, &style);
+                        let b = &mut line_node.children[idx].bbox;
+                        b.width = (b.width - tw).max(0.0);
+                    }
+                }
+            }
 
             // 조판부호: 텍스트 뒤에 위치한 미삽입 도형 마커 추가
             for (smi, (spos, stext)) in shape_markers.iter().enumerate() {

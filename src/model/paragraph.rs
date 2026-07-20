@@ -181,6 +181,14 @@ impl LineSeg {
     pub const TAG_AUTO_HYPHENATION: u32 = 1 << 19;
     pub const TAG_INDENTATION: u32 = 1 << 20;
     pub const TAG_PARAGRAPH_HEAD: u32 = 1 << 21;
+    /// [회귀 수정] always-compute `reflow_line_segs` 가 계산한 seg 표식. RowBreak 셀의
+    /// vpos 리셋/하드브레이크/갭 검출은 **파일이 인코딩한 저장 vpos 신호**에만 유효한데,
+    /// 로드 경로가 모든 셀 문단을 reflow 해(단조 재누적) 저장 신호가 사라지므로 reflow
+    /// 파생 seg 는 그 검출에서 제외해야 한다(안 그러면 hwpx_sample2 +1쪽, issue1949 2배).
+    /// 유닛테스트가 직접 구성한 seg(태그 없음)는 검출 대상으로 남는다. TAG_IMPLEMENTATION_
+    /// PROPERTY(#1811)는 다른 always-compute 판정에 널리 쓰이므로 재사용하지 않고 전용 비트
+    /// 를 둔다.
+    pub const TAG_REFLOW_COMPUTED: u32 = 1 << 22;
     pub const TAG_IMPLEMENTATION_PROPERTY: u32 = 1 << 31;
 
     /// 한 줄이 하나의 세그먼트로만 구성될 때 사용하는 HWP5 tag 조합.

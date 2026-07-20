@@ -1379,7 +1379,8 @@ pub(crate) fn reflow_line_segs(
             baseline_distance: baseline_distance_hwp,
             line_spacing: line_spacing_hwp,
             segment_width: seg_width_hwp,
-            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            // [회귀 수정] reflow 파생 표식 — RowBreak 셀 리셋/갭 검출 제외용([[TAG_REFLOW_COMPUTED]]).
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE | LineSeg::TAG_REFLOW_COMPUTED,
             ..Default::default()
         }
     };
