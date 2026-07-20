@@ -89,6 +89,8 @@ studio 자연 렌더 `compare/verify-{B-pr149,C-natbitmap,D-hwpx02}-VERIFY-natur
 - **B**: 확정 실건(정정) — **studio 가 이미지 색효과/필터 미적용**. 수정=studio. **국소화·수정 완료(아래)**.
 - **C/D**: rsvg 아티팩트 제거 후에도 남는 차이가 있으나 **진짜 정본(한컴 편집기/기준 PDF) 대조 없이는
   어느 쪽이 옳은지 단정 불가**(D 는 오히려 SVG 결함으로 뒤집힘). 시각 검증 거버넌스상 작업지시자 판정 영역.
+  → **후속: Windows 에서 한컴 편집기/기준 PDF 대조 예정**. 이슈 등록: **C = edwardkim/rhwp#2524**,
+  **D = edwardkim/rhwp#2525**.
 - **E**: 오탐, 종결.
 - **재발 방지**: 향후 studio↔SVG 비교는 **SVG 를 chrome 로 래스터**(또는 한컴/PDF 기준)해야 한다.
   rsvg-convert 래스터는 신뢰 불가.
