@@ -41,13 +41,13 @@ function isPrivateHost(hostname) {
 }
 
 /**
- * URL의 pathname에서 HWP 확장자를 확인한다.
+ * URL의 pathname에서 HWP/HWPX/HML 확장자를 확인한다.
  * @param {URL} parsed
  * @returns {boolean}
  */
 function hasHwpExtension(parsed) {
   const pathname = parsed.pathname.toLowerCase();
-  return pathname.endsWith('.hwp') || pathname.endsWith('.hwpx');
+  return pathname.endsWith('.hwp') || pathname.endsWith('.hwpx') || pathname.endsWith('.hml');
 }
 
 /**
@@ -76,7 +76,7 @@ function isDownloadEndpoint(parsed) {
 
 /**
  * open-hwp 용 URL 검증 (3단계).
- * ① pathname에 .hwp/.hwpx → 즉시 허용
+ * ① pathname에 .hwp/.hwpx/.hml → 즉시 허용
  * ② 허용 도메인 + 다운로드 패턴 → 허용 (viewer에서 재검증)
  * ③ 그 외 → 차단
  *
