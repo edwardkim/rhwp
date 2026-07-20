@@ -58,7 +58,14 @@ class AutosaveRecoveryDialog extends ModalDialog {
 
       const text = document.createElement('div');
       const title = document.createElement('div');
-      title.textContent = draft.fileName || '문서.hwp';
+      const displayName = draft.fileName || (() => {
+        switch (draft.sourceFormat?.toLowerCase()) {
+          case 'hml': return '문서.hml';
+          case 'hwpx': return '문서.hwpx';
+          default: return '문서.hwp';
+        }
+      })();
+      title.textContent = displayName;
       title.style.fontWeight = '600';
       const meta = document.createElement('div');
       meta.textContent = describeDraft(draft);
