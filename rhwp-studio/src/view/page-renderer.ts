@@ -985,7 +985,11 @@ export class PageRenderer {
     while ((d = dataUrlRe.exec(json)) !== null) {
       enqueue(`data:${d[1]};base64,${d[2]}`);
     }
-    if (tasks.length === 0) return false;
+    if (tasks.length === 0) {
+      // prefetch할 이미지가 없음 = 모든 imageCount 항목이 순수 rawSvg(차트/OLE).
+      // 이 경우 비동기 디코드가 필요 없으므로 즉시 완료로 간주한다.
+      return true;
+    }
     await Promise.all(tasks);
     return true;
   }
