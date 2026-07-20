@@ -5607,8 +5607,8 @@ impl HwpDocument {
             items.push(format!(
                 "{{\"id\":{},\"name\":\"{}\",\"englishName\":\"{}\",\"type\":{},\"nextStyleId\":{},\"paraShapeId\":{},\"charShapeId\":{}}}",
                 i,
-                s.local_name.replace('"', "\\\""),
-                s.english_name.replace('"', "\\\""),
+                json_escape(&s.local_name),
+                json_escape(&s.english_name),
                 s.style_type,
                 s.next_style_id,
                 s.para_shape_id,
@@ -5976,7 +5976,7 @@ impl HwpDocument {
             let formats: Vec<String> = n
                 .level_formats
                 .iter()
-                .map(|f| format!("\"{}\"", f.replace('"', "\\\"")))
+                .map(|f| format!("\"{}\"", json_escape(f)))
                 .collect();
             items.push(format!(
                 "{{\"id\":{},\"levelFormats\":[{}],\"startNumber\":{}}}",
@@ -6177,7 +6177,7 @@ impl HwpDocument {
         format!(
             "{{\"id\":{},\"name\":\"{}\"}}",
             style_id,
-            name.replace('"', "\\\"")
+            json_escape(name)
         )
     }
 
@@ -6213,7 +6213,7 @@ impl HwpDocument {
         format!(
             "{{\"id\":{},\"name\":\"{}\"}}",
             style_id,
-            name.replace('"', "\\\"")
+            json_escape(name)
         )
     }
 

@@ -24934,3 +24934,34 @@ fn delete_style_invalidates_docinfo_and_sections() {
         "문단 style_id 재배정이 반영되도록 섹션 raw_stream 이 무효화돼야 한다"
     );
 }
+
+/// [#2557] 스타일 이름에 역슬래시/개행/탭이 있어도 방출 JSON 이 파싱 가능해야 한다.
+///
+/// 종전엔 큰따옴표만 이스케이프해 깨진 JSON 이 나왔고, TS 측은 가드 없이
+/// JSON.parse 하므로(wasm-bridge.ts:1957, :2025) 예외가 났다. getStyleAt 은 커서
+/// 이동마다 호출되어 해당 문서에서 키 입력마다 편집기가 멈춘다.
+#[test]
+fn style_json_survives_backslash_and_control_chars() {
+    let mut doc = HwpDocument::create_empty();
+    {
+        let styles = &mut doc.core.document.doc_info.styles;
+        if styles.is_empty() {
+            styles.push(crate::model::style::Style::default());
+        }
+        styles[0].local_name = "a\\b\nc\td\"e".to_string();
+        styles[0].english_name = "x\\y\nz".to_string();
+    }
+
+    let list = doc.get_style_list();
+    let parsed: Value = serde_json::from_str(&list)
+        .expect("스타일 이름에 역슬래시/개행이 있어도 유효한 JSON 이어야 함");
+    assert_eq!(
+        parsed[0]["name"].as_str().unwrap(),
+        "a\\b\nc\td\"e",
+        "이스케이프 왕복 후 원래 이름이 복원돼야 함"
+    );
+
+    let at = doc.get_style_at(0, 0);
+    serde_json::from_str::<Value>(&at)
+        .expect("getStyleAt 도 유효한 JSON 이어야 함(커서 이동마다 호출됨)");
+}
