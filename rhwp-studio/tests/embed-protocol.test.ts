@@ -23,6 +23,17 @@ test('renderer diagnostics v1 keeps auto intent in the additive selection field'
   );
 });
 
+test('main.ts는 호스트 저장 완료 API completeHostSave를 window.rhwpStudio로 노출한다 (#2660)', () => {
+  const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+  // 코어: markClean('host-save') 후 draft 삭제 "완료"까지 await — 팝업 close 안전 계약
+  assert.match(
+    source,
+    /async function completeHostSave\(fileName\?: string\)[\s\S]*?markClean\('host-save'\)[\s\S]*?await autosaveManager\.discardCurrentDraft\('host-save'\)[\s\S]*?wasDirty/,
+  );
+  // window 공개 API: DEV 전용이 아닌 무조건 노출
+  assert.match(source, /\.rhwpStudio = \{\s*\n?\s*notifySaved:/);
+});
+
 test('embed protocol은 capability를 포함한 v1 connect와 session-bound request만 허용한다', () => {
   assert.equal(isConnectMessage({
     type: 'rhwp-connect', version: 1, sessionId: 's-1', capabilities: EMBED_CAPABILITIES,
