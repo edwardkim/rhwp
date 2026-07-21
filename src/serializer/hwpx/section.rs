@@ -23,7 +23,7 @@ use quick_xml::Writer;
 
 use crate::model::control::{
     AutoNumber, AutoNumberType, CharOverlap, Control, Equation, Field, NewNumber, PageHide,
-    PageNumberPos, Ruby,
+    PageNumberPos, Ruby, EQUATION_LINE_MODE_BIT,
 };
 use crate::model::document::{Document, Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
@@ -2026,8 +2026,17 @@ fn render_equation(eq: &Equation) -> String {
     // [#1594] holdAnchorAndSO 는 IR(prevent_page_break)을 보존(종전 "0" 하드코딩 제거).
     let hold = if c.prevent_page_break != 0 { "1" } else { "0" };
 
+    // [#2727] lineMode(수식이 차지하는 범위) 를 EQEDIT attribute bit0 에서 방출한다.
+    // 종전엔 속성 자체를 내보내지 않아 LINE 설정이 왕복마다 CHAR 로 되돌아갔다.
+    // 한컴 저장본과 동일하게 baseUnit 과 font 사이에 위치시킨다.
+    let line_mode = if eq.attr & EQUATION_LINE_MODE_BIT != 0 {
+        "LINE"
+    } else {
+        "CHAR"
+    };
+
     format!(
-        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="0" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="0" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
         text_wrap_to_hwpx(c.text_wrap),
         text_flow_to_hwpx(c.text_flow),
         vert_rel_to_hwpx(c.vert_rel_to),
@@ -2342,6 +2351,35 @@ mod tests {
         assert!(
             !xml.contains(r#"textFlow="BOTH_SIDES""#),
             "BOTH_SIDES 하드코딩 잔존 금지"
+        );
+    }
+
+    /// [Issue #2727] 수식의 lineMode(수식이 차지하는 범위)가 IR(EQEDIT attribute bit0)에서
+    /// 방출돼야 한다. 종전엔 속성 자체를 내보내지 않아 LINE 설정이 왕복마다 CHAR 로 돌아갔다.
+    /// 한컴 저장본은 값이 기본값(CHAR)이어도 예외 없이 baseUnit 과 font 사이에 기록한다.
+    #[test]
+    fn equation_line_mode_reflects_ir() {
+        use crate::model::control::{Equation, EQUATION_LINE_MODE_BIT};
+
+        let char_xml = render_equation(&Equation::default());
+        assert!(
+            char_xml.contains(r#"lineMode="CHAR""#),
+            "기본값도 lineMode 속성을 방출해야 함(한컴 저장본 정합): {char_xml}"
+        );
+
+        let eq = Equation {
+            attr: EQUATION_LINE_MODE_BIT,
+            font_size: 1000,
+            ..Default::default()
+        };
+        let line_xml = render_equation(&eq);
+        assert!(
+            line_xml.contains(r#"baseUnit="1000" lineMode="LINE" font="""#),
+            "lineMode 는 IR 값으로, 한컴과 같은 baseUnit·font 사이 자리에 와야 함: {line_xml}"
+        );
+        assert!(
+            !line_xml.contains(r#"lineMode="CHAR""#),
+            "CHAR 하드코딩 잔존 금지"
         );
     }
 
