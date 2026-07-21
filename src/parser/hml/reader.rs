@@ -995,6 +995,16 @@ impl<'a> ReadState<'a> {
             .paragraphs
             .pop()
             .ok_or_else(|| HmlError::InvalidXml("unexpected P end".to_string()))?;
+        // [#2723] DRAWTEXT (글상자) 컨텍스트 우선: 셀과 도형이 동시에 열려 있으면
+        // DRAWTEXT 안쪽 문단은 도형(text_box)에 귀속되어야 한다. 종전에는 cells →
+        // rectangles 순서로 검사해 셀이 먼저 선택되어 글상자 문단이 셀로 흘러들어
+        // 글상자가 비고 셀이 오염되었다.
+        if self.stack.iter().any(|name| name == "DRAWTEXT") {
+            if let Some(rectangle) = self.rectangles.last_mut() {
+                rectangle.text_box.push(paragraph);
+                return Ok(());
+            }
+        }
         if let Some(cell) = self.cells.last_mut() {
             cell.paragraphs.push(paragraph);
         } else if let Some(rectangle) = self.rectangles.last_mut() {
@@ -1007,6 +1017,17 @@ impl<'a> ReadState<'a> {
                 .paragraphs
                 .push(paragraph);
         }
+        Ok(())
+    }
+
+    fn finish_rectangle(&mut self) -> Result<(), HmlError> {
+        let rectangle = self
+            .rectangles
+            .pop()
+            .ok_or_else(|| HmlError::InvalidXml("unexpected RECTANGLE end".to_string()))?;
+        self.current_paragraph()?
+            .controls
+            .push(HmlControl::Rectangle(rectangle));
         Ok(())
     }
 
