@@ -215,8 +215,20 @@ URL.revokeObjectURL(url);
 
 ```javascript
 const state = await editor.getHmlSaveState();
-// { ok: true } 또는 { ok: false, blocker: '...' }
+// HML 저장 가능:
+//   { sourceFormat: 'hwp', hmlSavable: true, blockers: [] }
+// HML 저장 불가 (blocker 존재):
+//   {
+//     sourceFormat: 'hwpx',
+//     hmlSavable: false,
+//     blockers: [
+//       { code: 'PRESERVED_SECTION', xmlPath: '/hwpx:root/...', message: '보존 문단이 포함되어 있습니다', preserved: false }
+//     ]
+//   }
 ```
+
+`blockers` 배열이 비어 있으면 `hmlSavable`이 `true`입니다.
+각 blocker는 `code`, `xmlPath`, `message`, `preserved` 필드를 가집니다.
 
 ### editor.destroy()
 
