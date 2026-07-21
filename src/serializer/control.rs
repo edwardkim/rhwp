@@ -1468,6 +1468,10 @@ fn serialize_shape_control(
                 level,
                 &serialize_common_obj_attr(&chart.common),
             ));
+            // 캡션 (SHAPE_COMPONENT 앞, level+1)
+            if let Some(ref caption) = chart.caption {
+                serialize_caption(caption, level + 1, records);
+            }
             let sc_ctrl_id = chart.drawing.shape_attr.ctrl_id;
             emit_caption(&chart.caption, records);
             records.push(Record {
@@ -1491,6 +1495,10 @@ fn serialize_shape_control(
                 level,
                 &serialize_common_obj_attr(&ole.common),
             ));
+            // 캡션 (SHAPE_COMPONENT 앞, level+1)
+            if let Some(ref caption) = ole.caption {
+                serialize_caption(caption, level + 1, records);
+            }
             let drawing = ole_drawing_with_shape_component_contract(ole, true);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
