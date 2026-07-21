@@ -198,8 +198,12 @@ function cellPathJsonForPara(pos: DocumentPosition, cellParaIndex: number): stri
  *
  * cursor.ts(:399) 와 input-handler-text.ts(:307) 의 `useCellPath` 분기와 동일한 규칙이다.
  * depth 1 에서는 `cellPath[0]` 이 곧 최외곽이라 flat 값과 같으므로 동작 변화가 없다.
+ *
+ * [#2717] 셀 문단 경계 판정(호출자 가드)도 같은 축이어야 해서 export 한다 —
+ * 축 유도를 복제하면 한쪽만 고쳐지는 회귀가 재발한다
+ * (tests/undo-nested-cell-merge-offset.test.ts).
  */
-function cellParaIndexOf(pos: DocumentPosition): number {
+export function cellParaIndexOf(pos: DocumentPosition): number {
   const path = pos.cellPath;
   return (path?.length ?? 0) > 0 ? path![path!.length - 1].cellParaIndex : pos.cellParaIndex!;
 }

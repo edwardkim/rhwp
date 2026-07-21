@@ -13,6 +13,7 @@ import {
   MergeParagraphInHeaderFooterCommand,
   InsertTextInFootnoteCommand,
   insertTextWithMutationEffects,
+  cellParaIndexOf,
   NO_TEXT_MUTATION_EFFECTS,
 } from './command';
 import type { TextMutationEffects } from './command';
@@ -257,8 +258,12 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
     if (charOffset > 0) {
       const deletePos = { ...pos, charOffset: charOffset - 1 };
       this.executeOperation({ kind: 'command', command: new DeleteTextCommand(deletePos, 1, 'backward') });
-    } else if (pos.cellParaIndex! > 0) {
-      // 셀 문단 시작에서 Backspace → 이전 셀 문단과 병합
+    } else if (cellParaIndexOf(pos) > 0) {
+      // 셀 문단 시작에서 Backspace → 이전 셀 문단과 병합.
+      // [#2717] 중첩 셀에서 flat `pos.cellParaIndex` 는 hit-test 가 cellPath[0](최외곽)로 채운
+      // 바깥 셀의 문단 인덱스라, 그대로 쓰면 안쪽 셀 2번째 문단에서 병합이 통째로 누락되고
+      // (바깥이 0), 안쪽 첫 문단에서는 cellParaIndex:-1 경로로 병합이 실행된다(바깥이 ≥1).
+      // 아래 handleDelete(:307 useCellPath) 와 동일하게 안쪽 축으로 판정한다.
       this.executeOperation({ kind: 'command', command: new MergeParagraphInCellCommand(pos) });
     }
   } else {
