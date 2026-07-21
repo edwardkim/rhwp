@@ -20,6 +20,8 @@ import './actions/page';
 export { ParameterSet } from './parameter-set';
 export { Action } from './action';
 
+export type SaveCallback = () => void;
+
 export class HwpCtrl {
   /** rhwp WASM 문서 객체 */
   private wasmDoc: any;
@@ -29,9 +31,12 @@ export class HwpCtrl {
   private cursorPos = 0;
   /** 이벤트 리스너 */
   private listeners: Map<number, Function[]> = new Map();
+  /** 저장 성공 시 dirty 상태 정리 등 후처리 콜백 */
+  private onSave: SaveCallback | undefined;
 
-  constructor(wasmDoc: any) {
+  constructor(wasmDoc: any, onSave?: SaveCallback) {
     this.wasmDoc = wasmDoc;
+    this.onSave = onSave;
   }
 
   /** 내부: WASM 문서 객체 접근 */
@@ -109,6 +114,7 @@ export class HwpCtrl {
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
+      this.onSave?.();
       return true;
     } catch (e) {
       console.error('[hwpctl] SaveAs 실패:', e);
@@ -387,6 +393,7 @@ export class HwpCtrl {
 export async function createHwpCtrl(options: {
   wasmUrl?: string;
   wasmModule?: any;
+  onSave?: SaveCallback;
 }): Promise<HwpCtrl> {
   let wasmDoc: any;
 
@@ -400,5 +407,5 @@ export async function createHwpCtrl(options: {
     wasmDoc = HwpDocument.createEmpty();
   }
 
-  return new HwpCtrl(wasmDoc);
+  return new HwpCtrl(wasmDoc, options.onSave);
 }
