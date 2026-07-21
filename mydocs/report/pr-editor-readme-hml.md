@@ -16,5 +16,5 @@
 
 ## 결과
 - **Branch**: `pr/fix-issue-2691-editor-readme-hml`
-- **PR**: https://github.com/edwardkim/rhwp/pull/???? (생성 후 업데이트)
+- **PR**: https://github.com/edwardkim/rhwp/pull/2692
 - **Closes**: #2691
