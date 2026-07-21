@@ -605,104 +605,6 @@ fn test_cell_field_name_extra_roundtrip() {
     assert_eq!(crate::parser::control::parse_cell_field_name(&extra), None);
 }
 
-/// [#2696] OLE 의 SHAPE_COMPONENT 가 DrawingObjAttr 전체를 기록하는지.
-///
-/// 종전에는 base-only `serialize_shape_component` 를 호출해 테두리(13B) + 채우기 +
-/// 그림자(16B) + inst_id/shadow_alpha(6B) 가 빠졌고, 재파싱 시
-/// `parse_shape_component_full` 의 `remaining()` 가드가 전부 실패해 조용히 기본값이 됐다.
-#[test]
-fn issue2696_ole_shape_component_keeps_border_fill_shadow() {
-    use crate::model::style::SolidFill;
-
-    let drawing = DrawingObjAttr {
-        shape_attr: ShapeComponentAttr {
-            original_width: 7200,
-            original_height: 7200,
-            current_width: 7200,
-            current_height: 7200,
-            ..Default::default()
-        },
-        border_line: ShapeBorderLine {
-            color: 0x123456,
-            width: 300,
-            attr: 0x5,
-            outline_style: 1,
-        },
-        fill: Fill {
-            fill_type: FillType::Solid,
-            solid: Some(SolidFill {
-                background_color: 0x00FF00,
-                pattern_color: 0x0000FF,
-                pattern_type: -1,
-            }),
-            ..Default::default()
-        },
-        shadow_type: 2,
-        shadow_color: 0x808080,
-        shadow_offset_x: 141,
-        shadow_offset_y: 282,
-        inst_id: 0x0000_ABCD,
-        shadow_alpha: 0x80,
-        ..Default::default()
-    };
-
-    let ole = OleShape {
-        common: CommonObjAttr {
-            width: 7200,
-            height: 7200,
-            ..Default::default()
-        },
-        drawing,
-        extent_x: 7200,
-        extent_y: 7200,
-        bin_data_id: 1,
-        ..Default::default()
-    };
-
-    let para = Paragraph {
-        char_count: 2,
-        text: "".to_string(),
-        char_offsets: vec![],
-        controls: vec![Control::Shape(Box::new(ShapeObject::Ole(Box::new(ole))))],
-        ..Default::default()
-    };
-    let section = Section {
-        paragraphs: vec![para],
-        raw_stream: None,
-        ..Default::default()
-    };
-
-    let bytes = serialize_section(&section);
-    let parsed = parse_body_text_section(&bytes).unwrap();
-
-    let Control::Shape(shape) = &parsed.paragraphs[0].controls[0] else {
-        panic!("Shape 컨트롤이 나와야 함");
-    };
-    let ShapeObject::Ole(reparsed) = shape.as_ref() else {
-        panic!("Ole 도형이 나와야 함, got {:?}", shape);
-    };
-    let d = &reparsed.drawing;
-
-    assert_eq!(d.border_line.color, 0x123456, "테두리 색이 보존돼야 함");
-    assert_eq!(d.border_line.width, 300, "테두리 굵기가 보존돼야 함");
-    assert_eq!(d.border_line.attr, 0x5, "테두리 속성 워드가 보존돼야 함");
-    assert_eq!(d.border_line.outline_style, 1, "아웃라인 스타일이 보존돼야 함");
-
-    assert_eq!(d.fill.fill_type, FillType::Solid, "단색 채우기가 보존돼야 함");
-    let solid = d.fill.solid.expect("단색 채우기 본문이 있어야 함");
-    assert_eq!(solid.background_color, 0x00FF00, "채우기 배경색이 보존돼야 함");
-    assert_eq!(solid.pattern_color, 0x0000FF, "채우기 무늬색이 보존돼야 함");
-    assert_eq!(solid.pattern_type, -1, "채우기 무늬 종류가 보존돼야 함");
-
-    assert_eq!(d.shadow_type, 2, "그림자 종류가 보존돼야 함");
-    assert_eq!(d.shadow_color, 0x808080, "그림자 색이 보존돼야 함");
-    assert_eq!(d.shadow_offset_x, 141, "그림자 가로 오프셋이 보존돼야 함");
-    assert_eq!(d.shadow_offset_y, 282, "그림자 세로 오프셋이 보존돼야 함");
-
-    assert_eq!(d.inst_id, 0x0000_ABCD, "inst_id 가 보존돼야 함");
-    assert_eq!(d.shadow_alpha, 0x80, "그림자 투명도가 보존돼야 함");
-}
-
 /// [#2696] 최상위 `ShapeObject::Picture` 가 실제로 직렬화되는지.
 ///
 /// 그룹 해제(`ungroup_shape_native`)는 그림 자식을 최상위
@@ -734,7 +636,9 @@ fn issue2696_top_level_shape_picture_is_serialized() {
         char_count: 2,
         text: "".to_string(),
         char_offsets: vec![],
-        controls: vec![Control::Shape(Box::new(ShapeObject::Picture(Box::new(pic))))],
+        controls: vec![Control::Shape(Box::new(ShapeObject::Picture(Box::new(
+            pic,
+        ))))],
         ..Default::default()
     };
     let section = Section {
@@ -795,5 +699,35 @@ fn issue2696_top_level_shape_picture_emits_exactly_one_ctrl_header() {
             .iter()
             .any(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT_PICTURE),
         "SHAPE_COMPONENT_PICTURE 레코드가 함께 방출돼야 함"
+    );
+}
+
+/// [#2696] OLE 의 `SHAPE_COMPONENT` 는 **의도적으로** base-only 다.
+///
+/// 최초 조사에서 "Chart 형제 arm 은 `serialize_drawing_shape_component` 로
+/// DrawingObjAttr 전체를 기록하는데 OLE 만 base-only 이므로 비대칭 결함" 이라고
+/// 판단했으나, 한컴 저장본 `samples/143E433F503322BD33.hwp` 를 실측한 결과
+/// `$ole` ctrl id 를 가진 `SHAPE_COMPONENT` 는 **196B(base-only)** 였다. 같은
+/// 파일에서 테두리/채우기/그림자 꼬리를 가진 252B 레코드는 도형 쪽이다.
+/// 즉 base-only 가 한컴의 실제 OLE 포맷이며, `#1283` 이 한컴 읽기 오류를
+/// 잡으면서 확정한 계약이다(`tests/issue_1251_ole_chart_contents.rs` 가
+/// `shape_component.size == 196` 으로 고정).
+///
+/// 파서가 `parse_shape_component_full` 로 꼬리를 읽을 수 있는 것은 관대함이지
+/// 직렬화 의무가 아니다. 같은 오판이 반복되지 않도록 계약을 여기에 못박는다.
+#[test]
+fn issue2696_ole_shape_component_stays_base_only() {
+    let base = serialize_shape_component(tags::SHAPE_OLE_ID, &ShapeComponentAttr::default(), true);
+    let full =
+        serialize_drawing_shape_component(tags::SHAPE_OLE_ID, &DrawingObjAttr::default(), true);
+    assert!(
+        full.len() > base.len(),
+        "전제 확인: 전체 직렬화가 base 보다 길어야 이 계약이 의미를 가짐"
+    );
+    assert_eq!(
+        base.len(),
+        196,
+        "[#2696] OLE SHAPE_COMPONENT 는 한컴 실측치와 같은 196B(base-only)여야 한다 \
+         — 꼬리를 붙이면 #1283 의 한컴 호환 계약이 깨진다"
     );
 }

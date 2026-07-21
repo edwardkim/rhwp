@@ -1466,11 +1466,12 @@ fn serialize_shape_control(
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
                 size: 0,
-                // [#2696] base-only 직렬화는 테두리/채우기/그림자/inst_id/shadow_alpha 를
-                // 버려 재파싱 시 전부 기본값이 됐다 (parse_shape_component_full 의
-                // remaining() 가드가 조용히 실패). Chart 등 형제 arm 과 동일하게
-                // DrawingObjAttr 전체를 기록한다.
-                data: serialize_drawing_shape_component(tags::SHAPE_OLE_ID, &drawing, true),
+                // [#2696] OLE 의 SHAPE_COMPONENT 는 의도적으로 base-only 다.
+                // 한컴 저장본(samples/143E433F503322BD33.hwp)의 `$ole` SHAPE_COMPONENT
+                // 실측 크기가 196B(base) 이고, 테두리/채우기/그림자 꼬리를 붙인
+                // 252B 는 같은 파일의 도형 레코드 쪽이다. #1283 이 한컴 읽기 오류를
+                // 잡으며 확정한 계약이므로 Chart arm 과 달리 확장하지 않는다.
+                data: serialize_shape_component(tags::SHAPE_OLE_ID, &drawing.shape_attr, true),
             });
             emit_ctrl_data(records);
             serialize_text_box_if_present(&drawing, level + 2, records);
@@ -1767,8 +1768,8 @@ fn serialize_group_child(
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: comp_level,
                 size: 0,
-                // [#2696] 최상위 OLE arm 과 동일 — 그룹 자식도 DrawingObjAttr 전체를 기록.
-                data: serialize_drawing_shape_component(tags::SHAPE_OLE_ID, &drawing, false),
+                // [#2696] 최상위 OLE arm 과 동일하게 base-only 를 유지한다(#1283 계약).
+                data: serialize_shape_component(tags::SHAPE_OLE_ID, &drawing.shape_attr, false),
             });
             serialize_text_box_if_present(&drawing, type_level, records);
             records.push(Record {

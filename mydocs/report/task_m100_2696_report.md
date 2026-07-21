@@ -1,9 +1,50 @@
-# task_m100_2696 처리결과 보고서 — HWP5 도형 직렬화 비대칭 2건 (OLE SHAPE_COMPONENT / 최상위 Picture)
+# task_m100_2696 처리결과 보고서 — HWP5 도형 직렬화 (최상위 Picture 무출력)
 
 - **이슈**: [#2696](https://github.com/edwardkim/rhwp/issues/2696)
 - **브랜치**: `task/m100-2696-hwp5-shape-serializer-symmetry` (base `devel` @ `2cd4d78b`)
 - **범위**: `src/serializer/control.rs`, `src/serializer/control/tests.rs`
-- **분류**: 결함 수정 (직렬화 누락 2건 — 형제 arm 비대칭)
+- **분류**: 결함 수정 1건 + 오판 정정 1건
+
+## 0. 정정 고지 — OLE 건은 결함이 아니었다 (철회)
+
+이 보고서는 처음에 결함 2건을 주장했다. **그중 OLE 건은 오판이었고 철회한다.**
+
+최초 주장은 "Chart 형제 arm 은 `serialize_drawing_shape_component` 로 `DrawingObjAttr`
+전체를 기록하는데 OLE arm 만 base-only 이므로 비대칭 결함"이었다. 그러나 CI 검증
+(`cargo test --profile release-test --tests`)에서 기존 통합 테스트
+`issue_1283_hwpx_to_hwp_save_keeps_ole_as_storage` 가 깨졌다:
+
+```
+assertion `left == right` failed
+  left: 239
+ right: 196
+```
+
+**한컴 저장본을 직접 실측해 판정했다.** `samples/143E433F503322BD33.hwp` 의 레코드 덤프:
+
+```
+[ 14]  SHAPE_COMPONENT  sz=252     ← 도형 (테두리/채우기/그림자 꼬리 있음)
+[ 27]  SHAPE_COMPONENT  sz=252     ← 도형
+[ 49]  SHAPE_COMPONENT  sz=196     ← 그림 (뒤에 SC_PICTURE)
+[225]  SHAPE_COMPONENT  sz=196     ← OLE (데이터 선두 65 6c 6f 24 = "$ole")
+```
+
+**한컴 자신이 OLE 의 `SHAPE_COMPONENT` 를 196B(base-only)로 쓴다.** 즉 base-only 는
+누락이 아니라 한컴의 실제 OLE 포맷이며, `#1283`("Fix HWPX OLE chart save contract")이
+한컴 편집기 파일 읽기 오류를 잡으면서 확정한 계약이다.
+
+파서가 `parse_shape_component_full` 로 꼬리를 읽을 수 있는 것은 **관대함이지 직렬화
+의무가 아니었다.** 형제 arm 비대칭이라는 관찰은 사실이었지만, 그 비대칭에는 근거가
+있었고 내가 그 근거를 확인하지 않고 결함으로 단정했다.
+
+조치:
+- OLE arm 2곳(최상위/그룹 자식)을 `devel` 동작으로 되돌리고, **왜** base-only 인지
+  주석으로 근거를 남겼다.
+- 잘못된 전제로 쓴 테스트 `issue2696_ole_shape_component_keeps_border_fill_shadow` 를
+  제거하고, 반대로 **196B 계약을 고정하는** `issue2696_ole_shape_component_stays_base_only`
+  를 추가했다. 같은 오판이 반복되지 않게 하기 위해서다.
+
+아래 본문의 OLE 관련 서술은 이 정정에 따라 무효다. Picture 건(2절)만 유효하다.
 
 ## 1. 문제
 
