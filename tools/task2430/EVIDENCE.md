@@ -18,7 +18,8 @@
 왕복 조회로 실제 해소 결과를 검증한다. **실존 HFT 는 FontType=2 가 유지**되고,
 미설치 face 는 fallback 으로 FontType 이 변질된다(아래 negative-control).
 
-측정 환경 로그 (`tools/task2430/measured/preflight_report.tsv` 커밋본):
+아래는 측정 환경에서 5종을 per-face 실행했을 때의 preflight **콘솔 stdout**
+로그다(파일 형식이 아니라 실행 시 표준출력):
 
 ```
 한양신명조: readback=('한양신명조', FontType=2) OK
@@ -27,6 +28,18 @@
 한양견고딕: readback=('한양견고딕', FontType=2) OK
 휴먼명조:   readback=('휴먼명조',   FontType=2) OK
 ```
+
+> **커밋 아티팩트 상태(정정)**: 위 5행 블록은 *콘솔 로그*이며 커밋된
+> `tools/task2430/measured/preflight_report.tsv` 파일 내용 자체가 아니다.
+> 최초 커밋 시점의 `preflight_report.tsv` 는 per-face 프로세스 분할 실행에서
+> **매 실행이 파일을 덮어써 마지막 face(휴먼명조) 1행만** 잔존했다. 따라서
+> **저장소에 identity 아티팩트로 독립 보존된 것은 휴먼명조 1종**이고, 한양
+> 4종의 FontType=2 readback 은 현재 이 문서 산문으로만 남아 있다. 이 갭을
+> 없애기 위해 `hy_ascii_ladder.py` preflight 를 requested_face 기준 **누적
+> 병합**으로 개선했으므로(#2510 리뷰 후속 커밋), 저자가 동일 COM 환경에서
+> 5종 per-face 를 재실행하면 5행 `preflight_report.tsv` 가 커밋 아티팩트로
+> 보존된다. `--verify` 재현성(아래 §4)은 커밋 TSV↔배열 일치만 보증하며 HFT
+> vs fallback identity 는 이 preflight 아티팩트로만 입증되는 점에 유의한다.
 
 PDF 단 이중 확인: 각 face 프로브 PDF 의 임베드 폰트가 한양 4종=**Type3**(HFT
 렌더 경로), 휴먼명조=**Type0 `INPILL+휴먼명조`**(cp949 복원) — 시스템 TTF

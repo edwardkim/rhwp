@@ -22,7 +22,8 @@ preflight: 측정 전 각 요청 face 가 실제 HFT 로 선택 가능한지 Cha
 하나라도 실패하면 TSV 를 만들지 않고 non-zero 로 중단한다 — 존재하지 않는
 이름을 지정하는 것이 곧 negative-control 이다. 측정 후에는 PDF 임베드 폰트
 테이블에서 시스템 폰트 fallback(Haansoft*)이 섞이지 않았는지 재확인한다.
-결과는 out-dir/preflight_report.tsv 에 남는다.
+결과는 out-dir/preflight_report.tsv 에 requested_face 기준으로 누적 병합된다
+(per-face 프로세스 분할 실행에서도 5종 identity 행이 모두 보존된다).
 
 Windows + 한컴(pyhwpx) 전제. 경로는 리포지토리 루트 기준(절대 경로 하드코딩 없음).
 """
@@ -103,11 +104,35 @@ def preflight(hwp, fonts, report_path):
             failures.append(face)
         print(f"  [preflight] {face}: readback=({rb_name!r}, FontType={rb_type}) "
               f"{'OK' if ok else '** HFT 미확인 **'}")
-    with open(report_path, "w", encoding="utf-8") as fh:
-        fh.write("requested_face\treadback_face\treadback_fonttype\tverdict\n")
-        for r in rows:
-            fh.write("\t".join(str(x) for x in r) + "\n")
+    _merge_preflight_report(report_path, rows)
     return failures
+
+
+HEADER = "requested_face\treadback_face\treadback_fonttype\tverdict\n"
+
+
+def _merge_preflight_report(report_path, rows):
+    """preflight_report.tsv 를 requested_face 기준으로 누적 병합한다.
+
+    per-face 프로세스 분할 실행(권장 경로)에서 매 실행이 파일을 덮어쓰면 마지막
+    face 만 남아 5종 identity 증거가 소실된다. 기존 행을 읽어 이번 실행 결과로
+    같은 face 를 갱신하고, 나머지는 보존한 뒤 requested_face 순으로 재기록한다.
+    """
+    merged = {}
+    if os.path.exists(report_path):
+        with open(report_path, encoding="utf-8") as fh:
+            for i, line in enumerate(fh):
+                if i == 0 and line.startswith("requested_face"):
+                    continue
+                cols = line.rstrip("\n").split("\t")
+                if len(cols) == 4:
+                    merged[cols[0]] = tuple(cols)
+    for r in rows:
+        merged[r[0]] = tuple(str(x) for x in r)
+    with open(report_path, "w", encoding="utf-8") as fh:
+        fh.write(HEADER)
+        for face in sorted(merged):
+            fh.write("\t".join(merged[face]) + "\n")
 
 
 def check_pdf_fonts(pdf_path, face):
