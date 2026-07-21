@@ -1895,10 +1895,10 @@ impl DocumentCore {
                 best: &mut Option<(u8, CursorHit)>,
             ) {
                 if let RenderNodeType::TextRun(ref tr) = node.node_type {
-                    let matches_cell =
-                        tr.cell_context.as_ref().is_some_and(|ctx| {
-                            flat_cell_ctx_matches(ctx, ppi, ci, cei, cpi)
-                        });
+                    let matches_cell = tr
+                        .cell_context
+                        .as_ref()
+                        .is_some_and(|ctx| flat_cell_ctx_matches(ctx, ppi, ci, cei, cpi));
                     if matches_cell {
                         let cs = tr.char_start.unwrap_or(0);
                         let cc = tr.text.chars().count();
