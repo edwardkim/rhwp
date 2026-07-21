@@ -10,8 +10,8 @@
 //! - 파싱 완료 시 시리즈의 axis_ids를 primary/secondary 집합과 비교해 axis_group 지정
 
 use super::{
-    BarGrouping, LegendPos, OfPieInfo, OfPieType, OoxmlChart, OoxmlChartType, OoxmlSeries,
-    ScatterStyle, SeriesMarker, View3D,
+    BarGrouping, LegendPos, OfPieInfo, OfPieSplitType, OfPieType, OoxmlChart, OoxmlChartType,
+    OoxmlSeries, ScatterStyle, SeriesMarker, View3D,
 };
 use quick_xml::events::Event;
 use quick_xml::Reader;
@@ -34,6 +34,9 @@ struct ParseState {
     in_solid_fill: bool, // a:solidFill
     in_ln: bool,         // a:ln (stroke)
     in_num_cache: bool,  // c:numCache — formatCode 파싱
+    // c:dPt(점별 속성) 블록 내부 — 점별 explosion 을 계열로 승격하지 않기 위한
+    // 문맥 게이트 (PR #2500 후속)
+    in_d_pt: bool,
     bar_dir: Option<BarDir>,
     // 현재 파싱 중인 plot 블록 (barChart/lineChart/pieChart) 안에 있는지
     cur_plot_type: Option<OoxmlChartType>,
@@ -346,6 +349,19 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
                 }
             }
         }
+        b"splitType" => {
+            // pos 외 형태(val/percent/cust)는 splitPos 해석이 달라 count 적용을
+            // 막는다 — 렌더에서 기본 정책 폴백. (PR #2500 후속)
+            if let (Some(of), Some(val)) = (chart.of_pie.as_mut(), attr_val(e, "val")) {
+                of.split_type = match val.as_str() {
+                    "pos" => OfPieSplitType::Pos,
+                    "val" => OfPieSplitType::Val,
+                    "percent" => OfPieSplitType::Percent,
+                    "cust" => OfPieSplitType::Cust,
+                    _ => OfPieSplitType::Auto,
+                };
+            }
+        }
         b"splitPos" => {
             if let (Some(of), Some(v)) = (chart.of_pie.as_mut(), attr_f64(e)) {
                 of.split_pos = Some(v);
@@ -422,10 +438,16 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
         }
         b"explosion" => {
             // 계열 레벨 쪼개진원형 (%) — 렌더는 2D 원형 경로만 반영. (C2b #2278)
+            // c:dPt 내부의 점별 explosion 은 계열 전체로 승격하지 않고 무시한다
+            // (점별 렌더 미지원 — PR #2500 후속).
+            if st.in_d_pt {
+                return;
+            }
             if let (Some(ser), Some(v)) = (st.cur_series.as_mut(), attr_f64(e)) {
                 ser.explosion = Some(v);
             }
         }
+        b"dPt" => st.in_d_pt = true,
         b"ser" => {
             let mut ser = OoxmlSeries::default();
             if let Some(t) = st.cur_plot_type {
@@ -578,6 +600,7 @@ fn handle_end(name: &[u8], chart: &mut OoxmlChart, st: &mut ParseState) {
         b"tx" => st.in_tx = false,
         b"cat" => st.in_cat = false,
         b"val" => st.in_val = false,
+        b"dPt" => st.in_d_pt = false,
         b"xVal" => st.in_x_val = false,
         b"yVal" => st.in_y_val = false,
         b"title" => st.in_chart_title = false,
@@ -1058,6 +1081,45 @@ mod tests {
             parse_chart_xml(xml2).expect("parse OK").series[0].explosion,
             None
         );
+    }
+
+    // --- PR #2500 후속: dPt 점별 explosion 비승격 + splitType 해석 ---
+
+    #[test]
+    fn test_dpt_explosion_not_promoted_to_series() {
+        // c:dPt 내부 점별 explosion — 점별 렌더 미지원 동안 계열 승격 금지
+        let xml = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:pieChart><c:ser><c:dPt><c:idx val="1"/><c:explosion val="25"/></c:dPt><c:val><c:numCache><c:pt idx="0"><c:v>4</c:v></c:pt><c:pt idx="1"><c:v>3</c:v></c:pt></c:numCache></c:val></c:ser></c:pieChart></c:plotArea></c:chart></c:chartSpace>"#;
+        assert_eq!(
+            parse_chart_xml(xml).expect("parse OK").series[0].explosion,
+            None,
+            "dPt explosion 이 계열 전체로 승격되면 안 됨"
+        );
+        // 계열 레벨 explosion 은 dPt 공존 시에도 유지
+        let xml2 = br#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:pieChart><c:ser><c:explosion val="10"/><c:dPt><c:idx val="1"/><c:explosion val="25"/></c:dPt><c:val><c:numCache><c:pt idx="0"><c:v>4</c:v></c:pt></c:numCache></c:val></c:ser></c:pieChart></c:plotArea></c:chart></c:chartSpace>"#;
+        assert_eq!(
+            parse_chart_xml(xml2).expect("parse OK").series[0].explosion,
+            Some(10.0),
+            "계열 레벨 explosion 은 유지"
+        );
+    }
+
+    #[test]
+    fn test_ofpie_split_type_parsed() {
+        let make = |ty: &str| {
+            let xml = format!(
+                r#"<?xml version="1.0"?><c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea><c:ofPieChart><c:ofPieType val="pie"/><c:splitType val="{ty}"/><c:splitPos val="3"/><c:ser><c:val><c:numCache><c:pt idx="0"><c:v>4</c:v></c:pt></c:numCache></c:val></c:ser></c:ofPieChart></c:plotArea></c:chart></c:chartSpace>"#
+            );
+            parse_chart_xml(xml.as_bytes())
+                .expect("parse OK")
+                .of_pie
+                .expect("of_pie")
+        };
+        assert_eq!(make("pos").split_type, OfPieSplitType::Pos);
+        assert_eq!(make("val").split_type, OfPieSplitType::Val);
+        assert_eq!(make("percent").split_type, OfPieSplitType::Percent);
+        assert_eq!(make("cust").split_type, OfPieSplitType::Cust);
+        // splitPos 값 자체는 형태와 무관하게 IR 에 보존 (해석은 렌더에서 게이트)
+        assert_eq!(make("val").split_pos, Some(3.0));
     }
 
     #[test]

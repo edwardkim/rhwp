@@ -1189,8 +1189,16 @@ fn render_of_pie(
     if total <= 0.0 {
         return;
     }
+    // splitPos 의 count 해석은 splitType=pos(및 미지정 auto — 종전 코퍼스 정책
+    // 보존)에만 유효. val/percent/cust 는 값·백분율·점별 임계라 count 로 읽으면
+    // 오분할 — splitPos 를 무시하고 기본 2로 폴백한다. (PR #2500 후속)
+    let split_pos_as_count = matches!(
+        of.split_type,
+        super::OfPieSplitType::Auto | super::OfPieSplitType::Pos
+    );
     let k = of
         .split_pos
+        .filter(|_| split_pos_as_count)
         .map(|v| (v.round() as usize).clamp(1, n - 1))
         .unwrap_or(2)
         .min(n - 1);
@@ -3686,6 +3694,9 @@ mod tests {
     fn test_bar3d_clustered_faces_both_orientations() {
         // 3D 묶은: 막대(2cat×3ser=6)마다 top/side 면 1쌍 (정답지: 윗면 밝게 +
         // 우측면 어둡게 사선 압출). 2D는 면 없음.
+        // [지원 범위 — PR #2500 리뷰 P2] 이 시어 투영은 rAngAx=1(직각 축)
+        // 코퍼스 한정 근사다. rAngAx=0(회전 투영)·rotX/rotY 임의 조합은
+        // 동일 시어로 폴백하며 정답지 검증이 없다 — 별도 후속 트랙.
         for chart_type in [OoxmlChartType::Column, OoxmlChartType::Bar] {
             let chart = bars3d_chart(chart_type, BarGrouping::Clustered);
             let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
@@ -4424,6 +4435,45 @@ mod tests {
         );
         assert_eq!(svg.matches("hwp-ofpie-main").count(), 2, "주 원 2");
         assert_eq!(svg.matches("hwp-ofpie-second").count(), 3, "보조 3");
+    }
+
+    #[test]
+    fn test_ofpie_non_pos_split_type_falls_back_to_default() {
+        // PR #2500 후속: val/percent/cust 의 splitPos 는 count 가 아니므로
+        // 무시하고 기본 k=2 로 폴백 — 주 원 3(= 4−2+1) + 보조 2.
+        for ty in [
+            super::super::OfPieSplitType::Val,
+            super::super::OfPieSplitType::Percent,
+            super::super::OfPieSplitType::Cust,
+        ] {
+            let svg = render_chart_svg(
+                &ofpie_chart(OfPieInfo {
+                    split_type: ty,
+                    split_pos: Some(3.0),
+                    ..Default::default()
+                }),
+                0.0,
+                0.0,
+                400.0,
+                300.0,
+            );
+            assert_eq!(svg.matches("hwp-ofpie-main").count(), 3, "{ty:?}: 주 원 3");
+            assert_eq!(svg.matches("hwp-ofpie-second").count(), 2, "{ty:?}: 보조 2");
+        }
+        // splitType=pos 는 종전대로 count 적용
+        let svg = render_chart_svg(
+            &ofpie_chart(OfPieInfo {
+                split_type: super::super::OfPieSplitType::Pos,
+                split_pos: Some(3.0),
+                ..Default::default()
+            }),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        assert_eq!(svg.matches("hwp-ofpie-main").count(), 2, "pos: 주 원 2");
+        assert_eq!(svg.matches("hwp-ofpie-second").count(), 3, "pos: 보조 3");
     }
 
     #[test]

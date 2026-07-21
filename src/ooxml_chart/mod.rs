@@ -93,6 +93,10 @@ pub struct OoxmlChart {
 pub struct OfPieInfo {
     /// `c:ofPieType val` — pie=원형대원형(보조 원), bar=원형대가로막대형(누적 막대)
     pub of_pie_type: OfPieType,
+    /// `c:splitType val` — splitPos 해석 방식. 현재 count 해석은 pos(및 미지정
+    /// auto: 종전 코퍼스 정책 보존)만 적용하고, val/percent/cust 는 splitPos 를
+    /// 무시해 기본 정책(마지막 2개)으로 안전 폴백한다. (PR #2500 후속)
+    pub split_type: OfPieSplitType,
     /// `c:splitPos val` — 보조 플롯으로 보낼 마지막 카테고리 수. 코퍼스 부재 →
     /// None → 기본 2. (스키마상 double — f64 파싱, 사용 시 반올림·클램프)
     pub split_pos: Option<f64>,
@@ -106,11 +110,28 @@ impl Default for OfPieInfo {
     fn default() -> Self {
         Self {
             of_pie_type: OfPieType::Pie,
+            split_type: OfPieSplitType::Auto,
             split_pos: None,
             second_pie_size: 75.0,
             has_ser_lines: false,
         }
     }
+}
+
+/// `c:splitType` — ofPie 보조 플롯 항목 선택 방식 (PR #2500 후속)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum OfPieSplitType {
+    /// 미지정(스키마 기본 auto) — 앱 재량. splitPos 가 오면 종전 count 정책 유지.
+    #[default]
+    Auto,
+    /// splitPos = 마지막 N개 카테고리 수 (현재 구현 대상)
+    Pos,
+    /// splitPos = 값 임계 — 미구현, splitPos 무시 폴백
+    Val,
+    /// splitPos = 백분율 임계 — 미구현, splitPos 무시 폴백
+    Percent,
+    /// custPlt 점별 지정 — 미구현, splitPos 무시 폴백
+    Cust,
 }
 
 /// ofPie 보조 플롯 종류 (C2b #2278)
