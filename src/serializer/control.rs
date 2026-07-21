@@ -1192,6 +1192,10 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&line.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            // 캡션 (SHAPE_COMPONENT 앞, level+1)
+            if let Some(ref caption) = line.drawing.caption {
+                serialize_caption(caption, level + 1, records);
+            }
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1237,6 +1241,10 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&rect.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            // 캡션 (SHAPE_COMPONENT 앞, level+1)
+            if let Some(ref caption) = rect.drawing.caption {
+                serialize_caption(caption, level + 1, records);
+            }
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1266,6 +1274,10 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&ellipse.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            // 캡션 (SHAPE_COMPONENT 앞, level+1)
+            if let Some(ref caption) = ellipse.drawing.caption {
+                serialize_caption(caption, level + 1, records);
+            }
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1308,6 +1320,10 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&poly.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            // 캡션 (SHAPE_COMPONENT 앞, level+1)
+            if let Some(ref caption) = poly.drawing.caption {
+                serialize_caption(caption, level + 1, records);
+            }
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1345,6 +1361,10 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&arc.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            // 캡션 (SHAPE_COMPONENT 앞, level+1)
+            if let Some(ref caption) = arc.drawing.caption {
+                serialize_caption(caption, level + 1, records);
+            }
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1375,6 +1395,10 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&curve.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            // 캡션 (SHAPE_COMPONENT 앞, level+1)
+            if let Some(ref caption) = curve.drawing.caption {
+                serialize_caption(caption, level + 1, records);
+            }
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1408,6 +1432,10 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&group.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            // 캡션 (SHAPE_COMPONENT 앞, level+1)
+            if let Some(ref caption) = group.caption {
+                serialize_caption(caption, level + 1, records);
+            }
             // 그룹 컨테이너: SHAPE_COMPONENT + 자식 수 + 자식 ctrl_id 목록 (한컴 호환)
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
@@ -1439,6 +1467,10 @@ fn serialize_shape_control(
                 level,
                 &serialize_common_obj_attr(&chart.common),
             ));
+            // 캡션 (SHAPE_COMPONENT 앞, level+1)
+            if let Some(ref caption) = chart.caption {
+                serialize_caption(caption, level + 1, records);
+            }
             let sc_ctrl_id = chart.drawing.shape_attr.ctrl_id;
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
@@ -1461,6 +1493,10 @@ fn serialize_shape_control(
                 level,
                 &serialize_common_obj_attr(&ole.common),
             ));
+            // 캡션 (SHAPE_COMPONENT 앞, level+1)
+            if let Some(ref caption) = ole.caption {
+                serialize_caption(caption, level + 1, records);
+            }
             let drawing = ole_drawing_with_shape_component_contract(ole, true);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
@@ -2389,8 +2425,8 @@ fn serialize_equation_control(eq: &Equation, level: u16, records: &mut Vec<Recor
 
     // HWPTAG_EQEDIT 자식 레코드
     let mut w = ByteWriter::new();
-    // attr: u32
-    w.write_u32(0).unwrap();
+    // attr: u32 — bit0: lineMode (0=CHAR, 1=LINE)
+    w.write_u32(eq.eqedit).unwrap();
     // script: HWP string (length-prefixed UTF-16LE)
     w.write_hwp_string(&eq.script).unwrap();
     // font_size: u32
