@@ -929,6 +929,17 @@ impl<'a> ReadState<'a> {
         table.is_some_and(|table_index| rectangle.is_none_or(|rect_index| table_index > rect_index))
     }
 
+    /// [#2723] 닫히는 P 를 셀에 넣을지 글상자에 넣을지 판정한다.
+    /// cells 와 rectangles 는 둘 다 열린 요소 스택이라 동시에 비어 있지 않을 수 있고,
+    /// 그때 실제 부모는 스택에서 더 안쪽인 쪽이다. nearest_object_is_table 과 동일한
+    /// rposition 비교를 쓴다. 사각형이 문단을 받는 자식은 DRAWTEXT 뿐이므로
+    /// RECTANGLE 대신 DRAWTEXT 를 비교해 형제 요소로 인한 오판을 배제한다.
+    fn nearest_paragraph_owner_is_cell(&self) -> bool {
+        let draw_text = self.stack.iter().rposition(|name| name == "DRAWTEXT");
+        let cell = self.stack.iter().rposition(|name| name == "CELL");
+        cell.is_some_and(|cell_index| draw_text.is_none_or(|text_index| cell_index > text_index))
+    }
+
     fn capture_shape_object(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
         let text_wrap = parse_text_wrap(attribute(element, b"TextWrap")?.as_deref());
         // SHAPEOBJECT 는 표에도 방출되므로(write_shape_object) rectangle 뿐 아니라
@@ -1066,10 +1077,15 @@ impl<'a> ReadState<'a> {
             .paragraphs
             .pop()
             .ok_or_else(|| HmlError::InvalidXml("unexpected P end".to_string()))?;
-        if let Some(cell) = self.cells.last_mut() {
-            cell.paragraphs.push(paragraph);
-        } else if let Some(rectangle) = self.rectangles.last_mut() {
+        // [#2723] 종전엔 종류 우선순위(셀 먼저)로 골라, CELL 안 사각형의 DRAWTEXT
+        // 문단이 셀로 흘러들어 글상자는 비고(adapter 가 None 으로 접음) 셀에는 이물
+        // 문단이 남았다. 글상자가 스택상 더 안쪽일 때만 글상자를 고르고, 나머지는
+        // 종전 순서(셀 → 구역)를 그대로 유지한다.
+        let owner_is_cell = self.nearest_paragraph_owner_is_cell();
+        if let Some(rectangle) = self.rectangles.last_mut().filter(|_| !owner_is_cell) {
             rectangle.text_box.push(paragraph);
+        } else if let Some(cell) = self.cells.last_mut() {
+            cell.paragraphs.push(paragraph);
         } else {
             self.source
                 .sections
