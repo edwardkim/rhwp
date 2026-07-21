@@ -738,13 +738,26 @@ fn parse_para_shape(data: &[u8]) -> Result<ParaShape, DocInfoError> {
         0
     };
 
+    // [#2734] 말미 4바이트(payload offset 54~57) = 개요 수준(0~9 = 1수준~10수준).
+    // attr1 bit25~27 은 3비트라 한컴이 6 에서 포화시키므로 8~10수준은 이 필드에만 남는다.
+    // 종전엔 읽지 않아 8·9·10수준 문단이 모두 7수준(para_level=6)으로 붕괴했다.
+    let outline_level_tail = if r.remaining() >= 4 {
+        r.read_u32().unwrap_or(0)
+    } else {
+        0
+    };
+
     let head_type = match (attr1 >> 23) & 0x03 {
         1 => crate::model::style::HeadType::Outline,
         2 => crate::model::style::HeadType::Number,
         3 => crate::model::style::HeadType::Bullet,
         _ => crate::model::style::HeadType::None,
     };
-    let para_level = ((attr1 >> 25) & 0x07) as u8;
+    // [#2734] 두 출처 중 큰 쪽을 취한다. samples 코퍼스 58바이트 레코드 11,913건 전수에서
+    // 두 값이 어긋나는 경우는 (a) tail 7~9 / attr1 6(포화) 138건, (b) tail 0 / attr1 1~6 인
+    // 단일 파일 9건뿐이라, max 가 (a)에서 8~10수준을 복원하면서 (b)의 기존 동작을 보존한다.
+    // tail 이 없는 42/46/54바이트 레코드는 outline_level_tail=0 이라 종전과 동일하다.
+    let para_level = (((attr1 >> 25) & 0x07) as u8).max(outline_level_tail.min(9) as u8);
 
     Ok(ParaShape {
         raw_data: None,
@@ -1204,6 +1217,97 @@ mod tests {
         assert_eq!(ps.line_spacing, 160);
         assert!(matches!(ps.alignment, Alignment::Justify));
         assert!(matches!(ps.line_spacing_type, LineSpacingType::Percent));
+    }
+
+    /// [#2734] PARA_SHAPE 레코드 바이트 생성 헬퍼.
+    ///
+    /// `tail` 이 Some 이면 58바이트(말미 개요 수준 4바이트 포함), None 이면 54바이트.
+    fn make_para_shape_bytes(attr1: u32, tail: Option<u32>) -> Vec<u8> {
+        let mut data = Vec::new();
+        data.extend_from_slice(&attr1.to_le_bytes());
+        for _ in 0..6 {
+            data.extend_from_slice(&0i32.to_le_bytes()); // 여백/들여쓰기/간격/줄간격
+        }
+        for _ in 0..3 {
+            data.extend_from_slice(&0u16.to_le_bytes()); // tab_def/numbering/border_fill id
+        }
+        for _ in 0..4 {
+            data.extend_from_slice(&0i16.to_le_bytes()); // border_spacing
+        }
+        data.extend_from_slice(&0u32.to_le_bytes()); // attr2
+        data.extend_from_slice(&0u32.to_le_bytes()); // attr3
+        data.extend_from_slice(&0u32.to_le_bytes()); // line_spacing_v2
+        if let Some(t) = tail {
+            data.extend_from_slice(&t.to_le_bytes());
+        }
+        data
+    }
+
+    #[test]
+    fn para_shape_recovers_outline_level_8_to_10_from_tail() {
+        // [#2734] attr1 bit25~27 은 3비트라 한컴이 6 에서 포화시키고 실제 개요 수준은
+        // 말미 4바이트에 쓴다. 종전엔 tail 을 읽지 않아 8·9·10수준이 모두 7수준으로 붕괴했다.
+        for (tail, expected) in [(7u32, 7u8), (8, 8), (9, 9)] {
+            let data = make_para_shape_bytes(6u32 << 25, Some(tail));
+            assert_eq!(data.len(), 58);
+            let ps = parse_para_shape(&data).unwrap();
+            assert_eq!(
+                ps.para_level, expected,
+                "tail={tail} 이면 개요 수준 {expected} 로 복원돼야 함(attr1 은 6 에서 포화)"
+            );
+        }
+
+        // 1~7수준 구간은 두 출처가 일치한다 — 값이 그대로여야 한다.
+        for lvl in 0u32..=6 {
+            let data = make_para_shape_bytes(lvl << 25, Some(lvl));
+            let ps = parse_para_shape(&data).unwrap();
+            assert_eq!(ps.para_level, lvl as u8, "tail=attr1={lvl} 인 정합 레코드");
+        }
+
+        // 실측 예외(단일 파일 9건): tail=0 인데 attr1 이 수준을 갖는 형태.
+        // 종전 동작(attr1 값)이 그대로 유지돼야 회귀가 아니다.
+        for lvl in 1u32..=6 {
+            let data = make_para_shape_bytes(lvl << 25, Some(0));
+            let ps = parse_para_shape(&data).unwrap();
+            assert_eq!(ps.para_level, lvl as u8, "tail=0/attr1={lvl} → attr1 유지");
+        }
+
+        // tail 이 없는 54바이트 레코드는 종전과 동일하게 attr1 만 본다.
+        let data = make_para_shape_bytes(3u32 << 25, None);
+        assert_eq!(data.len(), 54);
+        assert_eq!(parse_para_shape(&data).unwrap().para_level, 3);
+    }
+
+    #[test]
+    fn para_shape_edit_path_keeps_outline_level_in_tail() {
+        // [#2734] 실제 손실 경로 재현: 개요 수준이 있는 한컴 레코드를 읽어 raw_data 없이
+        // 다시 직렬화하는 경로(find_or_create_para_shape → ParaShapeMods::apply_to 가
+        // raw_data=None 으로 만든 새 ParaShape)에서 말미 4바이트가 살아남아야 한다.
+        // 종전엔 0 리터럴이라 한컴이 읽는 개요 수준 필드가 매번 1수준으로 리셋됐다.
+        for lvl in 1u32..=6 {
+            let original = make_para_shape_bytes(lvl << 25, Some(lvl));
+            let ps = parse_para_shape(&original).unwrap();
+            let resaved = crate::serializer::doc_info::serialize_para_shape(&ps);
+            assert_eq!(
+                &resaved[54..58],
+                &original[54..58],
+                "개요 {lvl} 수준 레코드 재직렬화 시 말미 4바이트가 보존돼야 함"
+            );
+        }
+    }
+
+    #[test]
+    fn para_shape_outline_level_roundtrips_0_to_9() {
+        // [#2734] 개요 수준 전 범위(1~10수준)가 직렬화→재파싱을 통과해야 한다.
+        // 종전엔 직렬화가 말미 4바이트를 0 리터럴로 써서 모든 수준이 0(1수준)으로 리셋됐다.
+        for lvl in 0u8..=9 {
+            let mut ps = parse_para_shape(&make_para_shape_bytes(0, Some(0))).unwrap();
+            ps.para_level = lvl;
+            let bytes = crate::serializer::doc_info::serialize_para_shape(&ps);
+            assert_eq!(bytes.len(), 58, "58바이트 길이 계약(#1110)은 유지");
+            let back = parse_para_shape(&bytes).unwrap();
+            assert_eq!(back.para_level, lvl, "개요 수준 {lvl} 왕복 보존");
+        }
     }
 
     #[test]
