@@ -652,10 +652,10 @@ fn write_char_pr<W: Write>(
         &[
             (
                 "type",
-                if cs.shadow_type == 0 {
-                    "NONE"
-                } else {
-                    "CONTINUOUS"
+                match cs.shadow_type {
+                    0 => "NONE",
+                    1 => "DROP",
+                    _ => "CONTINUOUS",
                 },
             ),
             ("color", &color_hex(cs.shadow_color)),
@@ -762,6 +762,10 @@ fn outline_type_str(t: u8) -> &'static str {
         1 => "SOLID",
         2 => "DASH",
         3 => "DOT",
+        4 => "DASH_DOT",
+        5 => "DASH_DOT_DOT",
+        6 => "LONG_DASH",
+        7 => "CIRCLE",
         _ => "NONE",
     }
 }
@@ -2072,5 +2076,120 @@ mod tests {
         assert_eq!(tab_leader_str(10), "THICK_THIN");
         assert_eq!(tab_leader_str(11), "TRIM");
         assert_eq!(tab_leader_str(8), "DOUBLE_SLIM");
+    }
+
+    #[test]
+    fn outline_type_str_emits_all_eight_values() {
+        // outline_type 4~7 이 "NONE" 으로 유실되지 않고 파서가 받는 문자열로 방출돼야 한다.
+        assert_eq!(outline_type_str(0), "NONE");
+        assert_eq!(outline_type_str(1), "SOLID");
+        assert_eq!(outline_type_str(2), "DASH");
+        assert_eq!(outline_type_str(3), "DOT");
+        assert_eq!(outline_type_str(4), "DASH_DOT");
+        assert_eq!(outline_type_str(5), "DASH_DOT_DOT");
+        assert_eq!(outline_type_str(6), "LONG_DASH");
+        assert_eq!(outline_type_str(7), "CIRCLE");
+        // 범위 밖: NONE 폴백
+        assert_eq!(outline_type_str(8), "NONE");
+        assert_eq!(outline_type_str(255), "NONE");
+    }
+
+    #[test]
+    fn shadow_type_emits_drop_and_continuous_separately() {
+        // shadow_type 1=DROP, 2=CONTINUOUS 가 구분되어 방출돼야 한다.
+        // (L4 바이너리 손상 경로 방지: 2 → "CONTINUOUS" → 재파싱 2, not 1)
+        struct ShadowTestCase {
+            shadow_type: u8,
+            expected_type: &'static str,
+        }
+        let cases = [
+            ShadowTestCase { shadow_type: 0, expected_type: "NONE" },
+            ShadowTestCase { shadow_type: 1, expected_type: "DROP" },
+            ShadowTestCase { shadow_type: 2, expected_type: "CONTINUOUS" },
+        ];
+        for case in &cases {
+            let cs = CharShape {
+                shadow_type: case.shadow_type,
+                shadow_color: 0xFF000000,
+                shadow_offset_x: 10,
+                shadow_offset_y: 20,
+                ..Default::default()
+            };
+            let mut w = Writer::new(Vec::new());
+            write_char_pr(&mut w, 0, &cs).expect("write_char_pr");
+            let xml = String::from_utf8(w.into_inner()).unwrap();
+            assert!(
+                xml.contains(&format!(r#"type="{}""#, case.expected_type)),
+                "shadow_type={} → type=\"{}\": {xml}",
+                case.shadow_type, case.expected_type,
+            );
+            // 오프셋 보존 확인
+            assert!(xml.contains(r#"offsetX="10""#), "offsetX 보존: {xml}");
+            assert!(xml.contains(r#"offsetY="20""#), "offsetY 보존: {xml}");
+        }
+    }
+
+    #[test]
+    fn outline_type_hwpx_roundtrip() {
+        // <hh:outline type="DASH_DOT"/> → 파싱 IR 4 → 직렬화 "DASH_DOT" 왕복
+        let hwpx_head = r##"<?xml version="1.0" encoding="utf-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2016/head">
+  <hh:refList>
+    <hh:charPr>
+      <hh:outline type="DASH_DOT"/>
+    </hh:charPr>
+  </hh:refList>
+</hh:head>"##;
+        // header XML만 파싱
+        let (doc_info, _) = crate::parser::hwpx::header::parse_hwpx_header(hwpx_head).expect("parse header");
+        assert_eq!(doc_info.char_shapes[0].outline_type, 4);
+        // 직렬화: write_header는 Document 단위이므로 직접 write_char_pr 호출
+        let cs = &doc_info.char_shapes[0];
+        let mut w = Writer::new(Vec::new());
+        write_char_pr(&mut w, 0, cs).expect("write_char_pr");
+        let xml = String::from_utf8(w.into_inner()).unwrap();
+        assert!(xml.contains(r#"type="DASH_DOT""#), "DASH_DOT 왕복: {xml}");
+    }
+
+    #[test]
+    fn shadow_type_drop_hwpx_roundtrip() {
+        // <hh:shadow type="DROP"/> → 파싱 IR 1 → 직렬화 "DROP" 왕복 + 오프셋 보존
+        let hwpx_head = r##"<?xml version="1.0" encoding="utf-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2016/head">
+  <hh:refList>
+    <hh:charPr>
+      <hh:shadow type="DROP" color="#000000" offsetX="10" offsetY="20"/>
+    </hh:charPr>
+  </hh:refList>
+</hh:head>"##;
+        let (doc_info, _) = crate::parser::hwpx::header::parse_hwpx_header(hwpx_head).expect("parse header");
+        assert_eq!(doc_info.char_shapes[0].shadow_type, 1);
+        let cs = &doc_info.char_shapes[0];
+        let mut w = Writer::new(Vec::new());
+        write_char_pr(&mut w, 0, cs).expect("write_char_pr");
+        let xml = String::from_utf8(w.into_inner()).unwrap();
+        assert!(xml.contains(r#"type="DROP""#), "DROP 왕복: {xml}");
+        assert!(xml.contains(r#"offsetX="10""#), "offsetX 보존: {xml}");
+        assert!(xml.contains(r#"offsetY="20""#), "offsetY 보존: {xml}");
+    }
+
+    #[test]
+    fn shadow_type_continuous_hwpx_roundtrip() {
+        // <hh:shadow type="CONTINUOUS"/> → IR 2 → 직렬화 "CONTINUOUS" (L4 경로 방지)
+        let hwpx_head = r##"<?xml version="1.0" encoding="utf-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2016/head">
+  <hh:refList>
+    <hh:charPr>
+      <hh:shadow type="CONTINUOUS" color="#000000" offsetX="0" offsetY="0"/>
+    </hh:charPr>
+  </hh:refList>
+</hh:head>"##;
+        let (doc_info, _) = crate::parser::hwpx::header::parse_hwpx_header(hwpx_head).expect("parse header");
+        assert_eq!(doc_info.char_shapes[0].shadow_type, 2);
+        let cs = &doc_info.char_shapes[0];
+        let mut w = Writer::new(Vec::new());
+        write_char_pr(&mut w, 0, cs).expect("write_char_pr");
+        let xml = String::from_utf8(w.into_inner()).unwrap();
+        assert!(xml.contains(r#"type="CONTINUOUS""#), "CONTINUOUS 왕복: {xml}");
     }
 }

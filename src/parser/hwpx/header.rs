@@ -757,6 +757,10 @@ fn parse_char_shape(
                                         "SOLID" => 1,
                                         "DASH" => 2,
                                         "DOT" => 3,
+                                        "DASH_DOT" => 4,
+                                        "DASH_DOT_DOT" => 5,
+                                        "LONG_DASH" => 6,
+                                        "CIRCLE" => 7,
                                         _ => 0,
                                     };
                                 }
@@ -769,7 +773,8 @@ fn parse_char_shape(
                                         let val = attr_str(&attr);
                                         cs.shadow_type = match val.as_str() {
                                             "NONE" => 0,
-                                            "DROP" | "CONTINUOUS" => 1,
+                                            "DROP" => 1,
+                                            "CONTINUOUS" => 2,
                                             _ => 0,
                                         };
                                     }
