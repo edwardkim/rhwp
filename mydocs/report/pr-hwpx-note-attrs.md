@@ -1,4 +1,4 @@
-# PR #????: HWPX 각주/미주 저장 시 prefixChar/suffixChar/instId/flag 속성 유실 수정 (#2716)
+# PR #2730: HWPX 각주/미주 저장 시 prefixChar/suffixChar/instId/flag 속성 유실 수정 (#2716)
 
 ## 수정
 HWPX 직렬화기 `render_note_sublist`가 number만 방출하고 4개 속성을 버리던 문제 수정.
