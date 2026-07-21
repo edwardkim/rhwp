@@ -20,8 +20,8 @@ use quick_xml::Writer;
 
 use crate::model::shape::{
     CommonObjAttr, DrawingObjAttr, HorzAlign, HorzRelTo, LineShape, ObjectNumberingType,
-    OleDrawingAspect, OleShape, RectangleShape, ShapeComponentAttr, TextBox, TextFlow, TextWrap,
-    VertAlign, VertRelTo,
+    OleDrawingAspect, OleShape, RectangleShape, ShapeComponentAttr, SizeCriterion, TextBox,
+    TextFlow, TextWrap, VertAlign, VertRelTo,
 };
 use crate::model::style::{Fill, FillType, ImageFillMode, ShapeBorderLine, SolidFill};
 use crate::model::ColorRef;
@@ -983,10 +983,10 @@ fn write_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Serial
         "hp:sz",
         &[
             ("width", &width),
-            ("widthRelTo", "ABSOLUTE"),
+            ("widthRelTo", size_criterion_width_str(c.width_criterion)),
             ("height", &height),
-            ("heightRelTo", "ABSOLUTE"),
-            ("protect", "0"),
+            ("heightRelTo", size_criterion_height_str(c.height_criterion)),
+            ("protect", bool01(c.size_protect)),
         ],
     )
 }
@@ -1041,6 +1041,26 @@ pub(crate) fn color_to_hex(c: ColorRef) -> String {
         format!("#{:02X}{:02X}{:02X}", r, g, b)
     } else {
         format!("#{:02X}{:02X}{:02X}{:02X}", a, r, g, b)
+    }
+}
+
+pub(crate) fn size_criterion_width_str(c: SizeCriterion) -> &'static str {
+    match c {
+        SizeCriterion::Paper => "PAPER",
+        SizeCriterion::Page => "PAGE",
+        SizeCriterion::Column => "COLUMN",
+        SizeCriterion::Para => "PARA",
+        SizeCriterion::Absolute => "ABSOLUTE",
+    }
+}
+
+/// heightRelTo 전용: 파서가 Column/Para를 Absolute로 접으므로
+/// 방출측도 이 둘은 Absolute로 내야 정확한 역함수가 성립한다.
+pub(crate) fn size_criterion_height_str(c: SizeCriterion) -> &'static str {
+    match c {
+        SizeCriterion::Paper => "PAPER",
+        SizeCriterion::Page => "PAGE",
+        _ => "ABSOLUTE",
     }
 }
 

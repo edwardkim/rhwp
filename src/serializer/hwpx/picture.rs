@@ -36,6 +36,7 @@ use crate::model::shape::{
 };
 
 use super::context::SerializeContext;
+use super::shape::{size_criterion_height_str, size_criterion_width_str};
 use super::table::write_caption;
 use super::utils::{empty_tag, end_tag, start_tag, start_tag_attrs};
 use super::SerializeError;
@@ -387,10 +388,10 @@ fn write_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Serial
         "hp:sz",
         &[
             ("width", &width),
-            ("widthRelTo", "ABSOLUTE"),
+            ("widthRelTo", size_criterion_width_str(c.width_criterion)),
             ("height", &height),
-            ("heightRelTo", "ABSOLUTE"),
-            ("protect", "0"),
+            ("heightRelTo", size_criterion_height_str(c.height_criterion)),
+            ("protect", bool01(c.size_protect)),
         ],
     )
 }
