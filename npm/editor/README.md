@@ -211,12 +211,51 @@ URL.revokeObjectURL(url);
 
 ### editor.getHmlSaveState()
 
-현재 문서의 HML 저장 가능 여부와 blocker를 반환합니다.
+현재 문서의 HML 저장 가능 여부와 blocker 목록을 반환합니다.
+저장 가능 여부는 `hmlSavable`로 판정하고, 실패 원인은 `blockers` 배열로 표시하세요.
+`exportHml()`의 오류 문자열을 파싱하지 마세요.
 
 ```javascript
 const state = await editor.getHmlSaveState();
-// { ok: true } 또는 { ok: false, blocker: '...' }
+// {
+//   sourceFormat: 'hwp',
+//   hmlSavable: false,
+//   blockers: [
+//     {
+//       code: 'HML_SOURCE_REQUIRED',
+//       xmlPath: '/HWPML',
+//       message: 'HML source metadata is required',
+//       preserved: false
+//     }
+//   ]
+// }
+
+if (state.hmlSavable) {
+  const bytes = await editor.exportHml();
+  // ... 저장 진행
+} else {
+  for (const item of state.blockers) {
+    console.warn(`HML 저장 불가 [${item.code}] ${item.xmlPath} — ${item.message}`);
+  }
+}
 ```
+
+**반환값:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `sourceFormat` | `string` | 현재 문서의 원본 형식 — `'hwp'`, `'hwpx'`, `'hml'` |
+| `hmlSavable` | `boolean` | HML로 저장 가능하면 `true` |
+| `blockers` | `HmlSaveBlocker[]` | 저장을 막는 요소 목록. `hmlSavable`이 `true`이면 빈 배열 |
+
+**`HmlSaveBlocker`:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `code` | `string` | blocker 종류 코드 |
+| `xmlPath` | `string` | 해당 요소의 XML 경로 |
+| `message` | `string` | 사람이 읽을 수 있는 사유 |
+| `preserved` | `false` | 항상 `false` — 해당 요소가 HML로 보존되지 않음을 뜻함 |
 
 ### editor.destroy()
 
