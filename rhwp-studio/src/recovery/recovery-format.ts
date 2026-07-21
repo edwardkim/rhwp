@@ -12,10 +12,9 @@ function baseNameWithoutKnownExtension(fileName: string): string {
   return trimmed;
 }
 
-export function recoveryFileName(fileName: string, sourceFormat = 'hwp'): string {
+export function recoveryFileName(fileName: string): string {
   const base = baseNameWithoutKnownExtension(fileName);
-  // autosave draft는 exportHwp() 결과이므로 HWPX 출처도 복구본은 HWP로 연다.
-  if (sourceFormat.toLowerCase() === 'hwpx') return `${base} 복구본.hwp`;
+  // autosave draft는 exportHwp() 결과이므로 모든 출처의 복구본은 HWP로 생성한다.
   return `${base} 복구본.hwp`;
 }
 
