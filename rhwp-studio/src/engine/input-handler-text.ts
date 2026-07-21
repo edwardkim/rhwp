@@ -257,9 +257,15 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
     if (charOffset > 0) {
       const deletePos = { ...pos, charOffset: charOffset - 1 };
       this.executeOperation({ kind: 'command', command: new DeleteTextCommand(deletePos, 1, 'backward') });
-    } else if (pos.cellParaIndex! > 0) {
-      // 셀 문단 시작에서 Backspace → 이전 셀 문단과 병합
-      this.executeOperation({ kind: 'command', command: new MergeParagraphInCellCommand(pos) });
+    } else {
+      // cellPath 존재 시 최내곽(마지막) 엔트리의 cellParaIndex, 없으면 flat 값 사용
+      const cpi = (pos.cellPath?.length ?? 0) > 0
+        ? pos.cellPath![pos.cellPath!.length - 1].cellParaIndex
+        : pos.cellParaIndex!;
+      if (cpi > 0) {
+        // 셀 문단 시작에서 Backspace → 이전 셀 문단과 병합
+        this.executeOperation({ kind: 'command', command: new MergeParagraphInCellCommand(pos) });
+      }
     }
   } else {
     const { sectionIndex: sec, paragraphIndex: para } = pos;
