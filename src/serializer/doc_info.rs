@@ -657,8 +657,11 @@ pub fn serialize_para_shape(ps: &ParaShape) -> Vec<u8> {
         crate::model::style::HeadType::Bullet => 3,
     }) << 23;
     // bits 25-27: para_level
+    // [#2734] 3비트 필드라 6 에서 포화시킨다. 한컴 실측 규약(개요 8~10수준 문단모양 138건이
+    // 모두 attr1 비트 6 + 말미 4바이트 7/8/9)과 동일하다. 종전 `& 0x07` 은 para_level 이
+    // 7 이상일 때 8→0, 9→1 로 엉뚱한 수준을 박는다.
     attr1 &= !(0x07 << 25);
-    attr1 |= (ps.para_level as u32 & 0x07) << 25;
+    attr1 |= (ps.para_level.min(6) as u32) << 25;
     w.write_u32(attr1).unwrap();
     w.write_i32(ps.margin_left).unwrap();
     w.write_i32(ps.margin_right).unwrap();
@@ -684,7 +687,11 @@ pub fn serialize_para_shape(ps: &ParaShape) -> Vec<u8> {
     // 내보낸 정답지들은 PARA_SHAPE를 58바이트로 저장한다. 이 tail이 없으면
     // 한컴 편집기가 일부 masterpage/header 글상자 내부 줄나눔 폭을 다르게
     // 해석해 페이지 번호가 다음 줄로 밀리는 사례가 있다.
-    w.write_u32(0).unwrap();
+    //
+    // [#2734] 이 4바이트의 정체는 개요 수준(0~9 = 1수준~10수준)이다. samples 코퍼스의
+    // 58바이트 레코드 11,913건에서 tail 과 attr1 bit25~27 이 전수 정합하며(포화 138건 제외),
+    // tail != 0 인 872건이 종전 0 리터럴에 덮여 사라졌다. 길이 계약은 그대로 두고 값만 채운다.
+    w.write_u32(ps.para_level.min(9) as u32).unwrap();
     w.into_bytes()
 }
 

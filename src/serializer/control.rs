@@ -2420,7 +2420,9 @@ fn serialize_equation_control(eq: &Equation, level: u16, records: &mut Vec<Recor
     // HWPTAG_EQEDIT 자식 레코드
     let mut w = ByteWriter::new();
     // attr: u32
-    w.write_u32(0).unwrap();
+    // [#2727] 종전 상수 0 하드코딩 → IR 보존값 방출. bit0(수식 범위, HWPX lineMode)
+    // 이 저장마다 CHAR 로 초기화되던 손실 제거.
+    w.write_u32(eq.attr).unwrap();
     // script: HWP string (length-prefixed UTF-16LE)
     w.write_hwp_string(&eq.script).unwrap();
     // font_size: u32

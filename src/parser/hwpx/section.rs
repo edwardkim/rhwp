@@ -9,6 +9,7 @@ use quick_xml::Reader;
 use crate::model::control::{
     AutoNumber, AutoNumberType, Bookmark, CharOverlap, Control, Equation, Field, FieldType,
     FormObject, FormType, HiddenComment, NewNumber, PageHide, PageNumberPos, Ruby,
+    EQUATION_LINE_MODE_BIT,
 };
 use crate::model::document::{Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
@@ -5319,7 +5320,7 @@ fn read_dutmal_text(reader: &mut Reader<&[u8]>, end_tag: &[u8]) -> Result<String
 }
 
 /// `<hp:equation>` 요소 (수식)를 파싱한다.
-/// 수식 속성(version, baseLine, textColor, baseUnit, font)과
+/// 수식 속성(version, baseLine, textColor, baseUnit, lineMode, font)과
 /// `<hp:script>` 하위 요소에서 수식 스크립트를 추출하여 `Control::Equation`을 생성한다.
 fn parse_equation(
     e: &quick_xml::events::BytesStart,
@@ -5335,6 +5336,9 @@ fn parse_equation(
     let mut color: u32 = 0;
     let mut font_size: u32 = 1000;
     let mut font_name = String::new();
+    // [#2727] lineMode(수식이 차지하는 범위) → EQEDIT attribute bit0.
+    // OWPML 기본값은 CHAR 이므로 속성이 없으면 0(글자 단위)으로 둔다.
+    let mut eq_attr: u32 = 0;
 
     // 공통 개체 속성 + 수식 속성 파싱
     parse_object_element_attrs(e, &mut common, &mut shape_attr);
@@ -5344,6 +5348,14 @@ fn parse_equation(
             b"baseLine" => baseline = attr_str(&attr).parse().unwrap_or(0),
             b"textColor" => color = parse_color(&attr),
             b"baseUnit" => font_size = parse_u32(&attr),
+            // [#2727] LINE 이면 bit0 set. 종전엔 미파싱으로 왕복 시 CHAR 로 고정됐다.
+            b"lineMode" => {
+                if attr_str(&attr).eq_ignore_ascii_case("LINE") {
+                    eq_attr |= EQUATION_LINE_MODE_BIT;
+                } else {
+                    eq_attr &= !EQUATION_LINE_MODE_BIT;
+                }
+            }
             b"font" => font_name = attr_str(&attr),
             _ => {}
         }
@@ -5423,6 +5435,8 @@ fn parse_equation(
 
     let equation = Equation {
         common,
+        // [#2727] HWPX lineMode → EQEDIT attribute bit0
+        attr: eq_attr,
         script,
         font_size,
         color,

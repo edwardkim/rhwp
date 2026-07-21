@@ -559,6 +559,7 @@ mod tests {
                 horz_align: HorzAlign::Center,
                 ..Default::default()
             },
+            attr: 0,
             script: "x < y & z".to_string(),
             font_size: 1000,
             color: 0x000000FF,
