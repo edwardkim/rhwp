@@ -432,6 +432,8 @@ export class InputHandler {
     pageLeft: number;
     pageOffset: number;
     zoom: number;
+    // [Task #2759] 드래그 시작 시 캡처한 원래 끝점(글로벌 HWPUNIT) — 종료 시 Undo 기록의 before.
+    orig: { sx: number; sy: number; ex: number; ey: number };
   } | null = null;
 
   // 양식 개체 오버레이
@@ -1329,6 +1331,11 @@ export class InputHandler {
   /** 마우스 버튼 놓기: 드래그 선택 종료 */
   private onMouseUp(_e: MouseEvent): void {
     _mouse.onMouseUp.call(this, _e);
+  }
+
+  /** [Task #2759] 직선 끝점 드래그 종료 — 끝점 이동을 Undo 히스토리에 기록 */
+  private finishLineEndpointDrag(): void {
+    _mouse.finishLineEndpointDrag.call(this);
   }
 
   /** 마우스 이벤트에서 hitTest 결과를 반환한다 */

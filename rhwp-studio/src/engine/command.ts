@@ -1,6 +1,7 @@
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike } from '@/core/types';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
+import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
 
 /** 편집 명령 공통 인터페이스 */
 export interface EditCommand {
@@ -1564,6 +1565,43 @@ export class ResizeObjectCommand implements EditCommand {
     }
     const first = this.targets[0];
     return { sectionIndex: first?.sec ?? 0, paragraphIndex: first?.ppi ?? 0, charOffset: 0 };
+  }
+
+  mergeWith(): null { return null; }
+}
+
+/**
+ * [Task #2759] 직선/연결선 끝점 드래그를 Undo/Redo 스택에 기록하기 위한 명령.
+ *
+ * ResizeObjectCommand 와 동일하게 드래그 중 WASM 에 이미 반영된 변경을 kind:'record' 로
+ * 사후 기록한다(execute 는 redo 경로에서만 재적용). before/after 는 글로벌 끝점 좌표
+ * (HWPUNIT)이며 moveLineEndpoint 는 절대 좌표 setter 라 역연산이 자명하다.
+ */
+export class MoveLineEndpointCommand implements EditCommand {
+  readonly type = 'moveLineEndpoint';
+  readonly timestamp: number;
+
+  constructor(
+    private sec: number,
+    private ppi: number,
+    private ci: number,
+    private before: LineEndpointsLike,
+    private after: LineEndpointsLike,
+    timestamp?: number,
+  ) {
+    this.timestamp = timestamp ?? Date.now();
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    wasm.moveLineEndpoint(this.sec, this.ppi, this.ci,
+      this.after.sx, this.after.sy, this.after.ex, this.after.ey);
+    return { sectionIndex: this.sec, paragraphIndex: this.ppi, charOffset: 0 };
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    wasm.moveLineEndpoint(this.sec, this.ppi, this.ci,
+      this.before.sx, this.before.sy, this.before.ex, this.before.ey);
+    return { sectionIndex: this.sec, paragraphIndex: this.ppi, charOffset: 0 };
   }
 
   mergeWith(): null { return null; }
