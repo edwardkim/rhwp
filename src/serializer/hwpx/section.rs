@@ -1958,16 +1958,37 @@ fn render_common_shape_xml(
     out
 }
 
+struct NoteAttrs {
+    number: u16,
+    prefix_char: u16,  // 0이면 생략 (before_decoration_letter)
+    suffix_char: u16,  // 항상 방출 (after_decoration_letter)
+    number_shape: u32, // 0이면 flag 생략
+    inst_id: u32,      // 항상 방출 (instance_id)
+}
+
 fn render_note_sublist(
     tag: &str,
-    number: u16,
+    attrs: &NoteAttrs,
     paragraphs: &[Paragraph],
     ctx: &mut SerializeContext,
 ) -> String {
+    // 한컴 저장본 속성 순서: flag, number, prefixChar, suffixChar, instId
+    // 생략 규칙(828개 실측): flag ↔ number_shape != 0, prefixChar ↔ prefix_char != 0
+    let mut note_attrs = String::new();
+    if attrs.number_shape != 0 {
+        note_attrs.push_str(&format!(" flag=\"{}\"", attrs.number_shape));
+    }
+    note_attrs.push_str(&format!(" number=\"{}\"", attrs.number));
+    if attrs.prefix_char != 0 {
+        note_attrs.push_str(&format!(" prefixChar=\"{}\"", attrs.prefix_char));
+    }
+    note_attrs.push_str(&format!(" suffixChar=\"{}\"", attrs.suffix_char));
+    note_attrs.push_str(&format!(" instId=\"{}\"", attrs.inst_id));
+
     let mut out = format!(
-        r#"<hp:ctrl><hp:{tag} number="{num}"><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#,
+        r#"<hp:ctrl><hp:{tag}{attrs}><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#,
         tag = tag,
-        num = number,
+        attrs = note_attrs,
     );
     let mut vert_cursor: u32 = 0;
     for p in paragraphs.iter() {
@@ -1985,11 +2006,33 @@ fn render_note_sublist(
 }
 
 fn render_footnote(note: &Footnote, ctx: &mut SerializeContext) -> String {
-    render_note_sublist("footNote", note.number, &note.paragraphs, ctx)
+    render_note_sublist(
+        "footNote",
+        &NoteAttrs {
+            number: note.number,
+            prefix_char: note.before_decoration_letter,
+            suffix_char: note.after_decoration_letter,
+            number_shape: note.number_shape,
+            inst_id: note.instance_id,
+        },
+        &note.paragraphs,
+        ctx,
+    )
 }
 
 fn render_endnote(note: &Endnote, ctx: &mut SerializeContext) -> String {
-    render_note_sublist("endNote", note.number, &note.paragraphs, ctx)
+    render_note_sublist(
+        "endNote",
+        &NoteAttrs {
+            number: note.number,
+            prefix_char: note.before_decoration_letter,
+            suffix_char: note.after_decoration_letter,
+            number_shape: note.number_shape,
+            inst_id: note.instance_id,
+        },
+        &note.paragraphs,
+        ctx,
+    )
 }
 
 fn render_equation(eq: &Equation) -> String {

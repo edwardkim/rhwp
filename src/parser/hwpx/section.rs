@@ -4621,6 +4621,15 @@ fn parse_ctrl_footnote(
                     note.instance_id = v;
                 }
             }
+            // [#2716] flag = HWP5 number_shape (UInt4). 한컴 저장본 3%가 사용.
+            b"flag" => {
+                if let Ok(v) = std::str::from_utf8(&attr.value)
+                    .unwrap_or("")
+                    .parse::<u32>()
+                {
+                    note.number_shape = v;
+                }
+            }
             _ => {}
         }
     }
@@ -4666,6 +4675,15 @@ fn parse_ctrl_endnote(
                     .parse::<u32>()
                 {
                     note.instance_id = v;
+                }
+            }
+            // [#2716] flag → number_shape
+            b"flag" => {
+                if let Ok(v) = std::str::from_utf8(&attr.value)
+                    .unwrap_or("")
+                    .parse::<u32>()
+                {
+                    note.number_shape = v;
                 }
             }
             _ => {}
