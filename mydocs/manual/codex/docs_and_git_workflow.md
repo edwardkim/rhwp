@@ -42,6 +42,21 @@ mydocs/report/task_m100_{issue}_report.md
 mydocs/orders/YYYYMMDD.md
 ```
 
+회차형 측정 기록:
+
+```text
+mydocs/report/{주제}_{회차}_{YYYYMMDD}.md
+```
+
+서베이·벤치마크처럼 동일 축을 반복 측정해 시계열로 비교하는 문서는 이슈 1:1 대응이
+아니므로 `task_m100_{issue}_report.md` 를 적용하지 않는다. 회차와 날짜가 식별자다.
+예: `survey_10k_r18_20260721.md`. 한 이슈로 몰면 회차끼리 이름이 충돌하고 시계열
+비교라는 목적이 사라진다.
+
+파일명의 숫자는 **이슈 번호**다. PR 번호를 쓰지 않는다 — GitHub 는 이슈와 PR 이 번호
+공간을 공유해 번호만으로는 종류를 판별할 수 없으므로(`gh issue view <PR번호>` 가 PR 을
+반환한다), 보고서 본문에 `Issue: #N` 을 명시해 근거를 남긴다. (#2753)
+
 ## Folder Roles
 
 - `mydocs/orders/`: 오늘할일

@@ -61,6 +61,10 @@ gh pr edit N --repo edwardkim/rhwp --add-reviewer <reviewer>
 - [ ] **연관 이슈**: PR description 에 `closes #N` 또는 `#N` 참조가 있어야 함. 없으면 코멘트로 요청
 - [ ] **mergeable state**: `MERGEABLE` + `CLEAN` / `BEHIND` / `DIRTY` 중 확인
 - [ ] **CI 상태**: `Build & Test` / `CodeQL` 실행 결과
+- [ ] **문서 파일명**: `mydocs/report/` 신규 파일이 `task_m100_{issue}_report.md` 규칙을 따르는지.
+      파일명의 숫자가 **PR 번호일 수 있으므로** 본문의 `Issue: #N` 과 대조한다. 회차형 측정
+      기록은 예외 ([`docs_and_git_workflow.md`](codex/docs_and_git_workflow.md) 참조). 코드
+      게이트만 돌리다 2026-07-20~21 이틀에 21건이 규칙 밖 명명으로 유입된 사례가 있다 (#2753)
 
 ### 2.3 규모 분석
 
