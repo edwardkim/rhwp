@@ -419,7 +419,16 @@ fn write_table(writer: &mut XmlWriter, table: &Table, path: &str) -> Result<(), 
             table.padding.bottom,
         ),
     );
-    for row in 0..table.row_count {
+    // [#2751] 실셀의 최대 행까지만 <ROW> 방출. 무검증 row_count가 과도하게 크면
+    // 빈 <ROW>가 다수 방출되어 XML이 25배 이상 팽창하고 저장이 4.4초 지연된다.
+    let row_end = table
+        .cells
+        .iter()
+        .map(|c| c.row)
+        .max()
+        .map(|max_row| (max_row.saturating_add(1)).min(table.row_count))
+        .unwrap_or(table.row_count);
+    for row in 0..row_end {
         writer.open("ROW", &[]);
         for (cell_index, cell) in table
             .cells

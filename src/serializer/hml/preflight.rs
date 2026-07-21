@@ -630,6 +630,8 @@ fn validate_table(table: &Table, path: &str, blockers: &mut Vec<HmlSaveBlocker>)
         .collect::<Vec<_>>();
     let mut rebuilt = table.clone();
     rebuilt.rebuild_grid();
+    let max_cell_row = table.cells.iter().map(|c| c.row).max().unwrap_or(0);
+    let inflated_rows = table.row_count > max_cell_row.saturating_add(5);
     let omitted = table_attr_has_unrepresentable_bits(table)
         || table.page_break != TablePageBreak::CellBreak
         || !table.repeat_header
@@ -646,6 +648,7 @@ fn validate_table(table: &Table, path: &str, blockers: &mut Vec<HmlSaveBlocker>)
         || !table.raw_table_record_extra.is_empty()
         || table.row_sizes != expected_rows
         || table.cell_grid != rebuilt.cell_grid
+        || inflated_rows
         || table
             .cells
             .windows(2)
