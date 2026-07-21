@@ -43,3 +43,4 @@ rect(#2712)와 line(#2712)은 각각 write_sz를 호출하므로, write_sz 자�
 
 - #2697 — 표 hp:sz IR 보존
 - #2712 — rect/line/picture hp:sz IR 보존
+- #2733 — 본 PR
