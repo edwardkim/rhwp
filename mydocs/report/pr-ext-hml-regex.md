@@ -29,5 +29,5 @@ const isExt = /\.(hwp|hwpx|hml)(\?.*)?$/i.test(href);
 
 ## 결과
 - **Branch**: `pr/fix-issue-2689-ext-hml-regex`
-- **PR**: https://github.com/edwardkim/rhwp/pull/???? (생성 후 업데이트)
+- **PR**: https://github.com/edwardkim/rhwp/pull/2690
 - **Closes**: #2689
