@@ -21,6 +21,7 @@ impl DocumentCore {
         end_subject_id: u32,
         end_subject_index: u32,
     ) {
+        let mut modified = false;
         if let Some(section) = self.document.sections.get_mut(section_idx) {
             if let Some(para) = section.paragraphs.get_mut(para_idx) {
                 if let Some(Control::Shape(ref mut shape)) = para.controls.get_mut(control_idx) {
@@ -30,9 +31,15 @@ impl DocumentCore {
                             conn.start_subject_index = start_subject_index;
                             conn.end_subject_id = end_subject_id;
                             conn.end_subject_index = end_subject_index;
+                            modified = true;
                         }
                     }
                 }
+            }
+        }
+        if modified {
+            if let Some(section) = self.document.sections.get_mut(section_idx) {
+                section.raw_stream = None;
             }
         }
     }
@@ -48,165 +55,171 @@ impl DocumentCore {
     ) {
         use crate::model::shape::ConnectorControlPoint;
 
-        let section = match self.document.sections.get_mut(section_idx) {
-            Some(s) => s,
-            None => return,
-        };
-        let para = match section.paragraphs.get_mut(para_idx) {
-            Some(p) => p,
-            None => return,
-        };
-        let ctrl = match para.controls.get_mut(control_idx) {
-            Some(c) => c,
-            None => return,
-        };
+        let modified = self
+            .document
+            .sections
+            .get_mut(section_idx)
+            .is_some_and(|section| {
+                let para = match section.paragraphs.get_mut(para_idx) {
+                    Some(p) => p,
+                    None => return false,
+                };
+                let ctrl = match para.controls.get_mut(control_idx) {
+                    Some(c) => c,
+                    None => return false,
+                };
 
-        let line = match ctrl {
-            Control::Shape(ref mut s) => match s.as_mut() {
-                ShapeObject::Line(ref mut l) => l,
-                _ => return,
-            },
-            _ => return,
-        };
+                let line = match ctrl {
+                    Control::Shape(ref mut s) => match s.as_mut() {
+                        ShapeObject::Line(ref mut l) => l,
+                        _ => return false,
+                    },
+                    _ => return false,
+                };
 
-        let conn = match &mut line.connector {
-            Some(c) => c,
-            None => return,
-        };
+                let conn = match &mut line.connector {
+                    Some(c) => c,
+                    None => return false,
+                };
 
-        let sx = line.start.x;
-        let sy = line.start.y;
-        let ex = line.end.x;
-        let ey = line.end.y;
-        let w = line.common.width as i32;
-        let h = line.common.height as i32;
+                let sx = line.start.x;
+                let sy = line.start.y;
+                let ex = line.end.x;
+                let ey = line.end.y;
+                let w = line.common.width as i32;
+                let h = line.common.height as i32;
 
-        // 직선 연결선: 제어점 불필요
-        if !conn.link_type.is_stroke() && !conn.link_type.is_arc() {
-            conn.control_points.clear();
-            return;
-        }
-
-        // 연결점 방향: 0=상, 1=우, 2=하, 3=좌
-        if conn.link_type.is_arc() {
-            // ─── 곡선 연결선: 파워포인트 스타일 S곡선 ───
-            // ctrl1: 시작점에서 시작 방향으로 중간지점까지 뻗음
-            // ctrl2: 끝점에서 끝 방향으로 중간지점까지 뻗음
-            // → 중간지점에서 위아래(또는 좌우)가 반전되는 S자
-            // 한컴 공식: 수평 연결(우/좌)은 midX 기준, 수직 연결(상/하)은 midY 기준
-            // ctrl1 = (midX, startY) / (startX, midY), ctrl2 = (midX, endY) / (endX, midY)
-            let mid_x = (sx + ex) / 2;
-            let mid_y = (sy + ey) / 2;
-            let start_is_horz = start_idx == 1 || start_idx == 3; // 우/좌
-            let end_is_horz = end_idx == 1 || end_idx == 3;
-
-            let (c1x, c1y, c2x, c2y) = if start_is_horz && end_is_horz {
-                // 우↔좌: midX 기준 S곡선
-                (mid_x, sy, mid_x, ey)
-            } else if !start_is_horz && !end_is_horz {
-                // 상↔하: midY 기준 S곡선
-                (sx, mid_y, ex, mid_y)
-            } else if start_is_horz {
-                // 우/좌 → 상/하: 수평 출발 → midX까지, 수직 진입 → midY까지
-                (mid_x, sy, ex, mid_y)
-            } else {
-                // 상/하 → 우/좌: 수직 출발 → midY까지, 수평 진입 → midX까지
-                (sx, mid_y, mid_x, ey)
-            };
-
-            conn.control_points = vec![
-                ConnectorControlPoint {
-                    x: sx,
-                    y: sy,
-                    point_type: 3,
-                }, // 시작 앵커
-                ConnectorControlPoint {
-                    x: c1x,
-                    y: c1y,
-                    point_type: 2,
-                }, // 베지어 ctrl1
-                ConnectorControlPoint {
-                    x: c2x,
-                    y: c2y,
-                    point_type: 2,
-                }, // 베지어 ctrl2
-                ConnectorControlPoint {
-                    x: ex,
-                    y: ey,
-                    point_type: 26,
-                }, // 끝 앵커
-            ];
-        } else {
-            // ─── 꺽인 연결선: 직각 꺾임점 ───
-            let mut pts = Vec::new();
-            pts.push(ConnectorControlPoint {
-                x: sx,
-                y: sy,
-                point_type: 3,
-            });
-
-            match (start_idx, end_idx) {
-                (1, 3) | (3, 1) => {
-                    let mid_x = (sx + ex) / 2;
-                    pts.push(ConnectorControlPoint {
-                        x: mid_x,
-                        y: sy,
-                        point_type: 2,
-                    });
-                    pts.push(ConnectorControlPoint {
-                        x: mid_x,
-                        y: ey,
-                        point_type: 2,
-                    });
+                // 직선 연결선: 제어점 불필요
+                if !conn.link_type.is_stroke() && !conn.link_type.is_arc() {
+                    conn.control_points.clear();
+                    return true;
                 }
-                (2, 0) | (0, 2) => {
+                if conn.link_type.is_arc() {
+                    // ─── 곡선 연결선: 파워포인트 스타일 S곡선 ───
+                    // ctrl1: 시작점에서 시작 방향으로 중간지점까지 뻗음
+                    // ctrl2: 끝점에서 끝 방향으로 중간지점까지 뻗음
+                    // → 중간지점에서 위아래(또는 좌우)가 반전되는 S자
+                    // 한컴 공식: 수평 연결(우/좌)은 midX 기준, 수직 연결(상/하)은 midY 기준
+                    // ctrl1 = (midX, startY) / (startX, midY), ctrl2 = (midX, endY) / (endX, midY)
+                    let mid_x = (sx + ex) / 2;
                     let mid_y = (sy + ey) / 2;
-                    pts.push(ConnectorControlPoint {
-                        x: sx,
-                        y: mid_y,
-                        point_type: 2,
-                    });
-                    pts.push(ConnectorControlPoint {
-                        x: ex,
-                        y: mid_y,
-                        point_type: 2,
-                    });
-                }
-                (1, 0) | (1, 2) | (3, 0) | (3, 2) => {
-                    pts.push(ConnectorControlPoint {
-                        x: ex,
-                        y: sy,
-                        point_type: 2,
-                    });
-                }
-                (0, 1) | (0, 3) | (2, 1) | (2, 3) => {
-                    pts.push(ConnectorControlPoint {
-                        x: sx,
-                        y: ey,
-                        point_type: 2,
-                    });
-                }
-                _ => {
-                    let mid_x = (sx + ex) / 2;
-                    pts.push(ConnectorControlPoint {
-                        x: mid_x,
-                        y: sy,
-                        point_type: 2,
-                    });
-                    pts.push(ConnectorControlPoint {
-                        x: mid_x,
-                        y: ey,
-                        point_type: 2,
-                    });
-                }
-            }
+                    let start_is_horz = start_idx == 1 || start_idx == 3; // 우/좌
+                    let end_is_horz = end_idx == 1 || end_idx == 3;
 
-            pts.push(ConnectorControlPoint {
-                x: ex,
-                y: ey,
-                point_type: 26,
+                    let (c1x, c1y, c2x, c2y) = if start_is_horz && end_is_horz {
+                        // 우↔좌: midX 기준 S곡선
+                        (mid_x, sy, mid_x, ey)
+                    } else if !start_is_horz && !end_is_horz {
+                        // 상↔하: midY 기준 S곡선
+                        (sx, mid_y, ex, mid_y)
+                    } else if start_is_horz {
+                        // 우/좌 → 상/하: 수평 출발 → midX까지, 수직 진입 → midY까지
+                        (mid_x, sy, ex, mid_y)
+                    } else {
+                        // 상/하 → 우/좌: 수직 출발 → midY까지, 수평 진입 → midX까지
+                        (sx, mid_y, mid_x, ey)
+                    };
+
+                    conn.control_points = vec![
+                        ConnectorControlPoint {
+                            x: sx,
+                            y: sy,
+                            point_type: 3,
+                        }, // 시작 앵커
+                        ConnectorControlPoint {
+                            x: c1x,
+                            y: c1y,
+                            point_type: 2,
+                        }, // 베지어 ctrl1
+                        ConnectorControlPoint {
+                            x: c2x,
+                            y: c2y,
+                            point_type: 2,
+                        }, // 베지어 ctrl2
+                        ConnectorControlPoint {
+                            x: ex,
+                            y: ey,
+                            point_type: 26,
+                        }, // 끝 앵커
+                    ];
+                } else {
+                    // ─── 꺽인 연결선: 직각 꺾임점 ───
+                    let mut pts = Vec::new();
+                    pts.push(ConnectorControlPoint {
+                        x: sx,
+                        y: sy,
+                        point_type: 3,
+                    });
+
+                    match (start_idx, end_idx) {
+                        (1, 3) | (3, 1) => {
+                            let mid_x = (sx + ex) / 2;
+                            pts.push(ConnectorControlPoint {
+                                x: mid_x,
+                                y: sy,
+                                point_type: 2,
+                            });
+                            pts.push(ConnectorControlPoint {
+                                x: mid_x,
+                                y: ey,
+                                point_type: 2,
+                            });
+                        }
+                        (2, 0) | (0, 2) => {
+                            let mid_y = (sy + ey) / 2;
+                            pts.push(ConnectorControlPoint {
+                                x: sx,
+                                y: mid_y,
+                                point_type: 2,
+                            });
+                            pts.push(ConnectorControlPoint {
+                                x: ex,
+                                y: mid_y,
+                                point_type: 2,
+                            });
+                        }
+                        (1, 0) | (1, 2) | (3, 0) | (3, 2) => {
+                            pts.push(ConnectorControlPoint {
+                                x: ex,
+                                y: sy,
+                                point_type: 2,
+                            });
+                        }
+                        (0, 1) | (0, 3) | (2, 1) | (2, 3) => {
+                            pts.push(ConnectorControlPoint {
+                                x: sx,
+                                y: ey,
+                                point_type: 2,
+                            });
+                        }
+                        _ => {
+                            let mid_x = (sx + ex) / 2;
+                            pts.push(ConnectorControlPoint {
+                                x: mid_x,
+                                y: sy,
+                                point_type: 2,
+                            });
+                            pts.push(ConnectorControlPoint {
+                                x: mid_x,
+                                y: ey,
+                                point_type: 2,
+                            });
+                        }
+                    }
+
+                    pts.push(ConnectorControlPoint {
+                        x: ex,
+                        y: ey,
+                        point_type: 26,
+                    });
+                    conn.control_points = pts;
+                }
+                true
             });
-            conn.control_points = pts;
+        if modified {
+            if let Some(section) = self.document.sections.get_mut(section_idx) {
+                section.raw_stream = None;
+            }
         }
     }
     /// 구역 내 모든 연결선을 스캔하여 연결된 도형의 현재 위치에 맞게 갱신한다.
@@ -342,6 +355,9 @@ impl DocumentCore {
         }
         for (pi, ci, si, ei) in routing_targets {
             self.recalculate_connector_routing(section_idx, pi, ci, si, ei);
+        }
+        if let Some(section) = self.document.sections.get_mut(section_idx) {
+            section.raw_stream = None;
         }
     }
 }
