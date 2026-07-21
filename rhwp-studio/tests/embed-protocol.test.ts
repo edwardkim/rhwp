@@ -32,6 +32,8 @@ test('main.ts는 호스트 저장 완료 API completeHostSave를 window.rhwpStud
   );
   // window 공개 API: DEV 전용이 아닌 무조건 노출
   assert.match(source, /\.rhwpStudio = \{\s*\n?\s*notifySaved:/);
+  // embed RPC 핸들러도 동일 코어를 사용한다
+  assert.match(source, /async notifySaved\(fileName\)[\s\S]*?completeHostSave\(fileName\)/);
 });
 
 test('embed protocol은 capability를 포함한 v1 connect와 session-bound request만 허용한다', () => {
@@ -45,6 +47,7 @@ test('embed protocol은 capability를 포함한 v1 connect와 session-bound requ
     'transferable-array-buffer',
     'hml-export',
     'renderer-diagnostics-v1',
+    'notify-saved-v1',
   ]);
 
   assert.equal(isRequestEnvelope({
@@ -73,6 +76,7 @@ test('embed router는 binary load와 unknown method를 공개 동작으로 처�
     exportHml: async () => new Uint8Array([3]),
     getHmlSaveState: async () => ({ sourceFormat: 'hml', hmlSavable: true, blockers: [] }),
     exportHwpVerify: async () => ({ recovered: true }),
+    notifySaved: async () => ({ ok: true as const, wasDirty: true }),
   };
 
   assert.deepEqual(
@@ -125,6 +129,7 @@ test('embed runtime은 parent의 exact origin에서 v1 port session을 설치한
     exportHml: async () => new Uint8Array([3]),
     getHmlSaveState: async () => ({ sourceFormat: 'hml', hmlSavable: true, blockers: [] }),
     exportHwpVerify: async () => ({ recovered: true }),
+    notifySaved: async () => ({ ok: true as const, wasDirty: true }),
   };
   const cleanup = installEmbedRuntime({
     hostWindow: hostWindow as unknown as Window,
@@ -794,6 +799,7 @@ test('embed router는 suppressDialogs 파라미터를 핸들러로 전달한다 
     exportHml: async () => new Uint8Array(),
     getHmlSaveState: async () => ({ sourceFormat: 'hml', hmlSavable: true, blockers: [] }),
     exportHwpVerify: async () => ({}),
+    notifySaved: async () => ({ ok: true as const, wasDirty: false }),
   };
 
   await routeEmbedRequest('loadFile', { data: new Uint8Array([1]) }, handlers);
@@ -807,4 +813,25 @@ test('embed router는 suppressDialogs 파라미터를 핸들러로 전달한다 
     { skipUnsavedGuard: false, suppressDialogs: false },
     { skipUnsavedGuard: true, suppressDialogs: true },
   ]);
+});
+
+test('embed router는 notifySaved fileName을 정규화해 핸들러로 전달한다 (#2660)', async () => {
+  const received: Array<string | undefined> = [];
+  const handlers = {
+    notifySaved: async (fileName?: string) => {
+      received.push(fileName);
+      return { ok: true as const, wasDirty: true };
+    },
+  } as EmbedRpcHandlers;
+
+  assert.deepEqual(
+    await routeEmbedRequest('notifySaved', {}, handlers),
+    { ok: true, wasDirty: true },
+  );
+  await routeEmbedRequest('notifySaved', { fileName: 'a.hwp' }, handlers);
+  // 비문자열/빈 문자열 fileName은 undefined로 정규화한다
+  await routeEmbedRequest('notifySaved', { fileName: 123 }, handlers);
+  await routeEmbedRequest('notifySaved', { fileName: '' }, handlers);
+
+  assert.deepEqual(received, [undefined, 'a.hwp', undefined, undefined]);
 });

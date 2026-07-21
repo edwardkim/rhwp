@@ -1360,5 +1360,9 @@ installEmbedRuntime({
       await initPromise;
       return JSON.parse(wasm.exportHwpVerify());
     },
+    async notifySaved(fileName) {
+      await initPromise;
+      return completeHostSave(fileName);
+    },
   },
 });
