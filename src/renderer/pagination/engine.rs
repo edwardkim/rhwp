@@ -2446,9 +2446,14 @@ impl Paginator {
         };
 
         // 캡션 높이 계산
+        // [#2699] 음수 line_spacing(고정값 줄간격 TAC 표 마커, Task #9)은 캡션 예약에서 제외.
+        // 클램프하지 않으면 :2471의 caption_overhead가 |ls|만큼 작아져 과소 예약이 되고,
+        // 아래 "Bottom 캡션 공간 확보" 판정이 발동하지 않아 마지막 행+캡션이 본문 하단을 넘는다.
+        // 렌더러도 음수 ls에서는 y_offset을 더하지 않는다(layout.rs:7154). 형제: :1941/:1947
         let host_line_spacing_for_caption = para
             .line_segs
             .first()
+            .filter(|seg| seg.line_spacing > 0)
             .map(|seg| crate::renderer::hwpunit_to_px(seg.line_spacing, self.dpi))
             .unwrap_or(0.0);
         let caption_base_overhead = {
