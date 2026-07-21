@@ -65,5 +65,5 @@ PageCount(): number {
 
 ## 결과
 - **Branch**: `pr/fix-issue-2684-hwpctl-trycatch`
-- **PR**: https://github.com/edwardkim/rhwp/pull/???? (생성 후 업데이트)
+- **PR**: https://github.com/edwardkim/rhwp/pull/2686
 - **Closes**: #2684
