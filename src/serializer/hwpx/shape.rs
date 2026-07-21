@@ -984,7 +984,8 @@ fn write_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Serial
     // 파일 samples/hwpx/143E433F503322BD33.hwpx 의 hp:rect·hp:ole 이 protect="1" 인데
     // 종전 방출은 이를 "0" 으로 되썼다. 이웃 write_pos 는 이미 모든 필드를 통과시키고,
     // 같은 hp:sz 를 다루는 form.rs:183-188 도 3속성 모두 보존한다. 표는 #2697/#2701 에서
-    // 같은 결함을 같은 방식으로 정리했다.
+    // 같은 결함을 같은 방식으로 정리했다. ellipse/arc/polygon/curve/chart 등 write_sz() 를
+    // 공유하는 모든 도형 경로에 동일하게 적용된다(#2745).
     empty_tag(
         w,
         "hp:sz",
