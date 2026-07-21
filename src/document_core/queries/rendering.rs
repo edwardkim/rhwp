@@ -860,6 +860,43 @@ impl DocumentCore {
         self.render_pages_pdf_direct_native_with_options(&pages, options)
     }
 
+    /// [#2524] 문서 임베디드(BinData) 폰트를 face명 → 원본 bytes 로 수집한다.
+    ///
+    /// SVG `@font-face` 직접 임베딩용. 미설치 임베디드 폰트(bitmap 등)가
+    /// `local()` 폴백으로 chrome 두부가 되던 문제 해소. 동일 face 명이 여러
+    /// 언어 슬롯에 있으면 첫 항목만 담는다.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn collect_embedded_font_bytes_by_name(&self) -> std::collections::HashMap<String, Vec<u8>> {
+        let mut ids = Vec::new();
+        let mut name_id: Vec<(String, u16)> = Vec::new();
+        for fonts in &self.document.doc_info.font_faces {
+            for font in fonts {
+                if font.is_embedded {
+                    if let Some(id) = font.resolved_bin_data_id {
+                        ids.push(id);
+                        name_id.push((font.name.clone(), id));
+                    }
+                }
+            }
+        }
+        if ids.is_empty() {
+            return std::collections::HashMap::new();
+        }
+        let bytes_by_id = load_bounded_embedded_font_bytes(
+            &self.document.bin_data_content,
+            &ids,
+            MAX_EMBEDDED_FONT_BYTES,
+            MAX_EMBEDDED_FONT_BYTES_PER_PAGE,
+        );
+        let mut map = std::collections::HashMap::new();
+        for (name, id) in name_id {
+            if let Some(bytes) = bytes_by_id.get(&id) {
+                map.entry(name).or_insert_with(|| bytes.clone());
+            }
+        }
+        map
+    }
+
     /// SVG 렌더링 (폰트 임베딩 옵션 포함)
     #[cfg(not(target_arch = "wasm32"))]
     pub fn render_page_svg_with_fonts(
@@ -881,7 +918,11 @@ impl DocumentCore {
         // 폰트 임베딩 후처리
         let mut svg = renderer.output().to_string();
         if font_embed_mode != crate::renderer::svg::FontEmbedMode::None {
-            let style_css = crate::renderer::svg::generate_font_style(&renderer, font_paths);
+            // [#2524] 문서 임베디드(BinData) 폰트를 face명 → bytes 로 수집해
+            // @font-face 직접 임베딩에 쓴다(미설치 임베디드 폰트 chrome 두부 해소).
+            let embedded_fonts = self.collect_embedded_font_bytes_by_name();
+            let style_css =
+                crate::renderer::svg::generate_font_style(&renderer, font_paths, &embedded_fonts);
             if !style_css.is_empty() {
                 // <svg ...> 직후에 <style> 삽입
                 if let Some(pos) = svg.find('>') {

@@ -3549,9 +3549,49 @@ fn find_font_file(
     None
 }
 
+/// [#2524] 문서 임베디드(BinData) 폰트를 @font-face 로 직접 임베딩한다.
+///
+/// 미설치 임베디드 폰트(bitmap 등)는 `find_font_file`(디스크) 조회에 실패해
+/// `local()` 폴백이 되고, blink(chrome) 는 해결 못해 글리프가 두부(□)로 렌더된다
+/// (#2524). 서브셋터(typst)는 bitmap glyph 테이블(EBDT/EBLC)을 보존하지 못하므로
+/// 임베디드 폰트는 서브셋하지 않고 원본 전체를 data-URI 로 임베딩한다.
+fn embedded_font_face_css(
+    font_name: &str,
+    embedded_fonts: &std::collections::HashMap<String, Vec<u8>>,
+) -> Option<String> {
+    let bytes = embedded_fonts.get(font_name)?;
+    if bytes.is_empty() {
+        return None;
+    }
+    let (mime, format) = font_data_uri_format(bytes);
+    let b64 = base64::engine::general_purpose::STANDARD.encode(bytes);
+    Some(format!(
+        "@font-face {{ font-family: \"{}\"; src: url(\"data:{};base64,{}\") format(\"{}\"); }}\n",
+        font_name, mime, b64, format,
+    ))
+}
+
+/// 폰트 매직 바이트(sfnt version)로 data-URI mime 과 CSS `format()` 을 판별한다.
+fn font_data_uri_format(bytes: &[u8]) -> (&'static str, &'static str) {
+    match bytes.get(0..4) {
+        Some(b"OTTO") => ("font/otf", "opentype"),
+        Some(b"wOFF") => ("font/woff", "woff"),
+        Some(b"wOF2") => ("font/woff2", "woff2"),
+        // 0x00010000 (TrueType) · "true" · "ttcf"(TTC) 등은 truetype 으로 취급
+        _ => ("font/ttf", "truetype"),
+    }
+}
+
 /// SvgRenderer의 수집된 폰트 정보를 기반으로 @font-face CSS를 생성한다.
+///
+/// `embedded_fonts` (face명 → 원본 폰트 bytes) 에 있는 폰트는 임베드 모드와
+/// 무관하게 data-URI 로 전체 임베딩한다(#2524, 미설치 임베디드 폰트 대응).
 #[cfg(not(target_arch = "wasm32"))]
-pub fn generate_font_style(renderer: &SvgRenderer, font_paths: &[std::path::PathBuf]) -> String {
+pub fn generate_font_style(
+    renderer: &SvgRenderer,
+    font_paths: &[std::path::PathBuf],
+    embedded_fonts: &std::collections::HashMap<String, Vec<u8>>,
+) -> String {
     let codepoints = renderer.font_codepoints();
     if codepoints.is_empty() {
         return String::new();
@@ -3562,6 +3602,10 @@ pub fn generate_font_style(renderer: &SvgRenderer, font_paths: &[std::path::Path
     match renderer.font_embed_mode {
         FontEmbedMode::Style => {
             for font_name in codepoints.keys() {
+                if let Some(line) = embedded_font_face_css(font_name, embedded_fonts) {
+                    css.push_str(&line);
+                    continue;
+                }
                 let aliases = font_local_aliases(font_name);
                 let src = if aliases.is_empty() {
                     format!("local(\"{}\")", font_name)
@@ -3580,6 +3624,10 @@ pub fn generate_font_style(renderer: &SvgRenderer, font_paths: &[std::path::Path
         }
         FontEmbedMode::Subset => {
             for (font_name, chars) in codepoints.iter() {
+                if let Some(line) = embedded_font_face_css(font_name, embedded_fonts) {
+                    css.push_str(&line);
+                    continue;
+                }
                 if let Some(font_path) = find_font_file(font_name, font_paths) {
                     if let Ok(font_data) = std::fs::read(&font_path) {
                         // codepoint → glyph ID 변환 (ttf-parser cmap 사용)
@@ -3639,6 +3687,10 @@ pub fn generate_font_style(renderer: &SvgRenderer, font_paths: &[std::path::Path
         }
         FontEmbedMode::Full => {
             for font_name in codepoints.keys() {
+                if let Some(line) = embedded_font_face_css(font_name, embedded_fonts) {
+                    css.push_str(&line);
+                    continue;
+                }
                 if let Some(font_path) = find_font_file(font_name, font_paths) {
                     if let Ok(font_data) = std::fs::read(&font_path) {
                         let b64 = base64::engine::general_purpose::STANDARD.encode(&font_data);
