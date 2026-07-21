@@ -1423,8 +1423,8 @@ fn serialize_shape_control(
                 serialize_group_child(child, child_comp_level, child_type_level, records);
             }
         }
-        ShapeObject::Picture(_pic) => {
-            // 그룹 내 그림: 그룹 직렬화 시 자식으로 처리됨 (단독 Picture는 Control::Picture로 직렬화)
+        ShapeObject::Picture(pic) => {
+            serialize_picture_control(pic, level, ctrl_data_record, records);
         }
         ShapeObject::Chart(chart) => {
             // Task #195 단계 2: raw_chart_data를 그대로 보존하여 라운드트립 유지
