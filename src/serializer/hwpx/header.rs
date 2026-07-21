@@ -2103,9 +2103,18 @@ mod tests {
             expected_type: &'static str,
         }
         let cases = [
-            ShadowTestCase { shadow_type: 0, expected_type: "NONE" },
-            ShadowTestCase { shadow_type: 1, expected_type: "DROP" },
-            ShadowTestCase { shadow_type: 2, expected_type: "CONTINUOUS" },
+            ShadowTestCase {
+                shadow_type: 0,
+                expected_type: "NONE",
+            },
+            ShadowTestCase {
+                shadow_type: 1,
+                expected_type: "DROP",
+            },
+            ShadowTestCase {
+                shadow_type: 2,
+                expected_type: "CONTINUOUS",
+            },
         ];
         for case in &cases {
             let cs = CharShape {
@@ -2121,7 +2130,8 @@ mod tests {
             assert!(
                 xml.contains(&format!(r#"type="{}""#, case.expected_type)),
                 "shadow_type={} → type=\"{}\": {xml}",
-                case.shadow_type, case.expected_type,
+                case.shadow_type,
+                case.expected_type,
             );
             // 오프셋 보존 확인
             assert!(xml.contains(r#"offsetX="10""#), "offsetX 보존: {xml}");
@@ -2141,7 +2151,8 @@ mod tests {
   </hh:refList>
 </hh:head>"##;
         // header XML만 파싱
-        let (doc_info, _) = crate::parser::hwpx::header::parse_hwpx_header(hwpx_head).expect("parse header");
+        let (doc_info, _) =
+            crate::parser::hwpx::header::parse_hwpx_header(hwpx_head).expect("parse header");
         assert_eq!(doc_info.char_shapes[0].outline_type, 4);
         // 직렬화: write_header는 Document 단위이므로 직접 write_char_pr 호출
         let cs = &doc_info.char_shapes[0];
@@ -2162,7 +2173,8 @@ mod tests {
     </hh:charPr>
   </hh:refList>
 </hh:head>"##;
-        let (doc_info, _) = crate::parser::hwpx::header::parse_hwpx_header(hwpx_head).expect("parse header");
+        let (doc_info, _) =
+            crate::parser::hwpx::header::parse_hwpx_header(hwpx_head).expect("parse header");
         assert_eq!(doc_info.char_shapes[0].shadow_type, 1);
         let cs = &doc_info.char_shapes[0];
         let mut w = Writer::new(Vec::new());
@@ -2184,12 +2196,16 @@ mod tests {
     </hh:charPr>
   </hh:refList>
 </hh:head>"##;
-        let (doc_info, _) = crate::parser::hwpx::header::parse_hwpx_header(hwpx_head).expect("parse header");
+        let (doc_info, _) =
+            crate::parser::hwpx::header::parse_hwpx_header(hwpx_head).expect("parse header");
         assert_eq!(doc_info.char_shapes[0].shadow_type, 2);
         let cs = &doc_info.char_shapes[0];
         let mut w = Writer::new(Vec::new());
         write_char_pr(&mut w, 0, cs).expect("write_char_pr");
         let xml = String::from_utf8(w.into_inner()).unwrap();
-        assert!(xml.contains(r#"type="CONTINUOUS""#), "CONTINUOUS 왕복: {xml}");
+        assert!(
+            xml.contains(r#"type="CONTINUOUS""#),
+            "CONTINUOUS 왕복: {xml}"
+        );
     }
 }
