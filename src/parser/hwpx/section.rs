@@ -4613,6 +4613,17 @@ fn parse_ctrl_footnote(
                     note.after_decoration_letter = v;
                 }
             }
+            // [#2716] flag = HWP5 CTRL_FOOTNOTE numberShape(UInt4). 한컴 HWP5/HWPX 쌍
+            // (3-09월_교육_통합_2023) 각주/미주 46개 전수 대조에서 바이트 단위로 일치했다.
+            // 값이 0 이면 한컴이 속성 자체를 생략하므로 default 0 유지.
+            b"flag" => {
+                if let Ok(v) = std::str::from_utf8(&attr.value)
+                    .unwrap_or("")
+                    .parse::<u32>()
+                {
+                    note.number_shape = v;
+                }
+            }
             b"instId" => {
                 if let Ok(v) = std::str::from_utf8(&attr.value)
                     .unwrap_or("")
@@ -4658,6 +4669,15 @@ fn parse_ctrl_endnote(
                     .parse::<u16>()
                 {
                     note.after_decoration_letter = v;
+                }
+            }
+            // [#2716] flag = HWP5 CTRL_ENDNOTE numberShape(UInt4). footNote 와 동일 계약.
+            b"flag" => {
+                if let Ok(v) = std::str::from_utf8(&attr.value)
+                    .unwrap_or("")
+                    .parse::<u32>()
+                {
+                    note.number_shape = v;
                 }
             }
             b"instId" => {

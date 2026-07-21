@@ -1958,16 +1958,61 @@ fn render_common_shape_xml(
     out
 }
 
+/// [#2716] `<hp:footNote>` / `<hp:endNote>` 의 IR 보존 속성 묶음.
+///
+/// 종전에는 `number` 스칼라 하나만 `render_note_sublist` 로 넘겨 나머지 4개 필드가
+/// 구조적으로 방출 불가였다. 같은 파일의 `render_header_footer` 가 쓰는
+/// `HeaderFooterFields` 와 동일한 묶음 전달 패턴이다.
+struct NoteAttrs {
+    number: u16,
+    /// `before_decoration_letter` — 0 이면 속성 생략(한컴 계약).
+    prefix_char: u16,
+    /// `after_decoration_letter` — 항상 방출.
+    suffix_char: u16,
+    /// HWP5 `numberShape` — 0 이면 속성 생략(한컴 계약).
+    number_shape: u32,
+    /// HWP5 `instanceId` — 항상 방출.
+    inst_id: u32,
+}
+
+/// [#2716] 각주/미주 ctrl 속성 문자열.
+///
+/// 한컴 저장본 실측 계약(samples 16파일 · note 828개, 3-09월_교육_통합_2023 의 HWP5/HWPX
+/// 쌍 46개 필드 단위 전수 대조 일치):
+/// - `number` / `suffixChar` / `instId` 는 항상 존재(828/828)
+/// - `prefixChar` 는 `before_decoration_letter != 0` 일 때만 존재(598/828)
+/// - `flag`(= HWP5 `numberShape`) 는 `number_shape != 0` 일 때만 존재(27/828)
+/// - 속성 순서는 `flag → number → prefixChar → suffixChar → instId`
+///
+/// `suffixChar` 를 생략하면 파서(`parse_ctrl_footnote`)가 기본값 `0x0029` `)` 를 넣어
+/// 닫는 장식이 없는(0) 각주가 오염된다 — HWP5 직렬화기가 `serializer/control.rs` 에서
+/// 같은 이유로 고친 문제이므로 0 이어도 항상 방출한다.
+fn render_note_attrs(attrs: &NoteAttrs) -> String {
+    let mut out = String::new();
+    if attrs.number_shape != 0 {
+        out.push_str(&format!(r#" flag="{}""#, attrs.number_shape));
+    }
+    out.push_str(&format!(r#" number="{}""#, attrs.number));
+    if attrs.prefix_char != 0 {
+        out.push_str(&format!(r#" prefixChar="{}""#, attrs.prefix_char));
+    }
+    out.push_str(&format!(
+        r#" suffixChar="{}" instId="{}""#,
+        attrs.suffix_char, attrs.inst_id
+    ));
+    out
+}
+
 fn render_note_sublist(
     tag: &str,
-    number: u16,
+    attrs: NoteAttrs,
     paragraphs: &[Paragraph],
     ctx: &mut SerializeContext,
 ) -> String {
     let mut out = format!(
-        r#"<hp:ctrl><hp:{tag} number="{num}"><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#,
+        r#"<hp:ctrl><hp:{tag}{attrs}><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#,
         tag = tag,
-        num = number,
+        attrs = render_note_attrs(&attrs),
     );
     let mut vert_cursor: u32 = 0;
     for p in paragraphs.iter() {
@@ -1985,11 +2030,36 @@ fn render_note_sublist(
 }
 
 fn render_footnote(note: &Footnote, ctx: &mut SerializeContext) -> String {
-    render_note_sublist("footNote", note.number, &note.paragraphs, ctx)
+    // [#2716] IR 이 보존한 장식 문자/번호 모양/고유 ID 를 모두 방출한다. 종전엔 number 만
+    // 써서 저장 왕복마다 앞 장식('문')이 사라지고 뒤 장식이 ')' 로 변조됐다.
+    render_note_sublist(
+        "footNote",
+        NoteAttrs {
+            number: note.number,
+            prefix_char: note.before_decoration_letter,
+            suffix_char: note.after_decoration_letter,
+            number_shape: note.number_shape,
+            inst_id: note.instance_id,
+        },
+        &note.paragraphs,
+        ctx,
+    )
 }
 
 fn render_endnote(note: &Endnote, ctx: &mut SerializeContext) -> String {
-    render_note_sublist("endNote", note.number, &note.paragraphs, ctx)
+    // [#2716] Footnote 와 동일 계약.
+    render_note_sublist(
+        "endNote",
+        NoteAttrs {
+            number: note.number,
+            prefix_char: note.before_decoration_letter,
+            suffix_char: note.after_decoration_letter,
+            number_shape: note.number_shape,
+            inst_id: note.instance_id,
+        },
+        &note.paragraphs,
+        ctx,
+    )
 }
 
 fn render_equation(eq: &Equation) -> String {

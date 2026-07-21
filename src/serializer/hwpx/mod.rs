@@ -1672,6 +1672,118 @@ mod tests {
         );
     }
 
+    /// [#2716] `<hp:footNote>` / `<hp:endNote>` 의 장식 문자·번호 모양·고유 ID 왕복 보존.
+    ///
+    /// 종전 `render_note_sublist` 는 `number` 만 방출해 한컴 저장본이 항상 쓰는
+    /// `suffixChar`/`instId`(828/828), `prefixChar`(598/828), `flag`(27/828) 가 전량
+    /// 유실됐다. 그 결과 미주 마커 「문1）」이 저장 왕복마다 「1)」로 퇴화했다
+    /// (samples/3-09월_교육_통합_2022.hwpx 46/46).
+    ///
+    /// 방출 규칙은 한컴 HWP5/HWPX 쌍(3-09월_교육_통합_2023, note 46개 전수 대조) 실측:
+    /// `flag` 는 number_shape != 0 일 때만, `prefixChar` 는 before != 0 일 때만,
+    /// `number`/`suffixChar`/`instId` 는 항상.
+    #[test]
+    fn footnote_endnote_decoration_attrs_roundtrip() {
+        use crate::model::control::Control;
+        use crate::model::footnote::{Endnote, Footnote};
+        use crate::model::paragraph::Paragraph;
+
+        let mut doc = Document::default();
+        let mut section = crate::model::document::Section::default();
+        let mut para = crate::model::paragraph::Paragraph::default();
+        para.text = "본문".to_string();
+        para.char_offsets = vec![8, 17];
+        para.char_count = 20;
+
+        let mut fn_para = Paragraph::default();
+        fn_para.text = "각주 본문".to_string();
+        para.controls.push(Control::Footnote(Box::new(Footnote {
+            number: 1,
+            paragraphs: vec![fn_para],
+            before_decoration_letter: 47928, // 0xBB38 '문'
+            after_decoration_letter: 65289,  // 0xFF09 '）'
+            number_shape: 3211264,           // 0x00310000
+            instance_id: 1085612573,
+            ..Default::default()
+        })));
+
+        // 접두 없음(0) + 닫는 장식 없음(0): prefixChar/flag 는 생략, suffixChar 는 0 방출.
+        let mut en_para = Paragraph::default();
+        en_para.text = "미주 본문".to_string();
+        para.controls.push(Control::Endnote(Box::new(Endnote {
+            number: 2,
+            paragraphs: vec![en_para],
+            before_decoration_letter: 0,
+            after_decoration_letter: 0,
+            number_shape: 0,
+            instance_id: 7,
+            ..Default::default()
+        })));
+
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize notes");
+        let cursor = std::io::Cursor::new(&bytes);
+        let mut archive = zip::ZipArchive::new(cursor).expect("zip");
+        let mut sec0 = archive.by_name("Contents/section0.xml").expect("section0");
+        let mut xml = String::new();
+        std::io::Read::read_to_string(&mut sec0, &mut xml).expect("read");
+        drop(sec0);
+
+        assert!(
+            xml.contains(
+                r#"<hp:footNote flag="3211264" number="1" prefixChar="47928" suffixChar="65289" instId="1085612573">"#
+            ),
+            "footNote 속성이 한컴 계약대로 방출되지 않음: {}",
+            xml
+        );
+        assert!(
+            xml.contains(r#"<hp:endNote number="2" suffixChar="0" instId="7">"#),
+            "endNote 생략 규칙(flag/prefixChar 생략, suffixChar 항상)이 어긋남: {}",
+            xml
+        );
+
+        let parsed = parse_hwpx(&bytes).expect("parse back");
+        let ctrls = &parsed.sections[0].paragraphs[0].controls;
+
+        let fn_ctrl = ctrls
+            .iter()
+            .find_map(|c| match c {
+                Control::Footnote(f) => Some(f),
+                _ => None,
+            })
+            .expect("footnote ctrl");
+        assert_eq!(
+            fn_ctrl.before_decoration_letter, 47928,
+            "footNote prefixChar"
+        );
+        assert_eq!(
+            fn_ctrl.after_decoration_letter, 65289,
+            "footNote suffixChar"
+        );
+        assert_eq!(fn_ctrl.number_shape, 3211264, "footNote flag");
+        assert_eq!(fn_ctrl.instance_id, 1085612573, "footNote instId");
+
+        let en_ctrl = ctrls
+            .iter()
+            .find_map(|c| match c {
+                Control::Endnote(e) => Some(e),
+                _ => None,
+            })
+            .expect("endnote ctrl");
+        assert_eq!(
+            en_ctrl.before_decoration_letter, 0,
+            "endNote prefixChar 없음"
+        );
+        assert_eq!(
+            en_ctrl.after_decoration_letter, 0,
+            "endNote suffixChar 0 이 ')' 로 오염됨"
+        );
+        assert_eq!(en_ctrl.number_shape, 0, "endNote flag 없음");
+        assert_eq!(en_ctrl.instance_id, 7, "endNote instId");
+    }
+
     /// tac-img-02.hwpx 파싱 후 BinData 가 존재하는지, Picture 컨트롤이
     /// section XML 에 반영되는지 확인하는 스모크 테스트.
     /// 실문서는 borderFillIDRef 가 복잡하여 full roundtrip 대신 직렬화 단계만 검증.
