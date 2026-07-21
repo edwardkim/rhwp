@@ -20,8 +20,8 @@ use quick_xml::Writer;
 
 use crate::model::shape::{
     CommonObjAttr, DrawingObjAttr, HorzAlign, HorzRelTo, LineShape, ObjectNumberingType,
-    OleDrawingAspect, OleShape, RectangleShape, ShapeComponentAttr, TextBox, TextFlow, TextWrap,
-    VertAlign, VertRelTo,
+    OleDrawingAspect, OleShape, RectangleShape, ShapeComponentAttr, SizeCriterion, TextBox,
+    TextFlow, TextWrap, VertAlign, VertRelTo,
 };
 use crate::model::style::{Fill, FillType, ImageFillMode, ShapeBorderLine, SolidFill};
 use crate::model::ColorRef;
@@ -978,17 +978,50 @@ pub(super) fn write_shape_comment<W: Write>(
 fn write_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
     let width = c.width.to_string();
     let height = c.height.to_string();
+    // [#2712] widthRelTo/heightRelTo/protect 는 IR 을 보존한다. 종전 "ABSOLUTE"/"0"
+    // 하드코딩은 파서가 이미 읽어 둔 값(section.rs:2901/2904/2907, OLE 는 5967)을 저장 때
+    // 버려, 단/쪽/문단에 맞춘 도형이 절대값으로 굳고 "크기 고정"이 풀렸다. 실제 한글 산출
+    // 파일 samples/hwpx/143E433F503322BD33.hwpx 의 hp:rect·hp:ole 이 protect="1" 인데
+    // 종전 방출은 이를 "0" 으로 되썼다. 이웃 write_pos 는 이미 모든 필드를 통과시키고,
+    // 같은 hp:sz 를 다루는 form.rs:183-188 도 3속성 모두 보존한다. 표는 #2697/#2701 에서
+    // 같은 결함을 같은 방식으로 정리했다.
     empty_tag(
         w,
         "hp:sz",
         &[
             ("width", &width),
-            ("widthRelTo", "ABSOLUTE"),
+            ("widthRelTo", size_criterion_str(c.width_criterion)),
             ("height", &height),
-            ("heightRelTo", "ABSOLUTE"),
-            ("protect", "0"),
+            ("heightRelTo", height_criterion_str(c.height_criterion)),
+            ("protect", bool01(c.size_protect)),
         ],
     )
+}
+
+/// 너비 기준 → HWPX `widthRelTo`. 파서 `parse_size_criterion(_, true)` 의 정확한 역이다
+/// (`parser/hwpx/section.rs:1844`, 호출부 `:2901`). 너비는 HWP5 attr bit 15-17 로 3비트라
+/// 5값 전부를 담는다(`model/shape.rs:83`).
+pub(super) fn size_criterion_str(c: SizeCriterion) -> &'static str {
+    match c {
+        SizeCriterion::Paper => "PAPER",
+        SizeCriterion::Page => "PAGE",
+        SizeCriterion::Column => "COLUMN",
+        SizeCriterion::Para => "PARA",
+        SizeCriterion::Absolute => "ABSOLUTE",
+    }
+}
+
+/// 높이 기준 → HWPX `heightRelTo`. 파서는 높이를
+/// `parse_size_criterion(_, allow_column_para = false)` 로 읽으므로(`section.rs:2904`)
+/// 치역이 `{PAPER, PAGE, ABSOLUTE}` 3값뿐이다. 방출도 같은 3값으로 접어야 왕복이 정확한
+/// 역이 된다. HWP5 측 `height_criterion_to_bits`(`common_obj_attr_writer.rs:160`)와 모델
+/// 주석(`model/shape.rs:85`, bit 18-19)도 동일하게 접는다.
+pub(super) fn height_criterion_str(c: SizeCriterion) -> &'static str {
+    match c {
+        SizeCriterion::Paper => "PAPER",
+        SizeCriterion::Page => "PAGE",
+        SizeCriterion::Column | SizeCriterion::Para | SizeCriterion::Absolute => "ABSOLUTE",
+    }
 }
 
 fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
@@ -1597,5 +1630,108 @@ mod tests {
         assert!(!xml.contains("<hp:caption"), "캡션 부재 시 미방출: {}", xml);
         let xml = serialize_line(&LineShape::default());
         assert!(!xml.contains("<hp:caption"), "캡션 부재 시 미방출: {}", xml);
+    }
+
+    // ---------- #2712: 도형 hp:sz 크기 기준·크기 보호 라운드트립 ----------
+
+    /// 도형을 한 문단짜리 `<hs:sec>` 으로 감싸 다시 파싱한다(IR 수준 역검증용).
+    fn reparse_shape_common(fragment: &str) -> crate::model::shape::CommonObjAttr {
+        let xml = format!(
+            concat!(
+                r#"<?xml version="1.0" encoding="UTF-8"?>"#,
+                r#"<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph""#,
+                r#" xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">"#,
+                r#"<hp:p id="0" paraPrIDRef="0" styleIDRef="0">"#,
+                r#"<hp:run charPrIDRef="0">{}<hp:t/></hp:run></hp:p></hs:sec>"#
+            ),
+            fragment
+        );
+        let section = crate::parser::hwpx::section::parse_hwpx_section(&xml)
+            .expect("파싱 가능한 도형 조각이어야 함");
+        match &section.paragraphs[0].controls[0] {
+            crate::model::control::Control::Shape(s) => s.common().clone(),
+            other => panic!("도형 컨트롤이어야 함: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn task2712_shape_sz_criteria_and_protect_emitted_from_ir() {
+        // [#2712] hp:sz 의 widthRelTo/heightRelTo/protect 는 IR 을 보존해야 한다.
+        // 종전 "ABSOLUTE"/"ABSOLUTE"/"0" 하드코딩은 파서가 이미 읽어 둔 값
+        // (section.rs:2901/2904/2907)을 저장 때 버렸다. RED.
+        let mut rect = RectangleShape::default();
+        rect.common.width_criterion = SizeCriterion::Column;
+        rect.common.height_criterion = SizeCriterion::Paper;
+        rect.common.size_protect = true;
+        let xml = serialize_rect(&rect);
+        assert!(
+            xml.contains(r#"widthRelTo="COLUMN""#),
+            "widthRelTo 가 IR(Column)로 방출돼야 함(종전 ABSOLUTE 하드코딩): {xml}"
+        );
+        assert!(
+            xml.contains(r#"heightRelTo="PAPER""#),
+            "heightRelTo 가 IR(Paper)로 방출돼야 함(종전 ABSOLUTE 하드코딩): {xml}"
+        );
+        assert!(
+            xml.contains(r#"protect="1""#),
+            "protect 가 IR(size_protect=true)로 방출돼야 함(종전 0 하드코딩): {xml}"
+        );
+
+        // IR 수준 역검증 — 되읽었을 때 값이 그대로 복원돼야 한다.
+        let back = reparse_shape_common(&xml);
+        assert_eq!(back.width_criterion, SizeCriterion::Column);
+        assert_eq!(back.height_criterion, SizeCriterion::Paper);
+        assert!(back.size_protect);
+    }
+
+    #[test]
+    fn task2712_line_sz_criteria_and_protect_emitted_from_ir() {
+        // write_sz 는 rect/line/container/ole 이 공유하므로 선 도형에서도 확인한다.
+        let mut line = LineShape::default();
+        line.common.width_criterion = SizeCriterion::Page;
+        line.common.size_protect = true;
+        let xml = serialize_line(&line);
+        assert!(xml.contains(r#"widthRelTo="PAGE""#), "{xml}");
+        assert!(xml.contains(r#"protect="1""#), "{xml}");
+    }
+
+    #[test]
+    fn task2712_height_criterion_is_exact_inverse_of_parser() {
+        // 파서는 높이를 parse_size_criterion(_, allow_column_para=false) 로 읽어
+        // 치역이 {PAPER, PAGE, ABSOLUTE} 3값뿐이다(section.rs:2904). 방출도 같은 3값으로
+        // 접어야 왕복이 정확한 역이 된다. Column/Para 를 그대로 내보내면 되읽을 때
+        // Absolute 로 떨어져 왕복이 깨진다.
+        assert_eq!(height_criterion_str(SizeCriterion::Paper), "PAPER");
+        assert_eq!(height_criterion_str(SizeCriterion::Page), "PAGE");
+        assert_eq!(height_criterion_str(SizeCriterion::Absolute), "ABSOLUTE");
+        assert_eq!(height_criterion_str(SizeCriterion::Column), "ABSOLUTE");
+        assert_eq!(height_criterion_str(SizeCriterion::Para), "ABSOLUTE");
+
+        // 너비는 5값 전부를 담는다(bit 15-17).
+        assert_eq!(size_criterion_str(SizeCriterion::Paper), "PAPER");
+        assert_eq!(size_criterion_str(SizeCriterion::Page), "PAGE");
+        assert_eq!(size_criterion_str(SizeCriterion::Column), "COLUMN");
+        assert_eq!(size_criterion_str(SizeCriterion::Para), "PARA");
+        assert_eq!(size_criterion_str(SizeCriterion::Absolute), "ABSOLUTE");
+
+        // 높이에 Column 을 넣어도 방출은 ABSOLUTE 로 접히고, 되읽어도 Absolute 다.
+        let mut rect = RectangleShape::default();
+        rect.common.height_criterion = SizeCriterion::Column;
+        let xml = serialize_rect(&rect);
+        assert!(xml.contains(r#"heightRelTo="ABSOLUTE""#), "{xml}");
+        assert_eq!(
+            reparse_shape_common(&xml).height_criterion,
+            SizeCriterion::Absolute
+        );
+    }
+
+    #[test]
+    fn task2712_shape_sz_defaults_unchanged() {
+        // 기본 IR(Absolute/Absolute/false)은 종전 출력과 동일해야 한다(무변화 보장).
+        // 실측상 samples/hwpx 의 hp:rect 309개·hp:pic 188개가 모두 이 조합이다.
+        let xml = serialize_rect(&RectangleShape::default());
+        assert!(xml.contains(r#"widthRelTo="ABSOLUTE""#), "{xml}");
+        assert!(xml.contains(r#"heightRelTo="ABSOLUTE""#), "{xml}");
+        assert!(xml.contains(r#"protect="0""#), "{xml}");
     }
 }

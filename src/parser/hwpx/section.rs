@@ -2344,6 +2344,19 @@ fn parse_picture(
                                         common.height = v;
                                     }
                                 }
+                                // [#2712] 그림만 크기 기준·크기 보호 arm 이 없어 파싱 단계에서
+                                // 유실됐다. 도형 파서(같은 파일 2901-2907)와 동형이며, 높이는
+                                // 도형과 마찬가지로 allow_column_para=false 로 읽어 치역을
+                                // {Paper, Page, Absolute} 로 제한한다.
+                                b"widthRelTo" => {
+                                    common.width_criterion =
+                                        parse_size_criterion(&attr_str(&attr), true);
+                                }
+                                b"heightRelTo" => {
+                                    common.height_criterion =
+                                        parse_size_criterion(&attr_str(&attr), false);
+                                }
+                                b"protect" => common.size_protect = parse_bool(&attr),
                                 _ => {}
                             }
                         }
