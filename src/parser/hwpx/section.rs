@@ -1592,6 +1592,8 @@ fn parse_table(
 ) -> Result<Table, HwpxError> {
     let mut table = Table::default();
     let mut table_record_flags = 0u32;
+    // [#2697] numberingType 부재 시 표의 자연 기본값은 TABLE (종전 방출 리터럴과 동일).
+    table.common.numbering_type = crate::model::shape::ObjectNumberingType::Table;
 
     // 표 기본 속성
     for attr in e.attributes().flatten() {
@@ -1641,6 +1643,16 @@ fn parse_table(
                     "RIGHT_ONLY" => crate::model::shape::TextFlow::RightOnly,
                     "LARGEST_ONLY" => crate::model::shape::TextFlow::LargestOnly,
                     _ => crate::model::shape::TextFlow::BothSides,
+                };
+            }
+            // [#2697] 표만 numberingType arm 이 없어 캡션 번호 범주가 파싱 단계에서
+            // 유실됐다. 도형 파서(같은 파일 2855)와 동형. 방출측은 종전 "TABLE" 하드코딩.
+            b"numberingType" => {
+                table.common.numbering_type = match attr_str(&attr).to_ascii_uppercase().as_str() {
+                    "PICTURE" => crate::model::shape::ObjectNumberingType::Picture,
+                    "TABLE" => crate::model::shape::ObjectNumberingType::Table,
+                    "EQUATION" => crate::model::shape::ObjectNumberingType::Equation,
+                    _ => crate::model::shape::ObjectNumberingType::None,
                 };
             }
             _ => {}
@@ -1694,6 +1706,10 @@ fn parse_table(
                                     table.common.height_criterion =
                                         parse_size_criterion(&attr_str(&attr), false);
                                 }
+                                // [#2697] 표만 protect arm 이 없어 "표 크기 보호"가 파싱
+                                // 단계에서 유실됐다. 도형(2907)·사각형(5967)·양식(5590)
+                                // 파서는 모두 같은 hp:sz@protect 를 읽는다.
+                                b"protect" => table.common.size_protect = parse_bool(&attr),
                                 _ => {}
                             }
                         }
@@ -1854,7 +1870,14 @@ fn parse_size_criterion(value: &str, allow_column_para: bool) -> SizeCriterion {
 fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
     const HWPX_TABLE_NUMBERING_BIT: u32 = 0x0800_0000;
 
-    table.common.attr = pack_hwpx_common_obj_attr(&table.common) | HWPX_TABLE_NUMBERING_BIT;
+    // [#2697] "표 번호" 비트는 numberingType 이 실제로 TABLE 일 때만 세운다. 종전 무조건 OR
+    // 은 numberingType="PICTURE" 표에서 IR 모순(numbering_type=Picture ↔ attr=TABLE)을 만든다.
+    // 차트 파서(5800)가 PICTURE 를 별도 비트로 분기하는 것과 같은 취지.
+    let mut attr = pack_hwpx_common_obj_attr(&table.common);
+    if table.common.numbering_type == crate::model::shape::ObjectNumberingType::Table {
+        attr |= HWPX_TABLE_NUMBERING_BIT;
+    }
+    table.common.attr = attr;
     // HWPX keeps semantic placement in hp:pos, while legacy layout code still reads
     // table.attr bit0 for some inline-table decisions. Only mirror the minimum
     // renderer compatibility bit here; the HWP5 storage attr is packed later by
