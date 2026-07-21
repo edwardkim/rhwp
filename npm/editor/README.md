@@ -193,6 +193,31 @@ if (!verify.recovered || verify.pageCountBefore !== verify.pageCountAfter) {
 }
 ```
 
+### editor.exportHml()
+
+현재 편집 중인 문서를 HML(XML) 바이너리로 내보냅니다.
+
+```javascript
+const bytes = await editor.exportHml();
+const blob = new Blob([bytes], { type: 'application/xml' });
+
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'document.hml';
+a.click();
+URL.revokeObjectURL(url);
+```
+
+### editor.getHmlSaveState()
+
+현재 문서의 HML 저장 가능 여부와 blocker를 반환합니다.
+
+```javascript
+const state = await editor.getHmlSaveState();
+// { ok: true } 또는 { ok: false, blocker: '...' }
+```
+
 ### editor.destroy()
 
 에디터를 제거합니다.
