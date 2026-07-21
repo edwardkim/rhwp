@@ -1,4 +1,4 @@
-# PR #????: HWPX charPr outline type / shadow type 매핑 소실 수정
+# PR #2708: HWPX charPr outline type / shadow type 매핑 소실 수정
 
 ## 이슈
 - **Issue**: #2695 — HWPX charPr outline type 8값 중 4값·shadow type DROP 이 파싱/직렬화 양쪽에서 소실
@@ -36,3 +36,9 @@ IR 필드(`outline_type: u8`)는 HWP5 3비트(0~7)를 정확히 운반 중이었
 - `cargo test --lib -- hwpx::header` — 71/71 통과 (기존 68 + 신규 3)
 - `cargo fmt --all -- --check` — 통과
 - `cargo clippy --all-targets -- -D warnings` — 통과
+- `cargo test --profile release-test --tests` — 전체 통과
+
+## 결과
+- **Branch**: `pr/fix-issue-2695-hwpx-charpr-outline-shadow`
+- **PR**: https://github.com/edwardkim/rhwp/pull/2708
+- **Closes**: #2695
