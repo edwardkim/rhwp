@@ -11,3 +11,5 @@
 
 ## 결과
 - **Branch**: `pr/fix-issue-2693-hwpctl-open-cursor`
+- **PR**: https://github.com/edwardkim/rhwp/pull/2694
+- **Closes**: #2693
