@@ -55,13 +55,22 @@ fn hml_resource_id_beyond_limit_is_skipped_with_warning() {
     );
 }
 
-/// abort 구간 — 수정 전에는 테스트 실패가 아니라 프로세스가 죽는다.
+/// abort 구간 — 상한을 크게 넘는 Id 도 테이블을 늘리지 않아야 한다.
+///
+/// [메인테이너 보정] 종전에는 Id `2000000000` 을 썼다. 가드가 살아 있으면 안전하지만,
+/// **가드가 회귀로 사라지면 `CharShape` 120B × 20억 = 240GB** 를 요구해 테스트가 실패하는
+/// 대신 러너가 죽는다. 원저자도 "수정 전에는 테스트 실패가 아니라 프로세스가 죽는다" 고
+/// 주석에 적어 두었는데, 그것이 바로 CI 에서 허용될 수 없는 성질이다.
+///
+/// 상한(65,535)을 크게 넘는다는 성질은 Id `2_000_000` 으로도 동일하게 검증되며, 회귀 시
+/// 요구량은 240MB 로 진단 가능한 범위에 머문다. 경계 자체는 아래
+/// `hml_resource_id_boundary_accepts_limit_and_rejects_above` 가 65535/65536 으로 고정한다.
 #[test]
 fn hml_resource_id_far_beyond_limit_does_not_abort() {
-    let bytes = hml_with_charshape_id("2000000000");
-    assert_eq!(bytes.len(), 385, "재현 입력 크기 고정");
+    let bytes = hml_with_charshape_id("2000000");
+    assert_eq!(bytes.len(), 382, "재현 입력 크기 고정");
 
-    let parsed = parse_hml(&bytes).expect("240GB 를 요구하지 말고 정상 파싱되어야 함");
+    let parsed = parse_hml(&bytes).expect("거대 테이블을 요구하지 말고 정상 파싱되어야 함");
     assert!(parsed.document.doc_info.char_shapes.len() < 1_000);
     assert_eq!(invalid_reference_warnings(&parsed), 1);
 }

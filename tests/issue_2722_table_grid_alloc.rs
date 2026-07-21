@@ -15,12 +15,23 @@ use rhwp::model::control::Control;
 use rhwp::model::table::{Cell, Table, MAX_TABLE_GRID_CELLS};
 use rhwp::parser::hml::parse_hml;
 
-/// (1) 모델 직접 호출 — 셀이 하나도 없는 65535×65535 표.
+/// (1) 모델 직접 호출 — 셀이 하나도 없는 상한 초과 표.
+///
+/// [메인테이너 보정] 종전에는 `65535 × 65535` 를 썼다. 가드가 살아 있으면 실셀 범위까지만
+/// 예약하므로 안전하지만, **가드가 회귀로 사라지면 `Option<usize>` 16B × 42.9억 = 68.7GB**
+/// 를 요구해 테스트가 실패하는 대신 러너가 스왑에 빠지거나 OOM 으로 죽는다. CI 에서 회귀를
+/// 진단 가능한 형태로 잡아야 하므로, 상한(`MAX_TABLE_GRID_CELLS` = 4,000,000)을 넘기되
+/// 회귀 시에도 감당 가능한 크기(2100 × 2100 = 4.41M 칸 ≈ 70MB)로 낮춘다. 상한 초과 여부를
+/// 검사한다는 목적은 그대로다.
 #[test]
 fn rebuild_grid_bounds_hostile_row_col_count() {
     let mut table = Table::default();
-    table.row_count = 65535;
-    table.col_count = 65535;
+    table.row_count = 2100;
+    table.col_count = 2100;
+    assert!(
+        (table.row_count as usize) * (table.col_count as usize) > MAX_TABLE_GRID_CELLS,
+        "재현 입력이 상한을 넘어야 의미가 있다"
+    );
     table.rebuild_grid();
 
     assert!(
@@ -35,16 +46,18 @@ fn rebuild_grid_bounds_hostile_row_col_count() {
         "셀 0개 표는 그리드도 0칸이어야 함"
     );
     // 모델 필드는 건드리지 않는다 (직렬화·라운드트립 계약 보존).
-    assert_eq!(table.row_count, 65535);
-    assert_eq!(table.col_count, 65535);
+    assert_eq!(table.row_count, 2100);
+    assert_eq!(table.col_count, 2100);
 }
 
-/// (1') 셀이 하나 있는 65535×65535 표 — 실제 셀이 가리키는 범위까지만 예약.
+/// (1') 셀이 하나 있는 상한 초과 표 — 실제 셀이 가리키는 범위까지만 예약.
+///
+/// [메인테이너 보정] (1) 과 같은 이유로 `65535 × 65535` 에서 낮췄다.
 #[test]
 fn rebuild_grid_bounds_hostile_counts_with_one_cell() {
     let mut table = Table::default();
-    table.row_count = 65535;
-    table.col_count = 65535;
+    table.row_count = 2100;
+    table.col_count = 2100;
     table.cells = vec![Cell {
         row: 0,
         col: 0,
@@ -66,10 +79,13 @@ fn rebuild_grid_bounds_hostile_counts_with_one_cell() {
     );
 }
 
-/// (2) HML 파싱 경로 — 250바이트짜리 악성 입력이 abort 없이 파싱돼야 한다.
+/// (2) HML 파싱 경로 — 작은 악성 입력이 abort 없이 파싱돼야 한다.
+///
+/// [메인테이너 보정] (1) 과 같은 이유로 `65535` 에서 낮췄다. 파일이 선언한 카운트를 그대로
+/// 믿고 곱하면 안 된다는 계약은 상한(4,000,000)을 넘기기만 하면 검증된다.
 #[test]
 fn hml_table_with_hostile_counts_parses_without_abort() {
-    let xml = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P><TEXT><TABLE RowCount="65535" ColCount="65535">
+    let xml = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P><TEXT><TABLE RowCount="2100" ColCount="2100">
 <ROW><CELL ColAddr="0" RowAddr="0"><PARALIST><P><TEXT><CHAR>x</CHAR></TEXT></P></PARALIST></CELL></ROW>
 </TABLE></TEXT></P></SECTION></BODY><TAIL/></HWPML>"#;
 
@@ -89,8 +105,8 @@ fn hml_table_with_hostile_counts_parses_without_abort() {
         table.cell_grid.len()
     );
     // 파일이 선언한 행/열 수는 그대로 보존한다.
-    assert_eq!(table.row_count, 65535);
-    assert_eq!(table.col_count, 65535);
+    assert_eq!(table.row_count, 2100);
+    assert_eq!(table.col_count, 2100);
 }
 
 /// (3) 정상 표는 그리드 크기가 종전 식(`rc * cc`)과 완전히 동일해야 한다.
