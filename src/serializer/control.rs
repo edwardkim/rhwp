@@ -2389,8 +2389,8 @@ fn serialize_equation_control(eq: &Equation, level: u16, records: &mut Vec<Recor
 
     // HWPTAG_EQEDIT 자식 레코드
     let mut w = ByteWriter::new();
-    // attr: u32
-    w.write_u32(0).unwrap();
+    // attr: u32 — bit0: lineMode (0=CHAR, 1=LINE)
+    w.write_u32(eq.eqedit).unwrap();
     // script: HWP string (length-prefixed UTF-16LE)
     w.write_hwp_string(&eq.script).unwrap();
     // font_size: u32

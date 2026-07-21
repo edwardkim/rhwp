@@ -5302,6 +5302,7 @@ fn parse_equation(
     let mut color: u32 = 0;
     let mut font_size: u32 = 1000;
     let mut font_name = String::new();
+    let mut eqedit: u32 = 0;
 
     // 공통 개체 속성 + 수식 속성 파싱
     parse_object_element_attrs(e, &mut common, &mut shape_attr);
@@ -5312,6 +5313,12 @@ fn parse_equation(
             b"textColor" => color = parse_color(&attr),
             b"baseUnit" => font_size = parse_u32(&attr),
             b"font" => font_name = attr_str(&attr),
+            b"lineMode" => {
+                eqedit = match attr_str(&attr).as_str() {
+                    "LINE" => 0x01,
+                    _ => 0x00,
+                };
+            }
             _ => {}
         }
     }
@@ -5395,6 +5402,7 @@ fn parse_equation(
         color,
         baseline,
         unknown: 0,
+        eqedit,
         font_name,
         version_info,
         raw_ctrl_data: Vec::new(),

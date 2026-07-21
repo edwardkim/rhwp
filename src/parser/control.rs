@@ -862,8 +862,8 @@ fn parse_equation_control(ctrl_data: &[u8], child_records: &[Record]) -> Control
         let data = &eq_rec.data;
         let mut r = ByteReader::new(data);
 
-        // attr: u32 (4바이트) — bit0: 스크립트 범위
-        let _attr = r.read_u32().unwrap_or(0);
+        // attr: u32 (4바이트) — bit0: lineMode (0=글자단위/CHAR, 1=줄단위/LINE)
+        equation.eqedit = r.read_u32().unwrap_or(0);
 
         // script: WCHAR 문자열 (길이 접두 UTF-16LE)
         if let Ok(script) = r.read_hwp_string() {
