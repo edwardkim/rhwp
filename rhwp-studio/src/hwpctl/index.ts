@@ -62,10 +62,14 @@ export class HwpCtrl {
 
   /** 빈 문서 생성 */
   Clear(): void {
-    this.wasmDoc.createBlankDocument();
-    this.cursorSection = 0;
-    this.cursorPara = 0;
-    this.cursorPos = 0;
+    try {
+      this.wasmDoc.createBlankDocument();
+      this.cursorSection = 0;
+      this.cursorPara = 0;
+      this.cursorPos = 0;
+    } catch (e) {
+      console.error('[hwpctl] Clear 실패:', e);
+    }
   }
 
   /** 원본 파일 형식에 맞게 HWP, HWPX 또는 HML로 내보내기 */
@@ -182,7 +186,12 @@ export class HwpCtrl {
 
   /** 페이지 수 */
   PageCount(): number {
-    return this.wasmDoc.pageCount();
+    try {
+      return this.wasmDoc.pageCount();
+    } catch (e) {
+      console.error('[hwpctl] PageCount 실패:', e);
+      return 0;
+    }
   }
 
   // ── 표 셀 텍스트 API ──
