@@ -20,8 +20,8 @@ use quick_xml::Writer;
 
 use crate::model::shape::{
     CommonObjAttr, DrawingObjAttr, HorzAlign, HorzRelTo, LineShape, ObjectNumberingType,
-    OleDrawingAspect, OleShape, RectangleShape, ShapeComponentAttr, TextBox, TextFlow, TextWrap,
-    VertAlign, VertRelTo,
+    OleDrawingAspect, OleShape, RectangleShape, ShapeComponentAttr, SizeCriterion, TextBox,
+    TextFlow, TextWrap, VertAlign, VertRelTo,
 };
 use crate::model::style::{Fill, FillType, ImageFillMode, ShapeBorderLine, SolidFill};
 use crate::model::ColorRef;
@@ -978,17 +978,44 @@ pub(super) fn write_shape_comment<W: Write>(
 fn write_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
     let width = c.width.to_string();
     let height = c.height.to_string();
+    // [#2697/#2712] widthRelTo/heightRelTo/protect 는 IR 을 보존한다. 종전
+    // "ABSOLUTE"/"0" 하드코딩은 파서가 이미 읽어 둔 값(width_criterion/height_criterion/
+    // size_protect)을 저장 때 버려, 단/쪽/문단에 맞춘 도형이 절대값으로 바뀌고 크기 보호가
+    // 풀렸다(section.rs:2925/2928).
     empty_tag(
         w,
         "hp:sz",
         &[
             ("width", &width),
-            ("widthRelTo", "ABSOLUTE"),
+            ("widthRelTo", size_criterion_width_str(c.width_criterion)),
             ("height", &height),
-            ("heightRelTo", "ABSOLUTE"),
-            ("protect", "0"),
+            ("heightRelTo", size_criterion_height_str(c.height_criterion)),
+            ("protect", bool01(c.size_protect)),
         ],
     )
+}
+
+/// 너비 기준 → HWPX `widthRelTo`. 파서 `parse_size_criterion(_, true)` 의 정확한 역.
+pub(crate) fn size_criterion_width_str(c: SizeCriterion) -> &'static str {
+    match c {
+        SizeCriterion::Paper => "PAPER",
+        SizeCriterion::Page => "PAGE",
+        SizeCriterion::Column => "COLUMN",
+        SizeCriterion::Para => "PARA",
+        SizeCriterion::Absolute => "ABSOLUTE",
+    }
+}
+
+/// 높이 기준 → HWPX `heightRelTo`. 파서는 높이를
+/// `parse_size_criterion(_, allow_column_para = false)` 로 읽으므로
+/// 치역이 `{PAPER, PAGE, ABSOLUTE}` 3값뿐이다. 방출도 같은 3값으로 접어야 왕복이 정확한
+/// 역이 된다.
+pub(crate) fn size_criterion_height_str(c: SizeCriterion) -> &'static str {
+    match c {
+        SizeCriterion::Paper => "PAPER",
+        SizeCriterion::Page => "PAGE",
+        SizeCriterion::Column | SizeCriterion::Para | SizeCriterion::Absolute => "ABSOLUTE",
+    }
 }
 
 fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
