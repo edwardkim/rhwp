@@ -78,7 +78,10 @@ pub fn write_table<W: Write>(
             // 하드코딩은 표에 그림 번호 캡션을 붙인 문서(numberingType="PICTURE")에서
             // 저장 시 번호 범주를 되돌려 문서 전체 캡션 번호를 재배치시켰다. 도형 계열은
             // 이미 #1379 에서 IR 보존으로 정리됐다(shape.rs:70,172,291,367).
-            ("numberingType", numbering_type_str(table.common.numbering_type)),
+            (
+                "numberingType",
+                numbering_type_str(table.common.numbering_type),
+            ),
             ("textWrap", text_wrap),
             ("textFlow", text_flow),
             ("lock", lock),
