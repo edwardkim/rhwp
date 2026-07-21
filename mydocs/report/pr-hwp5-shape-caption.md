@@ -72,4 +72,4 @@ if let Some(ref caption) = $shape.$caption_field {
 
 ## PR 번호
 
-PR #(PR 생성 후 번호 기입)
+PR #2737
