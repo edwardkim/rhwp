@@ -268,6 +268,12 @@ pub struct ParaShape {
     /// KEEP_WORD. 값이 3가지라 attr1 비트 인코딩 대신 원문 보존으로 무손실 방출.
     /// 꼬리말·표셀 등 재계산 경로에서 줄나눔이 달라져 레이아웃이 갈리는 것을 막는다.
     pub break_latin_word: Option<String>,
+    /// [#2734] 개요 수준 (PARA_SHAPE 말미 4바이트, INT32).
+    ///
+    /// 한컴이 HWP5 저장 시 항상 붙이는 trailing 필드로, 0=본문, 1~=개요/제목 수준.
+    /// 파서가 이 필드를 읽지 않으면 문단 서식 편집 한 번에 개요 수준이 0으로 리셋되고,
+    /// 직렬화기가 0으로 하드코딩하면 저장 시 항상 초기화된다.
+    pub outline_level: i32,
 }
 
 /// ParaShape 비교: raw_data 필드 제외 (라운드트립용 원본 바이트는 논리적 동일성과 무관)
@@ -292,6 +298,7 @@ impl PartialEq for ParaShape {
             && self.head_type == other.head_type
             && self.para_level == other.para_level
             && self.break_latin_word == other.break_latin_word
+            && self.outline_level == other.outline_level
     }
 }
 
@@ -903,6 +910,7 @@ pub struct ParaShapeMods {
     pub tab_def_id: Option<u16>,
     // 번호/글머리표 ID
     pub numbering_id: Option<u16>,
+    pub outline_level: Option<i32>,
     // 테두리/배경 탭 속성
     pub border_fill_id: Option<u16>,
     pub border_spacing: Option<[i16; 4]>,
@@ -994,6 +1002,9 @@ impl ParaShapeMods {
         }
         if let Some(v) = self.numbering_id {
             ps.numbering_id = v;
+        }
+        if let Some(v) = self.outline_level {
+            ps.outline_level = v;
         }
         if let Some(v) = self.border_fill_id {
             ps.border_fill_id = v;

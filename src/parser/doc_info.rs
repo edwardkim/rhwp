@@ -738,6 +738,17 @@ fn parse_para_shape(data: &[u8]) -> Result<ParaShape, DocInfoError> {
         0
     };
 
+    // [#2734] 개요 수준 (PARA_SHAPE 말미 4바이트, INT32)
+    //
+    // 한컴이 HWP5 저장 시 항상 붙이는 trailing 필드. 공개 스펙 표 43은 전체
+    // 길이를 54바이트로 적지만, 한컴 정답지들은 PARA_SHAPE를 58바이트로 저장한다.
+    // 이 값은 편집 시 개요 수준(제목/본문) 유지에 사용된다.
+    let outline_level = if r.remaining() >= 4 {
+        r.read_i32().unwrap_or(0)
+    } else {
+        0
+    };
+
     let head_type = match (attr1 >> 23) & 0x03 {
         1 => crate::model::style::HeadType::Outline,
         2 => crate::model::style::HeadType::Number,
@@ -769,6 +780,7 @@ fn parse_para_shape(data: &[u8]) -> Result<ParaShape, DocInfoError> {
         // HWP5 는 breakLatinWord 를 attr1 비트로 갖지만 HWPX 원문 보존 필드는 미사용
         // (None → 직렬화 KEEP_WORD 기본, 기존 동작 유지). (#1986)
         break_latin_word: None,
+        outline_level,
     })
 }
 

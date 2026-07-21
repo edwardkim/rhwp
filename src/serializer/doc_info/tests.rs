@@ -248,6 +248,7 @@ fn test_serialize_para_shape_roundtrip() {
         head_type: crate::model::style::HeadType::None,
         para_level: 0,
         break_latin_word: None,
+        outline_level: 0,
     };
 
     let data = serialize_para_shape(&ps);
@@ -603,6 +604,7 @@ fn test_serialize_doc_info_roundtrip() {
         head_type: crate::model::style::HeadType::None,
         para_level: 0,
         break_latin_word: None,
+        outline_level: 0,
     });
     doc_info.styles.push(Style {
         raw_data: None,

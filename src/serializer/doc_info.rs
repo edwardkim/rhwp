@@ -684,7 +684,7 @@ pub fn serialize_para_shape(ps: &ParaShape) -> Vec<u8> {
     // 내보낸 정답지들은 PARA_SHAPE를 58바이트로 저장한다. 이 tail이 없으면
     // 한컴 편집기가 일부 masterpage/header 글상자 내부 줄나눔 폭을 다르게
     // 해석해 페이지 번호가 다음 줄로 밀리는 사례가 있다.
-    w.write_u32(0).unwrap();
+    w.write_i32(ps.outline_level).unwrap();
     w.into_bytes()
 }
 
