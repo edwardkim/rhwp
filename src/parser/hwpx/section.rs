@@ -6034,6 +6034,19 @@ fn parse_common_shape_children(
                             match attr.key.as_ref() {
                                 b"width" => common.width = parse_u32(&attr),
                                 b"height" => common.height = parse_u32(&attr),
+                                // [#2726] 공용 자식 파서(차트·OLE)만 크기 기준 arm 이 없어
+                                // 파싱 단계에서 유실됐다. 도형 공용 파서(같은 파일 2925/2928)·
+                                // 표(1702/1706)·그림(#2712)과 동형이며, 높이는 동일하게
+                                // allow_column_para=false 로 읽어 치역을 {Paper, Page,
+                                // Absolute} 로 제한한다.
+                                b"widthRelTo" => {
+                                    common.width_criterion =
+                                        parse_size_criterion(&attr_str(&attr), true);
+                                }
+                                b"heightRelTo" => {
+                                    common.height_criterion =
+                                        parse_size_criterion(&attr_str(&attr), false);
+                                }
                                 b"protect" => common.size_protect = parse_bool(&attr),
                                 _ => {}
                             }
@@ -7543,6 +7556,93 @@ mod tests {
             rect.common.text_flow,
             crate::model::shape::TextFlow::RightOnly
         );
+    }
+
+    /// [#2726] 공용 자식 파서(`parse_common_shape_children`)는 차트·OLE 를 담당하는데
+    /// `widthRelTo`/`heightRelTo` arm 이 없어 크기 기준이 **파싱 단계에서** 유실됐다.
+    /// 표(1702/1706)·도형(2925/2928)·그림(#2712) 파서와 동형으로 보강한다.
+    #[test]
+    fn issue2726_parse_chart_preserves_size_criteria() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:chart chartIDRef="Chart/chart1.xml" id="1" zOrder="0" textWrap="SQUARE">
+        <hp:sz width="4000" height="3000" widthRelTo="COLUMN" heightRelTo="PAGE" protect="1"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"/>
+      </hp:chart>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected OLE(chart) shape");
+        };
+        assert_eq!(
+            ole.common.width_criterion,
+            SizeCriterion::Column,
+            "widthRelTo=\"COLUMN\" 이 IR 에 적재되어야 한다"
+        );
+        assert_eq!(
+            ole.common.height_criterion,
+            SizeCriterion::Page,
+            "heightRelTo=\"PAGE\" 가 IR 에 적재되어야 한다"
+        );
+        assert!(ole.common.size_protect, "protect=\"1\" 은 종전에도 읽혔다");
+    }
+
+    /// [#2726] 높이 기준은 `allow_column_para=false` 로 읽어 치역이
+    /// `{Paper, Page, Absolute}` 3값이어야 한다. `COLUMN`/`PARA` 가 들어와도 `Absolute`
+    /// 로 접혀야 직렬화기 `height_criterion_str` 와 정확한 역 관계가 유지된다.
+    #[test]
+    fn issue2726_parse_chart_height_folds_column_and_para_to_absolute() {
+        for raw in ["COLUMN", "PARA"] {
+            let xml = format!(
+                r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:chart chartIDRef="Chart/chart1.xml" id="1" zOrder="0" textWrap="SQUARE">
+        <hp:sz width="4000" height="3000" widthRelTo="{raw}" heightRelTo="{raw}" protect="0"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"/>
+      </hp:chart>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#
+            );
+
+            let section = parse_hwpx_section(&xml).unwrap();
+            let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+                panic!("expected shape control");
+            };
+            let ShapeObject::Ole(ole) = shape.as_ref() else {
+                panic!("expected OLE(chart) shape");
+            };
+            // 너비는 5값 전부 허용 → 원문 그대로.
+            let expected_width = if raw == "COLUMN" {
+                SizeCriterion::Column
+            } else {
+                SizeCriterion::Para
+            };
+            assert_eq!(
+                ole.common.width_criterion, expected_width,
+                "너비는 {raw} 를 그대로 보존해야 한다"
+            );
+            // 높이는 3값으로 접힘.
+            assert_eq!(
+                ole.common.height_criterion,
+                SizeCriterion::Absolute,
+                "높이 {raw} 는 Absolute 로 접혀야 한다"
+            );
+        }
     }
 
     #[test]
