@@ -2,7 +2,11 @@ import { resolve } from 'path';
 
 import { runTest, assert } from './helpers.mjs';
 
-const EDITOR_MODULE_URL = `/@fs${resolve(import.meta.dirname, '../../npm/editor/index.js')}`;
+// Windows 절대 경로(D:\...)도 Vite /@fs URL로 변환되도록 정규화한다
+const EDITOR_MODULE_PATH = resolve(import.meta.dirname, '../../npm/editor/index.js').replace(/\\/g, '/');
+const EDITOR_MODULE_URL = EDITOR_MODULE_PATH.startsWith('/')
+  ? `/@fs${EDITOR_MODULE_PATH}`
+  : `/@fs/${EDITOR_MODULE_PATH}`;
 const VITE_URL = process.env.VITE_URL || 'http://localhost:7700';
 
 runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ page }) => {
