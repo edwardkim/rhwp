@@ -1335,6 +1335,13 @@ impl DocumentCore {
                     Some(id) => id,
                     None => {
                         self.document.doc_info.border_fills.push(new_bf);
+                        // [#2555] DocInfo 패스스루 무효화. 이 함수는 섹션 스트림만
+                        // 지우는데 섹션과 DocInfo 는 별개 계층이라, 이게 없으면
+                        // serialize_doc_info 가 원본 스트림을 그대로 반환해
+                        // (serializer/doc_info.rs:23-33) 새 BORDER_FILL 이 저장되지 않고
+                        // 본문의 border_fill_id 만 범위를 벗어난다. 형제 호출부
+                        // (object_ops/table.rs:451, html_table_import.rs:769)는 모두 무효화한다.
+                        self.document.doc_info.raw_stream_dirty = true;
                         self.document.doc_info.border_fills.len() as u16
                     }
                 }
@@ -3124,5 +3131,53 @@ mod neighbor_border_raw_data_tests {
             "이웃 셀 기준 좌측 테두리가 갱신돼야 함"
         );
         assert!(matches!(bf.borders[0].line_type, BorderLineType::Double));
+    }
+
+    /// [#2555] 새 BorderFill push 시 DocInfo 패스스루를 무효화해야 한다.
+    ///
+    /// 이 함수는 섹션 스트림만 지우는데 섹션과 DocInfo 는 별개 계층이다.
+    /// 무효화가 없으면 serialize_doc_info 가 원본 스트림을 그대로 반환해
+    /// (serializer/doc_info.rs:23-33) 새 BORDER_FILL 이 저장되지 않고, 본문의
+    /// border_fill_id 만 범위를 벗어나 dangling 이 된다.
+    #[test]
+    fn neighbor_border_push_marks_doc_info_dirty() {
+        let mut core = core_with_two_cell_row();
+        // 파싱된 문서 상태 재현: 원본 DocInfo 스트림이 있고 아직 깨끗하다.
+        core.document.doc_info.raw_stream = Some(vec![0xCC; 64]);
+        core.document.doc_info.raw_stream_dirty = false;
+        let before_len = core.document.doc_info.border_fills.len();
+
+        let new_border = BorderLine {
+            line_type: BorderLineType::Double,
+            width: 3,
+            color: 0x00FF0000,
+        };
+        core.update_neighbor_borders(
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            &[
+                BorderLine::default(),
+                new_border,
+                BorderLine::default(),
+                BorderLine::default(),
+            ],
+        );
+
+        assert_eq!(
+            core.document.doc_info.border_fills.len(),
+            before_len + 1,
+            "새 조합이므로 BorderFill 이 push 돼야 함(전제 확인)"
+        );
+        assert!(
+            core.document.doc_info.raw_stream_dirty,
+            "DocInfo 패스스루가 무효화되지 않으면 push 한 BORDER_FILL 이 저장되지 않아 \
+             본문의 border_fill_id 가 dangling 이 된다"
+        );
     }
 }

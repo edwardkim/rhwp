@@ -21,7 +21,9 @@ export function setupContextMenus() {
           '*://*/*.hwp',
           '*://*/*.hwp?*',
           '*://*/*.hwpx',
-          '*://*/*.hwpx?*'
+          '*://*/*.hwpx?*',
+          '*://*/*.hml',
+          '*://*/*.hml?*'
         ]
       });
     } catch (err) {

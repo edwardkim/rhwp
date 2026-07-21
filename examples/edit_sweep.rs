@@ -85,7 +85,7 @@ fn collect_files(root: &Path, max_kb: u64) -> Vec<PathBuf> {
         };
         for e in entries.flatten() {
             let p = e.path();
-            if p.is_dir() {
+            if p.is_dir() && !p.is_symlink() {
                 stack.push(p);
             } else if p
                 .extension()

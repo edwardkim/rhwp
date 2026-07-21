@@ -24753,14 +24753,16 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
         // #2195 이후에도 44번째 입력은 target paragraph의 상대 flow advance를 바꾼다.
         // 다만 선언 셀 높이가 증가분을 흡수해 full pagination의 cut/bounds는 불변이다.
         // render_normalized warm tree는 flush 전에도 매 mutation을 즉시 반영해야 한다.
-        for inserted in 0..44 {
+        // [#2430] HY/한양 ASCII 실측 교정으로 숫자 advance 가 0.625→0.497em 으로
+        // 좁아져 줄 채움 임계가 44→56 입력으로 이동 (probe 실측, hwp/hwpx 동일).
+        for inserted in 0..56 {
             let raw = doc
                 .insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + inserted, "1")
                 .expect("deferred sequential insert");
             let result: Value = serde_json::from_str(&raw).expect("edit result json");
             assert_eq!(
                 result["cellFlowChanged"].as_bool(),
-                Some(inserted == 43),
+                Some(inserted == 55),
                 "{label}: input {} flow signal",
                 inserted + 1
             );
@@ -24774,7 +24776,7 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
             .map(|(_, _, end)| *end)
             .expect("transient target end");
         let transient_rect = doc
-            .get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 174)
+            .get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 186)
             .expect("transient direct rect");
 
         doc.flush_deferred_pagination()
@@ -24788,15 +24790,15 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
             .map(|(_, _, end)| *end)
             .expect("flushed target end");
         let flushed_rect = doc
-            .get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 174)
+            .get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 186)
             .expect("flushed direct rect");
 
         eprintln!(
             "#2214 {label}: transient max={transient_max} rect={transient_rect}; flushed max={flushed_max} rect={flushed_rect}; cuts transient={transient_cut:?} flushed={flushed_cut:?}"
         );
 
-        assert_eq!(transient_max, 174, "{label}: scoped warm tree coherence");
-        assert_eq!(flushed_max, 174, "{label}: flush oracle");
+        assert_eq!(transient_max, 186, "{label}: scoped warm tree coherence");
+        assert_eq!(flushed_max, 186, "{label}: flush oracle");
         assert_eq!(
             transient_ranges, flushed_ranges,
             "{label}: transient target UTF-16 ranges must equal flush oracle"
@@ -24933,4 +24935,35 @@ fn delete_style_invalidates_docinfo_and_sections() {
         doc.document.sections[0].raw_stream.is_none(),
         "문단 style_id 재배정이 반영되도록 섹션 raw_stream 이 무효화돼야 한다"
     );
+}
+
+/// [#2557] 스타일 이름에 역슬래시/개행/탭이 있어도 방출 JSON 이 파싱 가능해야 한다.
+///
+/// 종전엔 큰따옴표만 이스케이프해 깨진 JSON 이 나왔고, TS 측은 가드 없이
+/// JSON.parse 하므로(wasm-bridge.ts:1957, :2025) 예외가 났다. getStyleAt 은 커서
+/// 이동마다 호출되어 해당 문서에서 키 입력마다 편집기가 멈춘다.
+#[test]
+fn style_json_survives_backslash_and_control_chars() {
+    let mut doc = HwpDocument::create_empty();
+    {
+        let styles = &mut doc.core.document.doc_info.styles;
+        if styles.is_empty() {
+            styles.push(crate::model::style::Style::default());
+        }
+        styles[0].local_name = "a\\b\nc\td\"e".to_string();
+        styles[0].english_name = "x\\y\nz".to_string();
+    }
+
+    let list = doc.get_style_list();
+    let parsed: Value = serde_json::from_str(&list)
+        .expect("스타일 이름에 역슬래시/개행이 있어도 유효한 JSON 이어야 함");
+    assert_eq!(
+        parsed[0]["name"].as_str().unwrap(),
+        "a\\b\nc\td\"e",
+        "이스케이프 왕복 후 원래 이름이 복원돼야 함"
+    );
+
+    let at = doc.get_style_at(0, 0);
+    serde_json::from_str::<Value>(&at)
+        .expect("getStyleAt 도 유효한 JSON 이어야 함(커서 이동마다 호출됨)");
 }

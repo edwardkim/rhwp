@@ -1,6 +1,9 @@
 //! Flow reservation helpers for non-inline floating objects.
 
+use crate::model::control::Control;
+use crate::model::paragraph::Paragraph;
 use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
+use crate::model::table::{Table, TablePageBreak};
 use crate::model::HwpUnit;
 
 use super::hwpunit_to_px;
@@ -16,6 +19,58 @@ pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
     !common.treat_as_char
         && matches!(common.text_wrap, TextWrap::TopAndBottom)
         && matches!(common.vert_rel_to, VertRelTo::Para)
+}
+
+/// Stored host-line evidence for the narrow native-HWP RowBreak flow contract (#2439).
+///
+/// The returned value is the non-synthetic stored line advance in HWPUNIT.  Callers may combine
+/// it with the positive object offset for pagination, or with the painted lane bottom and outer
+/// bottom for layout.  Keeping the structural predicate here prevents typeset/full/partial layout
+/// from drifting apart.  A broad empty-host outer-margin rule is disproven by #2097.
+pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
+    native_hwp5_layout: bool,
+    para: &Paragraph,
+    table: &Table,
+    next_para: Option<&Paragraph>,
+) -> Option<i32> {
+    let has_non_whitespace_text = |paragraph: &Paragraph| {
+        paragraph
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+    };
+    if !native_hwp5_layout
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || has_non_whitespace_text(para)
+        || !matches!(table.common.vert_rel_to, VertRelTo::Para)
+        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || signed_hwpunit(table.common.vertical_offset) <= 0
+        || para
+            .controls
+            .iter()
+            .filter(|control| matches!(control, Control::Table(_)))
+            .count()
+            != 1
+        || para
+            .controls
+            .iter()
+            .filter(|control| {
+                matches!(control, Control::Table(candidate)
+                    if is_para_topbottom_float(&candidate.common))
+            })
+            .count()
+            != 1
+        || !next_para.is_some_and(|next| has_non_whitespace_text(next) && next.controls.is_empty())
+    {
+        return None;
+    }
+
+    para.line_segs
+        .iter()
+        .find(|seg| seg.tag & 0x80000000 == 0 && seg.line_height > 0)
+        .map(|seg| seg.line_height + seg.line_spacing.max(0))
+        .filter(|advance| *advance > 0)
 }
 
 /// [Task #1658 v3] 페이지 하단 고정(vert=쪽·valign=Bottom) 자리차지 개체 (결재/서명 틀).

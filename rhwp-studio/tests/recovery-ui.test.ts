@@ -12,6 +12,7 @@ test('recoveryFileName은 원본을 덮어쓰지 않는 복구본 이름을 만�
   assert.equal(recoveryFileName('sample.hwp'), 'sample 복구본.hwp');
   assert.equal(recoveryFileName('sample.hwpx'), 'sample 복구본.hwp');
   assert.equal(recoveryFileName('sample.hwpx', 'hwpx'), 'sample 복구본.hwp');
+  assert.equal(recoveryFileName('sample.hml'), 'sample 복구본.hwp');
   assert.equal(recoveryFileName('새 문서.hwp'), '새 문서 복구본.hwp');
   assert.equal(recoveryFileName('memo'), 'memo 복구본.hwp');
   assert.equal(recoveryFileName(''), '문서 복구본.hwp');
@@ -38,6 +39,20 @@ test('describeDraft는 저장 시각, 크기, 출처 포맷을 포함한다', ()
   assert.match(text, /HWP/);
   assert.match(text, /2\.0 KB/);
   assert.notEqual(formatDraftSavedAt(savedAt), '저장 시각 알 수 없음');
+});
+
+test('describeDraft는 HML 출처 draft가 HWP 복구본으로 열림을 표시한다', () => {
+  const text = describeDraft({
+    id: 'd3',
+    fileName: '문서.hml',
+    sourceFormat: 'hml',
+    savedAt: 1,
+    byteLength: 2048,
+    data: new Uint8Array([1]),
+  });
+
+  assert.match(text, /HML/);
+  assert.match(text, /HWP 복구본/);
 });
 
 test('describeDraft는 HWPX 출처 draft가 HWP 복구본으로 열림을 표시한다', () => {

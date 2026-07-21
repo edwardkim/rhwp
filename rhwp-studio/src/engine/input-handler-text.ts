@@ -26,6 +26,19 @@ import {
   type NavigationKeyInput,
 } from './navigation-keymap';
 
+/**
+ * [#2548] WASM 삭제/조회 count 는 Rust `Paragraph::delete_text_at` 의 char(Unicode
+ * scalar) 단위다. JS `String.length`(UTF-16 code unit)를 넘기면 astral 문자(😀 등)에서
+ * 실제보다 많이 지워 인접 문자를 잃는다 — [#2337-review] 가 undo/HF/FN 경로에 적용한
+ * 계약을 IME 조합 경로에도 맞춘다.
+ *
+ * 주의: *커서 오프셋* 은 studio 의 UTF-16 관례를 유지한다(command.ts `charCount` 주석,
+ * tests/undo-delete-char-count.test.ts 참조). 여기서는 삭제/조회 count 에만 쓴다.
+ */
+function charCount(s: string): number {
+  return [...s].length;
+}
+
 const FOOTNOTE_DELETE_TITLE = '각주 삭제';
 const FOOTNOTE_DELETE_MESSAGE = '각주를 삭제하시겠습니까?';
 
@@ -471,7 +484,8 @@ export function onInput(this: any, e?: InputEvent): void {
     // 현재 조합 텍스트 삽입
     if (text) {
       this.insertTextAtRaw(anchor, text);
-      this.compositionLength = text.length;
+      // 다음 조합 업데이트에서 deleteTextAt 의 삭제 count 로 쓰이므로 scalar 단위.
+      this.compositionLength = charCount(text);
       this._lastCompositionText = text; // 더블 자음 분리 방지용
     } else {
       this.compositionLength = 0;
@@ -536,7 +550,7 @@ export function onInput(this: any, e?: InputEvent): void {
     // 현재 div 전체 텍스트를 문서에 삽입 (빈 값이면 삭제만)
     if (text) {
       this.insertTextAtRaw(this._iosAnchor, text);
-      this._iosLength = text.length;
+      this._iosLength = charCount(text);
     } else {
       this._iosLength = 0;
     }

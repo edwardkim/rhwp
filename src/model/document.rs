@@ -281,7 +281,8 @@ impl Document {
     /// 기존 분기의 1:1 파생 — `hwp3_layout` = `is_hwp3_variant`,
     /// `hwpx_stored_layout` = (HWPX 컨테이너 && rhwp HWP5→HWPX 산출물 마커
     /// 없음) || rhwp HWPX→HWP 변환본. HWP5→HWPX 마커는 세션 중 부착될 수
-    /// 있어 저장 값이 아닌 현재 문서 상태에서 파생한다.
+    /// 있어 저장 값이 아닌 현재 문서 상태에서 파생한다. `native_hwp5_layout`은
+    /// HWP5 컨테이너이면서 HWP3/HWPX 변환 계보가 없는 경우에만 true다.
     pub fn layout_profile(&self) -> crate::model::provenance::LayoutCompatibilityProfile {
         use crate::model::provenance::SourceFormat;
         let hwp5_origin_hwpx = self.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH).is_some();
@@ -291,6 +292,9 @@ impl Document {
             (self.provenance.format == SourceFormat::Hwpx && !hwp5_origin_hwpx)
                 || self.provenance.hwpx_lineage,
             hwp5_origin_hwpx,
+            self.provenance.format == SourceFormat::Hwp5
+                && !self.provenance.hwp3_lineage
+                && !self.provenance.hwpx_lineage,
         )
     }
 

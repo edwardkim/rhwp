@@ -5607,8 +5607,8 @@ impl HwpDocument {
             items.push(format!(
                 "{{\"id\":{},\"name\":\"{}\",\"englishName\":\"{}\",\"type\":{},\"nextStyleId\":{},\"paraShapeId\":{},\"charShapeId\":{}}}",
                 i,
-                s.local_name.replace('"', "\\\""),
-                s.english_name.replace('"', "\\\""),
+                json_escape(&s.local_name),
+                json_escape(&s.english_name),
                 s.style_type,
                 s.next_style_id,
                 s.para_shape_id,
@@ -5976,7 +5976,7 @@ impl HwpDocument {
             let formats: Vec<String> = n
                 .level_formats
                 .iter()
-                .map(|f| format!("\"{}\"", f.replace('"', "\\\"")))
+                .map(|f| format!("\"{}\"", json_escape(f)))
                 .collect();
             items.push(format!(
                 "{{\"id\":{},\"levelFormats\":[{}],\"startNumber\":{}}}",
@@ -6174,11 +6174,7 @@ impl HwpDocument {
             .get(style_id)
             .map(|s| s.local_name.as_str())
             .unwrap_or("");
-        format!(
-            "{{\"id\":{},\"name\":\"{}\"}}",
-            style_id,
-            name.replace('"', "\\\"")
-        )
+        format!("{{\"id\":{},\"name\":\"{}\"}}", style_id, json_escape(name))
     }
 
     /// 셀 내부 문단의 스타일을 조회한다.
@@ -6210,11 +6206,7 @@ impl HwpDocument {
             .get(style_id)
             .map(|s| s.local_name.as_str())
             .unwrap_or("");
-        format!(
-            "{{\"id\":{},\"name\":\"{}\"}}",
-            style_id,
-            name.replace('"', "\\\"")
-        )
+        format!("{{\"id\":{},\"name\":\"{}\"}}", style_id, json_escape(name))
     }
 
     /// 스타일을 적용한다 (본문 문단).

@@ -1,5 +1,5 @@
 // 다운로드 관찰자 (Firefox)
-// - .hwp/.hwpx 다운로드 감지 → 뷰어로 열기
+// - .hwp/.hwpx/.hml 다운로드 감지 → 뷰어로 열기
 // - 사용자 설정(autoOpen)에 따라 동작
 // - browser.downloads.search 로 최신 DownloadItem 재조회
 //

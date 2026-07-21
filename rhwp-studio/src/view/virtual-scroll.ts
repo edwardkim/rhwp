@@ -130,6 +130,15 @@ export class VirtualScroll {
   }
 
   /** 특정 문서 Y 좌표가 속하는 페이지 인덱스를 반환한다 */
+  /**
+   * Y 가 속한 행의 **마지막** 쪽 인덱스.
+   *
+   * 그리드 모드에서 한 행의 모든 쪽은 같은 offset 을 가지므로(layoutGrid),
+   * 뒤에서부터 스캔하는 이 함수는 그 행의 최대 인덱스를 돌려준다.
+   * `getPageAtPoint` 가 X 로 좁히기 위한 스캔 끝점으로 쓴다.
+   *
+   * "현재 쪽" 이 필요하면 [`getRowFirstPageAtY`] 를 쓸 것 — [#2560].
+   */
   getPageAtY(docY: number): number {
     for (let i = this.pageOffsets.length - 1; i >= 0; i--) {
       if (docY >= this.pageOffsets[i]) {
@@ -137,6 +146,25 @@ export class VirtualScroll {
       }
     }
     return 0;
+  }
+
+  /**
+   * Y 가 속한 행의 **첫** 쪽 인덱스 — 사람이 말하는 "현재 쪽".
+   *
+   * 단일 컬럼 모드에서는 `getPageAtY` 와 동치다.
+   */
+  getRowFirstPageAtY(docY: number): number {
+    const rowLastIdx = this.getPageAtY(docY);
+    if (!this.gridMode) return rowLastIdx;
+    const rowOffset = this.pageOffsets[rowLastIdx];
+    let rowFirst = rowLastIdx;
+    while (rowFirst > 0 && this.pageOffsets[rowFirst - 1] === rowOffset) rowFirst--;
+    return rowFirst;
+  }
+
+  /** 한 행에 놓이는 쪽 수. 단일 컬럼 모드는 1. */
+  get pagesPerRow(): number {
+    return this.gridMode ? this.columns : 1;
   }
 
   /**

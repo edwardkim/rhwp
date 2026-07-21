@@ -2191,6 +2191,60 @@ mod tests {
         assert!(area_dot_fallback_width("한컴바탕", fs).is_none());
     }
 
+    // ── #2430 한양·휴먼 HFT 실측 메트릭의 native/WASM 정합 보장 ──
+
+    /// 한양 4종·휴먼명조의 ASCII 전 구간(0x20..=0x7E)이 embedded 메트릭으로
+    /// 해소됨을 고정한다. WasmTextMeasurer 는 embedded 메트릭을 Canvas
+    /// measureText 보다 우선하므로, 이 커버리지가 성립하는 한 원본 글꼴이
+    /// 없는 Studio 환경(HY 대체 글리프 표시)에서도 줄바꿈·캐럿·선택 좌표를
+    /// 결정하는 문자폭은 native(EmbeddedTextMeasurer)와 동일하다 — hybrid
+    /// (HFT 실측 메트릭 + HY 대체 표시) 정책의 레이아웃 정합 근거.
+    /// 회귀 시(원명 미해소 → Canvas 폴백) 브라우저 폰트에 따라 셀 재래핑
+    /// 줄수가 native 와 갈라진다 (#2430 재래핑 오발동의 재발 형태).
+    #[test]
+    fn issue_2430_hft_faces_ascii_embedded_coverage() {
+        let fs = 40.0 / 3.0; // 10pt = 13.333px
+        for fam in [
+            "한양신명조",
+            "한양중고딕",
+            "한양견명조",
+            "한양견고딕",
+            "휴먼명조",
+        ] {
+            for code in 0x20..=0x7Eu32 {
+                let c = char::from_u32(code).unwrap();
+                let w =
+                    measure_char_width_embedded(fam, false, false, c, fs).unwrap_or_else(|| {
+                        panic!("{fam} {c:?}: embedded 메트릭 미해소 — Canvas 폴백 회귀")
+                    });
+                assert!(w > 0.0, "{fam} {c:?}: 비정상 폭 {w}");
+            }
+        }
+        // 실측 스팟 체크 (tools/task2430/measured/ ladder 실측 = 커밋 테이블):
+        // 명조·중고딕 계열 숫자 0.497em, 견 계열 0.565em.
+        let w = |fam: &str, c: char| measure_char_width_embedded(fam, false, false, c, fs).unwrap();
+        assert!(
+            (w("한양신명조", '0') - fs * 0.497).abs() < 0.05,
+            "신명조 '0' {}",
+            w("한양신명조", '0')
+        );
+        assert!(
+            (w("휴먼명조", '0') - fs * 0.497).abs() < 0.05,
+            "휴먼명조 '0' {}",
+            w("휴먼명조", '0')
+        );
+        assert!(
+            (w("한양견명조", '0') - fs * 0.565).abs() < 0.05,
+            "견명조 '0' {}",
+            w("한양견명조", '0')
+        );
+        assert!(
+            (w("한양견고딕", '0') - fs * 0.565).abs() < 0.05,
+            "견고딕 '0' {}",
+            w("한양견고딕", '0')
+        );
+    }
+
     // ── MockTextMeasurer 테스트 ──
 
     #[test]

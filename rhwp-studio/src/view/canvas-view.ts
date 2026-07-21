@@ -298,7 +298,9 @@ export class CanvasView {
     // 현재 페이지 번호 갱신
     if (visiblePages.length > 0) {
       const vpCenter = scrollY + vpHeight / 2;
-      const currentPage = this.virtualScroll.getPageAtY(vpCenter);
+      // [#2560] 그리드 모드에서 getPageAtY 는 행의 마지막 쪽을 준다. 상태바가
+      // 3열이면 첫 행에서 "3 / N" 으로 표시되고 1·2쪽은 현재 쪽이 될 수 없었다.
+      const currentPage = this.virtualScroll.getRowFirstPageAtY(vpCenter);
       this.eventBus.emit(
         'current-page-changed',
         currentPage,

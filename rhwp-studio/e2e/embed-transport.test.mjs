@@ -14,6 +14,7 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
     document.body.appendChild(host);
     const editor = await createEditor(host, {
       studioUrl: `${location.origin}/`,
+      renderer: 'auto',
       handshakeTimeoutMs: 10_000,
     });
     editor.element.name = 'rhwp-e2e-target';
@@ -23,17 +24,7 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
     ));
     const sampleBefore = new Uint8Array(sampleBuffer).slice(0, 16);
     const initialLength = sampleBuffer.byteLength;
-    let loadSettled = false;
-    const loadPromise = editor.loadFile(sampleBuffer, 'footnote-01.hwp')
-      .finally(() => { loadSettled = true; });
-    for (let attempt = 0; attempt < 600 && !loadSettled; attempt += 1) {
-      const fallbackButton = Array.from(
-        editor.element.contentDocument?.querySelectorAll('button') ?? [],
-      ).find((button) => button.textContent?.includes('대체 글꼴로 보기'));
-      if (fallbackButton) fallbackButton.click();
-      await new Promise((delay) => setTimeout(delay, 100));
-    }
-    const loaded = await loadPromise;
+    const loaded = await editor.loadFile(sampleBuffer, 'footnote-01.hwp');
     const publicDiagnostics = await editor.getRendererDiagnostics(0);
     const callerBytesPreserved = sampleBuffer.byteLength === initialLength
       && sampleBefore.every((byte, index) => new Uint8Array(sampleBuffer)[index] === byte);
