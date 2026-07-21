@@ -5,25 +5,40 @@ use std::process;
 
 mod atomic_file;
 
+/// [#2707] CLI 종료 코드 계약 — 성공.
+const EXIT_OK: i32 = 0;
+/// [#2707] CLI 종료 코드 계약 — 런타임 실패(읽기·파싱·렌더·쓰기).
+const EXIT_RUNTIME: i32 = 1;
+/// [#2707] CLI 종료 코드 계약 — 사용법 오류(인자 없음, 알 수 없는 옵션/명령, 페이지 범위 초과).
+///
+/// 3(`--verify` IR 차이)·4(`--verify-pages` 페이지 수 불일치)는
+/// `mydocs/manual/cli_commands.md` 에 이미 문서화된 계약이므로 상수화 대상에서 제외하고
+/// 기존 `process::exit(3)`/`process::exit(4)` 호출부를 그대로 둔다.
+const EXIT_USAGE: i32 = 2;
+
+/// [#2707] 명령 함수가 돌려준 종료 코드를 프로세스 종료 코드로 전파한다.
+///
+/// 0이면 아무것도 하지 않아 `main` 이 정상 종료하고, 그 외에는 즉시 그 코드로 종료한다.
+fn exit_with(exit_code: i32) {
+    if exit_code != EXIT_OK {
+        process::exit(exit_code);
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
     match args.get(1).map(|s| s.as_str()) {
         Some("--help") | Some("-h") => print_help(),
         Some("--version") | Some("-V") => println!("rhwp v{}", rhwp::version()),
-        Some("export-svg") => export_svg(&args[2..]),
-        Some("export-render-tree") => export_render_tree(&args[2..]),
-        Some("export-structure") => export_structure(&args[2..]),
-        Some("export-png") => export_png(&args[2..]),
-        Some("export-pdf") => {
-            let exit_code = export_pdf(&args[2..]);
-            if exit_code != 0 {
-                process::exit(exit_code);
-            }
-        }
-        Some("export-text") => export_text(&args[2..]),
-        Some("export-markdown") => export_markdown(&args[2..]),
-        Some("export-hwpx") => export_hwpx(&args[2..]),
+        Some("export-svg") => exit_with(export_svg(&args[2..])),
+        Some("export-render-tree") => exit_with(export_render_tree(&args[2..])),
+        Some("export-structure") => exit_with(export_structure(&args[2..])),
+        Some("export-png") => exit_with(export_png(&args[2..])),
+        Some("export-pdf") => exit_with(export_pdf(&args[2..])),
+        Some("export-text") => exit_with(export_text(&args[2..])),
+        Some("export-markdown") => exit_with(export_markdown(&args[2..])),
+        Some("export-hwpx") => exit_with(export_hwpx(&args[2..])),
         Some("export-hml") => export_hml(&args[2..]),
         Some("info") => show_info(&args[2..]),
         Some("dump") => dump_controls(&args[2..]),
@@ -31,7 +46,7 @@ fn main() {
         Some("dump-endnote-lines") => dump_endnote_lines(&args[2..]),
         Some("dump-pages") => dump_pages(&args[2..]),
         Some("diag") => diag_document(&args[2..]),
-        Some("convert") => convert_hwp(&args[2..]),
+        Some("convert") => exit_with(convert_hwp(&args[2..])),
         Some("build-from-ingest") => build_from_ingest(&args[2..]),
         Some("hwp5-inventory") => rhwp::diagnostics::hwp5_inventory::run(&args[2..]),
         Some("hwp5-inventory-diff") => rhwp::diagnostics::hwp5_inventory_diff::run(&args[2..]),
@@ -66,10 +81,17 @@ fn main() {
         Some("core-pages") => rhwp::diagnostics::core_pages_probe::run(&args[2..]),
         Some("bench") => rhwp::diagnostics::bench::run(&args[2..]),
         Some("thumbnail") => extract_thumbnail(&args[2..]),
-        _ => {
-            println!("rhwp v{}", rhwp::version());
-            println!("사용법: rhwp <명령> [옵션]");
-            println!("'rhwp --help'로 자세한 사용법을 확인하세요.");
+        // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
+        // 종료 코드 2로 끝낸다(기존에는 stdout + 0이라 오타 낸 명령이 스크립트에서 성공으로 보였다).
+        other => {
+            match other {
+                Some(command) => eprintln!("오류: 알 수 없는 명령입니다 - {}", command),
+                None => eprintln!("오류: 명령을 지정해주세요."),
+            }
+            eprintln!("rhwp v{}", rhwp::version());
+            eprintln!("사용법: rhwp <명령> [옵션]");
+            eprintln!("'rhwp --help'로 자세한 사용법을 확인하세요.");
+            process::exit(EXIT_USAGE);
         }
     }
 }
@@ -300,13 +322,13 @@ fn allows_implicit_sibling_resources(format: rhwp::parser::FileFormat) -> bool {
     !matches!(format, rhwp::parser::FileFormat::Hml)
 }
 
-fn export_svg(args: &[String]) {
+fn export_svg(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("오류: 문서 파일 경로를 지정해주세요.");
         eprintln!(
             "사용법: rhwp export-svg <파일.hwp|파일.hwpx|파일.hml> [옵션] (rhwp --help 참조)"
         );
-        return;
+        return EXIT_USAGE;
     }
 
     let file_path = &args[0];
@@ -331,7 +353,7 @@ fn export_svg(args: &[String]) {
                     i += 2;
                 } else {
                     eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--page" | "-p" => {
@@ -340,13 +362,13 @@ fn export_svg(args: &[String]) {
                         Ok(n) => target_page = Some(n),
                         Err(_) => {
                             eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
-                            return;
+                            return EXIT_USAGE;
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--profile" => {
@@ -356,12 +378,12 @@ fn export_svg(args: &[String]) {
                         eprintln!(
                             "오류: --profile 값이 올바르지 않습니다 (screen|print|high-quality|fast-preview)."
                         );
-                        return;
+                        return EXIT_USAGE;
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --profile 뒤에 프로필 이름이 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--show-para-marks" => {
@@ -388,7 +410,7 @@ fn export_svg(args: &[String]) {
                             eprintln!(
                                 "오류: --show-grid 값이 올바르지 않습니다. 예: --show-grid=3mm"
                             );
-                            return;
+                            return EXIT_USAGE;
                         }
                     }
                 } else {
@@ -404,13 +426,13 @@ fn export_svg(args: &[String]) {
                             eprintln!(
                                 "오류: --grid-origin 값이 올바르지 않습니다. 예: --grid-origin=15mm,20mm 또는 --grid-origin=auto"
                             );
-                            return;
+                            return EXIT_USAGE;
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --grid-origin 뒤에 가로,세로 값이 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             arg if arg.starts_with("--grid-origin=") || arg.starts_with("--grid-paper-origin=") => {
@@ -424,7 +446,7 @@ fn export_svg(args: &[String]) {
                         eprintln!(
                             "오류: --grid-origin 값이 올바르지 않습니다. 예: --grid-origin=15mm,20mm 또는 --grid-origin=auto"
                         );
-                        return;
+                        return EXIT_USAGE;
                     }
                 }
                 i += 1;
@@ -447,19 +469,19 @@ fn export_svg(args: &[String]) {
                     i += 2;
                 } else {
                     eprintln!("오류: --font-path 뒤에 경로가 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             _ => {
                 eprintln!("알 수 없는 옵션: {}", args[i]);
-                i += 1;
+                return EXIT_USAGE;
             }
         }
     }
 
     if render_profile.is_some() && font_embed_mode != rhwp::renderer::svg::FontEmbedMode::None {
         eprintln!("오류: --profile은 --font-style/--embed-fonts와 함께 사용할 수 없습니다.");
-        return;
+        return EXIT_USAGE;
     }
 
     // 파일 읽기
@@ -467,7 +489,7 @@ fn export_svg(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -478,7 +500,7 @@ fn export_svg(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 문서 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -514,7 +536,7 @@ fn export_svg(args: &[String]) {
                 "오류: 출력 폴더를 생성할 수 없습니다 - {}: {}",
                 output_dir, e
             );
-            return;
+            return EXIT_RUNTIME;
         }
     }
 
@@ -526,7 +548,7 @@ fn export_svg(args: &[String]) {
                     "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
                     page_count - 1
                 );
-                return;
+                return EXIT_USAGE;
             }
             vec![p]
         }
@@ -538,6 +560,9 @@ fn export_svg(args: &[String]) {
         .file_stem()
         .and_then(|s| s.to_str())
         .unwrap_or("page");
+
+    // [#2707] 요청한 페이지 수가 아니라 실제로 저장에 성공한 페이지 수를 센다.
+    let mut written = 0usize;
 
     for page_num in &pages {
         let svg_result = if let Some(profile) = render_profile {
@@ -576,7 +601,10 @@ fn export_svg(args: &[String]) {
                 let svg_path = output_path.join(&svg_filename);
 
                 match fs::write(&svg_path, &svg) {
-                    Ok(_) => println!("  → {}", svg_path.display()),
+                    Ok(_) => {
+                        println!("  → {}", svg_path.display());
+                        written += 1;
+                    }
                     Err(e) => eprintln!("오류: SVG 저장 실패 - {}: {}", svg_path.display(), e),
                 }
             }
@@ -586,18 +614,21 @@ fn export_svg(args: &[String]) {
         }
     }
 
-    println!(
-        "내보내기 완료: {}개 SVG 파일 → {}/",
-        pages.len(),
-        output_dir
-    );
+    println!("내보내기 완료: {}개 SVG 파일 → {}/", written, output_dir);
+
+    // [#2707] 한 장이라도 못 썼으면 런타임 실패다.
+    if written == pages.len() {
+        EXIT_OK
+    } else {
+        EXIT_RUNTIME
+    }
 }
 
-fn export_render_tree(args: &[String]) {
+fn export_render_tree(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("오류: HWP 파일 경로를 지정해주세요.");
         eprintln!("사용법: rhwp export-render-tree <파일.hwp> [옵션] (rhwp --help 참조)");
-        return;
+        return EXIT_USAGE;
     }
 
     let file_path = &args[0];
@@ -616,7 +647,7 @@ fn export_render_tree(args: &[String]) {
                     i += 2;
                 } else {
                     eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--page" | "-p" => {
@@ -625,13 +656,13 @@ fn export_render_tree(args: &[String]) {
                         Ok(n) => target_page = Some(n),
                         Err(_) => {
                             eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
-                            return;
+                            return EXIT_USAGE;
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--show-para-marks" => {
@@ -648,7 +679,7 @@ fn export_render_tree(args: &[String]) {
             }
             _ => {
                 eprintln!("알 수 없는 옵션: {}", args[i]);
-                i += 1;
+                return EXIT_USAGE;
             }
         }
     }
@@ -657,7 +688,7 @@ fn export_render_tree(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
     let source_format = rhwp::parser::detect_format(&data);
@@ -666,7 +697,7 @@ fn export_render_tree(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -696,7 +727,7 @@ fn export_render_tree(args: &[String]) {
                 "오류: 출력 폴더를 생성할 수 없습니다 - {}: {}",
                 output_dir, e
             );
-            return;
+            return EXIT_RUNTIME;
         }
     }
 
@@ -707,12 +738,15 @@ fn export_render_tree(args: &[String]) {
                     "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
                     page_count - 1
                 );
-                return;
+                return EXIT_USAGE;
             }
             vec![p]
         }
         None => (0..page_count).collect(),
     };
+
+    // [#2707] 요청한 페이지 수가 아니라 실제로 저장에 성공한 페이지 수를 센다.
+    let mut written = 0usize;
 
     for page_num in &pages {
         match doc.build_page_render_tree(*page_num) {
@@ -720,7 +754,10 @@ fn export_render_tree(args: &[String]) {
                 let json_path = output_path.join(format!("render_tree_{:03}.json", page_num + 1));
                 let json = tree.root.to_json();
                 match fs::write(&json_path, json) {
-                    Ok(_) => println!("  → {}", json_path.display()),
+                    Ok(_) => {
+                        println!("  → {}", json_path.display());
+                        written += 1;
+                    }
                     Err(e) => {
                         eprintln!(
                             "오류: render tree 저장 실패 - {}: {}",
@@ -738,13 +775,19 @@ fn export_render_tree(args: &[String]) {
 
     println!(
         "내보내기 완료: {}개 render tree JSON 파일 → {}/",
-        pages.len(),
-        output_dir
+        written, output_dir
     );
+
+    // [#2707] 한 장이라도 못 썼으면 런타임 실패다.
+    if written == pages.len() {
+        EXIT_OK
+    } else {
+        EXIT_RUNTIME
+    }
 }
 
 /// `export-structure` — 문서 개요/조문 계층을 중첩 JSON 트리로 추출 (조문 DB화용).
-fn export_structure(args: &[String]) {
+fn export_structure(args: &[String]) -> i32 {
     use rhwp::document_core::queries::structure::{build_structure, StructureMode};
 
     let mut file_path: Option<&str> = None;
@@ -759,7 +802,7 @@ fn export_structure(args: &[String]) {
                     Some(p) => out_path = Some(p.clone()),
                     None => {
                         eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return;
+                        return EXIT_USAGE;
                     }
                 }
             }
@@ -769,13 +812,13 @@ fn export_structure(args: &[String]) {
                     Some(m) => mode = m,
                     None => {
                         eprintln!("오류: --mode 는 auto|outline|clause");
-                        return;
+                        return EXIT_USAGE;
                     }
                 }
             }
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
-                return;
+                return EXIT_USAGE;
             }
             other => file_path = Some(other),
         }
@@ -786,21 +829,21 @@ fn export_structure(args: &[String]) {
         eprintln!(
             "사용법: rhwp export-structure <파일> [--mode auto|outline|clause] [-o out.json]"
         );
-        return;
+        return EXIT_USAGE;
     };
 
     let data = match fs::read(file_path) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
     let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -809,19 +852,29 @@ fn export_structure(args: &[String]) {
         Ok(j) => j,
         Err(e) => {
             eprintln!("오류: JSON 직렬화 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
     match out_path {
         Some(p) => match fs::write(&p, &json) {
-            Ok(_) => println!(
-                "구조 추출 완료: mode={} 노드={} → {}",
-                st.mode, st.node_count, p
-            ),
-            Err(e) => eprintln!("오류: 출력 쓰기 실패 - {}: {}", p, e),
+            Ok(_) => {
+                println!(
+                    "구조 추출 완료: mode={} 노드={} → {}",
+                    st.mode, st.node_count, p
+                );
+                EXIT_OK
+            }
+            Err(e) => {
+                eprintln!("오류: 출력 쓰기 실패 - {}: {}", p, e);
+                // [#2707] 출력 파일을 못 쓴 실행은 실패다.
+                EXIT_RUNTIME
+            }
         },
-        None => println!("{json}"),
+        None => {
+            println!("{json}");
+            EXIT_OK
+        }
     }
 }
 
@@ -954,19 +1007,21 @@ fn extract_attr_f64(svg: &str, attr: &str) -> Option<f64> {
 }
 
 #[cfg(not(feature = "native-skia"))]
-fn export_png(_args: &[String]) {
+fn export_png(_args: &[String]) -> i32 {
     eprintln!("오류: export-png 명령은 native-skia feature 가 활성화되어야 합니다.");
     eprintln!("       cargo build --release --features native-skia");
+    // [#2707] 기능이 아예 빌드되지 않은 바이너리다. 0으로 끝내면 스크립트가 성공으로 읽는다.
+    EXIT_USAGE
 }
 
 #[cfg(feature = "native-skia")]
-fn export_png(args: &[String]) {
+fn export_png(args: &[String]) -> i32 {
     use rhwp::document_core::queries::rendering::{PngExportOptions, VlmTarget};
 
     if args.is_empty() {
         eprintln!("오류: HWP 파일 경로를 지정해주세요.");
         eprintln!("사용법: rhwp export-png <파일.hwp> [옵션] (rhwp --help 참조)");
-        return;
+        return EXIT_USAGE;
     }
 
     let file_path = &args[0];
@@ -989,7 +1044,7 @@ fn export_png(args: &[String]) {
                     i += 2;
                 } else {
                     eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--page" | "-p" => {
@@ -998,13 +1053,13 @@ fn export_png(args: &[String]) {
                         Ok(n) => target_page = Some(n),
                         Err(_) => {
                             eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
-                            return;
+                            return EXIT_USAGE;
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--profile" => {
@@ -1013,13 +1068,13 @@ fn export_png(args: &[String]) {
                         eprintln!(
                             "오류: --profile 값이 올바르지 않습니다 (screen|print|high-quality|fast-preview)."
                         );
-                        return;
+                        return EXIT_USAGE;
                     };
                     render_profile = profile;
                     i += 2;
                 } else {
                     eprintln!("오류: --profile 뒤에 프로필 이름이 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--font-path" => {
@@ -1028,7 +1083,7 @@ fn export_png(args: &[String]) {
                     i += 2;
                 } else {
                     eprintln!("오류: --font-path 뒤에 경로가 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--scale" => {
@@ -1037,13 +1092,13 @@ fn export_png(args: &[String]) {
                         Ok(s) if s.is_finite() && s > 0.0 => scale = Some(s),
                         _ => {
                             eprintln!("오류: --scale 값이 올바르지 않습니다 (양수 실수 필요).");
-                            return;
+                            return EXIT_USAGE;
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --scale 뒤에 배율 값이 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--max-dimension" => {
@@ -1054,13 +1109,13 @@ fn export_png(args: &[String]) {
                             eprintln!(
                                 "오류: --max-dimension 값이 올바르지 않습니다 (양수 정수 필요)."
                             );
-                            return;
+                            return EXIT_USAGE;
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --max-dimension 뒤에 픽셀 값이 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--dpi" => {
@@ -1069,13 +1124,13 @@ fn export_png(args: &[String]) {
                         Ok(d) if d.is_finite() && d > 0.0 => dpi = Some(d),
                         _ => {
                             eprintln!("오류: --dpi 값이 올바르지 않습니다 (양수 실수 필요).");
-                            return;
+                            return EXIT_USAGE;
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --dpi 뒤에 DPI 값이 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--vlm-target" => {
@@ -1087,18 +1142,18 @@ fn export_png(args: &[String]) {
                                 "오류: --vlm-target 값이 올바르지 않습니다 (지원: {}).",
                                 VlmTarget::all_names()
                             );
-                            return;
+                            return EXIT_USAGE;
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --vlm-target 뒤에 프리셋 이름이 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             _ => {
                 eprintln!("알 수 없는 옵션: {}", args[i]);
-                i += 1;
+                return EXIT_USAGE;
             }
         }
     }
@@ -1115,7 +1170,7 @@ fn export_png(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -1123,7 +1178,7 @@ fn export_png(args: &[String]) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("오류: HWP 파싱 실패 - {:?}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -1137,7 +1192,7 @@ fn export_png(args: &[String]) {
                 "오류: 출력 폴더를 생성할 수 없습니다 - {}: {}",
                 output_dir, e
             );
-            return;
+            return EXIT_RUNTIME;
         }
     }
 
@@ -1148,7 +1203,7 @@ fn export_png(args: &[String]) {
                     "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
                     page_count - 1
                 );
-                return;
+                return EXIT_USAGE;
             }
             vec![p]
         }
@@ -1209,6 +1264,13 @@ fn export_png(args: &[String]) {
         output_dir,
         total_bytes as f64 / 1024.0 / 1024.0
     );
+
+    // [#2707] 성공 수 집계는 이미 정확했지만 종료 코드가 항상 0이었다.
+    if success == total_pages {
+        EXIT_OK
+    } else {
+        EXIT_RUNTIME
+    }
 }
 
 fn export_pdf(args: &[String]) -> i32 {
@@ -1596,11 +1658,11 @@ fn print_export_pdf_usage() {
     eprintln!("        작은따옴표는 zsh/bash/PowerShell에서 literal 값이 필요할 때만 사용합니다.");
 }
 
-fn export_text(args: &[String]) {
+fn export_text(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("오류: HWP 파일 경로를 지정해주세요.");
         eprintln!("사용법: rhwp export-text <파일.hwp> [옵션] (rhwp --help 참조)");
-        return;
+        return EXIT_USAGE;
     }
 
     let file_path = &args[0];
@@ -1616,7 +1678,7 @@ fn export_text(args: &[String]) {
                     i += 2;
                 } else {
                     eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--page" | "-p" => {
@@ -1625,18 +1687,18 @@ fn export_text(args: &[String]) {
                         Ok(n) => target_page = Some(n),
                         Err(_) => {
                             eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
-                            return;
+                            return EXIT_USAGE;
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             _ => {
                 eprintln!("알 수 없는 옵션: {}", args[i]);
-                i += 1;
+                return EXIT_USAGE;
             }
         }
     }
@@ -1645,7 +1707,7 @@ fn export_text(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -1653,7 +1715,7 @@ fn export_text(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -1661,7 +1723,7 @@ fn export_text(args: &[String]) {
     println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
     if page_count == 0 {
         eprintln!("오류: 문서에 페이지가 없습니다.");
-        return;
+        return EXIT_RUNTIME;
     }
 
     let output_path = Path::new(&output_dir);
@@ -1671,7 +1733,7 @@ fn export_text(args: &[String]) {
                 "오류: 출력 폴더를 생성할 수 없습니다 - {}: {}",
                 output_dir, e
             );
-            return;
+            return EXIT_RUNTIME;
         }
     }
 
@@ -1682,7 +1744,7 @@ fn export_text(args: &[String]) {
                     "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
                     page_count - 1
                 );
-                return;
+                return EXIT_USAGE;
             }
             vec![p]
         }
@@ -1693,6 +1755,9 @@ fn export_text(args: &[String]) {
         .file_stem()
         .and_then(|s| s.to_str())
         .unwrap_or("page");
+
+    // [#2707] 요청한 페이지 수가 아니라 실제로 저장에 성공한 페이지 수를 센다.
+    let mut written = 0usize;
 
     for page_num in &pages {
         match doc.extract_page_text_native(*page_num) {
@@ -1709,7 +1774,10 @@ fn export_text(args: &[String]) {
                 let txt_path = output_path.join(&txt_filename);
 
                 match fs::write(&txt_path, text.as_bytes()) {
-                    Ok(_) => println!("  → {}", txt_path.display()),
+                    Ok(_) => {
+                        println!("  → {}", txt_path.display());
+                        written += 1;
+                    }
                     Err(e) => eprintln!("오류: TXT 저장 실패 - {}: {}", txt_path.display(), e),
                 }
             }
@@ -1721,16 +1789,22 @@ fn export_text(args: &[String]) {
 
     println!(
         "텍스트 내보내기 완료: {}개 TXT 파일 → {}/",
-        pages.len(),
-        output_dir
+        written, output_dir
     );
+
+    // [#2707] 한 장이라도 못 썼으면 런타임 실패다.
+    if written == pages.len() {
+        EXIT_OK
+    } else {
+        EXIT_RUNTIME
+    }
 }
 
-fn export_markdown(args: &[String]) {
+fn export_markdown(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("오류: HWP 파일 경로를 지정해주세요.");
         eprintln!("사용법: rhwp export-markdown <파일.hwp> [옵션] (rhwp --help 참조)");
-        return;
+        return EXIT_USAGE;
     }
 
     let file_path = &args[0];
@@ -1746,7 +1820,7 @@ fn export_markdown(args: &[String]) {
                     i += 2;
                 } else {
                     eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--page" | "-p" => {
@@ -1755,18 +1829,18 @@ fn export_markdown(args: &[String]) {
                         Ok(n) => target_page = Some(n),
                         Err(_) => {
                             eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
-                            return;
+                            return EXIT_USAGE;
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             _ => {
                 eprintln!("알 수 없는 옵션: {}", args[i]);
-                i += 1;
+                return EXIT_USAGE;
             }
         }
     }
@@ -1775,7 +1849,7 @@ fn export_markdown(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -1783,7 +1857,7 @@ fn export_markdown(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -1791,7 +1865,7 @@ fn export_markdown(args: &[String]) {
     println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
     if page_count == 0 {
         eprintln!("오류: 문서에 페이지가 없습니다.");
-        return;
+        return EXIT_RUNTIME;
     }
 
     let output_path = Path::new(&output_dir);
@@ -1801,7 +1875,7 @@ fn export_markdown(args: &[String]) {
                 "오류: 출력 폴더를 생성할 수 없습니다 - {}: {}",
                 output_dir, e
             );
-            return;
+            return EXIT_RUNTIME;
         }
     }
 
@@ -1812,7 +1886,7 @@ fn export_markdown(args: &[String]) {
                     "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
                     page_count - 1
                 );
-                return;
+                return EXIT_USAGE;
             }
             vec![p]
         }
@@ -1827,6 +1901,9 @@ fn export_markdown(args: &[String]) {
     let assets_dir_name = format!("{}_assets", file_stem);
     let assets_dir_path = output_path.join(&assets_dir_name);
     let mut written_image_count: usize = 0;
+    // [#2707] 요청한 페이지 수가 아니라 실제로 저장에 성공한 MD 페이지 수를 센다.
+    // 이미지 실패는 경고로 남기고 MD 자체는 저장되므로 페이지 실패로 세지 않는다.
+    let mut written_page_count = 0usize;
 
     let mime_to_ext = |mime: &str| -> &'static str {
         match mime {
@@ -1978,7 +2055,10 @@ fn export_markdown(args: &[String]) {
                 let md_path = output_path.join(&md_filename);
 
                 match fs::write(&md_path, markdown.as_bytes()) {
-                    Ok(_) => println!("  → {}", md_path.display()),
+                    Ok(_) => {
+                        println!("  → {}", md_path.display());
+                        written_page_count += 1;
+                    }
                     Err(e) => eprintln!("오류: Markdown 저장 실패 - {}: {}", md_path.display(), e),
                 }
             }
@@ -1991,16 +2071,20 @@ fn export_markdown(args: &[String]) {
     if written_image_count > 0 {
         println!(
             "Markdown 내보내기 완료: {}개 MD 파일, {}개 이미지 → {}/",
-            pages.len(),
-            written_image_count,
-            output_dir
+            written_page_count, written_image_count, output_dir
         );
     } else {
         println!(
             "Markdown 내보내기 완료: {}개 MD 파일 → {}/",
-            pages.len(),
-            output_dir
+            written_page_count, output_dir
         );
+    }
+
+    // [#2707] 한 장이라도 못 썼으면 런타임 실패다.
+    if written_page_count == pages.len() {
+        EXIT_OK
+    } else {
+        EXIT_RUNTIME
     }
 }
 
@@ -4332,7 +4416,7 @@ fn verify_reparse_failed_exit_code(options: ConversionVerifyOptions) -> i32 {
     }
 }
 
-fn convert_hwp(args: &[String]) {
+fn convert_hwp(args: &[String]) -> i32 {
     let (positionals, verify_options) = match parse_conversion_verify_args(
         args,
         "rhwp convert <입력.hwp|입력.hwpx> <출력.hwp> [--verify] [--verify-pages]",
@@ -4342,7 +4426,7 @@ fn convert_hwp(args: &[String]) {
         Ok(parsed) => parsed,
         Err(message) => {
             eprintln!("{}", message);
-            return;
+            return EXIT_USAGE;
         }
     };
 
@@ -4354,7 +4438,7 @@ fn convert_hwp(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", input_path, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -4363,7 +4447,7 @@ fn convert_hwp(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -4386,7 +4470,7 @@ fn convert_hwp(args: &[String]) {
         }
         Err(e) => {
             eprintln!("오류: 변환 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     }
 
@@ -4428,13 +4512,17 @@ fn convert_hwp(args: &[String]) {
                         println!("검증 통과(--verify): IR 차이 없음");
                     }
                 }
+                EXIT_OK
             }
             Err(e) => {
                 eprintln!("오류: 파일 저장 실패 - {}: {}", output_path, e);
+                // [#2707] 출력 파일이 아예 안 만들어졌는데 0으로 끝나던 경로.
+                EXIT_RUNTIME
             }
         },
         Err(e) => {
             eprintln!("오류: 직렬화 실패 - {}", e);
+            EXIT_RUNTIME
         }
     }
 }
@@ -4444,7 +4532,7 @@ fn convert_hwp(args: &[String]) {
 /// 파서가 포맷을 자동 감지(HWP5/HWP3/HWPX)해 `Document` IR 로 읽고
 /// `export_hwpx_native()` 로 HWPX(ZIP) 직렬화한다. `convert`(배포용 해제 → .hwp 출력)와
 /// 별개의 포맷 변환 명령. 출력 생략 시 입력과 같은 폴더에 `<stem>.hwpx`.
-fn export_hwpx(args: &[String]) {
+fn export_hwpx(args: &[String]) -> i32 {
     let (positionals, verify_options) = match parse_conversion_verify_args(
         args,
         "rhwp export-hwpx <입력.hwp|입력.hwpx> [출력.hwpx] [--verify] [--verify-pages]",
@@ -4454,7 +4542,7 @@ fn export_hwpx(args: &[String]) {
         Ok(parsed) => parsed,
         Err(message) => {
             eprintln!("{}", message);
-            return;
+            return EXIT_USAGE;
         }
     };
 
@@ -4475,7 +4563,7 @@ fn export_hwpx(args: &[String]) {
     }
     if output_path == input_path {
         eprintln!("오류: 입력과 출력 경로가 같습니다. 원본을 덮어쓰지 않습니다.");
-        return;
+        return EXIT_USAGE;
     }
 
     let data = match fs::read(input_path) {
@@ -4486,7 +4574,7 @@ fn export_hwpx(args: &[String]) {
                 input_path.display(),
                 e
             );
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -4494,7 +4582,7 @@ fn export_hwpx(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 문서 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -4545,13 +4633,17 @@ fn export_hwpx(args: &[String]) {
                         println!("검증 통과(--verify): IR 차이 없음");
                     }
                 }
+                EXIT_OK
             }
             Err(e) => {
                 eprintln!("오류: 파일 저장 실패 - {}: {}", output_path.display(), e);
+                // [#2707] 출력 파일이 아예 안 만들어졌는데 0으로 끝나던 경로.
+                EXIT_RUNTIME
             }
         },
         Err(e) => {
             eprintln!("오류: HWPX 직렬화 실패 - {}", e);
+            EXIT_RUNTIME
         }
     }
 }
