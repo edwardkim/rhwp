@@ -1,4 +1,4 @@
-# PR #????: 최상위 ShapeObject::Picture HWP5 직렬화 무출력 버그 수정
+# PR #2713: 최상위 ShapeObject::Picture HWP5 직렬화 무출력 버그 수정
 
 ## 이슈
 - **Issue**: #2696 — 최상위 ShapeObject::Picture 무출력으로 그림 유실 + char_count 어긋남
