@@ -1423,8 +1423,14 @@ fn serialize_shape_control(
                 serialize_group_child(child, child_comp_level, child_type_level, records);
             }
         }
-        ShapeObject::Picture(_pic) => {
-            // 그룹 내 그림: 그룹 직렬화 시 자식으로 처리됨 (단독 Picture는 Control::Picture로 직렬화)
+        ShapeObject::Picture(pic) => {
+            // [#2696] 그룹 해제(object_ops/shape.rs 의 ungroup_shape_native)는 그림
+            // 자식을 최상위 Control::Shape(ShapeObject::Picture) 로 삽입하면서
+            // char_count += 8 을 함께 적용한다. 종전에는 이 arm 이 아무
+            // 레코드도 방출하지 않아 그림이 사라질 뿐 아니라 PARA_TEXT 의 확장 컨트롤
+            // 문자와 CTRL_HEADER 개수가 어긋나 이후 컨트롤이 잘못된 위치에 결합됐다.
+            // Control::Picture 가 쓰는 검증된 경로에 그대로 위임한다.
+            serialize_picture_control(pic, level, ctrl_data_record, records);
         }
         ShapeObject::Chart(chart) => {
             // Task #195 단계 2: raw_chart_data를 그대로 보존하여 라운드트립 유지
@@ -1460,7 +1466,11 @@ fn serialize_shape_control(
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
                 size: 0,
-                data: serialize_shape_component(tags::SHAPE_OLE_ID, &drawing.shape_attr, true),
+                // [#2696] base-only 직렬화는 테두리/채우기/그림자/inst_id/shadow_alpha 를
+                // 버려 재파싱 시 전부 기본값이 됐다 (parse_shape_component_full 의
+                // remaining() 가드가 조용히 실패). Chart 등 형제 arm 과 동일하게
+                // DrawingObjAttr 전체를 기록한다.
+                data: serialize_drawing_shape_component(tags::SHAPE_OLE_ID, &drawing, true),
             });
             emit_ctrl_data(records);
             serialize_text_box_if_present(&drawing, level + 2, records);
@@ -1757,7 +1767,8 @@ fn serialize_group_child(
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: comp_level,
                 size: 0,
-                data: serialize_shape_component(tags::SHAPE_OLE_ID, &drawing.shape_attr, false),
+                // [#2696] 최상위 OLE arm 과 동일 — 그룹 자식도 DrawingObjAttr 전체를 기록.
+                data: serialize_drawing_shape_component(tags::SHAPE_OLE_ID, &drawing, false),
             });
             serialize_text_box_if_present(&drawing, type_level, records);
             records.push(Record {

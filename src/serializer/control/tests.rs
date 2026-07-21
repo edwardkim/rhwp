@@ -604,3 +604,196 @@ fn test_cell_field_name_extra_roundtrip() {
     assert_eq!(extra.len(), 13);
     assert_eq!(crate::parser::control::parse_cell_field_name(&extra), None);
 }
+
+/// [#2696] OLE 의 SHAPE_COMPONENT 가 DrawingObjAttr 전체를 기록하는지.
+///
+/// 종전에는 base-only `serialize_shape_component` 를 호출해 테두리(13B) + 채우기 +
+/// 그림자(16B) + inst_id/shadow_alpha(6B) 가 빠졌고, 재파싱 시
+/// `parse_shape_component_full` 의 `remaining()` 가드가 전부 실패해 조용히 기본값이 됐다.
+#[test]
+fn issue2696_ole_shape_component_keeps_border_fill_shadow() {
+    use crate::model::style::SolidFill;
+
+    let drawing = DrawingObjAttr {
+        shape_attr: ShapeComponentAttr {
+            original_width: 7200,
+            original_height: 7200,
+            current_width: 7200,
+            current_height: 7200,
+            ..Default::default()
+        },
+        border_line: ShapeBorderLine {
+            color: 0x123456,
+            width: 300,
+            attr: 0x5,
+            outline_style: 1,
+        },
+        fill: Fill {
+            fill_type: FillType::Solid,
+            solid: Some(SolidFill {
+                background_color: 0x00FF00,
+                pattern_color: 0x0000FF,
+                pattern_type: -1,
+            }),
+            ..Default::default()
+        },
+        shadow_type: 2,
+        shadow_color: 0x808080,
+        shadow_offset_x: 141,
+        shadow_offset_y: 282,
+        inst_id: 0x0000_ABCD,
+        shadow_alpha: 0x80,
+        ..Default::default()
+    };
+
+    let ole = OleShape {
+        common: CommonObjAttr {
+            width: 7200,
+            height: 7200,
+            ..Default::default()
+        },
+        drawing,
+        extent_x: 7200,
+        extent_y: 7200,
+        bin_data_id: 1,
+        ..Default::default()
+    };
+
+    let para = Paragraph {
+        char_count: 2,
+        text: "".to_string(),
+        char_offsets: vec![],
+        controls: vec![Control::Shape(Box::new(ShapeObject::Ole(Box::new(ole))))],
+        ..Default::default()
+    };
+    let section = Section {
+        paragraphs: vec![para],
+        raw_stream: None,
+        ..Default::default()
+    };
+
+    let bytes = serialize_section(&section);
+    let parsed = parse_body_text_section(&bytes).unwrap();
+
+    let Control::Shape(shape) = &parsed.paragraphs[0].controls[0] else {
+        panic!("Shape 컨트롤이 나와야 함");
+    };
+    let ShapeObject::Ole(reparsed) = shape.as_ref() else {
+        panic!("Ole 도형이 나와야 함, got {:?}", shape);
+    };
+    let d = &reparsed.drawing;
+
+    assert_eq!(d.border_line.color, 0x123456, "테두리 색이 보존돼야 함");
+    assert_eq!(d.border_line.width, 300, "테두리 굵기가 보존돼야 함");
+    assert_eq!(d.border_line.attr, 0x5, "테두리 속성 워드가 보존돼야 함");
+    assert_eq!(d.border_line.outline_style, 1, "아웃라인 스타일이 보존돼야 함");
+
+    assert_eq!(d.fill.fill_type, FillType::Solid, "단색 채우기가 보존돼야 함");
+    let solid = d.fill.solid.expect("단색 채우기 본문이 있어야 함");
+    assert_eq!(solid.background_color, 0x00FF00, "채우기 배경색이 보존돼야 함");
+    assert_eq!(solid.pattern_color, 0x0000FF, "채우기 무늬색이 보존돼야 함");
+    assert_eq!(solid.pattern_type, -1, "채우기 무늬 종류가 보존돼야 함");
+
+    assert_eq!(d.shadow_type, 2, "그림자 종류가 보존돼야 함");
+    assert_eq!(d.shadow_color, 0x808080, "그림자 색이 보존돼야 함");
+    assert_eq!(d.shadow_offset_x, 141, "그림자 가로 오프셋이 보존돼야 함");
+    assert_eq!(d.shadow_offset_y, 282, "그림자 세로 오프셋이 보존돼야 함");
+
+    assert_eq!(d.inst_id, 0x0000_ABCD, "inst_id 가 보존돼야 함");
+    assert_eq!(d.shadow_alpha, 0x80, "그림자 투명도가 보존돼야 함");
+}
+
+/// [#2696] 최상위 `ShapeObject::Picture` 가 실제로 직렬화되는지.
+///
+/// 그룹 해제(`ungroup_shape_native`)는 그림 자식을 최상위
+/// `Control::Shape(ShapeObject::Picture)` 로 삽입한다. 종전에는 이 arm 이 아무 레코드도
+/// 방출하지 않아 그림이 통째로 사라졌다.
+#[test]
+fn issue2696_top_level_shape_picture_is_serialized() {
+    let pic = Picture {
+        common: CommonObjAttr {
+            width: 5000,
+            height: 3000,
+            ..Default::default()
+        },
+        shape_attr: ShapeComponentAttr {
+            original_width: 5000,
+            original_height: 3000,
+            current_width: 5000,
+            current_height: 3000,
+            ..Default::default()
+        },
+        image_attr: crate::model::image::ImageAttr {
+            bin_data_id: 7,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+
+    let para = Paragraph {
+        char_count: 2,
+        text: "".to_string(),
+        char_offsets: vec![],
+        controls: vec![Control::Shape(Box::new(ShapeObject::Picture(Box::new(pic))))],
+        ..Default::default()
+    };
+    let section = Section {
+        paragraphs: vec![para],
+        raw_stream: None,
+        ..Default::default()
+    };
+
+    let bytes = serialize_section(&section);
+    let parsed = parse_body_text_section(&bytes).unwrap();
+
+    assert_eq!(
+        parsed.paragraphs[0].controls.len(),
+        1,
+        "최상위 ShapeObject::Picture 가 컨트롤 1개로 왕복돼야 함"
+    );
+    let bin_data_id = match &parsed.paragraphs[0].controls[0] {
+        Control::Picture(p) => p.image_attr.bin_data_id,
+        Control::Shape(s) => match s.as_ref() {
+            ShapeObject::Picture(p) => p.image_attr.bin_data_id,
+            other => panic!("그림 도형이 나와야 함, got {:?}", other),
+        },
+        _ => panic!("그림 컨트롤이 나와야 함"),
+    };
+    assert_eq!(bin_data_id, 7, "bin_data_id 가 왕복 보존돼야 함");
+}
+
+/// [#2696] 최상위 `ShapeObject::Picture` 가 CTRL_HEADER 를 정확히 1개 방출하는지.
+///
+/// 그룹 해제는 그림 1개당 `char_count += 8`(확장 컨트롤 문자)을 함께 적용한다
+/// (`document_core/commands/object_ops/shape.rs:2317-2321`). CTRL_HEADER 가 0개면
+/// PARA_TEXT 의 컨트롤 문자와 레코드 개수가 어긋나 **이후 컨트롤이 잘못된 문자 위치에
+/// 결합**된다. 그림 유실보다 이 짝 어긋남이 더 위험하므로 개수를 별도로 고정한다.
+#[test]
+fn issue2696_top_level_shape_picture_emits_exactly_one_ctrl_header() {
+    let pic = Picture {
+        image_attr: crate::model::image::ImageAttr {
+            bin_data_id: 7,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let ctrl = Control::Shape(Box::new(ShapeObject::Picture(Box::new(pic))));
+
+    let mut records: Vec<Record> = Vec::new();
+    serialize_control(&ctrl, 1, None, &mut records);
+
+    let ctrl_headers = records
+        .iter()
+        .filter(|r| r.tag_id == tags::HWPTAG_CTRL_HEADER)
+        .count();
+    assert_eq!(
+        ctrl_headers, 1,
+        "최상위 그림 1개는 CTRL_HEADER 를 정확히 1개 방출해야 함 (char_count += 8 과 1:1)"
+    );
+    assert!(
+        records
+            .iter()
+            .any(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT_PICTURE),
+        "SHAPE_COMPONENT_PICTURE 레코드가 함께 방출돼야 함"
+    );
+}
