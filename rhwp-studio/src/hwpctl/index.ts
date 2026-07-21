@@ -51,6 +51,9 @@ export class HwpCtrl {
     try {
       const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
       this.wasmDoc = new (this.wasmDoc.constructor)(bytes);
+      this.cursorSection = 0;
+      this.cursorPara = 0;
+      this.cursorPos = 0;
       callback?.(true);
       return true;
     } catch (e) {
