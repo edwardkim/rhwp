@@ -3,6 +3,8 @@
 
 import type { ContextMenuItem } from '@/ui/context-menu';
 import * as _connector from './input-handler-connector';
+import { MoveLineEndpointCommand } from './command';
+import { computeLineEndpointRecord } from './object-drag-record';
 
 function protectedCellKey(hit: any): string | null {
   if (!hit || hit.isTextBox) return null;
@@ -563,11 +565,21 @@ export function onClick(this: any, e: MouseEvent): void {
                 const pw = this.virtualScroll.getPageWidth(picBbox.pageIndex);
                 const pl = this.virtualScroll.getPageLeftResolved(picBbox.pageIndex, sc.clientWidth);
                 this.isLineEndpointDragging = true;
+                // [Task #2759] 드래그 시작 시 원래 끝점(글로벌 HWPUNIT)을 캡처해 종료 시
+                // Undo 기록의 before 로 쓴다. (x1,y1)=시작점, (x2,y2)=끝점 — 드래그 중
+                // 좌표 계산(PX2HWP=75)과 동일. cellPath 는 담지 않는다(잔여: 셀 내 직선 미대응).
+                const PX2HWP_LINE = 75;
                 this.lineEndpointState = {
                   ref: { sec: ref.sec, ppi: ref.ppi, ci: ref.ci, type: ref.type },
                   endpoint: dir === 'sw' ? 'start' : 'end',
                   pageIndex: picBbox.pageIndex,
                   pageLeft: pl, pageOffset: po, zoom,
+                  orig: {
+                    sx: Math.round((picBbox.x1 ?? 0) * PX2HWP_LINE),
+                    sy: Math.round((picBbox.y1 ?? 0) * PX2HWP_LINE),
+                    ex: Math.round((picBbox.x2 ?? 0) * PX2HWP_LINE),
+                    ey: Math.round((picBbox.y2 ?? 0) * PX2HWP_LINE),
+                  },
                 };
                 this.container.style.cursor = 'crosshair';
                 document.addEventListener('mouseup', this.onMouseUpBound, { once: true });
@@ -1886,10 +1898,7 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
 
   // 직선 끝점 드래그 종료
   if (this.isLineEndpointDragging) {
-    this.isLineEndpointDragging = false;
-    this.lineEndpointState = null;
-    this.container.style.cursor = '';
-    if (this.dragRafId) { cancelAnimationFrame(this.dragRafId); this.dragRafId = 0; }
+    this.finishLineEndpointDrag();
     return;
   }
 
@@ -1950,10 +1959,59 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
 function bringShapeToFront(this: any, picHit: any): void {
   if (picHit.type === 'shape' || picHit.type === 'line' || picHit.type === 'group' || picHit.type === 'ole') {
     try {
-      this.wasm.changeShapeZOrder(picHit.sec, picHit.ppi, picHit.ci, 'front');
+      // [Task #2759] 선택 시 z순서 변경도 문서 뮤테이션 — 메뉴 정렬(insert.ts:427 등)의
+      // recordObjectMutation 과 동형으로 snapshot 기록해 undo 가능·redo 무효화·스냅샷 undo
+      // 동반 파괴를 막는다. UI 후처리(선택 진입·재렌더)는 호출부가 기존대로 수행한다.
+      const pos = this.getCursorPosition();
+      this.executeOperation({
+        kind: 'snapshot',
+        operationType: 'changeZOrder',
+        operation: (wasm: any) => {
+          wasm.changeShapeZOrder(picHit.sec, picHit.ppi, picHit.ci, 'front');
+          return pos;
+        },
+      });
       this.eventBus.emit('document-changed');
     } catch { /* ignore */ }
   }
+}
+
+/**
+ * [Task #2759] 직선 끝점 드래그 종료 — 드래그 중 이미 문서에 반영된 끝점 이동을 Undo
+ * 히스토리에 기록한다. 다른 드래그 종료(finishPictureMoveDrag/finishPictureResizeDrag)와
+ * 동형으로 kind:'record' 를 쓴다(after 는 종료 시점 문서에서 읽어 실제 반영값과 정합).
+ */
+export function finishLineEndpointDrag(this: any): void {
+  const st = this.lineEndpointState;
+  if (st && st.orig) {
+    try {
+      const PX2HWP = 75;
+      const bbox = this.findPictureBbox(st.ref);
+      if (bbox) {
+        const after = {
+          sx: Math.round((bbox.x1 ?? 0) * PX2HWP),
+          sy: Math.round((bbox.y1 ?? 0) * PX2HWP),
+          ex: Math.round((bbox.x2 ?? 0) * PX2HWP),
+          ey: Math.round((bbox.y2 ?? 0) * PX2HWP),
+        };
+        const record = computeLineEndpointRecord(st.orig, after);
+        if (record) {
+          this.executeOperation({
+            kind: 'record',
+            command: new MoveLineEndpointCommand(
+              st.ref.sec, st.ref.ppi, st.ref.ci, record.before, record.after,
+            ),
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('[InputHandler] 직선 끝점 이동 기록 실패:', err);
+    }
+  }
+  this.isLineEndpointDragging = false;
+  this.lineEndpointState = null;
+  this.container.style.cursor = '';
+  if (this.dragRafId) { cancelAnimationFrame(this.dragRafId); this.dragRafId = 0; }
 }
 
 function getRotatedCursor(dir: string, angleDeg: number): string {
