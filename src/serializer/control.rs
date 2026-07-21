@@ -1178,6 +1178,28 @@ fn serialize_shape_control(
         }
     };
 
+    // [#2715] 캡션(SHAPE_COMPONENT 앞, level+1) 방출 헬퍼.
+    //
+    // 파서는 `SHAPE_COMPONENT` **앞**의 LIST_HEADER 를 캡션으로 읽는데
+    // (`parser/control/shape.rs:134-147`), 종전 도형 arm 은 어느 것도 방출하지
+    // 않아 그리기 도형·묶음·차트 캡션이 HWP5 저장에서 전량 소실됐다 (표 `:492`·
+    // 그림 `:998` 만 방출 중이었다). 한컴 저장본도 `$rec`(사각형)·`$con`(묶음)에
+    // `$pic`(그림)과 **동일한 30B LIST_HEADER** 를 SHAPE_COMPONENT 앞에 쓴다
+    // (`samples/3-09월_교육_통합_2023.hwp`, `samples/draw-group.hwp` 실측).
+    //
+    // 호출 위치는 반드시 `emit_top_level_synthesized_ctrl_data` **뒤**여야 한다 —
+    // `parse_caption` 은 `records[1..]` 전체를 캡션 문단으로 넘기므로, 캡션과
+    // SHAPE_COMPONENT 사이에 CTRL_DATA 가 끼면 문단 파싱이 오염된다.
+    //
+    // OLE arm 은 제외한다: `#1283` 의 196B base-only 계약 영역이고
+    // (`tests/issue_1251_ole_chart_contents.rs` 가 고정), 캡션 보유 OLE 한컴
+    // 실물 샘플을 확보하지 못해 방출 위치를 실측 검증할 수 없다.
+    let emit_caption = |caption: &Option<Caption>, records: &mut Vec<Record>| {
+        if let Some(caption) = caption {
+            serialize_caption(caption, level + 1, records);
+        }
+    };
+
     match shape {
         ShapeObject::Line(line) => {
             let is_connector = line.connector.is_some();
@@ -1192,6 +1214,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&line.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&line.drawing.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1237,6 +1260,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&rect.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&rect.drawing.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1266,6 +1290,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&ellipse.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&ellipse.drawing.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1308,6 +1333,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&poly.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&poly.drawing.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1345,6 +1371,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&arc.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&arc.drawing.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1375,6 +1402,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&curve.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&curve.drawing.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1408,6 +1436,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&group.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&group.caption, records);
             // 그룹 컨테이너: SHAPE_COMPONENT + 자식 수 + 자식 ctrl_id 목록 (한컴 호환)
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
@@ -1440,6 +1469,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&chart.common),
             ));
             let sc_ctrl_id = chart.drawing.shape_attr.ctrl_id;
+            emit_caption(&chart.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
