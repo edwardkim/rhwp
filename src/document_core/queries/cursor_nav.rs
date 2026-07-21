@@ -1895,14 +1895,10 @@ impl DocumentCore {
                 best: &mut Option<(u8, CursorHit)>,
             ) {
                 if let RenderNodeType::TextRun(ref tr) = node.node_type {
-                    let matches_cell = tr.cell_context.as_ref().map_or(false, |ctx| {
-                        ctx.path.first().map_or(false, |entry| {
-                            ctx.parent_para_index == ppi
-                                && entry.control_index == ci
-                                && entry.cell_index == cei
-                                && entry.cell_para_index == cpi
-                        })
-                    });
+                    let matches_cell =
+                        tr.cell_context.as_ref().is_some_and(|ctx| {
+                            flat_cell_ctx_matches(ctx, ppi, ci, cei, cpi)
+                        });
                     if matches_cell {
                         let cs = tr.char_start.unwrap_or(0);
                         let cc = tr.text.chars().count();
@@ -2226,6 +2222,73 @@ impl DocumentCore {
         }
 
         Ok(format!("[{}]", rects.join(",")))
+    }
+}
+
+/// [#2651] `get_selection_rects_native` 의 셀 매칭 술어. `cell_ctx` 는 평면
+/// 3-튜플(parent_para_idx, control_idx, cell_idx)이라 애초에 중첩 셀을 정확히
+/// 지정할 수 없다 — `path.len() == 1` 가드 없이 `path[0]` 만 비교하면, 중첩
+/// 표 내부(depth>=2) run 이 그 중첩 표를 품은 바깥 셀과 동일한 `path[0]` 을
+/// 가져 잘못 매칭된다(같은 클래스의 이미 고친 `cursor_rect.rs` 버그와 동형).
+fn flat_cell_ctx_matches(
+    ctx: &crate::renderer::layout::CellContext,
+    ppi: usize,
+    ci: usize,
+    cei: usize,
+    cpi: usize,
+) -> bool {
+    ctx.path.len() == 1
+        && ctx.path.first().is_some_and(|entry| {
+            ctx.parent_para_index == ppi
+                && entry.control_index == ci
+                && entry.cell_index == cei
+                && entry.cell_para_index == cpi
+        })
+}
+
+#[cfg(test)]
+mod flat_cell_ctx_matches_tests {
+    use super::flat_cell_ctx_matches;
+    use crate::renderer::layout::{CellContext, CellPathEntry};
+
+    fn entry(control_index: usize, cell_index: usize, cell_para_index: usize) -> CellPathEntry {
+        CellPathEntry {
+            control_index,
+            cell_index,
+            cell_para_index,
+            text_direction: 0,
+        }
+    }
+
+    #[test]
+    fn matches_direct_single_level_cell() {
+        let ctx = CellContext {
+            parent_para_index: 0,
+            path: vec![entry(1, 2, 3)],
+        };
+        assert!(flat_cell_ctx_matches(&ctx, 0, 1, 2, 3));
+    }
+
+    #[test]
+    fn rejects_nested_cell_sharing_the_same_outer_path_entry() {
+        // 중첩 표 내부 run: path = [바깥 셀(1,2,3), 안쪽 셀(0,0,0)].
+        // path[0] 은 바깥 셀 질의(0,1,2,3)와 정확히 같지만, 이 run 은 실제로
+        // 안쪽 셀에 속하므로 매칭돼선 안 된다 — 종전엔 path.len() 가드가
+        // 없어 여기서 잘못 true 를 반환했다(#2651).
+        let ctx = CellContext {
+            parent_para_index: 0,
+            path: vec![entry(1, 2, 3), entry(0, 0, 0)],
+        };
+        assert!(!flat_cell_ctx_matches(&ctx, 0, 1, 2, 3));
+    }
+
+    #[test]
+    fn rejects_mismatched_outer_indices() {
+        let ctx = CellContext {
+            parent_para_index: 0,
+            path: vec![entry(1, 2, 3)],
+        };
+        assert!(!flat_cell_ctx_matches(&ctx, 0, 9, 9, 9));
     }
 }
 
