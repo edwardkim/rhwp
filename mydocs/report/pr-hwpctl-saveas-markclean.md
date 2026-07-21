@@ -96,5 +96,5 @@ const ctrl = await createHwpCtrl({
 
 ## 결과
 - **Branch**: `pr/fix-issue-2661-hwpctl-markclean`
-- **PR**: https://github.com/edwardkim/rhwp/pull/???? (생성 후 업데이트)
+- **PR**: https://github.com/edwardkim/rhwp/pull/2683
 - **Closes**: #2661
