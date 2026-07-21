@@ -31,7 +31,7 @@ use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
 use crate::model::page::{ColumnDef, ColumnDirection, ColumnType};
 use crate::model::paragraph::{ColumnBreakType, LineSeg, OrphanFieldEnd, Paragraph};
 use crate::model::shape::{
-    CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertAlign, VertRelTo,
+    CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, SizeCriterion, TextWrap, VertAlign, VertRelTo,
 };
 
 use super::context::SerializeContext;
@@ -1909,7 +1909,7 @@ fn render_common_shape_xml(
             r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}">"#,
             "{block}",
             "{geometry}",
-            r#"<hp:sz width="{w}" height="{h}" widthRelTo="ABSOLUTE" heightRelTo="ABSOLUTE"/>"#,
+            r#"<hp:sz width="{w}" height="{h}" widthRelTo="{wrt}" heightRelTo="{hrt}" protect="{prot}"/>"#,
             r#"<hp:pos treatAsChar="{tac}" affectLSpacing="0" flowWithText="{fwt}" allowOverlap="{ao}" holdAnchorAndSO="{hold}" vertRelTo="{vr}" vertAlign="{va}" horzRelTo="{hr}" horzAlign="{ha}" vertOffset="{vo}" horzOffset="{ho}"/>"#,
             r#"<hp:outMargin left="{ml}" right="{mr}" top="{mt}" bottom="{mb}"/>"#,
         ),
@@ -1928,6 +1928,12 @@ fn render_common_shape_xml(
         hold = if c.prevent_page_break != 0 { "1" } else { "0" },
         w = c.width,
         h = c.height,
+        // [#2726] 종전 widthRelTo/heightRelTo 는 "ABSOLUTE" 리터럴, protect 는 아예
+        // 미방출이었다. 파서(parse_object_layout_child:2909)가 이미 3값을 IR 에 적재하므로
+        // 저장에서만 버려지는 순손실이었다. #2697(표)·#2712(rect/line/container/pic) 와 동형.
+        wrt = size_criterion_str(c.width_criterion),
+        hrt = height_criterion_str(c.height_criterion),
+        prot = if c.size_protect { "1" } else { "0" },
         vr = vert_rel_to_hwpx(c.vert_rel_to),
         va = vert_align_to_hwpx(c.vert_align),
         hr = horz_rel_to_hwpx(c.horz_rel_to),
@@ -1956,6 +1962,33 @@ fn render_common_shape_xml(
     }
     out.push_str(&format!("</hp:{tag}>"));
     out
+}
+
+/// [#2726] 너비 기준 → HWPX `widthRelTo`. 파서 `parse_size_criterion(_, true)` 의 정확한 역.
+///
+/// `table.rs:147` 이 `#2697` 로 정립한 관례와 **동일 의미**다. 해당 사본이 private 이라
+/// 이 모듈에서 도달할 수 없어 부득이 복제했다. 공용 위치 1벌 통합은 잔여다(이슈 7장).
+fn size_criterion_str(c: SizeCriterion) -> &'static str {
+    match c {
+        SizeCriterion::Paper => "PAPER",
+        SizeCriterion::Page => "PAGE",
+        SizeCriterion::Column => "COLUMN",
+        SizeCriterion::Para => "PARA",
+        SizeCriterion::Absolute => "ABSOLUTE",
+    }
+}
+
+/// [#2726] 높이 기준 → HWPX `heightRelTo`. 파서는 높이를
+/// `parse_size_criterion(_, allow_column_para = false)` 로 읽으므로(`parser/hwpx/section.rs:1860`)
+/// 치역이 `{PAPER, PAGE, ABSOLUTE}` 3값뿐이다. 방출도 같은 3값으로 접어야 왕복이 정확한
+/// 역이 된다 — `COLUMN`/`PARA` 를 내면 되읽기에서 `Absolute` 로 접혀 비-멱등이 된다.
+/// HWP5 측 `height_criterion_to_bits`(`common_obj_attr_writer.rs:160`)도 동일하게 접는다.
+fn height_criterion_str(c: SizeCriterion) -> &'static str {
+    match c {
+        SizeCriterion::Paper => "PAPER",
+        SizeCriterion::Page => "PAGE",
+        SizeCriterion::Column | SizeCriterion::Para | SizeCriterion::Absolute => "ABSOLUTE",
+    }
 }
 
 fn render_note_sublist(
@@ -2384,6 +2417,125 @@ mod tests {
             !xml_empty.contains("<hp:drawText"),
             "빈 글상자는 drawText 를 방출하지 않아야 함"
         );
+    }
+
+    /// [#2726] 공용 도형 경로(ellipse/arc/polygon/curve/chart)의 `hp:sz` 가 IR 의
+    /// 크기 기준·크기 보호를 보존해야 한다. 종전엔 `widthRelTo`/`heightRelTo` 가
+    /// `"ABSOLUTE"` 리터럴이고 `protect` 는 아예 미방출이었다.
+    #[test]
+    fn issue2726_common_shape_sz_preserves_criteria_and_protect() {
+        use crate::model::shape::{CommonObjAttr, DrawingObjAttr};
+
+        let c = CommonObjAttr {
+            width: 4000,
+            height: 3000,
+            width_criterion: SizeCriterion::Column,
+            height_criterion: SizeCriterion::Page,
+            size_protect: true,
+            ..Default::default()
+        };
+        let drawing = DrawingObjAttr::default();
+        let mut ctx = SerializeContext::default();
+
+        for tag in ["ellipse", "arc", "polygon", "curve", "chart"] {
+            let xml = render_common_shape_xml(tag, &c, &None, Some(&drawing), &[], "", &mut ctx);
+            assert!(
+                xml.contains(r#"widthRelTo="COLUMN""#),
+                "{tag}: 너비 기준 COLUMN 이 보존되어야 함: {xml}"
+            );
+            assert!(
+                xml.contains(r#"heightRelTo="PAGE""#),
+                "{tag}: 높이 기준 PAGE 가 보존되어야 함: {xml}"
+            );
+            assert!(
+                xml.contains(r#"protect="1""#),
+                "{tag}: 크기 보호가 보존되어야 함: {xml}"
+            );
+        }
+    }
+
+    /// [#2726] `protect` 는 값이 0 이어도 **속성 자체가** 방출되어야 한다.
+    /// `samples/hwpx` 실제 한글 파일 60개의 `hp:sz` 1583개가 **전부** `protect` 를 갖는다
+    /// (1583/1583). 종전 미방출은 그중 `hp:polygon` 150개(8파일)에서 한컴 원본 대비
+    /// 구조 이탈을 만들었다.
+    #[test]
+    fn issue2726_common_shape_sz_always_emits_protect_attribute() {
+        use crate::model::shape::{CommonObjAttr, DrawingObjAttr};
+
+        let c = CommonObjAttr {
+            size_protect: false,
+            ..Default::default()
+        };
+        let drawing = DrawingObjAttr::default();
+        let mut ctx = SerializeContext::default();
+
+        let xml = render_common_shape_xml("polygon", &c, &None, Some(&drawing), &[], "", &mut ctx);
+        assert!(
+            xml.contains(r#"protect="0""#),
+            "size_protect=false 여도 protect=\"0\" 속성이 방출되어야 함: {xml}"
+        );
+    }
+
+    /// [#2726] `heightRelTo` 는 파서(`parse_size_criterion(_, allow_column_para=false)`)의
+    /// **정확한 역**이어야 한다. 파서 치역이 `{PAPER, PAGE, ABSOLUTE}` 3값뿐이므로
+    /// 방출도 절대 `COLUMN`/`PARA` 를 내면 안 된다 — 내면 되읽기에서 `Absolute` 로 접혀
+    /// 왕복이 비-멱등이 된다. 5값 전수 대조로 못 박는다.
+    #[test]
+    fn issue2726_height_criterion_never_emits_column_or_para() {
+        use crate::model::shape::{CommonObjAttr, DrawingObjAttr};
+
+        let cases = [
+            (SizeCriterion::Paper, "PAPER"),
+            (SizeCriterion::Page, "PAGE"),
+            (SizeCriterion::Column, "ABSOLUTE"),
+            (SizeCriterion::Para, "ABSOLUTE"),
+            (SizeCriterion::Absolute, "ABSOLUTE"),
+        ];
+        let drawing = DrawingObjAttr::default();
+        let mut ctx = SerializeContext::default();
+
+        for (criterion, expected) in cases {
+            assert_eq!(
+                height_criterion_str(criterion),
+                expected,
+                "높이 기준 {criterion:?} 는 {expected} 로 방출되어야 함"
+            );
+
+            let c = CommonObjAttr {
+                height_criterion: criterion,
+                ..Default::default()
+            };
+            let xml =
+                render_common_shape_xml("polygon", &c, &None, Some(&drawing), &[], "", &mut ctx);
+            assert!(
+                xml.contains(&format!(r#"heightRelTo="{expected}""#)),
+                "{criterion:?} → heightRelTo=\"{expected}\" 이어야 함: {xml}"
+            );
+            assert!(
+                !xml.contains(r#"heightRelTo="COLUMN""#) && !xml.contains(r#"heightRelTo="PARA""#),
+                "heightRelTo 는 COLUMN/PARA 를 방출하면 안 됨: {xml}"
+            );
+        }
+    }
+
+    /// [#2726] `widthRelTo` 는 5값 전부를 그대로 방출한다 — 파서
+    /// `parse_size_criterion(_, allow_column_para=true)` 의 정확한 역.
+    #[test]
+    fn issue2726_width_criterion_emits_all_five_values() {
+        let cases = [
+            (SizeCriterion::Paper, "PAPER"),
+            (SizeCriterion::Page, "PAGE"),
+            (SizeCriterion::Column, "COLUMN"),
+            (SizeCriterion::Para, "PARA"),
+            (SizeCriterion::Absolute, "ABSOLUTE"),
+        ];
+        for (criterion, expected) in cases {
+            assert_eq!(
+                size_criterion_str(criterion),
+                expected,
+                "너비 기준 {criterion:?} 는 {expected} 로 방출되어야 함"
+            );
+        }
     }
 
     /// [Task #1627] empty-text(객체-only) 문단에서 bookmark 는 문단 시작으로 끌려가지 않고
