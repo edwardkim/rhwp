@@ -60,11 +60,23 @@ pub enum Control {
     Unknown(UnknownControl),
 }
 
+/// [#2727] `Equation::attr` 의 bit 0 — 수식이 차지하는 범위.
+///
+/// set = 줄 단위 (HWPX `lineMode="LINE"`), clear = 글자 단위 (`lineMode="CHAR"`).
+pub const EQUATION_LINE_MODE_BIT: u32 = 0x0000_0001;
+
 /// 수식 ('eqed' 컨트롤, HWP 스펙 표 105)
 #[derive(Debug, Clone, Default)]
 pub struct Equation {
     /// 개체 공통 속성 (위치, 크기, 배치)
     pub common: CommonObjAttr,
+    /// [#2727] HWPTAG_EQEDIT 속성 (HWP5 spec 표 105 attribute, UINT32).
+    ///
+    /// bit 0 = 수식이 차지하는 범위 (0 = 글자 단위, 1 = 줄 단위) — HWPX
+    /// `hp:equation@lineMode` (`CHAR` / `LINE`) 와 대응한다. 나머지 비트는 의미
+    /// 미상이므로 UINT32 전체를 원본 그대로 보존해 왕복시킨다. 기본값 0 은
+    /// OWPML `lineMode` 기본값 `CHAR` 와 일치한다.
+    pub attr: u32,
     /// 수식 스크립트 ("1 over 2" 등)
     pub script: String,
     /// 글자 크기 (HWPUNIT)
