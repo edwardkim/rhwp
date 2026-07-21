@@ -1,5 +1,7 @@
 import type { DocumentPosition, CursorRect, LineInfo, CellPathEntry, NavContextEntry, CellBbox } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
+// [#2756] 셀 좌표 축 헬퍼는 command.ts 와 단일 정의를 공유한다(축 유도 복제 금지).
+import { cellAxisPath } from './command';
 
 type CellSelectionReason = 'manual' | 'protected';
 
@@ -189,17 +191,34 @@ export class CursorState {
     const bInCell = b.parentParaIndex !== undefined;
 
     if (aInCell && bInCell) {
-      // 둘 다 셀 내부 — 같은 셀인지 확인
-      if (a.parentParaIndex !== b.parentParaIndex ||
-          a.controlIndex !== b.controlIndex ||
-          a.cellIndex !== b.cellIndex) {
-        // 다른 셀이면 셀 인덱스로 비교
-        if (a.parentParaIndex !== b.parentParaIndex) return a.parentParaIndex! < b.parentParaIndex! ? -1 : 1;
-        if (a.controlIndex !== b.controlIndex) return a.controlIndex! < b.controlIndex! ? -1 : 1;
-        return a.cellIndex! < b.cellIndex! ? -1 : 1;
+      // [#2756] 둘 다 셀 내부 — **최내곽 축**으로 비교한다.
+      //
+      // flat controlIndex/cellIndex/cellParaIndex 는 hit-test 가 cellPath[0](최외곽)에서
+      // 채운다(cursor_rect.rs 의 `outer = &ctx.path[0]`). 중첩 표에서 이 셋을 그대로 쓰면
+      // 안쪽 셀의 서로 다른 문단이 **같은 위치**로 보여 charOffset 으로 낙하하고, 그 결과
+      // 선택 양끝이 뒤바뀐다. 소비자 DeleteSelectionCommand 는 cellParaIndexOf(=안쪽 축)로
+      // start/end 를 읽으므로 startPara > endPara 가 되어 savedTexts 가 비고, Rust
+      // delete_range_in_cell_by_path 는 start_para != end_para 분기를 타 **선택 범위의
+      // 여집합**을 지운다. undo 는 복원할 텍스트가 없어 무효가 된다.
+      if (a.parentParaIndex !== b.parentParaIndex) return a.parentParaIndex! < b.parentParaIndex! ? -1 : 1;
+
+      // 셀 경로를 깊이 순으로 비교 — 바깥에서 안쪽으로 진입 순서가 곧 문서 순서다.
+      // 각 깊이의 cellParaIndex 는 (중간 깊이) 어느 문단에서 다음 표로 내려갔는지 /
+      // (최내곽) 커서가 어느 문단에 있는지를 뜻하므로 두 경우 모두 올바른 정렬 키다.
+      const pathA = cellAxisPath(a);
+      const pathB = cellAxisPath(b);
+      const common = Math.min(pathA.length, pathB.length);
+      for (let d = 0; d < common; d++) {
+        const ea = pathA[d];
+        const eb = pathB[d];
+        if (ea.controlIndex !== eb.controlIndex) return ea.controlIndex < eb.controlIndex ? -1 : 1;
+        if (ea.cellIndex !== eb.cellIndex) return ea.cellIndex < eb.cellIndex ? -1 : 1;
+        if (ea.cellParaIndex !== eb.cellParaIndex) return ea.cellParaIndex < eb.cellParaIndex ? -1 : 1;
       }
-      // 같은 셀 내부: cellParaIndex → charOffset 비교
-      if (a.cellParaIndex !== b.cellParaIndex) return a.cellParaIndex! < b.cellParaIndex! ? -1 : 1;
+      // 공통 구간이 같으면 얕은 쪽(바깥 셀 본문)이 그 문단에서 표로 내려가기 전이므로 앞선다.
+      if (pathA.length !== pathB.length) return pathA.length < pathB.length ? -1 : 1;
+
+      // 같은 최내곽 셀·같은 문단: 마지막 루프 반복이 곧 cellParaIndexOf 비교였다.
       if (a.charOffset !== b.charOffset) return a.charOffset < b.charOffset ? -1 : 1;
       return 0;
     }

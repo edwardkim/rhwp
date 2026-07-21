@@ -1,5 +1,5 @@
 import type { WasmBridge } from '@/core/wasm-bridge';
-import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike } from '@/core/types';
+import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry } from '@/core/types';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 
 /** 편집 명령 공통 인터페이스 */
@@ -202,6 +202,26 @@ function cellPathJsonForPara(pos: DocumentPosition, cellParaIndex: number): stri
 function cellParaIndexOf(pos: DocumentPosition): number {
   const path = pos.cellPath;
   return (path?.length ?? 0) > 0 ? path![path!.length - 1].cellParaIndex : pos.cellParaIndex!;
+}
+
+/**
+ * [#2756] 비교용 셀 경로 — `cellParaIndexOf` 와 같은 축 규약의 경로 전체 버전.
+ *
+ * `cellParaIndexOf` 가 최내곽 **문단 인덱스** 하나를 주는 것과 달리, 이쪽은 셀 **정체성**을
+ * 깊이별로 비교해야 하는 곳(선택 영역 정렬)에 쓴다. 두 함수는 같은 규약을 공유한다 —
+ * `cellParaIndexOf(pos) === cellAxisPath(pos)[last].cellParaIndex`.
+ *
+ * `cellPath` 가 없는 위치(레거시 flat 좌표, `applyNavResult` 산출물)는 flat 필드로 1-depth
+ * 경로를 합성한다. hit-test 가 flat 을 `cellPath[0]`(최외곽)에서 채우므로, depth 1 에서는
+ * 합성 경로가 실제 경로와 완전히 같아 **동작 변화가 없다**.
+ */
+export function cellAxisPath(pos: DocumentPosition): CellPathEntry[] {
+  if ((pos.cellPath?.length ?? 0) > 0) return pos.cellPath!;
+  return [{
+    controlIndex: pos.controlIndex ?? 0,
+    cellIndex: pos.cellIndex ?? 0,
+    cellParaIndex: pos.cellParaIndex ?? 0,
+  }];
 }
 
 /** 셀 문단 구조 편집 뒤 flat/path 커서 위치를 같은 문단으로 맞춘다. */
