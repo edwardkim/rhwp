@@ -752,11 +752,18 @@ fn parse_char_shape(
                             for attr in ce.attributes().flatten() {
                                 if attr.key.as_ref() == b"type" {
                                     let val = attr_str(&attr);
+                                    // [#2695] 외곽선 8종 (표 27 선 종류 앞 7개 + NONE).
+                                    // HWP5 attr bits 8-10 (3비트) 과 1:1 대응하므로
+                                    // 4~7 을 버리면 외곽선이 NONE 으로 소멸한다.
                                     cs.outline_type = match val.as_str() {
                                         "NONE" => 0,
                                         "SOLID" => 1,
                                         "DASH" => 2,
                                         "DOT" => 3,
+                                        "DASH_DOT" => 4,
+                                        "DASH_DOT_DOT" => 5,
+                                        "LONG_DASH" => 6,
+                                        "CIRCLE" => 7,
                                         _ => 0,
                                     };
                                 }
@@ -767,9 +774,13 @@ fn parse_char_shape(
                                 match attr.key.as_ref() {
                                     b"type" => {
                                         let val = attr_str(&attr);
+                                        // [#2695] HWP5 attr bits 11-12: 1=비연속(DROP,
+                                        // offsetX/Y 사용), 2=연속(CONTINUOUS). 둘을 1 로
+                                        // 합치면 HWP5 왕복에서 2 가 1 로 손상된다.
                                         cs.shadow_type = match val.as_str() {
                                             "NONE" => 0,
-                                            "DROP" | "CONTINUOUS" => 1,
+                                            "DROP" => 1,
+                                            "CONTINUOUS" => 2,
                                             _ => 0,
                                         };
                                     }

@@ -650,14 +650,7 @@ fn write_char_pr<W: Write>(
         w,
         "hh:shadow",
         &[
-            (
-                "type",
-                if cs.shadow_type == 0 {
-                    "NONE"
-                } else {
-                    "CONTINUOUS"
-                },
-            ),
+            ("type", shadow_type_str(cs.shadow_type)),
             ("color", &color_hex(cs.shadow_color)),
             ("offsetX", &cs.shadow_offset_x.to_string()),
             ("offsetY", &cs.shadow_offset_y.to_string()),
@@ -756,13 +749,29 @@ fn line_shape_str(s: u8) -> &'static str {
     }
 }
 
+// [#2695] 외곽선 8종. IR outline_type 은 HWP5 attr bits 8-10(3비트)을 그대로 담으므로
+// 0~7 전부를 방출해야 한다. 4~7 을 NONE 으로 떨구면 외곽선이 소멸한다.
 fn outline_type_str(t: u8) -> &'static str {
     match t {
         0 => "NONE",
         1 => "SOLID",
         2 => "DASH",
         3 => "DOT",
+        4 => "DASH_DOT",
+        5 => "DASH_DOT_DOT",
+        6 => "LONG_DASH",
+        7 => "CIRCLE",
         _ => "NONE",
+    }
+}
+
+// [#2695] 그림자 3종. IR shadow_type 은 HWP5 attr bits 11-12(2비트).
+// 1=비연속(DROP), 2=연속(CONTINUOUS).
+fn shadow_type_str(t: u8) -> &'static str {
+    match t {
+        0 => "NONE",
+        1 => "DROP",
+        _ => "CONTINUOUS",
     }
 }
 
@@ -1926,6 +1935,100 @@ mod tests {
         assert!(
             xml.contains(r#"<hh:shadow type="NONE""#),
             "shadow NONE 항상 출력: {xml}"
+        );
+    }
+
+    /// [#2695] charPr 자식 하나를 담은 최소 hh:head 를 파싱해 CharShape 를 얻는다.
+    fn parse_single_char_pr(child: &str) -> CharShape {
+        let xml = format!(
+            r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:charProperties itemCnt="1">
+      <hh:charPr id="0" height="1000" textColor="#000000" shadeColor="none">
+        <hh:fontRef hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>
+        {child}
+      </hh:charPr>
+    </hh:charProperties>
+  </hh:refList>
+</hh:head>"##
+        );
+        let (doc_info, _) =
+            crate::parser::hwpx::header::parse_hwpx_header(&xml).expect("parse hh:head");
+        doc_info.char_shapes[0].clone()
+    }
+
+    /// [#2695] CharShape 를 charPr 로 직렬화한 XML 문자열.
+    fn write_single_char_pr(cs: &CharShape) -> String {
+        let mut writer = Writer::new(Vec::new());
+        write_char_pr(&mut writer, 0, cs).expect("write charPr");
+        String::from_utf8(writer.into_inner()).unwrap()
+    }
+
+    #[test]
+    fn char_pr_outline_type_roundtrips_all_eight_values() {
+        // [#2695] 외곽선은 HWP5 attr bits 8-10(3비트) = 8종이다. 종전엔 파서가
+        // NONE/SOLID/DASH/DOT 4종만 알고 나머지를 `_ => 0` 으로, 직렬화가
+        // `_ => "NONE"` 으로 떨궈 4~7 지정 시 외곽선이 통째로 사라졌다.
+        for (name, expected) in [
+            ("NONE", 0u8),
+            ("SOLID", 1),
+            ("DASH", 2),
+            ("DOT", 3),
+            ("DASH_DOT", 4),
+            ("DASH_DOT_DOT", 5),
+            ("LONG_DASH", 6),
+            ("CIRCLE", 7),
+        ] {
+            let cs = parse_single_char_pr(&format!(r#"<hh:outline type="{name}"/>"#));
+            assert_eq!(
+                cs.outline_type, expected,
+                "outline type={name} 은 IR {expected} 로 파싱돼야 함"
+            );
+
+            let xml = write_single_char_pr(&cs);
+            assert!(
+                xml.contains(&format!(r#"<hh:outline type="{name}"/>"#)),
+                "outline_type={expected} 은 type=\"{name}\" 으로 방출돼야 함: {xml}"
+            );
+        }
+    }
+
+    #[test]
+    fn char_pr_shadow_drop_survives_roundtrip_with_offsets() {
+        // [#2695] 비연속(DROP)은 offsetX/offsetY 로 본체와 떨어뜨려 그리는 종류다.
+        // 종전엔 파서가 DROP|CONTINUOUS 를 모두 1 로 합치고 직렬화가 0 이외를
+        // 무조건 CONTINUOUS 로 써서 DROP 이 방출 불가능했고, 보존된 오프셋도
+        // 해석 주체를 잃었다.
+        let cs = parse_single_char_pr(
+            r##"<hh:shadow type="DROP" color="#C0C0C0" offsetX="10" offsetY="-7"/>"##,
+        );
+        assert_eq!(cs.shadow_type, 1, "DROP 은 IR 1(비연속)");
+        assert_eq!(cs.shadow_offset_x, 10);
+        assert_eq!(cs.shadow_offset_y, -7);
+
+        let xml = write_single_char_pr(&cs);
+        assert!(
+            xml.contains(r#"<hh:shadow type="DROP""#),
+            "shadow_type=1 은 type=\"DROP\" 으로 방출돼야 함: {xml}"
+        );
+        assert!(
+            xml.contains(r#"offsetX="10" offsetY="-7""#),
+            "오프셋도 함께 보존돼야 함: {xml}"
+        );
+    }
+
+    #[test]
+    fn char_pr_shadow_continuous_is_ir_two_not_one() {
+        // [#2695] 연속은 HWP5 attr bits 11-12 = 2 다. 종전 파서는 1 로 읽어
+        // HWPX 를 경유한 .hwp 재저장 시 비트값이 2→1 로 손상됐다.
+        let cs = parse_single_char_pr(r##"<hh:shadow type="CONTINUOUS" color="#808080"/>"##);
+        assert_eq!(cs.shadow_type, 2, "CONTINUOUS 는 IR 2(연속)");
+
+        let xml = write_single_char_pr(&cs);
+        assert!(
+            xml.contains(r#"<hh:shadow type="CONTINUOUS""#),
+            "shadow_type=2 는 type=\"CONTINUOUS\" 로 방출돼야 함: {xml}"
         );
     }
 
