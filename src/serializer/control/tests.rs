@@ -2,6 +2,7 @@ use super::*;
 use crate::model::document::{Section, SectionDef};
 use crate::model::page::PageDef;
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
+use crate::model::shape::{GroupShape, RectangleShape};
 use crate::parser::body_text::parse_body_text_section;
 use crate::serializer::body_text::serialize_section;
 
@@ -729,5 +730,221 @@ fn issue2696_ole_shape_component_stays_base_only() {
         196,
         "[#2696] OLE SHAPE_COMPONENT 는 한컴 실측치와 같은 196B(base-only)여야 한다 \
          — 꼬리를 붙이면 #1283 의 한컴 호환 계약이 깨진다"
+    );
+}
+
+// ============================================================
+// [#2715] 그리기 도형·묶음·차트 캡션 HWP5 직렬화
+// ============================================================
+
+/// 캡션 1개짜리 테스트 픽스처.
+fn caption_fixture(text: &str) -> Caption {
+    Caption {
+        direction: CaptionDirection::Top,
+        vert_align: CaptionVertAlign::Center,
+        width: 4321,
+        spacing: 850,
+        max_width: 30000,
+        include_margin: true,
+        paragraphs: vec![Paragraph {
+            char_count: (text.chars().count() + 1) as u32,
+            text: text.to_string(),
+            char_offsets: (0..text.chars().count() as u32).collect(),
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }],
+    }
+}
+
+/// 컨트롤 1개를 담은 섹션을 직렬화 → 재파싱한다.
+fn roundtrip_single_control(ctrl: Control) -> Control {
+    let section = Section {
+        paragraphs: vec![Paragraph {
+            char_count: 2,
+            text: String::new(),
+            char_offsets: vec![],
+            controls: vec![ctrl],
+            ..Default::default()
+        }],
+        raw_stream: None,
+        ..Default::default()
+    };
+    let bytes = serialize_section(&section);
+    let parsed = parse_body_text_section(&bytes).unwrap();
+    parsed.paragraphs[0]
+        .controls
+        .first()
+        .expect("컨트롤이 왕복돼야 함")
+        .clone()
+}
+
+fn shape_of(ctrl: &Control) -> &ShapeObject {
+    match ctrl {
+        Control::Shape(s) => s.as_ref(),
+        other => panic!("도형 컨트롤이 나와야 함, got {other:?}"),
+    }
+}
+
+/// [#2715] 사각형 도형의 캡션이 HWP5 왕복에서 보존돼야 한다.
+///
+/// 종전에는 `serialize_shape_control` 의 어떤 arm 도 `serialize_caption` 을
+/// 호출하지 않아 `drawing.caption` 이 통째로 사라졌다 — 한컴 저장본
+/// `samples/3-09월_교육_통합_2023.hwp` 는 `$rec` 도형에 그림($pic)과 동일한
+/// 30B LIST_HEADER 캡션을 쓰므로 포맷 제약이 아니라 미구현이었다.
+#[test]
+fn issue2715_rectangle_caption_roundtrips() {
+    let rect = RectangleShape {
+        drawing: DrawingObjAttr {
+            caption: Some(caption_fixture("사각형 캡션")),
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let out = roundtrip_single_control(Control::Shape(Box::new(ShapeObject::Rectangle(rect))));
+
+    let ShapeObject::Rectangle(r) = shape_of(&out) else {
+        panic!("사각형이 나와야 함, got {:?}", shape_of(&out));
+    };
+    let cap = r
+        .drawing
+        .caption
+        .as_ref()
+        .expect("[#2715] 사각형 캡션이 왕복 보존돼야 함");
+    assert_eq!(cap.paragraphs[0].text, "사각형 캡션", "캡션 텍스트 보존");
+    assert_eq!(cap.direction, CaptionDirection::Top, "캡션 방향 보존");
+    assert_eq!(
+        cap.vert_align,
+        CaptionVertAlign::Center,
+        "캡션 세로 정렬 보존"
+    );
+    assert_eq!(cap.width, 4321, "캡션 폭 보존");
+    assert_eq!(cap.spacing, 850, "캡션-틀 간격 보존");
+    assert_eq!(cap.max_width, 30000, "캡션 최대 폭 보존");
+    assert!(cap.include_margin, "include_margin 보존");
+}
+
+/// [#2715] 묶음(`$con`) 캡션 왕복 — 한컴 `samples/draw-group.hwp` 실측 대응.
+#[test]
+fn issue2715_group_caption_roundtrips() {
+    let group = GroupShape {
+        caption: Some(caption_fixture("묶음 캡션")),
+        ..Default::default()
+    };
+    let out = roundtrip_single_control(Control::Shape(Box::new(ShapeObject::Group(group))));
+
+    let ShapeObject::Group(g) = shape_of(&out) else {
+        panic!("묶음이 나와야 함, got {:?}", shape_of(&out));
+    };
+    assert_eq!(
+        g.caption
+            .as_ref()
+            .expect("[#2715] 묶음 캡션이 왕복 보존돼야 함")
+            .paragraphs[0]
+            .text,
+        "묶음 캡션"
+    );
+}
+
+/// [#2715] 캡션은 `SHAPE_COMPONENT` **앞**, 글상자 LIST_HEADER 는 **뒤**로
+/// 분리 방출돼야 한다 (파서가 위치로 둘을 구분하므로 순서가 곧 계약이다).
+/// LIST_HEADER 크기 30B 는 한컴 저장본 실측치와 같다.
+#[test]
+fn issue2715_caption_precedes_shape_component_and_textbox_follows() {
+    let rect = RectangleShape {
+        drawing: DrawingObjAttr {
+            caption: Some(caption_fixture("캡션")),
+            text_box: Some(crate::model::shape::TextBox {
+                paragraphs: vec![Paragraph {
+                    char_count: 4,
+                    text: "글상자".to_string(),
+                    char_offsets: vec![0, 1, 2],
+                    char_shapes: vec![CharShapeRef {
+                        start_pos: 0,
+                        char_shape_id: 0,
+                    }],
+                    line_segs: vec![LineSeg {
+                        text_start: 0,
+                        ..Default::default()
+                    }],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let ctrl = Control::Shape(Box::new(ShapeObject::Rectangle(rect)));
+
+    let mut records: Vec<Record> = Vec::new();
+    serialize_control(&ctrl, 1, None, &mut records);
+
+    let comp_idx = records
+        .iter()
+        .position(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT)
+        .expect("SHAPE_COMPONENT 가 있어야 함");
+    let caption_idx = records
+        .iter()
+        .position(|r| r.tag_id == tags::HWPTAG_LIST_HEADER)
+        .expect("[#2715] 캡션 LIST_HEADER 가 방출돼야 함");
+    assert!(
+        caption_idx < comp_idx,
+        "캡션 LIST_HEADER 는 SHAPE_COMPONENT 앞이어야 함 (caption={caption_idx}, comp={comp_idx})"
+    );
+    assert_eq!(
+        records[caption_idx].level, 2,
+        "캡션 LIST_HEADER 는 level+1 이어야 함"
+    );
+    assert_eq!(
+        records[caption_idx].data.len(),
+        30,
+        "캡션 LIST_HEADER 는 한컴 실측치와 같은 30B 여야 함"
+    );
+
+    let textbox_idx = records
+        .iter()
+        .enumerate()
+        .skip(comp_idx)
+        .find(|(_, r)| r.tag_id == tags::HWPTAG_LIST_HEADER)
+        .map(|(i, _)| i)
+        .expect("글상자 LIST_HEADER 가 방출돼야 함");
+    assert!(
+        textbox_idx > comp_idx,
+        "글상자 LIST_HEADER 는 SHAPE_COMPONENT 뒤여야 함"
+    );
+
+    // 재파싱 시 캡션과 글상자가 각각 제자리에 복원되는지
+    let out = roundtrip_single_control(ctrl);
+    let ShapeObject::Rectangle(r) = shape_of(&out) else {
+        panic!("사각형이 나와야 함");
+    };
+    assert_eq!(
+        r.drawing.caption.as_ref().expect("캡션 보존").paragraphs[0].text,
+        "캡션"
+    );
+    assert_eq!(
+        r.drawing.text_box.as_ref().expect("글상자 보존").paragraphs[0].text,
+        "글상자",
+        "캡션 추가가 글상자 경로를 침범하면 안 됨"
+    );
+}
+
+/// [#2715] 캡션이 없는 도형은 LIST_HEADER 를 방출하지 않아야 한다
+/// (불필요한 레코드 추가로 기존 레코드 시퀀스를 흔들지 않기 위함).
+#[test]
+fn issue2715_shape_without_caption_emits_no_list_header() {
+    let ctrl = Control::Shape(Box::new(ShapeObject::Rectangle(RectangleShape::default())));
+    let mut records: Vec<Record> = Vec::new();
+    serialize_control(&ctrl, 1, None, &mut records);
+    assert!(
+        !records.iter().any(|r| r.tag_id == tags::HWPTAG_LIST_HEADER),
+        "캡션 없는 도형은 LIST_HEADER 를 방출하면 안 됨"
     );
 }
