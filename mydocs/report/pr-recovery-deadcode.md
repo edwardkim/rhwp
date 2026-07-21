@@ -47,5 +47,5 @@ export function recoveryFileName(fileName: string): string {
 
 ## 결과
 - **Branch**: `pr/fix-issue-2687-recovery-deadcode`
-- **PR**: https://github.com/edwardkim/rhwp/pull/???? (생성 후 업데이트)
+- **PR**: https://github.com/edwardkim/rhwp/pull/2688
 - **Closes**: #2687
