@@ -385,7 +385,9 @@ test('PageRenderer splits flow static images before the first Canvas2D flow rend
   assert.match(source, /this\.flowSplitSupported = false/);
   assert.match(source, /flow-dynamic 렌더 미지원/);
   assert.match(source, /flow-static 지연 재렌더 실패/);
-  assert.match(source, /'flow-static',\s*layers,\s*allowReuse,\s*false/);
+  // RawSvg 차트/OLE는 첫 Canvas2D 렌더에서 이미지 디코드를 시작해야 다음 재렌더에서 보인다.
+  assert.match(source, /'flow-static',\s*layers,\s*allowReuse,\s*\)/);
+  assert.doesNotMatch(source, /'flow-static',\s*layers,\s*allowReuse,\s*false/);
   assert.match(source, /createOrReuseFlowImageLayer\(/);
   assert.match(source, /usesDomFlowImages \? overlays\.rawSvgCount/);
   assert.match(source, /element\.src = `data:\$\{image\.mime\};base64,\$\{image\.base64\}`/);
@@ -399,9 +401,12 @@ test('PageRenderer deferred image rerender preserves static layer reuse policy',
   assert.match(source, /retrySignature: overlays\.signature/);
   assert.match(source, /reuseStaticFlow/);
   assert.match(source, /reuseStaticOverlay/);
-  assert.match(source, /const retryKey = `\$\{imageCount\}:\$\{policy\.retrySignature\}`/);
+  assert.match(source, /const retryKey = `\$\{imageCount\}:\$\{rawSvgCount\}:\$\{policy\.retrySignature\}`/);
   assert.match(source, /IMAGE_RE_RENDER_FALLBACK_DELAY_MS = 1500/);
+  assert.match(source, /RAW_SVG_EARLY_RE_RENDER_DELAYS_MS = \[0, 32, 96, 240\]/);
   assert.match(source, /const job: ReRenderJob/);
+  assert.match(source, /if \(rawSvgCount > 0\)/);
+  assert.match(source, /earlyRawSvgTimers/);
   assert.match(source, /this\.prefetchLayerImages\(pageIdx\)/);
   assert.match(source, /if \(decoded\) finish\(\)/);
   assert.equal(source.includes('const delays = [200, 600, 1500]'), false);

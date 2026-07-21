@@ -372,6 +372,55 @@ fn test_serialize_border_fill_solid() {
 }
 
 #[test]
+fn test_serialize_border_fill_preserves_solid_and_image_alpha() {
+    // 채우기는 BorderFill 헤더(attr 2 + 4테두리×6 + 대각선 6) 뒤 오프셋 32 부터.
+    const FILL_OFFSET: usize = 32;
+
+    // Solid: alpha=180 이 왕복해야 한다(종전엔 additional_size=1+0x00 로 항상 0).
+    let mut bf = BorderFill {
+        raw_data: None,
+        attr: 0,
+        borders: [BorderLine::default(); 4],
+        diagonal: DiagonalLine::default(),
+        center_line: CenterLine::None,
+        fill: Fill {
+            fill_type: FillType::Solid,
+            solid: Some(SolidFill {
+                background_color: 0x00FFFFFF,
+                pattern_color: 0,
+                pattern_type: -1,
+            }),
+            gradient: None,
+            image: None,
+            alpha: 180,
+        },
+    };
+    let data = serialize_border_fill(&bf);
+    let mut r = crate::parser::byte_reader::ByteReader::new(&data[FILL_OFFSET..]);
+    let parsed = crate::parser::doc_info::parse_fill(&mut r);
+    assert_eq!(parsed.alpha, 180, "Solid 채우기 alpha 가 왕복에서 유실됨");
+
+    // Image: alpha=200 이 왕복해야 한다(종전엔 alpha 바이트를 아예 안 냈다).
+    bf.fill = Fill {
+        fill_type: FillType::Image,
+        solid: None,
+        gradient: None,
+        image: Some(crate::model::style::ImageFill {
+            fill_mode: crate::model::style::ImageFillMode::TileAll,
+            brightness: 0,
+            contrast: 0,
+            effect: 0,
+            bin_data_id: 1,
+        }),
+        alpha: 200,
+    };
+    let data = serialize_border_fill(&bf);
+    let mut r = crate::parser::byte_reader::ByteReader::new(&data[FILL_OFFSET..]);
+    let parsed = crate::parser::doc_info::parse_fill(&mut r);
+    assert_eq!(parsed.alpha, 200, "Image 채우기 alpha 가 왕복에서 유실됨");
+}
+
+#[test]
 fn test_serialize_border_fill_cross_centerline_uses_hwp5_center_bits() {
     let bf = BorderFill {
         raw_data: None,

@@ -15,10 +15,12 @@ import {
 
 // ─── 문서 경로 판정 ────────────────────────────────────
 
-test('hwp/hwpx pathname 감지', () => {
+test('hwp/hwpx/hml pathname 감지', () => {
   assert.equal(isDocumentPath('/saved/sample.hwp'), true);
   assert.equal(isDocumentPath('/saved/sample.hwpx'), true);
+  assert.equal(isDocumentPath('/saved/sample.hml'), true);
   assert.equal(isDocumentPath('/saved/SAMPLE.HWP'), true);
+  assert.equal(isDocumentPath('/saved/SAMPLE.HML'), true);
 });
 
 test('query 문자열에만 hwp가 있으면 미감지', () => {
@@ -45,6 +47,13 @@ test('GitHub blob HWP URL을 raw URL로 변환', () => {
 test('GitHub blob HWPX URL도 raw URL로 변환', () => {
   const input = 'https://github.com/edwardkim/rhwp/blob/devel/saved/blank_hwpx.hwpx';
   const expected = 'https://raw.githubusercontent.com/edwardkim/rhwp/devel/saved/blank_hwpx.hwpx';
+
+  assert.equal(resolveDocumentUrl(input), expected);
+});
+
+test('GitHub blob HML URL도 raw URL로 변환', () => {
+  const input = 'https://github.com/edwardkim/rhwp/blob/devel/samples/hml/formatting_table.hml';
+  const expected = 'https://raw.githubusercontent.com/edwardkim/rhwp/devel/samples/hml/formatting_table.hml';
 
   assert.equal(resolveDocumentUrl(input), expected);
 });
@@ -112,6 +121,19 @@ test('classifyDocumentUrl은 GitHub blob HWPX URL도 openable로 분류', () => 
   assert.equal(
     result.resolvedUrl,
     'https://raw.githubusercontent.com/edwardkim/rhwp/main/samples/hwpx/sample.hwpx',
+  );
+});
+
+test('classifyDocumentUrl은 GitHub blob HML URL도 openable로 분류', () => {
+  const result = classifyDocumentUrl(
+    'https://github.com/edwardkim/rhwp/blob/main/samples/hml/formatting_table.hml',
+  );
+
+  assert.equal(result.status, 'openable');
+  assert.equal(result.reason, 'github-blob-document');
+  assert.equal(
+    result.resolvedUrl,
+    'https://raw.githubusercontent.com/edwardkim/rhwp/main/samples/hml/formatting_table.hml',
   );
 });
 

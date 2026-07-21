@@ -2630,7 +2630,12 @@ impl DocumentCore {
         ) -> Option<CursorHit> {
             if let RenderNodeType::TextRun(ref text_run) = node.node_type {
                 let matches_cell = text_run.cell_context.as_ref().map_or(false, |ctx| {
+                    // path.len()==1 가드가 없으면 중첩 표 *내부* 셀의 run 도
+                    // 매칭된다: 내부 run 의 path[0] 은 그 중첩 표를 품은 바깥 셀과
+                    // 정확히 같기 때문이다. 같은 파일의 cell_context_matches 가
+                    // path 길이 일치를 계약으로 명시한다.
                     ctx.parent_para_index == parent_para
+                        && ctx.path.len() == 1
                         && ctx.path[0].control_index == ctrl_idx
                         && ctx.path[0].cell_index == c_idx
                         && ctx.path[0].cell_para_index == cp_idx
@@ -2720,7 +2725,12 @@ impl DocumentCore {
         ) -> Option<(f64, f64, f64)> {
             if let RenderNodeType::TextRun(ref text_run) = node.node_type {
                 let matches_cell = text_run.cell_context.as_ref().map_or(false, |ctx| {
+                    // path.len()==1 가드가 없으면 중첩 표 *내부* 셀의 run 도
+                    // 매칭된다: 내부 run 의 path[0] 은 그 중첩 표를 품은 바깥 셀과
+                    // 정확히 같기 때문이다. 같은 파일의 cell_context_matches 가
+                    // path 길이 일치를 계약으로 명시한다.
                     ctx.parent_para_index == parent_para
+                        && ctx.path.len() == 1
                         && ctx.path[0].control_index == ctrl_idx
                         && ctx.path[0].cell_index == c_idx
                         && ctx.path[0].cell_para_index == cp_idx
@@ -2847,7 +2857,11 @@ impl DocumentCore {
             let mut result: Option<usize> = None;
             if let RenderNodeType::TextRun(ref tr) = node.node_type {
                 if let Some(ref ctx) = tr.cell_context {
+                    // 위와 동일 근거의 path.len()==1 가드. 이 함수는 max 를 취하므로
+                    // 중첩 표 내부 run 이 섞이면 바깥 셀이 실제로 그려지지 않은
+                    // 페이지에서도 "그려졌다"고 보고해 캐럿 클램프가 어긋난다.
                     if ctx.parent_para_index == parent_para
+                        && ctx.path.len() == 1
                         && ctx.path[0].control_index == ctrl_idx
                         && ctx.path[0].cell_index == c_idx
                     {
@@ -4167,6 +4181,17 @@ impl DocumentCore {
 
     /// 각주 영역 히트테스트
     ///
+    /// 페이지에 각주 영역이 존재하는지 빠르게 확인.
+    /// 페이지네이션 메타데이터(footnotes Vec)만 조회하므로 render tree build가 필요 없다.
+    /// hitTestFootnote fast-reject (#2428) 전용.
+    pub fn page_has_footnote_footholds_native(&self, page_num: u32) -> bool {
+        let (page_content, _, _) = match self.find_page(page_num) {
+            Ok(result) => result,
+            Err(_) => return false,
+        };
+        !page_content.footnotes.is_empty()
+    }
+
     /// 페이지 좌표가 각주 영역에 해당하는지 판별.
     /// 반환: JSON `{"hit":true,"footnoteIndex":N}` 또는 `{"hit":false}`
     pub fn hit_test_footnote_native(

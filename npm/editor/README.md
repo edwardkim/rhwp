@@ -93,8 +93,8 @@ HWP 파일을 로드합니다.
 const result = await editor.loadFile(buffer, 'sample.hwp');
 // result = { pageCount: 5 }
 
-// 임베드 환경 권장: 로드 후 안내창 없이 열기
-await editor.loadFile(buffer, 'sample.hwpx', { suppressDialogs: true });
+// 안내창에서 사용자가 직접 선택하도록 열기
+await editor.loadFile(buffer, 'sample.hwpx', { suppressDialogs: false });
 ```
 
 **options:**
@@ -102,13 +102,12 @@ await editor.loadFile(buffer, 'sample.hwpx', { suppressDialogs: true });
 | 옵션 | 기본값 | 설명 |
 |------|--------|------|
 | `skipUnsavedGuard` | `false` | 미저장 변경 확인 없이 문서 교체 |
-| `suppressDialogs` | `false` | 로드 후 안내창(HWPX 검증, 로컬 글꼴 감지) 없이 열기 |
+| `suppressDialogs` | `true` | 로드 후 안내창(HWPX 검증, 로컬 글꼴 감지) 없이 열기 |
 
-> **임베드 환경에서는 `suppressDialogs: true`를 권장합니다.** 스튜디오는 문서 로드 후
-> 안내창(HWPX 비표준 lineseg 검증, 로컬 글꼴 감지)의 사용자 선택을 기다린 뒤에
-> `loadFile` 응답을 보냅니다. iframe이 가려져 있거나 사용자가 안내창을 인지하지 못하면
-> 응답이 오지 않아 타임아웃처럼 보일 수 있습니다. `suppressDialogs: true`면 검증 경고는
-> '그대로 열기'로 처리하고 글꼴은 웹 대체 글꼴로 표시하여 즉시 응답합니다.
+> `suppressDialogs`를 생략하면 검증 경고는 '그대로 열기'로 처리하고 글꼴은 웹 대체 글꼴로
+> 표시하여 `loadFile` 응답을 즉시 반환합니다. 안내창(HWPX 비표준 lineseg 검증, 로컬 글꼴
+> 감지)에서 사용자가 직접 선택해야 하는 대화형 흐름이 필요하면 `suppressDialogs: false`를
+> 명시하세요.
 
 ### editor.pageCount()
 

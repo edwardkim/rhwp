@@ -154,12 +154,12 @@ fn issue_2215_hwp_and_hwpx_preserve_normal_selection_oracles() {
         let mut doc = load_sample(file_name);
 
         let first_rects = selection_rects_with_hints(&doc, first);
-        assert_single_rect_near(file_name, "first", &first_rects, 0, 84.1, 242.4, 111.7);
+        assert_single_rect_near(file_name, "first", &first_rects, 0, 84.1, 242.4, 105.0); // [#2430] 메트릭 교정: 111.7→105.0 실측
         let first_text = copied_text(&mut doc, first);
         assert_eq!(first_text, "1.1.1 수면비행");
 
         let middle_rects = selection_rects_with_hints(&doc, middle);
-        assert_single_rect_near(file_name, "middle", &middle_rects, 54, 92.1, 588.5, 10.0);
+        assert_single_rect_near(file_name, "middle", &middle_rects, 54, 92.1, 588.5, 7.9); // [#2430] 10.0→7.9 실측
         let middle_text = copied_text(&mut doc, middle);
         assert_eq!(middle_text, "8");
 

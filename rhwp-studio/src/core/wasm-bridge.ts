@@ -1573,6 +1573,11 @@ export class WasmBridge {
     } catch { return null; }
   }
 
+  pageHasFootnoteFootholds(pageNum: number): boolean {
+    if (!this.doc) return false;
+    return (this.doc as any).pageHasFootnoteFootholds(pageNum);
+  }
+
   hitTestFootnote(pageNum: number, x: number, y: number): { hit: boolean; footnoteIndex?: number } {
     if (!this.doc) return { hit: false };
     return JSON.parse((this.doc as any).hitTestFootnote(pageNum, x, y));

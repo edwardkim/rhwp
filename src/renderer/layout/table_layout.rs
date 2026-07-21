@@ -1472,11 +1472,11 @@ impl LayoutEngine {
         col_count: usize,
     ) -> Vec<f64> {
         // 1단계: col_span==1인 셀에서 개별 열 폭 추출
-        let inferred_local_resize_rows = table.inferred_local_resize_rows();
+        let base_grid_outlier_rows = table.base_grid_outlier_rows();
         let mut col_widths = vec![0.0f64; col_count];
         for cell in &table.cells {
             if table.local_resize_rows.contains(&cell.row)
-                || inferred_local_resize_rows.contains(&cell.row)
+                || base_grid_outlier_rows.contains(&cell.row)
             {
                 continue;
             }
@@ -1493,7 +1493,7 @@ impl LayoutEngine {
             let mut constraints: Vec<(usize, usize, f64)> = Vec::new();
             for cell in &table.cells {
                 if table.local_resize_rows.contains(&cell.row)
-                    || inferred_local_resize_rows.contains(&cell.row)
+                    || base_grid_outlier_rows.contains(&cell.row)
                 {
                     continue;
                 }
@@ -8292,7 +8292,7 @@ mod row_cut_tests {
         // 로컬 좌표 재시작으로 보고 같은 쪽에 이어 담는다.
         let eng = LayoutEngine::new(96.0);
         eng.set_layout_profile(crate::model::provenance::LayoutCompatibilityProfile::new(
-            false, false, true, false,
+            false, false, true, false, false,
         ));
         let styles = ResolvedStyleSet::default();
         let t = rowbreak_table(vec![cell(
@@ -8315,7 +8315,7 @@ mod row_cut_tests {
         // 한컴 저장 쪽 경계로 보존한다.
         let eng = LayoutEngine::new(96.0);
         eng.set_layout_profile(crate::model::provenance::LayoutCompatibilityProfile::new(
-            false, false, true, false,
+            false, false, true, false, false,
         ));
         let styles = ResolvedStyleSet::default();
         let t = rowbreak_table(vec![cell(

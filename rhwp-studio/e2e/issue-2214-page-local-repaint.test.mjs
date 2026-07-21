@@ -1,10 +1,14 @@
 /**
  * Issue #2214 focused GREEN regression and optional diagnostic.
  *
- * The default path is a focused HWP/HWPX regression that verifies the 44th
+ * The default path is a focused HWP/HWPX regression that verifies the 56th
  * cell-flow boundary, pre-cursor pagination, exact tree/caret state, and the
- * absence of an additional flush through the 50th input. The original
+ * absence of an additional flush through the 62nd input. The original
  * timeline/PNG controls remain available behind --diagnose.
+ *
+ * [#2430] 한양·휴먼 HFT ASCII 실측 교정으로 대상 셀의 줄 채움 임계가 44→56,
+ * 관측 범위가 50→62 로 이동했다 (native 계약: tests/issue_2214_page_local_repaint.rs
+ * 의 cell_flow_transition_baseline 이 0..62 전 구간에서 경계 56 단일 관측).
  *
  * Usage:
  *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless
@@ -943,7 +947,7 @@ function assertFocusedSnapshot(format, runNumber, inserted, snapshot, expectedTe
   const expectedLength = TARGET.charOffset + inserted;
   assert.equal(snapshot.model.length, expectedLength, `${prefix}: model length`);
   assert.equal(snapshot.model.text, expectedText, `${prefix}: model text`);
-  assert.equal(snapshot.model.lineCount, inserted < 44 ? 4 : 5, `${prefix}: line count`);
+  assert.equal(snapshot.model.lineCount, inserted < 56 ? 4 : 5, `${prefix}: line count`);
   assert.equal(snapshot.pagination.pageCount, 115, `${prefix}: page count`);
 
   const position = snapshot.cursor.position;
@@ -961,7 +965,7 @@ function assertFocusedSnapshot(format, runNumber, inserted, snapshot, expectedTe
   assertApprox(rect?.cellBounds?.h, 945.9, `${prefix}: cell bounds`);
   assert.equal(
     snapshot.pagination.pending,
-    inserted !== 44,
+    inserted !== 56,
     `${prefix}: deferred pagination pending state`,
   );
 }
@@ -1038,15 +1042,15 @@ function assertFocusedTrace(format, runNumber, trace) {
   const cursorQueries = trace.events.filter((event) => event.type === 'wasm.getCursorRectByPathNear');
   const operations = trace.events.filter((event) => event.type === 'InputHandler.executeOperation');
 
-  assert.equal(inserts.length, 50, `${prefix}: deferred insert count`);
-  assert.equal(effects.length, 50, `${prefix}: consumed mutation effect count`);
+  assert.equal(inserts.length, 62, `${prefix}: deferred insert count`);
+  assert.equal(effects.length, 62, `${prefix}: consumed mutation effect count`);
   assert.equal(flushes.length, 1, `${prefix}: WASM flush count`);
   assert.equal(inputFlushes.length, 1, `${prefix}: input flush count`);
-  assert.equal(operations.length, 50, `${prefix}: operation count`);
+  assert.equal(operations.length, 62, `${prefix}: operation count`);
 
   for (let index = 0; index < inserts.length; index += 1) {
     const inserted = index + 1;
-    const expectedFlowChange = inserted === 44;
+    const expectedFlowChange = inserted === 56;
     assert.equal(inserts[index].charOffset, TARGET.charOffset + index, `${prefix}: input ${inserted} source offset`);
     assert.equal(inserts[index].resultCharOffset, TARGET.charOffset + inserted, `${prefix}: input ${inserted} result offset`);
     assert.equal(inserts[index].paginationDeferred, true, `${prefix}: input ${inserted} deferred result`);
@@ -1056,7 +1060,7 @@ function assertFocusedTrace(format, runNumber, trace) {
     assert.equal(effects[index].paginationCompleted, false, `${prefix}: input ${inserted} deferred completion state`);
   }
 
-  const boundaryInsert = inserts[43];
+  const boundaryInsert = inserts[55];
   const boundaryFlush = flushes[0];
   const firstCursorAfterBoundary = cursorQueries.find((event) => event.sequence > boundaryInsert.sequence);
   assert.ok(firstCursorAfterBoundary, `${prefix}: cursor query after boundary`);
@@ -1070,8 +1074,8 @@ function assertFocusedTrace(format, runNumber, trace) {
   );
 
   const operationDurations = operations.map((event) => event.durationMs);
-  const stableOperationDurations = operationDurations.filter((_, index) => index !== 43);
-  const stableKeyboardDurations = trace.keyboardDurationsMs.filter((_, index) => index !== 43);
+  const stableOperationDurations = operationDurations.filter((_, index) => index !== 55);
+  const stableKeyboardDurations = trace.keyboardDurationsMs.filter((_, index) => index !== 55);
   const cursorDurations = cursorQueries.map((event) => event.durationMs);
   return {
     counts: trace.counts,
@@ -1082,9 +1086,9 @@ function assertFocusedTrace(format, runNumber, trace) {
     },
     timing: {
       keyboardStable: summarizeDurations(stableKeyboardDurations),
-      keyboardBoundaryMs: trace.keyboardDurationsMs[43],
+      keyboardBoundaryMs: trace.keyboardDurationsMs[55],
       operationStable: summarizeDurations(stableOperationDurations),
-      operationBoundaryMs: operationDurations[43],
+      operationBoundaryMs: operationDurations[55],
       boundaryFlushMs: boundaryFlush.durationMs,
       cursorQueries: summarizeDurations(cursorDurations),
       boundaryCursorMs: firstCursorAfterBoundary.durationMs,
@@ -1108,7 +1112,7 @@ async function runFocusedFormat(page, format, bytes, runNumber) {
   await installTrace(page);
   const keyboardDurationsMs = [];
   const checkpoints = { initial };
-  for (let inserted = 1; inserted <= 50; inserted += 1) {
+  for (let inserted = 1; inserted <= 62; inserted += 1) {
     const startedAt = performance.now();
     await page.keyboard.type('1');
     keyboardDurationsMs.push(performance.now() - startedAt);
@@ -1117,48 +1121,48 @@ async function runFocusedFormat(page, format, bytes, runNumber) {
     const snapshot = await readFocusedSnapshot(page);
     assertFocusedSnapshot(format, runNumber, inserted, snapshot, expectedText);
 
-    if (inserted === 43) {
-      const traceAt43 = await collectTrace(page);
-      assert.equal(traceAt43.counts.wasmFlush, 0, `${format} run ${runNumber}: inputs 1-43 flush count`);
+    if (inserted === 55) {
+      const traceAt55 = await collectTrace(page);
+      assert.equal(traceAt55.counts.wasmFlush, 0, `${format} run ${runNumber}: inputs 1-55 flush count`);
       await waitTwoRafs(page);
-      checkpoints.at43 = await collectState(page, 'after-43-2raf', timelineStart);
-      assertExactFocusedState(format, runNumber, checkpoints.at43, expectedText, 4, 945.9, true);
+      checkpoints.at55 = await collectState(page, 'after-55-2raf', timelineStart);
+      assertExactFocusedState(format, runNumber, checkpoints.at55, expectedText, 4, 945.9, true);
       visual.beforeBoundary = await captureCompositedCrop(
         page,
-        path.join(visualDirectory, 'after-43.png'),
+        path.join(visualDirectory, 'after-55.png'),
         clip,
       );
     }
 
-    if (inserted === 44) {
+    if (inserted === 56) {
       const boundaryStates = [];
-      boundaryStates.push(await collectState(page, 'after-44-sync', timelineStart));
+      boundaryStates.push(await collectState(page, 'after-56-sync', timelineStart));
       await waitTwoRafs(page);
-      boundaryStates.push(await collectState(page, 'after-44-2raf', timelineStart));
+      boundaryStates.push(await collectState(page, 'after-56-2raf', timelineStart));
       visual.boundary.push(await captureCompositedCrop(
         page,
-        path.join(visualDirectory, 'after-44-2raf.png'),
+        path.join(visualDirectory, 'after-56-2raf.png'),
         clip,
       ));
       await delay(page, 100);
-      boundaryStates.push(await collectState(page, 'after-44-100ms', timelineStart));
+      boundaryStates.push(await collectState(page, 'after-56-100ms', timelineStart));
       visual.boundary.push(await captureCompositedCrop(
         page,
-        path.join(visualDirectory, 'after-44-100ms.png'),
+        path.join(visualDirectory, 'after-56-100ms.png'),
         clip,
       ));
       await delay(page, 750);
-      boundaryStates.push(await collectState(page, 'after-44-850ms', timelineStart));
+      boundaryStates.push(await collectState(page, 'after-56-850ms', timelineStart));
       visual.boundary.push(await captureCompositedCrop(
         page,
-        path.join(visualDirectory, 'after-44-850ms.png'),
+        path.join(visualDirectory, 'after-56-850ms.png'),
         clip,
       ));
       await delay(page, 750);
-      boundaryStates.push(await collectState(page, 'after-44-1600ms', timelineStart));
+      boundaryStates.push(await collectState(page, 'after-56-1600ms', timelineStart));
       visual.boundary.push(await captureCompositedCrop(
         page,
-        path.join(visualDirectory, 'after-44-1600ms.png'),
+        path.join(visualDirectory, 'after-56-1600ms.png'),
         clip,
       ));
       for (const state of boundaryStates) {
@@ -1173,16 +1177,16 @@ async function runFocusedFormat(page, format, bytes, runNumber) {
       const transitionComparison = comparePng(
         visual.boundary[0].filePath,
         visual.beforeBoundary.filePath,
-        path.join(visualDirectory, 'diff-43-vs-44.png'),
+        path.join(visualDirectory, 'diff-55-vs-56.png'),
       );
       assert.equal(transitionComparison.comparable, true, `${format} run ${runNumber}: transition crop comparable`);
       assert.ok(transitionComparison.changedPixelCount > 0, `${format} run ${runNumber}: boundary crop must change`);
-      visual.comparisons.push({ label: '43-vs-44', ...transitionComparison });
+      visual.comparisons.push({ label: '55-vs-56', ...transitionComparison });
       for (let index = 1; index < visual.boundary.length; index += 1) {
         const comparison = comparePng(
           visual.boundary[index].filePath,
           visual.boundary[0].filePath,
-          path.join(visualDirectory, `diff-44-${index}.png`),
+          path.join(visualDirectory, `diff-56-${index}.png`),
         );
         assert.equal(comparison.comparable, true, `${format} run ${runNumber}: stable crop ${index} comparable`);
         assert.equal(comparison.changedPixelCount, 0, `${format} run ${runNumber}: boundary crop ${index} stable`);
@@ -1191,20 +1195,20 @@ async function runFocusedFormat(page, format, bytes, runNumber) {
           visual.boundary[0].sha256,
           `${format} run ${runNumber}: boundary crop ${index} exact hash`,
         );
-        visual.comparisons.push({ label: `44-stable-${index}`, ...comparison });
+        visual.comparisons.push({ label: `56-stable-${index}`, ...comparison });
       }
-      checkpoints.at44 = boundaryStates;
+      checkpoints.at56 = boundaryStates;
     }
   }
 
   await waitTwoRafs(page);
-  const finalText = `${initialText}${'1'.repeat(50)}`;
-  checkpoints.at50 = await collectState(page, 'after-50-2raf', timelineStart);
-  assertExactFocusedState(format, runNumber, checkpoints.at50, finalText, 5, 945.9, true);
+  const finalText = `${initialText}${'1'.repeat(62)}`;
+  checkpoints.at62 = await collectState(page, 'after-62-2raf', timelineStart);
+  assertExactFocusedState(format, runNumber, checkpoints.at62, finalText, 5, 945.9, true);
 
   const trace = await collectTrace(page);
   trace.keyboardDurationsMs = keyboardDurationsMs;
-  assert.equal(trace.counts.wasmFlush, 1, `${format} run ${runNumber}: inputs 45-50 add no flush`);
+  assert.equal(trace.counts.wasmFlush, 1, `${format} run ${runNumber}: inputs 57-62 add no flush`);
   const traceSummary = assertFocusedTrace(format, runNumber, trace);
   console.log(
     `  run ${runNumber}: GREEN, flush=1, boundary=${traceSummary.timing.operationBoundaryMs.toFixed(2)}ms, `
@@ -1216,9 +1220,9 @@ async function runFocusedFormat(page, format, bytes, runNumber) {
     format,
     runNumber,
     load,
-    transitionAt: 44,
-    pageCount: checkpoints.at50.pagination.pageCount,
-    finalLength: checkpoints.at50.model.length,
+    transitionAt: 56,
+    pageCount: checkpoints.at62.pagination.pageCount,
+    finalLength: checkpoints.at62.model.length,
     trace: traceSummary,
     visual,
   };
@@ -1232,8 +1236,8 @@ function assertRawBoundaryTrace(format, kind, trace) {
   const cursorQueries = trace.events.filter((event) => event.type === 'wasm.getCursorRectByPathNear');
 
   assert.equal(inserts.length, 1, `${prefix}: deferred insert count`);
-  assert.equal(inserts[0].charOffset, TARGET.charOffset + 43, `${prefix}: source offset`);
-  assert.equal(inserts[0].resultCharOffset, TARGET.charOffset + 44, `${prefix}: result offset`);
+  assert.equal(inserts[0].charOffset, TARGET.charOffset + 55, `${prefix}: source offset`);
+  assert.equal(inserts[0].resultCharOffset, TARGET.charOffset + 56, `${prefix}: result offset`);
   assert.equal(inserts[0].paginationDeferred, true, `${prefix}: deferred result`);
   assert.equal(inserts[0].cellFlowChanged, true, `${prefix}: flow boundary result`);
   assert.equal(effects.length, 1, `${prefix}: consumed effect count`);
@@ -1350,14 +1354,14 @@ async function runRawBoundarySmoke(page, format, bytes, kind) {
   const initialText = initial.model.text;
   assert.equal(initialText.length, TARGET.charOffset, `${format} ${kind}: initial text length`);
 
-  await typeKeyboardOnes(page, 43);
+  await typeKeyboardOnes(page, 55);
   const beforeBoundary = await readFocusedSnapshot(page);
   assertFocusedSnapshot(
     format,
     `${kind}-raw`,
-    43,
+    55,
     beforeBoundary,
-    `${initialText}${'1'.repeat(43)}`,
+    `${initialText}${'1'.repeat(55)}`,
   );
 
   await installTrace(page);
@@ -1365,7 +1369,7 @@ async function runRawBoundarySmoke(page, format, bytes, kind) {
 
   await delay(page, 150);
   await waitTwoRafs(page);
-  const finalText = `${initialText}${'1'.repeat(44)}`;
+  const finalText = `${initialText}${'1'.repeat(56)}`;
   const timelineStart = await page.evaluate(() => performance.now());
   const finalState = await collectState(page, `${kind}-raw-after-150ms`, timelineStart);
   assertExactFocusedState(

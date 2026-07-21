@@ -181,6 +181,38 @@ fn is_caption_cell_context(cell_ctx: Option<&CellContext>) -> bool {
         .is_some_and(|entry| entry.cell_index == CAPTION_CELL_SENTINEL)
 }
 
+/// HWP5 원본 LineSeg가 저장한 column-relative 줄 시작점을 일반 본문 줄에 적용한다.
+///
+/// ParaShape의 margin/indent는 재조판 기본값이고, 원본 LineSeg.column_start는 해당
+/// 줄의 확정 좌표다. 다만 cs+sw가 단 너비와 같은 일반 줄에만 적용한다. 그림 어울림,
+/// 표 셀, 합성 LineSeg는 각각 별도 좌표계를 사용하므로 caller가 `eligible=false`로
+/// 제외해 column_start가 이중 적용되지 않게 한다.
+fn authoritative_stored_line_start_px(
+    styled_margin_left: f64,
+    line_seg: Option<&LineSeg>,
+    column_width_hu: i32,
+    dpi: f64,
+    eligible: bool,
+) -> f64 {
+    let Some(line_seg) = line_seg else {
+        return styled_margin_left;
+    };
+    let full_width_line = line_seg.column_start > 0
+        && line_seg.segment_width > 0
+        && line_seg
+            .column_start
+            .saturating_add(line_seg.segment_width)
+            .saturating_sub(column_width_hu)
+            .abs()
+            <= 200;
+    let authoritative = line_seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0;
+    if !eligible || !authoritative || !full_width_line {
+        return styled_margin_left;
+    }
+
+    styled_margin_left.max(hwpunit_to_px(line_seg.column_start, dpi))
+}
+
 fn composed_line_char_end(comp: &ComposedParagraph, line_idx: usize) -> usize {
     if let Some(next) = comp.lines.get(line_idx + 1) {
         return next.char_start;
@@ -377,71 +409,12 @@ struct RunEmitVars {
     para_index: usize,
 }
 
-fn receipt_date_stamp_shift_px(
-    cell_ctx: &Option<CellContext>,
-    comp_line: &crate::renderer::composer::ComposedLine,
-    run_idx: usize,
-    run: &crate::renderer::composer::ComposedTextRun,
-    styles: &ResolvedStyleSet,
-) -> f64 {
-    if cell_ctx.is_none() || run.text.trim() != "㊞" || run.text.chars().count() != 1 {
-        return 0.0;
-    }
-
-    if comp_line
-        .runs
-        .iter()
-        .skip(run_idx + 1)
-        .any(|r| !r.text.trim().is_empty())
-    {
-        return 0.0;
-    }
-
-    let Some(prev_run) = run_idx
-        .checked_sub(1)
-        .and_then(|idx| comp_line.runs.get(idx))
-    else {
-        return 0.0;
-    };
-    if prev_run.text.chars().count() < 8 || !prev_run.text.chars().all(|ch| ch == ' ') {
-        return 0.0;
-    }
-
-    let stamp_style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
-    let r = (stamp_style.color >> 16) & 0xFF;
-    let g = (stamp_style.color >> 8) & 0xFF;
-    let b = stamp_style.color & 0xFF;
-    let rgb_red = r > 180 && g < 120 && b < 120;
-    let bgr_red = b > 180 && g < 120 && r < 120;
-    if !(rgb_red || bgr_red) {
-        return 0.0;
-    }
-
-    let prefix_text: String = comp_line
-        .runs
-        .iter()
-        .take(run_idx.saturating_sub(1))
-        .map(|r| r.text.as_str())
-        .collect();
-    let paren_groups = prefix_text.chars().filter(|&ch| ch == ')').count();
-    let non_space_count = prefix_text.chars().filter(|ch| !ch.is_whitespace()).count();
-    if paren_groups < 3 || non_space_count < 12 {
-        return 0.0;
-    }
-
-    let prev_style = resolved_to_text_style(styles, prev_run.char_style_id, prev_run.lang_index);
-    let current_gap = estimate_text_width(&prev_run.text, &prev_style);
-    let space_count = prev_run.text.chars().count() as f64;
-    let ratio = if prev_style.ratio > 0.0 {
-        prev_style.ratio
-    } else {
-        1.0
-    };
-    // 한컴은 이 접수증 날짜 행의 인장 앞 레이아웃 공백을 일반 half-em 보다
-    // 좁게 취급한다. 원 위치는 shape 절대 좌표를 따르고, ㊞ 텍스트만 왼쪽에 남는다.
-    let hancom_gap = prev_style.font_size * ratio * 0.42 * space_count;
-    (current_gap - hancom_gap).clamp(0.0, prev_style.font_size * 2.0)
-}
+// [#2510] 종전 `receipt_date_stamp_shift_px`(#2020) 제거 — 접수증 ㊞ 를
+// "한컴 공백 0.42em" 가정으로 −21px 이동시키던 보정. 실측(무신축 래더)
+// space=0.505em 균일이라 가정이 허구였고, 실체는 구 HY 테이블의 글자
+// 과대폭(+20px)을 도장 위치에서만 상쇄하던 것 — #2430 실측 메트릭 교정으로
+// 불필요·유해(㊞ 오라클 −15px)해져 제거. 제거+교정 시 ㊞ = 오라클 +6.2px,
+// issue_2020 도장 정렬 핀 4/4 유지 (PR #2510 코멘트 5017316669 실측).
 
 /// [#1925 추출] `estimate_line_run_widths` 결과 — est 사전 폭 추정 산출물.
 struct LineWidthEst {
@@ -1912,15 +1885,15 @@ impl LayoutEngine {
                     );
                     Some(cloned)
                 } else if column_inner_width > 0.0
-                    && crate::renderer::composer::stored_lines_overflow(
+                    && crate::renderer::composer::masked_stored_lines_stale(
                         comp,
                         para,
                         column_inner_width,
                         styles,
                     )
                 {
-                    // [#2279] 마스킹 저장분할 실폭-모순 본문 문단 fresh 재래핑 —
-                    // typeset(format_paragraph)과 동일.
+                    // [#2279] 마스킹 저장분할 stale(실폭-과잉/줄수-과소) 본문 문단
+                    // fresh 재래핑 — typeset(format_paragraph)과 동일.
                     let mut cloned = comp.clone();
                     crate::renderer::composer::recompose_stored_lines_if_overflowing_body(
                         &mut cloned,
@@ -2996,7 +2969,7 @@ impl LayoutEngine {
             // - 내어쓰기(ind<0): 첫줄 margin_left, 다음줄 margin_left+|indent|
             let line_indent =
                 crate::renderer::equation_tac_flow::paragraph_line_indent(indent, line_idx);
-            let effective_margin_left = margin_left + line_indent;
+            let styled_margin_left = margin_left + line_indent;
 
             // [Task #489] Picture/Shape Square wrap (어울림) 시 LINE_SEG.cs/sw 적용.
             // 한컴이 인코딩한 정답값을 그대로 사용 (휴리스틱 없음).
@@ -3069,19 +3042,35 @@ impl LayoutEngine {
                 && comp_line.column_start > 0
                 && comp_line.segment_width > 0
                 && comp_line.segment_width < col_area_w_hu;
-            let (effective_col_x, effective_col_w) = if (has_picture_shape_square_wrap
+            let uses_stored_segment_geometry = (has_picture_shape_square_wrap
                 || line_has_inline_tac_table
                 || precomputed_body_wrap_line
                 || empty_stored_wrap_line)
                 && comp_line.segment_width > 0
-                && (line_avail_hu < col_area_w_hu - 200 || cs_significant)
-            {
+                && (line_avail_hu < col_area_w_hu - 200 || cs_significant);
+            let (effective_col_x, effective_col_w) = if uses_stored_segment_geometry {
                 let cs_px = hwpunit_to_px(comp_line.column_start, self.dpi);
                 let sw_px = hwpunit_to_px(comp_line.segment_width, self.dpi);
                 (col_area.x + cs_px, sw_px)
             } else {
                 (col_area.x, col_area.width)
             };
+            let profile = self.profile.get();
+            let hwp5_stored_line_start_eligible = cell_ctx.is_none()
+                && self.is_body_flow_col_area(col_area)
+                && matches!(alignment, Alignment::Justify | Alignment::Left)
+                && wrap_anchor.is_none()
+                && !uses_stored_segment_geometry
+                && composed.numbering_text.is_none()
+                && para.map(|p| p.controls.is_empty()).unwrap_or(false)
+                && profile.native_hwp5_layout();
+            let effective_margin_left = authoritative_stored_line_start_px(
+                styled_margin_left,
+                para.and_then(|p| p.line_segs.get(line_idx)),
+                col_area_w_hu,
+                self.dpi,
+                hwp5_stored_line_start_eligible,
+            );
 
             // 인라인 Shape가 있는 줄: 텍스트 y를 Shape 하단 baseline에 맞춤
             let text_y = if has_tac_shape
@@ -4536,9 +4525,7 @@ impl LayoutEngine {
 
                     if run_fn_markers.is_empty() {
                         // 각주 없음: 기존 방식으로 전체 TextRun 생성
-                        let stamp_shift =
-                            receipt_date_stamp_shift_px(cell_ctx, comp_line, run_idx, run, styles);
-                        let run_x = x - stamp_shift;
+                        let run_x = x;
                         let run_id = tree.next_id();
                         let run_node = RenderNode::new(
                             run_id,
@@ -4563,9 +4550,6 @@ impl LayoutEngine {
                             BoundingBox::new(run_x, y, full_width, line_height),
                         );
                         line_node.children.push(run_node);
-                        if stamp_shift > 0.0 {
-                            x = run_x;
-                        }
                     } else {
                         // 각주 있음: run을 각주 위치에서 분할하여 TextRun + FootnoteMarker 교차 생성
                         let run_chars: Vec<char> = run.text.chars().collect();
@@ -6389,6 +6373,9 @@ pub(crate) struct ParaInlineState {
     /// 현재 line 의 최대 picture height (line wrap 임계 + 다음 line advance 용)
     pub line_height: f64,
 }
+
+#[cfg(test)]
+mod issue_2439_lineseg_indent_tests;
 
 #[cfg(test)]
 mod issue_1151_v3_helper_tests {

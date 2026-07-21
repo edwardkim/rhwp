@@ -859,8 +859,17 @@ impl<'a> ReadState<'a> {
     }
 
     fn capture_shape_object(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
-        if let Some(rectangle) = self.rectangles.last_mut() {
-            rectangle.text_wrap = parse_text_wrap(attribute(element, b"TextWrap")?.as_deref());
+        let text_wrap = parse_text_wrap(attribute(element, b"TextWrap")?.as_deref());
+        // SHAPEOBJECT 는 표에도 방출되므로(write_shape_object) rectangle 뿐 아니라
+        // 표의 common.text_wrap 도 되읽어야 한다. 종전엔 rectangle 만 처리해 표의
+        // TextWrap(예: TopAndBottom)이 HML 재로드 시 기본값 Square 로 유실됐다.
+        // capture_object_position 과 동일한 표/사각형 판별을 사용한다.
+        if self.nearest_object_is_table() {
+            if let Some(table) = self.tables.last_mut() {
+                table.common.text_wrap = text_wrap;
+            }
+        } else if let Some(rectangle) = self.rectangles.last_mut() {
+            rectangle.text_wrap = text_wrap;
         }
         Ok(())
     }

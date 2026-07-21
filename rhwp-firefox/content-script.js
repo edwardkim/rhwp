@@ -4,8 +4,8 @@
 (() => {
   'use strict';
 
-  const HWP_EXTENSIONS = /\.(hwp|hwpx)(\?.*)?$/i;
-  const DOCUMENT_PATH_EXTENSIONS = /\.(hwp|hwpx)$/i;
+  const HWP_EXTENSIONS = /\.(hwp|hwpx|hml)(\?.*)?$/i;
+  const DOCUMENT_PATH_EXTENSIONS = /\.(hwp|hwpx|hml)$/i;
   const GITHUB_NON_DOCUMENT_MARKERS = new Set(['edit', 'commits', 'blame', 'tree']);
   const BADGE_CLASS = 'rhwp-badge';
   const HOVER_CLASS = 'rhwp-hover-card';
@@ -596,7 +596,8 @@
   // ─── 링크 처리 ───
 
   function processLinks(root = document) {
-    const anchors = root.querySelectorAll('a[href]');
+    const anchors = root.matches?.('a[href]') ? [root] : [];
+    anchors.push(...root.querySelectorAll('a[href]'));
     for (const anchor of anchors) {
       if (anchor.hasAttribute(PROCESSED_ATTR)) continue;
       if (!isHwpLink(anchor)) continue;

@@ -109,6 +109,43 @@ fn test_parse_header_control() {
     }
 }
 
+/// [#2648] 머리말 LIST_HEADER 레코드 페이로드(list_attr/text_width/text_height/
+/// text_ref/num_ref)가 파싱돼야 한다. 종전엔 레코드 뒤 문단만 읽고 페이로드
+/// 자체는 무시해 이 필드들이 항상 0 이었다.
+#[test]
+fn test_parse_header_control_reads_list_header_layout_fields() {
+    let mut ctrl_data = Vec::new();
+    ctrl_data.extend_from_slice(&0u32.to_le_bytes()); // attr: Both
+
+    let mut list_data = Vec::new();
+    list_data.extend_from_slice(&1u16.to_le_bytes()); // n_paragraphs
+    list_data.extend_from_slice(&0x0002_0000u32.to_le_bytes()); // list_attr (비영)
+    list_data.extend_from_slice(&0u16.to_le_bytes()); // 예약
+    list_data.extend_from_slice(&5000u32.to_le_bytes()); // text_width
+    list_data.extend_from_slice(&3000u32.to_le_bytes()); // text_height
+    list_data.push(7); // text_ref
+    list_data.push(9); // num_ref
+    list_data.extend_from_slice(&0u16.to_le_bytes()); // ext_flags
+    list_data.extend_from_slice(&[0u8; 14]); // 예약
+
+    let child_records = vec![
+        make_record(tags::HWPTAG_LIST_HEADER, 2, list_data),
+        make_record(tags::HWPTAG_PARA_HEADER, 3, make_para_header_data(6)),
+        make_record(tags::HWPTAG_PARA_TEXT, 4, make_para_text_data("머리말")),
+    ];
+
+    let ctrl = parse_header_control(&ctrl_data, &child_records);
+    let Control::Header(header) = ctrl else {
+        panic!("Expected Header control");
+    };
+    assert_eq!(header.list_attr, 0x0002_0000, "list_attr 이 보존돼야 함");
+    assert_eq!(header.text_width, 5000, "text_width 가 보존돼야 함");
+    assert_eq!(header.text_height, 3000, "text_height 가 보존돼야 함");
+    assert_eq!(header.text_ref, 7, "text_ref 가 보존돼야 함");
+    assert_eq!(header.num_ref, 9, "num_ref 가 보존돼야 함");
+    assert_eq!(header.paragraphs.len(), 1);
+}
+
 #[test]
 fn test_parse_footer_control() {
     let mut ctrl_data = Vec::new();

@@ -218,6 +218,9 @@ fn parse_master_page_start(e: &quick_xml::events::BytesStart, master_page: &mut 
                 master_page.overlap = duplicate;
             }
             b"pageNumber" => master_page.hwpx_page_number = Some(parse_u16(&attr)),
+            // 표지(첫 쪽) 전용 바탕쪽. serializer 는 방출하나 종전엔 미독 →
+            // pageFront="1" 바탕쪽이 왕복 시 "0" 으로 적용 범위가 바뀌었다.
+            b"pageFront" => master_page.page_front = attr_str(&attr) != "0",
             _ => {}
         }
     }
@@ -1237,6 +1240,15 @@ fn parse_start_num(e: &quick_xml::events::BytesStart, sec_def: &mut SectionDef) 
             b"pic" => sec_def.picture_num = parse_u16(&attr),
             b"tbl" => sec_def.table_num = parse_u16(&attr),
             b"equation" => sec_def.equation_num = parse_u16(&attr),
+            // 쪽 번호 시작 종류(0=이어서/1=홀수/2=짝수, flags bit20-21). 종전엔
+            // 미독이라 HWPX 왕복 시 홀/짝 시작이 유실됐다(serializer 는 BOTH 고정).
+            b"pageStartsOn" => {
+                sec_def.page_num_type = match attr_str(&attr).as_str() {
+                    "ODD" => 1,
+                    "EVEN" => 2,
+                    _ => 0,
+                };
+            }
             _ => {}
         }
     }
@@ -2099,14 +2111,24 @@ fn parse_table_cell(
                         }
                     }
                     b"subList" => {
-                        // subList: vertAlign 속성 파싱
+                        // subList: vertAlign + textDirection 속성 파싱
                         for attr in ce.attributes().flatten() {
-                            if attr.key.as_ref() == b"vertAlign" {
-                                cell.vertical_align = match attr_str(&attr).as_str() {
-                                    "CENTER" => VerticalAlign::Center,
-                                    "BOTTOM" => VerticalAlign::Bottom,
-                                    _ => VerticalAlign::Top,
-                                };
+                            match attr.key.as_ref() {
+                                b"vertAlign" => {
+                                    cell.vertical_align = match attr_str(&attr).as_str() {
+                                        "CENTER" => VerticalAlign::Center,
+                                        "BOTTOM" => VerticalAlign::Bottom,
+                                        _ => VerticalAlign::Top,
+                                    };
+                                }
+                                // 세로쓰기 셀(textDirection). serializer 는 셀 <hp:subList>
+                                // 에 방출하지만 종전엔 vertAlign 만 읽어 세로쓰기가 왕복 시
+                                // 유실됐다(cellPr 경로는 serializer 가 방출하지 않음).
+                                b"textDirection" => {
+                                    cell.text_direction =
+                                        if attr_str(&attr) == "VERTICAL" { 1 } else { 0 };
+                                }
+                                _ => {}
                             }
                         }
                     }
@@ -2368,6 +2390,13 @@ fn parse_picture(
                                 }
                                 b"flowWithText" => common.flow_with_text = parse_bool(&attr),
                                 b"allowOverlap" => common.allow_overlap = parse_bool(&attr),
+                                // holdAnchorAndSO(쪽나눔 방지). 방출측은 모든 개체에 내지만
+                                // 종전엔 표 파서만 되읽어, 그림/도형/차트/OLE 는 prevent_page_break
+                                // 이 0 으로 유실됐다(표 파서와 동형으로 보강).
+                                b"holdAnchorAndSO" => {
+                                    common.prevent_page_break =
+                                        if parse_bool(&attr) { 1 } else { 0 };
+                                }
                                 b"vertRelTo" => {
                                     common.vert_rel_to = match attr_str(&attr).as_str() {
                                         "PAPER" => VertRelTo::Paper,
@@ -2715,6 +2744,7 @@ enum ShapeStorageKind {
 struct ObjectElementIds {
     instid: u32,
     round_rate: u8,
+    is_reverse_hv: bool,
 }
 
 /// HWPX 일부 샘플은 `<hp:curSz width="0" height="0">`를 기록하면서 실제 크기는
@@ -2830,6 +2860,9 @@ fn parse_object_element_attrs(
                     _ => crate::model::shape::ObjectNumberingType::None,
                 };
             }
+            // 선/연결선의 방향 뒤집기(isReverseHV). serializer 는 방출하나 파서가
+            // 되읽지 않아 HWPX 원본 선의 방향 반전이 왕복 시 유실됐다.
+            b"isReverseHV" => ids.is_reverse_hv = attr_str(&attr) == "1",
             _ => {}
         }
     }
@@ -2927,6 +2960,11 @@ fn parse_object_layout_child(
                     }
                     b"flowWithText" => common.flow_with_text = parse_bool(&attr),
                     b"allowOverlap" => common.allow_overlap = parse_bool(&attr),
+                    // holdAnchorAndSO(쪽나눔 방지). 방출측은 모든 개체에 내지만
+                    // 종전엔 표 파서만 되읽어 개체 배치에선 prevent_page_break 이 유실됐다.
+                    b"holdAnchorAndSO" => {
+                        common.prevent_page_break = if parse_bool(&attr) { 1 } else { 0 };
+                    }
                     b"vertRelTo" => {
                         common.vert_rel_to = match attr_str(&attr).as_str() {
                             "PAPER" => VertRelTo::Paper,
@@ -3418,13 +3456,23 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                         let mut img = ImageFill::default();
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
+                                // [#2563] 헤더(borderFill) 파서와 동일한 12종 매핑.
+                                // 종전엔 4종만 받아 TOTAL 등 8종이 TILE 로 붕괴했다.
                                 b"mode" => {
                                     img.fill_mode = match attr_str(&attr).as_str() {
                                         "TILE" | "TILE_ALL" => ImageFillMode::TileAll,
+                                        "TILE_HORZ_TOP" => ImageFillMode::TileHorzTop,
+                                        "TILE_HORZ_BOTTOM" => ImageFillMode::TileHorzBottom,
+                                        "TILE_VERT_LEFT" => ImageFillMode::TileVertLeft,
+                                        "TILE_VERT_RIGHT" => ImageFillMode::TileVertRight,
+                                        "CENTER" => ImageFillMode::Center,
+                                        "CENTER_TOP" => ImageFillMode::CenterTop,
+                                        "CENTER_BOTTOM" => ImageFillMode::CenterBottom,
                                         "FIT" | "FIT_TO_SIZE" | "STRETCH" => {
                                             ImageFillMode::FitToSize
                                         }
-                                        "CENTER" => ImageFillMode::Center,
+                                        "TOTAL" => ImageFillMode::Total,
+                                        "TOP_LEFT_ALIGN" => ImageFillMode::LeftTop,
                                         _ => ImageFillMode::TileAll,
                                     };
                                 }
@@ -3432,6 +3480,35 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                             }
                         }
                         fill.image = Some(img);
+                    }
+                    // [#2563] <hc:imgBrush> 의 <hc:img> 자식. 종전엔 이 arm 이 없어
+                    // binaryItemIDRef/bright/contrast/effect 가 전부 버려졌고,
+                    // bin_data_id 가 0 이라 직렬화가 <hc:img> 를 아예 못 내
+                    // 이미지로 채운 도형이 왕복 후 빈 도형이 됐다.
+                    // 헤더(borderFill) 파서 header.rs 의 b"img" arm 과 동형.
+                    b"img" | b"image" => {
+                        if let Some(ref mut img_fill) = fill.image {
+                            for attr in ce.attributes().flatten() {
+                                match attr.key.as_ref() {
+                                    b"binaryItemIDRef" => {
+                                        let val = attr_str(&attr);
+                                        let num: String =
+                                            val.chars().filter(|c| c.is_ascii_digit()).collect();
+                                        img_fill.bin_data_id = num.parse().unwrap_or(0);
+                                    }
+                                    b"bright" => img_fill.brightness = parse_i8(&attr),
+                                    b"contrast" => img_fill.contrast = parse_i8(&attr),
+                                    b"effect" => {
+                                        img_fill.effect = match attr_str(&attr).as_str() {
+                                            "GRAY_SCALE" => 1,
+                                            "BLACK_WHITE" => 2,
+                                            _ => 0, // REAL_PIC
+                                        };
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        }
                     }
                     _ => {}
                 }
@@ -3861,6 +3938,7 @@ fn parse_shape_object(
                 x: x_coords[1],
                 y: y_coords[1],
             },
+            started_right_or_bottom: object_ids.is_reverse_hv,
             ..Default::default()
         }),
         b"connectLine" => ShapeObject::Line(LineShape {
@@ -3883,7 +3961,7 @@ fn parse_shape_object(
                 control_points: connect_control_points,
                 raw_trailing: Vec::new(),
             }),
-            ..Default::default()
+            started_right_or_bottom: object_ids.is_reverse_hv,
         }),
         b"arc" => ShapeObject::Arc(ArcShape {
             common,
@@ -5717,7 +5795,8 @@ fn parse_hp_chart_element(
         }
     }
 
-    parse_common_shape_children(reader, &mut common, b"chart")?;
+    let mut extent: Option<(i32, i32)> = None;
+    parse_common_shape_children(reader, &mut common, b"chart", &mut extent)?;
     if numbering_type_picture {
         common.hwp5_gen_shape_attr_bit28 = true;
     }
@@ -5730,8 +5809,10 @@ fn parse_hp_chart_element(
     let mut ole = OleShape::default();
     ole.common = common;
     ole.bin_data_id = 60000u32 + chart_num as u32;
-    ole.extent_x = 7200;
-    ole.extent_y = 7200;
+    // <hc:extent> 가 있으면 원본 개체 크기를 보존한다(없으면 종전 기본값 7200).
+    let (ext_x, ext_y) = extent.unwrap_or((7200, 7200));
+    ole.extent_x = if ext_x > 0 { ext_x } else { 7200 };
+    ole.extent_y = if ext_y > 0 { ext_y } else { 7200 };
     apply_hwpx_ole_shape_component_contract(&mut ole);
     Ok(Some(Control::Shape(Box::new(ShapeObject::Ole(Box::new(
         ole,
@@ -5745,15 +5826,28 @@ fn parse_hp_ole_element(
 ) -> Result<Option<Control>, HwpxError> {
     use crate::model::shape::OleShape;
 
+    use crate::model::shape::OleDrawingAspect;
+
     let mut common = CommonObjAttr::default();
     common.hwp5_gen_shape_attr_bit26 = true;
     let mut bin_id: u32 = 0;
     let mut numbering_type_picture = false;
+    let mut draw_aspect = OleDrawingAspect::default();
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
             b"numberingType" => {
                 numbering_type_picture = attr_str(&attr).eq_ignore_ascii_case("PICTURE");
+            }
+            // 표시 방식(아이콘/썸네일/인쇄용/내용). serializer 는 방출하나 종전엔
+            // 파서가 읽지 않아 ICON 등이 왕복 시 CONTENT 로 바뀌었다.
+            b"drawAspect" => {
+                draw_aspect = match attr_str(&attr).as_str() {
+                    "ICON" => OleDrawingAspect::Icon,
+                    "THUMBNAIL" => OleDrawingAspect::Thumbnail,
+                    "DOCPRINT" => OleDrawingAspect::DocPrint,
+                    _ => OleDrawingAspect::Content,
+                };
             }
             b"zOrder" => common.z_order = parse_i32(&attr),
             b"textWrap" => {
@@ -5785,7 +5879,8 @@ fn parse_hp_ole_element(
         }
     }
 
-    parse_common_shape_children(reader, &mut common, b"ole")?;
+    let mut extent: Option<(i32, i32)> = None;
+    parse_common_shape_children(reader, &mut common, b"ole", &mut extent)?;
     if numbering_type_picture {
         common.hwp5_gen_shape_attr_bit28 = true;
     }
@@ -5794,8 +5889,11 @@ fn parse_hp_ole_element(
     let mut ole = OleShape::default();
     ole.common = common;
     ole.bin_data_id = bin_id;
-    ole.extent_x = 7200;
-    ole.extent_y = 7200;
+    ole.drawing_aspect = draw_aspect;
+    // <hc:extent> 가 있으면 원본 개체 크기를 보존한다(없으면 종전 기본값 7200).
+    let (ext_x, ext_y) = extent.unwrap_or((7200, 7200));
+    ole.extent_x = if ext_x > 0 { ext_x } else { 7200 };
+    ole.extent_y = if ext_y > 0 { ext_y } else { 7200 };
     apply_hwpx_ole_shape_component_contract(&mut ole);
     Ok(Some(Control::Shape(Box::new(ShapeObject::Ole(Box::new(
         ole,
@@ -5838,6 +5936,9 @@ fn parse_common_shape_children(
     reader: &mut Reader<&[u8]>,
     common: &mut CommonObjAttr,
     end_tag: &[u8],
+    // OLE 전용 `<hc:extent>`(원본 개체 크기) 수집용. 호출자(ole/chart)만 사용한다.
+    // 종전엔 이 자식을 무시하고 호출자가 7200 을 하드코딩해 개체 크기가 유실됐다.
+    extent_out: &mut Option<(i32, i32)>,
 ) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
     loop {
@@ -5846,6 +5947,18 @@ fn parse_common_shape_children(
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
                 match local {
+                    b"extent" => {
+                        let mut x = 0i32;
+                        let mut y = 0i32;
+                        for attr in ce.attributes().flatten() {
+                            match attr.key.as_ref() {
+                                b"x" => x = parse_i32(&attr),
+                                b"y" => y = parse_i32(&attr),
+                                _ => {}
+                            }
+                        }
+                        *extent_out = Some((x, y));
+                    }
                     b"sz" => {
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
@@ -5897,6 +6010,13 @@ fn parse_common_shape_children(
                                 b"treatAsChar" => common.treat_as_char = parse_bool(&attr),
                                 b"flowWithText" => common.flow_with_text = parse_bool(&attr),
                                 b"allowOverlap" => common.allow_overlap = parse_bool(&attr),
+                                // holdAnchorAndSO(쪽나눔 방지). 방출측은 모든 개체에 내지만
+                                // 종전엔 표 파서만 되읽어, 그림/도형/차트/OLE 는 prevent_page_break
+                                // 이 0 으로 유실됐다(표 파서와 동형으로 보강).
+                                b"holdAnchorAndSO" => {
+                                    common.prevent_page_break =
+                                        if parse_bool(&attr) { 1 } else { 0 };
+                                }
                                 _ => {}
                             }
                         }
@@ -7330,7 +7450,7 @@ mod tests {
           </hp:subList>
         </hp:drawText>
         <hp:sz width="2600" height="2600" protect="1"/>
-        <hp:pos treatAsChar="0" flowWithText="1" allowOverlap="1" vertRelTo="PARA" horzRelTo="PARA"/>
+        <hp:pos treatAsChar="0" flowWithText="1" allowOverlap="1" holdAnchorAndSO="1" vertRelTo="PARA" horzRelTo="PARA"/>
       </hp:rect>
       <hp:t/>
     </hp:run>
@@ -7347,9 +7467,132 @@ mod tests {
         assert!(rect.common.size_protect);
         assert!(rect.common.flow_with_text);
         assert!(rect.common.allow_overlap);
+        // holdAnchorAndSO="1" → prevent_page_break 이 비표 개체에서도 되읽혀야 한다.
+        assert_eq!(rect.common.prevent_page_break, 1);
         assert_eq!(
             rect.common.text_flow,
             crate::model::shape::TextFlow::RightOnly
+        );
+    }
+
+    #[test]
+    fn test_parse_line_preserves_is_reverse_hv() {
+        // <hp:line isReverseHV="1"> → LineShape.started_right_or_bottom.
+        // 종전엔 파서가 isReverseHV 를 읽지 않아 방향 반전이 유실됐다.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:line id="1" zOrder="0" textWrap="SQUARE" textFlow="BOTH_SIDES" isReverseHV="1">
+        <hp:sz width="1000" height="0" protect="0"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"/>
+        <hp:pt0 x="0" y="0"/>
+        <hp:pt1 x="1000" y="0"/>
+      </hp:line>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Line(line) = shape.as_ref() else {
+            panic!("expected line shape");
+        };
+        assert!(
+            line.started_right_or_bottom,
+            "isReverseHV=\"1\" 이 started_right_or_bottom 로 되읽혀야 함"
+        );
+    }
+
+    #[test]
+    fn test_parse_ole_preserves_extent_and_draw_aspect() {
+        // <hc:extent> 원본 개체 크기와 drawAspect(표시 방식)가 IR 로 되읽혀야 한다.
+        // 종전엔 extent 를 7200 으로 하드코딩하고 drawAspect 를 읽지 않아,
+        // 모든 OLE 이 7200x7200 / CONTENT 로 왕복에서 뭉개졌다.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="1" zOrder="0" drawAspect="ICON" binaryItemIDRef="ole1">
+        <hp:sz width="2600" height="2600"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"/>
+        <hc:extent x="12345" y="6789"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected ole shape");
+        };
+        assert_eq!(ole.extent_x, 12345, "hc:extent x 가 보존돼야 함");
+        assert_eq!(ole.extent_y, 6789, "hc:extent y 가 보존돼야 함");
+        assert_eq!(
+            ole.drawing_aspect,
+            crate::model::shape::OleDrawingAspect::Icon,
+            "drawAspect=ICON 이 보존돼야 함"
+        );
+    }
+
+    #[test]
+    fn test_shape_img_brush_preserves_image_ref_and_mode() {
+        // [#2563] 도형 <hc:imgBrush> 의 <hc:img> 자식과 12종 mode 매핑.
+        // 종전엔 mode 4종만 받아 TOTAL 이 TILE 로 붕괴했고, <hc:img> arm 이 없어
+        // binaryItemIDRef/bright/contrast/effect 가 전부 버려졌다. bin_data_id 가
+        // 0 이면 직렬화가 <hc:img> 를 못 내므로 이미지 도형이 빈 도형이 된다.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:rect id="1" zOrder="0" textWrap="SQUARE">
+        <hp:sz width="2600" height="2600"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"/>
+        <hc:fillBrush>
+          <hc:imgBrush mode="TOTAL">
+            <hc:img binaryItemIDRef="image3" bright="10" contrast="-5" effect="GRAY_SCALE"/>
+          </hc:imgBrush>
+        </hc:fillBrush>
+      </hp:rect>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Rectangle(rect) = shape.as_ref() else {
+            panic!("expected rectangle shape");
+        };
+        let img = rect
+            .drawing
+            .fill
+            .image
+            .as_ref()
+            .expect("imgBrush 는 ImageFill 을 남겨야 함");
+
+        assert_eq!(img.bin_data_id, 3, "binaryItemIDRef 가 보존돼야 함");
+        assert_eq!(img.brightness, 10, "bright 가 보존돼야 함");
+        assert_eq!(img.contrast, -5, "contrast 가 보존돼야 함");
+        assert_eq!(img.effect, 1, "effect=GRAY_SCALE 가 보존돼야 함");
+        assert_eq!(
+            img.fill_mode,
+            crate::model::style::ImageFillMode::Total,
+            "mode=TOTAL 이 TILE 로 붕괴하면 안 됨"
         );
     }
 

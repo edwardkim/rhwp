@@ -5,8 +5,8 @@
 (() => {
   'use strict';
 
-  const HWP_EXTENSIONS = /\.(hwp|hwpx)(\?.*)?$/i;
-  const DOCUMENT_PATH_EXTENSIONS = /\.(hwp|hwpx)$/i;
+  const HWP_EXTENSIONS = /\.(hwp|hwpx|hml)(\?.*)?$/i;
+  const DOCUMENT_PATH_EXTENSIONS = /\.(hwp|hwpx|hml)$/i;
   const GITHUB_NON_DOCUMENT_MARKERS = new Set(['edit', 'commits', 'blame', 'tree']);
   const BADGE_CLASS = 'rhwp-badge';
   const HOVER_CLASS = 'rhwp-hover-card';
@@ -37,17 +37,11 @@
   if (shouldAnnounce) {
     document.documentElement.setAttribute('data-hwp-extension', 'rhwp');
     window.dispatchEvent(new CustomEvent('hwp-extension-ready', {
-      detail: { name: 'rhwp', capabilities: ['preview'] }
+      detail: { name: 'rhwp', capabilities: ['preview', 'edit', 'print'] }
     }));
   }
 
   // ─── 유틸리티 ───
-
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
 
   function extractFilename(anchor) {
     // URL에서 파일명 추출
@@ -296,7 +290,7 @@
         card.appendChild(createDiv('rhwp-hover-desc', truncate(description, 500)));
       }
     } else {
-      const ext = filename.match(/\.(hwp|hwpx)$/i)?.[1]?.toUpperCase() || 'HWP';
+      const ext = filename.match(/\.(hwp|hwpx|hml)$/i)?.[1]?.toUpperCase() || 'HWP';
       card.appendChild(createDiv('rhwp-hover-title', truncate(filename, 200)));
       card.appendChild(createDiv('rhwp-hover-meta', `${ext} \uBB38\uC11C`));
     }
@@ -496,7 +490,8 @@
   // ─── 링크 처리 ───
 
   function processLinks(root = document) {
-    const anchors = root.querySelectorAll('a[href]');
+    const anchors = root.matches?.('a[href]') ? [root] : [];
+    anchors.push(...root.querySelectorAll('a[href]'));
     for (const anchor of anchors) {
       if (anchor.hasAttribute(PROCESSED_ATTR)) continue;
       if (!isHwpLink(anchor)) continue;

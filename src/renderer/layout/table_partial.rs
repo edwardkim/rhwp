@@ -12,7 +12,9 @@ use super::border_rendering::{
 use super::table_layout::{calc_nested_split_rows, NestedTableSplit};
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::find_bin_data;
-use super::{CellContext, CellPathEntry, LayoutEngine};
+use super::{
+    repeats_native_empty_host_rowbreak_fragment_margin, CellContext, CellPathEntry, LayoutEngine,
+};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
@@ -1453,6 +1455,13 @@ impl LayoutEngine {
             return y_start;
         }
 
+        let repeat_fragment_outer_margin = repeats_native_empty_host_rowbreak_fragment_margin(
+            self.profile.get().native_hwp5_layout(),
+            paragraphs,
+            para_index,
+            control_index,
+        );
+
         // 분할 표 첫 부분: vert_offset 적용 (자리차지 표의 세로 오프셋).
         // [Task #712] HwpUnit=u32 이라 `vertical_offset > 0` 는 음수 비트표현
         // (예: -1796 HU = 0xFFFFF8FC = 4294965500u32) 도 양수로 통과시켜
@@ -1461,7 +1470,7 @@ impl LayoutEngine {
         // `raw_y.max(y_start)` 클램프가 있어 음수 무력화. Partial 경로에는
         // 클램프가 없으므로 게이트를 signed 비교로 정정해 동등 효과.
         let vert_off_signed = table.common.vertical_offset as i32;
-        let y_start = if !is_continuation
+        let effective_vertical_offset = if !is_continuation
             && !table.common.treat_as_char
             && matches!(
                 table.common.text_wrap,
@@ -1485,10 +1494,9 @@ impl LayoutEngine {
                 .get(&para_index)
                 .copied()
                 .unwrap_or(0.0);
-            let eff_off = (hwpunit_to_px(vert_off_signed, self.dpi) - host_h).max(0.0);
-            y_start + eff_off
+            (hwpunit_to_px(vert_off_signed, self.dpi) - host_h).max(0.0)
         } else {
-            y_start
+            0.0
         };
         // [#2287 후속/1.hwpx p28] 같은 단의 직전 흐름 표와의 미세 겹침 방지
         // 안전망: 자리차지 표의 v_off/outer 흐름 미가산(#2097 반증 기록 축 —
@@ -1496,7 +1504,7 @@ impl LayoutEngine {
         // 좌표가 직전 표 렌더 끝보다 소폭(6.4px) 이르게 잡히면 괘선이 겹쳐
         // 렌더된다. 흐름 표(vert=문단·비 TAC) 한정으로 직전 표 렌더 하단
         // 아래로 push-down — 겹침이 없으면 no-op.
-        let y_start = if !table.common.treat_as_char
+        let is_para_flow_table = !table.common.treat_as_char
             && matches!(
                 table.common.text_wrap,
                 crate::model::shape::TextWrap::TopAndBottom
@@ -1504,20 +1512,56 @@ impl LayoutEngine {
             && matches!(
                 table.common.vert_rel_to,
                 crate::model::shape::VertRelTo::Para
-            ) {
+            );
+        let y_start = if is_para_flow_table {
             let prev_table_end = col_node
                 .children
                 .iter()
-                .filter(|c| matches!(c.node_type, RenderNodeType::Table(_)))
-                .map(|c| c.bbox.y + c.bbox.height)
+                .filter_map(|child| {
+                    let RenderNodeType::Table(meta) = &child.node_type else {
+                        return None;
+                    };
+                    let repeated_previous_bottom = if repeat_fragment_outer_margin {
+                        meta.para_index
+                            .zip(meta.control_index)
+                            .and_then(|(pi, ci)| paragraphs.get(pi)?.controls.get(ci))
+                            .and_then(|control| match control {
+                                Control::Table(previous) => Some(hwpunit_to_px(
+                                    previous.outer_margin_bottom as i32,
+                                    self.dpi,
+                                )),
+                                _ => None,
+                            })
+                            .unwrap_or(0.0)
+                    } else {
+                        0.0
+                    };
+                    Some(child.bbox.y + child.bbox.height + repeated_previous_bottom)
+                })
                 .fold(f64::NEG_INFINITY, f64::max);
-            if prev_table_end.is_finite() && y_start < prev_table_end - 0.5 {
+            if repeat_fragment_outer_margin {
+                // The strict native-HWP shape uses the painted predecessor plus its trailing
+                // margin as the flow base, then opens this fragment's top margin.  Apply the
+                // positive object offset only to the first fragment.  This ordering restores the
+                // 965HU p2 gap (283 previous-bottom + 283 current-top + 399 offset) and repeats
+                // only 283HU at the p3 continuation top.
+                let flow_base = if prev_table_end.is_finite() {
+                    y_start.max(prev_table_end)
+                } else {
+                    y_start
+                };
+                flow_base
+                    + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+                    + effective_vertical_offset
+            } else if prev_table_end.is_finite()
+                && y_start + effective_vertical_offset < prev_table_end - 0.5
+            {
                 prev_table_end
             } else {
-                y_start
+                y_start + effective_vertical_offset
             }
         } else {
-            y_start
+            y_start + effective_vertical_offset
         };
 
         let col_count = table.col_count as usize;

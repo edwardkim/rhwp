@@ -57,3 +57,10 @@ edwardkim <tangokorea@gmail.com> edward.kim <edward.kim@minervasoft.co.kr>
 # ── oleg-sung: 오타 표기(Sungyrovsky) + 이메일 2종 통합 ──
 Oleg Sungurovsky <safasgasc.asfg@gmail.com> Oleg Sungyrovsky <andreisungurovsky@yandex.ru>
 Oleg Sungurovsky <safasgasc.asfg@gmail.com> Oleg Sungurovsky <andreisungurovsky@yandex.ru>
+
+# ── v0.7.19 신규 기여자 (CHANGELOG 기준) ──
+# @cskwork — HML open/semantics-preserving save (#2219), MessageChannel embed (#2187)
+cskwork <76669236+cskwork@users.noreply.github.com> cskwork <csk917work@gmail.com>
+cskwork <76669236+cskwork@users.noreply.github.com> donga-csk <76669236+cskwork@users.noreply.github.com>
+# @lpaiu-cs (Juneyoung Kim) — undo/redo migration 연작
+lpaiu-cs <lpaiu.cs@gmail.com> 김준영 (Juneyoung, Kim) <lpaiu.cs@gmail.com>

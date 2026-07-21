@@ -92,7 +92,7 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 
 ```bash
 cargo fmt --all -- --check                   # 포맷 정책 준수
-cargo test --profile release-test --tests    # 통합 테스트 포함 전체 (3,300+)
+cargo test --profile release-test --tests    # 통합 테스트 포함 전체 (3,400+)
 cargo clippy -- -D warnings                  # 린트 경고 0건
 ```
 
@@ -178,6 +178,11 @@ python tools/object_visual_regression.py --preset ovr5 -o out/ovr --diff-against
 # (수동 3단계 흐름도 그대로 동작 — 수정 전 baseline 저장, 수정 후 비교)
 python tools/object_visual_regression.py <샘플.hwp> -o out/ovr --no-hwp --save-baseline
 python tools/object_visual_regression.py <샘플.hwp> -o out/ovr2 --no-hwp --baseline out/ovr/baseline.json
+
+# 편집-스윕 — 편집 경로 PR(vpos·pagination·undo)의 가짜 페이지 변동 검출
+# devel 과 브랜치에서 각각 스윕 → 공통/해소/신규 분류 리포트 (신규 존재 시 exit 1)
+cargo run --release --example edit_sweep -- samples -o out/sweep/branch.tsv
+cargo run --release --example edit_sweep -- --compare out/sweep/devel.tsv out/sweep/branch.tsv -o out/sweep/report.md
 
 # 라운드트립 시각 기하 회귀
 cargo run --release --bin rhwp -- render-diff <샘플.hwp>

@@ -976,9 +976,17 @@ fn parse_line_shape_data(data: &[u8], line: &mut LineShape, is_connector: bool) 
         let start_subject_index = r.read_u32().unwrap_or(0);
         let end_subject_id = r.read_u32().unwrap_or(0);
         let end_subject_index = r.read_u32().unwrap_or(0);
-        let count = r.read_u32().unwrap_or(0) as usize;
+        // countCP 는 파일에서 온 u32 다. 남은 바이트로 실제 담을 수 있는 개수
+        // (제어점당 4+4+2=10바이트)로 상한을 둔다. 종전엔 상한이 없어
+        // (a) Vec::with_capacity 가 최대 ~51GB 예약을 시도해 RawVec 오버플로
+        // panic/abort, (b) read_*().unwrap_or(0) 가 EOF 를 삼켜 루프가 count
+        // 만큼(최대 40억회) 0 을 채우며 도는 문제가 있었다.
+        let count = (r.read_u32().unwrap_or(0) as usize).min(r.remaining() / 10);
         let mut control_points = Vec::with_capacity(count);
         for _ in 0..count {
+            if r.remaining() < 10 {
+                break;
+            }
             let x = r.read_i32().unwrap_or(0);
             let y = r.read_i32().unwrap_or(0);
             let point_type = r.read_u16().unwrap_or(0);
@@ -1095,6 +1103,33 @@ fn parse_curve_shape_data(data: &[u8], curve: &mut CurveShape) {
 #[cfg(test)]
 mod task195_tests {
     use super::*;
+
+    #[test]
+    fn connector_control_point_count_is_bounded_by_remaining() {
+        // 악의적 countCP(0xFFFFFFFF)가 (a) ~51GB Vec 예약으로 abort 하거나
+        // (b) EOF 를 삼킨 채 40억회 루프를 도는 일이 없어야 한다.
+        // 페이로드: link_type(4)+ssid(4)+ssidx(4)+esid(4)+esidx(4)=20, 그 뒤 countCP.
+        let mut data = Vec::new();
+        data.extend_from_slice(&0i32.to_le_bytes()); // start.x
+        data.extend_from_slice(&0i32.to_le_bytes()); // start.y
+        data.extend_from_slice(&0i32.to_le_bytes()); // end.x
+        data.extend_from_slice(&0i32.to_le_bytes()); // end.y
+        data.extend_from_slice(&0u32.to_le_bytes()); // link_type
+        data.extend_from_slice(&0u32.to_le_bytes()); // start_subject_id
+        data.extend_from_slice(&0u32.to_le_bytes()); // start_subject_index
+        data.extend_from_slice(&0u32.to_le_bytes()); // end_subject_id
+        data.extend_from_slice(&0u32.to_le_bytes()); // end_subject_index
+        data.extend_from_slice(&0xFFFF_FFFFu32.to_le_bytes()); // countCP (악성)
+
+        let mut line = LineShape::default();
+        parse_line_shape_data(&data, &mut line, true);
+        let connector = line.connector.expect("connector 파싱");
+        assert!(
+            connector.control_points.is_empty(),
+            "남은 바이트가 없으므로 제어점은 비어야 함: {}",
+            connector.control_points.len()
+        );
+    }
 
     #[test]
     fn test_parse_ole_shape_minimal() {

@@ -1453,6 +1453,25 @@ pub fn recompose_stored_single_line_if_overflowing(
         .first()
         .map(|l| estimate_composed_line_width(l, styles) > cell_inner_width_px * 1.05)
         .unwrap_or(false);
+    if std::env::var("RHWP_DIAG_CELLREWRAP").is_ok() && over {
+        if let Some(l) = composed.lines.first() {
+            for run in &l.runs {
+                let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                eprintln!(
+                    "DIAG_CELLREWRAP inner={:.1} fs={:.1} lsp={:.2} font={:?} w={:.1} text={:?}",
+                    cell_inner_width_px,
+                    ts.font_size,
+                    ts.letter_spacing,
+                    ts.font_family.split(',').next().unwrap_or(""),
+                    estimate_text_width(effective_text_for_metrics(run), &ts),
+                    effective_text_for_metrics(run)
+                        .chars()
+                        .take(10)
+                        .collect::<String>(),
+                );
+            }
+        }
+    }
     if !over {
         return;
     }
@@ -1523,17 +1542,73 @@ pub fn stored_lines_overflow(
     fired
 }
 
-/// [#2279] 본문(column) 판 부실-저장 예외 — 저장 분할이 실폭 모순이면
-/// 저장을 불신하고 본문 경로(`recompose_for_body_width` — 글자모양 재분할
-/// 포함)로 fresh 재래핑한다. 셀 판(#2291, 1줄 한정)과 같은 원리의 다중줄
-/// 일반화 + 마스킹 한정. 정상 분할(전 줄 실폭 ≤ 내폭×1.05)은 불변.
+/// [#2279 stale-과소] 마스킹 문단의 저장 분할이 fresh 재래핑보다 **많은 줄**
+/// 인 경우 — 마스킹 치환('*')으로 원문보다 좁아졌는데 저장 분할은 원문 기준
+/// 줄수를 남긴 부실 저장. 한글은 fresh 재계산으로 줄수를 줄인다(36341511
+/// pi61/62/68/70/71 재저장 실측: 저장 3~5줄 vs fresh −1줄씩, 문단당 +31px
+/// 잔존 누적 +1쪽). 과잉(#2360, 실폭>내폭×1.05)과 대칭 — 마스킹·저장 요건은
+/// 동일하고, fresh 프로브 재래핑의 줄수가 저장과 다르면 stale 로 본다.
+pub fn masked_stored_lines_stale(
+    composed: &ComposedParagraph,
+    para: &Paragraph,
+    inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    if stored_lines_overflow(composed, para, inner_width_px, styles) {
+        return true;
+    }
+    let stored = !para.line_segs.is_empty()
+        && para
+            .line_segs
+            .iter()
+            .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+    if !stored
+        || composed.lines.is_empty()
+        || inner_width_px <= 0.0
+        || composed.lines.len() != para.line_segs.len()
+        || composed.lines.len() < 2
+    {
+        return false;
+    }
+    let (mut stars, mut others) = (0usize, 0usize);
+    for c in para.text.chars() {
+        if c == '*' {
+            stars += 1;
+        } else if !c.is_whitespace() {
+            others += 1;
+        }
+    }
+    if stars < 8 || stars < others {
+        return false;
+    }
+    let mut probe = composed.clone();
+    let mut para_no_ls = para.clone();
+    para_no_ls.line_segs.clear();
+    recompose_for_body_width(&mut probe, &para_no_ls, inner_width_px, styles);
+    let stale = probe.lines.len() != composed.lines.len();
+    if stale && std::env::var("RHWP_DIAG_REWRAP").is_ok() {
+        eprintln!(
+            "DIAG_REWRAP stale-count inner={:.0} stored={} fresh={} text='{}'",
+            inner_width_px,
+            composed.lines.len(),
+            probe.lines.len(),
+            para.text.chars().take(24).collect::<String>(),
+        );
+    }
+    stale
+}
+
+/// [#2279] 본문(column) 판 부실-저장 예외 — 저장 분할이 실폭 모순(과잉)이거나
+/// 마스킹 문단의 저장 줄수가 fresh 와 다르면(과소 포함) 저장을 불신하고 본문
+/// 경로(`recompose_for_body_width` — 글자모양 재분할 포함)로 fresh 재래핑한다.
+/// 셀 판(#2291, 1줄 한정)과 같은 원리의 다중줄 일반화 + 마스킹 한정.
 pub fn recompose_stored_lines_if_overflowing_body(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
     column_inner_width_px: f64,
     styles: &ResolvedStyleSet,
 ) {
-    if !stored_lines_overflow(composed, para, column_inner_width_px, styles) {
+    if !masked_stored_lines_stale(composed, para, column_inner_width_px, styles) {
         return;
     }
     let mut para_no_ls = para.clone();
@@ -1899,7 +1974,15 @@ fn is_hwp3_hwp5_missing_lineseg_legacy_bullet(
                 styles
                     .char_styles
                     .get(run.char_style_id as usize)
-                    .map(|cs| cs.font_family.split(',').next().unwrap_or("").trim() == "HY신명조")
+                    .map(|cs| {
+                        matches!(
+                            cs.font_family.split(',').next().unwrap_or("").trim(),
+                            // [#2430] 한양신명조·휴먼명조는 종전 HY신명조 치환이
+                            // 풀려 원명으로 온다 — #2070 v3/v4 규칙(원 계보가
+                            // 한양신명조 사다리) 대상 유지.
+                            "HY신명조" | "한양신명조" | "휴먼명조"
+                        )
+                    })
                     .unwrap_or(false)
             })
 }

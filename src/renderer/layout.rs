@@ -5,7 +5,8 @@
 
 use super::composer::{compose_paragraph, effective_text_for_metrics, ComposedParagraph};
 use super::float_placement::{
-    horizontal_range, is_para_topbottom_float, signed_hwpunit, FloatLaneSet, FloatPlacementContext,
+    horizontal_range, is_para_topbottom_float, native_empty_host_rowbreak_line_advance_hu,
+    signed_hwpunit, FloatLaneSet, FloatPlacementContext,
 };
 use super::font_metrics_data;
 use super::height_cursor::HeightCursor;
@@ -597,6 +598,39 @@ fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
     para.text
         .chars()
         .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace())
+}
+
+fn repeats_native_empty_host_rowbreak_fragment_margin(
+    native_hwp5_layout: bool,
+    paragraphs: &[Paragraph],
+    para_index: usize,
+    control_index: usize,
+) -> bool {
+    let Some(para) = paragraphs.get(para_index) else {
+        return false;
+    };
+    let Some(Control::Table(table)) = para.controls.get(control_index) else {
+        return false;
+    };
+    native_empty_host_rowbreak_line_advance_hu(
+        native_hwp5_layout,
+        para,
+        table,
+        paragraphs.get(para_index + 1),
+    )
+    .is_some()
+}
+
+/// Paint the first, unsplit form of the strict native-HWP empty-host RowBreak table at the
+/// same top coordinate that `layout_partial_table` uses for its first fragment.  The ordinary
+/// float lane intentionally omits outer margins (#2097); only callers that already proved the
+/// narrow #2439 structural contract pass a non-zero `fragment_outer_top_px` here.
+fn empty_host_float_raw_top(
+    para_y: f64,
+    vertical_offset_px: f64,
+    fragment_outer_top_px: f64,
+) -> f64 {
+    (para_y + vertical_offset_px).max(para_y) + fragment_outer_top_px
 }
 
 fn para_line_spacing_px(para: &Paragraph, dpi: f64) -> f64 {
@@ -5025,11 +5059,20 @@ impl LayoutEngine {
                     }
                 };
                 let mut jump_to = y_offset;
+                let same_owner_table_precedes =
+                    col_content.items[..item_ordinal].iter().any(|previous| {
+                        matches!(previous,
+                            PageItem::Table { para_index, .. }
+                                | PageItem::PartialTable { para_index, .. }
+                                if *para_index == item_para)
+                    });
                 for zone in &visible_float_exclusions {
                     // [Issue #1549] 자기 문단에 앵커된 float 표는 그 문단의 텍스트(제목)를
                     // 밀어내지 않는다 — 제목은 앵커(표 위)에 남아야 한다. owner 가 다른 후속
                     // 문단은 그대로 표 아래로 밀린다.
-                    if zone.owner_para == item_para {
+                    // [#2439] 단, 같은 문단의 표 항목 뒤에 emit 된 post-text(서명란)는
+                    // 이미 표 뒤 순서로 확정된 것이므로 자기 exclusion 도 소비해야 한다.
+                    if zone.owner_para == item_para && !same_owner_table_precedes {
                         continue;
                     }
                     let starts_in_zone = jump_to + 0.5 >= zone.top && jump_to < zone.bottom;
@@ -6268,7 +6311,19 @@ impl LayoutEngine {
                         horizontal_range(&t.common, width_px, placement_ctx, self.dpi);
                     let v_offset_px =
                         hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi);
-                    let raw_top = (para_y_for_table + v_offset_px).max(para_y_for_table);
+                    let fragment_outer_top_px = native_empty_host_rowbreak_line_advance_hu(
+                        self.profile.get().native_hwp5_layout(),
+                        para,
+                        t,
+                        paragraphs.get(para_index + 1),
+                    )
+                    .map(|_| hwpunit_to_px(t.outer_margin_top as i32, self.dpi))
+                    .unwrap_or(0.0);
+                    let raw_top = empty_host_float_raw_top(
+                        para_y_for_table,
+                        v_offset_px,
+                        fragment_outer_top_px,
+                    );
                     let lane_top = para_float_lanes
                         .entry(para_index)
                         .or_default()
@@ -6321,6 +6376,26 @@ impl LayoutEngine {
                 } else {
                     0.0
                 };
+                let has_preceding_coanchored_float = is_current_visible_para_float
+                    && para.controls.iter().take(control_index).any(|control| {
+                        matches!(control, Control::Table(previous)
+                            if is_para_topbottom_float(&previous.common))
+                    });
+                let profile = self.profile.get();
+                let issue2439_visible_host_stack = profile.native_hwp5_layout()
+                    && page_content.column_contents.len() == 1
+                    && is_current_visible_para_float
+                    && signed_hwpunit(t.common.vertical_offset) > 0
+                    && has_preceding_coanchored_float
+                    && para
+                        .controls
+                        .iter()
+                        .filter(|control| matches!(control, Control::Table(_)))
+                        .count()
+                        == 2
+                    && para.line_segs.iter().any(|seg| {
+                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    });
                 let table_y_start = if let Some((_, _, _, lane_top, _)) = para_float_lane_info {
                     lane_top
                 } else if let Some(abs_y) = paper_page_square_empty_top {
@@ -6376,7 +6451,13 @@ impl LayoutEngine {
                             // 복원한다(한컴: 표-표 간격 = 후행 표 offset). visible host 는
                             // part 3(host-title-line)이 간격을 처리하므로 여기선 zone 하단만.
                             let restore = if is_current_visible_para_float {
-                                0.0
+                                if issue2439_visible_host_stack && zone.owner_para == para_index {
+                                    // #2439: 같은 저장 host의 후행 표가 선행 표 아래로
+                                    // 밀려나도 자신의 outer-top은 사라지지 않는다.
+                                    visible_outer_top_px
+                                } else {
+                                    0.0
+                                }
                             } else {
                                 v_off.max(0.0)
                             };
@@ -6510,7 +6591,17 @@ impl LayoutEngine {
                 };
                 y_offset = if is_current_visible_para_float {
                     if signed_hwpunit(t.common.vertical_offset) > 0 {
-                        table_y_before
+                        if issue2439_visible_host_stack {
+                            // #2439: 저장된 두 표 visible-host 형상은 후행 표가 선행
+                            // 표 아래로 밀려난 높이까지 host 흐름이 실제로 소비한다.
+                            // typeset의 table_bottom + outer-bottom + LineSeg 간격과
+                            // 같은 경계에서 뒤의 서명문을 시작시킨다.
+                            table_visual_end
+                                + visible_outer_bottom_px
+                                + para_line_spacing_px(para, self.dpi)
+                        } else {
+                            table_y_before
+                        }
                     } else if self.profile.get().hwpx_stored_layout() {
                         let following_non_positive =
                             has_following_non_positive_visible_float(para, control_index);
@@ -6530,20 +6621,38 @@ impl LayoutEngine {
                 } else {
                     table_visual_end
                 };
+                let signed_vertical_offset = signed_hwpunit(t.common.vertical_offset);
+                let zero_offset_has_following_coanchored_float = signed_vertical_offset == 0
+                    && para.controls.iter().skip(control_index + 1).any(|control| {
+                        matches!(control, Control::Table(following)
+                            if is_para_topbottom_float(&following.common))
+                    });
                 if is_current_visible_para_float
-                    && signed_hwpunit(t.common.vertical_offset) > 0
+                    && (signed_vertical_offset > 0 || zero_offset_has_following_coanchored_float)
                     && table_visual_height > 0.0
                 {
                     let table_visual_top = table_visual_end - table_visual_height;
                     if table_visual_end > table_visual_top + 0.5 {
+                        // [#2439] offset=0 인 첫 co-anchored 표도 후행 float 가 있으면
+                        // exclusion 을 남겨야 한다. 그렇지 않으면 후행 양수-offset 표의
+                        // 자연 상단이 첫 표 안에 있어도 #1535 충돌 회피가 보지 못해 두
+                        // 표가 겹친다. 단독 zero-offset 표는 기존 flow 누적만 유지한다.
                         // exclusion 하단을 표의 outer_margin_bottom 만큼 늘려, 다음 섹션
                         // 제목(이 zone 을 consult)이 표 아래로 그 여백만큼 띄워지게 한다
                         // (한컴: 섹션 표와 다음 섹션 제목 사이 간격 = 표 아래 외곽여백).
                         let margin_bottom_px =
                             hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi);
+                        let host_line_spacing_px = if issue2439_visible_host_stack {
+                            // 마지막 co-anchored 표 뒤의 host 서명문은 표 하단 여백과
+                            // 저장 LineSeg 간격을 모두 지난 뒤 시작한다. exclusion에
+                            // 포함해 뒤의 post-text 흐름과 typeset을 같은 경계로 맞춘다.
+                            para_line_spacing_px(para, self.dpi)
+                        } else {
+                            0.0
+                        };
                         visible_float_exclusions.push(VisibleFloatExclusion {
                             top: table_visual_top,
-                            bottom: table_visual_end + margin_bottom_px,
+                            bottom: table_visual_end + margin_bottom_px + host_line_spacing_px,
                             owner_para: para_index,
                         });
                     }
@@ -6973,7 +7082,30 @@ impl LayoutEngine {
                 let reserved_height = (y_offset - lane_top).max(0.0);
                 let lanes = para_float_lanes.entry(para_index).or_default();
                 lanes.place(x_start, x_end, raw_top, reserved_height);
-                let lane_flow_bottom = if is_current_empty_para_float {
+                let single_positive_empty_float_before_plain_text = para
+                    .controls
+                    .get(control_index)
+                    .and_then(|control| match control {
+                        Control::Table(table) => native_empty_host_rowbreak_line_advance_hu(
+                            self.profile.get().native_hwp5_layout(),
+                            para,
+                            table,
+                            paragraphs.get(para_index + 1),
+                        )
+                        .map(|line_advance| (table.as_ref(), line_advance)),
+                        _ => None,
+                    });
+                let lane_flow_bottom = if let Some((table, line_advance)) =
+                    single_positive_empty_float_before_plain_text
+                {
+                    // #2439: a single empty-host TopAndBottom float followed by an ordinary
+                    // text paragraph must clear the table's painted lane. `global + reserved`
+                    // below deliberately omits the visual vertical offset; using it here put
+                    // the signature line inside the table by exactly that offset.
+                    let stored_rowbreak_host_tail = hwpunit_to_px(line_advance, self.dpi)
+                        + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
+                    lanes.max_bottom() + stored_rowbreak_host_tail
+                } else if is_current_empty_para_float {
                     // Empty-anchor TopAndBottom tables can encode a visual
                     // vertical offset separately from the flow height measured
                     // by pagination. Keep the table painted at lane_top, but
@@ -7272,6 +7404,12 @@ impl LayoutEngine {
         let pt_mt = measured_tables
             .iter()
             .find(|mt| mt.para_index == para_index && mt.control_index == control_index);
+        let repeat_fragment_outer_margin = repeats_native_empty_host_rowbreak_fragment_margin(
+            self.profile.get().native_hwp5_layout(),
+            paragraphs,
+            para_index,
+            control_index,
+        );
         // 비-TAC 자리차지 표에서 vert offset이 있으면 문단 시작 y 전달.
         // layout_partial_table 내부에서 vert_offset을 적용하므로 이중 적용 방지.
         // [Task #712] HwpUnit=u32 이라 `vertical_offset > 0` 가드는 음수 비트표현
@@ -7372,12 +7510,12 @@ impl LayoutEngine {
             let para_style_id = comp
                 .map(|c| c.para_style_id as usize)
                 .unwrap_or(para.para_shape_id as usize);
+            let is_tac = para
+                .controls
+                .get(control_index)
+                .map(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
+                .unwrap_or(false);
             if let Some(para_style) = styles.para_styles.get(para_style_id) {
-                let is_tac = para
-                    .controls
-                    .get(control_index)
-                    .map(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
-                    .unwrap_or(false);
                 if is_tac {
                     if para_style.spacing_after > 0.0 {
                         y_offset += para_style.spacing_after;
@@ -7395,6 +7533,14 @@ impl LayoutEngine {
                     if para_style.spacing_after > 0.0 {
                         y_offset += para_style.spacing_after;
                     }
+                }
+            }
+            // #2439: typeset reserves this margin for every proven native-HWP RowBreak
+            // fragment.  Keep it outside `last_item_content_bottom`: it is trailing flow, not
+            // painted content, and therefore must not trigger an overflow report.
+            if !is_tac && repeat_fragment_outer_margin {
+                if let Some(Control::Table(table)) = para.controls.get(control_index) {
+                    y_offset += hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
                 }
             }
         }

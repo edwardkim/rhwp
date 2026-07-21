@@ -3955,6 +3955,13 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 페이지에 각주 영역이 있는지 빠르게 확인 (hitTestFootnote fast-reject).
+    /// 페이지네이션 메타데이터만 조회하므로 render tree build가 필요 없다 (#2428).
+    #[wasm_bindgen(js_name = pageHasFootnoteFootholds)]
+    pub fn page_has_footnote_footholds(&self, page_num: u32) -> bool {
+        self.page_has_footnote_footholds_native(page_num)
+    }
+
     /// 각주 영역 히트테스트
     #[wasm_bindgen(js_name = hitTestFootnote)]
     pub fn hit_test_footnote(&self, page_num: u32, x: f64, y: f64) -> Result<String, JsValue> {
@@ -5600,8 +5607,8 @@ impl HwpDocument {
             items.push(format!(
                 "{{\"id\":{},\"name\":\"{}\",\"englishName\":\"{}\",\"type\":{},\"nextStyleId\":{},\"paraShapeId\":{},\"charShapeId\":{}}}",
                 i,
-                s.local_name.replace('"', "\\\""),
-                s.english_name.replace('"', "\\\""),
+                json_escape(&s.local_name),
+                json_escape(&s.english_name),
                 s.style_type,
                 s.next_style_id,
                 s.para_shape_id,
@@ -5969,7 +5976,7 @@ impl HwpDocument {
             let formats: Vec<String> = n
                 .level_formats
                 .iter()
-                .map(|f| format!("\"{}\"", f.replace('"', "\\\"")))
+                .map(|f| format!("\"{}\"", json_escape(f)))
                 .collect();
             items.push(format!(
                 "{{\"id\":{},\"levelFormats\":[{}],\"startNumber\":{}}}",
@@ -6167,11 +6174,7 @@ impl HwpDocument {
             .get(style_id)
             .map(|s| s.local_name.as_str())
             .unwrap_or("");
-        format!(
-            "{{\"id\":{},\"name\":\"{}\"}}",
-            style_id,
-            name.replace('"', "\\\"")
-        )
+        format!("{{\"id\":{},\"name\":\"{}\"}}", style_id, json_escape(name))
     }
 
     /// 셀 내부 문단의 스타일을 조회한다.
@@ -6203,11 +6206,7 @@ impl HwpDocument {
             .get(style_id)
             .map(|s| s.local_name.as_str())
             .unwrap_or("");
-        format!(
-            "{{\"id\":{},\"name\":\"{}\"}}",
-            style_id,
-            name.replace('"', "\\\"")
-        )
+        format!("{{\"id\":{},\"name\":\"{}\"}}", style_id, json_escape(name))
     }
 
     /// 스타일을 적용한다 (본문 문단).

@@ -5,8 +5,9 @@ use super::utils::{expand_numbering_format, numbering_format_to_number_format};
 use super::*;
 use crate::model::page::{ColumnDef, PageDef};
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
-use crate::model::shape::RectangleShape;
+use crate::model::shape::{CommonObjAttr, RectangleShape, TextWrap, VertRelTo};
 use crate::model::style::{Numbering, NumberingHead};
+use crate::model::table::{Cell, Table, TablePageBreak};
 use crate::renderer::composer::compose_paragraph;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 use crate::renderer::{TabStop, TextStyle};
@@ -62,6 +63,103 @@ fn test_build_empty_page() {
     );
     // 페이지 노드 + 배경 + 머리말 + 본문 + 각주 + 꼬리말
     assert!(tree.root.children.len() >= 4);
+}
+
+#[test]
+fn issue2439_fragment_margin_evidence_is_narrow_and_structural() {
+    let anchor = Paragraph {
+        line_segs: vec![LineSeg {
+            line_height: 1200,
+            line_spacing: 240,
+            ..Default::default()
+        }],
+        controls: vec![Control::Table(Box::new(Table {
+            page_break: TablePageBreak::RowBreak,
+            common: CommonObjAttr {
+                treat_as_char: false,
+                text_wrap: TextWrap::TopAndBottom,
+                vert_rel_to: VertRelTo::Para,
+                vertical_offset: 399,
+                ..Default::default()
+            },
+            ..Default::default()
+        }))],
+        ..Default::default()
+    };
+    let signature = Paragraph {
+        text: "signature".to_string(),
+        ..Default::default()
+    };
+    let paragraphs = vec![anchor.clone(), signature];
+
+    assert!(repeats_native_empty_host_rowbreak_fragment_margin(
+        true,
+        &paragraphs,
+        0,
+        0,
+    ));
+    assert!(!repeats_native_empty_host_rowbreak_fragment_margin(
+        false,
+        &paragraphs,
+        0,
+        0,
+    ));
+
+    let no_plain_tail = vec![anchor, Paragraph::new_empty()];
+    assert!(!repeats_native_empty_host_rowbreak_fragment_margin(
+        true,
+        &no_plain_tail,
+        0,
+        0,
+    ));
+}
+
+#[test]
+fn issue2439_full_table_top_matches_first_partial_fragment_top() {
+    let para_y = 100.0;
+    let vertical_offset = 5.32;
+    let outer_top = 3.77;
+
+    let full_table_top = empty_host_float_raw_top(para_y, vertical_offset, outer_top);
+    let first_partial_fragment_top = para_y + outer_top + vertical_offset;
+    assert!((full_table_top - first_partial_fragment_top).abs() < 1e-9);
+
+    // The generic empty-host float contract remains unchanged when the strict structural
+    // evidence is absent, and negative offsets remain clamped at the host paragraph top.
+    assert_eq!(empty_host_float_raw_top(para_y, -8.0, 0.0), para_y);
+}
+
+#[test]
+fn oversized_row_width_outlier_does_not_expand_base_columns() {
+    let mut cells = Vec::new();
+    for row in 0..3 {
+        for col in 0..2 {
+            cells.push(Cell {
+                row,
+                col,
+                row_span: 1,
+                col_span: 1,
+                width: if row == 0 && col == 0 { 150 } else { 100 },
+                ..Default::default()
+            });
+        }
+    }
+    let table = Table {
+        row_count: 3,
+        col_count: 2,
+        cells,
+        common: CommonObjAttr {
+            width: 200,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let engine = LayoutEngine::with_default_dpi();
+    let widths = engine.resolve_column_widths(&table, 2);
+    let expected = hwpunit_to_px(100, DEFAULT_DPI);
+
+    assert!((widths[0] - expected).abs() < 0.01, "widths={widths:?}");
+    assert!((widths[1] - expected).abs() < 0.01, "widths={widths:?}");
 }
 
 #[test]

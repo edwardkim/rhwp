@@ -896,8 +896,42 @@ impl Paragraph {
         }
         self.range_tags = kept_range_tags;
 
-        // 5-1. field_ranges 분할 (필드 control은 원래 문단에 유지)
-        self.field_ranges.retain(|fr| fr.end_char_idx <= split_pos);
+        // 5-1. field_ranges 분할
+        let mut new_field_ranges: Vec<FieldRange> = Vec::new();
+        let mut kept_field_ranges: Vec<FieldRange> = Vec::new();
+        // 5-1a. controls 분할 시 control_idx 리매핑을 위한 맵 (old → new)
+        let mut moved_control_idx_map: std::collections::HashMap<usize, usize> =
+            std::collections::HashMap::new();
+        for fr in &self.field_ranges {
+            if fr.start_char_idx >= split_pos {
+                // 완전히 새 문단 쪽 → 인덱스 조정 후 이관 (control_idx는 5-2에서 리매핑)
+                new_field_ranges.push(FieldRange {
+                    start_char_idx: fr.start_char_idx - split_pos,
+                    end_char_idx: fr.end_char_idx - split_pos,
+                    control_idx: fr.control_idx,
+                });
+            } else if fr.end_char_idx <= split_pos {
+                // 완전히 원래 문단 쪽
+                kept_field_ranges.push(fr.clone());
+            } else {
+                // 경계에 걸친 필드: 원래 문단에서 종료
+                kept_field_ranges.push(FieldRange {
+                    start_char_idx: fr.start_char_idx,
+                    end_char_idx: split_pos,
+                    control_idx: fr.control_idx,
+                });
+            }
+        }
+        self.field_ranges = kept_field_ranges;
+
+        // Field는 보이는 문자 오프셋에서 한 글자를 차지하지 않는다. 다만 새 문단으로
+        // 이관되는 FieldRange가 참조하는 Field control은 범위와 함께 이동해야 한다.
+        // 일반 이동형 컨트롤로 분류하면 split의 논리 offset 계산에 Field가 더해져
+        // ClickHere 복사/붙여넣기 경계가 한 글자씩 어긋난다.
+        let moved_field_control_indices: std::collections::HashSet<usize> = new_field_ranges
+            .iter()
+            .map(|field_range| field_range.control_idx)
+            .collect();
 
         // 5-2. controls 분할
         //
@@ -913,15 +947,23 @@ impl Paragraph {
 
         for (ci, ctrl) in old_controls.into_iter().enumerate() {
             let data = old_ctrl_data.get(ci).cloned().flatten();
-            let move_to_new = Self::is_split_movable_control(&ctrl)
-                && control_positions.get(ci).copied().unwrap_or(usize::MAX) >= char_offset;
+            let move_to_new = (Self::is_split_movable_control(&ctrl)
+                && control_positions.get(ci).copied().unwrap_or(usize::MAX) >= char_offset)
+                || moved_field_control_indices.contains(&ci);
 
             if move_to_new {
+                moved_control_idx_map.insert(ci, new_controls.len());
                 new_controls.push(ctrl);
                 new_ctrl_data_records.push(data);
             } else {
                 kept_controls.push(ctrl);
                 kept_ctrl_data.push(data);
+            }
+        }
+        // field_ranges의 control_idx를 새 문단의 controls 배열에 맞게 리매핑
+        for fr in &mut new_field_ranges {
+            if let Some(&new_idx) = moved_control_idx_map.get(&fr.control_idx) {
+                fr.control_idx = new_idx;
             }
         }
         self.controls = kept_controls;
@@ -942,7 +984,7 @@ impl Paragraph {
         self.control_mask =
             Self::compute_control_mask_for(&self.text, &self.controls, &self.field_ranges);
         let new_control_mask =
-            Self::compute_control_mask_for(&new_text, &new_controls, &Vec::new());
+            Self::compute_control_mask_for(&new_text, &new_controls, &new_field_ranges);
 
         Paragraph {
             text: new_text,
@@ -950,7 +992,7 @@ impl Paragraph {
             char_shapes: new_char_shapes,
             line_segs: new_line_segs,
             range_tags: new_range_tags,
-            field_ranges: Vec::new(), // controls가 이동하지 않으므로 새 문단에는 필드 없음
+            field_ranges: new_field_ranges, // 새 문단으로 이관된 필드 범위
             orphan_field_ends: Vec::new(),
             char_count: new_char_count,
             para_shape_id: self.para_shape_id,
