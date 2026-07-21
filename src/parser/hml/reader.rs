@@ -41,6 +41,21 @@ pub struct HmlLimits {
     pub max_depth: usize,
     pub max_attributes: usize,
     pub max_text_node_bytes: usize,
+    /// [#2743] 리소스 테이블(`FONT`/`BORDERFILL`/`CHARSHAPE`/`PARASHAPE`/`TABDEF`/
+    /// `STYLE`)의 `Id` 상한.
+    ///
+    /// 다른 필드는 전부 *입력 크기* 상한이지만 이것만 *할당 크기* 상한이다. `Id` 는
+    /// 문자 몇 개인데 `set_indexed` 의 `resize_with(id + 1, ..)` 는 그 값에 선형
+    /// 비례해 예약하므로, 상한이 없으면 382바이트 파일이 오류 없이 120 MB 를 쓰고
+    /// 385바이트 파일이 240 GB 를 요구하다 abort 한다.
+    ///
+    /// 기본값 65,535 근거: `samples/` 345개 파일 실측에서 리소스 테이블 최대 길이는
+    /// 28,193(char_shapes) 이라 2.32배 여유이며, `Paragraph.para_shape_id`(u16)·
+    /// `Style.para_shape_id`/`char_shape_id`(u16)·`Paragraph.style_id`(u8) 참조는
+    /// 애초에 이 범위를 넘길 수 없다. 다만 `CharShapeRef.char_shape_id` 는 u32 라
+    /// char_shapes 에 대해서는 표현 한계가 아닌 정책 상한이며, 그래서 초과분은
+    /// 하드 오류가 아니라 경고를 남기고 건너뛴다.
+    pub max_resource_id: usize,
 }
 
 impl Default for HmlLimits {
@@ -50,6 +65,7 @@ impl Default for HmlLimits {
             max_depth: 256,
             max_attributes: 256,
             max_text_node_bytes: 8 * 1024 * 1024,
+            max_resource_id: 65_535,
         }
     }
 }
@@ -183,10 +199,12 @@ struct ReadState<'a> {
     body_modeled_children: usize,
     saw_head: bool,
     saw_body: bool,
+    /// [#2743] `HmlLimits::max_resource_id` 사본 — 리소스 `Id` 상한.
+    max_resource_id: usize,
 }
 
 impl<'a> ReadState<'a> {
-    fn new(xml: &'a str) -> Self {
+    fn new(xml: &'a str, max_resource_id: usize) -> Self {
         Self {
             xml,
             stack: Vec::new(),
@@ -204,7 +222,19 @@ impl<'a> ReadState<'a> {
             body_modeled_children: 0,
             saw_head: false,
             saw_body: false,
+            max_resource_id,
         }
+    }
+
+    /// [#2743] 상한을 넘겨 건너뛴 리소스를 경고로 남긴다.
+    /// 기존 `InvalidReference` 경고 코드를 그대로 쓴다 — 잘못된 참조를 기본값으로
+    /// 대체하고 계속 진행하는 이 리더의 확립된 방침과 같은 처리다.
+    fn warn_resource_id_out_of_range(&mut self, element: &str, id: usize) {
+        let max = self.max_resource_id;
+        self.source.warnings.push(HmlWarning::invalid_reference(
+            format!("/{}", self.stack.join("/")),
+            format!("{element} Id={id} (상한 {max} 초과, 건너뜀)"),
+        ));
     }
 
     fn start(
@@ -472,7 +502,14 @@ impl<'a> ReadState<'a> {
             },
             ..Default::default()
         };
-        set_indexed(&mut self.source.font_faces[language], id, font);
+        if !set_indexed(
+            &mut self.source.font_faces[language],
+            id,
+            font,
+            self.max_resource_id,
+        ) {
+            self.warn_resource_id_out_of_range("FONT", id);
+        }
         Ok(())
     }
 
@@ -481,7 +518,18 @@ impl<'a> ReadState<'a> {
         if id == 0 {
             return Err(HmlError::InvalidReference("BORDERFILL Id=0".to_string()));
         }
-        set_indexed(&mut self.source.border_fills, id - 1, BorderFill::default());
+        if !set_indexed(
+            &mut self.source.border_fills,
+            id - 1,
+            BorderFill::default(),
+            self.max_resource_id,
+        ) {
+            self.warn_resource_id_out_of_range("BORDERFILL", id);
+            // 이 BORDERFILL 은 테이블에 없으므로 뒤따르는 *BORDER 자식도 버린다.
+            // (`capture_border_line` 은 `current_border_fill` 이 None 이면 무시한다)
+            self.current_border_fill = None;
+            return Ok(());
+        }
         self.current_border_fill = Some(id - 1);
         Ok(())
     }
@@ -537,7 +585,14 @@ impl<'a> ReadState<'a> {
             shade_color: parse_attribute(element, b"ShadeColor")?.unwrap_or(0),
             ..Default::default()
         };
-        set_indexed(&mut self.source.char_shapes, id, shape);
+        if !set_indexed(
+            &mut self.source.char_shapes,
+            id,
+            shape,
+            self.max_resource_id,
+        ) {
+            self.warn_resource_id_out_of_range("CHARSHAPE", id);
+        }
         Ok(())
     }
 
@@ -568,7 +623,14 @@ impl<'a> ReadState<'a> {
             para_level: parse_attribute(element, b"Level")?.unwrap_or(0),
             ..Default::default()
         };
-        set_indexed(&mut self.source.para_shapes, id, shape);
+        if !set_indexed(
+            &mut self.source.para_shapes,
+            id,
+            shape,
+            self.max_resource_id,
+        ) {
+            self.warn_resource_id_out_of_range("PARASHAPE", id);
+        }
         Ok(())
     }
 
@@ -600,7 +662,14 @@ impl<'a> ReadState<'a> {
 
     fn capture_tab_def(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
         let id = parse_attribute::<usize>(element, b"Id")?.unwrap_or(0);
-        set_indexed(&mut self.source.tab_defs, id, TabDef::default());
+        if !set_indexed(
+            &mut self.source.tab_defs,
+            id,
+            TabDef::default(),
+            self.max_resource_id,
+        ) {
+            self.warn_resource_id_out_of_range("TABDEF", id);
+        }
         Ok(())
     }
 
@@ -616,7 +685,9 @@ impl<'a> ReadState<'a> {
             char_shape_id: parse_attribute(element, b"CharShape")?.unwrap_or(0),
             ..Default::default()
         };
-        set_indexed(&mut self.source.styles, id, style);
+        if !set_indexed(&mut self.source.styles, id, style, self.max_resource_id) {
+            self.warn_resource_id_out_of_range("STYLE", id);
+        }
         Ok(())
     }
 
@@ -1262,7 +1333,7 @@ pub(crate) fn has_hwpml_root(xml: &str) -> bool {
 
 pub(crate) fn read_hml(xml: &str, limits: &HmlLimits) -> Result<HmlSource, HmlError> {
     let mut reader = Reader::from_str(xml);
-    let mut state = ReadState::new(xml);
+    let mut state = ReadState::new(xml, limits.max_resource_id);
     // 이전 이벤트가 소비를 마친 지점 = 다음 시작 태그의 첫 바이트 오프셋.
     // 보존 캡슐이 원문을 바이트 그대로 잘라내는 데 사용한다.
     let mut prev_pos: u64 = 0;
@@ -1501,9 +1572,21 @@ fn parse_text_wrap(value: Option<&str>) -> TextWrap {
     }
 }
 
-fn set_indexed<T: Default>(values: &mut Vec<T>, index: usize, value: T) {
+/// 리소스 테이블의 `index` 칸에 값을 배치한다. 필요한 만큼 테이블을 늘린다.
+///
+/// [#2743] `index` 는 HML `Id` 속성에서 그대로 온 값이라 상한이 필요하다. 종전엔
+/// `resize_with(index + 1, ..)` 에 검증이 없어 `Id="1000000"` 이면 오류 없이
+/// 120 MB 를(측정값: 힙 최대 120,009,531 바이트) 조용히 예약하고, `Id="2000000000"`
+/// 이면 240,000,000,120 바이트를 요구하다 `handle_alloc_error` → abort 로 프로세스가
+/// 죽었다. 상한을 넘으면 **아무것도 할당하지 않고** `false` 를 반환한다 — 호출부는
+/// 경고를 남기고 그 리소스만 건너뛴다(정상 파일은 상한에 닿지 않아 동작 불변).
+fn set_indexed<T: Default>(values: &mut Vec<T>, index: usize, value: T, max_index: usize) -> bool {
+    if index > max_index {
+        return false;
+    }
     if values.len() <= index {
         values.resize_with(index + 1, T::default);
     }
     values[index] = value;
+    true
 }
