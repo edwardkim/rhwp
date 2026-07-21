@@ -242,6 +242,45 @@ fn replace_first_two(haystack: &str, needle: &str, first: &str, second: &str) ->
     }
 }
 
+/// NumberFormat → HWPX `autoNumFormat type` 토큰. `number_format_from_name`의 역매핑.
+fn note_number_format_to_str(fmt: crate::model::footnote::NumberFormat) -> &'static str {
+    use crate::model::footnote::NumberFormat::*;
+    match fmt {
+        Digit => "DIGIT",
+        CircledDigit => "CIRCLED_DIGIT",
+        UpperRoman => "ROMAN_CAPITAL",
+        LowerRoman => "ROMAN_SMALL",
+        UpperAlpha => "LATIN_CAPITAL",
+        LowerAlpha => "LATIN_SMALL",
+        CircledUpperAlpha => "CIRCLED_LATIN_CAPITAL",
+        CircledLowerAlpha => "CIRCLED_LATIN_SMALL",
+        HangulSyllable => "HANGUL_SYLLABLE",
+        CircledHangulSyllable => "CIRCLED_HANGUL_SYLLABLE",
+        HangulJamo => "HANGUL_JAMO",
+        CircledHangulJamo => "CIRCLED_HANGUL_JAMO",
+        HangulDigit => "HANGUL_PHONETIC",
+        HanjaDigit => "IDEOGRAPH",
+        CircledHanjaDigit => "CIRCLED_IDEOGRAPH",
+        HanjaGapEul => "DECAGON_CIRCLE",
+        HanjaGapEulHanja => "DECAGON_CIRCLE_HANJA",
+        FourSymbol => "SYMBOL",
+        UserChar => "USER_CHAR",
+    }
+}
+
+/// `<hp:autoNumFormat type="..." userChar="..." prefixChar="..." suffixChar="..." supscript="..."/>`
+/// 각주/미주의 번호 모양·장식문자·위첨자 속성. 파서 `parse_note_pr_children`의 역매핑.
+fn render_auto_num_format(shape: &crate::model::footnote::FootnoteShape) -> String {
+    format!(
+        r##"<hp:autoNumFormat type="{}" userChar="{}" prefixChar="{}" suffixChar="{}" supscript="{}"/>"##,
+        note_number_format_to_str(shape.number_format),
+        ctrl_char_attr(shape.user_char),
+        ctrl_char_attr(shape.prefix_char),
+        ctrl_char_attr(shape.suffix_char),
+        u8::from(shape.number_code_superscript),
+    )
+}
+
 /// [#1984] 템플릿 footNotePr/endNotePr 의 하드코딩 noteLine·noteSpacing 을 IR 값으로 치환.
 /// 미치환 시 각주 구분선 위/아래 여백·주석간격이 항상 기본값(aboveLine=850 등)으로 방출돼
 /// 각주 zone 높이가 달라지고, 각주 있는 페이지의 본문 가용높이가 어긋나 표 분할·페이지 수가
@@ -282,6 +321,17 @@ fn replace_footnote_shape(xml: &str, sd: &SectionDef) -> String {
         r#"<hp:numbering type="CONTINUOUS" newNum="1"/>"#,
         &render_note_numbering(&sd.footnote_shape),
         &render_note_numbering(&sd.endnote_shape),
+    );
+
+    // [#2742] autoNumFormat(type/userChar/prefixChar/suffixChar/supscript) — 미치환 시
+    // 각주/미주의 번호 모양·장식문자·위첨자 속성이 템플릿 기본값(DIGIT·")"·0)으로 고정돼
+    // 구역 각주/미주 번호 형식이 소실된다. fn/en 템플릿 문자열이 같으므로
+    // replace_first_two 로 위치 기반 치환한다(103슬롯 중 결함 12).
+    let out = replace_first_two(
+        &out,
+        r##"<hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/>"##,
+        &render_auto_num_format(&sd.footnote_shape),
+        &render_auto_num_format(&sd.endnote_shape),
     );
 
     // beneathText(본문 아래 바로 이어 출력). placement 의 `place` 열거형은 각주/
