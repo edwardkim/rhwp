@@ -109,4 +109,18 @@ window.close();
 - [x] 기존 내부 저장/복구 회귀 없음 (단위 458/459 + E2E 회귀, 잔여 실패는 베이스 동일)
 - [x] README 저장 계약 문서화
 
-merge(local/devel) 및 이슈 클로즈는 작업지시자 승인 후 진행한다.
+## 8. 통합 절차 (정정: 컨트리뷰터 PR 워크플로우)
+
+당초 메인테이너용 local/devel merge로 기재했으나, 본 저장소에서 우리는
+fork(johndoekim) 기반 컨트리뷰터이므로 CONTRIBUTING.md의 Fork & PR 워크플로우를
+따른다 (작업지시자 지적 반영).
+
+- PR 전 체크리스트 수행: `cargo clippy -- -D warnings` 통과,
+  `cargo test --profile release-test --tests --no-fail-fast` **3,447 passed / 0 failed**
+  (`$TMPDIR/task2660_cargo_full_test.log`). `cargo fmt --check`는 로컬
+  `core.autocrlf=true`(CRLF) 체크아웃으로 전 파일 판정 불가 — 본 PR은 .rs 0건
+  변경이므로 CI 판정에 위임.
+- fork 브랜치 `feature/2660-notify-saved` push 후 PR 생성:
+  **[edwardkim/rhwp#2667](https://github.com/edwardkim/rhwp/pull/2667)** (base: devel,
+  `Closes #2660` 포함 — 메인테이너 merge 시 이슈 자동 클로즈).
+- 이후 절차: CI(빌드+테스트+Clippy) 통과 확인 → 메인테이너 리뷰 대응.
