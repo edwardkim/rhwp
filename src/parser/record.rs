@@ -58,11 +58,18 @@ impl Record {
 
             // 데이터 읽기
             let pos = cursor.position() as usize;
-            if pos + size as usize > data.len() {
+            // size 는 파일에서 온 확장 32비트 레코드 크기다. `pos + size` 를 그대로
+            // 더하면 usize 가 32비트인 wasm32(이 크레이트의 배포 타깃) 에서 랩어라운드가
+            // 일어나 경계 검사가 무력화되고, 뒤이어 vec![0u8; size] 가 4GB 할당을
+            // 시도한다. checked_add 로 오버플로 자체를 실패로 처리한다.
+            if pos
+                .checked_add(size as usize)
+                .map_or(true, |end| end > data.len())
+            {
                 return Err(RecordError::UnexpectedEof {
                     tag_id,
                     expected: size as usize,
-                    available: data.len() - pos,
+                    available: data.len().saturating_sub(pos),
                 });
             }
 
@@ -129,6 +136,18 @@ impl std::error::Error for RecordError {}
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn extended_size_overflow_is_rejected() {
+        // 헤더의 크기 필드가 0xFFF 면 다음 4바이트가 확장 크기다. 그 값이
+        // 0xFFFFFFFF 여도 경계 검사가 통과해선 안 된다(wasm32 에서 pos+size
+        // 랩어라운드로 무력화되던 경로). 할당 시도 없이 Err 로 끝나야 한다.
+        let data = [0x00u8, 0x00, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
+        assert!(
+            Record::read_all(&data).is_err(),
+            "확장 크기 오버플로 입력은 Err 여야 함"
+        );
+    }
 
     /// 기본 레코드 생성 헬퍼
     fn make_record_bytes(tag_id: u16, level: u16, data: &[u8]) -> Vec<u8> {

@@ -909,6 +909,38 @@ mod tests {
         );
     }
 
+    #[test]
+    fn face_name_roundtrips_subst_font_as_alt_name() {
+        use crate::model::style::SubstFont;
+        // HWPX 파서는 대체 글꼴을 subst_font 로 채우고 alt_name 은 None 으로 둔다.
+        // HWP5 FACE_NAME 은 alt_name 한 곳에만 담으므로, 직렬화가 두 출처를 합치지
+        // 않으면 HWPX→HWP5 저장에서 대체 글꼴이 통째로 사라진다.
+        let font = crate::model::style::Font {
+            name: "굴림".to_string(),
+            alt_name: None,
+            subst_font: Some(SubstFont {
+                face: "맑은 고딕".to_string(),
+                font_type: 1,
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let bytes = crate::serializer::doc_info::serialize_face_name(&font);
+        assert_eq!(
+            bytes[0] & 0x80,
+            0x80,
+            "대체 글꼴 있으면 attr bit7 이 서야 함"
+        );
+
+        let parsed = parse_face_name(&bytes).expect("FACE_NAME 재파싱");
+        assert_eq!(
+            parsed.alt_name.as_deref(),
+            Some("맑은 고딕"),
+            "subst_font 의 대체 글꼴이 HWP5 왕복에서 보존돼야 함"
+        );
+    }
+
     // 레코드 바이트 생성 헬퍼
     fn make_record(tag_id: u16, level: u16, data: &[u8]) -> Vec<u8> {
         let size = data.len() as u32;

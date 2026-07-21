@@ -136,7 +136,7 @@ export class RhwpEditor {
       data,
       fileName,
       skipUnsavedGuard: options.skipUnsavedGuard === true,
-      suppressDialogs: options.suppressDialogs === true,
+      suppressDialogs: options.suppressDialogs === undefined || options.suppressDialogs === true,
     });
   }
 

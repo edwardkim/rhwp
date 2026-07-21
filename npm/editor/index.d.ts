@@ -145,7 +145,8 @@ export interface LoadFileOptions {
   /**
    * 로드 후 안내창(HWPX 검증, 로컬 글꼴 감지) 없이 열기.
    * 임베드 환경에서 안내창의 사용자 선택을 기다리느라 loadFile 응답이
-   * 지연/교착되는 것을 방지한다.
+   * 지연/교착되는 것을 방지한다. 기본값은 true이며, 안내창을 표시하려면
+   * false를 명시한다.
    */
   suppressDialogs?: boolean;
 }

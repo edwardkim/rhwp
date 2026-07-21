@@ -505,8 +505,40 @@ Cargo 계열 검증은 순차 실행한다. `cargo test`, `cargo clippy`, `cargo
 | Rust parser/model/CLI | focused test, `cargo test --profile release-test --tests`, `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings` |
 | renderer/layout/typeset/WASM | Rust 검증, `wasm-pack build --target web --out-dir pkg`, 2.6·3.5절 시각 검증 |
 | `rhwp-studio/**` frontend만 변경 | `npx tsc --noEmit`, `npm test`, 실제 브라우저 동작 확인 |
+| `npm/editor/**` 공개 SDK·transport·타입 변경 | 4.3.1절 package unit/contract/type/pack/iframe smoke 확인 |
 | CI workflow 변경 | workflow 구문·변경 조건 확인과 최신 GitHub Actions 결과 확인 |
 | 기존 golden/baseline/fixture 변경 | 관련 focused test, snapshot 결정성 재확인, 최신 PR head CI |
+
+#### 4.3.1 `@rhwp/editor` npm package 로컬 검증
+
+`npm/editor/**`의 public API, transport, `index.d.ts`, README 또는 package manifest를 바꾸는 PR은 Studio
+테스트만으로 끝내지 않는다. publish하지 않고 아래 순서로 package 자체와 소비자 경계를 확인한다.
+
+```bash
+# 1. SDK unit/contract: public option 기본값, transport, timeout, destroy를 확인한다.
+npm --prefix npm/editor test
+
+# 2. CI와 같은 public embed/WASM contract를 확인한다.
+node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
+
+# 3. 공개 선언 파일의 TypeScript 구문을 확인한다.
+cd rhwp-studio && npx tsc --noEmit --skipLibCheck ../npm/editor/index.d.ts
+
+# 4. publish 없이 tarball에 JS, declaration, transport, README가 포함되는지 확인한다.
+npm --prefix npm/editor pack --dry-run --json
+```
+
+iframe RPC 완료 시점이나 기본 옵션처럼 실제 Studio와의 결합이 바뀌면, fresh WASM build와 로컬 Vite를 준비한
+뒤 실제 embed E2E도 추가한다. 이미 실행 중인 Vite가 있으면 그 URL을 사용하고 새 서버를 중복으로 열지 않는다.
+
+```bash
+wasm-pack build --target web --out-dir pkg
+VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
+```
+
+특정 기본값 변경은 E2E에 해당 옵션을 명시해 우회하지 말고, 옵션을 생략한 별도 smoke로도 확인한다. 이 경우
+`createEditor()`로 iframe을 만든 뒤 `loadFile()` Promise가 대화상자 클릭 없이 제한 시간 안에 완료되는지와
+문서 페이지 수를 기록한다. 이 절의 명령, package 파일 목록, 실제 iframe 결과는 review 문서에 함께 남긴다.
 
 공용 API, 여러 crate, renderer와 frontend를 함께 바꾸는 대형 변경이나 작업지시자가 전체 검증을 승인한 경우에는
 다음 전체 게이트를 순차 실행한다.
