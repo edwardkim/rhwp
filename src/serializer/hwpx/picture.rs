@@ -36,6 +36,7 @@ use crate::model::shape::{
 };
 
 use super::context::SerializeContext;
+use super::shape::numbering_type_str;
 use super::table::write_caption;
 use super::utils::{empty_tag, end_tag, start_tag, start_tag_attrs};
 use super::SerializeError;
@@ -59,6 +60,13 @@ pub fn write_picture<W: Write>(
     let tf = text_flow_str(pic.common.text_flow);
     let instid = pic.instance_id.to_string();
     let href = pic.href.as_deref().unwrap_or("");
+    // [#2697 동형] numberingType 은 IR(common.numbering_type)을 보존한다. 종전 "PICTURE"
+    // 하드코딩은 그림에 번호 범주를 변경한(예: NONE) 문서에서 저장 시 원본 속성이 유실됐다.
+    // 도형·표 계열은 이미 #1379/#2697 에서 IR 보존으로 정리됐다.
+    let numbering_type = numbering_type_str(pic.common.numbering_type);
+    // [#TODO-IR] groupLevel 은 IR(shape_attr.group_level)을 보존한다. 종전 "0" 하드코딩은
+    // 그룹 내 그림 개체의 중첩 레벨이 저장 시 유실됐다(shape.rs rect/line 경로는 이미 보존).
+    let group_level = pic.shape_attr.group_level.to_string();
 
     start_tag_attrs(
         w,
@@ -66,13 +74,13 @@ pub fn write_picture<W: Write>(
         &[
             ("id", &id_str),
             ("zOrder", &z_order),
-            ("numberingType", "PICTURE"),
+            ("numberingType", &numbering_type),
             ("textWrap", tw),
             ("textFlow", tf),
             ("lock", "0"),
             ("dropcapstyle", "None"),
             ("href", href),
-            ("groupLevel", "0"),
+            ("groupLevel", &group_level),
             ("instid", &instid),
             ("reverse", "0"),
         ],

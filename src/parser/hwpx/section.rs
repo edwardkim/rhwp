@@ -2301,6 +2301,17 @@ fn parse_picture(
                 }
             }
             b"groupLevel" => shape_attr.group_level = attr_str(&attr).parse().unwrap_or(0),
+            // [#2697 동형] numberingType (캡션 번호 범주) 보존 — 도형·표·그림 공통 속성.
+            // 종전 미파싱으로 그림에 번호 범주를 NONE 등으로 변경한 HWPX에서 IR 기본값(None)으로
+            // 떨어져 왕복 시 "PICTURE"로 강제복원되던 결함을 수정한다.
+            b"numberingType" => {
+                common.numbering_type = match attr_str(&attr).to_ascii_uppercase().as_str() {
+                    "PICTURE" => crate::model::shape::ObjectNumberingType::Picture,
+                    "TABLE" => crate::model::shape::ObjectNumberingType::Table,
+                    "EQUATION" => crate::model::shape::ObjectNumberingType::Equation,
+                    _ => crate::model::shape::ObjectNumberingType::None,
+                };
+            }
             _ => {}
         }
     }
@@ -5302,6 +5313,7 @@ fn parse_equation(
     let mut color: u32 = 0;
     let mut font_size: u32 = 1000;
     let mut font_name = String::new();
+    let mut eqedit: u32 = 0;
 
     // 공통 개체 속성 + 수식 속성 파싱
     parse_object_element_attrs(e, &mut common, &mut shape_attr);
@@ -5312,6 +5324,12 @@ fn parse_equation(
             b"textColor" => color = parse_color(&attr),
             b"baseUnit" => font_size = parse_u32(&attr),
             b"font" => font_name = attr_str(&attr),
+            b"lineMode" => {
+                eqedit = match attr_str(&attr).as_str() {
+                    "LINE" => 0x01,
+                    _ => 0x00,
+                };
+            }
             _ => {}
         }
     }
@@ -5395,6 +5413,7 @@ fn parse_equation(
         color,
         baseline,
         unknown: 0,
+        eqedit,
         font_name,
         version_info,
         raw_ctrl_data: Vec::new(),
