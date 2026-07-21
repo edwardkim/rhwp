@@ -1490,6 +1490,20 @@ pub fn stored_lines_overflow(
     if composed.lines.len() != para.line_segs.len() {
         return false;
     }
+    // [#2525] 비마스킹 대형 과밀: 저장 lineseg 이 장평 반영 실폭
+    // (estimate_composed_line_width 는 ts.ratio 를 자체 반영) 기준으로도 내폭을
+    // 크게(≥1.8×) 초과하면, 정당한 장평/자간 압축 범위(최소 advance 클램프 0.5×
+    // → 최대 ~2× 과밀)를 벗어난 부실 단일-저장 lineseg 다 (hwpx-02 p5: 135자
+    // 1줄 ≈4.5× 과밀 → 숫자 char_px*ratio*0.5 클램프로 0.5em 겹침). 마스킹(*)
+    // 게이트와 무관하게 fresh 재래핑한다. 정당한 장평 압축 문서는 ratio 반영
+    // 실폭이 내폭 이내라 오발동하지 않는다.
+    if composed
+        .lines
+        .iter()
+        .any(|l| estimate_composed_line_width(l, styles) > inner_width_px * 1.8)
+    {
+        return true;
+    }
     // 마스킹 판별: 공백 제외 글자의 절반 이상이 '*'
     let (mut stars, mut others) = (0usize, 0usize);
     for c in para.text.chars() {
