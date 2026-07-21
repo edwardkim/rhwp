@@ -1643,6 +1643,14 @@ fn parse_table(
                     _ => crate::model::shape::TextFlow::BothSides,
                 };
             }
+            b"numberingType" => {
+                table.common.numbering_type = match attr_str(&attr).as_str() {
+                    "PICTURE" => crate::model::shape::ObjectNumberingType::Picture,
+                    "TABLE" => crate::model::shape::ObjectNumberingType::Table,
+                    "EQUATION" => crate::model::shape::ObjectNumberingType::Equation,
+                    _ => crate::model::shape::ObjectNumberingType::None,
+                };
+            }
             _ => {}
         }
     }
@@ -1693,6 +1701,9 @@ fn parse_table(
                                 b"heightRelTo" => {
                                     table.common.height_criterion =
                                         parse_size_criterion(&attr_str(&attr), false);
+                                }
+                                b"protect" => {
+                                    table.common.size_protect = attr_str(&attr) == "1";
                                 }
                                 _ => {}
                             }
@@ -1854,7 +1865,15 @@ fn parse_size_criterion(value: &str, allow_column_para: bool) -> SizeCriterion {
 fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
     const HWPX_TABLE_NUMBERING_BIT: u32 = 0x0800_0000;
 
-    table.common.attr = pack_hwpx_common_obj_attr(&table.common) | HWPX_TABLE_NUMBERING_BIT;
+    // numberingType이 Table일 때만 번호 비트를 설정한다 (#2697).
+    // 이전에는 무조건 OR하여 numbering_type과 attr 내부의 비트가 불일치했다.
+    let numbering_bit =
+        if table.common.numbering_type == crate::model::shape::ObjectNumberingType::Table {
+            HWPX_TABLE_NUMBERING_BIT
+        } else {
+            0
+        };
+    table.common.attr = pack_hwpx_common_obj_attr(&table.common) | numbering_bit;
     // HWPX keeps semantic placement in hp:pos, while legacy layout code still reads
     // table.attr bit0 for some inline-table decisions. Only mirror the minimum
     // renderer compatibility bit here; the HWP5 storage attr is packed later by

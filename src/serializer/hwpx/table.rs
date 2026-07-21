@@ -29,7 +29,8 @@ use std::io::Write;
 use quick_xml::Writer;
 
 use crate::model::shape::{
-    CommonObjAttr, HorzAlign, HorzRelTo, TextFlow, TextWrap, VertAlign, VertRelTo,
+    CommonObjAttr, HorzAlign, HorzRelTo, ObjectNumberingType, SizeCriterion, TextFlow, TextWrap,
+    VertAlign, VertRelTo,
 };
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 
@@ -66,6 +67,7 @@ pub fn write_table<W: Write>(
     let cell_spacing = table.cell_spacing.to_string();
     let border_fill_id_ref = table.border_fill_id.to_string();
     let no_adjust = bool01((table.attr | table.raw_table_record_attr) & 0x08 != 0);
+    let numbering_type = numbering_type_str(table.common.numbering_type);
 
     start_tag_attrs(
         w,
@@ -73,7 +75,7 @@ pub fn write_table<W: Write>(
         &[
             ("id", &id_str),
             ("zOrder", &z_order),
-            ("numberingType", "TABLE"),
+            ("numberingType", numbering_type),
             ("textWrap", text_wrap),
             ("textFlow", text_flow),
             ("lock", lock),
@@ -118,15 +120,21 @@ pub fn write_table<W: Write>(
 fn write_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
     let width = c.width.to_string();
     let height = c.height.to_string();
+    let width_rel_to = size_criterion_width_str(c.width_criterion);
+    // heightRelTo는 파서가 Column/Para를 Absolute로 접으므로(parse_size_criterion
+    // with allow_column_para=false), 방출측도 Paper/Page/Absolute 3값만 내야
+    // 정확한 역함수가 된다. Column/Para IR(HWP5 경로 유입)은 Absolute로 접는다.
+    let height_rel_to = size_criterion_height_str(c.height_criterion);
+    let protect = bool01(c.size_protect);
     empty_tag(
         w,
         "hp:sz",
         &[
             ("width", &width),
-            ("widthRelTo", "ABSOLUTE"),
+            ("widthRelTo", width_rel_to),
             ("height", &height),
-            ("heightRelTo", "ABSOLUTE"),
-            ("protect", "0"),
+            ("heightRelTo", height_rel_to),
+            ("protect", protect),
         ],
     )
 }
@@ -420,6 +428,35 @@ fn write_cell_margin<W: Write>(w: &mut Writer<W>, cell: &Cell) -> Result<(), Ser
 }
 
 // ---------- enum 변환 헬퍼 ----------
+
+fn size_criterion_width_str(c: SizeCriterion) -> &'static str {
+    match c {
+        SizeCriterion::Paper => "PAPER",
+        SizeCriterion::Page => "PAGE",
+        SizeCriterion::Column => "COLUMN",
+        SizeCriterion::Para => "PARA",
+        SizeCriterion::Absolute => "ABSOLUTE",
+    }
+}
+
+/// heightRelTo 전용: 파서가 Column/Para를 Absolute로 접으므로
+/// 방출측도 이 둘은 Absolute로 내야 정확한 역함수가 성립한다.
+fn size_criterion_height_str(c: SizeCriterion) -> &'static str {
+    match c {
+        SizeCriterion::Paper => "PAPER",
+        SizeCriterion::Page => "PAGE",
+        _ => "ABSOLUTE",
+    }
+}
+
+fn numbering_type_str(n: ObjectNumberingType) -> &'static str {
+    match n {
+        ObjectNumberingType::Picture => "PICTURE",
+        ObjectNumberingType::Table => "TABLE",
+        ObjectNumberingType::Equation => "EQUATION",
+        ObjectNumberingType::None => "NONE",
+    }
+}
 
 fn bool01(b: bool) -> &'static str {
     if b {
