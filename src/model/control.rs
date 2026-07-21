@@ -89,6 +89,10 @@ pub struct Equation {
     /// HWP5 spec 표 105 에 누락되어 있으나 한컴 실제 저장본에 baseline 과 version_info
     /// 사이에 UINT16 zero 가 위치. Task #1061 발견.
     pub unknown: u16,
+    /// EQEDIT 속성 (UINT32, HWPTAG_EQEDIT 첫 필드).
+    /// bit 0: lineMode (0=글자 단위/CHAR, 1=줄 단위/LINE).
+    /// 종전엔 파싱 후 버려지고 저장 시 0으로 고정되어 lineMode 유실. Issue #2727.
+    pub eqedit: u32,
     /// 버전 정보
     pub version_info: String,
     /// 수식 글꼴명

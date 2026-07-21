@@ -2302,6 +2302,17 @@ fn parse_picture(
                 }
             }
             b"groupLevel" => shape_attr.group_level = attr_str(&attr).parse().unwrap_or(0),
+            // [#2697 동형] numberingType (캡션 번호 범주) 보존 — 도형·표·그림 공통 속성.
+            // 종전 미파싱으로 그림에 번호 범주를 NONE 등으로 변경한 HWPX에서 IR 기본값(None)으로
+            // 떨어져 왕복 시 "PICTURE"로 강제복원되던 결함을 수정한다.
+            b"numberingType" => {
+                common.numbering_type = match attr_str(&attr).to_ascii_uppercase().as_str() {
+                    "PICTURE" => crate::model::shape::ObjectNumberingType::Picture,
+                    "TABLE" => crate::model::shape::ObjectNumberingType::Table,
+                    "EQUATION" => crate::model::shape::ObjectNumberingType::Equation,
+                    _ => crate::model::shape::ObjectNumberingType::None,
+                };
+            }
             _ => {}
         }
     }
@@ -5338,7 +5349,9 @@ fn parse_equation(
     let mut font_name = String::new();
     // [#2727] lineMode(수식이 차지하는 범위) → EQEDIT attribute bit0.
     // OWPML 기본값은 CHAR 이므로 속성이 없으면 0(글자 단위)으로 둔다.
+    // `attr`/`eqedit` 두 필드가 동일한 값을 보관하므로 함께 채운다.
     let mut eq_attr: u32 = 0;
+    let mut eqedit: u32 = 0;
 
     // 공통 개체 속성 + 수식 속성 파싱
     parse_object_element_attrs(e, &mut common, &mut shape_attr);
@@ -5349,12 +5362,14 @@ fn parse_equation(
             b"textColor" => color = parse_color(&attr),
             b"baseUnit" => font_size = parse_u32(&attr),
             // [#2727] LINE 이면 bit0 set. 종전엔 미파싱으로 왕복 시 CHAR 로 고정됐다.
+            // `attr`/`eqedit` 두 필드가 동일한 값을 보관하므로 함께 채운다.
             b"lineMode" => {
                 if attr_str(&attr).eq_ignore_ascii_case("LINE") {
                     eq_attr |= EQUATION_LINE_MODE_BIT;
                 } else {
                     eq_attr &= !EQUATION_LINE_MODE_BIT;
                 }
+                eqedit = eq_attr;
             }
             b"font" => font_name = attr_str(&attr),
             _ => {}
@@ -5442,6 +5457,7 @@ fn parse_equation(
         color,
         baseline,
         unknown: 0,
+        eqedit,
         font_name,
         version_info,
         raw_ctrl_data: Vec::new(),
