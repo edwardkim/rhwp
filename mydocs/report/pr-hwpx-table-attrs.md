@@ -1,4 +1,4 @@
-# PR #????: hwpx 표 hp:tbl 속성 3종 하드코딩 제거 — widthRelTo/heightRelTo/protect/numberingType
+# PR #2718: hwpx 표 hp:tbl 속성 3종 하드코딩 제거 — widthRelTo/heightRelTo/protect/numberingType
 
 ## 이슈
 - **Issue**: #2697 — 표 `<hp:tbl>` 속성 3종이 하드코딩으로 라운드트립 유실
