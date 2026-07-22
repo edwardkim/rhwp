@@ -278,6 +278,9 @@ pub(crate) fn convert_char_shape(
     };
     cs.outline_type = if hwp3_cs.is_outline() { 1 } else { 0 };
     cs.shadow_type = if hwp3_cs.is_shadow() { 1 } else { 0 };
+    // attr 0x80(글꼴에 어울리는 빈칸 사용). 접근자 is_font_blank()는 있었으나
+    // 호출부가 없어 IR CharShape.use_font_space가 항상 false로 저장됐다.
+    cs.use_font_space = hwp3_cs.is_font_blank();
     cs
 }
 
@@ -3970,6 +3973,17 @@ mod tests {
         let cs = convert_char_shape(&hwp3_cs);
 
         assert_eq!(cs.text_color, 0x00FF0000);
+    }
+
+    #[test]
+    fn convert_char_shape_maps_font_blank() {
+        // attr 0x80=글꼴에 어울리는 빈칸 사용. 종전엔 매핑이 빠져 항상 false.
+        let hwp3_cs = crate::parser::hwp3::records::Hwp3CharShape {
+            attr: 0x80,
+            ..Default::default()
+        };
+        let cs = convert_char_shape(&hwp3_cs);
+        assert!(cs.use_font_space);
     }
 
     #[test]
