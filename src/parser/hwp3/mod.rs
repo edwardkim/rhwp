@@ -391,6 +391,17 @@ fn hwp3_para_flow_spacing(para_shape: Option<&crate::model::style::ParaShape>) -
     )
 }
 
+/// HWP3 스펙 offset 111 각주 분리선 길이 종류(0=5cm, 1=본문 폭의 1/3, 2=단 너비,
+/// 3 이상=없음)를 HWPUNIT 길이로 변환한다.
+fn hwp3_footnote_separator_length(footnote_line_width: u8, column_width_hu: i32) -> i32 {
+    match footnote_line_width {
+        0 => 14160, // 5cm ≈ 283.2 HWPUNIT/mm * 50mm
+        1 => column_width_hu / 3,
+        2 => column_width_hu,
+        _ => 0,
+    }
+}
+
 fn hwp3_note_column_width_hu(column_width_hu: i32) -> i32 {
     // HWP3 미주는 HWPX 기준 출력처럼 본문 영역 안에서 2단으로 흘린다.
     // 한글 97 계열의 기본 미주 단 간격은 5mm에 해당하는 1416 HWPUNIT로 본다.
@@ -3187,6 +3198,18 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
         ..Default::default()
     };
 
+    // HWP3 스펙(한글문서파일구조3.0.md:245) offset 111 각주 분리선 길이 종류.
+    // 기존 코드는 doc_info.footnote_line_width 를 파싱만 하고 버려 항상
+    // separator_length=0(선 없음)으로 렌더링했다.
+    section_def.footnote_shape.separator_length =
+        hwp3_footnote_separator_length(doc_info.footnote_line_width, column_width_hu);
+    section_def.footnote_shape.separator_line_type = if doc_info.footnote_line_width == 3 {
+        0
+    } else {
+        1
+    };
+    section_def.footnote_shape.separator_line_width = 1;
+
     // [Task #877 Stage 4] HWP3 doc_info.border_type / border_margin → SectionDef.page_border_fill
     // 변환. HWP3 spec §3.2 (문서 정보) offset 112-121 의 페이지 테두리 정보. type=0 이면 없음,
     // 그 외 = 실선 등. 한컴 viewer 의 PDF 출력에 페이지 외곽선 박스 표시 (sample16 표지/목차/
@@ -3890,6 +3913,17 @@ mod tests {
     use super::*;
     use std::fs::File;
     use std::io::Read;
+
+    #[test]
+    fn hwp3_maps_footnote_separator_length() {
+        // doc_info.footnote_line_width(스펙 offset 111, 각주 분리선 길이 종류)를
+        // 파싱만 하고 버리던 기존 버그: section_def.footnote_shape.separator_length 가
+        // 값과 무관하게 항상 0(선 없음)으로 남았다.
+        assert_eq!(hwp3_footnote_separator_length(0, 9999), 14160); // 5cm 고정
+        assert_eq!(hwp3_footnote_separator_length(1, 9000), 3000); // 본문 폭의 1/3
+        assert_eq!(hwp3_footnote_separator_length(2, 9000), 9000); // 단 너비
+        assert_eq!(hwp3_footnote_separator_length(3, 9000), 0); // 없음
+    }
 
     #[test]
     fn test_alloc_record_buf_overflow_returns_err() {
