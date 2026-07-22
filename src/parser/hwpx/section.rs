@@ -2218,6 +2218,7 @@ fn parse_picture(
     let mut href: Option<String> = None;
     let mut picture_instance_id = 0;
     let mut effects = PictureEffects::default();
+    let mut lock = false;
 
     // <hp:pic> 요소 자체의 속성 파싱
     for attr in e.attributes().flatten() {
@@ -2251,6 +2252,9 @@ fn parse_picture(
                 }
             }
             b"groupLevel" => shape_attr.group_level = attr_str(&attr).parse().unwrap_or(0),
+            // [#2875] 개체 잠금(보호). 종전 미매칭으로 조용히 버려져 직렬화 시 항상
+            // lock="0" 하드코딩되던 유실 — #2861(reverse), #2855(hp:tbl lock)과 동일 패턴.
+            b"lock" => lock = attr_str(&attr) == "1",
             _ => {}
         }
     }
@@ -2541,6 +2545,7 @@ fn parse_picture(
     pic.effects = effects;
     pic.caption = caption;
     pic.img_dim = img_dim;
+    pic.lock = lock;
 
     Ok(Control::Picture(Box::new(pic)))
 }

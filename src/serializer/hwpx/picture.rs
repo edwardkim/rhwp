@@ -59,6 +59,9 @@ pub fn write_picture<W: Write>(
     let tf = text_flow_str(pic.common.text_flow);
     let instid = pic.instance_id.to_string();
     let href = pic.href.as_deref().unwrap_or("");
+    // [#2875] 개체 잠금 — 종전 하드코딩 "0" 은 lock="1" 로 저장된 그림의 잠금 정보를
+    // 왕복 시 소실시켰다 (#2861 reverse, #2855 hp:tbl lock 과 동일 패턴).
+    let lock = bool01(pic.lock);
 
     start_tag_attrs(
         w,
@@ -69,7 +72,7 @@ pub fn write_picture<W: Write>(
             ("numberingType", "PICTURE"),
             ("textWrap", tw),
             ("textFlow", tf),
-            ("lock", "0"),
+            ("lock", lock),
             ("dropcapstyle", "None"),
             ("href", href),
             ("groupLevel", "0"),
@@ -554,6 +557,20 @@ mod tests {
         let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
         write_picture(&mut w, pic, ctx).expect("write_picture");
         String::from_utf8(w.into_inner()).unwrap()
+    }
+
+    // [#2875] hp:pic lock="1" 이 IR 에 있어도 종전에는 하드코딩 "0" 으로 방출됐다.
+    #[test]
+    fn issue2875_pic_lock_is_preserved_on_serialize() {
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+        pic.lock = true;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(
+            xml.contains(r#"lock="1""#),
+            "hp:pic lock=1 이 저장 시 보존돼야 한다: {xml}"
+        );
     }
 
     #[test]
