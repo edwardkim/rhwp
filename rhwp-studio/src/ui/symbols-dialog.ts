@@ -60,6 +60,11 @@ const COLS = 16;
 const RECENT_KEY = 'rhwp-symbols-recent';
 const MAX_RECENT = 32;
 
+/** 문자가 해당 유니코드 블록에 속하는지 판정(최근 사용 문자는 다른 블록일 수 있음). */
+export function isCodePointInBlock(codePoint: number, block: UnicodeBlock): boolean {
+  return codePoint >= block.start && codePoint <= block.end;
+}
+
 export class SymbolsDialog {
   private services: CommandServices;
   private _open = false;
@@ -285,11 +290,13 @@ export class SymbolsDialog {
     this.codeLabel.textContent = codePoint.toString(16).toUpperCase().padStart(4, '0');
     this.previewCell.textContent = ch;
 
-    // 그리드 하이라이트
+    // 그리드 하이라이트 (최근 사용 문자가 현재 블록에 없으면 하이라이트하지 않음)
     this.charGrid.querySelectorAll('.sym-cell.selected').forEach(el => el.classList.remove('selected'));
-    const idx = codePoint - this.currentBlock.start;
-    const cells = this.charGrid.querySelectorAll('.sym-cell');
-    cells[idx]?.classList.add('selected');
+    if (isCodePointInBlock(codePoint, this.currentBlock)) {
+      const idx = codePoint - this.currentBlock.start;
+      const cells = this.charGrid.querySelectorAll('.sym-cell');
+      cells[idx]?.classList.add('selected');
+    }
   }
 
   // ── 삽입 ──
