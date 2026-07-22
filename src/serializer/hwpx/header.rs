@@ -404,6 +404,21 @@ fn write_diag_line<W: Write>(
     )
 }
 
+// [#2947] parser 측 parse_numbering_format_code() (표 43) 의 역매핑.
+fn numbering_format_str(code: u8) -> &'static str {
+    match code {
+        1 => "CIRCLED_DIGIT",
+        2 => "ROMAN_CAPITAL",
+        3 => "ROMAN_SMALL",
+        4 => "LATIN_CAPITAL",
+        5 => "LATIN_SMALL",
+        8 => "HANGUL_SYLLABLE",
+        12 => "HANGUL_NUMBER",
+        13 => "HANJA_NUMBER",
+        _ => "DIGIT",
+    }
+}
+
 fn diagonal_shape_type(code: u8) -> &'static str {
     match code & 0x07 {
         0 => "NONE",
@@ -906,6 +921,9 @@ fn write_numbering<W: Write>(
         let level_s = (level + 1).to_string();
         let start_s = start.to_string();
         let wa = h.width_adjust.to_string();
+        // [#2947] h.number_format 을 무시하고 "DIGIT" 로 고정 방출하면 HWP5 경유
+        // 저장 시 로마자/한글/원문자 등 문단 번호 형식이 전부 아라비아 숫자로 뒤바뀐다.
+        let num_format = numbering_format_str(h.number_format);
         empty_tag(
             w,
             "hh:paraHead",
@@ -918,7 +936,7 @@ fn write_numbering<W: Write>(
                 ("widthAdjust", &wa),
                 ("textOffsetType", "PERCENT"),
                 ("textOffset", "50"),
-                ("numFormat", "DIGIT"),
+                ("numFormat", num_format),
                 ("charPrIDRef", &u32::MAX.to_string()),
                 ("checkable", "0"),
             ],
@@ -2166,6 +2184,23 @@ mod tests {
 
         assert_eq!(xml.matches("<hh:paraHead").count(), 10);
         assert!(xml.starts_with(r#"<hh:numbering id="1" start="0">"#));
+    }
+
+    #[test]
+    fn write_numbering_skeleton_uses_number_format_not_hardcoded_digit() {
+        // [#2947] HWP5 경유(raw_para_heads 없음) 시 h.number_format(예: ROMAN_CAPITAL=2)
+        // 을 무시하고 "DIGIT" 로 고정 방출하면 로마자/한글 문단 번호가 유실된다.
+        let mut n = Numbering::default();
+        n.heads[0].number_format = 2; // ROMAN_CAPITAL
+
+        let mut writer = Writer::new(Vec::new());
+        write_numbering(&mut writer, 0, &n).unwrap();
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(r#"numFormat="ROMAN_CAPITAL""#),
+            "level 1 paraHead 는 number_format=2 를 ROMAN_CAPITAL 로 방출해야 한다: {xml}"
+        );
     }
 
     #[test]
