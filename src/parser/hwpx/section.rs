@@ -5202,6 +5202,11 @@ fn read_compose_text(reader: &mut Reader<&[u8]>) -> Result<String, HwpxError> {
             Ok(Event::GeneralRef(ref r)) => {
                 text.push_str(&decode_xml_general_ref(r));
             }
+            // [CDATA] composeText(글자겹치기) 본문이 CDATA로 인코딩된 경우 처리하지
+            // 않으면 겹침 텍스트가 소실된다. #2916/#2935/#2951의 CDATA 누락과 동일한 패턴.
+            Ok(Event::CData(ref cdata)) => {
+                text.push_str(&String::from_utf8_lossy(cdata.as_ref()));
+            }
             Ok(Event::End(ref ee)) => {
                 let eename = ee.name();
                 if local_name(eename.as_ref()) == b"composeText" {
@@ -7731,6 +7736,32 @@ mod tests {
         assert_eq!(
             parse_field_type("TABLE_OF_CONTENTS"),
             FieldType::TableOfContents
+        );
+    }
+
+    #[test]
+    fn compose_text_preserve_cdata() {
+        // hp:compose(글자겹치기)의 composeText가 CDATA로 인코딩된 경우
+        // (예: 비교연산자 `<`/`>` 포함) read_compose_text의 arm 누락으로 소실되던 결함(#2974).
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:compose circleType="CHAR" charSz="100" composeType="OVERLAP">
+        <composeText><![CDATA[a<b]]></composeText>
+      </hp:compose>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::CharOverlap(co) = &section.paragraphs[0].controls[0] else {
+            panic!("첫 컨트롤은 CharOverlap(글자겹치기)이어야 함");
+        };
+        assert_eq!(
+            co.chars,
+            vec!['a', '<', 'b'],
+            "composeText CDATA 가 소실되면 안 됨"
         );
     }
 }
