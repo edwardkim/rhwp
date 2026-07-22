@@ -4239,7 +4239,9 @@ fn parse_page_num_attrs(e: &quick_xml::events::BytesStart) -> PageNumberPos {
             b"formatType" => {
                 pn.format = match attr_str(&attr).as_str() {
                     "DIGIT" => 0,
-                    "CIRCLE_DIGIT" => 1,
+                    // [#XXXX] 스펙 표기는 "CIRCLED_DIGIT"(NumberType1). 과거 오탈자
+                    // "CIRCLE_DIGIT"로 저장된 한컴 실물 파일과의 호환을 위해 둘 다 인식한다.
+                    "CIRCLED_DIGIT" | "CIRCLE_DIGIT" => 1,
                     "ROMAN_CAPITAL" => 2,
                     "ROMAN_SMALL" => 3,
                     "LATIN_CAPITAL" => 4,

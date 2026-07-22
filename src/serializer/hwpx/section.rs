@@ -1532,7 +1532,9 @@ fn page_num_pos_to_str(pos: u8) -> &'static str {
 fn page_num_format_to_str(fmt: u8) -> &'static str {
     match fmt {
         0 => "DIGIT",
-        1 => "CIRCLE_DIGIT",
+        // [#XXXX] OWPML Core 스키마 NumberType1(<hp:pageNum formatType>)의 실제 값은
+        // "CIRCLED_DIGIT"이다 (Core XML schema.xml 12행). "CIRCLE_DIGIT"은 오탈자.
+        1 => "CIRCLED_DIGIT",
         2 => "ROMAN_CAPITAL",
         3 => "ROMAN_SMALL",
         4 => "LATIN_CAPITAL",
@@ -2186,6 +2188,73 @@ fn render_page_border_fill(ty: &str, pbf: &crate::model::page::PageBorderFill) -
 mod tests {
     use super::*;
     use crate::model::paragraph::{CharShapeRef, Paragraph};
+
+    /// [#XXXX] `<hp:pageNum formatType="...">`의 원문자(circled digit) 값은 OWPML Core
+    /// 스키마 NumberType1 표기인 "CIRCLED_DIGIT"이어야 한다. 종전엔 "CIRCLE_DIGIT"(D 없음)
+    /// 오탈자로 방출돼 한컴이 값을 인식하지 못했다.
+    #[test]
+    fn page_num_circled_digit_format_reflects_spec_spelling() {
+        use crate::model::control::PageNumberPos;
+        let mut pn = PageNumberPos::default();
+        pn.format = 1; // circled digit
+        let xml = render_page_num(&pn);
+        assert!(
+            xml.contains(r#"formatType="CIRCLED_DIGIT""#),
+            "pageNum formatType 이 스펙 철자(CIRCLED_DIGIT)여야 함: {xml}"
+        );
+        assert!(
+            !xml.contains(r#"formatType="CIRCLE_DIGIT""#),
+            "CIRCLE_DIGIT 오탈자 잔존 금지: {xml}"
+        );
+    }
+
+    #[test]
+    fn equation_text_flow_reflects_ir() {
+        use crate::model::control::Equation;
+        use crate::model::shape::TextFlow;
+        // 수식의 textFlow 가 IR(common.text_flow)에서 방출돼야 한다.
+        // 종전엔 "BOTH_SIDES" 하드코딩으로 왕복 시 유실됐다(textWrap 은 이미 IR 구동).
+        let mut eq = Equation::default();
+        eq.common.text_flow = TextFlow::LeftOnly;
+        let xml = render_equation(&eq);
+        assert!(
+            xml.contains(r#"textFlow="LEFT_ONLY""#),
+            "수식 textFlow 이 IR 값이어야 함: {xml}"
+        );
+        assert!(
+            !xml.contains(r#"textFlow="BOTH_SIDES""#),
+            "BOTH_SIDES 하드코딩 잔존 금지"
+        );
+    }
+
+    /// [Issue #2727] 수식의 lineMode(수식이 차지하는 범위)가 IR(EQEDIT attribute bit0)에서
+    /// 방출돼야 한다. 종전엔 속성 자체를 내보내지 않아 LINE 설정이 왕복마다 CHAR 로 돌아갔다.
+    /// 한컴 저장본은 값이 기본값(CHAR)이어도 예외 없이 baseUnit 과 font 사이에 기록한다.
+    #[test]
+    fn equation_line_mode_reflects_ir() {
+        use crate::model::control::{Equation, EQUATION_LINE_MODE_BIT};
+
+        let char_xml = render_equation(&Equation::default());
+        assert!(
+            char_xml.contains(r#"lineMode="CHAR""#),
+            "기본값도 lineMode 속성을 방출해야 함(한컴 저장본 정합): {char_xml}"
+        );
+
+        let eq = Equation {
+            attr: EQUATION_LINE_MODE_BIT,
+            font_size: 1000,
+            ..Default::default()
+        };
+        let line_xml = render_equation(&eq);
+        assert!(
+            line_xml.contains(r#"baseUnit="1000" lineMode="LINE" font="""#),
+            "lineMode 는 IR 값으로, 한컴과 같은 baseUnit·font 사이 자리에 와야 함: {line_xml}"
+        );
+        assert!(
+            !line_xml.contains(r#"lineMode="CHAR""#),
+            "CHAR 하드코딩 잔존 금지"
+        );
+    }
 
     /// [Issue #1944] legacy 공용 도형 경로(polygon/ellipse/arc/curve)가 도형 내
     /// 글상자(drawText) 문단을 방출해야 한다 — 종전 누락으로 도형 안 텍스트 소실.
