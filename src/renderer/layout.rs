@@ -3395,7 +3395,12 @@ impl LayoutEngine {
                 _ => &layout.footer_area,
             };
 
-            let font_size = 10.0;
+            // [#3048] 한글은 쪽 번호 매기기(pgnp) 번호를 10pt 로 그린다 — pgnp 사용
+            // 문서 8건 오라클 실측 전건 일치(7건 직접 10.0pt, 1건은 2-up 내보내기로
+            // 0.707배 축소된 7.07pt 로 설명됨). 종전 값 10.0 은 pt 로 의도된 값이
+            // px 필드에 들어가 96dpi 에서 7.5pt 로 렌더되던 단위 혼동이었다.
+            const PAGE_NUMBER_PT: f64 = 10.0;
+            let font_size = PAGE_NUMBER_PT * self.dpi / 72.0;
             let text_width = page_num_text.chars().count() as f64 * font_size * 0.6;
 
             let is_odd_page = page_content.page_number % 2 == 1;

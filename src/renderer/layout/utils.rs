@@ -198,8 +198,12 @@ pub(crate) fn format_page_number(
     };
     if prefix.is_empty() && suffix.is_empty() && dash.is_empty() {
         formatted
+    } else if dash.is_empty() {
+        format!("{}{}{}", prefix, formatted, suffix)
     } else {
-        format!("{}{}{}{}{}", dash, prefix, formatted, suffix, dash)
+        // [#3048] 대시 장식은 번호와 공백 한 칸을 두고 그린다 — 한글 오라클은
+        // `- 1 -` (5자) 로 방출한다. 종전에는 `-1-` 로 붙여 폭이 좁았다.
+        format!("{} {}{}{} {}", dash, prefix, formatted, suffix, dash)
     }
 }
 

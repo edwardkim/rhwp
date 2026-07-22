@@ -1934,6 +1934,11 @@ mod tests {
     // 페이지 2, 3 미표시 메커니즘은 **별도 issue 분리**.
 
     /// SVG 에서 특정 y 좌표 (`±0.5px` 허용) 의 `<text>` 요소 개수를 센다.
+    /// 지정한 y(96dpi SVG 단위) 행의 `<text>` 개수.
+    ///
+    /// [#3048] 쪽 번호를 한글 정합값 10pt 로 교정하면서(종전 7.5pt) 줄 baseline 이
+    /// +4.44px 이동했다 — 아래 #634 가드들의 y 상수는 그만큼 갱신되어 있다.
+    /// 글자 수(`- N -` = 3개)는 불변이라 가드의 의도는 그대로다.
     fn count_text_at_y(svg: &str, target_y: f64) -> usize {
         let mut count = 0;
         for line in svg.lines() {
@@ -2012,7 +2017,7 @@ mod tests {
             return;
         };
         let svg = core.render_page_svg_native(0).unwrap_or_default();
-        let count = count_text_at_y(&svg, 1079.16);
+        let count = count_text_at_y(&svg, 1083.6);
         assert_eq!(
             count, 3,
             "aift.hwp 페이지 1 (cover disclaimer, PageNumberPos 등록 페이지) 은 \
@@ -2028,7 +2033,7 @@ mod tests {
             return;
         };
         let svg = core.render_page_svg_native(5).unwrap_or_default();
-        let count = count_text_at_y(&svg, 1079.16);
+        let count = count_text_at_y(&svg, 1083.6);
         assert_eq!(
             count, 3,
             "aift.hwp 페이지 6 (본문 시작) 은 한컴이 \"- N -\" 표시. \
@@ -2043,7 +2048,7 @@ mod tests {
             return;
         };
         let svg = core.render_page_svg_native(6).unwrap_or_default();
-        let count = count_text_at_y(&svg, 1079.16);
+        let count = count_text_at_y(&svg, 1083.6);
         assert_eq!(
             count, 3,
             "aift.hwp 페이지 7 (NewNumber 발화) 은 \"- 1 -\" 3글자 표시되어야 함."
@@ -2058,7 +2063,7 @@ mod tests {
             return;
         };
         let svg = core.render_page_svg_native(3).unwrap_or_default();
-        let count = count_text_at_y(&svg, 1079.16);
+        let count = count_text_at_y(&svg, 1083.6);
         assert_eq!(
             count, 0,
             "aift.hwp 페이지 4 는 PageHide page_num=true (paragraph 2.34) 로 미표시."
@@ -2072,7 +2077,7 @@ mod tests {
             return;
         };
         let svg = core.render_page_svg_native(4).unwrap_or_default();
-        let count = count_text_at_y(&svg, 1079.16);
+        let count = count_text_at_y(&svg, 1083.6);
         assert_eq!(
             count, 0,
             "aift.hwp 페이지 5 는 PageHide page_num=true (paragraph 2.54) 로 미표시."
@@ -2123,7 +2128,8 @@ mod tests {
         };
         let svg = core.render_page_svg_native(0).unwrap_or_default();
         // Issue #951: margin_bottom 원본값 보존 후 쪽번호 위치 보정 (1061.4→1050.8)
-        let count = count_text_at_y(&svg, 1050.8);
+        // [#3048] 쪽 번호를 10pt 로 교정하면서 줄 baseline 이 +4.44px 이동 (1050.8→1055.24).
+        let count = count_text_at_y(&svg, 1055.24);
         assert_eq!(
             count, 3,
             "hwp3-sample.hwp 페이지 1 (NewNumber 0개) 은 쪽번호 표시되어야 함 (회귀 방지)."
