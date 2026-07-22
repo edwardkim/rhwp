@@ -1612,10 +1612,15 @@ fn parse_tab_item(ce: &quick_xml::events::BytesStart) -> TabItem {
                     "DASH_DOT_DOT" => 5, // 이점쇄선
                     "LONG_DASH" => 6,    // 긴파선
                     "CIRCLE" => 7,       // 원형점선
-                    "DOUBLE_LINE" => 8,  // 이중실선
-                    "THIN_THICK" => 9,   // 얇고 굵은 이중선
-                    "THICK_THIN" => 10,  // 굵고 얇은 이중선
-                    "TRIM" => 11,        // 얇고 굵고 얇은 삼중선
+                    // 방출측 tab_leader_str 은 fill_type 8 을 "DOUBLE_SLIM" 으로 낸다
+                    // (border 명명과 동일). 안 받으면 이중실선 탭 리더가 왕복 시 NONE(0)으로 유실.
+                    "DOUBLE_LINE" | "DOUBLE_SLIM" => 8, // 이중실선
+                    // OWPML LineType3 스펙 리터럴은 SLIM_THICK/THICK_SLIM/SLIM_THICK_SLIM
+                    // (Core XML schema.xml 335~349행). THIN_THICK/THICK_THIN/TRIM 은
+                    // rhwp 내부에서만 쓰던 비표준 이름이라 스펙 준수 문서(#2857)를 못 읽었다.
+                    "THIN_THICK" | "SLIM_THICK" => 9, // 얇고 굵은 이중선
+                    "THICK_THIN" | "THICK_SLIM" => 10, // 굵고 얇은 이중선
+                    "TRIM" | "SLIM_THICK_SLIM" => 11, // 얇고 굵고 얇은 삼중선
                     _ => 0,
                 };
             }
@@ -2097,6 +2102,26 @@ mod tests {
                 (tags::HWPTAG_TRACKCHANGE, 1, 1032),
             ]
         );
+    }
+
+    #[test]
+    fn test_parse_tab_item_leader_accepts_owpml_spec_literal_slim_thick() {
+        // OWPML LineType3 스펙 리터럴(Core XML schema.xml 335행)은 "SLIM_THICK"이다.
+        // rhwp 내부 전용 이름 "THIN_THICK"만 받으면 한/글이 저장한 정상 문서의
+        // 탭 리더가 NONE(0)으로 유실된다 (#2857).
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:tabProperties itemCnt="1">
+      <hh:tabPr id="0" autoTabLeft="0" autoTabRight="0">
+        <hh:tabItem pos="1000" type="LEFT" leader="SLIM_THICK"/>
+      </hh:tabPr>
+    </hh:tabProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        assert_eq!(doc_info.tab_defs[0].tabs[0].fill_type, 9);
     }
 
     #[test]

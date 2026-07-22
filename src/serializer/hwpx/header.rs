@@ -837,6 +837,14 @@ fn tab_leader_str(f: u8) -> &'static str {
         6 => "LONG_DASH",
         7 => "CIRCLE",
         8 => "DOUBLE_SLIM",
+        // OWPML LineType3 스펙 리터럴(Core XML schema.xml 335~349행)로 방출한다.
+        // 종전엔 THIN_THICK/THICK_THIN/TRIM 이라는 비표준 이름을 썼는데, rhwp
+        // 자기 자신은 다시 읽을 수 있어도(파서가 두 이름을 모두 허용) 한/글 등
+        // 스펙을 따르는 다른 구현체에는 정의되지 않은 값이라 상호운용에 문제가
+        // 있었다(#2857). 파서는 하위호환을 위해 옛 이름도 계속 받는다.
+        9 => "SLIM_THICK",
+        10 => "THICK_SLIM",
+        11 => "SLIM_THICK_SLIM",
         _ => "NONE",
     }
 }
