@@ -846,11 +846,14 @@ fn tab_leader_str(f: u8) -> &'static str {
         6 => "LONG_DASH",
         7 => "CIRCLE",
         8 => "DOUBLE_SLIM",
-        // 종전엔 9/10/11 이 _ => "NONE" 으로 떨어져 이중/삼중선 탭 리더가 저장 시 유실됐다.
-        // 파서(parse_tab_item)는 이 문자열들을 각각 9/10/11 로 받으므로 왕복 보존된다.
-        9 => "THIN_THICK",
-        10 => "THICK_THIN",
-        11 => "TRIM",
+        // OWPML LineType3 스펙 리터럴(Core XML schema.xml 335~349행)로 방출한다.
+        // 종전엔 THIN_THICK/THICK_THIN/TRIM 이라는 비표준 이름을 썼는데, rhwp
+        // 자기 자신은 다시 읽을 수 있어도(파서가 두 이름을 모두 허용) 한/글 등
+        // 스펙을 따르는 다른 구현체에는 정의되지 않은 값이라 상호운용에 문제가
+        // 있었다(#2857). 파서는 하위호환을 위해 옛 이름도 계속 받는다.
+        9 => "SLIM_THICK",
+        10 => "THICK_SLIM",
+        11 => "SLIM_THICK_SLIM",
         _ => "NONE",
     }
 }
