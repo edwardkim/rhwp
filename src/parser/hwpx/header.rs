@@ -1344,13 +1344,17 @@ fn parse_border_fill(
 ) -> Result<(), HwpxError> {
     let mut bf = BorderFill::default();
     for attr in e.attributes().flatten() {
-        if attr.key.as_ref() == b"centerLine" {
-            bf.center_line = parse_center_line(&attr);
-            if bf.center_line == CenterLine::None {
-                bf.attr &= !(1 << 13);
-            } else {
-                bf.attr |= 1 << 13;
+        match attr.key.as_ref() {
+            b"centerLine" => {
+                bf.center_line = parse_center_line(&attr);
+                if bf.center_line == CenterLine::None {
+                    bf.attr &= !(1 << 13);
+                } else {
+                    bf.attr |= 1 << 13;
+                }
             }
+            b"threeD" => bf.three_d = parse_bool(&attr),
+            _ => {}
         }
     }
 
@@ -2811,6 +2815,13 @@ mod tests {
             .into_iter()
             .next()
             .expect("borderFill 파싱 실패")
+    }
+
+    #[test]
+    fn test_border_fill_three_d_attr_parsed() {
+        // threeD="1" 은 파서가 읽어 모델에 보존해야 한다(직렬화 시 하드코딩 "0" 방지).
+        let bf = parse_single_border_fill(r#"<hh:borderFill id="9" threeD="1"></hh:borderFill>"#);
+        assert!(bf.three_d, "threeD=\"1\" 이 bf.three_d 로 파싱되어야 함");
     }
 
     #[test]

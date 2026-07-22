@@ -446,6 +446,7 @@ impl DocumentCore {
                     },
                     center_line: CenterLine::None,
                     fill: Fill::default(),
+                    three_d: false,
                 };
                 self.document.doc_info.border_fills.push(new_bf);
                 self.document.doc_info.raw_stream = None;
@@ -882,6 +883,7 @@ impl DocumentCore {
                     },
                     center_line: CenterLine::None,
                     fill: Fill::default(),
+                    three_d: false,
                 };
                 self.document.doc_info.border_fills.push(new_bf);
                 self.document.doc_info.raw_stream = None;

@@ -756,6 +756,7 @@ impl DocumentCore {
             diagonal: DiagonalLine::default(),
             center_line: CenterLine::None,
             fill,
+            three_d: false,
         };
 
         // 기존 BorderFill에서 동일한 항목 검색
@@ -816,6 +817,7 @@ impl DocumentCore {
                 diagonal: DiagonalLine::default(),
                 center_line: CenterLine::None,
                 fill: Fill::default(),
+                three_d: false,
             });
         bf.raw_data = None;
 
