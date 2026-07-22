@@ -401,16 +401,25 @@ fn hwp3_note_column_width_hu(column_width_hu: i32) -> i32 {
         .max(1)
 }
 
-fn hwp3_default_endnote_shape() -> crate::model::footnote::FootnoteShape {
+fn hwp3_default_endnote_shape(doc_info: &Hwp3DocInfo) -> crate::model::footnote::FootnoteShape {
     use crate::model::footnote::{
         FootnoteNumbering, FootnotePlacement, FootnoteShape, NumberFormat,
+    };
+
+    // [Task #2772] doc_info.footnote_line_margin(오프셋 104, "각주 분리선과 본문
+    // 사이의 간격")을 separator_margin_top 으로 배선한다. 미배선 시 항상
+    // 하드코딩된 864 값이 쓰여 문서가 지정한 간격이 무시됐다.
+    let separator_margin_top = if doc_info.footnote_line_margin != 0 {
+        (doc_info.footnote_line_margin as i16).saturating_mul(4)
+    } else {
+        864
     };
 
     let mut shape = FootnoteShape {
         number_format: NumberFormat::Digit,
         suffix_char: ')',
         start_number: 1,
-        separator_margin_top: 864,
+        separator_margin_top,
         note_spacing: 576,
         separator_line_width: 1,
         separator_color: 0x00000000,
@@ -3243,7 +3252,7 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     super::populate_link_image_paths(&mut doc);
 
     crate::parser::assign_auto_numbers(&mut doc);
-    fixup_hwp3_notes(&mut doc);
+    fixup_hwp3_notes(&mut doc, &doc_info);
     fixup_hwp3_outline_fields(&mut doc);
     fixup_hwp3_picture_numbers(&mut doc);
     fixup_hwp3_outline_bullets(&mut doc);
@@ -3259,7 +3268,7 @@ struct Hwp3NoteFixupState {
     has_endnote: bool,
 }
 
-fn fixup_hwp3_notes(doc: &mut crate::model::document::Document) {
+fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, doc_info: &Hwp3DocInfo) {
     let para_shapes = doc.doc_info.para_shapes.clone();
     let mut state = Hwp3NoteFixupState {
         footnote_number: doc.doc_properties.footnote_start_num.max(1),
@@ -3275,7 +3284,7 @@ fn fixup_hwp3_notes(doc: &mut crate::model::document::Document) {
 
     if state.has_endnote {
         for section in &mut doc.sections {
-            section.section_def.endnote_shape = hwp3_default_endnote_shape();
+            section.section_def.endnote_shape = hwp3_default_endnote_shape(doc_info);
             ensure_hwp3_initial_body_column_def(&mut section.paragraphs);
             let page_def = &section.section_def.page_def;
             let body_width_hu = page_def
@@ -3946,6 +3955,22 @@ mod tests {
         assert_eq!(pbf.spacing_bottom, 160);
         assert_eq!(pbf.basis, PageBorderBasis::BodyBased);
         assert_eq!(pbf.ui_basis, PageBorderUiBasis::Page);
+    }
+
+    #[test]
+    fn task2772_hwp3_default_endnote_shape_wires_footnote_line_margin() {
+        // [Task #2772] doc_info.footnote_line_margin 이 separator_margin_top 으로
+        // 배선돼야 한다. 값이 0이면 기존 하드코딩 기본값(864)을 유지한다.
+        let doc_info = Hwp3DocInfo {
+            footnote_line_margin: 50,
+            ..Default::default()
+        };
+        let shape = hwp3_default_endnote_shape(&doc_info);
+        assert_eq!(shape.separator_margin_top, 200);
+
+        let default_doc_info = Hwp3DocInfo::default();
+        let default_shape = hwp3_default_endnote_shape(&default_doc_info);
+        assert_eq!(default_shape.separator_margin_top, 864);
     }
 
     #[test]
