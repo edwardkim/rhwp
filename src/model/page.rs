@@ -94,6 +94,14 @@ pub struct PageBorderFill {
     ///
     /// 렌더러의 외곽선 배치 계약인 `basis`와 분리한다.
     pub ui_basis: PageBorderUiBasis,
+    /// [HWPX] `<hp:pageBorderFill type="...">` 원본 문자열(BOTH/EVEN/ODD 등).
+    /// 파서는 이 값을 셋 중 어느 슬롯(`page_border_fill`/`extra_page_border_fills`)에
+    /// 넣을지 판단하는 데 쓰지 않고 위치로만 저장하므로, 직렬화기가 항상
+    /// BOTH→EVEN→ODD 고정 순서로 라벨을 재부여하면 원본이 그 순서를 벗어날 때
+    /// (예: 문서가 EVEN/ODD 만 갖거나 순서가 다를 때) 라벨이 실제 값과 어긋난다.
+    /// 빈 문자열이면(HWP5/HWP3 유래 등 `type` 이 없는 경우) 직렬화기가 위치 기반
+    /// 기본 라벨로 폴백한다.
+    pub apply_type: String,
 }
 
 /// 쪽 테두리 렌더 위치 기준

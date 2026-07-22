@@ -2130,11 +2130,20 @@ fn replace_page_border_fill(xml: &str, sec_def: &crate::model::document::Section
         ),
     ];
     let mut out = xml.to_string();
-    for (ty, pbf) in entries {
+    for (slot_ty, pbf) in entries {
         // 템플릿 고정 문자열 (empty_section0.xml 와 정확히 일치해야 함).
         let template = format!(
-            r#"<hp:pageBorderFill type="{ty}" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER"><hp:offset left="1417" right="1417" top="1417" bottom="1417"/></hp:pageBorderFill>"#
+            r#"<hp:pageBorderFill type="{slot_ty}" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER"><hp:offset left="1417" right="1417" top="1417" bottom="1417"/></hp:pageBorderFill>"#
         );
+        // [pageBorderFill@type] 파서가 슬롯을 위치로만 배치하므로(#1108
+        // push_page_border_fill), 원본 문서의 세 요소 순서가 BOTH→EVEN→ODD 를
+        // 벗어나면 이 슬롯 라벨(slot_ty)이 실제 원본 값과 다를 수 있다. IR 이
+        // 보존한 `apply_type` 이 있으면 그 값을 우선 방출해 라벨 유실을 막는다.
+        let ty: &str = if pbf.apply_type.is_empty() {
+            slot_ty
+        } else {
+            &pbf.apply_type
+        };
         if out.contains(&template) {
             out = out.replacen(&template, &render_page_border_fill(ty, pbf), 1);
         }
@@ -2186,6 +2195,37 @@ fn render_page_border_fill(ty: &str, pbf: &crate::model::page::PageBorderFill) -
 mod tests {
     use super::*;
     use crate::model::paragraph::{CharShapeRef, Paragraph};
+
+    /// pageBorderFill@type — 파서가 세 요소를 위치로만 슬롯에 배치하므로(2번째 슬롯 =
+    /// "EVEN" 고정 라벨), 원본 문서에서 2번째 pageBorderFill 이 실제로는 `type="ODD"`
+    /// 였어도 직렬화기는 항상 위치 기반 "EVEN" 을 방출했다. IR 이 보존한
+    /// `PageBorderFill.apply_type` 을 우선 방출해야 한다.
+    #[test]
+    fn page_border_fill_type_preserves_ir_label_over_positional_default() {
+        use crate::model::document::SectionDef;
+        use crate::model::page::PageBorderFill;
+
+        let mut sd = SectionDef::default();
+        // 1번째 슬롯은 위치상 "BOTH" 로 고정 방출되지만, 원본 문서는 실제로
+        // "ODD" 였던 케이스(예: BOTH 없이 EVEN/ODD 만 있는 문서를 파서가
+        // 첫 인코딩 순서로 슬롯 0에 밀어넣은 경우).
+        sd.page_border_fill = PageBorderFill {
+            apply_type: "ODD".to_string(),
+            ..Default::default()
+        };
+
+        let out = replace_page_border_fill(EMPTY_SECTION_XML, &sd);
+        let first_tag_start = out
+            .find("<hp:pageBorderFill")
+            .expect("pageBorderFill 요소가 있어야 함");
+        let first_tag_end = out[first_tag_start..].find('>').unwrap() + first_tag_start;
+        let first_tag = &out[first_tag_start..=first_tag_end];
+        assert!(
+            first_tag.contains(r#"type="ODD""#),
+            "첫 pageBorderFill 은 위치 기반 고정 라벨 BOTH 대신 IR 이 보존한 원본 \
+             type=\"ODD\" 를 방출해야 함: {first_tag}"
+        );
+    }
 
     /// [Issue #1944] legacy 공용 도형 경로(polygon/ellipse/arc/curve)가 도형 내
     /// 글상자(drawText) 문단을 방출해야 한다 — 종전 누락으로 도형 안 텍스트 소실.

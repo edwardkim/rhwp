@@ -93,6 +93,7 @@ fn hwp3_page_border_fill(
         border_fill_id,
         basis: crate::model::page::PageBorderBasis::BodyBased,
         ui_basis: crate::model::page::PageBorderUiBasis::Page,
+        apply_type: String::new(),
     }
 }
 

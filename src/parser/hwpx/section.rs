@@ -1174,6 +1174,9 @@ fn parse_page_border_fill_empty(e: &quick_xml::events::BytesStart) -> PageBorder
         header_inside,
         footer_inside,
     );
+    // [HWPX] `type` 속성(BOTH/EVEN/ODD) — 위치 기반 슬롯 배치와 별개로 원본 라벨을
+    // 그대로 보존한다. 직렬화기가 이 값을 우선 사용해 라운드트립 시 라벨 유실을 막는다.
+    page_border_fill.apply_type = apply_type;
     page_border_fill.ui_basis = if text_border.eq_ignore_ascii_case("PAPER") {
         // Task #1129 Stage 28: textBorder=PAPER is shown as page basis in the
         // dialog and renders from the page/body area edge.
