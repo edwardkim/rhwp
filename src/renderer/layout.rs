@@ -832,9 +832,14 @@ fn textless_infront_para_host_requires_line_advance(para: &Paragraph) -> bool {
     para.controls.iter().any(|ctrl| match ctrl {
         Control::Picture(pic) => {
             let cm = &pic.common;
+            // vert_rel_to 는 그림이 어디에 붙어 그려지는지를 정할 뿐, host 문단이
+            // 흐름에서 줄을 차지하는지와는 무관하다. PAPER 앵커 그림도 한컴은
+            // host 문단의 줄 진행량을 그대로 예약한다 — 저장 lineseg 실측:
+            // 그림 host 문단 vertpos=57375/vertsize=1200, 다음 문단 vertpos=59295
+            // (= +1920 HU, 정확히 한 줄).
             !cm.treat_as_char
                 && matches!(cm.text_wrap, TextWrap::InFrontOfText)
-                && matches!(cm.vert_rel_to, VertRelTo::Para)
+                && matches!(cm.vert_rel_to, VertRelTo::Para | VertRelTo::Paper)
         }
         Control::Shape(shape) => {
             let cm = shape.common();
