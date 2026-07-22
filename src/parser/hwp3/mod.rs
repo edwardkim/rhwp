@@ -301,6 +301,9 @@ pub(crate) fn convert_char_shape(
     // 렌더러(글자 축소·baseline 이동)가 소비하는 IR 필드가 항상 false 였다.
     cs.superscript = hwp3_cs.is_superscript();
     cs.subscript = hwp3_cs.is_subscript();
+    // attr 0x80(글꼴에 어울리는 빈칸 사용). 접근자 is_font_blank()는 있었으나
+    // 호출부가 없어 IR CharShape.use_font_space가 항상 false로 저장됐다.
+    cs.use_font_space = hwp3_cs.is_font_blank();
     cs
 }
 
@@ -4222,6 +4225,17 @@ mod tests {
             doc.doc_properties.footnote_start_num, 1,
             "각주 시작 번호가 doc_info 에서 매핑돼야 함(미매핑 시 0)"
         );
+    }
+
+    #[test]
+    fn convert_char_shape_maps_font_blank() {
+        // attr 0x80=글꼴에 어울리는 빈칸 사용. 종전엔 매핑이 빠져 항상 false.
+        let hwp3_cs = crate::parser::hwp3::records::Hwp3CharShape {
+            attr: 0x80,
+            ..Default::default()
+        };
+        let cs = convert_char_shape(&hwp3_cs);
+        assert!(cs.use_font_space);
     }
 
     #[test]
