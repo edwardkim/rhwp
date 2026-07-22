@@ -1060,7 +1060,8 @@ fn parse_arc_shape_data(data: &[u8], arc: &mut ArcShape) {
 /// hwplib: INT32 count + (INT32 x, INT32 y) × count + skip(4)
 fn parse_polygon_shape_data(data: &[u8], poly: &mut PolygonShape) {
     let mut r = ByteReader::new(data);
-    let cnt = r.read_i32().unwrap_or(0) as usize;
+    let cnt_raw = r.read_i32().unwrap_or(0);
+    let cnt = if cnt_raw < 0 { 0 } else { cnt_raw as usize };
     poly.points.clear();
     for _ in 0..cnt {
         let x = r.read_i32().unwrap_or(0);
@@ -1128,6 +1129,22 @@ mod task195_tests {
             connector.control_points.is_empty(),
             "남은 바이트가 없으므로 제어점은 비어야 함: {}",
             connector.control_points.len()
+        );
+    }
+
+    #[test]
+    fn polygon_point_count_negative_is_treated_as_zero() {
+        // count(INT32)에 음수(-1 = 0xFFFFFFFF)를 넣으면 as usize 부호확장으로
+        // 사실상 무한 루프에 빠지면 안 되고 빈 다각형으로 처리되어야 한다.
+        let mut data = Vec::new();
+        data.extend_from_slice(&(-1i32).to_le_bytes()); // count (악성)
+
+        let mut poly = PolygonShape::default();
+        parse_polygon_shape_data(&data, &mut poly);
+        assert!(
+            poly.points.is_empty(),
+            "음수 count는 빈 점 목록으로 처리되어야 함: {}",
+            poly.points.len()
         );
     }
 
