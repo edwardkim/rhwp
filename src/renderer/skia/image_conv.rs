@@ -218,7 +218,10 @@ pub fn draw_image_bytes(
         }
     };
 
-    if matches!(mode, ImageFillMode::FitToSize | ImageFillMode::None) {
+    if matches!(
+        mode,
+        ImageFillMode::FitToSize | ImageFillMode::Total | ImageFillMode::None
+    ) {
         draw_image_rect(crop_src, dst);
         return true;
     }

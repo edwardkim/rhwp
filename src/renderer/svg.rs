@@ -1433,7 +1433,9 @@ impl SvgRenderer {
         }
 
         match img.fill_mode {
-            ImageFillMode::FitToSize | ImageFillMode::None => {
+            // Total(HWPX "TOTAL")은 바이너리 채우기 유형 5(크기에 맞추어)의 HWPX
+            // 표기로, FitToSize 와 같은 의미다 — 영역 전체로 늘려 채운다.
+            ImageFillMode::FitToSize | ImageFillMode::Total | ImageFillMode::None => {
                 self.output.push_str(&format!(
                     "<image x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" preserveAspectRatio=\"none\" href=\"{}\"/>\n",
                     bbox.x, bbox.y, bbox.width, bbox.height, data_uri,
@@ -1583,7 +1585,7 @@ impl SvgRenderer {
         let fill_mode = img.fill_mode.unwrap_or(ImageFillMode::FitToSize);
 
         match fill_mode {
-            ImageFillMode::FitToSize => {
+            ImageFillMode::FitToSize | ImageFillMode::Total => {
                 // 그림 자르기: crop이 있으면 원본 이미지의 일부만 표시
                 if let Some((cl, ct, cr, cb)) = img.crop {
                     if let Some((img_w, img_h)) = parse_image_dimensions(&render_data) {
