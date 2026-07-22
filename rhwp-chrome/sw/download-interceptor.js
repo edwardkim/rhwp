@@ -12,6 +12,7 @@
 
 import { openViewer } from './viewer-launcher.js';
 import { shouldInterceptDownload } from './download-interceptor-common.js';
+import { loadSettingsForAutomaticActions } from './settings-store.js';
 import {
   DEFAULT_STATE_TTL_MS,
   evaluateDownloadChanged,
@@ -26,6 +27,7 @@ import {
 const STORAGE_PREFIX = 'rhwpDownloadState:';
 const TERMINAL_CLEANUP_MS = 30_000;
 const memoryStateFallback = new Map();
+const processingDownloadPromises = new Map();
 
 /** 다운로드 항목이 로컬 file:// 인지 판별. */
 function isLocalFileDownload(item) {
@@ -61,15 +63,15 @@ async function handleCreated(item) {
 
 async function handleChanged(delta) {
   const now = Date.now();
-  const state = await getDownloadState(delta?.id, now);
+  let state = await getDownloadState(delta?.id, now);
 
   if (state && !state.handledAt && shouldRecheckDownload(delta)) {
     try {
       const [item] = await chrome.downloads.search({ id: delta.id });
       const decision = evaluateDownloadChanged(delta, item, state, now);
       if (decision.action === 'candidate') {
-        await setDownloadState(decision.state);
-        await processDownloadCandidate(item, decision.state);
+        state = decision.state;
+        state = await processDownloadCandidate(item, state);
       }
     } catch (err) {
       console.error('[rhwp] 다운로드 항목 재조회 오류:', err);
@@ -86,22 +88,42 @@ async function handleChanged(delta) {
 }
 
 async function processDownloadCandidate(item, state) {
-  if (!item || state?.handledAt) return;
-  if (!shouldInterceptDownload(item)) return;
+  if (!item || state?.handledAt) return state;
+  if (!shouldInterceptDownload(item)) return state;
+  const existingProcessing = processingDownloadPromises.get(item.id);
+  if (existingProcessing) return existingProcessing;
 
+  const processing = processDownloadCandidateOnce(item, state);
+  processingDownloadPromises.set(item.id, processing);
   try {
-    const settings = await chrome.storage.sync.get({ autoOpen: true });
+    return await processing;
+  } finally {
+    if (processingDownloadPromises.get(item.id) === processing) {
+      processingDownloadPromises.delete(item.id);
+    }
+  }
+}
+
+async function processDownloadCandidateOnce(item, state) {
+  try {
+    const latestState = await getDownloadState(item.id);
+    if (latestState?.handledAt) return latestState;
+    const activeState = latestState || state;
+    const settings = await loadSettingsForAutomaticActions(chrome);
     const reason = settings.autoOpen ? 'opened' : 'auto-open-disabled';
-    await setDownloadState(markDownloadHandled(state, Date.now(), reason));
-    if (!settings.autoOpen) return;
+    const handledState = markDownloadHandled(activeState, Date.now(), reason);
+    await setDownloadState(handledState);
+    if (!settings.autoOpen) return handledState;
 
     handleHwpDownload(item);
 
     if (isLocalFileDownload(item)) {
       void suppressLocalDownload(item);
     }
+    return handledState;
   } catch (err) {
     console.error('[rhwp] 다운로드 인터셉터 오류:', err);
+    return state;
   }
 }
 
