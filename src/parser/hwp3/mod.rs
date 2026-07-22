@@ -1526,6 +1526,12 @@ fn parse_object_control_char(
             footnote.paragraphs = nested_paragraphs;
             controls.push(crate::model::control::Control::Footnote(Box::new(footnote)));
         }
+    } else if ch == 15 {
+        let mut hidden_comment = crate::model::control::HiddenComment::default();
+        hidden_comment.paragraphs = nested_paragraphs;
+        controls.push(crate::model::control::Control::HiddenComment(Box::new(
+            hidden_comment,
+        )));
     } else if ch == 29 {
         let mut field = crate::model::control::Field::default();
         field.field_type = crate::model::control::FieldType::CrossRef;
