@@ -192,6 +192,20 @@ fn hwp3_color_index_to_color_ref(color: u8) -> crate::model::ColorRef {
     }
 }
 
+/// [#2984] HWP3 그림 정보 레코드(348바이트) offset 339~341 의 밝기/명암/그림효과를
+/// 읽는다. (`mydocs/tech/한글문서파일구조3.0.md` 10.7절, 표 43 "그림 식별 정보")
+fn hwp3_picture_image_effect(info_buf: &[u8]) -> (i8, i8, crate::model::image::ImageEffect) {
+    if info_buf.len() < 342 {
+        return (0, 0, crate::model::image::ImageEffect::RealPic);
+    }
+    let effect = match info_buf[341] {
+        1 => crate::model::image::ImageEffect::GrayScale,
+        2 => crate::model::image::ImageEffect::BlackWhite,
+        _ => crate::model::image::ImageEffect::RealPic,
+    };
+    (info_buf[339] as i8, info_buf[340] as i8, effect)
+}
+
 const HWP3_TO_IR_PARA_UNIT: i32 = 8;
 
 fn hwp3_para_metric_to_ir(value: i16) -> i32 {
@@ -963,6 +977,13 @@ fn parse_hwp3_object_dispatch(
             pic.common.vertical_offset = (vert_align as i32 * 4) as u32;
         }
         pic.common.attr = build_common_obj_attr(&pic.common);
+
+        // [#2984] 밝기/명암/그림효과 (offset 339~341) 미반영 → 흑백/그레이스케일/
+        // 밝기·명암 보정된 HWP3 그림이 원본 컬러 그대로 렌더링되던 문제 수정.
+        let (brightness, contrast, effect) = hwp3_picture_image_effect(&info_buf);
+        pic.image_attr.brightness = brightness;
+        pic.image_attr.contrast = contrast;
+        pic.image_attr.effect = effect;
 
         let n_ext_from_buf = (&info_buf[0..4]).read_u32::<LittleEndian>().unwrap_or(0);
         let n_ext = n_ext_from_buf;
@@ -4003,6 +4024,19 @@ mod tests {
         assert_eq!(hwp3_color_index_to_color_ref(6), 0x0000FFFF);
         assert_eq!(hwp3_color_index_to_color_ref(7), 0x00FFFFFF);
         assert_eq!(hwp3_color_index_to_color_ref(255), 0x00000000);
+    }
+
+    #[test]
+    fn task2984_hwp3_picture_image_effect_reads_brightness_contrast_effect() {
+        // [#2984] offset 339=밝기, 340=명암, 341=그림효과(1=그레이스케일).
+        let mut info_buf = vec![0u8; 348];
+        info_buf[339] = (-40i8) as u8;
+        info_buf[340] = 25u8;
+        info_buf[341] = 1u8;
+        let (brightness, contrast, effect) = hwp3_picture_image_effect(&info_buf);
+        assert_eq!(brightness, -40);
+        assert_eq!(contrast, 25);
+        assert_eq!(effect, crate::model::image::ImageEffect::GrayScale);
     }
 
     #[test]
