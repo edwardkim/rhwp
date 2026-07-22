@@ -1238,7 +1238,7 @@ dependencies = [
 [[package]]
 name = "svg2pdf"
 version = "0.13.0"
-source = "git+https://github.com/planet6897/svg2pdf?branch=determinism-0.13#2caeb0a038f9128b79833d803b94c2667565c4da"
+source = "git+https://github.com/edwardkim/svg2pdf?branch=determinism-0.13#2caeb0a038f9128b79833d803b94c2667565c4da"
 dependencies = [
  "fontdb",
  "image",
