@@ -519,6 +519,14 @@ const fixtures: PatchFixture[] = [
     },
     expected: {},
   },
+  {
+    name: 'image brightness and contrast clamp to the -100..100 HTML input range',
+    objectType: 'image',
+    update(form) {
+      form.image = { brightness: '250', contrast: '-999' };
+    },
+    expected: { brightness: 100, contrast: -100 },
+  },
 ];
 
 for (const fixture of fixtures) {
