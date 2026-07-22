@@ -92,6 +92,11 @@ pub struct CommonObjAttr {
     pub numbering_type: ObjectNumberingType,
     /// 파싱된 필드 이후 추가 바이트 (라운드트립 보존용)
     pub raw_extra: Vec<u8>,
+    /// HWPX `lock`(개체 잠금) 속성 보존 (#2931).
+    ///
+    /// 차트(`hp:chart`)·OLE(`hp:ole`) 파서가 이 속성을 읽지 않아 직렬화 시 항상
+    /// `lock="0"`으로 하드코딩되던 문제 해소.
+    pub locked: bool,
 }
 
 /// HWPX 개체 `numberingType` (캡션 번호 범주)

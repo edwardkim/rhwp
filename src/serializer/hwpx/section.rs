@@ -1986,7 +1986,7 @@ fn render_common_shape_xml(
         .unwrap_or(c.instance_id);
     let mut out = format!(
         concat!(
-            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}">"#,
+            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="BOTH_SIDES" lock="{lock}" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}">"#,
             "{block}",
             "{geometry}",
             r#"<hp:sz width="{w}" height="{h}" widthRelTo="ABSOLUTE" heightRelTo="ABSOLUTE"/>"#,
@@ -1999,6 +1999,7 @@ fn render_common_shape_xml(
         id = c.instance_id,
         zo = c.z_order,
         nt = super::shape::numbering_type_str(c.numbering_type),
+        lock = if c.locked { "1" } else { "0" },
         gl = group_level,
         iid = instid,
         tw = text_wrap_to_hwpx(c.text_wrap),
