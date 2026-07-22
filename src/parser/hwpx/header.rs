@@ -1329,6 +1329,10 @@ fn parse_style(e: &quick_xml::events::BytesStart, doc_info: &mut DocInfo) {
                     }
                 }
             }
+            // [Task #2839] HWPX `lockForm` → Style.lock_form.
+            // 종전엔 이 속성을 아예 읽지 않아 시리얼라이저가 항상 "0" 을
+            // 하드코딩했고, 원본 lockForm="1"(양식 잠금) 이 왕복마다 유실됐다.
+            b"lockForm" => style.lock_form = attr_str(&attr) == "1",
             _ => {}
         }
     }

@@ -305,6 +305,7 @@ fn test_serialize_style_roundtrip() {
         lang_id: 1042,
         para_shape_id: 1,
         char_shape_id: 2,
+        lock_form: false,
     };
 
     let data = serialize_style(&style);
@@ -641,6 +642,7 @@ fn test_serialize_doc_info_roundtrip() {
         lang_id: 1042,
         para_shape_id: 0,
         char_shape_id: 0,
+        lock_form: false,
     });
 
     // 직렬화 → 역직렬화
