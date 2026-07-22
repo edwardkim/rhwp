@@ -51,6 +51,7 @@ import {
 import {
   canvasKitImageCacheKey,
   canvasKitImageFillModeTiles,
+  canvasKitImageFillModeStretches,
   canvasKitImagePlacement,
   canvasKitImageSourceRect,
 } from './canvaskit/image-replay';
@@ -1391,7 +1392,7 @@ export class CanvasKitLayerRenderer {
     };
 
     const fillMode = op.fillMode ?? 'fitToSize';
-    if (fillMode === 'fitToSize') {
+    if (canvasKitImageFillModeStretches(fillMode)) {
       drawImage(op.bbox.x, op.bbox.y, op.bbox.width, op.bbox.height);
       return;
     }

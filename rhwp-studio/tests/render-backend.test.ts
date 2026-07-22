@@ -13,6 +13,7 @@ import {
 import {
   canvasKitImageCacheKey,
   canvasKitImageFillModeTiles,
+  canvasKitImageFillModeStretches,
   canvasKitImagePlacement,
   canvasKitImageSourceRect,
   HWPUNIT_PER_PIXEL,
@@ -537,6 +538,15 @@ test('CanvasKit image fill-mode tiling detection stays explicit', () => {
   }
   for (const mode of [undefined, 'fitToSize', 'none', 'center', 'leftTop', 'rightBottom']) {
     assert.equal(canvasKitImageFillModeTiles(mode), false);
+  }
+});
+
+test('CanvasKit image TOTAL fill stretches like fitToSize', () => {
+  for (const mode of [undefined, 'fitToSize', 'total']) {
+    assert.equal(canvasKitImageFillModeStretches(mode), true);
+  }
+  for (const mode of ['none', 'center', 'leftTop', 'tileAll']) {
+    assert.equal(canvasKitImageFillModeStretches(mode), false);
   }
 });
 

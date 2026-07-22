@@ -124,6 +124,10 @@ export function canvasKitImageFillModeTiles(fillMode: string | undefined): boole
     || fillMode === 'tileVertRight';
 }
 
+export function canvasKitImageFillModeStretches(fillMode: string | undefined): boolean {
+  return fillMode === undefined || fillMode === 'fitToSize' || fillMode === 'total';
+}
+
 function fnv1a32(value: string): string {
   let hash = 2166136261;
   for (let i = 0; i < value.length; i += 1) {
