@@ -1052,7 +1052,8 @@ fn parse_arc_shape_data(data: &[u8], arc: &mut ArcShape) {
 /// hwplib: INT32 count + (INT32 x, INT32 y) × count + skip(4)
 fn parse_polygon_shape_data(data: &[u8], poly: &mut PolygonShape) {
     let mut r = ByteReader::new(data);
-    let cnt = r.read_i32().unwrap_or(0) as usize;
+    let cnt_raw = r.read_i32().unwrap_or(0);
+    let cnt = if cnt_raw < 0 { 0 } else { cnt_raw as usize };
     poly.points.clear();
     for _ in 0..cnt {
         let x = r.read_i32().unwrap_or(0);
@@ -1095,6 +1096,49 @@ fn parse_curve_shape_data(data: &[u8], curve: &mut CurveShape) {
 #[cfg(test)]
 mod task195_tests {
     use super::*;
+
+    #[test]
+    fn connector_control_point_count_is_bounded_by_remaining() {
+        // 악의적 countCP(0xFFFFFFFF)가 (a) ~51GB Vec 예약으로 abort 하거나
+        // (b) EOF 를 삼킨 채 40억회 루프를 도는 일이 없어야 한다.
+        // 페이로드: link_type(4)+ssid(4)+ssidx(4)+esid(4)+esidx(4)=20, 그 뒤 countCP.
+        let mut data = Vec::new();
+        data.extend_from_slice(&0i32.to_le_bytes()); // start.x
+        data.extend_from_slice(&0i32.to_le_bytes()); // start.y
+        data.extend_from_slice(&0i32.to_le_bytes()); // end.x
+        data.extend_from_slice(&0i32.to_le_bytes()); // end.y
+        data.extend_from_slice(&0u32.to_le_bytes()); // link_type
+        data.extend_from_slice(&0u32.to_le_bytes()); // start_subject_id
+        data.extend_from_slice(&0u32.to_le_bytes()); // start_subject_index
+        data.extend_from_slice(&0u32.to_le_bytes()); // end_subject_id
+        data.extend_from_slice(&0u32.to_le_bytes()); // end_subject_index
+        data.extend_from_slice(&0xFFFF_FFFFu32.to_le_bytes()); // countCP (악성)
+
+        let mut line = LineShape::default();
+        parse_line_shape_data(&data, &mut line, true);
+        let connector = line.connector.expect("connector 파싱");
+        assert!(
+            connector.control_points.is_empty(),
+            "남은 바이트가 없으므로 제어점은 비어야 함: {}",
+            connector.control_points.len()
+        );
+    }
+
+    #[test]
+    fn polygon_point_count_negative_is_treated_as_zero() {
+        // count(INT32)에 음수(-1 = 0xFFFFFFFF)를 넣으면 as usize 부호확장으로
+        // 사실상 무한 루프에 빠지면 안 되고 빈 다각형으로 처리되어야 한다.
+        let mut data = Vec::new();
+        data.extend_from_slice(&(-1i32).to_le_bytes()); // count (악성)
+
+        let mut poly = PolygonShape::default();
+        parse_polygon_shape_data(&data, &mut poly);
+        assert!(
+            poly.points.is_empty(),
+            "음수 count는 빈 점 목록으로 처리되어야 함: {}",
+            poly.points.len()
+        );
+    }
 
     #[test]
     fn test_parse_ole_shape_minimal() {
