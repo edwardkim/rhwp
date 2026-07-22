@@ -401,7 +401,7 @@ fn hwp3_note_column_width_hu(column_width_hu: i32) -> i32 {
         .max(1)
 }
 
-fn hwp3_default_endnote_shape() -> crate::model::footnote::FootnoteShape {
+fn hwp3_default_endnote_shape(between_margin: u16) -> crate::model::footnote::FootnoteShape {
     use crate::model::footnote::{
         FootnoteNumbering, FootnotePlacement, FootnoteShape, NumberFormat,
     };
@@ -416,6 +416,9 @@ fn hwp3_default_endnote_shape() -> crate::model::footnote::FootnoteShape {
         separator_color: 0x00000000,
         numbering: FootnoteNumbering::Continue,
         placement: FootnotePlacement::EachColumn,
+        // doc_info offset 108 "각주와 각주 사이의 간격"이 파싱만 되고(footnote_between_margin)
+        // raw_unknown("주석 사이" 값)에 배선되지 않아 항상 0으로 렌더되던 문제.
+        raw_unknown: between_margin,
         ..Default::default()
     };
     shape.attr = shape.encode_attr();
@@ -3243,7 +3246,7 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     super::populate_link_image_paths(&mut doc);
 
     crate::parser::assign_auto_numbers(&mut doc);
-    fixup_hwp3_notes(&mut doc);
+    fixup_hwp3_notes(&mut doc, doc_info.footnote_between_margin);
     fixup_hwp3_outline_fields(&mut doc);
     fixup_hwp3_picture_numbers(&mut doc);
     fixup_hwp3_outline_bullets(&mut doc);
@@ -3259,7 +3262,7 @@ struct Hwp3NoteFixupState {
     has_endnote: bool,
 }
 
-fn fixup_hwp3_notes(doc: &mut crate::model::document::Document) {
+fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, footnote_between_margin: u16) {
     let para_shapes = doc.doc_info.para_shapes.clone();
     let mut state = Hwp3NoteFixupState {
         footnote_number: doc.doc_properties.footnote_start_num.max(1),
@@ -3275,7 +3278,7 @@ fn fixup_hwp3_notes(doc: &mut crate::model::document::Document) {
 
     if state.has_endnote {
         for section in &mut doc.sections {
-            section.section_def.endnote_shape = hwp3_default_endnote_shape();
+            section.section_def.endnote_shape = hwp3_default_endnote_shape(footnote_between_margin);
             ensure_hwp3_initial_body_column_def(&mut section.paragraphs);
             let page_def = &section.section_def.page_def;
             let body_width_hu = page_def
@@ -3890,6 +3893,15 @@ mod tests {
     use super::*;
     use std::fs::File;
     use std::io::Read;
+
+    #[test]
+    fn issue_hwp3_endnote_raw_unknown_wires_footnote_between_margin() {
+        // doc_info offset 108 "각주와 각주 사이의 간격"(footnote_between_margin)이 파싱만
+        // 되고 endnote_shape.raw_unknown("주석 사이" 값)에 배선되지 않아 항상 0으로
+        // 렌더되던 문제.
+        let shape = hwp3_default_endnote_shape(720);
+        assert_eq!(shape.raw_unknown, 720);
+    }
 
     #[test]
     fn test_alloc_record_buf_overflow_returns_err() {
