@@ -902,6 +902,7 @@ fn parse_style(data: &[u8]) -> Result<Style, DocInfoError> {
         lang_id,
         para_shape_id,
         char_shape_id,
+        lock_form: false,
     })
 }
 

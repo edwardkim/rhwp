@@ -5897,6 +5897,7 @@ impl HwpDocument {
             lang_id: 1042, // 한국어 default (HWP5 spec 표 47)
             para_shape_id,
             char_shape_id,
+            lock_form: false,
         };
         self.core.document.doc_info.styles.push(new_style);
         self.core.document.doc_info.raw_stream_dirty = true;
