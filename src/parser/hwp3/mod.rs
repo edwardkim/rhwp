@@ -1229,6 +1229,14 @@ fn parse_hwp3_object_dispatch(
                 return Ok(Some(true));
             }
         }
+        // [Issue #3050] ch==6(책갈피)/ch==29(상호참조)와 달리 필드 코드는
+        // 소비만 하고 Control을 만들지 않아, 제어문자 마커당 정확히 1개의
+        // Control이 push되어야 하는 불변식이 깨져 있었다. 최소한 placeholder
+        // Field control을 push해 정렬을 맞춘다.
+        controls.push(crate::model::control::Control::Field(
+            crate::model::control::Field::default(),
+        ));
+        ctrl_data_records.push(None);
     } else if ch == 6 {
         // [Task #877] 책갈피 (spec §10.2, 표 36): 42 bytes total.
         // - offset 0..2: ch=6 (begin) [outer loop 에서 read 완료]
@@ -3923,6 +3931,69 @@ mod tests {
         assert!(check_record_count(HWP3_MAX_RECORD_SIZE + 1).is_err());
         assert!(check_record_count(0xFFFFFFFF).is_err());
         assert!(check_record_count(1024).is_ok());
+    }
+
+    #[test]
+    fn test_issue_3050_field_code_ch5_produces_control() {
+        // [Issue #3050] ch==5(필드 코드)는 소비만 하고 Control을 만들지 않아
+        // 마커-컨트롤 정렬이 깨졌었다. header_val1=0(추가 데이터 없음)인
+        // 최소 필드 코드 레코드를 넣고 controls 에 정확히 1개 push 되는지 확인.
+        let body: [u8; 6] = [0, 0, 0, 0, 5, 0]; // dword header_val1=0, ch2=5
+        let mut cursor = Cursor::new(&body[..]);
+        let para_info = Hwp3ParaInfo {
+            follow_prev_para_shape: 0,
+            char_count: 1,
+            line_count: 1,
+            include_char_shape: 0,
+            flags: 0,
+            special_char_flags: 0,
+            style_index: 0,
+            rep_char_shape: Default::default(),
+            para_shape: None,
+        };
+        let mut text_string = String::new();
+        let mut char_offsets = Vec::new();
+        let mut hwp3_char_to_utf16_pos = vec![0u32; 4];
+        let mut controls = Vec::new();
+        let mut ctrl_data_records = Vec::new();
+        let mut scan = Hwp3CharScan {
+            text_string: &mut text_string,
+            char_offsets: &mut char_offsets,
+            hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
+            controls: &mut controls,
+            ctrl_data_records: &mut ctrl_data_records,
+        };
+        let mut doc_char_shapes = Vec::new();
+        let mut doc_para_shapes = Vec::new();
+        let mut doc_border_fills = Vec::new();
+        let mut doc_tab_defs = Vec::new();
+        let mut pic_name_to_id = std::collections::HashMap::new();
+        let result = parse_object_control_char(
+            &mut cursor,
+            &mut doc_char_shapes,
+            &mut doc_para_shapes,
+            &mut doc_border_fills,
+            &mut doc_tab_defs,
+            &mut pic_name_to_id,
+            0,
+            0,
+            0,
+            5,
+            &para_info,
+            0,
+            0,
+            &mut scan,
+        );
+        assert!(result.is_ok(), "parse_object_control_char failed: {result:?}");
+        assert_eq!(
+            controls.len(),
+            1,
+            "필드 코드(ch=5)에 대응하는 Control이 push 되어야 함"
+        );
+        assert!(matches!(
+            controls[0],
+            crate::model::control::Control::Field(_)
+        ));
     }
 
     #[test]
