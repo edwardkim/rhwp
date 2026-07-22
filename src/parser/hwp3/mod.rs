@@ -77,6 +77,16 @@ pub(crate) fn check_record_count(count: usize) -> Result<(), io::Error> {
     Ok(())
 }
 
+/// doc_info.compressed(압축 여부)를 FileHeader.compressed 및 raw_data 플래그 비트(0x01)에 반영한다.
+fn apply_hwp3_compressed_flag(doc_info_compressed: u8, header: &mut crate::model::document::FileHeader) {
+    if doc_info_compressed != 0 {
+        header.compressed = true;
+        if let Some(raw) = header.raw_data.as_mut() {
+            raw[36] |= 0x01;
+        }
+    }
+}
+
 fn hwp3_page_border_fill(
     doc_info: &Hwp3DocInfo,
     border_fill_id: u16,
@@ -2919,6 +2929,11 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     doc.doc_properties.page_start_num = doc_info.start_page_number;
     doc.doc_properties.footnote_start_num = doc_info.footnote_start_number;
 
+    // doc_info.compressed(압축 여부)를 FileHeader.compressed 및 raw_data 플래그 비트(0x01)에
+    // 반영한다. 본문 압축 해제(아래 4번)에는 doc_info.compressed를 쓰지만 종전엔 헤더 raw_data를
+    // 항상 flags=0(비압축)으로 하드코딩해 doc.header.compressed가 실제 값과 무관하게 false였다.
+    apply_hwp3_compressed_flag(doc_info.compressed, &mut doc.header);
+
     // 2. 문서 요약 파싱 (1008 바이트)
     let doc_summary = Hwp3DocSummary::read(&mut cursor)?;
 
@@ -3927,6 +3942,19 @@ mod tests {
     use super::*;
     use std::fs::File;
     use std::io::Read;
+
+    #[test]
+    fn hwp3_maps_compressed_flag() {
+        // doc_info.compressed != 0 이면 FileHeader.compressed 와 raw_data 플래그 비트가
+        // 반영돼야 한다. 종전엔 배선이 없어 항상 false 였다.
+        let mut header = crate::model::document::FileHeader {
+            raw_data: Some(vec![0u8; crate::parser::header::FILE_HEADER_SIZE]),
+            ..Default::default()
+        };
+        apply_hwp3_compressed_flag(1, &mut header);
+        assert!(header.compressed);
+        assert_eq!(header.raw_data.unwrap()[36] & 0x01, 0x01);
+    }
 
     #[test]
     fn test_alloc_record_buf_overflow_returns_err() {
