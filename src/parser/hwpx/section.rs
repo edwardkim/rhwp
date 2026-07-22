@@ -5298,6 +5298,12 @@ fn read_dutmal_text(reader: &mut Reader<&[u8]>, end_tag: &[u8]) -> Result<String
             Ok(Event::GeneralRef(ref r)) => {
                 text.push_str(&decode_xml_general_ref(r));
             }
+            // [CDATA] dutmal(덧말)의 mainText/subText가 CDATA로 인코딩된 경우 처리하지
+            // 않으면 덧말 텍스트가 소실된다. #2916/#2935의 hp:script/stringParam CDATA
+            // 누락과 동일한 패턴.
+            Ok(Event::CData(ref cdata)) => {
+                text.push_str(&String::from_utf8_lossy(cdata.as_ref()));
+            }
             Ok(Event::End(ref ee)) => {
                 let eename = ee.name();
                 if local_name(eename.as_ref()) == end_tag {
@@ -6902,6 +6908,30 @@ mod tests {
             crate::model::image::ImageEffect::Pattern8x8,
             "PATTERN_8_8 그림 효과가 RealPic 으로 유실되면 안 됨"
         );
+    }
+
+    #[test]
+    fn dutmal_maintext_subtext_preserve_cdata() {
+        // hp:dutmal(덧말)의 mainText/subText가 CDATA로 인코딩된 경우
+        // (예: 비교연산자 `<`/`>` 포함) 파서 arm 누락으로 소실되던 결함.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:dutmal posType="TOP" align="CENTER" szRatio="50" option="0" styleIDRef="0">
+        <hp:mainText><![CDATA[a<b]]></hp:mainText>
+        <hp:subText><![CDATA[c>d]]></hp:subText>
+      </hp:dutmal>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Ruby(ruby) = &section.paragraphs[0].controls[0] else {
+            panic!("첫 컨트롤은 Ruby(덧말)여야 함");
+        };
+        assert_eq!(ruby.main_text, "a<b", "mainText CDATA 가 소실되면 안 됨");
+        assert_eq!(ruby.ruby_text, "c>d", "subText CDATA 가 소실되면 안 됨");
     }
 
     #[test]
