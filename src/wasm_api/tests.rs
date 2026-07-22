@@ -14813,6 +14813,7 @@ fn test_save_table_1x1() {
         },
         center_line: CenterLine::None,
         fill: Fill::default(),
+        three_d: false,
     };
     doc.document.doc_info.border_fills.push(new_bf);
     let table_bf_id = doc.document.doc_info.border_fills.len() as u16; // 1-based ID
@@ -16758,6 +16759,7 @@ fn test_save_pic_in_table() {
         },
         center_line: CenterLine::None,
         fill: Fill::default(),
+        three_d: false,
     };
     doc.document.doc_info.border_fills.push(new_bf);
     let table_bf_id = doc.document.doc_info.border_fills.len() as u16;
