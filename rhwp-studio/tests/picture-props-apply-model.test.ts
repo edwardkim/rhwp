@@ -527,6 +527,14 @@ const fixtures: PatchFixture[] = [
     },
     expected: { brightness: 100, contrast: -100 },
   },
+  {
+    name: 'image scale clamps to the 1..1000 HTML input range',
+    objectType: 'image',
+    update(form) {
+      form.image.scale = { x: '5000', y: '-10' };
+    },
+    expected: { width: 10000, height: 8 },
+  },
 ];
 
 for (const fixture of fixtures) {
