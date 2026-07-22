@@ -941,6 +941,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 1,
             control_idx: 2,
+            ..Default::default()
         }];
         section.paragraphs.push(p);
         doc.sections.push(section);

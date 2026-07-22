@@ -322,6 +322,7 @@ fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16;
                         start_char_idx: start_idx,
                         end_char_idx: char_count,
                         control_idx: field_ctrl_idx,
+                        end_field_id: 0,
                     });
                 }
             } else if is_extended_only_ctrl_char(ch) {
