@@ -1916,7 +1916,9 @@ fn apply_numbering_para_head(
 fn parse_numbering_format_code(value: &str) -> u8 {
     match value {
         "DIGIT" | "ARABIC" => 0,
-        "CIRCLED_DIGIT" => 1,
+        // "CIRCLED_DIGIT"이 스펙 철자(NumberType1)이나, "CIRCLE_DIGIT"(D 없음)로 저장된
+        // 한컴 실물 파일과의 호환을 위해 둘 다 인식한다 (section.rs autoNumFormat/pageNum과 동일 처리).
+        "CIRCLED_DIGIT" | "CIRCLE_DIGIT" => 1,
         "ROMAN_CAPITAL" | "ROMAN_UPPER" | "ROMAN" => 2,
         "ROMAN_SMALL" | "ROMAN_LOWER" => 3,
         "LATIN_CAPITAL" | "LATIN_UPPER" | "ALPHA_CAPITAL" => 4,
@@ -2149,6 +2151,28 @@ mod tests {
         assert_eq!(numbering.level_formats[0], "^1");
         assert_eq!(numbering.heads[0].number_format, 1);
         assert_eq!((numbering.heads[0].attr >> 5) & 0x0f, 1);
+    }
+
+    #[test]
+    fn test_parse_hwpx_numbering_para_head_accepts_circle_digit_typo_for_hancom_compat() {
+        // section.rs의 autoNumFormat/pageNum formatType과 마찬가지로, 문단 번호 모양
+        // numFormat도 한컴 실물 파일의 오탈자 "CIRCLE_DIGIT"(D 없음)를 스펙 철자
+        // "CIRCLED_DIGIT"과 동일하게 인식해야 한다 (#3011).
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:numberings itemCnt="1">
+      <hh:numbering id="1" start="1">
+        <hh:paraHead start="1" level="1" numFormat="CIRCLE_DIGIT" text="^1"/>
+      </hh:numbering>
+    </hh:numberings>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        let numbering = &doc_info.numberings[0];
+
+        assert_eq!(numbering.heads[0].number_format, 1);
     }
 
     #[test]
