@@ -424,8 +424,10 @@ function appendImageScale(
   form: PicturePropsApplyForm,
 ): void {
   if (form.common.sizeProtect || !form.image.scale || !(props.originalWidth > 0)) return;
-  const width = Math.round(props.originalWidth * numberOr(form.image.scale.x, 100) / 100);
-  const height = Math.round(props.originalHeight * numberOr(form.image.scale.y, 100) / 100);
+  const scaleX = Math.max(1, Math.min(1000, numberOr(form.image.scale.x, 100)));
+  const scaleY = Math.max(1, Math.min(1000, numberOr(form.image.scale.y, 100)));
+  const width = Math.round(props.originalWidth * scaleX / 100);
+  const height = Math.round(props.originalHeight * scaleY / 100);
   addChanged(patch, 'width', width, props.width);
   addChanged(patch, 'height', height, props.height);
 }
