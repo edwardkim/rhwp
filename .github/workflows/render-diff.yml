@@ -77,6 +77,9 @@ jobs:
         continue-on-error: true
         uses: actions/github-script@v8
         with:
+          # [#2804] API 5xx 일시 오류에 job 이 죽지 않도록 재시도한다.
+          # retry-exempt-status-codes 기본값(400,401,403,404,422)이 4xx 를 제외하므로 5xx 만 재시도된다.
+          retries: 3
           script: |
             const { owner, repo } = context.repo;
 
