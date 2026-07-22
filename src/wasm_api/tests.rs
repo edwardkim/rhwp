@@ -2301,6 +2301,73 @@ fn test_merge_table_cells() {
     }
 }
 
+/// [insert_row/insert_column stale local-resize] 행/열 삽입으로 셀 배열 인덱스가
+/// 바뀌면 local_resize_cell_widths/heights의 cell 인덱스 참조가 stale 해진다.
+///
+/// Table::insert_row()/insert_column()은 새 셀을 push()한 뒤 sort_by_key(row, col)로
+/// 전체 셀 배열을 재정렬한다(delete_row가 retain()+정렬로 stale을 만드는 것과 같은
+/// 근본 원인). 3×2 표에서 셀 인덱스 2에 로컬 resize 값을 저장해 둔 뒤 행을 삽입하면
+/// 재정렬로 인덱스 2가 더 이상 같은 셀을 가리키지 않으므로, 이 값을 cells[idx]로
+/// 읽는 렌더링/직렬화 경로가 엉뚱한 셀에 잘못된 로컬 resize 값을 적용하게 된다.
+/// 열 삽입도 동일 원인으로 같은 결과를 낳는다.
+#[test]
+fn test_insert_table_row_and_column_clear_stale_local_resize() {
+    let mut doc = HwpDocument::create_empty();
+    let table_result = doc.create_table_native(0, 0, 0, 3, 2).expect("3x2 표 생성");
+    let table_para_idx = issue_1481_json_usize(&table_result, "paraIdx");
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[table_para_idx]
+        .controls
+        .first_mut()
+    {
+        table.local_resize_cell_widths.push((2, 1234));
+        table.local_resize_cell_heights.push((2, 5678));
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+
+    doc.insert_table_row_native(0, table_para_idx, 0, 0, true)
+        .expect("행 삽입");
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[table_para_idx]
+        .controls
+        .first()
+    {
+        assert!(
+            table.local_resize_cell_widths.is_empty() && table.local_resize_cell_heights.is_empty(),
+            "행 삽입 후 셀 인덱스가 재배치되므로 local_resize_cell_widths/heights의 \
+             stale 참조(인덱스 2)가 비워져야 한다"
+        );
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[table_para_idx]
+        .controls
+        .first_mut()
+    {
+        table.local_resize_cell_widths.push((2, 1234));
+        table.local_resize_cell_heights.push((2, 5678));
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+
+    doc.insert_table_column_native(0, table_para_idx, 0, 0, true)
+        .expect("열 삽입");
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[table_para_idx]
+        .controls
+        .first()
+    {
+        assert!(
+            table.local_resize_cell_widths.is_empty() && table.local_resize_cell_heights.is_empty(),
+            "열 삽입 후에도 local_resize_cell_widths/heights의 stale 참조가 비워져야 한다"
+        );
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+}
+
 #[test]
 fn test_split_table_cell() {
     let mut doc = create_doc_with_table();
