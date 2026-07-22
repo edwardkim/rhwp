@@ -1265,6 +1265,15 @@ fn parse_hwp3_object_dispatch(
             if let Err(_) = body_cursor.read_exact(&mut field_data) {
                 return Ok(Some(true));
             }
+            // [Task #877 후속] field_data 는 파싱만 되고 IR로 배선되지 않아 소실됐다.
+            // 책갈피(ch==6)와 동일하게 원본 바이트를 command 에 실어 Field control로 배선.
+            let mut field = crate::model::control::Field::default();
+            field.field_type = crate::model::control::FieldType::Unknown;
+            field.command = crate::parser::hwp3::encoding::decode_hwp3_string(&field_data)
+                .trim_end_matches('\0')
+                .to_string();
+            controls.push(crate::model::control::Control::Field(field));
+            ctrl_data_records.push(None);
         }
     } else if ch == 6 {
         // [Task #877] 책갈피 (spec §10.2, 표 36): 42 bytes total.
@@ -3996,6 +4005,73 @@ mod tests {
         assert!(check_record_count(HWP3_MAX_RECORD_SIZE + 1).is_err());
         assert!(check_record_count(0xFFFFFFFF).is_err());
         assert!(check_record_count(1024).is_ok());
+    }
+
+    #[test]
+    fn test_hwp3_field_code_ch5_produces_field_control() {
+        // [Task #877 후속] ch==5 필드 코드는 field_data 를 읽고도 IR Field로
+        // 배선되지 않고 소실됐다. 8바이트 헤더(dword len=4 + ch2) + 4바이트
+        // payload 를 합성해 Control::Field 로 배선되는지 검증.
+        let payload = b"ABCD";
+        let mut body = Vec::new();
+        body.extend_from_slice(&(payload.len() as u32).to_le_bytes()); // header_val1
+        body.extend_from_slice(&5u16.to_le_bytes()); // ch2 (close)
+        body.extend_from_slice(payload);
+
+        let mut body_cursor = Cursor::new(body.as_slice());
+        let mut doc_char_shapes = Vec::new();
+        let mut doc_para_shapes = Vec::new();
+        let mut doc_border_fills = Vec::new();
+        let mut doc_tab_defs = Vec::new();
+        let mut pic_name_to_id = std::collections::HashMap::new();
+        let para_info = Hwp3ParaInfo {
+            follow_prev_para_shape: 0,
+            char_count: 10,
+            line_count: 1,
+            include_char_shape: 0,
+            flags: 0,
+            special_char_flags: 0,
+            style_index: 0,
+            rep_char_shape: Default::default(),
+            para_shape: None,
+        };
+        let mut text_string = String::new();
+        let mut char_offsets = Vec::new();
+        let mut hwp3_char_to_utf16_pos = vec![0u32; 10];
+        let mut controls = Vec::new();
+        let mut ctrl_data_records = Vec::new();
+        let mut scan = Hwp3CharScan {
+            text_string: &mut text_string,
+            char_offsets: &mut char_offsets,
+            hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
+            controls: &mut controls,
+            ctrl_data_records: &mut ctrl_data_records,
+        };
+
+        parse_object_control_char(
+            &mut body_cursor,
+            &mut doc_char_shapes,
+            &mut doc_para_shapes,
+            &mut doc_border_fills,
+            &mut doc_tab_defs,
+            &mut pic_name_to_id,
+            0,
+            0,
+            0,
+            5,
+            &para_info,
+            0,
+            0,
+            &mut scan,
+        )
+        .unwrap();
+
+        assert!(
+            controls
+                .iter()
+                .any(|c| matches!(c, crate::model::control::Control::Field(_))),
+            "ch==5 필드 코드가 Control::Field 로 배선되지 않음: {controls:?}"
+        );
     }
 
     #[test]
