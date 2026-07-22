@@ -1241,6 +1241,33 @@ pub struct PageRenderTree {
     inline_shape_positions: std::collections::HashMap<InlineShapeKey, (f64, f64)>,
 }
 
+/// `clip_overlapping_same_bin_images` 전용 대략적 replay plane 분류.
+///
+/// `src/paint/replay_order.rs` (`paint_op_replay_plane_with_layer`,
+/// `cap_master_page_plane`) 가 실제 페인트 backend 에서 적용하는 재생 순서는
+/// Background → BehindText → Flow → InFrontOfText 로, **트리 순서와 무관하게
+/// plane 별로 별도 재생**된다. 즉 트리 순서상 `BehindText` 개체가 `Flow`
+/// 개체보다 뒤에 있어도 실제로는 `BehindText` 가 먼저(더 아래에) 그려진다.
+/// clip 함수는 "트리 순서 = z 순서(먼저 그려짐 = 아래)"를 가정하므로, plane
+/// 이 다른 페어는 이 가정이 성립하지 않아 clip 방향을 잘못 판단할 수 있다
+/// (아래에 깔릴 그림이 아니라 위에 그려질 그림이 잘리는 역방향 clip).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ClipReplayPlane {
+    BehindText,
+    Flow,
+    InFrontOfText,
+}
+
+impl ClipReplayPlane {
+    fn from_text_wrap(wrap: Option<TextWrap>) -> Self {
+        match wrap {
+            Some(TextWrap::BehindText) => Self::BehindText,
+            Some(TextWrap::InFrontOfText) => Self::InFrontOfText,
+            _ => Self::Flow,
+        }
+    }
+}
+
 impl PageRenderTree {
     /// 새 페이지 렌더 트리 생성
     pub fn new(page_index: u32, width: f64, height: f64) -> Self {
@@ -1352,8 +1379,14 @@ impl PageRenderTree {
     /// 조건 2/3 은 의도적 시각 효과 (test-image, 3-10월_교육_통합 의 대각선
     /// 오프셋 등) 를 보호하기 위한 strict 가드.
     pub fn clip_overlapping_same_bin_images(&mut self) {
-        // Phase 1: 트리 순서대로 ImageNode 의 (id, bbox, bin_id, crop) 수집
-        let mut images: Vec<(NodeId, BoundingBox, u16, Option<(i32, i32, i32, i32)>)> = Vec::new();
+        // Phase 1: 트리 순서대로 ImageNode 의 (id, bbox, bin_id, crop, plane) 수집
+        let mut images: Vec<(
+            NodeId,
+            BoundingBox,
+            u16,
+            Option<(i32, i32, i32, i32)>,
+            ClipReplayPlane,
+        )> = Vec::new();
         Self::collect_image_nodes(&self.root, &mut images);
 
         if images.len() < 2 {
@@ -1367,10 +1400,19 @@ impl PageRenderTree {
 
         for i in 0..images.len() {
             for j in (i + 1)..images.len() {
-                let (id_a, bbox_a, bin_a, crop_a) = &images[i];
-                let (_id_b, bbox_b, bin_b, _crop_b) = &images[j];
+                let (id_a, bbox_a, bin_a, crop_a, plane_a) = &images[i];
+                let (_id_b, bbox_b, bin_b, _crop_b, plane_b) = &images[j];
                 // 조건 1: 같은 bin_id
                 if bin_a != bin_b {
+                    continue;
+                }
+                // 조건 0 (#paint/replay_order.rs plane 분리 재생 정합):
+                // BehindText/InFrontOfText 는 Flow 와 별도 plane 으로 재생되어
+                // 실제 페인트 순서가 트리 순서와 반대일 수 있다. 서로 다른
+                // plane 페어는 clip 방향을 트리 순서만으로 확정할 수 없으므로
+                // 건너뛴다 (트리 순서가 곧 페인트 순서인 동일 plane 내에서만
+                // 이 함수의 z 가정이 성립한다).
+                if plane_a != plane_b {
                     continue;
                 }
                 // 조건 2/3: x, width 동일 (1px tolerance)
@@ -1418,10 +1460,22 @@ impl PageRenderTree {
 
     fn collect_image_nodes(
         node: &RenderNode,
-        out: &mut Vec<(NodeId, BoundingBox, u16, Option<(i32, i32, i32, i32)>)>,
+        out: &mut Vec<(
+            NodeId,
+            BoundingBox,
+            u16,
+            Option<(i32, i32, i32, i32)>,
+            ClipReplayPlane,
+        )>,
     ) {
         if let RenderNodeType::Image(img) = &node.node_type {
-            out.push((node.id, node.bbox, img.bin_data_id, img.crop));
+            out.push((
+                node.id,
+                node.bbox,
+                img.bin_data_id,
+                img.crop,
+                ClipReplayPlane::from_text_wrap(img.text_wrap),
+            ));
         }
         for child in &node.children {
             Self::collect_image_nodes(child, out);
@@ -1812,6 +1866,44 @@ mod tests {
         let body = &tree.root.children[0];
         let lower = &body.children[0];
         assert!((image_bbox(lower).height - 219.58).abs() < 0.01);
+    }
+
+    /// Task #M100: BehindText 와 Flow 처럼 서로 다른 재생 plane 에 걸친 페어는
+    /// clip 대상에서 제외해야 한다. `src/paint/replay_order.rs` 의 plane 분리
+    /// 재생 규약상 BehindText 는 트리 순서와 무관하게 Flow 보다 먼저(더 아래)
+    /// 그려지므로, 트리 순서만 보고 clip 방향을 정하면 실제로는 위에 그려질
+    /// Flow 그림이 잘못 잘릴 수 있다.
+    #[test]
+    fn test_clip_skips_cross_plane_pairs() {
+        let mut tree = PageRenderTree::new(0, 1122.5, 1587.4);
+        // 트리 순서상 먼저 (Flow, y=100~300)
+        let mut flow = make_image_node(
+            tree.next_id(),
+            BoundingBox::new(100.0, 100.0, 200.0, 200.0),
+            9,
+            Some((0, 0, 1000, 2000)),
+        );
+        if let RenderNodeType::Image(ref mut img) = flow.node_type {
+            img.text_wrap = Some(TextWrap::Square);
+        }
+        // 트리 순서상 나중 (BehindText, y=150~350) — 실제 재생 순서는 Flow 보다 먼저(더 아래)
+        let mut behind = make_image_node(
+            tree.next_id(),
+            BoundingBox::new(100.0, 150.0, 200.0, 200.0),
+            9,
+            Some((0, 0, 1000, 2000)),
+        );
+        if let RenderNodeType::Image(ref mut img) = behind.node_type {
+            img.text_wrap = Some(TextWrap::BehindText);
+        }
+        tree.root.children.push(flow);
+        tree.root.children.push(behind);
+
+        tree.clip_overlapping_same_bin_images();
+
+        // 두 그림 모두 원래 크기 유지 — plane 이 다르므로 clip 미적용
+        assert_eq!(image_bbox(&tree.root.children[0]).height, 200.0);
+        assert_eq!(image_bbox(&tree.root.children[1]).height, 200.0);
     }
 
     /// 단일 이미지만 있는 경우 변경 없음 (no-op).
