@@ -5,13 +5,19 @@
  * 양식 모드 편집 가능 여부를 입력한다.
  */
 import { ModalDialog } from './dialog';
-import type { ClickHereProps } from './field-edit-dialog';
+import {
+  MAX_FIELD_GUIDE_LEN,
+  MAX_FIELD_MEMO_LEN,
+  type ClickHereProps,
+} from './field-edit-dialog';
 
 export class FieldInsertDialog extends ModalDialog {
   private guideInput!: HTMLInputElement;
   private memoInput!: HTMLTextAreaElement;
   private nameInput!: HTMLInputElement;
   private editableCheckbox!: HTMLInputElement;
+  private guideErrorLabel!: HTMLDivElement;
+  private memoErrorLabel!: HTMLDivElement;
 
   onApply: ((props: ClickHereProps) => void) | null = null;
 
@@ -44,7 +50,16 @@ export class FieldInsertDialog extends ModalDialog {
     this.guideInput.type = 'text';
     this.guideInput.className = 'field-edit-input';
     this.guideInput.value = '입력하세요';
+    this.guideInput.maxLength = MAX_FIELD_GUIDE_LEN;
     panel.appendChild(this.guideInput);
+
+    this.guideErrorLabel = document.createElement('div');
+    this.guideErrorLabel.className = 'field-edit-error';
+    this.guideErrorLabel.style.color = '#c00';
+    this.guideErrorLabel.style.fontSize = '11px';
+    this.guideErrorLabel.style.display = 'none';
+    this.guideErrorLabel.textContent = `안내문은 ${MAX_FIELD_GUIDE_LEN}자를 넘을 수 없습니다.`;
+    panel.appendChild(this.guideErrorLabel);
 
     const memoLabel = document.createElement('label');
     memoLabel.className = 'field-edit-label';
@@ -54,7 +69,16 @@ export class FieldInsertDialog extends ModalDialog {
     this.memoInput = document.createElement('textarea');
     this.memoInput.className = 'field-edit-textarea';
     this.memoInput.rows = 4;
+    this.memoInput.maxLength = MAX_FIELD_MEMO_LEN;
     panel.appendChild(this.memoInput);
+
+    this.memoErrorLabel = document.createElement('div');
+    this.memoErrorLabel.className = 'field-edit-error';
+    this.memoErrorLabel.style.color = '#c00';
+    this.memoErrorLabel.style.fontSize = '11px';
+    this.memoErrorLabel.style.display = 'none';
+    this.memoErrorLabel.textContent = `메모 내용은 ${MAX_FIELD_MEMO_LEN}자를 넘을 수 없습니다.`;
+    panel.appendChild(this.memoErrorLabel);
 
     const nameLabel = document.createElement('label');
     nameLabel.className = 'field-edit-label';
@@ -79,7 +103,24 @@ export class FieldInsertDialog extends ModalDialog {
     return body;
   }
 
-  protected onConfirm(): void {
+  protected onConfirm(): void | boolean {
+    let valid = true;
+    if (this.guideInput.value.length > MAX_FIELD_GUIDE_LEN) {
+      this.guideErrorLabel.style.display = '';
+      valid = false;
+    } else {
+      this.guideErrorLabel.style.display = 'none';
+    }
+    if (this.memoInput.value.length > MAX_FIELD_MEMO_LEN) {
+      this.memoErrorLabel.style.display = '';
+      valid = false;
+    } else {
+      this.memoErrorLabel.style.display = 'none';
+    }
+    if (!valid) {
+      return false;
+    }
+
     this.onApply?.({
       guide: this.guideInput.value,
       memo: this.memoInput.value,
