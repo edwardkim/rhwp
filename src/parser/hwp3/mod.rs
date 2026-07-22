@@ -1493,6 +1493,12 @@ fn parse_object_control_char(
                 crate::model::control::UnknownControl::default(),
             ));
         }
+    } else if ch == 15 {
+        let mut hidden_comment = crate::model::control::HiddenComment::default();
+        hidden_comment.paragraphs = nested_paragraphs;
+        controls.push(crate::model::control::Control::HiddenComment(Box::new(
+            hidden_comment,
+        )));
     } else if ch == 16 {
         let apply_to = match info_buf.get(9).copied().unwrap_or(0) {
             1 => crate::model::header_footer::HeaderFooterApply::Even,
@@ -3960,6 +3966,69 @@ mod tests {
         assert!(check_record_count(HWP3_MAX_RECORD_SIZE + 1).is_err());
         assert!(check_record_count(0xFFFFFFFF).is_err());
         assert!(check_record_count(1024).is_ok());
+    }
+
+    #[test]
+    fn test_hwp3_ch15_hidden_comment_pushes_control() {
+        // ch=15(숨은 설명)는 nested_paragraphs를 파싱만 하고 Control로 push하지 않던 버그(#3065) 회귀 테스트.
+        // 페이로드: info_buf(8B, 0으로 채움) + 빈 문단 리스트 종료자(char_count=0, 총 43B).
+        // header_val1(4B) + ch2(2B) + info_buf(8B) + 빈 문단 리스트 종료자(43B).
+        let mut body: Vec<u8> = vec![0u8; 6 + 8];
+        body.extend_from_slice(&[0u8; 43]);
+        let mut cursor = Cursor::new(body.as_slice());
+
+        let mut text_string = String::new();
+        let mut char_offsets = Vec::new();
+        let mut hwp3_char_to_utf16_pos = vec![0u32; 8];
+        let mut controls = Vec::new();
+        let mut ctrl_data_records = Vec::new();
+        let mut scan = Hwp3CharScan {
+            text_string: &mut text_string,
+            char_offsets: &mut char_offsets,
+            hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
+            controls: &mut controls,
+            ctrl_data_records: &mut ctrl_data_records,
+        };
+        let mut char_shapes = Vec::new();
+        let mut para_shapes = Vec::new();
+        let mut border_fills = Vec::new();
+        let mut tab_defs = Vec::new();
+        let mut pic_name_to_id = std::collections::HashMap::new();
+        let para_info = Hwp3ParaInfo {
+            follow_prev_para_shape: 0,
+            char_count: 4,
+            line_count: 1,
+            include_char_shape: 0,
+            flags: 0,
+            special_char_flags: 0,
+            style_index: 0,
+            rep_char_shape: crate::parser::hwp3::records::Hwp3CharShape::default(),
+            para_shape: None,
+        };
+
+        parse_object_control_char(
+            &mut cursor,
+            &mut char_shapes,
+            &mut para_shapes,
+            &mut border_fills,
+            &mut tab_defs,
+            &mut pic_name_to_id,
+            0,
+            0,
+            0,
+            15,
+            &para_info,
+            0,
+            0,
+            &mut scan,
+        )
+        .expect("ch=15 dispatch should succeed");
+
+        assert_eq!(controls.len(), 1);
+        assert!(matches!(
+            controls[0],
+            crate::model::control::Control::HiddenComment(_)
+        ));
     }
 
     #[test]
