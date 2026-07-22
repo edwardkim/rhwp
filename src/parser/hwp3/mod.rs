@@ -287,6 +287,11 @@ pub(crate) fn convert_char_shape(
     cs.ratios = hwp3_cs.ratios;
     cs.spacings = hwp3_cs.spacings;
     cs.text_color = hwp3_color_index_to_color_ref(hwp3_cs.text_color);
+    // [#2958] 글자 음영색(offset 23)도 text_color와 같은 8색 팔레트를 쓰지만
+    // 변환부에서 누락되어 CharShape 기본값(0=검정)이 그대로 남아 있었다.
+    // 렌더러는 0x00FFFFFF(흰색)를 "음영 없음" sentinel로 쓰므로, 여기서
+    // 매핑하지 않으면 음영 없는 문서도 검정 형광펜으로 오판될 수 있다.
+    cs.shade_color = hwp3_color_index_to_color_ref(hwp3_cs.shade_color);
     cs.attr = hwp3_cs.attr as u32;
     cs.italic = hwp3_cs.is_italic();
     cs.bold = hwp3_cs.is_bold();
@@ -4222,6 +4227,17 @@ mod tests {
             doc.doc_properties.footnote_start_num, 1,
             "각주 시작 번호가 doc_info 에서 매핑돼야 함(미매핑 시 0)"
         );
+    }
+
+    #[test]
+    fn task2958_convert_char_shape_preserves_shade_color() {
+        let hwp3_cs = crate::parser::hwp3::records::Hwp3CharShape {
+            shade_color: 1,
+            ..Default::default()
+        };
+        let cs = convert_char_shape(&hwp3_cs);
+
+        assert_eq!(cs.shade_color, 0x00FF0000);
     }
 
     #[test]
