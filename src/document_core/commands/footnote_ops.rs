@@ -171,9 +171,26 @@ impl DocumentCore {
             let section = &mut self.document.sections[section_idx];
             let para = &mut section.paragraphs[para_idx];
 
+            let marker_utf16_pos = para.char_offsets.get(marker_pos).copied().unwrap_or(0);
             for offset in para.char_offsets.iter_mut().skip(marker_pos) {
                 if *offset >= 8 {
                     *offset -= 8;
+                }
+            }
+            // char_shapes/range_tags 도 char_offsets 와 함께 되돌린다 — 삽입 경로
+            // (shift_for_inline_control_insert)와 대칭되는 삭제측 시프트가 없으면
+            // 삭제 지점 이후 글자모양 run·range_tag 경계가 텍스트와 어긋난다.
+            for cs in &mut para.char_shapes {
+                if cs.start_pos > marker_utf16_pos {
+                    cs.start_pos = cs.start_pos.saturating_sub(8);
+                }
+            }
+            for rt in &mut para.range_tags {
+                if rt.start >= marker_utf16_pos {
+                    rt.start = rt.start.saturating_sub(8);
+                }
+                if rt.end >= marker_utf16_pos {
+                    rt.end = rt.end.saturating_sub(8);
                 }
             }
 
@@ -745,6 +762,51 @@ mod tests {
         assert_eq!(
             remaining_endnote_number, 1,
             "각주 삭제 후 본문 최상위 미주 번호가 1로 재계산되어야 함"
+        );
+    }
+}
+
+#[cfg(test)]
+mod delete_footnote_char_shape_tests {
+    use crate::document_core::DocumentCore;
+    use crate::model::paragraph::CharShapeRef;
+
+    /// [reference-integrity 회귀] 각주 삭제 후 char_offsets 만 -8 시프트하고
+    /// char_shapes.start_pos 는 그대로 두면, 삭제 지점 이후 글자모양 run 경계가
+    /// 텍스트와 어긋난다(삽입측 shift_for_inline_control_insert 와 비대칭).
+    #[test]
+    fn delete_footnote_shifts_char_shapes_back_with_char_offsets() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "abcd").unwrap();
+        core.insert_footnote_native(0, 0, 2).unwrap();
+
+        // 각주 삽입 후 'c'(char idx 뒤쪽, 각주 마커 이후)의 글자모양을 별도 run(id=9)으로 지정.
+        let (control_idx, marker_pos) = {
+            let para = &core.document.sections[0].paragraphs[0];
+            let positions = crate::document_core::helpers::find_control_text_positions(para);
+            let ci = para
+                .controls
+                .iter()
+                .position(|c| matches!(c, crate::model::control::Control::Footnote(_)))
+                .expect("각주 컨트롤");
+            (ci, positions[ci])
+        };
+        {
+            let para = &mut core.document.sections[0].paragraphs[0];
+            para.char_shapes.push(CharShapeRef {
+                start_pos: marker_pos as u32 + 8,
+                char_shape_id: 9,
+            });
+        }
+
+        core.delete_footnote_native(0, 0, control_idx).unwrap();
+
+        let para = &core.document.sections[0].paragraphs[0];
+        assert_eq!(
+            para.char_shape_id_at(2),
+            Some(9),
+            "각주 삭제 후 char_shapes.start_pos 가 되돌아가지 않아 글자모양 run 이 텍스트와 어긋남"
         );
     }
 }
