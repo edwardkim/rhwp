@@ -15479,6 +15479,7 @@ fn test_save_picture() {
         caption: None,
         img_dim: (0, 0),
         reverse: ref_pic.reverse,
+        lock: false,
     };
 
     // 5. 문단 구성 (참조 파일: 단일 문단에 SectionDef + ColumnDef + Picture)
@@ -16671,6 +16672,7 @@ fn test_save_pic_in_table() {
         caption: None,
         img_dim: (0, 0),
         reverse: ref_pic.reverse,
+        lock: false,
     };
 
     // 6. 셀 내부 문단 구성 (cc=9: gso(8)+CR(1), mask=0x00000800)

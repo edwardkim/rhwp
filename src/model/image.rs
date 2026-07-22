@@ -51,6 +51,9 @@ pub struct Picture {
     /// `InsertPicture`의 `reverse` 옵션과 동일 개념). 파서가 읽지 않고 직렬화기가
     /// 항상 "0"을 방출해 `reverse="1"`로 저장된 그림이 왕복 시 반전이 풀린다.
     pub reverse: bool,
+    /// HWPX `<hp:pic lock="...">` 값 — 개체 잠금(보호) 여부. 파서가 읽지 않고
+    /// 직렬화기가 항상 "0"을 방출해 lock="1"로 저장된 그림이 왕복 시 잠금 해제됐다.
+    pub lock: bool,
 }
 
 impl Picture {
