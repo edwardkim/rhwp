@@ -1721,6 +1721,10 @@ fn parse_table(
                                     table.common.treat_as_char =
                                         attr_str(&attr) == "1" || attr_str(&attr) == "true";
                                 }
+                                // [#2784] affectLSpacing(줄 간격에 영향) — 표 pos 되읽기.
+                                b"affectLSpacing" => {
+                                    table.common.affect_line_spacing = parse_bool(&attr)
+                                }
                                 b"flowWithText" => table.common.flow_with_text = parse_bool(&attr),
                                 b"allowOverlap" => table.common.allow_overlap = parse_bool(&attr),
                                 b"holdAnchorAndSO" => {
@@ -2424,6 +2428,8 @@ fn parse_picture(
                                     common.treat_as_char =
                                         attr_str(&attr) == "1" || attr_str(&attr) == "true";
                                 }
+                                // [#2784] affectLSpacing(줄 간격에 영향) — 그림/도형 pos 되읽기.
+                                b"affectLSpacing" => common.affect_line_spacing = parse_bool(&attr),
                                 b"flowWithText" => common.flow_with_text = parse_bool(&attr),
                                 b"allowOverlap" => common.allow_overlap = parse_bool(&attr),
                                 // holdAnchorAndSO(쪽나눔 방지). 방출측은 모든 개체에 내지만
@@ -2994,6 +3000,8 @@ fn parse_object_layout_child(
                     b"treatAsChar" => {
                         common.treat_as_char = attr_str(&attr) == "1" || attr_str(&attr) == "true";
                     }
+                    // [#2784] affectLSpacing(줄 간격에 영향) — 공통 개체 pos 되읽기.
+                    b"affectLSpacing" => common.affect_line_spacing = parse_bool(&attr),
                     b"flowWithText" => common.flow_with_text = parse_bool(&attr),
                     b"allowOverlap" => common.allow_overlap = parse_bool(&attr),
                     // holdAnchorAndSO(쪽나눔 방지). 방출측은 모든 개체에 내지만
@@ -6064,6 +6072,8 @@ fn parse_common_shape_children(
                                 b"vertOffset" => common.vertical_offset = parse_u32(&attr),
                                 b"horzOffset" => common.horizontal_offset = parse_u32(&attr),
                                 b"treatAsChar" => common.treat_as_char = parse_bool(&attr),
+                                // [#2784] affectLSpacing(줄 간격에 영향) — 공통 개체 pos 되읽기.
+                                b"affectLSpacing" => common.affect_line_spacing = parse_bool(&attr),
                                 b"flowWithText" => common.flow_with_text = parse_bool(&attr),
                                 b"allowOverlap" => common.allow_overlap = parse_bool(&attr),
                                 // holdAnchorAndSO(쪽나눔 방지). 방출측은 모든 개체에 내지만

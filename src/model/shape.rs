@@ -59,6 +59,12 @@ pub struct CommonObjAttr {
     ///
     /// HWP5 GenShape CTRL_HEADER attr bit 14 후보로 보존한다.
     pub allow_overlap: bool,
+    /// HWPX `hp:pos@affectLSpacing` (개체가 줄 간격에 영향을 주는지).
+    ///
+    /// [#2784] HWP5 개체 공통 속성 attr bit 2 (스펙 표 70). 한컴 원본 파일에서
+    /// bit 2 ⟺ affectLSpacing="1" 를 1:1 대조 검증했다. 이 필드가 없어
+    /// 그림·도형·표 방출이 "0" 으로 하드코딩되던 유실을 해소한다.
+    pub affect_line_spacing: bool,
     /// HWPX 출처 GenShape를 HWP5로 저장할 때 필요한 storage high bit 후보.
     ///
     /// Table adapter의 `0x08000000` 보강과 다른 `0x04000000` bit 26이다.
