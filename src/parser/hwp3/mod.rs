@@ -1737,7 +1737,10 @@ fn parse_simple_control_char(
             utf16_len += 1;
             text_string.push(if ch == 30 { '\u{00A0}' } else { ' ' });
         }
-        24 | 25 => {
+        24 => {
+            // [#2765] HWP3 spec §10.18 표 59: 하이픈(24) = 6 bytes 구조
+            //   offset 0: hchar(=24) [outer read] / offset 2: hunit 너비 / offset 4: hchar(=24)
+            // 실제 하이픈 글리프이므로 '-' 를 방출한다 (6 bytes = 3 hchar 소비).
             let mut buf = [0u8; 4];
             if let Err(_) = body_cursor.read_exact(&mut buf) {
                 return Ok((i, utf16_len, true));
@@ -1751,6 +1754,28 @@ fn parse_simple_control_char(
             char_offsets.push(utf16_len);
             utf16_len += 1;
             text_string.push('-');
+        }
+        25 => {
+            // [#2765] HWP3 spec §10.19 표 60: 제목/표/그림차례 표시(25) = 6 bytes 구조
+            //   offset 0: hchar(=25) [outer read]
+            //   offset 2: hunit 종류 (0=제목차례, 1=표차례, 2=그림차례)
+            //   offset 4: hchar(=25)
+            // 차례(TOC) 항목 표식 — 비가시 마크이므로 글리프를 방출하지 않는다.
+            // (종전: 하이픈(24)과 동일 arm 에서 '-' 를 잘못 방출 → 본문 텍스트 오염.
+            //  한컴 HWP5 변환본 정답지에도 이 표식은 가시 글리프가 없다.)
+            // 바이트/hchar 소비량(6 bytes = 3 hchar)은 하이픈과 동일하게 유지하되,
+            // text_string/char_offsets/utf16_len 은 건드리지 않아
+            // char_offsets.len() == text.chars().count() 불변식을 보존한다.
+            let mut buf = [0u8; 4];
+            if let Err(_) = body_cursor.read_exact(&mut buf) {
+                return Ok((i, utf16_len, true));
+            }
+            for k in 0..2usize {
+                if i + k < hwp3_char_to_utf16_pos.len() {
+                    hwp3_char_to_utf16_pos[i + k] = utf16_len;
+                }
+            }
+            i += 2;
         }
         9 => {
             // [#929] HWP3 spec §10.5 표 39: 탭 = 8 bytes 구조
@@ -4051,6 +4076,41 @@ mod tests {
             total_paras >= 1000,
             "sample16 paragraph count too low ({}); ch=6/7/8 alignment 회귀 의심",
             total_paras
+        );
+    }
+
+    #[test]
+    fn task2765_hwp3_toc_mark_does_not_emit_hyphen() {
+        // [#2765] HWP3 특수문자 코드 25(제목/표/그림차례 표시, §10.19)는 비가시 표식이므로
+        // 하이픈 글리프('-')를 방출하면 안 된다. 종전에는 코드 24(하이픈)와 동일 arm 이라
+        // 차례 표식마다 잉여 '-' 가 본문에 삽입되어, 한컴 HWP5 변환본 정답지와 어긋났다.
+        //
+        // hwp3-sample10.hwp 문단 0.456 은 앞에 차례 표식(코드 25)이 붙은 제목으로,
+        // 정답지(hwp3-sample10-hwp5.hwp)의 텍스트는 "SAMPLE: SQL*LOADER SAMPLES PART I".
+        let path = "samples/hwp3-sample10.hwp";
+        if !std::path::Path::new(path).exists() {
+            return; // 샘플 미커밋 환경(예: CI)에서는 skip.
+        }
+        let mut data = Vec::new();
+        File::open(path).unwrap().read_to_end(&mut data).unwrap();
+        let doc = parse_hwp3(&data).expect("sample10 parse failed");
+
+        let all_texts: Vec<&str> = doc
+            .sections
+            .iter()
+            .flat_map(|s| s.paragraphs.iter())
+            .map(|p| p.text.as_str())
+            .collect();
+
+        // 정답지와 동일한 (하이픈 없는) 텍스트가 존재해야 한다.
+        assert!(
+            all_texts.contains(&"SAMPLE: SQL*LOADER SAMPLES PART I"),
+            "차례 표식 뒤 제목이 정답지 텍스트와 일치해야 한다(하이픈 없음)"
+        );
+        // 잉여 하이픈이 붙은 오염 변형은 존재하면 안 된다.
+        assert!(
+            !all_texts.contains(&"-SAMPLE: SQL*LOADER SAMPLES PART I"),
+            "코드 25 차례 표식이 하이픈 '-' 를 방출하면 안 된다"
         );
     }
 

@@ -70,6 +70,27 @@ initThemeSync((effective, mode) => {
   eventBus.emit('command-state-changed');
 });
 
+/**
+ * 호스트 저장 완료 통지 (#2660).
+ *
+ * 호스트가 내보내기 바이트의 영속화(업로드/핸드오프)를 마친 뒤 호출한다.
+ * draft 삭제 "완료"까지 await하므로, resolve 이후 팝업을 닫아도 IndexedDB
+ * 삭제가 잘리지 않는다. export 시점에는 호출하지 않는다(실패 시 백업 보존).
+ */
+async function completeHostSave(fileName?: string): Promise<{ ok: true; wasDirty: boolean }> {
+  const wasDirty = documentState.isDirty();
+  if (fileName) wasm.fileName = fileName;
+  documentState.markClean('host-save');
+  await autosaveManager.discardCurrentDraft('host-save');
+  return { ok: true, wasDirty };
+}
+
+// 호스트 통합용 공개 API — 팝업/포크 등 SDK 없이 스튜디오 페이지 안에서 통합하는
+// 호스트를 위해 프로덕션 빌드에도 항상 노출한다 (iframe 호스트는 embed RPC 사용).
+(window as any).rhwpStudio = {
+  notifySaved: (fileName?: string) => completeHostSave(fileName),
+};
+
 // E2E 테스트용 전역 노출 (개발 모드 전용)
 if (import.meta.env.DEV) {
   (window as any).__wasm = wasm;
@@ -1338,6 +1359,10 @@ installEmbedRuntime({
     async exportHwpVerify() {
       await initPromise;
       return JSON.parse(wasm.exportHwpVerify());
+    },
+    async notifySaved(fileName) {
+      await initPromise;
+      return completeHostSave(fileName);
     },
   },
 });
