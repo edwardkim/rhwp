@@ -299,6 +299,7 @@ hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].c
 hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[].children[][].drawing.text_box.raw_list_header_extra.len	7
 hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[][].caption	2
 hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[][].drawing.text_box.raw_list_header_extra.len	3
+hwp5rb	issue2808_report_physical_ladder.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	22
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].chars[]	3
