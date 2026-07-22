@@ -2336,10 +2336,22 @@ impl DocumentCore {
         }
 
         // char_offsets: 그룹 1개 → 자식 N개, net 변화 = (N-1) * 8
+        //
+        // [Issue #2912] group_shapes_native 의 반대 방향 연산이다. #2905/#2910 에서 확립한
+        // 규약(create_shape_control_native/insert_equation_native 와 동일)대로, 언그룹
+        // 지점(find_control_text_positions 기준) *이전* char_offsets 는 그대로 두고, 그
+        // 지점 이후 항목에만 net_delta 를 적용해야 한다. 기존 코드는 이 계산 없이
+        // para.char_offsets 전체에 무조건 += 했기 때문에, 언그룹 대상보다 앞서 문단에
+        // 남아있는 텍스트/컨트롤의 char_offsets 까지 밀려 텍스트-컨트롤 오프셋 매핑이
+        // 깨졌다.
         let children_count = insert_idx - control_idx;
         if children_count > 1 && !para.char_offsets.is_empty() {
             let net_delta = ((children_count - 1) * 8) as u32;
-            for co in para.char_offsets.iter_mut() {
+            let text_positions = crate::document_core::helpers::find_control_text_positions(para);
+            let text_len = para.text.chars().count();
+            let safe_offset = text_positions.get(control_idx).copied().unwrap_or(text_len);
+            let shift_from = safe_offset.min(para.char_offsets.len());
+            for co in para.char_offsets[shift_from..].iter_mut() {
                 *co += net_delta;
             }
         }
@@ -2837,6 +2849,111 @@ mod resize_clamp_tests {
             core.document.sections[0].paragraphs[0].char_offsets,
             vec![0],
             "그룹 묶기가 삽입 지점 이전 텍스트(char 'A')의 char_offsets 를 밀면 안 된다"
+        );
+    }
+
+    /// [Issue #2912] ungroup_shape_native 는 언그룹 지점 이전 char_offsets 를 건드리면 안
+    /// 된다. group_shapes_native(#2905/#2910) 와 반대 방향(1개 → N개)의 연산이지만 동일한
+    /// 규약을 지켜야 한다: 삽입/시프트 지점(find_control_text_positions 기준) 이전 항목은
+    /// 그대로 두고 그 이후만 시프트한다.
+    ///
+    /// 회귀 전에는 para.char_offsets 전체에 무조건 net_delta 를 더해서, 언그룹 대상보다
+    /// 앞서 문단에 남아있는 텍스트("A")의 char_offsets 항목까지 밀렸다.
+    #[test]
+    fn ungroup_shape_only_shifts_char_offsets_after_insertion_point() {
+        let mut core = make_test_core();
+        {
+            // 문단에 실제 텍스트 "A"를 미리 채워 char_offsets=[0] 상태를 만든다.
+            let para = &mut core.document.sections[0].paragraphs[0];
+            para.text = "A".to_string();
+            para.char_offsets = vec![0];
+            para.char_count = 1;
+        }
+
+        // 텍스트 뒤(char_offset=1)에 사각형 3개를 순서대로 삽입한다.
+        let mut ctrl_indices = Vec::new();
+        for _ in 0..3 {
+            let res = core
+                .create_shape_control_native(
+                    0,
+                    0,
+                    1,
+                    900,
+                    900,
+                    0,
+                    0,
+                    false,
+                    "InFrontOfText",
+                    "rectangle",
+                    false,
+                    false,
+                    &[],
+                )
+                .expect("create rectangle");
+            let ctrl_idx = res
+                .split("\"controlIdx\":")
+                .nth(1)
+                .and_then(|s| s.split(|c: char| !c.is_ascii_digit()).next())
+                .and_then(|s| s.parse::<usize>().ok())
+                .unwrap();
+            ctrl_indices.push(ctrl_idx);
+        }
+        assert_eq!(
+            core.document.sections[0].paragraphs[0].char_offsets,
+            vec![0],
+            "사전 조건: 사각형 삽입 후에도 'A' 오프셋은 0 이어야 한다"
+        );
+
+        // 뒤의 두 도형을 GroupShape 로 직접 감싸 넣는다 (group_shapes_native 는 별도 결함
+        // #2905 계열이 있어 이 테스트의 관심사인 ungroup_shape_native 만 독립적으로
+        // 검증하기 위해 그룹 생성은 우회한다). ctrl_indices[1], [2] 는 char_offsets
+        // 배열 길이(1) 를 넘어서는 위치에 있으므로 그룹으로 합쳐도 char_offsets 는
+        // 여전히 [0] 이어야 한다 — 이는 group_shapes_native 가 올바르게 구현되었을 때와
+        // 동일한 사전 조건이다.
+        let group_ctrl_idx;
+        {
+            use crate::model::control::Control;
+            use crate::model::shape::{GroupShape, ShapeObject};
+            let para = &mut core.document.sections[0].paragraphs[0];
+            let removed_third = para.controls.remove(ctrl_indices[2]);
+            para.ctrl_data_records.remove(ctrl_indices[2]);
+            let removed_second = para.controls.remove(ctrl_indices[1]);
+            para.ctrl_data_records.remove(ctrl_indices[1]);
+            let shape_of = |c: Control| -> ShapeObject {
+                match c {
+                    Control::Shape(s) => *s,
+                    _ => panic!("expected shape control"),
+                }
+            };
+            let child_a = shape_of(removed_second);
+            let child_b = shape_of(removed_third);
+            let group = GroupShape {
+                common: child_a.common().clone(),
+                shape_attr: child_a.shape_attr().clone(),
+                children: vec![child_a, child_b],
+                caption: None,
+            };
+            group_ctrl_idx = ctrl_indices[1];
+            para.controls.insert(
+                group_ctrl_idx,
+                Control::Shape(Box::new(ShapeObject::Group(group))),
+            );
+            para.ctrl_data_records.insert(group_ctrl_idx, None);
+        }
+        assert_eq!(
+            core.document.sections[0].paragraphs[0].char_offsets,
+            vec![0],
+            "사전 조건: 그룹 삽입 후에도 'A' 오프셋은 0 이어야 한다"
+        );
+
+        // 방금 만든 그룹을 다시 풀어낸다 (1개 → 2개, net_delta = 8).
+        core.ungroup_shape_native(0, 0, group_ctrl_idx)
+            .expect("ungroup shapes");
+
+        assert_eq!(
+            core.document.sections[0].paragraphs[0].char_offsets,
+            vec![0],
+            "언그룹이 삽입 지점 이전 텍스트(char 'A')의 char_offsets 를 밀면 안 된다"
         );
     }
 }
