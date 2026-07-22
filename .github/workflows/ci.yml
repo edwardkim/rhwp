@@ -614,17 +614,14 @@ jobs:
         with:
           toolchain: 1.93.1
 
-      - name: Restore cargo registry & build cache
-        id: cargo_cache_restore
-        uses: actions/cache/restore@v5
+      # [#2431 C] 기본 test job 의 rust-cache 이행 후 writer가 사라진
+      # Linux-cargo-* namespace 대신 Native Skia 전용 shared key를 사용한다.
+      # PR은 restore-only, devel/main push만 save하는 신뢰 경계를 유지한다.
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+          shared-key: native-skia
+          save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
       - name: Install native Skia runtime packages
         run: |
