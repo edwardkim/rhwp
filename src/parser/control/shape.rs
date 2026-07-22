@@ -1009,7 +1009,10 @@ fn parse_line_shape_data(data: &[u8], line: &mut LineShape, is_connector: bool) 
         });
     } else {
         // 일반 선
-        line.started_right_or_bottom = r.read_i32().unwrap_or(0) != 0;
+        // hwp5 스펙 표92: 속성 필드는 UINT16(2바이트). 선 개체 속성 전체 길이가
+        // 18바이트(4+4+4+4+2)로 명시되어 있는데 기존에는 INT32(4바이트)로 읽어
+        // 남은 2바이트로는 항상 실패해 unwrap_or(0)으로 값이 소실되고 있었다.
+        line.started_right_or_bottom = r.read_u16().unwrap_or(0) != 0;
     }
 }
 
@@ -1103,6 +1106,25 @@ fn parse_curve_shape_data(data: &[u8], curve: &mut CurveShape) {
 #[cfg(test)]
 mod task195_tests {
     use super::*;
+
+    #[test]
+    fn line_started_right_or_bottom_parsed_from_18byte_record() {
+        // hwp5 스펙 표92: 선 개체 속성은 4+4+4+4+2=18바이트이며 마지막 필드는
+        // UINT16. 18바이트만 주어져도 플래그(1)가 정확히 읽혀야 한다.
+        let mut data = Vec::new();
+        data.extend_from_slice(&0i32.to_le_bytes()); // start.x
+        data.extend_from_slice(&0i32.to_le_bytes()); // start.y
+        data.extend_from_slice(&0i32.to_le_bytes()); // end.x
+        data.extend_from_slice(&0i32.to_le_bytes()); // end.y
+        data.extend_from_slice(&1u16.to_le_bytes()); // 속성(방향 보정 플래그)
+
+        let mut line = LineShape::default();
+        parse_line_shape_data(&data, &mut line, false);
+        assert!(
+            line.started_right_or_bottom,
+            "18바이트 레코드에서 UINT16 플래그가 true 로 읽혀야 함"
+        );
+    }
 
     #[test]
     fn connector_control_point_count_is_bounded_by_remaining() {
