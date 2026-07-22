@@ -72,6 +72,14 @@ revision/structure를 검증하고 descriptor 좌표로 immutable source를 재�
 - target 변경과 full flush의 수명 계약
 - 기존 #2214와 text-editing focused tests
 
+완료 결과(2026-07-22):
+
+- `DeferredPaginationDescriptor`와 단조 revision을 `DocumentCore`에 추가했다.
+- row/column/span/cell paragraph/control 구조 fingerprint와 target 첫 global page를 기록한다.
+- `Current`/`Superseded`/`TargetMissing`/`StructureChanged` stale guard를 추가했다.
+- full pagination 성공 시 최신 descriptor를 소비한다.
+- focused 상태 전이, #2214 library 9건, page-local repaint 3건, wasm32 library check를 통과했다.
+
 ### C1 — cursor/context 리팩터링
 
 1. 최신 continuation loop의 지역 cursor를 값 타입으로 이동한다.

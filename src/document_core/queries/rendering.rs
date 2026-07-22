@@ -2914,6 +2914,9 @@ impl DocumentCore {
         let empty_breaks: Vec<std::collections::HashSet<usize>> =
             vec![std::collections::HashSet::new(); sec_count];
         self.paginate_pass(&empty_breaks);
+        // [#2424] full path가 최신 dirty state를 반영했으므로 deferred target을 소비한다.
+        // 이후 resumable job도 shadow result commit 성공 시 같은 수명 규칙을 적용한다.
+        self.deferred_pagination_descriptor = None;
     }
 
     fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {

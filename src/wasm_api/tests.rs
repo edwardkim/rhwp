@@ -2013,6 +2013,143 @@ fn issue2214_deferred_table_caption_reports_flow_change() {
 }
 
 #[test]
+fn issue2424_deferred_pagination_descriptor_tracks_latest_edit_until_flush() {
+    let mut doc = create_doc_with_table();
+    assert!(doc.deferred_pagination_descriptor.is_none());
+
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 1, "x")
+        .expect("first deferred insert");
+    let first = doc
+        .deferred_pagination_descriptor
+        .clone()
+        .expect("first target descriptor");
+    assert_eq!(first.revision, 1);
+    assert_eq!(
+        (
+            first.section_index,
+            first.para_index,
+            first.control_index,
+            first.cell_index,
+            first.cell_para_index,
+        ),
+        (0, 0, 0, 0, 0)
+    );
+    assert_eq!(first.target_first_page, Some(0));
+    assert_ne!(first.table_structure_fingerprint, 0);
+    assert_eq!(
+        doc.deferred_pagination_target_status(&first),
+        crate::document_core::DeferredPaginationTargetStatus::Current
+    );
+
+    // 앞선 입력에서 이미 flow boundary가 있었다고 가정하면 같은 target의 후속 stable
+    // 입력이 descriptor의 pending boundary를 지우면 안 된다.
+    doc.deferred_pagination_descriptor
+        .as_mut()
+        .expect("pending descriptor")
+        .cell_flow_changed = true;
+
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 2, "y")
+        .expect("replacement deferred insert");
+    let second = doc
+        .deferred_pagination_descriptor
+        .as_ref()
+        .expect("replacement target descriptor");
+    assert_eq!(second.revision, 2);
+    assert!(second.cell_flow_changed);
+    assert_eq!(
+        second.table_structure_fingerprint, first.table_structure_fingerprint,
+        "text-only edit must preserve the target table structure"
+    );
+    assert_eq!(
+        doc.deferred_pagination_target_status(&first),
+        crate::document_core::DeferredPaginationTargetStatus::Superseded,
+        "a newer deferred edit must invalidate an older job revision"
+    );
+    let second = second.clone();
+    assert_eq!(
+        doc.deferred_pagination_target_status(&second),
+        crate::document_core::DeferredPaginationTargetStatus::Current
+    );
+
+    let removed_paragraph = match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => table.cells[0]
+            .paragraphs
+            .pop()
+            .expect("target cell paragraph"),
+        _ => panic!("target table"),
+    };
+    assert_eq!(
+        doc.deferred_pagination_target_status(&second),
+        crate::document_core::DeferredPaginationTargetStatus::TargetMissing
+    );
+    match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => table.cells[0].paragraphs.push(removed_paragraph),
+        _ => panic!("target table"),
+    }
+
+    match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => table.row_count = table.row_count.saturating_add(1),
+        _ => panic!("target table"),
+    }
+    assert_eq!(
+        doc.deferred_pagination_target_status(&second),
+        crate::document_core::DeferredPaginationTargetStatus::StructureChanged
+    );
+    match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => table.row_count = table.row_count.saturating_sub(1),
+        _ => panic!("target table"),
+    }
+    assert_eq!(
+        doc.deferred_pagination_target_status(&second),
+        crate::document_core::DeferredPaginationTargetStatus::Current
+    );
+
+    match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => table.cells[0].paragraphs[0]
+            .controls
+            .push(Control::Bookmark(Default::default())),
+        _ => panic!("target table"),
+    }
+    assert_eq!(
+        doc.deferred_pagination_target_status(&second),
+        crate::document_core::DeferredPaginationTargetStatus::StructureChanged,
+        "cell paragraph control structure changes must invalidate the descriptor"
+    );
+    match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => {
+            table.cells[0].paragraphs[0].controls.pop();
+        }
+        _ => panic!("target table"),
+    }
+    assert_eq!(
+        doc.deferred_pagination_target_status(&second),
+        crate::document_core::DeferredPaginationTargetStatus::Current
+    );
+
+    let third_raw = doc
+        .insert_text_in_cell_native_deferred_pagination(0, 0, 0, 1, 0, 0, "z")
+        .expect("different target deferred insert");
+    let third_result: Value = serde_json::from_str(&third_raw).expect("different target result");
+    let third = doc
+        .deferred_pagination_descriptor
+        .as_ref()
+        .expect("different target descriptor");
+    assert_eq!(third.revision, 3);
+    assert_eq!(third.cell_index, 1);
+    assert_eq!(
+        third.cell_flow_changed,
+        third_result["cellFlowChanged"].as_bool().unwrap(),
+        "a different target must not inherit the previous flow signal"
+    );
+
+    doc.flush_deferred_pagination().expect("full flush");
+    assert!(
+        doc.deferred_pagination_descriptor.is_none(),
+        "successful full pagination must consume the pending descriptor"
+    );
+}
+
+#[test]
 fn issue2214_invalid_shape_cell_index_does_not_mutate_text() {
     let mut doc = HwpDocument::create_empty();
     let inserted = doc

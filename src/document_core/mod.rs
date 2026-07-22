@@ -44,6 +44,34 @@ pub(crate) struct TableTransposeClipboard {
     pub(crate) data: TableTransposeData,
 }
 
+/// [#2424] deferred cell edit가 이후 pagination job에 넘기는 최소 target descriptor.
+///
+/// resumable engine이 붙기 전까지 실제 flush는 기존 동기 `paginate()`를 사용하며,
+/// 성공한 pagination은 이 descriptor를 소비한다.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct DeferredPaginationDescriptor {
+    pub(crate) revision: u64,
+    pub(crate) section_index: usize,
+    pub(crate) para_index: usize,
+    pub(crate) control_index: usize,
+    pub(crate) cell_index: usize,
+    pub(crate) cell_para_index: usize,
+    pub(crate) cell_flow_changed: bool,
+    /// 기존 pagination에서 target table의 첫 fragment가 있던 global page.
+    /// 실제 최초 changed fragment는 synchronous oracle 비교 뒤 더 좁힌다.
+    pub(crate) target_first_page: Option<u32>,
+    pub(crate) table_structure_fingerprint: u64,
+}
+
+/// [#2424] pending pagination job이 descriptor 좌표를 다시 조회한 결과.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum DeferredPaginationTargetStatus {
+    Current,
+    Superseded,
+    TargetMissing,
+    StructureChanged,
+}
+
 /// HWP 문서 핵심 도메인 모델
 ///
 /// 문서 데이터, 레이아웃 상태, 설정, 캐시를 포함한다.
@@ -104,6 +132,10 @@ pub struct DocumentCore {
     /// 구역별 문단→단 인덱스 매핑 (페이지네이션에서 결정)
     /// para_column_map[section_idx][para_idx] = column_index
     pub(crate) para_column_map: Vec<Vec<u16>>,
+    /// [#2424] 마지막 deferred cell edit revision. 새 edit가 기존 pagination job을 대체한다.
+    pub(crate) deferred_pagination_revision: u64,
+    /// [#2424] 아직 full pagination에 반영되지 않은 target descriptor.
+    pub(crate) deferred_pagination_descriptor: Option<DeferredPaginationDescriptor>,
     /// 페이지별 렌더 트리 캐시 (지연 구축, 부분 무효화)
     pub(crate) page_tree_cache: RefCell<Vec<Option<PageRenderTree>>>,
     /// [Task #2222] 페이지 레이어 트리 JSON 캐시 — (출력옵션 지문, 직렬화 결과).
@@ -272,6 +304,8 @@ impl DocumentCore {
             measured_sections: Vec::new(),
             dirty_paragraphs: Vec::new(),
             para_column_map: Vec::new(),
+            deferred_pagination_revision: 0,
+            deferred_pagination_descriptor: None,
             page_tree_cache: RefCell::new(Vec::new()),
             layer_tree_json_cache: RefCell::new(Vec::new()),
             batch_mode: false,
