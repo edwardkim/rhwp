@@ -1775,6 +1775,13 @@ fn parse_bullet_hwpx(
                     }
                 }
             }
+            b"checkedChar" => {
+                if let Ok(s) = std::str::from_utf8(&attr.value) {
+                    if let Some(c) = s.chars().next() {
+                        bullet.check_bullet_char = c;
+                    }
+                }
+            }
             _ => {}
         }
     }
@@ -2197,6 +2204,27 @@ mod tests {
                 (tags::HWPTAG_TRACKCHANGE, 1, 1032),
             ]
         );
+    }
+
+    #[test]
+    fn test_parse_bullet_hwpx_checked_char() {
+        // checkedChar 는 체크 글머리표(checkbox bullet)의 체크 문자다. 종전 파서는
+        // char/useImage 만 읽고 checkedChar 를 무시해 IR.check_bullet_char 가 항상
+        // 기본값('\0')이었다 — 체크박스 글머리표가 라운드트립에서 소실된다.
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:bullets itemCnt="1">
+      <hh:bullet id="0" char="□" checkedChar="☑" useImage="0">
+        <hh:paraHead level="0" align="LEFT" useInstWidth="0" autoIndent="1" widthAdjust="0" textOffsetType="PERCENT" textOffset="50" numFormat="DIGIT" charPrIDRef="4294967295" checkable="1"/>
+      </hh:bullet>
+    </hh:bullets>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        assert_eq!(doc_info.bullets.len(), 1);
+        assert_eq!(doc_info.bullets[0].check_bullet_char, '☑');
     }
 
     #[test]

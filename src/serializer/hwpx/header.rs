@@ -963,16 +963,20 @@ fn write_bullet<W: Write>(
     let id_s = (id + 1).to_string(); // 관찰: 1-based, ParaShape.numbering_id 참조와 정합
     let char_s = b.bullet_char.to_string();
     let use_image = if b.image_bullet > 0 { "1" } else { "0" };
-    start_tag_attrs(
-        w,
-        "hh:bullet",
-        &[("id", &id_s), ("char", &char_s), ("useImage", use_image)],
-    )?;
+    // [#3028] checkedChar(체크 글머리표 문자) — 값이 있을 때만 방출한다.
+    let has_checked_char = b.check_bullet_char != '\0';
+    let checked_char_s = b.check_bullet_char.to_string();
+    let mut attrs: Vec<(&str, &str)> = vec![("id", &id_s), ("char", &char_s)];
+    if has_checked_char {
+        attrs.push(("checkedChar", &checked_char_s));
+    }
+    attrs.push(("useImage", use_image));
+    start_tag_attrs(w, "hh:bullet", &attrs)?;
     // 원본 HWPX paraHead 구간이 있으면(=이 파일에서 파싱된 bullet) 그대로 splice 해
     // align/useInstWidth/autoIndent/textOffsetType/checkable 등 Bullet 필드로 표현
     // 못하는 속성까지 무손실 복원(numbering.raw_para_heads 와 동일 패턴, #2790).
     // 없으면(HWP5 경로 등) widthAdjust/textOffset/charPrIDRef 만 필드값으로 채운
-    // 뼈대로 폴백.
+    // 뼈대로 폴백 — checkable 은 checkedChar 유무를 따른다(#3028).
     if let Some(raw) = &b.raw_para_head {
         w.get_mut()
             .write_all(raw.as_bytes())
@@ -991,7 +995,7 @@ fn write_bullet<W: Write>(
                 ("textOffset", &b.text_distance.to_string()),
                 ("numFormat", "DIGIT"),
                 ("charPrIDRef", &b.char_shape_id.to_string()),
-                ("checkable", "0"),
+                ("checkable", if has_checked_char { "1" } else { "0" }),
             ],
         )?;
     }
