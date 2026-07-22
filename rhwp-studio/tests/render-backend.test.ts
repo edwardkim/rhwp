@@ -525,6 +525,18 @@ test('CanvasKit image crop source follows the same HWPUNIT crop scale as SVG rep
   assert.equal(canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 174000, bottom: 26580 }), null);
 });
 
+test('CanvasKit image crop source honors issue2817 imgDim coordinates', () => {
+  assert.equal(
+    canvasKitImageSourceRect(
+      192,
+      108,
+      { left: 0, top: 0, right: 144000, bottom: 81000 },
+      [144000, 81000],
+    ),
+    null,
+  );
+});
+
 test('CanvasKit image placement follows layer fill-mode anchors', () => {
   const bbox = { x: 10, y: 20, width: 100, height: 80 };
   assert.deepEqual(canvasKitImagePlacement('center', bbox, 40, 20), { x: 40, y: 50 });

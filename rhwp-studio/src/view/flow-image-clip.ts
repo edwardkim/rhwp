@@ -17,6 +17,7 @@ export interface FlowImagePaintOp {
   mime: string;
   base64: string;
   crop: FlowImageCrop | null;
+  originalSizeHu: [number, number] | null;
   rotation: number;
   horzFlip: boolean;
   vertFlip: boolean;
@@ -42,6 +43,7 @@ type LayerPaintOpLike = {
   mime?: unknown;
   base64?: unknown;
   crop?: unknown;
+  originalSizeHu?: unknown;
   effect?: unknown;
   brightness?: unknown;
   contrast?: unknown;
@@ -110,6 +112,7 @@ export function collectFlowImagePaintOps(
           mime: op.mime,
           base64: op.base64,
           crop: isFiniteCrop(op.crop) ? op.crop : null,
+          originalSizeHu: isPositiveSizeTuple(op.originalSizeHu) ? op.originalSizeHu : null,
           rotation: finiteNumber(op.transform?.rotation),
           horzFlip: op.transform?.horzFlip === true,
           vertFlip: op.transform?.vertFlip === true,
@@ -143,6 +146,12 @@ function isLayerNode(value: unknown): value is LayerNodeLike {
 
 function isLayerPaintOp(value: unknown): value is LayerPaintOpLike {
   return value !== null && typeof value === 'object';
+}
+
+function isPositiveSizeTuple(value: unknown): value is [number, number] {
+  return Array.isArray(value)
+    && value.length === 2
+    && value.every((entry) => typeof entry === 'number' && Number.isFinite(entry) && entry > 0);
 }
 
 function intersectBboxes(

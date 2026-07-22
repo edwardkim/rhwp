@@ -1141,10 +1141,16 @@ function applyFlowImageCrop(
     return;
   }
 
-  const sourceLeft = crop.left / HWP_UNITS_PER_CSS_PIXEL;
-  const sourceTop = crop.top / HWP_UNITS_PER_CSS_PIXEL;
-  const sourceWidth = (crop.right - crop.left) / HWP_UNITS_PER_CSS_PIXEL;
-  const sourceHeight = (crop.bottom - crop.top) / HWP_UNITS_PER_CSS_PIXEL;
+  const scaleXHu = image.originalSizeHu
+    ? image.originalSizeHu[0] / element.naturalWidth
+    : HWP_UNITS_PER_CSS_PIXEL;
+  const scaleYHu = image.originalSizeHu
+    ? image.originalSizeHu[1] / element.naturalHeight
+    : HWP_UNITS_PER_CSS_PIXEL;
+  const sourceLeft = crop.left / scaleXHu;
+  const sourceTop = crop.top / scaleYHu;
+  const sourceWidth = (crop.right - crop.left) / scaleXHu;
+  const sourceHeight = (crop.bottom - crop.top) / scaleYHu;
   if (sourceWidth <= 0 || sourceHeight <= 0) return;
 
   const scaleX = (image.bbox.width * displayScale) / sourceWidth;

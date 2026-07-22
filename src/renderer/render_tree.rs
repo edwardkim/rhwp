@@ -1060,9 +1060,9 @@ pub struct ImageNode {
     /// 렌더러에서 이미지 원본 px 크기와 비교하여 source rect 계산
     /// None이면 전체 이미지 표시
     pub crop: Option<(i32, i32, i32, i32)>,
-    /// 원본 이미지 크기 (HWPUNIT) — `pic.shape_attr.{original_width, original_height}`.
-    /// crop 좌표를 픽셀로 변환할 때 정확한 HU/px 스케일 계산에 사용.
-    /// None이면 폴백 동작.
+    /// 그림 자르기 좌표의 전체 범위 — HWP/HWPX `imgDim`.
+    /// crop 좌표를 디코딩된 이미지 픽셀로 변환할 때 축별 스케일 계산에 사용한다.
+    /// None이면 표준 75 HU/px로 폴백한다.
     pub original_size_hu: Option<(u32, u32)>,
     /// 그림 효과 (실사/그레이스케일/흑백/패턴)
     pub effect: ImageEffect,

@@ -1382,7 +1382,12 @@ export class CanvasKitLayerRenderer {
       return;
     }
 
-    const crop = canvasKitImageSourceRect(imageWidth, imageHeight, op.crop);
+    const crop = canvasKitImageSourceRect(
+      imageWidth,
+      imageHeight,
+      op.crop,
+      op.originalSizeHu,
+    );
     const opacity = Number.isFinite(op.opacity) ? Math.max(0, Math.min(1, op.opacity ?? 1)) : 1;
     const drawImage = (dstX: number, dstY: number, dstW: number, dstH: number) => {
       const src = crop

@@ -594,6 +594,7 @@ impl SkiaLayerRenderer {
                           fill_mode,
                           original_size,
                           crop,
+                          crop_reference_size,
                           effect| {
             draw_image_bytes(
                 canvas,
@@ -605,6 +606,7 @@ impl SkiaLayerRenderer {
                 fill_mode,
                 original_size,
                 crop,
+                crop_reference_size,
                 effect,
                 ImageSampling::linear(),
             )
@@ -810,6 +812,7 @@ impl SkiaLayerRenderer {
                                     &image.data,
                                     *bbox,
                                     Some(image.fill_mode),
+                                    None,
                                     None,
                                     None,
                                     image.effect,
@@ -1102,6 +1105,7 @@ impl SkiaLayerRenderer {
                                     image.fill_mode,
                                     image.original_size,
                                     image.crop,
+                                    image.original_size_hu,
                                     effect,
                                 );
                                 if opacity < 1.0 {
