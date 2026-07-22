@@ -502,12 +502,20 @@ impl SkiaTextReplay<'_> {
                                 + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
                                 + advance / 2.0
                                 + dx;
-                            let cy = y as f32 - font_size * 0.35 + dy;
+                            let cy = y as f32
+                                - font_size
+                                    * crate::renderer::render_tree::MIDDLE_DOT_CY_OFFSET_EM as f32
+                                + dy;
                             let mut dot_paint = Paint::default();
                             dot_paint.set_anti_alias(true);
                             dot_paint.set_style(paint::Style::Fill);
                             dot_paint.set_color(color);
-                            canvas.draw_circle((cx, cy), font_size * 0.08, &dot_paint);
+                            canvas.draw_circle(
+                                (cx, cy),
+                                font_size
+                                    * crate::renderer::render_tree::MIDDLE_DOT_RADIUS_EM as f32,
+                                &dot_paint,
+                            );
                             continue;
                         }
                         if let Some(font) = font_for_text(cluster, font_size) {

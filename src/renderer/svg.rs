@@ -2753,8 +2753,8 @@ impl Renderer for SvgRenderer {
         // 중앙 점" 이므로 폰트 비의존 벡터 도형으로 직접 그린다.
         //
         //   cx = advance box 수평 중앙
-        //   cy = baseline(y) − font_size × 0.35  (CJK x-height 중앙 근사)
-        //   r  = font_size × 0.08               (PDF 관찰치 기준)
+        //   cy = baseline(y) − font_size × MIDDLE_DOT_CY_OFFSET_EM  (CJK x-height 중앙)
+        //   r  = font_size × MIDDLE_DOT_RADIUS_EM  (한글 COM PDF 실측, #2999)
         let cluster_advance = |char_idx: usize, cluster_str: &str| -> f64 {
             let n = cluster_str.chars().count();
             let end = char_idx + n;
@@ -2765,8 +2765,8 @@ impl Renderer for SvgRenderer {
             }
         };
         let is_middle_dot = |cluster_str: &str| cluster_str == "\u{00B7}";
-        let dot_radius = font_size * 0.08;
-        let dot_cy_offset = -font_size * 0.35;
+        let dot_radius = font_size * super::render_tree::MIDDLE_DOT_RADIUS_EM;
+        let dot_cy_offset = -font_size * super::render_tree::MIDDLE_DOT_CY_OFFSET_EM;
 
         // Task #352: 3+ 연속 '-' 시퀀스(빈칸/leader) 를 단일 가로선으로 대체.
         // Stage 2 가 advance 를 좁히면 글리프 폭이 advance 를 초과해 시각상
