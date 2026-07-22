@@ -54,6 +54,15 @@ impl DocumentCore {
         let row_count = table.row_count;
         let col_count = table.col_count;
 
+        // Table::insert_row()는 새 셀을 push()한 뒤 전체를
+        // sort_by_key(row, col)로 재정렬한다. local_resize_cell_widths/heights는
+        // 이 재정렬 이전의 cell 인덱스를 그대로 물고 있는 Vec<(usize, u32)>라서,
+        // 삽입 이후에는 엉뚱한(또는 범위를 벗어난) 셀을 가리키는 stale 참조가 된다.
+        // delete_table_row_native()(#2843/#2849), merge_table_cells_native()(#2832)와
+        // 동일하게, 행 삽입도 셀 인덱스 배치를 바꾸므로 함께 비워야 한다.
+        table.local_resize_cell_widths.clear();
+        table.local_resize_cell_heights.clear();
+
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -85,6 +94,12 @@ impl DocumentCore {
         table.dirty = true;
         let row_count = table.row_count;
         let col_count = table.col_count;
+
+        // insert_table_row_native()와 동일한 사유(위 주석 참조): Table::insert_column()도
+        // 새 셀을 push()한 뒤 sort_by_key(row, col)로 재정렬하므로 local_resize_cell_widths/
+        // heights의 인덱스 참조가 stale 해진다. 함께 비운다.
+        table.local_resize_cell_widths.clear();
+        table.local_resize_cell_heights.clear();
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
