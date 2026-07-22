@@ -311,10 +311,8 @@ impl SkiaLayerRenderer {
     /// 사용자 지정 폰트 디렉토리 (ttfs 등) 의 폰트를 로드하여 Skia 가 직접 사용 가능하게 한다.
     /// SVG 의 `--font-path` 와 동일한 패턴.
     pub fn with_font_paths(mut self, font_paths: &[std::path::PathBuf]) -> Self {
-        let mut search_dirs: Vec<std::path::PathBuf> = font_paths.to_vec();
-        for dir in &["ttfs/hwp", "ttfs/windows", "ttfs"] {
-            search_dirs.push(std::path::PathBuf::from(dir));
-        }
+        // [#2864] 조달 순서는 renderer::font_paths 가 단일 정의한다.
+        let search_dirs = crate::renderer::font_paths::search_dirs(font_paths);
         for dir in &search_dirs {
             if !dir.exists() {
                 continue;

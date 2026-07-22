@@ -87,6 +87,15 @@ HWP/HWPX → PDF (svg2pdf + pdf-writer).
 - `-o <파일>`, `--output <파일>` — 출력 PDF 파일(기본 `output/<입력명>.pdf`)
 - `-p <번호>`, `--page <번호>` — 0-based 단일 페이지 선택. 생략하면 전체 문서를 다중 페이지 PDF로 내보낸다.
 - `--font-path <경로>` — PDF 변환 fontdb에 추가할 폰트 탐색 경로(여러 번 지정 가능)
+  - 환경변수 `RHWP_FONT_PATH` 로도 지정할 수 있다(#2864). 복수 경로는 OS 관례
+    구분자로 나눈다(유닉스 `:`, Windows `;`). 백엔드에서 대량 변환할 때 호출마다
+    `--font-path` 를 붙이는 대신 한 번만 설정하면 된다.
+  - 조달 순서: `--font-path` → `RHWP_FONT_PATH` → 시스템 설치 폰트 →
+    저장소 번들 `ttfs/opensource`(최후 폴백, 한국어 드롭 방지).
+  - **폰트를 지정하지 않으면 산출물이 달라진다.** 문서가 쓰는 폰트(한컴 바탕/돋움,
+    Windows 폰트 등)가 시스템에 없으면 번들 대체 폰트(Noto Sans/Serif KR)로 떨어져
+    글꼴이 바뀐다. 서버·컨테이너에서 대량 변환할 때는 **필요한 폰트를 설치하고
+    `--font-path` 또는 `RHWP_FONT_PATH` 로 명시**해야 정본과 같은 결과를 얻는다.
 - `--fallback-serif <family>` — PDF serif generic fallback family
 - `--fallback-sans <family>` — PDF sans-serif generic fallback family
 - `--fallback-mono <family>` — PDF monospace generic fallback family

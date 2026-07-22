@@ -412,14 +412,9 @@ fn svg_fontdb() -> Arc<usvg::fontdb::Database> {
             // resvg 가 조각의 텍스트를 통째로 드롭했다.
             let mut fontdb = usvg::fontdb::Database::new();
             fontdb.load_system_fonts();
-            for dir in &["ttfs", "ttfs/windows", "ttfs/hwp"] {
-                if std::path::Path::new(dir).exists() {
-                    fontdb.load_fonts_dir(dir);
-                }
-            }
-            if std::path::Path::new("/mnt/c/Windows/Fonts").exists() {
-                fontdb.load_fonts_dir("/mnt/c/Windows/Fonts");
-            }
+            // [#2864] 조달 순서는 renderer::font_paths 가 단일 정의한다.
+            // ttfs/opensource 번들이 최후 폴백으로 남아 한국어 드롭을 막는다(#2293).
+            crate::renderer::font_paths::load_into_fontdb(&mut fontdb, &[]);
 
             // generic 폴백은 실존하는 첫 후보로 (매칭 실패 = 텍스트 드롭 방지).
             let sans = first_existing_family(

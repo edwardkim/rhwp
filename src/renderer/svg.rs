@@ -3508,34 +3508,12 @@ fn find_font_file(
         files
     };
 
-    // 탐색 경로 (우선순위 순)
-    let mut search_dirs: Vec<std::path::PathBuf> = extra_paths.to_vec();
-    for dir in &["ttfs/hwp", "ttfs/windows", "ttfs"] {
-        search_dirs.push(Path::new(dir).to_path_buf());
-    }
-    // 시스템 폰트 경로
-    #[cfg(target_os = "macos")]
-    {
-        search_dirs.push(Path::new("/Library/Fonts").to_path_buf());
-        search_dirs.push(Path::new("/System/Library/Fonts").to_path_buf());
-        search_dirs.push(Path::new("/System/Library/Fonts/Supplemental").to_path_buf());
-    }
-    #[cfg(target_os = "linux")]
-    {
-        search_dirs.push(Path::new("/usr/share/fonts").to_path_buf());
-        search_dirs.push(Path::new("/usr/local/share/fonts").to_path_buf());
-    }
-    #[cfg(target_os = "windows")]
-    {
-        search_dirs.push(Path::new("C:\\Windows\\Fonts").to_path_buf());
-    }
-    // WSL Windows 폰트
-    if Path::new("/mnt/c/Windows/Fonts").exists() {
-        search_dirs.push(Path::new("/mnt/c/Windows/Fonts").to_path_buf());
-    }
-    // Task #1224: 오픈소스 번들 대체 폰트 경로 — **최후 탐색**(실제 저작권/시스템 폰트가
-    // 항상 우선). 고딕 계열의 Noto Sans KR ExtraLight 대체가 여기서만 매칭된다.
-    search_dirs.push(Path::new("ttfs/opensource").to_path_buf());
+    // [#2864] 탐색 경로(우선순위 순)는 renderer::font_paths 가 단일 정의한다.
+    // 호출자 지정 → RHWP_FONT_PATH → OS 시스템 경로 → ttfs/opensource(최후 폴백).
+    // 종전의 ttfs/hwp·ttfs/windows(로컬 전용)와 /mnt/c/Windows/Fonts(WSL2 전용)는
+    // 제거했다. Task #1224 의 고딕 대체(Noto Sans KR ExtraLight)는 최후 탐색인
+    // ttfs/opensource 에서 그대로 매칭된다.
+    let search_dirs = crate::renderer::font_paths::search_dirs(extra_paths);
 
     for dir in &search_dirs {
         if !dir.exists() {

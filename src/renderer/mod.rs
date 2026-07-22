@@ -15,6 +15,8 @@ pub mod equation;
 pub(crate) mod equation_tac_flow;
 pub mod float_placement;
 pub mod font_metrics_data;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod font_paths;
 pub(crate) mod form_caption;
 pub mod height_cursor;
 pub mod height_measurer;
