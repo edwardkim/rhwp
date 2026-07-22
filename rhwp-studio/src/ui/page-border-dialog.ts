@@ -423,7 +423,10 @@ export class PageBorderDialog extends ModalDialog {
   private buildLineWidthSelect(): HTMLSelectElement {
     this.lineWidthSelect = document.createElement('select');
     this.lineWidthSelect.className = 'dialog-select';
-    ['0.1mm', '0.12mm', '0.15mm', '0.2mm', '0.25mm', '0.3mm', '0.4mm', '0.5mm', '0.6mm'].forEach((text, idx) => {
+    [
+      '0.1mm', '0.12mm', '0.15mm', '0.2mm', '0.25mm', '0.3mm', '0.4mm', '0.5mm', '0.6mm',
+      '0.7mm', '1mm', '1.5mm', '2mm', '3mm', '4mm', '5mm',
+    ].forEach((text, idx) => {
       const option = document.createElement('option');
       option.value = String(idx);
       option.textContent = text;
