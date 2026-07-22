@@ -1748,11 +1748,28 @@ fn parse_bullet_hwpx(
         }
     }
 
-    // 자식 <hh:paraHead>, <hh:image> 등 skip
+    // 자식 <hh:paraHead>, <hh:img> 순회. <hh:img binaryItemIDRef="imageN"> 는
+    // 이미지 글머리표의 실제 BinData 참조 ID — useImage="1" 만으로는 어떤 이미지인지
+    // 알 수 없어 누락 시 이미지 글머리표가 항상 ID 1 로 고정된다.
     if !is_empty_event(e) {
         let mut buf = Vec::new();
         loop {
             match reader.read_event_into(&mut buf) {
+                Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce))
+                    if local_name(ce.name().as_ref()) == b"img" =>
+                {
+                    if let Some(attr) = ce
+                        .attributes()
+                        .flatten()
+                        .find(|a| a.key.as_ref() == b"binaryItemIDRef")
+                    {
+                        let s = String::from_utf8_lossy(&attr.value);
+                        let num: String = s.chars().filter(|c| c.is_ascii_digit()).collect();
+                        if let Ok(id) = num.parse::<i32>() {
+                            bullet.image_bullet = id;
+                        }
+                    }
+                }
                 Ok(Event::End(ref ee)) => {
                     if local_name(ee.name().as_ref()) == b"bullet" {
                         break;
@@ -2096,6 +2113,28 @@ mod tests {
                 (tags::HWPTAG_LAYOUT_COMPATIBILITY, 1, 20),
                 (tags::HWPTAG_TRACKCHANGE, 1, 1032),
             ]
+        );
+    }
+
+    #[test]
+    fn test_parse_bullet_hwpx_image_id_from_binary_item_id_ref() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:bullets itemCnt="1">
+      <hh:bullet id="1" char="0x0" useImage="1">
+        <hh:img binaryItemIDRef="image3" bright="0" contrast="0" effect="REAL_PIC"/>
+      </hh:bullet>
+    </hh:bullets>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        assert_eq!(
+            doc_info.bullets[0].image_bullet, 3,
+            "이미지 글머리표는 <hh:img binaryItemIDRef>의 실제 BinData ID(3)로 매핑되어야 함. \
+             useImage=\"1\" 만으로는 어떤 이미지인지 알 수 없어, 이대로 두면 이미지 글머리표가 \
+             항상 ID 1로 고정된다."
         );
     }
 
