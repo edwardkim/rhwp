@@ -77,6 +77,11 @@ pub(crate) fn check_record_count(count: usize) -> Result<(), io::Error> {
     Ok(())
 }
 
+// HWP3 spec (한글문서파일구조3.0.md:248) doc_info offset 122 "빈줄감춤"(0 이외=on).
+fn hwp3_hide_empty_line(doc_info: &Hwp3DocInfo) -> bool {
+    doc_info.hide_empty_line != 0
+}
+
 fn hwp3_page_border_fill(
     doc_info: &Hwp3DocInfo,
     border_fill_id: u16,
@@ -3236,6 +3241,9 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
         landscape: doc_info.paper_direction != 0,
         ..Default::default()
     };
+    // 파싱만 되고 SectionDef.hide_empty_line 으로 배선되지 않아 페이지 시작부 빈 줄이
+    // 항상 정상 높이로 렌더되던 문제 (#issue).
+    section_def.hide_empty_line = hwp3_hide_empty_line(&doc_info);
 
     // [Task #877 Stage 4] HWP3 doc_info.border_type / border_margin → SectionDef.page_border_fill
     // 변환. HWP3 spec §3.2 (문서 정보) offset 112-121 의 페이지 테두리 정보. type=0 이면 없음,
@@ -4011,6 +4019,23 @@ mod tests {
         assert_eq!(pbf.spacing_bottom, 160);
         assert_eq!(pbf.basis, PageBorderBasis::BodyBased);
         assert_eq!(pbf.ui_basis, PageBorderUiBasis::Page);
+    }
+
+    #[test]
+    fn issue_hwp3_hide_empty_line_wires_doc_info_flag() {
+        // doc_info offset 122 "빈줄감춤" 이 파싱만 되고 SectionDef.hide_empty_line 으로
+        // 배선되지 않던 문제의 회귀 방지.
+        let on = Hwp3DocInfo {
+            hide_empty_line: 1,
+            ..Default::default()
+        };
+        assert!(hwp3_hide_empty_line(&on));
+
+        let off = Hwp3DocInfo {
+            hide_empty_line: 0,
+            ..Default::default()
+        };
+        assert!(!hwp3_hide_empty_line(&off));
     }
 
     #[test]
