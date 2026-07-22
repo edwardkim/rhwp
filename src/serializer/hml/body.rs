@@ -419,20 +419,43 @@ fn write_table(writer: &mut XmlWriter, table: &Table, path: &str) -> Result<(), 
             table.padding.bottom,
         ),
     );
-    for row in 0..table.row_count {
+    // [#2751] row_count 는 파일에서 온 무검증 u16 이다. 실제 셀이 자리한 행 수를
+    // 넘어서는 만큼은 셀이 하나도 없는 <ROW></ROW> 이며(HML 리더에 ROW 핸들러가
+    // 없어 정보량이 0), 방출 행 수를 그 상한으로 clamp 한다. row_span 은 쓰지
+    // 않는다 — 셀 하나의 RowSpan=65535 선언만으로 clamp 가 다시 무력화되기 때문.
+    let bound = serialized_row_count(table);
+    // [#2751] 행마다 cells 전체를 다시 스캔하면 O(row_count × cells.len()) 이 되어
+    // RowAddr 하나만 끝쪽 행을 가리켜도 clamp 를 우회해 이차 시간이 재현된다.
+    // cells 를 한 번만 순회해 행별로 버킷팅하고(O(cells.len() + row_count)),
+    // 각 행은 자기 버킷만 본다. 버킷은 원래 순회 순서를 보존하므로 cell_index
+    // (진단 경로 CELL[i] 에 쓰임)도 그대로 유지된다.
+    let mut buckets: Vec<Vec<(usize, &Cell)>> = vec![Vec::new(); bound as usize];
+    for (cell_index, cell) in table.cells.iter().enumerate() {
+        if let Some(bucket) = (cell.row < bound).then(|| &mut buckets[cell.row as usize]) {
+            bucket.push((cell_index, cell));
+        }
+    }
+    for bucket in &buckets {
         writer.open("ROW", &[]);
-        for (cell_index, cell) in table
-            .cells
-            .iter()
-            .enumerate()
-            .filter(|(_, cell)| cell.row == row)
-        {
+        for (cell_index, cell) in bucket {
             write_cell(writer, cell, &format!("{path}/CELL[{cell_index}]"))?;
         }
         writer.close("ROW");
     }
     writer.close("TABLE");
     Ok(())
+}
+
+/// [#2751] 실제로 방출할 `<ROW>` 개수. 선언된 `table.row_count` 가 어떤 셀도
+/// 자리하지 않는 행까지 포함하는 경우에만 줄어든다(늘어나는 일은 없음).
+fn serialized_row_count(table: &Table) -> u16 {
+    let addressed = table
+        .cells
+        .iter()
+        .map(|c| c.row)
+        .max()
+        .map_or(0, |r| r.saturating_add(1));
+    table.row_count.min(addressed)
 }
 
 fn write_cell(writer: &mut XmlWriter, cell: &Cell, path: &str) -> Result<(), HmlExportError> {
