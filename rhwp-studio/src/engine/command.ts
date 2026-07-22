@@ -1,6 +1,7 @@
 import type { WasmBridge } from '@/core/wasm-bridge';
-import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike } from '@/core/types';
+import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry } from '@/core/types';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
+import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
 
 /** 편집 명령 공통 인터페이스 */
 export interface EditCommand {
@@ -206,6 +207,26 @@ function cellPathJsonForPara(pos: DocumentPosition, cellParaIndex: number): stri
 export function cellParaIndexOf(pos: DocumentPosition): number {
   const path = pos.cellPath;
   return (path?.length ?? 0) > 0 ? path![path!.length - 1].cellParaIndex : pos.cellParaIndex!;
+}
+
+/**
+ * [#2756] 비교용 셀 경로 — `cellParaIndexOf` 와 같은 축 규약의 경로 전체 버전.
+ *
+ * `cellParaIndexOf` 가 최내곽 **문단 인덱스** 하나를 주는 것과 달리, 이쪽은 셀 **정체성**을
+ * 깊이별로 비교해야 하는 곳(선택 영역 정렬)에 쓴다. 두 함수는 같은 규약을 공유한다 —
+ * `cellParaIndexOf(pos) === cellAxisPath(pos)[last].cellParaIndex`.
+ *
+ * `cellPath` 가 없는 위치(레거시 flat 좌표, `applyNavResult` 산출물)는 flat 필드로 1-depth
+ * 경로를 합성한다. hit-test 가 flat 을 `cellPath[0]`(최외곽)에서 채우므로, depth 1 에서는
+ * 합성 경로가 실제 경로와 완전히 같아 **동작 변화가 없다**.
+ */
+export function cellAxisPath(pos: DocumentPosition): CellPathEntry[] {
+  if ((pos.cellPath?.length ?? 0) > 0) return pos.cellPath!;
+  return [{
+    controlIndex: pos.controlIndex ?? 0,
+    cellIndex: pos.cellIndex ?? 0,
+    cellParaIndex: pos.cellParaIndex ?? 0,
+  }];
 }
 
 /** 셀 문단 구조 편집 뒤 flat/path 커서 위치를 같은 문단으로 맞춘다. */
@@ -1568,6 +1589,43 @@ export class ResizeObjectCommand implements EditCommand {
     }
     const first = this.targets[0];
     return { sectionIndex: first?.sec ?? 0, paragraphIndex: first?.ppi ?? 0, charOffset: 0 };
+  }
+
+  mergeWith(): null { return null; }
+}
+
+/**
+ * [Task #2759] 직선/연결선 끝점 드래그를 Undo/Redo 스택에 기록하기 위한 명령.
+ *
+ * ResizeObjectCommand 와 동일하게 드래그 중 WASM 에 이미 반영된 변경을 kind:'record' 로
+ * 사후 기록한다(execute 는 redo 경로에서만 재적용). before/after 는 글로벌 끝점 좌표
+ * (HWPUNIT)이며 moveLineEndpoint 는 절대 좌표 setter 라 역연산이 자명하다.
+ */
+export class MoveLineEndpointCommand implements EditCommand {
+  readonly type = 'moveLineEndpoint';
+  readonly timestamp: number;
+
+  constructor(
+    private sec: number,
+    private ppi: number,
+    private ci: number,
+    private before: LineEndpointsLike,
+    private after: LineEndpointsLike,
+    timestamp?: number,
+  ) {
+    this.timestamp = timestamp ?? Date.now();
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    wasm.moveLineEndpoint(this.sec, this.ppi, this.ci,
+      this.after.sx, this.after.sy, this.after.ex, this.after.ey);
+    return { sectionIndex: this.sec, paragraphIndex: this.ppi, charOffset: 0 };
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    wasm.moveLineEndpoint(this.sec, this.ppi, this.ci,
+      this.before.sx, this.before.sy, this.before.ex, this.before.ey);
+    return { sectionIndex: this.sec, paragraphIndex: this.ppi, charOffset: 0 };
   }
 
   mergeWith(): null { return null; }

@@ -863,7 +863,9 @@ fn parse_equation_control(ctrl_data: &[u8], child_records: &[Record]) -> Control
         let mut r = ByteReader::new(data);
 
         // attr: u32 (4바이트) — bit0: 스크립트 범위
-        let _attr = r.read_u32().unwrap_or(0);
+        // [#2727] 종전엔 읽고 버려 저장 시 0 으로 고정됐다. bit0 은 HWPX
+        // `lineMode`(CHAR/LINE) 와 대응하므로 UINT32 전체를 IR 로 보존한다.
+        equation.attr = r.read_u32().unwrap_or(0);
 
         // script: WCHAR 문자열 (길이 접두 UTF-16LE)
         if let Ok(script) = r.read_hwp_string() {

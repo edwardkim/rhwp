@@ -432,6 +432,8 @@ export class InputHandler {
     pageLeft: number;
     pageOffset: number;
     zoom: number;
+    // [Task #2759] 드래그 시작 시 캡처한 원래 끝점(글로벌 HWPUNIT) — 종료 시 Undo 기록의 before.
+    orig: { sx: number; sy: number; ex: number; ey: number };
   } | null = null;
 
   // 양식 개체 오버레이
@@ -1331,6 +1333,11 @@ export class InputHandler {
     _mouse.onMouseUp.call(this, _e);
   }
 
+  /** [Task #2759] 직선 끝점 드래그 종료 — 끝점 이동을 Undo 히스토리에 기록 */
+  private finishLineEndpointDrag(): void {
+    _mouse.finishLineEndpointDrag.call(this);
+  }
+
   /** 마우스 이벤트에서 hitTest 결과를 반환한다 */
   private hitTestFromEvent(e: MouseEvent): DocumentPosition | null {
     return this.hitTestFromClientPoint(e.clientX, e.clientY);
@@ -1824,6 +1831,16 @@ export class InputHandler {
     // offset이 0이면 해당 위치, 아니면 offset-1 위치의 서식 반환 (커서 앞 글자 기준)
     const queryOffset = pos.charOffset > 0 ? pos.charOffset - 1 : 0;
     if (pos.parentParaIndex !== undefined) {
+      // [#2756] 중첩 표는 최내곽 셀 대상 ...ByPath 로 조회한다. flat controlIndex/cellIndex/
+      // cellParaIndex 는 hit-test 가 cellPath[0](최외곽)에서 채우므로 그대로 넘기면 **바깥
+      // 셀**의 서식을 읽는다. applyToggleFormat 이 이 값에서 !current[prop] 로 토글 방향을
+      // 정하므로(그리고 실제 적용 ApplyCharFormatCommand 는 이미 ...ByPath 로 안쪽 셀에
+      // 적용) 방향이 어긋나 Ctrl+B/I 가 거꾸로 동작하고 툴바 표시도 오답이 된다.
+      if ((pos.cellPath?.length ?? 0) > 0) {
+        return this.wasm.getCellCharPropertiesAtByPath(
+          pos.sectionIndex, pos.parentParaIndex, JSON.stringify(pos.cellPath), queryOffset,
+        );
+      }
       return this.wasm.getCellCharPropertiesAt(
         pos.sectionIndex, pos.parentParaIndex, pos.controlIndex!,
         pos.cellIndex!, pos.cellParaIndex!, queryOffset,

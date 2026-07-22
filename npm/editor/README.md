@@ -211,12 +211,70 @@ URL.revokeObjectURL(url);
 
 ### editor.getHmlSaveState()
 
-현재 문서의 HML 저장 가능 여부와 blocker를 반환합니다.
+현재 문서의 HML 저장 가능 여부와 blocker 목록을 반환합니다.
+저장 가능 여부는 `hmlSavable`로 판정하고, 실패 원인은 `blockers` 배열로 표시하세요.
+`exportHml()`의 오류 문자열을 파싱하지 마세요.
 
 ```javascript
 const state = await editor.getHmlSaveState();
-// { ok: true } 또는 { ok: false, blocker: '...' }
+// {
+//   sourceFormat: 'hwp',
+//   hmlSavable: false,
+//   blockers: [
+//     {
+//       code: 'HML_SOURCE_REQUIRED',
+//       xmlPath: '/HWPML',
+//       message: 'HML source metadata is required',
+//       preserved: false
+//     }
+//   ]
+// }
+
+if (state.hmlSavable) {
+  const bytes = await editor.exportHml();
+  // ... 저장 진행
+} else {
+  for (const item of state.blockers) {
+    console.warn(`HML 저장 불가 [${item.code}] ${item.xmlPath} — ${item.message}`);
+  }
+}
 ```
+
+**반환값:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `sourceFormat` | `string` | 현재 문서의 원본 형식 — `'hwp'`, `'hwpx'`, `'hml'` |
+| `hmlSavable` | `boolean` | HML로 저장 가능하면 `true` |
+| `blockers` | `HmlSaveBlocker[]` | 저장을 막는 요소 목록. `hmlSavable`이 `true`이면 빈 배열 |
+
+**`HmlSaveBlocker`:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `code` | `string` | blocker 종류 코드 |
+| `xmlPath` | `string` | 해당 요소의 XML 경로 |
+| `message` | `string` | 사람이 읽을 수 있는 사유 |
+| `preserved` | `false` | 항상 `false` — 해당 요소가 HML로 보존되지 않음을 뜻함 |
+### editor.notifySaved(fileName?)
+
+내보내기 바이트의 영속화(서버 업로드 또는 호스트 핸드오프) 완료를 스튜디오에
+통지합니다 (#2660). 통지 시 스튜디오는 미저장(dirty) 상태를 해제하고 자동복구
+draft(IndexedDB)를 삭제합니다. **draft 삭제가 완료된 뒤 resolve**되므로, resolve
+이후 창을 닫아도 안전합니다.
+
+```javascript
+const bytes = await editor.exportHwp();
+await uploadToServer(bytes);        // 호스트 저장
+await editor.notifySaved();         // 저장 완료 통지 — dirty 해제 + 복구 draft 삭제
+```
+
+- `fileName` (선택): 호스트가 저장에 사용한 파일 이름. 전달하면 스튜디오의 현재
+  파일 이름이 갱신됩니다.
+- 반환: `{ ok: true, wasDirty: boolean }` — `wasDirty`는 통지 시점에 미저장
+  변경이 있었는지 여부(멱등 호출 관찰용).
+- 스튜디오가 `notify-saved-v1` capability를 광고하지 않으면(구버전 스튜디오 또는
+  legacy 폴백 연결) 요청을 보내지 않고 예외를 던집니다.
 
 ### editor.destroy()
 
@@ -225,6 +283,43 @@ const state = await editor.getHmlSaveState();
 ```javascript
 editor.destroy();
 ```
+
+## 저장 계약 — 내보내기와 저장 완료 통지
+
+`exportHwp()`/`exportHwpx()`/`exportHml()`은 직렬화 바이트만 반환하며 **문서를
+"저장됨"으로 표시하지 않습니다.** 호스트 저장(업로드)이 실패할 수 있으므로,
+스튜디오는 호스트가 `notifySaved()`로 확정하기 전까지 자동복구 draft를
+보존합니다. 통지 없이 종료하면 다음 실행 시 "문서 복구" 안내가 표시됩니다.
+
+**iframe 임베드 (업로드 확정 후 통지):**
+
+```javascript
+const bytes = await editor.exportHwp();
+try {
+  await uploadToServer(bytes);
+  await editor.notifySaved();       // 업로드 "성공 시에만" 호출
+} catch (error) {
+  // 통지하지 않음 — 복구 draft가 보존되어 재시도/복구 가능
+}
+```
+
+**팝업 통합 (핸드오프 즉시 통지 후 닫기):**
+
+스튜디오를 `window.open`으로 띄우고 `window.opener.postMessage`로 바이트를
+넘기는 통합에서는, 핸드오프 시점에 통지하고 닫습니다. 바이트를 수신한 호스트가
+이후 영속화(재시도 포함)를 책임집니다.
+
+```javascript
+window.opener?.postMessage(
+  { action: 'documentExported', content: base64, format: 'hwp' },
+  HOST_ORIGIN,                       // '*' 대신 반드시 명시적 오리진 사용 (문서 유출 방지)
+);
+await editor.notifySaved();          // draft 삭제 완료까지 대기
+window.close();
+```
+
+SDK 없이 스튜디오 페이지 안에서 직접 통합(포크/주입)하는 경우에는 같은 동작의
+`window.rhwpStudio.notifySaved(fileName?)`를 사용할 수 있습니다.
 
 ## 디버깅 도구 — rhwpDev
 

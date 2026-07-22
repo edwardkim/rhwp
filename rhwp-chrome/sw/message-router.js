@@ -10,6 +10,7 @@ import {
   isTrustedExtensionPageSender,
   isWebPageSender
 } from './fetch-security.js';
+import { loadSettings } from './settings-store.js';
 
 /**
  * 메시지 라우터를 설정한다.
@@ -81,12 +82,6 @@ const messageHandlers = {
    * Content Script → Service Worker: 설정 조회
    */
   'get-settings': async () => {
-    const settings = await chrome.storage.sync.get({
-      autoOpen: true,
-      showBadges: true,
-      hoverPreview: true,
-      disableExternalWebFonts: false
-    });
-    return settings;
+    return loadSettings(chrome);
   }
 };

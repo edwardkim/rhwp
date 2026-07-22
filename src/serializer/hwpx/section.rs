@@ -23,7 +23,7 @@ use quick_xml::Writer;
 
 use crate::model::control::{
     AutoNumber, AutoNumberType, CharOverlap, Control, Equation, Field, NewNumber, PageHide,
-    PageNumberPos, Ruby,
+    PageNumberPos, Ruby, EQUATION_LINE_MODE_BIT,
 };
 use crate::model::document::{Document, Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
@@ -230,6 +230,73 @@ fn render_note_numbering(shape: &crate::model::footnote::FootnoteShape) -> Strin
     )
 }
 
+/// [#2742] NumberFormat → HWPX `autoNumFormat/@type` 토큰.
+///
+/// 파서 `FootnoteShape::number_format_from_name` 의 UPPER_SNAKE 분기 역매핑이며,
+/// 같은 파일의 `note_line_type_str`·`note_numbering_str` 와 동형이다. 이름이 모델
+/// variant 와 다른 항목(UpperRoman=ROMAN_CAPITAL, HangulDigit=HANGUL_PHONETIC,
+/// HanjaDigit=IDEOGRAPH, HanjaGapEul=DECAGON_CIRCLE, FourSymbol=SYMBOL)은 파서 표기를
+/// 그대로 따른다.
+fn note_number_format_str(format: crate::model::footnote::NumberFormat) -> &'static str {
+    use crate::model::footnote::NumberFormat::*;
+    match format {
+        Digit => "DIGIT",
+        CircledDigit => "CIRCLED_DIGIT",
+        UpperRoman => "ROMAN_CAPITAL",
+        LowerRoman => "ROMAN_SMALL",
+        UpperAlpha => "LATIN_CAPITAL",
+        LowerAlpha => "LATIN_SMALL",
+        CircledUpperAlpha => "CIRCLED_LATIN_CAPITAL",
+        CircledLowerAlpha => "CIRCLED_LATIN_SMALL",
+        HangulSyllable => "HANGUL_SYLLABLE",
+        CircledHangulSyllable => "CIRCLED_HANGUL_SYLLABLE",
+        HangulJamo => "HANGUL_JAMO",
+        CircledHangulJamo => "CIRCLED_HANGUL_JAMO",
+        HangulDigit => "HANGUL_PHONETIC",
+        HanjaDigit => "IDEOGRAPH",
+        CircledHanjaDigit => "CIRCLED_IDEOGRAPH",
+        HanjaGapEul => "DECAGON_CIRCLE",
+        HanjaGapEulHanja => "DECAGON_CIRCLE_HANJA",
+        FourSymbol => "SYMBOL",
+        UserChar => "USER_CHAR",
+    }
+}
+
+/// [#2742] 주석 장식 문자(IR `char`) → HWPX 속성값.
+///
+/// `'\0'` 은 "미지정" 규약이므로(`object_ops/note.rs` 가 `suffix_char == '\0'` 을 기본값
+/// 폴백으로 해석) 템플릿 기본값 `fallback` 을 유지한다. 파싱을 거치지 않은 문서에서
+/// IR 이 0 이면 템플릿 상수를 남기는 `tabStop`/`textDirection` 치환과 같은 패턴이다.
+///
+/// `'\0'` 외의 제어문자(< 0x20)도 같은 폴백으로 보낸다. HWP5 의 장식 문자는 WCHAR 원값이라
+/// 이론상 제어문자가 올 수 있고, 그대로 방출하면 XML 1.0 이 금지하는 문자가 되어 저장본을
+/// 한컴이 열지 못한다. 같은 파일 `render_hp_t_content` 도 `< 0x20` 을 방출 대상에서 뺀다.
+/// (코퍼스 828 note shape 의 장식 문자는 전부 `'\0'` 또는 출력 가능 문자였다.)
+fn note_deco_char_attr(c: char, fallback: &str) -> String {
+    if (c as u32) < 0x20 {
+        fallback.to_string()
+    } else {
+        xml_escape(&c.to_string())
+    }
+}
+
+/// [#2742] FootnoteShape → `<hp:autoNumFormat .../>`.
+/// 속성 순서는 템플릿·한컴 실물과 같이 type → userChar → prefixChar → suffixChar → supscript.
+fn render_auto_num_format(shape: &crate::model::footnote::FootnoteShape) -> String {
+    format!(
+        r#"<hp:autoNumFormat type="{}" userChar="{}" prefixChar="{}" suffixChar="{}" supscript="{}"/>"#,
+        note_number_format_str(shape.number_format),
+        note_deco_char_attr(shape.user_char, ""),
+        note_deco_char_attr(shape.prefix_char, ""),
+        note_deco_char_attr(shape.suffix_char, ")"),
+        u8::from(shape.number_code_superscript),
+    )
+}
+
+/// [#2742] 템플릿의 하드코딩 autoNumFormat — 각주/미주 두 슬롯의 문자열이 동일하다.
+const TEMPLATE_AUTO_NUM_FORMAT: &str =
+    r#"<hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/>"#;
+
 /// `needle` 의 처음 두 출현을 각각 `first`/`second` 로 치환한다. 치환 결과가 needle
 /// 과 같아도 안전하다(연쇄 replacen 은 replacement==needle 일 때 두 번째가 첫 슬롯을
 /// 다시 잡는 버그가 있어 각주/미주 numbering 처럼 fn/en 템플릿 문자열이 동일한 경우
@@ -248,6 +315,19 @@ fn replace_first_two(haystack: &str, needle: &str, first: &str, second: &str) ->
 /// 갈린다(1543000: 각주 overhead 32.83→19.39px → p141 표 1행/3행 → 192/190쪽). 파서는
 /// 값을 FootnoteShape 로 수집하나 직렬화가 템플릿 상수만 방출하던 결함.
 fn replace_footnote_shape(xml: &str, sd: &SectionDef) -> String {
+    // [#2742] 번호 모양·사용자 기호·앞/뒤 장식 문자·위첨자. 파서는 HWPX(autoNumFormat)와
+    // HWP5(FOOTNOTE_SHAPE attr) 양쪽에서 이 5필드를 FootnoteShape 로 읽지만 직렬화가
+    // 템플릿 상수만 방출해, 저장할 때마다 구역 각주/미주 모양이 한컴 기본값으로 리셋됐다.
+    // 새 주석 삽입은 이 모양을 기본값으로 쓰므로(object_ops/note.rs) 저장본에서는 미주가
+    // 「문1）」 대신 「1)」로 매겨진다(실측: 코퍼스 330파일 중 18파일 · note shape 19개).
+    // 각주/미주 템플릿 문자열이 완전히 같아 연쇄 replacen 은 두 번째 슬롯을 못 잡는다 —
+    // numbering 과 같은 사유로 위치 기반 2회 치환을 쓴다.
+    let xml = replace_first_two(
+        xml,
+        TEMPLATE_AUTO_NUM_FORMAT,
+        &render_auto_num_format(&sd.footnote_shape),
+        &render_auto_num_format(&sd.endnote_shape),
+    );
     // 템플릿: 첫 noteLine(length="-1")·noteSpacing(betweenNotes="283") = 각주,
     // 둘째(length="14692344"·betweenNotes="0") = 미주.
     let (fn_line, fn_spacing) = render_note_line_spacing(&sd.footnote_shape);
@@ -2096,8 +2176,17 @@ fn render_equation(eq: &Equation) -> String {
     // [#1594] holdAnchorAndSO 는 IR(prevent_page_break)을 보존(종전 "0" 하드코딩 제거).
     let hold = if c.prevent_page_break != 0 { "1" } else { "0" };
 
+    // [#2727] lineMode(수식이 차지하는 범위) 를 EQEDIT attribute bit0 에서 방출한다.
+    // 종전엔 속성 자체를 내보내지 않아 LINE 설정이 왕복마다 CHAR 로 되돌아갔다.
+    // 한컴 저장본과 동일하게 baseUnit 과 font 사이에 위치시킨다.
+    let line_mode = if eq.attr & EQUATION_LINE_MODE_BIT != 0 {
+        "LINE"
+    } else {
+        "CHAR"
+    };
+
     format!(
-        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="0" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="0" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
         text_wrap_to_hwpx(c.text_wrap),
         text_flow_to_hwpx(c.text_flow),
         vert_rel_to_hwpx(c.vert_rel_to),
@@ -2415,6 +2504,35 @@ mod tests {
         );
     }
 
+    /// [Issue #2727] 수식의 lineMode(수식이 차지하는 범위)가 IR(EQEDIT attribute bit0)에서
+    /// 방출돼야 한다. 종전엔 속성 자체를 내보내지 않아 LINE 설정이 왕복마다 CHAR 로 돌아갔다.
+    /// 한컴 저장본은 값이 기본값(CHAR)이어도 예외 없이 baseUnit 과 font 사이에 기록한다.
+    #[test]
+    fn equation_line_mode_reflects_ir() {
+        use crate::model::control::{Equation, EQUATION_LINE_MODE_BIT};
+
+        let char_xml = render_equation(&Equation::default());
+        assert!(
+            char_xml.contains(r#"lineMode="CHAR""#),
+            "기본값도 lineMode 속성을 방출해야 함(한컴 저장본 정합): {char_xml}"
+        );
+
+        let eq = Equation {
+            attr: EQUATION_LINE_MODE_BIT,
+            font_size: 1000,
+            ..Default::default()
+        };
+        let line_xml = render_equation(&eq);
+        assert!(
+            line_xml.contains(r#"baseUnit="1000" lineMode="LINE" font="""#),
+            "lineMode 는 IR 값으로, 한컴과 같은 baseUnit·font 사이 자리에 와야 함: {line_xml}"
+        );
+        assert!(
+            !line_xml.contains(r#"lineMode="CHAR""#),
+            "CHAR 하드코딩 잔존 금지"
+        );
+    }
+
     /// [Issue #1944] legacy 공용 도형 경로(polygon/ellipse/arc/curve)가 도형 내
     /// 글상자(drawText) 문단을 방출해야 한다 — 종전 누락으로 도형 안 텍스트 소실.
     #[test]
@@ -2591,6 +2709,71 @@ mod tests {
         assert!(
             !xml.contains(r#"<hp:numbering type="CONTINUOUS" newNum="1"/>"#),
             "템플릿 기본 numbering 잔존 금지"
+        );
+    }
+
+    #[test]
+    fn issue2742_auto_num_format_reflects_ir() {
+        // [#2742] footNotePr/endNotePr 의 autoNumFormat 5속성(type·userChar·prefixChar·
+        // suffixChar·supscript)이 템플릿 상수가 아니라 IR FootnoteShape 값으로 방출돼야
+        // 한다. 미치환 시 구역 각주/미주 모양이 저장마다 한컴 기본값으로 리셋돼, 실측
+        // 코퍼스에서 미주 장식문자 「문…）」(17파일)와 위첨자 설정(1파일)이 사라졌다.
+        // fn/en 템플릿 문자열이 동일하므로 위치 기반 치환이 각 슬롯을 정확히 채우는지도
+        // 함께 검증한다.
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (doc, mut section) = make_doc_with_paragraph(para);
+        let fs = &mut section.section_def.footnote_shape;
+        fs.number_format = crate::model::footnote::NumberFormat::CircledDigit;
+        fs.number_code_superscript = true;
+        let es = &mut section.section_def.endnote_shape;
+        es.number_format = crate::model::footnote::NumberFormat::UserChar;
+        es.user_char = '★';
+        es.prefix_char = '문';
+        es.suffix_char = '）'; // U+FF09 전각 — 한컴 실물 표기
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(
+                r#"<hp:autoNumFormat type="CIRCLED_DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="1"/>"#
+            ),
+            "각주 autoNumFormat 이 IR 값이어야 함: {}",
+            &xml[..xml
+                .find("footNotePr")
+                .map(|i| i + 200)
+                .unwrap_or(600)
+                .min(xml.len())]
+        );
+        assert!(
+            xml.contains(
+                r#"<hp:autoNumFormat type="USER_CHAR" userChar="★" prefixChar="문" suffixChar="）" supscript="0"/>"#
+            ),
+            "미주 autoNumFormat 이 IR 값이어야 함(장식문자 보존)"
+        );
+        assert!(
+            !xml.contains(TEMPLATE_AUTO_NUM_FORMAT),
+            "템플릿 기본 autoNumFormat 잔존 금지"
+        );
+    }
+
+    #[test]
+    fn issue2742_auto_num_format_keeps_template_when_ir_unset() {
+        // 파싱을 거치지 않은 기본 SectionDef(number_format=Digit, 장식문자 '\0',
+        // supscript=false)에서는 템플릿과 바이트 동일해야 한다 — '\0' = 미지정 규약.
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (doc, section) = make_doc_with_paragraph(para);
+        assert_eq!(
+            section.section_def.endnote_shape.suffix_char, '\0',
+            "전제: 기본 장식문자는 '\\0'"
+        );
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert_eq!(
+            xml.matches(TEMPLATE_AUTO_NUM_FORMAT).count(),
+            2,
+            "IR 미설정 시 각주/미주 모두 템플릿 문자열 유지: {xml:.900}"
         );
     }
 

@@ -7,6 +7,11 @@ import type {
   RenderBackendRequest,
 } from '../view/render-backend.ts';
 
+export interface EmbedNotifySavedResult {
+  ok: true;
+  wasDirty: boolean;
+}
+
 export interface EmbedRpcHandlers {
   ready(): Promise<boolean>;
   loadFile(
@@ -23,6 +28,7 @@ export interface EmbedRpcHandlers {
   exportHml(): Promise<Uint8Array>;
   getHmlSaveState(): Promise<HmlSaveState>;
   exportHwpVerify(): Promise<unknown>;
+  notifySaved(fileName?: string): Promise<EmbedNotifySavedResult>;
 }
 
 export interface EmbedRendererDiagnosticsV1 {
@@ -86,6 +92,11 @@ export async function routeEmbedRequest(
     case 'exportHml': return handlers.exportHml();
     case 'getHmlSaveState': return handlers.getHmlSaveState();
     case 'exportHwpVerify': return handlers.exportHwpVerify();
+    case 'notifySaved': return handlers.notifySaved(
+      typeof params.fileName === 'string' && params.fileName.length > 0
+        ? params.fileName
+        : undefined,
+    );
     default: throw new Error(`Unknown method: ${method}`);
   }
 }

@@ -4,6 +4,15 @@ use super::paragraph::Paragraph;
 use super::shape::{common_obj_offsets, Caption};
 use super::*;
 
+/// [#2722] `Table::rebuild_grid()` 가 예약할 수 있는 최대 그리드 칸 수.
+///
+/// 실측 근거: `samples/` 전수 조사(파일 343개, 중첩 포함 표 5,353개)에서
+/// `row_count × col_count` 최댓값은 52,770 (5,277행 × 10열,
+/// `issue2063_huge_cellbreak_table.hwp`) 이었다. 이 상한은 그 75.8배이므로
+/// 정상 문서는 상한 분기에 닿지 않는다. 최악의 경우 예약량은
+/// 4,000,000 × 16B = 64 MiB (wasm32 는 8B → 32 MiB) 로 abort 없이 처리된다.
+pub const MAX_TABLE_GRID_CELLS: usize = 4_000_000;
+
 pub const CELL_FLAG_HAS_MARGIN: u16 = 0x0001;
 pub const CELL_FLAG_PROTECT: u16 = 0x0002;
 pub const CELL_FLAG_HEADER: u16 = 0x0004;
@@ -510,10 +519,30 @@ impl Table {
 
     /// 2D 그리드 인덱스를 재구축한다.
     /// 구조 변경(파싱, 행/열 추가/삭제, 병합/분할) 후 호출해야 한다.
+    ///
+    /// [#2722] `row_count`/`col_count` 는 파일에서 그대로 온 `u16` 이다(HWPX `rowCnt`/
+    /// `colCnt`, HWP5 `HWPTAG_TABLE`, HML `RowCount`/`ColCount`). 종전엔 상한 없이
+    /// `vec![None; rc * cc]` 를 예약해, 65535×65535 = 4,294,836,225 칸 ×
+    /// `Option<usize>` 16바이트 = 68,717,379,600 바이트 예약을 시도하고 실패 시
+    /// `handle_alloc_error` → abort 로 프로세스가 죽었다(250바이트 HML 로 재현).
+    /// wasm32 에서는 `Layout::array` 가 32비트 `usize` 를 넘겨 capacity overflow
+    /// 패닉 → 모듈 트랩이 된다. 정상 파일은 실측상 최대 52,770 칸이라 아래
+    /// 분기가 아예 실행되지 않으므로 동작 불변이다.
     pub fn rebuild_grid(&mut self) {
         let rc = self.row_count as usize;
         let cc = self.col_count as usize;
-        self.cell_grid = vec![None; rc * cc];
+        let requested = rc.saturating_mul(cc);
+        let grid_len = if requested > MAX_TABLE_GRID_CELLS {
+            // 손상된 행/열 수. 실제 셀이 가리키는 마지막 칸 + 1 까지만 예약한다.
+            // 아래 채우기 루프에 이미 `gi < self.cell_grid.len()` 가드가 있어
+            // 범위를 넘는 칸은 원래도 무시됐다.
+            self.addressed_grid_len(cc)
+                .min(MAX_TABLE_GRID_CELLS)
+                .min(requested)
+        } else {
+            requested
+        };
+        self.cell_grid = vec![None; grid_len];
         for (idx, cell) in self.cells.iter().enumerate() {
             for r in cell.row..(cell.row + cell.row_span) {
                 for c in cell.col..(cell.col + cell.col_span) {
@@ -524,6 +553,28 @@ impl Table {
                 }
             }
         }
+    }
+
+    /// [#2722] 셀이 실제로 가리키는 마지막 그리드 인덱스 + 1.
+    /// 손상된 `row_count`/`col_count` 로 그리드가 상한을 넘을 때만 쓰인다.
+    /// 셀이 없으면 0 — 셀 0개짜리 악성 표는 그리드도 0칸이면 충분하다.
+    fn addressed_grid_len(&self, cc: usize) -> usize {
+        self.cells
+            .iter()
+            .map(|cell| {
+                let last_row = (cell.row as usize)
+                    .saturating_add(cell.row_span as usize)
+                    .saturating_sub(1);
+                let last_col = (cell.col as usize)
+                    .saturating_add(cell.col_span as usize)
+                    .saturating_sub(1);
+                last_row
+                    .saturating_mul(cc)
+                    .saturating_add(last_col)
+                    .saturating_add(1)
+            })
+            .max()
+            .unwrap_or(0)
     }
 
     /// O(1) 셀 인덱스 조회. rebuild_grid() 호출 후 사용해야 한다.
