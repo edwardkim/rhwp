@@ -70,6 +70,12 @@ HWP/HWPX → PDF (svg2pdf + pdf-writer).
 - `-o <파일>`, `--output <파일>` — 출력 PDF 파일(기본 `output/<입력명>.pdf`)
 - `-p <번호>`, `--page <번호>` — 0-based 단일 페이지 선택. 생략하면 전체 문서를 다중 페이지 PDF로 내보낸다.
 - `--font-path <경로>` — PDF 변환 fontdb에 추가할 폰트 탐색 경로(여러 번 지정 가능)
+- `--backend <svg|direct>` — PDF backend(기본값: svg). `svg`는 기존 SVG-derived 경로,
+  `direct`는 `PageLayerTree → PDF` direct/vector 경로. `direct`는 `native-skia` feature로
+  빌드한 native CLI가 필요하며, 해당 feature 없이 빌드된 CLI에서 `--backend direct`를 쓰면
+  종료코드 1과 함께 오류 메시지를 반환한다.
+- `--raster-dpi <DPI>` — `direct` backend fallback raster DPI(기본값: 144). `direct` backend
+  에서만 사용할 수 있다.
 - `--fallback-serif <family>` — PDF serif generic fallback family
 - `--fallback-sans <family>` — PDF sans-serif generic fallback family
 - `--fallback-mono <family>` — PDF monospace generic fallback family
@@ -102,7 +108,8 @@ rhwp export-pdf input.hwp -o out.pdf \
   - Linux: `Noto Serif CJK KR` / `Noto Sans CJK KR` / `Noto Sans Mono CJK KR`
   - macOS: `AppleMyungjo` / `Apple SD Gothic Neo` / `Menlo`
 - 선택한 fallback family 또는 수식 폰트가 fontdb에 없으면 warning을 출력한다.
-- direct/vector `PageLayerTree → PDF` backend는 아직 후속 작업이다.
+- direct/vector `PageLayerTree → PDF` backend는 `--backend direct`로 이미 사용 가능하다
+  (`native-skia` feature 빌드 필요, 위 옵션 설명 참고).
 
 ### `export-text <파일> [옵션]`
 페이지별 텍스트 → TXT. `-o`, `-p`.
