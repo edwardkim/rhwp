@@ -78,7 +78,10 @@ pub fn write_picture<W: Write>(
             ("textWrap", tw),
             ("textFlow", tf),
             ("lock", lock),
-            ("dropcapstyle", "None"),
+            (
+                "dropcapstyle",
+                super::shape::drop_cap_style_str(pic.common.drop_cap_style),
+            ),
             ("href", href),
             ("groupLevel", "0"),
             ("instid", &instid),
@@ -596,6 +599,19 @@ mod tests {
         assert!(
             xml.contains(r#"<hp:curSz width="1366" height="1268"/>"#),
             "curSz 는 shape_attr.current 사용(sz 아님): {xml}"
+        );
+    }
+
+    #[test]
+    fn dropcapstyle_round_trips_instead_of_always_none() {
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+        pic.common.drop_cap_style = crate::model::shape::DropCapStyle::TripleLine;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(
+            xml.contains(r#"dropcapstyle="TripleLine""#),
+            "dropcapstyle 는 원본 값을 보존해야 한다(하드코딩 \"None\" 아님): {xml}"
         );
     }
 

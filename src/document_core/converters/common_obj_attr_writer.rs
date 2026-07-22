@@ -234,6 +234,7 @@ mod tests {
             description: String::new(),
             raw_extra: Vec::new(),
             numbering_type: crate::model::shape::ObjectNumberingType::None,
+            drop_cap_style: crate::model::shape::DropCapStyle::None,
         }
     }
 
