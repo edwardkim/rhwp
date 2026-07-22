@@ -945,11 +945,14 @@ fn write_bullet<W: Write>(
     let id_s = (id + 1).to_string(); // 관찰: 1-based, ParaShape.numbering_id 참조와 정합
     let char_s = b.bullet_char.to_string();
     let use_image = if b.image_bullet > 0 { "1" } else { "0" };
-    start_tag_attrs(
-        w,
-        "hh:bullet",
-        &[("id", &id_s), ("char", &char_s), ("useImage", use_image)],
-    )?;
+    let has_checked_char = b.check_bullet_char != '\0';
+    let checked_char_s = b.check_bullet_char.to_string();
+    let mut attrs: Vec<(&str, &str)> = vec![("id", &id_s), ("char", &char_s)];
+    if has_checked_char {
+        attrs.push(("checkedChar", &checked_char_s));
+    }
+    attrs.push(("useImage", use_image));
+    start_tag_attrs(w, "hh:bullet", &attrs)?;
     // paraHead 뼈대 (파서는 무시하나 OWPML 유효성/한컴 호환 위해 방출).
     empty_tag(
         w,
@@ -964,7 +967,7 @@ fn write_bullet<W: Write>(
             ("textOffset", "50"),
             ("numFormat", "DIGIT"),
             ("charPrIDRef", &u32::MAX.to_string()),
-            ("checkable", "0"),
+            ("checkable", if has_checked_char { "1" } else { "0" }),
         ],
     )?;
     end_tag(w, "hh:bullet")?;
