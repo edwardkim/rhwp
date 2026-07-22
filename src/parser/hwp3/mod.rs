@@ -317,6 +317,13 @@ pub(crate) fn convert_para_shape(
         _ => crate::model::style::Alignment::Justify,
     };
 
+    // [#2976] 문단 테두리 연결(인접 문단끼리 테두리를 이어 그릴지) 플래그.
+    // 접근자 border_connection()은 있었으나 attr1 bit 28(HWPX 직렬화기·편집
+    // 커맨드가 공유하는 규약)로 배선되지 않아 항상 소실되었다.
+    if hwp3_ps.border_connection() {
+        ps.attr1 |= 1 << 28;
+    }
+
     // [Task #741 Stage 6] HWP3 ParaShape tabs[40] → Document IR TabDef 변환.
     // - HWP3 tab struct: tab_type(u8) → leader(u8) → position(u16 LE) — 4 bytes.
     // - default tab pattern (slot N: position=1000*(N+1) hunit, tab_type=0, leader=0) 은 system 기본 탭이므로 제외.
@@ -3912,6 +3919,21 @@ mod tests {
     use super::*;
     use std::fs::File;
     use std::io::Read;
+
+    #[test]
+    fn test_convert_para_shape_wires_border_connection_into_attr1_bit28() {
+        // [#2976] border_connection() 접근자는 있었으나 attr1 bit 28로 배선되지
+        // 않아 항상 소실되던 결함의 회귀 테스트.
+        let mut hwp3_ps = crate::parser::hwp3::records::Hwp3ParaShape::default();
+        hwp3_ps.border_connection = 1;
+        let mut doc_tab_defs = Vec::new();
+        let ps = convert_para_shape(&hwp3_ps, &mut doc_tab_defs);
+        assert_eq!(
+            (ps.attr1 >> 28) & 1,
+            1,
+            "border_connection이 attr1 bit 28로 배선되어야 함"
+        );
+    }
 
     #[test]
     fn test_alloc_record_buf_overflow_returns_err() {
