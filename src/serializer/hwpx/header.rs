@@ -1276,8 +1276,10 @@ fn write_style<W: Write>(w: &mut Writer<W>, id: u16, st: &Style) -> Result<(), S
             ("paraPrIDRef", &st.para_shape_id.to_string()),
             ("charPrIDRef", &st.char_shape_id.to_string()),
             ("nextStyleIDRef", &st.next_style_id.to_string()),
-            ("langID", "1042"),
-            ("lockForm", "0"),
+            // 파서가 Style.lang_id 로 읽는 값을 그대로 되돌린다. 종전 "1042"
+            // 하드코딩은 비한국어 langID(예: 1033)를 왕복마다 1042 로 바꿨다.
+            ("langID", &st.lang_id.to_string()),
+            ("lockForm", bool01(st.lock_form)),
         ],
     )
 }
@@ -1320,6 +1322,40 @@ use super::utils::start_tag;
 mod tests {
     use super::*;
     use crate::parser::hwpx::parse_hwpx;
+
+    #[test]
+    fn write_style_emits_ir_lang_id() {
+        // 파서가 읽은 Style.lang_id 가 그대로 방출돼야 한다.
+        // 종전엔 "1042" 하드코딩으로 비한국어 langID 가 왕복마다 뭉개졌다.
+        let st = Style {
+            lang_id: 1033,
+            ..Default::default()
+        };
+        let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
+        write_style(&mut w, 0, &st).expect("write_style");
+        let xml = String::from_utf8(w.into_inner()).unwrap();
+        assert!(
+            xml.contains(r#"langID="1033""#),
+            "Style.lang_id 가 방출돼야 함: {xml}"
+        );
+    }
+
+    #[test]
+    fn write_style_emits_ir_lock_form() {
+        // [Task #2839] 파서가 읽은 Style.lock_form 이 그대로 방출돼야 한다.
+        // 종전엔 "0" 하드코딩으로 lockForm="1" 스타일이 왕복마다 잠금 해제로 뭉개졌다.
+        let st = Style {
+            lock_form: true,
+            ..Default::default()
+        };
+        let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
+        write_style(&mut w, 0, &st).expect("write_style");
+        let xml = String::from_utf8(w.into_inner()).unwrap();
+        assert!(
+            xml.contains(r#"lockForm="1""#),
+            "Style.lock_form 이 방출돼야 함: {xml}"
+        );
+    }
 
     #[test]
     fn write_header_runs_on_empty_document() {
