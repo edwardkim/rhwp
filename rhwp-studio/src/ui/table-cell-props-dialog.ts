@@ -1207,8 +1207,8 @@ export class TableCellPropsDialog extends ModalDialog {
     if (props.fillType === 'solid' && props.fillColor) {
       this.bgColorRadio.checked = true;
       this.bgColorPicker.value = props.fillColor;
-      if (props.patternColor) this.bgPatternColorPicker.value = props.patternColor;
-      if (props.patternType != null) this.bgPatternTypeSelect.value = String(props.patternType);
+      this.bgPatternColorPicker.value = props.patternColor ?? '#000000';
+      this.bgPatternTypeSelect.value = props.patternType != null ? String(props.patternType) : '0';
     } else {
       this.bgNoneRadio.checked = true;
     }
