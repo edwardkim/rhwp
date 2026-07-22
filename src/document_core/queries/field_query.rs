@@ -1503,6 +1503,7 @@ mod tests {
                 start_char_idx: 3,
                 end_char_idx: 5,
                 control_idx: 1,
+                ..Default::default()
             }],
             char_count: 21,
             char_offsets: vec![8, 9, 10, 19, 20],
