@@ -895,7 +895,10 @@ fn hatch_style_str(pattern_type: i32) -> &'static str {
         3 => "BACK_SLASH",
         4 => "SLASH",
         5 => "CROSS",
-        _ => "CROSS_DIAGONAL",
+        6 => "CROSS_DIAGONAL",
+        // 계약(1~6) 밖의 값은 무늬 정보가 없다는 뜻이므로 임의의 무늬로
+        // 둔갑시키지 않고 가장 무난한 HORIZONTAL 로 방출한다.
+        _ => "HORIZONTAL",
     }
 }
 
@@ -1597,5 +1600,19 @@ mod tests {
         assert!(!xml.contains("<hp:caption"), "캡션 부재 시 미방출: {}", xml);
         let xml = serialize_line(&LineShape::default());
         assert!(!xml.contains("<hp:caption"), "캡션 부재 시 미방출: {}", xml);
+    }
+
+    #[test]
+    fn task_m100_hatch_style_str_covers_all_six() {
+        // 계약(1~6) 값 6개를 모두 명시적으로 매핑하는지 확인한다.
+        // 이전에는 6이 catch-all(_) 분기에 얹혀 있어, 계약 밖의 값(예: 손상된
+        // 원본의 pattern_type=99)도 CROSS_DIAGONAL 로 둔갑했다.
+        assert_eq!(hatch_style_str(1), "HORIZONTAL");
+        assert_eq!(hatch_style_str(2), "VERTICAL");
+        assert_eq!(hatch_style_str(3), "BACK_SLASH");
+        assert_eq!(hatch_style_str(4), "SLASH");
+        assert_eq!(hatch_style_str(5), "CROSS");
+        assert_eq!(hatch_style_str(6), "CROSS_DIAGONAL");
+        assert_eq!(hatch_style_str(99), "HORIZONTAL");
     }
 }
