@@ -693,6 +693,9 @@ jobs:
       - name: Run shared and extension service worker tests
         run: node --test rhwp-shared/sw/*.test.js rhwp-chrome/sw/*.test.mjs rhwp-firefox/sw/*.test.mjs
 
+      - name: Run Chrome extension options UI tests
+        run: node --test rhwp-chrome/options.test.mjs
+
       - name: Run Studio unit tests
         run: npm --prefix rhwp-studio run test
 
