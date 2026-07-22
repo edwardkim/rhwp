@@ -5703,6 +5703,9 @@ fn parse_hp_chart_element(
                 chart_num = digits.parse().unwrap_or(0);
             }
             b"instid" => common.instance_id = parse_u32(&attr),
+            // [#2931] 개체 잠금(lock) — 종전 미파싱으로 직렬화 시 항상 "0"으로
+            // 되돌아가 차트 개체의 잠금 상태가 유실됐다.
+            b"lock" => common.locked = attr_str(&attr) == "1",
             _ => {}
         }
     }
@@ -5771,6 +5774,9 @@ fn parse_hp_ole_element(
                 bin_id = digits.parse().unwrap_or(0);
             }
             b"instid" => common.instance_id = parse_u32(&attr),
+            // [#2931] 개체 잠금(lock) — 종전 미파싱으로 직렬화 시 항상 "0"으로
+            // 되돌아가 OLE 개체의 잠금 상태가 유실됐다.
+            b"lock" => common.locked = attr_str(&attr) == "1",
             _ => {}
         }
     }
@@ -7322,5 +7328,45 @@ mod tests {
         let xml = r#"<?xml version="1.0"?><hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"/>"#;
         let section = parse_hwpx_section(xml).unwrap();
         assert!(section.paragraphs.is_empty());
+    }
+
+    #[test]
+    fn parse_field_type_accepts_toc() {
+        // 직렬화기(hwpx/field.rs)가 방출하는 "TOC" 가 TableOfContents 로 파싱돼야
+        // hwpx 왕복에서 차례 필드 타입이 Unknown 으로 유실되지 않는다.
+        assert_eq!(parse_field_type("TOC"), FieldType::TableOfContents);
+        assert_eq!(
+            parse_field_type("TABLE_OF_CONTENTS"),
+            FieldType::TableOfContents
+        );
+    }
+
+    #[test]
+    fn task2931_chart_lock_attr_roundtrips_into_common() {
+        // <hp:chart lock="1" .../> → common.locked 이 true 로 되읽혀야 한다.
+        // 종전엔 parse_hp_chart_element 가 lock 속성을 매치하지 않아 항상 기본값(false)
+        // 으로 남고, 직렬화 시에도 render_common_shape_xml 이 "0"을 하드코딩했다(#2931).
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:chart id="1" zOrder="0" numberingType="NONE" textWrap="SQUARE" textFlow="BOTH_SIDES" lock="1" chartIDRef="Chart/chart1.xml" instid="1"></hp:chart>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected chart (modeled as OLE) shape");
+        };
+        assert!(
+            ole.common.locked,
+            "lock=\"1\" 이 common.locked 에 보존돼야 한다"
+        );
     }
 }

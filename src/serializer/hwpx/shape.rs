@@ -357,6 +357,8 @@ pub(crate) fn write_ole<W: Write>(
         OleDrawingAspect::DocPrint => "DOCPRINT",
         OleDrawingAspect::Content => "CONTENT",
     };
+    // [#2931] 개체 잠금(lock) — IR(common.locked)을 보존(종전 "0" 하드코딩 제거).
+    let lock = if c.locked { "1" } else { "0" };
 
     start_tag_attrs(
         w,
@@ -367,7 +369,7 @@ pub(crate) fn write_ole<W: Write>(
             ("numberingType", numbering_type_str(c.numbering_type)),
             ("textWrap", tw),
             ("textFlow", tf),
-            ("lock", "0"),
+            ("lock", lock),
             ("dropcapstyle", "None"),
             ("href", ""),
             ("groupLevel", "0"),
