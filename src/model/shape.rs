@@ -90,6 +90,11 @@ pub struct CommonObjAttr {
     /// HWP5 파서는 설정하지 않는다 (기본 None). HWPX 그리기 개체의
     /// `numberingType="PICTURE"` 등을 라운드트립 보존하기 위한 필드.
     pub numbering_type: ObjectNumberingType,
+    /// HWPX `lock` (개체 잠금) 보존 (#2855).
+    ///
+    /// 한컴 UI의 "개체 보호" 설정. 파서가 읽지 않으면 방출측이 항상 `lock="0"`으로
+    /// 되돌려 원본 잠금 상태가 왕복 시 유실된다.
+    pub locked: bool,
     /// 파싱된 필드 이후 추가 바이트 (라운드트립 보존용)
     pub raw_extra: Vec<u8>,
 }

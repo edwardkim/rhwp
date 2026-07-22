@@ -228,6 +228,7 @@ mod tests {
             description: String::new(),
             raw_extra: Vec::new(),
             numbering_type: crate::model::shape::ObjectNumberingType::None,
+            locked: false,
         }
     }
 

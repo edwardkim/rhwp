@@ -1656,6 +1656,9 @@ fn parse_table(
                     _ => crate::model::shape::ObjectNumberingType::None,
                 };
             }
+            // [#2855] 표만 lock arm 이 없어 개체 잠금이 파싱 단계에서 유실됐다. 도형/그림
+            // 계열이 공유하는 parse_object_element_attrs(같은 파일 2905행, #2840)와 동형.
+            b"lock" => table.common.locked = attr_str(&attr) == "1",
             _ => {}
         }
     }
