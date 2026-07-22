@@ -1633,7 +1633,6 @@ fn parse_table(
     // 표 내용 파싱 (행/셀)
     let mut buf = Vec::new();
     let mut current_row: u16 = 0;
-    let mut row_sizes: Vec<HwpUnit16> = Vec::new();
 
     loop {
         match reader.read_event_into(&mut buf) {
@@ -1806,18 +1805,12 @@ fn parse_table(
     table.common.margin.top = table.outer_margin_top;
     table.common.margin.bottom = table.outer_margin_bottom;
 
-    // row_sizes 설정 (행별 셀 높이의 최대값)
-    for r in 0..table.row_count {
-        let max_h = table
-            .cells
-            .iter()
-            .filter(|c| c.row == r && c.row_span == 1)
-            .map(|c| c.height as i16)
-            .max()
-            .unwrap_or(0);
-        row_sizes.push(max_h);
-    }
-    table.row_sizes = row_sizes;
+    // row_sizes 설정 (행별 셀 수, HWP 스펙 UINT16[NRows] 계약과 동일 — 높이가 아니다).
+    // model::table::Table::rebuild_row_sizes, parser::control(HWP5), html_table_import,
+    // document_core::commands::object_ops::table 이 모두 이 필드를 "행별 셀 개수"로 채운다.
+    table.row_sizes = (0..table.row_count)
+        .map(|r| table.cells.iter().filter(|c| c.row == r).count() as i16)
+        .collect();
 
     materialize_hwpx_table_attrs(&mut table, table_record_flags);
     table.rebuild_grid();
@@ -6587,6 +6580,39 @@ mod tests {
         assert!(table.cells[0].apply_inner_margin);
         assert_eq!(table.cells[0].padding.left, 141);
         assert_eq!(table.cells[0].padding.top, 113);
+    }
+
+    #[test]
+    fn test_parse_table_row_sizes_is_cell_count_not_height() {
+        // [#row_sizes 계약] HWP 스펙 UINT16[NRows]("행별 셀 수")과 동일해야 한다.
+        // model::table::Table::rebuild_row_sizes, parser::control(HWP5),
+        // html_table_import 모두 이 필드를 "행별 셀 개수"로 채우므로 HWPX 파서만
+        // 높이를 채우면 계약이 깨진다. 2행 2열에서 각 셀 높이를 다르게 주어
+        // 카운트(2)와 높이(예: 500/3000)를 구분한다.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:tbl rowCnt="2" colCnt="2" cellSpacing="0" borderFillIDRef="0">
+      <hp:inMargin left="0" right="0" top="0" bottom="0"/>
+      <hp:tr>
+        <hp:tc borderFillIDRef="0"><hp:cellAddr colAddr="0" rowAddr="0"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="1000" height="500"/></hp:tc>
+        <hp:tc borderFillIDRef="0"><hp:cellAddr colAddr="1" rowAddr="0"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="1000" height="500"/></hp:tc>
+      </hp:tr>
+      <hp:tr>
+        <hp:tc borderFillIDRef="0"><hp:cellAddr colAddr="0" rowAddr="1"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="1000" height="3000"/></hp:tc>
+        <hp:tc borderFillIDRef="0"><hp:cellAddr colAddr="1" rowAddr="1"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="1000" height="3000"/></hp:tc>
+      </hp:tr>
+    </hp:tbl>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let table = match &section.paragraphs[0].controls[0] {
+            crate::model::control::Control::Table(table) => table,
+            other => panic!("expected table, got {:?}", other),
+        };
+        assert_eq!(table.row_sizes, vec![2, 2]);
     }
 
     #[test]
