@@ -1774,25 +1774,6 @@ fn parse_simple_control_char(
             utf16_len += 8;
             text_string.push('\t');
         }
-        7 | 8 => {
-            let mut buf = [0u8; 6];
-            if let Err(_) = body_cursor.read_exact(&mut buf) {
-                return Ok((i, utf16_len, true));
-            }
-            for k in 0..3usize {
-                if i + k < hwp3_char_to_utf16_pos.len() {
-                    hwp3_char_to_utf16_pos[i + k] = utf16_len;
-                }
-            }
-            i += 3;
-            char_offsets.push(utf16_len);
-            utf16_len += 1;
-            text_string.push('\u{FFFC}');
-            controls.push(crate::model::control::Control::Unknown(
-                crate::model::control::UnknownControl { ctrl_id: ch as u32 },
-            ));
-            ctrl_data_records.push(None);
-        }
         23 => {
             let mut buf = [0u8; 8];
             if let Err(_) = body_cursor.read_exact(&mut buf) {
@@ -2057,7 +2038,11 @@ pub(crate) fn parse_paragraph_list(
 
             if ch > 0 && ch <= 31 && ch != 13 {
                 match ch {
-                    1 | 7 | 8 | 9 | 22 | 23 | 24 | 25 | 26 | 28 | 30 | 31 => {
+                    // [#2844] ch=7(날짜 형식)/ch=8(날짜 코드)는 각각 84/96바이트짜리
+                    // 가변폭 구조체이며, 이 arm 이 처리하는 다른 코드들처럼 8바이트에
+                    // 맞춰떨어지지 않는다. `_` 캐치올(parse_object_control_char)에 남아
+                    // 있는 Task #877의 76/88바이트 스킵 로직으로 라우팅해야 한다.
+                    1 | 9 | 22 | 23 | 24 | 25 | 26 | 28 | 30 | 31 => {
                         let (next_i, next_utf16_len, break_char_loop) = parse_simple_control_char(
                             body_cursor,
                             ch,
@@ -4069,5 +4054,75 @@ mod tests {
                 "saved HWP5 must have BinData/BIN* streams, got none (images lost)"
             );
         }
+    }
+
+    // [Task #2844] 스펙 §10.3 표 37: 날짜 형식(ch=7) 컨트롤은 식별 헤더 8바이트를
+    // 포함해 전체 84바이트다. 문자 스캔 루프의 디스패치 매치가 ch=7을
+    // parse_simple_control_char(6바이트만 소비)로 잘못 보내면, 그 뒤에 오는 실제
+    // 본문 텍스트("AAA")가 날짜 형식 문자열의 잔여 바이트로 오인되어 사라진다.
+    // 수정 후에는 ch=7이 parse_object_control_char(Task #877의 82바이트 스킵
+    // 로직)로 라우팅되어 "AAA"가 온전히 파싱되어야 한다.
+    #[test]
+    fn task2844_hwp3_date_format_ctrl_does_not_swallow_following_text() {
+        let mut body = Vec::new();
+
+        // 문단 정보 (43바이트: follow_prev_para_shape != 0 이므로 para_shape 생략).
+        body.push(1u8); // follow_prev_para_shape
+        body.extend_from_slice(&7u16.to_le_bytes()); // char_count: ch7(4) + "AAA"(3)
+        body.extend_from_slice(&0u16.to_le_bytes()); // line_count = 0 (LineInfo 생략)
+        body.push(0u8); // include_char_shape = 0
+        body.push(0u8); // flags
+        body.extend_from_slice(&0u32.to_le_bytes()); // special_char_flags
+        body.push(0u8); // style_index
+        body.extend_from_slice(&[0u8; 31]); // rep_char_shape (31바이트)
+        assert_eq!(body.len(), 43, "문단 정보 헤더 길이는 43바이트여야 함");
+
+        // ch=7 컨트롤 레코드 (전체 84바이트): open(2, 외부 char 루프에서 소비) +
+        // header_val1(4) + ch2(2) + 날짜 형식 문자열(76, 전부 0).
+        body.extend_from_slice(&7u16.to_le_bytes()); // 여는 특수 문자 코드
+        body.extend_from_slice(&84u32.to_le_bytes()); // header_val1 (예약 dword)
+        body.extend_from_slice(&7u16.to_le_bytes()); // 닫는 특수 문자 코드
+        body.extend_from_slice(&[0u8; 76]); // 날짜 형식 문자열 (모두 0)
+
+        // 날짜 컨트롤 뒤에 바로 오는 실제 본문: "AAA" (3 hchar).
+        for _ in 0..3 {
+            body.extend_from_slice(&0x0041u16.to_le_bytes()); // 'A'
+        }
+
+        // 문단 리스트 종료를 나타내는 빈 문단 (char_count=0, 총 43바이트).
+        body.push(0u8); // follow_prev_para_shape
+        body.extend_from_slice(&0u16.to_le_bytes()); // char_count = 0
+        body.extend_from_slice(&[0u8; 40]); // Hwp3ParaInfo::read가 요구하는 나머지 40바이트
+
+        let mut body_cursor = Cursor::new(body.as_slice());
+        let mut doc_char_shapes = Vec::new();
+        let mut doc_para_shapes = Vec::new();
+        let mut doc_border_fills = Vec::new();
+        let mut doc_tab_defs = Vec::new();
+        let mut pic_name_to_id = std::collections::HashMap::new();
+
+        let paragraphs = parse_paragraph_list(
+            &mut body_cursor,
+            &mut doc_char_shapes,
+            &mut doc_para_shapes,
+            &mut doc_border_fills,
+            &mut doc_tab_defs,
+            &mut pic_name_to_id,
+            0,
+            1000,
+            1000,
+        )
+        .expect("날짜 형식(ch=7) 컨트롤을 포함한 문단 파싱 실패");
+
+        assert_eq!(
+            paragraphs.len(),
+            1,
+            "빈 종료 문단을 제외하고 문단이 1개여야 함"
+        );
+        assert!(
+            paragraphs[0].text.contains("AAA"),
+            "날짜 형식(ch=7) 컨트롤 뒤의 \"AAA\" 본문이 유실됨 (바이트 언더리드로 흡수): {:?}",
+            paragraphs[0].text
+        );
     }
 }
