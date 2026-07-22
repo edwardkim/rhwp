@@ -59,6 +59,9 @@ pub fn write_picture<W: Write>(
     let tf = text_flow_str(pic.common.text_flow);
     let instid = pic.instance_id.to_string();
     let href = pic.href.as_deref().unwrap_or("");
+    // [#2791] IR의 shape_attr.group_level을 반영한다 — 하드코딩된 "0"은
+    // ungroup 후 재저장 시 그룹 레벨 정보를 유실시켰다.
+    let group_level = pic.shape_attr.group_level.to_string();
 
     start_tag_attrs(
         w,
@@ -72,7 +75,7 @@ pub fn write_picture<W: Write>(
             ("lock", "0"),
             ("dropcapstyle", "None"),
             ("href", href),
-            ("groupLevel", "0"),
+            ("groupLevel", &group_level),
             ("instid", &instid),
             ("reverse", "0"),
         ],
@@ -594,6 +597,19 @@ mod tests {
                 r#"<hp:imgRect><hc:pt0 x="0" y="0"/><hc:pt1 x="49380" y="0"/><hc:pt2 x="49380" y="45840"/><hc:pt3 x="0" y="45840"/></hp:imgRect>"#
             ),
             "imgRect 는 border 스칼라 레이아웃 역매핑: {xml}"
+        );
+    }
+
+    #[test]
+    fn issue2791_group_level_uses_shape_attr_not_hardcoded_zero() {
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+        pic.shape_attr.group_level = 2;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(
+            xml.contains(r#"groupLevel="2""#),
+            "groupLevel 은 shape_attr.group_level 을 반영해야 한다(하드코딩 0 아님): {xml}"
         );
     }
 
