@@ -2185,8 +2185,11 @@ fn render_equation(eq: &Equation) -> String {
         "CHAR"
     };
 
+    // [#2840] 개체 잠금(lock) — 종전 하드코딩 "0" 제거, IR(common.locked) 값을 방출.
+    let lock = if c.locked { "1" } else { "0" };
+
     format!(
-        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="0" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
         text_wrap_to_hwpx(c.text_wrap),
         text_flow_to_hwpx(c.text_flow),
         vert_rel_to_hwpx(c.vert_rel_to),
@@ -2530,6 +2533,21 @@ mod tests {
         assert!(
             !line_xml.contains(r#"lineMode="CHAR""#),
             "CHAR 하드코딩 잔존 금지"
+        );
+    }
+
+    /// [Issue #2840] 수식의 lock(개체 잠금)이 IR(common.locked)에서 방출돼야 한다.
+    /// 종전엔 파서가 lock 속성을 읽지 않아 하드코딩 "0"으로 왕복마다 잠금이 풀렸다.
+    #[test]
+    fn equation_lock_reflects_ir() {
+        use crate::model::control::Equation;
+
+        let mut eq = Equation::default();
+        eq.common.locked = true;
+        let xml = render_equation(&eq);
+        assert!(
+            xml.contains(r#"lock="1""#),
+            "locked=true 면 lock=\"1\" 을 방출해야 함(하드코딩 \"0\" 잔존 금지): {xml}"
         );
     }
 

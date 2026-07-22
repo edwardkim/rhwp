@@ -2900,6 +2900,9 @@ fn parse_object_element_attrs(
             // 선/연결선의 방향 뒤집기(isReverseHV). serializer 는 방출하나 파서가
             // 되읽지 않아 HWPX 원본 선의 방향 반전이 왕복 시 유실됐다.
             b"isReverseHV" => ids.is_reverse_hv = attr_str(&attr) == "1",
+            // [#2840] 개체 잠금(lock) — 종전 미파싱으로 <hp:equation> 직렬화 시
+            // 항상 "0"으로 되돌아가 원본의 잠금 상태가 유실됐다.
+            b"lock" => common.locked = attr_str(&attr) == "1",
             _ => {}
         }
     }
