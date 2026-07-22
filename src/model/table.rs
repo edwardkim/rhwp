@@ -4,6 +4,15 @@ use super::paragraph::Paragraph;
 use super::shape::{common_obj_offsets, Caption};
 use super::*;
 
+/// [#2722] `Table::rebuild_grid()` 가 예약할 수 있는 최대 그리드 칸 수.
+///
+/// 실측 근거: `samples/` 전수 조사(파일 343개, 중첩 포함 표 5,353개)에서
+/// `row_count × col_count` 최댓값은 52,770 (5,277행 × 10열,
+/// `issue2063_huge_cellbreak_table.hwp`) 이었다. 이 상한은 그 75.8배이므로
+/// 정상 문서는 상한 분기에 닿지 않는다. 최악의 경우 예약량은
+/// 4,000,000 × 16B = 64 MiB (wasm32 는 8B → 32 MiB) 로 abort 없이 처리된다.
+pub const MAX_TABLE_GRID_CELLS: usize = 4_000_000;
+
 pub const CELL_FLAG_HAS_MARGIN: u16 = 0x0001;
 pub const CELL_FLAG_PROTECT: u16 = 0x0002;
 pub const CELL_FLAG_HEADER: u16 = 0x0004;
@@ -134,6 +143,9 @@ pub struct Cell {
     /// 셀 필드 이름 (한컴 셀 속성 → 필드 → 필드 이름)
     /// raw_list_extra의 offset 14-15(name_len) + offset 16~(UTF-16LE)에서 추출
     pub field_name: Option<String>,
+    /// HWPX `<hp:tc dirty>` 속성 (편집기 캐시 무효화 표시, 라운드트립 보존용).
+    /// HWP5 바이너리에는 대응 비트가 없어 list_header_width_ref 재사용 대상에서 제외한다.
+    pub dirty_flag: bool,
 }
 
 /// 표 셀 행/열 바꿈 복사 데이터.
@@ -337,6 +349,7 @@ impl Cell {
             is_header: template.is_header,
             raw_list_extra: template.raw_list_extra.clone(),
             field_name: None,
+            dirty_flag: false,
             paragraphs: vec![para],
         }
     }
@@ -372,16 +385,15 @@ impl Table {
         (0..h).collect()
     }
 
-    /// 저장/복구 후 Studio 런타임 힌트가 사라진 행 단위 가로 resize를 보수적으로 추론한다.
-    ///
-    /// 한컴 HWP5에는 `local_resize_rows` 같은 rhwp 내부 힌트를 저장할 곳이 없다. 따라서
-    /// 같은 셀 배치 패턴을 공유하는 행들 중 다수의 폭 벡터와 다른 소수 행만 행 단위
-    /// resize 결과로 간주한다. 병합 패턴이 유일한 행은 원본 문서 구조일 가능성이 높아
-    /// 추론 대상에서 제외한다.
-    pub fn inferred_local_resize_rows(&self) -> Vec<u16> {
+    fn inferred_width_row_roles(
+        &self,
+    ) -> (
+        std::collections::BTreeSet<u16>,
+        std::collections::BTreeSet<u16>,
+    ) {
         let col_count = self.col_count as usize;
         if col_count == 0 || self.row_count == 0 {
-            return Vec::new();
+            return Default::default();
         }
 
         let explicit_rows = self
@@ -429,7 +441,8 @@ impl Table {
             grouped_rows.entry(pattern).or_default().push((row, widths));
         }
 
-        let mut inferred = std::collections::BTreeSet::new();
+        let mut base_grid_outliers = std::collections::BTreeSet::new();
+        let mut inferred_local_resize = std::collections::BTreeSet::new();
         for rows in grouped_rows.values() {
             if rows.len() < 2 {
                 continue;
@@ -458,22 +471,82 @@ impl Table {
                 continue;
             }
 
+            // Studio의 행 단위 가로 resize는 행 전체 표시 폭을 유지한다. 저장된
+            // 독립 행은 기준 폭 합과 같거나, 셀 간격을 흡수한 common.width와 같은
+            // 폭 합을 가질 수 있다. 반대로 일부 HWP5 셀의 퇴화 폭(예: 1 HU)은
+            // 어느 쪽에도 맞지 않으므로 로컬 resize로 오인하면 안 된다.
+            let dominant_total = dominant_widths
+                .iter()
+                .map(|width| u64::from(*width))
+                .sum::<u64>();
+            // 셀별 HWPUNIT 정수 반올림이 누적될 수 있어 셀당 1 HU를 허용한다.
+            let total_tolerance = dominant_widths.len().max(1) as u64;
+
             for (row, widths) in rows {
+                let row_total = widths.iter().map(|width| u64::from(*width)).sum::<u64>();
+                let matches_base_total = row_total.abs_diff(dominant_total) <= total_tolerance;
+                let matches_common_width = self.common.width > 0
+                    && row_total.abs_diff(u64::from(self.common.width)) <= total_tolerance;
                 if widths != dominant_widths {
-                    inferred.insert(*row);
+                    // Every unique minority vector is excluded from base-column extraction.
+                    // Otherwise a single oversized/corrupt cell can widen the entire table even
+                    // when it is not safe to reproduce as an independent row grid.
+                    base_grid_outliers.insert(*row);
+                    if matches_base_total || matches_common_width {
+                        inferred_local_resize.insert(*row);
+                    }
                 }
             }
         }
 
-        inferred.into_iter().collect()
+        (base_grid_outliers, inferred_local_resize)
+    }
+
+    /// Minority row-width vectors that must not participate in the table's base column grid.
+    ///
+    /// This set is intentionally wider than [`Self::inferred_local_resize_rows`]: a malformed
+    /// row with a non-preserved total is rendered on the dominant base grid, but still must not
+    /// enlarge that base grid.
+    pub fn base_grid_outlier_rows(&self) -> Vec<u16> {
+        self.inferred_width_row_roles().0.into_iter().collect()
+    }
+
+    /// 저장/복구 후 Studio 런타임 힌트가 사라진 행 단위 가로 resize를 보수적으로 추론한다.
+    ///
+    /// 한컴 HWP5에는 `local_resize_rows` 같은 rhwp 내부 힌트를 저장할 곳이 없다. 따라서
+    /// 같은 셀 배치 패턴을 공유하는 행들 중 다수의 폭 벡터와 다른 소수 행만 행 단위
+    /// resize 결과로 간주한다. 병합 패턴이 유일한 행은 원본 문서 구조일 가능성이 높아
+    /// 추론 대상에서 제외한다. 표시 폭 합이 보존된 행만 독립 grid로 재현한다.
+    pub fn inferred_local_resize_rows(&self) -> Vec<u16> {
+        self.inferred_width_row_roles().1.into_iter().collect()
     }
 
     /// 2D 그리드 인덱스를 재구축한다.
     /// 구조 변경(파싱, 행/열 추가/삭제, 병합/분할) 후 호출해야 한다.
+    ///
+    /// [#2722] `row_count`/`col_count` 는 파일에서 그대로 온 `u16` 이다(HWPX `rowCnt`/
+    /// `colCnt`, HWP5 `HWPTAG_TABLE`, HML `RowCount`/`ColCount`). 종전엔 상한 없이
+    /// `vec![None; rc * cc]` 를 예약해, 65535×65535 = 4,294,836,225 칸 ×
+    /// `Option<usize>` 16바이트 = 68,717,379,600 바이트 예약을 시도하고 실패 시
+    /// `handle_alloc_error` → abort 로 프로세스가 죽었다(250바이트 HML 로 재현).
+    /// wasm32 에서는 `Layout::array` 가 32비트 `usize` 를 넘겨 capacity overflow
+    /// 패닉 → 모듈 트랩이 된다. 정상 파일은 실측상 최대 52,770 칸이라 아래
+    /// 분기가 아예 실행되지 않으므로 동작 불변이다.
     pub fn rebuild_grid(&mut self) {
         let rc = self.row_count as usize;
         let cc = self.col_count as usize;
-        self.cell_grid = vec![None; rc * cc];
+        let requested = rc.saturating_mul(cc);
+        let grid_len = if requested > MAX_TABLE_GRID_CELLS {
+            // 손상된 행/열 수. 실제 셀이 가리키는 마지막 칸 + 1 까지만 예약한다.
+            // 아래 채우기 루프에 이미 `gi < self.cell_grid.len()` 가드가 있어
+            // 범위를 넘는 칸은 원래도 무시됐다.
+            self.addressed_grid_len(cc)
+                .min(MAX_TABLE_GRID_CELLS)
+                .min(requested)
+        } else {
+            requested
+        };
+        self.cell_grid = vec![None; grid_len];
         for (idx, cell) in self.cells.iter().enumerate() {
             for r in cell.row..(cell.row + cell.row_span) {
                 for c in cell.col..(cell.col + cell.col_span) {
@@ -484,6 +557,28 @@ impl Table {
                 }
             }
         }
+    }
+
+    /// [#2722] 셀이 실제로 가리키는 마지막 그리드 인덱스 + 1.
+    /// 손상된 `row_count`/`col_count` 로 그리드가 상한을 넘을 때만 쓰인다.
+    /// 셀이 없으면 0 — 셀 0개짜리 악성 표는 그리드도 0칸이면 충분하다.
+    fn addressed_grid_len(&self, cc: usize) -> usize {
+        self.cells
+            .iter()
+            .map(|cell| {
+                let last_row = (cell.row as usize)
+                    .saturating_add(cell.row_span as usize)
+                    .saturating_sub(1);
+                let last_col = (cell.col as usize)
+                    .saturating_add(cell.col_span as usize)
+                    .saturating_sub(1);
+                last_row
+                    .saturating_mul(cc)
+                    .saturating_add(last_col)
+                    .saturating_add(1)
+            })
+            .max()
+            .unwrap_or(0)
     }
 
     /// O(1) 셀 인덱스 조회. rebuild_grid() 호출 후 사용해야 한다.
