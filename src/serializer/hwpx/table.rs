@@ -278,6 +278,7 @@ fn write_cell<W: Write>(
     let has_margin = bool01(cell.apply_inner_margin);
     let protect = bool01(cell.cell_protect());
     let editable = bool01(cell.editable_in_form());
+    let dirty = bool01(cell.dirty_flag);
     let border_ref = cell.border_fill_id.to_string();
 
     start_tag_attrs(
@@ -289,7 +290,7 @@ fn write_cell<W: Write>(
             ("hasMargin", has_margin),
             ("protect", protect),
             ("editable", editable),
-            ("dirty", "0"),
+            ("dirty", dirty),
             ("borderFillIDRef", &border_ref),
         ],
     )?;
@@ -704,6 +705,34 @@ mod tests {
         let xml = serialize(&t);
         assert!(
             xml.contains(r#"allowOverlap="0""#),
+            "기본 0: {}",
+            &xml[..xml.len().min(300)]
+        );
+    }
+
+    // ---------- tc dirty 속성 라운드트립 ----------
+
+    #[test]
+    fn tc_dirty_flag_preserved_when_set() {
+        // <hp:tc dirty> 는 파싱은 되지만 직렬화 시 "0"으로 하드코딩되어 있었다.
+        // dirty_flag=true 인 셀은 dirty="1" 로 방출돼야 한다. RED(수정 전에는 실패).
+        let mut t = empty_table(1, 1);
+        t.cells[0].dirty_flag = true;
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r#"dirty="1""#),
+            "dirty_flag=true 인 셀은 dirty=\"1\" 로 방출돼야 한다: {}",
+            &xml[..xml.len().min(500)]
+        );
+    }
+
+    #[test]
+    fn tc_dirty_flag_zero_when_unset() {
+        // dirty_flag=false(기본) 이면 기존 동작대로 dirty="0" 유지.
+        let t = empty_table(1, 1);
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r#"dirty="0""#),
             "기본 0: {}",
             &xml[..xml.len().min(300)]
         );
