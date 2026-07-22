@@ -15,7 +15,7 @@ use quick_xml::Writer;
 
 use crate::model::control::{Bookmark, Field, FieldType, Hyperlink};
 
-use super::utils::{empty_tag, end_tag, start_tag};
+use super::utils::{empty_tag, end_tag, start_tag, start_tag_attrs, text};
 use super::SerializeError;
 
 // =====================================================================
@@ -134,10 +134,13 @@ pub fn write_hyperlink_begin<W: Write>(
     link: &Hyperlink,
     field_id: u32,
 ) -> Result<(), SerializeError> {
-    // command 에 URL 이 들어감. 실제 한컴은 별도 command 파싱 필요.
+    // [#2957 계열] HWPX 스키마는 `<hp:fieldBegin>` 에 `command` 속성을 정의하지 않는다.
+    // URL 은 파서(parse_field_parameters)가 읽는 대로 `<hp:parameters>` 자식의
+    // `<hp:stringParam name="Command">` 텍스트로 담아야 한다. 종전엔 존재하지 않는
+    // `command` 속성으로 방출해, 파서가 이를 무시(알 수 없는 속성)하여 저장 후 재로드 시
+    // 하이퍼링크 URL 이 조용히 소실됐다.
     let id_str = field_id.to_string();
-    let url = &link.url;
-    empty_tag(
+    start_tag_attrs(
         w,
         "hp:fieldBegin",
         &[
@@ -145,9 +148,14 @@ pub fn write_hyperlink_begin<W: Write>(
             ("type", "HYPERLINK"),
             ("name", ""),
             ("editable", "0"),
-            ("command", url),
         ],
-    )
+    )?;
+    start_tag(w, "hp:parameters")?;
+    start_tag_attrs(w, "hp:stringParam", &[("name", "Command")])?;
+    text(w, &link.url)?;
+    end_tag(w, "hp:stringParam")?;
+    end_tag(w, "hp:parameters")?;
+    end_tag(w, "hp:fieldBegin")
 }
 
 // =====================================================================
@@ -267,14 +275,24 @@ mod tests {
     }
 
     #[test]
-    fn hyperlink_begin_uses_url_command() {
+    fn hyperlink_begin_uses_string_param_command() {
+        // fieldBegin 에는 `command` 속성이 없다(HWPX 스키마 미정의) — 파서가 읽는
+        // <hp:parameters><hp:stringParam name="Command"> 자식으로 URL 을 담아야
+        // 저장 후 재로드 시 하이퍼링크 대상이 유지된다.
         let link = Hyperlink {
             url: "https://example.com".to_string(),
             text: "".to_string(),
         };
         let xml = to_string(|w| write_hyperlink_begin(w, &link, 7));
-        assert!(xml.contains(r#"type="HYPERLINK""#));
-        assert!(xml.contains(r#"command="https://example.com""#));
+        assert!(xml.contains(r#"type="HYPERLINK""#), "{xml}");
+        assert!(
+            !xml.contains("command="),
+            "fieldBegin 에 command 속성이 없어야 함: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hp:stringParam name="Command">https://example.com</hp:stringParam>"#),
+            "{xml}"
+        );
     }
 
     #[test]
