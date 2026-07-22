@@ -2218,11 +2218,13 @@ fn parse_picture(
     let mut href: Option<String> = None;
     let mut picture_instance_id = 0;
     let mut effects = PictureEffects::default();
+    let mut reverse = false; // #2861: hp:pic@reverse (좌우 반전)
 
     // <hp:pic> 요소 자체의 속성 파싱
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
             b"id" => common.instance_id = parse_u32(&attr),
+            b"reverse" => reverse = attr_str(&attr) != "0",
             b"zOrder" => common.z_order = parse_i32(&attr),
             b"textWrap" => {
                 common.text_wrap = match attr_str(&attr).as_str() {
@@ -2541,6 +2543,7 @@ fn parse_picture(
     pic.effects = effects;
     pic.caption = caption;
     pic.img_dim = img_dim;
+    pic.reverse = reverse;
 
     Ok(Control::Picture(Box::new(pic)))
 }

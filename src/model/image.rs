@@ -47,6 +47,11 @@ pub struct Picture {
     /// imgClip extent 와 독립(전수 측정: 불일치 24/170) — 원본 이미지 픽셀 크기를
     /// verbatim 보존한다. (dimwidth, dimheight). HWPX 파서만 적재.
     pub img_dim: (u32, u32),
+    /// HWPX `<hp:pic reverse="...">` 좌우 반전 여부 (#2861).
+    ///
+    /// 종전엔 파서가 이 속성을 읽지 않고 시리얼라이저가 항상 "0"을 방출해
+    /// 좌우 반전 삽입된 그림의 반전 상태가 왕복 시 소실됐다.
+    pub reverse: bool,
 }
 
 /// 자르기 정보

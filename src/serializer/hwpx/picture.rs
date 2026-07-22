@@ -59,6 +59,9 @@ pub fn write_picture<W: Write>(
     let tf = text_flow_str(pic.common.text_flow);
     let instid = pic.instance_id.to_string();
     let href = pic.href.as_deref().unwrap_or("");
+    // #2861: 파싱된 IR 값을 그대로 왕복시킨다. 종전엔 리터럴 "0" 하드코딩이라
+    // reverse="1"(좌우 반전) 그림이 저장 시 반전 해제됐다.
+    let reverse = if pic.reverse { "1" } else { "0" };
 
     start_tag_attrs(
         w,
@@ -74,7 +77,7 @@ pub fn write_picture<W: Write>(
             ("href", href),
             ("groupLevel", "0"),
             ("instid", &instid),
-            ("reverse", "0"),
+            ("reverse", reverse),
         ],
     )?;
 
@@ -671,6 +674,18 @@ mod tests {
         let pic = make_picture(1); // description 빈 문자열
         let xml = serialize(&pic, &mut ctx);
         assert!(!xml.contains("<hp:shapeComment"), "빈 설명은 미방출: {xml}");
+    }
+
+    #[test]
+    fn task2861_reverse_true_round_trips() {
+        // #2861: hp:pic@reverse(좌우 반전)가 serializer 하드코딩("0")으로 항상 소실됐다.
+        // reverse=true 그림을 직렬화하면 XML 에 reverse="1" 이 방출돼야 한다.
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+        pic.reverse = true;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(xml.contains(r#"reverse="1""#), "reverse=1 방출: {xml}");
     }
 
     #[test]
