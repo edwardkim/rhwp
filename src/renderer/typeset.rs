@@ -4432,7 +4432,7 @@ impl TypesetEngine {
             // (h_left, h_right, 스택_높이) px — 가로 겹침으로 스택/나란히 판별.
             let mut topbottom_cols: Vec<(f64, f64, f64)> = Vec::new();
             // [#2814] 이 문단의 pushdown 대상(비-TAC TopAndBottom vert=Para) 그림/도형 수.
-            // 2장 이상이 세로로 스택되면 쪽 용량 기반 분배 대상(아래 overflow 이월).
+            // 3장 이상이 세로로 스택되면 쪽 용량 기반 분배 대상(아래 overflow 이월).
             let pushdown_topbottom_ctrl_count = para
                 .controls
                 .iter()
