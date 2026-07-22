@@ -14357,7 +14357,10 @@ impl TypesetEngine {
             is_last_table && tac_table_count <= 1 && has_post_text && !pre_text_exists;
         if should_add_post_text {
             let post_height: f64 = fmt.line_advances_sum(post_table_start..total_lines);
-            if is_visible_para_float {
+            // [#2808] 소비 조건을 layout 의 same_owner_table_precedes 와 동일하게
+            // 다중 co-anchored float host 로 한정 — 단일 표 host post-text 는 기존
+            // 앵커 유지(#1549) 경로로 남긴다.
+            if is_visible_para_float && has_preceding_coanchored_float {
                 // [#2439] 다중 visible-host float 의 host 텍스트가 마지막 표 뒤에서
                 // emit 되는 경우, 같은 문단 소유 exclusion 도 post-text 에는 적용한다.
                 // 첫 표 offset=0 뒤의 양수-offset 표가 아래로 밀렸을 때 이 동기화가
@@ -17895,8 +17898,15 @@ mod tests {
             controls: vec![Control::Table(Box::new(table.clone()))],
             ..Default::default()
         };
+        // [#2808] 접힌 ladder 증거: next.vpos - anchor.vpos == anchor 줄 advance 일 때만
+        // 한컴이 host 줄을 실 흐름에 계상한 것으로 본다 (#2439 재현 문서 서명).
         let signature = Paragraph {
             text: "signature".to_string(),
+            line_segs: vec![LineSeg {
+                line_height: 1000,
+                vertical_pos: 1440,
+                ..Default::default()
+            }],
             ..Default::default()
         };
         let line_advance =
@@ -17933,6 +17943,18 @@ mod tests {
             &two_tables,
             &table,
             Some(&signature),
+        )
+        .is_none());
+
+        // [#2808] 물리 ladder(다음 문단 vpos 가 표 높이를 이미 포함) 문서는 tail 을
+        // 더하면 이중 계상 — 증거 불일치로 억제되어야 한다 (10k r19 회귀 4건).
+        let mut physical_ladder_signature = signature.clone();
+        physical_ladder_signature.line_segs[0].vertical_pos = 11202;
+        assert!(native_empty_host_rowbreak_line_advance_hu(
+            true,
+            &anchor,
+            &table,
+            Some(&physical_ladder_signature),
         )
         .is_none());
     }

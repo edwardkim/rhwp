@@ -5059,8 +5059,26 @@ impl LayoutEngine {
                     }
                 };
                 let mut jump_to = y_offset;
-                let same_owner_table_precedes =
-                    col_content.items[..item_ordinal].iter().any(|previous| {
+                // [#2808] 단일 표 host 의 post-text 는 한컴에서 앵커에 남는다(#1549 유지).
+                // exclusion 소비는 #2439 의 다중 co-anchored float 스택(표 2개+서명란)
+                // 형상에서만 필요하므로, owner 문단의 co-anchored float 가 2개 이상일
+                // 때로 한정한다 — 아니면 별지/서식류 단일 표 문서가 +1 과분할된다.
+                let owner_has_coanchored_stack = paragraphs
+                    .get(item_para)
+                    .map(|owner| {
+                        owner
+                            .controls
+                            .iter()
+                            .filter(|control| {
+                                matches!(control, Control::Table(t)
+                                    if is_para_topbottom_float(&t.common))
+                            })
+                            .count()
+                            >= 2
+                    })
+                    .unwrap_or(false);
+                let same_owner_table_precedes = owner_has_coanchored_stack
+                    && col_content.items[..item_ordinal].iter().any(|previous| {
                         matches!(previous,
                             PageItem::Table { para_index, .. }
                                 | PageItem::PartialTable { para_index, .. }

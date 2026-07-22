@@ -66,11 +66,30 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
         return None;
     }
 
-    para.line_segs
+    let host_seg = para
+        .line_segs
         .iter()
-        .find(|seg| seg.tag & 0x80000000 == 0 && seg.line_height > 0)
-        .map(|seg| seg.line_height + seg.line_spacing.max(0))
-        .filter(|advance| *advance > 0)
+        .find(|seg| seg.tag & 0x80000000 == 0 && seg.line_height > 0)?;
+    let advance = host_seg.line_height + host_seg.line_spacing.max(0);
+    if advance <= 0 {
+        return None;
+    }
+    // [#2808] 저장 vpos ladder 로 한컴이 host 줄 advance 를 실제 흐름에 계상했는지
+    // 검증한다. #2439 재현 문서(기계 반복 양식)는 ladder 가 표 높이를 접고
+    // `next.vpos - host.vpos == advance` 로 저장되는 반면(= advance 가 실 흐름 증거),
+    // 일반 물리 ladder 문서는 델타가 표 높이+offset 을 이미 포함하므로 advance 를
+    // 다시 더하면 이중 계상되어 쪽 경계 한 줄이 +1 로 밀린다 (10k r19 회귀 4건).
+    let next_vpos = next_para
+        .and_then(|next| {
+            next.line_segs
+                .iter()
+                .find(|seg| seg.tag & 0x80000000 == 0 && seg.line_height > 0)
+        })
+        .map(|seg| seg.vertical_pos)?;
+    if (next_vpos - host_seg.vertical_pos - advance).abs() > 1 {
+        return None;
+    }
+    Some(advance)
 }
 
 /// [Task #1658 v3] 페이지 하단 고정(vert=쪽·valign=Bottom) 자리차지 개체 (결재/서명 틀).

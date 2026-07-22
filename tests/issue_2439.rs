@@ -67,6 +67,11 @@ fn isolated_positive_empty_host_doc(top_margin_delta: i16) -> HwpDocument {
         panic!("positive empty-host fixture must contain a table control");
     };
     table.outer_margin_top += top_margin_delta;
+    // [#2808] 접힌 ladder 증거 스탬프 — positive_offset_empty_host_float_advances_flow_
+    // to_its_painted_bottom 의 주석 참조.
+    let host_seg = model.sections[0].paragraphs[1].line_segs[0].clone();
+    let advance = host_seg.line_height + host_seg.line_spacing.max(0);
+    model.sections[0].paragraphs[2].line_segs[0].vertical_pos = host_seg.vertical_pos + advance;
     doc.set_document(model);
     doc
 }
@@ -235,7 +240,19 @@ fn zero_offset_coanchored_float_reserves_its_full_zone_for_later_siblings() {
 
 #[test]
 fn positive_offset_empty_host_float_advances_flow_to_its_painted_bottom() {
-    let doc = load_with_native_hwp5_provenance(POSITIVE_EMPTY_HOST_SAMPLE);
+    let mut doc = load_with_native_hwp5_provenance(POSITIVE_EMPTY_HOST_SAMPLE);
+    // [#2808] painted-bottom 흐름 계약은 접힌 ladder(다음 문단 vpos = host vpos +
+    // host 줄 advance) 증거가 있는 native 문서에서만 성립한다 — #2439 재현 문서의
+    // 저장 형상. 물리 ladder 문서는 stored vpos 가 표 높이를 이미 포함하므로 tail
+    // 가산이 이중 계상이 된다 (10k r19 회귀 4건). 픽스처에 접힌 ladder 를 스탬프해
+    // 실계약 형상을 재현한다.
+    {
+        let mut model = doc.document().clone();
+        let host_seg = model.sections[0].paragraphs[1].line_segs[0].clone();
+        let advance = host_seg.line_height + host_seg.line_spacing.max(0);
+        model.sections[0].paragraphs[2].line_segs[0].vertical_pos = host_seg.vertical_pos + advance;
+        doc.set_document(model);
+    }
     let page = doc
         .build_page_render_tree(0)
         .expect("build positive-offset empty-host render tree");

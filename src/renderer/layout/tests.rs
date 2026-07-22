@@ -86,8 +86,16 @@ fn issue2439_fragment_margin_evidence_is_narrow_and_structural() {
         }))],
         ..Default::default()
     };
+    // [#2808] 접힌 ladder 증거(next.vpos = host.vpos + host 줄 advance)가 있어야
+    // native 재현 형상으로 인정된다 — typeset::tests::issue2439_native_empty_host_
+    // rowbreak_evidence_is_narrow 의 스탬프와 동일.
     let signature = Paragraph {
         text: "signature".to_string(),
+        line_segs: vec![LineSeg {
+            line_height: 1000,
+            vertical_pos: 1440,
+            ..Default::default()
+        }],
         ..Default::default()
     };
     let paragraphs = vec![anchor.clone(), signature];
