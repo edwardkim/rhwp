@@ -766,6 +766,19 @@ fn outline_type_str(t: u8) -> &'static str {
     }
 }
 
+// [#2695] 그림자 3종. IR shadow_type 은 HWP5 attr bits 11-12(2비트).
+// 1=비연속(DROP), 2=연속(CONTINUOUS). 3은 예약값(미정의).
+// [#3038] 종전엔 예약값 3이 `_ => "CONTINUOUS"`로 떨어져 그림자 없음이 그림자
+// 있음으로 둔갑했다. 계약(0~2) 밖의 값은 안전한 기본값(NONE)으로 방출한다.
+fn shadow_type_str(t: u8) -> &'static str {
+    match t {
+        0 => "NONE",
+        1 => "DROP",
+        2 => "CONTINUOUS",
+        _ => "NONE",
+    }
+}
+
 // =====================================================================
 // <hh:tabProperties>
 // =====================================================================
@@ -1320,6 +1333,17 @@ use super::utils::start_tag;
 mod tests {
     use super::*;
     use crate::parser::hwpx::parse_hwpx;
+
+    #[test]
+    fn task_m100_shadow_type_str_reserved_value_maps_to_none() {
+        // [#3038] 계약(0~2) 밖의 예약값(3)은 CONTINUOUS 로 둔갑하지 않고
+        // 안전한 기본값 NONE 으로 방출돼야 한다.
+        assert_eq!(shadow_type_str(0), "NONE");
+        assert_eq!(shadow_type_str(1), "DROP");
+        assert_eq!(shadow_type_str(2), "CONTINUOUS");
+        assert_eq!(shadow_type_str(3), "NONE");
+        assert_eq!(shadow_type_str(99), "NONE");
+    }
 
     #[test]
     fn write_header_runs_on_empty_document() {
