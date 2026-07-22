@@ -783,6 +783,7 @@ fn test_merge_from_field_ranges_ctrl_offset() {
             start_char_idx: 0,
             end_char_idx: 1,
             control_idx: 0,
+            ..Default::default()
         }],
         has_para_text: true,
         ..Default::default()
