@@ -2125,16 +2125,28 @@ impl DocumentCore {
 
             // controls/ctrl_data_records 삽입 (범위 보정)
             let ctrl_insert = insert_ci.min(para.controls.len());
+
+            // char_offsets 시프트 지점(텍스트축 char-index)을 컨트롤 삽입 *이전* 상태에서
+            // 계산한다. create_shape_control_native(#1904 shape.rs:1519-1556)와 동일한
+            // 규약: 삽입 지점 이전 char_offsets 는 그대로 두고, 그 지점 이후만 +8 시프트
+            // 해야 한다. 버그: 기존 코드는 이 계산 없이 para.char_offsets 전체를 +8 했기
+            // 때문에, 그룹 대상보다 앞서 문단에 남아있는 다른 컨트롤(그룹에 포함되지 않은
+            // Shape/Picture 등)의 char_offsets 항목까지 밀려 텍스트-컨트롤 오프셋 매핑이
+            // 깨졌다(커서 이동/컨트롤 조회 시 위치 오탐).
+            let text_positions = crate::document_core::helpers::find_control_text_positions(para);
+            let text_len = para.text.chars().count();
+            let safe_offset = text_positions.get(ctrl_insert).copied().unwrap_or(text_len);
+
             para.controls
                 .insert(ctrl_insert, Control::Shape(Box::new(group_obj)));
             let cdr_insert = ctrl_insert.min(para.ctrl_data_records.len());
             para.ctrl_data_records.insert(cdr_insert, None);
 
-            // char_offsets: 텍스트 문자 매핑이므로 컨트롤 인덱스와 무관
-            // 기존 char_offsets에서 마지막 gap 위치 다음에 8바이트 추가
+            // char_offsets: 텍스트 문자 매핑이므로 컨트롤 인덱스와 무관 — 삽입 지점(safe_offset)
+            // 이후 char_offsets 만 +8 시프트한다.
             if !para.char_offsets.is_empty() {
-                // 모든 기존 char_offsets를 8씩 증가 (컨트롤이 앞에 삽입되므로)
-                for co in para.char_offsets.iter_mut() {
+                let shift_from = safe_offset.min(para.char_offsets.len());
+                for co in para.char_offsets[shift_from..].iter_mut() {
                     *co += 8;
                 }
             }
@@ -2765,6 +2777,67 @@ mod resize_clamp_tests {
         let common = shape_common(&core, para, ctrl);
         assert_eq!(common.width, 12000);
         assert_eq!(common.height, 8000);
+    }
+
+    /// group_shapes_native 는 그룹으로 묶이는 컨트롤보다 앞서 문단에 남아있는 텍스트의
+    /// char_offsets 를 건드리면 안 된다. 삽입 지점(safe_offset) 이전 항목은 그대로 두고
+    /// 그 이후만 +8 시프트해야 한다(create_shape_control_native 와 동일 규약, shape.rs:1519).
+    /// 회귀 전에는 para.char_offsets 전체를 무조건 +8 해서, 그룹 대상보다 앞에 있는
+    /// 텍스트/컨트롤의 오프셋까지 밀렸다.
+    #[test]
+    fn group_shapes_only_shifts_char_offsets_after_insertion_point() {
+        let mut core = make_test_core();
+        {
+            // 문단에 실제 텍스트 "A"를 미리 채워 char_offsets=[0] 상태를 만든다.
+            let para = &mut core.document.sections[0].paragraphs[0];
+            para.text = "A".to_string();
+            para.char_offsets = vec![0];
+            para.char_count = 1;
+        }
+
+        // 텍스트 뒤(char_offset=1)에 사각형 3개를 순서대로 삽입한다.
+        let mut ctrl_indices = Vec::new();
+        for _ in 0..3 {
+            let res = core
+                .create_shape_control_native(
+                    0,
+                    0,
+                    1,
+                    900,
+                    900,
+                    0,
+                    0,
+                    false,
+                    "InFrontOfText",
+                    "rectangle",
+                    false,
+                    false,
+                    &[],
+                )
+                .expect("create rectangle");
+            let ctrl_idx = res
+                .split("\"controlIdx\":")
+                .nth(1)
+                .and_then(|s| s.split(|c: char| !c.is_ascii_digit()).next())
+                .and_then(|s| s.parse::<usize>().ok())
+                .unwrap();
+            ctrl_indices.push(ctrl_idx);
+        }
+        assert_eq!(
+            core.document.sections[0].paragraphs[0].char_offsets,
+            vec![0],
+            "사전 조건: 삽입 후에도 'A' 오프셋은 0 이어야 한다"
+        );
+
+        // 뒤의 두 도형만 묶는다 — 첫 도형은 문단에 그대로 남아 있다.
+        core.group_shapes_native(0, &[(0, ctrl_indices[1]), (0, ctrl_indices[2])])
+            .expect("group shapes");
+
+        assert_eq!(
+            core.document.sections[0].paragraphs[0].char_offsets,
+            vec![0],
+            "그룹 묶기가 삽입 지점 이전 텍스트(char 'A')의 char_offsets 를 밀면 안 된다"
+        );
     }
 }
 
