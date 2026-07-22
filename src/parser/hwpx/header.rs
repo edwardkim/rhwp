@@ -1791,10 +1791,12 @@ fn parse_bullet_hwpx(
     }
 
     // 자식 <hh:paraHead>(align/useInstWidth/widthAdjust/textOffset/charPrIDRef 등),
-    // <hh:image> 를 순회. widthAdjust/textOffset/charPrIDRef 는 Bullet 필드로 흡수하고,
+    // <hh:img> 를 순회. widthAdjust/textOffset/charPrIDRef 는 Bullet 필드로 흡수하고,
     // 7수준 모델로 표현 못하는 나머지 속성(align/useInstWidth/autoIndent/checkable 등)은
     // numbering.raw_para_heads(#2695 계열)와 같은 방식으로 원본 구간을 통째로 보존해
     // 직렬화 시 splice 한다(무손실 라운드트립).
+    // <hh:img binaryItemIDRef="imageN"> 는 이미지 글머리표의 실제 BinData 참조 ID —
+    // useImage="1" 만으로는 어떤 이미지인지 알 수 없어 누락 시 항상 ID 1 로 고정된다.
     if !is_empty_event(e) {
         let inner_start = reader.buffer_position() as usize;
         let mut inner_end = inner_start;
@@ -1802,6 +1804,21 @@ fn parse_bullet_hwpx(
         loop {
             let pos_before = reader.buffer_position() as usize;
             match reader.read_event_into(&mut buf) {
+                Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce))
+                    if local_name(ce.name().as_ref()) == b"img" =>
+                {
+                    if let Some(attr) = ce
+                        .attributes()
+                        .flatten()
+                        .find(|a| a.key.as_ref() == b"binaryItemIDRef")
+                    {
+                        let s = String::from_utf8_lossy(&attr.value);
+                        let num: String = s.chars().filter(|c| c.is_ascii_digit()).collect();
+                        if let Ok(id) = num.parse::<i32>() {
+                            bullet.image_bullet = id;
+                        }
+                    }
+                }
                 Ok(Event::Empty(ref ce)) => {
                     if local_name(ce.name().as_ref()) == b"paraHead" {
                         apply_bullet_para_head_attrs(&mut bullet, ce);
@@ -2229,6 +2246,28 @@ mod tests {
         let (doc_info, _) = parse_hwpx_header(xml).unwrap();
         assert_eq!(doc_info.bullets.len(), 1);
         assert_eq!(doc_info.bullets[0].check_bullet_char, '☑');
+    }
+
+    #[test]
+    fn test_parse_bullet_hwpx_image_id_from_binary_item_id_ref() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:bullets itemCnt="1">
+      <hh:bullet id="1" char="0x0" useImage="1">
+        <hh:img binaryItemIDRef="image3" bright="0" contrast="0" effect="REAL_PIC"/>
+      </hh:bullet>
+    </hh:bullets>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        assert_eq!(
+            doc_info.bullets[0].image_bullet, 3,
+            "이미지 글머리표는 <hh:img binaryItemIDRef>의 실제 BinData ID(3)로 매핑되어야 함. \
+             useImage=\"1\" 만으로는 어떤 이미지인지 알 수 없어, 이대로 두면 이미지 글머리표가 \
+             항상 ID 1로 고정된다."
+        );
     }
 
     #[test]
