@@ -432,7 +432,10 @@ fn hwp3_note_column_width_hu(column_width_hu: i32) -> i32 {
 }
 
 /// doc_info.encrypted(암호 설정 여부)를 FileHeader.encrypted 및 raw_data 플래그 비트(0x02)에 반영한다.
-fn apply_hwp3_encrypted_flag(doc_info_encrypted: u16, header: &mut crate::model::document::FileHeader) {
+fn apply_hwp3_encrypted_flag(
+    doc_info_encrypted: u16,
+    header: &mut crate::model::document::FileHeader,
+) {
     if doc_info_encrypted != 0 {
         header.encrypted = true;
         if let Some(raw) = header.raw_data.as_mut() {
