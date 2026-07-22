@@ -4813,6 +4813,16 @@ fn parse_field_parameters(
                     field.command.push_str(&decoded);
                 }
             }
+            // [CDATA] stringParam(Command)이 CDATA로 인코딩된 경우(예: 하이퍼링크 URL의
+            // 쿼리스트링 `&`, 수식 필드의 비교연산자 `<`/`>`) 처리하지 않으면 필드 명령
+            // 문자열이 소실된다. #2916/#2927의 hp:script CDATA 누락과 동일한 패턴.
+            Ok(Event::CData(ref cdata)) => {
+                let decoded = String::from_utf8_lossy(cdata.as_ref()).into_owned();
+                raw.push_str(&escape_xml_text(&decoded));
+                if in_command {
+                    field.command.push_str(&decoded);
+                }
+            }
             Ok(Event::End(ref ee)) => {
                 let eename = ee.name();
                 let local = local_name(eename.as_ref());
@@ -6855,6 +6865,31 @@ mod tests {
 
         assert_eq!(field.command, "MEMO/65535/2/1650281184/31247371/user/\\;;");
         assert_eq!(field.memo_index, 2);
+    }
+
+    #[test]
+    fn test_parse_field_parameters_preserves_cdata_command() {
+        let xml = r#"<hp:parameters xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">
+  <hp:stringParam name="Command"><![CDATA[HYPERLINK "https://example.com/?a=1&b=2"]]></hp:stringParam>
+</hp:parameters>"#;
+        let mut reader = Reader::from_str(xml);
+        let mut buf = Vec::new();
+        let mut field = Field::default();
+
+        loop {
+            match reader.read_event_into(&mut buf).unwrap() {
+                Event::Start(ref e) if local_name(e.name().as_ref()) == b"parameters" => {
+                    let start = e.to_owned();
+                    parse_field_parameters(&start, &mut reader, &mut field).unwrap();
+                    break;
+                }
+                Event::Eof => panic!("parameters not found"),
+                _ => {}
+            }
+            buf.clear();
+        }
+
+        assert_eq!(field.command, "HYPERLINK \"https://example.com/?a=1&b=2\"");
     }
 
     #[test]
