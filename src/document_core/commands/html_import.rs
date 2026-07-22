@@ -899,7 +899,8 @@ impl DocumentCore {
         let has_underline = inherited_underline
             || css_lower.contains("text-decoration:underline")
             || css_lower.contains("text-decoration: underline")
-            || css_lower.contains("text-decoration-line:underline");
+            || css_lower.contains("text-decoration-line:underline")
+            || css_lower.contains("text-decoration-line: underline");
         cs.underline_type = if has_underline {
             UnderlineType::Bottom
         } else {
@@ -1055,6 +1056,29 @@ mod tests {
         assert!(
             ps.raw_data.is_none(),
             "raw_data 가 남으면 정렬·줄간격 변경이 저장 시 사라진다"
+        );
+    }
+}
+
+#[cfg(test)]
+mod textdecoline_tests {
+    use super::*;
+    use crate::model::document::Document;
+    use crate::model::style::{CharShape, UnderlineType};
+
+    #[test]
+    fn css_underline_recognizes_text_decoration_line_with_space() {
+        let mut doc = Document::default();
+        doc.doc_info.char_shapes.push(CharShape::default());
+        let mut core = DocumentCore::new_empty();
+        core.document = doc;
+
+        let id = core.css_to_char_shape_id("text-decoration-line: underline", false, false, false);
+        let cs = &core.document.doc_info.char_shapes[id as usize];
+        assert_ne!(
+            cs.underline_type,
+            UnderlineType::None,
+            "콜론 뒤 공백이 있는 text-decoration-line: underline 도 밑줄로 인식돼야 함"
         );
     }
 }
