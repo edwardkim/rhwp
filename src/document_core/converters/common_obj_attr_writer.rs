@@ -227,6 +227,7 @@ mod tests {
             height_criterion: SizeCriterion::Absolute,
             description: String::new(),
             raw_extra: Vec::new(),
+            locked: false,
             numbering_type: crate::model::shape::ObjectNumberingType::None,
         }
     }
