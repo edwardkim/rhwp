@@ -724,6 +724,7 @@ fn parse_master_pages_from_raw(raw_records: &[RawRecord]) -> Vec<MasterPage> {
             replace_base: false,
             ext_flags,
             page_front: false, // HWP5 바이너리 바탕쪽엔 pageFront 개념 없음
+            text_direction: 0, // HWP5 바이너리 바탕쪽엔 textDirection 개념 없음
             paragraphs,
             text_width,
             text_height,

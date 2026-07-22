@@ -246,6 +246,12 @@ fn parse_master_page_sub_list(e: &quick_xml::events::BytesStart, master_page: &m
             b"textHeight" => master_page.text_height = parse_u32(&attr),
             b"hasTextRef" => master_page.text_ref = parse_u8(&attr),
             b"hasNumRef" => master_page.num_ref = parse_u8(&attr),
+            // 세로쓰기 바탕쪽(hp:subList@textDirection). serializer 는 항상
+            // HORIZONTAL 로 고정 출력하지만 종전엔 파서가 미독 →
+            // textDirection="VERTICAL" 바탕쪽이 왕복 시 가로쓰기로 바뀌었다.
+            b"textDirection" => {
+                master_page.text_direction = if attr_str(&attr) == "VERTICAL" { 1 } else { 0 };
+            }
             _ => {}
         }
     }
