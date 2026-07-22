@@ -1740,7 +1740,9 @@ fn page_num_pos_to_str(pos: u8) -> &'static str {
 fn page_num_format_to_str(fmt: u8) -> &'static str {
     match fmt {
         0 => "DIGIT",
-        1 => "CIRCLE_DIGIT",
+        // [#XXXX] OWPML Core 스키마 NumberType1(<hp:pageNum formatType>)의 실제 값은
+        // "CIRCLED_DIGIT"이다 (Core XML schema.xml 12행). "CIRCLE_DIGIT"은 오탈자.
+        1 => "CIRCLED_DIGIT",
         2 => "ROMAN_CAPITAL",
         3 => "ROMAN_SMALL",
         4 => "LATIN_CAPITAL",
@@ -2484,6 +2486,25 @@ fn render_page_border_fill(ty: &str, pbf: &crate::model::page::PageBorderFill) -
 mod tests {
     use super::*;
     use crate::model::paragraph::{CharShapeRef, Paragraph};
+
+    /// [#XXXX] `<hp:pageNum formatType="...">`의 원문자(circled digit) 값은 OWPML Core
+    /// 스키마 NumberType1 표기인 "CIRCLED_DIGIT"이어야 한다. 종전엔 "CIRCLE_DIGIT"(D 없음)
+    /// 오탈자로 방출돼 한컴이 값을 인식하지 못했다.
+    #[test]
+    fn page_num_circled_digit_format_reflects_spec_spelling() {
+        use crate::model::control::PageNumberPos;
+        let mut pn = PageNumberPos::default();
+        pn.format = 1; // circled digit
+        let xml = render_page_num(&pn);
+        assert!(
+            xml.contains(r#"formatType="CIRCLED_DIGIT""#),
+            "pageNum formatType 이 스펙 철자(CIRCLED_DIGIT)여야 함: {xml}"
+        );
+        assert!(
+            !xml.contains(r#"formatType="CIRCLE_DIGIT""#),
+            "CIRCLE_DIGIT 오탈자 잔존 금지: {xml}"
+        );
+    }
 
     #[test]
     fn equation_text_flow_reflects_ir() {
