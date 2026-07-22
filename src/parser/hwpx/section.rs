@@ -5831,8 +5831,18 @@ fn parse_hp_chart_element(
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
+            // [#2882] common.numbering_type(ObjectNumberingType) 도 함께 채운다.
+            // 직렬화기(numbering_type_str, serializer/hwpx/shape.rs)가 참조하는
+            // 필드는 이것뿐이라, bool 지역 변수만으로는 저장 시 항상 NONE 으로
+            // 되쓰인다(공용 도형 파서 section.rs:2892 와 동일 패턴으로 맞춤).
             b"numberingType" => {
                 numbering_type_picture = attr_str(&attr).eq_ignore_ascii_case("PICTURE");
+                common.numbering_type = match attr_str(&attr).to_ascii_uppercase().as_str() {
+                    "PICTURE" => crate::model::shape::ObjectNumberingType::Picture,
+                    "TABLE" => crate::model::shape::ObjectNumberingType::Table,
+                    "EQUATION" => crate::model::shape::ObjectNumberingType::Equation,
+                    _ => crate::model::shape::ObjectNumberingType::None,
+                };
             }
             b"zOrder" => common.z_order = parse_i32(&attr),
             b"textWrap" => {
@@ -5906,8 +5916,28 @@ fn parse_hp_ole_element(
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
+            // [#2882] common.numbering_type(ObjectNumberingType) 도 함께 채운다.
+            // 직렬화기(numbering_type_str, serializer/hwpx/shape.rs)가 참조하는
+            // 필드는 이것뿐이라, bool 지역 변수만으로는 저장 시 항상 NONE 으로
+            // 되쓰인다(공용 도형 파서 section.rs:2892 와 동일 패턴으로 맞춤).
             b"numberingType" => {
                 numbering_type_picture = attr_str(&attr).eq_ignore_ascii_case("PICTURE");
+                common.numbering_type = match attr_str(&attr).to_ascii_uppercase().as_str() {
+                    "PICTURE" => crate::model::shape::ObjectNumberingType::Picture,
+                    "TABLE" => crate::model::shape::ObjectNumberingType::Table,
+                    "EQUATION" => crate::model::shape::ObjectNumberingType::Equation,
+                    _ => crate::model::shape::ObjectNumberingType::None,
+                };
+            }
+            // 표시 방식(아이콘/썸네일/인쇄용/내용). serializer 는 방출하나 종전엔
+            // 파서가 읽지 않아 ICON 등이 왕복 시 CONTENT 로 바뀌었다.
+            b"drawAspect" => {
+                draw_aspect = match attr_str(&attr).as_str() {
+                    "ICON" => OleDrawingAspect::Icon,
+                    "THUMBNAIL" => OleDrawingAspect::Thumbnail,
+                    "DOCPRINT" => OleDrawingAspect::DocPrint,
+                    _ => OleDrawingAspect::Content,
+                };
             }
             // 표시 방식(아이콘/썸네일/인쇄용/내용). serializer 는 방출하나 종전엔
             // 파서가 읽지 않아 ICON 등이 왕복 시 CONTENT 로 바뀌었다.
@@ -7575,6 +7605,70 @@ mod tests {
         assert!(
             line.started_right_or_bottom,
             "isReverseHV=\"1\" 이 started_right_or_bottom 로 되읽혀야 함"
+        );
+    }
+
+    // ---------- #2882: hp:ole/hp:chart numberingType 라운드트립 ----------
+
+    #[test]
+    fn issue2882_ole_numbering_type_picture_is_parsed_into_common_field() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="1" zOrder="0" numberingType="PICTURE" binaryItemIDRef="ole1">
+        <hp:sz width="2600" height="2600"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected ole shape");
+        };
+        assert_eq!(
+            ole.common.numbering_type,
+            crate::model::shape::ObjectNumberingType::Picture,
+            "numberingType=\"PICTURE\" 가 common.numbering_type 에 매핑돼야 함(직렬화기가 참조하는 필드)"
+        );
+    }
+
+    #[test]
+    fn issue2882_chart_numbering_type_table_is_parsed_into_common_field() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:chart id="1" zOrder="0" numberingType="TABLE" chartIDRef="Chart/chart1.xml">
+        <hp:sz width="2600" height="2600"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"/>
+      </hp:chart>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected ole shape (chart is modeled as OleShape)");
+        };
+        assert_eq!(
+            ole.common.numbering_type,
+            crate::model::shape::ObjectNumberingType::Table,
+            "numberingType=\"TABLE\" 가 common.numbering_type 에 매핑돼야 함(직렬화기가 참조하는 필드)"
         );
     }
 
