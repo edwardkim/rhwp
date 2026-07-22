@@ -870,11 +870,15 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       const ref = this.cursor.getSelectedTableRef();
       if (ref) {
         try {
-          this.wasm.copyControl(ref.sec, ref.ppi, ref.ci);
+          // [Task #2880] 중첩 표(셀 안 표) 선택 시 cellPath 를 native 에 전달하지 않으면
+          // copyControl/exportControlHtml 이 본문 표로 오인해 엉뚱한 표를 복사한다.
+          // 그림 개체 Ctrl+C(위 pictureCellPathJson 사용부) 와 동일하게 cellPathJson 전달.
+          const cellPathJson = pictureCellPathJson(ref);
+          this.wasm.copyControl(ref.sec, ref.ppi, ref.ci, cellPathJson);
           const text = this.wasm.getClipboardText();
           if (text) {
             let html = '';
-            try { html = this.wasm.exportControlHtml(ref.sec, ref.ppi, ref.ci) || ''; } catch { /* 무시 */ }
+            try { html = this.wasm.exportControlHtml(ref.sec, ref.ppi, ref.ci, cellPathJson) || ''; } catch { /* 무시 */ }
             const markedHtml = prepareRhwpInternalClipboardHtml(this, html, text);
             writeTextHtmlToClipboard(text, markedHtml)
               .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
@@ -891,11 +895,13 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       const ref = this.cursor.getSelectedTableRef();
       if (ref && !(ref.cellPath && ref.cellPath.length > 1)) {
         try {
-          this.wasm.copyControl(ref.sec, ref.ppi, ref.ci);
+          // [Task #2880] Ctrl+C 사이드와 동일하게 cellPath 를 copyControl/exportControlHtml 에 전달.
+          const cellPathJson = pictureCellPathJson(ref);
+          this.wasm.copyControl(ref.sec, ref.ppi, ref.ci, cellPathJson);
           const text = this.wasm.getClipboardText();
           if (text) {
             let html = '';
-            try { html = this.wasm.exportControlHtml(ref.sec, ref.ppi, ref.ci) || ''; } catch { /* 무시 */ }
+            try { html = this.wasm.exportControlHtml(ref.sec, ref.ppi, ref.ci, cellPathJson) || ''; } catch { /* 무시 */ }
             const markedHtml = prepareRhwpInternalClipboardHtml(this, html, text);
             writeTextHtmlToClipboard(text, markedHtml)
               .catch(() => navigator.clipboard.writeText(text).catch(() => {}));
