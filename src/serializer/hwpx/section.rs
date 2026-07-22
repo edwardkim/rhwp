@@ -29,7 +29,7 @@ use crate::model::document::{Document, Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
 use crate::model::page::{ColumnDef, ColumnDirection, ColumnType};
-use crate::model::paragraph::{ColumnBreakType, LineSeg, OrphanFieldEnd, Paragraph};
+use crate::model::paragraph::{ColumnBreakType, FieldRange, LineSeg, OrphanFieldEnd, Paragraph};
 use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertAlign, VertRelTo,
 };
@@ -702,9 +702,18 @@ impl RunSplitter {
 }
 
 /// `<hp:ctrl><hp:fieldEnd beginIDRef=".."/></hp:ctrl>` 방출 공통 경로.
-fn emit_field_end(out: &mut String, para: &Paragraph, control_idx: usize) {
-    if let Some(Control::Field(f)) = para.controls.get(control_idx) {
-        if let Ok(xml) = writer_to_string(|w| write_field_end(w, f.field_id)) {
+fn emit_field_end(out: &mut String, para: &Paragraph, fr: &FieldRange) {
+    if let Some(Control::Field(f)) = para.controls.get(fr.control_idx) {
+        // [Task #bookmark-hyperlink] 짝(matched) fieldEnd 자신의 fieldid 는 fieldBegin 의
+        // id(f.field_id, beginIDRef 로 사용)와 별개 값 — 파싱된 fr.end_field_id 를 그대로
+        // 되돌려 써야 한다. 과거엔 write_field_end 로 beginIDRef 만 쓰고 fieldid 는 항상
+        // 누락시켰다(고아 fieldEnd 경로만 write_field_end_full 로 보존, 비대칭).
+        let xml_result = if fr.end_field_id == 0 {
+            writer_to_string(|w| write_field_end(w, f.field_id))
+        } else {
+            writer_to_string(|w| write_field_end_full(w, f.field_id, fr.end_field_id))
+        };
+        if let Ok(xml) = xml_result {
             out.push_str("<hp:ctrl>");
             out.push_str(&xml);
             out.push_str("</hp:ctrl>");
@@ -912,7 +921,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         // fieldBegin(슬롯)만 방출하고 fieldEnd 방출 코드가 없어 same-para 균형 필드가
         // 1/0 으로 깨지며 cc −8 (#1593). #1556 고아 복원과 동형(위치 대신 말미 일괄).
         for fr in &para.field_ranges {
-            emit_field_end(&mut splitter.content, para, fr.control_idx);
+            emit_field_end(&mut splitter.content, para, fr);
         }
         // [Task #1556] 위치 추정 불가 경로에서도 고아 fieldEnd 의 8유닛 슬롯은 복원한다
         // (정확한 위치 대신 말미 일괄 — 최소한 char_count 보존).
@@ -956,7 +965,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         for (i, fr) in para.field_ranges.iter().enumerate() {
             if fr.start_char_idx == fr.end_char_idx && !field_end_emitted[i] {
                 splitter.cut_before(expected_utf16_pos);
-                emit_field_end(&mut splitter.content, para, fr.control_idx);
+                emit_field_end(&mut splitter.content, para, fr);
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                 field_end_emitted[i] = true;
             }
@@ -1037,7 +1046,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     && fr.control_idx == emitted_ctrl_idx
                 {
                     splitter.cut_before(expected_utf16_pos);
-                    emit_field_end(&mut splitter.content, para, fr.control_idx);
+                    emit_field_end(&mut splitter.content, para, fr);
                     expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                     field_end_emitted[i] = true;
                 }
@@ -1075,7 +1084,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     &mut tab_idx,
                 );
                 splitter.cut_before(expected_utf16_pos);
-                emit_field_end(&mut splitter.content, para, fr.control_idx);
+                emit_field_end(&mut splitter.content, para, fr);
                 field_end_emitted[i] = true;
             }
         }
@@ -1146,7 +1155,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     &mut tab_idx,
                 );
                 splitter.cut_before(expected_utf16_pos);
-                emit_field_end(&mut splitter.content, para, fr.control_idx);
+                emit_field_end(&mut splitter.content, para, fr);
                 // [#1407] fieldEnd 는 8유닛 슬롯을 소비한다. expected 를 +8 진행하지
                 // 않으면 다음 idx 에서 텍스트-끝 슬롯(newNum 등)이 이 8유닛 갭을
                 // 가로채 텍스트가 +8 밀린다 (143E 문단 0.14: char_offsets[3] 27→35).
@@ -1178,7 +1187,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                 continue;
             }
             splitter.cut_before(expected_utf16_pos);
-            emit_field_end(&mut splitter.content, para, fr.control_idx);
+            emit_field_end(&mut splitter.content, para, fr);
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
             field_end_emitted[i] = true;
         }
@@ -1220,7 +1229,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                 && fr.control_idx == emitted_ctrl_idx
             {
                 splitter.cut_before(expected_utf16_pos);
-                emit_field_end(&mut splitter.content, para, fr.control_idx);
+                emit_field_end(&mut splitter.content, para, fr);
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                 field_end_emitted[i] = true;
             }
@@ -1230,7 +1239,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     for (i, fr) in para.field_ranges.iter().enumerate() {
         if !field_end_emitted[i] {
             splitter.cut_before(expected_utf16_pos);
-            emit_field_end(&mut splitter.content, para, fr.control_idx);
+            emit_field_end(&mut splitter.content, para, fr);
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
             field_end_emitted[i] = true;
         }
@@ -3489,6 +3498,35 @@ mod tests {
         );
     }
 
+    /// [bookmark-hyperlink] 같은 문단 내 짝(matched) HYPERLINK fieldBegin/fieldEnd 라운드트립 —
+    /// fieldEnd 자신의 fieldid(=100)가 fieldBegin 의 id(=42, beginIDRef 로 사용)와 다를 때,
+    /// 과거엔 emit_field_end 가 write_field_end(f.field_id) 만 호출해 fieldid 속성을 항상
+    /// 누락시켰다(고아 fieldEnd 경로만 보존해 비대칭). fr.end_field_id 를 IR 에 보존하고
+    /// 되돌려 쓰면 fieldid="100" 이 살아남아야 한다.
+    #[test]
+    fn bookmark_hyperlink_matched_field_end_preserves_own_fieldid() {
+        let mut f = Field::default();
+        f.field_type = FieldType::Hyperlink;
+        f.field_id = 42;
+        let mut para = Paragraph::default();
+        para.text = "링크".to_string();
+        para.char_count = 2 + 8 + 8 + 1; // text(2) + FIELD_BEGIN(8) + FIELD_END(8) + para_end(1)
+        para.controls.push(Control::Field(f));
+        para.field_ranges.push(FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 2,
+            control_idx: 0,
+            end_field_id: 100,
+        });
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"<hp:fieldEnd beginIDRef="42" fieldid="100"/>"#),
+            "matched fieldEnd 는 beginIDRef(=fieldBegin id)와 별개로 자신의 fieldid 를 보존해야 함: {xml}"
+        );
+    }
+
     // ---------- #1289: Bookmark / Field dispatcher 연결 ----------
 
     use crate::model::control::{Bookmark, Control, Field, FieldType};
@@ -3535,6 +3573,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 1,
             control_idx: 0,
+            ..Default::default()
         });
 
         let (doc, section) = make_doc_with_paragraph(para);
@@ -3571,6 +3610,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 1,
             control_idx: 0,
+            ..Default::default()
         });
         let (doc, section) = make_doc_with_paragraph(para);
         let mut ctx = SerializeContext::collect_from_document(&doc);
@@ -3599,6 +3639,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 5,
             control_idx: 0,
+            ..Default::default()
         });
 
         let (doc, section) = make_doc_with_paragraph(para);
@@ -3641,6 +3682,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 3, // == text.len() → 루프 후 처리 경로
             control_idx: 0,
+            ..Default::default()
         });
 
         let (doc, section) = make_doc_with_paragraph(para);
@@ -3674,6 +3716,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 0, // 0-length
             control_idx: 0,
+            ..Default::default()
         });
 
         let (doc, section) = make_doc_with_paragraph(para);
@@ -3721,6 +3764,7 @@ mod tests {
             start_char_idx: 3,
             end_char_idx: 3, // 0-length mid-text
             control_idx: 0,
+            ..Default::default()
         });
 
         let (doc, section) = make_doc_with_paragraph(para);
@@ -3770,6 +3814,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 0,
             control_idx: 0,
+            ..Default::default()
         });
 
         let (doc, section) = make_doc_with_paragraph(para);
@@ -3823,6 +3868,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 3, // "ABC" 래핑
             control_idx: 0,
+            ..Default::default()
         });
 
         let xml = runs_of(&para);
@@ -3979,6 +4025,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 3,
             control_idx: 0,
+            ..Default::default()
         });
         para.char_shapes = vec![cs(0, 1), cs(19, 2)];
         let xml = runs_of(&para);

@@ -1871,11 +1871,13 @@ mod validate_linesegs_tests {
                     start_char_idx: 0,
                     end_char_idx: 6,
                     control_idx: 0,
+                    ..Default::default()
                 },
                 FieldRange {
                     start_char_idx: 0,
                     end_char_idx: 6,
                     control_idx: 0,
+                    ..Default::default()
                 },
             ],
             ..Default::default()

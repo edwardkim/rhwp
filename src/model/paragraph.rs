@@ -274,6 +274,13 @@ pub struct FieldRange {
     pub end_char_idx: usize,
     /// controls[] 배열 내 인덱스 (해당 Field 컨트롤 참조)
     pub control_idx: usize,
+    /// 같은 문단 내 짝을 이루는 `<hp:fieldEnd>` 자신의 `fieldid` 속성값 (0 이면 없음/생략).
+    ///
+    /// `fieldBegin` 의 `id`(문서 내 고유 ID, `Field::field_id` 로 보존)와 달리, `fieldEnd`
+    /// 자신의 `fieldid` 는 별개 값으로 관찰되며(HYPERLINK 등) IR 로 옮기지 않으면 직렬화 시
+    /// 항상 소실된다. 고아(다단락) fieldEnd 는 `OrphanFieldEnd::field_id` 로 이미 보존하므로,
+    /// 같은 문단 내 짝(matched) 경로에도 대칭적으로 보존한다.
+    pub end_field_id: u32,
 }
 
 /// 고아 FIELD_END (0x04) — 짝이 되는 FIELD_BEGIN 이 다른 문단에 있는
@@ -909,6 +916,7 @@ impl Paragraph {
                     start_char_idx: fr.start_char_idx - split_pos,
                     end_char_idx: fr.end_char_idx - split_pos,
                     control_idx: fr.control_idx,
+                    end_field_id: fr.end_field_id,
                 });
             } else if fr.end_char_idx <= split_pos {
                 // 완전히 원래 문단 쪽
@@ -919,6 +927,7 @@ impl Paragraph {
                     start_char_idx: fr.start_char_idx,
                     end_char_idx: split_pos,
                     control_idx: fr.control_idx,
+                    end_field_id: fr.end_field_id,
                 });
             }
         }
@@ -1112,6 +1121,7 @@ impl Paragraph {
                 start_char_idx: fr.start_char_idx + self_text_len,
                 end_char_idx: fr.end_char_idx + self_text_len,
                 control_idx: fr.control_idx + ctrl_offset,
+                end_field_id: fr.end_field_id,
             });
         }
 

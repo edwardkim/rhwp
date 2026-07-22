@@ -633,6 +633,7 @@ fn parse_paragraph(
                         start_char_idx,
                         end_char_idx: visible_char_idx,
                         control_idx,
+                        end_field_id: field_id,
                     });
                 } else {
                     // [Task #1556] 짝 fieldBegin 이 다른 문단에 있는 다단락 필드의 종료 마커.
