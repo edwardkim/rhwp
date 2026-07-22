@@ -5397,6 +5397,14 @@ fn parse_equation(
                     }
                 }
             }
+            Ok(Event::CData(ref cdata)) => {
+                // #2916: 수식 스크립트가 CDATA 로 저장된 경우(비교 연산자 등 XML
+                // 예약 문자를 다량 포함해 엔티티 이스케이프 대신 CDATA 로 감싸는
+                // 케이스), 이 분기가 없으면 script 가 통째로 빈 문자열이 된다.
+                if in_script {
+                    script.push_str(&String::from_utf8_lossy(cdata.as_ref()));
+                }
+            }
             Ok(Event::GeneralRef(ref r)) => {
                 if in_script {
                     if let Ok(Some(ch)) = r.resolve_char_ref() {
@@ -7721,6 +7729,35 @@ mod tests {
         let xml = r#"<?xml version="1.0"?><hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"/>"#;
         let section = parse_hwpx_section(xml).unwrap();
         assert!(section.paragraphs.is_empty());
+    }
+
+    /// #2916: `<hp:equation>`의 `<hp:script>` 본문이 CDATA 섹션으로 인코딩된 경우
+    /// (실제 한글 저장 결과에서 관찰되는 형태 — 수식 스크립트에 `<`, `>` 등이
+    /// 다수 포함되어 개별 엔티티 이스케이프 대신 CDATA 로 감싸짐), 파서가
+    /// Event::CData 를 처리하지 않으면 script 가 빈 문자열로 소실된다.
+    #[test]
+    fn task_m100_2916_equation_script_cdata_not_lost() {
+        let xml = r##"<hp:equation xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+            id="1" version="Equation Version 60" baseLine="0" textColor="#000000" baseUnit="1000" font="HYhwpEQ"><hp:script><![CDATA[a < b > c]]></hp:script></hp:equation>"##;
+        let mut reader = Reader::from_str(xml);
+        let mut buf = Vec::new();
+        let ctrl = loop {
+            match reader.read_event_into(&mut buf).unwrap() {
+                Event::Start(ref e) if local_name(e.name().as_ref()) == b"equation" => {
+                    break parse_equation(e, &mut reader).unwrap();
+                }
+                Event::Eof => panic!("equation not found"),
+                _ => {}
+            }
+            buf.clear();
+        };
+        let Control::Equation(eq) = ctrl else {
+            panic!("expected Equation control");
+        };
+        assert_eq!(
+            eq.script, "a < b > c",
+            "CDATA 로 감싸진 수식 스크립트가 소실되면 안 된다"
+        );
     }
 
     #[test]
