@@ -361,6 +361,34 @@ pub(crate) fn convert_para_shape(
     ps
 }
 
+// [#2986] HWP3 ParaShape.border(has_border()) 플래그가 shade_ratio 처럼 border_fill_id로
+// 배선되지 않아, 문단 테두리가 켜져 있어도(음영 없이) 항상 소실되던 결함 수정.
+fn hwp3_para_shape_border_fill(
+    hwp3_ps: &crate::parser::hwp3::records::Hwp3ParaShape,
+) -> Option<crate::model::style::BorderFill> {
+    if hwp3_ps.shade_ratio == 0 && !hwp3_ps.has_border() {
+        return None;
+    }
+    let mut bf = crate::model::style::BorderFill::default();
+    if hwp3_ps.shade_ratio > 0 {
+        let ratio = hwp3_ps.shade_ratio.min(100) as u32;
+        let gray = (255 * (100 - ratio) / 100) as u8;
+        let color = u32::from_le_bytes([gray, gray, gray, 0]);
+        bf.fill.fill_type = crate::model::style::FillType::Solid;
+        bf.fill.solid = Some(crate::model::style::SolidFill {
+            background_color: color,
+            pattern_color: 0,
+            pattern_type: 0,
+        });
+    }
+    if hwp3_ps.has_border() {
+        for b in bf.borders.iter_mut() {
+            b.line_type = crate::model::style::BorderLineType::Solid;
+        }
+    }
+    Some(bf)
+}
+
 fn hwp3_para_line_box(
     para_shape: Option<&crate::model::style::ParaShape>,
     column_width_hu: i32,
@@ -1991,17 +2019,7 @@ pub(crate) fn parse_paragraph_list(
         if para_info.follow_prev_para_shape == 0 {
             if let Some(ref hwp3_ps) = para_info.para_shape {
                 let mut ps = convert_para_shape(hwp3_ps, doc_tab_defs);
-                if hwp3_ps.shade_ratio > 0 {
-                    let ratio = hwp3_ps.shade_ratio.min(100) as u32;
-                    let gray = (255 * (100 - ratio) / 100) as u8;
-                    let color = u32::from_le_bytes([gray, gray, gray, 0]);
-                    let mut bf = crate::model::style::BorderFill::default();
-                    bf.fill.fill_type = crate::model::style::FillType::Solid;
-                    bf.fill.solid = Some(crate::model::style::SolidFill {
-                        background_color: color,
-                        pattern_color: 0,
-                        pattern_type: 0,
-                    });
+                if let Some(bf) = hwp3_para_shape_border_fill(hwp3_ps) {
                     doc_border_fills.push(bf);
                     ps.border_fill_id = doc_border_fills.len() as u16; // 1-based (렌더러 규칙)
                 }
@@ -3890,6 +3908,19 @@ mod tests {
     use super::*;
     use std::fs::File;
     use std::io::Read;
+
+    #[test]
+    fn test_hwp3_para_shape_border_fill_wires_has_border_flag() {
+        // [#2986] border=1, shade_ratio=0 인 경우에도 border_fill 이 생성되고
+        // 4방향 테두리선이 Solid 로 설정되어야 한다 (기존에는 None 이 반환되어 소실됨).
+        let mut hwp3_ps = crate::parser::hwp3::records::Hwp3ParaShape::default();
+        hwp3_ps.border = 1;
+        let bf = hwp3_para_shape_border_fill(&hwp3_ps).expect("border_fill 이 생성되어야 함");
+        assert!(bf
+            .borders
+            .iter()
+            .all(|b| b.line_type == crate::model::style::BorderLineType::Solid));
+    }
 
     #[test]
     fn test_alloc_record_buf_overflow_returns_err() {
