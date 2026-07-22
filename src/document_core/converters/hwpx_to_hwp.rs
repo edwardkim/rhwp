@@ -103,6 +103,11 @@ pub struct AdapterReport {
     pub master_page_autonum_placeholder_removed: u32,
     /// HWPX 바탕쪽 line shape rendering matrix를 HWP5 size ratio contract로 보정한 횟수
     pub master_page_line_rendering_size_ratio_materialized: u32,
+    /// [#2767] 캡션이 있는 그림(gso `$pic`) CTRL_HEADER 의 한컴 캡션 비트(bit 29,
+    /// 0x2000_0000) 보강 횟수. 표는 이미 `materialize_table_ctrl_header_attr` 로
+    /// 보강되지만 그림은 빠져 있었다(전 코퍼스 실측 80/80 이 개체 종류와 무관하게
+    /// 이 비트를 요구).
+    pub picture_caption_common_attr_materialized: u32,
 }
 
 impl AdapterReport {
@@ -150,7 +155,8 @@ impl AdapterReport {
                 + self.autonum_fwspace_char_shape_offsets_materialized
                 + self.header_footer_fwspace_control_materialized
                 + self.master_page_autonum_placeholder_removed
-                + self.master_page_line_rendering_size_ratio_materialized)
+                + self.master_page_line_rendering_size_ratio_materialized
+                + self.picture_caption_common_attr_materialized)
                 > 0
     }
 }
@@ -500,6 +506,12 @@ fn remap_bin_refs_in_control(ctrl: &mut Control, remap: &[u16]) {
             remap_bin_refs_in_paragraphs(&mut footnote.paragraphs, remap)
         }
         Control::Endnote(endnote) => remap_bin_refs_in_paragraphs(&mut endnote.paragraphs, remap),
+        // [#2767] adapt 워크·border-fill 워크는 이미 HiddenComment 를 방문한다
+        // (#2467 근거). remap 워크만 빠져 있어 숨은설명 안 그림이 재정렬 후
+        // 엉뚱한 이미지를 가리키는 채로 남았다.
+        Control::HiddenComment(comment) => {
+            remap_bin_refs_in_paragraphs(&mut comment.paragraphs, remap)
+        }
         _ => {}
     }
 }
@@ -508,6 +520,12 @@ fn remap_bin_refs_in_shape(shape: &mut ShapeObject, remap: &[u16]) {
     match shape {
         ShapeObject::Picture(pic) => {
             pic.image_attr.bin_data_id = remap_bin_ref(pic.image_attr.bin_data_id, remap);
+            // [#2767] 그룹 내부 그림(ShapeObject::Picture)은 drawing_mut()이 항상
+            // None 이라(모델상 DrawingObjAttr 를 갖지 않음) 아래 공통 캡션 remap
+            // 경로를 타지 않는다. Picture 자신의 caption 필드를 직접 재귀해야 한다.
+            if let Some(caption) = &mut pic.caption {
+                remap_bin_refs_in_paragraphs(&mut caption.paragraphs, remap);
+            }
         }
         ShapeObject::Ole(ole) => {
             if let Ok(id) = u16::try_from(ole.bin_data_id) {
@@ -924,6 +942,7 @@ fn adapt_paragraph_with_context(
                 if let Some(caption) = &mut pic.caption {
                     adapt_paragraphs_with_context(&mut caption.paragraphs, report, context);
                 }
+                materialize_picture_caption_common_attr(pic, report);
             }
             Control::Shape(shape) => adapt_shape_with_context(shape, report, context),
             Control::Equation(eq) => adapt_equation(eq, report),
@@ -1674,6 +1693,27 @@ fn materialize_table_ctrl_header_attr(table: &mut Table, report: &mut AdapterRep
 
     if table.common.attr != before {
         report.table_ctrl_header_attr_materialized += 1;
+    }
+}
+
+/// [#2767] 캡션이 있는 그림(gso `$pic`) CTRL_HEADER 의 한컴 캡션 비트(bit 29) 보강.
+///
+/// 전 코퍼스 실측(`samples/**/*.hwp`, 한컴 저작 원본): 캡션 동반 gso 80개(그림 42,
+/// 사각형 33, 연결선 3, OLE 2) 전부 bit 29=1, 캡션 없는 gso 2,674개 전부 bit 29=0.
+/// 개체 종류와 무관하게 캡션 유무만으로 결정된다. HWPX 출처 그림의
+/// `common.attr` 는 파서(`pack_hwpx_common_obj_attr`)가 이미 non-zero로 채우고
+/// 직렬화기가 verbatim 기록하므로, 표처럼 `pack_common_attr_bits(...)`로
+/// **recompute** 하지 않고 비트만 **OR** 한다 — recompute 하면 표 전용 비트를
+/// 그림에 강제로 얹는 회귀가 된다. 멱등: 비트가 이미 켜져 있으면 카운트하지 않음.
+///
+/// 도형(`$rec`/`$con`)·OLE 캡션은 범위 밖이다 — 직렬화기(`serializer/control.rs`)가
+/// 도형 캡션 레코드 자체를 아직 출력하지 않아, 레코드 없이 비트만 켜면 자기모순
+/// 레코드가 된다(별도 후속 과제).
+fn materialize_picture_caption_common_attr(pic: &mut Picture, report: &mut AdapterReport) {
+    const HWP5_GSO_CAPTION_COMMON_ATTR_BIT: u32 = 0x2000_0000;
+    if pic.caption.is_some() && pic.common.attr & HWP5_GSO_CAPTION_COMMON_ATTR_BIT == 0 {
+        pic.common.attr |= HWP5_GSO_CAPTION_COMMON_ATTR_BIT;
+        report.picture_caption_common_attr_materialized += 1;
     }
 }
 
@@ -3270,6 +3310,142 @@ mod tests {
         assert_eq!(
             pic.image_attr.bin_data_id, 2,
             "표 캡션 그림의 bin_data_id 가 remap 되지 않음(캡션 문단 미방문)"
+        );
+    }
+
+    // ---------- #2767 결함 A — 그림 캡션 gso CTRL_HEADER 캡션 비트 ----------
+
+    #[test]
+    fn picture_caption_common_attr_bit_is_or_ed_in_when_caption_present() {
+        let mut para = Paragraph::default();
+        let pic = Picture {
+            common: crate::model::shape::CommonObjAttr {
+                // 실측(이슈 §A-2)에서 확인한 파서 값 — 캡션 비트 이전에 이미 non-zero.
+                attr: 0x042A_2211,
+                ..Default::default()
+            },
+            caption: Some(crate::model::shape::Caption::default()),
+            ..Default::default()
+        };
+        para.controls.push(Control::Picture(Box::new(pic)));
+
+        let mut report = AdapterReport::new();
+        adapt_paragraph(&mut para, &mut report);
+
+        let Control::Picture(pic) = &para.controls[0] else {
+            panic!("Picture control expected");
+        };
+        assert_eq!(
+            pic.common.attr, 0x242A_2211,
+            "캡션이 있으면 bit 29 가 OR 되어야 함(recompute 아님)"
+        );
+        assert_eq!(report.picture_caption_common_attr_materialized, 1);
+
+        // 멱등: 다시 적용해도 카운트가 늘지 않아야 함.
+        let mut second = AdapterReport::new();
+        adapt_paragraph(&mut para, &mut second);
+        assert_eq!(second.picture_caption_common_attr_materialized, 0);
+    }
+
+    #[test]
+    fn picture_caption_common_attr_bit_untouched_without_caption() {
+        let mut para = Paragraph::default();
+        let pic = Picture {
+            common: crate::model::shape::CommonObjAttr {
+                attr: 0x042A_2211,
+                ..Default::default()
+            },
+            caption: None,
+            ..Default::default()
+        };
+        para.controls.push(Control::Picture(Box::new(pic)));
+
+        let mut report = AdapterReport::new();
+        adapt_paragraph(&mut para, &mut report);
+
+        let Control::Picture(pic) = &para.controls[0] else {
+            panic!("Picture control expected");
+        };
+        assert_eq!(
+            pic.common.attr, 0x042A_2211,
+            "캡션이 없으면 bit 29 를 켜면 안 됨(거짓양성 방지)"
+        );
+        assert_eq!(report.picture_caption_common_attr_materialized, 0);
+    }
+
+    // ---------- #2767 결함 B(잔여) — HiddenComment · 그룹 내부 그림 캡션 remap ----------
+
+    #[test]
+    fn hidden_comment_picture_bin_ref_is_remapped() {
+        let inner_pic = Picture {
+            image_attr: crate::model::image::ImageAttr {
+                bin_data_id: 1,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let mut inner_para = Paragraph::default();
+        inner_para
+            .controls
+            .push(Control::Picture(Box::new(inner_pic)));
+        let comment = crate::model::control::HiddenComment {
+            paragraphs: vec![inner_para],
+        };
+        let mut ctrl = Control::HiddenComment(Box::new(comment));
+
+        // remap[1] = 2 : bin_data_id 1 을 2 로 재배치.
+        let remap = vec![0u16, 2, 1];
+        remap_bin_refs_in_control(&mut ctrl, &remap);
+
+        let Control::HiddenComment(comment) = &ctrl else {
+            panic!("HiddenComment control expected");
+        };
+        let Control::Picture(pic) = &comment.paragraphs[0].controls[0] else {
+            panic!("Picture control expected inside HiddenComment");
+        };
+        assert_eq!(
+            pic.image_attr.bin_data_id, 2,
+            "숨은설명 안 그림의 bin_data_id 도 재정렬 remap 을 반영해야 함"
+        );
+    }
+
+    #[test]
+    fn grouped_picture_caption_bin_ref_is_remapped() {
+        // ShapeObject::Picture(그룹 내부 그림)는 drawing_mut()이 None 이라 공통
+        // caption remap 경로를 타지 않는다 — Picture 자신의 caption 을 직접 재귀해야 함.
+        let inner_pic = Picture {
+            image_attr: crate::model::image::ImageAttr {
+                bin_data_id: 1,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let mut caption_para = Paragraph::default();
+        caption_para
+            .controls
+            .push(Control::Picture(Box::new(inner_pic)));
+        let grouped_pic = Picture {
+            caption: Some(crate::model::shape::Caption {
+                paragraphs: vec![caption_para],
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let mut shape = ShapeObject::Picture(Box::new(grouped_pic));
+
+        let remap = vec![0u16, 2, 1];
+        remap_bin_refs_in_shape(&mut shape, &remap);
+
+        let ShapeObject::Picture(pic) = &shape else {
+            panic!("Picture shape expected");
+        };
+        let caption = pic.caption.as_ref().expect("caption preserved");
+        let Control::Picture(inner) = &caption.paragraphs[0].controls[0] else {
+            panic!("Picture control expected inside caption");
+        };
+        assert_eq!(
+            inner.image_attr.bin_data_id, 2,
+            "그룹 내부 그림 캡션 안 그림의 bin_data_id 도 재정렬 remap 을 반영해야 함"
         );
     }
 }
