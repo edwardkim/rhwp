@@ -2600,6 +2600,7 @@ mod tests {
             Some(split_png(4, 4, [255, 0, 0, 255], [0, 0, 255, 255], true)),
         );
         node.crop = Some((0, 2, 4, 4));
+        node.original_size_hu = Some((4, 4));
         let tree = PageLayerTree::new(
             8.0,
             8.0,

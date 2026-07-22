@@ -25,6 +25,7 @@ PNG를 1920×1080 가상 이미지로 만든 crop 경로가 그림의 1/10만 �
 ## 검증
 
 - 전체 Rust·Studio·WASM 게이트: `pr_2818_review.md`와 같은 누적 통합 기준으로 모두 성공
+- Native Skia 공식 회귀: lib `skia` 56/56, placeholder integration 2/2, PDF integration 4/4 성공
 - 한글 2020 기준 PDF: `pdf/issue2817/paper_anchor_infront_pic-2020.pdf`, A4 1쪽,
   SHA-256 `58c73e47442052f79d3d9bf8ea99acaca472bcabe07cfa89d3576d0274f018af`
 - 원본 HWPX SHA-256: `db44a442ff70de950d718e9de63ce40b45be080466afe0d801c46789e055938f`

@@ -507,7 +507,7 @@ Cargo 계열 검증은 순차 실행한다. `cargo test`, `cargo clippy`, `cargo
 |---|---|
 | `mydocs/**` 문서만 변경 | `git diff --check`, 문서 경로·링크·변경 범위 확인. cargo 검증 생략 |
 | Rust parser/model/CLI | focused test, `cargo test --profile release-test --tests`, `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings` |
-| renderer/layout/typeset/WASM | Rust 검증, `wasm-pack build --target web --out-dir pkg`, 2.6·3.5절 시각 검증 |
+| renderer/layout/typeset/WASM | Rust 검증, 아래 Native Skia 공식 테스트 3종, `wasm-pack build --target web --out-dir pkg`, 2.6·3.5절 시각 검증 |
 | `rhwp-studio/**` frontend만 변경 | `npx tsc --noEmit`, `npm test`, 실제 브라우저 동작 확인 |
 | `npm/editor/**` 공개 SDK·transport·타입 변경 | 4.3.1절 package unit/contract/type/pack/iframe smoke 확인 |
 | CI workflow 변경 | workflow 구문·변경 조건 확인과 최신 GitHub Actions 결과 확인 |
@@ -551,6 +551,9 @@ VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
 cargo build --release
 cargo test --release --lib
 cargo test --profile release-test --tests
+cargo test --profile release-test --features native-skia skia --lib
+cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder
+cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export
 cargo fmt --check
 git diff --check
 cargo clippy --all-targets -- -D warnings
@@ -559,6 +562,10 @@ cd rhwp-studio && npx tsc --noEmit
 cd rhwp-studio && npm test
 wasm-pack build --target web --out-dir pkg
 ```
+
+위 Native Skia 3종은 `.github/workflows/ci.yml`의 `Native Skia tests` job과 같은 공식 회귀 범위다.
+기본 feature의 `--lib`/`--tests` 성공만으로 대체하지 않는다. 특히 이미지 crop, fill mode, 투명도,
+placeholder, PDF 직접 출력 경로를 건드린 PR은 remote push 전에 세 명령을 모두 통과시킨다.
 
 `cargo test --profile release-test --tests` 에는 `tests/svg_snapshot.rs` integration test 도 포함된다.
 따라서 전체 통합 테스트를 이미 통과했다면 `svg_snapshot`은 함께 검증된 것이다. 렌더 영향 PR 에서
