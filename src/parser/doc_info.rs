@@ -367,6 +367,7 @@ fn parse_border_fill(data: &[u8]) -> Result<BorderFill, DocInfoError> {
         diagonal,
         center_line: CenterLine::from_hwp_attr(attr),
         fill,
+        three_d: false,
     })
 }
 

@@ -346,7 +346,7 @@ fn write_border_fill<W: Write>(
         "hh:borderFill",
         &[
             ("id", &(id + 1).to_string()), // HWPX 관찰: id는 1-based
-            ("threeD", "0"),
+            ("threeD", if bf.three_d { "1" } else { "0" }),
             ("shadow", "0"),
             ("centerLine", center_line_type(bf)),
             ("breakCellSeparateLine", "0"),

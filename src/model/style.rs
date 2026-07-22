@@ -461,6 +461,8 @@ pub struct BorderFill {
     pub center_line: CenterLine,
     /// 채우기 정보
     pub fill: Fill,
+    /// 3차원 효과 (HWPX borderFill@threeD)
+    pub three_d: bool,
 }
 
 /// 중심선 방향 (HWPX borderFill@centerLine)
