@@ -431,6 +431,16 @@ fn hwp3_note_column_width_hu(column_width_hu: i32) -> i32 {
         .max(1)
 }
 
+/// doc_info.encrypted(암호 설정 여부)를 FileHeader.encrypted 및 raw_data 플래그 비트(0x02)에 반영한다.
+fn apply_hwp3_encrypted_flag(doc_info_encrypted: u16, header: &mut crate::model::document::FileHeader) {
+    if doc_info_encrypted != 0 {
+        header.encrypted = true;
+        if let Some(raw) = header.raw_data.as_mut() {
+            raw[36] |= 0x02;
+        }
+    }
+}
+
 fn hwp3_default_endnote_shape() -> crate::model::footnote::FootnoteShape {
     use crate::model::footnote::{
         FootnoteNumbering, FootnotePlacement, FootnoteShape, NumberFormat,
@@ -2946,6 +2956,11 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     doc.doc_properties.page_start_num = doc_info.start_page_number;
     doc.doc_properties.footnote_start_num = doc_info.footnote_start_number;
 
+    // doc_info.encrypted(암호 설정 여부)를 FileHeader.encrypted로 배선한다.
+    // HWP5/HWPX는 각자의 헤더에서 이 값을 채우지만 HWP3는 raw_data를 항상
+    // 비암호(flags=0)로 하드코딩해 doc.header.encrypted가 실제 값과 무관하게 false였다.
+    apply_hwp3_encrypted_flag(doc_info.encrypted, &mut doc.header);
+
     // 2. 문서 요약 파싱 (1008 바이트)
     let doc_summary = Hwp3DocSummary::read(&mut cursor)?;
 
@@ -4169,6 +4184,19 @@ mod tests {
         let cs = convert_char_shape(&sub);
         assert!(cs.subscript);
         assert!(!cs.superscript);
+    }
+
+    #[test]
+    fn hwp3_maps_encrypted_flag() {
+        // doc_info.encrypted != 0 이면 FileHeader.encrypted 와 raw_data 플래그 비트가
+        // 반영돼야 한다. 종전엔 배선이 없어 항상 false 였다.
+        let mut header = crate::model::document::FileHeader {
+            raw_data: Some(vec![0u8; crate::parser::header::FILE_HEADER_SIZE]),
+            ..Default::default()
+        };
+        apply_hwp3_encrypted_flag(1, &mut header);
+        assert!(header.encrypted);
+        assert_eq!(header.raw_data.unwrap()[36] & 0x02, 0x02);
     }
 
     #[test]
