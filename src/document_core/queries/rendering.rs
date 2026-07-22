@@ -2917,9 +2917,35 @@ impl DocumentCore {
     }
 
     fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
+        #[cfg(not(target_arch = "wasm32"))]
+        let issue2424_profile_enabled =
+            std::env::var("RHWP_2424_PROFILE").is_ok_and(|value| !value.is_empty() && value != "0");
+        #[cfg(target_arch = "wasm32")]
+        let issue2424_profile_enabled = false;
+        let issue2424_pass_started = issue2424_profile_enabled.then(std::time::Instant::now);
+        let issue2424_warm_sections = self
+            .measured_sections
+            .iter()
+            .filter(|section| !section.paragraphs.is_empty())
+            .count();
+        let issue2424_dirty_sections = self
+            .dirty_sections
+            .iter()
+            .copied()
+            .filter(|dirty| *dirty)
+            .count();
+        let issue2424_invalidate_started = issue2424_profile_enabled.then(std::time::Instant::now);
         self.invalidate_page_tree_cache();
+        let issue2424_invalidate_elapsed = issue2424_invalidate_started
+            .map(|started| started.elapsed())
+            .unwrap_or_default();
         // [#2004] 부동 이미지 스택 → 인라인 재분류 정규화본 재계산(원본 무손상).
+        let issue2424_normalize_started = issue2424_profile_enabled.then(std::time::Instant::now);
         self.compute_render_normalized();
+        let issue2424_normalize_elapsed = issue2424_normalize_started
+            .map(|started| started.elapsed())
+            .unwrap_or_default();
+        let issue2424_setup_started = issue2424_profile_enabled.then(std::time::Instant::now);
         let paginator = Paginator::new(self.dpi);
         let hwp3_origin_flow_spacing_before = uses_hwp3_origin_flow_spacing_before(&self.document);
         // [#2403] 소스분기 파생 일원화 — HWPX 시멘틱/HWP5→HWPX 마커/HWP3 변환본
@@ -3010,6 +3036,12 @@ impl DocumentCore {
 
         // [Task #1046] reflow force-break hint (구역별). reflow 루프(paginate)가 누적해 전달.
         let empty_breaks: std::collections::HashSet<usize> = std::collections::HashSet::new();
+        let issue2424_setup_elapsed = issue2424_setup_started
+            .map(|started| started.elapsed())
+            .unwrap_or_default();
+        let mut issue2424_measure_elapsed = std::time::Duration::ZERO;
+        let mut issue2424_typeset_elapsed = std::time::Duration::ZERO;
+        let mut issue2424_postprocess_elapsed = std::time::Duration::ZERO;
         for (idx, section) in self.document.sections.iter().enumerate() {
             if !self.dirty_sections[idx] {
                 // dirty가 아닌 구역에서도 carry를 업데이트
@@ -3067,6 +3099,7 @@ impl DocumentCore {
             };
 
             // 증분 측정: 이전 측정 데이터가 있으면 문단/표 수준 선택적 캐싱
+            let issue2424_measure_started = issue2424_profile_enabled.then(std::time::Instant::now);
             let measured = if !self.measured_sections[idx].paragraphs.is_empty() {
                 let dirty_paras = self
                     .dirty_paragraphs
@@ -3105,7 +3138,11 @@ impl DocumentCore {
                     .unwrap_or(layout_pre.body_area.width);
                 measurer.measure_section(para_src, composed, &self.styles, Some(col_w_pre))
             };
+            if let Some(started) = issue2424_measure_started {
+                issue2424_measure_elapsed += started.elapsed();
+            }
 
+            let issue2424_typeset_started = issue2424_profile_enabled.then(std::time::Instant::now);
             let hwp3_origin_page_tolerance = self.document.layout_profile().hwp3_layout()
                 || uses_hwp3_origin_page_tolerance(&self.document);
             let column_def = Self::find_initial_column_def(para_src);
@@ -3209,6 +3246,11 @@ impl DocumentCore {
                     endnote_deferral,
                 )
             };
+            if let Some(started) = issue2424_typeset_started {
+                issue2424_typeset_elapsed += started.elapsed();
+            }
+            let issue2424_postprocess_started =
+                issue2424_profile_enabled.then(std::time::Instant::now);
 
             // [Task #1086 Stage 3] HWP3 변환본의 표지성 구역은 한컴이 직전
             // 구역이 홀수 쪽에서 끝날 때 빈 쪽을 하나 삽입해 다음 구역 제목을
@@ -3633,8 +3675,12 @@ impl DocumentCore {
                 }
                 self.para_column_map[idx] = col_map;
             }
+            if let Some(started) = issue2424_postprocess_started {
+                issue2424_postprocess_elapsed += started.elapsed();
+            }
         }
 
+        let issue2424_cleanup_started = issue2424_profile_enabled.then(std::time::Instant::now);
         // para_offset 리셋 (수렴 감지 완료)
         for off in &mut self.para_offset {
             *off = 0;
@@ -3649,6 +3695,45 @@ impl DocumentCore {
                     }
                 }
             }
+        }
+        let issue2424_cleanup_elapsed = issue2424_cleanup_started
+            .map(|started| started.elapsed())
+            .unwrap_or_default();
+        if let Some(pass_started) = issue2424_pass_started {
+            let total = pass_started.elapsed();
+            let accounted = issue2424_invalidate_elapsed
+                + issue2424_normalize_elapsed
+                + issue2424_setup_elapsed
+                + issue2424_measure_elapsed
+                + issue2424_typeset_elapsed
+                + issue2424_postprocess_elapsed
+                + issue2424_cleanup_elapsed;
+            let other = total.saturating_sub(accounted);
+            let page_count: usize = self
+                .pagination
+                .iter()
+                .map(|section| section.pages.len())
+                .sum();
+            let mode = if issue2424_warm_sections == 0 {
+                "initial"
+            } else {
+                "incremental"
+            };
+            eprintln!(
+                "RHWP_2424_PAGINATION_PROFILE mode={mode} sections={} dirty_sections={} pages={} total_ms={:.3} invalidate_ms={:.3} normalize_ms={:.3} setup_ms={:.3} measure_ms={:.3} typeset_ms={:.3} postprocess_ms={:.3} cleanup_ms={:.3} other_ms={:.3}",
+                self.document.sections.len(),
+                issue2424_dirty_sections,
+                page_count,
+                total.as_secs_f64() * 1000.0,
+                issue2424_invalidate_elapsed.as_secs_f64() * 1000.0,
+                issue2424_normalize_elapsed.as_secs_f64() * 1000.0,
+                issue2424_setup_elapsed.as_secs_f64() * 1000.0,
+                issue2424_measure_elapsed.as_secs_f64() * 1000.0,
+                issue2424_typeset_elapsed.as_secs_f64() * 1000.0,
+                issue2424_postprocess_elapsed.as_secs_f64() * 1000.0,
+                issue2424_cleanup_elapsed.as_secs_f64() * 1000.0,
+                other.as_secs_f64() * 1000.0,
+            );
         }
     }
 

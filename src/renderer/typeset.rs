@@ -15450,7 +15450,66 @@ impl TypesetEngine {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn typeset_block_table(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        ctrl_idx: usize,
+        para: &Paragraph,
+        table: &crate::model::table::Table,
+        ft: &FormattedTable,
+        fmt: &FormattedParagraph,
+        mt: Option<&MeasuredTable>,
+        styles: &ResolvedStyleSet,
+        para_start_height: f64,
+        budget_para_start_height: f64,
+        is_first_placed: bool,
+        is_last_placed: bool,
+        paragraphs_all: &[Paragraph],
+        composed_all: &[ComposedParagraph],
+    ) {
+        #[cfg(not(target_arch = "wasm32"))]
+        let issue2424_profile_enabled =
+            std::env::var("RHWP_2424_PROFILE").is_ok_and(|value| !value.is_empty() && value != "0");
+        #[cfg(target_arch = "wasm32")]
+        let issue2424_profile_enabled = false;
+        let issue2424_started = issue2424_profile_enabled.then(std::time::Instant::now);
+        let issue2424_pages_before = st.pages.len();
+
+        self.typeset_block_table_inner(
+            st,
+            para_idx,
+            ctrl_idx,
+            para,
+            table,
+            ft,
+            fmt,
+            mt,
+            styles,
+            para_start_height,
+            budget_para_start_height,
+            is_first_placed,
+            is_last_placed,
+            paragraphs_all,
+            composed_all,
+        );
+
+        if let Some(started) = issue2424_started {
+            eprintln!(
+                "RHWP_2424_BLOCK_TABLE_PROFILE section={} para={} control={} rows={} elapsed_ms={:.3} pages_added={}",
+                st.section_index,
+                para_idx,
+                ctrl_idx,
+                table.row_count,
+                started.elapsed().as_secs_f64() * 1000.0,
+                st.pages.len().saturating_sub(issue2424_pages_before),
+            );
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn typeset_block_table_inner(
         &self,
         st: &mut TypesetState,
         para_idx: usize,
