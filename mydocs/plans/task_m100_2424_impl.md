@@ -94,6 +94,14 @@ revision/structure를 검증하고 descriptor 좌표로 immutable source를 재�
 - `is_continuation`, `is_block_split`, row range exact 일치
 - renderer typeset focused tests와 WASM library check
 
+완료 결과(2026-07-22):
+
+- row/start-cut/block-cut/continuation을 `TableContinuationCursor`로 묶었다.
+- split 준비값과 shadow `TypesetState`를 `BlockTableContinuationContext`가 소유한다.
+- iteration 결과를 `Skipped`/`Emitted`/`Complete`로 나누고 caller-controlled `step`을 추가했다.
+- budget 1/8/무제한에서 각각 115/15/1 step으로 같은 115-fragment HWP/HWPX oracle을 재현했다.
+- 최신 #2439/#2279 table-flow 보정과 footnote refit 경로를 그대로 보존했다.
+
 ### D1 — DocumentCore pending job
 
 1. selective measurement 후 descriptor target의 measured table을 재조회한다.
