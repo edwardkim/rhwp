@@ -58,7 +58,9 @@ pub fn write_table<W: Write>(
     let z_order = table.common.z_order.to_string();
     let text_wrap = text_wrap_str(table.common.text_wrap);
     let text_flow = text_flow_str(table.common.text_flow);
-    let lock = bool01(false);
+    // [#2855] 표만 lock 방출이 IR을 참조하지 않고 리터럴 false를 하드코딩해 왕복 시
+    // 개체 잠금이 항상 풀렸다. IR(common.locked)을 방출한다.
+    let lock = bool01(table.common.locked);
     let page_break = table_page_break_str(table.page_break);
     let repeat_header = bool01(table.repeat_header);
     let row_cnt = table.row_count.to_string();
@@ -1083,6 +1085,208 @@ mod tests {
         assert_eq!(table_page_break_str(TablePageBreak::None), "NONE");
         assert_eq!(table_page_break_str(TablePageBreak::CellBreak), "TABLE");
         assert_eq!(table_page_break_str(TablePageBreak::RowBreak), "CELL");
+    }
+
+    // ---------- #2697: hp:tbl 크기·번호 범주 속성 라운드트립 ----------
+
+    #[test]
+    fn task2697_sz_criteria_and_protect_emitted_from_ir() {
+        // [#2697] hp:sz 의 widthRelTo/heightRelTo/protect 는 IR 을 보존해야 한다.
+        // 종전 "ABSOLUTE"/"ABSOLUTE"/"0" 하드코딩은 파서가 이미 읽어 둔 값을 버렸다. RED.
+        let mut t = empty_table(1, 1);
+        t.common.width_criterion = SizeCriterion::Column;
+        t.common.height_criterion = SizeCriterion::Paper;
+        t.common.size_protect = true;
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r#"widthRelTo="COLUMN""#),
+            "widthRelTo 가 IR(Column)로 방출돼야 함(현재 ABSOLUTE 하드코딩): {}",
+            &xml[..xml.len().min(400)]
+        );
+        assert!(
+            xml.contains(r#"heightRelTo="PAPER""#),
+            "heightRelTo 가 IR(Paper)로 방출돼야 함(현재 ABSOLUTE 하드코딩): {}",
+            &xml[..xml.len().min(400)]
+        );
+        assert!(
+            xml.contains(r#"protect="1""#),
+            "protect 가 IR(size_protect=true)로 방출돼야 함(현재 0 하드코딩): {}",
+            &xml[..xml.len().min(400)]
+        );
+    }
+
+    #[test]
+    fn task2697_sz_defaults_unchanged() {
+        // 기본 IR(Absolute/Absolute/false)은 종전 출력과 동일해야 한다(무변화 보장).
+        let t = empty_table(1, 1);
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r#"widthRelTo="ABSOLUTE""#)
+                && xml.contains(r#"heightRelTo="ABSOLUTE""#)
+                && xml.contains(r#"protect="0""#),
+            "기본값 출력이 바뀌면 안 됨: {}",
+            &xml[..xml.len().min(400)]
+        );
+    }
+
+    #[test]
+    fn task2697_numbering_type_emitted_from_ir() {
+        // [#2697] numberingType 은 IR 을 보존해야 한다. 종전 "TABLE" 리터럴. RED.
+        use crate::model::shape::ObjectNumberingType;
+        let mut t = empty_table(1, 1);
+        t.common.numbering_type = ObjectNumberingType::Picture;
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r#"numberingType="PICTURE""#),
+            "numberingType 이 IR(Picture)로 방출돼야 함(현재 TABLE 하드코딩): {}",
+            &xml[..xml.len().min(400)]
+        );
+        // 기본값(Table)은 종전 출력과 동일.
+        let mut t2 = empty_table(1, 1);
+        t2.common.numbering_type = ObjectNumberingType::Table;
+        assert!(serialize(&t2).contains(r#"numberingType="TABLE""#));
+    }
+
+    #[test]
+    fn task2697_tbl_attrs_survive_xml_ir_xml_roundtrip() {
+        // XML → IR → XML 전 구간. 파서 arm 부재(protect/numberingType)와 방출 하드코딩이
+        // 모두 걸리는 통합 케이스.
+        use crate::model::shape::ObjectNumberingType;
+        use crate::parser::hwpx::section::parse_hwpx_section;
+
+        let src = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:tbl numberingType="PICTURE" textWrap="TOP_AND_BOTTOM" pageBreak="CELL"
+            repeatHeader="0" rowCnt="1" colCnt="1" cellSpacing="0" borderFillIDRef="0"
+            noAdjust="0">
+      <hp:sz width="42520" widthRelTo="COLUMN" height="10000" heightRelTo="PAPER" protect="1"/>
+      <hp:pos treatAsChar="0" flowWithText="1" allowOverlap="0"
+              vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT"
+              vertOffset="0" horzOffset="0"/>
+      <hp:outMargin left="0" right="0" top="0" bottom="0"/>
+      <hp:inMargin left="0" right="0" top="0" bottom="0"/>
+      <hp:tr>
+        <hp:tc borderFillIDRef="0">
+          <hp:cellAddr colAddr="0" rowAddr="0"/>
+          <hp:cellSpan colSpan="1" rowSpan="1"/>
+          <hp:cellSz width="42520" height="10000"/>
+        </hp:tc>
+      </hp:tr>
+    </hp:tbl>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(src).expect("파싱");
+        let table = match &section.paragraphs[0].controls[0] {
+            crate::model::control::Control::Table(t) => t.as_ref().clone(),
+            other => panic!("표가 아님: {other:?}"),
+        };
+
+        // IR 단계 — 파서가 4속성을 모두 읽어야 한다.
+        assert_eq!(
+            table.common.width_criterion,
+            SizeCriterion::Column,
+            "widthRelTo=COLUMN 이 IR 에 남아야 함"
+        );
+        assert_eq!(
+            table.common.height_criterion,
+            SizeCriterion::Paper,
+            "heightRelTo=PAPER 가 IR 에 남아야 함"
+        );
+        assert!(
+            table.common.size_protect,
+            "protect=1 이 IR(size_protect)에 남아야 함(파서 arm 누락)"
+        );
+        assert_eq!(
+            table.common.numbering_type,
+            ObjectNumberingType::Picture,
+            "numberingType=PICTURE 가 IR 에 남아야 함(파서 arm 누락)"
+        );
+        // numberingType 이 TABLE 이 아니므로 "표 번호" attr 비트는 서지 않는다.
+        assert_eq!(
+            table.common.attr & 0x0800_0000,
+            0,
+            "PICTURE 번호 표에 TABLE 번호 비트가 서면 IR 모순: {:#010x}",
+            table.common.attr
+        );
+
+        // 방출 단계 — 4속성이 그대로 되살아나야 한다.
+        let xml = serialize(&table);
+        for expected in [
+            r#"numberingType="PICTURE""#,
+            r#"widthRelTo="COLUMN""#,
+            r#"heightRelTo="PAPER""#,
+            r#"protect="1""#,
+        ] {
+            assert!(xml.contains(expected), "{expected} 유실: {xml}");
+        }
+    }
+
+    #[test]
+    fn task2855_tbl_lock_survives_xml_ir_xml_roundtrip() {
+        // [#2855] <hp:tbl> 의 lock(개체 잠금)이 parse_table 에 arm 이 없어 파싱 단계에서
+        // 버려지고, 방출측(이 파일 62행)도 bool01(false) 로 하드코딩되어 있어 왕복 시
+        // 원본 lock="1" 이 소리 없이 lock="0" 으로 풀린다. RED.
+        use crate::parser::hwpx::section::parse_hwpx_section;
+
+        let src = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:tbl lock="1" rowCnt="1" colCnt="1" cellSpacing="0" borderFillIDRef="0">
+      <hp:sz width="1000" widthRelTo="ABSOLUTE" height="1000" heightRelTo="ABSOLUTE"/>
+      <hp:pos treatAsChar="0" flowWithText="1" allowOverlap="0"
+              vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT"
+              vertOffset="0" horzOffset="0"/>
+      <hp:outMargin left="0" right="0" top="0" bottom="0"/>
+      <hp:inMargin left="0" right="0" top="0" bottom="0"/>
+      <hp:tr>
+        <hp:tc borderFillIDRef="0">
+          <hp:cellAddr colAddr="0" rowAddr="0"/>
+          <hp:cellSpan colSpan="1" rowSpan="1"/>
+          <hp:cellSz width="1000" height="1000"/>
+        </hp:tc>
+      </hp:tr>
+    </hp:tbl>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(src).expect("파싱");
+        let table = match &section.paragraphs[0].controls[0] {
+            crate::model::control::Control::Table(t) => t.as_ref().clone(),
+            other => panic!("표가 아님: {other:?}"),
+        };
+
+        assert!(
+            table.common.locked,
+            "lock=\"1\" 이 IR(common.locked)에 남아야 함(parse_table 에 lock arm 누락)"
+        );
+        let xml = serialize(&table);
+        assert!(
+            xml.contains(r#"lock="1""#),
+            "lock 이 IR 에서 방출돼야 함(현재 bool01(false) 하드코딩): {}",
+            &xml[..xml.len().min(400)]
+        );
+    }
+
+    #[test]
+    fn task2697_height_criterion_str_is_exact_inverse_of_parser() {
+        // 파서는 높이를 parse_size_criterion(_, allow_column_para=false) 로 읽으므로
+        // (section.rs:1693) 치역이 {Paper, Page, Absolute} 3값뿐이다. 방출이 COLUMN/PARA 를
+        // 내면 재파싱 시 Absolute 로 접혀 왕복이 비가역이 된다. 너비만 5값 전체를 낸다.
+        assert_eq!(height_criterion_str(SizeCriterion::Paper), "PAPER");
+        assert_eq!(height_criterion_str(SizeCriterion::Page), "PAGE");
+        assert_eq!(height_criterion_str(SizeCriterion::Absolute), "ABSOLUTE");
+        assert_eq!(height_criterion_str(SizeCriterion::Column), "ABSOLUTE");
+        assert_eq!(height_criterion_str(SizeCriterion::Para), "ABSOLUTE");
+
+        assert_eq!(size_criterion_str(SizeCriterion::Paper), "PAPER");
+        assert_eq!(size_criterion_str(SizeCriterion::Page), "PAGE");
+        assert_eq!(size_criterion_str(SizeCriterion::Column), "COLUMN");
+        assert_eq!(size_criterion_str(SizeCriterion::Para), "PARA");
+        assert_eq!(size_criterion_str(SizeCriterion::Absolute), "ABSOLUTE");
     }
 
     #[test]
