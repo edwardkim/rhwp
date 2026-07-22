@@ -868,6 +868,7 @@ fn sweep_cell(base: &str, a: &Cell, b: &Cell, out: &mut Vec<FieldDivergence>) {
         is_header,
         raw_list_extra,
         field_name,
+        dirty_flag,
     } = a;
 
     macro_rules! f {
@@ -890,6 +891,7 @@ fn sweep_cell(base: &str, a: &Cell, b: &Cell, out: &mut Vec<FieldDivergence>) {
     f!(is_header);
     f!(raw_list_extra);
     f!(field_name);
+    f!(dirty_flag);
 
     sweep_paragraphs(
         &format!("{base}.paragraphs"),

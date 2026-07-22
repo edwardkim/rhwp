@@ -143,6 +143,9 @@ pub struct Cell {
     /// 셀 필드 이름 (한컴 셀 속성 → 필드 → 필드 이름)
     /// raw_list_extra의 offset 14-15(name_len) + offset 16~(UTF-16LE)에서 추출
     pub field_name: Option<String>,
+    /// HWPX `<hp:tc dirty>` 속성 (편집기 캐시 무효화 표시, 라운드트립 보존용).
+    /// HWP5 바이너리에는 대응 비트가 없어 list_header_width_ref 재사용 대상에서 제외한다.
+    pub dirty_flag: bool,
 }
 
 /// 표 셀 행/열 바꿈 복사 데이터.
@@ -346,6 +349,7 @@ impl Cell {
             is_header: template.is_header,
             raw_list_extra: template.raw_list_extra.clone(),
             field_name: None,
+            dirty_flag: false,
             paragraphs: vec![para],
         }
     }
