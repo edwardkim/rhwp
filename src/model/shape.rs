@@ -90,6 +90,12 @@ pub struct CommonObjAttr {
     /// HWP5 파서는 설정하지 않는다 (기본 None). HWPX 그리기 개체의
     /// `numberingType="PICTURE"` 등을 라운드트립 보존하기 위한 필드.
     pub numbering_type: ObjectNumberingType,
+    /// HWPX `dropcapstyle` (개체를 감싼 단락의 드롭캡 표시 방식) 보존.
+    ///
+    /// 파서가 읽지 않으면 방출측(picture.rs 등)이 항상 `dropcapstyle="None"`으로
+    /// 되돌려, 원본이 `DoubleLine`/`TripleLine`/`Margin` 드롭캡으로 개체를 감싼
+    /// 문단이었더라도 저장 시 드롭캡 스타일이 유실된다.
+    pub drop_cap_style: DropCapStyle,
     /// 파싱된 필드 이후 추가 바이트 (라운드트립 보존용)
     pub raw_extra: Vec<u8>,
 }
@@ -102,6 +108,16 @@ pub enum ObjectNumberingType {
     Picture,
     Table,
     Equation,
+}
+
+/// HWPX 개체 `dropcapstyle` (드롭캡 표시 방식). OWPML Core 스키마 `DropCapStyleType`.
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub enum DropCapStyle {
+    #[default]
+    None,
+    DoubleLine,
+    TripleLine,
+    Margin,
 }
 
 /// 세로 위치 기준

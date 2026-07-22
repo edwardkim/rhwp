@@ -2251,6 +2251,18 @@ fn parse_picture(
                 }
             }
             b"groupLevel" => shape_attr.group_level = attr_str(&attr).parse().unwrap_or(0),
+            // dropcapstyle (개체를 감싼 문단의 드롭캡 표시 방식) 보존.
+            // 미파싱 상태에서는 picture.rs 방출측이 항상 "None"으로 되돌려,
+            // DoubleLine/TripleLine/Margin 드롭캡 문단에 있던 그림이 저장 시
+            // 드롭캡 스타일을 잃는다.
+            b"dropcapstyle" => {
+                common.drop_cap_style = match attr_str(&attr).as_str() {
+                    "DoubleLine" => crate::model::shape::DropCapStyle::DoubleLine,
+                    "TripleLine" => crate::model::shape::DropCapStyle::TripleLine,
+                    "Margin" => crate::model::shape::DropCapStyle::Margin,
+                    _ => crate::model::shape::DropCapStyle::None,
+                };
+            }
             _ => {}
         }
     }

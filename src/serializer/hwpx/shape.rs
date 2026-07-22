@@ -1053,6 +1053,18 @@ pub(crate) fn numbering_type_str(n: ObjectNumberingType) -> &'static str {
     }
 }
 
+/// `dropcapstyle` 방출 문자열. OWPML Core 스키마 `DropCapStyleType`
+/// (None/DoubleLine/TripleLine/Margin) 그대로 왕복한다.
+pub(crate) fn drop_cap_style_str(s: crate::model::shape::DropCapStyle) -> &'static str {
+    use crate::model::shape::DropCapStyle;
+    match s {
+        DropCapStyle::None => "None",
+        DropCapStyle::DoubleLine => "DoubleLine",
+        DropCapStyle::TripleLine => "TripleLine",
+        DropCapStyle::Margin => "Margin",
+    }
+}
+
 fn bool01(b: bool) -> &'static str {
     if b {
         "1"
