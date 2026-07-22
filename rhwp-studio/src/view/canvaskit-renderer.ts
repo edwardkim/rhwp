@@ -51,6 +51,7 @@ import {
 import {
   canvasKitImageCacheKey,
   canvasKitImageFillModeTiles,
+  canvasKitImageFillModeStretches,
   canvasKitImagePlacement,
   canvasKitImageSourceRect,
 } from './canvaskit/image-replay';
@@ -1381,7 +1382,12 @@ export class CanvasKitLayerRenderer {
       return;
     }
 
-    const crop = canvasKitImageSourceRect(imageWidth, imageHeight, op.crop);
+    const crop = canvasKitImageSourceRect(
+      imageWidth,
+      imageHeight,
+      op.crop,
+      op.originalSizeHu,
+    );
     const opacity = Number.isFinite(op.opacity) ? Math.max(0, Math.min(1, op.opacity ?? 1)) : 1;
     const drawImage = (dstX: number, dstY: number, dstW: number, dstH: number) => {
       const src = crop
@@ -1391,7 +1397,7 @@ export class CanvasKitLayerRenderer {
     };
 
     const fillMode = op.fillMode ?? 'fitToSize';
-    if (fillMode === 'fitToSize') {
+    if (canvasKitImageFillModeStretches(fillMode)) {
       drawImage(op.bbox.x, op.bbox.y, op.bbox.width, op.bbox.height);
       return;
     }

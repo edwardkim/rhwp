@@ -608,8 +608,8 @@ fn test_compute_image_crop_src_exam_kor_header() {
     assert!((sy - 0.0).abs() < 0.01);
     // 102366 / 75 = 1364.88
     assert!((sw - 1364.88).abs() < 0.01);
-    // 26580 / 75 = 354.4 (≈ 354 image height)
-    assert!((sh - 354.4).abs() < 0.01);
+    // imgDim 세로 범위가 디코딩 이미지 전체 높이에 대응한다.
+    assert!((sh - 354.0).abs() < 0.01);
 }
 
 #[test]
@@ -621,14 +621,13 @@ fn test_compute_image_crop_src_no_crop_full_image() {
     assert!((sy - 0.0).abs() < 0.01);
     // 174000 / 75 = 2320 (= image width)
     assert!((sw - 2320.0).abs() < 0.01);
-    assert!((sh - 354.4).abs() < 0.01);
+    assert!((sh - 354.0).abs() < 0.01);
 }
 
 #[test]
 fn test_compute_image_crop_src_offset_top_left() {
     // 좌·상단을 잘라낸 케이스: top=ow/4, left=ow/4 → 우하단 75% 영역
-    let (sx, sy, sw, sh) =
-        compute_image_crop_src((1000, 500, 4000, 2500), Some((4000, 2500)), 400.0, 250.0);
+    let (sx, sy, sw, sh) = compute_image_crop_src((1000, 500, 4000, 2500), None, 400.0, 250.0);
     // [Task #477] 75 HU/px 룰
     // src_x = 1000/75 = 13.33, src_y = 500/75 = 6.67
     // src_w = 3000/75 = 40, src_h = 2000/75 = 26.67
@@ -643,15 +642,25 @@ fn test_compute_image_crop_src_kwater_pi31() {
     // [Task #477] k-water-rfp.hwp pi=31 케이스 (회귀 정정 검증):
     // PNG (169 × 93 px) 가 이미 crop 적용 후 image — viewBox 가 image 전체와
     // 매칭해야 (좌측 일부만 보이는 결함 정정).
-    // crop=(0, 0, 12660, 6960), original 14119×7766 HU.
+    // crop=(0, 0, 12660, 6960), imgDim=12660×6960.
     let (sx, sy, sw, sh) =
-        compute_image_crop_src((0, 0, 12660, 6960), Some((14119, 7766)), 169.0, 93.0);
+        compute_image_crop_src((0, 0, 12660, 6960), Some((12660, 6960)), 169.0, 93.0);
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
-    // 12660 / 75 = 168.8 (≈ image width 169)
-    assert!((sw - 168.8).abs() < 0.01);
-    // 6960 / 75 = 92.8 (≈ image height 93)
-    assert!((sh - 92.8).abs() < 0.01);
+    assert!((sw - 169.0).abs() < 0.01);
+    assert!((sh - 93.0).abs() < 0.01);
+}
+
+#[test]
+fn test_compute_image_crop_src_issue2817_img_dim_scale() {
+    // issue2817 image2.png: 192×108 px, imgDim/crop 전체 범위 144000×81000.
+    // 고정 75 HU/px를 적용하면 1920×1080으로 계산되어 그림이 1/10만 표시된다.
+    let (sx, sy, sw, sh) =
+        compute_image_crop_src((0, 0, 144000, 81000), Some((144000, 81000)), 192.0, 108.0);
+    assert!((sx - 0.0).abs() < 0.01);
+    assert!((sy - 0.0).abs() < 0.01);
+    assert!((sw - 192.0).abs() < 0.01);
+    assert!((sh - 108.0).abs() < 0.01);
 }
 
 #[test]

@@ -49,6 +49,16 @@ pub struct Picture {
     pub img_dim: (u32, u32),
 }
 
+impl Picture {
+    /// 그림 자르기 좌표가 기준으로 삼는 전체 이미지 좌표 범위.
+    ///
+    /// HWPX `imgClip`은 디코딩된 비트맵 픽셀과 항상 75 HU/px 관계가 아니며,
+    /// 이 경우 `imgDim`이 실제 좌표 범위를 보존한다.
+    pub fn crop_reference_size(&self) -> Option<(u32, u32)> {
+        (self.img_dim.0 > 0 && self.img_dim.1 > 0).then_some(self.img_dim)
+    }
+}
+
 /// 자르기 정보
 #[derive(Debug, Clone, Copy, Default)]
 pub struct CropInfo {

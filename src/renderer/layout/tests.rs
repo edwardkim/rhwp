@@ -65,6 +65,29 @@ fn test_build_empty_page() {
     assert!(tree.root.children.len() >= 4);
 }
 
+fn issue2817_textless_picture_host(vert_rel_to: VertRelTo, text_wrap: TextWrap) -> Paragraph {
+    let mut picture = crate::model::image::Picture::default();
+    picture.common.treat_as_char = false;
+    picture.common.vert_rel_to = vert_rel_to;
+    picture.common.text_wrap = text_wrap;
+    Paragraph {
+        controls: vec![Control::Picture(Box::new(picture))],
+        ..Default::default()
+    }
+}
+
+#[test]
+fn issue2817_paper_anchor_infront_picture_host_reserves_line_advance() {
+    let para = issue2817_textless_picture_host(VertRelTo::Paper, TextWrap::InFrontOfText);
+    assert!(textless_infront_para_host_requires_line_advance(&para));
+}
+
+#[test]
+fn issue2817_paper_anchor_behind_picture_host_keeps_no_line_advance() {
+    let para = issue2817_textless_picture_host(VertRelTo::Paper, TextWrap::BehindText);
+    assert!(!textless_infront_para_host_requires_line_advance(&para));
+}
+
 #[test]
 fn issue2439_fragment_margin_evidence_is_narrow_and_structural() {
     let anchor = Paragraph {

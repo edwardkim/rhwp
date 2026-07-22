@@ -4431,6 +4431,37 @@ impl TypesetEngine {
             // [#2097] 이 문단의 TopAndBottom 자리차지 float pushdown 가로 컬럼
             // (h_left, h_right, 스택_높이) px — 가로 겹침으로 스택/나란히 판별.
             let mut topbottom_cols: Vec<(f64, f64, f64)> = Vec::new();
+            // [#2814] 이 문단의 pushdown 대상(비-TAC TopAndBottom vert=Para) 그림/도형 수.
+            // 3장 이상이 세로로 스택되면 쪽 용량 기반 분배 대상(아래 overflow 이월).
+            let pushdown_topbottom_ctrl_count = para
+                .controls
+                .iter()
+                .filter(|c| match c {
+                    Control::Picture(pic) => {
+                        !pic.common.treat_as_char
+                            && matches!(
+                                pic.common.text_wrap,
+                                crate::model::shape::TextWrap::TopAndBottom
+                            )
+                            && matches!(
+                                pic.common.vert_rel_to,
+                                crate::model::shape::VertRelTo::Para
+                            )
+                    }
+                    Control::Shape(s) => {
+                        !s.common().treat_as_char
+                            && matches!(
+                                s.common().text_wrap,
+                                crate::model::shape::TextWrap::TopAndBottom
+                            )
+                            && matches!(
+                                s.common().vert_rel_to,
+                                crate::model::shape::VertRelTo::Para
+                            )
+                    }
+                    _ => false,
+                })
+                .count();
 
             // 인라인 컨트롤 처리: 도형/그림/수식/각주 (Paginator engine.rs:509-525 동일)
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
@@ -4584,6 +4615,46 @@ impl TypesetEngine {
                                     }
                                 };
                                 if !already_accounted {
+                                    // [#2814] 절반쪽급 그림이 한 문단에 여럿 스택되면 한컴은
+                                    // 흐름처럼 쪽을 채우며 다음 쪽으로 넘긴다(창조경제 보고서:
+                                    // 절반쪽 그림 37장 = 쪽당 2장 × ~19쪽; #1995 의 전면 그림
+                                    // 1장/쪽과 별개 축). 이 그림을 더하면 스택 하단이 본문을
+                                    // 넘고 현재 쪽에 이미 다른 항목이 있으면, 방금 push 한 이
+                                    // Shape 항목을 새 쪽으로 이월하고 스택을 리셋한다.
+                                    // 발동은 3장 이상으로 한정 — 2장 스택은 한컴이 razor-full
+                                    // 페이지에 압축 유지하는 실측 반례(1051000-201800093 p60,
+                                    // 158쪽 정답 유지)가 있어 제외한다.
+                                    if pushdown_topbottom_ctrl_count >= 3 {
+                                        let ovl_base = topbottom_cols
+                                            .iter()
+                                            .filter(|c| c.1 > h_left && c.0 < h_right)
+                                            .map(|c| c.2)
+                                            .fold(0.0_f64, f64::max);
+                                        let before_max = topbottom_cols
+                                            .iter()
+                                            .map(|c| c.2)
+                                            .fold(0.0_f64, f64::max);
+                                        let delta = (ovl_base + extra - before_max).max(0.0);
+                                        let self_is_last = matches!(
+                                            st.current_items.last(),
+                                            Some(PageItem::Shape { para_index: p, control_index: c })
+                                                if *p == para_idx && *c == ctrl_idx
+                                        );
+                                        if delta > 0.0
+                                            && st.current_height + delta
+                                                > st.available_height() + 0.5
+                                            && self_is_last
+                                            && st.current_items.len() > 1
+                                        {
+                                            st.current_items.pop();
+                                            st.advance_column_or_new_page();
+                                            st.current_items.push(PageItem::Shape {
+                                                para_index: para_idx,
+                                                control_index: ctrl_idx,
+                                            });
+                                            topbottom_cols.clear();
+                                        }
+                                    }
                                     // [#2097] 같은 문단의 TopAndBottom float pushdown 을 가로
                                     // 컬럼 모델로 예약한다. 판별 축은 세로 offset 이 아니라 가로
                                     // 겹침 — 가로로 겹치는 float 은 세로로 스택되어 합산
@@ -17974,6 +18045,78 @@ mod tests {
             Some(&physical_ladder_signature),
         )
         .is_none());
+    }
+
+    fn issue2814_half_page_picture(height_hu: u32) -> Control {
+        use crate::model::shape::{TextWrap, VertRelTo};
+        let mut pic = crate::model::image::Picture::default();
+        pic.common.treat_as_char = false;
+        pic.common.text_wrap = TextWrap::TopAndBottom;
+        pic.common.vert_rel_to = VertRelTo::Para;
+        pic.common.width = 40000;
+        pic.common.height = height_hu;
+        Control::Picture(Box::new(pic))
+    }
+
+    fn issue2814_typeset_pages(host: Paragraph) -> Vec<usize> {
+        let engine = TypesetEngine::with_default_dpi();
+        let paginator = Paginator::with_default_dpi();
+        let styles = ResolvedStyleSet::default();
+        let paras = vec![host];
+        let composed: Vec<ComposedParagraph> = Vec::new();
+        let page_def = a4_page_def();
+        let col_def = ColumnDef::default();
+        let (_, measured) = paginator.paginate(&paras, &composed, &styles, &page_def, &col_def, 0);
+        let result = engine.typeset_section(
+            &paras,
+            &composed,
+            &styles,
+            &page_def,
+            &col_def,
+            0,
+            &measured.tables,
+            false,
+            &std::collections::HashSet::new(),
+        );
+        result
+            .pages
+            .iter()
+            .map(|page| {
+                page.column_contents
+                    .iter()
+                    .flat_map(|col| col.items.iter())
+                    .filter(|item| matches!(item, PageItem::Shape { .. }))
+                    .count()
+            })
+            .collect()
+    }
+
+    /// [#2814] 한 문단에 co-anchored 절반쪽 그림이 여럿(≥3)이면 쪽 용량 기반으로
+    /// 분배한다 — 한컴은 흐름처럼 쪽을 채우며 넘긴다(창조경제 보고서: 37장 = 2장/쪽).
+    #[test]
+    fn issue2814_multi_coanchored_half_page_pictures_distribute_across_pages() {
+        let mut host = make_paragraph_with_height(900);
+        host.controls = (0..6).map(|_| issue2814_half_page_picture(30000)).collect();
+        let shapes_per_page = issue2814_typeset_pages(host);
+        assert_eq!(
+            shapes_per_page,
+            vec![2, 2, 2],
+            "절반쪽 그림 6장은 쪽당 2장씩 3쪽으로 분배되어야 한다",
+        );
+    }
+
+    /// [#2814] 2장 스택은 발동하지 않는다 — 한컴이 razor-full 쪽에 압축 유지하는
+    /// 실측 반례(1051000-201800093 p60) 보호. 초과분은 기존 overflow 관용에 맡긴다.
+    #[test]
+    fn issue2814_two_picture_stack_keeps_current_page() {
+        let mut host = make_paragraph_with_height(900);
+        host.controls = (0..2).map(|_| issue2814_half_page_picture(35000)).collect();
+        let shapes_per_page = issue2814_typeset_pages(host);
+        assert_eq!(
+            shapes_per_page,
+            vec![2],
+            "2장 스택은 쪽 이월 없이 현재 쪽을 유지해야 한다",
+        );
     }
 
     #[test]

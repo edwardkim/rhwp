@@ -594,6 +594,7 @@ impl SkiaLayerRenderer {
                           fill_mode,
                           original_size,
                           crop,
+                          crop_reference_size,
                           effect| {
             draw_image_bytes(
                 canvas,
@@ -605,6 +606,7 @@ impl SkiaLayerRenderer {
                 fill_mode,
                 original_size,
                 crop,
+                crop_reference_size,
                 effect,
                 ImageSampling::linear(),
             )
@@ -810,6 +812,7 @@ impl SkiaLayerRenderer {
                                     &image.data,
                                     *bbox,
                                     Some(image.fill_mode),
+                                    None,
                                     None,
                                     None,
                                     image.effect,
@@ -1102,6 +1105,7 @@ impl SkiaLayerRenderer {
                                     image.fill_mode,
                                     image.original_size,
                                     image.crop,
+                                    image.original_size_hu,
                                     effect,
                                 );
                                 if opacity < 1.0 {
@@ -2596,6 +2600,7 @@ mod tests {
             Some(split_png(4, 4, [255, 0, 0, 255], [0, 0, 255, 255], true)),
         );
         node.crop = Some((0, 2, 4, 4));
+        node.original_size_hu = Some((4, 4));
         let tree = PageLayerTree::new(
             8.0,
             8.0,

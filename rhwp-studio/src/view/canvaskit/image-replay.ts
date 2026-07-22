@@ -46,6 +46,7 @@ export function canvasKitImageSourceRect(
   imageWidth: number,
   imageHeight: number,
   crop?: CanvasKitImageCrop,
+  cropReferenceSize?: [number, number],
 ): CanvasKitImageSourceRect | null {
   if (!crop) return null;
   if (
@@ -61,10 +62,18 @@ export function canvasKitImageSourceRect(
     return null;
   }
 
-  const x = crop.left / HWPUNIT_PER_PIXEL;
-  const y = crop.top / HWPUNIT_PER_PIXEL;
-  const width = (crop.right - crop.left) / HWPUNIT_PER_PIXEL;
-  const height = (crop.bottom - crop.top) / HWPUNIT_PER_PIXEL;
+  const referenceWidth = cropReferenceSize?.[0];
+  const referenceHeight = cropReferenceSize?.[1];
+  const scaleX = Number.isFinite(referenceWidth) && (referenceWidth ?? 0) > 0
+    ? (referenceWidth as number) / imageWidth
+    : HWPUNIT_PER_PIXEL;
+  const scaleY = Number.isFinite(referenceHeight) && (referenceHeight ?? 0) > 0
+    ? (referenceHeight as number) / imageHeight
+    : HWPUNIT_PER_PIXEL;
+  const x = crop.left / scaleX;
+  const y = crop.top / scaleY;
+  const width = (crop.right - crop.left) / scaleX;
+  const height = (crop.bottom - crop.top) / scaleY;
   if (width <= 0 || height <= 0) return null;
 
   const clampedX = clamp(x, 0, imageWidth);
@@ -122,6 +131,10 @@ export function canvasKitImageFillModeTiles(fillMode: string | undefined): boole
     || fillMode === 'tileHorzBottom'
     || fillMode === 'tileVertLeft'
     || fillMode === 'tileVertRight';
+}
+
+export function canvasKitImageFillModeStretches(fillMode: string | undefined): boolean {
+  return fillMode === undefined || fillMode === 'fitToSize' || fillMode === 'total';
 }
 
 function fnv1a32(value: string): string {

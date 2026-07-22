@@ -59,6 +59,7 @@ pub fn draw_svg_fragment(
         Some(ImageFillMode::FitToSize),
         None,
         None,
+        None,
         ImageEffect::RealPic,
         sampling,
     )
@@ -74,6 +75,7 @@ pub fn draw_image_bytes(
     fill_mode: Option<ImageFillMode>,
     original_size: Option<(f64, f64)>,
     crop: Option<(i32, i32, i32, i32)>,
+    crop_reference_size: Option<(u32, u32)>,
     effect: ImageEffect,
     sampling: ImageSampling,
 ) -> bool {
@@ -174,19 +176,17 @@ pub fn draw_image_bytes(
     let mode = fill_mode.unwrap_or(ImageFillMode::FitToSize);
     let decoded_width = image.width() as f32;
     let decoded_height = image.height() as f32;
-    let crop_src = crop.and_then(|(left, top, right, bottom)| {
+    let crop_src = crop.and_then(|crop_rect| {
         if decoded_width <= 0.0 || decoded_height <= 0.0 {
             return None;
         }
-        let scale_x = right as f32 / decoded_width;
-        let scale_y = bottom as f32 / decoded_height;
-        if scale_x <= 0.0 || scale_y <= 0.0 {
-            return None;
-        }
-        let src_x = left as f32 / scale_x;
-        let src_y = top as f32 / scale_y;
-        let src_w = (right - left) as f32 / scale_x;
-        let src_h = (bottom - top) as f32 / scale_y;
+        let (src_x, src_y, src_w, src_h) = crate::renderer::svg::compute_image_crop_src(
+            crop_rect,
+            crop_reference_size,
+            decoded_width as f64,
+            decoded_height as f64,
+        );
+        let (src_x, src_y, src_w, src_h) = (src_x as f32, src_y as f32, src_w as f32, src_h as f32);
         let is_cropped = src_x > 0.5
             || src_y > 0.5
             || (src_w - decoded_width).abs() > 1.0
@@ -218,7 +218,10 @@ pub fn draw_image_bytes(
         }
     };
 
-    if matches!(mode, ImageFillMode::FitToSize | ImageFillMode::None) {
+    if matches!(
+        mode,
+        ImageFillMode::FitToSize | ImageFillMode::Total | ImageFillMode::None
+    ) {
         draw_image_rect(crop_src, dst);
         return true;
     }
