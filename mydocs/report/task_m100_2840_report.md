@@ -20,13 +20,20 @@ rhwp를 거쳐 재저장하면 항상 잠금 해제 상태로 바뀐다.
 - `src/parser/hwpx/section.rs`: `parse_object_element_attrs`에서 `b"lock"` 속성을
   읽어 `common.locked`에 반영.
 - `src/serializer/hwpx/section.rs`: `render_equation`의 하드코딩 `lock="0"`을
-  `common.locked` 기반 방출로 교체.
+  `common.locked` 기반 방출로 교체. legacy 공용 도형 경로(`hp:{tag}` 포맷 문자열)도 동일
+  교체.
+- `src/serializer/hwpx/shape.rs`: `write_rect`/선(line·connectLine)/`hp:container`/
+  `hp:ole`의 `("lock", "0")` 하드코딩을 `common.locked` 방출로 교체.
+- `src/serializer/hwpx/picture.rs`, `src/serializer/hwpx/table.rs`: 동일 교체.
 - `src/document_core/converters/common_obj_attr_writer.rs`: 신규 필드 추가에 따른
   테스트 헬퍼 `make_sample()` 초기화 보정(`locked: false`).
 
-다른 개체 타입(그림·표·도형)도 동일한 `("lock", "0")` 하드코딩 패턴을 공유하지만, 이번
-작업은 충돌 회피를 위해 실제 사용처가 있는 `<hp:equation>` 경로로 범위를 한정했다.
-나머지 경로는 잔여로 남긴다.
+처음에는 `<hp:equation>` 경로로 범위를 한정했으나, 파서(`parse_object_element_attrs`)가
+모든 개체 공통으로 `lock`을 읽기 시작하면서 직렬화기가 여전히 `"0"` 하드코딩인 개체
+(rect 등)에서 IR 왕복 발산(`common.locked : 1건`)이 새로 생겨
+`ir_field_sweep_does_not_regress`가 CI에서 실패했다(샘플 `143E433F503322BD33.hwpx`의
+`lock="1"` rect). 따라서 파서와 대칭이 되도록 HWPX 개체 직렬화기 전체에 `lock` 방출을
+배선했다.
 
 ## 검증
 

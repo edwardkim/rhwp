@@ -70,7 +70,8 @@ pub fn write_rect<W: Write>(
             ("numberingType", numbering_type_str(c.numbering_type)),
             ("textWrap", tw),
             ("textFlow", tf),
-            ("lock", "0"),
+            // [#2840] lock(개체 잠금) — 파서가 읽기 시작했으므로 IR 값을 방출한다.
+            ("lock", bool01(c.locked)),
             ("dropcapstyle", "None"),
             ("href", ""),
             ("groupLevel", &group_level),
@@ -172,7 +173,8 @@ pub fn write_line<W: Write>(
         ("numberingType", numbering_type_str(c.numbering_type)),
         ("textWrap", text_wrap_str(c.text_wrap)),
         ("textFlow", text_flow_str(c.text_flow)),
-        ("lock", "0"),
+        // [#2840] lock(개체 잠금) — IR 보존 값 방출.
+        ("lock", bool01(c.locked)),
         ("dropcapstyle", "None"),
         ("href", ""),
         ("groupLevel", &group_level),
@@ -291,7 +293,8 @@ pub fn write_container_open<W: Write>(
             ("numberingType", numbering_type_str(common.numbering_type)),
             ("textWrap", tw),
             ("textFlow", tf),
-            ("lock", "0"),
+            // [#2840] lock(개체 잠금) — IR 보존 값 방출.
+            ("lock", bool01(common.locked)),
             ("dropcapstyle", "None"),
             ("href", ""),
             ("groupLevel", "0"),
@@ -367,7 +370,8 @@ pub(crate) fn write_ole<W: Write>(
             ("numberingType", numbering_type_str(c.numbering_type)),
             ("textWrap", tw),
             ("textFlow", tf),
-            ("lock", "0"),
+            // [#2840] lock(개체 잠금) — IR 보존 값 방출.
+            ("lock", bool01(c.locked)),
             ("dropcapstyle", "None"),
             ("href", ""),
             ("groupLevel", "0"),
