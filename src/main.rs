@@ -40,14 +40,14 @@ fn main() {
         Some("export-markdown") => exit_with(export_markdown(&args[2..])),
         Some("export-hwpx") => exit_with(export_hwpx(&args[2..])),
         Some("export-hml") => export_hml(&args[2..]),
-        Some("info") => show_info(&args[2..]),
+        Some("info") => exit_with(show_info(&args[2..])),
         Some("dump") => dump_controls(&args[2..]),
-        Some("dump-note-shape") => dump_note_shape(&args[2..]),
-        Some("dump-endnote-lines") => dump_endnote_lines(&args[2..]),
-        Some("dump-pages") => dump_pages(&args[2..]),
+        Some("dump-note-shape") => exit_with(dump_note_shape(&args[2..])),
+        Some("dump-endnote-lines") => exit_with(dump_endnote_lines(&args[2..])),
+        Some("dump-pages") => exit_with(dump_pages(&args[2..])),
         Some("diag") => diag_document(&args[2..]),
         Some("convert") => exit_with(convert_hwp(&args[2..])),
-        Some("build-from-ingest") => build_from_ingest(&args[2..]),
+        Some("build-from-ingest") => exit_with(build_from_ingest(&args[2..])),
         Some("hwp5-inventory") => rhwp::diagnostics::hwp5_inventory::run(&args[2..]),
         Some("hwp5-inventory-diff") => rhwp::diagnostics::hwp5_inventory_diff::run(&args[2..]),
         Some("hwp5-contract-analyze") => rhwp::diagnostics::hwp5_contract_analyze::run(&args[2..]),
@@ -67,7 +67,7 @@ fn main() {
         Some("hwp5-cell-header-probe") => {
             rhwp::diagnostics::hwp5_cell_header_probe::run(&args[2..])
         }
-        Some("dump-records") => dump_raw_records(&args[2..]),
+        Some("dump-records") => exit_with(dump_raw_records(&args[2..])),
         Some("test-shape") => test_shape_roundtrip(&args[2..]),
         Some("test-caption") => test_caption(&args[2..]),
         Some("gen-table") => gen_table(&args[2..]),
@@ -2088,10 +2088,10 @@ fn export_markdown(args: &[String]) -> i32 {
     }
 }
 
-fn show_info(args: &[String]) {
+fn show_info(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("오류: 문서 파일 경로를 지정해주세요.");
-        return;
+        return EXIT_USAGE;
     }
 
     let file_path = &args[0];
@@ -2101,7 +2101,7 @@ fn show_info(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -2113,7 +2113,7 @@ fn show_info(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 문서 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -2404,6 +2404,7 @@ fn show_info(args: &[String]) {
             }
         }
     }
+    EXIT_OK
 }
 
 /// HWPUNIT(u32)을 mm로 변환
@@ -2416,10 +2417,10 @@ fn hu_to_mm_i(hu: i32) -> f64 {
     hu as f64 * 25.4 / 7200.0
 }
 
-fn dump_note_shape(args: &[String]) {
+fn dump_note_shape(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("사용법: rhwp dump-note-shape <파일.hwp|파일.hwpx>");
-        return;
+        return EXIT_USAGE;
     }
 
     let file_path = &args[0];
@@ -2427,7 +2428,7 @@ fn dump_note_shape(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -2435,7 +2436,7 @@ fn dump_note_shape(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -2458,8 +2459,14 @@ fn dump_note_shape(args: &[String]) {
         "sections": sections,
     });
     match serde_json::to_string_pretty(&value) {
-        Ok(text) => println!("{}", text),
-        Err(e) => eprintln!("오류: JSON 생성 실패 - {}", e),
+        Ok(text) => {
+            println!("{}", text);
+            EXIT_OK
+        }
+        Err(e) => {
+            eprintln!("오류: JSON 생성 실패 - {}", e);
+            EXIT_RUNTIME
+        }
     }
 }
 
@@ -2504,10 +2511,10 @@ fn rounded_mm(hu: i32) -> f64 {
     (hu_to_mm_i(hu) * 1000.0).round() / 1000.0
 }
 
-fn dump_pages(args: &[String]) {
+fn dump_pages(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("사용법: rhwp dump-pages <파일.hwp> [-p <페이지번호>]");
-        return;
+        return EXIT_USAGE;
     }
 
     let file_path = &args[0];
@@ -2526,13 +2533,13 @@ fn dump_pages(args: &[String]) {
                         Ok(n) => target_page = Some(n),
                         Err(_) => {
                             eprintln!("오류: 페이지 번호가 올바르지 않습니다: {}", args[i + 1]);
-                            return;
+                            return EXIT_USAGE;
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("오류: {} 뒤에 페이지 번호가 필요합니다.", args[i]);
-                    return;
+                    return EXIT_USAGE;
                 }
             }
             "--respect-vpos-reset" => {
@@ -2541,7 +2548,7 @@ fn dump_pages(args: &[String]) {
             }
             _ => {
                 eprintln!("알 수 없는 옵션: {}", args[i]);
-                return;
+                return EXIT_USAGE;
             }
         }
     }
@@ -2550,7 +2557,7 @@ fn dump_pages(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -2558,7 +2565,7 @@ fn dump_pages(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -2577,20 +2584,21 @@ fn dump_pages(args: &[String]) {
                 "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
                 page_count.saturating_sub(1)
             );
-            return;
+            return EXIT_USAGE;
         }
     }
 
     println!("문서 로드: {} ({}페이지)", file_path, page_count);
     print!("{}", doc.dump_page_items(target_page));
+    EXIT_OK
 }
 
-fn dump_endnote_lines(args: &[String]) {
+fn dump_endnote_lines(args: &[String]) -> i32 {
     if args.len() < 4 {
         eprintln!(
             "사용법: rhwp dump-endnote-lines <파일.hwp> <section> <para> <control> [note-para]"
         );
-        return;
+        return EXIT_USAGE;
     }
 
     let file_path = &args[0];
@@ -2598,21 +2606,21 @@ fn dump_endnote_lines(args: &[String]) {
         Ok(v) => v,
         Err(e) => {
             eprintln!("오류: section 인덱스 파싱 실패 - {}", e);
-            return;
+            return EXIT_USAGE;
         }
     };
     let para_idx = match args[2].parse::<usize>() {
         Ok(v) => v,
         Err(e) => {
             eprintln!("오류: para 인덱스 파싱 실패 - {}", e);
-            return;
+            return EXIT_USAGE;
         }
     };
     let control_idx = match args[3].parse::<usize>() {
         Ok(v) => v,
         Err(e) => {
             eprintln!("오류: control 인덱스 파싱 실패 - {}", e);
-            return;
+            return EXIT_USAGE;
         }
     };
     let target_note_para = if args.len() >= 5 {
@@ -2620,7 +2628,7 @@ fn dump_endnote_lines(args: &[String]) {
             Ok(v) => Some(v),
             Err(e) => {
                 eprintln!("오류: note-para 인덱스 파싱 실패 - {}", e);
-                return;
+                return EXIT_USAGE;
             }
         }
     } else {
@@ -2631,7 +2639,7 @@ fn dump_endnote_lines(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -2639,22 +2647,22 @@ fn dump_endnote_lines(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
     let document = doc.document();
     let Some(section) = document.sections.get(section_idx) else {
         eprintln!("오류: section {} 범위 초과", section_idx);
-        return;
+        return EXIT_USAGE;
     };
     let Some(source_para) = section.paragraphs.get(para_idx) else {
         eprintln!("오류: para {} 범위 초과", para_idx);
-        return;
+        return EXIT_USAGE;
     };
     let Some(ctrl) = source_para.controls.get(control_idx) else {
         eprintln!("오류: control {} 범위 초과", control_idx);
-        return;
+        return EXIT_USAGE;
     };
 
     let rhwp::model::control::Control::Endnote(endnote) = ctrl else {
@@ -2665,7 +2673,7 @@ fn dump_endnote_lines(args: &[String]) {
             control_idx,
             control_kind(ctrl)
         );
-        return;
+        return EXIT_USAGE;
     };
 
     println!(
@@ -2693,6 +2701,7 @@ fn dump_endnote_lines(args: &[String]) {
         );
         dump_paragraph_line_trace(para);
     }
+    EXIT_OK
 }
 
 fn dump_paragraph_line_trace(para: &rhwp::model::paragraph::Paragraph) {
@@ -4762,10 +4771,10 @@ fn export_hml(args: &[String]) {
 ///
 /// Claude Code Skill (`rhwp-exam-ingest`)이 생성한 JSON 중간 표현을 HWPX로 변환한다.
 /// Task #660 (Neumann 본 작업 1단계).
-fn build_from_ingest(args: &[String]) {
+fn build_from_ingest(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("사용법: rhwp build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>");
-        return;
+        return EXIT_USAGE;
     }
 
     let mut input_path: Option<&str> = None;
@@ -4778,7 +4787,7 @@ fn build_from_ingest(args: &[String]) {
             "-o" | "--output" => {
                 if i + 1 >= args.len() {
                     eprintln!("오류: -o 옵션에 값이 필요합니다");
-                    return;
+                    return EXIT_USAGE;
                 }
                 output_path = Some(&args[i + 1]);
                 i += 2;
@@ -4786,7 +4795,7 @@ fn build_from_ingest(args: &[String]) {
             "--media-dir" => {
                 if i + 1 >= args.len() {
                     eprintln!("오류: --media-dir 옵션에 값이 필요합니다");
-                    return;
+                    return EXIT_USAGE;
                 }
                 media_dir = Some(&args[i + 1]);
                 i += 2;
@@ -4806,14 +4815,14 @@ fn build_from_ingest(args: &[String]) {
         Some(p) => p,
         None => {
             eprintln!("오류: 입력 ingest JSON 경로가 누락되었습니다");
-            return;
+            return EXIT_USAGE;
         }
     };
     let output = match output_path {
         Some(p) => p,
         None => {
             eprintln!("오류: -o <출력 경로> 가 누락되었습니다");
-            return;
+            return EXIT_USAGE;
         }
     };
 
@@ -4821,7 +4830,7 @@ fn build_from_ingest(args: &[String]) {
         Ok(b) => b,
         Err(e) => {
             eprintln!("오류: 입력 파일 읽기 실패 - {}: {}", input, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -4829,7 +4838,7 @@ fn build_from_ingest(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: ingest JSON 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -4849,35 +4858,41 @@ fn build_from_ingest(args: &[String]) {
         Ok(b) => b,
         Err(e) => {
             eprintln!("오류: HWPX 직렬화 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
     match fs::write(output, &hwpx_bytes) {
-        Ok(_) => println!(
-            "저장 완료: {} ({}바이트, 문제 {}개, 문단 {}개)",
-            output,
-            hwpx_bytes.len(),
-            ingest.questions.len(),
-            doc.sections
-                .iter()
-                .map(|s| s.paragraphs.len())
-                .sum::<usize>()
-        ),
-        Err(e) => eprintln!("오류: 파일 저장 실패 - {}: {}", output, e),
+        Ok(_) => {
+            println!(
+                "저장 완료: {} ({}바이트, 문제 {}개, 문단 {}개)",
+                output,
+                hwpx_bytes.len(),
+                ingest.questions.len(),
+                doc.sections
+                    .iter()
+                    .map(|s| s.paragraphs.len())
+                    .sum::<usize>()
+            );
+            EXIT_OK
+        }
+        Err(e) => {
+            eprintln!("오류: 파일 저장 실패 - {}: {}", output, e);
+            EXIT_RUNTIME
+        }
     }
 }
 
-fn dump_raw_records(args: &[String]) {
+fn dump_raw_records(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("사용법: rhwp dump-records <파일.hwp>");
-        return;
+        return EXIT_USAGE;
     }
     let data = match fs::read(&args[0]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
     use rhwp::parser::cfb_reader::CfbReader;
@@ -4886,7 +4901,7 @@ fn dump_raw_records(args: &[String]) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("오류: {:?}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
     // FileHeader에서 압축 여부 확인
@@ -4896,14 +4911,14 @@ fn dump_raw_records(args: &[String]) {
         Ok(s) => s,
         Err(e) => {
             eprintln!("오류: {:?}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
     let records = match Record::read_all(&section) {
         Ok(r) => r,
         Err(e) => {
             eprintln!("오류: {:?}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
     let tag_name = |id: u16| -> &str {
@@ -4956,6 +4971,7 @@ fn dump_raw_records(args: &[String]) {
             }
         }
     }
+    EXIT_OK
 }
 
 fn test_shape_roundtrip(args: &[String]) {
