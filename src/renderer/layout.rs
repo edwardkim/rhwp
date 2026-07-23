@@ -2013,39 +2013,83 @@ impl LayoutEngine {
         // 자식 노드(표 등)의 실제 바운딩 박스를 재귀적으로 반영하여
         // body_area보다 큰 콘텐츠(표 외곽 테두리 등)가 잘리지 않도록 함
         if self.clip_enabled.get() {
-            let mut clip = body_bbox;
-            fn expand_clip(clip: &mut BoundingBox, node: &RenderNode) {
+            // [#3127] clip 하방 확장은 콘텐츠 종류로 갈린다.
+            //
+            // - 흐름 콘텐츠(표/문단/셀 등)는 body_area 를 넘겨 배치돼도 잘리면 안 된다.
+            //   (예: body 바닥 아래로 늘어난 표 마지막 셀의 용지 규격 줄
+            //   `210mm×297mm(백상지 ㎡)`. 브라우저는 clip 밖도 그리지만 svg2pdf 는
+            //   엄격히 잘라 PDF 에서 소실됐다.)
+            // - 부동 그림/도형은 body_bottom+10 상한을 유지한다 — 대형 부동 그림이
+            //   꼬리말 영역까지 clip 을 확장하던 Task #460 회귀를 막기 위해서다.
+            //
+            // 그래서 흐름 콘텐츠 bbox 는 상한 없이 반영하고, 부동 그림 bbox 는 상한
+            // 적용분과 별도로 모아 두 결과를 합친다.
+            fn is_floating_object(node: &RenderNode) -> bool {
+                matches!(
+                    node.node_type,
+                    RenderNodeType::Image(_)
+                        | RenderNodeType::Group(_)
+                        | RenderNodeType::Path(_)
+                        | RenderNodeType::Ellipse(_)
+                        | RenderNodeType::Rectangle(_)
+                        | RenderNodeType::Line(_)
+                        | RenderNodeType::TextBox
+                        | RenderNodeType::Placeholder(_)
+                        | RenderNodeType::RawSvg(_)
+                )
+            }
+            // clip 을 자식 bbox 로 확장. `float_subtree` 가 참이면 그 서브트리는
+            // 부동 그림으로 취급해 상한 적용 대상 clip 만 넓힌다.
+            fn expand_clip(
+                flow: &mut BoundingBox,
+                float: &mut BoundingBox,
+                node: &RenderNode,
+                float_subtree: bool,
+            ) {
                 let cb = &node.bbox;
+                let is_float = float_subtree || is_floating_object(node);
+                let target: &mut BoundingBox = if is_float { &mut *float } else { &mut *flow };
                 let child_bottom = cb.y + cb.height;
                 let child_right = cb.x + cb.width;
-                let clip_bottom = clip.y + clip.height;
-                let clip_right = clip.x + clip.width;
-                if child_bottom > clip_bottom {
-                    clip.height = child_bottom - clip.y;
+                if child_bottom > target.y + target.height {
+                    target.height = child_bottom - target.y;
                 }
-                if child_right > clip_right {
-                    clip.width = child_right - clip.x;
+                if child_right > target.x + target.width {
+                    target.width = child_right - target.x;
                 }
-                if cb.x < clip.x {
-                    clip.width += clip.x - cb.x;
-                    clip.x = cb.x;
+                if cb.x < target.x {
+                    target.width += target.x - cb.x;
+                    target.x = cb.x;
                 }
-                if cb.y < clip.y {
-                    clip.height += clip.y - cb.y;
-                    clip.y = cb.y;
+                if cb.y < target.y {
+                    target.height += target.y - cb.y;
+                    target.y = cb.y;
                 }
                 for child in &node.children {
-                    expand_clip(clip, child);
+                    expand_clip(flow, float, child, is_float);
                 }
             }
+            let mut flow_clip = body_bbox;
+            let mut float_clip = body_bbox;
             for child in &body_node.children {
-                expand_clip(&mut clip, child);
+                expand_clip(&mut flow_clip, &mut float_clip, child, false);
             }
-            let body_bottom = body_bbox.y + body_bbox.height;
-            let max_bottom = body_bottom + 10.0;
-            if clip.y + clip.height > max_bottom {
-                clip.height = max_bottom - clip.y;
+            // 부동 그림 clip 만 body_bottom+10 상한으로 절단 (Task #460).
+            let max_bottom = body_bbox.y + body_bbox.height + 10.0;
+            if float_clip.y + float_clip.height > max_bottom {
+                float_clip.height = max_bottom - float_clip.y;
             }
+            // 두 clip 의 합집합 = 흐름 오버플로는 보존, 부동 그림은 상한 적용.
+            let x0 = flow_clip.x.min(float_clip.x);
+            let y0 = flow_clip.y.min(float_clip.y);
+            let x1 = (flow_clip.x + flow_clip.width).max(float_clip.x + float_clip.width);
+            let y1 = (flow_clip.y + flow_clip.height).max(float_clip.y + float_clip.height);
+            let clip = BoundingBox {
+                x: x0,
+                y: y0,
+                width: x1 - x0,
+                height: y1 - y0,
+            };
             body_node.node_type = RenderNodeType::Body {
                 clip_rect: Some(clip),
             };
