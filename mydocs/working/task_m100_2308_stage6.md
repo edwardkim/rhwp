@@ -6,7 +6,7 @@
 - 비교 기준: `upstream/devel@cbddc1cd87084b60685da9a2b4369a4511d86173`
 - 코드 기준: Stage 5 `6438a4cfb`
 - 완료일: 2026-07-23
-- 상태: 전체 로컬 검증·OVR·한컴 기준 OVL 완료, 원격 작업 승인 대기
+- 상태: 전체 로컬 회귀 검증·OVR 완료, 한컴 oracle gap #3128 분리, 원격 작업 승인 대기
 
 ## 최종 코드 동일성
 
@@ -84,18 +84,23 @@ OVR은 한컴 없이 실행하는 geometry 보조 근거다. 한컴 before/after
 ## 한컴 기준 before/after/OVL
 
 저장소의 한컴 기준 PDF를 사용해 `scripts/task1274_visual_sweep.py`를 실행하고 review contact
-sheet를 직접 판정했다.
+sheet를 직접 판정했다. 이 판정은 upstream 대비 회귀 여부와 한컴 oracle 정확성을 분리한다.
 
-| 표본 | 범위 | 페이지 | 자동 후보 | 육안 판정 |
-| --- | --- | ---: | ---: | --- |
-| `76076_regulatory_analysis.hwp` | #2195 핵심 33~34쪽 | 82=82 | 0/2 | 표 경계·분할·텍스트 순서 이상 없음 |
-| `issue2004_cell_image_stack.hwp` | 전체 1~8쪽 | 8=8 | 0/8 | 이미지 순서·셀 경계·잘림·누락 없음 |
+| 표본 | 범위 | 페이지 | 자동 후보 | upstream 회귀 | 한컴 oracle |
+| --- | --- | ---: | ---: | --- | --- |
+| `76076_regulatory_analysis.hwp` | #2195 핵심 33~34쪽 | 82=82 | 0/2 | PASS | KNOWN GAP — #3128 |
+| `issue2004_cell_image_stack.hwp` | 전체 1~8쪽 | 8=8 | 0/8 | PASS | 글꼴 민감 차이, exact fidelity 미판정 |
 
 - 한컴 OVL 평균 `visual_accuracy_proxy_percent`는 76076 표본 `10.50925`,
   #2004 표본 `19.88209`였다. 로컬 한컴/HY 글꼴 부재에 따른 glyph raster 차이가 커서 이 값은
-  구조 정확성 판정이 아닌 보조값으로만 사용했다.
+  구조 정확성 판정이 아닌 보조값으로만 사용했다. 자동 후보 0건도 한컴 정확성 PASS를 뜻하지
+  않고, 현재 휴리스틱이 frame overflow 등 정해진 후보를 잡지 않았다는 뜻이다.
 - #2004 before/after 8쪽 PNG는 모두 바이트 동일했다.
-- 76076의 34쪽은 바이트 동일했다. 33쪽은 `1507/891662` 픽셀(`0.16901023%`)이 달랐고
+- 76076의 34쪽은 before/after가 바이트 동일하지만 한컴과는 분명한 차이가 있다. continuation
+  셀 텍스트가 fragment 상단이 아니라 크게 아래에 배치되고 wrapping·우측 clip이 다르며, 뒤따르는
+  `직접편익` 표도 아래로 밀린다. 기존 oracle fidelity gap으로
+  [#3128](https://github.com/edwardkim/rhwp/issues/3128)에 분리했다.
+- 76076의 33쪽은 `1507/891662` 픽셀(`0.16901023%`)이 달랐고
   최대 채널 차이는 27, 차이 bbox는 `(269, 777, 711, 792)`였다. 같은 텍스트 한 줄의
   부동소수점 직렬화·서브픽셀 안티앨리어싱 차이이며 OVR geometry와 육안 배치는 동일했다.
 - current review:

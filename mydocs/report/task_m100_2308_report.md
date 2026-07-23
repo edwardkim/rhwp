@@ -17,9 +17,10 @@
   유지하며 stable 입력에서는 재복제하지 않는다.
 
 focused Rust 회귀와 source guard, 전체 release/native-Skia test, WASM, Studio unit/E2E,
-before/after/한컴 OVL까지 로컬 검증을 완료했다. `--all-targets` clippy와 대표 Studio
+before/after/한컴 OVL까지 로컬 검증을 수행했다. `--all-targets` clippy와 대표 Studio
 baseline에서 확인한 두 실패는 같은 `upstream/devel`에서도 동일하게 재현되고 비교 산출물도
-일치해 #2308 회귀에서 분리했다.
+일치해 #2308 회귀에서 분리했다. 76076 34쪽의 한컴 oracle 정확성 차이는 before/after가
+동일한 기존 문제로 확인해 [#3128](https://github.com/edwardkim/rhwp/issues/3128)에 분리했다.
 
 ## 착수 전 재판단
 
@@ -150,18 +151,24 @@ geometry를 비교했다.
 
 한컴 기준 PDF visual sweep도 추가로 수행했다.
 
-| 표본 | 비교 범위 | 페이지 일치 | 자동 후보 | 판정 |
-| --- | --- | ---: | ---: | --- |
-| `76076_regulatory_analysis.hwp` | #2195 핵심 33~34쪽 | 82=82 | 0/2 | PASS |
-| `issue2004_cell_image_stack.hwp` | 전체 1~8쪽 | 8=8 | 0/8 | PASS |
+| 표본 | 비교 범위 | 페이지 일치 | 자동 후보 | upstream 회귀 | 한컴 oracle |
+| --- | --- | ---: | ---: | --- | --- |
+| `76076_regulatory_analysis.hwp` | #2195 핵심 33~34쪽 | 82=82 | 0/2 | PASS | KNOWN GAP — #3128 |
+| `issue2004_cell_image_stack.hwp` | 전체 1~8쪽 | 8=8 | 0/8 | PASS | 글꼴 민감 차이, exact fidelity 미판정 |
 
-review contact sheet에서 표 셀 경계, 이미지 순서와 수직 간격, 페이지 분할, 잘림·겹침·누락을
-직접 확인했다. 한컴/HY 전용 글꼴이 없는 macOS 환경이라 glyph raster 차이로 자동 잉크 보조값은
-각각 평균 `10.50925%`, `19.88209%`에 머물렀으며 구조 판정 근거로 과대해석하지 않았다.
+한컴/HY 전용 글꼴이 없는 macOS 환경이라 glyph raster 차이로 자동 잉크 보조값은 각각 평균
+`10.50925%`, `19.88209%`에 머물렀다. 자동 후보 0건은 한컴 정확성 PASS가 아니라 현재
+휴리스틱이 frame overflow 등 정해진 후보를 검출하지 않았다는 뜻이다.
+
+특히 76076 34쪽은 rhwp에서 continuation 셀 내용이 fragment 상단보다 크게 아래에 배치되고,
+wrapping·우측 clip과 뒤따르는 `직접편익` 표의 y 위치도 한컴과 다르다. 이는 실제 oracle
+fidelity 문제이며 #3128에서 후속 처리한다.
 
 before/after에서 #2004 전체 8쪽과 76076의 34쪽 PNG는 바이트 동일했다. 76076 33쪽은 텍스트 한
 줄에서만 `1507/891662` 픽셀(`0.16901023%`, 최대 채널 차이 27)이 달랐다. OVR geometry는 0건이고
-육안 배치는 같아 부동소수점 직렬화에 따른 서브픽셀 안티앨리어싱 차이로 판정했다.
+육안 배치는 같아 부동소수점 직렬화에 따른 서브픽셀 안티앨리어싱 차이로 판정했다. 따라서
+#2308의 upstream 대비 출력 회귀 게이트는 PASS지만, 한컴 exact fidelity를 달성했다고 주장하지
+않는다.
 
 ## 전체 로컬 검증
 
