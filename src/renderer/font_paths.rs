@@ -130,11 +130,17 @@ pub fn load_into_fontdb(fontdb: &mut usvg::fontdb::Database, extra: &[PathBuf]) 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Mutex;
 
     /// 환경변수는 프로세스 전역이라 테스트가 병렬로 돌면 서로를 덮는다.
-    /// 이 모듈의 env 의존 테스트는 하나로 묶어 순서를 고정한다.
+    /// `RHWP_FONT_PATH` 를 만지는 테스트는 이 락으로 직렬화한다 — 락 없이 셋이
+    /// 병렬로 돌면 set 과 read 사이에 다른 테스트의 remove_var 가 끼어들어
+    /// 간헐 실패한다(실측 플레이크).
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
+
     #[test]
     fn env_font_paths_parses_and_filters() {
+        let _g = ENV_LOCK.lock().unwrap();
         // 미설정
         std::env::remove_var(FONT_PATH_ENV);
         assert!(env_font_paths().is_empty(), "미설정이면 빈 목록이어야 한다");
@@ -160,6 +166,7 @@ mod tests {
 
     #[test]
     fn search_dirs_orders_caller_first_and_bundled_last() {
+        let _g = ENV_LOCK.lock().unwrap();
         std::env::remove_var(FONT_PATH_ENV);
         let extra = vec![PathBuf::from("/tmp/caller")];
         let dirs = search_dirs(&extra);
@@ -180,6 +187,7 @@ mod tests {
     /// 이 가드가 없으면 편의를 위해 재추가되어 #2268 간헐 행이 재발할 수 있다.
     #[test]
     fn search_dirs_excludes_environment_specific_paths() {
+        let _g = ENV_LOCK.lock().unwrap();
         std::env::remove_var(FONT_PATH_ENV);
         let dirs = search_dirs(&[]);
         let joined: Vec<String> = dirs.iter().map(|p| p.display().to_string()).collect();
