@@ -83,6 +83,16 @@ export interface DeferredCellTextInsertResult {
   cellFlowChanged: boolean;
 }
 
+export type DeferredPaginationStatus = 'none' | 'pending' | 'complete' | 'fallback' | 'stale';
+
+export interface DeferredPaginationResult {
+  ok: boolean;
+  status: DeferredPaginationStatus;
+  revision: number;
+  fragmentsProcessed: number;
+  pageCount: number;
+}
+
 import { fontFamilyChainForDisplay } from './font-substitution';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
 
@@ -388,11 +398,55 @@ export class WasmBridge {
     return this.doc?.pageCount() ?? 0;
   }
 
-  flushDeferredPagination(): { ok: boolean; pageCount?: number } {
+  beginDeferredPagination(fragmentBudget = 1): DeferredPaginationResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { beginDeferredPagination?: (budget: number) => string };
+    if (typeof d.beginDeferredPagination !== 'function') {
+      return {
+        ok: true,
+        status: 'fallback',
+        revision: 0,
+        fragmentsProcessed: 0,
+        pageCount: this.pageCount,
+      };
+    }
+    return JSON.parse(d.beginDeferredPagination(Math.max(1, Math.trunc(fragmentBudget))));
+  }
+
+  stepDeferredPagination(fragmentBudget = 1): DeferredPaginationResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { stepDeferredPagination?: (budget: number) => string };
+    if (typeof d.stepDeferredPagination !== 'function') {
+      return {
+        ok: true,
+        status: 'fallback',
+        revision: 0,
+        fragmentsProcessed: 0,
+        pageCount: this.pageCount,
+      };
+    }
+    return JSON.parse(d.stepDeferredPagination(Math.max(1, Math.trunc(fragmentBudget))));
+  }
+
+  cancelDeferredPagination(): boolean {
+    if (!this.doc) return false;
+    const d = this.doc as unknown as { cancelDeferredPagination?: () => boolean };
+    return typeof d.cancelDeferredPagination === 'function'
+      ? d.cancelDeferredPagination()
+      : false;
+  }
+
+  flushDeferredPagination(): DeferredPaginationResult {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as { flushDeferredPagination?: () => string };
     if (typeof d.flushDeferredPagination !== 'function') {
-      return { ok: true, pageCount: this.pageCount };
+      return {
+        ok: true,
+        status: 'fallback',
+        revision: 0,
+        fragmentsProcessed: 0,
+        pageCount: this.pageCount,
+      };
     }
     return JSON.parse(d.flushDeferredPagination());
   }

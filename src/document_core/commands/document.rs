@@ -160,6 +160,7 @@ impl DocumentCore {
             para_column_map: Vec::new(),
             deferred_pagination_revision: 0,
             deferred_pagination_descriptor: None,
+            pending_pagination_job: None,
             page_tree_cache: RefCell::new(Vec::new()),
             layer_tree_json_cache: RefCell::new(Vec::new()),
             batch_mode: false,

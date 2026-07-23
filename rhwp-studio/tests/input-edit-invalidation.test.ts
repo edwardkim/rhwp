@@ -109,7 +109,15 @@ test('deferred pending이 실제로 있을 때만 page-local idle flush를 예�
     '구형 deferred 결과의 누락 신호는 mutation 후 예외 대신 보수적 경계로 복구해야 한다',
   );
   assert.match(inputHandlerSource, /if \(!this\.deferredPaginationPending\) return false;/);
-  assert.match(inputHandlerSource, /if \(effects\.paginationCompleted\) \{\s*this\.cancelDeferredPaginationFlush\(\);\s*this\.deferredPaginationPending = false;\s*\}/);
+  assert.match(
+    inputHandlerSource,
+    /if \(effects\.paginationCompleted\) \{\s*this\.cancelDeferredPaginationFlush\(\);\s*this\.deferredPaginationRunner\.cancel\(\);\s*this\.deferredPaginationPending = false;\s*\}/,
+  );
+  assert.match(
+    inputHandlerSource,
+    /this\.deferredPaginationRunner\.start\(\);/,
+    'cell-flow 경계는 동기 full flush 대신 resumable macrotask runner를 시작해야 한다',
+  );
 });
 
 test('문서 전환은 deferred·IME·iOS 입력 세션 상태를 격리한다', () => {
@@ -120,12 +128,31 @@ test('문서 전환은 deferred·IME·iOS 입력 세션 상태를 격리한다',
   const deactivateSource = inputHandlerSource.slice(deactivateStart, disposeStart);
 
   assert.match(deactivateSource, /this\.cancelDeferredPaginationFlush\(\);/);
+  assert.match(deactivateSource, /this\.deferredPaginationRunner\.cancel\(\);/);
   assert.match(deactivateSource, /this\.deferredPaginationPending = false;/);
   assert.match(deactivateSource, /this\.resetRawTextMutationEffects\(\);/);
   assert.match(deactivateSource, /this\._lastComposedText = '';/);
   assert.match(deactivateSource, /this\._iosAnchor = null;/);
   assert.match(deactivateSource, /this\._iosRequiresFullRefresh = false;/);
   assert.match(deactivateSource, /this\.textarea\.value = '';/);
+});
+
+test('저장·다른 이름 저장·인쇄는 resumable job을 출력 전에 동기 barrier로 마감한다', () => {
+  const fileCommandSource = readFileSync(
+    new URL('../src/command/commands/file.ts', import.meta.url),
+    'utf8',
+  );
+  assert.match(
+    fileCommandSource,
+    /function flushDeferredPaginationBeforeExplicitOutput\([\s\S]*?flushDeferredPaginationIfNeeded\(reason\);/,
+  );
+  for (const reason of ['save', 'save-as', 'print']) {
+    assert.match(
+      fileCommandSource,
+      new RegExp(`flushDeferredPaginationBeforeExplicitOutput\\(services, '${reason}'\\)`),
+      `${reason} 경로는 export/render 전에 pending pagination을 마감해야 한다`,
+    );
+  }
 });
 
 test('isPageLocalTextEditCommand는 본문 텍스트와 구조 변경 명령을 full refresh로 남긴다', () => {

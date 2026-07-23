@@ -39,6 +39,7 @@ import { computeHangingIndentPx } from './hanging-indent';
 import { isPageLocalTextEditCommand, type PageLocalTextEditOptions } from './input-edit-invalidation';
 import type { NavigationKeyInput } from './navigation-keymap';
 import { isPointNearBoxBorder } from './table-border-hit';
+import { DeferredPaginationRunner } from './deferred-pagination-runner';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
@@ -311,6 +312,7 @@ export class InputHandler {
   private protectedCellHoverEl: HTMLDivElement | null = null;
   private deferredPaginationFlushTimer: ReturnType<typeof setTimeout> | null = null;
   private deferredPaginationPending = false;
+  private readonly deferredPaginationRunner: DeferredPaginationRunner;
   private rawTextMutationEffects = new TextMutationEffectAccumulator();
 
   // 표 경계선 리사이즈 드래그 상태
@@ -490,6 +492,11 @@ export class InputHandler {
     this.fieldMarker = new FieldMarkerRenderer(container, virtualScroll);
     this.selectionRenderer = new SelectionRenderer(container, virtualScroll);
     this.history = new CommandHistory();
+    this.deferredPaginationRunner = new DeferredPaginationRunner(
+      wasm,
+      (result) => this.completeResumablePagination(result.pageCount),
+      () => this.fallbackFromResumablePagination(),
+    );
 
     // Hidden input 요소 생성
     // iOS WebKit에서는 <textarea>로 composition 이벤트가 발생하지 않으므로
@@ -2402,6 +2409,7 @@ export class InputHandler {
     if (!this.cursor.getRect()?.cellOverflowed) return false;
 
     this.cancelDeferredPaginationFlush();
+    this.deferredPaginationRunner.cancel();
     try {
       this.wasm.flushDeferredPagination();
       this.deferredPaginationPending = false;
@@ -2440,17 +2448,36 @@ export class InputHandler {
   private prepareTextMutationBeforeCursor(effects: TextMutationEffects): boolean {
     if (effects.paginationCompleted) {
       this.cancelDeferredPaginationFlush();
+      this.deferredPaginationRunner.cancel();
       this.deferredPaginationPending = false;
     }
     if (!effects.deferredPagination) return false;
 
+    const replacesActiveJob = this.deferredPaginationRunner.isActive();
     this.cancelDeferredPaginationFlush();
     this.deferredPaginationPending = true;
-    if (!effects.cellFlowChanged) return false;
+    if (!effects.cellFlowChanged && !replacesActiveJob) return false;
 
-    // 성공 여부와 무관하게 이 호출에서 재시도하지 않는다. 실패하면 pending은 보존된다.
-    this.flushDeferredPaginationIfNeeded('cell-flow-boundary', false);
+    // 최신 revision의 shadow job으로 교체하고, 한 macrotask당 한 fragment씩 전진한다.
+    this.deferredPaginationRunner.start();
     return true;
+  }
+
+  private completeResumablePagination(_pageCount: number): void {
+    this.cancelDeferredPaginationFlush();
+    this.deferredPaginationPending = false;
+    this.lastCellKey = null;
+    this.protectedCellHitCache = null;
+    this.eventBus.emit('document-mutated', 'input-handler-resumable-pagination');
+    this.eventBus.emit('document-changed', 'deferred-pagination-complete');
+    const position = this.cursor.getPosition();
+    this.cursor.moveTo(position);
+    this.updateCaret();
+  }
+
+  private fallbackFromResumablePagination(): void {
+    // 구버전 WASM 또는 fast-path 비대상 문서는 기존 동기 barrier 의미론을 유지한다.
+    this.flushDeferredPaginationIfNeeded('resumable-fallback');
   }
 
   private resetRawTextMutationEffects(): void {
@@ -2470,11 +2497,14 @@ export class InputHandler {
   }
 
   flushDeferredPaginationIfNeeded(reason = 'manual', emitChange = true): boolean {
-    const shouldFlush = this.deferredPaginationPending || this.deferredPaginationFlushTimer !== null;
+    const shouldFlush = this.deferredPaginationPending
+      || this.deferredPaginationFlushTimer !== null
+      || this.deferredPaginationRunner.isActive();
     this.cancelDeferredPaginationFlush();
     if (!shouldFlush) return false;
 
     try {
+      this.deferredPaginationRunner.cancel();
       this.wasm.flushDeferredPagination();
       this.deferredPaginationPending = false;
       if (emitChange) {
@@ -3115,6 +3145,7 @@ export class InputHandler {
   deactivate(): void {
     this.active = false;
     this.cancelDeferredPaginationFlush();
+    this.deferredPaginationRunner.cancel();
     this.deferredPaginationPending = false;
     this.resetRawTextMutationEffects();
     this.isComposing = false;
@@ -3157,6 +3188,7 @@ export class InputHandler {
       this.resizeHoverRafId = 0;
     }
     this.cancelDeferredPaginationFlush();
+    this.deferredPaginationRunner.cancel();
     this.deferredPaginationPending = false;
     this.resetRawTextMutationEffects();
     this.isComposing = false;

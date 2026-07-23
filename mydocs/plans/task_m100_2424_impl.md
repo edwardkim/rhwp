@@ -124,6 +124,17 @@ revision/structure를 검증하고 descriptor 좌표로 immutable source를 재�
 - save/print completion/fallback
 - Studio unit test와 HWP/HWPX browser E2E
 
+완료 결과(2026-07-23):
+
+- `DocumentCore`가 descriptor, measured section, borrow-free renderer context를 pending job으로 소유한다.
+- begin/step/cancel/동기 drain과 `none`/`pending`/`complete`/`fallback`/`stale` 상태를 WASM에 노출했다.
+- 진행 중 공개 pagination은 유지하고 마지막 fragment에서만 measurement/dirty/cache와 함께 원자 commit한다.
+- 새 edit stale 폐기와 최신 revision 재시작, save/save-as/print 동기 barrier를 고정했다.
+- Studio는 budget 1을 macrotask별로 실행하고 새 입력에서 예약 task와 core job을 교체한다.
+- HWP/HWPX 실제 API 115 steps, 115 fragments, 113 changed cuts와 공개 pagination 비노출 계약을 통과했다.
+- release 계측은 begin 약 32ms, step p50 약 10.2ms, p95 약 11.0ms, max 약 22.3ms였다.
+- Studio 507 tests와 production build, wasm-pack web binding 생성, wasm32 check가 통과했다.
+
 ## 4. 성능 게이트
 
 - Stage A와 같은 환경·fixture·입력 수·반복 수 사용

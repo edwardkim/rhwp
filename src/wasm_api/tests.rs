@@ -25015,6 +25015,142 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
     }
 }
 
+/// #2424 Stage D: 공개 pagination을 유지한 채 한 호출당 한 fragment만 전진하고,
+/// 마지막 step에서만 full-pagination oracle과 같은 cut chain을 원자적으로 commit한다.
+#[test]
+fn issue2424_resumable_pagination_commits_only_after_final_fragment() {
+    for (label, relative) in [
+        ("hwp", "samples/issue1949_giant_cell_nested_tables_perf.hwp"),
+        (
+            "hwpx",
+            "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+        ),
+    ] {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(relative);
+        let bytes = std::fs::read(path).expect("read #2424 fixture");
+        let mut doc = HwpDocument::from_bytes(&bytes).expect("load #2424 fixture");
+
+        for inserted in 0..56 {
+            doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + inserted, "1")
+                .expect("deferred sequential insert");
+        }
+        let transient_cuts = issue2214_target_cuts(&doc);
+        issue2214_assert_cut_continuity(label, "resumable-transient", &transient_cuts);
+
+        let begin: Value = serde_json::from_str(
+            &doc.begin_deferred_pagination(1)
+                .expect("begin resumable pagination"),
+        )
+        .expect("begin result json");
+        assert_eq!(begin["status"], "pending", "{label}: begin status");
+        assert_eq!(
+            issue2214_target_cuts(&doc),
+            transient_cuts,
+            "{label}: begin must not publish shadow pages"
+        );
+
+        let mut step_calls = 0usize;
+        let mut fragments_processed = 0usize;
+        loop {
+            let step: Value = serde_json::from_str(
+                &doc.step_deferred_pagination(1)
+                    .expect("step resumable pagination"),
+            )
+            .expect("step result json");
+            step_calls += 1;
+            fragments_processed +=
+                step["fragmentsProcessed"].as_u64().expect("fragment count") as usize;
+            match step["status"].as_str() {
+                Some("pending") => assert_eq!(
+                    issue2214_target_cuts(&doc),
+                    transient_cuts,
+                    "{label}: step {step_calls} published an incomplete shadow result"
+                ),
+                Some("complete") => break,
+                other => panic!("{label}: unexpected step status {other:?}: {step}"),
+            }
+        }
+
+        assert_eq!(step_calls, 115, "{label}: one macrotask per fragment");
+        assert_eq!(
+            fragments_processed, 115,
+            "{label}: every target fragment processed exactly once"
+        );
+        let committed_cuts = issue2214_target_cuts(&doc);
+        issue2214_assert_cut_continuity(label, "resumable-committed", &committed_cuts);
+        assert_eq!(
+            transient_cuts
+                .iter()
+                .zip(&committed_cuts)
+                .filter(|(before, after)| before != after)
+                .count(),
+            113,
+            "{label}: committed cut chain must match the full-pagination oracle"
+        );
+    }
+}
+
+#[test]
+fn issue2424_new_edit_stales_old_job_and_sync_flush_restarts_latest_revision() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue1949_giant_cell_nested_tables_perf.hwp");
+    let bytes = std::fs::read(path).expect("read #2424 fixture");
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("load #2424 fixture");
+    for inserted in 0..56 {
+        doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + inserted, "1")
+            .expect("deferred sequential insert");
+    }
+
+    let begin: Value = serde_json::from_str(
+        &doc.begin_deferred_pagination(1)
+            .expect("begin first revision"),
+    )
+    .expect("begin json");
+    assert_eq!(begin["status"], "pending");
+    let first_revision = begin["revision"].as_u64().expect("first revision");
+    let first_step: Value = serde_json::from_str(
+        &doc.step_deferred_pagination(1)
+            .expect("step first revision"),
+    )
+    .expect("step json");
+    assert_eq!(first_step["status"], "pending");
+
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 186, "1")
+        .expect("new edit supersedes first revision");
+    let stale: Value = serde_json::from_str(
+        &doc.step_deferred_pagination(1)
+            .expect("reject stale first revision"),
+    )
+    .expect("stale json");
+    assert_eq!(stale["status"], "stale");
+    assert_eq!(stale["revision"].as_u64(), Some(first_revision));
+
+    let replacement: Value = serde_json::from_str(
+        &doc.begin_deferred_pagination(1)
+            .expect("begin replacement revision"),
+    )
+    .expect("replacement json");
+    assert_eq!(replacement["status"], "pending");
+    assert!(
+        replacement["revision"]
+            .as_u64()
+            .expect("replacement revision")
+            > first_revision,
+        "latest edit must own a newer job revision"
+    );
+    assert!(doc.cancel_deferred_pagination());
+    assert!(!doc.cancel_deferred_pagination());
+
+    let flushed: Value = serde_json::from_str(
+        &doc.flush_deferred_pagination()
+            .expect("sync barrier restarts latest revision"),
+    )
+    .expect("flush json");
+    assert_eq!(flushed["status"], "complete");
+    assert_eq!(flushed["pageCount"], 115);
+    issue2214_assert_cut_continuity("hwp", "replacement-flushed", &issue2214_target_cuts(&doc));
+}
+
 #[test]
 fn update_style_dirties_docinfo_for_hwp5_save() {
     use crate::model::style::Style;

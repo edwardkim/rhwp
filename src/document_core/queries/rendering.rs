@@ -1,7 +1,10 @@
 //! 렌더링/페이지 정보/구성/페이지네이션/페이지 트리 관련 native 메서드
 
 use super::super::helpers::color_ref_to_css;
-use crate::document_core::DocumentCore;
+use crate::document_core::{
+    DeferredPaginationJobState, DeferredPaginationStepResult, DeferredPaginationTargetStatus,
+    DocumentCore, PendingPaginationJob,
+};
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::document::{Document, Section};
@@ -23,6 +26,7 @@ use crate::renderer::render_tree::PageRenderTree;
 use crate::renderer::style_resolver::resolve_styles;
 use crate::renderer::svg::SvgRenderer;
 use crate::renderer::svg_layer::SvgLayerRenderer;
+use crate::renderer::typeset::TypesetEngine;
 use std::cell::RefCell;
 use std::fmt::Write as _;
 
@@ -2897,6 +2901,328 @@ impl DocumentCore {
 
     /// Batch 모드가 아닐 때만 paginate를 실행한다.
     /// Command 메서드에서 self.paginate() 대신 호출한다.
+    /// [#2424] 최신 deferred descriptor를 shadow pagination job으로 승격한다.
+    /// 지원하지 않는 문서 형상은 공개 pagination을 건드리지 않고 Fallback을 반환한다.
+    pub fn begin_deferred_pagination(
+        &mut self,
+        fragment_budget: usize,
+    ) -> DeferredPaginationStepResult {
+        self.pending_pagination_job = None;
+        let Some(descriptor) = self.deferred_pagination_descriptor.clone() else {
+            return DeferredPaginationStepResult {
+                state: DeferredPaginationJobState::None,
+                revision: self.deferred_pagination_revision,
+                fragments_processed: 0,
+                page_count: self.page_count(),
+            };
+        };
+        if !descriptor.cell_flow_changed
+            || self.deferred_pagination_target_status(&descriptor)
+                != DeferredPaginationTargetStatus::Current
+            || self.document.sections.len() != 1
+        {
+            return DeferredPaginationStepResult {
+                state: DeferredPaginationJobState::Fallback,
+                revision: descriptor.revision,
+                fragments_processed: 0,
+                page_count: self.page_count(),
+            };
+        }
+
+        self.compute_render_normalized();
+        let section_index = descriptor.section_index;
+        let Some(section) = self.document.sections.get(section_index) else {
+            return DeferredPaginationStepResult {
+                state: DeferredPaginationJobState::Fallback,
+                revision: descriptor.revision,
+                fragments_processed: 0,
+                page_count: self.page_count(),
+            };
+        };
+        let normalized = self
+            .render_normalized
+            .get(section_index)
+            .and_then(|entry| entry.as_ref());
+        let paragraphs: &[Paragraph] = normalized
+            .map(|(paragraphs, _)| paragraphs.as_slice())
+            .unwrap_or(&section.paragraphs);
+        let composed: &[ComposedParagraph] = match normalized {
+            Some((_, composed)) => composed,
+            None => match self.composed.get(section_index) {
+                Some(composed) => composed,
+                None => {
+                    return DeferredPaginationStepResult {
+                        state: DeferredPaginationJobState::Fallback,
+                        revision: descriptor.revision,
+                        fragments_processed: 0,
+                        page_count: self.page_count(),
+                    };
+                }
+            },
+        };
+        let profile = self.document.layout_profile();
+        let hwp3_origin_flow_spacing_before = uses_hwp3_origin_flow_spacing_before(&self.document);
+        let measurer = HeightMeasurer::new(self.dpi)
+            .with_hwp3_variant(profile.hwp3_layout())
+            .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before);
+        let column_def = Self::find_initial_column_def(paragraphs);
+        let layout =
+            PageLayoutInfo::from_page_def(&section.section_def.page_def, &column_def, self.dpi);
+        let column_width = layout
+            .column_areas
+            .first()
+            .map(|area| area.width)
+            .unwrap_or(layout.body_area.width);
+        let measured = if self
+            .measured_sections
+            .get(section_index)
+            .is_some_and(|cached| !cached.paragraphs.is_empty())
+        {
+            measurer.measure_section_selective(
+                paragraphs,
+                composed,
+                &self.styles,
+                &self.measured_sections[section_index],
+                self.dirty_paragraphs
+                    .get(section_index)
+                    .and_then(|dirty| dirty.as_deref()),
+                Some(column_width),
+            )
+        } else {
+            measurer.measure_section(paragraphs, composed, &self.styles, Some(column_width))
+        };
+        let typesetter = TypesetEngine::new(self.dpi);
+        let Some(renderer_job) = typesetter.begin_resumable_table_pagination(
+            paragraphs,
+            composed,
+            &self.styles,
+            &section.section_def.page_def,
+            &column_def,
+            section_index,
+            &measured.tables,
+            section.section_def.hide_empty_line,
+            profile,
+            hwp3_origin_flow_spacing_before,
+            Some(&section.section_def.footnote_shape),
+            descriptor.para_index,
+            descriptor.control_index,
+            fragment_budget,
+        ) else {
+            return DeferredPaginationStepResult {
+                state: DeferredPaginationJobState::Fallback,
+                revision: descriptor.revision,
+                fragments_processed: 0,
+                page_count: self.page_count(),
+            };
+        };
+        self.pending_pagination_job = Some(PendingPaginationJob {
+            descriptor: descriptor.clone(),
+            renderer_job,
+            measured,
+        });
+        DeferredPaginationStepResult {
+            state: DeferredPaginationJobState::Pending,
+            revision: descriptor.revision,
+            fragments_processed: 0,
+            page_count: self.page_count(),
+        }
+    }
+
+    /// [#2424] shadow job에서 fragment budget만큼 전진한다.
+    /// 완료 전에는 기존 공개 pagination과 render tree cache를 유지한다.
+    pub fn step_deferred_pagination(
+        &mut self,
+        fragment_budget: usize,
+    ) -> DeferredPaginationStepResult {
+        let Some(mut pending) = self.pending_pagination_job.take() else {
+            return DeferredPaginationStepResult {
+                state: DeferredPaginationJobState::None,
+                revision: self.deferred_pagination_revision,
+                fragments_processed: 0,
+                page_count: self.page_count(),
+            };
+        };
+        let revision = pending.descriptor.revision;
+        if self.deferred_pagination_target_status(&pending.descriptor)
+            != DeferredPaginationTargetStatus::Current
+        {
+            return DeferredPaginationStepResult {
+                state: DeferredPaginationJobState::Stale,
+                revision,
+                fragments_processed: 0,
+                page_count: self.page_count(),
+            };
+        }
+
+        let (paragraph_index, control_index) =
+            TypesetEngine::resumable_table_target(&pending.renderer_job);
+        let step = {
+            let Some(section) = self.document.sections.get(pending.descriptor.section_index) else {
+                return DeferredPaginationStepResult {
+                    state: DeferredPaginationJobState::Stale,
+                    revision,
+                    fragments_processed: 0,
+                    page_count: self.page_count(),
+                };
+            };
+            let Some(paragraph) = section.paragraphs.get(paragraph_index) else {
+                return DeferredPaginationStepResult {
+                    state: DeferredPaginationJobState::Stale,
+                    revision,
+                    fragments_processed: 0,
+                    page_count: self.page_count(),
+                };
+            };
+            let Some(Control::Table(table)) = paragraph.controls.get(control_index) else {
+                return DeferredPaginationStepResult {
+                    state: DeferredPaginationJobState::Stale,
+                    revision,
+                    fragments_processed: 0,
+                    page_count: self.page_count(),
+                };
+            };
+            let Some(measured_table) = pending.measured.tables.iter().find(|measured| {
+                measured.para_index == paragraph_index && measured.control_index == control_index
+            }) else {
+                return DeferredPaginationStepResult {
+                    state: DeferredPaginationJobState::Stale,
+                    revision,
+                    fragments_processed: 0,
+                    page_count: self.page_count(),
+                };
+            };
+            TypesetEngine::new(self.dpi).step_resumable_table_pagination(
+                &mut pending.renderer_job,
+                paragraph,
+                table,
+                measured_table,
+                &self.styles,
+                fragment_budget,
+            )
+        };
+        if !step.complete {
+            self.pending_pagination_job = Some(pending);
+            return DeferredPaginationStepResult {
+                state: DeferredPaginationJobState::Pending,
+                revision,
+                fragments_processed: step.fragments_processed,
+                page_count: self.page_count(),
+            };
+        }
+
+        let section_index = pending.descriptor.section_index;
+        let result = {
+            let section = &self.document.sections[section_index];
+            let Some(mut result) = TypesetEngine::new(self.dpi).finish_resumable_table_pagination(
+                pending.renderer_job,
+                &section.paragraphs,
+                section_index,
+            ) else {
+                return DeferredPaginationStepResult {
+                    state: DeferredPaginationJobState::Fallback,
+                    revision,
+                    fragments_processed: step.fragments_processed,
+                    page_count: self.page_count(),
+                };
+            };
+            apply_page_number_layouts_for_section(&mut result, section);
+            assign_master_pages_for_section(&mut result, section_index, section, &None, &None);
+            result
+        };
+        let completed_page_count = result.pages.len() as u32;
+        if self.pagination.len() <= section_index {
+            self.pagination
+                .resize_with(section_index + 1, || PaginationResult {
+                    pages: Vec::new(),
+                    wrap_around_paras: Vec::new(),
+                    hidden_empty_paras: std::collections::HashSet::new(),
+                    pre_emitted_host_paras: std::collections::HashSet::new(),
+                    pre_emitted_host_heights: std::collections::HashMap::new(),
+                    endnotes: Vec::new(),
+                    endnote_paragraphs: Vec::new(),
+                    endnote_para_sources: Vec::new(),
+                    endnote_between_notes_hu: 0,
+                    endnote_separator_above_hu: 0,
+                    endnote_separator_below_hu: 0,
+                });
+        }
+        self.pagination[section_index] = result;
+        if self.measured_tables.len() <= section_index {
+            self.measured_tables
+                .resize_with(section_index + 1, Vec::new);
+        }
+        if self.measured_sections.len() <= section_index {
+            self.measured_sections
+                .resize_with(section_index + 1, || MeasuredSection {
+                    paragraphs: Vec::new(),
+                    tables: Vec::new(),
+                });
+        }
+        self.measured_tables[section_index] = pending.measured.tables.clone();
+        self.measured_sections[section_index] = pending.measured;
+        self.dirty_sections
+            .resize(self.document.sections.len(), false);
+        self.dirty_sections[section_index] = false;
+        self.dirty_paragraphs
+            .resize_with(self.document.sections.len(), || None);
+        let paragraph_count = self.document.sections[section_index].paragraphs.len();
+        self.dirty_paragraphs[section_index] = Some(vec![false; paragraph_count]);
+        self.para_column_map
+            .resize_with(self.document.sections.len(), Vec::new);
+        self.para_column_map[section_index] = vec![0; paragraph_count];
+        for offset in &mut self.para_offset {
+            *offset = 0;
+        }
+        for paragraph in &mut self.document.sections[section_index].paragraphs {
+            for control in &mut paragraph.controls {
+                if let Control::Table(table) = control {
+                    table.dirty = false;
+                }
+            }
+        }
+        self.deferred_pagination_descriptor = None;
+        self.invalidate_page_tree_cache();
+        DeferredPaginationStepResult {
+            state: DeferredPaginationJobState::Complete,
+            revision,
+            fragments_processed: step.fragments_processed,
+            page_count: completed_page_count.max(1),
+        }
+    }
+
+    pub fn cancel_deferred_pagination(&mut self) -> bool {
+        self.pending_pagination_job.take().is_some()
+    }
+
+    /// 저장/인쇄/명시 flush용 동기 barrier. resumable job을 끝까지 drain하고,
+    /// 시작 불가 또는 stale이면 기존 full pagination으로 복구한다.
+    pub fn flush_deferred_pagination(&mut self) -> DeferredPaginationStepResult {
+        if self.pending_pagination_job.is_none() {
+            let begin = self.begin_deferred_pagination(usize::MAX);
+            if begin.state != DeferredPaginationJobState::Pending {
+                self.paginate();
+                return DeferredPaginationStepResult {
+                    state: DeferredPaginationJobState::Fallback,
+                    revision: self.deferred_pagination_revision,
+                    fragments_processed: 0,
+                    page_count: self.page_count(),
+                };
+            }
+        }
+        let step = self.step_deferred_pagination(usize::MAX);
+        if step.state == DeferredPaginationJobState::Complete {
+            step
+        } else {
+            self.paginate();
+            DeferredPaginationStepResult {
+                state: DeferredPaginationJobState::Fallback,
+                revision: self.deferred_pagination_revision,
+                fragments_processed: step.fragments_processed,
+                page_count: self.page_count(),
+            }
+        }
+    }
+
     pub(crate) fn paginate_if_needed(&mut self) {
         if !self.batch_mode {
             self.paginate();
@@ -2910,6 +3236,7 @@ impl DocumentCore {
     /// 측정 통일(B). `paginate_pass` 의 `force_break_before` 훅과 `LayoutOverflow` 의
     /// section_index/is_first_in_column 계측은 측정 통일 작업의 진단·후속용으로 유지한다.
     pub(crate) fn paginate(&mut self) {
+        self.pending_pagination_job = None;
         let sec_count = self.document.sections.len().max(1);
         let empty_breaks: Vec<std::collections::HashSet<usize>> =
             vec![std::collections::HashSet::new(); sec_count];

@@ -24,6 +24,7 @@ use crate::renderer::layout::LayoutEngine;
 use crate::renderer::pagination::PaginationResult;
 use crate::renderer::render_tree::PageRenderTree;
 use crate::renderer::style_resolver::ResolvedStyleSet;
+use crate::renderer::typeset::ResumableTablePaginationJob;
 use crate::renderer::DEFAULT_DPI;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -70,6 +71,29 @@ pub(crate) enum DeferredPaginationTargetStatus {
     Superseded,
     TargetMissing,
     StructureChanged,
+}
+
+pub(crate) struct PendingPaginationJob {
+    pub(crate) descriptor: DeferredPaginationDescriptor,
+    pub(crate) renderer_job: ResumableTablePaginationJob,
+    pub(crate) measured: MeasuredSection,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DeferredPaginationJobState {
+    None,
+    Pending,
+    Complete,
+    Fallback,
+    Stale,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DeferredPaginationStepResult {
+    pub state: DeferredPaginationJobState,
+    pub revision: u64,
+    pub fragments_processed: usize,
+    pub page_count: u32,
 }
 
 /// HWP 문서 핵심 도메인 모델
@@ -136,6 +160,8 @@ pub struct DocumentCore {
     pub(crate) deferred_pagination_revision: u64,
     /// [#2424] 아직 full pagination에 반영되지 않은 target descriptor.
     pub(crate) deferred_pagination_descriptor: Option<DeferredPaginationDescriptor>,
+    /// [#2424] 공개 pagination과 분리된 shadow continuation job.
+    pub(crate) pending_pagination_job: Option<PendingPaginationJob>,
     /// 페이지별 렌더 트리 캐시 (지연 구축, 부분 무효화)
     pub(crate) page_tree_cache: RefCell<Vec<Option<PageRenderTree>>>,
     /// [Task #2222] 페이지 레이어 트리 JSON 캐시 — (출력옵션 지문, 직렬화 결과).
@@ -306,6 +332,7 @@ impl DocumentCore {
             para_column_map: Vec::new(),
             deferred_pagination_revision: 0,
             deferred_pagination_descriptor: None,
+            pending_pagination_job: None,
             page_tree_cache: RefCell::new(Vec::new()),
             layer_tree_json_cache: RefCell::new(Vec::new()),
             batch_mode: false,

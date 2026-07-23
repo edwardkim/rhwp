@@ -14,7 +14,9 @@ use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use web_sys::HtmlCanvasElement;
 
-use crate::document_core::{DocumentCore, DEFAULT_FALLBACK_FONT};
+use crate::document_core::{
+    DeferredPaginationJobState, DeferredPaginationStepResult, DocumentCore, DEFAULT_FALLBACK_FONT,
+};
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::document::{Document, Section};
@@ -43,6 +45,24 @@ impl From<HwpError> for JsValue {
     fn from(err: HwpError) -> Self {
         JsValue::from_str(&err.to_string())
     }
+}
+
+fn deferred_pagination_result_json(result: DeferredPaginationStepResult) -> String {
+    let status = match result.state {
+        DeferredPaginationJobState::None => "none",
+        DeferredPaginationJobState::Pending => "pending",
+        DeferredPaginationJobState::Complete => "complete",
+        DeferredPaginationJobState::Fallback => "fallback",
+        DeferredPaginationJobState::Stale => "stale",
+    };
+    serde_json::json!({
+        "ok": true,
+        "status": status,
+        "revision": result.revision,
+        "fragmentsProcessed": result.fragments_processed,
+        "pageCount": result.page_count,
+    })
+    .to_string()
 }
 
 /// [Task #1161] 클립보드 API 의 cellPath JSON 인자 파싱.
@@ -1000,14 +1020,34 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
-    /// 지연된 페이지네이션을 즉시 flush하고 최신 페이지 수를 반환한다.
+    /// 대형 표 continuation shadow job을 시작한다. 공개 페이지는 완료 전까지 유지된다.
+    #[wasm_bindgen(js_name = beginDeferredPagination)]
+    pub fn begin_deferred_pagination(&mut self, fragment_budget: u32) -> Result<String, JsValue> {
+        Ok(deferred_pagination_result_json(
+            self.core
+                .begin_deferred_pagination((fragment_budget as usize).max(1)),
+        ))
+    }
+
+    /// 대형 표 continuation을 fragment budget만큼 전진한다.
+    #[wasm_bindgen(js_name = stepDeferredPagination)]
+    pub fn step_deferred_pagination(&mut self, fragment_budget: u32) -> Result<String, JsValue> {
+        Ok(deferred_pagination_result_json(
+            self.core
+                .step_deferred_pagination((fragment_budget as usize).max(1)),
+        ))
+    }
+
+    #[wasm_bindgen(js_name = cancelDeferredPagination)]
+    pub fn cancel_deferred_pagination(&mut self) -> bool {
+        self.core.cancel_deferred_pagination()
+    }
+
+    /// 지연된 페이지네이션을 동기 barrier로 flush하고 최신 페이지 수를 반환한다.
     #[wasm_bindgen(js_name = flushDeferredPagination)]
     pub fn flush_deferred_pagination(&mut self) -> Result<String, JsValue> {
-        self.invalidate_page_tree_cache();
-        self.paginate();
-        Ok(format!(
-            "{{\"ok\":true,\"pageCount\":{}}}",
-            self.page_count()
+        Ok(deferred_pagination_result_json(
+            self.core.flush_deferred_pagination(),
         ))
     }
 
