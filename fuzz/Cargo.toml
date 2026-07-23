@@ -1,0 +1,46 @@
+[package]
+name = "rhwp-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.rhwp]
+path = ".."
+
+# 본 크레이트와 별도의 독립 크레이트로 유지한다 (워크스페이스에서 제외).
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "parse_hwp"
+path = "fuzz_targets/parse_hwp.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "parse_hwp3"
+path = "fuzz_targets/parse_hwp3.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "parse_hwpx"
+path = "fuzz_targets/parse_hwpx.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "parse_hml"
+path = "fuzz_targets/parse_hml.rs"
+test = false
+doc = false
+bench = false
