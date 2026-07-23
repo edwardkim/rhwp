@@ -13,6 +13,7 @@
  * Usage:
  *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless
  *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --runs=1  # local smoke
+ *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --review-only
  *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --diagnose
  *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --diagnose \
  *     --formats=hwp --runs=1
@@ -343,6 +344,24 @@ async function installTrace(page) {
       paginationDeferred: result?.paginationDeferred ?? null,
       cellFlowChanged: result?.cellFlowChanged ?? null,
     }));
+    wrap(wasm, 'deleteTextInCellDeferredPagination', 'wasm.deleteTextInCellDeferredPagination', (args) => ({
+      sectionIndex: args[0],
+      parentParaIndex: args[1],
+      controlIndex: args[2],
+      cellIndex: args[3],
+      cellParaIndex: args[4],
+      charOffset: args[5],
+      count: args[6],
+    }), (result) => ({
+      resultCharOffset: result?.charOffset ?? null,
+      paginationDeferred: result?.paginationDeferred ?? null,
+      cellFlowChanged: result?.cellFlowChanged ?? null,
+    }));
+    wrap(wasm, 'deleteTextInCell', 'wasm.deleteTextInCell');
+    wrap(wasm, 'deleteTextInCellByPath', 'wasm.deleteTextInCellByPath');
+    wrap(wasm, 'exportHwp', 'wasm.exportHwp');
+    wrap(wasm, 'exportHwpx', 'wasm.exportHwpx');
+    wrap(wasm, 'renderPageSvg', 'wasm.renderPageSvg', (args) => ({ pageIndex: args[0] }));
     wrap(wasm, 'getCursorRectByPathNear', 'wasm.getCursorRectByPathNear', (args) => ({
       sectionIndex: args[0],
       parentParaIndex: args[1],
@@ -419,6 +438,12 @@ async function collectTrace(page) {
         pageRender: count('PageRenderer.renderPage'),
         refreshNow: count('CanvasView.refreshInvalidatedPageNow'),
         deferredInsert: count('wasm.insertTextInCellDeferredPagination'),
+        deferredDelete: count('wasm.deleteTextInCellDeferredPagination'),
+        immediateDelete: count('wasm.deleteTextInCell'),
+        pathDelete: count('wasm.deleteTextInCellByPath'),
+        exportHwp: count('wasm.exportHwp'),
+        exportHwpx: count('wasm.exportHwpx'),
+        renderPageSvg: count('wasm.renderPageSvg'),
         cursorRectNear: count('wasm.getCursorRectByPathNear'),
         cursorRect: count('wasm.getCursorRectByPath'),
         executeOperation: count('InputHandler.executeOperation'),
@@ -1374,6 +1399,117 @@ async function dispatchRawInput(page, kind, text) {
   }, { rawKind: kind, rawText: text });
 }
 
+async function runMultiUpdateImeSmoke(page, format, bytes) {
+  await restoreTrace(page);
+  await openDocumentThroughApp(page, format, bytes);
+  await moveToTarget(page);
+  const initial = await readFocusedSnapshot(page);
+  const initialText = initial.model.text;
+  await installTrace(page);
+
+  await page.evaluate(() => {
+    const textarea = window.__inputHandler.textarea;
+    textarea.dispatchEvent(new CompositionEvent('compositionstart', {
+      bubbles: true,
+      data: '',
+    }));
+  });
+  const durationsMs = [];
+  for (const value of ['ㅎ', '하', '한']) {
+    durationsMs.push(await page.evaluate((text) => {
+      const textarea = window.__inputHandler.textarea;
+      textarea.value = text;
+      const startedAt = performance.now();
+      textarea.dispatchEvent(new InputEvent('input', {
+        bubbles: true,
+        data: text,
+        inputType: 'insertCompositionText',
+        isComposing: true,
+      }));
+      return performance.now() - startedAt;
+    }, value));
+  }
+  await page.evaluate(() => {
+    const textarea = window.__inputHandler.textarea;
+    textarea.dispatchEvent(new CompositionEvent('compositionend', {
+      bubbles: true,
+      data: '한',
+    }));
+  });
+  await waitTwoRafs(page);
+
+  const snapshot = await readFocusedSnapshot(page);
+  assert.equal(snapshot.model.text, `${initialText}한`, `${format} multi-update IME final text`);
+  assert.equal(snapshot.cursor.position.charOffset, TARGET.charOffset + 1, `${format} IME cursor offset`);
+  assert.equal(snapshot.pagination.pageCount, 115, `${format} IME public page count`);
+  assert.equal(snapshot.pagination.pending, true, `${format} IME deferred hold`);
+
+  const trace = await collectTrace(page);
+  const deletes = trace.events.filter((event) => event.type === 'wasm.deleteTextInCellDeferredPagination');
+  assert.equal(trace.counts.deferredInsert, 3, `${format} IME deferred insert count`);
+  assert.equal(trace.counts.deferredDelete, 2, `${format} IME replacement delete count`);
+  assert.equal(trace.counts.immediateDelete, 0, `${format} IME synchronous flat delete count`);
+  assert.equal(trace.counts.pathDelete, 0, `${format} IME path delete count`);
+  assert.equal(trace.counts.prepareTextMutation, 3, `${format} IME effect consumption count`);
+  assert.equal(trace.counts.wasmFlush, 0, `${format} IME synchronous flush count`);
+  assert.deepEqual(deletes.map((event) => event.charOffset), [
+    TARGET.charOffset,
+    TARGET.charOffset,
+  ]);
+  for (const [index, durationMs] of durationsMs.entries()) {
+    assert.ok(durationMs < 250, `${format} IME update ${index + 1} blocked ${durationMs.toFixed(2)}ms`);
+  }
+  await restoreTrace(page);
+  console.log(`  multi-update IME smoke: GREEN, updates=${durationsMs.map((v) => v.toFixed(1)).join('/')}ms`);
+  return { format, durationsMs, traceCounts: trace.counts };
+}
+
+async function runDeleteKeySmoke(page, format, bytes, key) {
+  await restoreTrace(page);
+  await openDocumentThroughApp(page, format, bytes);
+  const charOffset = key === 'Delete' ? 64 : TARGET.charOffset;
+  await page.evaluate(({ target, offset }) => {
+    const input = window.__inputHandler;
+    input.cursor.clearSelection();
+    input.cursor.moveTo({ ...target, charOffset: offset });
+    input.cursor.resetPreferredX();
+    input.updateCaret();
+    input.focus();
+  }, { target: TARGET, offset: charOffset });
+  const before = await readFocusedSnapshot(page);
+  const expectedText = key === 'Delete'
+    ? `${before.model.text.slice(0, charOffset)}${before.model.text.slice(charOffset + 1)}`
+    : before.model.text.slice(0, -1);
+  await installTrace(page);
+
+  const startedAt = performance.now();
+  await page.keyboard.press(key);
+  const wallDurationMs = performance.now() - startedAt;
+  await waitTwoRafs(page);
+
+  const after = await readFocusedSnapshot(page);
+  assert.equal(after.model.text, expectedText, `${format} ${key} final text`);
+  assert.equal(
+    after.cursor.position.charOffset,
+    key === 'Delete' ? charOffset : charOffset - 1,
+    `${format} ${key} cursor offset`,
+  );
+  assert.equal(after.pagination.pageCount, 115, `${format} ${key} public page count`);
+  assert.equal(after.pagination.pending, true, `${format} ${key} deferred hold`);
+
+  const trace = await collectTrace(page);
+  const deferred = trace.events.filter((event) => event.type === 'wasm.deleteTextInCellDeferredPagination');
+  assert.equal(deferred.length, 1, `${format} ${key} deferred delete count`);
+  assert.equal(trace.counts.immediateDelete, 0, `${format} ${key} synchronous delete count`);
+  assert.equal(trace.counts.pathDelete, 0, `${format} ${key} path delete count`);
+  assert.equal(trace.counts.wasmFlush, 0, `${format} ${key} synchronous flush count`);
+  assert.ok(deferred[0].durationMs < 250, `${format} ${key} WASM blocked ${deferred[0].durationMs.toFixed(2)}ms`);
+  assert.ok(wallDurationMs < 500, `${format} ${key} key event blocked ${wallDurationMs.toFixed(2)}ms`);
+  await restoreTrace(page);
+  console.log(`  ${key} smoke: GREEN, wasm=${deferred[0].durationMs.toFixed(1)}ms`);
+  return { format, key, wallDurationMs, wasmDurationMs: deferred[0].durationMs };
+}
+
 async function runRawStableSmoke(page, format, bytes, kind) {
   await restoreTrace(page);
   await openDocumentThroughApp(page, format, bytes);
@@ -1475,12 +1611,149 @@ async function runRawBoundarySmoke(page, format, bytes, kind) {
   };
 }
 
+async function triggerFileMenuCommand(page, commandId) {
+  return page.evaluate((id) => {
+    const fileItem = [...document.querySelectorAll('#menu-bar .menu-item')]
+      .find((element) => (element.textContent || '').includes('파일'));
+    const title = fileItem?.querySelector('.menu-title');
+    if (!title) return { ok: false, reason: 'file menu title missing' };
+    title.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    const command = document.querySelector(`.md-item[data-cmd="${id}"]`);
+    if (!command) return { ok: false, reason: `${id} menu item missing` };
+    if (command.classList.contains('disabled')) {
+      return { ok: false, reason: `${id} menu item disabled` };
+    }
+    command.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    return { ok: true };
+  }, commandId);
+}
+
+async function preparePendingBoundary(page, format, bytes) {
+  await restoreTrace(page);
+  await openDocumentThroughApp(page, format, bytes);
+  await moveToTarget(page);
+  await typeKeyboardOnes(page, 55);
+  await installTrace(page);
+  await page.keyboard.type('1');
+  const state = await readFocusedSnapshot(page);
+  assert.equal(state.pagination.pending, true, `${format} output barrier precondition`);
+  assert.equal(state.model.text.slice(-56), '1'.repeat(56), `${format} output latest text precondition`);
+  return state;
+}
+
+async function runSaveBarrierSmoke(page, format, bytes) {
+  const before = await preparePendingBoundary(page, format, bytes);
+  await page.evaluate(() => {
+    try { delete window.showSaveFilePicker; } catch { window.showSaveFilePicker = undefined; }
+    window.__issue2424SavedBlob = null;
+    window.__issue2424OriginalCreateObjectURL ??= URL.createObjectURL.bind(URL);
+    URL.createObjectURL = (blob) => {
+      window.__issue2424SavedBlob = blob;
+      return 'blob:issue-2424-captured';
+    };
+    HTMLAnchorElement.prototype.click = function issue2424NoDownload() {};
+  });
+
+  const triggered = await triggerFileMenuCommand(page, 'file:save');
+  assert.equal(triggered.ok, true, `${format} save trigger: ${triggered.reason ?? ''}`);
+  await page.waitForFunction(() => window.__issue2424SavedBlob instanceof Blob, { timeout: 60_000 });
+
+  const trace = await collectTrace(page);
+  const flush = trace.events.find((event) => event.type === 'wasm.flushDeferredPagination');
+  const exportType = format === 'hwpx' ? 'wasm.exportHwpx' : 'wasm.exportHwp';
+  const exported = trace.events.find((event) => event.type === exportType);
+  assert.ok(flush, `${format} save flush event`);
+  assert.ok(exported, `${format} save export event`);
+  assert.ok(flush.sequence < exported.sequence, `${format} save must flush before serialization`);
+  assert.equal(trace.counts.wasmFlush, 1, `${format} save flush count`);
+  assert.equal(
+    await page.evaluate(() => window.__inputHandler.hasDeferredPaginationPending()),
+    false,
+    `${format} save pending state`,
+  );
+
+  const saved = await page.evaluate(async ({ target, sourceFormat }) => {
+    const buffer = await window.__issue2424SavedBlob.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    const info = window.__wasm.loadDocument(bytes, `issue2424-saved.${sourceFormat}`);
+    const length = window.__wasm.getCellParagraphLength(
+      target.sectionIndex,
+      target.parentParaIndex,
+      target.controlIndex,
+      target.cellIndex,
+      target.cellParaIndex,
+    );
+    const text = window.__wasm.getTextInCell(
+      target.sectionIndex,
+      target.parentParaIndex,
+      target.controlIndex,
+      target.cellIndex,
+      target.cellParaIndex,
+      0,
+      length,
+    );
+    return {
+      byteLength: bytes.byteLength,
+      pageCount: info.pageCount,
+      textTail: text.slice(-56),
+    };
+  }, { target: TARGET, sourceFormat: format });
+  assert.ok(saved.byteLength > 0, `${format} saved bytes`);
+  assert.equal(saved.pageCount, before.pagination.pageCount, `${format} saved final page count`);
+  assert.equal(saved.textTail, '1'.repeat(56), `${format} saved latest cell text`);
+  await restoreTrace(page);
+  console.log(`  save barrier: GREEN, flush→${format} export, bytes=${saved.byteLength}`);
+  return { format, saved, flushSequence: flush.sequence, exportSequence: exported.sequence };
+}
+
+async function runPrintBarrierSmoke(page, format, bytes) {
+  const before = await preparePendingBoundary(page, format, bytes);
+  await page.evaluate(() => {
+    const printDocument = document.implementation.createHTMLDocument('issue-2424-print');
+    window.__issue2424PrintWindow = {
+      document: printDocument,
+      print() {},
+      close() {},
+    };
+    window.open = () => window.__issue2424PrintWindow;
+  });
+
+  const triggered = await triggerFileMenuCommand(page, 'file:print');
+  assert.equal(triggered.ok, true, `${format} print trigger: ${triggered.reason ?? ''}`);
+  await page.waitForFunction(
+    (pageCount) => window.__issue2424PrintWindow?.document?.querySelectorAll('.page').length === pageCount,
+    { timeout: 120_000 },
+    before.pagination.pageCount,
+  );
+  const trace = await collectTrace(page);
+  const flush = trace.events.find((event) => event.type === 'wasm.flushDeferredPagination');
+  const firstRender = trace.events.find((event) => event.type === 'wasm.renderPageSvg');
+  assert.ok(flush, `${format} print flush event`);
+  assert.ok(firstRender, `${format} print render event`);
+  assert.ok(flush.sequence < firstRender.sequence, `${format} print must flush before first page render`);
+  assert.equal(trace.counts.wasmFlush, 1, `${format} print flush count`);
+  assert.equal(trace.counts.renderPageSvg, before.pagination.pageCount, `${format} print rendered page count`);
+
+  const output = await page.evaluate(() => ({
+    pageCount: window.__issue2424PrintWindow.document.querySelectorAll('.page').length,
+    printBarLabel: window.__issue2424PrintWindow.document.querySelector('.print-bar span')?.textContent ?? '',
+    pending: window.__inputHandler.hasDeferredPaginationPending(),
+  }));
+  assert.equal(output.pageCount, before.pagination.pageCount, `${format} print final page count`);
+  assert.match(output.printBarLabel, /115페이지/, `${format} print bar page count`);
+  assert.equal(output.pending, false, `${format} print pending state`);
+  await restoreTrace(page);
+  console.log(`  print barrier: GREEN, flush→render ${output.pageCount} pages`);
+  return { format, output, flushSequence: flush.sequence, firstRenderSequence: firstRender.sequence };
+}
+
 async function runFocusedMain() {
   const formats = cliValue('formats', 'hwp,hwpx')
     .split(',')
     .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
   const runs = Number(cliValue('runs', '3'));
+  const reviewOnly = process.argv.includes('--review-only');
   assert.ok(Number.isInteger(runs) && runs > 0, '--runs must be a positive integer');
   for (const format of formats) assert.ok(SAMPLES[format], `unsupported format: ${format}`);
 
@@ -1507,17 +1780,28 @@ async function runFocusedMain() {
   const startedAt = new Date().toISOString();
   const results = [];
   const rawSmokes = [];
+  const reviewSmokes = [];
   try {
     await loadApp(page);
     for (const format of formats) {
-      console.log(`\n[${format.toUpperCase()}] focused GREEN (${runs} runs)`);
-      for (let runNumber = 1; runNumber <= runs; runNumber += 1) {
-        results.push(await runFocusedFormat(page, format, fixtures[format].bytes, runNumber));
+      if (!reviewOnly) {
+        console.log(`\n[${format.toUpperCase()}] focused GREEN (${runs} runs)`);
+        for (let runNumber = 1; runNumber <= runs; runNumber += 1) {
+          results.push(await runFocusedFormat(page, format, fixtures[format].bytes, runNumber));
+        }
+        rawSmokes.push(await runRawStableSmoke(page, format, fixtures[format].bytes, 'ime'));
+        rawSmokes.push(await runRawStableSmoke(page, format, fixtures[format].bytes, 'ios'));
+        rawSmokes.push(await runRawBoundarySmoke(page, format, fixtures[format].bytes, 'ime'));
+        rawSmokes.push(await runRawBoundarySmoke(page, format, fixtures[format].bytes, 'ios'));
       }
-      rawSmokes.push(await runRawStableSmoke(page, format, fixtures[format].bytes, 'ime'));
-      rawSmokes.push(await runRawStableSmoke(page, format, fixtures[format].bytes, 'ios'));
-      rawSmokes.push(await runRawBoundarySmoke(page, format, fixtures[format].bytes, 'ime'));
-      rawSmokes.push(await runRawBoundarySmoke(page, format, fixtures[format].bytes, 'ios'));
+      console.log(`\n[${format.toUpperCase()}] #2424 deletion/IME/output barrier`);
+      reviewSmokes.push(await runDeleteKeySmoke(page, format, fixtures[format].bytes, 'Backspace'));
+      reviewSmokes.push(await runDeleteKeySmoke(page, format, fixtures[format].bytes, 'Delete'));
+      reviewSmokes.push(await runMultiUpdateImeSmoke(page, format, fixtures[format].bytes));
+      reviewSmokes.push(await runSaveBarrierSmoke(page, format, fixtures[format].bytes));
+      if (format === 'hwp') {
+        reviewSmokes.push(await runPrintBarrierSmoke(page, format, fixtures[format].bytes));
+      }
     }
   } finally {
     await restoreTrace(page).catch(() => {});
@@ -1543,6 +1827,7 @@ async function runFocusedMain() {
     }])),
     results,
     rawSmokes,
+    reviewSmokes,
   };
   writeJson(path.join(OUTPUT_ROOT, 'focused-summary.json'), summary);
   console.log(`\nIssue #2214 focused GREEN written to ${OUTPUT_ROOT}`);

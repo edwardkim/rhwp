@@ -4972,24 +4972,20 @@ impl LayoutEngine {
         flag
     }
 
-    /// [Issue #2214] 텍스트 삽입 뒤 edited cell의 memoized units를 국소 무효화한다.
-    /// 삽입은 local contribution을 true→false로 바꾸지 않는 단조 연산이다.
+    /// [Issue #2214/#2424] 텍스트 편집 뒤 edited cell의 memoized units를 국소 무효화한다.
     ///
     /// cached owner flag가 false인데 edited paragraph가 false→true가 된 경우에만
     /// owner의 직접 cell units를 모두 제거하고, local witness로 flag를 true로 갱신한다.
+    /// 삭제로 true→false가 되면 다른 cell의 contribution 여부를 알 수 없으므로 owner의
+    /// 직접 cell units와 flag를 제거해 다음 접근에서 한 번만 다시 계산한다.
     /// 이 direct-key 제거는 predicate 재스캔이 아니며 nested/unrelated table cache는 보존한다.
-    pub(crate) fn invalidate_cell_units_after_text_insert(
+    pub(crate) fn invalidate_cell_units_after_text_edit(
         &self,
         edited_cell: &crate::model::table::Cell,
         owner_table: &crate::model::table::Table,
         local_before: bool,
         local_after: bool,
     ) {
-        debug_assert!(
-            !local_before || local_after,
-            "text insert cannot remove a nested-text contribution"
-        );
-
         let edited_cell_key = edited_cell as *const crate::model::table::Cell as usize;
         let owner_table_key = owner_table as *const crate::model::table::Table as usize;
         let cached_owner_flag = self
@@ -4998,6 +4994,20 @@ impl LayoutEngine {
             .get(&owner_table_key)
             .copied();
         let local_became_true = !local_before && local_after;
+        let local_became_false = local_before && !local_after;
+
+        if local_became_false {
+            let mut cell_cache = self.cell_units_cache.borrow_mut();
+            for cell in &owner_table.cells {
+                let key = cell as *const crate::model::table::Cell as usize;
+                cell_cache.remove(&key);
+            }
+            drop(cell_cache);
+            self.table_nested_text_flag_cache
+                .borrow_mut()
+                .remove(&owner_table_key);
+            return;
+        }
 
         if local_became_true && cached_owner_flag == Some(false) {
             let mut cell_cache = self.cell_units_cache.borrow_mut();
@@ -8885,7 +8895,7 @@ mod row_cut_tests {
             &unrelated_table.cells[0] as *const crate::model::table::Cell as usize;
         let owner_table_key = &edited_table as *const crate::model::table::Table as usize;
         let unrelated_table_key = &unrelated_table as *const crate::model::table::Table as usize;
-        eng.invalidate_cell_units_after_text_insert(
+        eng.invalidate_cell_units_after_text_edit(
             &edited_table.cells[0],
             &edited_table,
             false,
@@ -8949,12 +8959,7 @@ mod row_cut_tests {
         eng.table_nested_text_flag_scan_count.set(0);
 
         owner_table.cells[0].paragraphs[0].insert_text_at(0, "x");
-        eng.invalidate_cell_units_after_text_insert(
-            &owner_table.cells[0],
-            &owner_table,
-            false,
-            true,
-        );
+        eng.invalidate_cell_units_after_text_edit(&owner_table.cells[0], &owner_table, false, true);
 
         assert!(eng.cell_units_cache.borrow().is_empty());
         assert_eq!(
@@ -9025,7 +9030,7 @@ mod row_cut_tests {
         eng.table_nested_text_flag_scan_count.set(0);
 
         edited_table.cells[1].paragraphs[0].insert_text_at(0, "x");
-        eng.invalidate_cell_units_after_text_insert(
+        eng.invalidate_cell_units_after_text_edit(
             &edited_table.cells[1],
             &edited_table,
             false,
@@ -9130,7 +9135,7 @@ mod row_cut_tests {
             &unrelated_table.cells[0] as *const crate::model::table::Cell as usize;
         let owner_table_key = &edited_table as *const crate::model::table::Table as usize;
         let unrelated_table_key = &unrelated_table as *const crate::model::table::Table as usize;
-        eng.invalidate_cell_units_after_text_insert(
+        eng.invalidate_cell_units_after_text_edit(
             &edited_table.cells[0],
             &edited_table,
             false,
@@ -9180,6 +9185,77 @@ mod row_cut_tests {
         assert_eq!(
             table_scan_count, 0,
             "flag update and cache rewarm must not rescan the owner table"
+        );
+    }
+
+    /// [Issue #2424] 삭제로 visible nested host가 비게 되면 true owner flag를
+    /// 보수적으로 버리고 owner cell units만 다시 계산한다. unrelated cache는 유지한다.
+    #[test]
+    fn issue2424_delete_local_contribution_recomputes_owner_flag_only() {
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let nested_table = table(vec![cell(0, 0, vec![visible_text_para(1, 0)])]);
+        let mut nested_host = visible_text_para(1, 0);
+        nested_host
+            .controls
+            .push(Control::Table(Box::new(nested_table)));
+        let mut owner_table = rowbreak_table(vec![
+            cell(0, 0, vec![nested_host]),
+            cell(0, 1, vec![visible_text_para(2, 0)]),
+        ]);
+        let unrelated_table = table(vec![cell(0, 0, vec![visible_text_para(3, 0)])]);
+
+        let owner_before = owner_table
+            .cells
+            .iter()
+            .map(|cell| eng.cell_units(cell, &owner_table, &styles))
+            .collect::<Vec<_>>();
+        let unrelated_before = eng.cell_units(&unrelated_table.cells[0], &unrelated_table, &styles);
+        assert!(eng.table_has_visible_text_with_nested_table(&owner_table));
+        let owner_table_key = &owner_table as *const Table as usize;
+        let unrelated_table_key = &unrelated_table as *const Table as usize;
+        eng.table_nested_text_flag_scan_count.set(0);
+
+        owner_table.cells[0].paragraphs[0].text.clear();
+        owner_table.cells[0].paragraphs[0].char_count = 0;
+        eng.invalidate_cell_units_after_text_edit(&owner_table.cells[0], &owner_table, true, false);
+
+        assert!(
+            owner_table.cells.iter().all(|cell| {
+                let key = cell as *const crate::model::table::Cell as usize;
+                !eng.cell_units_cache.borrow().contains_key(&key)
+            }),
+            "all owner cell units must be evicted"
+        );
+        assert!(
+            !eng.table_nested_text_flag_cache
+                .borrow()
+                .contains_key(&owner_table_key),
+            "owner flag must be recomputed after a true→false local change"
+        );
+        assert!(
+            eng.table_nested_text_flag_cache
+                .borrow()
+                .contains_key(&unrelated_table_key),
+            "unrelated flag must be retained"
+        );
+
+        let owner_after = owner_table
+            .cells
+            .iter()
+            .map(|cell| eng.cell_units(cell, &owner_table, &styles))
+            .collect::<Vec<_>>();
+        let unrelated_after = eng.cell_units(&unrelated_table.cells[0], &unrelated_table, &styles);
+        assert!(owner_before
+            .iter()
+            .zip(&owner_after)
+            .all(|(before, after)| !std::sync::Arc::ptr_eq(before, after)));
+        assert!(std::sync::Arc::ptr_eq(&unrelated_before, &unrelated_after));
+        assert!(!eng.table_has_visible_text_with_nested_table(&owner_table));
+        assert_eq!(
+            eng.table_nested_text_flag_scan_count.get(),
+            1,
+            "owner table must be rescanned once after deletion"
         );
     }
 }

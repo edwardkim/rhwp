@@ -2354,8 +2354,7 @@ export class InputHandler {
 
   /** 위치에서 텍스트를 삭제한다 (WASM 직접 호출, IME 조합용) */
   private deleteTextAt(pos: DocumentPosition, count: number): void {
-    _text.deleteTextAt.call(this, pos, count);
-    this.rawTextMutationEffects.add(IMMEDIATE_TEXT_MUTATION_EFFECTS);
+    this.rawTextMutationEffects.add(_text.deleteTextAt.call(this, pos, count));
   }
 
   /** textarea에 포커스를 설정한다 (iOS 호환) */

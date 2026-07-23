@@ -93,6 +93,16 @@ test('raw 셀 입력은 command와 같은 typed mutation helper를 사용한다'
     textSource,
     /export function insertTextAtRaw\([\s\S]*?\): TextMutationEffects \{[\s\S]*?return insertTextWithMutationEffects\(this\.wasm, pos, text\);\s*\}/,
   );
+  assert.match(
+    textSource,
+    /export function deleteTextAt\([\s\S]*?\): TextMutationEffects \{[\s\S]*?return deleteTextWithMutationEffects\(this\.wasm, pos, count\);\s*\}/,
+  );
+  const inputHandlerSource = readFileSync(new URL('../src/engine/input-handler.ts', import.meta.url), 'utf8');
+  assert.match(
+    inputHandlerSource,
+    /private deleteTextAt\(pos: DocumentPosition, count: number\): void \{\s*this\.rawTextMutationEffects\.add\(_text\.deleteTextAt\.call\(this, pos, count\)\);\s*\}/,
+    'IME 조합 치환의 delete와 insert effect를 한 accumulator에서 OR 누적해야 한다',
+  );
 });
 
 test('deferred pending이 실제로 있을 때만 page-local idle flush를 예약한다', () => {
@@ -144,7 +154,8 @@ test('저장·다른 이름 저장·인쇄는 resumable job을 출력 전에 동
   );
   assert.match(
     fileCommandSource,
-    /function flushDeferredPaginationBeforeExplicitOutput\([\s\S]*?flushDeferredPaginationIfNeeded\(reason\);/,
+    /function flushDeferredPaginationBeforeExplicitOutput\([\s\S]*?flushDeferredPaginationIfNeeded\(reason\);[\s\S]*?hasDeferredPaginationPending\(\)[\s\S]*?throw new Error/,
+    'flush 실패 뒤 pending이 남으면 저장·인쇄를 중단해야 한다',
   );
   for (const reason of ['save', 'save-as', 'print']) {
     assert.match(

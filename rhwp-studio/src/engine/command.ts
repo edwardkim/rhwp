@@ -175,6 +175,11 @@ export function canUseDeferredCellTextInsert(pos: DocumentPosition, text: string
   return true;
 }
 
+export function canUseDeferredCellTextDelete(pos: DocumentPosition, count: number): boolean {
+  if (!isCell(pos) || isNestedCell(pos)) return false;
+  return Number.isInteger(count) && count > 0 && count <= MAX_PAGE_LOCAL_TEXT_EDIT_CHARS;
+}
+
 /** cellPath를 WASM용 JSON 문자열로 변환 */
 function cellPathJson(pos: DocumentPosition): string {
   return JSON.stringify(pos.cellPath ?? []);
@@ -283,7 +288,30 @@ function doInsertTextImmediate(wasm: WasmBridge, pos: DocumentPosition, text: st
   }
 }
 
-function doDeleteText(wasm: WasmBridge, pos: DocumentPosition, count: number): void {
+export function deleteTextWithMutationEffects(
+  wasm: WasmBridge,
+  pos: DocumentPosition,
+  count: number,
+): TextMutationEffects {
+  if (isNestedCell(pos)) {
+    wasm.deleteTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, count);
+  } else if (isCell(pos)) {
+    if (canUseDeferredCellTextDelete(pos, count)) {
+      const result = wasm.deleteTextInCellDeferredPagination(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, count);
+      return {
+        deferredPagination: result.paginationDeferred,
+        cellFlowChanged: result.cellFlowChanged,
+        paginationCompleted: !result.paginationDeferred,
+      };
+    }
+    wasm.deleteTextInCell(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, count);
+  } else {
+    wasm.deleteText(pos.sectionIndex, pos.paragraphIndex, pos.charOffset, count);
+  }
+  return IMMEDIATE_TEXT_MUTATION_EFFECTS;
+}
+
+function doDeleteTextImmediate(wasm: WasmBridge, pos: DocumentPosition, count: number): void {
   if (isNestedCell(pos)) {
     wasm.deleteTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPathJson(pos), pos.charOffset, count);
   } else if (isCell(pos)) {
@@ -338,7 +366,7 @@ export class InsertTextCommand implements EditCommand {
     this.lastMutationEffects = NO_TEXT_MUTATION_EFFECTS;
     // [#2337-review] 삭제 count 는 char(Unicode scalar) 단위다. UTF-16 length 를 넘기면
     // astral 문자에서 실제보다 많이 지워 인접 문자를 잃는다 → HF/FN 과 동일하게 charCount.
-    doDeleteText(wasm, this.position, charCount(this.text));
+    doDeleteTextImmediate(wasm, this.position, charCount(this.text));
     return { ...this.position };
   }
 
@@ -393,8 +421,7 @@ export class DeleteTextCommand implements EditCommand {
     if (!this.deletedText) {
       this.deletedText = doGetTextRange(wasm, this.position, this.count);
     }
-    doDeleteText(wasm, this.position, this.count);
-    this.lastMutationEffects = IMMEDIATE_TEXT_MUTATION_EFFECTS;
+    this.lastMutationEffects = deleteTextWithMutationEffects(wasm, this.position, this.count);
     return { ...this.position };
   }
 
@@ -466,7 +493,7 @@ export class InsertLineBreakCommand implements EditCommand {
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    doDeleteText(wasm, this.position, 1);
+    doDeleteTextImmediate(wasm, this.position, 1);
     return { ...this.position };
   }
 
@@ -488,7 +515,7 @@ export class InsertTabCommand implements EditCommand {
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    doDeleteText(wasm, this.position, 1);
+    doDeleteTextImmediate(wasm, this.position, 1);
     return { ...this.position };
   }
 

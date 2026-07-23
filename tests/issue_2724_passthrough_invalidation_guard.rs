@@ -84,7 +84,7 @@ enum Exempt {
 
 /// 무효화하지 않는 `pub fn (&mut self)` 전수 목록 — (파일, 함수, 분류, 근거).
 ///
-/// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. `devel` 기준 40건(2026-07-23 동결).
+/// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. `devel` 기준 42건(2026-07-23 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     // ── 세션/캐시 상태만 변경 (문서 IR 비변경) ──────────────────────────────
     (
@@ -301,6 +301,18 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "commands/text_editing.rs",
         "insert_text_in_cell_native_deferred_pagination",
         Exempt::DelegatesTo("insert_text_in_cell_native_impl"),
+        "페이지네이션 지연 플래그만 다른 래퍼 — 본체는 `_impl`.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "delete_text_in_cell_native",
+        Exempt::DelegatesTo("delete_text_in_cell_native_impl"),
+        "얇은 래퍼 — 실제 삭제·무효화는 `_impl` 이 수행.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "delete_text_in_cell_native_deferred_pagination",
+        Exempt::DelegatesTo("delete_text_in_cell_native_impl"),
         "페이지네이션 지연 플래그만 다른 래퍼 — 본체는 `_impl`.",
     ),
     (

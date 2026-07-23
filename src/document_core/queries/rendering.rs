@@ -4255,7 +4255,7 @@ impl DocumentCore {
                     *target_para = source_para;
                 }
                 let cell = &table.cells[cell_idx];
-                self.layout_engine.invalidate_cell_units_after_text_insert(
+                self.layout_engine.invalidate_cell_units_after_text_edit(
                     cell,
                     table,
                     local_contribution_before,

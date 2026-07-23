@@ -16,6 +16,11 @@ macrotask runner를 연결했다. 실제 브라우저에서는 경계 입력이 
 115개 fragment가 task 사이에서 하나씩 처리된다. 공개 pagination은 완료 전까지 그대로이며 마지막
 fragment에서만 정확한 115쪽 결과로 원자 교체된다.
 
+PR 리뷰 후 insert 전용이던 fast path를 flat 셀 삭제에도 연결했다. HWP/HWPX 실브라우저에서
+Backspace/Delete WASM 호출은 1.5~2.5ms, `ㅎ→하→한` 조합 input handler는 71.1~75.3ms였고,
+기존 약 917ms 동기 삭제 프리즈와 자모별 full pagination은 사라졌다. Enter는 구조 변경이므로
+후속 범위로 분리했다.
+
 ## 원인과 구현
 
 Stage A 계측에서 전체 incremental flush의 98.7~98.8%가 `TypesetEngine`이었고, 하나의 대형
@@ -44,11 +49,16 @@ long task를 해소할 수 없어 다음 계층으로 구현했다.
   - 경계 operation 75.9~81.3ms, begin 32.0~34.0ms.
   - model/tree/layout/cursor/caret와 page 0 crop exact 유지.
 - IME/iOS stable·boundary smoke 모두 통과.
-- Rust 전체 library: 2533 passed, 0 failed, 7 ignored.
-- Studio: 509 passed, production build 통과.
+- Rust 전체 library: 2537 passed, 0 failed, 7 ignored.
+- Studio: 511 passed, production build 통과.
 - wasm32 check, wasm-pack web build, fmt, clippy, #2214 focused 회귀 통과.
 - PR #3125 CI 후속으로 #2724 패스스루 분류 가드에 pagination API 4개의 `SessionState` 근거를
   등록했고, 해당 integration guard 5건을 통과했다.
+- 실제 1쪽→2쪽 RowBreak 합성 문서에서 pending page count hold와 final-only publish를 확인했다.
+- 5줄→4줄 deferred 삭제도 115개 pending step 동안 공개 cut chain을 유지하고, final commit에서만
+  55자 full-pagination oracle과 일치함을 HWP/HWPX 양쪽에서 확인했다.
+- pending 경계 입력 직후 실제 저장을 실행해 `flush → HWP/HWPX export`, 저장본 최신 텍스트·115쪽
+  재오픈을 확인했고, 실제 인쇄는 `flush → 첫 SVG render` 뒤 115페이지를 생성했다.
 
 세부 수치와 단계별 계약은 다음 문서에 있다.
 
@@ -57,6 +67,7 @@ long task를 해소할 수 없어 다음 계층으로 구현했다.
 - `mydocs/working/task_m100_2424_stage3.md`
 - `mydocs/working/task_m100_2424_stage4.md`
 - `mydocs/working/task_m100_2424_stage5.md`
+- `mydocs/working/task_m100_2424_stage6.md`
 
 ## 잔여 위험과 후속 후보
 
@@ -66,6 +77,8 @@ long task를 해소할 수 없어 다음 계층으로 구현했다.
   resumable fast path 대상이 아니다.
 - fragment 총 계산량은 기존 full pagination과 비슷하다. 이번 변경의 목적은 총량 제거보다 main-thread
   blocking slice 분할과 정확한 atomic commit이다.
+- Enter는 `splitParagraphInCell` 구조 편집이므로 삭제·IME 보정에 포함하지 않았다. 구조 fingerprint와
+  undo/selection 계약을 별도로 설계한 뒤 후속 최적화로 다룬다.
 
 현재 fast path 대상인 이슈 fixture의 완료 조건은 모두 만족한다. 원격 push, PR 생성과 이슈 상태 변경은
 작업지시자 승인 전에는 수행하지 않는다.

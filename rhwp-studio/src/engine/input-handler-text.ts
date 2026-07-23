@@ -13,7 +13,9 @@ import {
   MergeParagraphInHeaderFooterCommand,
   InsertTextInFootnoteCommand,
   insertTextWithMutationEffects,
+  deleteTextWithMutationEffects,
   cellParaIndexOf,
+  IMMEDIATE_TEXT_MUTATION_EFFECTS,
   NO_TEXT_MUTATION_EFFECTS,
 } from './command';
 import type { TextMutationEffects } from './command';
@@ -675,7 +677,7 @@ export function insertTextAtRaw(this: any, pos: DocumentPosition, text: string):
       this.cursor.hfSectionIdx, isHeader, this.cursor.hfApplyTo,
       this.cursor.hfParaIdx, pos.charOffset, text,
     );
-    return NO_TEXT_MUTATION_EFFECTS;
+    return IMMEDIATE_TEXT_MUTATION_EFFECTS;
   }
   // 각주 편집 모드
   if (this.cursor.isInFootnote()) {
@@ -683,13 +685,13 @@ export function insertTextAtRaw(this: any, pos: DocumentPosition, text: string):
       this.cursor.fnSectionIdx, this.cursor.fnParaIdx, this.cursor.fnControlIdx,
       this.cursor.fnInnerParaIdx, pos.charOffset, text,
     );
-    return NO_TEXT_MUTATION_EFFECTS;
+    return IMMEDIATE_TEXT_MUTATION_EFFECTS;
   }
   return insertTextWithMutationEffects(this.wasm, pos, text);
 }
 
-export function deleteTextAt(this: any, pos: DocumentPosition, count: number): void {
-  if (!this.canDeleteTextInFormMode?.(pos, count)) return;
+export function deleteTextAt(this: any, pos: DocumentPosition, count: number): TextMutationEffects {
+  if (!this.canDeleteTextInFormMode?.(pos, count)) return NO_TEXT_MUTATION_EFFECTS;
   // 머리말/꼬리말 편집 모드
   if (this.cursor.isInHeaderFooter()) {
     const isHeader = this.cursor.headerFooterMode === 'header';
@@ -697,7 +699,7 @@ export function deleteTextAt(this: any, pos: DocumentPosition, count: number): v
       this.cursor.hfSectionIdx, isHeader, this.cursor.hfApplyTo,
       this.cursor.hfParaIdx, pos.charOffset, count,
     );
-    return;
+    return NO_TEXT_MUTATION_EFFECTS;
   }
   // 각주 편집 모드
   if (this.cursor.isInFootnote()) {
@@ -705,15 +707,7 @@ export function deleteTextAt(this: any, pos: DocumentPosition, count: number): v
       this.cursor.fnSectionIdx, this.cursor.fnParaIdx, this.cursor.fnControlIdx,
       this.cursor.fnInnerParaIdx, pos.charOffset, count,
     );
-    return;
+    return NO_TEXT_MUTATION_EFFECTS;
   }
-  if ((pos.cellPath?.length ?? 0) > 0 && pos.parentParaIndex !== undefined) {
-    this.wasm.deleteTextInCellByPath(pos.sectionIndex, pos.parentParaIndex!, JSON.stringify(pos.cellPath), pos.charOffset, count);
-  } else if (pos.parentParaIndex !== undefined) {
-    const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellIndex: cei, cellParaIndex: cpi, charOffset } = pos;
-    this.wasm.deleteTextInCell(sec, ppi!, ci!, cei!, cpi!, charOffset, count);
-  } else {
-    const { sectionIndex: sec, paragraphIndex: para, charOffset } = pos;
-    this.wasm.deleteText(sec, para, charOffset, count);
-  }
+  return deleteTextWithMutationEffects(this.wasm, pos, count);
 }

@@ -130,6 +130,40 @@ test('한 macrotask당 한 budget만 처리하고 complete에서 한 번 commit 
   assert.equal(fallbacks.length, 0);
 });
 
+test('공개 페이지 수는 pending 동안 유지되고 complete callback에서 한 번 교체된다', () => {
+  const tasks = new ManualTasks();
+  const client = new FakeClient([
+    result('pending', 1, 1, 115),
+    result('complete', 1, 1, 116),
+  ]);
+  let publicPageCount = 115;
+  const published = [];
+  const runner = new DeferredPaginationRunner(
+    client,
+    (value) => {
+      publicPageCount = value.pageCount;
+      published.push(value.pageCount);
+    },
+    () => assert.fail('fallback must not run'),
+    1,
+    (callback) => tasks.schedule(callback),
+    (task) => tasks.cancel(task),
+  );
+
+  const begin = runner.start();
+  assert.equal(begin.pageCount, 115);
+  assert.equal(publicPageCount, 115);
+  assert.deepEqual(published, []);
+
+  tasks.runOne();
+  assert.equal(publicPageCount, 115, 'intermediate pending result must stay private');
+  assert.deepEqual(published, []);
+
+  tasks.runOne();
+  assert.equal(publicPageCount, 116);
+  assert.deepEqual(published, [116], 'final page count must publish once');
+});
+
 test('새 입력 start는 예약 step과 이전 core job을 취소하고 최신 revision으로 교체한다', () => {
   const tasks = new ManualTasks();
   const client = new FakeClient([result('complete', 2, 1)]);

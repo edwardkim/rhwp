@@ -41,6 +41,7 @@ const {
   IMMEDIATE_TEXT_MUTATION_EFFECTS,
   NO_TEXT_MUTATION_EFFECTS,
   TextMutationEffectAccumulator,
+  deleteTextWithMutationEffects,
   insertTextWithMutationEffects,
 } = require(path.join(runtimeRoot, 'engine', 'command.js'));
 const { CommandHistory } = require(path.join(runtimeRoot, 'engine', 'history.js'));
@@ -93,6 +94,13 @@ class FakeWasm {
 
   insertTextInCellDeferredPagination(...args) {
     this.calls.push({ name: 'deferred', args });
+    const result = this.deferredResults.shift();
+    assert.ok(result, 'deferred mutation result fixture exhausted');
+    return result;
+  }
+
+  deleteTextInCellDeferredPagination(...args) {
+    this.calls.push({ name: 'delete-deferred', args });
     const result = this.deferredResults.shift();
     assert.ok(result, 'deferred mutation result fixture exhausted');
     return result;
@@ -172,14 +180,20 @@ test('TextMutationEffectAccumulator는 묶음 effect를 OR 누적하고 한 번�
   assert.deepEqual(accumulator.consume(), NO_TEXT_MUTATION_EFFECTS);
 });
 
-test('즉시 pagination 삭제는 기존 deferred pending을 대체하는 effect를 반환한다', () => {
-  const wasm = new FakeWasm();
+test('flat 셀 삭제는 deferred effect를 반환하고 undo는 즉시 pagination을 사용한다', () => {
+  const wasm = new FakeWasm(mutationResult(true));
   const history = new CommandHistory();
 
   history.execute(new DeleteTextCommand(depth1Position(), 1, 'forward'), wasm);
-  assert.deepEqual(history.consumeLastExecutionEffects(), IMMEDIATE_TEXT_MUTATION_EFFECTS);
+  assert.deepEqual(history.consumeLastExecutionEffects(), {
+    deferredPagination: true,
+    cellFlowChanged: true,
+    paginationCompleted: false,
+  });
+  assert.equal(wasm.calls.at(-1).name, 'delete-deferred');
   assert.deepEqual(history.consumeLastExecutionEffects(), NO_TEXT_MUTATION_EFFECTS);
   history.undo(wasm);
+  assert.equal(wasm.calls.at(-1).name, 'cell-immediate');
   assert.deepEqual(history.consumeLastExecutionEffects(), NO_TEXT_MUTATION_EFFECTS);
 });
 
@@ -263,5 +277,38 @@ test('insert helper는 depth 1 셀만 deferred로 보내고 depth 2 셀은 path 
     insertTextWithMutationEffects(fallbackWasm, depth1Position(), '1'),
     IMMEDIATE_TEXT_MUTATION_EFFECTS,
     'immediate bridge fallback은 deferred pending을 만들지 않아야 한다',
+  );
+});
+
+test('delete helper는 depth 1 셀만 deferred로 보내고 depth 2 셀은 path immediate로 보낸다', () => {
+  const wasm = new FakeWasm(mutationResult(false));
+
+  assert.deepEqual(deleteTextWithMutationEffects(wasm, depth1Position(1), 1), {
+    deferredPagination: true,
+    cellFlowChanged: false,
+    paginationCompleted: false,
+  });
+  assert.equal(wasm.calls.length, 1);
+  assert.equal(wasm.calls[0].name, 'delete-deferred');
+
+  wasm.calls.length = 0;
+  assert.deepEqual(
+    deleteTextWithMutationEffects(wasm, depth2Position(1), 1),
+    IMMEDIATE_TEXT_MUTATION_EFFECTS,
+  );
+  assert.equal(wasm.calls.length, 1);
+  assert.equal(wasm.calls[0].name, 'delete-path');
+  assert.equal(JSON.parse(wasm.calls[0].args[2]).length, 2);
+
+  const fallbackWasm = new FakeWasm({
+    ok: true,
+    charOffset: 0,
+    paginationDeferred: false,
+    cellFlowChanged: false,
+  });
+  assert.deepEqual(
+    deleteTextWithMutationEffects(fallbackWasm, depth1Position(1), 1),
+    IMMEDIATE_TEXT_MUTATION_EFFECTS,
+    '구형 WASM bridge fallback은 deferred pending을 만들지 않아야 한다',
   );
 });

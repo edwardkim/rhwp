@@ -109,7 +109,12 @@ function flushDeferredPaginationBeforeExplicitOutput(
   services: CommandServices,
   reason: string,
 ): void {
-  services.getInputHandler()?.flushDeferredPaginationIfNeeded(reason);
+  const inputHandler = services.getInputHandler();
+  if (!inputHandler) return;
+  inputHandler.flushDeferredPaginationIfNeeded(reason);
+  if (inputHandler.hasDeferredPaginationPending()) {
+    throw new Error(`출력 전 페이지네이션을 완료하지 못했습니다 (${reason})`);
+  }
 }
 
 async function chooseSaveAsFormat(services: CommandServices): Promise<SaveFormat | null> {
@@ -468,16 +473,16 @@ export const fileCommands: CommandDef[] = [
     shortcutLabel: 'Ctrl+P',
     canExecute: (ctx) => ctx.hasDocument,
     async execute(services) {
-      flushDeferredPaginationBeforeExplicitOutput(services, 'print');
       const wasm = services.wasm;
-      const pageCount = wasm.pageCount;
-      if (pageCount === 0) return;
-
       // 진행률 표시
       const statusEl = document.getElementById('sb-message');
       const origStatus = statusEl?.textContent || '';
 
       try {
+        flushDeferredPaginationBeforeExplicitOutput(services, 'print');
+        const pageCount = wasm.pageCount;
+        if (pageCount === 0) return;
+
         // SVG 페이지 생성
         const printPages: PrintPage[] = [];
         for (let i = 0; i < pageCount; i++) {

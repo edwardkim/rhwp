@@ -1039,7 +1039,7 @@ impl DocumentCore {
                 [control_idx];
             if let Control::Table(table) = control {
                 if let Some(edited_cell) = table.cells.get(cell_idx) {
-                    self.layout_engine.invalidate_cell_units_after_text_insert(
+                    self.layout_engine.invalidate_cell_units_after_text_edit(
                         edited_cell,
                         table,
                         local_contribution_before,
@@ -1138,6 +1138,54 @@ impl DocumentCore {
         char_offset: usize,
         count: usize,
     ) -> Result<String, HwpError> {
+        self.delete_text_in_cell_native_impl(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            char_offset,
+            count,
+            true,
+        )
+    }
+
+    /// 표 셀 내부 단일 텍스트 삭제 후 전체 페이지네이션을 호출자가 지연한다.
+    /// 결과 JSON의 `cellFlowChanged`는 상대 line advance 변화 여부다.
+    pub fn delete_text_in_cell_native_deferred_pagination(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        count: usize,
+    ) -> Result<String, HwpError> {
+        self.delete_text_in_cell_native_impl(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            char_offset,
+            count,
+            false,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn delete_text_in_cell_native_impl(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        count: usize,
+        paginate_immediately: bool,
+    ) -> Result<String, HwpError> {
         // 셀 문단 접근 검증 및 텍스트 삭제
         let cell_para = self.get_cell_paragraph_mut(
             section_idx,
@@ -1146,6 +1194,11 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         )?;
+        let flow_advance_before = relative_paragraph_flow_advance(cell_para);
+        let local_contribution_before =
+            crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
+                cell_para,
+            );
         cell_para.delete_text_at(char_offset, count);
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
@@ -1168,10 +1221,98 @@ impl DocumentCore {
             None,
         );
 
+        let (flow_advance_after, local_contribution_after, cell_para_after) = {
+            let cell_para_after = self
+                .get_cell_paragraph_ref(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                )
+                .ok_or_else(|| {
+                    HwpError::RenderError("삭제 뒤 셀 문단을 다시 찾을 수 없습니다".to_string())
+                })?;
+            (
+                relative_paragraph_flow_advance(cell_para_after),
+                crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
+                    cell_para_after,
+                ),
+                cell_para_after.clone(),
+            )
+        };
+        let cell_flow_changed = flow_advance_before != flow_advance_after;
+
+        // Table의 일반 cell만 pointer-key layout cache의 owner다.
+        if cell_idx != 65534 {
+            let control = &self.document.sections[section_idx].paragraphs[parent_para_idx].controls
+                [control_idx];
+            if let Control::Table(table) = control {
+                if let Some(edited_cell) = table.cells.get(cell_idx) {
+                    self.layout_engine.invalidate_cell_units_after_text_edit(
+                        edited_cell,
+                        table,
+                        local_contribution_before,
+                        local_contribution_after,
+                    );
+                }
+            }
+        }
+
+        if !paginate_immediately {
+            self.refresh_render_normalized_cell_paragraph_after_edit(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+                cell_para_after,
+                local_contribution_before,
+                local_contribution_after,
+            );
+
+            let target_first_page =
+                target_table_first_global_page(self, section_idx, parent_para_idx, control_idx);
+            let table_structure_fingerprint = match &self.document.sections[section_idx].paragraphs
+                [parent_para_idx]
+                .controls[control_idx]
+            {
+                Control::Table(table) => table_structure_fingerprint(table),
+                _ => 0,
+            };
+            let pending_flow_changed =
+                self.deferred_pagination_descriptor
+                    .as_ref()
+                    .is_some_and(|pending| {
+                        pending.section_index == section_idx
+                            && pending.para_index == parent_para_idx
+                            && pending.control_index == control_idx
+                            && pending.cell_index == cell_idx
+                            && pending.cell_para_index == cell_para_idx
+                            && pending.cell_flow_changed
+                    });
+            self.deferred_pagination_revision =
+                self.deferred_pagination_revision.wrapping_add(1).max(1);
+            self.deferred_pagination_descriptor = Some(DeferredPaginationDescriptor {
+                revision: self.deferred_pagination_revision,
+                section_index: section_idx,
+                para_index: parent_para_idx,
+                control_index: control_idx,
+                cell_index: cell_idx,
+                cell_para_index: cell_para_idx,
+                cell_flow_changed: pending_flow_changed || cell_flow_changed,
+                target_first_page,
+                table_structure_fingerprint,
+            });
+        }
+
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변)
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
-        self.paginate_if_needed();
+        self.invalidate_page_tree_cache_from(0);
+        if paginate_immediately {
+            self.paginate_if_needed();
+        }
 
         self.event_log.push(DocumentEvent::CellTextChanged {
             section: section_idx,
@@ -1179,10 +1320,15 @@ impl DocumentCore {
             ctrl: control_idx,
             cell: cell_idx,
         });
-        Ok(super::super::helpers::json_ok_with(&format!(
-            "\"charOffset\":{}",
-            char_offset
-        )))
+        let result_fields = if paginate_immediately {
+            format!("\"charOffset\":{}", char_offset)
+        } else {
+            format!(
+                "\"charOffset\":{},\"cellFlowChanged\":{}",
+                char_offset, cell_flow_changed
+            )
+        };
+        Ok(super::super::helpers::json_ok_with(&result_fields))
     }
 
     /// 표 셀 또는 글상자 내부 문단에 대한 가변 참조를 얻는다.

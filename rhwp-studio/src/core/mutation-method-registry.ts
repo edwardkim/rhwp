@@ -26,6 +26,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'insertPageBreak', 'insertColumnBreak', 'insertNewNumber', 'setNumberingRestart',
   // 셀 텍스트/문단
   'insertTextInCell', 'insertTextInCellDeferredPagination', 'deleteTextInCell',
+  'deleteTextInCellDeferredPagination',
   'deleteRangeInCell', 'insertTextInCellByPath', 'deleteTextInCellByPath', 'deleteRangeInCellByPath',
   'splitParagraphInCell', 'mergeParagraphInCell', 'splitParagraphInCellByPath',
   'mergeParagraphInCellByPath',
@@ -84,4 +85,3 @@ export const EXCLUDED_NON_DOCUMENT: readonly string[] = [
   'moveVertical', 'moveVerticalByPath', // 캐럿 세로 탐색 (조회)
   'ensureParagraphStableIds', // 런타임 추적 id 부여
 ];
-
