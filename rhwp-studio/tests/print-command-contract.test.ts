@@ -14,6 +14,10 @@ const printSurfaceSource = readFileSync(
   new URL('../src/command/print-surface.ts', import.meta.url),
   'utf8',
 );
+const toolbarCss = readFileSync(
+  new URL('../src/styles/toolbar.css', import.meta.url),
+  'utf8',
+);
 const pdfDialogSource = readFileSync(
   new URL('../src/ui/pdf-print-dialog.ts', import.meta.url),
   'utf8',
@@ -43,6 +47,14 @@ test('파일 메뉴는 별도 PDF 진입점과 브라우저의 남은 단계를 
   assert.match(indexHtml, /data-cmd="file:print-to-pdf"/);
   assert.match(indexHtml, />PDF로 저장…</);
   assert.match(indexHtml, /대상 → PDF로 저장/);
+  assert.match(
+    indexHtml,
+    /data-cmd="file:print-to-pdf"[^>]*>.*class="md-icon icon-pdf"/,
+  );
+  assert.match(
+    toolbarCss,
+    /\.icon-pdf\s*\{\s*background-position:\s*calc\(-40px \* 3\) calc\(-40px \* 0\);\s*\}/,
+  );
   assert.match(indexHtml, /data-cmd="file:print"/);
 });
 

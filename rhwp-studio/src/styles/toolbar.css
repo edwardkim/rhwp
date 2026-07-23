@@ -115,6 +115,7 @@
 /* 메뉴 드롭다운 전용 추가 아이콘 위치 */
 .icon-new-doc       { background-position: calc(-40px * 0) calc(-40px * 0); }
 .icon-save          { background-position: calc(-40px * 1) calc(-40px * 0); }
+.icon-pdf           { background-position: calc(-40px * 3) calc(-40px * 0); }
 .icon-undo          { background-position: calc(-40px * 0) calc(-40px * 1); }
 .icon-redo          { background-position: calc(-40px * 1) calc(-40px * 1); }
 .icon-print         { background-position: calc(-40px * 4) calc(-40px * 0); }
