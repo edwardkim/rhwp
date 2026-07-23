@@ -23,12 +23,25 @@ async function installPrintCapture(page) {
     window.__documentState.markDirty('issue-3126-e2e');
     window.__issue3126 = {
       sentinelHandle,
+      sawPreparingFeedback: false,
       before: {
         fileName: window.__wasm.fileName,
         isDirty: window.__documentState.isDirty(),
       },
       capture: null,
     };
+
+    const feedbackObserver = new MutationObserver(() => {
+      const feedback = document.querySelector('[data-toast-kind="print-feedback"]');
+      if ((feedback?.textContent || '').includes('PDF 준비 중')) {
+        window.__issue3126.sawPreparingFeedback = true;
+      }
+    });
+    feedbackObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
 
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
@@ -55,6 +68,9 @@ async function installPrintCapture(page) {
                 hostOrigin: window.location.origin,
                 printCallCount: 1,
                 statusAtPrint: document.getElementById('sb-message')?.textContent || '',
+                sawPreparingFeedback: window.__issue3126.sawPreparingFeedback,
+                printFeedbackVisibleAtPrint:
+                  Boolean(document.querySelector('[data-toast-kind="print-feedback"]')),
                 title: printDocument.title,
                 html: printDocument.documentElement.outerHTML,
                 styleText: [...printDocument.querySelectorAll('style')]
@@ -80,6 +96,7 @@ async function installPrintCapture(page) {
     });
     observer.observe(document.body, { childList: true });
     window.__issue3126.observer = observer;
+    window.__issue3126.feedbackObserver = feedbackObserver;
   });
 }
 
@@ -110,6 +127,7 @@ async function capturePrintDocument(page) {
   return page.evaluate(() => {
     const state = window.__issue3126;
     state.observer?.disconnect();
+    state.feedbackObserver?.disconnect();
     return {
       before: state.before,
       capture: state.capture,
@@ -172,6 +190,8 @@ function assertSharedPdfContract(menu, result) {
   assert(!capture.frameHref.startsWith('about:blank'), 'about:blank 비사용');
   assert(capture.frameHref.endsWith('/print.html'), '전용 print.html surface');
   assert(capture.printCallCount === 1, 'rhwp 한 번 클릭으로 print() 자동 1회 호출');
+  assert(capture.sawPreparingFeedback, '인쇄창을 열기 전에 PDF 준비 피드백 표시');
+  assert(!capture.printFeedbackVisibleAtPrint, '네이티브 인쇄창 호출 전에 안내 토스트 제거');
   assert(capture.statusAtPrint.includes('PDF 준비 완료'), 'print() 직전 PDF 준비 완료 상태');
   assert(capture.styleText.includes('@page rhwp-print-page-1'), '페이지별 named @page');
   assert(capture.textElementCount > 0, '검색 가능한 SVG text 요소 보존');

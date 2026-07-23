@@ -41,7 +41,7 @@ import {
   type SaveDocumentResult,
   type FileSystemWindowLike,
 } from '@/command/file-system-access';
-import { showToast } from '@/ui/toast';
+import { showToast, type ToastHandle } from '@/ui/toast';
 import { clearRecentDocs, listRecentDocs, removeRecentDoc } from '@/recent/recent-store';
 import { openRecentEntry } from '@/recent/recent-open';
 
@@ -343,6 +343,27 @@ function setupPrintDocument(
 }
 
 let printJobActive = false;
+const PDF_FEEDBACK_MIN_VISIBLE_MS = 1200;
+const PDF_READY_MIN_VISIBLE_MS = 300;
+
+function waitForHostAnimationFrame(): Promise<void> {
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => resolve());
+  });
+}
+
+async function waitForHostPaint(): Promise<void> {
+  await waitForHostAnimationFrame();
+  await waitForHostAnimationFrame();
+}
+
+function waitForMilliseconds(durationMs: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, durationMs));
+}
+
+function pdfPreparingFeedback(progressText: string): string {
+  return `${progressText}\n준비가 끝나면 브라우저 인쇄 창이 자동으로 열립니다.`;
+}
 
 async function runBrowserPrint(
   services: CommandServices,
@@ -362,20 +383,30 @@ async function runBrowserPrint(
   const statusEl = document.getElementById('sb-message');
   const originalStatus = statusEl?.textContent || '';
   let surface: PrintSurface | null = null;
+  let feedbackToast: ToastHandle | null = null;
   let restoreStatus = true;
+  const feedbackStartedAt = window.performance.now();
 
   if (intent === 'pdf') {
-    showToast({ message: PDF_PRINT_GUIDANCE, durationMs: 5000 });
+    const initialProgress = printProgressText(intent, 0, pageCount);
+    feedbackToast = showToast({
+      message: pdfPreparingFeedback(initialProgress),
+      durationMs: 0,
+    });
+    feedbackToast.element.dataset.toastKind = 'print-feedback';
   }
+  if (statusEl) statusEl.textContent = printProgressText(intent, 0, pageCount);
 
   try {
+    // 메뉴가 닫힌 뒤 준비 상태를 한 번 그려 사용자가 클릭 결과를 즉시 인지하게 한다.
+    await waitForHostPaint();
     surface = await createPrintSurface();
 
     const printPages: PrintPage[] = [];
     for (let i = 0; i < pageCount; i++) {
-      if (statusEl) {
-        statusEl.textContent = printProgressText(intent, i + 1, pageCount);
-      }
+      const progressText = printProgressText(intent, i + 1, pageCount);
+      if (statusEl) statusEl.textContent = progressText;
+      feedbackToast?.update(pdfPreparingFeedback(progressText));
       const svg = wasm.renderPageSvgWithProfile(i, 'print');
       const pageInfo = wasm.getPageInfo(i);
       printPages.push(createPrintPage(svg, pageInfo, i));
@@ -385,6 +416,20 @@ async function runBrowserPrint(
     setupPrintDocument(surface.document, wasm.fileName, printPages);
     await waitForPrintSurfaceReady(surface);
     if (statusEl) statusEl.textContent = printReadyText(intent);
+
+    if (feedbackToast) {
+      feedbackToast.update(`PDF 준비 완료\n${PDF_PRINT_GUIDANCE}`);
+      await waitForHostPaint();
+      const elapsedMs = window.performance.now() - feedbackStartedAt;
+      const remainingMinimumMs = PDF_FEEDBACK_MIN_VISIBLE_MS - elapsedMs;
+      await waitForMilliseconds(Math.max(PDF_READY_MIN_VISIBLE_MS, remainingMinimumMs));
+      // 네이티브 인쇄 창보다 위에 표시할 수 없으므로 안내를 읽힌 뒤 먼저 제거한다.
+      feedbackToast.dismiss({ immediate: true });
+      feedbackToast = null;
+    } else {
+      // print() 직전 상태 문구가 브라우저 모달 뒤 화면에도 반영되도록 한다.
+      await waitForHostPaint();
+    }
 
     console.info(
       `[file:${intent === 'pdf' ? 'print-to-pdf' : 'print'}] `
@@ -399,6 +444,7 @@ async function runBrowserPrint(
     if (statusEl) statusEl.textContent = `${label} 실패: ${msg}`;
     showToast({ message: `${label}에 실패했습니다: ${msg}`, durationMs: 5000 });
   } finally {
+    feedbackToast?.dismiss({ immediate: true });
     surface?.dispose();
     printJobActive = false;
     if (restoreStatus && statusEl) statusEl.textContent = originalStatus;
