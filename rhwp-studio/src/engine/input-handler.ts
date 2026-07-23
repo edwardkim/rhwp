@@ -2444,7 +2444,7 @@ export class InputHandler {
     }
   }
 
-  /** deferred mutation을 cursor lookup 전에 등록하고 실제 flow 경계만 동기 flush한다. */
+  /** deferred mutation을 cursor lookup 전에 등록하고 flow 경계에서는 resumable job을 시작한다. */
   private prepareTextMutationBeforeCursor(effects: TextMutationEffects): boolean {
     if (effects.paginationCompleted) {
       this.cancelDeferredPaginationFlush();

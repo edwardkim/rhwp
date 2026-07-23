@@ -293,6 +293,33 @@ async function installTrace(page) {
     const canvasView = window.__canvasView;
     const renderer = canvasView.pageRenderer;
 
+    const describePaginationResult = (result) => ({
+      status: result?.status ?? null,
+      revision: result?.revision ?? null,
+      fragmentsProcessed: result?.fragmentsProcessed ?? null,
+      pageCount: result?.pageCount ?? null,
+    });
+    wrap(
+      wasm,
+      'beginDeferredPagination',
+      'wasm.beginDeferredPagination',
+      (args) => ({ fragmentBudget: args[0] }),
+      describePaginationResult,
+    );
+    wrap(
+      wasm,
+      'stepDeferredPagination',
+      'wasm.stepDeferredPagination',
+      (args) => ({ fragmentBudget: args[0] }),
+      describePaginationResult,
+    );
+    wrap(
+      wasm,
+      'cancelDeferredPagination',
+      'wasm.cancelDeferredPagination',
+      () => ({}),
+      (result) => ({ result }),
+    );
     wrap(wasm, 'flushDeferredPagination', 'wasm.flushDeferredPagination', (args) => ({ argsLength: args.length }));
     wrap(input, 'flushDeferredPaginationIfNeeded', 'input.flushDeferredPaginationIfNeeded', (args) => ({
       reason: args[0] ?? 'manual',
@@ -381,6 +408,9 @@ async function collectTrace(page) {
       startedAt: trace?.startedAt ?? null,
       events,
       counts: {
+        wasmBegin: count('wasm.beginDeferredPagination'),
+        wasmStep: count('wasm.stepDeferredPagination'),
+        wasmCancel: count('wasm.cancelDeferredPagination'),
         wasmFlush: count('wasm.flushDeferredPagination'),
         inputFlush: count('input.flushDeferredPaginationIfNeeded'),
         invalidation: count('event.document-page-invalidated'),
@@ -643,6 +673,15 @@ async function prepareScenario(page, format, bytes, transitionAt) {
   return { load, clip, keyboardDurationsMs };
 }
 
+async function waitForDeferredPaginationCompletion(page, timeoutMs = 5_000) {
+  const startedAt = performance.now();
+  await page.waitForFunction(
+    () => !window.__inputHandler.hasDeferredPaginationPending(),
+    { timeout: timeoutMs, polling: 25 },
+  );
+  return performance.now() - startedAt;
+}
+
 async function runTimeline(page, format, bytes, transitionAt) {
   const directory = path.join(OUTPUT_ROOT, format, 'timeline');
   const prepared = await prepareScenario(page, format, bytes, transitionAt);
@@ -669,7 +708,7 @@ async function runTimeline(page, format, bytes, transitionAt) {
   checkpoints.push(await captureCheckpoint(page, directory, 'after-n-plus-2', timelineStart, prepared.clip));
 
   const trace = await collectTrace(page);
-  assert.equal(trace.counts.wasmFlush, 1, `${format}: timeline expected one boundary pagination flush`);
+  assert.equal(trace.counts.wasmFlush, 0, `${format}: timeline must not synchronously flush at the boundary`);
   return {
     kind: 'timeline',
     format,
@@ -701,7 +740,7 @@ async function runFullLayerControl(page, format, bytes, transitionAt) {
   await waitTwoRafs(page);
   const after = await captureCheckpoint(page, directory, 'after-full-layer', timelineStart, prepared.clip);
   const trace = await collectTrace(page);
-  assert.equal(trace.counts.wasmFlush, 1, `${format}: full-layer control expected one boundary pagination flush`);
+  assert.equal(trace.counts.wasmFlush, 0, `${format}: full-layer control must not synchronously flush`);
   return {
     kind: 'full-layer-control',
     format,
@@ -722,7 +761,7 @@ async function runFlushControl(page, format, bytes, transitionAt) {
   await waitTwoRafs(page);
   const before = await captureCheckpoint(page, directory, 'before-explicit-flush', timelineStart, prepared.clip);
   const traceBefore = await collectTrace(page);
-  assert.equal(traceBefore.counts.wasmFlush, 1, `${format}: boundary pagination must precede explicit control`);
+  assert.equal(traceBefore.counts.wasmFlush, 0, `${format}: boundary pagination must remain resumable`);
 
   const explicit = await page.evaluate(() => {
     const input = window.__inputHandler;
@@ -733,7 +772,7 @@ async function runFlushControl(page, format, bytes, transitionAt) {
     window.__eventBus.emit('document-view-changed');
     return { flushed, durationMs: performance.now() - startedAt };
   });
-  assert.equal(explicit.flushed, false, `${format}: boundary effect must already be consumed`);
+  assert.equal(explicit.flushed, true, `${format}: explicit control must drain the active resumable job`);
   await waitTwoRafs(page);
   const after = await captureCheckpoint(page, directory, 'after-explicit-flush', timelineStart, prepared.clip);
   const trace = await collectTrace(page);
@@ -963,11 +1002,7 @@ function assertFocusedSnapshot(format, runNumber, inserted, snapshot, expectedTe
   assert.equal(rect?.pageIndex, 0, `${prefix}: cursor page`);
   assert.equal(rect?.cellOverflowed, false, `${prefix}: cursor must not use overflow fallback`);
   assertApprox(rect?.cellBounds?.h, 945.9, `${prefix}: cell bounds`);
-  assert.equal(
-    snapshot.pagination.pending,
-    inserted !== 56,
-    `${prefix}: deferred pagination pending state`,
-  );
+  assert.equal(snapshot.pagination.pending, true, `${prefix}: deferred pagination pending state`);
 }
 
 function targetRunStart(op, label) {
@@ -991,7 +1026,9 @@ function assertExactFocusedState(
   assert.equal(state.model.text, expectedText, `${prefix}: model text`);
   assert.equal(state.model.lineCount, expectedLineCount, `${prefix}: line count`);
   assert.equal(state.pagination.pageCount, 115, `${prefix}: page count`);
-  assert.equal(state.pagination.pending, expectedPending, `${prefix}: pending state`);
+  if (expectedPending !== null) {
+    assert.equal(state.pagination.pending, expectedPending, `${prefix}: pending state`);
+  }
   assert.equal(state.layerTree.pageIndex, 0, `${prefix}: tree page`);
   assert.equal(state.layerTree.targetText, expectedText, `${prefix}: layer tree text`);
   assert.equal(state.pageTextLayout.error, null, `${prefix}: page text layout error`);
@@ -1037,6 +1074,8 @@ function assertFocusedTrace(format, runNumber, trace) {
   const prefix = `${format} run ${runNumber}`;
   const inserts = trace.events.filter((event) => event.type === 'wasm.insertTextInCellDeferredPagination');
   const effects = trace.events.filter((event) => event.type === 'InputHandler.prepareTextMutationBeforeCursor');
+  const begins = trace.events.filter((event) => event.type === 'wasm.beginDeferredPagination');
+  const steps = trace.events.filter((event) => event.type === 'wasm.stepDeferredPagination');
   const flushes = trace.events.filter((event) => event.type === 'wasm.flushDeferredPagination');
   const inputFlushes = trace.events.filter((event) => event.type === 'input.flushDeferredPaginationIfNeeded');
   const cursorQueries = trace.events.filter((event) => event.type === 'wasm.getCursorRectByPathNear');
@@ -1044,8 +1083,16 @@ function assertFocusedTrace(format, runNumber, trace) {
 
   assert.equal(inserts.length, 62, `${prefix}: deferred insert count`);
   assert.equal(effects.length, 62, `${prefix}: consumed mutation effect count`);
-  assert.equal(flushes.length, 1, `${prefix}: WASM flush count`);
-  assert.equal(inputFlushes.length, 1, `${prefix}: input flush count`);
+  assert.equal(begins.length, 1, `${prefix}: resumable begin count`);
+  assert.equal(steps.length, 115, `${prefix}: one-fragment step count`);
+  assert.equal(
+    steps.reduce((sum, event) => sum + event.fragmentsProcessed, 0),
+    115,
+    `${prefix}: processed fragment count`,
+  );
+  assert.equal(steps.at(-1)?.status, 'complete', `${prefix}: final resumable status`);
+  assert.equal(flushes.length, 0, `${prefix}: synchronous WASM flush count`);
+  assert.equal(inputFlushes.length, 0, `${prefix}: synchronous input flush count`);
   assert.equal(operations.length, 62, `${prefix}: operation count`);
 
   for (let index = 0; index < inserts.length; index += 1) {
@@ -1061,16 +1108,16 @@ function assertFocusedTrace(format, runNumber, trace) {
   }
 
   const boundaryInsert = inserts[55];
-  const boundaryFlush = flushes[0];
+  const boundaryBegin = begins[0];
   const firstCursorAfterBoundary = cursorQueries.find((event) => event.sequence > boundaryInsert.sequence);
   assert.ok(firstCursorAfterBoundary, `${prefix}: cursor query after boundary`);
   assert.ok(
-    boundaryInsert.sequence < boundaryFlush.sequence,
-    `${prefix}: mutation result must precede boundary flush`,
+    boundaryInsert.sequence < boundaryBegin.sequence,
+    `${prefix}: mutation result must precede resumable begin`,
   );
   assert.ok(
-    boundaryFlush.sequence < firstCursorAfterBoundary.sequence,
-    `${prefix}: boundary flush must precede cursor query`,
+    boundaryBegin.sequence < firstCursorAfterBoundary.sequence,
+    `${prefix}: resumable begin must precede cursor query`,
   );
 
   const operationDurations = operations.map((event) => event.durationMs);
@@ -1081,7 +1128,7 @@ function assertFocusedTrace(format, runNumber, trace) {
     counts: trace.counts,
     ordering: {
       boundaryMutationSequence: boundaryInsert.sequence,
-      boundaryFlushSequence: boundaryFlush.sequence,
+      boundaryBeginSequence: boundaryBegin.sequence,
       boundaryCursorSequence: firstCursorAfterBoundary.sequence,
     },
     timing: {
@@ -1089,7 +1136,8 @@ function assertFocusedTrace(format, runNumber, trace) {
       keyboardBoundaryMs: trace.keyboardDurationsMs[55],
       operationStable: summarizeDurations(stableOperationDurations),
       operationBoundaryMs: operationDurations[55],
-      boundaryFlushMs: boundaryFlush.durationMs,
+      boundaryBeginMs: boundaryBegin.durationMs,
+      resumableSteps: summarizeDurations(steps.map((event) => event.durationMs)),
       cursorQueries: summarizeDurations(cursorDurations),
       boundaryCursorMs: firstCursorAfterBoundary.durationMs,
     },
@@ -1165,12 +1213,28 @@ async function runFocusedFormat(page, format, bytes, runNumber) {
         path.join(visualDirectory, 'after-56-1600ms.png'),
         clip,
       ));
-      for (const state of boundaryStates) {
-        assertExactFocusedState(format, runNumber, state, expectedText, 5, 945.9, false);
+      const completionWaitMs = await waitForDeferredPaginationCompletion(page);
+      boundaryStates.push(await collectState(page, 'after-56-complete', timelineStart));
+      visual.boundary.push(await captureCompositedCrop(
+        page,
+        path.join(visualDirectory, 'after-56-complete.png'),
+        clip,
+      ));
+      const pendingExpectations = [true, true, null, null, null, false];
+      for (const [index, state] of boundaryStates.entries()) {
+        assertExactFocusedState(
+          format,
+          runNumber,
+          state,
+          expectedText,
+          5,
+          945.9,
+          pendingExpectations[index],
+        );
         const traceAtCheckpoint = await collectTrace(page);
         assert.equal(
           traceAtCheckpoint.counts.wasmFlush,
-          1,
+          0,
           `${format} run ${runNumber} ${state.label}: cumulative flush count`,
         );
       }
@@ -1197,7 +1261,7 @@ async function runFocusedFormat(page, format, bytes, runNumber) {
         );
         visual.comparisons.push({ label: `56-stable-${index}`, ...comparison });
       }
-      checkpoints.at56 = boundaryStates;
+      checkpoints.at56 = { states: boundaryStates, completionWaitMs };
     }
   }
 
@@ -1208,11 +1272,12 @@ async function runFocusedFormat(page, format, bytes, runNumber) {
 
   const trace = await collectTrace(page);
   trace.keyboardDurationsMs = keyboardDurationsMs;
-  assert.equal(trace.counts.wasmFlush, 1, `${format} run ${runNumber}: inputs 57-62 add no flush`);
+  assert.equal(trace.counts.wasmFlush, 0, `${format} run ${runNumber}: inputs 57-62 add no flush`);
   const traceSummary = assertFocusedTrace(format, runNumber, trace);
   console.log(
-    `  run ${runNumber}: GREEN, flush=1, boundary=${traceSummary.timing.operationBoundaryMs.toFixed(2)}ms, `
-      + `flushTime=${traceSummary.timing.boundaryFlushMs.toFixed(2)}ms, `
+    `  run ${runNumber}: GREEN, flush=0, steps=${traceSummary.counts.wasmStep}, `
+      + `boundary=${traceSummary.timing.operationBoundaryMs.toFixed(2)}ms, `
+      + `begin=${traceSummary.timing.boundaryBeginMs.toFixed(2)}ms, `
       + `stableP95=${traceSummary.timing.operationStable.p95Ms.toFixed(2)}ms`,
   );
 
@@ -1232,6 +1297,8 @@ function assertRawBoundaryTrace(format, kind, trace) {
   const prefix = `${format} ${kind} raw boundary`;
   const inserts = trace.events.filter((event) => event.type === 'wasm.insertTextInCellDeferredPagination');
   const effects = trace.events.filter((event) => event.type === 'InputHandler.prepareTextMutationBeforeCursor');
+  const begins = trace.events.filter((event) => event.type === 'wasm.beginDeferredPagination');
+  const steps = trace.events.filter((event) => event.type === 'wasm.stepDeferredPagination');
   const flushes = trace.events.filter((event) => event.type === 'wasm.flushDeferredPagination');
   const cursorQueries = trace.events.filter((event) => event.type === 'wasm.getCursorRectByPathNear');
 
@@ -1244,12 +1311,15 @@ function assertRawBoundaryTrace(format, kind, trace) {
   assert.equal(effects[0].deferredPagination, true, `${prefix}: consumed deferred effect`);
   assert.equal(effects[0].cellFlowChanged, true, `${prefix}: consumed flow effect`);
   assert.equal(effects[0].paginationCompleted, false, `${prefix}: deferred completion state`);
-  assert.equal(flushes.length, 1, `${prefix}: cumulative flush count`);
+  assert.equal(begins.length, 1, `${prefix}: resumable begin count`);
+  assert.equal(steps.length, 115, `${prefix}: one-fragment step count`);
+  assert.equal(steps.at(-1)?.status, 'complete', `${prefix}: final resumable status`);
+  assert.equal(flushes.length, 0, `${prefix}: synchronous flush count`);
 
   const firstCursorQuery = cursorQueries.find((event) => event.sequence > inserts[0].sequence);
   assert.ok(firstCursorQuery, `${prefix}: cursor query after mutation`);
-  assert.ok(inserts[0].sequence < flushes[0].sequence, `${prefix}: mutation must precede flush`);
-  assert.ok(flushes[0].sequence < firstCursorQuery.sequence, `${prefix}: flush must precede cursor query`);
+  assert.ok(inserts[0].sequence < begins[0].sequence, `${prefix}: mutation must precede resumable begin`);
+  assert.ok(begins[0].sequence < firstCursorQuery.sequence, `${prefix}: begin must precede cursor query`);
 }
 
 function assertRawStableTrace(format, kind, trace) {
@@ -1268,6 +1338,8 @@ function assertRawStableTrace(format, kind, trace) {
   assert.equal(effects[0].deferredPagination, true, `${prefix}: consumed deferred effect`);
   assert.equal(effects[0].cellFlowChanged, false, `${prefix}: consumed stable effect`);
   assert.equal(effects[0].paginationCompleted, false, `${prefix}: deferred completion state`);
+  assert.equal(trace.counts.wasmBegin, 0, `${prefix}: stable input resumable begin count`);
+  assert.equal(trace.counts.wasmStep, 0, `${prefix}: stable input resumable step count`);
   assert.equal(flushes.length, 0, `${prefix}: stable input flush count`);
   assert.ok(
     cursorQueries.some((event) => event.sequence > inserts[0].sequence),
@@ -1367,11 +1439,11 @@ async function runRawBoundarySmoke(page, format, bytes, kind) {
   await installTrace(page);
   await dispatchRawInput(page, kind, '1');
 
-  await delay(page, 150);
+  const completionWaitMs = await waitForDeferredPaginationCompletion(page);
   await waitTwoRafs(page);
   const finalText = `${initialText}${'1'.repeat(56)}`;
   const timelineStart = await page.evaluate(() => performance.now());
-  const finalState = await collectState(page, `${kind}-raw-after-150ms`, timelineStart);
+  const finalState = await collectState(page, `${kind}-raw-after-complete`, timelineStart);
   assertExactFocusedState(
     format,
     `${kind}-raw`,
@@ -1390,7 +1462,7 @@ async function runRawBoundarySmoke(page, format, bytes, kind) {
     });
   }
   await restoreTrace(page);
-  console.log(`  ${kind} raw smoke: GREEN, flush=1`);
+  console.log(`  ${kind} raw smoke: GREEN, flush=0, steps=${trace.counts.wasmStep}`);
   return {
     format,
     kind,
@@ -1398,6 +1470,8 @@ async function runRawBoundarySmoke(page, format, bytes, kind) {
     finalLength: finalState.model.length,
     pageCount: finalState.pagination.pageCount,
     flushCount: trace.counts.wasmFlush,
+    stepCount: trace.counts.wasmStep,
+    completionWaitMs,
   };
 }
 
