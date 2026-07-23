@@ -6,7 +6,7 @@
 - 비교 기준: `upstream/devel@cbddc1cd87084b60685da9a2b4369a4511d86173`
 - 코드 기준: Stage 5 `6438a4cfb`
 - 완료일: 2026-07-23
-- 상태: focused·OVR 완료, 전체 게이트 승인 대기
+- 상태: 전체 로컬 검증·OVR·한컴 기준 OVL 완료, 원격 작업 승인 대기
 
 ## 최종 코드 동일성
 
@@ -35,7 +35,73 @@ python3 tools/object_visual_regression.py \
 - 결과: `/private/tmp/issue2308-hw-ovr/ovr_diff.md`
 
 OVR은 한컴 없이 실행하는 geometry 보조 근거다. 한컴 before/after/OVL 사람 판정은 전체 검증
-승인 게이트에 남긴다.
+결과와 함께 아래에 기록한다.
+
+## 전체 로컬 검증
+
+### Rust
+
+| 명령 | 결과 |
+| --- | --- |
+| `cargo fmt --all -- --check` | PASS |
+| `cargo build --release` | PASS |
+| `cargo test --release --lib` | 2537 passed, 7 ignored |
+| `cargo test --profile release-test --tests` | 모든 test binary PASS |
+| `cargo test --profile release-test --features native-skia skia --lib` | 56 passed |
+| `cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder` | 2 passed |
+| `cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export` | 4 passed |
+| `cargo clippy -- -D warnings` | PASS |
+| `cargo clippy --all-targets -- -D warnings -A clippy::identity-op` | PASS |
+| `cargo test --doc` | 1 ignored, 실패 0 |
+
+`cargo clippy --all-targets -- -D warnings`만
+`src/parser/hwp3/johab.rs:113`의 기존 `0x8000 | ... | 0`에 대해 Rust 1.93.1
+`clippy::identity-op`로 실패했다. 이 파일은 `upstream/devel`과 동일하고 실제 CI 명령인
+`cargo clippy -- -D warnings`는 통과했다. 해당 lint 하나를 허용한 all-targets 재실행도 통과해
+#2308 변경 회귀가 아닌 upstream 기준선으로 분리했다.
+
+### WASM·Studio
+
+| 명령 | 결과 |
+| --- | --- |
+| `wasm-pack build --target web --out-dir pkg` | PASS |
+| `npm test` | 505 passed |
+| `npm run build` | PASS |
+| `npm run e2e:renderer-contract` | PASS |
+| `npm run e2e:issue-2214` | HWP/HWPX 각 3회와 IME/iOS raw smoke 모두 GREEN |
+| `npm run e2e:render-diff` | 3 fixture PASS |
+| `npm run e2e -- --mode=headless` | 입력·줄바꿈·분할·페이지 넘김·병합 PASS |
+
+- `pkg/rhwp_bg.wasm` SHA-256:
+  `8e1ef352cbe6536dedf51553ea709d25943a560d3217947bc1e651f840a1eae4`
+- canvas render diff는 `basic/KTX.hwp` 1쪽에서 `116/889746` 픽셀
+  (`0.01304%`) 차이로 허용 범위 안이었고, 나머지 두 fixture는 0픽셀이었다.
+- 대표 `npm run e2e:baseline:headless`는 전체 캡처 뒤 `exam-math`의
+  `equation:invalidLayout` 때문에 종료 코드 1이었다. 독립 `upstream/devel@cbddc1cd8`
+  WASM으로 같은 표본을 재실행해 네 backend/profile 조합이 모두 같은 사유로 실패함을 확인했다.
+  두 실행의 `exam-math` PNG 6개 SHA-256도 각각 일치해 #2308 회귀에서 분리했다.
+
+## 한컴 기준 before/after/OVL
+
+저장소의 한컴 기준 PDF를 사용해 `scripts/task1274_visual_sweep.py`를 실행하고 review contact
+sheet를 직접 판정했다.
+
+| 표본 | 범위 | 페이지 | 자동 후보 | 육안 판정 |
+| --- | --- | ---: | ---: | --- |
+| `76076_regulatory_analysis.hwp` | #2195 핵심 33~34쪽 | 82=82 | 0/2 | 표 경계·분할·텍스트 순서 이상 없음 |
+| `issue2004_cell_image_stack.hwp` | 전체 1~8쪽 | 8=8 | 0/8 | 이미지 순서·셀 경계·잘림·누락 없음 |
+
+- 한컴 OVL 평균 `visual_accuracy_proxy_percent`는 76076 표본 `10.50925`,
+  #2004 표본 `19.88209`였다. 로컬 한컴/HY 글꼴 부재에 따른 glyph raster 차이가 커서 이 값은
+  구조 정확성 판정이 아닌 보조값으로만 사용했다.
+- #2004 before/after 8쪽 PNG는 모두 바이트 동일했다.
+- 76076의 34쪽은 바이트 동일했다. 33쪽은 `1507/891662` 픽셀(`0.16901023%`)이 달랐고
+  최대 채널 차이는 27, 차이 bbox는 `(269, 777, 711, 792)`였다. 같은 텍스트 한 줄의
+  부동소수점 직렬화·서브픽셀 안티앨리어싱 차이이며 OVR geometry와 육안 배치는 동일했다.
+- current review:
+  `/private/tmp/issue2308-visual/76076/issue2308-76076/review_contact_sheet.png`
+  및
+  `/private/tmp/issue2308-visual/issue2004/issue2308-issue2004/review_contact_sheet.png`
 
 ## 문서화
 
@@ -47,8 +113,6 @@ OVR은 한컴 없이 실행하는 geometry 보조 근거다. 한컴 before/after
 
 ## 남은 승인 게이트
 
-1. 전체 release test와 clippy
-2. WASM build
-3. Studio unit/E2E
-4. 한컴 기준 before/after/OVL 최종 시각 판정
-5. 원격 push, draft PR, 이슈 결과 코멘트
+1. 원격 push
+2. draft PR 생성
+3. 이슈 결과 코멘트

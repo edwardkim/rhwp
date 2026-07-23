@@ -16,8 +16,10 @@
 - #2004 이미지 스택은 source section revision으로 검증되는 immutable `Arc` derived cache로
   유지하며 stable 입력에서는 재복제하지 않는다.
 
-focused Rust 회귀와 source guard는 통과했다. 전체 release test, clippy, WASM, Studio/E2E는 수행
-계획의 별도 승인 게이트에 따라 아직 실행하지 않았다.
+focused Rust 회귀와 source guard, 전체 release/native-Skia test, WASM, Studio unit/E2E,
+before/after/한컴 OVL까지 로컬 검증을 완료했다. `--all-targets` clippy와 대표 Studio
+baseline에서 확인한 두 실패는 같은 `upstream/devel`에서도 동일하게 재현되고 비교 산출물도
+일치해 #2308 회귀에서 분리했다.
 
 ## 착수 전 재판단
 
@@ -146,8 +148,57 @@ geometry를 비교했다.
 예산이 source cell width를 overlay scale 없이 읽었다. 해당 경로와 병합 셀·row-cut·partial-table의
 동일 계급 누락을 보완한 뒤 0건이 됐고, 두 fragment 높이는 통합 테스트로 고정했다.
 
-이 자동 OVR은 한컴 최종 시각 판정을 대체하지 않으며, PR 단계의 before/after/OVL 사람 판정은
-별도 승인·검토 대상으로 남는다.
+한컴 기준 PDF visual sweep도 추가로 수행했다.
+
+| 표본 | 비교 범위 | 페이지 일치 | 자동 후보 | 판정 |
+| --- | --- | ---: | ---: | --- |
+| `76076_regulatory_analysis.hwp` | #2195 핵심 33~34쪽 | 82=82 | 0/2 | PASS |
+| `issue2004_cell_image_stack.hwp` | 전체 1~8쪽 | 8=8 | 0/8 | PASS |
+
+review contact sheet에서 표 셀 경계, 이미지 순서와 수직 간격, 페이지 분할, 잘림·겹침·누락을
+직접 확인했다. 한컴/HY 전용 글꼴이 없는 macOS 환경이라 glyph raster 차이로 자동 잉크 보조값은
+각각 평균 `10.50925%`, `19.88209%`에 머물렀으며 구조 판정 근거로 과대해석하지 않았다.
+
+before/after에서 #2004 전체 8쪽과 76076의 34쪽 PNG는 바이트 동일했다. 76076 33쪽은 텍스트 한
+줄에서만 `1507/891662` 픽셀(`0.16901023%`, 최대 채널 차이 27)이 달랐다. OVR geometry는 0건이고
+육안 배치는 같아 부동소수점 직렬화에 따른 서브픽셀 안티앨리어싱 차이로 판정했다.
+
+## 전체 로컬 검증
+
+### Rust
+
+| 명령 | 결과 |
+| --- | --- |
+| `cargo fmt --all -- --check` | PASS |
+| `cargo build --release` | PASS |
+| `cargo test --release --lib` | 2537 passed, 7 ignored |
+| `cargo test --profile release-test --tests` | 전체 PASS |
+| native-Skia 공식 3개 명령 | 56 + 2 + 4 passed |
+| `cargo clippy -- -D warnings` | PASS |
+| `cargo test --doc` | 실패 0, 1 ignored |
+
+`cargo clippy --all-targets -- -D warnings`는 Rust 1.93.1에서
+`src/parser/hwp3/johab.rs:113`의 기존 identity-op 한 건으로 실패했다. 해당 파일은
+`upstream/devel`과 동일하고 identity-op만 허용한 all-targets 재실행은 통과했다.
+
+### WASM·Studio
+
+| 명령 | 결과 |
+| --- | --- |
+| `wasm-pack build --target web --out-dir pkg` | PASS |
+| `npm test` | 505 passed |
+| `npm run build` | PASS |
+| `npm run e2e:renderer-contract` | PASS |
+| `npm run e2e:issue-2214` | HWP/HWPX 각 3회와 raw smoke GREEN |
+| `npm run e2e:render-diff` | 3 fixture PASS |
+| `npm run e2e -- --mode=headless` | 핵심 text-flow PASS |
+
+WASM SHA-256은
+`8e1ef352cbe6536dedf51553ea709d25943a560d3217947bc1e651f840a1eae4`다.
+
+대표 `npm run e2e:baseline:headless`는 `exam-math`의 기존
+`equation:invalidLayout`으로 종료 코드 1이었다. 독립 upstream WASM 재실행도 같은 네 조합에서
+같은 진단을 냈고 `exam-math` PNG 6개 SHA-256이 현재 브랜치와 모두 일치했다.
 
 ## 문서
 
@@ -159,12 +210,8 @@ geometry를 비교했다.
 
 ## 남은 게이트
 
-focused 결과 공유 뒤 다음 실행 여부를 작업지시자에게 별도 승인받는다.
+로컬 구현·검증은 완료했다. 저장소 지침에 따라 다음 원격 변경은 아직 수행하지 않았다.
 
-1. 전체 release test와 clippy
-2. WASM build
-3. Studio unit/E2E
-4. 한컴 기준 before/after/OVL 최종 시각 판정
-5. 원격 push, draft PR 생성, 이슈 결과 코멘트
-
-원격 변경은 아직 수행하지 않았다.
+1. 원격 push
+2. draft PR 생성
+3. 이슈 결과 코멘트
