@@ -21,8 +21,17 @@ import {
   appendPrintStyle,
   appendSvgPage,
   createPrintPage,
+  PDF_PRINT_GUIDANCE,
+  printProgressText,
+  printReadyText,
+  type PrintIntent,
   type PrintPage,
 } from '@/command/print-pages';
+import {
+  createPrintSurface,
+  waitForPrintSurfaceReady,
+  type PrintSurface,
+} from '@/command/print-surface';
 import {
   canUseOpenFilePicker,
   pickOpenFileHandle,
@@ -310,50 +319,90 @@ export async function confirmSaveBeforeReplacingDocument(
   return result === 'saved';
 }
 
-function createPrintButton(doc: Document, id: string, label: string, background?: string): HTMLButtonElement {
-  const button = doc.createElement('button');
-  button.id = id;
-  button.type = 'button';
-  button.textContent = label;
-  if (background) button.style.background = background;
-  return button;
-}
-
 function setupPrintDocument(
-  printWin: Window,
+  doc: Document,
   fileName: string,
-  pageCount: number,
   printPages: PrintPage[],
 ): void {
-  const doc = printWin.document;
   doc.documentElement.lang = 'ko';
-  doc.title = `${fileName} — 인쇄`;
 
   doc.head.replaceChildren();
   const meta = doc.createElement('meta');
   meta.setAttribute('charset', 'UTF-8');
-  doc.head.appendChild(meta);
+  const viewport = doc.createElement('meta');
+  viewport.name = 'viewport';
+  viewport.content = 'width=device-width, initial-scale=1.0';
+  doc.head.append(meta, viewport);
+  doc.title = `${fileName} — 인쇄`;
   appendPrintStyle(doc, printPages);
 
-  const printBar = doc.createElement('div');
-  printBar.className = 'print-bar';
-  const printButton = createPrintButton(doc, 'print-btn', '인쇄');
-  const closeButton = createPrintButton(doc, 'close-btn', '닫기', '#475569');
-  const title = doc.createElement('span');
-  title.textContent = `${fileName} — ${pageCount}페이지`;
-  printBar.append(printButton, closeButton, title);
-
-  doc.body.replaceChildren(printBar);
+  doc.body.replaceChildren();
   for (const printPage of printPages) {
     appendSvgPage(doc, doc.body, printPage);
   }
+}
 
-  printButton.addEventListener('click', () => {
-    printWin.print();
-  });
-  closeButton.addEventListener('click', () => {
-    printWin.close();
-  });
+let printJobActive = false;
+
+async function runBrowserPrint(
+  services: CommandServices,
+  intent: PrintIntent,
+): Promise<void> {
+  if (printJobActive) {
+    showToast({ message: '인쇄 문서를 준비하고 있습니다.', durationMs: 2500 });
+    return;
+  }
+
+  flushDeferredPaginationBeforeExplicitOutput(services, intent === 'pdf' ? 'print-pdf' : 'print');
+  const wasm = services.wasm;
+  const pageCount = wasm.pageCount;
+  if (pageCount === 0) return;
+
+  printJobActive = true;
+  const statusEl = document.getElementById('sb-message');
+  const originalStatus = statusEl?.textContent || '';
+  let surface: PrintSurface | null = null;
+  let restoreStatus = true;
+
+  if (intent === 'pdf') {
+    showToast({ message: PDF_PRINT_GUIDANCE, durationMs: 5000 });
+  }
+
+  try {
+    surface = await createPrintSurface();
+
+    const printPages: PrintPage[] = [];
+    for (let i = 0; i < pageCount; i++) {
+      if (statusEl) {
+        statusEl.textContent = printProgressText(intent, i + 1, pageCount);
+      }
+      const svg = wasm.renderPageSvgWithProfile(i, 'print');
+      const pageInfo = wasm.getPageInfo(i);
+      printPages.push(createPrintPage(svg, pageInfo, i));
+      if (i % 5 === 0) await new Promise(resolve => setTimeout(resolve, 0));
+    }
+
+    setupPrintDocument(surface.document, wasm.fileName, printPages);
+    await waitForPrintSurfaceReady(surface);
+    if (statusEl) statusEl.textContent = printReadyText(intent);
+
+    console.info(
+      `[file:${intent === 'pdf' ? 'print-to-pdf' : 'print'}] `
+      + `브라우저 인쇄 호출 (surface=iframe, pages=${pageCount}, profile=print)`,
+    );
+    surface.window.print();
+  } catch (err) {
+    restoreStatus = false;
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[file:${intent === 'pdf' ? 'print-to-pdf' : 'print'}]`, msg);
+    const label = intent === 'pdf' ? 'PDF 준비' : '인쇄';
+    if (statusEl) statusEl.textContent = `${label} 실패: ${msg}`;
+    showToast({ message: `${label}에 실패했습니다: ${msg}`, durationMs: 5000 });
+  } finally {
+    surface?.dispose();
+    printJobActive = false;
+    if (restoreStatus && statusEl) statusEl.textContent = originalStatus;
+  }
 }
 
 export const fileCommands: CommandDef[] = [
@@ -462,48 +511,21 @@ export const fileCommands: CommandDef[] = [
     },
   },
   {
+    id: 'file:print-to-pdf',
+    label: 'PDF로 저장…',
+    canExecute: (ctx) => ctx.hasDocument,
+    async execute(services) {
+      await runBrowserPrint(services, 'pdf');
+    },
+  },
+  {
     id: 'file:print',
     label: '인쇄',
     icon: 'icon-print',
     shortcutLabel: 'Ctrl+P',
     canExecute: (ctx) => ctx.hasDocument,
     async execute(services) {
-      flushDeferredPaginationBeforeExplicitOutput(services, 'print');
-      const wasm = services.wasm;
-      const pageCount = wasm.pageCount;
-      if (pageCount === 0) return;
-
-      // 진행률 표시
-      const statusEl = document.getElementById('sb-message');
-      const origStatus = statusEl?.textContent || '';
-
-      try {
-        // SVG 페이지 생성
-        const printPages: PrintPage[] = [];
-        for (let i = 0; i < pageCount; i++) {
-          if (statusEl) statusEl.textContent = `인쇄 준비 중... (${i + 1}/${pageCount})`;
-          const svg = wasm.renderPageSvg(i);
-          const pageInfo = wasm.getPageInfo(i);
-          printPages.push(createPrintPage(svg, pageInfo, i));
-          // UI 갱신을 위한 양보
-          if (i % 5 === 0) await new Promise(r => setTimeout(r, 0));
-        }
-
-        // 인쇄 전용 창 생성
-        const printWin = window.open('', '_blank');
-        if (!printWin) {
-          alert('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요.');
-          return;
-        }
-
-        setupPrintDocument(printWin, wasm.fileName, pageCount, printPages);
-
-        if (statusEl) statusEl.textContent = origStatus;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error('[file:print]', msg);
-        if (statusEl) statusEl.textContent = `인쇄 실패: ${msg}`;
-      }
+      await runBrowserPrint(services, 'print');
     },
   },
   {

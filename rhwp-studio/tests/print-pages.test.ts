@@ -5,6 +5,9 @@ import {
   buildPrintStyleText,
   createPrintPage,
   namespaceSvgReferenceValue,
+  PDF_PRINT_GUIDANCE,
+  printProgressText,
+  printReadyText,
   pxToPrintMm,
 } from '../src/command/print-pages.ts';
 
@@ -58,4 +61,18 @@ test('namespaceSvgReferenceValue는 SVG url/hash 참조를 페이지별 id로 �
     namespaceSvgReferenceValue('#body-clip-3', idMap),
     '#rhwp-print-page-2-body-clip-3',
   );
+});
+
+test('PDF 인쇄 의도는 준비 상태와 남은 브라우저 단계를 명확히 안내한다', () => {
+  assert.equal(printProgressText('pdf', 2, 7), 'PDF 준비 중… (2/7)');
+  assert.equal(
+    printReadyText('pdf'),
+    `PDF 준비 완료 — ${PDF_PRINT_GUIDANCE}`,
+  );
+  assert.match(PDF_PRINT_GUIDANCE, /대상 → PDF로 저장/);
+});
+
+test('일반 인쇄는 같은 진행 helper를 쓰되 PDF 안내를 표시하지 않는다', () => {
+  assert.equal(printProgressText('print', 1, 3), '인쇄 준비 중… (1/3)');
+  assert.equal(printReadyText('print'), '인쇄 준비 완료…');
 });
