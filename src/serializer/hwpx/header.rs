@@ -2173,10 +2173,12 @@ mod tests {
 
     #[test]
     fn tab_leader_str_emits_double_and_triple_line_types() {
-        // fill_type 9/10/11 이 "NONE" 으로 유실되지 않고 파서가 받는 문자열로 방출돼야 한다.
-        assert_eq!(tab_leader_str(9), "THIN_THICK");
-        assert_eq!(tab_leader_str(10), "THICK_THIN");
-        assert_eq!(tab_leader_str(11), "TRIM");
+        // fill_type 9/10/11 이 "NONE" 으로 유실되지 않고 OWPML LineType3 스펙 리터럴
+        // (Core XML schema.xml 335~349행)로 방출돼야 한다 (#2857). 파서는 옛 이름
+        // (THIN_THICK/THICK_THIN/TRIM)도 하위호환으로 계속 받는다.
+        assert_eq!(tab_leader_str(9), "SLIM_THICK");
+        assert_eq!(tab_leader_str(10), "THICK_SLIM");
+        assert_eq!(tab_leader_str(11), "SLIM_THICK_SLIM");
         assert_eq!(tab_leader_str(8), "DOUBLE_SLIM");
     }
 }
