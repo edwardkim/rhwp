@@ -3077,13 +3077,19 @@ impl DocumentCore {
 
             // [#2004] render-전용 정규화본(부동 이미지 스택 인라인 재분류) 우선. 원본 무손상.
             // 직접 필드 접근으로 disjoint-borrow 유지(이후 self.measured_* 가변 대입과 공존).
-            let norm = self.render_normalized.get(idx).and_then(|o| o.as_ref());
+            let source_revision = self.render_normalization.section_revisions[idx];
+            let norm = self
+                .render_normalization
+                .sections
+                .get(idx)
+                .and_then(|section| section.as_ref())
+                .filter(|section| section.source_revision == source_revision);
             let para_src: &[Paragraph] = match norm {
-                Some((p, _)) => &p[..],
+                Some(normalized) => &normalized.paragraphs[..],
                 None => &section.paragraphs[..],
             };
             let composed: &[ComposedParagraph] = match norm {
-                Some((_, c)) => &c[..],
+                Some(normalized) => &normalized.composed[..],
                 None => {
                     if idx < self.composed.len() {
                         &self.composed[idx][..]
@@ -3682,8 +3688,20 @@ impl DocumentCore {
     /// 글로벌 페이지 번호로 해당 페이지와 문단/구성 목록을 찾는다.
     /// [#2004] 섹션의 render-전용 문단 (부동 이미지 스택 재분류본, 없으면 원본).
     pub(crate) fn section_render_paragraphs(&self, sec_idx: usize) -> &[Paragraph] {
-        match self.render_normalized.get(sec_idx).and_then(|o| o.as_ref()) {
-            Some((paras, _)) => &paras[..],
+        let source_revision = self
+            .render_normalization
+            .section_revisions
+            .get(sec_idx)
+            .copied()
+            .unwrap_or(0);
+        match self
+            .render_normalization
+            .sections
+            .get(sec_idx)
+            .and_then(|section| section.as_ref())
+            .filter(|section| section.source_revision == source_revision)
+        {
+            Some(section) => &section.paragraphs[..],
             None => self
                 .document
                 .sections
@@ -3695,8 +3713,20 @@ impl DocumentCore {
 
     /// [#2004] 섹션의 render-전용 구성 (재분류본, 없으면 원본).
     pub(crate) fn section_render_composed(&self, sec_idx: usize) -> &[ComposedParagraph] {
-        match self.render_normalized.get(sec_idx).and_then(|o| o.as_ref()) {
-            Some((_, comp)) => &comp[..],
+        let source_revision = self
+            .render_normalization
+            .section_revisions
+            .get(sec_idx)
+            .copied()
+            .unwrap_or(0);
+        match self
+            .render_normalization
+            .sections
+            .get(sec_idx)
+            .and_then(|section| section.as_ref())
+            .filter(|section| section.source_revision == source_revision)
+        {
+            Some(section) => &section.composed[..],
             None => self.composed.get(sec_idx).map(|c| &c[..]).unwrap_or(&[]),
         }
     }
@@ -3705,9 +3735,21 @@ impl DocumentCore {
     /// 원본 `document`/`composed` 는 무손상(save 무결). paginate 시작 시 호출.
     pub(crate) fn compute_render_normalized(&mut self) {
         let sec_count = self.document.sections.len();
-        let mut out: Vec<Option<(Vec<Paragraph>, Vec<ComposedParagraph>)>> =
-            Vec::with_capacity(sec_count);
+        self.render_normalization
+            .section_revisions
+            .resize(sec_count, 0);
+        let mut previous = std::mem::take(&mut self.render_normalization.sections);
+        previous.resize_with(sec_count, || None);
+        let mut out = Vec::with_capacity(sec_count);
         for idx in 0..sec_count {
+            let source_revision = self.render_normalization.section_revisions[idx];
+            if previous[idx]
+                .as_ref()
+                .is_some_and(|section| section.source_revision == source_revision)
+            {
+                out.push(previous[idx].take());
+                continue;
+            }
             let section = &self.document.sections[idx];
             let pd = &section.section_def.page_def;
             let body_h_hu = pd.height as i32
@@ -3734,9 +3776,7 @@ impl DocumentCore {
                     _ => false,
                 })
             });
-            // [#2195] 중첩 표 스트레치 대상 검출 — 한글은 내부 표를 부모 셀
-            // 전폭으로 확장 배치한다 (76076 표325 근거설명 셀 오라클 + pad 사다리).
-            // 렌더 전용 사본에서 폭을 확장해 measure/cut/render 전 경로 일원 정합.
+            // [#2195] Stage 4 전까지 기존 clone 기반 stretch를 보존한다.
             let has_nested_stretch = section.paragraphs.iter().any(|p| {
                 p.controls.iter().any(|ctrl| match ctrl {
                     Control::Table(table) => table.cells.iter().any(|cell| {
@@ -3813,9 +3853,13 @@ impl DocumentCore {
                     }
                 })
                 .collect();
-            out.push(Some((np, nc)));
+            out.push(Some(super::super::RenderNormalizedSection {
+                source_revision,
+                paragraphs: std::sync::Arc::new(np),
+                composed: std::sync::Arc::new(nc),
+            }));
         }
-        self.render_normalized = out;
+        self.render_normalization.sections = out;
     }
 
     /// [#2308] 구조가 안정적인 deferred 셀 편집의 logical path revision을 올린다.
@@ -3926,89 +3970,6 @@ impl DocumentCore {
             .or_insert(0);
         *revision = revision.wrapping_add(1);
         Ok(())
-    }
-
-    /// [#2214/#2195] deferred 셀 편집 뒤 render 전용 정규화본의 동일 문단을 갱신한다.
-    ///
-    /// `render_normalized`는 pagination 시 원본 문단을 복제하므로 pagination을 지연하는
-    /// 편집에서는 별도 coherence가 필요하다. 상위 문단/소유 표/셀의 주소는 보존하고
-    /// 편집된 내부 문단만 교체해 unrelated cell cache를 유지한다. 새 문단에 포함된
-    /// 비-TAC 중첩 표에는 #2195 stretch를 다시 적용한다.
-    #[allow(clippy::too_many_arguments)]
-    pub(crate) fn refresh_render_normalized_cell_paragraph_after_edit(
-        &mut self,
-        section_idx: usize,
-        parent_para_idx: usize,
-        control_idx: usize,
-        cell_idx: usize,
-        cell_para_idx: usize,
-        source_para: Paragraph,
-        local_contribution_before: bool,
-        local_contribution_after: bool,
-    ) {
-        let Some(Some((paragraphs, _))) = self.render_normalized.get_mut(section_idx) else {
-            return;
-        };
-        let Some(parent_para) = paragraphs.get_mut(parent_para_idx) else {
-            return;
-        };
-        let Some(control) = parent_para.controls.get_mut(control_idx) else {
-            return;
-        };
-
-        match control {
-            Control::Table(table) if cell_idx == 65534 => {
-                let Some(caption) = table.caption.as_mut() else {
-                    return;
-                };
-                let Some(target_para) = caption.paragraphs.get_mut(cell_para_idx) else {
-                    return;
-                };
-                *target_para = source_para;
-            }
-            Control::Table(table) => {
-                {
-                    let Some(cell) = table.cells.get_mut(cell_idx) else {
-                        return;
-                    };
-                    let Some(target_para) = cell.paragraphs.get_mut(cell_para_idx) else {
-                        return;
-                    };
-                    *target_para = source_para;
-                }
-                let cell = &table.cells[cell_idx];
-                self.layout_engine.invalidate_cell_units_after_text_insert(
-                    cell,
-                    table,
-                    local_contribution_before,
-                    local_contribution_after,
-                );
-            }
-            Control::Shape(shape) => {
-                let Some(textbox) = super::super::helpers::get_textbox_from_shape_mut(shape) else {
-                    return;
-                };
-                let Some(target_para) = textbox.paragraphs.get_mut(cell_para_idx) else {
-                    return;
-                };
-                *target_para = source_para;
-            }
-            Control::Picture(picture) => {
-                let Some(caption) = picture.caption.as_mut() else {
-                    return;
-                };
-                let Some(target_para) = caption.paragraphs.get_mut(cell_para_idx) else {
-                    return;
-                };
-                *target_para = source_para;
-            }
-            _ => return,
-        }
-
-        // 교체한 원본 문단 안의 nested table은 아직 저장 폭이므로 정규화본의 나머지와
-        // 동일하게 #2195 비-TAC stretch를 재적용한다. 이미 stretch된 sibling은 폭 비교
-        // 가드로 그대로 유지된다.
-        stretch_nested_tables_to_parent_cell(parent_para);
     }
 
     pub(crate) fn find_page(
@@ -5410,7 +5371,8 @@ fn format_line_seg_brief(para: Option<&Paragraph>) -> String {
 }
 
 /// [#2195] 중첩 표를 부모 셀 전폭으로 스트레치 (렌더 전용 사본에서만 호출).
-/// 한글은 내부 표의 저장 폭이 부모 셀보다 좁아도 부모 셀 전폭 기준으로 재래핑한다.
+///
+/// Stage 4에서 이 mutable clone 변환을 logical-path sparse overlay로 교체한다.
 fn stretch_nested_tables_to_parent_cell(p: &mut Paragraph) {
     for ctrl in p.controls.iter_mut() {
         if let Control::Table(table) = ctrl {
@@ -5422,10 +5384,6 @@ fn stretch_nested_tables_to_parent_cell(p: &mut Paragraph) {
                 for cp in cell.paragraphs.iter_mut() {
                     for c2 in cp.controls.iter_mut() {
                         if let Control::Table(nested) = c2 {
-                            // [#2195 stage60] TAC(글자처럼) 중첩 표는 인라인 개체 —
-                            // 스트레치 제외. hcar-001 4x1 동의 표 한컴 PDF 590.7px
-                            // = 원폭 유지(#1195 rect 오라클); 스트레치 대상(근거설명
-                            // 계열)은 비-TAC.
                             if nested.common.treat_as_char {
                                 continue;
                             }
@@ -5459,6 +5417,38 @@ mod tests {
     #[test]
     fn issue_2308_document_core_remains_send() {
         assert_send::<DocumentCore>();
+    }
+
+    #[test]
+    fn issue_2308_stable_compat_projection_reuses_arc_identity() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("samples/issue2004_cell_image_stack.hwp");
+        let bytes = std::fs::read(path).expect("read #2004 fixture");
+        let mut document =
+            crate::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse #2004 fixture");
+        let first = document
+            .render_normalization
+            .sections
+            .iter()
+            .flatten()
+            .next()
+            .map(|section| std::sync::Arc::clone(&section.paragraphs))
+            .expect("#2004 compatibility projection");
+
+        document.compute_render_normalized();
+
+        let second = document
+            .render_normalization
+            .sections
+            .iter()
+            .flatten()
+            .next()
+            .map(|section| std::sync::Arc::clone(&section.paragraphs))
+            .expect("stable #2004 compatibility projection");
+        assert!(
+            std::sync::Arc::ptr_eq(&first, &second),
+            "same section revision must reuse the immutable compatibility projection"
+        );
     }
 
     #[test]

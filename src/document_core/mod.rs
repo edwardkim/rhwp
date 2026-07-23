@@ -47,10 +47,17 @@ pub(crate) struct TableTransposeClipboard {
     pub(crate) data: TableTransposeData,
 }
 
+pub(crate) struct RenderNormalizedSection {
+    pub(crate) source_revision: u64,
+    pub(crate) paragraphs: Arc<Vec<Paragraph>>,
+    pub(crate) composed: Arc<Vec<ComposedParagraph>>,
+}
+
 #[derive(Default)]
 pub(crate) struct RenderNormalizationState {
     pub(crate) document_epoch: u64,
     pub(crate) section_revisions: Vec<u64>,
+    pub(crate) sections: Vec<Option<RenderNormalizedSection>>,
     pub(crate) path_revisions: HashMap<RenderPath, u64>,
     pub(crate) overlay: Arc<RenderNormalizationOverlay>,
 }
@@ -71,15 +78,6 @@ pub struct DocumentCore {
     /// [#2004] 부동(tac=false) 전면 이미지 스택을 인라인(tac=true)으로 재분류한 render-전용
     /// 문단/구성. 섹션별 Some 이면 pagination·layout 이 원본 대신 이 정규화본을 사용한다.
     /// **원본 `document` 는 무손상** → 직렬화(save) 정합 유지. paginate 시 재계산.
-    pub(crate) render_normalized: Vec<
-        Option<(
-            Vec<crate::model::paragraph::Paragraph>,
-            Vec<ComposedParagraph>,
-        )>,
-    >,
-    /// [#2308] render-only 파생 상태의 revision ledger와 희소 overlay 기반.
-    ///
-    /// Stage 3에서 #2004 projection, Stage 4에서 #2195 소비 경로를 이 상태로 이전한다.
     pub(crate) render_normalization: RenderNormalizationState,
     /// DPI
     pub(crate) dpi: f64,
@@ -269,7 +267,6 @@ impl DocumentCore {
             pagination: Vec::new(),
             styles: ResolvedStyleSet::default(),
             composed: Vec::new(),
-            render_normalized: Vec::new(),
             render_normalization: RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,
             fallback_font: DEFAULT_FALLBACK_FONT.to_string(),

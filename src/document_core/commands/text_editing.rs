@@ -870,7 +870,7 @@ impl DocumentCore {
             None,
         );
 
-        let (flow_advance_after, local_contribution_after, cell_para_after) = {
+        let (flow_advance_after, local_contribution_after) = {
             let cell_para_after = self
                 .get_cell_paragraph_ref(
                     section_idx,
@@ -887,14 +887,13 @@ impl DocumentCore {
                 crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                     cell_para_after,
                 ),
-                cell_para_after.clone(),
             )
         };
         let cell_flow_changed = flow_advance_before != flow_advance_after;
 
         // Table의 일반 cell만 pointer-key layout cache의 owner다. 표 캡션 sentinel과
         // Shape/Picture 텍스트 경로에는 cell_units cache가 없으므로 적용하지 않는다.
-        if cell_idx != 65534 {
+        if cell_idx != super::super::TABLE_CAPTION_CELL_SENTINEL {
             let control = &self.document.sections[section_idx].paragraphs[parent_para_idx].controls
                 [control_idx];
             if let Control::Table(table) = control {
@@ -909,25 +908,29 @@ impl DocumentCore {
             }
         }
 
-        // [#2214/#2195] paginate 시 생성된 render_normalized는 원본 IR의 파생
-        // 복사본이다. deferred edit은 pagination을 실행하지 않으므로 원본만 바꾸면
-        // page tree가 편집 전 복사본을 계속 읽는다. 편집된 cell paragraph만 같은
-        // normalized path에 반영하고 그 복사본의 pointer-key cache도 국소 제거한다.
-        if !paginate_immediately {
-            self.refresh_render_normalized_cell_paragraph_after_edit(
-                section_idx,
-                parent_para_idx,
-                control_idx,
-                cell_idx,
-                cell_para_idx,
-                cell_para_after,
-                local_contribution_before,
-                local_contribution_after,
-            );
-        }
+        // [#2308] editable IR이 단일 권위 상태다. clone paragraph를 mirror하지 않고
+        // 명시적 logical path revision만 갱신한다. #2004 호환 projection이 있는
+        // 섹션은 transient render 전에 해당 revision으로 재파생한다.
+        let refresh_compat_projection = !paginate_immediately
+            && self
+                .render_normalization
+                .sections
+                .get(section_idx)
+                .is_some_and(|section| section.is_some());
+        self.mark_render_normalization_path_dirty(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        )?;
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변, section dirty만 설정)
         self.document.sections[section_idx].raw_stream = None;
-        self.mark_section_dirty(section_idx);
+        if refresh_compat_projection {
+            self.invalidate_render_normalization_section(section_idx);
+            self.compute_render_normalized();
+        }
+        self.mark_section_pagination_dirty(section_idx);
         self.invalidate_page_tree_cache_from(0);
         if paginate_immediately {
             self.paginate_if_needed();
