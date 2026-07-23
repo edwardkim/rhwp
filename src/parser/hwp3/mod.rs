@@ -455,24 +455,47 @@ fn apply_hwp3_encrypted_flag(
     }
 }
 
-fn hwp3_default_endnote_shape(bracket: bool) -> crate::model::footnote::FootnoteShape {
+fn hwp3_default_endnote_shape(doc_info: &Hwp3DocInfo) -> crate::model::footnote::FootnoteShape {
     use crate::model::footnote::{
         FootnoteNumbering, FootnotePlacement, FootnoteShape, NumberFormat,
     };
 
+    // [통합] 각주 관련 doc_info 필드가 여러 PR 에서 각각 배선되며 이 함수의 시그니처를
+    // 서로 다르게 고쳐 충돌했다. doc_info 전체를 받아 필드별 배선을 한곳에 모은다.
+    // offset 104 line_margin → separator_margin_top(0 이면 864), offset 105 text_margin →
+    // note_spacing(0 이면 576), offset 108 between_margin → raw_unknown,
+    // offset 110 bracket → suffix_char.
+
+    let separator_margin_top = if doc_info.footnote_line_margin != 0 {
+        (doc_info.footnote_line_margin as i16).saturating_mul(4)
+    } else {
+        864
+    };
+    let note_spacing = if doc_info.footnote_text_margin != 0 {
+        (doc_info.footnote_text_margin as i16).saturating_mul(4)
+    } else {
+        576
+    };
+
     let mut shape = FootnoteShape {
         number_format: NumberFormat::Digit,
-        // doc_info offset 110 "각주 옵션": ')' = 번호에 ')' 붙임, 0 = 안 붙임.
-        // 파싱만 되고(footnote_bracket) 항상 ')' 로 하드코딩되어 옵션을 끈 문서도
-        // ')' 가 표시되던 문제.
-        suffix_char: if bracket { ')' } else { '\0' },
+        // offset 110 "각주 옵션"(footnote_bracket): 파싱만 되고 항상 ')' 로 하드코딩돼
+        // 옵션을 끈 문서도 ')' 가 표시됐다. (#3021)
+        suffix_char: if doc_info.footnote_bracket != 0 {
+            ')'
+        } else {
+            '\0'
+        },
         start_number: 1,
-        separator_margin_top: 864,
-        note_spacing: 576,
+        separator_margin_top,
+        note_spacing,
         separator_line_width: 1,
         separator_color: 0x00000000,
         numbering: FootnoteNumbering::Continue,
         placement: FootnotePlacement::EachColumn,
+        // offset 108 "각주 사이 간격"(footnote_between_margin)이 파싱만 되고 raw_unknown 에
+        // 배선되지 않아 항상 0으로 렌더됐다. (#3032)
+        raw_unknown: doc_info.footnote_between_margin,
         ..Default::default()
     };
     shape.attr = shape.encode_attr();
@@ -3354,7 +3377,7 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     super::populate_link_image_paths(&mut doc);
 
     crate::parser::assign_auto_numbers(&mut doc);
-    fixup_hwp3_notes(&mut doc, doc_info.footnote_bracket != 0);
+    fixup_hwp3_notes(&mut doc, &doc_info);
     fixup_hwp3_outline_fields(&mut doc);
     fixup_hwp3_picture_numbers(&mut doc);
     fixup_hwp3_outline_bullets(&mut doc);
@@ -3370,7 +3393,7 @@ struct Hwp3NoteFixupState {
     has_endnote: bool,
 }
 
-fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, footnote_bracket: bool) {
+fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, doc_info: &Hwp3DocInfo) {
     let para_shapes = doc.doc_info.para_shapes.clone();
     let mut state = Hwp3NoteFixupState {
         footnote_number: doc.doc_properties.footnote_start_num.max(1),
@@ -3386,7 +3409,7 @@ fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, footnote_bracket
 
     if state.has_endnote {
         for section in &mut doc.sections {
-            section.section_def.endnote_shape = hwp3_default_endnote_shape(footnote_bracket);
+            section.section_def.endnote_shape = hwp3_default_endnote_shape(doc_info);
             ensure_hwp3_initial_body_column_def(&mut section.paragraphs);
             let page_def = &section.section_def.page_def;
             let body_width_hu = page_def
@@ -4021,11 +4044,43 @@ mod tests {
     fn issue_hwp3_endnote_suffix_char_wires_footnote_bracket_flag() {
         // doc_info offset 110 "각주 옵션" footnote_bracket 이 파싱만 되고 항상 ')' 로
         // 하드코딩되어, 옵션을 끈(footnote_bracket=0) 문서도 미주 번호에 ')' 가 붙던 문제.
-        let on = hwp3_default_endnote_shape(true);
+        let on = hwp3_default_endnote_shape(&Hwp3DocInfo {
+            footnote_bracket: 1,
+            ..Default::default()
+        });
         assert_eq!(on.suffix_char, ')');
 
-        let off = hwp3_default_endnote_shape(false);
+        let off = hwp3_default_endnote_shape(&Hwp3DocInfo {
+            footnote_bracket: 0,
+            ..Default::default()
+        });
         assert_eq!(off.suffix_char, '\0');
+
+        // between_margin(#3032) → raw_unknown
+        let bm = hwp3_default_endnote_shape(&Hwp3DocInfo {
+            footnote_bracket: 1,
+            footnote_between_margin: 720,
+            ..Default::default()
+        });
+        assert_eq!(bm.raw_unknown, 720);
+
+        // line_margin(#3048) → separator_margin_top (0 이면 864)
+        let lm = hwp3_default_endnote_shape(&Hwp3DocInfo {
+            footnote_line_margin: 50,
+            ..Default::default()
+        });
+        assert_eq!(lm.separator_margin_top, 200);
+        let lm0 = hwp3_default_endnote_shape(&Hwp3DocInfo::default());
+        assert_eq!(lm0.separator_margin_top, 864);
+
+        // text_margin(#3054) → note_spacing (0 이면 576)
+        let tm = hwp3_default_endnote_shape(&Hwp3DocInfo {
+            footnote_text_margin: 100,
+            ..Default::default()
+        });
+        assert_eq!(tm.note_spacing, 400);
+        let tm0 = hwp3_default_endnote_shape(&Hwp3DocInfo::default());
+        assert_eq!(tm0.note_spacing, 576);
     }
 
     #[test]
