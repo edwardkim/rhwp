@@ -1078,7 +1078,12 @@ fn parse_polygon_shape_data(data: &[u8], poly: &mut PolygonShape) {
 /// hwplib: INT32 count + (INT32 x, INT32 y) × count + BYTE[count-1] segment_types + skip(4)
 fn parse_curve_shape_data(data: &[u8], curve: &mut CurveShape) {
     let mut r = ByteReader::new(data);
-    let cnt = r.read_i32().unwrap_or(0) as usize;
+    // count(INT32)는 파일에서 온 부호 있는 값이다. 음수(예: -1 = 0xFFFFFFFF)를
+    // 검증 없이 `as usize` 로 캐스팅하면 부호 확장으로 usize::MAX 근처의 거대한
+    // 값이 되어 아래 루프가 사실상 종료되지 않는(수십억 회) DoS 를 유발한다.
+    // 캐스팅 전에 음수를 0(빈 곡선)으로 처리한다. (#3012 다각형과 동일 클래스)
+    let cnt_raw = r.read_i32().unwrap_or(0);
+    let cnt = if cnt_raw < 0 { 0 } else { cnt_raw as usize };
     curve.points.clear();
     for _ in 0..cnt {
         let x = r.read_i32().unwrap_or(0);
@@ -1128,6 +1133,29 @@ mod task195_tests {
             connector.control_points.is_empty(),
             "남은 바이트가 없으므로 제어점은 비어야 함: {}",
             connector.control_points.len()
+        );
+    }
+
+    #[test]
+    fn curve_point_count_negative_is_treated_as_zero() {
+        // count(INT32)에 음수(-1 = 0xFFFFFFFF)를 넣으면 as usize 부호확장으로
+        // usize::MAX 근처의 거대한 값이 되어 `for _ in 0..cnt` 및
+        // `for _ in 0..(cnt - 1)` 루프가 사실상 종료되지 않는(수십억 회) DoS 를
+        // 유발한다. 음수 count 는 빈 곡선으로 처리되어야 한다. (#3012 다각형과 동일 클래스)
+        let mut data = Vec::new();
+        data.extend_from_slice(&(-1i32).to_le_bytes()); // count (악성)
+
+        let mut curve = CurveShape::default();
+        parse_curve_shape_data(&data, &mut curve);
+        assert!(
+            curve.points.is_empty(),
+            "음수 count는 빈 점 목록으로 처리되어야 함: {}",
+            curve.points.len()
+        );
+        assert!(
+            curve.segment_types.is_empty(),
+            "음수 count는 빈 세그먼트 목록으로 처리되어야 함: {}",
+            curve.segment_types.len()
         );
     }
 
