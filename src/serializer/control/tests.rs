@@ -967,7 +967,11 @@ fn char_overlap_non_bmp_char_roundtrip() {
     let Control::CharOverlap(r) = parsed else {
         panic!("CharOverlap 이 아님");
     };
-    assert_eq!(r.chars, vec!['\u{1D400}'], "비BMP 문자가 왕복 보존되어야 함");
+    assert_eq!(
+        r.chars,
+        vec!['\u{1D400}'],
+        "비BMP 문자가 왕복 보존되어야 함"
+    );
     assert_eq!(r.char_shape_ids, vec![3]);
 }
 
