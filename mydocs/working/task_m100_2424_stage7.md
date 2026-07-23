@@ -64,18 +64,18 @@ HWP 기준 수정 후 영문 stable operation은 p50 45.4ms, p95 46.5ms이고 IM
 ## 5. 후속 추적 판단
 
 - 상세 근거의 canonical 기록은 이 Stage G 문서와 최종 보고서로 둔다.
-- PR #3125에는 push 뒤 리뷰 후속 요약을 남기는 것이 좋다. 삭제·IME 누락 보정, B/C barrier,
-  IME `73ms→46~48ms`, 전체 게이트를 짧게 기록하면 reviewer가 최초 지적의 해소 여부를 바로
-  확인할 수 있다. 현재 PR 본문도 Stage F/G 이전 수치이므로 함께 갱신하는 편이 낫다.
+- PR #3125 본문과 리뷰 후속 코멘트에는 삭제·IME 누락 보정, B/C barrier,
+  IME `73ms→46~48ms`, 전체 게이트를 요약해 reviewer가 최초 지적의 해소 여부를 바로
+  확인할 수 있게 한다.
 - #2424 이슈에는 구현 중간 코멘트를 중복해서 남기지 않는다. PR이 merge될 때 최종 결과와 잔여
   후속 이슈 링크를 한 번 남긴 뒤 close하는 흐름이 적절하다.
 - #2193과 #2021은 이미 종료됐으므로 재개하지 않는다. 남은 일반 입력 병목인
-  `getCursorRectByPathNear()` p50 약 45ms는 새 성능 이슈로 분리하고 #2021, #2424, #2193을 관련
-  이슈로 연결한다.
+  `getCursorRectByPathNear()` p50 약 45ms는 [#3137](https://github.com/edwardkim/rhwp/issues/3137)로
+  분리하고 #2021, #2424, #2193을 관련 이슈로 연결했다.
 
-후속 이슈 후보:
+후속 이슈:
 
-- 제목: `perf: 거대 표 셀 입력의 cursor rect lookup을 frame budget 안으로 축소`
+- [#3137 perf: 거대 표 셀 입력의 cursor rect lookup을 frame budget 안으로 축소](https://github.com/edwardkim/rhwp/issues/3137)
 - 기준선: HWP cursor query p50 44.8ms, p95 45.6ms; stable operation p95 46.5ms
 - 후보: deferred mutation 응답의 cursor rect 동봉, focused-cell line layout cache, exact lookup의
   다음 frame 이전

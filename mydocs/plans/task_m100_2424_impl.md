@@ -153,3 +153,11 @@ revision/structure를 검증하고 descriptor 좌표로 immutable source를 재�
 - 경계 operation은 75.9~81.3ms에 반환했고 공개 pagination은 마지막 step 전까지 유지됐다.
 - 완료 뒤 model/tree/layout/cursor/caret, 115쪽, 113 changed cuts와 page 0 PNG가 exact했다.
 - 전체 Rust/Studio 회귀, wasm32와 production WASM/Studio build가 통과했다.
+
+## 5. 리뷰 후속과 잔여 성능 추적
+
+- flat 셀 삭제와 IME의 delete+insert 경로를 deferred/resumable pagination에 연결했다.
+- pending page count/final-only publish와 저장·인쇄 동기 barrier를 HWP/HWPX 브라우저에서 검증했다.
+- IME 조합 anchor rect 재조회 캐시로 stable IME를 영문과 같은 46~50ms 수준으로 낮췄다.
+- 공통 `getCursorRectByPathNear()` 병목은 이 구현 범위와 분리해
+  [#3137](https://github.com/edwardkim/rhwp/issues/3137)에서 frame-budget 목표로 추적한다.

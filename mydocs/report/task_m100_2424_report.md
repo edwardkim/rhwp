@@ -91,8 +91,9 @@ long task를 해소할 수 없어 다음 계층으로 구현했다.
 - Enter는 `splitParagraphInCell` 구조 편집이므로 삭제·IME 보정에 포함하지 않았다. 구조 fingerprint와
   undo/selection 계약을 별도로 설계한 뒤 후속 최적화로 다룬다.
 - 일반 영문과 IME에 공통으로 남은 `getCursorRectByPathNear()`는 HWP p50 44.8ms, p95 45.6ms로
-  stable operation의 지배 항이다. 종료된 #2021/#2193을 다시 열기보다 별도 후속 성능 이슈로
-  분리해 deferred mutation cursor 결과나 focused-cell layout cache를 검토한다.
+  stable operation의 지배 항이다. 종료된 #2021/#2193을 다시 열지 않고
+  [#3137](https://github.com/edwardkim/rhwp/issues/3137)로 분리해 deferred mutation cursor 결과나
+  focused-cell layout cache를 검토한다.
 
-현재 fast path 대상인 이슈 fixture의 완료 조건은 모두 만족한다. 원격 push, PR 생성과 이슈 상태 변경은
-작업지시자 승인 전에는 수행하지 않는다.
+현재 fast path 대상인 이슈 fixture의 완료 조건은 모두 만족한다. 구현과 보정은 PR #3125에서 검토하고,
+공통 cursor lookup 최적화는 #3137에서 독립적으로 추적한다.
