@@ -934,6 +934,8 @@ fn write_numbering<W: Write>(
         // [#2947] h.number_format 을 무시하고 "DIGIT" 로 고정 방출하면 HWP5 경유
         // 저장 시 로마자/한글/원문자 등 문단 번호 형식이 전부 아라비아 숫자로 뒤바뀐다.
         let num_format = numbering_format_str(h.number_format);
+        let text_offset_s = h.text_distance.to_string();
+        let char_pr_id_ref_s = h.char_shape_id.to_string();
         empty_tag(
             w,
             "hh:paraHead",
@@ -945,9 +947,9 @@ fn write_numbering<W: Write>(
                 ("autoIndent", "1"),
                 ("widthAdjust", &wa),
                 ("textOffsetType", "PERCENT"),
-                ("textOffset", "50"),
+                ("textOffset", &text_offset_s),
                 ("numFormat", num_format),
-                ("charPrIDRef", &u32::MAX.to_string()),
+                ("charPrIDRef", &char_pr_id_ref_s),
                 ("checkable", "0"),
             ],
         )?;
@@ -2275,6 +2277,30 @@ mod tests {
         assert!(
             xml.contains(r#"numFormat="ROMAN_CAPITAL""#),
             "level 1 paraHead 는 number_format=2 를 ROMAN_CAPITAL 로 방출해야 한다: {xml}"
+        );
+    }
+
+    #[test]
+    fn write_numbering_skeleton_preserves_text_distance_and_char_shape_id() {
+        // HWP5 경로(raw_para_heads 없음)에서 NumberingHead.text_distance /
+        // char_shape_id 는 DocInfo 파서가 실제 값으로 채워 넣는 필드인데,
+        // 폴백 스켈레톤이 textOffset="50" / charPrIDRef=u32::MAX 로 하드코딩해
+        // 유실시키면 안 된다 (write_bullet 의 대응 필드 처리와 대칭이어야 함).
+        let mut n = Numbering::default();
+        n.heads[0].text_distance = 130;
+        n.heads[0].char_shape_id = 7;
+
+        let mut writer = Writer::new(Vec::new());
+        write_numbering(&mut writer, 0, &n).unwrap();
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(r#"textOffset="130""#),
+            "text_distance 유실: {xml}"
+        );
+        assert!(
+            xml.contains(r#"charPrIDRef="7""#),
+            "char_shape_id 유실: {xml}"
         );
     }
 
