@@ -41,11 +41,11 @@ fn main() {
         Some("export-hwpx") => exit_with(export_hwpx(&args[2..])),
         Some("export-hml") => export_hml(&args[2..]),
         Some("info") => show_info(&args[2..]),
-        Some("dump") => dump_controls(&args[2..]),
+        Some("dump") => exit_with(dump_controls(&args[2..])),
         Some("dump-note-shape") => dump_note_shape(&args[2..]),
         Some("dump-endnote-lines") => dump_endnote_lines(&args[2..]),
         Some("dump-pages") => dump_pages(&args[2..]),
-        Some("diag") => diag_document(&args[2..]),
+        Some("diag") => exit_with(diag_document(&args[2..])),
         Some("convert") => exit_with(convert_hwp(&args[2..])),
         Some("build-from-ingest") => build_from_ingest(&args[2..]),
         Some("hwp5-inventory") => rhwp::diagnostics::hwp5_inventory::run(&args[2..]),
@@ -3005,13 +3005,13 @@ fn brief_text(text: &str, max_chars: usize) -> String {
     out
 }
 
-fn dump_controls(args: &[String]) {
+fn dump_controls(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("오류: 문서 파일 경로를 지정해주세요.");
         eprintln!(
             "사용법: rhwp dump <파일.hwp|파일.hwpx|파일.hml> [--section <번호>] [--para <번호>]"
         );
-        return;
+        return EXIT_USAGE;
     }
 
     let file_path = &args[0];
@@ -3047,7 +3047,7 @@ fn dump_controls(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -3055,7 +3055,7 @@ fn dump_controls(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 문서 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -4228,13 +4228,15 @@ fn dump_controls(args: &[String]) {
             .map(|s| s.paragraphs.len())
             .sum::<usize>()
     );
+
+    EXIT_OK
 }
 
-fn diag_document(args: &[String]) {
+fn diag_document(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("오류: HWP 파일 경로를 지정해주세요.");
         eprintln!("사용법: rhwp diag <파일.hwp>");
-        return;
+        return EXIT_USAGE;
     }
 
     let file_path = &args[0];
@@ -4242,7 +4244,7 @@ fn diag_document(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -4250,7 +4252,7 @@ fn diag_document(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -4350,6 +4352,8 @@ fn diag_document(args: &[String]) {
             }
         }
     }
+
+    EXIT_OK
 }
 
 #[derive(Debug, Default, Clone, Copy)]
