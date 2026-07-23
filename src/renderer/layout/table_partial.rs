@@ -1801,6 +1801,7 @@ impl LayoutEngine {
             row_count,
             cell_spacing,
             self.dpi,
+            self.render_table_width_scale(table),
         );
 
         let table_width = row_col_x

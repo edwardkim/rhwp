@@ -27,8 +27,13 @@ fn issue_2308_uses_revision_overlay_without_clone_mirror() {
         "normalization mapping must use an explicit logical path contract"
     );
     assert!(
-        !rendering.contains("section.paragraphs.clone()"),
-        "render normalization must not clone an entire source section"
+        rendering.contains("source_revision"),
+        "compat projections must be revision keyed and reusable on stable input"
+    );
+    assert!(
+        !rendering.contains("has_nested_stretch")
+            && !rendering.contains("stretch_nested_tables_to_parent_cell"),
+        "#2195 nested-table normalization must use a sparse width overlay, not a section clone"
     );
     assert!(
         !rendering.contains("refresh_render_normalized_cell_paragraph_after_edit"),

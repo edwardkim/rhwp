@@ -980,6 +980,7 @@ impl LayoutEngine {
             row_count,
             cell_spacing,
             self.dpi,
+            self.render_table_width_scale(table),
         );
         let independent_col_row_y = if split_row_range.is_none() && !table.common.treat_as_char {
             let col_row_y = build_col_row_y_from_cell_heights(
@@ -1471,6 +1472,7 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         col_count: usize,
     ) -> Vec<f64> {
+        let width_scale = self.render_table_width_scale(table);
         // 1단계: col_span==1인 셀에서 개별 열 폭 추출
         let base_grid_outlier_rows = table.base_grid_outlier_rows();
         let mut col_widths = vec![0.0f64; col_count];
@@ -1481,7 +1483,7 @@ impl LayoutEngine {
                 continue;
             }
             if cell.col_span == 1 && (cell.col as usize) < col_count {
-                let w = hwpunit_to_px(cell.width as i32, self.dpi);
+                let w = hwpunit_to_px(cell.width as i32, self.dpi) * width_scale;
                 if w > col_widths[cell.col as usize] {
                     col_widths[cell.col as usize] = w;
                 }
@@ -1500,7 +1502,7 @@ impl LayoutEngine {
                 let c = cell.col as usize;
                 let span = cell.col_span as usize;
                 if span > 1 && c + span <= col_count {
-                    let total_w = hwpunit_to_px(cell.width as i32, self.dpi);
+                    let total_w = hwpunit_to_px(cell.width as i32, self.dpi) * width_scale;
                     if let Some(existing) = constraints.iter_mut().find(|x| x.0 == c && x.1 == span)
                     {
                         if total_w > existing.2 {
@@ -1565,7 +1567,7 @@ impl LayoutEngine {
             }
         }
         let target_width = if table.common.width > 0 {
-            hwpunit_to_px(table.common.width as i32, self.dpi)
+            hwpunit_to_px(table.common.width as i32, self.dpi) * width_scale
         } else {
             0.0
         };
@@ -1691,7 +1693,8 @@ impl LayoutEngine {
                     // 세로쓰기: line_seg.segment_width가 열의 세로 길이
                     self.calc_vertical_cell_content_height(&cell.paragraphs) + pad_top + pad_bottom
                 } else {
-                    let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi);
+                    let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi)
+                        * self.render_table_width_scale(table);
                     let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
                     let (line_based, object_based) = self.calc_cell_paragraphs_content_parts(
                         &cell.paragraphs,
@@ -4279,7 +4282,8 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> f64 {
         let measurer = super::super::height_measurer::HeightMeasurer::new(self.dpi)
-            .with_hwp3_variant(self.profile.get().hwp3_layout());
+            .with_hwp3_variant(self.profile.get().hwp3_layout())
+            .with_render_normalization(self.render_normalization_overlay());
         measurer.cell_controls_height(&cell.paragraphs, styles, 0, 0.0)
     }
 
@@ -5050,7 +5054,7 @@ impl LayoutEngine {
     ) -> Vec<CellUnit> {
         let (pad_left, pad_right, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
         let cell_w = if cell.width < 0x8000_0000 {
-            hwpunit_to_px(cell.width as i32, self.dpi)
+            hwpunit_to_px(cell.width as i32, self.dpi) * self.render_table_width_scale(table)
         } else {
             0.0
         };

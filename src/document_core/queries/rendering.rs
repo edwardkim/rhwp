@@ -2954,7 +2954,8 @@ impl DocumentCore {
         let profile = self.document.layout_profile();
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
-            .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before);
+            .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before)
+            .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay));
 
         if self.document.sections.is_empty() {
             self.pagination.clear();
@@ -3776,26 +3777,7 @@ impl DocumentCore {
                     _ => false,
                 })
             });
-            // [#2195] Stage 4 전까지 기존 clone 기반 stretch를 보존한다.
-            let has_nested_stretch = section.paragraphs.iter().any(|p| {
-                p.controls.iter().any(|ctrl| match ctrl {
-                    Control::Table(table) => table.cells.iter().any(|cell| {
-                        cell.width < 0x8000_0000
-                            && cell.paragraphs.iter().any(|cp| {
-                                cp.controls.iter().any(|c2| match c2 {
-                                    Control::Table(nested) => {
-                                        !nested.common.treat_as_char
-                                            && nested.common.width > 0
-                                            && (nested.common.width as u64) < cell.width as u64
-                                    }
-                                    _ => false,
-                                })
-                            })
-                    }),
-                    _ => false,
-                })
-            });
-            if matches.is_empty() && !has_cell_stack && !has_nested_stretch {
+            if matches.is_empty() && !has_cell_stack {
                 out.push(None);
                 continue;
             }
@@ -3803,11 +3785,6 @@ impl DocumentCore {
             if has_cell_stack {
                 for p in np.iter_mut() {
                     reclassify_cell_floating_stacks(p, min_height_hu);
-                }
-            }
-            if has_nested_stretch {
-                for p in np.iter_mut() {
-                    stretch_nested_tables_to_parent_cell(p);
                 }
             }
             for &i in &matches {
@@ -3860,6 +3837,14 @@ impl DocumentCore {
             }));
         }
         self.render_normalization.sections = out;
+        let overlay = std::sync::Arc::new(
+            crate::renderer::render_normalization::RenderNormalizationOverlay::from_document_reusing(
+                &self.document,
+                &self.render_normalization.overlay,
+            ),
+        );
+        self.render_normalization.overlay = std::sync::Arc::clone(&overlay);
+        self.layout_engine.set_render_normalization_overlay(overlay);
     }
 
     /// [#2308] 구조가 안정적인 deferred 셀 편집의 logical path revision을 올린다.
@@ -5367,42 +5352,6 @@ fn format_line_seg_brief(para: Option<&Paragraph>) -> String {
             last.column_start,
             last.segment_width
         )
-    }
-}
-
-/// [#2195] 중첩 표를 부모 셀 전폭으로 스트레치 (렌더 전용 사본에서만 호출).
-///
-/// Stage 4에서 이 mutable clone 변환을 logical-path sparse overlay로 교체한다.
-fn stretch_nested_tables_to_parent_cell(p: &mut Paragraph) {
-    for ctrl in p.controls.iter_mut() {
-        if let Control::Table(table) = ctrl {
-            for cell in table.cells.iter_mut() {
-                if cell.width >= 0x8000_0000 {
-                    continue;
-                }
-                let parent_w = cell.width as u64;
-                for cp in cell.paragraphs.iter_mut() {
-                    for c2 in cp.controls.iter_mut() {
-                        if let Control::Table(nested) = c2 {
-                            if nested.common.treat_as_char {
-                                continue;
-                            }
-                            let nw = nested.common.width as u64;
-                            if nw == 0 || nw >= parent_w {
-                                continue;
-                            }
-                            let scale = parent_w as f64 / nw as f64;
-                            nested.common.width = parent_w as u32;
-                            for nc in nested.cells.iter_mut() {
-                                if nc.width < 0x8000_0000 {
-                                    nc.width = (nc.width as f64 * scale).round() as u32;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 

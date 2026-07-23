@@ -59,6 +59,7 @@ pub(crate) fn build_row_col_x(
     row_count: usize,
     cell_spacing: f64,
     dpi: f64,
+    width_scale: f64,
 ) -> Vec<Vec<f64>> {
     use super::super::hwpunit_to_px;
     // 셀 너비 그리드 구축 (O(cells) 탐색 1회)
@@ -70,7 +71,7 @@ pub(crate) fn build_row_col_x(
             && (cell.row as usize) < row_count
         {
             cell_width_grid[cell.row as usize][cell.col as usize] =
-                Some(hwpunit_to_px(cell.width as i32, dpi));
+                Some(hwpunit_to_px(cell.width as i32, dpi) * width_scale);
         }
     }
     let mut base_rx = vec![0.0f64; col_count + 1];
@@ -84,7 +85,7 @@ pub(crate) fn build_row_col_x(
     }
 
     let target_total = if table.common.width > 0 {
-        hwpunit_to_px(table.common.width as i32, dpi)
+        hwpunit_to_px(table.common.width as i32, dpi) * width_scale
             + cell_spacing * col_count.saturating_sub(1) as f64
     } else {
         base_rx.last().copied().unwrap_or(0.0)
@@ -138,7 +139,7 @@ pub(crate) fn build_row_col_x(
                         if has_width_overrides {
                             (base_rx[end] - base_rx[c]).max(0.0)
                         } else {
-                            hwpunit_to_px(cell.width as i32, dpi)
+                            hwpunit_to_px(cell.width as i32, dpi) * width_scale
                         }
                     });
                 let end_x = cursor + cell_w;
@@ -1096,7 +1097,7 @@ mod tests {
         let col_widths =
             base_widths_hu.map(|width| crate::renderer::hwpunit_to_px(width as i32, DPI));
 
-        let row_col_x = build_row_col_x(&table, &col_widths, 3, 3, 0.0, DPI);
+        let row_col_x = build_row_col_x(&table, &col_widths, 3, 3, 0.0, DPI, 1.0);
         let expected_first_boundary = col_widths[0];
         let expected_last_width = col_widths[2];
 
