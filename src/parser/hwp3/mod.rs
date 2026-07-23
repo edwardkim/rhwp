@@ -1893,7 +1893,10 @@ fn parse_simple_control_char(
             char_offsets.push(utf16_len);
             utf16_len += 1;
             text_string.push('\u{FFFC}');
-            let name_buf = &buf[2..22];
+            // 스펙 §10.16 표 57: 필드 이름은 파일 오프셋 2..22 (= 추가로 읽은
+            // buf 의 [0..20]). 종전 buf[2..22] 는 이름 앞 2바이트를 유실하고
+            // 닫는 코드(0x0016)를 이름에 혼입시켰다.
+            let name_buf = &buf[0..20];
             let name = crate::parser::hwp3::encoding::decode_hwp3_string(name_buf)
                 .trim_end_matches('\0')
                 .to_string();
@@ -4427,4 +4430,78 @@ mod tests {
             paragraphs[0].text
         );
     }
+
+    /// 메일머지 표시(ch=22) 문단 바디를 만드는 헬퍼.
+    /// 스펙 §10.16 표 57: open(2) + kchar array[20] 필드 이름 + close(2) = 24바이트.
+    fn build_mail_merge_paragraph(name: &[u8]) -> Vec<u8> {
+        let mut body = Vec::new();
+        body.push(1u8); // follow_prev_para_shape (문단 모양 생략)
+        body.extend_from_slice(&12u16.to_le_bytes()); // char_count: 24바이트 = 12 hchar
+        body.extend_from_slice(&0u16.to_le_bytes()); // line_count = 0
+        body.push(0u8); // include_char_shape
+        body.push(0u8); // flags
+        body.extend_from_slice(&0u32.to_le_bytes()); // special_char_flags
+        body.push(0u8); // style_index
+        body.extend_from_slice(&[0u8; 31]); // rep_char_shape
+        assert_eq!(body.len(), 43);
+
+        body.extend_from_slice(&22u16.to_le_bytes()); // 여는 특수 문자 코드
+        let mut name_buf = [0u8; 20];
+        name_buf[..name.len()].copy_from_slice(name);
+        body.extend_from_slice(&name_buf); // 필드 이름 (파일 오프셋 2..22)
+        body.extend_from_slice(&22u16.to_le_bytes()); // 닫는 특수 문자 코드
+
+        // 문단 리스트 종료 (빈 문단, 43바이트)
+        body.push(0u8);
+        body.extend_from_slice(&0u16.to_le_bytes());
+        body.extend_from_slice(&[0u8; 40]);
+        body
+    }
+
+    // 스펙 §10.16 표 57: 메일머지 표시(ch=22)의 필드 이름은 여는 코드 바로 뒤
+    // (파일 오프셋 2..22, 즉 추가로 읽은 22바이트 buf 의 [0..20])에 있다.
+    // buf[2..22] 로 읽으면 이름 앞 2바이트가 유실되고 닫는 코드(0x0016)가
+    // 이름에 혼입된다.
+    #[test]
+    fn hwp3_mail_merge_field_name_starts_at_offset_zero() {
+        let body = build_mail_merge_paragraph(b"MERGEFIELD");
+        let mut body_cursor = Cursor::new(body.as_slice());
+        let mut doc_char_shapes = Vec::new();
+        let mut doc_para_shapes = Vec::new();
+        let mut doc_border_fills = Vec::new();
+        let mut doc_tab_defs = Vec::new();
+        let mut pic_name_to_id = std::collections::HashMap::new();
+
+        let paragraphs = parse_paragraph_list(
+            &mut body_cursor,
+            &mut doc_char_shapes,
+            &mut doc_para_shapes,
+            &mut doc_border_fills,
+            &mut doc_tab_defs,
+            &mut pic_name_to_id,
+            0,
+            1000,
+            1000,
+        )
+        .expect("메일머지(ch=22) 컨트롤을 포함한 문단 파싱 실패");
+
+        assert_eq!(paragraphs.len(), 1);
+        let field = paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|c| match c {
+                crate::model::control::Control::Field(f) => Some(f),
+                _ => None,
+            })
+            .expect("메일머지 Field 컨트롤이 생성되지 않음");
+        assert_eq!(
+            field.field_type,
+            crate::model::control::FieldType::MailMerge
+        );
+        assert_eq!(
+            field.command, "MERGEFIELD",
+            "필드 이름이 오프셋 +2 로 어긋나게 읽힘 (앞 2바이트 유실)"
+        );
+    }
+
 }
