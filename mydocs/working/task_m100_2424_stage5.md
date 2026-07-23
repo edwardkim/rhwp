@@ -47,6 +47,7 @@ IME/iOS stable smoke는 begin/step/flush가 모두 0회였고 pending descriptor
 | #2424 focused library tests | 5 passed |
 | #2214 library oracle | 9 passed |
 | `tests/issue_2214_page_local_repaint.rs` | 3 passed |
+| `tests/issue_2724_passthrough_invalidation_guard.rs` | 5 passed |
 | `wasm-pack build --target web --out-dir pkg --no-opt` | 통과 |
 | Studio `npm test` | 509 passed, 0 failed |
 | Studio `npm run build` | 통과 |
@@ -55,6 +56,11 @@ IME/iOS stable smoke는 begin/step/flush가 모두 0회였고 pending descriptor
 
 production build의 CanvasKit `fs`/`path` externalize와 500kB chunk 경고는 기존 경고이며 실패가 아니다.
 E2E PNG와 JSON은 ignored `output/poc/task2214/stage4`에 생성했고 소스 변경에는 포함하지 않았다.
+
+PR #3125의 첫 CI에서는 새 `pub fn(&mut self)` 네 개가 #2724 패스스루 무효화 가드에 미분류되어
+default-feature shard 8이 실패했다. 네 API는 편집 IR이 아니라 shadow pagination job, 측정·pagination
+cache와 직렬화 비대상 `Table::dirty`만 변경하므로 `Exempt::SessionState`에 근거와 함께 등재했다.
+실제 셀 편집의 `section.raw_stream` 무효화는 선행 text-editing 뮤테이터가 계속 담당한다.
 
 ## 4. 수용 판정
 

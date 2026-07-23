@@ -47,6 +47,8 @@ long task를 해소할 수 없어 다음 계층으로 구현했다.
 - Rust 전체 library: 2533 passed, 0 failed, 7 ignored.
 - Studio: 509 passed, production build 통과.
 - wasm32 check, wasm-pack web build, fmt, clippy, #2214 focused 회귀 통과.
+- PR #3125 CI 후속으로 #2724 패스스루 분류 가드에 pagination API 4개의 `SessionState` 근거를
+  등록했고, 해당 integration guard 5건을 통과했다.
 
 세부 수치와 단계별 계약은 다음 문서에 있다.
 
