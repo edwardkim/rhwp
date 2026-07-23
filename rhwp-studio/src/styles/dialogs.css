@@ -238,6 +238,26 @@
   font-size: var(--font-size-sm);
 }
 
+.dialog-pdf-preference {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.dialog-pdf-preference input {
+  margin: 0;
+}
+
+.dialog-pdf-preparing .dialog-pdf-summary,
+.dialog-pdf-preparing .dialog-pdf-guidance,
+.dialog-pdf-preparing .dialog-pdf-note,
+.dialog-pdf-preparing .dialog-pdf-preference,
+.dialog-pdf-preparing .dialog-footer {
+  display: none;
+}
+
 .dialog-pdf-progress {
   display: flex;
   flex-direction: column;

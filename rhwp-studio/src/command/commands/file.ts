@@ -44,6 +44,7 @@ import {
   type FileSystemWindowLike,
 } from '@/command/file-system-access';
 import { PdfPrintDialog } from '@/ui/pdf-print-dialog';
+import { userSettings } from '@/core/user-settings';
 import { showToast } from '@/ui/toast';
 import { clearRecentDocs, listRecentDocs, removeRecentDoc } from '@/recent/recent-store';
 import { openRecentEntry } from '@/recent/recent-open';
@@ -448,10 +449,18 @@ async function runPdfPrint(services: CommandServices): Promise<void> {
     const pageCount = wasm.pageCount;
     if (pageCount === 0) return;
 
-    dialog = new PdfPrintDialog(pageCount);
+    const showGuidance = userSettings.getShowPdfPrintGuidance();
+    dialog = new PdfPrintDialog(pageCount, showGuidance);
     dialogVisible = true;
-    const confirmed = await dialog.showAsync();
-    if (!confirmed) return;
+    const decision = await dialog.showAsync();
+    if (!decision.confirmed) return;
+    if (decision.hideFutureGuidance) {
+      try {
+        userSettings.setShowPdfPrintGuidance(false);
+      } catch (error) {
+        console.warn('[file:print-to-pdf] 안내 표시 설정을 저장하지 못했습니다:', error);
+      }
+    }
 
     const initialProgress = printProgressText('pdf', 0, pageCount);
     if (statusEl) statusEl.textContent = initialProgress;

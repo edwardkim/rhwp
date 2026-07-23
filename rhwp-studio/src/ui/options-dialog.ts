@@ -23,6 +23,7 @@ export class OptionsDialog extends ModalDialog {
   private recoveryIntervalInput!: HTMLInputElement;
   private idleSaveEnabledCheck!: HTMLInputElement;
   private idleDelayInput!: HTMLInputElement;
+  private pdfPrintGuidanceCheck!: HTMLInputElement;
 
   constructor(private readonly eventBus?: EventBus) {
     super('환경 설정', 480);
@@ -234,6 +235,7 @@ export class OptionsDialog extends ModalDialog {
   private createFilePanel(): HTMLElement {
     const panel = document.createElement('div');
     const autosave = userSettings.getAutosaveSettings();
+    const dialogSettings = userSettings.getDialogSettings();
 
     const saveSection = document.createElement('div');
     saveSection.className = 'dialog-section';
@@ -295,6 +297,37 @@ export class OptionsDialog extends ModalDialog {
     syncDisabled();
 
     panel.appendChild(saveSection);
+
+    const pdfSection = document.createElement('div');
+    pdfSection.className = 'dialog-section';
+
+    const pdfTitle = document.createElement('div');
+    pdfTitle.className = 'dialog-section-title';
+    pdfTitle.textContent = 'PDF 저장';
+    pdfSection.appendChild(pdfTitle);
+
+    const pdfDesc = document.createElement('p');
+    pdfDesc.className = 'opt-desc';
+    pdfDesc.textContent =
+      '안내를 끄면 PDF로 저장을 선택하는 즉시 문서 준비가 시작됩니다. 준비 진행률과 오류는 계속 표시됩니다.';
+    pdfSection.appendChild(pdfDesc);
+
+    const pdfRow = document.createElement('div');
+    pdfRow.className = 'dialog-row opt-row';
+
+    this.pdfPrintGuidanceCheck = document.createElement('input');
+    this.pdfPrintGuidanceCheck.type = 'checkbox';
+    this.pdfPrintGuidanceCheck.id = 'opt-pdf-print-guidance';
+    this.pdfPrintGuidanceCheck.checked = dialogSettings.showPdfPrintGuidance;
+
+    const pdfLabel = document.createElement('label');
+    pdfLabel.htmlFor = 'opt-pdf-print-guidance';
+    pdfLabel.textContent = 'PDF로 저장할 때 저장 방법 안내 표시';
+
+    pdfRow.append(this.pdfPrintGuidanceCheck, pdfLabel);
+    pdfSection.appendChild(pdfRow);
+    panel.appendChild(pdfSection);
+
     return panel;
   }
 
@@ -310,6 +343,7 @@ export class OptionsDialog extends ModalDialog {
       idleSaveEnabled: this.idleSaveEnabledCheck.checked,
       idleDelaySeconds: clampInteger(this.idleDelayInput.value, 10, 5, 600),
     });
+    userSettings.setShowPdfPrintGuidance(this.pdfPrintGuidanceCheck.checked);
     this.eventBus?.emit('autosave-settings-changed', { source: 'options-dialog' });
   }
 }

@@ -26,6 +26,7 @@ async function installPrintCapture(page) {
       sentinelHandle,
       sawPdfConfirmDialog: false,
       sawPdfProgress: false,
+      guidanceVisibleDuringProgress: false,
       before: {
         fileName: window.__wasm.fileName,
         isDirty: window.__documentState.isDirty(),
@@ -36,12 +37,21 @@ async function installPrintCapture(page) {
     const dialogObserver = new MutationObserver(() => {
       const dialog = document.querySelector('[data-testid="pdf-print-dialog"]');
       const dialogText = dialog?.textContent || '';
-      if (dialogText.includes('PDF로 저장') && dialogText.includes('인쇄 창')) {
+      const guidance = dialog?.querySelector('.dialog-pdf-guidance');
+      const guidanceVisible = guidance
+        && getComputedStyle(guidance).display !== 'none'
+        && getComputedStyle(guidance).visibility !== 'hidden';
+      if (
+        dialogText.includes('PDF로 저장')
+        && dialogText.includes('인쇄 창')
+        && guidanceVisible
+      ) {
         window.__issue3126.sawPdfConfirmDialog = true;
       }
       const progress = document.querySelector('[data-testid="pdf-print-progress"]');
       if (progress && !progress.hidden && (progress.textContent || '').includes('PDF 준비 중')) {
         window.__issue3126.sawPdfProgress = true;
+        window.__issue3126.guidanceVisibleDuringProgress ||= Boolean(guidanceVisible);
       }
     });
     dialogObserver.observe(document.body, {
@@ -77,6 +87,8 @@ async function installPrintCapture(page) {
                 statusAtPrint: document.getElementById('sb-message')?.textContent || '',
                 sawPdfConfirmDialog: window.__issue3126.sawPdfConfirmDialog,
                 sawPdfProgress: window.__issue3126.sawPdfProgress,
+                guidanceVisibleDuringProgress:
+                  window.__issue3126.guidanceVisibleDuringProgress,
                 pdfDialogVisibleAtPrint:
                   Boolean(document.querySelector('[data-testid="pdf-print-dialog"]')),
                 title: printDocument.title,
@@ -125,23 +137,32 @@ async function clickPdfMenuItem(page) {
   });
 }
 
-async function confirmPdfDialog(page) {
+async function confirmPdfDialog(page, { hideFutureGuidance = false } = {}) {
   await page.waitForSelector('[data-testid="pdf-print-dialog"]', { timeout: 10_000 });
-  return page.evaluate(() => {
+  return page.evaluate((shouldHideFutureGuidance) => {
     const dialog = document.querySelector('[data-testid="pdf-print-dialog"]');
     const primary = dialog?.closest('.dialog-wrap')?.querySelector('.dialog-btn-primary');
+    const hideGuidanceCheck = dialog?.querySelector(
+      '[data-testid="pdf-print-hide-guidance"]',
+    );
     if (!(primary instanceof HTMLButtonElement)) {
       return { ok: false, reason: 'PDF 확인 버튼 없음', text: dialog?.textContent || '' };
+    }
+    if (shouldHideFutureGuidance && hideGuidanceCheck instanceof HTMLInputElement) {
+      hideGuidanceCheck.click();
     }
     const result = {
       ok: true,
       reason: '',
       text: dialog?.textContent || '',
       primaryLabel: primary.textContent || '',
+      hasHideFutureGuidance: hideGuidanceCheck instanceof HTMLInputElement,
+      hideFutureGuidanceChecked:
+        hideGuidanceCheck instanceof HTMLInputElement && hideGuidanceCheck.checked,
     };
     primary.click();
     return result;
-  });
+  }, hideFutureGuidance);
 }
 
 async function capturePrintDocument(page) {
@@ -218,6 +239,7 @@ function assertSharedPdfContract(menu, dialog, result) {
     dialog.text.includes('대상') && dialog.text.includes('PDF로 저장'),
     'PDF 모달에서 브라우저 인쇄 대상 안내',
   );
+  assert(dialog.hasHideFutureGuidance, '다음부터 안내를 숨기는 체크박스');
   assert(dialog.primaryLabel.includes('인쇄 창 열기'), 'PDF 모달의 명시적 확인 버튼');
   assert(capture.frameOrigin === capture.hostOrigin, 'same-origin print iframe');
   assert(!capture.frameHref.startsWith('about:blank'), 'about:blank 비사용');
@@ -225,6 +247,7 @@ function assertSharedPdfContract(menu, dialog, result) {
   assert(capture.printCallCount === 1, '모달 확인 뒤 print() 자동 1회 호출');
   assert(capture.sawPdfConfirmDialog, 'PDF 안내 모달 표시');
   assert(capture.sawPdfProgress, '같은 모달에서 PDF 준비 진행률 표시');
+  assert(!capture.guidanceVisibleDuringProgress, '준비 중에는 저장 방법 안내를 숨김');
   assert(!capture.pdfDialogVisibleAtPrint, '네이티브 인쇄창 호출 전에 PDF 모달 제거');
   assert(capture.statusAtPrint.includes('PDF 준비 완료'), 'print() 직전 PDF 준비 완료 상태');
   assert(capture.styleText.includes('@page rhwp-print-page-1'), '페이지별 named @page');
@@ -292,6 +315,35 @@ await runTest('#3126 PDF 경로 — #2525 다중 페이지/검색 텍스트 회�
   if (pdf.text !== null) {
     assert(pdf.text.replace(/\s/g, '').length > 20, '생성 PDF 검색 텍스트가 비어 있지 않음');
   }
+});
+
+await runTest('#3126 PDF 경로 — 안내 숨김 저장과 복원 가능한 직접 준비 흐름', async ({ page }) => {
+  await loadHwpFile(page, 'render-p35-font-native-bitmap.hwpx');
+  await installPrintCapture(page);
+  const firstMenu = await clickPdfMenuItem(page);
+  const firstDialog = await confirmPdfDialog(page, { hideFutureGuidance: true });
+  const firstResult = await capturePrintDocument(page);
+  assertSharedPdfContract(firstMenu, firstDialog, firstResult);
+  assert(firstDialog.hideFutureGuidanceChecked, '안내 숨김 체크 상태로 실행');
+
+  const storedAfterFirst = await page.evaluate(() => {
+    const settings = JSON.parse(localStorage.getItem('rhwp-settings') || '{}');
+    return settings.dialog?.showPdfPrintGuidance;
+  });
+  assert(storedAfterFirst === false, '안내 숨김 설정을 rhwp-settings에 저장');
+
+  await installPrintCapture(page);
+  const secondMenu = await clickPdfMenuItem(page);
+  const secondResult = await capturePrintDocument(page);
+  assert(secondMenu.ok, '안내를 숨긴 뒤 PDF 메뉴 재실행');
+  assert(!secondResult.capture.sawPdfConfirmDialog, '두 번째 실행은 저장 방법 안내를 생략');
+  assert(secondResult.capture.sawPdfProgress, '두 번째 실행도 PDF 준비 진행률 표시');
+  assert(
+    !secondResult.capture.guidanceVisibleDuringProgress,
+    '두 번째 실행의 진행 모달에도 저장 방법 안내가 보이지 않음',
+  );
+  assert(!secondResult.capture.pdfDialogVisibleAtPrint, 'print() 전에 직접 준비 모달 제거');
+  assert(secondResult.after.surfaceRemoved, '두 번째 실행 뒤 iframe 정리');
 });
 
 async function clickPrintMenuItem(page) {

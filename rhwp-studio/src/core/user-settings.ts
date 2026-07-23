@@ -40,6 +40,8 @@ export interface ThemeSettings {
 export interface DialogSettings {
   /** 개체 속성 기본 탭에서 너비/높이 입력 비율을 유지할지 여부 */
   picturePropsKeepRatio: boolean;
+  /** PDF 저장 전에 브라우저 인쇄 대상 선택 방법을 안내할지 여부 */
+  showPdfPrintGuidance: boolean;
 }
 
 /** 보기 표시 설정 */
@@ -132,6 +134,7 @@ function defaultSettings(): AppSettings {
     },
     dialog: {
       picturePropsKeepRatio: true,
+      showPdfPrintGuidance: true,
     },
     view: {
       showParagraphMarks: false,
@@ -196,6 +199,10 @@ class UserSettingsService {
           picturePropsKeepRatio: normalizeBoolean(
             dialog.picturePropsKeepRatio,
             defaults.dialog.picturePropsKeepRatio,
+          ),
+          showPdfPrintGuidance: normalizeBoolean(
+            dialog.showPdfPrintGuidance,
+            defaults.dialog.showPdfPrintGuidance,
           ),
         },
         view: {
@@ -288,6 +295,17 @@ class UserSettingsService {
   /** 개체 속성 기본 탭 비율 유지 설정 */
   setPicturePropsKeepRatio(value: boolean): void {
     this.data.dialog.picturePropsKeepRatio = value;
+    this.save();
+  }
+
+  /** PDF 저장 전 브라우저 인쇄 대상 안내 표시 설정 반환 */
+  getShowPdfPrintGuidance(): boolean {
+    return this.data.dialog.showPdfPrintGuidance;
+  }
+
+  /** PDF 저장 전 브라우저 인쇄 대상 안내 표시 설정 */
+  setShowPdfPrintGuidance(value: boolean): void {
+    this.data.dialog.showPdfPrintGuidance = value;
     this.save();
   }
 

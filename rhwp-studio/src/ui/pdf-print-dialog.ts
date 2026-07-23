@@ -3,22 +3,31 @@ import { ModalDialog } from './dialog';
 
 type PdfPrintDialogState = 'confirm' | 'preparing' | 'complete' | 'error';
 
+export interface PdfPrintDecision {
+  confirmed: boolean;
+  hideFutureGuidance: boolean;
+}
+
 /**
  * 브라우저 인쇄 기반 PDF 저장의 남은 단계를 설명하고, 확인 뒤 같은 모달에서
  * 인쇄 문서 준비 진행률을 표시한다.
  */
 export class PdfPrintDialog extends ModalDialog {
   private state: PdfPrintDialogState = 'confirm';
-  private resolveDecision: (confirmed: boolean) => void = () => {};
+  private resolveDecision: (decision: PdfPrintDecision) => void = () => {};
   private progressMessage!: HTMLDivElement;
   private progressTrack!: HTMLDivElement;
   private progressBar!: HTMLDivElement;
   private errorMessage!: HTMLDivElement;
+  private hideFutureGuidanceCheck!: HTMLInputElement;
   private confirmButton: HTMLButtonElement | null = null;
   private cancelButton: HTMLButtonElement | null = null;
   private closeButton: HTMLButtonElement | null = null;
 
-  constructor(private readonly pageCount: number) {
+  constructor(
+    private readonly pageCount: number,
+    private readonly showGuidance = true,
+  ) {
     super('PDF로 저장', 460);
   }
 
@@ -49,6 +58,20 @@ export class PdfPrintDialog extends ModalDialog {
     stateNote.textContent =
       '현재 문서의 파일명, 저장 위치와 편집 상태는 변경되지 않습니다.';
 
+    const preference = document.createElement('div');
+    preference.className = 'dialog-pdf-preference';
+
+    this.hideFutureGuidanceCheck = document.createElement('input');
+    this.hideFutureGuidanceCheck.type = 'checkbox';
+    this.hideFutureGuidanceCheck.id = 'pdf-print-hide-guidance';
+    this.hideFutureGuidanceCheck.dataset.testid = 'pdf-print-hide-guidance';
+
+    const preferenceLabel = document.createElement('label');
+    preferenceLabel.htmlFor = 'pdf-print-hide-guidance';
+    preferenceLabel.textContent = '다음부터 이 안내를 표시하지 않기';
+
+    preference.append(this.hideFutureGuidanceCheck, preferenceLabel);
+
     const progress = document.createElement('div');
     progress.className = 'dialog-pdf-progress';
     progress.hidden = true;
@@ -75,12 +98,17 @@ export class PdfPrintDialog extends ModalDialog {
     this.errorMessage.hidden = true;
     this.errorMessage.setAttribute('role', 'alert');
 
-    body.append(summary, guidance, stateNote, progress, this.errorMessage);
+    body.append(summary, guidance, stateNote, preference, progress, this.errorMessage);
     return body;
   }
 
   protected onConfirm(): boolean {
     if (this.state !== 'confirm') return false;
+    this.beginPreparing();
+    return false;
+  }
+
+  private beginPreparing(): void {
     this.state = 'preparing';
     this.dialog.classList.add('dialog-pdf-preparing');
 
@@ -95,23 +123,25 @@ export class PdfPrintDialog extends ModalDialog {
     if (this.cancelButton) this.cancelButton.disabled = true;
     if (this.closeButton) this.closeButton.hidden = true;
 
-    this.resolveDecision(true);
-    return false;
+    this.resolveDecision({
+      confirmed: true,
+      hideFutureGuidance: this.showGuidance && this.hideFutureGuidanceCheck.checked,
+    });
   }
 
   override hide(): void {
     if (this.state === 'preparing') return;
-    this.resolveDecision(false);
+    this.resolveDecision({ confirmed: false, hideFutureGuidance: false });
     super.hide();
   }
 
-  showAsync(): Promise<boolean> {
+  showAsync(): Promise<PdfPrintDecision> {
     return new Promise((resolve) => {
       let resolved = false;
-      this.resolveDecision = (confirmed: boolean) => {
+      this.resolveDecision = (decision: PdfPrintDecision) => {
         if (resolved) return;
         resolved = true;
-        resolve(confirmed);
+        resolve(decision);
       };
 
       super.show();
@@ -126,6 +156,7 @@ export class PdfPrintDialog extends ModalDialog {
       this.closeButton = this.dialog.querySelector('.dialog-close');
 
       if (this.confirmButton) this.confirmButton.textContent = '인쇄 창 열기';
+      if (!this.showGuidance) this.beginPreparing();
     });
   }
 

@@ -43,6 +43,47 @@ test('개체 속성 비율 유지 설정은 rhwp-settings에 저장된다', () =
   }
 });
 
+test('PDF 저장 안내 표시 설정은 rhwp-settings에 저장되고 다시 켤 수 있다', () => {
+  const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
+  const store = new Map<string, string>();
+  const mockStorage = {
+    get length() {
+      return store.size;
+    },
+    clear() {
+      store.clear();
+    },
+    getItem(key: string) {
+      return store.get(key) ?? null;
+    },
+    key(index: number) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    removeItem(key: string) {
+      store.delete(key);
+    },
+    setItem(key: string, value: string) {
+      store.set(key, value);
+    },
+  } as Storage;
+
+  (globalThis as { localStorage?: Storage }).localStorage = mockStorage;
+  try {
+    userSettings.setShowPdfPrintGuidance(false);
+    assert.equal(userSettings.getShowPdfPrintGuidance(), false);
+    let stored = JSON.parse(store.get('rhwp-settings') ?? '{}');
+    assert.equal(stored.dialog.showPdfPrintGuidance, false);
+
+    userSettings.setShowPdfPrintGuidance(true);
+    assert.equal(userSettings.getShowPdfPrintGuidance(), true);
+    stored = JSON.parse(store.get('rhwp-settings') ?? '{}');
+    assert.equal(stored.dialog.showPdfPrintGuidance, true);
+  } finally {
+    userSettings.setShowPdfPrintGuidance(true);
+    (globalThis as { localStorage?: Storage }).localStorage = originalStorage;
+  }
+});
+
 test('문단부호 표시 설정은 rhwp-settings에 저장된다', () => {
   const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
   const store = new Map<string, string>();
