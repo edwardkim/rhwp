@@ -1,8 +1,8 @@
 //! Issue #2308 architecture guard.
 //!
-//! 렌더 정규화는 editable IR의 전체 section clone이나 경로별 mutable mirror에
-//! 의존하지 않아야 한다. 이 테스트는 기능 회귀 테스트와 별도로 금지 구조의
-//! 재도입을 빠르게 차단한다.
+//! 렌더 정규화는 stable 입력의 반복 section clone, #2195 width용 section clone,
+//! 경로별 mutable mirror에 의존하지 않아야 한다. 이 테스트는 기능 회귀 테스트와
+//! 별도로 금지 구조의 재도입을 빠르게 차단한다.
 
 use std::fs;
 use std::path::Path;

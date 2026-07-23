@@ -2013,6 +2013,87 @@ fn issue2214_deferred_table_caption_reports_flow_change() {
 }
 
 #[test]
+fn issue2308_deferred_cell_edit_uses_path_revision_without_section_invalidation() {
+    use crate::renderer::render_normalization::RenderPathEntry;
+
+    let mut doc = create_doc_with_table();
+    let section_revision_before = doc.render_normalization.section_revisions[0];
+
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 1, "가")
+        .expect("deferred table-cell insert");
+
+    assert_eq!(
+        doc.render_normalization.section_revisions[0], section_revision_before,
+        "a structure-stable cell edit must not invalidate the section projection"
+    );
+    let revision = doc
+        .render_normalization
+        .path_revisions
+        .iter()
+        .find_map(|(path, revision)| match path.entries.as_slice() {
+            [RenderPathEntry::TableCell {
+                control_index: 0,
+                cell_index: 0,
+                paragraph_index: 0,
+            }] => Some(*revision),
+            _ => None,
+        });
+    assert_eq!(revision, Some(1), "the edited logical path revision");
+}
+
+#[test]
+fn issue2308_immediate_edit_rederives_existing_compat_projection() {
+    use crate::model::image::Picture;
+    use crate::model::shape::{CommonObjAttr, TextWrap};
+
+    fn floating_picture() -> Control {
+        Control::Picture(Box::new(Picture {
+            common: CommonObjAttr {
+                height: 50_000,
+                text_wrap: TextWrap::Square,
+                allow_overlap: false,
+                treat_as_char: false,
+                ..Default::default()
+            },
+            ..Default::default()
+        }))
+    }
+
+    let mut doc = create_doc_with_table();
+    let Control::Table(table) = &mut doc.document.sections[0].paragraphs[0].controls[0] else {
+        panic!("table control");
+    };
+    table.cells[0].paragraphs[0] = Paragraph {
+        controls: vec![floating_picture(), floating_picture()],
+        line_segs: vec![LineSeg {
+            line_height: 400,
+            baseline_distance: 320,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let document = doc.document.clone();
+    doc.set_document(document);
+    assert!(
+        doc.render_normalization.sections[0].is_some(),
+        "the synthetic cell image stack must create a #2004 compatibility projection"
+    );
+    let revision_before = doc.render_normalization.section_revisions[0];
+
+    doc.insert_text_in_cell_native(0, 0, 0, 0, 0, 0, "x")
+        .expect("immediate edit in a projected cell");
+
+    assert_ne!(
+        doc.render_normalization.section_revisions[0], revision_before,
+        "an existing compatibility projection must be invalidated"
+    );
+    assert!(
+        doc.render_normalization.sections[0].is_none(),
+        "visible source text removes the stack gate, so no stale projection may survive"
+    );
+}
+
+#[test]
 fn issue2214_invalid_shape_cell_index_does_not_mutate_text() {
     let mut doc = HwpDocument::create_empty();
     let inserted = doc

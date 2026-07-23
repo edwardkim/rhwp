@@ -836,7 +836,8 @@ impl LayoutEngine {
                         // nested 표 위치/size 미리 결정 (nested layout 의 위치 결정 logic 동일)
                         let pw_now = self.current_paper_width.get();
                         let paper_w = if pw_now > 0.0 { Some(pw_now) } else { None };
-                        let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi);
+                        let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi)
+                            * self.render_table_width_scale(nested);
                         let outer_w_for_box = nested_w;
                         let outer_x_for_box = self.compute_table_x_position(
                             nested,
@@ -1795,7 +1796,8 @@ impl LayoutEngine {
             if span > 1 && r + span <= row_count {
                 let (pad_left, pad_right, pad_top, pad_bottom) =
                     self.resolve_cell_padding(cell, table);
-                let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi);
+                let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi)
+                    * self.render_table_width_scale(table);
                 let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
                 // LINE_SEG의 line_height에 이미 셀 내 중첩 표 높이가 반영되어 있으므로
                 // controls_height를 별도로 더하면 이중 계산됨
@@ -4768,7 +4770,7 @@ impl LayoutEngine {
         for cell in table.cells.iter().filter(|cell| cell.row == 0) {
             let (pad_left, pad_right, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
             let cell_w = if cell.width < 0x8000_0000 {
-                hwpunit_to_px(cell.width as i32, self.dpi)
+                hwpunit_to_px(cell.width as i32, self.dpi) * self.render_table_width_scale(table)
             } else {
                 0.0
             };
@@ -7452,6 +7454,7 @@ impl LayoutEngine {
                 let (pad_left, pad_right, _, _) = self.resolve_cell_padding(cell, table);
                 let cell_w_px = if cell.width < 0x8000_0000 {
                     hwpunit_to_px(cell.width as i32, self.dpi)
+                        * self.render_table_width_scale(table)
                 } else {
                     0.0
                 };

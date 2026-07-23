@@ -75,9 +75,9 @@ pub struct DocumentCore {
     pub(crate) styles: ResolvedStyleSet,
     /// 구역별 구성된 문단 목록
     pub(crate) composed: Vec<Vec<ComposedParagraph>>,
-    /// [#2004] 부동(tac=false) 전면 이미지 스택을 인라인(tac=true)으로 재분류한 render-전용
-    /// 문단/구성. 섹션별 Some 이면 pagination·layout 이 원본 대신 이 정규화본을 사용한다.
-    /// **원본 `document` 는 무손상** → 직렬화(save) 정합 유지. paginate 시 재계산.
+    /// [#2308] source IR로부터 재생성되는 revision 기반 render normalization state.
+    /// #2004 immutable compatibility projection과 #2195 sparse width overlay를 소유하며,
+    /// **원본 `document`는 무손상**이고 deferred edit은 projection을 직접 mirror하지 않는다.
     pub(crate) render_normalization: RenderNormalizationState,
     /// DPI
     pub(crate) dpi: f64,

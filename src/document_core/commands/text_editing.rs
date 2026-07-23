@@ -911,12 +911,11 @@ impl DocumentCore {
         // [#2308] editable IR이 단일 권위 상태다. clone paragraph를 mirror하지 않고
         // 명시적 logical path revision만 갱신한다. #2004 호환 projection이 있는
         // 섹션은 transient render 전에 해당 revision으로 재파생한다.
-        let refresh_compat_projection = !paginate_immediately
-            && self
-                .render_normalization
-                .sections
-                .get(section_idx)
-                .is_some_and(|section| section.is_some());
+        let has_compat_projection = self
+            .render_normalization
+            .sections
+            .get(section_idx)
+            .is_some_and(|section| section.is_some());
         self.mark_render_normalization_path_dirty(
             section_idx,
             parent_para_idx,
@@ -926,8 +925,10 @@ impl DocumentCore {
         )?;
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변, section dirty만 설정)
         self.document.sections[section_idx].raw_stream = None;
-        if refresh_compat_projection {
+        if has_compat_projection {
             self.invalidate_render_normalization_section(section_idx);
+        }
+        if has_compat_projection && !paginate_immediately {
             self.compute_render_normalized();
         }
         self.mark_section_pagination_dirty(section_idx);

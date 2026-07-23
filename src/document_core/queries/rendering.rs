@@ -2945,7 +2945,7 @@ impl DocumentCore {
 
     fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
         self.invalidate_page_tree_cache();
-        // [#2004] 부동 이미지 스택 → 인라인 재분류 정규화본 재계산(원본 무손상).
+        // [#2308] #2004 revision cache와 #2195 sparse overlay를 source IR에서 갱신한다.
         self.compute_render_normalized();
         let paginator = Paginator::new(self.dpi);
         let hwp3_origin_flow_spacing_before = uses_hwp3_origin_flow_spacing_before(&self.document);
