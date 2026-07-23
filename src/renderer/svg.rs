@@ -3562,6 +3562,23 @@ fn font_data_uri_format(bytes: &[u8]) -> (&'static str, &'static str) {
     }
 }
 
+/// 렌더 결과에서 실제 사용된 문서 내장 폰트만 data-URI `@font-face`로 만든다.
+///
+/// 시스템 폰트 탐색·서브셋 파일 I/O가 없는 경로이므로 WASM의 인쇄 SVG에서도
+/// 사용할 수 있다. 비내장 폰트는 기존 SVG `font-family` fallback을 유지한다.
+pub fn generate_embedded_font_style(
+    renderer: &SvgRenderer,
+    embedded_fonts: &std::collections::HashMap<String, Vec<u8>>,
+) -> String {
+    let mut css = String::new();
+    for font_name in renderer.font_codepoints().keys() {
+        if let Some(line) = embedded_font_face_css(font_name, embedded_fonts) {
+            css.push_str(&line);
+        }
+    }
+    css
+}
+
 /// SvgRenderer의 수집된 폰트 정보를 기반으로 @font-face CSS를 생성한다.
 ///
 /// `embedded_fonts` (face명 → 원본 폰트 bytes) 에 있는 폰트는 임베드 모드와

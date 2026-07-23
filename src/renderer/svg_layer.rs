@@ -31,6 +31,10 @@ impl SvgLayerRenderer {
         &mut self.renderer
     }
 
+    pub fn inner(&self) -> &SvgRenderer {
+        &self.renderer
+    }
+
     fn build_render_tree(&mut self, tree: &PageLayerTree) -> PageRenderTree {
         let mut render_tree = PageRenderTree::new(0, tree.page_width, tree.page_height);
         render_tree.root.bbox = tree.root.bounds;

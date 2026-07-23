@@ -413,14 +413,18 @@ pub(crate) fn render_transparent_borders(
             } else if let Some(start) = seg_start {
                 let x1 = table_x + ref_cx[start];
                 let x2 = table_x + ref_cx[ci];
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y, x2, y));
+                nodes.extend(create_editor_only_line(
+                    tree, color, width, dash, x1, y, x2, y,
+                ));
                 seg_start = None;
             }
         }
         if let Some(start) = seg_start {
             let x1 = table_x + ref_cx[start];
             let x2 = table_x + ref_cx.get(h_row.len()).copied().unwrap_or(ref_cx[start]);
-            nodes.extend(create_single_line(tree, color, width, dash, x1, y, x2, y));
+            nodes.extend(create_editor_only_line(
+                tree, color, width, dash, x1, y, x2, y,
+            ));
         }
     }
 
@@ -443,7 +447,7 @@ pub(crate) fn render_transparent_borders(
                     // x가 바뀌면 이전 세그먼트 마무리 후 새 세그먼트 시작
                     let y1 = table_y + row_y[seg_start.unwrap()];
                     let y2 = table_y + row_y[ri];
-                    nodes.extend(create_single_line(
+                    nodes.extend(create_editor_only_line(
                         tree, color, width, dash, seg_x, y1, seg_x, y2,
                     ));
                     seg_start = Some(ri);
@@ -452,7 +456,7 @@ pub(crate) fn render_transparent_borders(
             } else if let Some(start) = seg_start {
                 let y1 = table_y + row_y[start];
                 let y2 = table_y + row_y[ri];
-                nodes.extend(create_single_line(
+                nodes.extend(create_editor_only_line(
                     tree, color, width, dash, seg_x, y1, seg_x, y2,
                 ));
                 seg_start = None;
@@ -461,7 +465,7 @@ pub(crate) fn render_transparent_borders(
         if let Some(start) = seg_start {
             let y1 = table_y + row_y[start];
             let y2 = table_y + row_y.get(v_col.len()).copied().unwrap_or(row_y[start]);
-            nodes.extend(create_single_line(
+            nodes.extend(create_editor_only_line(
                 tree, color, width, dash, seg_x, y1, seg_x, y2,
             ));
         }
@@ -717,6 +721,22 @@ fn create_single_line(
             (y2 - y1).abs().max(width),
         ),
     )]
+}
+
+fn create_editor_only_line(
+    tree: &mut PageRenderTree,
+    color: u32,
+    width: f64,
+    dash: StrokeDash,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
+) -> Vec<RenderNode> {
+    create_single_line(tree, color, width, dash, x1, y1, x2, y2)
+        .into_iter()
+        .map(RenderNode::with_editor_only)
+        .collect()
 }
 
 fn border_line_type_from_code(code: u8) -> BorderLineType {

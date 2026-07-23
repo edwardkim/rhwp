@@ -449,6 +449,19 @@ impl HwpDocument {
         self.render_page_svg_native(page_num).map_err(|e| e.into())
     }
 
+    /// 명시적인 출력 profile로 특정 페이지를 SVG 문자열로 렌더링한다.
+    #[wasm_bindgen(js_name = renderPageSvgWithProfile)]
+    pub fn render_page_svg_with_profile(
+        &self,
+        page_num: u32,
+        profile: &str,
+    ) -> Result<String, JsValue> {
+        let profile = crate::paint::RenderProfile::parse(profile)
+            .ok_or_else(|| JsValue::from_str(&format!("unsupported render profile: {profile}")))?;
+        self.render_page_svg_layer_with_profile_native(page_num, profile)
+            .map_err(Into::into)
+    }
+
     /// 특정 페이지를 HTML 문자열로 렌더링한다.
     #[wasm_bindgen(js_name = renderPageHtml)]
     pub fn render_page_html(&self, page_num: u32) -> Result<String, JsValue> {
@@ -7111,6 +7124,17 @@ impl HwpViewer {
     #[wasm_bindgen(js_name = renderPageSvg)]
     pub fn render_page_svg(&self, page_num: u32) -> Result<String, JsValue> {
         self.document.render_page_svg(page_num)
+    }
+
+    /// 명시적인 출력 profile로 특정 페이지 SVG 렌더링
+    #[wasm_bindgen(js_name = renderPageSvgWithProfile)]
+    pub fn render_page_svg_with_profile(
+        &self,
+        page_num: u32,
+        profile: &str,
+    ) -> Result<String, JsValue> {
+        self.document
+            .render_page_svg_with_profile(page_num, profile)
     }
 
     /// 특정 페이지 HTML 렌더링

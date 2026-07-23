@@ -669,6 +669,17 @@ export class WasmBridge {
     return this.doc.renderPageSvg(pageNum);
   }
 
+  renderPageSvgWithProfile(pageNum: number, profile: LayerRenderProfile): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as {
+      renderPageSvgWithProfile?: (pageNum: number, profile: string) => string;
+    };
+    if (typeof d.renderPageSvgWithProfile !== 'function') {
+      throw new Error('[WasmBridge] 현재 WASM은 profile별 SVG 렌더링을 지원하지 않습니다');
+    }
+    return d.renderPageSvgWithProfile(pageNum, profile);
+  }
+
   getCursorRect(sec: number, para: number, charOffset: number): CursorRect {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getCursorRect(sec, para, charOffset));

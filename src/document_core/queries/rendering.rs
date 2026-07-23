@@ -496,12 +496,13 @@ impl DocumentCore {
         profile: RenderProfile,
     ) -> Result<PageLayerTree, HwpError> {
         let _overflows = self.layout_engine.take_overflows();
+        let show_editor_visuals = profile.shows_editor_visuals();
         let output_options = LayerOutputOptions {
-            show_paragraph_marks: self.show_paragraph_marks,
-            show_control_codes: self.show_control_codes,
-            show_transparent_borders: self.show_transparent_borders,
+            show_paragraph_marks: show_editor_visuals && self.show_paragraph_marks,
+            show_control_codes: show_editor_visuals && self.show_control_codes,
+            show_transparent_borders: show_editor_visuals && self.show_transparent_borders,
             clip_enabled: self.clip_enabled,
-            debug_overlay: self.debug_overlay,
+            debug_overlay: show_editor_visuals && self.debug_overlay,
         };
         self.with_page_tree_cached(page_num, |tree| {
             let mut used_font_slots = Vec::new();
@@ -700,11 +701,25 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         let layer_tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
         let mut renderer = SvgLayerRenderer::new();
-        renderer.inner_mut().show_paragraph_marks = self.show_paragraph_marks;
-        renderer.inner_mut().show_control_codes = self.show_control_codes;
-        renderer.inner_mut().debug_overlay = self.debug_overlay;
+        // WASM에서도 문서 내장 face 사용량을 수집한다. 실제 CSS 생성은 아래의
+        // embedded-only 경로가 담당하므로 시스템 font file I/O는 발생하지 않는다.
+        renderer.inner_mut().font_embed_mode = crate::renderer::svg::FontEmbedMode::Style;
         renderer.render_page(&layer_tree)?;
-        Ok(renderer.output().to_string())
+        let mut svg = renderer.output().to_string();
+
+        // [#2524/#3126] print/profile SVG도 브라우저가 문서 내장 폰트를 직접
+        // 해석할 수 있게 원본 font bytes를 data URI로 포함한다. Layer SVG가
+        // TextRun fallback을 재생하더라도 Blink에서 두부(□)가 되지 않는다.
+        let embedded_fonts = self.collect_embedded_font_bytes_by_name();
+        let style_css =
+            crate::renderer::svg::generate_embedded_font_style(renderer.inner(), &embedded_fonts);
+        if !style_css.is_empty() {
+            if let Some(pos) = svg.find('>') {
+                let insert = format!("\n<style>\n{}</style>\n", style_css);
+                svg.insert_str(pos + 1, &insert);
+            }
+        }
+        Ok(svg)
     }
 
     /// PDF export for one page, implemented as the current compatibility path:
@@ -865,7 +880,6 @@ impl DocumentCore {
     /// SVG `@font-face` 직접 임베딩용. 미설치 임베디드 폰트(bitmap 등)가
     /// `local()` 폴백으로 chrome 두부가 되던 문제 해소. 동일 face 명이 여러
     /// 언어 슬롯에 있으면 첫 항목만 담는다.
-    #[cfg(not(target_arch = "wasm32"))]
     fn collect_embedded_font_bytes_by_name(&self) -> std::collections::HashMap<String, Vec<u8>> {
         let mut ids = Vec::new();
         let mut name_id: Vec<(String, u16)> = Vec::new();
@@ -5316,6 +5330,36 @@ mod tests {
     use super::*;
     use crate::model::bin_data::BinDataContent;
     use crate::renderer::render_tree::RenderNodeType;
+
+    #[test]
+    fn print_profile_suppresses_interactive_output_options_without_mutating_state() {
+        let bytes = include_bytes!("../../../samples/render-p35-font-native-bitmap.hwpx");
+        let mut core = DocumentCore::from_bytes(bytes).expect("fixture parses");
+        core.show_paragraph_marks = true;
+        core.show_control_codes = true;
+        core.show_transparent_borders = true;
+        core.debug_overlay = true;
+
+        let screen = core
+            .build_page_layer_tree_with_profile(0, RenderProfile::Screen)
+            .expect("screen layer tree");
+        let print = core
+            .build_page_layer_tree_with_profile(0, RenderProfile::Print)
+            .expect("print layer tree");
+
+        assert!(screen.output_options.show_paragraph_marks);
+        assert!(screen.output_options.show_control_codes);
+        assert!(screen.output_options.show_transparent_borders);
+        assert!(screen.output_options.debug_overlay);
+        assert!(!print.output_options.show_paragraph_marks);
+        assert!(!print.output_options.show_control_codes);
+        assert!(!print.output_options.show_transparent_borders);
+        assert!(!print.output_options.debug_overlay);
+        assert!(core.show_paragraph_marks);
+        assert!(core.show_control_codes);
+        assert!(core.show_transparent_borders);
+        assert!(core.debug_overlay);
+    }
 
     #[test]
     fn embedded_font_loading_enforces_per_page_cumulative_limit() {
