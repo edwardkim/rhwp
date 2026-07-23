@@ -565,9 +565,11 @@ fn parse_char_shape(
     doc_info: &mut DocInfo,
 ) -> Result<(), HwpxError> {
     let mut cs = CharShape::default();
+    let mut id: Option<usize> = None;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
+            b"id" => id = Some(parse_u32(&attr) as usize),
             b"height" => cs.base_size = parse_i32(&attr),
             b"textColor" => cs.text_color = parse_color(&attr),
             b"shadeColor" => cs.shade_color = parse_color(&attr),
@@ -818,7 +820,21 @@ fn parse_char_shape(
         }
     }
 
-    doc_info.char_shapes.push(cs);
+    // `id` 속성은 charPrIDRef 가 참조하는 실제 배열 인덱스다. XML 등장 순서를
+    // 그대로 push 하면 id 가 등장 순서와 다르거나(재정렬) 중간이 비어 있을 때
+    // (스타일 삭제 등) charPrIDRef 참조가 엉뚱한 CharShape 로 해석된다.
+    // id 가 없는(비정상) 항목만 등장 순서 fallback 으로 push.
+    match id {
+        Some(idx) => {
+            if doc_info.char_shapes.len() <= idx {
+                doc_info
+                    .char_shapes
+                    .resize_with(idx + 1, CharShape::default);
+            }
+            doc_info.char_shapes[idx] = cs;
+        }
+        None => doc_info.char_shapes.push(cs),
+    }
     Ok(())
 }
 
@@ -832,9 +848,11 @@ fn parse_para_shape(
     let mut ps = ParaShape::default();
     // OWPML ParaShapeType의 snapToGrid 기본값은 true.
     ps.attr1 |= 1 << 8;
+    let mut id: Option<usize> = None;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
+            b"id" => id = Some(parse_u32(&attr) as usize),
             b"tabPrIDRef" => ps.tab_def_id = parse_u16(&attr),
             b"condense" => {
                 let condense = parse_u32(&attr).min(75);
@@ -903,7 +921,19 @@ fn parse_para_shape(
         ps.line_spacing_v2 = ps.line_spacing as u32;
     }
 
-    doc_info.para_shapes.push(ps);
+    // `id` 속성은 paraPrIDRef 가 참조하는 실제 배열 인덱스다. charPr 과 동일한
+    // 이유로 등장 순서 push 대신 id 로 배치한다.
+    match id {
+        Some(idx) => {
+            if doc_info.para_shapes.len() <= idx {
+                doc_info
+                    .para_shapes
+                    .resize_with(idx + 1, ParaShape::default);
+            }
+            doc_info.para_shapes[idx] = ps;
+        }
+        None => doc_info.para_shapes.push(ps),
+    }
     Ok(())
 }
 
@@ -2322,7 +2352,8 @@ mod tests {
 </hh:head>"##;
 
         let (doc_info, _) = parse_hwpx_header(xml).unwrap();
-        let ps = &doc_info.para_shapes[0];
+        // paraPr id="1" 이므로 paraPrIDRef=1 이 참조할 실제 배열 위치는 index 1.
+        let ps = &doc_info.para_shapes[1];
 
         assert_eq!((ps.attr1 >> 9) & 0x7f, 30);
         assert_eq!(ps.attr1 & (1 << 22), 1 << 22);
@@ -2347,8 +2378,9 @@ mod tests {
   </hh:refList>
 </hh:head>"##;
         let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        // paraPr id="1" → index 1.
         assert_eq!(
-            doc_info.para_shapes[0].line_spacing_type,
+            doc_info.para_shapes[1].line_spacing_type,
             crate::model::style::LineSpacingType::SpaceOnly,
             "type=BETWEEN_LINES 가 SpaceOnly 로 파싱돼야 함(Percent 유실 방지)"
         );
@@ -2374,14 +2406,15 @@ mod tests {
 
         let (doc_info, _) = parse_hwpx_header(xml).unwrap();
 
-        assert_eq!(doc_info.para_shapes[0].attr1 & (1 << 7), 1 << 7);
-        assert_eq!(doc_info.para_shapes[1].attr1 & (1 << 7), 0);
+        // paraPr id="1"/"2" → index 1/2 (index 0 은 정의되지 않아 default).
+        assert_eq!(doc_info.para_shapes[1].attr1 & (1 << 7), 1 << 7);
+        assert_eq!(doc_info.para_shapes[2].attr1 & (1 << 7), 0);
         assert_eq!(
-            doc_info.para_shapes[0].break_latin_word.as_deref(),
+            doc_info.para_shapes[1].break_latin_word.as_deref(),
             Some("KEEP_WORD")
         );
         assert_eq!(
-            doc_info.para_shapes[1].break_latin_word.as_deref(),
+            doc_info.para_shapes[2].break_latin_word.as_deref(),
             Some("HYPHENATION")
         );
     }
@@ -2407,9 +2440,10 @@ mod tests {
 
         let (doc_info, _) = parse_hwpx_header(xml).unwrap();
 
-        assert_eq!(doc_info.para_shapes[0].attr1 & (1 << 8), 1 << 8);
-        assert_eq!(doc_info.para_shapes[1].attr1 & (1 << 8), 0);
-        assert_eq!(doc_info.para_shapes[2].attr1 & (1 << 8), 1 << 8);
+        // paraPr id="1"/"2"/"3" → index 1/2/3 (index 0 은 정의되지 않아 default).
+        assert_eq!(doc_info.para_shapes[1].attr1 & (1 << 8), 1 << 8);
+        assert_eq!(doc_info.para_shapes[2].attr1 & (1 << 8), 0);
+        assert_eq!(doc_info.para_shapes[3].attr1 & (1 << 8), 1 << 8);
     }
 
     #[test]
@@ -2987,5 +3021,89 @@ mod tests {
 
         assert_eq!((bf.attr >> 8) & 0x03, 2, "Crooked=2 보존");
         assert_eq!((bf.attr >> 5) & 0x07, 0b010, "backSlash CENTER 보존");
+    }
+
+    /// `<hh:charPr id="N">`/`<hh:paraPr id="N">`의 `id` 속성을 무시하고 XML 등장
+    /// 순서(push 순서)를 그대로 배열 인덱스로 쓰면, id 가 등장 순서와 다르거나
+    /// (역순) 중간이 비어 있을 때 `charPrIDRef`/`paraPrIDRef` 참조가 엉뚱한
+    /// 항목으로 해석된다. 한컴이 내보내는 파일은 보통 id 순으로 정렬돼 있어
+    /// 드러나지 않지만, OWPML 스펙상 id 는 임의 참조값일 뿐 등장 순서를
+    /// 보장하지 않는다 (예: 스타일 편집기로 재정렬되거나 서드파티 생성기가
+    /// 만든 파일).
+    #[test]
+    fn test_char_pr_id_out_of_order_resolves_by_id_not_document_order() {
+        // id="1" 항목이 먼저, id="0" 항목이 나중에 등장 — 등장 순서 그대로
+        // push 하면 char_shapes[0] 에 id="1"의 속성(height=2000)이 들어가
+        // charPrIDRef="0" 참조가 실제로는 id="1" 의 서식을 받게 된다.
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:charProperties itemCnt="2">
+      <hh:charPr id="1" height="2000" textColor="#000000" shadeColor="none" useFontSpace="0" useKerning="0" symMark="NONE">
+        <hh:fontRef hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>
+      </hh:charPr>
+      <hh:charPr id="0" height="1000" textColor="#000000" shadeColor="none" useFontSpace="0" useKerning="0" symMark="NONE">
+        <hh:fontRef hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>
+      </hh:charPr>
+    </hh:charProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+
+        // charPrIDRef="0" 을 참조하는 run 은 id="0"(height=1000) 서식을 받아야 한다.
+        let cs0 = doc_info
+            .char_shapes
+            .get(0)
+            .expect("id=0 charPr 이 존재해야 함");
+        assert_eq!(cs0.base_size, 1000, "charPrIDRef=0 은 id=\"0\" 항목이어야 함");
+
+        let cs1 = doc_info
+            .char_shapes
+            .get(1)
+            .expect("id=1 charPr 이 존재해야 함");
+        assert_eq!(cs1.base_size, 2000, "charPrIDRef=1 은 id=\"1\" 항목이어야 함");
+    }
+
+    /// paraPr 도 charPr 과 동일한 결함을 공유한다: id 속성을 무시하고 등장 순서로
+    /// push 하므로, id 가 비순차적이면 `paraPrIDRef` 가 잘못된 문단 서식을
+    /// 가리킨다.
+    #[test]
+    fn test_para_pr_id_out_of_order_resolves_by_id_not_document_order() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:paraProperties itemCnt="2">
+      <hh:paraPr id="1" tabPrIDRef="0">
+        <hh:align horizontal="RIGHT"/>
+      </hh:paraPr>
+      <hh:paraPr id="0" tabPrIDRef="0">
+        <hh:align horizontal="LEFT"/>
+      </hh:paraPr>
+    </hh:paraProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+
+        let ps0 = doc_info
+            .para_shapes
+            .get(0)
+            .expect("id=0 paraPr 이 존재해야 함");
+        assert_eq!(
+            ps0.alignment,
+            Alignment::Left,
+            "paraPrIDRef=0 은 id=\"0\"(LEFT) 항목이어야 함"
+        );
+
+        let ps1 = doc_info
+            .para_shapes
+            .get(1)
+            .expect("id=1 paraPr 이 존재해야 함");
+        assert_eq!(
+            ps1.alignment,
+            Alignment::Right,
+            "paraPrIDRef=1 은 id=\"1\"(RIGHT) 항목이어야 함"
+        );
     }
 }
