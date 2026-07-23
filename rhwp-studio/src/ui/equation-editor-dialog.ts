@@ -273,6 +273,11 @@ export class EquationEditorDialog {
     this.fontSizeInput.value = String(Math.round(this.origProps.fontSize / 100));
     this.colorInput.value = colorRefToHex(this.origProps.color);
 
+    // 싱글턴으로 재사용 + build() 는 1회만 실행되므로 이전 세션의 기호 검색어와
+    // 펼쳐진 결과 드롭다운이 남지 않도록 초기화한다. (#3145)
+    this.searchInput.value = '';
+    this.searchResults.style.display = 'none';
+
     // 기존 스크립트에 \ 가 있으면 LaTeX 모드로 시작
     if (this.origProps.script && /\\[a-zA-Z]/.test(this.origProps.script)) {
       this.setMode('latex');
