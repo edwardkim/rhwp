@@ -2449,6 +2449,36 @@ fn test_delete_table_column_and_split_cell_clear_stale_local_resize() {
     }
 }
 
+/// [split_table_cells_in_range stale local-resize] split_table_cell_native/
+/// split_table_cell_into_native와 동일하게 split_table_cells_in_range_native도
+/// Table::split_cells_in_range()가 내부적으로 split_cell_into()를 반복 호출해
+/// cells 배열의 인덱스 배치를 바꾼다. 그런데 이 커맨드만 local_resize_cell_widths/
+/// heights를 비우지 않아 stale 참조가 남는다.
+#[test]
+fn test_split_table_cells_in_range_clears_stale_local_resize() {
+    let mut doc = create_doc_with_table();
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first_mut()
+    {
+        table.local_resize_cell_widths.push((1, 1234));
+        table.local_resize_cell_heights.push((1, 5678));
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+
+    doc.split_table_cells_in_range_native(0, 0, 0, 0, 0, 1, 1, 2, 2, false)
+        .expect("범위 분할");
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
+        assert!(
+            table.local_resize_cell_widths.is_empty() && table.local_resize_cell_heights.is_empty(),
+            "범위 분할 후 local_resize_cell_widths/heights의 stale 참조가 비워져야 한다"
+        );
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+}
+
 #[test]
 fn test_merge_then_control_layout_has_col_span() {
     let mut doc = create_doc_with_table();
