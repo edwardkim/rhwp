@@ -49,7 +49,10 @@ CDP 출력을 검증한다.
 | focused print tests | 12/12 |
 | #2524 Rust regression | 4/4 |
 | #2525 Rust regression | 1/1 |
+| `cargo test --lib` | 2,530 passed / 0 failed / 7 ignored |
+| `cargo clippy --lib -- -D warnings` | 통과 |
 | headless Chrome #3126 E2E | 두 시나리오 전 assertion 통과 |
+| E2E manifest check | tracked 76 / manifest 76, 이상 없음 |
 | `git diff --check` | 통과 |
 
 ## 5. 잔여 게이트
