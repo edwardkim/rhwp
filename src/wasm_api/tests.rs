@@ -4999,6 +4999,46 @@ fn test_table_utility_functions() {
 }
 
 #[test]
+fn test_css_color_rgba_and_border_width_keywords() {
+    // rgba() 색상: 브라우저는 반투명/알파 포함 색을 rgba(r, g, b, a)로 직렬화한다.
+    assert_eq!(
+        super::css_color_to_hwp_bgr("rgba(255, 0, 0, 1)"),
+        Some(0x0000FF),
+        "rgba() 불투명 빨강 → BGR"
+    );
+    assert_eq!(
+        super::css_color_to_hwp_bgr("rgba(0, 128, 255, 0.5)"),
+        Some(0xFF8000),
+        "rgba() 반투명 색도 RGB 성분은 파싱되어야 함"
+    );
+    // 완전 투명(alpha=0)은 색 없음으로 처리
+    assert_eq!(
+        super::css_color_to_hwp_bgr("rgba(255, 0, 0, 0)"),
+        None,
+        "rgba() alpha=0 → 색 없음"
+    );
+
+    // border 축약형의 rgba() 색상
+    let (w, c, s) = super::parse_css_border_shorthand("1px solid rgba(255, 0, 0, 1)");
+    assert!((w - 0.75).abs() < 0.01, "border width 1px -> 0.75pt");
+    assert_eq!(c, 0x0000FF, "border rgba() 색상 빨강 (BGR)");
+    assert_eq!(s, 1, "border style solid");
+
+    // CSS 표준 border-width 키워드: thin(1px)/medium(3px)/thick(5px)
+    // 키워드를 인식하지 못하면 width 0 → 테두리 전체가 소실된다.
+    let (w_thin, _, s_thin) = super::parse_css_border_shorthand("thin solid #000000");
+    assert!((w_thin - 0.75).abs() < 0.01, "thin = 1px = 0.75pt");
+    assert_eq!(s_thin, 1);
+
+    let (w_med, c_med, _) = super::parse_css_border_shorthand("medium solid #ff0000");
+    assert!((w_med - 2.25).abs() < 0.01, "medium = 3px = 2.25pt");
+    assert_eq!(c_med, 0x0000FF);
+
+    let (w_thick, _, _) = super::parse_css_border_shorthand("thick solid #000000");
+    assert!((w_thick - 3.75).abs() < 0.01, "thick = 5px = 3.75pt");
+}
+
+#[test]
 fn test_html_utility_functions() {
     // decode_html_entities
     assert_eq!(super::decode_html_entities("&amp;&lt;&gt;"), "&<>");
