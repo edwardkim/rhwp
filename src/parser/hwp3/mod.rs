@@ -1873,9 +1873,17 @@ fn parse_simple_control_char(
             utf16_len += 1;
             text_string.push('\u{FFFC}');
             let mut overlap = crate::model::control::CharOverlap::default();
-            // buf[0..2] 또는 buf[2..8]은 문자와 테두리 종류를 포함할 수 있습니다.
-            // 가능한 부분을 매핑하지만, 테스트 없이 정확한 오프셋을 찾기는 까다로우므로
-            // 구조체는 유지하되 완벽하게 채우지 않을 수도 있습니다.
+            // [#3148] 스펙 §10.17 표 58: 오프셋 2..8 = 겹칠 글자 hchar array[3]
+            // (남는 부분 0 채움). 여는 코드는 스캔 루프에서 소비됐으므로 이
+            // 8바이트 버퍼에서 buf[0..6]이 겹칠 글자, buf[6..8]이 닫는 코드다.
+            for k in 0..3usize {
+                let hch = u16::from_le_bytes([buf[k * 2], buf[k * 2 + 1]]);
+                if hch != 0 {
+                    overlap
+                        .chars
+                        .push(crate::parser::hwp3::johab::decode_johab(hch));
+                }
+            }
             controls.push(crate::model::control::Control::CharOverlap(overlap));
             ctrl_data_records.push(None);
         }
@@ -1893,7 +1901,11 @@ fn parse_simple_control_char(
             char_offsets.push(utf16_len);
             utf16_len += 1;
             text_string.push('\u{FFFC}');
-            let name_buf = &buf[2..22];
+            // [#3147] 스펙 §10.16 표 57: 필드 이름은 파일 오프셋 2..22 (kchar
+            // array[20]). 여는 코드(오프셋 0..2)는 스캔 루프에서 이미 소비됐으므로
+            // 이 22바이트 버퍼에서 이름은 buf[0..20], 닫는 코드는 buf[20..22]다.
+            // (종전 buf[2..22] 는 앞 2바이트 유실 + 닫는 코드 혼입)
+            let name_buf = &buf[0..20];
             let name = crate::parser::hwp3::encoding::decode_hwp3_string(name_buf)
                 .trim_end_matches('\0')
                 .to_string();
@@ -4089,6 +4101,92 @@ mod tests {
                 .iter()
                 .any(|c| matches!(c, crate::model::control::Control::Field(_))),
             "ch==5 필드 코드가 Control::Field 로 배선되지 않음: {controls:?}"
+        );
+    }
+
+    /// ch=22/23 테스트 공용: `parse_simple_control_char` 를 합성 body 로 구동한다.
+    /// 반환: (controls, 소비 후 커서 위치)
+    fn run_simple_control_char(
+        body: Vec<u8>,
+        ch: u16,
+    ) -> (Vec<crate::model::control::Control>, u64) {
+        let mut body_cursor = Cursor::new(body.as_slice());
+        let mut text_string = String::new();
+        let mut char_offsets = Vec::new();
+        let mut hwp3_char_to_utf16_pos = vec![0u32; 16];
+        let mut controls = Vec::new();
+        let mut ctrl_data_records = Vec::new();
+        let mut scan = Hwp3CharScan {
+            text_string: &mut text_string,
+            char_offsets: &mut char_offsets,
+            hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
+            controls: &mut controls,
+            ctrl_data_records: &mut ctrl_data_records,
+        };
+        parse_simple_control_char(&mut body_cursor, ch, 0, 0, &mut scan).unwrap();
+        let pos = body_cursor.position();
+        (controls, pos)
+    }
+
+    #[test]
+    fn hwp3_mail_merge_field_name_starts_at_offset_zero() {
+        // [#3147] 스펙 §10.16 표 57: 필드 이름은 파일 오프셋 2..22.
+        // 여는 코드(오프셋 0..2)는 스캔 루프에서 이미 소비되므로, 이어 읽는
+        // 22바이트 버퍼에서 이름은 buf[0..20], 닫는 코드는 buf[20..22]다.
+        // 종전 buf[2..22] 사용 시 앞 2바이트('ME')가 유실된다.
+        let mut body = Vec::new();
+        let name = b"MERGEFIELD";
+        body.extend_from_slice(name); // 이름 (아스키)
+        body.resize(20, 0); // 20바이트까지 0 패딩
+        body.extend_from_slice(&22u16.to_le_bytes()); // 닫는 특수 문자 코드
+        assert_eq!(body.len(), 22);
+
+        let (controls, pos) = run_simple_control_char(body, 22);
+        assert_eq!(pos, 22, "ch=22 는 추가 22바이트를 소비해야 함");
+        let field = controls
+            .iter()
+            .find_map(|c| match c {
+                crate::model::control::Control::Field(f) => Some(f),
+                _ => None,
+            })
+            .expect("ch==22 는 Control::Field 를 push 해야 함");
+        assert_eq!(
+            field.field_type,
+            crate::model::control::FieldType::MailMerge
+        );
+        assert_eq!(
+            field.command, "MERGEFIELD",
+            "필드 이름은 buf[0..20]에서 읽어야 함 (buf[2..22] 사용 시 앞 2글자 유실)"
+        );
+    }
+
+    #[test]
+    fn hwp3_char_overlap_extracts_overlap_chars() {
+        // [#3148] 스펙 §10.17 표 58: 글자겹침(10바이트) 오프셋 2..8 =
+        // 겹칠 글자 hchar array[3] (남는 부분 0 채움).
+        // 여는 코드 소비 후 읽는 8바이트 버퍼에서 buf[0..6]이 겹칠 글자,
+        // buf[6..8]이 닫는 코드다. 종전에는 buf 를 전혀 사용하지 않아
+        // CharOverlap.chars 가 항상 빈 Vec 이었다.
+        let mut body = Vec::new();
+        body.extend_from_slice(&(b'A' as u16).to_le_bytes()); // 겹칠 글자 1
+        body.extend_from_slice(&(b'B' as u16).to_le_bytes()); // 겹칠 글자 2
+        body.extend_from_slice(&0u16.to_le_bytes()); // 미사용(0 채움)
+        body.extend_from_slice(&23u16.to_le_bytes()); // 닫는 특수 문자 코드
+        assert_eq!(body.len(), 8);
+
+        let (controls, pos) = run_simple_control_char(body, 23);
+        assert_eq!(pos, 8, "ch=23 은 추가 8바이트를 소비해야 함");
+        let overlap = controls
+            .iter()
+            .find_map(|c| match c {
+                crate::model::control::Control::CharOverlap(o) => Some(o),
+                _ => None,
+            })
+            .expect("ch==23 은 Control::CharOverlap 을 push 해야 함");
+        assert_eq!(
+            overlap.chars,
+            vec!['A', 'B'],
+            "겹칠 글자 hchar array[3] (buf[0..6]) 가 chars 로 배선되어야 함"
         );
     }
 
