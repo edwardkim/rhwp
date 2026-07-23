@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { isCodePointInBlock } from '../src/ui/symbols-dialog.ts';
+import { isCodePointInBlock } from '../src/ui/unicode-block.ts';
 
 // [문자표] 최근 사용 문자는 현재 표시된 블록과 다른 블록에 속할 수 있다.
 // selectChar()가 codePoint - block.start 로 그리드 인덱스를 계산하므로,

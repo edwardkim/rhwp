@@ -6,14 +6,11 @@
 import type { CommandServices } from '@/command/types';
 import { InsertTextCommand } from '@/engine/command';
 import { enableDialogDrag } from './dialog-drag';
+import { isCodePointInBlock, type UnicodeBlock } from './unicode-block.ts';
+
+export { isCodePointInBlock } from './unicode-block.ts';
 
 // ── 유니코드 블록 정의 ──
-
-interface UnicodeBlock {
-  name: string;
-  start: number;
-  end: number;
-}
 
 const UNICODE_BLOCKS: UnicodeBlock[] = [
   { name: '기본 라틴 문자', start: 0x0020, end: 0x007F },
@@ -59,11 +56,6 @@ const UNICODE_BLOCKS: UnicodeBlock[] = [
 const COLS = 16;
 const RECENT_KEY = 'rhwp-symbols-recent';
 const MAX_RECENT = 32;
-
-/** 문자가 해당 유니코드 블록에 속하는지 판정(최근 사용 문자는 다른 블록일 수 있음). */
-export function isCodePointInBlock(codePoint: number, block: UnicodeBlock): boolean {
-  return codePoint >= block.start && codePoint <= block.end;
-}
 
 export class SymbolsDialog {
   private services: CommandServices;
