@@ -15,8 +15,12 @@ Native Skia feature 산출물은 별도 namespace로 분리한다.
 - `target`
 
 key는 `Linux-cargo-${Cargo.lock hash}`이고 `Linux-cargo-` restore key를 사용하지만, 이 namespace를
-갱신하는 save step은 없다. 2026-07-22 devel run에서는 2026-04-04에 생성된 426,792,350 B fallback을
-복원한 뒤 의존성을 다시 컴파일했다.
+갱신하는 save step은 없다. 2026-07-23 재계측에서도 2026-04-04에 생성된 426,792,350 B fallback이
+08:24:48 KST에 다시 접근돼, 오래된 cache를 계속 복원하는 동작이 유지됨을 확인했다.
+
+최신 `upstream/devel` `29b5547e2`의 #3064 CI fail-fast 변경은 Native Skia의 선행 gate만
+강화했으며 cache reader는 바꾸지 않았다. 따라서 최신 CI 의존성 구조를 보존하면서 아래 cache
+step만 교체한다.
 
 ## 파일별 변경
 
