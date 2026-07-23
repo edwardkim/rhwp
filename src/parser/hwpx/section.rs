@@ -5330,12 +5330,14 @@ fn parse_equation(
     let mut shape_attr = ShapeComponentAttr::default();
     let mut has_pos = false;
 
-    // 수식 전용 속성
-    let mut version_info = String::new();
-    let mut baseline: i16 = 0;
+    // 수식 전용 속성 — 초기값은 OWPML(ParaList 스키마 EquationType) 속성 기본값.
+    // 속성이 생략된 파일에서 zero-계열 값으로 복원하면 직렬화기가 세 속성을
+    // 무조건 방출하므로 라운드트립 시 version=""/baseLine="0"/font="" 으로 변형된다.
+    let mut version_info = String::from("Equation Version 60");
+    let mut baseline: i16 = 85;
     let mut color: u32 = 0;
     let mut font_size: u32 = 1000;
-    let mut font_name = String::new();
+    let mut font_name = String::from("HYhwpEQ");
     // [#2727] lineMode(수식이 차지하는 범위) → EQEDIT attribute bit0.
     // OWPML 기본값은 CHAR 이므로 속성이 없으면 0(글자 단위)으로 둔다.
     let mut eq_attr: u32 = 0;
@@ -5345,7 +5347,7 @@ fn parse_equation(
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
             b"version" => version_info = attr_str(&attr),
-            b"baseLine" => baseline = attr_str(&attr).parse().unwrap_or(0),
+            b"baseLine" => baseline = attr_str(&attr).parse().unwrap_or(85),
             b"textColor" => color = parse_color(&attr),
             b"baseUnit" => font_size = parse_u32(&attr),
             // [#2727] LINE 이면 bit0 set. 종전엔 미파싱으로 왕복 시 CHAR 로 고정됐다.
@@ -6202,6 +6204,45 @@ mod tests {
         };
         assert!(section_def.hide_empty_line);
         assert_ne!(section_def.flags & 0x0008_0000, 0);
+    }
+
+    #[test]
+    fn equation_missing_attrs_fall_back_to_owpml_defaults() {
+        // OWPML 스키마(ParaList, EquationType)의 속성 기본값:
+        //   version  = "Equation Version 60"
+        //   baseLine = 85
+        //   font     = "HYhwpEQ"
+        // 속성이 생략된 수식을 파싱하면 스펙 기본값으로 복원되어야 한다.
+        // (직렬화기는 세 속성을 무조건 방출하므로, 파서가 0/"" 로 복원하면
+        //  왕복 시 baseLine="0" font="" version="" 으로 값이 변형된다.)
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:equation id="1" zOrder="0" numberingType="EQUATION" textWrap="TOP_AND_BOTTOM" lock="0">
+        <hp:script>1 over 2</hp:script>
+        <hp:sz width="2000" widthRelTo="ABSOLUTE" height="1000" heightRelTo="ABSOLUTE"/>
+        <hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="PARA" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/>
+      </hp:equation>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+        let section = parse_hwpx_section(xml).unwrap();
+        let eq = section.paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|c| match c {
+                Control::Equation(e) => Some(e),
+                _ => None,
+            })
+            .expect("수식 컨트롤");
+        assert_eq!(eq.baseline, 85, "baseLine 생략 시 스펙 기본값 85");
+        assert_eq!(eq.font_name, "HYhwpEQ", "font 생략 시 스펙 기본값 HYhwpEQ");
+        assert_eq!(
+            eq.version_info, "Equation Version 60",
+            "version 생략 시 스펙 기본값"
+        );
     }
 
     #[test]
