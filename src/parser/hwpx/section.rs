@@ -5939,16 +5939,6 @@ fn parse_hp_ole_element(
                     _ => OleDrawingAspect::Content,
                 };
             }
-            // 표시 방식(아이콘/썸네일/인쇄용/내용). serializer 는 방출하나 종전엔
-            // 파서가 읽지 않아 ICON 등이 왕복 시 CONTENT 로 바뀌었다.
-            b"drawAspect" => {
-                draw_aspect = match attr_str(&attr).as_str() {
-                    "ICON" => OleDrawingAspect::Icon,
-                    "THUMBNAIL" => OleDrawingAspect::Thumbnail,
-                    "DOCPRINT" => OleDrawingAspect::DocPrint,
-                    _ => OleDrawingAspect::Content,
-                };
-            }
             b"zOrder" => common.z_order = parse_i32(&attr),
             b"textWrap" => {
                 common.text_wrap = match attr_str(&attr).as_str() {
