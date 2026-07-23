@@ -195,6 +195,12 @@ struct ReadState<'a> {
     cells: Vec<HmlCell>,
     font_language: Option<usize>,
     current_border_fill: Option<usize>,
+    /// 자식 요소(FONTID/RATIO/...)를 귀속할 CHARSHAPE 의 `Id` 위치.
+    /// `set_indexed` 는 `Id` 위치에 배치하므로 `last_mut` 로는 내림차순·건너뜀
+    /// 입력에서 엉뚱한 도형을 가리킨다 — `current_border_fill` 과 같은 방식.
+    current_char_shape: Option<usize>,
+    /// 자식 요소(PARAMARGIN/PARABORDER)를 귀속할 PARASHAPE 의 `Id` 위치.
+    current_para_shape: Option<usize>,
     head_modeled_children: usize,
     body_modeled_children: usize,
     saw_head: bool,
@@ -218,6 +224,8 @@ impl<'a> ReadState<'a> {
             cells: Vec::new(),
             font_language: None,
             current_border_fill: None,
+            current_char_shape: None,
+            current_para_shape: None,
             head_modeled_children: 0,
             body_modeled_children: 0,
             saw_head: false,
@@ -450,6 +458,8 @@ impl<'a> ReadState<'a> {
         match name {
             "FONTFACE" => self.font_language = None,
             "BORDERFILL" => self.current_border_fill = None,
+            "CHARSHAPE" => self.current_char_shape = None,
+            "PARASHAPE" => self.current_para_shape = None,
             "P" => self.finish_paragraph()?,
             "EQUATION" if self.stack.iter().rev().nth(1).map(String::as_str) == Some("TEXT") => {
                 self.finish_equation()?
@@ -592,7 +602,12 @@ impl<'a> ReadState<'a> {
             self.max_resource_id,
         ) {
             self.warn_resource_id_out_of_range("CHARSHAPE", id);
+            // 건너뛴 CHARSHAPE 의 FONTID/RATIO/... 자식이 다른 도형을 덮어쓰지
+            // 않도록 귀속 대상을 비운다 (BORDERFILL 의 *BORDER 처리와 동일).
+            self.current_char_shape = None;
+            return Ok(());
         }
+        self.current_char_shape = Some(id);
         Ok(())
     }
 
@@ -601,7 +616,10 @@ impl<'a> ReadState<'a> {
         name: &str,
         element: &BytesStart<'_>,
     ) -> Result<(), HmlError> {
-        let Some(shape) = self.source.char_shapes.last_mut() else {
+        let Some(shape) = self
+            .current_char_shape
+            .and_then(|index| self.source.char_shapes.get_mut(index))
+        else {
             return Ok(());
         };
         match name {
@@ -630,12 +648,19 @@ impl<'a> ReadState<'a> {
             self.max_resource_id,
         ) {
             self.warn_resource_id_out_of_range("PARASHAPE", id);
+            // 건너뛴 PARASHAPE 의 PARAMARGIN/PARABORDER 자식도 버린다.
+            self.current_para_shape = None;
+            return Ok(());
         }
+        self.current_para_shape = Some(id);
         Ok(())
     }
 
     fn capture_para_margin(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
-        let Some(shape) = self.source.para_shapes.last_mut() else {
+        let Some(shape) = self
+            .current_para_shape
+            .and_then(|index| self.source.para_shapes.get_mut(index))
+        else {
             return Ok(());
         };
         shape.margin_left = parse_attribute(element, b"Left")?.unwrap_or(0);
@@ -654,7 +679,10 @@ impl<'a> ReadState<'a> {
     }
 
     fn capture_para_border(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
-        if let Some(shape) = self.source.para_shapes.last_mut() {
+        if let Some(shape) = self
+            .current_para_shape
+            .and_then(|index| self.source.para_shapes.get_mut(index))
+        {
             shape.border_fill_id = parse_attribute(element, b"BorderFill")?.unwrap_or(0);
         }
         Ok(())
