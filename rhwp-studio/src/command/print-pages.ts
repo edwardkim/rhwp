@@ -28,7 +28,7 @@ export function printProgressText(
 export function printReadyText(intent: PrintIntent): string {
   return intent === 'pdf'
     ? `PDF 준비 완료 — ${PDF_PRINT_GUIDANCE}`
-    : '인쇄 준비 완료…';
+    : '인쇄 미리보기 준비 완료';
 }
 
 export function pxToPrintMm(px: number): number {
@@ -121,7 +121,45 @@ ${pageSizeRules}
 @media screen {
   body { background: #e5e7eb; display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 16px; }
   .page { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  body.rhwp-print-preview { padding-top: 72px; }
+  .print-preview-bar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 8px 16px;
+    background: #1e293b;
+    color: #f8fafc;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.28);
+    font: 14px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .print-preview-bar button {
+    min-width: 72px;
+    height: 32px;
+    padding: 0 14px;
+    border: 1px solid #64748b;
+    border-radius: 5px;
+    background: #475569;
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+  }
+  .print-preview-bar button:hover { background: #64748b; }
+  .print-preview-bar button:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+  .print-preview-bar .print-preview-primary { background: #2563eb; border-color: #60a5fa; }
+  .print-preview-bar .print-preview-primary:hover { background: #1d4ed8; }
+  .print-preview-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #e2e8f0;
+  }
 }
+@media print { .print-preview-bar { display: none !important; } }
 `;
 }
 

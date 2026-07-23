@@ -31,17 +31,6 @@ export interface ToastOptions {
   confirmLabel?: string;
 }
 
-export interface ToastDismissOptions {
-  /** 전환 없이 즉시 DOM에서 제거한다. 네이티브 브라우저 UI를 열기 직전에 사용한다. */
-  immediate?: boolean;
-}
-
-export interface ToastHandle {
-  readonly element: HTMLElement;
-  update(message: string): void;
-  dismiss(options?: ToastDismissOptions): void;
-}
-
 function ensureContainer(): HTMLElement {
   let container = document.getElementById(CONTAINER_ID);
   if (container) return container;
@@ -65,7 +54,7 @@ function ensureContainer(): HTMLElement {
  *
  * @param options 메시지·지속시간·액션
  */
-export function showToast(options: ToastOptions): ToastHandle {
+export function showToast(options: ToastOptions): void {
   const container = ensureContainer();
   const duration = options.durationMs ?? DEFAULT_DURATION_MS;
 
@@ -150,23 +139,18 @@ export function showToast(options: ToastOptions): ToastHandle {
 
   container.appendChild(toast);
 
-  let removed = false;
-  let timer: ReturnType<typeof setTimeout> | null = null;
-
   // 슬라이드 인 (다음 프레임에서 transform 변경)
   requestAnimationFrame(() => {
-    if (removed) return;
     toast.style.transform = 'translateX(0)';
   });
 
-  function removeToast(immediate = false): void {
+  let removed = false;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  function removeToast(): void {
     if (removed) return;
     removed = true;
     if (timer) clearTimeout(timer);
-    if (immediate) {
-      toast.remove();
-      return;
-    }
     toast.style.opacity = '0';
     toast.style.transform = 'translateX(120%)';
     setTimeout(() => {
@@ -178,14 +162,4 @@ export function showToast(options: ToastOptions): ToastHandle {
   if (duration > 0) {
     timer = setTimeout(removeToast, duration);
   }
-
-  return {
-    element: toast,
-    update(message: string) {
-      if (!removed) body.textContent = message;
-    },
-    dismiss(dismissOptions: ToastDismissOptions = {}) {
-      removeToast(dismissOptions.immediate);
-    },
-  };
 }

@@ -10,13 +10,28 @@ const indexHtml = readFileSync(
   new URL('../index.html', import.meta.url),
   'utf8',
 );
+const printSurfaceSource = readFileSync(
+  new URL('../src/command/print-surface.ts', import.meta.url),
+  'utf8',
+);
+const pdfDialogSource = readFileSync(
+  new URL('../src/ui/pdf-print-dialog.ts', import.meta.url),
+  'utf8',
+);
+const printHtml = readFileSync(
+  new URL('../public/print.html', import.meta.url),
+  'utf8',
+);
 
-test('PDF로 저장과 인쇄는 same-origin iframe print pipeline을 공유한다', () => {
-  assert.match(commandSource, /runBrowserPrint\(services, 'pdf'\)/);
-  assert.match(commandSource, /runBrowserPrint\(services, 'print'\)/);
+test('PDF와 인쇄 미리보기는 페이지 준비 pipeline을 공유하고 surface만 분리한다', () => {
+  assert.match(commandSource, /runPdfPrint\(services\)/);
+  assert.match(commandSource, /runPrintPreview\(services\)/);
+  assert.equal(commandSource.match(/preparePrintPages\(services,/g)?.length, 2);
+  assert.match(commandSource, /createPrintSurface\(\)/);
+  assert.match(commandSource, /createPrintPreviewSurface\(\)/);
   assert.match(commandSource, /surface\.window\.print\(\)/);
-  assert.doesNotMatch(commandSource, /window\.open\(/);
-  assert.doesNotMatch(commandSource, /about:blank/);
+  assert.match(printSurfaceSource, /hostWindow\.open\(surfaceUrl, '_blank'\)/);
+  assert.doesNotMatch(printSurfaceSource, /about:blank/);
 });
 
 test('print pipeline은 명시적인 print profile SVG만 사용한다', () => {
@@ -31,9 +46,25 @@ test('파일 메뉴는 별도 PDF 진입점과 브라우저의 남은 단계를 
   assert.match(indexHtml, /data-cmd="file:print"/);
 });
 
+test('PDF 경로는 안내·진행 모달을 닫은 뒤 native 인쇄창을 호출한다', () => {
+  assert.match(pdfDialogSource, /PDF_PRINT_GUIDANCE/);
+  assert.match(pdfDialogSource, /인쇄 창 열기/);
+  assert.match(pdfDialogSource, /printProgressText\('pdf'/);
+  assert.match(commandSource, /dialog\.closeBeforePrint\(\)/);
+  assert.match(commandSource, /await waitForHostPaint\(\)/);
+  assert.doesNotMatch(commandSource, /data\.toastKind|PDF_FEEDBACK_MIN_VISIBLE_MS/);
+});
+
+test('인쇄 전용 문서는 same-origin 미리보기 loading surface를 제공한다', () => {
+  assert.match(printHtml, /인쇄 미리보기를 준비하고 있습니다/);
+  assert.match(commandSource, /appendPrintPreviewBar/);
+  assert.match(commandSource, /id = 'print-btn'/);
+  assert.match(commandSource, /id = 'close-btn'/);
+});
+
 test('print pipeline은 저장 handle·파일명·dirty 상태를 변경하지 않는다', () => {
   const printSection = commandSource.slice(
-    commandSource.indexOf('async function runBrowserPrint'),
+    commandSource.indexOf('async function preparePrintPages'),
     commandSource.indexOf('export const fileCommands'),
   );
   assert.doesNotMatch(printSection, /\.fileName\s*=/);

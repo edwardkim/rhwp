@@ -2,17 +2,37 @@ const DEFAULT_PRINT_SURFACE_PATH = 'print.html';
 const DEFAULT_PRINT_SURFACE_TIMEOUT_MS = 10_000;
 const PRINT_FRAME_ID = 'rhwp-print-surface';
 
-export interface PrintSurface {
-  readonly frame: HTMLIFrameElement;
+export interface PrintDocumentSurface {
   readonly window: Window;
   readonly document: Document;
+}
+
+export interface PrintSurface extends PrintDocumentSurface {
+  readonly frame: HTMLIFrameElement;
   dispose(): void;
+}
+
+export interface PrintPreviewSurface extends PrintDocumentSurface {
+  close(): void;
 }
 
 export interface PrintSurfaceOptions {
   hostDocument?: Document;
   surfacePath?: string;
   timeoutMs?: number;
+}
+
+export interface PrintPreviewSurfaceOptions {
+  hostWindow?: Window;
+  surfacePath?: string;
+  timeoutMs?: number;
+}
+
+export class PrintPreviewBlockedError extends Error {
+  constructor() {
+    super('인쇄 미리보기 팝업이 차단되었습니다.');
+    this.name = 'PrintPreviewBlockedError';
+  }
 }
 
 export function resolvePrintSurfaceUrl(
@@ -103,13 +123,78 @@ export async function createPrintSurface(
   };
 }
 
+/**
+ * 사용자 클릭의 동기 구간에서 same-origin 인쇄 미리보기 창을 먼저 확보한다.
+ * 함수가 Promise를 반환하지만 window.open 자체는 첫 await 전에 즉시 실행된다.
+ */
+export function createPrintPreviewSurface(
+  options: PrintPreviewSurfaceOptions = {},
+): Promise<PrintPreviewSurface> {
+  const hostWindow = options.hostWindow ?? window;
+  const surfaceUrl = resolvePrintSurfaceUrl(
+    hostWindow.document.baseURI,
+    options.surfacePath ?? DEFAULT_PRINT_SURFACE_PATH,
+  );
+  const timeoutMs = options.timeoutMs ?? DEFAULT_PRINT_SURFACE_TIMEOUT_MS;
+  const previewWindow = hostWindow.open(surfaceUrl, '_blank');
+  if (!previewWindow) {
+    return Promise.reject(new PrintPreviewBlockedError());
+  }
+
+  return new Promise<PrintPreviewSurface>((resolve, reject) => {
+    let settled = false;
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      hostWindow.clearTimeout(timeoutId);
+      previewWindow.removeEventListener('load', onLoad);
+
+      if (error) {
+        previewWindow.close();
+        reject(error);
+        return;
+      }
+
+      try {
+        const previewDocument = previewWindow.document;
+        if (previewWindow.location.origin !== hostWindow.location.origin) {
+          throw new Error('인쇄 미리보기 창의 origin이 Studio와 다릅니다.');
+        }
+        resolve({
+          window: previewWindow,
+          document: previewDocument,
+          close() {
+            if (!previewWindow.closed) previewWindow.close();
+          },
+        });
+      } catch (error) {
+        previewWindow.close();
+        reject(error);
+      }
+    };
+    const onLoad = () => finish();
+    const timeoutId = hostWindow.setTimeout(
+      () => finish(new Error('인쇄 미리보기 준비 시간이 초과되었습니다.')),
+      timeoutMs,
+    );
+
+    previewWindow.addEventListener('load', onLoad);
+    if (
+      previewWindow.location.href === surfaceUrl
+      && previewWindow.document.readyState === 'complete'
+    ) {
+      hostWindow.queueMicrotask(onLoad);
+    }
+  });
+}
+
 function waitForAnimationFrame(windowLike: Window): Promise<void> {
   return new Promise((resolve) => {
     windowLike.requestAnimationFrame(() => resolve());
   });
 }
 
-export async function waitForPrintSurfaceReady(surface: PrintSurface): Promise<void> {
+export async function waitForPrintSurfaceReady(surface: PrintDocumentSurface): Promise<void> {
   const fontSet = surface.document.fonts;
   if (fontSet) {
     await fontSet.ready;

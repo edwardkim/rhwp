@@ -40,6 +40,8 @@ test('buildPrintStyleText는 혼합 방향 페이지의 @page size를 페이지�
   assert.match(css, /@page rhwp-print-page-1 \{ size: 210mm 297mm; margin: 0; \}/);
   assert.match(css, /@page rhwp-print-page-2 \{ size: 297mm 210mm; margin: 0; \}/);
   assert.match(css, /\.rhwp-print-page-2 \{ page: rhwp-print-page-2; width: 297mm; height: 210mm; \}/);
+  assert.match(css, /\.print-preview-bar/);
+  assert.match(css, /@media print \{ \.print-preview-bar \{ display: none !important; \} \}/);
   assert.equal(css.includes('@page { size:'), false);
 });
 
@@ -74,5 +76,5 @@ test('PDF 인쇄 의도는 준비 상태와 남은 브라우저 단계를 명확
 
 test('일반 인쇄는 같은 진행 helper를 쓰되 PDF 안내를 표시하지 않는다', () => {
   assert.equal(printProgressText('print', 1, 3), '인쇄 준비 중… (1/3)');
-  assert.equal(printReadyText('print'), '인쇄 준비 완료…');
+  assert.equal(printReadyText('print'), '인쇄 미리보기 준비 완료');
 });

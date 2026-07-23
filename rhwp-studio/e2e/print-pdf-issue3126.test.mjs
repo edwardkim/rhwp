@@ -1,5 +1,6 @@
 /**
- * Issue #3126 — 발견 가능한 PDF 저장 진입점과 same-origin iframe print pipeline.
+ * Issue #3126 — PDF 안내/진행 모달, same-origin iframe PDF 경로,
+ * same-origin 인쇄 미리보기 창.
  *
  * 자동화는 native 인쇄 대화상자 대신 iframe의 print()만 가로챈다. 구성된 인쇄
  * 문서는 별도 headless page에서 CDP printToPDF로 변환해 페이지 수와 검색 가능한
@@ -23,7 +24,8 @@ async function installPrintCapture(page) {
     window.__documentState.markDirty('issue-3126-e2e');
     window.__issue3126 = {
       sentinelHandle,
-      sawPreparingFeedback: false,
+      sawPdfConfirmDialog: false,
+      sawPdfProgress: false,
       before: {
         fileName: window.__wasm.fileName,
         isDirty: window.__documentState.isDirty(),
@@ -31,13 +33,18 @@ async function installPrintCapture(page) {
       capture: null,
     };
 
-    const feedbackObserver = new MutationObserver(() => {
-      const feedback = document.querySelector('[data-toast-kind="print-feedback"]');
-      if ((feedback?.textContent || '').includes('PDF 준비 중')) {
-        window.__issue3126.sawPreparingFeedback = true;
+    const dialogObserver = new MutationObserver(() => {
+      const dialog = document.querySelector('[data-testid="pdf-print-dialog"]');
+      const dialogText = dialog?.textContent || '';
+      if (dialogText.includes('PDF로 저장') && dialogText.includes('인쇄 창')) {
+        window.__issue3126.sawPdfConfirmDialog = true;
+      }
+      const progress = document.querySelector('[data-testid="pdf-print-progress"]');
+      if (progress && !progress.hidden && (progress.textContent || '').includes('PDF 준비 중')) {
+        window.__issue3126.sawPdfProgress = true;
       }
     });
-    feedbackObserver.observe(document.body, {
+    dialogObserver.observe(document.body, {
       childList: true,
       subtree: true,
       characterData: true,
@@ -68,9 +75,10 @@ async function installPrintCapture(page) {
                 hostOrigin: window.location.origin,
                 printCallCount: 1,
                 statusAtPrint: document.getElementById('sb-message')?.textContent || '',
-                sawPreparingFeedback: window.__issue3126.sawPreparingFeedback,
-                printFeedbackVisibleAtPrint:
-                  Boolean(document.querySelector('[data-toast-kind="print-feedback"]')),
+                sawPdfConfirmDialog: window.__issue3126.sawPdfConfirmDialog,
+                sawPdfProgress: window.__issue3126.sawPdfProgress,
+                pdfDialogVisibleAtPrint:
+                  Boolean(document.querySelector('[data-testid="pdf-print-dialog"]')),
                 title: printDocument.title,
                 html: printDocument.documentElement.outerHTML,
                 styleText: [...printDocument.querySelectorAll('style')]
@@ -96,7 +104,7 @@ async function installPrintCapture(page) {
     });
     observer.observe(document.body, { childList: true });
     window.__issue3126.observer = observer;
-    window.__issue3126.feedbackObserver = feedbackObserver;
+    window.__issue3126.dialogObserver = dialogObserver;
   });
 }
 
@@ -117,6 +125,25 @@ async function clickPdfMenuItem(page) {
   });
 }
 
+async function confirmPdfDialog(page) {
+  await page.waitForSelector('[data-testid="pdf-print-dialog"]', { timeout: 10_000 });
+  return page.evaluate(() => {
+    const dialog = document.querySelector('[data-testid="pdf-print-dialog"]');
+    const primary = dialog?.closest('.dialog-wrap')?.querySelector('.dialog-btn-primary');
+    if (!(primary instanceof HTMLButtonElement)) {
+      return { ok: false, reason: 'PDF 확인 버튼 없음', text: dialog?.textContent || '' };
+    }
+    const result = {
+      ok: true,
+      reason: '',
+      text: dialog?.textContent || '',
+      primaryLabel: primary.textContent || '',
+    };
+    primary.click();
+    return result;
+  });
+}
+
 async function capturePrintDocument(page) {
   await page.waitForFunction(() => window.__issue3126?.capture?.printCallCount === 1, {
     timeout: 60_000,
@@ -127,7 +154,7 @@ async function capturePrintDocument(page) {
   return page.evaluate(() => {
     const state = window.__issue3126;
     state.observer?.disconnect();
-    state.feedbackObserver?.disconnect();
+    state.dialogObserver?.disconnect();
     return {
       before: state.before,
       capture: state.capture,
@@ -178,7 +205,7 @@ function inspectPdf(outputPath) {
   return { pageCount, text };
 }
 
-function assertSharedPdfContract(menu, result) {
+function assertSharedPdfContract(menu, dialog, result) {
   const { before, capture, after } = result;
   assert(menu.ok, `PDF로 저장 메뉴 클릭 (${menu.reason || ''})`);
   assert(menu.label.includes('PDF로 저장'), '별도 PDF로 저장 메뉴 label');
@@ -186,12 +213,19 @@ function assertSharedPdfContract(menu, result) {
     menu.tooltip.includes('대상') && menu.tooltip.includes('PDF로 저장'),
     '남은 브라우저 단계 tooltip 안내',
   );
+  assert(dialog.ok, `PDF 안내 모달 확인 (${dialog.reason || ''})`);
+  assert(
+    dialog.text.includes('대상') && dialog.text.includes('PDF로 저장'),
+    'PDF 모달에서 브라우저 인쇄 대상 안내',
+  );
+  assert(dialog.primaryLabel.includes('인쇄 창 열기'), 'PDF 모달의 명시적 확인 버튼');
   assert(capture.frameOrigin === capture.hostOrigin, 'same-origin print iframe');
   assert(!capture.frameHref.startsWith('about:blank'), 'about:blank 비사용');
   assert(capture.frameHref.endsWith('/print.html'), '전용 print.html surface');
-  assert(capture.printCallCount === 1, 'rhwp 한 번 클릭으로 print() 자동 1회 호출');
-  assert(capture.sawPreparingFeedback, '인쇄창을 열기 전에 PDF 준비 피드백 표시');
-  assert(!capture.printFeedbackVisibleAtPrint, '네이티브 인쇄창 호출 전에 안내 토스트 제거');
+  assert(capture.printCallCount === 1, '모달 확인 뒤 print() 자동 1회 호출');
+  assert(capture.sawPdfConfirmDialog, 'PDF 안내 모달 표시');
+  assert(capture.sawPdfProgress, '같은 모달에서 PDF 준비 진행률 표시');
+  assert(!capture.pdfDialogVisibleAtPrint, '네이티브 인쇄창 호출 전에 PDF 모달 제거');
   assert(capture.statusAtPrint.includes('PDF 준비 완료'), 'print() 직전 PDF 준비 완료 상태');
   assert(capture.styleText.includes('@page rhwp-print-page-1'), '페이지별 named @page');
   assert(capture.textElementCount > 0, '검색 가능한 SVG text 요소 보존');
@@ -207,8 +241,14 @@ await runTest('#3126 PDF 경로 — #2524 embedded bitmap/SVG font 회귀', asyn
   const load = await loadHwpFile(page, 'render-p35-font-native-bitmap.hwpx');
   await installPrintCapture(page);
   const menu = await clickPdfMenuItem(page);
+  mkdirSync(OUTPUT_DIR, { recursive: true });
+  await page.screenshot({
+    path: `${OUTPUT_DIR}/pdf-guidance-modal.png`,
+    fullPage: false,
+  });
+  const dialog = await confirmPdfDialog(page);
   const result = await capturePrintDocument(page);
-  assertSharedPdfContract(menu, result);
+  assertSharedPdfContract(menu, dialog, result);
 
   assert(result.capture.pages.length === load.pageCount, '인쇄 페이지 수 = 문서 페이지 수');
   assert(result.capture.embeddedFontRuleCount > 0, '#2524 embedded font @font-face 보존');
@@ -234,8 +274,9 @@ await runTest('#3126 PDF 경로 — #2525 다중 페이지/검색 텍스트 회�
   assert(load.pageCount > 1, '#2525 fixture는 다중 페이지');
   await installPrintCapture(page);
   const menu = await clickPdfMenuItem(page);
+  const dialog = await confirmPdfDialog(page);
   const result = await capturePrintDocument(page);
-  assertSharedPdfContract(menu, result);
+  assertSharedPdfContract(menu, dialog, result);
 
   assert(result.capture.pages.length === load.pageCount, '모든 #2525 페이지가 인쇄 문서에 포함됨');
   for (let index = 0; index < load.pageCount; index++) {
@@ -251,4 +292,88 @@ await runTest('#3126 PDF 경로 — #2525 다중 페이지/검색 텍스트 회�
   if (pdf.text !== null) {
     assert(pdf.text.replace(/\s/g, '').length > 20, '생성 PDF 검색 텍스트가 비어 있지 않음');
   }
+});
+
+async function clickPrintMenuItem(page) {
+  return page.evaluate(() => {
+    const fileMenu = [...document.querySelectorAll('#menu-bar .menu-item')]
+      .find((element) => (element.textContent || '').includes('파일'));
+    const title = fileMenu?.querySelector('.menu-title');
+    if (!title) return { ok: false, reason: '파일 메뉴 없음' };
+    title.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+
+    const item = document.querySelector('.md-item[data-cmd="file:print"]');
+    if (!item) return { ok: false, reason: '인쇄 메뉴 없음' };
+    item.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    return { ok: true, reason: '', label: item.textContent || '' };
+  });
+}
+
+await runTest('#3126 인쇄 경로 — same-origin 미리보기와 수동 인쇄', async ({ page }) => {
+  const load = await loadHwpFile(page, 'hwpx/hwpx-02.hwpx');
+  const before = await page.evaluate(() => {
+    const sentinelHandle = { kind: 'file', name: 'issue-3126-preview.hwpx' };
+    window.__wasm.currentFileHandle = sentinelHandle;
+    window.__wasm.fileName = 'issue-3126-preview.hwpx';
+    window.__documentState.markDirty('issue-3126-preview-e2e');
+    window.__issue3126Preview = { sentinelHandle };
+    return {
+      fileName: window.__wasm.fileName,
+      isDirty: window.__documentState.isDirty(),
+    };
+  });
+
+  const popupPromise = new Promise((resolve) => page.once('popup', resolve));
+  const menu = await clickPrintMenuItem(page);
+  assert(menu.ok, `기존 인쇄 메뉴 클릭 (${menu.reason || ''})`);
+  const preview = await popupPromise;
+  await preview.waitForSelector('#print-btn', { timeout: 60_000 });
+  mkdirSync(OUTPUT_DIR, { recursive: true });
+  await preview.screenshot({
+    path: `${OUTPUT_DIR}/print-preview.png`,
+    fullPage: false,
+  });
+
+  const previewState = await preview.evaluate(() => ({
+    href: location.href,
+    origin: location.origin,
+    title: document.title,
+    toolbarText: document.querySelector('.print-preview-bar')?.textContent || '',
+    pageCount: document.querySelectorAll('.page').length,
+    hasPrintButton: Boolean(document.getElementById('print-btn')),
+    hasCloseButton: Boolean(document.getElementById('close-btn')),
+  }));
+  const hostOrigin = new URL(page.url()).origin;
+  assert(previewState.origin === hostOrigin, '인쇄 미리보기 same-origin');
+  assert(!previewState.href.startsWith('about:blank'), '인쇄 미리보기 about:blank 비사용');
+  assert(previewState.href.endsWith('/print.html'), '인쇄 미리보기 전용 print.html');
+  assert(previewState.title.includes('인쇄 미리보기'), '인쇄 미리보기 창 제목');
+  assert(previewState.toolbarText.includes('인쇄'), '미리보기 인쇄 도구');
+  assert(previewState.hasPrintButton && previewState.hasCloseButton, '인쇄/닫기 버튼');
+  assert(previewState.pageCount === load.pageCount, '미리보기 페이지 수 = 문서 페이지 수');
+
+  await preview.evaluate(() => {
+    window.__issue3126PreviewPrintCalls = 0;
+    window.print = () => {
+      window.__issue3126PreviewPrintCalls += 1;
+    };
+  });
+  await preview.click('#print-btn');
+  const printCallCount = await preview.evaluate(() => window.__issue3126PreviewPrintCalls);
+  assert(printCallCount === 1, '미리보기 인쇄 버튼이 print() 1회 호출');
+
+  const after = await page.evaluate(() => ({
+    sameHandle:
+      window.__wasm.currentFileHandle === window.__issue3126Preview.sentinelHandle,
+    fileName: window.__wasm.fileName,
+    isDirty: window.__documentState.isDirty(),
+  }));
+  assert(after.sameHandle, '미리보기 전후 file handle 불변');
+  assert(after.fileName === before.fileName, '미리보기 전후 파일명 불변');
+  assert(before.isDirty && after.isDirty, '미리보기 전후 dirty 상태 불변');
+
+  const closePromise = new Promise((resolve) => preview.once('close', resolve));
+  await preview.click('#close-btn');
+  await closePromise;
+  assert(true, '미리보기 닫기 버튼으로 창 종료');
 });
