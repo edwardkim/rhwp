@@ -110,7 +110,8 @@ mod tests {
         // jong_idx=0 은 종성 매핑에서 -1(무효)이며, "받침 없음"은 jong_idx=1 이
         // 별도로 나타낸다. 무효 jong_idx 를 받침 없음으로 오인하면 존재하지
         // 않아야 할 완성형 음절 '가'(U+AC00)가 잘못 생성된다.
-        let ch: u16 = 0x8000 | (2 << 10) | (3 << 5) | 0;
+        let jong_idx = 0;
+        let ch: u16 = 0x8000 | (2 << 10) | (3 << 5) | jong_idx;
         assert_ne!(decode_johab(ch), '가');
     }
 }

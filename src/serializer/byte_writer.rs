@@ -209,9 +209,7 @@ mod tests {
     fn test_write_hwp_string_overlong_truncates_instead_of_wrapping() {
         // u16::MAX(65535) 초과 길이 문자열을 그대로 쓰면 `as u16` 캐스팅이 wraparound 되어
         // 기록된 길이 필드와 실제 바이트열이 어긋난 손상 레코드가 생긴다.
-        let s: String = std::iter::repeat('A')
-            .take(u16::MAX as usize + 10)
-            .collect();
+        let s: String = "A".repeat(u16::MAX as usize + 10);
         let mut w = ByteWriter::new();
         w.write_hwp_string(&s).unwrap();
         let bytes = w.into_bytes();
