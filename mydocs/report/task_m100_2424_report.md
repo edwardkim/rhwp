@@ -2,7 +2,7 @@
 
 - 이슈: [#2424](https://github.com/edwardkim/rhwp/issues/2424)
 - 최종 기준: `upstream/devel@cbddc1cd8`
-- 작업 브랜치: `codex/issue-2424-resumable-pagination-v3`
+- 작업 브랜치: `issue-2424-resumable-pagination-v3`
 - 작성일: 2026-07-23
 
 ## 결론
