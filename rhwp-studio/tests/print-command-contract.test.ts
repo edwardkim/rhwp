@@ -51,6 +51,14 @@ test('파일 메뉴는 별도 PDF 진입점과 브라우저의 남은 단계를 
   assert.match(indexHtml, /data-cmd="file:print-to-pdf"/);
   assert.match(indexHtml, />PDF로 저장…</);
   assert.match(indexHtml, /대상 → PDF로 저장/);
+  const saveAsIndex = indexHtml.indexOf('data-cmd="file:save-as"');
+  const pdfIndex = indexHtml.indexOf('data-cmd="file:print-to-pdf"');
+  const hwpIndex = indexHtml.indexOf('data-cmd="file:save-as-hwp"');
+  assert.ok(
+    saveAsIndex >= 0 && saveAsIndex < pdfIndex,
+    'PDF 저장은 다른 이름으로 저장 다음에 배치한다',
+  );
+  assert.ok(pdfIndex < hwpIndex, 'PDF 저장은 명시적 HWP/HWPX 형식 저장보다 앞에 배치한다');
   assert.match(
     indexHtml,
     /data-cmd="file:print-to-pdf"[^>]*>.*class="md-icon icon-pdf"/,
