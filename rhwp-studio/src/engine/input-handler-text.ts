@@ -378,10 +378,12 @@ export function onCompositionStart(this: any): void {
     this.textarea.value = '';
     this.isComposing = false;
     this.compositionAnchor = null;
+    this.clearCompositionAnchorRect();
     this.compositionLength = 0;
     return;
   }
 
+  this.captureCompositionAnchorRect(basePos);
   this.isComposing = true;
   if (this.cursor.isInHeaderFooter()) {
     // 머리말/꼬리말 모드에서는 hfCharOffset을 anchor의 charOffset으로 사용
@@ -401,6 +403,7 @@ export function onCompositionEnd(this: any): void {
 
   this.isComposing = false;
   this.compositionAnchor = null;
+  this.clearCompositionAnchorRect();
   this.compositionLength = 0;
   this.textarea.value = '';
   this.caret.hideComposition();

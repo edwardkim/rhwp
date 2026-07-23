@@ -373,6 +373,14 @@ async function installTrace(page) {
       parentParaIndex: args[1],
       charOffset: args[3],
     }));
+    wrap(wasm, 'getCursorRectInCell', 'wasm.getCursorRectInCell', (args) => ({
+      sectionIndex: args[0],
+      parentParaIndex: args[1],
+      controlIndex: args[2],
+      cellIndex: args[3],
+      cellParaIndex: args[4],
+      charOffset: args[5],
+    }));
     wrap(input.cursor, 'updateRect', 'CursorState.updateRect');
     wrap(input.cursor, 'moveTo', 'CursorState.moveTo', (args) => ({
       charOffset: args[0]?.charOffset,
@@ -446,6 +454,7 @@ async function collectTrace(page) {
         renderPageSvg: count('wasm.renderPageSvg'),
         cursorRectNear: count('wasm.getCursorRectByPathNear'),
         cursorRect: count('wasm.getCursorRectByPath'),
+        cursorRectInCell: count('wasm.getCursorRectInCell'),
         executeOperation: count('InputHandler.executeOperation'),
         prepareTextMutation: count('InputHandler.prepareTextMutationBeforeCursor'),
       },
@@ -1450,6 +1459,7 @@ async function runMultiUpdateImeSmoke(page, format, bytes) {
   assert.equal(trace.counts.deferredDelete, 2, `${format} IME replacement delete count`);
   assert.equal(trace.counts.immediateDelete, 0, `${format} IME synchronous flat delete count`);
   assert.equal(trace.counts.pathDelete, 0, `${format} IME path delete count`);
+  assert.equal(trace.counts.cursorRectInCell, 0, `${format} IME anchor cursor lookup count`);
   assert.equal(trace.counts.prepareTextMutation, 3, `${format} IME effect consumption count`);
   assert.equal(trace.counts.wasmFlush, 0, `${format} IME synchronous flush count`);
   assert.deepEqual(deletes.map((event) => event.charOffset), [
@@ -1462,6 +1472,92 @@ async function runMultiUpdateImeSmoke(page, format, bytes) {
   await restoreTrace(page);
   console.log(`  multi-update IME smoke: GREEN, updates=${durationsMs.map((v) => v.toFixed(1)).join('/')}ms`);
   return { format, durationsMs, traceCounts: trace.counts };
+}
+
+async function runImeAcrossPaginationCommitSmoke(page, format, bytes) {
+  await restoreTrace(page);
+  await openDocumentThroughApp(page, format, bytes);
+  await moveToTarget(page);
+  const initial = await readFocusedSnapshot(page);
+  await typeKeyboardOnes(page, 55);
+  await installTrace(page);
+
+  const firstDurationMs = await page.evaluate(() => {
+    const textarea = window.__inputHandler.textarea;
+    textarea.dispatchEvent(new CompositionEvent('compositionstart', {
+      bubbles: true,
+      data: '',
+    }));
+    textarea.value = 'ㅎ';
+    const startedAt = performance.now();
+    textarea.dispatchEvent(new InputEvent('input', {
+      bubbles: true,
+      data: 'ㅎ',
+      inputType: 'insertCompositionText',
+      isComposing: true,
+    }));
+    return performance.now() - startedAt;
+  });
+  assert.equal(
+    await page.evaluate(() => window.__inputHandler.hasDeferredPaginationPending()),
+    true,
+    `${format} IME pagination-commit precondition`,
+  );
+
+  await waitForDeferredPaginationCompletion(page);
+  const afterCommit = await collectTrace(page);
+  assert.equal(
+    afterCommit.counts.cursorRectInCell,
+    1,
+    `${format} IME commit must refresh the invalidated anchor exactly once`,
+  );
+
+  const secondDurationMs = await page.evaluate(() => {
+    const textarea = window.__inputHandler.textarea;
+    textarea.value = '하';
+    const startedAt = performance.now();
+    textarea.dispatchEvent(new InputEvent('input', {
+      bubbles: true,
+      data: '하',
+      inputType: 'insertCompositionText',
+      isComposing: true,
+    }));
+    return performance.now() - startedAt;
+  });
+  await page.evaluate(() => {
+    const textarea = window.__inputHandler.textarea;
+    textarea.dispatchEvent(new CompositionEvent('compositionend', {
+      bubbles: true,
+      data: '하',
+    }));
+  });
+  await waitTwoRafs(page);
+
+  const snapshot = await readFocusedSnapshot(page);
+  assert.equal(
+    snapshot.model.text,
+    `${initial.model.text}${'1'.repeat(55)}하`,
+    `${format} IME pagination-commit final text`,
+  );
+  assert.equal(snapshot.cursor.position.charOffset, TARGET.charOffset + 56, `${format} IME commit cursor offset`);
+  const trace = await collectTrace(page);
+  assert.equal(
+    trace.counts.cursorRectInCell,
+    1,
+    `${format} IME update after commit must reuse the refreshed anchor`,
+  );
+  assert.equal(trace.counts.immediateDelete, 0, `${format} IME commit synchronous delete count`);
+  assert.equal(trace.counts.wasmFlush, 0, `${format} IME commit synchronous flush count`);
+  await restoreTrace(page);
+  console.log(
+    `  IME pagination-commit smoke: GREEN, updates=${firstDurationMs.toFixed(1)}/${secondDurationMs.toFixed(1)}ms`,
+  );
+  return {
+    format,
+    firstDurationMs,
+    secondDurationMs,
+    cursorRectInCell: trace.counts.cursorRectInCell,
+  };
 }
 
 async function runDeleteKeySmoke(page, format, bytes, key) {
@@ -1798,6 +1894,7 @@ async function runFocusedMain() {
       reviewSmokes.push(await runDeleteKeySmoke(page, format, fixtures[format].bytes, 'Backspace'));
       reviewSmokes.push(await runDeleteKeySmoke(page, format, fixtures[format].bytes, 'Delete'));
       reviewSmokes.push(await runMultiUpdateImeSmoke(page, format, fixtures[format].bytes));
+      reviewSmokes.push(await runImeAcrossPaginationCommitSmoke(page, format, fixtures[format].bytes));
       reviewSmokes.push(await runSaveBarrierSmoke(page, format, fixtures[format].bytes));
       if (format === 'hwp') {
         reviewSmokes.push(await runPrintBarrierSmoke(page, format, fixtures[format].bytes));

@@ -21,6 +21,12 @@ Backspace/Delete WASM 호출은 1.5~2.5ms, `ㅎ→하→한` 조합 input handle
 기존 약 917ms 동기 삭제 프리즈와 자모별 full pagination은 사라졌다. Enter는 구조 변경이므로
 후속 범위로 분리했다.
 
+추가 계측에서 일반 문자 0.1ms는 WASM mutation만, IME 71~75ms는 handler 전체를 잰 값임을
+정정했다. 같은 범위에서 영문 stable operation은 p50 46.0ms, p95 47.6ms였고, IME가 조합 anchor
+좌표를 한 번 더 조회해 약 25~28ms를 추가로 썼다. 조합 시작 좌표를 보존하고 pagination 공개
+레이아웃 교체 시 폐기하도록 보정한 뒤 HWP IME는 45.5~48.2ms, HWPX는 46.9~49.7ms로 줄어
+영문 operation과 사실상 같은 수준이 됐다.
+
 ## 원인과 구현
 
 Stage A 계측에서 전체 incremental flush의 98.7~98.8%가 `TypesetEngine`이었고, 하나의 대형
@@ -50,7 +56,7 @@ long task를 해소할 수 없어 다음 계층으로 구현했다.
   - model/tree/layout/cursor/caret와 page 0 crop exact 유지.
 - IME/iOS stable·boundary smoke 모두 통과.
 - Rust 전체 library: 2537 passed, 0 failed, 7 ignored.
-- Studio: 511 passed, production build 통과.
+- Studio: 512 passed, production build 통과.
 - wasm32 check, wasm-pack web build, fmt, clippy, #2214 focused 회귀 통과.
 - PR #3125 CI 후속으로 #2724 패스스루 분류 가드에 pagination API 4개의 `SessionState` 근거를
   등록했고, 해당 integration guard 5건을 통과했다.
@@ -59,6 +65,10 @@ long task를 해소할 수 없어 다음 계층으로 구현했다.
   55자 full-pagination oracle과 일치함을 HWP/HWPX 양쪽에서 확인했다.
 - pending 경계 입력 직후 실제 저장을 실행해 `flush → HWP/HWPX export`, 저장본 최신 텍스트·115쪽
   재오픈을 확인했고, 실제 인쇄는 `flush → 첫 SVG render` 뒤 115페이지를 생성했다.
+- IME 조합 caret의 direct `getCursorRectInCell` 재조회는 HWP/HWPX 모두 0회이고, 조합 anchor
+  캐시는 pagination commit/flush와 입력 세션 종료에서 폐기된다.
+- 조합 중 shadow pagination이 실제 commit되는 경계에서는 anchor rect를 정확히 1회 갱신하고
+  다음 자모가 새 캐시를 재사용함을 HWP/HWPX 브라우저 smoke로 확인했다.
 
 세부 수치와 단계별 계약은 다음 문서에 있다.
 
@@ -68,6 +78,7 @@ long task를 해소할 수 없어 다음 계층으로 구현했다.
 - `mydocs/working/task_m100_2424_stage4.md`
 - `mydocs/working/task_m100_2424_stage5.md`
 - `mydocs/working/task_m100_2424_stage6.md`
+- `mydocs/working/task_m100_2424_stage7.md`
 
 ## 잔여 위험과 후속 후보
 
@@ -79,6 +90,9 @@ long task를 해소할 수 없어 다음 계층으로 구현했다.
   blocking slice 분할과 정확한 atomic commit이다.
 - Enter는 `splitParagraphInCell` 구조 편집이므로 삭제·IME 보정에 포함하지 않았다. 구조 fingerprint와
   undo/selection 계약을 별도로 설계한 뒤 후속 최적화로 다룬다.
+- 일반 영문과 IME에 공통으로 남은 `getCursorRectByPathNear()`는 HWP p50 44.8ms, p95 45.6ms로
+  stable operation의 지배 항이다. 종료된 #2021/#2193을 다시 열기보다 별도 후속 성능 이슈로
+  분리해 deferred mutation cursor 결과나 focused-cell layout cache를 검토한다.
 
 현재 fast path 대상인 이슈 fixture의 완료 조건은 모두 만족한다. 원격 push, PR 생성과 이슈 상태 변경은
 작업지시자 승인 전에는 수행하지 않는다.

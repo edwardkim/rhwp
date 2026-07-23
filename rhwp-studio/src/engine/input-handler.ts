@@ -451,6 +451,8 @@ export class InputHandler {
   // IME 조합 상태
   private isComposing = false;
   private compositionAnchor: DocumentPosition | null = null;
+  /** 조합 시작 시점의 exact 좌표. 조합 갱신마다 같은 anchor를 다시 탐색하지 않는다. */
+  private compositionAnchorRect: CursorRect | null = null;
   private compositionLength = 0; // 문서에 삽입된 조합 텍스트 길이
   private _lastCompositionText = '';
   private _lastComposedText = '';
@@ -2332,6 +2334,22 @@ export class InputHandler {
     _text.onCompositionStart.call(this);
   }
 
+  /** 현재 cursor가 조합 anchor와 같을 때 시작 좌표를 안전하게 보존한다. */
+  private captureCompositionAnchorRect(anchor: DocumentPosition): void {
+    const current = this.cursor.getPosition();
+    const rect = this.cursor.getRect();
+    this.compositionAnchorRect = rect && CursorState.comparePositions(current, anchor) === 0
+      ? {
+          ...rect,
+          cellBounds: rect.cellBounds ? { ...rect.cellBounds } : undefined,
+        }
+      : null;
+  }
+
+  private clearCompositionAnchorRect(): void {
+    this.compositionAnchorRect = null;
+  }
+
   /** IME 조합 완료 — 조합 텍스트를 Command로 기록 */
   private onCompositionEnd(): void {
     _text.onCompositionEnd.call(this);
@@ -2414,6 +2432,9 @@ export class InputHandler {
       this.deferredPaginationPending = false;
       this.lastCellKey = null;
       this.protectedCellHitCache = null;
+      if (this.isComposing) {
+        this.compositionAnchorRect = null;
+      }
       this.eventBus.emit('document-mutated', 'input-handler-cell-overflow');
       this.eventBus.emit('document-changed', 'cell-overflow-pagination');
       this.cursor.moveTo(this.cursor.getPosition());
@@ -2467,6 +2488,9 @@ export class InputHandler {
     this.deferredPaginationPending = false;
     this.lastCellKey = null;
     this.protectedCellHitCache = null;
+    if (this.isComposing) {
+      this.compositionAnchorRect = null;
+    }
     this.eventBus.emit('document-mutated', 'input-handler-resumable-pagination');
     this.eventBus.emit('document-changed', 'deferred-pagination-complete');
     const position = this.cursor.getPosition();
@@ -2506,6 +2530,9 @@ export class InputHandler {
       this.deferredPaginationRunner.cancel();
       this.wasm.flushDeferredPagination();
       this.deferredPaginationPending = false;
+      if (this.isComposing) {
+        this.compositionAnchorRect = null;
+      }
       if (emitChange) {
         this.eventBus.emit('document-changed', `deferred-pagination-flush:${reason}`);
       }
@@ -2601,33 +2628,39 @@ export class InputHandler {
       if (this.isComposing && this.compositionAnchor && this.compositionLength > 0) {
         try {
           const anchor = this.compositionAnchor;
-          let startRect: CursorRect;
-          if (this.cursor.isInHeaderFooter()) {
-            const isHeader = this.cursor.headerFooterMode === 'header';
-            startRect = this.wasm.getCursorRectInHeaderFooter(
-              this.cursor.hfSectionIdx, isHeader, this.cursor.hfApplyTo,
-              this.cursor.hfParaIdx, anchor.charOffset, this.cursor.getRect()?.pageIndex ?? 0,
-            )!;
-          } else if (this.cursor.isInFootnote()) {
-            startRect = this.wasm.getCursorRectInFootnote(
-              this.cursor.fnPageNum, this.cursor.fnFootnoteIndex,
-              this.cursor.fnInnerParaIdx, anchor.charOffset,
-            )!;
-          } else if ((anchor.cellPath?.length ?? 0) > 1 && anchor.parentParaIndex !== undefined) {
-            startRect = this.wasm.getCursorRectByPath(
-              anchor.sectionIndex, anchor.parentParaIndex,
-              JSON.stringify(anchor.cellPath), anchor.charOffset,
-            );
-          } else if (anchor.parentParaIndex !== undefined) {
-            startRect = this.wasm.getCursorRectInCell(
-              anchor.sectionIndex, anchor.parentParaIndex,
-              anchor.controlIndex!, anchor.cellIndex!,
-              anchor.cellParaIndex!, anchor.charOffset,
-            );
-          } else {
-            startRect = this.wasm.getCursorRect(
-              anchor.sectionIndex, anchor.paragraphIndex, anchor.charOffset,
-            );
+          let startRect = this.compositionAnchorRect;
+          if (!startRect) {
+            if (this.cursor.isInHeaderFooter()) {
+              const isHeader = this.cursor.headerFooterMode === 'header';
+              startRect = this.wasm.getCursorRectInHeaderFooter(
+                this.cursor.hfSectionIdx, isHeader, this.cursor.hfApplyTo,
+                this.cursor.hfParaIdx, anchor.charOffset, this.cursor.getRect()?.pageIndex ?? 0,
+              )!;
+            } else if (this.cursor.isInFootnote()) {
+              startRect = this.wasm.getCursorRectInFootnote(
+                this.cursor.fnPageNum, this.cursor.fnFootnoteIndex,
+                this.cursor.fnInnerParaIdx, anchor.charOffset,
+              )!;
+            } else if ((anchor.cellPath?.length ?? 0) > 1 && anchor.parentParaIndex !== undefined) {
+              startRect = this.wasm.getCursorRectByPath(
+                anchor.sectionIndex, anchor.parentParaIndex,
+                JSON.stringify(anchor.cellPath), anchor.charOffset,
+              );
+            } else if (anchor.parentParaIndex !== undefined) {
+              startRect = this.wasm.getCursorRectInCell(
+                anchor.sectionIndex, anchor.parentParaIndex,
+                anchor.controlIndex!, anchor.cellIndex!,
+                anchor.cellParaIndex!, anchor.charOffset,
+              );
+            } else {
+              startRect = this.wasm.getCursorRect(
+                anchor.sectionIndex, anchor.paragraphIndex, anchor.charOffset,
+              );
+            }
+            this.compositionAnchorRect = {
+              ...startRect,
+              cellBounds: startRect.cellBounds ? { ...startRect.cellBounds } : undefined,
+            };
           }
           const charWidth = rect.x - startRect.x;
           const text = this.textarea.value || '';
@@ -3149,6 +3182,7 @@ export class InputHandler {
     this.resetRawTextMutationEffects();
     this.isComposing = false;
     this.compositionAnchor = null;
+    this.compositionAnchorRect = null;
     this.compositionLength = 0;
     this._lastCompositionText = '';
     this._lastComposedText = '';
@@ -3192,6 +3226,7 @@ export class InputHandler {
     this.resetRawTextMutationEffects();
     this.isComposing = false;
     this.compositionAnchor = null;
+    this.compositionAnchorRect = null;
     this.compositionLength = 0;
     this._lastCompositionText = '';
     this._lastComposedText = '';
