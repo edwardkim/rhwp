@@ -217,8 +217,9 @@ WASM SHA-256은
 
 ## 남은 게이트
 
-로컬 구현·검증은 완료했다. 저장소 지침에 따라 다음 원격 변경은 아직 수행하지 않았다.
+로컬 구현·검증과 브랜치 push를 완료하고
+[draft PR #3130](https://github.com/edwardkim/rhwp/pull/3130)을 `devel` 대상으로 게시했다.
+한컴 oracle fidelity 문제는 [#3128](https://github.com/edwardkim/rhwp/issues/3128)에 분리했다.
 
-1. 원격 push
-2. draft PR 생성
-3. 이슈 결과 코멘트
+1. PR CI·review 대응
+2. #2308 구현 결과 코멘트

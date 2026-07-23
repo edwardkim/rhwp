@@ -10,7 +10,7 @@
 - 최종 재배치 기준: `upstream/devel@cbddc1cd87084b60685da9a2b4369a4511d86173`
 - 작성일: 2026-07-22
 - 승인일: 2026-07-23
-- 상태: 구현·전체 로컬 검증 완료, 원격 작업 승인 대기
+- 상태: 구현·전체 로컬 검증 완료, draft PR #3130 게시, CI·review 대기
 
 ## 1. 구현 불변식
 
@@ -309,4 +309,6 @@ working 문서에 고정한다. focused 결과를 공유한 뒤 전체 검증은
 이 계획은 2026-07-23 사용자 승인을 받았으며 Stage 1~6 구현과 전체 로컬 검증을 완료했다.
 `--all-targets` clippy와 대표 Studio baseline에서 발견한 실패는 같은
 `upstream/devel@cbddc1cd8`에서도 동일하게 재현되고 비교 산출물도 일치해 #2308 회귀에서
-분리했다. 남은 작업은 원격 push, draft PR, 이슈 결과 코멘트다.
+분리했다. 브랜치를 push하고
+[draft PR #3130](https://github.com/edwardkim/rhwp/pull/3130)을 `devel` 대상으로 게시했다.
+남은 작업은 CI·review 대응과 #2308 구현 결과 코멘트다.

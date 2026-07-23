@@ -6,7 +6,7 @@
 - 비교 기준: `upstream/devel@cbddc1cd87084b60685da9a2b4369a4511d86173`
 - 코드 기준: Stage 5 `6438a4cfb`
 - 완료일: 2026-07-23
-- 상태: 전체 로컬 회귀 검증·OVR 완료, 한컴 oracle gap #3128 분리, 원격 작업 승인 대기
+- 상태: 전체 로컬 회귀 검증·OVR 완료, 한컴 oracle gap #3128 분리, draft PR #3130 게시
 
 ## 최종 코드 동일성
 
@@ -116,8 +116,9 @@ sheet를 직접 판정했다. 이 판정은 upstream 대비 회귀 여부와 한
   invalidation/fallback 계약을 반영했다.
 - 최종 보고서에 Stage별 커밋과 focused/OVR 결과를 기록했다.
 
-## 남은 승인 게이트
+## 원격 현황
 
-1. 원격 push
-2. draft PR 생성
-3. 이슈 결과 코멘트
+- 브랜치 push: 완료
+- draft PR: [#3130](https://github.com/edwardkim/rhwp/pull/3130)
+- 한컴 oracle 후속: [#3128](https://github.com/edwardkim/rhwp/issues/3128)
+- 남은 작업: CI·review 대응, #2308 구현 결과 코멘트
