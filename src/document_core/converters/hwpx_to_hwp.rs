@@ -418,6 +418,9 @@ fn collect_bin_order_from_control(
         Control::Endnote(endnote) => {
             collect_bin_order_from_paragraphs(&endnote.paragraphs, bin_count, order, seen);
         }
+        Control::HiddenComment(comment) => {
+            collect_bin_order_from_paragraphs(&comment.paragraphs, bin_count, order, seen);
+        }
         _ => {}
     }
 }
@@ -3555,6 +3558,31 @@ mod tests {
         assert_eq!(
             inner.image_attr.bin_data_id, 2,
             "그룹 내부 그림 캡션 안 그림의 bin_data_id 도 재정렬 remap 을 반영해야 함"
+        );
+    }
+
+    #[test]
+    fn hidden_comment_picture_is_collected_into_bin_order() {
+        use crate::model::control::HiddenComment;
+        use crate::model::image::Picture;
+        use std::collections::BTreeSet;
+
+        let mut pic = Picture::default();
+        pic.image_attr.bin_data_id = 2;
+        let mut comment_para = Paragraph::default();
+        comment_para.controls.push(Control::Picture(Box::new(pic)));
+        let ctrl = Control::HiddenComment(Box::new(HiddenComment {
+            paragraphs: vec![comment_para],
+        }));
+
+        let mut order = Vec::new();
+        let mut seen = BTreeSet::new();
+        collect_bin_order_from_control(&ctrl, 2, &mut order, &mut seen);
+
+        assert_eq!(
+            order,
+            vec![2],
+            "숨은설명 안 그림의 bin_data_id 가 순서 수집에서 누락됨(숨은설명 문단 미방문)"
         );
     }
 }
