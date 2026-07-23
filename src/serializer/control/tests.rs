@@ -948,3 +948,62 @@ fn issue2715_shape_without_caption_emits_no_list_header() {
         "캡션 없는 도형은 LIST_HEADER 를 방출하면 안 됨"
     );
 }
+
+/// [#3143] 글자겹침(tcps) 라운드트립: 비BMP 문자(서로게이트 쌍)가 보존되어야 한다.
+///
+/// 파서(parse_char_overlap)는 WCHAR 배열에서 서로게이트 쌍을 디코딩하지만,
+/// 직렬화기는 `ch as u16` 절단 캐스팅으로 하위 16비트만 기록해 왕복이 깨진다.
+#[test]
+fn char_overlap_non_bmp_char_roundtrip() {
+    let co = CharOverlap {
+        chars: vec!['\u{1D400}'], // 𝐀 (MATHEMATICAL BOLD CAPITAL A)
+        border_type: 1,
+        inner_char_size: 100,
+        expansion: 0,
+        char_shape_ids: vec![3],
+    };
+    let data = serialize_char_overlap(&co);
+    let parsed = crate::parser::control::parse_control(tags::CTRL_TCPS, &data, &[]);
+    let Control::CharOverlap(r) = parsed else {
+        panic!("CharOverlap 이 아님");
+    };
+    assert_eq!(r.chars, vec!['\u{1D400}'], "비BMP 문자가 왕복 보존되어야 함");
+    assert_eq!(r.char_shape_ids, vec![3]);
+}
+
+/// [#3143] 글자겹침(tcps) charshape 카운트 필드: u8 랩어라운드로 레코드가 손상되면 안 된다.
+///
+/// HWPX `<hp:compose>` 는 `<hp:charPr>` 자식 수에 제한이 없어 256개 이상이 들어올 수 있고,
+/// 직렬화기의 `len() as u8` 캐스팅이 wraparound 되면 카운트 필드(256→0)와 실제 기록된
+/// ID 개수가 어긋난 손상 레코드가 만들어진다.
+#[test]
+fn char_overlap_256_char_shape_ids_no_wraparound() {
+    let co = CharOverlap {
+        chars: vec!['가'],
+        border_type: 0,
+        inner_char_size: 100,
+        expansion: 0,
+        char_shape_ids: (0u32..256).collect(),
+    };
+    let data = serialize_char_overlap(&co);
+    // 카운트 바이트: chars 카운트(2) + WCHAR(2×1) + 테두리(1) + 크기(1) + 펼침(1) = offset 7
+    let cnt = data[7];
+    // 기록된 ID 바이트 수와 카운트 필드가 일치해야 한다 (손상 레코드 금지)
+    let id_bytes = data.len() - 8;
+    assert_eq!(
+        cnt as usize * 4,
+        id_bytes,
+        "카운트 필드({})와 실제 기록된 ID 바이트({})가 어긋남 — u8 wraparound",
+        cnt,
+        id_bytes
+    );
+    // 왕복 시 charshape ID 가 전량 소실되면 안 된다
+    let parsed = crate::parser::control::parse_control(tags::CTRL_TCPS, &data, &[]);
+    let Control::CharOverlap(r) = parsed else {
+        panic!("CharOverlap 이 아님");
+    };
+    assert!(
+        !r.char_shape_ids.is_empty(),
+        "u8 카운트 wraparound 로 charshape ID 전량 소실"
+    );
+}
