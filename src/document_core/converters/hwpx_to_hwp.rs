@@ -1664,9 +1664,14 @@ fn materialize_table_ctrl_header_attr(table: &mut Table, report: &mut AdapterRep
     const HWP5_TABLE_CAPTION_COMMON_ATTR_BIT: u32 = 0x2000_0000;
 
     let before = table.common.attr;
-    let mut attr = pack_common_attr_bits(&table.common)
-        | HWPX_TABLE_FLOW_WITH_TEXT_BIT
-        | HWPX_TABLE_NUMBERING_BIT;
+    let mut attr = pack_common_attr_bits(&table.common) | HWPX_TABLE_FLOW_WITH_TEXT_BIT;
+    // [#2697] 파서(materialize_hwpx_table_attrs)와 동일 게이트: "표 번호" 비트는
+    // numberingType 이 실제로 TABLE 일 때만 세운다. 종전 무조건 OR 은 numberingType=
+    // "PICTURE"/"NONE" 표를 HWP5 저장 시 표 번호 범주로 되돌려, 파서가 #2697 에서
+    // 제거한 IR 모순(numbering_type=Picture ↔ attr=TABLE)을 변환 계층이 재도입했다.
+    if table.common.numbering_type == crate::model::shape::ObjectNumberingType::Table {
+        attr |= HWPX_TABLE_NUMBERING_BIT;
+    }
     if table.caption.is_some() {
         attr |= HWP5_TABLE_CAPTION_COMMON_ATTR_BIT;
     }
@@ -1903,6 +1908,8 @@ mod tests {
                 width: 47697,
                 height: 3525,
                 z_order: 26,
+                // HWPX 파서는 표 기본 numberingType 을 TABLE 로 채운다 (section.rs).
+                numbering_type: crate::model::shape::ObjectNumberingType::Table,
                 ..Default::default()
             },
             outer_margin_left: 283,
@@ -2014,6 +2021,8 @@ mod tests {
                 width: 47152,
                 height: 14976,
                 z_order: 6,
+                // HWPX 파서는 표 기본 numberingType 을 TABLE 로 채운다 (section.rs).
+                numbering_type: crate::model::shape::ObjectNumberingType::Table,
                 ..Default::default()
             },
             outer_margin_left: 141,
@@ -2042,6 +2051,106 @@ mod tests {
                     .unwrap(),
             ),
             0x282a_2311
+        );
+    }
+
+    #[test]
+    fn picture_numbering_table_keeps_category_on_hwp_save() {
+        // [#2697] HWPX 파서는 numberingType="PICTURE" 표에 TABLE 번호 비트(0x0800_0000)를
+        // 세우지 않는다. HWP5 저장 어댑터도 같은 게이트를 따라야 한다 — 종전 무조건 OR 은
+        // 그림 번호 캡션 표를 표 번호 범주로 되돌려 파서가 만든 IR 계약과 모순됐다.
+        use crate::model::shape::ObjectNumberingType;
+
+        let mut table = Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                col: 0,
+                row: 0,
+                col_span: 1,
+                row_span: 1,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        table.common.numbering_type = ObjectNumberingType::Picture;
+
+        let mut report = AdapterReport::new();
+        adapt_table(&mut table, &mut report);
+
+        assert_eq!(
+            table.common.attr & 0x0800_0000,
+            0,
+            "PICTURE 번호 표에 TABLE 번호 비트가 서면 IR 모순: {:#010x}",
+            table.common.attr
+        );
+        let flags = u32::from_le_bytes(
+            table.raw_ctrl_data[common_obj_offsets::FLAGS]
+                .try_into()
+                .unwrap(),
+        );
+        assert_eq!(
+            flags & 0x0800_0000,
+            0,
+            "raw_ctrl_data 에도 TABLE 번호 비트가 없어야 함: {flags:#010x}"
+        );
+    }
+
+    #[test]
+    fn none_numbering_table_keeps_category_on_hwp_save() {
+        // numberingType="NONE"(번호 매김 제외) 표도 저장 시 표 번호 범주로 승격되면 안 된다.
+        let mut table = Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                col: 0,
+                row: 0,
+                col_span: 1,
+                row_span: 1,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        // Table::default() 의 common.numbering_type 은 None.
+
+        let mut report = AdapterReport::new();
+        adapt_table(&mut table, &mut report);
+
+        assert_eq!(
+            table.common.attr & 0x0800_0000,
+            0,
+            "NONE 번호 표에 TABLE 번호 비트가 서면 안 됨: {:#010x}",
+            table.common.attr
+        );
+    }
+
+    #[test]
+    fn table_numbering_table_still_sets_numbering_bit() {
+        // 회귀 가드: 기본 표(numberingType="TABLE")는 종전대로 표 번호 비트를 유지한다.
+        use crate::model::shape::ObjectNumberingType;
+
+        let mut table = Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                col: 0,
+                row: 0,
+                col_span: 1,
+                row_span: 1,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        table.common.numbering_type = ObjectNumberingType::Table;
+
+        let mut report = AdapterReport::new();
+        adapt_table(&mut table, &mut report);
+
+        assert_eq!(
+            table.common.attr & 0x0800_0000,
+            0x0800_0000,
+            "TABLE 번호 표는 표 번호 비트를 유지해야 함: {:#010x}",
+            table.common.attr
         );
     }
 
