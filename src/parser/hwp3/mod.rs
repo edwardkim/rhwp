@@ -4037,7 +4037,6 @@ mod tests {
         assert_eq!(hwp3_footnote_separator_length(1, 9000), 3000); // 본문 폭의 1/3
         assert_eq!(hwp3_footnote_separator_length(2, 9000), 9000); // 단 너비
         assert_eq!(hwp3_footnote_separator_length(3, 9000), 0); // 없음
-
     }
 
     #[test]
