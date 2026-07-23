@@ -84,6 +84,28 @@ fn issue_598_second_body_footnote_marker_has_same_cursor_unit() {
 }
 
 #[test]
+fn endnote_marker_can_be_found_and_deleted_like_footnote() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/endnote-01.hwp");
+    let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("parse endnote-01.hwp");
+
+    // section 0 / para 3 / ctrl 0 is an endnote marker at text position 7.
+    let forward = doc
+        .get_footnote_at_cursor_native(0, 3, 7, "forward")
+        .expect("find endnote after cursor");
+    assert!(forward.contains("\"hit\":true"), "forward json: {forward}");
+    assert!(
+        forward.contains("\"controlIndex\":0"),
+        "forward json: {forward}"
+    );
+
+    let deleted = doc
+        .delete_footnote_native(0, 3, 0)
+        .expect("delete endnote control");
+    assert!(deleted.contains("\"ok\":true"), "deleted json: {deleted}");
+}
+
+#[test]
 fn issue_598_body_footnote_marker_can_be_found_and_deleted_from_cursor() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/footnote-01.hwp");
     let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));

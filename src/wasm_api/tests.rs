@@ -2341,6 +2341,44 @@ fn test_merge_table_cells() {
     }
 }
 
+/// [merge stale local-resize] 병합으로 셀 배열 인덱스가 바뀌면
+/// local_resize_cell_widths의 cell 인덱스 참조가 stale 해진다.
+///
+/// 2×2 표에서 셀 3(row=1,col=1)에 로컬 resize 폭을 저장해 둔 뒤 (0,0)~(0,1)을 병합하면
+/// Table::merge_cells()가 비주 셀 하나를 retain()으로 제거해 cells.len()이 4→3으로
+/// 줄어든다. local_resize_cell_widths가 갱신되지 않으면 이제 존재하지 않는 인덱스 3을
+/// 계속 가리켜, 이 값을 cells[idx]로 읽는 렌더링/직렬화 경로가 범위를 벗어나거나
+/// 병합 후 엉뚱한 셀에 로컬 resize 폭을 적용하게 된다.
+#[test]
+fn test_merge_table_cells_clears_stale_local_resize_widths() {
+    let mut doc = create_doc_with_table();
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first_mut()
+    {
+        // 병합 전: 셀 인덱스 3(row=1,col=1)에 로컬 resize 폭 저장.
+        table.local_resize_cell_widths.push((3, 1234));
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+
+    // (0,0)~(0,1) 병합 — 비주 셀 하나 제거, cells.len() 4→3.
+    doc.merge_table_cells_native(0, 0, 0, 0, 0, 0, 1).unwrap();
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
+        assert_eq!(
+            table.cells.len(),
+            3,
+            "병합으로 비주 셀 하나가 제거돼야 함(전제 확인)"
+        );
+        assert!(
+            table.local_resize_cell_widths.is_empty(),
+            "병합 후 셀 인덱스가 재배치되므로 local_resize_cell_widths의 stale 참조(인덱스 3)가 \
+             비워져야 한다"
+        );
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+}
+
 #[test]
 fn test_split_table_cell() {
     let mut doc = create_doc_with_table();
@@ -2361,6 +2399,51 @@ fn test_split_table_cell() {
         let cell = &table.cells[0];
         assert_eq!(cell.col_span, 1);
         assert_eq!(cell.row_span, 1);
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+}
+
+/// [delete_table_column/split_table_cell stale local-resize] #2832/#2843/#2853과
+/// 동일한 버그 클래스의 마지막 두 인스턴스. Table::delete_column()/split_cell()이
+/// cells 배열의 인덱스 배치를 바꾸므로, local_resize_cell_widths/heights가 물고 있던
+/// 이전 cell_idx는 정리되지 않으면 stale 참조로 남는다.
+#[test]
+fn test_delete_table_column_and_split_cell_clear_stale_local_resize() {
+    let mut doc = create_doc_with_table();
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first_mut()
+    {
+        table.local_resize_cell_widths.push((1, 1234));
+        table.local_resize_cell_heights.push((1, 5678));
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+    doc.delete_table_column_native(0, 0, 0, 0).expect("열 삭제");
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
+        assert!(
+            table.local_resize_cell_widths.is_empty() && table.local_resize_cell_heights.is_empty(),
+            "열 삭제 후 local_resize_cell_widths/heights의 stale 참조가 비워져야 한다"
+        );
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first_mut()
+    {
+        table.local_resize_cell_widths.push((0, 1234));
+        table.local_resize_cell_heights.push((0, 5678));
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+    doc.merge_table_cells_native(0, 0, 0, 0, 0, 1, 0)
+        .expect("병합");
+    doc.split_table_cell_native(0, 0, 0, 0, 0).expect("분할");
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
+        assert!(
+            table.local_resize_cell_widths.is_empty() && table.local_resize_cell_heights.is_empty(),
+            "셀 분할 후 local_resize_cell_widths/heights의 stale 참조가 비워져야 한다"
+        );
     } else {
         panic!("표 컨트롤을 찾을 수 없음");
     }
@@ -4896,6 +4979,12 @@ fn test_table_utility_functions() {
     let (w2, _, s2) = super::parse_css_border_shorthand("none");
     assert_eq!(w2, 0.0);
     assert_eq!(s2, 0);
+
+    // rgb() 내부에 공백이 있어도 색상 토큰이 쪼개지지 않아야 한다.
+    let (w3, c3, s3) = super::parse_css_border_shorthand("1px solid rgb(255, 0, 0)");
+    assert!((w3 - 0.75).abs() < 0.01, "border width 1px -> 0.75pt");
+    assert_eq!(c3, 0x0000FF, "border color red (BGR)");
+    assert_eq!(s3, 1, "border style solid");
 
     // css_border_width_to_hwp
     assert_eq!(super::css_border_width_to_hwp(0.28), 0); // 0.28pt ≈ 0.1mm → index 0
