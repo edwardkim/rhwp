@@ -208,8 +208,29 @@ pub fn parse_hwpx_header(xml: &str) -> Result<(DocInfo, DocProperties), HwpxErro
     // compatibleDocument/docOption/trackchageConfig 등은 본문과 무관한 전역
     // 설정이라 헤더 재생성 시 splice 로 무손실 복원한다.
     doc_info.hwpx_head_tail = extract_head_tail(xml);
+    doc_info.memo_properties_xml = extract_memo_properties(xml);
 
     Ok((doc_info, doc_props))
+}
+
+/// HWPX 헤더 원문에서 `<hh:memoProperties>...</hh:memoProperties>`
+/// (또는 자기닫힘 `<hh:memoProperties .../>`) 블록을 그대로 추출한다.
+/// `parse_memo_shape`가 만드는 HWPTAG_MEMO_SHAPE 바이너리는 hwpx→hwp5
+/// 변환용 `extra_records`에만 쌓이고 HWPX 재직렬화 시 사용되지 않으므로,
+/// hwpx→hwpx 라운드트립에서 memoPr(메모 모양 정의)이 통째로 사라지는 것을
+/// 막기 위해 원문을 verbatim 보존한다.
+fn extract_memo_properties(xml: &str) -> Option<String> {
+    const OPEN: &str = "<hh:memoProperties";
+    let start = xml.find(OPEN)?;
+    let tail = &xml[start..];
+    let first_close = tail.find('>')?;
+    if tail.as_bytes()[first_close - 1] == b'/' {
+        // 자기닫힘: <hh:memoProperties itemCnt="0"/>
+        return Some(tail[..=first_close].to_string());
+    }
+    const CLOSE: &str = "</hh:memoProperties>";
+    let end = tail.find(CLOSE)? + CLOSE.len();
+    Some(tail[..end].to_string())
 }
 
 /// HWPX 헤더 문자열에서 `</hh:refList>` 닫는 태그와 `</hh:head>` 사이 구간을
