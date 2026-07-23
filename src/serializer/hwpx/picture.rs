@@ -71,7 +71,8 @@ pub fn write_picture<W: Write>(
             ("numberingType", "PICTURE"),
             ("textWrap", tw),
             ("textFlow", tf),
-            ("lock", "0"),
+            // [#2840] lock(개체 잠금) — IR 보존 값 방출.
+            ("lock", bool01(pic.common.locked)),
             ("dropcapstyle", "None"),
             ("href", href),
             ("groupLevel", "0"),

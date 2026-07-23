@@ -1986,7 +1986,7 @@ fn render_common_shape_xml(
         .unwrap_or(c.instance_id);
     let mut out = format!(
         concat!(
-            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}">"#,
+            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="BOTH_SIDES" lock="{lk}" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}">"#,
             "{block}",
             "{geometry}",
             r#"<hp:sz width="{w}" height="{h}" widthRelTo="ABSOLUTE" heightRelTo="ABSOLUTE"/>"#,
@@ -2002,6 +2002,8 @@ fn render_common_shape_xml(
         gl = group_level,
         iid = instid,
         tw = text_wrap_to_hwpx(c.text_wrap),
+        // [#2840] lock(개체 잠금) — IR 보존 값 방출 (종전 "0" 하드코딩).
+        lk = if c.locked { "1" } else { "0" },
         tac = if c.treat_as_char { "1" } else { "0" },
         fwt = if c.flow_with_text { "1" } else { "0" },
         ao = if c.allow_overlap { "1" } else { "0" },

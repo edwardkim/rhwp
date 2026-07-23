@@ -59,7 +59,8 @@ pub fn write_table<W: Write>(
     let z_order = table.common.z_order.to_string();
     let text_wrap = text_wrap_str(table.common.text_wrap);
     let text_flow = text_flow_str(table.common.text_flow);
-    let lock = bool01(false);
+    // [#2840] lock(개체 잠금) — IR 보존 값 방출 (종전 false 하드코딩).
+    let lock = bool01(table.common.locked);
     let page_break = table_page_break_str(table.page_break);
     let repeat_header = bool01(table.repeat_header);
     let row_cnt = table.row_count.to_string();
