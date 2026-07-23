@@ -141,6 +141,7 @@ impl DocumentCore {
             styles,
             composed,
             render_normalized: Vec::new(),
+            render_normalization: super::super::RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,
             fallback_font: DEFAULT_FALLBACK_FONT.to_string(),
             layout_engine: LayoutEngine::new(DEFAULT_DPI),

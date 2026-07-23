@@ -22,14 +22,17 @@ use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::height_measurer::{MeasuredSection, MeasuredTable};
 use crate::renderer::layout::LayoutEngine;
 use crate::renderer::pagination::PaginationResult;
+use crate::renderer::render_normalization::{RenderNormalizationOverlay, RenderPath};
 use crate::renderer::render_tree::PageRenderTree;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 use crate::renderer::DEFAULT_DPI;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// 기본 폰트 fallback 경로
 pub const DEFAULT_FALLBACK_FONT: &str = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf";
+pub(crate) const TABLE_CAPTION_CELL_SENTINEL: usize = 65_534;
 
 /// 내부 클립보드 데이터
 pub(crate) struct ClipboardData {
@@ -42,6 +45,14 @@ pub(crate) struct ClipboardData {
 /// 표 셀 행/열 바꿈 전용 내부 버퍼
 pub(crate) struct TableTransposeClipboard {
     pub(crate) data: TableTransposeData,
+}
+
+#[derive(Default)]
+pub(crate) struct RenderNormalizationState {
+    pub(crate) document_epoch: u64,
+    pub(crate) section_revisions: Vec<u64>,
+    pub(crate) path_revisions: HashMap<RenderPath, u64>,
+    pub(crate) overlay: Arc<RenderNormalizationOverlay>,
 }
 
 /// HWP 문서 핵심 도메인 모델
@@ -66,6 +77,10 @@ pub struct DocumentCore {
             Vec<ComposedParagraph>,
         )>,
     >,
+    /// [#2308] render-only 파생 상태의 revision ledger와 희소 overlay 기반.
+    ///
+    /// Stage 3에서 #2004 projection, Stage 4에서 #2195 소비 경로를 이 상태로 이전한다.
+    pub(crate) render_normalization: RenderNormalizationState,
     /// DPI
     pub(crate) dpi: f64,
     /// 대체 폰트 경로
@@ -255,6 +270,7 @@ impl DocumentCore {
             styles: ResolvedStyleSet::default(),
             composed: Vec::new(),
             render_normalized: Vec::new(),
+            render_normalization: RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,
             fallback_font: DEFAULT_FALLBACK_FONT.to_string(),
             layout_engine: LayoutEngine::new(DEFAULT_DPI),

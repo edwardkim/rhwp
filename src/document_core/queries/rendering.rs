@@ -2771,9 +2771,7 @@ impl DocumentCore {
     pub(crate) fn recompose_section(&mut self, section_idx: usize) {
         self.invalidate_page_tree_cache();
         self.composed[section_idx] = compose_section(&self.document.sections[section_idx]);
-        if section_idx < self.dirty_sections.len() {
-            self.dirty_sections[section_idx] = true;
-        }
+        self.mark_section_dirty(section_idx);
         // 전체 문단 dirty (모두 재측정 필요)
         if section_idx < self.dirty_paragraphs.len() {
             self.dirty_paragraphs[section_idx] = None;
@@ -2783,10 +2781,30 @@ impl DocumentCore {
     /// 구역을 dirty로 표시만 한다 (재조판 없이).
     /// 셀 내부 편집처럼 composed 데이터가 불변인 경우 사용.
     pub(crate) fn mark_section_dirty(&mut self, section_idx: usize) {
+        self.mark_section_pagination_dirty(section_idx);
+        self.invalidate_render_normalization_section(section_idx);
+    }
+
+    /// 구조가 안정적인 path edit에서 pagination만 dirty로 표시한다.
+    ///
+    /// 렌더 정규화의 section revision은 구조/기하 변경을 뜻하므로 여기서는 유지한다.
+    /// 해당 path revision은 mutation 진입점에서 별도로 증가시킨다.
+    pub(crate) fn mark_section_pagination_dirty(&mut self, section_idx: usize) {
         if section_idx < self.dirty_sections.len() {
             self.dirty_sections[section_idx] = true;
         }
         // 문단 dirty는 건드리지 않음 (셀 편집 시 문단 재측정 불필요)
+    }
+
+    /// section 구조·페이지 기하 변경으로 해당 normalization projection을 무효화한다.
+    pub(crate) fn invalidate_render_normalization_section(&mut self, section_idx: usize) {
+        if self.render_normalization.section_revisions.len() <= section_idx {
+            self.render_normalization
+                .section_revisions
+                .resize(section_idx + 1, 0);
+        }
+        self.render_normalization.section_revisions[section_idx] =
+            self.render_normalization.section_revisions[section_idx].wrapping_add(1);
     }
 
     /// 문단 dirty 비트 설정
@@ -2893,6 +2911,15 @@ impl DocumentCore {
         for d in &mut self.dirty_sections {
             *d = true;
         }
+        self.render_normalization
+            .section_revisions
+            .resize(self.document.sections.len(), 0);
+        for revision in &mut self.render_normalization.section_revisions {
+            *revision = revision.wrapping_add(1);
+        }
+        self.render_normalization.document_epoch =
+            self.render_normalization.document_epoch.wrapping_add(1);
+        self.render_normalization.path_revisions.clear();
     }
 
     /// Batch 모드가 아닐 때만 paginate를 실행한다.
@@ -3789,6 +3816,116 @@ impl DocumentCore {
             out.push(Some((np, nc)));
         }
         self.render_normalized = out;
+    }
+
+    /// [#2308] 구조가 안정적인 deferred 셀 편집의 logical path revision을 올린다.
+    ///
+    /// API 호환을 위해 입력의 table-caption sentinel은 여기서만 해석하고, derived-state
+    /// cache에는 명시적인 `RenderPathEntry`만 저장한다. 경로 불일치는 stale cache를
+    /// 조용히 유지하지 않고 오류로 표면화한다.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn mark_render_normalization_path_dirty(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+    ) -> Result<(), HwpError> {
+        use crate::renderer::render_normalization::{RenderPath, RenderPathEntry};
+
+        let control = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(parent_para_idx))
+            .and_then(|paragraph| paragraph.controls.get(control_idx))
+            .ok_or_else(|| {
+                HwpError::RenderError(format!(
+                    "render normalization path mismatch: section={section_idx} para={parent_para_idx} control={control_idx}"
+                ))
+            })?;
+
+        let entry = match control {
+            Control::Table(table) if cell_idx == super::super::TABLE_CAPTION_CELL_SENTINEL => {
+                let valid = table
+                    .caption
+                    .as_ref()
+                    .is_some_and(|caption| cell_para_idx < caption.paragraphs.len());
+                if !valid {
+                    return Err(HwpError::RenderError(format!(
+                        "render normalization table-caption path mismatch: control={control_idx} para={cell_para_idx}"
+                    )));
+                }
+                RenderPathEntry::TableCaption {
+                    control_index: control_idx,
+                    paragraph_index: cell_para_idx,
+                }
+            }
+            Control::Table(table) => {
+                let valid = table
+                    .cells
+                    .get(cell_idx)
+                    .is_some_and(|cell| cell_para_idx < cell.paragraphs.len());
+                if !valid {
+                    return Err(HwpError::RenderError(format!(
+                        "render normalization table-cell path mismatch: control={control_idx} cell={cell_idx} para={cell_para_idx}"
+                    )));
+                }
+                RenderPathEntry::TableCell {
+                    control_index: control_idx,
+                    cell_index: cell_idx,
+                    paragraph_index: cell_para_idx,
+                }
+            }
+            Control::Shape(shape) => {
+                let valid = super::super::helpers::get_textbox_from_shape(shape)
+                    .is_some_and(|textbox| cell_para_idx < textbox.paragraphs.len());
+                if !valid {
+                    return Err(HwpError::RenderError(format!(
+                        "render normalization shape-textbox path mismatch: control={control_idx} para={cell_para_idx}"
+                    )));
+                }
+                RenderPathEntry::ShapeTextBox {
+                    control_index: control_idx,
+                    paragraph_index: cell_para_idx,
+                }
+            }
+            Control::Picture(picture) => {
+                let valid = picture
+                    .caption
+                    .as_ref()
+                    .is_some_and(|caption| cell_para_idx < caption.paragraphs.len());
+                if !valid {
+                    return Err(HwpError::RenderError(format!(
+                        "render normalization picture-caption path mismatch: control={control_idx} para={cell_para_idx}"
+                    )));
+                }
+                RenderPathEntry::PictureCaption {
+                    control_index: control_idx,
+                    paragraph_index: cell_para_idx,
+                }
+            }
+            _ => {
+                return Err(HwpError::RenderError(format!(
+                    "render normalization unsupported path control: section={section_idx} para={parent_para_idx} control={control_idx}"
+                )));
+            }
+        };
+
+        let path = RenderPath {
+            section_index: section_idx,
+            parent_paragraph_index: parent_para_idx,
+            entries: vec![entry],
+            target_control_index: None,
+        };
+        let revision = self
+            .render_normalization
+            .path_revisions
+            .entry(path)
+            .or_insert(0);
+        *revision = revision.wrapping_add(1);
+        Ok(())
     }
 
     /// [#2214/#2195] deferred 셀 편집 뒤 render 전용 정규화본의 동일 문단을 갱신한다.
@@ -5316,6 +5453,118 @@ mod tests {
     use super::*;
     use crate::model::bin_data::BinDataContent;
     use crate::renderer::render_tree::RenderNodeType;
+
+    fn assert_send<T: Send>() {}
+
+    #[test]
+    fn issue_2308_document_core_remains_send() {
+        assert_send::<DocumentCore>();
+    }
+
+    #[test]
+    fn issue_2308_edit_paths_use_explicit_revision_keys() {
+        use crate::model::control::Control;
+        use crate::model::document::{Document, Section};
+        use crate::model::image::Picture;
+        use crate::model::paragraph::Paragraph;
+        use crate::model::shape::{Caption, DrawingObjAttr, RectangleShape, ShapeObject, TextBox};
+        use crate::model::table::{Cell, Table};
+        use crate::renderer::render_normalization::RenderPathEntry;
+
+        let caption = || Caption {
+            paragraphs: vec![Paragraph::default()],
+            ..Default::default()
+        };
+        let table = Table {
+            cells: vec![Cell {
+                paragraphs: vec![Paragraph::default()],
+                ..Default::default()
+            }],
+            caption: Some(caption()),
+            ..Default::default()
+        };
+        let shape = ShapeObject::Rectangle(RectangleShape {
+            drawing: DrawingObjAttr {
+                text_box: Some(TextBox {
+                    paragraphs: vec![Paragraph::default()],
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+            ..Default::default()
+        });
+        let picture = Picture {
+            caption: Some(caption()),
+            ..Default::default()
+        };
+        let document = Document {
+            sections: vec![Section {
+                paragraphs: vec![Paragraph {
+                    controls: vec![
+                        Control::Table(Box::new(table)),
+                        Control::Shape(Box::new(shape)),
+                        Control::Picture(Box::new(picture)),
+                    ],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let mut core = DocumentCore::new_empty();
+        core.set_document(document);
+
+        core.mark_render_normalization_path_dirty(0, 0, 0, 0, 0)
+            .expect("table cell path");
+        core.mark_render_normalization_path_dirty(
+            0,
+            0,
+            0,
+            crate::document_core::TABLE_CAPTION_CELL_SENTINEL,
+            0,
+        )
+        .expect("table caption path");
+        core.mark_render_normalization_path_dirty(0, 0, 1, 0, 0)
+            .expect("shape textbox path");
+        core.mark_render_normalization_path_dirty(0, 0, 2, 0, 0)
+            .expect("picture caption path");
+
+        let entries = core
+            .render_normalization
+            .path_revisions
+            .keys()
+            .filter_map(|path| path.entries.first())
+            .collect::<Vec<_>>();
+        assert!(entries.iter().any(|entry| matches!(
+            entry,
+            RenderPathEntry::TableCell {
+                control_index: 0,
+                cell_index: 0,
+                paragraph_index: 0
+            }
+        )));
+        assert!(entries.iter().any(|entry| matches!(
+            entry,
+            RenderPathEntry::TableCaption {
+                control_index: 0,
+                paragraph_index: 0
+            }
+        )));
+        assert!(entries.iter().any(|entry| matches!(
+            entry,
+            RenderPathEntry::ShapeTextBox {
+                control_index: 1,
+                paragraph_index: 0
+            }
+        )));
+        assert!(entries.iter().any(|entry| matches!(
+            entry,
+            RenderPathEntry::PictureCaption {
+                control_index: 2,
+                paragraph_index: 0
+            }
+        )));
+    }
 
     #[test]
     fn embedded_font_loading_enforces_per_page_cumulative_limit() {
