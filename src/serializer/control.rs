@@ -233,7 +233,12 @@ fn make_ctrl_record(ctrl_id: u32, level: u16, ctrl_data: &[u8]) -> Record {
 
 fn serialize_section_def(sd: &SectionDef, level: u16, records: &mut Vec<Record>) {
     let mut w = ByteWriter::new();
-    w.write_u32(sd.flags).unwrap();
+    // HWPX 파서(parse_start_num, pageStartsOn)는 page_num_type 필드만 세팅하고
+    // flags bit 20-21은 동기화하지 않는다. HWP5는 page_num_type을 별도 필드로
+    // 갖지 않고 flags bit 20-21로만 표현하므로, 여기서 반영하지 않으면 HWPX
+    // 출처 문서를 HWP5로 저장할 때 홀/짝 쪽번호 시작 설정이 유실된다.
+    let flags = (sd.flags & !0x0030_0000) | (((sd.page_num_type as u32) & 0x03) << 20);
+    w.write_u32(flags).unwrap();
     w.write_i16(sd.column_spacing).unwrap();
     w.write_i16(sd.line_grid).unwrap();
     w.write_i16(sd.char_grid).unwrap();
