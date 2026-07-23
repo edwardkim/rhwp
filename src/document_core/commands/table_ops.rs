@@ -342,6 +342,12 @@ impl DocumentCore {
         table.dirty = true;
         let cell_count = table.cells.len();
 
+        // split_table_cell_native()/split_table_cell_into_native()와 동일한 이유(위 주석 참조):
+        // split_cells_in_range()도 내부적으로 split_cell_into()를 반복 호출해 cells 배열의
+        // 인덱스 배치를 바꾸므로 local_resize_cell_widths/heights가 stale해진다. 함께 비운다.
+        table.local_resize_cell_widths.clear();
+        table.local_resize_cell_heights.clear();
+
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
