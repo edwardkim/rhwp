@@ -4,6 +4,7 @@
 
 - 브랜치: `issue-2308-render-normalized-derived-state`
 - 구현 기준선: `upstream/devel@29b5547e256a3d6a1f8c94c9434c14a351b5543a`
+- 최종 재배치 기준: `upstream/devel@cbddc1cd87084b60685da9a2b4369a4511d86173`
 - 조사일: 2026-07-23
 
 ## 현재 소유권과 소비 경로
@@ -69,7 +70,8 @@ text, char shape, 일반 LINE_SEG, caption 본문은 원본과 동일하며 별�
 ## 구현 경계
 
 1. #2195 폭 변화는 source table clone 대신 logical path의 width-scale projection으로 옮긴다.
-2. #2004는 전체 section clone이 아니라 영향 paragraph/control의 sparse projection으로 옮긴다.
+2. #2004는 구조 projection이므로 revision 검증 immutable cache로 전환하고 stable 입력에서
+   재복제하지 않는다.
 3. renderer의 빠른 조회는 source pointer index를 사용할 수 있지만, cache identity와 revision
    판정의 권위 key는 `RenderPath`다.
 4. path 해석 실패는 stale entry 재사용 없이 section rederive로 승격한다.
@@ -79,7 +81,7 @@ text, char shape, 일반 LINE_SEG, caption 본문은 원본과 동일하며 별�
 
 `tests/issue_2308_render_normalized_guard.rs`는 다음 구조가 제거될 때까지 실패해야 한다.
 
-- `section.paragraphs.clone()`
+- #2195 `has_nested_stretch`/`stretch_nested_tables_to_parent_cell` section clone 변환
 - `refresh_render_normalized_cell_paragraph_after_edit`
 - `cell_idx == 65534` caption sentinel
 - `RenderNormalizationState` / `RenderPathEntry` 부재

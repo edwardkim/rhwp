@@ -2,7 +2,7 @@
 
 ## 기준
 
-- 브랜치: `issue-2308-hyper-waterfall-rebuild`
+- 브랜치: `issue-2308-render-normalized-derived-state`
 - 기준선: `upstream/devel@cbddc1cd87084b60685da9a2b4369a4511d86173`
 - 완료일: 2026-07-23
 

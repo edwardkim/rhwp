@@ -2,7 +2,7 @@
 
 ## 기준
 
-- 브랜치: `issue-2308-hyper-waterfall-rebuild`
+- 브랜치: `issue-2308-render-normalized-derived-state`
 - 선행 Stage: `task_m100_2308_stage3.md`
 - 완료일: 2026-07-23
 
