@@ -90,8 +90,8 @@ prelude를 포함하며, 후속 범위 확장 단계에서 별도 chunk 후보�
 | `node --test tests/input-edit-invalidation.test.ts` | 10 passed |
 | `cargo check --lib --target wasm32-unknown-unknown` | 통과 |
 
-## 7. 다음 단계
+## 7. 후속 완료
 
-1. 전체 #2214/#2424 focused matrix와 Studio type/build 검증을 실행한다.
-2. fast path 비대상 문서의 fallback 및 save/print source 계약을 최종 확인한다.
-3. 작업 계획·오늘할일 상태를 갱신하고 phase commit을 만든다.
+전체 #2214/#2424 matrix, Studio type/build, save/save-as/print barrier 계약과 실제 HWP/HWPX 브라우저
+E2E는 Stage 5에서 통과했다. 최종 판정과 최신 upstream 재검증은
+`mydocs/working/task_m100_2424_stage5.md`와 `mydocs/report/task_m100_2424_report.md`에 기록한다.

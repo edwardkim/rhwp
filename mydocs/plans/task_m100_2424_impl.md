@@ -145,3 +145,11 @@ revision/structure를 검증하고 descriptor 좌표로 immutable source를 재�
 
 총 completion time이 소폭 증가해도 browser event loop가 fragment 사이에 실행될 수 있어야 한다. 단순히
 기존 full flush를 idle로 미루는 결과는 완료로 인정하지 않는다.
+
+완료 결과(2026-07-23):
+
+- release step p95는 HWP 10.733ms, HWPX 11.002ms였다.
+- 실제 브라우저 경계 입력은 HWP/HWPX 6회 모두 동기 flush 0회, begin 1회, step 115회였다.
+- 경계 operation은 75.9~81.3ms에 반환했고 공개 pagination은 마지막 step 전까지 유지됐다.
+- 완료 뒤 model/tree/layout/cursor/caret, 115쪽, 113 changed cuts와 page 0 PNG가 exact했다.
+- 전체 Rust/Studio 회귀, wasm32와 production WASM/Studio build가 통과했다.
