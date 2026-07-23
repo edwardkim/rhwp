@@ -1873,9 +1873,19 @@ fn parse_simple_control_char(
             utf16_len += 1;
             text_string.push('\u{FFFC}');
             let mut overlap = crate::model::control::CharOverlap::default();
-            // buf[0..2] 또는 buf[2..8]은 문자와 테두리 종류를 포함할 수 있습니다.
-            // 가능한 부분을 매핑하지만, 테스트 없이 정확한 오프셋을 찾기는 까다로우므로
-            // 구조체는 유지하되 완벽하게 채우지 않을 수도 있습니다.
+            // 스펙 §10.17 표 58: buf[0..6] = 겹칠 글자 hchar array[3]
+            // (최대 3자, 남는 부분 0 패딩), buf[6..8] = 닫는 코드(늘 23).
+            // 0 이 아닌 hchar 만 johab 디코딩해 IR 에 보존한다.
+            for k in 0..3usize {
+                let v = (&buf[k * 2..k * 2 + 2])
+                    .read_u16::<LittleEndian>()
+                    .unwrap_or(0);
+                if v != 0 {
+                    overlap
+                        .chars
+                        .push(crate::parser::hwp3::johab::decode_johab(v));
+                }
+            }
             controls.push(crate::model::control::Control::CharOverlap(overlap));
             ctrl_data_records.push(None);
         }
@@ -4425,6 +4435,69 @@ mod tests {
             paragraphs[0].text.contains("AAA"),
             "날짜 형식(ch=7) 컨트롤 뒤의 \"AAA\" 본문이 유실됨 (바이트 언더리드로 흡수): {:?}",
             paragraphs[0].text
+        );
+    }
+
+    // 스펙 §10.17 표 58: 글자겹침(ch=23)의 겹칠 글자는 오프셋 2..8 의
+    // hchar array[3] (남는 부분 0 패딩)이다. 파서가 이를 IR CharOverlap.chars
+    // 에 채워야 겹침 문자가 보존된다 (종전: 항상 빈 Vec → 겹칠 글자 전량 유실).
+    #[test]
+    fn hwp3_char_overlap_extracts_overlap_chars() {
+        let mut body = Vec::new();
+        body.push(1u8); // follow_prev_para_shape
+        body.extend_from_slice(&5u16.to_le_bytes()); // char_count: 10바이트 = 5 hchar
+        body.extend_from_slice(&0u16.to_le_bytes()); // line_count
+        body.push(0u8); // include_char_shape
+        body.push(0u8); // flags
+        body.extend_from_slice(&0u32.to_le_bytes()); // special_char_flags
+        body.push(0u8); // style_index
+        body.extend_from_slice(&[0u8; 31]); // rep_char_shape
+        assert_eq!(body.len(), 43);
+
+        body.extend_from_slice(&23u16.to_le_bytes()); // 여는 특수 문자 코드
+        body.extend_from_slice(&0x0041u16.to_le_bytes()); // 겹칠 글자 1: 'A'
+        body.extend_from_slice(&0x0042u16.to_le_bytes()); // 겹칠 글자 2: 'B'
+        body.extend_from_slice(&0u16.to_le_bytes()); // 겹칠 글자 3: 없음 (0 패딩)
+        body.extend_from_slice(&23u16.to_le_bytes()); // 닫는 특수 문자 코드
+
+        // 문단 리스트 종료 (빈 문단, 43바이트)
+        body.push(0u8);
+        body.extend_from_slice(&0u16.to_le_bytes());
+        body.extend_from_slice(&[0u8; 40]);
+
+        let mut body_cursor = Cursor::new(body.as_slice());
+        let mut doc_char_shapes = Vec::new();
+        let mut doc_para_shapes = Vec::new();
+        let mut doc_border_fills = Vec::new();
+        let mut doc_tab_defs = Vec::new();
+        let mut pic_name_to_id = std::collections::HashMap::new();
+
+        let paragraphs = parse_paragraph_list(
+            &mut body_cursor,
+            &mut doc_char_shapes,
+            &mut doc_para_shapes,
+            &mut doc_border_fills,
+            &mut doc_tab_defs,
+            &mut pic_name_to_id,
+            0,
+            1000,
+            1000,
+        )
+        .expect("글자겹침(ch=23) 컨트롤을 포함한 문단 파싱 실패");
+
+        assert_eq!(paragraphs.len(), 1);
+        let overlap = paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|c| match c {
+                crate::model::control::Control::CharOverlap(co) => Some(co),
+                _ => None,
+            })
+            .expect("CharOverlap 컨트롤이 생성되지 않음");
+        assert_eq!(
+            overlap.chars,
+            vec!['A', 'B'],
+            "겹칠 글자(스펙 표 58 오프셋 2..8)가 IR 로 추출되지 않음"
         );
     }
 }
