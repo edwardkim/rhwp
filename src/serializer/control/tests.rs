@@ -58,6 +58,58 @@ fn test_roundtrip_section_def() {
     assert_eq!(parsed.section_def.page_def.height, 84188);
 }
 
+/// [#new] page_num_type 필드만 설정되고 flags 비트(20-21)는 미동기화된
+/// SectionDef를 HWP5로 직렬화 → 재파싱했을 때 page_num_type이 보존되어야 한다.
+///
+/// HWPX 파서(src/parser/hwpx/section.rs::parse_start_num)는 pageStartsOn 속성을
+/// 읽어 page_num_type만 설정하고 flags는 건드리지 않는다. HWP5 직렬화기
+/// (src/serializer/control.rs::serialize_section_def)는 sd.flags를 그대로만
+/// 기록하므로, HWPX 출처 문서를 HWP5로 저장하면 홀/짝 시작 쪽번호 설정이
+/// 유실된다.
+#[test]
+fn test_roundtrip_section_def_page_num_type_without_flags_sync() {
+    let sd = SectionDef {
+        flags: 0,         // HWPX 파서가 남긴 상태: page_num_type만 세팅, flags는 미동기화
+        page_num_type: 1, // 홀수 시작 (ODD)
+        page_def: PageDef {
+            width: 59528,
+            height: 84188,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+
+    let para = Paragraph {
+        char_count: 3,
+        text: "A".to_string(),
+        char_offsets: vec![8],
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        line_segs: vec![LineSeg {
+            text_start: 0,
+            ..Default::default()
+        }],
+        controls: vec![Control::SectionDef(Box::new(sd))],
+        ..Default::default()
+    };
+
+    let section = Section {
+        paragraphs: vec![para],
+        raw_stream: None,
+        ..Default::default()
+    };
+
+    let bytes = serialize_section(&section);
+    let parsed = parse_body_text_section(&bytes).unwrap();
+
+    assert_eq!(
+        parsed.section_def.page_num_type, 1,
+        "HWP5 라운드트립 후 page_num_type(홀/짝 쪽번호 시작)이 유실됨"
+    );
+}
+
 /// ColumnDef 라운드트립
 #[test]
 fn test_roundtrip_column_def() {
