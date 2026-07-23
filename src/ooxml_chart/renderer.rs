@@ -206,7 +206,10 @@ pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> S
 
     // 영역 분할
     let title_h = if effective_title.is_some() { 22.0 } else { 4.0 };
-    let legend_visible = chart.series.iter().any(|s| !s.name.is_empty());
+    // 파이는 카테고리 기반 범례라 시리즈 이름과 무관하게 항상 그려진다(파이 분기가
+    // render_legend/render_legend_right를 무조건 호출) — 공간 예약도 그에 맞춰야 함.
+    let legend_visible =
+        chart.chart_type == OoxmlChartType::Pie || chart.series.iter().any(|s| !s.name.is_empty());
     // C1c #1882 갭③: legendPos=r(한컴 코퍼스 전 샘플)은 우측 세로 스택 — 하단 슬롯
     // 대신 우측 폭(legend_w)을 확보. 그 외 위치는 현행 하단 가로 유지.
     // `w * 0.30 >= 50.0` 가드: 폭이 좁으면(<167px) 하단 폴백 — 아래 clamp의
@@ -2257,6 +2260,53 @@ mod tests {
         let chart = OoxmlChart::default();
         let svg = render_chart_svg(&chart, 0.0, 0.0, 100.0, 100.0);
         assert!(svg.contains("fallback"));
+    }
+
+    #[test]
+    fn test_pie_legend_reserves_space_regardless_of_series_name() {
+        // 파이 범례는 카테고리 기반이라 시리즈 이름과 무관하게 항상 그려진다
+        // (render_chart_svg 파이 분기는 legend_h/legend_w 계산과 무관하게
+        // render_legend를 무조건 호출). 그런데 legend_h/legend_w는
+        // `legend_visible`(= 시리즈 이름 존재 여부)로만 계산되므로, 시리즈
+        // 이름이 없으면 범례가 그려지는데도 plot_h가 legend 공간을 빼지 않고
+        // 계산되어(버그) 파이 반지름이 이름 있는 경우보다 부당하게 커진다.
+        fn pie(name: &str) -> OoxmlChart {
+            OoxmlChart {
+                chart_type: OoxmlChartType::Pie,
+                series: vec![OoxmlSeries {
+                    name: name.to_string(),
+                    values: vec![1.0, 2.0, 3.0],
+                    series_type: OoxmlChartType::Pie,
+                    ..Default::default()
+                }],
+                categories: vec!["가".into(), "나".into(), "다".into()],
+                ..Default::default()
+            }
+        }
+        fn pie_radius(svg: &str) -> f64 {
+            // path의 `A{r},{r}` 반지름 값을 첫 슬라이스에서 추출
+            let a_pos = svg.find(" A").expect("파이 path 없음");
+            let rest = &svg[a_pos + 2..];
+            let comma = rest.find(',').unwrap();
+            rest[..comma].parse::<f64>().unwrap()
+        }
+
+        let named_svg = render_chart_svg(&pie("판매"), 0.0, 0.0, 400.0, 300.0);
+        let unnamed_svg = render_chart_svg(&pie(""), 0.0, 0.0, 400.0, 300.0);
+
+        // 두 경우 모두 범례가 그려진다 (카테고리 기반이므로 시리즈 이름 무관)
+        assert!(named_svg.contains("hwp-chart-legend"));
+        assert!(unnamed_svg.contains("hwp-chart-legend"));
+
+        let named_r = pie_radius(&named_svg);
+        let unnamed_r = pie_radius(&unnamed_svg);
+        // 범례가 동일하게 그려지므로 예약 공간도 동일해야 하고, 따라서 두
+        // 반지름이 같아야 한다. 버그 상태에서는 unnamed_r > named_r (범례
+        // 공간이 예약되지 않아 파이가 legend와 겹치도록 더 크게 그려짐).
+        assert_eq!(
+            named_r, unnamed_r,
+            "시리즈 이름 유무와 무관하게 파이 범례 공간이 동일하게 예약되어야 함 (named={named_r}, unnamed={unnamed_r})"
+        );
     }
 
     #[test]
