@@ -42,6 +42,7 @@ fn main() {
         Some("export-hwpx") => exit_with(export_hwpx(&args[2..])),
         Some("export-hml") => export_hml(&args[2..]),
         Some("export-doclang") => exit_with(export_doclang(&args[2..])),
+        Some("capabilities") => exit_with(show_capabilities()),
         Some("batch") => exit_with(run_batch(&args[2..])),
         Some("info") => exit_with(show_info(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
@@ -99,6 +100,210 @@ fn main() {
             process::exit(EXIT_USAGE);
         }
     }
+}
+
+/// [#3263] 도구 자기서술 — 에이전트가 첫 호출 1회로 명령·계약·스키마를 파악하는 입구.
+///
+/// `--help`(사람용)와 본 목록(기계용)은 함께 현행화한다 — help 에만 추가된 명령은
+/// `tests/cli_json_contract.rs::capabilities_covers_every_help_command` 가 잡는다.
+fn show_capabilities() -> i32 {
+    fn cmd(name: &str, category: &str, summary: &str) -> serde_json::Value {
+        serde_json::json!({ "name": name, "category": category, "summary": summary })
+    }
+    fn cmd_json(
+        name: &str,
+        category: &str,
+        summary: &str,
+        batch: bool,
+        flags: &[&str],
+        record_fields: &[&str],
+    ) -> serde_json::Value {
+        serde_json::json!({
+            "name": name, "category": category, "summary": summary,
+            "json": true, "batch": batch, "flags": flags, "recordFields": record_fields,
+        })
+    }
+
+    let commands = vec![
+        // ── 기계 계약(--json) 명령 ──
+        cmd_json(
+            "info",
+            "query",
+            "문서 메타(포맷·버전·페이지/문단 수·폰트) 표시",
+            true,
+            &["--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "format",
+                "sizeBytes",
+                "version",
+                "sections",
+                "pageCount",
+                "paraCount",
+                "fonts",
+            ],
+        ),
+        cmd_json(
+            "export-text",
+            "export",
+            "페이지별 텍스트 추출 (TXT 파일 또는 --json stdout)",
+            true,
+            &["-o", "-p", "--json"],
+            &["schemaVersion", "source", "pageCount", "pages"],
+        ),
+        cmd_json(
+            "export-structure",
+            "export",
+            "문서 개요/조문 계층을 JSON 트리로 추출",
+            true,
+            &["--mode", "-o", "--json"],
+            &["schemaVersion", "source", "mode", "nodeCount", "structure"],
+        ),
+        cmd_json(
+            "capabilities",
+            "query",
+            "본 자기서술 JSON 출력",
+            false,
+            &[],
+            &[
+                "schemaVersion",
+                "tool",
+                "version",
+                "exitCodes",
+                "commands",
+                "batch",
+            ],
+        ),
+        // ── 내보내기/변환 ──
+        cmd("export-svg", "export", "문서를 페이지별 SVG로 렌더"),
+        cmd(
+            "export-png",
+            "export",
+            "문서를 페이지별 PNG로 렌더 (native-skia)",
+        ),
+        cmd(
+            "export-pdf",
+            "export",
+            "문서를 PDF로 렌더 (svg|direct backend)",
+        ),
+        cmd(
+            "export-markdown",
+            "export",
+            "페이지별 텍스트를 Markdown으로 추출",
+        ),
+        cmd(
+            "export-hwpx",
+            "export",
+            "HWP→HWPX 변환 저장 (--verify 게이트, exit 3/4)",
+        ),
+        cmd("export-hml", "export", "HML 원본을 HWPML 2.91 XML로 저장"),
+        cmd(
+            "export-doclang",
+            "export",
+            "문서를 DocLang v0.6 XML로 내보내기",
+        ),
+        cmd(
+            "export-render-tree",
+            "export",
+            "페이지별 render tree bbox JSON 덤프",
+        ),
+        cmd(
+            "convert",
+            "export",
+            "HWP↔HWPX 변환 (--verify/--verify-pages 게이트)",
+        ),
+        cmd("build-from-ingest", "export", "ingest JSON에서 HWPX 생성"),
+        cmd("thumbnail", "export", "내장 썸네일(PrvImage) 추출"),
+        // ── 배치 ──
+        cmd_json(
+            "batch",
+            "batch",
+            "stdin 파일 목록을 한 프로세스에서 파일 간 병렬 처리, NDJSON 스트림 출력",
+            true,
+            &["--json", "--threads", "--mode"],
+            &["schemaVersion", "source", "error", "exitClass"],
+        ),
+        // ── 진단 ──
+        cmd("dump", "diagnostic", "문서 조판부호 구조 덤프"),
+        cmd("dump-pages", "diagnostic", "페이지네이션 항목 덤프"),
+        cmd("dump-note-shape", "diagnostic", "각주/미주 모양 덤프"),
+        cmd("dump-endnote-lines", "diagnostic", "미주 줄 배치 덤프"),
+        cmd("dump-records", "diagnostic", "저수준 레코드 스트림 덤프"),
+        cmd("diag", "diagnostic", "문서 구조 진단(번호/글머리표/개요)"),
+        cmd("ir-diff", "diagnostic", "두 문서의 IR 차이 비교"),
+        cmd(
+            "render-diff",
+            "diagnostic",
+            "왕복/두 파일 렌더 기하 차이 검증",
+        ),
+        cmd("hwpx-roundtrip", "diagnostic", "HWPX 왕복 무손실 게이트"),
+        cmd("hwp5-roundtrip", "diagnostic", "HWP5 왕복 무손실 게이트"),
+        cmd("measure-width", "diagnostic", "텍스트 폭 측정 프로브"),
+        cmd("core-pages", "diagnostic", "코어 페이지 수 프로브"),
+        cmd("bench", "diagnostic", "성능 벤치마크"),
+        cmd("hwp5-inventory", "diagnostic", "HWP5 레코드 인벤토리"),
+        cmd("hwp5-inventory-diff", "diagnostic", "HWP5 인벤토리 비교"),
+        cmd(
+            "hwp5-contract-analyze",
+            "diagnostic",
+            "HWPX→HWP5 저장 계약 분석",
+        ),
+        cmd("hwp5-contract-probe", "diagnostic", "HWP5 저장 계약 프로브"),
+        cmd("hwp5-ctrl-data-trace", "diagnostic", "CTRL_DATA 추적"),
+        cmd("hwp5-table-probe", "diagnostic", "표 저장 프로브"),
+        cmd(
+            "hwp5-mel-personnel-probe",
+            "diagnostic",
+            "특정 샘플 재현 프로브",
+        ),
+        cmd(
+            "hwp5-borderfill-diagonal-probe",
+            "diagnostic",
+            "테두리 대각선 프로브",
+        ),
+        cmd(
+            "hwp5-first-para-control-probe",
+            "diagnostic",
+            "첫 문단 컨트롤 프로브",
+        ),
+        cmd("hwp5-anchor-trace", "diagnostic", "앵커 추적"),
+        cmd("hwp5-cell-header-probe", "diagnostic", "셀 헤더 프로브"),
+        // ── 내부 개발용 ──
+        cmd("test-shape", "internal", "도형 왕복 테스트"),
+        cmd("test-caption", "internal", "캡션 테스트"),
+        cmd("test-field", "internal", "누름틀 왕복 테스트"),
+        cmd("gen-table", "internal", "표 샘플 생성"),
+        cmd("gen-pua", "internal", "PUA 샘플 생성"),
+    ];
+
+    let caps = serde_json::json!({
+        "schemaVersion": "1.0",
+        "tool": "rhwp",
+        "version": rhwp::version(),
+        "formats": { "read": ["hwp5", "hwpx", "hwp3", "hml"], "write": ["hwpx", "hml", "pdf", "svg", "png", "txt", "md", "doclang"] },
+        "exitCodes": {
+            "0": "성공",
+            "1": "런타임 실패 (읽기·파싱·렌더·쓰기)",
+            "2": "사용법 오류 (인자 없음, 알 수 없는 옵션/명령, 페이지 범위 초과)",
+            "3": "--verify IR 차이 (convert/export-hwpx)",
+            "4": "--verify-pages 페이지 수 불일치 (convert/export-hwpx)",
+        },
+        "jsonContract": {
+            "stdout": "데이터(JSON/NDJSON)만 — 진단·진행·요약은 stderr",
+            "schemaPolicy": "필드 추가 허용, 변경·삭제는 schemaVersion 범프",
+            "failure": "단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1",
+        },
+        "batch": {
+            "subcommands": ["export-text", "info", "export-structure"],
+            "flags": ["--json", "--threads", "--mode"],
+            "ordering": "stdin 입력 순서 보존",
+            "input": "stdin, 한 줄당 파일 경로 하나",
+        },
+        "commands": commands,
+    });
+    println!("{caps}");
+    EXIT_OK
 }
 
 fn print_help() {
@@ -241,6 +446,9 @@ fn print_help() {
     println!("      HWP/HWPX/HML 문서 정보 표시");
     println!();
     println!("      --json                  문서 정보를 JSON으로 stdout에 출력");
+    println!();
+    println!("  capabilities");
+    println!("      도구 자기서술 JSON 출력 (명령·플래그·JSON 계약·종료 코드) — 에이전트용");
     println!();
     println!("  dump <파일.hwp|파일.hwpx|파일.hml> [--section <번호>] [--para <번호>]");
     println!("      문서 조판부호 구조 덤프 (디버깅용)");

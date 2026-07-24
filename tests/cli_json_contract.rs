@@ -229,6 +229,89 @@ fn batch_export_text_json_partial_failure_exit_runtime() {
     assert_eq!(failed[0]["schemaVersion"], "1.0", "{records:?}");
 }
 
+// ── capabilities ───────────────────────────────────────────────────────────
+
+#[test]
+fn capabilities_json_contract() {
+    // [#3263] 도구 자기서술: 에이전트가 첫 호출 1회로 도구 전체를 파악하는 입구.
+    let args = ["capabilities"];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
+
+    let v = parse_stdout_json(&args, &output);
+    assert_eq!(v["schemaVersion"], "1.0", "{v}");
+    assert_eq!(v["tool"], "rhwp", "{v}");
+    assert!(v["version"].is_string(), "{v}");
+    assert!(v["exitCodes"]["1"].is_string(), "{v}");
+    let commands = v["commands"].as_array().expect("commands 배열");
+    assert!(commands.len() >= 20, "전 명령 수록: {v}");
+    // --json 계약 명령은 machine-readable 표시가 있어야 한다.
+    for name in ["info", "export-text", "export-structure"] {
+        let cmd = commands
+            .iter()
+            .find(|c| c["name"] == name)
+            .unwrap_or_else(|| panic!("{name} 누락: {v}"));
+        assert_eq!(cmd["json"], true, "{cmd}");
+        assert!(cmd["summary"].is_string(), "{cmd}");
+        assert!(cmd["category"].is_string(), "{cmd}");
+    }
+    let batch_subs = v["batch"]["subcommands"].as_array().expect("batch");
+    assert!(batch_subs.iter().any(|s| s == "export-structure"), "{v}");
+}
+
+#[test]
+fn capabilities_version_matches_version_flag() {
+    // 드리프트 가드 ①: capabilities.version 은 `--version` 과 같은 원천이어야 한다.
+    let cap = parse_stdout_json(&["capabilities"], &run(&["capabilities"]));
+    let ver_out = run(&["--version"]);
+    let ver_line = String::from_utf8_lossy(&ver_out.stdout);
+    let ver = ver_line.trim().trim_start_matches("rhwp v");
+    assert_eq!(cap["version"], ver, "version 불일치: {ver_line}");
+}
+
+#[test]
+fn capabilities_covers_every_help_command() {
+    // 드리프트 가드 ②: `--help` 에 보이는 명령은 capabilities 에도 있어야 한다.
+    // 새 명령을 help 에만 추가하면 이 테스트가 잡는다.
+    let cap = parse_stdout_json(&["capabilities"], &run(&["capabilities"]));
+    let names: Vec<String> = cap["commands"]
+        .as_array()
+        .expect("commands")
+        .iter()
+        .map(|c| c["name"].as_str().expect("name").to_string())
+        .collect();
+
+    let help = run(&["--help"]);
+    let help_text = String::from_utf8_lossy(&help.stdout);
+    let mut missing = Vec::new();
+    for line in help_text.lines() {
+        // help 의 명령 줄 패턴: 정확히 2칸 들여쓰기 + 소문자/하이픈 토큰.
+        if let Some(rest) = line.strip_prefix("  ") {
+            if rest.starts_with(' ') || rest.starts_with('-') {
+                continue; // 옵션·설명 줄
+            }
+            let token = rest.split_whitespace().next().unwrap_or("");
+            if !token.is_empty()
+                && token
+                    .chars()
+                    .all(|c| c.is_ascii_lowercase() || c == '-' || c.is_ascii_digit())
+                && !names.iter().any(|n| n == token)
+            {
+                missing.push(token.to_string());
+            }
+        }
+    }
+    assert!(
+        missing.is_empty(),
+        "--help 에는 있는데 capabilities 에 없는 명령: {missing:?}"
+    );
+}
+
 // ── export-structure --json ────────────────────────────────────────────────
 
 #[test]
