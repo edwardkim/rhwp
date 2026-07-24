@@ -680,6 +680,10 @@ struct TypesetState {
     /// 흐름 +143px), 이후 footer 의 저장 vpos 동기화(target_y)를 오염시킨다.
     /// 켜져 있으면 footer 는 stored 동기화 없이 흐름 좌표로 판정한다.
     page_has_page_abs_top_table: bool,
+    /// [#2813] 저장 앵커 줄이 float 스택 아래를 인코딩하는 host 문단: 이 문단의
+    /// PartialParagraph(앵커 줄) 아이템을 표들 뒤에 밀어 넣어(한글 문서순) 렌더가
+    /// 표를 줄 이후 흐름에 배치하지 않게 한다. 값은 해당 para_idx.
+    defer_host_line_item_para: Option<usize>,
     /// 첫 각주 여부
     is_first_footnote_on_page: bool,
     /// 각주 구분선 오버헤드
@@ -2036,6 +2040,7 @@ impl TypesetState {
             current_bottom_fixed_exclusion: 0.0,
             bottom_fixed_consumed_flow: 0.0,
             page_has_page_abs_top_table: false,
+            defer_host_line_item_para: None,
             is_first_footnote_on_page: true,
             footnote_separator_overhead,
             footnote_between_notes_margin,
@@ -14591,13 +14596,16 @@ impl TypesetEngine {
         // pre-table 텍스트 (첫 번째 표에서만)
         // [참고2 fix] 배열순서가 아닌 배치순서 기준 (typeset_table_paragraph 산출).
         let is_first_table = is_first_placed;
+        let defer_host_line = st.defer_host_line_item_para == Some(para_idx);
         let pre_height: f64 = if pre_table_end_line > 0 && is_first_table {
             let h = fmt.line_advances_sum(0..pre_table_end_line);
-            st.current_items.push(PageItem::PartialParagraph {
-                para_index: para_idx,
-                start_line: 0,
-                end_line: pre_table_end_line,
-            });
+            if !defer_host_line {
+                st.current_items.push(PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: 0,
+                    end_line: pre_table_end_line,
+                });
+            }
             h
         } else {
             0.0
@@ -14799,6 +14807,17 @@ impl TypesetEngine {
                 st.current_height,
                 st.pages.len(),
             );
+        }
+
+        // [#2813] 이연된 host 앵커 줄 아이템 — 마지막 float 뒤에 한글 문서순으로
+        // 삽입한다. 렌더는 이 순서대로 표를 흐름 상단부터, 줄을 저장 vpos 로 놓는다.
+        if defer_host_line && is_last_placed {
+            st.current_items.push(PageItem::PartialParagraph {
+                para_index: para_idx,
+                start_line: 0,
+                end_line: pre_table_end_line.max(1),
+            });
+            st.defer_host_line_item_para = None;
         }
 
         // post-table 텍스트
@@ -16302,6 +16321,54 @@ impl TypesetEngine {
             .iter()
             .take(ctrl_idx)
             .any(|c| matches!(c, Control::Table(t) if is_para_topbottom_float(&t.common)));
+        // [#2813] 빈 host 문단의 유일한 저장 앵커 줄이 float 스택 아래(현재 흐름
+        // 꼬리 이후)이자 본문 안에 들어가는 위치를 인코딩하면, 한글은 이 스택과
+        // 앵커 줄을 현재 쪽에 통째 배치한 것이다 — para-relative TopAndBottom
+        // 스택에서 앵커 줄 vpos 는 스택 하단 이후를 기록한다(36352939: 저장 줄
+        // 666.7+13.3=680.0px ≤ 본문 680.3px 로 한글 1쪽 razor-fit, rhwp 는 셀
+        // 실측 팽창으로 naive fit 697.8px 실패 → 표2 이월 +1 과분할). 아래 5축
+        // saved_span(개체가 줄 아래 모델)과 반대 형상이라 별도 판별자가 필요하다.
+        let has_following_coanchored_float = para
+            .controls
+            .iter()
+            .skip(ctrl_idx + 1)
+            .any(|c| matches!(c, Control::Table(t) if is_para_topbottom_float(&t.common)));
+        // 스택(같은 host 에 자리차지 float 표 ≥2) 형상의 임의 표에서 참 — 단일
+        // float host 는 제외한다: 그 표는 한글도 행 분할하므로(issue #1488 pi=28,
+        // 3쪽 분할) 통째-배치 구제 대상이 아니다.
+        let host_line_trails_float_stack = is_para_topbottom_float(&table.common)
+            && (has_preceding_coanchored_float || has_following_coanchored_float)
+            && !para_has_non_whitespace_text(para)
+            && single_line_visible_bounds_px(para, st.vpos_page_base.unwrap_or(0), self.dpi)
+                .is_some_and(|bounds| {
+                    // 줄이 현재 흐름 꼬리보다 자기 줄높이 이상 아래 = 앵커 줄이
+                    // 스택 뒤를 인코딩(선두-줄 host 의 vpos 0/흐름-일치 저장은 제외).
+                    let line_h = (bounds.1 - bounds.0).max(0.0);
+                    bounds.0 > st.current_height + line_h + 16.0
+                        && saved_bounds_fit_at_flow_tail(bounds, st.current_height, available)
+                });
+        // 통째-배치 구제는 스택의 2번째 이후 표(선행 co-anchored 존재)이면서
+        // 표 자체가 한 쪽에 들어갈 때만 — 첫 표는 정상 fit/분할 경로를 그대로
+        // 타고, 쪽보다 큰 표는 한글도 분할하므로(20320575 별표 24쪽: 통째-배치
+        // 시 27→8쪽 붕괴 실측) 구제 대상이 아니다.
+        let saved_host_line_after_stack_fits = host_line_trails_float_stack
+            && has_preceding_coanchored_float
+            && table_total <= available;
+        if std::env::var("RHWP_DIAG_2813").is_ok() {
+            eprintln!(
+                "DIAG_2813 pi={} ci={} float={} vis_text={} segs={} real_segs={} bounds={:?} cur_h={:.1} avail={:.1} verdict={}",
+                para_idx,
+                ctrl_idx,
+                is_para_topbottom_float(&table.common),
+                para_has_visible_text(para),
+                para.line_segs.len(),
+                para.line_segs.iter().filter(|ls| !is_synthetic_line_seg(ls)).count(),
+                single_line_visible_bounds_px(para, st.vpos_page_base.unwrap_or(0), self.dpi),
+                st.current_height,
+                available,
+                saved_host_line_after_stack_fits,
+            );
+        }
         // [#2439] 아래 orphan 가드가 새 페이지/단으로 이월한 뒤에도 원 페이지의
         // para_start_height 를 visible-float placement/exclusion 에 넘기면, 새 페이지의
         // 배타영역이 이전 페이지 시작 높이만큼 아래에서 시작한다. 후속 문단은 실제 표를
@@ -16318,6 +16385,7 @@ impl TypesetEngine {
             && !st.current_items.is_empty()
             && st.current_height + table_total > available
             && table_total <= available
+            && !saved_host_line_after_stack_fits
         {
             st.advance_column_or_new_page();
             placement_para_start_height = st.current_height;
@@ -16410,6 +16478,7 @@ impl TypesetEngine {
                 && declared_overflows_current
                 && !saved_object_bottom_fits_current
                 && !saved_anchor_splits_here
+                && !saved_host_line_after_stack_fits
                 && !single_row_object_declared_fits_current
                 && (saved_span.is_some() || measured_fits_current)
                 && declared_total <= available
@@ -16498,10 +16567,16 @@ impl TypesetEngine {
             && !table.common.treat_as_char
             && declared_object_total > host_spacing_total
             && st.current_height + declared_object_total <= available;
+        if host_line_trails_float_stack {
+            // [#2813] 앵커 줄 아이템을 float 스택 뒤로 이연(한글 문서순) —
+            // 스택 첫 표 배치 전에 걸려야 렌더 순서가 표→줄로 나온다.
+            st.defer_host_line_item_para = Some(para_idx);
+        }
         if st.current_height + table_total <= available
             || fits_after_overlay_shapes
             || single_row_object_height_advance.is_some()
             || declared_table_whole_fits
+            || saved_host_line_after_stack_fits
         {
             self.place_table_with_text(
                 st,
