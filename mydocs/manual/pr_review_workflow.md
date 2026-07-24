@@ -1234,9 +1234,14 @@ PR 커밋 전에 archive 경로로 이동한다. archive 이동만을 위한 별
   - 신규 추가(`added`) 상태의 `samples/**/*.png`
   - 신규 추가(`added`) 상태의 `pdf/**/*.pdf`
 - 기존 `samples/**` 또는 `pdf/**` 파일을 수정, 삭제, rename 한 경우 fast-pass 대상이 아니다.
-- 해당 후속 커밋들은 single-parent commit 이다.
-- 후속 문서 커밋을 제외한 직전 코드 검증 대상 SHA 에 기존 GitHub Actions check-run 이 존재한다.
-- 직전 코드 검증 대상 SHA 의 relevant check 가 `success`, `skipped`, `neutral` 중 하나다.
+- 해당 후속 문서 커밋들은 single-parent commit 이다. 단, 그 바로 앞 candidate SHA 는 문서-only
+  Update branch merge일 수 있다. 이 예외는 다음을 모두 만족할 때만 허용한다.
+  - merge parent 수가 정확히 2개이고 현재 PR `base.sha`를 parent로 포함한다.
+  - merge diff도 허용된 review-only 경로만 포함한다.
+  - 적어도 하나의 trailing single-parent 후속 문서 커밋이 그 merge 뒤에 있다.
+- 후속 문서 커밋을 제외한 직전 검증 대상 SHA(코드 commit 또는 위 문서-only Update branch merge)에 기존
+  GitHub Actions check-run 이 존재한다.
+- 직전 검증 대상 SHA 의 relevant check 가 `success`, `skipped`, `neutral` 중 하나다.
 
 fast-pass 는 merge 조건을 약화하는 예외가 아니다. 이전 코드 검증 결과를 재사용하는 좁은 최적화일 뿐이다.
 다음 변경이 포함되면 반드시 최신 PR head 기준 heavy CI 를 다시 기다린다.
@@ -1244,7 +1249,8 @@ fast-pass 는 merge 조건을 약화하는 예외가 아니다. 이전 코드 �
 - 코드, 테스트, CI workflow 파일(`.github/workflows/**`) 변경
 - 기존 샘플, baseline, golden, 렌더링 fixture 변경
 - `mydocs/**` 밖의 파일 변경 또는 신규 기준 샘플/PDF 추가가 아닌 실행/검증 입력 파일 변경
-- check-run 조회 실패, missing check, failed check, merge commit 형태의 문서 후속 커밋
+- check-run 조회 실패, missing check, failed check, 현재 base를 parent로 포함하지 않는 merge commit 형태의
+  문서 후속 커밋
 
 fast-pass 가 적용되면 PR UI 에서 heavy job 이 `skipped` 로 보일 수 있다. 이때도 collaborator 는 GitHub Actions
 결과가 merge 가능 상태인지 확인하고, branch protection 이 요구하는 check 가 pending/failing 이면 merge 하지
