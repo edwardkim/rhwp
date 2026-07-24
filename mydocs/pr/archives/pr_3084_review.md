@@ -7,7 +7,7 @@
 | 관련 이슈 | [#3048](https://github.com/edwardkim/rhwp/issues/3048) |
 | base / 규모 | devel / 5 files, +29 -12 |
 | 문서 작성 시점 참고값 | 원 PR head 68898247607b64941e82539503c00d7e5e577190, BEHIND 및 MERGEABLE. 이전 head의 Build & Test, CodeQL, Canvas visual diff는 성공으로 확인했다. |
-| 통합 적용 | 최신 upstream/devel 1ddfc7da1 위 적용 commit 723db748705ecc9f0144623f8a41e7ebf3d466ef |
+| 통합 적용 | 최신 upstream/devel 866925fa6 위 적용 commit 6dcccecdc2834c831e677143af60f93f1d14ee35 |
 
 ## 관련 이슈와 변경 범위
 
