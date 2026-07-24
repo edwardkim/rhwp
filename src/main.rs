@@ -75,7 +75,7 @@ fn main() {
         Some("gen-table") => gen_table(&args[2..]),
         Some("gen-pua") => gen_pua_test(&args[2..]),
         Some("test-field") => test_field_roundtrip(&args[2..]),
-        Some("ir-diff") => ir_diff(&args[2..]),
+        Some("ir-diff") => exit_with(ir_diff(&args[2..])),
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
         Some("render-diff") => rhwp::diagnostics::render_geom_diff::run(&args[2..]),
@@ -292,8 +292,9 @@ fn print_help() {
     println!("  build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>");
     println!("      ingest JSON(시험문제 등)을 HWPX로 생성 (rhwp-exam-ingest 파이프라인)");
     println!();
-    println!("  ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>]");
+    println!("  ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>] [--json]");
     println!("      두 파일의 IR(중간표현) 비교 (HWPX↔HWP 불일치 검출)");
+    println!("      --json                  판정 봉투 JSON 한 줄 출력, 차이 발견 시 exit 3");
     println!("      비교 항목: text, char_count, char_offsets, char_shapes, line_segs,");
     println!("                 controls(타입+속성), tab_extended, ParaShape, TabDef");
     println!("      표: page_break, outer_margin, treat_as_char, wrap, size, v_offset/h_offset");
@@ -6550,10 +6551,11 @@ fn ir_diff_paragraph_fields(
     diffs
 }
 
-fn ir_diff(args: &[String]) {
+fn ir_diff(args: &[String]) -> i32 {
     if args.len() < 2 {
-        eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>]");
-        return;
+        eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>] [--json]");
+        // [#3274] 인자 부족은 사용법 오류다 — 종전엔 0 으로 끝나 스크립트가 감지 못했다.
+        return EXIT_USAGE;
     }
 
     let file_a = &args[0];
@@ -6563,6 +6565,8 @@ fn ir_diff(args: &[String]) {
     // [Task #653 보강] 출력 가드 옵션
     let mut summary_mode = false;
     let mut max_lines: Option<usize> = None;
+    // [#3274] --json: 계약 봉투 한 줄(카테고리 요약 포함), 차이 발견 시 exit 3.
+    let mut json_mode = false;
 
     let mut i = 2;
     while i < args.len() {
@@ -6583,24 +6587,30 @@ fn ir_diff(args: &[String]) {
                 max_lines = args[i + 1].parse().ok();
                 i += 2;
             }
+            "--json" => {
+                json_mode = true;
+                i += 1;
+            }
             _ => {
                 i += 1;
             }
         }
     }
 
+    // [#3274] 읽기·파싱 실패는 exit 1 (#2707 정렬) — 종전엔 0 으로 끝나
+    // "비교했고 차이 없음"과 "비교 자체를 못 함"을 구별할 수 없었다.
     let data_a = match fs::read(file_a) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: {} 읽기 실패: {}", file_a, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
     let data_b = match fs::read(file_b) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: {} 읽기 실패: {}", file_b, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -6608,14 +6618,14 @@ fn ir_diff(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: {} 파싱 실패: {:?}", file_a, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
     let doc_b = match rhwp::parser::parse_document(&data_b) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: {} 파싱 실패: {:?}", file_b, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -6627,13 +6637,15 @@ fn ir_diff(args: &[String]) {
         .file_name()
         .unwrap_or_default()
         .to_string_lossy();
-    if !summary_mode {
+    if !summary_mode && !json_mode {
         println!("=== IR 비교: {} vs {} ===", name_a, name_b);
     }
 
     // [Task #653 보강] 출력 가드 상태 — IrDiffEmitter 로 통합 (#2122)
+    // [#3274] json 모드는 summary 와 같은 수집 전용 경로(버킷만 쌓고 무출력)를 탄다 —
+    // stdout 순수성을 위해 텍스트 라인을 한 줄도 내면 안 된다.
     let mut em = IrDiffEmitter {
-        summary_mode,
+        summary_mode: summary_mode || json_mode,
         max_lines,
         printed_lines: 0,
         truncated: false,
@@ -6788,7 +6800,8 @@ fn ir_diff(args: &[String]) {
     }
 
     // [Task #653 보강] 요약 모드 출력 — 카테고리별 카운트 (내림차순 → 알파벳)
-    if summary_mode {
+    // [#3274] --summary --json 병용 시 JSON 이 이긴다 — stdout 순수성 우선.
+    if summary_mode && !json_mode {
         println!("=== 카테고리별 차이 요약 ===");
         let mut entries: Vec<(String, u32)> = em.summary_buckets.clone().into_iter().collect();
         entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
@@ -6797,7 +6810,23 @@ fn ir_diff(args: &[String]) {
         }
     }
 
+    if json_mode {
+        // [#3274] 계약 봉투 한 줄 — 카테고리 버킷(BTreeMap)은 키 정렬이 결정적이다.
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "a": file_a,
+            "b": file_b,
+            "identical": total_diffs == 0,
+            "diffCount": total_diffs,
+            "categories": em.summary_buckets,
+        });
+        println!("{envelope}");
+        // 차이 발견 = 3: #2707 의 "--verify IR 차이" 코드와 같은 의미의 게이트 신호.
+        return if total_diffs == 0 { EXIT_OK } else { 3 };
+    }
+
     println!("\n=== 비교 완료: 차이 {} 건 ===", total_diffs);
+    EXIT_OK
 }
 
 fn extract_thumbnail(args: &[String]) {
