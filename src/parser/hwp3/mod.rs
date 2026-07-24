@@ -504,9 +504,18 @@ fn apply_hwp3_encrypted_flag(
     }
 }
 
-fn hwp3_default_endnote_shape(bracket: bool) -> crate::model::footnote::FootnoteShape {
+fn hwp3_default_endnote_shape(doc_info: &Hwp3DocInfo) -> crate::model::footnote::FootnoteShape {
     use crate::model::footnote::{
         FootnoteNumbering, FootnotePlacement, FootnoteShape, NumberFormat,
+    };
+
+    // [Task #2772] doc_info.footnote_line_margin(오프셋 104, "각주 분리선과 본문
+    // 사이의 간격")을 separator_margin_top 으로 배선한다. 미배선 시 항상
+    // 하드코딩된 864 값이 쓰여 문서가 지정한 간격이 무시됐다.
+    let separator_margin_top = if doc_info.footnote_line_margin != 0 {
+        (doc_info.footnote_line_margin as i16).saturating_mul(4)
+    } else {
+        864
     };
 
     let mut shape = FootnoteShape {
@@ -514,9 +523,13 @@ fn hwp3_default_endnote_shape(bracket: bool) -> crate::model::footnote::Footnote
         // doc_info offset 110 "각주 옵션": ')' = 번호에 ')' 붙임, 0 = 안 붙임.
         // 파싱만 되고(footnote_bracket) 항상 ')' 로 하드코딩되어 옵션을 끈 문서도
         // ')' 가 표시되던 문제.
-        suffix_char: if bracket { ')' } else { '\0' },
+        suffix_char: if doc_info.footnote_bracket != 0 {
+            ')'
+        } else {
+            '\0'
+        },
         start_number: 1,
-        separator_margin_top: 864,
+        separator_margin_top,
         note_spacing: 576,
         separator_line_width: 1,
         separator_color: 0x00000000,
@@ -3416,7 +3429,7 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     super::populate_link_image_paths(&mut doc);
 
     crate::parser::assign_auto_numbers(&mut doc);
-    fixup_hwp3_notes(&mut doc, doc_info.footnote_bracket != 0);
+    fixup_hwp3_notes(&mut doc, &doc_info);
     fixup_hwp3_outline_fields(&mut doc);
     fixup_hwp3_picture_numbers(&mut doc);
     fixup_hwp3_outline_bullets(&mut doc);
@@ -3432,7 +3445,7 @@ struct Hwp3NoteFixupState {
     has_endnote: bool,
 }
 
-fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, footnote_bracket: bool) {
+fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, doc_info: &Hwp3DocInfo) {
     let para_shapes = doc.doc_info.para_shapes.clone();
     let mut state = Hwp3NoteFixupState {
         footnote_number: doc.doc_properties.footnote_start_num.max(1),
@@ -3448,7 +3461,7 @@ fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, footnote_bracket
 
     if state.has_endnote {
         for section in &mut doc.sections {
-            section.section_def.endnote_shape = hwp3_default_endnote_shape(footnote_bracket);
+            section.section_def.endnote_shape = hwp3_default_endnote_shape(doc_info);
             ensure_hwp3_initial_body_column_def(&mut section.paragraphs);
             let page_def = &section.section_def.page_def;
             let body_width_hu = page_def
@@ -4083,11 +4096,14 @@ mod tests {
     fn issue_hwp3_endnote_suffix_char_wires_footnote_bracket_flag() {
         // doc_info offset 110 "각주 옵션" footnote_bracket 이 파싱만 되고 항상 ')' 로
         // 하드코딩되어, 옵션을 끈(footnote_bracket=0) 문서도 미주 번호에 ')' 가 붙던 문제.
-        let on = hwp3_default_endnote_shape(true);
-        assert_eq!(on.suffix_char, ')');
+        let on = Hwp3DocInfo {
+            footnote_bracket: 1,
+            ..Default::default()
+        };
+        assert_eq!(hwp3_default_endnote_shape(&on).suffix_char, ')');
 
-        let off = hwp3_default_endnote_shape(false);
-        assert_eq!(off.suffix_char, '\0');
+        let off = Hwp3DocInfo::default();
+        assert_eq!(hwp3_default_endnote_shape(&off).suffix_char, '\0');
     }
 
     #[test]
@@ -4329,6 +4345,22 @@ mod tests {
             ..Default::default()
         };
         assert!(!hwp3_hide_empty_line(&off));
+    }
+
+    #[test]
+    fn task2772_hwp3_default_endnote_shape_wires_footnote_line_margin() {
+        // [Task #2772] doc_info.footnote_line_margin 이 separator_margin_top 으로
+        // 배선돼야 한다. 값이 0이면 기존 하드코딩 기본값(864)을 유지한다.
+        let doc_info = Hwp3DocInfo {
+            footnote_line_margin: 50,
+            ..Default::default()
+        };
+        let shape = hwp3_default_endnote_shape(&doc_info);
+        assert_eq!(shape.separator_margin_top, 200);
+
+        let default_doc_info = Hwp3DocInfo::default();
+        let default_shape = hwp3_default_endnote_shape(&default_doc_info);
+        assert_eq!(default_shape.separator_margin_top, 864);
     }
 
     #[test]
