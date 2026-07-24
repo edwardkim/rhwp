@@ -403,14 +403,28 @@ jobs:
             }
 
   # [#2393] 기본 테스트 병렬화 — 테스트 바이너리를 한 번 빌드해 아카이브하고
-  # 8개 샤드가 컴파일 없이 나눠 실행한다. [#3064] 필수 gate 실패 뒤 불필요한
-  # 테스트를 시작하지 않도록 lint/frontend/native-skia 성공 뒤 archive를 만든다.
+  # 8개 샤드가 컴파일 없이 나눠 실행한다. [#3266] Native Skia와 archive는 같은
+  # lint/frontend gate 뒤 병렬로 시작한다. Native 실패 시 archive가 끝날 수는 있어도
+  # shard는 두 job 성공 뒤에만 시작하므로 #3064의 테스트 실행 차단은 유지된다.
   # required check 는 집계 job "Build & Test" 로 불변이다.
   build-test-archive:
     name: Build test archive
     runs-on: ubuntu-latest
-    needs: [preflight, native-skia-tests]
-    if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' && needs['native-skia-tests'].result == 'success' }}
+    needs: [preflight, lint, frontend-package-gates]
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs.lint.result == 'success'
+        && (
+          needs['frontend-package-gates'].result == 'success'
+          || (
+            needs.preflight.outputs.frontend_required != 'true'
+            && needs['frontend-package-gates'].result == 'skipped'
+          )
+        )
+      }}
     permissions:
       contents: read
     outputs:
@@ -486,14 +500,26 @@ jobs:
         with:
           name: test-archive-${{ github.run_id }}
           path: tests.tar.zst
+          # tests.tar.zst 는 cargo-nextest가 이미 압축한 파일이다. ZIP 재압축 CPU를
+          # 쓰지 않아 Native Skia와 겹치는 archive 준비 시간을 더 줄인다. (#3266)
+          compression-level: 0
           retention-days: 1
           if-no-files-found: error
 
   test-shard:
     name: Default-feature tests (shard ${{ matrix.shard }}/8)
     runs-on: ubuntu-latest
-    needs: [preflight, build-test-archive]
-    if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' && needs['build-test-archive'].result == 'success' }}
+    needs: [preflight, native-skia-tests, build-test-archive]
+    # [#3266] archive와 Native Skia를 병렬화하되, 두 필수 worker가 모두 성공한
+    # 뒤에만 기본 테스트를 실행한다. 따라서 Native 실패 시 archive가 완료돼도 shard는 skip된다.
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs['native-skia-tests'].result == 'success'
+        && needs['build-test-archive'].result == 'success'
+      }}
     permissions:
       contents: read
     strategy:
