@@ -82,6 +82,19 @@ fn hwp3_hide_empty_line(doc_info: &Hwp3DocInfo) -> bool {
     doc_info.hide_empty_line != 0
 }
 
+/// doc_info.compressed(압축 여부)를 FileHeader.compressed 및 raw_data 플래그 비트(0x01)에 반영한다.
+fn apply_hwp3_compressed_flag(
+    doc_info_compressed: u8,
+    header: &mut crate::model::document::FileHeader,
+) {
+    if doc_info_compressed != 0 {
+        header.compressed = true;
+        if let Some(raw) = header.raw_data.as_mut() {
+            raw[36] |= 0x01;
+        }
+    }
+}
+
 fn hwp3_page_border_fill(
     doc_info: &Hwp3DocInfo,
     border_fill_id: u16,
@@ -287,6 +300,11 @@ pub(crate) fn convert_char_shape(
     cs.ratios = hwp3_cs.ratios;
     cs.spacings = hwp3_cs.spacings;
     cs.text_color = hwp3_color_index_to_color_ref(hwp3_cs.text_color);
+    // [#2958] 글자 음영색(offset 23)도 text_color와 같은 8색 팔레트를 쓰지만
+    // 변환부에서 누락되어 CharShape 기본값(0=검정)이 그대로 남아 있었다.
+    // 렌더러는 0x00FFFFFF(흰색)를 "음영 없음" sentinel로 쓰므로, 여기서
+    // 매핑하지 않으면 음영 없는 문서도 검정 형광펜으로 오판될 수 있다.
+    cs.shade_color = hwp3_color_index_to_color_ref(hwp3_cs.shade_color);
     cs.attr = hwp3_cs.attr as u32;
     cs.italic = hwp3_cs.is_italic();
     cs.bold = hwp3_cs.is_bold();
@@ -301,6 +319,9 @@ pub(crate) fn convert_char_shape(
     // 렌더러(글자 축소·baseline 이동)가 소비하는 IR 필드가 항상 false 였다.
     cs.superscript = hwp3_cs.is_superscript();
     cs.subscript = hwp3_cs.is_subscript();
+    // attr 0x80(글꼴에 어울리는 빈칸 사용). 접근자 is_font_blank()는 있었으나
+    // 호출부가 없어 IR CharShape.use_font_space가 항상 false로 저장됐다.
+    cs.use_font_space = hwp3_cs.is_font_blank();
     cs
 }
 
@@ -1590,6 +1611,12 @@ fn parse_object_control_char(
                 crate::model::control::UnknownControl::default(),
             ));
         }
+    } else if ch == 15 {
+        let mut hidden_comment = crate::model::control::HiddenComment::default();
+        hidden_comment.paragraphs = nested_paragraphs;
+        controls.push(crate::model::control::Control::HiddenComment(Box::new(
+            hidden_comment,
+        )));
     } else if ch == 16 {
         let apply_to = match info_buf.get(9).copied().unwrap_or(0) {
             1 => crate::model::header_footer::HeaderFooterApply::Even,
@@ -1915,9 +1942,19 @@ fn parse_simple_control_char(
             utf16_len += 1;
             text_string.push('\u{FFFC}');
             let mut overlap = crate::model::control::CharOverlap::default();
-            // buf[0..2] 또는 buf[2..8]은 문자와 테두리 종류를 포함할 수 있습니다.
-            // 가능한 부분을 매핑하지만, 테스트 없이 정확한 오프셋을 찾기는 까다로우므로
-            // 구조체는 유지하되 완벽하게 채우지 않을 수도 있습니다.
+            // 스펙 §10.17 표 58: buf[0..6] = 겹칠 글자 hchar array[3]
+            // (최대 3자, 남는 부분 0 패딩), buf[6..8] = 닫는 코드(늘 23).
+            // 0 이 아닌 hchar 만 johab 디코딩해 IR 에 보존한다.
+            for k in 0..3usize {
+                let v = (&buf[k * 2..k * 2 + 2])
+                    .read_u16::<LittleEndian>()
+                    .unwrap_or(0);
+                if v != 0 {
+                    overlap
+                        .chars
+                        .push(crate::parser::hwp3::johab::decode_johab(v));
+                }
+            }
             controls.push(crate::model::control::Control::CharOverlap(overlap));
             ctrl_data_records.push(None);
         }
@@ -1935,7 +1972,10 @@ fn parse_simple_control_char(
             char_offsets.push(utf16_len);
             utf16_len += 1;
             text_string.push('\u{FFFC}');
-            let name_buf = &buf[2..22];
+            // 스펙 §10.16 표 57: 필드 이름은 파일 오프셋 2..22 (= 추가로 읽은
+            // buf 의 [0..20]). 종전 buf[2..22] 는 이름 앞 2바이트를 유실하고
+            // 닫는 코드(0x0016)를 이름에 혼입시켰다.
+            let name_buf = &buf[0..20];
             let name = crate::parser::hwp3::encoding::decode_hwp3_string(name_buf)
                 .trim_end_matches('\0')
                 .to_string();
@@ -2995,6 +3035,10 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     // HWP5/HWPX는 각자의 헤더에서 이 값을 채우지만 HWP3는 raw_data를 항상
     // 비암호(flags=0)로 하드코딩해 doc.header.encrypted가 실제 값과 무관하게 false였다.
     apply_hwp3_encrypted_flag(doc_info.encrypted, &mut doc.header);
+    // doc_info.compressed(압축 여부)를 FileHeader.compressed 및 raw_data 플래그 비트(0x01)에
+    // 반영한다. 본문 압축 해제(아래 4번)에는 doc_info.compressed를 쓰지만 종전엔 헤더 raw_data를
+    // 항상 flags=0(비압축)으로 하드코딩해 doc.header.compressed가 실제 값과 무관하게 false였다.
+    apply_hwp3_compressed_flag(doc_info.compressed, &mut doc.header);
 
     // 2. 문서 요약 파싱 (1008 바이트)
     let doc_summary = Hwp3DocSummary::read(&mut cursor)?;
@@ -4071,6 +4115,19 @@ mod tests {
     }
 
     #[test]
+    fn hwp3_maps_compressed_flag() {
+        // doc_info.compressed != 0 이면 FileHeader.compressed 와 raw_data 플래그 비트가
+        // 반영돼야 한다. 종전엔 배선이 없어 항상 false 였다.
+        let mut header = crate::model::document::FileHeader {
+            raw_data: Some(vec![0u8; crate::parser::header::FILE_HEADER_SIZE]),
+            ..Default::default()
+        };
+        apply_hwp3_compressed_flag(1, &mut header);
+        assert!(header.compressed);
+        assert_eq!(header.raw_data.unwrap()[36] & 0x01, 0x01);
+    }
+
+    #[test]
     fn test_alloc_record_buf_overflow_returns_err() {
         // [Task #877] garbage length 입력 시 panic 대신 graceful Err 반환.
         // 32-bit WASM 의 RawVec capacity overflow panic 방지 검증.
@@ -4169,6 +4226,69 @@ mod tests {
                 .any(|c| matches!(c, crate::model::control::Control::Field(_))),
             "ch==5 필드 코드가 Control::Field 로 배선되지 않음: {controls:?}"
         );
+    }
+
+    #[test]
+    fn test_hwp3_ch15_hidden_comment_pushes_control() {
+        // ch=15(숨은 설명)는 nested_paragraphs를 파싱만 하고 Control로 push하지 않던 버그(#3065) 회귀 테스트.
+        // 페이로드: info_buf(8B, 0으로 채움) + 빈 문단 리스트 종료자(char_count=0, 총 43B).
+        // header_val1(4B) + ch2(2B) + info_buf(8B) + 빈 문단 리스트 종료자(43B).
+        let mut body: Vec<u8> = vec![0u8; 6 + 8];
+        body.extend_from_slice(&[0u8; 43]);
+        let mut cursor = Cursor::new(body.as_slice());
+
+        let mut text_string = String::new();
+        let mut char_offsets = Vec::new();
+        let mut hwp3_char_to_utf16_pos = vec![0u32; 8];
+        let mut controls = Vec::new();
+        let mut ctrl_data_records = Vec::new();
+        let mut scan = Hwp3CharScan {
+            text_string: &mut text_string,
+            char_offsets: &mut char_offsets,
+            hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
+            controls: &mut controls,
+            ctrl_data_records: &mut ctrl_data_records,
+        };
+        let mut char_shapes = Vec::new();
+        let mut para_shapes = Vec::new();
+        let mut border_fills = Vec::new();
+        let mut tab_defs = Vec::new();
+        let mut pic_name_to_id = std::collections::HashMap::new();
+        let para_info = Hwp3ParaInfo {
+            follow_prev_para_shape: 0,
+            char_count: 4,
+            line_count: 1,
+            include_char_shape: 0,
+            flags: 0,
+            special_char_flags: 0,
+            style_index: 0,
+            rep_char_shape: crate::parser::hwp3::records::Hwp3CharShape::default(),
+            para_shape: None,
+        };
+
+        parse_object_control_char(
+            &mut cursor,
+            &mut char_shapes,
+            &mut para_shapes,
+            &mut border_fills,
+            &mut tab_defs,
+            &mut pic_name_to_id,
+            0,
+            0,
+            0,
+            15,
+            &para_info,
+            0,
+            0,
+            &mut scan,
+        )
+        .expect("ch=15 dispatch should succeed");
+
+        assert_eq!(controls.len(), 1);
+        assert!(matches!(
+            controls[0],
+            crate::model::control::Control::HiddenComment(_)
+        ));
     }
 
     #[test]
@@ -4301,6 +4421,28 @@ mod tests {
             doc.doc_properties.footnote_start_num, 1,
             "각주 시작 번호가 doc_info 에서 매핑돼야 함(미매핑 시 0)"
         );
+    }
+
+    #[test]
+    fn convert_char_shape_maps_font_blank() {
+        // attr 0x80=글꼴에 어울리는 빈칸 사용. 종전엔 매핑이 빠져 항상 false.
+        let hwp3_cs = crate::parser::hwp3::records::Hwp3CharShape {
+            attr: 0x80,
+            ..Default::default()
+        };
+        let cs = convert_char_shape(&hwp3_cs);
+        assert!(cs.use_font_space);
+    }
+
+    #[test]
+    fn task2958_convert_char_shape_preserves_shade_color() {
+        let hwp3_cs = crate::parser::hwp3::records::Hwp3CharShape {
+            shade_color: 1,
+            ..Default::default()
+        };
+        let cs = convert_char_shape(&hwp3_cs);
+
+        assert_eq!(cs.shade_color, 0x00FF0000);
     }
 
     #[test]
@@ -4504,6 +4646,142 @@ mod tests {
             paragraphs[0].text.contains("AAA"),
             "날짜 형식(ch=7) 컨트롤 뒤의 \"AAA\" 본문이 유실됨 (바이트 언더리드로 흡수): {:?}",
             paragraphs[0].text
+        );
+    }
+
+    /// 메일머지 표시(ch=22) 문단 바디를 만드는 헬퍼.
+    /// 스펙 §10.16 표 57: open(2) + kchar array[20] 필드 이름 + close(2) = 24바이트.
+    fn build_mail_merge_paragraph(name: &[u8]) -> Vec<u8> {
+        let mut body = Vec::new();
+        body.push(1u8); // follow_prev_para_shape (문단 모양 생략)
+        body.extend_from_slice(&12u16.to_le_bytes()); // char_count: 24바이트 = 12 hchar
+        body.extend_from_slice(&0u16.to_le_bytes()); // line_count = 0
+        body.push(0u8); // include_char_shape
+        body.push(0u8); // flags
+        body.extend_from_slice(&0u32.to_le_bytes()); // special_char_flags
+        body.push(0u8); // style_index
+        body.extend_from_slice(&[0u8; 31]); // rep_char_shape
+        assert_eq!(body.len(), 43);
+
+        body.extend_from_slice(&22u16.to_le_bytes()); // 여는 특수 문자 코드
+        let mut name_buf = [0u8; 20];
+        name_buf[..name.len()].copy_from_slice(name);
+        body.extend_from_slice(&name_buf); // 필드 이름 (파일 오프셋 2..22)
+        body.extend_from_slice(&22u16.to_le_bytes()); // 닫는 특수 문자 코드
+
+        // 문단 리스트 종료 (빈 문단, 43바이트)
+        body.push(0u8);
+        body.extend_from_slice(&0u16.to_le_bytes());
+        body.extend_from_slice(&[0u8; 40]);
+        body
+    }
+
+    // 스펙 §10.16 표 57: 메일머지 표시(ch=22)의 필드 이름은 여는 코드 바로 뒤
+    // (파일 오프셋 2..22, 즉 추가로 읽은 22바이트 buf 의 [0..20])에 있다.
+    // buf[2..22] 로 읽으면 이름 앞 2바이트가 유실되고 닫는 코드(0x0016)가
+    // 이름에 혼입된다.
+    #[test]
+    fn hwp3_mail_merge_field_name_starts_at_offset_zero() {
+        let body = build_mail_merge_paragraph(b"MERGEFIELD");
+        let mut body_cursor = Cursor::new(body.as_slice());
+        let mut doc_char_shapes = Vec::new();
+        let mut doc_para_shapes = Vec::new();
+        let mut doc_border_fills = Vec::new();
+        let mut doc_tab_defs = Vec::new();
+        let mut pic_name_to_id = std::collections::HashMap::new();
+
+        let paragraphs = parse_paragraph_list(
+            &mut body_cursor,
+            &mut doc_char_shapes,
+            &mut doc_para_shapes,
+            &mut doc_border_fills,
+            &mut doc_tab_defs,
+            &mut pic_name_to_id,
+            0,
+            1000,
+            1000,
+        )
+        .expect("메일머지(ch=22) 컨트롤을 포함한 문단 파싱 실패");
+
+        assert_eq!(paragraphs.len(), 1);
+        let field = paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|c| match c {
+                crate::model::control::Control::Field(f) => Some(f),
+                _ => None,
+            })
+            .expect("메일머지 Field 컨트롤이 생성되지 않음");
+        assert_eq!(
+            field.field_type,
+            crate::model::control::FieldType::MailMerge
+        );
+        assert_eq!(
+            field.command, "MERGEFIELD",
+            "필드 이름이 오프셋 +2 로 어긋나게 읽힘 (앞 2바이트 유실)"
+        );
+    }
+
+    // 스펙 §10.17 표 58: 글자겹침(ch=23)의 겹칠 글자는 오프셋 2..8 의
+    // hchar array[3] (남는 부분 0 패딩)이다. 파서가 이를 IR CharOverlap.chars
+    // 에 채워야 겹침 문자가 보존된다 (종전: 항상 빈 Vec → 겹칠 글자 전량 유실).
+    #[test]
+    fn hwp3_char_overlap_extracts_overlap_chars() {
+        let mut body = Vec::new();
+        body.push(1u8); // follow_prev_para_shape
+        body.extend_from_slice(&5u16.to_le_bytes()); // char_count: 10바이트 = 5 hchar
+        body.extend_from_slice(&0u16.to_le_bytes()); // line_count
+        body.push(0u8); // include_char_shape
+        body.push(0u8); // flags
+        body.extend_from_slice(&0u32.to_le_bytes()); // special_char_flags
+        body.push(0u8); // style_index
+        body.extend_from_slice(&[0u8; 31]); // rep_char_shape
+        assert_eq!(body.len(), 43);
+
+        body.extend_from_slice(&23u16.to_le_bytes()); // 여는 특수 문자 코드
+        body.extend_from_slice(&0x0041u16.to_le_bytes()); // 겹칠 글자 1: 'A'
+        body.extend_from_slice(&0x0042u16.to_le_bytes()); // 겹칠 글자 2: 'B'
+        body.extend_from_slice(&0u16.to_le_bytes()); // 겹칠 글자 3: 없음 (0 패딩)
+        body.extend_from_slice(&23u16.to_le_bytes()); // 닫는 특수 문자 코드
+
+        // 문단 리스트 종료 (빈 문단, 43바이트)
+        body.push(0u8);
+        body.extend_from_slice(&0u16.to_le_bytes());
+        body.extend_from_slice(&[0u8; 40]);
+
+        let mut body_cursor = Cursor::new(body.as_slice());
+        let mut doc_char_shapes = Vec::new();
+        let mut doc_para_shapes = Vec::new();
+        let mut doc_border_fills = Vec::new();
+        let mut doc_tab_defs = Vec::new();
+        let mut pic_name_to_id = std::collections::HashMap::new();
+
+        let paragraphs = parse_paragraph_list(
+            &mut body_cursor,
+            &mut doc_char_shapes,
+            &mut doc_para_shapes,
+            &mut doc_border_fills,
+            &mut doc_tab_defs,
+            &mut pic_name_to_id,
+            0,
+            1000,
+            1000,
+        )
+        .expect("글자겹침(ch=23) 컨트롤을 포함한 문단 파싱 실패");
+
+        assert_eq!(paragraphs.len(), 1);
+        let overlap = paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|c| match c {
+                crate::model::control::Control::CharOverlap(co) => Some(co),
+                _ => None,
+            })
+            .expect("CharOverlap 컨트롤이 생성되지 않음");
+        assert_eq!(
+            overlap.chars,
+            vec!['A', 'B'],
+            "겹칠 글자(스펙 표 58 오프셋 2..8)가 IR 로 추출되지 않음"
         );
     }
 }
