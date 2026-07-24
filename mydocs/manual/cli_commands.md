@@ -96,6 +96,12 @@ HWP/HWPX → PDF (svg2pdf + pdf-writer).
     Windows 폰트 등)가 시스템에 없으면 번들 대체 폰트(Noto Sans/Serif KR)로 떨어져
     글꼴이 바뀐다. 서버·컨테이너에서 대량 변환할 때는 **필요한 폰트를 설치하고
     `--font-path` 또는 `RHWP_FONT_PATH` 로 명시**해야 정본과 같은 결과를 얻는다.
+- `--backend <svg|direct>` — PDF backend(기본값: svg). `svg`는 기존 SVG-derived 경로,
+  `direct`는 `PageLayerTree → PDF` direct/vector 경로. `direct`는 `native-skia` feature로
+  빌드한 native CLI가 필요하며, 해당 feature 없이 빌드된 CLI에서 `--backend direct`를 쓰면
+  종료코드 1과 함께 오류 메시지를 반환한다.
+- `--raster-dpi <DPI>` — `direct` backend fallback raster DPI(기본값: 144). `direct` backend
+  에서만 사용할 수 있다.
 - `--fallback-serif <family>` — PDF serif generic fallback family
 - `--fallback-sans <family>` — PDF sans-serif generic fallback family
 - `--fallback-mono <family>` — PDF monospace generic fallback family
@@ -128,7 +134,8 @@ rhwp export-pdf input.hwp -o out.pdf \
   - Linux: `Noto Serif CJK KR` / `Noto Sans CJK KR` / `Noto Sans Mono CJK KR`
   - macOS: `AppleMyungjo` / `Apple SD Gothic Neo` / `Menlo`
 - 선택한 fallback family 또는 수식 폰트가 fontdb에 없으면 warning을 출력한다.
-- direct/vector `PageLayerTree → PDF` backend는 아직 후속 작업이다.
+- direct/vector `PageLayerTree → PDF` backend는 `--backend direct`로 이미 사용 가능하다
+  (`native-skia` feature 빌드 필요, 위 옵션 설명 참고).
 
 ### `export-text <파일> [옵션]`
 페이지별 텍스트 → TXT. `-o`, `-p`.

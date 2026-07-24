@@ -17,6 +17,7 @@ import canvaskitWasmUrl from '@/view/canvaskit-wasm-url';
 
 import type {
   LayerBounds,
+  LayerCharOverlapOp,
   LayerClipNode,
   LayerEllipseOp,
   LayerEquationLayoutBox,
@@ -38,6 +39,9 @@ import type {
   LayerRenderProfile,
   LayerResources,
   LayerShapeStyle,
+  LayerTabLeaderOp,
+  LayerTextControlMarkOp,
+  LayerTextDecorationOp,
   LayerTextRunOp,
   PageInfo,
   PageLayerTree,
@@ -84,8 +88,12 @@ type SkSurface = Surface;
 
 export interface CanvasKitLayerRendererOptions {
   defaultFontUrl?: string;
+  symbolFallbackFontUrl?: string;
+  oldHangulFontUrl?: string;
   requirePreparedFontFamilies?: boolean;
 }
+
+const OLD_HANGUL_FONT_FAMILY = 'Source Han Serif K Old Hangul';
 type MutablePath = Path & Pick<PathBuilder, 'arcToRotated' | 'close' | 'cubicTo' | 'lineTo' | 'moveTo'>;
 type LayerColorGraph = NonNullable<NonNullable<LayerGlyphOutlineOp['colorLayers']>['paintGraph']>;
 type LayerColorGraphNode = NonNullable<LayerColorGraph['nodes']>[number];
@@ -170,6 +178,9 @@ export class CanvasKitLayerRenderer {
   private static readonly MAX_EQUATION_LAYOUT_DEPTH = 64;
   private static readonly MAX_EQUATION_LAYOUT_NODES = 4096;
   private static readonly MAX_EQUATION_TEXT_LENGTH = 4096;
+  private static readonly MAX_TEXT_VISUAL_WAVE_SEGMENTS = 4096;
+  private static readonly MAX_TEXT_SPECIAL_VISUAL_ITEMS = 4096;
+  private static readonly MAX_TEXT_RUN_FALLBACK_SPANS = 4096;
   // 단일 text run은 줄바꿈 없이 문서가 지정한 위치에 재생한다.
   private static readonly MAX_SHAPED_TEXT_WIDTH = 1_000_000;
   private static readonly MAX_BUNDLED_FONT_BYTES = 32 * 1024 * 1024;
@@ -197,6 +208,8 @@ export class CanvasKitLayerRenderer {
   private imageCacheEvictions = 0;
   private imageCachePixels = 0;
   private currentResources: LayerResources | undefined;
+  private currentShowParagraphMarks = false;
+  private currentShowControlCodes = false;
   private selectedTextVariantOps = new WeakSet<LayerPaintOp>();
   private documentGeneration = 0;
   private disposed = false;
@@ -206,10 +219,13 @@ export class CanvasKitLayerRenderer {
     private readonly renderMode: CanvasKitRenderMode,
     private readonly surfaceRequest: CanvasKitSurfaceRequest,
     private readonly defaultTypeface: Typeface | null,
+    private readonly symbolFallbackTypeface: Typeface | null,
     private readonly defaultFontManager: FontMgr | null = null,
     private readonly defaultFontFamily: string | null = null,
     private readonly defaultFontUrl: string = 'fonts/NotoSansKR-Regular.woff2',
     private readonly requirePreparedFontFamilies: boolean = false,
+    private readonly oldHangulTypeface: CanvasKitLocalTypeface | null = null,
+    private readonly oldHangulFontUrl: string = 'fonts/SourceHanSerifK-OldHangul-subset.woff2',
   ) {}
 
   static async create(
@@ -244,15 +260,65 @@ export class CanvasKitLayerRenderer {
     } catch (error) {
       console.warn('[CanvasKitLayerRenderer] 기본 CJK 폰트 로딩 실패:', error);
     }
+    let symbolFallbackTypeface: Typeface | null = null;
+    const symbolFallbackFontUrl = options.symbolFallbackFontUrl
+      ?? 'fonts/D2Coding-Regular.woff2';
+    try {
+      const response = await fetch(symbolFallbackFontUrl);
+      if (response.ok) {
+        const bytes = await readBoundedResponseArrayBuffer(response, {
+          maxBytes: CanvasKitLayerRenderer.MAX_BUNDLED_FONT_BYTES,
+        });
+        symbolFallbackTypeface = canvasKit.Typeface.MakeFreeTypeFaceFromData(bytes)
+          ?? canvasKit.Typeface.MakeTypefaceFromData(bytes);
+      }
+    } catch (error) {
+      console.warn('[CanvasKitLayerRenderer] 기호 폴백 폰트 로딩 실패:', error);
+    }
+    let oldHangulTypeface: CanvasKitLocalTypeface | null = null;
+    const oldHangulFontUrl = options.oldHangulFontUrl
+      ?? 'fonts/SourceHanSerifK-OldHangul-subset.woff2';
+    let oldHangulNativeTypeface: Typeface | null = null;
+    let oldHangulFontManager: FontMgr | null = null;
+    try {
+      const response = await fetch(oldHangulFontUrl);
+      if (response.ok) {
+        const bytes = await readBoundedResponseArrayBuffer(response, {
+          maxBytes: CanvasKitLayerRenderer.MAX_BUNDLED_FONT_BYTES,
+        });
+        oldHangulNativeTypeface = canvasKit.Typeface.MakeFreeTypeFaceFromData(bytes)
+          ?? canvasKit.Typeface.MakeTypefaceFromData(bytes);
+        oldHangulFontManager = canvasKit.FontMgr.FromData(bytes.slice(0));
+        const fontFamily = oldHangulFontManager && oldHangulFontManager.countFamilies() > 0
+          ? oldHangulFontManager.getFamilyName(0)
+          : OLD_HANGUL_FONT_FAMILY;
+        if (oldHangulNativeTypeface || oldHangulFontManager) {
+          oldHangulTypeface = {
+            typeface: oldHangulNativeTypeface,
+            fontManager: oldHangulFontManager,
+            fontFamily,
+          };
+          oldHangulNativeTypeface = null;
+          oldHangulFontManager = null;
+        }
+      }
+    } catch (error) {
+      oldHangulNativeTypeface?.delete?.();
+      oldHangulFontManager?.delete?.();
+      console.warn('[CanvasKitLayerRenderer] 옛한글 shaping 폰트 로딩 실패:', error);
+    }
     return new CanvasKitLayerRenderer(
       canvasKit,
       renderMode,
       resolvedSurfaceRequest,
       defaultTypeface,
+      symbolFallbackTypeface,
       defaultFontManager,
       defaultFontFamily,
       defaultFontUrl,
       options.requirePreparedFontFamilies ?? false,
+      oldHangulTypeface,
+      oldHangulFontUrl,
     );
   }
 
@@ -263,14 +329,21 @@ export class CanvasKitLayerRenderer {
     let registered = 0;
     for (const source of sources) {
       if (!source.url || source.aliases.length === 0) continue;
-      let prepared = source.url === this.defaultFontUrl
-        && (this.defaultTypeface || this.defaultFontManager)
-        ? {
+      const requiresShapingManager = source.aliases.some(alias => (
+        normalizedFontFamily(alias) === normalizedFontFamily(OLD_HANGUL_FONT_FAMILY)
+      ));
+      let prepared = source.url === this.oldHangulFontUrl && this.oldHangulTypeface
+        ? this.oldHangulTypeface
+        : source.url === this.defaultFontUrl && (this.defaultTypeface || this.defaultFontManager)
+          ? {
             typeface: this.defaultTypeface,
             fontManager: this.defaultFontManager,
             fontFamily: this.defaultFontFamily,
           }
-        : this.bundledTypefaces.get(source.url) ?? null;
+          : this.bundledTypefaces.get(source.url) ?? null;
+      if (prepared && requiresShapingManager && !prepared.fontManager) {
+        throw new Error(`CanvasKit shaping font source 준비 실패: ${source.url}`);
+      }
       if (!prepared) {
         if (this.bundledTypefaceLoadFailures.has(source.url)) {
           throw new Error(`CanvasKit font source 준비 실패: ${source.url}`);
@@ -299,7 +372,7 @@ export class CanvasKitLayerRenderer {
           typeface = this.canvasKit.Typeface.MakeFreeTypeFaceFromData(bytes)
             ?? this.canvasKit.Typeface.MakeTypefaceFromData(bytes);
           fontManager = this.canvasKit.FontMgr.FromData(bytes.slice(0));
-          if (!typeface && !fontManager) {
+          if ((!typeface && !fontManager) || (requiresShapingManager && !fontManager)) {
             throw new Error('CanvasKit이 font payload를 해석하지 못했습니다');
           }
           const fontFamily = fontManager && fontManager.countFamilies() > 0
@@ -411,6 +484,11 @@ export class CanvasKitLayerRenderer {
       renderedCanvas = surfaceTarget.canvas;
       const canvas = surface.getCanvas();
       this.currentResources = tree.resources;
+      this.currentShowParagraphMarks = tree.outputOptions?.showParagraphMarks === true;
+      this.currentShowControlCodes = tree.outputOptions?.showControlCodes === true;
+      if (this.currentShowControlCodes) {
+        this.unsupportedOps.add('viewOption:showControlCodes');
+      }
       this.selectedTextVariantOps = new WeakSet<LayerPaintOp>();
       this.selectTextVariants(tree.root);
       let hasPageBackground = false;
@@ -459,6 +537,8 @@ export class CanvasKitLayerRenderer {
     } finally {
       surface?.delete();
       this.currentResources = undefined;
+      this.currentShowParagraphMarks = false;
+      this.currentShowControlCodes = false;
       this.lastRenderDurationMs = performance.now() - renderStartedAt;
       this.renderCount += 1;
     }
@@ -565,7 +645,10 @@ export class CanvasKitLayerRenderer {
     this.disposed = true;
     this.resetDocumentResources();
     this.defaultTypeface?.delete();
+    this.symbolFallbackTypeface?.delete();
     this.defaultFontManager?.delete();
+    this.oldHangulTypeface?.typeface?.delete?.();
+    this.oldHangulTypeface?.fontManager?.delete?.();
   }
 
   private makeSurface(
@@ -896,10 +979,18 @@ export class CanvasKitLayerRenderer {
         this.unsupportedOps.add('rawSvg:unsupportedDirectReplay');
         return;
       case 'charOverlap':
-      case 'glyphRun':
+        this.renderCharOverlap(canvas, op);
+        return;
       case 'tabLeader':
+        this.renderTabLeader(canvas, op);
+        return;
       case 'textControlMark':
+        this.renderTextControlMark(canvas, op);
+        return;
       case 'textDecoration':
+        this.renderTextDecoration(canvas, op);
+        return;
+      case 'glyphRun':
         this.unsupportedOps.add(op.type);
         return;
       case 'glyphOutline': {
@@ -1517,16 +1608,17 @@ export class CanvasKitLayerRenderer {
 
   private recordTextRunCoverageGaps(op: LayerTextRunOp): void {
     const style = op.style ?? {};
+    const decorationsAreExternal = op.legacyVisuals?.decorations === 'mirror';
     if (op.isVertical) {
       this.unsupportedOps.add('textRun:verticalText');
     }
-    if (style.underline && style.underline !== 'none') {
+    if (!decorationsAreExternal && style.underline && style.underline !== 'none') {
       this.unsupportedOps.add('textRun:textDecoration');
     }
-    if (style.strikethrough) {
+    if (!decorationsAreExternal && style.strikethrough) {
       this.unsupportedOps.add('textRun:textDecoration');
     }
-    if (style.emphasisDot && style.emphasisDot !== 0) {
+    if (!decorationsAreExternal && style.emphasisDot && style.emphasisDot !== 0) {
       this.unsupportedOps.add('textRun:emphasisDot');
     }
     if (style.outlineType && style.outlineType !== 0) {
@@ -1559,6 +1651,24 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderTextRun(canvas: SkCanvas, op: LayerTextRunOp): void {
+    if (op.charOverlap && op.legacyVisuals?.charOverlap === 'mirror') {
+      return;
+    }
+    if (op.charOverlap) {
+      this.renderCharOverlap(canvas, {
+        type: 'charOverlap',
+        bbox: op.bbox,
+        text: op.text,
+        baseline: op.baseline ?? op.style?.fontSize ?? 12,
+        rotation: op.rotation ?? 0,
+        isVertical: op.isVertical === true,
+        style: op.style ?? {},
+        positions: op.positions ?? [],
+        positionsComplete: op.positions !== undefined,
+        charOverlap: op.charOverlap,
+      });
+      return;
+    }
     const replayText = op.displayText ?? op.text;
     const replayPositions = op.displayText !== undefined ? op.displayPositions : op.positions;
     if (!replayText) return;
@@ -1598,10 +1708,14 @@ export class CanvasKitLayerRenderer {
     const fontManager = preparedTypeface?.fontManager ?? this.defaultFontManager;
     const fontFamily = preparedTypeface?.fontFamily ?? this.defaultFontFamily;
     let font: Font | null = null;
+    const fallbackFonts: Font[] = [];
+    let boxedPuaFont: Font | null = null;
+    let boxedPuaStrokePaint: SkPaint | null = null;
     let canvasSaved = false;
     try {
       paint.setAntiAlias?.(true);
-      if (!typeface && !fontManager && /[^\u0000-\u00ff]/.test(replayText)) {
+      if (!typeface && !fontManager && !this.symbolFallbackTypeface
+        && /[^\u0000-\u00ff]/.test(replayText)) {
         this.unsupportedOps.add('textRunFont');
         return;
       }
@@ -1638,20 +1752,152 @@ export class CanvasKitLayerRenderer {
         adjustableFont.setEmbolden?.(style.bold === true);
         adjustableFont.setSkewX?.(style.italic === true ? -0.2 : 0);
         if (hasLayoutPositions) {
-          const glyphIds = font.getGlyphIDs(replayText, codePoints.length);
-          const hasGlyphMapping = glyphIds.length === codePoints.length
-            && glyphIds.every((glyphId) => glyphId !== 0);
-          if (hasGlyphMapping) {
-            const glyphPositions = new Float32Array(codePoints.length * 2);
-            for (let index = 0; index < codePoints.length; index += 1) {
-              glyphPositions[index * 2] = replayPositions![index];
-              glyphPositions[index * 2 + 1] = baselineShift;
-            }
-            canvas.drawGlyphs(glyphIds, glyphPositions, originX, originY, font, paint);
-          } else {
-            if (needsPreservedAdvances) this.unsupportedOps.add('textRun:glyphMapping');
-            canvas.drawText(replayText, originX, originY + baselineShift, paint, font);
+          const primaryGlyphIds = font.getGlyphIDs(replayText, codePoints.length);
+          const candidateFonts = [font];
+          const candidateGlyphIds = [primaryGlyphIds];
+          const oldHangulTypeface = codePoints.some((codePoint) => {
+            const code = codePoint.codePointAt(0) ?? 0;
+            return (code >= 0x1100 && code <= 0x11FF)
+              || (code >= 0xA960 && code <= 0xA97F)
+              || (code >= 0xD7B0 && code <= 0xD7FF);
+          })
+            ? this.findPreparedTypeface(OLD_HANGUL_FONT_FAMILY)
+            : null;
+          if (primaryGlyphIds.some(glyphId => glyphId === 0)
+            && this.defaultTypeface !== null
+            && typeface !== this.defaultTypeface) {
+            const defaultFont = new this.canvasKit.Font(this.defaultTypeface, fontSize);
+            const adjustableDefault = defaultFont as Font & {
+              setEmbolden?: (enabled: boolean) => void;
+              setSkewX?: (skew: number) => void;
+            };
+            adjustableDefault.setEmbolden?.(style.bold === true);
+            adjustableDefault.setSkewX?.(style.italic === true ? -0.2 : 0);
+            fallbackFonts.push(defaultFont);
+            candidateFonts.push(defaultFont);
+            candidateGlyphIds.push(defaultFont.getGlyphIDs(replayText, codePoints.length));
           }
+          if (codePoints.some((_, index) => candidateGlyphIds.every(ids => (ids[index] ?? 0) === 0))
+            && this.symbolFallbackTypeface !== null
+            && typeface !== this.symbolFallbackTypeface
+            && this.defaultTypeface !== this.symbolFallbackTypeface) {
+            const symbolFont = new this.canvasKit.Font(this.symbolFallbackTypeface, fontSize);
+            const adjustableSymbol = symbolFont as Font & {
+              setEmbolden?: (enabled: boolean) => void;
+              setSkewX?: (skew: number) => void;
+            };
+            adjustableSymbol.setEmbolden?.(style.bold === true);
+            adjustableSymbol.setSkewX?.(style.italic === true ? -0.2 : 0);
+            fallbackFonts.push(symbolFont);
+            candidateFonts.push(symbolFont);
+            candidateGlyphIds.push(symbolFont.getGlyphIDs(replayText, codePoints.length));
+          }
+          const selectedFontIndices = codePoints.map((codePoint, index) => {
+            const code = codePoint.codePointAt(0) ?? 0;
+            if ((code >= 0x1100 && code <= 0x11FF)
+              || (code >= 0xA960 && code <= 0xA97F)
+              || (code >= 0xD7B0 && code <= 0xD7FF)) {
+              return -2;
+            }
+            const candidateIndex = candidateGlyphIds.findIndex(ids => (ids[index] ?? 0) !== 0);
+            if (candidateIndex >= 0) return candidateIndex;
+            return code >= 0xF02B1 && code <= 0xF02C4 ? -1 : 0;
+          });
+          const fallbackSpans: Array<{ start: number; end: number; fontIndex: number }> = [];
+          let spanStart = 0;
+          while (spanStart < codePoints.length) {
+            const fontIndex = selectedFontIndices[spanStart];
+            let spanEnd = spanStart + 1;
+            if (fontIndex !== -1) {
+              while (spanEnd < codePoints.length && selectedFontIndices[spanEnd] === fontIndex) {
+                spanEnd += 1;
+              }
+            }
+            fallbackSpans.push({ start: spanStart, end: spanEnd, fontIndex });
+            if (fallbackSpans.length > CanvasKitLayerRenderer.MAX_TEXT_RUN_FALLBACK_SPANS) {
+              this.unsupportedOps.add('textRun:fallbackSpanLimitExceeded');
+              return;
+            }
+            spanStart = spanEnd;
+          }
+          let hasMissingGlyph = false;
+          for (const { start: runStart, end: runEnd, fontIndex } of fallbackSpans) {
+            if (fontIndex === -2) {
+              if (!this.renderShapedScriptText(
+                canvas,
+                codePoints.slice(runStart, runEnd).join(''),
+                style.color ?? '#000000',
+                fontSize,
+                originX + replayPositions![runStart],
+                originY,
+                baselineShift,
+                oldHangulTypeface?.fontManager ?? null,
+                oldHangulTypeface?.fontFamily ?? OLD_HANGUL_FONT_FAMILY,
+                style.bold === true,
+                style.italic === true,
+              )) {
+                hasMissingGlyph = true;
+              }
+              continue;
+            }
+            if (fontIndex === -1) {
+              const codePoint = codePoints[runStart].codePointAt(0) ?? 0;
+              const displayNumber = String(codePoint - 0xF02B0);
+              const boxSize = Math.max(1, fontSize * 0.72);
+              const boxX = originX + replayPositions![runStart];
+              const boxY = originY + baselineShift - fontSize * 0.76;
+              boxedPuaStrokePaint ??= this.makeStrokePaint(
+                style.color ?? '#000000',
+                Math.max(0.6, fontSize * 0.04),
+              );
+              boxedPuaFont ??= new this.canvasKit.Font(
+                this.symbolFallbackTypeface ?? this.defaultTypeface ?? typeface,
+                Math.max(1, fontSize * 0.5),
+              );
+              const boxedAdjustable = boxedPuaFont as Font & {
+                setEmbolden?: (enabled: boolean) => void;
+                setSkewX?: (skew: number) => void;
+              };
+              boxedAdjustable.setEmbolden?.(style.bold === true);
+              boxedAdjustable.setSkewX?.(style.italic === true ? -0.2 : 0);
+              const numberGlyphIds = boxedPuaFont.getGlyphIDs(
+                displayNumber,
+                displayNumber.length,
+              );
+              const numberWidth = (boxedPuaFont.getGlyphWidths(numberGlyphIds) ?? [])
+                .reduce((sum, width) => sum + width, 0);
+              canvas.drawRect(
+                this.canvasKit.XYWHRect(boxX, boxY, boxSize, boxSize),
+                boxedPuaStrokePaint,
+              );
+              canvas.drawText(
+                displayNumber,
+                boxX + (boxSize - numberWidth) / 2,
+                boxY + boxSize * 0.72,
+                paint,
+                boxedPuaFont,
+              );
+              continue;
+            }
+            const runGlyphIds = new Uint16Array(runEnd - runStart);
+            const runPositions = new Float32Array((runEnd - runStart) * 2);
+            for (let index = runStart; index < runEnd; index += 1) {
+              const glyphId = candidateGlyphIds[fontIndex][index] ?? 0;
+              runGlyphIds[index - runStart] = glyphId;
+              runPositions[(index - runStart) * 2] = replayPositions![index];
+              runPositions[(index - runStart) * 2 + 1] = baselineShift;
+              hasMissingGlyph ||= glyphId === 0;
+            }
+            canvas.drawGlyphs(
+              runGlyphIds,
+              runPositions,
+              originX,
+              originY,
+              candidateFonts[fontIndex],
+              paint,
+            );
+          }
+          if (hasMissingGlyph) this.unsupportedOps.add('textRun:glyphMapping');
         } else if (needsPreservedAdvances) {
           this.unsupportedOps.add('textRun:layoutPositions');
           canvas.drawText(replayText, originX, originY + baselineShift, paint, font);
@@ -1664,8 +1910,592 @@ export class CanvasKitLayerRenderer {
         if (canvasSaved) canvas.restore();
       } finally {
         font?.delete?.();
+        for (const fallbackFont of fallbackFonts) fallbackFont.delete?.();
+        boxedPuaFont?.delete?.();
+        boxedPuaStrokePaint?.delete?.();
         paint.delete?.();
       }
+    }
+  }
+
+  private renderCharOverlap(canvas: SkCanvas, op: LayerCharOverlapOp): void {
+    if (typeof op.text !== 'string' || !op.charOverlap || !Array.isArray(op.positions)) {
+      this.unsupportedOps.add('charOverlap:invalidGeometry');
+      return;
+    }
+    if (op.positionsComplete !== true
+      || op.positions.length > CanvasKitLayerRenderer.MAX_TEXT_SPECIAL_VISUAL_ITEMS + 1) {
+      this.unsupportedOps.add('charOverlap:visualItemLimitExceeded');
+      return;
+    }
+    const chars: string[] = [];
+    for (const ch of op.text) {
+      if (chars.length >= CanvasKitLayerRenderer.MAX_TEXT_SPECIAL_VISUAL_ITEMS) {
+        this.unsupportedOps.add('charOverlap:visualItemLimitExceeded');
+        return;
+      }
+      chars.push(ch);
+    }
+    if (op.positions.length !== chars.length + 1) {
+      this.unsupportedOps.add('charOverlap:invalidGeometry');
+      return;
+    }
+    if (chars.length === 0) return;
+    if (op.isVertical) {
+      this.unsupportedOps.add('textRun:verticalText');
+      return;
+    }
+    const style = op.style ?? {};
+    const rawFontSize = style.fontSize ?? (op.bbox.height || 12);
+    if (![op.baseline, op.rotation, rawFontSize, op.charOverlap.innerCharSize]
+      .every(Number.isFinite)
+      || op.positions.some(position => !Number.isFinite(position))
+      || rawFontSize <= 0
+      || !Number.isInteger(op.charOverlap.borderType)
+      || op.charOverlap.borderType < 0
+      || op.charOverlap.borderType > 4
+      || !Number.isInteger(op.charOverlap.innerCharSize)
+      || op.charOverlap.innerCharSize < -128
+      || op.charOverlap.innerCharSize > 127) {
+      this.unsupportedOps.add('charOverlap:invalidGeometry');
+      return;
+    }
+    const fontSize = Math.max(1, rawFontSize);
+    const rawRatio = op.charOverlap.innerCharSize > 0
+      ? op.charOverlap.innerCharSize / 100
+      : op.charOverlap.innerCharSize < 0
+        ? 1 + op.charOverlap.innerCharSize * 0.1
+        : 1;
+    const innerFontSize = Math.max(1, fontSize * Math.min(4, Math.max(0.1, rawRatio)));
+    const requestedFontFamily = primaryFontFamily(style.fontFamily);
+    const preparedTypeface = this.findPreparedTypeface(requestedFontFamily);
+    if (requestedFontFamily && !preparedTypeface && this.requirePreparedFontFamilies) {
+      throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${requestedFontFamily}`);
+    }
+    const primaryTypeface = preparedTypeface?.typeface ?? this.defaultTypeface;
+
+    const overlapDigits: Array<[number, number]> = [];
+    for (const ch of chars) {
+      const codePoint = ch.codePointAt(0) ?? 0;
+      const digit = codePoint >= 0xF0289 && codePoint <= 0xF0291
+        ? [0, codePoint - 0xF0288] as [number, number]
+        : codePoint >= 0xF0292 && codePoint <= 0xF029B
+          ? [1, codePoint - 0xF0292] as [number, number]
+          : codePoint >= 0xF0491 && codePoint <= 0xF0499
+            ? [0, codePoint - 0xF0490] as [number, number]
+            : codePoint >= 0xF049A && codePoint <= 0xF04A3
+              ? [1, codePoint - 0xF049A] as [number, number]
+              : codePoint >= 0xF04A4 && codePoint <= 0xF04AD
+                ? [2, codePoint - 0xF04A4] as [number, number]
+                : null;
+      if (!digit) {
+        overlapDigits.length = 0;
+        break;
+      }
+      overlapDigits.push(digit);
+    }
+    const decodedNumber = overlapDigits.length === chars.length
+      ? overlapDigits
+          .sort(([left], [right]) => left - right)
+          .map(([, digit]) => String.fromCharCode(0x30 + digit))
+          .join('')
+      : null;
+
+    const draw = (originX: number, originY: number) => {
+      const boxSize = fontSize;
+      const centerY = originY + op.bbox.height - boxSize / 2;
+      const drawCell = (
+        displayText: string,
+        centerX: number,
+        drawShape: boolean,
+        horizontalScale?: number,
+      ) => {
+        const borderType = horizontalScale !== undefined && op.charOverlap.borderType === 0
+          ? 1
+          : op.charOverlap.borderType;
+        const reversed = borderType === 2 || borderType === 4;
+        const circle = borderType === 1 || borderType === 2;
+        const rectangle = borderType === 3 || borderType === 4;
+        const textColor = reversed ? '#ffffff' : style.color ?? '#000000';
+        if (drawShape && (circle || rectangle)) {
+          let fill: SkPaint | null = null;
+          let stroke: SkPaint | null = null;
+          try {
+            fill = reversed ? this.makeFillPaint('#000000') : null;
+            stroke = this.makeStrokePaint(
+              reversed ? '#000000' : style.color ?? '#000000',
+              0.8,
+            );
+            if (circle) {
+              const radiusY = boxSize / 2;
+              const radiusX = radiusY * 0.85;
+              const oval = this.canvasKit.XYWHRect(
+                centerX - radiusX,
+                centerY - radiusY,
+                radiusX * 2,
+                radiusY * 2,
+              );
+              if (fill) canvas.drawOval(oval, fill);
+              canvas.drawOval(oval, stroke);
+            } else {
+              const rect = this.canvasKit.XYWHRect(
+                centerX - boxSize / 2,
+                centerY - boxSize / 2,
+                boxSize,
+                boxSize,
+              );
+              if (fill) canvas.drawRect(rect, fill);
+              canvas.drawRect(rect, stroke);
+            }
+          } finally {
+            fill?.delete?.();
+            stroke?.delete?.();
+          }
+        }
+
+        let textFont = new this.canvasKit.Font(primaryTypeface, innerFontSize);
+        let fallbackCandidate: Font | null = null;
+        let paint: SkPaint | null = null;
+        const adjustFont = (target: Font) => {
+          const adjustable = target as Font & {
+            setEmbolden?: (enabled: boolean) => void;
+            setSkewX?: (skew: number) => void;
+          };
+          adjustable.setEmbolden?.(style.bold === true);
+          adjustable.setSkewX?.(style.italic === true ? -0.2 : 0);
+        };
+        try {
+          adjustFont(textFont);
+          let glyphIds = textFont.getGlyphIDs(displayText, Array.from(displayText).length);
+          if (glyphIds.some(glyphId => glyphId === 0)) {
+            for (const fallbackTypeface of [this.defaultTypeface, this.symbolFallbackTypeface]) {
+              if (!fallbackTypeface || fallbackTypeface === primaryTypeface) continue;
+              fallbackCandidate = new this.canvasKit.Font(fallbackTypeface, innerFontSize);
+              adjustFont(fallbackCandidate);
+              const fallbackGlyphIds = fallbackCandidate.getGlyphIDs(
+                displayText,
+                Array.from(displayText).length,
+              );
+              if (fallbackGlyphIds.every(glyphId => glyphId !== 0)) {
+                textFont.delete?.();
+                textFont = fallbackCandidate;
+                fallbackCandidate = null;
+                glyphIds = fallbackGlyphIds;
+                break;
+              }
+              fallbackCandidate.delete?.();
+              fallbackCandidate = null;
+            }
+          }
+          if (glyphIds.some(glyphId => glyphId === 0)) {
+            this.unsupportedOps.add('textRun:glyphMapping');
+          }
+          const widths = textFont.getGlyphWidths(glyphIds) ?? [];
+          const measuredWidth = widths.reduce((sum, width) => sum + width, 0);
+          const scaleX = horizontalScale ?? 1;
+          if (scaleX < 1) {
+            textFont.setScaleX(scaleX);
+          }
+          const drawWidth = measuredWidth * scaleX;
+          paint = this.makeFillPaint(textColor);
+          const textY = (horizontalScale !== undefined ? centerY - fontSize * 0.08 : centerY)
+            + innerFontSize * 0.35;
+          canvas.drawText(displayText, centerX - Math.max(drawWidth, 1) / 2, textY, paint, textFont);
+        } finally {
+          paint?.delete?.();
+          fallbackCandidate?.delete?.();
+          textFont.delete?.();
+        }
+      };
+
+      if (decodedNumber !== null) {
+        const horizontalScale = decodedNumber.length > 1
+          ? 0.7 / decodedNumber.length * 2
+          : 1;
+        drawCell(decodedNumber, originX + boxSize / 2, true, horizontalScale);
+        return;
+      }
+      const centerX = chars.length > 1 ? originX + op.bbox.width / 2 : originX + boxSize / 2;
+      chars.forEach((ch, index) => {
+        const codePoint = ch.codePointAt(0) ?? 0;
+        const displayText = codePoint >= 0x2460 && codePoint <= 0x2473
+          ? String(codePoint - 0x2460 + 1)
+          : codePoint >= 0xF02CE && codePoint <= 0xF02E1
+            ? String(codePoint - 0xF02CD)
+          : codePoint === 0xF012B
+            ? '(인)'
+            : codePoint === 0xF031C
+              ? '■'
+              : codePoint === 0xF02FC
+                ? '►'
+                : codePoint === 0xF03C5
+                  ? '□'
+              : ch;
+        drawCell(displayText, centerX, index === 0);
+      });
+    };
+
+    this.withHorizontalTextVisualOrigin(canvas, op.bbox, op.rotation ?? 0, 'charOverlap', draw);
+  }
+
+  private renderTextControlMark(canvas: SkCanvas, op: LayerTextControlMarkOp): void {
+    if (op.isVertical) {
+      this.unsupportedOps.add('textRun:verticalText');
+      return;
+    }
+    if (!Array.isArray(op.marks)) {
+      this.unsupportedOps.add('textControlMark:invalidGeometry');
+      return;
+    }
+    if (op.marksComplete !== true
+      || op.marks.length > CanvasKitLayerRenderer.MAX_TEXT_SPECIAL_VISUAL_ITEMS) {
+      this.unsupportedOps.add('textControlMark:visualItemLimitExceeded');
+      return;
+    }
+    if (![op.baseline, op.rotation].every(Number.isFinite)
+      || op.marks.some(mark => !['space', 'tab', 'paragraphEnd', 'lineBreakEnd'].includes(mark.kind)
+        || ![mark.x, mark.y, mark.fontSize].every(Number.isFinite)
+        || mark.fontSize <= 0)) {
+      this.unsupportedOps.add('textControlMark:invalidGeometry');
+      return;
+    }
+    if (!this.currentShowParagraphMarks && !this.currentShowControlCodes) return;
+    const draw = (originX: number, originY: number) => {
+      const baselineY = originY + op.baseline;
+      let paint: SkPaint | null = null;
+      try {
+        paint = this.makeStrokePaint('#0066ff', 0.75);
+        for (const mark of op.marks) {
+          const x = originX + mark.x;
+          const y = baselineY + mark.y;
+          const size = mark.fontSize;
+          if (mark.kind === 'space') {
+            canvas.drawLine(x, y - size * 0.45, x + size * 0.25, y - size * 0.15, paint);
+            canvas.drawLine(x + size * 0.25, y - size * 0.15, x + size * 0.5, y - size * 0.45, paint);
+          } else if (mark.kind === 'tab') {
+            const lineY = y - size * 0.3;
+            const tipX = x + size * 0.85;
+            canvas.drawLine(x, lineY, tipX, lineY, paint);
+            canvas.drawLine(tipX, lineY, tipX - size * 0.25, lineY - size * 0.2, paint);
+            canvas.drawLine(tipX, lineY, tipX - size * 0.25, lineY + size * 0.2, paint);
+          } else if (mark.kind === 'paragraphEnd') {
+            const topY = y - size * 0.8;
+            const turnX = x + size * 0.4;
+            const arrowY = y - size * 0.25;
+            canvas.drawLine(turnX, topY, turnX, arrowY, paint);
+            canvas.drawLine(turnX, arrowY, x, arrowY, paint);
+            canvas.drawLine(x, arrowY, x + size * 0.2, arrowY - size * 0.18, paint);
+            canvas.drawLine(x, arrowY, x + size * 0.2, arrowY + size * 0.18, paint);
+          } else {
+            const lineX = x + size * 0.25;
+            const tipY = y - size * 0.1;
+            canvas.drawLine(lineX, y - size * 0.85, lineX, tipY, paint);
+            canvas.drawLine(lineX, tipY, lineX - size * 0.18, tipY - size * 0.22, paint);
+            canvas.drawLine(lineX, tipY, lineX + size * 0.18, tipY - size * 0.22, paint);
+          }
+        }
+      } finally {
+        paint?.delete?.();
+      }
+    };
+
+    this.withHorizontalTextVisualOrigin(canvas, op.bbox, op.rotation, 'textControlMark', draw);
+  }
+
+  private renderTabLeader(canvas: SkCanvas, op: LayerTabLeaderOp): void {
+    if (op.isVertical) {
+      this.unsupportedOps.add('textRun:verticalText');
+      return;
+    }
+    if (!Array.isArray(op.leaders)) {
+      this.unsupportedOps.add('tabLeader:invalidGeometry');
+      return;
+    }
+    if (op.leadersComplete !== true
+      || op.leaders.length > CanvasKitLayerRenderer.MAX_TEXT_SPECIAL_VISUAL_ITEMS) {
+      this.unsupportedOps.add('tabLeader:visualItemLimitExceeded');
+      return;
+    }
+    if (![op.baseline, op.fontSize, op.rotation].every(Number.isFinite)
+      || op.fontSize <= 0
+      || op.leaders.some(leader => ![leader.startX, leader.endX].every(Number.isFinite)
+        || leader.endX < leader.startX
+        || !Number.isInteger(leader.fillType)
+        || leader.fillType < 0
+        || leader.fillType > 11)) {
+      this.unsupportedOps.add('tabLeader:invalidGeometry');
+      return;
+    }
+    const draw = (originX: number, originY: number) => {
+      const baselineY = originY + op.baseline;
+      for (const leader of op.leaders) {
+        if (leader.fillType === 0 || leader.endX <= leader.startX) continue;
+        const x1 = originX + leader.startX;
+        const x2 = originX + leader.endX;
+        const y = baselineY - op.fontSize * 0.35;
+        switch (leader.fillType) {
+          case 1:
+            this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 0.5);
+            break;
+          case 2:
+            this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 0.5, [3, 3]);
+            break;
+          case 3:
+            this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 1, [0.1, 3], true);
+            break;
+          case 4:
+            this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 0.5, [6, 2, 1, 2]);
+            break;
+          case 5:
+            this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 0.5, [6, 2, 1, 2, 1, 2]);
+            break;
+          case 6:
+            this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 0.5, [8, 4]);
+            break;
+          case 7:
+            this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 0.7, [0.1, 2.5], true);
+            break;
+          case 8:
+            this.drawTextVisualStroke(canvas, x1, y - 1, x2, y - 1, op.color, 0.3);
+            this.drawTextVisualStroke(canvas, x1, y + 1, x2, y + 1, op.color, 0.3);
+            break;
+          case 9:
+            this.drawTextVisualStroke(canvas, x1, y - 1.2, x2, y - 1.2, op.color, 0.3);
+            this.drawTextVisualStroke(canvas, x1, y + 0.8, x2, y + 0.8, op.color, 0.8);
+            break;
+          case 10:
+            this.drawTextVisualStroke(canvas, x1, y - 0.8, x2, y - 0.8, op.color, 0.8);
+            this.drawTextVisualStroke(canvas, x1, y + 1.2, x2, y + 1.2, op.color, 0.3);
+            break;
+          case 11:
+            this.drawTextVisualStroke(canvas, x1, y - 2, x2, y - 2, op.color, 0.3);
+            this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 0.8);
+            this.drawTextVisualStroke(canvas, x1, y + 2, x2, y + 2, op.color, 0.3);
+            break;
+        }
+      }
+    };
+
+    this.withHorizontalTextVisualOrigin(canvas, op.bbox, op.rotation, 'tabLeader', draw);
+  }
+
+  private renderTextDecoration(canvas: SkCanvas, op: LayerTextDecorationOp): void {
+    const decoration = op.decoration;
+    if (!decoration
+      || !Array.isArray(decoration.positions)
+      || !['underline', 'strikethrough', 'emphasisDot'].includes(decoration.kind)) {
+      this.unsupportedOps.add('textDecoration:invalidGeometry');
+      return;
+    }
+    if (decoration.isVertical) {
+      this.unsupportedOps.add('textRun:verticalText');
+      return;
+    }
+    if (decoration.positionsComplete !== true
+      || decoration.positions.length > CanvasKitLayerRenderer.MAX_TEXT_SPECIAL_VISUAL_ITEMS + 1) {
+      this.unsupportedOps.add('textDecoration:visualItemLimitExceeded');
+      return;
+    }
+    if (![decoration.baseline, decoration.rotation, decoration.fontSize, decoration.ratio]
+      .every(Number.isFinite)
+      || decoration.fontSize <= 0
+      || decoration.ratio <= 0
+      || decoration.positions.some(position => !Number.isFinite(position))
+      || !Number.isInteger(decoration.shape)
+      || decoration.shape < 0
+      || decoration.shape > 12
+      || !Number.isInteger(decoration.emphasisDot)
+      || decoration.emphasisDot < 0
+      || decoration.emphasisDot > 6
+      || !['none', 'bottom', 'top'].includes(decoration.underline)) {
+      this.unsupportedOps.add('textDecoration:invalidGeometry');
+      return;
+    }
+    const textWidth = decoration.positions.at(-1) ?? 0;
+    if (!Number.isFinite(textWidth) || textWidth < 0) {
+      this.unsupportedOps.add('textDecoration:invalidGeometry');
+      return;
+    }
+    const drawLineShape = (originX: number, y: number) => {
+      const x2 = originX + textWidth;
+      switch (decoration.shape) {
+        case 7:
+          this.drawTextVisualStroke(canvas, originX, y - 1, x2, y - 1, decoration.color, 0.7);
+          this.drawTextVisualStroke(canvas, originX, y + 1, x2, y + 1, decoration.color, 0.7);
+          break;
+        case 8:
+          this.drawTextVisualStroke(canvas, originX, y - 1.2, x2, y - 1.2, decoration.color, 0.5);
+          this.drawTextVisualStroke(canvas, originX, y + 0.8, x2, y + 0.8, decoration.color, 1.2);
+          break;
+        case 9:
+          this.drawTextVisualStroke(canvas, originX, y - 0.8, x2, y - 0.8, decoration.color, 1.2);
+          this.drawTextVisualStroke(canvas, originX, y + 1.2, x2, y + 1.2, decoration.color, 0.5);
+          break;
+        case 10:
+          this.drawTextVisualStroke(canvas, originX, y - 1.5, x2, y - 1.5, decoration.color, 0.5);
+          this.drawTextVisualStroke(canvas, originX, y, x2, y, decoration.color, 0.5);
+          this.drawTextVisualStroke(canvas, originX, y + 1.5, x2, y + 1.5, decoration.color, 0.5);
+          break;
+        case 11:
+          this.drawTextVisualStroke(canvas, originX, y, x2, y, decoration.color, 0.7, [], false, 1.5, 6);
+          break;
+        case 12:
+          this.drawTextVisualStroke(canvas, originX, y - 1, x2, y - 1, decoration.color, 0.5, [], false, 1.2, 6);
+          this.drawTextVisualStroke(canvas, originX, y + 1, x2, y + 1, decoration.color, 0.5, [], false, 1.2, 6);
+          break;
+        default: {
+          const dash = decoration.shape === 1 ? [3, 3]
+            : decoration.shape === 2 ? [1, 2]
+              : decoration.shape === 3 ? [6, 2, 1, 2]
+                : decoration.shape === 4 ? [6, 2, 1, 2, 1, 2]
+                  : decoration.shape === 5 ? [8, 4]
+                    : decoration.shape === 6 ? [0.1, 2.5]
+                      : [];
+          this.drawTextVisualStroke(
+            canvas,
+            originX,
+            y,
+            x2,
+            y,
+            decoration.color,
+            1,
+            dash,
+            decoration.shape === 6,
+          );
+        }
+      }
+    };
+    const draw = (originX: number, originY: number) => {
+      const baselineY = originY + decoration.baseline;
+      if (decoration.kind === 'underline') {
+        const y = decoration.underline === 'top'
+          ? baselineY - decoration.fontSize + 1
+          : baselineY + 2;
+        drawLineShape(originX, y);
+        return;
+      }
+      if (decoration.kind === 'strikethrough') {
+        drawLineShape(originX, baselineY - decoration.fontSize * 0.3);
+        return;
+      }
+      if (decoration.emphasisDot === 0) return;
+      const dotSize = Math.max(1, decoration.fontSize * 0.3);
+      let fillPaint: SkPaint | null = null;
+      let strokePaint: SkPaint | null = null;
+      try {
+        fillPaint = this.makeFillPaint(decoration.color);
+        strokePaint = this.makeStrokePaint(
+          decoration.color,
+          Math.max(dotSize * 0.12, 0.75),
+        );
+        for (const position of decoration.positions.slice(0, -1)) {
+          const x = originX + position + decoration.fontSize * decoration.ratio * 0.5;
+          const y = baselineY - decoration.fontSize * 1.05;
+          const centerY = y - dotSize * 0.45;
+          if (decoration.emphasisDot === 1) {
+            canvas.drawCircle(x, centerY, Math.max(dotSize * 0.48, 1), fillPaint);
+          } else if (decoration.emphasisDot === 2) {
+            canvas.drawCircle(x, centerY, Math.max(dotSize * 0.48, 1), strokePaint);
+          } else if (decoration.emphasisDot === 3) {
+            canvas.drawLine(x - dotSize * 0.45, centerY - dotSize * 0.2, x, centerY + dotSize * 0.25, strokePaint);
+            canvas.drawLine(x, centerY + dotSize * 0.25, x + dotSize * 0.45, centerY - dotSize * 0.2, strokePaint);
+          } else if (decoration.emphasisDot === 4) {
+            canvas.drawLine(x - dotSize * 0.5, centerY, x - dotSize * 0.15, centerY - dotSize * 0.22, strokePaint);
+            canvas.drawLine(x - dotSize * 0.15, centerY - dotSize * 0.22, x + dotSize * 0.15, centerY + dotSize * 0.22, strokePaint);
+            canvas.drawLine(x + dotSize * 0.15, centerY + dotSize * 0.22, x + dotSize * 0.5, centerY, strokePaint);
+          } else if (decoration.emphasisDot === 5) {
+            canvas.drawCircle(x, centerY, Math.max(dotSize * 0.22, 0.75), fillPaint);
+          } else {
+            const radius = Math.max(dotSize * 0.18, 0.7);
+            canvas.drawCircle(x, centerY - radius * 1.5, radius, fillPaint);
+            canvas.drawCircle(x, centerY + radius * 1.5, radius, fillPaint);
+          }
+        }
+      } finally {
+        strokePaint?.delete?.();
+        fillPaint?.delete?.();
+      }
+    };
+
+    this.withHorizontalTextVisualOrigin(
+      canvas,
+      op.bbox,
+      decoration.rotation,
+      'textDecoration',
+      draw,
+    );
+  }
+
+  private withHorizontalTextVisualOrigin(
+    canvas: SkCanvas,
+    bbox: LayerBounds,
+    rotation: number,
+    opType: 'charOverlap' | 'textControlMark' | 'tabLeader' | 'textDecoration',
+    draw: (originX: number, originY: number) => void,
+  ): void {
+    if (![bbox.x, bbox.y, bbox.width, bbox.height, rotation].every(Number.isFinite)
+      || bbox.width < 0
+      || bbox.height < 0) {
+      this.unsupportedOps.add(`${opType}:invalidGeometry`);
+      return;
+    }
+    if (rotation !== 0) {
+      this.unsupportedOps.add(`${opType}:rotatedText`);
+      return;
+    }
+    draw(bbox.x, bbox.y);
+  }
+
+  private drawTextVisualStroke(
+    canvas: SkCanvas,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    color: string,
+    width: number,
+    dash: number[] = [],
+    roundCap = false,
+    waveHeight = 0,
+    waveWidth = 0,
+  ): void {
+    const paint = this.makeStrokePaint(color, width);
+    let effect: ReturnType<typeof this.canvasKit.PathEffect.MakeDash> | null = null;
+    let path: Path | null = null;
+    try {
+      if (roundCap) paint.setStrokeCap(this.canvasKit.StrokeCap.Round);
+      if (dash.length > 0) {
+        effect = this.canvasKit.PathEffect.MakeDash(dash, 0);
+        if (effect) paint.setPathEffect(effect);
+      }
+      if (waveHeight > 0 && waveWidth > 0) {
+        const builder = new this.canvasKit.PathBuilder();
+        try {
+          builder.moveTo(x1, y1);
+          let cursor = x1;
+          let up = true;
+          const step = Math.max(
+            waveWidth,
+            (x2 - x1) / CanvasKitLayerRenderer.MAX_TEXT_VISUAL_WAVE_SEGMENTS,
+          );
+          while (cursor < x2) {
+            const next = Math.min(cursor + step, x2);
+            builder.quadTo((cursor + next) / 2, up ? y1 - waveHeight : y1 + waveHeight, next, y1);
+            cursor = next;
+            up = !up;
+          }
+          path = builder.detach();
+        } finally {
+          builder.delete?.();
+        }
+        canvas.drawPath(path, paint);
+      } else {
+        canvas.drawLine(x1, y1, x2, y2, paint);
+      }
+    } finally {
+      path?.delete?.();
+      effect?.delete?.();
+      paint.delete?.();
     }
   }
 
@@ -1719,8 +2549,12 @@ export class CanvasKitLayerRenderer {
     if (!key) return null;
     const record = resolveLocalFont(primaryFontFamily(fontFamily));
     const local = record ? this.localTypefaces.get(localFontFaceKey(record)) ?? null : null;
-    if (local) return local;
     const bundled = this.bundledTypefaceAliases.get(key);
+    if (key === normalizedFontFamily(OLD_HANGUL_FONT_FAMILY)) {
+      return [this.oldHangulTypeface, local, bundled]
+        .find(candidate => candidate?.fontManager) ?? null;
+    }
+    if (local) return local;
     if (bundled) return bundled;
     if (key === normalizedFontFamily(this.defaultFontFamily) || key === 'noto sans kr') {
       return this.defaultTypeface || this.defaultFontManager

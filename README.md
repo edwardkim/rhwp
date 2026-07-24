@@ -123,7 +123,7 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 ### Multi-Renderer Backends (멀티 렌더러 백엔드)
 - 공통 paint IR: `PageRenderTree` → `PageLayerTree` (Rust `DocumentCore::build_page_layer_tree`, WASM `getPageLayerTree`) — `schemaVersion: 1`, 호환 변경은 additive 원칙
 - 백엔드: legacy/layered SVG, Canvas2D, CanvasKit 직접 replay, native Skia PNG/direct PDF(`--features native-skia`)
-- Studio, 브라우저 확장/embed, VS Code 뷰어의 기본 요청은 호환 경로인 Canvas2D입니다. Studio 계열에서 `?renderer=auto`를 명시하면 bounded document preflight가 완전하고 적격이며 필요한 문서 폰트를 준비할 수 있는 경우만 CanvasKit으로 고정합니다. 조판/문단 부호를 켠 경우와 판정·초기화·리소스 준비·런타임 실패 시에는 해당 문서 revision 전체를 Canvas2D로 고정합니다. `?renderer=canvas2d`와 `?renderer=canvaskit`은 명시적 강제 선택입니다.
+- Studio, 브라우저 확장/embed, VS Code 뷰어의 기본 요청은 호환 경로인 Canvas2D입니다. Studio 계열에서 `?renderer=auto`를 명시하면 bounded document preflight가 완전하고 적격이며 필요한 문서 폰트를 준비할 수 있는 경우만 CanvasKit으로 고정합니다. 수평 글자 겹침, 탭 리더, 밑줄·취소선·강조점, 위치가 확정된 공백·탭·문단 끝·줄바꿈 부호는 CanvasKit이 직접 재생합니다. `[표]`, `[그림]` 같은 구조 조판 부호를 포함하는 `showControlCodes`와 지원하지 않는 세로쓰기·회전된 특수 텍스트 시각 요소·텍스트 효과, 판정·초기화·리소스 준비·런타임 실패는 해당 문서 revision 전체를 Canvas2D로 고정합니다. `?renderer=canvas2d`와 `?renderer=canvaskit`은 명시적 강제 선택입니다.
 - Text IR v2: 폰트 blob 증명 기반 GlyphRun/GlyphOutline 사이드카 — 미증명 케이스는 항상 `TextRun` 폴백 (호환 계약)
 - direct PDF는 print profile과 CSS px→PDF point `72/96` 변환을 사용합니다. 손실되는 gradient/pattern/shadow/connector/image adjustment는 SVG backend 사용을 안내하며 실패하고, Raw SVG만 `--raster-dpi` 기반 bounded raster fallback을 사용합니다.
 - 시각 회귀 CI: render-diff(Canvas 계열 + browser/compatibility PDF report), selected direct/compatibility PDF 2% hard gate, 4-backend 공통 replay-plane(배경→글뒤→본문→글앞) 계약

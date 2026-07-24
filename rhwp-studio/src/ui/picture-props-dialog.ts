@@ -48,6 +48,19 @@ const OLE_TAB_NAMES = ['기본', '여백/캡션', '선'];
 /** 탭 이름 — 직선용 (채우기/글상자 불필요) */
 const LINE_TAB_NAMES = ['기본', '여백/캡션', '선', '그림자'];
 
+/**
+ * 개체 설명문(description)의 안전한 상한 길이(문자 수).
+ *
+ * Rust 직렬화기(`src/serializer/control.rs`)는 그림/글상자 등 개체의 CommonObjAttr
+ * description 필드를 `write_hwp_string()`(`src/serializer/byte_writer.rs`)로 기록하는데,
+ * 이 함수는 UTF-16 코드 유닛 수를 `as u16`으로 캐스팅해 길이 프리픽스를 만든다. 문자열
+ * 길이가 65536 이상이면 캐스팅이 랩어라운드되어 길이 프리픽스와 실제 기록된 바이트 수가
+ * 어긋난 손상된 레코드가 만들어진다(#2851/#2862/#2866/#2878과 동일 원인). `.rs`를 수정하지
+ * 않는 범위에서, 손상 가능한 값이 wasm 호출까지 도달하지 않도록 프런트엔드에서 훨씬 낮은
+ * 상한으로 미리 막는다.
+ */
+export const MAX_OBJECT_DESCRIPTION_LEN = 4000;
+
 export class PicturePropsDialog {
   private overlay!: HTMLDivElement;
   private dialog!: HTMLDivElement;
@@ -2096,6 +2109,10 @@ export class PicturePropsDialog {
 
   private handleOk(): void {
     if (!this.props) { this.hide(); return; }
+    if (this.descInput.value.length > MAX_OBJECT_DESCRIPTION_LEN) {
+      this.showDescriptionPrompt();
+      return;
+    }
     const patch = buildPicturePropsPatch(
       this.objectType,
       this.props,
@@ -2488,8 +2505,17 @@ export class PicturePropsDialog {
     leftCol.className = 'cs-left-col';
     const textarea = document.createElement('textarea');
     textarea.className = 'pp-desc-textarea';
+    textarea.maxLength = MAX_OBJECT_DESCRIPTION_LEN;
     textarea.value = this.descInput.value;
     leftCol.appendChild(textarea);
+
+    const errorLabel = document.createElement('div');
+    errorLabel.className = 'pp-desc-error';
+    errorLabel.style.color = '#c00';
+    errorLabel.style.fontSize = '11px';
+    errorLabel.style.display = 'none';
+    errorLabel.textContent = `개체 설명문은 ${MAX_OBJECT_DESCRIPTION_LEN}자를 넘을 수 없습니다.`;
+    leftCol.appendChild(errorLabel);
 
     const rightCol = document.createElement('div');
     rightCol.className = 'cs-right-col';
@@ -2497,6 +2523,10 @@ export class PicturePropsDialog {
     okBtn.className = 'dialog-btn dialog-btn-primary';
     okBtn.textContent = '확인(D)';
     okBtn.addEventListener('click', () => {
+      if (textarea.value.length > MAX_OBJECT_DESCRIPTION_LEN) {
+        errorLabel.style.display = '';
+        return;
+      }
       this.descInput.value = textarea.value;
       overlay.remove();
     });

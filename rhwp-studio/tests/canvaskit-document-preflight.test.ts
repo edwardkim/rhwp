@@ -90,15 +90,15 @@ test('surface blockers remain visible when the WASM blocker budget is full', () 
     })),
   };
   const blocked = withCanvasKitSurfaceBlockers(report, [
-    'viewOption:showParagraphMarks',
-    'viewOption:showControlCodes',
+    'fontUnavailable:Family A',
+    'fontUnavailable:Family B',
   ]);
 
   assert.equal(report.blockers.length, 32);
   assert.equal(blocked.blockers.length, 32);
   assert.deepEqual(
     blocked.blockers.slice(-2).map(blocker => blocker.detail),
-    ['viewOption:showControlCodes', 'viewOption:showParagraphMarks'],
+    ['fontUnavailable:Family A', 'fontUnavailable:Family B'],
   );
 });
 
