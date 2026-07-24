@@ -523,7 +523,11 @@ fn hwp3_default_endnote_shape(doc_info: &Hwp3DocInfo) -> crate::model::footnote:
         // doc_info offset 110 "각주 옵션": ')' = 번호에 ')' 붙임, 0 = 안 붙임.
         // 파싱만 되고(footnote_bracket) 항상 ')' 로 하드코딩되어 옵션을 끈 문서도
         // ')' 가 표시되던 문제.
-        suffix_char: if doc_info.footnote_bracket != 0 { ')' } else { '\0' },
+        suffix_char: if doc_info.footnote_bracket != 0 {
+            ')'
+        } else {
+            '\0'
+        },
         start_number: 1,
         separator_margin_top,
         note_spacing: 576,
