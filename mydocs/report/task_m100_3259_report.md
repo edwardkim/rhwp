@@ -31,21 +31,20 @@
 추가한 단위 테스트는 handle API가 `await` 전에 같은 tick에서 호출되는지, 미지원·오류·directory
 fallback 및 다른 파일 item을 capture하지 않는지를 고정한다.
 
-## macOS 실동작 확인 범위
+## macOS 실동작 확인
 
-로컬 Chrome의 Studio 기동과 production build까지 확인했다. 다만 자동화 세션에서는 Finder 창의
-파일을 Chrome의 웹 콘텐츠 영역으로 안정적으로 드롭할 수 없었고, `⌘O`는 Studio 단축키가 아니라
-Chrome 자체 파일 열기로 선점돼 설치된 확장 프로그램 탭을 열었다. 따라서 아래 네이티브 Finder
-검사는 PR 전 최종 수동 확인 항목으로 남긴다.
+로컬 Chrome의 Studio 기동과 production build까지 확인했다. 자동화 세션은 Finder 창의 파일을 Chrome
+웹 콘텐츠 영역으로 안정적으로 드롭하지 못했으나, 작업지시자가 실제 macOS Finder에서 아래 흐름을
+직접 확인해 통과했다.
 
 1. Finder에서 문서 A를 Studio로 드롭하고 열기 확인을 승인한다.
 2. 문서 B를 연다.
 3. 파일 → 최근 문서에서 A를 선택한다.
-4. 파일 재선택 picker나 `핸들 없이 열려` toast 없이 A가 다시 열리는지 확인한다.
+4. 파일 재선택 picker나 `핸들 없이 열려` toast 없이 A가 다시 열린다.
 
-지원하지 않는 브라우저와 과거 handle 없는 recent entry는 의도대로 재선택 fallback을 유지해야 한다.
+지원하지 않는 브라우저와 과거 handle 없는 recent entry는 의도대로 재선택 fallback을 유지한다.
 
 ## PR 준비 상태
 
-#3257과 함께 `task/3257-3259-renderer-recent-reopen` 단일 브랜치에서 PR로 낸다.
-오늘할일 문서는 PR 생성 승인 직전에만 추가한다.
+#3257과 함께 단일 브랜치에서 준비한 [PR #3265](https://github.com/edwardkim/rhwp/pull/3265)에 포함했다.
+오늘할일 문서는 최초 PR diff에만 추가했으며 PR 번호 발급 후에는 다시 수정하지 않는다.
