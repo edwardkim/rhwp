@@ -626,15 +626,16 @@ fn test_compute_image_crop_src_no_crop_full_image() {
 
 #[test]
 fn test_compute_image_crop_src_offset_top_left() {
-    // 좌·상단을 잘라낸 케이스: top=ow/4, left=ow/4 → 우하단 75% 영역
+    // 좌·상단을 잘라낸 케이스: top=oh/5, left=ow/4 → 우하단 영역.
+    // imgDim 부재 → 적응 폴백(#3239): right/bottom(4000, 2500)이 전체 좌표
+    // 범위 = 디코딩 400×250px 에 대응 (10 HU/px).
     let (sx, sy, sw, sh) = compute_image_crop_src((1000, 500, 4000, 2500), None, 400.0, 250.0);
-    // [Task #477] 75 HU/px 룰
-    // src_x = 1000/75 = 13.33, src_y = 500/75 = 6.67
-    // src_w = 3000/75 = 40, src_h = 2000/75 = 26.67
-    assert!((sx - 13.333).abs() < 0.01);
-    assert!((sy - 6.667).abs() < 0.01);
-    assert!((sw - 40.0).abs() < 0.01);
-    assert!((sh - 26.667).abs() < 0.01);
+    // src_x = 1000/10 = 100, src_y = 500/10 = 50
+    // src_w = 3000/10 = 300, src_h = 2000/10 = 200
+    assert!((sx - 100.0).abs() < 0.01);
+    assert!((sy - 50.0).abs() < 0.01);
+    assert!((sw - 300.0).abs() < 0.01);
+    assert!((sh - 200.0).abs() < 0.01);
 }
 
 #[test]
@@ -665,10 +666,38 @@ fn test_compute_image_crop_src_issue2817_img_dim_scale() {
 
 #[test]
 fn test_compute_image_crop_src_fallback_when_original_size_missing() {
-    // original_size_hu가 None 이어도 [Task #477] 75 HU/px 룰을 동일하게 적용.
+    // original_size_hu(imgDim) 부재 시 적응 폴백(#3239): crop right/bottom
+    // (102366, 26580)이 전체 좌표 범위 = 디코딩 2320×354px 에 대응한다고 본다.
+    // pre-#2990 skia 경로(image_conv.rs)와 동일한 해석 — crop 이 전체 범위를
+    // 가리키는 그림(대부분의 무-crop 저장)은 단위와 무관하게 정확하다.
     let (sx, sy, sw, sh) = compute_image_crop_src((0, 0, 102366, 26580), None, 2320.0, 354.0);
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
-    assert!((sw - 1364.88).abs() < 0.01);
-    assert!((sh - 354.4).abs() < 0.01);
+    assert!((sw - 2320.0).abs() < 0.01);
+    assert!((sh - 354.0).abs() < 0.01);
+}
+
+#[test]
+fn test_compute_image_crop_src_issue3239_non_96dpi_scan_fallback() {
+    // #3239 r22 회귀 재현 실측값: samples/issue3239 평가결과서 BIN0001.TIF —
+    // 200dpi 스캔(36 HU/px), 디코딩 1654×2340px, crop=(0,0,59520,84240),
+    // raw_picture_extra 9바이트로 imgDim 부재.
+    // 고정 75 룰이면 src=793.6×1123.2 로 과소 계산되어 좌상단만 2.08배
+    // 확대·절단 렌더된다. 적응 폴백은 전체 이미지를 그대로 돌려준다.
+    let (sx, sy, sw, sh) = compute_image_crop_src((0, 0, 59520, 84240), None, 1654.0, 2340.0);
+    assert!((sx - 0.0).abs() < 0.01);
+    assert!((sy - 0.0).abs() < 0.01);
+    assert!((sw - 1654.0).abs() < 0.01);
+    assert!((sh - 2340.0).abs() < 0.01);
+}
+
+#[test]
+fn test_compute_image_crop_src_last_resort_hu_rule() {
+    // crop right/bottom 이 무효(≤0)이고 imgDim 도 없으면 최후 폴백으로
+    // [Task #477] 75 HU/px 룰을 유지한다.
+    let (sx, sy, sw, sh) = compute_image_crop_src((-300, -150, 0, 0), None, 400.0, 250.0);
+    assert!((sx - -4.0).abs() < 0.01);
+    assert!((sy - -2.0).abs() < 0.01);
+    assert!((sw - 4.0).abs() < 0.01);
+    assert!((sh - 2.0).abs() < 0.01);
 }
