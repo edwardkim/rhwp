@@ -404,8 +404,9 @@ jobs:
 
   # [#2393] 기본 테스트 병렬화 — 테스트 바이너리를 한 번 빌드해 아카이브하고
   # 8개 샤드가 컴파일 없이 나눠 실행한다. [#3266] Native Skia와 archive는 같은
-  # lint/frontend gate 뒤 병렬로 시작한다. Native 실패 시 archive가 끝날 수는 있어도
-  # shard는 두 job 성공 뒤에만 시작하므로 #3064의 테스트 실행 차단은 유지된다.
+  # lint/frontend gate 뒤 병렬로 시작한다. [#3268] Lint와 Frontend도 preflight 뒤
+  # 병렬이지만, Native/archive는 두 gate 성공 뒤에만 시작한다. Native 실패 시 archive가
+  # 끝날 수는 있어도 shard는 두 job 성공 뒤에만 시작하므로 #3064의 테스트 실행 차단은 유지된다.
   # required check 는 집계 job "Build & Test" 로 불변이다.
   build-test-archive:
     name: Build test archive
@@ -690,8 +691,11 @@ jobs:
   frontend-package-gates:
     name: Frontend package gates
     runs-on: ubuntu-latest
-    needs: [preflight, lint]
-    if: ${{ always() && needs.preflight.result == 'success' && needs.lint.result == 'success' && needs.preflight.outputs.fast_pass != 'true' && needs.preflight.outputs.frontend_required == 'true' }}
+    # [#3268] Frontend는 Lint의 산출물을 읽지 않고 독립 runner에서 별도 target/cache를 쓴다.
+    # preflight의 fast-pass·영향 판정만 기다려 Lint와 병렬 시작한다. Lint 실패 시 Frontend가
+    # 끝날 수는 있지만 Native/archive는 아래 두 worker의 성공을 모두 계속 요구한다.
+    needs: preflight
+    if: ${{ always() && needs.preflight.result == 'success' && needs.preflight.outputs.fast_pass != 'true' && needs.preflight.outputs.frontend_required == 'true' }}
     permissions:
       contents: read
 
