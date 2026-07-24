@@ -555,109 +555,61 @@ export class DeleteSelectionCommand implements EditCommand {
   readonly type = 'deleteSelection';
   readonly timestamp = Date.now();
 
-  /** undo용: 삭제 전 선택 영역의 텍스트 (문단별) */
-  private savedTexts: string[] = [];
-  /** undo용: 삭제 전 다중 문단 여부 */
-  private multiPara = false;
+  /**
+   * 삭제 범위의 복원은 문서 스냅샷에 맡긴다 (Task #2418).
+   *
+   * 평문만 저장해 되돌리던 이전 방식은 글자 모양·문단 메타·인라인 컨트롤을 되살리지
+   * 못했다 — 재삽입은 삽입 지점의 현재 글자 모양을 쓰고, 다문단 복원은 문단 메타를 앞
+   * 문단에서 상속하는 `splitParagraph` 를 타며(#2342), 셀 다문단은 문단 구조 대신
+   * `'\n'` 이어붙이기로 대체됐다. 선택 범위의 서식·컨트롤을 평문 밖에서 따로 캡처하려면
+   * 글자모양 run·문단 메타·컨트롤을 읽고 되돌리는 API 가 새로 필요한데, 그것은 스냅샷이
+   * 이미 하는 일이다. 같은 이유로 붙여넣기(`pasteInternal` 등)가 스냅샷을 쓰므로 그
+   * 역연산인 선택 삭제도 같은 방식으로 맞춘다.
+   *
+   * `kind:'command'` 로 남는다 — 양식 모드 게이트(`isOperationAllowedInEditMode` 의
+   * `'deleteSelection'` 분기)가 커맨드 타입에 걸려 있어, `kind:'snapshot'` 으로 바꾸면
+   * 양식 모드 선택 삭제가 게이트에서 드롭돼 무언 폐기가 된다.
+   */
+  private readonly snapshot: SnapshotCommand;
 
-  constructor(
-    private start: DocumentPosition,
-    private end: DocumentPosition,
-  ) {}
+  constructor(start: DocumentPosition, end: DocumentPosition) {
+    // 삭제 후 커서는 선택 시작으로 모이고, undo 후에는 선택 끝으로 되돌아간다.
+    this.snapshot = new SnapshotCommand('deleteSelection', end, start, (wasm) => {
+      if (isCell(start)) {
+        // 중첩 셀 좌표 축 정합: flat controlIndex/cellIndex 는 cellPath[0](최외곽)이라
+        // 중첩 셀에서 바깥 셀을 지운다. 최내곽 셀을 대상으로 ...ByPath 로 라우팅하고,
+        // 셀 문단 인덱스는 cellPath[last] 에서 읽는다(cellParaIndexOf).
+        wasm.deleteRangeInCellByPath(
+          start.sectionIndex, start.parentParaIndex!, cellPathJson(start),
+          cellParaIndexOf(start), start.charOffset, cellParaIndexOf(end), end.charOffset,
+        );
+      } else {
+        wasm.deleteRange(
+          start.sectionIndex, start.paragraphIndex, start.charOffset,
+          end.paragraphIndex, end.charOffset,
+        );
+      }
+      return { ...start };
+    });
+  }
 
   execute(wasm: WasmBridge): DocumentPosition {
-    const { start, end } = this;
-
-    // 삭제 전 텍스트 보존 (undo용)
-    this.savedTexts = [];
-    if (isCell(start)) {
-      // 중첩 셀 좌표 축 정합: flat controlIndex/cellIndex 는 cellPath[0](최외곽)이라
-      // 중첩 셀에서 바깥 셀을 삭제한다. 최내곽 셀을 대상으로 ...ByPath 로 라우팅하고,
-      // 셀 문단 인덱스는 cellPath[last] 에서 읽는다(cellParaIndexOf). undo 는 이미
-      // doInsertTextImmediate 가 cellPath 로 최내곽 셀에 삽입하므로 축이 일치한다.
-      const sec = start.sectionIndex;
-      const ppi = start.parentParaIndex!;
-      const startPara = cellParaIndexOf(start);
-      const endPara = cellParaIndexOf(end);
-      this.multiPara = startPara !== endPara;
-      for (let p = startPara; p <= endPara; p++) {
-        const pathP = cellPathJsonForPara(start, p);
-        const pLen = wasm.getCellParagraphLengthByPath(sec, ppi, pathP);
-        const from = p === startPara ? start.charOffset : 0;
-        const to = p === endPara ? end.charOffset : pLen;
-        if (to > from) {
-          this.savedTexts.push(wasm.getTextInCellByPath(sec, ppi, pathP, from, to - from));
-        } else {
-          this.savedTexts.push('');
-        }
-      }
-      wasm.deleteRangeInCellByPath(sec, ppi, cellPathJson(start), startPara, start.charOffset, endPara, end.charOffset);
-    } else {
-      const sec = start.sectionIndex;
-      this.multiPara = start.paragraphIndex !== end.paragraphIndex;
-      for (let p = start.paragraphIndex; p <= end.paragraphIndex; p++) {
-        const pLen = wasm.getParagraphLength(sec, p);
-        const from = p === start.paragraphIndex ? start.charOffset : 0;
-        const to = p === end.paragraphIndex ? end.charOffset : pLen;
-        if (to > from) {
-          this.savedTexts.push(wasm.getTextRange(sec, p, from, to - from));
-        } else {
-          this.savedTexts.push('');
-        }
-      }
-      wasm.deleteRange(sec, start.paragraphIndex, start.charOffset, end.paragraphIndex, end.charOffset);
-    }
-
-    return { ...start };
+    return this.snapshot.execute(wasm);
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    const { start } = this;
-
-    if (!this.multiPara) {
-      // 같은 문단 내 삭제 → 텍스트 재삽입
-      const text = this.savedTexts[0] || '';
-      if (text) doInsertTextImmediate(wasm, start, text);
-    } else {
-      // 다중 문단: 마지막 텍스트부터 역순으로 복원
-      // 1) 첫 문단 뒷부분 텍스트 삽입
-      const firstText = this.savedTexts[0] || '';
-      if (firstText) doInsertTextImmediate(wasm, start, firstText);
-
-      // 2) 중간 문단 + 마지막 문단: splitParagraph로 분리 후 텍스트 삽입
-      if (isCell(start)) {
-        // 셀 내 다중 문단 undo는 복잡하므로 단순 텍스트 삽입으로 대체
-        // (셀 내 다중 문단 선택 삭제의 undo는 한계가 있음)
-        for (let i = 1; i < this.savedTexts.length; i++) {
-          const text = this.savedTexts[i];
-          if (text || i < this.savedTexts.length - 1) {
-            // splitParagraph는 셀 내에서 미지원 → 텍스트만 이어붙이기
-            const restorePos = { ...start, charOffset: start.charOffset + firstText.length };
-            if (text) doInsertTextImmediate(wasm, restorePos, '\n' + text);
-          }
-        }
-      } else {
-        const sec = start.sectionIndex;
-        let currentPara = start.paragraphIndex;
-        let currentOffset = start.charOffset + firstText.length;
-        for (let i = 1; i < this.savedTexts.length; i++) {
-          wasm.splitParagraph(sec, currentPara, currentOffset);
-          currentPara++;
-          const text = this.savedTexts[i];
-          if (text) {
-            wasm.insertText(sec, currentPara, 0, text);
-          }
-          // 다음 분할점은 방금 복원한 텍스트 "뒤" 다. 0 으로 두면 이미 복원된 텍스트 앞을
-          // 잘라 빈 문단이 끼어들고 내용이 다음 문단으로 밀린다(문단 3개 이상 선택 삭제 undo).
-          currentOffset = text ? text.length : 0;
-        }
-      }
-    }
-
-    return { ...this.end };
+    return this.snapshot.undo(wasm);
   }
 
   mergeWith(): null { return null; }
+
+  snapshotResourceCount(): number {
+    return this.snapshot.snapshotResourceCount();
+  }
+
+  discard(wasm: WasmBridge): void {
+    this.snapshot.discard(wasm);
+  }
 }
 
 // ─── 글자 서식 적용 명령 ─────────────────────────────
