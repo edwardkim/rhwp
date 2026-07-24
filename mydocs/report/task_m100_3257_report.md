@@ -34,8 +34,8 @@
 ![#3257 4쪽 rhwp·HWP 2020 비교 및 overlay](assets/task_m100_3257/visual_sweep_review_004.png)
 
 - sweep 자동 후보: `0/1`
-- pixel match: `86.21665%`
-- visual_accuracy_proxy_percent: `9.25429%` — 한컴 전용 글꼴과 기존 전체 줄 위치 차이를
+- pixel match: `86.11708%`
+- visual_accuracy_proxy_percent: `11.30076%` — 한컴 전용 글꼴과 기존 전체 줄 위치 차이를
   함께 반영하는 보조값이므로, 그림의 본문 내 완전 표시 여부는 위 실제 비교 이미지와
   render-tree 좌표로 별도 판정했다.
 - 임시 산출물: `compare/compare_004.png`, `overlay/overlay_004.png`,
