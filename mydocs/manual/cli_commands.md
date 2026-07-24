@@ -217,6 +217,13 @@ HWP5 raw record 덤프(DocInfo/BodyText 레코드 트리).
 ### `diag <파일>`
 문서 구조 진단(번호/글머리표/개요 분석).
 
+### `capabilities` (#3263)
+도구 자기서술 JSON 을 stdout 으로 출력한다 — 에이전트가 첫 호출 1회로 명령·플래그·
+JSON 계약·종료 코드를 파악하는 입구.
+`{"schemaVersion":"1.0","tool","version","formats","exitCodes","jsonContract","batch","commands":[{name,category,summary,...}]}`
+- `--json` 계약 명령(info/export-text/export-structure/batch)은 `json:true`·`recordFields` 로 상세 서술
+- `--help`(사람용)와 함께 현행화한다 — help 에만 추가된 명령은 드리프트 가드 테스트가 잡는다
+
 ### `info <파일> [--json]`
 HWP 파일 정보 표시(버전/구역 수/암호화 등).
 - `--json` (#3237): stdout 에 순수 JSON 하나 —

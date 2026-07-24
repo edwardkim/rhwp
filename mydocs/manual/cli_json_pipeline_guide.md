@@ -37,6 +37,22 @@ last_verified: 2026-07-24
   레코드로 스트림에 남고, 하나라도 실패하면 최종 종료 코드가 1 이다.
 - 스키마는 필드 **추가만** 허용된다(변경·삭제는 `tests/cli_json_contract.rs` 가 CI 에서 실패시킴).
 
+## 시나리오 0 — 에이전트 온보딩 (도구 발견)
+
+에이전트가 rhwp 를 처음 만나면 help 파싱도 플래그 추측도 필요 없다 — 한 번의 호출로
+도구 전체를 발견한다.
+
+```bash
+rhwp capabilities | jq '{version, machineReadable: [.commands[]|select(.json==true)|.name], batch: .batch.subcommands}'
+```
+
+```console
+{"version":"0.7.19","machineReadable":["info","export-text","export-structure","capabilities","batch"],"batch":["export-text","info","export-structure"]}
+```
+
+`exitCodes`·`jsonContract`(stdout 순수성·스키마 정책·실패 규약)·명령별 `recordFields` 가
+전부 들어 있어, 에이전트 도구 정의(함수 호출 스키마·MCP 도구 목록)를 여기서 자동 생성할 수 있다.
+
 ## 시나리오 1 — 아카이브 선별 후 추출 (에이전트의 첫 작업)
 
 에이전트가 아카이브를 만나면 첫 질문은 "무슨 파일이, 몇 페이지, 어떤 포맷인가"다.
