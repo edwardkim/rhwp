@@ -408,6 +408,21 @@ fn write_diag_line<W: Write>(
     )
 }
 
+// [#2947] parser 측 parse_numbering_format_code() (표 43) 의 역매핑.
+fn numbering_format_str(code: u8) -> &'static str {
+    match code {
+        1 => "CIRCLED_DIGIT",
+        2 => "ROMAN_CAPITAL",
+        3 => "ROMAN_SMALL",
+        4 => "LATIN_CAPITAL",
+        5 => "LATIN_SMALL",
+        8 => "HANGUL_SYLLABLE",
+        12 => "HANGUL_NUMBER",
+        13 => "HANJA_NUMBER",
+        _ => "DIGIT",
+    }
+}
+
 fn diagonal_shape_type(code: u8) -> &'static str {
     match code & 0x07 {
         0 => "NONE",
@@ -770,12 +785,15 @@ fn outline_type_str(t: u8) -> &'static str {
 }
 
 // [#2695] 그림자 3종. IR shadow_type 은 HWP5 attr bits 11-12(2비트).
-// 1=비연속(DROP), 2=연속(CONTINUOUS).
+// 1=비연속(DROP), 2=연속(CONTINUOUS). 3은 예약값(미정의).
+// [#3038] 종전엔 예약값 3이 `_ => "CONTINUOUS"`로 떨어져 그림자 없음이 그림자
+// 있음으로 둔갑했다. 계약(0~2) 밖의 값은 안전한 기본값(NONE)으로 방출한다.
 fn shadow_type_str(t: u8) -> &'static str {
     match t {
         0 => "NONE",
         1 => "DROP",
-        _ => "CONTINUOUS",
+        2 => "CONTINUOUS",
+        _ => "NONE",
     }
 }
 
@@ -850,11 +868,14 @@ fn tab_leader_str(f: u8) -> &'static str {
         6 => "LONG_DASH",
         7 => "CIRCLE",
         8 => "DOUBLE_SLIM",
-        // 종전엔 9/10/11 이 _ => "NONE" 으로 떨어져 이중/삼중선 탭 리더가 저장 시 유실됐다.
-        // 파서(parse_tab_item)는 이 문자열들을 각각 9/10/11 로 받으므로 왕복 보존된다.
-        9 => "THIN_THICK",
-        10 => "THICK_THIN",
-        11 => "TRIM",
+        // OWPML LineType3 스펙 리터럴(Core XML schema.xml 335~349행)로 방출한다.
+        // 종전엔 THIN_THICK/THICK_THIN/TRIM 이라는 비표준 이름을 썼는데, rhwp
+        // 자기 자신은 다시 읽을 수 있어도(파서가 두 이름을 모두 허용) 한/글 등
+        // 스펙을 따르는 다른 구현체에는 정의되지 않은 값이라 상호운용에 문제가
+        // 있었다(#2857). 파서는 하위호환을 위해 옛 이름도 계속 받는다.
+        9 => "SLIM_THICK",
+        10 => "THICK_SLIM",
+        11 => "SLIM_THICK_SLIM",
         _ => "NONE",
     }
 }
@@ -910,6 +931,11 @@ fn write_numbering<W: Write>(
         let level_s = (level + 1).to_string();
         let start_s = start.to_string();
         let wa = h.width_adjust.to_string();
+        // [#2947] h.number_format 을 무시하고 "DIGIT" 로 고정 방출하면 HWP5 경유
+        // 저장 시 로마자/한글/원문자 등 문단 번호 형식이 전부 아라비아 숫자로 뒤바뀐다.
+        let num_format = numbering_format_str(h.number_format);
+        let text_offset_s = h.text_distance.to_string();
+        let char_pr_id_ref_s = h.char_shape_id.to_string();
         empty_tag(
             w,
             "hh:paraHead",
@@ -921,9 +947,9 @@ fn write_numbering<W: Write>(
                 ("autoIndent", "1"),
                 ("widthAdjust", &wa),
                 ("textOffsetType", "PERCENT"),
-                ("textOffset", "50"),
-                ("numFormat", "DIGIT"),
-                ("charPrIDRef", &u32::MAX.to_string()),
+                ("textOffset", &text_offset_s),
+                ("numFormat", num_format),
+                ("charPrIDRef", &char_pr_id_ref_s),
                 ("checkable", "0"),
             ],
         )?;
@@ -1311,7 +1337,7 @@ fn write_style<W: Write>(w: &mut Writer<W>, id: u16, st: &Style) -> Result<(), S
             // 파서가 Style.lang_id 로 읽는 값을 그대로 되돌린다. 종전 "1042"
             // 하드코딩은 비한국어 langID(예: 1033)를 왕복마다 1042 로 바꿨다.
             ("langID", &st.lang_id.to_string()),
-            ("lockForm", "0"),
+            ("lockForm", bool01(st.lock_form)),
         ],
     )
 }
@@ -1370,6 +1396,34 @@ mod tests {
             xml.contains(r#"langID="1033""#),
             "Style.lang_id 가 방출돼야 함: {xml}"
         );
+    }
+
+    #[test]
+    fn write_style_emits_ir_lock_form() {
+        // [Task #2839] 파서가 읽은 Style.lock_form 이 그대로 방출돼야 한다.
+        // 종전엔 "0" 하드코딩으로 lockForm="1" 스타일이 왕복마다 잠금 해제로 뭉개졌다.
+        let st = Style {
+            lock_form: true,
+            ..Default::default()
+        };
+        let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
+        write_style(&mut w, 0, &st).expect("write_style");
+        let xml = String::from_utf8(w.into_inner()).unwrap();
+        assert!(
+            xml.contains(r#"lockForm="1""#),
+            "Style.lock_form 이 방출돼야 함: {xml}"
+        );
+    }
+
+    #[test]
+    fn task_m100_shadow_type_str_reserved_value_maps_to_none() {
+        // [#3038] 계약(0~2) 밖의 예약값(3)은 CONTINUOUS 로 둔갑하지 않고
+        // 안전한 기본값 NONE 으로 방출돼야 한다.
+        assert_eq!(shadow_type_str(0), "NONE");
+        assert_eq!(shadow_type_str(1), "DROP");
+        assert_eq!(shadow_type_str(2), "CONTINUOUS");
+        assert_eq!(shadow_type_str(3), "NONE");
+        assert_eq!(shadow_type_str(99), "NONE");
     }
 
     #[test]
@@ -2210,11 +2264,54 @@ mod tests {
     }
 
     #[test]
+    fn write_numbering_skeleton_uses_number_format_not_hardcoded_digit() {
+        // [#2947] HWP5 경유(raw_para_heads 없음) 시 h.number_format(예: ROMAN_CAPITAL=2)
+        // 을 무시하고 "DIGIT" 로 고정 방출하면 로마자/한글 문단 번호가 유실된다.
+        let mut n = Numbering::default();
+        n.heads[0].number_format = 2; // ROMAN_CAPITAL
+
+        let mut writer = Writer::new(Vec::new());
+        write_numbering(&mut writer, 0, &n).unwrap();
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(r#"numFormat="ROMAN_CAPITAL""#),
+            "level 1 paraHead 는 number_format=2 를 ROMAN_CAPITAL 로 방출해야 한다: {xml}"
+        );
+    }
+
+    #[test]
+    fn write_numbering_skeleton_preserves_text_distance_and_char_shape_id() {
+        // HWP5 경로(raw_para_heads 없음)에서 NumberingHead.text_distance /
+        // char_shape_id 는 DocInfo 파서가 실제 값으로 채워 넣는 필드인데,
+        // 폴백 스켈레톤이 textOffset="50" / charPrIDRef=u32::MAX 로 하드코딩해
+        // 유실시키면 안 된다 (write_bullet 의 대응 필드 처리와 대칭이어야 함).
+        let mut n = Numbering::default();
+        n.heads[0].text_distance = 130;
+        n.heads[0].char_shape_id = 7;
+
+        let mut writer = Writer::new(Vec::new());
+        write_numbering(&mut writer, 0, &n).unwrap();
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(r#"textOffset="130""#),
+            "text_distance 유실: {xml}"
+        );
+        assert!(
+            xml.contains(r#"charPrIDRef="7""#),
+            "char_shape_id 유실: {xml}"
+        );
+    }
+
+    #[test]
     fn tab_leader_str_emits_double_and_triple_line_types() {
-        // fill_type 9/10/11 이 "NONE" 으로 유실되지 않고 파서가 받는 문자열로 방출돼야 한다.
-        assert_eq!(tab_leader_str(9), "THIN_THICK");
-        assert_eq!(tab_leader_str(10), "THICK_THIN");
-        assert_eq!(tab_leader_str(11), "TRIM");
+        // fill_type 9/10/11 이 "NONE" 으로 유실되지 않고 OWPML LineType3 스펙 리터럴
+        // (Core XML schema.xml 335~349행)로 방출돼야 한다 (#2857). 파서는 옛 이름
+        // (THIN_THICK/THICK_THIN/TRIM)도 하위호환으로 계속 받는다.
+        assert_eq!(tab_leader_str(9), "SLIM_THICK");
+        assert_eq!(tab_leader_str(10), "THICK_SLIM");
+        assert_eq!(tab_leader_str(11), "SLIM_THICK_SLIM");
         assert_eq!(tab_leader_str(8), "DOUBLE_SLIM");
     }
 }

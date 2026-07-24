@@ -59,7 +59,8 @@ pub fn write_table<W: Write>(
     let z_order = table.common.z_order.to_string();
     let text_wrap = text_wrap_str(table.common.text_wrap);
     let text_flow = text_flow_str(table.common.text_flow);
-    let lock = bool01(false);
+    // [#2840] lock(개체 잠금) — IR 보존 값 방출 (종전 false 하드코딩).
+    let lock = bool01(table.common.locked);
     let page_break = table_page_break_str(table.page_break);
     let repeat_header = bool01(table.repeat_header);
     let row_cnt = table.row_count.to_string();
@@ -277,6 +278,7 @@ fn write_cell<W: Write>(
     let has_margin = bool01(cell.apply_inner_margin);
     let protect = bool01(cell.cell_protect());
     let editable = bool01(cell.editable_in_form());
+    let dirty = bool01(cell.dirty_flag);
     let border_ref = cell.border_fill_id.to_string();
 
     start_tag_attrs(
@@ -288,7 +290,7 @@ fn write_cell<W: Write>(
             ("hasMargin", has_margin),
             ("protect", protect),
             ("editable", editable),
-            ("dirty", "0"),
+            ("dirty", dirty),
             ("borderFillIDRef", &border_ref),
         ],
     )?;
@@ -703,6 +705,34 @@ mod tests {
         let xml = serialize(&t);
         assert!(
             xml.contains(r#"allowOverlap="0""#),
+            "기본 0: {}",
+            &xml[..xml.len().min(300)]
+        );
+    }
+
+    // ---------- tc dirty 속성 라운드트립 ----------
+
+    #[test]
+    fn tc_dirty_flag_preserved_when_set() {
+        // <hp:tc dirty> 는 파싱은 되지만 직렬화 시 "0"으로 하드코딩되어 있었다.
+        // dirty_flag=true 인 셀은 dirty="1" 로 방출돼야 한다. RED(수정 전에는 실패).
+        let mut t = empty_table(1, 1);
+        t.cells[0].dirty_flag = true;
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r#"dirty="1""#),
+            "dirty_flag=true 인 셀은 dirty=\"1\" 로 방출돼야 한다: {}",
+            &xml[..xml.len().min(500)]
+        );
+    }
+
+    #[test]
+    fn tc_dirty_flag_zero_when_unset() {
+        // dirty_flag=false(기본) 이면 기존 동작대로 dirty="0" 유지.
+        let t = empty_table(1, 1);
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r#"dirty="0""#),
             "기본 0: {}",
             &xml[..xml.len().min(300)]
         );
@@ -1360,6 +1390,53 @@ mod tests {
         ] {
             assert!(xml.contains(expected), "{expected} 유실: {xml}");
         }
+    }
+
+    #[test]
+    fn task2855_tbl_lock_survives_xml_ir_xml_roundtrip() {
+        // [#2855] <hp:tbl> 의 lock(개체 잠금)이 parse_table 에 arm 이 없어 파싱 단계에서
+        // 버려지고, 방출측(이 파일 62행)도 bool01(false) 로 하드코딩되어 있어 왕복 시
+        // 원본 lock="1" 이 소리 없이 lock="0" 으로 풀린다. RED.
+        use crate::parser::hwpx::section::parse_hwpx_section;
+
+        let src = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:tbl lock="1" rowCnt="1" colCnt="1" cellSpacing="0" borderFillIDRef="0">
+      <hp:sz width="1000" widthRelTo="ABSOLUTE" height="1000" heightRelTo="ABSOLUTE"/>
+      <hp:pos treatAsChar="0" flowWithText="1" allowOverlap="0"
+              vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT"
+              vertOffset="0" horzOffset="0"/>
+      <hp:outMargin left="0" right="0" top="0" bottom="0"/>
+      <hp:inMargin left="0" right="0" top="0" bottom="0"/>
+      <hp:tr>
+        <hp:tc borderFillIDRef="0">
+          <hp:cellAddr colAddr="0" rowAddr="0"/>
+          <hp:cellSpan colSpan="1" rowSpan="1"/>
+          <hp:cellSz width="1000" height="1000"/>
+        </hp:tc>
+      </hp:tr>
+    </hp:tbl>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(src).expect("파싱");
+        let table = match &section.paragraphs[0].controls[0] {
+            crate::model::control::Control::Table(t) => t.as_ref().clone(),
+            other => panic!("표가 아님: {other:?}"),
+        };
+
+        assert!(
+            table.common.locked,
+            "lock=\"1\" 이 IR(common.locked)에 남아야 함(parse_table 에 lock arm 누락)"
+        );
+        let xml = serialize(&table);
+        assert!(
+            xml.contains(r#"lock="1""#),
+            "lock 이 IR 에서 방출돼야 함(현재 bool01(false) 하드코딩): {}",
+            &xml[..xml.len().min(400)]
+        );
     }
 
     #[test]

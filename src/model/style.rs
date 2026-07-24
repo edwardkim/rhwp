@@ -448,6 +448,10 @@ pub struct Style {
     pub para_shape_id: u16,
     /// 글자 모양 ID 참조
     pub char_shape_id: u16,
+    /// [Task #2839] 양식(폼) 필드 잠금 여부 (HWPX `lockForm`).
+    /// 파서가 값을 읽지 않고 시리얼라이저가 "0" 을 하드코딩해 원본이 항상
+    /// 잠금 해제 상태로 바뀌던 결함 수정.
+    pub lock_form: bool,
 }
 
 /// 테두리/배경 (HWPTAG_BORDER_FILL)
@@ -465,6 +469,8 @@ pub struct BorderFill {
     pub center_line: CenterLine,
     /// 채우기 정보
     pub fill: Fill,
+    /// 3차원 효과 (HWPX borderFill@threeD)
+    pub three_d: bool,
 }
 
 /// 중심선 방향 (HWPX borderFill@centerLine)

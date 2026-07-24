@@ -639,6 +639,7 @@ fn parse_paragraph(
                         start_char_idx,
                         end_char_idx: visible_char_idx,
                         control_idx,
+                        end_field_id: field_id,
                     });
                 } else {
                     // [Task #1556] 짝 fieldBegin 이 다른 문단에 있는 다단락 필드의 종료 마커.
@@ -1701,6 +1702,9 @@ fn parse_table(
                     _ => crate::model::shape::ObjectNumberingType::None,
                 };
             }
+            // [#2855] 표만 lock arm 이 없어 개체 잠금이 파싱 단계에서 유실됐다. 도형/그림
+            // 계열이 공유하는 parse_object_element_attrs(같은 파일 2905행, #2840)와 동형.
+            b"lock" => table.common.locked = attr_str(&attr) == "1",
             _ => {}
         }
     }
@@ -2096,6 +2100,7 @@ fn parse_table_cell(
             b"hasMargin" => cell.set_apply_inner_margin(parse_bool(&attr)),
             b"protect" => cell.set_cell_protect(parse_bool(&attr)),
             b"editable" => cell.set_editable_in_form(parse_bool(&attr)),
+            b"dirty" => cell.dirty_flag = parse_bool(&attr),
             // 셀 필드 이름 (누름틀 셀 필드, #493). 직렬화기는 무명 셀도 name=""로
             // 항상 방출하므로 빈 값은 None — HWP5 파서(parse_cell_field_name)와
             // 동일 의미. 누락 시 HWPX 로드에서 getFieldList가 셀 필드를 반환하지 못하고
@@ -2977,6 +2982,9 @@ fn parse_object_element_attrs(
             // 선/연결선의 방향 뒤집기(isReverseHV). serializer 는 방출하나 파서가
             // 되읽지 않아 HWPX 원본 선의 방향 반전이 왕복 시 유실됐다.
             b"isReverseHV" => ids.is_reverse_hv = attr_str(&attr) == "1",
+            // [#2840] 개체 잠금(lock) — 종전 미파싱으로 <hp:equation> 직렬화 시
+            // 항상 "0"으로 되돌아가 원본의 잠금 상태가 유실됐다.
+            b"lock" => common.locked = attr_str(&attr) == "1",
             _ => {}
         }
     }
@@ -6011,6 +6019,9 @@ fn parse_hp_chart_element(
                 chart_num = digits.parse().unwrap_or(0);
             }
             b"instid" => common.instance_id = parse_u32(&attr),
+            // [#2931] 개체 잠금(lock) — 종전 미파싱으로 직렬화 시 항상 "0"으로
+            // 되돌아가 차트 개체의 잠금 상태가 유실됐다.
+            b"lock" => common.locked = attr_str(&attr) == "1",
             _ => {}
         }
     }
@@ -6105,6 +6116,9 @@ fn parse_hp_ole_element(
                 bin_id = digits.parse().unwrap_or(0);
             }
             b"instid" => common.instance_id = parse_u32(&attr),
+            // [#2931] 개체 잠금(lock) — 종전 미파싱으로 직렬화 시 항상 "0"으로
+            // 되돌아가 OLE 개체의 잠금 상태가 유실됐다.
+            b"lock" => common.locked = attr_str(&attr) == "1",
             _ => {}
         }
     }
@@ -8284,6 +8298,35 @@ mod tests {
             co.chars,
             vec!['a', '<', 'b'],
             "composeText CDATA 가 소실되면 안 됨"
+        );
+    }
+
+    #[test]
+    fn task2931_chart_lock_attr_roundtrips_into_common() {
+        // <hp:chart lock="1" .../> → common.locked 이 true 로 되읽혀야 한다.
+        // 종전엔 parse_hp_chart_element 가 lock 속성을 매치하지 않아 항상 기본값(false)
+        // 으로 남고, 직렬화 시에도 render_common_shape_xml 이 "0"을 하드코딩했다(#2931).
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:chart id="1" zOrder="0" numberingType="NONE" textWrap="SQUARE" textFlow="BOTH_SIDES" lock="1" chartIDRef="Chart/chart1.xml" instid="1"></hp:chart>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected chart (modeled as OLE) shape");
+        };
+        assert!(
+            ole.common.locked,
+            "lock=\"1\" 이 common.locked 에 보존돼야 한다"
         );
     }
 }

@@ -1035,17 +1035,23 @@ pub(crate) fn css_color_to_hwp_bgr(css: &str) -> Option<u32> {
         } else {
             None
         }
-    } else if css.starts_with("rgb(") || css.starts_with("rgb (") {
-        // rgb(r, g, b) 형식
-        let inner = css
-            .trim_start_matches("rgb")
-            .trim_start_matches('(')
-            .trim_end_matches(')');
+    } else if css.starts_with("rgb") {
+        // rgb(r, g, b) / rgba(r, g, b, a) 형식 — 브라우저는 알파 포함 색을
+        // rgba()로 직렬화하므로 함께 처리한다.
+        let open = css.find('(')?;
+        let inner = css[open + 1..].trim_end_matches(')');
         let parts: Vec<&str> = inner.split(',').collect();
         if parts.len() >= 3 {
             let r: u32 = parts[0].trim().parse().ok()?;
             let g: u32 = parts[1].trim().parse().ok()?;
             let b: u32 = parts[2].trim().parse().ok()?;
+            // rgba()의 alpha=0(완전 투명)은 색 없음으로 처리
+            if let Some(a_str) = parts.get(3) {
+                let a: f64 = a_str.trim().parse().ok()?;
+                if a <= 0.0 {
+                    return None;
+                }
+            }
             Some(r | (g << 8) | (b << 16))
         } else {
             None
@@ -1321,6 +1327,19 @@ pub(crate) fn parse_css_border_shorthand(val: &str) -> (f64, u32, u8) {
             }
             "hidden" => {
                 style = 0;
+                continue;
+            }
+            // CSS 표준 border-width 키워드 (브라우저 기준 thin=1px, medium=3px, thick=5px)
+            "thin" => {
+                width_pt = 0.75; // 1px
+                continue;
+            }
+            "medium" => {
+                width_pt = 2.25; // 3px
+                continue;
+            }
+            "thick" => {
+                width_pt = 3.75; // 5px
                 continue;
             }
             _ => {}

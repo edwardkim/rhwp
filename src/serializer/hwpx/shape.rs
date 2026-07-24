@@ -70,7 +70,8 @@ pub fn write_rect<W: Write>(
             ("numberingType", numbering_type_str(c.numbering_type)),
             ("textWrap", tw),
             ("textFlow", tf),
-            ("lock", "0"),
+            // [#2840] lock(개체 잠금) — 파서가 읽기 시작했으므로 IR 값을 방출한다.
+            ("lock", bool01(c.locked)),
             ("dropcapstyle", "None"),
             ("href", ""),
             ("groupLevel", &group_level),
@@ -172,7 +173,8 @@ pub fn write_line<W: Write>(
         ("numberingType", numbering_type_str(c.numbering_type)),
         ("textWrap", text_wrap_str(c.text_wrap)),
         ("textFlow", text_flow_str(c.text_flow)),
-        ("lock", "0"),
+        // [#2840] lock(개체 잠금) — IR 보존 값 방출.
+        ("lock", bool01(c.locked)),
         ("dropcapstyle", "None"),
         ("href", ""),
         ("groupLevel", &group_level),
@@ -291,7 +293,8 @@ pub fn write_container_open<W: Write>(
             ("numberingType", numbering_type_str(common.numbering_type)),
             ("textWrap", tw),
             ("textFlow", tf),
-            ("lock", "0"),
+            // [#2840] lock(개체 잠금) — IR 보존 값 방출.
+            ("lock", bool01(common.locked)),
             ("dropcapstyle", "None"),
             ("href", ""),
             ("groupLevel", "0"),
@@ -357,6 +360,8 @@ pub(crate) fn write_ole<W: Write>(
         OleDrawingAspect::DocPrint => "DOCPRINT",
         OleDrawingAspect::Content => "CONTENT",
     };
+    // [#2931] 개체 잠금(lock) — IR(common.locked)을 보존(종전 "0" 하드코딩 제거).
+    let lock = if c.locked { "1" } else { "0" };
 
     start_tag_attrs(
         w,
@@ -367,7 +372,8 @@ pub(crate) fn write_ole<W: Write>(
             ("numberingType", numbering_type_str(c.numbering_type)),
             ("textWrap", tw),
             ("textFlow", tf),
-            ("lock", "0"),
+            // [#2840] lock(개체 잠금) — IR 보존 값 방출.
+            ("lock", bool01(c.locked)),
             ("dropcapstyle", "None"),
             ("href", ""),
             ("groupLevel", "0"),
@@ -930,7 +936,10 @@ fn hatch_style_str(pattern_type: i32) -> &'static str {
         3 => "BACK_SLASH",
         4 => "SLASH",
         5 => "CROSS",
-        _ => "CROSS_DIAGONAL",
+        6 => "CROSS_DIAGONAL",
+        // 계약(1~6) 밖의 값은 무늬 정보가 없다는 뜻이므로 임의의 무늬로
+        // 둔갑시키지 않고 가장 무난한 HORIZONTAL 로 방출한다.
+        _ => "HORIZONTAL",
     }
 }
 
@@ -1837,5 +1846,19 @@ mod tests {
         assert!(xml.contains(r#"widthRelTo="ABSOLUTE""#), "{xml}");
         assert!(xml.contains(r#"heightRelTo="ABSOLUTE""#), "{xml}");
         assert!(xml.contains(r#"protect="0""#), "{xml}");
+    }
+
+    #[test]
+    fn task_m100_hatch_style_str_covers_all_six() {
+        // 계약(1~6) 값 6개를 모두 명시적으로 매핑하는지 확인한다.
+        // 이전에는 6이 catch-all(_) 분기에 얹혀 있어, 계약 밖의 값(예: 손상된
+        // 원본의 pattern_type=99)도 CROSS_DIAGONAL 로 둔갑했다.
+        assert_eq!(hatch_style_str(1), "HORIZONTAL");
+        assert_eq!(hatch_style_str(2), "VERTICAL");
+        assert_eq!(hatch_style_str(3), "BACK_SLASH");
+        assert_eq!(hatch_style_str(4), "SLASH");
+        assert_eq!(hatch_style_str(5), "CROSS");
+        assert_eq!(hatch_style_str(6), "CROSS_DIAGONAL");
+        assert_eq!(hatch_style_str(99), "HORIZONTAL");
     }
 }

@@ -233,7 +233,12 @@ fn make_ctrl_record(ctrl_id: u32, level: u16, ctrl_data: &[u8]) -> Record {
 
 fn serialize_section_def(sd: &SectionDef, level: u16, records: &mut Vec<Record>) {
     let mut w = ByteWriter::new();
-    w.write_u32(sd.flags).unwrap();
+    // HWPX 파서(parse_start_num, pageStartsOn)는 page_num_type 필드만 세팅하고
+    // flags bit 20-21은 동기화하지 않는다. HWP5는 page_num_type을 별도 필드로
+    // 갖지 않고 flags bit 20-21로만 표현하므로, 여기서 반영하지 않으면 HWPX
+    // 출처 문서를 HWP5로 저장할 때 홀/짝 쪽번호 시작 설정이 유실된다.
+    let flags = (sd.flags & !0x0030_0000) | (((sd.page_num_type as u32) & 0x03) << 20);
+    w.write_u32(flags).unwrap();
     w.write_i16(sd.column_spacing).unwrap();
     w.write_i16(sd.line_grid).unwrap();
     w.write_i16(sd.char_grid).unwrap();
@@ -960,17 +965,41 @@ fn serialize_bookmark_ctrl_data(bm: &Bookmark) -> Option<Vec<u8>> {
 }
 
 /// 글자 겹침 직렬화 (HWP 스펙 표 152)
+///
+/// [#3143] 미검증 `as` 캐스팅 방어:
+/// - 겹칠 글자는 `encode_utf16()` 으로 서로게이트 쌍을 포함해 인코딩하고,
+///   카운트는 파서(parse_char_overlap)와 대칭인 UTF-16 코드유닛 수로 기록한다.
+///   (기존 `ch as u16` 은 비BMP 문자를 하위 16비트로 절단했다.)
+/// - 카운트 필드(u16/u8)는 타입 한계로 상한을 두고 기록 배열도 함께 절단해
+///   카운트와 실제 데이터가 항상 일치하도록 보장한다.
 fn serialize_char_overlap(co: &CharOverlap) -> Vec<u8> {
     let mut w = ByteWriter::new();
-    w.write_u16(co.chars.len() as u16).unwrap();
+
+    // 겹칠 글자: WCHAR(UTF-16LE) 배열, 서로게이트 쌍 포함
+    let mut utf16: Vec<u16> = Vec::with_capacity(co.chars.len());
+    let mut buf = [0u16; 2];
     for &ch in &co.chars {
-        w.write_u16(ch as u16).unwrap();
+        utf16.extend_from_slice(ch.encode_utf16(&mut buf));
     }
+    // u16 카운트 필드 wraparound 방지 (스펙상 최대 9글자라 실사용에선 도달하지 않음)
+    utf16.truncate(u16::MAX as usize);
+    // 절단 끝이 홀로 남은 상위 서로게이트면 함께 제거
+    if matches!(utf16.last(), Some(&last) if (0xD800..=0xDBFF).contains(&last)) {
+        utf16.pop();
+    }
+    w.write_u16(utf16.len() as u16).unwrap();
+    for unit in utf16 {
+        w.write_u16(unit).unwrap();
+    }
+
     w.write_u8(co.border_type).unwrap();
     w.write_i8(co.inner_char_size).unwrap();
     w.write_u8(co.expansion).unwrap();
-    w.write_u8(co.char_shape_ids.len() as u8).unwrap();
-    for &id in &co.char_shape_ids {
+
+    // charshape 카운트: u8 wraparound 방지 — 카운트와 기록 개수를 함께 상한 절단
+    let n_ids = co.char_shape_ids.len().min(u8::MAX as usize);
+    w.write_u8(n_ids as u8).unwrap();
+    for &id in &co.char_shape_ids[..n_ids] {
         w.write_u32(id).unwrap();
     }
     w.into_bytes()

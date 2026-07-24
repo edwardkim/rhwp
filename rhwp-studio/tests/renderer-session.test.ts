@@ -189,8 +189,7 @@ test('surface preflight transforms stay lazy and document resources prepare befo
   assert.equal(fallback.diagnostics.selectionError, 'font decode failed');
 });
 
-test('auto re-evaluation keeps paragraph and control marks on Canvas2D', async () => {
-  let showParagraphMarks = false;
+test('auto re-evaluation permits text marks but keeps structural control markers on Canvas2D', async () => {
   let showControlCodes = false;
   let createCalls = 0;
   const rendererSession = session('auto', async () => {
@@ -198,10 +197,10 @@ test('auto re-evaluation keeps paragraph and control marks on Canvas2D', async (
     return fakeRenderer();
   }, {
     transformCanvasKitPreflight(report) {
-      const blockers: string[] = [];
-      if (showParagraphMarks) blockers.push('viewOption:showParagraphMarks');
-      if (showControlCodes) blockers.push('viewOption:showControlCodes');
-      return withCanvasKitSurfaceBlockers(report, blockers);
+      return withCanvasKitSurfaceBlockers(
+        report,
+        showControlCodes ? ['viewOption:showControlCodes'] : [],
+      );
     },
   });
   const wasm = { getCanvasKitDocumentPreflight: () => preflight('eligible') };
@@ -209,17 +208,9 @@ test('auto re-evaluation keeps paragraph and control marks on Canvas2D', async (
   rendererSession.beginDocument('document-view-marks');
   assert.equal((await rendererSession.resolve(wasm)).backend, 'canvaskit');
 
-  showParagraphMarks = true;
   rendererSession.invalidateDocument({ resetResources: false });
-  const paragraphMarks = await rendererSession.resolve(wasm);
-  assert.equal(paragraphMarks.backend, 'canvas2d');
-  assert.equal(paragraphMarks.diagnostics.selectionReason, 'autoIneligible');
-  assert.equal(
-    paragraphMarks.diagnostics.preflight?.blockers.at(-1)?.detail,
-    'viewOption:showParagraphMarks',
-  );
+  assert.equal((await rendererSession.resolve(wasm)).backend, 'canvaskit');
 
-  showParagraphMarks = false;
   showControlCodes = true;
   rendererSession.invalidateDocument({ resetResources: false });
   const controlCodes = await rendererSession.resolve(wasm);
