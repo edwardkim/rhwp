@@ -2146,6 +2146,17 @@ export class WasmBridge {
     return JSON.parse(this.doc.hitTestHeaderFooter(pageNum, x, y));
   }
 
+  /**
+   * 이 쪽에서 머리말/꼬리말을 편집할 때 대상이 되는 (구역, applyTo).
+   *
+   * 좌표 없이 쪽만으로 묻는다 — 히트테스트(`hitTestHeaderFooter`)가 영역 판정 뒤에 쓰는
+   * 것과 같은 답이다 (Task #3206).
+   */
+  getHeaderFooterEditTarget(pageNum: number, isHeader: boolean): { sectionIndex: number; applyTo: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).getHeaderFooterEditTarget(pageNum, isHeader));
+  }
+
   hitTestInHeaderFooter(pageNum: number, isHeader: boolean, x: number, y: number): { hit: boolean; paraIndex?: number; charOffset?: number; cursorRect?: { pageIndex: number; x: number; y: number; height: number } } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.hitTestInHeaderFooter(pageNum, isHeader, x, y));

@@ -18,15 +18,16 @@ function stub(id: string, label: string, icon?: string, shortcut?: string): Comm
 }
 
 /**
- * 구역에 머리말/꼬리말이 없으면 만든다 (Task #3206).
+ * 대상 좌표에 머리말/꼬리말이 없으면 만든다 (Task #3206).
  *
  * 존재 확인은 **생성 네이티브가 중복을 거부하는 조건과 같은 범위**(구역·종류·applyTo)로 해야
  * 한다 — `getHeaderFooter` 와 `createHeaderFooter` 는 같은 `find_header_footer_control` 을
- * 쓰므로 두 판단이 어긋날 수 없다.
+ * 쓰므로 두 판단이 어긋날 수 없다. 대상 좌표를 정하는 일은 호출측(`getHeaderFooterEditTarget`)
+ * 몫이고, 여기서는 그 좌표를 그대로 쓴다.
  *
- * `navigateHeaderFooterByPage` 로 대신하면 안 된다. 이 함수는 `current_page + direction` 부터
- * 훑는 쪽 이동용이라 현재 쪽을 건너뛴다 — 1쪽 문서에서는 어느 방향으로도 대상이 없어, 이미
- * 있는 머리말을 없다고 판단하고 생성으로 넘어가 중복 생성 오류가 났다.
+ * `navigateHeaderFooterByPage` 로 존재를 확인하면 안 된다. 이 함수는 `current_page + direction`
+ * 부터 훑는 쪽 이동용이라 현재 쪽을 건너뛴다 — 1쪽 문서에서는 어느 방향으로도 대상이 없어,
+ * 이미 있는 머리말을 없다고 판단하고 생성으로 넘어가 중복 생성 오류가 났다.
  *
  * [Task #3207] 생성은 문서 구조를 바꾸므로 snapshot 으로 기록한다(이미 있으면 커서 이동뿐이라
  * 기록 대상이 아니다).
@@ -35,18 +36,18 @@ function ensureHeaderFooter(
   services: Parameters<CommandDef['execute']>[0],
   ih: NonNullable<ReturnType<Parameters<CommandDef['execute']>[0]['getInputHandler']>>,
   bodyPos: DocumentPosition,
+  target: { sectionIndex: number; applyTo: number },
   isHeader: boolean,
-  applyTo: number,
 ): void {
-  const sectionIdx = bodyPos.sectionIndex;
-  const hf = JSON.parse(services.wasm.getHeaderFooter(sectionIdx, isHeader, applyTo));
+  const { sectionIndex, applyTo } = target;
+  const hf = JSON.parse(services.wasm.getHeaderFooter(sectionIndex, isHeader, applyTo));
   if (hf.exists) return;
 
   ih.executeOperation({
     kind: 'snapshot',
     operationType: 'createHeaderFooter',
     operation: (wasm) => {
-      wasm.createHeaderFooter(sectionIdx, isHeader, applyTo);
+      wasm.createHeaderFooter(sectionIndex, isHeader, applyTo);
       return bodyPos;
     },
   });
@@ -56,18 +57,22 @@ function ensureHeaderFooter(
 function enterHeaderFooterEditing(
   services: Parameters<CommandDef['execute']>[0],
   isHeader: boolean,
-  applyTo: number,
 ): void {
   const ih = services.getInputHandler();
   if (!ih) return;
   const cursor = (ih as any).cursor;
   if (!cursor) return;
 
+  // 편집 대상은 이 쪽에 **실제로 렌더되는** 컨트롤이다 — 어느 것이 렌더되는지는 쪽 홀짝이
+  // 정하고(홀수/짝수가 양 쪽을 이긴다) 구역에 자기 머리말이 없으면 앞 구역에서 상속된다.
+  // `양 쪽` 으로 고정하면 캐럿이 찍힌 머리말과 다른 컨트롤을 편집하게 된다 (Task #3206).
+  // 더블클릭 진입(input-handler-mouse)이 히트테스트로 얻는 것과 같은 답이다.
+  const currentPage = cursor.rect?.pageIndex ?? 0;
+  const target = services.wasm.getHeaderFooterEditTarget(currentPage, isHeader);
+
   const bodyPos = cursor.getPosition();
-  ensureHeaderFooter(services, ih, bodyPos, isHeader, applyTo);
-  // 편집 대상 쪽은 보고 있던 쪽 그대로다 — 머리말/꼬리말은 구역 전체에 적용되므로
-  // 다른 쪽으로 옮겨 갈 이유가 없다.
-  cursor.enterHeaderFooterMode(isHeader, bodyPos.sectionIndex, applyTo, cursor.rect?.pageIndex ?? 0);
+  ensureHeaderFooter(services, ih, bodyPos, target, isHeader);
+  cursor.enterHeaderFooterMode(isHeader, target.sectionIndex, target.applyTo, currentPage);
 
   services.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
   (ih as any).updateCaret?.();
@@ -208,7 +213,7 @@ export const pageCommands: CommandDef[] = [
     label: '머리말',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
-      enterHeaderFooterEditing(services, true, 0); // Both
+      enterHeaderFooterEditing(services, true);
     },
   },
   // ─── 꼬리말 ──────────────────────────────────
@@ -217,7 +222,7 @@ export const pageCommands: CommandDef[] = [
     label: '꼬리말',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
-      enterHeaderFooterEditing(services, false, 0); // Both
+      enterHeaderFooterEditing(services, false);
     },
   },
   // ─── 머리말/꼬리말 닫기 ────────────────────────

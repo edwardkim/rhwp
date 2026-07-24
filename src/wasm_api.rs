@@ -2251,6 +2251,20 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 이 쪽에서 머리말/꼬리말을 편집할 때 대상이 되는 (구역, applyTo) 를 반환한다.
+    ///
+    /// 좌표 없이 쪽만으로 묻는 경로(툴바 `머리말`/`꼬리말`)용 — 히트테스트와 같은 답을 쓴다.
+    /// 반환: JSON `{"ok":true,"sectionIndex":N,"applyTo":N}`
+    #[wasm_bindgen(js_name = getHeaderFooterEditTarget)]
+    pub fn get_header_footer_edit_target(
+        &self,
+        page_num: u32,
+        is_header: bool,
+    ) -> Result<String, JsValue> {
+        self.get_header_footer_edit_target_native(page_num, is_header)
+            .map_err(|e| e.into())
+    }
+
     /// 머리말/꼬리말 내부 텍스트 히트테스트.
     ///
     /// 편집 모드에서 클릭한 좌표의 문단·문자 위치를 반환.

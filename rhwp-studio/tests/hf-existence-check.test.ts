@@ -26,9 +26,22 @@ function slice(s: string, from: string, to: string): string {
 
 test('머리말 진입은 구역 범위 존재 확인으로 판단하고, 쪽 이동 함수를 쓰지 않는다', () => {
   const block = slice(pageSrc, 'function ensureHeaderFooter(', 'function insertHfField(');
-  assert.match(block, /wasm\.getHeaderFooter\(sectionIdx, isHeader, applyTo\)/, '생성과 같은 범위의 존재 확인');
+  assert.match(block, /wasm\.getHeaderFooter\(sectionIndex, isHeader, applyTo\)/, '생성과 같은 범위의 존재 확인');
   assert.match(block, /operationType:\s*'createHeaderFooter'/, '생성은 snapshot 라우팅 유지(#3207)');
   assert.doesNotMatch(block, /navigateHeaderFooterByPage/, '진입 경로에서 쪽 이동 함수 사용 금지');
+});
+
+test('진입 대상(구역·applyTo)은 실제 렌더되는 컨트롤에서 얻는다', () => {
+  // `양 쪽` 으로 고정하면 홀수/짝수 전용 머리말이 있는 쪽에서 캐럿이 찍힌 컨트롤과 다른
+  // 것을 편집하게 된다 — 입력이 화면에 안 나타나고 반대 홀짝 쪽에 들어간다.
+  const block = slice(pageSrc, 'function enterHeaderFooterEditing(', 'function insertHfField(');
+  assert.match(block, /getHeaderFooterEditTarget\(currentPage, isHeader\)/, '쪽 기준 대상 조회');
+  assert.match(block, /enterHeaderFooterMode\(isHeader, target\.sectionIndex, target\.applyTo/, '조회한 좌표로 진입');
+  assert.doesNotMatch(block, /applyTo:\s*number/, 'applyTo 를 인자로 받아 고정하지 않는다');
+
+  // 툴바 두 커맨드는 종류만 넘긴다 — `양 쪽` 하드코딩이 되살아나면 회귀.
+  assert.match(pageSrc, /enterHeaderFooterEditing\(services, true\);/, '머리말 커맨드');
+  assert.match(pageSrc, /enterHeaderFooterEditing\(services, false\);/, '꼬리말 커맨드');
 });
 
 test('마당 적용 후 재진입은 존재 확인 없이 적용 좌표로 들어간다', () => {

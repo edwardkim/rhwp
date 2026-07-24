@@ -3889,39 +3889,59 @@ impl DocumentCore {
         // 머리말 영역 hit 판정 (layout.header_area — 정확한 머리말 범위)
         let h = &layout.header_area;
         if x >= h.x && x <= h.x + h.width && y >= h.y && y <= h.y + h.height {
-            // active header에서 source_section_index와 apply_to 추출
-            // 머리말은 이전 구역에서 상속될 수 있으므로 source_section_index 우선
-            if let Some((source_sec, apply_to)) = self.get_active_hf_info(page_num, true) {
-                return Ok(format!(
-                    "{{\"hit\":true,\"isHeader\":true,\"sectionIndex\":{},\"applyTo\":{}}}",
-                    source_sec, apply_to
-                ));
-            }
-            // active 정보가 없는 경우 fallback (빈 머리말 영역 — 신규 생성 대상)
-            let (section_idx, _) = self.find_section_for_page(page_num);
+            let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, true);
             return Ok(format!(
-                "{{\"hit\":true,\"isHeader\":true,\"sectionIndex\":{},\"applyTo\":0}}",
-                section_idx
+                "{{\"hit\":true,\"isHeader\":true,\"sectionIndex\":{},\"applyTo\":{}}}",
+                section_idx, apply_to
             ));
         }
 
         // 꼬리말 영역 hit 판정 (layout.footer_area)
         let f = &layout.footer_area;
         if x >= f.x && x <= f.x + f.width && y >= f.y && y <= f.y + f.height {
-            if let Some((source_sec, apply_to)) = self.get_active_hf_info(page_num, false) {
-                return Ok(format!(
-                    "{{\"hit\":true,\"isHeader\":false,\"sectionIndex\":{},\"applyTo\":{}}}",
-                    source_sec, apply_to
-                ));
-            }
-            let (section_idx, _) = self.find_section_for_page(page_num);
+            let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, false);
             return Ok(format!(
-                "{{\"hit\":true,\"isHeader\":false,\"sectionIndex\":{},\"applyTo\":0}}",
-                section_idx
+                "{{\"hit\":true,\"isHeader\":false,\"sectionIndex\":{},\"applyTo\":{}}}",
+                section_idx, apply_to
             ));
         }
 
         Ok("{\"hit\":false}".to_string())
+    }
+
+    /// 이 쪽에서 머리말/꼬리말을 편집할 때 대상이 되는 (구역, applyTo) 를 반환한다.
+    ///
+    /// 편집 대상은 **그 쪽에 실제로 렌더되는 컨트롤**(`page.active_header`/`active_footer`)이다.
+    /// 어느 컨트롤이 렌더되는지는 쪽 홀짝이 정하며(홀수/짝수가 양 쪽을 이긴다 —
+    /// `renderer/pagination/engine.rs` 의 `active_header` 결정), 구역에 자기 머리말이 없으면
+    /// 앞 구역에서 상속된다(`source_section_index`). 요청한 applyTo 로 대상을 고정하면
+    /// 화면에 보이는 컨트롤과 다른 것을 편집하게 된다 (Task #3206).
+    ///
+    /// 렌더되는 컨트롤이 없으면(빈 머리말 영역) 이 쪽이 속한 구역에 `양 쪽`으로 새로
+    /// 만드는 것이 대상이다.
+    pub(crate) fn resolve_header_footer_target(
+        &self,
+        page_num: u32,
+        is_header: bool,
+    ) -> (usize, u8) {
+        self.get_active_hf_info(page_num, is_header)
+            .unwrap_or_else(|| (self.find_section_for_page(page_num).0, 0))
+    }
+
+    /// `resolve_header_footer_target` 의 JSON 반환 — 좌표 없이 쪽만으로 편집 대상을 묻는
+    /// 경로(툴바 `머리말`/`꼬리말`)용. 히트테스트는 영역 판정이 앞에 붙을 뿐 같은 답을 쓴다.
+    ///
+    /// 반환: JSON `{"ok":true,"sectionIndex":N,"applyTo":N}`
+    pub fn get_header_footer_edit_target_native(
+        &self,
+        page_num: u32,
+        is_header: bool,
+    ) -> Result<String, HwpError> {
+        let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, is_header);
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"sectionIndex\":{},\"applyTo\":{}",
+            section_idx, apply_to
+        )))
     }
 
     /// 페이지 번호로 구역 인덱스를 찾는다.
