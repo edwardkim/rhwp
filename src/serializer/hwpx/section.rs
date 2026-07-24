@@ -3822,6 +3822,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 1,
             control_idx: 0,
+            end_field_id: 0,
         });
 
         let (doc, section) = make_doc_with_paragraph(para);

@@ -744,6 +744,7 @@ mod tests {
             start_char_idx: 4,
             end_char_idx: 8,
             control_idx: 0,
+            end_field_id: 0,
         }];
 
         let di = DocInfo::default();
@@ -777,6 +778,7 @@ mod tests {
             start_char_idx: 2,
             end_char_idx: 6,
             control_idx: 0,
+            end_field_id: 0,
         }];
 
         let di = DocInfo::default();
