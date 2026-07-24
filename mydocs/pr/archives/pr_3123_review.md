@@ -33,5 +33,5 @@
 
 ## 최종 권고
 
-- 최신 head CI가 성공했으므로 수용 권고. 추가 코드 보정은 필요하지 않으며, merge는 작업지시자 별도 승인 후 수행한다.
+- 최신 head CI가 성공해 수용했고, squash merge `0f0d92e687b1a0006e4d33c3892f883fb718f810`로 `devel`에 반영했다. 추가 코드 보정은 필요하지 않다.
 - merge 뒤에는 devel writer save와 후속 PR warm restore를 관측하고, #2431은 A, B, D 및 legacy cache 정리 범위를 계속 추적한다.
