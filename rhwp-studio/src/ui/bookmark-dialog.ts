@@ -49,6 +49,11 @@ export class BookmarkDialog {
     };
     document.addEventListener('keydown', this.captureHandler, true);
 
+    // 싱글턴으로 재사용되는데 build() 가 라디오를 매번 '위치(P)' 체크 상태로 새로
+    // 만들므로, 이전 세션의 sortMode('name')가 남으면 라디오 표시와 실제 목록
+    // 정렬이 어긋난다 — 라디오 초기 상태와 일치하도록 리셋한다. (#3144)
+    this.sortMode = 'position';
+
     this.refreshList();
     this.suggestName();
     this.nameInput.focus();

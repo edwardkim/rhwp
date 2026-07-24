@@ -499,10 +499,15 @@ requireSnippet(
   /if \(options\.readinessOnly\) \{[\s\S]*?\?renderer=auto&canvaskitMode=default&renderProfile=[\s\S]*?runtime\.request\?\.backend\?\.backend !== 'canvas2d'[\s\S]*?runtime\.selection\?\.request\?\.backend !== 'auto'[\s\S]*?runtime\.selection\?\.request\?\.source !== 'url'[\s\S]*?runtime\.selection\?\.selectionReason !== 'autoEligible'[\s\S]*?autoPreflightNotEligible/,
   'Selected readiness should measure an explicit auto candidate and its preflight decision',
 );
-requireSnippet(
+assert.doesNotMatch(
   mainSource,
-  /transformCanvasKitPreflight\(report\)[\s\S]*?getShowParagraphMarks\(\)[\s\S]*?viewOption:showParagraphMarks[\s\S]*?getShowControlCodes\(\)[\s\S]*?viewOption:showControlCodes[\s\S]*?withCanvasKitSurfaceBlockers/,
-  'Automatic selection should reject paragraph and control mark view options before replay',
+  /viewOption:showParagraphMarks/,
+  'Automatic selection should permit directly replayable text marks',
+);
+assert.match(
+  mainSource,
+  /viewOption:showControlCodes/,
+  'Automatic selection should reject structural control markers until they have explicit ops',
 );
 requireSnippet(
   embedRpcRouterSource,
@@ -524,6 +529,11 @@ requireSnippet(
   /prepareBundledFonts\([\s\S]*?MAX_BUNDLED_FONT_BYTES[\s\S]*?bundledTypefaceAliases\.set[\s\S]*?CanvasKit font family가 준비되지 않았습니다/,
   'CanvasKit should bound bundled font parsing and reject unprepared explicit families',
 );
+requireSnippet(
+  canvaskitSource,
+  /requiresShapingManager[\s\S]*?OLD_HANGUL_FONT_FAMILY[\s\S]*?!prepared\.fontManager[\s\S]*?shaping font source 준비 실패/,
+  'Old-Hangul font preparation should require a shaping-capable font manager',
+);
 assert.doesNotMatch(
   renderBackendSource,
   /rhwp\.renderBackend|persistRenderBackend/,
@@ -531,6 +541,7 @@ assert.doesNotMatch(
 );
 
 const directReplayOps = [
+  ['charOverlap', 'renderCharOverlap'],
   ['ellipse', 'renderEllipse'],
   ['equation', 'renderEquation'],
   ['footnoteMarker', 'renderTextRun'],
@@ -541,14 +552,13 @@ const directReplayOps = [
   ['path', 'renderPath'],
   ['placeholder', 'renderPlaceholder'],
   ['rectangle', 'renderRectangle'],
+  ['tabLeader', 'renderTabLeader'],
+  ['textControlMark', 'renderTextControlMark'],
+  ['textDecoration', 'renderTextDecoration'],
   ['textRun', 'renderTextRun'],
 ];
 const textRunFallbackOps = [
-  'charOverlap',
   'glyphRun',
-  'tabLeader',
-  'textControlMark',
-  'textDecoration',
 ];
 const objectFragmentFallbackOps = [
   ['rawSvg', 'rawSvg:unsupportedDirectReplay'],
@@ -599,13 +609,9 @@ for (const [op, unsupportedReason] of objectFragmentFallbackOps) {
   );
 }
 for (const expectedUnsupportedToken of [
-  'charOverlap',
   'equation:unsupportedDirectReplay',
   'rawSvg:unsupportedDirectReplay',
   'glyphRun',
-  'tabLeader',
-  'textControlMark',
-  'textDecoration',
   'textRunFont',
   'image:dataMissing',
   'image:invalidBounds',
@@ -619,6 +625,20 @@ for (const expectedUnsupportedToken of [
   assert.ok(
     expectedUnsupportedSetBody.includes(`'${expectedUnsupportedToken}'`),
     `CanvasKit expected unsupported set should include ${expectedUnsupportedToken}`,
+  );
+}
+for (const directTextVisualToken of [
+  'charOverlap',
+  'tabLeader',
+  'textControlMark',
+  'textDecoration',
+  'textRun:glyphMapping',
+  'textRun:textDecoration',
+]) {
+  assert.equal(
+    expectedUnsupportedSetBody.includes(`'${directTextVisualToken}'`),
+    false,
+    `CanvasKit direct text visual should not stay on the expected-unsupported allowlist: ${directTextVisualToken}`,
   );
 }
 assert.ok(
@@ -679,6 +699,9 @@ try {
 
 function runExecutableTextReplay(op, {
   glyphIds,
+  fallbackGlyphIds,
+  symbolGlyphIds,
+  usePreparedTypeface = false,
   drawGlyphsError,
   drawParagraphError,
   shapedTextAvailable = true,
@@ -690,13 +713,24 @@ function runExecutableTextReplay(op, {
     ?? Array.from({ length: Array.from(replayText).length }, (_, index) => index + 1);
 
   class FakeFont {
-    constructor(_typeface, size) {
-      events.push({ type: 'font.create', size });
+    constructor(typeface, size) {
+      this.typeface = typeface;
+      events.push({ type: 'font.create', face: typeface?.face ?? 'default', size });
     }
 
     getGlyphIDs(text, count) {
       events.push({ type: 'font.getGlyphIDs', text, count });
-      return Uint16Array.from(resolvedGlyphIds);
+      return Uint16Array.from(
+        this.typeface?.face === 'symbol' && symbolGlyphIds
+          ? symbolGlyphIds
+          : this.typeface?.face === 'fallback' && fallbackGlyphIds
+            ? fallbackGlyphIds
+            : resolvedGlyphIds,
+      );
+    }
+
+    getGlyphWidths(ids) {
+      return Array.from(ids, () => 8);
     }
 
     delete() {
@@ -763,6 +797,9 @@ function runExecutableTextReplay(op, {
     drawText(text, x, y) {
       events.push({ type: 'canvas.drawText', text, x, y });
     },
+    drawRect(rect) {
+      events.push({ type: 'canvas.drawRect', rect });
+    },
     drawParagraph(_paragraph, x, y) {
       events.push({ type: 'canvas.drawParagraph', x, y });
       if (drawParagraphError) throw drawParagraphError;
@@ -771,6 +808,8 @@ function runExecutableTextReplay(op, {
       events.push({ type: 'canvas.restore' });
     },
   };
+  const fallbackTypeface = { face: 'fallback' };
+  const symbolTypeface = symbolGlyphIds ? { face: 'symbol' } : null;
   const renderer = new CanvasKitLayerRendererRuntime({
     Font: FakeFont,
     ParagraphStyle: FakeParagraphStyle,
@@ -780,13 +819,29 @@ function runExecutableTextReplay(op, {
         return paragraphBuilder;
       },
     },
-  }, 'default', {}, {}, shapedTextAvailable ? {} : null, 'Noto Sans KR');
+    XYWHRect(x, y, width, height) {
+      return { x, y, width, height };
+    },
+  }, 'default', {}, fallbackTypeface, symbolTypeface, shapedTextAvailable ? {} : null, 'Noto Sans KR');
   renderer.unsupportedOps = unsupportedOps;
+  if (usePreparedTypeface) {
+    renderer.findPreparedTypeface = (fontFamily) => ({
+      typeface: fontFamily === 'Source Han Serif K Old Hangul'
+        ? null
+        : { face: 'primary' },
+      fontManager: shapedTextAvailable ? {} : null,
+      fontFamily,
+    });
+  }
   renderer.recordTextRunCoverageGaps = () => {
     events.push({ type: 'coverage.record' });
   };
   renderer.makeFillPaint = () => {
     events.push({ type: 'paint.create' });
+    return paint;
+  };
+  renderer.makeStrokePaint = () => {
+    events.push({ type: 'strokePaint.create' });
     return paint;
   };
   renderer.color = (color) => color;
@@ -798,6 +853,424 @@ function runExecutableTextReplay(op, {
     error = caught;
   }
   return { error, events, unsupportedOps };
+}
+
+function runExecutableTextSpecialReplay() {
+  const events = [];
+  class FakePaint {
+    setAntiAlias() {}
+    setStyle() {}
+    setColor() {}
+    setStrokeWidth() {}
+    setStrokeCap() {}
+    setPathEffect() { events.push({ type: 'paint.pathEffect' }); }
+    delete() { events.push({ type: 'paint.delete' }); }
+  }
+  class FakeFont {
+    constructor(_typeface, size) { this.size = size; }
+    getGlyphIDs(text) { return Uint16Array.from(Array.from(text), (_, index) => index + 1); }
+    getGlyphWidths(ids) { return Array.from(ids, () => this.size * 0.5); }
+    setScaleX(scale) { events.push({ type: 'font.scaleX', scale }); }
+    delete() { events.push({ type: 'font.delete' }); }
+  }
+  const canvasKit = {
+    Font: FakeFont,
+    Paint: FakePaint,
+    PaintStyle: { Fill: 0, Stroke: 1 },
+    StrokeCap: { Round: 0 },
+    PathEffect: {
+      MakeDash(dash) {
+        events.push({ type: 'pathEffect.create', dash: [...dash] });
+        return { delete() { events.push({ type: 'pathEffect.delete' }); } };
+      },
+    },
+    Color: (r, g, b, a) => [r, g, b, a],
+    XYWHRect: (x, y, width, height) => ({ x, y, width, height }),
+  };
+  const canvas = {
+    save() { events.push({ type: 'canvas.save' }); },
+    restore() { events.push({ type: 'canvas.restore' }); },
+    translate(x, y) { events.push({ type: 'canvas.translate', x, y }); },
+    rotate(rotation) { events.push({ type: 'canvas.rotate', rotation }); },
+    drawOval(rect) { events.push({ type: 'canvas.drawOval', rect }); },
+    drawRect(rect) { events.push({ type: 'canvas.drawRect', rect }); },
+    drawText(text, x, y) { events.push({ type: 'canvas.drawText', text, x, y }); },
+    drawLine(x1, y1, x2, y2) { events.push({ type: 'canvas.drawLine', x1, y1, x2, y2 }); },
+    drawCircle(x, y, radius) { events.push({ type: 'canvas.drawCircle', x, y, radius }); },
+  };
+  const renderer = new CanvasKitLayerRendererRuntime(
+    canvasKit,
+    'default',
+    {},
+    { face: 'fallback' },
+    null,
+    null,
+    'Noto Sans KR',
+  );
+  renderer.currentShowParagraphMarks = true;
+  renderer.currentShowControlCodes = true;
+  const incompleteOldHangulAlias = { typeface: { face: 'old-hangul-incomplete' }, fontManager: null };
+  renderer.bundledTypefaceAliases.set('source han serif k old hangul', incompleteOldHangulAlias);
+  const rejectedOldHangulAlias = renderer.findPreparedTypeface('Source Han Serif K Old Hangul');
+  const oldHangulAlias = {
+    typeface: { face: 'old-hangul-alias' },
+    fontManager: { family: 'old-hangul-manager' },
+  };
+  renderer.bundledTypefaceAliases.set('source han serif k old hangul', oldHangulAlias);
+  const resolvedOldHangulAlias = renderer.findPreparedTypeface('Source Han Serif K Old Hangul');
+
+  renderer.renderOp(canvas, {
+    type: 'charOverlap',
+    bbox: { x: 10, y: 20, width: 16, height: 16 },
+    text: '①',
+    baseline: 12,
+    rotation: 0,
+    isVertical: false,
+    style: { fontSize: 16, color: '#112233' },
+    positions: [0, 16],
+    positionsComplete: true,
+    charOverlap: { borderType: 1, innerCharSize: 80 },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'charOverlap',
+    bbox: { x: 30, y: 20, width: 16, height: 16 },
+    text: '\u{F0289}\u{F0294}',
+    baseline: 12,
+    rotation: 0,
+    isVertical: false,
+    style: { fontSize: 16, color: '#112233' },
+    positions: [0, 8, 16],
+    positionsComplete: true,
+    charOverlap: { borderType: 1, innerCharSize: 80 },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'textControlMark',
+    bbox: { x: 10, y: 20, width: 40, height: 16 },
+    fieldMarker: 'none',
+    isParaEnd: true,
+    isLineBreakEnd: false,
+    baseline: 12,
+    rotation: 0,
+    isVertical: false,
+    marks: [
+      { kind: 'space', text: '∨', x: 8, y: 0, fontSize: 8 },
+      { kind: 'paragraphEnd', text: '↵', x: 40, y: 0, fontSize: 16 },
+    ],
+    marksComplete: true,
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'tabLeader',
+    bbox: { x: 10, y: 20, width: 40, height: 16 },
+    leaders: [{ startX: 4, endX: 30, fillType: 2 }],
+    color: '#000000',
+    fontSize: 16,
+    baseline: 12,
+    rotation: 0,
+    isVertical: false,
+    leadersComplete: true,
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'textDecoration',
+    bbox: { x: 10, y: 20, width: 40, height: 16 },
+    decoration: {
+      kind: 'emphasisDot',
+      baseline: 12,
+      rotation: 0,
+      isVertical: false,
+      fontSize: 16,
+      ratio: 1,
+      color: '#000000',
+      shape: 0,
+      underline: 'none',
+      emphasisDot: 1,
+      positions: [0, 12],
+      positionsComplete: true,
+    },
+  }, 'screen');
+  const beforeMirror = events.length;
+  renderer.renderTextRun(canvas, {
+    type: 'textRun',
+    bbox: { x: 10, y: 20, width: 16, height: 16 },
+    text: '①',
+    style: { fontSize: 16 },
+    charOverlap: { borderType: 1, innerCharSize: 80 },
+    legacyVisuals: { charOverlap: 'mirror' },
+  });
+  const mirrorEvents = events.slice(beforeMirror);
+  const beforeMalformed = events.length;
+  renderer.renderOp(canvas, {
+    type: 'textDecoration',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    decoration: {
+      kind: 'underline',
+      baseline: 8,
+      rotation: 0,
+      isVertical: false,
+      fontSize: 10,
+      ratio: 1,
+      color: '#000000',
+      shape: 0,
+      underline: 'center',
+      emphasisDot: 0,
+      positions: [0, 10],
+      positionsComplete: true,
+    },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'charOverlap',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    text: 'A'.repeat(4097),
+    baseline: 8,
+    rotation: 0,
+    isVertical: false,
+    style: { fontSize: 10 },
+    positions: [],
+    positionsComplete: true,
+    charOverlap: { borderType: 1, innerCharSize: 100 },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'charOverlap',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    text: 'A',
+    baseline: 8,
+    rotation: 0,
+    isVertical: false,
+    style: { fontSize: 10 },
+    positions: [0, 10],
+    positionsComplete: true,
+    charOverlap: { borderType: 5, innerCharSize: 100 },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'charOverlap',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    text: 'A',
+    baseline: 8,
+    rotation: 0,
+    isVertical: false,
+    style: { fontSize: 10 },
+    positions: [],
+    positionsComplete: true,
+    charOverlap: { borderType: 1, innerCharSize: 100 },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'textControlMark',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    baseline: 8,
+    rotation: 0,
+    isVertical: false,
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'tabLeader',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    fontSize: 10,
+    baseline: 8,
+    rotation: 0,
+    isVertical: false,
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'charOverlap',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    text: 'A',
+    baseline: 8,
+    rotation: 0,
+    isVertical: false,
+    style: { fontSize: 10 },
+    positions: [0, 10],
+    charOverlap: { borderType: 1, innerCharSize: 100 },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'textControlMark',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    fieldMarker: 'none',
+    isParaEnd: false,
+    isLineBreakEnd: false,
+    baseline: 8,
+    rotation: 0,
+    isVertical: false,
+    marks: [],
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'tabLeader',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    leaders: [{ startX: 1, endX: 8, fillType: 1 }],
+    color: '#000000',
+    fontSize: 10,
+    baseline: 8,
+    rotation: 0,
+    isVertical: false,
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'textDecoration',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    decoration: {
+      kind: 'underline',
+      baseline: 8,
+      rotation: 0,
+      isVertical: false,
+      fontSize: 10,
+      ratio: 1,
+      color: '#000000',
+      shape: 0,
+      underline: 'bottom',
+      emphasisDot: 0,
+      positions: [0, 10],
+    },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'textDecoration',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'textDecoration',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    decoration: {
+      kind: 'underline',
+      baseline: 8,
+      rotation: 0,
+      isVertical: false,
+      fontSize: 10,
+      ratio: 1,
+      color: '#000000',
+      shape: 0,
+      underline: 'bottom',
+      emphasisDot: 0,
+      positions: [0, 10],
+      positionsComplete: false,
+    },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'charOverlap',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    text: 'A',
+    baseline: 8,
+    rotation: 0,
+    isVertical: false,
+    style: { fontSize: 10 },
+    positions: [0, 10],
+    positionsComplete: false,
+    charOverlap: { borderType: 1, innerCharSize: 100 },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'tabLeader',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    leaders: [{ startX: 1, endX: 8, fillType: 1 }],
+    leadersComplete: false,
+    color: '#000000',
+    fontSize: 10,
+    baseline: 8,
+    rotation: 0,
+    isVertical: false,
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'tabLeader',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    leaders: [{ startX: 1, endX: 8, fillType: 1.5 }],
+    leadersComplete: true,
+    color: '#000000',
+    fontSize: 10,
+    baseline: 8,
+    rotation: 0,
+    isVertical: false,
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'tabLeader',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    leaders: [{ startX: 4, endX: 4, fillType: 1 }],
+    leadersComplete: true,
+    color: '#000000',
+    fontSize: 10,
+    baseline: 8,
+    rotation: 0,
+    isVertical: false,
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'textDecoration',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    decoration: {
+      kind: 'underline',
+      baseline: 8,
+      rotation: 0,
+      isVertical: false,
+      fontSize: 10,
+      ratio: 1,
+      color: '#000000',
+      shape: 0.5,
+      underline: 'future',
+      emphasisDot: 0,
+      positions: [0, 10],
+      positionsComplete: true,
+    },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'charOverlap',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    text: 'A',
+    baseline: 8,
+    rotation: 15,
+    isVertical: false,
+    style: { fontSize: 10 },
+    positions: [0, 10],
+    positionsComplete: true,
+    charOverlap: { borderType: 1, innerCharSize: 100 },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'textControlMark',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    baseline: 8,
+    rotation: 15,
+    isVertical: false,
+    marks: [],
+    marksComplete: true,
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'tabLeader',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    leaders: [{ startX: 1, endX: 8, fillType: 1 }],
+    color: '#000000',
+    fontSize: 10,
+    baseline: 8,
+    rotation: 15,
+    isVertical: false,
+    leadersComplete: true,
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'textDecoration',
+    bbox: { x: 0, y: 0, width: 10, height: 10 },
+    decoration: {
+      kind: 'underline',
+      baseline: 8,
+      rotation: 15,
+      isVertical: false,
+      fontSize: 10,
+      ratio: 1,
+      color: '#000000',
+      shape: 0,
+      underline: 'bottom',
+      emphasisDot: 0,
+      positions: [0, 10],
+      positionsComplete: true,
+    },
+  }, 'screen');
+  renderer.renderOp(canvas, {
+    type: 'tabLeader',
+    bbox: { x: 0, y: 0, width: -1, height: 10 },
+    leaders: [{ startX: 1, endX: 8, fillType: 1 }],
+    color: '#000000',
+    fontSize: 10,
+    baseline: 8,
+    rotation: 0,
+    isVertical: false,
+    leadersComplete: true,
+  }, 'screen');
+  return {
+    events,
+    mirrorEvents,
+    malformedEvents: events.slice(beforeMalformed),
+    oldHangulAlias,
+    rejectedOldHangulAlias,
+    resolvedOldHangulAlias,
+    unsupportedOps: renderer.unsupportedOps,
+  };
 }
 
 function runExecutableFontNativeGlyphReplay() {
@@ -1072,7 +1545,7 @@ for (const [label, body, baselinePattern] of [
 }
 requireSnippet(
   renderTextRunBody,
-  /this\.recordTextRunCoverageGaps\(op\);[\s\S]*?canvas\.drawGlyphs\(glyphIds, glyphPositions, originX, originY, font, paint\)/,
+  /this\.recordTextRunCoverageGaps\(op\);[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs[\s\S]*?const runGlyphIds = new Uint16Array[\s\S]*?canvas\.drawGlyphs\(/,
   'textRun replay should record unsupported effect diagnostics before drawing positioned glyphs',
 );
 requireSnippet(
@@ -1087,8 +1560,13 @@ requireSnippet(
 );
 requireSnippet(
   renderTextRunBody,
-  /const replayText = op\.displayText \?\? op\.text;[\s\S]*?const replayPositions = op\.displayText !== undefined \? op\.displayPositions : op\.positions;[\s\S]*?const codePoints = Array\.from\(replayText\);[\s\S]*?const hasSimpleScriptText[\s\S]*?code >= 0x20 && code <= 0x7e[\s\S]*?needsPreservedAdvances && !hasSimpleScriptText[\s\S]*?this\.renderShapedScriptText\([\s\S]*?if \(hasLayoutPositions\)[\s\S]*?font\.getGlyphIDs\(replayText, codePoints\.length\)[\s\S]*?glyphIds\.every\(\(glyphId\) => glyphId !== 0\)[\s\S]*?glyphPositions\[index \* 2\] = replayPositions!\[index\];[\s\S]*?canvas\.drawGlyphs\(glyphIds, glyphPositions, originX, originY, font, paint\)/,
+  /const replayText = op\.displayText \?\? op\.text;[\s\S]*?const replayPositions = op\.displayText !== undefined \? op\.displayPositions : op\.positions;[\s\S]*?const codePoints = Array\.from\(replayText\);[\s\S]*?const hasSimpleScriptText[\s\S]*?code >= 0x20 && code <= 0x7e[\s\S]*?needsPreservedAdvances && !hasSimpleScriptText[\s\S]*?this\.renderShapedScriptText\([\s\S]*?if \(hasLayoutPositions\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs\(replayText, codePoints\.length\)[\s\S]*?const runPositions = new Float32Array[\s\S]*?runPositions\[\(index - runStart\) \* 2\] = replayPositions!\[index\];[\s\S]*?canvas\.drawGlyphs\(/,
   'textRun replay should preserve serialized layout advances for regular and resized glyph runs',
+);
+requireSnippet(
+  renderTextRunBody,
+  /OLD_HANGUL_FONT_FAMILY[\s\S]*?selectedFontIndices[\s\S]*?return -2;[\s\S]*?fontIndex === -2[\s\S]*?codePoints\.slice\(runStart, runEnd\)\.join\(''\)[\s\S]*?originX \+ replayPositions!\[runStart\][\s\S]*?oldHangulTypeface\?\.fontManager/,
+  'old Hangul Jamo should shape as a bounded cluster at the producer position',
 );
 requireSnippet(
   renderShapedScriptTextBody,
@@ -1229,8 +1707,200 @@ const missingGlyphReplay = runExecutableTextReplay({
 assert.equal(missingGlyphReplay.unsupportedOps.has('textRun:glyphMapping'), true);
 assert.equal(
   missingGlyphReplay.events.some((event) => event.type === 'canvas.drawGlyphs'),
+  true,
+  'an unresolved glyph should retain its producer position while runtime diagnostics fail closed',
+);
+
+const fallbackGlyphReplay = runExecutableTextReplay({
+  type: 'textRun',
+  bbox: { x: 0, y: 20, width: 30, height: 20 },
+  text: 'A①B',
+  baseline: 15,
+  positions: [0, 8, 17, 25],
+  style: { fontFamily: 'Prepared', fontSize: 20 },
+}, {
+  glyphIds: [1, 0, 2],
+  fallbackGlyphIds: [0, 7, 0],
+  usePreparedTypeface: true,
+});
+assert.equal(fallbackGlyphReplay.unsupportedOps.has('textRun:glyphMapping'), false);
+assert.deepEqual(
+  fallbackGlyphReplay.events
+    .filter((event) => event.type === 'canvas.drawGlyphs')
+    .map(({ glyphIds: ids, positions }) => ({ glyphIds: ids, positions })),
+  [
+    { glyphIds: [1], positions: [0, 0] },
+    { glyphIds: [7], positions: [8, 0] },
+    { glyphIds: [2], positions: [17, 0] },
+  ],
+  'fallback glyphs should switch fonts per contiguous run without changing serialized positions',
+);
+
+const symbolGlyphReplay = runExecutableTextReplay({
+  type: 'textRun',
+  bbox: { x: 0, y: 20, width: 30, height: 20 },
+  text: 'A①B',
+  baseline: 15,
+  positions: [0, 8, 17, 25],
+  style: { fontFamily: 'Prepared', fontSize: 20 },
+}, {
+  glyphIds: [1, 0, 2],
+  fallbackGlyphIds: [0, 0, 0],
+  symbolGlyphIds: [0, 9, 0],
+  usePreparedTypeface: true,
+});
+assert.equal(symbolGlyphReplay.unsupportedOps.has('textRun:glyphMapping'), false);
+assert.deepEqual(
+  symbolGlyphReplay.events
+    .filter((event) => event.type === 'canvas.drawGlyphs')
+    .map(({ glyphIds: ids, positions }) => ({ glyphIds: ids, positions })),
+  [
+    { glyphIds: [1], positions: [0, 0] },
+    { glyphIds: [9], positions: [8, 0] },
+    { glyphIds: [2], positions: [17, 0] },
+  ],
+  'the bounded symbol face should be the final positioned fallback without moving surrounding text',
+);
+
+const oldHangulReplay = runExecutableTextReplay({
+  type: 'textRun',
+  bbox: { x: 10, y: 20, width: 40, height: 20 },
+  text: 'A\u{F53A}B',
+  displayText: 'A\u1112\u119E\u11ABB',
+  baseline: 15,
+  positions: [0, 8, 20, 28],
+  displayPositions: [0, 8, 8, 8, 20, 28],
+  style: { fontFamily: 'Prepared', fontSize: 20 },
+}, { usePreparedTypeface: true });
+assert.equal(oldHangulReplay.unsupportedOps.has('textRun:glyphMapping'), false);
+assert.deepEqual(
+  oldHangulReplay.events.find(event => event.type === 'paragraphBuilder.addText'),
+  { type: 'paragraphBuilder.addText', text: '\u1112\u119E\u11AB' },
+  'old Hangul PUA projection should shape its Jamo sequence as one cluster',
+);
+assert.deepEqual(
+  oldHangulReplay.events.find(event => event.type === 'canvas.drawParagraph'),
+  { type: 'canvas.drawParagraph', x: 18, y: 15 },
+  'old Hangul shaping should begin at the serialized cluster position',
+);
+assert.deepEqual(
+  oldHangulReplay.events
+    .filter(event => event.type === 'canvas.drawGlyphs')
+    .map(({ glyphIds: ids, positions }) => ({ glyphIds: ids, positions })),
+  [
+    { glyphIds: [1], positions: [0, 0] },
+    { glyphIds: [5], positions: [20, 0] },
+  ],
+  'surrounding glyphs should retain their producer positions around shaped old Hangul',
+);
+
+const boxedPuaReplay = runExecutableTextReplay({
+  type: 'textRun',
+  bbox: { x: 0, y: 20, width: 20, height: 20 },
+  text: '\u{F02B1}',
+  baseline: 15,
+  positions: [0, 18],
+  style: { fontFamily: 'Prepared', fontSize: 20 },
+}, {
+  glyphIds: [0],
+  fallbackGlyphIds: [0],
+  symbolGlyphIds: [0],
+  usePreparedTypeface: true,
+});
+assert.equal(boxedPuaReplay.unsupportedOps.has('textRun:glyphMapping'), false);
+assert.equal(
+  boxedPuaReplay.events.some(event => event.type === 'canvas.drawRect'),
+  true,
+  'Hancom boxed-number PUA should use a bounded vector box fallback',
+);
+assert.equal(
+  boxedPuaReplay.events.some(event => event.type === 'canvas.drawText' && event.text === '1'),
+  true,
+  'Hancom boxed-number PUA should preserve the encoded number',
+);
+
+const textSpecialReplay = runExecutableTextSpecialReplay();
+assert.equal(textSpecialReplay.events.some(event => event.type === 'canvas.drawOval'), true);
+assert.equal(
+  textSpecialReplay.events.some(event => event.type === 'canvas.drawText' && event.text === '1'),
+  true,
+  'circled overlap text should replay as a directly drawn border plus display digit',
+);
+assert.equal(
+  textSpecialReplay.events.filter(event => event.type === 'canvas.drawLine').length >= 6,
+  true,
+  'control marks should replay as font-independent vectors at producer positions',
+);
+assert.equal(
+  textSpecialReplay.events.some(event => event.type === 'canvas.drawText' && ['∨', '↵'].includes(event.text)),
   false,
-  'glyph ID zero should reject positioned glyph replay',
+  'control mark replay should not depend on optional symbol glyph coverage',
+);
+assert.equal(textSpecialReplay.events.some(event => event.type === 'pathEffect.create'), true);
+assert.equal(textSpecialReplay.events.some(event => event.type === 'canvas.drawCircle'), true);
+assert.equal(
+  textSpecialReplay.events.some(event => event.type === 'font.scaleX' && event.scale === 0.7),
+  true,
+  'combined overlap numbers should use the Canvas2D digit-count compression formula',
+);
+assert.equal(
+  textSpecialReplay.rejectedOldHangulAlias,
+  null,
+  'a typeface-only old-Hangul alias must not satisfy the shaping contract',
+);
+assert.equal(
+  textSpecialReplay.resolvedOldHangulAlias,
+  textSpecialReplay.oldHangulAlias,
+  'a prepared old-Hangul alias must remain reachable when the dedicated subset is unavailable',
+);
+assert.deepEqual(textSpecialReplay.mirrorEvents, [], 'the TextRun char-overlap mirror must not double-paint');
+assert.deepEqual(
+  textSpecialReplay.malformedEvents,
+  [],
+  'malformed or over-limit text visuals must fail closed without drawing partial output',
+);
+for (const diagnostic of [
+  'charOverlap:visualItemLimitExceeded',
+  'charOverlap:invalidGeometry',
+  'textControlMark:invalidGeometry',
+  'textControlMark:visualItemLimitExceeded',
+  'tabLeader:invalidGeometry',
+  'tabLeader:visualItemLimitExceeded',
+  'textDecoration:invalidGeometry',
+  'textDecoration:visualItemLimitExceeded',
+  'charOverlap:rotatedText',
+  'textControlMark:rotatedText',
+  'tabLeader:rotatedText',
+  'textDecoration:rotatedText',
+]) {
+  assert.equal(
+    textSpecialReplay.unsupportedOps.has(diagnostic),
+    true,
+    `malformed text visuals should report ${diagnostic}`,
+  );
+}
+
+const alternatingGlyphText = 'A'.repeat(4098);
+const alternatingGlyphReplay = runExecutableTextReplay({
+  type: 'textRun',
+  bbox: { x: 0, y: 20, width: 4098, height: 20 },
+  text: alternatingGlyphText,
+  baseline: 15,
+  positions: Array.from({ length: 4099 }, (_, index) => index),
+  style: { fontSize: 12 },
+}, {
+  glyphIds: Array.from({ length: 4098 }, (_, index) => index % 2 === 0 ? 1 : 0),
+  symbolGlyphIds: Array.from({ length: 4098 }, (_, index) => index % 2 === 0 ? 0 : 1),
+});
+assert.equal(
+  alternatingGlyphReplay.unsupportedOps.has('textRun:fallbackSpanLimitExceeded'),
+  true,
+  'alternating fallback coverage must fail closed before native draw-call amplification',
+);
+assert.equal(
+  alternatingGlyphReplay.events.some(event => event.type === 'canvas.drawGlyphs'),
+  false,
+  'over-limit fallback segmentation must not draw a partial text run',
 );
 
 const cleanupReplay = runExecutableTextReplay({
@@ -1268,8 +1938,6 @@ for (const cleanupEvent of ['canvas.restore', 'paragraph.delete', 'paragraphBuil
 }
 for (const expectedTextRunGap of [
   'textRun:verticalText',
-  'textRun:textDecoration',
-  'textRun:emphasisDot',
   'textRun:outlineTextEffect',
   'textRun:shadowTextEffect',
   'textRun:embossTextEffect',
@@ -1432,8 +2100,32 @@ assert.deepEqual(
     .filter((sample) => sample.canvaskitReadinessGate === true)
     .map((sample) => sample.id)
     .sort(),
-  ['font-batang-hancom', 'font-native-bitmap', 'image-crop', 'paragraph-line-basic', 'table-core'],
-  'CanvasKit readiness gate should cover paragraph/table/image/font and font-native resources',
+  [
+    'font-batang-hancom',
+    'font-native-bitmap',
+    'image-crop',
+    'paragraph-line-basic',
+    'paragraph-text-marks',
+    'pua-special-glyphs',
+    'table-core',
+  ],
+  'CanvasKit readiness gate should cover text visuals, positioned fallbacks, and core resources',
+);
+const textMarkReadinessSample = rendererBaselineManifest.samples
+  .find((sample) => sample.id === 'paragraph-text-marks');
+assert.deepEqual(
+  textMarkReadinessSample?.viewOptions,
+  { showParagraphMarks: true, showControlCodes: false },
+  'text-mark readiness must exercise the directly replayable paragraph-mark mode only',
+);
+assert.ok(
+  rendererBaselineSource.includes('applySampleViewOptions(page, sample.viewOptions)'),
+  'browser baseline capture must apply manifest view options before the selected-page replay',
+);
+assert.match(
+  rendererBaselineSource,
+  /viewOptions:\s*\{\s*showParagraphMarks:\s*false,\s*showControlCodes:\s*false,\s*\}/,
+  'every baseline sample must reset view options so one marked sample cannot contaminate the next',
 );
 const fontNativeReadinessSample = rendererBaselineManifest.samples
   .find((sample) => sample.id === 'font-native-bitmap');
@@ -1477,7 +2169,7 @@ for (const sample of rendererBaselineManifest.samples) {
 }
 assert.equal(
   rendererBaselineManifest.samples.filter((sample) => sample.baselineTier === 'representative').length,
-  21,
+  23,
   'the default renderer baseline tier must remain bounded',
 );
 for (const sampleId of [

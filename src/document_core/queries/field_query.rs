@@ -1296,6 +1296,7 @@ fn insert_click_here_field_in_para(
         start_char_idx: start,
         end_char_idx: start,
         control_idx: insert_idx,
+        ..Default::default()
     };
     let range_idx = para
         .field_ranges
@@ -1508,6 +1509,7 @@ mod tests {
                 start_char_idx: 3,
                 end_char_idx: 5,
                 control_idx: 1,
+                ..Default::default()
             }],
             char_count: 21,
             char_offsets: vec![8, 9, 10, 19, 20],
@@ -1594,6 +1596,7 @@ mod tests {
                 start_char_idx: 3,
                 end_char_idx: 5,
                 control_idx: 1,
+                ..Default::default()
             }],
             char_offsets: vec![8, 9, 10, 19, 20],
             ..Default::default()
@@ -1615,6 +1618,7 @@ mod tests {
                 start_char_idx: 0,
                 end_char_idx: 2,
                 control_idx: 0,
+                ..Default::default()
             }],
             char_offsets: vec![8, 9],
             ..Default::default()
@@ -1638,6 +1642,7 @@ mod tests {
                 start_char_idx: 4,
                 end_char_idx: 7,
                 control_idx: 1,
+                ..Default::default()
             }],
             // 원본 offsets (stale after text change, but char_offsets[0] still valid for ctrls_before_text)
             char_offsets: vec![8, 9, 10, 11, 20, 21, 22],

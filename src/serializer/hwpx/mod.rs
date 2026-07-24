@@ -565,6 +565,7 @@ mod tests {
             color: 0x000000FF,
             baseline: 120,
             unknown: 0,
+            eqedit: 0,
             font_name: "HYhwpEQ".to_string(),
             version_info: "Equation Version 60".to_string(),
             raw_ctrl_data: Vec::new(),
@@ -940,6 +941,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 1,
             control_idx: 2,
+            ..Default::default()
         }];
         section.paragraphs.push(p);
         doc.sections.push(section);

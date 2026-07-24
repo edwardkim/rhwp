@@ -2,6 +2,8 @@
 //!
 //! semantic render tree를 backend-friendly layer tree로 변환한다.
 
+pub(crate) const MAX_POSITIONED_CONTROL_MARKS_PER_RUN: usize = 4096;
+
 pub mod builder;
 pub mod font;
 pub mod font_glyph;

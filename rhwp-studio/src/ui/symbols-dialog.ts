@@ -6,14 +6,11 @@
 import type { CommandServices } from '@/command/types';
 import { InsertTextCommand } from '@/engine/command';
 import { enableDialogDrag } from './dialog-drag';
+import { isCodePointInBlock, type UnicodeBlock } from './unicode-block.ts';
+
+export { isCodePointInBlock } from './unicode-block.ts';
 
 // ── 유니코드 블록 정의 ──
-
-interface UnicodeBlock {
-  name: string;
-  start: number;
-  end: number;
-}
 
 const UNICODE_BLOCKS: UnicodeBlock[] = [
   { name: '기본 라틴 문자', start: 0x0020, end: 0x007F },
@@ -285,11 +282,13 @@ export class SymbolsDialog {
     this.codeLabel.textContent = codePoint.toString(16).toUpperCase().padStart(4, '0');
     this.previewCell.textContent = ch;
 
-    // 그리드 하이라이트
+    // 그리드 하이라이트 (최근 사용 문자가 현재 블록에 없으면 하이라이트하지 않음)
     this.charGrid.querySelectorAll('.sym-cell.selected').forEach(el => el.classList.remove('selected'));
-    const idx = codePoint - this.currentBlock.start;
-    const cells = this.charGrid.querySelectorAll('.sym-cell');
-    cells[idx]?.classList.add('selected');
+    if (isCodePointInBlock(codePoint, this.currentBlock)) {
+      const idx = codePoint - this.currentBlock.start;
+      const cells = this.charGrid.querySelectorAll('.sym-cell');
+      cells[idx]?.classList.add('selected');
+    }
   }
 
   // ── 삽입 ──

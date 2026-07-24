@@ -297,7 +297,6 @@ hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].c
 hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	985
 hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	16
 hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[].children[][].drawing.text_box.raw_list_header_extra.len	7
-hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[][].caption	2
 hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[][].drawing.text_box.raw_list_header_extra.len	3
 hwp5rb	issue2808_report_physical_ladder.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	22
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
@@ -415,25 +414,20 @@ hwpx	143E433F503322BD33.hwpx	sections[].paragraphs[].controls[].caption.paragrap
 hwpx	143E433F503322BD33.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	60
 hwpx	143E433F503322BD33.hwpx	sections[].paragraphs[].controls[].paragraphs[].raw_header_extra[]	2
 hwpx	143E433F503322BD33.hwpx	sections[].paragraphs[].controls[].text_box.paragraphs[].raw_header_extra[]	1
-hwpx	143E433F503322BD33.hwpx	sections[].paragraphs[].controls[][].common.attr	1
-hwpx	143E433F503322BD33.hwpx	sections[].paragraphs[].controls[][].common.hwp5_gen_shape_attr_bit28	1
 hwpx	143E433F503322BD33.hwpx	sections[].paragraphs[].raw_header_extra[]	22
 hwpx	2024년 1분기 해외직접투자 보도자료 ff.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].shape_attr.offset_x	1
 hwpx	2024년 1분기 해외직접투자 보도자료 ff.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].shape_attr.offset_y	1
-hwpx	2024년 1분기 해외직접투자 보도자료 ff.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	1862
-hwpx	2024년 1분기 해외직접투자 보도자료 ff.hwpx	sections[].paragraphs[].controls[].children[][].shape_attr.group_level	3
-hwpx	2024년 1분기 해외직접투자 보도자료 ff.hwpx	sections[].paragraphs[].raw_header_extra[]	133
+hwpx	2024년 1분기 해외직접투자 보도자료 ff.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	1864
+hwpx	2024년 1분기 해외직접투자 보도자료 ff.hwpx	sections[].paragraphs[].raw_header_extra[]	134
 hwpx	2024년 2분기 해외직접투자 보도자료ff.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].shape_attr.offset_x	1
 hwpx	2024년 2분기 해외직접투자 보도자료ff.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].shape_attr.offset_y	1
-hwpx	2024년 2분기 해외직접투자 보도자료ff.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	1866
-hwpx	2024년 2분기 해외직접투자 보도자료ff.hwpx	sections[].paragraphs[].controls[].children[][].shape_attr.group_level	3
+hwpx	2024년 2분기 해외직접투자 보도자료ff.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	1869
 hwpx	2024년 2분기 해외직접투자 보도자료ff.hwpx	sections[].paragraphs[].raw_header_extra[]	129
 hwpx	2024년 연간 해외직접투자 보도자료 _ ff.hwpx	doc_info.extra_records.len	1
 hwpx	2024년 연간 해외직접투자 보도자료 _ ff.hwpx	doc_info.memo_shape_count	1
 hwpx	2024년 연간 해외직접투자 보도자료 _ ff.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].shape_attr.offset_x	1
 hwpx	2024년 연간 해외직접투자 보도자료 _ ff.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].shape_attr.offset_y	1
-hwpx	2024년 연간 해외직접투자 보도자료 _ ff.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	1875
-hwpx	2024년 연간 해외직접투자 보도자료 _ ff.hwpx	sections[].paragraphs[].controls[].children[][].shape_attr.group_level	3
+hwpx	2024년 연간 해외직접투자 보도자료 _ ff.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	1878
 hwpx	2024년 연간 해외직접투자 보도자료 _ ff.hwpx	sections[].paragraphs[].raw_header_extra[]	118
 hwpx	2025년 1분기 해외직접투자 보도자료f.hwpx	doc_info.extra_records.len	1
 hwpx	2025년 1분기 해외직접투자 보도자료f.hwpx	doc_info.memo_shape_count	1
@@ -584,9 +578,8 @@ hwpx	hwpx-centered-cell-vpos-after-tac-shape.hwpx	sections[].paragraphs[].contro
 hwpx	hwpx-centered-cell-vpos-after-tac-shape.hwpx	sections[].paragraphs[].raw_header_extra[]	15
 hwpx	hwpx-h-01.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].shape_attr.offset_x	1
 hwpx	hwpx-h-01.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].shape_attr.offset_y	1
-hwpx	hwpx-h-01.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	1862
-hwpx	hwpx-h-01.hwpx	sections[].paragraphs[].controls[].children[][].shape_attr.group_level	3
-hwpx	hwpx-h-01.hwpx	sections[].paragraphs[].raw_header_extra[]	133
+hwpx	hwpx-h-01.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	1864
+hwpx	hwpx-h-01.hwpx	sections[].paragraphs[].raw_header_extra[]	134
 hwpx	hwpx-h-02.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	1868
 hwpx	hwpx-h-02.hwpx	sections[].paragraphs[].raw_header_extra[]	132
 hwpx	hwpx-h-03.hwpx	doc_info.extra_records.len	1

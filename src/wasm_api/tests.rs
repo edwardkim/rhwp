@@ -2564,6 +2564,36 @@ fn test_delete_table_column_and_split_cell_clear_stale_local_resize() {
     }
 }
 
+/// [split_table_cells_in_range stale local-resize] split_table_cell_native/
+/// split_table_cell_into_native와 동일하게 split_table_cells_in_range_native도
+/// Table::split_cells_in_range()가 내부적으로 split_cell_into()를 반복 호출해
+/// cells 배열의 인덱스 배치를 바꾼다. 그런데 이 커맨드만 local_resize_cell_widths/
+/// heights를 비우지 않아 stale 참조가 남는다.
+#[test]
+fn test_split_table_cells_in_range_clears_stale_local_resize() {
+    let mut doc = create_doc_with_table();
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first_mut()
+    {
+        table.local_resize_cell_widths.push((1, 1234));
+        table.local_resize_cell_heights.push((1, 5678));
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+
+    doc.split_table_cells_in_range_native(0, 0, 0, 0, 0, 1, 1, 2, 2, false)
+        .expect("범위 분할");
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
+        assert!(
+            table.local_resize_cell_widths.is_empty() && table.local_resize_cell_heights.is_empty(),
+            "범위 분할 후 local_resize_cell_widths/heights의 stale 참조가 비워져야 한다"
+        );
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+}
+
 #[test]
 fn test_merge_then_control_layout_has_col_span() {
     let mut doc = create_doc_with_table();
@@ -5111,6 +5141,46 @@ fn test_table_utility_functions() {
         Some(3)
     );
     assert_eq!(super::parse_html_attr_u16(r#"<td>"#, "colspan"), None);
+}
+
+#[test]
+fn test_css_color_rgba_and_border_width_keywords() {
+    // rgba() 색상: 브라우저는 반투명/알파 포함 색을 rgba(r, g, b, a)로 직렬화한다.
+    assert_eq!(
+        super::css_color_to_hwp_bgr("rgba(255, 0, 0, 1)"),
+        Some(0x0000FF),
+        "rgba() 불투명 빨강 → BGR"
+    );
+    assert_eq!(
+        super::css_color_to_hwp_bgr("rgba(0, 128, 255, 0.5)"),
+        Some(0xFF8000),
+        "rgba() 반투명 색도 RGB 성분은 파싱되어야 함"
+    );
+    // 완전 투명(alpha=0)은 색 없음으로 처리
+    assert_eq!(
+        super::css_color_to_hwp_bgr("rgba(255, 0, 0, 0)"),
+        None,
+        "rgba() alpha=0 → 색 없음"
+    );
+
+    // border 축약형의 rgba() 색상
+    let (w, c, s) = super::parse_css_border_shorthand("1px solid rgba(255, 0, 0, 1)");
+    assert!((w - 0.75).abs() < 0.01, "border width 1px -> 0.75pt");
+    assert_eq!(c, 0x0000FF, "border rgba() 색상 빨강 (BGR)");
+    assert_eq!(s, 1, "border style solid");
+
+    // CSS 표준 border-width 키워드: thin(1px)/medium(3px)/thick(5px)
+    // 키워드를 인식하지 못하면 width 0 → 테두리 전체가 소실된다.
+    let (w_thin, _, s_thin) = super::parse_css_border_shorthand("thin solid #000000");
+    assert!((w_thin - 0.75).abs() < 0.01, "thin = 1px = 0.75pt");
+    assert_eq!(s_thin, 1);
+
+    let (w_med, c_med, _) = super::parse_css_border_shorthand("medium solid #ff0000");
+    assert!((w_med - 2.25).abs() < 0.01, "medium = 3px = 2.25pt");
+    assert_eq!(c_med, 0x0000FF);
+
+    let (w_thick, _, _) = super::parse_css_border_shorthand("thick solid #000000");
+    assert!((w_thick - 3.75).abs() < 0.01, "thick = 5px = 3.75pt");
 }
 
 #[test]
@@ -14813,6 +14883,7 @@ fn test_save_table_1x1() {
         },
         center_line: CenterLine::None,
         fill: Fill::default(),
+        three_d: false,
     };
     doc.document.doc_info.border_fills.push(new_bf);
     let table_bf_id = doc.document.doc_info.border_fills.len() as u16; // 1-based ID
@@ -16758,6 +16829,7 @@ fn test_save_pic_in_table() {
         },
         center_line: CenterLine::None,
         fill: Fill::default(),
+        three_d: false,
     };
     doc.document.doc_info.border_fills.push(new_bf);
     let table_bf_id = doc.document.doc_info.border_fills.len() as u16;

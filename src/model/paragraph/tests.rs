@@ -813,6 +813,7 @@ fn test_merge_from_field_ranges_ctrl_offset() {
             start_char_idx: 0,
             end_char_idx: 1,
             control_idx: 0,
+            ..Default::default()
         }],
         has_para_text: true,
         ..Default::default()
@@ -881,6 +882,7 @@ fn test_undo_split_moves_merged_clickhere_field_to_restored_paragraph() {
             start_char_idx: 0,
             end_char_idx: 2,
             control_idx: 0,
+            ..Default::default()
         }],
         has_para_text: true,
         ..Default::default()
@@ -922,6 +924,7 @@ fn test_split_moves_field_with_range_without_consuming_visible_offset() {
             start_char_idx: 2,
             end_char_idx: 4,
             control_idx: 0,
+            ..Default::default()
         }],
         has_para_text: true,
         ..Default::default()
