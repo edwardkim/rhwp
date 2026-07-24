@@ -7,7 +7,7 @@ use crate::error::HwpError;
 use crate::model::control::{Control, FieldType};
 use crate::model::event::DocumentEvent;
 use crate::model::page::ColumnDef;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{ParaMeta, Paragraph};
 use crate::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use crate::renderer::composer::{compose_paragraph, reflow_line_segs, ComposedParagraph};
 use crate::renderer::page_layout::PageLayoutInfo;
@@ -1645,11 +1645,17 @@ impl DocumentCore {
         }
     }
 
+    /// 문단을 분할한다.
+    ///
+    /// `restore_meta` 는 병합 undo 전용이다 — 병합으로 사라졌던 문단의 스코프
+    /// 메타데이터를 새 문단에 되돌린다. 일반 Enter 분할은 `None` 으로 앞 문단의
+    /// 서식을 잇는다 (Task #2342).
     pub fn split_paragraph_native(
         &mut self,
         section_idx: usize,
         para_idx: usize,
         char_offset: usize,
+        restore_meta: Option<ParaMeta>,
     ) -> Result<String, HwpError> {
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -1674,9 +1680,12 @@ impl DocumentCore {
         {
             self.document.sections[section_idx].raw_stream = None;
             let new_para_idx = para_idx + 1;
-            let new_para = empty_paragraph_after_table_anchor(
+            let mut new_para = empty_paragraph_after_table_anchor(
                 &self.document.sections[section_idx].paragraphs[para_idx],
             );
+            if let Some(meta) = restore_meta {
+                new_para.apply_meta(meta);
+            }
             self.document.sections[section_idx]
                 .paragraphs
                 .insert(new_para_idx, new_para);
@@ -1812,8 +1821,11 @@ impl DocumentCore {
         self.document.sections[section_idx].raw_stream = None;
 
         // 문단 분리
-        let new_para =
+        let mut new_para =
             self.document.sections[section_idx].paragraphs[para_idx].split_at(char_offset);
+        if let Some(meta) = restore_meta {
+            new_para.apply_meta(meta);
+        }
 
         // 새 문단을 현재 문단 뒤에 삽입
         let new_para_idx = para_idx + 1;
@@ -2172,6 +2184,8 @@ impl DocumentCore {
             .paragraphs
             .remove(para_idx);
         let prev_idx = para_idx - 1;
+        let removed_meta =
+            super::super::helpers::removed_para_meta_field(&current_para.capture_meta());
         let merge_point =
             self.document.sections[section_idx].paragraphs[prev_idx].merge_from(&current_para);
 
@@ -2195,8 +2209,8 @@ impl DocumentCore {
                 para: para_idx,
             });
             return Ok(super::super::helpers::json_ok_with(&format!(
-                "\"paraIdx\":{},\"charOffset\":{}",
-                prev_idx, merge_point
+                "\"paraIdx\":{},\"charOffset\":{}{}",
+                prev_idx, merge_point, removed_meta
             )));
         }
 
@@ -2260,8 +2274,8 @@ impl DocumentCore {
             para: para_idx,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"paraIdx\":{},\"charOffset\":{}",
-            prev_idx, merge_point
+            "\"paraIdx\":{},\"charOffset\":{}{}",
+            prev_idx, merge_point, removed_meta
         )))
     }
 
@@ -3917,7 +3931,69 @@ impl DocumentCore {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::paragraph::CharShapeRef;
+    use crate::document_core::helpers::removed_para_meta_of;
+    use crate::model::paragraph::{CharShapeRef, ColumnBreakType, NumberingRestart};
+
+    /// 본문 문단 병합의 undo 가 사라진 문단의 스코프 메타데이터를 되돌리는지 (Task #2342).
+    ///
+    /// `split_at` 은 새 문단을 앞 문단에서 파생시키므로, 되돌린 문단은 메타 복원 없이는
+    /// 문단 1 의 서식을 뒤집어쓴다.
+    #[test]
+    fn merge_paragraph_undo_restores_removed_paragraph_meta() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "첫째").unwrap();
+        core.split_paragraph_native(0, 0, 2, None).unwrap();
+        core.insert_text_native(0, 1, 0, "둘째").unwrap();
+
+        core.document.sections[0].paragraphs[0].para_shape_id = 10;
+        core.document.sections[0].paragraphs[0].style_id = 1;
+        let second = &mut core.document.sections[0].paragraphs[1];
+        second.para_shape_id = 20;
+        second.style_id = 5;
+        second.column_type = ColumnBreakType::Page;
+        second.raw_break_type = 0x04;
+        second.numbering_restart = Some(NumberingRestart::NewStart(7));
+        second.raw_header_extra = vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB];
+        second.tab_extended = vec![[100, 0, 0x0200, 0, 0, 0, 9]];
+
+        let merged = core.merge_paragraph_native(0, 1).unwrap();
+        let meta = removed_para_meta_of(&merged);
+        core.split_paragraph_native(0, 0, 2, Some(meta)).unwrap();
+
+        let restored = &core.document.sections[0].paragraphs[1];
+        assert_eq!(restored.text, "둘째");
+        assert_eq!(restored.para_shape_id, 20);
+        assert_eq!(restored.style_id, 5);
+        assert_eq!(restored.column_type, ColumnBreakType::Page);
+        assert_eq!(restored.raw_break_type, 0x04);
+        assert_eq!(
+            restored.numbering_restart,
+            Some(NumberingRestart::NewStart(7))
+        );
+        assert_eq!(
+            restored.raw_header_extra,
+            vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB]
+        );
+        assert_eq!(restored.tab_extended, vec![[100, 0, 0x0200, 0, 0, 0, 9]]);
+        assert_eq!(core.document.sections[0].paragraphs[0].para_shape_id, 10);
+    }
+
+    /// 메타를 넘기지 않는 일반 Enter 분할은 앞 문단의 서식을 잇는다 (기존 시맨틱 고정).
+    #[test]
+    fn split_paragraph_without_meta_inherits_previous_paragraph_shape() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "첫째둘째").unwrap();
+        core.document.sections[0].paragraphs[0].para_shape_id = 33;
+        core.document.sections[0].paragraphs[0].style_id = 4;
+
+        core.split_paragraph_native(0, 0, 2, None).unwrap();
+
+        let new_para = &core.document.sections[0].paragraphs[1];
+        assert_eq!(new_para.para_shape_id, 33);
+        assert_eq!(new_para.style_id, 4);
+    }
 
     /// insert_paragraph_native 는 새 문단의 서식을 이웃에서 상속해야 한다.
     ///
@@ -3957,7 +4033,7 @@ mod tests {
         let mut core = DocumentCore::new_empty();
         core.create_blank_document_native().unwrap();
         core.insert_text_native(0, 0, 0, "첫째").unwrap();
-        core.split_paragraph_native(0, 0, 2).unwrap();
+        core.split_paragraph_native(0, 0, 2, None).unwrap();
         core.insert_text_native(0, 1, 0, "둘째").unwrap();
         set_shape(&mut core, 0, 12, 3, 7);
         set_shape(&mut core, 1, 14, 5, 9);
@@ -4522,7 +4598,8 @@ mod tests {
         // Enter를 500번 입력하여 페이지 오버플로우 유발
         for i in 0..500 {
             let para_count = core.document.sections[0].paragraphs.len();
-            core.split_paragraph_native(0, para_count - 1, 0).unwrap();
+            core.split_paragraph_native(0, para_count - 1, 0, None)
+                .unwrap();
         }
 
         let para_count = core.document.sections[0].paragraphs.len();
@@ -4556,7 +4633,7 @@ mod tests {
 
         // Enter로 문단 분리 (텍스트 끝에서)
         let text_len = core.document.sections[0].paragraphs[0].text.chars().count();
-        core.split_paragraph_native(0, 0, text_len).unwrap();
+        core.split_paragraph_native(0, 0, text_len, None).unwrap();
 
         // 두 번째 문단에 텍스트 입력
         core.insert_text_native(0, 1, 0, "Second paragraph")
@@ -4603,7 +4680,8 @@ mod tests {
             let para_count = core.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core.insert_text_native(0, last, 0, text).unwrap();
-            core.split_paragraph_native(0, last, text.len()).unwrap();
+            core.split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
         }
 
         let page_count = core.page_count();
@@ -4631,7 +4709,9 @@ mod tests {
             let para_count = core100.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core100.insert_text_native(0, last, 0, text).unwrap();
-            core100.split_paragraph_native(0, last, text.len()).unwrap();
+            core100
+                .split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
             // 새 문단에도 100% 적용
             let new_last = core100.document.sections[0].paragraphs.len() - 1;
             core100
@@ -4650,7 +4730,9 @@ mod tests {
             let para_count = core200.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core200.insert_text_native(0, last, 0, text).unwrap();
-            core200.split_paragraph_native(0, last, text.len()).unwrap();
+            core200
+                .split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
             let new_last = core200.document.sections[0].paragraphs.len() - 1;
             core200
                 .apply_para_format_native(0, new_last, r#"{"lineSpacing":200}"#)
@@ -4685,7 +4767,9 @@ mod tests {
             let para_count = core300.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core300.insert_text_native(0, last, 0, text).unwrap();
-            core300.split_paragraph_native(0, last, text.len()).unwrap();
+            core300
+                .split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
             let new_last = core300.document.sections[0].paragraphs.len() - 1;
             core300
                 .apply_para_format_native(0, new_last, r#"{"lineSpacing":300}"#)
@@ -4700,7 +4784,9 @@ mod tests {
             let para_count = core160.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core160.insert_text_native(0, last, 0, text).unwrap();
-            core160.split_paragraph_native(0, last, text.len()).unwrap();
+            core160
+                .split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
         }
         let pages_160 = core160.page_count();
 
@@ -4733,7 +4819,8 @@ mod tests {
             let spacing = spacings[i % spacings.len()];
             let json = format!(r#"{{"lineSpacing":{}}}"#, spacing);
             core.apply_para_format_native(0, last, &json).unwrap();
-            core.split_paragraph_native(0, last, text.len()).unwrap();
+            core.split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
         }
 
         let page_count = core.page_count();
@@ -4775,7 +4862,8 @@ mod tests {
             let para_count = core.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core.insert_text_native(0, last, 0, text).unwrap();
-            core.split_paragraph_native(0, last, text.len()).unwrap();
+            core.split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
             let new_last = core.document.sections[0].paragraphs.len() - 1;
             core.apply_para_format_native(
                 0,
@@ -4816,7 +4904,8 @@ mod tests {
             for _ in 0..60 {
                 let last = core.document.sections[0].paragraphs.len() - 1;
                 core.insert_text_native(0, last, 0, text).unwrap();
-                core.split_paragraph_native(0, last, text.len()).unwrap();
+                core.split_paragraph_native(0, last, text.len(), None)
+                    .unwrap();
                 let new_last = core.document.sections[0].paragraphs.len() - 1;
                 core.apply_para_format_native(0, new_last, &json).unwrap();
             }
@@ -4855,7 +4944,8 @@ mod tests {
         for _ in 0..29 {
             let last = core.document.sections[0].paragraphs.len() - 1;
             core.insert_text_native(0, last, 0, text).unwrap();
-            core.split_paragraph_native(0, last, text.len()).unwrap();
+            core.split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
         }
         // 마지막 문단에도 텍스트
         let last = core.document.sections[0].paragraphs.len() - 1;

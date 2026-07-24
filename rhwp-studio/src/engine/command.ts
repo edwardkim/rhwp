@@ -1,4 +1,4 @@
-import type { WasmBridge } from '@/core/wasm-bridge';
+import type { RemovedParaMeta, WasmBridge } from '@/core/wasm-bridge';
 import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry } from '@/core/types';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
@@ -529,6 +529,8 @@ export class MergeParagraphCommand implements EditCommand {
 
   /** undo 시 분할 위치 (이전 문단의 원래 길이) */
   private mergePointOffset = 0;
+  /** 병합으로 사라진 문단의 스코프 메타데이터 — undo 분할이 되돌린다 (Task #2342) */
+  private removedParaMeta?: RemovedParaMeta;
 
   constructor(private position: DocumentPosition) {}
 
@@ -536,13 +538,13 @@ export class MergeParagraphCommand implements EditCommand {
     const { sectionIndex: sec, paragraphIndex: para } = this.position;
     // 병합 전 이전 문단 길이 기억
     this.mergePointOffset = wasm.getParagraphLength(sec, para - 1);
-    wasm.mergeParagraph(sec, para);
+    this.removedParaMeta = JSON.parse(wasm.mergeParagraph(sec, para)).removedParaMeta;
     return { sectionIndex: sec, paragraphIndex: para - 1, charOffset: this.mergePointOffset };
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
     const { sectionIndex: sec, paragraphIndex: para } = this.position;
-    wasm.splitParagraph(sec, para - 1, this.mergePointOffset);
+    wasm.splitParagraph(sec, para - 1, this.mergePointOffset, this.removedParaMeta);
     return { ...this.position };
   }
 
@@ -878,17 +880,20 @@ export class MergeNextParagraphCommand implements EditCommand {
   readonly type = 'mergeNextParagraph';
   readonly timestamp = Date.now();
 
+  /** 병합으로 사라진 문단의 스코프 메타데이터 — undo 분할이 되돌린다 (Task #2342) */
+  private removedParaMeta?: RemovedParaMeta;
+
   constructor(private position: DocumentPosition) {}
 
   execute(wasm: WasmBridge): DocumentPosition {
     const { sectionIndex: sec, paragraphIndex: para } = this.position;
-    wasm.mergeParagraph(sec, para + 1);
+    this.removedParaMeta = JSON.parse(wasm.mergeParagraph(sec, para + 1)).removedParaMeta;
     return { ...this.position };
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
     const { sectionIndex: sec, paragraphIndex: para, charOffset } = this.position;
-    wasm.splitParagraph(sec, para, charOffset);
+    wasm.splitParagraph(sec, para, charOffset, this.removedParaMeta);
     return { ...this.position };
   }
 
@@ -1061,6 +1066,8 @@ export class MergeParagraphInHeaderFooterCommand implements EditCommand {
     /** 병합 전 커서(undo 복원용) — Backspace: (paraIdx,0), Delete: (prevParaIdx,mergeOffset). */
     private beforeParaIdx: number,
     private beforeOffset: number,
+    /** 병합으로 사라진 문단의 스코프 메타데이터 — undo 분할이 되돌린다 (Task #2342). */
+    private removedParaMeta?: RemovedParaMeta,
   ) {
     this.lastContext = hfEditContext(target, prevParaIdx, mergeOffset);
   }
@@ -1072,7 +1079,7 @@ export class MergeParagraphInHeaderFooterCommand implements EditCommand {
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    wasm.splitParagraphInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.prevParaIdx, this.mergeOffset);
+    wasm.splitParagraphInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.prevParaIdx, this.mergeOffset, this.removedParaMeta);
     this.lastContext = hfEditContext(this.target, this.beforeParaIdx, this.beforeOffset);
     return hfFnStubPosition(this.target.sectionIdx);
   }
@@ -1187,6 +1194,8 @@ export class MergeParagraphInFootnoteCommand implements EditCommand {
     /** 병합 전 커서(undo 복원) — Backspace: (innerParaIdx,0), Delete: (prevInnerParaIdx,mergeOffset). */
     private beforeInnerParaIdx: number,
     private beforeOffset: number,
+    /** 병합으로 사라진 문단의 스코프 메타데이터 — undo 분할이 되돌린다 (Task #2342). */
+    private removedParaMeta?: RemovedParaMeta,
   ) {
     this.lastContext = fnEditContext(target, prevInnerParaIdx, mergeOffset);
   }
@@ -1198,7 +1207,7 @@ export class MergeParagraphInFootnoteCommand implements EditCommand {
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    wasm.splitParagraphInFootnote(this.target.sectionIdx, this.target.paraIdx, this.target.controlIdx, this.prevInnerParaIdx, this.mergeOffset);
+    wasm.splitParagraphInFootnote(this.target.sectionIdx, this.target.paraIdx, this.target.controlIdx, this.prevInnerParaIdx, this.mergeOffset, this.removedParaMeta);
     this.lastContext = fnEditContext(this.target, this.beforeInnerParaIdx, this.beforeOffset);
     return hfFnStubPosition(this.target.sectionIdx);
   }

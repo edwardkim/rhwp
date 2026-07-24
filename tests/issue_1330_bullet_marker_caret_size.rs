@@ -112,7 +112,7 @@ fn split_empty_bullet_line_uses_active_char_shape_before_and_after_typing() {
     .unwrap_or_else(|e| panic!("apply bullet format: {e:?}"));
 
     let split_result = parse_json(
-        doc.split_paragraph_native(0, 0, 2)
+        doc.split_paragraph_native(0, 0, 2, None)
             .unwrap_or_else(|e| panic!("split paragraph: {e:?}")),
         "split result",
     );

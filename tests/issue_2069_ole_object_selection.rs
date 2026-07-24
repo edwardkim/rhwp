@@ -159,7 +159,7 @@ fn assert_enter_after_square_ole_keeps_wrap_zone(rel: &str) {
         96.0,
     );
 
-    core.split_paragraph_native(0, 0, 0)
+    core.split_paragraph_native(0, 0, 0, None)
         .unwrap_or_else(|e| panic!("split after OLE {}: {:?}", rel, e));
 
     let section = &core.document().sections[0];
@@ -295,7 +295,7 @@ fn assert_enter_after_square_ole_keeps_wrap_zone(rel: &str) {
         para0_anchor.bbox
     );
 
-    core.split_paragraph_native(0, 1, 0)
+    core.split_paragraph_native(0, 1, 0, None)
         .unwrap_or_else(|e| panic!("second split after OLE {}: {:?}", rel, e));
 
     let section = &core.document().sections[0];
@@ -417,7 +417,7 @@ fn assert_enter_after_square_ole_keeps_wrap_zone(rel: &str) {
         para1_anchor_after_second.bbox
     );
 
-    core.split_paragraph_native(0, 2, 0)
+    core.split_paragraph_native(0, 2, 0, None)
         .unwrap_or_else(|e| panic!("third split after OLE {}: {:?}", rel, e));
 
     let section = &core.document().sections[0];
@@ -557,7 +557,7 @@ fn assert_enter_backspace_reenter_after_square_ole(rel: &str) {
         96.0,
     );
 
-    core.split_paragraph_native(0, 0, 0)
+    core.split_paragraph_native(0, 0, 0, None)
         .unwrap_or_else(|e| panic!("initial split after OLE {}: {:?}", rel, e));
     core.merge_paragraph_native(0, 1)
         .unwrap_or_else(|e| panic!("Backspace merge after OLE {}: {:?}", rel, e));
@@ -591,7 +591,7 @@ fn assert_enter_backspace_reenter_after_square_ole(rel: &str) {
         rel
     );
 
-    core.split_paragraph_native(0, 0, 0)
+    core.split_paragraph_native(0, 0, 0, None)
         .unwrap_or_else(|e| panic!("re-enter split after Backspace {}: {:?}", rel, e));
 
     let section = &core.document().sections[0];
