@@ -565,9 +565,11 @@ fn parse_char_shape(
     doc_info: &mut DocInfo,
 ) -> Result<(), HwpxError> {
     let mut cs = CharShape::default();
+    let mut id: Option<usize> = None;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
+            b"id" => id = Some(parse_u32(&attr) as usize),
             b"height" => cs.base_size = parse_i32(&attr),
             b"textColor" => cs.text_color = parse_color(&attr),
             b"shadeColor" => cs.shade_color = parse_color(&attr),
@@ -818,7 +820,21 @@ fn parse_char_shape(
         }
     }
 
-    doc_info.char_shapes.push(cs);
+    // `id` 속성은 charPrIDRef 가 참조하는 실제 배열 인덱스다. XML 등장 순서를
+    // 그대로 push 하면 id 가 등장 순서와 다르거나(재정렬) 중간이 비어 있을 때
+    // (스타일 삭제 등) charPrIDRef 참조가 엉뚱한 CharShape 로 해석된다.
+    // id 가 없는(비정상) 항목만 등장 순서 fallback 으로 push.
+    match id {
+        Some(idx) => {
+            if doc_info.char_shapes.len() <= idx {
+                doc_info
+                    .char_shapes
+                    .resize_with(idx + 1, CharShape::default);
+            }
+            doc_info.char_shapes[idx] = cs;
+        }
+        None => doc_info.char_shapes.push(cs),
+    }
     Ok(())
 }
 
@@ -832,9 +848,11 @@ fn parse_para_shape(
     let mut ps = ParaShape::default();
     // OWPML ParaShapeType의 snapToGrid 기본값은 true.
     ps.attr1 |= 1 << 8;
+    let mut id: Option<usize> = None;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
+            b"id" => id = Some(parse_u32(&attr) as usize),
             b"tabPrIDRef" => ps.tab_def_id = parse_u16(&attr),
             b"condense" => {
                 let condense = parse_u32(&attr).min(75);
@@ -903,7 +921,19 @@ fn parse_para_shape(
         ps.line_spacing_v2 = ps.line_spacing as u32;
     }
 
-    doc_info.para_shapes.push(ps);
+    // `id` 속성은 paraPrIDRef 가 참조하는 실제 배열 인덱스다. charPr 과 동일한
+    // 이유로 등장 순서 push 대신 id 로 배치한다.
+    match id {
+        Some(idx) => {
+            if doc_info.para_shapes.len() <= idx {
+                doc_info
+                    .para_shapes
+                    .resize_with(idx + 1, ParaShape::default);
+            }
+            doc_info.para_shapes[idx] = ps;
+        }
+        None => doc_info.para_shapes.push(ps),
+    }
     Ok(())
 }
 
@@ -1329,6 +1359,10 @@ fn parse_style(e: &quick_xml::events::BytesStart, doc_info: &mut DocInfo) {
                     }
                 }
             }
+            // [Task #2839] HWPX `lockForm` → Style.lock_form.
+            // 종전엔 이 속성을 아예 읽지 않아 시리얼라이저가 항상 "0" 을
+            // 하드코딩했고, 원본 lockForm="1"(양식 잠금) 이 왕복마다 유실됐다.
+            b"lockForm" => style.lock_form = attr_str(&attr) == "1",
             _ => {}
         }
     }
@@ -1344,13 +1378,26 @@ fn parse_border_fill(
 ) -> Result<(), HwpxError> {
     let mut bf = BorderFill::default();
     for attr in e.attributes().flatten() {
-        if attr.key.as_ref() == b"centerLine" {
-            bf.center_line = parse_center_line(&attr);
-            if bf.center_line == CenterLine::None {
-                bf.attr &= !(1 << 13);
-            } else {
-                bf.attr |= 1 << 13;
+        match attr.key.as_ref() {
+            b"centerLine" => {
+                bf.center_line = parse_center_line(&attr);
+                if bf.center_line == CenterLine::None {
+                    bf.attr &= !(1 << 13);
+                } else {
+                    bf.attr |= 1 << 13;
+                }
             }
+            // [#2973] 필드와 함께 attr bit0(표 24 3D 효과)도 동기화한다 — 방출측
+            // (#2965)이 attr 비트에서 읽으므로, centerLine(bit13)과 같은 패턴.
+            b"threeD" => {
+                bf.three_d = parse_bool(&attr);
+                if bf.three_d {
+                    bf.attr |= 1;
+                } else {
+                    bf.attr &= !1;
+                }
+            }
+            _ => {}
         }
     }
 
@@ -1643,9 +1690,12 @@ fn parse_tab_item(ce: &quick_xml::events::BytesStart) -> TabItem {
                     // 방출측 tab_leader_str 은 fill_type 8 을 "DOUBLE_SLIM" 으로 낸다
                     // (border 명명과 동일). 안 받으면 이중실선 탭 리더가 왕복 시 NONE(0)으로 유실.
                     "DOUBLE_LINE" | "DOUBLE_SLIM" => 8, // 이중실선
-                    "THIN_THICK" => 9,                  // 얇고 굵은 이중선
-                    "THICK_THIN" => 10,                 // 굵고 얇은 이중선
-                    "TRIM" => 11,                       // 얇고 굵고 얇은 삼중선
+                    // OWPML LineType3 스펙 리터럴은 SLIM_THICK/THICK_SLIM/SLIM_THICK_SLIM
+                    // (Core XML schema.xml 335~349행). THIN_THICK/THICK_THIN/TRIM 은
+                    // rhwp 내부에서만 쓰던 비표준 이름이라 스펙 준수 문서(#2857)를 못 읽었다.
+                    "THIN_THICK" | "SLIM_THICK" => 9, // 얇고 굵은 이중선
+                    "THICK_THIN" | "THICK_SLIM" => 10, // 굵고 얇은 이중선
+                    "TRIM" | "SLIM_THICK_SLIM" => 11, // 얇고 굵고 얇은 삼중선
                     _ => 0,
                 };
             }
@@ -1787,10 +1837,12 @@ fn parse_bullet_hwpx(
     }
 
     // 자식 <hh:paraHead>(align/useInstWidth/widthAdjust/textOffset/charPrIDRef 등),
-    // <hh:image> 를 순회. widthAdjust/textOffset/charPrIDRef 는 Bullet 필드로 흡수하고,
+    // <hh:img> 를 순회. widthAdjust/textOffset/charPrIDRef 는 Bullet 필드로 흡수하고,
     // 7수준 모델로 표현 못하는 나머지 속성(align/useInstWidth/autoIndent/checkable 등)은
     // numbering.raw_para_heads(#2695 계열)와 같은 방식으로 원본 구간을 통째로 보존해
     // 직렬화 시 splice 한다(무손실 라운드트립).
+    // <hh:img binaryItemIDRef="imageN"> 는 이미지 글머리표의 실제 BinData 참조 ID —
+    // useImage="1" 만으로는 어떤 이미지인지 알 수 없어 누락 시 항상 ID 1 로 고정된다.
     if !is_empty_event(e) {
         let inner_start = reader.buffer_position() as usize;
         let mut inner_end = inner_start;
@@ -1798,6 +1850,21 @@ fn parse_bullet_hwpx(
         loop {
             let pos_before = reader.buffer_position() as usize;
             match reader.read_event_into(&mut buf) {
+                Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce))
+                    if local_name(ce.name().as_ref()) == b"img" =>
+                {
+                    if let Some(attr) = ce
+                        .attributes()
+                        .flatten()
+                        .find(|a| a.key.as_ref() == b"binaryItemIDRef")
+                    {
+                        let s = String::from_utf8_lossy(&attr.value);
+                        let num: String = s.chars().filter(|c| c.is_ascii_digit()).collect();
+                        if let Ok(id) = num.parse::<i32>() {
+                            bullet.image_bullet = id;
+                        }
+                    }
+                }
                 Ok(Event::Empty(ref ce)) => {
                     if local_name(ce.name().as_ref()) == b"paraHead" {
                         apply_bullet_para_head_attrs(&mut bullet, ce);
@@ -2228,6 +2295,48 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_bullet_hwpx_image_id_from_binary_item_id_ref() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:bullets itemCnt="1">
+      <hh:bullet id="1" char="0x0" useImage="1">
+        <hh:img binaryItemIDRef="image3" bright="0" contrast="0" effect="REAL_PIC"/>
+      </hh:bullet>
+    </hh:bullets>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        assert_eq!(
+            doc_info.bullets[0].image_bullet, 3,
+            "이미지 글머리표는 <hh:img binaryItemIDRef>의 실제 BinData ID(3)로 매핑되어야 함. \
+             useImage=\"1\" 만으로는 어떤 이미지인지 알 수 없어, 이대로 두면 이미지 글머리표가 \
+             항상 ID 1로 고정된다."
+        );
+    }
+
+    #[test]
+    fn test_parse_tab_item_leader_accepts_owpml_spec_literal_slim_thick() {
+        // OWPML LineType3 스펙 리터럴(Core XML schema.xml 335행)은 "SLIM_THICK"이다.
+        // rhwp 내부 전용 이름 "THIN_THICK"만 받으면 한/글이 저장한 정상 문서의
+        // 탭 리더가 NONE(0)으로 유실된다 (#2857).
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:tabProperties itemCnt="1">
+      <hh:tabPr id="0" autoTabLeft="0" autoTabRight="0">
+        <hh:tabItem pos="1000" type="LEFT" leader="SLIM_THICK"/>
+      </hh:tabPr>
+    </hh:tabProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        assert_eq!(doc_info.tab_defs[0].tabs[0].fill_type, 9);
+    }
+
+    #[test]
     fn test_parse_hwpx_numbering_para_head_text_body() {
         let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
 <hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
@@ -2374,7 +2483,8 @@ mod tests {
 </hh:head>"##;
 
         let (doc_info, _) = parse_hwpx_header(xml).unwrap();
-        let ps = &doc_info.para_shapes[0];
+        // paraPr id="1" 이므로 paraPrIDRef=1 이 참조할 실제 배열 위치는 index 1.
+        let ps = &doc_info.para_shapes[1];
 
         assert_eq!((ps.attr1 >> 9) & 0x7f, 30);
         assert_eq!(ps.attr1 & (1 << 22), 1 << 22);
@@ -2399,8 +2509,9 @@ mod tests {
   </hh:refList>
 </hh:head>"##;
         let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        // paraPr id="1" → index 1.
         assert_eq!(
-            doc_info.para_shapes[0].line_spacing_type,
+            doc_info.para_shapes[1].line_spacing_type,
             crate::model::style::LineSpacingType::SpaceOnly,
             "type=BETWEEN_LINES 가 SpaceOnly 로 파싱돼야 함(Percent 유실 방지)"
         );
@@ -2426,14 +2537,15 @@ mod tests {
 
         let (doc_info, _) = parse_hwpx_header(xml).unwrap();
 
-        assert_eq!(doc_info.para_shapes[0].attr1 & (1 << 7), 1 << 7);
-        assert_eq!(doc_info.para_shapes[1].attr1 & (1 << 7), 0);
+        // paraPr id="1"/"2" → index 1/2 (index 0 은 정의되지 않아 default).
+        assert_eq!(doc_info.para_shapes[1].attr1 & (1 << 7), 1 << 7);
+        assert_eq!(doc_info.para_shapes[2].attr1 & (1 << 7), 0);
         assert_eq!(
-            doc_info.para_shapes[0].break_latin_word.as_deref(),
+            doc_info.para_shapes[1].break_latin_word.as_deref(),
             Some("KEEP_WORD")
         );
         assert_eq!(
-            doc_info.para_shapes[1].break_latin_word.as_deref(),
+            doc_info.para_shapes[2].break_latin_word.as_deref(),
             Some("HYPHENATION")
         );
     }
@@ -2459,9 +2571,10 @@ mod tests {
 
         let (doc_info, _) = parse_hwpx_header(xml).unwrap();
 
-        assert_eq!(doc_info.para_shapes[0].attr1 & (1 << 8), 1 << 8);
-        assert_eq!(doc_info.para_shapes[1].attr1 & (1 << 8), 0);
-        assert_eq!(doc_info.para_shapes[2].attr1 & (1 << 8), 1 << 8);
+        // paraPr id="1"/"2"/"3" → index 1/2/3 (index 0 은 정의되지 않아 default).
+        assert_eq!(doc_info.para_shapes[1].attr1 & (1 << 8), 1 << 8);
+        assert_eq!(doc_info.para_shapes[2].attr1 & (1 << 8), 0);
+        assert_eq!(doc_info.para_shapes[3].attr1 & (1 << 8), 1 << 8);
     }
 
     #[test]
@@ -2958,6 +3071,13 @@ mod tests {
     }
 
     #[test]
+    fn test_border_fill_three_d_attr_parsed() {
+        // threeD="1" 은 파서가 읽어 모델에 보존해야 한다(직렬화 시 하드코딩 "0" 방지).
+        let bf = parse_single_border_fill(r#"<hh:borderFill id="9" threeD="1"></hh:borderFill>"#);
+        assert!(bf.three_d, "threeD=\"1\" 이 bf.three_d 로 파싱되어야 함");
+    }
+
+    #[test]
     fn test_img_brush_total_keeps_total_mode() {
         let bf = parse_single_border_fill(
             r#"<hh:borderFill id="346">
@@ -3039,5 +3159,95 @@ mod tests {
 
         assert_eq!((bf.attr >> 8) & 0x03, 2, "Crooked=2 보존");
         assert_eq!((bf.attr >> 5) & 0x07, 0b010, "backSlash CENTER 보존");
+    }
+
+    /// `<hh:charPr id="N">`/`<hh:paraPr id="N">`의 `id` 속성을 무시하고 XML 등장
+    /// 순서(push 순서)를 그대로 배열 인덱스로 쓰면, id 가 등장 순서와 다르거나
+    /// (역순) 중간이 비어 있을 때 `charPrIDRef`/`paraPrIDRef` 참조가 엉뚱한
+    /// 항목으로 해석된다. 한컴이 내보내는 파일은 보통 id 순으로 정렬돼 있어
+    /// 드러나지 않지만, OWPML 스펙상 id 는 임의 참조값일 뿐 등장 순서를
+    /// 보장하지 않는다 (예: 스타일 편집기로 재정렬되거나 서드파티 생성기가
+    /// 만든 파일).
+    #[test]
+    fn test_char_pr_id_out_of_order_resolves_by_id_not_document_order() {
+        // id="1" 항목이 먼저, id="0" 항목이 나중에 등장 — 등장 순서 그대로
+        // push 하면 char_shapes[0] 에 id="1"의 속성(height=2000)이 들어가
+        // charPrIDRef="0" 참조가 실제로는 id="1" 의 서식을 받게 된다.
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:charProperties itemCnt="2">
+      <hh:charPr id="1" height="2000" textColor="#000000" shadeColor="none" useFontSpace="0" useKerning="0" symMark="NONE">
+        <hh:fontRef hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>
+      </hh:charPr>
+      <hh:charPr id="0" height="1000" textColor="#000000" shadeColor="none" useFontSpace="0" useKerning="0" symMark="NONE">
+        <hh:fontRef hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>
+      </hh:charPr>
+    </hh:charProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+
+        // charPrIDRef="0" 을 참조하는 run 은 id="0"(height=1000) 서식을 받아야 한다.
+        let cs0 = doc_info
+            .char_shapes
+            .first()
+            .expect("id=0 charPr 이 존재해야 함");
+        assert_eq!(
+            cs0.base_size, 1000,
+            "charPrIDRef=0 은 id=\"0\" 항목이어야 함"
+        );
+
+        let cs1 = doc_info
+            .char_shapes
+            .get(1)
+            .expect("id=1 charPr 이 존재해야 함");
+        assert_eq!(
+            cs1.base_size, 2000,
+            "charPrIDRef=1 은 id=\"1\" 항목이어야 함"
+        );
+    }
+
+    /// paraPr 도 charPr 과 동일한 결함을 공유한다: id 속성을 무시하고 등장 순서로
+    /// push 하므로, id 가 비순차적이면 `paraPrIDRef` 가 잘못된 문단 서식을
+    /// 가리킨다.
+    #[test]
+    fn test_para_pr_id_out_of_order_resolves_by_id_not_document_order() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:paraProperties itemCnt="2">
+      <hh:paraPr id="1" tabPrIDRef="0">
+        <hh:align horizontal="RIGHT"/>
+      </hh:paraPr>
+      <hh:paraPr id="0" tabPrIDRef="0">
+        <hh:align horizontal="LEFT"/>
+      </hh:paraPr>
+    </hh:paraProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+
+        let ps0 = doc_info
+            .para_shapes
+            .first()
+            .expect("id=0 paraPr 이 존재해야 함");
+        assert_eq!(
+            ps0.alignment,
+            Alignment::Left,
+            "paraPrIDRef=0 은 id=\"0\"(LEFT) 항목이어야 함"
+        );
+
+        let ps1 = doc_info
+            .para_shapes
+            .get(1)
+            .expect("id=1 paraPr 이 존재해야 함");
+        assert_eq!(
+            ps1.alignment,
+            Alignment::Right,
+            "paraPrIDRef=1 은 id=\"1\"(RIGHT) 항목이어야 함"
+        );
     }
 }

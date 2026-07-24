@@ -305,6 +305,7 @@ fn test_serialize_style_roundtrip() {
         lang_id: 1042,
         para_shape_id: 1,
         char_shape_id: 2,
+        lock_form: false,
     };
 
     let data = serialize_style(&style);
@@ -382,6 +383,7 @@ fn test_serialize_border_fill_solid() {
             image: None,
             alpha: 0,
         },
+        three_d: false,
     };
 
     let data = serialize_border_fill(&bf);
@@ -422,6 +424,7 @@ fn test_serialize_border_fill_preserves_solid_and_image_alpha() {
             image: None,
             alpha: 180,
         },
+        three_d: false,
     };
     let data = serialize_border_fill(&bf);
     let mut r = crate::parser::byte_reader::ByteReader::new(&data[FILL_OFFSET..]);
@@ -457,6 +460,7 @@ fn test_serialize_border_fill_cross_centerline_uses_hwp5_center_bits() {
         diagonal: DiagonalLine::default(),
         center_line: CenterLine::Cross,
         fill: Fill::default(),
+        three_d: false,
     };
 
     let data = serialize_border_fill(&bf);
@@ -510,6 +514,7 @@ fn test_serialize_border_fill_image_fill_mode_uses_hwp5_values() {
                 }),
                 alpha: 0,
             },
+            three_d: false,
         };
 
         let data = serialize_border_fill(&bf);
@@ -641,6 +646,7 @@ fn test_serialize_doc_info_roundtrip() {
         lang_id: 1042,
         para_shape_id: 0,
         char_shape_id: 0,
+        lock_form: false,
     });
 
     // 직렬화 → 역직렬화

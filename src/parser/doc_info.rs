@@ -367,6 +367,7 @@ fn parse_border_fill(data: &[u8]) -> Result<BorderFill, DocInfoError> {
         diagonal,
         center_line: CenterLine::from_hwp_attr(attr),
         fill,
+        three_d: false,
     })
 }
 
@@ -903,6 +904,7 @@ fn parse_style(data: &[u8]) -> Result<Style, DocInfoError> {
         lang_id,
         para_shape_id,
         char_shape_id,
+        lock_form: false,
     })
 }
 
