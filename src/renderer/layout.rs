@@ -1381,6 +1381,11 @@ pub struct LayoutEngine {
     profile: std::cell::Cell<crate::model::provenance::LayoutCompatibilityProfile>,
     /// HWP3 원본 및 HWP3-origin HWP5 변환본의 본문 흐름 spacing_before 보정 여부.
     use_hwp3_origin_flow_spacing_before: std::cell::Cell<bool>,
+    /// [#2308] Source IR로부터 재생성되는 render-only width/TAC projection.
+    /// 논리 path가 권위 key이고 이 엔진은 hot-path pointer index만 조회한다.
+    render_normalization: std::cell::RefCell<
+        std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
+    >,
     /// [Task #1728 v2] RowBreak 셀-내 continuation 조각의 첫 가시 문단에서만 set.
     /// 이 문단은 셀-상단(is_column_top)이고 셀-상대 인덱스>0 이지만, 한컴은 앞 간격
     /// (spacing_before)을 유지하므로 column-top 트림을 우회해 전량 적용한다.
@@ -1473,6 +1478,9 @@ impl LayoutEngine {
             current_body_area: std::cell::Cell::new((0.0, 0.0, 0.0, 0.0)),
             profile: std::cell::Cell::new(Default::default()),
             use_hwp3_origin_flow_spacing_before: std::cell::Cell::new(false),
+            render_normalization: std::cell::RefCell::new(std::sync::Arc::new(
+                crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
+            )),
             keep_continuation_column_top_spacing_before: std::cell::Cell::new(false),
             hwpx_page_preview: std::cell::RefCell::new(None),
             cell_units_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
@@ -1487,6 +1495,26 @@ impl LayoutEngine {
     pub fn clear_layout_caches(&self) {
         self.cell_units_cache.borrow_mut().clear();
         self.table_nested_text_flag_cache.borrow_mut().clear();
+    }
+
+    pub(crate) fn set_render_normalization_overlay(
+        &self,
+        overlay: std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
+    ) {
+        *self.render_normalization.borrow_mut() = overlay;
+    }
+
+    #[inline]
+    pub(crate) fn render_table_width_scale(&self, table: &crate::model::table::Table) -> f64 {
+        self.render_normalization
+            .borrow()
+            .nested_table_width_scale(table)
+    }
+
+    pub(crate) fn render_normalization_overlay(
+        &self,
+    ) -> std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay> {
+        std::sync::Arc::clone(&self.render_normalization.borrow())
     }
 
     /// 기본 DPI(96)로 생성

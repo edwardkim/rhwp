@@ -201,6 +201,103 @@
   background: #1d4ed8;
 }
 
+/* 브라우저 인쇄 기반 PDF 저장 안내/진행 */
+.dialog-pdf-print {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 20px;
+  line-height: 1.55;
+}
+
+.dialog-pdf-summary,
+.dialog-pdf-note {
+  margin: 0;
+}
+
+.dialog-pdf-summary {
+  color: var(--color-text);
+}
+
+.dialog-pdf-guidance {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-primary-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-bg);
+}
+
+.dialog-pdf-guidance strong {
+  color: var(--color-primary-dark);
+}
+
+.dialog-pdf-note {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.dialog-pdf-preference {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.dialog-pdf-preference input {
+  margin: 0;
+}
+
+.dialog-pdf-preparing .dialog-pdf-summary,
+.dialog-pdf-preparing .dialog-pdf-guidance,
+.dialog-pdf-preparing .dialog-pdf-note,
+.dialog-pdf-preparing .dialog-pdf-preference,
+.dialog-pdf-preparing .dialog-footer {
+  display: none;
+}
+
+.dialog-pdf-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.dialog-pdf-progress[hidden],
+.dialog-pdf-error[hidden] {
+  display: none;
+}
+
+.dialog-pdf-progress-message {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.dialog-pdf-progress-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ui-surface-muted);
+}
+
+.dialog-pdf-progress-bar {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary);
+  transition: width 120ms linear;
+}
+
+.dialog-pdf-error {
+  padding: 10px 12px;
+  border: 1px solid var(--color-danger, #b91c1c);
+  border-radius: var(--radius-sm);
+  color: var(--color-danger, #b91c1c);
+  white-space: pre-line;
+}
+
 .page-border-side-btn {
   width: 26px;
   height: 24px;

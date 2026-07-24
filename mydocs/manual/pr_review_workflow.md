@@ -486,6 +486,33 @@ docs-only 작업 브랜치와 worktree 는 같은 정리 대상이다. 이때는
 git fetch upstream pull/N/head:local/prN
 ```
 
+### 4.1.1 devel 기준 가시성 검토 브랜치
+
+작업지시자가 터미널·VS Code에서 현재 검토 진행을 확인할 수 있어야 하거나, 외부 PR을 실제
+merge 대신 누적 체리픽으로 검토할 때는 **검토를 시작하기 전에** 기본 작업트리에
+`upstream/devel` 기준 가시성 브랜치를 만든다. PR head를 기본 작업트리에 바로 checkout하지 않는다.
+
+```bash
+git status --short                 # 사용자/다른 작업의 변경이 있으면 중단하고 먼저 보고
+git fetch upstream devel
+git switch devel
+git merge --ff-only upstream/devel
+git switch -c review/<contributor>-<yyyymmdd> upstream/devel
+git status --short --branch
+```
+
+여러 원 PR을 한 통합 후보로 검토하는 경우에는 `review/` 대신
+`integrate/<contributor>-<yyyymmdd>` 이름을 쓸 수 있다. 이어서 4.1절의
+`local/prN` fetch와 4.2절 merge simulation 또는 4.2.1절 누적 체리픽을 이 브랜치에서 수행한다.
+
+- 시작 상태 보고에는 **검토 브랜치명**, 기준 `upstream/devel` SHA, 적용 중인 원 PR 번호·SHA를
+  함께 적는다. 적용·충돌 해결·검증 단계가 바뀔 때도 같은 브랜치명을 다시 적어 사용자가 위치를
+  확인할 수 있게 한다.
+- 검토 산출물과 메인터너 보정은 이 브랜치에만 쌓고, `devel`에는 직접 커밋하지 않는다.
+  원격 push와 통합 PR 생성은 작업지시자 승인 뒤에만 한다.
+- CI 대기 또는 작업지시자 승인 대기 중에는 브랜치를 유지한다. merge·close·보류 종결 뒤에만
+  7.7절의 정리 게이트에 따라 로컬·원격 브랜치와 worktree를 정리한다.
+
 ### 4.2 Merge 시뮬레이션
 
 ```bash
@@ -525,13 +552,38 @@ Cargo 계열 검증은 순차 실행한다. `cargo test`, `cargo clippy`, `cargo
 |---|---|
 | `mydocs/**` 문서만 변경 | `git diff --check`, 문서 경로·링크·변경 범위 확인. cargo 검증 생략 |
 | Rust parser/model/CLI | focused test, `cargo test --profile release-test --tests`, `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings` |
-| renderer/layout/typeset/WASM | Rust 검증, 아래 Native Skia 공식 테스트 3종, `wasm-pack build --target web --out-dir pkg`, 2.6·3.5절 시각 검증 |
+| renderer/layout/typeset/WASM | focused test와 `cargo test --profile release-test --tests`, 아래 Native Skia 공식 테스트 3종, `wasm-pack build --target web --out-dir pkg`, 2.6·3.5절 시각 검증 |
 | `rhwp-studio/**` frontend만 변경 | `npx tsc --noEmit`, `npm test`, 실제 브라우저 동작 확인 |
-| `npm/editor/**` 공개 SDK·transport·타입 변경 | 4.3.1절 package unit/contract/type/pack/iframe smoke 확인 |
+| `npm/editor/**` 공개 SDK·transport·타입 변경 | 4.3.2절 package unit/contract/type/pack/iframe smoke 확인 |
 | CI workflow 변경 | workflow 구문·변경 조건 확인과 최신 GitHub Actions 결과 확인 |
 | 기존 golden/baseline/fixture 변경 | 관련 focused test, snapshot 결정성 재확인, 최신 PR head CI |
 
-#### 4.3.1 `@rhwp/editor` npm package 로컬 검증
+#### 4.3.1 새 HWP/HWPX fixture의 IR field sweep baseline 등록
+
+`samples/**/*.hwp` 또는 `samples/**/*.hwpx`를 새로 추가·교체·이동하는 PR은 fixture를
+커밋하는 것만으로 끝내지 않는다. **PR 생성 또는 draft 해제 전에** 아래 전수 스윕을 실행해
+새 fixture의 왕복 발산을 baseline과 비교한다. 이 단계는 renderer 변경 여부와 무관하다.
+
+```bash
+RHWP_IR_SWEEP_DUMP=/tmp/ir_field_sweep_current.tsv \
+  cargo test --profile release-test --test ir_field_sweep_baseline -- --nocapture
+diff -u tests/fixtures/ir_field_sweep_baseline.tsv /tmp/ir_field_sweep_current.tsv
+```
+
+- baseline은 fixture 목록이 아니라 **관측된 비영(非零) 왕복 발산**의 래칫이다. 따라서 새
+  fixture에 발산이 없으면 행을 억지로 추가하지 않는다.
+- 새 fixture에서 발산이 관측되면, 먼저 `RHWP_IR_SWEEP_DETAIL=<fixture-경로조각>`으로 원본값과
+  재생성값을 확인한다. 기존 의도된 정규화와 같은 값임을 증명한 경우에만 TSV에 lane·상대경로·정규화
+  필드경로·실측 건수를 사전순으로 추가한다. 원인을 모르는 증가분을 baseline으로 숨기지 않는다.
+- 새 TSV 행을 추가한 경우 review 문서에는 fixture 경로와 SHA-256, lane·필드경로·건수, 상세
+  값 변화, 의도된 정규화 또는 별도 수정으로 판정한 근거를 남긴다.
+- 마지막으로 `cargo test --profile release-test --tests` 전체를 통과해야 한다. 이 명령이
+  실패한 상태에서는 PR을 생성하거나 ready로 바꾸지 않는다.
+
+이 절은 이 파일을 작업 시작 시 읽는 Codex/Claude와 reviewer 모두가 새 fixture onboarding을
+같은 방식으로 수행하도록 하는 기준이며, 개인 기억이나 대화 요약에 의존하지 않는다.
+
+#### 4.3.2 `@rhwp/editor` npm package 로컬 검증
 
 `npm/editor/**`의 public API, transport, `index.d.ts`, README 또는 package manifest를 바꾸는 PR은 Studio
 테스트만으로 끝내지 않는다. publish하지 않고 아래 순서로 package 자체와 소비자 경계를 확인한다.
@@ -1234,9 +1286,14 @@ PR 커밋 전에 archive 경로로 이동한다. archive 이동만을 위한 별
   - 신규 추가(`added`) 상태의 `samples/**/*.png`
   - 신규 추가(`added`) 상태의 `pdf/**/*.pdf`
 - 기존 `samples/**` 또는 `pdf/**` 파일을 수정, 삭제, rename 한 경우 fast-pass 대상이 아니다.
-- 해당 후속 커밋들은 single-parent commit 이다.
-- 후속 문서 커밋을 제외한 직전 코드 검증 대상 SHA 에 기존 GitHub Actions check-run 이 존재한다.
-- 직전 코드 검증 대상 SHA 의 relevant check 가 `success`, `skipped`, `neutral` 중 하나다.
+- 해당 후속 문서 커밋들은 single-parent commit 이다. 단, 그 바로 앞 candidate SHA 는 문서-only
+  Update branch merge일 수 있다. 이 예외는 다음을 모두 만족할 때만 허용한다.
+  - merge parent 수가 정확히 2개이고 현재 PR `base.sha`를 parent로 포함한다.
+  - merge diff도 허용된 review-only 경로만 포함한다.
+  - 적어도 하나의 trailing single-parent 후속 문서 커밋이 그 merge 뒤에 있다.
+- 후속 문서 커밋을 제외한 직전 검증 대상 SHA(코드 commit 또는 위 문서-only Update branch merge)에 기존
+  GitHub Actions check-run 이 존재한다.
+- 직전 검증 대상 SHA 의 relevant check 가 `success`, `skipped`, `neutral` 중 하나다.
 
 fast-pass 는 merge 조건을 약화하는 예외가 아니다. 이전 코드 검증 결과를 재사용하는 좁은 최적화일 뿐이다.
 다음 변경이 포함되면 반드시 최신 PR head 기준 heavy CI 를 다시 기다린다.
@@ -1244,7 +1301,8 @@ fast-pass 는 merge 조건을 약화하는 예외가 아니다. 이전 코드 �
 - 코드, 테스트, CI workflow 파일(`.github/workflows/**`) 변경
 - 기존 샘플, baseline, golden, 렌더링 fixture 변경
 - `mydocs/**` 밖의 파일 변경 또는 신규 기준 샘플/PDF 추가가 아닌 실행/검증 입력 파일 변경
-- check-run 조회 실패, missing check, failed check, merge commit 형태의 문서 후속 커밋
+- check-run 조회 실패, missing check, failed check, 현재 base를 parent로 포함하지 않는 merge commit 형태의
+  문서 후속 커밋
 
 fast-pass 가 적용되면 PR UI 에서 heavy job 이 `skipped` 로 보일 수 있다. 이때도 collaborator 는 GitHub Actions
 결과가 merge 가능 상태인지 확인하고, branch protection 이 요구하는 check 가 pending/failing 이면 merge 하지

@@ -28,6 +28,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `drag-selection-autoscroll.test.mjs` | 상시 | active | 텍스트 드래그 선택 edge 자동 스크롤 | — | npm e2e:drag-autoscroll |  |
 | `drop-confirm.test.mjs` | 상시 | active | #1439 드래그&드롭 로컬 파일 로딩 보안 게이트 | — | 수동 |  |
 | `edit-pipeline.test.mjs` | 상시 | active | 편집 파이프라인 검증 (Issue #2) | — | 수동 |  |
+| `embed-save-ack.test.mjs` | 상시 | active | Task #2660 호스트 저장 완료 통지와 dirty/autosave 정리 계약 | footnote-01.hwp | 수동 |  |
 | `embed-transport.test.mjs` | 상시 | active | Issue #2186 @rhwp/editor MessageChannel v1 iframe transport | — | npm e2e:embed |  |
 | `export-hwpx.test.mjs` | 상시 | active | Issue #557 — npm/editor RPC + Wrapper 에 exportHwpx / exportHwpVeri | — | 수동 |  |
 | `footnote-delete-confirm.test.mjs` | 상시 | active | #598 본문 각주 삭제 확인창/취소/Undo | footnote-01.hwp | 수동 |  |
@@ -49,6 +50,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-2318-master-page-zorder.test.mjs` | 상시 | active | Issue #2318: 바탕쪽 개체가 본문 텍스트를 가림 — studio 다층 canvas 합성 검증. /  / sho | basic/shortcut.hwp | 수동 |  |
 | `issue-2635-rawsvg-first-paint.test.mjs` | 상시 | active | Issue #2635: 순수 RawSvg 차트가 첫 화면에 늦게 표시되는 회귀 | chart/원형/쪼개진원형.hwp | 수동 |  |
 | `issue-270-set-field-persist.test.mjs` | 상시 | active | 이슈 #270 — set_field 후 저장/재오픈 시 필드 값 유실 회귀 | field-01.hwp | 수동 |  |
+| `issue-2809-split-alignment.test.mjs` | 상시 | active | Issue #2809 위·아래 Split 문단 속성 및 WASM/editor 정렬 회귀 | issues/2809/jubo_20260104.hwp | npm e2e:issue-2809 |  |
 | `issue-595.test.mjs` | 진단 | hold | Issue #595 진단 e2e | exam_math.hwp | 수동 | legacy-name · #595 진단 (assertion 0) |
 | `line-spacing.test.mjs` | 상시 | active | 줄간격 변경에 따른 페이지 넘김 검증 | — | 수동 |  |
 | `navigation-shortcuts.test.mjs` | 상시 | active | 플랫폼별 navigation shortcut | — | 수동 |  |
@@ -56,6 +58,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `page-break.test.mjs` | 상시 | active | biz_plan.hwp 강제 쪽 나누기 / "5. 사업추진조직" 문단 앞에 쪽 나누기 삽입 후 페이지 재배치 확인 | biz_plan.hwp | 수동 |  |
 | `page-setup-orientation-icon.test.mjs` | 상시 | active | 편집 용지 대화창의 용지 방향 아이콘 식별성 | — | 수동 |  |
 | `pdf-render-diff-report.mjs` | 상시 | active | Report-only visual diff between browser Canvas output and SVG-deri | — | npm+CI | legacy-name |
+| `print-pdf-issue3126.test.mjs` | 상시 | active | #3126 same-origin iframe 인쇄/PDF UX, 상태 불변, #2524/#2525 browser PDF 회귀 | render-p35-font-native-bitmap.hwpx, hwpx/hwpx-02.hwpx | 수동 | native dialog는 Chrome/Edge 수동 절차 병행 |
 | `pr2260-vscode-zoom-menu.test.mjs` | 상시 | active | [PR #2260 검증] rhwp-vscode 배율 메뉴 — 호스트 Chrome CDP 로 webview 하네스 구동. | — | 수동 |  |
 | `renderer-baseline-native-diff.mjs` | 유틸 | active | 렌더러 baseline — studio vs native 산출 대조 | — | CI |  |
 | `renderer-baseline.mjs` | 유틸 | active | 렌더러 baseline 스윕 러너 (manifest 기반 다문서 측정) | — | npm+CI |  |

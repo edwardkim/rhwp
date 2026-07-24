@@ -14,7 +14,9 @@ use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use web_sys::HtmlCanvasElement;
 
-use crate::document_core::{DocumentCore, DEFAULT_FALLBACK_FONT};
+use crate::document_core::{
+    DeferredPaginationJobState, DeferredPaginationStepResult, DocumentCore, DEFAULT_FALLBACK_FONT,
+};
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::document::{Document, Section};
@@ -43,6 +45,24 @@ impl From<HwpError> for JsValue {
     fn from(err: HwpError) -> Self {
         JsValue::from_str(&err.to_string())
     }
+}
+
+fn deferred_pagination_result_json(result: DeferredPaginationStepResult) -> String {
+    let status = match result.state {
+        DeferredPaginationJobState::None => "none",
+        DeferredPaginationJobState::Pending => "pending",
+        DeferredPaginationJobState::Complete => "complete",
+        DeferredPaginationJobState::Fallback => "fallback",
+        DeferredPaginationJobState::Stale => "stale",
+    };
+    serde_json::json!({
+        "ok": true,
+        "status": status,
+        "revision": result.revision,
+        "fragmentsProcessed": result.fragments_processed,
+        "pageCount": result.page_count,
+    })
+    .to_string()
 }
 
 /// [Task #1161] 클립보드 API 의 cellPath JSON 인자 파싱.
@@ -447,6 +467,19 @@ impl HwpDocument {
     #[wasm_bindgen(js_name = renderPageSvg)]
     pub fn render_page_svg(&self, page_num: u32) -> Result<String, JsValue> {
         self.render_page_svg_native(page_num).map_err(|e| e.into())
+    }
+
+    /// 명시적인 출력 profile로 특정 페이지를 SVG 문자열로 렌더링한다.
+    #[wasm_bindgen(js_name = renderPageSvgWithProfile)]
+    pub fn render_page_svg_with_profile(
+        &self,
+        page_num: u32,
+        profile: &str,
+    ) -> Result<String, JsValue> {
+        let profile = crate::paint::RenderProfile::parse(profile)
+            .ok_or_else(|| JsValue::from_str(&format!("unsupported render profile: {profile}")))?;
+        self.render_page_svg_layer_with_profile_native(page_num, profile)
+            .map_err(Into::into)
     }
 
     /// 특정 페이지를 HTML 문자열로 렌더링한다.
@@ -1000,14 +1033,60 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
-    /// 지연된 페이지네이션을 즉시 flush하고 최신 페이지 수를 반환한다.
+    /// 표 셀 내부 문단에서 텍스트를 삭제하되 전체 페이지네이션은 호출자가 지연한다.
+    ///
+    /// 결과 JSON은 `charOffset`과 상대 cell-flow 변화 신호 `cellFlowChanged`를 포함한다.
+    #[wasm_bindgen(js_name = deleteTextInCellDeferredPagination)]
+    pub fn delete_text_in_cell_deferred_pagination(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        cell_idx: u32,
+        cell_para_idx: u32,
+        char_offset: u32,
+        count: u32,
+    ) -> Result<String, JsValue> {
+        self.delete_text_in_cell_native_deferred_pagination(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+            cell_idx as usize,
+            cell_para_idx as usize,
+            char_offset as usize,
+            count as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 대형 표 continuation shadow job을 시작한다. 공개 페이지는 완료 전까지 유지된다.
+    #[wasm_bindgen(js_name = beginDeferredPagination)]
+    pub fn begin_deferred_pagination(&mut self, fragment_budget: u32) -> Result<String, JsValue> {
+        Ok(deferred_pagination_result_json(
+            self.core
+                .begin_deferred_pagination((fragment_budget as usize).max(1)),
+        ))
+    }
+
+    /// 대형 표 continuation을 fragment budget만큼 전진한다.
+    #[wasm_bindgen(js_name = stepDeferredPagination)]
+    pub fn step_deferred_pagination(&mut self, fragment_budget: u32) -> Result<String, JsValue> {
+        Ok(deferred_pagination_result_json(
+            self.core
+                .step_deferred_pagination((fragment_budget as usize).max(1)),
+        ))
+    }
+
+    #[wasm_bindgen(js_name = cancelDeferredPagination)]
+    pub fn cancel_deferred_pagination(&mut self) -> bool {
+        self.core.cancel_deferred_pagination()
+    }
+
+    /// 지연된 페이지네이션을 동기 barrier로 flush하고 최신 페이지 수를 반환한다.
     #[wasm_bindgen(js_name = flushDeferredPagination)]
     pub fn flush_deferred_pagination(&mut self) -> Result<String, JsValue> {
-        self.invalidate_page_tree_cache();
-        self.paginate();
-        Ok(format!(
-            "{{\"ok\":true,\"pageCount\":{}}}",
-            self.page_count()
+        Ok(deferred_pagination_result_json(
+            self.core.flush_deferred_pagination(),
         ))
     }
 
@@ -7112,6 +7191,17 @@ impl HwpViewer {
     #[wasm_bindgen(js_name = renderPageSvg)]
     pub fn render_page_svg(&self, page_num: u32) -> Result<String, JsValue> {
         self.document.render_page_svg(page_num)
+    }
+
+    /// 명시적인 출력 profile로 특정 페이지 SVG 렌더링
+    #[wasm_bindgen(js_name = renderPageSvgWithProfile)]
+    pub fn render_page_svg_with_profile(
+        &self,
+        page_num: u32,
+        profile: &str,
+    ) -> Result<String, JsValue> {
+        self.document
+            .render_page_svg_with_profile(page_num, profile)
     }
 
     /// 특정 페이지 HTML 렌더링

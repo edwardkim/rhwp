@@ -75,12 +75,22 @@ export interface TableTransposeResult {
   targetCols: number;
 }
 
-/** deferred cell text insert의 pagination 경계 결과 (#2214). */
-export interface DeferredCellTextInsertResult {
+/** deferred cell text mutation의 pagination 경계 결과 (#2214/#2424). */
+export interface DeferredCellTextMutationResult {
   ok: boolean;
   charOffset: number;
   paginationDeferred: boolean;
   cellFlowChanged: boolean;
+}
+
+export type DeferredPaginationStatus = 'none' | 'pending' | 'complete' | 'fallback' | 'stale';
+
+export interface DeferredPaginationResult {
+  ok: boolean;
+  status: DeferredPaginationStatus;
+  revision: number;
+  fragmentsProcessed: number;
+  pageCount: number;
 }
 
 import { fontFamilyChainForDisplay } from './font-substitution';
@@ -388,11 +398,55 @@ export class WasmBridge {
     return this.doc?.pageCount() ?? 0;
   }
 
-  flushDeferredPagination(): { ok: boolean; pageCount?: number } {
+  beginDeferredPagination(fragmentBudget = 1): DeferredPaginationResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { beginDeferredPagination?: (budget: number) => string };
+    if (typeof d.beginDeferredPagination !== 'function') {
+      return {
+        ok: true,
+        status: 'fallback',
+        revision: 0,
+        fragmentsProcessed: 0,
+        pageCount: this.pageCount,
+      };
+    }
+    return JSON.parse(d.beginDeferredPagination(Math.max(1, Math.trunc(fragmentBudget))));
+  }
+
+  stepDeferredPagination(fragmentBudget = 1): DeferredPaginationResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { stepDeferredPagination?: (budget: number) => string };
+    if (typeof d.stepDeferredPagination !== 'function') {
+      return {
+        ok: true,
+        status: 'fallback',
+        revision: 0,
+        fragmentsProcessed: 0,
+        pageCount: this.pageCount,
+      };
+    }
+    return JSON.parse(d.stepDeferredPagination(Math.max(1, Math.trunc(fragmentBudget))));
+  }
+
+  cancelDeferredPagination(): boolean {
+    if (!this.doc) return false;
+    const d = this.doc as unknown as { cancelDeferredPagination?: () => boolean };
+    return typeof d.cancelDeferredPagination === 'function'
+      ? d.cancelDeferredPagination()
+      : false;
+  }
+
+  flushDeferredPagination(): DeferredPaginationResult {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as { flushDeferredPagination?: () => string };
     if (typeof d.flushDeferredPagination !== 'function') {
-      return { ok: true, pageCount: this.pageCount };
+      return {
+        ok: true,
+        status: 'fallback',
+        revision: 0,
+        fragmentsProcessed: 0,
+        pageCount: this.pageCount,
+      };
     }
     return JSON.parse(d.flushDeferredPagination());
   }
@@ -669,6 +723,17 @@ export class WasmBridge {
     return this.doc.renderPageSvg(pageNum);
   }
 
+  renderPageSvgWithProfile(pageNum: number, profile: LayerRenderProfile): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as {
+      renderPageSvgWithProfile?: (pageNum: number, profile: string) => string;
+    };
+    if (typeof d.renderPageSvgWithProfile !== 'function') {
+      throw new Error('[WasmBridge] 현재 WASM은 profile별 SVG 렌더링을 지원하지 않습니다');
+    }
+    return d.renderPageSvgWithProfile(pageNum, profile);
+  }
+
   getCursorRect(sec: number, para: number, charOffset: number): CursorRect {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getCursorRect(sec, para, charOffset));
@@ -865,7 +930,7 @@ export class WasmBridge {
     return this.doc.insertTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, text);
   }
 
-  insertTextInCellDeferredPagination(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, text: string): DeferredCellTextInsertResult {
+  insertTextInCellDeferredPagination(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, text: string): DeferredCellTextMutationResult {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as {
       insertTextInCellDeferredPagination?: (
@@ -886,7 +951,7 @@ export class WasmBridge {
     } else {
       raw = this.doc.insertTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, text);
     }
-    const parsed = JSON.parse(raw) as Partial<DeferredCellTextInsertResult>;
+    const parsed = JSON.parse(raw) as Partial<DeferredCellTextMutationResult>;
     const parsedCharOffset = parsed.charOffset;
     if (
       parsed.ok !== true ||
@@ -908,6 +973,44 @@ export class WasmBridge {
   deleteTextInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, count: number): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.deleteTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, count);
+  }
+
+  deleteTextInCellDeferredPagination(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, count: number): DeferredCellTextMutationResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as {
+      deleteTextInCellDeferredPagination?: (
+        sec: number,
+        parentPara: number,
+        controlIdx: number,
+        cellIdx: number,
+        cellParaIdx: number,
+        charOffset: number,
+        count: number,
+      ) => string;
+    };
+    let raw: string;
+    let paginationDeferred = false;
+    if (typeof d.deleteTextInCellDeferredPagination === 'function') {
+      raw = d.deleteTextInCellDeferredPagination(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, count);
+      paginationDeferred = true;
+    } else {
+      raw = this.doc.deleteTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, count);
+    }
+    const parsed = JSON.parse(raw) as Partial<DeferredCellTextMutationResult>;
+    const parsedCharOffset = parsed.charOffset;
+    if (
+      parsed.ok !== true ||
+      typeof parsedCharOffset !== 'number' ||
+      !Number.isInteger(parsedCharOffset)
+    ) {
+      throw new Error('잘못된 deferred cell text delete 결과');
+    }
+    return {
+      ok: true,
+      charOffset: parsedCharOffset,
+      paginationDeferred,
+      cellFlowChanged: paginationDeferred && parsed.cellFlowChanged !== false,
+    };
   }
 
   // ─── 중첩 표 path 기반 편집 API ──────────────────────────

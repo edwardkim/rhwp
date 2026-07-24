@@ -52,9 +52,19 @@ function enterHeaderFooterEditing(
       targetResult.pageIndex!,
     );
   } else {
-    // 문서에 머리말/꼬리말이 전혀 없으면 현재 구역에 새로 생성
-    const sectionIdx = cursor.getPosition().sectionIndex;
-    services.wasm.createHeaderFooter(sectionIdx, isHeader, applyTo);
+    // 문서에 머리말/꼬리말이 전혀 없으면 현재 구역에 새로 생성.
+    // [Task #3207] 생성은 문서 구조를 바꾸므로 snapshot 으로 기록한다(기존 HF 로 진입하는
+    // 위 분기는 커서 이동뿐이라 기록 대상이 아니다).
+    const bodyPos = cursor.getPosition();
+    const sectionIdx = bodyPos.sectionIndex;
+    ih.executeOperation({
+      kind: 'snapshot',
+      operationType: 'createHeaderFooter',
+      operation: (wasm) => {
+        wasm.createHeaderFooter(sectionIdx, isHeader, applyTo);
+        return bodyPos;
+      },
+    });
     cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, currentPage);
   }
 
@@ -136,7 +146,20 @@ function applyHfTemplate(
   }
 
   try {
-    services.wasm.applyHfTemplate(sectionIdx, isHeader, applyTo, templateId);
+    // [Task #3207] 마당 적용은 HF 내용을 통째로 교체하므로 snapshot 으로 기록한다.
+    // 모드 탈출/재진입은 커서 상태라 기록 밖에 둔다(undo 는 본문 분기로 모드를 빠져나온다).
+    // 위에서 이미 HF 모드를 종료했으므로 여기서 읽는 위치는 본문 위치다.
+    const bodyPos = ih.getPosition();
+    ih.executeOperation({
+      kind: 'snapshot',
+      operationType: 'applyHfTemplate',
+      operation: (wasm) => {
+        const r = wasm.applyHfTemplate(sectionIdx, isHeader, applyTo, templateId);
+        // 의미상 실패(ok:false)면 throw 해 before==after 무변 스냅샷 엔트리를 막는다(삽입류와 동형).
+        if (!r.ok) throw new Error('[page:applyHfTemplate] 마당 적용 실패');
+        return bodyPos;
+      },
+    });
     // 템플릿 적용 후 편집 모드로 진입
     const currentPage = cursor?.rect?.pageIndex ?? 0;
     let targetResult = services.wasm.navigateHeaderFooterByPage(currentPage - 1, isHeader, 1);
@@ -157,8 +180,10 @@ function applyHfTemplate(
     services.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
   } catch (e) {
     console.warn('[page] 마당 적용 실패:', e);
+    // 실패 경로 리프레시 — 성공 경로는 executeOperation 이 이미 afterEdit 로 갱신했으므로
+    // 여기서 다시 부르지 않는다(성공 경로 이중 afterEdit 제거).
+    (ih as any).afterEdit?.();
   }
-  (ih as any).afterEdit?.();
   (ih as any).updateCaret?.();
   // 메뉴 닫기 후 포커스가 유실될 수 있으므로 지연 포커스
   const textarea = (ih as any).textarea;
@@ -255,13 +280,18 @@ export const pageCommands: CommandDef[] = [
       // 편집 모드 탈출
       cursor.exitHeaderFooterMode();
       services.eventBus.emit('headerFooterModeChanged', 'none');
-      // 컨트롤 삭제
-      try {
-        services.wasm.deleteHeaderFooter(sectionIdx, isHeader, applyTo);
-      } catch (e) {
-        console.warn('[page] 머리말/꼬리말 삭제 실패:', e);
-      }
-      (ih as any).afterEdit?.();
+      // 컨트롤 삭제 — [Task #3207] snapshot 으로 기록해 undo 로 되살릴 수 있게 한다.
+      // 모드 탈출은 위에서 이미 끝났으므로 여기 커서는 본문이다.
+      const bodyPos = ih.getPosition();
+      ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'deleteHeaderFooter',
+        operation: (wasm) => {
+          wasm.deleteHeaderFooter(sectionIdx, isHeader, applyTo);
+          return bodyPos;
+        },
+      });
+      // executeOperation 이 이미 afterEdit 로 리프레시하므로 별도 afterEdit 를 부르지 않는다.
       (ih as any).textarea?.focus();
     },
   },
@@ -313,6 +343,11 @@ export const pageCommands: CommandDef[] = [
       if (!cursor || !cursor.isInHeaderFooter()) return;
       const isHeader = cursor.headerFooterMode === 'header';
       const pageIndex = cursor.rect?.pageIndex ?? 0;
+      // [Task #3207] 감추기는 히스토리에 기록하지 않는다 — toggle_hide_header_footer_native 는
+      // 세션 집합(hidden_header_footer)과 렌더 캐시만 바꾸고 document 는 건드리지 않는데
+      // (레포 가드가 Exempt::SessionState/직렬화 비대상으로 분류), 스냅샷은 document 만 담고
+      // 복원도 세션 집합을 되돌리지 않는다. 라우팅하면 되돌아가는 것 없이 redo 스택이 버려지고
+      // 스냅샷 예산만 소모돼 사용자의 진짜 undo 이력이 축출된다.
       try {
         const result = services.wasm.toggleHideHeaderFooter(pageIndex, isHeader);
         console.log(`[page] ${isHeader ? '머리말' : '꼬리말'} 쪽 ${pageIndex} 감추기: ${result.hidden}`);
@@ -333,6 +368,9 @@ export const pageCommands: CommandDef[] = [
       const cursor = (ih as any).cursor;
       if (!cursor) return;
       const pageIndex = cursor.rect?.pageIndex ?? 0;
+      // [Task #3207] 감추기는 세션 상태라 히스토리에 기록하지 않는다(위 page:hide-headerfooter
+      // 주석 참조). 스냅샷이 담는 내용이 없어 원자화도 실효가 없으므로 종전 호출을 유지하고,
+      // dirty 마킹 경로인 emit 도 그대로 둔다.
       try {
         const headerResult = services.wasm.toggleHideHeaderFooter(pageIndex, true);
         const footerResult = services.wasm.toggleHideHeaderFooter(pageIndex, false);

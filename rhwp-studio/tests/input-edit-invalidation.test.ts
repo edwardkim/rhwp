@@ -86,12 +86,51 @@ test('raw IME/iOS 입력은 flow effect를 cursor lookup 전에 소비하고 ref
   );
 });
 
+test('IME 조합 caret은 시작 시 보존한 anchor 좌표를 재사용한다', () => {
+  const inputHandlerSource = readFileSync(new URL('../src/engine/input-handler.ts', import.meta.url), 'utf8');
+  const textSource = readFileSync(new URL('../src/engine/input-handler-text.ts', import.meta.url), 'utf8');
+
+  assert.match(inputHandlerSource, /private compositionAnchorRect: CursorRect \| null = null;/);
+  assert.match(
+    inputHandlerSource,
+    /private captureCompositionAnchorRect\(anchor: DocumentPosition\): void \{[\s\S]*?CursorState\.comparePositions\(current, anchor\) === 0[\s\S]*?cellBounds: rect\.cellBounds \? \{ \.\.\.rect\.cellBounds \} : undefined,[\s\S]*?\}/,
+    '조합 시작 좌표는 현재 logical cursor와 anchor가 정확히 같을 때만 캐시해야 한다',
+  );
+  assert.match(textSource, /this\.captureCompositionAnchorRect\(basePos\);\s*this\.isComposing = true;/);
+  assert.match(
+    inputHandlerSource,
+    /let startRect = this\.compositionAnchorRect;\s*if \(!startRect\) \{[\s\S]*?this\.wasm\.getCursorRectInCell\(/,
+    '캐시가 없을 때만 기존 exact anchor lookup으로 fallback해야 한다',
+  );
+  assert.match(
+    inputHandlerSource,
+    /this\.compositionAnchorRect = \{\s*\.\.\.startRect,\s*cellBounds: startRect\.cellBounds \? \{ \.\.\.startRect\.cellBounds \} : undefined,\s*\};/,
+    'fallback exact lookup 결과도 이후 조합 갱신에서 재사용해야 한다',
+  );
+  assert.match(
+    inputHandlerSource,
+    /private completeResumablePagination\([\s\S]*?if \(this\.isComposing\) \{\s*this\.compositionAnchorRect = null;\s*\}[\s\S]*?this\.cursor\.moveTo\(position\);/,
+    'shadow pagination commit은 이전 공개 레이아웃의 anchor 좌표를 폐기해야 한다',
+  );
+  assert.match(textSource, /this\.compositionAnchor = null;\s*this\.clearCompositionAnchorRect\(\);/);
+});
+
 test('raw 셀 입력은 command와 같은 typed mutation helper를 사용한다', () => {
   const textSource = readFileSync(new URL('../src/engine/input-handler-text.ts', import.meta.url), 'utf8');
 
   assert.match(
     textSource,
     /export function insertTextAtRaw\([\s\S]*?\): TextMutationEffects \{[\s\S]*?return insertTextWithMutationEffects\(this\.wasm, pos, text\);\s*\}/,
+  );
+  assert.match(
+    textSource,
+    /export function deleteTextAt\([\s\S]*?\): TextMutationEffects \{[\s\S]*?return deleteTextWithMutationEffects\(this\.wasm, pos, count\);\s*\}/,
+  );
+  const inputHandlerSource = readFileSync(new URL('../src/engine/input-handler.ts', import.meta.url), 'utf8');
+  assert.match(
+    inputHandlerSource,
+    /private deleteTextAt\(pos: DocumentPosition, count: number\): void \{\s*this\.rawTextMutationEffects\.add\(_text\.deleteTextAt\.call\(this, pos, count\)\);\s*\}/,
+    'IME 조합 치환의 delete와 insert effect를 한 accumulator에서 OR 누적해야 한다',
   );
 });
 
@@ -109,7 +148,15 @@ test('deferred pending이 실제로 있을 때만 page-local idle flush를 예�
     '구형 deferred 결과의 누락 신호는 mutation 후 예외 대신 보수적 경계로 복구해야 한다',
   );
   assert.match(inputHandlerSource, /if \(!this\.deferredPaginationPending\) return false;/);
-  assert.match(inputHandlerSource, /if \(effects\.paginationCompleted\) \{\s*this\.cancelDeferredPaginationFlush\(\);\s*this\.deferredPaginationPending = false;\s*\}/);
+  assert.match(
+    inputHandlerSource,
+    /if \(effects\.paginationCompleted\) \{\s*this\.cancelDeferredPaginationFlush\(\);\s*this\.deferredPaginationRunner\.cancel\(\);\s*this\.deferredPaginationPending = false;\s*\}/,
+  );
+  assert.match(
+    inputHandlerSource,
+    /this\.deferredPaginationRunner\.start\(\);/,
+    'cell-flow 경계는 동기 full flush 대신 resumable macrotask runner를 시작해야 한다',
+  );
 });
 
 test('문서 전환은 deferred·IME·iOS 입력 세션 상태를 격리한다', () => {
@@ -120,12 +167,33 @@ test('문서 전환은 deferred·IME·iOS 입력 세션 상태를 격리한다',
   const deactivateSource = inputHandlerSource.slice(deactivateStart, disposeStart);
 
   assert.match(deactivateSource, /this\.cancelDeferredPaginationFlush\(\);/);
+  assert.match(deactivateSource, /this\.deferredPaginationRunner\.cancel\(\);/);
   assert.match(deactivateSource, /this\.deferredPaginationPending = false;/);
   assert.match(deactivateSource, /this\.resetRawTextMutationEffects\(\);/);
+  assert.match(deactivateSource, /this\.compositionAnchorRect = null;/);
   assert.match(deactivateSource, /this\._lastComposedText = '';/);
   assert.match(deactivateSource, /this\._iosAnchor = null;/);
   assert.match(deactivateSource, /this\._iosRequiresFullRefresh = false;/);
   assert.match(deactivateSource, /this\.textarea\.value = '';/);
+});
+
+test('저장·다른 이름 저장·인쇄는 resumable job을 출력 전에 동기 barrier로 마감한다', () => {
+  const fileCommandSource = readFileSync(
+    new URL('../src/command/commands/file.ts', import.meta.url),
+    'utf8',
+  );
+  assert.match(
+    fileCommandSource,
+    /function flushDeferredPaginationBeforeExplicitOutput\([\s\S]*?flushDeferredPaginationIfNeeded\(reason\);[\s\S]*?hasDeferredPaginationPending\(\)[\s\S]*?throw new Error/,
+    'flush 실패 뒤 pending이 남으면 저장·인쇄를 중단해야 한다',
+  );
+  for (const reason of ['save', 'save-as', 'print']) {
+    assert.match(
+      fileCommandSource,
+      new RegExp(`flushDeferredPaginationBeforeExplicitOutput\\(services, '${reason}'\\)`),
+      `${reason} 경로는 export/render 전에 pending pagination을 마감해야 한다`,
+    );
+  }
 });
 
 test('isPageLocalTextEditCommand는 본문 텍스트와 구조 변경 명령을 full refresh로 남긴다', () => {

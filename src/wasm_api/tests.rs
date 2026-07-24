@@ -1913,6 +1913,92 @@ fn create_doc_with_table() -> HwpDocument {
     doc
 }
 
+/// #2424 page-count commit 검증용: 한 쪽에 거의 차는 1열 RowBreak 표.
+/// 마지막 cell의 줄 수만 늘리면 표 continuation이 한 쪽 더 필요해진다.
+fn create_doc_with_page_count_boundary_table() -> HwpDocument {
+    use crate::model::control::Control;
+    use crate::model::document::SectionDef;
+    use crate::model::page::PageDef;
+    use crate::model::table::{Cell, Table, TablePageBreak};
+    use crate::model::Padding;
+
+    let mut doc = HwpDocument::create_empty();
+    let mut document = Document::default();
+    let page_def = PageDef {
+        width: 59528,
+        height: 84188,
+        margin_left: 8504,
+        margin_right: 8504,
+        margin_top: 5669,
+        margin_bottom: 4252,
+        margin_header: 4252,
+        margin_footer: 4252,
+        ..Default::default()
+    };
+    let row_count = 13u16;
+    let mut cells = Vec::with_capacity(row_count as usize);
+    for row in 0..row_count {
+        let text = if row + 1 == row_count {
+            "가"
+        } else {
+            "고정"
+        };
+        cells.push(Cell {
+            row,
+            col: 0,
+            row_span: 1,
+            col_span: 1,
+            width: if row + 1 == row_count { 2_200 } else { 42_000 },
+            height: if row + 1 == row_count { 600 } else { 5_250 },
+            paragraphs: vec![Paragraph {
+                text: text.to_string(),
+                char_count: text.chars().count() as u32,
+                char_offsets: make_char_offsets(text),
+                line_segs: vec![LineSeg {
+                    line_height: 400,
+                    baseline_distance: 320,
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        });
+    }
+    let mut table = Table {
+        row_count,
+        col_count: 1,
+        page_break: TablePageBreak::RowBreak,
+        padding: Padding {
+            left: 100,
+            right: 100,
+            top: 100,
+            bottom: 100,
+        },
+        cells,
+        ..Default::default()
+    };
+    table.rebuild_grid();
+    let parent_para = Paragraph {
+        controls: vec![Control::Table(Box::new(table))],
+        line_segs: vec![LineSeg {
+            line_height: 400,
+            baseline_distance: 320,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    document.sections.push(Section {
+        section_def: SectionDef {
+            page_def,
+            ..Default::default()
+        },
+        paragraphs: vec![parent_para],
+        raw_stream: None,
+    });
+    doc.set_document(document);
+    doc
+}
+
 #[test]
 fn test_insert_text_in_cell() {
     let mut doc = create_doc_with_table();
@@ -1931,6 +2017,110 @@ fn test_insert_text_in_cell() {
     } else {
         panic!("표 컨트롤을 찾을 수 없음");
     }
+}
+
+#[test]
+fn issue2424_deferred_delete_preserves_immediate_schema_and_tracks_ime_revision() {
+    let mut immediate = create_doc_with_table();
+    let immediate_raw = immediate
+        .delete_text_in_cell_native(0, 0, 0, 0, 0, 1, 1)
+        .expect("immediate cell delete");
+    let immediate_result: Value =
+        serde_json::from_str(&immediate_raw).expect("immediate delete json");
+    assert_eq!(immediate_result["charOffset"], 1);
+    assert!(
+        immediate_result.get("cellFlowChanged").is_none(),
+        "existing immediate response schema must remain unchanged"
+    );
+
+    let mut doc = create_doc_with_table();
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 1, "ㅎ")
+        .expect("first IME insert");
+    let first_revision = doc
+        .deferred_pagination_descriptor
+        .as_ref()
+        .expect("first IME descriptor")
+        .revision;
+
+    let delete_raw = doc
+        .delete_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 1, 1)
+        .expect("IME replacement delete");
+    let delete_result: Value = serde_json::from_str(&delete_raw).expect("deferred delete json");
+    assert_eq!(delete_result["charOffset"], 1);
+    assert!(delete_result["cellFlowChanged"].is_boolean());
+    let delete_revision = doc
+        .deferred_pagination_descriptor
+        .as_ref()
+        .expect("delete descriptor")
+        .revision;
+    assert!(delete_revision > first_revision);
+
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 1, "하")
+        .expect("second IME insert");
+    let final_descriptor = doc
+        .deferred_pagination_descriptor
+        .as_ref()
+        .expect("latest IME descriptor");
+    assert!(final_descriptor.revision > delete_revision);
+    assert_eq!(
+        (
+            final_descriptor.section_index,
+            final_descriptor.para_index,
+            final_descriptor.control_index,
+            final_descriptor.cell_index,
+            final_descriptor.cell_para_index,
+        ),
+        (0, 0, 0, 0, 0)
+    );
+    match &doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => assert_eq!(table.cells[0].paragraphs[0].text, "셀하A"),
+        other => panic!("table control expected: {other:?}"),
+    }
+
+    doc.flush_deferred_pagination().expect("IME output barrier");
+    assert!(doc.deferred_pagination_descriptor.is_none());
+}
+
+#[test]
+fn issue2424_page_count_is_held_until_shadow_layout_commits() {
+    let mut doc = create_doc_with_page_count_boundary_table();
+    let initial_page_count = doc.page_count();
+    assert_eq!(initial_page_count, 1, "fixture must begin on one page");
+
+    let inserted = "가".repeat(48);
+    let edit_raw = doc
+        .insert_text_in_cell_native_deferred_pagination(0, 0, 0, 12, 0, 1, &inserted)
+        .expect("deferred boundary insert");
+    let edit: Value = serde_json::from_str(&edit_raw).expect("edit json");
+    assert_eq!(edit["cellFlowChanged"], true, "fixture must add cell lines");
+    assert_eq!(
+        doc.page_count(),
+        initial_page_count,
+        "deferred edit must keep the public page count"
+    );
+
+    let begin = doc.core.begin_deferred_pagination(1);
+    assert_eq!(begin.state, DeferredPaginationJobState::Pending);
+    assert_eq!(begin.page_count, initial_page_count);
+
+    let completed = loop {
+        let step = doc.core.step_deferred_pagination(1);
+        match step.state {
+            DeferredPaginationJobState::Pending => {
+                assert_eq!(
+                    step.page_count, initial_page_count,
+                    "incomplete shadow fragments must not publish a page count"
+                );
+            }
+            DeferredPaginationJobState::Complete => break step,
+            state => panic!("unexpected shadow status: {state:?}"),
+        }
+    };
+    assert!(
+        completed.page_count > initial_page_count,
+        "final shadow commit must publish the added page: {completed:?}"
+    );
+    assert_eq!(doc.page_count(), completed.page_count);
 }
 
 #[test]
@@ -2009,6 +2199,224 @@ fn issue2214_deferred_table_caption_reports_flow_change() {
     assert!(
         saw_boundary,
         "caption deferred input must report a wrapping flow boundary"
+    );
+}
+
+#[test]
+fn issue2424_deferred_pagination_descriptor_tracks_latest_edit_until_flush() {
+    let mut doc = create_doc_with_table();
+    assert!(doc.deferred_pagination_descriptor.is_none());
+
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 1, "x")
+        .expect("first deferred insert");
+    let first = doc
+        .deferred_pagination_descriptor
+        .clone()
+        .expect("first target descriptor");
+    assert_eq!(first.revision, 1);
+    assert_eq!(
+        (
+            first.section_index,
+            first.para_index,
+            first.control_index,
+            first.cell_index,
+            first.cell_para_index,
+        ),
+        (0, 0, 0, 0, 0)
+    );
+    assert_eq!(first.target_first_page, Some(0));
+    assert_ne!(first.table_structure_fingerprint, 0);
+    assert_eq!(
+        doc.deferred_pagination_target_status(&first),
+        crate::document_core::DeferredPaginationTargetStatus::Current
+    );
+
+    // 앞선 입력에서 이미 flow boundary가 있었다고 가정하면 같은 target의 후속 stable
+    // 입력이 descriptor의 pending boundary를 지우면 안 된다.
+    doc.deferred_pagination_descriptor
+        .as_mut()
+        .expect("pending descriptor")
+        .cell_flow_changed = true;
+
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 2, "y")
+        .expect("replacement deferred insert");
+    let second = doc
+        .deferred_pagination_descriptor
+        .as_ref()
+        .expect("replacement target descriptor");
+    assert_eq!(second.revision, 2);
+    assert!(second.cell_flow_changed);
+    assert_eq!(
+        second.table_structure_fingerprint, first.table_structure_fingerprint,
+        "text-only edit must preserve the target table structure"
+    );
+    assert_eq!(
+        doc.deferred_pagination_target_status(&first),
+        crate::document_core::DeferredPaginationTargetStatus::Superseded,
+        "a newer deferred edit must invalidate an older job revision"
+    );
+    let second = second.clone();
+    assert_eq!(
+        doc.deferred_pagination_target_status(&second),
+        crate::document_core::DeferredPaginationTargetStatus::Current
+    );
+
+    let removed_paragraph = match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => table.cells[0]
+            .paragraphs
+            .pop()
+            .expect("target cell paragraph"),
+        _ => panic!("target table"),
+    };
+    assert_eq!(
+        doc.deferred_pagination_target_status(&second),
+        crate::document_core::DeferredPaginationTargetStatus::TargetMissing
+    );
+    match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => table.cells[0].paragraphs.push(removed_paragraph),
+        _ => panic!("target table"),
+    }
+
+    match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => table.row_count = table.row_count.saturating_add(1),
+        _ => panic!("target table"),
+    }
+    assert_eq!(
+        doc.deferred_pagination_target_status(&second),
+        crate::document_core::DeferredPaginationTargetStatus::StructureChanged
+    );
+    match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => table.row_count = table.row_count.saturating_sub(1),
+        _ => panic!("target table"),
+    }
+    assert_eq!(
+        doc.deferred_pagination_target_status(&second),
+        crate::document_core::DeferredPaginationTargetStatus::Current
+    );
+
+    match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => table.cells[0].paragraphs[0]
+            .controls
+            .push(Control::Bookmark(Default::default())),
+        _ => panic!("target table"),
+    }
+    assert_eq!(
+        doc.deferred_pagination_target_status(&second),
+        crate::document_core::DeferredPaginationTargetStatus::StructureChanged,
+        "cell paragraph control structure changes must invalidate the descriptor"
+    );
+    match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => {
+            table.cells[0].paragraphs[0].controls.pop();
+        }
+        _ => panic!("target table"),
+    }
+    assert_eq!(
+        doc.deferred_pagination_target_status(&second),
+        crate::document_core::DeferredPaginationTargetStatus::Current
+    );
+
+    let third_raw = doc
+        .insert_text_in_cell_native_deferred_pagination(0, 0, 0, 1, 0, 0, "z")
+        .expect("different target deferred insert");
+    let third_result: Value = serde_json::from_str(&third_raw).expect("different target result");
+    let third = doc
+        .deferred_pagination_descriptor
+        .as_ref()
+        .expect("different target descriptor");
+    assert_eq!(third.revision, 3);
+    assert_eq!(third.cell_index, 1);
+    assert_eq!(
+        third.cell_flow_changed,
+        third_result["cellFlowChanged"].as_bool().unwrap(),
+        "a different target must not inherit the previous flow signal"
+    );
+
+    doc.flush_deferred_pagination().expect("full flush");
+    assert!(
+        doc.deferred_pagination_descriptor.is_none(),
+        "successful full pagination must consume the pending descriptor"
+    );
+}
+
+#[test]
+fn issue2308_deferred_cell_edit_uses_path_revision_without_section_invalidation() {
+    use crate::renderer::render_normalization::RenderPathEntry;
+
+    let mut doc = create_doc_with_table();
+    let section_revision_before = doc.render_normalization.section_revisions[0];
+
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 1, "가")
+        .expect("deferred table-cell insert");
+
+    assert_eq!(
+        doc.render_normalization.section_revisions[0], section_revision_before,
+        "a structure-stable cell edit must not invalidate the section projection"
+    );
+    let revision = doc
+        .render_normalization
+        .path_revisions
+        .iter()
+        .find_map(|(path, revision)| match path.entries.as_slice() {
+            [RenderPathEntry::TableCell {
+                control_index: 0,
+                cell_index: 0,
+                paragraph_index: 0,
+            }] => Some(*revision),
+            _ => None,
+        });
+    assert_eq!(revision, Some(1), "the edited logical path revision");
+}
+
+#[test]
+fn issue2308_immediate_edit_rederives_existing_compat_projection() {
+    use crate::model::image::Picture;
+    use crate::model::shape::{CommonObjAttr, TextWrap};
+
+    fn floating_picture() -> Control {
+        Control::Picture(Box::new(Picture {
+            common: CommonObjAttr {
+                height: 50_000,
+                text_wrap: TextWrap::Square,
+                allow_overlap: false,
+                treat_as_char: false,
+                ..Default::default()
+            },
+            ..Default::default()
+        }))
+    }
+
+    let mut doc = create_doc_with_table();
+    let Control::Table(table) = &mut doc.document.sections[0].paragraphs[0].controls[0] else {
+        panic!("table control");
+    };
+    table.cells[0].paragraphs[0] = Paragraph {
+        controls: vec![floating_picture(), floating_picture()],
+        line_segs: vec![LineSeg {
+            line_height: 400,
+            baseline_distance: 320,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let document = doc.document.clone();
+    doc.set_document(document);
+    assert!(
+        doc.render_normalization.sections[0].is_some(),
+        "the synthetic cell image stack must create a #2004 compatibility projection"
+    );
+    let revision_before = doc.render_normalization.section_revisions[0];
+
+    doc.insert_text_in_cell_native(0, 0, 0, 0, 0, 0, "x")
+        .expect("immediate edit in a projected cell");
+
+    assert_ne!(
+        doc.render_normalization.section_revisions[0], revision_before,
+        "an existing compatibility projection must be invalidated"
+    );
+    assert!(
+        doc.render_normalization.sections[0].is_none(),
+        "visible source text removes the stack gate, so no stale projection may survive"
     );
 }
 
@@ -25156,6 +25564,223 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
         );
         assert_eq!(doc.page_count(), 115, "{label}: page count");
     }
+}
+
+/// #2424 Stage D: 공개 pagination을 유지한 채 한 호출당 한 fragment만 전진하고,
+/// 마지막 step에서만 full-pagination oracle과 같은 cut chain을 원자적으로 commit한다.
+#[test]
+fn issue2424_resumable_pagination_commits_only_after_final_fragment() {
+    for (label, relative) in [
+        ("hwp", "samples/issue1949_giant_cell_nested_tables_perf.hwp"),
+        (
+            "hwpx",
+            "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+        ),
+    ] {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(relative);
+        let bytes = std::fs::read(path).expect("read #2424 fixture");
+        let mut doc = HwpDocument::from_bytes(&bytes).expect("load #2424 fixture");
+
+        for inserted in 0..56 {
+            doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + inserted, "1")
+                .expect("deferred sequential insert");
+        }
+        let transient_cuts = issue2214_target_cuts(&doc);
+        issue2214_assert_cut_continuity(label, "resumable-transient", &transient_cuts);
+
+        let begin: Value = serde_json::from_str(
+            &doc.begin_deferred_pagination(1)
+                .expect("begin resumable pagination"),
+        )
+        .expect("begin result json");
+        assert_eq!(begin["status"], "pending", "{label}: begin status");
+        assert_eq!(
+            issue2214_target_cuts(&doc),
+            transient_cuts,
+            "{label}: begin must not publish shadow pages"
+        );
+
+        let mut step_calls = 0usize;
+        let mut fragments_processed = 0usize;
+        loop {
+            let step: Value = serde_json::from_str(
+                &doc.step_deferred_pagination(1)
+                    .expect("step resumable pagination"),
+            )
+            .expect("step result json");
+            step_calls += 1;
+            fragments_processed +=
+                step["fragmentsProcessed"].as_u64().expect("fragment count") as usize;
+            match step["status"].as_str() {
+                Some("pending") => assert_eq!(
+                    issue2214_target_cuts(&doc),
+                    transient_cuts,
+                    "{label}: step {step_calls} published an incomplete shadow result"
+                ),
+                Some("complete") => break,
+                other => panic!("{label}: unexpected step status {other:?}: {step}"),
+            }
+        }
+
+        assert_eq!(step_calls, 115, "{label}: one macrotask per fragment");
+        assert_eq!(
+            fragments_processed, 115,
+            "{label}: every target fragment processed exactly once"
+        );
+        let committed_cuts = issue2214_target_cuts(&doc);
+        issue2214_assert_cut_continuity(label, "resumable-committed", &committed_cuts);
+        assert_eq!(
+            transient_cuts
+                .iter()
+                .zip(&committed_cuts)
+                .filter(|(before, after)| before != after)
+                .count(),
+            113,
+            "{label}: committed cut chain must match the full-pagination oracle"
+        );
+    }
+}
+
+/// #2424 리뷰 보정: line 5→4가 되는 삭제도 incomplete shadow cut을 게시하지 않고,
+/// 마지막 step에서 full-pagination oracle과 같은 continuation chain으로 돌아가야 한다.
+#[test]
+fn issue2424_resumable_delete_commits_only_after_final_fragment() {
+    for (label, relative) in [
+        ("hwp", "samples/issue1949_giant_cell_nested_tables_perf.hwp"),
+        (
+            "hwpx",
+            "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+        ),
+    ] {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(relative);
+        let bytes = std::fs::read(path).expect("read #2424 fixture");
+        let mut doc = HwpDocument::from_bytes(&bytes).expect("load #2424 fixture");
+        doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130, &"1".repeat(56))
+            .expect("prepare fifth cell line");
+        doc.flush_deferred_pagination()
+            .expect("commit expanded pagination");
+        let expanded_cuts = issue2214_target_cuts(&doc);
+
+        let delete_raw = doc
+            .delete_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 185, 1)
+            .expect("deferred line-shrinking delete");
+        let delete: Value = serde_json::from_str(&delete_raw).expect("delete result");
+        assert_eq!(
+            delete["cellFlowChanged"], true,
+            "{label}: delete must remove the fifth line"
+        );
+        let transient_cuts = issue2214_target_cuts(&doc);
+        issue2214_assert_cut_continuity(label, "delete-transient", &transient_cuts);
+
+        let begin: Value = serde_json::from_str(
+            &doc.begin_deferred_pagination(1)
+                .expect("begin delete pagination"),
+        )
+        .expect("begin delete json");
+        assert_eq!(begin["status"], "pending", "{label}: delete begin");
+        assert_eq!(
+            issue2214_target_cuts(&doc),
+            transient_cuts,
+            "{label}: delete begin must not publish shadow pages"
+        );
+
+        let mut step_calls = 0usize;
+        loop {
+            let step: Value = serde_json::from_str(
+                &doc.step_deferred_pagination(1)
+                    .expect("step delete pagination"),
+            )
+            .expect("step delete json");
+            step_calls += 1;
+            match step["status"].as_str() {
+                Some("pending") => assert_eq!(
+                    issue2214_target_cuts(&doc),
+                    transient_cuts,
+                    "{label}: delete step {step_calls} published incomplete cuts"
+                ),
+                Some("complete") => break,
+                other => panic!("{label}: unexpected delete step {other:?}: {step}"),
+            }
+        }
+        assert_eq!(step_calls, 115, "{label}: delete fragment steps");
+        let committed_cuts = issue2214_target_cuts(&doc);
+        issue2214_assert_cut_continuity(label, "delete-committed", &committed_cuts);
+
+        let mut oracle = HwpDocument::from_bytes(&bytes).expect("load delete oracle");
+        oracle
+            .insert_text_in_cell_native(0, 0, 2, 2, 5, 130, &"1".repeat(55))
+            .expect("full-pagination delete oracle state");
+        assert_eq!(
+            committed_cuts,
+            issue2214_target_cuts(&oracle),
+            "{label}: resumable delete must match full pagination"
+        );
+        assert_ne!(
+            committed_cuts, expanded_cuts,
+            "{label}: deleting the boundary character must change downstream cuts"
+        );
+    }
+}
+
+#[test]
+fn issue2424_new_edit_stales_old_job_and_sync_flush_restarts_latest_revision() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue1949_giant_cell_nested_tables_perf.hwp");
+    let bytes = std::fs::read(path).expect("read #2424 fixture");
+    let mut doc = HwpDocument::from_bytes(&bytes).expect("load #2424 fixture");
+    for inserted in 0..56 {
+        doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + inserted, "1")
+            .expect("deferred sequential insert");
+    }
+
+    let begin: Value = serde_json::from_str(
+        &doc.begin_deferred_pagination(1)
+            .expect("begin first revision"),
+    )
+    .expect("begin json");
+    assert_eq!(begin["status"], "pending");
+    let first_revision = begin["revision"].as_u64().expect("first revision");
+    let first_step: Value = serde_json::from_str(
+        &doc.step_deferred_pagination(1)
+            .expect("step first revision"),
+    )
+    .expect("step json");
+    assert_eq!(first_step["status"], "pending");
+
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 186, "1")
+        .expect("new edit supersedes first revision");
+    let stale: Value = serde_json::from_str(
+        &doc.step_deferred_pagination(1)
+            .expect("reject stale first revision"),
+    )
+    .expect("stale json");
+    assert_eq!(stale["status"], "stale");
+    assert_eq!(stale["revision"].as_u64(), Some(first_revision));
+
+    let replacement: Value = serde_json::from_str(
+        &doc.begin_deferred_pagination(1)
+            .expect("begin replacement revision"),
+    )
+    .expect("replacement json");
+    assert_eq!(replacement["status"], "pending");
+    assert!(
+        replacement["revision"]
+            .as_u64()
+            .expect("replacement revision")
+            > first_revision,
+        "latest edit must own a newer job revision"
+    );
+    assert!(doc.cancel_deferred_pagination());
+    assert!(!doc.cancel_deferred_pagination());
+
+    let flushed: Value = serde_json::from_str(
+        &doc.flush_deferred_pagination()
+            .expect("sync barrier restarts latest revision"),
+    )
+    .expect("flush json");
+    assert_eq!(flushed["status"], "complete");
+    assert_eq!(flushed["pageCount"], 115);
+    issue2214_assert_cut_continuity("hwp", "replacement-flushed", &issue2214_target_cuts(&doc));
 }
 
 #[test]

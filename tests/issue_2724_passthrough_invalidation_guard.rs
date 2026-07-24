@@ -84,7 +84,7 @@ enum Exempt {
 
 /// 무효화하지 않는 `pub fn (&mut self)` 전수 목록 — (파일, 함수, 분류, 근거).
 ///
-/// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. `devel` 기준 36건(2026-07-21 동결).
+/// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. `devel` 기준 42건(2026-07-23 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     // ── 세션/캐시 상태만 변경 (문서 IR 비변경) ──────────────────────────────
     (
@@ -92,6 +92,30 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "set_dpi",
         Exempt::SessionState,
         "렌더 DPI·해소 스타일·페이지네이션만 갱신. 문서 IR 무변경.",
+    ),
+    (
+        "queries/rendering.rs",
+        "begin_deferred_pagination",
+        Exempt::SessionState,
+        "편집이 만든 descriptor로 shadow pagination job과 측정 캐시만 준비. 문서 IR 무변경.",
+    ),
+    (
+        "queries/rendering.rs",
+        "step_deferred_pagination",
+        Exempt::SessionState,
+        "shadow 결과를 pagination·측정·dirty 캐시에 commit. `Table::dirty`는 직렬화 비대상 런타임 플래그.",
+    ),
+    (
+        "queries/rendering.rs",
+        "cancel_deferred_pagination",
+        Exempt::SessionState,
+        "pending shadow job만 폐기. 문서 IR과 패스스루 무변경.",
+    ),
+    (
+        "queries/rendering.rs",
+        "flush_deferred_pagination",
+        Exempt::SessionState,
+        "pending job을 drain하거나 기존 paginate로 fallback. 편집 IR은 선행 뮤테이터가 이미 무효화.",
     ),
     (
         "commands/clipboard.rs",
@@ -277,6 +301,18 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "commands/text_editing.rs",
         "insert_text_in_cell_native_deferred_pagination",
         Exempt::DelegatesTo("insert_text_in_cell_native_impl"),
+        "페이지네이션 지연 플래그만 다른 래퍼 — 본체는 `_impl`.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "delete_text_in_cell_native",
+        Exempt::DelegatesTo("delete_text_in_cell_native_impl"),
+        "얇은 래퍼 — 실제 삭제·무효화는 `_impl` 이 수행.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "delete_text_in_cell_native_deferred_pagination",
+        Exempt::DelegatesTo("delete_text_in_cell_native_impl"),
         "페이지네이션 지연 플래그만 다른 래퍼 — 본체는 `_impl`.",
     ),
     (

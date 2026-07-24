@@ -31,6 +31,7 @@ pub mod pagination;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf;
 pub mod pua_oldhangul;
+pub mod render_normalization;
 pub mod render_tree;
 pub mod scheduler;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]

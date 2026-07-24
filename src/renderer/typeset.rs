@@ -46,6 +46,185 @@ struct BlockTableRowScan {
     split_end_limit: f64,
 }
 
+/// [#2424] block-table continuation loop의 재개 지점.
+///
+/// 행과 셀별 절대 unit cut, rowspan block cut 여부, continuation 여부를 owned state로
+/// 묶어 fragment budget 경계에서 그대로 보존한다.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+struct TableContinuationCursor {
+    row: usize,
+    start_cut: Vec<usize>,
+    start_cut_is_block: bool,
+    is_continuation: bool,
+    fragments_emitted: usize,
+}
+
+impl TableContinuationCursor {
+    fn skip_consumed_row(&mut self) {
+        self.row = self.row.saturating_add(1);
+        self.start_cut.clear();
+        self.start_cut_is_block = false;
+        self.is_continuation = true;
+    }
+
+    fn advance(
+        &mut self,
+        end_row: usize,
+        split_block_start: Option<usize>,
+        cut: Vec<usize>,
+        has_intra_row_split: bool,
+    ) {
+        if has_intra_row_split {
+            self.row = split_block_start.unwrap_or(end_row.saturating_sub(1));
+            self.start_cut = cut;
+            self.start_cut_is_block = split_block_start.is_some();
+        } else {
+            self.row = end_row;
+            self.start_cut.clear();
+            self.start_cut_is_block = false;
+        }
+        self.is_continuation = true;
+        self.fragments_emitted = self.fragments_emitted.saturating_add(1);
+    }
+
+    fn finish(&mut self, row_count: usize, emitted_fragment: bool) {
+        self.row = row_count;
+        self.start_cut.clear();
+        self.start_cut_is_block = false;
+        if emitted_fragment {
+            self.fragments_emitted = self.fragments_emitted.saturating_add(1);
+        }
+    }
+}
+
+/// [#2424] continuation loop 진입 전에 한번 계산하는 owned 준비 상태.
+struct BlockTableContinuationPreparedState {
+    row_count: usize,
+    cell_spacing: f64,
+    can_intra_split: bool,
+    base_available: f64,
+    table_available: f64,
+    layout_engine: crate::renderer::layout::LayoutEngine,
+    rowspan_touched: Vec<bool>,
+    cut_row_heights: Vec<f64>,
+    caption_is_top: bool,
+    caption_overhead: f64,
+    total_rows_height: f64,
+    total_footnote_height: f64,
+    footnote_margin: f64,
+    host_spacing_total: f64,
+    host_spacing_before: f64,
+    host_spacing_after_only: f64,
+    strict_following_plain_text_fit: bool,
+    budget_para_start_height: f64,
+}
+
+/// [#2424] 한 continuation iteration이 caller-controlled step에 돌려주는 진행 상태.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum TableContinuationIteration {
+    Skipped,
+    Emitted,
+    Complete,
+}
+
+/// [#2424] 각 step이 document/measurement cache에서 다시 빌릴 불변 입력.
+/// context에는 borrow를 저장하지 않아 이후 WASM 호출 사이 소유를 막지 않는다.
+#[derive(Clone, Copy)]
+struct BlockTableContinuationSource<'a> {
+    para_index: usize,
+    control_index: usize,
+    paragraph: &'a Paragraph,
+    table: &'a crate::model::table::Table,
+    measured_table: &'a MeasuredTable,
+    styles: &'a ResolvedStyleSet,
+}
+
+/// [#2424] fragment-budget drain의 caller-owned 제어 상태.
+/// cursor, budget/step 통계, 비가변 준비값과 shadow page-flow state를 소유한다.
+struct BlockTableContinuationContext {
+    cursor: TableContinuationCursor,
+    fragment_budget: usize,
+    steps_completed: usize,
+    prepared: BlockTableContinuationPreparedState,
+    flow_state: TypesetState,
+}
+
+/// [#2424] WASM 호출 사이에 보존되는 단일 대형 표 continuation 작업.
+///
+/// 문서/측정 캐시의 borrow는 저장하지 않고, 매 step마다 좌표로 다시 해석한다.
+/// 공개 pagination은 작업 완료 전까지 이 shadow flow state와 분리되어 있다.
+pub(crate) struct ResumableTablePaginationJob {
+    context: BlockTableContinuationContext,
+    paragraph_index: usize,
+    control_index: usize,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct ResumablePaginationStep {
+    pub(crate) fragments_processed: usize,
+    pub(crate) complete: bool,
+}
+
+impl BlockTableContinuationContext {
+    fn new(
+        fragment_budget: usize,
+        prepared: BlockTableContinuationPreparedState,
+        flow_state: TypesetState,
+    ) -> Self {
+        Self {
+            cursor: TableContinuationCursor::default(),
+            fragment_budget: fragment_budget.max(1),
+            steps_completed: 0,
+            prepared,
+            flow_state,
+        }
+    }
+
+    fn step<F>(&mut self, mut next: F)
+    where
+        F: FnMut(
+            &BlockTableContinuationPreparedState,
+            &mut TypesetState,
+            &mut TableContinuationCursor,
+        ) -> TableContinuationIteration,
+    {
+        if self.is_complete() {
+            return;
+        }
+        self.steps_completed = self.steps_completed.saturating_add(1);
+        let step_start_fragments = self.cursor.fragments_emitted;
+        loop {
+            match next(&self.prepared, &mut self.flow_state, &mut self.cursor) {
+                TableContinuationIteration::Skipped => {
+                    if self.cursor.row >= self.prepared.row_count {
+                        return;
+                    }
+                }
+                TableContinuationIteration::Complete => return,
+                TableContinuationIteration::Emitted => {
+                    if self.cursor.row >= self.prepared.row_count
+                        || self
+                            .cursor
+                            .fragments_emitted
+                            .saturating_sub(step_start_fragments)
+                            >= self.fragment_budget
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    fn is_complete(&self) -> bool {
+        self.cursor.row >= self.prepared.row_count
+    }
+
+    fn into_flow_state(self) -> TypesetState {
+        self.flow_state
+    }
+}
+
 /// [#2085] 표 행-스캔의 조각-스코프 읽기 스칼라 묶음.
 #[derive(Clone, Copy)]
 struct BlockRowScanVars {
@@ -1908,6 +2087,20 @@ impl TypesetState {
         }
     }
 
+    /// [#2424] page-flow state를 continuation context로 이동할 때 잠시 남겨둘 빈 자리.
+    /// context drain 직후 원래 state로 교체되며 placeholder 자체는 조판에 사용되지 않는다.
+    fn transfer_placeholder(&self) -> Self {
+        Self::new(
+            self.layout.clone(),
+            self.col_count,
+            self.section_index,
+            self.footnote_separator_overhead,
+            self.footnote_between_notes_margin,
+            self.footnote_safety_margin,
+            self.current_zone_column_type,
+        )
+    }
+
     /// [Task #1027 Stage D] 컬럼 경계에서 vpos 스냅 상태 초기화.
     /// 렌더러 build_single_column 진입 정합: page/lazy base·prev 초기화,
     /// anchor 를 현 current_height(컬럼 시작값)로 설정.
@@ -2774,6 +2967,211 @@ impl TypesetEngine {
             force_break_before,
             EndnoteDeferral::None,
         )
+    }
+
+    /// [#2424] 단일 문단의 마지막 대형 RowBreak 표를 shadow flow state에서 시작한다.
+    ///
+    /// Stage D의 첫 fast path는 편집 지연 대상이 문서의 유일한 본문 표인 형상으로
+    /// 의도적으로 제한한다. 지원 범위를 벗어나면 caller가 기존 full paginate로
+    /// fallback할 수 있도록 `None`을 반환한다.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn begin_resumable_table_pagination(
+        &self,
+        paragraphs: &[Paragraph],
+        composed: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        section_index: usize,
+        measured_tables: &[MeasuredTable],
+        hide_empty_line: bool,
+        profile: crate::model::provenance::LayoutCompatibilityProfile,
+        skip_spacing_before_prededuct: bool,
+        footnote_shape: Option<&FootnoteShape>,
+        paragraph_index: usize,
+        control_index: usize,
+        fragment_budget: usize,
+    ) -> Option<ResumableTablePaginationJob> {
+        if paragraphs.len() != 1 || paragraph_index != 0 || column_def.column_count.max(1) != 1 {
+            return None;
+        }
+        let para = paragraphs.get(paragraph_index)?;
+        let table = match para.controls.get(control_index)? {
+            Control::Table(table) => table,
+            _ => return None,
+        };
+        if table.common.treat_as_char
+            || !matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            || table.row_count <= 1
+            || para_has_visible_text(para)
+            || para.controls.iter().enumerate().any(|(index, control)| {
+                index != control_index
+                    && !matches!(
+                        control,
+                        Control::SectionDef(_) | Control::ColumnDef(_) | Control::Bookmark(_)
+                    )
+            })
+            || para
+                .controls
+                .iter()
+                .enumerate()
+                .skip(control_index + 1)
+                .any(|(_, control)| !matches!(control, Control::Bookmark(_)))
+        {
+            return None;
+        }
+        let measured_table = measured_tables.iter().find(|measured| {
+            measured.para_index == paragraph_index && measured.control_index == control_index
+        })?;
+        if measured_table.row_heights.is_empty() {
+            return None;
+        }
+
+        let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
+        self.profile.set(profile);
+        let default_footnote_shape = FootnoteShape::default();
+        let footnote_shape = footnote_shape.unwrap_or(&default_footnote_shape);
+        let mut state = TypesetState::new(
+            layout,
+            1,
+            section_index,
+            footnote_separator_overhead_px(footnote_shape, self.dpi),
+            footnote_between_notes_margin_px(footnote_shape, self.dpi),
+            hwpunit_to_px(3000, self.dpi),
+            column_def.column_type,
+        );
+        state.hide_empty_line = hide_empty_line;
+        state.profile = profile;
+        state.has_stored_line_segs = para
+            .line_segs
+            .iter()
+            .any(|line| !is_synthetic_line_seg(line));
+        state.skip_spacing_before_prededuct = skip_spacing_before_prededuct;
+        state.current_zone_design_spacing_px = column_def_design_spacing_px(column_def, self.dpi);
+        state.section_has_no_footer = true;
+        state.ensure_page();
+
+        let column_width = state
+            .layout
+            .column_areas
+            .first()
+            .map(|area| area.width)
+            .unwrap_or(state.layout.body_area.width);
+        let formatted_para = self.format_paragraph(
+            para,
+            composed.get(paragraph_index),
+            styles,
+            Some(column_width),
+        );
+        let formatted_table = self.format_table(
+            para,
+            paragraph_index,
+            control_index,
+            table,
+            measured_tables,
+            styles,
+            composed.get(paragraph_index),
+            None,
+            true,
+        );
+        let context = self.typeset_block_table_inner(
+            &mut state,
+            paragraph_index,
+            control_index,
+            para,
+            table,
+            &formatted_table,
+            &formatted_para,
+            Some(measured_table),
+            styles,
+            0.0,
+            0.0,
+            true,
+            true,
+            paragraphs,
+            composed,
+            true,
+        )?;
+        let mut job = ResumableTablePaginationJob {
+            context,
+            paragraph_index,
+            control_index,
+        };
+        job.context.fragment_budget = fragment_budget.max(1);
+        Some(job)
+    }
+
+    pub(crate) fn step_resumable_table_pagination(
+        &self,
+        job: &mut ResumableTablePaginationJob,
+        paragraph: &Paragraph,
+        table: &crate::model::table::Table,
+        measured_table: &MeasuredTable,
+        styles: &ResolvedStyleSet,
+        fragment_budget: usize,
+    ) -> ResumablePaginationStep {
+        self.profile.set(job.context.flow_state.profile);
+        job.context.fragment_budget = fragment_budget.max(1);
+        let before = job.context.cursor.fragments_emitted;
+        let source = BlockTableContinuationSource {
+            para_index: job.paragraph_index,
+            control_index: job.control_index,
+            paragraph,
+            table,
+            measured_table,
+            styles,
+        };
+        self.step_block_table_continuation(&mut job.context, source);
+        ResumablePaginationStep {
+            fragments_processed: job.context.cursor.fragments_emitted.saturating_sub(before),
+            complete: job.context.is_complete(),
+        }
+    }
+
+    pub(crate) fn finish_resumable_table_pagination(
+        &self,
+        job: ResumableTablePaginationJob,
+        paragraphs: &[Paragraph],
+        section_index: usize,
+    ) -> Option<PaginationResult> {
+        if !job.context.is_complete() {
+            return None;
+        }
+        let mut state = job.context.into_flow_state();
+        if !state.current_items.is_empty() {
+            state.flush_column_always();
+        }
+        state.ensure_page();
+        let (hf_entries, page_number_pos, new_page_numbers, page_hides) =
+            Self::collect_header_footer_controls(paragraphs, section_index);
+        Self::finalize_pages(
+            &mut state.pages,
+            &hf_entries,
+            &page_number_pos,
+            &new_page_numbers,
+            &page_hides,
+            section_index,
+        );
+        Some(PaginationResult {
+            pages: state.pages,
+            wrap_around_paras: Vec::new(),
+            hidden_empty_paras: state.hidden_empty_paras,
+            pre_emitted_host_paras: state.pre_emitted_host_paras,
+            pre_emitted_host_heights: state.pre_emitted_host_heights,
+            endnotes: state.endnotes,
+            endnote_paragraphs: state.endnote_paragraphs,
+            endnote_para_sources: state.endnote_para_sources,
+            endnote_between_notes_hu: state.endnote_between_notes_hu,
+            endnote_separator_above_hu: state.endnote_separator_above_hu,
+            endnote_separator_below_hu: state.endnote_separator_below_hu,
+        })
+    }
+
+    pub(crate) fn resumable_table_target(job: &ResumableTablePaginationJob) -> (usize, usize) {
+        (job.paragraph_index, job.control_index)
     }
 
     /// [Task #2094] HWP3 변환본 vpos 리셋 쪽나눔 판정 — 소스분기(is_hwp3_variant)는
@@ -15450,7 +15848,67 @@ impl TypesetEngine {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn typeset_block_table(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        ctrl_idx: usize,
+        para: &Paragraph,
+        table: &crate::model::table::Table,
+        ft: &FormattedTable,
+        fmt: &FormattedParagraph,
+        mt: Option<&MeasuredTable>,
+        styles: &ResolvedStyleSet,
+        para_start_height: f64,
+        budget_para_start_height: f64,
+        is_first_placed: bool,
+        is_last_placed: bool,
+        paragraphs_all: &[Paragraph],
+        composed_all: &[ComposedParagraph],
+    ) {
+        #[cfg(not(target_arch = "wasm32"))]
+        let issue2424_profile_enabled =
+            std::env::var("RHWP_2424_PROFILE").is_ok_and(|value| !value.is_empty() && value != "0");
+        #[cfg(target_arch = "wasm32")]
+        let issue2424_profile_enabled = false;
+        let issue2424_started = issue2424_profile_enabled.then(std::time::Instant::now);
+        let issue2424_pages_before = st.pages.len();
+
+        self.typeset_block_table_inner(
+            st,
+            para_idx,
+            ctrl_idx,
+            para,
+            table,
+            ft,
+            fmt,
+            mt,
+            styles,
+            para_start_height,
+            budget_para_start_height,
+            is_first_placed,
+            is_last_placed,
+            paragraphs_all,
+            composed_all,
+            false,
+        );
+
+        if let Some(started) = issue2424_started {
+            eprintln!(
+                "RHWP_2424_BLOCK_TABLE_PROFILE section={} para={} control={} rows={} elapsed_ms={:.3} pages_added={}",
+                st.section_index,
+                para_idx,
+                ctrl_idx,
+                table.row_count,
+                started.elapsed().as_secs_f64() * 1000.0,
+                st.pages.len().saturating_sub(issue2424_pages_before),
+            );
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn typeset_block_table_inner(
         &self,
         st: &mut TypesetState,
         para_idx: usize,
@@ -15472,7 +15930,8 @@ impl TypesetEngine {
         // [Task #1753] 지연 이월 직전 후속 문단 prefill 용 전체 슬라이스.
         paragraphs_all: &[Paragraph],
         composed_all: &[ComposedParagraph],
-    ) {
+        suspend_before_drain: bool,
+    ) -> Option<BlockTableContinuationContext> {
         // 표 내 각주를 고려한 가용 높이 계산 (Paginator engine.rs:583-586 동일)
         let total_footnote =
             st.projected_footnote_height(ft.table_footnote_height, ft.table_footnote_count);
@@ -15634,7 +16093,7 @@ impl TypesetEngine {
                         ft.strict_following_plain_text_fit,
                         styles,
                     );
-                    return;
+                    return None;
                 }
             }
         }
@@ -15821,7 +16280,7 @@ impl TypesetEngine {
                         }
                     }
                 }
-                return;
+                return None;
             }
         }
 
@@ -16066,7 +16525,7 @@ impl TypesetEngine {
                 ft.strict_following_plain_text_fit,
                 styles,
             );
-            return;
+            return None;
         }
 
         // [Task #991] 1행짜리 글자처럼취급(treat_as_char) 표는 페이지 경계에서
@@ -16096,7 +16555,7 @@ impl TypesetEngine {
                 ft.strict_following_plain_text_fit,
                 styles,
             );
-            return;
+            return None;
         }
 
         // MeasuredTable이 없거나 행이 없으면 강제 배치
@@ -16118,7 +16577,7 @@ impl TypesetEngine {
                 if ft.strict_following_plain_text_fit && is_last_placed {
                     st.strict_plain_text_fit_after_empty_host_float_once = true;
                 }
-                return;
+                return None;
             }
         };
 
@@ -16161,7 +16620,7 @@ impl TypesetEngine {
                 ft.strict_following_plain_text_fit,
                 styles,
             );
-            return;
+            return None;
         }
 
         // [#2097] 쪽나눔=None 표는 fresh 쪽보다 커도 행 분할하지 않는다 — 한글은
@@ -16197,7 +16656,7 @@ impl TypesetEngine {
                 ft.strict_following_plain_text_fit,
                 styles,
             );
-            return;
+            return None;
         }
 
         let row_count = mt.row_heights.len();
@@ -16539,18 +16998,110 @@ impl TypesetEngine {
             self.pre_emit_visible_rowbreak_host_text(st, para_idx, para, composed_all, styles);
         }
 
-        // 행 단위 + 인트라-로우 분할 루프 (기존 Paginator split_table_rows 동일)
-        let mut cursor_row: usize = 0;
-        let mut is_continuation = false;
-        // [Task #993] 분할 상태를 px content_offset 대신 행 컷(셀별 소비 유닛
-        // 수)으로 추적한다. 빈 Vec = cursor_row 를 처음부터. 컷은 advance_row_cut
-        // 에 의해 유닛을 ≥1개씩 단조 전진하므로 무한 루프가 구조적으로 불가능하다.
-        let mut start_cut: Vec<usize> = Vec::new();
-        // [Task #1025] 현재 start_cut 이 rowspan 블록-셀 인덱스인지(직전 블록 분할의
-        // 연속분). PartialTable.is_block_split 로 렌더러에 전달.
-        let mut start_cut_is_block = false;
+        #[cfg(not(target_arch = "wasm32"))]
+        let continuation_fragment_budget = std::env::var("RHWP_2424_FRAGMENT_BUDGET")
+            .ok()
+            .and_then(|value| value.parse::<usize>().ok())
+            .filter(|budget| *budget > 0)
+            .unwrap_or(usize::MAX);
+        #[cfg(target_arch = "wasm32")]
+        let continuation_fragment_budget = usize::MAX;
+        let prepared = BlockTableContinuationPreparedState {
+            row_count,
+            cell_spacing: cs,
+            can_intra_split,
+            base_available,
+            table_available,
+            layout_engine,
+            rowspan_touched,
+            cut_row_heights: cut_row_h,
+            caption_is_top,
+            caption_overhead,
+            total_rows_height: total_rows_h,
+            total_footnote_height: total_footnote,
+            footnote_margin: fn_margin,
+            host_spacing_total,
+            host_spacing_before: ft.host_spacing.before,
+            host_spacing_after_only: ft.host_spacing.spacing_after_only,
+            strict_following_plain_text_fit: ft.strict_following_plain_text_fit,
+            budget_para_start_height,
+        };
+        let source = BlockTableContinuationSource {
+            para_index: para_idx,
+            control_index: ctrl_idx,
+            paragraph: para,
+            table,
+            measured_table: mt,
+            styles,
+        };
+        let placeholder = st.transfer_placeholder();
+        let flow_state = std::mem::replace(st, placeholder);
+        let mut continuation_context =
+            BlockTableContinuationContext::new(continuation_fragment_budget, prepared, flow_state);
 
-        while cursor_row < row_count {
+        if suspend_before_drain {
+            return Some(continuation_context);
+        }
+
+        // [#2424 Stage C] Native caller는 step을 동기 drain한다. 각 step은 budget만큼의
+        // fragment만 처리하며 cursor와 shadow page-flow state는 context에 남는다.
+        while !continuation_context.is_complete() {
+            self.step_block_table_continuation(&mut continuation_context, source);
+        }
+        if std::env::var("RHWP_2424_PROFILE").is_ok_and(|value| !value.is_empty() && value != "0") {
+            eprintln!(
+                "RHWP_2424_CONTINUATION_CURSOR section={} para={} control={} fragments={} steps={} budget={} final_row={} rows={}",
+                continuation_context.flow_state.section_index,
+                para_idx,
+                ctrl_idx,
+                continuation_context.cursor.fragments_emitted,
+                continuation_context.steps_completed,
+                continuation_context.fragment_budget,
+                continuation_context.cursor.row,
+                row_count,
+            );
+        }
+        *st = continuation_context.into_flow_state();
+        if ft.strict_following_plain_text_fit && is_last_placed {
+            st.strict_plain_text_fit_after_empty_host_float_once = true;
+        }
+        None
+    }
+
+    fn step_block_table_continuation(
+        &self,
+        continuation_context: &mut BlockTableContinuationContext,
+        source: BlockTableContinuationSource<'_>,
+    ) {
+        let para_idx = source.para_index;
+        let ctrl_idx = source.control_index;
+        let para = source.paragraph;
+        let table = source.table;
+        let mt = source.measured_table;
+        let styles = source.styles;
+        continuation_context.step(|prepared, st, continuation| {
+            let row_count = prepared.row_count;
+            let cs = prepared.cell_spacing;
+            let can_intra_split = prepared.can_intra_split;
+            let base_available = prepared.base_available;
+            let table_available = prepared.table_available;
+            let layout_engine = &prepared.layout_engine;
+            let rowspan_touched = &prepared.rowspan_touched;
+            let cut_row_h = &prepared.cut_row_heights;
+            let caption_is_top = prepared.caption_is_top;
+            let caption_overhead = prepared.caption_overhead;
+            let total_rows_h = prepared.total_rows_height;
+            let total_footnote = prepared.total_footnote_height;
+            let fn_margin = prepared.footnote_margin;
+            let host_spacing_total = prepared.host_spacing_total;
+            let host_spacing_before = prepared.host_spacing_before;
+            let host_spacing_after_only = prepared.host_spacing_after_only;
+            let strict_following_plain_text_fit = prepared.strict_following_plain_text_fit;
+            let budget_para_start_height = prepared.budget_para_start_height;
+            let cursor_row = continuation.row;
+            let is_continuation = continuation.is_continuation;
+            let start_cut_is_block = continuation.start_cut_is_block;
+            let start_cut = &continuation.start_cut;
             // 이전 분할에서 모든 콘텐츠가 소진된 행은 건너뜀.
             // [Task #1025] 블록 컷(start_cut_is_block)은 per-row(row_span==1) 컷이 아니라
             // 블록-셀 인덱스다. advance_row_cut(per-row)로 판정하면 블록 첫 행이 소진돼도
@@ -16561,13 +17112,12 @@ impl TypesetEngine {
                 && !start_cut.is_empty()
                 && can_intra_split
                 && layout_engine
-                    .advance_row_cut(table, cursor_row, &start_cut, f64::MAX, styles)
+                    .advance_row_cut(table, cursor_row, start_cut, f64::MAX, styles)
                     .consumed_height
                     <= 0.0
             {
-                cursor_row += 1;
-                start_cut = Vec::new();
-                continue;
+                continuation.skip_consumed_row();
+                return TableContinuationIteration::Skipped;
             }
 
             let caption_extra =
@@ -16585,9 +17135,9 @@ impl TypesetEngine {
             let (host_before_overhead, fragment_outer_bottom_overhead) =
                 partial_rowbreak_fragment_spacing_px(
                     table,
-                    ft.host_spacing.before,
+                    host_spacing_before,
                     is_continuation,
-                    ft.strict_following_plain_text_fit,
+                    strict_following_plain_text_fit,
                     self.dpi,
                 );
             let vert_offset_overhead = if is_continuation {
@@ -16710,7 +17260,7 @@ impl TypesetEngine {
                 if !is_continuation
                     && cursor_row == 0
                     && start_cut.is_empty()
-                    && !ft.strict_following_plain_text_fit
+                    && !strict_following_plain_text_fit
                     && total_rows_h > base
                     && total_rows_h <= base + WHOLE_TABLE_FIT_TOLERANCE_PX
                 {
@@ -16777,13 +17327,13 @@ impl TypesetEngine {
                 mut split_end_limit,
             } = self.scan_block_table_split_rows(
                 st,
-                &layout_engine,
+                layout_engine,
                 mt,
                 table,
                 styles,
-                &cut_row_h,
-                &rowspan_touched,
-                &start_cut,
+                cut_row_h,
+                rowspan_touched,
+                start_cut,
                 BlockRowScanVars {
                     cursor_row,
                     row_count,
@@ -16797,7 +17347,7 @@ impl TypesetEngine {
                     landscape_short_row_tolerance,
                     landscape_short_row_max_height,
                     rowbreak_split_row_overflow_tolerance,
-                    strict_painted_bottom_fit: ft.strict_following_plain_text_fit,
+                    strict_painted_bottom_fit: strict_following_plain_text_fit,
                 },
                 BlockTableRowScan {
                     consumed: 0.0,
@@ -16870,13 +17420,13 @@ impl TypesetEngine {
                     if avail_refit > avail_for_rows + 0.5 {
                         let refit = self.scan_block_table_split_rows(
                             st,
-                            &layout_engine,
+                            layout_engine,
                             mt,
                             table,
                             styles,
-                            &cut_row_h,
-                            &rowspan_touched,
-                            &start_cut,
+                            cut_row_h,
+                            rowspan_touched,
+                            start_cut,
                             BlockRowScanVars {
                                 cursor_row,
                                 row_count,
@@ -16890,7 +17440,7 @@ impl TypesetEngine {
                                 landscape_short_row_tolerance,
                                 landscape_short_row_max_height,
                                 rowbreak_split_row_overflow_tolerance,
-                                strict_painted_bottom_fit: ft.strict_following_plain_text_fit,
+                                strict_painted_bottom_fit: strict_following_plain_text_fit,
                             },
                             BlockTableRowScan {
                                 consumed: 0.0,
@@ -16969,11 +17519,12 @@ impl TypesetEngine {
                     && caption_overhead <= 0.5
                     && partial_height < MIN_TOP_KEEP_PX
                     && (cursor_row..end_row).all(|r| {
-                        let su: &[usize] = if r == cursor_row { &start_cut } else { &[] };
+                        let su: &[usize] = if r == cursor_row { start_cut } else { &[] };
                         !layout_engine.row_cut_range_has_visible_content(table, r, su, &[], styles)
                     });
                 if skip_terminal_empty_sliver {
-                    break;
+                    continuation.finish(row_count, false);
+                    return TableContinuationIteration::Complete;
                 }
 
                 // 나머지 전부가 현재 페이지에 들어감
@@ -16995,7 +17546,7 @@ impl TypesetEngine {
                         start_row: cursor_row,
                         end_row,
                         is_continuation,
-                        start_cut: start_cut.clone(),
+                        start_cut: continuation.start_cut.clone(),
                         end_cut: Vec::new(),
                         is_block_split: start_cut_is_block,
                     });
@@ -17007,9 +17558,10 @@ impl TypesetEngine {
                         + partial_height
                         + bottom_caption_extra
                         + fragment_outer_bottom_overhead
-                        + ft.host_spacing.spacing_after_only;
+                        + host_spacing_after_only;
                 }
-                break;
+                continuation.finish(row_count, true);
+                return TableContinuationIteration::Complete;
             }
 
             // 중간 fragment 배치
@@ -17019,7 +17571,7 @@ impl TypesetEngine {
                 start_row: cursor_row,
                 end_row,
                 is_continuation,
-                start_cut: start_cut.clone(),
+                start_cut: continuation.start_cut.clone(),
                 end_cut: split_end_cut.clone(),
                 // [Task #1025] 이번 분할이 블록 분할이거나 start_cut 이 이미 블록 인덱스.
                 is_block_split: split_block_start.is_some() || start_cut_is_block,
@@ -17033,22 +17585,14 @@ impl TypesetEngine {
             st.advance_column_or_new_page();
 
             // 커서 전진 — [Task #993] 컷은 절대 유닛 인덱스이므로 누적 없이 대입.
-            if split_end_limit > 0.0 {
-                // [Task #1025] 블록 분할이면 커서를 블록 시작 행으로(end_row-1 아님).
-                cursor_row = split_block_start.unwrap_or(end_row - 1);
-                start_cut = split_end_cut;
-                // 다음 fragment 의 start_cut 이 블록 인덱스인지 전파.
-                start_cut_is_block = split_block_start.is_some();
+            let next_cut = if split_end_limit > 0.0 {
+                split_end_cut
             } else {
-                cursor_row = end_row;
-                start_cut = Vec::new();
-                start_cut_is_block = false;
-            }
-            is_continuation = true;
-        }
-        if ft.strict_following_plain_text_fit && is_last_placed {
-            st.strict_plain_text_fit_after_empty_host_float_once = true;
-        }
+                Vec::new()
+            };
+            continuation.advance(end_row, split_block_start, next_cut, split_end_limit > 0.0);
+            TableContinuationIteration::Emitted
+        });
     }
 
     // ========================================================
@@ -18285,6 +18829,93 @@ mod tests {
             }],
             ..Default::default()
         }
+    }
+
+    #[test]
+    fn issue2424_table_continuation_cursor_preserves_break_state() {
+        let mut cursor = TableContinuationCursor::default();
+        assert_eq!(cursor.row, 0);
+        assert!(!cursor.is_continuation);
+        assert_eq!(cursor.fragments_emitted, 0);
+
+        cursor.advance(3, None, vec![4, 7], true);
+        assert_eq!(
+            cursor.row, 2,
+            "ordinary intra-row split resumes at end_row-1"
+        );
+        assert_eq!(cursor.start_cut, vec![4, 7]);
+        assert!(!cursor.start_cut_is_block);
+        assert!(cursor.is_continuation);
+        assert_eq!(cursor.fragments_emitted, 1);
+
+        cursor.advance(3, Some(1), vec![8], true);
+        assert_eq!(cursor.row, 1, "rowspan block split resumes at block start");
+        assert_eq!(cursor.start_cut, vec![8]);
+        assert!(cursor.start_cut_is_block);
+        assert_eq!(cursor.fragments_emitted, 2);
+
+        cursor.advance(3, None, vec![99], false);
+        assert_eq!(cursor.row, 3, "whole-row consumption resumes at end_row");
+        assert!(cursor.start_cut.is_empty());
+        assert!(!cursor.start_cut_is_block);
+        assert_eq!(cursor.fragments_emitted, 3);
+
+        cursor.skip_consumed_row();
+        assert_eq!(cursor.row, 4);
+        assert_eq!(cursor.fragments_emitted, 3, "skipping emits no fragment");
+        cursor.finish(9, true);
+        assert_eq!(cursor.row, 9);
+        assert!(cursor.start_cut.is_empty());
+        assert_eq!(cursor.fragments_emitted, 4);
+    }
+
+    #[test]
+    fn issue2424_block_table_context_owns_step_lifecycle() {
+        let prepared = BlockTableContinuationPreparedState {
+            row_count: 3,
+            cell_spacing: 0.0,
+            can_intra_split: true,
+            base_available: 100.0,
+            table_available: 100.0,
+            layout_engine: crate::renderer::layout::LayoutEngine::new(DEFAULT_DPI),
+            rowspan_touched: vec![false; 3],
+            cut_row_heights: vec![10.0; 3],
+            caption_is_top: false,
+            caption_overhead: 0.0,
+            total_rows_height: 30.0,
+            total_footnote_height: 0.0,
+            footnote_margin: 0.0,
+            host_spacing_total: 0.0,
+            host_spacing_before: 0.0,
+            host_spacing_after_only: 0.0,
+            strict_following_plain_text_fit: false,
+            budget_para_start_height: 0.0,
+        };
+        let flow_layout =
+            PageLayoutInfo::from_page_def(&a4_page_def(), &ColumnDef::default(), DEFAULT_DPI);
+        let flow_state = TypesetState::new(flow_layout, 1, 0, 0.0, 0.0, 0.0, Default::default());
+        let mut context = BlockTableContinuationContext::new(0, prepared, flow_state);
+        assert_eq!(context.fragment_budget, 1, "zero budget clamps to one");
+        assert_eq!(context.steps_completed, 0);
+        assert!(!context.is_complete());
+
+        context.step(|_, _, cursor| {
+            cursor.advance(2, None, vec![4], true);
+            TableContinuationIteration::Emitted
+        });
+        assert_eq!(context.steps_completed, 1);
+        assert_eq!(context.cursor.fragments_emitted, 1);
+        assert!(!context.is_complete());
+
+        context.step(|_, _, cursor| {
+            cursor.finish(3, true);
+            TableContinuationIteration::Complete
+        });
+        assert!(context.is_complete());
+        assert_eq!(context.steps_completed, 2);
+        assert_eq!(context.cursor.fragments_emitted, 2);
+        let flow_state = context.into_flow_state();
+        assert_eq!(flow_state.section_index, 0);
     }
 
     /// [Task #1749] 저장 flow 페이지-마지막 인코딩 판정

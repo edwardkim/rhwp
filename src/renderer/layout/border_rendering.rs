@@ -59,6 +59,7 @@ pub(crate) fn build_row_col_x(
     row_count: usize,
     cell_spacing: f64,
     dpi: f64,
+    width_scale: f64,
 ) -> Vec<Vec<f64>> {
     use super::super::hwpunit_to_px;
     // 셀 너비 그리드 구축 (O(cells) 탐색 1회)
@@ -70,7 +71,7 @@ pub(crate) fn build_row_col_x(
             && (cell.row as usize) < row_count
         {
             cell_width_grid[cell.row as usize][cell.col as usize] =
-                Some(hwpunit_to_px(cell.width as i32, dpi));
+                Some(hwpunit_to_px(cell.width as i32, dpi) * width_scale);
         }
     }
     let mut base_rx = vec![0.0f64; col_count + 1];
@@ -84,7 +85,7 @@ pub(crate) fn build_row_col_x(
     }
 
     let target_total = if table.common.width > 0 {
-        hwpunit_to_px(table.common.width as i32, dpi)
+        hwpunit_to_px(table.common.width as i32, dpi) * width_scale
             + cell_spacing * col_count.saturating_sub(1) as f64
     } else {
         base_rx.last().copied().unwrap_or(0.0)
@@ -138,7 +139,7 @@ pub(crate) fn build_row_col_x(
                         if has_width_overrides {
                             (base_rx[end] - base_rx[c]).max(0.0)
                         } else {
-                            hwpunit_to_px(cell.width as i32, dpi)
+                            hwpunit_to_px(cell.width as i32, dpi) * width_scale
                         }
                     });
                 let end_x = cursor + cell_w;
@@ -413,14 +414,18 @@ pub(crate) fn render_transparent_borders(
             } else if let Some(start) = seg_start {
                 let x1 = table_x + ref_cx[start];
                 let x2 = table_x + ref_cx[ci];
-                nodes.extend(create_single_line(tree, color, width, dash, x1, y, x2, y));
+                nodes.extend(create_editor_only_line(
+                    tree, color, width, dash, x1, y, x2, y,
+                ));
                 seg_start = None;
             }
         }
         if let Some(start) = seg_start {
             let x1 = table_x + ref_cx[start];
             let x2 = table_x + ref_cx.get(h_row.len()).copied().unwrap_or(ref_cx[start]);
-            nodes.extend(create_single_line(tree, color, width, dash, x1, y, x2, y));
+            nodes.extend(create_editor_only_line(
+                tree, color, width, dash, x1, y, x2, y,
+            ));
         }
     }
 
@@ -443,7 +448,7 @@ pub(crate) fn render_transparent_borders(
                     // x가 바뀌면 이전 세그먼트 마무리 후 새 세그먼트 시작
                     let y1 = table_y + row_y[seg_start.unwrap()];
                     let y2 = table_y + row_y[ri];
-                    nodes.extend(create_single_line(
+                    nodes.extend(create_editor_only_line(
                         tree, color, width, dash, seg_x, y1, seg_x, y2,
                     ));
                     seg_start = Some(ri);
@@ -452,7 +457,7 @@ pub(crate) fn render_transparent_borders(
             } else if let Some(start) = seg_start {
                 let y1 = table_y + row_y[start];
                 let y2 = table_y + row_y[ri];
-                nodes.extend(create_single_line(
+                nodes.extend(create_editor_only_line(
                     tree, color, width, dash, seg_x, y1, seg_x, y2,
                 ));
                 seg_start = None;
@@ -461,7 +466,7 @@ pub(crate) fn render_transparent_borders(
         if let Some(start) = seg_start {
             let y1 = table_y + row_y[start];
             let y2 = table_y + row_y.get(v_col.len()).copied().unwrap_or(row_y[start]);
-            nodes.extend(create_single_line(
+            nodes.extend(create_editor_only_line(
                 tree, color, width, dash, seg_x, y1, seg_x, y2,
             ));
         }
@@ -717,6 +722,22 @@ fn create_single_line(
             (y2 - y1).abs().max(width),
         ),
     )]
+}
+
+fn create_editor_only_line(
+    tree: &mut PageRenderTree,
+    color: u32,
+    width: f64,
+    dash: StrokeDash,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
+) -> Vec<RenderNode> {
+    create_single_line(tree, color, width, dash, x1, y1, x2, y2)
+        .into_iter()
+        .map(RenderNode::with_editor_only)
+        .collect()
 }
 
 fn border_line_type_from_code(code: u8) -> BorderLineType {
@@ -1096,7 +1117,7 @@ mod tests {
         let col_widths =
             base_widths_hu.map(|width| crate::renderer::hwpunit_to_px(width as i32, DPI));
 
-        let row_col_x = build_row_col_x(&table, &col_widths, 3, 3, 0.0, DPI);
+        let row_col_x = build_row_col_x(&table, &col_widths, 3, 3, 0.0, DPI, 1.0);
         let expected_first_boundary = col_widths[0];
         let expected_last_width = col_widths[2];
 

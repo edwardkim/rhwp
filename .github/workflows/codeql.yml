@@ -112,6 +112,11 @@ jobs:
               return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
             }
 
+            function isCurrentBaseReviewMerge(commit, baseSha) {
+              const parents = commit.parents || [];
+              return parents.length === 2 && parents.some((parent) => parent.sha === baseSha);
+            }
+
             function latestRun(runs) {
               return runs
                 .slice()
@@ -173,12 +178,23 @@ jobs:
 
                 const reviewOnly = files.every((file) => isAllowedReviewPath(file));
                 if (reviewOnly) {
-                  if ((commit.parents || []).length !== 1) {
-                    setResult(false, `${reviewOnlyLabel(files)}-merge-commit:${sha}`);
-                    return;
+                  const parents = commit.parents || [];
+                  if (parents.length === 1) {
+                    trailingReviewOnlyCommits += 1;
+                    continue;
                   }
-                  trailingReviewOnlyCommits += 1;
-                  continue;
+                  // #3233: a docs-only Update branch merge can be the already-verified
+                  // candidate after one or more trailing review-record commits. It must
+                  // be exactly a merge of the current PR base; all other merge shapes
+                  // retain the conservative full-CodeQL fallback.
+                  if (trailingReviewOnlyCommits > 0
+                    && isCurrentBaseReviewMerge(commit, pr.base.sha)) {
+                    candidateSha = sha;
+                    core.info(`using current-base ${reviewOnlyLabel(files)} merge as candidate SHA ${candidateSha}`);
+                    break;
+                  }
+                  setResult(false, `${reviewOnlyLabel(files)}-merge-not-reusable:${sha}`);
+                  return;
                 }
 
                 candidateSha = sha;

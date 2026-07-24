@@ -1222,6 +1222,7 @@ impl LayoutEngine {
                                     };
                                     let nested_w = if nested_table.common.width > 0 {
                                         hwpunit_to_px(nested_table.common.width as i32, self.dpi)
+                                            * self.render_table_width_scale(nested_table)
                                     } else {
                                         inner_area.width
                                     };
@@ -1801,6 +1802,7 @@ impl LayoutEngine {
             row_count,
             cell_spacing,
             self.dpi,
+            self.render_table_width_scale(table),
         );
 
         let table_width = row_col_x

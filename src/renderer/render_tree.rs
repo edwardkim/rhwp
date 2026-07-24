@@ -115,6 +115,9 @@ pub struct RenderNode {
     pub dirty: bool,
     /// 가시성
     pub visible: bool,
+    /// 문단 부호·투명 테두리처럼 편집 화면에서만 보여야 하는 보조 표시.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub editor_only: bool,
 }
 
 impl RenderNode {
@@ -127,6 +130,7 @@ impl RenderNode {
             children: Vec::new(),
             dirty: true,
             visible: true,
+            editor_only: false,
         }
     }
 
@@ -139,6 +143,12 @@ impl RenderNode {
     /// 기존 노드에 레이어 메타데이터를 부여한다.
     pub fn set_layer(&mut self, layer: RenderLayerInfo) {
         self.layer = Some(layer);
+    }
+
+    /// 출력/인쇄 profile에서 제외할 편집 전용 노드로 표시한다.
+    pub fn with_editor_only(mut self) -> Self {
+        self.editor_only = true;
+        self
     }
 
     /// dirty 플래그 설정 (변경된 노드만 재렌더링)

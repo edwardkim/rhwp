@@ -2,7 +2,9 @@
 
 use super::super::helpers::get_textbox_from_shape;
 use super::super::queries::field_query::rebuild_char_offsets;
-use crate::document_core::{ActiveFieldInfo, DocumentCore};
+use crate::document_core::{
+    ActiveFieldInfo, DeferredPaginationDescriptor, DeferredPaginationTargetStatus, DocumentCore,
+};
 use crate::error::HwpError;
 use crate::model::control::{Control, FieldType};
 use crate::model::event::DocumentEvent;
@@ -11,6 +13,7 @@ use crate::model::paragraph::Paragraph;
 use crate::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use crate::renderer::composer::{compose_paragraph, reflow_line_segs, ComposedParagraph};
 use crate::renderer::page_layout::PageLayoutInfo;
+use crate::renderer::pagination::PageItem;
 use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
 
 fn recalculate_cell_paragraph_vpos(
@@ -123,6 +126,143 @@ fn relative_paragraph_flow_advance(paragraph: &Paragraph) -> Option<i64> {
         i64::from(last.vertical_pos) + i64::from(last.line_height) + i64::from(last.line_spacing)
             - i64::from(first.vertical_pos),
     )
+}
+
+fn mix_structure_fingerprint(hash: &mut u64, value: usize) {
+    for byte in value.to_le_bytes() {
+        *hash ^= u64::from(byte);
+        *hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+    }
+}
+
+fn control_structure_tag(control: &Control) -> usize {
+    match control {
+        Control::SectionDef(_) => 1,
+        Control::ColumnDef(_) => 2,
+        Control::Table(_) => 3,
+        Control::Shape(_) => 4,
+        Control::Picture(_) => 5,
+        Control::Header(_) => 6,
+        Control::Footer(_) => 7,
+        Control::Footnote(_) => 8,
+        Control::Endnote(_) => 9,
+        Control::AutoNumber(_) => 10,
+        Control::NewNumber(_) => 11,
+        Control::PageNumberPos(_) => 12,
+        Control::Bookmark(_) => 13,
+        Control::Hyperlink(_) => 14,
+        Control::Ruby(_) => 15,
+        Control::CharOverlap(_) => 16,
+        Control::PageHide(_) => 17,
+        Control::HiddenComment(_) => 18,
+        Control::Equation(_) => 19,
+        Control::Field(_) => 20,
+        Control::Form(_) => 21,
+        Control::Unknown(_) => 22,
+    }
+}
+
+fn mix_table_structure_fingerprint(hash: &mut u64, table: &crate::model::table::Table) {
+    mix_structure_fingerprint(hash, table.row_count as usize);
+    mix_structure_fingerprint(hash, table.col_count as usize);
+    mix_structure_fingerprint(hash, table.cells.len());
+    for cell in &table.cells {
+        mix_structure_fingerprint(hash, cell.row as usize);
+        mix_structure_fingerprint(hash, cell.col as usize);
+        mix_structure_fingerprint(hash, cell.row_span as usize);
+        mix_structure_fingerprint(hash, cell.col_span as usize);
+        mix_structure_fingerprint(hash, cell.paragraphs.len());
+        for paragraph in &cell.paragraphs {
+            mix_structure_fingerprint(hash, paragraph.controls.len());
+            for control in &paragraph.controls {
+                mix_structure_fingerprint(hash, control_structure_tag(control));
+                if let Control::Table(nested) = control {
+                    mix_table_structure_fingerprint(hash, nested);
+                }
+            }
+        }
+    }
+}
+
+fn table_structure_fingerprint(table: &crate::model::table::Table) -> u64 {
+    // 고정 FNV-1a 조합으로 row/column/span뿐 아니라 셀 문단과 control 구조도 묶는다.
+    // Stage B fast path는 text-only edit만 허용하므로 구조가 달라지면 반드시 fallback한다.
+    let mut hash = 0xcbf2_9ce4_8422_2325_u64;
+    mix_table_structure_fingerprint(&mut hash, table);
+    hash
+}
+
+fn target_table_first_global_page(
+    core: &DocumentCore,
+    section_index: usize,
+    para_index: usize,
+    control_index: usize,
+) -> Option<u32> {
+    let mut global_page = 0_u32;
+    for (result_section, result) in core.pagination.iter().enumerate() {
+        for page in &result.pages {
+            if result_section == section_index
+                && page.column_contents.iter().any(|column| {
+                    column.items.iter().any(|item| {
+                        matches!(
+                            item,
+                            PageItem::Table {
+                                para_index: item_para,
+                                control_index: item_control,
+                            }
+                                | PageItem::PartialTable {
+                                    para_index: item_para,
+                                    control_index: item_control,
+                                    ..
+                            } if *item_para == para_index && *item_control == control_index
+                        )
+                    })
+                })
+            {
+                return Some(global_page);
+            }
+            global_page = global_page.saturating_add(1);
+        }
+    }
+    None
+}
+
+impl DocumentCore {
+    /// [#2424] resumable step 시작 전에 descriptor가 여전히 같은 text-only table edit을
+    /// 가리키는지 좌표로 다시 조회한다. 불일치하면 shadow state를 commit하지 않고 기존
+    /// full pagination으로 fallback해야 한다.
+    pub(crate) fn deferred_pagination_target_status(
+        &self,
+        descriptor: &DeferredPaginationDescriptor,
+    ) -> DeferredPaginationTargetStatus {
+        if descriptor.revision != self.deferred_pagination_revision
+            || self.deferred_pagination_descriptor.as_ref() != Some(descriptor)
+        {
+            return DeferredPaginationTargetStatus::Superseded;
+        }
+
+        let Some(section) = self.document.sections.get(descriptor.section_index) else {
+            return DeferredPaginationTargetStatus::TargetMissing;
+        };
+        let Some(paragraph) = section.paragraphs.get(descriptor.para_index) else {
+            return DeferredPaginationTargetStatus::TargetMissing;
+        };
+        let Some(Control::Table(table)) = paragraph.controls.get(descriptor.control_index) else {
+            return DeferredPaginationTargetStatus::TargetMissing;
+        };
+        if table
+            .cells
+            .get(descriptor.cell_index)
+            .and_then(|cell| cell.paragraphs.get(descriptor.cell_para_index))
+            .is_none()
+        {
+            return DeferredPaginationTargetStatus::TargetMissing;
+        }
+        if table_structure_fingerprint(table) != descriptor.table_structure_fingerprint {
+            return DeferredPaginationTargetStatus::StructureChanged;
+        }
+        DeferredPaginationTargetStatus::Current
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -870,7 +1010,7 @@ impl DocumentCore {
             None,
         );
 
-        let (flow_advance_after, local_contribution_after, cell_para_after) = {
+        let (flow_advance_after, local_contribution_after) = {
             let cell_para_after = self
                 .get_cell_paragraph_ref(
                     section_idx,
@@ -887,19 +1027,18 @@ impl DocumentCore {
                 crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                     cell_para_after,
                 ),
-                cell_para_after.clone(),
             )
         };
         let cell_flow_changed = flow_advance_before != flow_advance_after;
 
         // Table의 일반 cell만 pointer-key layout cache의 owner다. 표 캡션 sentinel과
         // Shape/Picture 텍스트 경로에는 cell_units cache가 없으므로 적용하지 않는다.
-        if cell_idx != 65534 {
+        if cell_idx != super::super::TABLE_CAPTION_CELL_SENTINEL {
             let control = &self.document.sections[section_idx].paragraphs[parent_para_idx].controls
                 [control_idx];
             if let Control::Table(table) = control {
                 if let Some(edited_cell) = table.cells.get(cell_idx) {
-                    self.layout_engine.invalidate_cell_units_after_text_insert(
+                    self.layout_engine.invalidate_cell_units_after_text_edit(
                         edited_cell,
                         table,
                         local_contribution_before,
@@ -909,25 +1048,67 @@ impl DocumentCore {
             }
         }
 
-        // [#2214/#2195] paginate 시 생성된 render_normalized는 원본 IR의 파생
-        // 복사본이다. deferred edit은 pagination을 실행하지 않으므로 원본만 바꾸면
-        // page tree가 편집 전 복사본을 계속 읽는다. 편집된 cell paragraph만 같은
-        // normalized path에 반영하고 그 복사본의 pointer-key cache도 국소 제거한다.
+        // [#2308] editable IR이 단일 권위 상태다. clone paragraph를 mirror하지 않고
+        // 명시적 logical path revision만 갱신한다. #2004 호환 projection이 있는
+        // 섹션은 transient render 전에 해당 revision으로 재파생한다.
+        let has_compat_projection = self
+            .render_normalization
+            .sections
+            .get(section_idx)
+            .is_some_and(|section| section.is_some());
+        self.mark_render_normalization_path_dirty(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        )?;
         if !paginate_immediately {
-            self.refresh_render_normalized_cell_paragraph_after_edit(
-                section_idx,
-                parent_para_idx,
-                control_idx,
-                cell_idx,
-                cell_para_idx,
-                cell_para_after,
-                local_contribution_before,
-                local_contribution_after,
-            );
+            let target_first_page =
+                target_table_first_global_page(self, section_idx, parent_para_idx, control_idx);
+            let table_structure_fingerprint = match &self.document.sections[section_idx].paragraphs
+                [parent_para_idx]
+                .controls[control_idx]
+            {
+                Control::Table(table) => table_structure_fingerprint(table),
+                _ => 0,
+            };
+            let pending_flow_changed =
+                self.deferred_pagination_descriptor
+                    .as_ref()
+                    .is_some_and(|pending| {
+                        pending.section_index == section_idx
+                            && pending.para_index == parent_para_idx
+                            && pending.control_index == control_idx
+                            && pending.cell_index == cell_idx
+                            && pending.cell_para_index == cell_para_idx
+                            && pending.cell_flow_changed
+                    });
+            self.deferred_pagination_revision =
+                self.deferred_pagination_revision.wrapping_add(1).max(1);
+            self.deferred_pagination_descriptor = Some(DeferredPaginationDescriptor {
+                revision: self.deferred_pagination_revision,
+                section_index: section_idx,
+                para_index: parent_para_idx,
+                control_index: control_idx,
+                cell_index: cell_idx,
+                cell_para_index: cell_para_idx,
+                // 같은 target의 여러 deferred input 사이에서 한번 관측한 flow boundary는
+                // full pagination이 소비할 때까지 유지한다.
+                cell_flow_changed: pending_flow_changed || cell_flow_changed,
+                target_first_page,
+                table_structure_fingerprint,
+            });
         }
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변, section dirty만 설정)
         self.document.sections[section_idx].raw_stream = None;
-        self.mark_section_dirty(section_idx);
+        if has_compat_projection {
+            self.invalidate_render_normalization_section(section_idx);
+        }
+        if has_compat_projection && !paginate_immediately {
+            self.compute_render_normalized();
+        }
+        self.mark_section_pagination_dirty(section_idx);
         self.invalidate_page_tree_cache_from(0);
         if paginate_immediately {
             self.paginate_if_needed();
@@ -962,6 +1143,54 @@ impl DocumentCore {
         char_offset: usize,
         count: usize,
     ) -> Result<String, HwpError> {
+        self.delete_text_in_cell_native_impl(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            char_offset,
+            count,
+            true,
+        )
+    }
+
+    /// 표 셀 내부 단일 텍스트 삭제 후 전체 페이지네이션을 호출자가 지연한다.
+    /// 결과 JSON의 `cellFlowChanged`는 상대 line advance 변화 여부다.
+    pub fn delete_text_in_cell_native_deferred_pagination(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        count: usize,
+    ) -> Result<String, HwpError> {
+        self.delete_text_in_cell_native_impl(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            char_offset,
+            count,
+            false,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn delete_text_in_cell_native_impl(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        count: usize,
+        paginate_immediately: bool,
+    ) -> Result<String, HwpError> {
         // 셀 문단 접근 검증 및 텍스트 삭제
         let cell_para = self.get_cell_paragraph_mut(
             section_idx,
@@ -970,6 +1199,11 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         )?;
+        let flow_advance_before = relative_paragraph_flow_advance(cell_para);
+        let local_contribution_before =
+            crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
+                cell_para,
+            );
         cell_para.delete_text_at(char_offset, count);
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
@@ -992,10 +1226,103 @@ impl DocumentCore {
             None,
         );
 
+        let (flow_advance_after, local_contribution_after) = {
+            let cell_para_after = self
+                .get_cell_paragraph_ref(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                )
+                .ok_or_else(|| {
+                    HwpError::RenderError("삭제 뒤 셀 문단을 다시 찾을 수 없습니다".to_string())
+                })?;
+            (
+                relative_paragraph_flow_advance(cell_para_after),
+                crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
+                    cell_para_after,
+                ),
+            )
+        };
+        let cell_flow_changed = flow_advance_before != flow_advance_after;
+
+        // Table의 일반 cell만 pointer-key layout cache의 owner다.
+        if cell_idx != 65534 {
+            let control = &self.document.sections[section_idx].paragraphs[parent_para_idx].controls
+                [control_idx];
+            if let Control::Table(table) = control {
+                if let Some(edited_cell) = table.cells.get(cell_idx) {
+                    self.layout_engine.invalidate_cell_units_after_text_edit(
+                        edited_cell,
+                        table,
+                        local_contribution_before,
+                        local_contribution_after,
+                    );
+                }
+            }
+        }
+
+        let refresh_compat_projection = !paginate_immediately
+            && self
+                .render_normalization
+                .sections
+                .get(section_idx)
+                .is_some_and(|section| section.is_some());
+        self.mark_render_normalization_path_dirty(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        )?;
+        if !paginate_immediately {
+            let target_first_page =
+                target_table_first_global_page(self, section_idx, parent_para_idx, control_idx);
+            let table_structure_fingerprint = match &self.document.sections[section_idx].paragraphs
+                [parent_para_idx]
+                .controls[control_idx]
+            {
+                Control::Table(table) => table_structure_fingerprint(table),
+                _ => 0,
+            };
+            let pending_flow_changed =
+                self.deferred_pagination_descriptor
+                    .as_ref()
+                    .is_some_and(|pending| {
+                        pending.section_index == section_idx
+                            && pending.para_index == parent_para_idx
+                            && pending.control_index == control_idx
+                            && pending.cell_index == cell_idx
+                            && pending.cell_para_index == cell_para_idx
+                            && pending.cell_flow_changed
+                    });
+            self.deferred_pagination_revision =
+                self.deferred_pagination_revision.wrapping_add(1).max(1);
+            self.deferred_pagination_descriptor = Some(DeferredPaginationDescriptor {
+                revision: self.deferred_pagination_revision,
+                section_index: section_idx,
+                para_index: parent_para_idx,
+                control_index: control_idx,
+                cell_index: cell_idx,
+                cell_para_index: cell_para_idx,
+                cell_flow_changed: pending_flow_changed || cell_flow_changed,
+                target_first_page,
+                table_structure_fingerprint,
+            });
+        }
+
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변)
         self.document.sections[section_idx].raw_stream = None;
-        self.mark_section_dirty(section_idx);
-        self.paginate_if_needed();
+        if refresh_compat_projection {
+            self.invalidate_render_normalization_section(section_idx);
+            self.compute_render_normalized();
+        }
+        self.mark_section_pagination_dirty(section_idx);
+        self.invalidate_page_tree_cache_from(0);
+        if paginate_immediately {
+            self.paginate_if_needed();
+        }
 
         self.event_log.push(DocumentEvent::CellTextChanged {
             section: section_idx,
@@ -1003,10 +1330,15 @@ impl DocumentCore {
             ctrl: control_idx,
             cell: cell_idx,
         });
-        Ok(super::super::helpers::json_ok_with(&format!(
-            "\"charOffset\":{}",
-            char_offset
-        )))
+        let result_fields = if paginate_immediately {
+            format!("\"charOffset\":{}", char_offset)
+        } else {
+            format!(
+                "\"charOffset\":{},\"cellFlowChanged\":{}",
+                char_offset, cell_flow_changed
+            )
+        };
+        Ok(super::super::helpers::json_ok_with(&result_fields))
     }
 
     /// 표 셀 또는 글상자 내부 문단에 대한 가변 참조를 얻는다.
