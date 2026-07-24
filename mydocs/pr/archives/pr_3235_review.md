@@ -24,8 +24,9 @@
 ## 후속 fast-pass 검증
 
 - 이 문서와 오늘할일 기록만을 뒤따르는 single-parent 문서 커밋으로 push한다. 변경 경로는 `mydocs/orders/20260724.md`와 이 archive review 파일뿐이다.
-- push 후 preflight 성공, heavy job의 `skipped` 표시, PR의 merge 가능 상태를 확인한다. 기대와 달리 full CI가 재실행되거나 preflight가 실패하면 원인을 기록하고 merge하지 않는다.
+- 문서 head `82844486b`에서 CI·CodeQL·Render Diff preflight가 모두 성공했고 Build & Test 집계도 성공했다. Lint, Native Skia tests, Frontend package gates, Build test archive, 8개 default-feature shard, CodeQL 분석, Canvas visual diff는 모두 `skipped`였다.
+- 이 head는 `CLEAN`·`MERGEABLE` 상태가 됐다. 기대와 달리 full CI가 재실행되거나 preflight가 실패하지 않아, #3123에서 확인한 base 일치 문서-only Update branch merge 재사용 경로가 실제로 동작함을 확인했다.
 
 ## 최종 권고
 
-- 문서 전용 후속 push의 실제 결과 확인이 남아 있다. 그 결과가 fast-pass 조건과 merge 가능 상태를 모두 만족하면 #3235를 merge 후보로 권고한다.
+- fast-pass 조건과 merge 가능 상태를 모두 충족했다. 최종 문서 보완 head도 같은 문서-only 경로로 확인한 뒤 #3235를 merge 후보로 권고한다.
