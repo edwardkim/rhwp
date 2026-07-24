@@ -13,6 +13,20 @@ use crate::model::shape::TextWrap;
 use crate::model::style::ImageFillMode;
 use crate::model::{ColorRef, Rect};
 
+/// 가운뎃점 `·`(U+00B7) 합성 원의 반지름 / em (Task #257, #2999).
+///
+/// Task #257 이 폰트 대체 시 글리프 LSB·폭 불일치를 피하려고 `·` 를 폰트 비의존
+/// 벡터로 그린다. 상수는 한글 COM PDF 12문서 실측으로 보정했다 — 문자 bbox
+/// 내부 잉크를 900dpi 로 측정한 폰트·크기 그룹별 중앙값이 0.053~0.080 범위이고,
+/// 양자화 영향이 작은 fs ≥ 12 그룹의 중앙값이 0.0598 이다. 종전 값 0.08 은 그
+/// 범위의 최상단(휴먼명조 0.0798)이라 대부분의 폰트에서 반지름 ~1.3배, 면적
+/// ~1.8배 과대였다.
+pub const MIDDLE_DOT_RADIUS_EM: f64 = 0.060;
+
+/// 가운뎃점 합성 원의 세로 중심 오프셋 / em — baseline 기준 위쪽.
+/// 실측 중앙값 0.3520~0.3559 로 종전 값이 정확해 유지한다.
+pub const MIDDLE_DOT_CY_OFFSET_EM: f64 = 0.35;
+
 pub const REAL_PICTURE_WATERMARK_PAGE_OPACITY: f64 = 0.26;
 pub const REAL_PICTURE_WATERMARK_FILL_OPACITY: f64 = 0.15;
 pub const REAL_PICTURE_WATERMARK_OPACITY: f64 = REAL_PICTURE_WATERMARK_PAGE_OPACITY;
