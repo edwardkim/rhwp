@@ -66,6 +66,66 @@
       "baselineTier": "extended"
     },
     {
+      "id": "paragraph-text-marks",
+      "file": "lseg-05-tab.hwp",
+      "category": "paragraph",
+      "page": 0,
+      "notes": "Paragraph-mark view mode covering positioned spaces, tabs, and line-end control visuals.",
+      "viewOptions": {
+        "showParagraphMarks": true,
+        "showControlCodes": false
+      },
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "minimumInkPixels": 1000,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.02,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.03
+      },
+      "canvaskitReadinessGate": true,
+      "canvaskitPerformanceBudget": {
+        "maxColdDocumentLoadAndInitialRenderMs": 30000,
+        "maxWarmReplayMs": 5000,
+        "maxWarmRendererDurationMs": 4000,
+        "maxImageCachePixels": 67108864
+      },
+      "diagnosticAxes": [
+        "control-mark",
+        "paragraph",
+        "text-special-visual"
+      ],
+      "baselineTier": "representative"
+    },
+    {
+      "id": "pua-special-glyphs",
+      "file": "pua-test.hwp",
+      "category": "font",
+      "page": 0,
+      "notes": "PUA and circled-character sample for positioned CanvasKit glyph fallback coverage.",
+      "browserParityThresholds": {
+        "maxDiffRatio": null,
+        "minimumInkPixels": 20000,
+        "inkMaskNeighborhoodRadius": 3,
+        "inkMaskMaxDiffRatio": 0.01,
+        "nonInkMaxDiffPixels": 0,
+        "solidInkMaxDiffRatio": 0.03
+      },
+      "diagnosticAxes": [
+        "font",
+        "glyph-fallback",
+        "special-character"
+      ],
+      "canvaskitReadinessGate": true,
+      "canvaskitPerformanceBudget": {
+        "maxColdDocumentLoadAndInitialRenderMs": 30000,
+        "maxWarmReplayMs": 5000,
+        "maxWarmRendererDurationMs": 4000,
+        "maxImageCachePixels": 67108864
+      },
+      "baselineTier": "representative"
+    },
+    {
       "id": "paragraph-spacing",
       "file": "lseg-03-spacing.hwp",
       "category": "paragraph",

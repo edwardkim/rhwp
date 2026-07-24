@@ -558,6 +558,22 @@ const fixtures: PatchFixture[] = [
       paddingBottom: 0,
     },
   },
+  {
+    name: 'image brightness and contrast clamp to the -100..100 HTML input range',
+    objectType: 'image',
+    update(form) {
+      form.image = { brightness: '250', contrast: '-999' };
+    },
+    expected: { brightness: 100, contrast: -100 },
+  },
+  {
+    name: 'image scale clamps to the 1..1000 HTML input range',
+    objectType: 'image',
+    update(form) {
+      form.image.scale = { x: '5000', y: '-10' };
+    },
+    expected: { width: 10000, height: 8 },
+  },
 ];
 
 for (const fixture of fixtures) {

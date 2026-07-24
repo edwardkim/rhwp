@@ -424,8 +424,10 @@ function appendImageScale(
   form: PicturePropsApplyForm,
 ): void {
   if (form.common.sizeProtect || !form.image.scale || !(props.originalWidth > 0)) return;
-  const width = Math.round(props.originalWidth * numberOr(form.image.scale.x, 100) / 100);
-  const height = Math.round(props.originalHeight * numberOr(form.image.scale.y, 100) / 100);
+  const scaleX = Math.max(1, Math.min(1000, numberOr(form.image.scale.x, 100)));
+  const scaleY = Math.max(1, Math.min(1000, numberOr(form.image.scale.y, 100)));
+  const width = Math.round(props.originalWidth * scaleX / 100);
+  const height = Math.round(props.originalHeight * scaleY / 100);
   addChanged(patch, 'width', width, props.width);
   addChanged(patch, 'height', height, props.height);
 }
@@ -452,8 +454,14 @@ function appendImageEffects(
     const effect = form.selectedEffect === 'Original' ? 'RealPic' : form.selectedEffect;
     addChanged(patch, 'effect', effect, props.effect ?? 'RealPic');
   }
-  if (form.brightness !== undefined) addChanged(patch, 'brightness', integerOr(form.brightness, 0), props.brightness ?? 0);
-  if (form.contrast !== undefined) addChanged(patch, 'contrast', integerOr(form.contrast, 0), props.contrast ?? 0);
+  if (form.brightness !== undefined) {
+    const brightness = Math.max(-100, Math.min(100, integerOr(form.brightness, 0)));
+    addChanged(patch, 'brightness', brightness, props.brightness ?? 0);
+  }
+  if (form.contrast !== undefined) {
+    const contrast = Math.max(-100, Math.min(100, integerOr(form.contrast, 0)));
+    addChanged(patch, 'contrast', contrast, props.contrast ?? 0);
+  }
   if (form.transparency !== undefined) {
     const transparency = Math.max(0, Math.min(100, integerOr(form.transparency, 0)));
     addChanged(patch, 'transparency', transparency, props.transparency ?? 0);

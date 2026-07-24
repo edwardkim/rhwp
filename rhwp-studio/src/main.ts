@@ -343,7 +343,6 @@ async function initialize(): Promise<void> {
             extensionViewerSettings,
           );
           const blockers = plan.unavailableFonts.map(font => `fontUnavailable:${font}`);
-          if (wasm.getShowParagraphMarks()) blockers.push('viewOption:showParagraphMarks');
           if (wasm.getShowControlCodes()) blockers.push('viewOption:showControlCodes');
           return withCanvasKitSurfaceBlockers(
             report,
