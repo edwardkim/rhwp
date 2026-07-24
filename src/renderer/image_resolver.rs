@@ -22,10 +22,18 @@ use crate::renderer::render_tree::{
 //
 // 변환은 입력 바이트만으로 결과가 정해지는 순수 함수다. 그래서 내용 지문을 키로 쓰면
 // 문서 쪽에서 무효화를 알려 줄 필요가 없다 — 바이트가 바뀌면 키가 바뀐다.
+//
+// 세 경로(paint/builder.rs, paint/json.rs, renderer/skia/image_conv.rs)와 svg·web_canvas·
+// emf 경로는 모두 `&[u8]` 만 넘긴다. `bin_data_id` 로 키를 잡으려면 그 전부에 신원을
+// 실어 날라야 하고, EMF 안에 박힌 BMP 처럼 애초에 BinData 가 아닌 그림도 있다.
 
-/// 메모 상한(byte). 회색 JPEG 은 PNG 로 재인코딩한 결과를 들고 있어야 하므로 항목 수가
-/// 아니라 바이트로 제한한다. 변환하지 않는 색 사진은 결과가 `None` 이라 거의 공짜다.
+/// 메모 상한(byte). 회색 JPEG 은 PNG 로 재인코딩한 결과를 들고 있어야 하므로 바이트로
+/// 제한한다.
 const MAX_MEMO_BYTES: usize = 16 * 1024 * 1024;
+
+/// 항목 수 상한. 변환하지 않는 색 사진은 결과가 `None` 이라 바이트를 전혀 차지하지 않아
+/// 바이트 예산만으로는 영영 밀려나지 않는다. 조회가 선형 탐색이라 항목 수도 묶는다.
+const MAX_MEMO_ENTRIES: usize = 64;
 
 /// 변환 종류. 같은 바이트라도 어떤 변환을 거쳤느냐에 따라 결과가 다르다.
 #[derive(Clone, Copy)]
@@ -61,7 +69,7 @@ impl ConversionMemo {
         if size > MAX_MEMO_BYTES {
             return;
         }
-        while self.bytes + size > MAX_MEMO_BYTES {
+        while self.bytes + size > MAX_MEMO_BYTES || self.entries.len() >= MAX_MEMO_ENTRIES {
             let (_, evicted) = self.entries.remove(0);
             self.bytes -= evicted.as_ref().map_or(0, Vec::len);
         }
@@ -99,26 +107,22 @@ fn memoized(
     converted
 }
 
-/// 내용 지문 — 길이와 앞뒤 4KiB 를 섞는다.
+/// 내용 지문 — 바이트 전체를 해싱한다.
 ///
-/// 전체를 해싱하면 그 해싱 자체가 MB 단위 비용이라 메모의 목적을 잃는다. JPEG 은
-/// 앞쪽에 크기·양자화표·허프만표가, 뒤쪽에 엔트로피 데이터 꼬리가 있어 서로 다른
-/// 그림이 길이·앞·뒤 셋 다 같기는 어렵다.
+/// 앞뒤 일부만 뽑는 표본 키는 쓰지 않는다. 무압축 BMP 는 같은 치수면 길이가 정확히
+/// 같고 고정 헤더 뒤에 원시 픽셀이 이어지므로, 위아래 여백이 균일한 두 그림이 길이·앞·뒤
+/// 표본까지 전부 같아진다 — 가운데만 다른 그림이 남의 변환 결과를 받는다.
+///
+/// 해싱은 바이트 수에 비례하지만 상수가 작다. 3.7MB 기준 1.35ms(릴리스)로, 이 메모가
+/// 없앤 285ms 짜리 JPEG 전체 디코드에 비하면 무시할 만하다. `blake3`(2.90ms)도 재 봤지만
+/// 이 키는 세션 안에서만 쓰고 밖으로 나가지 않으므로 싼 쪽을 쓴다.
 fn conversion_key(conversion: Conversion, data: &[u8]) -> u64 {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
 
-    const SAMPLE: usize = 4096;
-
     let mut hasher = DefaultHasher::new();
     (conversion as u8).hash(&mut hasher);
-    data.len().hash(&mut hasher);
-    if data.len() <= SAMPLE * 2 {
-        data.hash(&mut hasher);
-    } else {
-        data[..SAMPLE].hash(&mut hasher);
-        data[data.len() - SAMPLE..].hash(&mut hasher);
-    }
+    data.hash(&mut hasher);
     hasher.finish()
 }
 
@@ -621,7 +625,7 @@ mod tests {
     use super::{
         bmp_bytes_to_png_bytes, grayscale_jpeg_bytes_to_png_bytes, resolve_image_payload,
         watermark_jpeg_bytes_to_hancom_baked_png_bytes, ConversionMemo, CONVERSIONS_RUN,
-        MAX_MEMO_BYTES,
+        MAX_MEMO_BYTES, MAX_MEMO_ENTRIES,
     };
     use crate::paint::ResolvedImageKind;
     use crate::renderer::render_tree::ImageNode;
@@ -646,6 +650,58 @@ mod tests {
     /// 지금까지 실제로 수행된 변환 횟수.
     fn conversions_run() -> usize {
         CONVERSIONS_RUN.with(|runs| runs.get())
+    }
+
+    fn bmp_with_middle_band(mid: [u8; 3]) -> Vec<u8> {
+        let mut img = RgbImage::new(64, 64);
+        for y in 0..64u32 {
+            for x in 0..64u32 {
+                let px = if (24..40).contains(&y) {
+                    Rgb(mid)
+                } else {
+                    Rgb([255, 255, 255])
+                };
+                img.put_pixel(x, y, px);
+            }
+        }
+
+        let mut out = Vec::new();
+        img.write_to(&mut Cursor::new(&mut out), ImageFormat::Bmp)
+            .expect("encode bmp");
+        out
+    }
+
+    /// 앞뒤 일부만 뽑는 표본 키는 다른 그림을 한 항목으로 묶는다.
+    ///
+    /// 무압축 BMP 는 같은 치수면 길이가 정확히 같고, 고정 헤더 뒤에 원시 픽셀이 아래에서
+    /// 위로 이어진다. 위아래 여백이 같으면 길이·앞 4KiB·뒤 4KiB 가 전부 일치해, 가운데만
+    /// 다른 두 그림이 남의 변환 결과를 받는다.
+    #[test]
+    fn images_sharing_length_and_edges_do_not_share_a_result() {
+        let red = bmp_with_middle_band([200, 30, 30]);
+        let blue = bmp_with_middle_band([30, 30, 200]);
+
+        assert_ne!(red, blue);
+        assert_eq!(red.len(), blue.len(), "같은 치수 무압축 BMP 는 길이가 같다");
+        assert_eq!(&red[..4096], &blue[..4096], "앞 4KiB 가 같다");
+        assert_eq!(
+            &red[red.len() - 4096..],
+            &blue[blue.len() - 4096..],
+            "뒤 4KiB 가 같다"
+        );
+
+        let red_png = bmp_bytes_to_png_bytes(&red).expect("red bmp converts");
+        let blue_png = bmp_bytes_to_png_bytes(&blue).expect("blue bmp converts");
+        let decoded = image::load_from_memory(&blue_png)
+            .expect("decode converted blue")
+            .to_rgb8();
+
+        assert_ne!(red_png, blue_png);
+        assert_eq!(
+            decoded.get_pixel(32, 32),
+            &Rgb([30, 30, 200]),
+            "파란 그림 자리에 빨간 그림이 나오면 안 된다"
+        );
     }
 
     /// 같은 그림을 여러 번 해석해도 변환은 한 번만 한다 (#2520).
@@ -721,6 +777,19 @@ mod tests {
         assert!(memo.bytes <= MAX_MEMO_BYTES);
         assert!(memo.get(0).is_none(), "가장 오래된 항목은 밀려나 있다");
         assert!(memo.get(7).is_some(), "가장 최근 항목은 남아 있다");
+    }
+
+    /// 결과가 `None` 인 항목은 바이트를 차지하지 않으므로 항목 수로 묶는다.
+    #[test]
+    fn memo_bounds_entry_count_even_when_results_are_empty() {
+        let mut memo = ConversionMemo::default();
+        for key in 0..(MAX_MEMO_ENTRIES as u64 * 2) {
+            memo.insert(key, None);
+        }
+
+        assert_eq!(memo.bytes, 0);
+        assert!(memo.entries.len() <= MAX_MEMO_ENTRIES);
+        assert!(memo.get(0).is_none(), "가장 오래된 항목은 밀려나 있다");
     }
 
     #[test]
