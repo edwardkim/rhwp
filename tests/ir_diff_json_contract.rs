@@ -10,6 +10,24 @@ use std::process::{Command, Output};
 
 const SAMPLE_A: &str = "samples/hwp3-sample.hwp";
 const SAMPLE_B: &str = "samples/SO-SUEOP.hwp";
+/// 구역 수 차이 경로용: SAMPLE_A(1구역) 과 구역 수가 다른 다구역 문서.
+const SAMPLE_MULTI: &str = "samples/aift.hwp";
+
+/// [#3274] 봉투 계약 불변식 — 이 세 관계가 늘 성립해야 한다.
+/// `identical` ⇔ `diffCount == 0` ⇔ `categories` 가 비어 있음.
+/// 구역 수 차이가 diffCount 에 미집계되던 버그는 바로 이 불변식을 깨뜨렸다
+/// (categories 는 비어있지 않은데 identical:true·diffCount:0).
+fn assert_envelope_invariants(v: &serde_json::Value) {
+    let identical = v["identical"].as_bool().expect("identical bool");
+    let diff_count = v["diffCount"].as_u64().expect("diffCount u64");
+    let cats = v["categories"].as_object().expect("categories 객체");
+    assert_eq!(identical, diff_count == 0, "identical ⇔ diffCount==0: {v}");
+    assert_eq!(
+        identical,
+        cats.is_empty(),
+        "identical ⇔ categories 비어있음: {v}"
+    );
+}
 
 fn sample(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
@@ -67,6 +85,7 @@ fn ir_diff_json_identical_exit_zero() {
     assert_eq!(v["identical"], true, "{v}");
     assert_eq!(v["diffCount"], 0, "{v}");
     assert!(v["categories"].is_object(), "{v}");
+    assert_envelope_invariants(&v);
 }
 
 #[test]
@@ -74,7 +93,12 @@ fn ir_diff_json_differs_exit_three() {
     // [#2707] 계약의 "IR 차이" 코드(3)와 같은 의미 — 파이프라인 게이트가 성립한다.
     let a = sample(SAMPLE_A);
     let b = sample(SAMPLE_B);
-    let args = ["ir-diff", a.to_str().unwrap(), b.to_str().unwrap(), "--json"];
+    let args = [
+        "ir-diff",
+        a.to_str().unwrap(),
+        b.to_str().unwrap(),
+        "--json",
+    ];
     let output = run(&args);
     assert_eq!(
         output.status.code(),
@@ -87,17 +111,78 @@ fn ir_diff_json_differs_exit_three() {
     assert_eq!(v["schemaVersion"], "1.0", "{v}");
     assert_eq!(v["identical"], false, "{v}");
     assert!(v["diffCount"].as_u64().unwrap() >= 1, "{v}");
+    assert!(!v["categories"].as_object().unwrap().is_empty(), "{v}");
+    assert_envelope_invariants(&v);
+}
+
+#[test]
+fn ir_diff_json_section_count_diff_is_counted() {
+    // [#3274 회귀] 구역 수 차이가 diffCount 에 집계되는지 — 종전엔 total_diffs
+    // 선언이 구역 수 비교 뒤에 있어 이 차이가 누락됐고, 구역 하나 덧붙은 변환본이
+    // identical:true·exit 0 으로 게이트를 통과했다.
+    let a = sample(SAMPLE_A); // 1구역
+    let m = sample(SAMPLE_MULTI); // 다구역
+    let args = [
+        "ir-diff",
+        a.to_str().unwrap(),
+        m.to_str().unwrap(),
+        "--json",
+    ];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(3),
+        "{}",
+        describe(&args, &output)
+    );
+
+    let v = parse_stdout_json(&args, &output);
+    // 구역 수 카테고리가 실제로 봉투에 잡혀야 한다.
     let cats = v["categories"].as_object().expect("categories 객체");
-    assert!(!cats.is_empty(), "{v}");
-    // 카테고리 합은 diffCount 이하다(문단 수 차이 등 버킷 밖 집계 허용) — 건전성만 고정.
-    let cat_sum: u64 = cats.values().filter_map(|c| c.as_u64()).sum();
-    assert!(cat_sum >= 1, "{v}");
+    assert!(
+        cats.keys().any(|k| k.contains("구역")),
+        "구역 수 차이가 categories 에 나타나야 합니다: {v}"
+    );
+    // 그리고 그 차이가 diffCount 에도 반영되어 게이트가 성립해야 한다(불변식).
+    assert_eq!(v["identical"], false, "{v}");
+    assert_envelope_invariants(&v);
+}
+
+#[test]
+fn ir_diff_json_flag_not_swallowed_as_value() {
+    // [#3274] 값 누락 옵션이 뒤따르는 플래그를 값으로 삼키지 않는다 — `--max-lines --json`
+    // 에서 --json 이 살아남아 게이트(exit 3)가 성립해야 한다. 종전엔 텍스트 모드로
+    // 떨어져 차이가 있어도 exit 0 으로 조용히 통과했다.
+    let a = sample(SAMPLE_A);
+    let b = sample(SAMPLE_B);
+    let args = [
+        "ir-diff",
+        a.to_str().unwrap(),
+        b.to_str().unwrap(),
+        "--max-lines",
+        "--json",
+    ];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(3),
+        "{}",
+        describe(&args, &output)
+    );
+    let v = parse_stdout_json(&args, &output);
+    assert_eq!(v["schemaVersion"], "1.0", "{v}");
+    assert_eq!(v["identical"], false, "{v}");
 }
 
 #[test]
 fn ir_diff_json_missing_file_exit_runtime_silent_stdout() {
     let a = sample(SAMPLE_A);
-    let args = ["ir-diff", a.to_str().unwrap(), "없는파일-irdiff.hwp", "--json"];
+    let args = [
+        "ir-diff",
+        a.to_str().unwrap(),
+        "없는파일-irdiff.hwp",
+        "--json",
+    ];
     let output = run(&args);
     assert_eq!(
         output.status.code(),
@@ -129,7 +214,11 @@ fn ir_diff_usage_error_exit_two() {
 fn ir_diff_default_mode_missing_file_exit_runtime() {
     // [#3274] 기본 모드도 읽기 실패는 exit 1 (#2707 정렬) — 종전 exit 0 결함 정정.
     let a = sample(SAMPLE_A);
-    let args = ["ir-diff", a.to_str().unwrap(), "없는파일-irdiff-default.hwp"];
+    let args = [
+        "ir-diff",
+        a.to_str().unwrap(),
+        "없는파일-irdiff-default.hwp",
+    ];
     let output = run(&args);
     assert_eq!(
         output.status.code(),

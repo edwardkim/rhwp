@@ -44,7 +44,7 @@ rhwp --version     # 버전
 | 0 | 성공 | 요청한 페이지를 모두 내보냄 |
 | 1 | 런타임 실패 — 읽기·파싱·렌더·쓰기 | 입력 파일 없음, 파싱 실패, 출력 저장 실패 |
 | 2 | 사용법 오류 — 인자 없음, 알 수 없는 옵션/명령, 페이지 범위 초과 | `rhwp export-svg` (인자 없음), `--fontpath` 오타 |
-| 3 | `--verify` IR 차이 | `convert` / `export-hwpx` 전용 (아래 §3) |
+| 3 | IR 차이 검출 | `convert` / `export-hwpx` 의 `--verify` (아래 §3), `ir-diff --json` (#3274) |
 | 4 | `--verify-pages` 페이지 수 불일치 | `convert` / `export-hwpx` 전용 (아래 §3) |
 
 - 알 수 없는 명령·옵션은 **경고 후 진행하지 않고** 즉시 2로 끝난다. 안내는 stderr 로 나간다.
@@ -262,7 +262,7 @@ HML 원본 문서를 의미 보존 HWPML 2.91 XML로 저장한다.
   표(page_break/outer_margin/treat_as_char/wrap/size/offset), 그림·도형(rel_to 등)
 - `--json` (#3274): 판정 봉투 **한 줄** JSON 을 stdout 으로 —
   `{"schemaVersion":"1.0","a","b","identical","diffCount","categories":{카테고리:건수}}`.
-  종료 코드 0=동일 / **3=차이 발견**(§종료 코드 계약의 "IR 차이" 코드와 동일 의미) /
+  종료 코드 0=동일 / **3=차이 발견**(위 "종료 코드 (#2707)" 표의 "IR 차이 검출" 코드와 동일 의미) /
   1=읽기·파싱 실패(stdout 0바이트) / 2=사용법 오류 → 변환 파이프라인 게이트:
   `rhwp ir-diff 원본.hwp 변환본.hwpx --json || 격리처리`
 - 종료 코드 정정(#3274): 기본(텍스트) 모드도 읽기·파싱 실패는 1, 인자 부족은 2 (#2707 정렬).
