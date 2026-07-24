@@ -6103,14 +6103,19 @@ fn ir_diff(args: &[String]) -> i32 {
     // [#3274] --json: 계약 봉투 한 줄(카테고리 요약 포함), 차이 발견 시 exit 3.
     let mut json_mode = false;
 
+    // [#3274] 값을 받는 옵션은 다음 토큰이 플래그(`-` 시작)면 값으로 삼키지 않는다.
+    // 종전엔 `--max-lines --json` 처럼 값을 빠뜨리면 "--json" 이 값으로 소비돼
+    // json 모드가 조용히 꺼지고, 게이트를 기대한 스크립트가 차이를 통과로 오판했다.
+    // (-s/-p/--max-lines 는 모두 비음수만 받으므로 `-` 로 시작하는 값은 없다.)
+    let is_value = |idx: usize| idx < args.len() && !args[idx].starts_with('-');
     let mut i = 2;
     while i < args.len() {
         match args[i].as_str() {
-            "-s" | "--section" if i + 1 < args.len() => {
+            "-s" | "--section" if is_value(i + 1) => {
                 section_filter = args[i + 1].parse().ok();
                 i += 2;
             }
-            "-p" | "--para" if i + 1 < args.len() => {
+            "-p" | "--para" if is_value(i + 1) => {
                 para_filter = args[i + 1].parse().ok();
                 i += 2;
             }
@@ -6118,7 +6123,7 @@ fn ir_diff(args: &[String]) -> i32 {
                 summary_mode = true;
                 i += 1;
             }
-            "--max-lines" if i + 1 < args.len() => {
+            "--max-lines" if is_value(i + 1) => {
                 max_lines = args[i + 1].parse().ok();
                 i += 2;
             }
@@ -6187,17 +6192,23 @@ fn ir_diff(args: &[String]) -> i32 {
         summary_buckets: std::collections::BTreeMap::new(),
     };
 
+    let mut total_diffs = 0u32;
+
     // 구역 수 비교
+    // [#3274] 종전엔 total_diffs 선언이 이 블록 뒤에 있어 구역 수 차이가 집계되지
+    // 않았다. 텍스트 모드에선 차이 라인이 화면에 보여 무해했으나, --json 게이트에서는
+    // 구역 하나가 덧붙은 변환본이 diffCount=0·identical:true·exit 0 으로 통과하는
+    // 치명적 누락이었다(봉투 자기모순). 선언을 앞으로 올리고 여기서도 집계한다.
     if doc_a.sections.len() != doc_b.sections.len() {
         em.diff(format!(
             "구역 수: A={} vs B={}",
             doc_a.sections.len(),
             doc_b.sections.len()
         ));
+        total_diffs += 1;
     }
 
     let sec_count = doc_a.sections.len().min(doc_b.sections.len());
-    let mut total_diffs = 0u32;
 
     for sec_idx in 0..sec_count {
         if let Some(sf) = section_filter {
