@@ -7,6 +7,10 @@
 //! `renderer/typeset.rs::finalize_pages` 가 그 형태였다 — 주석은 `engine.rs` 와 "동일" 이라고
 //! 적혀 있었지만 규칙이 갈라져 있었고, 이제 두 경로가 `ActiveHeaderFooter` 를 공유한다.
 //!
+//! 같은 규칙의 사본이 `queries/rendering.rs` 의 구역 보정에도 있었다. 그쪽은 홀짝만 보고
+//! 구체성을 몰라서, 구역 간 쪽번호 이어짐(carry)이 홀수인 다구역 문서에서 같은 증상이
+//! 남았다 — 이제 그 자리도 `ActiveHeaderFooter` 를 쓴다.
+//!
 //! 검증은 **실제로 그려지는 글자**로 한다. 두 머리말에 서로 다른 표식을 넣고 쪽 렌더 트리에
 //! 어느 쪽 글자가 나오는지 본다 — 사용자가 겪는 증상 그대로다.
 
@@ -29,6 +33,36 @@ fn doc_with_headers(pages: usize, order: &[(u8, &str)]) -> HwpDocument {
         doc.create_header_footer_native(0, true, *apply_to)
             .expect("create header");
         doc.insert_text_in_header_footer_native(0, true, *apply_to, 0, 0, mark)
+            .expect("fill header");
+    }
+    doc
+}
+
+/// 구역 0 을 `first_pages` 쪽으로 두고, 머리말은 **구역 1** 에만 `order` 순서로 만든다.
+///
+/// 구역 1 의 쪽번호는 구역 0 의 마지막 번호에서 이어진다 — `first_pages` 가 홀수면
+/// 구역 1 의 지역 홀짝이 최종 홀짝과 반대가 된다.
+fn doc_two_sections(first_pages: usize, order: &[(u8, &str)]) -> HwpDocument {
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native().expect("blank");
+    doc.insert_text_native(0, 0, 0, "본문").expect("text");
+    for i in 0..first_pages - 1 {
+        doc.insert_page_break_native(0, i, if i == 0 { 2 } else { 0 })
+            .expect("구역 0 쪽 나누기");
+    }
+
+    // 구역 1 = 구역 0 복제 (구역 나누기 편집 API 가 없어 IR 로 만든다)
+    let mut ir = doc.document().clone();
+    let sec0 = ir.sections[0].clone();
+    ir.sections.push(sec0);
+    doc.set_document(ir);
+
+    doc.insert_page_break_native(1, 0, 2)
+        .expect("구역 1 쪽 나누기");
+    for (apply_to, mark) in order {
+        doc.create_header_footer_native(1, true, *apply_to)
+            .expect("create header");
+        doc.insert_text_in_header_footer_native(1, true, *apply_to, 0, 0, mark)
             .expect("fill header");
     }
     doc
@@ -73,6 +107,36 @@ fn odd_header_wins_on_odd_pages_regardless_of_creation_order() {
                     page_number
                 );
             }
+        }
+    }
+}
+
+/// 구역 간 쪽번호 이어짐(carry)이 홀짝을 뒤집어도 구체성이 이긴다.
+///
+/// pagination 은 구역마다 1부터 세는 **지역** 쪽번호로 머리말을 고르고, 앞 구역 번호를
+/// 이어 붙이는 일은 그 뒤에 일어난다. 그래서 carry 가 홀수면 지역 짝수 쪽에 배정된
+/// `양 쪽` 이 최종 홀수 쪽에 그대로 남아, 같은 구역의 `홀수` 전용이 사라졌다.
+///
+/// 같은 문서 모양에서 **앞 구역 쪽수만 1↔2 로 바꿔도 결과가 갈리는 것**이 이 결함의 표식이다.
+#[test]
+fn odd_header_wins_across_section_page_number_carry() {
+    for first_pages in [1usize, 2] {
+        let doc = doc_two_sections(first_pages, &[(2, ODD_MARK), (0, BOTH_MARK)]);
+        for k in 0..2u32 {
+            let page_idx = first_pages as u32 + k;
+            let page_number = page_idx + 1;
+            let expected = if page_number % 2 == 1 {
+                ODD_MARK
+            } else {
+                BOTH_MARK
+            };
+            assert_eq!(
+                drawn_mark(&doc, page_idx),
+                Some(expected),
+                "앞 구역 {}쪽 → 최종 {}쪽 — 홀짝에 더 구체적인 머리말이 그려져야 한다",
+                first_pages,
+                page_number
+            );
         }
     }
 }
