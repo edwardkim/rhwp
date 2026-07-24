@@ -45,12 +45,12 @@ shard는 `needs['native-skia-tests'].result == 'success'`와
 | `git diff --check` | PASS |
 | workflow DAG 계약 Ruby 검사 | PASS — archive/native 공통 조건, shard dual-success, 8개 matrix, `compression-level: 0`, aggregate dependency 확인 |
 
-제품 테스트 명령은 변경하지 않았으므로 이 단계에서 cargo 전체 회귀는 실행하지 않았다. 최종 검증은
-작업지시자 승인 후 생성할 PR의 GitHub Actions에서 Native Skia·archive 병렬 시작, 8개 shard,
-`Build & Test`, CodeQL, Render Diff를 모두 확인하고 기준 run과 시간을 비교한다.
+제품 테스트 명령은 변경하지 않았으므로 이 단계에서 cargo 전체 회귀는 실행하지 않았다. 이 PR의
+GitHub Actions에서는 Native Skia·archive 병렬 시작, 8개 shard, `Build & Test`, CodeQL, Render Diff의
+gate 계약만 확인한다. 시간 단축의 전후 비교는 이 변경 merge 뒤 **다음 PR**에서 수행한다.
 
 ## 후속 측정 기준
 
 - 기준: run [30081855067](https://github.com/edwardkim/rhwp/actions/runs/30081855067), 전체 26분 48초
 - 최근 기준: [#3265 update-branch run 30094656772](https://github.com/edwardkim/rhwp/actions/runs/30094656772), Native Skia 4분 8초, archive 7분 56초, 최장 shard 3분 4초
-- PR CI 후 기록할 값: Native·archive 시작/종료 시각, artifact upload/download, shard별 nextest, 전체 wall-clock
+- 다음 PR에서 기록할 값: Native·archive 시작/종료 시각, artifact upload/download, shard별 nextest, 전체 wall-clock

@@ -22,8 +22,8 @@ writer 충돌은 없다. PR run은 두 cache 모두 restore-only다.
 
 기준 run [30081855067](https://github.com/edwardkim/rhwp/actions/runs/30081855067)에서는 Native Skia
 7분 27초 뒤 archive 7분 56초가 시작해 전체 26분 48초가 걸렸다. 이 변경은 성공 경로에서 두 구간을
-겹쳐 약 4–8분의 critical path 단축을 목표로 한다. 실제 절감값은 최신 PR CI의 job 시작·완료 시각으로
-판정한다.
+겹쳐 약 4–8분의 critical path 단축을 목표로 한다. 작업지시자 지시에 따라 실제 절감값은 이 PR이
+merge된 뒤 **다음 PR**에서의 job 시작·완료 시각으로 판정한다.
 
 ### 실패 전파 보존
 
@@ -50,7 +50,7 @@ writer 충돌은 없다. PR run은 두 cache 모두 restore-only다.
 
 Rust·TypeScript 제품 코드와 실행할 테스트 명령은 바꾸지 않았다. 따라서 로컬 cargo 전체 회귀를 중복 실행하지
 않고, 최신 PR CI에서 Native Skia, test archive, 8개 default-feature shard, `Build & Test`, CodeQL,
-Render Diff의 실제 동작과 시간을 최종 확인한다.
+Render Diff의 gate 동작을 최종 확인한다. 시간 단축 측정은 merge 뒤 다음 PR에서 수행한다.
 
 ## 범위 외와 리스크
 
@@ -63,4 +63,5 @@ Render Diff의 실제 동작과 시간을 최종 확인한다.
 ## 최종 권고
 
 최신 PR head의 GitHub Actions가 통과하고, Native Skia와 archive의 병렬 시작 및 shard dual-success
-차단 계약을 확인한 뒤 작업지시자 승인으로 ready 전환·merge를 판단한다.
+차단 계약을 확인한 뒤 작업지시자 승인으로 ready 전환·merge를 판단한다. #3266의 시간 단축 완료 판정은
+다음 PR의 실측까지 보류한다.
