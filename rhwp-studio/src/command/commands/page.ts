@@ -4,6 +4,7 @@ import { PageBorderDialog } from '@/ui/page-border-dialog';
 import { SectionSettingsDialog } from '@/ui/section-settings-dialog';
 import { ColumnSettingsDialog } from '@/ui/column-settings-dialog';
 import { NewNumberDialog } from '@/ui/new-number-dialog';
+import { InsertFieldInHeaderFooterCommand } from '@/engine/command';
 
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
   return {
@@ -73,13 +74,23 @@ function insertHfField(
   const cursor = (ih as any).cursor;
   if (!cursor || !cursor.isInHeaderFooter()) return;
   const isHeader = cursor.headerFooterMode === 'header';
+  const target = { sectionIdx: cursor.hfSectionIdx, isHeader, applyTo: cursor.hfApplyTo };
+  const paraIdx = cursor.hfParaIdx;
+  const charOffset = cursor.hfCharOffset;
   try {
     const result = services.wasm.insertFieldInHf(
-      cursor.hfSectionIdx, isHeader, cursor.hfApplyTo,
-      cursor.hfParaIdx, cursor.hfCharOffset, fieldType,
+      target.sectionIdx, isHeader, target.applyTo, paraIdx, charOffset, fieldType,
     );
     if (result.ok && result.charOffset !== undefined) {
-      cursor.setHfCursorPosition(cursor.hfParaIdx, result.charOffset);
+      cursor.setHfCursorPosition(paraIdx, result.charOffset);
+      // [Task #3212] 이미 적용된 삽입을 역연산 명령으로 기록한다(#2337 HF 커맨드와 동형).
+      // 마커 길이는 삽입 결과 오프셋 차이로 실측해, 필드 종류가 늘어도 역연산이 어긋나지 않게 한다.
+      ih.executeOperation({
+        kind: 'record',
+        command: new InsertFieldInHeaderFooterCommand(
+          target, paraIdx, charOffset, fieldType, result.charOffset - charOffset,
+        ),
+      });
     }
     (ih as any).afterEdit?.();
     (ih as any).updateCaret?.();

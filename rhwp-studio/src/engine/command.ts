@@ -982,6 +982,45 @@ export class InsertTextInHeaderFooterCommand implements EditCommand {
   mergeWith(): null { return null; }
 }
 
+/**
+ * [Task #3212] 머리말/꼬리말 필드(쪽 번호·전체 쪽수·파일 이름) 삽입의 역연산 명령.
+ *
+ * 필드는 HF 문단에 제어문자 마커로 들어가므로 역연산은 그 문자 범위 삭제다. HF 모드
+ * '내부' 편집이라 snapshot 으로 기록하면 undo 가 본문 분기를 타 HF 밖으로 튕겨나가므로,
+ * editContext 를 노출하는 이 명령으로 기록해 undo/redo 가 HF 모드와 오프셋을 유지한다.
+ */
+export class InsertFieldInHeaderFooterCommand implements EditCommand {
+  readonly type = 'insertFieldInHeaderFooter';
+  readonly timestamp = Date.now();
+  private lastContext: EditContext;
+
+  constructor(
+    private target: HeaderFooterEditTarget,
+    private paraIdx: number,
+    private charOffset: number,
+    private fieldType: number,
+    /** 필드 마커가 차지한 문자 수 — 호출부가 삽입 결과 오프셋 차이로 실측해 넘긴다. */
+    private markerLength: number,
+  ) {
+    this.lastContext = hfEditContext(target, paraIdx, charOffset + markerLength);
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    wasm.insertFieldInHf(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.charOffset, this.fieldType);
+    this.lastContext = hfEditContext(this.target, this.paraIdx, this.charOffset + this.markerLength);
+    return hfFnStubPosition(this.target.sectionIdx);
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    wasm.deleteTextInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.charOffset, this.markerLength);
+    this.lastContext = hfEditContext(this.target, this.paraIdx, this.charOffset);
+    return hfFnStubPosition(this.target.sectionIdx);
+  }
+
+  editContext(): EditContext { return this.lastContext; }
+  mergeWith(): null { return null; }
+}
+
 export class DeleteTextInHeaderFooterCommand implements EditCommand {
   readonly type = 'deleteTextInHeaderFooter';
   readonly timestamp = Date.now();
