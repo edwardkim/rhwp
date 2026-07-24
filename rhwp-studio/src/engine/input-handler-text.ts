@@ -14,9 +14,14 @@ import {
   InsertTextInFootnoteCommand,
   insertTextWithMutationEffects,
   deleteTextWithMutationEffects,
+  replaceBodyTextWithMutationEffects,
+  canUseDeferredCellTextReplace,
+  replaceCellTextWithMutationEffects,
+  canUseLocalBodyTextReplace,
   cellParaIndexOf,
   IMMEDIATE_TEXT_MUTATION_EFFECTS,
   NO_TEXT_MUTATION_EFFECTS,
+  TextMutationEffectAccumulator,
 } from './command';
 import type { TextMutationEffects } from './command';
 import type { DocumentPosition } from '@/core/types';
@@ -102,6 +107,7 @@ function executeNavigationAction(this: any, action: NavigationAction, shiftKey: 
 }
 
 function processPendingNav(this: any, nav: NavigationKeyInput): void {
+  this.flushDeferredPaginationIfNeeded('before-navigation', false);
   const { code, shiftKey } = nav;
   const platform = detectPlatformKind();
   const action = getNavigationAction(nav, platform);
@@ -486,20 +492,10 @@ export function onInput(this: any, e?: InputEvent): void {
     }
     this.resetRawTextMutationEffects();
 
-    // 이전 조합 텍스트 삭제
-    if (this.compositionLength > 0) {
-      this.deleteTextAt(anchor, this.compositionLength);
-    }
-
-    // 현재 조합 텍스트 삽입
-    if (text) {
-      this.insertTextAtRaw(anchor, text);
-      // 다음 조합 업데이트에서 deleteTextAt 의 삭제 count 로 쓰이므로 scalar 단위.
-      this.compositionLength = charCount(text);
-      this._lastCompositionText = text; // 더블 자음 분리 방지용
-    } else {
-      this.compositionLength = 0;
-    }
+    this.replaceTextAtRaw(anchor, this.compositionLength, text);
+    // 다음 조합 업데이트의 삭제 count는 scalar 단위다.
+    this.compositionLength = charCount(text);
+    if (text) this._lastCompositionText = text;
 
     // cursor.moveTo() 내부의 exact lookup 전에 deferred mutation을 등록하고,
     // 실제 cell-flow 경계에서만 동기 flush한다.
@@ -552,18 +548,8 @@ export function onInput(this: any, e?: InputEvent): void {
     }
     this.resetRawTextMutationEffects();
 
-    // 이전 삽입 전부 삭제
-    if (this._iosLength > 0 && this._iosAnchor) {
-      this.deleteTextAt(this._iosAnchor, this._iosLength);
-    }
-
-    // 현재 div 전체 텍스트를 문서에 삽입 (빈 값이면 삭제만)
-    if (text) {
-      this.insertTextAtRaw(this._iosAnchor, text);
-      this._iosLength = charCount(text);
-    } else {
-      this._iosLength = 0;
-    }
+    this.replaceTextAtRaw(this._iosAnchor, this._iosLength, text);
+    this._iosLength = charCount(text);
 
     const boundaryHandled = this.consumeRawTextMutationBeforeCursor();
     this._iosRequiresFullRefresh = this._iosRequiresFullRefresh || boundaryHandled;
@@ -578,24 +564,19 @@ export function onInput(this: any, e?: InputEvent): void {
       this.cursor.moveTo({ ...this._iosAnchor, charOffset: newOffset });
     }
 
-    // 렌더링 디바운스: 빠른 연속 입력 중에는 렌더링 생략,
-    // 마지막 입력 후 100ms 뒤에 한 번만 렌더링
     clearTimeout(this._iosInputTimer);
     const iosAnchor = this._iosAnchor;
     const iosAfterPos = this.cursor.getPosition();
     const beforePageIndex = this._iosBeforePageIndex;
     const afterPageIndex = this.cursor.getRect()?.pageIndex;
-    this._iosInputTimer = setTimeout(() => {
-      const requiresFullRefresh = this._iosRequiresFullRefresh;
-      this._iosRequiresFullRefresh = false;
-      this.afterTextInputEdit(iosAnchor, iosAfterPos, {
-        insertedText: text,
-        beforePageIndex,
-        afterPageIndex,
-      }, requiresFullRefresh);
-      // 렌더링 후 div 포커스 복원 (afterEdit가 포커스를 뺏을 수 있음)
-      this.textarea.focus();
-    }, 100);
+    const requiresFullRefresh = this._iosRequiresFullRefresh;
+    this._iosRequiresFullRefresh = false;
+    this.afterTextInputEdit(iosAnchor, iosAfterPos, {
+      insertedText: text,
+      beforePageIndex,
+      afterPageIndex,
+    }, requiresFullRefresh);
+    this.textarea.focus();
     return;
   }
 
@@ -691,6 +672,41 @@ export function insertTextAtRaw(this: any, pos: DocumentPosition, text: string):
     return IMMEDIATE_TEXT_MUTATION_EFFECTS;
   }
   return insertTextWithMutationEffects(this.wasm, pos, text);
+}
+
+export function replaceTextAtRaw(
+  this: any,
+  pos: DocumentPosition,
+  deleteCount: number,
+  text: string,
+): TextMutationEffects {
+  if (!this.canInsertTextInFormMode?.(pos)) return NO_TEXT_MUTATION_EFFECTS;
+  if (deleteCount > 0 && !this.canDeleteTextInFormMode?.(pos, deleteCount)) {
+    return NO_TEXT_MUTATION_EFFECTS;
+  }
+  if (
+    !this.cursor.isInHeaderFooter() &&
+    !this.cursor.isInFootnote() &&
+    canUseDeferredCellTextReplace(pos, deleteCount, text)
+  ) {
+    return replaceCellTextWithMutationEffects(this.wasm, pos, deleteCount, text);
+  }
+  if (
+    !this.cursor.isInHeaderFooter() &&
+    !this.cursor.isInFootnote() &&
+    canUseLocalBodyTextReplace(pos, deleteCount, text)
+  ) {
+    return replaceBodyTextWithMutationEffects(this.wasm, pos, deleteCount, text);
+  }
+
+  const effects = new TextMutationEffectAccumulator();
+  if (deleteCount > 0) {
+    effects.add(deleteTextAt.call(this, pos, deleteCount));
+  }
+  if (text.length > 0) {
+    effects.add(insertTextAtRaw.call(this, pos, text));
+  }
+  return effects.consume();
 }
 
 export function deleteTextAt(this: any, pos: DocumentPosition, count: number): TextMutationEffects {

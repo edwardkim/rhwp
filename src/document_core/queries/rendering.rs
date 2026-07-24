@@ -4280,6 +4280,24 @@ impl DocumentCore {
         self.layout_engine.set_render_normalization_overlay(overlay);
     }
 
+    pub(crate) fn refresh_render_normalized_body_paragraph_after_edit(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+    ) {
+        let source_para = self.document.sections[section_idx].paragraphs[para_idx].clone();
+        let source_composed = self.composed[section_idx][para_idx].clone();
+        let Some(Some(section)) = self.render_normalization.sections.get_mut(section_idx) else {
+            return;
+        };
+        if let Some(target) = std::sync::Arc::make_mut(&mut section.paragraphs).get_mut(para_idx) {
+            *target = source_para;
+        }
+        if let Some(target) = std::sync::Arc::make_mut(&mut section.composed).get_mut(para_idx) {
+            *target = source_composed;
+        }
+    }
+
     /// [#2308] 구조가 안정적인 deferred 셀 편집의 logical path revision을 올린다.
     ///
     /// API 호환을 위해 입력의 table-caption sentinel은 여기서만 해석하고, derived-state

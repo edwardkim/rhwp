@@ -33,6 +33,7 @@ export class VirtualScroll {
     } else {
       this.layoutSingleColumn();
     }
+    this.applyHorizontalPanSpace(viewportWidth);
   }
 
   /** 단일 열 배치 (기존 동작) */
@@ -89,6 +90,18 @@ export class VirtualScroll {
     }
     this.totalHeight = rowTop + lastRowMaxH + gap;
     this.totalWidth = Math.max(gridWidth + marginLeft * 2, viewportWidth);
+  }
+
+  private applyHorizontalPanSpace(viewportWidth: number): void {
+    if (viewportWidth <= 0) return;
+    const baseWidth = this.totalWidth;
+    this.pageLefts = this.pageLefts.map((left, pageIdx) => {
+      const resolved = left >= 0
+        ? left
+        : (baseWidth - (this.pageWidths[pageIdx] ?? 0)) / 2;
+      return resolved + viewportWidth;
+    });
+    this.totalWidth = baseWidth + viewportWidth * 2;
   }
 
   /** 뷰포트에 보이는 페이지 인덱스 목록을 반환한다 */
@@ -240,6 +253,10 @@ export class VirtualScroll {
 
   getTotalWidth(): number {
     return this.totalWidth;
+  }
+
+  getCenteredScrollLeft(viewportWidth: number): number {
+    return Math.max(0, (this.totalWidth - viewportWidth) / 2);
   }
 
   isGridMode(): boolean {

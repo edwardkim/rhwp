@@ -15,6 +15,19 @@ import type { DocumentPosition, CellBbox, CellPathLike } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 
 const RHWP_CLIPBOARD_MARKER_RE = /<!--\s*rhwp-studio-clipboard:([A-Za-z0-9._:-]+)\s*-->/;
+const PAGINATION_BOUNDARY_KEYS = new Set([
+  'ArrowLeft',
+  'ArrowRight',
+  'ArrowUp',
+  'ArrowDown',
+  'Home',
+  'End',
+  'PageUp',
+  'PageDown',
+  'Enter',
+  'Tab',
+  'Escape',
+]);
 
 function createRhwpClipboardToken(): string {
   try {
@@ -499,6 +512,10 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       };
     }
     return;
+  }
+
+  if (PAGINATION_BOUNDARY_KEYS.has(e.key)) {
+    this.flushDeferredPaginationIfNeeded('before-navigation', false);
   }
 
   // ─── 머리말/꼬리말 편집 모드 키보드 처리 ──────────────────

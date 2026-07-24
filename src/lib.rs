@@ -16,6 +16,8 @@ pub mod paint;
 pub mod parser;
 pub mod renderer;
 pub mod serializer;
+#[cfg(feature = "subsecond-dev")]
+pub mod subsecond_dev;
 pub mod wasm_api;
 pub mod wmf;
 

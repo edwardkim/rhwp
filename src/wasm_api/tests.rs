@@ -2124,6 +2124,207 @@ fn issue2424_page_count_is_held_until_shadow_layout_commits() {
 }
 
 #[test]
+fn deferred_cell_replace_applies_ime_atomically() {
+    use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+    fn contains_text(node: &RenderNode, needle: &str) -> bool {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.text.contains(needle) {
+                return true;
+            }
+        }
+        node.children
+            .iter()
+            .any(|child| contains_text(child, needle))
+    }
+
+    let mut doc = create_doc_with_table();
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 2, "ㅎ")
+        .expect("seed composition");
+    doc.build_page_render_tree(0).expect("warm page tree");
+
+    let raw = doc
+        .replace_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 2, 1, "하")
+        .expect("atomic composition replace");
+    let result: Value = serde_json::from_str(&raw).expect("replace result json");
+
+    assert_eq!(result["charOffset"].as_u64(), Some(3));
+    assert_eq!(result["cellFlowChanged"].as_bool(), Some(false));
+    match &doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => {
+            let para = &table.cells[0].paragraphs[0];
+            assert_eq!(para.text, "셀A하");
+            assert_eq!(para.char_count, 3);
+            assert_eq!(para.char_offsets, make_char_offsets("셀A하"));
+        }
+        other => panic!("table control expected: {other:?}"),
+    }
+
+    let transient_tree = doc.build_page_render_tree(0).expect("transient page tree");
+    assert!(
+        contains_text(&transient_tree.root, "하"),
+        "warm page tree must expose the final composition before pagination"
+    );
+    assert_eq!(doc.event_log.len(), 2, "seed insert + atomic replace");
+    assert!(matches!(
+        doc.event_log.last(),
+        Some(crate::model::event::DocumentEvent::CellTextChanged {
+            section: 0,
+            para: 0,
+            ctrl: 0,
+            cell: 0,
+        })
+    ));
+}
+
+#[test]
+fn deferred_cell_replace_reports_real_flow_boundary() {
+    use crate::model::shape::{Caption, CaptionDirection};
+
+    let mut doc = create_doc_with_table();
+    match &mut doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => {
+            table.caption = Some(Caption {
+                direction: CaptionDirection::Bottom,
+                width: 2_000,
+                max_width: 2_000,
+                paragraphs: vec![Paragraph {
+                    text: "가".to_string(),
+                    char_count: 1,
+                    char_offsets: make_char_offsets("가"),
+                    line_segs: vec![LineSeg {
+                        line_height: 400,
+                        baseline_distance: 320,
+                        ..Default::default()
+                    }],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            });
+        }
+        other => panic!("table control expected: {other:?}"),
+    }
+    doc.reflow_cell_paragraph(0, 0, 0, 65534, 0);
+
+    let raw = doc
+        .replace_text_in_cell_native_deferred_pagination(
+            0,
+            0,
+            0,
+            65534,
+            0,
+            0,
+            1,
+            "가나다라마바사아",
+        )
+        .expect("caption boundary replace");
+    let result: Value = serde_json::from_str(&raw).expect("boundary result json");
+    assert_eq!(result["cellFlowChanged"].as_bool(), Some(true));
+    match &doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => assert!(
+            table.caption.as_ref().expect("table caption").paragraphs[0]
+                .line_segs
+                .len()
+                > 1,
+            "replacement must cross a line-flow boundary"
+        ),
+        other => panic!("table control expected: {other:?}"),
+    }
+}
+
+#[test]
+fn deferred_cell_replace_preserves_clickhere_range_and_offsets() {
+    let mut doc = create_doc_with_table();
+    let mut legacy = create_doc_with_table();
+    doc.insert_click_here_field_at_in_cell(0, 0, 0, 0, 0, 2, false, "안내", "메모", "이름", true)
+        .expect("insert empty ClickHere");
+    legacy
+        .insert_click_here_field_at_in_cell(0, 0, 0, 0, 0, 2, false, "안내", "메모", "이름", true)
+        .expect("insert legacy empty ClickHere");
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 2, "ㅎ")
+        .expect("seed field composition");
+    legacy
+        .insert_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 2, "ㅎ")
+        .expect("seed legacy field composition");
+    doc.event_log.clear();
+    legacy.event_log.clear();
+
+    doc.replace_text_in_cell_native_deferred_pagination(0, 0, 0, 0, 0, 2, 1, "하")
+        .expect("replace field composition");
+    legacy
+        .delete_text_in_cell_native(0, 0, 0, 0, 0, 2, 1)
+        .expect("legacy field composition delete");
+    legacy
+        .insert_text_in_cell_native(0, 0, 0, 0, 0, 2, "하")
+        .expect("legacy field composition insert");
+
+    let para = match &doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => &table.cells[0].paragraphs[0],
+        other => panic!("table control expected: {other:?}"),
+    };
+    let legacy_para = match &legacy.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => &table.cells[0].paragraphs[0],
+        other => panic!("legacy table control expected: {other:?}"),
+    };
+    assert_eq!(para.text, "셀A하");
+    assert_eq!(para.char_offsets, legacy_para.char_offsets);
+    assert_eq!(para.field_ranges.len(), 1);
+    assert_eq!(
+        para.field_ranges[0].control_idx,
+        legacy_para.field_ranges[0].control_idx
+    );
+    assert_eq!(
+        para.field_ranges[0].start_char_idx,
+        legacy_para.field_ranges[0].start_char_idx
+    );
+    assert_eq!(
+        para.field_ranges[0].end_char_idx,
+        legacy_para.field_ranges[0].end_char_idx
+    );
+    assert_eq!(para.field_ranges[0].start_char_idx, 2);
+    assert_eq!(para.field_ranges[0].end_char_idx, 3);
+    assert_eq!(
+        doc.event_log.len(),
+        1,
+        "replace emits only final cell state"
+    );
+    assert_eq!(
+        legacy.event_log.len(),
+        2,
+        "legacy delete+insert exposes two intermediate events"
+    );
+}
+
+#[test]
+fn deferred_cell_replace_rejects_invalid_input_before_mutation() {
+    let mut doc = create_doc_with_table();
+    let before = match &doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => table.cells[0].paragraphs[0].text.clone(),
+        other => panic!("table control expected: {other:?}"),
+    };
+
+    let result = doc.replace_text_in_cell_native_deferred_pagination(
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        1,
+        "가나다라마바사아자",
+    );
+
+    assert!(
+        result.is_err(),
+        "more than eight replacement chars must fail"
+    );
+    match &doc.document.sections[0].paragraphs[0].controls[0] {
+        Control::Table(table) => assert_eq!(table.cells[0].paragraphs[0].text, before),
+        other => panic!("table control expected: {other:?}"),
+    }
+}
+
+#[test]
 fn issue2214_deferred_table_caption_reports_flow_change() {
     use crate::model::shape::{Caption, CaptionDirection};
 
@@ -25871,4 +26072,103 @@ fn style_json_survives_backslash_and_control_chars() {
     let at = doc.get_style_at(0, 0);
     serde_json::from_str::<Value>(&at)
         .expect("getStyleAt 도 유효한 JSON 이어야 함(커서 이동마다 호출됨)");
+}
+
+#[test]
+fn local_body_replace_exposes_stable_edit_before_full_pagination() {
+    use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+    fn contains_text(node: &RenderNode, needle: &str) -> bool {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.text.contains(needle) {
+                return true;
+            }
+        }
+        node.children
+            .iter()
+            .any(|child| contains_text(child, needle))
+    }
+
+    let mut doc = HwpDocument::create_empty();
+    doc.insert_text_native(0, 0, 0, "나")
+        .expect("seed non-empty body paragraph");
+    doc.build_page_render_tree(0).expect("warm page tree");
+
+    let raw = doc
+        .replace_body_text_local_native(0, 0, 1, 0, "가")
+        .expect("stable local insert");
+    let result: Value = serde_json::from_str(&raw).expect("local result json");
+
+    assert_eq!(result["charOffset"].as_u64(), Some(2));
+    assert_eq!(result["documentPaginationPending"].as_bool(), Some(true));
+    assert_eq!(result["flowChanged"].as_bool(), Some(false));
+    assert_eq!(
+        doc.get_text_range_native(0, 0, 0, 2)
+            .expect("immediate text"),
+        "나가"
+    );
+
+    let transient_tree = doc.build_page_render_tree(0).expect("transient page tree");
+    assert!(
+        contains_text(&transient_tree.root, "가"),
+        "warm page tree must expose the local edit before full pagination"
+    );
+
+    let deleted_raw = doc
+        .replace_body_text_local_native(0, 0, 1, 1, "")
+        .expect("stable local delete");
+    let deleted: Value = serde_json::from_str(&deleted_raw).expect("delete result json");
+    assert_eq!(deleted["charOffset"].as_u64(), Some(1));
+    assert_eq!(deleted["documentPaginationPending"].as_bool(), Some(true));
+    assert_eq!(deleted["flowChanged"].as_bool(), Some(false));
+    assert_eq!(
+        doc.get_text_range_native(0, 0, 0, 1).expect("deleted text"),
+        "나"
+    );
+}
+
+#[test]
+fn local_body_replace_applies_ime_replacement_as_one_final_state() {
+    let mut doc = HwpDocument::create_empty();
+    doc.replace_body_text_local_native(0, 0, 0, 0, "ㅎ")
+        .expect("initial composition");
+    let raw = doc
+        .replace_body_text_local_native(0, 0, 0, 1, "하")
+        .expect("composition replacement");
+    let result: Value = serde_json::from_str(&raw).expect("replace result json");
+
+    assert_eq!(result["charOffset"].as_u64(), Some(1));
+    assert_eq!(
+        doc.get_text_range_native(0, 0, 0, 1)
+            .expect("final composition"),
+        "하"
+    );
+}
+
+#[test]
+fn local_body_replace_paginates_immediately_at_flow_boundary() {
+    let mut doc = HwpDocument::create_empty();
+    let mut boundary = None;
+
+    for offset in 0..512 {
+        let raw = doc
+            .replace_body_text_local_native(0, 0, offset, 0, "가")
+            .expect("sequential local insert");
+        let result: Value = serde_json::from_str(&raw).expect("flow result json");
+        if result["flowChanged"].as_bool() == Some(true) {
+            boundary = Some(result);
+            break;
+        }
+    }
+
+    let result = boundary.expect("a body line-flow boundary within 512 characters");
+    assert_eq!(result["documentPaginationPending"].as_bool(), Some(false));
+    assert_eq!(result["flowChanged"].as_bool(), Some(true));
+    assert_eq!(
+        doc.page_count(),
+        doc.pagination
+            .iter()
+            .map(|section| section.pages.len())
+            .sum::<usize>() as u32
+    );
 }

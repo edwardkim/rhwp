@@ -56,6 +56,7 @@ import {
   resolveRenderProfile,
   type RenderBackendFallbackReason,
 } from '@/view/render-backend';
+import { calculateFitPageZoom, calculateFitWidthZoom } from '@/view/zoom-fit';
 import { installEmbedRuntime } from '@/embed/runtime';
 import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
 
@@ -643,36 +644,37 @@ function setupZoomControls(): void {
   const vm = canvasView.getViewportManager();
 
   document.getElementById('sb-zoom-in')!.addEventListener('click', () => {
-    vm.setZoom(vm.getZoom() + 0.1);
+    vm.smoothZoomBy(0.1);
   });
   document.getElementById('sb-zoom-out')!.addEventListener('click', () => {
-    vm.setZoom(vm.getZoom() - 0.1);
+    vm.smoothZoomBy(-0.1);
   });
 
   // 폭 맞춤: 용지 폭에 맞게 줌 조절
   document.getElementById('sb-zoom-fit-width')!.addEventListener('click', () => {
     if (wasm.pageCount === 0) return;
     const container = document.getElementById('scroll-container')!;
-    const containerWidth = container.clientWidth - 40; // 좌우 여백 제외
     const pageInfo = wasm.getPageInfo(0);
     // pageInfo.width는 이미 px 단위 (96dpi 기준)
-    const zoom = containerWidth / pageInfo.width;
-    console.log(`[zoom-fit-width] container=${containerWidth} page=${pageInfo.width} zoom=${zoom.toFixed(3)}`);
-    vm.setZoom(Math.max(0.1, Math.min(zoom, 4.0)));
+    const zoom = calculateFitWidthZoom(container.clientWidth, pageInfo.width);
+    console.log(`[zoom-fit-width] container=${container.clientWidth} page=${pageInfo.width} zoom=${zoom.toFixed(3)}`);
+    vm.setZoom(zoom);
   });
 
   // 쪽 맞춤: 한 페이지 전체가 보이도록 줌 조절
   document.getElementById('sb-zoom-fit')!.addEventListener('click', () => {
     if (wasm.pageCount === 0) return;
     const container = document.getElementById('scroll-container')!;
-    const containerWidth = container.clientWidth - 40;
-    const containerHeight = container.clientHeight - 40;
     const pageInfo = wasm.getPageInfo(0);
     // pageInfo.width/height는 이미 px 단위 (96dpi 기준)
-    const zoomW = containerWidth / pageInfo.width;
-    const zoomH = containerHeight / pageInfo.height;
-    console.log(`[zoom-fit-page] containerW=${containerWidth} containerH=${containerHeight} pageW=${pageInfo.width} pageH=${pageInfo.height} zoomW=${zoomW.toFixed(3)} zoomH=${zoomH.toFixed(3)}`);
-    vm.setZoom(Math.max(0.1, Math.min(zoomW, zoomH, 4.0)));
+    const zoom = calculateFitPageZoom(
+      container.clientWidth,
+      container.clientHeight,
+      pageInfo.width,
+      pageInfo.height,
+    );
+    console.log(`[zoom-fit-page] containerW=${container.clientWidth} containerH=${container.clientHeight} pageW=${pageInfo.width} pageH=${pageInfo.height} zoom=${zoom.toFixed(3)}`);
+    vm.setZoom(zoom);
   });
 
   // 모바일: 줌 값 클릭 → 100% 토글
@@ -691,10 +693,10 @@ function setupZoomControls(): void {
     if (!e.ctrlKey && !e.metaKey) return;
     if (e.key === '=' || e.key === '+') {
       e.preventDefault();
-      vm.setZoom(vm.getZoom() + 0.1);
+      vm.smoothZoomBy(0.1);
     } else if (e.key === '-') {
       e.preventDefault();
-      vm.setZoom(vm.getZoom() - 0.1);
+      vm.smoothZoomBy(-0.1);
     } else if (e.key === '0') {
       e.preventDefault();
       vm.setZoom(1.0);

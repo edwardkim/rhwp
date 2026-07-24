@@ -57,22 +57,22 @@ export type EditContext =
       readonly charOffset: number;
     };
 
-/** cell text mutation의 deferred/flow 경계와 immediate pagination 완료를 함께 전달한다. */
+/** text mutation의 document pagination/flow 경계와 immediate 완료를 함께 전달한다. */
 export interface TextMutationEffects {
-  readonly deferredPagination: boolean;
-  readonly cellFlowChanged: boolean;
+  readonly documentPaginationPending: boolean;
+  readonly flowChanged: boolean;
   readonly paginationCompleted: boolean;
 }
 
 export const NO_TEXT_MUTATION_EFFECTS: TextMutationEffects = Object.freeze({
-  deferredPagination: false,
-  cellFlowChanged: false,
+  documentPaginationPending: false,
+  flowChanged: false,
   paginationCompleted: false,
 });
 
 export const IMMEDIATE_TEXT_MUTATION_EFFECTS: TextMutationEffects = Object.freeze({
-  deferredPagination: false,
-  cellFlowChanged: false,
+  documentPaginationPending: false,
+  flowChanged: false,
   paginationCompleted: true,
 });
 
@@ -82,8 +82,9 @@ export class TextMutationEffectAccumulator {
 
   add(effects: TextMutationEffects): void {
     this.effects = {
-      deferredPagination: this.effects.deferredPagination || effects.deferredPagination,
-      cellFlowChanged: this.effects.cellFlowChanged || effects.cellFlowChanged,
+      documentPaginationPending:
+        this.effects.documentPaginationPending || effects.documentPaginationPending,
+      flowChanged: this.effects.flowChanged || effects.flowChanged,
       paginationCompleted: this.effects.paginationCompleted || effects.paginationCompleted,
     };
   }
@@ -180,6 +181,40 @@ export function canUseDeferredCellTextDelete(pos: DocumentPosition, count: numbe
   return Number.isInteger(count) && count > 0 && count <= MAX_PAGE_LOCAL_TEXT_EDIT_CHARS;
 }
 
+export function canUseDeferredCellTextReplace(
+  pos: DocumentPosition,
+  deleteCount: number,
+  text: string,
+): boolean {
+  if (!isCell(pos) || isNestedCell(pos)) return false;
+  if (
+    !Number.isInteger(deleteCount) ||
+    deleteCount < 1 ||
+    deleteCount > MAX_PAGE_LOCAL_TEXT_EDIT_CHARS
+  ) {
+    return false;
+  }
+  const textChars = charCount(text);
+  if (textChars < 1 || textChars > MAX_PAGE_LOCAL_TEXT_EDIT_CHARS) return false;
+  if (/[\r\n\t]/.test(text)) return false;
+  return true;
+}
+
+export function canUseLocalBodyTextReplace(
+  pos: DocumentPosition,
+  deleteCount: number,
+  text: string,
+): boolean {
+  if (isCell(pos)) return false;
+  if (!Number.isInteger(deleteCount) || deleteCount < 0 || deleteCount > MAX_PAGE_LOCAL_TEXT_EDIT_CHARS) {
+    return false;
+  }
+  if (deleteCount === 0 && text.length === 0) return false;
+  if (charCount(text) > MAX_PAGE_LOCAL_TEXT_EDIT_CHARS) return false;
+  if (/[\r\n\t]/.test(text)) return false;
+  return true;
+}
+
 /** cellPath를 WASM용 JSON 문자열로 변환 */
 function cellPathJson(pos: DocumentPosition): string {
   return JSON.stringify(pos.cellPath ?? []);
@@ -264,17 +299,62 @@ export function insertTextWithMutationEffects(
     if (canUseDeferredCellTextInsert(pos, text)) {
       const result = wasm.insertTextInCellDeferredPagination(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, text);
       return {
-        deferredPagination: result.paginationDeferred,
-        cellFlowChanged: result.cellFlowChanged,
+        documentPaginationPending: result.paginationDeferred,
+        flowChanged: result.cellFlowChanged,
         paginationCompleted: !result.paginationDeferred,
       };
     } else {
       wasm.insertTextInCell(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, text);
     }
+  } else if (canUseLocalBodyTextReplace(pos, 0, text)) {
+    return replaceBodyTextWithMutationEffects(wasm, pos, 0, text);
   } else {
     wasm.insertText(pos.sectionIndex, pos.paragraphIndex, pos.charOffset, text);
   }
   return IMMEDIATE_TEXT_MUTATION_EFFECTS;
+}
+
+export function replaceBodyTextWithMutationEffects(
+  wasm: WasmBridge,
+  pos: DocumentPosition,
+  deleteCount: number,
+  text: string,
+): TextMutationEffects {
+  const result = wasm.replaceBodyTextLocal(
+    pos.sectionIndex,
+    pos.paragraphIndex,
+    pos.charOffset,
+    deleteCount,
+    text,
+  );
+  return {
+    documentPaginationPending: result.documentPaginationPending,
+    flowChanged: result.flowChanged,
+    paginationCompleted: !result.documentPaginationPending,
+  };
+}
+
+export function replaceCellTextWithMutationEffects(
+  wasm: WasmBridge,
+  pos: DocumentPosition,
+  deleteCount: number,
+  text: string,
+): TextMutationEffects {
+  const result = wasm.replaceTextInCellDeferredPagination(
+    pos.sectionIndex,
+    pos.parentParaIndex!,
+    pos.controlIndex!,
+    pos.cellIndex!,
+    pos.cellParaIndex!,
+    pos.charOffset,
+    deleteCount,
+    text,
+  );
+  return {
+    documentPaginationPending: result.paginationDeferred,
+    flowChanged: result.paginationDeferred && result.cellFlowChanged,
+    paginationCompleted: !result.paginationDeferred,
+  };
 }
 
 /** undo/구조 명령의 full-refresh 복원은 flat cell에서도 immediate pagination을 사용한다. */
@@ -299,12 +379,14 @@ export function deleteTextWithMutationEffects(
     if (canUseDeferredCellTextDelete(pos, count)) {
       const result = wasm.deleteTextInCellDeferredPagination(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, count);
       return {
-        deferredPagination: result.paginationDeferred,
-        cellFlowChanged: result.cellFlowChanged,
+        documentPaginationPending: result.paginationDeferred,
+        flowChanged: result.cellFlowChanged,
         paginationCompleted: !result.paginationDeferred,
       };
     }
     wasm.deleteTextInCell(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, pos.cellIndex!, pos.cellParaIndex!, pos.charOffset, count);
+  } else if (canUseLocalBodyTextReplace(pos, count, '')) {
+    return replaceBodyTextWithMutationEffects(wasm, pos, count, '');
   } else {
     wasm.deleteText(pos.sectionIndex, pos.paragraphIndex, pos.charOffset, count);
   }
