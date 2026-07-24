@@ -59,7 +59,8 @@ pub fn write_table<W: Write>(
     let z_order = table.common.z_order.to_string();
     let text_wrap = text_wrap_str(table.common.text_wrap);
     let text_flow = text_flow_str(table.common.text_flow);
-    let lock = bool01(false);
+    // [#2840] lock(개체 잠금) — IR 보존 값 방출 (종전 false 하드코딩).
+    let lock = bool01(table.common.locked);
     let page_break = table_page_break_str(table.page_break);
     let repeat_header = bool01(table.repeat_header);
     let row_cnt = table.row_count.to_string();
@@ -179,7 +180,9 @@ fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Seria
         "hp:pos",
         &[
             ("treatAsChar", treat),
-            ("affectLSpacing", "0"),
+            // [#2784] affectLSpacing 은 IR(affect_line_spacing)을 보존한다. 종전 "0"
+            // 하드코딩은 "줄 간격에 영향" 켜진 표가 저장 시 1→0 으로 드롭됐다.
+            ("affectLSpacing", bool01(c.affect_line_spacing)),
             // [#1637] flowWithText 는 IR(flow_with_text)을 보존한다. 종전 "1" 하드코딩은
             // treatAsChar 표의 1→0 케이스에서 0→1 드롭으로 표 partial-split 임계를 흔들어
             // 페이지네이션이 달라졌다(IR-invisible). #1594 holdAnchorAndSO 와 동형.
@@ -372,21 +375,27 @@ fn write_sub_list_paragraphs<W: Write>(
 /// `<hp:caption>` 직렬화 (#1387) — 자식 순서상 outMargin 과 inMargin 사이 (모듈 doc).
 ///
 /// 속성 순서는 한컴 실물(ta-pic-001-r) 기준: side, fullSz, width, gap, lastWidth.
-/// 캡션 subList 속성은 파서가 적재하지 않으며 samples/hwpx 전수 17건 동일
-/// (vertAlign=TOP lineWrap=BREAK textDirection=HORIZONTAL — 1단계 측정) — 실물 고정값 방출.
+/// 캡션 subList 의 lineWrap/textDirection 은 파서가 적재하지 않으며 samples/hwpx 전수
+/// 17건 동일(lineWrap=BREAK textDirection=HORIZONTAL — 1단계 측정) — 실물 고정값 방출.
+/// vertAlign 은 IR(`caption.vert_align`, table_ops.rs 편집 경로 존재)을 실제로 반영한다(#3035).
 /// 그림/도형/묶음 캡션(#1403)도 동일 경로를 공유한다 (pub(super)).
 pub(super) fn write_caption<W: Write>(
     w: &mut Writer<W>,
     caption: &crate::model::shape::Caption,
     ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
-    use crate::model::shape::CaptionDirection;
+    use crate::model::shape::{CaptionDirection, CaptionVertAlign};
 
     let side = match caption.direction {
         CaptionDirection::Left => "LEFT",
         CaptionDirection::Right => "RIGHT",
         CaptionDirection::Top => "TOP",
         CaptionDirection::Bottom => "BOTTOM",
+    };
+    let vert_align = match caption.vert_align {
+        CaptionVertAlign::Top => "TOP",
+        CaptionVertAlign::Center => "CENTER",
+        CaptionVertAlign::Bottom => "BOTTOM",
     };
     let full_sz = bool01(caption.include_margin);
     let width = caption.width.to_string();
@@ -410,7 +419,7 @@ pub(super) fn write_caption<W: Write>(
             ("id", ""),
             ("textDirection", "HORIZONTAL"),
             ("lineWrap", "BREAK"),
-            ("vertAlign", "TOP"),
+            ("vertAlign", vert_align),
             ("linkListIDRef", "0"),
             ("linkListNextIDRef", "0"),
             ("textWidth", "0"),
@@ -735,6 +744,22 @@ mod tests {
         let cp = xml.find("<hp:caption").unwrap();
         let im = xml.find("<hp:inMargin").unwrap();
         assert!(om < cp && cp < im, "caption 은 outMargin 과 inMargin 사이");
+    }
+
+    #[test]
+    fn task3035_caption_vert_align_reflects_ir() {
+        // vertAlign 이 caption.vert_align IR 값을 실제로 반영해야 함(고정 TOP 방출 금지).
+        use crate::model::shape::CaptionVertAlign;
+        let mut t = empty_table(1, 1);
+        let mut c = caption_with_text("c");
+        c.vert_align = CaptionVertAlign::Bottom;
+        t.caption = Some(c);
+        let xml = serialize(&t);
+        assert!(
+            xml.contains(r#"vertAlign="BOTTOM""#),
+            "vertAlign 이 IR 값(BOTTOM)으로 방출되어야 함: {}",
+            xml
+        );
     }
 
     #[test]
@@ -1336,6 +1361,53 @@ mod tests {
         ] {
             assert!(xml.contains(expected), "{expected} 유실: {xml}");
         }
+    }
+
+    #[test]
+    fn task2855_tbl_lock_survives_xml_ir_xml_roundtrip() {
+        // [#2855] <hp:tbl> 의 lock(개체 잠금)이 parse_table 에 arm 이 없어 파싱 단계에서
+        // 버려지고, 방출측(이 파일 62행)도 bool01(false) 로 하드코딩되어 있어 왕복 시
+        // 원본 lock="1" 이 소리 없이 lock="0" 으로 풀린다. RED.
+        use crate::parser::hwpx::section::parse_hwpx_section;
+
+        let src = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:tbl lock="1" rowCnt="1" colCnt="1" cellSpacing="0" borderFillIDRef="0">
+      <hp:sz width="1000" widthRelTo="ABSOLUTE" height="1000" heightRelTo="ABSOLUTE"/>
+      <hp:pos treatAsChar="0" flowWithText="1" allowOverlap="0"
+              vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT"
+              vertOffset="0" horzOffset="0"/>
+      <hp:outMargin left="0" right="0" top="0" bottom="0"/>
+      <hp:inMargin left="0" right="0" top="0" bottom="0"/>
+      <hp:tr>
+        <hp:tc borderFillIDRef="0">
+          <hp:cellAddr colAddr="0" rowAddr="0"/>
+          <hp:cellSpan colSpan="1" rowSpan="1"/>
+          <hp:cellSz width="1000" height="1000"/>
+        </hp:tc>
+      </hp:tr>
+    </hp:tbl>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(src).expect("파싱");
+        let table = match &section.paragraphs[0].controls[0] {
+            crate::model::control::Control::Table(t) => t.as_ref().clone(),
+            other => panic!("표가 아님: {other:?}"),
+        };
+
+        assert!(
+            table.common.locked,
+            "lock=\"1\" 이 IR(common.locked)에 남아야 함(parse_table 에 lock arm 누락)"
+        );
+        let xml = serialize(&table);
+        assert!(
+            xml.contains(r#"lock="1""#),
+            "lock 이 IR 에서 방출돼야 함(현재 bool01(false) 하드코딩): {}",
+            &xml[..xml.len().min(400)]
+        );
     }
 
     #[test]

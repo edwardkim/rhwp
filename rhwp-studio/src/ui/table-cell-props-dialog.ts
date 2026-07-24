@@ -1080,6 +1080,20 @@ export class TableCellPropsDialog extends ModalDialog {
         this.borderEdits[i] = { type: b.type, width: b.width, color: b.color };
       }
     }
+    // 굵기/색/선종류 컨트롤을 대표 테두리(왼쪽)로 동기화한다. 이 컨트롤들은
+    // applyBorderToDirection()이 '현재 값'으로 그대로 읽어 wasm.set*Properties에
+    // 전달하므로, 미리보기만 문서 값을 반영하고 컨트롤은 하드코딩 기본값(0.1mm/검정/실선)에
+    // 머무르면 방향 버튼 재적용 시 기존 서식이 조용히 유실된다 (#2908).
+    const rep = this.borderEdits[0];
+    if (rep) {
+      this.borderSelectedLineType = rep.type;
+      this.borderWidthSelect.value = String(rep.width);
+      this.borderColorInput.value = rep.color;
+      this.borderLineTypeGrid.querySelectorAll('.tcp-line-type-item').forEach((el, idx) => {
+        const lineTypeDefs = [0, 1, 2, 3, 4, 5, 6, 8];
+        el.classList.toggle('active', lineTypeDefs[idx] === rep.type);
+      });
+    }
     this.updateBorderPreview();
   }
 
@@ -1207,8 +1221,8 @@ export class TableCellPropsDialog extends ModalDialog {
     if (props.fillType === 'solid' && props.fillColor) {
       this.bgColorRadio.checked = true;
       this.bgColorPicker.value = props.fillColor;
-      if (props.patternColor) this.bgPatternColorPicker.value = props.patternColor;
-      if (props.patternType != null) this.bgPatternTypeSelect.value = String(props.patternType);
+      this.bgPatternColorPicker.value = props.patternColor ?? '#000000';
+      this.bgPatternTypeSelect.value = props.patternType != null ? String(props.patternType) : '0';
     } else {
       this.bgNoneRadio.checked = true;
     }
@@ -1525,6 +1539,18 @@ export class TableCellPropsDialog extends ModalDialog {
     inp.className = 'dialog-input';
     inp.step = '0.1';
     inp.min = '0';
+    // HTML min 속성은 .value 를 자동으로 clamp 하지 않는다(브라우저는 checkValidity()에서만
+    // 검사) — 음수·비정상 값이 그대로 parseFloat 되어 wasm.setCellProperties/setTableProperties
+    // 로 전달되는 것을 막는다. (#2838 번호매기기 시작 번호 clamp 누락과 동일 패턴)
+    inp.addEventListener('change', () => {
+      if (inp.value === '') return;
+      const min = inp.min !== '' ? parseFloat(inp.min) : -Infinity;
+      const max = inp.max !== '' ? parseFloat(inp.max) : Infinity;
+      const v = parseFloat(inp.value);
+      if (!Number.isFinite(v)) return;
+      const clamped = Math.min(max, Math.max(min, v));
+      if (clamped !== v) inp.value = String(clamped);
+    });
     return inp;
   }
 

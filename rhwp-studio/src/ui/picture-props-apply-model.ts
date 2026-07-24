@@ -211,8 +211,8 @@ function appendCommonSize(
 ): void {
   addChanged(patch, 'sizeProtect', form.sizeProtect, props.sizeProtect ?? false);
   if (form.sizeProtect) return;
-  addChanged(patch, 'width', mmToHwp(form.width), props.width);
-  addChanged(patch, 'height', mmToHwp(form.height), props.height);
+  addChanged(patch, 'width', Math.max(0, mmToHwp(form.width)), props.width);
+  addChanged(patch, 'height', Math.max(0, mmToHwp(form.height)), props.height);
 }
 
 function appendCommonPosition(
@@ -437,10 +437,10 @@ function appendImageBox(
   current: readonly [number, number, number, number],
 ): void {
   if (!values) return;
-  addChanged(patch, keys[0], mmToHwp(values.left), current[0]);
-  addChanged(patch, keys[1], mmToHwp(values.top), current[1]);
-  addChanged(patch, keys[2], mmToHwp(values.right), current[2]);
-  addChanged(patch, keys[3], mmToHwp(values.bottom), current[3]);
+  addChanged(patch, keys[0], Math.max(0, mmToHwp(values.left)), current[0]);
+  addChanged(patch, keys[1], Math.max(0, mmToHwp(values.top)), current[1]);
+  addChanged(patch, keys[2], Math.max(0, mmToHwp(values.right)), current[2]);
+  addChanged(patch, keys[3], Math.max(0, mmToHwp(values.bottom)), current[3]);
 }
 
 function appendImageEffects(

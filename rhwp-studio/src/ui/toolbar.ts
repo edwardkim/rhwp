@@ -187,10 +187,12 @@ export class Toolbar {
 
       const commit = () => {
         const num = parseInt(input.value, 10);
+        // format:line-spacing-increase 커맨드(format.ts)와 동일하게 500%로 상한 clamp
         if (num > 0) {
-          this.ensureLsOption(num);
-          this.lsSelect.value = String(num);
-          this.dispatcher.dispatch('format:line-spacing', { value: num });
+          const clamped = Math.min(500, num);
+          this.ensureLsOption(clamped);
+          this.lsSelect.value = String(clamped);
+          this.dispatcher.dispatch('format:line-spacing', { value: clamped });
         }
         input.remove();
         this.lsSelect.style.display = '';
@@ -207,7 +209,7 @@ export class Toolbar {
     this.btnLsUp.addEventListener('mousedown', (e) => {
       e.preventDefault();
       const cur = Number(this.lsSelect.value) || 160;
-      const next = cur + 5;
+      const next = Math.min(500, cur + 5);
       this.ensureLsOption(next);
       this.lsSelect.value = String(next);
       this.dispatcher.dispatch('format:line-spacing', { value: next });
@@ -312,16 +314,18 @@ export class Toolbar {
         e.preventDefault();
         const pt = parseFloat(this.fontSize.value);
         if (!isNaN(pt) && pt > 0) {
-          this.eventBus.emit('format-char', { fontSize: Math.round(pt * 100) } as CharProperties);
+          const clampedPt = Math.min(4096, Math.max(1, pt));
+          this.fontSize.value = String(clampedPt);
+          this.eventBus.emit('format-char', { fontSize: Math.round(clampedPt * 100) } as CharProperties);
         }
       }
     });
 
-    // 크기 증감 버튼
+    // 크기 증감 버튼 (char-shape-dialog.ts의 fontSize 범위 100~409600과 동일한 1~4096pt로 clamp)
     this.btnSizeUp.addEventListener('mousedown', (e) => {
       e.preventDefault();
       const pt = parseFloat(this.fontSize.value) || 10;
-      const newPt = pt + 1;
+      const newPt = Math.min(4096, pt + 1);
       this.fontSize.value = String(newPt);
       this.eventBus.emit('format-char', { fontSize: Math.round(newPt * 100) } as CharProperties);
     });

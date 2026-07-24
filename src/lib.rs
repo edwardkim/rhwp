@@ -5,6 +5,7 @@
 use wasm_bindgen::prelude::*;
 
 pub mod diagnostics;
+pub mod doclang;
 pub mod document_core;
 pub mod emf;
 pub mod error;

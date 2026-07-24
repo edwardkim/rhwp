@@ -37,7 +37,7 @@ use crate::model::shape::{
 
 use super::context::SerializeContext;
 // [#2712] hp:sz 크기 기준 헬퍼는 도형 직렬화기와 공유한다(관례 이중화 방지).
-use super::shape::{height_criterion_str, size_criterion_str};
+use super::shape::{height_criterion_str, numbering_type_str, size_criterion_str};
 use super::table::write_caption;
 use super::utils::{empty_tag, end_tag, start_tag, start_tag_attrs};
 use super::SerializeError;
@@ -61,6 +61,19 @@ pub fn write_picture<W: Write>(
     let tf = text_flow_str(pic.common.text_flow);
     let instid = pic.instance_id.to_string();
     let href = pic.href.as_deref().unwrap_or("");
+    // [#2861] 좌우 반전 — 종전 하드코딩 "0" 은 reverse="1" 로 저장된 그림의 반전 정보를
+    // 왕복 시 소실시켰다.
+    let reverse = bool01(pic.reverse);
+    // [#2875] 개체 잠금 — 종전 하드코딩 "0" 은 lock="1" 로 저장된 그림의 잠금 정보를
+    // 왕복 시 소실시켰다 (#2861 reverse, #2855 hp:tbl lock 과 동일 패턴).
+    let lock = bool01(pic.lock);
+    // [#2697 동형] numberingType 은 IR(common.numbering_type)을 보존한다. 종전 "PICTURE"
+    // 하드코딩은 그림에 번호 범주를 변경한(예: NONE) 문서에서 저장 시 원본 속성이 유실됐다.
+    // 도형·표 계열은 이미 #1379/#2697 에서 IR 보존으로 정리됐다.
+    let numbering_type = numbering_type_str(pic.common.numbering_type);
+    // [#TODO-IR] groupLevel 은 IR(shape_attr.group_level)을 보존한다. 종전 "0" 하드코딩은
+    // 그룹 내 그림 개체의 중첩 레벨이 저장 시 유실됐다(shape.rs rect/line 경로는 이미 보존).
+    let group_level = pic.shape_attr.group_level.to_string();
 
     start_tag_attrs(
         w,
@@ -68,15 +81,18 @@ pub fn write_picture<W: Write>(
         &[
             ("id", &id_str),
             ("zOrder", &z_order),
-            ("numberingType", "PICTURE"),
+            ("numberingType", &numbering_type),
             ("textWrap", tw),
             ("textFlow", tf),
-            ("lock", "0"),
-            ("dropcapstyle", "None"),
+            ("lock", lock),
+            (
+                "dropcapstyle",
+                super::shape::drop_cap_style_str(pic.common.drop_cap_style),
+            ),
             ("href", href),
-            ("groupLevel", "0"),
+            ("groupLevel", &group_level),
             ("instid", &instid),
-            ("reverse", "0"),
+            ("reverse", reverse),
         ],
     )?;
 
@@ -414,7 +430,9 @@ fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Seria
         "hp:pos",
         &[
             ("treatAsChar", treat),
-            ("affectLSpacing", "0"),
+            // [#2784] affectLSpacing 은 IR(affect_line_spacing)을 보존한다. 종전 "0"
+            // 하드코딩은 "줄 간격에 영향" 켜진 그림이 저장 시 1→0 으로 드롭됐다.
+            ("affectLSpacing", bool01(c.affect_line_spacing)),
             ("flowWithText", flow_with_text),
             ("allowOverlap", allow_overlap),
             ("holdAnchorAndSO", hold),
@@ -563,6 +581,20 @@ mod tests {
         String::from_utf8(w.into_inner()).unwrap()
     }
 
+    // [#2875] hp:pic lock="1" 이 IR 에 있어도 종전에는 하드코딩 "0" 으로 방출됐다.
+    #[test]
+    fn issue2875_pic_lock_is_preserved_on_serialize() {
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+        pic.lock = true;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(
+            xml.contains(r#"lock="1""#),
+            "hp:pic lock=1 이 저장 시 보존돼야 한다: {xml}"
+        );
+    }
+
     #[test]
     fn task1389_cur_sz_uses_shape_attr() {
         let doc = make_doc_with_bin(1, "png");
@@ -574,6 +606,19 @@ mod tests {
         assert!(
             xml.contains(r#"<hp:curSz width="1366" height="1268"/>"#),
             "curSz 는 shape_attr.current 사용(sz 아님): {xml}"
+        );
+    }
+
+    #[test]
+    fn dropcapstyle_round_trips_instead_of_always_none() {
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+        pic.common.drop_cap_style = crate::model::shape::DropCapStyle::TripleLine;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(
+            xml.contains(r#"dropcapstyle="TripleLine""#),
+            "dropcapstyle 는 원본 값을 보존해야 한다(하드코딩 \"None\" 아님): {xml}"
         );
     }
 
@@ -622,6 +667,21 @@ mod tests {
         assert!(
             xml.contains(r#"alpha="255""#),
             "그림 투명도 100%는 한컴 HWPX alpha byte 255로 저장되어야 한다: {xml}"
+        );
+    }
+
+    // [#2861] reverse="1" 이 IR 에 있어도 종전에는 하드코딩 "0" 으로 방출됐다.
+    #[test]
+    fn issue2861_pic_reverse_is_preserved_on_serialize() {
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+
+        pic.reverse = true;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(
+            xml.contains(r#"reverse="1""#),
+            "hp:pic reverse=1 이 저장 시 보존돼야 한다: {xml}"
         );
     }
 

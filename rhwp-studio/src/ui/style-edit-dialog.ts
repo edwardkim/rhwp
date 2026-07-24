@@ -27,6 +27,14 @@ import { ModalDialog } from './dialog';
 import { CharShapeDialog } from './char-shape-dialog';
 import { ParaShapeDialog } from './para-shape-dialog';
 
+// [Task #2866] 스타일 이름/영문 이름은 HWP5 DocInfo STYLE 레코드에서 u16 길이
+// 프리픽스로 직렬화된다(`src/serializer/doc_info.rs`의 `serialize_style` →
+// `src/serializer/byte_writer.rs`의 `write_hwp_string`, `utf16.len() as u16`).
+// UTF-16 코드 유닛 65536개 이상이면 길이 프리픽스가 랩어라운드되어 저장 파일이
+// 손상되므로(#2851/#2862와 동일한 원인), 프런트엔드에서 여유를 둔 상한으로
+// 미리 차단한다.
+export const MAX_STYLE_NAME_LEN = 250;
+
 interface StyleInfo {
   id: number;
   name: string;
@@ -86,6 +94,7 @@ export class StyleEditDialog extends ModalDialog {
     nameLabel.textContent = '스타일 이름(N):';
     this.nameInput = document.createElement('input');
     this.nameInput.className = 'se-field-input';
+    this.nameInput.maxLength = MAX_STYLE_NAME_LEN;
     this.nameInput.value = this.styleInfo.name;
     nameGroup.appendChild(nameLabel);
     nameGroup.appendChild(this.nameInput);
@@ -97,6 +106,7 @@ export class StyleEditDialog extends ModalDialog {
     enLabel.textContent = '영문 이름(E):';
     this.enNameInput = document.createElement('input');
     this.enNameInput.className = 'se-field-input';
+    this.enNameInput.maxLength = MAX_STYLE_NAME_LEN;
     this.enNameInput.value = this.styleInfo.englishName;
     enGroup.appendChild(enLabel);
     enGroup.appendChild(this.enNameInput);
@@ -276,6 +286,10 @@ export class StyleEditDialog extends ModalDialog {
 
     if (!name) {
       alert('스타일 이름을 입력하세요.');
+      return;
+    }
+    if (name.length > MAX_STYLE_NAME_LEN || englishName.length > MAX_STYLE_NAME_LEN) {
+      alert(`스타일 이름/영문 이름은 ${MAX_STYLE_NAME_LEN}자를 넘을 수 없습니다.`);
       return;
     }
 

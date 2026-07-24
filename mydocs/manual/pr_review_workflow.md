@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-07-22
+last_verified: 2026-07-24
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -1022,7 +1022,7 @@ maintainer 일반 경로의 active 경로 작성 규칙까지 대체하지 않�
 오늘할일과 충돌 여부를 다시 확인한다.
 
 collaborator self-merge 후보에서는 오늘할일을 PR 생성 후 후속 커밋이나 merge 후 별도 PR 로 늦게 만들지
-않는다. PR 번호가 필요한 review 문서·asset 후속 커밋은 9.3.1 절의 fast-pass 조건으로 통과시킬 수 있지만,
+않는다. PR 번호가 필요한 review 문서·asset 후속 커밋은 9.3.2 절의 fast-pass 조건으로 통과시킬 수 있지만,
 오늘할일은 그보다 앞선 최초 PR diff 에 이미 포함되어 있어야 한다.
 
 여기서 최종 PR review 문서 묶음은 다음 중 해당 PR 에 실제로 필요한 문서다.
@@ -1105,7 +1105,7 @@ collaborator-mediated 외부 PR 경로에서는 오늘할일을 PR 착수나 최
 운영 문서와 오늘할일이 같은 판단 시점을 공유한다.
 
 collaborator-mediated 경로에서도 오늘할일을 merge 후 별도 PR 로 늦게 만들지 않는다. 오늘할일이 필요한 경우
-PR review 문서와 함께 PR head 에 포함하고, 문서/asset/오늘할일만 바뀐 후속 커밋은 9.3.1 절의 fast-pass
+PR review 문서와 함께 PR head 에 포함하고, 문서/asset/오늘할일만 바뀐 후속 커밋은 9.3.2 절의 fast-pass
 조건으로 통과시키는 것을 기본으로 한다.
 
 여기서 최종 PR review 문서 묶음은 다음 중 해당 PR 에 실제로 필요한 문서다.
@@ -1134,7 +1134,7 @@ merge 완료 사실과 이슈 close 결과는 GitHub PR/Issue metadata 를 원�
 - contributor 의 원 코드 커밋을 rewrite 하지 않는다.
 - review 문서, 오늘할일, maintainer 보정 코드는 별도 커밋으로 분리한다.
 - maintainer 보정 코드가 포함되면 review 문서에 contributor 원 변경과 collaborator 추가 변경을 구분한다.
-- 문서 커밋 push 후 GitHub Actions 결과를 확인한다. full CI 재실행 또는 9.3.1 절의 fast-pass 결과가
+- 문서 커밋 push 후 GitHub Actions 결과를 확인한다. full CI 재실행 또는 9.3.2 절의 fast-pass 결과가
   merge 가능 상태여야 한다.
 
 예시:
@@ -1147,7 +1147,77 @@ git commit -m "docs: PR #N 검토 기록"
 git push https://github.com/{contributor}/rhwp.git HEAD:{head-branch}
 ```
 
-### 9.3.1 후속 기록 PR fast-pass
+### 9.3.1 Contributor PR head 직접 보정·remote push
+
+contributor가 제출한 코드에 차단 결함이나 검토 중 발견된 보정이 있고 collaborator가 직접 고치기로 한
+경우, 변경을 체리픽해 별도 통합 branch로 옮기지 않는다. `maintainer_can_modify=true`인 contributor의
+**현재 PR head 위에만** collaborator 보정 commit을 추가하고, 같은 source branch로 직접 push한다.
+
+이 경로는 다음 조건을 모두 만족할 때만 쓴다.
+
+- 9.1 절의 조건을 만족하고 contributor branch가 현재 PR head다.
+- 보정 범위·로컬 검증·review 문서의 권고가 준비돼 있다.
+- contributor 원 commit은 rebase, amend, reset, force-push하지 않고 보정 code/test와 운영 문서를 별도
+  commit으로 추가한다.
+- GitHub review/comment, 실제 remote push, merge는 각각 작업지시자 승인을 받은 뒤에만 수행한다.
+
+#### 9.3.1.1 source head 고정과 보정 branch 준비
+
+remote push 직전과 직후의 source SHA를 모두 기록한다. GitHub repository API의 일반 `push` permission이
+`false`로 보이더라도 PR별 `maintainer_can_modify` ref write 권한과 다를 수 있으므로, API 표시값만으로
+가능·불가능을 단정하지 않는다.
+
+```bash
+gh pr view N --repo edwardkim/rhwp \
+  --json headRefName,headRefOid,headRepository,maintainerCanModify
+git ls-remote --heads https://github.com/{contributor}/rhwp.git refs/heads/{head-branch}
+git fetch https://github.com/{contributor}/rhwp.git \
+  refs/heads/{head-branch}:refs/heads/review/prN-maintainer
+git switch review/prN-maintainer
+```
+
+`git ls-remote` 결과, PR `headRefOid`, fetch한 local branch SHA가 모두 같을 때만 보정을 시작한다. contributor가
+그 사이 새 commit을 push했다면 local 보정 branch를 그 새 head에서 다시 만들고, 이전 보정 commit을 재작성하지
+않은 채 필요한 경우 새 commit으로 다시 적용한다.
+
+#### 9.3.1.2 commit 분리와 LFS pre-push 확인
+
+1. 보정 code와 회귀 test를 contributor commit 뒤의 별도 commit으로 만든다.
+2. review·implementation·오늘할일 문서는 archive 경로 규칙(9.2 절)에 맞춰 별도 commit으로 만든다.
+3. source head와 local `HEAD` 사이의 변경에 LFS 추적 파일 또는 새 LFS 객체가 있는지 확인한다. LFS 객체가
+   있으면 LFS lock/업로드 권한을 정상 경로로 확보해야 하며 `GIT_LFS_SKIP_PUSH=1`을 쓰지 않는다.
+4. 먼저 remote ref만 검사하는 non-mutating dry-run을 실행한다.
+
+```bash
+git push --dry-run https://github.com/{contributor}/rhwp.git HEAD:{head-branch}
+```
+
+Git LFS pre-push hook의 `locks:verify` 인증 오류는 Git ref write 권한 거부와 다른 단계다. 변경 commit에
+LFS 객체가 전혀 없을 때만 아래처럼 LFS object 전송과 lock 검증을 건너뛰어 Git ref 권한을 다시 확인할 수 있다.
+
+```bash
+GIT_LFS_SKIP_PUSH=1 \
+  git push --dry-run https://github.com/{contributor}/rhwp.git HEAD:{head-branch}
+```
+
+이 dry-run이 성공하면 contributor source branch를 변경하지 않고 PR별 Git ref write 가능 여부만 확인한
+것이다. 진단이나 실제 push에서 `core.hooksPath`를 무력화해 다른 pre-push hook 전체를 건너뛰지 않는다.
+
+#### 9.3.1.3 승인 후 실제 push와 CI
+
+작업지시자가 실제 push를 승인했고, 마지막 `git ls-remote` SHA가 보정 시작 SHA와 같으며, 변경에 LFS 객체가
+없을 때 다음 명령으로 collaborator 추가 commit만 contributor PR head에 push한다.
+
+```bash
+GIT_LFS_SKIP_PUSH=1 \
+  git push https://github.com/{contributor}/rhwp.git HEAD:{head-branch}
+```
+
+push 뒤 `git ls-remote`와 `gh pr view N --json headRefOid`가 local `HEAD`와 같은지 확인한다. code 또는 test
+commit이 하나라도 포함되면 문서-only fast-pass를 적용하지 않고 최신 head 기준 full GitHub Actions를 기다린다.
+그 뒤 9.4 절의 merge 전 조건과 7장의 merge 후속 절차를 수행한다.
+
+### 9.3.2 후속 기록 PR fast-pass
 
 메인터너 또는 collaborator 가 외부 PR head 또는 별도 후속 PR 에 review/운영 문서와 기준 샘플을 보강하는 경우,
 다음 조건을 모두 만족하면 heavy CI 가 job-level 로 skip 될 수 있다.
@@ -1190,7 +1260,7 @@ fast-pass PR 의 로컬/원격 브랜치 및 worktree 정리, 잔여 브랜치 �
 
 ### 9.4 merge 전 최종 조건
 
-- PR head 최신 커밋 기준 GitHub Actions 통과 또는 9.3.1 절의 후속 기록 PR fast-pass 결과 확인
+- PR head 최신 커밋 기준 GitHub Actions 통과 또는 9.3.2 절의 후속 기록 PR fast-pass 결과 확인
 - review 문서가 PR diff 에 포함됨
 - 오늘할일 갱신이 필요한 collaborator 경로에서는 `mydocs/orders/{yyyymmdd}.md` 가 같은 PR diff 에 포함됨
 - `pr_{N}_report.md` 를 작성한 경우 사전 판단 보고서 형식이며, merge 후 사실을 미리 단정하지 않음

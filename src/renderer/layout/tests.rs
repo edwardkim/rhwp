@@ -2349,3 +2349,36 @@ fn page_bg_image_only_on_section_first_page() {
     assert!(!image_rest, "구역 첫 쪽이 아니면 배경 이미지가 없어야 한다");
     assert!(color_rest, "이미지가 억제돼도 색 채우기는 유지되어야 한다");
 }
+
+/// [Task #2835] TAC picture/shape 배치 경로의 좌측 margin 이 paragraph_layout.rs
+/// (Task #544 v2, 커밋 a30dca73) 의 "margin_left 단일 가산" 규칙과 일치해야 한다.
+///
+/// 버그(수정 전): `has_visible_stroke && border_spacing[0]==[1]==0` 인 문단에서
+/// `inner_pad_left = para_margin_left` 를 추가로 더해 TAC 그림이 같은 문단의 본문
+/// 텍스트보다 `para_margin_left` 만큼 더 오른쪽으로 밀렸다 (exam_kor.hwp pi=46 등
+/// 실측 inner_pad_left=11.33px). 본 테스트는 `border_fill_id`/`border_spacing` 유무와
+/// 무관하게 `tac_picture_effective_margin_left` 가 `para_margin_left`(+indent) 만
+/// 반환해야 함을 검증한다.
+#[test]
+fn tac_picture_effective_margin_left_matches_paragraph_layout_single_margin_rule() {
+    use super::tac_picture_effective_margin_left;
+
+    // 테두리(has_visible_stroke) + border_spacing=0 케이스 (버그 트리거 조건)여도
+    // margin_left 를 한 번만 반영해야 한다. 버그 있던 구현이라면 11.33 + 11.33 = 22.66.
+    let para_margin_left = 11.33;
+    assert!(
+        (tac_picture_effective_margin_left(para_margin_left, 0.0) - para_margin_left).abs() < 1e-9,
+        "border_spacing=0/유테두리 문단에서도 margin_left 를 한 번만 더해야 함 \
+         (이중 가산 버그: 22.66 이 아니라 11.33 이어야 함)"
+    );
+
+    // indent>0 (첫 줄 hanging indent) 이면 margin_left + indent 만 더해야 한다.
+    let para_indent = 13.23;
+    assert!(
+        (tac_picture_effective_margin_left(para_margin_left, para_indent)
+            - (para_margin_left + para_indent))
+            .abs()
+            < 1e-9,
+        "indent>0 이면 margin_left + indent 만 반영해야 함 (inner_pad 이중 가산 없이)"
+    );
+}

@@ -149,6 +149,16 @@ rhwp export-pdf input.hwp -o out.pdf \
 - JSON: `{mode, node_count, preamble, roots:[{level,kind,marker,heading,section,paragraph,body,children}]}`.
   비제목 문단은 직전 제목 노드의 `body` 에 귀속. `-o` 생략 시 stdout.
 
+### `export-doclang <파일.hwp|.hwpx> [-o <출력.xml>] [--assets-dir <디렉터리>]`
+HWP5 / HWPX 문서를 **DocLang v0.6** 의미 XML 로 내보낸다 (다운스트림 AI 파이프라인용).
+문서를 의미 IR(SirDocument)로 낮춘 뒤 `<doclang version="0.6">` 루트의 XML 로 직렬화한다.
+- 입력은 `.hwp`(HWP5) / `.hwpx` 만 받는다. HWP3·HML·DRM·빈 파일은 사용법 오류로 거부한다.
+- `-o`, `--output <파일>` 생략 시 입력과 같은 폴더에 `<입력 stem>.dclg.xml`.
+  입력==출력 경로면 원본 보호를 위해 거부한다.
+- `--assets-dir <디렉터리>` — 그림 등 이진 자원을 이 디렉터리에 파일로 기록하고 XML 은
+  해당 경로를 참조한다. 생략 시 자원은 base64 data URI 로 XML 에 인라인된다.
+- DocLang v0.6 으로 표현할 수 없는 정보는 손실 보고 건수로 요약 출력한다(변환 자체는 성공).
+
 ---
 
 ## 2. 구조 덤프·진단 (Debug)

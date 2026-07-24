@@ -887,7 +887,7 @@ export function finishPictureResizeDrag(this: any, e: MouseEvent): void {
         const relX = r.bboxX - origX;
         const relY = r.bboxY - origY;
         const sx = isCorner ? scaleX : (state.dir === 'n' || state.dir === 's' ? 1 : scaleX);
-        const sy = isCorner ? scaleX : (state.dir === 'e' || state.dir === 'w' ? 1 : scaleY);
+        const sy = isCorner ? scaleY : (state.dir === 'e' || state.dir === 'w' ? 1 : scaleY);
         const newPx = newOrigX + relX * sx;
         const newPy = newOrigY + relY * sy;
         const deltaH = Math.round((newPx - r.bboxX) * PX2HWP);

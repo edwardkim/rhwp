@@ -12,11 +12,40 @@ export interface ClickHereProps {
   editable: boolean;
 }
 
+/**
+ * 필드 이름의 안전한 상한 길이(문자 수).
+ *
+ * Rust 직렬화기(`src/serializer/control.rs`)는 CTRL_DATA 레코드에 필드 이름 길이를
+ * `nlen as u16`으로 기록한다. 65536자 이상이면 이 캐스팅이 랩어라운드되어 길이
+ * 프리픽스와 실제 기록된 바이트 수가 어긋난 손상된 레코드가 만들어진다(#2851).
+ * `.rs`를 수정하지 않는 범위에서, 손상 가능한 값이 wasm 호출까지 도달하지 않도록
+ * 프런트엔드에서 훨씬 낮은 상한으로 미리 막는다.
+ */
+export const MAX_FIELD_NAME_LEN = 250;
+
+/**
+ * 안내문(guide)의 안전한 상한 길이(문자 수).
+ *
+ * Rust 직렬화기(`src/serializer/control.rs`)는 누름틀 CTRL_DATA 레코드에 안내문과
+ * 메모를 포함한 command 문자열 전체 길이를 `cmd_len as u16`으로 기록한다. 두 필드의
+ * 합산 UTF-16 코드 유닛 수가 65536 이상이면 이 캐스팅이 랩어라운드되어 길이
+ * 프리픽스와 실제 기록된 바이트 수가 어긋난 손상된 레코드가 만들어진다(#2851과
+ * 동일 원인, guide/memo 형제 필드 재발). `.rs`를 수정하지 않는 범위에서, 손상 가능한
+ * 값이 wasm 호출까지 도달하지 않도록 프런트엔드에서 훨씬 낮은 상한으로 미리 막는다.
+ */
+export const MAX_FIELD_GUIDE_LEN = 250;
+
+/** 메모(memo)의 안전한 상한 길이(문자 수). 근거는 {@link MAX_FIELD_GUIDE_LEN} 참고. */
+export const MAX_FIELD_MEMO_LEN = 1000;
+
 export class FieldEditDialog extends ModalDialog {
   private guideInput!: HTMLInputElement;
   private memoInput!: HTMLTextAreaElement;
   private nameInput!: HTMLInputElement;
   private editableCheckbox!: HTMLInputElement;
+  private nameErrorLabel!: HTMLDivElement;
+  private guideErrorLabel!: HTMLDivElement;
+  private memoErrorLabel!: HTMLDivElement;
 
   /** 적용 콜백 */
   onApply: ((props: ClickHereProps) => void) | null = null;
@@ -71,7 +100,16 @@ export class FieldEditDialog extends ModalDialog {
     this.guideInput = document.createElement('input');
     this.guideInput.type = 'text';
     this.guideInput.className = 'field-edit-input';
+    this.guideInput.maxLength = MAX_FIELD_GUIDE_LEN;
     panel.appendChild(this.guideInput);
+
+    this.guideErrorLabel = document.createElement('div');
+    this.guideErrorLabel.className = 'field-edit-error';
+    this.guideErrorLabel.style.color = '#c00';
+    this.guideErrorLabel.style.fontSize = '11px';
+    this.guideErrorLabel.style.display = 'none';
+    this.guideErrorLabel.textContent = `안내문은 ${MAX_FIELD_GUIDE_LEN}자를 넘을 수 없습니다.`;
+    panel.appendChild(this.guideErrorLabel);
 
     // ── 메모 내용(M) ──
     const memoLabel = document.createElement('label');
@@ -82,7 +120,16 @@ export class FieldEditDialog extends ModalDialog {
     this.memoInput = document.createElement('textarea');
     this.memoInput.className = 'field-edit-textarea';
     this.memoInput.rows = 4;
+    this.memoInput.maxLength = MAX_FIELD_MEMO_LEN;
     panel.appendChild(this.memoInput);
+
+    this.memoErrorLabel = document.createElement('div');
+    this.memoErrorLabel.className = 'field-edit-error';
+    this.memoErrorLabel.style.color = '#c00';
+    this.memoErrorLabel.style.fontSize = '11px';
+    this.memoErrorLabel.style.display = 'none';
+    this.memoErrorLabel.textContent = `메모 내용은 ${MAX_FIELD_MEMO_LEN}자를 넘을 수 없습니다.`;
+    panel.appendChild(this.memoErrorLabel);
 
     // ── 필드 이름(N) ──
     const nameLabel = document.createElement('label');
@@ -93,7 +140,16 @@ export class FieldEditDialog extends ModalDialog {
     this.nameInput = document.createElement('input');
     this.nameInput.type = 'text';
     this.nameInput.className = 'field-edit-input';
+    this.nameInput.maxLength = MAX_FIELD_NAME_LEN;
     panel.appendChild(this.nameInput);
+
+    this.nameErrorLabel = document.createElement('div');
+    this.nameErrorLabel.className = 'field-edit-error';
+    this.nameErrorLabel.style.color = '#c00';
+    this.nameErrorLabel.style.fontSize = '11px';
+    this.nameErrorLabel.style.display = 'none';
+    this.nameErrorLabel.textContent = `필드 이름은 ${MAX_FIELD_NAME_LEN}자를 넘을 수 없습니다.`;
+    panel.appendChild(this.nameErrorLabel);
 
     // ── 양식 모드에서 편집 가능(F) ──
     const editableRow = document.createElement('label');
@@ -109,7 +165,31 @@ export class FieldEditDialog extends ModalDialog {
     return body;
   }
 
-  protected onConfirm(): void {
+  protected onConfirm(): void | boolean {
+    if (this.nameInput.value.length > MAX_FIELD_NAME_LEN) {
+      this.nameErrorLabel.style.display = '';
+      this.nameInput.focus();
+      return false;
+    }
+    this.nameErrorLabel.style.display = 'none';
+
+    let valid = true;
+    if (this.guideInput.value.length > MAX_FIELD_GUIDE_LEN) {
+      this.guideErrorLabel.style.display = '';
+      valid = false;
+    } else {
+      this.guideErrorLabel.style.display = 'none';
+    }
+    if (this.memoInput.value.length > MAX_FIELD_MEMO_LEN) {
+      this.memoErrorLabel.style.display = '';
+      valid = false;
+    } else {
+      this.memoErrorLabel.style.display = 'none';
+    }
+    if (!valid) {
+      return false;
+    }
+
     if (this.onApply) {
       this.onApply({
         guide: this.guideInput.value,

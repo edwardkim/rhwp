@@ -107,7 +107,8 @@ export const formatCommands: CommandDef[] = [
       if (!ih) return;
       const props = ih.getParaProperties();
       const current = props?.lineSpacing ?? 160;
-      const newValue = current - 10;
+      // toolbar.ts ▼ 버튼과 동일하게 5%로 하한 clamp (issue #3009)
+      const newValue = Math.max(5, current - 10);
       ih.setLineSpacing(newValue);
     },
   },

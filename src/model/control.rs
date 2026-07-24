@@ -89,6 +89,10 @@ pub struct Equation {
     /// HWP5 spec 표 105 에 누락되어 있으나 한컴 실제 저장본에 baseline 과 version_info
     /// 사이에 UINT16 zero 가 위치. Task #1061 발견.
     pub unknown: u16,
+    /// EQEDIT 속성 (UINT32, HWPTAG_EQEDIT 첫 필드).
+    /// bit 0: lineMode (0=글자 단위/CHAR, 1=줄 단위/LINE).
+    /// 종전엔 파싱 후 버려지고 저장 시 0으로 고정되어 lineMode 유실. Issue #2727.
+    pub eqedit: u32,
     /// 버전 정보
     pub version_info: String,
     /// 수식 글꼴명
@@ -246,12 +250,20 @@ pub struct Field {
     pub field_id: u32,
     /// 원본 ctrl_id (직렬화용)
     pub ctrl_id: u32,
+    /// HWPX `<hp:fieldBegin fieldid="..">` 원본 값 (동종 필드 간 공유되는 instance id).
+    /// `id`(=field_id, 문서 내 고유)와 별개 값이며 실물 파일에서 서로 다를 수 있다(#1512).
+    /// `None` 이면 fieldid 속성 자체가 없었거나 파서가 값을 못 읽은 경우 — 방출 생략.
+    pub instance_id: Option<u32>,
     /// CTRL_DATA에서 읽은 필드 이름 (누름틀 고치기에서 설정)
     pub ctrl_data_name: Option<String>,
     /// 메모 인덱스 (hwplib: memoIndex)
     pub memo_index: u32,
     /// 메모 본문 문단 리스트 (`fieldBegin type="MEMO"` 내부 subList)
     pub memo_paragraphs: Vec<Paragraph>,
+    /// 메모 본문 subList 의 `textDirection` 속성 (예: "VERTICAL"). 세로쓰기 메모가
+    /// 왕복 시 가로쓰기로 뒤집히지 않도록 원본 값을 보존한다.
+    /// `None` 이면 기본값 "HORIZONTAL" 방출.
+    pub memo_text_direction: Option<String>,
     /// HWPX `<hp:parameters>` 요소 원문 verbatim (#1391).
     ///
     /// 전 fieldBegin 타입(MEMO/HYPERLINK/FORMULA/BOOKMARK 등)이 parameters 를

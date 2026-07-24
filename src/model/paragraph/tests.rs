@@ -646,6 +646,36 @@ fn test_merge_from_empty_text_with_control() {
 }
 
 #[test]
+fn test_merge_from_text_only_control_mask_bits() {
+    // other 문단이 controls는 없고 tab/개행만 가진 경우에도 control_mask의
+    // 텍스트 기반 비트(0x9=tab, 0xA=개행)가 병합 결과에 반영돼야 한다.
+    let mut para1 = Paragraph {
+        text: "안녕".to_string(),
+        char_count: 3,
+        char_offsets: vec![0, 1],
+        has_para_text: true,
+        ..Default::default()
+    };
+
+    let tab_para = Paragraph {
+        text: "\t뒤".to_string(),
+        char_count: 3,
+        char_offsets: vec![0, 1],
+        control_mask: 1u32 << 0x0009,
+        has_para_text: true,
+        ..Default::default()
+    };
+
+    para1.merge_from(&tab_para);
+
+    assert_ne!(
+        para1.control_mask & (1u32 << 0x0009),
+        0,
+        "controls가 없는 other의 tab 비트도 control_mask에 반영돼야 한다"
+    );
+}
+
+#[test]
 fn test_merge_from_control_then_right_half() {
     // 셀 paste 3단 흐름 재현: split_at → merge(컨트롤 문단) → merge(right_half)
     let mut para = Paragraph {
@@ -783,6 +813,7 @@ fn test_merge_from_field_ranges_ctrl_offset() {
             start_char_idx: 0,
             end_char_idx: 1,
             control_idx: 0,
+            ..Default::default()
         }],
         has_para_text: true,
         ..Default::default()
@@ -851,6 +882,7 @@ fn test_undo_split_moves_merged_clickhere_field_to_restored_paragraph() {
             start_char_idx: 0,
             end_char_idx: 2,
             control_idx: 0,
+            ..Default::default()
         }],
         has_para_text: true,
         ..Default::default()
@@ -892,6 +924,7 @@ fn test_split_moves_field_with_range_without_consuming_visible_offset() {
             start_char_idx: 2,
             end_char_idx: 4,
             control_idx: 0,
+            ..Default::default()
         }],
         has_para_text: true,
         ..Default::default()
