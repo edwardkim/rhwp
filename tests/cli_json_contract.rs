@@ -229,6 +229,109 @@ fn batch_export_text_json_partial_failure_exit_runtime() {
     assert_eq!(failed[0]["schemaVersion"], "1.0", "{records:?}");
 }
 
+// ── export-structure --json ────────────────────────────────────────────────
+
+#[test]
+fn export_structure_json_envelope_contract() {
+    // [#3261] 계약 봉투: 한 줄 JSON, schemaVersion·source·mode·nodeCount·structure.
+    let sample = sample_path();
+    let args = ["export-structure", "--json", sample.to_str().unwrap()];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert_eq!(
+        stdout.lines().filter(|l| !l.trim().is_empty()).count(),
+        1,
+        "봉투는 한 줄이어야 합니다.\n{}",
+        describe(&args, &output)
+    );
+    let v = parse_stdout_json(&args, &output);
+    assert_eq!(v["schemaVersion"], "1.0", "{v}");
+    assert!(v["source"].is_string(), "{v}");
+    assert!(v["mode"].is_string(), "{v}");
+    assert!(v["nodeCount"].as_u64().is_some(), "{v}");
+    assert!(v["structure"].is_object(), "{v}");
+}
+
+#[test]
+fn export_structure_default_output_unchanged() {
+    // 기본 출력(무봉투 pretty JSON)은 종전과 동일해야 한다 — 봉투 필드가 없음을 고정.
+    let sample = sample_path();
+    let args = ["export-structure", sample.to_str().unwrap()];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
+    let v = parse_stdout_json(&args, &output);
+    assert!(
+        v.get("schemaVersion").is_none(),
+        "기본 출력에 봉투가 생기면 기존 소비자가 깨집니다: {v}"
+    );
+}
+
+#[test]
+fn batch_export_structure_json_contract() {
+    let sample = sample_path();
+    let sample_str = sample.to_str().unwrap();
+    let args = ["batch", "export-structure", "--json", "--mode", "outline"];
+    let stdin_body = format!("{sample_str}\n{sample_str}\n");
+    let output = run_with_stdin(&args, &stdin_body);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let records: Vec<serde_json::Value> = stdout
+        .lines()
+        .filter(|l| !l.trim().is_empty())
+        .map(|l| serde_json::from_str(l).unwrap_or_else(|e| panic!("NDJSON 아님 ({e}): {l}")))
+        .collect();
+    assert_eq!(records.len(), 2, "{}", describe(&args, &output));
+    for v in &records {
+        assert_eq!(v["schemaVersion"], "1.0", "{v}");
+        assert_eq!(v["mode"], "outline", "{v}");
+        assert!(v["nodeCount"].as_u64().is_some(), "{v}");
+        assert!(v["structure"].is_object(), "{v}");
+    }
+}
+
+#[test]
+fn batch_structure_invalid_mode_is_usage_error() {
+    let args = ["batch", "export-structure", "--json", "--mode", "elephant"];
+    let output = run_with_stdin(&args, "");
+    assert_eq!(
+        output.status.code(),
+        Some(2),
+        "{}",
+        describe(&args, &output)
+    );
+}
+
+#[test]
+fn batch_mode_flag_rejected_for_other_subcommands() {
+    // --mode 는 export-structure 전용이다.
+    let args = ["batch", "export-text", "--json", "--mode", "outline"];
+    let output = run_with_stdin(&args, "");
+    assert_eq!(
+        output.status.code(),
+        Some(2),
+        "{}",
+        describe(&args, &output)
+    );
+}
+
 #[test]
 fn batch_info_json_shares_single_command_schema() {
     // `batch info --json` 레코드는 `info --json` 과 같은 스키마다 — 소비자가

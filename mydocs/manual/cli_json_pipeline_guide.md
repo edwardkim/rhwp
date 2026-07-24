@@ -29,7 +29,8 @@ last_verified: 2026-07-24
 |---|---|---|
 | `info --json <f>` | 문서 메타 JSON 1개 | 0 / 1 / 2 |
 | `export-text --json <f> [-p N]` | 페이지 텍스트 JSON 1개 | 0 / 1 / 2 |
-| `batch <export-text\|info> --json [--threads N]` | 파일당 NDJSON 1줄, **stdin 입력 순서 보존** | 0 / 전건 성공 아니면 1 / 2 |
+| `export-structure --json <f> [--mode m]` | 구조 봉투 JSON 1개 (한 줄) | 0 / 1 / 2 |
+| `batch <export-text\|info\|export-structure> --json [--threads N]` | 파일당 NDJSON 1줄, **stdin 입력 순서 보존** | 0 / 전건 성공 아니면 1 / 2 |
 
 - 실패한 단건 명령의 stdout 은 **0바이트**다 — 부분 JSON 을 파싱할 일이 없다.
 - batch 의 건별 실패(읽기·파싱·추출·panic)는 `{"schemaVersion","source","error","exitClass":"runtime"}`
@@ -86,6 +87,24 @@ fi
 - 성공분은 이미 `out.ndjson` 에 있다 — 재시도는 실패 건만 하면 된다.
 - 한 건의 파서 panic 도 해당 파일의 `error` 레코드로 격리된다(배치는 죽지 않는다).
 - 소비자가 파이프를 끊으면(`| head` 등) rhwp 는 작업을 정리하고 1 로 끝난다.
+
+## 시나리오 4 — 문서 구조 스윕 (조문 DB화·구조 기반 청킹)
+
+평문 텍스트로는 조문("제3조 2항")·개요 계층이 사라진다. `export-structure` 축은
+문서의 **구조 트리**를 주고, batch 로 아카이브 전체의 구조 지도를 만든다.
+
+```bash
+# 아카이브 전체 구조 스윕 → 모드(조문/개요)별 분포
+find docs/ -name '*.hwp' | rhwp batch export-structure --json > structure.ndjson
+jq -s 'group_by(.mode) | map({mode: .[0].mode, files: length, nodes: (map(.nodeCount)|add)})' structure.ndjson
+```
+
+```console
+[{"mode":"clause","files":258,"nodes":7239},{"mode":"outline","files":13,"nodes":905}]
+```
+
+실측: 271건 구조 스윕 2.7s, 전건 성공. 조문 구조 문서만 골라 조문 단위로 청킹하면
+"제N조" 검색·인용이 좌표째 성립한다 — 평문 RAG 가 못 하는 것.
 
 ## 성능 특성 (실측)
 

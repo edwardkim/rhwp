@@ -132,7 +132,7 @@ fn print_help() {
     println!("      --show-control-codes    조판부호 보이기 상태의 트리 생성");
     println!("      --respect-vpos-reset    LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리");
     println!();
-    println!("  export-structure <파일> [--mode auto|outline|clause] [-o out.json]");
+    println!("  export-structure <파일> [--mode auto|outline|clause] [-o out.json] [--json]");
     println!("      문서 개요/조문(편·장·절·관·조·항·호·목) 계층을 중첩 JSON 트리로 추출");
     println!();
     println!("      --mode <방식>           분류 방식 auto|outline|clause (기본: auto)");
@@ -172,11 +172,12 @@ fn print_help() {
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
     println!("      --json                  결과를 JSON으로 stdout에 출력 (파일 저장 안 함)");
     println!();
-    println!("  batch <export-text|info> --json [--threads <N>]");
+    println!("  batch <export-text|info|export-structure> --json [--threads <N>]");
     println!(
         "      stdin의 파일 목록(한 줄당 하나)을 한 프로세스로 전건 처리해 NDJSON 스트림 출력"
     );
     println!("      --threads <N>           파일 간 병렬 스레드 수 (기본: CPU 코어 수)");
+    println!("      --mode <m>              export-structure 전용: auto|outline|clause");
     println!();
     println!("  export-markdown <파일.hwp> [옵션]");
     println!("      페이지별 텍스트를 Markdown(.md)으로 내보내기");
@@ -811,9 +812,13 @@ fn export_structure(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut out_path: Option<String> = None;
     let mut mode = StructureMode::Auto;
+    // [#3261] --json: 계약 봉투(schemaVersion·source)를 씌운 한 줄 JSON.
+    // 기본 출력(무봉투 pretty JSON·-o 파일 저장)은 기존 소비자 계약이라 건드리지 않는다.
+    let mut json_mode = false;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
+            "--json" => json_mode = true,
             "-o" | "--out" => {
                 i += 1;
                 match args.get(i) {
@@ -866,6 +871,14 @@ fn export_structure(args: &[String]) -> i32 {
     };
 
     let st = build_structure(doc.document(), mode);
+
+    if json_mode {
+        // [#3261] 봉투는 한 줄 — NDJSON(batch)과 같은 스키마로 단건/배치 동일 소비.
+        let envelope = structure_json_value(file_path, &st);
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
     let json = match serde_json::to_string_pretty(&st) {
         Ok(j) => j,
         Err(e) => {
@@ -2146,34 +2159,53 @@ fn export_markdown(args: &[String]) -> i32 {
 fn run_batch(args: &[String]) -> i32 {
     use std::io::{BufRead, Write};
 
-    const USAGE: &str = "사용법: <파일 목록> | rhwp batch <export-text|info> --json [--threads <N>]  (stdin: 한 줄당 파일 경로 하나)";
+    const USAGE: &str = "사용법: <파일 목록> | rhwp batch <export-text|info|export-structure> --json [--mode auto|outline|clause] [--threads <N>]  (stdin: 한 줄당 파일 경로 하나)";
 
-    let mode = match args.first().map(String::as_str) {
-        Some("export-text") => BatchMode::ExportText,
-        Some("info") => BatchMode::Info,
-        other => {
-            match other {
-                Some(unknown) => {
-                    eprintln!(
-                        "오류: batch 는 현재 export-text·info 만 지원합니다 - {}",
-                        unknown
-                    )
-                }
-                None => eprintln!("오류: batch 서브커맨드를 지정해주세요."),
-            }
-            eprintln!("{USAGE}");
-            return EXIT_USAGE;
+    let subcommand = args.first().map(String::as_str);
+    let is_structure = subcommand == Some("export-structure");
+    if !matches!(
+        subcommand,
+        Some("export-text") | Some("info") | Some("export-structure")
+    ) {
+        match subcommand {
+            Some(unknown) => eprintln!(
+                "오류: batch 는 현재 export-text·info·export-structure 만 지원합니다 - {}",
+                unknown
+            ),
+            None => eprintln!("오류: batch 서브커맨드를 지정해주세요."),
         }
-    };
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    }
 
     let mut json_mode = false;
     let mut threads_opt: Option<usize> = None;
+    let mut structure_mode = rhwp::document_core::queries::structure::StructureMode::Auto;
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
             "--json" => {
                 json_mode = true;
                 i += 1;
+            }
+            "--mode" => {
+                // [#3261] --mode 는 export-structure 축 전용이다.
+                if !is_structure {
+                    eprintln!("오류: --mode 는 export-structure 에서만 사용할 수 있습니다.");
+                    return EXIT_USAGE;
+                }
+                let Some(value) = args.get(i + 1) else {
+                    eprintln!("오류: --mode 뒤에 auto|outline|clause 가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match rhwp::document_core::queries::structure::StructureMode::parse(value) {
+                    Some(m) => structure_mode = m,
+                    None => {
+                        eprintln!("오류: --mode 는 auto|outline|clause - {}", value);
+                        return EXIT_USAGE;
+                    }
+                }
+                i += 2;
             }
             "--threads" => {
                 let Some(value) = args.get(i + 1) else {
@@ -2201,6 +2233,12 @@ fn run_batch(args: &[String]) -> i32 {
         eprintln!("{USAGE}");
         return EXIT_USAGE;
     }
+
+    let mode = match subcommand {
+        Some("export-text") => BatchMode::ExportText,
+        Some("info") => BatchMode::Info,
+        _ => BatchMode::Structure(structure_mode),
+    };
 
     let stdin = std::io::stdin();
     let mut paths: Vec<String> = Vec::new();
@@ -2340,6 +2378,8 @@ fn run_batch(args: &[String]) -> i32 {
 enum BatchMode {
     ExportText,
     Info,
+    /// [#3261] 문서 개요/조문 구조 — `export-structure --json` 과 스키마 공유.
+    Structure(rhwp::document_core::queries::structure::StructureMode),
 }
 
 /// [#3238] 파일 하나를 처리해 NDJSON 레코드 하나를 만든다. 실패는 레코드로 보고하고
@@ -2351,6 +2391,7 @@ fn batch_record(mode: BatchMode, path: &str) -> serde_json::Value {
     match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match mode {
         BatchMode::ExportText => batch_export_text_record_inner(path),
         BatchMode::Info => batch_info_record_inner(path),
+        BatchMode::Structure(structure_mode) => batch_structure_record_inner(path, structure_mode),
     })) {
         Ok(record) => record,
         Err(payload) => {
@@ -2410,6 +2451,24 @@ fn batch_export_text_record_inner(path: &str) -> serde_json::Value {
     })
 }
 
+/// [#3261] `batch export-structure --json` 의 파일당 레코드 — `export-structure --json`
+/// 봉투(`structure_json_value` 공유)와 같은 스키마다.
+fn batch_structure_record_inner(
+    path: &str,
+    mode: rhwp::document_core::queries::structure::StructureMode,
+) -> serde_json::Value {
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
+    };
+    let st = rhwp::document_core::queries::structure::build_structure(doc.document(), mode);
+    structure_json_value(path, &st)
+}
+
 /// [#3238] `batch info --json` 의 파일당 레코드 — `info --json` 과 같은 스키마
 /// (`info_json_value` 공유)라 소비자가 단건/배치를 같은 코드로 읽는다.
 fn batch_info_record_inner(path: &str) -> serde_json::Value {
@@ -2424,6 +2483,21 @@ fn batch_info_record_inner(path: &str) -> serde_json::Value {
         Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
     };
     info_json_value(path, file_size, detected_format, &doc)
+}
+
+/// [#3261] `export-structure --json`·`batch export-structure --json` 이 공유하는
+/// 구조 봉투 레코드. `mode`/`nodeCount` 를 톱레벨로 올려 스윕 선별(jq select)이 싸다.
+fn structure_json_value(
+    file_path: &str,
+    st: &rhwp::document_core::queries::structure::StructureDoc,
+) -> serde_json::Value {
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "mode": st.mode,
+        "nodeCount": st.node_count,
+        "structure": st,
+    })
 }
 
 /// [#3237] `info --json`·`batch info --json` 이 공유하는 문서 메타 JSON 레코드.
