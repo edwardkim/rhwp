@@ -518,6 +518,15 @@ fn hwp3_default_endnote_shape(doc_info: &Hwp3DocInfo) -> crate::model::footnote:
         864
     };
 
+    // [Task #3054] doc_info.footnote_text_margin(각주 분리선과 각주 본문 사이의
+    // 간격)을 note_spacing 으로 배선한다. 미배선 시 항상 하드코딩된 576 값이
+    // 쓰여 문서가 지정한 간격이 무시됐다.
+    let note_spacing = if doc_info.footnote_text_margin != 0 {
+        (doc_info.footnote_text_margin as i16).saturating_mul(4)
+    } else {
+        576
+    };
+
     let mut shape = FootnoteShape {
         number_format: NumberFormat::Digit,
         // doc_info offset 110 "각주 옵션": ')' = 번호에 ')' 붙임, 0 = 안 붙임.
@@ -530,7 +539,7 @@ fn hwp3_default_endnote_shape(doc_info: &Hwp3DocInfo) -> crate::model::footnote:
         },
         start_number: 1,
         separator_margin_top,
-        note_spacing: 576,
+        note_spacing,
         separator_line_width: 1,
         separator_color: 0x00000000,
         numbering: FootnoteNumbering::Continue,
@@ -4141,6 +4150,22 @@ mod tests {
         apply_hwp3_compressed_flag(1, &mut header);
         assert!(header.compressed);
         assert_eq!(header.raw_data.unwrap()[36] & 0x01, 0x01);
+    }
+
+    #[test]
+    fn task3054_hwp3_default_endnote_shape_wires_footnote_text_margin() {
+        // [Task #3054] doc_info.footnote_text_margin 이 note_spacing 으로
+        // 배선돼야 한다. 값이 0이면 기존 하드코딩 기본값(576)을 유지한다.
+        let doc_info = Hwp3DocInfo {
+            footnote_text_margin: 50,
+            ..Default::default()
+        };
+        let shape = hwp3_default_endnote_shape(&doc_info);
+        assert_eq!(shape.note_spacing, 200);
+
+        let default_doc_info = Hwp3DocInfo::default();
+        let default_shape = hwp3_default_endnote_shape(&default_doc_info);
+        assert_eq!(default_shape.note_spacing, 576);
     }
 
     #[test]
