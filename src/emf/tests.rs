@@ -430,6 +430,33 @@ fn parses_polyline16_with_points() {
 }
 
 #[test]
+fn polyline16_rejects_unbounded_point_count() {
+    // EMR_POLYLINE16 레코드에 악의적인 count(u32::MAX)를 넣고 실제 포인트
+    // 데이터는 0바이트만 둔다. 검증 없이 Vec::with_capacity(count)를
+    // 호출하면 ~17GB 예약을 시도해 OOM abort로 이어진다 — 남은 바이트 기준
+    // 상한이 걸려 빈 포인트 목록으로 정상 반환해야 한다.
+    let mut b = header_prefix();
+    let mut p = Vec::new();
+    for v in [0i32, 0, 100, 100] {
+        p.extend_from_slice(&v.to_le_bytes());
+    }
+    p.extend_from_slice(&u32::MAX.to_le_bytes()); // count (조작된 값)
+    push_record(&mut b, 0x56, &p);
+    push_eof(&mut b);
+
+    let recs = parse_emf(&b).expect("count가 남은 바이트 기준으로 상한이 걸려 정상 파싱돼야 함");
+    match &recs[1] {
+        Record::Polyline16 { points, .. } => {
+            assert!(
+                points.is_empty(),
+                "남은 바이트가 없으므로 포인트는 비어야 함"
+            );
+        }
+        other => panic!("expected Polyline16, got {other:?}"),
+    }
+}
+
+#[test]
 fn parses_path_begin_end_fill() {
     let mut b = header_prefix();
     push_record(&mut b, 0x3B, &[]); // BeginPath

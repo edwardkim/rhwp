@@ -1,5 +1,34 @@
 use crate::wmf::imports::*;
 
+#[cfg(test)]
+mod tests {
+    use super::Region;
+
+    /// scan_count에 -1(0xFFFF)을 넣으면 `as usize` 부호확장으로
+    /// `Vec::with_capacity`가 usize::MAX 근처 값을 요청해 capacity overflow
+    /// 패닉이 발생해야 정상 동작(수정 전 red)이었으나, 수정 후에는
+    /// ParseError로 안전하게 실패해야 한다(green).
+    #[test]
+    fn negative_scan_count_returns_error_instead_of_panicking() {
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(&0u16.to_le_bytes()); // next_in_chain
+        bytes.extend_from_slice(&0x0006i16.to_le_bytes()); // object_type
+        bytes.extend_from_slice(&0u32.to_le_bytes()); // object_count
+        bytes.extend_from_slice(&0i16.to_le_bytes()); // size
+        bytes.extend_from_slice(&(-1i16).to_le_bytes()); // scan_count = -1
+        bytes.extend_from_slice(&0i16.to_le_bytes()); // max_scan
+        bytes.extend_from_slice(&0i16.to_le_bytes()); // bounding_rectangle.left
+        bytes.extend_from_slice(&0i16.to_le_bytes()); // top
+        bytes.extend_from_slice(&0i16.to_le_bytes()); // right
+        bytes.extend_from_slice(&0i16.to_le_bytes()); // bottom
+
+        let mut data: &[u8] = &bytes;
+        let result = Region::parse(&mut data);
+
+        assert!(result.is_err(), "negative scan_count must be rejected");
+    }
+}
+
 /// The Region Object defines a potentially non-rectilinear shape defined by an
 /// array of scanlines.
 #[derive(Clone, Debug)]
@@ -64,6 +93,11 @@ impl Region {
             + scan_count_bytes
             + max_scan_bytes
             + bounding_rectangle_bytes;
+        if scan_count < 0 {
+            return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
+                cause: format!("The scan_count field `{scan_count}` must not be negative"),
+            });
+        }
         let mut a_scans = Vec::with_capacity(scan_count as usize);
 
         for _ in 0..scan_count {

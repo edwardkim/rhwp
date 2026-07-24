@@ -9,6 +9,12 @@ import { enableDialogDrag } from './dialog-drag';
 
 type SortMode = 'name' | 'position';
 
+// [Task #2862] 책갈피 이름은 HWP5 CTRL_DATA 레코드에서 u16 길이 프리픽스로 직렬화된다
+// (`src/serializer/control.rs`의 `serialize_bookmark_ctrl_data`, `utf16.len() as u16`).
+// UTF-16 코드 유닛 65536개 이상이면 길이 프리픽스가 랩어라운드되어 저장 파일이 손상되므로
+// (#2851/#2854와 동일한 원인), 프런트엔드에서 여유를 둔 상한으로 미리 차단한다.
+export const MAX_BOOKMARK_NAME_LEN = 250;
+
 export class BookmarkDialog {
   private services: CommandServices;
   private _open = false;
@@ -93,6 +99,7 @@ export class BookmarkDialog {
     this.nameInput = document.createElement('input');
     this.nameInput.type = 'text';
     this.nameInput.className = 'bm-name-input';
+    this.nameInput.maxLength = MAX_BOOKMARK_NAME_LEN;
     this.nameInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); this.doAdd(); }
     });
@@ -274,6 +281,11 @@ export class BookmarkDialog {
       this.statusLabel.style.color = '#c00';
       return;
     }
+    if (name.length > MAX_BOOKMARK_NAME_LEN) {
+      this.statusLabel.textContent = `책갈피 이름은 ${MAX_BOOKMARK_NAME_LEN}자를 넘을 수 없습니다.`;
+      this.statusLabel.style.color = '#c00';
+      return;
+    }
 
     const ih = this.services.getInputHandler();
     if (!ih) return;
@@ -350,6 +362,10 @@ export class BookmarkDialog {
     const bm = this.bookmarks[this.selectedIdx];
     const newName = prompt('새 책갈피 이름:', bm.name);
     if (!newName || newName.trim() === '' || newName === bm.name) return;
+    if (newName.trim().length > MAX_BOOKMARK_NAME_LEN) {
+      alert(`책갈피 이름은 ${MAX_BOOKMARK_NAME_LEN}자를 넘을 수 없습니다.`);
+      return;
+    }
 
     const ih = this.services.getInputHandler();
     if (!ih) return;

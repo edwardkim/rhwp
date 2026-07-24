@@ -1246,6 +1246,7 @@ mod tests {
                 start_char_idx: 0,
                 end_char_idx: 1,
                 control_idx: 0,
+                ..Default::default()
             }],
             ..Default::default()
         };
@@ -1292,11 +1293,13 @@ mod tests {
                     start_char_idx: 0,
                     end_char_idx: 2,
                     control_idx: 0,
+                    ..Default::default()
                 },
                 crate::model::paragraph::FieldRange {
                     start_char_idx: 3,
                     end_char_idx: 5,
                     control_idx: 1,
+                    ..Default::default()
                 },
             ],
             ..Default::default()

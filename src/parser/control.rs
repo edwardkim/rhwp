@@ -130,9 +130,11 @@ fn parse_field_control(ctrl_id: u32, ctrl_data: &[u8]) -> Control {
         extra_properties,
         field_id,
         ctrl_id,
+        instance_id: None,
         ctrl_data_name: None,
         memo_index,
         memo_paragraphs: Vec::new(),
+        memo_text_direction: None,
         raw_parameters_xml: None,
     })
 }
@@ -862,10 +864,11 @@ fn parse_equation_control(ctrl_data: &[u8], child_records: &[Record]) -> Control
         let data = &eq_rec.data;
         let mut r = ByteReader::new(data);
 
-        // attr: u32 (4바이트) — bit0: 스크립트 범위
-        // [#2727] 종전엔 읽고 버려 저장 시 0 으로 고정됐다. bit0 은 HWPX
-        // `lineMode`(CHAR/LINE) 와 대응하므로 UINT32 전체를 IR 로 보존한다.
-        equation.attr = r.read_u32().unwrap_or(0);
+        // attr: u32 (4바이트) — bit0: lineMode (0=글자단위/CHAR, 1=줄단위/LINE)
+        // `attr`/`eqedit` 두 필드가 동일한 값을 보관하므로 함께 채운다.
+        let raw_attr = r.read_u32().unwrap_or(0);
+        equation.attr = raw_attr;
+        equation.eqedit = raw_attr;
 
         // script: WCHAR 문자열 (길이 접두 UTF-16LE)
         if let Ok(script) = r.read_hwp_string() {

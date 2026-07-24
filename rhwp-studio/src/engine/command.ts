@@ -1369,7 +1369,14 @@ export class MoveTableCommand implements EditCommand {
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    wasm.moveTableOffset(this.sec, this.resultPpi, this.resultCi, -this.deltaH, -this.deltaV);
+    // [Task #2903] execute() 는 moveTableOffset 반환값(result.ppi/ci)을 권위 소스로 삼아
+    // this.resultPpi/resultCi 를 갱신하는데, undo() 는 동일한 반환값을 버리고 생성 시점의
+    // stale this.ppi/this.ci 를 그대로 반환했다. 표 이동과 문단 구조 변경(삽입/삭제/병합)이
+    // 같은 세션에서 섞이면 undo 후 커서가 존재하지 않거나 엉뚱한 문단을 가리킬 수 있다 —
+    // execute() 와 대칭으로 반환값을 캡처해 this.ppi/this.ci 를 갱신한다.
+    const result = wasm.moveTableOffset(this.sec, this.resultPpi, this.resultCi, -this.deltaH, -this.deltaV);
+    this.ppi = result.ppi;
+    this.ci = result.ci;
     return { sectionIndex: this.sec, paragraphIndex: this.ppi, charOffset: 0 };
   }
 

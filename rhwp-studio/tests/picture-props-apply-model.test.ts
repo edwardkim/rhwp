@@ -479,6 +479,15 @@ const fixtures: PatchFixture[] = [
     expected: { width: 500, height: 200 },
   },
   {
+    name: 'negative width/height input clamps to 0 instead of applying negative HWPUNIT',
+    objectType: 'image',
+    update(form) {
+      form.common.width = '-50';
+      form.common.height = '-30';
+    },
+    expected: { width: 0, height: 0 },
+  },
+  {
     name: 'image geometry, effects, border, and clamped transparency preserve field policy',
     objectType: 'image',
     update(form) {
@@ -518,6 +527,36 @@ const fixtures: PatchFixture[] = [
       form.image.selectedEffect = 'Original';
     },
     expected: {},
+  },
+  {
+    name: 'negative crop and padding inputs clamp to zero',
+    objectType: 'image',
+    props: pictureProps({
+      cropLeft: 100,
+      cropTop: 100,
+      cropRight: 100,
+      cropBottom: 100,
+      paddingLeft: 100,
+      paddingTop: 100,
+      paddingRight: 100,
+      paddingBottom: 100,
+    }),
+    update(form) {
+      form.image = {
+        crop: { left: '-1', top: '-2', right: '-3', bottom: '-4' },
+        padding: { left: '-4', top: '-3', right: '-2', bottom: '-1' },
+      };
+    },
+    expected: {
+      cropLeft: 0,
+      cropTop: 0,
+      cropRight: 0,
+      cropBottom: 0,
+      paddingLeft: 0,
+      paddingTop: 0,
+      paddingRight: 0,
+      paddingBottom: 0,
+    },
   },
 ];
 

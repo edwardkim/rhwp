@@ -1251,6 +1251,22 @@ pub(crate) fn para_has_overlay_shape(para: &Paragraph) -> bool {
 /// 자리차지(TopAndBottom)·tac=true 는 개체가 흐름 공간을 실제로 차지하므로 제외.
 /// Shape/Picture 는 통과·글앞·글뒤만(Square 는 그림 좌우 흘림이 흔해 제외, 회귀 차단).
 /// Table 은 부동 배치가 어울림(Square) 표준이므로 어울림 포함.
+/// [Task #544 v2 정합] TAC picture/shape 배치 경로의 좌측 유효 margin 계산.
+///
+/// `paragraph_layout.rs` (커밋 a30dca73, Task #544 v2 Stage 2) 는 본문 텍스트 경로에서
+/// `has_visible_stroke && border_spacing[0]==[1]==0` 조건에 `box_margin_left` 를 inner
+/// padding 명목으로 한 번 더 가산하던 분기를 이중 inset 부작용으로 판단해 완전히
+/// 제거했다 (`margin_left = box_margin_left` 단일 룰). 본 함수는 TAC picture/shape
+/// 배치 경로가 그 규칙과 동일한 값을 쓰도록 통일한다 — border/stroke 유무는 더 이상
+/// 좌측 margin 계산에 관여하지 않는다.
+pub(crate) fn tac_picture_effective_margin_left(para_margin_left: f64, para_indent: f64) -> f64 {
+    if para_indent > 0.0 {
+        para_margin_left + para_indent
+    } else {
+        para_margin_left
+    }
+}
+
 pub(crate) fn para_is_floating_overlay_anchor(para: &Paragraph) -> bool {
     use crate::model::shape::TextWrap;
     if !para.text.trim().is_empty() || para.controls.is_empty() {
@@ -7756,45 +7772,18 @@ impl LayoutEngine {
                         // Task #347: 첫 줄 effective_margin (hanging indent: indent<0 → first-line은 margin_left만 적용)
                         let para_margin_left = para_style_ref.map(|s| s.margin_left).unwrap_or(0.0);
                         let para_indent = para_style_ref.map(|s| s.indent).unwrap_or(0.0);
-                        // [Task #534] paragraph_layout 의 effective_margin_left 정합:
-                        // visible stroke 보유 + border_spacing[0,1]=0 인 paragraph 는
-                        // box_margin_left 를 inner padding 으로 추가 가산 (paragraph_layout.rs
-                        // line 711-716 와 동일). wrap_host (Square wrap 표 보유) paragraph 는
-                        // paragraph_layout 미호출되어 본 경로만 emit → inner_pad 누락 시
-                        // 위치 결함 (예: exam_kor p18 pi=50/56 의 [A]/[B] 표시기 옆 그림).
-                        let para_border_fill_id_pre =
-                            para_style_ref.map(|s| s.border_fill_id).unwrap_or(0);
-                        let has_visible_stroke = if para_border_fill_id_pre > 0 {
-                            let idx = (para_border_fill_id_pre as usize).saturating_sub(1);
-                            styles
-                                .border_styles
-                                .get(idx)
-                                .map(|bs| {
-                                    bs.borders.iter().any(|b| {
-                                        !matches!(
-                                            b.line_type,
-                                            crate::model::style::BorderLineType::None
-                                        ) && b.width > 0
-                                    })
-                                })
-                                .unwrap_or(false)
-                        } else {
-                            false
-                        };
-                        let bs_left_px = para_style_ref.map(|s| s.border_spacing[0]).unwrap_or(0.0);
-                        let bs_right_px =
-                            para_style_ref.map(|s| s.border_spacing[1]).unwrap_or(0.0);
-                        let inner_pad_left =
-                            if has_visible_stroke && bs_left_px == 0.0 && bs_right_px == 0.0 {
-                                para_margin_left
-                            } else {
-                                0.0
-                            };
-                        let mut effective_margin_left = if para_indent > 0.0 {
-                            para_margin_left + para_indent + inner_pad_left
-                        } else {
-                            para_margin_left + inner_pad_left
-                        };
+                        // [Task #544 v2 정합] paragraph_layout.rs (a30dca73, Task #544 v2 Stage 2)
+                        // 는 has_visible_stroke / bs_left_px / bs_right_px 를 보고
+                        // box_margin_left 를 inner padding 으로 한 번 더 가산하던 분기를
+                        // 이중 inset 부작용으로 판단해 완전히 제거했다 (margin_left =
+                        // box_margin_left 단일 룰, PDF 정합 확인됨). 본 TAC picture/shape
+                        // 경로는 그 수정이 반영되지 않아 테두리 있는 문단(has_visible_stroke)
+                        // + border_spacing[0]=[1]=0 조건에서 그림이 같은 문단의 텍스트보다
+                        // para_margin_left 만큼 더 오른쪽으로 밀리는 결함이 있었다
+                        // (exam_kor.hwp p18/pi=46,50,54,56... 실측 확인 — inner_pad_left=11.33px
+                        // 만큼 이중 가산). paragraph_layout.rs 와 동일하게 가산 없이 통일한다.
+                        let mut effective_margin_left =
+                            tac_picture_effective_margin_left(para_margin_left, para_indent);
                         // [Task #534 v2] LINE_SEG.column_start 는 Square wrap 인라인 표/그림이
                         // 좌측에 floating 시 표 영역 이후 텍스트 시작 위치를 HWP IR 가 인코딩.
                         // layout_shape_item 은 col_area.x 그대로 사용 → picture (TAC) 가 표

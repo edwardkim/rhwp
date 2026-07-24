@@ -343,6 +343,8 @@ pub(crate) fn parse_common_obj_attr(ctrl_data: &[u8]) -> CommonObjAttr {
     let attr = r.read_u32().unwrap_or(0);
     common.attr = attr;
     common.treat_as_char = attr & 0x01 != 0;
+    // [#2784] affectLSpacing(줄 간격에 영향) — 개체 공통 속성 attr bit 2 (스펙 표 70).
+    common.affect_line_spacing = attr & (1 << 2) != 0;
     common.flow_with_text = attr & (1 << 13) != 0;
     common.allow_overlap = attr & (1 << 14) != 0;
     common.size_protect = attr & (1 << 20) != 0;

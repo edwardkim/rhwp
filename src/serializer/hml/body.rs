@@ -419,7 +419,16 @@ fn write_table(writer: &mut XmlWriter, table: &Table, path: &str) -> Result<(), 
             table.padding.bottom,
         ),
     );
-    for row in 0..table.row_count {
+    // [#2751] 실셀의 최대 행까지만 <ROW> 방출. 무검증 row_count가 과도하게 크면
+    // 빈 <ROW>가 다수 방출되어 XML이 25배 이상 팽창하고 저장이 4.4초 지연된다.
+    let row_end = table
+        .cells
+        .iter()
+        .map(|c| c.row)
+        .max()
+        .map(|max_row| (max_row.saturating_add(1)).min(table.row_count))
+        .unwrap_or(table.row_count);
+    for row in 0..row_end {
         writer.open("ROW", &[]);
         for (cell_index, cell) in table
             .cells
@@ -554,5 +563,72 @@ fn text_wrap_name(value: TextWrap) -> &'static str {
         TextWrap::BehindText => "BehindText",
         TextWrap::InFrontOfText => "InFrontOfText",
         TextWrap::Square => "Square",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::table::Cell;
+
+    /// row_count 행 중 실제 셀은 cell_rows 행만 덮는 표를 만든다 (행당 1셀, 1열).
+    fn table_with_rows(row_count: u16, cell_rows: u16) -> Table {
+        let mut table = Table {
+            row_count,
+            col_count: 1,
+            ..Default::default()
+        };
+        table.cells = (0..cell_rows)
+            .map(|row| Cell {
+                row,
+                col: 0,
+                col_span: 1,
+                row_span: 1,
+                ..Default::default()
+            })
+            .collect();
+        table
+    }
+
+    fn serialize_table_to_hml(table: &Table) -> String {
+        let mut writer = XmlWriter::default();
+        write_table(&mut writer, table, "/TABLE").expect("table should serialize");
+        String::from_utf8(writer.finish()).expect("HML is UTF-8")
+    }
+
+    // [#2751 회귀] row_count 는 크게, 실셀은 적게: 방출되는 <ROW> 는 실셀 범위로
+    // 제한되어야 한다. 종전에는 무검증 row_count 만큼 빈 <ROW> 9600개가 방출되어
+    // XML 이 25배 팽창하고 저장이 4.4초 지연됐다. 이 결함은 되돌아가도 abort 없이
+    // 조용히 통과하므로 방출 개수 자체를 고정한다.
+    #[test]
+    fn hml_table_row_emission_is_bounded_by_actual_cells() {
+        let table = table_with_rows(10_000, 400);
+
+        let xml = serialize_table_to_hml(&table);
+        let row_count = xml.matches("<ROW").count();
+
+        assert!(
+            row_count <= 400,
+            "실셀 범위를 넘는 <ROW> 가 방출됨: {row_count}"
+        );
+        assert_eq!(row_count, 400, "실셀이 있는 행은 전부 방출되어야 함");
+    }
+
+    // [#2751 회귀] row_count 와 실셀 범위가 일치하는 정상 표는 종전과 동일하게
+    // row_count 만큼 <ROW> 를 방출해야 한다 — 과하게 잘라내지 않는다.
+    #[test]
+    fn normal_table_row_emission_unchanged() {
+        let table = table_with_rows(400, 400);
+
+        let xml = serialize_table_to_hml(&table);
+        assert_eq!(
+            xml.matches("<ROW").count(),
+            400,
+            "정상 표의 <ROW> 방출 개수가 달라짐"
+        );
+
+        // 셀이 하나도 없는 비정상 표도 종전 동작(row_count 만큼 방출)을 유지한다.
+        let empty = table_with_rows(3, 0);
+        assert_eq!(serialize_table_to_hml(&empty).matches("<ROW").count(), 3);
     }
 }

@@ -2341,6 +2341,159 @@ fn test_merge_table_cells() {
     }
 }
 
+/// [merge stale local-resize] 병합으로 셀 배열 인덱스가 바뀌면
+/// local_resize_cell_widths의 cell 인덱스 참조가 stale 해진다.
+///
+/// 2×2 표에서 셀 3(row=1,col=1)에 로컬 resize 폭을 저장해 둔 뒤 (0,0)~(0,1)을 병합하면
+/// Table::merge_cells()가 비주 셀 하나를 retain()으로 제거해 cells.len()이 4→3으로
+/// 줄어든다. local_resize_cell_widths가 갱신되지 않으면 이제 존재하지 않는 인덱스 3을
+/// 계속 가리켜, 이 값을 cells[idx]로 읽는 렌더링/직렬화 경로가 범위를 벗어나거나
+/// 병합 후 엉뚱한 셀에 로컬 resize 폭을 적용하게 된다.
+#[test]
+fn test_merge_table_cells_clears_stale_local_resize_widths() {
+    let mut doc = create_doc_with_table();
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first_mut()
+    {
+        // 병합 전: 셀 인덱스 3(row=1,col=1)에 로컬 resize 폭 저장.
+        table.local_resize_cell_widths.push((3, 1234));
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+
+    // (0,0)~(0,1) 병합 — 비주 셀 하나 제거, cells.len() 4→3.
+    doc.merge_table_cells_native(0, 0, 0, 0, 0, 0, 1).unwrap();
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
+        assert_eq!(
+            table.cells.len(),
+            3,
+            "병합으로 비주 셀 하나가 제거돼야 함(전제 확인)"
+        );
+        assert!(
+            table.local_resize_cell_widths.is_empty(),
+            "병합 후 셀 인덱스가 재배치되므로 local_resize_cell_widths의 stale 참조(인덱스 3)가 \
+             비워져야 한다"
+        );
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+}
+
+/// [delete_row stale local-resize] 행 삭제로 셀 배열 인덱스가 바뀌면
+/// local_resize_cell_heights의 cell 인덱스 참조가 stale 해진다.
+///
+/// 3×2 표(row 0,1,2 × col 0,1)에서 셀 인덱스 2(row=1,col=0)에 로컬 resize 높이를
+/// 저장해 둔 뒤 row 0을 삭제하면 Table::delete_row()가 row 0의 셀 2개를 retain()으로
+/// 제거해 cells.len()이 6→4로 줄고, 남은 셀을 sort_by_key(row, col)로 재정렬한다.
+/// local_resize_cell_heights가 갱신되지 않으면 이제 존재하지 않거나(범위 초과) 엉뚱한
+/// 셀을 가리키는 stale 참조가 남아, 이 값을 cells[idx]로 읽는 렌더링/직렬화 경로가
+/// 패닉하거나 삭제 후 남은 엉뚱한 셀에 잘못된 로컬 resize 높이를 적용하게 된다.
+#[test]
+fn test_delete_table_row_clears_stale_local_resize_heights() {
+    let mut doc = HwpDocument::create_empty();
+    let table_result = doc.create_table_native(0, 0, 0, 3, 2).expect("3x2 표 생성");
+    let table_para_idx = issue_1481_json_usize(&table_result, "paraIdx");
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[table_para_idx]
+        .controls
+        .first_mut()
+    {
+        // 삭제 전: 셀 인덱스 2(row=1,col=0)에 로컬 resize 높이 저장.
+        table.local_resize_cell_heights.push((2, 5678));
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+
+    // row 0 삭제 — 셀 2개 제거, cells.len() 6→4.
+    doc.delete_table_row_native(0, table_para_idx, 0, 0)
+        .expect("행 삭제");
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[table_para_idx]
+        .controls
+        .first()
+    {
+        assert_eq!(
+            table.cells.len(),
+            4,
+            "행 삭제로 셀 2개가 제거돼야 함(전제 확인)"
+        );
+        assert!(
+            table.local_resize_cell_heights.is_empty(),
+            "행 삭제 후 셀 인덱스가 재배치되므로 local_resize_cell_heights의 stale 참조(인덱스 2)가 \
+             비워져야 한다"
+        );
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+}
+
+/// [insert_row/insert_column stale local-resize] 행/열 삽입으로 셀 배열 인덱스가
+/// 바뀌면 local_resize_cell_widths/heights의 cell 인덱스 참조가 stale 해진다.
+///
+/// Table::insert_row()/insert_column()은 새 셀을 push()한 뒤 sort_by_key(row, col)로
+/// 전체 셀 배열을 재정렬한다(delete_row가 retain()+정렬로 stale을 만드는 것과 같은
+/// 근본 원인). 3×2 표에서 셀 인덱스 2에 로컬 resize 값을 저장해 둔 뒤 행을 삽입하면
+/// 재정렬로 인덱스 2가 더 이상 같은 셀을 가리키지 않으므로, 이 값을 cells[idx]로
+/// 읽는 렌더링/직렬화 경로가 엉뚱한 셀에 잘못된 로컬 resize 값을 적용하게 된다.
+/// 열 삽입도 동일 원인으로 같은 결과를 낳는다.
+#[test]
+fn test_insert_table_row_and_column_clear_stale_local_resize() {
+    let mut doc = HwpDocument::create_empty();
+    let table_result = doc.create_table_native(0, 0, 0, 3, 2).expect("3x2 표 생성");
+    let table_para_idx = issue_1481_json_usize(&table_result, "paraIdx");
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[table_para_idx]
+        .controls
+        .first_mut()
+    {
+        table.local_resize_cell_widths.push((2, 1234));
+        table.local_resize_cell_heights.push((2, 5678));
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+
+    doc.insert_table_row_native(0, table_para_idx, 0, 0, true)
+        .expect("행 삽입");
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[table_para_idx]
+        .controls
+        .first()
+    {
+        assert!(
+            table.local_resize_cell_widths.is_empty() && table.local_resize_cell_heights.is_empty(),
+            "행 삽입 후 셀 인덱스가 재배치되므로 local_resize_cell_widths/heights의 \
+             stale 참조(인덱스 2)가 비워져야 한다"
+        );
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[table_para_idx]
+        .controls
+        .first_mut()
+    {
+        table.local_resize_cell_widths.push((2, 1234));
+        table.local_resize_cell_heights.push((2, 5678));
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+
+    doc.insert_table_column_native(0, table_para_idx, 0, 0, true)
+        .expect("열 삽입");
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[table_para_idx]
+        .controls
+        .first()
+    {
+        assert!(
+            table.local_resize_cell_widths.is_empty() && table.local_resize_cell_heights.is_empty(),
+            "열 삽입 후에도 local_resize_cell_widths/heights의 stale 참조가 비워져야 한다"
+        );
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+}
+
 #[test]
 fn test_split_table_cell() {
     let mut doc = create_doc_with_table();
@@ -2361,6 +2514,51 @@ fn test_split_table_cell() {
         let cell = &table.cells[0];
         assert_eq!(cell.col_span, 1);
         assert_eq!(cell.row_span, 1);
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+}
+
+/// [delete_table_column/split_table_cell stale local-resize] #2832/#2843/#2853과
+/// 동일한 버그 클래스의 마지막 두 인스턴스. Table::delete_column()/split_cell()이
+/// cells 배열의 인덱스 배치를 바꾸므로, local_resize_cell_widths/heights가 물고 있던
+/// 이전 cell_idx는 정리되지 않으면 stale 참조로 남는다.
+#[test]
+fn test_delete_table_column_and_split_cell_clear_stale_local_resize() {
+    let mut doc = create_doc_with_table();
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first_mut()
+    {
+        table.local_resize_cell_widths.push((1, 1234));
+        table.local_resize_cell_heights.push((1, 5678));
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+    doc.delete_table_column_native(0, 0, 0, 0).expect("열 삭제");
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
+        assert!(
+            table.local_resize_cell_widths.is_empty() && table.local_resize_cell_heights.is_empty(),
+            "열 삭제 후 local_resize_cell_widths/heights의 stale 참조가 비워져야 한다"
+        );
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first_mut()
+    {
+        table.local_resize_cell_widths.push((0, 1234));
+        table.local_resize_cell_heights.push((0, 5678));
+    } else {
+        panic!("표 컨트롤을 찾을 수 없음");
+    }
+    doc.merge_table_cells_native(0, 0, 0, 0, 0, 1, 0)
+        .expect("병합");
+    doc.split_table_cell_native(0, 0, 0, 0, 0).expect("분할");
+    if let Some(Control::Table(table)) = doc.document.sections[0].paragraphs[0].controls.first() {
+        assert!(
+            table.local_resize_cell_widths.is_empty() && table.local_resize_cell_heights.is_empty(),
+            "셀 분할 후 local_resize_cell_widths/heights의 stale 참조가 비워져야 한다"
+        );
     } else {
         panic!("표 컨트롤을 찾을 수 없음");
     }
@@ -4896,6 +5094,12 @@ fn test_table_utility_functions() {
     let (w2, _, s2) = super::parse_css_border_shorthand("none");
     assert_eq!(w2, 0.0);
     assert_eq!(s2, 0);
+
+    // rgb() 내부에 공백이 있어도 색상 토큰이 쪼개지지 않아야 한다.
+    let (w3, c3, s3) = super::parse_css_border_shorthand("1px solid rgb(255, 0, 0)");
+    assert!((w3 - 0.75).abs() < 0.01, "border width 1px -> 0.75pt");
+    assert_eq!(c3, 0x0000FF, "border color red (BGR)");
+    assert_eq!(s3, 1, "border style solid");
 
     // css_border_width_to_hwp
     assert_eq!(super::css_border_width_to_hwp(0.28), 0); // 0.28pt ≈ 0.1mm → index 0
@@ -14609,6 +14813,7 @@ fn test_save_table_1x1() {
         },
         center_line: CenterLine::None,
         fill: Fill::default(),
+        three_d: false,
     };
     doc.document.doc_info.border_fills.push(new_bf);
     let table_bf_id = doc.document.doc_info.border_fills.len() as u16; // 1-based ID
@@ -15389,6 +15594,8 @@ fn test_save_picture() {
         effects: ref_pic.effects.clone(),
         caption: None,
         img_dim: (0, 0),
+        reverse: ref_pic.reverse,
+        lock: false,
     };
 
     // 5. 문단 구성 (참조 파일: 단일 문단에 SectionDef + ColumnDef + Picture)
@@ -16552,6 +16759,7 @@ fn test_save_pic_in_table() {
         },
         center_line: CenterLine::None,
         fill: Fill::default(),
+        three_d: false,
     };
     doc.document.doc_info.border_fills.push(new_bf);
     let table_bf_id = doc.document.doc_info.border_fills.len() as u16;
@@ -16580,6 +16788,8 @@ fn test_save_pic_in_table() {
         effects: ref_pic.effects.clone(),
         caption: None,
         img_dim: (0, 0),
+        reverse: ref_pic.reverse,
+        lock: false,
     };
 
     // 6. 셀 내부 문단 구성 (cc=9: gso(8)+CR(1), mask=0x00000800)

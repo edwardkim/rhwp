@@ -29,9 +29,9 @@ use crate::model::document::{Document, Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
 use crate::model::page::{ColumnDef, ColumnDirection, ColumnType};
-use crate::model::paragraph::{ColumnBreakType, LineSeg, OrphanFieldEnd, Paragraph};
+use crate::model::paragraph::{ColumnBreakType, FieldRange, LineSeg, OrphanFieldEnd, Paragraph};
 use crate::model::shape::{
-    CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertAlign, VertRelTo,
+    CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, SizeCriterion, TextWrap, VertAlign, VertRelTo,
 };
 
 use super::context::SerializeContext;
@@ -43,7 +43,13 @@ use super::{picture, table};
 const EMPTY_SECTION_XML: &str = include_str!("templates/empty_section0.xml");
 
 /// MEMO subList 여는 태그 (#1391) — 실물(aift) 고정 속성.
-const SUB_LIST_OPEN: &str = r#"<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#;
+/// `textDirection` 만 원본값 보존(가변); 나머지는 실측 고정 속성.
+fn render_sub_list_open(text_direction: Option<&str>) -> String {
+    format!(
+        r#"<hp:subList id="" textDirection="{}" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">"#,
+        text_direction.unwrap_or("HORIZONTAL"),
+    )
+}
 const LINESEG_SLOT_OPEN: &str = "<hp:linesegarray>";
 const LINESEG_SLOT_CLOSE: &str = "</hp:linesegarray>";
 const PARA_CLOSE: &str = "</hp:p></hs:sec>";
@@ -702,9 +708,18 @@ impl RunSplitter {
 }
 
 /// `<hp:ctrl><hp:fieldEnd beginIDRef=".."/></hp:ctrl>` 방출 공통 경로.
-fn emit_field_end(out: &mut String, para: &Paragraph, control_idx: usize) {
-    if let Some(Control::Field(f)) = para.controls.get(control_idx) {
-        if let Ok(xml) = writer_to_string(|w| write_field_end(w, f.field_id)) {
+fn emit_field_end(out: &mut String, para: &Paragraph, fr: &FieldRange) {
+    if let Some(Control::Field(f)) = para.controls.get(fr.control_idx) {
+        // [Task #bookmark-hyperlink] 짝(matched) fieldEnd 자신의 fieldid 는 fieldBegin 의
+        // id(f.field_id, beginIDRef 로 사용)와 별개 값 — 파싱된 fr.end_field_id 를 그대로
+        // 되돌려 써야 한다. 과거엔 write_field_end 로 beginIDRef 만 쓰고 fieldid 는 항상
+        // 누락시켰다(고아 fieldEnd 경로만 write_field_end_full 로 보존, 비대칭).
+        let xml_result = if fr.end_field_id == 0 {
+            writer_to_string(|w| write_field_end(w, f.field_id))
+        } else {
+            writer_to_string(|w| write_field_end_full(w, f.field_id, fr.end_field_id))
+        };
+        if let Ok(xml) = xml_result {
             out.push_str("<hp:ctrl>");
             out.push_str(&xml);
             out.push_str("</hp:ctrl>");
@@ -912,7 +927,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         // fieldBegin(슬롯)만 방출하고 fieldEnd 방출 코드가 없어 same-para 균형 필드가
         // 1/0 으로 깨지며 cc −8 (#1593). #1556 고아 복원과 동형(위치 대신 말미 일괄).
         for fr in &para.field_ranges {
-            emit_field_end(&mut splitter.content, para, fr.control_idx);
+            emit_field_end(&mut splitter.content, para, fr);
         }
         // [Task #1556] 위치 추정 불가 경로에서도 고아 fieldEnd 의 8유닛 슬롯은 복원한다
         // (정확한 위치 대신 말미 일괄 — 최소한 char_count 보존).
@@ -956,7 +971,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         for (i, fr) in para.field_ranges.iter().enumerate() {
             if fr.start_char_idx == fr.end_char_idx && !field_end_emitted[i] {
                 splitter.cut_before(expected_utf16_pos);
-                emit_field_end(&mut splitter.content, para, fr.control_idx);
+                emit_field_end(&mut splitter.content, para, fr);
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                 field_end_emitted[i] = true;
             }
@@ -1037,7 +1052,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     && fr.control_idx == emitted_ctrl_idx
                 {
                     splitter.cut_before(expected_utf16_pos);
-                    emit_field_end(&mut splitter.content, para, fr.control_idx);
+                    emit_field_end(&mut splitter.content, para, fr);
                     expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                     field_end_emitted[i] = true;
                 }
@@ -1075,7 +1090,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     &mut tab_idx,
                 );
                 splitter.cut_before(expected_utf16_pos);
-                emit_field_end(&mut splitter.content, para, fr.control_idx);
+                emit_field_end(&mut splitter.content, para, fr);
                 field_end_emitted[i] = true;
             }
         }
@@ -1146,7 +1161,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     &mut tab_idx,
                 );
                 splitter.cut_before(expected_utf16_pos);
-                emit_field_end(&mut splitter.content, para, fr.control_idx);
+                emit_field_end(&mut splitter.content, para, fr);
                 // [#1407] fieldEnd 는 8유닛 슬롯을 소비한다. expected 를 +8 진행하지
                 // 않으면 다음 idx 에서 텍스트-끝 슬롯(newNum 등)이 이 8유닛 갭을
                 // 가로채 텍스트가 +8 밀린다 (143E 문단 0.14: char_offsets[3] 27→35).
@@ -1178,7 +1193,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                 continue;
             }
             splitter.cut_before(expected_utf16_pos);
-            emit_field_end(&mut splitter.content, para, fr.control_idx);
+            emit_field_end(&mut splitter.content, para, fr);
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
             field_end_emitted[i] = true;
         }
@@ -1220,7 +1235,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                 && fr.control_idx == emitted_ctrl_idx
             {
                 splitter.cut_before(expected_utf16_pos);
-                emit_field_end(&mut splitter.content, para, fr.control_idx);
+                emit_field_end(&mut splitter.content, para, fr);
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                 field_end_emitted[i] = true;
             }
@@ -1230,7 +1245,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     for (i, fr) in para.field_ranges.iter().enumerate() {
         if !field_end_emitted[i] {
             splitter.cut_before(expected_utf16_pos);
-            emit_field_end(&mut splitter.content, para, fr.control_idx);
+            emit_field_end(&mut splitter.content, para, fr);
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
             field_end_emitted[i] = true;
         }
@@ -1385,7 +1400,7 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
                     out.push_str(params);
                 }
                 if has_memo {
-                    out.push_str(SUB_LIST_OPEN);
+                    out.push_str(&render_sub_list_open(f.memo_text_direction.as_deref()));
                     let mut vert_cursor: u32 = 0;
                     for para in &f.memo_paragraphs {
                         ctx.para_shape_ids.reference(para.para_shape_id);
@@ -1596,7 +1611,13 @@ fn render_autonum(an: &AutoNumber) -> String {
         ),
         num = an.number,
         nt = auto_number_type_to_str(an.number_type),
-        ty = page_num_format_to_str(an.format),
+        // [#2957] <hp:autoNumFormat type> 은 <hp:pageNum formatType> 과 달리 원 문자
+        // 형식을 "CIRCLED_DIGIT"로 표기한다(각주/미주 경로에서 실측 검증됨, #2742).
+        ty = if an.format == 1 {
+            "CIRCLED_DIGIT"
+        } else {
+            page_num_format_to_str(an.format)
+        },
         u = ctrl_char_attr(an.user_symbol),
         p = ctrl_char_attr(an.prefix_char),
         s = ctrl_char_attr(an.suffix_char),
@@ -1740,7 +1761,9 @@ fn page_num_pos_to_str(pos: u8) -> &'static str {
 fn page_num_format_to_str(fmt: u8) -> &'static str {
     match fmt {
         0 => "DIGIT",
-        1 => "CIRCLE_DIGIT",
+        // [#XXXX] OWPML Core 스키마 NumberType1(<hp:pageNum formatType>)의 실제 값은
+        // "CIRCLED_DIGIT"이다 (Core XML schema.xml 12행). "CIRCLE_DIGIT"은 오탈자.
+        1 => "CIRCLED_DIGIT",
         2 => "ROMAN_CAPITAL",
         3 => "ROMAN_SMALL",
         4 => "LATIN_CAPITAL",
@@ -1986,10 +2009,10 @@ fn render_common_shape_xml(
         .unwrap_or(c.instance_id);
     let mut out = format!(
         concat!(
-            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}">"#,
+            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="BOTH_SIDES" lock="{lock}" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}">"#,
             "{block}",
             "{geometry}",
-            r#"<hp:sz width="{w}" height="{h}" widthRelTo="ABSOLUTE" heightRelTo="ABSOLUTE"/>"#,
+            r#"<hp:sz width="{w}" height="{h}" widthRelTo="{wrt}" heightRelTo="{hrt}" protect="{prot}"/>"#,
             r#"<hp:pos treatAsChar="{tac}" affectLSpacing="0" flowWithText="{fwt}" allowOverlap="{ao}" holdAnchorAndSO="{hold}" vertRelTo="{vr}" vertAlign="{va}" horzRelTo="{hr}" horzAlign="{ha}" vertOffset="{vo}" horzOffset="{ho}"/>"#,
             r#"<hp:outMargin left="{ml}" right="{mr}" top="{mt}" bottom="{mb}"/>"#,
         ),
@@ -1999,6 +2022,8 @@ fn render_common_shape_xml(
         id = c.instance_id,
         zo = c.z_order,
         nt = super::shape::numbering_type_str(c.numbering_type),
+        // [#2840] lock(개체 잠금) — IR 보존 값 방출 (종전 "0" 하드코딩).
+        lock = if c.locked { "1" } else { "0" },
         gl = group_level,
         iid = instid,
         tw = text_wrap_to_hwpx(c.text_wrap),
@@ -2008,6 +2033,12 @@ fn render_common_shape_xml(
         hold = if c.prevent_page_break != 0 { "1" } else { "0" },
         w = c.width,
         h = c.height,
+        // [#2726] 종전 widthRelTo/heightRelTo 는 "ABSOLUTE" 리터럴, protect 는 아예
+        // 미방출이었다. 파서(parse_object_layout_child:2909)가 이미 3값을 IR 에 적재하므로
+        // 저장에서만 버려지는 순손실이었다. #2697(표)·#2712(rect/line/container/pic) 와 동형.
+        wrt = size_criterion_str(c.width_criterion),
+        hrt = height_criterion_str(c.height_criterion),
+        prot = if c.size_protect { "1" } else { "0" },
         vr = vert_rel_to_hwpx(c.vert_rel_to),
         va = vert_align_to_hwpx(c.vert_align),
         hr = horz_rel_to_hwpx(c.horz_rel_to),
@@ -2081,6 +2112,33 @@ fn render_note_attrs(attrs: &NoteAttrs) -> String {
         attrs.suffix_char, attrs.inst_id
     ));
     out
+}
+
+/// [#2726] 너비 기준 → HWPX `widthRelTo`. 파서 `parse_size_criterion(_, true)` 의 정확한 역.
+///
+/// `table.rs:147` 이 `#2697` 로 정립한 관례와 **동일 의미**다. 해당 사본이 private 이라
+/// 이 모듈에서 도달할 수 없어 부득이 복제했다. 공용 위치 1벌 통합은 잔여다(이슈 7장).
+fn size_criterion_str(c: SizeCriterion) -> &'static str {
+    match c {
+        SizeCriterion::Paper => "PAPER",
+        SizeCriterion::Page => "PAGE",
+        SizeCriterion::Column => "COLUMN",
+        SizeCriterion::Para => "PARA",
+        SizeCriterion::Absolute => "ABSOLUTE",
+    }
+}
+
+/// [#2726] 높이 기준 → HWPX `heightRelTo`. 파서는 높이를
+/// `parse_size_criterion(_, allow_column_para = false)` 로 읽으므로(`parser/hwpx/section.rs:1860`)
+/// 치역이 `{PAPER, PAGE, ABSOLUTE}` 3값뿐이다. 방출도 같은 3값으로 접어야 왕복이 정확한
+/// 역이 된다 — `COLUMN`/`PARA` 를 내면 되읽기에서 `Absolute` 로 접혀 비-멱등이 된다.
+/// HWP5 측 `height_criterion_to_bits`(`common_obj_attr_writer.rs:160`)도 동일하게 접는다.
+fn height_criterion_str(c: SizeCriterion) -> &'static str {
+    match c {
+        SizeCriterion::Paper => "PAPER",
+        SizeCriterion::Page => "PAGE",
+        SizeCriterion::Column | SizeCriterion::Para | SizeCriterion::Absolute => "ABSOLUTE",
+    }
 }
 
 fn render_note_sublist(
@@ -2185,8 +2243,11 @@ fn render_equation(eq: &Equation) -> String {
         "CHAR"
     };
 
+    // [#2840] 개체 잠금(lock) — 종전 하드코딩 "0" 제거, IR(common.locked) 값을 방출.
+    let lock = if c.locked { "1" } else { "0" };
+
     format!(
-        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="0" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
         text_wrap_to_hwpx(c.text_wrap),
         text_flow_to_hwpx(c.text_flow),
         vert_rel_to_hwpx(c.vert_rel_to),
@@ -2407,25 +2468,20 @@ fn replace_page_pr(xml: &str, page_def: &crate::model::page::PageDef) -> String 
 }
 
 /// 템플릿의 3개 `pageBorderFill`(BOTH/EVEN/ODD, 하드코딩 borderFillIDRef="1") 을 IR 값으로
-/// 치환한다. 누락 시 문서의 실제 쪽 테두리가 소실된다. 파서는 첫 항목(BOTH)을
-/// `page_border_fill`, 나머지(EVEN/ODD)를 `extra_page_border_fills` 에 위치 기반 저장한다.
+/// 치환한다. 누락 시 문서의 실제 쪽 테두리가 소실된다. 파서는 `type` 속성 값을 기준으로
+/// `page_border_fill`(BOTH) / `extra_page_border_fills`(EVEN/ODD) 슬롯을 배정한다(#2885).
+///
+/// `extra_page_border_fills` 에 실제 EVEN/ODD 데이터가 없는 경우(절대다수 — 실제 한컴
+/// 문서는 `pageBorderFill` 을 1개(BOTH)만 갖는다) `page_border_fill` 값을 그대로 복제해
+/// EVEN/ODD 자리를 채우면, 원본에 없던 요소가 왕복 후 생겨나고 그 값(=BOTH 복제본)이
+/// 재파싱 시 `extra_page_border_fills` 로 다시 흡수되어 존재하지 않던 필드가 왕복마다
+/// 늘어난다(#2896 CI 발견 — IR 필드 스윕 baseline 발산). 대신 그 자리는 템플릿에서
+/// 통째로 제거해 원본 문서 구조(단일 BOTH)를 보존한다.
 fn replace_page_border_fill(xml: &str, sec_def: &crate::model::document::SectionDef) -> String {
-    let entries: [(&str, &crate::model::page::PageBorderFill); 3] = [
-        ("BOTH", &sec_def.page_border_fill),
-        (
-            "EVEN",
-            sec_def
-                .extra_page_border_fills
-                .first()
-                .unwrap_or(&sec_def.page_border_fill),
-        ),
-        (
-            "ODD",
-            sec_def
-                .extra_page_border_fills
-                .get(1)
-                .unwrap_or(&sec_def.page_border_fill),
-        ),
+    let entries: [(&str, Option<&crate::model::page::PageBorderFill>); 3] = [
+        ("BOTH", Some(&sec_def.page_border_fill)),
+        ("EVEN", sec_def.extra_page_border_fills.first()),
+        ("ODD", sec_def.extra_page_border_fills.get(1)),
     ];
     let mut out = xml.to_string();
     for (ty, pbf) in entries {
@@ -2434,7 +2490,13 @@ fn replace_page_border_fill(xml: &str, sec_def: &crate::model::document::Section
             r#"<hp:pageBorderFill type="{ty}" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER"><hp:offset left="1417" right="1417" top="1417" bottom="1417"/></hp:pageBorderFill>"#
         );
         if out.contains(&template) {
-            out = out.replacen(&template, &render_page_border_fill(ty, pbf), 1);
+            let replacement = match pbf {
+                Some(pbf) => render_page_border_fill(ty, pbf),
+                // IR 에 이 슬롯의 실데이터가 없음 — BOTH 를 복제해 채우는 대신
+                // 요소 자체를 제거한다(원본 없던 EVEN/ODD 요소를 만들어내지 않음).
+                None => String::new(),
+            };
+            out = out.replacen(&template, &replacement, 1);
         }
         // 미일치 시 원본 유지(회귀 방지) — replace_page_pr 패턴과 동형.
     }
@@ -2485,6 +2547,25 @@ mod tests {
     use super::*;
     use crate::model::paragraph::{CharShapeRef, Paragraph};
 
+    /// [#XXXX] `<hp:pageNum formatType="...">`의 원문자(circled digit) 값은 OWPML Core
+    /// 스키마 NumberType1 표기인 "CIRCLED_DIGIT"이어야 한다. 종전엔 "CIRCLE_DIGIT"(D 없음)
+    /// 오탈자로 방출돼 한컴이 값을 인식하지 못했다.
+    #[test]
+    fn page_num_circled_digit_format_reflects_spec_spelling() {
+        use crate::model::control::PageNumberPos;
+        let mut pn = PageNumberPos::default();
+        pn.format = 1; // circled digit
+        let xml = render_page_num(&pn);
+        assert!(
+            xml.contains(r#"formatType="CIRCLED_DIGIT""#),
+            "pageNum formatType 이 스펙 철자(CIRCLED_DIGIT)여야 함: {xml}"
+        );
+        assert!(
+            !xml.contains(r#"formatType="CIRCLE_DIGIT""#),
+            "CIRCLE_DIGIT 오탈자 잔존 금지: {xml}"
+        );
+    }
+
     #[test]
     fn equation_text_flow_reflects_ir() {
         use crate::model::control::Equation;
@@ -2533,6 +2614,21 @@ mod tests {
         );
     }
 
+    /// [Issue #2840] 수식의 lock(개체 잠금)이 IR(common.locked)에서 방출돼야 한다.
+    /// 종전엔 파서가 lock 속성을 읽지 않아 하드코딩 "0"으로 왕복마다 잠금이 풀렸다.
+    #[test]
+    fn equation_lock_reflects_ir() {
+        use crate::model::control::Equation;
+
+        let mut eq = Equation::default();
+        eq.common.locked = true;
+        let xml = render_equation(&eq);
+        assert!(
+            xml.contains(r#"lock="1""#),
+            "locked=true 면 lock=\"1\" 을 방출해야 함(하드코딩 \"0\" 잔존 금지): {xml}"
+        );
+    }
+
     /// [Issue #1944] legacy 공용 도형 경로(polygon/ellipse/arc/curve)가 도형 내
     /// 글상자(drawText) 문단을 방출해야 한다 — 종전 누락으로 도형 안 텍스트 소실.
     #[test]
@@ -2572,6 +2668,125 @@ mod tests {
             !xml_empty.contains("<hp:drawText"),
             "빈 글상자는 drawText 를 방출하지 않아야 함"
         );
+    }
+
+    /// [#2726] 공용 도형 경로(ellipse/arc/polygon/curve/chart)의 `hp:sz` 가 IR 의
+    /// 크기 기준·크기 보호를 보존해야 한다. 종전엔 `widthRelTo`/`heightRelTo` 가
+    /// `"ABSOLUTE"` 리터럴이고 `protect` 는 아예 미방출이었다.
+    #[test]
+    fn issue2726_common_shape_sz_preserves_criteria_and_protect() {
+        use crate::model::shape::{CommonObjAttr, DrawingObjAttr};
+
+        let c = CommonObjAttr {
+            width: 4000,
+            height: 3000,
+            width_criterion: SizeCriterion::Column,
+            height_criterion: SizeCriterion::Page,
+            size_protect: true,
+            ..Default::default()
+        };
+        let drawing = DrawingObjAttr::default();
+        let mut ctx = SerializeContext::default();
+
+        for tag in ["ellipse", "arc", "polygon", "curve", "chart"] {
+            let xml = render_common_shape_xml(tag, &c, &None, Some(&drawing), &[], "", &mut ctx);
+            assert!(
+                xml.contains(r#"widthRelTo="COLUMN""#),
+                "{tag}: 너비 기준 COLUMN 이 보존되어야 함: {xml}"
+            );
+            assert!(
+                xml.contains(r#"heightRelTo="PAGE""#),
+                "{tag}: 높이 기준 PAGE 가 보존되어야 함: {xml}"
+            );
+            assert!(
+                xml.contains(r#"protect="1""#),
+                "{tag}: 크기 보호가 보존되어야 함: {xml}"
+            );
+        }
+    }
+
+    /// [#2726] `protect` 는 값이 0 이어도 **속성 자체가** 방출되어야 한다.
+    /// `samples/hwpx` 실제 한글 파일 60개의 `hp:sz` 1583개가 **전부** `protect` 를 갖는다
+    /// (1583/1583). 종전 미방출은 그중 `hp:polygon` 150개(8파일)에서 한컴 원본 대비
+    /// 구조 이탈을 만들었다.
+    #[test]
+    fn issue2726_common_shape_sz_always_emits_protect_attribute() {
+        use crate::model::shape::{CommonObjAttr, DrawingObjAttr};
+
+        let c = CommonObjAttr {
+            size_protect: false,
+            ..Default::default()
+        };
+        let drawing = DrawingObjAttr::default();
+        let mut ctx = SerializeContext::default();
+
+        let xml = render_common_shape_xml("polygon", &c, &None, Some(&drawing), &[], "", &mut ctx);
+        assert!(
+            xml.contains(r#"protect="0""#),
+            "size_protect=false 여도 protect=\"0\" 속성이 방출되어야 함: {xml}"
+        );
+    }
+
+    /// [#2726] `heightRelTo` 는 파서(`parse_size_criterion(_, allow_column_para=false)`)의
+    /// **정확한 역**이어야 한다. 파서 치역이 `{PAPER, PAGE, ABSOLUTE}` 3값뿐이므로
+    /// 방출도 절대 `COLUMN`/`PARA` 를 내면 안 된다 — 내면 되읽기에서 `Absolute` 로 접혀
+    /// 왕복이 비-멱등이 된다. 5값 전수 대조로 못 박는다.
+    #[test]
+    fn issue2726_height_criterion_never_emits_column_or_para() {
+        use crate::model::shape::{CommonObjAttr, DrawingObjAttr};
+
+        let cases = [
+            (SizeCriterion::Paper, "PAPER"),
+            (SizeCriterion::Page, "PAGE"),
+            (SizeCriterion::Column, "ABSOLUTE"),
+            (SizeCriterion::Para, "ABSOLUTE"),
+            (SizeCriterion::Absolute, "ABSOLUTE"),
+        ];
+        let drawing = DrawingObjAttr::default();
+        let mut ctx = SerializeContext::default();
+
+        for (criterion, expected) in cases {
+            assert_eq!(
+                height_criterion_str(criterion),
+                expected,
+                "높이 기준 {criterion:?} 는 {expected} 로 방출되어야 함"
+            );
+
+            let c = CommonObjAttr {
+                height_criterion: criterion,
+                ..Default::default()
+            };
+            let xml =
+                render_common_shape_xml("polygon", &c, &None, Some(&drawing), &[], "", &mut ctx);
+            assert!(
+                xml.contains(&format!(r#"heightRelTo="{expected}""#)),
+                "{criterion:?} → heightRelTo=\"{expected}\" 이어야 함: {xml}"
+            );
+            assert!(
+                !xml.contains(r#"heightRelTo="COLUMN""#) && !xml.contains(r#"heightRelTo="PARA""#),
+                "heightRelTo 는 COLUMN/PARA 를 방출하면 안 됨: {xml}"
+            );
+        }
+    }
+
+    /// [#2726] `widthRelTo` 는 5값 전부를 그대로 방출한다 — 파서
+    /// `parse_size_criterion(_, allow_column_para=true)` 의 정확한 역.
+    #[test]
+    fn issue2726_width_criterion_emits_all_five_values() {
+        let cases = [
+            (SizeCriterion::Paper, "PAPER"),
+            (SizeCriterion::Page, "PAGE"),
+            (SizeCriterion::Column, "COLUMN"),
+            (SizeCriterion::Para, "PARA"),
+            (SizeCriterion::Absolute, "ABSOLUTE"),
+        ];
+        for (criterion, expected) in cases {
+            assert_eq!(
+                size_criterion_str(criterion),
+                expected,
+                "너비 기준 {criterion:?} 는 {expected} 로 방출되어야 함"
+            );
+        }
     }
 
     /// [Task #1627] empty-text(객체-only) 문단에서 bookmark 는 문단 시작으로 끌려가지 않고
@@ -3489,6 +3704,35 @@ mod tests {
         );
     }
 
+    /// [bookmark-hyperlink] 같은 문단 내 짝(matched) HYPERLINK fieldBegin/fieldEnd 라운드트립 —
+    /// fieldEnd 자신의 fieldid(=100)가 fieldBegin 의 id(=42, beginIDRef 로 사용)와 다를 때,
+    /// 과거엔 emit_field_end 가 write_field_end(f.field_id) 만 호출해 fieldid 속성을 항상
+    /// 누락시켰다(고아 fieldEnd 경로만 보존해 비대칭). fr.end_field_id 를 IR 에 보존하고
+    /// 되돌려 쓰면 fieldid="100" 이 살아남아야 한다.
+    #[test]
+    fn bookmark_hyperlink_matched_field_end_preserves_own_fieldid() {
+        let mut f = Field::default();
+        f.field_type = FieldType::Hyperlink;
+        f.field_id = 42;
+        let mut para = Paragraph::default();
+        para.text = "링크".to_string();
+        para.char_count = 2 + 8 + 8 + 1; // text(2) + FIELD_BEGIN(8) + FIELD_END(8) + para_end(1)
+        para.controls.push(Control::Field(f));
+        para.field_ranges.push(FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 2,
+            control_idx: 0,
+            end_field_id: 100,
+        });
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"<hp:fieldEnd beginIDRef="42" fieldid="100"/>"#),
+            "matched fieldEnd 는 beginIDRef(=fieldBegin id)와 별개로 자신의 fieldid 를 보존해야 함: {xml}"
+        );
+    }
+
     // ---------- #1289: Bookmark / Field dispatcher 연결 ----------
 
     use crate::model::control::{Bookmark, Control, Field, FieldType};
@@ -3535,6 +3779,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 1,
             control_idx: 0,
+            ..Default::default()
         });
 
         let (doc, section) = make_doc_with_paragraph(para);
@@ -3557,6 +3802,40 @@ mod tests {
     }
 
     #[test]
+    fn memo_vertical_text_direction_roundtrips() {
+        // [#task-m100] 세로쓰기 MEMO subList 는 파싱 시 textDirection="VERTICAL" 을
+        // 보존해야 하며, 재직렬화 시 하드코딩된 "HORIZONTAL" 로 뒤집히면 안 된다.
+        let mut f = Field::default();
+        f.field_type = FieldType::Memo;
+        f.field_id = 9;
+        f.memo_text_direction = Some("VERTICAL".to_string());
+        let mut memo_para = Paragraph::default();
+        memo_para.text = "메모".to_string();
+        f.memo_paragraphs.push(memo_para);
+
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        para.char_count = 18;
+        para.char_offsets = vec![8];
+        para.controls.push(Control::Field(f));
+        para.field_ranges.push(FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 1,
+            control_idx: 0,
+            end_field_id: 0,
+        });
+
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hp:subList id="" textDirection="VERTICAL""#),
+            "세로쓰기 메모 subList 의 textDirection 보존: {xml}"
+        );
+    }
+
+    #[test]
     fn task1391_field_without_params_keeps_empty_tag() {
         // parameters/memo 없는 필드는 기존 empty_tag 자기닫힘 유지 (회귀 방지).
         let mut f = Field::default();
@@ -3571,6 +3850,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 1,
             control_idx: 0,
+            ..Default::default()
         });
         let (doc, section) = make_doc_with_paragraph(para);
         let mut ctx = SerializeContext::collect_from_document(&doc);
@@ -3599,6 +3879,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 5,
             control_idx: 0,
+            ..Default::default()
         });
 
         let (doc, section) = make_doc_with_paragraph(para);
@@ -3641,6 +3922,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 3, // == text.len() → 루프 후 처리 경로
             control_idx: 0,
+            ..Default::default()
         });
 
         let (doc, section) = make_doc_with_paragraph(para);
@@ -3674,6 +3956,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 0, // 0-length
             control_idx: 0,
+            ..Default::default()
         });
 
         let (doc, section) = make_doc_with_paragraph(para);
@@ -3721,6 +4004,7 @@ mod tests {
             start_char_idx: 3,
             end_char_idx: 3, // 0-length mid-text
             control_idx: 0,
+            ..Default::default()
         });
 
         let (doc, section) = make_doc_with_paragraph(para);
@@ -3770,6 +4054,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 0,
             control_idx: 0,
+            ..Default::default()
         });
 
         let (doc, section) = make_doc_with_paragraph(para);
@@ -3823,6 +4108,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 3, // "ABC" 래핑
             control_idx: 0,
+            ..Default::default()
         });
 
         let xml = runs_of(&para);
@@ -3979,6 +4265,7 @@ mod tests {
             start_char_idx: 0,
             end_char_idx: 3,
             control_idx: 0,
+            ..Default::default()
         });
         para.char_shapes = vec![cs(0, 1), cs(19, 2)];
         let xml = runs_of(&para);

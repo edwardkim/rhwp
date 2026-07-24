@@ -712,6 +712,12 @@ export class CursorState {
     const pos = this.position;
 
     if (this.isInCell() && !this.isInTextBox()) {
+      // [#2914] 본문 분기와 동일한 한컴 표준 — 문단 중간(Ctrl+↑)이면 먼저 현재 문단 시작에서 멈춘다.
+      if (direction === -1 && pos.charOffset > 0) {
+        this.position = { ...pos, charOffset: 0 };
+        this.updateRect();
+        return;
+      }
       try {
         const sec = pos.sectionIndex;
         const ppi = pos.parentParaIndex!;
