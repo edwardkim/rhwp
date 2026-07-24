@@ -30,6 +30,7 @@ async function installPrintCapture(page) {
       before: {
         fileName: window.__wasm.fileName,
         isDirty: window.__documentState.isDirty(),
+        hostTitle: document.title,
       },
       capture: null,
     };
@@ -92,6 +93,7 @@ async function installPrintCapture(page) {
                 pdfDialogVisibleAtPrint:
                   Boolean(document.querySelector('[data-testid="pdf-print-dialog"]')),
                 title: printDocument.title,
+                hostTitleAtPrint: document.title,
                 html: printDocument.documentElement.outerHTML,
                 styleText: [...printDocument.querySelectorAll('style')]
                   .map((style) => style.textContent || '')
@@ -183,6 +185,7 @@ async function capturePrintDocument(page) {
         sameHandle: window.__wasm.currentFileHandle === state.sentinelHandle,
         fileName: window.__wasm.fileName,
         isDirty: window.__documentState.isDirty(),
+        hostTitle: document.title,
         surfaceRemoved: !document.getElementById('rhwp-print-surface'),
       },
     };
@@ -250,6 +253,9 @@ function assertSharedPdfContract(menu, dialog, result) {
   assert(!capture.guidanceVisibleDuringProgress, '준비 중에는 저장 방법 안내를 숨김');
   assert(!capture.pdfDialogVisibleAtPrint, '네이티브 인쇄창 호출 전에 PDF 모달 제거');
   assert(capture.statusAtPrint.includes('PDF 준비 완료'), 'print() 직전 PDF 준비 완료 상태');
+  assert(capture.title === 'issue-3126-source', '인쇄 문서 제목에 원본 basename 보존');
+  assert(capture.hostTitleAtPrint === 'issue-3126-source', 'Edge PDF 기본 이름용 host 제목');
+  assert(after.hostTitle === before.hostTitle, 'print() 뒤 Studio 제목 복원');
   assert(capture.styleText.includes('@page rhwp-print-page-1'), '페이지별 named @page');
   assert(capture.textElementCount > 0, '검색 가능한 SVG text 요소 보존');
   assert(capture.bodyText.trim().length > 0, '인쇄 문서 텍스트 보존');

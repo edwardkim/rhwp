@@ -21,6 +21,7 @@ import {
   appendPrintStyle,
   appendSvgPage,
   createPrintPage,
+  pdfPrintTitle,
   printProgressText,
   printReadyText,
   type PrintIntent,
@@ -340,7 +341,7 @@ function setupPrintDocument(
   doc.head.append(meta, viewport);
   doc.title = previewWindow
     ? `${fileName} — 인쇄 미리보기`
-    : `${fileName} — 인쇄`;
+    : pdfPrintTitle(fileName);
   appendPrintStyle(doc, printPages);
 
   doc.body.replaceChildren();
@@ -443,6 +444,7 @@ async function runPdfPrint(services: CommandServices): Promise<void> {
   let surface: PrintSurface | null = null;
   let restoreStatus = true;
   let dialogVisible = false;
+  let originalDocumentTitle: string | null = null;
 
   try {
     flushDeferredPaginationBeforeExplicitOutput(services, 'print-pdf');
@@ -485,6 +487,10 @@ async function runPdfPrint(services: CommandServices): Promise<void> {
       `[file:print-to-pdf] 브라우저 인쇄 호출 `
       + `(surface=iframe, pages=${pageCount}, profile=print)`,
     );
+    // Chromium/Edge는 iframe을 인쇄해도 최상위 문서 제목을 PDF 기본 파일명으로
+    // 사용한다. native print()가 열린 동안에만 원본 파일의 basename을 노출한다.
+    originalDocumentTitle = document.title;
+    document.title = pdfPrintTitle(wasm.fileName);
     surface.window.print();
   } catch (err) {
     restoreStatus = false;
@@ -497,6 +503,9 @@ async function runPdfPrint(services: CommandServices): Promise<void> {
       showToast({ message: `PDF 준비에 실패했습니다: ${msg}`, durationMs: 5000 });
     }
   } finally {
+    if (originalDocumentTitle !== null) {
+      document.title = originalDocumentTitle;
+    }
     surface?.dispose();
     printJobActive = false;
     if (restoreStatus && statusEl) statusEl.textContent = originalStatus;

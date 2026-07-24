@@ -16,6 +16,11 @@ export type PrintIntent = 'print' | 'pdf';
 export const PDF_PRINT_GUIDANCE =
   '브라우저 인쇄 창에서 ‘대상 → PDF로 저장’을 선택합니다.';
 
+export function pdfPrintTitle(fileName: string): string {
+  const baseName = fileName.trim().replace(/\.(hwp|hwpx|hml)$/i, '').trim();
+  return baseName || '문서';
+}
+
 export function printProgressText(
   intent: PrintIntent,
   currentPage: number,

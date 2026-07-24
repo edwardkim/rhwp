@@ -80,6 +80,8 @@ test('PDF 경로는 안내·진행 모달을 닫은 뒤 native 인쇄창을 호�
   assert.match(optionsDialogSource, /PDF로 저장할 때 저장 방법 안내 표시/);
   assert.match(commandSource, /dialog\.closeBeforePrint\(\)/);
   assert.match(commandSource, /await waitForHostPaint\(\)/);
+  assert.match(commandSource, /document\.title = pdfPrintTitle\(wasm\.fileName\)/);
+  assert.match(commandSource, /document\.title = originalDocumentTitle/);
   assert.doesNotMatch(commandSource, /data\.toastKind|PDF_FEEDBACK_MIN_VISIBLE_MS/);
 });
 

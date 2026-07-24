@@ -6,6 +6,7 @@ import {
   createPrintPage,
   namespaceSvgReferenceValue,
   PDF_PRINT_GUIDANCE,
+  pdfPrintTitle,
   printProgressText,
   printReadyText,
   pxToPrintMm,
@@ -72,6 +73,14 @@ test('PDF 인쇄 의도는 준비 상태와 남은 브라우저 단계를 명확
     `PDF 준비 완료 — ${PDF_PRINT_GUIDANCE}`,
   );
   assert.match(PDF_PRINT_GUIDANCE, /대상 → PDF로 저장/);
+});
+
+test('PDF 기본 파일명은 원본 문서 이름을 보존하고 HWP 계열 확장자를 제거한다', () => {
+  assert.equal(pdfPrintTitle('복학원서.hwp'), '복학원서');
+  assert.equal(pdfPrintTitle('회의록.HWPX'), '회의록');
+  assert.equal(pdfPrintTitle('양식.hml'), '양식');
+  assert.equal(pdfPrintTitle('확장자 없는 문서'), '확장자 없는 문서');
+  assert.equal(pdfPrintTitle(' .hwp '), '문서');
 });
 
 test('일반 인쇄는 같은 진행 helper를 쓰되 PDF 안내를 표시하지 않는다', () => {
