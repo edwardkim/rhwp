@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-07-16
+last_verified: 2026-07-24
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -139,6 +139,30 @@ rhwp export-pdf input.hwp -o out.pdf \
 
 ### `export-text <파일> [옵션]`
 페이지별 텍스트 → TXT. `-o`, `-p`.
+- `--json` (#3237): 파일 저장 대신 stdout 에 순수 JSON 하나를 출력. 진행 메시지 없음.
+  `{"schemaVersion":"1.0","source","pageCount","pages":[{"page","text"}]}` —
+  `schemaVersion` 이 계약이며 필드 추가는 허용, 변경·삭제는 `tests/cli_json_contract.rs` 가 잡는다.
+  `page` 는 `-p` 와 같은 0 기준.
+
+### `batch <export-text|info> --json [--threads <N>]` (#3238)
+stdin 의 파일 목록(한 줄당 경로 하나)을 **한 프로세스에서 파일 간 병렬**로 처리해
+NDJSON(한 줄당 레코드 하나)을 stdin 입력 순서대로 스트림 출력한다.
+- `batch export-text` 성공 레코드: `{"schemaVersion":"1.0","source","pageCount","text"}`
+- `batch info` 성공 레코드: `info --json` 과 **같은 스키마** — 단건/배치를 같은 소비 코드로 읽는다
+- 실패 레코드(공통): `{"schemaVersion":"1.0","source","error","exitClass":"runtime"}`
+- 건별 실패(읽기·파싱·추출·panic)는 레코드로 격리하고 스트림을 계속한다.
+  하나라도 실패하면 최종 종료 코드 1 (#2707 계약).
+- `--threads <N>` 기본값은 CPU 코어 수. 출력 순서는 병렬에서도 입력 순서를 보존한다.
+- 요약(`batch: N건 중 …`)은 stderr 로 나간다 — stdout 은 NDJSON 뿐이다.
+
+```bash
+# 아카이브 파이프라인: 메타데이터 스윕 → 대상 선별 → 본문 추출
+find docs/ -name '*.hwp' | rhwp batch info --json > meta.ndjson
+find docs/ -name '*.hwp' | rhwp batch export-text --json > corpus.ndjson
+```
+
+검증된 에이전트·파이프라인 시나리오(선별→추출, RAG 청킹, 실패 처리)는
+[CLI JSON 파이프라인 가이드](cli_json_pipeline_guide.md) 참조.
 
 ### `export-markdown <파일> [옵션]`
 페이지별 텍스트 → Markdown(.md). `-o`, `-p`.
@@ -188,8 +212,11 @@ HWP5 raw record 덤프(DocInfo/BodyText 레코드 트리).
 ### `diag <파일>`
 문서 구조 진단(번호/글머리표/개요 분석).
 
-### `info <파일>`
+### `info <파일> [--json]`
 HWP 파일 정보 표시(버전/구역 수/암호화 등).
+- `--json` (#3237): stdout 에 순수 JSON 하나 —
+  `{"schemaVersion":"1.0","source","format":"hwp5|hwpx|hwp3|hml","sizeBytes","version","sections","pageCount","paraCount","fonts"}`.
+  `version` 은 HML 이면 null. 스키마 계약은 `export-text --json` 항목과 동일 규칙.
 
 ### `thumbnail <파일> [옵션]`
 HWP 내장 썸네일(PrvImage) 추출.
