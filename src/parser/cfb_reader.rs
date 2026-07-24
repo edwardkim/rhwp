@@ -838,8 +838,8 @@ mod tests {
         // 헤더(512B) 뒤에 DIFAT 섹터 2개(섹터 0, 섹터 1)를 배치.
         d.resize(512 + 512 * 2, 0);
         let entries_per = 512 / 4 - 1; // 127
-        // 모든 FAT-포인터 엔트리는 FREE_SECT 로 채워 fat_sector_ids 가 자라지 않게 한다
-        // (순환 자체와 무관한 메모리 팽창을 피하기 위함).
+                                       // 모든 FAT-포인터 엔트리는 FREE_SECT 로 채워 fat_sector_ids 가 자라지 않게 한다
+                                       // (순환 자체와 무관한 메모리 팽창을 피하기 위함).
         for sector_idx in 0..2usize {
             let base = 512 + sector_idx * 512;
             for i in 0..entries_per {
