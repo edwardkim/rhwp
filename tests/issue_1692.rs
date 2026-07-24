@@ -530,7 +530,16 @@ fn issue_1692_so_sueop_hwp3_endnotes_follow_hwpx_numbering_and_width() {
         hwp3_shape.separator_margin_top,
         hwpx_shape.separator_margin_top
     );
-    assert_eq!(hwp3_shape.note_spacing, hwpx_shape.note_spacing);
+    // [Task #3054 후속] note_spacing 도 같은 이유로 근접값 검증 — SO-SUEOP.hwp 는
+    // footnote_text_margin=142 hunit(→568 HWPUNIT), .hwpx 는 belowLine=576 을
+    // 저장하고 있다(차이 8 HWPUNIT ≈ 0.03mm, 샘플 쌍의 저장 시점 차이).
+    let note_spacing_diff = (hwp3_shape.note_spacing as i32 - hwpx_shape.note_spacing as i32).abs();
+    assert!(
+        note_spacing_diff <= 16,
+        "HWP3/HWPX note_spacing must be within HWP3 hunit rounding tolerance: hwp3={} hwpx={}",
+        hwp3_shape.note_spacing,
+        hwpx_shape.note_spacing
+    );
     assert_eq!(
         hwp3_shape.separator_line_width,
         hwpx_shape.separator_line_width
