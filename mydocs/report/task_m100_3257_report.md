@@ -51,7 +51,17 @@
 | `CARGO_INCREMENTAL=0 python3 scripts/task1274_visual_sweep.py ... --page 4 --dpi 144` | 성공, 후보 0/1 |
 | `cargo fmt`, `git diff --check` | 통과 |
 
-전체 CI와 최종 시각 승인 판정은 PR 생성 후 CI 결과 및 작업지시자 확인으로 진행한다.
+### IR field sweep baseline
+
+`cargo test --profile release-test --tests`의 첫 실행은 새 #3257 fixture에 baseline이 없어
+`hwp5rb`의 `cells[].list_header_width_ref` 16건을 회귀로 보고했다. 상세 비교에서 원본값은
+모두 0, 재생성 저장본은 모두 `0x0400`이었다. 이는 #1633 HWP 저장 호환 보정이 이미 기존
+코퍼스에 남긴 알려진 정규화이며 TAC 레이아웃 수정에 따른 발산은 아니다. 새 fixture의
+동일 관측값 16건을 `tests/fixtures/ir_field_sweep_baseline.tsv`에 기록했다. 이후
+`CARGO_INCREMENTAL=0 cargo test --profile release-test --tests` 전체 재실행은 exit 0으로
+완료했고, `ir_field_sweep_baseline`은 2 passed였다.
+
+전체 GitHub Actions와 최종 시각 승인 판정은 ready 전환 후 CI 결과 및 작업지시자 확인으로 진행한다.
 
 ## PR 준비 상태
 

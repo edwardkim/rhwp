@@ -44,11 +44,27 @@ drop event와 같은 tick에 `DataTransferItem.getAsFileSystemHandle()` Promise�
 | Studio `file-system-access` | 19 passed |
 | Studio `npm test` | 568 passed |
 | WASM dev build · Studio production build | 통과 |
-| `cargo fmt`, `git diff --check` | 통과 |
+| `cargo test --profile release-test --tests` (초기) | IR field sweep baseline 신규 행 1건으로 실패 — 아래 분류 후 보강 |
+| `CARGO_INCREMENTAL=0 cargo test --profile release-test --tests` (재실행) | exit 0, IR field sweep 2 passed 포함 |
+| `CARGO_INCREMENTAL=0 cargo build --release` | 통과 |
+| `CARGO_INCREMENTAL=0 cargo test --release --lib` | 2,894 passed, 0 failed, 7 ignored |
+| Native Skia 공식 3종 | lib 56 passed, #2225 2 passed, direct PDF 4 passed |
+| `cargo fmt --check`, `git diff --check`, `cargo clippy --all-targets -- -D warnings` | 통과 |
+| `CARGO_INCREMENTAL=0 cargo test --doc` | 4 passed, 2 ignored |
+
+### IR field sweep baseline 분류
+
+`samples/issue3257/webhangul_product_spec_v1.1.hwp`를 추가하면서 `hwp5rb` 레코드 재생성
+경로의 기존 정규화가 새로 관측됐다. 원본 `LIST_HEADER` 폭 참조가 0인 셀 16개를 #1633의
+HWP 저장 호환 보정이 `0x0400`으로 기록하므로, 상세 스윕은 각 셀에서 `0 → 1024`를 보인다.
+이는 TAC 정렬 수정 전후의 새 발산이 아니며, 기존 코퍼스에도 같은
+`list_header_width_ref` baseline 행이 다수 있다. 새 fixture의 관측값 16건을 baseline에
+명시했고, 전체 통합 테스트 재실행은 exit 0으로 완료했다.
 
 ## 리스크와 최종 권고
 
 - visual sweep의 내용 픽셀 중심 자동 일치율 보조값 `11.30076%`는 폰트 및 기존 전체 줄 위치 차이를
   포함하므로 단독 merge 판단 지표가 아니다. 대상 그림의 bbox와 실제 비교 PNG로 우측 잘림 해소를 확인했다.
 - #3259는 지원하지 않는 브라우저에서 재선택 fallback을 의도적으로 유지한다.
-- 최종 권고: PR head 최신 GitHub Actions가 통과하면 #3257·#3259를 함께 merge한다.
+- 최종 권고: 로컬 필수 gate는 통과했다. ready 전환 뒤 PR head 최신 GitHub Actions가 통과하면
+  #3257·#3259를 함께 merge한다.
