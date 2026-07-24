@@ -175,6 +175,69 @@ pub struct HeaderFooterRef {
     pub source_section_index: usize,
 }
 
+/// 쪽별 활성 머리말/꼬리말 선택기.
+///
+/// 등장한 컨트롤을 **종류별 칸에 나눠** 누적하고, 쓸 때 쪽 홀짝에 맞춰 고른다. 홀수/짝수
+/// 전용이 양 쪽보다 **더 구체적**이므로 우선한다 — 문서 안에서 어느 컨트롤이 먼저
+/// 등장했는지와 무관해야 한다.
+///
+/// 한 변수에 덮어쓰며 누적하면 "마지막에 일치한 것" 이 이기고, 그러면 양 쪽 머리말을
+/// 나중에 추가했다는 이유만으로 홀수 전용 머리말이 홀수 쪽에서 사라진다 (Task #3234).
+#[derive(Debug, Default, Clone)]
+pub struct ActiveHeaderFooter {
+    header_both: Option<HeaderFooterRef>,
+    header_even: Option<HeaderFooterRef>,
+    header_odd: Option<HeaderFooterRef>,
+    footer_both: Option<HeaderFooterRef>,
+    footer_even: Option<HeaderFooterRef>,
+    footer_odd: Option<HeaderFooterRef>,
+}
+
+impl ActiveHeaderFooter {
+    /// `page_last_para` 까지 등장한 컨트롤을 누적한다.
+    ///
+    /// 누적은 쪽을 넘어가며 유지된다 — 머리말은 정의된 문단이 나온 쪽부터 이후 쪽에도
+    /// 계속 적용되기 때문이다.
+    pub fn accumulate(
+        &mut self,
+        entries: &[(usize, HeaderFooterRef, bool, HeaderFooterApply)],
+        page_last_para: usize,
+    ) {
+        for (para_idx, hf_ref, is_header, apply_to) in entries {
+            if *para_idx > page_last_para {
+                continue;
+            }
+            let slot = match (is_header, apply_to) {
+                (true, HeaderFooterApply::Both) => &mut self.header_both,
+                (true, HeaderFooterApply::Even) => &mut self.header_even,
+                (true, HeaderFooterApply::Odd) => &mut self.header_odd,
+                (false, HeaderFooterApply::Both) => &mut self.footer_both,
+                (false, HeaderFooterApply::Even) => &mut self.footer_even,
+                (false, HeaderFooterApply::Odd) => &mut self.footer_odd,
+            };
+            *slot = Some(hf_ref.clone());
+        }
+    }
+
+    /// 쪽 번호에 대한 활성 (머리말, 꼬리말).
+    pub fn active(&self, page_number: u32) -> (Option<HeaderFooterRef>, Option<HeaderFooterRef>) {
+        let is_odd = page_number % 2 == 1;
+        let pick = |odd: &Option<HeaderFooterRef>,
+                    even: &Option<HeaderFooterRef>,
+                    both: &Option<HeaderFooterRef>| {
+            if is_odd {
+                odd.clone().or_else(|| both.clone())
+            } else {
+                even.clone().or_else(|| both.clone())
+            }
+        };
+        (
+            pick(&self.header_odd, &self.header_even, &self.header_both),
+            pick(&self.footer_odd, &self.footer_even, &self.footer_both),
+        )
+    }
+}
+
 /// 각주 출처 (본문 문단 또는 표 셀 내)
 #[derive(Debug, Clone)]
 pub enum FootnoteSource {
