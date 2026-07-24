@@ -144,11 +144,13 @@ rhwp export-pdf input.hwp -o out.pdf \
   `schemaVersion` 이 계약이며 필드 추가는 허용, 변경·삭제는 `tests/cli_json_contract.rs` 가 잡는다.
   `page` 는 `-p` 와 같은 0 기준.
 
-### `batch <export-text|info> --json [--threads <N>]` (#3238)
+### `batch <export-text|info|export-structure> --json [--mode <m>] [--threads <N>]` (#3238, #3261)
 stdin 의 파일 목록(한 줄당 경로 하나)을 **한 프로세스에서 파일 간 병렬**로 처리해
 NDJSON(한 줄당 레코드 하나)을 stdin 입력 순서대로 스트림 출력한다.
 - `batch export-text` 성공 레코드: `{"schemaVersion":"1.0","source","pageCount","text"}`
 - `batch info` 성공 레코드: `info --json` 과 **같은 스키마** — 단건/배치를 같은 소비 코드로 읽는다
+- `batch export-structure` 성공 레코드: `export-structure --json` 봉투와 같은 스키마.
+  `--mode auto|outline|clause` 는 이 축 전용(기본 auto)
 - 실패 레코드(공통): `{"schemaVersion":"1.0","source","error","exitClass":"runtime"}`
 - 건별 실패(읽기·파싱·추출·panic)는 레코드로 격리하고 스트림을 계속한다.
   하나라도 실패하면 최종 종료 코드 1 (#2707 계약).
@@ -172,8 +174,11 @@ find docs/ -name '*.hwp' | rhwp batch export-text --json > corpus.ndjson
 - `-o`, `-p`, `--show-para-marks`, `--show-control-codes`, `--respect-vpos-reset`
 - JSON: `{type, bbox:{x,y,w,h}, children:[...]}` (Page → PageBg/Line/TextRun/Image/Table/Shape …)
 
-### `export-structure <파일> [--mode auto|outline|clause] [-o out.json]`
+### `export-structure <파일> [--mode auto|outline|clause] [-o out.json] [--json]`
 문서 **개요/조문 계층**을 중첩 JSON 트리로 추출 (조문 DB화·목차 생성용). 파서/렌더 무변경 읽기 질의.
+- `--json` (#3261): 계약 봉투를 씌운 **한 줄** JSON —
+  `{"schemaVersion":"1.0","source","mode","nodeCount","structure":{...기존 트리...}}`.
+  기본 출력(무봉투 pretty JSON·`-o` 저장)은 무변경. `batch export-structure` 레코드와 같은 스키마.
 - `--mode outline`: IR 개요 수준(`ParaShape.para_level`/head_type) 기반.
 - `--mode clause`: 법률 조문 텍스트 패턴(편·장·절·관·조 / 항①②③ / 호1. / 목가.) 기반.
 - `--mode auto`(기본): 개요 head_type 있으면 outline, 없으면 clause.
