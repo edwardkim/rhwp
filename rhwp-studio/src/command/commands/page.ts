@@ -1,4 +1,5 @@
 import type { CommandDef } from '../types';
+import type { DocumentPosition } from '@/core/types';
 import { PageSetupDialog } from '@/ui/page-setup-dialog';
 import { PageBorderDialog } from '@/ui/page-border-dialog';
 import { SectionSettingsDialog } from '@/ui/section-settings-dialog';
@@ -16,6 +17,41 @@ function stub(id: string, label: string, icon?: string, shortcut?: string): Comm
   };
 }
 
+/**
+ * 구역에 머리말/꼬리말이 없으면 만든다 (Task #3206).
+ *
+ * 존재 확인은 **생성 네이티브가 중복을 거부하는 조건과 같은 범위**(구역·종류·applyTo)로 해야
+ * 한다 — `getHeaderFooter` 와 `createHeaderFooter` 는 같은 `find_header_footer_control` 을
+ * 쓰므로 두 판단이 어긋날 수 없다.
+ *
+ * `navigateHeaderFooterByPage` 로 대신하면 안 된다. 이 함수는 `current_page + direction` 부터
+ * 훑는 쪽 이동용이라 현재 쪽을 건너뛴다 — 1쪽 문서에서는 어느 방향으로도 대상이 없어, 이미
+ * 있는 머리말을 없다고 판단하고 생성으로 넘어가 중복 생성 오류가 났다.
+ *
+ * [Task #3207] 생성은 문서 구조를 바꾸므로 snapshot 으로 기록한다(이미 있으면 커서 이동뿐이라
+ * 기록 대상이 아니다).
+ */
+function ensureHeaderFooter(
+  services: Parameters<CommandDef['execute']>[0],
+  ih: NonNullable<ReturnType<Parameters<CommandDef['execute']>[0]['getInputHandler']>>,
+  bodyPos: DocumentPosition,
+  isHeader: boolean,
+  applyTo: number,
+): void {
+  const sectionIdx = bodyPos.sectionIndex;
+  const hf = JSON.parse(services.wasm.getHeaderFooter(sectionIdx, isHeader, applyTo));
+  if (hf.exists) return;
+
+  ih.executeOperation({
+    kind: 'snapshot',
+    operationType: 'createHeaderFooter',
+    operation: (wasm) => {
+      wasm.createHeaderFooter(sectionIdx, isHeader, applyTo);
+      return bodyPos;
+    },
+  });
+}
+
 /** 머리말/꼬리말 생성 + 편집 모드 진입 공통 함수 */
 function enterHeaderFooterEditing(
   services: Parameters<CommandDef['execute']>[0],
@@ -27,46 +63,11 @@ function enterHeaderFooterEditing(
   const cursor = (ih as any).cursor;
   if (!cursor) return;
 
-  // 현재 보고 있는 페이지 기준으로 머리말/꼬리말이 있는 페이지 탐색
-  const currentPage = cursor.rect?.pageIndex ?? 0;
-
-  // 1) 현재 페이지에 머리말/꼬리말이 있는지 확인
-  let targetResult = services.wasm.navigateHeaderFooterByPage(currentPage - 1, isHeader, 1);
-  // navigateHeaderFooterByPage는 currentPage 다음부터 찾으므로, currentPage-1을 전달하면 currentPage부터 탐색
-  // 결과의 pageIndex가 currentPage이면 현재 페이지에 존재
-  if (!targetResult.ok || targetResult.pageIndex !== currentPage) {
-    // 2) 현재 페이지에 없으면 이전 방향으로 탐색
-    targetResult = services.wasm.navigateHeaderFooterByPage(currentPage, isHeader, -1);
-  }
-  if (!targetResult.ok) {
-    // 3) 이전에도 없으면 다음 방향으로 탐색
-    targetResult = services.wasm.navigateHeaderFooterByPage(currentPage, isHeader, 1);
-  }
-
-  if (targetResult.ok) {
-    // 기존 머리말/꼬리말로 편집 모드 진입
-    cursor.enterHeaderFooterMode(
-      targetResult.isHeader!,
-      targetResult.sectionIdx!,
-      targetResult.applyTo!,
-      targetResult.pageIndex!,
-    );
-  } else {
-    // 문서에 머리말/꼬리말이 전혀 없으면 현재 구역에 새로 생성.
-    // [Task #3207] 생성은 문서 구조를 바꾸므로 snapshot 으로 기록한다(기존 HF 로 진입하는
-    // 위 분기는 커서 이동뿐이라 기록 대상이 아니다).
-    const bodyPos = cursor.getPosition();
-    const sectionIdx = bodyPos.sectionIndex;
-    ih.executeOperation({
-      kind: 'snapshot',
-      operationType: 'createHeaderFooter',
-      operation: (wasm) => {
-        wasm.createHeaderFooter(sectionIdx, isHeader, applyTo);
-        return bodyPos;
-      },
-    });
-    cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, currentPage);
-  }
+  const bodyPos = cursor.getPosition();
+  ensureHeaderFooter(services, ih, bodyPos, isHeader, applyTo);
+  // 편집 대상 쪽은 보고 있던 쪽 그대로다 — 머리말/꼬리말은 구역 전체에 적용되므로
+  // 다른 쪽으로 옮겨 갈 이유가 없다.
+  cursor.enterHeaderFooterMode(isHeader, bodyPos.sectionIndex, applyTo, cursor.rect?.pageIndex ?? 0);
 
   services.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
   (ih as any).updateCaret?.();
@@ -158,23 +159,10 @@ function applyHfTemplate(
         return bodyPos;
       },
     });
-    // 템플릿 적용 후 편집 모드로 진입
-    const currentPage = cursor?.rect?.pageIndex ?? 0;
-    let targetResult = services.wasm.navigateHeaderFooterByPage(currentPage - 1, isHeader, 1);
-    if (!targetResult.ok || targetResult.pageIndex !== currentPage) {
-      targetResult = services.wasm.navigateHeaderFooterByPage(currentPage, isHeader, -1);
-    }
-    if (!targetResult.ok) {
-      targetResult = services.wasm.navigateHeaderFooterByPage(currentPage, isHeader, 1);
-    }
-    if (targetResult.ok) {
-      cursor.enterHeaderFooterMode(
-        targetResult.isHeader!, targetResult.sectionIdx!,
-        targetResult.applyTo!, targetResult.pageIndex!,
-      );
-    } else {
-      cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, currentPage);
-    }
+    // 템플릿 적용 후 편집 모드로 진입. 마당 적용은 기존 HF 를 지우고 다시 만들므로
+    // (`apply_hf_template_native` 1~2단계) 적용 대상 좌표에 HF 가 있음이 보장된다 —
+    // 존재 확인이 필요 없다 (Task #3206).
+    cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, cursor?.rect?.pageIndex ?? 0);
     services.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
   } catch (e) {
     console.warn('[page] 마당 적용 실패:', e);
