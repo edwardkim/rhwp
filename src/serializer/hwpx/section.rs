@@ -35,7 +35,7 @@ use crate::model::shape::{
 };
 
 use super::context::SerializeContext;
-use super::field::{write_bookmark, write_field_begin, write_field_end_full};
+use super::field::{write_bookmark, write_field_begin, write_field_end, write_field_end_full};
 use super::utils::xml_escape;
 use super::SerializeError;
 use super::{picture, table};
