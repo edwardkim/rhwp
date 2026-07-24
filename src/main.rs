@@ -41,6 +41,7 @@ fn main() {
         Some("export-hwpx") => exit_with(export_hwpx(&args[2..])),
         Some("export-hml") => export_hml(&args[2..]),
         Some("export-doclang") => exit_with(export_doclang(&args[2..])),
+        Some("batch") => exit_with(run_batch(&args[2..])),
         Some("info") => exit_with(show_info(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
         Some("dump-note-shape") => exit_with(dump_note_shape(&args[2..])),
@@ -169,6 +170,13 @@ fn print_help() {
     println!();
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!("      --json                  결과를 JSON으로 stdout에 출력 (파일 저장 안 함)");
+    println!();
+    println!("  batch <export-text|info> --json [--threads <N>]");
+    println!(
+        "      stdin의 파일 목록(한 줄당 하나)을 한 프로세스로 전건 처리해 NDJSON 스트림 출력"
+    );
+    println!("      --threads <N>           파일 간 병렬 스레드 수 (기본: CPU 코어 수)");
     println!();
     println!("  export-markdown <파일.hwp> [옵션]");
     println!("      페이지별 텍스트를 Markdown(.md)으로 내보내기");
@@ -219,8 +227,10 @@ fn print_help() {
     println!("      --assets-dir <디렉터리> 그림 등 이진 자원을 이 디렉터리에 파일로 기록");
     println!("                              (생략 시 base64 data URI로 XML에 인라인)");
     println!();
-    println!("  info <파일.hwp|파일.hwpx|파일.hml>");
+    println!("  info <파일.hwp|파일.hwpx|파일.hml> [--json]");
     println!("      HWP/HWPX/HML 문서 정보 표시");
+    println!();
+    println!("      --json                  문서 정보를 JSON으로 stdout에 출력");
     println!();
     println!("  dump <파일.hwp|파일.hwpx|파일.hml> [--section <번호>] [--para <번호>]");
     println!("      문서 조판부호 구조 덤프 (디버깅용)");
@@ -1667,6 +1677,14 @@ fn print_export_pdf_usage() {
 }
 
 fn export_text(args: &[String]) -> i32 {
+    // [#3237] --json: 결과를 파일 대신 stdout JSON 으로 낸다. stdout 은 순수 JSON 이어야
+    // 하므로 이 모드에서는 진행 메시지를 찍지 않는다. 위치 무관 플래그다 (info 와 동일 규약).
+    let json_mode = args.iter().any(|a| a == "--json");
+    let args: Vec<String> = args
+        .iter()
+        .filter(|a| a.as_str() != "--json")
+        .cloned()
+        .collect();
     if args.is_empty() {
         eprintln!("오류: HWP 파일 경로를 지정해주세요.");
         eprintln!("사용법: rhwp export-text <파일.hwp> [옵션] (rhwp --help 참조)");
@@ -1728,14 +1746,16 @@ fn export_text(args: &[String]) -> i32 {
     };
 
     let page_count = doc.page_count();
-    println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    if !json_mode {
+        println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    }
     if page_count == 0 {
         eprintln!("오류: 문서에 페이지가 없습니다.");
         return EXIT_RUNTIME;
     }
 
     let output_path = Path::new(&output_dir);
-    if !output_path.exists() {
+    if !json_mode && !output_path.exists() {
         if let Err(e) = fs::create_dir_all(output_path) {
             eprintln!(
                 "오류: 출력 폴더를 생성할 수 없습니다 - {}: {}",
@@ -1758,6 +1778,30 @@ fn export_text(args: &[String]) -> i32 {
         }
         None => (0..page_count).collect(),
     };
+
+    // [#3237] JSON 모드: 파일을 쓰지 않고 요청 페이지 전체를 stdout JSON 하나로 낸다.
+    if json_mode {
+        let mut page_objs = Vec::with_capacity(pages.len());
+        for page_num in &pages {
+            match doc.extract_page_text_native(*page_num) {
+                Ok(text) => {
+                    page_objs.push(serde_json::json!({ "page": page_num, "text": text }));
+                }
+                Err(e) => {
+                    eprintln!("오류: 페이지 {} 텍스트 추출 실패 - {}", page_num, e);
+                    return EXIT_RUNTIME;
+                }
+            }
+        }
+        let result = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "pageCount": page_objs.len(),
+            "pages": page_objs,
+        });
+        println!("{result}");
+        return EXIT_OK;
+    }
 
     let file_stem = Path::new(file_path)
         .file_stem()
@@ -2096,13 +2140,352 @@ fn export_markdown(args: &[String]) -> i32 {
     }
 }
 
+/// [#3238] batch — 파일 목록을 stdin(한 줄당 하나)으로 받아 한 프로세스에서 전건 처리하고
+/// NDJSON 스트림을 stdout 으로 낸다. 건별 실패는 `error` 레코드로 스트림을 계속하되,
+/// 하나라도 실패하면 [#2707] 계약대로 종료 코드 1 로 끝난다.
+fn run_batch(args: &[String]) -> i32 {
+    use std::io::{BufRead, Write};
+
+    const USAGE: &str = "사용법: <파일 목록> | rhwp batch <export-text|info> --json [--threads <N>]  (stdin: 한 줄당 파일 경로 하나)";
+
+    let mode = match args.first().map(String::as_str) {
+        Some("export-text") => BatchMode::ExportText,
+        Some("info") => BatchMode::Info,
+        other => {
+            match other {
+                Some(unknown) => {
+                    eprintln!(
+                        "오류: batch 는 현재 export-text·info 만 지원합니다 - {}",
+                        unknown
+                    )
+                }
+                None => eprintln!("오류: batch 서브커맨드를 지정해주세요."),
+            }
+            eprintln!("{USAGE}");
+            return EXIT_USAGE;
+        }
+    };
+
+    let mut json_mode = false;
+    let mut threads_opt: Option<usize> = None;
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => {
+                json_mode = true;
+                i += 1;
+            }
+            "--threads" => {
+                let Some(value) = args.get(i + 1) else {
+                    eprintln!("오류: --threads 뒤에 스레드 수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match value.parse::<usize>() {
+                    Ok(n) if n >= 1 => threads_opt = Some(n),
+                    _ => {
+                        eprintln!("오류: 스레드 수가 올바르지 않습니다 - {}", value);
+                        return EXIT_USAGE;
+                    }
+                }
+                i += 2;
+            }
+            other => {
+                eprintln!("알 수 없는 옵션: {}", other);
+                eprintln!("{USAGE}");
+                return EXIT_USAGE;
+            }
+        }
+    }
+    if !json_mode {
+        eprintln!("오류: batch 는 현재 --json 출력만 지원합니다.");
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    }
+
+    let stdin = std::io::stdin();
+    let mut paths: Vec<String> = Vec::new();
+    for line in stdin.lock().lines() {
+        match line {
+            Ok(l) => {
+                let path = l.trim().to_string();
+                if !path.is_empty() {
+                    paths.push(path);
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: stdin 읽기 실패 - {}", e);
+                return EXIT_RUNTIME;
+            }
+        }
+    }
+
+    let threads = threads_opt
+        .unwrap_or_else(|| {
+            std::thread::available_parallelism()
+                .map(|n| n.get())
+                .unwrap_or(1)
+        })
+        .max(1);
+
+    let started = std::time::Instant::now();
+    let stdout = std::io::stdout();
+    let mut out = std::io::BufWriter::new(stdout.lock());
+
+    // 파일 간 병렬 처리 + 한계 재정렬 버퍼(bounded reorder buffer) 스트리밍.
+    //
+    // 배리어 없이 완전 병렬로 돌리되, 완료 레코드는 stdin 입력 순서대로 즉시 방출한다.
+    // 완료-미방출 레코드가 cap 을 넘으면 워커가 대기(역압)해 메모리를 상한한다.
+    // 단, 방출 차례(next_emit) 레코드는 cap 과 무관하게 넣을 수 있어야 교착이 없다 —
+    // 느린 파일 하나가 버퍼를 채워도, 그 파일이 곧 방출 차례이므로 항상 전진한다.
+    let n = paths.len();
+    let cap = threads.saturating_mul(8).max(1);
+    let next_claim = std::sync::atomic::AtomicUsize::new(0);
+    let abort = std::sync::atomic::AtomicBool::new(false);
+    let buf: std::sync::Mutex<std::collections::HashMap<usize, serde_json::Value>> =
+        std::sync::Mutex::new(std::collections::HashMap::new());
+    let next_emit = std::sync::atomic::AtomicUsize::new(0);
+    let space = std::sync::Condvar::new(); // 버퍼에 자리가 났다
+    let ready = std::sync::Condvar::new(); // 방출 차례 레코드가 도착했다
+
+    let (failed, emitted) = std::thread::scope(|scope| {
+        for _ in 0..threads.min(n) {
+            scope.spawn(|| loop {
+                if abort.load(std::sync::atomic::Ordering::Relaxed) {
+                    break;
+                }
+                let idx = next_claim.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                if idx >= n {
+                    break;
+                }
+                let record = batch_record(mode, &paths[idx]);
+                let mut guard = buf.lock().expect("batch buf lock");
+                while guard.len() >= cap
+                    && idx != next_emit.load(std::sync::atomic::Ordering::Relaxed)
+                    && !abort.load(std::sync::atomic::Ordering::Relaxed)
+                {
+                    guard = space.wait(guard).expect("batch buf lock");
+                }
+                if abort.load(std::sync::atomic::Ordering::Relaxed) {
+                    break;
+                }
+                guard.insert(idx, record);
+                // 방출자는 하나뿐이므로 notify_one 으로 충분하다.
+                ready.notify_one();
+            });
+        }
+
+        // 방출자(현재 스레드): 입력 순서대로 도착 즉시 방출한다. 도착해 있는 연속
+        // 레코드는 한 번의 락으로 일괄 드레인하고 notify 도 배치당 1회만 보낸다 —
+        // 레코드당 notify_all 은 대기 워커 전원을 헛깨우는 thundering herd 가 된다
+        // (271건 실측에서 방출 버스트 구간 수 초 손실).
+        let mut failed = 0usize;
+        let mut emitted = 0usize;
+        let mut drained: Vec<serde_json::Value> = Vec::new();
+        'emit: while emitted < n {
+            drained.clear();
+            {
+                let mut guard = buf.lock().expect("batch buf lock");
+                while guard.get(&emitted).is_none() {
+                    guard = ready.wait(guard).expect("batch buf lock");
+                }
+                while let Some(record) = guard.remove(&emitted) {
+                    emitted += 1;
+                    drained.push(record);
+                }
+                next_emit.store(emitted, std::sync::atomic::Ordering::Relaxed);
+            }
+            space.notify_all();
+            for record in &drained {
+                if record.get("error").is_some() {
+                    failed += 1;
+                }
+                if let Err(e) = writeln!(out, "{record}") {
+                    // 파이프 소비자가 끊은 경우(broken pipe 등): 새 작업 수주를 멈추고
+                    // 대기 중인 워커를 전부 깨워 정리한다.
+                    eprintln!("오류: stdout 쓰기 실패 - {}", e);
+                    abort.store(true, std::sync::atomic::Ordering::Relaxed);
+                    space.notify_all();
+                    break 'emit;
+                }
+            }
+        }
+        (failed, emitted)
+    });
+
+    if abort.load(std::sync::atomic::Ordering::Relaxed) {
+        return EXIT_RUNTIME;
+    }
+    if let Err(e) = out.flush() {
+        eprintln!("오류: stdout 쓰기 실패 - {}", e);
+        return EXIT_RUNTIME;
+    }
+
+    eprintln!(
+        "batch: {}건 중 {} 성공, {} 실패 ({}ms, threads={})",
+        emitted,
+        emitted - failed,
+        failed,
+        started.elapsed().as_millis(),
+        threads
+    );
+    if failed > 0 {
+        EXIT_RUNTIME
+    } else {
+        EXIT_OK
+    }
+}
+
+/// [#3238] batch 가 처리하는 서브커맨드 축.
+#[derive(Clone, Copy)]
+enum BatchMode {
+    ExportText,
+    Info,
+}
+
+/// [#3238] 파일 하나를 처리해 NDJSON 레코드 하나를 만든다. 실패는 레코드로 보고하고
+/// 스트림은 계속된다 — 프로세스 중단 없이 부분 실패를 종료 코드로 신호하기 위함.
+///
+/// 배치는 신뢰할 수 없는 대량 코퍼스를 훑는 용도라, 한 건의 파서 panic 이 배치 전체를
+/// 죽여서는 안 된다. panic 도 해당 파일의 `error` 레코드로 격리한다.
+fn batch_record(mode: BatchMode, path: &str) -> serde_json::Value {
+    match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match mode {
+        BatchMode::ExportText => batch_export_text_record_inner(path),
+        BatchMode::Info => batch_info_record_inner(path),
+    })) {
+        Ok(record) => record,
+        Err(payload) => {
+            let message = payload
+                .downcast_ref::<&str>()
+                .map(|s| (*s).to_string())
+                .or_else(|| payload.downcast_ref::<String>().cloned())
+                .unwrap_or_else(|| "원인 불명".to_string());
+            batch_fail_record(path, format!("내부 오류(panic): {}", message))
+        }
+    }
+}
+
+fn batch_fail_record(path: &str, message: String) -> serde_json::Value {
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": path,
+        "error": message,
+        "exitClass": "runtime",
+    })
+}
+
+fn batch_export_text_record_inner(path: &str) -> serde_json::Value {
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
+    };
+
+    let page_count = doc.page_count();
+    let mut text = String::new();
+    for page_num in 0..page_count {
+        match doc.extract_page_text_native(page_num) {
+            Ok(t) => {
+                text.push_str(&t);
+                if !t.ends_with('\n') {
+                    text.push('\n');
+                }
+            }
+            Err(e) => {
+                return batch_fail_record(
+                    path,
+                    format!("페이지 {} 텍스트 추출 실패: {}", page_num, e),
+                )
+            }
+        }
+    }
+
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": path,
+        "pageCount": page_count,
+        "text": text,
+    })
+}
+
+/// [#3238] `batch info --json` 의 파일당 레코드 — `info --json` 과 같은 스키마
+/// (`info_json_value` 공유)라 소비자가 단건/배치를 같은 코드로 읽는다.
+fn batch_info_record_inner(path: &str) -> serde_json::Value {
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    let file_size = data.len();
+    let detected_format = rhwp::parser::detect_format(&data);
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
+    };
+    info_json_value(path, file_size, detected_format, &doc)
+}
+
+/// [#3237] `info --json`·`batch info --json` 이 공유하는 문서 메타 JSON 레코드.
+/// `schemaVersion` 이 계약이며 필드 추가는 허용, 변경·삭제는 계약 테스트가 잡는다.
+fn info_json_value(
+    file_path: &str,
+    file_size: usize,
+    detected_format: rhwp::parser::FileFormat,
+    doc: &rhwp::wasm_api::HwpDocument,
+) -> serde_json::Value {
+    let document = doc.document();
+    let format_str = match detected_format {
+        rhwp::parser::FileFormat::Hwp => "hwp5",
+        rhwp::parser::FileFormat::Hwpx => "hwpx",
+        rhwp::parser::FileFormat::Hwp3 => "hwp3",
+        rhwp::parser::FileFormat::Hml => "hml",
+        // 파싱이 성공한 뒤에는 도달하지 않지만, 계약상 문자열은 고정해 둔다.
+        rhwp::parser::FileFormat::DrmProtected => "drm-protected",
+        rhwp::parser::FileFormat::Empty => "empty",
+        rhwp::parser::FileFormat::Unknown => "unknown",
+    };
+    let version = if detected_format == rhwp::parser::FileFormat::Hml {
+        serde_json::Value::Null
+    } else {
+        serde_json::Value::String(format!(
+            "{}.{}.{}.{}",
+            document.header.version.major,
+            document.header.version.minor,
+            document.header.version.build,
+            document.header.version.revision,
+        ))
+    };
+    let fonts: Vec<String> = document
+        .doc_info
+        .font_faces
+        .first()
+        .map(|faces| faces.iter().map(|f| f.name.clone()).collect())
+        .unwrap_or_default();
+    let para_count: usize = document.sections.iter().map(|s| s.paragraphs.len()).sum();
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "format": format_str,
+        "sizeBytes": file_size,
+        "version": version,
+        "sections": document.sections.len(),
+        "pageCount": doc.page_count(),
+        "paraCount": para_count,
+        "fonts": fonts,
+    })
+}
+
 fn show_info(args: &[String]) -> i32 {
-    if args.is_empty() {
+    // [#3237] --json: 기계가 읽는 출력. 플래그만 걸러내고 나머지 처리(파일 해석)는 종전과 동일.
+    let json_mode = args.iter().any(|a| a == "--json");
+    let positional: Vec<&String> = args.iter().filter(|a| a.as_str() != "--json").collect();
+    if positional.is_empty() {
         eprintln!("오류: 문서 파일 경로를 지정해주세요.");
         return EXIT_USAGE;
     }
 
-    let file_path = &args[0];
+    let file_path = positional[0];
 
     // 파일 읽기
     let data = match fs::read(file_path) {
@@ -2126,6 +2509,14 @@ fn show_info(args: &[String]) -> i32 {
     };
 
     let document = doc.document();
+
+    // [#3237] JSON 모드: 핵심 메타를 stdout JSON 하나로 낸다. `schemaVersion` 이 계약이며
+    // 필드 추가는 허용, 기존 필드 변경·삭제는 `tests/cli_json_contract.rs` 가 잡는다.
+    if json_mode {
+        let info = info_json_value(file_path, file_size, detected_format, &doc);
+        println!("{info}");
+        return EXIT_OK;
+    }
 
     if detected_format == rhwp::parser::FileFormat::Hml {
         println!("format: HML");
