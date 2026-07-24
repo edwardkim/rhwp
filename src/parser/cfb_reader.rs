@@ -394,7 +394,14 @@ impl LenientCfbReader {
         // 추가 DIFAT 섹터 체인
         if difat_sectors_count > 0 && first_difat_sector != Self::END_OF_CHAIN {
             let mut dsid = first_difat_sector;
+            // difat_sectors_count 는 파일 헤더에서 그대로 읽은 값(공격자 통제 가능)이라,
+            // 실제 섹터 체인이 짧은 순환을 이뤄도 최대 u32::MAX 번 순회할 수 있다.
+            // FAT/미니FAT 체인 순회(read_chain_static)처럼 방문 집합으로 순환을 조기 차단한다.
+            let mut visited_difat = std::collections::HashSet::new();
             for _ in 0..difat_sectors_count {
+                if !visited_difat.insert(dsid) {
+                    break;
+                }
                 let off = 512 + dsid as usize * sector_size;
                 if off + sector_size > data.len() {
                     break;
@@ -814,6 +821,48 @@ mod tests {
 
         let r = LenientCfbReader::open(&d);
         assert!(r.is_ok(), "손상된 name_len 에서 패닉 없이 열려야 함");
+    }
+
+    #[test]
+    fn lenient_open_terminates_on_cyclic_difat_chain() {
+        // DIFAT 확장 체인은 header 의 difat_sectors_count(공격자 통제 가능한 4바이트) 만큼
+        // 순회하되, FAT 체인 순회(read_chain_static)와 달리 방문 집합이 없다. 두 DIFAT
+        // 섹터가 서로를 가리키는 순환을 만들고 difat_sectors_count 를 u32::MAX 로 두면,
+        // 실제 체인 길이(2)와 무관하게 최대 40억 회 넘게 순회해 사실상 멈추지 않는다 —
+        // 단일 스레드 WASM 에서는 탭 전체가 응답 없음 상태가 된다.
+        let mut d = minimal_header();
+        d[44..48].copy_from_slice(&0u32.to_le_bytes()); // fat_sectors_count = 0
+        d[68..72].copy_from_slice(&0u32.to_le_bytes()); // first_difat_sector = 섹터 0
+        d[72..76].copy_from_slice(&u32::MAX.to_le_bytes()); // difat_sectors_count: 공격자 제어
+
+        // 헤더(512B) 뒤에 DIFAT 섹터 2개(섹터 0, 섹터 1)를 배치.
+        d.resize(512 + 512 * 2, 0);
+        let entries_per = 512 / 4 - 1; // 127
+                                       // 모든 FAT-포인터 엔트리는 FREE_SECT 로 채워 fat_sector_ids 가 자라지 않게 한다
+                                       // (순환 자체와 무관한 메모리 팽창을 피하기 위함).
+        for sector_idx in 0..2usize {
+            let base = 512 + sector_idx * 512;
+            for i in 0..entries_per {
+                let eoff = base + i * 4;
+                d[eoff..eoff + 4].copy_from_slice(&0xFFFF_FFFFu32.to_le_bytes());
+            }
+        }
+        // 섹터 0 의 "다음 DIFAT" 포인터 = 섹터 1
+        let next0 = 512 + entries_per * 4;
+        d[next0..next0 + 4].copy_from_slice(&1u32.to_le_bytes());
+        // 섹터 1 의 "다음 DIFAT" 포인터 = 섹터 0 (순환!)
+        let next1 = 512 + 512 + entries_per * 4;
+        d[next1..next1 + 4].copy_from_slice(&0u32.to_le_bytes());
+
+        let (tx, rx) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let _ = LenientCfbReader::open(&d);
+            let _ = tx.send(());
+        });
+        assert!(
+            rx.recv_timeout(std::time::Duration::from_secs(3)).is_ok(),
+            "순환 DIFAT 체인에서 방문 집합 없이 difat_sectors_count 만큼 순회해 반환하지 않음"
+        );
     }
 
     #[test]

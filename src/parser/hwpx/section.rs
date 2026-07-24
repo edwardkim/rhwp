@@ -2100,6 +2100,7 @@ fn parse_table_cell(
             b"hasMargin" => cell.set_apply_inner_margin(parse_bool(&attr)),
             b"protect" => cell.set_cell_protect(parse_bool(&attr)),
             b"editable" => cell.set_editable_in_form(parse_bool(&attr)),
+            b"dirty" => cell.dirty_flag = parse_bool(&attr),
             // 셀 필드 이름 (누름틀 셀 필드, #493). 직렬화기는 무명 셀도 name=""로
             // 항상 방출하므로 빈 값은 None — HWP5 파서(parse_cell_field_name)와
             // 동일 의미. 누락 시 HWPX 로드에서 getFieldList가 셀 필드를 반환하지 못하고

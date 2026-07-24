@@ -1063,6 +1063,36 @@ export interface LayerTextStyle {
   emphasisDot?: number;
 }
 
+export interface LayerTextLegacyVisuals {
+  charOverlap?: 'canonical' | 'mirror';
+  controlMarks?: 'canonical' | 'mirror';
+  tabLeaders?: 'canonical' | 'mirror';
+  decorations?: 'canonical' | 'mirror';
+}
+
+export interface LayerCharOverlap {
+  borderType: number;
+  innerCharSize: number;
+}
+
+export interface LayerTabLeader {
+  startX: number;
+  endX: number;
+  fillType: number;
+}
+
+export type LayerTextControlMarkKind = 'space' | 'tab' | 'paragraphEnd' | 'lineBreakEnd';
+
+export interface LayerTextControlMark {
+  kind: LayerTextControlMarkKind;
+  text: string;
+  /** X offset relative to the text run origin. */
+  x: number;
+  /** Y offset relative to the text run baseline. */
+  y: number;
+  fontSize: number;
+}
+
 export interface LayerTextRunOp {
   type: 'textRun';
   bbox: LayerBounds;
@@ -1076,6 +1106,14 @@ export interface LayerTextRunOp {
   placement?: { runToPage?: LayerAffineTransform; baselineY?: number };
   positions?: number[];
   displayPositions?: number[];
+  legacyVisuals?: LayerTextLegacyVisuals;
+  controlMarks?: LayerTextControlMark[];
+  controlMarksComplete?: boolean;
+  tabLeaders?: LayerTabLeader[];
+  charOverlap?: LayerCharOverlap | null;
+  isParaEnd?: boolean;
+  isLineBreakEnd?: boolean;
+  fieldMarker?: { kind?: string; controlIndex?: number };
   variant?: LayerTextVariantMeta;
 }
 
@@ -1278,30 +1316,60 @@ export interface LayerRawSvgOp {
 export interface LayerTextDecorationOp {
   type: 'textDecoration';
   bbox: LayerBounds;
-  decoration?: unknown;
+  decoration: {
+    kind: 'underline' | 'strikethrough' | 'emphasisDot';
+    baseline: number;
+    rotation: number;
+    isVertical: boolean;
+    fontSize: number;
+    ratio: number;
+    color: string;
+    shape: number;
+    underline: 'none' | 'bottom' | 'top';
+    emphasisDot: number;
+    positions: number[];
+    positionsComplete: boolean;
+  };
 }
 
 export interface LayerTextControlMarkOp {
   type: 'textControlMark';
   bbox: LayerBounds;
-  fieldMarker?: string | { kind?: string };
+  fieldMarker: string;
+  isParaEnd: boolean;
+  isLineBreakEnd: boolean;
+  baseline: number;
+  rotation: number;
+  isVertical: boolean;
+  marks: LayerTextControlMark[];
+  marksComplete: boolean;
+  shapeMarkerIndex?: number;
 }
 
 export interface LayerTabLeaderOp {
   type: 'tabLeader';
   bbox: LayerBounds;
-  leaders?: Array<{ startX: number; endX: number; fillType: number }>;
-  color?: string;
-  fontSize?: number;
-  baseline?: number;
+  leaders: LayerTabLeader[];
+  color: string;
+  fontSize: number;
+  baseline: number;
+  rotation: number;
+  isVertical: boolean;
+  leadersComplete: boolean;
 }
 
 export interface LayerCharOverlapOp {
   type: 'charOverlap';
   bbox: LayerBounds;
-  text?: string;
-  baseline?: number;
-  style?: LayerTextStyle;
+  text: string;
+  baseline: number;
+  rotation: number;
+  isVertical: boolean;
+  orientation?: 'horizontal' | 'vertical-upright' | 'vertical-sideways';
+  style: LayerTextStyle;
+  positions: number[];
+  positionsComplete: boolean;
+  charOverlap: LayerCharOverlap;
 }
 
 export interface LayerGlyphRunOp {

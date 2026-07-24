@@ -171,6 +171,22 @@ test('CanvasKit text replay preserves LayerTree positions for regular runs', () 
   assert.doesNotMatch(source, /needsPreservedAdvances && hasLayoutPositions/);
 });
 
+test('CanvasKit text replay uses positioned fallback glyphs and external text visuals', () => {
+  const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
+  assert.match(source, /const candidateFonts = \[font\][\s\S]*?selectedFontIndices[\s\S]*?canvas\.drawGlyphs/);
+  assert.match(source, /case 'charOverlap':\s+this\.renderCharOverlap/);
+  assert.match(source, /case 'textControlMark':\s+this\.renderTextControlMark/);
+  assert.match(source, /case 'tabLeader':\s+this\.renderTabLeader/);
+  assert.match(source, /case 'textDecoration':\s+this\.renderTextDecoration/);
+  assert.doesNotMatch(source, /case 'charOverlap':[\s\S]{0,200}unsupportedOps\.add\(op\.type\)/);
+});
+
+test('CanvasKit auto preflight permits text marks but blocks missing structural control markers', () => {
+  const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /viewOption:showParagraphMarks/);
+  assert.match(source, /viewOption:showControlCodes/);
+});
+
 test('CanvasKit contains malformed images and bounds both decode caches', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
   assert.match(source, /try \{\s*image = this\.canvasKit\.MakeImageFromEncoded/);

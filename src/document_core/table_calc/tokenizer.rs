@@ -1,5 +1,9 @@
 //! 계산식 토크나이저: 문자열 → 토큰 스트림
 
+/// 와일드카드 행을 나타내는 내부 센티널 값. 실제 행 번호(1부터 시작)와
+/// 절대 충돌하지 않도록 0이 아닌 u32::MAX를 사용한다.
+pub const WILDCARD_ROW: u32 = u32::MAX;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     /// 숫자 리터럴
@@ -107,14 +111,25 @@ pub fn tokenize(input: &str) -> Vec<Token> {
                 if (first.is_ascii_alphabetic() || first == '?')
                     && (rest.chars().all(|c| c.is_ascii_digit()) || rest == "?")
                 {
+                    // 행은 1부터 시작한다 (mydocs/plans/archives/task_370.md).
+                    // 와일드카드는 `?`만 인정하며, 내부적으로 WILDCARD_ROW로 구분한다.
+                    // 명시적으로 0행("A0")을 쓰는 것은 잘못된 입력이므로 셀 참조로
+                    // 인식하지 않고 아래 함수 이름 처리 경로로 넘긴다 (0이 와일드카드와
+                    // 충돌하여 현재 행으로 조용히 대체되는 것을 방지).
                     let row = if rest == "?" {
-                        0 // 와일드카드 행 (0으로 표시)
+                        Some(WILDCARD_ROW)
                     } else {
-                        rest.parse::<u32>().unwrap_or(0)
+                        match rest.parse::<u32>() {
+                            Ok(0) => None,
+                            Ok(n) => Some(n),
+                            Err(_) => None,
+                        }
                     };
-                    let col_char = if first == '?' { '?' } else { first };
-                    tokens.push(Token::CellRef(col_char, row));
-                    continue;
+                    if let Some(row) = row {
+                        let col_char = if first == '?' { '?' } else { first };
+                        tokens.push(Token::CellRef(col_char, row));
+                        continue;
+                    }
                 }
             }
 
