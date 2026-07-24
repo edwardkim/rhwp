@@ -224,10 +224,17 @@ HML 원본 문서를 의미 보존 HWPML 2.91 XML로 저장한다.
 - 입력과 출력이 같은 경로이면 원본 보호를 위해 거부한다.
 - 이 명령은 HWP/HWPX 변환 명령이 아니며 입력은 `.hml`만 받는다.
 
-### `ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>] [--summary] [--max-lines N]`
+### `ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>] [--summary] [--max-lines N] [--json]`
 두 파일의 IR 비교(HWPX↔HWP 불일치 검출). 상세: [ir_diff_command.md](ir_diff_command.md)
 - 비교: text, char_count/offsets/shapes, line_segs, controls, tab_extended, ParaShape, TabDef,
   표(page_break/outer_margin/treat_as_char/wrap/size/offset), 그림·도형(rel_to 등)
+- `--json` (#3274): 판정 봉투 **한 줄** JSON 을 stdout 으로 —
+  `{"schemaVersion":"1.0","a","b","identical","diffCount","categories":{카테고리:건수}}`.
+  종료 코드 0=동일 / **3=차이 발견**(§종료 코드 계약의 "IR 차이" 코드와 동일 의미) /
+  1=읽기·파싱 실패(stdout 0바이트) / 2=사용법 오류 → 변환 파이프라인 게이트:
+  `rhwp ir-diff 원본.hwp 변환본.hwpx --json || 격리처리`
+- 종료 코드 정정(#3274): 기본(텍스트) 모드도 읽기·파싱 실패는 1, 인자 부족은 2 (#2707 정렬).
+  **기본 모드의 정상 비교는 차이가 있어도 종전대로 0** — 기존 소비자 무변경.
 
 ### `build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>`
 ingest JSON(시험문제 등) → HWPX 생성. (rhwp-exam-ingest 파이프라인)

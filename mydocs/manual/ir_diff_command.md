@@ -26,7 +26,7 @@ HWPX(XML 기반)와 HWP(바이너리)는 동일한 문서를 다른 형식으로
 ## 사용법
 
 ```bash
-rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>]
+rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>] [--json]
 ```
 
 ### 옵션
@@ -37,6 +37,7 @@ rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-
 | `--para <번호>` | `-p` | 특정 문단만 비교 (0부터 시작) |
 | `--summary` |  | 카테고리별 차이 카운트만 출력 (paragraph 헤더 + 개별 차이 라인 생략) |
 | `--max-lines <N>` |  | 출력 라인 수를 N 으로 제한, 초과 시 truncation 마커 표시 (`=== 비교 완료` 라인은 항상 출력) |
+| `--json` (#3274) |  | 판정 봉투 JSON 한 줄만 stdout 출력 (`schemaVersion`·`a`·`b`·`identical`·`diffCount`·`categories`). 차이 발견 시 종료 코드 3, 읽기·파싱 실패 1(stdout 0바이트), 사용법 오류 2 |
 
 #### 출력 가드 사용 예
 
@@ -47,6 +48,15 @@ rhwp ir-diff samples/hwpx/aift.hwpx samples/aift.hwp --summary
 # 출력을 50 라인으로 제한 (긴 출력 처음 검사)
 rhwp ir-diff samples/hwpx/aift.hwpx samples/aift.hwp --max-lines 50
 ```
+
+#### 파이프라인 게이트 사용 예 (#3274)
+
+```bash
+# 대량 변환 후 내용 보존 검증 — 차이가 있으면 exit 3 으로 즉시 신호
+rhwp ir-diff 원본.hwp 변환본.hwpx --json || echo "격리 대상"
+# {"a":"원본.hwp","b":"변환본.hwpx","categories":{...},"diffCount":N,"identical":false,"schemaVersion":"1.0"}
+```
+
 
 ### 사용 예시
 
