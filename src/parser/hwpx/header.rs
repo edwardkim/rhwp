@@ -3192,15 +3192,21 @@ mod tests {
         // charPrIDRef="0" 을 참조하는 run 은 id="0"(height=1000) 서식을 받아야 한다.
         let cs0 = doc_info
             .char_shapes
-            .get(0)
+            .first()
             .expect("id=0 charPr 이 존재해야 함");
-        assert_eq!(cs0.base_size, 1000, "charPrIDRef=0 은 id=\"0\" 항목이어야 함");
+        assert_eq!(
+            cs0.base_size, 1000,
+            "charPrIDRef=0 은 id=\"0\" 항목이어야 함"
+        );
 
         let cs1 = doc_info
             .char_shapes
             .get(1)
             .expect("id=1 charPr 이 존재해야 함");
-        assert_eq!(cs1.base_size, 2000, "charPrIDRef=1 은 id=\"1\" 항목이어야 함");
+        assert_eq!(
+            cs1.base_size, 2000,
+            "charPrIDRef=1 은 id=\"1\" 항목이어야 함"
+        );
     }
 
     /// paraPr 도 charPr 과 동일한 결함을 공유한다: id 속성을 무시하고 등장 순서로
@@ -3226,7 +3232,7 @@ mod tests {
 
         let ps0 = doc_info
             .para_shapes
-            .get(0)
+            .first()
             .expect("id=0 paraPr 이 존재해야 함");
         assert_eq!(
             ps0.alignment,
