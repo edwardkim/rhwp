@@ -231,13 +231,16 @@ fn text_run_ops(
     output_options: LayerOutputOptions,
 ) -> Vec<PaintOp> {
     let has_char_overlap = run.char_overlap.is_some();
-    let has_control_mark = (output_options.show_paragraph_marks
-        || output_options.show_control_codes)
-        && (run.field_marker != Default::default() || run.is_para_end || run.is_line_break_end);
-    let has_tab_leader = !run.style.tab_leaders.is_empty();
-    let has_underline = run.style.underline != UnderlineType::None;
-    let has_strikethrough = run.style.strikethrough;
-    let has_emphasis_dot = run.style.emphasis_dot > 0;
+    let show_text_marks = output_options.show_paragraph_marks || output_options.show_control_codes;
+    let has_control_mark = show_text_marks
+        && (run.is_para_end
+            || run.is_line_break_end
+            || run.text.chars().any(|ch| matches!(ch, ' ' | '\t')));
+    // Legacy renderers bypass normal text decoration/leader paint for overlap runs.
+    let has_tab_leader = !has_char_overlap && !run.style.tab_leaders.is_empty();
+    let has_underline = !has_char_overlap && run.style.underline != UnderlineType::None;
+    let has_strikethrough = !has_char_overlap && run.style.strikethrough;
+    let has_emphasis_dot = !has_char_overlap && run.style.emphasis_dot > 0;
 
     let mut ops = Vec::with_capacity(
         1 + has_char_overlap as usize
@@ -703,10 +706,6 @@ mod tests {
         let mut run = text_run("special\ttext");
         run.field_marker = FieldMarkerType::FieldBegin;
         run.is_para_end = true;
-        run.char_overlap = Some(CharOverlapInfo {
-            border_type: 1,
-            inner_char_size: 90,
-        });
         run.style.tab_leaders.push(TabLeaderInfo {
             start_x: 12.0,
             end_x: 36.0,
@@ -739,7 +738,7 @@ mod tests {
         };
 
         assert!(matches!(ops[0], PaintOp::TextRun { .. }));
-        assert!(ops
+        assert!(!ops
             .iter()
             .any(|op| matches!(op, PaintOp::CharOverlap { .. })));
         assert!(ops
@@ -767,6 +766,94 @@ mod tests {
                 ..
             }
         )));
+    }
+
+    #[test]
+    fn lowers_space_and_tab_control_marks_without_an_end_marker() {
+        let run = text_run("space\tmark");
+        let mut tree = PageRenderTree::new(0, 100.0, 100.0);
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::TextRun(run),
+            BoundingBox::new(1.0, 2.0, 80.0, 20.0),
+        ));
+
+        let mut builder =
+            LayerBuilder::new(RenderProfile::Screen).with_output_options(LayerOutputOptions {
+                show_control_codes: true,
+                ..Default::default()
+            });
+        let layer_tree = builder.build(&tree);
+
+        let LayerNodeKind::Group { children, .. } = &layer_tree.root.kind else {
+            panic!("expected root group");
+        };
+        let LayerNodeKind::Leaf { ops } = &children[0].kind else {
+            panic!("expected text leaf");
+        };
+        assert!(ops
+            .iter()
+            .any(|op| matches!(op, PaintOp::TextControlMark { .. })));
+    }
+
+    #[test]
+    fn either_view_option_preserves_legacy_text_mark_union_semantics() {
+        let mut paragraph_run = text_run("plain");
+        paragraph_run.is_para_end = true;
+        let paragraph_ops = text_run_ops(
+            BoundingBox::new(0.0, 0.0, 40.0, 10.0),
+            paragraph_run,
+            LayerOutputOptions {
+                show_control_codes: true,
+                ..Default::default()
+            },
+        );
+        assert!(paragraph_ops
+            .iter()
+            .any(|op| matches!(op, PaintOp::TextControlMark { .. })));
+
+        let space_ops = text_run_ops(
+            BoundingBox::new(0.0, 0.0, 40.0, 10.0),
+            text_run("a b"),
+            LayerOutputOptions {
+                show_paragraph_marks: true,
+                ..Default::default()
+            },
+        );
+        assert!(space_ops
+            .iter()
+            .any(|op| matches!(op, PaintOp::TextControlMark { .. })));
+    }
+
+    #[test]
+    fn overlap_runs_do_not_gain_normal_text_decorations_or_tab_leaders() {
+        let mut run = text_run("overlap");
+        run.char_overlap = Some(CharOverlapInfo {
+            border_type: 1,
+            inner_char_size: 90,
+        });
+        run.style.tab_leaders.push(TabLeaderInfo {
+            start_x: 2.0,
+            end_x: 20.0,
+            fill_type: 1,
+        });
+        run.style.underline = UnderlineType::Bottom;
+        run.style.strikethrough = true;
+        run.style.emphasis_dot = 1;
+
+        let ops = text_run_ops(
+            BoundingBox::new(0.0, 0.0, 40.0, 10.0),
+            run,
+            LayerOutputOptions::default(),
+        );
+
+        assert!(ops
+            .iter()
+            .any(|op| matches!(op, PaintOp::CharOverlap { .. })));
+        assert!(!ops.iter().any(|op| matches!(op, PaintOp::TabLeader { .. })));
+        assert!(!ops
+            .iter()
+            .any(|op| matches!(op, PaintOp::TextDecoration { .. })));
     }
 
     #[test]

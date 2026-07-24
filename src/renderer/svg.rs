@@ -2755,8 +2755,8 @@ impl Renderer for SvgRenderer {
         // 중앙 점" 이므로 폰트 비의존 벡터 도형으로 직접 그린다.
         //
         //   cx = advance box 수평 중앙
-        //   cy = baseline(y) − font_size × 0.35  (CJK x-height 중앙 근사)
-        //   r  = font_size × 0.08               (PDF 관찰치 기준)
+        //   cy = baseline(y) − font_size × MIDDLE_DOT_CY_OFFSET_EM  (CJK x-height 중앙)
+        //   r  = font_size × MIDDLE_DOT_RADIUS_EM  (한글 COM PDF 실측, #2999)
         let cluster_advance = |char_idx: usize, cluster_str: &str| -> f64 {
             let n = cluster_str.chars().count();
             let end = char_idx + n;
@@ -2767,8 +2767,8 @@ impl Renderer for SvgRenderer {
             }
         };
         let is_middle_dot = |cluster_str: &str| cluster_str == "\u{00B7}";
-        let dot_radius = font_size * 0.08;
-        let dot_cy_offset = -font_size * 0.35;
+        let dot_radius = font_size * super::render_tree::MIDDLE_DOT_RADIUS_EM;
+        let dot_cy_offset = -font_size * super::render_tree::MIDDLE_DOT_CY_OFFSET_EM;
 
         // Task #352: 3+ 연속 '-' 시퀀스(빈칸/leader) 를 단일 가로선으로 대체.
         // Stage 2 가 advance 를 좁히면 글리프 폭이 advance 를 초과해 시각상
@@ -2905,6 +2905,21 @@ impl Renderer for SvgRenderer {
                 self.output.push_str(&format!(
                     "<circle cx=\"{:.4}\" cy=\"{:.4}\" r=\"{:.4}\" fill=\"{}\"/>\n",
                     cx, cy, dot_radius, color,
+                ));
+                // Task #257 은 폰트별 LSB 편차를 피하려고 `·` 를 벡터로 그린다. 그
+                // 부작용으로 이 문자가 **출력 텍스트 스트림에서 사라져** PDF 검색과
+                // 스크린리더에서 누락된다 (10k 표본 300건 실측: 문서의 38.0% 가
+                // U+00B7 을 전량 소실). 보이지 않는 텍스트를 같은 자리에 겹쳐
+                // 추출만 복구한다 — 그려지는 것은 위 원 그대로이므로 시각 회귀 없음.
+                self.output.push_str(&format!(
+                    "<text x=\"{:.4}\" y=\"{:.4}\" font-size=\"{}\" fill=\"{}\" \
+                     fill-opacity=\"0\"{}>{}</text>\n",
+                    x + char_positions[*char_idx],
+                    y,
+                    font_size,
+                    color,
+                    svg_text_length_attrs(cluster_str, adv, ratio),
+                    escape_xml(cluster_str),
                 ));
                 continue;
             }

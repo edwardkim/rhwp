@@ -263,7 +263,9 @@ fn issue_1486_page13_page_number_keeps_footer_gap() {
     let table_bottom = bottom_table.bbox.y + bottom_table.bbox.height;
 
     let mut page_numbers = Vec::new();
-    collect_text_run_bboxes(&page13.root, "-13-", &mut page_numbers);
+    // [#3048] 대시 장식은 한글처럼 번호와 공백 한 칸을 둔다 (`-13-` → `- 13 -`).
+    // 이 테스트의 단언은 표 하단과 쪽번호 사이 간격이고, 문자열은 위치 지정용이다.
+    collect_text_run_bboxes(&page13.root, "- 13 -", &mut page_numbers);
     let page_number = page_numbers.into_iter().next().expect("13쪽 쪽번호");
 
     assert!(

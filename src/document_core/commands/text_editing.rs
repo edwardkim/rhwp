@@ -1423,6 +1423,36 @@ impl DocumentCore {
         end_offset: usize,
         cell_ctx: Option<(usize, usize, usize)>,
     ) -> Result<String, HwpError> {
+        // 인덱스/범위 검증 — section_idx 범위, start/end para 범위, 뒤집힌 오프셋(start > end)
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 인덱스 {} 범위 초과 (총 {}개)",
+                section_idx,
+                self.document.sections.len()
+            )));
+        }
+        if start_para > end_para {
+            return Err(HwpError::RenderError(format!(
+                "시작 문단 {} 이 끝 문단 {} 보다 뒤에 있습니다",
+                start_para, end_para
+            )));
+        }
+        if start_para == end_para && start_offset > end_offset {
+            return Err(HwpError::RenderError(format!(
+                "시작 오프셋 {} 이 끝 오프셋 {} 보다 뒤에 있습니다",
+                start_offset, end_offset
+            )));
+        }
+        if cell_ctx.is_none() {
+            let para_count = self.document.sections[section_idx].paragraphs.len();
+            if start_para >= para_count || end_para >= para_count {
+                return Err(HwpError::RenderError(format!(
+                    "문단 인덱스 범위 초과 (start={}, end={}, 총 {}개)",
+                    start_para, end_para, para_count
+                )));
+            }
+        }
+
         // Section raw 스트림 무효화 (재직렬화 유도)
         self.document.sections[section_idx].raw_stream = None;
         // DocInfo raw_stream은 유지 (전체 재직렬화 시 FIX-4 문제 발생)
@@ -3962,6 +3992,37 @@ mod tests {
         set_shape(&mut core, 0, 12, 3, 7);
         set_shape(&mut core, 1, 14, 5, 9);
         core
+    }
+
+    /// deleteRange 에 start/end 오프셋이 뒤집힌 값(start > end, 같은 문단)이 들어오면
+    /// `end_offset - start_offset` 가 usize 언더플로해서 패닉하면 안 된다.
+    #[test]
+    fn delete_range_native_rejects_inverted_offsets_same_paragraph() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "ABCDE").unwrap();
+
+        // start_offset(4) > end_offset(1): 뒤집힌 범위
+        let result = core.delete_range_native(0, 0, 4, 0, 1, None);
+        assert!(
+            result.is_err(),
+            "뒤집힌 범위는 에러를 반환해야 한다 (패닉 대신)"
+        );
+    }
+
+    /// deleteRange 에 범위를 벗어난 section_idx/para_idx 가 들어오면
+    /// 인덱싱 패닉이 아니라 에러를 반환해야 한다.
+    #[test]
+    fn delete_range_native_rejects_out_of_bounds_indices() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "ABC").unwrap();
+
+        let result = core.delete_range_native(0, 5, 0, 5, 1, None);
+        assert!(
+            result.is_err(),
+            "범위 밖 para_idx 는 에러를 반환해야 한다 (패닉 대신)"
+        );
     }
 
     #[test]

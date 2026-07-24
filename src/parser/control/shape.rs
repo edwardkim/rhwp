@@ -1011,7 +1011,10 @@ fn parse_line_shape_data(data: &[u8], line: &mut LineShape, is_connector: bool) 
         });
     } else {
         // 일반 선
-        line.started_right_or_bottom = r.read_i32().unwrap_or(0) != 0;
+        // hwp5 스펙 표92: 속성 필드는 UINT16(2바이트). 선 개체 속성 전체 길이가
+        // 18바이트(4+4+4+4+2)로 명시되어 있는데 기존에는 INT32(4바이트)로 읽어
+        // 남은 2바이트로는 항상 실패해 unwrap_or(0)으로 값이 소실되고 있었다.
+        line.started_right_or_bottom = r.read_u16().unwrap_or(0) != 0;
     }
 }
 
@@ -1062,7 +1065,8 @@ fn parse_arc_shape_data(data: &[u8], arc: &mut ArcShape) {
 /// hwplib: INT32 count + (INT32 x, INT32 y) × count + skip(4)
 fn parse_polygon_shape_data(data: &[u8], poly: &mut PolygonShape) {
     let mut r = ByteReader::new(data);
-    let cnt = r.read_i32().unwrap_or(0) as usize;
+    let cnt_raw = r.read_i32().unwrap_or(0);
+    let cnt = if cnt_raw < 0 { 0 } else { cnt_raw as usize };
     poly.points.clear();
     for _ in 0..cnt {
         let x = r.read_i32().unwrap_or(0);
@@ -1080,7 +1084,12 @@ fn parse_polygon_shape_data(data: &[u8], poly: &mut PolygonShape) {
 /// hwplib: INT32 count + (INT32 x, INT32 y) × count + BYTE[count-1] segment_types + skip(4)
 fn parse_curve_shape_data(data: &[u8], curve: &mut CurveShape) {
     let mut r = ByteReader::new(data);
-    let cnt = r.read_i32().unwrap_or(0) as usize;
+    // count(INT32)는 파일에서 온 부호 있는 값이다. 음수(예: -1 = 0xFFFFFFFF)를
+    // 검증 없이 `as usize` 로 캐스팅하면 부호 확장으로 usize::MAX 근처의 거대한
+    // 값이 되어 아래 루프가 사실상 종료되지 않는(수십억 회) DoS 를 유발한다.
+    // 캐스팅 전에 음수를 0(빈 곡선)으로 처리한다. (#3012 다각형과 동일 클래스)
+    let cnt_raw = r.read_i32().unwrap_or(0);
+    let cnt = if cnt_raw < 0 { 0 } else { cnt_raw as usize };
     curve.points.clear();
     for _ in 0..cnt {
         let x = r.read_i32().unwrap_or(0);
@@ -1107,6 +1116,25 @@ mod task195_tests {
     use super::*;
 
     #[test]
+    fn line_started_right_or_bottom_parsed_from_18byte_record() {
+        // hwp5 스펙 표92: 선 개체 속성은 4+4+4+4+2=18바이트이며 마지막 필드는
+        // UINT16. 18바이트만 주어져도 플래그(1)가 정확히 읽혀야 한다.
+        let mut data = Vec::new();
+        data.extend_from_slice(&0i32.to_le_bytes()); // start.x
+        data.extend_from_slice(&0i32.to_le_bytes()); // start.y
+        data.extend_from_slice(&0i32.to_le_bytes()); // end.x
+        data.extend_from_slice(&0i32.to_le_bytes()); // end.y
+        data.extend_from_slice(&1u16.to_le_bytes()); // 속성(방향 보정 플래그)
+
+        let mut line = LineShape::default();
+        parse_line_shape_data(&data, &mut line, false);
+        assert!(
+            line.started_right_or_bottom,
+            "18바이트 레코드에서 UINT16 플래그가 true 로 읽혀야 함"
+        );
+    }
+
+    #[test]
     fn connector_control_point_count_is_bounded_by_remaining() {
         // 악의적 countCP(0xFFFFFFFF)가 (a) ~51GB Vec 예약으로 abort 하거나
         // (b) EOF 를 삼킨 채 40억회 루프를 도는 일이 없어야 한다.
@@ -1130,6 +1158,45 @@ mod task195_tests {
             connector.control_points.is_empty(),
             "남은 바이트가 없으므로 제어점은 비어야 함: {}",
             connector.control_points.len()
+        );
+    }
+
+    #[test]
+    fn polygon_point_count_negative_is_treated_as_zero() {
+        // count(INT32)에 음수(-1 = 0xFFFFFFFF)를 넣으면 as usize 부호확장으로
+        // 사실상 무한 루프에 빠지면 안 되고 빈 다각형으로 처리되어야 한다.
+        let mut data = Vec::new();
+        data.extend_from_slice(&(-1i32).to_le_bytes()); // count (악성)
+
+        let mut poly = PolygonShape::default();
+        parse_polygon_shape_data(&data, &mut poly);
+        assert!(
+            poly.points.is_empty(),
+            "음수 count는 빈 점 목록으로 처리되어야 함: {}",
+            poly.points.len()
+        );
+    }
+
+    #[test]
+    fn curve_point_count_negative_is_treated_as_zero() {
+        // count(INT32)에 음수(-1 = 0xFFFFFFFF)를 넣으면 as usize 부호확장으로
+        // usize::MAX 근처의 거대한 값이 되어 `for _ in 0..cnt` 및
+        // `for _ in 0..(cnt - 1)` 루프가 사실상 종료되지 않는(수십억 회) DoS 를
+        // 유발한다. 음수 count 는 빈 곡선으로 처리되어야 한다. (#3012 다각형과 동일 클래스)
+        let mut data = Vec::new();
+        data.extend_from_slice(&(-1i32).to_le_bytes()); // count (악성)
+
+        let mut curve = CurveShape::default();
+        parse_curve_shape_data(&data, &mut curve);
+        assert!(
+            curve.points.is_empty(),
+            "음수 count는 빈 점 목록으로 처리되어야 함: {}",
+            curve.points.len()
+        );
+        assert!(
+            curve.segment_types.is_empty(),
+            "음수 count는 빈 세그먼트 목록으로 처리되어야 함: {}",
+            curve.segment_types.len()
         );
     }
 

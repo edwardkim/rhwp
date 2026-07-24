@@ -4,7 +4,7 @@ use std::fmt;
 
 use crate::model::image::ImageEffect;
 use crate::model::shape::TextWrap;
-use crate::model::style::{ImageFillMode, UnderlineType};
+use crate::model::style::ImageFillMode;
 use crate::paint::{
     paint_op_replay_plane_with_layer, CacheHint, ClipKind, LayerNode, LayerNodeKind, PageLayerTree,
     PaintOp, PaintReplayPlane, RenderProfile, ResolvedImageKind, ResolvedImagePayload,
@@ -20,11 +20,14 @@ use crate::renderer::layer_renderer::{
     analyze_text_variant_selection, TextVariantSelectionOptions, VariantSelectedReason,
     VariantSelectionBackend,
 };
+use crate::renderer::layout::compute_char_positions;
 use crate::renderer::render_tree::{
     EllipseNode, ImageNode, LineNode, PageBackgroundNode, PageRenderTree, PathNode, RectangleNode,
     RenderLayerInfo, RenderNodeType, TextRunNode,
 };
 use crate::renderer::{ArrowStyle, LineRenderType, ShapeStyle, StrokeDash};
+
+const OLD_HANGUL_FONT_FAMILY: &str = "Source Han Serif K Old Hangul";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -649,6 +652,16 @@ fn additional_payload_work_units(bytes: usize) -> usize {
 }
 
 fn paint_op_work_units(op: &PaintOp) -> usize {
+    let repeated_visual_units = match op {
+        PaintOp::TextRun { run, .. } => run.text.chars().count(),
+        PaintOp::CharOverlap { run, .. } => run.text.chars().count(),
+        PaintOp::TextControlMark { run, .. } => bounded_text_char_count(&run.text),
+        PaintOp::TabLeader { run, .. } => {
+            bounded_text_char_count(&run.text).saturating_add(run.style.tab_leaders.len())
+        }
+        PaintOp::TextDecoration { run, .. } => text_decoration_position_count(run),
+        _ => 0,
+    };
     let payload_bytes = match op {
         PaintOp::PageBackground { background, .. } => background
             .image
@@ -717,7 +730,76 @@ fn paint_op_work_units(op: &PaintOp) -> usize {
         | PaintOp::Ellipse { .. }
         | PaintOp::Placeholder { .. } => 0,
     };
-    1usize.saturating_add(additional_payload_work_units(payload_bytes))
+    1usize
+        .saturating_add(additional_payload_work_units(payload_bytes))
+        .saturating_add(repeated_visual_units)
+}
+
+fn positioned_control_mark_count(run: &TextRunNode) -> usize {
+    let inline_marks = if matches!(
+        run.field_marker,
+        crate::renderer::render_tree::FieldMarkerType::None
+    ) {
+        run.text
+            .chars()
+            .filter(|ch| matches!(ch, ' ' | '\t'))
+            .count()
+    } else {
+        0
+    };
+    inline_marks.saturating_add((run.is_para_end || run.is_line_break_end) as usize)
+}
+
+fn bounded_text_char_count(text: &str) -> usize {
+    text.chars()
+        .take(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN + 1)
+        .count()
+}
+
+fn text_decoration_position_count(run: &TextRunNode) -> usize {
+    let source: String = run
+        .text
+        .chars()
+        .take(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN + 1)
+        .collect();
+    if source.chars().count() > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN {
+        return crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN + 1;
+    }
+    expand_pua_display_text(&source)
+        .chars()
+        .take(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN + 1)
+        .count()
+}
+
+fn text_visual_geometry_is_valid(
+    bbox: &crate::renderer::render_tree::BoundingBox,
+    run: &TextRunNode,
+) -> bool {
+    [
+        bbox.x,
+        bbox.y,
+        bbox.width,
+        bbox.height,
+        run.baseline,
+        run.rotation,
+        run.style.font_size,
+        run.style.ratio,
+    ]
+    .iter()
+    .all(|value| value.is_finite())
+        && bbox.width >= 0.0
+        && bbox.height >= 0.0
+        && run.style.font_size > 0.0
+        && run.style.ratio > 0.0
+        && compute_char_positions(
+            &run.text
+                .chars()
+                .take(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN)
+                .collect::<String>(),
+            &run.style,
+        )
+        .iter()
+        .all(|position| position.is_finite())
 }
 
 fn minimum_work_exceeds_limit(
@@ -1229,6 +1311,10 @@ impl CanvasKitReplayPlanBuilder {
             match op {
                 PaintOp::TextRun { run, .. } if text_run_selected => {
                     self.record_required_font_family(&run.style.font_family);
+                    let display_text = expand_pua_display_text(&run.text);
+                    if crate::renderer::contains_old_hangul_jamo(&display_text) {
+                        self.record_required_font_family(OLD_HANGUL_FONT_FAMILY);
+                    }
                 }
                 PaintOp::FootnoteMarker { marker, .. } => {
                     self.record_required_font_family(&marker.font_family);
@@ -1352,14 +1438,145 @@ impl CanvasKitReplayPlanBuilder {
                 item
             }
             PaintOp::TextRun { run, .. } => self.text_run_item(path, run),
-            PaintOp::CharOverlap { .. }
-            | PaintOp::TextControlMark { .. }
-            | PaintOp::TabLeader { .. }
-            | PaintOp::TextDecoration { .. } => self.transition_overlay_item(
-                path,
-                paint_op_type(op),
-                CanvasKitReplayFeature::TextSpecialVisual,
-            ),
+            PaintOp::CharOverlap { bbox, run } => {
+                let detail = if bounded_text_char_count(&run.text)
+                    > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN
+                {
+                    Some("visualItemLimitExceeded")
+                } else if !text_visual_geometry_is_valid(bbox, run) {
+                    Some("invalidGeometry")
+                } else if run.is_vertical {
+                    Some("verticalText")
+                } else if run.rotation.abs() > f64::EPSILON {
+                    Some("rotatedText")
+                } else if run
+                    .char_overlap
+                    .as_ref()
+                    .is_none_or(|overlap| overlap.border_type > 4)
+                {
+                    Some("invalidCharOverlap")
+                } else {
+                    None
+                };
+                if let Some(detail) = detail {
+                    let mut item = self.transition_overlay_item(
+                        path,
+                        "charOverlap",
+                        CanvasKitReplayFeature::TextSpecialVisual,
+                    );
+                    item.detail = Some(detail.to_string());
+                    item
+                } else {
+                    direct_item(
+                        path,
+                        "charOverlap",
+                        CanvasKitReplayFeature::TextSpecialVisual,
+                    )
+                }
+            }
+            PaintOp::TextControlMark { bbox, run } => {
+                let detail = if bounded_text_char_count(&run.text)
+                    > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN
+                    || positioned_control_mark_count(run)
+                        > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN
+                {
+                    Some("visualItemLimitExceeded")
+                } else if !text_visual_geometry_is_valid(bbox, run) {
+                    Some("invalidGeometry")
+                } else if run.is_vertical {
+                    Some("verticalText")
+                } else if run.rotation.abs() > f64::EPSILON {
+                    Some("rotatedText")
+                } else {
+                    None
+                };
+                if let Some(detail) = detail {
+                    let mut item = self.transition_overlay_item(
+                        path,
+                        "textControlMark",
+                        CanvasKitReplayFeature::TextSpecialVisual,
+                    );
+                    item.detail = Some(detail.to_string());
+                    item
+                } else {
+                    direct_item(
+                        path,
+                        "textControlMark",
+                        CanvasKitReplayFeature::TextSpecialVisual,
+                    )
+                }
+            }
+            PaintOp::TabLeader { bbox, run } => {
+                let detail = if bounded_text_char_count(&run.text)
+                    > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN
+                    || run.style.tab_leaders.len()
+                        > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN
+                {
+                    Some("visualItemLimitExceeded")
+                } else if !text_visual_geometry_is_valid(bbox, run) {
+                    Some("invalidGeometry")
+                } else if run.is_vertical {
+                    Some("verticalText")
+                } else if run.rotation.abs() > f64::EPSILON {
+                    Some("rotatedText")
+                } else if run.style.tab_leaders.iter().any(|leader| {
+                    !leader.start_x.is_finite()
+                        || !leader.end_x.is_finite()
+                        || leader.end_x <= leader.start_x
+                        || leader.fill_type > 11
+                }) {
+                    Some("invalidTabLeader")
+                } else {
+                    None
+                };
+                if let Some(detail) = detail {
+                    let mut item = self.transition_overlay_item(
+                        path,
+                        "tabLeader",
+                        CanvasKitReplayFeature::TextSpecialVisual,
+                    );
+                    item.detail = Some(detail.to_string());
+                    item
+                } else {
+                    direct_item(path, "tabLeader", CanvasKitReplayFeature::TextSpecialVisual)
+                }
+            }
+            PaintOp::TextDecoration { bbox, run, kind } => {
+                let too_many_items = text_decoration_position_count(run)
+                    > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN;
+                let detail = if too_many_items {
+                    Some("visualItemLimitExceeded")
+                } else if !text_visual_geometry_is_valid(bbox, run) {
+                    Some("invalidGeometry")
+                } else if run.is_vertical {
+                    Some("verticalText")
+                } else if run.rotation.abs() > f64::EPSILON {
+                    Some("rotatedText")
+                } else if match kind {
+                    TextDecorationKind::Underline => run.style.underline_shape > 12,
+                    TextDecorationKind::Strikethrough => run.style.strike_shape > 12,
+                    TextDecorationKind::EmphasisDot => run.style.emphasis_dot > 6,
+                } {
+                    Some("unsupportedTextDecoration")
+                } else {
+                    None
+                };
+                if let Some(detail) = detail {
+                    let mut item = self.transition_overlay_item(
+                        path,
+                        paint_op_type(op),
+                        CanvasKitReplayFeature::TextSpecialVisual,
+                    );
+                    item.detail = Some(detail.to_string());
+                    item
+                } else {
+                    direct_item(
+                        path,
+                        paint_op_type(op),
+                        CanvasKitReplayFeature::TextSpecialVisual,
+                    )
+                }
+            }
             PaintOp::GlyphRun { run, .. } => self.text_variant_item(
                 path,
                 "glyphRun",
@@ -1818,18 +2035,6 @@ fn clip_kind_detail(clip_kind: ClipKind) -> &'static str {
 fn text_run_transition_detail(run: &TextRunNode) -> Option<&'static str> {
     if run.is_vertical {
         return Some("verticalText");
-    }
-    if run.char_overlap.is_some() {
-        return Some("charOverlap");
-    }
-    if !run.style.tab_leaders.is_empty() {
-        return Some("tabLeader");
-    }
-    if !matches!(run.style.underline, UnderlineType::None) || run.style.strikethrough {
-        return Some("textDecoration");
-    }
-    if run.style.emphasis_dot != 0 {
-        return Some("emphasisDot");
     }
     if run.style.outline_type != 0 {
         return Some("outlineTextEffect");
@@ -2590,29 +2795,147 @@ mod tests {
         let mark_tree = tree_with_ops(vec![PaintOp::text_control_mark(bbox(), run)]);
         let mark_plan = analyze_canvaskit_replay_plan(&mark_tree, CanvasKitReplayMode::Default);
         assert_eq!(mark_plan.items[0].op_type, "textControlMark");
-        assert_eq!(
-            mark_plan.items[0].status,
-            CanvasKitReplayStatus::DirectRequired
-        );
-        assert_eq!(mark_plan.summary.hidden_overlay_violations, 1);
+        assert_eq!(mark_plan.items[0].status, CanvasKitReplayStatus::Direct);
+        assert_eq!(mark_plan.summary.hidden_overlay_violations, 0);
     }
 
     #[test]
-    fn superscript_with_char_overlap_stays_policy_visible() {
+    fn external_text_special_visuals_are_direct_replay_items() {
         let mut superscript = text_run("AB");
         superscript.style.superscript = true;
         superscript.char_overlap = Some(CharOverlapInfo {
-            border_type: 0,
+            border_type: 1,
             inner_char_size: 100,
         });
-        let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), superscript)]);
+        superscript
+            .style
+            .tab_leaders
+            .push(crate::renderer::TabLeaderInfo {
+                start_x: 4.0,
+                end_x: 20.0,
+                fill_type: 3,
+            });
+        superscript.style.underline = crate::model::style::UnderlineType::Bottom;
+        let tree = tree_with_ops(vec![
+            PaintOp::text_run(bbox(), superscript.clone()),
+            PaintOp::char_overlap(bbox(), superscript.clone()),
+            PaintOp::tab_leader(bbox(), superscript.clone()),
+            PaintOp::text_decoration(bbox(), superscript, TextDecorationKind::Underline),
+        ]);
 
         for mode in [CanvasKitReplayMode::Default, CanvasKitReplayMode::Compat] {
             let plan = analyze_canvaskit_replay_plan(&tree, mode);
-            assert_eq!(plan.summary.direct_required_items, 1);
-            assert_eq!(plan.items[0].status, CanvasKitReplayStatus::DirectRequired);
-            assert_eq!(plan.items[0].detail.as_deref(), Some("charOverlap"));
+            assert_eq!(plan.summary.direct_items, 4);
+            assert_eq!(plan.summary.direct_required_items, 0);
+            assert!(plan
+                .items
+                .iter()
+                .all(|item| item.status == CanvasKitReplayStatus::Direct));
         }
+    }
+
+    #[test]
+    fn malformed_vertical_and_rotated_text_special_visuals_stay_fail_closed() {
+        let mut invalid_overlap = text_run("A");
+        invalid_overlap.char_overlap = Some(CharOverlapInfo {
+            border_type: 9,
+            inner_char_size: 100,
+        });
+        let mut invalid_leader = text_run("A");
+        invalid_leader
+            .style
+            .tab_leaders
+            .push(crate::renderer::TabLeaderInfo {
+                start_x: 20.0,
+                end_x: 4.0,
+                fill_type: 12,
+            });
+        let mut vertical_mark = text_run("A");
+        vertical_mark.is_vertical = true;
+        let mut rotated = text_run("A");
+        rotated.rotation = 15.0;
+        rotated.char_overlap = Some(CharOverlapInfo {
+            border_type: 1,
+            inner_char_size: 100,
+        });
+        rotated
+            .style
+            .tab_leaders
+            .push(crate::renderer::TabLeaderInfo {
+                start_x: 1.0,
+                end_x: 8.0,
+                fill_type: 1,
+            });
+        let tree = tree_with_ops(vec![
+            PaintOp::char_overlap(bbox(), invalid_overlap),
+            PaintOp::tab_leader(bbox(), invalid_leader),
+            PaintOp::text_control_mark(bbox(), vertical_mark),
+            PaintOp::char_overlap(bbox(), rotated.clone()),
+            PaintOp::text_control_mark(bbox(), rotated.clone()),
+            PaintOp::tab_leader(bbox(), rotated.clone()),
+            PaintOp::text_decoration(bbox(), rotated, TextDecorationKind::Underline),
+        ]);
+
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert_eq!(plan.summary.direct_required_items, 7);
+        assert_eq!(plan.items[0].detail.as_deref(), Some("invalidCharOverlap"));
+        assert_eq!(plan.items[1].detail.as_deref(), Some("invalidTabLeader"));
+        assert_eq!(plan.items[2].detail.as_deref(), Some("verticalText"));
+        for item in &plan.items[3..] {
+            assert_eq!(item.detail.as_deref(), Some("rotatedText"));
+        }
+    }
+
+    #[test]
+    fn text_special_visual_work_and_item_counts_are_bounded() {
+        let marks = text_run(&" ".repeat(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN + 1));
+        let tree = tree_with_ops(vec![PaintOp::text_control_mark(bbox(), marks)]);
+
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert_eq!(plan.summary.direct_required_items, 1);
+        assert_eq!(
+            plan.items[0].detail.as_deref(),
+            Some("visualItemLimitExceeded")
+        );
+        assert_eq!(
+            count_layer_tree_work_units(&tree, 100),
+            CanvasKitBoundedWorkCount::Exceeded
+        );
+
+        let decoration =
+            text_run(&"A".repeat(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN + 1));
+        let decoration_tree = tree_with_ops(vec![PaintOp::text_decoration(
+            bbox(),
+            decoration,
+            TextDecorationKind::Underline,
+        )]);
+        let decoration_plan =
+            analyze_canvaskit_replay_plan(&decoration_tree, CanvasKitReplayMode::Default);
+        assert_eq!(decoration_plan.summary.direct_required_items, 1);
+        assert_eq!(
+            decoration_plan.items[0].detail.as_deref(),
+            Some("visualItemLimitExceeded")
+        );
+        assert_eq!(
+            count_layer_tree_work_units(&decoration_tree, 100),
+            CanvasKitBoundedWorkCount::Exceeded
+        );
+
+        let mut malformed = text_run("A");
+        malformed.baseline = f64::NAN;
+        let malformed_tree = tree_with_ops(vec![PaintOp::text_control_mark(bbox(), malformed)]);
+        let malformed_plan =
+            analyze_canvaskit_replay_plan(&malformed_tree, CanvasKitReplayMode::Default);
+        assert_eq!(
+            malformed_plan.items[0].detail.as_deref(),
+            Some("invalidGeometry")
+        );
+
+        let text_tree = tree_with_ops(vec![PaintOp::text_run(bbox(), text_run(&"A".repeat(101)))]);
+        assert_eq!(
+            count_layer_tree_work_units(&text_tree, 100),
+            CanvasKitBoundedWorkCount::Exceeded
+        );
     }
 
     #[test]
@@ -2767,11 +3090,34 @@ mod tests {
         assert!(preflight.eligible);
         assert!(preflight.complete);
         assert_eq!(preflight.scanned_pages, 1);
-        assert_eq!(preflight.scanned_work_units, 2);
+        assert_eq!(preflight.scanned_work_units, 3);
         assert_eq!(preflight.summary.direct_items, 1);
         assert!(preflight.blockers.is_empty());
         assert_eq!(preflight.required_font_families, ["Test"]);
         assert!(preflight.capability_digest.starts_with("blake3:"));
+    }
+
+    #[test]
+    fn document_preflight_requires_old_hangul_shaping_font_for_pua_projection() {
+        let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), text_run("\u{F53A}"))]);
+        let preflight = analyze_canvaskit_document_preflight_with_limits(
+            1,
+            CanvasKitReplayMode::Default,
+            RenderProfile::Screen,
+            CanvasKitDocumentPreflightLimits {
+                max_pages: 4,
+                max_work_units: 16,
+                max_blockers: 4,
+                max_required_font_families: 8,
+            },
+            move |_, _| Ok::<_, &'static str>(preflight_page(tree.clone())),
+        );
+
+        assert_eq!(preflight.status, CanvasKitDocumentPreflightStatus::Eligible);
+        assert_eq!(
+            preflight.required_font_families,
+            [OLD_HANGUL_FONT_FAMILY, "Test"]
+        );
     }
 
     #[test]
