@@ -13,14 +13,25 @@ runs:
         set -euo pipefail
         # [#2233] 버전 변경은 여기 한 곳 + Dockerfile 만 갱신한다.
         WASM_PACK_VERSION=0.15.0
-        TARBALL="wasm-pack-v${WASM_PACK_VERSION}-x86_64-unknown-linux-musl"
-        URL="https://github.com/rustwasm/wasm-pack/releases/download/v${WASM_PACK_VERSION}/${TARBALL}.tar.gz"
-        curl -sSfL "$URL" | tar -xzf - -C /tmp
-        # [#3284] sudo 없이 사용자 경로(~/.cargo/bin)에 배치 — self-hosted 러너의
-        # 제한된 sudo(apt 한정)와 호스티드 러너 양쪽에서 동일하게 동작한다.
-        # dtolnay/rust-toolchain 이 이미 PATH 에 넣지만 self-hosted 안전을 위해 명시 추가.
         install_dir="${HOME}/.cargo/bin"
-        mkdir -p "$install_dir"
-        mv "/tmp/${TARBALL}/wasm-pack" "$install_dir/wasm-pack"
+        # [#3289] self-hosted 20 러너는 ~/.cargo/bin 을 공유한다 — 매 잡 무조건 설치는
+        # 동시 잡의 mv 교체 레이스가 되므로, 핀 버전이 이미 있으면 건너뛴다.
+        if command -v wasm-pack >/dev/null 2>&1 \
+          && [[ "$(wasm-pack --version)" == "wasm-pack ${WASM_PACK_VERSION}" ]]; then
+          echo "wasm-pack ${WASM_PACK_VERSION} already installed — skip"
+        else
+          TARBALL="wasm-pack-v${WASM_PACK_VERSION}-x86_64-unknown-linux-musl"
+          URL="https://github.com/rustwasm/wasm-pack/releases/download/v${WASM_PACK_VERSION}/${TARBALL}.tar.gz"
+          # [#3289] 고정 /tmp 경로는 동시 잡 간 전개 충돌 — mktemp 로 격리하고,
+          # 설치는 같은 디렉터리 임시명 → rename(원자적 교체)으로 부분 바이너리 노출을 막는다.
+          tmpdir="$(mktemp -d)"
+          curl -sSfL "$URL" | tar -xzf - -C "$tmpdir"
+          # [#3284] sudo 없이 사용자 경로(~/.cargo/bin)에 배치 — self-hosted 러너의
+          # 제한된 sudo(apt 한정)와 호스티드 러너 양쪽에서 동일하게 동작한다.
+          mkdir -p "$install_dir"
+          mv "$tmpdir/${TARBALL}/wasm-pack" "$install_dir/wasm-pack.tmp.$$"
+          mv -f "$install_dir/wasm-pack.tmp.$$" "$install_dir/wasm-pack"
+          rm -rf "$tmpdir"
+        fi
         echo "$install_dir" >> "$GITHUB_PATH"
         "$install_dir/wasm-pack" --version

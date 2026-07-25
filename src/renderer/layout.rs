@@ -509,6 +509,63 @@ fn page_item_is_treat_as_char_picture_only(item: &PageItem, paragraphs: &[Paragr
         .unwrap_or(false)
 }
 
+/// [#2813] 빈 host 문단의 para-relative TopAndBottom 표 스택 뒤로 이연된 앵커 줄이다.
+///
+/// typeset은 한글 문서순을 보존하기 위해 `Table → Table → PartialParagraph` 순서로
+/// PageItem을 남긴다. 마지막 줄은 공백뿐이라 잉크·높이를 만들 필요가 없지만, 일반
+/// PartialParagraph layout 경로를 태우면 표의 실제 측정 높이를 다시 더해 본문 밖에서
+/// 빈 줄을 그리려 한다. 앞쪽에 같은 host의 float 표가 두 개 이상 있는 경우에만 이를
+/// 식별해 item 순서는 보존하고 빈 줄의 draw/flow advance는 생략한다.
+fn is_deferred_blank_para_float_stack_anchor(
+    item: &PageItem,
+    item_ordinal: usize,
+    items: &[PageItem],
+    paragraphs: &[Paragraph],
+) -> bool {
+    let PageItem::PartialParagraph {
+        para_index,
+        start_line,
+        ..
+    } = item
+    else {
+        return false;
+    };
+    if *start_line != 0
+        || paragraphs
+            .get(*para_index)
+            .map(para_has_visible_text)
+            .unwrap_or(true)
+    {
+        return false;
+    }
+
+    // 바로 앞에 연속된 표만 세어, 같은 host의 이전 표가 우연히 둘 이상 있었다는 이유로
+    // 일반 빈 문단의 간격을 없애지 않는다.
+    let coanchored_float_count = items[..item_ordinal]
+        .iter()
+        .rev()
+        .take_while(|previous| {
+            let PageItem::Table {
+                para_index: table_para_index,
+                control_index,
+            } = previous
+            else {
+                return false;
+            };
+            *table_para_index == *para_index
+                && paragraphs
+                    .get(*table_para_index)
+                    .and_then(|para| para.controls.get(*control_index))
+                    .is_some_and(|control| {
+                        matches!(control, Control::Table(table)
+                            if is_para_topbottom_float(&table.common))
+                    })
+        })
+        .count();
+
+    coanchored_float_count >= 2
+}
+
 /// 표 경로의 단일 레벨 (표 → 셀 → 문단)
 #[derive(Debug, Clone, Copy, serde::Serialize)]
 pub struct CellPathEntry {
@@ -4585,6 +4642,19 @@ impl LayoutEngine {
                     continue;
                 }
             };
+            // [#2813] 공백-only host 앵커 줄은 표 스택의 문서순을 보존하는 PageItem일
+            // 뿐, 표를 측정한 뒤 다시 그 높이를 소비하는 flow 요소가 아니다. 이 줄을
+            // 일반 paragraph로 layout하면 본문 하단 밖에 빈 줄을 재배치해
+            // LAYOUT_OVERFLOW를 남긴다. item은 유지해 dump/selection 순서를 보존하고,
+            // draw와 advance만 생략한다.
+            if is_deferred_blank_para_float_stack_anchor(
+                item,
+                item_ordinal,
+                &col_content.items,
+                paragraphs,
+            ) {
+                continue;
+            }
             // [Task #901 Stage 8/10] post-jump 적용: 직전 anchor paragraph 가 flow-around 로
             // 그림 위에 렌더된 경우 후속 paragraph 의 y_offset 을 picture bottom 으로 jump
             // + vpos_lazy_base 를 anchor first_vpos 로 set → file vpos 누적이 visual y 와 정합.

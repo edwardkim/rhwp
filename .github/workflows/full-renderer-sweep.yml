@@ -18,7 +18,8 @@ env:
 jobs:
   full-renderer-sweep:
     name: Full Renderer Sweep
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 60
     permissions:
       contents: read
