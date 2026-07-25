@@ -250,6 +250,21 @@ JSON 계약·종료 코드를 파악하는 입구.
 - `--json` 계약 명령(info/export-text/export-structure/batch)은 `json:true`·`recordFields` 로 상세 서술
 - `--help`(사람용)와 함께 현행화한다 — help 에만 추가된 명령은 드리프트 가드 테스트가 잡는다
 
+#### `capabilities --mcp` — MCP 도구 정의 생성
+MCP 서버(및 함수 호출 클라이언트)가 **그대로 등록할 수 있는** 도구 정의를 낸다.
+`{"schemaVersion":"1.0","protocol":"mcp","server":{…},"invocation":{…},"tools":[{name,description,inputSchema,cli,outputFields}]}`
+- 각 도구는 MCP 필수 3종(`name`·`description`·`inputSchema`)에 더해 **실행 배선**(`cli.command`/`cli.args`)을 갖는다.
+  `cli.args` 의 `{path}`·`{a}`·`{b}`·`{subcommand}` 자리표시자를 `inputSchema` 의 같은 이름 값으로 치환해 실행한다.
+- `hwp_batch` 는 파일 목록을 stdin 으로 받는다(`invocation.stdinTools` 로 명시).
+- 로드맵상 MCP 서버 자체는 별도 저장소(#227)다. 서버가 도구 목록을 **손으로 베껴 쓰면 rhwp 가
+  바뀔 때 조용히 낡으므로**, 원천을 도구 자신이 낸다. `--json` 계약 명령이 늘었는데 MCP 에서
+  빠지면 드리프트 가드(`capabilities_mcp_covers_every_json_command`)가 잡는다.
+
+```bash
+# MCP 서버 도구 목록을 자동 생성
+rhwp capabilities --mcp | jq '.tools[] | {name, description}'
+```
+
 ### `info <파일> [--json]`
 HWP 파일 정보 표시(버전/구역 수/암호화 등).
 - `--json` (#3237): stdout 에 순수 JSON 하나 —

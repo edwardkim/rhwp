@@ -38,6 +38,20 @@
 - `cargo clippy --release --bin rhwp -- -D warnings`·`rustfmt --check`·문서 검사 스크립트 clean
 - 실측: `rhwp capabilities | jq` 로 machine-readable 명령 5종·batch 3축 발견 확인 (가이드 예시 실행 검증)
 
+## 4-2. 추가 — `--mcp` 도구 정의 생성 (2차 커밋)
+
+로드맵 Stage 5 의 MCP 서버는 별도 저장소(#227)지만, **그 서버가 도구 목록·입력 스키마를
+손으로 옮겨 적으면 rhwp 가 바뀔 때마다 조용히 낡는다.** 원천을 도구 자신이 내도록 했다.
+
+- `capabilities --mcp`: `{schemaVersion, protocol:"mcp", server, invocation, tools[]}`.
+  각 도구는 MCP 필수 3종(`name`/`description`/`inputSchema`)에 **실행 배선**(`cli.command`·
+  `cli.args` 자리표시자)과 `outputFields` 를 더해, 서버가 파싱 없이 등록·호출할 수 있다.
+- 현재 5개 도구: `hwp_info`·`hwp_export_text`·`hwp_export_structure`·`hwp_ir_diff`·`hwp_batch`
+  (batch 는 stdin 입력이라 `invocation.stdinTools` 로 명시).
+- **드리프트 가드 ③** 추가: `--json` 계약 명령인데 MCP 도구로 안 나오면 테스트 실패
+  (`capabilities_mcp_covers_every_json_command`). 계약 축이 늘 때 MCP 가 뒤처지지 못한다.
+- 계약 테스트 2종 신설 red→green (MCP 스키마 필수 필드·이름 안전 문자·path 필수 선언).
+
 ## 5. 남긴 것
 
 - 명령별 인자 상세(전 명령)·JSON Schema 파일 산출은 소비 수요(MCP 서버 설계) 확정 후 확장

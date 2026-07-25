@@ -265,6 +265,87 @@ fn capabilities_json_contract() {
 }
 
 #[test]
+fn capabilities_mcp_tool_definitions_contract() {
+    // [#3263] `--mcp` 는 MCP 서버가 그대로 등록할 수 있는 도구 정의를 낸다 —
+    // 서버 저자가 도구 목록·입력 스키마를 손으로 베껴 쓰지 않게 하는 것이 목적이다.
+    let args = ["capabilities", "--mcp"];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
+
+    let v = parse_stdout_json(&args, &output);
+    assert_eq!(v["schemaVersion"], "1.0", "{v}");
+    assert_eq!(v["protocol"], "mcp", "{v}");
+    let tools = v["tools"].as_array().expect("tools 배열");
+    assert!(!tools.is_empty(), "{v}");
+
+    for t in tools {
+        // MCP 도구 필수 3종: name·description·inputSchema
+        let name = t["name"]
+            .as_str()
+            .unwrap_or_else(|| panic!("name 누락: {t}"));
+        assert!(
+            name.chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-'),
+            "MCP 도구 이름은 안전 문자만 써야 합니다: {t}"
+        );
+        assert!(t["description"].is_string(), "{t}");
+        let schema = &t["inputSchema"];
+        assert_eq!(schema["type"], "object", "{t}");
+        assert!(schema["properties"].is_object(), "{t}");
+        assert!(schema["required"].is_array(), "{t}");
+        // 실행 방법(어떤 CLI 명령으로 내려가는지)이 있어야 서버가 배선할 수 있다.
+        assert!(t["cli"]["command"].is_string(), "cli.command 누락: {t}");
+    }
+
+    // 파일을 받는 도구는 path 를 필수 입력으로 선언해야 한다.
+    let info = tools
+        .iter()
+        .find(|t| t["cli"]["command"] == "info")
+        .unwrap_or_else(|| panic!("info 도구 누락: {v}"));
+    let required = info["inputSchema"]["required"].as_array().unwrap();
+    assert!(required.iter().any(|r| r == "path"), "{info}");
+    assert!(
+        info["inputSchema"]["properties"]["path"]["type"] == "string",
+        "{info}"
+    );
+}
+
+#[test]
+fn capabilities_mcp_covers_every_json_command() {
+    // 드리프트 가드 ③: `--json` 계약을 가진 명령은 MCP 도구로도 노출되어야 한다.
+    // 새 계약 명령을 capabilities 에만 넣고 MCP 에서 빠뜨리면 이 테스트가 잡는다.
+    let cap = parse_stdout_json(&["capabilities"], &run(&["capabilities"]));
+    let mcp = parse_stdout_json(&["capabilities", "--mcp"], &run(&["capabilities", "--mcp"]));
+
+    let mcp_commands: Vec<&str> = mcp["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|t| t["cli"]["command"].as_str())
+        .collect();
+
+    let missing: Vec<&str> = cap["commands"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|c| c["json"] == true)
+        .filter_map(|c| c["name"].as_str())
+        // capabilities 자신은 도구가 아니라 도구 목록의 원천이라 제외한다.
+        .filter(|n| *n != "capabilities")
+        .filter(|n| !mcp_commands.contains(n))
+        .collect();
+    assert!(
+        missing.is_empty(),
+        "--json 계약 명령인데 MCP 도구로 안 나오는 것: {missing:?}"
+    );
+}
+
+#[test]
 fn capabilities_version_matches_version_flag() {
     // 드리프트 가드 ①: capabilities.version 은 `--version` 과 같은 원천이어야 한다.
     let cap = parse_stdout_json(&["capabilities"], &run(&["capabilities"]));
