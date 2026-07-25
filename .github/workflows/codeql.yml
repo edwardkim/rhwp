@@ -45,7 +45,7 @@ concurrency:
 jobs:
   preflight:
     name: CodeQL preflight
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: read
@@ -248,7 +248,7 @@ jobs:
 
   analyze:
     name: Analyze (${{ matrix.language }})
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: preflight
     if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
@@ -264,15 +264,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # [#3289] CodeQL 은 가용 RAM 대부분을 힙으로 잡는다 — 공유 self-hosted 호스트에서
-      # 분석 2개 동시 실행 시 JVM 이 각각 40~55GB 를 점유해 호스트 100GB 를 포화시킨
-      # 사고 실측(2026-07-25 htop). 호스티드(16GB VM)와 동급으로 캡한다.
+      # [#3290] 호스티드 16GB VM 은 CodeQL 자동 감지 값이 적정하다. self-hosted 로
+      # 되돌릴 경우 ram/threads 캡 필수 — #3289 사고(무캡 JVM 40~55GB×2 로 호스트
+      # 포화·스톨) 및 task_m100_3289_report.md 거버넌스 절 참조.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
-          ram: 12288
-          threads: 16
 
       - name: Install Rust toolchain
         if: matrix.language == 'rust'
