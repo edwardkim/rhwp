@@ -178,6 +178,12 @@ pub struct DocInfo {
     pub bullet_count: u32,
     /// MemoShape 개수 (ID_MAPPINGS에 포함, 현재 파싱 미지원이지만 보존 필요)
     pub memo_shape_count: u32,
+    /// HWPX 헤더 `<hh:refList>` 안의 `<hh:memoProperties>...</hh:memoProperties>`
+    /// (또는 자기닫힘) 블록을 원본 그대로 보존한다. `extra_records`의
+    /// HWPTAG_MEMO_SHAPE 바이너리는 hwpx→hwp5 변환 전용이라 hwpx→hwpx
+    /// 라운드트립 시 refList에 재방출되지 않아, memoPr(메모 테두리/색상 모양)이
+    /// 통째로 소실되는 문제를 splice 보존으로 막는다. 원본에 없으면 None.
+    pub memo_properties_xml: Option<String>,
     /// DISTRIBUTE_DOC_DATA 레코드 제거 플래그 (serializer에서 raw_stream surgical remove 수행)
     pub distribute_doc_data_removed: bool,
     /// raw_stream이 model 변경과 동기화되지 않음 (serializer에서 재생성 필요)

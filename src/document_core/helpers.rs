@@ -4,7 +4,7 @@
 
 use crate::error::HwpError;
 use crate::model::control::Control;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{ParaMeta, Paragraph};
 use crate::model::path::PathSegment;
 use crate::model::style::BorderLineType;
 
@@ -838,6 +838,35 @@ pub(crate) fn json_ok() -> String {
 /// JSON 성공 응답 생성: {"ok":true,...fields}
 pub(crate) fn json_ok_with(fields: &str) -> String {
     format!("{{\"ok\":true,{}}}", fields)
+}
+
+/// 병합 결과 JSON 에 덧붙일 `,"removedParaMeta":{...}` 조각 (Task #2342).
+///
+/// undo 가 `split_at` 뒤 되돌릴 값이며 스튜디오는 내용을 해석하지 않고 그대로
+/// 분할 호출에 되돌려준다.
+pub(crate) fn removed_para_meta_field(meta: &ParaMeta) -> String {
+    format!(
+        ",\"removedParaMeta\":{}",
+        serde_json::to_string(meta).unwrap()
+    )
+}
+
+/// 병합 결과 JSON 에서 `removedParaMeta` 를 꺼낸다 — 병합 undo 왕복 테스트용.
+#[cfg(test)]
+pub(crate) fn removed_para_meta_of(merge_result: &str) -> ParaMeta {
+    let value: serde_json::Value =
+        serde_json::from_str(merge_result).expect("병합 결과가 JSON 이어야 함");
+    serde_json::from_value(value["removedParaMeta"].clone())
+        .expect("병합 결과에 removedParaMeta 가 있어야 함")
+}
+
+/// 분할 호출이 받은 `removedParaMeta` JSON 을 되돌릴 메타로 해석한다 (Task #2342).
+pub(crate) fn parse_removed_para_meta(json: Option<String>) -> Result<Option<ParaMeta>, HwpError> {
+    json.map(|raw| {
+        serde_json::from_str(&raw)
+            .map_err(|error| HwpError::RenderError(format!("문단 메타 파싱 실패: {}", error)))
+    })
+    .transpose()
 }
 
 /// HWP BGR 색상 (0x00BBGGRR)을 CSS hex (#RRGGBB)로 변환

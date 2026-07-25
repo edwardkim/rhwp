@@ -2120,7 +2120,7 @@ mod issue_1151_cell_picture_insert_tests {
 
         core.set_picture_properties_native(0, 0, ctrl_idx, r#"{"treatAsChar":true}"#)
             .expect("dropped picture becomes treat-as-char");
-        core.split_paragraph_native(0, 0, logical_offset)
+        core.split_paragraph_native(0, 0, logical_offset, None)
             .expect("Enter after dropped picture");
 
         assert_eq!(
@@ -2388,7 +2388,7 @@ mod issue_1151_cell_picture_insert_tests {
             .expect("fixture 읽기 실패 samples/투명도0-50.hwp");
         let mut core = DocumentCore::from_bytes(&data).expect("parse samples/투명도0-50.hwp");
 
-        core.split_paragraph_native(0, 0, 2)
+        core.split_paragraph_native(0, 0, 2, None)
             .expect("두 번째 TAC 그림 뒤 Enter");
 
         assert_eq!(

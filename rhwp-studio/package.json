@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "subsecond:install": "cargo install dioxus-cli --version 0.7.9 --locked --root ../target/dioxus-cli",
+    "subsecond:serve": "cd .. && target/dioxus-cli/bin/dx serve --web --package rhwp-subsecond --features subsecond-dev --hot-patch --port 7711 --addr 127.0.0.1 --open false --interactive false --inject-loading-scripts false",
+    "subsecond:sync": "mkdir -p ../target/rhwp-subsecond-vite && cp ../target/dx/rhwp-subsecond/debug/web/public/wasm/rhwp-subsecond.js ../target/dx/rhwp-subsecond/debug/web/public/wasm/rhwp-subsecond_bg.wasm ../target/rhwp-subsecond-vite/",
+    "dev:subsecond": "npm run subsecond:sync && RHWP_SUBSECOND=1 vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "node --test tests/*.test.ts ../npm/editor/tests/*.test.mjs",

@@ -4,6 +4,13 @@ import { readFileSync, readFile } from 'fs';
 import { VitePWA } from 'vite-plugin-pwa';
 
 const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
+const subsecondWasmDir = resolve(
+  __dirname,
+  '..',
+  'target',
+  'rhwp-subsecond-vite',
+);
+const useSubsecondWasm = process.env.RHWP_SUBSECOND === '1';
 
 export default defineConfig({
   define: {
@@ -12,23 +19,47 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      '@wasm/rhwp.js': useSubsecondWasm
+        ? resolve(subsecondWasmDir, 'rhwp-subsecond.js')
+        : resolve(__dirname, '..', 'pkg', 'rhwp.js'),
       '@wasm': resolve(__dirname, '..', 'pkg'),
     },
   },
   server: {
     host: '127.0.0.1',
     port: 7700,
+    proxy: useSubsecondWasm ? {
+      '/_dioxus': {
+        target: 'http://127.0.0.1:7711',
+        ws: true,
+      },
+      '/wasm': {
+        target: 'http://127.0.0.1:7711',
+      },
+    } : undefined,
     fs: {
       // [Task #741 후속] 외부 file path 그림 영역 영역 samples/ dir 영역 영역 fetch 가능 영역.
       allow: [
         __dirname,
         resolve(__dirname, '..', 'pkg'),
+        subsecondWasmDir,
         resolve(__dirname, '..', 'samples'),
         resolve(__dirname, '..', 'npm', 'editor'),
       ],
     },
+    watch: {
+      ignored: ['**/librhwp-subsecond-patch-*.wasm'],
+    },
   },
   plugins: [
+    {
+      name: 'ignore-subsecond-patch-artifacts',
+      handleHotUpdate(context) {
+        if (/librhwp-subsecond-patch-\d+\.wasm$/.test(context.file)) {
+          return [];
+        }
+      },
+    },
     // [Task #741 후속] dev 서버 영역 영역 /samples/* 경로 영역 영역 parent samples/ dir 영역
     // 영역 정적 serve 영역 — wasm-bridge.ts 영역 영역 외부 image fetch 영역 영역 영역.
     {

@@ -4,17 +4,21 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// DeleteSelectionCommand.undo 의 다중 문단 복원 분할점 가드.
+// DeleteSelectionCommand.undo 의 복원 방식 가드.
 //
-// 본문 분기는 savedTexts[i] 를 복원할 때마다 splitParagraph 로 문단을 다시 만든다.
-// 이때 다음 분할점은 "방금 복원한 텍스트 뒤" 여야 한다. 0 으로 고정하면 이미 복원된
-// 텍스트 앞을 잘라, 빈 문단이 끼어들고 내용이 다음 문단으로 밀린다.
+// [이력] 예전 undo 는 savedTexts 를 splitParagraph + insertText 로 다시 조립했다. 이때
+// 다음 분할점을 0 으로 고정하면 이미 복원된 텍스트 앞을 잘라 빈 문단이 끼어들고 내용이
+// 다음 문단으로 밀렸다(#2406). 문단 2개 선택은 루프가 1회라 증상이 없어 오래 살아남았다.
 //
 //   p5="head5"+A / p6=B / p7=C+"tail7" 를 걸쳐 선택 삭제 후 Ctrl+Z
 //   기대: p5="head5"+A, p6=B,  p7=C+"tail7"
 //   실제: p5="head5"+A, p6="", p7=C+B+"tail7"   ← 분할점이 0 으로 고정된 경우
 //
-// 문단 2개 선택(가장 흔한 경우)은 루프가 1 회라 증상이 없어 오래 살아남았다.
+// [현재] #2418 에서 복원을 문서 스냅샷에 맡기면서 이 분할점 산술 자체가 사라졌다 —
+// 조립 과정이 없으므로 위 결함은 재현될 수 없다. 그래서 분할점 계산을 고정하는 대신,
+// undo 가 텍스트 재조립으로 되돌아가지 않는지를 고정한다. 되돌아가는 순간 분할점 결함과
+// 서식·컨트롤 손실이 함께 살아난다.
+//
 // node --test 는 strip-only TS 라 engine 클래스를 실행할 수 없어(이 저장소 undo 테스트
 // 관례) 소스 배선을 정적으로 검증한다. 행위 증명은 브라우저 왕복(PR 검증).
 
@@ -31,18 +35,24 @@ function classBlock(src: string, name: string): string {
 
 const block = classBlock(commandSrc, 'DeleteSelectionCommand');
 
-test('다중 문단 undo 의 분할점이 0 으로 고정되지 않는다', () => {
-  assert.doesNotMatch(block, /currentPara\+\+;\s*\n\s*currentOffset = 0;/,
-    '분할 직후 currentOffset 을 0 으로 고정하면 복원된 텍스트 앞을 잘라 문단이 어긋난다');
+test('undo 는 스냅샷 복원에 위임한다', () => {
+  assert.match(block, /new SnapshotCommand\('deleteSelection'/, '스냅샷 커맨드에 위임');
+  assert.match(block, /undo\(wasm: WasmBridge\): DocumentPosition \{\s*\n\s*return this\.snapshot\.undo\(wasm\);/,
+    'undo 는 스냅샷 복원만 한다');
 });
 
-test('다음 분할점은 복원한 텍스트 길이에서 나온다', () => {
-  assert.match(block, /currentOffset = text \? text\.length : 0;/,
-    '다음 splitParagraph 는 방금 삽입한 텍스트 뒤에서 일어나야 함');
+test('undo 가 텍스트 재조립으로 되돌아가지 않는다', () => {
+  // 아래가 다시 등장하면 #2406 분할점 결함과 #2418 서식·컨트롤 손실이 함께 살아난다.
+  assert.doesNotMatch(block, /savedTexts/, '평문 캡처 부활 금지');
+  assert.doesNotMatch(block, /wasm\.splitParagraph\(/, 'undo 에서 문단 재분할 금지');
+  assert.doesNotMatch(block, /doInsertTextImmediate\(/, 'undo 에서 텍스트 재삽입 금지');
+});
 
-  // 순서 보장: insertText 로 복원한 뒤에 다음 분할점을 계산해야 한다.
-  const insertAt = block.search(/wasm\.insertText\(sec, currentPara, 0, text\)/);
-  const offsetAt = block.search(/currentOffset = text \? text\.length : 0;/);
-  assert.ok(insertAt >= 0 && offsetAt >= 0, 'insertText/분할점 계산이 모두 존재해야 함');
-  assert.ok(insertAt < offsetAt, '분할점 계산은 insertText 뒤에 와야 함');
+test('스냅샷 예산에 참여한다', () => {
+  // 위임만 하고 snapshotResourceCount/discard 를 안 넘기면 히스토리가 이 커맨드의 WASM
+  // 스냅샷 id 를 세지 못해 예산이 어긋나고, 축출 시 id 가 반환되지 않아 누수된다(#2328).
+  assert.match(block, /snapshotResourceCount\(\): number \{\s*\n\s*return this\.snapshot\.snapshotResourceCount\(\);/,
+    'id 개수 위임');
+  assert.match(block, /discard\(wasm: WasmBridge\): void \{\s*\n\s*this\.snapshot\.discard\(wasm\);/,
+    'discard 위임');
 });

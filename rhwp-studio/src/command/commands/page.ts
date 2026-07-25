@@ -1,9 +1,11 @@
 import type { CommandDef } from '../types';
+import type { DocumentPosition } from '@/core/types';
 import { PageSetupDialog } from '@/ui/page-setup-dialog';
 import { PageBorderDialog } from '@/ui/page-border-dialog';
 import { SectionSettingsDialog } from '@/ui/section-settings-dialog';
 import { ColumnSettingsDialog } from '@/ui/column-settings-dialog';
 import { NewNumberDialog } from '@/ui/new-number-dialog';
+import { InsertFieldInHeaderFooterCommand } from '@/engine/command';
 
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
   return {
@@ -16,57 +18,62 @@ function stub(id: string, label: string, icon?: string, shortcut?: string): Comm
   };
 }
 
+/**
+ * 대상 좌표에 머리말/꼬리말이 없으면 만든다 (Task #3206).
+ *
+ * 존재 확인은 **생성 네이티브가 중복을 거부하는 조건과 같은 범위**(구역·종류·applyTo)로 해야
+ * 한다 — `getHeaderFooter` 와 `createHeaderFooter` 는 같은 `find_header_footer_control` 을
+ * 쓰므로 두 판단이 어긋날 수 없다. 대상 좌표를 정하는 일은 호출측(`getHeaderFooterEditTarget`)
+ * 몫이고, 여기서는 그 좌표를 그대로 쓴다.
+ *
+ * `navigateHeaderFooterByPage` 로 존재를 확인하면 안 된다. 이 함수는 `current_page + direction`
+ * 부터 훑는 쪽 이동용이라 현재 쪽을 건너뛴다 — 1쪽 문서에서는 어느 방향으로도 대상이 없어,
+ * 이미 있는 머리말을 없다고 판단하고 생성으로 넘어가 중복 생성 오류가 났다.
+ *
+ * [Task #3207] 생성은 문서 구조를 바꾸므로 snapshot 으로 기록한다(이미 있으면 커서 이동뿐이라
+ * 기록 대상이 아니다).
+ */
+function ensureHeaderFooter(
+  services: Parameters<CommandDef['execute']>[0],
+  ih: NonNullable<ReturnType<Parameters<CommandDef['execute']>[0]['getInputHandler']>>,
+  bodyPos: DocumentPosition,
+  target: { sectionIndex: number; applyTo: number },
+  isHeader: boolean,
+): void {
+  const { sectionIndex, applyTo } = target;
+  const hf = JSON.parse(services.wasm.getHeaderFooter(sectionIndex, isHeader, applyTo));
+  if (hf.exists) return;
+
+  ih.executeOperation({
+    kind: 'snapshot',
+    operationType: 'createHeaderFooter',
+    operation: (wasm) => {
+      wasm.createHeaderFooter(sectionIndex, isHeader, applyTo);
+      return bodyPos;
+    },
+  });
+}
+
 /** 머리말/꼬리말 생성 + 편집 모드 진입 공통 함수 */
 function enterHeaderFooterEditing(
   services: Parameters<CommandDef['execute']>[0],
   isHeader: boolean,
-  applyTo: number,
 ): void {
   const ih = services.getInputHandler();
   if (!ih) return;
   const cursor = (ih as any).cursor;
   if (!cursor) return;
 
-  // 현재 보고 있는 페이지 기준으로 머리말/꼬리말이 있는 페이지 탐색
+  // 편집 대상은 이 쪽에 **실제로 렌더되는** 컨트롤이다 — 어느 것이 렌더되는지는 쪽 홀짝이
+  // 정하고(홀수/짝수가 양 쪽을 이긴다) 구역에 자기 머리말이 없으면 앞 구역에서 상속된다.
+  // `양 쪽` 으로 고정하면 캐럿이 찍힌 머리말과 다른 컨트롤을 편집하게 된다 (Task #3206).
+  // 더블클릭 진입(input-handler-mouse)이 히트테스트로 얻는 것과 같은 답이다.
   const currentPage = cursor.rect?.pageIndex ?? 0;
+  const target = services.wasm.getHeaderFooterEditTarget(currentPage, isHeader);
 
-  // 1) 현재 페이지에 머리말/꼬리말이 있는지 확인
-  let targetResult = services.wasm.navigateHeaderFooterByPage(currentPage - 1, isHeader, 1);
-  // navigateHeaderFooterByPage는 currentPage 다음부터 찾으므로, currentPage-1을 전달하면 currentPage부터 탐색
-  // 결과의 pageIndex가 currentPage이면 현재 페이지에 존재
-  if (!targetResult.ok || targetResult.pageIndex !== currentPage) {
-    // 2) 현재 페이지에 없으면 이전 방향으로 탐색
-    targetResult = services.wasm.navigateHeaderFooterByPage(currentPage, isHeader, -1);
-  }
-  if (!targetResult.ok) {
-    // 3) 이전에도 없으면 다음 방향으로 탐색
-    targetResult = services.wasm.navigateHeaderFooterByPage(currentPage, isHeader, 1);
-  }
-
-  if (targetResult.ok) {
-    // 기존 머리말/꼬리말로 편집 모드 진입
-    cursor.enterHeaderFooterMode(
-      targetResult.isHeader!,
-      targetResult.sectionIdx!,
-      targetResult.applyTo!,
-      targetResult.pageIndex!,
-    );
-  } else {
-    // 문서에 머리말/꼬리말이 전혀 없으면 현재 구역에 새로 생성.
-    // [Task #3207] 생성은 문서 구조를 바꾸므로 snapshot 으로 기록한다(기존 HF 로 진입하는
-    // 위 분기는 커서 이동뿐이라 기록 대상이 아니다).
-    const bodyPos = cursor.getPosition();
-    const sectionIdx = bodyPos.sectionIndex;
-    ih.executeOperation({
-      kind: 'snapshot',
-      operationType: 'createHeaderFooter',
-      operation: (wasm) => {
-        wasm.createHeaderFooter(sectionIdx, isHeader, applyTo);
-        return bodyPos;
-      },
-    });
-    cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, currentPage);
-  }
+  const bodyPos = cursor.getPosition();
+  ensureHeaderFooter(services, ih, bodyPos, target, isHeader);
+  cursor.enterHeaderFooterMode(isHeader, target.sectionIndex, target.applyTo, currentPage);
 
   services.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
   (ih as any).updateCaret?.();
@@ -83,13 +90,34 @@ function insertHfField(
   const cursor = (ih as any).cursor;
   if (!cursor || !cursor.isInHeaderFooter()) return;
   const isHeader = cursor.headerFooterMode === 'header';
+  const target = { sectionIdx: cursor.hfSectionIdx, isHeader, applyTo: cursor.hfApplyTo };
+  const paraIdx = cursor.hfParaIdx;
+  // HF hit-test는 field marker가 치환된 표시 문자열의 offset을 줄 수 있지만, WASM
+  // mutation/history는 모델 marker 1글자 기준이다. mutation 경계에서 모델 문단 길이로
+  // 정규화해 undo가 문단 끝 밖 offset을 기록하지 않게 한다 (#3212 review).
+  const renderedCharOffset = cursor.hfCharOffset;
   try {
+    const paraInfo = JSON.parse(services.wasm.getHeaderFooterParaInfo(
+      target.sectionIdx, isHeader, target.applyTo, paraIdx,
+    ));
+    const charOffset = Math.min(renderedCharOffset, paraInfo.charCount);
     const result = services.wasm.insertFieldInHf(
-      cursor.hfSectionIdx, isHeader, cursor.hfApplyTo,
-      cursor.hfParaIdx, cursor.hfCharOffset, fieldType,
+      target.sectionIdx, isHeader, target.applyTo, paraIdx, charOffset, fieldType,
     );
     if (result.ok && result.charOffset !== undefined) {
-      cursor.setHfCursorPosition(cursor.hfParaIdx, result.charOffset);
+      const markerLength = result.charOffset - charOffset;
+      // 성공한 필드 삽입은 marker를 하나 이상 삽입해야 한다. 계약 밖 결과를 history에
+      // 기록하면 redo가 잘못된 범위를 되살릴 수 있으므로 기록하지 않는다.
+      if (markerLength <= 0) throw new Error('[page] 필드 마커 길이가 유효하지 않습니다');
+      cursor.setHfCursorPosition(paraIdx, result.charOffset);
+      // [Task #3212] 이미 적용된 삽입을 역연산 명령으로 기록한다(#2337 HF 커맨드와 동형).
+      // 마커 길이는 삽입 결과 오프셋 차이로 실측해, 필드 종류가 늘어도 역연산이 어긋나지 않게 한다.
+      ih.executeOperation({
+        kind: 'record',
+        command: new InsertFieldInHeaderFooterCommand(
+          target, paraIdx, charOffset, fieldType, markerLength,
+        ),
+      });
     }
     (ih as any).afterEdit?.();
     (ih as any).updateCaret?.();
@@ -160,23 +188,10 @@ function applyHfTemplate(
         return bodyPos;
       },
     });
-    // 템플릿 적용 후 편집 모드로 진입
-    const currentPage = cursor?.rect?.pageIndex ?? 0;
-    let targetResult = services.wasm.navigateHeaderFooterByPage(currentPage - 1, isHeader, 1);
-    if (!targetResult.ok || targetResult.pageIndex !== currentPage) {
-      targetResult = services.wasm.navigateHeaderFooterByPage(currentPage, isHeader, -1);
-    }
-    if (!targetResult.ok) {
-      targetResult = services.wasm.navigateHeaderFooterByPage(currentPage, isHeader, 1);
-    }
-    if (targetResult.ok) {
-      cursor.enterHeaderFooterMode(
-        targetResult.isHeader!, targetResult.sectionIdx!,
-        targetResult.applyTo!, targetResult.pageIndex!,
-      );
-    } else {
-      cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, currentPage);
-    }
+    // 템플릿 적용 후 편집 모드로 진입. 마당 적용은 기존 HF 를 지우고 다시 만들므로
+    // (`apply_hf_template_native` 1~2단계) 적용 대상 좌표에 HF 가 있음이 보장된다 —
+    // 존재 확인이 필요 없다 (Task #3206).
+    cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, cursor?.rect?.pageIndex ?? 0);
     services.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
   } catch (e) {
     console.warn('[page] 마당 적용 실패:', e);
@@ -224,7 +239,7 @@ export const pageCommands: CommandDef[] = [
     label: '머리말',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
-      enterHeaderFooterEditing(services, true, 0); // Both
+      enterHeaderFooterEditing(services, true);
     },
   },
   // ─── 꼬리말 ──────────────────────────────────
@@ -233,7 +248,7 @@ export const pageCommands: CommandDef[] = [
     label: '꼬리말',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
-      enterHeaderFooterEditing(services, false, 0); // Both
+      enterHeaderFooterEditing(services, false);
     },
   },
   // ─── 머리말/꼬리말 닫기 ────────────────────────

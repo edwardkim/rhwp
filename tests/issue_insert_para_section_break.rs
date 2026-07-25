@@ -110,7 +110,7 @@ fn insert_and_split_agree_on_page_count() {
     inserted.insert_paragraph_native(0, 0).expect("insert");
 
     let mut split = one_line_document();
-    split.split_paragraph_native(0, 0, 0).expect("split");
+    split.split_paragraph_native(0, 0, 0, None).expect("split");
 
     assert_eq!(
         inserted.page_count(),

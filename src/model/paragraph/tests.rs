@@ -949,6 +949,69 @@ fn test_split_moves_field_with_range_without_consuming_visible_offset() {
 }
 
 #[test]
+fn test_merge_undo_restores_second_paragraph_meta() {
+    // 병합 undo 는 split_at 으로 문단을 되살리는데, 새 문단의 메타데이터는 앞 문단에서
+    // 상속되므로 사라진 문단의 원래 값을 재현할 수 없다. capture_meta/apply_meta 로
+    // 되돌린다 (Task #2342).
+    let mut first = Paragraph {
+        text: "AB".to_string(),
+        char_count: 3,
+        char_offsets: vec![0, 1],
+        para_shape_id: 10,
+        style_id: 1,
+        raw_header_extra: vec![0, 0, 0, 0, 0, 0, 0xAA, 0xAA, 0xAA, 0xAA],
+        has_para_text: true,
+        ..Default::default()
+    };
+    let second = Paragraph {
+        text: "C\tD".to_string(),
+        char_count: 4,
+        char_offsets: vec![0, 1, 2],
+        para_shape_id: 20,
+        style_id: 5,
+        column_type: ColumnBreakType::Page,
+        raw_break_type: 0x04,
+        numbering_restart: Some(NumberingRestart::NewStart(7)),
+        raw_header_extra: vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB],
+        tab_extended: vec![[100, 0, 0x0200, 0, 0, 0, 9]],
+        has_para_text: true,
+        ..Default::default()
+    };
+    let meta = second.capture_meta();
+
+    let merge_pos = first.merge_from(&second);
+    let mut restored = first.split_at(merge_pos);
+
+    // apply_meta 이전: split_at 의 Enter 시맨틱대로 앞 문단 값을 상속한다.
+    assert_eq!(restored.para_shape_id, 10);
+    assert_eq!(restored.style_id, 1);
+
+    restored.apply_meta(meta);
+
+    assert_eq!(restored.text, "C\tD");
+    assert_eq!(restored.para_shape_id, 20);
+    assert_eq!(restored.style_id, 5);
+    assert_eq!(restored.column_type, ColumnBreakType::Page);
+    assert_eq!(restored.raw_break_type, 0x04);
+    assert_eq!(
+        restored.numbering_restart,
+        Some(NumberingRestart::NewStart(7))
+    );
+    assert_eq!(
+        restored.raw_header_extra,
+        vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB]
+    );
+    assert_eq!(restored.tab_extended, vec![[100, 0, 0x0200, 0, 0, 0, 9]]);
+
+    // 앞 문단은 자기 값을 유지한다.
+    assert_eq!(first.para_shape_id, 10);
+    assert_eq!(
+        first.raw_header_extra,
+        vec![0, 0, 0, 0, 0, 0, 0xAA, 0xAA, 0xAA, 0xAA]
+    );
+}
+
+#[test]
 fn test_char_shape_id_at() {
     let para = Paragraph {
         text: "ABCDE".to_string(),
