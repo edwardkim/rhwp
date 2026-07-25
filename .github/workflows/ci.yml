@@ -413,6 +413,10 @@ jobs:
     name: Build test archive
     runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 30
+    # [#3289] 러너 .env 의 CARGO_BUILD_JOBS=3 은 20개 러너 동시 빌드 폭주 대비
+    # 보수값이다. critical path 빌드 잡만 상향해 70코어 호스트를 활용한다.
+    env:
+      CARGO_BUILD_JOBS: 12
     needs: [preflight, lint, frontend-package-gates]
     if: >-
       ${{
@@ -485,6 +489,20 @@ jobs:
             --cargo-profile "${{ steps.profile.outputs.cargo_profile }}" \
             --archive-file tests.tar.zst
 
+      # [#3289] 20개 러너가 한 호스트를 공유하므로 아카이브를 호스트 캐시 디렉터리에
+      # 복사해 두면 8개 shard 의 동시 다운로드(1GB×8, 회선 공유로 ~6분 대기)를
+      # 로컬 hardlink/copy 로 대체할 수 있다. 업로드 아티팩트는 fallback 으로 유지한다.
+      # tmp+mv 원자적 쓰기로 부분 파일 노출을 막고, 하루 지난 run 캐시는 정리한다.
+      - name: Publish archive to host cache
+        if: runner.environment != 'github-hosted'
+        run: |
+          cache_dir="$HOME/artifact-cache/${GITHUB_RUN_ID}"
+          find "$HOME/artifact-cache" -mindepth 1 -maxdepth 1 -type d -mmin +1440 -exec rm -rf {} + 2>/dev/null || true
+          mkdir -p "$cache_dir"
+          cp tests.tar.zst "$cache_dir/tests.tar.zst.tmp"
+          mv "$cache_dir/tests.tar.zst.tmp" "$cache_dir/tests.tar.zst"
+          ls -la --block-size=M "$cache_dir"
+
       # [#2393] 샤드 합계 대조의 기대치 — 비-ignored(runnable) 테스트 수.
       # nextest Summary 의 skipped 는 파티션 제외분과 #[ignore] 를 합산하므로
       # run 합계의 기준은 total 이 아니라 runnable 이다 (3차 PR CI 실측: 23 ignored).
@@ -549,7 +567,25 @@ jobs:
         with:
           tool: nextest
 
+      # [#3289] 같은 호스트의 build-test-archive 잡이 남긴 호스트 캐시를 우선 사용해
+      # 8개 shard 동시 다운로드 병목(~6분)을 제거한다. hardlink 는 동일 파일시스템
+      # (/home/app)에서 즉시 완료되고, 실패 시 copy → 그마저 없으면 아티팩트 다운로드.
+      - name: Fetch test archive from host cache
+        id: host_cache
+        if: runner.environment != 'github-hosted'
+        run: |
+          src="$HOME/artifact-cache/${GITHUB_RUN_ID}/tests.tar.zst"
+          if [[ -f "$src" ]]; then
+            ln -f "$src" tests.tar.zst 2>/dev/null || cp "$src" tests.tar.zst
+            hit=true
+          else
+            hit=false
+          fi
+          echo "hit=$hit" >> "$GITHUB_OUTPUT"
+          echo "host cache hit=$hit"
+
       - name: Download test archive
+        if: steps.host_cache.outputs.hit != 'true'
         uses: actions/download-artifact@v8
         with:
           name: test-archive-${{ github.run_id }}
@@ -593,6 +629,9 @@ jobs:
     name: Lint (fmt, clippy, WASM check)
     runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 20
+    # [#3289] critical path 빌드 잡 한정 CARGO_BUILD_JOBS 상향 (build-test-archive 주석 참조)
+    env:
+      CARGO_BUILD_JOBS: 12
     needs: preflight
     if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
     permissions:
@@ -627,6 +666,9 @@ jobs:
     name: Native Skia tests
     runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 30
+    # [#3289] critical path 빌드 잡 한정 CARGO_BUILD_JOBS 상향 (build-test-archive 주석 참조)
+    env:
+      CARGO_BUILD_JOBS: 12
     needs: [preflight, lint, frontend-package-gates]
     # frontend 비대상 job의 skipped는 정상 경로다. 대상 job의 실패/취소와 lint 실패는
     # native-skia 이후 worker 전체에 전파한다.
