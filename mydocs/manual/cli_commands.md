@@ -58,6 +58,10 @@ rhwp --version     # 버전
 
 ### `export-svg <파일> [옵션]`
 HWP/HWPX → SVG.
+- `--json` (#3287): 산출물 **매니페스트**를 stdout 에 JSON 으로 출력한다(렌더 동작 무변경).
+  `{"schemaVersion":"1.0","source","format":"svg","outputDir","pageCount","renderedCount","pages":[{"page","path","bytes"}]}`
+  기본 출력(사람용 진행 메시지)은 무변경이며, `--json` 모드에서는 stdout 에 JSON 만 나간다.
+  `search --json`(#3283)과 조합하면 **찾은 페이지만 렌더해 VLM 에 넘기는** 루프가 닫힌다.
 - `-o`, `-p` (공통)
 - `--show-para-marks` — 문단부호(↵/↓)
 - `--show-control-codes` — 조판부호(문단부호 + 개체 마커)
