@@ -83,6 +83,7 @@ fn main() {
         Some("core-pages") => rhwp::diagnostics::core_pages_probe::run(&args[2..]),
         Some("bench") => rhwp::diagnostics::bench::run(&args[2..]),
         Some("thumbnail") => extract_thumbnail(&args[2..]),
+        Some("fields") => exit_with(show_fields(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
         // 종료 코드 2로 끝낸다(기존에는 stdout + 0이라 오타 낸 명령이 스크립트에서 성공으로 보였다).
         other => {
@@ -324,6 +325,11 @@ fn print_help() {
     println!("      -o, --output <파일>       출력 파일 경로 (기본: 입력명_thumb.png)");
     println!("      --base64                  base64 문자열을 stdout에 출력");
     println!("      --data-uri                data:image/... URI 형식으로 stdout에 출력");
+    println!();
+    println!("  fields <파일.hwp|파일.hwpx> [--json]");
+    println!("      누름틀/필드 조사 (읽기 전용) — 이름·안내문·지시문·현재값·위치");
+    println!();
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!();
     println!("내부 개발·회귀 도구 (일반 사용자 대상 아님):");
     println!("  test-caption <파일.hwp>             캡션 라운드트립 검증");
@@ -6837,6 +6843,130 @@ fn ir_diff(args: &[String]) -> i32 {
     }
 
     println!("\n=== 비교 완료: 차이 {} 건 ===", total_diffs);
+    EXIT_OK
+}
+
+/// `fields` — 누름틀/필드 조사 (읽기 전용).
+///
+/// rhwp 는 이미 필드에 값을 **쓸 수** 있는데(`set_field_value_by_name`) 조회 API 는
+/// WASM/스튜디오 경로에만 있어, 브라우저 밖 에이전트는 "이 서식이 무엇을 요구하는지"
+/// 알 방법이 없었다. 기존 `collect_all_fields()` 를 그대로 노출한다(라이브러리 무변경).
+fn show_fields(args: &[String]) -> i32 {
+    use rhwp::document_core::queries::field_query::NestedEntry;
+
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    for a in args {
+        match a.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => file_path = Some(other),
+        }
+    }
+
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp fields <파일.hwp|파일.hwpx> [--json]");
+        return EXIT_USAGE;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let infos = doc.collect_all_fields();
+    let fields: Vec<serde_json::Value> = infos
+        .iter()
+        .map(|fi| {
+            // 중첩 경로: 표 셀·글상자 안의 필드가 어디에 있는지 — 후속 편집의 좌표다.
+            let nested: Vec<serde_json::Value> = fi
+                .location
+                .nested_path
+                .iter()
+                .map(|e| match e {
+                    NestedEntry::TableCell {
+                        control_index,
+                        cell_index,
+                        para_index,
+                    } => serde_json::json!({
+                        "kind": "tableCell",
+                        "control": control_index,
+                        "cell": cell_index,
+                        "paragraph": para_index,
+                    }),
+                    NestedEntry::TextBox {
+                        control_index,
+                        para_index,
+                    } => serde_json::json!({
+                        "kind": "textBox",
+                        "control": control_index,
+                        "paragraph": para_index,
+                    }),
+                })
+                .collect();
+
+            serde_json::json!({
+                "fieldId": fi.field.field_id,
+                "fieldType": format!("{:?}", fi.field.field_type),
+                "name": fi.field.field_name().unwrap_or(""),
+                "guide": fi.field.guide_text().unwrap_or(""),
+                "memo": fi.field.memo_text().unwrap_or_default(),
+                "command": fi.field.command,
+                "value": fi.value,
+                "editableInForm": fi.field.is_editable_in_form(),
+                "location": {
+                    "section": fi.location.section_index,
+                    "paragraph": fi.location.para_index,
+                    "nested": nested,
+                },
+            })
+        })
+        .collect();
+
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "fieldCount": fields.len(),
+            "fields": fields,
+        });
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
+    println!("문서 로드: {} (필드 {}개)", file_path, fields.len());
+    for f in &fields {
+        let name = f["name"].as_str().unwrap_or("");
+        let label = if name.is_empty() {
+            "(이름 없음)"
+        } else {
+            name
+        };
+        println!(
+            "  [{}] {} = {:?}{}",
+            f["fieldType"].as_str().unwrap_or("?"),
+            label,
+            f["value"].as_str().unwrap_or(""),
+            if f["editableInForm"] == true {
+                ""
+            } else {
+                " (서식 편집 불가)"
+            }
+        );
+    }
     EXIT_OK
 }
 

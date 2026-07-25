@@ -229,6 +229,26 @@ HWP 내장 썸네일(PrvImage) 추출.
 - `--base64` — base64 문자열 stdout
 - `--data-uri` — `data:image/...` URI stdout
 
+### `fields <파일> [--json]` (#3281)
+누름틀/필드를 **읽기 전용**으로 조사한다 — 서식이 무엇을 요구하는지 기계가 읽는 입구.
+rhwp 는 이미 필드에 값을 쓸 수 있지만(`set_field_value_by_name`) 조회 API 가 WASM/스튜디오
+경로에만 있어 CLI 소비자는 접근할 수 없었다. 기존 `collect_all_fields()` 를 그대로 노출한다.
+- `--json` 봉투: `{"schemaVersion":"1.0","source","fieldCount","fields":[…]}`
+- 필드: `{fieldId,fieldType,name,guide,memo,command,value,editableInForm,location}`
+  - `guide` 는 누름틀 안내문, `memo` 는 HelpState 지시문("어떻게 쓰라"는 사람용 설명)
+  - `location`: `{section,paragraph,nested:[{kind:"tableCell"|"textBox",…}]}` — 표 셀·글상자
+    안의 필드는 `nested` 로 좌표를 준다
+- 필드가 없는 문서는 오류가 아니라 `fieldCount:0` 이다 (파이프라인이 멈추지 않는다)
+- 기본 출력은 사람용 요약, 종료 코드는 §종료 코드 계약(없는 파일 1·인자 없음 2)
+- **범위 한계**: `collect_fields_from_paragraph` 의 재귀는 표 셀·글상자 두 갈래다.
+  머리말/꼬리말·각주/미주 안의 필드는 잡히지 않는다(실재하는 사각지대 — 재귀 확장은
+  편집 API 좌표계와 함께 봐야 하므로 별도 이슈).
+
+```bash
+# 서식이 요구하는 항목과 지시문 확인
+rhwp fields 신청서.hwp --json | jq -r '.fields[] | "\(.name): \(.memo // .guide)"'
+```
+
 ---
 
 ## 3. 변환·비교
