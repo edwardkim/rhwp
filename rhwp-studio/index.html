@@ -15,8 +15,10 @@
 </head>
 <body>
   <div id="studio-root">
+    <header id="studio-header">
+      <h1 class="visually-hidden">rhwp-studio 문서 편집기</h1>
     <!-- 메뉴바 -->
-    <div id="menu-bar">
+    <nav id="menu-bar" aria-label="주 메뉴">
       <!-- ── 파일 ── -->
       <div class="menu-item" data-menu="file">
         <span class="menu-title">파일</span>
@@ -400,7 +402,7 @@
           <div class="md-item" data-cmd="tool:options"><span class="md-icon"></span><span class="md-label">환경 설정</span></div>
         </div>
       </div>
-    </div>
+    </nav>
 
     <!-- 아이콘 툴바 -->
     <div id="icon-toolbar">
@@ -501,110 +503,151 @@
 
     <!-- 서식 도구 모음 (style bar) -->
     <div id="style-bar">
-      <!-- 스타일 -->
-      <select id="style-name" class="sb-combo" title="스타일">
-      </select>
-      <!-- 글꼴 언어 카테고리 -->
-      <select id="font-lang" class="sb-combo sb-font-lang" title="글꼴 적용 언어">
-        <option value="all">대표</option>
-        <option value="0">한글</option>
-        <option value="1">영문</option>
-        <option value="2">한자</option>
-        <option value="3">일어</option>
-        <option value="4">외국어</option>
-        <option value="5">기호</option>
-        <option value="6">사용자</option>
-      </select>
-      <!-- 글꼴 -->
-      <select id="font-name" class="sb-combo sb-font" title="글꼴">
-        <option value="함초롬바탕">함초롬바탕</option>
-        <option value="함초롬돋움">함초롬돋움</option>
-        <option value="맑은 고딕">맑은 고딕</option>
-        <option value="나눔고딕">나눔고딕</option>
-        <option value="바탕">바탕</option>
-        <option value="돋움">돋움</option>
-        <option value="궁서">궁서</option>
-      </select>
-      <!-- 글자 크기 -->
-      <span class="sb-size-group">
-        <input id="font-size" type="text" class="sb-size" title="글자 크기 (pt)" value="10.0" />
-        <span class="sb-size-unit">pt</span>
-        <span class="sb-size-arrows">
-          <button id="btn-size-up" class="sb-arrow" title="크기 크게">▲</button>
-          <button id="btn-size-down" class="sb-arrow" title="크기 작게">▼</button>
-        </span>
-      </span>
-      <span class="sb-sep"></span>
-      <!-- 글자 서식: 가 -->
-      <button id="btn-bold" class="sb-btn" title="굵게 (Ctrl+B)"><span class="sb-ga sb-bold">가</span></button>
-      <button id="btn-italic" class="sb-btn" title="기울임 (Ctrl+I)"><span class="sb-ga sb-italic">가</span></button>
-      <button id="btn-underline" class="sb-btn" title="밑줄 (Ctrl+U)"><span class="sb-ga sb-underline">간</span></button>
-      <button id="btn-strike" class="sb-btn sb-has-arrow" title="취소선"><span class="sb-ga sb-strike">가</span><span class="sb-dd">▾</span></button>
-      <div class="sb-dropdown" id="charfx-dropdown">
-        <button class="sb-btn sb-has-arrow" id="btn-charfx" title="글자 효과">
-          <span class="sb-ga" id="charfx-icon">가</span><span class="sb-dd">▾</span>
-        </button>
-        <div class="sb-dropdown-menu" id="charfx-menu">
-          <button class="sb-dropdown-item" data-format="emboss"><span class="sb-ga sb-emboss">가</span>양각</button>
-          <button class="sb-dropdown-item" data-format="engrave"><span class="sb-ga sb-engrave">가</span>음각</button>
-          <button class="sb-dropdown-item" data-format="outline"><span class="sb-ga sb-outline">가</span>외곽선</button>
-          <button class="sb-dropdown-item" data-format="superscript"><span class="sb-ga sb-sup">가</span>위 첨자</button>
-          <button class="sb-dropdown-item" data-format="subscript"><span class="sb-ga sb-sub">가</span>아래 첨자</button>
+      <div class="sb-ribbon-group sb-field-ribbon-group">
+        <div class="sb-field-grid">
+          <!-- 스타일 -->
+          <span class="sb-field">
+            <label class="sb-field-label" for="style-name">스타일</label>
+            <select id="style-name" class="sb-combo" title="스타일">
+              <option value="0">바탕글</option>
+            </select>
+          </span>
+          <!-- 글꼴 언어 카테고리 -->
+          <span class="sb-field">
+            <label class="sb-field-label" for="font-lang">언어</label>
+            <select id="font-lang" class="sb-combo sb-font-lang" title="글꼴 적용 언어">
+              <option value="all">대표</option>
+              <option value="0">한글</option>
+              <option value="1">영문</option>
+              <option value="2">한자</option>
+              <option value="3">일어</option>
+              <option value="4">외국어</option>
+              <option value="5">기호</option>
+              <option value="6">사용자</option>
+            </select>
+          </span>
+          <!-- 글꼴 -->
+          <span class="sb-field">
+            <label class="sb-field-label" for="font-name">글꼴</label>
+            <select id="font-name" class="sb-combo sb-font" title="글꼴">
+              <option value="함초롬바탕">함초롬바탕</option>
+              <option value="함초롬돋움">함초롬돋움</option>
+              <option value="맑은 고딕">맑은 고딕</option>
+              <option value="나눔고딕">나눔고딕</option>
+              <option value="바탕">바탕</option>
+              <option value="돋움">돋움</option>
+              <option value="궁서">궁서</option>
+            </select>
+          </span>
+          <!-- 글자 크기 -->
+          <span class="sb-field">
+            <label class="sb-field-label" for="font-size">크기</label>
+            <span class="sb-size-group">
+              <input id="font-size" type="text" class="sb-size" title="글자 크기 (pt)" value="10.0" />
+              <span class="sb-size-unit">pt</span>
+              <span class="sb-size-arrows">
+                <button id="btn-size-up" class="sb-arrow" title="크기 크게">▲</button>
+                <button id="btn-size-down" class="sb-arrow" title="크기 작게">▼</button>
+              </span>
+            </span>
+          </span>
+          <!-- 줄 간격 -->
+          <span class="sb-field">
+            <label class="sb-field-label" for="linespacing-select">줄 간격</label>
+            <span class="sb-ls-group" id="linespacing-group">
+              <select id="linespacing-select" class="sb-ls-select" title="줄 간격">
+                <option value="100">100 %</option>
+                <option value="130">130 %</option>
+                <option value="160" selected>160 %</option>
+                <option value="180">180 %</option>
+                <option value="200">200 %</option>
+                <option value="300">300 %</option>
+              </select>
+              <span class="sb-ls-arrows">
+                <button id="btn-ls-up" class="sb-arrow" title="줄 간격 증가 (+5%)">▲</button>
+                <button id="btn-ls-down" class="sb-arrow" title="줄 간격 감소 (-5%)">▼</button>
+              </span>
+            </span>
+          </span>
+        </div>
+        <span class="sb-ribbon-label">글꼴 및 간격</span>
+      </div>
+
+      <div class="sb-command-band sb-character-band">
+        <div class="sb-ribbon-group sb-character-ribbon-group">
+          <div class="sb-command-group sb-character-group">
+            <!-- 글자 서식 -->
+            <button id="btn-bold" class="sb-btn" title="굵게 (Ctrl+B)"><span class="sb-ga sb-bold">가</span></button>
+            <button id="btn-italic" class="sb-btn" title="기울임 (Ctrl+I)"><span class="sb-ga sb-italic">가</span></button>
+            <button id="btn-underline" class="sb-btn" title="밑줄 (Ctrl+U)"><span class="sb-ga sb-underline">간</span></button>
+            <button id="btn-strike" class="sb-btn" title="취소선"><span class="sb-ga sb-strike">가</span></button>
+            <div class="sb-dropdown" id="charfx-dropdown">
+              <button class="sb-btn sb-has-arrow" id="btn-charfx" title="글자 효과">
+                <span class="sb-ga sb-effect-icon" id="charfx-icon">가</span><span class="sb-dd">▾</span>
+              </button>
+              <div class="sb-dropdown-menu" id="charfx-menu">
+                <button class="sb-dropdown-item" data-format="emboss"><span class="sb-ga sb-emboss">가</span>양각</button>
+                <button class="sb-dropdown-item" data-format="engrave"><span class="sb-ga sb-engrave">가</span>음각</button>
+                <button class="sb-dropdown-item" data-format="outline"><span class="sb-ga sb-outline">가</span>외곽선</button>
+                <button class="sb-dropdown-item" data-format="superscript"><span class="sb-ga sb-sup">가</span>위 첨자</button>
+                <button class="sb-dropdown-item" data-format="subscript"><span class="sb-ga sb-sub">가</span>아래 첨자</button>
+              </div>
+            </div>
+          </div>
+          <span class="sb-ribbon-label">글자 모양</span>
+        </div>
+        <div class="sb-ribbon-group sb-color-ribbon-group">
+          <div class="sb-command-group sb-color-group">
+            <!-- 글자색 -->
+            <span class="sb-color-wrap">
+              <button id="btn-text-color" class="sb-btn sb-has-arrow" title="글자 색">
+                <span class="sb-color-visual"><span class="sb-ga">가</span><span id="color-bar"></span></span>
+                <span class="sb-dd">▾</span>
+              </button>
+              <input id="text-color-picker" type="color" value="#000000" aria-label="글자 색 선택" />
+            </span>
+            <!-- 형광펜 -->
+            <span id="highlight-dropdown" class="sb-dropdown">
+              <button id="btn-highlight" class="sb-btn sb-has-arrow" title="형광펜">
+                <span class="sb-highlight-visual"><span class="sb-highlight-icon">✏</span><span id="highlight-bar"></span></span>
+                <span class="sb-dd">▾</span>
+              </button>
+              <div id="highlight-palette" class="sb-hl-palette"></div>
+            </span>
+          </div>
+          <span class="sb-ribbon-label">색</span>
         </div>
       </div>
-      <!-- 글자색 -->
-      <span class="sb-color-wrap">
-        <button id="btn-text-color" class="sb-btn sb-has-arrow" title="글자 색">
-          <span class="sb-ga">간</span><span id="color-bar"></span><span class="sb-dd">▾</span>
-        </button>
-        <input id="text-color-picker" type="color" value="#000000" />
-      </span>
-      <span class="sb-sep"></span>
-      <!-- 형광펜 -->
-      <span id="highlight-dropdown" class="sb-dropdown">
-        <button id="btn-highlight" class="sb-btn sb-has-arrow" title="형광펜">
-          <span class="sb-highlight-icon">✏</span><span id="highlight-bar"></span><span class="sb-dd">▾</span>
-        </button>
-        <div id="highlight-palette" class="sb-hl-palette"></div>
-      </span>
-      <span class="sb-sep"></span>
-      <!-- 문단 정렬 -->
-      <button id="btn-align-left" class="sb-btn" title="왼쪽 정렬"><span class="sb-align sb-al-left"></span></button>
-      <button id="btn-align-center" class="sb-btn" title="가운데 정렬"><span class="sb-align sb-al-center"></span></button>
-      <button id="btn-align-right" class="sb-btn" title="오른쪽 정렬"><span class="sb-align sb-al-right"></span></button>
-      <button id="btn-align-justify" class="sb-btn" title="양쪽 정렬"><span class="sb-align sb-al-justify"></span></button>
-      <button id="btn-align-distribute" class="sb-btn" title="배분 정렬"><span class="sb-align sb-al-distribute"></span></button>
-      <button id="btn-align-split" class="sb-btn" title="나눔 정렬"><span class="sb-align sb-al-split"></span></button>
-      <span class="sb-sep"></span>
-      <!-- 줄 간격 -->
-      <span class="sb-ls-group" id="linespacing-group">
-        <select id="linespacing-select" class="sb-ls-select" title="줄 간격">
-          <option value="100">100 %</option>
-          <option value="130">130 %</option>
-          <option value="160" selected>160 %</option>
-          <option value="180">180 %</option>
-          <option value="200">200 %</option>
-          <option value="300">300 %</option>
-        </select>
-        <span class="sb-ls-arrows">
-          <button id="btn-ls-up" class="sb-arrow" title="줄 간격 증가 (+5%)">▲</button>
-          <button id="btn-ls-down" class="sb-arrow" title="줄 간격 감소 (-5%)">▼</button>
-        </span>
-      </span>
+
+      <div class="sb-command-band sb-paragraph-band">
+        <div class="sb-ribbon-group sb-paragraph-ribbon-group">
+          <div class="sb-command-group sb-align-group">
+            <!-- 문단 정렬 -->
+            <button id="btn-align-left" class="sb-btn" title="왼쪽 정렬"><span class="sb-align sb-al-left"></span></button>
+            <button id="btn-align-center" class="sb-btn" title="가운데 정렬"><span class="sb-align sb-al-center"></span></button>
+            <button id="btn-align-right" class="sb-btn" title="오른쪽 정렬"><span class="sb-align sb-al-right"></span></button>
+            <button id="btn-align-justify" class="sb-btn" title="양쪽 정렬"><span class="sb-align sb-al-justify"></span></button>
+            <button id="btn-align-distribute" class="sb-btn" title="배분 정렬"><span class="sb-align sb-al-distribute"></span></button>
+            <button id="btn-align-split" class="sb-btn" title="나눔 정렬"><span class="sb-align sb-al-split"></span></button>
+          </div>
+          <span class="sb-ribbon-label">문단</span>
+        </div>
+      </div>
     </div>
+    </header>
 
     <!-- 에디터 영역 (눈금자 포함) -->
-    <div id="editor-area">
+    <main id="editor-area" aria-label="문서 편집 영역">
       <div id="ruler-corner"></div>
       <canvas id="h-ruler"></canvas>
       <canvas id="v-ruler"></canvas>
-      <div id="scroll-container">
+      <div id="scroll-container" role="region" aria-label="문서 페이지" tabindex="0">
         <div id="scroll-content"></div>
       </div>
-    </div>
+    </main>
 
     <!-- 하단 상태 바 -->
-    <div id="status-bar">
+    <footer id="status-bar">
       <span id="sb-page" class="stb-item">1 / 1 쪽</span>
       <span class="stb-divider"></span>
       <span id="sb-section" class="stb-item">구역: 1 / 1</span>
@@ -620,7 +663,7 @@
         <button id="sb-zoom-out" class="stb-icon-btn" title="축소"><span class="tb-sprite icon-zoom-out"></span></button>
         <button id="sb-zoom-in" class="stb-icon-btn" title="확대"><span class="tb-sprite icon-zoom-in"></span></button>
       </span>
-    </div>
+    </footer>
   </div>
   <script type="module" src="/src/main.ts"></script>
 </body>

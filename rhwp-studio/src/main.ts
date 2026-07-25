@@ -21,7 +21,11 @@ import { tableCommands } from '@/command/commands/table';
 import { pageCommands } from '@/command/commands/page';
 import { toolCommands } from '@/command/commands/tool';
 import { installPwaFileHandling, type FileHandlingWindowLike } from '@/command/pwa-file-handling';
-import { isSupportedDocumentFileName } from '@/command/file-system-access';
+import {
+  captureDroppedFileHandle,
+  isSupportedDocumentFileName,
+  type FileSystemFileHandleLike,
+} from '@/command/file-system-access';
 import { forgetConvertedHmlSaveHandle } from '@/command/save-target';
 import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
@@ -52,6 +56,7 @@ import {
   resolveRenderProfile,
   type RenderBackendFallbackReason,
 } from '@/view/render-backend';
+import { calculateFitPageZoom, calculateFitWidthZoom } from '@/view/zoom-fit';
 import { installEmbedRuntime } from '@/embed/runtime';
 import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
 
@@ -582,6 +587,12 @@ function setupFileInput(): void {
       return;
     }
 
+    // #3259: Chromium은 getAsFileSystemHandle을 drop event와 같은 tick에 호출해야 한다.
+    // 아직 bytes를 읽거나 handle을 저장하지 않으며, 아래 사용자 확인이 승인된 뒤에만 사용한다.
+    const droppedFileHandle = isDoc
+      ? captureDroppedFileHandle(e.dataTransfer?.items, file)
+      : Promise.resolve<FileSystemFileHandleLike | null>(null);
+
     // [#1439] 보안: 드롭으로 로컬 파일을 읽는 동작은 기본에서 제외하고, 사용자가
     // 명시적으로 [열기]를 눌러 동의한 경우에만 진행한다 (확장/웹 공통).
     const confirmed = await showDropConfirmDialog(file.name);
@@ -624,7 +635,7 @@ function setupFileInput(): void {
     }
 
     // HWP/HWPX/HML — loadFile 내부 unsaved 가드는 드롭 확인 이후에 동작한다.
-    await loadFile(file);
+    await loadFile(file, { fileHandle: await droppedFileHandle });
   });
 }
 
@@ -633,36 +644,37 @@ function setupZoomControls(): void {
   const vm = canvasView.getViewportManager();
 
   document.getElementById('sb-zoom-in')!.addEventListener('click', () => {
-    vm.setZoom(vm.getZoom() + 0.1);
+    vm.smoothZoomBy(0.1);
   });
   document.getElementById('sb-zoom-out')!.addEventListener('click', () => {
-    vm.setZoom(vm.getZoom() - 0.1);
+    vm.smoothZoomBy(-0.1);
   });
 
   // 폭 맞춤: 용지 폭에 맞게 줌 조절
   document.getElementById('sb-zoom-fit-width')!.addEventListener('click', () => {
     if (wasm.pageCount === 0) return;
     const container = document.getElementById('scroll-container')!;
-    const containerWidth = container.clientWidth - 40; // 좌우 여백 제외
     const pageInfo = wasm.getPageInfo(0);
     // pageInfo.width는 이미 px 단위 (96dpi 기준)
-    const zoom = containerWidth / pageInfo.width;
-    console.log(`[zoom-fit-width] container=${containerWidth} page=${pageInfo.width} zoom=${zoom.toFixed(3)}`);
-    vm.setZoom(Math.max(0.1, Math.min(zoom, 4.0)));
+    const zoom = calculateFitWidthZoom(container.clientWidth, pageInfo.width);
+    console.log(`[zoom-fit-width] container=${container.clientWidth} page=${pageInfo.width} zoom=${zoom.toFixed(3)}`);
+    vm.setZoom(zoom);
   });
 
   // 쪽 맞춤: 한 페이지 전체가 보이도록 줌 조절
   document.getElementById('sb-zoom-fit')!.addEventListener('click', () => {
     if (wasm.pageCount === 0) return;
     const container = document.getElementById('scroll-container')!;
-    const containerWidth = container.clientWidth - 40;
-    const containerHeight = container.clientHeight - 40;
     const pageInfo = wasm.getPageInfo(0);
     // pageInfo.width/height는 이미 px 단위 (96dpi 기준)
-    const zoomW = containerWidth / pageInfo.width;
-    const zoomH = containerHeight / pageInfo.height;
-    console.log(`[zoom-fit-page] containerW=${containerWidth} containerH=${containerHeight} pageW=${pageInfo.width} pageH=${pageInfo.height} zoomW=${zoomW.toFixed(3)} zoomH=${zoomH.toFixed(3)}`);
-    vm.setZoom(Math.max(0.1, Math.min(zoomW, zoomH, 4.0)));
+    const zoom = calculateFitPageZoom(
+      container.clientWidth,
+      container.clientHeight,
+      pageInfo.width,
+      pageInfo.height,
+    );
+    console.log(`[zoom-fit-page] containerW=${container.clientWidth} containerH=${container.clientHeight} pageW=${pageInfo.width} pageH=${pageInfo.height} zoom=${zoom.toFixed(3)}`);
+    vm.setZoom(zoom);
   });
 
   // 모바일: 줌 값 클릭 → 100% 토글
@@ -681,10 +693,10 @@ function setupZoomControls(): void {
     if (!e.ctrlKey && !e.metaKey) return;
     if (e.key === '=' || e.key === '+') {
       e.preventDefault();
-      vm.setZoom(vm.getZoom() + 0.1);
+      vm.smoothZoomBy(0.1);
     } else if (e.key === '-') {
       e.preventDefault();
-      vm.setZoom(vm.getZoom() - 0.1);
+      vm.smoothZoomBy(-0.1);
     } else if (e.key === '0') {
       e.preventDefault();
       vm.setZoom(1.0);
@@ -938,7 +950,10 @@ async function promptLocalFontsIfNeeded(docInfo: DocumentInfo, displayName: stri
   }
 }
 
-async function loadFile(file: File, options: { skipUnsavedGuard?: boolean } = {}): Promise<boolean> {
+async function loadFile(
+  file: File,
+  options: { skipUnsavedGuard?: boolean; fileHandle?: FileSystemFileHandleLike | null } = {},
+): Promise<boolean> {
   try {
     if (!options.skipUnsavedGuard) {
       const canReplace = await confirmSaveBeforeReplacingDocument(commandServices);
@@ -948,7 +963,7 @@ async function loadFile(file: File, options: { skipUnsavedGuard?: boolean } = {}
     await updateLoadProgress(0, '파일 읽는 중...');
     const data = new Uint8Array(await file.arrayBuffer());
     await updateLoadProgress(15, '파일 읽기 완료');
-    await loadBytes(data, file.name, null, startTime, { dataReadProgressShown: true });
+    await loadBytes(data, file.name, options.fileHandle ?? null, startTime, { dataReadProgressShown: true });
     return true;
   } catch (error) {
     showLoadError(error);

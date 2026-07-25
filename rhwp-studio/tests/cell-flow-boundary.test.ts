@@ -43,6 +43,9 @@ const {
   TextMutationEffectAccumulator,
   deleteTextWithMutationEffects,
   insertTextWithMutationEffects,
+  replaceBodyTextWithMutationEffects,
+  canUseDeferredCellTextReplace,
+  replaceCellTextWithMutationEffects,
 } = require(path.join(runtimeRoot, 'engine', 'command.js'));
 const { CommandHistory } = require(path.join(runtimeRoot, 'engine', 'history.js'));
 
@@ -89,7 +92,22 @@ function mutationResult(cellFlowChanged) {
 class FakeWasm {
   constructor(...deferredResults) {
     this.deferredResults = [...deferredResults];
+    this.bodyResults = [];
     this.calls = [];
+  }
+
+  queueBodyResult(result) {
+    this.bodyResults.push(result);
+  }
+
+  replaceBodyTextLocal(...args) {
+    this.calls.push({ name: 'body-local', args });
+    return this.bodyResults.shift() ?? {
+      ok: true,
+      charOffset: args[2] + String(args[4]).length,
+      documentPaginationPending: true,
+      flowChanged: false,
+    };
   }
 
   insertTextInCellDeferredPagination(...args) {
@@ -101,6 +119,13 @@ class FakeWasm {
 
   deleteTextInCellDeferredPagination(...args) {
     this.calls.push({ name: 'delete-deferred', args });
+    const result = this.deferredResults.shift();
+    assert.ok(result, 'deferred mutation result fixture exhausted');
+    return result;
+  }
+
+  replaceTextInCellDeferredPagination(...args) {
+    this.calls.push({ name: 'replace-deferred', args });
     const result = this.deferredResults.shift();
     assert.ok(result, 'deferred mutation result fixture exhausted');
     return result;
@@ -139,6 +164,10 @@ class FakeWasm {
     this.calls.push({ name: 'delete-body', args });
     return JSON.stringify({ ok: true, charOffset: args[2] });
   }
+
+  getTextRange(...args) {
+    return 'x'.repeat(args[3]);
+  }
 }
 
 test('InsertTextCommand effect는 실행별로 한 번만 소비되고 undo에서 초기화된다', () => {
@@ -147,8 +176,8 @@ test('InsertTextCommand effect는 실행별로 한 번만 소비되고 undo에�
 
   command.execute(wasm);
   assert.deepEqual(command.consumeTextMutationEffects(), {
-    deferredPagination: true,
-    cellFlowChanged: true,
+    documentPaginationPending: true,
+    flowChanged: true,
     paginationCompleted: false,
   });
   assert.deepEqual(command.consumeTextMutationEffects(), NO_TEXT_MUTATION_EFFECTS);
@@ -165,17 +194,17 @@ test('InsertTextCommand effect는 실행별로 한 번만 소비되고 undo에�
 test('TextMutationEffectAccumulator는 묶음 effect를 OR 누적하고 한 번만 소비한다', () => {
   const accumulator = new TextMutationEffectAccumulator();
   accumulator.add(IMMEDIATE_TEXT_MUTATION_EFFECTS);
-  accumulator.add({ deferredPagination: true, cellFlowChanged: false, paginationCompleted: false });
-  accumulator.add({ deferredPagination: true, cellFlowChanged: true, paginationCompleted: false });
+  accumulator.add({ documentPaginationPending: true, flowChanged: false, paginationCompleted: false });
+  accumulator.add({ documentPaginationPending: true, flowChanged: true, paginationCompleted: false });
 
   assert.deepEqual(accumulator.consume(), {
-    deferredPagination: true,
-    cellFlowChanged: true,
+    documentPaginationPending: true,
+    flowChanged: true,
     paginationCompleted: true,
   });
   assert.deepEqual(accumulator.consume(), NO_TEXT_MUTATION_EFFECTS);
 
-  accumulator.add({ deferredPagination: true, cellFlowChanged: true, paginationCompleted: false });
+  accumulator.add({ documentPaginationPending: true, flowChanged: true, paginationCompleted: false });
   accumulator.clear();
   assert.deepEqual(accumulator.consume(), NO_TEXT_MUTATION_EFFECTS);
 });
@@ -186,8 +215,8 @@ test('flat 셀 삭제는 deferred effect를 반환하고 undo는 즉시 paginati
 
   history.execute(new DeleteTextCommand(depth1Position(), 1, 'forward'), wasm);
   assert.deepEqual(history.consumeLastExecutionEffects(), {
-    deferredPagination: true,
-    cellFlowChanged: true,
+    documentPaginationPending: true,
+    flowChanged: true,
     paginationCompleted: false,
   });
   assert.equal(wasm.calls.at(-1).name, 'delete-deferred');
@@ -208,8 +237,8 @@ test('history merge는 이전 effect를 누수하지 않고 redo 때 실제 결�
 
   history.execute(new InsertTextCommand(depth1Position(0), '1', 1_000), wasm);
   assert.deepEqual(history.consumeLastExecutionEffects(), {
-    deferredPagination: true,
-    cellFlowChanged: true,
+    documentPaginationPending: true,
+    flowChanged: true,
     paginationCompleted: false,
   });
   assert.deepEqual(history.consumeLastExecutionEffects(), NO_TEXT_MUTATION_EFFECTS);
@@ -218,7 +247,7 @@ test('history merge는 이전 effect를 누수하지 않고 redo 때 실제 결�
   history.execute(new InsertTextCommand(depth1Position(1), '2', 1_100), wasm);
   assert.deepEqual(
     history.consumeLastExecutionEffects(),
-    { deferredPagination: true, cellFlowChanged: false, paginationCompleted: false },
+    { documentPaginationPending: true, flowChanged: false, paginationCompleted: false },
     'merged history entry must not inherit the preceding true effect',
   );
 
@@ -228,7 +257,7 @@ test('history merge는 이전 effect를 누수하지 않고 redo 때 실제 결�
   history.redo(wasm);
   assert.deepEqual(
     history.consumeLastExecutionEffects(),
-    { deferredPagination: true, cellFlowChanged: true, paginationCompleted: false },
+    { documentPaginationPending: true, flowChanged: true, paginationCompleted: false },
     'redo must expose its newly calculated mutation result',
   );
 
@@ -242,7 +271,7 @@ test('history merge는 이전 effect를 누수하지 않고 redo 때 실제 결�
   history.redo(wasm);
   assert.deepEqual(
     history.consumeLastExecutionEffects(),
-    { deferredPagination: true, cellFlowChanged: false, paginationCompleted: false },
+    { documentPaginationPending: true, flowChanged: false, paginationCompleted: false },
     'a later redo must replace, not reuse, the preceding true result',
   );
 });
@@ -251,8 +280,8 @@ test('insert helper는 depth 1 셀만 deferred로 보내고 depth 2 셀은 path 
   const wasm = new FakeWasm(mutationResult(true));
 
   assert.deepEqual(insertTextWithMutationEffects(wasm, depth1Position(), '1'), {
-    deferredPagination: true,
-    cellFlowChanged: true,
+    documentPaginationPending: true,
+    flowChanged: true,
     paginationCompleted: false,
   });
   assert.equal(wasm.calls.length, 1);
@@ -284,8 +313,8 @@ test('delete helper는 depth 1 셀만 deferred로 보내고 depth 2 셀은 path 
   const wasm = new FakeWasm(mutationResult(false));
 
   assert.deepEqual(deleteTextWithMutationEffects(wasm, depth1Position(1), 1), {
-    deferredPagination: true,
-    cellFlowChanged: false,
+    documentPaginationPending: true,
+    flowChanged: false,
     paginationCompleted: false,
   });
   assert.equal(wasm.calls.length, 1);
@@ -311,4 +340,122 @@ test('delete helper는 depth 1 셀만 deferred로 보내고 depth 2 셀은 path 
     IMMEDIATE_TEXT_MUTATION_EFFECTS,
     '구형 WASM bridge fallback은 deferred pending을 만들지 않아야 한다',
   );
+});
+
+test('depth-1 IME replace는 atomic deferred mutation 한 번만 사용한다', () => {
+  const wasm = new FakeWasm(mutationResult(false));
+  const position = depth1Position(7);
+
+  assert.equal(canUseDeferredCellTextReplace(position, 1, '하'), true);
+  assert.deepEqual(
+    replaceCellTextWithMutationEffects(wasm, position, 1, '하'),
+    {
+      documentPaginationPending: true,
+      flowChanged: false,
+      paginationCompleted: false,
+    },
+  );
+  assert.deepEqual(wasm.calls, [{
+    name: 'replace-deferred',
+    args: [0, 5, 2, 3, 0, 7, 1, '하'],
+  }]);
+});
+
+test('flow boundary replace effect는 pre-caret flush 신호를 보존한다', () => {
+  const wasm = new FakeWasm(mutationResult(true));
+
+  assert.deepEqual(
+    replaceCellTextWithMutationEffects(wasm, depth1Position(7), 1, '가나다라마바사아'),
+    {
+      documentPaginationPending: true,
+      flowChanged: true,
+      paginationCompleted: false,
+    },
+  );
+});
+
+test('중첩 셀과 빈 replacement는 atomic cell replace 대상이 아니다', () => {
+  assert.equal(canUseDeferredCellTextReplace(depth2Position(), 1, '하'), false);
+  assert.equal(canUseDeferredCellTextReplace(depth1Position(), 1, ''), false);
+  assert.equal(canUseDeferredCellTextReplace(depth1Position(), 0, '하'), false);
+  assert.equal(canUseDeferredCellTextReplace(depth1Position(), 1, '가나다라마바사아자'), false);
+});
+
+test('atomic API fallback 결과는 immediate-completed effect다', () => {
+  const wasm = new FakeWasm({
+    ok: true,
+    charOffset: 8,
+    paginationDeferred: false,
+    cellFlowChanged: false,
+  });
+
+  assert.deepEqual(
+    replaceCellTextWithMutationEffects(wasm, depth1Position(7), 1, '하'),
+    {
+      documentPaginationPending: false,
+      flowChanged: false,
+      paginationCompleted: true,
+    },
+  );
+});
+
+test('본문 insert와 delete command는 stable local replace effect를 반환한다', () => {
+  const wasm = new FakeWasm();
+  const position = { sectionIndex: 0, paragraphIndex: 2, charOffset: 3 };
+
+  const insert = new InsertTextCommand(position, '가');
+  insert.execute(wasm);
+  assert.deepEqual(insert.consumeTextMutationEffects(), {
+    documentPaginationPending: true,
+    flowChanged: false,
+    paginationCompleted: false,
+  });
+  assert.deepEqual(wasm.calls.at(-1), {
+    name: 'body-local',
+    args: [0, 2, 3, 0, '가'],
+  });
+
+  const deletion = new DeleteTextCommand(position, 1, 'forward');
+  deletion.execute(wasm);
+  assert.deepEqual(deletion.consumeTextMutationEffects(), {
+    documentPaginationPending: true,
+    flowChanged: false,
+    paginationCompleted: false,
+  });
+  assert.deepEqual(wasm.calls.at(-1), {
+    name: 'body-local',
+    args: [0, 2, 3, 1, ''],
+  });
+});
+
+test('본문 flow boundary local result는 pagination 완료 effect로 전달된다', () => {
+  const wasm = new FakeWasm();
+  const position = { sectionIndex: 0, paragraphIndex: 2, charOffset: 3 };
+  wasm.queueBodyResult({
+    ok: true,
+    charOffset: 4,
+    documentPaginationPending: false,
+    flowChanged: true,
+  });
+
+  assert.deepEqual(
+    replaceBodyTextWithMutationEffects(wasm, position, 0, '가'),
+    {
+      documentPaginationPending: false,
+      flowChanged: true,
+      paginationCompleted: true,
+    },
+  );
+});
+
+test('본문 command undo는 local pending을 만들지 않고 기존 immediate API를 사용한다', () => {
+  const wasm = new FakeWasm();
+  const position = { sectionIndex: 0, paragraphIndex: 2, charOffset: 3 };
+  const command = new InsertTextCommand(position, '가');
+
+  command.execute(wasm);
+  command.undo(wasm);
+
+  assert.equal(wasm.calls.at(-1).name, 'delete-body');
+  assert.deepEqual(command.consumeTextMutationEffects(), NO_TEXT_MUTATION_EFFECTS);
 });

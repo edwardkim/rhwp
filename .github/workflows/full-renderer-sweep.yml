@@ -18,7 +18,8 @@ env:
 jobs:
   full-renderer-sweep:
     name: Full Renderer Sweep
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 60
     permissions:
       contents: read
 

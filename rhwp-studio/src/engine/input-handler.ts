@@ -47,8 +47,7 @@ const DRAG_SCROLL_MIN_STEP_PX = 2;
 const DRAG_SCROLL_MAX_STEP_PX = 20;
 const PX_TO_RAW_2X = 150;
 const PX_TO_HWPUNIT = 75;
-const DEFERRED_PAGINATION_AUTO_FLUSH_DELAY_MS = 10_000;
-const DEFERRED_PAGINATION_AUTO_FLUSH_PAGE_LIMIT = 30;
+const DOCUMENT_PAGINATION_IDLE_FLUSH_DELAY_MS = 120;
 
 type FormatCopyState = {
   charProps: Partial<CharProperties>;
@@ -474,6 +473,7 @@ export class InputHandler {
   private onInputBound: (e?: Event) => void;
   private onCompositionStartBound: () => void;
   private onCompositionEndBound: () => void;
+  private onInputBlurBound: () => void;
   private onCopyBound: (e: ClipboardEvent) => void;
   private onCutBound: (e: ClipboardEvent) => void;
   private onPasteBound: (e: ClipboardEvent) => void;
@@ -505,6 +505,7 @@ export class InputHandler {
     // contentEditable <div>를 사용하고 .value 프록시를 추가한다.
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const inputHost = this.container.closest('main') ?? document.body;
 
     if (isIOS) {
       const div = document.createElement('div');
@@ -519,7 +520,8 @@ export class InputHandler {
       div.setAttribute('autocapitalize', 'off');
       div.setAttribute('spellcheck', 'false');
       div.setAttribute('inputmode', 'text');
-      document.body.appendChild(div);
+      div.setAttribute('aria-label', '문서 편집 입력');
+      inputHost.appendChild(div);
       // textarea 인터페이스 호환을 위한 프록시
       Object.defineProperty(div, 'value', {
         get() { return div.textContent || ''; },
@@ -534,7 +536,8 @@ export class InputHandler {
       this.textarea.setAttribute('autocorrect', 'off');
       this.textarea.setAttribute('autocapitalize', 'off');
       this.textarea.setAttribute('spellcheck', 'false');
-      document.body.appendChild(this.textarea);
+      this.textarea.setAttribute('aria-label', '문서 편집 입력');
+      inputHost.appendChild(this.textarea);
     }
 
     this.onClickBound = this.onClick.bind(this);
@@ -543,6 +546,9 @@ export class InputHandler {
     this.onInputBound = this.onInput.bind(this);
     this.onCompositionStartBound = this.onCompositionStart.bind(this);
     this.onCompositionEndBound = this.onCompositionEnd.bind(this);
+    this.onInputBlurBound = () => {
+      this.flushDeferredPaginationIfNeeded('input-blur', false);
+    };
     this.onCopyBound = this.onCopy.bind(this);
     this.onCutBound = this.onCut.bind(this);
     this.onPasteBound = this.onPaste.bind(this);
@@ -572,6 +578,7 @@ export class InputHandler {
     this.textarea.addEventListener('input', this.onInputBound);
     this.textarea.addEventListener('compositionstart', this.onCompositionStartBound);
     this.textarea.addEventListener('compositionend', this.onCompositionEndBound);
+    this.textarea.addEventListener('blur', this.onInputBlurBound);
     this.textarea.addEventListener('copy', this.onCopyBound);
     this.textarea.addEventListener('cut', this.onCutBound);
     this.textarea.addEventListener('paste', this.onPasteBound);
@@ -2135,6 +2142,7 @@ export class InputHandler {
 
   /** Undo 처리 */
   private handleUndo(): void {
+    this.flushDeferredPaginationIfNeeded('before-undo', false);
     const newPos = this.history.undo(this.wasm);
     if (newPos) {
       this.prepareTextMutationBeforeCursor(IMMEDIATE_TEXT_MUTATION_EFFECTS);
@@ -2148,6 +2156,7 @@ export class InputHandler {
 
   /** Redo 처리 */
   private handleRedo(): void {
+    this.flushDeferredPaginationIfNeeded('before-redo', false);
     const newPos = this.history.redo(this.wasm);
     if (newPos) {
       const boundaryHandled = this.prepareTextMutationBeforeCursor(
@@ -2370,6 +2379,12 @@ export class InputHandler {
     this.rawTextMutationEffects.add(_text.insertTextAtRaw.call(this, pos, text));
   }
 
+  private replaceTextAtRaw(pos: DocumentPosition, deleteCount: number, text: string): void {
+    this.rawTextMutationEffects.add(
+      _text.replaceTextAtRaw.call(this, pos, deleteCount, text),
+    );
+  }
+
   /** 위치에서 텍스트를 삭제한다 (WASM 직접 호출, IME 조합용) */
   private deleteTextAt(pos: DocumentPosition, count: number): void {
     this.rawTextMutationEffects.add(_text.deleteTextAt.call(this, pos, count));
@@ -2449,12 +2464,9 @@ export class InputHandler {
   private scheduleDeferredPaginationFlush(): void {
     this.cancelDeferredPaginationFlush();
     this.deferredPaginationPending = true;
-    if (!this.shouldAutoFlushDeferredPagination()) {
-      return;
-    }
     this.deferredPaginationFlushTimer = setTimeout(() => {
       this.flushDeferredPaginationIfNeeded('idle-auto');
-    }, DEFERRED_PAGINATION_AUTO_FLUSH_DELAY_MS);
+    }, DOCUMENT_PAGINATION_IDLE_FLUSH_DELAY_MS);
   }
 
   private cancelDeferredPaginationFlush(): void {
@@ -2471,12 +2483,13 @@ export class InputHandler {
       this.deferredPaginationRunner.cancel();
       this.deferredPaginationPending = false;
     }
-    if (!effects.deferredPagination) return false;
+    if (effects.flowChanged && effects.paginationCompleted) return true;
+    if (!effects.documentPaginationPending) return false;
 
     const replacesActiveJob = this.deferredPaginationRunner.isActive();
     this.cancelDeferredPaginationFlush();
     this.deferredPaginationPending = true;
-    if (!effects.cellFlowChanged && !replacesActiveJob) return false;
+    if (!effects.flowChanged && !replacesActiveJob) return false;
 
     // 최신 revision의 shadow job으로 교체하고, 한 macrotask당 한 fragment씩 전진한다.
     this.deferredPaginationRunner.start();
@@ -2509,10 +2522,6 @@ export class InputHandler {
 
   private consumeRawTextMutationBeforeCursor(): boolean {
     return this.prepareTextMutationBeforeCursor(this.rawTextMutationEffects.consume());
-  }
-
-  private shouldAutoFlushDeferredPagination(): boolean {
-    return this.wasm.pageCount <= DEFERRED_PAGINATION_AUTO_FLUSH_PAGE_LIMIT;
   }
 
   hasDeferredPaginationPending(): boolean {
@@ -3175,6 +3184,7 @@ export class InputHandler {
   }
 
   deactivate(): void {
+    this.flushDeferredPaginationIfNeeded('before-deactivate', false);
     this.active = false;
     this.cancelDeferredPaginationFlush();
     this.deferredPaginationRunner.cancel();
@@ -3206,6 +3216,7 @@ export class InputHandler {
   }
 
   dispose(): void {
+    this.flushDeferredPaginationIfNeeded('before-dispose', false);
     if (this.isResizeDragging) {
       this.cleanupResizeDrag();
     }
@@ -3252,6 +3263,7 @@ export class InputHandler {
     this.textarea.removeEventListener('input', this.onInputBound);
     this.textarea.removeEventListener('compositionstart', this.onCompositionStartBound);
     this.textarea.removeEventListener('compositionend', this.onCompositionEndBound);
+    this.textarea.removeEventListener('blur', this.onInputBlurBound);
     this.textarea.removeEventListener('copy', this.onCopyBound);
     this.textarea.removeEventListener('cut', this.onCutBound);
     this.textarea.removeEventListener('paste', this.onPasteBound);
