@@ -453,6 +453,10 @@ jobs:
           df -h
 
       - name: Install Rust toolchain
+        # [#3289] dtolnay 액션의 rustup default 가 매 잡마다 공유 ~/.rustup/settings.toml 을
+        # 다시 써 동시 잡 레이스로 파일이 깨진다(실측: version 필드 소실). self-hosted 는
+        # 호스트 rustup + rust-toolchain.toml 디렉터리 override 로 충분하므로 hosted 전용.
+        if: runner.environment == 'github-hosted'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.1
@@ -566,6 +570,8 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Install Rust toolchain
+        # [#3289] 공유 ~/.rustup settings.toml 레이스 방지 — 첫 사용처 주석 참조.
+        if: runner.environment == 'github-hosted'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.1
@@ -651,6 +657,8 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Install Rust toolchain
+        # [#3289] 공유 ~/.rustup settings.toml 레이스 방지 — 첫 사용처 주석 참조.
+        if: runner.environment == 'github-hosted'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.1
@@ -718,6 +726,8 @@ jobs:
           df -h
 
       - name: Install Rust toolchain
+        # [#3289] 공유 ~/.rustup settings.toml 레이스 방지 — 첫 사용처 주석 참조.
+        if: runner.environment == 'github-hosted'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.1
@@ -771,6 +781,8 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Install Rust toolchain
+        # [#3289] 공유 ~/.rustup settings.toml 레이스 방지 — 첫 사용처 주석 참조.
+        if: runner.environment == 'github-hosted'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.1
@@ -995,6 +1007,8 @@ jobs:
           df -h
 
       - name: Install Rust toolchain
+        # [#3289] 공유 ~/.rustup settings.toml 레이스 방지 — 첫 사용처 주석 참조.
+        if: runner.environment == 'github-hosted'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.1
