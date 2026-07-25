@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-07-16
+last_verified: 2026-07-24
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -44,7 +44,7 @@ rhwp --version     # 버전
 | 0 | 성공 | 요청한 페이지를 모두 내보냄 |
 | 1 | 런타임 실패 — 읽기·파싱·렌더·쓰기 | 입력 파일 없음, 파싱 실패, 출력 저장 실패 |
 | 2 | 사용법 오류 — 인자 없음, 알 수 없는 옵션/명령, 페이지 범위 초과 | `rhwp export-svg` (인자 없음), `--fontpath` 오타 |
-| 3 | `--verify` IR 차이 | `convert` / `export-hwpx` 전용 (아래 §3) |
+| 3 | IR 차이 검출 | `convert` / `export-hwpx` 의 `--verify` (아래 §3), `ir-diff --json` (#3274) |
 | 4 | `--verify-pages` 페이지 수 불일치 | `convert` / `export-hwpx` 전용 (아래 §3) |
 
 - 알 수 없는 명령·옵션은 **경고 후 진행하지 않고** 즉시 2로 끝난다. 안내는 stderr 로 나간다.
@@ -58,6 +58,10 @@ rhwp --version     # 버전
 
 ### `export-svg <파일> [옵션]`
 HWP/HWPX → SVG.
+- `--json` (#3287): 산출물 **매니페스트**를 stdout 에 JSON 으로 출력한다(렌더 동작 무변경).
+  `{"schemaVersion":"1.0","source","format":"svg","outputDir","pageCount","renderedCount","pages":[{"page","path","bytes"}]}`
+  기본 출력(사람용 진행 메시지)은 무변경이며, `--json` 모드에서는 stdout 에 JSON 만 나간다.
+  `search --json`(#3283)과 조합하면 **찾은 페이지만 렌더해 VLM 에 넘기는** 루프가 닫힌다.
 - `-o`, `-p` (공통)
 - `--show-para-marks` — 문단부호(↵/↓)
 - `--show-control-codes` — 조판부호(문단부호 + 개체 마커)
@@ -139,17 +143,68 @@ rhwp export-pdf input.hwp -o out.pdf \
 
 ### `export-text <파일> [옵션]`
 페이지별 텍스트 → TXT. `-o`, `-p`.
+- `--json` (#3237): 파일 저장 대신 stdout 에 순수 JSON 하나를 출력. 진행 메시지 없음.
+  `{"schemaVersion":"1.0","source","pageCount","pages":[{"page","text"}]}` —
+  `schemaVersion` 이 계약이며 필드 추가는 허용, 변경·삭제는 `tests/cli_json_contract.rs` 가 잡는다.
+  `page` 는 `-p` 와 같은 0 기준.
+
+### `batch <export-text|info|export-structure> --json [--mode <m>] [--threads <N>]` (#3238, #3261)
+stdin 의 파일 목록(한 줄당 경로 하나)을 **한 프로세스에서 파일 간 병렬**로 처리해
+NDJSON(한 줄당 레코드 하나)을 stdin 입력 순서대로 스트림 출력한다.
+- `batch export-text` 성공 레코드: `{"schemaVersion":"1.0","source","pageCount","text"}`
+- `batch info` 성공 레코드: `info --json` 과 **같은 스키마** — 단건/배치를 같은 소비 코드로 읽는다
+- `batch export-structure` 성공 레코드: `export-structure --json` 봉투와 같은 스키마.
+  `--mode auto|outline|clause` 는 이 축 전용(기본 auto)
+- 실패 레코드(공통): `{"schemaVersion":"1.0","source","error","exitClass":"runtime"}`
+- 건별 실패(읽기·파싱·추출·panic)는 레코드로 격리하고 스트림을 계속한다.
+  하나라도 실패하면 최종 종료 코드 1 (#2707 계약).
+- `--threads <N>` 기본값은 CPU 코어 수. 출력 순서는 병렬에서도 입력 순서를 보존한다.
+- 요약(`batch: N건 중 …`)은 stderr 로 나간다 — stdout 은 NDJSON 뿐이다.
+
+```bash
+# 아카이브 파이프라인: 메타데이터 스윕 → 대상 선별 → 본문 추출
+find docs/ -name '*.hwp' | rhwp batch info --json > meta.ndjson
+find docs/ -name '*.hwp' | rhwp batch export-text --json > corpus.ndjson
+```
+
+검증된 에이전트·파이프라인 시나리오(선별→추출, RAG 청킹, 실패 처리)는
+[CLI JSON 파이프라인 가이드](cli_json_pipeline_guide.md) 참조.
 
 ### `export-markdown <파일> [옵션]`
 페이지별 텍스트 → Markdown(.md). `-o`, `-p`.
+
+### `export-tables <파일> [--json] [-o out.json]` (#3278)
+표를 **격자 JSON** 으로 추출한다 (표 데이터의 기계 소비용). 파서/렌더 무변경 읽기 질의.
+- 평문·Markdown 추출은 **병합을 잃는다** — `table_to_markdown` 은 앵커 위치에만 텍스트를
+  찍어 3열 병합 헤더가 `| 5월 |  |  |` 로 나오고, 소비자는 빈 칸을 별개 열로 오독한다.
+  본 명령은 `Table.cells`(앵커 셀 + span)를 직역해 병합을 보존한다.
+- `--json` 봉투: `{"schemaVersion":"1.0","source","tableCount","tables":[…]}`
+- 표: `{index,section,paragraph,rows,cols,cellCount,caption?,cells:[…]}` —
+  `section`/`paragraph` 는 인용·역참조용 주소
+- 셀: `{row,col,rowSpan,colSpan,isHeader,text,nested?}` — 병합 셀은 **앵커에 한 번만** 나오고
+  덮인 칸은 출력하지 않는다. `nested` 는 셀 안의 표(재귀)
+- **본문뿐 아니라 글상자·머리말/꼬리말·각주/미주 안의 표까지 재귀 수집**한다.
+  (최상위 `controls` 만 훑는 `info` 의 표 열거는 이들을 놓친다 — 실측:
+  `samples/basic/treatise sample.hwp` 는 info 기준 1개, 실제 3개)
+- 기본 출력은 사람용 요약(표별 크기·병합·중첩 개수), `-o` 는 pretty JSON 파일 저장
+- 한계: 셀 안 **자동번호**는 IR 텍스트에 값이 없어(렌더 단계 주입) 빈 자리로 나온다.
+  1×1 래퍼 표(공문서 관용)도 그대로 하나의 표로 잡히므로 소비자가 걸러야 한다.
+
+```bash
+# 병합 헤더를 가진 표에서 헤더 셀만 추출
+rhwp export-tables 별표.hwp --json | jq '.tables[].cells[] | select(.isHeader)'
+```
 
 ### `export-render-tree <파일> [옵션]`
 페이지별 render tree bbox JSON(레이아웃 시각 분석용). 출력 `render_tree_{NNN}.json`.
 - `-o`, `-p`, `--show-para-marks`, `--show-control-codes`, `--respect-vpos-reset`
 - JSON: `{type, bbox:{x,y,w,h}, children:[...]}` (Page → PageBg/Line/TextRun/Image/Table/Shape …)
 
-### `export-structure <파일> [--mode auto|outline|clause] [-o out.json]`
+### `export-structure <파일> [--mode auto|outline|clause] [-o out.json] [--json]`
 문서 **개요/조문 계층**을 중첩 JSON 트리로 추출 (조문 DB화·목차 생성용). 파서/렌더 무변경 읽기 질의.
+- `--json` (#3261): 계약 봉투를 씌운 **한 줄** JSON —
+  `{"schemaVersion":"1.0","source","mode","nodeCount","structure":{...기존 트리...}}`.
+  기본 출력(무봉투 pretty JSON·`-o` 저장)은 무변경. `batch export-structure` 레코드와 같은 스키마.
 - `--mode outline`: IR 개요 수준(`ParaShape.para_level`/head_type) 기반.
 - `--mode clause`: 법률 조문 텍스트 패턴(편·장·절·관·조 / 항①②③ / 호1. / 목가.) 기반.
 - `--mode auto`(기본): 개요 head_type 있으면 outline, 없으면 clause.
@@ -188,14 +243,81 @@ HWP5 raw record 덤프(DocInfo/BodyText 레코드 트리).
 ### `diag <파일>`
 문서 구조 진단(번호/글머리표/개요 분석).
 
-### `info <파일>`
+### `capabilities` (#3263)
+도구 자기서술 JSON 을 stdout 으로 출력한다 — 에이전트가 첫 호출 1회로 명령·플래그·
+JSON 계약·종료 코드를 파악하는 입구.
+`{"schemaVersion":"1.0","tool","version","formats","exitCodes","jsonContract","batch","commands":[{name,category,summary,...}]}`
+- `--json` 계약 명령(info/export-text/export-structure/batch)은 `json:true`·`recordFields` 로 상세 서술
+- `--help`(사람용)와 함께 현행화한다 — help 에만 추가된 명령은 드리프트 가드 테스트가 잡는다
+
+#### `capabilities --mcp` — MCP 도구 정의 생성
+MCP 서버(및 함수 호출 클라이언트)가 **그대로 등록할 수 있는** 도구 정의를 낸다.
+`{"schemaVersion":"1.0","protocol":"mcp","server":{…},"invocation":{…},"tools":[{name,description,inputSchema,cli,outputFields}]}`
+- 각 도구는 MCP 필수 3종(`name`·`description`·`inputSchema`)에 더해 **실행 배선**(`cli.command`/`cli.args`)을 갖는다.
+  `cli.args` 의 `{path}`·`{a}`·`{b}`·`{subcommand}` 자리표시자를 `inputSchema` 의 같은 이름 값으로 치환해 실행한다.
+- `hwp_batch` 는 파일 목록을 stdin 으로 받는다(`invocation.stdinTools` 로 명시).
+- 로드맵상 MCP 서버 자체는 별도 저장소(#227)다. 서버가 도구 목록을 **손으로 베껴 쓰면 rhwp 가
+  바뀔 때 조용히 낡으므로**, 원천을 도구 자신이 낸다. `--json` 계약 명령이 늘었는데 MCP 에서
+  빠지면 드리프트 가드(`capabilities_mcp_covers_every_json_command`)가 잡는다.
+
+```bash
+# MCP 서버 도구 목록을 자동 생성
+rhwp capabilities --mcp | jq '.tools[] | {name, description}'
+```
+
+### `info <파일> [--json]`
 HWP 파일 정보 표시(버전/구역 수/암호화 등).
+- `--json` (#3237): stdout 에 순수 JSON 하나 —
+  `{"schemaVersion":"1.0","source","format":"hwp5|hwpx|hwp3|hml","sizeBytes","version","sections","pageCount","paraCount","fonts"}`.
+  `version` 은 HML 이면 null. 스키마 계약은 `export-text --json` 항목과 동일 규칙.
+
+### `search <파일> <검색어> [--json] [--ignore-case] [--limit N]` (#3283)
+문서를 검색해 매치마다 **구역·문단·페이지·문자 오프셋**을 함께 돌려준다.
+평문을 뽑아 외부에서 찾으면 주소가 소멸해 근거 제시가 불가능한데, rhwp 는 조판 엔진이
+있어 "몇 쪽"에 답할 수 있다. 파서/렌더 무변경 읽기 질의.
+- `--json` 봉투: `{"schemaVersion":"1.0","source","query","caseSensitive","matchCount","matches":[…]}`
+- 매치: `{section,paragraph,page?,charOffset,length,text,context,cell?}`
+  - `page` 는 0부터 시작하는 글로벌 페이지. 조판에 배치되지 않은 문단이면 생략된다.
+  - `cell` 은 표 셀 안의 매치일 때 `{control,cell,paragraph}` 좌표
+  - `context` 는 매치 앞뒤 발췌(각 40자)
+- 검색 범위는 본문 + 표 셀 + 글상자 (`search_query::search_all` 과 동일)
+- **매치 0건은 오류가 아니다** — `matchCount:0`, 종료 코드 0 (1은 런타임 실패 전용)
+- `--limit N` 은 대형 문서에서 컨텍스트를 아끼기 위한 상한
+- 성능: 페이지 매핑 비용은 0이다(로드 시 조판 완료). `(구역,문단)→페이지` 인덱스를
+  한 번만 만들어 재사용한다. 실측 393쪽·10MB 문서에서 19건 검색 **215ms**(파싱 포함).
+
+```bash
+# 근거를 댈 수 있는 답변: 어느 쪽 어느 문단인지
+rhwp search 편람.hwp "위임전결" --json | jq -r '.matches[] | "\(.page+1)쪽: \(.context)"'
+# 찾은 페이지를 이미지로 렌더해 눈으로 확인
+rhwp export-png 편람.hwp -p "$(rhwp search 편람.hwp "위임전결" --json | jq '.matches[0].page')"
+```
 
 ### `thumbnail <파일> [옵션]`
 HWP 내장 썸네일(PrvImage) 추출.
 - `-o, --output <파일>` (기본 `입력명_thumb.png`)
 - `--base64` — base64 문자열 stdout
 - `--data-uri` — `data:image/...` URI stdout
+
+### `fields <파일> [--json]` (#3281)
+누름틀/필드를 **읽기 전용**으로 조사한다 — 서식이 무엇을 요구하는지 기계가 읽는 입구.
+rhwp 는 이미 필드에 값을 쓸 수 있지만(`set_field_value_by_name`) 조회 API 가 WASM/스튜디오
+경로에만 있어 CLI 소비자는 접근할 수 없었다. 기존 `collect_all_fields()` 를 그대로 노출한다.
+- `--json` 봉투: `{"schemaVersion":"1.0","source","fieldCount","fields":[…]}`
+- 필드: `{fieldId,fieldType,name,guide,memo,command,value,editableInForm,location}`
+  - `guide` 는 누름틀 안내문, `memo` 는 HelpState 지시문("어떻게 쓰라"는 사람용 설명)
+  - `location`: `{section,paragraph,nested:[{kind:"tableCell"|"textBox",…}]}` — 표 셀·글상자
+    안의 필드는 `nested` 로 좌표를 준다
+- 필드가 없는 문서는 오류가 아니라 `fieldCount:0` 이다 (파이프라인이 멈추지 않는다)
+- 기본 출력은 사람용 요약, 종료 코드는 §종료 코드 계약(없는 파일 1·인자 없음 2)
+- **범위 한계**: `collect_fields_from_paragraph` 의 재귀는 표 셀·글상자 두 갈래다.
+  머리말/꼬리말·각주/미주 안의 필드는 잡히지 않는다(실재하는 사각지대 — 재귀 확장은
+  편집 API 좌표계와 함께 봐야 하므로 별도 이슈).
+
+```bash
+# 서식이 요구하는 항목과 지시문 확인
+rhwp fields 신청서.hwp --json | jq -r '.fields[] | "\(.name): \(.memo // .guide)"'
+```
 
 ---
 
@@ -224,10 +346,17 @@ HML 원본 문서를 의미 보존 HWPML 2.91 XML로 저장한다.
 - 입력과 출력이 같은 경로이면 원본 보호를 위해 거부한다.
 - 이 명령은 HWP/HWPX 변환 명령이 아니며 입력은 `.hml`만 받는다.
 
-### `ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>] [--summary] [--max-lines N]`
+### `ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>] [--summary] [--max-lines N] [--json]`
 두 파일의 IR 비교(HWPX↔HWP 불일치 검출). 상세: [ir_diff_command.md](ir_diff_command.md)
 - 비교: text, char_count/offsets/shapes, line_segs, controls, tab_extended, ParaShape, TabDef,
   표(page_break/outer_margin/treat_as_char/wrap/size/offset), 그림·도형(rel_to 등)
+- `--json` (#3274): 판정 봉투 **한 줄** JSON 을 stdout 으로 —
+  `{"schemaVersion":"1.0","a","b","identical","diffCount","categories":{카테고리:건수}}`.
+  종료 코드 0=동일 / **3=차이 발견**(위 "종료 코드 (#2707)" 표의 "IR 차이 검출" 코드와 동일 의미) /
+  1=읽기·파싱 실패(stdout 0바이트) / 2=사용법 오류 → 변환 파이프라인 게이트:
+  `rhwp ir-diff 원본.hwp 변환본.hwpx --json || 격리처리`
+- 종료 코드 정정(#3274): 기본(텍스트) 모드도 읽기·파싱 실패는 1, 인자 부족은 2 (#2707 정렬).
+  **기본 모드의 정상 비교는 차이가 있어도 종전대로 0** — 기존 소비자 무변경.
 
 ### `build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>`
 ingest JSON(시험문제 등) → HWPX 생성. (rhwp-exam-ingest 파이프라인)
