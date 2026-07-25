@@ -35,6 +35,7 @@ front matter는 `mydocs/manual`, `mydocs/tech`, `mydocs/troubleshootings`의 모
 
 - `manual/verification/`: 시각 검증 정책과 실행 가이드
 - `manual/codex/`: 저장소 부트스트랩과 현행 문서·Git 절차
+- `manual/pr_review/`: canonical PR review 라우터가 조건별로 선택하는 역할·검증·후속 처리 가이드
 - `manual/memory/`: 과거 피드백과 memory 출처
 - `tech/investigations/issue-####/`: 특정 이슈의 가설·실험·관찰
 - `tech/archive/`: 대체된 계획·설계와 역사 자료
@@ -52,7 +53,8 @@ front matter는 `mydocs/manual`, `mydocs/tech`, `mydocs/troubleshootings`의 모
 | [문서·Git 워크플로](manual/codex/docs_and_git_workflow.md) | canonical | active | `manual/codex/docs_and_git_workflow.md` | 2026-07-16 |
 | [Codex 문서 지도](manual/codex/README.md) | guide | active | `manual/codex/README.md` | 2026-07-17 |
 | [Claude memory dump 색인](manual/memory/MEMORY.md) | memory | historical | `manual/codex/docs_and_git_workflow.md` | 2026-07-17 |
-| [PR 리뷰·통합 워크플로](manual/pr_review_workflow.md) | canonical | active | `manual/pr_review_workflow.md` | 2026-07-16 |
+| [PR 리뷰·통합 워크플로](manual/pr_review_workflow.md) | canonical | active | `manual/pr_review_workflow.md` | 2026-07-25 |
+| [PR review 조건별 가이드](manual/pr_review/README.md) | guide | active | `manual/pr_review_workflow.md` | 2026-07-25 |
 | [개발 환경 가이드](manual/dev_environment_guide.md) | guide | active | `manual/dev_environment_guide.md` | 2026-07-17 |
 | [온보딩 가이드](manual/onboarding_guide.md) | guide | active | `manual/README.md` | 2026-07-17 |
 | [배포 가이드](manual/publish_guide.md) | guide | active | `manual/publish_guide.md` | 2026-07-17 |

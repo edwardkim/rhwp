@@ -8,7 +8,8 @@ last_verified: 2026-07-16
 # Documentation And Git Workflow
 
 > 이 문서는 문서·Git 작업의 공통 절차를 다룬다. PR 검토·merge·후속 처리의 역할별 규칙은
-> [PR 리뷰·통합 워크플로우](../pr_review_workflow.md)를 우선한다. 현재 세션이나 종료된 작업의 상태는
+> [PR 리뷰·통합 워크플로우](../pr_review_workflow.md)와 그
+> [조건별 자식 가이드 선택표](../pr_review/README.md)를 우선한다. 현재 세션이나 종료된 작업의 상태는
 > 이 문서에 기록하지 않는다.
 
 ## Document Language
@@ -151,5 +152,5 @@ PR 댓글 톤은 과장하지 않는다. "정말 감사합니다", "정성스러
 - 로컬 작업과 검증의 기준은 최신 `upstream/devel`이다.
 - 일반 변경은 작업 브랜치에서 검증한 뒤 `devel` 대상 PR로 통합한다. `upstream/devel`에 직접 push하지 않는다.
 - collaborator·maintainer가 원 PR에 보정하거나 merge 후 운영 기록을 반영하는 경우에도
-  [PR 리뷰·통합 워크플로우](../pr_review_workflow.md)의 역할별 경로를 따른다.
+  [PR 리뷰·통합 워크플로우](../pr_review_workflow.md)의 선택표가 지정한 역할별 경로를 따른다.
 - `local/*`은 로컬 작업 이름일 뿐 원격 `devel`을 갱신하는 명령의 근거가 아니다.
