@@ -9,3 +9,4 @@ mod form_query;
 pub mod rendering;
 mod search_query;
 pub mod structure;
+pub mod table_extract;

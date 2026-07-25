@@ -169,6 +169,28 @@ find docs/ -name '*.hwp' | rhwp batch export-text --json > corpus.ndjson
 ### `export-markdown <파일> [옵션]`
 페이지별 텍스트 → Markdown(.md). `-o`, `-p`.
 
+### `export-tables <파일> [--json] [-o out.json]` (#3278)
+표를 **격자 JSON** 으로 추출한다 (표 데이터의 기계 소비용). 파서/렌더 무변경 읽기 질의.
+- 평문·Markdown 추출은 **병합을 잃는다** — `table_to_markdown` 은 앵커 위치에만 텍스트를
+  찍어 3열 병합 헤더가 `| 5월 |  |  |` 로 나오고, 소비자는 빈 칸을 별개 열로 오독한다.
+  본 명령은 `Table.cells`(앵커 셀 + span)를 직역해 병합을 보존한다.
+- `--json` 봉투: `{"schemaVersion":"1.0","source","tableCount","tables":[…]}`
+- 표: `{index,section,paragraph,rows,cols,cellCount,caption?,cells:[…]}` —
+  `section`/`paragraph` 는 인용·역참조용 주소
+- 셀: `{row,col,rowSpan,colSpan,isHeader,text,nested?}` — 병합 셀은 **앵커에 한 번만** 나오고
+  덮인 칸은 출력하지 않는다. `nested` 는 셀 안의 표(재귀)
+- **본문뿐 아니라 글상자·머리말/꼬리말·각주/미주 안의 표까지 재귀 수집**한다.
+  (최상위 `controls` 만 훑는 `info` 의 표 열거는 이들을 놓친다 — 실측:
+  `samples/basic/treatise sample.hwp` 는 info 기준 1개, 실제 3개)
+- 기본 출력은 사람용 요약(표별 크기·병합·중첩 개수), `-o` 는 pretty JSON 파일 저장
+- 한계: 셀 안 **자동번호**는 IR 텍스트에 값이 없어(렌더 단계 주입) 빈 자리로 나온다.
+  1×1 래퍼 표(공문서 관용)도 그대로 하나의 표로 잡히므로 소비자가 걸러야 한다.
+
+```bash
+# 병합 헤더를 가진 표에서 헤더 셀만 추출
+rhwp export-tables 별표.hwp --json | jq '.tables[].cells[] | select(.isHeader)'
+```
+
 ### `export-render-tree <파일> [옵션]`
 페이지별 render tree bbox JSON(레이아웃 시각 분석용). 출력 `render_tree_{NNN}.json`.
 - `-o`, `-p`, `--show-para-marks`, `--show-control-codes`, `--respect-vpos-reset`

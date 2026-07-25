@@ -38,6 +38,7 @@ fn main() {
         Some("export-pdf") => exit_with(export_pdf(&args[2..])),
         Some("export-text") => exit_with(export_text(&args[2..])),
         Some("export-markdown") => exit_with(export_markdown(&args[2..])),
+        Some("export-tables") => exit_with(export_tables(&args[2..])),
         Some("export-hwpx") => exit_with(export_hwpx(&args[2..])),
         Some("export-hml") => export_hml(&args[2..]),
         Some("export-doclang") => exit_with(export_doclang(&args[2..])),
@@ -185,6 +186,12 @@ fn print_help() {
     println!();
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!();
+    println!("  export-tables <파일.hwp|파일.hwpx> [--json] [-o <출력.json>]");
+    println!("      표를 격자 JSON으로 추출 (병합 rowSpan/colSpan·중첩 표 보존)");
+    println!();
+    println!("      --json                  계약 봉투 JSON을 stdout에 출력");
+    println!("      -o, --output <파일>     JSON을 파일로 저장");
     println!();
     println!("  export-pdf <파일.hwp|파일.hwpx|파일.hml> [옵션]");
     println!("      HWP/HWPX/HML 문서를 PDF로 내보내기 (기본: SVG 호환 backend)");
@@ -1870,6 +1877,109 @@ fn export_text(args: &[String]) -> i32 {
     } else {
         EXIT_RUNTIME
     }
+}
+
+/// `export-tables` — 표를 격자 JSON 으로 추출 (병합·중첩 보존).
+///
+/// 평문·Markdown 추출은 병합(rowSpan/colSpan)을 잃어 소비자가 덮인 칸을 별개 열로
+/// 오독한다. 본 명령은 `Table.cells`(앵커 셀 + span)를 그대로 직역해 격자를 보존한다.
+fn export_tables(args: &[String]) -> i32 {
+    use rhwp::document_core::queries::table_extract::extract_tables;
+
+    let mut file_path: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "-o" | "--out" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(p) => out_path = Some(p.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => file_path = Some(other),
+        }
+        i += 1;
+    }
+
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp export-tables <파일.hwp|파일.hwpx> [--json] [-o <출력.json>]");
+        return EXIT_USAGE;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let tables = extract_tables(doc.document());
+    let envelope = serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "tableCount": tables.len(),
+        "tables": tables,
+    });
+
+    if let Some(p) = out_path {
+        let json = match serde_json::to_string_pretty(&envelope) {
+            Ok(j) => j,
+            Err(e) => {
+                eprintln!("오류: JSON 직렬화 실패 - {}", e);
+                return EXIT_RUNTIME;
+            }
+        };
+        return match fs::write(&p, &json) {
+            Ok(_) => {
+                println!("표 추출 완료: {}개 → {}", tables.len(), p);
+                EXIT_OK
+            }
+            Err(e) => {
+                eprintln!("오류: 출력 쓰기 실패 - {}: {}", p, e);
+                EXIT_RUNTIME
+            }
+        };
+    }
+
+    if json_mode {
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
+    // 기본 출력은 사람용 요약 — 기계 소비는 --json 이 담당한다.
+    println!("문서 로드: {} (표 {}개)", file_path, tables.len());
+    for t in &tables {
+        let merged = t
+            .cells
+            .iter()
+            .filter(|c| c.row_span > 1 || c.col_span > 1)
+            .count();
+        let nested = t.cells.iter().filter(|c| !c.nested.is_empty()).count();
+        println!(
+            "  표{} [구역{}:문단{}]: {}행×{}열, 셀 {}개 (병합 {}개, 중첩 {}개)",
+            t.index, t.section, t.paragraph, t.rows, t.cols, t.cell_count, merged, nested
+        );
+    }
+    EXIT_OK
 }
 
 fn export_markdown(args: &[String]) -> i32 {
