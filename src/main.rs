@@ -41,7 +41,7 @@ fn main() {
         Some("export-hwpx") => exit_with(export_hwpx(&args[2..])),
         Some("export-hml") => export_hml(&args[2..]),
         Some("export-doclang") => exit_with(export_doclang(&args[2..])),
-        Some("capabilities") => exit_with(show_capabilities()),
+        Some("capabilities") => exit_with(show_capabilities(&args[2..])),
         Some("batch") => exit_with(run_batch(&args[2..])),
         Some("info") => exit_with(show_info(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
@@ -99,11 +99,161 @@ fn main() {
     }
 }
 
+/// [#3263] `capabilities --mcp` — MCP 도구 정의 생성.
+///
+/// MCP 서버 저자(및 함수 호출 클라이언트)가 도구 이름·설명·입력 JSON Schema·실행 배선을
+/// 손으로 옮겨 적지 않게 한다. `--json` 계약을 가진 명령이 늘면
+/// `capabilities_mcp_covers_every_json_command` 가 누락을 잡는다.
+fn show_mcp_tools() -> i32 {
+    /// 문서 경로 하나를 받는 도구의 표준 입력 스키마.
+    fn path_schema(extra: serde_json::Value) -> serde_json::Value {
+        let mut props = serde_json::json!({
+            "path": { "type": "string", "description": "HWP/HWPX/HML 문서 경로" }
+        });
+        if let (Some(p), Some(e)) = (props.as_object_mut(), extra.as_object()) {
+            for (k, v) in e {
+                p.insert(k.clone(), v.clone());
+            }
+        }
+        serde_json::json!({
+            "type": "object",
+            "properties": props,
+            "required": ["path"],
+        })
+    }
+
+    fn tool(
+        name: &str,
+        description: &str,
+        input_schema: serde_json::Value,
+        command: &str,
+        args_template: serde_json::Value,
+        output_fields: &[&str],
+    ) -> serde_json::Value {
+        serde_json::json!({
+            "name": name,
+            "description": description,
+            "inputSchema": input_schema,
+            "cli": { "command": command, "args": args_template },
+            "outputFields": output_fields,
+        })
+    }
+
+    let tools = vec![
+        tool(
+            "hwp_info",
+            "HWP/HWPX/HML 문서의 메타데이터(포맷·구역/페이지/문단 수·폰트)를 조회한다. 문서를 열기 전에 규모와 형식을 파악할 때 쓴다.",
+            path_schema(serde_json::json!({})),
+            "info",
+            serde_json::json!(["info", "--json", "{path}"]),
+            &["format", "sizeBytes", "sections", "pageCount", "paraCount", "fonts"],
+        ),
+        tool(
+            "hwp_export_text",
+            "문서의 페이지별 본문 텍스트를 추출한다. 특정 페이지만 필요하면 page 를 준다.",
+            path_schema(serde_json::json!({
+                "page": { "type": "integer", "minimum": 0, "description": "0부터 시작하는 페이지 번호. 생략하면 전체" }
+            })),
+            "export-text",
+            serde_json::json!(["export-text", "--json", "{path}"]),
+            &["pageCount", "pages"],
+        ),
+        tool(
+            "hwp_export_structure",
+            "문서의 개요/조문 계층을 트리로 추출한다. 법령·규정의 '제N조' 구조를 얻어 조문 단위로 인용하거나 청킹할 때 쓴다.",
+            path_schema(serde_json::json!({
+                "mode": {
+                    "type": "string",
+                    "enum": ["auto", "outline", "clause"],
+                    "description": "분류 방식. 기본 auto"
+                }
+            })),
+            "export-structure",
+            serde_json::json!(["export-structure", "--json", "{path}"]),
+            &["mode", "nodeCount", "structure"],
+        ),
+        tool(
+            "hwp_ir_diff",
+            "두 문서의 내부 표현(IR) 차이를 비교한다. 변환 전후의 내용 보존을 검증할 때 쓴다. 차이가 있으면 CLI 종료 코드 3.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "a": { "type": "string", "description": "비교 대상 A 경로" },
+                    "b": { "type": "string", "description": "비교 대상 B 경로" }
+                },
+                "required": ["a", "b"],
+            }),
+            "ir-diff",
+            serde_json::json!(["ir-diff", "{a}", "{b}", "--json"]),
+            &["identical", "diffCount", "categories"],
+        ),
+        tool(
+            "hwp_batch",
+            "여러 문서를 한 프로세스에서 병렬 처리해 NDJSON 스트림으로 받는다. 파일 목록은 stdin 으로 한 줄에 하나씩 넣는다. 아카이브 전체를 스윕할 때 쓴다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "subcommand": {
+                        "type": "string",
+                        "enum": ["export-text", "info", "export-structure"],
+                        "description": "각 파일에 적용할 처리"
+                    },
+                    "paths": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "처리할 문서 경로 목록 (stdin 으로 전달된다)"
+                    },
+                    "threads": { "type": "integer", "minimum": 1, "description": "병렬 스레드 수. 기본은 CPU 코어 수" }
+                },
+                "required": ["subcommand", "paths"],
+            }),
+            "batch",
+            serde_json::json!(["batch", "{subcommand}", "--json"]),
+            &["schemaVersion", "source", "error", "exitClass"],
+        ),
+    ];
+
+    let manifest = serde_json::json!({
+        "schemaVersion": "1.0",
+        "protocol": "mcp",
+        "server": {
+            "suggestedName": "rhwp",
+            "version": rhwp::version(),
+            "description": "HWP/HWPX 한국어 문서를 읽는 도구 모음 (읽기 전용)",
+        },
+        "invocation": {
+            "transport": "cli",
+            "note": "각 도구의 cli.args 에서 {name} 자리표시자를 inputSchema 의 같은 이름 값으로 치환해 실행한다. stdout 은 순수 JSON, 진단은 stderr, 종료 코드는 0/1/2(+ir-diff 차이 3).",
+            "stdinTools": ["hwp_batch"],
+        },
+        "tools": tools,
+    });
+    println!("{manifest}");
+    EXIT_OK
+}
+
 /// [#3263] 도구 자기서술 — 에이전트가 첫 호출 1회로 명령·계약·스키마를 파악하는 입구.
 ///
 /// `--help`(사람용)와 본 목록(기계용)은 함께 현행화한다 — help 에만 추가된 명령은
 /// `tests/cli_json_contract.rs::capabilities_covers_every_help_command` 가 잡는다.
-fn show_capabilities() -> i32 {
+fn show_capabilities(args: &[String]) -> i32 {
+    // [#3263] --mcp: MCP 서버가 그대로 등록할 수 있는 도구 정의.
+    // 로드맵상 MCP 서버 자체는 별도 저장소(#227)지만, 그 서버가 도구 목록·입력 스키마를
+    // 손으로 베껴 쓰면 rhwp 가 바뀔 때마다 조용히 낡는다. 원천을 여기서 낸다.
+    let mut mcp_mode = false;
+    for a in args {
+        match a.as_str() {
+            "--mcp" => mcp_mode = true,
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+    }
+    if mcp_mode {
+        return show_mcp_tools();
+    }
+
     fn cmd(name: &str, category: &str, summary: &str) -> serde_json::Value {
         serde_json::json!({ "name": name, "category": category, "summary": summary })
     }
@@ -438,8 +588,10 @@ fn print_help() {
     println!();
     println!("      --json                  문서 정보를 JSON으로 stdout에 출력");
     println!();
-    println!("  capabilities");
+    println!("  capabilities [--mcp]");
     println!("      도구 자기서술 JSON 출력 (명령·플래그·JSON 계약·종료 코드) — 에이전트용");
+    println!();
+    println!("      --mcp                   MCP 도구 정의(name/description/inputSchema) 출력");
     println!();
     println!("  dump <파일.hwp|파일.hwpx|파일.hml> [--section <번호>] [--para <번호>]");
     println!("      문서 조판부호 구조 덤프 (디버깅용)");
