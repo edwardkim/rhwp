@@ -468,7 +468,11 @@ jobs:
 
       # [#2393] 수동 restore/save 캐시 → rust-cache (적중률·정리 자동화).
       # 저장 정책은 종전과 동일하게 devel/main push 로 한정.
+      # [#3289] self-hosted 는 공유 ~/.cargo + 러너별 _work target 이 자연 캐시라 제외.
+      # rust-cache 의 save 전 정리가 공유 ~/.cargo/bin 의 cargo-nextest 를 삭제하는
+      # 사고 실측 (devel push run 30145509799, "Cleaning cargo/bin").
       - name: Rust build cache
+        if: runner.environment == 'github-hosted'
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: test-archive
@@ -653,7 +657,9 @@ jobs:
           components: clippy, rustfmt
           targets: wasm32-unknown-unknown
 
+      # [#3289] self-hosted 제외 — 공유 ~/.cargo/bin 파괴 사고 (build-test-archive 주석 참조)
       - name: Rust build cache
+        if: runner.environment == 'github-hosted'
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: lint
@@ -719,7 +725,9 @@ jobs:
       # [#2431 C] 기본 test job 의 rust-cache 이행 후 writer가 사라진
       # Linux-cargo-* namespace 대신 Native Skia 전용 shared key를 사용한다.
       # PR은 restore-only, devel/main push만 save하는 신뢰 경계를 유지한다.
+      # [#3289] self-hosted 제외 — 공유 ~/.cargo/bin 파괴 사고 (build-test-archive 주석 참조)
       - name: Rust build cache
+        if: runner.environment == 'github-hosted'
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: native-skia
