@@ -18,6 +18,14 @@ struct SearchHit {
     cell_context: Option<(usize, usize, usize, usize)>,
 }
 
+/// 문단 텍스트에서 query를 검색하여 모든 매치 오프셋을 반환한다.
+///
+/// [#3283] `grep`(주소를 가진 검색)이 같은 매칭 규칙을 쓰도록 크레이트에 공개한다 —
+/// 검색과 치환이 다른 규칙을 쓰면 "찾았는데 못 바꾸는" 어긋남이 생긴다.
+pub(crate) fn find_matches(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
+    find_in_text(text, query, case_sensitive)
+}
+
 /// 문단 텍스트에서 query를 검색하여 모든 매치 오프셋을 반환
 fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
     if query.is_empty() || text.is_empty() {
