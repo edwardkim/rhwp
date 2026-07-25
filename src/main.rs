@@ -384,6 +384,7 @@ fn export_svg(args: &[String]) -> i32 {
     let mut font_embed_mode = rhwp::renderer::svg::FontEmbedMode::None;
     let mut font_paths: Vec<std::path::PathBuf> = Vec::new();
     let mut render_profile: Option<rhwp::paint::RenderProfile> = None;
+    let mut json_mode = false;
 
     let mut i = 1;
     while i < args.len() {
@@ -513,6 +514,12 @@ fn export_svg(args: &[String]) -> i32 {
                     return EXIT_USAGE;
                 }
             }
+            "--json" => {
+                // [#3286] 산출물 매니페스트를 stdout 에 JSON 으로 — 에이전트가
+                // 어떤 파일이 생겼는지 파싱 없이 알 수 있게 한다.
+                json_mode = true;
+                i += 1;
+            }
             _ => {
                 eprintln!("알 수 없는 옵션: {}", args[i]);
                 return EXIT_USAGE;
@@ -567,7 +574,10 @@ fn export_svg(args: &[String]) -> i32 {
     }
 
     let page_count = doc.page_count();
-    println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    if !json_mode {
+        // stdout 순수성: --json 모드에서는 데이터(JSON)만 나간다.
+        println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    }
 
     // 출력 폴더 생성
     let output_path = Path::new(&output_dir);
@@ -603,6 +613,7 @@ fn export_svg(args: &[String]) -> i32 {
         .unwrap_or("page");
 
     // [#2707] 요청한 페이지 수가 아니라 실제로 저장에 성공한 페이지 수를 센다.
+    let mut manifest: Vec<serde_json::Value> = Vec::new();
     let mut written = 0usize;
 
     for page_num in &pages {
@@ -643,7 +654,15 @@ fn export_svg(args: &[String]) -> i32 {
 
                 match fs::write(&svg_path, &svg) {
                     Ok(_) => {
-                        println!("  → {}", svg_path.display());
+                        if json_mode {
+                            manifest.push(serde_json::json!({
+                                "page": page_num,
+                                "path": svg_path.display().to_string(),
+                                "bytes": svg.len(),
+                            }));
+                        } else {
+                            println!("  → {}", svg_path.display());
+                        }
                         written += 1;
                     }
                     Err(e) => eprintln!("오류: SVG 저장 실패 - {}: {}", svg_path.display(), e),
@@ -655,7 +674,20 @@ fn export_svg(args: &[String]) -> i32 {
         }
     }
 
-    println!("내보내기 완료: {}개 SVG 파일 → {}/", written, output_dir);
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "format": "svg",
+            "outputDir": output_dir,
+            "pageCount": page_count,
+            "renderedCount": written,
+            "pages": manifest,
+        });
+        println!("{envelope}");
+    } else {
+        println!("내보내기 완료: {}개 SVG 파일 → {}/", written, output_dir);
+    }
 
     // [#2707] 한 장이라도 못 썼으면 런타임 실패다.
     if written == pages.len() {
