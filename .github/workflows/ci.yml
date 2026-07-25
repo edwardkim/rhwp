@@ -53,7 +53,8 @@ concurrency:
 jobs:
   preflight:
     name: CI preflight
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 10
     permissions:
       actions: read
       contents: read
@@ -410,7 +411,12 @@ jobs:
   # required check 는 집계 job "Build & Test" 로 불변이다.
   build-test-archive:
     name: Build test archive
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 30
+    # [#3289] 러너 .env 의 CARGO_BUILD_JOBS=3 은 20개 러너 동시 빌드 폭주 대비
+    # 보수값이다. critical path 빌드 잡만 상향해 70코어 호스트를 활용한다.
+    env:
+      CARGO_BUILD_JOBS: 12
     needs: [preflight, lint, frontend-package-gates]
     if: >-
       ${{
@@ -438,6 +444,9 @@ jobs:
       # [Task #1109 / #1192 C] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
       # 테스트 빌드 시 디스크 한도 초과를 줄인다.
       - name: Free disk space (remove unused pre-installed toolchains)
+        # [#3284] GitHub-hosted 이미지 전용 사전설치물 제거 — self-hosted 러너에는
+        # 해당 디렉터리가 없고 sudo(apt 한정)로 rm 이 불가하므로 skip 한다.
+        if: runner.environment == 'github-hosted'
         run: |
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /usr/share/dotnet
@@ -448,7 +457,11 @@ jobs:
         with:
           toolchain: 1.93.1
 
+      # [#3289] 20개 러너가 /home/app 의 ~/.cargo/bin 을 공유하므로 동시 설치 시
+      # mv 레이스로 실패한다 (shard 8개 동시 시작 실측). self-hosted 는 호스트에
+      # 1회 설치된 cargo-nextest 를 그대로 쓰고, hosted 러너에서만 설치한다.
       - name: Install cargo-nextest
+        if: runner.environment == 'github-hosted'
         uses: taiki-e/install-action@v2
         with:
           tool: nextest
@@ -480,6 +493,20 @@ jobs:
             --cargo-profile "${{ steps.profile.outputs.cargo_profile }}" \
             --archive-file tests.tar.zst
 
+      # [#3289] 20개 러너가 한 호스트를 공유하므로 아카이브를 호스트 캐시 디렉터리에
+      # 복사해 두면 8개 shard 의 동시 다운로드(1GB×8, 회선 공유로 ~6분 대기)를
+      # 로컬 hardlink/copy 로 대체할 수 있다. 업로드 아티팩트는 fallback 으로 유지한다.
+      # tmp+mv 원자적 쓰기로 부분 파일 노출을 막고, 하루 지난 run 캐시는 정리한다.
+      - name: Publish archive to host cache
+        if: runner.environment != 'github-hosted'
+        run: |
+          cache_dir="$HOME/artifact-cache/${GITHUB_RUN_ID}"
+          find "$HOME/artifact-cache" -mindepth 1 -maxdepth 1 -type d -mmin +1440 -exec rm -rf {} + 2>/dev/null || true
+          mkdir -p "$cache_dir"
+          cp tests.tar.zst "$cache_dir/tests.tar.zst.tmp"
+          mv "$cache_dir/tests.tar.zst.tmp" "$cache_dir/tests.tar.zst"
+          ls -la --block-size=M "$cache_dir"
+
       # [#2393] 샤드 합계 대조의 기대치 — 비-ignored(runnable) 테스트 수.
       # nextest Summary 의 skipped 는 파티션 제외분과 #[ignore] 를 합산하므로
       # run 합계의 기준은 total 이 아니라 runnable 이다 (3차 PR CI 실측: 23 ignored).
@@ -509,7 +536,8 @@ jobs:
 
   test-shard:
     name: Default-feature tests (shard ${{ matrix.shard }}/8)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 30
     needs: [preflight, native-skia-tests, build-test-archive]
     # [#3266] archive와 Native Skia를 병렬화하되, 두 필수 worker가 모두 성공한
     # 뒤에만 기본 테스트를 실행한다. 따라서 Native 실패 시 archive가 완료돼도 shard는 skip된다.
@@ -538,12 +566,32 @@ jobs:
         with:
           toolchain: 1.93.1
 
+      # [#3289] 공유 ~/.cargo/bin 동시 설치 레이스 방지 — build-test-archive 주석 참조.
       - name: Install cargo-nextest
+        if: runner.environment == 'github-hosted'
         uses: taiki-e/install-action@v2
         with:
           tool: nextest
 
+      # [#3289] 같은 호스트의 build-test-archive 잡이 남긴 호스트 캐시를 우선 사용해
+      # 8개 shard 동시 다운로드 병목(~6분)을 제거한다. hardlink 는 동일 파일시스템
+      # (/home/app)에서 즉시 완료되고, 실패 시 copy → 그마저 없으면 아티팩트 다운로드.
+      - name: Fetch test archive from host cache
+        id: host_cache
+        if: runner.environment != 'github-hosted'
+        run: |
+          src="$HOME/artifact-cache/${GITHUB_RUN_ID}/tests.tar.zst"
+          if [[ -f "$src" ]]; then
+            ln -f "$src" tests.tar.zst 2>/dev/null || cp "$src" tests.tar.zst
+            hit=true
+          else
+            hit=false
+          fi
+          echo "hit=$hit" >> "$GITHUB_OUTPUT"
+          echo "host cache hit=$hit"
+
       - name: Download test archive
+        if: steps.host_cache.outputs.hit != 'true'
         uses: actions/download-artifact@v8
         with:
           name: test-archive-${{ github.run_id }}
@@ -585,7 +633,11 @@ jobs:
 
   lint:
     name: Lint (fmt, clippy, WASM check)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 20
+    # [#3289] critical path 빌드 잡 한정 CARGO_BUILD_JOBS 상향 (build-test-archive 주석 참조)
+    env:
+      CARGO_BUILD_JOBS: 12
     needs: preflight
     if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
     permissions:
@@ -618,7 +670,11 @@ jobs:
 
   native-skia-tests:
     name: Native Skia tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 30
+    # [#3289] critical path 빌드 잡 한정 CARGO_BUILD_JOBS 상향 (build-test-archive 주석 참조)
+    env:
+      CARGO_BUILD_JOBS: 12
     needs: [preflight, lint, frontend-package-gates]
     # frontend 비대상 job의 skipped는 정상 경로다. 대상 job의 실패/취소와 lint 실패는
     # native-skia 이후 worker 전체에 전파한다.
@@ -647,6 +703,9 @@ jobs:
       # [#1192] 캐시 정상 작동 확인 후 "크고 빠른" 항목(android/dotnet)만 남기고 축소.
       # 느린 docker prune --all / apt clean / ghc / CodeQL 정리는 제거. df -h 로 여유 확인.
       - name: Free disk space (remove unused pre-installed toolchains)
+        # [#3284] GitHub-hosted 이미지 전용 사전설치물 제거 — self-hosted 러너에는
+        # 해당 디렉터리가 없고 sudo(apt 한정)로 rm 이 불가하므로 skip 한다.
+        if: runner.environment == 'github-hosted'
         run: |
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /usr/share/dotnet
@@ -690,7 +749,8 @@ jobs:
 
   frontend-package-gates:
     name: Frontend package gates
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 20
     # [#3268] Frontend는 Lint의 산출물을 읽지 않고 독립 runner에서 별도 target/cache를 쓴다.
     # preflight의 fast-pass·영향 판정만 기다려 Lint와 병렬 시작한다. Lint 실패 시 Frontend가
     # 끝날 수는 있지만 Native/archive는 아래 두 worker의 성공을 모두 계속 요구한다.
@@ -788,7 +848,8 @@ jobs:
 
   build-and-test:
     name: Build & Test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 45
     needs:
       - preflight
       - build-test-archive
@@ -905,7 +966,8 @@ jobs:
 
   wasm-build:
     name: WASM Build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 30
     permissions:
       contents: read
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
@@ -916,6 +978,9 @@ jobs:
       # [Task #1109 / #1192 C] wasm-build job 도 build-and-test 와 동일 축소 패턴.
       # "크고 빠른" 항목(android/dotnet)만 제거. df -h 로 여유 확인.
       - name: Free disk space (remove unused pre-installed toolchains)
+        # [#3284] GitHub-hosted 이미지 전용 사전설치물 제거 — self-hosted 러너에는
+        # 해당 디렉터리가 없고 sudo(apt 한정)로 rm 이 불가하므로 skip 한다.
+        if: runner.environment == 'github-hosted'
         run: |
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /usr/share/dotnet

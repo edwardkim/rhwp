@@ -160,7 +160,7 @@ mod tests {
             // 이전 문단 끝에서 Enter
             let prev_para = &core.document.sections[0].paragraphs[i - 1];
             let end_pos = prev_para.text.chars().count();
-            let _ = core.split_paragraph_native(0, i - 1, end_pos);
+            let _ = core.split_paragraph_native(0, i - 1, end_pos, None);
             // 새 문단에 텍스트 삽입
             let _ = core.insert_text_native(0, i, 0, text);
         }

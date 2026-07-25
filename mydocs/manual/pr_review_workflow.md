@@ -1015,6 +1015,28 @@ git ls-remote --heads upstream <headRefName>
 git status --short --branch
 ```
 
+#### 7.7.1 검토 전용 `target/` 임시 산출물 정리
+
+PR review에서 이전 검증의 `target/debug` 비대화와 Cargo lock 영향을 피하려고
+`CARGO_TARGET_DIR=target/<review-name>` 같은 **검토 전용** target 경로를 만들었다면, 7.7의
+브랜치·worktree 정리 직후 해당 임시 경로도 정리한다. 검토 전용 target을 남겨 두면 다음 review의
+디스크 사용량과 빌드 상태 판정에 혼입되므로, "후속 처리 완료" 보고 전 확인 대상이다.
+
+다만 `target/debug`, `target/release`, `target/release-test`, `target/wasm32-unknown-unknown`처럼
+다른 작업과 공유할 수 있는 경로, 또는 사용자·다른 도구가 만든 산출물은 삭제 대상으로 가정하지 않는다.
+먼저 정확한 전용 경로와 실행 중인 Cargo/Rust 작업을 확인한다.
+
+```bash
+find target -mindepth 1 -maxdepth 1 -type d -exec du -sh {} \;
+pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
+```
+
+- 실행 중인 Cargo/Rust 작업이 그 경로를 사용하면 종료될 때까지 유지한다.
+- 경로가 현재 review 전용임을 확인한 뒤에만 해당 **정확한 하위 디렉터리**를 제거한다. 저장소 전체
+  `target/`이나 공유 target 경로를 재귀 삭제하지 않는다.
+- 복구가 필요한 환경에서는 먼저 휴지통으로 이동할 수 있다. 실제 삭제 또는 휴지통 이동 뒤에는 남은
+  `target/` 하위 경로를 다시 확인하고, 정리한 정확한 이름과 공유 경로를 보존한 사실을 최종 상태에 기록한다.
+
 ### 7.8 오늘할일 갱신
 
 maintainer 일반 경로에서는 PR merge 와 후속 처리를 끝낸 뒤 이 절을 수행한다. collaborator 경로의
