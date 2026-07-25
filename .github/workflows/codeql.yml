@@ -45,7 +45,8 @@ concurrency:
 jobs:
   preflight:
     name: CodeQL preflight
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 10
     permissions:
       contents: read
       checks: read
@@ -247,7 +248,8 @@ jobs:
 
   analyze:
     name: Analyze (${{ matrix.language }})
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 45
     needs: preflight
     if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
     permissions:
