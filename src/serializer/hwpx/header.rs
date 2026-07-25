@@ -85,6 +85,15 @@ pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, S
     write_bullets(&mut w, &doc.doc_info)?;
     write_para_properties(&mut w, &doc.doc_info, ctx)?;
     write_styles(&mut w, &doc.doc_info, ctx)?;
+    // memoProperties(메모 모양 정의: 테두리/색상)는 refList 마지막 자식으로,
+    // parse_memo_shape가 만드는 extra_records(HWPTAG_MEMO_SHAPE, hwpx→hwp5
+    // 변환 전용)는 여기서 쓰이지 않는다. 원본 verbatim splice로 hwpx→hwpx
+    // 라운드트립 시 memoPr 소실을 막는다(#3xxx).
+    if let Some(memo_properties) = &doc.doc_info.memo_properties_xml {
+        w.get_mut()
+            .write_all(memo_properties.as_bytes())
+            .map_err(|e| SerializeError::XmlError(format!("memoProperties splice: {e}")))?;
+    }
     end_tag(&mut w, "hh:refList")?;
 
     // 문서 설정 tail: 원본 HWPX 가 있으면 그대로 splice(compatibleDocument/
@@ -1475,6 +1484,34 @@ mod tests {
         assert!(
             !xml.contains(r#"version="1.2""#),
             "하드코딩 1.2 가 남아있으면 안 됨"
+        );
+    }
+
+    #[test]
+    fn write_header_preserves_memo_properties_roundtrip() {
+        // aift.hwpx 실물 헤더에는 refList 마지막 자식으로
+        // <hh:memoProperties itemCnt="1"><hh:memoPr .../></hh:memoProperties>
+        // 가 있다. parse_memo_shape()가 만드는 extra_records(HWPTAG_MEMO_SHAPE)는
+        // hwpx→hwp5 변환 전용이라 write_header가 참조하지 않으므로, splice
+        // 보존이 없으면 hwpx→hwpx 라운드트립에서 memoPr(메모 모양: 테두리/색상)이
+        // 통째로 사라진다.
+        let bytes = include_bytes!("../../../samples/hwpx/aift.hwpx");
+        let doc = parse_hwpx(bytes).expect("parse aift.hwpx");
+        assert!(
+            doc.doc_info.memo_properties_xml.is_some(),
+            "파서가 memoProperties 원문을 보존해야 함"
+        );
+        let ctx = SerializeContext::collect_from_document(&doc);
+        let header_xml =
+            String::from_utf8(write_header(&doc, &ctx).expect("write header")).unwrap();
+        assert!(
+            header_xml.contains("<hh:memoProperties"),
+            "재직렬화된 header.xml에 memoProperties가 있어야 함: {header_xml}"
+        );
+        assert!(
+            header_xml.contains(r#"lineType="SOLID""#)
+                && header_xml.contains(r##"fillColor="#CBFF99""##),
+            "memoPr 원본 속성(lineType/fillColor 등)이 그대로 보존돼야 함: {header_xml}"
         );
     }
 

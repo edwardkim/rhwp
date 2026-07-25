@@ -294,14 +294,20 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
         "commands/text_editing.rs",
         "insert_text_in_cell_native",
-        Exempt::DelegatesTo("insert_text_in_cell_native_impl"),
+        Exempt::DelegatesTo("replace_text_in_cell_native_impl"),
         "얇은 래퍼 — 실제 삽입·무효화는 `_impl` 이 수행.",
     ),
     (
         "commands/text_editing.rs",
         "insert_text_in_cell_native_deferred_pagination",
-        Exempt::DelegatesTo("insert_text_in_cell_native_impl"),
+        Exempt::DelegatesTo("replace_text_in_cell_native_impl"),
         "페이지네이션 지연 플래그만 다른 래퍼 — 본체는 `_impl`.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "replace_text_in_cell_native_deferred_pagination",
+        Exempt::DelegatesTo("replace_text_in_cell_native_impl"),
+        "원자 치환 래퍼 — 실제 치환·무효화는 `_impl` 이 수행.",
     ),
     (
         "commands/text_editing.rs",

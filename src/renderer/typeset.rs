@@ -18115,8 +18115,9 @@ impl TypesetEngine {
         _section_index: usize,
     ) {
         // 쪽번호: PageNumberAssigner 가 NewNumber 1회 적용 + 단조 증가를 보장 (Issue #353)
-        let mut current_header: Option<HeaderFooterRef> = None;
-        let mut current_footer: Option<HeaderFooterRef> = None;
+        // 머리말/꼬리말 선택은 engine.rs 와 같은 규칙을 쓴다 — 종류별로 누적하고 쪽 홀짝에
+        // 더 구체적인 것을 고른다. 한 변수에 덮어쓰면 등장 순서가 구체성을 이긴다 (#3234).
+        let mut active_hf = crate::renderer::pagination::ActiveHeaderFooter::default();
         let mut assigner =
             crate::renderer::page_number::PageNumberAssigner::new(new_page_numbers, 1);
 
@@ -18139,27 +18140,13 @@ impl TypesetEngine {
                 .max();
 
             if let Some(last_pi) = page_last_para {
-                for (hf_pi, hf_ref, is_header, apply) in hf_entries {
-                    if *hf_pi <= last_pi {
-                        let applies = match apply {
-                            HeaderFooterApply::Both => true,
-                            HeaderFooterApply::Even => page_num.is_multiple_of(2),
-                            HeaderFooterApply::Odd => page_num % 2 == 1,
-                        };
-                        if applies {
-                            if *is_header {
-                                current_header = Some(hf_ref.clone());
-                            } else {
-                                current_footer = Some(hf_ref.clone());
-                            }
-                        }
-                    }
-                }
+                active_hf.accumulate(hf_entries, last_pi);
             }
 
             page.page_number = page_num;
-            page.active_header = current_header.clone();
-            page.active_footer = current_footer.clone();
+            let (current_header, current_footer) = active_hf.active(page_num);
+            page.active_header = current_header;
+            page.active_footer = current_footer;
             if !assigner.should_hide_page_number() {
                 page.page_number_pos = page_number_pos.clone();
             }

@@ -60,11 +60,11 @@ fn issue_1914_roundtrip_gates_classify_masqueraded_files_as_format_skip() {
     // HWP3 실체 → .hwp 확장자 (hwp5 게이트 범위 밖 — #1892 도구 축)
     let hwp3_as_hwp = repo_root.join("samples/issue1892_hwp3_drawing_group_roundtrip.hwp");
 
-    let exe = env!("CARGO_BIN_EXE_rhwp");
+    let exe = rhwp_bin();
     let out_dir = tmp.join("out");
 
     let run = |args: &[&str]| -> (String, bool) {
-        let output = Command::new(exe).args(args).output().expect("run rhwp");
+        let output = Command::new(&exe).args(args).output().expect("run rhwp");
         let text = format!(
             "{}{}",
             String::from_utf8_lossy(&output.stdout),
@@ -96,4 +96,10 @@ fn issue_1914_roundtrip_gates_classify_masqueraded_files_as_format_skip() {
         "hwp5-roundtrip HWP3 실체: FORMAT_SKIP+실체 안내여야 함 (종전 오도성 IR_DIFF, #1892): {text}"
     );
     assert!(ok, "FORMAT_SKIP 은 하드 실패가 아님 (exit 0): {text}");
+}
+
+/// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,
+/// nextest가 런타임에 재매핑해 주입하는 CARGO_BIN_EXE_rhwp를 우선한다.
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
 }

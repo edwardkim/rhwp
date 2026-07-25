@@ -19,7 +19,7 @@ fn unique_temp_dir(label: &str) -> std::path::PathBuf {
 }
 
 fn run_export_hml(input: &Path, output: &Path, output_flag: &str) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    Command::new(rhwp_bin())
         .arg("export-hml")
         .arg(input)
         .arg(output_flag)
@@ -75,7 +75,7 @@ fn document_core_preserves_real_hml_page_breaks() {
 
 #[test]
 fn info_reports_hml_contract_fields() {
-    let output = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let output = Command::new(rhwp_bin())
         .arg("info")
         .arg(fixture_path())
         .output()
@@ -132,7 +132,7 @@ fn info_reports_hml_contract_fields() {
 
 #[test]
 fn help_lists_hml_for_supported_document_commands() {
-    let output = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let output = Command::new(rhwp_bin())
         .arg("--help")
         .output()
         .expect("run rhwp --help");
@@ -188,7 +188,7 @@ fn export_hml_flags_preserve_edit_reparse_and_raw_fragment() {
 
 #[test]
 fn export_hml_refusals_are_nonzero_structured_and_write_nothing() {
-    let exe = env!("CARGO_BIN_EXE_rhwp");
+    let exe = rhwp_bin();
     let non_hml_output = unique_temp_dir("cli_non_hml").with_extension("hml");
     let non_hml = Command::new(exe)
         .arg("export-hml")
@@ -268,7 +268,7 @@ fn export_hml_never_overwrites_a_hard_link_to_its_input() {
 fn export_hml_rejects_an_option_token_as_the_output_value() {
     let sandbox = unique_temp_dir("cli_output_option");
     std::fs::create_dir_all(&sandbox).expect("create isolated working directory");
-    let command = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let command = Command::new(rhwp_bin())
         .current_dir(&sandbox)
         .arg("export-hml")
         .arg(fixture_path())
@@ -330,10 +330,10 @@ fn export_hml_accepts_a_near_name_max_output_basename() {
 
 #[test]
 fn dump_svg_and_pdf_commands_accept_hml() {
-    let exe = env!("CARGO_BIN_EXE_rhwp");
+    let exe = rhwp_bin();
     let fixture = fixture_path();
 
-    let dump = Command::new(exe)
+    let dump = Command::new(&exe)
         .arg("dump")
         .arg(&fixture)
         .output()
@@ -345,7 +345,7 @@ fn dump_svg_and_pdf_commands_accept_hml() {
     );
 
     let svg_dir = unique_temp_dir("svg");
-    let svg = Command::new(exe)
+    let svg = Command::new(&exe)
         .arg("export-svg")
         .arg(&fixture)
         .args(["--output", svg_dir.to_str().expect("UTF-8 temp path")])
@@ -360,7 +360,7 @@ fn dump_svg_and_pdf_commands_accept_hml() {
     assert!(svg_count > 0, "HML export-svg produced no SVG pages");
 
     let pdf_path = unique_temp_dir("pdf").with_extension("pdf");
-    let pdf = Command::new(exe)
+    let pdf = Command::new(&exe)
         .arg("export-pdf")
         .arg(&fixture)
         .args(["--output", pdf_path.to_str().expect("UTF-8 temp path")])
@@ -369,4 +369,10 @@ fn dump_svg_and_pdf_commands_accept_hml() {
     assert!(pdf.status.success(), "PDF command failed");
     let pdf_bytes = std::fs::read(&pdf_path).expect("PDF output");
     assert!(pdf_bytes.starts_with(b"%PDF-"), "invalid PDF output");
+}
+
+/// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,
+/// nextest가 런타임에 재매핑해 주입하는 CARGO_BIN_EXE_rhwp를 우선한다.
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
 }

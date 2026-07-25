@@ -3,12 +3,15 @@
    ================================================================ */
 #icon-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: stretch;
+  align-content: flex-start;
   padding: 2px 8px;
   background: linear-gradient(to bottom, var(--ui-toolbar-bg-start), var(--ui-toolbar-bg-end));
   border-bottom: 1px solid var(--ui-border);
   flex-shrink: 0;
-  height: 56px;
+  height: auto;
+  min-height: 56px;
   overflow: visible;
 }
 
@@ -16,6 +19,7 @@
   display: flex;
   align-items: stretch;
   gap: 0;
+  flex-shrink: 0;
 }
 
 .tb-mode-group {

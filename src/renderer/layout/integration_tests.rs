@@ -917,6 +917,47 @@ mod tests {
         );
     }
 
+    /// Issue #3257: 마지막 공백 뒤의 TAC 그림도 가운데 정렬 폭에 포함해야 한다.
+    ///
+    /// HWP 2020 기준에서 4쪽 `용도별 서버 구성`은 본문 안쪽 약 x=129px에서 시작한다.
+    /// 수정 전에는 끝 위치 TAC가 폭 계산에서 빠져 공백만 Center 정렬한 뒤 그림을 붙여
+    /// x=416.9px로 밀리고 페이지 오른쪽에서 잘렸다.
+    #[test]
+    fn issue_3257_centered_trailing_picture_uses_full_line_width() {
+        let Some(core) = load_document("samples/issue3257/webhangul_product_spec_v1.1.hwp") else {
+            return;
+        };
+        let tree = core
+            .build_page_render_tree(3)
+            .expect("#3257: 제품규격서 4페이지 render tree 생성 실패");
+
+        fn find_picture<'a>(node: &'a RenderNode, out: &mut Option<&'a RenderNode>) {
+            if let RenderNodeType::Image(image) = &node.node_type {
+                if image.para_index == Some(75) && image.control_index == Some(0) {
+                    *out = Some(node);
+                }
+            }
+            for child in &node.children {
+                find_picture(child, out);
+            }
+        }
+
+        let mut picture_node = None;
+        find_picture(&tree.root, &mut picture_node);
+        let picture = picture_node.expect("#3257: pi=75 ci=0 TAC 그림 노드를 찾지 못함");
+        assert!(
+            (picture.bbox.x - 129.8).abs() < 2.0,
+            "#3257: 끝 위치 TAC 그림의 Center 정렬 좌표가 기준에서 벗어남: x={:.1}",
+            picture.bbox.x
+        );
+        assert!(
+            picture.bbox.x + picture.bbox.width < 718.5,
+            "#3257: 그림이 본문 우측을 넘음: x={:.1}, width={:.1}",
+            picture.bbox.x,
+            picture.bbox.width
+        );
+    }
+
     /// Issue #1838 회귀 가드: 셀 폭을 초과하는 텍스트(공백 포함)가 파일 lineseg
     /// (짧은 값 기준 단일 줄, 외부 도구 값 교체 시나리오)와 부정합해도 **모든 글자가
     /// SVG 에 방출**되어야 한다 (조용한 글리프 탈락 금지).

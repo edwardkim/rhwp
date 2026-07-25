@@ -6,8 +6,13 @@ description = "HWP file viewer and editor written in Rust, targeting WebAssembly
 license = "MIT"
 repository = "https://github.com/edwardkim/rhwp"
 
+[workspace]
+members = [".", "tools/rhwp-subsecond"]
+resolver = "2"
+
 [lib]
-crate-type = ["cdylib", "rlib"]
+# Dioxus CLI 0.7.9 classifies the first crate type when capturing hot-patch args.
+crate-type = ["rlib", "cdylib"]
 
 [[bin]]
 name = "rhwp"
@@ -42,10 +47,12 @@ serde_json = "1"
 ttf-parser = "0.25"
 
 console_error_panic_hook = { version = "0.1", optional = true }
+subsecond = { version = "=0.7.9", optional = true }
 
 [features]
 default = ["console_error_panic_hook"]
 native-skia = ["dep:resvg", "dep:skia-safe"]
+subsecond-dev = ["dep:subsecond"]
 
 # PDF 내보내기 (네이티브 전용, Task #21)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

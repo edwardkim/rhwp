@@ -4,14 +4,23 @@
    브레이크포인트:
      모바일:   ~767px
      태블릿:   768px ~ 1023px
-     데스크톱: 1024px~ (기존 레이아웃 유지)
+     데스크톱: 1024px~
    ================================================================ */
+
+/* ─── 좁은 데스크톱 이하 (~1279px) ───────────────────── */
+@media (max-width: 1279px) {
+  /* 행 경계에 구분선만 남지 않도록 최상위 구분선을 숨긴다. */
+  #icon-toolbar > .tb-sep,
+  #style-bar > .sb-sep {
+    display: none;
+  }
+}
 
 /* ─── 태블릿 (768~1023px) ────────────────────────────── */
 @media (max-width: 1023px) {
   /* 도구 상자: 높이 축소, 라벨 숨김 */
   #icon-toolbar {
-    height: 40px;
+    min-height: 40px;
     padding: 2px 4px;
   }
   .tb-btn {
@@ -20,12 +29,6 @@
   }
   .tb-btn .tb-label {
     display: none;
-  }
-
-  /* 서식 도구 모음: 가로 스크롤 */
-  #style-bar {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   /* 눈금자 숨김: grid 대신 display로 처리하여 iOS WebKit 호환 */
@@ -39,6 +42,52 @@
   #scroll-container {
     flex: 1;
     min-height: 0;
+  }
+}
+
+/* ─── 태블릿 서식 리본: 필드 1행 + 명령 1행 ─────────── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  #style-bar {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    min-height: 0;
+    align-items: start;
+    align-content: start;
+    justify-content: start;
+    gap: 4px 0;
+    padding: 4px 6px 5px;
+  }
+
+  .sb-field-ribbon-group {
+    grid-column: 1 / -1;
+  }
+
+  .sb-character-band {
+    grid-column: 1;
+  }
+
+  .sb-paragraph-band {
+    grid-column: 2;
+  }
+
+  .sb-ribbon-group {
+    min-height: 0;
+    padding: 0;
+    border-right: 0;
+  }
+
+  .sb-ribbon-label {
+    display: none;
+  }
+
+  .sb-character-ribbon-group,
+  .sb-color-ribbon-group {
+    padding: 0 7px;
+    border-right: 1px solid var(--ui-border);
+  }
+
+  .sb-paragraph-ribbon-group {
+    padding: 0 7px;
   }
 }
 
@@ -87,35 +136,185 @@
     height: auto;
   }
 
-  /* ── 도구 상자: 태블릿과 같이 한 줄 + 가로 스크롤 (숨기면 비교/이력 등 메뉴에도 없어져 도달 불가) ── */
+  /* ── 도구 상자: 논리 그룹 단위 여러 행 ── */
   #icon-toolbar {
-    display: flex;
-    height: 40px;
+    min-height: 40px;
     padding: 2px 4px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
-  /* ── 서식 도구 모음: 가로 스크롤 + 터치 타겟 확대 ── */
+  /* ── 서식 도구 모음: 필드 + 글자 + 문단 리본 ── */
   #style-bar {
-    height: 40px;
-    padding: 2px 4px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    gap: 1px;
+    min-height: 40px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+    padding: 5px 6px 6px;
   }
-  .sb-btn {
-    min-width: var(--touch-target-min);
-    min-height: var(--touch-target-min);
-    padding: 4px;
+
+  .sb-ribbon-group {
+    min-height: 0;
+    padding: 0;
+    border-right: 0;
   }
-  .sb-combo {
-    height: 36px;
-    font-size: var(--font-size-md);
+
+  .sb-ribbon-label {
+    display: none;
   }
-  /* 일부 서식 버튼 숨김 (축소 모드) */
+
+  .sb-field-ribbon-group,
+  .sb-paragraph-ribbon-group {
+    width: 100%;
+  }
+
+  .sb-field-grid {
+    display: grid;
+    grid-template-columns: 68px 54px minmax(96px, 1fr) 72px 72px;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .sb-field-grid .sb-field {
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+  }
+
+  .sb-field-grid .sb-field-label {
+    overflow: hidden;
+    color: var(--color-text-secondary);
+    font-size: 9px;
+    line-height: 1;
+    text-overflow: ellipsis;
+  }
+
+  .sb-field-grid .sb-combo,
+  .sb-field-grid .sb-size-group,
+  .sb-field-grid .sb-ls-group {
+    width: 100%;
+    height: 27px;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .sb-field-grid .sb-size-group {
+    border: 1px solid var(--ui-border-light);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--color-surface);
+  }
+
+  .sb-field-grid .sb-size-group:focus-within {
+    border-color: var(--color-focus-border);
+  }
+
+  .sb-field-grid .sb-combo,
+  .sb-field-grid .sb-size,
+  .sb-field-grid .sb-size-unit,
+  .sb-field-grid .sb-ls-select {
+    height: 27px;
+    box-sizing: border-box;
+    font-size: var(--font-size-sm);
+  }
+
+  .sb-field-grid .sb-size,
+  .sb-field-grid .sb-ls-select {
+    min-width: 0;
+    flex: 1 1 auto;
+    width: auto;
+  }
+
+  .sb-field-grid .sb-size {
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sb-field-grid .sb-size-unit {
+    flex: 0 0 auto;
+    height: 100%;
+    padding: 0 2px;
+    line-height: 25px;
+    border: 0;
+    border-left: 1px solid var(--ui-border-light);
+    background: transparent;
+  }
+
+  .sb-field-grid .sb-size-arrows,
+  .sb-field-grid .sb-ls-arrows {
+    flex: 0 0 14px;
+    height: 27px;
+  }
+
+  .sb-field-grid .sb-size-arrows {
+    height: 100%;
+    border-left: 1px solid var(--ui-border-light);
+  }
+
+  .sb-field-grid .sb-arrow {
+    width: 14px;
+    height: 13.5px;
+    min-height: 0;
+  }
+
+  .sb-field-grid .sb-size-arrows .sb-arrow {
+    height: 50%;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .sb-field-grid .sb-size-arrows .sb-arrow + .sb-arrow {
+    border-top: 1px solid var(--ui-border-light);
+  }
+
+  #style-bar #btn-size-up,
+  #style-bar #btn-size-down {
+    border-radius: 0;
+  }
+
+  .sb-command-band {
+    width: 100%;
+    min-width: 0;
+    gap: 5px;
+    padding: 0;
+    border-left: 0;
+  }
+
+  .sb-command-group {
+    gap: 2px;
+  }
+
+  .sb-color-ribbon-group {
+    padding-left: 5px;
+    border-left: 1px solid var(--ui-border);
+  }
+
+  .sb-paragraph-band {
+    padding-top: 4px;
+    border-top: 1px solid var(--ui-border);
+  }
+
+  #style-bar .sb-btn {
+    width: 29px;
+    min-width: 29px;
+    height: 29px;
+    min-height: 29px;
+    padding: 0;
+  }
+
+  #style-bar .sb-has-arrow {
+    width: 38px;
+    min-width: 38px;
+  }
+
+  #style-bar .sb-ga {
+    display: inline-block;
+  }
+
   .sb-sep { display: none; }
-  .sb-ga { display: none; }
 
   /* ── 편집 영역: 전체 화면 (grid→flex 전환으로 iOS 호환) ── */
   #editor-area {
@@ -170,6 +369,10 @@
     border-radius: 12px 12px 0 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+  }
+  .dialog-wrap.recovery-dialog {
+    max-height: 90dvh;
+    overflow: hidden;
   }
   .dialog-title {
     padding: 12px 16px;
@@ -226,7 +429,7 @@
 /* ─── 터치 디바이스 공통 (pointer: coarse) ────────────── */
 @media (pointer: coarse) {
   /* 모든 클릭 가능 요소의 최소 터치 타겟 */
-  .tb-btn, .sb-btn, .stb-icon-btn, .md-item, .menu-title {
+  .tb-btn, .stb-icon-btn, .md-item, .menu-title {
     min-height: 36px;
   }
   .dialog-btn, .dialog-close {

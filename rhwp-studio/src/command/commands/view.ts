@@ -10,6 +10,7 @@ import {
   toggleGridVisibility,
 } from '../../view/grid-settings';
 import { HWPUNIT_PER_MM } from '../../core/hwp-constants';
+import { calculateFitPageZoom, calculateFitWidthZoom } from '../../view/zoom-fit';
 
 const PX_TO_MM = 25.4 / 96;
 
@@ -149,7 +150,7 @@ export const viewCommands: CommandDef[] = [
     shortcutLabel: 'Shift+Num +',
     execute(services) {
       const vm = services.getViewportManager();
-      if (vm) vm.setZoom(vm.getZoom() + 0.1);
+      if (vm) vm.smoothZoomBy(0.1);
     },
   },
   {
@@ -159,7 +160,7 @@ export const viewCommands: CommandDef[] = [
     shortcutLabel: 'Shift+Num -',
     execute(services) {
       const vm = services.getViewportManager();
-      if (vm) vm.setZoom(vm.getZoom() - 0.1);
+      if (vm) vm.smoothZoomBy(-0.1);
     },
   },
   {
@@ -170,11 +171,14 @@ export const viewCommands: CommandDef[] = [
       const vm = services.getViewportManager();
       if (!vm || services.wasm.pageCount === 0) return;
       const container = document.getElementById('scroll-container')!;
-      const containerH = container.clientHeight - 40;
-      const containerW = container.clientWidth - 40;
       const pi = services.wasm.getPageInfo(0);
       // pi.width/height는 이미 px 단위 (96dpi 기준)
-      vm.setZoom(Math.max(0.1, Math.min(containerW / pi.width, containerH / pi.height, 4.0)));
+      vm.setZoom(calculateFitPageZoom(
+        container.clientWidth,
+        container.clientHeight,
+        pi.width,
+        pi.height,
+      ));
     },
   },
   {
@@ -185,10 +189,9 @@ export const viewCommands: CommandDef[] = [
       const vm = services.getViewportManager();
       if (!vm || services.wasm.pageCount === 0) return;
       const container = document.getElementById('scroll-container')!;
-      const containerW = container.clientWidth - 40;
       const pi = services.wasm.getPageInfo(0);
       // pi.width는 이미 px 단위 (96dpi 기준)
-      vm.setZoom(Math.max(0.1, Math.min(containerW / pi.width, 4.0)));
+      vm.setZoom(calculateFitWidthZoom(container.clientWidth, pi.width));
     },
   },
   zoomLevel(50),
