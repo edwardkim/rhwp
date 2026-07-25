@@ -112,7 +112,7 @@
     "canvaskit-wasm": "^0.41.1"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/node": "^26.1.1",
     "@types/vscode": "^1.82.0",
     "copy-webpack-plugin": "^14.0.0",
     "null-loader": "^4.0.1",
