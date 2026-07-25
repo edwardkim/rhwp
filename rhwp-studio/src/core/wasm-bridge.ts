@@ -929,9 +929,9 @@ export class WasmBridge {
     return this.doc.mergeParagraph(sec, para);
   }
 
-  splitParagraphInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number): string {
+  splitParagraphInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, removedParaMeta?: RemovedParaMeta): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return this.doc.splitParagraphInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset);
+    return this.doc.splitParagraphInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, serializeParaMeta(removedParaMeta));
   }
 
   mergeParagraphInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number): string {
@@ -1218,9 +1218,9 @@ export class WasmBridge {
     return (this.doc as any).deleteRangeInCellByPath(sec, parentPara, pathJson, startPara, startOffset, endPara, endOffset);
   }
 
-  splitParagraphInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number): string {
+  splitParagraphInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, removedParaMeta?: RemovedParaMeta): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return (this.doc as any).splitParagraphInCellByPath(sec, parentPara, pathJson, charOffset);
+    return (this.doc as any).splitParagraphInCellByPath(sec, parentPara, pathJson, charOffset, serializeParaMeta(removedParaMeta));
   }
 
   mergeParagraphInCellByPath(sec: number, parentPara: number, pathJson: string): string {

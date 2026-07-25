@@ -3119,6 +3119,9 @@ impl DocumentCore {
     }
 
     /// 셀 내부 문단 분할 (네이티브 에러 타입)
+    ///
+    /// `restore_meta` 는 병합 undo 전용이다 — 병합으로 사라졌던 문단의 스코프 메타를
+    /// 되돌린다. `None` 이면 기존 Enter 분할 시맨틱 그대로다 (Task #2342).
     pub fn split_paragraph_in_cell_native(
         &mut self,
         section_idx: usize,
@@ -3127,6 +3130,7 @@ impl DocumentCore {
         cell_idx: usize,
         cell_para_idx: usize,
         char_offset: usize,
+        restore_meta: Option<ParaMeta>,
     ) -> Result<String, HwpError> {
         // 셀 문단 검증 및 분할
         let cell_para = self.get_cell_paragraph_mut(
@@ -3137,7 +3141,10 @@ impl DocumentCore {
             cell_para_idx,
         )?;
         let original_vpos = cell_para.line_segs.first().map(|seg| seg.vertical_pos);
-        let new_para = cell_para.split_at(char_offset);
+        let mut new_para = cell_para.split_at(char_offset);
+        if let Some(meta) = restore_meta {
+            new_para.apply_meta(meta);
+        }
 
         // 새 문단을 셀/글상자에 삽입
         let new_cell_para_idx = cell_para_idx + 1;
@@ -3256,18 +3263,23 @@ impl DocumentCore {
             )
             .and_then(|para| para.line_segs.first().map(|seg| seg.vertical_pos));
         let merge_point;
+        // 사라지는 문단의 스코프 메타를 캡처해 결과에 실어 보낸다 — undo(split)가 이걸
+        // 되돌려주지 않으면 되살아난 문단이 앞 문단 서식을 뒤집어쓴다 (Task #2342).
+        let removed_meta;
         match self.document.sections[section_idx].paragraphs[parent_para_idx]
             .controls
             .get_mut(control_idx)
         {
             Some(Control::Table(table)) => {
                 let removed = table.cells[cell_idx].paragraphs.remove(cell_para_idx);
+                removed_meta = removed.capture_meta();
                 merge_point = table.cells[cell_idx].paragraphs[prev_idx].merge_from(&removed);
                 table.dirty = true;
             }
             Some(Control::Shape(shape)) => {
                 if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
                     let removed = tb.paragraphs.remove(cell_para_idx);
+                    removed_meta = removed.capture_meta();
                     merge_point = tb.paragraphs[prev_idx].merge_from(&removed);
                 } else {
                     return Err(HwpError::RenderError(
@@ -3278,6 +3290,7 @@ impl DocumentCore {
             Some(Control::Picture(pic)) => {
                 if let Some(ref mut cap) = pic.caption {
                     let removed = cap.paragraphs.remove(cell_para_idx);
+                    removed_meta = removed.capture_meta();
                     merge_point = cap.paragraphs[prev_idx].merge_from(&removed);
                 } else {
                     return Err(HwpError::RenderError(
@@ -3331,8 +3344,10 @@ impl DocumentCore {
             cell: cell_idx,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"cellParaIndex\":{},\"charOffset\":{}",
-            prev_idx, merge_point
+            "\"cellParaIndex\":{},\"charOffset\":{}{}",
+            prev_idx,
+            merge_point,
+            super::super::helpers::removed_para_meta_field(&removed_meta)
         )))
     }
 
@@ -4329,12 +4344,15 @@ impl DocumentCore {
     }
 
     /// path 기반 셀 문단 분할 (중첩 표 지원)
+    ///
+    /// `restore_meta` 는 병합 undo 전용이다 — 평면 형제와 같은 규약이다 (Task #2342).
     pub fn split_paragraph_in_cell_by_path(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,
         path: &[(usize, usize, usize)],
         char_offset: usize,
+        restore_meta: Option<ParaMeta>,
     ) -> Result<String, HwpError> {
         // [#2755] 빈 경로는 패닉이 아니라 Err 로 거절한다. `parse_cell_path` 가 "[]" 에
         // Ok(Vec::new()) 를 반환하므로 빈 경로가 여기 도달할 수 있고, wasm 에서 Rust 패닉은
@@ -4376,7 +4394,10 @@ impl DocumentCore {
                     .line_segs
                     .first()
                     .map(|seg| seg.vertical_pos);
-                let new_para = cell.paragraphs[cell_para_idx].split_at(char_offset);
+                let mut new_para = cell.paragraphs[cell_para_idx].split_at(char_offset);
+                if let Some(meta) = restore_meta {
+                    new_para.apply_meta(meta);
+                }
                 cell.paragraphs.insert(cell_para_idx + 1, new_para);
                 break;
             }
@@ -4458,6 +4479,8 @@ impl DocumentCore {
             .ok_or_else(|| HwpError::RenderError("문단 범위 초과".to_string()))?;
 
         let mut merge_point = 0usize;
+        // 사라지는 문단의 스코프 메타 — undo(split)가 되돌릴 값이다 (Task #2342).
+        let mut removed_meta: Option<ParaMeta> = None;
         for (i, &(ctrl_idx, cell_idx, _cpi)) in path.iter().enumerate() {
             let table = match para.controls.get_mut(ctrl_idx) {
                 Some(Control::Table(t)) => t.as_mut(),
@@ -4476,6 +4499,7 @@ impl DocumentCore {
                     .first()
                     .map(|seg| seg.vertical_pos);
                 let removed = cell.paragraphs.remove(cell_para_idx);
+                removed_meta = Some(removed.capture_meta());
                 let prev = &mut cell.paragraphs[prev_idx];
                 merge_point = prev.text.chars().count();
                 prev.merge_from(&removed);
@@ -4520,9 +4544,13 @@ impl DocumentCore {
             cell: path[0].1,
         });
         let prev_cpi = cell_para_idx - 1;
+        let removed_meta = removed_meta
+            .as_ref()
+            .map(super::super::helpers::removed_para_meta_field)
+            .unwrap_or_default();
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"cellParaIndex\":{},\"charOffset\":{}",
-            prev_cpi, merge_point
+            "\"cellParaIndex\":{},\"charOffset\":{}{}",
+            prev_cpi, merge_point, removed_meta
         )))
     }
 
@@ -4936,7 +4964,8 @@ mod tests {
         let mut core = core_with_narrow_cell_line_segs("AB", &[0]);
 
         assert!(
-            core.split_paragraph_in_cell_by_path(0, 0, &[], 1).is_err(),
+            core.split_paragraph_in_cell_by_path(0, 0, &[], 1, None)
+                .is_err(),
             "빈 경로 분할은 Err 여야 한다"
         );
         assert!(
@@ -5094,7 +5123,7 @@ mod tests {
         let (mut core, path) = core_with_nested_narrow_cell(&text, &[0, 20]);
 
         // 20 지점에서 분할 → 앞뒤 각각 20자. 폭 200 재래핑이면 각 문단이 여러 줄로 나뉜다.
-        core.split_paragraph_in_cell_by_path(0, 0, &path, 20)
+        core.split_paragraph_in_cell_by_path(0, 0, &path, 20, None)
             .expect("문단 분할이 성공해야 함");
 
         let paras = core.get_cell_paragraphs_mut_by_path(0, 0, &path).unwrap();

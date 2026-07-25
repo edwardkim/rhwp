@@ -1363,6 +1363,8 @@ export class MergeParagraphInCellCommand implements EditCommand {
   readonly timestamp = Date.now();
 
   private mergePointOffset = 0;
+  /** 사라진 문단의 스코프 메타 — undo(분할)가 되돌린다 (Task #2342). */
+  private removedParaMeta?: RemovedParaMeta;
 
   constructor(private position: DocumentPosition) {}
 
@@ -1381,10 +1383,10 @@ export class MergeParagraphInCellCommand implements EditCommand {
         index + 1 === path.length ? { ...entry, cellParaIndex: cpi - 1 } : entry,
       );
       this.mergePointOffset = wasm.getCellParagraphLengthByPath(sec, ppi, JSON.stringify(prevPath));
-      wasm.mergeParagraphInCellByPath(sec, ppi, cellPathJson(pos));
+      this.removedParaMeta = JSON.parse(wasm.mergeParagraphInCellByPath(sec, ppi, cellPathJson(pos))).removedParaMeta;
     } else {
       this.mergePointOffset = wasm.getCellParagraphLength(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi - 1);
-      wasm.mergeParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi);
+      this.removedParaMeta = JSON.parse(wasm.mergeParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi)).removedParaMeta;
     }
     return cellParagraphPosition(pos, cpi - 1, this.mergePointOffset);
   }
@@ -1397,9 +1399,9 @@ export class MergeParagraphInCellCommand implements EditCommand {
     if (isNestedCell(pos)) {
       const undoPath = [...pos.cellPath!];
       undoPath[undoPath.length - 1] = { ...undoPath[undoPath.length - 1], cellParaIndex: cpi - 1 };
-      wasm.splitParagraphInCellByPath(sec, ppi, JSON.stringify(undoPath), this.mergePointOffset);
+      wasm.splitParagraphInCellByPath(sec, ppi, JSON.stringify(undoPath), this.mergePointOffset, this.removedParaMeta);
     } else {
-      wasm.splitParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi - 1, this.mergePointOffset);
+      wasm.splitParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi - 1, this.mergePointOffset, this.removedParaMeta);
     }
     return { ...pos };
   }
@@ -1413,6 +1415,9 @@ export class MergeNextParagraphInCellCommand implements EditCommand {
   readonly type = 'mergeNextParagraphInCell';
   readonly timestamp = Date.now();
 
+  /** 사라진 문단의 스코프 메타 — undo(분할)가 되돌린다 (Task #2342). */
+  private removedParaMeta?: RemovedParaMeta;
+
   constructor(private position: DocumentPosition) {}
 
   execute(wasm: WasmBridge): DocumentPosition {
@@ -1423,9 +1428,9 @@ export class MergeNextParagraphInCellCommand implements EditCommand {
     if (isNestedCell(pos)) {
       const nextPath = [...pos.cellPath!];
       nextPath[nextPath.length - 1] = { ...nextPath[nextPath.length - 1], cellParaIndex: cpi + 1 };
-      wasm.mergeParagraphInCellByPath(sec, ppi, JSON.stringify(nextPath));
+      this.removedParaMeta = JSON.parse(wasm.mergeParagraphInCellByPath(sec, ppi, JSON.stringify(nextPath))).removedParaMeta;
     } else {
-      wasm.mergeParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi + 1);
+      this.removedParaMeta = JSON.parse(wasm.mergeParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi + 1)).removedParaMeta;
     }
     return { ...pos };
   }
@@ -1436,9 +1441,9 @@ export class MergeNextParagraphInCellCommand implements EditCommand {
     const ppi = pos.parentParaIndex!;
     const cpi = cellParaIndexOf(pos);
     if (isNestedCell(pos)) {
-      wasm.splitParagraphInCellByPath(sec, ppi, cellPathJson(pos), pos.charOffset);
+      wasm.splitParagraphInCellByPath(sec, ppi, cellPathJson(pos), pos.charOffset, this.removedParaMeta);
     } else {
-      wasm.splitParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi, pos.charOffset);
+      wasm.splitParagraphInCell(sec, ppi, pos.controlIndex!, pos.cellIndex!, cpi, pos.charOffset, this.removedParaMeta);
     }
     return { ...pos };
   }

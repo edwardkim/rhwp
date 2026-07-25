@@ -1260,6 +1260,9 @@ impl HwpDocument {
     /// 셀 내부 문단을 분할한다 (셀 내 Enter 키).
     ///
     /// 반환값: JSON `{"ok":true,"cellParaIndex":<new_idx>,"charOffset":0}`
+    ///
+    /// `removed_para_meta` 는 병합 undo 가 되돌려주는 값이다 — 본문 `splitParagraph`
+    /// 와 같은 규약이다 (Task #2342).
     #[wasm_bindgen(js_name = splitParagraphInCell)]
     pub fn split_paragraph_in_cell(
         &mut self,
@@ -1269,6 +1272,7 @@ impl HwpDocument {
         cell_idx: u32,
         cell_para_idx: u32,
         char_offset: u32,
+        removed_para_meta: Option<String>,
     ) -> Result<String, JsValue> {
         self.split_paragraph_in_cell_native(
             section_idx as usize,
@@ -1277,6 +1281,7 @@ impl HwpDocument {
             cell_idx as usize,
             cell_para_idx as usize,
             char_offset as usize,
+            parse_removed_para_meta(removed_para_meta)?,
         )
         .map_err(|e| e.into())
     }
@@ -1377,6 +1382,7 @@ impl HwpDocument {
         parent_para_idx: u32,
         path_json: &str,
         char_offset: u32,
+        removed_para_meta: Option<String>,
     ) -> Result<String, JsValue> {
         let path = DocumentCore::parse_cell_path(path_json)?;
         self.split_paragraph_in_cell_by_path(
@@ -1384,6 +1390,7 @@ impl HwpDocument {
             parent_para_idx as usize,
             &path,
             char_offset as usize,
+            parse_removed_para_meta(removed_para_meta)?,
         )
         .map_err(|e| e.into())
     }
