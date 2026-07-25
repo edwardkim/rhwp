@@ -27,7 +27,7 @@ wasm-bindgen = "0.2"
 cfb = "0.14"
 flate2 = "1.0"
 byteorder = "1.5"
-base64 = "0.22"
+base64 = "0.23"
 blake3 = "1"
 zip = { version = "8.5", default-features = false, features = ["deflate"] }
 quick-xml = "0.41"
