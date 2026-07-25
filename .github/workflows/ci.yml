@@ -457,7 +457,11 @@ jobs:
         with:
           toolchain: 1.93.1
 
+      # [#3289] 20개 러너가 /home/app 의 ~/.cargo/bin 을 공유하므로 동시 설치 시
+      # mv 레이스로 실패한다 (shard 8개 동시 시작 실측). self-hosted 는 호스트에
+      # 1회 설치된 cargo-nextest 를 그대로 쓰고, hosted 러너에서만 설치한다.
       - name: Install cargo-nextest
+        if: runner.environment == 'github-hosted'
         uses: taiki-e/install-action@v2
         with:
           tool: nextest
@@ -562,7 +566,9 @@ jobs:
         with:
           toolchain: 1.93.1
 
+      # [#3289] 공유 ~/.cargo/bin 동시 설치 레이스 방지 — build-test-archive 주석 참조.
       - name: Install cargo-nextest
+        if: runner.environment == 'github-hosted'
         uses: taiki-e/install-action@v2
         with:
           tool: nextest
