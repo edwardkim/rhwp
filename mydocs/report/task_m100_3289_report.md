@@ -66,6 +66,31 @@
   동시 실행 시 JVM 각각 40~55GB → 호스트 100GB 포화·스톨 실측(2026-07-25, swap 512M).
   호스티드에서 무해했던 건 16GB VM 이라 힙이 작게 잡혔기 때문. codeql-action init 에
   `ram: 12288`/`threads: 16` 캡. 같은 유형(가용 자원 전체를 잡는 도구) 도입 시 동일 점검.
+  (이후 #3290 으로 CodeQL·Render Diff 가 호스티드 복귀 — self-hosted 재배치 시 캡 필수.)
+
+## 동시 쓰기 레이스 전수 점검 (2026-07-25, 작업지시자 지시)
+
+self-hosted 워크플로(ci.yml·full-renderer-sweep.yml)의 공유 상태 쓰기 경로 전수 점검 결과.
+
+**정정한 잡 단위 쓰기 (전부 hosted 게이트 또는 무해화):**
+
+| 쓰기 경로 | 결함 | 정정 |
+|---|---|---|
+| dtolnay rust-toolchain 7곳 | `rustup default` 가 매 잡 `~/.rustup/settings.toml` 재작성 → 동시 잡에 파일 파손 실측 | hosted 게이트, self-hosted 는 rust-toolchain.toml override |
+| taiki-e nextest 2곳 | 공유 `~/.cargo/bin` 동시 mv 교체 실측 | hosted 게이트 + 호스트 상주 설치 |
+| Swatinem/rust-cache 3곳 | save 전 정리가 공유 bin·registry 파괴 실측 | hosted 게이트 |
+| install-wasm-pack composite | 고정 /tmp 전개 충돌 + 공유 bin 무조건 mv | 핀 버전 존재 시 skip + mktemp + 동일 디렉터리 rename(원자 교체) |
+| actions/cache 3곳 (frontend·release wasm·sweep) | restore 의 tar 전개가 공유 `~/.cargo/registry` 를 락 없이 덮어씀 | hosted 게이트 |
+| apt-get 2곳 (native-skia·sweep 폰트) | 동시 잡 dpkg 락 경합 | hosted 게이트, 패키지는 호스트 선설치(sweep 폰트 포함, 2026-07-25) |
+
+**점검 후 안전 판정 (설계상 동시성 안전):**
+
+- cargo 자체의 `~/.cargo/registry`·`git` 접근 — cargo 내장 flock 으로 직렬화
+- npm 의 `~/.npm` — cacache 가 동시 접근 안전 설계
+- `artifact-cache` 호스트 캐시 — tmp+mv 원자 쓰기, prune 은 24h 경과 dir 만 + 오류 무시
+- setup-node 툴 캐시 — 러너별 `_work/_tool` (공유 아님)
+- `GITHUB_OUTPUT`/`GITHUB_PATH`/`GITHUB_ENV` — 잡별 임시 파일
+- rustup 툴체인 자동 설치 — 평상시 no-op, 버전 범프 시 호스트 선설치 절차로 회피(위 규칙)
 - **Rust 툴체인 버전 범프 절차**: CI 의 toolchain 값을 올리기 전에 호스트에서
   `rustup toolchain install <ver>` 선행 — 동시 잡의 자동 설치 레이스 방지.
 - **러너 설정 파일**: `.path` 는 한 줄 콜론 결합(nvm bin + 시스템 + `/home/app/.cargo/bin`),
