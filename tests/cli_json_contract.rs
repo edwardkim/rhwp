@@ -17,7 +17,7 @@ fn sample_path() -> PathBuf {
 }
 
 fn run(args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    Command::new(rhwp_bin())
         .args(args)
         .output()
         .expect("rhwp 실행 실패")
@@ -25,7 +25,7 @@ fn run(args: &[&str]) -> Output {
 
 /// stdin 으로 파일 목록을 흘려 넣는 batch 실행 헬퍼.
 fn run_with_stdin(args: &[&str], stdin_body: &str) -> Output {
-    let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let mut child = Command::new(rhwp_bin())
         .args(args)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -578,4 +578,10 @@ fn batch_unknown_subcommand_is_usage_error() {
         "{}",
         describe(&args, &output)
     );
+}
+
+/// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,
+/// nextest가 런타임에 재매핑해 주입하는 CARGO_BIN_EXE_rhwp를 우선한다.
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
 }
