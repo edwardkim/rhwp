@@ -112,3 +112,78 @@ fn the_field_still_renders_its_substituted_value() {
     );
     serde_json::from_str::<serde_json::Value>(&json).expect("레이어 트리 JSON 은 파싱돼야 한다");
 }
+
+/// 쪽 텍스트 추출은 필드 값을 내보낸다 — 제어문자가 새어 나가면 안 된다.
+///
+/// 렌더 트리에서 **문자열을 만들어 내보내는** 소비자다. 정본(`text`)이 아니라 표시
+/// 텍스트를 써야 한다 — 그리기·측정과 같은 부류이고 오프셋 계산 쪽이 아니다.
+/// 출시 CLI 의 쪽 텍스트·마크다운 내보내기가 이 경로를 쓴다.
+#[test]
+fn page_text_extraction_emits_the_field_value() {
+    let doc = doc_with_file_name_field();
+    let text = doc.extract_page_text_native(0).expect("page text");
+
+    assert!(
+        text.contains('\u{0017}') == false,
+        "치환되지 않은 마커가 추출물에 새면 안 된다: {text:?}"
+    );
+    assert!(
+        text.contains("보고서초안.hwp"),
+        "머리말 필드 값이 추출물에 있어야 한다: {text:?}"
+    );
+}
+
+/// 마커를 사이에 두고 쪼갠 조각이 원본 런의 표시 문자열을 물려받지 않는다.
+///
+/// `convert_pua_display_text` 가 런 전체에 대해 만든 값을 조각이 그대로 들고 가면,
+/// 조각마다 남의 글자를 그려 주변 글자가 두 번 나온다. 형제 함수
+/// `substitute_page_auto_numbers_in_composed` 도 `text` 를 고친 뒤 표시값을 무효화한다.
+#[test]
+fn split_pieces_do_not_inherit_the_whole_run_display_text() {
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native().expect("blank document");
+    doc.set_file_name("F.hwp");
+    doc.create_header_footer_native(0, true, 0)
+        .expect("create header");
+    // 표시 확장이 있는 PUA 글자(U+F012B → "(인)")와 필드 마커를 한 런에 둔다.
+    doc.insert_text_in_header_footer_native(0, true, 0, 0, 0, "󰄫Z")
+        .expect("header text");
+
+    let json = doc.get_page_layer_tree_native(0).expect("layer tree");
+    let value: serde_json::Value = serde_json::from_str(&json).expect("layer tree json");
+
+    let mut displays: Vec<String> = Vec::new();
+    fn walk(node: &serde_json::Value, out: &mut Vec<String>) {
+        if let Some(ops) = node.get("ops").and_then(|v| v.as_array()) {
+            for op in ops {
+                if op.get("type").and_then(|v| v.as_str()) == Some("textRun") {
+                    if let Some(d) = op.get("displayText").and_then(|v| v.as_str()) {
+                        out.push(d.to_string());
+                    }
+                }
+            }
+        }
+        for child in node
+            .get("children")
+            .and_then(|v| v.as_array())
+            .into_iter()
+            .flatten()
+        {
+            walk(child, out);
+        }
+    }
+    walk(value.get("root").unwrap_or(&value), &mut displays);
+
+    // 어떤 조각도 치환되지 않은 마커를 표시값으로 들고 있으면 안 된다.
+    for d in &displays {
+        assert!(
+            !d.contains(''),
+            "조각이 원본 런의 표시 문자열을 물려받았다: {displays:?}"
+        );
+    }
+    // 필드 조각은 파일 이름을, PUA 조각은 자기 확장만 갖는다.
+    assert!(
+        displays.iter().any(|d| d == "F.hwp"),
+        "필드 조각의 표시값: {displays:?}"
+    );
+}

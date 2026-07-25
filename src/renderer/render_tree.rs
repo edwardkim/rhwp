@@ -779,7 +779,11 @@ pub struct TextRunNode {
 }
 
 impl TextRunNode {
-    /// 그리기·폭 계산에 쓸 텍스트. 오프셋 계산에는 쓰지 않는다 — 그쪽은 `text` 다.
+    /// 사람이 보게 될 텍스트 — 그리기·폭 계산, 그리고 **문자열을 만들어 내보내는**
+    /// 추출·직렬화(쪽 텍스트, 마크다운)가 이것을 쓴다.
+    ///
+    /// 오프셋·인덱싱에는 쓰지 않는다 — 그쪽은 `text` 다. 필드처럼 모델 1자가 표시
+    /// N자인 런에서 둘은 길이가 다르다.
     pub fn display_or_text(&self) -> &str {
         self.display_text.as_deref().unwrap_or(&self.text)
     }

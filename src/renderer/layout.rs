@@ -2522,16 +2522,25 @@ impl LayoutEngine {
                 }
                 // 마커마다 [앞 텍스트][필드][뒤 텍스트] 로 쪼갠다. 필드 런은 모델 1자에
                 // 표시값 N자라, 캐럿이 필드 안으로 들어가지 않고 앞뒤로만 놓인다.
+                // 조각은 자기 글자에 맞는 표시 텍스트를 새로 갖는다. 원본 런의
+                // `display_text` 는 **런 전체**에 대해 만들어진 값이라(이 함수는
+                // `convert_pua_display_text` 직후에 돌아간다) 그대로 물려주면 조각이
+                // 남의 글자를 그린다. 형제 `substitute_page_auto_numbers_in_composed`
+                // 도 `text` 를 고친 뒤 `display_text` 를 무효화한다.
                 let mut plain = String::new();
+                let mut push_plain = |new_runs: &mut Vec<_>, text: String| {
+                    let mut piece = run.clone();
+                    piece.display_text = Self::pua_display_for(&text);
+                    piece.text = text;
+                    new_runs.push(piece);
+                };
                 for ch in run.text.chars() {
                     let Some(value) = field_value(ch) else {
                         plain.push(ch);
                         continue;
                     };
                     if !plain.is_empty() {
-                        let mut before = run.clone();
-                        before.text = std::mem::take(&mut plain);
-                        new_runs.push(before);
+                        push_plain(&mut new_runs, std::mem::take(&mut plain));
                     }
                     let mut field = run.clone();
                     field.text = ch.to_string();
@@ -2539,13 +2548,21 @@ impl LayoutEngine {
                     new_runs.push(field);
                 }
                 if !plain.is_empty() {
-                    let mut after = run.clone();
-                    after.text = plain;
-                    new_runs.push(after);
+                    push_plain(&mut new_runs, plain);
                 }
             }
             line.runs = new_runs;
         }
+    }
+
+    /// PUA 표시 확장이 필요한 글자가 있으면 그 표시 문자열을, 없으면 `None` 을 준다.
+    ///
+    /// `convert_pua_display_text` 와 같은 규칙(`expand_pua_display_text`)을 쓰되 조각
+    /// 단위로 다시 만든다 — 원본 런의 값을 잘라 쓸 수 없기 때문이다(표시 길이가 모델과
+    /// 다르므로 모델 인덱스로 자를 수 없다).
+    fn pua_display_for(text: &str) -> Option<String> {
+        let expanded = crate::renderer::composer::expand_pua_display_text(text);
+        (expanded != text).then_some(expanded)
     }
 
     /// `AutoNumber(Page)` 컨트롤의 placeholder 문자만 현재 쪽번호로 치환한다.

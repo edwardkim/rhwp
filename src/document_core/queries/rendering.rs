@@ -5200,7 +5200,9 @@ impl DocumentCore {
         fn collect_line_text(node: &RenderNode, out: &mut String, has_token: &mut bool) {
             match &node.node_type {
                 RenderNodeType::TextRun(tr) => {
-                    out.push_str(&tr.text);
+                    // 사람이 읽을 문자열이므로 표시 텍스트를 쓴다 — 머리말 필드는
+                    // 모델에 제어문자 1자라 그대로 내보내면 값이 사라진다 (Task #3216).
+                    out.push_str(tr.display_or_text());
                     *has_token = true;
                 }
                 RenderNodeType::FootnoteMarker(marker) => {
@@ -5285,7 +5287,9 @@ impl DocumentCore {
         fn collect_line_text(node: &RenderNode, out: &mut String, has_token: &mut bool) {
             match &node.node_type {
                 RenderNodeType::TextRun(tr) => {
-                    out.push_str(&tr.text);
+                    // 사람이 읽을 문자열이므로 표시 텍스트를 쓴다 — 머리말 필드는
+                    // 모델에 제어문자 1자라 그대로 내보내면 값이 사라진다 (Task #3216).
+                    out.push_str(tr.display_or_text());
                     *has_token = true;
                 }
                 RenderNodeType::FootnoteMarker(marker) => {
