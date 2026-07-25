@@ -53,7 +53,8 @@ concurrency:
 jobs:
   preflight:
     name: CI preflight
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 10
     permissions:
       actions: read
@@ -411,12 +412,9 @@ jobs:
   # required check 는 집계 job "Build & Test" 로 불변이다.
   build-test-archive:
     name: Build test archive
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 30
-    # [#3289] 러너 .env 의 CARGO_BUILD_JOBS=3 은 20개 러너 동시 빌드 폭주 대비
-    # 보수값이다. critical path 빌드 잡만 상향해 70코어 호스트를 활용한다.
-    env:
-      CARGO_BUILD_JOBS: 12
     needs: [preflight, lint, frontend-package-gates]
     if: >-
       ${{
@@ -444,39 +442,24 @@ jobs:
       # [Task #1109 / #1192 C] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
       # 테스트 빌드 시 디스크 한도 초과를 줄인다.
       - name: Free disk space (remove unused pre-installed toolchains)
-        # [#3284] GitHub-hosted 이미지 전용 사전설치물 제거 — self-hosted 러너에는
-        # 해당 디렉터리가 없고 sudo(apt 한정)로 rm 이 불가하므로 skip 한다.
-        if: runner.environment == 'github-hosted'
         run: |
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /usr/share/dotnet
           df -h
 
       - name: Install Rust toolchain
-        # [#3289] dtolnay 액션의 rustup default 가 매 잡마다 공유 ~/.rustup/settings.toml 을
-        # 다시 써 동시 잡 레이스로 파일이 깨진다(실측: version 필드 소실). self-hosted 는
-        # 호스트 rustup + rust-toolchain.toml 디렉터리 override 로 충분하므로 hosted 전용.
-        if: runner.environment == 'github-hosted'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.1
 
-      # [#3289] 20개 러너가 /home/app 의 ~/.cargo/bin 을 공유하므로 동시 설치 시
-      # mv 레이스로 실패한다 (shard 8개 동시 시작 실측). self-hosted 는 호스트에
-      # 1회 설치된 cargo-nextest 를 그대로 쓰고, hosted 러너에서만 설치한다.
       - name: Install cargo-nextest
-        if: runner.environment == 'github-hosted'
         uses: taiki-e/install-action@v2
         with:
           tool: nextest
 
       # [#2393] 수동 restore/save 캐시 → rust-cache (적중률·정리 자동화).
       # 저장 정책은 종전과 동일하게 devel/main push 로 한정.
-      # [#3289] self-hosted 는 공유 ~/.cargo + 러너별 _work target 이 자연 캐시라 제외.
-      # rust-cache 의 save 전 정리가 공유 ~/.cargo/bin 의 cargo-nextest 를 삭제하는
-      # 사고 실측 (devel push run 30145509799, "Cleaning cargo/bin").
       - name: Rust build cache
-        if: runner.environment == 'github-hosted'
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: test-archive
@@ -500,20 +483,6 @@ jobs:
           cargo nextest archive \
             --cargo-profile "${{ steps.profile.outputs.cargo_profile }}" \
             --archive-file tests.tar.zst
-
-      # [#3289] 20개 러너가 한 호스트를 공유하므로 아카이브를 호스트 캐시 디렉터리에
-      # 복사해 두면 8개 shard 의 동시 다운로드(1GB×8, 회선 공유로 ~6분 대기)를
-      # 로컬 hardlink/copy 로 대체할 수 있다. 업로드 아티팩트는 fallback 으로 유지한다.
-      # tmp+mv 원자적 쓰기로 부분 파일 노출을 막고, 하루 지난 run 캐시는 정리한다.
-      - name: Publish archive to host cache
-        if: runner.environment != 'github-hosted'
-        run: |
-          cache_dir="$HOME/artifact-cache/${GITHUB_RUN_ID}"
-          find "$HOME/artifact-cache" -mindepth 1 -maxdepth 1 -type d -mmin +1440 -exec rm -rf {} + 2>/dev/null || true
-          mkdir -p "$cache_dir"
-          cp tests.tar.zst "$cache_dir/tests.tar.zst.tmp"
-          mv "$cache_dir/tests.tar.zst.tmp" "$cache_dir/tests.tar.zst"
-          ls -la --block-size=M "$cache_dir"
 
       # [#2393] 샤드 합계 대조의 기대치 — 비-ignored(runnable) 테스트 수.
       # nextest Summary 의 skipped 는 파티션 제외분과 #[ignore] 를 합산하므로
@@ -544,7 +513,8 @@ jobs:
 
   test-shard:
     name: Default-feature tests (shard ${{ matrix.shard }}/8)
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 30
     needs: [preflight, native-skia-tests, build-test-archive]
     # [#3266] archive와 Native Skia를 병렬화하되, 두 필수 worker가 모두 성공한
@@ -570,38 +540,16 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Install Rust toolchain
-        # [#3289] 공유 ~/.rustup settings.toml 레이스 방지 — 첫 사용처 주석 참조.
-        if: runner.environment == 'github-hosted'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.1
 
-      # [#3289] 공유 ~/.cargo/bin 동시 설치 레이스 방지 — build-test-archive 주석 참조.
       - name: Install cargo-nextest
-        if: runner.environment == 'github-hosted'
         uses: taiki-e/install-action@v2
         with:
           tool: nextest
 
-      # [#3289] 같은 호스트의 build-test-archive 잡이 남긴 호스트 캐시를 우선 사용해
-      # 8개 shard 동시 다운로드 병목(~6분)을 제거한다. hardlink 는 동일 파일시스템
-      # (/home/app)에서 즉시 완료되고, 실패 시 copy → 그마저 없으면 아티팩트 다운로드.
-      - name: Fetch test archive from host cache
-        id: host_cache
-        if: runner.environment != 'github-hosted'
-        run: |
-          src="$HOME/artifact-cache/${GITHUB_RUN_ID}/tests.tar.zst"
-          if [[ -f "$src" ]]; then
-            ln -f "$src" tests.tar.zst 2>/dev/null || cp "$src" tests.tar.zst
-            hit=true
-          else
-            hit=false
-          fi
-          echo "hit=$hit" >> "$GITHUB_OUTPUT"
-          echo "host cache hit=$hit"
-
       - name: Download test archive
-        if: steps.host_cache.outputs.hit != 'true'
         uses: actions/download-artifact@v8
         with:
           name: test-archive-${{ github.run_id }}
@@ -643,11 +591,9 @@ jobs:
 
   lint:
     name: Lint (fmt, clippy, WASM check)
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 20
-    # [#3289] critical path 빌드 잡 한정 CARGO_BUILD_JOBS 상향 (build-test-archive 주석 참조)
-    env:
-      CARGO_BUILD_JOBS: 12
     needs: preflight
     if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
     permissions:
@@ -657,17 +603,13 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Install Rust toolchain
-        # [#3289] 공유 ~/.rustup settings.toml 레이스 방지 — 첫 사용처 주석 참조.
-        if: runner.environment == 'github-hosted'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.1
           components: clippy, rustfmt
           targets: wasm32-unknown-unknown
 
-      # [#3289] self-hosted 제외 — 공유 ~/.cargo/bin 파괴 사고 (build-test-archive 주석 참조)
       - name: Rust build cache
-        if: runner.environment == 'github-hosted'
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: lint
@@ -684,11 +626,9 @@ jobs:
 
   native-skia-tests:
     name: Native Skia tests
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 30
-    # [#3289] critical path 빌드 잡 한정 CARGO_BUILD_JOBS 상향 (build-test-archive 주석 참조)
-    env:
-      CARGO_BUILD_JOBS: 12
     needs: [preflight, lint, frontend-package-gates]
     # frontend 비대상 job의 skipped는 정상 경로다. 대상 job의 실패/취소와 lint 실패는
     # native-skia 이후 worker 전체에 전파한다.
@@ -717,17 +657,12 @@ jobs:
       # [#1192] 캐시 정상 작동 확인 후 "크고 빠른" 항목(android/dotnet)만 남기고 축소.
       # 느린 docker prune --all / apt clean / ghc / CodeQL 정리는 제거. df -h 로 여유 확인.
       - name: Free disk space (remove unused pre-installed toolchains)
-        # [#3284] GitHub-hosted 이미지 전용 사전설치물 제거 — self-hosted 러너에는
-        # 해당 디렉터리가 없고 sudo(apt 한정)로 rm 이 불가하므로 skip 한다.
-        if: runner.environment == 'github-hosted'
         run: |
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /usr/share/dotnet
           df -h
 
       - name: Install Rust toolchain
-        # [#3289] 공유 ~/.rustup settings.toml 레이스 방지 — 첫 사용처 주석 참조.
-        if: runner.environment == 'github-hosted'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.1
@@ -735,18 +670,13 @@ jobs:
       # [#2431 C] 기본 test job 의 rust-cache 이행 후 writer가 사라진
       # Linux-cargo-* namespace 대신 Native Skia 전용 shared key를 사용한다.
       # PR은 restore-only, devel/main push만 save하는 신뢰 경계를 유지한다.
-      # [#3289] self-hosted 제외 — 공유 ~/.cargo/bin 파괴 사고 (build-test-archive 주석 참조)
       - name: Rust build cache
-        if: runner.environment == 'github-hosted'
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: native-skia
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
-      # [#3289] self-hosted 는 호스트에 선설치됨 — 동시 잡의 apt/dpkg 락 경합 방지.
-      # 신규 시스템 패키지는 호스트 선설치가 정본 (거버넌스 보고서 참조).
       - name: Install native Skia runtime packages
-        if: runner.environment == 'github-hosted'
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
@@ -770,7 +700,8 @@ jobs:
 
   frontend-package-gates:
     name: Frontend package gates
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 20
     # [#3268] Frontend는 Lint의 산출물을 읽지 않고 독립 runner에서 별도 target/cache를 쓴다.
     # preflight의 fast-pass·영향 판정만 기다려 Lint와 병렬 시작한다. Lint 실패 시 Frontend가
@@ -784,8 +715,6 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Install Rust toolchain
-        # [#3289] 공유 ~/.rustup settings.toml 레이스 방지 — 첫 사용처 주석 참조.
-        if: runner.environment == 'github-hosted'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.1
@@ -794,11 +723,8 @@ jobs:
       - name: Install wasm-pack
         uses: ./.github/actions/install-wasm-pack
 
-      # [#3289] self-hosted 제외 — restore 의 tar 전개가 공유 ~/.cargo/registry 를
-      # 락 없이 덮어써 동시 cargo 빌드와 충돌한다. 상주 registry + _work target 이 자연 캐시.
       - name: Restore frontend WASM cargo cache
         id: frontend_wasm_cargo_cache_restore
-        if: runner.environment == 'github-hosted'
         uses: actions/cache/restore@v5
         with:
           path: |
@@ -862,9 +788,8 @@ jobs:
       - name: Verify font asset contracts
         run: node --test scripts/frontend-font-assets.test.mjs
 
-      # [#3289] self-hosted 제외 — 공유 ~/.cargo tar 저장은 무익(쿼터 read-only)하고 거대하다.
       - name: Save frontend WASM cargo cache
-        if: ${{ runner.environment == 'github-hosted' && github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.frontend_wasm_cargo_cache_restore.outputs.cache-hit != 'true' }}
+        if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.frontend_wasm_cargo_cache_restore.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v5
         with:
           path: |
@@ -875,7 +800,8 @@ jobs:
 
   build-and-test:
     name: Build & Test
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 45
     needs:
       - preflight
@@ -993,7 +919,8 @@ jobs:
 
   wasm-build:
     name: WASM Build
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 30
     permissions:
       contents: read
@@ -1005,17 +932,12 @@ jobs:
       # [Task #1109 / #1192 C] wasm-build job 도 build-and-test 와 동일 축소 패턴.
       # "크고 빠른" 항목(android/dotnet)만 제거. df -h 로 여유 확인.
       - name: Free disk space (remove unused pre-installed toolchains)
-        # [#3284] GitHub-hosted 이미지 전용 사전설치물 제거 — self-hosted 러너에는
-        # 해당 디렉터리가 없고 sudo(apt 한정)로 rm 이 불가하므로 skip 한다.
-        if: runner.environment == 'github-hosted'
         run: |
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /usr/share/dotnet
           df -h
 
       - name: Install Rust toolchain
-        # [#3289] 공유 ~/.rustup settings.toml 레이스 방지 — 첫 사용처 주석 참조.
-        if: runner.environment == 'github-hosted'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.93.1
@@ -1024,9 +946,7 @@ jobs:
       - name: Install wasm-pack
         uses: ./.github/actions/install-wasm-pack
 
-      # [#3289] self-hosted 제외 — 공유 ~/.cargo 락 없는 tar 전개/저장 금지 (frontend 주석 참조).
       - name: Cache cargo registry & build
-        if: runner.environment == 'github-hosted'
         uses: actions/cache@v5
         with:
           path: |
