@@ -102,6 +102,11 @@ self-hosted 워크플로(ci.yml·full-renderer-sweep.yml)의 공유 상태 쓰�
   "Unable to clean → repository will be recreated" 로 자가 복구한다(재클론 ~30s). 조치 불요.
 - **네트워크**: 20 러너가 회선 1개 공유 — 대용량 아티팩트를 다수 잡이 동시 소비하는 설계는
   호스트 캐시 공유를 먼저 검토한다.
+- **CPU 공유와 시간 상한 테스트**: nextest 기본 스레드는 코어 수(70)라, 다중 run 폭주 시
+  20잡×70=1400 스레드가 70코어를 경쟁해 벽시계 상한 테스트가 CPU 기아로 flake 한다
+  (PR #3288 shard 실측: issue_2833 상한 초과). shard 잡은 self-hosted 에서
+  `NEXTEST_TEST_THREADS=8` 캡(단일 run 8shard×8=64≈70코어 정합, 폭주 시 ~2.3배 상한).
+  벽시계 상한을 단정하는 테스트 신설은 공유 CPU 환경의 간섭을 감안해 여유 배수를 둔다.
 
 ## 후속 후보
 

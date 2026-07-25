@@ -612,6 +612,13 @@ jobs:
       - name: Run shard ${{ matrix.shard }}/8
         run: |
           set -o pipefail
+          # [#3289] self-hosted 20 러너는 70코어 한 호스트를 공유한다. nextest 기본
+          # 스레드(=코어 수 70)로는 다중 run 폭주 시 20잡×70=1400 스레드가 경쟁해
+          # 벽시계 상한 테스트가 CPU 기아로 flake 한다 (PR #3288 shard 8 실측:
+          # issue_2833 상한 초과). 8 스레드 캡 — 단일 run 8shard×8=64≈70코어 정합.
+          if [[ "${RUNNER_ENVIRONMENT}" != "github-hosted" ]]; then
+            export NEXTEST_TEST_THREADS=8
+          fi
           # --extract-to . : CLI 테스트의 env!("CARGO_BIN_EXE_rhwp") 는 빌드
           # 러너 절대 경로가 컴파일 타임에 박힌다. GitHub 러너는 job 간
           # workspace 경로가 동일하므로 워크스페이스에 풀어 target/ 경로를
