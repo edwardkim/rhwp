@@ -118,6 +118,15 @@ jobs:
               return parents.length === 2 && parents.some((parent) => parent.sha === baseSha);
             }
 
+            async function isCurrentBaseAncestor(candidateSha, baseSha) {
+              const { data: comparison } = await github.rest.repos.compareCommitsWithBasehead({
+                owner,
+                repo,
+                basehead: `${baseSha}...${candidateSha}`,
+              });
+              return comparison.status === 'ahead' || comparison.status === 'identical';
+            }
+
             function latestRun(runs) {
               return runs
                 .slice()
@@ -126,6 +135,38 @@ jobs:
                   const aTime = Date.parse(a.completed_at || a.started_at || a.created_at || 0);
                   return bTime - aTime;
                 })[0];
+            }
+
+            async function codeqlResult(candidateSha) {
+              const checkRuns = await github.paginate(github.rest.checks.listForRef, {
+                owner,
+                repo,
+                ref: candidateSha,
+                per_page: 100,
+              });
+
+              for (const checkName of requiredChecks) {
+                const checkRun = latestRun(checkRuns.filter((run) => (
+                  run.name === checkName
+                  && run.app?.slug === 'github-actions'
+                )));
+                if (!checkRun) {
+                  return { state: 'missing', reason: `missing-check:${checkName}:${candidateSha}` };
+                }
+                if (checkRun.status !== 'completed') {
+                  return {
+                    state: 'pending',
+                    reason: `check-not-completed:${checkName}:${checkRun.status}`,
+                  };
+                }
+                if (!allowedConclusions.has(checkRun.conclusion)) {
+                  return {
+                    state: 'failed',
+                    reason: `check-not-green:${checkName}:${checkRun.conclusion}`,
+                  };
+                }
+              }
+              return { state: 'green' };
             }
 
             try {
@@ -159,8 +200,8 @@ jobs:
                 return;
               }
 
-              let trailingReviewOnlyCommits = 0;
-              let candidateSha = '';
+              const reviewOnlyCandidates = [];
+              let codeCandidateSha = '';
 
               for (let index = commits.length - 1; index >= 0; index -= 1) {
                 const sha = commits[index].sha;
@@ -181,66 +222,51 @@ jobs:
                 if (reviewOnly) {
                   const parents = commit.parents || [];
                   if (parents.length === 1) {
-                    trailingReviewOnlyCommits += 1;
+                    reviewOnlyCandidates.push(sha);
                     continue;
                   }
-                  // #3233: a docs-only Update branch merge can be the already-verified
-                  // candidate after one or more trailing review-record commits. It must
-                  // be exactly a merge of the current PR base; all other merge shapes
-                  // retain the conservative full-CodeQL fallback.
-                  if (trailingReviewOnlyCommits > 0
+                  // #3233 keeps the narrow Update branch merge topology. Its green
+                  // workflow can be reused after one or more review-only records.
+                  if (reviewOnlyCandidates.length > 0
                     && isCurrentBaseReviewMerge(commit, pr.base.sha)) {
-                    candidateSha = sha;
-                    core.info(`using current-base ${reviewOnlyLabel(files)} merge as candidate SHA ${candidateSha}`);
+                    reviewOnlyCandidates.push(sha);
+                    core.info(`including current-base ${reviewOnlyLabel(files)} merge candidate ${sha}`);
                     break;
                   }
                   setResult(false, `${reviewOnlyLabel(files)}-merge-not-reusable:${sha}`);
                   return;
                 }
 
-                candidateSha = sha;
+                codeCandidateSha = sha;
                 break;
               }
 
-              if (trailingReviewOnlyCommits === 0) {
+              if (reviewOnlyCandidates.length === 0) {
                 setResult(false, 'no-trailing-review-only-commits');
                 return;
               }
-              if (!candidateSha) {
-                candidateSha = pr.base.sha;
-                core.info(`all PR commits are review-only; using base SHA ${candidateSha}`);
-                setResult(true, 'all-review-only-no-code-impact', candidateSha);
-                return;
+              if (codeCandidateSha) {
+                reviewOnlyCandidates.push(codeCandidateSha);
               }
 
-              const checkRuns = await github.paginate(github.rest.checks.listForRef, {
-                owner,
-                repo,
-                ref: candidateSha,
-                per_page: 100,
-              });
-
-              for (const checkName of requiredChecks) {
-                const checkRun = latestRun(checkRuns.filter((run) => (
-                  run.name === checkName
-                  && run.app?.slug === 'github-actions'
-                )));
-
-                if (!checkRun) {
-                  setResult(false, `missing-check:${checkName}:${candidateSha}`, candidateSha);
+              for (const candidateSha of reviewOnlyCandidates) {
+                if (!(await isCurrentBaseAncestor(candidateSha, pr.base.sha))) {
+                  core.info(`candidate does not include current base: ${candidateSha}`);
+                  continue;
+                }
+                const result = await codeqlResult(candidateSha);
+                if (result.state === 'green') {
+                  setResult(true, 'codeql-checks-green', candidateSha);
                   return;
                 }
-                if (checkRun.status !== 'completed') {
-                  setResult(false, `check-not-completed:${checkName}:${checkRun.status}`, candidateSha);
+                if (result.state === 'failed') {
+                  setResult(false, result.reason, candidateSha);
                   return;
                 }
-                if (!allowedConclusions.has(checkRun.conclusion)) {
-                  setResult(false, `check-not-green:${checkName}:${checkRun.conclusion}`, candidateSha);
-                  return;
-                }
+                core.info(`candidate not reusable yet: ${candidateSha} (${result.reason})`);
               }
 
-              setResult(true, 'codeql-checks-green', candidateSha);
+              setResult(false, 'no-green-current-base-codeql-candidate');
             } catch (error) {
               core.warning(`CodeQL preflight failed; running full CodeQL. ${error.message}`);
               setResult(false, 'preflight-error');
