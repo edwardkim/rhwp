@@ -113,7 +113,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "@types/vscode": "^1.82.0",
+    "@types/vscode": "^1.125.0",
     "copy-webpack-plugin": "^14.0.0",
     "null-loader": "^4.0.1",
     "ts-loader": "^9.5.0",
