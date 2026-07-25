@@ -75,17 +75,6 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
     results
 }
 
-#[cfg(test)]
-mod tests {
-    use super::find_matches;
-
-    #[test]
-    fn ignore_case_returns_original_char_offset_after_unicode_lowercase_expansion() {
-        // `İ`가 두 lower-case 문자로 확장돼도 `stan`의 시작은 원문 2번째 문자다.
-        assert_eq!(find_matches("Aİstanbul", "stan", false), vec![2]);
-    }
-}
-
 /// 문서 본문에서 query의 첫 번째 매치만 반환 (표/글상자 내부 제외, early-exit)
 fn search_first_body(doc: &DocumentCore, query: &str, case_sensitive: bool) -> Option<SearchHit> {
     let qlen = query.chars().count();
@@ -512,6 +501,12 @@ mod tests {
     fn find_in_text_case_insensitive() {
         assert_eq!(find_in_text("Hello World", "hello", false), vec![0]);
         assert_eq!(find_in_text("Hello World", "WORLD", false), vec![6]);
+    }
+
+    #[test]
+    fn ignore_case_returns_original_char_offset_after_unicode_lowercase_expansion() {
+        // `İ`가 두 lower-case 문자로 확장돼도 `stan`의 시작은 원문 2번째 문자다.
+        assert_eq!(find_matches("Aİstanbul", "stan", false), vec![2]);
     }
 
     #[test]
