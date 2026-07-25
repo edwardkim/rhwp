@@ -1728,13 +1728,21 @@ fn export_png(args: &[String]) -> i32 {
         }
     };
 
-    let core = match rhwp::document_core::DocumentCore::from_bytes(&data) {
+    let mut core = match rhwp::document_core::DocumentCore::from_bytes(&data) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("오류: HWP 파싱 실패 - {:?}", e);
             return EXIT_RUNTIME;
         }
     };
+
+    // [#3302] 외부 연결 그림(HWP3 pic_type=0 등)의 같은 디렉터리 자동 적재 — export-svg
+    // 의 #741 규칙과 동일. 누락 시 skia 렌더가 회색 placeholder 를 그린다 (SO-SUEOP 1쪽 실측).
+    if allows_implicit_sibling_resources(rhwp::parser::detect_format(&data)) {
+        if let Some(parent) = Path::new(file_path).parent() {
+            let _loaded = core.populate_external_images_from_dir(parent);
+        }
+    }
 
     let page_count = core.page_count();
     println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
@@ -2096,13 +2104,20 @@ fn export_pdf(args: &[String]) -> i32 {
             }
         };
 
-        let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
             Ok(d) => d,
             Err(e) => {
                 eprintln!("오류: 문서 파싱 실패 - {}", e);
                 return 1;
             }
         };
+
+        // [#3302] 외부 연결 그림 같은 디렉터리 자동 적재 — export-svg/export-png 와 동일 규칙.
+        if allows_implicit_sibling_resources(rhwp::parser::detect_format(&data)) {
+            if let Some(parent) = Path::new(file_path).parent() {
+                let _loaded = doc.populate_external_images_from_dir(parent);
+            }
+        }
 
         let page_count = doc.page_count();
         println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
