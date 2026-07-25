@@ -148,13 +148,20 @@ rhwp export-pdf input.hwp -o out.pdf \
   `schemaVersion` 이 계약이며 필드 추가는 허용, 변경·삭제는 `tests/cli_json_contract.rs` 가 잡는다.
   `page` 는 `-p` 와 같은 0 기준.
 
-### `batch <export-text|info|export-structure> --json [--mode <m>] [--threads <N>]` (#3238, #3261)
+### `batch <export-text|info|export-structure|export-tables|fields|search> --json [옵션]` (#3238, #3261, #3346)
 stdin 의 파일 목록(한 줄당 경로 하나)을 **한 프로세스에서 파일 간 병렬**로 처리해
 NDJSON(한 줄당 레코드 하나)을 stdin 입력 순서대로 스트림 출력한다.
 - `batch export-text` 성공 레코드: `{"schemaVersion":"1.0","source","pageCount","text"}`
 - `batch info` 성공 레코드: `info --json` 과 **같은 스키마** — 단건/배치를 같은 소비 코드로 읽는다
 - `batch export-structure` 성공 레코드: `export-structure --json` 봉투와 같은 스키마.
   `--mode auto|outline|clause` 는 이 축 전용(기본 auto)
+- `batch export-tables` 성공 레코드: `export-tables --json` 봉투와 같은 스키마
+  (병합 `rowSpan`/`colSpan`·중첩 표 보존)
+- `batch fields` 성공 레코드: `fields --json` 봉투와 같은 스키마
+- `batch search` 성공 레코드: `search --json` 봉투와 같은 스키마.
+  **`--query <검색어>` 는 이 축 전용이며 필수**다(없으면 사용법 오류 2).
+  대량 코퍼스에서 스트림이 부풀지 않도록 **파일당 매치 1,000건 상한**을 둔다
+  (단건 `search --limit` 과 같은 취지). 대소문자는 구분한다.
 - 실패 레코드(공통): `{"schemaVersion":"1.0","source","error","exitClass":"runtime"}`
 - 건별 실패(읽기·파싱·추출·panic)는 레코드로 격리하고 스트림을 계속한다.
   하나라도 실패하면 최종 종료 코드 1 (#2707 계약).
@@ -165,6 +172,13 @@ NDJSON(한 줄당 레코드 하나)을 stdin 입력 순서대로 스트림 출�
 # 아카이브 파이프라인: 메타데이터 스윕 → 대상 선별 → 본문 추출
 find docs/ -name '*.hwp' | rhwp batch info --json > meta.ndjson
 find docs/ -name '*.hwp' | rhwp batch export-text --json > corpus.ndjson
+
+# 아카이브 전역 검색 — 어느 문서 어느 쪽에 있는지 (#3346)
+find docs/ -name '*.hwp' | rhwp batch search --query "위임전결" --json   | jq -c 'select(.matchCount > 0) | {source, pages:[.matches[].page]}'
+
+# 코퍼스 표 수확 / 서식 템플릿 일괄 조사
+find docs/ -name '*.hwp' | rhwp batch export-tables --json | jq -c '{source, tableCount}'
+find forms/ -name '*.hwp' | rhwp batch fields --json | jq -c 'select(.fieldCount>0) | {source, fieldCount}'
 ```
 
 검증된 에이전트·파이프라인 시나리오(선별→추출, RAG 청킹, 실패 처리)는

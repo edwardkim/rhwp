@@ -238,7 +238,7 @@ fn show_mcp_tools() -> i32 {
                 "properties": {
                     "subcommand": {
                         "type": "string",
-                        "enum": ["export-text", "info", "export-structure"],
+                        "enum": ["export-text", "info", "export-structure", "export-tables", "fields"],
                         "description": "각 파일에 적용할 처리"
                     },
                     "paths": {
@@ -275,6 +275,26 @@ fn show_mcp_tools() -> i32 {
             serde_json::json!(["edit", "fill-fields", "{path}", "--data", "{data}", "--json"]),
             &["schemaVersion", "source", "dryRun", "filledCount", "filled", "notFound", "output"],
         ),
+        tool(
+            "hwp_batch_search",
+            "여러 문서를 한 프로세스에서 병렬 검색해 NDJSON 스트림으로 받는다. 매치마다 구역·문단·페이지 주소가 붙어 '어느 문서 몇 쪽'을 답할 수 있다. 파일 목록은 stdin 으로 한 줄에 하나씩 넣는다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "query": { "type": "string", "description": "찾을 문자열 (대소문자 구분)" },
+                    "paths": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "검색할 문서 경로 목록 (stdin 으로 전달된다)"
+                    },
+                    "threads": { "type": "integer", "minimum": 1, "description": "병렬 스레드 수. 기본은 CPU 코어 수" }
+                },
+                "required": ["query", "paths"],
+            }),
+            "batch",
+            serde_json::json!(["batch", "search", "--json", "--query", "{query}"]),
+            &["schemaVersion", "source", "query", "matchCount", "matches"],
+        ),
     ];
 
     let manifest = serde_json::json!({
@@ -288,7 +308,7 @@ fn show_mcp_tools() -> i32 {
         "invocation": {
             "transport": "cli",
             "note": "각 도구의 cli.args 에서 {name} 자리표시자를 inputSchema 의 같은 이름 값으로 치환해 실행한다. stdout 은 순수 JSON, 진단은 stderr, 종료 코드는 0/1/2(+ir-diff 차이 3).",
-            "stdinTools": ["hwp_batch"],
+            "stdinTools": ["hwp_batch", "hwp_batch_search"],
         },
         "tools": tools,
     });
@@ -583,8 +603,8 @@ fn show_capabilities(args: &[String]) -> i32 {
             "failure": "단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1",
         },
         "batch": {
-            "subcommands": ["export-text", "info", "export-structure"],
-            "flags": ["--json", "--threads", "--mode"],
+            "subcommands": ["export-text", "info", "export-structure", "export-tables", "fields", "search"],
+            "flags": ["--json", "--threads", "--mode", "--query"],
             "ordering": "stdin 입력 순서 보존",
             "input": "stdin, 한 줄당 파일 경로 하나",
         },
@@ -669,12 +689,13 @@ fn print_help() {
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
     println!("      --json                  결과를 JSON으로 stdout에 출력 (파일 저장 안 함)");
     println!();
-    println!("  batch <export-text|info|export-structure> --json [--threads <N>]");
+    println!("  batch <export-text|info|export-structure|export-tables|fields|search> --json [--threads <N>]");
     println!(
         "      stdin의 파일 목록(한 줄당 하나)을 한 프로세스로 전건 처리해 NDJSON 스트림 출력"
     );
     println!("      --threads <N>           파일 간 병렬 스레드 수 (기본: CPU 코어 수)");
     println!("      --mode <m>              export-structure 전용: auto|outline|clause");
+    println!("      --query <검색어>        search 전용: 찾을 문자열");
     println!();
     println!("  export-markdown <파일.hwp> [옵션]");
     println!("      페이지별 텍스트를 Markdown(.md)으로 내보내기");
@@ -2509,12 +2530,7 @@ fn export_tables(args: &[String]) -> i32 {
     };
 
     let tables = extract_tables(doc.document());
-    let envelope = serde_json::json!({
-        "schemaVersion": "1.0",
-        "source": file_path,
-        "tableCount": tables.len(),
-        "tables": tables,
-    });
+    let envelope = tables_json_value(file_path, &tables);
 
     if let Some(p) = out_path {
         let json = match serde_json::to_string_pretty(&envelope) {
@@ -2852,17 +2868,24 @@ fn export_markdown(args: &[String]) -> i32 {
 fn run_batch(args: &[String]) -> i32 {
     use std::io::{BufRead, Write};
 
-    const USAGE: &str = "사용법: <파일 목록> | rhwp batch <export-text|info|export-structure> --json [--mode auto|outline|clause] [--threads <N>]  (stdin: 한 줄당 파일 경로 하나)";
+    const USAGE: &str = "사용법: <파일 목록> | rhwp batch <export-text|info|export-structure|export-tables|fields|search> --json [--mode auto|outline|clause] [--query <검색어>] [--threads <N>]  (stdin: 한 줄당 파일 경로 하나)";
 
     let subcommand = args.first().map(String::as_str);
     let is_structure = subcommand == Some("export-structure");
+    // [#3346] --query 는 search 축 전용이다 (--mode 가 export-structure 전용인 것과 같은 규약).
+    let is_search = subcommand == Some("search");
     if !matches!(
         subcommand,
-        Some("export-text") | Some("info") | Some("export-structure")
+        Some("export-text")
+            | Some("info")
+            | Some("export-structure")
+            | Some("export-tables")
+            | Some("fields")
+            | Some("search")
     ) {
         match subcommand {
             Some(unknown) => eprintln!(
-                "오류: batch 는 현재 export-text·info·export-structure 만 지원합니다 - {}",
+                "오류: batch 는 export-text·info·export-structure·export-tables·fields·search 만 지원합니다 - {}",
                 unknown
             ),
             None => eprintln!("오류: batch 서브커맨드를 지정해주세요."),
@@ -2874,12 +2897,30 @@ fn run_batch(args: &[String]) -> i32 {
     let mut json_mode = false;
     let mut threads_opt: Option<usize> = None;
     let mut structure_mode = rhwp::document_core::queries::structure::StructureMode::Auto;
+    let mut search_query: Option<String> = None;
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
             "--json" => {
                 json_mode = true;
                 i += 1;
+            }
+            "--query" => {
+                // [#3346] --query 는 search 축 전용이다.
+                if !is_search {
+                    eprintln!("오류: --query 는 search 에서만 사용할 수 있습니다.");
+                    return EXIT_USAGE;
+                }
+                let Some(value) = args.get(i + 1) else {
+                    eprintln!("오류: --query 뒤에 검색어가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                if value.is_empty() {
+                    eprintln!("오류: --query 검색어가 비어 있습니다.");
+                    return EXIT_USAGE;
+                }
+                search_query = Some(value.clone());
+                i += 2;
             }
             "--mode" => {
                 // [#3261] --mode 는 export-structure 축 전용이다.
@@ -2930,6 +2971,16 @@ fn run_batch(args: &[String]) -> i32 {
     let mode = match subcommand {
         Some("export-text") => BatchMode::ExportText,
         Some("info") => BatchMode::Info,
+        Some("export-tables") => BatchMode::Tables,
+        Some("fields") => BatchMode::Fields,
+        Some("search") => {
+            let Some(q) = search_query.as_deref() else {
+                eprintln!("오류: batch search 는 --query <검색어> 가 필요합니다.");
+                eprintln!("{USAGE}");
+                return EXIT_USAGE;
+            };
+            BatchMode::Search { query: q }
+        }
         _ => BatchMode::Structure(structure_mode),
     };
 
@@ -3068,11 +3119,19 @@ fn run_batch(args: &[String]) -> i32 {
 
 /// [#3238] batch 가 처리하는 서브커맨드 축.
 #[derive(Clone, Copy)]
-enum BatchMode {
+enum BatchMode<'a> {
     ExportText,
     Info,
     /// [#3261] 문서 개요/조문 구조 — `export-structure --json` 과 스키마 공유.
     Structure(rhwp::document_core::queries::structure::StructureMode),
+    /// [#3346] 표 격자 — `export-tables --json` 과 스키마 공유.
+    Tables,
+    /// [#3346] 누름틀 조사 — `fields --json` 과 스키마 공유.
+    Fields,
+    /// [#3346] 주소를 가진 검색 — `search --json` 과 스키마 공유.
+    Search {
+        query: &'a str,
+    },
 }
 
 /// [#3238] 파일 하나를 처리해 NDJSON 레코드 하나를 만든다. 실패는 레코드로 보고하고
@@ -3080,11 +3139,14 @@ enum BatchMode {
 ///
 /// 배치는 신뢰할 수 없는 대량 코퍼스를 훑는 용도라, 한 건의 파서 panic 이 배치 전체를
 /// 죽여서는 안 된다. panic 도 해당 파일의 `error` 레코드로 격리한다.
-fn batch_record(mode: BatchMode, path: &str) -> serde_json::Value {
+fn batch_record(mode: BatchMode<'_>, path: &str) -> serde_json::Value {
     match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match mode {
         BatchMode::ExportText => batch_export_text_record_inner(path),
         BatchMode::Info => batch_info_record_inner(path),
         BatchMode::Structure(structure_mode) => batch_structure_record_inner(path, structure_mode),
+        BatchMode::Tables => batch_tables_record_inner(path),
+        BatchMode::Fields => batch_fields_record_inner(path),
+        BatchMode::Search { query } => batch_search_record_inner(path, query),
     })) {
         Ok(record) => record,
         Err(payload) => {
@@ -3162,6 +3224,54 @@ fn batch_structure_record_inner(
     structure_json_value(path, &st)
 }
 
+/// [#3346] `batch export-tables --json` 의 파일당 레코드 — `export-tables --json` 봉투와
+/// 같은 스키마(`tables_json_value` 공유)다.
+fn batch_tables_record_inner(path: &str) -> serde_json::Value {
+    use rhwp::document_core::queries::table_extract::extract_tables;
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
+    };
+    let tables = extract_tables(doc.document());
+    tables_json_value(path, &tables)
+}
+
+/// [#3346] `batch fields --json` 의 파일당 레코드 — `fields --json` 봉투와 같은 스키마.
+fn batch_fields_record_inner(path: &str) -> serde_json::Value {
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
+    };
+    let fields = collect_field_records(&doc);
+    fields_json_value(path, &fields)
+}
+
+/// [#3346] `batch search --json` 의 파일당 레코드 — `search --json` 봉투와 같은 스키마.
+///
+/// 대량 코퍼스에서 한 문서가 매치를 수만 건 쏟아내면 스트림이 부풀므로, 배치 경로는
+/// 파일당 매치 상한을 둔다(단건 `search --limit` 과 같은 취지).
+fn batch_search_record_inner(path: &str, query: &str) -> serde_json::Value {
+    const BATCH_MATCH_LIMIT: usize = 1000;
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
+    };
+    let matches = doc.grep(query, true, Some(BATCH_MATCH_LIMIT));
+    search_json_value(path, query, true, &matches)
+}
+
 /// [#3238] `batch info --json` 의 파일당 레코드 — `info --json` 과 같은 스키마
 /// (`info_json_value` 공유)라 소비자가 단건/배치를 같은 코드로 읽는다.
 fn batch_info_record_inner(path: &str) -> serde_json::Value {
@@ -3190,6 +3300,46 @@ fn structure_json_value(
         "mode": st.mode,
         "nodeCount": st.node_count,
         "structure": st,
+    })
+}
+
+/// [#3346] `export-tables --json` 과 `batch export-tables` 가 공유하는 봉투.
+fn tables_json_value(
+    file_path: &str,
+    tables: &[rhwp::document_core::queries::table_extract::TableGrid],
+) -> serde_json::Value {
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "tableCount": tables.len(),
+        "tables": tables,
+    })
+}
+
+/// [#3346] `fields --json` 과 `batch fields` 가 공유하는 봉투.
+fn fields_json_value(file_path: &str, fields: &[serde_json::Value]) -> serde_json::Value {
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "fieldCount": fields.len(),
+        "fields": fields,
+    })
+}
+
+/// [#3346] `search --json` 과 `batch search` 가 공유하는 봉투.
+fn search_json_value(
+    file_path: &str,
+    query: &str,
+    case_sensitive: bool,
+    matches: &[rhwp::document_core::queries::grep::GrepMatch],
+) -> serde_json::Value {
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "query": query,
+        "caseSensitive": case_sensitive,
+        "matchCount": matches.len(),
+        "matches": matches,
     })
 }
 
@@ -5489,14 +5639,7 @@ fn search_document(args: &[String]) -> i32 {
     let matches = doc.grep(query, !ignore_case, limit);
 
     if json_mode {
-        let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
-            "source": file_path,
-            "query": query,
-            "caseSensitive": !ignore_case,
-            "matchCount": matches.len(),
-            "matches": matches,
-        });
+        let envelope = search_json_value(file_path, query, !ignore_case, &matches);
         println!("{envelope}");
         // 매치 0건은 실패가 아니다 — 1은 런타임 실패 전용이다(#2707).
         return EXIT_OK;
@@ -7641,11 +7784,63 @@ fn ir_diff(args: &[String]) -> i32 {
     EXIT_OK
 }
 
+/// [#3346] `fields --json` 과 `batch fields` 가 공유하는 필드 레코드 수집.
+///
+/// 단건/배치가 같은 스키마를 내도록 한 곳에서 만든다.
+fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::Value> {
+    use rhwp::document_core::queries::field_query::NestedEntry;
+
+    doc.collect_all_fields()
+        .iter()
+        .map(|fi| {
+            // 중첩 경로: 표 셀·글상자 안의 필드가 어디에 있는지 — 후속 편집의 좌표다.
+            let nested: Vec<serde_json::Value> = fi
+                .location
+                .nested_path
+                .iter()
+                .map(|e| match e {
+                    NestedEntry::TableCell {
+                        control_index,
+                        cell_index,
+                        para_index,
+                    } => serde_json::json!({
+                        "kind": "tableCell",
+                        "control": control_index,
+                        "cell": cell_index,
+                        "paragraph": para_index,
+                    }),
+                    NestedEntry::TextBox {
+                        control_index,
+                        para_index,
+                    } => serde_json::json!({
+                        "kind": "textBox",
+                        "control": control_index,
+                        "paragraph": para_index,
+                    }),
+                })
+                .collect();
+
+            serde_json::json!({
+                "fieldId": fi.field.field_id,
+                "fieldType": format!("{:?}", fi.field.field_type),
+                "name": fi.field.field_name().unwrap_or(""),
+                "guide": fi.field.guide_text().unwrap_or(""),
+                "memo": fi.field.memo_text().unwrap_or_default(),
+                "command": fi.field.command,
+                "value": fi.value,
+                "editableInForm": fi.field.is_editable_in_form(),
+                "location": {
+                    "section": fi.location.section_index,
+                    "paragraph": fi.location.para_index,
+                    "nested": nested,
+                },
+            })
+        })
+        .collect()
+}
+
 /// `fields` — 누름틀/필드 조사 (읽기 전용).
 ///
-/// rhwp 는 이미 필드에 값을 **쓸 수** 있는데(`set_field_value_by_name`) 조회 API 는
-/// WASM/스튜디오 경로에만 있어, 브라우저 밖 에이전트는 "이 서식이 무엇을 요구하는지"
-/// 알 방법이 없었다. 기존 `collect_all_fields()` 를 그대로 노출한다(라이브러리 무변경).
 /// `edit` — 문서 편집 명령군 (로드맵 #2659 Stage 3).
 ///
 /// 공통 규약: `--dry-run`(변경 요약만 출력, 파일 무변경), 결과 리포트 JSON,
@@ -7852,9 +8047,10 @@ fn edit_fill_fields(args: &[String]) -> i32 {
     EXIT_OK
 }
 
+/// rhwp 는 이미 필드에 값을 **쓸 수** 있는데(`set_field_value_by_name`) 조회 API 는
+/// WASM/스튜디오 경로에만 있어, 브라우저 밖 에이전트는 "이 서식이 무엇을 요구하는지"
+/// 알 방법이 없었다. 기존 `collect_all_fields()` 를 그대로 노출한다(라이브러리 무변경).
 fn show_fields(args: &[String]) -> i32 {
-    use rhwp::document_core::queries::field_query::NestedEntry;
-
     let mut file_path: Option<&str> = None;
     let mut json_mode = false;
     for a in args {
@@ -7888,62 +8084,10 @@ fn show_fields(args: &[String]) -> i32 {
         }
     };
 
-    let infos = doc.collect_all_fields();
-    let fields: Vec<serde_json::Value> = infos
-        .iter()
-        .map(|fi| {
-            // 중첩 경로: 표 셀·글상자 안의 필드가 어디에 있는지 — 후속 편집의 좌표다.
-            let nested: Vec<serde_json::Value> = fi
-                .location
-                .nested_path
-                .iter()
-                .map(|e| match e {
-                    NestedEntry::TableCell {
-                        control_index,
-                        cell_index,
-                        para_index,
-                    } => serde_json::json!({
-                        "kind": "tableCell",
-                        "control": control_index,
-                        "cell": cell_index,
-                        "paragraph": para_index,
-                    }),
-                    NestedEntry::TextBox {
-                        control_index,
-                        para_index,
-                    } => serde_json::json!({
-                        "kind": "textBox",
-                        "control": control_index,
-                        "paragraph": para_index,
-                    }),
-                })
-                .collect();
-
-            serde_json::json!({
-                "fieldId": fi.field.field_id,
-                "fieldType": format!("{:?}", fi.field.field_type),
-                "name": fi.field.field_name().unwrap_or(""),
-                "guide": fi.field.guide_text().unwrap_or(""),
-                "memo": fi.field.memo_text().unwrap_or_default(),
-                "command": fi.field.command,
-                "value": fi.value,
-                "editableInForm": fi.field.is_editable_in_form(),
-                "location": {
-                    "section": fi.location.section_index,
-                    "paragraph": fi.location.para_index,
-                    "nested": nested,
-                },
-            })
-        })
-        .collect();
+    let fields = collect_field_records(&doc);
 
     if json_mode {
-        let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
-            "source": file_path,
-            "fieldCount": fields.len(),
-            "fields": fields,
-        });
+        let envelope = fields_json_value(file_path, &fields);
         println!("{envelope}");
         return EXIT_OK;
     }
