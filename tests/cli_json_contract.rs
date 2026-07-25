@@ -251,7 +251,16 @@ fn capabilities_json_contract() {
     let commands = v["commands"].as_array().expect("commands 배열");
     assert!(commands.len() >= 20, "전 명령 수록: {v}");
     // --json 계약 명령은 machine-readable 표시가 있어야 한다.
-    for name in ["info", "export-text", "export-structure"] {
+    for name in [
+        "info",
+        "export-text",
+        "export-structure",
+        "export-svg",
+        "export-tables",
+        "search",
+        "fields",
+        "ir-diff",
+    ] {
         let cmd = commands
             .iter()
             .find(|c| c["name"] == name)

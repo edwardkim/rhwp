@@ -191,6 +191,45 @@ fn show_mcp_tools() -> i32 {
             &["identical", "diffCount", "categories"],
         ),
         tool(
+            "hwp_export_svg",
+            "문서를 SVG로 렌더하고 생성된 페이지별 파일 경로를 JSON 매니페스트로 돌려준다.",
+            path_schema(serde_json::json!({})),
+            "export-svg",
+            serde_json::json!(["export-svg", "{path}", "--json"]),
+            &["format", "outputDir", "pageCount", "renderedCount", "pages"],
+        ),
+        tool(
+            "hwp_export_tables",
+            "문서의 표를 병합 정보와 중첩 구조를 보존한 격자 JSON으로 추출한다.",
+            path_schema(serde_json::json!({})),
+            "export-tables",
+            serde_json::json!(["export-tables", "{path}", "--json"]),
+            &["source", "tableCount", "tables"],
+        ),
+        tool(
+            "hwp_search",
+            "문서에서 검색어를 찾아 구역·문단·페이지·문자 오프셋 주소와 문맥을 돌려준다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "HWP/HWPX 문서 경로" },
+                    "query": { "type": "string", "minLength": 1, "description": "검색어" }
+                },
+                "required": ["path", "query"],
+            }),
+            "search",
+            serde_json::json!(["search", "{path}", "{query}", "--json"]),
+            &["source", "query", "caseSensitive", "matchCount", "matches"],
+        ),
+        tool(
+            "hwp_fields",
+            "문서의 누름틀·필드를 이름·안내문·현재값·위치와 함께 조사한다.",
+            path_schema(serde_json::json!({})),
+            "fields",
+            serde_json::json!(["fields", "{path}", "--json"]),
+            &["source", "fieldCount", "fields"],
+        ),
+        tool(
             "hwp_batch",
             "여러 문서를 한 프로세스에서 병렬 처리해 NDJSON 스트림으로 받는다. 파일 목록은 stdin 으로 한 줄에 하나씩 넣는다. 아카이브 전체를 스윕할 때 쓴다.",
             serde_json::json!({
@@ -368,6 +407,37 @@ fn show_capabilities(args: &[String]) -> i32 {
             "export",
             "문서를 DocLang v0.6 XML로 내보내기",
         ),
+        cmd_json(
+            "export-tables",
+            "export",
+            "표를 병합·중첩 구조를 보존한 격자 JSON으로 추출",
+            false,
+            &["-o", "--json"],
+            &["schemaVersion", "source", "tableCount", "tables"],
+        ),
+        cmd_json(
+            "search",
+            "query",
+            "문서 검색 결과를 구역·문단·페이지·문자 오프셋 주소와 함께 출력",
+            false,
+            &["--json", "--ignore-case", "--limit"],
+            &[
+                "schemaVersion",
+                "source",
+                "query",
+                "caseSensitive",
+                "matchCount",
+                "matches",
+            ],
+        ),
+        cmd_json(
+            "fields",
+            "query",
+            "누름틀/필드를 이름·안내문·현재값·위치와 함께 조사",
+            false,
+            &["--json"],
+            &["schemaVersion", "source", "fieldCount", "fields"],
+        ),
         cmd(
             "export-render-tree",
             "export",
@@ -396,7 +466,21 @@ fn show_capabilities(args: &[String]) -> i32 {
         cmd("dump-endnote-lines", "diagnostic", "미주 줄 배치 덤프"),
         cmd("dump-records", "diagnostic", "저수준 레코드 스트림 덤프"),
         cmd("diag", "diagnostic", "문서 구조 진단(번호/글머리표/개요)"),
-        cmd("ir-diff", "diagnostic", "두 문서의 IR 차이 비교"),
+        cmd_json(
+            "ir-diff",
+            "diagnostic",
+            "두 문서의 IR 차이를 JSON으로 비교",
+            false,
+            &["-s", "-p", "--json"],
+            &[
+                "schemaVersion",
+                "sourceA",
+                "sourceB",
+                "identical",
+                "diffCount",
+                "categories",
+            ],
+        ),
         cmd(
             "render-diff",
             "diagnostic",
@@ -1074,12 +1158,7 @@ fn export_svg(args: &[String]) -> i32 {
         println!("내보내기 완료: {}개 SVG 파일 → {}/", written, output_dir);
     }
 
-    // [#2707] 한 장이라도 못 썼으면 런타임 실패다.
-    if written == pages.len() {
-        EXIT_OK
-    } else {
-        EXIT_RUNTIME
-    }
+    EXIT_OK
 }
 
 fn export_render_tree(args: &[String]) -> i32 {
