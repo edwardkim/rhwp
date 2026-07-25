@@ -19,7 +19,7 @@ fn unique_pdf_path(label: &str) -> PathBuf {
 }
 
 fn run_compatibility_export(output_path: &Path, explicit_backend: bool) -> std::process::Output {
-    let mut command = Command::new(env!("CARGO_BIN_EXE_rhwp"));
+    let mut command = Command::new(rhwp_bin());
     command.arg("export-pdf").arg(sample_path());
     if explicit_backend {
         command.args(["--backend", "svg"]);
@@ -49,7 +49,7 @@ fn explicit_svg_backend_preserves_default_pdf_bytes_and_stdout() {
 #[test]
 fn direct_backend_reports_missing_native_skia_feature() {
     let output_path = unique_pdf_path("missing-feature");
-    let output = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let output = Command::new(rhwp_bin())
         .arg("export-pdf")
         .arg(sample_path())
         .args(["--backend", "direct", "--output"])
@@ -61,4 +61,10 @@ fn direct_backend_reports_missing_native_skia_feature() {
     assert!(String::from_utf8_lossy(&output.stderr)
         .contains("direct PDF backend requires a build with the native-skia feature"));
     assert!(!output_path.exists());
+}
+
+/// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,
+/// nextest가 런타임에 재매핑해 주입하는 CARGO_BIN_EXE_rhwp를 우선한다.
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
 }
