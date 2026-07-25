@@ -65,8 +65,15 @@ impl SkiaTextReplay<'_> {
                     (false, false) => FontStyle::normal(),
                 };
                 let mut families = Vec::new();
+                // [#3314] 접미사 face("Noto Serif KR Black") 미설치 시 base
+                // family 가 아래 generic 폴백보다 먼저 구제 — SVG 체인과 정합.
+                let base_family =
+                    crate::renderer::base_family_without_weight_suffix(&style.font_family);
                 if !style.font_family.trim().is_empty() {
                     families.push(style.font_family.as_str());
+                }
+                if let Some(base) = base_family.as_deref() {
+                    families.push(base);
                 }
                 // 한글 fallback (CJK glyph 미보유 폰트로 fallback 시 사각형 방지).
                 // SVG 경로의 CSS font chain 과 동일한 한글 폴백 폰트 순서.

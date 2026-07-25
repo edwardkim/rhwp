@@ -320,8 +320,8 @@ impl SvgRenderer {
                     let font_family = if run.style.font_family.is_empty() {
                         "sans-serif".to_string()
                     } else {
-                        let fb = super::generic_fallback(&run.style.font_family);
-                        format!("{},{}", run.style.font_family, fb)
+                        // [#3314] 요청 face → base family → generic 체인.
+                        super::render_font_family_chain(&run.style.font_family)
                     };
                     let mut attrs = format!("font-family=\"{}\" font-size=\"{}\" fill=\"{}\" text-anchor=\"middle\" dominant-baseline=\"central\"",
                         escape_xml(&font_family), font_size, color);
@@ -1979,8 +1979,8 @@ impl SvgRenderer {
         let font_family_str = if style.font_family.is_empty() {
             "sans-serif".to_string()
         } else {
-            let fb = super::generic_fallback(&style.font_family);
-            format!("{},{}", style.font_family, fb)
+            // [#3314] 요청 face → base family → generic 체인.
+            super::render_font_family_chain(&style.font_family)
         };
         let mut font_attrs = format!(
             "font-family=\"{}\" font-size=\"{:.2}\"",
@@ -2123,8 +2123,8 @@ impl SvgRenderer {
         let font_family_str = if style.font_family.is_empty() {
             "sans-serif".to_string()
         } else {
-            let fb = super::generic_fallback(&style.font_family);
-            format!("{},{}", style.font_family, fb)
+            // [#3314] 요청 face → base family → generic 체인.
+            super::render_font_family_chain(&style.font_family)
         };
         let mut font_attrs = format!(
             "font-family=\"{}\" font-size=\"{:.2}\"",
@@ -2698,8 +2698,8 @@ impl Renderer for SvgRenderer {
         let font_family = if style.font_family.is_empty() {
             "sans-serif".to_string()
         } else {
-            let fb = super::generic_fallback(&style.font_family);
-            format!("{},{}", style.font_family, fb)
+            // [#3314] 요청 face → base family → generic 체인.
+            super::render_font_family_chain(&style.font_family)
         };
         let old_hangul_font_family = format!("'Source Han Serif K Old Hangul',{}", font_family);
 
