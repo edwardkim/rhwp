@@ -87,7 +87,7 @@ fn document_core_direct_pdf_preserves_selection_errors() {
 #[test]
 fn export_pdf_cli_selects_direct_backend_explicitly() {
     let output_path = unique_pdf_path();
-    let output = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let output = Command::new(rhwp_bin())
         .arg("export-pdf")
         .arg(sample_path())
         .args(["--backend", "direct"])
@@ -111,7 +111,7 @@ fn export_pdf_cli_selects_direct_backend_explicitly() {
     assert_complete_pdf(&pdf);
 
     let explicit_print_path = unique_pdf_path();
-    let explicit_print = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let explicit_print = Command::new(rhwp_bin())
         .arg("export-pdf")
         .arg(sample_path())
         .args(["--backend", "direct", "--profile", "print"])
@@ -129,7 +129,7 @@ fn export_pdf_cli_selects_direct_backend_explicitly() {
 #[test]
 fn export_pdf_cli_rejects_backend_specific_option_mismatches() {
     let direct_output_path = unique_pdf_path();
-    let direct_with_svg_option = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let direct_with_svg_option = Command::new(rhwp_bin())
         .arg("export-pdf")
         .arg(sample_path())
         .args(["--backend", "direct", "--fallback-serif", "serif"])
@@ -143,7 +143,7 @@ fn export_pdf_cli_rejects_backend_specific_option_mismatches() {
     assert!(!direct_output_path.exists());
 
     let compatibility_output_path = unique_pdf_path();
-    let svg_with_direct_option = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let svg_with_direct_option = Command::new(rhwp_bin())
         .arg("export-pdf")
         .arg(sample_path())
         .args(["--backend", "svg", "--raster-dpi", "96"])
@@ -155,4 +155,10 @@ fn export_pdf_cli_rejects_backend_specific_option_mismatches() {
     assert!(String::from_utf8_lossy(&svg_with_direct_option.stderr)
         .contains("direct PDF backend에서만"));
     assert!(!compatibility_output_path.exists());
+}
+
+/// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,
+/// nextest가 런타임에 재매핑해 주입하는 CARGO_BIN_EXE_rhwp를 우선한다.
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
 }
