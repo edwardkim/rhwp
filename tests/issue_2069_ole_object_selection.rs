@@ -936,6 +936,35 @@ fn hwpx_ole_preview_is_selectable_and_drives_empty_para_caret() {
 }
 
 #[test]
+fn so_sueop_hwpx_hmapsi_ole_preview_is_exposed_as_selectable_control() {
+    let core = load_core("samples/SO-SUEOP.hwpx");
+    let layout_json = core
+        .get_page_control_layout_native(0)
+        .expect("SO-SUEOP HWPX page 1 control layout");
+    let layout: Value = serde_json::from_str(&layout_json)
+        .unwrap_or_else(|e| panic!("parse SO-SUEOP HWPX control layout `{layout_json}`: {e}"));
+    let controls = layout["controls"]
+        .as_array()
+        .expect("SO-SUEOP HWPX control layout controls");
+    let ole = controls
+        .iter()
+        .find(|control| control["type"] == "ole")
+        .unwrap_or_else(|| panic!("HMapsi OLE must be selectable: {layout_json}"));
+
+    assert!(ole["secIdx"].is_u64(), "OLE section ref: {ole}");
+    assert!(ole["paraIdx"].is_u64(), "OLE paragraph ref: {ole}");
+    assert!(ole["controlIdx"].is_u64(), "OLE control ref: {ole}");
+    assert!(
+        ole["w"].as_f64().unwrap_or_default() > 0.0,
+        "OLE width: {ole}"
+    );
+    assert!(
+        ole["h"].as_f64().unwrap_or_default() > 0.0,
+        "OLE height: {ole}"
+    );
+}
+
+#[test]
 fn hwp_enter_after_square_ole_respects_height_boundary() {
     assert_enter_after_square_ole_keeps_wrap_zone("samples/한셀OLE.hwp");
 }
