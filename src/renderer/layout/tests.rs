@@ -65,6 +65,47 @@ fn test_build_empty_page() {
     assert!(tree.root.children.len() >= 4);
 }
 
+/// Task #3216: AutoNumber(Page)와 명시 쪽번호 필드가 같은 문단에 있어도 각각은
+/// 모델 한 글자를 유지하고 표시값만 확장해야 한다.
+#[test]
+fn issue3216_page_auto_number_does_not_expand_manual_page_field_model_text() {
+    use crate::model::control::{AutoNumber, AutoNumberType};
+
+    let para = Paragraph {
+        // 앞 U+0015는 Studio에서 삽입한 명시 쪽번호 필드, 뒤 U+0015는 HWPX
+        // AutoNumber(Page) placeholder다. char_offsets의 8-unit gap이 컨트롤 위치를
+        // 뒤 placeholder로 고정한다.
+        text: "\u{0015}\u{0015}".to_string(),
+        char_offsets: vec![0, 9],
+        char_count: 10,
+        controls: vec![Control::AutoNumber(AutoNumber {
+            number_type: AutoNumberType::Page,
+            ..Default::default()
+        })],
+        ..Default::default()
+    };
+    let engine = LayoutEngine::with_default_dpi();
+    let mut composed = compose_paragraph(&para);
+
+    engine.substitute_hf_field_markers(&mut composed, 12);
+    engine.substitute_page_auto_numbers_in_composed(&para, &mut composed, 12);
+
+    let runs: Vec<(String, Option<String>)> = composed
+        .lines
+        .iter()
+        .flat_map(|line| line.runs.iter())
+        .map(|run| (run.text.clone(), run.display_text.clone()))
+        .collect();
+    assert_eq!(
+        runs,
+        vec![
+            ("\u{0015}".to_string(), Some("12".to_string())),
+            ("\u{0015}".to_string(), Some("12".to_string())),
+        ],
+        "명시 필드와 AutoNumber 모두 raw text는 모델 marker 한 글자여야 한다"
+    );
+}
+
 fn issue2817_textless_picture_host(vert_rel_to: VertRelTo, text_wrap: TextWrap) -> Paragraph {
     let mut picture = crate::model::image::Picture::default();
     picture.common.treat_as_char = false;

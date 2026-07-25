@@ -8,7 +8,25 @@ use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
-use crate::renderer::render_tree::PageRenderTree;
+use crate::renderer::render_tree::{PageRenderTree, TextRunNode};
+
+/// 화면에서는 여러 글자로 보이지만 모델에서는 marker 한 글자인 필드 런의 캐럿 경계다.
+///
+/// `compute_char_positions(run.text)`는 raw marker의 가상 글리프 폭을 반환하므로,
+/// field display 런은 레이아웃이 확정한 bbox 끝을 모델 한 글자의 끝으로 쓴다.
+fn cursor_positions_for_render_run(run: &TextRunNode, bbox_width: f64) -> Vec<f64> {
+    let is_expanded_field_marker = run.display_text.is_some()
+        && run.text.chars().count() == 1
+        && matches!(
+            run.text.chars().next(),
+            Some('\u{0015}' | '\u{0016}' | '\u{0017}' | '\u{2007}')
+        );
+    if is_expanded_field_marker {
+        vec![0.0, bbox_width]
+    } else {
+        crate::renderer::layout::compute_char_positions(&run.text, &run.style)
+    }
+}
 
 fn is_caret_logical_inline_control(ctrl: &Control) -> bool {
     is_treat_as_char_object_control(ctrl)
@@ -328,7 +346,6 @@ impl DocumentCore {
         preferred_x: f64,
         cell_ctx: Option<(usize, usize, usize, usize)>,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         // ═══ PHASE 1: preferredX 결정 ═══
@@ -1085,7 +1102,7 @@ impl DocumentCore {
                     let cc = tr.text.chars().count();
                     // 이 run이 목표 줄의 char_range에 겹치는지 확인
                     if cs < char_range.1 && cs + cc > char_range.0 {
-                        let positions = compute_char_positions(&tr.text, &tr.style);
+                        let positions = cursor_positions_for_render_run(tr, node.bbox.width);
                         result.push(RunMatch {
                             char_start: cs,
                             char_count: cc,
@@ -1823,7 +1840,7 @@ impl DocumentCore {
                         let cs = tr.char_start.unwrap_or(0);
                         let cc = tr.text.chars().count();
                         if offset >= cs && offset <= cs + cc {
-                            let pos = compute_char_positions(&tr.text, &tr.style);
+                            let pos = cursor_positions_for_render_run(tr, node.bbox.width);
                             let lo = offset - cs;
                             let xr = if lo < pos.len() {
                                 pos[lo]
@@ -1903,7 +1920,7 @@ impl DocumentCore {
                         let cs = tr.char_start.unwrap_or(0);
                         let cc = tr.text.chars().count();
                         if offset >= cs && offset <= cs + cc {
-                            let pos = compute_char_positions(&tr.text, &tr.style);
+                            let pos = cursor_positions_for_render_run(tr, node.bbox.width);
                             let lo = offset - cs;
                             let xr = if lo < pos.len() {
                                 pos[lo]

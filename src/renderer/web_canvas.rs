@@ -741,10 +741,15 @@ impl WebCanvasRenderer {
             let _ = self.ctx.rotate(run.rotation * std::f64::consts::PI / 180.0);
             self.ctx.set_text_align("center");
             self.ctx.set_text_baseline("middle");
-            let _ = self.ctx.fill_text(&run.text, 0.0, 0.0);
+            let _ = self.ctx.fill_text(run.display_or_text(), 0.0, 0.0);
             self.ctx.restore();
         } else {
-            self.draw_text(&run.text, bbox.x, bbox.y + run.baseline, &run.style);
+            self.draw_text(
+                run.display_or_text(),
+                bbox.x,
+                bbox.y + run.baseline,
+                &run.style,
+            );
         }
         if self.show_paragraph_marks || self.show_control_codes {
             let is_marker = !matches!(

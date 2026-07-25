@@ -200,16 +200,23 @@ impl RenderNode {
                 "TextLine",
                 format!(",\"pi\":{}", tl.para_index.unwrap_or(0)),
             ),
-            RenderNodeType::TextRun(tr) => (
-                "TextRun",
-                format!(
+            RenderNodeType::TextRun(tr) => {
+                let mut extra = format!(
                     ",\"text\":{},\"pi\":{}",
                     json_escape(&tr.text),
                     tr.section_index
                         .map(|_| tr.para_index.unwrap_or(0))
                         .unwrap_or(0)
-                ),
-            ),
+                );
+                // `text`는 char_start와 같은 모델 좌표를 보존한다. 그러나 머리말/꼬리말
+                // 필드처럼 화면에 N자로 표시되는 marker는 displayText도 JSON에 노출해야
+                // render-tree 소비자가 실제 표시값을 검증·표시할 수 있다 (Task #3216).
+                if let Some(display_text) = &tr.display_text {
+                    extra.push_str(",\"displayText\":");
+                    extra.push_str(&json_escape(display_text));
+                }
+                ("TextRun", extra)
+            }
             RenderNodeType::Table(tn) => (
                 "Table",
                 format!(
@@ -770,6 +777,23 @@ pub struct TextRunNode {
     pub baseline: f64,
     /// 누름틀 필드 마커: 이 TextRun 위치에 표시할 필드 경계 마커
     pub field_marker: FieldMarkerType,
+    /// 표시 텍스트 (`Some` 이면 그리기·폭 계산은 본 필드를 쓴다).
+    ///
+    /// `text` 는 모델과 같은 문자 수를 유지해 `char_start` 와 같은 공간에 있도록 한다.
+    /// 머리말/꼬리말 필드처럼 모델 1자가 화면에서 N자로 보이는 경우가 여기 해당한다
+    /// (`ComposedTextRun::display_text` 와 같은 규약, Task #3216).
+    pub display_text: Option<String>,
+}
+
+impl TextRunNode {
+    /// 사람이 보게 될 텍스트 — 그리기·폭 계산, 그리고 **문자열을 만들어 내보내는**
+    /// 추출·직렬화(쪽 텍스트, 마크다운)가 이것을 쓴다.
+    ///
+    /// 오프셋·인덱싱에는 쓰지 않는다 — 그쪽은 `text` 다. 필드처럼 모델 1자가 표시
+    /// N자인 런에서 둘은 길이가 다르다.
+    pub fn display_or_text(&self) -> &str {
+        self.display_text.as_deref().unwrap_or(&self.text)
+    }
 }
 
 /// 누름틀 필드 조판부호 마커 유형

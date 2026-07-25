@@ -304,6 +304,7 @@ fn push_tac_receipt_seal_line(
             border_fill_id: 0,
             baseline,
             field_marker: FieldMarkerType::None,
+            display_text: None,
         }),
         BoundingBox::new(
             col_area.x + (col_area.width - width).max(0.0) / 2.0,
@@ -1202,6 +1203,7 @@ fn push_empty_para_end_mark(
             border_fill_id: 0,
             baseline,
             field_marker: FieldMarkerType::None,
+            display_text: None,
         }),
         BoundingBox::new(x, y, 0.0, line_height),
     );
@@ -2493,34 +2495,74 @@ impl LayoutEngine {
     /// - `\u{0015}` → 현재 쪽번호
     /// - `\u{0016}` → 총 쪽수
     /// - `\u{0017}` → 파일 이름
+    ///
+    /// 치환 결과는 `run.text` 가 아니라 `display_text` 에 넣고, 마커 하나를 제 런으로
+    /// 떼어낸다. `text` 가 모델과 같은 글자 수를 유지해야 `char_start` 와 같은 공간에
+    /// 있고, 그래야 히트테스트가 모델 오프셋을 돌려준다 — `convert_pua_display_text`
+    /// 가 세운 규약과 같다 (Task #3216).
     fn substitute_hf_field_markers(&self, comp: &mut ComposedParagraph, page_number: u32) {
         let total = self.total_pages.get();
         let file_name = self.file_name.borrow();
-        let page_str = page_number.to_string();
-        let total_str = total.to_string();
+
+        let field_value = |ch: char| -> Option<String> {
+            match ch {
+                '\u{0015}' => Some(page_number.to_string()),
+                '\u{0016}' => Some(total.to_string()),
+                '\u{0017}' => Some(file_name.clone()),
+                _ => None,
+            }
+        };
 
         for line in &mut comp.lines {
             let mut new_runs = Vec::new();
             for run in &line.runs {
-                if !run.text.contains('\u{0015}')
-                    && !run.text.contains('\u{0016}')
-                    && !run.text.contains('\u{0017}')
-                {
+                if !run.text.chars().any(|ch| field_value(ch).is_some()) {
                     new_runs.push(run.clone());
                     continue;
                 }
-                // 마커가 포함된 런 → 치환 후 분할
-                let replaced = run
-                    .text
-                    .replace('\u{0015}', &page_str)
-                    .replace('\u{0016}', &total_str)
-                    .replace('\u{0017}', &file_name);
-                let mut new_run = run.clone();
-                new_run.text = replaced;
-                new_runs.push(new_run);
+                // 마커마다 [앞 텍스트][필드][뒤 텍스트] 로 쪼갠다. 필드 런은 모델 1자에
+                // 표시값 N자라, 캐럿이 필드 안으로 들어가지 않고 앞뒤로만 놓인다.
+                // 조각은 자기 글자에 맞는 표시 텍스트를 새로 갖는다. 원본 런의
+                // `display_text` 는 **런 전체**에 대해 만들어진 값이라(이 함수는
+                // `convert_pua_display_text` 직후에 돌아간다) 그대로 물려주면 조각이
+                // 남의 글자를 그린다. 형제 `substitute_page_auto_numbers_in_composed`도
+                // 원본 marker 문자열은 보존하고 해당 문단의 표시 문자열을 다시 만든다.
+                let mut plain = String::new();
+                let mut push_plain = |new_runs: &mut Vec<_>, text: String| {
+                    let mut piece = run.clone();
+                    piece.display_text = Self::pua_display_for(&text);
+                    piece.text = text;
+                    new_runs.push(piece);
+                };
+                for ch in run.text.chars() {
+                    let Some(value) = field_value(ch) else {
+                        plain.push(ch);
+                        continue;
+                    };
+                    if !plain.is_empty() {
+                        push_plain(&mut new_runs, std::mem::take(&mut plain));
+                    }
+                    let mut field = run.clone();
+                    field.text = ch.to_string();
+                    field.display_text = Some(value);
+                    new_runs.push(field);
+                }
+                if !plain.is_empty() {
+                    push_plain(&mut new_runs, plain);
+                }
             }
             line.runs = new_runs;
         }
+    }
+
+    /// PUA 표시 확장이 필요한 글자가 있으면 그 표시 문자열을, 없으면 `None` 을 준다.
+    ///
+    /// `convert_pua_display_text` 와 같은 규칙(`expand_pua_display_text`)을 쓰되 조각
+    /// 단위로 다시 만든다 — 원본 런의 값을 잘라 쓸 수 없기 때문이다(표시 길이가 모델과
+    /// 다르므로 모델 인덱스로 자를 수 없다).
+    fn pua_display_for(text: &str) -> Option<String> {
+        let expanded = crate::renderer::composer::expand_pua_display_text(text);
+        (expanded != text).then_some(expanded)
     }
 
     /// `AutoNumber(Page)` 컨트롤의 placeholder 문자만 현재 쪽번호로 치환한다.
@@ -2541,20 +2583,11 @@ impl LayoutEngine {
 
         let page_str = page_number.to_string();
 
-        for line in &mut comp.lines {
-            for run in &mut line.runs {
-                if run.text.contains('\u{0015}') {
-                    run.text = run.text.replace('\u{0015}', &page_str);
-                    run.display_text = None;
-                }
-            }
-        }
-
         let mut positions = self.page_auto_number_placeholder_positions(para);
         positions.sort_unstable();
         positions.dedup();
         for pos in positions.into_iter().rev() {
-            Self::replace_composed_char(comp, pos, &page_str);
+            Self::replace_composed_char_with_display(comp, pos, &page_str);
         }
     }
 
@@ -2649,24 +2682,41 @@ impl LayoutEngine {
         })
     }
 
-    fn replace_composed_char(
+    /// AutoNumber의 모델 placeholder 한 글자를 유지한 채 표시값만 바꾼다.
+    ///
+    /// 같은 문단에 명시적으로 넣은 쪽번호 필드(`U+0015`)가 있어도 AutoNumber 컨트롤이
+    /// 가리키는 위치만 처리해야 한다. 모든 `U+0015`를 일괄 치환하면 명시 필드의
+    /// `display_text` 규약을 깨고, 필드 뒤의 캐럿이 다시 표시 문자열 공간으로 밀린다.
+    ///
+    /// marker와 뒤 공백을 별도 run으로 자르면 각 run의 정수 폭 반올림 때문에 SVG의
+    /// 소수 glyph advance와 다음 공백의 앵커가 어긋난다. 따라서 raw `text` 전체는
+    /// 그대로 두고, 그 동일 모델 run의 `display_text`만 재구성한다. 모델 길이는
+    /// 보존되며 SVG는 연속 표시 문자열의 문자별 정확한 advance를 사용한다.
+    fn replace_composed_char_with_display(
         comp: &mut ComposedParagraph,
         abs_pos: usize,
         replacement: &str,
     ) -> bool {
         for line in &mut comp.lines {
             let mut run_start = line.char_start;
-            for run in &mut line.runs {
+            for run_idx in 0..line.runs.len() {
+                let run = &line.runs[run_idx];
                 let run_len = run.text.chars().count();
                 let run_end = run_start + run_len;
                 if abs_pos >= run_start && abs_pos < run_end {
                     let rel_pos = abs_pos - run_start;
                     let mut chars = run.text.chars();
                     let before: String = chars.by_ref().take(rel_pos).collect();
-                    let _ = chars.next();
+                    let Some(_) = chars.next() else {
+                        return false;
+                    };
                     let after: String = chars.collect();
-                    run.text = format!("{before}{replacement}{after}");
-                    run.display_text = None;
+                    let mut display = crate::renderer::composer::expand_pua_display_text(&before);
+                    display.push_str(replacement);
+                    display.push_str(&crate::renderer::composer::expand_pua_display_text(&after));
+                    // `line.runs[run_idx].text`는 marker를 포함한 원 모델 문자열이다.
+                    // 바꾸지 않아야 char_start/offset이 표시 자릿수에 끌려가지 않는다.
+                    line.runs[run_idx].display_text = Some(display);
                     return true;
                 }
                 run_start = run_end;
@@ -3632,6 +3682,7 @@ impl LayoutEngine {
                     border_fill_id: 0,
                     baseline: font_size,
                     field_marker: FieldMarkerType::None,
+                    display_text: None,
                 }),
                 BoundingBox::new(x, y, text_width, font_size),
             );
@@ -8813,6 +8864,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline,
                         field_marker: FieldMarkerType::None,
+                        display_text: None,
                     }),
                     BoundingBox::new(wrap_text_x, table_y_start, 0.0, line_height),
                 );
@@ -8932,6 +8984,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline,
                         field_marker: FieldMarkerType::None,
+                        display_text: None,
                     }),
                     BoundingBox::new(mark_x, para_y, 0.0, line_height),
                 );

@@ -4043,7 +4043,9 @@ impl DocumentCore {
         struct HfRunInfo {
             hf_para_idx: usize, // 머리말/꼬리말 내 문단 인덱스 (0, 1, 2, ...)
             char_start: usize,
+            /// 모델 글자 수 — 오프셋은 이 공간에서 센다.
             char_count: usize,
+            /// 표시 글자 위치 — 폭·x 는 이 공간에서 잰다.
             char_positions: Vec<f64>,
             bbox_x: f64,
             bbox_y: f64,
@@ -4059,7 +4061,10 @@ impl DocumentCore {
                     // marker_para = usize::MAX - hf_para_idx → 복원
                     if marker_para >= (usize::MAX - 1000) {
                         let hf_para_idx = usize::MAX - marker_para;
-                        let positions = compute_char_positions(&text_run.text, &text_run.style);
+                        // 폭은 화면에 그려지는 글자로, 오프셋은 모델 글자로 센다.
+                        // 필드는 모델 1자가 표시 N자라 둘이 다르다 (Task #3216).
+                        let positions =
+                            compute_char_positions(text_run.display_or_text(), &text_run.style);
                         runs.push(HfRunInfo {
                             hf_para_idx,
                             char_start: cs,
@@ -4108,11 +4113,33 @@ impl DocumentCore {
             positions.len()
         }
 
+        /// 표시 인덱스를 모델 인덱스로 옮긴다.
+        ///
+        /// 머리말/꼬리말 필드는 모델 1자가 화면에서 N자로 보이므로 두 공간의 길이가
+        /// 다르다. 경계로 반올림하면 필드는 앞/뒤에만 캐럿이 놓이고(원자적 필드), 길이가
+        /// 같은 보통 런은 항등이다 (Task #3216).
+        fn model_index_in_run(run: &HfRunInfo, display_idx: usize) -> usize {
+            let display_len = run.char_positions.len().saturating_sub(1);
+            if display_len == 0 || display_len == run.char_count {
+                return display_idx.min(run.char_count);
+            }
+            (display_idx * run.char_count + display_len / 2) / display_len
+        }
+
+        /// 모델 인덱스를 표시 인덱스로 되돌린다 — 캐럿 x 를 재는 쪽.
+        fn display_index_in_run(run: &HfRunInfo, model_idx: usize) -> usize {
+            let display_len = run.char_positions.len().saturating_sub(1);
+            if display_len == 0 || display_len == run.char_count || run.char_count == 0 {
+                return model_idx;
+            }
+            (model_idx * display_len + run.char_count / 2) / run.char_count
+        }
+
         fn format_hf_hit(run: &HfRunInfo, char_offset: usize, page_num: u32) -> String {
             let cursor_x = if char_offset <= run.char_start {
                 run.bbox_x
             } else {
-                let local_idx = char_offset - run.char_start;
+                let local_idx = display_index_in_run(run, char_offset - run.char_start);
                 if local_idx < run.char_positions.len() {
                     run.bbox_x + run.char_positions[local_idx]
                 } else if !run.char_positions.is_empty() {
@@ -4137,7 +4164,8 @@ impl DocumentCore {
                 && y <= run.bbox_y + run.bbox_h
             {
                 let local_x = x - run.bbox_x;
-                let char_offset = find_char_at_x_hf(&run.char_positions, local_x);
+                let display_idx = find_char_at_x_hf(&run.char_positions, local_x);
+                let char_offset = model_index_in_run(run, display_idx);
                 return Ok(format_hf_hit(run, run.char_start + char_offset, page_num));
             }
         }
@@ -4186,7 +4214,8 @@ impl DocumentCore {
         for run in &line_runs {
             if x >= run.bbox_x && x <= run.bbox_x + run.bbox_w {
                 let local_x = x - run.bbox_x;
-                let char_offset = find_char_at_x_hf(&run.char_positions, local_x);
+                let display_idx = find_char_at_x_hf(&run.char_positions, local_x);
+                let char_offset = model_index_in_run(run, display_idx);
                 return Ok(format_hf_hit(run, run.char_start + char_offset, page_num));
             }
         }

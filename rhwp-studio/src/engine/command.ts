@@ -1063,23 +1063,36 @@ export class InsertFieldInHeaderFooterCommand implements EditCommand {
   constructor(
     private target: HeaderFooterEditTarget,
     private paraIdx: number,
-    private charOffset: number,
+    /** redo 시 native에 다시 넘길 원래 cursor 좌표 */
+    private requestedCharOffset: number,
+    /** undo가 marker를 지워야 하는 실제 모델 텍스트 좌표 */
+    private insertedAt: number,
     private fieldType: number,
-    /** 필드 마커가 차지한 문자 수 — 호출부가 삽입 결과 오프셋 차이로 실측해 넘긴다. */
+    /** 필드 마커가 실제 모델 텍스트에서 차지한 문자 수. */
     private markerLength: number,
+    /** 삽입 직후 cursor가 돌아갈 좌표. */
+    private cursorAfterOffset: number,
   ) {
-    this.lastContext = hfEditContext(target, paraIdx, charOffset + markerLength);
+    this.lastContext = hfEditContext(target, paraIdx, cursorAfterOffset);
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
-    wasm.insertFieldInHf(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.charOffset, this.fieldType);
-    this.lastContext = hfEditContext(this.target, this.paraIdx, this.charOffset + this.markerLength);
+    const result = wasm.insertFieldInHf(
+      this.target.sectionIdx, this.target.isHeader, this.target.applyTo,
+      this.paraIdx, this.requestedCharOffset, this.fieldType,
+    );
+    if (result.ok) {
+      this.insertedAt = result.insertedAt;
+      this.markerLength = result.insertedLength;
+      this.cursorAfterOffset = result.charOffset;
+    }
+    this.lastContext = hfEditContext(this.target, this.paraIdx, this.cursorAfterOffset);
     return hfFnStubPosition(this.target.sectionIdx);
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    wasm.deleteTextInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.charOffset, this.markerLength);
-    this.lastContext = hfEditContext(this.target, this.paraIdx, this.charOffset);
+    wasm.deleteTextInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.insertedAt, this.markerLength);
+    this.lastContext = hfEditContext(this.target, this.paraIdx, this.requestedCharOffset);
     return hfFnStubPosition(this.target.sectionIdx);
   }
 

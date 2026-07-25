@@ -214,6 +214,37 @@ fn text_concat_in_tree(node: &Value, ancestor_type: &str) -> String {
     out
 }
 
+/// 렌더된 문자열을 검증할 때에는 모델용 `text` 대신 있으면 `displayText`를 읽는다.
+///
+/// Task #3216 필드처럼 모델 marker 한 글자가 화면에서는 여러 글자로 보일 수 있다.
+/// `text`는 char_start와 같은 모델 좌표 계약을 보존하므로, 사용자에게 실제로 보이는
+/// AutoNumber(Page)는 이 helper로 검증해야 한다.
+fn display_text_concat_in_tree(node: &Value, ancestor_type: &str) -> String {
+    fn walk(node: &Value, ancestor_type: &str, in_ancestor: bool, out: &mut String) {
+        let node_type = node.get("type").and_then(Value::as_str).unwrap_or("");
+        let now_in_ancestor = in_ancestor || node_type == ancestor_type;
+        if now_in_ancestor && node_type == "TextRun" {
+            if let Some(text) = node
+                .get("displayText")
+                .or_else(|| node.get("text"))
+                .and_then(Value::as_str)
+            {
+                out.push_str(text);
+            }
+        }
+
+        if let Some(children) = node.get("children").and_then(Value::as_array) {
+            for child in children {
+                walk(child, ancestor_type, now_in_ancestor, out);
+            }
+        }
+    }
+
+    let mut out = String::new();
+    walk(node, ancestor_type, false, &mut out);
+    out
+}
+
 fn parse_leading_note_marker(text: &str) -> Option<u32> {
     let trimmed = text.trim_start();
     let digit_len = trimmed
@@ -630,7 +661,7 @@ fn issue_1692_so_sueop_header_footer_page5_matches_reference_contract() {
             "SO-SUEOP header underline must render"
         );
 
-        let footer_text = text_concat_in_tree(tree, "Footer");
+        let footer_text = display_text_concat_in_tree(tree, "Footer");
         assert!(
             footer_text.contains("협성고등학교"),
             "page 5 footer school label must render"

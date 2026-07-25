@@ -290,7 +290,8 @@ impl SvgRenderer {
                         .font_codepoints
                         .entry(run.style.font_family.clone())
                         .or_default();
-                    for ch in run.text.chars() {
+                    // 그려지는 글자로 모은다 — 필드는 표시값이 나간다 (Task #3216).
+                    for ch in run.display_or_text().chars() {
                         if !ch.is_control() {
                             codepoints.insert(ch);
                         }
@@ -333,7 +334,7 @@ impl SvgRenderer {
                     if run.style.italic {
                         attrs.push_str(" font-style=\"italic\"");
                     }
-                    for c in run.text.chars() {
+                    for c in run.display_or_text().chars() {
                         if c == ' ' {
                             continue;
                         }
@@ -350,7 +351,7 @@ impl SvgRenderer {
                     }
                 } else {
                     self.draw_text(
-                        &run.text,
+                        run.display_or_text(),
                         node.bbox.x,
                         node.bbox.y + run.baseline,
                         &run.style,

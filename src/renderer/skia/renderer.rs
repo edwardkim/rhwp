@@ -875,7 +875,7 @@ impl SkiaLayerRenderer {
                                 crate::renderer::render_tree::FieldMarkerType::None
                             );
                             text_replay.draw_text(
-                                &run.text,
+                                run.display_or_text(),
                                 *bbox,
                                 &run.style,
                                 run.baseline,
@@ -2772,6 +2772,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 20.0,
             field_marker: Default::default(),
+            display_text: None,
         };
         let marker = FootnoteMarkerNode {
             number: 1,
@@ -2829,6 +2830,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 22.0,
             field_marker: Default::default(),
+            display_text: None,
         };
         let tree = PageLayerTree::new(
             40.0,
@@ -2878,6 +2880,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 22.0,
             field_marker: Default::default(),
+            display_text: None,
         };
         let tree = PageLayerTree::new(
             88.0,
@@ -2922,6 +2925,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 22.0,
             field_marker: Default::default(),
+            display_text: None,
         };
         let tree = PageLayerTree::new(
             72.0,
@@ -2974,6 +2978,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 24.0,
             field_marker: Default::default(),
+            display_text: None,
         };
         let tree = PageLayerTree::new(
             48.0,
