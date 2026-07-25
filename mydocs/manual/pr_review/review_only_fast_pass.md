@@ -12,7 +12,8 @@ review-only인 경우에 적용하는 공용 modifier다. maintainer·collaborat
 
 [CI workflow](../../../.github/workflows/ci.yml)의 preflight는 다음 허용 범위를 사용한다.
 
-- mydocs 아래 모든 파일
+- mydocs 아래 모든 파일 — 파일 상태와 확장자를 제한하지 않는다. 따라서 `mydocs/pr/assets` 등에
+  올리는 PDF, HWP/HWPX, PNG 등 검토 증적도 문서-only PR과 같은 허용 범위다.
 - added 상태의 samples 아래 hwp, hwpx, pdf, png
 - added 상태의 pdf 아래 PDF
 
@@ -21,21 +22,28 @@ review-only인 경우에 적용하는 공용 modifier다. maintainer·collaborat
 
 ## A. code PR 뒤의 trailing review-only commit
 
-contributor code PR의 뒤에 review 문서·오늘할일·허용된 신규 기준 자료를 추가하면 workflow는 trailing
-review-only commit을 제외한 직전 candidate SHA의 Build & Test 결과를 재사용한다.
+contributor code PR의 뒤에 review 문서·오늘할일·허용된 신규 기준 자료를 추가하면 workflow는 현재 head에서
+거꾸로 확인해, **현재 base를 포함하고 이후 변경이 모두 review-only인 가장 최근 green PR head**의 결과를
+재사용한다. 따라서 직전 green PR head 자체가 review-only commit이어도, 그 commit의 full CI가 성공했고 그 뒤에
+허용된 기록만 추가됐다면 candidate가 될 수 있다.
 
 다음 조건을 모두 만족해야 한다.
 
-1. 뒤에 추가한 review-only commit은 single-parent다.
-2. 직전 candidate가 review-only Update branch merge이면 현재 PR base를 parent로 포함한 2-parent merge이고,
-   그 뒤에 적어도 하나의 single-parent review-only commit이 있어야 한다.
-3. candidate SHA의 Build & Test check 또는 같은 SHA의 CI workflow 집계 job이 completed이고
-   conclusion이 success, skipped, neutral 중 하나다.
-4. push 뒤 최신 head의 preflight와 branch protection이 요구하는 Build & Test aggregate를 확인한다.
+1. candidate 이후 current head까지의 review-only commit은 single-parent다.
+2. review-only Update branch merge를 candidate로 쓰는 경우에는 현재 PR base를 parent로 포함한 정확히
+   2-parent merge이고, 그 뒤에 적어도 하나의 single-parent review-only commit이 있어야 한다.
+3. candidate SHA는 현재 base를 ancestor로 포함한다. base가 바뀐 뒤 update branch를 하지 않은 옛 run은
+   재사용하지 않는다.
+4. 후보는 최신순으로 조회한다. check/workflow가 없거나 진행 중인 후보는 더 이전 후보를 계속 확인하되,
+   가장 최근 완료 후보가 failed이면 full CI로 fallback한다.
+5. 채택한 candidate SHA의 Build & Test check 또는 같은 SHA의 CI workflow 집계 job이 completed이고
+   conclusion이 success, skipped, neutral 중 하나여야 한다.
+6. push 뒤 최신 head의 preflight와 branch protection이 요구하는 Build & Test aggregate를 확인한다.
    heavy worker가 skipped인 것은 정상이나 aggregate가 pending 또는 failing이면 merge하지 않는다.
 
-local Cargo 성공만으로 candidate의 GitHub Actions를 대체하지 않는다. check 조회 실패, missing, failed,
-허용되지 않은 merge 형태이면 workflow는 full CI로 fallback한다.
+local Cargo 성공만으로 candidate의 GitHub Actions를 대체하지 않는다. current base 불일치, 가장 최근 완료
+candidate check의 failed, 허용되지 않은 merge 형태, 허용 경로 밖 변경은 full CI fallback이다. 후보가 전부
+missing 또는 진행 중이면 green 검증을 찾지 못한 것이므로 역시 full CI를 실행한다.
 
 collaborator가 contributor code를 local에서 검증한 뒤 review·오늘할일만 같은 source head에 추가하는 경우도
 이 A 경로다. local 검증 결과와 candidate SHA, 재사용한 Build & Test URL을 review 문서에 기록한다.

@@ -124,6 +124,15 @@ jobs:
               return parents.length === 2 && parents.some((parent) => parent.sha === baseSha);
             }
 
+            async function isCurrentBaseAncestor(candidateSha, baseSha) {
+              const { data: comparison } = await github.rest.repos.compareCommitsWithBasehead({
+                owner,
+                repo,
+                basehead: `${baseSha}...${candidateSha}`,
+              });
+              return comparison.status === 'ahead' || comparison.status === 'identical';
+            }
+
             function latestRun(runs) {
               return runs
                 .slice()
@@ -132,6 +141,74 @@ jobs:
                   const aTime = Date.parse(a.completed_at || a.started_at || a.created_at || 0);
                   return bTime - aTime;
                 })[0];
+            }
+
+            async function buildResult(candidateSha, pr) {
+              const checkRuns = await github.paginate(github.rest.checks.listForRef, {
+                owner,
+                repo,
+                ref: candidateSha,
+                per_page: 100,
+              });
+              let source = 'check-run';
+              let buildRun = latestRun(checkRuns.filter((run) => (
+                run.name === 'Build & Test'
+                && run.app?.slug === 'github-actions'
+              )));
+
+              if (!buildRun) {
+                // Fork PRs can expose the aggregate only through Actions jobs. Keep the
+                // branch and exact candidate SHA identity guard for that fallback.
+                const workflowRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                  owner,
+                  repo,
+                  workflow_id: 'ci.yml',
+                  event: 'pull_request',
+                  branch: pr.head.ref,
+                  per_page: 100,
+                });
+                const workflowRun = latestRun(workflowRuns.filter((run) => (
+                  run.path === '.github/workflows/ci.yml'
+                  && run.event === 'pull_request'
+                  && run.head_sha === candidateSha
+                )));
+
+                if (!workflowRun) {
+                  return { state: 'missing', reason: `missing-build-and-test:${candidateSha}` };
+                }
+                if (workflowRun.status !== 'completed') {
+                  return {
+                    state: 'pending',
+                    reason: `build-and-test-workflow-not-completed:${workflowRun.status}`,
+                  };
+                }
+
+                const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                  owner,
+                  repo,
+                  run_id: workflowRun.id,
+                  filter: 'latest',
+                  per_page: 100,
+                });
+                buildRun = latestRun(jobs.filter((job) => job.name === 'Build & Test'));
+                if (!buildRun) {
+                  return { state: 'missing', reason: `missing-build-and-test-job:${candidateSha}` };
+                }
+                source = 'actions-job';
+              }
+              if (buildRun.status !== 'completed') {
+                return {
+                  state: 'pending',
+                  reason: `build-and-test-not-completed:${buildRun.status}`,
+                };
+              }
+              if (!allowedConclusions.has(buildRun.conclusion)) {
+                return {
+                  state: 'failed',
+                  reason: `build-and-test-not-green:${buildRun.conclusion}`,
+                };
+              }
+              return { state: 'green', source, conclusion: buildRun.conclusion };
             }
 
             try {
@@ -165,8 +242,8 @@ jobs:
                 return;
               }
 
-              let trailingReviewOnlyCommits = 0;
-              let candidateSha = '';
+              const reviewOnlyCandidates = [];
+              let codeCandidateSha = '';
 
               for (let index = commits.length - 1; index >= 0; index -= 1) {
                 const sha = commits[index].sha;
@@ -187,109 +264,55 @@ jobs:
                 if (reviewOnly) {
                   const parents = commit.parents || [];
                   if (parents.length === 1) {
-                    trailingReviewOnlyCommits += 1;
+                    reviewOnlyCandidates.push(sha);
                     continue;
                   }
-                  // #3233: a docs-only Update branch merge can be the already-verified
-                  // candidate after one or more trailing review-record commits. It must
-                  // be exactly a merge of the current PR base; all other merge shapes
-                  // retain the conservative full-CI fallback.
-                  if (trailingReviewOnlyCommits > 0
+                  // #3233: a docs-only Update branch merge can be an eligible green
+                  // candidate only after a trailing review-only record. Other merge
+                  // shapes may hide code outside the review-only diff.
+                  if (reviewOnlyCandidates.length > 0
                     && isCurrentBaseReviewMerge(commit, pr.base.sha)) {
-                    candidateSha = sha;
-                    core.info(`using current-base ${reviewOnlyLabel(files)} merge as candidate SHA ${candidateSha}`);
+                    reviewOnlyCandidates.push(sha);
+                    core.info(`including current-base ${reviewOnlyLabel(files)} merge candidate ${sha}`);
                     break;
                   }
                   setResult(false, `${reviewOnlyLabel(files)}-merge-not-reusable:${sha}`);
                   return;
                 }
 
-                candidateSha = sha;
+                codeCandidateSha = sha;
                 break;
               }
 
-              if (trailingReviewOnlyCommits === 0) {
+              if (reviewOnlyCandidates.length === 0) {
                 setResult(false, 'no-trailing-review-only-commits');
                 return;
               }
-              if (!candidateSha) {
-                candidateSha = pr.base.sha;
-                core.info(`all PR commits are review-only; using base SHA ${candidateSha}`);
-                setResult(true, 'all-review-only-no-code-impact', candidateSha);
-                return;
+              if (codeCandidateSha) {
+                reviewOnlyCandidates.push(codeCandidateSha);
               }
 
-              const checkRuns = await github.paginate(github.rest.checks.listForRef, {
-                owner,
-                repo,
-                ref: candidateSha,
-                per_page: 100,
-              });
-              let buildSource = 'check-run';
-              let buildRun = latestRun(checkRuns.filter((run) => (
-                run.name === 'Build & Test'
-                && run.app?.slug === 'github-actions'
-              )));
-
-              if (!buildRun) {
-                // Fork pull_request runs may expose the head SHA through Actions jobs while
-                // returning no check-runs for that same SHA. The Actions head_sha server filter
-                // can omit fork runs too, so narrow by the PR branch and compare head_sha locally.
-                // Still require the exact CI workflow, head SHA, and aggregate job.
-                const workflowRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
-                  owner,
-                  repo,
-                  workflow_id: 'ci.yml',
-                  event: 'pull_request',
-                  branch: pr.head.ref,
-                  per_page: 100,
-                });
-                const workflowRun = latestRun(workflowRuns.filter((run) => (
-                  run.path === '.github/workflows/ci.yml'
-                  && run.event === 'pull_request'
-                  && run.head_sha === candidateSha
-                )));
-
-                if (!workflowRun) {
-                  setResult(false, `missing-build-and-test:${candidateSha}`, candidateSha);
+              for (const candidateSha of reviewOnlyCandidates) {
+                if (!(await isCurrentBaseAncestor(candidateSha, pr.base.sha))) {
+                  core.info(`candidate does not include current base: ${candidateSha}`);
+                  continue;
+                }
+                const result = await buildResult(candidateSha, pr);
+                if (result.state === 'green') {
+                  const successReason = result.source === 'check-run'
+                    ? `build-and-test-green:${result.conclusion}`
+                    : `build-and-test-job-green:${result.conclusion}`;
+                  setResult(true, successReason, candidateSha);
                   return;
                 }
-                if (workflowRun.status !== 'completed') {
-                  setResult(
-                    false,
-                    `build-and-test-workflow-not-completed:${workflowRun.status}`,
-                    candidateSha,
-                  );
+                if (result.state === 'failed') {
+                  setResult(false, result.reason, candidateSha);
                   return;
                 }
-
-                const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
-                  owner,
-                  repo,
-                  run_id: workflowRun.id,
-                  filter: 'latest',
-                  per_page: 100,
-                });
-                buildRun = latestRun(jobs.filter((job) => job.name === 'Build & Test'));
-                if (!buildRun) {
-                  setResult(false, `missing-build-and-test-job:${candidateSha}`, candidateSha);
-                  return;
-                }
-                buildSource = 'actions-job';
-              }
-              if (buildRun.status !== 'completed') {
-                setResult(false, `build-and-test-not-completed:${buildRun.status}`, candidateSha);
-                return;
-              }
-              if (!allowedConclusions.has(buildRun.conclusion)) {
-                setResult(false, `build-and-test-not-green:${buildRun.conclusion}`, candidateSha);
-                return;
+                core.info(`candidate not reusable yet: ${candidateSha} (${result.reason})`);
               }
 
-              const successReason = buildSource === 'check-run'
-                ? `build-and-test-green:${buildRun.conclusion}`
-                : `build-and-test-job-green:${buildRun.conclusion}`;
-              setResult(true, successReason, candidateSha);
+              setResult(false, 'no-green-current-base-build-candidate');
             } catch (error) {
               core.warning(`CI preflight failed; running full CI. ${error.message}`);
               setResult(false, 'preflight-error');

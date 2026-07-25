@@ -32,14 +32,15 @@ contributor 또는 maintainer가 Update branch를 수행해 PR head가 바뀌면
 
 1. 최신 head SHA를 확인한다.
 2. 이전 SHA에서 시작한 run을 확인한다.
-3. queued, pending, in_progress run만 force-cancel API로 취소한다.
+3. queued, pending, in_progress run만 **일반 `gh run cancel`을 먼저 시도하지 않고** force-cancel API로
+   즉시 취소한다.
 4. 완료 상태와 cancelled 결론을 재확인한다.
 
 러너 구성 전환 등으로 배정 가능한 label이 사라진 run은 `queued`에 고착될 수 있다. 이 run은 일반 cancel이
 끝나지 않고 같은 concurrency group을 계속 점유해, 후속 run이 job을 하나도 시작하지 못한 `pending`으로
 연쇄 고착될 수 있다. 새 run이 `pending`이면 최신 run만 재실행하지 말고 같은 PR·workflow의 이전
-`queued`/`pending`/`in_progress` run부터 확인한다. 일반 cancel 뒤에도 상태가 유지되면 아래 force-cancel
-API를 사용하고, 이전 run이 실제 `completed/cancelled`가 된 뒤 후속 run 상태를 다시 확인한다.
+`queued`/`pending`/`in_progress` run부터 확인한다. 정확한 stale SHA를 확인한 직후 아래 force-cancel API를
+사용하고, 이전 run이 실제 `completed/cancelled`가 된 뒤 후속 run 상태를 다시 확인한다.
 
 ~~~bash
 gh pr view N --repo edwardkim/rhwp --json headRefOid

@@ -128,6 +128,15 @@ jobs:
               return parents.length === 2 && parents.some((parent) => parent.sha === baseSha);
             }
 
+            async function isCurrentBaseAncestor(candidateSha, baseSha) {
+              const { data: comparison } = await github.rest.repos.compareCommitsWithBasehead({
+                owner,
+                repo,
+                basehead: `${baseSha}...${candidateSha}`,
+              });
+              return comparison.status === 'ahead' || comparison.status === 'identical';
+            }
+
             function latestRun(runs) {
               return runs
                 .slice()
@@ -136,6 +145,87 @@ jobs:
                   const aTime = Date.parse(a.completed_at || a.started_at || a.created_at || 0);
                   return bTime - aTime;
                 })[0];
+            }
+
+            async function renderDiffResult(candidateSha, pr) {
+              const workflowRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                owner,
+                repo,
+                workflow_id: 'render-diff.yml',
+                event: 'pull_request',
+                head_sha: candidateSha,
+                per_page: 100,
+              });
+              const renderDiffRun = latestRun(workflowRuns.filter((run) => (
+                run.path === '.github/workflows/render-diff.yml'
+                && run.event === 'pull_request'
+                && run.head_sha === candidateSha
+              )));
+
+              if (!renderDiffRun) {
+                return {
+                  state: 'missing',
+                  reason: `missing-render-diff-workflow:${candidateSha}`,
+                };
+              }
+              if (renderDiffRun.status !== 'completed') {
+                return {
+                  state: 'pending',
+                  reason: `render-diff-workflow-not-completed:${renderDiffRun.status}`,
+                };
+              }
+              if (renderDiffRun.conclusion !== 'success') {
+                return {
+                  state: 'failed',
+                  reason: `latest-render-diff-workflow-not-success:${renderDiffRun.conclusion}`,
+                };
+              }
+              const runCreatedAt = Date.parse(renderDiffRun.created_at);
+              const pullCreatedAt = Date.parse(pr.created_at);
+              if (!Number.isFinite(runCreatedAt)
+                || !Number.isFinite(pullCreatedAt)
+                || renderDiffRun.head_branch !== pr.head.ref
+                || renderDiffRun.head_repository?.id !== pr.head.repo?.id
+                || runCreatedAt < pullCreatedAt) {
+                return { state: 'failed', reason: 'render-diff-workflow-pr-identity-mismatch' };
+              }
+
+              const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                owner,
+                repo,
+                run_id: renderDiffRun.id,
+                filter: 'latest',
+                per_page: 100,
+              });
+              const renderDiffJob = latestRun(jobs.filter((job) => (
+                job.name === 'Canvas visual diff'
+              )));
+              if (!renderDiffJob) {
+                return {
+                  state: 'failed',
+                  reason: `missing-canvas-visual-diff-job:${candidateSha}`,
+                };
+              }
+              if (renderDiffJob.status !== 'completed') {
+                return {
+                  state: 'pending',
+                  reason: `canvas-visual-diff-not-completed:${renderDiffJob.status}`,
+                };
+              }
+              if (renderDiffJob.conclusion !== 'success') {
+                return {
+                  state: 'failed',
+                  reason: `canvas-visual-diff-not-success:${renderDiffJob.conclusion}`,
+                };
+              }
+              const expectedIdentityStep = `Render Diff identity PR #${pr.number} base ${pr.base.sha}`;
+              const identityStep = (renderDiffJob.steps || []).find((step) => (
+                step.name === expectedIdentityStep
+              ));
+              if (identityStep?.status !== 'completed' || identityStep.conclusion !== 'success') {
+                return { state: 'failed', reason: 'canvas-visual-diff-identity-mismatch' };
+              }
+              return { state: 'green' };
             }
 
             try {
@@ -169,8 +259,8 @@ jobs:
                 return;
               }
 
-              let trailingReviewOnlyCommits = 0;
-              let candidateSha = '';
+              const reviewOnlyCandidates = [];
+              let codeCandidateSha = '';
 
               for (let index = commits.length - 1; index >= 0; index -= 1) {
                 const sha = commits[index].sha;
@@ -191,108 +281,51 @@ jobs:
                 if (reviewOnly) {
                   const parents = commit.parents || [];
                   if (parents.length === 1) {
-                    trailingReviewOnlyCommits += 1;
+                    reviewOnlyCandidates.push(sha);
                     continue;
                   }
-                  // #3233: a docs-only Update branch merge can be the already-verified
-                  // candidate after one or more trailing review-record commits. It must
-                  // be exactly a merge of the current PR base; all other merge shapes
-                  // retain the conservative full-render fallback.
-                  if (trailingReviewOnlyCommits > 0
+                  // #3233 keeps the narrow Update branch merge topology. Its green
+                  // workflow can be reused after one or more review-only records.
+                  if (reviewOnlyCandidates.length > 0
                     && isCurrentBaseReviewMerge(commit, pr.base.sha)) {
-                    candidateSha = sha;
-                    core.info(`using current-base ${reviewOnlyLabel(files)} merge as candidate SHA ${candidateSha}`);
+                    reviewOnlyCandidates.push(sha);
+                    core.info(`including current-base ${reviewOnlyLabel(files)} merge candidate ${sha}`);
                     break;
                   }
                   setResult(false, `${reviewOnlyLabel(files)}-merge-not-reusable:${sha}`);
                   return;
                 }
 
-                candidateSha = sha;
+                codeCandidateSha = sha;
                 break;
               }
 
-              if (trailingReviewOnlyCommits === 0) {
+              if (reviewOnlyCandidates.length === 0) {
                 setResult(false, 'no-trailing-review-only-commits');
                 return;
               }
-              if (!candidateSha) {
-                candidateSha = pr.base.sha;
-                core.info(`all PR commits are review-only; using base SHA ${candidateSha}`);
-                setResult(true, 'all-review-only-no-render-impact', candidateSha);
-                return;
+              if (codeCandidateSha) {
+                reviewOnlyCandidates.push(codeCandidateSha);
               }
 
-              const workflowRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
-                owner,
-                repo,
-                workflow_id: 'render-diff.yml',
-                event: 'pull_request',
-                status: 'completed',
-                head_sha: candidateSha,
-                per_page: 100,
-              });
-              const renderDiffRun = latestRun(workflowRuns.filter((run) => (
-                run.path === '.github/workflows/render-diff.yml'
-                && run.event === 'pull_request'
-                && run.head_sha === candidateSha
-              )));
-
-              if (!renderDiffRun) {
-                setResult(false, `missing-completed-render-diff-workflow:${candidateSha}`, candidateSha);
-                return;
-              }
-              if (renderDiffRun.conclusion !== 'success') {
-                setResult(
-                  false,
-                  `latest-render-diff-workflow-not-success:${renderDiffRun.conclusion}`,
-                  candidateSha,
-                );
-                return;
-              }
-              const runCreatedAt = Date.parse(renderDiffRun.created_at);
-              const pullCreatedAt = Date.parse(pr.created_at);
-              if (!Number.isFinite(runCreatedAt)
-                || !Number.isFinite(pullCreatedAt)
-                || renderDiffRun.head_branch !== pr.head.ref
-                || renderDiffRun.head_repository?.id !== pr.head.repo?.id
-                || runCreatedAt < pullCreatedAt) {
-                setResult(false, 'render-diff-workflow-pr-identity-mismatch', candidateSha);
-                return;
+              for (const candidateSha of reviewOnlyCandidates) {
+                if (!(await isCurrentBaseAncestor(candidateSha, pr.base.sha))) {
+                  core.info(`candidate does not include current base: ${candidateSha}`);
+                  continue;
+                }
+                const result = await renderDiffResult(candidateSha, pr);
+                if (result.state === 'green') {
+                  setResult(true, 'canvas-visual-diff-success', candidateSha);
+                  return;
+                }
+                if (result.state === 'failed') {
+                  setResult(false, result.reason, candidateSha);
+                  return;
+                }
+                core.info(`candidate not reusable yet: ${candidateSha} (${result.reason})`);
               }
 
-              const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
-                owner,
-                repo,
-                run_id: renderDiffRun.id,
-                filter: 'latest',
-                per_page: 100,
-              });
-              const renderDiffJob = latestRun(jobs.filter((job) => (
-                job.name === 'Canvas visual diff'
-              )));
-              if (!renderDiffJob) {
-                setResult(false, `missing-canvas-visual-diff-job:${candidateSha}`, candidateSha);
-                return;
-              }
-              if (renderDiffJob.status !== 'completed' || renderDiffJob.conclusion !== 'success') {
-                setResult(
-                  false,
-                  `canvas-visual-diff-not-success:${renderDiffJob.status}:${renderDiffJob.conclusion}`,
-                  candidateSha,
-                );
-                return;
-              }
-              const expectedIdentityStep = `Render Diff identity PR #${pr.number} base ${pr.base.sha}`;
-              const identityStep = (renderDiffJob.steps || []).find((step) => (
-                step.name === expectedIdentityStep
-              ));
-              if (identityStep?.status !== 'completed' || identityStep.conclusion !== 'success') {
-                setResult(false, 'canvas-visual-diff-identity-mismatch', candidateSha);
-                return;
-              }
-
-              setResult(true, 'canvas-visual-diff-success', candidateSha);
+              setResult(false, 'no-green-current-base-render-candidate');
             } catch (error) {
               core.warning(`Render Diff preflight failed; running full Render Diff. ${error.message}`);
               setResult(false, 'preflight-error');
