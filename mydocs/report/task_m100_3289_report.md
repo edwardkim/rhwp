@@ -62,6 +62,10 @@
   첫 save 에서 실측(run 30145509799, "Cleaning cargo/bin"). rust-cache 는
   `runner.environment == 'github-hosted'` 게이트 필수. 캐시 저장 쿼터도 read-only 상태라
   self-hosted 에선 이득이 없다.
+- **RAM 자동 감지 도구는 캡 필수**: CodeQL 은 가용 RAM 대부분을 힙으로 잡아, 분석 2개
+  동시 실행 시 JVM 각각 40~55GB → 호스트 100GB 포화·스톨 실측(2026-07-25, swap 512M).
+  호스티드에서 무해했던 건 16GB VM 이라 힙이 작게 잡혔기 때문. codeql-action init 에
+  `ram: 12288`/`threads: 16` 캡. 같은 유형(가용 자원 전체를 잡는 도구) 도입 시 동일 점검.
 - **Rust 툴체인 버전 범프 절차**: CI 의 toolchain 값을 올리기 전에 호스트에서
   `rustup toolchain install <ver>` 선행 — 동시 잡의 자동 설치 레이스 방지.
 - **러너 설정 파일**: `.path` 는 한 줄 콜론 결합(nvm bin + 시스템 + `/home/app/.cargo/bin`),
