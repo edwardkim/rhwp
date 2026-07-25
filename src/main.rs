@@ -87,6 +87,7 @@ fn main() {
         Some("bench") => rhwp::diagnostics::bench::run(&args[2..]),
         Some("thumbnail") => extract_thumbnail(&args[2..]),
         Some("fields") => exit_with(show_fields(&args[2..])),
+        Some("edit") => exit_with(run_edit(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
         // 종료 코드 2로 끝낸다(기존에는 stdout + 0이라 오타 낸 명령이 스크립트에서 성공으로 보였다).
         other => {
@@ -804,6 +805,14 @@ fn print_help() {
     println!("  fields <파일.hwp|파일.hwpx> [--json]");
     println!("      누름틀/필드 조사 (읽기 전용) — 이름·안내문·지시문·현재값·위치");
     println!();
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!();
+    println!("  edit fill-fields <파일.hwp> --data <JSON|@파일> [-o <출력.hwp>] [옵션]");
+    println!("      누름틀에 값을 채운다 (서식 자동 작성/메일머지)");
+    println!();
+    println!("      --data <JSON|@파일>       {{\"필드이름\":\"값\"}} 형식. @경로면 파일에서 읽음");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_filled.hwp)");
+    println!("      --dry-run                 파일을 쓰지 않고 변경 예정 내역만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!();
     println!("내부 개발·회귀 도구 (일반 사용자 대상 아님):");
@@ -7599,6 +7608,212 @@ fn ir_diff(args: &[String]) -> i32 {
 /// rhwp 는 이미 필드에 값을 **쓸 수** 있는데(`set_field_value_by_name`) 조회 API 는
 /// WASM/스튜디오 경로에만 있어, 브라우저 밖 에이전트는 "이 서식이 무엇을 요구하는지"
 /// 알 방법이 없었다. 기존 `collect_all_fields()` 를 그대로 노출한다(라이브러리 무변경).
+/// `edit` — 문서 편집 명령군 (로드맵 #2659 Stage 3).
+///
+/// 공통 규약: `--dry-run`(변경 요약만 출력, 파일 무변경), 결과 리포트 JSON,
+/// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
+fn run_edit(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit fill-fields <파일.hwp> --data <JSON|@파일> [-o <출력.hwp>] [--dry-run] [--json]";
+
+    match args.first().map(String::as_str) {
+        Some("fill-fields") => edit_fill_fields(&args[1..]),
+        Some(other) => {
+            eprintln!("오류: 알 수 없는 edit 하위 명령 - {}", other);
+            eprintln!("{USAGE}");
+            EXIT_USAGE
+        }
+        None => {
+            eprintln!("오류: edit 하위 명령을 지정해주세요.");
+            eprintln!("{USAGE}");
+            EXIT_USAGE
+        }
+    }
+}
+
+/// `edit fill-fields` — 누름틀에 값을 채운다 (메일머지).
+///
+/// 검증된 코어 경로(`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없다.
+/// 필드 값만 바꾸므로 레이아웃·구조는 불변이다.
+fn edit_fill_fields(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut data_arg: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--data" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => data_arg = Some(v),
+                    None => {
+                        eprintln!("오류: --data 뒤에 JSON 또는 @파일경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => file_path = Some(other),
+        }
+        i += 1;
+    }
+
+    let (Some(file_path), Some(data_arg)) = (file_path, data_arg) else {
+        eprintln!("사용법: rhwp edit fill-fields <파일.hwp> --data <JSON|@파일> [-o <출력.hwp>] [--dry-run] [--json]");
+        return EXIT_USAGE;
+    };
+
+    // `@경로` 면 파일에서 읽는다 — 대량 메일머지에서 셸 인용 지옥을 피한다.
+    let data_text = if let Some(path) = data_arg.strip_prefix('@') {
+        match fs::read_to_string(path) {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("오류: --data 파일을 읽을 수 없습니다 - {}: {}", path, e);
+                return EXIT_RUNTIME;
+            }
+        }
+    } else {
+        data_arg.to_string()
+    };
+
+    let data: serde_json::Map<String, serde_json::Value> =
+        match serde_json::from_str::<serde_json::Value>(&data_text) {
+            Ok(serde_json::Value::Object(m)) => m,
+            Ok(_) => {
+                eprintln!("오류: --data 는 {{\"필드이름\":\"값\"}} 형식의 JSON 객체여야 합니다.");
+                return EXIT_USAGE;
+            }
+            Err(e) => {
+                eprintln!("오류: --data JSON 파싱 실패 - {}", e);
+                return EXIT_USAGE;
+            }
+        };
+
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    // 문서에 실재하는 필드 이름을 먼저 모아, 없는 이름을 편집 전에 가려낸다.
+    let existing: std::collections::HashSet<String> = doc
+        .collect_all_fields()
+        .iter()
+        .filter_map(|fi| fi.field.field_name().map(|s| s.to_string()))
+        .collect();
+
+    let mut filled: Vec<serde_json::Value> = Vec::new();
+    let mut not_found: Vec<String> = Vec::new();
+
+    for (name, value) in &data {
+        let value_str = match value {
+            serde_json::Value::String(s) => s.clone(),
+            other => other.to_string(),
+        };
+        if !existing.contains(name) {
+            not_found.push(name.clone());
+            continue;
+        }
+        if dry_run {
+            // 파일을 건드리지 않고 무엇이 바뀔지만 기록한다.
+            filled.push(serde_json::json!({ "name": name, "value": value_str }));
+            continue;
+        }
+        if let Err(e) = doc.set_field_value_by_name(name, &value_str) {
+            eprintln!("오류: 필드 '{}' 설정 실패 - {}", name, e);
+            // 실패 시 원본 불변 — 출력 파일을 쓰지 않고 즉시 끝낸다.
+            return EXIT_RUNTIME;
+        }
+        filled.push(serde_json::json!({ "name": name, "value": value_str }));
+    }
+
+    let output_path = out_path.unwrap_or_else(|| {
+        let stem = Path::new(file_path)
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| "output".to_string());
+        format!("{}_filled.hwp", stem)
+    });
+
+    if !dry_run {
+        let out_bytes = match doc.export_hwp_native() {
+            Ok(b) => b,
+            Err(e) => {
+                eprintln!("오류: HWP 직렬화 실패 - {}", e);
+                return EXIT_RUNTIME;
+            }
+        };
+        if let Err(e) = fs::write(&output_path, &out_bytes) {
+            eprintln!("오류: 출력 쓰기 실패 - {}: {}", output_path, e);
+            return EXIT_RUNTIME;
+        }
+    }
+
+    if json_mode {
+        let mut envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "dryRun": dry_run,
+            "filledCount": filled.len(),
+            "filled": filled,
+            "notFound": not_found,
+        });
+        if !dry_run {
+            envelope["output"] = serde_json::Value::String(output_path.clone());
+        }
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
+    if dry_run {
+        println!("변경 예정: {} (필드 {}개)", file_path, filled.len());
+    } else {
+        println!(
+            "채우기 완료: {} → {} (필드 {}개)",
+            file_path,
+            output_path,
+            filled.len()
+        );
+    }
+    for f in &filled {
+        println!(
+            "  {} = {:?}",
+            f["name"].as_str().unwrap_or(""),
+            f["value"].as_str().unwrap_or("")
+        );
+    }
+    if !not_found.is_empty() {
+        println!("  문서에 없는 필드 이름: {}", not_found.join(", "));
+    }
+    EXIT_OK
+}
+
 fn show_fields(args: &[String]) -> i32 {
     use rhwp::document_core::queries::field_query::NestedEntry;
 

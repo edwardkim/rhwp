@@ -319,6 +319,27 @@ rhwp 는 이미 필드에 값을 쓸 수 있지만(`set_field_value_by_name`) �
 rhwp fields 신청서.hwp --json | jq -r '.fields[] | "\(.name): \(.memo // .guide)"'
 ```
 
+### `edit fill-fields <파일> --data <JSON|@파일> [옵션]` (#3329)
+누름틀에 값을 채운다 — 서식 자동 작성/메일머지. 검증된 코어 경로
+(`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없고, **필드 값만 바꾸므로
+레이아웃·구조는 불변**이다.
+- `--data <JSON|@파일>` — `{"필드이름":"값"}` 형식. `@경로` 면 파일에서 읽는다
+  (대량 메일머지에서 셸 인용을 피한다). 값이 문자열이 아니면 JSON 표현으로 넣는다.
+- `-o, --output <파일>` — 출력 파일 (기본 `<입력명>_filled.hwp`)
+- `--dry-run` — **파일을 쓰지 않고** 변경 예정 내역만 보고. 에이전트의 사전 확인 장치.
+- `--json` 봉투: `{"schemaVersion":"1.0","source","dryRun","filledCount","filled":[{name,value}],"notFound":[…],"output"?}`
+  - `notFound` — 문서에 없는 필드 이름. 조용히 무시하지 않으므로 오타를 즉시 안다.
+  - `output` 은 실제 저장했을 때만 실린다(`--dry-run` 이면 없음).
+- **실패 시 원본 불변**: 필드 설정이 하나라도 실패하면 출력 파일을 쓰지 않고 종료 코드 1.
+- 종료 코드는 §종료 코드 계약 (없는 파일·직렬화/쓰기 실패 1 · 인자/JSON 오류 2)
+
+```bash
+# 서식 조사 → 값 채우기 → 산출물 재확인 (전 과정 CLI)
+rhwp fields 신청서.hwp --json | jq -r '.fields[].name'
+rhwp edit fill-fields 신청서.hwp --data @row.json -o out.hwp --json
+rhwp fields out.hwp --json | jq -c '[.fields[]|select(.value!="")|{name,value}]'
+```
+
 ---
 
 ## 3. 변환·비교
