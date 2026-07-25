@@ -150,6 +150,36 @@ fn export_svg_json_missing_file_exit_runtime_silent_stdout() {
     let _ = std::fs::remove_dir_all(&out);
 }
 
+#[test]
+fn export_svg_json_write_failure_exit_runtime_silent_stdout() {
+    // 출력 폴더 자리에 일반 파일을 두면 어느 플랫폼에서도 쓰기 실패를 재현할 수 있다.
+    let out = temp_dir("write-failure");
+    std::fs::write(&out, b"not a directory").expect("출력 경로 파일 생성");
+    let p = sample();
+    let args = [
+        "export-svg",
+        p.to_str().unwrap(),
+        "-p",
+        "0",
+        "-o",
+        out.to_str().unwrap(),
+        "--json",
+    ];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "{}",
+        describe(&args, &output)
+    );
+    assert!(
+        output.stdout.is_empty(),
+        "부분 매니페스트를 stdout에 출력하면 안 됩니다.\n{}",
+        describe(&args, &output)
+    );
+    let _ = std::fs::remove_file(&out);
+}
+
 /// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,
 /// nextest가 런타임에 재매핑해 주입하는 CARGO_BIN_EXE_rhwp를 우선한다.
 fn rhwp_bin() -> String {

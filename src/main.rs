@@ -326,7 +326,22 @@ fn show_capabilities(args: &[String]) -> i32 {
             ],
         ),
         // ── 내보내기/변환 ──
-        cmd("export-svg", "export", "문서를 페이지별 SVG로 렌더"),
+        cmd_json(
+            "export-svg",
+            "export",
+            "문서를 페이지별 SVG로 렌더하고 --json 매니페스트 출력",
+            false,
+            &["-o", "-p", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "format",
+                "outputDir",
+                "pageCount",
+                "renderedCount",
+                "pages",
+            ],
+        ),
         cmd(
             "export-png",
             "export",
@@ -480,6 +495,7 @@ fn print_help() {
     println!("      --embed-fonts           폰트 서브셋 임베딩 (사용 글자만 base64)");
     println!("      --embed-fonts=full      폰트 전체 임베딩 (base64)");
     println!("      --font-path <경로>      폰트 파일 탐색 경로 (여러 번 지정 가능)");
+    println!("      --json                  산출물 매니페스트를 JSON으로 stdout에 출력");
     println!();
     println!("  export-render-tree <파일.hwp> [옵션]");
     println!("      페이지별 render tree bbox JSON을 내보내기 (레이아웃 시각 분석용)");
@@ -1032,6 +1048,15 @@ fn export_svg(args: &[String]) -> i32 {
                 eprintln!("오류: 페이지 {} 렌더링 실패 - {:?}", page_num, e);
             }
         }
+    }
+
+    // 단건 JSON 명령의 실패는 stdout 을 비워야 한다. 부분 매니페스트를 출력하면
+    // 소비자가 성공 결과로 오인하거나 stdout JSON을 파싱한 뒤 실패를 놓친다.
+    if written != pages.len() {
+        if !json_mode {
+            println!("내보내기 완료: {}개 SVG 파일 → {}/", written, output_dir);
+        }
+        return EXIT_RUNTIME;
     }
 
     if json_mode {
