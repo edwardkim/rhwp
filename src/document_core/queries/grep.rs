@@ -39,6 +39,9 @@ pub struct GrepMatch {
     /// 표 셀 안의 매치면 셀 좌표. 본문 매치면 생략된다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cell: Option<CellRef>,
+    /// 글상자 안의 매치면 글상자 좌표. 본문·표 셀 매치면 생략된다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub textbox: Option<TextBoxRef>,
 }
 
 /// 표 셀 매치의 좌표.
@@ -49,6 +52,15 @@ pub struct CellRef {
     /// 셀 인덱스.
     pub cell: usize,
     /// 셀 안의 문단 인덱스.
+    pub paragraph: usize,
+}
+
+/// 글상자 매치의 좌표.
+#[derive(Debug, Clone, Serialize)]
+pub struct TextBoxRef {
+    /// 글상자를 담은 본문 문단의 컨트롤 인덱스.
+    pub control: usize,
+    /// 글상자 안의 문단 인덱스.
     pub paragraph: usize,
 }
 
@@ -116,7 +128,10 @@ impl DocumentCore {
             for (para_idx, para) in section.paragraphs.iter().enumerate() {
                 let page = page_index.get(&(sec_idx, para_idx)).copied();
 
-                let make = |text: &str, offset: usize, cell: Option<CellRef>| GrepMatch {
+                let make = |text: &str,
+                            offset: usize,
+                            cell: Option<CellRef>,
+                            textbox: Option<TextBoxRef>| GrepMatch {
                     section: sec_idx,
                     paragraph: para_idx,
                     page,
@@ -125,10 +140,11 @@ impl DocumentCore {
                     text: text.to_string(),
                     context: make_context(text, offset, qlen),
                     cell,
+                    textbox,
                 };
 
                 for offset in super::search_query::find_matches(&para.text, query, case_sensitive) {
-                    out.push(make(&para.text, offset, None));
+                    out.push(make(&para.text, offset, None, None));
                     if limit.is_some_and(|n| out.len() >= n) {
                         return out;
                     }
@@ -152,6 +168,7 @@ impl DocumentCore {
                                                 cell: cell_idx,
                                                 paragraph: cp_idx,
                                             }),
+                                            None,
                                         ));
                                         if limit.is_some_and(|n| out.len() >= n) {
                                             return out;
@@ -164,13 +181,21 @@ impl DocumentCore {
                             if let Some(tb) =
                                 crate::document_core::helpers::get_textbox_from_shape(shape)
                             {
-                                for tp in &tb.paragraphs {
+                                for (tp_idx, tp) in tb.paragraphs.iter().enumerate() {
                                     for offset in super::search_query::find_matches(
                                         &tp.text,
                                         query,
                                         case_sensitive,
                                     ) {
-                                        out.push(make(&tp.text, offset, None));
+                                        out.push(make(
+                                            &tp.text,
+                                            offset,
+                                            None,
+                                            Some(TextBoxRef {
+                                                control: ctrl_idx,
+                                                paragraph: tp_idx,
+                                            }),
+                                        ));
                                         if limit.is_some_and(|n| out.len() >= n) {
                                             return out;
                                         }

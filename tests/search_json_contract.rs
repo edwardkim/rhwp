@@ -11,6 +11,8 @@ use std::process::{Command, Output};
 const SAMPLE: &str = "samples/hwp3-sample.hwp";
 /// 표를 가진 문서 — 표 셀 안의 매치 좌표 검증용.
 const SAMPLE_TABLE: &str = "samples/table-001.hwp";
+/// 글상자 안의 매치에 재참조 가능한 좌표가 붙는지 검증한다.
+const SAMPLE_TEXTBOX: &str = "samples/table-in-tbox.hwp";
 
 fn sample(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
@@ -138,6 +140,30 @@ fn search_finds_matches_inside_table_cells() {
     }
     // 표 문서에서 이 검색어가 0건이면 표 셀 순회 자체가 끊긴 것이다.
     assert!(v["matchCount"].as_u64().unwrap() >= 1, "{v}");
+}
+
+#[test]
+fn search_finds_matches_inside_textboxes_with_coordinates() {
+    // 이 샘플의 첫 본문 문단은 글상자이며, 검색어는 글상자 문단 10에 실재한다.
+    let p = sample(SAMPLE_TEXTBOX);
+    let args = ["search", p.to_str().unwrap(), "수돗물", "--json"];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
+    let v = parse_json(&args, &output);
+    let m = v["matches"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|m| m["paragraph"] == 0 && m.get("textbox").is_some())
+        .unwrap_or_else(|| panic!("글상자 매치와 좌표가 필요합니다: {v}"));
+    assert_eq!(m["textbox"]["control"], 2, "{m}");
+    assert_eq!(m["textbox"]["paragraph"], 10, "{m}");
+    assert!(m.get("cell").is_none(), "글상자는 표 셀이 아닙니다: {m}");
 }
 
 #[test]

@@ -45,21 +45,45 @@ fn find_in_text(text: &str, query: &str, case_sensitive: bool) -> Vec<usize> {
             }
         }
     } else {
-        let text_lower: String = text.chars().flat_map(|c| c.to_lowercase()).collect();
+        // `to_lowercase()` 는 한 원문 문자를 여러 문자로 확장할 수 있다(예: `İ` →
+        // `i` + COMBINING DOT ABOVE). lower-case 버퍼의 인덱스를 그대로 반환하면
+        // 호출자가 기대하는 원문 문자 오프셋이 밀린다. 각 확장 문자를 원문 문자
+        // 인덱스에 연결해 검색은 folded 텍스트에서 하되 주소는 원문 기준으로 돌려준다.
+        let chars: Vec<(char, usize)> = text
+            .chars()
+            .enumerate()
+            .flat_map(|(original_offset, c)| {
+                c.to_lowercase().map(move |lower| (lower, original_offset))
+            })
+            .collect();
         let query_lower: String = query.chars().flat_map(|c| c.to_lowercase()).collect();
-        let chars: Vec<char> = text_lower.chars().collect();
         let qchars: Vec<char> = query_lower.chars().collect();
         let qlen = qchars.len();
         if chars.len() < qlen {
             return results;
         }
         for i in 0..=chars.len() - qlen {
-            if chars[i..i + qlen] == qchars[..] {
-                results.push(i);
+            if chars[i..i + qlen]
+                .iter()
+                .map(|(c, _)| *c)
+                .eq(qchars.iter().copied())
+            {
+                results.push(chars[i].1);
             }
         }
     }
     results
+}
+
+#[cfg(test)]
+mod tests {
+    use super::find_matches;
+
+    #[test]
+    fn ignore_case_returns_original_char_offset_after_unicode_lowercase_expansion() {
+        // `İ`가 두 lower-case 문자로 확장돼도 `stan`의 시작은 원문 2번째 문자다.
+        assert_eq!(find_matches("Aİstanbul", "stan", false), vec![2]);
+    }
 }
 
 /// 문서 본문에서 query의 첫 번째 매치만 반환 (표/글상자 내부 제외, early-exit)
