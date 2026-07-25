@@ -6,6 +6,86 @@ This document records the major changes of the rhwp project.
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-07-26
+
+> MINOR release — 265 PRs integrated since v0.7.19. Save round-trip preservation
+> overhaul (invalidation contract + dozens of HWPX/HWP5 attribute round-trips),
+> new agent-facing CLI query/verification tool suite, parser fuzzing
+> infrastructure, editing-undo fidelity series, and rendering/font consistency
+> improvements. Starting with this release, **browser extension versions
+> (Chrome/Edge/Firefox/Safari) are unified with the library version**
+> (0.2.8 → 0.8.0).
+
+### Save reliability — round-trip preservation overhaul
+- Fixed a batch of invalidation omissions where edits reverted to stale bytes on
+  save — form values, bookmarks, click-here fields, style edits, neighbor-cell
+  borders, equation properties, pasted HTML formatting, and more (the
+  raw_stream/raw_data invalidation contract is now a canonical document).
+- Dozens of HWPX save round-trip preservations: secPr grid/startNum/tabStop,
+  table allowOverlap, vertical writing, borderFill threeD/shadow, 7 imgBrush
+  modes, lineShape arrowheads, 3-state checkboxes, memo border lineType,
+  paragraph numFormat literals, fieldBegin/fieldEnd fieldid, bullet paraHead,
+  caption vertAlign, refList memoProperties, object locks, and more.
+- HWP5 save-loss fixes — paragraph number format, autoTab bit, shape captions,
+  footnote/endnote decorations, BinData remap for caption images in hwpx→hwp.
+
+### CLI — agent tool suite
+- 8 JSON query/verification tools integrated: `info` / `export-text --json` /
+  parallel batch streaming, `export-structure`, `capabilities`,
+  `ir-diff --json` verdict envelope, `export-tables` (grid JSON), `fields`,
+  `search` (addressed results), `export-svg --json` (render manifest).
+- `export-doclang` — export HWP/HWPX to DocLang v0.6 XML.
+- Established non-zero exit-code contract on failure; fixed `export-png` /
+  `export-pdf` missing external-linked image loading (#3302).
+
+### Parser robustness — fuzzing and defenses
+- Introduced cargo-fuzz parser fuzzing infrastructure (stage 1) and extended
+  WMF / ooxml_chart harnesses (stage 2).
+- Hardened against malicious/corrupt inputs: WMF region sign-extension panic,
+  EMF POINTS16 unchecked allocation, 68 GB table-grid allocation, CFB corrupt
+  header panic, DIB over-allocation, infinite-loop/overflow defenses.
+- HWP3 IR wiring series — footnote options, separator length/margins,
+  between-notes spacing (×4 scale, footnote-only, grounded in Hancom's own
+  HWP3→HWPX conversion), TOC-mark separation, bookmark under-read, has_border.
+
+### Editing — undo fidelity series
+- Footnote/endnote/equation insertion and header-footer structural operations
+  are now recorded in history (#3207).
+- Cell paragraph-merge undo restores paragraph-scope properties in table
+  cells / text boxes / captions / nested tables (#2342 completed).
+- Header/footer fields separate display text from model offsets — caret, undo,
+  extraction, and render-tree JSON consistency (#3216).
+
+### Rendering consistency
+- Trust stored anchor-lines in para-float stacks — resolved bottom-aligned
+  overlap and +1 over-splitting (#2813).
+- Removed environment-dependent font sourcing paths and completed Web Canvas
+  base-family fallbacks — 10k survey r23 establishes a font-clean baseline
+  (zero page-count regressions).
+- Hanyang/Human-family ASCII metric calibration, repeated table-header grid
+  alignment, TAC margin double-add fix, overlapping-image clip fix, 3D/ofPie
+  chart rendering, CanvasKit positioned-text replay.
+
+### rhwp-studio
+- Responsiveness and Korean input latency improvements; memoized image
+  conversion results.
+- Input validation pass — ~20 clamp fixes across dialogs/toolbar plus
+  name-length guards preventing record corruption.
+- External-linked image display, HWPX OLE object selection, host save
+  notification API `notifySaved`, IME/grid-view fixes.
+
+### Browser extensions
+- **Unified versioning**: extension versions now match the library (0.8.0).
+- Hardened settings persistence/recovery and auto-open defenses.
+
+### Infrastructure & docs
+- svg2pdf determinism patches moved to an rhwp-hosted fork; wasm-pack 0.15.0
+  pinned; CI parallelization (Native Skia/test archive, Frontend/Lint) and
+  retry hardening. (A self-hosted runner experiment was validated and rolled
+  back to hosted runners; the pitfall catalog is preserved in docs.)
+- PR review workflow split into conditional guides; serialization invalidation
+  contract documented; bulk-PR triage tooling; permanent edit-sweep harness.
+
 ## [0.7.19] — 2026-07-17
 
 > Patch following v0.7.18 — honoring stored geometry signals (intra-paragraph vpos

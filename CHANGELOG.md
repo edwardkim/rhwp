@@ -4,6 +4,81 @@
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-07-26
+
+> MINOR 릴리즈 — v0.7.19 이후 265개 PR 통합. 저장 왕복 보존 대공사(무효화 계약 확립 +
+> HWPX/HWP5 속성 왕복 수십 건), 에이전트용 CLI 조회·검증 도구군 신설, 파서 퍼징 인프라
+> 도입, 편집 undo 충실도 연작, 렌더·폰트 정합 개선. 이번 릴리즈부터 **브라우저 확장
+> (Chrome/Edge/Firefox/Safari) 버전을 라이브러리와 동일하게 통일**한다 (0.2.8 → 0.8.0).
+
+### 저장 신뢰성 — 왕복 보존 대공사
+- 편집 후 저장이 옛 바이트로 되돌아가던 무효화 누락 일괄 정정 — 양식 값·책갈피·누름틀·
+  스타일 편집·이웃 셀 테두리·수식 속성·HTML 붙여넣기 서식 등 (raw_stream/raw_data
+  무효화 계약을 canonical 문서로 확립).
+- HWPX 저장 왕복 속성 보존 수십 건 — secPr grid/startNum/tabStop, 표 allowOverlap,
+  세로쓰기, borderFill threeD/shadow, imgBrush 7종, lineShape 화살표, 체크박스 3상태,
+  메모 테두리 lineType, 문단 번호 형식(numFormat 6종), fieldBegin/fieldEnd fieldid,
+  bullet paraHead, 캡션 vertAlign, refList memoProperties, 개체 lock 등
+  (kevin9327 축배치 A~M·G3·G5·G6~G12 연작).
+- HWP5 저장 유실 정정 — 문단 번호 형식, 자동 탭 비트, 도형 캡션, 각주·미주 장식 속성,
+  hwpx→hwp 변환 BinData 재정렬 시 캡션 그림 remap.
+
+### CLI — 에이전트 도구군 신설
+- JSON 조회·검증 도구 8종 통합(kevin9327): `info`·`export-text --json`·batch 병렬
+  스트리밍, `export-structure`, `capabilities`(도구 자기서술), `ir-diff --json` 판정
+  봉투, `export-tables`(격자 JSON), `fields`(누름틀 조사), `search`(주소 기반 검색),
+  `export-svg --json`(렌더 매니페스트).
+- `export-doclang` — HWP/HWPX를 DocLang v0.6 XML로 내보내기.
+- 실패 시 종료 코드 계약 정립, `export-png`/`export-pdf`의 외부 연결 그림 적재 누락
+  정정(#3302 — SVG와 동일 규칙).
+
+### 파서 견고성 — 퍼징 인프라와 방어
+- cargo-fuzz 파서 퍼징 인프라 도입(1단계) + WMF·ooxml_chart 하네스 확장(2단계).
+- 악성/손상 입력 방어: WMF Region 음수 부호확장 패닉, EMF POINTS16 무검증 할당,
+  표 그리드 68GB 할당, CFB 손상 헤더 패닉, DIB 과대 할당, 무한루프·오버플로 6건 등.
+- HWP3 IR 배선 누락 정정 연작 — 각주 옵션·분리선 길이/여백/본문 간격, 각주 사이 간격
+  (한컴 HWP3→HWPX 변환 실측 기반 ×4 스케일·각주 전용 적용), 차례 표시 분리,
+  책갈피 언더리드, has_border 소실 등.
+
+### 편집 — undo 충실도 연작
+- 각주·미주·수식 삽입과 머리말/꼬리말 구조 조작을 히스토리에 기록(#3207).
+- 셀(표 셀·글상자·캡션·중첩) 문단 병합 undo의 문단 범위 속성 복원(#2342 셀 경로 완결).
+- 머리말/꼬리말 필드의 표시 문자열(display_text)과 모델 좌표 분리 — 캐럿·undo·추출·
+  render-tree JSON 정합(#3216).
+- 중첩 표 셀 경로 정합(병합 undo 분할 길이·최내곽 셀 보정·Backspace 축), 표 이동
+  undo stale 인덱스, 문단 3개 이상 선택 삭제 undo 경계 등.
+
+### 렌더링 정합
+- para-float 스택의 저장 앵커-줄 신뢰 — 하단정렬 겹침·+1 과분할 해소(#2813).
+- 폰트 조달의 환경 종속 경로 제거(4파일 하드코딩 통합) + Web Canvas base-family
+  폴백 경로 보완 — 10k 서베이 r23 폰트-클린 신규 기준선 확립(쪽수 회귀 0).
+- 한양·휴먼 계열 ASCII 메트릭 실측 교정(셀 재래핑 오발동 해소), 반복 표 헤더 격자
+  정합, TAC margin 이중 가산 정정, 동일 이미지 겹침-clip 역방향 절단 수정,
+  3D 입체·ofPie 보조플롯 차트 렌더(#1431 Track C), CanvasKit positioned text replay.
+- 10k 한글 오라클 서베이 r16→r23: PI 일치율 93.75%, 측정 갭 역대 최소(65),
+  전 구간 쪽수 회귀 0 검증.
+
+### rhwp-studio
+- 반응성·한글 입력 지연 개선, 그림 변환 결과 메모화(편집마다 반복되던 JPEG 전체
+  디코드 제거).
+- 입력 검증 일괄 정비 — 글자 크기/장평/자간/줄 간격/단 간격/시작 번호 등 대화상자·
+  툴바 clamp 20여 건, 필드·책갈피·스타일 이름 길이 가드(레코드 손상 방지).
+- 외부 연결 그림 표시(#3313 1차)·HWPX OLE 개체 선택(#3319), 호스트 저장 완료 통지
+  API notifySaved, IME·그리드 뷰 정비.
+
+### 브라우저 확장
+- **버전 체계 통일**: Chrome/Edge/Firefox/Safari 확장 버전을 라이브러리와 동일한
+  0.8.0으로 통일(기존 0.2.8 독립 넘버링 종료).
+- 설정 저장·복구와 자동 열기 방어 강화.
+
+### 인프라·문서
+- svg2pdf 결정화 패치 공급원을 rhwp 산하 포크로 이관, wasm-pack 0.15.0 핀.
+- CI: Native Skia·테스트 archive 병렬화, Frontend·Lint 병렬화, 필수 gate 실패 시
+  후속 중단, github-script 재시도. (self-hosted 러너 실험은 검증 후 호스티드로
+  원복 — 함정 카탈로그를 문서로 보존.)
+- PR 검토 워크플로를 조건별 가이드로 분리, 직렬화 무효화 계약 canonical 문서,
+  대량 PR 분류 도구(pr_triage.sh), 편집-스윕 상설화.
+
 ## [0.7.19] — 2026-07-17
 
 > v0.7.18 후속 patch — 저장 지오메트리 신호(intra-para vpos 리셋/되감김) 존중 계보의
