@@ -230,3 +230,26 @@ fn export_tables_usage_error_exit_two() {
         describe(&args, &output)
     );
 }
+#[test]
+fn export_tables_multiple_files_exit_usage() {
+    let first = sample(SAMPLE_MERGED);
+    let second = sample(SAMPLE_NESTED);
+    let args = [
+        "export-tables",
+        first.to_str().unwrap(),
+        second.to_str().unwrap(),
+        "--json",
+    ];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(2),
+        "여러 입력 파일을 마지막 파일로 조용히 덮어쓰면 안 됩니다.\n{}",
+        describe(&args, &output)
+    );
+    assert!(
+        output.stdout.is_empty(),
+        "사용법 오류에서 stdout 은 비어야 합니다.\n{}",
+        describe(&args, &output)
+    );
+}
