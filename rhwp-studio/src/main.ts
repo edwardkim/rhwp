@@ -376,6 +376,13 @@ async function initialize(): Promise<void> {
       rendererSession,
     );
 
+    // [#3313] 외부 연결 그림(HWP3 pic_type=0)의 비동기 주입이 첫 렌더 이후에 끝나면
+    // 화면이 이전 프레임(그림 없는 상태)에 머무른다. 주입 완료 시 뷰 문서를 다시
+    // 로드해 페이지 트리를 재구성한다 — dirty 마킹 없는 뷰 전용 갱신.
+    wasm.onExternalImagesInjected = () => {
+      void canvasView?.loadDocument();
+    };
+
     // 눈금자 초기화
     ruler = new Ruler(
       document.getElementById('h-ruler') as HTMLCanvasElement,

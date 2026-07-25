@@ -383,11 +383,19 @@ impl LenientCfbReader {
             u32::from_le_bytes([data[72], data[73], data[74], data[75]]) as usize;
 
         // DIFAT 읽기: 헤더의 109개 + 추가 DIFAT 섹터
+        //
+        // [정적분석] 유효한 CFB 파일은 각 FAT 섹터 id 를 DIFAT 에 한 번만 기재한다
+        // (섹터마다 파일의 서로 다른 영역을 담당하므로). 이 불변식을 검증 없이 신뢰하면,
+        // 조작된 파일이 같은 id 를 반복 기재해 물리 섹터 1개만으로 FAT 벡터를
+        // 반복 횟수에 비례해(최대 DIFAT 섹터 수 × 섹터당 엔트리 수) 부풀릴 수 있다
+        // (#3181 순환 미탐지와 같은 클래스 — "카운트 필드를 무검증으로 반복 사용"하는
+        // DoS 증폭). visited_fat_sids 로 중복 id 를 조용히 건너뛴다.
         let mut fat_sector_ids = Vec::new();
+        let mut visited_fat_sids = std::collections::HashSet::new();
         for i in 0..109.min(fat_sectors_count) {
             let off = 76 + i * 4;
             let sid = u32::from_le_bytes([data[off], data[off + 1], data[off + 2], data[off + 3]]);
-            if sid != Self::FREE_SECT && sid != Self::END_OF_CHAIN {
+            if sid != Self::FREE_SECT && sid != Self::END_OF_CHAIN && visited_fat_sids.insert(sid) {
                 fat_sector_ids.push(sid);
             }
         }
@@ -415,7 +423,10 @@ impl LenientCfbReader {
                         data[eoff + 2],
                         data[eoff + 3],
                     ]);
-                    if sid != Self::FREE_SECT && sid != Self::END_OF_CHAIN {
+                    if sid != Self::FREE_SECT
+                        && sid != Self::END_OF_CHAIN
+                        && visited_fat_sids.insert(sid)
+                    {
                         fat_sector_ids.push(sid);
                     }
                 }
@@ -862,6 +873,36 @@ mod tests {
         assert!(
             rx.recv_timeout(std::time::Duration::from_secs(3)).is_ok(),
             "순환 DIFAT 체인에서 방문 집합 없이 difat_sectors_count 만큼 순회해 반환하지 않음"
+        );
+    }
+
+    #[test]
+    fn lenient_open_deduplicates_fat_sector_id_from_difat() {
+        // Header DIFAT과 추가 DIFAT가 같은 FAT sector 0을 가리키는 손상 CFB.
+        // 물리 FAT은 한 섹터이므로 결과 fat도 512 / 4 엔트리여야 한다.
+        let mut d = minimal_header();
+        d[44..48].copy_from_slice(&1u32.to_le_bytes()); // FAT sector 수
+        d[48..52].copy_from_slice(&0xFFFF_FFFEu32.to_le_bytes()); // directory = EOC
+        d[68..72].copy_from_slice(&1u32.to_le_bytes()); // 추가 DIFAT = sector 1
+        d[72..76].copy_from_slice(&1u32.to_le_bytes());
+        d[76..80].copy_from_slice(&0u32.to_le_bytes()); // header FAT = sector 0
+        d.resize(512 + 512 * 2, 0);
+
+        let difat_off = 512 + 512;
+        let entries_per = 512 / 4 - 1;
+        for i in 0..entries_per {
+            let off = difat_off + i * 4;
+            d[off..off + 4].copy_from_slice(&0xFFFF_FFFFu32.to_le_bytes());
+        }
+        d[difat_off..difat_off + 4].copy_from_slice(&0u32.to_le_bytes()); // duplicate FAT
+        let next_difat = difat_off + entries_per * 4;
+        d[next_difat..next_difat + 4].copy_from_slice(&0xFFFF_FFFEu32.to_le_bytes());
+
+        let reader = LenientCfbReader::open(&d).expect("손상 CFB도 lenient reader가 열어야 함");
+        assert_eq!(
+            reader.fat.len(),
+            512 / 4,
+            "중복 FAT sector를 한 번만 읽어야 함"
         );
     }
 

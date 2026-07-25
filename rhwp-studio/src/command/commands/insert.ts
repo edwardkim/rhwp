@@ -669,8 +669,9 @@ function applyRotationDelta(services: import('../types').CommandServices, delta:
   // -180 ~ 180 범위로 정규화
   next = ((next % 360) + 360) % 360;
   if (next > 180) next -= 360;
+  // recordObjectMutation → executeOperation snapshot 의 'full' refresh 가 afterEdit()→
+  // 'document-changed' 를 이미 emit 한다. 수동 emit 은 중복(이중 렌더)이라 제거. [undo P3 정리]
   recordObjectMutation(ih, 'rotateObject', () => setProps(services, ref, { rotationAngle: next }));
-  services.eventBus.emit('document-changed');
 }
 
 /** horzFlip/vertFlip을 토글한다 (shape + image 지원). */
@@ -682,6 +683,6 @@ function toggleFlip(services: import('../types').CommandServices, key: 'horzFlip
   const props = getProps(services, ref);
   if (props.sizeProtect) return;
   const cur = !!props[key];
+  // 위 rotate 와 동일 — snapshot 라우팅이 이미 refresh 하므로 수동 emit 제거. [undo P3 정리]
   recordObjectMutation(ih, 'flipObject', () => setProps(services, ref, { [key]: !cur }));
-  services.eventBus.emit('document-changed');
 }

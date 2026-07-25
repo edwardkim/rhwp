@@ -282,7 +282,33 @@ async function exercisePictureCopyPasteAfterCaretMove(page) {
   }, MINIMAL_PNG);
 }
 
-runTest('Issue #2069 OLE 개체 선택', async ({ page }) => {
+async function assertSoSueopHwpxOleSelectable(page) {
+  await loadHwpFile(page, 'SO-SUEOP.hwpx');
+
+  const clickPoint = await clickOlePreview(page);
+  const state = await page.evaluate(() => {
+    const cursor = window.__inputHandler.cursor;
+    const ole = window.__wasm.getPageControlLayout(0).controls.find(c => c.type === 'ole');
+    return {
+      ole,
+      selected: cursor.getSelectedPictureRef?.() ?? null,
+      isPictureSelection: cursor.isInPictureObjectSelection?.() ?? false,
+    };
+  });
+
+  assert(state.ole, `SO-SUEOP HWPX 1쪽 OLE layout 확인: ${JSON.stringify(state)}`);
+  assert(state.isPictureSelection === true, `SO-SUEOP HWPX OLE 클릭은 객체 선택으로 진입해야 함: ${JSON.stringify(state)}`);
+  assert(state.selected?.type === 'ole', `SO-SUEOP HWPX 선택 개체 타입 확인: ${JSON.stringify(state)}`);
+  assert(
+    state.selected?.sec === clickPoint.ole.secIdx &&
+      state.selected?.ppi === clickPoint.ole.paraIdx &&
+      state.selected?.ci === clickPoint.ole.controlIdx,
+    `SO-SUEOP HWPX 선택 ref는 클릭한 OLE control과 일치해야 함: ${JSON.stringify({ click: clickPoint.ole, state })}`,
+  );
+  await screenshot(page, 'issue-3319-so-sueop-hwpx-ole-selected');
+}
+
+runTest('Issue #2069/#3319 OLE 개체 선택', async ({ page }) => {
   await createNewDocument(page);
   const picturePasteState = await exercisePictureCopyPasteAfterCaretMove(page);
   assert(picturePasteState.copiedText === '[그림]', `그림 복사 내부 클립보드 텍스트 확인: ${JSON.stringify(picturePasteState)}`);
@@ -354,4 +380,6 @@ runTest('Issue #2069 OLE 개체 선택', async ({ page }) => {
   );
 
   await screenshot(page, 'ole-click-object-selection');
+
+  await assertSoSueopHwpxOleSelectable(page);
 });
