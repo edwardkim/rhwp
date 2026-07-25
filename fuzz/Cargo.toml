@@ -44,3 +44,17 @@ path = "fuzz_targets/parse_hml.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "parse_wmf"
+path = "fuzz_targets/parse_wmf.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "parse_ooxml_chart"
+path = "fuzz_targets/parse_ooxml_chart.rs"
+test = false
+doc = false
+bench = false

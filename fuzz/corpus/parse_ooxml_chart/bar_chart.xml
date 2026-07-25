@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<c:chartSpace xmlns:c="x" xmlns:a="y">
+<c:chart>
+  <c:title><c:tx><c:rich><a:p><a:r><a:t>Title A</a:t></a:r></a:p></c:rich></c:tx></c:title>
+  <c:plotArea>
+    <c:barChart>
+      <c:barDir val="col"/>
+      <c:ser>
+        <c:tx><c:strRef><c:strCache><c:pt idx="0"><c:v>Q1</c:v></c:pt></c:strCache></c:strRef></c:tx>
+        <c:cat><c:strRef><c:strCache>
+          <c:pt idx="0"><c:v>Seoul</c:v></c:pt>
+          <c:pt idx="1"><c:v>Busan</c:v></c:pt>
+        </c:strCache></c:strRef></c:cat>
+        <c:val><c:numRef><c:numCache>
+          <c:pt idx="0"><c:v>100</c:v></c:pt>
+          <c:pt idx="1"><c:v>80</c:v></c:pt>
+        </c:numCache></c:numRef></c:val>
+      </c:ser>
+    </c:barChart>
+  </c:plotArea>
+</c:chart>
+</c:chartSpace>
