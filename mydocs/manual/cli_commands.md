@@ -245,6 +245,28 @@ HWP 파일 정보 표시(버전/구역 수/암호화 등).
   `{"schemaVersion":"1.0","source","format":"hwp5|hwpx|hwp3|hml","sizeBytes","version","sections","pageCount","paraCount","fonts"}`.
   `version` 은 HML 이면 null. 스키마 계약은 `export-text --json` 항목과 동일 규칙.
 
+### `search <파일> <검색어> [--json] [--ignore-case] [--limit N]` (#3283)
+문서를 검색해 매치마다 **구역·문단·페이지·문자 오프셋**을 함께 돌려준다.
+평문을 뽑아 외부에서 찾으면 주소가 소멸해 근거 제시가 불가능한데, rhwp 는 조판 엔진이
+있어 "몇 쪽"에 답할 수 있다. 파서/렌더 무변경 읽기 질의.
+- `--json` 봉투: `{"schemaVersion":"1.0","source","query","caseSensitive","matchCount","matches":[…]}`
+- 매치: `{section,paragraph,page?,charOffset,length,text,context,cell?}`
+  - `page` 는 0부터 시작하는 글로벌 페이지. 조판에 배치되지 않은 문단이면 생략된다.
+  - `cell` 은 표 셀 안의 매치일 때 `{control,cell,paragraph}` 좌표
+  - `context` 는 매치 앞뒤 발췌(각 40자)
+- 검색 범위는 본문 + 표 셀 + 글상자 (`search_query::search_all` 과 동일)
+- **매치 0건은 오류가 아니다** — `matchCount:0`, 종료 코드 0 (1은 런타임 실패 전용)
+- `--limit N` 은 대형 문서에서 컨텍스트를 아끼기 위한 상한
+- 성능: 페이지 매핑 비용은 0이다(로드 시 조판 완료). `(구역,문단)→페이지` 인덱스를
+  한 번만 만들어 재사용한다. 실측 393쪽·10MB 문서에서 19건 검색 **215ms**(파싱 포함).
+
+```bash
+# 근거를 댈 수 있는 답변: 어느 쪽 어느 문단인지
+rhwp search 편람.hwp "위임전결" --json | jq -r '.matches[] | "\(.page+1)쪽: \(.context)"'
+# 찾은 페이지를 이미지로 렌더해 눈으로 확인
+rhwp export-png 편람.hwp -p "$(rhwp search 편람.hwp "위임전결" --json | jq '.matches[0].page')"
+```
+
 ### `thumbnail <파일> [옵션]`
 HWP 내장 썸네일(PrvImage) 추출.
 - `-o, --output <파일>` (기본 `입력명_thumb.png`)

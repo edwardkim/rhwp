@@ -49,6 +49,7 @@ fn main() {
         Some("dump-endnote-lines") => exit_with(dump_endnote_lines(&args[2..])),
         Some("dump-pages") => exit_with(dump_pages(&args[2..])),
         Some("diag") => exit_with(diag_document(&args[2..])),
+        Some("search") => exit_with(search_document(&args[2..])),
         Some("convert") => exit_with(convert_hwp(&args[2..])),
         Some("build-from-ingest") => exit_with(build_from_ingest(&args[2..])),
         Some("hwp5-inventory") => rhwp::diagnostics::hwp5_inventory::run(&args[2..]),
@@ -258,6 +259,13 @@ fn print_help() {
     println!();
     println!("  diag <파일.hwp>");
     println!("      문서 구조 진단 (번호/글머리표/개요 분석)");
+    println!();
+    println!("  search <파일.hwp|파일.hwpx> <검색어> [옵션]");
+    println!("      문서 검색 — 매치마다 구역·문단·페이지·문자 오프셋을 함께 반환");
+    println!();
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!("      --ignore-case             대소문자 무시");
+    println!("      --limit <N>               최대 매치 수 (컨텍스트 절약용)");
     println!();
     println!("  hwp5-inventory <파일.hwp> [--format jsonl|md] [--section N] [--out <path>]");
     println!("      HWP5 DocInfo/BodyText record inventory 생성 (HWPX→HWP contract 분석용)");
@@ -4828,6 +4836,102 @@ fn dump_controls(args: &[String]) -> i32 {
             .sum::<usize>()
     );
 
+    EXIT_OK
+}
+
+/// `search` — 주소(구역·문단·**페이지**)를 가진 문서 검색.
+///
+/// 평문을 뽑아 외부에서 찾으면 주소가 소멸해 근거 제시가 불가능하다. rhwp 는 조판 엔진이
+/// 있어 "몇 쪽"에 답할 수 있는 유일한 도구인데, 그 출구가 없었다.
+fn search_document(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut query: Option<&str> = None;
+    let mut json_mode = false;
+    let mut ignore_case = false;
+    let mut limit: Option<usize> = None;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--ignore-case" | "-i" => ignore_case = true,
+            "--limit" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
+                    Some(n) if n >= 1 => limit = Some(n),
+                    _ => {
+                        eprintln!("오류: --limit 뒤에 1 이상의 정수가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.is_none() {
+                    file_path = Some(other);
+                } else if query.is_none() {
+                    query = Some(other);
+                } else {
+                    eprintln!("오류: 인자가 너무 많습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+
+    let (Some(file_path), Some(query)) = (file_path, query) else {
+        eprintln!(
+            "사용법: rhwp search <파일.hwp|파일.hwpx> <검색어> [--json] [--ignore-case] [--limit <N>]"
+        );
+        return EXIT_USAGE;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let matches = doc.grep(query, !ignore_case, limit);
+
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "query": query,
+            "caseSensitive": !ignore_case,
+            "matchCount": matches.len(),
+            "matches": matches,
+        });
+        println!("{envelope}");
+        // 매치 0건은 실패가 아니다 — 1은 런타임 실패 전용이다(#2707).
+        return EXIT_OK;
+    }
+
+    println!("검색: {:?} in {} — {}건", query, file_path, matches.len());
+    for m in &matches {
+        let page = m
+            .page
+            .map(|p| format!("{}쪽", p + 1))
+            .unwrap_or_else(|| "쪽 미배치".to_string());
+        println!(
+            "  [{}] 구역{}:문단{} +{}  {}",
+            page, m.section, m.paragraph, m.char_offset, m.context
+        );
+    }
     EXIT_OK
 }
 
