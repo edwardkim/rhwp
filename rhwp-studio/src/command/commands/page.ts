@@ -92,30 +92,19 @@ function insertHfField(
   const isHeader = cursor.headerFooterMode === 'header';
   const target = { sectionIdx: cursor.hfSectionIdx, isHeader, applyTo: cursor.hfApplyTo };
   const paraIdx = cursor.hfParaIdx;
-  // HF hit-test는 field marker가 치환된 표시 문자열의 offset을 줄 수 있지만, WASM
-  // mutation/history는 모델 marker 1글자 기준이다. mutation 경계에서 모델 문단 길이로
-  // 정규화해 undo가 문단 끝 밖 offset을 기록하지 않게 한다 (#3212 review).
-  const renderedCharOffset = cursor.hfCharOffset;
+  const charOffset = cursor.hfCharOffset;
   try {
-    const paraInfo = JSON.parse(services.wasm.getHeaderFooterParaInfo(
-      target.sectionIdx, isHeader, target.applyTo, paraIdx,
-    ));
-    const charOffset = Math.min(renderedCharOffset, paraInfo.charCount);
     const result = services.wasm.insertFieldInHf(
       target.sectionIdx, isHeader, target.applyTo, paraIdx, charOffset, fieldType,
     );
     if (result.ok && result.charOffset !== undefined) {
-      const markerLength = result.charOffset - charOffset;
-      // 성공한 필드 삽입은 marker를 하나 이상 삽입해야 한다. 계약 밖 결과를 history에
-      // 기록하면 redo가 잘못된 범위를 되살릴 수 있으므로 기록하지 않는다.
-      if (markerLength <= 0) throw new Error('[page] 필드 마커 길이가 유효하지 않습니다');
       cursor.setHfCursorPosition(paraIdx, result.charOffset);
       // [Task #3212] 이미 적용된 삽입을 역연산 명령으로 기록한다(#2337 HF 커맨드와 동형).
       // 마커 길이는 삽입 결과 오프셋 차이로 실측해, 필드 종류가 늘어도 역연산이 어긋나지 않게 한다.
       ih.executeOperation({
         kind: 'record',
         command: new InsertFieldInHeaderFooterCommand(
-          target, paraIdx, charOffset, fieldType, markerLength,
+          target, paraIdx, charOffset, fieldType, result.charOffset - charOffset,
         ),
       });
     }

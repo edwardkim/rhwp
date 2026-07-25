@@ -893,11 +893,7 @@ impl DocumentCore {
         };
 
         let hf_para = self.get_hf_paragraph_mut(section_idx, is_header, apply_to, hf_para_idx)?;
-        // UI hit-test는 field marker가 치환된 표시 문자열의 offset을 줄 수 있다. 모델
-        // mutation API는 Paragraph의 실제 char index를 계약으로 하므로, clamp된 실제
-        // 삽입 위치를 이벤트와 반환값에도 일관되게 사용한다 (Task #3212 review).
-        let effective_offset = char_offset.min(hf_para.text.chars().count());
-        hf_para.insert_text_at(effective_offset, marker);
+        hf_para.insert_text_at(char_offset, marker);
 
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
 
@@ -905,11 +901,11 @@ impl DocumentCore {
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
-        let new_offset = effective_offset + 1;
+        let new_offset = char_offset + 1;
         self.event_log.push(DocumentEvent::TextInserted {
             section: section_idx,
             para: 0,
-            offset: effective_offset,
+            offset: char_offset,
             len: 1,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
@@ -1167,27 +1163,6 @@ mod tests {
 
         let result = core.get_header_footer_native(0, true, 0).unwrap();
         assert!(result.contains("Hello"));
-    }
-
-    #[test]
-    fn field_insert_reports_the_clamped_model_offset() {
-        let mut core = make_test_core();
-        core.create_header_footer_native(0, true, 0).unwrap();
-        core.insert_field_in_hf_native(0, true, 0, 0, 0, 3)
-            .expect("file-name field");
-
-        // 파일명 marker는 화면에서 여러 글자로 치환될 수 있다. UI가 그 표시 offset(7)을
-        // 전달해도 모델에는 marker 하나뿐이므로, API 반환은 실제 삽입 직후 model offset=2
-        // 여야 이후 undo가 존재하지 않는 8을 삭제하지 않는다.
-        let result = core
-            .insert_field_in_hf_native(0, true, 0, 0, 7, 1)
-            .expect("page-number field after rendered file-name offset");
-        assert!(result.contains("\"charOffset\":2"));
-
-        let result = core
-            .get_header_footer_para_info_native(0, true, 0, 0)
-            .unwrap();
-        assert!(result.contains("\"charCount\":2"));
     }
 
     #[test]

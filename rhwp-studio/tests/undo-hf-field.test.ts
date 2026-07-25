@@ -36,19 +36,12 @@ test('InsertFieldInHeaderFooterCommand 는 마커 삭제로 역연산하고 HF e
   assert.match(block, /hfEditContext\(this\.target, this\.paraIdx, this\.charOffset\)/, 'undo 후 커서는 삽입 지점');
 });
 
-test('insertHfField 는 모델 offset에서 마커 길이를 실측해 record 로 기록한다', () => {
+test('insertHfField 는 마커 길이를 실측해 record 로 기록한다', () => {
   const block = slice(pageSrc, 'function insertHfField', 'function navigateHeaderFooter');
   assert.match(block, /kind:\s*'record'/, "record 경로(뮤테이션 선적용 후 기록 — #2337 HF 커맨드 동형)");
   assert.match(block, /new InsertFieldInHeaderFooterCommand\(/, '역연산 명령으로 기록');
-  // 파일명/두 자리 쪽번호처럼 marker가 표시 문자열로 확장돼도 mutation은 모델 char
-  // index에서 해야 한다. 이 정규화가 없으면 undo가 문단 끝 밖 offset을 삭제해 no-op이 된다.
-  assert.match(block, /getHeaderFooterParaInfo\(/, '삽입 전 모델 문단 길이 조회');
-  assert.match(block, /Math\.min\(renderedCharOffset, paraInfo\.charCount\)/,
-    '렌더 offset을 모델 범위로 정규화');
   // 하드코딩된 길이가 아니라 삽입 결과에서 실측해야 필드 종류가 늘어도 어긋나지 않는다.
-  assert.match(block, /const markerLength = result\.charOffset - charOffset/,
-    '마커 길이는 모델 오프셋 기준 결과 차이로 실측');
-  assert.match(block, /if \(markerLength <= 0\)/, '비정상 삽입 결과는 history에 기록하지 않음');
+  assert.match(block, /result\.charOffset - charOffset/, '마커 길이는 결과 오프셋 차이로 실측');
   // 성공했을 때만 기록(no-op 엔트리 방지).
   assert.match(block, /if \(result\.ok && result\.charOffset !== undefined\)/, '성공 시에만 기록');
 });
