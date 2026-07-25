@@ -440,6 +440,9 @@ jobs:
       # [Task #1109 / #1192 C] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
       # 테스트 빌드 시 디스크 한도 초과를 줄인다.
       - name: Free disk space (remove unused pre-installed toolchains)
+        # [#3284] GitHub-hosted 이미지 전용 사전설치물 제거 — self-hosted 러너에는
+        # 해당 디렉터리가 없고 sudo(apt 한정)로 rm 이 불가하므로 skip 한다.
+        if: runner.environment == 'github-hosted'
         run: |
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /usr/share/dotnet
@@ -652,6 +655,9 @@ jobs:
       # [#1192] 캐시 정상 작동 확인 후 "크고 빠른" 항목(android/dotnet)만 남기고 축소.
       # 느린 docker prune --all / apt clean / ghc / CodeQL 정리는 제거. df -h 로 여유 확인.
       - name: Free disk space (remove unused pre-installed toolchains)
+        # [#3284] GitHub-hosted 이미지 전용 사전설치물 제거 — self-hosted 러너에는
+        # 해당 디렉터리가 없고 sudo(apt 한정)로 rm 이 불가하므로 skip 한다.
+        if: runner.environment == 'github-hosted'
         run: |
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /usr/share/dotnet
@@ -924,6 +930,9 @@ jobs:
       # [Task #1109 / #1192 C] wasm-build job 도 build-and-test 와 동일 축소 패턴.
       # "크고 빠른" 항목(android/dotnet)만 제거. df -h 로 여유 확인.
       - name: Free disk space (remove unused pre-installed toolchains)
+        # [#3284] GitHub-hosted 이미지 전용 사전설치물 제거 — self-hosted 러너에는
+        # 해당 디렉터리가 없고 sudo(apt 한정)로 rm 이 불가하므로 skip 한다.
+        if: runner.environment == 'github-hosted'
         run: |
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /usr/share/dotnet

@@ -65,3 +65,21 @@
 - 본문: 범위(13 job + timeout, 배포/릴리스 제외), 인지된 제약(단일 러너 직렬·폴백 없음 —
   발생 시 대응), 러너 사양 실증, 멀티 러너·폴백은 후속 이슈 후보로 명시.
 - assignee=edwardkim / milestone=v1.0.0.
+
+## 정정 (구현 후 — CI 실패 대응)
+
+첫 CI 실행에서 두 스텝이 self-hosted 러너의 제한된 sudo(apt 한정)로 실패했다. 조사
+(GitHub 공식 문서)로 양쪽 호환 패턴을 확정해 정정한다:
+
+1. **`install-wasm-pack` 액션** (`sudo mv → /usr/local/bin` 실패):
+   → `~/.cargo/bin` 에 sudo 없이 배치 + `$GITHUB_PATH` 추가. 호스티드·self-hosted 양쪽
+   동일 동작(sudo 의존 제거가 가장 견고 — 분기 불필요). **이 액션은 deploy-pages·
+   npm-publish(호스티드 유지 대상)도 쓰지만, sudo 제거는 그쪽에도 안전한 무해 개선.**
+
+2. **ci.yml 디스크 정리 3곳** (`sudo rm android/dotnet` — 호스티드 이미지 전용):
+   → `if: runner.environment == 'github-hosted'` 로 감싸 self-hosted 에서 skip.
+   호스티드 동작 100% 보존(되돌려도 회귀 없음). `runner.environment` 는 공식 컨텍스트
+   (값 github-hosted/self-hosted), 러너 에이전트가 노출.
+
+원칙: **sudo/시스템경로 의존은 제거(설치 스텝), 호스티드 이미지 구조 전용 스텝은
+조건 분기로 skip(작업지시자 권고).** 두 기법의 역할 분리가 portable 패턴.
