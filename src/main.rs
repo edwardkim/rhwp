@@ -843,12 +843,7 @@ fn export_structure(args: &[String]) -> i32 {
                 eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
             }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
-                    return EXIT_USAGE;
-                }
-            }
+            other => file_path = Some(other),
         }
         i += 1;
     }

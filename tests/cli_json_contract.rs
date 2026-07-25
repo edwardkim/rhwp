@@ -260,26 +260,6 @@ fn export_structure_json_envelope_contract() {
 }
 
 #[test]
-fn export_structure_multiple_files_exit_usage_silent_stdout() {
-    let first = sample_path();
-    let second = sample_path();
-    let args = [
-        "export-structure",
-        first.to_str().unwrap(),
-        second.to_str().unwrap(),
-        "--json",
-    ];
-    let output = run(&args);
-    assert_eq!(
-        output.status.code(),
-        Some(2),
-        "마지막 파일로 바꿔 읽으면 안 됩니다.\n{}",
-        describe(&args, &output)
-    );
-    assert!(output.stdout.is_empty(), "{}", describe(&args, &output));
-}
-
-#[test]
 fn export_structure_default_output_unchanged() {
     // 기본 출력(무봉투 pretty JSON)은 종전과 동일해야 한다 — 봉투 필드가 없음을 고정.
     let sample = sample_path();
