@@ -57,6 +57,11 @@
 
 - **공유 홈 원칙**: 잡 단위 툴 설치 액션 금지(레이스). 툴은 호스트에 1회 설치가 정본.
   현재 상주: rustup/cargo(1.93.1), cargo-nextest 0.9.140, node v24.18.0(nvm).
+- **공유 홈을 변형하는 캐시 액션 금지**: Swatinem/rust-cache 는 save 전 정리로 공유
+  `~/.cargo/bin` 의 상주 툴(cargo-nextest)을 삭제하고 registry 를 prune 한다 — devel push
+  첫 save 에서 실측(run 30145509799, "Cleaning cargo/bin"). rust-cache 는
+  `runner.environment == 'github-hosted'` 게이트 필수. 캐시 저장 쿼터도 read-only 상태라
+  self-hosted 에선 이득이 없다.
 - **Rust 툴체인 버전 범프 절차**: CI 의 toolchain 값을 올리기 전에 호스트에서
   `rustup toolchain install <ver>` 선행 — 동시 잡의 자동 설치 레이스 방지.
 - **러너 설정 파일**: `.path` 는 한 줄 콜론 결합(nvm bin + 시스템 + `/home/app/.cargo/bin`),
