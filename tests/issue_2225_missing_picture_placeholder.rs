@@ -71,7 +71,7 @@ fn issue_2225_export_png_defaults_to_print_equivalent_skia_profile() {
     let default_dir = output_root.join("default");
     let screen_dir = output_root.join("screen");
 
-    let default_output = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let default_output = Command::new(rhwp_bin())
         .arg("export-png")
         .arg(&sample_path)
         .args(["--page", "0", "--output"])
@@ -85,7 +85,7 @@ fn issue_2225_export_png_defaults_to_print_equivalent_skia_profile() {
         String::from_utf8_lossy(&default_output.stderr)
     );
 
-    let screen_output = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let screen_output = Command::new(rhwp_bin())
         .arg("export-png")
         .arg(&sample_path)
         .args(["--page", "0", "--output"])
@@ -136,4 +136,10 @@ fn issue_2225_export_png_defaults_to_print_equivalent_skia_profile() {
         screen_ink > 1_000,
         "explicit screen profile did not emit the missingPicture editor visual: {screen_ink}"
     );
+}
+
+/// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,
+/// nextest가 런타임에 재매핑해 주입하는 CARGO_BIN_EXE_rhwp를 우선한다.
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
 }
