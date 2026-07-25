@@ -81,6 +81,10 @@ fn export_tables_json_envelope_contract() {
         t["paragraph"].as_u64().is_some(),
         "표의 문단 주소가 있어야 인용된다: {t}"
     );
+    assert!(
+        t["control"].as_u64().is_some(),
+        "같은 문단의 여러 표를 구별할 control 주소가 있어야 한다: {t}"
+    );
     let cells = t["cells"].as_array().expect("cells 배열");
     assert_eq!(
         cells.len() as u64,
@@ -168,6 +172,21 @@ fn export_tables_expresses_nested_tables() {
                 .is_some_and(|n| !n.is_empty())
         });
     assert!(nested_found, "중첩 표가 nested 로 표현되어야 합니다: {v}");
+    let nested_has_cell_path = v["tables"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|t| t["cells"].as_array().unwrap().iter())
+        .flat_map(|c| c["nested"].as_array().into_iter().flatten())
+        .any(|t| {
+            t["containerPath"]
+                .as_array()
+                .is_some_and(|path| path.iter().any(|e| e["kind"] == "tableCell"))
+        });
+    assert!(
+        nested_has_cell_path,
+        "중첩 표에는 부모 셀을 가리키는 containerPath 가 필요합니다: {v}"
+    );
 }
 
 #[test]
@@ -179,6 +198,18 @@ fn export_tables_finds_tables_inside_containers() {
     assert!(
         v["tableCount"].as_u64().unwrap() >= 3,
         "컨테이너 안의 표까지 찾아야 합니다 (기대 3+, 최상위만 보면 1): {v}"
+    );
+    let container_path = v["tables"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find_map(|t| t["containerPath"].as_array())
+        .unwrap_or_else(|| panic!("컨테이너 표에는 경로가 필요합니다: {v}"));
+    assert!(
+        container_path
+            .iter()
+            .any(|entry| entry["kind"].is_string() && entry["control"].is_u64()),
+        "컨테이너 표의 kind·control 경로가 필요합니다: {v}"
     );
 }
 

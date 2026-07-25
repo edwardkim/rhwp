@@ -36,6 +36,23 @@ pub struct GridCell {
     pub nested: Vec<TableGrid>,
 }
 
+/// 본문 문단에서 표까지 내려가는 컨테이너 경로 한 단계.
+///
+/// `section`·`paragraph`만으로는 같은 문단에 놓인 여러 글상자·머리말·표 셀을
+/// 구분할 수 없으므로, 컨트롤과 내부 문단(필요 시 셀)을 함께 남긴다.
+#[derive(Debug, Clone, Serialize)]
+pub struct TableContainerRef {
+    /// 컨테이너 종류: textbox, header, footer, footnote, endnote, tableCell.
+    pub kind: &'static str,
+    /// 부모 문단 안의 컨트롤 인덱스.
+    pub control: usize,
+    /// 컨테이너 안의 문단 인덱스.
+    pub paragraph: usize,
+    /// tableCell 경로일 때만 셀 인덱스.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cell: Option<usize>,
+}
+
 /// 표 하나의 격자 표현.
 #[derive(Debug, Clone, Serialize)]
 pub struct TableGrid {
@@ -45,6 +62,11 @@ pub struct TableGrid {
     pub section: usize,
     /// 표를 담은 문단 인덱스 — 인용·역참조용 주소.
     pub paragraph: usize,
+    /// 표 자체의 부모 문단 내 컨트롤 인덱스.
+    pub control: usize,
+    /// 글상자·머리말·각주·표 셀 등 중첩 컨테이너 경로.
+    #[serde(rename = "containerPath", skip_serializing_if = "Vec::is_empty")]
+    pub container_path: Vec<TableContainerRef>,
     /// 행 수.
     pub rows: u16,
     /// 열 수.
@@ -76,13 +98,35 @@ fn paragraphs_text(paragraphs: &[Paragraph]) -> String {
 /// 병적 중첩에서 스택이 터지지 않게 한다.
 const MAX_NEST_DEPTH: usize = 8;
 
-fn nested_tables(cell: &Cell, section: usize, depth: usize) -> Vec<TableGrid> {
+fn nested_tables(
+    cell: &Cell,
+    section: usize,
+    root_paragraph: usize,
+    table_control: usize,
+    cell_index: usize,
+    container_path: &[TableContainerRef],
+    depth: usize,
+) -> Vec<TableGrid> {
     if depth >= MAX_NEST_DEPTH {
         return Vec::new();
     }
     let mut out = Vec::new();
     for (para_idx, para) in cell.paragraphs.iter().enumerate() {
-        collect_from_paragraph(para, section, para_idx, depth + 1, &mut out);
+        let mut cell_path = container_path.to_vec();
+        cell_path.push(TableContainerRef {
+            kind: "tableCell",
+            control: table_control,
+            paragraph: para_idx,
+            cell: Some(cell_index),
+        });
+        collect_from_paragraph(
+            para,
+            section,
+            root_paragraph,
+            &cell_path,
+            depth + 1,
+            &mut out,
+        );
     }
     out
 }
@@ -92,6 +136,8 @@ fn build_grid(
     index: usize,
     section: usize,
     paragraph: usize,
+    control: usize,
+    container_path: &[TableContainerRef],
     depth: usize,
 ) -> TableGrid {
     let rows = table.row_count;
@@ -102,7 +148,8 @@ fn build_grid(
         // 손상 문서의 범위 밖 앵커는 격자를 깨뜨리므로 버린다 —
         // doclang 변환(`convert_table`)이 clamp 로 하는 방어와 같은 취지다.
         .filter(|c| c.row < rows.max(1) && c.col < cols.max(1))
-        .map(|c| GridCell {
+        .enumerate()
+        .map(|(cell_index, c)| GridCell {
             row: c.row,
             col: c.col,
             // 파서가 0을 남기는 경우가 있어 최소 1로 정규화한다 — 소비자가
@@ -111,7 +158,15 @@ fn build_grid(
             col_span: c.col_span.max(1),
             is_header: c.is_header,
             text: paragraphs_text(&c.paragraphs),
-            nested: nested_tables(c, section, depth),
+            nested: nested_tables(
+                c,
+                section,
+                paragraph,
+                control,
+                cell_index,
+                container_path,
+                depth,
+            ),
         })
         .collect();
 
@@ -119,6 +174,8 @@ fn build_grid(
         index,
         section,
         paragraph,
+        control,
+        container_path: container_path.to_vec(),
         rows: table.row_count,
         cols: table.col_count,
         cell_count: cells.len(),
@@ -138,45 +195,89 @@ fn build_grid(
 fn collect_from_paragraph(
     para: &Paragraph,
     section: usize,
-    para_idx: usize,
+    root_paragraph: usize,
+    container_path: &[TableContainerRef],
     depth: usize,
     out: &mut Vec<TableGrid>,
 ) {
     if depth >= MAX_NEST_DEPTH {
         return;
     }
-    for control in &para.controls {
+    for (control_index, control) in para.controls.iter().enumerate() {
         match control {
             Control::Table(table) => {
                 let index = out.len();
-                out.push(build_grid(table, index, section, para_idx, depth));
+                out.push(build_grid(
+                    table,
+                    index,
+                    section,
+                    root_paragraph,
+                    control_index,
+                    container_path,
+                    depth,
+                ));
             }
             // 컨테이너 컨트롤 — 내부 문단을 재귀한다.
             Control::Shape(shape) => {
                 if let Some(tb) = shape.drawing().and_then(|d| d.text_box.as_ref()) {
-                    for p in &tb.paragraphs {
-                        collect_from_paragraph(p, section, para_idx, depth + 1, out);
+                    for (paragraph, p) in tb.paragraphs.iter().enumerate() {
+                        let mut path = container_path.to_vec();
+                        path.push(TableContainerRef {
+                            kind: "textbox",
+                            control: control_index,
+                            paragraph,
+                            cell: None,
+                        });
+                        collect_from_paragraph(p, section, root_paragraph, &path, depth + 1, out);
                     }
                 }
             }
             Control::Header(h) => {
-                for p in &h.paragraphs {
-                    collect_from_paragraph(p, section, para_idx, depth + 1, out);
+                for (paragraph, p) in h.paragraphs.iter().enumerate() {
+                    let mut path = container_path.to_vec();
+                    path.push(TableContainerRef {
+                        kind: "header",
+                        control: control_index,
+                        paragraph,
+                        cell: None,
+                    });
+                    collect_from_paragraph(p, section, root_paragraph, &path, depth + 1, out);
                 }
             }
             Control::Footer(f) => {
-                for p in &f.paragraphs {
-                    collect_from_paragraph(p, section, para_idx, depth + 1, out);
+                for (paragraph, p) in f.paragraphs.iter().enumerate() {
+                    let mut path = container_path.to_vec();
+                    path.push(TableContainerRef {
+                        kind: "footer",
+                        control: control_index,
+                        paragraph,
+                        cell: None,
+                    });
+                    collect_from_paragraph(p, section, root_paragraph, &path, depth + 1, out);
                 }
             }
             Control::Footnote(f) => {
-                for p in &f.paragraphs {
-                    collect_from_paragraph(p, section, para_idx, depth + 1, out);
+                for (paragraph, p) in f.paragraphs.iter().enumerate() {
+                    let mut path = container_path.to_vec();
+                    path.push(TableContainerRef {
+                        kind: "footnote",
+                        control: control_index,
+                        paragraph,
+                        cell: None,
+                    });
+                    collect_from_paragraph(p, section, root_paragraph, &path, depth + 1, out);
                 }
             }
             Control::Endnote(e) => {
-                for p in &e.paragraphs {
-                    collect_from_paragraph(p, section, para_idx, depth + 1, out);
+                for (paragraph, p) in e.paragraphs.iter().enumerate() {
+                    let mut path = container_path.to_vec();
+                    path.push(TableContainerRef {
+                        kind: "endnote",
+                        control: control_index,
+                        paragraph,
+                        cell: None,
+                    });
+                    collect_from_paragraph(p, section, root_paragraph, &path, depth + 1, out);
                 }
             }
             _ => {}
@@ -192,7 +293,7 @@ pub fn extract_tables(doc: &Document) -> Vec<TableGrid> {
     let mut out = Vec::new();
     for (sec_idx, section) in doc.sections.iter().enumerate() {
         for (para_idx, para) in section.paragraphs.iter().enumerate() {
-            collect_from_paragraph(para, sec_idx, para_idx, 0, &mut out);
+            collect_from_paragraph(para, sec_idx, para_idx, &[], 0, &mut out);
         }
     }
     // 컨테이너 재귀로 수집 순서가 흔들릴 수 있으므로 최상위 index 를 다시 매긴다.
