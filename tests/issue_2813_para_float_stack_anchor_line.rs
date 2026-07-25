@@ -53,12 +53,11 @@ fn issue_2813_stack_stays_on_first_page_with_trailing_anchor_line() {
         .iter()
         .position(|l| l.contains("PartialParagraph") && l.contains("pi=0"));
     assert_eq!(table_lines.len(), 2, "1쪽에 pi=0 표 2개가 있어야 함");
-    if let Some(line_idx) = line_item {
-        assert!(
-            table_lines.iter().all(|&t| t < line_idx),
-            "앵커 줄 아이템이 표들 뒤(문서순)에 와야 함 — 표 {:?} vs 줄 {}",
-            table_lines,
-            line_idx
-        );
-    }
+    let line_idx = line_item.expect("1쪽에 pi=0 앵커 줄 PartialParagraph가 있어야 함");
+    assert!(
+        table_lines.iter().all(|&t| t < line_idx),
+        "앵커 줄 아이템이 표들 뒤(문서순)에 와야 함 — 표 {:?} vs 줄 {}",
+        table_lines,
+        line_idx
+    );
 }
