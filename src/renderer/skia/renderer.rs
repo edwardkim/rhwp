@@ -281,6 +281,11 @@ pub struct SkiaLayerRenderer {
     /// key = primary face name (Typeface::family_name), value = Typeface.
     /// SVG 의 `--font-path` 와 같은 패턴으로 ttfs 디렉토리의 한컴 전용 폰트 (HY견명조 등) 도 사용 가능.
     custom_typefaces: HashMap<String, Typeface>,
+    /// [#3300] 번들 최후-폴백 폰트(ttfs/opensource). custom 과 분리해 해석
+    /// 체인에서 custom·시스템 매칭 **뒤**에만 선다 — custom 에 섞으면 깊은
+    /// 폴백(Noto Sans KR)이 시스템 1순위(문서 지정 맑은 고딕 등)를 제치고
+    /// 본문 전체를 폴백 서체로 렌더한다(r23 발산 −6.9pp).
+    bundled_typefaces: HashMap<String, Typeface>,
     /// 시스템에 실제 존재하는 font family 목록.
     /// headless macOS 에서 missing family 를 CoreText 에 넘기면 downloadable font
     /// lookup IPC가 영구 대기할 수 있어, match_family_style 호출 전 사전 필터로 사용한다.
@@ -304,16 +309,17 @@ impl SkiaLayerRenderer {
         SKIA_FONT_BASE.with(|(font_mgr, system_families)| Self {
             font_mgr: font_mgr.clone(),
             custom_typefaces: HashMap::new(),
+            bundled_typefaces: HashMap::new(),
             system_families: system_families.clone(),
         })
     }
 
-    /// 사용자 지정 폰트 디렉토리 (ttfs 등) 의 폰트를 로드하여 Skia 가 직접 사용 가능하게 한다.
-    /// SVG 의 `--font-path` 와 동일한 패턴.
-    pub fn with_font_paths(mut self, font_paths: &[std::path::PathBuf]) -> Self {
-        // [#2864] 조달 순서는 renderer::font_paths 가 단일 정의한다.
-        let search_dirs = crate::renderer::font_paths::search_dirs(font_paths);
-        for dir in &search_dirs {
+    fn load_typefaces_from_dirs(
+        font_mgr: &FontMgr,
+        dirs: &[std::path::PathBuf],
+        into: &mut HashMap<String, Typeface>,
+    ) {
+        for dir in dirs {
             if !dir.exists() {
                 continue;
             }
@@ -329,14 +335,26 @@ impl SkiaLayerRenderer {
                     }
                     if let Ok(data) = std::fs::read(&path) {
                         let skia_data = skia_safe::Data::new_copy(&data);
-                        if let Some(typeface) = self.font_mgr.new_from_data(&skia_data, None) {
+                        if let Some(typeface) = font_mgr.new_from_data(&skia_data, None) {
                             let family = typeface.family_name();
-                            self.custom_typefaces.entry(family).or_insert(typeface);
+                            into.entry(family).or_insert(typeface);
                         }
                     }
                 }
             }
         }
+    }
+
+    /// 사용자 지정 폰트 디렉토리 (ttfs 등) 의 폰트를 로드하여 Skia 가 직접 사용 가능하게 한다.
+    /// SVG 의 `--font-path` 와 동일한 패턴.
+    pub fn with_font_paths(mut self, font_paths: &[std::path::PathBuf]) -> Self {
+        // [#2864] 조달 순서는 renderer::font_paths 가 단일 정의한다.
+        // [#3300] custom(호출자+환경변수)과 번들 최후-폴백을 분리 적재한다 —
+        // 시스템 디렉터리는 어느 쪽에도 넣지 않는다(스타일 매칭은 FontMgr 담당).
+        let custom_dirs = crate::renderer::font_paths::custom_font_dirs(font_paths);
+        Self::load_typefaces_from_dirs(&self.font_mgr, &custom_dirs, &mut self.custom_typefaces);
+        let bundled_dirs = crate::renderer::font_paths::bundled_font_dirs();
+        Self::load_typefaces_from_dirs(&self.font_mgr, &bundled_dirs, &mut self.bundled_typefaces);
         self
     }
 
@@ -615,6 +633,7 @@ impl SkiaLayerRenderer {
             canvas,
             font_mgr: &self.font_mgr,
             custom_typefaces: &self.custom_typefaces,
+            bundled_typefaces: &self.bundled_typefaces,
             system_families: &self.system_families,
             output_options,
         };

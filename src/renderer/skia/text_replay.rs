@@ -22,6 +22,7 @@ pub(super) struct SkiaTextReplay<'a> {
     pub(super) canvas: &'a Canvas,
     pub(super) font_mgr: &'a FontMgr,
     pub(super) custom_typefaces: &'a HashMap<String, Typeface>,
+    pub(super) bundled_typefaces: &'a HashMap<String, Typeface>,
     pub(super) system_families: &'a SystemFontFamilies,
     pub(super) output_options: &'a LayerOutputOptions,
 }
@@ -114,6 +115,16 @@ impl SkiaTextReplay<'_> {
                             family,
                             font_style,
                         ) {
+                            push(&mut chain, &mut seen, tf);
+                        }
+                    }
+                    // [#3300] 번들 최후-폴백(ttfs/opensource)은 custom·시스템
+                    // 뒤에만 선다. #2864 가 번들을 custom 에 섞은 뒤 깊은 폴백
+                    // (Noto Sans KR)이 시스템 1순위를 제치고 본문 전체를 폴백
+                    // 서체로 렌더했다(r23 발산 −6.9pp). 폰트 미설치 환경(#2293)
+                    // 에서는 앞 단계가 비므로 종전대로 번들이 한국어를 구제한다.
+                    for family in &families {
+                        if let Some(tf) = self.bundled_typefaces.get(*family).cloned() {
                             push(&mut chain, &mut seen, tf);
                         }
                     }
