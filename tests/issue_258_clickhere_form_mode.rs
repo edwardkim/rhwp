@@ -535,7 +535,7 @@ fn copying_adjacent_clickheres_preserves_separate_pasted_fields() {
         .expect("copy adjacent clickheres");
     assert_eq!(core.get_clipboard_text_native(), "123123");
 
-    core.split_paragraph_native(0, 0, 9)
+    core.split_paragraph_native(0, 0, 9, None)
         .expect("create paste target paragraph");
     core.paste_internal_native(0, 1, 0)
         .expect("paste adjacent clickheres into next paragraph");

@@ -8,7 +8,7 @@ use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{ParaMeta, Paragraph};
 use crate::renderer::composer::reflow_line_segs;
 
 impl DocumentCore {
@@ -576,9 +576,10 @@ impl DocumentCore {
         control_idx: usize,
         fn_para_idx: usize,
         char_offset: usize,
+        restore_meta: Option<ParaMeta>,
     ) -> Result<String, HwpError> {
         // 문단 분할
-        let new_para = {
+        let mut new_para = {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
             })?;
@@ -614,6 +615,9 @@ impl DocumentCore {
                 }
             }
         };
+        if let Some(meta) = restore_meta {
+            new_para.apply_meta(meta);
+        }
 
         // 새 문단 삽입
         let new_para_idx = fn_para_idx + 1;
@@ -661,6 +665,7 @@ impl DocumentCore {
         }
 
         let merge_offset;
+        let removed_meta;
         {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
@@ -681,6 +686,8 @@ impl DocumentCore {
                     }
                     merge_offset = f.paragraphs[fn_para_idx - 1].text.chars().count();
                     let removed = f.paragraphs.remove(fn_para_idx);
+                    removed_meta =
+                        super::super::helpers::removed_para_meta_field(&removed.capture_meta());
                     f.paragraphs[fn_para_idx - 1].merge_from(&removed);
                 }
                 Control::Endnote(e) => {
@@ -692,6 +699,8 @@ impl DocumentCore {
                     }
                     merge_offset = e.paragraphs[fn_para_idx - 1].text.chars().count();
                     let removed = e.paragraphs.remove(fn_para_idx);
+                    removed_meta =
+                        super::super::helpers::removed_para_meta_field(&removed.capture_meta());
                     e.paragraphs[fn_para_idx - 1].merge_from(&removed);
                 }
                 _ => {
@@ -714,8 +723,8 @@ impl DocumentCore {
             para: para_idx,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"fnParaIndex\":{},\"charOffset\":{}",
-            prev_idx, merge_offset
+            "\"fnParaIndex\":{},\"charOffset\":{}{}",
+            prev_idx, merge_offset, removed_meta
         )))
     }
 }
@@ -762,6 +771,55 @@ mod tests {
         assert_eq!(
             remaining_endnote_number, 1,
             "각주 삭제 후 본문 최상위 미주 번호가 1로 재계산되어야 함"
+        );
+    }
+
+    /// 각주 문단 병합의 undo 가 사라진 문단의 스코프 메타데이터를 되돌리는지 (Task #2342).
+    #[test]
+    fn merge_paragraph_in_footnote_undo_restores_removed_paragraph_meta() {
+        use crate::document_core::helpers::removed_para_meta_of;
+        use crate::model::paragraph::NumberingRestart;
+
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "ab").unwrap();
+        core.insert_footnote_native(0, 0, 0).unwrap();
+        let ctrl_idx = core.document.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::Footnote(_)))
+            .expect("각주 컨트롤");
+
+        core.insert_text_in_footnote_native(0, 0, ctrl_idx, 0, 0, "HelloWorld")
+            .unwrap();
+        core.split_paragraph_in_footnote_native(0, 0, ctrl_idx, 0, 5, None)
+            .unwrap();
+
+        let second = core.get_footnote_paragraph_mut(0, 0, ctrl_idx, 1).unwrap();
+        second.para_shape_id = 20;
+        second.style_id = 5;
+        second.numbering_restart = Some(NumberingRestart::NewStart(3));
+        second.raw_header_extra = vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB];
+        let text_before_merge = second.text.clone();
+
+        let merged = core
+            .merge_paragraph_in_footnote_native(0, 0, ctrl_idx, 1)
+            .unwrap();
+        let meta = removed_para_meta_of(&merged);
+        core.split_paragraph_in_footnote_native(0, 0, ctrl_idx, 0, 5, Some(meta))
+            .unwrap();
+
+        let restored = core.get_footnote_paragraph_mut(0, 0, ctrl_idx, 1).unwrap();
+        assert_eq!(restored.text, text_before_merge);
+        assert_eq!(restored.para_shape_id, 20);
+        assert_eq!(restored.style_id, 5);
+        assert_eq!(
+            restored.numbering_restart,
+            Some(NumberingRestart::NewStart(3))
+        );
+        assert_eq!(
+            restored.raw_header_extra,
+            vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB]
         );
     }
 }

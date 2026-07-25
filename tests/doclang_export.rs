@@ -32,7 +32,7 @@ fn unique_temp_path(label: &str) -> PathBuf {
 }
 
 fn run_export_doclang(input: &Path, output: &Path) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    Command::new(rhwp_bin())
         .arg("export-doclang")
         .arg(input)
         .arg("-o")
@@ -170,4 +170,10 @@ fn export_doclang_never_overwrites_a_hard_link_to_its_input() {
         std::fs::read(&input).expect("read unchanged input"),
         original
     );
+}
+
+/// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,
+/// nextest가 런타임에 재매핑해 주입하는 CARGO_BIN_EXE_rhwp를 우선한다.
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
 }

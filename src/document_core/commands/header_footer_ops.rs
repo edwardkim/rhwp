@@ -9,7 +9,7 @@ use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{ParaMeta, Paragraph};
 use crate::renderer::composer::reflow_line_segs;
 
 /// applyTo u8 값 → HeaderFooterApply 변환
@@ -350,6 +350,7 @@ impl DocumentCore {
         apply_to: u8,
         hf_para_idx: usize,
         char_offset: usize,
+        restore_meta: Option<ParaMeta>,
     ) -> Result<String, HwpError> {
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -380,7 +381,11 @@ impl DocumentCore {
                     hf_para_idx
                 )));
             }
-            paragraphs[hf_para_idx].split_at(char_offset)
+            let mut new_para = paragraphs[hf_para_idx].split_at(char_offset);
+            if let Some(meta) = restore_meta {
+                new_para.apply_meta(meta);
+            }
+            new_para
         };
 
         // 새 문단 삽입
@@ -444,6 +449,7 @@ impl DocumentCore {
 
         // 병합
         let merge_offset;
+        let removed_meta;
         {
             let ctrl = &mut self.document.sections[section_idx].paragraphs[pi].controls[ci];
             let paragraphs = match ctrl {
@@ -459,6 +465,7 @@ impl DocumentCore {
             }
             merge_offset = paragraphs[hf_para_idx - 1].text.chars().count();
             let removed = paragraphs.remove(hf_para_idx);
+            removed_meta = super::super::helpers::removed_para_meta_field(&removed.capture_meta());
             paragraphs[hf_para_idx - 1].merge_from(&removed);
         }
 
@@ -474,8 +481,8 @@ impl DocumentCore {
             para: hf_para_idx,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"hfParaIndex\":{},\"charOffset\":{}",
-            prev_idx, merge_offset
+            "\"hfParaIndex\":{},\"charOffset\":{}{}",
+            prev_idx, merge_offset, removed_meta
         )))
     }
 
@@ -886,7 +893,11 @@ impl DocumentCore {
         };
 
         let hf_para = self.get_hf_paragraph_mut(section_idx, is_header, apply_to, hf_para_idx)?;
-        hf_para.insert_text_at(char_offset, marker);
+        // UI hit-test는 field marker가 치환된 표시 문자열의 offset을 줄 수 있다. 모델
+        // mutation API는 Paragraph의 실제 char index를 계약으로 하므로, clamp된 실제
+        // 삽입 위치를 이벤트와 반환값에도 일관되게 사용한다 (Task #3212 review).
+        let effective_offset = char_offset.min(hf_para.text.chars().count());
+        hf_para.insert_text_at(effective_offset, marker);
 
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
 
@@ -894,11 +905,11 @@ impl DocumentCore {
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
-        let new_offset = char_offset + 1;
+        let new_offset = effective_offset + 1;
         self.event_log.push(DocumentEvent::TextInserted {
             section: section_idx,
             para: 0,
-            offset: char_offset,
+            offset: effective_offset,
             len: 1,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
@@ -1159,6 +1170,27 @@ mod tests {
     }
 
     #[test]
+    fn field_insert_reports_the_clamped_model_offset() {
+        let mut core = make_test_core();
+        core.create_header_footer_native(0, true, 0).unwrap();
+        core.insert_field_in_hf_native(0, true, 0, 0, 0, 3)
+            .expect("file-name field");
+
+        // 파일명 marker는 화면에서 여러 글자로 치환될 수 있다. UI가 그 표시 offset(7)을
+        // 전달해도 모델에는 marker 하나뿐이므로, API 반환은 실제 삽입 직후 model offset=2
+        // 여야 이후 undo가 존재하지 않는 8을 삭제하지 않는다.
+        let result = core
+            .insert_field_in_hf_native(0, true, 0, 0, 7, 1)
+            .expect("page-number field after rendered file-name offset");
+        assert!(result.contains("\"charOffset\":2"));
+
+        let result = core
+            .get_header_footer_para_info_native(0, true, 0, 0)
+            .unwrap();
+        assert!(result.contains("\"charCount\":2"));
+    }
+
+    #[test]
     fn test_delete_text_in_header() {
         let mut core = make_test_core();
         core.create_header_footer_native(0, true, 0).unwrap();
@@ -1183,7 +1215,7 @@ mod tests {
 
         // 문단 분할
         let result = core
-            .split_paragraph_in_header_footer_native(0, true, 0, 0, 5)
+            .split_paragraph_in_header_footer_native(0, true, 0, 0, 5, None)
             .unwrap();
         assert!(result.contains("\"hfParaIndex\":1"));
         assert!(result.contains("\"charOffset\":0"));
@@ -1206,6 +1238,46 @@ mod tests {
             .get_header_footer_para_info_native(0, true, 0, 0)
             .unwrap();
         assert!(result.contains("\"paraCount\":1"));
+    }
+
+    /// 머리말 문단 병합의 undo 가 사라진 문단의 스코프 메타데이터를 되돌리는지 (Task #2342).
+    #[test]
+    fn merge_paragraph_in_header_undo_restores_removed_paragraph_meta() {
+        use crate::document_core::helpers::removed_para_meta_of;
+        use crate::model::paragraph::NumberingRestart;
+
+        let mut core = make_test_core();
+        core.create_header_footer_native(0, true, 0).unwrap();
+        core.insert_text_in_header_footer_native(0, true, 0, 0, 0, "HelloWorld")
+            .unwrap();
+        core.split_paragraph_in_header_footer_native(0, true, 0, 0, 5, None)
+            .unwrap();
+
+        let second = core.get_hf_paragraph_mut(0, true, 0, 1).unwrap();
+        second.para_shape_id = 20;
+        second.style_id = 5;
+        second.numbering_restart = Some(NumberingRestart::ContinuePrevious);
+        second.raw_header_extra = vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB];
+
+        let merged = core
+            .merge_paragraph_in_header_footer_native(0, true, 0, 1)
+            .unwrap();
+        let meta = removed_para_meta_of(&merged);
+        core.split_paragraph_in_header_footer_native(0, true, 0, 0, 5, Some(meta))
+            .unwrap();
+
+        let restored = core.get_hf_paragraph_mut(0, true, 0, 1).unwrap();
+        assert_eq!(restored.text, "World");
+        assert_eq!(restored.para_shape_id, 20);
+        assert_eq!(restored.style_id, 5);
+        assert_eq!(
+            restored.numbering_restart,
+            Some(NumberingRestart::ContinuePrevious)
+        );
+        assert_eq!(
+            restored.raw_header_extra,
+            vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB]
+        );
     }
 
     #[test]

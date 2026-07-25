@@ -15,6 +15,19 @@ import type { DocumentPosition, CellBbox, CellPathLike } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 
 const RHWP_CLIPBOARD_MARKER_RE = /<!--\s*rhwp-studio-clipboard:([A-Za-z0-9._:-]+)\s*-->/;
+const PAGINATION_BOUNDARY_KEYS = new Set([
+  'ArrowLeft',
+  'ArrowRight',
+  'ArrowUp',
+  'ArrowDown',
+  'Home',
+  'End',
+  'PageUp',
+  'PageDown',
+  'Enter',
+  'Tab',
+  'Escape',
+]);
 
 function createRhwpClipboardToken(): string {
   try {
@@ -501,6 +514,10 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     return;
   }
 
+  if (PAGINATION_BOUNDARY_KEYS.has(e.key)) {
+    this.flushDeferredPaginationIfNeeded('before-navigation', false);
+  }
+
   // ─── 머리말/꼬리말 편집 모드 키보드 처리 ──────────────────
   if (this.cursor.isInHeaderFooter()) {
     // Shift+Esc 또는 Esc → 편집 모드 탈출
@@ -637,7 +654,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
           // 문단 시작에서 Backspace → 이전 문단과 병합. 병합 전 커서 (innerParaIdx, 0).
           try {
             const result = this.wasm.mergeParagraphInFootnote(target.sectionIdx, target.paraIdx, target.controlIdx, innerParaIdx);
-            this.executeOperation({ kind: 'record', command: new MergeParagraphInFootnoteCommand(target, innerParaIdx, result.fnParaIndex, result.charOffset, innerParaIdx, 0) });
+            this.executeOperation({ kind: 'record', command: new MergeParagraphInFootnoteCommand(target, innerParaIdx, result.fnParaIndex, result.charOffset, innerParaIdx, 0, result.removedParaMeta) });
             this.cursor.setFnCursorPosition(result.fnParaIndex, result.charOffset);
             this.afterEdit();
           } catch { /* ignore */ }

@@ -3317,7 +3317,11 @@ pub(crate) fn convert_wmf_to_svg(data: &[u8]) -> Option<Vec<u8>> {
 /// source rect (x, y, w, h) 를 계산한다.
 ///
 /// `crop_reference_size`(`imgDim`)가 있으면 문서가 보존한 전체 좌표 범위를
-/// 디코딩 이미지 크기에 대응시킨다. 없으면 [Task #477] 표준 75 HU/px를 쓴다.
+/// 디코딩 이미지 크기에 대응시킨다. 없으면 crop `right`/`bottom` 이 전체 좌표
+/// 범위를 가리킨다고 보고 디코딩 크기에 대응시킨다(적응 폴백) — imgDim 을
+/// 보존하지 않는 구형 HWP5 의 비-96dpi 스캔 그림은 crop 단위가 75 HU/px 가
+/// 아니어서, 고정 75 룰은 src 를 과소 계산해 그림을 확대·절단한다(#3239).
+/// 둘 다 쓸 수 없을 때만 [Task #477] 표준 75 HU/px 를 쓴다.
 /// `shape_attr.orgSz`는 개체 크기라서 crop 좌표 기준으로 사용하면 안 된다.
 pub(crate) fn compute_image_crop_src(
     crop_hu: (i32, i32, i32, i32),
@@ -3331,6 +3335,11 @@ pub(crate) fn compute_image_crop_src(
         .filter(|(w, h)| *w > 0 && *h > 0 && img_w_px > 0.0 && img_h_px > 0.0)
         .map(|(w, h)| (w as f64 / img_w_px, h as f64 / img_h_px))
         .filter(|(sx, sy)| sx.is_finite() && sy.is_finite() && *sx > 0.0 && *sy > 0.0)
+        .or_else(|| {
+            (cr > 0 && cb > 0 && img_w_px > 0.0 && img_h_px > 0.0)
+                .then(|| (cr as f64 / img_w_px, cb as f64 / img_h_px))
+                .filter(|(sx, sy)| sx.is_finite() && sy.is_finite() && *sx > 0.0 && *sy > 0.0)
+        })
         .unwrap_or((HU_PER_PX, HU_PER_PX));
     let src_x = cl as f64 / scale_x;
     let src_y = ct as f64 / scale_y;

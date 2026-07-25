@@ -22,11 +22,11 @@ export const MUTATING_METHODS: readonly string[] = [
   // 쪽/구역/다단
   'setPageDef', 'setSectionDef', 'setSectionDefAll', 'setPageBorderFill', 'setColumnDef',
   // 본문 텍스트/문단
-  'insertText', 'deleteText', 'deleteRange', 'splitParagraph', 'mergeParagraph',
+  'insertText', 'replaceBodyTextLocal', 'deleteText', 'deleteRange', 'splitParagraph', 'mergeParagraph',
   'insertPageBreak', 'insertColumnBreak', 'insertNewNumber', 'setNumberingRestart',
   // 셀 텍스트/문단
   'insertTextInCell', 'insertTextInCellDeferredPagination', 'deleteTextInCell',
-  'deleteTextInCellDeferredPagination',
+  'deleteTextInCellDeferredPagination', 'replaceTextInCellDeferredPagination',
   'deleteRangeInCell', 'insertTextInCellByPath', 'deleteTextInCellByPath', 'deleteRangeInCellByPath',
   'splitParagraphInCell', 'mergeParagraphInCell', 'splitParagraphInCellByPath',
   'mergeParagraphInCellByPath',
