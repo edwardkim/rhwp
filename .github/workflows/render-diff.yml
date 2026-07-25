@@ -61,7 +61,7 @@ concurrency:
 jobs:
   preflight:
     name: Render Diff preflight
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       actions: read
@@ -300,7 +300,7 @@ jobs:
 
   canvas-visual-diff:
     name: Canvas visual diff
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: preflight
     if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
