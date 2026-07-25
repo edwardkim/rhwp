@@ -544,6 +544,9 @@ fn hwp3_default_endnote_shape(doc_info: &Hwp3DocInfo) -> crate::model::footnote:
         separator_color: 0x00000000,
         numbering: FootnoteNumbering::Continue,
         placement: FootnotePlacement::EachColumn,
+        // doc_info offset 108(footnote_between_margin)은 미주에 배선하지 않는다 —
+        // 한컴 HWP3→HWPX 변환 실측(SO-SUEOP: endNotePr betweenNotes=0)과
+        // PDF 쪽범위 골든(issue_1692) 모두 미주 간격 0 을 요구한다 (#3032).
         ..Default::default()
     };
     shape.attr = shape.encode_attr();
@@ -3381,6 +3384,12 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
         1
     };
     section_def.footnote_shape.separator_line_width = 1;
+    // [#3032] doc_info offset 108 "각주와 각주 사이의 간격"(footnote_between_margin)을
+    // footnote_shape.raw_unknown("주석 사이")에 hunit ×4 = HWPUNIT 변환으로 배선한다.
+    // 적용처·스케일 근거는 한컴 자체 HWP3→HWPX 변환 실측(SO-SUEOP.hwpx:
+    // footNotePr betweenNotes=284=71×4 / endNotePr betweenNotes=0) — 각주 전용이며
+    // 미주(endnote_shape)는 0 을 유지한다 (PR #3036 검토에서 적용처 정정).
+    section_def.footnote_shape.raw_unknown = doc_info.footnote_between_margin.saturating_mul(4);
 
     // [Task #877 Stage 4] HWP3 doc_info.border_type / border_margin → SectionDef.page_border_fill
     // 변환. HWP3 spec §3.2 (문서 정보) offset 112-121 의 페이지 테두리 정보. type=0 이면 없음,
@@ -4098,6 +4107,31 @@ mod tests {
             (ps.attr1 >> 28) & 1,
             1,
             "border_connection이 attr1 bit 28로 배선되어야 함"
+        );
+    }
+
+    #[test]
+    fn issue_3032_footnote_between_margin_wires_footnote_shape_only() {
+        // doc_info offset 108 "각주와 각주 사이의 간격"(footnote_between_margin)이 파싱만
+        // 되고 IR 에 배선되지 않던 문제 (#3032, PR #3036 kevin9327 발견). 적용처·스케일은
+        // 한컴 자체 HWP3→HWPX 변환 실측(SO-SUEOP.hwpx)이 정답지다:
+        //   footNotePr betweenNotes=284(=71×4) / endNotePr betweenNotes=0.
+        // 따라서 footnote_shape 에만 hunit ×4 로 배선하고 endnote_shape 는 0 을 유지한다.
+        let doc = crate::parser::hwp3::parse_hwp3(
+            &std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/samples/SO-SUEOP.hwp"))
+                .expect("SO-SUEOP.hwp 읽기"),
+        )
+        .expect("SO-SUEOP.hwp 파싱");
+        let section_def = &doc.sections[0].section_def;
+        assert_eq!(
+            section_def.footnote_shape.between_notes_margin_hu(),
+            284,
+            "각주 raw_unknown 은 71(hunit)×4 = 284(HWPUNIT) 이어야 한다"
+        );
+        assert_eq!(
+            section_def.endnote_shape.between_notes_margin_hu(),
+            0,
+            "미주 raw_unknown 은 한컴 endNotePr 실측대로 0 을 유지해야 한다"
         );
     }
 
