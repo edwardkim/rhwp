@@ -8,7 +8,8 @@
 | 원 head | `d8b8fee39149926be6338f65b9c582c5921aebe7` (2026-07-25 조회 참고값) |
 | 규모 | +1867/-10, 9 files, 6 commits |
 | 관련 이슈 | #3263 (제목·처리 보고서 기준; GitHub closing reference는 없음) |
-| 판단 | 메인터너 보정 후 수용 후보 — 최종 처리 |
+| 통합 보정 | `31e3d5c36` — JSON command와 MCP tool inventory 정합 |
+| 판단 | v2 통합 PR 수용 후보 — 최종 처리 |
 
 ## 범위와 검토
 
@@ -19,7 +20,7 @@
 
 ## 보정과 검증
 
-- `31e3d5c36`는 누락한 command의 JSON capability와 `hwp_export_svg`, `hwp_export_tables`, `hwp_search`,
+- v2의 `31e3d5c36`는 누락한 command의 JSON capability와 `hwp_export_svg`, `hwp_export_tables`, `hwp_search`,
   `hwp_fields`, `hwp_ir_diff` MCP schema를 추가한다. 기존 test가 모든 JSON command의 MCP 노출을 가드한다.
 - direct CLI에서 JSON command 10개와 MCP tool 9개가 모두 확인됐고, `cli_json_contract` 22 passed와 누적
   full release-test 전체 성공을 확인했다.
@@ -27,7 +28,6 @@
 
 ## 권고와 다음 조건
 
-- **권고: 최종 보정 후 수용.** #3258, #3262, #3276, #3282, #3280, #3285, #3288이 merge된 최신 `devel` 위에서만
-  capability manifest를 확정한다. 1,000줄 초과 PR의 보정 범위는 공개 command/MCP inventory 정합으로 한정한다.
-- source head 고정과 사용자 push 승인 뒤 code/test와 docs commit을 분리하고 latest full CI·mergeability·사용자 merge
-  승인을 확인한다.
+- **권고: v2 통합 PR의 최종 보정으로 수용.** #3258, #3262, #3276, #3282, #3280, #3285, #3288 feature가 누적된
+  v2에서 capability manifest를 확정한다. 1,000줄 초과 PR의 보정 범위는 공개 command/MCP inventory 정합으로 한정한다.
+- source head에는 push하지 않고 latest full CI·통합 PR mergeability·사용자 PR·merge 승인을 확인한다.

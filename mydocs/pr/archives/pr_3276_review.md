@@ -8,7 +8,7 @@
 | 원 head | `4458b27a132576b38d9a7c7bb49c14f3a35a96e8` (2026-07-25 조회 참고값) |
 | 규모 | +404/-23, 5 files, 4 commits |
 | 관련 이슈 | #3274 (제목·처리 보고서 기준; GitHub closing reference는 없음) |
-| 판단 | 수용 후보 |
+| 판단 | v2 통합 PR 수용 후보 |
 
 ## 검토와 검증
 
@@ -21,7 +21,6 @@
 
 ## 권고와 다음 조건
 
-- **권고: 수용.** 현재 `MERGEABLE`/`BEHIND`와 CI 성공은 작성 시점 참고값이며, #3262 뒤 최신 head·required CI와
+- **권고: v2 통합 PR로 수용.** 원 PR은 추가 push 없이 보존하고, #3262 뒤 누적된 통합 head의 required CI와
   사용자 merge 승인을 재확인한다.
-- code 보정은 없다. current code head를 검증한 뒤 review·오늘할일만 추가한다면 review-only fast-pass A 조건을
-  사용할 수 있으나, 실제 source SHA와 직전 Build & Test를 push 직전에 판정한다.
+- code 보정은 없다. 통합 PR은 다른 code/test 보정을 포함하므로 review-only fast-pass가 아니라 full CI를 사용한다.

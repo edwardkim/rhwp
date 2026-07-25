@@ -8,7 +8,8 @@
 | 원 head | `e26c9564191ba8e6bcbabc395ad8c2874da241e2` (2026-07-25 조회 참고값) |
 | 규모 | +240/-3, 4 files, 4 commits |
 | 관련 이슈 | #3287 (제목·처리 보고서 기준; GitHub closing reference는 없음) |
-| 판단 | 메인터너 보정 후 수용 후보 |
+| 통합 보정 | `0ee48afa5` — 실패 JSON stdout 0-byte 계약과 help 노출 |
+| 판단 | v2 통합 PR 수용 후보 |
 
 ## 범위와 검토
 
@@ -18,7 +19,7 @@
 
 ## 보정과 검증
 
-- `0ee48afa5`는 JSON mode에서 렌더/쓰기 실패면 stdout을 비워 두고 stderr와 non-zero exit만 남기며, help에
+- v2의 `0ee48afa5`는 JSON mode에서 렌더/쓰기 실패면 stdout을 비워 두고 stderr와 non-zero exit만 남기며, help에
   `--json`을 노출한다. 일반 사람용 실패 요약은 유지한다.
 - 쓰기 불가 output을 통한 direct CLI 재현에서 보정 후 exit 1/stdout 0 bytes를 확인했고,
   `render_manifest_json_contract` 4 passed와 누적 full release-test 전체 성공을 확인했다.
@@ -27,5 +28,5 @@
 
 ## 권고와 다음 조건
 
-- **권고: 보정 후 수용.** #3285 다음 source head의 3-way 일치와 사용자 push 승인 뒤 보정 code/test와 docs를
-  분리 push한다. full CI 성공, 최신 mergeability, 사용자 merge 승인이 필요하다.
+- **권고: v2 통합 PR로 수용.** source branch에는 추가 push하지 않는다. full CI 성공, 통합 PR의 최신
+  mergeability, 사용자 PR·merge 승인이 필요하다.

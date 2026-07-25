@@ -8,7 +8,8 @@
 | 원 head | `f8bd6017245002b99126a08a4b9f60e60549f9f0` (2026-07-25 조회 참고값) |
 | 규모 | +1247/-10, 8 files, 4 commits |
 | 관련 이슈 | #3261 (제목·처리 보고서 기준; GitHub closing reference는 없음) |
-| 판단 | 메인터너 보정 후 수용 후보 |
+| 통합 보정 | `df3797ce4` — `export-structure` 다중 입력을 사용법 오류로 처리 |
+| 판단 | v2 통합 PR 수용 후보 |
 
 ## 범위와 검토
 
@@ -19,12 +20,12 @@
 
 ## 보정과 검증
 
-- 보정 후보 `df3797ce4`는 정확히 한 파일만 허용하고 다중 입력을 stdout 없는 `EXIT_USAGE`로 고정한다.
+- v2의 `df3797ce4`는 정확히 한 파일만 허용하고 다중 입력을 stdout 없는 `EXIT_USAGE`로 고정한다.
 - `cli_json_contract` focused 검증 22 passed와 누적 full release-test 전체 성공을 확인했다.
 - Rust CLI·문서 변경만 있고 renderer·layout·fixture·golden 변경은 없으므로 visual sweep과 baseline 등록은 불필요하다.
 
 ## 권고와 다음 조건
 
-- **권고: #3258 merge 뒤 보정 후 수용.** 1,000줄 초과 PR이므로 보정 범위는 입력 계약으로 한정하고,
-  source-head 3-way 일치 및 사용자 push 승인 뒤에만 contributor branch에 적용한다.
-- `MERGEABLE`/`BEHIND` 및 현재 CI 성공은 참고값이다. 최신 full CI와 merge 조건을 merge 직전에 재확인한다.
+- **권고: #3258 뒤 v2 통합 PR로 수용.** 1,000줄 초과 PR의 보정 범위는 입력 계약으로 한정하며 contributor
+  source head에는 push하지 않는다.
+- 원 PR의 `MERGEABLE`/`BEHIND`와 CI는 참고값이다. 최신 통합 PR의 full CI와 merge 조건을 재확인한다.

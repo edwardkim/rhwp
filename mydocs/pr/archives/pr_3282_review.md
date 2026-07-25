@@ -8,7 +8,7 @@
 | 원 head | `467023e0fe50c76d0dd51f591d83ee67489a9ab6` (2026-07-25 조회 참고값) |
 | 규모 | +391/-1, 5 files, 3 commits |
 | 관련 이슈 | #3281 (제목·처리 보고서 기준; GitHub closing reference는 없음) |
-| 판단 | 수용 후보 |
+| 판단 | v2 통합 PR 수용 후보 |
 
 ## 검토와 검증
 
@@ -20,6 +20,6 @@
 
 ## 권고와 다음 조건
 
-- **권고: 수용.** #3276 뒤 최신 `devel`로 branch freshness를 보장한 뒤 current head·required CI·mergeability와
-  사용자 merge 승인을 다시 확인한다.
-- code 보정은 없다. review-only 문서 추가만 남으면 candidate SHA의 Build & Test 재사용 조건을 확인한다.
+- **권고: v2 통합 PR로 수용.** #3276 뒤 누적된 통합 head의 required CI·mergeability와 사용자 merge 승인을
+  다시 확인한다.
+- code 보정은 없다. 통합 PR은 다른 code/test 보정을 포함하므로 review-only fast-pass가 아니라 full CI를 사용한다.
