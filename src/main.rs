@@ -254,6 +254,27 @@ fn show_mcp_tools() -> i32 {
             serde_json::json!(["batch", "{subcommand}", "--json"]),
             &["schemaVersion", "source", "error", "exitClass"],
         ),
+        tool(
+            "hwp_fill_fields",
+            "HWP 서식(템플릿)의 누름틀에 값을 채워 새 문서를 만든다. 먼저 hwp_fields 로 어떤 필드가 있는지 확인한 뒤 사용한다. dryRun 으로 파일을 만들지 않고 변경 예정만 확인할 수 있다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWP 문서 경로" },
+                    "data": {
+                        "type": "object",
+                        "additionalProperties": { "type": "string" },
+                        "description": "{\"필드이름\":\"값\"} 형태의 채울 값"
+                    },
+                    "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_filled.hwp" },
+                    "dryRun": { "type": "boolean", "description": "true 면 파일을 쓰지 않고 변경 예정만 보고" }
+                },
+                "required": ["path", "data"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "fill-fields", "{path}", "--data", "{data}", "--json"]),
+            &["schemaVersion", "source", "dryRun", "filledCount", "filled", "notFound", "output"],
+        ),
     ];
 
     let manifest = serde_json::json!({
@@ -451,6 +472,23 @@ fn show_capabilities(args: &[String]) -> i32 {
         ),
         cmd("build-from-ingest", "export", "ingest JSON에서 HWPX 생성"),
         cmd("thumbnail", "export", "내장 썸네일(PrvImage) 추출"),
+        // ── 편집 (#3329 Stage 3) ──
+        cmd_json(
+            "edit",
+            "edit",
+            "문서 편집 — fill-fields: 누름틀에 값 채우기(서식 자동 작성/메일머지)",
+            false,
+            &["--data", "-o", "--dry-run", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "dryRun",
+                "filledCount",
+                "filled",
+                "notFound",
+                "output",
+            ],
+        ),
         // ── 배치 ──
         cmd_json(
             "batch",

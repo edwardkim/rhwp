@@ -249,6 +249,7 @@ JSON 계약·종료 코드를 파악하는 입구.
 `{"schemaVersion":"1.0","tool","version","formats","exitCodes","jsonContract","batch","commands":[{name,category,summary,...}]}`
 - `--json` 계약 명령(info/export-text/export-structure/batch)은 `json:true`·`recordFields` 로 상세 서술
 - `--help`(사람용)와 함께 현행화한다 — help 에만 추가된 명령은 드리프트 가드 테스트가 잡는다
+- 편집 명령(`edit`)도 등재된다 — MCP 도구로는 `hwp_fill_fields` 로 노출된다 (#3329)
 
 #### `capabilities --mcp` — MCP 도구 정의 생성
 MCP 서버(및 함수 호출 클라이언트)가 **그대로 등록할 수 있는** 도구 정의를 낸다.
