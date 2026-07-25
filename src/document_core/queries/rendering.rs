@@ -3851,170 +3851,64 @@ impl DocumentCore {
                 carry_last_page_number = last.page_number;
             }
 
-            // 같은 구역 내 머리말/꼬리말 보정:
-            // pagination에서 머리말이 누락된 페이지에 구역의 머리말 컨트롤을 직접 할당
+            // 같은 구역 내 머리말/꼬리말 재선택:
+            // pagination 은 구역 **지역** 쪽번호로 골랐다. 구역 간 쪽번호 carry 가 홀수면
+            // 그 구역 모든 쪽의 홀짝이 뒤집히므로, carry 가 반영된 최종 쪽번호로 다시 고른다.
+            // 규칙은 pagination 과 같은 `ActiveHeaderFooter` 를 쓴다 — 같은 규칙의 사본을
+            // 여기에 따로 두면 홀짝만 보고 구체성을 놓친다 (#3234).
             {
                 use crate::model::header_footer::HeaderFooterApply as HFA;
-                let mut sec_h_odd: Option<HeaderFooterRef> = None;
-                let mut sec_h_even: Option<HeaderFooterRef> = None;
-                let mut sec_h_both: Option<HeaderFooterRef> = None;
-                let mut sec_f_odd: Option<HeaderFooterRef> = None;
-                let mut sec_f_even: Option<HeaderFooterRef> = None;
-                let mut sec_f_both: Option<HeaderFooterRef> = None;
+                use crate::renderer::pagination::{ActiveHeaderFooter, PageItem};
+
+                let mut entries: Vec<(usize, HeaderFooterRef, bool, HFA)> = Vec::new();
                 for (pi, para) in section.paragraphs.iter().enumerate() {
                     for (ci, ctrl) in para.controls.iter().enumerate() {
-                        match ctrl {
-                            Control::Header(h) => {
-                                let r = HeaderFooterRef {
-                                    para_index: pi,
-                                    control_index: ci,
-                                    source_section_index: idx,
-                                };
-                                match h.apply_to {
-                                    HFA::Both => sec_h_both = Some(r),
-                                    HFA::Even => sec_h_even = Some(r),
-                                    HFA::Odd => sec_h_odd = Some(r),
-                                }
-                            }
-                            Control::Footer(f) => {
-                                let r = HeaderFooterRef {
-                                    para_index: pi,
-                                    control_index: ci,
-                                    source_section_index: idx,
-                                };
-                                match f.apply_to {
-                                    HFA::Both => sec_f_both = Some(r),
-                                    HFA::Even => sec_f_even = Some(r),
-                                    HFA::Odd => sec_f_odd = Some(r),
-                                }
-                            }
-                            _ => {}
-                        }
+                        let (is_header, apply_to) = match ctrl {
+                            Control::Header(h) => (true, h.apply_to),
+                            Control::Footer(f) => (false, f.apply_to),
+                            _ => continue,
+                        };
+                        entries.push((
+                            pi,
+                            HeaderFooterRef {
+                                para_index: pi,
+                                control_index: ci,
+                                source_section_index: idx,
+                            },
+                            is_header,
+                            apply_to,
+                        ));
                     }
                 }
-                let has_hf = sec_h_odd.is_some()
-                    || sec_h_even.is_some()
-                    || sec_h_both.is_some()
-                    || sec_f_odd.is_some()
-                    || sec_f_even.is_some()
-                    || sec_f_both.is_some();
-                // 머리말/꼬리말이 정의된 문단이 시작되는 페이지를 찾아
-                // 그 페이지부터만 적용 (정의 이전 페이지에는 미적용)
-                use crate::renderer::pagination::PageItem;
-                let hdr_start_page = [&sec_h_odd, &sec_h_even, &sec_h_both]
-                    .iter()
-                    .filter_map(|r| r.as_ref())
-                    .map(|r| r.para_index)
-                    .min()
-                    .and_then(|hdr_pi| {
-                        result.pages.iter().position(|p| {
-                            p.column_contents.iter().any(|cc| {
-                                cc.items.iter().any(|item| {
-                                    let pi = match item {
-                                        PageItem::FullParagraph { para_index } => Some(*para_index),
-                                        PageItem::PartialParagraph { para_index, .. } => {
-                                            Some(*para_index)
-                                        }
-                                        PageItem::Table { para_index, .. } => Some(*para_index),
-                                        PageItem::PartialTable { para_index, .. } => {
-                                            Some(*para_index)
-                                        }
-                                        PageItem::Shape { para_index, .. } => Some(*para_index),
-                                        PageItem::EndnoteSeparator { .. } => None,
-                                    };
-                                    pi.is_some_and(|pi| pi >= hdr_pi)
-                                })
-                            })
+                let has_header = entries.iter().any(|(_, _, is_header, _)| *is_header);
+                let has_footer = entries.iter().any(|(_, _, is_header, _)| !*is_header);
+
+                let mut active = ActiveHeaderFooter::default();
+                for page in result.pages.iter_mut() {
+                    // 머리말은 정의된 문단이 나온 쪽부터 적용된다.
+                    let page_last_para = page
+                        .column_contents
+                        .iter()
+                        .flat_map(|col| col.items.iter())
+                        .filter_map(|item| match item {
+                            PageItem::FullParagraph { para_index } => Some(*para_index),
+                            PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
+                            PageItem::Table { para_index, .. } => Some(*para_index),
+                            PageItem::PartialTable { para_index, .. } => Some(*para_index),
+                            PageItem::Shape { para_index, .. } => Some(*para_index),
+                            PageItem::EndnoteSeparator { .. } => None,
                         })
-                    })
-                    .unwrap_or(0);
-                let ftr_start_page = [&sec_f_odd, &sec_f_even, &sec_f_both]
-                    .iter()
-                    .filter_map(|r| r.as_ref())
-                    .map(|r| r.para_index)
-                    .min()
-                    .and_then(|ftr_pi| {
-                        result.pages.iter().position(|p| {
-                            p.column_contents.iter().any(|cc| {
-                                cc.items.iter().any(|item| {
-                                    let pi = match item {
-                                        PageItem::FullParagraph { para_index } => Some(*para_index),
-                                        PageItem::PartialParagraph { para_index, .. } => {
-                                            Some(*para_index)
-                                        }
-                                        PageItem::Table { para_index, .. } => Some(*para_index),
-                                        PageItem::PartialTable { para_index, .. } => {
-                                            Some(*para_index)
-                                        }
-                                        PageItem::Shape { para_index, .. } => Some(*para_index),
-                                        PageItem::EndnoteSeparator { .. } => None,
-                                    };
-                                    pi.is_some_and(|pi| pi >= ftr_pi)
-                                })
-                            })
-                        })
-                    })
-                    .unwrap_or(0);
-                if has_hf {
-                    for (page_idx, page) in result.pages.iter_mut().enumerate() {
-                        let is_odd = page.page_number % 2 == 1;
-                        if page.active_header.is_none() && page_idx >= hdr_start_page {
-                            page.active_header = if is_odd {
-                                sec_h_odd.clone().or_else(|| sec_h_both.clone())
-                            } else {
-                                sec_h_even.clone().or_else(|| sec_h_both.clone())
-                            };
-                        } else {
-                            // pagination에서 할당된 머리말의 apply_to가 현재 페이지 홀짝과 맞지 않으면 교체
-                            if let Some(ref hdr_ref) = page.active_header {
-                                if let Some(para) = section.paragraphs.get(hdr_ref.para_index) {
-                                    if let Some(Control::Header(h)) =
-                                        para.controls.get(hdr_ref.control_index)
-                                    {
-                                        let correct = match h.apply_to {
-                                            HFA::Both => true,
-                                            HFA::Odd => is_odd,
-                                            HFA::Even => !is_odd,
-                                        };
-                                        if !correct {
-                                            page.active_header = if is_odd {
-                                                sec_h_odd.clone().or_else(|| sec_h_both.clone())
-                                            } else {
-                                                sec_h_even.clone().or_else(|| sec_h_both.clone())
-                                            };
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if page.active_footer.is_none() && page_idx >= ftr_start_page {
-                            page.active_footer = if is_odd {
-                                sec_f_odd.clone().or_else(|| sec_f_both.clone())
-                            } else {
-                                sec_f_even.clone().or_else(|| sec_f_both.clone())
-                            };
-                        } else {
-                            if let Some(ref ftr_ref) = page.active_footer {
-                                if let Some(para) = section.paragraphs.get(ftr_ref.para_index) {
-                                    if let Some(Control::Footer(f)) =
-                                        para.controls.get(ftr_ref.control_index)
-                                    {
-                                        let correct = match f.apply_to {
-                                            HFA::Both => true,
-                                            HFA::Odd => is_odd,
-                                            HFA::Even => !is_odd,
-                                        };
-                                        if !correct {
-                                            page.active_footer = if is_odd {
-                                                sec_f_odd.clone().or_else(|| sec_f_both.clone())
-                                            } else {
-                                                sec_f_even.clone().or_else(|| sec_f_both.clone())
-                                            };
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        .max();
+                    if let Some(last_pi) = page_last_para {
+                        active.accumulate(&entries, last_pi);
+                    }
+                    let (header, footer) = active.active(page.page_number);
+                    // 이 구역에 없는 종류는 건드리지 않는다 — 앞 구역에서 상속받은 것이 살아 있다.
+                    if has_header {
+                        page.active_header = header;
+                    }
+                    if has_footer {
+                        page.active_footer = footer;
                     }
                 }
             }

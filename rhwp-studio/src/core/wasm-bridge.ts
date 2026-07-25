@@ -20,6 +20,18 @@ import {
   type LocalBodyTextReplaceResult,
 } from './local-text-replace-result';
 
+/**
+ * 문단 병합으로 사라진 문단의 스코프 메타데이터 (Task #2342).
+ *
+ * 병합 결과에 실려 오고 undo 분할에 그대로 되돌려주는 불투명 값이다 — 스튜디오는
+ * 내용을 해석하지 않는다.
+ */
+export type RemovedParaMeta = Record<string, unknown>;
+
+function serializeParaMeta(meta: RemovedParaMeta | undefined): string | undefined {
+  return meta && JSON.stringify(meta);
+}
+
 /** HWPX 비표준 감지 경고 리포트 (#177). */
 export interface ValidationReport {
   /** 경고 총 개수 */
@@ -873,9 +885,9 @@ export class WasmBridge {
     return this.doc.deleteText(sec, para, charOffset, count);
   }
 
-  splitParagraph(sec: number, para: number, charOffset: number): string {
+  splitParagraph(sec: number, para: number, charOffset: number, removedParaMeta?: RemovedParaMeta): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return this.doc.splitParagraph(sec, para, charOffset);
+    return this.doc.splitParagraph(sec, para, charOffset, serializeParaMeta(removedParaMeta));
   }
 
   insertPageBreak(sec: number, para: number, charOffset: number): string {
@@ -1825,12 +1837,12 @@ export class WasmBridge {
     return JSON.parse((this.doc as any).deleteTextInFootnote(sec, para, controlIdx, fnParaIdx, charOffset, count));
   }
 
-  splitParagraphInFootnote(sec: number, para: number, controlIdx: number, fnParaIdx: number, charOffset: number): { ok: boolean; fnParaIndex: number; charOffset: number } {
+  splitParagraphInFootnote(sec: number, para: number, controlIdx: number, fnParaIdx: number, charOffset: number, removedParaMeta?: RemovedParaMeta): { ok: boolean; fnParaIndex: number; charOffset: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse((this.doc as any).splitParagraphInFootnote(sec, para, controlIdx, fnParaIdx, charOffset));
+    return JSON.parse((this.doc as any).splitParagraphInFootnote(sec, para, controlIdx, fnParaIdx, charOffset, serializeParaMeta(removedParaMeta)));
   }
 
-  mergeParagraphInFootnote(sec: number, para: number, controlIdx: number, fnParaIdx: number): { ok: boolean; fnParaIndex: number; charOffset: number } {
+  mergeParagraphInFootnote(sec: number, para: number, controlIdx: number, fnParaIdx: number): { ok: boolean; fnParaIndex: number; charOffset: number; removedParaMeta: RemovedParaMeta } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse((this.doc as any).mergeParagraphInFootnote(sec, para, controlIdx, fnParaIdx));
   }
@@ -2390,9 +2402,9 @@ export class WasmBridge {
     return this.doc.deleteTextInHeaderFooter(sec, isHeader, applyTo, hfParaIdx, charOffset, count);
   }
 
-  splitParagraphInHeaderFooter(sec: number, isHeader: boolean, applyTo: number, hfParaIdx: number, charOffset: number): string {
+  splitParagraphInHeaderFooter(sec: number, isHeader: boolean, applyTo: number, hfParaIdx: number, charOffset: number, removedParaMeta?: RemovedParaMeta): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return this.doc.splitParagraphInHeaderFooter(sec, isHeader, applyTo, hfParaIdx, charOffset);
+    return this.doc.splitParagraphInHeaderFooter(sec, isHeader, applyTo, hfParaIdx, charOffset, serializeParaMeta(removedParaMeta));
   }
 
   mergeParagraphInHeaderFooter(sec: number, isHeader: boolean, applyTo: number, hfParaIdx: number): string {
@@ -2413,6 +2425,17 @@ export class WasmBridge {
   hitTestHeaderFooter(pageNum: number, x: number, y: number): { hit: boolean; isHeader?: boolean; sectionIndex?: number; applyTo?: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.hitTestHeaderFooter(pageNum, x, y));
+  }
+
+  /**
+   * 이 쪽에서 머리말/꼬리말을 편집할 때 대상이 되는 (구역, applyTo).
+   *
+   * 좌표 없이 쪽만으로 묻는다 — 히트테스트(`hitTestHeaderFooter`)가 영역 판정 뒤에 쓰는
+   * 것과 같은 답이다 (Task #3206).
+   */
+  getHeaderFooterEditTarget(pageNum: number, isHeader: boolean): { sectionIndex: number; applyTo: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).getHeaderFooterEditTarget(pageNum, isHeader));
   }
 
   hitTestInHeaderFooter(pageNum: number, isHeader: boolean, x: number, y: number): { hit: boolean; paraIndex?: number; charOffset?: number; cursorRect?: { pageIndex: number; x: number; y: number; height: number } } {

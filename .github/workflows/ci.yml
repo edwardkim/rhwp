@@ -54,6 +54,8 @@ jobs:
   preflight:
     name: CI preflight
     runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 10
     permissions:
       actions: read
       contents: read
@@ -411,6 +413,8 @@ jobs:
   build-test-archive:
     name: Build test archive
     runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 30
     needs: [preflight, lint, frontend-package-gates]
     if: >-
       ${{
@@ -510,6 +514,8 @@ jobs:
   test-shard:
     name: Default-feature tests (shard ${{ matrix.shard }}/8)
     runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 30
     needs: [preflight, native-skia-tests, build-test-archive]
     # [#3266] archive와 Native Skia를 병렬화하되, 두 필수 worker가 모두 성공한
     # 뒤에만 기본 테스트를 실행한다. 따라서 Native 실패 시 archive가 완료돼도 shard는 skip된다.
@@ -586,6 +592,8 @@ jobs:
   lint:
     name: Lint (fmt, clippy, WASM check)
     runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 20
     needs: preflight
     if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
     permissions:
@@ -619,6 +627,8 @@ jobs:
   native-skia-tests:
     name: Native Skia tests
     runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 30
     needs: [preflight, lint, frontend-package-gates]
     # frontend 비대상 job의 skipped는 정상 경로다. 대상 job의 실패/취소와 lint 실패는
     # native-skia 이후 worker 전체에 전파한다.
@@ -691,6 +701,8 @@ jobs:
   frontend-package-gates:
     name: Frontend package gates
     runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 20
     # [#3268] Frontend는 Lint의 산출물을 읽지 않고 독립 runner에서 별도 target/cache를 쓴다.
     # preflight의 fast-pass·영향 판정만 기다려 Lint와 병렬 시작한다. Lint 실패 시 Frontend가
     # 끝날 수는 있지만 Native/archive는 아래 두 worker의 성공을 모두 계속 요구한다.
@@ -789,6 +801,8 @@ jobs:
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 45
     needs:
       - preflight
       - build-test-archive
@@ -906,6 +920,8 @@ jobs:
   wasm-build:
     name: WASM Build
     runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 30
     permissions:
       contents: read
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')

@@ -585,7 +585,7 @@ fn issue_1481_create_table_keeps_first_line_mark_for_escape() {
     );
 
     let enter_result = doc
-        .split_paragraph_native(0, table_para_idx, 0)
+        .split_paragraph_native(0, table_para_idx, 0, None)
         .expect("표 앞 조판부호 위치 Enter");
     let enter_para_idx = issue_1481_json_usize(&enter_result, "paraIdx");
     assert_eq!(
@@ -650,7 +650,7 @@ fn issue_1481_create_table_preserves_user_blank_line_above() {
     use crate::model::control::Control;
 
     let mut doc = HwpDocument::create_empty();
-    doc.split_paragraph_native(0, 0, 0)
+    doc.split_paragraph_native(0, 0, 0, None)
         .expect("사용자가 만든 빈 줄");
     let table_result = doc
         .create_table_ex_native(0, 1, 1, 3, 5, false, None, None)
@@ -18749,7 +18749,7 @@ fn test_diag_double_enter_save() {
     let split_offset = 4; // 4번째 글자 뒤에서 분할 (사용자 시나리오)
 
     // === 엔터 1회 ===
-    let result1 = doc.split_paragraph_native(0, target_para, split_offset);
+    let result1 = doc.split_paragraph_native(0, target_para, split_offset, None);
     assert!(result1.is_ok(), "1차 분할 실패: {:?}", result1.err());
     eprintln!("\n--- 1차 분할 (offset={}) ---", split_offset);
 
@@ -18779,7 +18779,7 @@ fn test_diag_double_enter_save() {
 
     // === 엔터 2회 (새 문단의 시작에서 다시 분할) ===
     let new_para_idx = target_para + 1;
-    let result2 = doc.split_paragraph_native(0, new_para_idx, 0);
+    let result2 = doc.split_paragraph_native(0, new_para_idx, 0, None);
     assert!(result2.is_ok(), "2차 분할 실패: {:?}", result2.err());
     eprintln!("\n--- 2차 분할 (문단[{}], offset=0) ---", new_para_idx);
 
@@ -21270,7 +21270,7 @@ fn test_blank2020_enter_corruption_diagnosis() {
         );
 
         // 엔터 (split at 0)
-        let result = doc.split_paragraph_native(0, 0, 0);
+        let result = doc.split_paragraph_native(0, 0, 0, None);
         eprintln!("  split result: {:?}", result);
 
         // 분할 후 문단 정보
@@ -21354,7 +21354,7 @@ fn test_repeated_enter_on_empty_paragraph() {
     println!("Insert: {}", result);
 
     // 2. 첫 번째 Enter (텍스트 끝에서)
-    let result1 = doc.split_paragraph_native(0, 0, 3).unwrap();
+    let result1 = doc.split_paragraph_native(0, 0, 3, None).unwrap();
     println!("Split 1 (para=0, offset=3): {}", result1);
     assert!(result1.contains("\"ok\":true"));
     assert_eq!(doc.document.sections[0].paragraphs.len(), 2);
@@ -21369,7 +21369,7 @@ fn test_repeated_enter_on_empty_paragraph() {
     );
 
     // 3. 두 번째 Enter (빈 문단에서)
-    let result2 = doc.split_paragraph_native(0, 1, 0).unwrap();
+    let result2 = doc.split_paragraph_native(0, 1, 0, None).unwrap();
     println!("Split 2 (para=1, offset=0): {}", result2);
     assert!(result2.contains("\"ok\":true"));
     assert!(result2.contains("\"paraIdx\":2"));
@@ -21384,7 +21384,7 @@ fn test_repeated_enter_on_empty_paragraph() {
     );
 
     // 4. 세 번째 Enter
-    let result3 = doc.split_paragraph_native(0, 2, 0).unwrap();
+    let result3 = doc.split_paragraph_native(0, 2, 0, None).unwrap();
     println!("Split 3 (para=2, offset=0): {}", result3);
     assert!(result3.contains("\"ok\":true"));
 
@@ -24127,7 +24127,7 @@ fn test_page13_enter_propagation() {
 
     // page 13 (idx=12)의 pi=199 앞에서 엔터
     eprintln!("=== splitParagraph(0, 199, 0) ===");
-    let result = doc.split_paragraph_native(0, 199, 0).unwrap();
+    let result = doc.split_paragraph_native(0, 199, 0, None).unwrap();
     assert!(result.contains("\"ok\":true"));
 
     let pages_after = doc.pagination[0].pages.len();
@@ -24246,7 +24246,9 @@ fn test_page12_enter_table_placement_scan() {
             table_pi_before, has_table_before
         );
 
-        let result = doc.split_paragraph_native(0, split_pi, offset).unwrap();
+        let result = doc
+            .split_paragraph_native(0, split_pi, offset, None)
+            .unwrap();
         assert!(
             result.contains("\"ok\":true"),
             "split failed at pi={}: {}",
@@ -24354,7 +24356,7 @@ fn test_page12_enter_table_placement() {
     );
 
     // pi=199 앞에서 엔터 (pi=199를 분할하여 빈 문단 삽입)
-    let result = doc.split_paragraph_native(0, 199, 0).unwrap();
+    let result = doc.split_paragraph_native(0, 199, 0, None).unwrap();
     assert!(result.contains("\"ok\":true"), "split failed: {}", result);
 
     let pages_after = doc.pagination[0].pages.len();
@@ -24406,7 +24408,7 @@ fn test_split_paragraph_page_count_stability() {
     eprintln!("  pages_before = {}", pages_before);
 
     // pi=199 앞에서 엔터 (offset=0으로 분할)
-    let result = doc.split_paragraph_native(0, 199, 0).unwrap();
+    let result = doc.split_paragraph_native(0, 199, 0, None).unwrap();
     assert!(result.contains("\"ok\":true"), "split failed: {}", result);
 
     let pages_after = doc.pagination.iter().map(|r| r.pages.len()).sum::<usize>();
@@ -24434,7 +24436,7 @@ fn test_logical_offset_insert_after_inline_table() {
 
     // Enter로 새 문단 생성 (기존 컨트롤이 있는 pi=0 대신 깨끗한 pi=1 사용)
     doc.insert_text_native(0, 0, 0, "test").unwrap();
-    doc.split_paragraph_native(0, 0, 4).unwrap();
+    doc.split_paragraph_native(0, 0, 4, None).unwrap();
 
     // pi=1에 "abc" 입력
     doc.insert_text_native(0, 1, 0, "abc").unwrap();
@@ -24509,7 +24511,7 @@ fn test_logical_offset_insert_after_inline_table() {
 
     // ── 핵심 검증: charOffset > text_len으로 직접 삽입 ──
     // 새 문서에서 "가나다" + [표] 구조 생성, charOffset=4로 삽입
-    doc.split_paragraph_native(0, 1, 6).unwrap(); // pi=2 생성
+    doc.split_paragraph_native(0, 1, 6, None).unwrap(); // pi=2 생성
     doc.insert_text_native(0, 2, 0, "가나다").unwrap();
     doc.create_table_ex_native(0, 2, 3, 1, 1, true, Some(&[5000]), None)
         .unwrap();
@@ -24545,7 +24547,7 @@ fn test_create_inline_tac_table() {
     // 1. pi=0에 "TC #20" 입력
     doc.insert_text_native(0, 0, 0, "TC #20").unwrap();
     // 2. Enter → pi=1 생성
-    doc.split_paragraph_native(0, 0, 6).unwrap();
+    doc.split_paragraph_native(0, 0, 6, None).unwrap();
     // 3. pi=1에 "tacglkj 표 3 배치 시작" 입력
     doc.insert_text_native(0, 1, 0, "tacglkj 표 3 배치 시작")
         .unwrap();
@@ -24610,7 +24612,7 @@ fn test_create_inline_tac_table() {
     let pi1_len = crate::document_core::helpers::logical_paragraph_length(
         &doc.document.sections[0].paragraphs[1],
     );
-    doc.split_paragraph_native(0, 1, pi1_len).unwrap();
+    doc.split_paragraph_native(0, 1, pi1_len, None).unwrap();
     // pi=2에 텍스트
     doc.insert_text_native(0, 2, 0, "tacglkj 가나 옮").unwrap();
 

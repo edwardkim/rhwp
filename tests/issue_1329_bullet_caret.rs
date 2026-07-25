@@ -43,7 +43,7 @@ fn issue_1329_bullet_enter_empty_line_caret_stays_after_marker() {
     let split_para = 1;
     let split_offset = paragraph_len(&doc, split_para);
 
-    doc.split_paragraph_native(0, split_para, split_offset)
+    doc.split_paragraph_native(0, split_para, split_offset, None)
         .expect("split bullet paragraph");
 
     let new_para = split_para + 1;
@@ -60,7 +60,7 @@ fn issue_1329_number_enter_empty_line_caret_stays_after_marker() {
     let split_para = 1;
     let split_offset = paragraph_len(&doc, split_para);
 
-    doc.split_paragraph_native(0, split_para, split_offset)
+    doc.split_paragraph_native(0, split_para, split_offset, None)
         .expect("split numbered paragraph");
 
     let new_para = split_para + 1;
@@ -80,7 +80,7 @@ fn issue_1329_plain_empty_paragraph_caret_keeps_original_start() {
         .expect("insert text");
 
     let expected_x = cursor_x(&doc, 0, 0);
-    doc.split_paragraph_native(0, 0, 3)
+    doc.split_paragraph_native(0, 0, 3, None)
         .expect("split plain paragraph");
     let actual_x = cursor_x(&doc, 1, 0);
 

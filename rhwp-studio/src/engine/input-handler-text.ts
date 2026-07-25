@@ -239,7 +239,7 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
       // 문단 시작에서 Backspace → 이전 문단과 병합
       const result = JSON.parse(this.wasm.mergeParagraphInHeaderFooter(target.sectionIdx, isHeader, target.applyTo, paraIdx));
       // Backspace 병합: 병합 전 커서는 (paraIdx, 0).
-      this.executeOperation({ kind: 'record', command: new MergeParagraphInHeaderFooterCommand(target, paraIdx, result.hfParaIndex, result.charOffset, paraIdx, 0) });
+      this.executeOperation({ kind: 'record', command: new MergeParagraphInHeaderFooterCommand(target, paraIdx, result.hfParaIndex, result.charOffset, paraIdx, 0, result.removedParaMeta) });
       this.cursor.setHfCursorPosition(result.hfParaIndex, result.charOffset);
       this.afterEdit();
     }
@@ -305,7 +305,7 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
       } else if (paraIdx + 1 < info.paraCount) {
         // 문단 끝에서 Delete → 다음 문단(paraIdx+1)을 현재 문단으로 병합. 병합 전 커서는 (paraIdx, 끝).
         const result = JSON.parse(this.wasm.mergeParagraphInHeaderFooter(target.sectionIdx, isHeader, target.applyTo, paraIdx + 1));
-        this.executeOperation({ kind: 'record', command: new MergeParagraphInHeaderFooterCommand(target, paraIdx + 1, result.hfParaIndex, result.charOffset, result.hfParaIndex, result.charOffset) });
+        this.executeOperation({ kind: 'record', command: new MergeParagraphInHeaderFooterCommand(target, paraIdx + 1, result.hfParaIndex, result.charOffset, result.hfParaIndex, result.charOffset, result.removedParaMeta) });
         this.cursor.setHfCursorPosition(result.hfParaIndex, result.charOffset);
         this.afterEdit();
       }
