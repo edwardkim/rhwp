@@ -895,6 +895,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 12.0,
             field_marker: Default::default(),
+            display_text: None,
         };
         let mut root = LayerNode::leaf(bbox, None, vec![PaintOp::text_run(bbox, run)]);
         let mut resources = ResourceArena::default();
@@ -948,6 +949,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 12.0,
                 field_marker: Default::default(),
+                display_text: None,
             };
             match case {
                 "bold" => run.style.bold = true,
@@ -1034,6 +1036,7 @@ mod tests {
                         border_fill_id: 0,
                         baseline: 12.0,
                         field_marker: Default::default(),
+                        display_text: None,
                     },
                 )
             })

@@ -1055,6 +1055,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline,
                         field_marker: FieldMarkerType::None,
+                        display_text: None,
                     }),
                     BoundingBox::new(x, y, num_width, line_height),
                 );
@@ -1088,6 +1089,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline,
                         field_marker: FieldMarkerType::None,
+                        display_text: None,
                     }),
                     BoundingBox::new(x, y, width, line_height),
                 );
@@ -1287,6 +1289,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline: line_height,
                         field_marker: FieldMarkerType::None,
+                        display_text: None,
                     }),
                     BoundingBox::new(insert_x, line_y - sup_y_offset, width, line_height),
                 );

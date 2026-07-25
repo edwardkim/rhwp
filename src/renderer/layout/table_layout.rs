@@ -3292,6 +3292,7 @@ impl LayoutEngine {
                                                 border_fill_id: 0,
                                                 baseline: text_baseline,
                                                 field_marker: FieldMarkerType::None,
+                                                display_text: None,
                                             }),
                                             BoundingBox::new(inline_x, text_y, text_w, font_line_h),
                                         );
@@ -3610,6 +3611,7 @@ impl LayoutEngine {
                                                 border_fill_id: 0,
                                                 baseline,
                                                 field_marker: FieldMarkerType::None,
+                                                display_text: None,
                                             }),
                                             BoundingBox::new(run_x, nested_y, run_w, line_h),
                                         );
@@ -3759,6 +3761,7 @@ impl LayoutEngine {
                                 border_fill_id: 0,
                                 baseline: text_baseline,
                                 field_marker: FieldMarkerType::None,
+                                display_text: None,
                             }),
                             BoundingBox::new(inline_x, text_y, text_w, text_h),
                         );

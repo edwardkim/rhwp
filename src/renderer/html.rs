@@ -126,7 +126,7 @@ impl HtmlRenderer {
                 return;
             }
             RenderNodeType::TextRun(run) => {
-                self.draw_text(&run.text, node.bbox.x, node.bbox.y, &run.style);
+                self.draw_text(run.display_or_text(), node.bbox.x, node.bbox.y, &run.style);
                 if self.show_paragraph_marks || self.show_control_codes {
                     let font_size = if run.style.font_size > 0.0 {
                         run.style.font_size

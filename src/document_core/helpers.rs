@@ -822,12 +822,30 @@ pub(crate) fn json_usize(json: &str, key: &str) -> Result<usize, HwpError> {
 }
 
 /// JSON 문자열 이스케이프
+/// JSON 문자열 본문으로 이스케이프한다 (바깥 따옴표는 호출부 몫).
+///
+/// RFC 8259 는 U+0000..=U+001F 를 모두 이스케이프하도록 요구한다. HWP 본문에는 필드
+/// 마커(`\u{0015}`~`\u{0017}`) 같은 제어문자가 그대로 들어 있어, 자주 쓰는 넷만 처리하면
+/// 파서가 거부하는 JSON 이 나간다 (Task #3216).
 pub(crate) fn json_escape(s: &str) -> String {
-    s.replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .replace('\t', "\\t")
+    let mut out = String::with_capacity(s.len());
+    for ch in s.chars() {
+        match ch {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            '\u{08}' => out.push_str("\\b"),
+            '\u{0C}' => out.push_str("\\f"),
+            c if (c as u32) < 0x20 => {
+                use std::fmt::Write;
+                let _ = write!(out, "\\u{:04x}", c as u32);
+            }
+            c => out.push(c),
+        }
+    }
+    out
 }
 
 /// JSON 성공 응답 생성: {"ok":true}

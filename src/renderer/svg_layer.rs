@@ -295,6 +295,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 15.0,
                 field_marker: Default::default(),
+                display_text: None,
             }),
             BoundingBox::new(20.0, 20.0, 60.0, 20.0),
         ));
@@ -419,6 +420,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 16.0,
                 field_marker: Default::default(),
+                display_text: None,
             }),
             BoundingBox::new(10.0, 15.0, 40.0, 20.0),
         ));

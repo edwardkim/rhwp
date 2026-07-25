@@ -304,6 +304,7 @@ fn push_tac_receipt_seal_line(
             border_fill_id: 0,
             baseline,
             field_marker: FieldMarkerType::None,
+            display_text: None,
         }),
         BoundingBox::new(
             col_area.x + (col_area.width - width).max(0.0) / 2.0,
@@ -1202,6 +1203,7 @@ fn push_empty_para_end_mark(
             border_fill_id: 0,
             baseline,
             field_marker: FieldMarkerType::None,
+            display_text: None,
         }),
         BoundingBox::new(x, y, 0.0, line_height),
     );
@@ -2493,31 +2495,54 @@ impl LayoutEngine {
     /// - `\u{0015}` → 현재 쪽번호
     /// - `\u{0016}` → 총 쪽수
     /// - `\u{0017}` → 파일 이름
+    ///
+    /// 치환 결과는 `run.text` 가 아니라 `display_text` 에 넣고, 마커 하나를 제 런으로
+    /// 떼어낸다. `text` 가 모델과 같은 글자 수를 유지해야 `char_start` 와 같은 공간에
+    /// 있고, 그래야 히트테스트가 모델 오프셋을 돌려준다 — `convert_pua_display_text`
+    /// 가 세운 규약과 같다 (Task #3216).
     fn substitute_hf_field_markers(&self, comp: &mut ComposedParagraph, page_number: u32) {
         let total = self.total_pages.get();
         let file_name = self.file_name.borrow();
-        let page_str = page_number.to_string();
-        let total_str = total.to_string();
+
+        let field_value = |ch: char| -> Option<String> {
+            match ch {
+                '\u{0015}' => Some(page_number.to_string()),
+                '\u{0016}' => Some(total.to_string()),
+                '\u{0017}' => Some(file_name.clone()),
+                _ => None,
+            }
+        };
 
         for line in &mut comp.lines {
             let mut new_runs = Vec::new();
             for run in &line.runs {
-                if !run.text.contains('\u{0015}')
-                    && !run.text.contains('\u{0016}')
-                    && !run.text.contains('\u{0017}')
-                {
+                if !run.text.chars().any(|ch| field_value(ch).is_some()) {
                     new_runs.push(run.clone());
                     continue;
                 }
-                // 마커가 포함된 런 → 치환 후 분할
-                let replaced = run
-                    .text
-                    .replace('\u{0015}', &page_str)
-                    .replace('\u{0016}', &total_str)
-                    .replace('\u{0017}', &file_name);
-                let mut new_run = run.clone();
-                new_run.text = replaced;
-                new_runs.push(new_run);
+                // 마커마다 [앞 텍스트][필드][뒤 텍스트] 로 쪼갠다. 필드 런은 모델 1자에
+                // 표시값 N자라, 캐럿이 필드 안으로 들어가지 않고 앞뒤로만 놓인다.
+                let mut plain = String::new();
+                for ch in run.text.chars() {
+                    let Some(value) = field_value(ch) else {
+                        plain.push(ch);
+                        continue;
+                    };
+                    if !plain.is_empty() {
+                        let mut before = run.clone();
+                        before.text = std::mem::take(&mut plain);
+                        new_runs.push(before);
+                    }
+                    let mut field = run.clone();
+                    field.text = ch.to_string();
+                    field.display_text = Some(value);
+                    new_runs.push(field);
+                }
+                if !plain.is_empty() {
+                    let mut after = run.clone();
+                    after.text = plain;
+                    new_runs.push(after);
+                }
             }
             line.runs = new_runs;
         }
@@ -3632,6 +3657,7 @@ impl LayoutEngine {
                     border_fill_id: 0,
                     baseline: font_size,
                     field_marker: FieldMarkerType::None,
+                    display_text: None,
                 }),
                 BoundingBox::new(x, y, text_width, font_size),
             );
@@ -8813,6 +8839,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline,
                         field_marker: FieldMarkerType::None,
+                        display_text: None,
                     }),
                     BoundingBox::new(wrap_text_x, table_y_start, 0.0, line_height),
                 );
@@ -8932,6 +8959,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline,
                         field_marker: FieldMarkerType::None,
+                        display_text: None,
                     }),
                     BoundingBox::new(mark_x, para_y, 0.0, line_height),
                 );

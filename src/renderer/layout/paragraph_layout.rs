@@ -1585,6 +1585,7 @@ impl LayoutEngine {
                                             .unwrap_or(0),
                                         baseline: run_bbox_h,
                                         field_marker: FieldMarkerType::None,
+                                        display_text: None,
                                     }),
                                     BoundingBox::new(line_run_x, current_y, run_width, run_bbox_h),
                                 );
@@ -1699,6 +1700,7 @@ impl LayoutEngine {
                                         .unwrap_or(0),
                                     baseline: run_bbox_h,
                                     field_marker: FieldMarkerType::None,
+                                    display_text: None,
                                 }),
                                 BoundingBox::new(line_run_x, current_y, run_width, run_bbox_h),
                             );
@@ -1766,6 +1768,7 @@ impl LayoutEngine {
                                     .unwrap_or(0),
                                 baseline: remaining_bbox_h,
                                 field_marker: FieldMarkerType::None,
+                                display_text: None,
                             }),
                             BoundingBox::new(line_run_x, current_y, run_width, remaining_bbox_h),
                         );
@@ -2460,6 +2463,7 @@ impl LayoutEngine {
                     border_fill_id: 0,
                     baseline,
                     field_marker: FieldMarkerType::None,
+                    display_text: None,
                 }),
                 BoundingBox::new(marker_x, marker_y, 0.0, line_height),
             );
@@ -2760,6 +2764,7 @@ impl LayoutEngine {
                                     self.dpi,
                                 ),
                                 field_marker: FieldMarkerType::None,
+                                display_text: None,
                             }),
                             BoundingBox::new(
                                 marker_x,
@@ -3401,10 +3406,18 @@ impl LayoutEngine {
             let needs_distribute = alignment == Alignment::Distribute;
 
             let has_tabs = comp_line.runs.iter().any(|r| r.text.contains('\t'));
+            // 자간은 **그려지는 글자**에 나눠 붙으므로 폭(`total_text_width`)과 같은
+            // 텍스트로 센다. 머리말 필드처럼 모델 1자가 표시 N자면 모델로 세었을 때
+            // 글자당 몫이 N배로 부풀어 글자가 흩어진다 (Task #3216).
             let total_char_count: usize = comp_line
                 .runs
                 .iter()
-                .map(|r| r.text.chars().filter(|c| *c != '\t').count())
+                .map(|r| {
+                    effective_text_for_metrics(r)
+                        .chars()
+                        .filter(|c| *c != '\t')
+                        .count()
+                })
                 .sum();
             let suppress_cell_overflow_spacing =
                 cell_ctx.is_some() && total_text_width > available_width * 1.15;
@@ -3568,6 +3581,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::None,
+                            display_text: None,
                         }),
                         BoundingBox::new(x, y, num_width, line_height),
                     );
@@ -3687,6 +3701,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::ShapeMarker(*spos),
+                            display_text: None,
                         }),
                         BoundingBox::new(x, y, mw, line_height),
                     );
@@ -4099,6 +4114,7 @@ impl LayoutEngine {
                     border_fill_id: 0,
                     baseline: default_height * 0.85,
                     field_marker: FieldMarkerType::None,
+                    display_text: None,
                 }),
                 BoundingBox::new(col_area.x, y, col_area.width, default_height),
             );
@@ -4203,6 +4219,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::ShapeMarker(*spos),
+                            display_text: None,
                         }),
                         BoundingBox::new(x, y, mw, line_height),
                     );
@@ -4595,6 +4612,7 @@ impl LayoutEngine {
                             run_id,
                             RenderNodeType::TextRun(TextRunNode {
                                 text: run.text.clone(),
+                                display_text: run.display_text.clone(),
                                 style: text_style,
                                 char_shape_id: Some(run.char_style_id),
                                 para_shape_id: Some(composed.para_style_id),
@@ -4648,6 +4666,7 @@ impl LayoutEngine {
                                         border_fill_id: run_border_fill_id,
                                         baseline,
                                         field_marker: FieldMarkerType::None,
+                                        display_text: None,
                                     }),
                                     BoundingBox::new(sub_x, y, seg_w, line_height),
                                 );
@@ -4713,6 +4732,7 @@ impl LayoutEngine {
                                     border_fill_id: run_border_fill_id,
                                     baseline,
                                     field_marker: FieldMarkerType::None,
+                                    display_text: None,
                                 }),
                                 BoundingBox::new(sub_x, y, seg_w, line_height),
                             );
@@ -4796,6 +4816,7 @@ impl LayoutEngine {
                                     border_fill_id: run_border_fill_id,
                                     baseline,
                                     field_marker: FieldMarkerType::None,
+                                    display_text: None,
                                 }),
                                 BoundingBox::new(x, y, seg_w, line_height),
                             );
@@ -5173,6 +5194,7 @@ impl LayoutEngine {
                                 border_fill_id: run_border_fill_id,
                                 baseline,
                                 field_marker: FieldMarkerType::None,
+                                display_text: None,
                             }),
                             BoundingBox::new(x, y, seg_w, line_height),
                         );
@@ -5203,6 +5225,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::None,
+                            display_text: None,
                         }),
                         BoundingBox::new(x, y, 0.0, line_height),
                     );
@@ -5354,6 +5377,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::FieldBegin,
+                            display_text: None,
                         }),
                         BoundingBox::new(marker_x, y, marker_w, line_height),
                     );
@@ -5388,6 +5412,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::None,
+                            display_text: None,
                         }),
                         BoundingBox::new(anchor_x, y, 0.0, line_height),
                     );
@@ -5427,6 +5452,7 @@ impl LayoutEngine {
                                 border_fill_id: 0,
                                 baseline,
                                 field_marker: FieldMarkerType::None,
+                                display_text: None,
                             }),
                             BoundingBox::new(guide_x, y, guide_width, line_height),
                         );
@@ -5466,6 +5492,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::FieldEnd,
+                            display_text: None,
                         }),
                         BoundingBox::new(marker_x, y, marker_w, line_height),
                     );
@@ -5517,6 +5544,7 @@ impl LayoutEngine {
                                 border_fill_id: 0,
                                 baseline,
                                 field_marker: FieldMarkerType::None,
+                                display_text: None,
                             }),
                             BoundingBox::new(marker_x, y, marker_w, line_height),
                         );
@@ -5739,7 +5767,13 @@ impl LayoutEngine {
                 seg_start_est = tac_rel;
             }
             // 마지막 세그먼트 처리
-            let remaining_est: String = run_chars_est[seg_start_est..].iter().collect();
+            let mut remaining_est: String = run_chars_est[seg_start_est..].iter().collect();
+            // TAC 로 쪼개지지 않은 런은 통째로 재므로, 표시 길이가 모델과 다르면
+            // **그려지는 글자**로 잰다. 이 자연 폭이 정렬 간격 분배의 기준이라, 모델로
+            // 재면 남는 폭이 과대평가돼 글자가 흩어진다 (Task #3216).
+            if seg_start_est == 0 && run.display_text.is_some() {
+                remaining_est = effective_text_for_metrics(run).to_string();
+            }
             ts.line_x_offset = est_x;
             // [Task #874 #2] composer lang split (예: "F3→Alt+I" → "F3"/"→"/"Alt+I")
             // 으로 auto_tab_right post-tab 콘텐츠가 후속 run 으로 흩어진 경우, 현재
@@ -6023,6 +6057,7 @@ impl LayoutEngine {
                 border_fill_id: 0,
                 baseline: vars.baseline,
                 field_marker: FieldMarkerType::None,
+                display_text: None,
             }),
             BoundingBox::new(
                 empty_line_mark_x,
@@ -6097,6 +6132,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline: line_height * 0.85,
                         field_marker: FieldMarkerType::None,
+                        display_text: None,
                     }),
                     BoundingBox::new(col_area.x, y_clamped, col_area.width, line_height),
                 );
@@ -6139,6 +6175,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline: default_height * 0.8,
                         field_marker: FieldMarkerType::None,
+                        display_text: None,
                     }),
                     BoundingBox::new(col_area.x, y, col_area.width, default_height),
                 );

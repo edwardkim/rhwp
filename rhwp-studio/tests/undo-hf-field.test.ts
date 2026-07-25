@@ -44,4 +44,9 @@ test('insertHfField 는 마커 길이를 실측해 record 로 기록한다', () 
   assert.match(block, /result\.charOffset - charOffset/, '마커 길이는 결과 오프셋 차이로 실측');
   // 성공했을 때만 기록(no-op 엔트리 방지).
   assert.match(block, /if \(result\.ok && result\.charOffset !== undefined\)/, '성공 시에만 기록');
+  // [#3216] HF 히트테스트가 필드를 모델 1자로 세므로 캐럿이 이미 모델 오프셋이다.
+  // 뮤테이션 경계에서 다시 정규화하면 근인을 남긴 채 증상만 가리게 된다.
+  assert.match(block, /const charOffset = cursor\.hfCharOffset/, '캐럿 오프셋을 그대로 사용');
+  assert.doesNotMatch(block, /Math\.min\(/, '뮤테이션 경계 clamp 없음');
+  assert.doesNotMatch(block, /getHeaderFooterParaInfo\(/, '모델 길이 조회 왕복 없음');
 });

@@ -770,6 +770,19 @@ pub struct TextRunNode {
     pub baseline: f64,
     /// 누름틀 필드 마커: 이 TextRun 위치에 표시할 필드 경계 마커
     pub field_marker: FieldMarkerType,
+    /// 표시 텍스트 (`Some` 이면 그리기·폭 계산은 본 필드를 쓴다).
+    ///
+    /// `text` 는 모델과 같은 문자 수를 유지해 `char_start` 와 같은 공간에 있도록 한다.
+    /// 머리말/꼬리말 필드처럼 모델 1자가 화면에서 N자로 보이는 경우가 여기 해당한다
+    /// (`ComposedTextRun::display_text` 와 같은 규약, Task #3216).
+    pub display_text: Option<String>,
+}
+
+impl TextRunNode {
+    /// 그리기·폭 계산에 쓸 텍스트. 오프셋 계산에는 쓰지 않는다 — 그쪽은 `text` 다.
+    pub fn display_or_text(&self) -> &str {
+        self.display_text.as_deref().unwrap_or(&self.text)
+    }
 }
 
 /// 누름틀 필드 조판부호 마커 유형

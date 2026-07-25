@@ -893,7 +893,8 @@ impl DocumentCore {
         };
 
         let hf_para = self.get_hf_paragraph_mut(section_idx, is_header, apply_to, hf_para_idx)?;
-        hf_para.insert_text_at(char_offset, marker);
+        // 반환·이벤트는 실제로 삽입된 위치를 쓴다 — 요청 값과 다를 수 있다.
+        let inserted_at = hf_para.insert_text_at(char_offset, marker);
 
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
 
@@ -901,11 +902,11 @@ impl DocumentCore {
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
-        let new_offset = char_offset + 1;
+        let new_offset = inserted_at + 1;
         self.event_log.push(DocumentEvent::TextInserted {
             section: section_idx,
             para: 0,
-            offset: char_offset,
+            offset: inserted_at,
             len: 1,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
@@ -1163,6 +1164,28 @@ mod tests {
 
         let result = core.get_header_footer_native(0, true, 0).unwrap();
         assert!(result.contains("Hello"));
+    }
+
+    /// 필드 삽입의 반환 오프셋은 실제로 삽입된 자리를 가리킨다.
+    ///
+    /// 반환값이 요청 값을 그대로 되돌려 주면 undo 가 존재하지 않는 자리를 지우려 해
+    /// 무언 no-op 이 된다 (Task #3216).
+    #[test]
+    fn field_insert_reports_where_the_marker_actually_landed() {
+        let mut core = make_test_core();
+        core.create_header_footer_native(0, true, 0).unwrap();
+        core.insert_field_in_hf_native(0, true, 0, 0, 0, 3)
+            .expect("file-name field");
+
+        let result = core
+            .insert_field_in_hf_native(0, true, 0, 0, 1, 1)
+            .expect("page-number field after the file-name marker");
+        assert!(result.contains("\"charOffset\":2"), "{result}");
+
+        let info = core
+            .get_header_footer_para_info_native(0, true, 0, 0)
+            .unwrap();
+        assert!(info.contains("\"charCount\":2"), "{info}");
     }
 
     #[test]

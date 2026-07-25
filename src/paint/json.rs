@@ -1520,7 +1520,7 @@ fn bounded_text_prefix(text: &str) -> (String, bool) {
 }
 
 fn bounded_display_text_for_run(run: &TextRunNode) -> (String, bool) {
-    let (source_prefix, source_complete) = bounded_text_prefix(&run.text);
+    let (source_prefix, source_complete) = bounded_text_prefix(run.display_or_text());
     let display_text = expand_pua_display_text(&source_prefix);
     let (display_prefix, display_complete) = bounded_text_prefix(&display_text);
     (display_prefix, source_complete && display_complete)
@@ -1534,7 +1534,7 @@ fn write_bounded_text_positions(buf: &mut String, text: &str, style: &TextStyle)
 }
 
 fn display_text_for_text_run(run: &TextRunNode) -> Option<String> {
-    let display_text = expand_pua_display_text(&run.text);
+    let display_text = expand_pua_display_text(run.display_or_text());
     (display_text != run.text.as_str()).then_some(display_text)
 }
 
@@ -3124,6 +3124,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 13.0,
                 field_marker: FieldMarkerType::FieldBegin,
+                display_text: None,
             },
         );
         let rect = PaintOp::rectangle(
@@ -3264,6 +3265,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 13.0,
                 field_marker: FieldMarkerType::None,
+                display_text: None,
             },
         );
         let tree = PageLayerTree::new(
@@ -3326,6 +3328,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 13.0,
                 field_marker: FieldMarkerType::None,
+                display_text: None,
             },
         );
         let tree = PageLayerTree::new(
@@ -3379,6 +3382,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 11.0,
             field_marker: FieldMarkerType::FieldEnd,
+            display_text: None,
         };
         let bbox = BoundingBox::new(10.0, 20.0, 40.0, 16.0);
         let tree = PageLayerTree::new(
@@ -3471,6 +3475,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 20.0,
             field_marker: FieldMarkerType::None,
+            display_text: None,
         };
         let bbox = BoundingBox::new(0.0, 0.0, 80.0, 24.0);
         let tree = PageLayerTree::new(
@@ -3523,6 +3528,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 13.0,
             field_marker: FieldMarkerType::None,
+            display_text: None,
         };
         let tree = PageLayerTree::new(
             120.0,
@@ -3584,6 +3590,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 10.0,
             field_marker: FieldMarkerType::None,
+            display_text: None,
         };
         let bbox = BoundingBox::new(0.0, 0.0, 100.0, 14.0);
         let tree = PageLayerTree::new(
@@ -3696,6 +3703,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 12.0,
                 field_marker: FieldMarkerType::None,
+                display_text: None,
             },
         );
         let glyph_run = PaintOp::GlyphRun {
@@ -3875,6 +3883,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 12.0,
                 field_marker: FieldMarkerType::None,
+                display_text: None,
             },
         );
         let outline = PaintOp::GlyphOutline {
