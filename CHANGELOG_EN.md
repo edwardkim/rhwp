@@ -86,6 +86,43 @@ This document records the major changes of the rhwp project.
 - PR review workflow split into conditional guides; serialization invalidation
   contract documented; bulk-PR triage tooling; permanent edit-sweep harness.
 
+### Contributors
+
+200 contributor PRs merged in this cycle (since v0.7.19; GitHub handles,
+alphabetical):
+
+- @chrisryugj — permanent edit-sweep harness (#2458), one-command OVR
+  self-verification (#2449) *(first contribution — welcome!)*
+- @cskwork — embed loadFile dialog deadlock prevention (#2518)
+- @donggyun112 — template PrvText placeholder fix (#2388), section start-mark
+  migration (#2386) *(first contribution — welcome!)*
+- @humdrum00001010 — studio responsiveness / Korean input latency (#3255)
+- @jangster77 (Taesup Jang) — 42 integration & review-record PRs: #3216
+  header/footer field integration (#3325), conditional PR-review guides
+  (#3299), bulk intake integrations
+- @johndoekim — 3D / ofPie chart rendering (#2500), host save notification
+  `notifySaved` (#2660)
+- @kevin9327 — 88 PRs: HWPX/HWP5 save round-trip preservation series
+  (batches A–M, G3–G12), HWP3 IR wiring series, WMF/CFB/EMF hardening,
+  8 CLI JSON tools (#3304), studio input clamp / dialog sync series
+- @lpaiu-cs — 18-PR undo fidelity series: dialog/object history recording
+  (#2337–#2378), footnote/endnote/equation & header-footer structural
+  recording (#3208), cell-merge paragraph meta restore (#3324),
+  header/footer display_text separation (#3323)
+- @myeolinmalchi — export-doclang: DocLang v0.6 XML export (#3132)
+  *(first contribution — welcome!)*
+- @planet6897 (Jaeook Ryu) — 28 PRs: 10k Korean oracle survey r16–r23 series
+  (font-clean baseline), para-float anchor-line trust (#3270), crop fallback
+  regression restore (#3241), render/layout integrations, font fallbacks
+  (#3300/#3314)
+- @postmelee (Taegyu Lee) — 13 PRs: wasm-pack 0.15.0 pin / toolchain
+  alignment (#2420), repeated table-header grid (#2512), Native Skia cache
+  writer recovery (#3123), Chrome extension settings hardening (#2658)
+- @seo-rii — CanvasKit series: positioned text replay (#2939),
+  document-scoped auto selection (#2394), direct PageLayerTree PDF (#2372)
+- @sxngt — embed loadFile `suppressDialogs` option (#2390)
+  *(first contribution — welcome!)*
+
 ## [0.7.19] — 2026-07-17
 
 > Patch following v0.7.18 — honoring stored geometry signals (intra-paragraph vpos

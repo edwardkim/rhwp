@@ -79,6 +79,35 @@
 - PR 검토 워크플로를 조건별 가이드로 분리, 직렬화 무효화 계약 canonical 문서,
   대량 PR 분류 도구(pr_triage.sh), 편집-스윕 상설화.
 
+### 기여자
+
+이번 사이클(v0.7.19 이후)에 머지된 기여자 PR 200건 (GitHub 핸들, 알파벳순):
+
+- @chrisryugj — 편집-스윕 상설화(#2458), OVR 자가 검증 원커맨드화(#2449) *(첫 기여 환영!)*
+- @cskwork — embed loadFile 기본 대화상자 교착 방지(#2518)
+- @donggyun112 — 템플릿 문서 PrvText placeholder 보정(#2388), 구역 시작 표식 이관(#2386) *(첫 기여 환영!)*
+- @humdrum00001010 — studio 반응성·한글 입력 지연 개선(#3255)
+- @jangster77 (Taesup Jang) — 외부 PR 통합·검토 기록 연작 42건: #3216 머리말/꼬리말
+  필드 통합(#3325), PR 검토 워크플로 조건별 가이드 분리(#3299), kevin9327·planet6897
+  대량 유입 통합 다수
+- @johndoekim — 3D 입체·ofPie 보조플롯 차트 렌더(#2500), 호스트 저장 통지 notifySaved(#2660)
+- @kevin9327 — 88건: HWPX/HWP5 저장 왕복 보존 축배치 연작(A~M·G3~G12), HWP3 IR 배선
+  연작, WMF/CFB/EMF 악성 입력 방어, CLI JSON 조회·검증 도구 8종(#3304), studio 입력
+  clamp·대화상자 동기화 연작
+- @lpaiu-cs — undo 충실도 연작 18건: 다이얼로그·개체 조작 히스토리 기록(#2337~#2378),
+  각주·미주·수식·HF 구조 조작 기록(#3208), 셀 병합 문단 속성 복원(#3324),
+  머리말/꼬리말 display_text 분리(#3323)
+- @myeolinmalchi — export-doclang: DocLang v0.6 XML 내보내기(#3132) *(첫 기여 환영!)*
+- @planet6897 (Jaeook Ryu) — 28건: 10k 한글 오라클 서베이 r16~r23 연작(폰트-클린
+  기준선 확립), para-float 앵커-줄 신뢰(#3270), crop 폴백 회귀 복원(#3241), 렌더·
+  레이아웃 정합 통합 다수, 폰트 폴백(#3300/#3314)
+- @postmelee (Taegyu Lee) — 13건: wasm-pack 0.15.0 핀·toolchain 정합(#2420), 반복 표
+  헤더 격자 정합(#2512), Native Skia cache writer 복구(#3123), chrome 확장 설정
+  저장·복구 방어(#2658), 프론트 구조 정리
+- @seo-rii — CanvasKit 연작: positioned text replay(#2939), document-scoped 자동
+  선택(#2394), direct PageLayerTree PDF(#2372)
+- @sxngt — embed loadFile suppressDialogs 옵션(#2390) *(첫 기여 환영!)*
+
 ## [0.7.19] — 2026-07-17
 
 > v0.7.18 후속 patch — 저장 지오메트리 신호(intra-para vpos 리셋/되감김) 존중 계보의
