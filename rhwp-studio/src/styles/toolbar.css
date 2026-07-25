@@ -3,12 +3,15 @@
    ================================================================ */
 #icon-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: stretch;
+  align-content: flex-start;
   padding: 2px 8px;
   background: linear-gradient(to bottom, var(--ui-toolbar-bg-start), var(--ui-toolbar-bg-end));
   border-bottom: 1px solid var(--ui-border);
   flex-shrink: 0;
-  height: 56px;
+  height: auto;
+  min-height: 56px;
   overflow: visible;
 }
 
@@ -16,6 +19,7 @@
   display: flex;
   align-items: stretch;
   gap: 0;
+  flex-shrink: 0;
 }
 
 .tb-mode-group {
@@ -115,6 +119,7 @@
 /* 메뉴 드롭다운 전용 추가 아이콘 위치 */
 .icon-new-doc       { background-position: calc(-40px * 0) calc(-40px * 0); }
 .icon-save          { background-position: calc(-40px * 1) calc(-40px * 0); }
+.icon-pdf           { background-position: calc(-40px * 3) calc(-40px * 0); }
 .icon-undo          { background-position: calc(-40px * 0) calc(-40px * 1); }
 .icon-redo          { background-position: calc(-40px * 1) calc(-40px * 1); }
 .icon-print         { background-position: calc(-40px * 4) calc(-40px * 0); }

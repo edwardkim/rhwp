@@ -64,7 +64,7 @@ impl LayerBuilder {
     }
 
     fn build_node(&mut self, node: &RenderNode) -> Option<LayerNode> {
-        if !node.visible {
+        if !node.visible || (node.editor_only && !self.profile.shows_editor_visuals()) {
             return None;
         }
 
@@ -854,6 +854,46 @@ mod tests {
         assert!(!ops
             .iter()
             .any(|op| matches!(op, PaintOp::TextDecoration { .. })));
+    }
+
+    #[test]
+    fn excludes_editor_only_nodes_from_print_profile() {
+        let editor_line = RenderNode::new(
+            1,
+            RenderNodeType::Line(crate::renderer::render_tree::LineNode::new(
+                0.0,
+                0.0,
+                20.0,
+                0.0,
+                crate::renderer::LineStyle::default(),
+            )),
+            BoundingBox::new(0.0, 0.0, 20.0, 1.0),
+        )
+        .with_editor_only();
+
+        let mut tree = PageRenderTree::new(0, 100.0, 100.0);
+        tree.root.children.push(editor_line);
+
+        let screen = LayerBuilder::new(RenderProfile::Screen).build(&tree);
+        let print = LayerBuilder::new(RenderProfile::Print).build(&tree);
+
+        let LayerNodeKind::Group {
+            children: screen_children,
+            ..
+        } = &screen.root.kind
+        else {
+            panic!("expected screen root group");
+        };
+        let LayerNodeKind::Group {
+            children: print_children,
+            ..
+        } = &print.root.kind
+        else {
+            panic!("expected print root group");
+        };
+
+        assert_eq!(screen_children.len(), 1);
+        assert!(print_children.is_empty());
     }
 
     #[test]

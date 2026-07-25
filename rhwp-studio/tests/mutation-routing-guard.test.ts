@@ -162,7 +162,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   'src/engine/input-handler-mouse.ts': 3,
   'src/engine/input-handler-picture.ts': 11,
   'src/engine/input-handler-table.ts': 7,
-  'src/engine/input-handler-text.ts': 14,
+  'src/engine/input-handler-text.ts': 11, // #2424: raw IME delete를 command 공통 typed helper로 이관
 };
 
 test('뮤테이션 표면 원장: 신규·증가 사이트는 baseline 갱신을 강제한다', () => {

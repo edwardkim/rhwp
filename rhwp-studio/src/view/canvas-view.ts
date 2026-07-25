@@ -15,6 +15,14 @@ import {
 } from './renderer-session';
 import { applyGridOverlayBox, createGridClipCornerOverlay, createGridOverlay } from './grid-overlay';
 import { getGridViewSettings } from './grid-settings';
+import {
+  calculateAnchoredScroll,
+  CENTER_ZOOM_ANCHOR,
+  normalizeZoomAnchor,
+  type ZoomAnchor,
+  type ZoomPageBox,
+} from './zoom-anchor.ts';
+import { SubsecondRevisionWatcher } from '@/core/subsecond-runtime';
 
 const TEXT_EDIT_STATIC_LAYER_VERIFY_DELAY_MS = 800;
 const AUTO_RENDERER_RESELECTION_DELAY_MS = 300;
@@ -34,6 +42,7 @@ export class CanvasView {
   private pageRenderer: PageRenderer;
   private viewportManager: ViewportManager;
   private coordinateSystem: CoordinateSystem;
+  private subsecondRevisionWatcher: SubsecondRevisionWatcher;
 
   private scrollContent: HTMLElement;
   private pages: PageInfo[] = [];
@@ -49,6 +58,7 @@ export class CanvasView {
   private activeRendererDecisionKey: string | null = null;
   private autoRendererReselectionTimer: ReturnType<typeof setTimeout> | null = null;
   private documentLoadPrepared = false;
+  private layoutViewportSize = { width: 0, height: 0 };
   private disposed = false;
 
   constructor(
@@ -62,21 +72,37 @@ export class CanvasView {
     this.pageRenderer = new PageRenderer(wasm);
     this.viewportManager = new ViewportManager(eventBus);
     this.coordinateSystem = new CoordinateSystem(this.virtualScroll);
+    this.subsecondRevisionWatcher = new SubsecondRevisionWatcher(
+      wasm,
+      () => eventBus.emit('document-view-changed', 'subsecond-renderer'),
+    );
+    this.subsecondRevisionWatcher.start();
 
     this.scrollContent = container.querySelector('#scroll-content')!;
     this.viewportManager.attachTo(container);
 
     this.unsubscribers.push(
-      eventBus.on('viewport-scroll', () => this.updateVisiblePages()),
+      eventBus.on('viewport-scroll', () => {
+        if (!this.viewportManager.isZoomAnimating()) this.updateVisiblePages();
+      }),
       eventBus.on('viewport-resize', () => this.onViewportResize()),
-      eventBus.on('zoom-changed', (zoom) => this.onZoomChanged(zoom as number)),
+      eventBus.on('zoom-changed', (zoom, anchor) => {
+        this.onZoomChanged(
+          zoom as number,
+          normalizeZoomAnchor(anchor as Partial<ZoomAnchor> | undefined),
+        );
+      }),
       eventBus.on('document-page-invalidated', (payload) => {
         void this.refreshInvalidatedPageForMutation(payload);
       }),
       eventBus.on('document-changed', () => {
         void this.refreshPagesForMutation();
       }),
-      eventBus.on('document-view-changed', () => {
+      eventBus.on('document-view-changed', (source) => {
+        if (source === 'subsecond-renderer') {
+          this.refreshPages();
+          return;
+        }
         void this.refreshPagesForRevision();
       }),
       eventBus.on('grid-view-changed', () => this.refreshGridOverlays()),
@@ -124,6 +150,9 @@ export class CanvasView {
     }
 
     this.recalcLayout();
+    this.viewportManager.setScrollLeft(
+      this.virtualScroll.getCenteredScrollLeft(this.layoutViewportSize.width),
+    );
 
     this.container.scrollTop = 0;
     this.updateVisiblePages();
@@ -254,10 +283,11 @@ export class CanvasView {
   /** 레이아웃을 재계산한다 (줌/리사이즈 공통) */
   private recalcLayout(): void {
     const zoom = this.viewportManager.getZoom();
-    const { width: vpWidth } = this.viewportManager.getViewportSize();
-    this.virtualScroll.setPageDimensions(this.pages, zoom, vpWidth);
+    const viewport = this.viewportManager.getViewportSize();
+    this.virtualScroll.setPageDimensions(this.pages, zoom, viewport.width);
     this.scrollContent.style.height = `${this.virtualScroll.getTotalHeight()}px`;
     this.scrollContent.style.width = `${this.virtualScroll.getTotalWidth()}px`;
+    this.layoutViewportSize = viewport;
 
     // 그리드 모드 CSS 클래스 토글
     this.scrollContent.classList.toggle('grid-mode', this.virtualScroll.isGridMode());
@@ -398,6 +428,7 @@ export class CanvasView {
       canvas.style.left = '50%';
       canvas.style.transform = 'translateX(-50%)';
     }
+    canvas.style.transformOrigin = '';
 
     // WASM이 Canvas 크기를 자동 설정한다 (물리 픽셀 = 페이지크기 × zoom × DPR)
     let renderResult: PageRenderResult = { needsTextEditStaticLayerVerification: false };
@@ -449,6 +480,8 @@ export class CanvasView {
     // CSS 표시 크기 = 물리 픽셀 / DPR (= 페이지크기 × zoom)
     renderedCanvas.style.width = `${renderedCanvas.width / dpr}px`;
     renderedCanvas.style.height = `${renderedCanvas.height / dpr}px`;
+    renderedCanvas.style.transformOrigin = '';
+    renderedCanvas.dataset.rhwpRenderedZoom = String(zoom);
     this.renderGridOverlay(pageIdx, renderedCanvas);
     if (renderResult.needsTextEditStaticLayerVerification) {
       this.scheduleTextEditStaticLayerVerification(pageIdx);
@@ -483,15 +516,53 @@ export class CanvasView {
 
   /** 뷰포트 리사이즈 처리 */
   private onViewportResize(): void {
+    const nextViewport = this.viewportManager.getViewportSize();
     if (this.pages.length === 0) {
+      this.layoutViewportSize = nextViewport;
       this.updateVisiblePages();
       return;
     }
+
+    const previousViewport = this.layoutViewportSize;
+    const canPreserveCenter = previousViewport.width > 0 && previousViewport.height > 0;
+    const scrollLeft = this.viewportManager.getScrollX();
+    const scrollTop = this.viewportManager.getScrollY();
+    const focusPage = canPreserveCenter
+      ? this.virtualScroll.getPageAtPoint(
+        scrollLeft + previousViewport.width / 2,
+        scrollTop + previousViewport.height / 2,
+      )
+      : 0;
+    const oldBox = canPreserveCenter
+      ? this.getZoomPageBox(focusPage, previousViewport.width)
+      : null;
 
     // 그리드 모드에서 열 수가 바뀔 수 있으므로 레이아웃 재계산
     const wasGrid = this.virtualScroll.isGridMode();
     this.recalcLayout();
     const isGrid = this.virtualScroll.isGridMode();
+
+    if (oldBox) {
+      const newBox = this.getZoomPageBox(focusPage, nextViewport.width);
+      const nextScroll = calculateAnchoredScroll(
+        oldBox,
+        newBox,
+        {
+          width: previousViewport.width,
+          height: previousViewport.height,
+          scrollLeft,
+          scrollTop,
+        },
+        CENTER_ZOOM_ANCHOR,
+        nextViewport,
+      );
+      this.viewportManager.setScrollLeft(nextScroll.scrollLeft);
+      this.viewportManager.setScrollTop(nextScroll.scrollTop);
+    } else {
+      this.viewportManager.setScrollLeft(
+        this.virtualScroll.getCenteredScrollLeft(nextViewport.width),
+      );
+    }
 
     if (wasGrid || isGrid) {
       // 그리드 관련 변경 시 전체 재렌더링
@@ -503,28 +574,54 @@ export class CanvasView {
     this.updateVisiblePages();
   }
 
+  private getZoomPageBox(pageIdx: number, viewportWidth: number): ZoomPageBox {
+    const layoutWidth = Math.max(viewportWidth, this.virtualScroll.getTotalWidth());
+    return {
+      left: this.virtualScroll.getPageLeftResolved(pageIdx, layoutWidth),
+      top: this.virtualScroll.getPageOffset(pageIdx),
+      width: this.virtualScroll.getPageWidth(pageIdx),
+      height: this.virtualScroll.getPageHeight(pageIdx),
+    };
+  }
+
   /** 줌 변경 처리 */
-  private onZoomChanged(zoom: number): void {
+  private onZoomChanged(zoom: number, anchor: ZoomAnchor): void {
     if (this.pages.length === 0) return;
 
-    // 현재 보이는 페이지 기억
-    const scrollY = this.viewportManager.getScrollY();
-    const { height: vpHeight } = this.viewportManager.getViewportSize();
-    const vpCenter = scrollY + vpHeight / 2;
-    const focusPage = this.virtualScroll.getPageAtY(vpCenter);
-    const oldOffset = this.virtualScroll.getPageOffset(focusPage);
-    const relativeY = vpCenter - oldOffset;
-    const oldHeight = this.virtualScroll.getPageHeight(focusPage);
-    const ratio = oldHeight > 0 ? relativeY / oldHeight : 0;
+    const scrollTop = this.viewportManager.getScrollY();
+    const scrollLeft = this.viewportManager.getScrollX();
+    const { width: vpWidth, height: vpHeight } = this.viewportManager.getViewportSize();
+    const anchorDocumentX = scrollLeft + vpWidth * anchor.x;
+    const anchorDocumentY = scrollTop + vpHeight * anchor.y;
+    const focusPage = this.virtualScroll.getPageAtPoint(anchorDocumentX, anchorDocumentY);
+    const oldBox = this.getZoomPageBox(focusPage, vpWidth);
 
-    // 페이지 크기 재계산
     this.recalcLayout();
 
-    // 스크롤 위치 보정
-    const newOffset = this.virtualScroll.getPageOffset(focusPage);
-    const newHeight = this.virtualScroll.getPageHeight(focusPage);
-    const newCenter = newOffset + newHeight * ratio;
-    this.viewportManager.setScrollTop(newCenter - vpHeight / 2);
+    const newBox = this.getZoomPageBox(focusPage, vpWidth);
+    const nextScroll = calculateAnchoredScroll(
+      oldBox,
+      newBox,
+      {
+        width: vpWidth,
+        height: vpHeight,
+        scrollLeft,
+        scrollTop,
+      },
+      anchor,
+    );
+    this.viewportManager.setScrollLeft(nextScroll.scrollLeft);
+    this.viewportManager.setScrollTop(nextScroll.scrollTop);
+
+    this.eventBus.emit('zoom-level-display', zoom);
+
+    if (this.viewportManager.isZoomAnimating()) {
+      this.cancelPendingTextEditRefresh();
+      this.cancelTextEditStaticLayerVerification();
+      this.cancelPendingPrefetch();
+      this.updateRenderedPageZoomPreview();
+      return;
+    }
 
     // 모든 Canvas 재렌더링
     this.cancelPendingTextEditRefresh();
@@ -532,8 +629,36 @@ export class CanvasView {
     this.releaseAllRenderedPages();
     this.pageRenderer.cancelAll();
     this.updateVisiblePages();
+  }
 
-    this.eventBus.emit('zoom-level-display', zoom);
+  private updateRenderedPageZoomPreview(): void {
+    const zoom = this.viewportManager.getZoom();
+    for (const pageIdx of this.canvasPool.activePages) {
+      const canvas = this.canvasPool.getCanvas(pageIdx);
+      if (!canvas) continue;
+      const renderedZoom = Number(canvas.dataset.rhwpRenderedZoom);
+      const scale = Number.isFinite(renderedZoom) && renderedZoom > 0
+        ? zoom / renderedZoom
+        : 1;
+      this.applyZoomPreviewBox(canvas, pageIdx, scale);
+      this.scrollContent.querySelectorAll<HTMLElement>(
+        `[data-rhwp-overlay-page="${pageIdx}"], [data-rhwp-grid-page="${pageIdx}"]`,
+      ).forEach((element) => this.applyZoomPreviewBox(element, pageIdx, scale));
+    }
+  }
+
+  private applyZoomPreviewBox(element: HTMLElement, pageIdx: number, scale: number): void {
+    element.style.top = `${this.virtualScroll.getPageOffset(pageIdx)}px`;
+    const pageLeft = this.virtualScroll.getPageLeft(pageIdx);
+    if (pageLeft >= 0) {
+      element.style.left = `${pageLeft}px`;
+      element.style.transform = `scale(${scale})`;
+      element.style.transformOrigin = 'top left';
+    } else {
+      element.style.left = '50%';
+      element.style.transform = `translateX(-50%) scale(${scale})`;
+      element.style.transformOrigin = 'top center';
+    }
   }
 
   /** 편집 후 보이는 페이지를 재렌더링한다 */
@@ -747,6 +872,7 @@ export class CanvasView {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.subsecondRevisionWatcher.stop();
     this.rendererSelectionEpoch += 1;
     this.documentLoadPrepared = false;
     this.cancelAutoRendererReselection();

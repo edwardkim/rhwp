@@ -309,6 +309,8 @@ pub struct HeightMeasurer {
     dpi: f64,
     is_hwp3_variant: bool,
     use_hwp3_origin_flow_spacing_before: bool,
+    render_normalization:
+        std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
 }
 
 impl HeightMeasurer {
@@ -317,6 +319,9 @@ impl HeightMeasurer {
             dpi,
             is_hwp3_variant: false,
             use_hwp3_origin_flow_spacing_before: false,
+            render_normalization: std::sync::Arc::new(
+                crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
+            ),
         }
     }
 
@@ -328,6 +333,14 @@ impl HeightMeasurer {
 
     pub fn with_hwp3_origin_flow_spacing_before(mut self, enabled: bool) -> Self {
         self.use_hwp3_origin_flow_spacing_before = enabled;
+        self
+    }
+
+    pub fn with_render_normalization(
+        mut self,
+        overlay: std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
+    ) -> Self {
+        self.render_normalization = overlay;
         self
     }
 
@@ -873,7 +886,7 @@ impl HeightMeasurer {
         styles: &ResolvedStyleSet,
         depth: usize,
         // [#2195] 부모 셀 전폭(px, 스트레치 기준). 0.0 = 미적용.
-        parent_cell_w: f64,
+        _parent_cell_w: f64,
     ) -> f64 {
         if depth >= Self::MAX_NESTED_DEPTH {
             return 0.0;
@@ -885,8 +898,8 @@ impl HeightMeasurer {
                     .iter()
                     .filter_map(|ctrl| {
                         if let Control::Table(nested) = ctrl {
-                            let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi);
-                            let stretch = 1.0; // [#2195] 스트레치는 render_normalized 로 일원화
+                            let stretch =
+                                self.render_normalization.nested_table_width_scale(nested);
                             let mt =
                                 self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch);
                             Some(mt.total_height)
@@ -910,7 +923,7 @@ impl HeightMeasurer {
         styles: &ResolvedStyleSet,
         depth: usize,
         // [#2195] 부모 셀 전폭(px, 스트레치 기준). 0.0 = 미적용.
-        parent_cell_w: f64,
+        _parent_cell_w: f64,
     ) -> f64 {
         if depth >= Self::MAX_NESTED_DEPTH {
             return 0.0;
@@ -923,8 +936,8 @@ impl HeightMeasurer {
                     .iter()
                     .filter_map(|ctrl| {
                         if let Control::Table(nested) = ctrl {
-                            let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi);
-                            let stretch = 1.0; // [#2195] 스트레치는 render_normalized 로 일원화
+                            let stretch =
+                                self.render_normalization.nested_table_width_scale(nested);
                             let mt =
                                 self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch);
                             // [#2148 실험] NO_LS 중첩 표 선언 신뢰 — 성장 전용 max.
@@ -965,6 +978,8 @@ impl HeightMeasurer {
         // 저장 487.6px vs 실효 ~506px, 근거설명 셀 41줄 오라클 + 휴먼명조 사다리).
         width_scale: f64,
     ) -> MeasuredTable {
+        let width_scale =
+            width_scale.max(self.render_normalization.nested_table_width_scale(table));
         if depth >= Self::MAX_NESTED_DEPTH {
             let rc = table.row_count as usize;
             let (rbs, rbe) = compute_row_blocks(table, rc);
@@ -1309,11 +1324,11 @@ impl HeightMeasurer {
                         .flat_map(|p| p.controls.iter())
                         .filter_map(|ctrl| {
                             if let Control::Table(nested) = ctrl {
-                                let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi);
                                 // 한글 실효폭은 부모 셀 **전폭**(pad 미차감, 76076
                                 // 근거설명 셀: 유효 ~504px = 부모 w 506.2, inner 492.6
                                 // 으로는 L0 40자 수용 불가) 기준.
-                                let stretch = 1.0; // [#2195] 스트레치는 render_normalized 로 일원화
+                                let stretch =
+                                    self.render_normalization.nested_table_width_scale(nested);
                                 let mt = self.measure_table_impl(
                                     nested,
                                     0,

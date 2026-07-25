@@ -2,15 +2,18 @@
 
 use super::super::helpers::get_textbox_from_shape;
 use super::super::queries::field_query::rebuild_char_offsets;
-use crate::document_core::{ActiveFieldInfo, DocumentCore};
+use crate::document_core::{
+    ActiveFieldInfo, DeferredPaginationDescriptor, DeferredPaginationTargetStatus, DocumentCore,
+};
 use crate::error::HwpError;
 use crate::model::control::{Control, FieldType};
 use crate::model::event::DocumentEvent;
 use crate::model::page::ColumnDef;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{ParaMeta, Paragraph};
 use crate::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use crate::renderer::composer::{compose_paragraph, reflow_line_segs, ComposedParagraph};
 use crate::renderer::page_layout::PageLayoutInfo;
+use crate::renderer::pagination::PageItem;
 use crate::renderer::style_resolver::{resolve_styles, ResolvedStyleSet};
 
 fn recalculate_cell_paragraph_vpos(
@@ -122,6 +125,150 @@ fn relative_paragraph_flow_advance(paragraph: &Paragraph) -> Option<i64> {
     Some(
         i64::from(last.vertical_pos) + i64::from(last.line_height) + i64::from(last.line_spacing)
             - i64::from(first.vertical_pos),
+    )
+}
+
+fn mix_structure_fingerprint(hash: &mut u64, value: usize) {
+    for byte in value.to_le_bytes() {
+        *hash ^= u64::from(byte);
+        *hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+    }
+}
+
+fn control_structure_tag(control: &Control) -> usize {
+    match control {
+        Control::SectionDef(_) => 1,
+        Control::ColumnDef(_) => 2,
+        Control::Table(_) => 3,
+        Control::Shape(_) => 4,
+        Control::Picture(_) => 5,
+        Control::Header(_) => 6,
+        Control::Footer(_) => 7,
+        Control::Footnote(_) => 8,
+        Control::Endnote(_) => 9,
+        Control::AutoNumber(_) => 10,
+        Control::NewNumber(_) => 11,
+        Control::PageNumberPos(_) => 12,
+        Control::Bookmark(_) => 13,
+        Control::Hyperlink(_) => 14,
+        Control::Ruby(_) => 15,
+        Control::CharOverlap(_) => 16,
+        Control::PageHide(_) => 17,
+        Control::HiddenComment(_) => 18,
+        Control::Equation(_) => 19,
+        Control::Field(_) => 20,
+        Control::Form(_) => 21,
+        Control::Unknown(_) => 22,
+    }
+}
+
+fn mix_table_structure_fingerprint(hash: &mut u64, table: &crate::model::table::Table) {
+    mix_structure_fingerprint(hash, table.row_count as usize);
+    mix_structure_fingerprint(hash, table.col_count as usize);
+    mix_structure_fingerprint(hash, table.cells.len());
+    for cell in &table.cells {
+        mix_structure_fingerprint(hash, cell.row as usize);
+        mix_structure_fingerprint(hash, cell.col as usize);
+        mix_structure_fingerprint(hash, cell.row_span as usize);
+        mix_structure_fingerprint(hash, cell.col_span as usize);
+        mix_structure_fingerprint(hash, cell.paragraphs.len());
+        for paragraph in &cell.paragraphs {
+            mix_structure_fingerprint(hash, paragraph.controls.len());
+            for control in &paragraph.controls {
+                mix_structure_fingerprint(hash, control_structure_tag(control));
+                if let Control::Table(nested) = control {
+                    mix_table_structure_fingerprint(hash, nested);
+                }
+            }
+        }
+    }
+}
+
+fn table_structure_fingerprint(table: &crate::model::table::Table) -> u64 {
+    // 고정 FNV-1a 조합으로 row/column/span뿐 아니라 셀 문단과 control 구조도 묶는다.
+    // Stage B fast path는 text-only edit만 허용하므로 구조가 달라지면 반드시 fallback한다.
+    let mut hash = 0xcbf2_9ce4_8422_2325_u64;
+    mix_table_structure_fingerprint(&mut hash, table);
+    hash
+}
+
+fn target_table_first_global_page(
+    core: &DocumentCore,
+    section_index: usize,
+    para_index: usize,
+    control_index: usize,
+) -> Option<u32> {
+    let mut global_page = 0_u32;
+    for (result_section, result) in core.pagination.iter().enumerate() {
+        for page in &result.pages {
+            if result_section == section_index
+                && page.column_contents.iter().any(|column| {
+                    column.items.iter().any(|item| {
+                        matches!(
+                            item,
+                            PageItem::Table {
+                                para_index: item_para,
+                                control_index: item_control,
+                            }
+                                | PageItem::PartialTable {
+                                    para_index: item_para,
+                                    control_index: item_control,
+                                    ..
+                            } if *item_para == para_index && *item_control == control_index
+                        )
+                    })
+                })
+            {
+                return Some(global_page);
+            }
+            global_page = global_page.saturating_add(1);
+        }
+    }
+    None
+}
+
+impl DocumentCore {
+    /// [#2424] resumable step 시작 전에 descriptor가 여전히 같은 text-only table edit을
+    /// 가리키는지 좌표로 다시 조회한다. 불일치하면 shadow state를 commit하지 않고 기존
+    /// full pagination으로 fallback해야 한다.
+    pub(crate) fn deferred_pagination_target_status(
+        &self,
+        descriptor: &DeferredPaginationDescriptor,
+    ) -> DeferredPaginationTargetStatus {
+        if descriptor.revision != self.deferred_pagination_revision
+            || self.deferred_pagination_descriptor.as_ref() != Some(descriptor)
+        {
+            return DeferredPaginationTargetStatus::Superseded;
+        }
+
+        let Some(section) = self.document.sections.get(descriptor.section_index) else {
+            return DeferredPaginationTargetStatus::TargetMissing;
+        };
+        let Some(paragraph) = section.paragraphs.get(descriptor.para_index) else {
+            return DeferredPaginationTargetStatus::TargetMissing;
+        };
+        let Some(Control::Table(table)) = paragraph.controls.get(descriptor.control_index) else {
+            return DeferredPaginationTargetStatus::TargetMissing;
+        };
+        if table
+            .cells
+            .get(descriptor.cell_index)
+            .and_then(|cell| cell.paragraphs.get(descriptor.cell_para_index))
+            .is_none()
+        {
+            return DeferredPaginationTargetStatus::TargetMissing;
+        }
+        if table_structure_fingerprint(table) != descriptor.table_structure_fingerprint {
+            return DeferredPaginationTargetStatus::StructureChanged;
+        }
+        DeferredPaginationTargetStatus::Current
+    }
+}
+
+fn body_paragraph_flow_signature(paragraph: &Paragraph) -> (usize, Option<i64>) {
+    (
+        paragraph.line_segs.len(),
+        relative_paragraph_flow_advance(paragraph),
     )
 }
 
@@ -436,6 +583,186 @@ fn has_clickhere_field_range(para: &Paragraph) -> bool {
 }
 
 impl DocumentCore {
+    pub fn replace_body_text_local_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        delete_count: usize,
+        text: &str,
+    ) -> Result<String, HwpError> {
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 인덱스 {} 범위 초과 (총 {}개)",
+                section_idx,
+                self.document.sections.len()
+            )));
+        }
+        let section = &self.document.sections[section_idx];
+        if para_idx >= section.paragraphs.len() {
+            return Err(HwpError::RenderError(format!(
+                "문단 인덱스 {} 범위 초과 (총 {}개)",
+                para_idx,
+                section.paragraphs.len()
+            )));
+        }
+        let new_chars_count = text.chars().count();
+        if delete_count > 8
+            || new_chars_count > 8
+            || text.chars().any(|ch| matches!(ch, '\r' | '\n' | '\t'))
+        {
+            return Err(HwpError::RenderError(
+                "local 본문 편집은 줄바꿈·탭 없는 최대 8자만 지원합니다".to_string(),
+            ));
+        }
+
+        let flow_before = body_paragraph_flow_signature(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
+        let old_col = self
+            .para_column_map
+            .get(section_idx)
+            .and_then(|map| map.get(para_idx))
+            .copied()
+            .unwrap_or(0);
+        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
+        self.document.sections[section_idx].raw_stream = None;
+
+        let deleted_count = if delete_count > 0 {
+            self.document.sections[section_idx].paragraphs[para_idx]
+                .delete_text_at(char_offset, delete_count)
+        } else {
+            0
+        };
+
+        if new_chars_count > 0 {
+            let active_field = self.active_field.clone();
+            let outside_insertions = inactive_field_end_insertions(
+                &self.document.sections[section_idx].paragraphs[para_idx],
+                active_field.as_ref(),
+                section_idx,
+                para_idx,
+                None,
+                char_offset,
+            );
+            let before_insertions = inactive_field_start_insertions(
+                &self.document.sections[section_idx].paragraphs[para_idx],
+                active_field.as_ref(),
+                section_idx,
+                para_idx,
+                None,
+                char_offset,
+            );
+            let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+            para.insert_text_at(char_offset, text);
+            keep_inactive_field_start_outside(para, &before_insertions, new_chars_count);
+            keep_inactive_field_end_outside(para, &outside_insertions, new_chars_count);
+            if has_clickhere_field_range(para) {
+                rebuild_char_offsets(para);
+            }
+        }
+
+        self.reflow_paragraph(section_idx, para_idx);
+        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            None,
+            stored_end_for_reset,
+            &self.styles,
+            self.dpi,
+            doc_hwp3_layout,
+        );
+        self.recompose_paragraph(section_idx, para_idx);
+
+        let flow_after = body_paragraph_flow_signature(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
+        let flow_changed = flow_before != flow_after;
+        if flow_changed {
+            self.paginate();
+            for _ in 0..2 {
+                let new_col = self
+                    .para_column_map
+                    .get(section_idx)
+                    .and_then(|map| map.get(para_idx))
+                    .copied()
+                    .unwrap_or(0);
+                if new_col == old_col {
+                    break;
+                }
+                let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+                    &self.document.sections[section_idx].paragraphs[para_idx],
+                );
+                self.reflow_paragraph(section_idx, para_idx);
+                let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+                crate::renderer::composer::recalculate_section_vpos(
+                    &mut self.document.sections[section_idx].paragraphs,
+                    para_idx,
+                    None,
+                    stored_end_for_reset,
+                    &self.styles,
+                    self.dpi,
+                    doc_hwp3_layout,
+                );
+                self.recompose_paragraph(section_idx, para_idx);
+                self.paginate();
+            }
+        } else {
+            self.refresh_render_normalized_body_paragraph_after_edit(section_idx, para_idx);
+        }
+
+        let new_offset = char_offset + new_chars_count;
+        let para = &self.document.sections[section_idx].paragraphs[para_idx];
+        let caret_utf16_pos = if new_offset < para.char_offsets.len() {
+            para.char_offsets[new_offset]
+        } else if !para.char_offsets.is_empty() {
+            let last = para.char_offsets.len() - 1;
+            let last_char = para.text.chars().nth(last);
+            para.char_offsets[last]
+                + last_char
+                    .map(|ch| if (ch as u32) > 0xFFFF { 2 } else { 1 })
+                    .unwrap_or(1)
+        } else {
+            (para.controls.len() as u32) * 8
+        };
+        self.document.doc_properties.caret_list_id = section_idx as u32;
+        self.document.doc_properties.caret_para_id = para_idx as u32;
+        self.document.doc_properties.caret_char_pos = caret_utf16_pos;
+        if let Some(ref mut raw) = self.document.doc_info.raw_stream {
+            let _ = crate::serializer::doc_info::surgical_update_caret(
+                raw,
+                section_idx as u32,
+                para_idx as u32,
+                caret_utf16_pos,
+            );
+        }
+
+        if deleted_count > 0 {
+            self.event_log.push(DocumentEvent::TextDeleted {
+                section: section_idx,
+                para: para_idx,
+                offset: char_offset,
+                count: deleted_count,
+            });
+        }
+        if new_chars_count > 0 {
+            self.event_log.push(DocumentEvent::TextInserted {
+                section: section_idx,
+                para: para_idx,
+                offset: char_offset,
+                len: new_chars_count,
+            });
+        }
+
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"charOffset\":{},\"documentPaginationPending\":{},\"flowChanged\":{}",
+            new_offset, !flow_changed, flow_changed
+        )))
+    }
+
     pub fn insert_text_native(
         &mut self,
         section_idx: usize,
@@ -764,13 +1091,14 @@ impl DocumentCore {
         char_offset: usize,
         text: &str,
     ) -> Result<String, HwpError> {
-        self.insert_text_in_cell_native_impl(
+        self.replace_text_in_cell_native_impl(
             section_idx,
             parent_para_idx,
             control_idx,
             cell_idx,
             cell_para_idx,
             char_offset,
+            0,
             text,
             true,
         )
@@ -788,19 +1116,21 @@ impl DocumentCore {
         char_offset: usize,
         text: &str,
     ) -> Result<String, HwpError> {
-        self.insert_text_in_cell_native_impl(
+        self.replace_text_in_cell_native_impl(
             section_idx,
             parent_para_idx,
             control_idx,
             cell_idx,
             cell_para_idx,
             char_offset,
+            0,
             text,
             false,
         )
     }
 
-    fn insert_text_in_cell_native_impl(
+    /// 표 셀 내부의 짧은 IME 조합 문자열을 원자적으로 교체하고 전체 페이지네이션은 지연한다.
+    pub fn replace_text_in_cell_native_deferred_pagination(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -808,10 +1138,65 @@ impl DocumentCore {
         cell_idx: usize,
         cell_para_idx: usize,
         char_offset: usize,
+        delete_count: usize,
+        text: &str,
+    ) -> Result<String, HwpError> {
+        let new_chars_count = text.chars().count();
+        if delete_count == 0
+            || delete_count > 8
+            || new_chars_count == 0
+            || new_chars_count > 8
+            || text.chars().any(|ch| matches!(ch, '\r' | '\n' | '\t'))
+        {
+            return Err(HwpError::RenderError(
+                "deferred 셀 replace는 줄바꿈·탭 없는 1~8자 교체만 지원합니다".to_string(),
+            ));
+        }
+
+        let text_len = self
+            .get_cell_paragraph_ref(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )
+            .ok_or_else(|| HwpError::RenderError("교체할 셀 문단을 찾을 수 없습니다".to_string()))?
+            .text
+            .chars()
+            .count();
+        if char_offset > text_len || delete_count > text_len.saturating_sub(char_offset) {
+            return Err(HwpError::RenderError(
+                "deferred 셀 replace 범위가 문단 텍스트를 벗어났습니다".to_string(),
+            ));
+        }
+
+        self.replace_text_in_cell_native_impl(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            char_offset,
+            delete_count,
+            text,
+            false,
+        )
+    }
+
+    fn replace_text_in_cell_native_impl(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        delete_count: usize,
         text: &str,
         paginate_immediately: bool,
     ) -> Result<String, HwpError> {
-        // 셀 문단 접근 검증 및 텍스트 삽입
+        // 셀 문단 접근 검증 및 텍스트 교체
         let active_field = self.active_field.clone();
         let cell_path = [(control_idx, cell_idx, cell_para_idx)];
         let cell_para = self.get_cell_paragraph_mut(
@@ -826,6 +1211,11 @@ impl DocumentCore {
             crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                 cell_para,
             );
+        let deleted_count = if delete_count > 0 {
+            cell_para.delete_text_at(char_offset, delete_count)
+        } else {
+            0
+        };
         let new_chars_count = text.chars().count();
         let outside_insertions = inactive_field_end_insertions(
             cell_para,
@@ -843,12 +1233,15 @@ impl DocumentCore {
             Some(&cell_path),
             char_offset,
         );
-        cell_para.insert_text_at(char_offset, text);
-        keep_inactive_field_start_outside(cell_para, &before_insertions, new_chars_count);
-        keep_inactive_field_end_outside(cell_para, &outside_insertions, new_chars_count);
-        if has_clickhere_field_range(cell_para) {
-            rebuild_char_offsets(cell_para);
+        if new_chars_count > 0 {
+            cell_para.insert_text_at(char_offset, text);
+            keep_inactive_field_start_outside(cell_para, &before_insertions, new_chars_count);
+            keep_inactive_field_end_outside(cell_para, &outside_insertions, new_chars_count);
+            if has_clickhere_field_range(cell_para) {
+                rebuild_char_offsets(cell_para);
+            }
         }
+        debug_assert_eq!(deleted_count, delete_count);
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
         self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
@@ -870,7 +1263,7 @@ impl DocumentCore {
             None,
         );
 
-        let (flow_advance_after, local_contribution_after, cell_para_after) = {
+        let (flow_advance_after, local_contribution_after) = {
             let cell_para_after = self
                 .get_cell_paragraph_ref(
                     section_idx,
@@ -880,26 +1273,25 @@ impl DocumentCore {
                     cell_para_idx,
                 )
                 .ok_or_else(|| {
-                    HwpError::RenderError("삽입 뒤 셀 문단을 다시 찾을 수 없습니다".to_string())
+                    HwpError::RenderError("편집 뒤 셀 문단을 다시 찾을 수 없습니다".to_string())
                 })?;
             (
                 relative_paragraph_flow_advance(cell_para_after),
                 crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                     cell_para_after,
                 ),
-                cell_para_after.clone(),
             )
         };
         let cell_flow_changed = flow_advance_before != flow_advance_after;
 
         // Table의 일반 cell만 pointer-key layout cache의 owner다. 표 캡션 sentinel과
         // Shape/Picture 텍스트 경로에는 cell_units cache가 없으므로 적용하지 않는다.
-        if cell_idx != 65534 {
+        if cell_idx != super::super::TABLE_CAPTION_CELL_SENTINEL {
             let control = &self.document.sections[section_idx].paragraphs[parent_para_idx].controls
                 [control_idx];
             if let Control::Table(table) = control {
                 if let Some(edited_cell) = table.cells.get(cell_idx) {
-                    self.layout_engine.invalidate_cell_units_after_text_insert(
+                    self.layout_engine.invalidate_cell_units_after_text_edit(
                         edited_cell,
                         table,
                         local_contribution_before,
@@ -909,25 +1301,67 @@ impl DocumentCore {
             }
         }
 
-        // [#2214/#2195] paginate 시 생성된 render_normalized는 원본 IR의 파생
-        // 복사본이다. deferred edit은 pagination을 실행하지 않으므로 원본만 바꾸면
-        // page tree가 편집 전 복사본을 계속 읽는다. 편집된 cell paragraph만 같은
-        // normalized path에 반영하고 그 복사본의 pointer-key cache도 국소 제거한다.
+        // [#2308] editable IR이 단일 권위 상태다. clone paragraph를 mirror하지 않고
+        // 명시적 logical path revision만 갱신한다. #2004 호환 projection이 있는
+        // 섹션은 transient render 전에 해당 revision으로 재파생한다.
+        let has_compat_projection = self
+            .render_normalization
+            .sections
+            .get(section_idx)
+            .is_some_and(|section| section.is_some());
+        self.mark_render_normalization_path_dirty(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        )?;
         if !paginate_immediately {
-            self.refresh_render_normalized_cell_paragraph_after_edit(
-                section_idx,
-                parent_para_idx,
-                control_idx,
-                cell_idx,
-                cell_para_idx,
-                cell_para_after,
-                local_contribution_before,
-                local_contribution_after,
-            );
+            let target_first_page =
+                target_table_first_global_page(self, section_idx, parent_para_idx, control_idx);
+            let table_structure_fingerprint = match &self.document.sections[section_idx].paragraphs
+                [parent_para_idx]
+                .controls[control_idx]
+            {
+                Control::Table(table) => table_structure_fingerprint(table),
+                _ => 0,
+            };
+            let pending_flow_changed =
+                self.deferred_pagination_descriptor
+                    .as_ref()
+                    .is_some_and(|pending| {
+                        pending.section_index == section_idx
+                            && pending.para_index == parent_para_idx
+                            && pending.control_index == control_idx
+                            && pending.cell_index == cell_idx
+                            && pending.cell_para_index == cell_para_idx
+                            && pending.cell_flow_changed
+                    });
+            self.deferred_pagination_revision =
+                self.deferred_pagination_revision.wrapping_add(1).max(1);
+            self.deferred_pagination_descriptor = Some(DeferredPaginationDescriptor {
+                revision: self.deferred_pagination_revision,
+                section_index: section_idx,
+                para_index: parent_para_idx,
+                control_index: control_idx,
+                cell_index: cell_idx,
+                cell_para_index: cell_para_idx,
+                // 같은 target의 여러 deferred input 사이에서 한번 관측한 flow boundary는
+                // full pagination이 소비할 때까지 유지한다.
+                cell_flow_changed: pending_flow_changed || cell_flow_changed,
+                target_first_page,
+                table_structure_fingerprint,
+            });
         }
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변, section dirty만 설정)
         self.document.sections[section_idx].raw_stream = None;
-        self.mark_section_dirty(section_idx);
+        if has_compat_projection {
+            self.invalidate_render_normalization_section(section_idx);
+        }
+        if has_compat_projection && !paginate_immediately {
+            self.compute_render_normalized();
+        }
+        self.mark_section_pagination_dirty(section_idx);
         self.invalidate_page_tree_cache_from(0);
         if paginate_immediately {
             self.paginate_if_needed();
@@ -962,6 +1396,54 @@ impl DocumentCore {
         char_offset: usize,
         count: usize,
     ) -> Result<String, HwpError> {
+        self.delete_text_in_cell_native_impl(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            char_offset,
+            count,
+            true,
+        )
+    }
+
+    /// 표 셀 내부 단일 텍스트 삭제 후 전체 페이지네이션을 호출자가 지연한다.
+    /// 결과 JSON의 `cellFlowChanged`는 상대 line advance 변화 여부다.
+    pub fn delete_text_in_cell_native_deferred_pagination(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        count: usize,
+    ) -> Result<String, HwpError> {
+        self.delete_text_in_cell_native_impl(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            char_offset,
+            count,
+            false,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn delete_text_in_cell_native_impl(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        count: usize,
+        paginate_immediately: bool,
+    ) -> Result<String, HwpError> {
         // 셀 문단 접근 검증 및 텍스트 삭제
         let cell_para = self.get_cell_paragraph_mut(
             section_idx,
@@ -970,6 +1452,11 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         )?;
+        let flow_advance_before = relative_paragraph_flow_advance(cell_para);
+        let local_contribution_before =
+            crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
+                cell_para,
+            );
         cell_para.delete_text_at(char_offset, count);
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
@@ -992,10 +1479,103 @@ impl DocumentCore {
             None,
         );
 
+        let (flow_advance_after, local_contribution_after) = {
+            let cell_para_after = self
+                .get_cell_paragraph_ref(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                )
+                .ok_or_else(|| {
+                    HwpError::RenderError("삭제 뒤 셀 문단을 다시 찾을 수 없습니다".to_string())
+                })?;
+            (
+                relative_paragraph_flow_advance(cell_para_after),
+                crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
+                    cell_para_after,
+                ),
+            )
+        };
+        let cell_flow_changed = flow_advance_before != flow_advance_after;
+
+        // Table의 일반 cell만 pointer-key layout cache의 owner다.
+        if cell_idx != 65534 {
+            let control = &self.document.sections[section_idx].paragraphs[parent_para_idx].controls
+                [control_idx];
+            if let Control::Table(table) = control {
+                if let Some(edited_cell) = table.cells.get(cell_idx) {
+                    self.layout_engine.invalidate_cell_units_after_text_edit(
+                        edited_cell,
+                        table,
+                        local_contribution_before,
+                        local_contribution_after,
+                    );
+                }
+            }
+        }
+
+        let refresh_compat_projection = !paginate_immediately
+            && self
+                .render_normalization
+                .sections
+                .get(section_idx)
+                .is_some_and(|section| section.is_some());
+        self.mark_render_normalization_path_dirty(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        )?;
+        if !paginate_immediately {
+            let target_first_page =
+                target_table_first_global_page(self, section_idx, parent_para_idx, control_idx);
+            let table_structure_fingerprint = match &self.document.sections[section_idx].paragraphs
+                [parent_para_idx]
+                .controls[control_idx]
+            {
+                Control::Table(table) => table_structure_fingerprint(table),
+                _ => 0,
+            };
+            let pending_flow_changed =
+                self.deferred_pagination_descriptor
+                    .as_ref()
+                    .is_some_and(|pending| {
+                        pending.section_index == section_idx
+                            && pending.para_index == parent_para_idx
+                            && pending.control_index == control_idx
+                            && pending.cell_index == cell_idx
+                            && pending.cell_para_index == cell_para_idx
+                            && pending.cell_flow_changed
+                    });
+            self.deferred_pagination_revision =
+                self.deferred_pagination_revision.wrapping_add(1).max(1);
+            self.deferred_pagination_descriptor = Some(DeferredPaginationDescriptor {
+                revision: self.deferred_pagination_revision,
+                section_index: section_idx,
+                para_index: parent_para_idx,
+                control_index: control_idx,
+                cell_index: cell_idx,
+                cell_para_index: cell_para_idx,
+                cell_flow_changed: pending_flow_changed || cell_flow_changed,
+                target_first_page,
+                table_structure_fingerprint,
+            });
+        }
+
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변)
         self.document.sections[section_idx].raw_stream = None;
-        self.mark_section_dirty(section_idx);
-        self.paginate_if_needed();
+        if refresh_compat_projection {
+            self.invalidate_render_normalization_section(section_idx);
+            self.compute_render_normalized();
+        }
+        self.mark_section_pagination_dirty(section_idx);
+        self.invalidate_page_tree_cache_from(0);
+        if paginate_immediately {
+            self.paginate_if_needed();
+        }
 
         self.event_log.push(DocumentEvent::CellTextChanged {
             section: section_idx,
@@ -1003,10 +1583,15 @@ impl DocumentCore {
             ctrl: control_idx,
             cell: cell_idx,
         });
-        Ok(super::super::helpers::json_ok_with(&format!(
-            "\"charOffset\":{}",
-            char_offset
-        )))
+        let result_fields = if paginate_immediately {
+            format!("\"charOffset\":{}", char_offset)
+        } else {
+            format!(
+                "\"charOffset\":{},\"cellFlowChanged\":{}",
+                char_offset, cell_flow_changed
+            )
+        };
+        Ok(super::super::helpers::json_ok_with(&result_fields))
     }
 
     /// 표 셀 또는 글상자 내부 문단에 대한 가변 참조를 얻는다.
@@ -1675,11 +2260,17 @@ impl DocumentCore {
         }
     }
 
+    /// 문단을 분할한다.
+    ///
+    /// `restore_meta` 는 병합 undo 전용이다 — 병합으로 사라졌던 문단의 스코프
+    /// 메타데이터를 새 문단에 되돌린다. 일반 Enter 분할은 `None` 으로 앞 문단의
+    /// 서식을 잇는다 (Task #2342).
     pub fn split_paragraph_native(
         &mut self,
         section_idx: usize,
         para_idx: usize,
         char_offset: usize,
+        restore_meta: Option<ParaMeta>,
     ) -> Result<String, HwpError> {
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -1704,9 +2295,12 @@ impl DocumentCore {
         {
             self.document.sections[section_idx].raw_stream = None;
             let new_para_idx = para_idx + 1;
-            let new_para = empty_paragraph_after_table_anchor(
+            let mut new_para = empty_paragraph_after_table_anchor(
                 &self.document.sections[section_idx].paragraphs[para_idx],
             );
+            if let Some(meta) = restore_meta {
+                new_para.apply_meta(meta);
+            }
             self.document.sections[section_idx]
                 .paragraphs
                 .insert(new_para_idx, new_para);
@@ -1798,7 +2392,7 @@ impl DocumentCore {
             };
             let next_vpos = next_line_vpos_after_para_for_enter(anchor).saturating_add(enter_gap);
             let keep_wrap_zone = next_vpos < chain.bottom_vpos;
-            let new_para = if keep_wrap_zone {
+            let mut new_para = if keep_wrap_zone {
                 empty_paragraph_after_square_wrap_anchor(
                     &self.document.sections[section_idx].paragraphs[para_idx],
                 )
@@ -1807,6 +2401,12 @@ impl DocumentCore {
                     &self.document.sections[section_idx].paragraphs[para_idx],
                 )
             };
+            // square-OLE wrap도 merge의 역연산으로 문단을 되살리는 경로다. Enter의
+            // 기본 상속은 유지하되, merge undo가 준 원래 문단 메타는 모든 생성 분기에서
+            // 동일하게 적용해야 한다 (Task #2342 review).
+            if let Some(meta) = restore_meta {
+                new_para.apply_meta(meta);
+            }
             self.document.sections[section_idx]
                 .paragraphs
                 .insert(new_para_idx, new_para);
@@ -1842,8 +2442,11 @@ impl DocumentCore {
         self.document.sections[section_idx].raw_stream = None;
 
         // 문단 분리
-        let new_para =
+        let mut new_para =
             self.document.sections[section_idx].paragraphs[para_idx].split_at(char_offset);
+        if let Some(meta) = restore_meta {
+            new_para.apply_meta(meta);
+        }
 
         // 새 문단을 현재 문단 뒤에 삽입
         let new_para_idx = para_idx + 1;
@@ -2202,6 +2805,8 @@ impl DocumentCore {
             .paragraphs
             .remove(para_idx);
         let prev_idx = para_idx - 1;
+        let removed_meta =
+            super::super::helpers::removed_para_meta_field(&current_para.capture_meta());
         let merge_point =
             self.document.sections[section_idx].paragraphs[prev_idx].merge_from(&current_para);
 
@@ -2225,8 +2830,8 @@ impl DocumentCore {
                 para: para_idx,
             });
             return Ok(super::super::helpers::json_ok_with(&format!(
-                "\"paraIdx\":{},\"charOffset\":{}",
-                prev_idx, merge_point
+                "\"paraIdx\":{},\"charOffset\":{}{}",
+                prev_idx, merge_point, removed_meta
             )));
         }
 
@@ -2290,8 +2895,8 @@ impl DocumentCore {
             para: para_idx,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"paraIdx\":{},\"charOffset\":{}",
-            prev_idx, merge_point
+            "\"paraIdx\":{},\"charOffset\":{}{}",
+            prev_idx, merge_point, removed_meta
         )))
     }
 
@@ -3947,7 +4552,69 @@ impl DocumentCore {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::paragraph::CharShapeRef;
+    use crate::document_core::helpers::removed_para_meta_of;
+    use crate::model::paragraph::{CharShapeRef, ColumnBreakType, NumberingRestart};
+
+    /// 본문 문단 병합의 undo 가 사라진 문단의 스코프 메타데이터를 되돌리는지 (Task #2342).
+    ///
+    /// `split_at` 은 새 문단을 앞 문단에서 파생시키므로, 되돌린 문단은 메타 복원 없이는
+    /// 문단 1 의 서식을 뒤집어쓴다.
+    #[test]
+    fn merge_paragraph_undo_restores_removed_paragraph_meta() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "첫째").unwrap();
+        core.split_paragraph_native(0, 0, 2, None).unwrap();
+        core.insert_text_native(0, 1, 0, "둘째").unwrap();
+
+        core.document.sections[0].paragraphs[0].para_shape_id = 10;
+        core.document.sections[0].paragraphs[0].style_id = 1;
+        let second = &mut core.document.sections[0].paragraphs[1];
+        second.para_shape_id = 20;
+        second.style_id = 5;
+        second.column_type = ColumnBreakType::Page;
+        second.raw_break_type = 0x04;
+        second.numbering_restart = Some(NumberingRestart::NewStart(7));
+        second.raw_header_extra = vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB];
+        second.tab_extended = vec![[100, 0, 0x0200, 0, 0, 0, 9]];
+
+        let merged = core.merge_paragraph_native(0, 1).unwrap();
+        let meta = removed_para_meta_of(&merged);
+        core.split_paragraph_native(0, 0, 2, Some(meta)).unwrap();
+
+        let restored = &core.document.sections[0].paragraphs[1];
+        assert_eq!(restored.text, "둘째");
+        assert_eq!(restored.para_shape_id, 20);
+        assert_eq!(restored.style_id, 5);
+        assert_eq!(restored.column_type, ColumnBreakType::Page);
+        assert_eq!(restored.raw_break_type, 0x04);
+        assert_eq!(
+            restored.numbering_restart,
+            Some(NumberingRestart::NewStart(7))
+        );
+        assert_eq!(
+            restored.raw_header_extra,
+            vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB]
+        );
+        assert_eq!(restored.tab_extended, vec![[100, 0, 0x0200, 0, 0, 0, 9]]);
+        assert_eq!(core.document.sections[0].paragraphs[0].para_shape_id, 10);
+    }
+
+    /// 메타를 넘기지 않는 일반 Enter 분할은 앞 문단의 서식을 잇는다 (기존 시맨틱 고정).
+    #[test]
+    fn split_paragraph_without_meta_inherits_previous_paragraph_shape() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "첫째둘째").unwrap();
+        core.document.sections[0].paragraphs[0].para_shape_id = 33;
+        core.document.sections[0].paragraphs[0].style_id = 4;
+
+        core.split_paragraph_native(0, 0, 2, None).unwrap();
+
+        let new_para = &core.document.sections[0].paragraphs[1];
+        assert_eq!(new_para.para_shape_id, 33);
+        assert_eq!(new_para.style_id, 4);
+    }
 
     /// insert_paragraph_native 는 새 문단의 서식을 이웃에서 상속해야 한다.
     ///
@@ -3987,7 +4654,7 @@ mod tests {
         let mut core = DocumentCore::new_empty();
         core.create_blank_document_native().unwrap();
         core.insert_text_native(0, 0, 0, "첫째").unwrap();
-        core.split_paragraph_native(0, 0, 2).unwrap();
+        core.split_paragraph_native(0, 0, 2, None).unwrap();
         core.insert_text_native(0, 1, 0, "둘째").unwrap();
         set_shape(&mut core, 0, 12, 3, 7);
         set_shape(&mut core, 1, 14, 5, 9);
@@ -4583,7 +5250,8 @@ mod tests {
         // Enter를 500번 입력하여 페이지 오버플로우 유발
         for i in 0..500 {
             let para_count = core.document.sections[0].paragraphs.len();
-            core.split_paragraph_native(0, para_count - 1, 0).unwrap();
+            core.split_paragraph_native(0, para_count - 1, 0, None)
+                .unwrap();
         }
 
         let para_count = core.document.sections[0].paragraphs.len();
@@ -4617,7 +5285,7 @@ mod tests {
 
         // Enter로 문단 분리 (텍스트 끝에서)
         let text_len = core.document.sections[0].paragraphs[0].text.chars().count();
-        core.split_paragraph_native(0, 0, text_len).unwrap();
+        core.split_paragraph_native(0, 0, text_len, None).unwrap();
 
         // 두 번째 문단에 텍스트 입력
         core.insert_text_native(0, 1, 0, "Second paragraph")
@@ -4664,7 +5332,8 @@ mod tests {
             let para_count = core.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core.insert_text_native(0, last, 0, text).unwrap();
-            core.split_paragraph_native(0, last, text.len()).unwrap();
+            core.split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
         }
 
         let page_count = core.page_count();
@@ -4692,7 +5361,9 @@ mod tests {
             let para_count = core100.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core100.insert_text_native(0, last, 0, text).unwrap();
-            core100.split_paragraph_native(0, last, text.len()).unwrap();
+            core100
+                .split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
             // 새 문단에도 100% 적용
             let new_last = core100.document.sections[0].paragraphs.len() - 1;
             core100
@@ -4711,7 +5382,9 @@ mod tests {
             let para_count = core200.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core200.insert_text_native(0, last, 0, text).unwrap();
-            core200.split_paragraph_native(0, last, text.len()).unwrap();
+            core200
+                .split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
             let new_last = core200.document.sections[0].paragraphs.len() - 1;
             core200
                 .apply_para_format_native(0, new_last, r#"{"lineSpacing":200}"#)
@@ -4746,7 +5419,9 @@ mod tests {
             let para_count = core300.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core300.insert_text_native(0, last, 0, text).unwrap();
-            core300.split_paragraph_native(0, last, text.len()).unwrap();
+            core300
+                .split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
             let new_last = core300.document.sections[0].paragraphs.len() - 1;
             core300
                 .apply_para_format_native(0, new_last, r#"{"lineSpacing":300}"#)
@@ -4761,7 +5436,9 @@ mod tests {
             let para_count = core160.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core160.insert_text_native(0, last, 0, text).unwrap();
-            core160.split_paragraph_native(0, last, text.len()).unwrap();
+            core160
+                .split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
         }
         let pages_160 = core160.page_count();
 
@@ -4794,7 +5471,8 @@ mod tests {
             let spacing = spacings[i % spacings.len()];
             let json = format!(r#"{{"lineSpacing":{}}}"#, spacing);
             core.apply_para_format_native(0, last, &json).unwrap();
-            core.split_paragraph_native(0, last, text.len()).unwrap();
+            core.split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
         }
 
         let page_count = core.page_count();
@@ -4836,7 +5514,8 @@ mod tests {
             let para_count = core.document.sections[0].paragraphs.len();
             let last = para_count - 1;
             core.insert_text_native(0, last, 0, text).unwrap();
-            core.split_paragraph_native(0, last, text.len()).unwrap();
+            core.split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
             let new_last = core.document.sections[0].paragraphs.len() - 1;
             core.apply_para_format_native(
                 0,
@@ -4877,7 +5556,8 @@ mod tests {
             for _ in 0..60 {
                 let last = core.document.sections[0].paragraphs.len() - 1;
                 core.insert_text_native(0, last, 0, text).unwrap();
-                core.split_paragraph_native(0, last, text.len()).unwrap();
+                core.split_paragraph_native(0, last, text.len(), None)
+                    .unwrap();
                 let new_last = core.document.sections[0].paragraphs.len() - 1;
                 core.apply_para_format_native(0, new_last, &json).unwrap();
             }
@@ -4916,7 +5596,8 @@ mod tests {
         for _ in 0..29 {
             let last = core.document.sections[0].paragraphs.len() - 1;
             core.insert_text_native(0, last, 0, text).unwrap();
-            core.split_paragraph_native(0, last, text.len()).unwrap();
+            core.split_paragraph_native(0, last, text.len(), None)
+                .unwrap();
         }
         // 마지막 문단에도 텍스트
         let last = core.document.sections[0].paragraphs.len() - 1;

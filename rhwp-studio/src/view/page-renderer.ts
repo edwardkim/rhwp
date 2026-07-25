@@ -456,6 +456,7 @@ export class PageRenderer {
       frame.style.transformOrigin = 'center';
 
       const element = new Image();
+      element.alt = '';
       element.src = `data:${image.mime};base64,${image.base64}`;
       element.style.position = 'absolute';
       element.style.pointerEvents = 'none';

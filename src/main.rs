@@ -38,15 +38,19 @@ fn main() {
         Some("export-pdf") => exit_with(export_pdf(&args[2..])),
         Some("export-text") => exit_with(export_text(&args[2..])),
         Some("export-markdown") => exit_with(export_markdown(&args[2..])),
+        Some("export-tables") => exit_with(export_tables(&args[2..])),
         Some("export-hwpx") => exit_with(export_hwpx(&args[2..])),
         Some("export-hml") => export_hml(&args[2..]),
         Some("export-doclang") => exit_with(export_doclang(&args[2..])),
+        Some("capabilities") => exit_with(show_capabilities(&args[2..])),
+        Some("batch") => exit_with(run_batch(&args[2..])),
         Some("info") => exit_with(show_info(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
         Some("dump-note-shape") => exit_with(dump_note_shape(&args[2..])),
         Some("dump-endnote-lines") => exit_with(dump_endnote_lines(&args[2..])),
         Some("dump-pages") => exit_with(dump_pages(&args[2..])),
         Some("diag") => exit_with(diag_document(&args[2..])),
+        Some("search") => exit_with(search_document(&args[2..])),
         Some("convert") => exit_with(convert_hwp(&args[2..])),
         Some("build-from-ingest") => exit_with(build_from_ingest(&args[2..])),
         Some("hwp5-inventory") => rhwp::diagnostics::hwp5_inventory::run(&args[2..]),
@@ -74,7 +78,7 @@ fn main() {
         Some("gen-table") => gen_table(&args[2..]),
         Some("gen-pua") => gen_pua_test(&args[2..]),
         Some("test-field") => test_field_roundtrip(&args[2..]),
-        Some("ir-diff") => ir_diff(&args[2..]),
+        Some("ir-diff") => exit_with(ir_diff(&args[2..])),
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
         Some("render-diff") => rhwp::diagnostics::render_geom_diff::run(&args[2..]),
@@ -82,6 +86,7 @@ fn main() {
         Some("core-pages") => rhwp::diagnostics::core_pages_probe::run(&args[2..]),
         Some("bench") => rhwp::diagnostics::bench::run(&args[2..]),
         Some("thumbnail") => extract_thumbnail(&args[2..]),
+        Some("fields") => exit_with(show_fields(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
         // 종료 코드 2로 끝낸다(기존에는 stdout + 0이라 오타 낸 명령이 스크립트에서 성공으로 보였다).
         other => {
@@ -95,6 +100,459 @@ fn main() {
             process::exit(EXIT_USAGE);
         }
     }
+}
+
+/// [#3263] `capabilities --mcp` — MCP 도구 정의 생성.
+///
+/// MCP 서버 저자(및 함수 호출 클라이언트)가 도구 이름·설명·입력 JSON Schema·실행 배선을
+/// 손으로 옮겨 적지 않게 한다. `--json` 계약을 가진 명령이 늘면
+/// `capabilities_mcp_covers_every_json_command` 가 누락을 잡는다.
+fn show_mcp_tools() -> i32 {
+    /// 문서 경로 하나를 받는 도구의 표준 입력 스키마.
+    fn path_schema(extra: serde_json::Value) -> serde_json::Value {
+        let mut props = serde_json::json!({
+            "path": { "type": "string", "description": "HWP/HWPX/HML 문서 경로" }
+        });
+        if let (Some(p), Some(e)) = (props.as_object_mut(), extra.as_object()) {
+            for (k, v) in e {
+                p.insert(k.clone(), v.clone());
+            }
+        }
+        serde_json::json!({
+            "type": "object",
+            "properties": props,
+            "required": ["path"],
+        })
+    }
+
+    fn tool(
+        name: &str,
+        description: &str,
+        input_schema: serde_json::Value,
+        command: &str,
+        args_template: serde_json::Value,
+        output_fields: &[&str],
+    ) -> serde_json::Value {
+        serde_json::json!({
+            "name": name,
+            "description": description,
+            "inputSchema": input_schema,
+            "cli": { "command": command, "args": args_template },
+            "outputFields": output_fields,
+        })
+    }
+
+    let tools = vec![
+        tool(
+            "hwp_info",
+            "HWP/HWPX/HML 문서의 메타데이터(포맷·구역/페이지/문단 수·폰트)를 조회한다. 문서를 열기 전에 규모와 형식을 파악할 때 쓴다.",
+            path_schema(serde_json::json!({})),
+            "info",
+            serde_json::json!(["info", "--json", "{path}"]),
+            &["format", "sizeBytes", "sections", "pageCount", "paraCount", "fonts"],
+        ),
+        tool(
+            "hwp_export_text",
+            "문서의 페이지별 본문 텍스트를 추출한다. 특정 페이지만 필요하면 page 를 준다.",
+            path_schema(serde_json::json!({
+                "page": { "type": "integer", "minimum": 0, "description": "0부터 시작하는 페이지 번호. 생략하면 전체" }
+            })),
+            "export-text",
+            serde_json::json!(["export-text", "--json", "{path}"]),
+            &["pageCount", "pages"],
+        ),
+        tool(
+            "hwp_export_structure",
+            "문서의 개요/조문 계층을 트리로 추출한다. 법령·규정의 '제N조' 구조를 얻어 조문 단위로 인용하거나 청킹할 때 쓴다.",
+            path_schema(serde_json::json!({
+                "mode": {
+                    "type": "string",
+                    "enum": ["auto", "outline", "clause"],
+                    "description": "분류 방식. 기본 auto"
+                }
+            })),
+            "export-structure",
+            serde_json::json!(["export-structure", "--json", "{path}"]),
+            &["mode", "nodeCount", "structure"],
+        ),
+        tool(
+            "hwp_ir_diff",
+            "두 문서의 내부 표현(IR) 차이를 비교한다. 변환 전후의 내용 보존을 검증할 때 쓴다. 차이가 있으면 CLI 종료 코드 3.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "a": { "type": "string", "description": "비교 대상 A 경로" },
+                    "b": { "type": "string", "description": "비교 대상 B 경로" }
+                },
+                "required": ["a", "b"],
+            }),
+            "ir-diff",
+            serde_json::json!(["ir-diff", "{a}", "{b}", "--json"]),
+            &["identical", "diffCount", "categories"],
+        ),
+        tool(
+            "hwp_export_svg",
+            "문서를 SVG로 렌더하고 생성된 페이지별 파일 경로를 JSON 매니페스트로 돌려준다.",
+            path_schema(serde_json::json!({})),
+            "export-svg",
+            serde_json::json!(["export-svg", "{path}", "--json"]),
+            &["format", "outputDir", "pageCount", "renderedCount", "pages"],
+        ),
+        tool(
+            "hwp_export_tables",
+            "문서의 표를 병합 정보와 중첩 구조를 보존한 격자 JSON으로 추출한다.",
+            path_schema(serde_json::json!({})),
+            "export-tables",
+            serde_json::json!(["export-tables", "{path}", "--json"]),
+            &["source", "tableCount", "tables"],
+        ),
+        tool(
+            "hwp_search",
+            "문서에서 검색어를 찾아 구역·문단·페이지·문자 오프셋 주소와 문맥을 돌려준다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "HWP/HWPX 문서 경로" },
+                    "query": { "type": "string", "minLength": 1, "description": "검색어" }
+                },
+                "required": ["path", "query"],
+            }),
+            "search",
+            serde_json::json!(["search", "{path}", "{query}", "--json"]),
+            &["source", "query", "caseSensitive", "matchCount", "matches"],
+        ),
+        tool(
+            "hwp_fields",
+            "문서의 누름틀·필드를 이름·안내문·현재값·위치와 함께 조사한다.",
+            path_schema(serde_json::json!({})),
+            "fields",
+            serde_json::json!(["fields", "{path}", "--json"]),
+            &["source", "fieldCount", "fields"],
+        ),
+        tool(
+            "hwp_batch",
+            "여러 문서를 한 프로세스에서 병렬 처리해 NDJSON 스트림으로 받는다. 파일 목록은 stdin 으로 한 줄에 하나씩 넣는다. 아카이브 전체를 스윕할 때 쓴다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "subcommand": {
+                        "type": "string",
+                        "enum": ["export-text", "info", "export-structure"],
+                        "description": "각 파일에 적용할 처리"
+                    },
+                    "paths": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "처리할 문서 경로 목록 (stdin 으로 전달된다)"
+                    },
+                    "threads": { "type": "integer", "minimum": 1, "description": "병렬 스레드 수. 기본은 CPU 코어 수" }
+                },
+                "required": ["subcommand", "paths"],
+            }),
+            "batch",
+            serde_json::json!(["batch", "{subcommand}", "--json"]),
+            &["schemaVersion", "source", "error", "exitClass"],
+        ),
+    ];
+
+    let manifest = serde_json::json!({
+        "schemaVersion": "1.0",
+        "protocol": "mcp",
+        "server": {
+            "suggestedName": "rhwp",
+            "version": rhwp::version(),
+            "description": "HWP/HWPX 한국어 문서를 읽는 도구 모음 (읽기 전용)",
+        },
+        "invocation": {
+            "transport": "cli",
+            "note": "각 도구의 cli.args 에서 {name} 자리표시자를 inputSchema 의 같은 이름 값으로 치환해 실행한다. stdout 은 순수 JSON, 진단은 stderr, 종료 코드는 0/1/2(+ir-diff 차이 3).",
+            "stdinTools": ["hwp_batch"],
+        },
+        "tools": tools,
+    });
+    println!("{manifest}");
+    EXIT_OK
+}
+
+/// [#3263] 도구 자기서술 — 에이전트가 첫 호출 1회로 명령·계약·스키마를 파악하는 입구.
+///
+/// `--help`(사람용)와 본 목록(기계용)은 함께 현행화한다 — help 에만 추가된 명령은
+/// `tests/cli_json_contract.rs::capabilities_covers_every_help_command` 가 잡는다.
+fn show_capabilities(args: &[String]) -> i32 {
+    // [#3263] --mcp: MCP 서버가 그대로 등록할 수 있는 도구 정의.
+    // 로드맵상 MCP 서버 자체는 별도 저장소(#227)지만, 그 서버가 도구 목록·입력 스키마를
+    // 손으로 베껴 쓰면 rhwp 가 바뀔 때마다 조용히 낡는다. 원천을 여기서 낸다.
+    let mut mcp_mode = false;
+    for a in args {
+        match a.as_str() {
+            "--mcp" => mcp_mode = true,
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+    }
+    if mcp_mode {
+        return show_mcp_tools();
+    }
+
+    fn cmd(name: &str, category: &str, summary: &str) -> serde_json::Value {
+        serde_json::json!({ "name": name, "category": category, "summary": summary })
+    }
+    fn cmd_json(
+        name: &str,
+        category: &str,
+        summary: &str,
+        batch: bool,
+        flags: &[&str],
+        record_fields: &[&str],
+    ) -> serde_json::Value {
+        serde_json::json!({
+            "name": name, "category": category, "summary": summary,
+            "json": true, "batch": batch, "flags": flags, "recordFields": record_fields,
+        })
+    }
+
+    let commands = vec![
+        // ── 기계 계약(--json) 명령 ──
+        cmd_json(
+            "info",
+            "query",
+            "문서 메타(포맷·버전·페이지/문단 수·폰트) 표시",
+            true,
+            &["--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "format",
+                "sizeBytes",
+                "version",
+                "sections",
+                "pageCount",
+                "paraCount",
+                "fonts",
+            ],
+        ),
+        cmd_json(
+            "export-text",
+            "export",
+            "페이지별 텍스트 추출 (TXT 파일 또는 --json stdout)",
+            true,
+            &["-o", "-p", "--json"],
+            &["schemaVersion", "source", "pageCount", "pages"],
+        ),
+        cmd_json(
+            "export-structure",
+            "export",
+            "문서 개요/조문 계층을 JSON 트리로 추출",
+            true,
+            &["--mode", "-o", "--json"],
+            &["schemaVersion", "source", "mode", "nodeCount", "structure"],
+        ),
+        cmd_json(
+            "capabilities",
+            "query",
+            "본 자기서술 JSON 출력",
+            false,
+            &[],
+            &[
+                "schemaVersion",
+                "tool",
+                "version",
+                "exitCodes",
+                "commands",
+                "batch",
+            ],
+        ),
+        // ── 내보내기/변환 ──
+        cmd_json(
+            "export-svg",
+            "export",
+            "문서를 페이지별 SVG로 렌더하고 --json 매니페스트 출력",
+            false,
+            &["-o", "-p", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "format",
+                "outputDir",
+                "pageCount",
+                "renderedCount",
+                "pages",
+            ],
+        ),
+        cmd(
+            "export-png",
+            "export",
+            "문서를 페이지별 PNG로 렌더 (native-skia)",
+        ),
+        cmd(
+            "export-pdf",
+            "export",
+            "문서를 PDF로 렌더 (svg|direct backend)",
+        ),
+        cmd(
+            "export-markdown",
+            "export",
+            "페이지별 텍스트를 Markdown으로 추출",
+        ),
+        cmd(
+            "export-hwpx",
+            "export",
+            "HWP→HWPX 변환 저장 (--verify 게이트, exit 3/4)",
+        ),
+        cmd("export-hml", "export", "HML 원본을 HWPML 2.91 XML로 저장"),
+        cmd(
+            "export-doclang",
+            "export",
+            "문서를 DocLang v0.6 XML로 내보내기",
+        ),
+        cmd_json(
+            "export-tables",
+            "export",
+            "표를 병합·중첩 구조를 보존한 격자 JSON으로 추출",
+            false,
+            &["-o", "--json"],
+            &["schemaVersion", "source", "tableCount", "tables"],
+        ),
+        cmd_json(
+            "search",
+            "query",
+            "문서 검색 결과를 구역·문단·페이지·문자 오프셋 주소와 함께 출력",
+            false,
+            &["--json", "--ignore-case", "--limit"],
+            &[
+                "schemaVersion",
+                "source",
+                "query",
+                "caseSensitive",
+                "matchCount",
+                "matches",
+            ],
+        ),
+        cmd_json(
+            "fields",
+            "query",
+            "누름틀/필드를 이름·안내문·현재값·위치와 함께 조사",
+            false,
+            &["--json"],
+            &["schemaVersion", "source", "fieldCount", "fields"],
+        ),
+        cmd(
+            "export-render-tree",
+            "export",
+            "페이지별 render tree bbox JSON 덤프",
+        ),
+        cmd(
+            "convert",
+            "export",
+            "HWP↔HWPX 변환 (--verify/--verify-pages 게이트)",
+        ),
+        cmd("build-from-ingest", "export", "ingest JSON에서 HWPX 생성"),
+        cmd("thumbnail", "export", "내장 썸네일(PrvImage) 추출"),
+        // ── 배치 ──
+        cmd_json(
+            "batch",
+            "batch",
+            "stdin 파일 목록을 한 프로세스에서 파일 간 병렬 처리, NDJSON 스트림 출력",
+            true,
+            &["--json", "--threads", "--mode"],
+            &["schemaVersion", "source", "error", "exitClass"],
+        ),
+        // ── 진단 ──
+        cmd("dump", "diagnostic", "문서 조판부호 구조 덤프"),
+        cmd("dump-pages", "diagnostic", "페이지네이션 항목 덤프"),
+        cmd("dump-note-shape", "diagnostic", "각주/미주 모양 덤프"),
+        cmd("dump-endnote-lines", "diagnostic", "미주 줄 배치 덤프"),
+        cmd("dump-records", "diagnostic", "저수준 레코드 스트림 덤프"),
+        cmd("diag", "diagnostic", "문서 구조 진단(번호/글머리표/개요)"),
+        cmd_json(
+            "ir-diff",
+            "diagnostic",
+            "두 문서의 IR 차이를 JSON으로 비교",
+            false,
+            &["-s", "-p", "--json"],
+            &[
+                "schemaVersion",
+                "sourceA",
+                "sourceB",
+                "identical",
+                "diffCount",
+                "categories",
+            ],
+        ),
+        cmd(
+            "render-diff",
+            "diagnostic",
+            "왕복/두 파일 렌더 기하 차이 검증",
+        ),
+        cmd("hwpx-roundtrip", "diagnostic", "HWPX 왕복 무손실 게이트"),
+        cmd("hwp5-roundtrip", "diagnostic", "HWP5 왕복 무손실 게이트"),
+        cmd("measure-width", "diagnostic", "텍스트 폭 측정 프로브"),
+        cmd("core-pages", "diagnostic", "코어 페이지 수 프로브"),
+        cmd("bench", "diagnostic", "성능 벤치마크"),
+        cmd("hwp5-inventory", "diagnostic", "HWP5 레코드 인벤토리"),
+        cmd("hwp5-inventory-diff", "diagnostic", "HWP5 인벤토리 비교"),
+        cmd(
+            "hwp5-contract-analyze",
+            "diagnostic",
+            "HWPX→HWP5 저장 계약 분석",
+        ),
+        cmd("hwp5-contract-probe", "diagnostic", "HWP5 저장 계약 프로브"),
+        cmd("hwp5-ctrl-data-trace", "diagnostic", "CTRL_DATA 추적"),
+        cmd("hwp5-table-probe", "diagnostic", "표 저장 프로브"),
+        cmd(
+            "hwp5-mel-personnel-probe",
+            "diagnostic",
+            "특정 샘플 재현 프로브",
+        ),
+        cmd(
+            "hwp5-borderfill-diagonal-probe",
+            "diagnostic",
+            "테두리 대각선 프로브",
+        ),
+        cmd(
+            "hwp5-first-para-control-probe",
+            "diagnostic",
+            "첫 문단 컨트롤 프로브",
+        ),
+        cmd("hwp5-anchor-trace", "diagnostic", "앵커 추적"),
+        cmd("hwp5-cell-header-probe", "diagnostic", "셀 헤더 프로브"),
+        // ── 내부 개발용 ──
+        cmd("test-shape", "internal", "도형 왕복 테스트"),
+        cmd("test-caption", "internal", "캡션 테스트"),
+        cmd("test-field", "internal", "누름틀 왕복 테스트"),
+        cmd("gen-table", "internal", "표 샘플 생성"),
+        cmd("gen-pua", "internal", "PUA 샘플 생성"),
+    ];
+
+    let caps = serde_json::json!({
+        "schemaVersion": "1.0",
+        "tool": "rhwp",
+        "version": rhwp::version(),
+        "formats": { "read": ["hwp5", "hwpx", "hwp3", "hml"], "write": ["hwpx", "hml", "pdf", "svg", "png", "txt", "md", "doclang"] },
+        "exitCodes": {
+            "0": "성공",
+            "1": "런타임 실패 (읽기·파싱·렌더·쓰기)",
+            "2": "사용법 오류 (인자 없음, 알 수 없는 옵션/명령, 페이지 범위 초과)",
+            "3": "--verify IR 차이 (convert/export-hwpx)",
+            "4": "--verify-pages 페이지 수 불일치 (convert/export-hwpx)",
+        },
+        "jsonContract": {
+            "stdout": "데이터(JSON/NDJSON)만 — 진단·진행·요약은 stderr",
+            "schemaPolicy": "필드 추가 허용, 변경·삭제는 schemaVersion 범프",
+            "failure": "단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1",
+        },
+        "batch": {
+            "subcommands": ["export-text", "info", "export-structure"],
+            "flags": ["--json", "--threads", "--mode"],
+            "ordering": "stdin 입력 순서 보존",
+            "input": "stdin, 한 줄당 파일 경로 하나",
+        },
+        "commands": commands,
+    });
+    println!("{caps}");
+    EXIT_OK
 }
 
 fn print_help() {
@@ -121,6 +579,7 @@ fn print_help() {
     println!("      --embed-fonts           폰트 서브셋 임베딩 (사용 글자만 base64)");
     println!("      --embed-fonts=full      폰트 전체 임베딩 (base64)");
     println!("      --font-path <경로>      폰트 파일 탐색 경로 (여러 번 지정 가능)");
+    println!("      --json                  산출물 매니페스트를 JSON으로 stdout에 출력");
     println!();
     println!("  export-render-tree <파일.hwp> [옵션]");
     println!("      페이지별 render tree bbox JSON을 내보내기 (레이아웃 시각 분석용)");
@@ -131,7 +590,7 @@ fn print_help() {
     println!("      --show-control-codes    조판부호 보이기 상태의 트리 생성");
     println!("      --respect-vpos-reset    LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리");
     println!();
-    println!("  export-structure <파일> [--mode auto|outline|clause] [-o out.json]");
+    println!("  export-structure <파일> [--mode auto|outline|clause] [-o out.json] [--json]");
     println!("      문서 개요/조문(편·장·절·관·조·항·호·목) 계층을 중첩 JSON 트리로 추출");
     println!();
     println!("      --mode <방식>           분류 방식 auto|outline|clause (기본: auto)");
@@ -169,12 +628,26 @@ fn print_help() {
     println!();
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!("      --json                  결과를 JSON으로 stdout에 출력 (파일 저장 안 함)");
+    println!();
+    println!("  batch <export-text|info|export-structure> --json [--threads <N>]");
+    println!(
+        "      stdin의 파일 목록(한 줄당 하나)을 한 프로세스로 전건 처리해 NDJSON 스트림 출력"
+    );
+    println!("      --threads <N>           파일 간 병렬 스레드 수 (기본: CPU 코어 수)");
+    println!("      --mode <m>              export-structure 전용: auto|outline|clause");
     println!();
     println!("  export-markdown <파일.hwp> [옵션]");
     println!("      페이지별 텍스트를 Markdown(.md)으로 내보내기");
     println!();
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
+    println!();
+    println!("  export-tables <파일.hwp|파일.hwpx> [--json] [-o <출력.json>]");
+    println!("      표를 격자 JSON으로 추출 (병합 rowSpan/colSpan·중첩 표 보존)");
+    println!();
+    println!("      --json                  계약 봉투 JSON을 stdout에 출력");
+    println!("      -o, --output <파일>     JSON을 파일로 저장");
     println!();
     println!("  export-pdf <파일.hwp|파일.hwpx|파일.hml> [옵션]");
     println!("      HWP/HWPX/HML 문서를 PDF로 내보내기 (기본: SVG 호환 backend)");
@@ -219,8 +692,15 @@ fn print_help() {
     println!("      --assets-dir <디렉터리> 그림 등 이진 자원을 이 디렉터리에 파일로 기록");
     println!("                              (생략 시 base64 data URI로 XML에 인라인)");
     println!();
-    println!("  info <파일.hwp|파일.hwpx|파일.hml>");
+    println!("  info <파일.hwp|파일.hwpx|파일.hml> [--json]");
     println!("      HWP/HWPX/HML 문서 정보 표시");
+    println!();
+    println!("      --json                  문서 정보를 JSON으로 stdout에 출력");
+    println!();
+    println!("  capabilities [--mcp]");
+    println!("      도구 자기서술 JSON 출력 (명령·플래그·JSON 계약·종료 코드) — 에이전트용");
+    println!();
+    println!("      --mcp                   MCP 도구 정의(name/description/inputSchema) 출력");
     println!();
     println!("  dump <파일.hwp|파일.hwpx|파일.hml> [--section <번호>] [--para <번호>]");
     println!("      문서 조판부호 구조 덤프 (디버깅용)");
@@ -239,6 +719,13 @@ fn print_help() {
     println!();
     println!("  diag <파일.hwp>");
     println!("      문서 구조 진단 (번호/글머리표/개요 분석)");
+    println!();
+    println!("  search <파일.hwp|파일.hwpx> <검색어> [옵션]");
+    println!("      문서 검색 — 매치마다 구역·문단·페이지·문자 오프셋을 함께 반환");
+    println!();
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!("      --ignore-case             대소문자 무시");
+    println!("      --limit <N>               최대 매치 수 (컨텍스트 절약용)");
     println!();
     println!("  hwp5-inventory <파일.hwp> [--format jsonl|md] [--section N] [--out <path>]");
     println!("      HWP5 DocInfo/BodyText record inventory 생성 (HWPX→HWP contract 분석용)");
@@ -281,8 +768,9 @@ fn print_help() {
     println!("  build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>");
     println!("      ingest JSON(시험문제 등)을 HWPX로 생성 (rhwp-exam-ingest 파이프라인)");
     println!();
-    println!("  ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>]");
+    println!("  ir-diff <파일A.hwpx> <파일B.hwp> [-s <구역>] [-p <문단>] [--json]");
     println!("      두 파일의 IR(중간표현) 비교 (HWPX↔HWP 불일치 검출)");
+    println!("      --json                  판정 봉투 JSON 한 줄 출력, 차이 발견 시 exit 3");
     println!("      비교 항목: text, char_count, char_offsets, char_shapes, line_segs,");
     println!("                 controls(타입+속성), tab_extended, ParaShape, TabDef");
     println!("      표: page_break, outer_margin, treat_as_char, wrap, size, v_offset/h_offset");
@@ -312,6 +800,11 @@ fn print_help() {
     println!("      -o, --output <파일>       출력 파일 경로 (기본: 입력명_thumb.png)");
     println!("      --base64                  base64 문자열을 stdout에 출력");
     println!("      --data-uri                data:image/... URI 형식으로 stdout에 출력");
+    println!();
+    println!("  fields <파일.hwp|파일.hwpx> [--json]");
+    println!("      누름틀/필드 조사 (읽기 전용) — 이름·안내문·지시문·현재값·위치");
+    println!();
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!();
     println!("내부 개발·회귀 도구 (일반 사용자 대상 아님):");
     println!("  test-caption <파일.hwp>             캡션 라운드트립 검증");
@@ -351,6 +844,7 @@ fn export_svg(args: &[String]) -> i32 {
     let mut font_embed_mode = rhwp::renderer::svg::FontEmbedMode::None;
     let mut font_paths: Vec<std::path::PathBuf> = Vec::new();
     let mut render_profile: Option<rhwp::paint::RenderProfile> = None;
+    let mut json_mode = false;
 
     let mut i = 1;
     while i < args.len() {
@@ -480,6 +974,12 @@ fn export_svg(args: &[String]) -> i32 {
                     return EXIT_USAGE;
                 }
             }
+            "--json" => {
+                // [#3286] 산출물 매니페스트를 stdout 에 JSON 으로 — 에이전트가
+                // 어떤 파일이 생겼는지 파싱 없이 알 수 있게 한다.
+                json_mode = true;
+                i += 1;
+            }
             _ => {
                 eprintln!("알 수 없는 옵션: {}", args[i]);
                 return EXIT_USAGE;
@@ -534,7 +1034,10 @@ fn export_svg(args: &[String]) -> i32 {
     }
 
     let page_count = doc.page_count();
-    println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    if !json_mode {
+        // stdout 순수성: --json 모드에서는 데이터(JSON)만 나간다.
+        println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    }
 
     // 출력 폴더 생성
     let output_path = Path::new(&output_dir);
@@ -570,6 +1073,7 @@ fn export_svg(args: &[String]) -> i32 {
         .unwrap_or("page");
 
     // [#2707] 요청한 페이지 수가 아니라 실제로 저장에 성공한 페이지 수를 센다.
+    let mut manifest: Vec<serde_json::Value> = Vec::new();
     let mut written = 0usize;
 
     for page_num in &pages {
@@ -610,7 +1114,15 @@ fn export_svg(args: &[String]) -> i32 {
 
                 match fs::write(&svg_path, &svg) {
                     Ok(_) => {
-                        println!("  → {}", svg_path.display());
+                        if json_mode {
+                            manifest.push(serde_json::json!({
+                                "page": page_num,
+                                "path": svg_path.display().to_string(),
+                                "bytes": svg.len(),
+                            }));
+                        } else {
+                            println!("  → {}", svg_path.display());
+                        }
                         written += 1;
                     }
                     Err(e) => eprintln!("오류: SVG 저장 실패 - {}: {}", svg_path.display(), e),
@@ -622,14 +1134,31 @@ fn export_svg(args: &[String]) -> i32 {
         }
     }
 
-    println!("내보내기 완료: {}개 SVG 파일 → {}/", written, output_dir);
-
-    // [#2707] 한 장이라도 못 썼으면 런타임 실패다.
-    if written == pages.len() {
-        EXIT_OK
-    } else {
-        EXIT_RUNTIME
+    // 단건 JSON 명령의 실패는 stdout 을 비워야 한다. 부분 매니페스트를 출력하면
+    // 소비자가 성공 결과로 오인하거나 stdout JSON을 파싱한 뒤 실패를 놓친다.
+    if written != pages.len() {
+        if !json_mode {
+            println!("내보내기 완료: {}개 SVG 파일 → {}/", written, output_dir);
+        }
+        return EXIT_RUNTIME;
     }
+
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "format": "svg",
+            "outputDir": output_dir,
+            "pageCount": page_count,
+            "renderedCount": written,
+            "pages": manifest,
+        });
+        println!("{envelope}");
+    } else {
+        println!("내보내기 완료: {}개 SVG 파일 → {}/", written, output_dir);
+    }
+
+    EXIT_OK
 }
 
 fn export_render_tree(args: &[String]) -> i32 {
@@ -801,9 +1330,13 @@ fn export_structure(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut out_path: Option<String> = None;
     let mut mode = StructureMode::Auto;
+    // [#3261] --json: 계약 봉투(schemaVersion·source)를 씌운 한 줄 JSON.
+    // 기본 출력(무봉투 pretty JSON·-o 파일 저장)은 기존 소비자 계약이라 건드리지 않는다.
+    let mut json_mode = false;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
+            "--json" => json_mode = true,
             "-o" | "--out" => {
                 i += 1;
                 match args.get(i) {
@@ -828,7 +1361,12 @@ fn export_structure(args: &[String]) -> i32 {
                 eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
             }
-            other => file_path = Some(other),
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
         }
         i += 1;
     }
@@ -856,6 +1394,14 @@ fn export_structure(args: &[String]) -> i32 {
     };
 
     let st = build_structure(doc.document(), mode);
+
+    if json_mode {
+        // [#3261] 봉투는 한 줄 — NDJSON(batch)과 같은 스키마로 단건/배치 동일 소비.
+        let envelope = structure_json_value(file_path, &st);
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
     let json = match serde_json::to_string_pretty(&st) {
         Ok(j) => j,
         Err(e) => {
@@ -1667,6 +2213,14 @@ fn print_export_pdf_usage() {
 }
 
 fn export_text(args: &[String]) -> i32 {
+    // [#3237] --json: 결과를 파일 대신 stdout JSON 으로 낸다. stdout 은 순수 JSON 이어야
+    // 하므로 이 모드에서는 진행 메시지를 찍지 않는다. 위치 무관 플래그다 (info 와 동일 규약).
+    let json_mode = args.iter().any(|a| a == "--json");
+    let args: Vec<String> = args
+        .iter()
+        .filter(|a| a.as_str() != "--json")
+        .cloned()
+        .collect();
     if args.is_empty() {
         eprintln!("오류: HWP 파일 경로를 지정해주세요.");
         eprintln!("사용법: rhwp export-text <파일.hwp> [옵션] (rhwp --help 참조)");
@@ -1728,14 +2282,16 @@ fn export_text(args: &[String]) -> i32 {
     };
 
     let page_count = doc.page_count();
-    println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    if !json_mode {
+        println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    }
     if page_count == 0 {
         eprintln!("오류: 문서에 페이지가 없습니다.");
         return EXIT_RUNTIME;
     }
 
     let output_path = Path::new(&output_dir);
-    if !output_path.exists() {
+    if !json_mode && !output_path.exists() {
         if let Err(e) = fs::create_dir_all(output_path) {
             eprintln!(
                 "오류: 출력 폴더를 생성할 수 없습니다 - {}: {}",
@@ -1758,6 +2314,30 @@ fn export_text(args: &[String]) -> i32 {
         }
         None => (0..page_count).collect(),
     };
+
+    // [#3237] JSON 모드: 파일을 쓰지 않고 요청 페이지 전체를 stdout JSON 하나로 낸다.
+    if json_mode {
+        let mut page_objs = Vec::with_capacity(pages.len());
+        for page_num in &pages {
+            match doc.extract_page_text_native(*page_num) {
+                Ok(text) => {
+                    page_objs.push(serde_json::json!({ "page": page_num, "text": text }));
+                }
+                Err(e) => {
+                    eprintln!("오류: 페이지 {} 텍스트 추출 실패 - {}", page_num, e);
+                    return EXIT_RUNTIME;
+                }
+            }
+        }
+        let result = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "pageCount": page_objs.len(),
+            "pages": page_objs,
+        });
+        println!("{result}");
+        return EXIT_OK;
+    }
 
     let file_stem = Path::new(file_path)
         .file_stem()
@@ -1806,6 +2386,114 @@ fn export_text(args: &[String]) -> i32 {
     } else {
         EXIT_RUNTIME
     }
+}
+
+/// `export-tables` — 표를 격자 JSON 으로 추출 (병합·중첩 보존).
+///
+/// 평문·Markdown 추출은 병합(rowSpan/colSpan)을 잃어 소비자가 덮인 칸을 별개 열로
+/// 오독한다. 본 명령은 `Table.cells`(앵커 셀 + span)를 그대로 직역해 격자를 보존한다.
+fn export_tables(args: &[String]) -> i32 {
+    use rhwp::document_core::queries::table_extract::extract_tables;
+
+    let mut file_path: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "-o" | "--out" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(p) => out_path = Some(p.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다.");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp export-tables <파일.hwp|파일.hwpx> [--json] [-o <출력.json>]");
+        return EXIT_USAGE;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let tables = extract_tables(doc.document());
+    let envelope = serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "tableCount": tables.len(),
+        "tables": tables,
+    });
+
+    if let Some(p) = out_path {
+        let json = match serde_json::to_string_pretty(&envelope) {
+            Ok(j) => j,
+            Err(e) => {
+                eprintln!("오류: JSON 직렬화 실패 - {}", e);
+                return EXIT_RUNTIME;
+            }
+        };
+        return match fs::write(&p, &json) {
+            Ok(_) => {
+                println!("표 추출 완료: {}개 → {}", tables.len(), p);
+                EXIT_OK
+            }
+            Err(e) => {
+                eprintln!("오류: 출력 쓰기 실패 - {}: {}", p, e);
+                EXIT_RUNTIME
+            }
+        };
+    }
+
+    if json_mode {
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
+    // 기본 출력은 사람용 요약 — 기계 소비는 --json 이 담당한다.
+    println!("문서 로드: {} (표 {}개)", file_path, tables.len());
+    for t in &tables {
+        let merged = t
+            .cells
+            .iter()
+            .filter(|c| c.row_span > 1 || c.col_span > 1)
+            .count();
+        let nested = t.cells.iter().filter(|c| !c.nested.is_empty()).count();
+        println!(
+            "  표{} [구역{}:문단{}]: {}행×{}열, 셀 {}개 (병합 {}개, 중첩 {}개)",
+            t.index, t.section, t.paragraph, t.rows, t.cols, t.cell_count, merged, nested
+        );
+    }
+    EXIT_OK
 }
 
 fn export_markdown(args: &[String]) -> i32 {
@@ -2096,13 +2784,426 @@ fn export_markdown(args: &[String]) -> i32 {
     }
 }
 
-fn show_info(args: &[String]) -> i32 {
-    if args.is_empty() {
-        eprintln!("오류: 문서 파일 경로를 지정해주세요.");
+/// [#3238] batch — 파일 목록을 stdin(한 줄당 하나)으로 받아 한 프로세스에서 전건 처리하고
+/// NDJSON 스트림을 stdout 으로 낸다. 건별 실패는 `error` 레코드로 스트림을 계속하되,
+/// 하나라도 실패하면 [#2707] 계약대로 종료 코드 1 로 끝난다.
+fn run_batch(args: &[String]) -> i32 {
+    use std::io::{BufRead, Write};
+
+    const USAGE: &str = "사용법: <파일 목록> | rhwp batch <export-text|info|export-structure> --json [--mode auto|outline|clause] [--threads <N>]  (stdin: 한 줄당 파일 경로 하나)";
+
+    let subcommand = args.first().map(String::as_str);
+    let is_structure = subcommand == Some("export-structure");
+    if !matches!(
+        subcommand,
+        Some("export-text") | Some("info") | Some("export-structure")
+    ) {
+        match subcommand {
+            Some(unknown) => eprintln!(
+                "오류: batch 는 현재 export-text·info·export-structure 만 지원합니다 - {}",
+                unknown
+            ),
+            None => eprintln!("오류: batch 서브커맨드를 지정해주세요."),
+        }
+        eprintln!("{USAGE}");
         return EXIT_USAGE;
     }
 
-    let file_path = &args[0];
+    let mut json_mode = false;
+    let mut threads_opt: Option<usize> = None;
+    let mut structure_mode = rhwp::document_core::queries::structure::StructureMode::Auto;
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => {
+                json_mode = true;
+                i += 1;
+            }
+            "--mode" => {
+                // [#3261] --mode 는 export-structure 축 전용이다.
+                if !is_structure {
+                    eprintln!("오류: --mode 는 export-structure 에서만 사용할 수 있습니다.");
+                    return EXIT_USAGE;
+                }
+                let Some(value) = args.get(i + 1) else {
+                    eprintln!("오류: --mode 뒤에 auto|outline|clause 가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match rhwp::document_core::queries::structure::StructureMode::parse(value) {
+                    Some(m) => structure_mode = m,
+                    None => {
+                        eprintln!("오류: --mode 는 auto|outline|clause - {}", value);
+                        return EXIT_USAGE;
+                    }
+                }
+                i += 2;
+            }
+            "--threads" => {
+                let Some(value) = args.get(i + 1) else {
+                    eprintln!("오류: --threads 뒤에 스레드 수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match value.parse::<usize>() {
+                    Ok(n) if n >= 1 => threads_opt = Some(n),
+                    _ => {
+                        eprintln!("오류: 스레드 수가 올바르지 않습니다 - {}", value);
+                        return EXIT_USAGE;
+                    }
+                }
+                i += 2;
+            }
+            other => {
+                eprintln!("알 수 없는 옵션: {}", other);
+                eprintln!("{USAGE}");
+                return EXIT_USAGE;
+            }
+        }
+    }
+    if !json_mode {
+        eprintln!("오류: batch 는 현재 --json 출력만 지원합니다.");
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    }
+
+    let mode = match subcommand {
+        Some("export-text") => BatchMode::ExportText,
+        Some("info") => BatchMode::Info,
+        _ => BatchMode::Structure(structure_mode),
+    };
+
+    let stdin = std::io::stdin();
+    let mut paths: Vec<String> = Vec::new();
+    for line in stdin.lock().lines() {
+        match line {
+            Ok(l) => {
+                let path = l.trim().to_string();
+                if !path.is_empty() {
+                    paths.push(path);
+                }
+            }
+            Err(e) => {
+                eprintln!("오류: stdin 읽기 실패 - {}", e);
+                return EXIT_RUNTIME;
+            }
+        }
+    }
+
+    let threads = threads_opt
+        .unwrap_or_else(|| {
+            std::thread::available_parallelism()
+                .map(|n| n.get())
+                .unwrap_or(1)
+        })
+        .max(1);
+
+    let started = std::time::Instant::now();
+    let stdout = std::io::stdout();
+    let mut out = std::io::BufWriter::new(stdout.lock());
+
+    // 파일 간 병렬 처리 + 한계 재정렬 버퍼(bounded reorder buffer) 스트리밍.
+    //
+    // 배리어 없이 완전 병렬로 돌리되, 완료 레코드는 stdin 입력 순서대로 즉시 방출한다.
+    // 완료-미방출 레코드가 cap 을 넘으면 워커가 대기(역압)해 메모리를 상한한다.
+    // 단, 방출 차례(next_emit) 레코드는 cap 과 무관하게 넣을 수 있어야 교착이 없다 —
+    // 느린 파일 하나가 버퍼를 채워도, 그 파일이 곧 방출 차례이므로 항상 전진한다.
+    let n = paths.len();
+    let cap = threads.saturating_mul(8).max(1);
+    let next_claim = std::sync::atomic::AtomicUsize::new(0);
+    let abort = std::sync::atomic::AtomicBool::new(false);
+    let buf: std::sync::Mutex<std::collections::HashMap<usize, serde_json::Value>> =
+        std::sync::Mutex::new(std::collections::HashMap::new());
+    let next_emit = std::sync::atomic::AtomicUsize::new(0);
+    let space = std::sync::Condvar::new(); // 버퍼에 자리가 났다
+    let ready = std::sync::Condvar::new(); // 방출 차례 레코드가 도착했다
+
+    let (failed, emitted) = std::thread::scope(|scope| {
+        for _ in 0..threads.min(n) {
+            scope.spawn(|| loop {
+                if abort.load(std::sync::atomic::Ordering::Relaxed) {
+                    break;
+                }
+                let idx = next_claim.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                if idx >= n {
+                    break;
+                }
+                let record = batch_record(mode, &paths[idx]);
+                let mut guard = buf.lock().expect("batch buf lock");
+                while guard.len() >= cap
+                    && idx != next_emit.load(std::sync::atomic::Ordering::Relaxed)
+                    && !abort.load(std::sync::atomic::Ordering::Relaxed)
+                {
+                    guard = space.wait(guard).expect("batch buf lock");
+                }
+                if abort.load(std::sync::atomic::Ordering::Relaxed) {
+                    break;
+                }
+                guard.insert(idx, record);
+                // 방출자는 하나뿐이므로 notify_one 으로 충분하다.
+                ready.notify_one();
+            });
+        }
+
+        // 방출자(현재 스레드): 입력 순서대로 도착 즉시 방출한다. 도착해 있는 연속
+        // 레코드는 한 번의 락으로 일괄 드레인하고 notify 도 배치당 1회만 보낸다 —
+        // 레코드당 notify_all 은 대기 워커 전원을 헛깨우는 thundering herd 가 된다
+        // (271건 실측에서 방출 버스트 구간 수 초 손실).
+        let mut failed = 0usize;
+        let mut emitted = 0usize;
+        let mut drained: Vec<serde_json::Value> = Vec::new();
+        'emit: while emitted < n {
+            drained.clear();
+            {
+                let mut guard = buf.lock().expect("batch buf lock");
+                while guard.get(&emitted).is_none() {
+                    guard = ready.wait(guard).expect("batch buf lock");
+                }
+                while let Some(record) = guard.remove(&emitted) {
+                    emitted += 1;
+                    drained.push(record);
+                }
+                next_emit.store(emitted, std::sync::atomic::Ordering::Relaxed);
+            }
+            space.notify_all();
+            for record in &drained {
+                if record.get("error").is_some() {
+                    failed += 1;
+                }
+                if let Err(e) = writeln!(out, "{record}") {
+                    // 파이프 소비자가 끊은 경우(broken pipe 등): 새 작업 수주를 멈추고
+                    // 대기 중인 워커를 전부 깨워 정리한다.
+                    eprintln!("오류: stdout 쓰기 실패 - {}", e);
+                    abort.store(true, std::sync::atomic::Ordering::Relaxed);
+                    space.notify_all();
+                    break 'emit;
+                }
+            }
+        }
+        (failed, emitted)
+    });
+
+    if abort.load(std::sync::atomic::Ordering::Relaxed) {
+        return EXIT_RUNTIME;
+    }
+    if let Err(e) = out.flush() {
+        eprintln!("오류: stdout 쓰기 실패 - {}", e);
+        return EXIT_RUNTIME;
+    }
+
+    eprintln!(
+        "batch: {}건 중 {} 성공, {} 실패 ({}ms, threads={})",
+        emitted,
+        emitted - failed,
+        failed,
+        started.elapsed().as_millis(),
+        threads
+    );
+    if failed > 0 {
+        EXIT_RUNTIME
+    } else {
+        EXIT_OK
+    }
+}
+
+/// [#3238] batch 가 처리하는 서브커맨드 축.
+#[derive(Clone, Copy)]
+enum BatchMode {
+    ExportText,
+    Info,
+    /// [#3261] 문서 개요/조문 구조 — `export-structure --json` 과 스키마 공유.
+    Structure(rhwp::document_core::queries::structure::StructureMode),
+}
+
+/// [#3238] 파일 하나를 처리해 NDJSON 레코드 하나를 만든다. 실패는 레코드로 보고하고
+/// 스트림은 계속된다 — 프로세스 중단 없이 부분 실패를 종료 코드로 신호하기 위함.
+///
+/// 배치는 신뢰할 수 없는 대량 코퍼스를 훑는 용도라, 한 건의 파서 panic 이 배치 전체를
+/// 죽여서는 안 된다. panic 도 해당 파일의 `error` 레코드로 격리한다.
+fn batch_record(mode: BatchMode, path: &str) -> serde_json::Value {
+    match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match mode {
+        BatchMode::ExportText => batch_export_text_record_inner(path),
+        BatchMode::Info => batch_info_record_inner(path),
+        BatchMode::Structure(structure_mode) => batch_structure_record_inner(path, structure_mode),
+    })) {
+        Ok(record) => record,
+        Err(payload) => {
+            let message = payload
+                .downcast_ref::<&str>()
+                .map(|s| (*s).to_string())
+                .or_else(|| payload.downcast_ref::<String>().cloned())
+                .unwrap_or_else(|| "원인 불명".to_string());
+            batch_fail_record(path, format!("내부 오류(panic): {}", message))
+        }
+    }
+}
+
+fn batch_fail_record(path: &str, message: String) -> serde_json::Value {
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": path,
+        "error": message,
+        "exitClass": "runtime",
+    })
+}
+
+fn batch_export_text_record_inner(path: &str) -> serde_json::Value {
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
+    };
+
+    let page_count = doc.page_count();
+    let mut text = String::new();
+    for page_num in 0..page_count {
+        match doc.extract_page_text_native(page_num) {
+            Ok(t) => {
+                text.push_str(&t);
+                if !t.ends_with('\n') {
+                    text.push('\n');
+                }
+            }
+            Err(e) => {
+                return batch_fail_record(
+                    path,
+                    format!("페이지 {} 텍스트 추출 실패: {}", page_num, e),
+                )
+            }
+        }
+    }
+
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": path,
+        "pageCount": page_count,
+        "text": text,
+    })
+}
+
+/// [#3261] `batch export-structure --json` 의 파일당 레코드 — `export-structure --json`
+/// 봉투(`structure_json_value` 공유)와 같은 스키마다.
+fn batch_structure_record_inner(
+    path: &str,
+    mode: rhwp::document_core::queries::structure::StructureMode,
+) -> serde_json::Value {
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
+    };
+    let st = rhwp::document_core::queries::structure::build_structure(doc.document(), mode);
+    structure_json_value(path, &st)
+}
+
+/// [#3238] `batch info --json` 의 파일당 레코드 — `info --json` 과 같은 스키마
+/// (`info_json_value` 공유)라 소비자가 단건/배치를 같은 코드로 읽는다.
+fn batch_info_record_inner(path: &str) -> serde_json::Value {
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    let file_size = data.len();
+    let detected_format = rhwp::parser::detect_format(&data);
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
+    };
+    info_json_value(path, file_size, detected_format, &doc)
+}
+
+/// [#3261] `export-structure --json`·`batch export-structure --json` 이 공유하는
+/// 구조 봉투 레코드. `mode`/`nodeCount` 를 톱레벨로 올려 스윕 선별(jq select)이 싸다.
+fn structure_json_value(
+    file_path: &str,
+    st: &rhwp::document_core::queries::structure::StructureDoc,
+) -> serde_json::Value {
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "mode": st.mode,
+        "nodeCount": st.node_count,
+        "structure": st,
+    })
+}
+
+/// [#3237] `info --json`·`batch info --json` 이 공유하는 문서 메타 JSON 레코드.
+/// `schemaVersion` 이 계약이며 필드 추가는 허용, 변경·삭제는 계약 테스트가 잡는다.
+fn info_json_value(
+    file_path: &str,
+    file_size: usize,
+    detected_format: rhwp::parser::FileFormat,
+    doc: &rhwp::wasm_api::HwpDocument,
+) -> serde_json::Value {
+    let document = doc.document();
+    let format_str = match detected_format {
+        rhwp::parser::FileFormat::Hwp => "hwp5",
+        rhwp::parser::FileFormat::Hwpx => "hwpx",
+        rhwp::parser::FileFormat::Hwp3 => "hwp3",
+        rhwp::parser::FileFormat::Hml => "hml",
+        // 파싱이 성공한 뒤에는 도달하지 않지만, 계약상 문자열은 고정해 둔다.
+        rhwp::parser::FileFormat::DrmProtected => "drm-protected",
+        rhwp::parser::FileFormat::Empty => "empty",
+        rhwp::parser::FileFormat::Unknown => "unknown",
+    };
+    let version = if detected_format == rhwp::parser::FileFormat::Hml {
+        serde_json::Value::Null
+    } else {
+        serde_json::Value::String(format!(
+            "{}.{}.{}.{}",
+            document.header.version.major,
+            document.header.version.minor,
+            document.header.version.build,
+            document.header.version.revision,
+        ))
+    };
+    let fonts: Vec<String> = document
+        .doc_info
+        .font_faces
+        .first()
+        .map(|faces| faces.iter().map(|f| f.name.clone()).collect())
+        .unwrap_or_default();
+    let para_count: usize = document.sections.iter().map(|s| s.paragraphs.len()).sum();
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "format": format_str,
+        "sizeBytes": file_size,
+        "version": version,
+        "sections": document.sections.len(),
+        "pageCount": doc.page_count(),
+        "paraCount": para_count,
+        "fonts": fonts,
+    })
+}
+
+fn show_info(args: &[String]) -> i32 {
+    // [#3237] --json은 위치와 무관하다. 단일 입력 명령이므로 추가 경로를 무시하지 않는다.
+    let mut json_mode = false;
+    let mut file_path: Option<&str> = None;
+    for arg in args {
+        match arg.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("오류: 문서 파일 경로를 지정해주세요.");
+        return EXIT_USAGE;
+    };
 
     // 파일 읽기
     let data = match fs::read(file_path) {
@@ -2126,6 +3227,14 @@ fn show_info(args: &[String]) -> i32 {
     };
 
     let document = doc.document();
+
+    // [#3237] JSON 모드: 핵심 메타를 stdout JSON 하나로 낸다. `schemaVersion` 이 계약이며
+    // 필드 추가는 허용, 기존 필드 변경·삭제는 `tests/cli_json_contract.rs` 가 잡는다.
+    if json_mode {
+        let info = info_json_value(file_path, file_size, detected_format, &doc);
+        println!("{info}");
+        return EXIT_OK;
+    }
 
     if detected_format == rhwp::parser::FileFormat::Hml {
         println!("format: HML");
@@ -4249,6 +5358,102 @@ fn dump_controls(args: &[String]) -> i32 {
     EXIT_OK
 }
 
+/// `search` — 주소(구역·문단·**페이지**)를 가진 문서 검색.
+///
+/// 평문을 뽑아 외부에서 찾으면 주소가 소멸해 근거 제시가 불가능하다. rhwp 는 조판 엔진이
+/// 있어 "몇 쪽"에 답할 수 있는 유일한 도구인데, 그 출구가 없었다.
+fn search_document(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut query: Option<&str> = None;
+    let mut json_mode = false;
+    let mut ignore_case = false;
+    let mut limit: Option<usize> = None;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--ignore-case" | "-i" => ignore_case = true,
+            "--limit" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
+                    Some(n) if n >= 1 => limit = Some(n),
+                    _ => {
+                        eprintln!("오류: --limit 뒤에 1 이상의 정수가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.is_none() {
+                    file_path = Some(other);
+                } else if query.is_none() {
+                    query = Some(other);
+                } else {
+                    eprintln!("오류: 인자가 너무 많습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+
+    let (Some(file_path), Some(query)) = (file_path, query) else {
+        eprintln!(
+            "사용법: rhwp search <파일.hwp|파일.hwpx> <검색어> [--json] [--ignore-case] [--limit <N>]"
+        );
+        return EXIT_USAGE;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let matches = doc.grep(query, !ignore_case, limit);
+
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "query": query,
+            "caseSensitive": !ignore_case,
+            "matchCount": matches.len(),
+            "matches": matches,
+        });
+        println!("{envelope}");
+        // 매치 0건은 실패가 아니다 — 1은 런타임 실패 전용이다(#2707).
+        return EXIT_OK;
+    }
+
+    println!("검색: {:?} in {} — {}건", query, file_path, matches.len());
+    for m in &matches {
+        let page = m
+            .page
+            .map(|p| format!("{}쪽", p + 1))
+            .unwrap_or_else(|| "쪽 미배치".to_string());
+        println!(
+            "  [{}] 구역{}:문단{} +{}  {}",
+            page, m.section, m.paragraph, m.char_offset, m.context
+        );
+    }
+    EXIT_OK
+}
+
 fn diag_document(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("오류: HWP 파일 경로를 지정해주세요.");
@@ -6085,10 +7290,11 @@ fn ir_diff_paragraph_fields(
     diffs
 }
 
-fn ir_diff(args: &[String]) {
+fn ir_diff(args: &[String]) -> i32 {
     if args.len() < 2 {
-        eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>]");
-        return;
+        eprintln!("사용법: rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>] [--json]");
+        // [#3274] 인자 부족은 사용법 오류다 — 종전엔 0 으로 끝나 스크립트가 감지 못했다.
+        return EXIT_USAGE;
     }
 
     let file_a = &args[0];
@@ -6098,15 +7304,22 @@ fn ir_diff(args: &[String]) {
     // [Task #653 보강] 출력 가드 옵션
     let mut summary_mode = false;
     let mut max_lines: Option<usize> = None;
+    // [#3274] --json: 계약 봉투 한 줄(카테고리 요약 포함), 차이 발견 시 exit 3.
+    let mut json_mode = false;
 
+    // [#3274] 값을 받는 옵션은 다음 토큰이 플래그(`-` 시작)면 값으로 삼키지 않는다.
+    // 종전엔 `--max-lines --json` 처럼 값을 빠뜨리면 "--json" 이 값으로 소비돼
+    // json 모드가 조용히 꺼지고, 게이트를 기대한 스크립트가 차이를 통과로 오판했다.
+    // (-s/-p/--max-lines 는 모두 비음수만 받으므로 `-` 로 시작하는 값은 없다.)
+    let is_value = |idx: usize| idx < args.len() && !args[idx].starts_with('-');
     let mut i = 2;
     while i < args.len() {
         match args[i].as_str() {
-            "-s" | "--section" if i + 1 < args.len() => {
+            "-s" | "--section" if is_value(i + 1) => {
                 section_filter = args[i + 1].parse().ok();
                 i += 2;
             }
-            "-p" | "--para" if i + 1 < args.len() => {
+            "-p" | "--para" if is_value(i + 1) => {
                 para_filter = args[i + 1].parse().ok();
                 i += 2;
             }
@@ -6114,9 +7327,13 @@ fn ir_diff(args: &[String]) {
                 summary_mode = true;
                 i += 1;
             }
-            "--max-lines" if i + 1 < args.len() => {
+            "--max-lines" if is_value(i + 1) => {
                 max_lines = args[i + 1].parse().ok();
                 i += 2;
+            }
+            "--json" => {
+                json_mode = true;
+                i += 1;
             }
             _ => {
                 i += 1;
@@ -6124,18 +7341,20 @@ fn ir_diff(args: &[String]) {
         }
     }
 
+    // [#3274] 읽기·파싱 실패는 exit 1 (#2707 정렬) — 종전엔 0 으로 끝나
+    // "비교했고 차이 없음"과 "비교 자체를 못 함"을 구별할 수 없었다.
     let data_a = match fs::read(file_a) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: {} 읽기 실패: {}", file_a, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
     let data_b = match fs::read(file_b) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: {} 읽기 실패: {}", file_b, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -6143,14 +7362,14 @@ fn ir_diff(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: {} 파싱 실패: {:?}", file_a, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
     let doc_b = match rhwp::parser::parse_document(&data_b) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: {} 파싱 실패: {:?}", file_b, e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -6162,30 +7381,38 @@ fn ir_diff(args: &[String]) {
         .file_name()
         .unwrap_or_default()
         .to_string_lossy();
-    if !summary_mode {
+    if !summary_mode && !json_mode {
         println!("=== IR 비교: {} vs {} ===", name_a, name_b);
     }
 
     // [Task #653 보강] 출력 가드 상태 — IrDiffEmitter 로 통합 (#2122)
+    // [#3274] json 모드는 summary 와 같은 수집 전용 경로(버킷만 쌓고 무출력)를 탄다 —
+    // stdout 순수성을 위해 텍스트 라인을 한 줄도 내면 안 된다.
     let mut em = IrDiffEmitter {
-        summary_mode,
+        summary_mode: summary_mode || json_mode,
         max_lines,
         printed_lines: 0,
         truncated: false,
         summary_buckets: std::collections::BTreeMap::new(),
     };
 
+    let mut total_diffs = 0u32;
+
     // 구역 수 비교
+    // [#3274] 종전엔 total_diffs 선언이 이 블록 뒤에 있어 구역 수 차이가 집계되지
+    // 않았다. 텍스트 모드에선 차이 라인이 화면에 보여 무해했으나, --json 게이트에서는
+    // 구역 하나가 덧붙은 변환본이 diffCount=0·identical:true·exit 0 으로 통과하는
+    // 치명적 누락이었다(봉투 자기모순). 선언을 앞으로 올리고 여기서도 집계한다.
     if doc_a.sections.len() != doc_b.sections.len() {
         em.diff(format!(
             "구역 수: A={} vs B={}",
             doc_a.sections.len(),
             doc_b.sections.len()
         ));
+        total_diffs += 1;
     }
 
     let sec_count = doc_a.sections.len().min(doc_b.sections.len());
-    let mut total_diffs = 0u32;
 
     for sec_idx in 0..sec_count {
         if let Some(sf) = section_filter {
@@ -6323,7 +7550,8 @@ fn ir_diff(args: &[String]) {
     }
 
     // [Task #653 보강] 요약 모드 출력 — 카테고리별 카운트 (내림차순 → 알파벳)
-    if summary_mode {
+    // [#3274] --summary --json 병용 시 JSON 이 이긴다 — stdout 순수성 우선.
+    if summary_mode && !json_mode {
         println!("=== 카테고리별 차이 요약 ===");
         let mut entries: Vec<(String, u32)> = em.summary_buckets.clone().into_iter().collect();
         entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
@@ -6332,7 +7560,147 @@ fn ir_diff(args: &[String]) {
         }
     }
 
+    if json_mode {
+        // [#3274] 계약 봉투 한 줄 — 카테고리 버킷(BTreeMap)은 키 정렬이 결정적이다.
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "a": file_a,
+            "b": file_b,
+            "identical": total_diffs == 0,
+            "diffCount": total_diffs,
+            "categories": em.summary_buckets,
+        });
+        println!("{envelope}");
+        // 차이 발견 = 3: #2707 의 "--verify IR 차이" 코드와 같은 의미의 게이트 신호.
+        return if total_diffs == 0 { EXIT_OK } else { 3 };
+    }
+
     println!("\n=== 비교 완료: 차이 {} 건 ===", total_diffs);
+    EXIT_OK
+}
+
+/// `fields` — 누름틀/필드 조사 (읽기 전용).
+///
+/// rhwp 는 이미 필드에 값을 **쓸 수** 있는데(`set_field_value_by_name`) 조회 API 는
+/// WASM/스튜디오 경로에만 있어, 브라우저 밖 에이전트는 "이 서식이 무엇을 요구하는지"
+/// 알 방법이 없었다. 기존 `collect_all_fields()` 를 그대로 노출한다(라이브러리 무변경).
+fn show_fields(args: &[String]) -> i32 {
+    use rhwp::document_core::queries::field_query::NestedEntry;
+
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    for a in args {
+        match a.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => file_path = Some(other),
+        }
+    }
+
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp fields <파일.hwp|파일.hwpx> [--json]");
+        return EXIT_USAGE;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let infos = doc.collect_all_fields();
+    let fields: Vec<serde_json::Value> = infos
+        .iter()
+        .map(|fi| {
+            // 중첩 경로: 표 셀·글상자 안의 필드가 어디에 있는지 — 후속 편집의 좌표다.
+            let nested: Vec<serde_json::Value> = fi
+                .location
+                .nested_path
+                .iter()
+                .map(|e| match e {
+                    NestedEntry::TableCell {
+                        control_index,
+                        cell_index,
+                        para_index,
+                    } => serde_json::json!({
+                        "kind": "tableCell",
+                        "control": control_index,
+                        "cell": cell_index,
+                        "paragraph": para_index,
+                    }),
+                    NestedEntry::TextBox {
+                        control_index,
+                        para_index,
+                    } => serde_json::json!({
+                        "kind": "textBox",
+                        "control": control_index,
+                        "paragraph": para_index,
+                    }),
+                })
+                .collect();
+
+            serde_json::json!({
+                "fieldId": fi.field.field_id,
+                "fieldType": format!("{:?}", fi.field.field_type),
+                "name": fi.field.field_name().unwrap_or(""),
+                "guide": fi.field.guide_text().unwrap_or(""),
+                "memo": fi.field.memo_text().unwrap_or_default(),
+                "command": fi.field.command,
+                "value": fi.value,
+                "editableInForm": fi.field.is_editable_in_form(),
+                "location": {
+                    "section": fi.location.section_index,
+                    "paragraph": fi.location.para_index,
+                    "nested": nested,
+                },
+            })
+        })
+        .collect();
+
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "fieldCount": fields.len(),
+            "fields": fields,
+        });
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
+    println!("문서 로드: {} (필드 {}개)", file_path, fields.len());
+    for f in &fields {
+        let name = f["name"].as_str().unwrap_or("");
+        let label = if name.is_empty() {
+            "(이름 없음)"
+        } else {
+            name
+        };
+        println!(
+            "  [{}] {} = {:?}{}",
+            f["fieldType"].as_str().unwrap_or("?"),
+            label,
+            f["value"].as_str().unwrap_or(""),
+            if f["editableInForm"] == true {
+                ""
+            } else {
+                " (서식 편집 불가)"
+            }
+        );
+    }
+    EXIT_OK
 }
 
 fn extract_thumbnail(args: &[String]) {

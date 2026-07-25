@@ -58,6 +58,37 @@ function enterNoteEditing(
   (ih as any).textarea?.focus();
 }
 
+/**
+ * [Task #3207] 각주/미주 삽입을 snapshot 으로 기록한 뒤 노트 편집 모드로 진입한다.
+ *
+ * 삽입은 본문에 노트 참조를 넣어 문자 수를 바꾸므로 미기록 시 undo 불가 + 후속 undo
+ * 오프셋 오염으로 이어진다. undo 시 노트 모드 이탈은 별도 배선이 필요 없다 —
+ * SnapshotCommand 는 editContext() 를 노출하지 않아 restoreEditContextAfterHistory 의
+ * 본문 분기를 타고, 그 분기가 노트 모드를 빠져나와 삽입 위치로 커서를 되돌린다.
+ */
+function insertNote(
+  services: Parameters<CommandDef['execute']>[0],
+  kind: 'footnote' | 'endnote',
+): void {
+  const ih = services.getInputHandler();
+  if (!ih) return;
+  const pos = ih.getPosition();
+  let result: { ok: boolean; paraIdx: number; controlIdx: number } | undefined;
+  ih.executeOperation({
+    kind: 'snapshot',
+    operationType: kind === 'footnote' ? 'insertFootnote' : 'insertEndnote',
+    operation: (wasm) => {
+      result = kind === 'footnote'
+        ? wasm.insertFootnote(pos.sectionIndex, pos.paragraphIndex, pos.charOffset)
+        : wasm.insertEndnote(pos.sectionIndex, pos.paragraphIndex, pos.charOffset);
+      if (!result.ok) throw new Error(`[insert:${kind}] 삽입 실패`);
+      return pos;
+    },
+  });
+  // 편집 모드 게이트로 라우터가 작업을 드롭했으면 result 가 없다.
+  if (result) enterNoteEditing(services, ih, pos.sectionIndex, result.paraIdx, result.controlIdx);
+}
+
 export const insertCommands: CommandDef[] = [
   {
     id: 'insert:shape',
@@ -147,23 +178,25 @@ export const insertCommands: CommandDef[] = [
       const pos = ih.getPosition();
       // 본문 전용 — 표 셀 내부에서는 실행하지 않음
       if ((pos as any).cellIndex !== undefined && (pos as any).cellIndex >= 0) return;
-      try {
-        const defaultFontSize = 1000; // 10pt → HWPUNIT
-        const defaultColor = 0x00000000; // 검정
-        const result = services.wasm.insertEquation(
-          pos.sectionIndex, pos.paragraphIndex, pos.charOffset,
-          '', defaultFontSize, defaultColor
-        );
-        if (result.ok) {
-          services.eventBus.emit('document-changed');
-          if (!equationEditorDialog) {
-            equationEditorDialog = new EquationEditorDialog(services.wasm, services.eventBus, services);
-          }
-          equationEditorDialog.open(pos.sectionIndex, result.paraIdx, result.controlIdx);
-        }
-      } catch (err) {
-        console.warn('[insert:equation] 수식 삽입 실패:', err);
-      }
+      const defaultFontSize = 1000; // 10pt → HWPUNIT
+      const defaultColor = 0x00000000; // 검정
+      // [Task #3207] 수식 삽입도 본문 문자 수를 바꾸므로 snapshot 으로 기록한다(각주/미주와 동형).
+      let result: { ok: boolean; paraIdx: number; controlIdx: number } | undefined;
+      ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'insertEquation',
+        operation: (wasm) => {
+          result = wasm.insertEquation(
+            pos.sectionIndex, pos.paragraphIndex, pos.charOffset,
+            '', defaultFontSize, defaultColor,
+          );
+          if (!result.ok) throw new Error('[insert:equation] 삽입 실패');
+          return pos;
+        },
+      });
+      if (!result) return;
+      equationEditorDialog ??= new EquationEditorDialog(services.wasm, services.eventBus, services);
+      equationEditorDialog.open(pos.sectionIndex, result.paraIdx, result.controlIdx);
     },
   },
   {
@@ -221,19 +254,7 @@ export const insertCommands: CommandDef[] = [
     icon: 'icon-footnote',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
-      if (!services.getContext().hasDocument) return;
-      const ih = services.getInputHandler();
-      if (!ih) return;
-      const pos = ih.getPosition();
-      try {
-        const result = services.wasm.insertFootnote(pos.sectionIndex, pos.paragraphIndex, pos.charOffset);
-        if (result.ok) {
-          services.eventBus.emit('document-changed');
-          enterNoteEditing(services, ih, pos.sectionIndex, result.paraIdx, result.controlIdx);
-        }
-      } catch (err) {
-        console.warn('[insert:footnote] 각주 삽입 실패:', err);
-      }
+      insertNote(services, 'footnote');
     },
   },
   {
@@ -242,19 +263,7 @@ export const insertCommands: CommandDef[] = [
     icon: 'icon-endnote',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
-      if (!services.getContext().hasDocument) return;
-      const ih = services.getInputHandler();
-      if (!ih) return;
-      const pos = ih.getPosition();
-      try {
-        const result = services.wasm.insertEndnote(pos.sectionIndex, pos.paragraphIndex, pos.charOffset);
-        if (result.ok) {
-          services.eventBus.emit('document-changed');
-          enterNoteEditing(services, ih, pos.sectionIndex, result.paraIdx, result.controlIdx);
-        }
-      } catch (err) {
-        console.warn('[insert:endnote] 미주 삽입 실패:', err);
-      }
+      insertNote(services, 'endnote');
     },
   },
   {

@@ -440,6 +440,52 @@ fn tac_offsets_for_line(
         .collect()
 }
 
+/// 정렬 폭 산정에 사용할 줄 단위 TAC 집합.
+///
+/// 기본 줄 범위는 [`tac_offsets_for_line`]과 동일하게 엄격한 반열림 구간이다. 다만
+/// 실제 렌더 경로(`emit_line_runs`)는 문단 마지막 run 또는 명시 줄바꿈의 마지막 run
+/// 끝에 놓인 TAC를 현재 줄에 방출한다. 그 TAC를 폭 계산에서 제외하면 Center/Right
+/// 정렬의 시작점만 그림 폭만큼 어긋난다 (#3257).
+///
+/// 다음 composed line이 정확히 같은 run 끝 위치에서 시작하면 그 TAC는 다음 줄 선두다.
+/// #1219의 줄 경계 수식 중복·폭 오포함을 막기 위해 이 경우에는 추가하지 않는다.
+fn tac_offsets_for_line_width(
+    comp: &ComposedParagraph,
+    tac_offsets_px: &[(usize, f64, usize)],
+    line_idx: usize,
+) -> Vec<(usize, f64, usize)> {
+    let mut offsets = tac_offsets_for_line(comp, tac_offsets_px, line_idx);
+    let Some(line) = comp.lines.get(line_idx) else {
+        return offsets;
+    };
+    if line.runs.is_empty() {
+        return offsets;
+    }
+
+    let run_end = line.char_start
+        + line
+            .runs
+            .iter()
+            .map(|run| run.text.chars().count())
+            .sum::<usize>();
+    let is_last_line = comp.lines.get(line_idx + 1).is_none();
+    let next_starts_at_run_end = comp
+        .lines
+        .get(line_idx + 1)
+        .is_some_and(|next| next.char_start == run_end);
+    let emits_trailing_tac = (is_last_line || line.has_line_break) && !next_starts_at_run_end;
+    if !emits_trailing_tac {
+        return offsets;
+    }
+
+    for offset @ (pos, _, _) in tac_offsets_px.iter().copied() {
+        if pos == run_end && !offsets.iter().any(|(_, _, ci)| *ci == offset.2) {
+            offsets.push(offset);
+        }
+    }
+    offsets
+}
+
 fn repeated_empty_tac_line_offset(
     comp: &ComposedParagraph,
     tac_offsets_px: &[(usize, f64, usize)],
@@ -2847,39 +2893,10 @@ impl LayoutEngine {
                 line_tac_offsets = offsets;
             }
             let runs_all_whitespace = comp_line.runs.iter().all(|r| r.text.trim().is_empty());
-            let mut line_tac_offsets_for_width = line_tac_offsets.clone();
-            if cell_ctx.is_some()
-                && alignment == Alignment::Right
-                && runs_all_whitespace
-                && composed.lines.get(line_idx + 1).is_none()
-            {
-                let has_strict_inline_tac_table = para
-                    .map(|p| {
-                        line_tac_offsets.iter().any(|(_, _, ci)| {
-                            matches!(p.controls.get(*ci), Some(Control::Table(t)) if t.common.treat_as_char)
-                        })
-                    })
-                    .unwrap_or(false);
-                if has_strict_inline_tac_table {
-                    let line_end = composed_line_char_end(composed, line_idx);
-                    if line_end > comp_line.char_start {
-                        for (pos, tac_w, ci) in tac_offsets_px.iter().copied() {
-                            if pos == line_end
-                                && !line_tac_offsets_for_width
-                                    .iter()
-                                    .any(|(_, _, existing_ci)| *existing_ci == ci)
-                                && para
-                                    .and_then(|p| p.controls.get(ci))
-                                    .is_some_and(|ctrl| {
-                                        matches!(ctrl, Control::Table(t) if t.common.treat_as_char)
-                                    })
-                            {
-                                line_tac_offsets_for_width.push((pos, tac_w, ci));
-                            }
-                        }
-                    }
-                }
-            }
+            // 정렬 폭은 실제 run 방출과 같은 TAC 귀속을 쓴다. 끝 위치 TAC를 빼면
+            // 그림은 그리되 Center/Right 시작점이 그림 폭만큼 우측으로 밀린다 (#3257).
+            let line_tac_offsets_for_width =
+                tac_offsets_for_line_width(composed, &tac_offsets_px, line_idx);
             let empty_tac_guide_line = comp_line.runs.is_empty() && !line_tac_offsets.is_empty();
             // LineSeg.line_height는 HWP에서 줄간격이 이미 반영된 값.
             // PARA_LINE_SEG가 없는 폴백(400 HWPUNIT=5.333px) 등 line_height가 폰트 크기보다 작으면,
@@ -3411,13 +3428,17 @@ impl LayoutEngine {
             let is_answer_sheet_number_label =
                 cell_ctx.is_some() && line_plain_text.trim() == "수험번호";
             // [Task #1308 CI follow-up / #1256 regression]
-            // 본문/미주 흐름의 TAC-only 줄은 저장된 LINE_SEG x 흐름을 따라야 한다.
+            // 본문/미주 흐름의 TAC 수식-only 줄은 저장된 LINE_SEG x 흐름을 따라야 한다.
             // 빈 TextRun 이 있는 수식-only 문단은 일반 정렬 경로로 들어오므로,
             // Distribute/Center 의 잔여 폭 중앙 오프셋을 적용하면 한컴과 달리 수식 블록이
-            // 열 안쪽으로 밀린다. 표 셀 안 수식은 기존처럼 셀 정렬을 따른다.
+            // 열 안쪽으로 밀린다. 그림/표 TAC는 문단 정렬 폭을 따라야 하며, 표 셀 안 수식은
+            // 기존처럼 셀 정렬을 따른다.
             let non_cell_tac_only_line = cell_ctx.is_none()
                 && !line_tac_offsets_for_width.is_empty()
-                && line_plain_text.trim().is_empty();
+                && line_plain_text.trim().is_empty()
+                && line_tac_offsets_for_width.iter().any(|(_, _, ci)| {
+                    is_treat_as_char_equation_control(para.and_then(|p| p.controls.get(*ci)))
+                });
 
             // 셀 overflow/underflow 분기로 자간 보정된 경우 정렬 기준 폭은 실제 렌더 폭이어야 함.
             // 특히 #1285 답안지 `수험번호` 라벨은 음수 자간으로 압축된 텍스트를 자연 폭 기준으로
@@ -6513,6 +6534,66 @@ mod issue_2809_split_alignment_tests {
         assert!((advance + trailing_ink_overhang - 90.0).abs() < 0.001);
         assert_eq!(extra_char, 0.0);
         assert_eq!(extra_dash, 0.0);
+    }
+}
+
+#[cfg(test)]
+mod trailing_tac_width_tests {
+    use super::tac_offsets_for_line_width;
+    use crate::renderer::composer::{ComposedLine, ComposedParagraph, ComposedTextRun};
+
+    fn line(text: &str, char_start: usize, has_line_break: bool) -> ComposedLine {
+        ComposedLine {
+            runs: vec![ComposedTextRun {
+                text: text.to_string(),
+                ..Default::default()
+            }],
+            line_height: 1_000,
+            baseline_distance: 800,
+            segment_width: 10_000,
+            column_start: 0,
+            line_spacing: 0,
+            has_line_break,
+            char_start,
+        }
+    }
+
+    fn composed(lines: Vec<ComposedLine>) -> ComposedParagraph {
+        ComposedParagraph {
+            lines,
+            para_style_id: 0,
+            inline_controls: Vec::new(),
+            numbering_text: None,
+            tac_controls: Vec::new(),
+            footnote_positions: Vec::new(),
+            tab_extended: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn final_run_trailing_tac_is_included_in_alignment_width() {
+        let comp = composed(vec![line("      ", 0, false)]);
+        let offsets = tac_offsets_for_line_width(&comp, &[(6, 574.08, 0)], 0);
+
+        assert_eq!(offsets, vec![(6, 574.08, 0)]);
+    }
+
+    #[test]
+    fn next_line_leading_tac_is_not_back_attributed_to_previous_width() {
+        let comp = composed(vec![line("A", 0, false), line("B", 1, false)]);
+        let offsets = [(1, 55.0, 0)];
+
+        assert!(tac_offsets_for_line_width(&comp, &offsets, 0).is_empty());
+        assert_eq!(tac_offsets_for_line_width(&comp, &offsets, 1), offsets);
+    }
+
+    #[test]
+    fn forced_break_trailing_tac_stays_with_emitting_line() {
+        let comp = composed(vec![line("A", 0, true), line("B", 2, false)]);
+        let offsets = [(1, 55.0, 0)];
+
+        assert_eq!(tac_offsets_for_line_width(&comp, &offsets, 0), offsets);
+        assert!(tac_offsets_for_line_width(&comp, &offsets, 1).is_empty());
     }
 }
 

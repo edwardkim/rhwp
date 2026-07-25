@@ -35,16 +35,16 @@ function undoBlock(block: string): string {
 test('InsertTextCommand.undo 는 삭제 count 를 charCount 로 계산한다', () => {
   const undo = undoBlock(classBlock(commandSrc, 'InsertTextCommand'));
 
-  assert.match(undo, /doDeleteText\([^)]*charCount\(this\.text\)/,
+  assert.match(undo, /doDeleteTextImmediate\([^)]*charCount\(this\.text\)/,
     'astral 문자 over-delete 방지 — charCount 로 코드포인트 수를 넘겨야 함');
-  assert.doesNotMatch(undo, /doDeleteText\([^)]*this\.text\.length/,
+  assert.doesNotMatch(undo, /doDeleteTextImmediate\([^)]*this\.text\.length/,
     'UTF-16 length 를 삭제 count 로 넘기면 😀 입력 후 undo 가 인접 문자까지 지운다');
 });
 
 test('command.ts 의 삭제 count 에 UTF-16 length 를 넘기는 호출이 없다', () => {
   // 커서 오프셋(charOffset + text.length)은 studio 의 UTF-16 관례를 유지하므로 제외하고,
   // 삭제 count 인자만 본다.
-  const deleteCalls = /(doDeleteText|deleteTextInHeaderFooter|deleteTextInFootnote|deleteTextInCell)\(([^;]{0,400}?)\)/g;
+  const deleteCalls = /(doDeleteTextImmediate|deleteTextWithMutationEffects|deleteTextInHeaderFooter|deleteTextInFootnote|deleteTextInCell)\(([^;]{0,400}?)\)/g;
   const offenders: string[] = [];
   for (const m of commandSrc.matchAll(deleteCalls)) {
     const args = m[2];

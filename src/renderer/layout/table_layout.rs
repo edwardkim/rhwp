@@ -836,7 +836,8 @@ impl LayoutEngine {
                         // nested 표 위치/size 미리 결정 (nested layout 의 위치 결정 logic 동일)
                         let pw_now = self.current_paper_width.get();
                         let paper_w = if pw_now > 0.0 { Some(pw_now) } else { None };
-                        let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi);
+                        let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi)
+                            * self.render_table_width_scale(nested);
                         let outer_w_for_box = nested_w;
                         let outer_x_for_box = self.compute_table_x_position(
                             nested,
@@ -980,6 +981,7 @@ impl LayoutEngine {
             row_count,
             cell_spacing,
             self.dpi,
+            self.render_table_width_scale(table),
         );
         let independent_col_row_y = if split_row_range.is_none() && !table.common.treat_as_char {
             let col_row_y = build_col_row_y_from_cell_heights(
@@ -1471,6 +1473,7 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         col_count: usize,
     ) -> Vec<f64> {
+        let width_scale = self.render_table_width_scale(table);
         // 1단계: col_span==1인 셀에서 개별 열 폭 추출
         let base_grid_outlier_rows = table.base_grid_outlier_rows();
         let mut col_widths = vec![0.0f64; col_count];
@@ -1481,7 +1484,7 @@ impl LayoutEngine {
                 continue;
             }
             if cell.col_span == 1 && (cell.col as usize) < col_count {
-                let w = hwpunit_to_px(cell.width as i32, self.dpi);
+                let w = hwpunit_to_px(cell.width as i32, self.dpi) * width_scale;
                 if w > col_widths[cell.col as usize] {
                     col_widths[cell.col as usize] = w;
                 }
@@ -1500,7 +1503,7 @@ impl LayoutEngine {
                 let c = cell.col as usize;
                 let span = cell.col_span as usize;
                 if span > 1 && c + span <= col_count {
-                    let total_w = hwpunit_to_px(cell.width as i32, self.dpi);
+                    let total_w = hwpunit_to_px(cell.width as i32, self.dpi) * width_scale;
                     if let Some(existing) = constraints.iter_mut().find(|x| x.0 == c && x.1 == span)
                     {
                         if total_w > existing.2 {
@@ -1565,7 +1568,7 @@ impl LayoutEngine {
             }
         }
         let target_width = if table.common.width > 0 {
-            hwpunit_to_px(table.common.width as i32, self.dpi)
+            hwpunit_to_px(table.common.width as i32, self.dpi) * width_scale
         } else {
             0.0
         };
@@ -1691,7 +1694,8 @@ impl LayoutEngine {
                     // 세로쓰기: line_seg.segment_width가 열의 세로 길이
                     self.calc_vertical_cell_content_height(&cell.paragraphs) + pad_top + pad_bottom
                 } else {
-                    let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi);
+                    let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi)
+                        * self.render_table_width_scale(table);
                     let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
                     let (line_based, object_based) = self.calc_cell_paragraphs_content_parts(
                         &cell.paragraphs,
@@ -1792,7 +1796,8 @@ impl LayoutEngine {
             if span > 1 && r + span <= row_count {
                 let (pad_left, pad_right, pad_top, pad_bottom) =
                     self.resolve_cell_padding(cell, table);
-                let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi);
+                let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi)
+                    * self.render_table_width_scale(table);
                 let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
                 // LINE_SEG의 line_height에 이미 셀 내 중첩 표 높이가 반영되어 있으므로
                 // controls_height를 별도로 더하면 이중 계산됨
@@ -4279,7 +4284,8 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> f64 {
         let measurer = super::super::height_measurer::HeightMeasurer::new(self.dpi)
-            .with_hwp3_variant(self.profile.get().hwp3_layout());
+            .with_hwp3_variant(self.profile.get().hwp3_layout())
+            .with_render_normalization(self.render_normalization_overlay());
         measurer.cell_controls_height(&cell.paragraphs, styles, 0, 0.0)
     }
 
@@ -4764,7 +4770,7 @@ impl LayoutEngine {
         for cell in table.cells.iter().filter(|cell| cell.row == 0) {
             let (pad_left, pad_right, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
             let cell_w = if cell.width < 0x8000_0000 {
-                hwpunit_to_px(cell.width as i32, self.dpi)
+                hwpunit_to_px(cell.width as i32, self.dpi) * self.render_table_width_scale(table)
             } else {
                 0.0
             };
@@ -4972,24 +4978,20 @@ impl LayoutEngine {
         flag
     }
 
-    /// [Issue #2214] 텍스트 삽입 뒤 edited cell의 memoized units를 국소 무효화한다.
-    /// 삽입은 local contribution을 true→false로 바꾸지 않는 단조 연산이다.
+    /// [Issue #2214/#2424] 텍스트 편집 뒤 edited cell의 memoized units를 국소 무효화한다.
     ///
     /// cached owner flag가 false인데 edited paragraph가 false→true가 된 경우에만
     /// owner의 직접 cell units를 모두 제거하고, local witness로 flag를 true로 갱신한다.
+    /// 삭제로 true→false가 되면 다른 cell의 contribution 여부를 알 수 없으므로 owner의
+    /// 직접 cell units와 flag를 제거해 다음 접근에서 한 번만 다시 계산한다.
     /// 이 direct-key 제거는 predicate 재스캔이 아니며 nested/unrelated table cache는 보존한다.
-    pub(crate) fn invalidate_cell_units_after_text_insert(
+    pub(crate) fn invalidate_cell_units_after_text_edit(
         &self,
         edited_cell: &crate::model::table::Cell,
         owner_table: &crate::model::table::Table,
         local_before: bool,
         local_after: bool,
     ) {
-        debug_assert!(
-            !local_before || local_after,
-            "text insert cannot remove a nested-text contribution"
-        );
-
         let edited_cell_key = edited_cell as *const crate::model::table::Cell as usize;
         let owner_table_key = owner_table as *const crate::model::table::Table as usize;
         let cached_owner_flag = self
@@ -4998,6 +5000,20 @@ impl LayoutEngine {
             .get(&owner_table_key)
             .copied();
         let local_became_true = !local_before && local_after;
+        let local_became_false = local_before && !local_after;
+
+        if local_became_false {
+            let mut cell_cache = self.cell_units_cache.borrow_mut();
+            for cell in &owner_table.cells {
+                let key = cell as *const crate::model::table::Cell as usize;
+                cell_cache.remove(&key);
+            }
+            drop(cell_cache);
+            self.table_nested_text_flag_cache
+                .borrow_mut()
+                .remove(&owner_table_key);
+            return;
+        }
 
         if local_became_true && cached_owner_flag == Some(false) {
             let mut cell_cache = self.cell_units_cache.borrow_mut();
@@ -5050,7 +5066,7 @@ impl LayoutEngine {
     ) -> Vec<CellUnit> {
         let (pad_left, pad_right, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
         let cell_w = if cell.width < 0x8000_0000 {
-            hwpunit_to_px(cell.width as i32, self.dpi)
+            hwpunit_to_px(cell.width as i32, self.dpi) * self.render_table_width_scale(table)
         } else {
             0.0
         };
@@ -7448,6 +7464,7 @@ impl LayoutEngine {
                 let (pad_left, pad_right, _, _) = self.resolve_cell_padding(cell, table);
                 let cell_w_px = if cell.width < 0x8000_0000 {
                     hwpunit_to_px(cell.width as i32, self.dpi)
+                        * self.render_table_width_scale(table)
                 } else {
                     0.0
                 };
@@ -8885,7 +8902,7 @@ mod row_cut_tests {
             &unrelated_table.cells[0] as *const crate::model::table::Cell as usize;
         let owner_table_key = &edited_table as *const crate::model::table::Table as usize;
         let unrelated_table_key = &unrelated_table as *const crate::model::table::Table as usize;
-        eng.invalidate_cell_units_after_text_insert(
+        eng.invalidate_cell_units_after_text_edit(
             &edited_table.cells[0],
             &edited_table,
             false,
@@ -8949,12 +8966,7 @@ mod row_cut_tests {
         eng.table_nested_text_flag_scan_count.set(0);
 
         owner_table.cells[0].paragraphs[0].insert_text_at(0, "x");
-        eng.invalidate_cell_units_after_text_insert(
-            &owner_table.cells[0],
-            &owner_table,
-            false,
-            true,
-        );
+        eng.invalidate_cell_units_after_text_edit(&owner_table.cells[0], &owner_table, false, true);
 
         assert!(eng.cell_units_cache.borrow().is_empty());
         assert_eq!(
@@ -9025,7 +9037,7 @@ mod row_cut_tests {
         eng.table_nested_text_flag_scan_count.set(0);
 
         edited_table.cells[1].paragraphs[0].insert_text_at(0, "x");
-        eng.invalidate_cell_units_after_text_insert(
+        eng.invalidate_cell_units_after_text_edit(
             &edited_table.cells[1],
             &edited_table,
             false,
@@ -9130,7 +9142,7 @@ mod row_cut_tests {
             &unrelated_table.cells[0] as *const crate::model::table::Cell as usize;
         let owner_table_key = &edited_table as *const crate::model::table::Table as usize;
         let unrelated_table_key = &unrelated_table as *const crate::model::table::Table as usize;
-        eng.invalidate_cell_units_after_text_insert(
+        eng.invalidate_cell_units_after_text_edit(
             &edited_table.cells[0],
             &edited_table,
             false,
@@ -9180,6 +9192,77 @@ mod row_cut_tests {
         assert_eq!(
             table_scan_count, 0,
             "flag update and cache rewarm must not rescan the owner table"
+        );
+    }
+
+    /// [Issue #2424] 삭제로 visible nested host가 비게 되면 true owner flag를
+    /// 보수적으로 버리고 owner cell units만 다시 계산한다. unrelated cache는 유지한다.
+    #[test]
+    fn issue2424_delete_local_contribution_recomputes_owner_flag_only() {
+        let eng = LayoutEngine::new(96.0);
+        let styles = ResolvedStyleSet::default();
+        let nested_table = table(vec![cell(0, 0, vec![visible_text_para(1, 0)])]);
+        let mut nested_host = visible_text_para(1, 0);
+        nested_host
+            .controls
+            .push(Control::Table(Box::new(nested_table)));
+        let mut owner_table = rowbreak_table(vec![
+            cell(0, 0, vec![nested_host]),
+            cell(0, 1, vec![visible_text_para(2, 0)]),
+        ]);
+        let unrelated_table = table(vec![cell(0, 0, vec![visible_text_para(3, 0)])]);
+
+        let owner_before = owner_table
+            .cells
+            .iter()
+            .map(|cell| eng.cell_units(cell, &owner_table, &styles))
+            .collect::<Vec<_>>();
+        let unrelated_before = eng.cell_units(&unrelated_table.cells[0], &unrelated_table, &styles);
+        assert!(eng.table_has_visible_text_with_nested_table(&owner_table));
+        let owner_table_key = &owner_table as *const Table as usize;
+        let unrelated_table_key = &unrelated_table as *const Table as usize;
+        eng.table_nested_text_flag_scan_count.set(0);
+
+        owner_table.cells[0].paragraphs[0].text.clear();
+        owner_table.cells[0].paragraphs[0].char_count = 0;
+        eng.invalidate_cell_units_after_text_edit(&owner_table.cells[0], &owner_table, true, false);
+
+        assert!(
+            owner_table.cells.iter().all(|cell| {
+                let key = cell as *const crate::model::table::Cell as usize;
+                !eng.cell_units_cache.borrow().contains_key(&key)
+            }),
+            "all owner cell units must be evicted"
+        );
+        assert!(
+            !eng.table_nested_text_flag_cache
+                .borrow()
+                .contains_key(&owner_table_key),
+            "owner flag must be recomputed after a true→false local change"
+        );
+        assert!(
+            eng.table_nested_text_flag_cache
+                .borrow()
+                .contains_key(&unrelated_table_key),
+            "unrelated flag must be retained"
+        );
+
+        let owner_after = owner_table
+            .cells
+            .iter()
+            .map(|cell| eng.cell_units(cell, &owner_table, &styles))
+            .collect::<Vec<_>>();
+        let unrelated_after = eng.cell_units(&unrelated_table.cells[0], &unrelated_table, &styles);
+        assert!(owner_before
+            .iter()
+            .zip(&owner_after)
+            .all(|(before, after)| !std::sync::Arc::ptr_eq(before, after)));
+        assert!(std::sync::Arc::ptr_eq(&unrelated_before, &unrelated_after));
+        assert!(!eng.table_has_visible_text_with_nested_table(&owner_table));
+        assert_eq!(
+            eng.table_nested_text_flag_scan_count.get(),
+            1,
+            "owner table must be rescanned once after deletion"
         );
     }
 }

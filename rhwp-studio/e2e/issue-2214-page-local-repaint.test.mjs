@@ -13,6 +13,7 @@
  * Usage:
  *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless
  *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --runs=1  # local smoke
+ *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --review-only
  *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --diagnose
  *   node e2e/issue-2214-page-local-repaint.test.mjs --mode=headless --diagnose \
  *     --formats=hwp --runs=1
@@ -293,6 +294,33 @@ async function installTrace(page) {
     const canvasView = window.__canvasView;
     const renderer = canvasView.pageRenderer;
 
+    const describePaginationResult = (result) => ({
+      status: result?.status ?? null,
+      revision: result?.revision ?? null,
+      fragmentsProcessed: result?.fragmentsProcessed ?? null,
+      pageCount: result?.pageCount ?? null,
+    });
+    wrap(
+      wasm,
+      'beginDeferredPagination',
+      'wasm.beginDeferredPagination',
+      (args) => ({ fragmentBudget: args[0] }),
+      describePaginationResult,
+    );
+    wrap(
+      wasm,
+      'stepDeferredPagination',
+      'wasm.stepDeferredPagination',
+      (args) => ({ fragmentBudget: args[0] }),
+      describePaginationResult,
+    );
+    wrap(
+      wasm,
+      'cancelDeferredPagination',
+      'wasm.cancelDeferredPagination',
+      () => ({}),
+      (result) => ({ result }),
+    );
     wrap(wasm, 'flushDeferredPagination', 'wasm.flushDeferredPagination', (args) => ({ argsLength: args.length }));
     wrap(input, 'flushDeferredPaginationIfNeeded', 'input.flushDeferredPaginationIfNeeded', (args) => ({
       reason: args[0] ?? 'manual',
@@ -316,6 +344,24 @@ async function installTrace(page) {
       paginationDeferred: result?.paginationDeferred ?? null,
       cellFlowChanged: result?.cellFlowChanged ?? null,
     }));
+    wrap(wasm, 'deleteTextInCellDeferredPagination', 'wasm.deleteTextInCellDeferredPagination', (args) => ({
+      sectionIndex: args[0],
+      parentParaIndex: args[1],
+      controlIndex: args[2],
+      cellIndex: args[3],
+      cellParaIndex: args[4],
+      charOffset: args[5],
+      count: args[6],
+    }), (result) => ({
+      resultCharOffset: result?.charOffset ?? null,
+      paginationDeferred: result?.paginationDeferred ?? null,
+      cellFlowChanged: result?.cellFlowChanged ?? null,
+    }));
+    wrap(wasm, 'deleteTextInCell', 'wasm.deleteTextInCell');
+    wrap(wasm, 'deleteTextInCellByPath', 'wasm.deleteTextInCellByPath');
+    wrap(wasm, 'exportHwp', 'wasm.exportHwp');
+    wrap(wasm, 'exportHwpx', 'wasm.exportHwpx');
+    wrap(wasm, 'renderPageSvg', 'wasm.renderPageSvg', (args) => ({ pageIndex: args[0] }));
     wrap(wasm, 'getCursorRectByPathNear', 'wasm.getCursorRectByPathNear', (args) => ({
       sectionIndex: args[0],
       parentParaIndex: args[1],
@@ -326,6 +372,14 @@ async function installTrace(page) {
       sectionIndex: args[0],
       parentParaIndex: args[1],
       charOffset: args[3],
+    }));
+    wrap(wasm, 'getCursorRectInCell', 'wasm.getCursorRectInCell', (args) => ({
+      sectionIndex: args[0],
+      parentParaIndex: args[1],
+      controlIndex: args[2],
+      cellIndex: args[3],
+      cellParaIndex: args[4],
+      charOffset: args[5],
     }));
     wrap(input.cursor, 'updateRect', 'CursorState.updateRect');
     wrap(input.cursor, 'moveTo', 'CursorState.moveTo', (args) => ({
@@ -381,6 +435,9 @@ async function collectTrace(page) {
       startedAt: trace?.startedAt ?? null,
       events,
       counts: {
+        wasmBegin: count('wasm.beginDeferredPagination'),
+        wasmStep: count('wasm.stepDeferredPagination'),
+        wasmCancel: count('wasm.cancelDeferredPagination'),
         wasmFlush: count('wasm.flushDeferredPagination'),
         inputFlush: count('input.flushDeferredPaginationIfNeeded'),
         invalidation: count('event.document-page-invalidated'),
@@ -389,8 +446,15 @@ async function collectTrace(page) {
         pageRender: count('PageRenderer.renderPage'),
         refreshNow: count('CanvasView.refreshInvalidatedPageNow'),
         deferredInsert: count('wasm.insertTextInCellDeferredPagination'),
+        deferredDelete: count('wasm.deleteTextInCellDeferredPagination'),
+        immediateDelete: count('wasm.deleteTextInCell'),
+        pathDelete: count('wasm.deleteTextInCellByPath'),
+        exportHwp: count('wasm.exportHwp'),
+        exportHwpx: count('wasm.exportHwpx'),
+        renderPageSvg: count('wasm.renderPageSvg'),
         cursorRectNear: count('wasm.getCursorRectByPathNear'),
         cursorRect: count('wasm.getCursorRectByPath'),
+        cursorRectInCell: count('wasm.getCursorRectInCell'),
         executeOperation: count('InputHandler.executeOperation'),
         prepareTextMutation: count('InputHandler.prepareTextMutationBeforeCursor'),
       },
@@ -643,6 +707,15 @@ async function prepareScenario(page, format, bytes, transitionAt) {
   return { load, clip, keyboardDurationsMs };
 }
 
+async function waitForDeferredPaginationCompletion(page, timeoutMs = 5_000) {
+  const startedAt = performance.now();
+  await page.waitForFunction(
+    () => !window.__inputHandler.hasDeferredPaginationPending(),
+    { timeout: timeoutMs, polling: 25 },
+  );
+  return performance.now() - startedAt;
+}
+
 async function runTimeline(page, format, bytes, transitionAt) {
   const directory = path.join(OUTPUT_ROOT, format, 'timeline');
   const prepared = await prepareScenario(page, format, bytes, transitionAt);
@@ -669,7 +742,7 @@ async function runTimeline(page, format, bytes, transitionAt) {
   checkpoints.push(await captureCheckpoint(page, directory, 'after-n-plus-2', timelineStart, prepared.clip));
 
   const trace = await collectTrace(page);
-  assert.equal(trace.counts.wasmFlush, 1, `${format}: timeline expected one boundary pagination flush`);
+  assert.equal(trace.counts.wasmFlush, 0, `${format}: timeline must not synchronously flush at the boundary`);
   return {
     kind: 'timeline',
     format,
@@ -701,7 +774,7 @@ async function runFullLayerControl(page, format, bytes, transitionAt) {
   await waitTwoRafs(page);
   const after = await captureCheckpoint(page, directory, 'after-full-layer', timelineStart, prepared.clip);
   const trace = await collectTrace(page);
-  assert.equal(trace.counts.wasmFlush, 1, `${format}: full-layer control expected one boundary pagination flush`);
+  assert.equal(trace.counts.wasmFlush, 0, `${format}: full-layer control must not synchronously flush`);
   return {
     kind: 'full-layer-control',
     format,
@@ -722,7 +795,7 @@ async function runFlushControl(page, format, bytes, transitionAt) {
   await waitTwoRafs(page);
   const before = await captureCheckpoint(page, directory, 'before-explicit-flush', timelineStart, prepared.clip);
   const traceBefore = await collectTrace(page);
-  assert.equal(traceBefore.counts.wasmFlush, 1, `${format}: boundary pagination must precede explicit control`);
+  assert.equal(traceBefore.counts.wasmFlush, 0, `${format}: boundary pagination must remain resumable`);
 
   const explicit = await page.evaluate(() => {
     const input = window.__inputHandler;
@@ -733,7 +806,7 @@ async function runFlushControl(page, format, bytes, transitionAt) {
     window.__eventBus.emit('document-view-changed');
     return { flushed, durationMs: performance.now() - startedAt };
   });
-  assert.equal(explicit.flushed, false, `${format}: boundary effect must already be consumed`);
+  assert.equal(explicit.flushed, true, `${format}: explicit control must drain the active resumable job`);
   await waitTwoRafs(page);
   const after = await captureCheckpoint(page, directory, 'after-explicit-flush', timelineStart, prepared.clip);
   const trace = await collectTrace(page);
@@ -963,11 +1036,7 @@ function assertFocusedSnapshot(format, runNumber, inserted, snapshot, expectedTe
   assert.equal(rect?.pageIndex, 0, `${prefix}: cursor page`);
   assert.equal(rect?.cellOverflowed, false, `${prefix}: cursor must not use overflow fallback`);
   assertApprox(rect?.cellBounds?.h, 945.9, `${prefix}: cell bounds`);
-  assert.equal(
-    snapshot.pagination.pending,
-    inserted !== 56,
-    `${prefix}: deferred pagination pending state`,
-  );
+  assert.equal(snapshot.pagination.pending, true, `${prefix}: deferred pagination pending state`);
 }
 
 function targetRunStart(op, label) {
@@ -991,7 +1060,9 @@ function assertExactFocusedState(
   assert.equal(state.model.text, expectedText, `${prefix}: model text`);
   assert.equal(state.model.lineCount, expectedLineCount, `${prefix}: line count`);
   assert.equal(state.pagination.pageCount, 115, `${prefix}: page count`);
-  assert.equal(state.pagination.pending, expectedPending, `${prefix}: pending state`);
+  if (expectedPending !== null) {
+    assert.equal(state.pagination.pending, expectedPending, `${prefix}: pending state`);
+  }
   assert.equal(state.layerTree.pageIndex, 0, `${prefix}: tree page`);
   assert.equal(state.layerTree.targetText, expectedText, `${prefix}: layer tree text`);
   assert.equal(state.pageTextLayout.error, null, `${prefix}: page text layout error`);
@@ -1037,6 +1108,8 @@ function assertFocusedTrace(format, runNumber, trace) {
   const prefix = `${format} run ${runNumber}`;
   const inserts = trace.events.filter((event) => event.type === 'wasm.insertTextInCellDeferredPagination');
   const effects = trace.events.filter((event) => event.type === 'InputHandler.prepareTextMutationBeforeCursor');
+  const begins = trace.events.filter((event) => event.type === 'wasm.beginDeferredPagination');
+  const steps = trace.events.filter((event) => event.type === 'wasm.stepDeferredPagination');
   const flushes = trace.events.filter((event) => event.type === 'wasm.flushDeferredPagination');
   const inputFlushes = trace.events.filter((event) => event.type === 'input.flushDeferredPaginationIfNeeded');
   const cursorQueries = trace.events.filter((event) => event.type === 'wasm.getCursorRectByPathNear');
@@ -1044,8 +1117,16 @@ function assertFocusedTrace(format, runNumber, trace) {
 
   assert.equal(inserts.length, 62, `${prefix}: deferred insert count`);
   assert.equal(effects.length, 62, `${prefix}: consumed mutation effect count`);
-  assert.equal(flushes.length, 1, `${prefix}: WASM flush count`);
-  assert.equal(inputFlushes.length, 1, `${prefix}: input flush count`);
+  assert.equal(begins.length, 1, `${prefix}: resumable begin count`);
+  assert.equal(steps.length, 115, `${prefix}: one-fragment step count`);
+  assert.equal(
+    steps.reduce((sum, event) => sum + event.fragmentsProcessed, 0),
+    115,
+    `${prefix}: processed fragment count`,
+  );
+  assert.equal(steps.at(-1)?.status, 'complete', `${prefix}: final resumable status`);
+  assert.equal(flushes.length, 0, `${prefix}: synchronous WASM flush count`);
+  assert.equal(inputFlushes.length, 0, `${prefix}: synchronous input flush count`);
   assert.equal(operations.length, 62, `${prefix}: operation count`);
 
   for (let index = 0; index < inserts.length; index += 1) {
@@ -1061,16 +1142,16 @@ function assertFocusedTrace(format, runNumber, trace) {
   }
 
   const boundaryInsert = inserts[55];
-  const boundaryFlush = flushes[0];
+  const boundaryBegin = begins[0];
   const firstCursorAfterBoundary = cursorQueries.find((event) => event.sequence > boundaryInsert.sequence);
   assert.ok(firstCursorAfterBoundary, `${prefix}: cursor query after boundary`);
   assert.ok(
-    boundaryInsert.sequence < boundaryFlush.sequence,
-    `${prefix}: mutation result must precede boundary flush`,
+    boundaryInsert.sequence < boundaryBegin.sequence,
+    `${prefix}: mutation result must precede resumable begin`,
   );
   assert.ok(
-    boundaryFlush.sequence < firstCursorAfterBoundary.sequence,
-    `${prefix}: boundary flush must precede cursor query`,
+    boundaryBegin.sequence < firstCursorAfterBoundary.sequence,
+    `${prefix}: resumable begin must precede cursor query`,
   );
 
   const operationDurations = operations.map((event) => event.durationMs);
@@ -1081,7 +1162,7 @@ function assertFocusedTrace(format, runNumber, trace) {
     counts: trace.counts,
     ordering: {
       boundaryMutationSequence: boundaryInsert.sequence,
-      boundaryFlushSequence: boundaryFlush.sequence,
+      boundaryBeginSequence: boundaryBegin.sequence,
       boundaryCursorSequence: firstCursorAfterBoundary.sequence,
     },
     timing: {
@@ -1089,7 +1170,8 @@ function assertFocusedTrace(format, runNumber, trace) {
       keyboardBoundaryMs: trace.keyboardDurationsMs[55],
       operationStable: summarizeDurations(stableOperationDurations),
       operationBoundaryMs: operationDurations[55],
-      boundaryFlushMs: boundaryFlush.durationMs,
+      boundaryBeginMs: boundaryBegin.durationMs,
+      resumableSteps: summarizeDurations(steps.map((event) => event.durationMs)),
       cursorQueries: summarizeDurations(cursorDurations),
       boundaryCursorMs: firstCursorAfterBoundary.durationMs,
     },
@@ -1165,12 +1247,28 @@ async function runFocusedFormat(page, format, bytes, runNumber) {
         path.join(visualDirectory, 'after-56-1600ms.png'),
         clip,
       ));
-      for (const state of boundaryStates) {
-        assertExactFocusedState(format, runNumber, state, expectedText, 5, 945.9, false);
+      const completionWaitMs = await waitForDeferredPaginationCompletion(page);
+      boundaryStates.push(await collectState(page, 'after-56-complete', timelineStart));
+      visual.boundary.push(await captureCompositedCrop(
+        page,
+        path.join(visualDirectory, 'after-56-complete.png'),
+        clip,
+      ));
+      const pendingExpectations = [true, true, null, null, null, false];
+      for (const [index, state] of boundaryStates.entries()) {
+        assertExactFocusedState(
+          format,
+          runNumber,
+          state,
+          expectedText,
+          5,
+          945.9,
+          pendingExpectations[index],
+        );
         const traceAtCheckpoint = await collectTrace(page);
         assert.equal(
           traceAtCheckpoint.counts.wasmFlush,
-          1,
+          0,
           `${format} run ${runNumber} ${state.label}: cumulative flush count`,
         );
       }
@@ -1197,7 +1295,7 @@ async function runFocusedFormat(page, format, bytes, runNumber) {
         );
         visual.comparisons.push({ label: `56-stable-${index}`, ...comparison });
       }
-      checkpoints.at56 = boundaryStates;
+      checkpoints.at56 = { states: boundaryStates, completionWaitMs };
     }
   }
 
@@ -1208,11 +1306,12 @@ async function runFocusedFormat(page, format, bytes, runNumber) {
 
   const trace = await collectTrace(page);
   trace.keyboardDurationsMs = keyboardDurationsMs;
-  assert.equal(trace.counts.wasmFlush, 1, `${format} run ${runNumber}: inputs 57-62 add no flush`);
+  assert.equal(trace.counts.wasmFlush, 0, `${format} run ${runNumber}: inputs 57-62 add no flush`);
   const traceSummary = assertFocusedTrace(format, runNumber, trace);
   console.log(
-    `  run ${runNumber}: GREEN, flush=1, boundary=${traceSummary.timing.operationBoundaryMs.toFixed(2)}ms, `
-      + `flushTime=${traceSummary.timing.boundaryFlushMs.toFixed(2)}ms, `
+    `  run ${runNumber}: GREEN, flush=0, steps=${traceSummary.counts.wasmStep}, `
+      + `boundary=${traceSummary.timing.operationBoundaryMs.toFixed(2)}ms, `
+      + `begin=${traceSummary.timing.boundaryBeginMs.toFixed(2)}ms, `
       + `stableP95=${traceSummary.timing.operationStable.p95Ms.toFixed(2)}ms`,
   );
 
@@ -1232,6 +1331,8 @@ function assertRawBoundaryTrace(format, kind, trace) {
   const prefix = `${format} ${kind} raw boundary`;
   const inserts = trace.events.filter((event) => event.type === 'wasm.insertTextInCellDeferredPagination');
   const effects = trace.events.filter((event) => event.type === 'InputHandler.prepareTextMutationBeforeCursor');
+  const begins = trace.events.filter((event) => event.type === 'wasm.beginDeferredPagination');
+  const steps = trace.events.filter((event) => event.type === 'wasm.stepDeferredPagination');
   const flushes = trace.events.filter((event) => event.type === 'wasm.flushDeferredPagination');
   const cursorQueries = trace.events.filter((event) => event.type === 'wasm.getCursorRectByPathNear');
 
@@ -1244,12 +1345,15 @@ function assertRawBoundaryTrace(format, kind, trace) {
   assert.equal(effects[0].deferredPagination, true, `${prefix}: consumed deferred effect`);
   assert.equal(effects[0].cellFlowChanged, true, `${prefix}: consumed flow effect`);
   assert.equal(effects[0].paginationCompleted, false, `${prefix}: deferred completion state`);
-  assert.equal(flushes.length, 1, `${prefix}: cumulative flush count`);
+  assert.equal(begins.length, 1, `${prefix}: resumable begin count`);
+  assert.equal(steps.length, 115, `${prefix}: one-fragment step count`);
+  assert.equal(steps.at(-1)?.status, 'complete', `${prefix}: final resumable status`);
+  assert.equal(flushes.length, 0, `${prefix}: synchronous flush count`);
 
   const firstCursorQuery = cursorQueries.find((event) => event.sequence > inserts[0].sequence);
   assert.ok(firstCursorQuery, `${prefix}: cursor query after mutation`);
-  assert.ok(inserts[0].sequence < flushes[0].sequence, `${prefix}: mutation must precede flush`);
-  assert.ok(flushes[0].sequence < firstCursorQuery.sequence, `${prefix}: flush must precede cursor query`);
+  assert.ok(inserts[0].sequence < begins[0].sequence, `${prefix}: mutation must precede resumable begin`);
+  assert.ok(begins[0].sequence < firstCursorQuery.sequence, `${prefix}: begin must precede cursor query`);
 }
 
 function assertRawStableTrace(format, kind, trace) {
@@ -1268,6 +1372,8 @@ function assertRawStableTrace(format, kind, trace) {
   assert.equal(effects[0].deferredPagination, true, `${prefix}: consumed deferred effect`);
   assert.equal(effects[0].cellFlowChanged, false, `${prefix}: consumed stable effect`);
   assert.equal(effects[0].paginationCompleted, false, `${prefix}: deferred completion state`);
+  assert.equal(trace.counts.wasmBegin, 0, `${prefix}: stable input resumable begin count`);
+  assert.equal(trace.counts.wasmStep, 0, `${prefix}: stable input resumable step count`);
   assert.equal(flushes.length, 0, `${prefix}: stable input flush count`);
   assert.ok(
     cursorQueries.some((event) => event.sequence > inserts[0].sequence),
@@ -1300,6 +1406,204 @@ async function dispatchRawInput(page, kind, text) {
       inputType: 'insertText',
     }));
   }, { rawKind: kind, rawText: text });
+}
+
+async function runMultiUpdateImeSmoke(page, format, bytes) {
+  await restoreTrace(page);
+  await openDocumentThroughApp(page, format, bytes);
+  await moveToTarget(page);
+  const initial = await readFocusedSnapshot(page);
+  const initialText = initial.model.text;
+  await installTrace(page);
+
+  await page.evaluate(() => {
+    const textarea = window.__inputHandler.textarea;
+    textarea.dispatchEvent(new CompositionEvent('compositionstart', {
+      bubbles: true,
+      data: '',
+    }));
+  });
+  const durationsMs = [];
+  for (const value of ['ㅎ', '하', '한']) {
+    durationsMs.push(await page.evaluate((text) => {
+      const textarea = window.__inputHandler.textarea;
+      textarea.value = text;
+      const startedAt = performance.now();
+      textarea.dispatchEvent(new InputEvent('input', {
+        bubbles: true,
+        data: text,
+        inputType: 'insertCompositionText',
+        isComposing: true,
+      }));
+      return performance.now() - startedAt;
+    }, value));
+  }
+  await page.evaluate(() => {
+    const textarea = window.__inputHandler.textarea;
+    textarea.dispatchEvent(new CompositionEvent('compositionend', {
+      bubbles: true,
+      data: '한',
+    }));
+  });
+  await waitTwoRafs(page);
+
+  const snapshot = await readFocusedSnapshot(page);
+  assert.equal(snapshot.model.text, `${initialText}한`, `${format} multi-update IME final text`);
+  assert.equal(snapshot.cursor.position.charOffset, TARGET.charOffset + 1, `${format} IME cursor offset`);
+  assert.equal(snapshot.pagination.pageCount, 115, `${format} IME public page count`);
+  assert.equal(snapshot.pagination.pending, true, `${format} IME deferred hold`);
+
+  const trace = await collectTrace(page);
+  const deletes = trace.events.filter((event) => event.type === 'wasm.deleteTextInCellDeferredPagination');
+  assert.equal(trace.counts.deferredInsert, 3, `${format} IME deferred insert count`);
+  assert.equal(trace.counts.deferredDelete, 2, `${format} IME replacement delete count`);
+  assert.equal(trace.counts.immediateDelete, 0, `${format} IME synchronous flat delete count`);
+  assert.equal(trace.counts.pathDelete, 0, `${format} IME path delete count`);
+  assert.equal(trace.counts.cursorRectInCell, 0, `${format} IME anchor cursor lookup count`);
+  assert.equal(trace.counts.prepareTextMutation, 3, `${format} IME effect consumption count`);
+  assert.equal(trace.counts.wasmFlush, 0, `${format} IME synchronous flush count`);
+  assert.deepEqual(deletes.map((event) => event.charOffset), [
+    TARGET.charOffset,
+    TARGET.charOffset,
+  ]);
+  for (const [index, durationMs] of durationsMs.entries()) {
+    assert.ok(durationMs < 250, `${format} IME update ${index + 1} blocked ${durationMs.toFixed(2)}ms`);
+  }
+  await restoreTrace(page);
+  console.log(`  multi-update IME smoke: GREEN, updates=${durationsMs.map((v) => v.toFixed(1)).join('/')}ms`);
+  return { format, durationsMs, traceCounts: trace.counts };
+}
+
+async function runImeAcrossPaginationCommitSmoke(page, format, bytes) {
+  await restoreTrace(page);
+  await openDocumentThroughApp(page, format, bytes);
+  await moveToTarget(page);
+  const initial = await readFocusedSnapshot(page);
+  await typeKeyboardOnes(page, 55);
+  await installTrace(page);
+
+  const firstDurationMs = await page.evaluate(() => {
+    const textarea = window.__inputHandler.textarea;
+    textarea.dispatchEvent(new CompositionEvent('compositionstart', {
+      bubbles: true,
+      data: '',
+    }));
+    textarea.value = 'ㅎ';
+    const startedAt = performance.now();
+    textarea.dispatchEvent(new InputEvent('input', {
+      bubbles: true,
+      data: 'ㅎ',
+      inputType: 'insertCompositionText',
+      isComposing: true,
+    }));
+    return performance.now() - startedAt;
+  });
+  assert.equal(
+    await page.evaluate(() => window.__inputHandler.hasDeferredPaginationPending()),
+    true,
+    `${format} IME pagination-commit precondition`,
+  );
+
+  await waitForDeferredPaginationCompletion(page);
+  const afterCommit = await collectTrace(page);
+  assert.equal(
+    afterCommit.counts.cursorRectInCell,
+    1,
+    `${format} IME commit must refresh the invalidated anchor exactly once`,
+  );
+
+  const secondDurationMs = await page.evaluate(() => {
+    const textarea = window.__inputHandler.textarea;
+    textarea.value = '하';
+    const startedAt = performance.now();
+    textarea.dispatchEvent(new InputEvent('input', {
+      bubbles: true,
+      data: '하',
+      inputType: 'insertCompositionText',
+      isComposing: true,
+    }));
+    return performance.now() - startedAt;
+  });
+  await page.evaluate(() => {
+    const textarea = window.__inputHandler.textarea;
+    textarea.dispatchEvent(new CompositionEvent('compositionend', {
+      bubbles: true,
+      data: '하',
+    }));
+  });
+  await waitTwoRafs(page);
+
+  const snapshot = await readFocusedSnapshot(page);
+  assert.equal(
+    snapshot.model.text,
+    `${initial.model.text}${'1'.repeat(55)}하`,
+    `${format} IME pagination-commit final text`,
+  );
+  assert.equal(snapshot.cursor.position.charOffset, TARGET.charOffset + 56, `${format} IME commit cursor offset`);
+  const trace = await collectTrace(page);
+  assert.equal(
+    trace.counts.cursorRectInCell,
+    1,
+    `${format} IME update after commit must reuse the refreshed anchor`,
+  );
+  assert.equal(trace.counts.immediateDelete, 0, `${format} IME commit synchronous delete count`);
+  assert.equal(trace.counts.wasmFlush, 0, `${format} IME commit synchronous flush count`);
+  await restoreTrace(page);
+  console.log(
+    `  IME pagination-commit smoke: GREEN, updates=${firstDurationMs.toFixed(1)}/${secondDurationMs.toFixed(1)}ms`,
+  );
+  return {
+    format,
+    firstDurationMs,
+    secondDurationMs,
+    cursorRectInCell: trace.counts.cursorRectInCell,
+  };
+}
+
+async function runDeleteKeySmoke(page, format, bytes, key) {
+  await restoreTrace(page);
+  await openDocumentThroughApp(page, format, bytes);
+  const charOffset = key === 'Delete' ? 64 : TARGET.charOffset;
+  await page.evaluate(({ target, offset }) => {
+    const input = window.__inputHandler;
+    input.cursor.clearSelection();
+    input.cursor.moveTo({ ...target, charOffset: offset });
+    input.cursor.resetPreferredX();
+    input.updateCaret();
+    input.focus();
+  }, { target: TARGET, offset: charOffset });
+  const before = await readFocusedSnapshot(page);
+  const expectedText = key === 'Delete'
+    ? `${before.model.text.slice(0, charOffset)}${before.model.text.slice(charOffset + 1)}`
+    : before.model.text.slice(0, -1);
+  await installTrace(page);
+
+  const startedAt = performance.now();
+  await page.keyboard.press(key);
+  const wallDurationMs = performance.now() - startedAt;
+  await waitTwoRafs(page);
+
+  const after = await readFocusedSnapshot(page);
+  assert.equal(after.model.text, expectedText, `${format} ${key} final text`);
+  assert.equal(
+    after.cursor.position.charOffset,
+    key === 'Delete' ? charOffset : charOffset - 1,
+    `${format} ${key} cursor offset`,
+  );
+  assert.equal(after.pagination.pageCount, 115, `${format} ${key} public page count`);
+  assert.equal(after.pagination.pending, true, `${format} ${key} deferred hold`);
+
+  const trace = await collectTrace(page);
+  const deferred = trace.events.filter((event) => event.type === 'wasm.deleteTextInCellDeferredPagination');
+  assert.equal(deferred.length, 1, `${format} ${key} deferred delete count`);
+  assert.equal(trace.counts.immediateDelete, 0, `${format} ${key} synchronous delete count`);
+  assert.equal(trace.counts.pathDelete, 0, `${format} ${key} path delete count`);
+  assert.equal(trace.counts.wasmFlush, 0, `${format} ${key} synchronous flush count`);
+  assert.ok(deferred[0].durationMs < 250, `${format} ${key} WASM blocked ${deferred[0].durationMs.toFixed(2)}ms`);
+  assert.ok(wallDurationMs < 500, `${format} ${key} key event blocked ${wallDurationMs.toFixed(2)}ms`);
+  await restoreTrace(page);
+  console.log(`  ${key} smoke: GREEN, wasm=${deferred[0].durationMs.toFixed(1)}ms`);
+  return { format, key, wallDurationMs, wasmDurationMs: deferred[0].durationMs };
 }
 
 async function runRawStableSmoke(page, format, bytes, kind) {
@@ -1367,11 +1671,11 @@ async function runRawBoundarySmoke(page, format, bytes, kind) {
   await installTrace(page);
   await dispatchRawInput(page, kind, '1');
 
-  await delay(page, 150);
+  const completionWaitMs = await waitForDeferredPaginationCompletion(page);
   await waitTwoRafs(page);
   const finalText = `${initialText}${'1'.repeat(56)}`;
   const timelineStart = await page.evaluate(() => performance.now());
-  const finalState = await collectState(page, `${kind}-raw-after-150ms`, timelineStart);
+  const finalState = await collectState(page, `${kind}-raw-after-complete`, timelineStart);
   assertExactFocusedState(
     format,
     `${kind}-raw`,
@@ -1390,7 +1694,7 @@ async function runRawBoundarySmoke(page, format, bytes, kind) {
     });
   }
   await restoreTrace(page);
-  console.log(`  ${kind} raw smoke: GREEN, flush=1`);
+  console.log(`  ${kind} raw smoke: GREEN, flush=0, steps=${trace.counts.wasmStep}`);
   return {
     format,
     kind,
@@ -1398,7 +1702,145 @@ async function runRawBoundarySmoke(page, format, bytes, kind) {
     finalLength: finalState.model.length,
     pageCount: finalState.pagination.pageCount,
     flushCount: trace.counts.wasmFlush,
+    stepCount: trace.counts.wasmStep,
+    completionWaitMs,
   };
+}
+
+async function triggerFileMenuCommand(page, commandId) {
+  return page.evaluate((id) => {
+    const fileItem = [...document.querySelectorAll('#menu-bar .menu-item')]
+      .find((element) => (element.textContent || '').includes('파일'));
+    const title = fileItem?.querySelector('.menu-title');
+    if (!title) return { ok: false, reason: 'file menu title missing' };
+    title.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    const command = document.querySelector(`.md-item[data-cmd="${id}"]`);
+    if (!command) return { ok: false, reason: `${id} menu item missing` };
+    if (command.classList.contains('disabled')) {
+      return { ok: false, reason: `${id} menu item disabled` };
+    }
+    command.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    return { ok: true };
+  }, commandId);
+}
+
+async function preparePendingBoundary(page, format, bytes) {
+  await restoreTrace(page);
+  await openDocumentThroughApp(page, format, bytes);
+  await moveToTarget(page);
+  await typeKeyboardOnes(page, 55);
+  await installTrace(page);
+  await page.keyboard.type('1');
+  const state = await readFocusedSnapshot(page);
+  assert.equal(state.pagination.pending, true, `${format} output barrier precondition`);
+  assert.equal(state.model.text.slice(-56), '1'.repeat(56), `${format} output latest text precondition`);
+  return state;
+}
+
+async function runSaveBarrierSmoke(page, format, bytes) {
+  const before = await preparePendingBoundary(page, format, bytes);
+  await page.evaluate(() => {
+    try { delete window.showSaveFilePicker; } catch { window.showSaveFilePicker = undefined; }
+    window.__issue2424SavedBlob = null;
+    window.__issue2424OriginalCreateObjectURL ??= URL.createObjectURL.bind(URL);
+    URL.createObjectURL = (blob) => {
+      window.__issue2424SavedBlob = blob;
+      return 'blob:issue-2424-captured';
+    };
+    HTMLAnchorElement.prototype.click = function issue2424NoDownload() {};
+  });
+
+  const triggered = await triggerFileMenuCommand(page, 'file:save');
+  assert.equal(triggered.ok, true, `${format} save trigger: ${triggered.reason ?? ''}`);
+  await page.waitForFunction(() => window.__issue2424SavedBlob instanceof Blob, { timeout: 60_000 });
+
+  const trace = await collectTrace(page);
+  const flush = trace.events.find((event) => event.type === 'wasm.flushDeferredPagination');
+  const exportType = format === 'hwpx' ? 'wasm.exportHwpx' : 'wasm.exportHwp';
+  const exported = trace.events.find((event) => event.type === exportType);
+  assert.ok(flush, `${format} save flush event`);
+  assert.ok(exported, `${format} save export event`);
+  assert.ok(flush.sequence < exported.sequence, `${format} save must flush before serialization`);
+  assert.equal(trace.counts.wasmFlush, 1, `${format} save flush count`);
+  assert.equal(
+    await page.evaluate(() => window.__inputHandler.hasDeferredPaginationPending()),
+    false,
+    `${format} save pending state`,
+  );
+
+  const saved = await page.evaluate(async ({ target, sourceFormat }) => {
+    const buffer = await window.__issue2424SavedBlob.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    const info = window.__wasm.loadDocument(bytes, `issue2424-saved.${sourceFormat}`);
+    const length = window.__wasm.getCellParagraphLength(
+      target.sectionIndex,
+      target.parentParaIndex,
+      target.controlIndex,
+      target.cellIndex,
+      target.cellParaIndex,
+    );
+    const text = window.__wasm.getTextInCell(
+      target.sectionIndex,
+      target.parentParaIndex,
+      target.controlIndex,
+      target.cellIndex,
+      target.cellParaIndex,
+      0,
+      length,
+    );
+    return {
+      byteLength: bytes.byteLength,
+      pageCount: info.pageCount,
+      textTail: text.slice(-56),
+    };
+  }, { target: TARGET, sourceFormat: format });
+  assert.ok(saved.byteLength > 0, `${format} saved bytes`);
+  assert.equal(saved.pageCount, before.pagination.pageCount, `${format} saved final page count`);
+  assert.equal(saved.textTail, '1'.repeat(56), `${format} saved latest cell text`);
+  await restoreTrace(page);
+  console.log(`  save barrier: GREEN, flush→${format} export, bytes=${saved.byteLength}`);
+  return { format, saved, flushSequence: flush.sequence, exportSequence: exported.sequence };
+}
+
+async function runPrintBarrierSmoke(page, format, bytes) {
+  const before = await preparePendingBoundary(page, format, bytes);
+  await page.evaluate(() => {
+    const printDocument = document.implementation.createHTMLDocument('issue-2424-print');
+    window.__issue2424PrintWindow = {
+      document: printDocument,
+      print() {},
+      close() {},
+    };
+    window.open = () => window.__issue2424PrintWindow;
+  });
+
+  const triggered = await triggerFileMenuCommand(page, 'file:print');
+  assert.equal(triggered.ok, true, `${format} print trigger: ${triggered.reason ?? ''}`);
+  await page.waitForFunction(
+    (pageCount) => window.__issue2424PrintWindow?.document?.querySelectorAll('.page').length === pageCount,
+    { timeout: 120_000 },
+    before.pagination.pageCount,
+  );
+  const trace = await collectTrace(page);
+  const flush = trace.events.find((event) => event.type === 'wasm.flushDeferredPagination');
+  const firstRender = trace.events.find((event) => event.type === 'wasm.renderPageSvg');
+  assert.ok(flush, `${format} print flush event`);
+  assert.ok(firstRender, `${format} print render event`);
+  assert.ok(flush.sequence < firstRender.sequence, `${format} print must flush before first page render`);
+  assert.equal(trace.counts.wasmFlush, 1, `${format} print flush count`);
+  assert.equal(trace.counts.renderPageSvg, before.pagination.pageCount, `${format} print rendered page count`);
+
+  const output = await page.evaluate(() => ({
+    pageCount: window.__issue2424PrintWindow.document.querySelectorAll('.page').length,
+    printBarLabel: window.__issue2424PrintWindow.document.querySelector('.print-bar span')?.textContent ?? '',
+    pending: window.__inputHandler.hasDeferredPaginationPending(),
+  }));
+  assert.equal(output.pageCount, before.pagination.pageCount, `${format} print final page count`);
+  assert.match(output.printBarLabel, /115페이지/, `${format} print bar page count`);
+  assert.equal(output.pending, false, `${format} print pending state`);
+  await restoreTrace(page);
+  console.log(`  print barrier: GREEN, flush→render ${output.pageCount} pages`);
+  return { format, output, flushSequence: flush.sequence, firstRenderSequence: firstRender.sequence };
 }
 
 async function runFocusedMain() {
@@ -1407,6 +1849,7 @@ async function runFocusedMain() {
     .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
   const runs = Number(cliValue('runs', '3'));
+  const reviewOnly = process.argv.includes('--review-only');
   assert.ok(Number.isInteger(runs) && runs > 0, '--runs must be a positive integer');
   for (const format of formats) assert.ok(SAMPLES[format], `unsupported format: ${format}`);
 
@@ -1433,17 +1876,29 @@ async function runFocusedMain() {
   const startedAt = new Date().toISOString();
   const results = [];
   const rawSmokes = [];
+  const reviewSmokes = [];
   try {
     await loadApp(page);
     for (const format of formats) {
-      console.log(`\n[${format.toUpperCase()}] focused GREEN (${runs} runs)`);
-      for (let runNumber = 1; runNumber <= runs; runNumber += 1) {
-        results.push(await runFocusedFormat(page, format, fixtures[format].bytes, runNumber));
+      if (!reviewOnly) {
+        console.log(`\n[${format.toUpperCase()}] focused GREEN (${runs} runs)`);
+        for (let runNumber = 1; runNumber <= runs; runNumber += 1) {
+          results.push(await runFocusedFormat(page, format, fixtures[format].bytes, runNumber));
+        }
+        rawSmokes.push(await runRawStableSmoke(page, format, fixtures[format].bytes, 'ime'));
+        rawSmokes.push(await runRawStableSmoke(page, format, fixtures[format].bytes, 'ios'));
+        rawSmokes.push(await runRawBoundarySmoke(page, format, fixtures[format].bytes, 'ime'));
+        rawSmokes.push(await runRawBoundarySmoke(page, format, fixtures[format].bytes, 'ios'));
       }
-      rawSmokes.push(await runRawStableSmoke(page, format, fixtures[format].bytes, 'ime'));
-      rawSmokes.push(await runRawStableSmoke(page, format, fixtures[format].bytes, 'ios'));
-      rawSmokes.push(await runRawBoundarySmoke(page, format, fixtures[format].bytes, 'ime'));
-      rawSmokes.push(await runRawBoundarySmoke(page, format, fixtures[format].bytes, 'ios'));
+      console.log(`\n[${format.toUpperCase()}] #2424 deletion/IME/output barrier`);
+      reviewSmokes.push(await runDeleteKeySmoke(page, format, fixtures[format].bytes, 'Backspace'));
+      reviewSmokes.push(await runDeleteKeySmoke(page, format, fixtures[format].bytes, 'Delete'));
+      reviewSmokes.push(await runMultiUpdateImeSmoke(page, format, fixtures[format].bytes));
+      reviewSmokes.push(await runImeAcrossPaginationCommitSmoke(page, format, fixtures[format].bytes));
+      reviewSmokes.push(await runSaveBarrierSmoke(page, format, fixtures[format].bytes));
+      if (format === 'hwp') {
+        reviewSmokes.push(await runPrintBarrierSmoke(page, format, fixtures[format].bytes));
+      }
     }
   } finally {
     await restoreTrace(page).catch(() => {});
@@ -1469,6 +1924,7 @@ async function runFocusedMain() {
     }])),
     results,
     rawSmokes,
+    reviewSmokes,
   };
   writeJson(path.join(OUTPUT_ROOT, 'focused-summary.json'), summary);
   console.log(`\nIssue #2214 focused GREEN written to ${OUTPUT_ROOT}`);

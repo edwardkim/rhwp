@@ -10,6 +10,7 @@
 //! `src: url("data:font/...;base64,...")` 로 원본 전체 임베딩한다.
 
 use rhwp::document_core::DocumentCore;
+use rhwp::paint::RenderProfile;
 use rhwp::renderer::svg::FontEmbedMode;
 
 const SAMPLE: &str = "samples/render-p35-font-native-bitmap.hwpx";
@@ -75,5 +76,24 @@ fn embedded_font_embedded_in_full_mode_too() {
     assert!(
         !rule.contains("local("),
         "Full 모드의 embedded face가 local() 폴백을 쓰면 안 됨 (#2524). 규칙: {rule}"
+    );
+}
+
+#[test]
+fn embedded_font_is_preserved_in_profiled_print_svg() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = std::fs::read(&path).expect("read sample");
+    let core = DocumentCore::from_bytes(&bytes).expect("parse");
+    let svg = core
+        .render_page_svg_layer_with_profile_native(0, RenderProfile::Print)
+        .expect("render profiled print svg");
+    let rule = embedded_face_rule(&svg);
+    assert!(
+        rule.contains("src: url(\"data:font/"),
+        "print profile도 #2524 embedded face를 data-URI로 보존해야 함. 규칙: {rule}"
+    );
+    assert!(
+        !rule.contains("local("),
+        "print profile의 embedded face가 local() fallback을 쓰면 안 됨. 규칙: {rule}"
     );
 }
