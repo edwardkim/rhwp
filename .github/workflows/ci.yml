@@ -743,7 +743,10 @@ jobs:
           shared-key: native-skia
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
+      # [#3289] self-hosted 는 호스트에 선설치됨 — 동시 잡의 apt/dpkg 락 경합 방지.
+      # 신규 시스템 패키지는 호스트 선설치가 정본 (거버넌스 보고서 참조).
       - name: Install native Skia runtime packages
+        if: runner.environment == 'github-hosted'
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
@@ -791,8 +794,11 @@ jobs:
       - name: Install wasm-pack
         uses: ./.github/actions/install-wasm-pack
 
+      # [#3289] self-hosted 제외 — restore 의 tar 전개가 공유 ~/.cargo/registry 를
+      # 락 없이 덮어써 동시 cargo 빌드와 충돌한다. 상주 registry + _work target 이 자연 캐시.
       - name: Restore frontend WASM cargo cache
         id: frontend_wasm_cargo_cache_restore
+        if: runner.environment == 'github-hosted'
         uses: actions/cache/restore@v5
         with:
           path: |
@@ -856,8 +862,9 @@ jobs:
       - name: Verify font asset contracts
         run: node --test scripts/frontend-font-assets.test.mjs
 
+      # [#3289] self-hosted 제외 — 공유 ~/.cargo tar 저장은 무익(쿼터 read-only)하고 거대하다.
       - name: Save frontend WASM cargo cache
-        if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.frontend_wasm_cargo_cache_restore.outputs.cache-hit != 'true' }}
+        if: ${{ runner.environment == 'github-hosted' && github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.frontend_wasm_cargo_cache_restore.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v5
         with:
           path: |
@@ -1017,7 +1024,9 @@ jobs:
       - name: Install wasm-pack
         uses: ./.github/actions/install-wasm-pack
 
+      # [#3289] self-hosted 제외 — 공유 ~/.cargo 락 없는 tar 전개/저장 금지 (frontend 주석 참조).
       - name: Cache cargo registry & build
+        if: runner.environment == 'github-hosted'
         uses: actions/cache@v5
         with:
           path: |
