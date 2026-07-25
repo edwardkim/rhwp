@@ -35,6 +35,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `footnote-insert.test.mjs` | 상시 | active | footnote-01.hwp 각주 삽입 시 문단 위치 이상 확인 | footnote-01.hwp | 수동 |  |
 | `footnote-vpos.test.mjs` | 상시 | active | footnote-01.hwp "원료를" 뒤 스페이스 입력 시 문단 위치 이상 / WASM API 직접 호출로 정확한 재 | footnote-01.hwp | 수동 |  |
 | `form-control.test.mjs` | 상시 | active | 양식 컨트롤 — 셀 커서 진입(#111) + 체크박스 클릭 토글(#112) | form-002.hwpx | 수동 |  |
+| `form-edit-escape-cancel.test.mjs` | 상시 | active | #2375 Edit 양식 필드 Escape는 blur 뒤에도 취소·무기록 | form-01.hwp | npm e2e:form-edit-escape |  |
 | `gen-screenshot.mjs` | 유틸 | active | README 용 렌더 스크린샷 생성기 | basic/KTX.hwp | 수동 |  |
 | `global-shortcut.test.mjs` | 상시 | active | 전역 단축키 (문서 미로드 상태) | — | 수동 |  |
 | `grid-mode-click-coord.test.mjs` | 진단 | hold | 보류 ① 그리드 좌표 결함 — 정량 e2e 측정 | exam_kor.hwp | 수동 | legacy-name · 보류① 이슈 종속 |

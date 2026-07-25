@@ -3635,9 +3635,10 @@ export class InputHandler {
 
     try {
       // [Task #2377] 누름틀 제거는 필드+안내문 텍스트를 지운다(문자 수 변경) — 일반
-      // 모드에선 snapshot 으로 기록해 undo 가능하게 한다. 양식 모드는 게이트가 snapshot 을
-      // 드롭해 무언 폐기 회귀(#2361 리뷰 계급)가 되므로 기존 직접 경로를 유지한다(비기록 —
-      // 양식 모드 누름틀 제거의 기록은 역연산 설계가 필요해 범위 외).
+      // 모드에선 snapshot 으로 기록해 undo 가능하게 한다. 아래 양식 모드 분기는 방어적이다:
+      // field:remove는 canExecute에서, 키보드 경계 삭제는 tryConfirmRemove…에서 양식 모드를
+      // 이미 막으므로 현재 도달 경로가 없다. 미래의 직접 호출이 생겨도 snapshot 게이트의
+      // 무언 폐기를 피하려 기존 직접 경로를 보존한다(기록 역연산 설계는 명시적 범위 외).
       if (this.editMode === 'form') {
         const result = this.wasm.removeFieldAt(pos);
         if (!result.ok) return;
@@ -4924,6 +4925,8 @@ export class InputHandler {
         commit();
       } else if (e.key === 'Escape') {
         e.preventDefault();
+        // 취소는 blur가 뒤따라도 값을 적용하거나 히스토리를 기록하지 않아야 한다.
+        committed = true;
         this.removeFormOverlay();
       }
     });

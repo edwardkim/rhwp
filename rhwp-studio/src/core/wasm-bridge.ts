@@ -168,6 +168,10 @@ export class WasmBridge {
   private _fileName = 'document.hwp';
   private _currentFileHandle: FileSystemFileHandleLike | null = null;
   private _documentDigest: string | null = null;
+  /** [#3313] 외부 연결 그림 비동기 주입 완료 훅 — 주입 성공(>0)시에만 호출된다.
+   * 첫 렌더 이후에 fetch 가 끝나면 뷰가 재갱신 없이는 이미지를 표시하지 못하므로,
+   * main 쪽에서 뷰 갱신을 배선한다 (dirty 마킹 없는 뷰 전용 경로여야 함). */
+  onExternalImagesInjected?: (injected: number) => void;
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
@@ -299,6 +303,7 @@ export class WasmBridge {
       const basenames: string[] = JSON.parse(basenamesJson);
       if (basenames.length === 0) return;
       console.log(`[WasmBridge] 외부 image 영역 영역 ${basenames.length}개 영역 영역 fetch 시도`);
+      let totalInjected = 0;
       for (const name of basenames) {
         try {
           const url = `/samples/${name}`;
@@ -313,13 +318,17 @@ export class WasmBridge {
           const filePathHeader = res.headers.get('X-File-Path');
           const displayPath = filePathHeader ? decodeURI(filePathHeader) : '';
           const injected = this.doc.injectExternalImage(name, new Uint8Array(buf), displayPath);
+          totalInjected += injected;
           console.log(`[WasmBridge] 외부 image inject: ${name} → ${displayPath || url} (${buf.byteLength} bytes, ${injected} 영역)`);
         } catch (e) {
           console.warn(`[WasmBridge] 외부 image 영역 영역 영역: ${name}`, e);
         }
       }
-      // 갱신된 image 영역 영역 영역 화면 영역 영역 영역 — eventBus 영역 영역 document-changed 영역 영역.
-      // (caller 영역 영역 영역 별도 영역 영역 reflow 영역 영역.)
+      // [#3313] 주입은 첫 렌더 이후에 끝나므로, 주입이 있었으면 뷰 갱신 훅을 호출한다.
+      // 훅 없이는 페이지 트리 캐시만 무효화되고 화면은 재요청 전까지 이전 프레임을 유지한다.
+      if (totalInjected > 0) {
+        this.onExternalImagesInjected?.(totalInjected);
+      }
     } catch (e) {
       console.warn('[WasmBridge] populateExternalImagesFromDevServer 실패', e);
     }

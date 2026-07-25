@@ -13,6 +13,7 @@
     "preview": "vite preview",
     "test": "node --test tests/*.test.ts ../npm/editor/tests/*.test.mjs",
     "e2e": "node e2e/text-flow.test.mjs",
+    "e2e:form-edit-escape": "node e2e/form-edit-escape-cancel.test.mjs --mode=headless",
     "e2e:unsaved-guard": "node e2e/unsaved-changes-guard.test.mjs",
     "e2e:undo": "node e2e/undo-contracts.test.mjs",
     "e2e:undo-object-selection": "node e2e/undo-object-selection.test.mjs",
