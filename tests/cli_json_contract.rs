@@ -103,6 +103,26 @@ fn info_json_missing_file_exit_runtime_and_silent_stdout() {
     );
 }
 
+#[test]
+fn info_json_multiple_files_exit_usage_silent_stdout() {
+    let first = sample_path();
+    let second = sample_path();
+    let args = [
+        "info",
+        first.to_str().unwrap(),
+        second.to_str().unwrap(),
+        "--json",
+    ];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(2),
+        "추가 입력을 조용히 무시하면 안 됩니다.\n{}",
+        describe(&args, &output)
+    );
+    assert!(output.stdout.is_empty(), "{}", describe(&args, &output));
+}
+
 // ── export-text --json ─────────────────────────────────────────────────────
 
 #[test]

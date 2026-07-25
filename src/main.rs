@@ -2477,15 +2477,28 @@ fn info_json_value(
 }
 
 fn show_info(args: &[String]) -> i32 {
-    // [#3237] --json: 기계가 읽는 출력. 플래그만 걸러내고 나머지 처리(파일 해석)는 종전과 동일.
-    let json_mode = args.iter().any(|a| a == "--json");
-    let positional: Vec<&String> = args.iter().filter(|a| a.as_str() != "--json").collect();
-    if positional.is_empty() {
+    // [#3237] --json은 위치와 무관하다. 단일 입력 명령이므로 추가 경로를 무시하지 않는다.
+    let mut json_mode = false;
+    let mut file_path: Option<&str> = None;
+    for arg in args {
+        match arg.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+    }
+    let Some(file_path) = file_path else {
         eprintln!("오류: 문서 파일 경로를 지정해주세요.");
         return EXIT_USAGE;
-    }
-
-    let file_path = positional[0];
+    };
 
     // 파일 읽기
     let data = match fs::read(file_path) {
