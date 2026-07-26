@@ -935,7 +935,7 @@ dependencies = [
 
 [[package]]
 name = "rhwp"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "base64 0.23.0",
  "blake3",
