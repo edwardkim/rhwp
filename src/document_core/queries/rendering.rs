@@ -1428,11 +1428,13 @@ impl DocumentCore {
             }
 
             let mut mime = "application/octet-stream";
-            let mut base64_data = String::new();
+            // base64 인코딩은 emit 시점에 버퍼로 직접 흘린다 — 수 MB 중간 String 을
+            // 만들지 않는다 (Task #3315).
+            let mut image_bytes: Option<std::borrow::Cow<[u8]>> = None;
             let mut baked_watermark = false;
             if let Some(payload) = resolved {
                 mime = payload.mime;
-                base64_data = base64::engine::general_purpose::STANDARD.encode(&payload.data);
+                image_bytes = Some(std::borrow::Cow::Borrowed(&payload.data[..]));
                 baked_watermark = matches!(payload.kind, ResolvedImageKind::BakedWatermark);
             } else if let Some(data) = &image.data {
                 let detected = crate::renderer::svg::detect_image_mime_type(data);
@@ -1451,7 +1453,7 @@ impl DocumentCore {
                         (detected, std::borrow::Cow::Borrowed(data.as_slice()))
                     };
                 mime = final_mime;
-                base64_data = base64::engine::general_purpose::STANDARD.encode(&*final_data);
+                image_bytes = Some(final_data);
             }
 
             buf.push('{');
@@ -1460,7 +1462,10 @@ impl DocumentCore {
             buf.push_str(",\"mime\":");
             write_json_str(buf, mime);
             buf.push_str(",\"base64\":");
-            write_json_str(buf, &base64_data);
+            crate::document_core::helpers::write_json_base64(
+                buf,
+                image_bytes.as_deref().unwrap_or(&[]),
+            );
             buf.push_str(",\"effect\":");
             write_json_str(buf, effect_str(image.effect));
             let _ = write!(

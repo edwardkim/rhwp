@@ -848,6 +848,19 @@ pub(crate) fn json_escape(s: &str) -> String {
     out
 }
 
+/// 바이트를 JSON 문자열 리터럴(따옴표 포함)로 버퍼에 바로 base64 인코딩한다.
+///
+/// base64 표준 알파벳은 `A-Za-z0-9+/=` 뿐이라 [`json_escape`] 가 바꿀 문자가 하나도
+/// 없다. 그림 바이트는 수 MB 라서 이스케이프 스캔과 중간 String 할당이 레이어 JSON
+/// 직렬화 비용의 대부분을 차지했다 (Task #3315: 3.7MB 그림 1장 36.4ms 중 29.5ms).
+pub(crate) fn write_json_base64(buf: &mut String, bytes: &[u8]) {
+    use base64::Engine;
+
+    buf.push('"');
+    base64::engine::general_purpose::STANDARD.encode_string(bytes, buf);
+    buf.push('"');
+}
+
 /// JSON 성공 응답 생성: {"ok":true}
 pub(crate) fn json_ok() -> String {
     r#"{"ok":true}"#.to_string()
@@ -1532,6 +1545,38 @@ mod tests {
     use crate::model::image::Picture;
     use crate::model::page::ColumnDef;
     use crate::model::shape::TextWrap;
+
+    /// `write_json_base64` 는 "이스케이프를 건너뛰어도 같은 출력"이라는 전제로 스캔을
+    /// 없앤 것이므로, 전제 자체를 옛 경로와의 차분으로 고정한다 (Task #3315).
+    #[test]
+    fn json_base64_matches_escaped_encoding_for_every_byte_value() {
+        use base64::Engine;
+
+        let all_bytes: Vec<u8> = (0..=255u8).collect();
+        let cases: Vec<Vec<u8>> = vec![
+            Vec::new(),
+            vec![0x00],
+            vec![b'"', b'\\', b'\n', b'\r', b'\t', 0x08, 0x0C],
+            all_bytes.clone(),
+            // 길이 % 3 을 모두 훑어 패딩(`=`) 유무를 전부 통과시킨다.
+            all_bytes[..254].to_vec(),
+            all_bytes[..253].to_vec(),
+        ];
+
+        for bytes in cases {
+            let mut actual = String::new();
+            write_json_base64(&mut actual, &bytes);
+
+            let encoded = base64::engine::general_purpose::STANDARD.encode(&bytes);
+            let expected = format!("\"{}\"", json_escape(&encoded));
+
+            assert_eq!(actual, expected, "len={}", bytes.len());
+            let decoded = base64::engine::general_purpose::STANDARD
+                .decode(actual.trim_matches('"'))
+                .expect("base64 왕복");
+            assert_eq!(decoded, bytes);
+        }
+    }
 
     #[test]
     fn navigable_text_len_counts_trailing_footnote_marker() {
