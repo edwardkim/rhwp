@@ -525,6 +525,7 @@ fn show_capabilities(args: &[String]) -> i32 {
                 "--row",
                 "--col",
                 "--text",
+                "--keep-style",
                 "-o",
                 "--dry-run",
                 "--json",
@@ -542,6 +543,7 @@ fn show_capabilities(args: &[String]) -> i32 {
                 "col",
                 "oldText",
                 "newText",
+                "keepStyle",
                 "output",
             ],
         ),
@@ -925,6 +927,7 @@ fn print_help() {
     println!();
     println!("      --table/--row/--col       export-tables 격자와 같은 좌표 (0부터)");
     println!("      --text <문자열>           셀에 넣을 값 (비우기는 \"\", 줄바꿈·탭 불가)");
+    println!("      --keep-style              셀 안내문 스타일 상속(기본: 검정 글씨로 기록)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cell.hwp)");
     println!("      --dry-run                 파일을 쓰지 않고 old→new 만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
@@ -8106,6 +8109,75 @@ fn edit_replace_text(args: &[String]) -> i32 {
 /// [#3381] 좌표계는 `export-tables` 격자와 동일하다 — 발견과 편집이 같은 주소를 쓴다.
 /// 검증된 코어 셀 편집 경로(delete/insert_text_in_cell)를 재사용하므로 새 편집 로직이
 /// 없다. v1 범위: 본문 최상위 표, 셀 첫 문단 교체(중첩 표·다문단 셀은 후속).
+/// [#3391] 셀 문단 0 의 글자모양을 검정·비이탤릭·비진하게 글자모양 하나로 덮는다.
+/// 안내문(파란 이탤릭)을 지우고 실값을 쓰는 set-cell 의 제출 요건(검정 글씨) 대응.
+/// 검정 글자모양이 없으면 char_shape 0 을 복제해 검정화한 뒤 추가한다.
+/// 반환: 적용 성공 여부(좌표 해석 실패 시 false).
+fn recolor_cell_text_black(
+    document: &mut rhwp::model::document::Document,
+    sec: usize,
+    para: usize,
+    ctrl: usize,
+    cell_idx: usize,
+) -> bool {
+    use rhwp::model::control::Control;
+    use rhwp::model::paragraph::CharShapeRef;
+
+    // 검정·비이탤릭·비진하게·밑줄 없음·취소선 없음인 글자모양 id 를 찾거나 만든다.
+    let is_plain_black = |cs: &rhwp::model::style::CharShape| {
+        cs.text_color == 0
+            && !cs.italic
+            && !cs.bold
+            && !cs.strikethrough
+            && cs.underline_type == rhwp::model::style::UnderlineType::None
+    };
+    let black_id = match document
+        .doc_info
+        .char_shapes
+        .iter()
+        .position(is_plain_black)
+    {
+        Some(idx) => idx as u32,
+        None => {
+            let Some(base) = document.doc_info.char_shapes.first().cloned() else {
+                return false;
+            };
+            let mut black = base;
+            black.raw_data = None; // 원본 바이트를 버려 변경된 필드가 직렬화되게 한다.
+            black.text_color = 0;
+            black.italic = false;
+            black.bold = false;
+            black.strikethrough = false;
+            black.underline_type = rhwp::model::style::UnderlineType::None;
+            let new_id = document.doc_info.char_shapes.len() as u32;
+            document.doc_info.char_shapes.push(black);
+            new_id
+        }
+    };
+
+    let Some(section) = document.sections.get_mut(sec) else {
+        return false;
+    };
+    let Some(parent) = section.paragraphs.get_mut(para) else {
+        return false;
+    };
+    let Some(Control::Table(table)) = parent.controls.get_mut(ctrl) else {
+        return false;
+    };
+    let Some(cell) = table.cells.get_mut(cell_idx) else {
+        return false;
+    };
+    let Some(cell_para) = cell.paragraphs.get_mut(0) else {
+        return false;
+    };
+    // 문단 전체를 하나의 검정 글자모양으로 덮는다.
+    cell_para.char_shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id: black_id,
+    }];
+    true
+}
+
 fn edit_set_cell(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut table_arg: Option<usize> = None;
@@ -8115,10 +8187,15 @@ fn edit_set_cell(args: &[String]) -> i32 {
     let mut out_path: Option<String> = None;
     let mut dry_run = false;
     let mut json_mode = false;
+    // [#3391] 실물 공고 양식의 기입 칸 안내문은 파란 이탤릭이 흔하다. set-cell 은
+    // "안내문을 지우고 실값을 쓰는" 용도이므로 제출 요건(검정 글씨)에 맞춰 기본을
+    // 검정·비이탤릭·비진하게로 기록한다. --keep-style 로 셀 스타일 상속을 유지한다.
+    let mut keep_style = false;
 
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
+            "--keep-style" => keep_style = true,
             "--table" | "--row" | "--col" => {
                 let name = args[i].clone();
                 i += 1;
@@ -8174,7 +8251,7 @@ fn edit_set_cell(args: &[String]) -> i32 {
         (file_path, table_arg, row_arg, col_arg, text_arg)
     else {
         eprintln!(
-            "사용법: rhwp edit set-cell <파일> --table <번호> --row <행> --col <열> --text <문자열> [-o <출력>] [--dry-run] [--json]"
+            "사용법: rhwp edit set-cell <파일> --table <번호> --row <행> --col <열> --text <문자열> [-o <출력>] [--keep-style] [--dry-run] [--json]"
         );
         return EXIT_USAGE;
     };
@@ -8329,6 +8406,13 @@ fn edit_set_cell(args: &[String]) -> i32 {
                 // 실패 시 원본 불변 — 출력 파일을 쓰지 않고 즉시 끝낸다.
                 return EXIT_RUNTIME;
             }
+            // [#3391] 기본은 제출 요건(검정 글씨)에 맞춘다 — 셀 문단 0 의 글자모양을
+            // 검정·비이탤릭·비진하게 글자모양 하나로 덮는다. --keep-style 이면 생략.
+            if !keep_style
+                && !recolor_cell_text_black(doc.document_mut(), sec, para, ctrl, cell_idx)
+            {
+                eprintln!("경고: 셀 글자색을 검정으로 바꾸지 못했습니다 (상속 스타일 유지).");
+            }
         }
     }
 
@@ -8364,6 +8448,7 @@ fn edit_set_cell(args: &[String]) -> i32 {
             "oldText": old_text,
             "newText": new_text,
             "dryRun": dry_run,
+            "keepStyle": keep_style,
         });
         if !dry_run {
             envelope["output"] = serde_json::Value::String(output_path.clone());

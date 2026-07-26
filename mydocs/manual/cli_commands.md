@@ -366,9 +366,11 @@ rhwp search 개정본.hwp "2025년" --json | jq .matchCount     # → 0 이어�
 검증이 같은 주소로 닫힌다. 검증된 코어 셀 편집 경로를 재사용하므로 새 편집 로직이 없다.
 - `--table/--row/--col` — `export-tables` 의 `index`/`row`/`col` (0부터, 본문 최상위 표)
 - `--text <문자열>` — 셀에 넣을 값 (`""` 비우기, 줄바꿈·탭 불가 — v1 단일 문단 교체)
+- `--keep-style` — 셀 안내문 스타일 상속. **기본은 검정·비이탤릭·비진하게로 기록**한다
+  (#3391 — 실물 공고 양식의 파란 안내문 스타일을 상속하면 "검정 글씨 제출" 요건과 충돌).
 - `-o, --output <파일>` — 출력 파일 (기본 `<입력명>_cell.hwp`)
 - `--dry-run` — **파일을 쓰지 않고** `oldText`→`newText` 예고
-- `--json` 봉투: `{"schemaVersion":"1.0","source","table","row","col","oldText","newText","dryRun","output"?}`
+- `--json` 봉투: `{"schemaVersion":"1.0","source","table","row","col","oldText","newText","dryRun","keepStyle","output"?}`
 - **병합으로 덮인 칸**은 앵커 좌표 안내와 함께 exit 2. 격자 밖 좌표 exit 2.
 - **실패 시 원본 불변**: 셀 기록·직렬화·쓰기 실패 시 출력 없이 exit 1.
 - v1 범위: 본문 최상위 표·셀 첫 문단 (중첩 표·다문단 셀은 후속).

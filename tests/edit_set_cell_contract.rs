@@ -277,3 +277,75 @@ fn missing_args_and_out_of_range_are_usage_errors() {
         );
     }
 }
+
+/// [#3391] 기본은 검정 글씨로 기록한다 — 셀 안내문(파란 이탤릭) 스타일을 상속하지 않는다.
+/// keepStyle 봉투 필드가 기본 false 이고, --keep-style 이면 true.
+#[test]
+fn default_black_style_and_keep_style_flag() {
+    let sample = sample();
+    let (tbl, row, col, _) = pick_cell(&tables_of(&sample));
+    let (ts, rs, cs) = (tbl.to_string(), row.to_string(), col.to_string());
+
+    // 기본: keepStyle=false
+    let out = temp_out("black");
+    let args = [
+        "edit",
+        "set-cell",
+        sample.to_str().unwrap(),
+        "--table",
+        &ts,
+        "--row",
+        &rs,
+        "--col",
+        &cs,
+        "--text",
+        "검정값",
+        "-o",
+        out.to_str().unwrap(),
+        "--json",
+    ];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
+    let v = parse_json(&args, &output);
+    assert_eq!(
+        v["keepStyle"], false,
+        "기본은 검정 기록(keepStyle=false): {v}"
+    );
+    assert!(out.exists());
+    let _ = std::fs::remove_file(&out);
+
+    // --keep-style: keepStyle=true
+    let out2 = temp_out("keep");
+    let args2 = [
+        "edit",
+        "set-cell",
+        sample.to_str().unwrap(),
+        "--table",
+        &ts,
+        "--row",
+        &rs,
+        "--col",
+        &cs,
+        "--text",
+        "상속값",
+        "--keep-style",
+        "-o",
+        out2.to_str().unwrap(),
+        "--json",
+    ];
+    let output2 = run(&args2);
+    assert_eq!(
+        output2.status.code(),
+        Some(0),
+        "{}",
+        describe(&args2, &output2)
+    );
+    let v2 = parse_json(&args2, &output2);
+    assert_eq!(v2["keepStyle"], true, "{v2}");
+    let _ = std::fs::remove_file(&out2);
+}
