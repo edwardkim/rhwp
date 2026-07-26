@@ -347,7 +347,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         run: printf '%s\n' 'Render Diff identity recorded'
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
