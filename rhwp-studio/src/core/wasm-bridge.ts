@@ -298,6 +298,10 @@ export class WasmBridge {
   /** [Task #741 후속] 외부 file path 그림 영역 영역 dev 서버 영역 영역 fetch + inject. */
   private async populateExternalImagesFromDevServer(): Promise<void> {
     if (!this.doc) return;
+    // [#3348] /samples/ fetch는 vite dev 서버 전용(server.fs.allow). 프로덕션 빌드
+    // (Pages·확장)에는 경로가 없어 실패 로그만 쌓이므로 dev 외에는 시도하지 않는다.
+    // 프로덕션 사이드카 공급 UX는 #3313 잔여 범위.
+    if (!import.meta.env.DEV) return;
     try {
       const basenamesJson = this.doc.getExternalImageBasenames();
       const basenames: string[] = JSON.parse(basenamesJson);

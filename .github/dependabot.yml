@@ -81,3 +81,12 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    # engines.vscode ^1.82.0 계약은 VS Code API 1.82와 Node 18.15를 기준으로 한다.
+    # 최소 지원 버전을 올리기 전에는 더 최신 API/runtime 타입을 노출하지 않는다.
+    ignore:
+      - dependency-name: "@types/vscode"
+        versions:
+          - ">=1.83.0"
+      - dependency-name: "@types/node"
+        versions:
+          - ">=18.16.0"

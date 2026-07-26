@@ -2059,6 +2059,38 @@ impl LayoutEngine {
                                 }
                             }
 
+                            // [#3363] EMF 부재 시 WMF 프레젠테이션 폴백 — HWP3 내장
+                            // OLE(글맵시 등)의 OlePres000 은 표준 WMF 다. 기존 WMF
+                            // 그림 경로와 동일하게 SVG 로 변환해 data URI 로 배치한다.
+                            if !rendered {
+                                if let Some(wmf_bytes) = container.preview_wmf.as_ref() {
+                                    if let Some(svg_bytes) =
+                                        crate::renderer::svg::convert_wmf_to_svg(wmf_bytes)
+                                    {
+                                        use base64::Engine;
+                                        let b64 = base64::engine::general_purpose::STANDARD
+                                            .encode(&svg_bytes);
+                                        let href = format!("data:image/svg+xml;base64,{}", b64);
+                                        let svg_fragment = format!(
+                                            "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\" href=\"{}\"/>",
+                                            render_x, render_y, render_w, render_h, href, href
+                                        );
+                                        push_ole_raw_svg_render_node(
+                                            tree,
+                                            parent,
+                                            BoundingBox::new(
+                                                render_x, render_y, render_w, render_h,
+                                            ),
+                                            svg_fragment,
+                                            section_index,
+                                            para_index,
+                                            control_index,
+                                        );
+                                        rendered = true;
+                                    }
+                                }
+                            }
+
                             // 네이티브 임베딩 이미지(BMP/PNG/JPEG/GIF) 폴백
                             if !rendered {
                                 if let Some((kind, bytes)) = container.native_image.as_ref() {

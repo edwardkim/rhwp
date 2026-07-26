@@ -102,7 +102,8 @@
     }
   },
   "scripts": {
-    "compile": "webpack --mode production",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.webview.json",
+    "compile": "npm run typecheck && webpack --mode production",
     "watch": "webpack --mode development --watch",
     "vscode:prepublish": "npm run compile",
     "package": "vsce package"
@@ -112,13 +113,14 @@
     "canvaskit-wasm": "^0.41.1"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/vscode": "^1.82.0",
+    "@types/node": "~18.15.0",
+    "@types/vscode": "~1.82.0",
+    "@typescript/native": "npm:typescript@^7.0.2",
     "copy-webpack-plugin": "^14.0.0",
     "null-loader": "^4.0.1",
-    "ts-loader": "^9.5.0",
-    "typescript": "^5.7.0",
-    "webpack": "^5.98.0",
-    "webpack-cli": "^6.0.0"
+    "ts-loader": "^9.6.2",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "webpack": "^5.109.0",
+    "webpack-cli": "^7.2.1"
   }
 }
