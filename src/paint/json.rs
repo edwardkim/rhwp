@@ -4374,6 +4374,7 @@ mod tests {
                             color_str: "#000000".to_string(),
                             color: 0x00000000,
                             font_size: 12.0,
+                            script: String::new(),
                             section_index: None,
                             para_index: None,
                             control_index: None,

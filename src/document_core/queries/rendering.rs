@@ -5218,6 +5218,17 @@ impl DocumentCore {
                         *has_token = true;
                     }
                 }
+                // [#3413] 수식은 렌더에만 존재하고 평문에서 조용히 사라졌다. 수학·과학
+                // 문서에서는 선택지 값과 발문 수식이 통째로 비어(exit 0, 경고 없음)
+                // RAG·검색 파이프라인이 의미 없는 텍스트를 받는다. 원본 스크립트를
+                // 그대로 방출한다 — HWP 수식 문법은 사람이 읽을 수 있는 형식이다.
+                RenderNodeType::Equation(eq) => {
+                    let script = eq.script.trim();
+                    if !script.is_empty() {
+                        out.push_str(script);
+                        *has_token = true;
+                    }
+                }
                 _ => {}
             }
 
@@ -5302,6 +5313,17 @@ impl DocumentCore {
                         *has_token = true;
                     } else if !form.caption.is_empty() {
                         out.push_str(&form.caption);
+                        *has_token = true;
+                    }
+                }
+                // [#3413] 수식은 렌더에만 존재하고 평문에서 조용히 사라졌다. 수학·과학
+                // 문서에서는 선택지 값과 발문 수식이 통째로 비어(exit 0, 경고 없음)
+                // RAG·검색 파이프라인이 의미 없는 텍스트를 받는다. 원본 스크립트를
+                // 그대로 방출한다 — HWP 수식 문법은 사람이 읽을 수 있는 형식이다.
+                RenderNodeType::Equation(eq) => {
+                    let script = eq.script.trim();
+                    if !script.is_empty() {
+                        out.push_str(script);
                         *has_token = true;
                     }
                 }
