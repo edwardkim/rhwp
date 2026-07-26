@@ -42,6 +42,9 @@ pub struct GrepMatch {
     /// 글상자 안의 매치면 글상자 좌표. 본문·표 셀 매치면 생략된다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub textbox: Option<TextBoxRef>,
+    /// 수식 스크립트 안의 매치면 수식 좌표. 본문·표 셀·글상자 매치면 생략된다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub equation: Option<EquationRef>,
 }
 
 /// 표 셀 매치의 좌표.
@@ -62,6 +65,13 @@ pub struct TextBoxRef {
     pub control: usize,
     /// 글상자 안의 문단 인덱스.
     pub paragraph: usize,
+}
+
+/// 수식 매치의 좌표.
+#[derive(Debug, Clone, Serialize)]
+pub struct EquationRef {
+    /// 수식을 담은 본문 문단의 컨트롤 인덱스.
+    pub control: usize,
 }
 
 /// 매치 주변 발췌를 만든다 (앞뒤 `WINDOW` 문자).
@@ -131,7 +141,8 @@ impl DocumentCore {
                 let make = |text: &str,
                             offset: usize,
                             cell: Option<CellRef>,
-                            textbox: Option<TextBoxRef>| GrepMatch {
+                            textbox: Option<TextBoxRef>,
+                            equation: Option<EquationRef>| GrepMatch {
                     section: sec_idx,
                     paragraph: para_idx,
                     page,
@@ -141,10 +152,11 @@ impl DocumentCore {
                     context: make_context(text, offset, qlen),
                     cell,
                     textbox,
+                    equation,
                 };
 
                 for offset in super::search_query::find_matches(&para.text, query, case_sensitive) {
-                    out.push(make(&para.text, offset, None, None));
+                    out.push(make(&para.text, offset, None, None, None));
                     if limit.is_some_and(|n| out.len() >= n) {
                         return out;
                     }
@@ -168,6 +180,7 @@ impl DocumentCore {
                                                 cell: cell_idx,
                                                 paragraph: cp_idx,
                                             }),
+                                            None,
                                             None,
                                         ));
                                         if limit.is_some_and(|n| out.len() >= n) {
@@ -195,11 +208,31 @@ impl DocumentCore {
                                                 control: ctrl_idx,
                                                 paragraph: tp_idx,
                                             }),
+                                            None,
                                         ));
                                         if limit.is_some_and(|n| out.len() >= n) {
                                             return out;
                                         }
                                     }
+                                }
+                            }
+                        }
+                        // 수식 스크립트 — 렌더 트리(EquationNode)가 아니라 IR을 직접 순회하므로
+                        // #3419(export-text/markdown 쪽 수식 텍스트화)와는 별개 경로였다.
+                        // 표 셀·글상자와 동일하게 본문 문단 순회 중 함께 검색한다.
+                        Control::Equation(eq) => {
+                            for offset in
+                                super::search_query::find_matches(&eq.script, query, case_sensitive)
+                            {
+                                out.push(make(
+                                    &eq.script,
+                                    offset,
+                                    None,
+                                    None,
+                                    Some(EquationRef { control: ctrl_idx }),
+                                ));
+                                if limit.is_some_and(|n| out.len() >= n) {
+                                    return out;
                                 }
                             }
                         }
@@ -209,5 +242,28 @@ impl DocumentCore {
             }
         }
         out
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// [#3413] CLI `rhwp search` 는 `DocumentCore::grep` 을 호출한다(`wasm_api::HwpDocument::grep`
+    /// 경유). 이 경로가 본문/표 셀/글상자만 순회하고 수식(Equation) 컨트롤의 script 텍스트를
+    /// 빠뜨려 `search exam_math.hwp "lim" --json` 이 matchCount=0 을 반환하던 버그의 회귀 테스트.
+    #[test]
+    fn grep_finds_equation_script() {
+        let data = std::fs::read("samples/exam_math.hwp").expect("샘플 파일 읽기 실패");
+        let doc = DocumentCore::from_bytes(&data).expect("샘플 파일 파싱 실패");
+        let matches = doc.grep("lim", true, None);
+        assert!(
+            !matches.is_empty(),
+            "수식 스크립트 안의 'lim' 매치를 찾지 못함"
+        );
+        assert!(
+            matches.iter().any(|m| m.equation.is_some()),
+            "매치 중 equation 컨텍스트가 있는 항목이 없음: {matches:?}"
+        );
     }
 }

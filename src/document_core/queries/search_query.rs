@@ -150,6 +150,20 @@ fn search_all(doc: &DocumentCore, query: &str, case_sensitive: bool) -> Vec<Sear
                             }
                         }
                     }
+                    // 수식 스크립트 — 렌더 트리(EquationNode)가 아니라 IR을 직접 순회하므로
+                    // #3419(export-text/markdown 쪽 수식 텍스트화)와는 별개 경로. 셀/글상자와
+                    // 동일하게 cell_context 로 표시해 커서 이동 대상에서는 제외한다.
+                    Control::Equation(eq) => {
+                        for offset in find_in_text(&eq.script, query, case_sensitive) {
+                            results.push(SearchHit {
+                                sec: sec_idx,
+                                para: para_idx,
+                                char_offset: offset,
+                                length: qlen,
+                                cell_context: Some((para_idx, ctrl_idx, 0, 0)),
+                            });
+                        }
+                    }
                     _ => {}
                 }
             }
@@ -524,5 +538,22 @@ mod tests {
     fn find_in_text_korean() {
         assert_eq!(find_in_text("안녕하세요 세계", "세계", true), vec![6]);
         assert_eq!(find_in_text("가나가나", "가나", true), vec![0, 2]);
+    }
+
+    /// [#3413] `search` 가 수식(Equation) 컨트롤의 script 텍스트를 검색 대상에서
+    /// 빠뜨리던 버그 회귀 테스트. 실제 표본(`samples/exam_math.hwp`)의 수식에는
+    /// `lim` 이 포함돼 있는데도 이전 코드는 matchCount=0 을 반환했다.
+    #[test]
+    fn search_all_text_finds_equation_script() {
+        let data = std::fs::read("samples/exam_math.hwp").expect("샘플 파일 읽기 실패");
+        let doc = DocumentCore::from_bytes(&data).expect("샘플 파일 파싱 실패");
+        let json = doc
+            .search_all_text_native("lim", true, true)
+            .expect("검색 실패");
+        assert!(
+            json.contains("\"charOffset\""),
+            "수식 스크립트 내 'lim' 매치를 찾지 못함: {json}"
+        );
+        assert_ne!(json, "[]", "수식 스크립트 내 'lim' 매치가 비어있음");
     }
 }
