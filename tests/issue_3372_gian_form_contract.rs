@@ -10,6 +10,24 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 const FORM: &str = "tools/forms/일반기안문_서식.hwpx";
+const FORM_GANI: &str = "tools/forms/간이기안문_서식.hwpx";
+
+/// 별지 제2호서식(간이기안문) 기입 위치 — 결재란 표 포함.
+const REQUIRED_FIELDS_GANI: &[&str] = &[
+    "생산등록번호",
+    "등록일",
+    "결재일",
+    "공개구분",
+    "결재직위1",
+    "결재직위2",
+    "결재직위3",
+    "결재직위4",
+    "협조자",
+    "제목",
+    "요약설명",
+    "작성일",
+    "작성기관",
+];
 
 /// 별지 제1호서식 기입 위치 — 이름 집합이 곧 서식의 공개 계약이다.
 const REQUIRED_FIELDS: &[&str] = &[
@@ -140,5 +158,60 @@ fn form_renders_to_svg() {
         .filter_map(Result::ok)
         .any(|e| e.path().extension().is_some_and(|x| x == "svg"));
     assert!(produced, "SVG 산출물이 있어야 합니다");
+    let _ = std::fs::remove_dir_all(&out);
+}
+
+/// 간이기안문 — 결재란 표 안 누름틀까지 이름 집합이 고정이다.
+#[test]
+fn gani_form_exposes_all_required_fields() {
+    let p = Path::new(env!("CARGO_MANIFEST_DIR")).join(FORM_GANI);
+    let args = ["fields", p.to_str().unwrap(), "--json"];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
+    let v: serde_json::Value = serde_json::from_slice(&output.stdout).expect("순수 JSON");
+    let names: Vec<&str> = v["fields"]
+        .as_array()
+        .expect("fields 배열")
+        .iter()
+        .filter_map(|f| f["name"].as_str())
+        .collect();
+    for required in REQUIRED_FIELDS_GANI {
+        assert!(
+            names.contains(required),
+            "누름틀 '{required}' 이 서식에 없습니다. 실재 목록: {names:?}"
+        );
+    }
+    assert_eq!(names.len(), REQUIRED_FIELDS_GANI.len(), "{names:?}");
+}
+
+/// 간이기안문 렌더 smoke — 표 2개(등록표·결재란 병합)가 렌더 가능해야 한다.
+#[test]
+fn gani_form_renders_to_svg() {
+    let p = Path::new(env!("CARGO_MANIFEST_DIR")).join(FORM_GANI);
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("system clock")
+        .as_nanos();
+    let out = std::env::temp_dir().join(format!("rhwp-3372g-{}-{nonce}", std::process::id()));
+    let args = [
+        "export-svg",
+        p.to_str().unwrap(),
+        "-p",
+        "0",
+        "-o",
+        out.to_str().unwrap(),
+    ];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
     let _ = std::fs::remove_dir_all(&out);
 }
