@@ -1089,11 +1089,11 @@ impl PathNode {
 pub struct ImageNode {
     /// BinData ID 참조
     pub bin_data_id: u16,
-    /// 이미지 데이터 (캐시용, JSON 직렬화 시 제외)
+    /// 이미지 데이터 (캐시용, JSON 직렬화 시 제외).
+    ///
+    /// `Arc` 인 이유는 이 노드가 편집마다 다시 빌드되고 `paint/builder.rs` 가 빌드마다
+    /// 노드를 클론하기 때문이다 — `Vec` 이면 수 MB 원본이 그때마다 복제된다 (Task #3315).
     #[serde(skip)]
-    /// 이미지 바이트. `Arc` 인 이유는 이 노드가 편집마다 다시 빌드되고
-    /// `paint/builder.rs` 가 빌드마다 노드를 클론하기 때문이다 — `Vec` 이면 수 MB
-    /// 원본이 그때마다 복제된다 (Task #3315).
     pub data: Option<std::sync::Arc<[u8]>>,
     /// 소속 구역 인덱스
     pub section_index: Option<usize>,

@@ -127,7 +127,8 @@ impl BinDataBytes {
     ///
     /// `Lazy` 는 여전히 호출마다 압축을 푼다. 압축 해제 결과를 여기 붙들면 화면에
     /// 없는 이미지까지 상주하므로(#2263 이 `Lazy` 를 도입한 이유) 그 판단은 이 함수가
-    /// 아니라 캐시를 갖는 쪽에서 해야 한다.
+    /// 아니라 캐시를 갖는 쪽에서 해야 한다. 리졸버가 `Vec` 을 돌려주므로 `Arc` 로 옮기는
+    /// 복사 1회가 따라붙는다 — 압축 해제 비용에 묻히지만 `Loaded` 처럼 공짜는 아니다.
     pub fn load(&self) -> std::sync::Arc<[u8]> {
         match self {
             BinDataBytes::Loaded(v) => std::sync::Arc::clone(v),
@@ -155,7 +156,9 @@ impl BinDataBytes {
     pub fn len(&self) -> usize {
         match self {
             BinDataBytes::Loaded(v) => v.len(),
-            BinDataBytes::Lazy { .. } => self.load().len(),
+            // 길이만 알면 되므로 `load()` 를 쓰지 않는다 — 그 경로는 압축 해제 결과를
+            // `Arc` 로 한 번 더 복사한다 (Task #3315).
+            BinDataBytes::Lazy { resolver, key } => resolver.resolve(key).len(),
         }
     }
 
@@ -168,7 +171,7 @@ impl BinDataBytes {
     pub fn is_empty(&self) -> bool {
         match self {
             BinDataBytes::Loaded(v) => v.is_empty(),
-            BinDataBytes::Lazy { .. } => self.load().is_empty(),
+            BinDataBytes::Lazy { resolver, key } => resolver.resolve(key).is_empty(),
         }
     }
 }

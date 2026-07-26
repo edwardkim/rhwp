@@ -2141,7 +2141,7 @@ fn image_payload_bytes<'a>(
     resolved: Option<&'a ResolvedImagePayload>,
 ) -> Option<&'a [u8]> {
     resolved
-        .map(|payload| payload.data.as_slice())
+        .map(|payload| &payload.data[..])
         .or(image.data.as_deref())
 }
 
@@ -2492,7 +2492,7 @@ mod tests {
             bbox(),
             image,
             Some(ResolvedImagePayload {
-                data: fixture_png(),
+                data: fixture_png().into(),
                 mime: "image/png",
                 kind: ResolvedImageKind::BakedWatermark,
                 suppress_effects: true,

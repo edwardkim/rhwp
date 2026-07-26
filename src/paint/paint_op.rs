@@ -35,7 +35,10 @@ pub enum ResolvedImageKind {
 
 #[derive(Debug, Clone)]
 pub struct ResolvedImagePayload {
-    pub data: Vec<u8>,
+    /// 변환 결과 바이트. `Arc` 인 이유는 이 payload 가 **한 번 만들어져 여러 backend 로
+    /// 내려가기** 때문이다 — `svg_layer`·`web_canvas`·`json` 이 각각 `ImageNode.data` 로
+    /// 옮겨 담는데, `Vec` 이면 그때마다 수 MB PNG 가 복제된다 (Task #3315).
+    pub data: std::sync::Arc<[u8]>,
     pub mime: &'static str,
     pub kind: ResolvedImageKind,
     pub suppress_effects: bool,

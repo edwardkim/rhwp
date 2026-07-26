@@ -132,33 +132,33 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
 
     match mime {
         "image/bmp" => bmp_bytes_to_png_bytes(data).map(|data| ResolvedImagePayload {
-            data,
+            data: data.into(),
             mime: "image/png",
             kind: ResolvedImageKind::FormatConverted,
             suppress_effects: false,
         }),
         "image/x-pcx" => pcx_bytes_to_png_bytes(data).map(|data| ResolvedImagePayload {
-            data,
+            data: data.into(),
             mime: "image/png",
             kind: ResolvedImageKind::FormatConverted,
             suppress_effects: false,
         }),
         "image/tiff" => tiff_bytes_to_png_bytes(data).map(|data| ResolvedImagePayload {
-            data,
+            data: data.into(),
             mime: "image/png",
             kind: ResolvedImageKind::FormatConverted,
             suppress_effects: false,
         }),
         "image/jpeg" if is_watermark_image(image) => {
             watermark_jpeg_bytes_to_hancom_baked_png_bytes(data).map(|data| ResolvedImagePayload {
-                data,
+                data: data.into(),
                 mime: "image/png",
                 kind: ResolvedImageKind::BakedWatermark,
                 suppress_effects: true,
             })
         }
         "image/jpeg" => grayscale_jpeg_bytes_to_png_bytes(data).map(|data| ResolvedImagePayload {
-            data,
+            data: data.into(),
             mime: "image/png",
             kind: ResolvedImageKind::FormatConverted,
             suppress_effects: false,
@@ -173,7 +173,7 @@ pub(crate) fn image_node_with_resolved_payload(
 ) -> ImageNode {
     let mut image = image.clone();
     if let Some(payload) = resolved {
-        image.data = Some(payload.data.clone().into());
+        image.data = Some(std::sync::Arc::clone(&payload.data));
         if payload.suppress_effects {
             image.effect = ImageEffect::RealPic;
             image.brightness = 0;
