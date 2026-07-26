@@ -85,7 +85,7 @@ fn main() {
         Some("measure-width") => rhwp::diagnostics::text_width_probe::run(&args[2..]),
         Some("core-pages") => rhwp::diagnostics::core_pages_probe::run(&args[2..]),
         Some("bench") => rhwp::diagnostics::bench::run(&args[2..]),
-        Some("thumbnail") => extract_thumbnail(&args[2..]),
+        Some("thumbnail") => exit_with(extract_thumbnail(&args[2..])),
         Some("fields") => exit_with(show_fields(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
         // 종료 코드 2로 끝낸다(기존에는 stdout + 0이라 오타 낸 명령이 스크립트에서 성공으로 보였다).
@@ -7718,40 +7718,56 @@ fn show_fields(args: &[String]) -> i32 {
     EXIT_OK
 }
 
-fn extract_thumbnail(args: &[String]) {
-    if args.is_empty() {
-        eprintln!("사용법: rhwp thumbnail <파일.hwp> [옵션]");
-        eprintln!("  -o, --output <파일>   출력 파일 경로");
-        eprintln!("  --base64              base64 문자열 출력");
-        eprintln!("  --data-uri            data:image/... URI 출력");
-        std::process::exit(1);
-    }
-
-    let input_path = &args[0];
+fn extract_thumbnail(args: &[String]) -> i32 {
+    // [#3366] 계약 정합 — 파싱은 #3349 규약(위치 무관, 미지 플래그 즉시 exit 2,
+    // 중복 positional exit 2), 종료 코드는 #2707(사용법 오류 = 2). 종전에는 알 수
+    // 없는 옵션을 조용히 무시한 채 산출물까지 만들고, 인자 없음이 1 로 끝났다.
+    let mut input_path: Option<&str> = None;
     let mut output_path: Option<String> = None;
     let mut mode = "file"; // "file", "base64", "data-uri"
 
-    let mut i = 1;
+    let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "-o" | "--output" => {
                 i += 1;
-                if i < args.len() {
-                    output_path = Some(args[i].clone());
+                match args.get(i) {
+                    Some(p) => output_path = Some(p.clone()),
+                    None => {
+                        eprintln!("오류: --output 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
                 }
             }
             "--base64" => mode = "base64",
             "--data-uri" => mode = "data-uri",
-            _ => {}
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if input_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
         }
         i += 1;
     }
+
+    let Some(input_path) = input_path else {
+        eprintln!("사용법: rhwp thumbnail <파일.hwp> [옵션]");
+        eprintln!("  -o, --output <파일>   출력 파일 경로");
+        eprintln!("  --base64              base64 문자열 출력");
+        eprintln!("  --data-uri            data:image/... URI 출력");
+        return EXIT_USAGE;
+    };
 
     let data = match fs::read(input_path) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다: {} ({})", input_path, e);
-            std::process::exit(1);
+            return EXIT_RUNTIME;
         }
     };
 
@@ -7759,7 +7775,7 @@ fn extract_thumbnail(args: &[String]) {
         Some(r) => r,
         None => {
             eprintln!("오류: PrvImage 썸네일이 없습니다: {}", input_path);
-            std::process::exit(1);
+            return EXIT_RUNTIME;
         }
     };
 
@@ -7812,11 +7828,12 @@ fn extract_thumbnail(args: &[String]) {
                 }
                 Err(e) => {
                     eprintln!("오류: 파일 저장 실패: {} ({})", out, e);
-                    std::process::exit(1);
+                    return EXIT_RUNTIME;
                 }
             }
         }
     }
+    EXIT_OK
 }
 
 #[cfg(test)]
