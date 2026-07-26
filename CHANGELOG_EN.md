@@ -8,18 +8,23 @@ This document records the major changes of the rhwp project.
 
 ## [0.8.1] — 2026-07-26
 
-> PATCH release — CLI contract consistency and HWP3 rendering corrections since
+> PATCH release — rendering corrections and CLI contract consistency since
 > v0.8.0. New features are included but are confined to the CLI tooling layer;
 > there are no public library API changes.
 
-### HWP3 rendering corrections
-- Page 1 WordArt now renders without a sidecar file — the embedded OLE payload
-  (pic_type=1, additional info block id=2), previously misread as an externally
-  linked image, is extracted, repackaged, and drawn from its OlePres000 WMF
-  preview. WMF POLYPOLYGON hole loss is also corrected (single path merge) (#3363).
-- Paragraph borders set to "no line" no longer render as solid lines — wiring now
-  follows Hancom's measured mapping. Shading side rules share the same root cause
-  and are corrected together (#3303).
+### Rendering corrections
+- Header objects placed on the master page (page-number boxes, labels) no longer
+  overflow past the side margins to the physical paper edge — the horizontal
+  reference area for paragraph/column-anchored objects is corrected to the body
+  text area, matching Hancom output (#3402).
+- HWP 3.0: page 1 WordArt now renders without a sidecar file — the embedded OLE
+  payload (pic_type=1, additional info block id=2), previously misread as an
+  externally linked image, is extracted, repackaged, and drawn from its OlePres000
+  WMF preview. WMF POLYPOLYGON hole loss is also corrected (single path merge)
+  (#3363).
+- HWP 3.0: paragraph borders set to "no line" no longer render as solid lines —
+  wiring now follows Hancom's measured mapping. Shading side rules share the same
+  root cause and are corrected together (#3303).
 
 ### CLI — contract consistency
 - Unified positional argument parsing across `export` commands — svg/png/pdf/
