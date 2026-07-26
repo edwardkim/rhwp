@@ -1,0 +1,42 @@
+### STEP 1 — 공식 양식 다운로드 (모집중 실공고 pbancSn=178662, 마감 8/12)
+$ curl -sL -o form.hwp 'https://www.k-startup.go.kr/afile/fileDownload/mo0Ln'
+  [별첨1] 사업계획서 양식.hwp  (104,960 bytes)
+
+### STEP 2 — 양식 분석 (info / fields / export-tables)
+$ rhwp info --json 양식.hwp
+  → format=hwp5  pages=12  paras=172
+$ rhwp fields --json 양식.hwp   → 누름틀(CLICK_HERE): 0
+$ rhwp export-tables --json 양식.hwp   → 표(table): 39
+  판정: 누름틀 0 · 표 다수 = 실물 표 양식 → set-cell 대상
+
+### STEP 3 — 셀 채움 (edit set-cell · 완전 가상 데이터 · 기본 검정 글씨)
+$ rhwp edit set-cell 표5 (0,1) --text '(주)시연용가상기업'
+    'OOOOO (법인등기부등본 및' → '(주)시연용가상기업'   (keepStyle=False)
+$ rhwp edit set-cell 표5 (0,3) --text '25.01.02'
+    'OO.OO.OO (법인등기부등' → '25.01.02'   (keepStyle=False)
+$ rhwp edit set-cell 표5 (1,1) --text '법인사업자'
+    '개인사업자 / 법인사업자' → '법인사업자'   (keepStyle=False)
+$ rhwp edit set-cell 표5 (1,3) --text '단독'
+    '단독 / 공동 / 각자대표' → '단독'   (keepStyle=False)
+$ rhwp edit set-cell 표5 (2,1) --text '000-00-00000 (000000-000'
+    'OOO-OO-OOOOO (OO' → '000-00-00000 (000000-0000000)'   (keepStyle=False)
+$ rhwp edit set-cell 표5 (2,3) --text '세종특별자치시 (가상)'
+    'OO도 OO시·군' → '세종특별자치시 (가상)'   (keepStyle=False)
+$ rhwp edit set-cell 표6 (0,1) --text 'AI 기반 무인기 임무영상 요약·판독 지원 '
+    'OO기술이 적용된 OO기능의 ' → 'AI 기반 무인기 임무영상 요약·판독 지원 소프트웨어 '   (keepStyle=False)
+$ rhwp edit set-cell 표6 (1,1) --text '영상 판독 SW 시제품(1식), 학습데이터 '
+    '0000 통제 모듈(0개), ' → '영상 판독 SW 시제품(1식), 학습데이터 구축 도구('   (keepStyle=False)
+$ rhwp edit set-cell 표6 (5,1) --text '√'
+    '' → '√'   (keepStyle=False)
+$ rhwp edit set-cell 표6 (13,1) --text '√'
+    '' → '√'   (keepStyle=False)
+
+### STEP 4 — 재독 검증 (export-tables 로 기록값 대조)
+$ rhwp export-tables --json filled.hwp  (기록 10칸 재독)
+  → 재독 대조: 10/10 일치
+
+### STEP 5 — 제출용 산출 (PDF + HWP)
+$ rhwp export-pdf filled.hwp -o submission.pdf
+  → submission.pdf (1,003,183 bytes) · filled.hwp (89,600 bytes)
+
+=== E2E 완료: 발굴 → 분석 → 채움 → 검증 → 산출, 전 5단계 모두 CLI ===
