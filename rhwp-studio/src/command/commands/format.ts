@@ -412,7 +412,7 @@ export const formatCommands: CommandDef[] = [
     execute(services) {
       const ih = services.getInputHandler();
       if (!ih) return;
-      const dialog = new StyleDialog(services.wasm, services.eventBus);
+      const dialog = new StyleDialog(services.wasm, services.eventBus, services);
 
       // 편집 요청
       dialog.onEditRequest = (styleId: number) => {
@@ -422,7 +422,7 @@ export const formatCommands: CommandDef[] = [
         const editDlg = new StyleEditDialog(services.wasm, services.eventBus, 'edit', {
           id: style.id, name: style.name, englishName: style.englishName,
           type: style.type, nextStyleId: style.nextStyleId,
-        });
+        }, undefined, services);
         editDlg.onSave = () => dialog.refresh();
         editDlg.show();
       };
@@ -438,7 +438,7 @@ export const formatCommands: CommandDef[] = [
         } catch {
           baseInfo = {};
         }
-        const addDlg = new StyleEditDialog(services.wasm, services.eventBus, 'add', undefined, baseInfo);
+        const addDlg = new StyleEditDialog(services.wasm, services.eventBus, 'add', undefined, baseInfo, services);
         addDlg.onSave = () => dialog.refresh();
         addDlg.show();
       };

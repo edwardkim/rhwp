@@ -30,11 +30,14 @@ scripts/pr_triage.sh <author> --list
 contributor 또는 maintainer가 Update branch를 수행해 PR head가 바뀌면, 이전 SHA run이 최신 required check와
 섞여 보일 수 있다. 최신 head의 CI는 절대 취소하지 않는다.
 
-1. 최신 head SHA를 확인한다.
-2. 이전 SHA에서 시작한 run을 확인한다.
-3. queued, pending, in_progress run만 **일반 `gh run cancel`을 먼저 시도하지 않고** force-cancel API로
-   즉시 취소한다.
-4. 완료 상태와 cancelled 결론을 재확인한다.
+1. `devel` 대상이고 head가 같은 저장소인 PR에서는 `Cancel stale PR runs` reaper가 `synchronize` event로
+   시작했는지, 최신 head SHA와 함께 확인한다. 이 workflow는 PR source를 checkout·실행하지 않고, 같은
+   PR의 이전 SHA `pull_request` run만 force-cancel한다.
+2. reaper가 성공했다면 이전 SHA run이 `completed/cancelled`가 되었고 최신 head run이 시작됐는지 확인한다.
+3. external fork PR은 GitHub가 `pull_request` token의 write 권한을 읽기 전용으로 낮추므로 reaper가
+   의도적으로 skip한다. 이 경우와 reaper 실패·미실행 시에는 이전 SHA에서 시작한 active run만 **일반
+   `gh run cancel`을 먼저 시도하지 않고** force-cancel API로 즉시 취소한다.
+4. 수동 취소 뒤에도 완료 상태와 `cancelled` 결론을 재확인한다.
 
 러너 구성 전환 등으로 배정 가능한 label이 사라진 run은 `queued`에 고착될 수 있다. 이 run은 일반 cancel이
 끝나지 않고 같은 concurrency group을 계속 점유해, 후속 run이 job을 하나도 시작하지 못한 `pending`으로
@@ -49,8 +52,9 @@ gh run list --repo edwardkim/rhwp --commit <old-sha> \
 gh api --method POST repos/edwardkim/rhwp/actions/runs/<run-id>/force-cancel
 ~~~
 
-force-cancel 대상 SHA, run URL, 완료 상태를 review 문서 또는 작업 기록에 남긴다. stale run 정리는 최신
-head의 새 CI를 기다리는 일과 병렬로 할 수 있지만, 대상 SHA 검증과 force-cancel API 호출은 순차로 한다.
+자동·수동 어느 경로든 force-cancel 대상 SHA, run URL, 완료 상태를 review 문서 또는 작업 기록에 남긴다.
+stale run 정리는 최신 head의 새 CI를 기다리는 일과 병렬로 할 수 있지만, 대상 SHA 검증과 force-cancel
+API 호출은 순차로 한다.
 
 PR close/reopen만으로는 GitHub의 merge ref가 항상 재계산된다고 가정하지 않는다. 고착 run을 정리한 뒤에도
 merge ref 또는 required check가 갱신되지 않으면, head SHA가 바뀌는 push의 `synchronize` 이벤트로

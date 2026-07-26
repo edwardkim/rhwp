@@ -23,6 +23,7 @@
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { EventBus } from '@/core/event-bus';
 import type { CharProperties, ParaProperties } from '@/core/types';
+import type { CommandServices } from '@/command/types';
 import { ModalDialog } from './dialog';
 import { CharShapeDialog } from './char-shape-dialog';
 import { ParaShapeDialog } from './para-shape-dialog';
@@ -72,6 +73,7 @@ export class StyleEditDialog extends ModalDialog {
     mode: 'add' | 'edit',
     styleInfo?: StyleInfo,
     baseInfo?: StyleBaseInfo,
+    private services?: CommandServices,
   ) {
     super(mode === 'add' ? '스타일 추가하기' : '스타일 편집하기', 480);
     this.addMode = mode === 'add';
@@ -293,25 +295,44 @@ export class StyleEditDialog extends ModalDialog {
       return;
     }
 
-    try {
+    // [Task #3387] 스타일 정의와 글자/문단 모양은 **두 번의 뮤테이션**이다. 따로 기록하면
+    // undo 가 두 번 필요하고 그 사이에 모양만 빠진 스타일이 남는다 — #2366 계산식과 동형으로
+    // 한 스냅샷 안에서 둘을 끝낸다.
+    const apply = (wasm: WasmBridge): void => {
       if (this.addMode) {
         const baseParaShapeId = this.baseInfo.paraProps?.paraShapeId;
         const baseCharShapeId = this.baseInfo.charProps?.charShapeId;
-        const newId = this.wasm.createStyle(JSON.stringify({
+        const newId = wasm.createStyle(JSON.stringify({
           name, englishName, type: styleType, nextStyleId,
           ...(typeof baseParaShapeId === 'number' ? { baseParaShapeId } : {}),
           ...(typeof baseCharShapeId === 'number' ? { baseCharShapeId } : {}),
         }));
+        // 의미상 실패(음수 ID)면 throw 해 무변 스냅샷 엔트리를 막는다.
+        if (!(newId >= 0)) throw new Error('[StyleEditDialog] 스타일 생성 실패');
         if (this.charModsJson !== '{}' || this.paraModsJson !== '{}') {
-          this.wasm.updateStyleShapes(newId, this.charModsJson, this.paraModsJson);
+          wasm.updateStyleShapes(newId, this.charModsJson, this.paraModsJson);
         }
       } else {
-        this.wasm.updateStyle(this.styleInfo.id, JSON.stringify({
+        wasm.updateStyle(this.styleInfo.id, JSON.stringify({
           name, englishName, nextStyleId,
         }));
         if (this.charModsJson !== '{}' || this.paraModsJson !== '{}') {
-          this.wasm.updateStyleShapes(this.styleInfo.id, this.charModsJson, this.paraModsJson);
+          wasm.updateStyleShapes(this.styleInfo.id, this.charModsJson, this.paraModsJson);
         }
+      }
+    };
+
+    try {
+      const ih = this.services?.getInputHandler();
+      if (ih) {
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: this.addMode ? 'createStyle' : 'updateStyle',
+          operation: (wasm) => { apply(wasm); return ih.getPosition(); },
+        });
+      } else {
+        apply(this.wasm);
+        this.eventBus.emit('document-changed');
       }
       this.onSave?.();
     } catch (err) {

@@ -4,7 +4,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 기준 파일:
 
-- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.7.17)
+- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.8.1)
 - `rhwp-studio/package.json` / `rhwp-studio/package-lock.json`
 - `rhwp-chrome/package.json` / `rhwp-chrome/package-lock.json`
 - `rhwp-firefox/package.json` / `rhwp-firefox/package-lock.json`
@@ -19,7 +19,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 | 크레이트 | 버전 | 라이선스 | 저장소 | 비고 |
 |---------|------|---------|--------|------|
-| base64 | 0.22.1 | MIT OR Apache-2.0 | marshallpierce/rust-base64 | Base64 인코딩 |
+| base64 | 0.23.0 | MIT OR Apache-2.0 | marshallpierce/rust-base64 | Base64 인코딩 |
 | blake3 | 1.8.5 | CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception | BLAKE3-team/BLAKE3 | 해시/진단 |
 | byteorder | 1.5.0 | Unlicense OR MIT | BurntSushi/byteorder | 바이너리 endian 처리 |
 | cfb | 0.14.0 | MIT | mdsteele/rust-cfb | OLE Compound File |
@@ -38,7 +38,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 | serde | 1.0.228 | MIT OR Apache-2.0 | serde-rs/serde | 직렬화 |
 | serde_json | 1.0.150 | MIT OR Apache-2.0 | serde-rs/json | JSON 직렬화 |
 | skia-safe | 0.99.0 | BSD-3-Clause | rust-skia/rust-skia | native-skia PNG/PDF backend (optional) |
-| snafu | 0.9.1 | MIT OR Apache-2.0 | shepmaster/snafu | 에러 처리 |
+| snafu | 0.9.2 | MIT OR Apache-2.0 | shepmaster/snafu | 에러 처리 |
 | strum | 0.28.0 | MIT | Peternator7/strum | enum derive |
 | subsetter | 0.2.6 | MIT OR Apache-2.0 | typst/subsetter | 폰트 subset |
 | svg2pdf | 0.13.0 | MIT OR Apache-2.0 | typst/svg2pdf | SVG → PDF |

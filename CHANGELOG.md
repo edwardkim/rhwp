@@ -4,6 +4,57 @@
 
 ## [Unreleased]
 
+## [0.8.1] — 2026-07-26
+
+> PATCH 릴리즈 — v0.8.0 이후 렌더 정정과 CLI 계약 정합. 신규 기능이 포함되나 전부
+> CLI 도구 계층이며 라이브러리 공개 API 변경은 없다.
+
+### 렌더 정정
+- 바탕쪽에 놓인 머리말 개체(쪽번호 상자, 라벨 등)가 좌우 여백을 넘어 용지 가장자리로
+  튀어나가던 문제 정정 — 문단·단 기준 개체의 가로 기준 영역을 본문 텍스트 영역으로
+  교정해 한컴 출력과 맞췄다 (#3402).
+- HWP3 1쪽 글맵시가 사이드카 파일 없이 렌더된다 — 외부 연결 그림으로 오인하던 내장 OLE
+  payload(pic_type=1, 추가 정보 블록 id=2)를 추출·재포장하고 OlePres000 WMF preview로
+  그린다. WMF POLYPOLYGON 구멍 소실도 함께 정정(단일 path 병합) (#3363).
+- HWP3 문단 테두리 '선 없음'이 실선으로 그려지던 오렌더 정정 — 한컴 실측 매핑대로 배선.
+  음영 좌우 세로선도 같은 뿌리로 함께 정정 (#3303).
+
+### CLI — 계약 정합
+- `export` 계열 위치 인자 파싱 통일 — svg/png/pdf/markdown/render-tree/doclang (#3359),
+  `export-text` 옵션 선행 호출 수용 (#3349).
+- `search --limit` 절단 가시화 — `totalMatchCount`·`truncated` 추가 (#3353).
+- `thumbnail` 종료 코드 정합 — 미지 옵션을 무시하고 exit 0 을 반환하던 동작 제거 (#3366).
+- `capabilities` 에 `export-png` feature 가용성 자기서술 추가 — `requiresFeature`·
+  `available` (#3357), `edit` 명령을 capabilities·MCP 자기서술에 등재 (#3329).
+- ingest 미지 필드 거부 — 침묵 유실 대신 위치·힌트가 있는 즉시 실패 (#3358).
+- `build-from-ingest` 기본 borderFill 을 무테두리로 명시 — 전 텍스트 런에 상자가 그려지던
+  문제 제거 (#3355).
+
+### CLI — 신규 기능
+- `edit fill-fields` 서식 값 채우기 (#3329), `edit replace-text` 문서 전체 일괄 치환
+  (#3373), `edit set-cell` 표 격자 좌표로 셀 기록 (#3381).
+- `batch` 에 search·export-tables·fields 축 추가 (#3346).
+- 일반기안문(별지 제1호서식)·간이기안문(별지 제2호서식) 표준 서식 자산 — 누름틀 23곳과
+  계약 테스트 (#3372).
+- 정답지(한컴 공식 PDF) 페이지별 대규모 비교 하네스 (#3389).
+
+### studio
+- 스타일 생성·수정·삭제가 편집 히스토리에 기록된다 — 종전에는 편집 라우터를 우회해
+  `Ctrl+Z` 로 되돌릴 수 없었다. 삭제는 전문서 style_id 재배정을 수반하므로 snapshot 으로
+  기록한다 (#3387).
+- 외부 연결 그림의 dev 전용 fetch 를 프로덕션·확장에서 가드 — 확장 Errors 소음 제거
+  (#3348).
+
+### 의존성
+- base64 0.22.1 → 0.23.0, snafu 0.9.1 → 0.9.2.
+- GitHub Actions 7종 major 갱신 — checkout v7, setup-node v7, cache v6,
+  upload-pages-artifact v5, deploy-pages v5, github-script v9, action-gh-release v3.
+
+### 알려진 문제
+- studio E2E `issue-2214` 의 페이지 로컬 리페인트 계약이 `after-56-sync` 체크포인트에서
+  실패한다(누적 wasmFlush 2, 기대 0). v0.8.0 대조를 수행하지 않아 회귀 여부는 미확정이며
+  별도 이슈로 추적한다 (#3412).
+
 ## [0.8.0] — 2026-07-26
 
 > MINOR 릴리즈 — v0.7.19 이후 265개 PR 통합. 저장 왕복 보존 대공사(무효화 계약 확립 +
