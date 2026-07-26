@@ -6444,10 +6444,23 @@ fn test_caption(args: &[String]) {
     }
 
     // 캡션 상태 확인
+    // [CLI 계약 정합] capabilities 가 "internal" 카테고리로도 <파일.hwp> 를 받는
+    // 일반 명령처럼 자기서술한다 — 에이전트가 임의 문서로 호출할 수 있다는 뜻이다.
+    // 이 도구는 원래 para=0/1·control 2/3/0/1 을 가진 고정 fixture 전용이었는데,
+    // 그 인덱스를 경계검사 없이 바로 인덱싱해 다른 문서를 주면 패닉(exit 101)했다.
+    // "안 죽는다"는 CLI 자기서술 계약을 어기므로, 범위를 벗어나면 패닉 대신
+    // 제어된 오류를 출력하고 다음 항목으로 넘어간다.
     for (i, (para, ci)) in pic_refs.iter().enumerate() {
         let section = &doc.document().sections[0];
-        let p = &section.paragraphs[*para];
-        if let rhwp::model::control::Control::Picture(pic) = &p.controls[*ci] {
+        let Some(p) = section.paragraphs.get(*para) else {
+            println!("[{}] 건너뜀: para={} 가 문서 범위를 벗어남(문단 {}개)", i, para, section.paragraphs.len());
+            continue;
+        };
+        let Some(ctrl) = p.controls.get(*ci) else {
+            println!("[{}] 건너뜀: para={} ci={} 가 범위를 벗어남(컨트롤 {}개)", i, para, ci, p.controls.len());
+            continue;
+        };
+        if let rhwp::model::control::Control::Picture(pic) = ctrl {
             println!(
                 "[{}] caption={:?}",
                 i,
