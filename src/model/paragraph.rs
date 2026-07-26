@@ -322,6 +322,26 @@ pub struct OrphanFieldEnd {
 }
 
 impl Paragraph {
+    /// `ctrl_data_records` 를 `controls` 길이에 맞춰 `None` 으로 패딩한다.
+    ///
+    /// [#3214] `ctrl_data_records[i]` 는 `controls[i]` 대응이지만, **두 배열의 길이가 항상
+    /// 같지는 않다**. CTRL_DATA 는 HWP5 바이너리 전용 레코드라 HWPX 파서는 이 배열을 채우지
+    /// 않고(`parser/hwpx` 에 적재 지점이 없다), HWP3 파서와 편집 커맨드만 쌍으로 관리한다.
+    /// 즉 HWPX 로 연 문서는 `ctrl_data_records.len() < controls.len()` 이 정상 상태다.
+    ///
+    /// 그런데 컨트롤 삽입 경로는 삽입 위치를 `controls` 기준으로 계산한 뒤 그 인덱스를 그대로
+    /// `ctrl_data_records.insert(idx, None)` 에 넘긴다. 두 길이가 어긋나 있으면
+    /// `insertion index (is N) should be <= len (is M)` 로 패닉하고, WASM 에서는 패닉이
+    /// 객체 borrow 를 오염시켜 이후 모든 호출이 `recursive use of an object` 로 실패한다.
+    ///
+    /// 인덱스 대응에 기대는 쓰기를 하기 전에 이 함수로 정렬한다. 삽입 **전에** 호출하면
+    /// `insert_idx <= ctrl_data_records.len()` 이 보장된다.
+    pub fn align_ctrl_data_records(&mut self) {
+        while self.ctrl_data_records.len() < self.controls.len() {
+            self.ctrl_data_records.push(None);
+        }
+    }
+
     pub(crate) fn is_split_movable_control(ctrl: &Control) -> bool {
         matches!(
             ctrl,

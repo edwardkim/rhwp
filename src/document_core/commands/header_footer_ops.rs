@@ -166,6 +166,9 @@ impl DocumentCore {
             return Err(HwpError::RenderError("구역에 문단이 없습니다".to_string()));
         }
         section.paragraphs[0].controls.push(ctrl);
+        // [#3214] controls 만 늘리면 ctrl_data_records 와의 인덱스 대응이 깨져, 이후 같은
+        // 문단에 각주·미주·수식을 삽입할 때 ctrl_data_records.insert 가 범위를 넘어 패닉한다.
+        section.paragraphs[0].align_ctrl_data_records();
         // 컨트롤 1개 = UTF-16 8 code units → char_count 갱신
         section.paragraphs[0].char_count += 8;
         section.raw_stream = None;
@@ -1586,6 +1589,58 @@ mod tests {
         assert!(
             format!("{:?}", tree).contains("가나다"),
             "렌더 트리에 본문 텍스트 없음"
+        );
+    }
+
+    /// [#3214] 머리말 생성이 `controls` 만 늘려 `ctrl_data_records` 와 어긋나면, 같은 문단에
+    /// 각주를 삽입할 때 `ctrl_data_records.insert` 가 범위를 넘어 패닉한다.
+    /// (WASM 에서는 패닉이 객체 borrow 를 오염시켜 이후 모든 호출이 실패한다.)
+    #[test]
+    fn issue3214_header_creation_keeps_ctrl_data_records_aligned() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "ab").unwrap();
+
+        core.create_header_footer_native(0, true, 0).unwrap();
+
+        let para = &core.document.sections[0].paragraphs[0];
+        assert_eq!(
+            para.controls.len(),
+            para.ctrl_data_records.len(),
+            "머리말 생성 후 controls/ctrl_data_records 길이가 어긋났다"
+        );
+
+        // 머리말 컨트롤 "뒤"(텍스트 끝)에 각주를 삽입해야 insert_idx == controls.len() 이 되어
+        // ctrl_data_records(짧음)에 대한 범위 초과가 드러난다 — 수정 전에는 여기서 패닉했다.
+        core.insert_footnote_native(0, 0, 2).unwrap();
+        let para = &core.document.sections[0].paragraphs[0];
+        assert_eq!(para.controls.len(), para.ctrl_data_records.len());
+    }
+
+    /// [#3214] HWPX 파서는 CTRL_DATA(HWP5 전용 레코드) 개념이 없어 `ctrl_data_records` 를
+    /// 채우지 않는다. 즉 `ctrl_data_records.len() < controls.len()` 은 HWPX 문서의 정상
+    /// 상태이며, 컨트롤 삽입 경로는 이를 견뎌야 한다.
+    #[test]
+    fn issue3214_insert_survives_unaligned_ctrl_data_records() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "ab").unwrap();
+
+        // HWPX 파서가 남기는 어긋난 상태를 재현한다(컨트롤은 있고 CTRL_DATA 는 없음).
+        core.create_header_footer_native(0, true, 0).unwrap();
+        {
+            let para = &mut core.document.sections[0].paragraphs[0];
+            para.ctrl_data_records.clear();
+            assert!(!para.controls.is_empty());
+        }
+
+        core.insert_footnote_native(0, 0, 2).unwrap();
+
+        let para = &core.document.sections[0].paragraphs[0];
+        assert_eq!(
+            para.controls.len(),
+            para.ctrl_data_records.len(),
+            "삽입 후 두 배열 길이가 정합해야 한다"
         );
     }
 }

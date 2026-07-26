@@ -512,6 +512,10 @@ impl DocumentCore {
             idx
         };
 
+        // [#3214] insert_idx 는 controls 기준이다. HWPX 문서는 ctrl_data_records 가 controls
+        // 보다 짧은 상태가 정상이므로(파서가 채우지 않음), 정렬 없이 같은 인덱스로 insert 하면
+        // 범위 초과로 패닉한다.
+        paragraph.align_ctrl_data_records();
         paragraph
             .controls
             .insert(insert_idx, Control::Footnote(Box::new(footnote)));
@@ -758,6 +762,8 @@ impl DocumentCore {
             idx
         };
 
+        // [#3214] 각주 경로와 동일 — controls 기준 인덱스를 쓰기 전에 정렬한다.
+        paragraph.align_ctrl_data_records();
         paragraph
             .controls
             .insert(insert_idx, Control::Endnote(Box::new(endnote)));
