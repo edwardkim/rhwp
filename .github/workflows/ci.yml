@@ -748,7 +748,7 @@ jobs:
 
       - name: Restore frontend WASM cargo cache
         id: frontend_wasm_cargo_cache_restore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: |
             ~/.cargo/registry
@@ -813,7 +813,7 @@ jobs:
 
       - name: Save frontend WASM cargo cache
         if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.frontend_wasm_cargo_cache_restore.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: |
             ~/.cargo/registry
@@ -970,7 +970,7 @@ jobs:
         uses: ./.github/actions/install-wasm-pack
 
       - name: Cache cargo registry & build
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry

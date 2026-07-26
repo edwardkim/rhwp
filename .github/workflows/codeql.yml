@@ -308,7 +308,7 @@ jobs:
       - name: Restore cargo registry & build cache (rust)
         id: codeql_rust_cache_restore
         if: matrix.language == 'rust'
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: |
             ~/.cargo/registry
@@ -324,7 +324,7 @@ jobs:
 
       - name: Save cargo registry & build cache (rust)
         if: ${{ matrix.language == 'rust' && github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.codeql_rust_cache_restore.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: |
             ~/.cargo/registry

@@ -371,7 +371,7 @@ jobs:
       # and allow only trusted manual devel/main seed runs to save a cache.
       - name: Restore cargo registry & build cache
         id: render_diff_cargo_cache_restore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: |
             ~/.cargo/registry
@@ -389,7 +389,7 @@ jobs:
 
       - name: Save cargo registry & build cache
         if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.render_diff_cargo_cache_restore.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: |
             ~/.cargo/registry
