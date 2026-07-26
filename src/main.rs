@@ -427,6 +427,8 @@ fn show_capabilities(args: &[String]) -> i32 {
                 "query",
                 "caseSensitive",
                 "matchCount",
+                "totalMatchCount",
+                "truncated",
                 "matches",
             ],
         ),
@@ -5439,15 +5441,28 @@ fn search_document(args: &[String]) -> i32 {
         }
     };
 
-    let matches = doc.grep(query, !ignore_case, limit);
+    // [#3353] 총량을 보고하려면 전수 스캔이 불가피하다 — `--limit` 의 목적은 스캔 시간이
+    // 아니라 출력 컨텍스트 절약이므로, 전수 grep 후 표시만 절단한다. 절단 사실을 숨기면
+    // 에이전트가 "정확히 N건"과 "N건만 표시(실제 그 이상)"를 구별할 수 없다.
+    let all_matches = doc.grep(query, !ignore_case, None);
+    let total_match_count = all_matches.len();
+    let matches: Vec<_> = match limit {
+        Some(n) => all_matches.into_iter().take(n).collect(),
+        None => all_matches,
+    };
+    let truncated = matches.len() < total_match_count;
 
     if json_mode {
+        // [#3353] matchCount 는 종전대로 반환된 매치 수(= matches.len())다.
+        // totalMatchCount·truncated 는 추가-전용 필드(스키마 정책: 변경·삭제 금지).
         let envelope = serde_json::json!({
             "schemaVersion": "1.0",
             "source": file_path,
             "query": query,
             "caseSensitive": !ignore_case,
             "matchCount": matches.len(),
+            "totalMatchCount": total_match_count,
+            "truncated": truncated,
             "matches": matches,
         });
         println!("{envelope}");
@@ -5455,7 +5470,17 @@ fn search_document(args: &[String]) -> i32 {
         return EXIT_OK;
     }
 
-    println!("검색: {:?} in {} — {}건", query, file_path, matches.len());
+    if truncated {
+        println!(
+            "검색: {:?} in {} — {}건 중 {}건 표시 (--limit)",
+            query,
+            file_path,
+            total_match_count,
+            matches.len()
+        );
+    } else {
+        println!("검색: {:?} in {} — {}건", query, file_path, matches.len());
+    }
     for m in &matches {
         let page = m
             .page

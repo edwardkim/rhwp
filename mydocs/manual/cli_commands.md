@@ -275,14 +275,16 @@ HWP 파일 정보 표시(버전/구역 수/암호화 등).
 문서를 검색해 매치마다 **구역·문단·페이지·문자 오프셋**을 함께 돌려준다.
 평문을 뽑아 외부에서 찾으면 주소가 소멸해 근거 제시가 불가능한데, rhwp 는 조판 엔진이
 있어 "몇 쪽"에 답할 수 있다. 파서/렌더 무변경 읽기 질의.
-- `--json` 봉투: `{"schemaVersion":"1.0","source","query","caseSensitive","matchCount","matches":[…]}`
+- `--json` 봉투: `{"schemaVersion":"1.0","source","query","caseSensitive","matchCount","totalMatchCount","truncated","matches":[…]}`
 - 매치: `{section,paragraph,page?,charOffset,length,text,context,cell?}`
   - `page` 는 0부터 시작하는 글로벌 페이지. 조판에 배치되지 않은 문단이면 생략된다.
   - `cell` 은 표 셀 안의 매치일 때 `{control,cell,paragraph}` 좌표
   - `context` 는 매치 앞뒤 발췌(각 40자)
 - 검색 범위는 본문 + 표 셀 + 글상자 (`search_query::search_all` 과 동일)
 - **매치 0건은 오류가 아니다** — `matchCount:0`, 종료 코드 0 (1은 런타임 실패 전용)
-- `--limit N` 은 대형 문서에서 컨텍스트를 아끼기 위한 상한
+- `--limit N` 은 대형 문서에서 컨텍스트를 아끼기 위한 상한. 절단돼도
+  `totalMatchCount`(문서 전체 매치 수)와 `truncated:true` 로 총량이 보인다 (#3353) —
+  `matchCount` 는 종전대로 반환된 매치 수(= `matches` 길이)다.
 - 성능: 페이지 매핑 비용은 0이다(로드 시 조판 완료). `(구역,문단)→페이지` 인덱스를
   한 번만 만들어 재사용한다. 실측 393쪽·10MB 문서에서 19건 검색 **215ms**(파싱 포함).
 
