@@ -316,7 +316,7 @@ fn validate_direct_pdf_tree(
                             validate_transform(image.transform, page_index, "image")?;
                             if let Some(data) = resolved
                                 .as_deref()
-                                .map(|payload| payload.data.as_slice())
+                                .map(|payload| &payload.data[..])
                                 .or(image.data.as_deref())
                             {
                                 validate_image_payload(data, page_index, "image")?;
@@ -1095,7 +1095,7 @@ mod tests {
                 None,
                 vec![PaintOp::image(
                     BoundingBox::new(8.0, 8.0, 32.0, 32.0),
-                    ImageNode::new(1, Some(corrupt_png)),
+                    ImageNode::new(1, Some(corrupt_png.into())),
                     None,
                 )],
             ),
@@ -1116,7 +1116,10 @@ mod tests {
                 None,
                 vec![PaintOp::image(
                     BoundingBox::new(8.0, 8.0, 32.0, 32.0),
-                    ImageNode::new(2, Some(b"GIF89a\x01\x00\x01\x00\x80\x00\x00".to_vec())),
+                    ImageNode::new(
+                        2,
+                        Some(b"GIF89a\x01\x00\x01\x00\x80\x00\x00".to_vec().into()),
+                    ),
                     None,
                 )],
             ),
@@ -1136,7 +1139,7 @@ mod tests {
                 None,
                 vec![PaintOp::image(
                     BoundingBox::new(8.0, 8.0, 32.0, 32.0),
-                    ImageNode::new(3, Some(b"unrecognized image payload".to_vec())),
+                    ImageNode::new(3, Some(b"unrecognized image payload".to_vec().into())),
                     None,
                 )],
             ),

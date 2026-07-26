@@ -2002,7 +2002,7 @@ mod tests {
     }
 
     fn solid_image_op(bbox: BoundingBox, color: [u8; 4], wrap: TextWrap) -> PaintOp {
-        let mut image = ImageNode::new(1, Some(solid_png(color)));
+        let mut image = ImageNode::new(1, Some(solid_png(color).into()));
         image.text_wrap = Some(wrap);
         PaintOp::image(bbox, image, None)
     }
@@ -2295,7 +2295,7 @@ mod tests {
                         border_width: 0.0,
                         gradient: None,
                         image: Some(PageBackgroundImage {
-                            data: solid_png([0, 0, 255, 255]),
+                            data: solid_png([0, 0, 255, 255]).into(),
                             fill_mode: ImageFillMode::FitToSize,
                             brightness: 0,
                             contrast: 0,
@@ -2457,12 +2457,12 @@ mod tests {
                 vec![
                     PaintOp::image(
                         BoundingBox::new(0.0, 0.0, 8.0, 8.0),
-                        ImageNode::new(1, Some(solid_png([0, 0, 255, 255]))),
+                        ImageNode::new(1, Some(solid_png([0, 0, 255, 255]).into())),
                         None,
                     ),
                     PaintOp::image(
                         BoundingBox::new(10.0, 0.0, 8.0, 8.0),
-                        ImageNode::new(2, Some(vec![1, 2, 3, 4])),
+                        ImageNode::new(2, Some(vec![1, 2, 3, 4].into())),
                         None,
                     ),
                 ],
@@ -2481,7 +2481,7 @@ mod tests {
 
     #[test]
     fn renders_perpendicular_images_with_effective_bounds() {
-        let mut image = ImageNode::new(1, Some(solid_png([0, 0, 255, 255])));
+        let mut image = ImageNode::new(1, Some(solid_png([0, 0, 255, 255]).into()));
         image.transform = crate::renderer::render_tree::ShapeTransform {
             rotation: 90.0,
             ..Default::default()
@@ -2634,7 +2634,7 @@ mod tests {
     fn renders_cropped_image_source_rects() {
         let mut node = ImageNode::new(
             1,
-            Some(split_png(4, 4, [255, 0, 0, 255], [0, 0, 255, 255], true)),
+            Some(split_png(4, 4, [255, 0, 0, 255], [0, 0, 255, 255], true).into()),
         );
         node.crop = Some((0, 2, 4, 4));
         node.original_size_hu = Some((4, 4));
@@ -2665,7 +2665,7 @@ mod tests {
     fn renders_tiled_images_using_original_size() {
         let mut node = ImageNode::new(
             1,
-            Some(split_png(8, 4, [255, 0, 0, 255], [0, 255, 0, 255], false)),
+            Some(split_png(8, 4, [255, 0, 0, 255], [0, 255, 0, 255], false).into()),
         );
         node.fill_mode = Some(ImageFillMode::TileAll);
         node.original_size = Some((8.0, 4.0));
@@ -2699,7 +2699,7 @@ mod tests {
 
     #[test]
     fn applies_grayscale_image_effect() {
-        let mut node = ImageNode::new(1, Some(solid_png([255, 0, 0, 255])));
+        let mut node = ImageNode::new(1, Some(solid_png([255, 0, 0, 255]).into()));
         node.effect = ImageEffect::GrayScale;
         let tree = PageLayerTree::new(
             8.0,
@@ -2736,7 +2736,7 @@ mod tests {
                 None,
                 vec![PaintOp::image(
                     BoundingBox::new(f64::NAN, 0.0, 8.0, 8.0),
-                    ImageNode::new(1, Some(solid_png([255, 0, 0, 255]))),
+                    ImageNode::new(1, Some(solid_png([255, 0, 0, 255]).into())),
                     None,
                 )],
             ),
