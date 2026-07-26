@@ -24,6 +24,8 @@ rhwp --version     # 버전
 - `-p, --page <번호>` — 특정 페이지만 (0부터). 생략 시 전체
 - `--profile <프로필>` — 출력 프로필: `screen` | `print` | `high-quality` | `fast-preview`
   (export-svg / export-png / export-pdf 지원, #2297)
+- 옵션은 파일 앞뒤 어디에 와도 된다 (#3359 — export-svg/png/pdf/markdown/render-tree/
+  doclang, export-structure/export-tables 와 동일 규약). 파일 positional 을 두 번 주면 exit 2.
 
 **프로필 의미론** — 편집 시각 요소(#2225 그림 미지정 placeholder 등)의 표시 여부를 가른다:
 
