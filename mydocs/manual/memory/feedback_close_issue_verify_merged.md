@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 이슈 close 시 정정 commit 이 devel 에 머지됐는지 확인 필수
 description: 이슈를 close 하기 전에 정정 commit 이 devel / main 에 실제 머지됐는지 git branch --contains 로 검증. close 만 하면 commit 이 임시 브랜치에만 남아 회귀 재발 위험
 type: feedback
-originSessionId: 263bacf0-af73-4169-8b90-2cc13f939a31
 ---
 이슈를 close 하기 전에 **정정 commit 이 devel (또는 main) 에 실제 머지됐는지** 반드시 확인.
 

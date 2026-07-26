@@ -24,6 +24,8 @@ rhwp --version     # 버전
 - `-p, --page <번호>` — 특정 페이지만 (0부터). 생략 시 전체
 - `--profile <프로필>` — 출력 프로필: `screen` | `print` | `high-quality` | `fast-preview`
   (export-svg / export-png / export-pdf 지원, #2297)
+- 옵션은 파일 앞뒤 어디에 와도 된다 (#3359 — export-svg/png/pdf/markdown/render-tree/
+  doclang, export-structure/export-tables 와 동일 규약). 파일 positional 을 두 번 주면 exit 2.
 
 **프로필 의미론** — 편집 시각 요소(#2225 그림 미지정 placeholder 등)의 표시 여부를 가른다:
 
@@ -147,14 +149,23 @@ rhwp export-pdf input.hwp -o out.pdf \
   `{"schemaVersion":"1.0","source","pageCount","pages":[{"page","text"}]}` —
   `schemaVersion` 이 계약이며 필드 추가는 허용, 변경·삭제는 `tests/cli_json_contract.rs` 가 잡는다.
   `page` 는 `-p` 와 같은 0 기준.
+- 옵션은 파일 앞뒤 어디에 와도 된다 (#3349, export-structure/export-tables 와 동일 규약).
+  파일 positional 을 두 번 주면 exit 2.
 
-### `batch <export-text|info|export-structure> --json [--mode <m>] [--threads <N>]` (#3238, #3261)
+### `batch <export-text|info|export-structure|export-tables|fields|search> --json [옵션]` (#3238, #3261, #3346)
 stdin 의 파일 목록(한 줄당 경로 하나)을 **한 프로세스에서 파일 간 병렬**로 처리해
 NDJSON(한 줄당 레코드 하나)을 stdin 입력 순서대로 스트림 출력한다.
 - `batch export-text` 성공 레코드: `{"schemaVersion":"1.0","source","pageCount","text"}`
 - `batch info` 성공 레코드: `info --json` 과 **같은 스키마** — 단건/배치를 같은 소비 코드로 읽는다
 - `batch export-structure` 성공 레코드: `export-structure --json` 봉투와 같은 스키마.
   `--mode auto|outline|clause` 는 이 축 전용(기본 auto)
+- `batch export-tables` 성공 레코드: `export-tables --json` 봉투와 같은 스키마
+  (병합 `rowSpan`/`colSpan`·중첩 표 보존)
+- `batch fields` 성공 레코드: `fields --json` 봉투와 같은 스키마
+- `batch search` 성공 레코드: `search --json` 봉투와 같은 스키마.
+  **`--query <검색어>` 는 이 축 전용이며 필수**다(없으면 사용법 오류 2).
+  대량 코퍼스에서 스트림이 부풀지 않도록 **파일당 매치 1,000건 상한**을 둔다
+  (단건 `search --limit` 과 같은 취지). 대소문자는 구분한다.
 - 실패 레코드(공통): `{"schemaVersion":"1.0","source","error","exitClass":"runtime"}`
 - 건별 실패(읽기·파싱·추출·panic)는 레코드로 격리하고 스트림을 계속한다.
   하나라도 실패하면 최종 종료 코드 1 (#2707 계약).
@@ -165,6 +176,13 @@ NDJSON(한 줄당 레코드 하나)을 stdin 입력 순서대로 스트림 출�
 # 아카이브 파이프라인: 메타데이터 스윕 → 대상 선별 → 본문 추출
 find docs/ -name '*.hwp' | rhwp batch info --json > meta.ndjson
 find docs/ -name '*.hwp' | rhwp batch export-text --json > corpus.ndjson
+
+# 아카이브 전역 검색 — 어느 문서 어느 쪽에 있는지 (#3346)
+find docs/ -name '*.hwp' | rhwp batch search --query "위임전결" --json   | jq -c 'select(.matchCount > 0) | {source, pages:[.matches[].page]}'
+
+# 코퍼스 표 수확 / 서식 템플릿 일괄 조사
+find docs/ -name '*.hwp' | rhwp batch export-tables --json | jq -c '{source, tableCount}'
+find forms/ -name '*.hwp' | rhwp batch fields --json | jq -c 'select(.fieldCount>0) | {source, fieldCount}'
 ```
 
 검증된 에이전트·파이프라인 시나리오(선별→추출, RAG 청킹, 실패 처리)는
@@ -248,7 +266,11 @@ HWP5 raw record 덤프(DocInfo/BodyText 레코드 트리).
 JSON 계약·종료 코드를 파악하는 입구.
 `{"schemaVersion":"1.0","tool","version","formats","exitCodes","jsonContract","batch","commands":[{name,category,summary,...}]}`
 - `--json` 계약 명령(info/export-text/export-structure/batch)은 `json:true`·`recordFields` 로 상세 서술
+- feature 게이트 명령(export-png)은 `requiresFeature`·`available` 을 항상 방출한다 (#3357) —
+  값은 빌드 실측과 일치하며(`available:false` 빌드에서만 기능 부재 오류), 매니페스트만 보고
+  호출을 생성하는 에이전트가 사전에 걸러낼 수 있다
 - `--help`(사람용)와 함께 현행화한다 — help 에만 추가된 명령은 드리프트 가드 테스트가 잡는다
+- 편집 명령(`edit`)도 등재된다 — MCP 도구로는 `hwp_fill_fields` 로 노출된다 (#3329)
 
 #### `capabilities --mcp` — MCP 도구 정의 생성
 MCP 서버(및 함수 호출 클라이언트)가 **그대로 등록할 수 있는** 도구 정의를 낸다.
@@ -275,14 +297,16 @@ HWP 파일 정보 표시(버전/구역 수/암호화 등).
 문서를 검색해 매치마다 **구역·문단·페이지·문자 오프셋**을 함께 돌려준다.
 평문을 뽑아 외부에서 찾으면 주소가 소멸해 근거 제시가 불가능한데, rhwp 는 조판 엔진이
 있어 "몇 쪽"에 답할 수 있다. 파서/렌더 무변경 읽기 질의.
-- `--json` 봉투: `{"schemaVersion":"1.0","source","query","caseSensitive","matchCount","matches":[…]}`
+- `--json` 봉투: `{"schemaVersion":"1.0","source","query","caseSensitive","matchCount","totalMatchCount","truncated","matches":[…]}`
 - 매치: `{section,paragraph,page?,charOffset,length,text,context,cell?}`
   - `page` 는 0부터 시작하는 글로벌 페이지. 조판에 배치되지 않은 문단이면 생략된다.
   - `cell` 은 표 셀 안의 매치일 때 `{control,cell,paragraph}` 좌표
   - `context` 는 매치 앞뒤 발췌(각 40자)
 - 검색 범위는 본문 + 표 셀 + 글상자 (`search_query::search_all` 과 동일)
 - **매치 0건은 오류가 아니다** — `matchCount:0`, 종료 코드 0 (1은 런타임 실패 전용)
-- `--limit N` 은 대형 문서에서 컨텍스트를 아끼기 위한 상한
+- `--limit N` 은 대형 문서에서 컨텍스트를 아끼기 위한 상한. 절단돼도
+  `totalMatchCount`(문서 전체 매치 수)와 `truncated:true` 로 총량이 보인다 (#3353) —
+  `matchCount` 는 종전대로 반환된 매치 수(= `matches` 길이)다.
 - 성능: 페이지 매핑 비용은 0이다(로드 시 조판 완료). `(구역,문단)→페이지` 인덱스를
   한 번만 만들어 재사용한다. 실측 393쪽·10MB 문서에서 19건 검색 **215ms**(파싱 포함).
 
@@ -317,6 +341,67 @@ rhwp 는 이미 필드에 값을 쓸 수 있지만(`set_field_value_by_name`) �
 ```bash
 # 서식이 요구하는 항목과 지시문 확인
 rhwp fields 신청서.hwp --json | jq -r '.fields[] | "\(.name): \(.memo // .guide)"'
+```
+
+### `edit fill-fields <파일> --data <JSON|@파일> [옵션]` (#3329)
+누름틀에 값을 채운다 — 서식 자동 작성/메일머지. 검증된 코어 경로
+(`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없고, **필드 값만 바꾸므로
+레이아웃·구조는 불변**이다.
+- `--data <JSON|@파일>` — `{"필드이름":"값"}` 형식. `@경로` 면 파일에서 읽는다
+  (대량 메일머지에서 셸 인용을 피한다). 값이 문자열이 아니면 JSON 표현으로 넣는다.
+- `-o, --output <파일>` — 출력 파일 (기본 `<입력명>_filled.hwp`)
+- `--dry-run` — **파일을 쓰지 않고** 변경 예정 내역만 보고. 에이전트의 사전 확인 장치.
+- `--json` 봉투: `{"schemaVersion":"1.0","source","dryRun","filledCount","filled":[{name,value}],"notFound":[…],"output"?}`
+  - `notFound` — 문서에 없는 필드 이름. 조용히 무시하지 않으므로 오타를 즉시 안다.
+  - `output` 은 실제 저장했을 때만 실린다(`--dry-run` 이면 없음).
+- **실패 시 원본 불변**: 필드 설정이 하나라도 실패하면 출력 파일을 쓰지 않고 종료 코드 1.
+- 종료 코드는 §종료 코드 계약 (없는 파일·직렬화/쓰기 실패 1 · 인자/JSON 오류 2)
+
+```bash
+# 서식 조사 → 값 채우기 → 산출물 재확인 (전 과정 CLI)
+rhwp fields 신청서.hwp --json | jq -r '.fields[].name'
+rhwp edit fill-fields 신청서.hwp --data @row.json -o out.hwp --json
+rhwp fields out.hwp --json | jq -c '[.fields[]|select(.value!="")|{name,value}]'
+```
+
+### `edit replace-text <파일> --find <문자열> --replace <문자열> [옵션]` (#3373)
+문서 전체 일괄 치환(본문+표 셀) — 기관명 변경·연도 갱신·용어 정비. 검증된 코어 경로
+(`replace_all` — 역순 치환으로 오프셋 안전)를 재사용하므로 새 편집 로직이 없다.
+- `--find <문자열>` — 찾을 문자열 (빈 문자열은 exit 2)
+- `--replace <문자열>` — 바꿀 문자열 (`""` 이면 삭제)
+- `--ignore-case` — 대소문자 무시
+- `-o, --output <파일>` — 출력 파일 (기본 `<입력명>_replaced.hwp`)
+- `--dry-run` — **파일을 쓰지 않고** 읽기 전용 검색으로 치환 예정 건수만 보고
+- `--json` 봉투: `{"schemaVersion":"1.0","source","find","replace","caseSensitive","dryRun","replacedCount","output"?}`
+  - `output` 은 실제 저장했을 때만 실린다 — **치환 0건이면 출력 파일을 만들지 않는다**
+    (무변경 산출물 금지, dry-run 과 동일하게 파일 경로를 타지 않음).
+- **실패 시 원본 불변**: 치환·직렬화·쓰기 실패 시 출력 파일 없이 종료 코드 1.
+
+```bash
+# 치환 → 산출물 재독 대조 (전 과정 CLI)
+rhwp edit replace-text 공문.hwp --find "2025년" --replace "2026년" -o 개정본.hwp --json
+rhwp search 개정본.hwp "2025년" --json | jq .matchCount     # → 0 이어야 함
+```
+
+### `edit set-cell <파일> --table <번호> --row <행> --col <열> --text <문자열> [옵션]` (#3381)
+표 격자 좌표로 셀 값을 바꾼다. `export-tables`의 `index`/`row`/`col`과 같은 좌표계를 써서
+누름틀 없는 표 양식도 발견 → 기록 → 재독 검증을 하나의 주소로 닫는다.
+
+- `--table`/`--row`/`--col` — 본문 최상위 표의 0-based 격자 좌표
+- `--text <문자열>` — 셀에 넣을 값. 빈 문자열은 비우기이며 줄바꿈·탭은 v1에서 허용하지 않는다.
+- `--keep-style` — 셀 안내문의 글자 모양을 유지한다. 기본은 검정·비이탤릭·비진하게로 기록해,
+  제출용 양식의 파란 안내문 스타일을 실값이 상속하지 않게 한다 (#3391).
+- `-o, --output <파일>` — 출력 파일 (기본 `<입력명>_cell.hwp`)
+- `--dry-run` — 파일을 쓰지 않고 `oldText` → `newText` 변경 예정만 보고한다.
+- `--json` 봉투: `{"schemaVersion":"1.0","source","table","row","col","oldText","newText","dryRun","keepStyle","output"?}`
+- 병합으로 덮인 칸은 앵커 좌표를 안내하며 exit 2로 끝난다. 격자 밖 좌표도 exit 2다.
+- 실패 시 원본은 불변이며, v1 범위는 본문 최상위 표와 셀 첫 문단이다.
+
+```bash
+# 발견 → 기록 → 재독 검증
+rhwp export-tables 양식.hwpx --json | jq '.tables[0].cells[:4]'
+rhwp edit set-cell 양식.hwpx --table 0 --row 2 --col 1 --text "1,234" -o 작성본.hwp --json
+rhwp export-tables 작성본.hwp --json | jq '.tables[0].cells[] | select(.row==2 and .col==1).text'
 ```
 
 ---

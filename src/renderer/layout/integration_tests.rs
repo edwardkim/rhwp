@@ -656,6 +656,98 @@ mod tests {
         );
     }
 
+    /// 바탕쪽(master page) 머리말 GSO 개체의 가로 위치 회귀
+    /// (branch pr/task-header-float-horz-margin).
+    ///
+    /// samples/21_언어_기출_편집가능본.hwp 은 매 페이지 머리말(쪽번호 상자,
+    /// "언어이해", "홀수형" 상자, 밑줄)을 바탕쪽 GSO(도형)로 그린다. 이 개체들은
+    /// horz_rel_to=Para(또는 Column) 이며, 바탕쪽에는 단(column)·문단 흐름이 없어
+    /// 가로 기준 영역은 본문 텍스트 영역이어야 한다(한컴 정합).
+    ///
+    /// 수정 전: 바탕쪽 도형 배치(`layout.rs::build_master_page`)가 col_area 로
+    /// paper_area 를 넘겨, Para-Left "8" 상자가 x=0(용지 좌단)에, Para-Right
+    /// "홀수형" 상자가 x=용지폭(용지 우단)에 붙어 좌우 여백 밖으로 튀었다.
+    /// 수정 후: 가로 기준을 본문 영역(x/width)으로 교정해 머리말 상자가 여백 안에
+    /// 놓인다.
+    ///
+    /// 검증: page 8(index 7) 렌더 SVG 에서 머리말 밴드(y<205)의 글상자 clip 이
+    /// 용지 좌/우단에 닿지 않는지 확인. 수정 전에는 min_left≈0, max_right≈용지폭.
+    #[test]
+    fn test_master_page_header_shapes_stay_within_body_margins() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        // page 8 (index 7) — 머리말 GSO 가 매 페이지 반복 렌더된다.
+        let svg = core.render_page_svg_native(7).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 8 SVG 가 비어있음");
+
+        // 용지 폭 = SVG 루트 width 속성.
+        let paper_width = {
+            let i = svg.find("width=\"").expect("svg root width 없음") + "width=\"".len();
+            let j = i + svg[i..].find('"').unwrap();
+            svg[i..j].parse::<f64>().expect("용지 폭 파싱 실패")
+        };
+        assert!(paper_width > 1000.0, "용지 폭 파싱 이상: {}", paper_width);
+
+        // 머리말 밴드(y<205)의 글상자 clip rect 수집 → (left, right).
+        let parse_attr = |attrs: &str, name: &str| -> Option<f64> {
+            let pat = format!("{}=\"", name);
+            let i = attrs.find(&pat)? + pat.len();
+            let j = i + attrs[i..].find('"')?;
+            attrs[i..j].parse::<f64>().ok()
+        };
+        let mut header_boxes: Vec<(f64, f64)> = Vec::new();
+        for chunk in svg.split("<clipPath id=\"textbox-clip-").skip(1) {
+            let Some(rect_i) = chunk.find("<rect ") else {
+                continue;
+            };
+            let attrs = &chunk[rect_i..];
+            let (x, y, w) = match (
+                parse_attr(attrs, "x"),
+                parse_attr(attrs, "y"),
+                parse_attr(attrs, "width"),
+            ) {
+                (Some(a), Some(b), Some(c)) => (a, b, c),
+                _ => continue,
+            };
+            if y < 205.0 {
+                header_boxes.push((x, x + w));
+            }
+        }
+        assert!(
+            header_boxes.len() >= 2,
+            "머리말 밴드 글상자를 찾지 못함: {:?}",
+            header_boxes
+        );
+
+        let min_left = header_boxes
+            .iter()
+            .map(|b| b.0)
+            .fold(f64::INFINITY, f64::min);
+        let max_right = header_boxes
+            .iter()
+            .map(|b| b.1)
+            .fold(f64::NEG_INFINITY, f64::max);
+
+        // 좌측(Para-Left 쪽번호 상자): 용지 좌단(x=0) 이 아니라 본문 좌여백
+        // (31mm≈117px) 안. 수정 전 min_left≈0.
+        assert!(
+            min_left > 40.0,
+            "머리말 글상자 좌단이 용지 좌단(x=0)에 붙음: min_left={} boxes={:?}",
+            min_left,
+            header_boxes
+        );
+        // 우측(Para-Right 홀수형 상자): 용지 우단(x=용지폭) 이 아니라 본문 우여백
+        // 안. 수정 전 max_right≈용지폭.
+        assert!(
+            paper_width - max_right > 40.0,
+            "머리말 글상자 우단이 용지 우단(용지폭={})에 붙음: max_right={} boxes={:?}",
+            paper_width,
+            max_right,
+            header_boxes
+        );
+    }
+
     /// Task #490: 빈 텍스트 + TAC 수식만 있는 셀 paragraph 의 alignment 적용.
     ///
     /// 케이스: `samples/exam_science.hwp` 페이지 1 의 3번 표 (pi=12, 4행×4열,

@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 기계적 어휘 회피
 description: "본질", "본질적", "정합 영역" 같은 기계적·반복적 표현 과다 사용 금지
 type: feedback
-originSessionId: 4861649d-834a-43c6-a262-9f08333360e8
 ---
 `본질`, `본질적`, `정합 영역`, `본 영역`, `본질적으로` 같은 표현을 한 응답에서 반복적으로 사용하지 말 것. 메인테이너에게 기계적 인상을 주고 가독성을 해친다.
 

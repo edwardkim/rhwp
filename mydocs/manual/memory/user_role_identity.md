@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 작업지시자 정체성 + 역할
 description: edwardkim — rhwp 프로젝트 메인테이너 + Rust/WASM HWP 뷰어 단독 설계자
 type: user
-originSessionId: 4861649d-834a-43c6-a262-9f08333360e8
 ---
 **GitHub**: edwardkim / **이메일**: tangokorea@gmail.com
 **프로젝트**: rhwp — Rust + WebAssembly 기반 HWP/HWPX 오픈소스 뷰어/에디터 ("All HWP, Open for Everyone" / "알(R), 모두의 한글")

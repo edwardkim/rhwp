@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 작업 스타일 + 협업 패턴
 description: 하이퍼-워터폴, 시각 판정 게이트, 광범위 sweep, 외부 PR 흡수 패턴
 type: user
-originSessionId: 4861649d-834a-43c6-a262-9f08333360e8
 ---
 ## 강한 특징 (절대 위반 금지)
 

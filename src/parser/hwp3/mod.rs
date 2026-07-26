@@ -412,8 +412,13 @@ pub(crate) fn convert_para_shape(
     ps
 }
 
-// [#2986] HWP3 ParaShape.border(has_border()) 플래그가 shade_ratio 처럼 border_fill_id로
-// 배선되지 않아, 문단 테두리가 켜져 있어도(음영 없이) 항상 소실되던 결함 수정.
+// [#3303] V3 문단 모양(표 13)에는 테두리 선 종류/굵기/색 필드가 없다(offset 181은
+// on/off 뿐). 한컴 2022는 border=1을 "선 없음"으로 매핑한다 — 한컴 자체 변환
+// SO-SUEOP.hwpx에서 paraPr/border → borderFill 4방향 type="NONE" 실측. 따라서
+// BorderFill 구조(참조·연결 속성)는 유지하되 선은 그리지 않는다. BorderLineType의
+// Rust default가 Solid라서 명시적으로 None을 채워야 하며(#2995의 Solid 합성이
+// 42쪽 지문 상자·음영 문단 좌우 세로선 오렌더의 뿌리였다), 음영(shade_ratio)
+// 경로도 같은 이유로 선은 항상 None이다.
 fn hwp3_para_shape_border_fill(
     hwp3_ps: &crate::parser::hwp3::records::Hwp3ParaShape,
 ) -> Option<crate::model::style::BorderFill> {
@@ -421,6 +426,9 @@ fn hwp3_para_shape_border_fill(
         return None;
     }
     let mut bf = crate::model::style::BorderFill::default();
+    for b in bf.borders.iter_mut() {
+        b.line_type = crate::model::style::BorderLineType::None;
+    }
     if hwp3_ps.shade_ratio > 0 {
         let ratio = hwp3_ps.shade_ratio.min(100) as u32;
         let gray = (255 * (100 - ratio) / 100) as u8;
@@ -431,11 +439,6 @@ fn hwp3_para_shape_border_fill(
             pattern_color: 0,
             pattern_type: 0,
         });
-    }
-    if hwp3_ps.has_border() {
-        for b in bf.borders.iter_mut() {
-            b.line_type = crate::model::style::BorderLineType::Solid;
-        }
     }
     Some(bf)
 }
@@ -3278,6 +3281,47 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
                 doc_bin_data_list.push(bin_data);
                 processed_ids.insert(id);
             }
+        } else if block.id == 2 {
+            // [#3363] OLE 정보 (스펙 표 82): 인식 정보(4B) + CFB 스토리지.
+            // 그림 코드(pic_type=1)의 이름은 root 서브 스토리지명이며, 개체별로
+            // standalone CFB로 재포장해 HWPX BinData/*.ole 과 동일 형식으로 주입한다.
+            // 종전에는 이 블록이 미처리라 pic_type=1 BinData 가 payload 없는 Link 로
+            // 남아 외부 파일 경로로 오노출됐다(사이드카 워크어라운드의 발생 지점).
+            let ole_info = match crate::parser::hwp3::ole::Hwp3OleInfo::read(
+                std::io::Cursor::new(block.data.as_slice()),
+                block.data.len() as u32,
+            ) {
+                Ok(info) => info,
+                Err(_) => continue, // 시그니처/길이 불일치 — 관대하게 건너뜀
+            };
+            for (name, cfb_bytes) in
+                crate::parser::hwp3::ole::extract_ole_payloads(&ole_info.storage_data)
+            {
+                let id = if let Some(&id) = pic_name_to_id.get(&name) {
+                    id
+                } else {
+                    let next_id = (pic_name_to_id.len() + 1) as u16;
+                    pic_name_to_id.insert(name.clone(), next_id);
+                    next_id
+                };
+                let ext = "ole".to_string();
+                let content = crate::model::bin_data::BinDataContent {
+                    id,
+                    extension: ext.clone(),
+                    data: cfb_bytes.into(),
+                };
+                let bin_data = crate::model::bin_data::BinData {
+                    storage_id: id,
+                    extension: Some(ext),
+                    data_type: crate::model::bin_data::BinDataType::Embedding,
+                    compression: crate::model::bin_data::BinDataCompression::Default,
+                    attr: 1, // type=Embedding(bits 0-3=1), compression=Default(bits 4-5=0)
+                    ..Default::default()
+                };
+                temp_bin_data_content.push(content);
+                doc_bin_data_list.push(bin_data);
+                processed_ids.insert(id);
+            }
         } else if block.id == 3 {
             // 추가정보블록 #1 TagID 3 = 하이퍼텍스트(HyperLink) 정보
             // 구조 (스펙 §8.3): 각 항목 617바이트, n개 연속
@@ -3441,6 +3485,10 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     doc.doc_info.tab_defs = doc_tab_defs;
     doc.doc_info.bin_data_list = doc_bin_data_list;
     doc.bin_data_content = doc_bin_data_content;
+
+    // [#3363] 추가 정보 블록 id=2 에서 payload 를 확보한 pic_type=1 그림을 OLE
+    // 컨트롤로 변환한다 (Link 노출 이전에 수행 — payload 확보분은 Link 대상 아님).
+    fixup_hwp3_ole_pictures(&mut doc);
 
     // HWP3 pic_type=1 OLE도 payload가 없으면 Link BinData로 남는다.
     // 같은 디렉터리의 외부 파일을 로드할 수 있도록 공통 Link 경로 전달을 적용한다.
@@ -4030,6 +4078,72 @@ fn apply_bullet_fixup_single(
     }
 }
 
+// [#3363] ext "ole" payload 가 실제 주입된 그림(pic_type=1)만 OLE 컨트롤로 변환한다.
+// 렌더러의 기존 OLE preview/HMapsi 경로(shape_layout)와 OLE 선택 경로(#3319/#3321)를
+// 그대로 상속하고, HWPX 저장 시 hp:ole 로 방출된다(한컴 변환과 동형). payload 미확보
+// pic_type=1 은 현행(Picture + Link) 유지 — 행동 변화를 payload 확보 케이스로 한정.
+fn fixup_hwp3_ole_pictures(doc: &mut crate::model::document::Document) {
+    let ole_ids: std::collections::HashSet<u16> = doc
+        .bin_data_content
+        .iter()
+        .filter(|c| c.extension == "ole")
+        .map(|c| c.id)
+        .collect();
+    if ole_ids.is_empty() {
+        return;
+    }
+    for section in &mut doc.sections {
+        for para in &mut section.paragraphs {
+            convert_ole_pictures_in_controls(&mut para.controls, &ole_ids);
+        }
+    }
+}
+
+fn convert_ole_pictures_in_controls(
+    controls: &mut [crate::model::control::Control],
+    ole_ids: &std::collections::HashSet<u16>,
+) {
+    use crate::model::control::Control;
+    for ctrl in controls.iter_mut() {
+        match ctrl {
+            Control::Picture(pic) if ole_ids.contains(&pic.image_attr.bin_data_id) => {
+                let mut ole = crate::model::shape::OleShape::default();
+                ole.common = pic.common.clone();
+                ole.extent_x = pic.common.width as i32;
+                ole.extent_y = pic.common.height as i32;
+                ole.bin_data_id = pic.image_attr.bin_data_id as u32;
+                ole.caption = pic.caption.take();
+                *ctrl = Control::Shape(Box::new(crate::model::shape::ShapeObject::Ole(Box::new(
+                    ole,
+                ))));
+            }
+            Control::Table(table) => {
+                for cell in &mut table.cells {
+                    for para in &mut cell.paragraphs {
+                        convert_ole_pictures_in_controls(&mut para.controls, ole_ids);
+                    }
+                }
+                if let Some(ref mut caption) = table.caption {
+                    for para in &mut caption.paragraphs {
+                        convert_ole_pictures_in_controls(&mut para.controls, ole_ids);
+                    }
+                }
+            }
+            Control::Header(h) => {
+                for para in &mut h.paragraphs {
+                    convert_ole_pictures_in_controls(&mut para.controls, ole_ids);
+                }
+            }
+            Control::Footer(f) => {
+                for para in &mut f.paragraphs {
+                    convert_ole_pictures_in_controls(&mut para.controls, ole_ids);
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
 fn fixup_hwp3_picture_numbers(doc: &mut crate::model::document::Document) {
     let start = doc.doc_properties.picture_start_num.saturating_sub(1);
     let mut pic_counter: u16 = start;
@@ -4161,16 +4275,42 @@ mod tests {
     }
 
     #[test]
-    fn test_hwp3_para_shape_border_fill_wires_has_border_flag() {
-        // [#2986] border=1, shade_ratio=0 인 경우에도 border_fill 이 생성되고
-        // 4방향 테두리선이 Solid 로 설정되어야 한다 (기존에는 None 이 반환되어 소실됨).
+    fn test_hwp3_para_shape_border_fill_maps_border_flag_to_no_lines() {
+        // [#3303] V3 문단 모양에는 선 종류 필드가 없어, 한컴 2022는 border=1 을
+        // "선 없음"으로 매핑한다(한컴 변환 SO-SUEOP.hwpx: borderFill 4방향 NONE).
+        // BorderFill 구조는 생성·참조하되 4방향 선은 None 이어야 한다 —
+        // #2995 의 Solid 합성은 42쪽 지문 상자 오렌더의 원인이었다.
         let mut hwp3_ps = crate::parser::hwp3::records::Hwp3ParaShape::default();
         hwp3_ps.border = 1;
         let bf = hwp3_para_shape_border_fill(&hwp3_ps).expect("border_fill 이 생성되어야 함");
         assert!(bf
             .borders
             .iter()
-            .all(|b| b.line_type == crate::model::style::BorderLineType::Solid));
+            .all(|b| b.line_type == crate::model::style::BorderLineType::None));
+        assert!(bf.fill.solid.is_none());
+    }
+
+    #[test]
+    fn test_hwp3_para_shape_border_fill_shade_has_fill_without_lines() {
+        // [#3303] 음영 경로도 BorderLineType 의 Rust default(Solid) 아티팩트 없이
+        // 배경 채움만 배선돼야 한다 — 종전엔 음영 문단 좌우에 세로선이 오렌더됐다
+        // (hwp3-sample4 실측).
+        let mut hwp3_ps = crate::parser::hwp3::records::Hwp3ParaShape::default();
+        hwp3_ps.shade_ratio = 20;
+        let bf = hwp3_para_shape_border_fill(&hwp3_ps).expect("border_fill 이 생성되어야 함");
+        assert!(bf
+            .borders
+            .iter()
+            .all(|b| b.line_type == crate::model::style::BorderLineType::None));
+        assert_eq!(bf.fill.fill_type, crate::model::style::FillType::Solid);
+        assert!(bf.fill.solid.is_some());
+    }
+
+    #[test]
+    fn test_hwp3_para_shape_border_fill_absent_returns_none() {
+        // border=0, shade_ratio=0 이면 border_fill 을 만들지 않는다 (기존 동작 유지).
+        let hwp3_ps = crate::parser::hwp3::records::Hwp3ParaShape::default();
+        assert!(hwp3_para_shape_border_fill(&hwp3_ps).is_none());
     }
 
     #[test]
@@ -4561,6 +4701,75 @@ mod tests {
             total_paras >= 1000,
             "sample16 paragraph count too low ({}); ch=6/7/8 alignment 회귀 의심",
             total_paras
+        );
+    }
+
+    #[test]
+    fn task3363_hwp3_embedded_ole_payload_extraction() {
+        // [#3363] 추가 정보 블록 id=2(OLE 스토리지, 표 82)에서 pic_type=1 개체
+        // payload 를 추출·재포장해 ext "ole" BinData 로 주입하고, 해당 그림을 OLE
+        // 컨트롤로 변환한다. 종전에는 블록 미처리로 Link BinData 로 남아 외부 파일
+        // 경로로 오노출됐다(SO-SUEOP 1쪽 글맵시 미표시·사이드카 워크어라운드).
+        let path = "samples/SO-SUEOP.hwp";
+        if !std::path::Path::new(path).exists() {
+            // 샘플 미커밋 환경에서는 skip.
+            return;
+        }
+        let mut data = Vec::new();
+        File::open(path).unwrap().read_to_end(&mut data).unwrap();
+        let doc = parse_hwp3(&data).expect("SO-SUEOP parse failed");
+
+        // 1) ext "ole" payload 주입 + 기존 OLE 소비 경로에서 열림(preview·HMapsi 판별)
+        let ole_contents: Vec<_> = doc
+            .bin_data_content
+            .iter()
+            .filter(|c| c.extension == "ole")
+            .collect();
+        assert_eq!(ole_contents.len(), 1, "내장 OLE 개체 1건이 주입되어야 함");
+        let bytes = ole_contents[0].data.load();
+        let container = crate::parser::ole_container::parse_ole_container(&bytes)
+            .expect("재포장 CFB 를 parse_ole_container 가 열 수 있어야 함");
+        assert!(
+            container.has_preview(),
+            "OlePres000 preview 가 추출되어야 함"
+        );
+        assert!(
+            crate::parser::ole_container::is_hmapsi_ole_container(&bytes),
+            "글맵시(HMapsi) 컨테이너로 판별되어야 함"
+        );
+
+        // 2) payload 확보 그림은 Ole 컨트롤로 변환 (렌더/선택 경로 상속)
+        let has_ole_control = doc.sections.iter().any(|s| {
+            s.paragraphs.iter().any(|p| {
+                p.controls.iter().any(|c| {
+                    matches!(
+                        c,
+                        crate::model::control::Control::Shape(shape)
+                            if matches!(
+                                shape.as_ref(),
+                                crate::model::shape::ShapeObject::Ole(_)
+                            )
+                    )
+                })
+            })
+        });
+        assert!(has_ole_control, "payload 확보 그림은 Ole 컨트롤이어야 함");
+
+        // 3) Link 오노출 소거 — 어떤 그림도 external_path 를 갖지 않아야 함
+        //    (studio getExternalImageBasenames 의 수집 조건과 동일 기준)
+        let any_external = doc.sections.iter().any(|s| {
+            s.paragraphs.iter().any(|p| {
+                p.controls.iter().any(|c| match c {
+                    crate::model::control::Control::Picture(pic) => {
+                        pic.image_attr.external_path.is_some()
+                    }
+                    _ => false,
+                })
+            })
+        });
+        assert!(
+            !any_external,
+            "내장 OLE 확보 후에는 외부 이미지 경로 오노출이 없어야 함"
         );
     }
 

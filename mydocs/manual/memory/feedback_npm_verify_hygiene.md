@@ -2,13 +2,12 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: feedback_npm_verify_hygiene
-description: "PR 브랜치 npm 검증 위생 — 검증 전 npm ci 선행, 브랜치 이탈 후 untracked node_modules 잔류 정리, 신설 패키지 디렉터리는 개별 .gitignore 필요 (2026-07-11)"
+description: "PR 브랜치 npm 검증 위생 — npm ci 선행, untracked node_modules 정리, 신설 패키지 .gitignore, studio 재현 검증 시 dev 서버 재기동 필수 (2026-07-12 갱신)"
 metadata: 
   node_type: memory
   type: feedback
-  originSessionId: 2560b31a-9f1c-4764-bbf1-7ba5fc27c7ce
 ---
 
 **PR 브랜치에서 npm 검증을 돌린 뒤의 위생 루틴** (2026-07-11, PR #2174/#2188 처리 중
@@ -32,3 +31,9 @@ metadata:
    항목에 넣는다 (#2174 에 실제 요청한 전례).
 
 관련: [[feedback_pr_ci_before_pr]] [[project_extension_publicdir_false]]
+
+**추가 (2026-07-12, #2228 검증)**: studio 측 결함의 로컬 재현 검증 시 **dev 서버
+재기동(또는 hard reload)이 선행**되어야 한다 — 프론트 코드가 머지된 직후에도
+돌고 있는 vite dev 서버/SW 캐시는 구 번들을 서빙해 "재현 안 됨" 위음성을 만든다
+(#2228: task 2217 회귀가 서버 재기동 후에야 재현). 레이어 트리를 네이티브로
+덤프해 TS 게이트 로직을 시뮬레이션하면 브라우저 없이 존재 검증이 가능하다.

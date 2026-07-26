@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 한컴 호환은 일반화보다 케이스별 명시 가드가 안전
 description: 한컴의 페이지네이션/레이아웃은 비일관적이라 일반화 알고리즘이 다른 케이스에서 회귀를 일으킨다. 케이스별 명시 가드가 안전.
 type: feedback
-originSessionId: 263bacf0-af73-4169-8b90-2cc13f939a31
 ---
 한컴 호환성 작업에서 결함 정정 시 일반화된 알고리즘보다 **케이스별 명시 가드** 가 더 안전하다.
 

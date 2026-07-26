@@ -85,8 +85,9 @@ fn main() {
         Some("measure-width") => rhwp::diagnostics::text_width_probe::run(&args[2..]),
         Some("core-pages") => rhwp::diagnostics::core_pages_probe::run(&args[2..]),
         Some("bench") => rhwp::diagnostics::bench::run(&args[2..]),
-        Some("thumbnail") => extract_thumbnail(&args[2..]),
+        Some("thumbnail") => exit_with(extract_thumbnail(&args[2..])),
         Some("fields") => exit_with(show_fields(&args[2..])),
+        Some("edit") => exit_with(run_edit(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
         // 종료 코드 2로 끝낸다(기존에는 stdout + 0이라 오타 낸 명령이 스크립트에서 성공으로 보였다).
         other => {
@@ -237,7 +238,7 @@ fn show_mcp_tools() -> i32 {
                 "properties": {
                     "subcommand": {
                         "type": "string",
-                        "enum": ["export-text", "info", "export-structure"],
+                        "enum": ["export-text", "info", "export-structure", "export-tables", "fields"],
                         "description": "각 파일에 적용할 처리"
                     },
                     "paths": {
@@ -253,6 +254,93 @@ fn show_mcp_tools() -> i32 {
             serde_json::json!(["batch", "{subcommand}", "--json"]),
             &["schemaVersion", "source", "error", "exitClass"],
         ),
+        tool(
+            "hwp_fill_fields",
+            "HWP 서식(템플릿)의 누름틀에 값을 채워 새 문서를 만든다. 먼저 hwp_fields 로 어떤 필드가 있는지 확인한 뒤 사용한다. dryRun 으로 파일을 만들지 않고 변경 예정만 확인할 수 있다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWP 문서 경로" },
+                    "data": {
+                        "type": "object",
+                        "additionalProperties": { "type": "string" },
+                        "description": "{\"필드이름\":\"값\"} 형태의 채울 값"
+                    },
+                    "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_filled.hwp" },
+                    "dryRun": { "type": "boolean", "description": "true 면 파일을 쓰지 않고 변경 예정만 보고" }
+                },
+                "required": ["path", "data"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "fill-fields", "{path}", "--data", "{data}", "--json"]),
+            &["schemaVersion", "source", "dryRun", "filledCount", "filled", "notFound", "output"],
+        ),
+        tool(
+            "hwp_batch_search",
+            "여러 문서를 한 프로세스에서 병렬 검색해 NDJSON 스트림으로 받는다. 매치마다 구역·문단·페이지 주소가 붙어 '어느 문서 몇 쪽'을 답할 수 있다. 파일 목록은 stdin 으로 한 줄에 하나씩 넣는다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "query": { "type": "string", "description": "찾을 문자열 (대소문자 구분)" },
+                    "paths": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "검색할 문서 경로 목록 (stdin 으로 전달된다)"
+                    },
+                    "threads": { "type": "integer", "minimum": 1, "description": "병렬 스레드 수. 기본은 CPU 코어 수" }
+                },
+                "required": ["query", "paths"],
+            }),
+            "batch",
+            serde_json::json!(["batch", "search", "--json", "--query", "{query}"]),
+            &[
+                "schemaVersion",
+                "source",
+                "query",
+                "matchCount",
+                "totalMatchCount",
+                "truncated",
+                "matches",
+            ],
+        ),
+        tool(
+            "hwp_replace_text",
+            "HWP 문서 전체에서 문자열을 일괄 치환해 새 문서를 만든다 (기관명 변경·연도 갱신·용어 정비). dryRun 으로 파일을 만들지 않고 치환 예정 건수만 확인할 수 있다. 치환 0건이면 출력 파일을 만들지 않는다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWP 문서 경로" },
+                    "find": { "type": "string", "description": "찾을 문자열 (빈 문자열 불가)" },
+                    "replace": { "type": "string", "description": "바꿀 문자열 (빈 문자열이면 삭제)" },
+                    "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_replaced.hwp" },
+                    "dryRun": { "type": "boolean", "description": "true 면 파일을 쓰지 않고 치환 예정 건수만 보고" }
+                },
+                "required": ["path", "find", "replace"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "replace-text", "{path}", "--find", "{find}", "--replace", "{replace}", "--json"]),
+            &["schemaVersion", "source", "find", "replace", "caseSensitive", "dryRun", "replacedCount", "output"],
+        ),
+        tool(
+            "hwp_set_cell",
+            "HWP 표의 격자 좌표(hwp_export_tables 와 동일)로 셀 값을 바꿔 새 문서를 만든다 — 누름틀 없는 실물 표 양식 채우기. 먼저 hwp_export_tables 로 좌표를 확인한 뒤 사용한다. 병합으로 덮인 칸은 앵커 좌표를 안내하며 실패한다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWP/HWPX 문서 경로" },
+                    "table": { "type": "integer", "minimum": 0, "description": "본문 최상위 표 번호 (export-tables 의 index)" },
+                    "row": { "type": "integer", "minimum": 0, "description": "행 (0부터)" },
+                    "col": { "type": "integer", "minimum": 0, "description": "열 (0부터)" },
+                    "text": { "type": "string", "description": "셀에 넣을 값 (빈 문자열이면 비우기)" },
+                    "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_cell.hwp" },
+                    "dryRun": { "type": "boolean", "description": "true 면 파일을 쓰지 않고 old→new 만 보고" }
+                },
+                "required": ["path", "table", "row", "col", "text"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--text", "{text}", "--json"]),
+            &["schemaVersion", "source", "table", "row", "col", "oldText", "newText", "dryRun", "output"],
+        ),
     ];
 
     let manifest = serde_json::json!({
@@ -266,7 +354,7 @@ fn show_mcp_tools() -> i32 {
         "invocation": {
             "transport": "cli",
             "note": "각 도구의 cli.args 에서 {name} 자리표시자를 inputSchema 의 같은 이름 값으로 치환해 실행한다. stdout 은 순수 JSON, 진단은 stderr, 종료 코드는 0/1/2(+ir-diff 차이 3).",
-            "stdinTools": ["hwp_batch"],
+            "stdinTools": ["hwp_batch", "hwp_batch_search"],
         },
         "tools": tools,
     });
@@ -310,6 +398,22 @@ fn show_capabilities(args: &[String]) -> i32 {
         serde_json::json!({
             "name": name, "category": category, "summary": summary,
             "json": true, "batch": batch, "flags": flags, "recordFields": record_fields,
+        })
+    }
+    /// [#3357] feature 게이트 명령 — 빌드에 따라 실행 가능 여부가 달라지므로 자기서술이
+    /// 가용성을 명시한다. 두 필드는 빌드와 무관하게 항상 방출되고 값만 달라진다
+    /// (스키마 안정성). 매니페스트만 보고 호출을 생성하는 에이전트가 exit 2 를
+    /// 밟기 전에 알 수 있게 한다.
+    fn cmd_gated(
+        name: &str,
+        category: &str,
+        summary: &str,
+        requires_feature: &str,
+        available: bool,
+    ) -> serde_json::Value {
+        serde_json::json!({
+            "name": name, "category": category, "summary": summary,
+            "requiresFeature": requires_feature, "available": available,
         })
     }
 
@@ -381,10 +485,12 @@ fn show_capabilities(args: &[String]) -> i32 {
                 "pages",
             ],
         ),
-        cmd(
+        cmd_gated(
             "export-png",
             "export",
             "문서를 페이지별 PNG로 렌더 (native-skia)",
+            "native-skia",
+            cfg!(feature = "native-skia"),
         ),
         cmd(
             "export-pdf",
@@ -427,6 +533,8 @@ fn show_capabilities(args: &[String]) -> i32 {
                 "query",
                 "caseSensitive",
                 "matchCount",
+                "totalMatchCount",
+                "truncated",
                 "matches",
             ],
         ),
@@ -450,6 +558,43 @@ fn show_capabilities(args: &[String]) -> i32 {
         ),
         cmd("build-from-ingest", "export", "ingest JSON에서 HWPX 생성"),
         cmd("thumbnail", "export", "내장 썸네일(PrvImage) 추출"),
+        // ── 편집 (#3329 Stage 3) ──
+        cmd_json(
+            "edit",
+            "edit",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환 / set-cell: 표 셀 기록",
+            false,
+            &[
+                "--data",
+                "--find",
+                "--replace",
+                "--ignore-case",
+                "--table",
+                "--row",
+                "--col",
+                "--text",
+                "--keep-style",
+                "-o",
+                "--dry-run",
+                "--json",
+            ],
+            &[
+                "schemaVersion",
+                "source",
+                "dryRun",
+                "filledCount",
+                "filled",
+                "notFound",
+                "replacedCount",
+                "table",
+                "row",
+                "col",
+                "oldText",
+                "newText",
+                "keepStyle",
+                "output",
+            ],
+        ),
         // ── 배치 ──
         cmd_json(
             "batch",
@@ -544,8 +689,8 @@ fn show_capabilities(args: &[String]) -> i32 {
             "failure": "단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1",
         },
         "batch": {
-            "subcommands": ["export-text", "info", "export-structure"],
-            "flags": ["--json", "--threads", "--mode"],
+            "subcommands": ["export-text", "info", "export-structure", "export-tables", "fields", "search"],
+            "flags": ["--json", "--threads", "--mode", "--query"],
             "ordering": "stdin 입력 순서 보존",
             "input": "stdin, 한 줄당 파일 경로 하나",
         },
@@ -630,12 +775,13 @@ fn print_help() {
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
     println!("      --json                  결과를 JSON으로 stdout에 출력 (파일 저장 안 함)");
     println!();
-    println!("  batch <export-text|info|export-structure> --json [--threads <N>]");
+    println!("  batch <export-text|info|export-structure|export-tables|fields|search> --json [--threads <N>]");
     println!(
         "      stdin의 파일 목록(한 줄당 하나)을 한 프로세스로 전건 처리해 NDJSON 스트림 출력"
     );
     println!("      --threads <N>           파일 간 병렬 스레드 수 (기본: CPU 코어 수)");
     println!("      --mode <m>              export-structure 전용: auto|outline|clause");
+    println!("      --query <검색어>        search 전용: 찾을 문자열");
     println!();
     println!("  export-markdown <파일.hwp> [옵션]");
     println!("      페이지별 텍스트를 Markdown(.md)으로 내보내기");
@@ -806,6 +952,36 @@ fn print_help() {
     println!();
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!();
+    println!("  edit fill-fields <파일.hwp> --data <JSON|@파일> [-o <출력.hwp>] [옵션]");
+    println!("      누름틀에 값을 채운다 (서식 자동 작성/메일머지)");
+    println!();
+    println!("      --data <JSON|@파일>       {{\"필드이름\":\"값\"}} 형식. @경로면 파일에서 읽음");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_filled.hwp)");
+    println!("      --dry-run                 파일을 쓰지 않고 변경 예정 내역만 보고");
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!();
+    println!("  edit replace-text <파일.hwp> --find <문자열> --replace <문자열> [옵션]");
+    println!("      문서 전체 일괄 치환 (기관명 변경·연도 갱신·용어 정비). 본문+표 셀");
+    println!();
+    println!("      --find <문자열>           찾을 문자열 (빈 문자열 불가)");
+    println!("      --replace <문자열>        바꿀 문자열 (\"\" 이면 삭제)");
+    println!("      --ignore-case             대소문자 무시");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_replaced.hwp)");
+    println!("      --dry-run                 파일을 쓰지 않고 치환 예정 건수만 보고");
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!("      치환 0건이면 출력 파일을 만들지 않음");
+    println!();
+    println!("  edit set-cell <파일> --table <번호> --row <행> --col <열> --text <문자열> [옵션]");
+    println!("      표 격자 좌표로 셀 값을 바꾼다 (실물 표 양식 채우기)");
+    println!();
+    println!("      --table/--row/--col       export-tables 격자와 같은 좌표 (0부터)");
+    println!("      --text <문자열>           셀에 넣을 값 (비우기는 \"\", 줄바꿈·탭 불가)");
+    println!("      --keep-style              셀 안내문 스타일 상속(기본: 검정 글씨로 기록)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cell.hwp)");
+    println!("      --dry-run                 파일을 쓰지 않고 old→new 만 보고");
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!("      병합으로 덮인 칸은 앵커 좌표 안내와 함께 오류 종료");
+    println!();
     println!("내부 개발·회귀 도구 (일반 사용자 대상 아님):");
     println!("  test-caption <파일.hwp>             캡션 라운드트립 검증");
     println!("  test-field <파일.hwp>               필드 라운드트립 검증");
@@ -824,15 +1000,9 @@ fn allows_implicit_sibling_resources(format: rhwp::parser::FileFormat) -> bool {
 }
 
 fn export_svg(args: &[String]) -> i32 {
-    if args.is_empty() {
-        eprintln!("오류: 문서 파일 경로를 지정해주세요.");
-        eprintln!(
-            "사용법: rhwp export-svg <파일.hwp|파일.hwpx|파일.hml> [옵션] (rhwp --help 참조)"
-        );
-        return EXIT_USAGE;
-    }
-
-    let file_path = &args[0];
+    // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일 —
+    // 첫 비플래그 토큰이 파일이고 옵션은 위치 무관이다.
+    let mut file_path: Option<&str> = None;
     let mut output_dir = "output".to_string();
     let mut target_page: Option<u32> = None;
     let mut show_para_marks = false;
@@ -846,7 +1016,7 @@ fn export_svg(args: &[String]) -> i32 {
     let mut render_profile: Option<rhwp::paint::RenderProfile> = None;
     let mut json_mode = false;
 
-    let mut i = 1;
+    let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--output" | "-o" => {
@@ -980,12 +1150,27 @@ fn export_svg(args: &[String]) -> i32 {
                 json_mode = true;
                 i += 1;
             }
-            _ => {
-                eprintln!("알 수 없는 옵션: {}", args[i]);
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+                i += 1;
             }
         }
     }
+
+    let Some(file_path) = file_path else {
+        eprintln!("오류: 문서 파일 경로를 지정해주세요.");
+        eprintln!(
+            "사용법: rhwp export-svg <파일.hwp|파일.hwpx|파일.hml> [옵션] (rhwp --help 참조)"
+        );
+        return EXIT_USAGE;
+    };
 
     if render_profile.is_some() && font_embed_mode != rhwp::renderer::svg::FontEmbedMode::None {
         eprintln!("오류: --profile은 --font-style/--embed-fonts와 함께 사용할 수 없습니다.");
@@ -1162,20 +1347,15 @@ fn export_svg(args: &[String]) -> i32 {
 }
 
 fn export_render_tree(args: &[String]) -> i32 {
-    if args.is_empty() {
-        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
-        eprintln!("사용법: rhwp export-render-tree <파일.hwp> [옵션] (rhwp --help 참조)");
-        return EXIT_USAGE;
-    }
-
-    let file_path = &args[0];
+    // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일.
+    let mut file_path: Option<&str> = None;
     let mut output_dir = "output".to_string();
     let mut target_page: Option<u32> = None;
     let mut show_para_marks = false;
     let mut show_control_codes = false;
     let mut respect_vpos_reset = false;
 
-    let mut i = 1;
+    let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--output" | "-o" => {
@@ -1214,12 +1394,25 @@ fn export_render_tree(args: &[String]) -> i32 {
                 respect_vpos_reset = true;
                 i += 1;
             }
-            _ => {
-                eprintln!("알 수 없는 옵션: {}", args[i]);
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+                i += 1;
             }
         }
     }
+
+    let Some(file_path) = file_path else {
+        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("사용법: rhwp export-render-tree <파일.hwp> [옵션] (rhwp --help 참조)");
+        return EXIT_USAGE;
+    };
 
     let data = match fs::read(file_path) {
         Ok(d) => d,
@@ -1572,13 +1765,8 @@ fn export_png(_args: &[String]) -> i32 {
 fn export_png(args: &[String]) -> i32 {
     use rhwp::document_core::queries::rendering::{PngExportOptions, VlmTarget};
 
-    if args.is_empty() {
-        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
-        eprintln!("사용법: rhwp export-png <파일.hwp> [옵션] (rhwp --help 참조)");
-        return EXIT_USAGE;
-    }
-
-    let file_path = &args[0];
+    // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일.
+    let mut file_path: Option<&str> = None;
     let mut output_dir = "output".to_string();
     let mut target_page: Option<u32> = None;
     let mut font_paths: Vec<std::path::PathBuf> = Vec::new();
@@ -1589,7 +1777,7 @@ fn export_png(args: &[String]) -> i32 {
     // PNG export is print-equivalent output. Editor visuals require an explicit screen profile.
     let mut render_profile = rhwp::paint::RenderProfile::HighQuality;
 
-    let mut i = 1;
+    let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--output" | "-o" => {
@@ -1705,12 +1893,25 @@ fn export_png(args: &[String]) -> i32 {
                     return EXIT_USAGE;
                 }
             }
-            _ => {
-                eprintln!("알 수 없는 옵션: {}", args[i]);
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+                i += 1;
             }
         }
     }
+
+    let Some(file_path) = file_path else {
+        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("사용법: rhwp export-png <파일.hwp> [옵션] (rhwp --help 참조)");
+        return EXIT_USAGE;
+    };
 
     let png_options = PngExportOptions {
         scale,
@@ -1836,12 +2037,7 @@ fn export_png(args: &[String]) -> i32 {
 }
 
 fn export_pdf(args: &[String]) -> i32 {
-    if args.is_empty() {
-        eprintln!("오류: 문서 파일 경로를 지정해주세요.");
-        print_export_pdf_usage();
-        return 2;
-    }
-    if args[0] == "--help" || args[0] == "-h" {
+    if args.first().is_some_and(|a| a == "--help" || a == "-h") {
         print_export_pdf_usage();
         return 0;
     }
@@ -1854,7 +2050,8 @@ fn export_pdf(args: &[String]) -> i32 {
 
     #[cfg(not(target_arch = "wasm32"))]
     {
-        let file_path = &args[0];
+        // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일.
+        let mut file_path: Option<&str> = None;
         let mut output_file = String::new();
         let mut target_page: Option<u32> = None;
         let mut pdf_backend = rhwp::renderer::pdf::PdfBackend::default();
@@ -1864,7 +2061,7 @@ fn export_pdf(args: &[String]) -> i32 {
         let mut compatibility_only_options = Vec::new();
         let mut direct_raster_dpi_was_set = false;
 
-        let mut i = 1;
+        let mut i = 0;
         while i < args.len() {
             match args[i].as_str() {
                 "--output" | "-o" => {
@@ -2061,13 +2258,26 @@ fn export_pdf(args: &[String]) -> i32 {
                     );
                     i += 1;
                 }
-                _ => {
-                    eprintln!("알 수 없는 옵션: {}", args[i]);
+                other if other.starts_with('-') => {
+                    eprintln!("알 수 없는 옵션: {other}");
                     print_export_pdf_usage();
                     return 2;
                 }
+                other => {
+                    if file_path.replace(other).is_some() {
+                        eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                        return 2;
+                    }
+                    i += 1;
+                }
             }
         }
+
+        let Some(file_path) = file_path else {
+            eprintln!("오류: 문서 파일 경로를 지정해주세요.");
+            print_export_pdf_usage();
+            return 2;
+        };
 
         compatibility_only_options.sort_unstable();
         compatibility_only_options.dedup();
@@ -2236,49 +2446,61 @@ fn export_text(args: &[String]) -> i32 {
         .filter(|a| a.as_str() != "--json")
         .cloned()
         .collect();
-    if args.is_empty() {
-        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
-        eprintln!("사용법: rhwp export-text <파일.hwp> [옵션] (rhwp --help 참조)");
-        return EXIT_USAGE;
-    }
-
-    let file_path = &args[0];
+    // [#3349] 위치 인자 파싱을 export-structure/export-tables 규약으로 통일 —
+    // 첫 비플래그 토큰이 파일이고 옵션은 위치 무관이다. 파일 선행을 강제하면
+    // `-p 0 --json 파일` 에서 `-p` 가 파일로 잡혀 "알 수 없는 옵션: 0" 이 된다.
+    let mut file_path: Option<&str> = None;
     let mut output_dir = "output".to_string();
     let mut target_page: Option<u32> = None;
 
-    let mut i = 1;
+    let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--output" | "-o" => {
-                if i + 1 < args.len() {
-                    output_dir = args[i + 1].clone();
-                    i += 2;
-                } else {
-                    eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
-                    return EXIT_USAGE;
+                i += 1;
+                match args.get(i) {
+                    Some(p) => output_dir = p.clone(),
+                    None => {
+                        eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
                 }
             }
             "--page" | "-p" => {
-                if i + 1 < args.len() {
-                    match args[i + 1].parse::<u32>() {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => match v.parse::<u32>() {
                         Ok(n) => target_page = Some(n),
                         Err(_) => {
                             eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
                             return EXIT_USAGE;
                         }
+                    },
+                    None => {
+                        eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                        return EXIT_USAGE;
                     }
-                    i += 2;
-                } else {
-                    eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
                     return EXIT_USAGE;
                 }
             }
-            _ => {
-                eprintln!("알 수 없는 옵션: {}", args[i]);
-                return EXIT_USAGE;
-            }
         }
+        i += 1;
     }
+
+    let Some(file_path) = file_path else {
+        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("사용법: rhwp export-text <파일.hwp> [옵션] (rhwp --help 참조)");
+        return EXIT_USAGE;
+    };
 
     let data = match fs::read(file_path) {
         Ok(d) => d,
@@ -2462,12 +2684,7 @@ fn export_tables(args: &[String]) -> i32 {
     };
 
     let tables = extract_tables(doc.document());
-    let envelope = serde_json::json!({
-        "schemaVersion": "1.0",
-        "source": file_path,
-        "tableCount": tables.len(),
-        "tables": tables,
-    });
+    let envelope = tables_json_value(file_path, &tables);
 
     if let Some(p) = out_path {
         let json = match serde_json::to_string_pretty(&envelope) {
@@ -2512,17 +2729,12 @@ fn export_tables(args: &[String]) -> i32 {
 }
 
 fn export_markdown(args: &[String]) -> i32 {
-    if args.is_empty() {
-        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
-        eprintln!("사용법: rhwp export-markdown <파일.hwp> [옵션] (rhwp --help 참조)");
-        return EXIT_USAGE;
-    }
-
-    let file_path = &args[0];
+    // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일.
+    let mut file_path: Option<&str> = None;
     let mut output_dir = "output".to_string();
     let mut target_page: Option<u32> = None;
 
-    let mut i = 1;
+    let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--output" | "-o" => {
@@ -2549,12 +2761,25 @@ fn export_markdown(args: &[String]) -> i32 {
                     return EXIT_USAGE;
                 }
             }
-            _ => {
-                eprintln!("알 수 없는 옵션: {}", args[i]);
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+                i += 1;
             }
         }
     }
+
+    let Some(file_path) = file_path else {
+        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("사용법: rhwp export-markdown <파일.hwp> [옵션] (rhwp --help 참조)");
+        return EXIT_USAGE;
+    };
 
     let data = match fs::read(file_path) {
         Ok(d) => d,
@@ -2805,17 +3030,24 @@ fn export_markdown(args: &[String]) -> i32 {
 fn run_batch(args: &[String]) -> i32 {
     use std::io::{BufRead, Write};
 
-    const USAGE: &str = "사용법: <파일 목록> | rhwp batch <export-text|info|export-structure> --json [--mode auto|outline|clause] [--threads <N>]  (stdin: 한 줄당 파일 경로 하나)";
+    const USAGE: &str = "사용법: <파일 목록> | rhwp batch <export-text|info|export-structure|export-tables|fields|search> --json [--mode auto|outline|clause] [--query <검색어>] [--threads <N>]  (stdin: 한 줄당 파일 경로 하나)";
 
     let subcommand = args.first().map(String::as_str);
     let is_structure = subcommand == Some("export-structure");
+    // [#3346] --query 는 search 축 전용이다 (--mode 가 export-structure 전용인 것과 같은 규약).
+    let is_search = subcommand == Some("search");
     if !matches!(
         subcommand,
-        Some("export-text") | Some("info") | Some("export-structure")
+        Some("export-text")
+            | Some("info")
+            | Some("export-structure")
+            | Some("export-tables")
+            | Some("fields")
+            | Some("search")
     ) {
         match subcommand {
             Some(unknown) => eprintln!(
-                "오류: batch 는 현재 export-text·info·export-structure 만 지원합니다 - {}",
+                "오류: batch 는 export-text·info·export-structure·export-tables·fields·search 만 지원합니다 - {}",
                 unknown
             ),
             None => eprintln!("오류: batch 서브커맨드를 지정해주세요."),
@@ -2827,12 +3059,30 @@ fn run_batch(args: &[String]) -> i32 {
     let mut json_mode = false;
     let mut threads_opt: Option<usize> = None;
     let mut structure_mode = rhwp::document_core::queries::structure::StructureMode::Auto;
+    let mut search_query: Option<String> = None;
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
             "--json" => {
                 json_mode = true;
                 i += 1;
+            }
+            "--query" => {
+                // [#3346] --query 는 search 축 전용이다.
+                if !is_search {
+                    eprintln!("오류: --query 는 search 에서만 사용할 수 있습니다.");
+                    return EXIT_USAGE;
+                }
+                let Some(value) = args.get(i + 1) else {
+                    eprintln!("오류: --query 뒤에 검색어가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                if value.is_empty() {
+                    eprintln!("오류: --query 검색어가 비어 있습니다.");
+                    return EXIT_USAGE;
+                }
+                search_query = Some(value.clone());
+                i += 2;
             }
             "--mode" => {
                 // [#3261] --mode 는 export-structure 축 전용이다.
@@ -2883,6 +3133,16 @@ fn run_batch(args: &[String]) -> i32 {
     let mode = match subcommand {
         Some("export-text") => BatchMode::ExportText,
         Some("info") => BatchMode::Info,
+        Some("export-tables") => BatchMode::Tables,
+        Some("fields") => BatchMode::Fields,
+        Some("search") => {
+            let Some(q) = search_query.as_deref() else {
+                eprintln!("오류: batch search 는 --query <검색어> 가 필요합니다.");
+                eprintln!("{USAGE}");
+                return EXIT_USAGE;
+            };
+            BatchMode::Search { query: q }
+        }
         _ => BatchMode::Structure(structure_mode),
     };
 
@@ -3021,11 +3281,19 @@ fn run_batch(args: &[String]) -> i32 {
 
 /// [#3238] batch 가 처리하는 서브커맨드 축.
 #[derive(Clone, Copy)]
-enum BatchMode {
+enum BatchMode<'a> {
     ExportText,
     Info,
     /// [#3261] 문서 개요/조문 구조 — `export-structure --json` 과 스키마 공유.
     Structure(rhwp::document_core::queries::structure::StructureMode),
+    /// [#3346] 표 격자 — `export-tables --json` 과 스키마 공유.
+    Tables,
+    /// [#3346] 누름틀 조사 — `fields --json` 과 스키마 공유.
+    Fields,
+    /// [#3346] 주소를 가진 검색 — `search --json` 과 스키마 공유.
+    Search {
+        query: &'a str,
+    },
 }
 
 /// [#3238] 파일 하나를 처리해 NDJSON 레코드 하나를 만든다. 실패는 레코드로 보고하고
@@ -3033,11 +3301,14 @@ enum BatchMode {
 ///
 /// 배치는 신뢰할 수 없는 대량 코퍼스를 훑는 용도라, 한 건의 파서 panic 이 배치 전체를
 /// 죽여서는 안 된다. panic 도 해당 파일의 `error` 레코드로 격리한다.
-fn batch_record(mode: BatchMode, path: &str) -> serde_json::Value {
+fn batch_record(mode: BatchMode<'_>, path: &str) -> serde_json::Value {
     match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match mode {
         BatchMode::ExportText => batch_export_text_record_inner(path),
         BatchMode::Info => batch_info_record_inner(path),
         BatchMode::Structure(structure_mode) => batch_structure_record_inner(path, structure_mode),
+        BatchMode::Tables => batch_tables_record_inner(path),
+        BatchMode::Fields => batch_fields_record_inner(path),
+        BatchMode::Search { query } => batch_search_record_inner(path, query),
     })) {
         Ok(record) => record,
         Err(payload) => {
@@ -3115,6 +3386,58 @@ fn batch_structure_record_inner(
     structure_json_value(path, &st)
 }
 
+/// [#3346] `batch export-tables --json` 의 파일당 레코드 — `export-tables --json` 봉투와
+/// 같은 스키마(`tables_json_value` 공유)다.
+fn batch_tables_record_inner(path: &str) -> serde_json::Value {
+    use rhwp::document_core::queries::table_extract::extract_tables;
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
+    };
+    let tables = extract_tables(doc.document());
+    tables_json_value(path, &tables)
+}
+
+/// [#3346] `batch fields --json` 의 파일당 레코드 — `fields --json` 봉투와 같은 스키마.
+fn batch_fields_record_inner(path: &str) -> serde_json::Value {
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
+    };
+    let fields = collect_field_records(&doc);
+    fields_json_value(path, &fields)
+}
+
+/// [#3346] `batch search --json` 의 파일당 레코드 — `search --json` 봉투와 같은 스키마.
+///
+/// 대량 코퍼스에서 한 문서가 매치를 수만 건 쏟아내면 스트림이 부풀므로, 배치 경로는
+/// 파일당 매치 상한을 둔다(단건 `search --limit` 과 같은 취지).
+fn batch_search_record_inner(path: &str, query: &str) -> serde_json::Value {
+    const BATCH_MATCH_LIMIT: usize = 1000;
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
+    };
+    // 단건 `search --limit`와 동일하게 전체 매치 수를 먼저 관찰하고, NDJSON 크기만
+    // 배치 상한으로 자른다. 그래야 단건·배치가 같은 envelope 계약을 공유한다.
+    let all_matches = doc.grep(query, true, None);
+    let total_match_count = all_matches.len();
+    let matches: Vec<_> = all_matches.into_iter().take(BATCH_MATCH_LIMIT).collect();
+    search_json_value(path, query, true, &matches, total_match_count)
+}
+
 /// [#3238] `batch info --json` 의 파일당 레코드 — `info --json` 과 같은 스키마
 /// (`info_json_value` 공유)라 소비자가 단건/배치를 같은 코드로 읽는다.
 fn batch_info_record_inner(path: &str) -> serde_json::Value {
@@ -3143,6 +3466,49 @@ fn structure_json_value(
         "mode": st.mode,
         "nodeCount": st.node_count,
         "structure": st,
+    })
+}
+
+/// [#3346] `export-tables --json` 과 `batch export-tables` 가 공유하는 봉투.
+fn tables_json_value(
+    file_path: &str,
+    tables: &[rhwp::document_core::queries::table_extract::TableGrid],
+) -> serde_json::Value {
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "tableCount": tables.len(),
+        "tables": tables,
+    })
+}
+
+/// [#3346] `fields --json` 과 `batch fields` 가 공유하는 봉투.
+fn fields_json_value(file_path: &str, fields: &[serde_json::Value]) -> serde_json::Value {
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "fieldCount": fields.len(),
+        "fields": fields,
+    })
+}
+
+/// [#3346] `search --json` 과 `batch search` 가 공유하는 봉투.
+fn search_json_value(
+    file_path: &str,
+    query: &str,
+    case_sensitive: bool,
+    matches: &[rhwp::document_core::queries::grep::GrepMatch],
+    total_match_count: usize,
+) -> serde_json::Value {
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "query": query,
+        "caseSensitive": case_sensitive,
+        "matchCount": matches.len(),
+        "totalMatchCount": total_match_count,
+        "truncated": matches.len() < total_match_count,
+        "matches": matches,
     })
 }
 
@@ -5439,23 +5805,38 @@ fn search_document(args: &[String]) -> i32 {
         }
     };
 
-    let matches = doc.grep(query, !ignore_case, limit);
+    // [#3353] 총량을 보고하려면 전수 스캔이 불가피하다 — `--limit` 의 목적은 스캔 시간이
+    // 아니라 출력 컨텍스트 절약이므로, 전수 grep 후 표시만 절단한다. 절단 사실을 숨기면
+    // 에이전트가 "정확히 N건"과 "N건만 표시(실제 그 이상)"를 구별할 수 없다.
+    let all_matches = doc.grep(query, !ignore_case, None);
+    let total_match_count = all_matches.len();
+    let matches: Vec<_> = match limit {
+        Some(n) => all_matches.into_iter().take(n).collect(),
+        None => all_matches,
+    };
+    let truncated = matches.len() < total_match_count;
 
     if json_mode {
-        let envelope = serde_json::json!({
-            "schemaVersion": "1.0",
-            "source": file_path,
-            "query": query,
-            "caseSensitive": !ignore_case,
-            "matchCount": matches.len(),
-            "matches": matches,
-        });
+        // [#3353] matchCount 는 반환된 매치 수이고, 추가-전용 totalMatchCount·truncated가
+        // 전체 수와 절단 여부를 표현한다. #3346 batch와 하나의 helper를 공유한다.
+        let envelope =
+            search_json_value(file_path, query, !ignore_case, &matches, total_match_count);
         println!("{envelope}");
         // 매치 0건은 실패가 아니다 — 1은 런타임 실패 전용이다(#2707).
         return EXIT_OK;
     }
 
-    println!("검색: {:?} in {} — {}건", query, file_path, matches.len());
+    if truncated {
+        println!(
+            "검색: {:?} in {} — {}건 중 {}건 표시 (--limit)",
+            query,
+            file_path,
+            total_match_count,
+            matches.len()
+        );
+    } else {
+        println!("검색: {:?} in {} — {}건", query, file_path, matches.len());
+    }
     for m in &matches {
         let page = m
             .page
@@ -5774,19 +6155,12 @@ fn convert_hwp(args: &[String]) -> i32 {
 /// `export_hwpx_native()` 로 HWPX(ZIP) 직렬화한다. `convert`(배포용 해제 → .hwp 출력)와
 /// 별개의 포맷 변환 명령. 출력 생략 시 입력과 같은 폴더에 `<stem>.hwpx`.
 fn export_doclang(args: &[String]) -> i32 {
-    if args.is_empty() {
-        eprintln!("오류: 문서 파일 경로를 지정해주세요.");
-        eprintln!(
-            "사용법: rhwp export-doclang <파일.hwp|파일.hwpx> [-o <출력.xml>] [--assets-dir <디렉터리>] (rhwp --help 참조)"
-        );
-        return EXIT_USAGE;
-    }
-
-    let file_path = &args[0];
+    // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일.
+    let mut file_path: Option<&str> = None;
     let mut output_override: Option<std::path::PathBuf> = None;
     let mut assets_dir: Option<std::path::PathBuf> = None;
 
-    let mut i = 1;
+    let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--output" | "-o" => {
@@ -5807,12 +6181,27 @@ fn export_doclang(args: &[String]) -> i32 {
                     return EXIT_USAGE;
                 }
             }
-            _ => {
-                eprintln!("알 수 없는 옵션: {}", args[i]);
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+                i += 1;
             }
         }
     }
+
+    let Some(file_path) = file_path else {
+        eprintln!("오류: 문서 파일 경로를 지정해주세요.");
+        eprintln!(
+            "사용법: rhwp export-doclang <파일.hwp|파일.hwpx> [-o <출력.xml>] [--assets-dir <디렉터리>] (rhwp --help 참조)"
+        );
+        return EXIT_USAGE;
+    };
 
     // 기본 출력 경로: 입력 stem + `.dclg.xml` (입력 파일 옆).
     let input_path = std::path::Path::new(file_path);
@@ -7594,49 +7983,13 @@ fn ir_diff(args: &[String]) -> i32 {
     EXIT_OK
 }
 
-/// `fields` — 누름틀/필드 조사 (읽기 전용).
+/// [#3346] `fields --json` 과 `batch fields` 가 공유하는 필드 레코드 수집.
 ///
-/// rhwp 는 이미 필드에 값을 **쓸 수** 있는데(`set_field_value_by_name`) 조회 API 는
-/// WASM/스튜디오 경로에만 있어, 브라우저 밖 에이전트는 "이 서식이 무엇을 요구하는지"
-/// 알 방법이 없었다. 기존 `collect_all_fields()` 를 그대로 노출한다(라이브러리 무변경).
-fn show_fields(args: &[String]) -> i32 {
+/// 단건/배치가 같은 스키마를 내도록 한 곳에서 만든다.
+fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::Value> {
     use rhwp::document_core::queries::field_query::NestedEntry;
 
-    let mut file_path: Option<&str> = None;
-    let mut json_mode = false;
-    for a in args {
-        match a.as_str() {
-            "--json" => json_mode = true,
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => file_path = Some(other),
-        }
-    }
-
-    let Some(file_path) = file_path else {
-        eprintln!("사용법: rhwp fields <파일.hwp|파일.hwpx> [--json]");
-        return EXIT_USAGE;
-    };
-
-    let data = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
-    };
-
-    let infos = doc.collect_all_fields();
-    let fields: Vec<serde_json::Value> = infos
+    doc.collect_all_fields()
         .iter()
         .map(|fi| {
             // 중첩 경로: 표 셀·글상자 안의 필드가 어디에 있는지 — 후속 편집의 좌표다.
@@ -7682,15 +8035,835 @@ fn show_fields(args: &[String]) -> i32 {
                 },
             })
         })
+        .collect()
+}
+
+/// `fields` — 누름틀/필드 조사 (읽기 전용).
+///
+/// `edit` — 문서 편집 명령군 (로드맵 #2659 Stage 3).
+///
+/// 공통 규약: `--dry-run`(변경 요약만 출력, 파일 무변경), 결과 리포트 JSON,
+/// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
+fn run_edit(args: &[String]) -> i32 {
+    const USAGE: &str =
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell> <파일.hwp> [옵션] (rhwp --help 참조)";
+
+    match args.first().map(String::as_str) {
+        Some("fill-fields") => edit_fill_fields(&args[1..]),
+        Some("replace-text") => edit_replace_text(&args[1..]),
+        Some("set-cell") => edit_set_cell(&args[1..]),
+        Some(other) => {
+            eprintln!("오류: 알 수 없는 edit 하위 명령 - {}", other);
+            eprintln!("{USAGE}");
+            EXIT_USAGE
+        }
+        None => {
+            eprintln!("오류: edit 하위 명령을 지정해주세요.");
+            eprintln!("{USAGE}");
+            EXIT_USAGE
+        }
+    }
+}
+
+/// `edit fill-fields` — 누름틀에 값을 채운다 (메일머지).
+///
+/// 검증된 코어 경로(`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없다.
+/// 필드 값만 바꾸므로 레이아웃·구조는 불변이다.
+fn edit_fill_fields(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut data_arg: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--data" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => data_arg = Some(v),
+                    None => {
+                        eprintln!("오류: --data 뒤에 JSON 또는 @파일경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => file_path = Some(other),
+        }
+        i += 1;
+    }
+
+    let (Some(file_path), Some(data_arg)) = (file_path, data_arg) else {
+        eprintln!("사용법: rhwp edit fill-fields <파일.hwp> --data <JSON|@파일> [-o <출력.hwp>] [--dry-run] [--json]");
+        return EXIT_USAGE;
+    };
+
+    // `@경로` 면 파일에서 읽는다 — 대량 메일머지에서 셸 인용 지옥을 피한다.
+    let data_text = if let Some(path) = data_arg.strip_prefix('@') {
+        match fs::read_to_string(path) {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("오류: --data 파일을 읽을 수 없습니다 - {}: {}", path, e);
+                return EXIT_RUNTIME;
+            }
+        }
+    } else {
+        data_arg.to_string()
+    };
+
+    let data: serde_json::Map<String, serde_json::Value> =
+        match serde_json::from_str::<serde_json::Value>(&data_text) {
+            Ok(serde_json::Value::Object(m)) => m,
+            Ok(_) => {
+                eprintln!("오류: --data 는 {{\"필드이름\":\"값\"}} 형식의 JSON 객체여야 합니다.");
+                return EXIT_USAGE;
+            }
+            Err(e) => {
+                eprintln!("오류: --data JSON 파싱 실패 - {}", e);
+                return EXIT_USAGE;
+            }
+        };
+
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    // 문서에 실재하는 필드 이름을 먼저 모아, 없는 이름을 편집 전에 가려낸다.
+    let existing: std::collections::HashSet<String> = doc
+        .collect_all_fields()
+        .iter()
+        .filter_map(|fi| fi.field.field_name().map(|s| s.to_string()))
         .collect();
 
+    let mut filled: Vec<serde_json::Value> = Vec::new();
+    let mut not_found: Vec<String> = Vec::new();
+
+    for (name, value) in &data {
+        let value_str = match value {
+            serde_json::Value::String(s) => s.clone(),
+            other => other.to_string(),
+        };
+        if !existing.contains(name) {
+            not_found.push(name.clone());
+            continue;
+        }
+        if dry_run {
+            // 파일을 건드리지 않고 무엇이 바뀔지만 기록한다.
+            filled.push(serde_json::json!({ "name": name, "value": value_str }));
+            continue;
+        }
+        if let Err(e) = doc.set_field_value_by_name(name, &value_str) {
+            eprintln!("오류: 필드 '{}' 설정 실패 - {}", name, e);
+            // 실패 시 원본 불변 — 출력 파일을 쓰지 않고 즉시 끝낸다.
+            return EXIT_RUNTIME;
+        }
+        filled.push(serde_json::json!({ "name": name, "value": value_str }));
+    }
+
+    let output_path = out_path.unwrap_or_else(|| {
+        let stem = Path::new(file_path)
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| "output".to_string());
+        format!("{}_filled.hwp", stem)
+    });
+
+    if !dry_run {
+        let out_bytes = match doc.export_hwp_native() {
+            Ok(b) => b,
+            Err(e) => {
+                eprintln!("오류: HWP 직렬화 실패 - {}", e);
+                return EXIT_RUNTIME;
+            }
+        };
+        if let Err(e) = fs::write(&output_path, &out_bytes) {
+            eprintln!("오류: 출력 쓰기 실패 - {}: {}", output_path, e);
+            return EXIT_RUNTIME;
+        }
+    }
+
     if json_mode {
-        let envelope = serde_json::json!({
+        let mut envelope = serde_json::json!({
             "schemaVersion": "1.0",
             "source": file_path,
-            "fieldCount": fields.len(),
-            "fields": fields,
+            "dryRun": dry_run,
+            "filledCount": filled.len(),
+            "filled": filled,
+            "notFound": not_found,
         });
+        if !dry_run {
+            envelope["output"] = serde_json::Value::String(output_path.clone());
+        }
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
+    if dry_run {
+        println!("변경 예정: {} (필드 {}개)", file_path, filled.len());
+    } else {
+        println!(
+            "채우기 완료: {} → {} (필드 {}개)",
+            file_path,
+            output_path,
+            filled.len()
+        );
+    }
+    for f in &filled {
+        println!(
+            "  {} = {:?}",
+            f["name"].as_str().unwrap_or(""),
+            f["value"].as_str().unwrap_or("")
+        );
+    }
+    if !not_found.is_empty() {
+        println!("  문서에 없는 필드 이름: {}", not_found.join(", "));
+    }
+    EXIT_OK
+}
+
+/// `edit replace-text` — 문서 전체 일괄 치환 (기관명 변경·연도 갱신·용어 정비).
+///
+/// [#3373] 검증된 코어 경로(`replace_all` — 역순 치환으로 오프셋 안전, 본문+표 셀)를
+/// 재사용하므로 새 편집 로직이 없다. `--dry-run` 은 파일 생성 경로를 타지 않고
+/// 읽기 전용 `grep` 으로 치환 예정 건수만 보고한다. **0건이면 출력 파일을 만들지
+/// 않는다** — 무변경 산출물이 생기지 않게 한다.
+fn edit_replace_text(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut find_arg: Option<&str> = None;
+    let mut replace_arg: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut ignore_case = false;
+    let mut dry_run = false;
+    let mut json_mode = false;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--find" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => find_arg = Some(v),
+                    None => {
+                        eprintln!("오류: --find 뒤에 찾을 문자열이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--replace" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => replace_arg = Some(v),
+                    None => {
+                        eprintln!("오류: --replace 뒤에 바꿀 문자열이 필요합니다 (삭제는 \"\").");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--ignore-case" => ignore_case = true,
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+
+    let (Some(file_path), Some(find), Some(replace)) = (file_path, find_arg, replace_arg) else {
+        eprintln!(
+            "사용법: rhwp edit replace-text <파일.hwp> --find <문자열> --replace <문자열> [-o <출력.hwp>] [--ignore-case] [--dry-run] [--json]"
+        );
+        return EXIT_USAGE;
+    };
+    if find.is_empty() {
+        eprintln!("오류: --find 는 빈 문자열일 수 없습니다.");
+        return EXIT_USAGE;
+    }
+
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let replaced_count = if dry_run {
+        // 파일을 건드리지 않는다 — 읽기 전용 검색으로 치환 예정 건수만 센다.
+        doc.grep(find, !ignore_case, None).len()
+    } else {
+        let result = match doc.replace_all(find, replace, !ignore_case) {
+            Ok(r) => r,
+            Err(e) => {
+                eprintln!("오류: 치환 실패 - {:?}", e);
+                // 실패 시 원본 불변 — 출력 파일을 쓰지 않고 즉시 끝낸다.
+                return EXIT_RUNTIME;
+            }
+        };
+        serde_json::from_str::<serde_json::Value>(&result)
+            .ok()
+            .and_then(|v| v["count"].as_u64())
+            .unwrap_or(0) as usize
+    };
+
+    let output_path = out_path.unwrap_or_else(|| {
+        let stem = Path::new(file_path)
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| "output".to_string());
+        format!("{}_replaced.hwp", stem)
+    });
+
+    // 0건이면 무변경이다 — 산출물을 만들지 않는다 (dry-run 과 동일하게 파일 경로를 타지 않음).
+    let wrote_output = !dry_run && replaced_count > 0;
+    if wrote_output {
+        let out_bytes = match doc.export_hwp_native() {
+            Ok(b) => b,
+            Err(e) => {
+                eprintln!("오류: HWP 직렬화 실패 - {}", e);
+                return EXIT_RUNTIME;
+            }
+        };
+        if let Err(e) = fs::write(&output_path, &out_bytes) {
+            eprintln!("오류: 출력 쓰기 실패 - {}: {}", output_path, e);
+            return EXIT_RUNTIME;
+        }
+    }
+
+    if json_mode {
+        let mut envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "find": find,
+            "replace": replace,
+            "caseSensitive": !ignore_case,
+            "dryRun": dry_run,
+            "replacedCount": replaced_count,
+        });
+        if wrote_output {
+            envelope["output"] = serde_json::Value::String(output_path.clone());
+        }
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
+    if dry_run {
+        println!(
+            "변경 예정: {} — {:?} → {:?} ({}건)",
+            file_path, find, replace, replaced_count
+        );
+    } else if replaced_count == 0 {
+        println!(
+            "치환 0건: {} — {:?} 없음 (출력 파일 미생성)",
+            file_path, find
+        );
+    } else {
+        println!(
+            "치환 완료: {} → {} — {:?} → {:?} ({}건)",
+            file_path, output_path, find, replace, replaced_count
+        );
+    }
+    EXIT_OK
+}
+
+/// `edit set-cell` — 표 격자 좌표로 셀 값을 바꾼다 (실물 표 양식 채우기).
+///
+/// [#3381] 좌표계는 `export-tables` 격자와 동일하다 — 발견과 편집이 같은 주소를 쓴다.
+/// 검증된 코어 셀 편집 경로(delete/insert_text_in_cell)를 재사용하므로 새 편집 로직이
+/// 없다. v1 범위: 본문 최상위 표, 셀 첫 문단 교체(중첩 표·다문단 셀은 후속).
+/// [#3391] 셀 문단 0 의 글자모양을 검정·비이탤릭·비진하게 글자모양 하나로 덮는다.
+/// 안내문(파란 이탤릭)을 지우고 실값을 쓰는 set-cell 의 제출 요건(검정 글씨) 대응.
+/// 대상 셀의 첫 글자모양을 복제하므로 글꼴·크기·자간은 보존한다. 같은 모양이 이미 있으면
+/// 재사용한다.
+/// 반환: 적용 성공 여부(좌표 해석 실패 시 false).
+fn recolor_cell_text_black(
+    document: &mut rhwp::model::document::Document,
+    sec: usize,
+    para: usize,
+    ctrl: usize,
+    cell_idx: usize,
+) -> bool {
+    use rhwp::model::control::Control;
+    use rhwp::model::paragraph::CharShapeRef;
+
+    // 대상 셀의 현재 글자모양을 기준으로 해야 한다. 문서 어딘가의 "검정" 모양을 재사용하면
+    // 글꼴·크기까지 바뀔 수 있다.
+    let source_id = {
+        let Some(section) = document.sections.get(sec) else {
+            return false;
+        };
+        let Some(parent) = section.paragraphs.get(para) else {
+            return false;
+        };
+        let Some(Control::Table(table)) = parent.controls.get(ctrl) else {
+            return false;
+        };
+        let Some(cell) = table.cells.get(cell_idx) else {
+            return false;
+        };
+        let Some(paragraph) = cell.paragraphs.first() else {
+            return false;
+        };
+        let Some(shape) = paragraph.char_shapes.first() else {
+            return false;
+        };
+        shape.char_shape_id as usize
+    };
+    let Some(base) = document
+        .doc_info
+        .char_shapes
+        .get(source_id)
+        .or_else(|| document.doc_info.char_shapes.first())
+        .cloned()
+    else {
+        return false;
+    };
+    let mut black = base;
+    black.raw_data = None; // 원본 바이트를 버려 변경된 필드가 직렬화되게 한다.
+    black.text_color = 0;
+    black.italic = false;
+    black.bold = false;
+    black.strikethrough = false;
+    black.underline_type = rhwp::model::style::UnderlineType::None;
+    let black_id = document
+        .doc_info
+        .char_shapes
+        .iter()
+        .position(|candidate| candidate == &black)
+        .map(|idx| idx as u32)
+        .unwrap_or_else(|| {
+            let new_id = document.doc_info.char_shapes.len() as u32;
+            document.doc_info.char_shapes.push(black);
+            new_id
+        });
+
+    let Some(section) = document.sections.get_mut(sec) else {
+        return false;
+    };
+    let Some(parent) = section.paragraphs.get_mut(para) else {
+        return false;
+    };
+    let Some(Control::Table(table)) = parent.controls.get_mut(ctrl) else {
+        return false;
+    };
+    let Some(cell) = table.cells.get_mut(cell_idx) else {
+        return false;
+    };
+    let Some(cell_para) = cell.paragraphs.get_mut(0) else {
+        return false;
+    };
+    // 문단 전체를 하나의 검정 글자모양으로 덮는다.
+    cell_para.char_shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id: black_id,
+    }];
+    true
+}
+
+fn edit_set_cell(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut text_arg: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    // [#3391] 실물 공고 양식의 기입 칸 안내문은 파란 이탤릭이 흔하다. set-cell 은
+    // "안내문을 지우고 실값을 쓰는" 용도이므로 제출 요건(검정 글씨)에 맞춰 기본을
+    // 검정·비이탤릭·비진하게로 기록한다. --keep-style 로 셀 스타일 상속을 유지한다.
+    let mut keep_style = false;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--keep-style" => keep_style = true,
+            "--table" | "--row" | "--col" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {} 뒤에 0 이상의 정수가 필요합니다.", name);
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" => match v.parse::<usize>() {
+                        Ok(value) => table_arg = Some(value),
+                        Err(_) => {
+                            eprintln!("오류: {} 뒤에 0 이상의 정수가 필요합니다.", name);
+                            return EXIT_USAGE;
+                        }
+                    },
+                    "--row" => match v.parse::<u16>() {
+                        Ok(value) => row_arg = Some(value),
+                        Err(_) => {
+                            eprintln!("오류: {} 뒤에 0 이상 65535 이하의 정수가 필요합니다.", name);
+                            return EXIT_USAGE;
+                        }
+                    },
+                    _ => match v.parse::<u16>() {
+                        Ok(value) => col_arg = Some(value),
+                        Err(_) => {
+                            eprintln!("오류: {} 뒤에 0 이상 65535 이하의 정수가 필요합니다.", name);
+                            return EXIT_USAGE;
+                        }
+                    },
+                }
+            }
+            "--text" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => text_arg = Some(v),
+                    None => {
+                        eprintln!(
+                            "오류: --text 뒤에 셀에 넣을 문자열이 필요합니다 (비우기는 \"\")."
+                        );
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+
+    let (Some(file_path), Some(table_no), Some(row), Some(col), Some(new_text)) =
+        (file_path, table_arg, row_arg, col_arg, text_arg)
+    else {
+        eprintln!(
+            "사용법: rhwp edit set-cell <파일> --table <번호> --row <행> --col <열> --text <문자열> [-o <출력>] [--keep-style] [--dry-run] [--json]"
+        );
+        return EXIT_USAGE;
+    };
+    if new_text.chars().any(|ch| matches!(ch, '\r' | '\n' | '\t')) {
+        eprintln!("오류: --text 에 줄바꿈·탭은 넣을 수 없습니다 (한 줄 값 기록).");
+        return EXIT_USAGE;
+    }
+
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    // 격자 주소(export-tables 좌표) → 모델 좌표. 병합으로 덮인 칸은 앵커가 아니므로
+    // 모델 셀 순회로 (row,col) 앵커를 직접 찾는다 (격자 배열 위치는 손상 방어 필터
+    // 때문에 모델 인덱스와 어긋날 수 있어 쓰지 않는다).
+    enum Located {
+        Ok(usize, usize, usize, usize, Vec<usize>, String),
+        Fail(i32),
+    }
+    let located = {
+        use rhwp::document_core::queries::table_extract::extract_tables;
+        use rhwp::model::control::Control;
+        let document = doc.document();
+        let grids = extract_tables(document);
+        match grids
+            .iter()
+            .find(|g| g.index == table_no && g.container_path.is_empty())
+        {
+            None => {
+                let top_level = grids.iter().filter(|g| g.container_path.is_empty()).count();
+                eprintln!(
+                    "오류: 본문 최상위 표 {} 번이 없습니다 (최상위 표 {}개; 중첩 표는 v1 범위 밖).",
+                    table_no, top_level
+                );
+                Located::Fail(EXIT_RUNTIME)
+            }
+            Some(grid) => match document.sections[grid.section].paragraphs[grid.paragraph]
+                .controls
+                .get(grid.control)
+            {
+                Some(Control::Table(table)) => {
+                    if row >= table.row_count || col >= table.col_count {
+                        eprintln!(
+                            "오류: 좌표가 격자를 벗어났습니다 — 표 {} 는 {}x{} 입니다.",
+                            table_no, table.row_count, table.col_count
+                        );
+                        Located::Fail(EXIT_USAGE)
+                    } else {
+                        match table
+                            .cells
+                            .iter()
+                            .enumerate()
+                            .find(|(_, c)| c.row == row && c.col == col)
+                        {
+                            Some((cell_idx, c)) => {
+                                // 셀의 문단별 글자 수(전체 비우기용)와, export-tables 격자와
+                                // 같은 방식(줄바꿈 결합 + 트림)의 기존 텍스트를 모은다.
+                                let para_lens: Vec<usize> = c
+                                    .paragraphs
+                                    .iter()
+                                    .map(|p| p.text.chars().count())
+                                    .collect();
+                                let old_text = c
+                                    .paragraphs
+                                    .iter()
+                                    .map(|p| p.text.as_str())
+                                    .collect::<Vec<_>>()
+                                    .join("\n")
+                                    .trim()
+                                    .to_string();
+                                Located::Ok(
+                                    grid.section,
+                                    grid.paragraph,
+                                    grid.control,
+                                    cell_idx,
+                                    para_lens,
+                                    old_text,
+                                )
+                            }
+                            None => {
+                                let anchor = table.cells.iter().find(|c| {
+                                    c.row <= row
+                                        && row < c.row + c.row_span
+                                        && c.col <= col
+                                        && col < c.col + c.col_span
+                                });
+                                match anchor {
+                                    Some(a) => eprintln!(
+                                        "오류: ({},{}) 는 병합으로 덮인 칸입니다 — 앵커 ({},{}) 를 지정하세요.",
+                                        row, col, a.row, a.col
+                                    ),
+                                    None => eprintln!("오류: ({},{}) 위치에 셀이 없습니다.", row, col),
+                                }
+                                Located::Fail(EXIT_USAGE)
+                            }
+                        }
+                    }
+                }
+                _ => {
+                    eprintln!("오류: 표 컨트롤 좌표 해석 실패 (내부 불일치).");
+                    Located::Fail(EXIT_RUNTIME)
+                }
+            },
+        }
+    };
+    let (sec, para, ctrl, cell_idx, para_lens, old_text) = match located {
+        Located::Ok(a, b, c, d, e, f) => (a, b, c, d, e, f),
+        Located::Fail(code) => return code,
+    };
+
+    if !dry_run {
+        // 셀의 모든 문단 텍스트를 비운다 (다문단 셀 — 빈 문단 골격은 유지된다).
+        for (pi, len) in para_lens.iter().enumerate() {
+            if *len == 0 {
+                continue;
+            }
+            if let Err(e) = doc.delete_text_in_cell(
+                sec as u32,
+                para as u32,
+                ctrl as u32,
+                cell_idx as u32,
+                pi as u32,
+                0,
+                *len as u32,
+            ) {
+                eprintln!("오류: 셀 비우기 실패(문단 {}) - {:?}", pi, e);
+                return EXIT_RUNTIME;
+            }
+        }
+        if !new_text.is_empty() {
+            if let Err(e) = doc.insert_text_in_cell(
+                sec as u32,
+                para as u32,
+                ctrl as u32,
+                cell_idx as u32,
+                0,
+                0,
+                new_text,
+            ) {
+                eprintln!("오류: 셀 쓰기 실패 - {:?}", e);
+                // 실패 시 원본 불변 — 출력 파일을 쓰지 않고 즉시 끝낸다.
+                return EXIT_RUNTIME;
+            }
+            // [#3391] 기본은 제출 요건(검정 글씨)에 맞춘다 — 셀 문단 0 의 글자모양을
+            // 검정·비이탤릭·비진하게 글자모양 하나로 덮는다. --keep-style 이면 생략.
+            if !keep_style
+                && !recolor_cell_text_black(doc.document_mut(), sec, para, ctrl, cell_idx)
+            {
+                eprintln!("경고: 셀 글자색을 검정으로 바꾸지 못했습니다 (상속 스타일 유지).");
+            }
+        }
+    }
+
+    let output_path = out_path.unwrap_or_else(|| {
+        let stem = Path::new(file_path)
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| "output".to_string());
+        format!("{}_cell.hwp", stem)
+    });
+
+    if !dry_run {
+        let out_bytes = match doc.export_hwp_native() {
+            Ok(b) => b,
+            Err(e) => {
+                eprintln!("오류: HWP 직렬화 실패 - {}", e);
+                return EXIT_RUNTIME;
+            }
+        };
+        if let Err(e) = fs::write(&output_path, &out_bytes) {
+            eprintln!("오류: 출력 쓰기 실패 - {}: {}", output_path, e);
+            return EXIT_RUNTIME;
+        }
+    }
+
+    if json_mode {
+        let mut envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "oldText": old_text,
+            "newText": new_text,
+            "dryRun": dry_run,
+            "keepStyle": keep_style,
+        });
+        if !dry_run {
+            envelope["output"] = serde_json::Value::String(output_path.clone());
+        }
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
+    if dry_run {
+        println!(
+            "변경 예정: {} 표{} ({},{}) {:?} → {:?}",
+            file_path, table_no, row, col, old_text, new_text
+        );
+    } else {
+        println!(
+            "셀 기록 완료: {} → {} — 표{} ({},{}) {:?} → {:?}",
+            file_path, output_path, table_no, row, col, old_text, new_text
+        );
+    }
+    EXIT_OK
+}
+
+/// rhwp 는 이미 필드에 값을 **쓸 수** 있는데(`set_field_value_by_name`) 조회 API 는
+/// WASM/스튜디오 경로에만 있어, 브라우저 밖 에이전트는 "이 서식이 무엇을 요구하는지"
+/// 알 방법이 없었다. 기존 `collect_all_fields()` 를 그대로 노출한다(라이브러리 무변경).
+fn show_fields(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    for a in args {
+        match a.as_str() {
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => file_path = Some(other),
+        }
+    }
+
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp fields <파일.hwp|파일.hwpx> [--json]");
+        return EXIT_USAGE;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let fields = collect_field_records(&doc);
+
+    if json_mode {
+        let envelope = fields_json_value(file_path, &fields);
         println!("{envelope}");
         return EXIT_OK;
     }
@@ -7718,40 +8891,56 @@ fn show_fields(args: &[String]) -> i32 {
     EXIT_OK
 }
 
-fn extract_thumbnail(args: &[String]) {
-    if args.is_empty() {
-        eprintln!("사용법: rhwp thumbnail <파일.hwp> [옵션]");
-        eprintln!("  -o, --output <파일>   출력 파일 경로");
-        eprintln!("  --base64              base64 문자열 출력");
-        eprintln!("  --data-uri            data:image/... URI 출력");
-        std::process::exit(1);
-    }
-
-    let input_path = &args[0];
+fn extract_thumbnail(args: &[String]) -> i32 {
+    // [#3366] 계약 정합 — 파싱은 #3349 규약(위치 무관, 미지 플래그 즉시 exit 2,
+    // 중복 positional exit 2), 종료 코드는 #2707(사용법 오류 = 2). 종전에는 알 수
+    // 없는 옵션을 조용히 무시한 채 산출물까지 만들고, 인자 없음이 1 로 끝났다.
+    let mut input_path: Option<&str> = None;
     let mut output_path: Option<String> = None;
     let mut mode = "file"; // "file", "base64", "data-uri"
 
-    let mut i = 1;
+    let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "-o" | "--output" => {
                 i += 1;
-                if i < args.len() {
-                    output_path = Some(args[i].clone());
+                match args.get(i) {
+                    Some(p) => output_path = Some(p.clone()),
+                    None => {
+                        eprintln!("오류: --output 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
                 }
             }
             "--base64" => mode = "base64",
             "--data-uri" => mode = "data-uri",
-            _ => {}
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if input_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
         }
         i += 1;
     }
+
+    let Some(input_path) = input_path else {
+        eprintln!("사용법: rhwp thumbnail <파일.hwp> [옵션]");
+        eprintln!("  -o, --output <파일>   출력 파일 경로");
+        eprintln!("  --base64              base64 문자열 출력");
+        eprintln!("  --data-uri            data:image/... URI 출력");
+        return EXIT_USAGE;
+    };
 
     let data = match fs::read(input_path) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("오류: 파일을 읽을 수 없습니다: {} ({})", input_path, e);
-            std::process::exit(1);
+            return EXIT_RUNTIME;
         }
     };
 
@@ -7759,7 +8948,7 @@ fn extract_thumbnail(args: &[String]) {
         Some(r) => r,
         None => {
             eprintln!("오류: PrvImage 썸네일이 없습니다: {}", input_path);
-            std::process::exit(1);
+            return EXIT_RUNTIME;
         }
     };
 
@@ -7812,11 +9001,12 @@ fn extract_thumbnail(args: &[String]) {
                 }
                 Err(e) => {
                     eprintln!("오류: 파일 저장 실패: {} ({})", out, e);
-                    std::process::exit(1);
+                    return EXIT_RUNTIME;
                 }
             }
         }
     }
+    EXIT_OK
 }
 
 #[cfg(test)]

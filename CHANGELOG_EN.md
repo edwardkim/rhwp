@@ -6,6 +6,66 @@ This document records the major changes of the rhwp project.
 
 ## [Unreleased]
 
+## [0.8.1] — 2026-07-26
+
+> PATCH release — CLI contract consistency and HWP3 rendering corrections since
+> v0.8.0. New features are included but are confined to the CLI tooling layer;
+> there are no public library API changes.
+
+### HWP3 rendering corrections
+- Page 1 WordArt now renders without a sidecar file — the embedded OLE payload
+  (pic_type=1, additional info block id=2), previously misread as an externally
+  linked image, is extracted, repackaged, and drawn from its OlePres000 WMF
+  preview. WMF POLYPOLYGON hole loss is also corrected (single path merge) (#3363).
+- Paragraph borders set to "no line" no longer render as solid lines — wiring now
+  follows Hancom's measured mapping. Shading side rules share the same root cause
+  and are corrected together (#3303).
+
+### CLI — contract consistency
+- Unified positional argument parsing across `export` commands — svg/png/pdf/
+  markdown/render-tree/doclang (#3359); `export-text` accepts option-first
+  invocation (#3349).
+- `search --limit` truncation is now visible — added `totalMatchCount` and
+  `truncated` (#3353).
+- `thumbnail` exit-code consistency — removed the behavior of ignoring unknown
+  options and returning exit 0 (#3366).
+- `capabilities` now self-describes `export-png` feature availability via
+  `requiresFeature`/`available` (#3357); `edit` commands are registered in
+  capabilities and MCP self-description (#3329).
+- ingest rejects unknown fields — immediate failure with position and hint
+  instead of silent data loss (#3358).
+- `build-from-ingest` now specifies a borderless default borderFill, removing
+  boxes drawn around every text run (#3355).
+
+### CLI — new features
+- `edit fill-fields` for filling form values (#3329), `edit replace-text` for
+  document-wide replacement (#3373), `edit set-cell` for writing cells by table
+  grid coordinates (#3381).
+- Added search, export-tables, and fields axes to `batch` (#3346).
+- Standard government form assets — General Draft Form (Form No. 1) and Simplified
+  Draft Form (Form No. 2), with 23 form fields and contract tests (#3372).
+- Large-scale page-by-page comparison harness against Hancom official PDF
+  references (#3389).
+
+### studio
+- Style creation, modification, and deletion are now recorded in the edit history;
+  previously they bypassed the edit router and could not be undone with `Ctrl+Z`.
+  Deletion is recorded as a snapshot because it reassigns style_id document-wide
+  (#3387).
+- Guarded the dev-only fetch for externally linked images in production and
+  extension builds, removing extension Errors noise (#3348).
+
+### Dependencies
+- base64 0.22.1 → 0.23.0, snafu 0.9.1 → 0.9.2.
+- Seven GitHub Actions major updates — checkout v7, setup-node v7, cache v6,
+  upload-pages-artifact v5, deploy-pages v5, github-script v9, action-gh-release v3.
+
+### Known issues
+- The studio E2E `issue-2214` page-local repaint contract fails at the
+  `after-56-sync` checkpoint (cumulative wasmFlush 2, expected 0). No comparison
+  against v0.8.0 was performed, so whether this is a regression remains
+  undetermined; tracked separately (#3412).
+
 ## [0.8.0] — 2026-07-26
 
 > MINOR release — 265 PRs integrated since v0.7.19. Save round-trip preservation
