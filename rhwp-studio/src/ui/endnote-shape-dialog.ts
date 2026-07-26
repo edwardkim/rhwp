@@ -201,6 +201,12 @@ export class EndnoteShapeDialog extends ModalDialog {
       placement: this.placementSection.checked ? 'sectionEnd' : 'documentEnd',
     };
 
+    // [Task #2370] 값이 하나도 안 바뀐 [확인]은 문서를 바꾸지 않는다. `next` 는
+    // `this.settings` 를 펼친 뒤 폼 값으로 덮어쓴 것이므로 `next` 의 모든 키를 대조하면
+    // 원래 설정 전체를 덮는다.
+    const unchanged = (Object.keys(next) as (keyof EndnoteShapeSettings)[])
+      .every((k) => next[k] === this.settings[k]);
+
     // [미주 모양 이관] snapshot 으로 라우팅(#2077 동형). services 미주입 시 직접 적용 fallback.
     const apply = () => this.wasm.applyEndnoteShape(this.sectionIdx, next);
     const ih = this.services?.getInputHandler();
@@ -208,7 +214,12 @@ export class EndnoteShapeDialog extends ModalDialog {
       ih.executeOperation({
         kind: 'snapshot',
         operationType: 'endnoteShape',
-        operation: () => { apply(); return ih.getCursorPosition(); },
+        // 무변경이면 뮤테이션도 기록도 생략(null) — phantom 엔트리·스냅샷 2슬롯 방지.
+        operation: () => {
+          if (unchanged) return null;
+          apply();
+          return ih.getCursorPosition();
+        },
       });
     } else {
       apply();

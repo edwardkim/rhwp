@@ -235,7 +235,9 @@ export class PageSetupDialog extends ModalDialog {
       ih.executeOperation({
         kind: 'snapshot',
         operationType: 'pageSetup',
-        operation: () => { apply(); return ih.getCursorPosition(); },
+        // [Task #2370] 거부(ok:false)는 문서 무변경 → null 로 기록을 취소한다.
+        // fallback 이 `else if (apply().ok)` 로 이미 지키던 게이트를 라우팅 경로에도 맞춘 것.
+        operation: () => (apply().ok ? ih.getCursorPosition() : null),
       });
     } else if (apply().ok) {
       this.eventBus.emit('document-changed');

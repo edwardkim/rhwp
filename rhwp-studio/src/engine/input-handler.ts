@@ -2310,7 +2310,11 @@ export class InputHandler {
         const cmd = new SnapshotCommand(desc.operationType, cursorBefore, cursorBefore, desc.operation);
         const newPos = this.history.execute(cmd, this.wasm);
         const markPastedFieldEndOutside = this.pastedFieldEndOutsidePending;
+        // 무변경 경로에서도 pending 플래그는 소비한다 — 남겨 두면 다음 연산으로 샌다.
         this.pastedFieldEndOutsidePending = false;
+        // [Task #2370] operation 이 무변경(null)을 알리면 기록도 리프레시도 없다.
+        // 문서가 그대로이므로 다시 그릴 것이 없고, 커서도 움직이지 않았다.
+        if (cmd.isNoOp()) break;
         this.cursor.moveTo(newPos);
         this.cursor.resetPreferredX();
         if (markPastedFieldEndOutside) {

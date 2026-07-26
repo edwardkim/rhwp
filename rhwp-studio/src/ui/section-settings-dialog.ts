@@ -166,7 +166,8 @@ export class SectionSettingsDialog extends ModalDialog {
       ih.executeOperation({
         kind: 'snapshot',
         operationType: 'sectionSettings',
-        operation: () => { apply(); return ih.getCursorPosition(); },
+        // [Task #2370] 거부(ok:false)는 문서 무변경 → null 로 기록을 취소한다(fallback 게이트와 동형).
+        operation: () => (apply().ok ? ih.getCursorPosition() : null),
       });
     } else if (apply().ok) {
       this.eventBus.emit('document-changed');

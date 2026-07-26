@@ -134,7 +134,7 @@ function mutatorCallCount(src: string): number {
 const BASELINE: Readonly<Record<string, number>> = {
   'src/command/commands/edit.ts': 1,
   'src/command/commands/format.ts': 1,
-  'src/command/commands/insert.ts': 19,
+  'src/command/commands/insert.ts': 16, // -3: z순서 4 호출부를 changeZOrder 헬퍼 1곳으로 합침(#2370 A)
   'src/command/commands/page.ts': 13,
   'src/command/commands/table.ts': 34, // +1: 블록계산 이관 시 evaluateTableFormula dry-run(write=false, 검증) 추가
   'src/ui/bookmark-dialog.ts': 3,

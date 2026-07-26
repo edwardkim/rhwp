@@ -61,10 +61,14 @@ test('HF 구조 조작 3종이 snapshot 으로 라우팅된다', () => {
     assert.doesNotMatch(pageSrc, new RegExp(`services\\.wasm\\.${op}\\s*\\(`),
       `${op} 직접 호출 금지 — executeOperation 경유`);
   }
-  // [보정 #3208] applyHfTemplate 은 삽입류처럼 ok:false 에 throw 해 before==after 무변
-  // 스냅샷 엔트리(no-op undo)를 막는다. bridge 가 {ok} 를 반환하므로 검사 가능하다.
-  const applyTpl = slice(pageSrc, "operationType: 'applyHfTemplate'", 'return bodyPos');
-  assert.match(applyTpl, /if \(!r\.ok\) throw/, 'applyHfTemplate 실패 시 throw — 무변 스냅샷 엔트리 방지');
+  // [보정 #3208 → #2370] applyHfTemplate 은 ok:false 에 before==after 무변 스냅샷
+  // 엔트리(no-op undo)를 만들면 안 된다. 종전에는 throw 로 막았으나 공용 no-op 신호
+  // (operation 이 null 반환)로 통일했다 — bridge 가 {ok} 를 반환하므로 검사 가능하다.
+  const applyTpl = slice(pageSrc, "operationType: 'applyHfTemplate'", '\n    });');
+  assert.match(applyTpl, /applied \? bodyPos : null/, 'applyHfTemplate 실패 시 null — 무변 스냅샷 엔트리 방지');
+  // 실패했으면 HF 존재가 보장되지 않으므로 편집 모드로 들어가면 안 된다.
+  const afterApply = slice(pageSrc, "operationType: 'applyHfTemplate'", 'catch (e)');
+  assert.match(afterApply, /if \(!applied\)/, '적용 실패 시 enterHeaderFooterMode 를 건너뛰어야 함');
 });
 
 test('감추기 2종은 세션 상태라 의도적으로 기록하지 않는다', () => {
