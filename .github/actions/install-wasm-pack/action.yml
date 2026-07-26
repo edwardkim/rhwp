@@ -25,7 +25,9 @@ runs:
           # [#3289] 고정 /tmp 경로는 동시 잡 간 전개 충돌 — mktemp 로 격리하고,
           # 설치는 같은 디렉터리 임시명 → rename(원자적 교체)으로 부분 바이너리 노출을 막는다.
           tmpdir="$(mktemp -d)"
-          curl -sSfL "$URL" | tar -xzf - -C "$tmpdir"
+          # [#3431] GitHub Releases 의 일시 5xx(실사례: 504) 가 job 을 즉사시켜 매트릭스
+          # 재실행을 강제했다. curl 은 --retry 에서 408/429/5xx 를 transient 로 재시도한다.
+          curl -sSfL --retry 5 --retry-delay 2 --retry-connrefused "$URL" | tar -xzf - -C "$tmpdir"
           # [#3284] sudo 없이 사용자 경로(~/.cargo/bin)에 배치 — self-hosted 러너의
           # 제한된 sudo(apt 한정)와 호스티드 러너 양쪽에서 동일하게 동작한다.
           mkdir -p "$install_dir"
