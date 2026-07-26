@@ -226,7 +226,9 @@ export const insertCommands: CommandDef[] = [
           // 커서는 라우터가 삽입 위치로 이동시킨다 — 필드 끝 밖 마킹·활성 필드 해제는 기존대로.
           ih.markCurrentFieldEndOutside();
           services.wasm.clearActiveField();
-          services.eventBus.emit('document-mutated', 'insert-field');
+          // [Task #2370] 수동 emit 제거 — 스냅샷 라우팅의 'full' refresh 가 afterEdit() 를
+          // 부르고 거기서 이미 'document-mutated'/'document-changed' 를 emit 한다.
+          // 구독자(markDirty·autosave)는 reason 을 라벨로만 쓰므로 중복 emit 은 순손해다.
           // 모달 확인 버튼으로 옮겨간 포커스를 편집기로 복원 — 종전엔 moveCursorTo 끝의
           // focusTextarea 가 담당했으나 라우터 경로엔 없다(field:edit 의 onClose 복원과 동형).
           ih.focus();
