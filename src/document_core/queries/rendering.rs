@@ -3718,6 +3718,7 @@ impl DocumentCore {
                                     para_index: pi,
                                     control_index: ci,
                                     source_section_index: idx,
+                                    table_path: Vec::new(),
                                 };
                                 match h.apply_to {
                                     HFA::Both => {
@@ -3737,6 +3738,7 @@ impl DocumentCore {
                                     para_index: pi,
                                     control_index: ci,
                                     source_section_index: idx,
+                                    table_path: Vec::new(),
                                 };
                                 match f.apply_to {
                                     HFA::Both => {
@@ -3863,21 +3865,48 @@ impl DocumentCore {
                 let mut entries: Vec<(usize, HeaderFooterRef, bool, HFA)> = Vec::new();
                 for (pi, para) in section.paragraphs.iter().enumerate() {
                     for (ci, ctrl) in para.controls.iter().enumerate() {
-                        let (is_header, apply_to) = match ctrl {
-                            Control::Header(h) => (true, h.apply_to),
-                            Control::Footer(f) => (false, f.apply_to),
-                            _ => continue,
-                        };
-                        entries.push((
-                            pi,
-                            HeaderFooterRef {
-                                para_index: pi,
-                                control_index: ci,
-                                source_section_index: idx,
-                            },
-                            is_header,
-                            apply_to,
-                        ));
+                        match ctrl {
+                            Control::Header(h) => {
+                                entries.push((
+                                    pi,
+                                    HeaderFooterRef {
+                                        para_index: pi,
+                                        control_index: ci,
+                                        source_section_index: idx,
+                                        table_path: Vec::new(),
+                                    },
+                                    true,
+                                    h.apply_to,
+                                ));
+                            }
+                            Control::Footer(f) => {
+                                entries.push((
+                                    pi,
+                                    HeaderFooterRef {
+                                        para_index: pi,
+                                        control_index: ci,
+                                        source_section_index: idx,
+                                        table_path: Vec::new(),
+                                    },
+                                    false,
+                                    f.apply_to,
+                                ));
+                            }
+                            // 표 셀 안에 중첩 정의된 머리말/꼬리말도 수집한다. (수능 수학
+                            // 선택과목 소책자의 4쪽 머리말이 제목표 셀 안에 있는 사례 — 이게
+                            // 없으면 4쪽 쪽번호가 2쪽 머리말로 대체돼 잘못 표시된다.)
+                            Control::Table(table) => {
+                                crate::renderer::pagination::collect_nested_header_footer_controls(
+                                    table,
+                                    pi,
+                                    idx,
+                                    ci,
+                                    &[],
+                                    &mut entries,
+                                );
+                            }
+                            _ => {}
+                        }
                     }
                 }
                 let has_header = entries.iter().any(|(_, _, is_header, _)| *is_header);

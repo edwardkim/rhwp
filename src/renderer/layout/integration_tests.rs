@@ -269,6 +269,64 @@ mod tests {
         }
     }
 
+    /// exam_math.hwp: 선택과목 소책자(확통/미적분/기하)마다 소책자 쪽번호가 1,2,3,4로
+    /// 재시작한다. 큰 이탤릭 모서리 쪽번호는 짝수쪽(왼쪽)에서 2쪽=2, 4쪽=4 로 보여야 한다.
+    /// 4쪽 머리말이 제목표 셀 안에 중첩 정의된 확통(p12)·기하(p20)에서 과거에는
+    /// 4 대신 2가 렌더되던 회귀를 방어한다. (미적분 p16은 최상위 머리말이라 항상 정상)
+    #[test]
+    fn test_exam_math_booklet_corner_page_number_on_fourth_page() {
+        let Some(core) = load_document("samples/exam_math.hwp") else {
+            return;
+        };
+
+        // 짝수(왼쪽)쪽의 바깥 모서리(가장 왼쪽)에 있는 큰 폰트(>=38px) 한 자리 숫자 = 소책자 쪽번호
+        fn corner_digit(node: &RenderNode, best: &mut Option<(f64, String)>) {
+            if let RenderNodeType::TextRun(run) = &node.node_type {
+                let t = run.text.trim();
+                if t.len() == 1
+                    && t.chars().all(|c| c.is_ascii_digit())
+                    && run.style.font_size >= 38.0
+                    && node.bbox.y < 300.0
+                {
+                    let x = node.bbox.x;
+                    if best.as_ref().map_or(true, |(bx, _)| x < *bx) {
+                        *best = Some((x, t.to_string()));
+                    }
+                }
+            }
+            for child in &node.children {
+                corner_digit(child, best);
+            }
+        }
+
+        // (0-based page_index, 기대 소책자 쪽번호)
+        // p10=확통2, p12=확통4, p14=미적2, p16=미적4, p18=기하2, p20=기하4
+        let expected = [
+            (9, "2"),
+            (11, "4"),
+            (13, "2"),
+            (15, "4"),
+            (17, "2"),
+            (19, "4"),
+        ];
+        for (idx, want) in expected {
+            let Ok(tree) = core.build_page_render_tree(idx) else {
+                continue;
+            };
+            let mut best = None;
+            corner_digit(&tree.root, &mut best);
+            let got = best.map(|(_, s)| s);
+            assert_eq!(
+                got.as_deref(),
+                Some(want),
+                "exam_math 페이지 인덱스 {} 모서리 소책자 쪽번호가 {:?}가 아님 (기대 {})",
+                idx,
+                got,
+                want
+            );
+        }
+    }
+
     #[test]
     fn test_1098_hwpx_last_page_master_replaces_base_master() {
         let Some(core) = load_document("samples/hwpx/exam-kor-2p.hwpx") else {

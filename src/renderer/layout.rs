@@ -3329,8 +3329,10 @@ impl LayoutEngine {
             .contains(&(page_content.page_index, true));
         if !hidden {
             if let Some(hf_ref) = &page_content.active_header {
-                if let Some(para) = paragraphs.get(hf_ref.para_index) {
-                    if let Some(ctrl) = para.controls.get(hf_ref.control_index) {
+                {
+                    if let Some(ctrl) = crate::renderer::pagination::resolve_header_footer_control(
+                        paragraphs, hf_ref,
+                    ) {
                         if let Control::Header(header) = ctrl {
                             let header_table_area =
                                 self.header_table_area_from_page_border(layout, page_border_fill);
@@ -3464,8 +3466,10 @@ impl LayoutEngine {
             .contains(&(page_content.page_index, false));
         if !hidden {
             if let Some(hf_ref) = &page_content.active_footer {
-                if let Some(para) = paragraphs.get(hf_ref.para_index) {
-                    if let Some(ctrl) = para.controls.get(hf_ref.control_index) {
+                {
+                    if let Some(ctrl) = crate::renderer::pagination::resolve_header_footer_control(
+                        paragraphs, hf_ref,
+                    ) {
                         if let Control::Footer(footer) = ctrl {
                             // [Task #825] 꼬리말 그림 hit-test marker.
                             let outer_ref = crate::renderer::render_tree::HeaderFooterImageRef {
