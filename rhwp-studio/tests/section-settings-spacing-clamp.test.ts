@@ -14,7 +14,9 @@ const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 
 function readOnConfirmBody(): string {
   const src = readFileSync(join(rootDir, 'src/ui/section-settings-dialog.ts'), 'utf8');
-  const match = src.match(/protected onConfirm\(\): void \{([\s\S]*?)\n  \}/);
+  // [Task #2370] 반환형이 boolean 으로 바뀌었다(공용 헬퍼가 성공 여부를 돌려주고
+  // onConfirm 이 그대로 반환 → 실패 시 다이얼로그 유지). 반환형에 묶이지 않게 잡는다.
+  const match = src.match(/protected onConfirm\(\):[^{]*\{([\s\S]*?)\n  \}/);
   assert.ok(match, 'onConfirm() 정의를 찾을 수 없음');
   return match![1];
 }

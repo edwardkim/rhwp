@@ -2,6 +2,7 @@ import { ModalDialog } from './dialog';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { EventBus } from '@/core/event-bus';
 import type { CommandServices } from '@/command/types';
+import { applyThroughRouter } from './dialog-apply';
 
 const HWPUNIT_PER_MM = 7200 / 25.4;
 
@@ -105,27 +106,19 @@ export class ColumnSettingsDialog extends ModalDialog {
     }
   }
 
-  protected onConfirm(): void {
+  protected onConfirm(): boolean {
     const count = Math.max(1, Math.min(8, parseInt(this.countInput.value, 10) || 1));
     const type = Math.max(0, Math.min(2, parseInt(this.typeSelect.value, 10) || 0));
     const sameWidth = this.sameWidthCheck.checked ? 1 : 0;
     const spacingHu = Math.max(0, Math.min(32767, mmToHwpunit(parseFloat(this.spacingInput.value) || 0)));
     // [다단 설정 이관] snapshot 으로 라우팅(#2077 동형). services 미주입 시 직접 적용 fallback.
     const apply = () => this.wasm.setColumnDef(this.sectionIdx, count, type, sameWidth, spacingHu);
-    try {
-      const ih = this.services?.getInputHandler();
-      if (ih) {
-        ih.executeOperation({
-          kind: 'snapshot',
-          operationType: 'columnSettings',
-          operation: () => { apply(); return ih.getCursorPosition(); },
-        });
-      } else {
-        apply();
-        this.eventBus.emit('document-changed');
-      }
-    } catch (err) {
-      console.warn('[ColumnSettingsDialog] 다단 설정 실패:', err);
-    }
+    return applyThroughRouter({
+      services: this.services,
+      label: 'ColumnSettingsDialog',
+      operationType: 'columnSettings',
+      operation: (ih) => { apply(); return ih.getCursorPosition(); },
+      fallback: () => { apply(); this.eventBus.emit('document-changed'); },
+    });
   }
 }

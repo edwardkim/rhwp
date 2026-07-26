@@ -104,8 +104,8 @@ test('레이아웃 setter 의 {ok:false} 는 도달 불가 — 없는 신호를 
 test('미주 모양은 값이 안 바뀌면 뮤테이션도 기록도 하지 않는다', () => {
   const dialogSrc = src('src/ui/endnote-shape-dialog.ts');
   assert.match(dialogSrc, /const unchanged = \(Object\.keys\(next\)/, '변경 여부를 next 의 전 키로 판정해야 함');
-  const idx = dialogSrc.indexOf("kind: 'snapshot'");
-  assert.notEqual(idx, -1, 'snapshot 라우팅이 존재해야 함');
+  const idx = dialogSrc.indexOf('operation: (ih) => {');
+  assert.notEqual(idx, -1, 'snapshot operation 콜백이 존재해야 함');
   const block = dialogSrc.slice(idx, idx + 400);
   assert.match(block, /if \(unchanged\) return null/, '무변경이면 null 로 기록을 취소해야 함');
   assert.ok(

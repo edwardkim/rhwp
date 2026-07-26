@@ -10,6 +10,10 @@ import { fileURLToPath } from 'node:url';
 // (편집 라우터)에 도달 못 했다 → 편집 용지/구역/다단/쪽테두리 변경이 미기록(undo 불가).
 // services 를 생성자에 주입하고 onConfirm 을 executeOperation snapshot 으로 라우팅했는지,
 // services 미주입 fallback(직접 적용)을 유지했는지 정적으로 핀한다. 행위 증명은 브라우저 왕복.
+//
+// [Task #2370 클러스터 C] 라우팅 경로를 공용 헬퍼 `applyThroughRouter`(ui/dialog-apply.ts)로
+// 통일했다 — 라우터 도달·fallback·실패 처리가 다이얼로그마다 제각각이던 것을 한 자리로 모은다.
+// 따라서 가드도 "직접 getInputHandler 를 부르는가" 대신 "헬퍼를 경유하는가"를 본다.
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const src = (rel: string): string => readFileSync(join(rootDir, `src/ui/${rel}`), 'utf8');
@@ -39,10 +43,13 @@ for (const { file, op } of DIALOGS) {
     // services 를 생성자에 주입(라우터 도달 경로 확보).
     assert.match(s, /services\?:\s*CommandServices/, `${file}: 생성자에 services 주입`);
     assert.match(s, /import type \{ CommandServices \}/, `${file}: CommandServices import`);
-    // onConfirm 이 라우터 경유로 snapshot 기록.
-    assert.match(s, /this\.services\?\.getInputHandler\(\)/, `${file}: getInputHandler 로 라우터 도달`);
+    // onConfirm 이 공용 헬퍼 경유로 snapshot 기록(헬퍼가 getInputHandler 도달을 담당).
+    assert.match(s, /import \{ applyThroughRouter \} from '\.\/dialog-apply'/, `${file}: 공용 헬퍼 import`);
+    assert.match(s, /return applyThroughRouter\(\{/, `${file}: onConfirm 이 헬퍼 결과를 반환`);
     assert.match(s, new RegExp(`operationType:\\s*'${op}'`), `${file}: ${op} snapshot 라우팅`);
     // services 미주입 환경 호환 fallback(직접 적용 + emit) 유지.
-    assert.match(s, /this\.eventBus\.emit\('document-changed'\)/, `${file}: fallback emit 유지`);
+    assert.match(s, /fallback: \(\) => \{[^}]*emit\('document-changed'\)/, `${file}: fallback emit 유지`);
+    // 실패 처리를 다이얼로그가 따로 두면 표준화가 다시 갈라진다.
+    assert.doesNotMatch(s, /catch[^\n]*\n[^\n]*적용 실패/, `${file}: 실패 처리는 헬퍼가 담당`);
   });
 }

@@ -4,6 +4,7 @@ import type { WasmBridge } from '@/core/wasm-bridge';
 import type { PageDef } from '@/core/types';
 import type { EventBus } from '@/core/event-bus';
 import type { CommandServices } from '@/command/types';
+import { applyThroughRouter } from './dialog-apply';
 
 const HWPUNIT_PER_MM = 7200 / 25.4; // ≈283.46
 const PAPER_PRESET_TOLERANCE_HU = 3;
@@ -204,7 +205,7 @@ export class PageSetupDialog extends ModalDialog {
     return body;
   }
 
-  protected onConfirm(): void {
+  protected onConfirm(): boolean {
     // mm → HWPUNIT 변환
     const landscape = this.landscapeRadios[1].checked;
     let w = mmToHwpunit(parseFloat(this.widthInput.value) || 0);
@@ -230,16 +231,13 @@ export class PageSetupDialog extends ModalDialog {
     // [편집 용지 이관] 쪽 정의 변경을 snapshot 으로 라우팅해 undo 가능(#2077 수식 속성 동형).
     // services 미주입 환경(구 호출부)에서만 직접 적용 fallback.
     const apply = () => this.wasm.setPageDef(this.sectionIdx, newDef);
-    const ih = this.services?.getInputHandler();
-    if (ih) {
-      ih.executeOperation({
-        kind: 'snapshot',
-        operationType: 'pageSetup',
-        operation: () => { apply(); return ih.getCursorPosition(); },
-      });
-    } else if (apply().ok) {
-      this.eventBus.emit('document-changed');
-    }
+    return applyThroughRouter({
+      services: this.services,
+      label: 'PageSetupDialog',
+      operationType: 'pageSetup',
+      operation: (ih) => { apply(); return ih.getCursorPosition(); },
+      fallback: () => { if (apply().ok) this.eventBus.emit('document-changed'); },
+    });
   }
 
   private populateFields(): void {

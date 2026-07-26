@@ -26,8 +26,11 @@ for (const { file, op } of DIALOGS) {
     const s = src(file);
     assert.match(s, /services\?:\s*CommandServices/, `${file}: 생성자에 services 주입`);
     assert.match(s, /import type \{ CommandServices \}/, `${file}: CommandServices import`);
-    assert.match(s, /this\.services\?\.getInputHandler\(\)/, `${file}: getInputHandler 로 라우터 도달`);
+    // [Task #2370 클러스터 C] 라우터 도달·fallback·실패 처리를 공용 헬퍼로 통일.
+    assert.match(s, /import \{ applyThroughRouter \} from '\.\/dialog-apply'/, `${file}: 공용 헬퍼 import`);
+    assert.match(s, /return applyThroughRouter\(\{/, `${file}: onConfirm 이 헬퍼 결과를 반환`);
     assert.match(s, new RegExp(`operationType:\\s*'${op}'`), `${file}: ${op} snapshot 라우팅`);
-    assert.match(s, /this\.eventBus\.emit\('document-changed'\)/, `${file}: fallback emit 유지`);
+    assert.match(s, /fallback: \(\) => \{[^}]*emit\('document-changed'\)/, `${file}: fallback emit 유지`);
+    assert.doesNotMatch(s, /catch[^\n]*\n[^\n]*적용 실패/, `${file}: 실패 처리는 헬퍼가 담당`);
   });
 }

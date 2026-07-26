@@ -4,6 +4,7 @@ import type { EndnoteShapeSettings } from '@/core/types';
 import { HWPUNIT_PER_MM } from '@/core/hwp-constants';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { CommandServices } from '@/command/types';
+import { applyThroughRouter } from './dialog-apply';
 
 type LineTypeChoice = {
   value: string;
@@ -183,7 +184,7 @@ export class EndnoteShapeDialog extends ModalDialog {
     return body;
   }
 
-  protected onConfirm(): void {
+  protected onConfirm(): boolean {
     const next: EndnoteShapeSettings = {
       ...this.settings,
       numberFormat: this.numberFormatSelect.value,
@@ -217,22 +218,18 @@ export class EndnoteShapeDialog extends ModalDialog {
 
     // [미주 모양 이관] snapshot 으로 라우팅(#2077 동형). services 미주입 시 직접 적용 fallback.
     const apply = () => this.wasm.applyEndnoteShape(this.sectionIdx, next);
-    const ih = this.services?.getInputHandler();
-    if (ih) {
-      ih.executeOperation({
-        kind: 'snapshot',
-        operationType: 'endnoteShape',
-        // 무변경이면 뮤테이션도 기록도 생략(null) — phantom 엔트리·스냅샷 2슬롯 방지.
-        operation: () => {
-          if (unchanged) return null;
-          apply();
-          return ih.getCursorPosition();
-        },
-      });
-    } else {
-      apply();
-      this.eventBus.emit('document-changed');
-    }
+    return applyThroughRouter({
+      services: this.services,
+      label: 'EndnoteShapeDialog',
+      operationType: 'endnoteShape',
+      // 무변경이면 뮤테이션도 기록도 생략(null) — phantom 엔트리·스냅샷 2슬롯 방지.
+      operation: (ih) => {
+        if (unchanged) return null;
+        apply();
+        return ih.getCursorPosition();
+      },
+      fallback: () => { apply(); this.eventBus.emit('document-changed'); },
+    });
   }
 
   private populate(): void {
