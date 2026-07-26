@@ -16,7 +16,7 @@ Issue: #3401
 | npm `@rhwp/editor` | 자동(Release) | **0.8.1** |
 | VS Code Marketplace | 자동(Release) | **0.8.1** |
 | Open VSX | 자동(Release) | **0.8.1** |
-| Chrome / Edge / Firefox | 수동 업로드 | zip 준비 완료(메인테이너 작업) |
+| Chrome / Edge / Firefox | 수동 업로드 | **제출 완료**(메인테이너, 2026-07-26) |
 
 VS Code Marketplace 와 Open VSX 는 Release 직후 조회에서 0.8.0 으로 나왔다. 워크플로의
 publish step 이 모두 success 였으므로 인덱싱 지연으로 판단하고 폴링했고, 3회차(약 2분)에
@@ -126,10 +126,11 @@ CHANGELOG 와 릴리즈 노트의 **"알려진 문제"** 절에 회귀 여부 �
 system/cpu/cpu0/cpufreq/` 부재)도 #3412 에 기록했다. 같은 headless 인 다른 스위트는 통과하므로
 이 스위트만 다른 실행 경로를 탄다.
 
-### 스토어 수동 업로드
+### 스토어 수동 업로드 — 완료
 
-Chrome Web Store, Microsoft Edge Add-ons, Firefox AMO 업로드는 메인테이너 작업이다. AMO 는
-확장 zip 과 source zip 을 함께 업로드한다.
+2026-07-26 메인테이너가 **3개 스토어 모두 제출 완료**했다(Chrome Web Store, Microsoft Edge
+Add-ons, Firefox AMO). AMO 는 확장 zip 과 source zip 을 함께 올렸다. 이후 각 스토어 심사
+결과는 릴리즈 범위 밖이다.
 
 ## 7. 운영 기록
 
