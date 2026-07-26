@@ -75,16 +75,28 @@ test('경계 z순서는 반환 zOrder 비교로 무변경을 보고한다', () =
   assert.match(body, /wasm\.changeShapeZOrder\(/, '뮤테이션은 operation 콜백 안에 있어야 함');
 });
 
-test('거부된 다이얼로그 적용({ok:false})은 기록하지 않는다', () => {
-  // fallback 이 `else if (apply().ok)` 로 지키던 게이트를 라우팅 경로에도 맞춘 것.
+test('레이아웃 setter 의 {ok:false} 는 도달 불가 — 없는 신호를 검사하지 않는다', () => {
+  // 자체 리뷰에서 확인: setPageDef/setSectionDef/setSectionDefAll/setPageBorderFill/
+  // setColumnDef/applyEndnoteShape 의 네이티브는 성공 시 `{"ok":true,…}` **하나만** 반환하고
+  // 실패는 전부 `Err(HwpError)` → WASM 경계에서 throw 다. 브리지도 pass-through
+  // (`JSON.parse(this.doc.setPageDef(...))`)라 {ok:false} 를 합성하지 않는다.
+  // 선언 타입이 `{ ok: boolean }` 이라 검사할 값처럼 보이지만 실제로는 항상 true 다.
+  //
+  // 그래서 이 두 다이얼로그에는 무변경 신호로 삼을 것이 없다 — `apply().ok ? … : null`
+  // 같은 가드를 넣으면 #3438 이 지적한 "존재하지 않는 실패 신호를 가정한 방어"가 된다.
+  // 거부는 throw 로 오고, 그건 no-op 장치가 아니라 예외 경로가 다룬다.
+  const rendering = readFileSync(join(rootDir, '../src/document_core/queries/rendering.rs'), 'utf8');
+  for (const fn of ['set_page_def_native', 'set_section_def_native']) {
+    const start = rendering.indexOf(`pub fn ${fn}`);
+    assert.notEqual(start, -1, `${fn} 이 존재해야 함`);
+    const body = rendering.slice(start, rendering.indexOf('\n    pub fn ', start + 1));
+    assert.doesNotMatch(body, /"ok\\":false/, `${fn} 이 {ok:false} 를 반환하게 되면 이 전제가 깨진다`);
+  }
   for (const rel of ['src/ui/page-setup-dialog.ts', 'src/ui/section-settings-dialog.ts']) {
-    const dialogSrc = src(rel);
-    const idx = dialogSrc.indexOf("kind: 'snapshot'");
-    assert.notEqual(idx, -1, `${rel} 이 snapshot 으로 라우팅돼야 함`);
-    assert.match(
-      dialogSrc.slice(idx, idx + 400),
-      /apply\(\)\.ok \? ih\.getCursorPosition\(\) : null/,
-      `${rel}: 거부(ok:false)면 null 로 기록을 취소해야 함`,
+    assert.doesNotMatch(
+      src(rel),
+      /operation: \(ih\) => \(apply\(\)\.ok \?/,
+      `${rel}: 도달 불가한 {ok:false} 를 무변경 신호로 쓰지 말 것`,
     );
   }
 });
