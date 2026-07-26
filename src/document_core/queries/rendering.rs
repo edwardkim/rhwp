@@ -659,7 +659,9 @@ impl DocumentCore {
                     },
                 )
                 .collect::<Vec<_>>();
-            let mut builder = LayerBuilder::new(profile).with_output_options(output_options);
+            let mut builder = LayerBuilder::new(profile)
+                .with_output_options(output_options)
+                .with_bin_data_epoch(self.bin_data_epoch);
             Ok(builder.build_with_embedded_fonts(tree, &embedded_fonts))
         })
     }
@@ -1366,6 +1368,68 @@ impl DocumentCore {
             | (u8::from(self.clip_enabled) << 3)
             | (u8::from(self.debug_overlay) << 4)
             | (profile_bits << 5)
+    }
+
+    /// 페이지가 그리는 그림들의 신원 키만 작은 JSON 으로 반환한다 (Task #3315).
+    ///
+    /// `{"keys":["img:0:1:src", ...]}` 형태이며, 등장 순서를 보존한다. 소비자는 이 목록을
+    /// 서명으로 삼아 "그림이 그대로면 앞서 만든 디코드 결과를 재사용"할 수 있다 — 그러려고
+    /// 수 MB 짜리 레이어 트리 JSON 을 다시 받아 정규식으로 훑을 이유가 없다.
+    ///
+    /// 안정된 신원이 없는 그림(`bin_data_id == 0`)은 목록에서 빠지는 대신 `null` 로 자리를
+    /// 남긴다 — 개수가 달라지면 서명이 달라져야 하기 때문이다.
+    pub fn get_page_source_image_keys_native(&self, page_num: u32) -> Result<String, HwpError> {
+        use crate::paint::{LayerNode, LayerNodeKind, PaintOp};
+
+        fn collect(node: &LayerNode, epoch: u32, out: &mut Vec<Option<String>>) {
+            match &node.kind {
+                LayerNodeKind::Group { children, .. } => {
+                    for child in children {
+                        collect(child, epoch, out);
+                    }
+                }
+                LayerNodeKind::ClipRect { child, .. } => collect(child, epoch, out),
+                LayerNodeKind::Leaf { ops } => {
+                    for op in ops {
+                        let PaintOp::Image {
+                            image, resolved, ..
+                        } = op
+                        else {
+                            continue;
+                        };
+                        if image.data.is_none() && resolved.is_none() {
+                            continue;
+                        }
+                        out.push(crate::paint::source_image_key(
+                            epoch,
+                            image,
+                            resolved.as_deref(),
+                        ));
+                    }
+                }
+            }
+        }
+
+        let tree = self.build_page_layer_tree(page_num)?;
+        let mut keys = Vec::new();
+        collect(&tree.root, tree.bin_data_epoch, &mut keys);
+
+        let mut buf = String::from("{\"keys\":[");
+        for (index, key) in keys.iter().enumerate() {
+            if index > 0 {
+                buf.push(',');
+            }
+            match key {
+                Some(key) => {
+                    buf.push('"');
+                    buf.push_str(&crate::document_core::helpers::json_escape(key));
+                    buf.push('"');
+                }
+                None => buf.push_str("null"),
+            }
+        }
+        buf.push_str("]}");
+        Ok(buf)
     }
 
     /// 페이지 overlay 이미지와 replay-plane summary만 작은 JSON으로 반환한다.

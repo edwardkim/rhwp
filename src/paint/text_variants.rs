@@ -483,6 +483,7 @@ mod tests {
             root,
             resources: ResourceArena::default(),
             text_sources: TextSourceTable::default(),
+            bin_data_epoch: 0,
         }
     }
 

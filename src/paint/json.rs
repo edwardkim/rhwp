@@ -98,8 +98,12 @@ impl PageLayerTree {
             self.page_height
         );
         let mut text_source_state = TextSourceExportState::default();
-        self.root
-            .write_json(&mut buf, &mut text_source_state, &self.resources);
+        self.root.write_json(
+            &mut buf,
+            &mut text_source_state,
+            &self.resources,
+            self.bin_data_epoch,
+        );
         buf.push_str(",\"textSources\":");
         write_text_source_entries(&mut buf, &self.text_sources);
         buf.push_str(",\"fontResources\":");
@@ -378,6 +382,7 @@ impl LayerNode {
         buf: &mut String,
         text_sources: &mut TextSourceExportState,
         resources: &ResourceArena,
+        bin_data_epoch: u32,
     ) {
         buf.push('{');
         buf.push_str("\"bounds\":");
@@ -407,7 +412,7 @@ impl LayerNode {
                     if idx > 0 {
                         buf.push(',');
                     }
-                    child.write_json(buf, text_sources, resources);
+                    child.write_json(buf, text_sources, resources, bin_data_epoch);
                 }
                 buf.push(']');
             }
@@ -424,7 +429,7 @@ impl LayerNode {
                     json_escape(clip_kind_str(*clip_kind))
                 );
                 buf.push_str(",\"child\":");
-                child.write_json(buf, text_sources, resources);
+                child.write_json(buf, text_sources, resources, bin_data_epoch);
             }
             LayerNodeKind::Leaf { ops } => {
                 buf.push_str(",\"kind\":\"leaf\",\"ops\":[");
@@ -433,7 +438,7 @@ impl LayerNode {
                     if idx > 0 {
                         buf.push(',');
                     }
-                    op.write_json(buf, text_sources, &leaf_visuals, resources);
+                    op.write_json(buf, text_sources, &leaf_visuals, resources, bin_data_epoch);
                 }
                 buf.push(']');
             }
@@ -449,6 +454,7 @@ impl PaintOp {
         text_sources: &mut TextSourceExportState,
         leaf_visuals: &LeafTextVisualOps,
         resources: &ResourceArena,
+        bin_data_epoch: u32,
     ) {
         match self {
             PaintOp::PageBackground { bbox, background } => {
@@ -867,6 +873,11 @@ impl PaintOp {
                     };
                     let _ = write!(buf, ",\"mime\":\"{}\",\"base64\":", final_mime);
                     write_json_base64(buf, &final_data);
+                }
+                if let Some(key) =
+                    crate::paint::source_image_key(bin_data_epoch, image, resolved.as_deref())
+                {
+                    let _ = write!(buf, ",\"sourceImageKey\":{}", json_escape(&key));
                 }
                 if let Some(fill_mode) = image.fill_mode {
                     let _ = write!(

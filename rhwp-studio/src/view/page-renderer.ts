@@ -2,6 +2,7 @@ import { WasmBridge } from '@/core/wasm-bridge';
 import type { LayerRenderProfile } from '@/core/types';
 import { layerPaintOpReplayPlane } from './canvaskit/replay-plane';
 import type { CanvasKitLayerRenderer, CanvasKitRenderDiagnostics } from './canvaskit-renderer';
+import { shouldSkipImagePrefetch, type PrefetchSignature } from './image-prefetch-signature.ts';
 import { collectVectorRawSvgDataUrls } from './raw-svg-prefetch';
 import {
   collectFlowImagePaintOps,
@@ -62,6 +63,13 @@ export class PageRenderer {
   private imageRetryCounts = new Map<number, string>();
   private layerSummaryCache = new Map<number, LayerSummaryCacheEntry>();
   private canvaskitDiagnosticsByPage = new Map<number, CanvasKitRenderDiagnostics>();
+  /**
+   * prefetch 를 끝낸 페이지의 그림 서명 (Task #3315).
+   *
+   * 내용에서 유도된 키라 스스로 무효화된다 — 편집 때 비우지 않는다. 비우면 서명을 두는
+   * 의미가 사라진다.
+   */
+  private prefetchedImageSignatures = new Map<number, PrefetchSignature>();
   private flowSplitSupported: boolean | null = null;
 
   constructor(
@@ -969,6 +977,13 @@ export class PageRenderer {
    * Task #1154 — IMAGE_CACHE 의 비동기 디코드 누락 안전망.
    */
   private async prefetchLayerImages(pageIdx: number): Promise<boolean> {
+    // [#3315] 그림이 그대로면 다시 디코드시킬 것이 없다. 서명 조회는 수백 바이트인데
+    // 아래의 전체 레이어 트리 조회는 그림 1장에 수 MB 라, 편집마다 되풀이할 값이 아니다.
+    const imageKeys = this.wasm.getPageSourceImageKeys(pageIdx);
+    if (shouldSkipImagePrefetch(this.prefetchedImageSignatures.get(pageIdx), imageKeys)) {
+      return true;
+    }
+
     let json: string;
     try {
       json = this.wasm.getPageLayerTree(pageIdx);
@@ -1011,7 +1026,8 @@ export class PageRenderer {
     // 잡히지 않는다. web_canvas.render_raw_svg 와 동일하게 조각을 wrap 한 SVG data URL
     // 을 프리페치해야 비동기 로드 완료 신호를 얻어 지연 재렌더(finish)가 발동하고,
     // WASM 캐시의 SVG 이미지가 로드 완료 상태로 flow-static overlay 에 그려진다.
-    if (json.includes('"type":"rawSvg"')) {
+    const hadRawSvg = json.includes('"type":"rawSvg"');
+    if (hadRawSvg) {
       try {
         const vectorRawSvgUrls: string[] = [];
         collectVectorRawSvgDataUrls(JSON.parse(json), vectorRawSvgUrls);
@@ -1019,6 +1035,9 @@ export class PageRenderer {
       } catch {
         // 파싱 실패 시 raster 프리페치 결과만 사용한다.
       }
+    }
+    if (imageKeys !== null) {
+      this.prefetchedImageSignatures.set(pageIdx, { imageKeys, hadRawSvg });
     }
     if (tasks.length === 0) {
       // URL을 수집하지 못한 순수 rawSvg는 upstream의 조기 재렌더 경로를 사용한다.
@@ -1057,6 +1076,7 @@ export class PageRenderer {
 
   dispose(): void {
     this.cancelAll();
+    this.prefetchedImageSignatures.clear();
     this.layerSummaryCache.clear();
     this.canvaskitDiagnosticsByPage.clear();
     this.canvaskitRenderer = null;

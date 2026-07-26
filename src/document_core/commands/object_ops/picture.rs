@@ -1325,6 +1325,8 @@ impl DocumentCore {
             extension: Some(extension.to_string()),
         });
         self.document.doc_info.raw_stream = None; // DocInfo 재직렬화
+                                                  // [#3315] 여기서 bin_data_epoch 를 올리지 않는다 — 새 id 를 덧붙일 뿐 기존
+                                                  // id→바이트는 그대로다. 올리면 무관한 그림의 소비자 캐시까지 함께 버려진다.
         position_id
     }
 

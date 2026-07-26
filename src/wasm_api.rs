@@ -772,6 +772,13 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 페이지가 그리는 그림들의 신원 키만 작은 JSON 으로 반환한다 (Task #3315).
+    #[wasm_bindgen(js_name = getPageSourceImageKeys)]
+    pub fn get_page_source_image_keys(&self, page_num: u32) -> Result<String, JsValue> {
+        self.get_page_source_image_keys_native(page_num)
+            .map_err(|e| e.into())
+    }
+
     /// 페이지 정보를 JSON 문자열로 반환한다.
     #[wasm_bindgen(js_name = getPageInfo)]
     pub fn get_page_info(&self, page_num: u32) -> Result<String, JsValue> {

@@ -230,6 +230,50 @@ pub fn image_resource_key(byte_len: usize, digest: &str) -> String {
     resource_key("img", byte_len, digest)
 }
 
+/// 그림 op 이 내보내는 바이트의 신원 키 (Task #3315).
+///
+/// 위의 `image_resource_key` 는 arena 에 담긴 바이트의 **내용** 키(blake3)다. 이쪽은
+/// 리페인트마다 다시 계산돼야 하므로 내용 해시를 쓸 수 없다 — 그림 1장에 수 MB 를 매 키
+/// 입력마다 훑게 된다. 대신 문서가 이미 가진 신원을 쓴다.
+///
+/// - `bin_data_id`: 등록이 append-only 라 세션 중 id→바이트가 안정하다.
+/// - `epoch`: 문서를 통째로 갈아끼우는 연산(스냅샷 복원, 새 문서, `set_document`)만이 이
+///   안정성을 깨므로, 그때만 올라간다. 그림을 **추가**하는 것은 기존 id 의 바이트를 바꾸지
+///   않으므로 올리지 않는다 — 올리면 무관한 그림의 캐시까지 함께 버려진다.
+/// - variant: 같은 원본이라도 워터마크 굽기와 포맷 변환은 둘 다 PNG 를 내면서 바이트가
+///   다르다.
+///
+/// 접두어를 `img:` 가 아니라 `bin:` 으로 둔 것은 위 내용 키(`img:blake3:…`)와 한눈에
+/// 구분되게 하기 위해서다. 두 키는 서로 다른 이름공간이다.
+///
+/// 바이트를 내보내지 않는 op, 그리고 문서 BinData 에 대응하지 않는 합성 이미지
+/// (`bin_data_id == 0`)는 안정된 신원이 없으므로 `None` 이다 — 소비자는 캐시 대상에서
+/// 제외한다.
+pub fn source_image_key(
+    bin_data_epoch: u32,
+    image: &crate::renderer::render_tree::ImageNode,
+    resolved: Option<&crate::paint::paint_op::ResolvedImagePayload>,
+) -> Option<String> {
+    use crate::paint::paint_op::ResolvedImageKind;
+
+    if resolved.is_none() && image.data.is_none() {
+        return None;
+    }
+    if image.bin_data_id == 0 {
+        return None;
+    }
+
+    let variant = match resolved.map(|payload| payload.kind) {
+        None => "src",
+        Some(ResolvedImageKind::BakedWatermark) => "wmpng",
+        Some(_) => "png",
+    };
+    Some(format!(
+        "bin:{bin_data_epoch}:{}:{variant}",
+        image.bin_data_id
+    ))
+}
+
 pub fn svg_resource_key(byte_len: usize, digest: &str) -> String {
     resource_key("svg", byte_len, digest)
 }

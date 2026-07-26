@@ -643,6 +643,24 @@ export class WasmBridge {
     return '{"pageWidth":0,"pageHeight":0,"profile":"screen","buildOptions":{"showTransparentBorders":false,"clipEnabled":true},"debugOptions":{"debugOverlay":false},"outputOptions":{"showParagraphMarks":false,"showControlCodes":false,"showTransparentBorders":false,"clipEnabled":true,"debugOverlay":false},"root":{"kind":"leaf","bounds":{"x":0,"y":0,"width":0,"height":0},"ops":[]}}';
   }
 
+  /**
+   * 페이지가 그리는 그림들의 신원 키만 받는다 (Task #3315).
+   *
+   * "그림이 그대로면 앞서 만든 디코드 결과를 재사용"을 판정하는 서명이다. 같은 판정을
+   * PageLayerTree JSON 으로 하면 그림 1장에 수 MB 를 다시 받아 훑어야 한다.
+   * 구형 WASM(키 조회 미지원)에서는 `null` — 호출부는 종전대로 매번 다시 계산한다.
+   */
+  getPageSourceImageKeys(pageNum: number): string | null {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { getPageSourceImageKeys?: (p: number) => string };
+    if (typeof d.getPageSourceImageKeys !== 'function') return null;
+    try {
+      return d.getPageSourceImageKeys(pageNum);
+    } catch {
+      return null;
+    }
+  }
+
   getPageLayerTreeObject(pageNum: number, profile: LayerRenderProfile = 'screen'): PageLayerTree {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as {
