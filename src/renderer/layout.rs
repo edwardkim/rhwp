@@ -2488,6 +2488,16 @@ impl LayoutEngine {
         }) {
             self.substitute_page_auto_numbers_in_composed(para, &mut comp, page_number);
         }
+        if para.controls.iter().any(|ctrl| {
+            matches!(ctrl, Control::AutoNumber(an)
+                if an.number_type == crate::model::control::AutoNumberType::TotalPage)
+        }) {
+            self.substitute_total_page_auto_numbers_in_composed(
+                para,
+                &mut comp,
+                self.total_pages.get(),
+            );
+        }
         comp
     }
 
@@ -2577,21 +2587,60 @@ impl LayoutEngine {
         comp: &mut ComposedParagraph,
         page_number: u32,
     ) {
-        if page_number == 0 {
+        self.substitute_auto_number_type_in_composed(
+            para,
+            comp,
+            crate::model::control::AutoNumberType::Page,
+            page_number,
+        );
+    }
+
+    /// `AutoNumber(TotalPage)` 컨트롤의 placeholder 문자를 문서 총 쪽수로 치환한다.
+    ///
+    /// HWP atno 컨트롤의 번호 종류(표 144) 값 6은 "총 쪽수" 필드다. 과거엔 파서가 이
+    /// 값을 인식하지 못해 Page로 폴백했고, 렌더러도 Page 치환만 수행해서 꼬리말의
+    /// 총 쪽수 상자가 현재 쪽번호와 같은 값을 두 번 표시했다 (예: "3/8" 이어야 할 것이
+    /// "3/3"으로 표시).
+    pub(crate) fn substitute_total_page_auto_numbers_in_composed(
+        &self,
+        para: &Paragraph,
+        comp: &mut ComposedParagraph,
+        total_pages: u32,
+    ) {
+        self.substitute_auto_number_type_in_composed(
+            para,
+            comp,
+            crate::model::control::AutoNumberType::TotalPage,
+            total_pages,
+        );
+    }
+
+    fn substitute_auto_number_type_in_composed(
+        &self,
+        para: &Paragraph,
+        comp: &mut ComposedParagraph,
+        an_type: crate::model::control::AutoNumberType,
+        value: u32,
+    ) {
+        if value == 0 {
             return;
         }
 
-        let page_str = page_number.to_string();
+        let value_str = value.to_string();
 
-        let mut positions = self.page_auto_number_placeholder_positions(para);
+        let mut positions = self.auto_number_placeholder_positions(para, an_type);
         positions.sort_unstable();
         positions.dedup();
         for pos in positions.into_iter().rev() {
-            Self::replace_composed_char_with_display(comp, pos, &page_str);
+            Self::replace_composed_char_with_display(comp, pos, &value_str);
         }
     }
 
-    fn page_auto_number_placeholder_positions(&self, para: &Paragraph) -> Vec<usize> {
+    fn auto_number_placeholder_positions(
+        &self,
+        para: &Paragraph,
+        an_type: crate::model::control::AutoNumberType,
+    ) -> Vec<usize> {
         let ctrl_positions = crate::document_core::helpers::find_control_text_positions(para);
         let text_chars: Vec<char> = para.text.chars().collect();
         let mut positions = Vec::new();
@@ -2600,8 +2649,7 @@ impl LayoutEngine {
         for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
             if !matches!(
                 ctrl,
-                Control::AutoNumber(an)
-                    if an.number_type == crate::model::control::AutoNumberType::Page
+                Control::AutoNumber(an) if an.number_type == an_type
             ) {
                 continue;
             }

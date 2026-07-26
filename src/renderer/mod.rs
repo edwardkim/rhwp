@@ -1182,6 +1182,9 @@ impl AutoNumberCounter {
                 self.page += 1;
                 self.page
             }
+            // 총 쪽수는 카운터로 증가시키는 값이 아니라 페이지네이션이 끝난 뒤
+            // 알려지는 문서 전체 쪽수를 그대로 표시하는 필드라 여기서 처리하지 않는다.
+            AutoNumberType::TotalPage => 0,
         }
     }
 
@@ -1194,6 +1197,7 @@ impl AutoNumberCounter {
             AutoNumberType::Footnote => self.footnote,
             AutoNumberType::Endnote => self.endnote,
             AutoNumberType::Page => self.page,
+            AutoNumberType::TotalPage => 0,
         }
     }
 

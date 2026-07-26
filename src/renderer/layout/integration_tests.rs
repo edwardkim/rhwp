@@ -2382,4 +2382,60 @@ mod tests {
             y
         );
     }
+
+    /// exam_eng.hwp 꼬리말 쪽번호 상자 "현재쪽/총쪽수" 회귀 테스트.
+    ///
+    /// HWP atno 컨트롤(표 144)의 "번호 종류" 값 6은 총 쪽수(TotalPage) 필드다.
+    /// 과거엔 파서가 이 값을 인식하지 못해 Page로 폴백했고, 렌더러도 Page 치환만
+    /// 수행해서 꼬리말 쪽번호 상자가 "현재쪽\n현재쪽" 을 표시했다
+    /// (예: 3페이지에서 "3\n3", 6페이지에서 "6\n6" — "3\n8", "6\n8" 이어야 함).
+    ///
+    /// samples/exam_eng.hwp는 총 8페이지이며 각 페이지 텍스트 말미에
+    /// "제 3 교시\n홀수형\n<현재쪽>\n<총쪽수>" 형태의 꼬리말이 들어간다.
+    #[test]
+    fn test_footer_total_page_field_distinct_from_current_page() {
+        let Some(core) = load_document("samples/exam_eng.hwp") else {
+            return;
+        };
+
+        let page_count = core.page_count();
+        assert_eq!(page_count, 8, "exam_eng.hwp는 8페이지여야 함");
+
+        for page_idx in 0..page_count {
+            let text = core
+                .extract_page_text_native(page_idx)
+                .unwrap_or_else(|e| panic!("페이지 {} 텍스트 추출 실패: {:?}", page_idx, e));
+            let trimmed = text.trim_end();
+            let last_two: Vec<&str> = trimmed
+                .rsplit('\n')
+                .take(2)
+                .collect::<Vec<_>>()
+                .into_iter()
+                .rev()
+                .collect();
+            assert_eq!(
+                last_two.len(),
+                2,
+                "페이지 {} 꼬리말 끝에서 두 줄(현재쪽/총쪽수)을 찾지 못함: {:?}",
+                page_idx,
+                trimmed
+            );
+            let current = last_two[0];
+            let total = last_two[1];
+            assert_eq!(
+                current,
+                (page_idx + 1).to_string(),
+                "페이지 {} 꼬리말 현재쪽번호가 {}이어야 함 (실제: {:?})",
+                page_idx,
+                page_idx + 1,
+                current
+            );
+            assert_eq!(
+                total, "8",
+                "페이지 {} 꼬리말 총쪽수가 8이어야 함 (실제: {:?}) — \
+                 AutoNumberType::TotalPage 미치환 시 current와 동일한 값이 찍힌다",
+                page_idx, total
+            );
+        }
+    }
 }

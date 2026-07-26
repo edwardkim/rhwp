@@ -711,6 +711,9 @@ pub(crate) fn assign_auto_numbers(doc: &mut Document) {
             AutoNumberType::Picture => 3,
             AutoNumberType::Table => 4,
             AutoNumberType::Equation => 5,
+            // 총 쪽수는 여기서 카운터로 다루지 않는 페이지네이션 후 계산값이라
+            // Page와 같은 슬롯을 공유해도 무해하다 (아래 순회에서 실사용되지 않음).
+            AutoNumberType::TotalPage => 0,
         }
     }
 
