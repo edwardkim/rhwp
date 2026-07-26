@@ -312,6 +312,22 @@ fn show_capabilities(args: &[String]) -> i32 {
             "json": true, "batch": batch, "flags": flags, "recordFields": record_fields,
         })
     }
+    /// [#3357] feature 게이트 명령 — 빌드에 따라 실행 가능 여부가 달라지므로 자기서술이
+    /// 가용성을 명시한다. 두 필드는 빌드와 무관하게 항상 방출되고 값만 달라진다
+    /// (스키마 안정성). 매니페스트만 보고 호출을 생성하는 에이전트가 exit 2 를
+    /// 밟기 전에 알 수 있게 한다.
+    fn cmd_gated(
+        name: &str,
+        category: &str,
+        summary: &str,
+        requires_feature: &str,
+        available: bool,
+    ) -> serde_json::Value {
+        serde_json::json!({
+            "name": name, "category": category, "summary": summary,
+            "requiresFeature": requires_feature, "available": available,
+        })
+    }
 
     let commands = vec![
         // ── 기계 계약(--json) 명령 ──
@@ -381,10 +397,12 @@ fn show_capabilities(args: &[String]) -> i32 {
                 "pages",
             ],
         ),
-        cmd(
+        cmd_gated(
             "export-png",
             "export",
             "문서를 페이지별 PNG로 렌더 (native-skia)",
+            "native-skia",
+            cfg!(feature = "native-skia"),
         ),
         cmd(
             "export-pdf",

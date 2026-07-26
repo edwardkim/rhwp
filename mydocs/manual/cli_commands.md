@@ -248,6 +248,9 @@ HWP5 raw record 덤프(DocInfo/BodyText 레코드 트리).
 JSON 계약·종료 코드를 파악하는 입구.
 `{"schemaVersion":"1.0","tool","version","formats","exitCodes","jsonContract","batch","commands":[{name,category,summary,...}]}`
 - `--json` 계약 명령(info/export-text/export-structure/batch)은 `json:true`·`recordFields` 로 상세 서술
+- feature 게이트 명령(export-png)은 `requiresFeature`·`available` 을 항상 방출한다 (#3357) —
+  값은 빌드 실측과 일치하며(`available:false` 빌드에서만 기능 부재 오류), 매니페스트만 보고
+  호출을 생성하는 에이전트가 사전에 걸러낼 수 있다
 - `--help`(사람용)와 함께 현행화한다 — help 에만 추가된 명령은 드리프트 가드 테스트가 잡는다
 
 #### `capabilities --mcp` — MCP 도구 정의 생성
