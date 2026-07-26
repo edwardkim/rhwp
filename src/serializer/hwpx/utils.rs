@@ -70,6 +70,9 @@ pub fn text<W: Write>(w: &mut Writer<W>, content: &str) -> Result<(), SerializeE
 }
 
 /// XML 속성·텍스트 이스케이프 (&, <, >, ", ')
+///
+/// XML 1.0 이 문서에 담을 수 없는 문자(제어문자 등)는 제거한다 — 남겨 두면 저장된
+/// HWPX 안의 XML 이 불법이 되어 한컴·뷰어가 파일 자체를 열지 못한다 (#3382 계열).
 pub fn xml_escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
@@ -79,8 +82,39 @@ pub fn xml_escape(s: &str) -> String {
             '>' => out.push_str("&gt;"),
             '"' => out.push_str("&quot;"),
             '\'' => out.push_str("&apos;"),
-            _ => out.push(c),
+            // XML 1.0 허용 문자: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+            '\u{09}' | '\u{0A}' | '\u{0D}' => out.push(c),
+            '\u{20}'..='\u{D7FF}' | '\u{E000}'..='\u{FFFD}' | '\u{10000}'..='\u{10FFFF}' => {
+                out.push(c)
+            }
+            _ => {} // XML 무효 문자 제거
         }
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn xml_escape_drops_xml_invalid_control_chars() {
+        // #3382 계열: 저장 경로에서 제어문자를 그대로 흘리면 section0.xml 이 불법 XML 이 되어
+        // 한컴·뷰어가 파일 자체를 열지 못한다. (HWPX→HWP5 변환 등으로 IR 에 0x03 이 유입된 실측 사례)
+        assert_eq!(xml_escape("a\u{03}b"), "ab");
+        for c in ['\u{00}', '\u{08}', '\u{0B}', '\u{0C}', '\u{0E}', '\u{1F}'] {
+            assert_eq!(
+                xml_escape(&format!("x{c}y")),
+                "xy",
+                "control {:#04x}",
+                c as u32
+            );
+        }
+        assert_eq!(xml_escape("a\u{FFFE}\u{FFFF}b"), "ab");
+        // 탭·개행·복귀는 XML 1.0 허용 문자이므로 유지
+        assert_eq!(xml_escape("a\tb\nc\rd"), "a\tb\nc\rd");
+        // 기존 마크업 이스케이프·한글·non-BMP 는 무회귀
+        assert_eq!(xml_escape("<a & b>\"'"), "&lt;a &amp; b&gt;&quot;&apos;");
+        assert_eq!(xml_escape("한글 A\u{1F600}"), "한글 A\u{1F600}");
+    }
 }

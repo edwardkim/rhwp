@@ -60,7 +60,22 @@ pub fn field_begin_open_tag(field: &Field) -> String {
 }
 
 fn xml_escape_attr(s: &str) -> String {
-    s.replace('&', "&amp;")
+    // XML 1.0 이 담을 수 없는 문자(제어문자 등)를 먼저 제거한다 — 남겨 두면 저장된 HWPX 안의
+    // XML 이 불법이 되어 한컴·뷰어가 파일 자체를 열지 못한다 (#3382 계열).
+    s.chars()
+        .filter(|c| {
+            matches!(
+                c,
+                '\u{09}'
+                    | '\u{0A}'
+                    | '\u{0D}'
+                    | '\u{20}'..='\u{D7FF}'
+                    | '\u{E000}'..='\u{FFFD}'
+                    | '\u{10000}'..='\u{10FFFF}'
+            )
+        })
+        .collect::<String>()
+        .replace('&', "&amp;")
         .replace('<', "&lt;")
         .replace('>', "&gt;")
         .replace('"', "&quot;")

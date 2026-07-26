@@ -50,6 +50,22 @@ impl Node {
     fn escape_text(value: impl ToString) -> String {
         value
             .to_string()
+            .chars()
+            // XML 1.0 허용 문자만 남긴다: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] |
+            // [#x10000-#x10FFFF]. 제어문자를 그대로 흘리면 방출된 SVG 가 불법 XML 이 되어
+            // 뷰어가 렌더를 중단한다 (#3382).
+            .filter(|c| {
+                matches!(
+                    c,
+                    '\u{09}'
+                        | '\u{0A}'
+                        | '\u{0D}'
+                        | '\u{20}'..='\u{D7FF}'
+                        | '\u{E000}'..='\u{FFFD}'
+                        | '\u{10000}'..='\u{10FFFF}'
+                )
+            })
+            .collect::<String>()
             .replace('&', "&amp;")
             .replace('<', "&lt;")
             .replace('>', "&gt;")

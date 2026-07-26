@@ -267,7 +267,13 @@ fn escape_xml_text(value: &str) -> String {
             '>' => escaped.push_str("&gt;"),
             '"' => escaped.push_str("&quot;"),
             '\'' => escaped.push_str("&apos;"),
-            _ => escaped.push(ch),
+            // XML 1.0 허용 문자: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+            // 그 외(제어문자, U+FFFE, U+FFFF 등)는 제거 — 방출된 SVG 가 불법 XML 이 되지 않도록 (#3382)
+            '\u{09}' | '\u{0A}' | '\u{0D}' => escaped.push(ch),
+            '\u{20}'..='\u{D7FF}' | '\u{E000}'..='\u{FFFD}' | '\u{10000}'..='\u{10FFFF}' => {
+                escaped.push(ch)
+            }
+            _ => {} // XML 무효 문자 제거
         }
     }
     escaped
