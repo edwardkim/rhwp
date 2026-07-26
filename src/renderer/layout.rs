@@ -3070,6 +3070,23 @@ impl LayoutEngine {
                             let target_node = temp_parent.as_mut().unwrap_or(&mut mp_node);
                             match ctrl {
                                 Control::Shape(_) | Control::Equation(_) => {
+                                    // [바탕쪽 col_area] 바탕쪽에는 단(column)·문단 흐름이
+                                    // 없다. `Para`/`Column` 기준 가로 위치는 물리 용지가
+                                    // 아니라 본문 텍스트 영역을 기준으로 해석해야 한다
+                                    // (한컴 정합). col_area 로 paper_area 를 그대로 넘기면
+                                    // Para-Left 개체가 용지 좌단(x=0), Para-Right 개체가
+                                    // 용지 우단(x=용지폭)에 붙어 좌우 여백 밖으로 튄다
+                                    // (머리말 쪽번호/홀수형 상자). 세로 기준은 기존 동작을
+                                    // 보존하기 위해 용지 y/height 를 유지하고, 가로(x/width)
+                                    // 만 본문 영역으로 교정한다. `Paper`/`Page` 기준은
+                                    // compute_object_position 에서 paper_area/body_area 를
+                                    // 직접 쓰므로 이 값에 영향받지 않는다.
+                                    let master_col_area = LayoutRect {
+                                        x: body_area.x,
+                                        y: paper_area.y,
+                                        width: body_area.width,
+                                        height: paper_area.height,
+                                    };
                                     self.layout_shape(
                                         tree,
                                         target_node,
@@ -3078,7 +3095,7 @@ impl LayoutEngine {
                                         ci,
                                         section_index,
                                         styles,
-                                        &paper_area,
+                                        &master_col_area,
                                         body_area,
                                         &paper_area,
                                         paper_area.y,
@@ -6403,7 +6420,25 @@ impl LayoutEngine {
                         .map(|c| compute_tac_leading_width(c, control_index, styles))
                         .unwrap_or(0.0)
                 };
-                let base_x = col_area.x + effective_margin + leading;
+                // [Issue #3396] 한글은 TAC 표를 "문자"로 취급해 advance =
+                // outMargin.left + 표폭 + outMargin.right 로 잡고, 괘선(테두리)은
+                // pen + outMargin.left 에 그린다 (오라클 실측: 156678235 p1 JUSTIFY
+                // 표 좌측 괘선 = col_x + om_l, p5 RIGHT 표 우측 괘선 =
+                // 우측 여백 - om_r, 표+여백이 단폭을 넘어도 클램프 없음).
+                // 단, U+F081C 필러 기반 leading(compute_tac_leading_width)이 있는
+                // 케이스는 [#1195] 한컴 실측으로 보정된 별도 축이라 om 을 겹치면
+                // 이중 가산이 된다 (복학원서 접수증 오라클 실측: 한컴 ※ 81.7 vs
+                // rhwp leading 포함 86.9 — leading 축 자체의 잔차가 미해결이므로
+                // 그 케이스는 종전 위치를 유지한다).
+                let (om_l, om_r) = if leading > 0.0 {
+                    (0.0, 0.0)
+                } else {
+                    (
+                        hwpunit_to_px(t.outer_margin_left as i32, self.dpi),
+                        hwpunit_to_px(t.outer_margin_right as i32, self.dpi),
+                    )
+                };
+                let base_x = col_area.x + effective_margin + leading + om_l;
                 // [Issue #291] ParaShape align 반영:
                 // TAC 표가 inline_shape_position 미설정 상태에서 단/문단 좌측에
                 // 붙어버리는 회귀를 막는다. ParaShape align=Right 인 경우 표를
@@ -6413,15 +6448,34 @@ impl LayoutEngine {
                     Some(crate::model::style::Alignment::Right) => {
                         let tbl_w = hwpunit_to_px(t.common.width as i32, self.dpi);
                         let avail_right = col_area.x + col_area.width - margin_right;
-                        (avail_right - tbl_w).max(base_x)
+                        (avail_right - om_r - tbl_w).max(base_x)
                     }
                     Some(crate::model::style::Alignment::Center) => {
                         let tbl_w = hwpunit_to_px(t.common.width as i32, self.dpi);
-                        let center = col_area.x + (col_area.width - tbl_w) / 2.0;
+                        let center =
+                            col_area.x + (col_area.width - tbl_w) / 2.0 + (om_l - om_r) / 2.0;
                         center.max(base_x)
                     }
                     _ => base_x,
                 };
+                if std::env::var("RHWP_DIAG_TACX").is_ok() {
+                    eprintln!(
+                        "DIAG_TACX pi={} ci={} align={:?} base_x={:.2} aligned_x={:.2} tblw={:.2} om_l={} om_r={} col_x={:.2} col_w={:.2} eff_ml={:.2} mr={:.2} leading={:.2}",
+                        para_index,
+                        control_index,
+                        alignment,
+                        base_x,
+                        aligned_x,
+                        hwpunit_to_px(t.common.width as i32, self.dpi),
+                        t.outer_margin_left,
+                        t.outer_margin_right,
+                        col_area.x,
+                        col_area.width,
+                        effective_margin,
+                        margin_right,
+                        leading,
+                    );
+                }
                 Some(aligned_x)
             } else {
                 None

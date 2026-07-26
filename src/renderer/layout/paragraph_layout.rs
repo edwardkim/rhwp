@@ -1360,6 +1360,18 @@ impl LayoutEngine {
                 total
             })
             .collect();
+        // [Issue #3396] 한글은 TAC 표를 "outMargin 포함 폭의 문자"로 배치한다 —
+        // 정렬/전진 폭에는 outMargin 좌/우가 포함되고, 괘선(테두리)은
+        // pen + outMargin.left 에 그려진다 (오라클 실측: 156678235 p1/p5/p7).
+        let table_om_px: Vec<(f64, f64)> = inline_tables
+            .iter()
+            .map(|(_, t)| {
+                (
+                    hwpunit_to_px(t.outer_margin_left as i32, self.dpi),
+                    hwpunit_to_px(t.outer_margin_right as i32, self.dpi),
+                )
+            })
+            .collect();
 
         // 4b. 텍스트 세그먼트 폭 계산
         let char_style_id = para
@@ -1396,8 +1408,10 @@ impl LayoutEngine {
             })
             .collect();
 
-        // 5. 총 폭과 정렬 계산
-        let total_width: f64 = seg_widths.iter().sum::<f64>() + table_widths.iter().sum::<f64>();
+        // 5. 총 폭과 정렬 계산 (TAC 표는 outMargin 좌/우 포함 폭 — Issue #3396)
+        let total_width: f64 = seg_widths.iter().sum::<f64>()
+            + table_widths.iter().sum::<f64>()
+            + table_om_px.iter().map(|(l, r)| l + r).sum::<f64>();
         let available_width = col_area.width - margin_left - margin_right;
         let start_x = match alignment {
             Alignment::Center | Alignment::Distribute => {
@@ -1806,6 +1820,7 @@ impl LayoutEngine {
                     current_y += line_step;
                     inline_x = line_start_x;
                 }
+                let (om_left, om_right) = table_om_px[table_idx];
                 let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
                 let tbl_y = (current_y + baseline_dist + om_bottom - tbl_h).max(current_y);
 
@@ -1826,7 +1841,7 @@ impl LayoutEngine {
                     None,
                     0.0,
                     0.0,
-                    Some(inline_x),
+                    Some(inline_x + om_left),
                     None,
                     table_para_y,
                     false,
@@ -1841,7 +1856,7 @@ impl LayoutEngine {
                     inline_x = line_start_x;
                     wrapped_below_table = true;
                 } else {
-                    inline_x += tw;
+                    inline_x += tw + om_left + om_right;
                 }
                 table_idx += 1;
             }
@@ -1854,6 +1869,7 @@ impl LayoutEngine {
                 .iter()
                 .find(|mt| mt.para_index == para_index && mt.control_index == *ctrl_idx);
             let tw = table_widths[table_idx];
+            let (om_left, om_right) = table_om_px[table_idx];
             let tbl_h = mt
                 .map(|m| m.total_height)
                 .unwrap_or_else(|| hwpunit_to_px(tbl.common.height as i32, self.dpi));
@@ -1877,7 +1893,7 @@ impl LayoutEngine {
                 None,
                 0.0,
                 0.0,
-                Some(inline_x),
+                Some(inline_x + om_left),
                 None,
                 table_para_y,
                 false,
@@ -1887,7 +1903,7 @@ impl LayoutEngine {
                 max_table_bottom = table_bottom;
             }
 
-            inline_x += tw;
+            inline_x += tw + om_left + om_right;
             table_idx += 1;
         }
 
@@ -4790,6 +4806,13 @@ impl LayoutEngine {
                 // shape_layout 이 inline_shape_position 을 보고 별도 패스에서 렌더하므로 중복되지 않는다.
 
                 for &(tac_rel, tac_w, tac_ci) in &run_tacs {
+                    // [Issue #3396] 한글은 TAC 표를 "outMargin 포함 폭의 문자"로
+                    // 배치한다 — 괘선(테두리)은 pen + outMargin.left 에 그려지고,
+                    // 다음 문자는 outMargin.right 뒤에서 시작한다 (오라클 실측:
+                    // 156678235 JUSTIFY 표 좌측 괘선 = 흐름 x + om_l). tac_w
+                    // (composer 열폭 합)는 측정 경로 공유값이라 여기 렌더 전진에서만
+                    // 보정한다. 아래 표 분기에서 채워진다.
+                    let mut tac_table_om = (0.0f64, 0.0f64);
                     // tac 앞 텍스트 세그먼트 렌더링
                     if seg_start < tac_rel {
                         let seg_text: String = run_chars[seg_start..tac_rel].iter().collect();
@@ -5072,6 +5095,14 @@ impl LayoutEngine {
                                     cell_ctx.as_ref(),
                                 )
                                 .is_some();
+                            if t.common.treat_as_char && should_render_inline {
+                                // [Issue #3396] 렌더 여부와 무관하게 이 줄에서 표가
+                                // 문자로 취급되면 전진 폭에 outMargin 좌/우를 포함.
+                                tac_table_om = (
+                                    hwpunit_to_px(t.outer_margin_left as i32, self.dpi),
+                                    hwpunit_to_px(t.outer_margin_right as i32, self.dpi),
+                                );
+                            }
                             if t.common.treat_as_char && should_render_inline && !already_rendered {
                                 let table_h = hwpunit_to_px(t.common.height as i32, self.dpi);
                                 let om_bottom =
@@ -5110,7 +5141,7 @@ impl LayoutEngine {
                                     nested_ctx,
                                     0.0,
                                     0.0,
-                                    Some(x),
+                                    Some(x + tac_table_om.0),
                                     None,
                                     None,
                                     false,
@@ -5122,7 +5153,7 @@ impl LayoutEngine {
                                     para_index,
                                     tac_ci,
                                     cell_ctx.as_ref(),
-                                    x,
+                                    x + tac_table_om.0,
                                     table_y,
                                 );
                             }
@@ -5164,8 +5195,8 @@ impl LayoutEngine {
                             line_node.children.push(form_node);
                         }
                     }
-                    // tac 폭만큼 x 전진
-                    x += tac_w;
+                    // tac 폭만큼 x 전진 (+ TAC 표 outMargin 좌/우 — Issue #3396)
+                    x += tac_w + tac_table_om.0 + tac_table_om.1;
                     sub_char_offset += 1;
                     seg_start = tac_rel;
                 }
