@@ -360,6 +360,26 @@ rhwp edit replace-text 공문.hwp --find "2025년" --replace "2026년" -o 개정
 rhwp search 개정본.hwp "2025년" --json | jq .matchCount     # → 0 이어야 함
 ```
 
+### `edit set-cell <파일> --table <번호> --row <행> --col <열> --text <문자열> [옵션]` (#3381)
+표 격자 좌표로 셀 값을 바꾼다 — **누름틀 없는 실물 표 양식 채우기**(실측: 배포 정부 양식은
+누름틀 0·표 53 구조가 표준형이다). 좌표계는 `export-tables` 격자와 동일해 발견→편집→재독
+검증이 같은 주소로 닫힌다. 검증된 코어 셀 편집 경로를 재사용하므로 새 편집 로직이 없다.
+- `--table/--row/--col` — `export-tables` 의 `index`/`row`/`col` (0부터, 본문 최상위 표)
+- `--text <문자열>` — 셀에 넣을 값 (`""` 비우기, 줄바꿈·탭 불가 — v1 단일 문단 교체)
+- `-o, --output <파일>` — 출력 파일 (기본 `<입력명>_cell.hwp`)
+- `--dry-run` — **파일을 쓰지 않고** `oldText`→`newText` 예고
+- `--json` 봉투: `{"schemaVersion":"1.0","source","table","row","col","oldText","newText","dryRun","output"?}`
+- **병합으로 덮인 칸**은 앵커 좌표 안내와 함께 exit 2. 격자 밖 좌표 exit 2.
+- **실패 시 원본 불변**: 셀 기록·직렬화·쓰기 실패 시 출력 없이 exit 1.
+- v1 범위: 본문 최상위 표·셀 첫 문단 (중첩 표·다문단 셀은 후속).
+
+```bash
+# 발견 → 기록 → 재독 검증 (전 과정 같은 좌표계)
+rhwp export-tables 양식.hwpx --json | jq '.tables[0].cells[:4]'
+rhwp edit set-cell 양식.hwpx --table 0 --row 2 --col 1 --text "1,234" -o 작성본.hwp --json
+rhwp export-tables 작성본.hwp --json | jq '.tables[0].cells[] | select(.row==2 and .col==1).text'
+```
+
 ---
 
 ## 3. 변환·비교

@@ -293,6 +293,26 @@ fn show_mcp_tools() -> i32 {
             serde_json::json!(["edit", "replace-text", "{path}", "--find", "{find}", "--replace", "{replace}", "--json"]),
             &["schemaVersion", "source", "find", "replace", "caseSensitive", "dryRun", "replacedCount", "output"],
         ),
+        tool(
+            "hwp_set_cell",
+            "HWP 표의 격자 좌표(hwp_export_tables 와 동일)로 셀 값을 바꿔 새 문서를 만든다 — 누름틀 없는 실물 표 양식 채우기. 먼저 hwp_export_tables 로 좌표를 확인한 뒤 사용한다. 병합으로 덮인 칸은 앵커 좌표를 안내하며 실패한다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWP/HWPX 문서 경로" },
+                    "table": { "type": "integer", "minimum": 0, "description": "본문 최상위 표 번호 (export-tables 의 index)" },
+                    "row": { "type": "integer", "minimum": 0, "description": "행 (0부터)" },
+                    "col": { "type": "integer", "minimum": 0, "description": "열 (0부터)" },
+                    "text": { "type": "string", "description": "셀에 넣을 값 (빈 문자열이면 비우기)" },
+                    "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_cell.hwp" },
+                    "dryRun": { "type": "boolean", "description": "true 면 파일을 쓰지 않고 old→new 만 보고" }
+                },
+                "required": ["path", "table", "row", "col", "text"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--text", "{text}", "--json"]),
+            &["schemaVersion", "source", "table", "row", "col", "oldText", "newText", "dryRun", "output"],
+        ),
     ];
 
     let manifest = serde_json::json!({
@@ -494,13 +514,17 @@ fn show_capabilities(args: &[String]) -> i32 {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 값 채우기 / replace-text: 일괄 치환",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환 / set-cell: 표 셀 기록",
             false,
             &[
                 "--data",
                 "--find",
                 "--replace",
                 "--ignore-case",
+                "--table",
+                "--row",
+                "--col",
+                "--text",
                 "-o",
                 "--dry-run",
                 "--json",
@@ -513,6 +537,11 @@ fn show_capabilities(args: &[String]) -> i32 {
                 "filled",
                 "notFound",
                 "replacedCount",
+                "table",
+                "row",
+                "col",
+                "oldText",
+                "newText",
                 "output",
             ],
         ),
@@ -890,6 +919,16 @@ fn print_help() {
     println!("      --dry-run                 파일을 쓰지 않고 치환 예정 건수만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!("      치환 0건이면 출력 파일을 만들지 않음");
+    println!();
+    println!("  edit set-cell <파일> --table <번호> --row <행> --col <열> --text <문자열> [옵션]");
+    println!("      표 격자 좌표로 셀 값을 바꾼다 (실물 표 양식 채우기)");
+    println!();
+    println!("      --table/--row/--col       export-tables 격자와 같은 좌표 (0부터)");
+    println!("      --text <문자열>           셀에 넣을 값 (비우기는 \"\", 줄바꿈·탭 불가)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cell.hwp)");
+    println!("      --dry-run                 파일을 쓰지 않고 old→new 만 보고");
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!("      병합으로 덮인 칸은 앵커 좌표 안내와 함께 오류 종료");
     println!();
     println!("내부 개발·회귀 도구 (일반 사용자 대상 아님):");
     println!("  test-caption <파일.hwp>             캡션 라운드트립 검증");
@@ -7690,11 +7729,12 @@ fn ir_diff(args: &[String]) -> i32 {
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text> <파일.hwp> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell> <파일.hwp> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
         Some("replace-text") => edit_replace_text(&args[1..]),
+        Some("set-cell") => edit_set_cell(&args[1..]),
         Some(other) => {
             eprintln!("오류: 알 수 없는 edit 하위 명령 - {}", other);
             eprintln!("{USAGE}");
@@ -8056,6 +8096,291 @@ fn edit_replace_text(args: &[String]) -> i32 {
         println!(
             "치환 완료: {} → {} — {:?} → {:?} ({}건)",
             file_path, output_path, find, replace, replaced_count
+        );
+    }
+    EXIT_OK
+}
+
+/// `edit set-cell` — 표 격자 좌표로 셀 값을 바꾼다 (실물 표 양식 채우기).
+///
+/// [#3381] 좌표계는 `export-tables` 격자와 동일하다 — 발견과 편집이 같은 주소를 쓴다.
+/// 검증된 코어 셀 편집 경로(delete/insert_text_in_cell)를 재사용하므로 새 편집 로직이
+/// 없다. v1 범위: 본문 최상위 표, 셀 첫 문단 교체(중첩 표·다문단 셀은 후속).
+fn edit_set_cell(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut table_arg: Option<usize> = None;
+    let mut row_arg: Option<u16> = None;
+    let mut col_arg: Option<u16> = None;
+    let mut text_arg: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--table" | "--row" | "--col" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i).and_then(|v| v.parse::<u32>().ok()) else {
+                    eprintln!("오류: {} 뒤에 0 이상의 정수가 필요합니다.", name);
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--table" => table_arg = Some(v as usize),
+                    "--row" => row_arg = Some(v as u16),
+                    _ => col_arg = Some(v as u16),
+                }
+            }
+            "--text" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => text_arg = Some(v),
+                    None => {
+                        eprintln!(
+                            "오류: --text 뒤에 셀에 넣을 문자열이 필요합니다 (비우기는 \"\")."
+                        );
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+
+    let (Some(file_path), Some(table_no), Some(row), Some(col), Some(new_text)) =
+        (file_path, table_arg, row_arg, col_arg, text_arg)
+    else {
+        eprintln!(
+            "사용법: rhwp edit set-cell <파일> --table <번호> --row <행> --col <열> --text <문자열> [-o <출력>] [--dry-run] [--json]"
+        );
+        return EXIT_USAGE;
+    };
+    if new_text.chars().any(|ch| matches!(ch, '\r' | '\n' | '\t')) {
+        eprintln!("오류: --text 에 줄바꿈·탭은 넣을 수 없습니다 (한 줄 값 기록).");
+        return EXIT_USAGE;
+    }
+
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    // 격자 주소(export-tables 좌표) → 모델 좌표. 병합으로 덮인 칸은 앵커가 아니므로
+    // 모델 셀 순회로 (row,col) 앵커를 직접 찾는다 (격자 배열 위치는 손상 방어 필터
+    // 때문에 모델 인덱스와 어긋날 수 있어 쓰지 않는다).
+    enum Located {
+        Ok(usize, usize, usize, usize, Vec<usize>, String),
+        Fail(i32),
+    }
+    let located = {
+        use rhwp::document_core::queries::table_extract::extract_tables;
+        use rhwp::model::control::Control;
+        let document = doc.document();
+        let grids = extract_tables(document);
+        match grids
+            .iter()
+            .find(|g| g.index == table_no && g.container_path.is_empty())
+        {
+            None => {
+                let top_level = grids.iter().filter(|g| g.container_path.is_empty()).count();
+                eprintln!(
+                    "오류: 본문 최상위 표 {} 번이 없습니다 (최상위 표 {}개; 중첩 표는 v1 범위 밖).",
+                    table_no, top_level
+                );
+                Located::Fail(EXIT_RUNTIME)
+            }
+            Some(grid) => match document.sections[grid.section].paragraphs[grid.paragraph]
+                .controls
+                .get(grid.control)
+            {
+                Some(Control::Table(table)) => {
+                    if row >= table.row_count || col >= table.col_count {
+                        eprintln!(
+                            "오류: 좌표가 격자를 벗어났습니다 — 표 {} 는 {}x{} 입니다.",
+                            table_no, table.row_count, table.col_count
+                        );
+                        Located::Fail(EXIT_USAGE)
+                    } else {
+                        match table
+                            .cells
+                            .iter()
+                            .enumerate()
+                            .find(|(_, c)| c.row == row && c.col == col)
+                        {
+                            Some((cell_idx, c)) => {
+                                // 셀의 문단별 글자 수(전체 비우기용)와, export-tables 격자와
+                                // 같은 방식(줄바꿈 결합 + 트림)의 기존 텍스트를 모은다.
+                                let para_lens: Vec<usize> = c
+                                    .paragraphs
+                                    .iter()
+                                    .map(|p| p.text.chars().count())
+                                    .collect();
+                                let old_text = c
+                                    .paragraphs
+                                    .iter()
+                                    .map(|p| p.text.as_str())
+                                    .collect::<Vec<_>>()
+                                    .join("\n")
+                                    .trim()
+                                    .to_string();
+                                Located::Ok(
+                                    grid.section,
+                                    grid.paragraph,
+                                    grid.control,
+                                    cell_idx,
+                                    para_lens,
+                                    old_text,
+                                )
+                            }
+                            None => {
+                                let anchor = table.cells.iter().find(|c| {
+                                    c.row <= row
+                                        && row < c.row + c.row_span
+                                        && c.col <= col
+                                        && col < c.col + c.col_span
+                                });
+                                match anchor {
+                                    Some(a) => eprintln!(
+                                        "오류: ({},{}) 는 병합으로 덮인 칸입니다 — 앵커 ({},{}) 를 지정하세요.",
+                                        row, col, a.row, a.col
+                                    ),
+                                    None => eprintln!("오류: ({},{}) 위치에 셀이 없습니다.", row, col),
+                                }
+                                Located::Fail(EXIT_USAGE)
+                            }
+                        }
+                    }
+                }
+                _ => {
+                    eprintln!("오류: 표 컨트롤 좌표 해석 실패 (내부 불일치).");
+                    Located::Fail(EXIT_RUNTIME)
+                }
+            },
+        }
+    };
+    let (sec, para, ctrl, cell_idx, para_lens, old_text) = match located {
+        Located::Ok(a, b, c, d, e, f) => (a, b, c, d, e, f),
+        Located::Fail(code) => return code,
+    };
+
+    if !dry_run {
+        // 셀의 모든 문단 텍스트를 비운다 (다문단 셀 — 빈 문단 골격은 유지된다).
+        for (pi, len) in para_lens.iter().enumerate() {
+            if *len == 0 {
+                continue;
+            }
+            if let Err(e) = doc.delete_text_in_cell(
+                sec as u32,
+                para as u32,
+                ctrl as u32,
+                cell_idx as u32,
+                pi as u32,
+                0,
+                *len as u32,
+            ) {
+                eprintln!("오류: 셀 비우기 실패(문단 {}) - {:?}", pi, e);
+                return EXIT_RUNTIME;
+            }
+        }
+        if !new_text.is_empty() {
+            if let Err(e) = doc.insert_text_in_cell(
+                sec as u32,
+                para as u32,
+                ctrl as u32,
+                cell_idx as u32,
+                0,
+                0,
+                new_text,
+            ) {
+                eprintln!("오류: 셀 쓰기 실패 - {:?}", e);
+                // 실패 시 원본 불변 — 출력 파일을 쓰지 않고 즉시 끝낸다.
+                return EXIT_RUNTIME;
+            }
+        }
+    }
+
+    let output_path = out_path.unwrap_or_else(|| {
+        let stem = Path::new(file_path)
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| "output".to_string());
+        format!("{}_cell.hwp", stem)
+    });
+
+    if !dry_run {
+        let out_bytes = match doc.export_hwp_native() {
+            Ok(b) => b,
+            Err(e) => {
+                eprintln!("오류: HWP 직렬화 실패 - {}", e);
+                return EXIT_RUNTIME;
+            }
+        };
+        if let Err(e) = fs::write(&output_path, &out_bytes) {
+            eprintln!("오류: 출력 쓰기 실패 - {}: {}", output_path, e);
+            return EXIT_RUNTIME;
+        }
+    }
+
+    if json_mode {
+        let mut envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "table": table_no,
+            "row": row,
+            "col": col,
+            "oldText": old_text,
+            "newText": new_text,
+            "dryRun": dry_run,
+        });
+        if !dry_run {
+            envelope["output"] = serde_json::Value::String(output_path.clone());
+        }
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
+    if dry_run {
+        println!(
+            "변경 예정: {} 표{} ({},{}) {:?} → {:?}",
+            file_path, table_no, row, col, old_text, new_text
+        );
+    } else {
+        println!(
+            "셀 기록 완료: {} → {} — 표{} ({},{}) {:?} → {:?}",
+            file_path, output_path, table_no, row, col, old_text, new_text
         );
     }
     EXIT_OK
