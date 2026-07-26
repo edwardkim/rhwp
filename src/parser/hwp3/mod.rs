@@ -412,8 +412,13 @@ pub(crate) fn convert_para_shape(
     ps
 }
 
-// [#2986] HWP3 ParaShape.border(has_border()) 플래그가 shade_ratio 처럼 border_fill_id로
-// 배선되지 않아, 문단 테두리가 켜져 있어도(음영 없이) 항상 소실되던 결함 수정.
+// [#3303] V3 문단 모양(표 13)에는 테두리 선 종류/굵기/색 필드가 없다(offset 181은
+// on/off 뿐). 한컴 2022는 border=1을 "선 없음"으로 매핑한다 — 한컴 자체 변환
+// SO-SUEOP.hwpx에서 paraPr/border → borderFill 4방향 type="NONE" 실측. 따라서
+// BorderFill 구조(참조·연결 속성)는 유지하되 선은 그리지 않는다. BorderLineType의
+// Rust default가 Solid라서 명시적으로 None을 채워야 하며(#2995의 Solid 합성이
+// 42쪽 지문 상자·음영 문단 좌우 세로선 오렌더의 뿌리였다), 음영(shade_ratio)
+// 경로도 같은 이유로 선은 항상 None이다.
 fn hwp3_para_shape_border_fill(
     hwp3_ps: &crate::parser::hwp3::records::Hwp3ParaShape,
 ) -> Option<crate::model::style::BorderFill> {
@@ -421,6 +426,9 @@ fn hwp3_para_shape_border_fill(
         return None;
     }
     let mut bf = crate::model::style::BorderFill::default();
+    for b in bf.borders.iter_mut() {
+        b.line_type = crate::model::style::BorderLineType::None;
+    }
     if hwp3_ps.shade_ratio > 0 {
         let ratio = hwp3_ps.shade_ratio.min(100) as u32;
         let gray = (255 * (100 - ratio) / 100) as u8;
@@ -431,11 +439,6 @@ fn hwp3_para_shape_border_fill(
             pattern_color: 0,
             pattern_type: 0,
         });
-    }
-    if hwp3_ps.has_border() {
-        for b in bf.borders.iter_mut() {
-            b.line_type = crate::model::style::BorderLineType::Solid;
-        }
     }
     Some(bf)
 }
@@ -4161,16 +4164,42 @@ mod tests {
     }
 
     #[test]
-    fn test_hwp3_para_shape_border_fill_wires_has_border_flag() {
-        // [#2986] border=1, shade_ratio=0 인 경우에도 border_fill 이 생성되고
-        // 4방향 테두리선이 Solid 로 설정되어야 한다 (기존에는 None 이 반환되어 소실됨).
+    fn test_hwp3_para_shape_border_fill_maps_border_flag_to_no_lines() {
+        // [#3303] V3 문단 모양에는 선 종류 필드가 없어, 한컴 2022는 border=1 을
+        // "선 없음"으로 매핑한다(한컴 변환 SO-SUEOP.hwpx: borderFill 4방향 NONE).
+        // BorderFill 구조는 생성·참조하되 4방향 선은 None 이어야 한다 —
+        // #2995 의 Solid 합성은 42쪽 지문 상자 오렌더의 원인이었다.
         let mut hwp3_ps = crate::parser::hwp3::records::Hwp3ParaShape::default();
         hwp3_ps.border = 1;
         let bf = hwp3_para_shape_border_fill(&hwp3_ps).expect("border_fill 이 생성되어야 함");
         assert!(bf
             .borders
             .iter()
-            .all(|b| b.line_type == crate::model::style::BorderLineType::Solid));
+            .all(|b| b.line_type == crate::model::style::BorderLineType::None));
+        assert!(bf.fill.solid.is_none());
+    }
+
+    #[test]
+    fn test_hwp3_para_shape_border_fill_shade_has_fill_without_lines() {
+        // [#3303] 음영 경로도 BorderLineType 의 Rust default(Solid) 아티팩트 없이
+        // 배경 채움만 배선돼야 한다 — 종전엔 음영 문단 좌우에 세로선이 오렌더됐다
+        // (hwp3-sample4 실측).
+        let mut hwp3_ps = crate::parser::hwp3::records::Hwp3ParaShape::default();
+        hwp3_ps.shade_ratio = 20;
+        let bf = hwp3_para_shape_border_fill(&hwp3_ps).expect("border_fill 이 생성되어야 함");
+        assert!(bf
+            .borders
+            .iter()
+            .all(|b| b.line_type == crate::model::style::BorderLineType::None));
+        assert_eq!(bf.fill.fill_type, crate::model::style::FillType::Solid);
+        assert!(bf.fill.solid.is_some());
+    }
+
+    #[test]
+    fn test_hwp3_para_shape_border_fill_absent_returns_none() {
+        // border=0, shade_ratio=0 이면 border_fill 을 만들지 않는다 (기존 동작 유지).
+        let hwp3_ps = crate::parser::hwp3::records::Hwp3ParaShape::default();
+        assert!(hwp3_para_shape_border_fill(&hwp3_ps).is_none());
     }
 
     #[test]
