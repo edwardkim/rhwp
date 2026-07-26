@@ -275,6 +275,24 @@ fn show_mcp_tools() -> i32 {
             serde_json::json!(["edit", "fill-fields", "{path}", "--data", "{data}", "--json"]),
             &["schemaVersion", "source", "dryRun", "filledCount", "filled", "notFound", "output"],
         ),
+        tool(
+            "hwp_replace_text",
+            "HWP 문서 전체에서 문자열을 일괄 치환해 새 문서를 만든다 (기관명 변경·연도 갱신·용어 정비). dryRun 으로 파일을 만들지 않고 치환 예정 건수만 확인할 수 있다. 치환 0건이면 출력 파일을 만들지 않는다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWP 문서 경로" },
+                    "find": { "type": "string", "description": "찾을 문자열 (빈 문자열 불가)" },
+                    "replace": { "type": "string", "description": "바꿀 문자열 (빈 문자열이면 삭제)" },
+                    "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_replaced.hwp" },
+                    "dryRun": { "type": "boolean", "description": "true 면 파일을 쓰지 않고 치환 예정 건수만 보고" }
+                },
+                "required": ["path", "find", "replace"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "replace-text", "{path}", "--find", "{find}", "--replace", "{replace}", "--json"]),
+            &["schemaVersion", "source", "find", "replace", "caseSensitive", "dryRun", "replacedCount", "output"],
+        ),
     ];
 
     let manifest = serde_json::json!({
@@ -476,9 +494,17 @@ fn show_capabilities(args: &[String]) -> i32 {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀에 값 채우기(서식 자동 작성/메일머지)",
+            "문서 편집 — fill-fields: 누름틀 값 채우기 / replace-text: 일괄 치환",
             false,
-            &["--data", "-o", "--dry-run", "--json"],
+            &[
+                "--data",
+                "--find",
+                "--replace",
+                "--ignore-case",
+                "-o",
+                "--dry-run",
+                "--json",
+            ],
             &[
                 "schemaVersion",
                 "source",
@@ -486,6 +512,7 @@ fn show_capabilities(args: &[String]) -> i32 {
                 "filledCount",
                 "filled",
                 "notFound",
+                "replacedCount",
                 "output",
             ],
         ),
@@ -852,6 +879,17 @@ fn print_help() {
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_filled.hwp)");
     println!("      --dry-run                 파일을 쓰지 않고 변경 예정 내역만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!();
+    println!("  edit replace-text <파일.hwp> --find <문자열> --replace <문자열> [옵션]");
+    println!("      문서 전체 일괄 치환 (기관명 변경·연도 갱신·용어 정비). 본문+표 셀");
+    println!();
+    println!("      --find <문자열>           찾을 문자열 (빈 문자열 불가)");
+    println!("      --replace <문자열>        바꿀 문자열 (\"\" 이면 삭제)");
+    println!("      --ignore-case             대소문자 무시");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_replaced.hwp)");
+    println!("      --dry-run                 파일을 쓰지 않고 치환 예정 건수만 보고");
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!("      치환 0건이면 출력 파일을 만들지 않음");
     println!();
     println!("내부 개발·회귀 도구 (일반 사용자 대상 아님):");
     println!("  test-caption <파일.hwp>             캡션 라운드트립 검증");
@@ -7651,10 +7689,12 @@ fn ir_diff(args: &[String]) -> i32 {
 /// 공통 규약: `--dry-run`(변경 요약만 출력, 파일 무변경), 결과 리포트 JSON,
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit fill-fields <파일.hwp> --data <JSON|@파일> [-o <출력.hwp>] [--dry-run] [--json]";
+    const USAGE: &str =
+        "사용법: rhwp edit <fill-fields|replace-text> <파일.hwp> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
+        Some("replace-text") => edit_replace_text(&args[1..]),
         Some(other) => {
             eprintln!("오류: 알 수 없는 edit 하위 명령 - {}", other);
             eprintln!("{USAGE}");
@@ -7848,6 +7888,175 @@ fn edit_fill_fields(args: &[String]) -> i32 {
     }
     if !not_found.is_empty() {
         println!("  문서에 없는 필드 이름: {}", not_found.join(", "));
+    }
+    EXIT_OK
+}
+
+/// `edit replace-text` — 문서 전체 일괄 치환 (기관명 변경·연도 갱신·용어 정비).
+///
+/// [#3373] 검증된 코어 경로(`replace_all` — 역순 치환으로 오프셋 안전, 본문+표 셀)를
+/// 재사용하므로 새 편집 로직이 없다. `--dry-run` 은 파일 생성 경로를 타지 않고
+/// 읽기 전용 `grep` 으로 치환 예정 건수만 보고한다. **0건이면 출력 파일을 만들지
+/// 않는다** — 무변경 산출물이 생기지 않게 한다.
+fn edit_replace_text(args: &[String]) -> i32 {
+    let mut file_path: Option<&str> = None;
+    let mut find_arg: Option<&str> = None;
+    let mut replace_arg: Option<&str> = None;
+    let mut out_path: Option<String> = None;
+    let mut ignore_case = false;
+    let mut dry_run = false;
+    let mut json_mode = false;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--find" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => find_arg = Some(v),
+                    None => {
+                        eprintln!("오류: --find 뒤에 찾을 문자열이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--replace" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => replace_arg = Some(v),
+                    None => {
+                        eprintln!("오류: --replace 뒤에 바꿀 문자열이 필요합니다 (삭제는 \"\").");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--ignore-case" => ignore_case = true,
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+
+    let (Some(file_path), Some(find), Some(replace)) = (file_path, find_arg, replace_arg) else {
+        eprintln!(
+            "사용법: rhwp edit replace-text <파일.hwp> --find <문자열> --replace <문자열> [-o <출력.hwp>] [--ignore-case] [--dry-run] [--json]"
+        );
+        return EXIT_USAGE;
+    };
+    if find.is_empty() {
+        eprintln!("오류: --find 는 빈 문자열일 수 없습니다.");
+        return EXIT_USAGE;
+    }
+
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let replaced_count = if dry_run {
+        // 파일을 건드리지 않는다 — 읽기 전용 검색으로 치환 예정 건수만 센다.
+        doc.grep(find, !ignore_case, None).len()
+    } else {
+        let result = match doc.replace_all(find, replace, !ignore_case) {
+            Ok(r) => r,
+            Err(e) => {
+                eprintln!("오류: 치환 실패 - {:?}", e);
+                // 실패 시 원본 불변 — 출력 파일을 쓰지 않고 즉시 끝낸다.
+                return EXIT_RUNTIME;
+            }
+        };
+        serde_json::from_str::<serde_json::Value>(&result)
+            .ok()
+            .and_then(|v| v["count"].as_u64())
+            .unwrap_or(0) as usize
+    };
+
+    let output_path = out_path.unwrap_or_else(|| {
+        let stem = Path::new(file_path)
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| "output".to_string());
+        format!("{}_replaced.hwp", stem)
+    });
+
+    // 0건이면 무변경이다 — 산출물을 만들지 않는다 (dry-run 과 동일하게 파일 경로를 타지 않음).
+    let wrote_output = !dry_run && replaced_count > 0;
+    if wrote_output {
+        let out_bytes = match doc.export_hwp_native() {
+            Ok(b) => b,
+            Err(e) => {
+                eprintln!("오류: HWP 직렬화 실패 - {}", e);
+                return EXIT_RUNTIME;
+            }
+        };
+        if let Err(e) = fs::write(&output_path, &out_bytes) {
+            eprintln!("오류: 출력 쓰기 실패 - {}: {}", output_path, e);
+            return EXIT_RUNTIME;
+        }
+    }
+
+    if json_mode {
+        let mut envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "find": find,
+            "replace": replace,
+            "caseSensitive": !ignore_case,
+            "dryRun": dry_run,
+            "replacedCount": replaced_count,
+        });
+        if wrote_output {
+            envelope["output"] = serde_json::Value::String(output_path.clone());
+        }
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
+    if dry_run {
+        println!(
+            "변경 예정: {} — {:?} → {:?} ({}건)",
+            file_path, find, replace, replaced_count
+        );
+    } else if replaced_count == 0 {
+        println!(
+            "치환 0건: {} — {:?} 없음 (출력 파일 미생성)",
+            file_path, find
+        );
+    } else {
+        println!(
+            "치환 완료: {} → {} — {:?} → {:?} ({}건)",
+            file_path, output_path, find, replace, replaced_count
+        );
     }
     EXIT_OK
 }

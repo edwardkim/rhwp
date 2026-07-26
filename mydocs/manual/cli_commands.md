@@ -341,6 +341,25 @@ rhwp edit fill-fields 신청서.hwp --data @row.json -o out.hwp --json
 rhwp fields out.hwp --json | jq -c '[.fields[]|select(.value!="")|{name,value}]'
 ```
 
+### `edit replace-text <파일> --find <문자열> --replace <문자열> [옵션]` (#3373)
+문서 전체 일괄 치환(본문+표 셀) — 기관명 변경·연도 갱신·용어 정비. 검증된 코어 경로
+(`replace_all` — 역순 치환으로 오프셋 안전)를 재사용하므로 새 편집 로직이 없다.
+- `--find <문자열>` — 찾을 문자열 (빈 문자열은 exit 2)
+- `--replace <문자열>` — 바꿀 문자열 (`""` 이면 삭제)
+- `--ignore-case` — 대소문자 무시
+- `-o, --output <파일>` — 출력 파일 (기본 `<입력명>_replaced.hwp`)
+- `--dry-run` — **파일을 쓰지 않고** 읽기 전용 검색으로 치환 예정 건수만 보고
+- `--json` 봉투: `{"schemaVersion":"1.0","source","find","replace","caseSensitive","dryRun","replacedCount","output"?}`
+  - `output` 은 실제 저장했을 때만 실린다 — **치환 0건이면 출력 파일을 만들지 않는다**
+    (무변경 산출물 금지, dry-run 과 동일하게 파일 경로를 타지 않음).
+- **실패 시 원본 불변**: 치환·직렬화·쓰기 실패 시 출력 파일 없이 종료 코드 1.
+
+```bash
+# 치환 → 산출물 재독 대조 (전 과정 CLI)
+rhwp edit replace-text 공문.hwp --find "2025년" --replace "2026년" -o 개정본.hwp --json
+rhwp search 개정본.hwp "2025년" --json | jq .matchCount     # → 0 이어야 함
+```
+
 ---
 
 ## 3. 변환·비교
