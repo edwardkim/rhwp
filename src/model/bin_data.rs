@@ -102,8 +102,13 @@ pub trait BinDataResolver:
 /// 컨테이너만 보유하고 실제 요청 시점에 해당 항목만 압축을 푼다.
 #[derive(Debug, Clone)]
 pub enum BinDataBytes {
-    /// 메모리에 이미 올라온 바이트 (직렬화기가 새로 추가한 이미지, HML/HWP3 등)
-    Loaded(Vec<u8>),
+    /// 메모리에 이미 올라온 바이트 (직렬화기가 새로 추가한 이미지, HML/HWP3 등).
+    ///
+    /// `Arc` 인 이유는 이 값이 **여러 벌 복제되는 자리**에 놓이기 때문이다 — undo
+    /// 스냅샷은 `Document` 를 통째로 클론하고(`snapshot_store`), 레이어 트리는 편집마다
+    /// 다시 빌드된다. `Vec` 이면 4MB 사진 한 장이 스냅샷 98개에서 약 392MB 가 된다
+    /// (실측 0.032 → 0.173 ms/스냅샷, Task #3315).
+    Loaded(std::sync::Arc<[u8]>),
     /// 원본 컨테이너에서 요청 시 압축 해제
     Lazy {
         /// 원본 컨테이너를 보유한 리졸버 (문서 내 모든 항목이 공유)
@@ -116,12 +121,17 @@ pub enum BinDataBytes {
 impl BinDataBytes {
     /// 바이트를 얻는다. `Lazy` 인 경우 이 시점에 압축을 푼다.
     ///
-    /// 캐시하지 않는다. 호출부(레이아웃/직렬화기)가 어차피 바이트를 복사해
-    /// 보유하므로, 여기서 캐시하면 이중 상주가 되어 목적에 반한다.
-    pub fn load(&self) -> Vec<u8> {
+    /// `Loaded` 는 같은 할당을 공유해 돌려주므로 호출을 반복해도 복제가 없다 —
+    /// 호출부가 `Arc` 를 들기 때문에 종전의 "호출부가 어차피 복사해 보유하니 캐시가
+    /// 이중 상주" 라는 전제가 성립하지 않는다 (Task #3315).
+    ///
+    /// `Lazy` 는 여전히 호출마다 압축을 푼다. 압축 해제 결과를 여기 붙들면 화면에
+    /// 없는 이미지까지 상주하므로(#2263 이 `Lazy` 를 도입한 이유) 그 판단은 이 함수가
+    /// 아니라 캐시를 갖는 쪽에서 해야 한다.
+    pub fn load(&self) -> std::sync::Arc<[u8]> {
         match self {
-            BinDataBytes::Loaded(v) => v.clone(),
-            BinDataBytes::Lazy { resolver, key } => resolver.resolve(key),
+            BinDataBytes::Loaded(v) => std::sync::Arc::clone(v),
+            BinDataBytes::Lazy { resolver, key } => resolver.resolve(key).into(),
         }
     }
 
@@ -129,13 +139,14 @@ impl BinDataBytes {
     ///
     /// `Loaded` 는 복제 전에 길이를 확인하고, `Lazy` 는 리졸버가 제공하는
     /// bounded read/decompression 경로만 사용한다.
-    pub fn load_limited(&self, max_bytes: usize) -> Option<Vec<u8>> {
+    pub fn load_limited(&self, max_bytes: usize) -> Option<std::sync::Arc<[u8]>> {
         match self {
-            BinDataBytes::Loaded(v) if v.len() <= max_bytes => Some(v.clone()),
+            BinDataBytes::Loaded(v) if v.len() <= max_bytes => Some(std::sync::Arc::clone(v)),
             BinDataBytes::Loaded(_) => None,
             BinDataBytes::Lazy { resolver, key } => resolver
                 .resolve_limited(key, max_bytes)
-                .filter(|bytes| bytes.len() <= max_bytes),
+                .filter(|bytes| bytes.len() <= max_bytes)
+                .map(Into::into),
         }
     }
 
@@ -164,13 +175,13 @@ impl BinDataBytes {
 
 impl Default for BinDataBytes {
     fn default() -> Self {
-        BinDataBytes::Loaded(Vec::new())
+        BinDataBytes::Loaded(std::sync::Arc::from(Vec::new()))
     }
 }
 
 impl From<Vec<u8>> for BinDataBytes {
     fn from(v: Vec<u8>) -> Self {
-        BinDataBytes::Loaded(v)
+        BinDataBytes::Loaded(v.into())
     }
 }
 

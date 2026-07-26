@@ -395,7 +395,7 @@ mod tests {
         let mut tree = PageRenderTree::new(0, 100.0, 100.0);
         tree.root.children.push(RenderNode::new(
             1,
-            RenderNodeType::Image(ImageNode::new(1, Some(bmp))),
+            RenderNodeType::Image(ImageNode::new(1, Some(bmp.into()))),
             BoundingBox::new(0.0, 0.0, 10.0, 10.0),
         ));
 
@@ -606,7 +606,7 @@ mod tests {
                 "Path",
             ),
             (
-                RenderNodeType::Image(ImageNode::new(1, Some(vec![0x89, b'P', b'N', b'G']))),
+                RenderNodeType::Image(ImageNode::new(1, Some(vec![0x89, b'P', b'N', b'G'].into()))),
                 |op| matches!(op, PaintOp::Image { .. }),
                 "Image",
             ),

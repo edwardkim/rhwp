@@ -124,7 +124,7 @@ mod tests {
     }
 
     fn image_with_wrap(wrap: Option<TextWrap>) -> PaintOp {
-        let mut image = ImageNode::new(1, Some(vec![1, 2, 3]));
+        let mut image = ImageNode::new(1, Some(vec![1, 2, 3].into()));
         image.text_wrap = wrap;
         PaintOp::image(bbox(), image, None)
     }

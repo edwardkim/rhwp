@@ -576,7 +576,7 @@ mod tests {
         ));
         tree.root.children.push(RenderNode::new(
             7,
-            RenderNodeType::Image(ImageNode::new(0, Some(vec![1, 2, 3]))),
+            RenderNodeType::Image(ImageNode::new(0, Some(vec![1, 2, 3].into()))),
             BoundingBox::new(240.0, 50.0, 20.0, 20.0),
         ));
 

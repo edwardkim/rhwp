@@ -173,7 +173,7 @@ pub(crate) fn image_node_with_resolved_payload(
 ) -> ImageNode {
     let mut image = image.clone();
     if let Some(payload) = resolved {
-        image.data = Some(payload.data.clone());
+        image.data = Some(payload.data.clone().into());
         if payload.suppress_effects {
             image.effect = ImageEffect::RealPic;
             image.brightness = 0;
@@ -712,7 +712,7 @@ mod tests {
     #[test]
     fn repeated_resolve_of_same_image_converts_once() {
         let jpeg = jpeg_from_pixels(24, 24, |x, y| [(x * 7) as u8, 40, (y * 9) as u8]);
-        let image = ImageNode::new(1, Some(jpeg));
+        let image = ImageNode::new(1, Some(jpeg.into()));
 
         let before = conversions_run();
         for _ in 0..3 {
@@ -829,7 +829,7 @@ mod tests {
             .write_to(&mut Cursor::new(&mut tiff), ImageFormat::Tiff)
             .expect("encode tiff");
 
-        let image = ImageNode::new(1, Some(tiff));
+        let image = ImageNode::new(1, Some(tiff.into()));
         let resolved = resolve_image_payload(&image).expect("tiff should resolve");
 
         assert_eq!(resolved.mime, "image/png");
@@ -853,6 +853,6 @@ mod tests {
         bmp[54..58].copy_from_slice(&[0, 1, 0, 1]);
 
         assert!(bmp_bytes_to_png_bytes(&bmp).is_none());
-        assert!(resolve_image_payload(&ImageNode::new(1, Some(bmp))).is_none());
+        assert!(resolve_image_payload(&ImageNode::new(1, Some(bmp.into()))).is_none());
     }
 }

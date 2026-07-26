@@ -4020,13 +4020,13 @@ mod bindata_storage_id_collision_tests {
         let by_position = &core.document.bin_data_content[(new_bin_id - 1) as usize];
         assert_eq!(
             by_position.data.load(),
-            minimal_png(),
+            minimal_png().into(),
             "위치 기반 조회로 신규 그림 데이터가 나와야 함"
         );
         // 기존 이미지 데이터 불변
         assert_eq!(
             core.document.bin_data_content[0].data.load(),
-            EXISTING_IMAGE
+            EXISTING_IMAGE.into()
         );
     }
 
@@ -4052,14 +4052,14 @@ mod bindata_storage_id_collision_tests {
 
         let saved = core.export_hwp_with_adapter().expect("export_hwp");
         let reloaded = DocumentCore::from_bytes(&saved).expect("재로드");
-        let datas: Vec<Vec<u8>> = reloaded
+        let datas: Vec<std::sync::Arc<[u8]>> = reloaded
             .document()
             .bin_data_content
             .iter()
             .map(|c| c.data.load())
             .collect();
         assert!(
-            datas.iter().any(|d| d.as_slice() == EXISTING_IMAGE),
+            datas.iter().any(|d| &d[..] == EXISTING_IMAGE),
             "저장 왕복 후 기존 이미지가 소실됨 (스트림 이름 충돌): {:?}",
             reloaded
                 .document()
@@ -4069,7 +4069,7 @@ mod bindata_storage_id_collision_tests {
                 .collect::<Vec<_>>()
         );
         assert!(
-            datas.iter().any(|d| *d == minimal_png().as_slice()),
+            datas.iter().any(|d| &d[..] == minimal_png().as_slice()),
             "저장 왕복 후 신규 이미지가 소실됨"
         );
     }

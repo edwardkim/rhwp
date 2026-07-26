@@ -38,7 +38,7 @@ fn load_bounded_embedded_font_bytes(
     font_ids: &[u16],
     per_font_limit: usize,
     page_limit: usize,
-) -> std::collections::HashMap<u16, Vec<u8>> {
+) -> std::collections::HashMap<u16, std::sync::Arc<[u8]>> {
     let mut bytes_by_id = std::collections::HashMap::new();
     let mut attempted_ids = std::collections::HashSet::new();
     let mut loaded_bytes = 0usize;
@@ -653,7 +653,7 @@ impl DocumentCore {
                             language_index,
                             family,
                             alternate_family,
-                            bytes: font_bytes_by_id.get(&bin_data_id)?.as_slice(),
+                            bytes: &font_bytes_by_id.get(&bin_data_id)?[..],
                             face_index,
                         })
                     },
@@ -667,10 +667,11 @@ impl DocumentCore {
     /// 바이너리 데이터를 0-based `bin_data_content` 인덱스로 반환한다.
     /// [Task #2263] 지연 로딩 도입으로 바이트를 빌려줄 수 없어 소유값을 반환한다.
     pub fn get_bin_data(&self, index: usize) -> Option<Vec<u8>> {
+        // 공개 계약은 소유 `Vec` 이다 — 호출부가 WASM 경계로 넘긴다.
         self.document
             .bin_data_content
             .get(index)
-            .map(|b| b.data.load())
+            .map(|b| b.data.load().to_vec())
     }
 
     pub fn render_page_svg_native(&self, page_num: u32) -> Result<String, HwpError> {
@@ -884,7 +885,9 @@ impl DocumentCore {
     /// SVG `@font-face` 직접 임베딩용. 미설치 임베디드 폰트(bitmap 등)가
     /// `local()` 폴백으로 chrome 두부가 되던 문제 해소. 동일 face 명이 여러
     /// 언어 슬롯에 있으면 첫 항목만 담는다.
-    fn collect_embedded_font_bytes_by_name(&self) -> std::collections::HashMap<String, Vec<u8>> {
+    fn collect_embedded_font_bytes_by_name(
+        &self,
+    ) -> std::collections::HashMap<String, std::sync::Arc<[u8]>> {
         let mut ids = Vec::new();
         let mut name_id: Vec<(String, u16)> = Vec::new();
         for fonts in &self.document.doc_info.font_faces {
@@ -1440,15 +1443,15 @@ impl DocumentCore {
                     if detected == "image/x-pcx" {
                         match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
                             Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
+                            None => (detected, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else if detected == "image/bmp" {
                         match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
                             Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
+                            None => (detected, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else {
-                        (detected, std::borrow::Cow::Borrowed(data.as_slice()))
+                        (detected, std::borrow::Cow::Borrowed(&data[..]))
                     };
                 mime = final_mime;
                 base64_data = base64::engine::general_purpose::STANDARD.encode(&*final_data);
@@ -5907,10 +5910,10 @@ mod tests {
         let loaded = load_bounded_embedded_font_bytes(&contents, &[1, 2, 3, 1], 4, 6);
 
         assert_eq!(loaded.len(), 2);
-        assert_eq!(loaded.get(&1).map(Vec::len), Some(4));
+        assert_eq!(loaded.get(&1).map(|b| b.len()), Some(4));
         assert!(!loaded.contains_key(&2));
-        assert_eq!(loaded.get(&3).map(Vec::len), Some(2));
-        assert_eq!(loaded.values().map(Vec::len).sum::<usize>(), 6);
+        assert_eq!(loaded.get(&3).map(|b| b.len()), Some(2));
+        assert_eq!(loaded.values().map(|b| b.len()).sum::<usize>(), 6);
     }
 
     #[test]

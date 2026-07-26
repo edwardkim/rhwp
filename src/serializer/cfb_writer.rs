@@ -202,7 +202,7 @@ fn write_hwp_cfb(
             v.extend_from_slice(&bytes);
             v
         } else {
-            bytes
+            bytes.to_vec()
         };
 
         let data = if should_compress {

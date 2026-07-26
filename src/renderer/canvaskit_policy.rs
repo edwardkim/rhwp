@@ -513,7 +513,7 @@ fn render_node_prelower_work_units(node_type: &RenderNodeType) -> Option<usize> 
             true,
         ),
         RenderNodeType::Path(path) => (2usize.checked_add(path.commands.len())?, 0, false),
-        RenderNodeType::Image(image) => (2, image.data.as_ref().map_or(0, Vec::len), false),
+        RenderNodeType::Image(image) => (2, image.data.as_ref().map_or(0, |d| d.len()), false),
         RenderNodeType::PageBackground(background) => (
             2,
             background
@@ -713,7 +713,7 @@ fn paint_op_work_units(op: &PaintOp) -> usize {
         } => resolved
             .as_deref()
             .map(|payload| payload.data.len())
-            .or_else(|| image.data.as_ref().map(Vec::len))
+            .or_else(|| image.data.as_ref().map(|d| d.len()))
             .unwrap_or_default(),
         PaintOp::Equation { equation, .. } => equation.svg_content.len(),
         PaintOp::FormObject { form, .. } => form
@@ -2277,7 +2277,7 @@ mod tests {
     }
 
     fn image_node(bin_data_id: u16) -> ImageNode {
-        ImageNode::new(bin_data_id, Some(fixture_png()))
+        ImageNode::new(bin_data_id, Some(fixture_png().into()))
     }
 
     fn page_background(
@@ -2603,7 +2603,7 @@ mod tests {
         for bytes in [vec![1, 2, 3], tiff.into_inner()] {
             let tree = tree_with_ops(vec![PaintOp::image(
                 bbox(),
-                ImageNode::new(1, Some(bytes)),
+                ImageNode::new(1, Some(bytes.into())),
                 None,
             )]);
 
@@ -2637,7 +2637,7 @@ mod tests {
     fn page_background_image_and_gradient_are_policy_visible() {
         let image_background = page_background(
             Some(PageBackgroundImage {
-                data: vec![1, 2, 3],
+                data: vec![1, 2, 3].into(),
                 fill_mode: ImageFillMode::FitToSize,
                 brightness: 0,
                 contrast: 0,

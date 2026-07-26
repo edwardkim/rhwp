@@ -849,27 +849,27 @@ impl PaintOp {
                     {
                         match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
                             Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                            None => (mime, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else if mime == "image/bmp" {
                         match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
                             Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                            None => (mime, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else if mime == "image/tiff" {
                         match crate::renderer::image_resolver::tiff_bytes_to_png_bytes(data) {
                             Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                            None => (mime, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else if mime == "image/jpeg" {
                         match crate::renderer::image_resolver::grayscale_jpeg_bytes_to_png_bytes(
                             data,
                         ) {
                             Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                            None => (mime, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else {
-                        (mime, std::borrow::Cow::Borrowed(data.as_slice()))
+                        (mime, std::borrow::Cow::Borrowed(&data[..]))
                     };
                     let base64_data =
                         base64::engine::general_purpose::STANDARD.encode(&*final_data);
@@ -4343,7 +4343,7 @@ mod tests {
         path.connector_endpoints = Some((1.0, 2.0, 3.0, 4.0));
         path.line_style = Some(LineStyle::default());
 
-        let mut image = ImageNode::new(7, Some(vec![1, 2, 3]));
+        let mut image = ImageNode::new(7, Some(vec![1, 2, 3].into()));
         image.effect = ImageEffect::BlackWhite;
         image.brightness = -50;
         image.contrast = 70;

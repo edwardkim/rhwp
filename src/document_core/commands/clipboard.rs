@@ -1691,7 +1691,7 @@ impl DocumentCore {
                 HwpError::RenderError(format!("바이너리 데이터 {} 범위 초과", bin_data_id))
             })?;
 
-        Ok(bdc.data.load())
+        Ok(bdc.data.load().to_vec())
     }
 
     /// 컨트롤의 이미지 MIME 타입을 반환한다.
@@ -1750,7 +1750,7 @@ impl DocumentCore {
             .ok_or_else(|| {
                 HwpError::RenderError(format!("바이너리 데이터 {} 범위 초과", bin_data_id))
             })?;
-        Ok(bdc.data.load())
+        Ok(bdc.data.load().to_vec())
     }
 
     /// BinData ID(1-based)로 이미지 MIME 타입을 반환한다.

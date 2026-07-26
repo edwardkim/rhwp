@@ -342,7 +342,7 @@ fn test_pcx_to_png_maps_white_to_transparent() {
 #[test]
 fn test_page_background_image_pcx_converts_to_png() {
     let image = PageBackgroundImage {
-        data: make_minimal_pcx_2x1(),
+        data: make_minimal_pcx_2x1().into(),
         fill_mode: ImageFillMode::FitToSize,
         brightness: 0,
         contrast: 0,
@@ -363,7 +363,7 @@ fn test_page_background_image_pcx_converts_to_png() {
 fn test_page_background_image_fit_to_size_preserves_bbox_output() {
     let png = bmp_bytes_to_png_bytes(&make_minimal_bmp_2x2()).expect("BMP->PNG 변환 실패");
     let image = PageBackgroundImage {
-        data: png,
+        data: png.into(),
         fill_mode: ImageFillMode::FitToSize,
         brightness: 0,
         contrast: 0,
@@ -388,7 +388,7 @@ fn test_page_background_image_fit_to_size_preserves_bbox_output() {
 fn test_page_background_image_center_uses_original_image_size() {
     let png = bmp_bytes_to_png_bytes(&make_minimal_bmp_2x2()).expect("BMP->PNG 변환 실패");
     let image = PageBackgroundImage {
-        data: png,
+        data: png.into(),
         fill_mode: ImageFillMode::Center,
         brightness: 0,
         contrast: 0,
@@ -419,7 +419,7 @@ fn test_page_background_image_center_uses_original_image_size() {
 fn test_page_background_image_realpic_watermark_preserves_color_with_opacity() {
     let png = bmp_bytes_to_png_bytes(&make_minimal_bmp_2x2()).expect("BMP->PNG 변환 실패");
     let image = PageBackgroundImage {
-        data: png,
+        data: png.into(),
         fill_mode: ImageFillMode::Center,
         brightness: -50,
         contrast: 70,
@@ -463,7 +463,7 @@ fn test_page_background_image_realpic_watermark_preserves_color_with_opacity() {
 fn test_page_background_image_non_realpic_watermark_uses_legacy_opacity() {
     let png = bmp_bytes_to_png_bytes(&make_minimal_bmp_2x2()).expect("BMP->PNG 변환 실패");
     let image = PageBackgroundImage {
-        data: png,
+        data: png.into(),
         fill_mode: ImageFillMode::FitToSize,
         brightness: -50,
         contrast: 70,
@@ -496,7 +496,7 @@ fn test_page_background_image_non_realpic_watermark_uses_legacy_opacity() {
 #[test]
 fn test_background_image_realpic_watermark_fill_preserves_color_with_opacity() {
     let png = bmp_bytes_to_png_bytes(&make_minimal_bmp_2x2()).expect("BMP->PNG 변환 실패");
-    let mut image = ImageNode::new(1, Some(png));
+    let mut image = ImageNode::new(1, Some(png.into()));
     image.fill_mode = Some(ImageFillMode::FitToSize);
     image.brightness = -50;
     image.contrast = 70;

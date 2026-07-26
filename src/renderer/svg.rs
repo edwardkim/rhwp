@@ -1374,32 +1374,20 @@ impl SvgRenderer {
             if preserve_color_watermark {
                 match real_picture_watermark_bytes_to_hancom_tone_png_bytes(&img.data) {
                     Some(png) => (std::borrow::Cow::Owned(png), "image/png"),
-                    None => (
-                        std::borrow::Cow::Borrowed(img.data.as_slice()),
-                        detected_mime,
-                    ),
+                    None => (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime),
                 }
             } else if detected_mime == "image/bmp" {
                 match bmp_bytes_to_png_bytes(&img.data) {
                     Some(png) => (std::borrow::Cow::Owned(png), "image/png"),
-                    None => (
-                        std::borrow::Cow::Borrowed(img.data.as_slice()),
-                        detected_mime,
-                    ),
+                    None => (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime),
                 }
             } else if detected_mime == "image/x-pcx" {
                 match pcx_bytes_to_png_bytes(&img.data) {
                     Some(png) => (std::borrow::Cow::Owned(png), "image/png"),
-                    None => (
-                        std::borrow::Cow::Borrowed(img.data.as_slice()),
-                        detected_mime,
-                    ),
+                    None => (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime),
                 }
             } else {
-                (
-                    std::borrow::Cow::Borrowed(img.data.as_slice()),
-                    detected_mime,
-                )
+                (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime)
             };
         let base64_data = base64::engine::general_purpose::STANDARD.encode(&*render_bytes);
         let data_uri = format!("data:{};base64,{}", render_mime, base64_data);
@@ -3562,7 +3550,7 @@ fn find_font_file(
 /// 임베디드 폰트는 서브셋하지 않고 원본 전체를 data-URI 로 임베딩한다.
 fn embedded_font_face_css(
     font_name: &str,
-    embedded_fonts: &std::collections::HashMap<String, Vec<u8>>,
+    embedded_fonts: &std::collections::HashMap<String, std::sync::Arc<[u8]>>,
 ) -> Option<String> {
     let bytes = embedded_fonts.get(font_name)?;
     if bytes.is_empty() {
@@ -3593,7 +3581,7 @@ fn font_data_uri_format(bytes: &[u8]) -> (&'static str, &'static str) {
 /// 사용할 수 있다. 비내장 폰트는 기존 SVG `font-family` fallback을 유지한다.
 pub fn generate_embedded_font_style(
     renderer: &SvgRenderer,
-    embedded_fonts: &std::collections::HashMap<String, Vec<u8>>,
+    embedded_fonts: &std::collections::HashMap<String, std::sync::Arc<[u8]>>,
 ) -> String {
     let mut css = String::new();
     for font_name in renderer.font_codepoints().keys() {
@@ -3612,7 +3600,7 @@ pub fn generate_embedded_font_style(
 pub fn generate_font_style(
     renderer: &SvgRenderer,
     font_paths: &[std::path::PathBuf],
-    embedded_fonts: &std::collections::HashMap<String, Vec<u8>>,
+    embedded_fonts: &std::collections::HashMap<String, std::sync::Arc<[u8]>>,
 ) -> String {
     let codepoints = renderer.font_codepoints();
     if codepoints.is_empty() {
