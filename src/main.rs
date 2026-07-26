@@ -2236,49 +2236,61 @@ fn export_text(args: &[String]) -> i32 {
         .filter(|a| a.as_str() != "--json")
         .cloned()
         .collect();
-    if args.is_empty() {
-        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
-        eprintln!("사용법: rhwp export-text <파일.hwp> [옵션] (rhwp --help 참조)");
-        return EXIT_USAGE;
-    }
-
-    let file_path = &args[0];
+    // [#3349] 위치 인자 파싱을 export-structure/export-tables 규약으로 통일 —
+    // 첫 비플래그 토큰이 파일이고 옵션은 위치 무관이다. 파일 선행을 강제하면
+    // `-p 0 --json 파일` 에서 `-p` 가 파일로 잡혀 "알 수 없는 옵션: 0" 이 된다.
+    let mut file_path: Option<&str> = None;
     let mut output_dir = "output".to_string();
     let mut target_page: Option<u32> = None;
 
-    let mut i = 1;
+    let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--output" | "-o" => {
-                if i + 1 < args.len() {
-                    output_dir = args[i + 1].clone();
-                    i += 2;
-                } else {
-                    eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
-                    return EXIT_USAGE;
+                i += 1;
+                match args.get(i) {
+                    Some(p) => output_dir = p.clone(),
+                    None => {
+                        eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
                 }
             }
             "--page" | "-p" => {
-                if i + 1 < args.len() {
-                    match args[i + 1].parse::<u32>() {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => match v.parse::<u32>() {
                         Ok(n) => target_page = Some(n),
                         Err(_) => {
                             eprintln!("오류: 페이지 번호가 올바르지 않습니다.");
                             return EXIT_USAGE;
                         }
+                    },
+                    None => {
+                        eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                        return EXIT_USAGE;
                     }
-                    i += 2;
-                } else {
-                    eprintln!("오류: --page 뒤에 페이지 번호가 필요합니다.");
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
                     return EXIT_USAGE;
                 }
             }
-            _ => {
-                eprintln!("알 수 없는 옵션: {}", args[i]);
-                return EXIT_USAGE;
-            }
         }
+        i += 1;
     }
+
+    let Some(file_path) = file_path else {
+        eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("사용법: rhwp export-text <파일.hwp> [옵션] (rhwp --help 참조)");
+        return EXIT_USAGE;
+    };
 
     let data = match fs::read(file_path) {
         Ok(d) => d,

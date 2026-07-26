@@ -147,6 +147,8 @@ rhwp export-pdf input.hwp -o out.pdf \
   `{"schemaVersion":"1.0","source","pageCount","pages":[{"page","text"}]}` —
   `schemaVersion` 이 계약이며 필드 추가는 허용, 변경·삭제는 `tests/cli_json_contract.rs` 가 잡는다.
   `page` 는 `-p` 와 같은 0 기준.
+- 옵션은 파일 앞뒤 어디에 와도 된다 (#3349, export-structure/export-tables 와 동일 규약).
+  파일 positional 을 두 번 주면 exit 2.
 
 ### `batch <export-text|info|export-structure> --json [--mode <m>] [--threads <N>]` (#3238, #3261)
 stdin 의 파일 목록(한 줄당 경로 하나)을 **한 프로세스에서 파일 간 병렬**로 처리해
