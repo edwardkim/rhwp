@@ -67,7 +67,9 @@ export class PageRenderer {
    * prefetch 를 끝낸 페이지의 그림 서명 (Task #3315).
    *
    * 내용에서 유도된 키라 스스로 무효화된다 — 편집 때 비우지 않는다. 비우면 서명을 두는
-   * 의미가 사라진다.
+   * 의미가 사라진다. 문서 경계는 서명이 들고 다니는 `documentDigest` 로 갈린다 —
+   * `PageRenderer` 는 문서보다 오래 살고 문서 로드 경로가 이 맵을 비우지 않으므로,
+   * 비우기에 기대지 않고 항목 자체가 어느 문서의 것인지 말하게 한다.
    */
   private prefetchedImageSignatures = new Map<number, PrefetchSignature>();
   private flowSplitSupported: boolean | null = null;
@@ -980,7 +982,14 @@ export class PageRenderer {
     // [#3315] 그림이 그대로면 다시 디코드시킬 것이 없다. 서명 조회는 수백 바이트인데
     // 아래의 전체 레이어 트리 조회는 그림 1장에 수 MB 라, 편집마다 되풀이할 값이 아니다.
     const imageKeys = this.wasm.getPageSourceImageKeys(pageIdx);
-    if (shouldSkipImagePrefetch(this.prefetchedImageSignatures.get(pageIdx), imageKeys)) {
+    const documentDigest = this.wasm.documentDigest;
+    if (
+      shouldSkipImagePrefetch(
+        this.prefetchedImageSignatures.get(pageIdx),
+        imageKeys,
+        documentDigest,
+      )
+    ) {
       return true;
     }
 
@@ -1036,8 +1045,8 @@ export class PageRenderer {
         // 파싱 실패 시 raster 프리페치 결과만 사용한다.
       }
     }
-    if (imageKeys !== null) {
-      this.prefetchedImageSignatures.set(pageIdx, { imageKeys, hadRawSvg });
+    if (imageKeys !== null && documentDigest !== null) {
+      this.prefetchedImageSignatures.set(pageIdx, { documentDigest, imageKeys, hadRawSvg });
     }
     if (tasks.length === 0) {
       // URL을 수집하지 못한 순수 rawSvg는 upstream의 조기 재렌더 경로를 사용한다.

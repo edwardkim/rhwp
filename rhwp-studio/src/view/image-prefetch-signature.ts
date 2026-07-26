@@ -8,6 +8,16 @@
  */
 
 export interface PrefetchSignature {
+  /**
+   * 이 서명이 설명하는 문서 (`WasmBridge.documentDigest`).
+   *
+   * 그림 키는 **문서 안에서만** 신원이다 — `bin_data_id` 는 문서마다 1 부터 다시 매겨지고
+   * 세대 번호도 문서마다 0 에서 시작한다. 반면 이 서명을 담는 맵은 `PageRenderer` 에 있고
+   * `PageRenderer` 는 문서보다 오래 산다. 그래서 서명은 자기가 어느 문서의 것인지 함께
+   * 들고 다녀야 한다 — 그러지 않으면 두 문서의 0쪽 첫 그림이 똑같이 `bin:0:1:src` 라서
+   * 서로의 서명이 맞아떨어진다.
+   */
+  documentDigest: string;
   /** `getPageSourceImageKeys` 응답 원문. */
   imageKeys: string;
   /**
@@ -21,15 +31,18 @@ export interface PrefetchSignature {
 /**
  * 이미 디코드를 마친 그림 집합과 같으면 prefetch 를 건너뛴다.
  *
- * 판정 재료가 없을 때(`imageKeys === null` — 키 조회를 지원하지 않는 구형 WASM, 기록
- * 없음 — 아직 한 번도 데우지 않은 페이지)는 건너뛰지 않는다. 안전망을 없애는 쪽이 아니라
- * 이미 끝난 일을 되풀이하지 않는 쪽으로만 작동해야 한다.
+ * 판정 재료가 없으면 건너뛰지 않는다 — 키 조회를 지원하지 않는 구형 WASM(`imageKeys`
+ * 없음), 아직 한 번도 데우지 않은 페이지(기록 없음), 문서 신원을 모르는 상태
+ * (`documentDigest` 없음). 안전망을 없애는 쪽이 아니라 이미 끝난 일을 되풀이하지 않는
+ * 쪽으로만 작동해야 한다.
  */
 export function shouldSkipImagePrefetch(
   cached: PrefetchSignature | undefined,
   imageKeys: string | null,
+  documentDigest: string | null,
 ): boolean {
-  if (imageKeys === null || !cached) return false;
+  if (imageKeys === null || documentDigest === null || !cached) return false;
+  if (cached.documentDigest !== documentDigest) return false;
   if (cached.hadRawSvg) return false;
   return cached.imageKeys === imageKeys;
 }
