@@ -6719,7 +6719,16 @@ impl LayoutEngine {
                         .first()
                         .map(|s| hwpunit_to_px(s.line_height, self.dpi))
                         .unwrap_or(0.0);
-                    let mut title_flow_y = para_y_for_table;
+                    // [Task #2711 v2] title_flow_y 는 선행 float exclusion 으로 이미
+                    // 밀려난 `table_y_start`(위 exclusion 보정 블록의 결과)를 기준으로
+                    // 삼아야 한다. 종전에는 미보정 `para_y_for_table`에서 다시 자체
+                    // exclusion 루프를 돌렸는데, 이 루프의 판정 조건(오프셋/outer 미포함
+                    // 원시 좌표)이 위 exclusion 보정 블록의 판정 조건과 달라 같은 zone을
+                    // 못 잡는 경우가 있었다 — 그 결과 candidate(title_flow_y+host_line_px+
+                    // outer)가 이미 밀려난 table_y_start보다 작게 나와 max()가 밀려난 값을
+                    // 그대로 선택해 host-title 줄 예약분이 사라지고, 그 줄(예: "7. [필수]")과
+                    // 표 첫 줄이 같은 y 에 겹쳐 그려졌다 (synam-001.hwp p30 "7. [필수]" 행).
+                    let mut title_flow_y = table_y_start;
                     for zone in visible_float_exclusions.iter() {
                         if title_flow_y + 0.5 >= zone.top && title_flow_y < zone.bottom {
                             title_flow_y = title_flow_y.max(zone.bottom);
