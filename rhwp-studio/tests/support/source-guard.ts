@@ -75,10 +75,29 @@ export function callsOf(src: string, callee: string): string[] {
   return out;
 }
 
-/** `pattern` 의 모든 매치가 `ranges` 중 하나에 포함되는지. 포함되지 않은 매치를 돌려준다. */
+/**
+ * `pattern` 의 모든 매치가 `ranges` 중 하나에 포함되는지. 포함되지 않은 매치를 돌려준다.
+ *
+ * 구간을 찾을 때 두 가지를 지킨다 — 이 헬퍼가 조용히 틀리면 가드가 초록인 채로
+ * 회귀를 통과시키므로(이 파일이 고치려는 바로 그 실패 모드) 방어적으로 쓴다.
+ *
+ * 1. **길이를 자기 문자열에서 센다.** 먼저 `indexOf` 로 걸러 낸 뒤 인덱스만 모으면
+ *    걸러진 원소 때문에 뒤 항목의 길이가 어긋난다(짝이 밀림).
+ * 2. **같은 텍스트가 여러 번 나오면 각 출현을 모두 구간으로 잡는다.** `indexOf` 는
+ *    첫 출현만 주므로, 텍스트가 같은 호출이 둘 있으면 두 번째의 실제 위치가
+ *    "구간 밖"으로 오판된다.
+ * 찾지 못한 `range` 는 호출부의 전제가 깨진 것이므로 조용히 넘기지 않고 던진다.
+ */
 export function matchesOutside(src: string, pattern: RegExp, ranges: string[]): string[] {
-  const escaped = ranges.map((r) => src.indexOf(r)).filter((n) => n !== -1);
-  const spans = escaped.map((start, n) => [start, start + ranges[n].length] as const);
+  const spans: Array<readonly [number, number]> = [];
+  for (const r of ranges) {
+    let at = src.indexOf(r);
+    if (at === -1) throw new Error(`구간을 소스에서 찾지 못함(호출부 전제 위반): ${r.slice(0, 60)}…`);
+    while (at !== -1) {
+      spans.push([at, at + r.length] as const);
+      at = src.indexOf(r, at + 1);
+    }
+  }
   const outside: string[] = [];
   for (const m of src.matchAll(pattern)) {
     const at = m.index ?? -1;
