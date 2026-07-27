@@ -30,6 +30,14 @@ STEP() { echo "::group::[detect] $*"; }
 END()  { echo "::endgroup::"; }
 
 emit() {  # emit <kind> <title> <evidence-file>
+  # 제외 목록(이미 upstream 에 보고된 것 + 이번 run 에서 탈락한 것)에 있으면
+  # 이 발견을 건너뛰고 1 을 돌려준다 — 호출부는 계속 다음 표본/다음 층을 훑는다.
+  # 이것이 '같은 발견 반복'을 끊고 오라클을 점점 깊은 층으로 보내는 탐색 장치다.
+  if [ -n "${DETECT_EXCLUDE_FILE:-}" ] && [ -s "${DETECT_EXCLUDE_FILE:-}" ] \
+     && grep -qF -- "$2" "$DETECT_EXCLUDE_FILE"; then
+    echo "제외된 발견 건너뜀(이미 보고/탈락): $2"
+    return 1
+  fi
   {
     echo "---"
     echo "kind: $1"
@@ -186,19 +194,54 @@ echo "산술 오버플로 없음"
 END
 
 # ─────────────────────────────────────────────────────────────
-# A. 크래시 퍼징 (nightly 가 준비된 경우에만)
+# A. 크래시 퍼징 — 무한 탐색원. corpus 는 작업 트리 밖에 두고(게이트 STRAY 방지)
+#    실행 간 캐시로 누적한다 — 돌수록 깊은 입력 공간을 탐색한다.
 # ─────────────────────────────────────────────────────────────
-STEP "A. 크래시 퍼징"
+STEP "A. 크래시 퍼징 (corpus 누적 탐색)"
 if command -v cargo-fuzz >/dev/null 2>&1 && rustup toolchain list 2>/dev/null | grep -q nightly; then
   TARGETS=(parse_hwp parse_hwpx parse_hwp3 parse_hml parse_wmf parse_ooxml_chart)
   T="${TARGETS[$(( ROTATION % ${#TARGETS[@]} ))]}"
   echo "표적: $T"
-  L="$WORK/fuzz.log"
-  if ! cargo +nightly fuzz run "$T" -- -max_total_time=180 -timeout=10 >"$L" 2>&1; then
-    grep -qE 'panicked at|ERROR: libFuzzer|SUMMARY:' "$L" \
-      && emit "fuzz-crash" "퍼징 중 ${T} 에서 패닉이 발생한다" "$L"
+  CORPUS_ROOT="${FUZZ_CORPUS_DIR:-$WORK/fuzz-corpus}"
+  CORPUS="$CORPUS_ROOT/$T"
+  mkdir -p "$CORPUS"
+  # 시드: 비어 있으면 저장소 corpus + 실전 샘플로 채운다
+  if [ -z "$(ls -A "$CORPUS" 2>/dev/null)" ]; then
+    cp fuzz/corpus/"$T"/* "$CORPUS"/ 2>/dev/null || true
+    case "$T" in
+      parse_hwp|parse_hwp3) cp samples/*.hwp  "$CORPUS"/ 2>/dev/null || true ;;
+      parse_hwpx)           cp samples/*.hwpx "$CORPUS"/ 2>/dev/null || true ;;
+      parse_hml)            cp samples/*.hml  "$CORPUS"/ 2>/dev/null || true ;;
+    esac
+    echo "시드 투입: $(ls "$CORPUS" | wc -l)개"
+  else
+    echo "누적 corpus: $(ls "$CORPUS" | wc -l)개"
   fi
-  echo "크래시 없음"
+  L="$WORK/fuzz.log"
+  rm -rf "fuzz/artifacts/$T"
+  cargo +nightly fuzz run "$T" "$CORPUS" -- \
+    -max_total_time="${FUZZ_SECS:-240}" -timeout=10 -max_len=65536 >"$L" 2>&1
+  RC=$?
+  if [ "$RC" -ne 0 ] && grep -qE 'panicked at|ERROR: libFuzzer|SUMMARY:' "$L"; then
+    CRASH=$(ls "fuzz/artifacts/$T/" 2>/dev/null | head -1)
+    EV="$WORK/fuzz-ev.log"
+    {
+      echo "표적: fuzz/fuzz_targets/${T}.rs"
+      grep -E 'panicked at|SUMMARY:|ERROR:' "$L" | head -8
+      if [ -n "$CRASH" ]; then
+        SZ=$(stat -c%s "fuzz/artifacts/$T/$CRASH" 2>/dev/null || echo '?')
+        echo
+        echo "크래시 입력 (${SZ}B) — 회귀 테스트에 바이트 리터럴로 박아 재현할 것:"
+        od -Ax -tx1 "fuzz/artifacts/$T/$CRASH" | head -40
+        cp "fuzz/artifacts/$T/$CRASH" "${RUNNER_TEMP:-/tmp}/fuzz-crash-${T}.bin" 2>/dev/null || true
+      fi
+    } > "$EV"
+    # 크래시 파일로 작업 트리를 오염시키지 않는다 — 입력은 위 hex 로 FINDING 에 보존된다
+    rm -rf fuzz/artifacts
+    emit "fuzz-crash" "퍼징 중 ${T} 파서가 패닉한다 (${CRASH:-crash})" "$EV"
+  fi
+  rm -rf fuzz/artifacts
+  echo "크래시 없음 (${T}, ${FUZZ_SECS:-240}s)"
 else
   echo "nightly/cargo-fuzz 미설치 — 이 층 건너뜀"
 fi
