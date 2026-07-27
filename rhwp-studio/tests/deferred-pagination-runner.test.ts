@@ -9,9 +9,16 @@ import { fileURLToPath } from 'node:url';
 
 const studioRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const runtimeRoot = mkdtempSync(path.join(tmpdir(), 'rhwp-deferred-pagination-runner-'));
-const compiler = process.env.RHWP_STUDIO_TSC
-  ?? path.join(studioRoot, 'node_modules', '.bin', 'tsc');
+// npm bin 을 직접 spawn 하지 않는다: Windows 의 `.bin/tsc` 는 확장자 없는 shell 스크립트라
+// 실행되지 않고, `.cmd` 는 Node 가 shell 없는 spawn 을 막는다(CVE-2024-27980 완화). 어느
+// 쪽이든 status=null 로 죽어 테스트가 통째로 중단된다. typescript 의 JS 진입점을 현재
+// node 로 실행하면 셸 없이도 모든 OS 에서 동일하게 동작한다.
+const compiler = process.env.RHWP_STUDIO_TSC ?? process.execPath;
+const compilerArgs = process.env.RHWP_STUDIO_TSC
+  ? []
+  : [path.join(studioRoot, 'node_modules', 'typescript', 'bin', 'tsc')];
 const compilation = spawnSync(compiler, [
+  ...compilerArgs,
   '--ignoreConfig',
   'src/engine/deferred-pagination-runner.ts',
   '--target', 'ES2022',

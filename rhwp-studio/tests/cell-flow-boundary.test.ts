@@ -11,8 +11,16 @@ import { fileURLToPath } from 'node:url';
 // 실제 production 모듈을 임시 CommonJS로 변환해 source 복제 없이 동작을 검증한다.
 const studioRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const runtimeRoot = mkdtempSync(path.join(tmpdir(), 'rhwp-cell-flow-boundary-'));
-const compiler = path.join(studioRoot, 'node_modules', '.bin', 'tsc');
+// npm bin 을 직접 spawn 하지 않는다: Windows 의 `.bin/tsc` 는 확장자 없는 shell 스크립트라
+// 실행되지 않고, `.cmd` 는 Node 가 shell 없는 spawn 을 막는다(CVE-2024-27980 완화). 어느
+// 쪽이든 status=null 로 죽어 테스트가 통째로 중단된다. typescript 의 JS 진입점을 현재
+// node 로 실행하면 셸 없이도 모든 OS 에서 동일하게 동작한다.
+const compiler = process.env.RHWP_STUDIO_TSC ?? process.execPath;
+const compilerArgs = process.env.RHWP_STUDIO_TSC
+  ? []
+  : [path.join(studioRoot, 'node_modules', 'typescript', 'bin', 'tsc')];
 const compilation = spawnSync(compiler, [
+  ...compilerArgs,
   '--ignoreConfig',
   'src/engine/command.ts',
   'src/engine/history.ts',
