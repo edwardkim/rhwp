@@ -27,6 +27,11 @@ START=$(date +%s)
 TMP="${RUNNER_TEMP:-/tmp}"
 ATTEMPTED="$TMP/attempted-titles.txt"
 : > "$ATTEMPTED"
+# 오라클 제외 목록 — upstream 에 이미 보고된 제목 + 이번 run 탈락 제목.
+# detect.sh 의 emit 이 이 파일을 보고 같은 발견을 건너뛰며 다음 표본/다음 층으로
+# 파고든다. '같은 발견 반복 → 탐색 정체'를 끊는 장치.
+DETECT_EXCLUDE_FILE="$TMP/detect-exclude.txt"
+export DETECT_EXCLUDE_FILE
 cd "$WORK"
 
 # repo-map 을 크게 준다 — 11,000+ 파일 저장소에서 1024 토큰 지도는 관련 경로조차
@@ -91,7 +96,8 @@ for (( A=1; A<=MAX_ATTEMPTS; A++ )); do
   echo "::group::[loop] 시도 ${A}/${MAX_ATTEMPTS} — 경과 $(( E / 60 ))분"
   reset_tree
 
-  # ── 1) 오라클 탐지 — 시도마다 다른 회전 창을 본다
+  # ── 1) 오라클 탐지 — 시도마다 다른 회전 창을 보고, 이미 처리된 발견은 건너뛴다
+  { printf '%s\n' "${HUNT_EXCLUDE:-}"; cat "$ATTEMPTED"; } > "$DETECT_EXCLUDE_FILE"
   bash "$BOT/.github/autofix/detect.sh" "$PWD" "$(( RUN_NO * 7 + A - 1 ))" 2>&1 | tee -a ../detect.log
   KIND=$(grep -oE 'DETECT_KIND=[A-Za-z-]+' ../detect.log | tail -1 | cut -d= -f2)
   [ "$KIND" = "NONE" ] && KIND=""
