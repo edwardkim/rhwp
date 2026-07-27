@@ -19,6 +19,8 @@ pub const RESOURCE_KEY_ALGORITHM: &str = "blake3";
 /// identity는 glyph replay contract에서 참조할 수 있게 한다.
 #[derive(Debug, Clone, Default)]
 pub struct ResourceArena {
+    /// 그림 신원 키에 섞는 문서 단위 세대. 기존 공개 `PageLayerTree` 모양은 바꾸지 않는다.
+    source_image_epoch: u32,
     image_bytes: Vec<Vec<u8>>,
     image_hashes: Vec<u64>,
     image_fingerprints: Vec<[u8; 16]>,
@@ -38,6 +40,14 @@ pub struct ResourceArena {
 }
 
 impl ResourceArena {
+    pub(crate) fn set_source_image_epoch(&mut self, epoch: u32) {
+        self.source_image_epoch = epoch;
+    }
+
+    pub(crate) fn source_image_epoch(&self) -> u32 {
+        self.source_image_epoch
+    }
+
     pub fn intern_image_bytes(&mut self, bytes: &[u8]) -> ImageResourceId {
         let hash = resource_hash(bytes);
         if let Some(candidates) = self.image_lookup.get(&hash) {
@@ -230,6 +240,46 @@ pub fn image_resource_key(byte_len: usize, digest: &str) -> String {
     resource_key("img", byte_len, digest)
 }
 
+/// 그림 op 이 내보내는 바이트의 신원 키 (Task #3315).
+///
+/// 위의 `image_resource_key` 는 arena 에 담긴 바이트의 **내용** 키(blake3)다. 이쪽은
+/// 리페인트마다 다시 계산돼야 하므로 내용 해시를 쓸 수 없다 — 그림 1장에 수 MB 를 매 키
+/// 입력마다 훑게 된다. 대신 문서가 이미 가진 신원을 쓴다.
+///
+/// - `bin_data_id`: 등록이 append-only 라 세션 중 id→바이트가 안정하다.
+/// - `epoch`: 문서를 통째로 갈아끼우는 연산(스냅샷 복원, 새 문서, `set_document`)만이 이
+///   안정성을 깨므로, 그때만 올라간다. 그림을 **추가**하는 것은 기존 id 의 바이트를 바꾸지
+///   않으므로 올리지 않는다 — 올리면 무관한 그림의 캐시까지 함께 버려진다.
+/// - variant: JPEG 워터마크 bake는 같은 원본에서도 base64 payload를 바꾸므로 구분한다.
+///   BMP/PCX/TIFF/회색 JPEG 변환 여부는 원본 바이트만으로 결정되므로 별도 variant가
+///   필요 없다. 이렇게 해야 작은 키 조회가 변환 메모의 전체 바이트 해시를 되풀이하지 않는다.
+///
+/// 접두어를 `img:` 가 아니라 `bin:` 으로 둔 것은 위 내용 키(`img:blake3:…`)와 한눈에
+/// 구분되게 하기 위해서다. 두 키는 서로 다른 이름공간이다.
+///
+/// 바이트를 내보내지 않는 op, 그리고 문서 BinData 에 대응하지 않는 합성 이미지
+/// (`bin_data_id == 0`)는 안정된 신원이 없으므로 `None` 이다 — 소비자는 캐시 대상에서
+/// 제외한다.
+pub fn source_image_key(
+    bin_data_epoch: u32,
+    image: &crate::renderer::render_tree::ImageNode,
+) -> Option<String> {
+    let data = image.data.as_deref()?;
+    if image.bin_data_id == 0 {
+        return None;
+    }
+
+    let bakes_watermark = crate::renderer::image_resolver::detect_image_mime_type(data)
+        == "image/jpeg"
+        && !matches!(image.effect, crate::model::image::ImageEffect::RealPic)
+        && (image.brightness != 0 || image.contrast != 0);
+    let variant = if bakes_watermark { "wmpng" } else { "src" };
+    Some(format!(
+        "bin:{bin_data_epoch}:{}:{variant}",
+        image.bin_data_id
+    ))
+}
+
 pub fn svg_resource_key(byte_len: usize, digest: &str) -> String {
     resource_key("svg", byte_len, digest)
 }
@@ -246,9 +296,11 @@ fn resource_key(kind: &str, byte_len: usize, digest: &str) -> String {
 mod tests {
     use super::{
         font_blob_resource_key, image_resource_key, resource_digest_hex, resource_fingerprint,
-        svg_resource_key, BinaryResourceKind, BinaryResourceRef, FontBlobResourceId,
-        ImageResourceId, ResourceArena, SvgResourceId,
+        source_image_key, svg_resource_key, BinaryResourceKind, BinaryResourceRef,
+        FontBlobResourceId, ImageResourceId, ResourceArena, SvgResourceId,
     };
+    use crate::model::image::ImageEffect;
+    use crate::renderer::render_tree::ImageNode;
 
     #[test]
     fn interns_duplicate_resources_once() {
@@ -357,5 +409,29 @@ mod tests {
             "svg:blake3:6:0123456789abcdef"
         );
         assert_eq!(font_blob_resource_key(8, "feed"), "font:blake3:8:feed");
+    }
+
+    #[test]
+    fn source_image_key_changes_only_when_jpeg_base64_is_baked() {
+        // MIME 판정은 다른 포맷의 8-byte magic과 같은 최소 길이 계약을 사용한다.
+        let mut image = ImageNode::new(
+            7,
+            Some(vec![0xff, 0xd8, 0xff, 0xe0, 0x00, 0x00, 0x00, 0x00]),
+        );
+        assert_eq!(source_image_key(3, &image).as_deref(), Some("bin:3:7:src"));
+
+        image.effect = ImageEffect::GrayScale;
+        image.brightness = 1;
+        assert_eq!(
+            source_image_key(3, &image).as_deref(),
+            Some("bin:3:7:wmpng")
+        );
+
+        // JPEG 이 아니면 효과 필드는 별도 JSON 속성일 뿐 base64 payload는 바뀌지 않는다.
+        image.data = Some(vec![0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a]);
+        assert_eq!(source_image_key(3, &image).as_deref(), Some("bin:3:7:src"));
+
+        image.bin_data_id = 0;
+        assert_eq!(source_image_key(3, &image), None);
     }
 }

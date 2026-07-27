@@ -425,7 +425,10 @@ test('PageRenderer deferred image rerender preserves static layer reuse policy',
   assert.match(source, /const job: ReRenderJob/);
   assert.match(source, /if \(rawSvgCount > 0\)/);
   assert.match(source, /earlyRawSvgTimers/);
-  assert.match(source, /this\.prefetchLayerImages\(pageIdx\)/);
+  assert.match(
+    source,
+    /this\.prefetchLayerImages\(\s*pageIdx,\s*rawSvgCount,\s*prefetchRequestToken\s*\)/,
+  );
   assert.match(source, /if \(decoded\) finish\(\)/);
   assert.equal(source.includes('const delays = [200, 600, 1500]'), false);
   assert.match(source, /this\.reRenderPageCanvases\(pageIdx,\s*canvas,\s*renderScale,\s*policy\)/);

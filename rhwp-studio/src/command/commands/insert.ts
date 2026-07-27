@@ -12,6 +12,7 @@ import type { ShapeType } from '@/ui/shape-picker';
 import type { CellPathLike } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { InputHandler } from '@/engine/input-handler';
+import type { RefreshPolicy } from '@/engine/command';
 
 /** 스텁 커맨드 생성 헬퍼 */
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
@@ -226,7 +227,9 @@ export const insertCommands: CommandDef[] = [
           // 커서는 라우터가 삽입 위치로 이동시킨다 — 필드 끝 밖 마킹·활성 필드 해제는 기존대로.
           ih.markCurrentFieldEndOutside();
           services.wasm.clearActiveField();
-          services.eventBus.emit('document-mutated', 'insert-field');
+          // [Task #2370] 수동 emit 제거 — 스냅샷 라우팅의 'full' refresh 가 afterEdit() 를
+          // 부르고 거기서 이미 'document-mutated'/'document-changed' 를 emit 한다.
+          // 구독자(markDirty·autosave)는 reason 을 라벨로만 쓰므로 중복 emit 은 순손해다.
           // 모달 확인 버튼으로 옮겨간 포커스를 편집기로 복원 — 종전엔 moveCursorTo 끝의
           // focusTextarea 가 담당했으나 라우터 경로엔 없다(field:edit 의 onClose 복원과 동형).
           ih.focus();
@@ -433,8 +436,7 @@ export const insertCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'shape') return;
-      recordObjectMutation(ih, 'changeZOrder', (wasm) => wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, 'front'));
-      ih.exitPictureObjectSelectionAndAfterEdit();
+      changeZOrder(services, ih, ref, 'front');
     },
   },
   {
@@ -446,8 +448,7 @@ export const insertCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'shape') return;
-      recordObjectMutation(ih, 'changeZOrder', (wasm) => wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, 'forward'));
-      ih.exitPictureObjectSelectionAndAfterEdit();
+      changeZOrder(services, ih, ref, 'forward');
     },
   },
   {
@@ -459,8 +460,7 @@ export const insertCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'shape') return;
-      recordObjectMutation(ih, 'changeZOrder', (wasm) => wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, 'backward'));
-      ih.exitPictureObjectSelectionAndAfterEdit();
+      changeZOrder(services, ih, ref, 'backward');
     },
   },
   {
@@ -472,8 +472,7 @@ export const insertCommands: CommandDef[] = [
       if (!ih) return;
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'shape') return;
-      recordObjectMutation(ih, 'changeZOrder', (wasm) => wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, 'back'));
-      ih.exitPictureObjectSelectionAndAfterEdit();
+      changeZOrder(services, ih, ref, 'back');
     },
   },
   {
@@ -495,7 +494,7 @@ export const insertCommands: CommandDef[] = [
         } else {
           wasm.deletePictureControl(ref.sec, ref.ppi, ref.ci);
         }
-      });
+      }, DEFER_REFRESH_TO_EXIT);
       ih.exitPictureObjectSelectionAndAfterEdit();
     },
   },
@@ -513,7 +512,7 @@ export const insertCommands: CommandDef[] = [
       const targets = refs.map(r => ({ paraIdx: r.ppi, controlIdx: r.ci }));
       try {
         let result: ReturnType<typeof services.wasm.groupShapes> | undefined;
-        recordObjectMutation(ih, 'groupShapes', (wasm) => { result = wasm.groupShapes(sec, targets); });
+        recordObjectMutation(ih, 'groupShapes', (wasm) => { result = wasm.groupShapes(sec, targets); }, DEFER_REFRESH_TO_EXIT);
         ih.exitPictureObjectSelectionAndAfterEdit();
         // 생성된 GroupShape를 선택
         if (result) ih.selectPictureObject(sec, result.paraIdx, result.controlIdx, 'group');
@@ -532,7 +531,7 @@ export const insertCommands: CommandDef[] = [
       const ref = ih.getSelectedPictureRef();
       if (!ref || ref.type !== 'group') return;
       try {
-        recordObjectMutation(ih, 'ungroupShape', (wasm) => wasm.ungroupShape(ref.sec, ref.ppi, ref.ci));
+        recordObjectMutation(ih, 'ungroupShape', (wasm) => { wasm.ungroupShape(ref.sec, ref.ppi, ref.ci); }, DEFER_REFRESH_TO_EXIT);
         ih.exitPictureObjectSelectionAndAfterEdit();
       } catch (err) {
         console.warn('[ungroup-shapes] 개체 풀기 실패:', err);
@@ -619,17 +618,50 @@ function getProps(services: import('../types').CommandServices, ref: PictureRef)
 function recordObjectMutation(
   ih: InputHandler,
   operationType: string,
-  mutate: (wasm: WasmBridge) => void,
+  mutate: (wasm: WasmBridge) => boolean | void,
+  opts?: { refresh?: RefreshPolicy },
 ): void {
   const pos = ih.getCursorPosition();
   ih.executeOperation({
     kind: 'snapshot',
     operationType,
-    operation: (wasm) => {
-      mutate(wasm);
-      return pos;
-    },
+    // [Task #2370] mutate 가 명시적으로 false 를 반환하면 문서 무변경 → 기록 취소.
+    // void 반환(대부분의 호출부)은 종전대로 항상 기록한다.
+    operation: (wasm) => (mutate(wasm) === false ? null : pos),
+    meta: opts?.refresh ? { refresh: opts.refresh } : undefined,
   });
+}
+
+/**
+ * [Task #2370 클러스터 B] 뒤에 `exitPictureObjectSelectionAndAfterEdit()` 가 따라오는
+ * 호출부용 옵션. 스냅샷 라우팅의 기본 'full' refresh 가 `afterEdit()` 를 부르고 곧바로
+ * 선택 해제가 또 `afterEdit()` 를 불러 중복 repaint 가 된다. 스냅샷 쪽 리프레시를 끄면
+ * 최종 상태(선택 해제까지 끝난) 기준 한 번만 그린다.
+ */
+const DEFER_REFRESH_TO_EXIT = { refresh: 'none' } as const;
+
+/**
+ * [Task #2370 클러스터 A] z순서 변경 — 이미 맨 앞/뒤라 바뀔 것이 없으면 기록하지 않는다.
+ *
+ * `change_shape_z_order_native`(shape.rs)는 경계 케이스에서 문서를 건드리지 않고
+ * `{ok:true, zOrder:<현재값>}` 을 그대로 돌려준다("이미 맨 앞/뒤" → `changes = None`).
+ * 반대로 실제로 바뀌는 경우 새 z 는 항상 이전과 다르다(front=max+1 · back=min-1 ·
+ * forward/backward=이웃 z 또는 ±1). 따라서 **반환 zOrder 와 호출 전 zOrder 의 일치가
+ * 곧 무변경 신호**다 — 이를 no-op 으로 보고해 phantom undo 엔트리와 스냅샷 2슬롯 점유를
+ * 막는다.
+ */
+function changeZOrder(
+  services: import('../types').CommandServices,
+  ih: InputHandler,
+  ref: PictureRef,
+  operation: 'front' | 'forward' | 'backward' | 'back',
+): void {
+  const zBefore = (getProps(services, ref) as { zOrder?: number }).zOrder;
+  recordObjectMutation(ih, 'changeZOrder', (wasm) => {
+    const r = wasm.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, operation);
+    return r.ok && r.zOrder !== zBefore;
+  }, DEFER_REFRESH_TO_EXIT);
+  ih.exitPictureObjectSelectionAndAfterEdit();
 }
 
 function setProps(services: import('../types').CommandServices, ref: PictureRef, props: Record<string, unknown>): any {

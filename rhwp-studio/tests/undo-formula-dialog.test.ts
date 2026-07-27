@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { balancedFrom } from './support/source-guard.ts';
 
 // [Task #formula-dialog] 계산식 다이얼로그 히스토리 라우팅 소스 가드.
 //
@@ -25,10 +26,11 @@ test('formula-dialog 는 services 주입 + tableFormula snapshot 라우팅 + fal
 
 test('commit + 쉼표 insert 는 하나의 commit 클로저로 원자화되고 dry-run 은 밖에 있다', () => {
   // 원자화: 두 뮤테이션이 같은 commit 클로저 안에 있어야 함(사이에 스냅샷 경계 금지).
+  // [Task #2370 클러스터 D] 종전에는 클로저의 끝을 주석 문자열(`catch { /* 쉼표…`)로
+  // 찾아 주석을 고치기만 해도 구간이 어긋났다 → 중괄호 매칭으로 본문을 잡는다.
   const commitStart = src.indexOf('const commit = () => {');
   assert.notEqual(commitStart, -1, 'commit 클로저 존재');
-  const commitEnd = src.indexOf('};', src.indexOf('catch { /* 쉼표', commitStart));
-  const commitBody = src.slice(commitStart, commitEnd);
+  const commitBody = balancedFrom(src, 'const commit = () => {', '{');
   assert.match(commitBody, /evaluateTableFormula\([\s\S]*?true,?\s*\)/, 'commit(write=true)은 클로저 안');
   assert.match(commitBody, /insertTextInCell\(/, '쉼표 insert 도 같은 클로저 안(원자화)');
   // dry-run(write=false) 검증은 클로저/스냅샷 밖(실패 시 no-op 스냅샷 방지).

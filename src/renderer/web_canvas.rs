@@ -665,10 +665,10 @@ impl WebCanvasRenderer {
                         baked_color_watermark = true;
                         std::borrow::Cow::Owned(png)
                     }
-                    None => std::borrow::Cow::Borrowed(img.data.as_slice()),
+                    None => std::borrow::Cow::Borrowed(&img.data[..]),
                 }
             } else {
-                std::borrow::Cow::Borrowed(img.data.as_slice())
+                std::borrow::Cow::Borrowed(&img.data[..])
             };
             let filter_str = if preserve_color_watermark {
                 if baked_color_watermark {
@@ -907,7 +907,7 @@ impl WebCanvasRenderer {
                         baked_watermark = true;
                         std::borrow::Cow::Owned(png)
                     }
-                    None => std::borrow::Cow::Borrowed(data.as_slice()),
+                    None => std::borrow::Cow::Borrowed(&data[..]),
                 }
             } else if is_watermark_image
                 && crate::renderer::image_resolver::detect_image_mime_type(data) == "image/jpeg"
@@ -919,10 +919,10 @@ impl WebCanvasRenderer {
                         baked_watermark = true;
                         std::borrow::Cow::Owned(png)
                     }
-                    None => std::borrow::Cow::Borrowed(data.as_slice()),
+                    None => std::borrow::Cow::Borrowed(&data[..]),
                 }
             } else {
-                std::borrow::Cow::Borrowed(data.as_slice())
+                std::borrow::Cow::Borrowed(&data[..])
             };
             let filter_str = if baked_watermark {
                 None

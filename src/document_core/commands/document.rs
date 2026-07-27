@@ -163,6 +163,7 @@ impl DocumentCore {
             pending_pagination_job: None,
             page_tree_cache: RefCell::new(Vec::new()),
             layer_tree_json_cache: RefCell::new(Vec::new()),
+            bin_data_epoch: 0,
             batch_mode: false,
             event_log: Vec::new(),
             overflow_links_cache: RefCell::new(HashMap::new()),
@@ -1103,6 +1104,7 @@ impl DocumentCore {
         let sec_count = document.sections.len();
 
         self.document = document;
+        self.bump_bin_data_epoch();
         self.styles = styles;
         self.composed = composed;
         self.clipboard = None;
@@ -1449,6 +1451,7 @@ impl DocumentCore {
     /// 문서 IR을 직접 설정한다 (테스트/네이티브 전용).
     pub fn set_document(&mut self, doc: Document) {
         self.document = doc;
+        self.bump_bin_data_epoch();
         self.styles = resolve_styles(&self.document.doc_info, self.dpi);
         self.composed = self
             .document
@@ -1497,6 +1500,16 @@ impl DocumentCore {
         id
     }
 
+    /// 그림 신원 키의 세대를 올린다 (Task #3315).
+    ///
+    /// `bin_data_id` 등록은 append-only 라 세션 중 id→바이트가 안정하다. 그 안정성을 깨는
+    /// 것은 **문서를 통째로 갈아끼우는 연산**뿐이므로 — 스냅샷 복원, 새 문서 생성,
+    /// `set_document` — 그 세 곳에서만 올린다. 그림 추가에서 올리면 바이트가 그대로인
+    /// 다른 그림의 키까지 바뀌어, 키를 두는 이유(편집 사이 안정성)가 사라진다.
+    pub(crate) fn bump_bin_data_epoch(&mut self) {
+        self.bin_data_epoch = self.bin_data_epoch.wrapping_add(1);
+    }
+
     /// 지정 ID의 스냅샷으로 Document를 복원한다.
     /// 스타일 재해소 + 문단 구성 + 페이지네이션까지 수행.
     pub fn restore_snapshot_native(&mut self, id: u32) -> Result<String, HwpError> {
@@ -1507,6 +1520,7 @@ impl DocumentCore {
             .ok_or_else(|| HwpError::RenderError(format!("스냅샷 {} 없음", id)))?;
         let (_, doc) = self.snapshot_store[idx].clone();
         self.document = doc;
+        self.bump_bin_data_epoch();
         // 캐시 전체 재구성
         self.styles = resolve_styles(&self.document.doc_info, self.dpi);
         self.composed = self

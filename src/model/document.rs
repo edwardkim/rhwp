@@ -363,13 +363,14 @@ impl Document {
         let idx = (bin_data_id as usize).saturating_sub(1);
         if idx < self.bin_data_content.len() {
             self.bin_data_content[idx].id = bin_data_id;
-            self.bin_data_content[idx].data = data.into();
+            self.bin_data_content[idx].data =
+                crate::model::bin_data::BinDataBytes::from_shared(data);
             self.bin_data_content[idx].extension = extension;
         } else {
             self.bin_data_content
                 .push(crate::model::bin_data::BinDataContent {
                     id: bin_data_id,
-                    data: data.into(),
+                    data: crate::model::bin_data::BinDataBytes::from_shared(data),
                     extension,
                 });
         }

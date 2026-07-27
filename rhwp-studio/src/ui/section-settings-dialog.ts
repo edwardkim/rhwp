@@ -3,6 +3,7 @@ import type { WasmBridge } from '@/core/wasm-bridge';
 import type { SectionDef } from '@/core/types';
 import type { EventBus } from '@/core/event-bus';
 import type { CommandServices } from '@/command/types';
+import { applyThroughRouter } from './dialog-apply';
 
 const HWPUNIT_PER_PT = 100; // 1pt = 100 HWPUNIT (HWP 내부 단위)
 
@@ -123,7 +124,7 @@ export class SectionSettingsDialog extends ModalDialog {
     return body;
   }
 
-  protected onConfirm(): void {
+  protected onConfirm(): boolean {
     const pageComboVal = this.pageNumCombo.select.value;
     // pageNumType: 0=이어서, 1=홀수, 2=짝수
     // pageNum: 사용자 선택 시 입력값, 그 외 0
@@ -161,16 +162,13 @@ export class SectionSettingsDialog extends ModalDialog {
       ? this.wasm.setSectionDefAll(newDef)
       : this.wasm.setSectionDef(this.sectionIdx, newDef);
     // [구역 설정 이관] snapshot 으로 라우팅(#2077 동형). services 미주입 시 직접 적용 fallback.
-    const ih = this.services?.getInputHandler();
-    if (ih) {
-      ih.executeOperation({
-        kind: 'snapshot',
-        operationType: 'sectionSettings',
-        operation: () => { apply(); return ih.getCursorPosition(); },
-      });
-    } else if (apply().ok) {
-      this.eventBus.emit('document-changed');
-    }
+    return applyThroughRouter({
+      services: this.services,
+      label: 'SectionSettingsDialog',
+      operationType: 'sectionSettings',
+      operation: (ih) => { apply(); return ih.getCursorPosition(); },
+      fallback: () => { if (apply().ok) this.eventBus.emit('document-changed'); },
+    });
   }
 
   private populateFields(): void {

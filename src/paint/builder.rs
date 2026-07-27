@@ -11,6 +11,7 @@ use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
 pub struct LayerBuilder {
     profile: RenderProfile,
     output_options: LayerOutputOptions,
+    bin_data_epoch: u32,
 }
 
 impl LayerBuilder {
@@ -18,11 +19,17 @@ impl LayerBuilder {
         Self {
             profile,
             output_options: LayerOutputOptions::default(),
+            bin_data_epoch: 0,
         }
     }
 
     pub fn with_output_options(mut self, output_options: LayerOutputOptions) -> Self {
         self.output_options = output_options;
+        self
+    }
+
+    pub fn with_bin_data_epoch(mut self, bin_data_epoch: u32) -> Self {
+        self.bin_data_epoch = bin_data_epoch;
         self
     }
 
@@ -51,7 +58,8 @@ impl LayerBuilder {
 
         let mut layer_tree =
             PageLayerTree::with_profile(page_width, page_height, root, self.profile)
-                .with_output_options(self.output_options);
+                .with_output_options(self.output_options)
+                .with_bin_data_epoch(self.bin_data_epoch);
         lower_font_native_glyph_sidecars(&mut layer_tree.root, &mut layer_tree.resources, fonts);
         layer_tree
     }

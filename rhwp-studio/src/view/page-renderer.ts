@@ -2,6 +2,13 @@ import { WasmBridge } from '@/core/wasm-bridge';
 import type { LayerRenderProfile } from '@/core/types';
 import { layerPaintOpReplayPlane } from './canvaskit/replay-plane';
 import type { CanvasKitLayerRenderer, CanvasKitRenderDiagnostics } from './canvaskit-renderer';
+import {
+  cacheableImageKeySignature,
+  collectImagePrefetchDataUrls,
+  completeImagePrefetch,
+  shouldSkipImagePrefetch,
+  type PrefetchSignature,
+} from './image-prefetch-signature.ts';
 import { collectVectorRawSvgDataUrls } from './raw-svg-prefetch';
 import {
   collectFlowImagePaintOps,
@@ -62,6 +69,17 @@ export class PageRenderer {
   private imageRetryCounts = new Map<number, string>();
   private layerSummaryCache = new Map<number, LayerSummaryCacheEntry>();
   private canvaskitDiagnosticsByPage = new Map<number, CanvasKitRenderDiagnostics>();
+  /**
+   * prefetch 를 끝낸 페이지의 그림 서명 (Task #3315).
+   *
+   * 내용에서 유도된 키라 스스로 무효화된다 — 편집 때 비우지 않는다. 비우면 서명을 두는
+   * 의미가 사라진다. 문서 경계는 서명이 들고 다니는 `documentDigest` 로 갈린다 —
+   * `PageRenderer` 는 문서보다 오래 살고 문서 로드 경로가 이 맵을 비우지 않으므로,
+   * 비우기에 기대지 않고 항목 자체가 어느 문서의 것인지 말하게 한다.
+   */
+  private prefetchedImageSignatures = new Map<number, PrefetchSignature>();
+  private prefetchRequestTokens = new Map<number, number>();
+  private nextPrefetchRequestToken = 0;
   private flowSplitSupported: boolean | null = null;
 
   constructor(
@@ -859,6 +877,8 @@ export class PageRenderer {
 
     this.cancelReRender(pageIdx);
     this.imageRetryCounts.set(pageIdx, retryKey);
+    const prefetchRequestToken = ++this.nextPrefetchRequestToken;
+    this.prefetchRequestTokens.set(pageIdx, prefetchRequestToken);
 
     const job: ReRenderJob = {
       fallbackTimer: 0 as unknown as ReturnType<typeof setTimeout>,
@@ -892,7 +912,7 @@ export class PageRenderer {
 
     // 자체 prefetch로 실제 decode를 마친 경우에만 fallback보다 먼저 다시 그린다.
     queueMicrotask(() => {
-      this.prefetchLayerImages(pageIdx)
+      this.prefetchLayerImages(pageIdx, rawSvgCount, prefetchRequestToken)
         .then((decoded) => {
           if (decoded) finish();
         })
@@ -968,36 +988,73 @@ export class PageRenderer {
    * 자체 prefetch 하여 모든 이미지가 브라우저에 디코드 완료될 때까지 대기.
    * Task #1154 — IMAGE_CACHE 의 비동기 디코드 누락 안전망.
    */
-  private async prefetchLayerImages(pageIdx: number): Promise<boolean> {
+  private async prefetchLayerImages(
+    pageIdx: number,
+    rawSvgCount: number,
+    prefetchRequestToken: number,
+  ): Promise<boolean> {
+    // [#3315] 그림이 그대로면 다시 디코드시킬 것이 없다. 서명 조회는 수백 바이트인데
+    // 아래의 전체 레이어 트리 조회는 그림 1장에 수 MB 라, 편집마다 되풀이할 값이 아니다.
+    const imageKeys = cacheableImageKeySignature(this.wasm.getPageSourceImageKeys(pageIdx));
+    const documentDigest = this.wasm.documentDigest;
+    const documentGeneration = this.wasm.documentGeneration;
+    if (
+      shouldSkipImagePrefetch(
+        this.prefetchedImageSignatures.get(pageIdx),
+        imageKeys,
+        documentDigest,
+        documentGeneration,
+        rawSvgCount,
+      )
+    ) {
+      return true;
+    }
+
     let json: string;
     try {
       json = this.wasm.getPageLayerTree(pageIdx);
     } catch {
       return false;
     }
-    const tasks: Promise<unknown>[] = [];
+    const tasks: Promise<boolean>[] = [];
     const seen = new Set<string>();
     const enqueue = (dataUrl: string) => {
       if (seen.has(dataUrl)) return;
       seen.add(dataUrl);
       tasks.push(
-        new Promise<void>((resolve) => {
+        new Promise<boolean>((resolve) => {
           const img = new Image();
-          img.onload = () => resolve();
-          img.onerror = () => resolve();
+          let settled = false;
+          const finish = (ok: boolean) => {
+            if (settled) return;
+            settled = true;
+            resolve(ok);
+          };
+          const supportsDecode = typeof img.decode === 'function';
+          img.onload = () => {
+            if (!supportsDecode) finish(true);
+          };
+          img.onerror = () => finish(false);
           img.src = dataUrl;
           // decode() 이 더 정확하지만 일부 브라우저 미지원
-          if (typeof img.decode === 'function') {
-            img.decode().then(() => resolve()).catch(() => resolve());
+          if (supportsDecode) {
+            try {
+              img.decode().then(() => finish(true)).catch(() => finish(false));
+            } catch {
+              finish(false);
+            }
           }
         }),
       );
     };
-    // image 항목들의 mime + base64 추출 (간단한 정규식)
-    const re = /"type":"image"[^}]*?(?:"wrap":"(behindText|inFrontOfText)")?[^}]*?"mime":"([^"]+)","base64":"([^"]+)"/g;
-    let m: RegExpExecArray | null;
-    while ((m = re.exec(json)) !== null) {
-      enqueue(`data:${m[2]};base64,${m[3]}`);
+    let layerTree: unknown = null;
+    try {
+      layerTree = JSON.parse(json);
+      const imageDataUrls: string[] = [];
+      collectImagePrefetchDataUrls(layerTree, imageDataUrls);
+      for (const dataUrl of imageDataUrls) enqueue(dataUrl);
+    } catch {
+      // 유효한 PageLayerTree JSON이 아니면 완료 서명을 기록하지 않고 다음 렌더에서 재시도한다.
     }
     // rawSvg 항목 (OLE/차트 미리보기) 의 embedded data URL 추출.
     // svg 필드는 JSON 인코딩 문자열이며 내부에 data:image/MIME;base64,... 가 등장한다.
@@ -1011,25 +1068,30 @@ export class PageRenderer {
     // 잡히지 않는다. web_canvas.render_raw_svg 와 동일하게 조각을 wrap 한 SVG data URL
     // 을 프리페치해야 비동기 로드 완료 신호를 얻어 지연 재렌더(finish)가 발동하고,
     // WASM 캐시의 SVG 이미지가 로드 완료 상태로 flow-static overlay 에 그려진다.
-    if (json.includes('"type":"rawSvg"')) {
-      try {
-        const vectorRawSvgUrls: string[] = [];
-        collectVectorRawSvgDataUrls(JSON.parse(json), vectorRawSvgUrls);
-        for (const dataUrl of vectorRawSvgUrls) enqueue(dataUrl);
-      } catch {
-        // 파싱 실패 시 raster 프리페치 결과만 사용한다.
+    const hadRawSvg = json.includes('"type":"rawSvg"');
+    if (hadRawSvg && layerTree !== null) {
+      const vectorRawSvgUrls: string[] = [];
+      collectVectorRawSvgDataUrls(layerTree, vectorRawSvgUrls);
+      for (const dataUrl of vectorRawSvgUrls) enqueue(dataUrl);
+    }
+    return completeImagePrefetch(tasks, () => (
+      this.prefetchRequestTokens.get(pageIdx) === prefetchRequestToken
+      && this.wasm.documentGeneration === documentGeneration
+    ), () => {
+      if (imageKeys !== null && documentDigest !== null) {
+        this.prefetchedImageSignatures.set(pageIdx, {
+          documentDigest,
+          documentGeneration,
+          imageKeys,
+          hadRawSvg,
+        });
       }
-    }
-    if (tasks.length === 0) {
-      // URL을 수집하지 못한 순수 rawSvg는 upstream의 조기 재렌더 경로를 사용한다.
-      return true;
-    }
-    await Promise.all(tasks);
-    return true;
+    });
   }
 
   /** 특정 페이지의 지연 재렌더링을 취소한다 */
   cancelReRender(pageIdx: number): void {
+    this.prefetchRequestTokens.delete(pageIdx);
     const job = this.reRenderJobs.get(pageIdx);
     if (job) {
       job.completed = true;
@@ -1047,16 +1109,20 @@ export class PageRenderer {
       for (const timer of job.earlyRawSvgTimers) clearTimeout(timer);
     }
     this.reRenderJobs.clear();
+    this.prefetchRequestTokens.clear();
   }
 
   resetImageRetryState(): void {
     this.imageRetryCounts.clear();
+    this.prefetchRequestTokens.clear();
     this.layerSummaryCache.clear();
     this.canvaskitDiagnosticsByPage.clear();
   }
 
   dispose(): void {
     this.cancelAll();
+    this.prefetchedImageSignatures.clear();
+    this.prefetchRequestTokens.clear();
     this.layerSummaryCache.clear();
     this.canvaskitDiagnosticsByPage.clear();
     this.canvaskitRenderer = null;

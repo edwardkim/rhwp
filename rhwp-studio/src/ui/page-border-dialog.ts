@@ -1,6 +1,7 @@
 import { ModalDialog } from './dialog';
 import type { EventBus } from '@/core/event-bus';
 import type { CommandServices } from '@/command/types';
+import { applyThroughRouter } from './dialog-apply';
 import type { PageBorderFillSettings, BorderLineProps } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 
@@ -110,7 +111,7 @@ export class PageBorderDialog extends ModalDialog {
     return body;
   }
 
-  protected onConfirm(): void {
+  protected onConfirm(): boolean {
     const applyPage = this.radioValue('page-border-apply', 'all');
     const next: PageBorderFillSettings = {
       ...this.settings,
@@ -137,17 +138,13 @@ export class PageBorderDialog extends ModalDialog {
 
     // [쪽 테두리/배경 이관] snapshot 으로 라우팅(#2077 동형). services 미주입 시 직접 적용 fallback.
     const apply = () => this.wasm.setPageBorderFill(this.sectionIdx, next);
-    const ih = this.services?.getInputHandler();
-    if (ih) {
-      ih.executeOperation({
-        kind: 'snapshot',
-        operationType: 'pageBorder',
-        operation: () => { apply(); return ih.getCursorPosition(); },
-      });
-    } else {
-      apply();
-      this.eventBus.emit('document-changed');
-    }
+    return applyThroughRouter({
+      services: this.services,
+      label: 'PageBorderDialog',
+      operationType: 'pageBorder',
+      operation: (ih) => { apply(); return ih.getCursorPosition(); },
+      fallback: () => { apply(); this.eventBus.emit('document-changed'); },
+    });
   }
 
   private buildBorderTab(): HTMLElement {

@@ -1,8 +1,8 @@
 use std::fmt::Write as _;
 
-use base64::Engine;
-
-use crate::document_core::helpers::{color_ref_to_css, json_escape as raw_json_escape};
+use crate::document_core::helpers::{
+    color_ref_to_css, json_escape as raw_json_escape, write_json_base64,
+};
 use crate::model::control::FormType;
 use crate::model::image::ImageEffect;
 use crate::model::style::{ImageFillMode, UnderlineType};
@@ -98,8 +98,12 @@ impl PageLayerTree {
             self.page_height
         );
         let mut text_source_state = TextSourceExportState::default();
-        self.root
-            .write_json(&mut buf, &mut text_source_state, &self.resources);
+        self.root.write_json(
+            &mut buf,
+            &mut text_source_state,
+            &self.resources,
+            self.resources.source_image_epoch(),
+        );
         buf.push_str(",\"textSources\":");
         write_text_source_entries(&mut buf, &self.text_sources);
         buf.push_str(",\"fontResources\":");
@@ -378,6 +382,7 @@ impl LayerNode {
         buf: &mut String,
         text_sources: &mut TextSourceExportState,
         resources: &ResourceArena,
+        bin_data_epoch: u32,
     ) {
         buf.push('{');
         buf.push_str("\"bounds\":");
@@ -407,7 +412,7 @@ impl LayerNode {
                     if idx > 0 {
                         buf.push(',');
                     }
-                    child.write_json(buf, text_sources, resources);
+                    child.write_json(buf, text_sources, resources, bin_data_epoch);
                 }
                 buf.push(']');
             }
@@ -424,7 +429,7 @@ impl LayerNode {
                     json_escape(clip_kind_str(*clip_kind))
                 );
                 buf.push_str(",\"child\":");
-                child.write_json(buf, text_sources, resources);
+                child.write_json(buf, text_sources, resources, bin_data_epoch);
             }
             LayerNodeKind::Leaf { ops } => {
                 buf.push_str(",\"kind\":\"leaf\",\"ops\":[");
@@ -433,7 +438,7 @@ impl LayerNode {
                     if idx > 0 {
                         buf.push(',');
                     }
-                    op.write_json(buf, text_sources, &leaf_visuals, resources);
+                    op.write_json(buf, text_sources, &leaf_visuals, resources, bin_data_epoch);
                 }
                 buf.push(']');
             }
@@ -449,6 +454,7 @@ impl PaintOp {
         text_sources: &mut TextSourceExportState,
         leaf_visuals: &LeafTextVisualOps,
         resources: &ResourceArena,
+        bin_data_epoch: u32,
     ) {
         match self {
             PaintOp::PageBackground { bbox, background } => {
@@ -475,13 +481,13 @@ impl PaintOp {
                     write_gradient(buf, gradient);
                 }
                 if let Some(image) = &background.image {
-                    let base64_data = base64::engine::general_purpose::STANDARD.encode(&image.data);
                     let _ = write!(
                         buf,
-                        ",\"image\":{{\"fillMode\":{},\"base64\":{}}}",
+                        ",\"image\":{{\"fillMode\":{},\"base64\":",
                         json_escape(image_fill_mode_str(image.fill_mode)),
-                        json_escape(&base64_data),
                     );
+                    write_json_base64(buf, &image.data[..]);
+                    buf.push('}');
                 }
                 buf.push('}');
             }
@@ -829,14 +835,8 @@ impl PaintOp {
                 buf.push_str("\"type\":\"image\",\"bbox\":");
                 write_bbox(buf, *bbox);
                 if let Some(payload) = resolved.as_deref() {
-                    let base64_data =
-                        base64::engine::general_purpose::STANDARD.encode(&payload.data);
-                    let _ = write!(
-                        buf,
-                        ",\"mime\":\"{}\",\"base64\":{}",
-                        payload.mime,
-                        json_escape(&base64_data)
-                    );
+                    let _ = write!(buf, ",\"mime\":\"{}\",\"base64\":", payload.mime);
+                    write_json_base64(buf, &payload.data[..]);
                     if matches!(payload.kind, ResolvedImageKind::BakedWatermark) {
                         buf.push_str(",\"bakedWatermark\":true");
                     }
@@ -849,36 +849,33 @@ impl PaintOp {
                     {
                         match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
                             Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                            None => (mime, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else if mime == "image/bmp" {
                         match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
                             Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                            None => (mime, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else if mime == "image/tiff" {
                         match crate::renderer::image_resolver::tiff_bytes_to_png_bytes(data) {
                             Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                            None => (mime, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else if mime == "image/jpeg" {
                         match crate::renderer::image_resolver::grayscale_jpeg_bytes_to_png_bytes(
                             data,
                         ) {
                             Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (mime, std::borrow::Cow::Borrowed(data.as_slice())),
+                            None => (mime, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else {
-                        (mime, std::borrow::Cow::Borrowed(data.as_slice()))
+                        (mime, std::borrow::Cow::Borrowed(&data[..]))
                     };
-                    let base64_data =
-                        base64::engine::general_purpose::STANDARD.encode(&*final_data);
-                    let _ = write!(
-                        buf,
-                        ",\"mime\":\"{}\",\"base64\":{}",
-                        final_mime,
-                        json_escape(&base64_data)
-                    );
+                    let _ = write!(buf, ",\"mime\":\"{}\",\"base64\":", final_mime);
+                    write_json_base64(buf, &final_data);
+                }
+                if let Some(key) = crate::paint::source_image_key(bin_data_epoch, image) {
+                    let _ = write!(buf, ",\"sourceImageKey\":{}", json_escape(&key));
                 }
                 if let Some(fill_mode) = image.fill_mode {
                     let _ = write!(
@@ -1177,8 +1174,7 @@ fn write_visual_resources(buf: &mut String, resources: &ResourceArena) {
         if index > 0 {
             buf.push(',');
         }
-        let encoded = base64::engine::general_purpose::STANDARD.encode(bytes);
-        buf.push_str(&json_escape(&encoded));
+        write_json_base64(buf, bytes);
     }
     buf.push_str("],\"imageKeys\":[");
     for index in 0..resources.image_count() {
@@ -3085,8 +3081,8 @@ mod tests {
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
     use crate::renderer::render_tree::{
-        EquationNode, FieldMarkerType, ImageNode, PathNode, PlaceholderNode, RawSvgNode,
-        RenderLayerInfo, TextRunNode,
+        EquationNode, FieldMarkerType, ImageNode, PageBackgroundImage, PageBackgroundNode,
+        PathNode, PlaceholderNode, RawSvgNode, RenderLayerInfo, TextRunNode,
     };
     use serde_json::Value;
 
@@ -4300,7 +4296,7 @@ mod tests {
 
         let json = tree.to_json();
 
-        assert!(json.contains("\"schemaMinorVersion\":19"));
+        assert!(json.contains("\"schemaMinorVersion\":20"));
         assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:bitmapGlyph:imageRef:0"));
         assert!(json.contains("placement:0.123,0.568,10.988,10.543"));
         assert!(json.contains(&format!(":resource:{image_resource_key}\"")));
@@ -4320,6 +4316,59 @@ mod tests {
         assert!(json.contains(&format!("\"imageKeys\":[\"{image_resource_key}\"]")));
         assert!(json.contains(&format!("\"svgKeys\":[\"{svg_resource_key}\"]")));
         assert!(json.contains("\"svgFragments\":[\"<path d=\\\"M0 0H10V10Z\\\"/>\"]"));
+    }
+
+    /// 그림 바이트는 base64 로 나가므로 이스케이프 대상이 없다 — 그 전제로 이스케이프
+    /// 스캔을 없앴으니, 제어문자·따옴표·역슬래시를 포함한 바이트도 JSON 파서를 통과해
+    /// 원본으로 되돌아오는지 왕복으로 고정한다 (Task #3315).
+    #[test]
+    fn image_bytes_survive_json_round_trip_for_every_byte_value() {
+        use base64::Engine;
+
+        let image_bytes: Vec<u8> = (0..=255u8).collect();
+        let background = PageBackgroundNode {
+            background_color: None,
+            border_color: None,
+            border_width: 0.0,
+            gradient: None,
+            image: Some(PageBackgroundImage {
+                data: image_bytes.clone(),
+                fill_mode: ImageFillMode::FitToSize,
+                brightness: 0,
+                contrast: 0,
+                effect: ImageEffect::RealPic,
+            }),
+        };
+
+        let tree = PageLayerTree::new(
+            120.0,
+            80.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 120.0, 80.0),
+                None,
+                vec![
+                    PaintOp::page_background(BoundingBox::new(0.0, 0.0, 120.0, 80.0), background),
+                    PaintOp::image(
+                        BoundingBox::new(3.0, 4.0, 30.0, 20.0),
+                        ImageNode::new(7, Some(image_bytes.clone())),
+                        None,
+                    ),
+                ],
+            ),
+        );
+
+        let value: Value = serde_json::from_str(&tree.to_json()).expect("valid layer JSON");
+        let ops = value["root"]["ops"].as_array().expect("ops");
+
+        let decode = |op: &Value, pointer: &str| {
+            let encoded = op.pointer(pointer).and_then(Value::as_str).expect(pointer);
+            base64::engine::general_purpose::STANDARD
+                .decode(encoded)
+                .expect("base64 왕복")
+        };
+
+        assert_eq!(decode(&ops[0], "/image/base64"), image_bytes);
+        assert_eq!(decode(&ops[1], "/base64"), image_bytes);
     }
 
     #[test]

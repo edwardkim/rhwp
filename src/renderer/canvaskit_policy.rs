@@ -513,7 +513,7 @@ fn render_node_prelower_work_units(node_type: &RenderNodeType) -> Option<usize> 
             true,
         ),
         RenderNodeType::Path(path) => (2usize.checked_add(path.commands.len())?, 0, false),
-        RenderNodeType::Image(image) => (2, image.data.as_ref().map_or(0, Vec::len), false),
+        RenderNodeType::Image(image) => (2, image.data.as_ref().map_or(0, |d| d.len()), false),
         RenderNodeType::PageBackground(background) => (
             2,
             background
@@ -713,7 +713,7 @@ fn paint_op_work_units(op: &PaintOp) -> usize {
         } => resolved
             .as_deref()
             .map(|payload| payload.data.len())
-            .or_else(|| image.data.as_ref().map(Vec::len))
+            .or_else(|| image.data.as_ref().map(|d| d.len()))
             .unwrap_or_default(),
         PaintOp::Equation { equation, .. } => equation.svg_content.len(),
         PaintOp::FormObject { form, .. } => form
@@ -2141,7 +2141,7 @@ fn image_payload_bytes<'a>(
     resolved: Option<&'a ResolvedImagePayload>,
 ) -> Option<&'a [u8]> {
     resolved
-        .map(|payload| payload.data.as_slice())
+        .map(|payload| &payload.data[..])
         .or(image.data.as_deref())
 }
 

@@ -168,6 +168,8 @@ export class WasmBridge {
   private _fileName = 'document.hwp';
   private _currentFileHandle: FileSystemFileHandleLike | null = null;
   private _documentDigest: string | null = null;
+  /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
+  private _documentGeneration = 0;
   /** [#3313] 외부 연결 그림 비동기 주입 완료 훅 — 주입 성공(>0)시에만 호출된다.
    * 첫 렌더 이후에 fetch 가 끝나면 뷰가 재갱신 없이는 이미지를 표시하지 못하므로,
    * main 쪽에서 뷰 갱신을 배선한다 (dirty 마킹 없는 뷰 전용 경로여야 함). */
@@ -269,6 +271,7 @@ export class WasmBridge {
       this.ensureParagraphStableIds();
       this.doc.setFileName(this._fileName);
       const info: DocumentInfo = JSON.parse(this.doc.getDocumentInfo());
+      this._documentGeneration += 1;
       console.log(`[WasmBridge] 문서 로드: ${info.pageCount}페이지`);
 
       // [Task #741 후속] 외부 file path 그림 영역 영역 dev 환경 영역 영역 fetch (basename 영역
@@ -358,6 +361,7 @@ export class WasmBridge {
     } catch {
       this._documentDigest = null;
     }
+    this._documentGeneration += 1;
     console.log(`[WasmBridge] 새 문서 생성: ${info.pageCount}페이지`);
     return info;
   }
@@ -368,6 +372,10 @@ export class WasmBridge {
 
   get documentDigest(): string | null {
     return this._documentDigest;
+  }
+
+  get documentGeneration(): number {
+    return this._documentGeneration;
   }
 
   set fileName(name: string) {
@@ -641,6 +649,24 @@ export class WasmBridge {
       return d.getPageLayerTree(pageNum);
     }
     return '{"pageWidth":0,"pageHeight":0,"profile":"screen","buildOptions":{"showTransparentBorders":false,"clipEnabled":true},"debugOptions":{"debugOverlay":false},"outputOptions":{"showParagraphMarks":false,"showControlCodes":false,"showTransparentBorders":false,"clipEnabled":true,"debugOverlay":false},"root":{"kind":"leaf","bounds":{"x":0,"y":0,"width":0,"height":0},"ops":[]}}';
+  }
+
+  /**
+   * 페이지가 그리는 그림들의 신원 키만 받는다 (Task #3315).
+   *
+   * "그림이 그대로면 앞서 만든 디코드 결과를 재사용"을 판정하는 서명이다. 같은 판정을
+   * PageLayerTree JSON 으로 하면 그림 1장에 수 MB 를 다시 받아 훑어야 한다.
+   * 구형 WASM(키 조회 미지원)에서는 `null` — 호출부는 종전대로 매번 다시 계산한다.
+   */
+  getPageSourceImageKeys(pageNum: number): string | null {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { getPageSourceImageKeys?: (p: number) => string };
+    if (typeof d.getPageSourceImageKeys !== 'function') return null;
+    try {
+      return d.getPageSourceImageKeys(pageNum);
+    } catch {
+      return null;
+    }
   }
 
   getPageLayerTreeObject(pageNum: number, profile: LayerRenderProfile = 'screen'): PageLayerTree {

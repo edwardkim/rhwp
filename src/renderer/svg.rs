@@ -1374,32 +1374,20 @@ impl SvgRenderer {
             if preserve_color_watermark {
                 match real_picture_watermark_bytes_to_hancom_tone_png_bytes(&img.data) {
                     Some(png) => (std::borrow::Cow::Owned(png), "image/png"),
-                    None => (
-                        std::borrow::Cow::Borrowed(img.data.as_slice()),
-                        detected_mime,
-                    ),
+                    None => (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime),
                 }
             } else if detected_mime == "image/bmp" {
                 match bmp_bytes_to_png_bytes(&img.data) {
                     Some(png) => (std::borrow::Cow::Owned(png), "image/png"),
-                    None => (
-                        std::borrow::Cow::Borrowed(img.data.as_slice()),
-                        detected_mime,
-                    ),
+                    None => (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime),
                 }
             } else if detected_mime == "image/x-pcx" {
                 match pcx_bytes_to_png_bytes(&img.data) {
                     Some(png) => (std::borrow::Cow::Owned(png), "image/png"),
-                    None => (
-                        std::borrow::Cow::Borrowed(img.data.as_slice()),
-                        detected_mime,
-                    ),
+                    None => (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime),
                 }
             } else {
-                (
-                    std::borrow::Cow::Borrowed(img.data.as_slice()),
-                    detected_mime,
-                )
+                (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime)
             };
         let base64_data = base64::engine::general_purpose::STANDARD.encode(&*render_bytes);
         let data_uri = format!("data:{};base64,{}", render_mime, base64_data);
