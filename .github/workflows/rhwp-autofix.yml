@@ -7,7 +7,10 @@ name: rhwp autofix bot
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    # GitHub 의 schedule 은 best-effort 다. 정시(:00/:30)는 전 세계 cron 이 몰리는 혼잡
+    # 슬롯이라 수십 분씩 밀리거나 통째로 건너뛴다 — 실측으로 */30 이 95~107분 간격으로
+    # 격하됐다. 한적한 분(:13/:43)으로 옮기면 같은 빈도(시간당 2회)로 지연이 크게 준다.
+    - cron: "13,43 * * * *"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -249,11 +252,33 @@ jobs:
           MODEL: ${{ steps.nim.outputs.model }}
         run: |
           set -uo pipefail
-          aider --model "openai/${MODEL}" \
-            --yes-always --no-auto-commits --no-analytics --no-gitignore \
-            --no-show-model-warnings --map-tokens 1024 --edit-format diff \
-            --message "$(cat ../bot/.github/autofix/fix-prompt.md)" \
-            2>&1 | tee ../fix.log || true
+          # run #10 사고: 모델이 유일한 턴을 "cat FINDING.md 하겠다"는 말로 소진하고 끝나
+          # 사이클이 통째로 버려졌다. 읽을 파일은 전부 컨텍스트로 직접 주고(--read + 본문
+          # 인라인), 산출물(AUTOFIX_RESULT.md)이 나올 때까지 최대 3턴 이어간다.
+          READS=(--read FINDING.md)
+          [ -f AGENTS.md ] && READS+=(--read AGENTS.md)
+          [ -f CONTRIBUTING.md ] && READS+=(--read CONTRIBUTING.md)
+          {
+            cat ../bot/.github/autofix/fix-prompt.md
+            printf '\n---\n\n## FINDING.md 전문 (파일을 다시 읽을 필요 없다 — 아래가 전부다)\n\n'
+            cat FINDING.md
+          } > /tmp/fix-msg.md
+
+          run_aider() {
+            aider --model "openai/${MODEL}" \
+              --yes-always --no-auto-commits --no-analytics --no-gitignore \
+              --no-show-model-warnings --map-tokens 1024 --edit-format diff \
+              "${READS[@]}" "$@" 2>&1 | tee -a ../fix.log || true
+          }
+
+          : > ../fix.log
+          run_aider --message "$(cat /tmp/fix-msg.md)"
+          for TURN in 2 3; do
+            [ -f AUTOFIX_RESULT.md ] && break
+            echo "--- ${TURN}턴: AUTOFIX_RESULT.md 미생성 — 대화를 복원해 이어간다 ---" | tee -a ../fix.log
+            run_aider --restore-chat-history \
+              --message "아직 루트에 AUTOFIX_RESULT.md 가 없다. 지시서의 남은 단계(재현 → red 회귀 테스트 작성 → src/ 최소 수정 → AUTOFIX_RESULT.md 작성)를 지금 끝내라. 포기하는 경우에도 status: NO-FINDING 으로 AUTOFIX_RESULT.md 는 반드시 남겨라."
+          done
 
       - name: 탐색 실행
         id: hunt
@@ -269,11 +294,35 @@ jobs:
           HUNT_EXCLUDE: ${{ needs.guard.outputs.exclude }}
         run: |
           set -uo pipefail
-          aider --model "openai/${MODEL}" \
-            --yes-always --no-auto-commits --no-analytics --no-gitignore \
-            --no-show-model-warnings --map-tokens 1024 --edit-format diff \
-            --message "$(cat ../bot/.github/autofix/hunt-prompt.md)" \
-            2>&1 | tee ../hunt.log || true
+          # 모델은 셸 환경변수를 볼 수 없다 — HUNT_* 값을 메시지 본문에 직접 인라인한다.
+          # 규약 문서도 --read 로 컨텍스트에 실어 '읽으러 가는' 턴 낭비를 없앤다.
+          READS=()
+          [ -f AGENTS.md ] && READS+=(--read AGENTS.md)
+          [ -f CONTRIBUTING.md ] && READS+=(--read CONTRIBUTING.md)
+          {
+            cat ../bot/.github/autofix/hunt-prompt.md
+            printf '\n---\n\n## 이번 사이클 파라미터 (환경변수를 조회할 필요 없다 — 아래가 그 값이다)\n\n'
+            printf -- '- HUNT_MODE: %s\n- HUNT_RANGE: %s\n- HUNT_TARGET: %s\n\n' \
+              "${HUNT_MODE:-}" "${HUNT_RANGE:-}" "${HUNT_TARGET:-}"
+            printf '### HUNT_EXCLUDE — 이미 올린 PR·이슈 제목 (겹치면 즉시 폐기)\n\n%s\n' \
+              "${HUNT_EXCLUDE:-<없음>}"
+          } > /tmp/hunt-msg.md
+
+          run_aider() {
+            aider --model "openai/${MODEL}" \
+              --yes-always --no-auto-commits --no-analytics --no-gitignore \
+              --no-show-model-warnings --map-tokens 1024 --edit-format diff \
+              "${READS[@]}" "$@" 2>&1 | tee -a ../hunt.log || true
+          }
+
+          : > ../hunt.log
+          run_aider --message "$(cat /tmp/hunt-msg.md)"
+          for TURN in 2 3; do
+            [ -f AUTOFIX_RESULT.md ] && break
+            echo "--- ${TURN}턴: AUTOFIX_RESULT.md 미생성 — 대화를 복원해 이어간다 ---" | tee -a ../hunt.log
+            run_aider --restore-chat-history \
+              --message "아직 루트에 AUTOFIX_RESULT.md 가 없다. 지시서의 남은 단계(탐색 → red 테스트 → src/ 최소 수정 → AUTOFIX_RESULT.md 작성)를 지금 끝내라. 제출 기준에 못 미치면 status: NO-FINDING 으로 AUTOFIX_RESULT.md 를 남겨라."
+          done
 
           if [ ! -f AUTOFIX_RESULT.md ]; then
             echo "::warning::AUTOFIX_RESULT.md 없음 — 탐색이 결론을 못 냄. 사이클 폐기."
@@ -299,6 +348,9 @@ jobs:
         working-directory: work
         run: |
           set -uo pipefail
+          # aider 부산물(.aider.chat.history.md, 태그 캐시 등)을 여기서 지운다.
+          # 남겨두면 게이트의 '허용 범위 밖 변경(STRAY)' 검사에 걸려 진짜 수정도 탈락한다.
+          rm -rf .aider*
           if [ ! -f AUTOFIX_RESULT.md ]; then
             echo "status=NO-FINDING" >> "$GITHUB_OUTPUT"
             echo "산출물 없음 — 이번 사이클 폐기."
@@ -405,7 +457,8 @@ jobs:
             echo
             awk 'f{print} /^---$/{c++} c==2 && !f{f=1}' AUTOFIX_RESULT.md
           } > "mydocs/report/task_m100_${N}_report.md"
-          rm -f AUTOFIX_RESULT.md
+          # 커밋 단계가 git add -A 를 쓰므로, PR 에 섞이면 안 되는 봇 산출물은 여기서 지운다.
+          rm -f AUTOFIX_RESULT.md FINDING.md
 
       - name: 커밋 + fork 에 push
         if: ${{ steps.result.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
