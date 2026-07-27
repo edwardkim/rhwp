@@ -10,7 +10,8 @@
 4. 개발·문서·Git 작업은 `mydocs/manual/codex/docs_and_git_workflow.md`
 5. PR 검토·merge·후속 처리는 `mydocs/manual/pr_review_workflow.md`를 먼저 읽고,
    `mydocs/manual/pr_review/README.md`의 선택표가 지정한 기본·보조 자식 문서를 작업 전에 모두 읽는다.
-6. 로컬 빌드·WASM 검증은 `mydocs/manual/dev_environment_guide.md`
+6. 로컬 빌드·WASM 검증은 `mydocs/manual/dev_environment_guide.md`,
+   변경 범위별 검증 게이트는 `mydocs/manual/pr_review/local_validation.md`의 4.3
 7. CLI 작업은 `mydocs/manual/cli_commands.md`
 8. 시각 검증은 `mydocs/manual/verification/visual_verification_governance.md`와 `mydocs/manual/verification/visual_sweep_guide.md`
 

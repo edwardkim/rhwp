@@ -4,6 +4,7 @@ import type { EndnoteShapeSettings } from '@/core/types';
 import { HWPUNIT_PER_MM } from '@/core/hwp-constants';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { CommandServices } from '@/command/types';
+import { applyThroughRouter } from './dialog-apply';
 
 type LineTypeChoice = {
   value: string;
@@ -183,7 +184,7 @@ export class EndnoteShapeDialog extends ModalDialog {
     return body;
   }
 
-  protected onConfirm(): void {
+  protected onConfirm(): boolean {
     const next: EndnoteShapeSettings = {
       ...this.settings,
       numberFormat: this.numberFormatSelect.value,
@@ -201,19 +202,34 @@ export class EndnoteShapeDialog extends ModalDialog {
       placement: this.placementSection.checked ? 'sectionEnd' : 'documentEnd',
     };
 
+    // [Task #2370] 값이 하나도 안 바뀐 [확인]은 문서를 바꾸지 않는다. `next` 는
+    // `this.settings` 를 펼친 뒤 폼 값으로 덮어쓴 것이므로 `next` 의 모든 키를 대조하면
+    // 원래 설정 전체를 덮는다.
+    //
+    // 주의: 이 판정은 **`next` 가 읽는 폼 컨트롤까지만** 본다. 위 리터럴이 덮지 않는
+    // 설정은 스프레드 값이 그대로라 항상 "같음"으로 나온다. 현재 그런 컨트롤이 둘 있다 —
+    // `numberCodeSuperscript`·`printInlineAfterText`(`contentNumberGroup()` 이 라디오를
+    // 만들지만 이 파일 어디서도 읽지 않는 사전존재 죽은 UI). 지금은 무해하다(어느 쪽
+    // 경로로도 적용된 적이 없다). 다만 나중에 그 설정을 살릴 때 위 리터럴에 추가하지
+    // 않으면, 적용이 안 되는 데서 그치지 않고 **[확인] 자체가 통째로 생략된다.**
+    // 폼 컨트롤을 늘릴 때는 반드시 `next` 에도 함께 넣을 것.
+    const unchanged = (Object.keys(next) as (keyof EndnoteShapeSettings)[])
+      .every((k) => next[k] === this.settings[k]);
+
     // [미주 모양 이관] snapshot 으로 라우팅(#2077 동형). services 미주입 시 직접 적용 fallback.
     const apply = () => this.wasm.applyEndnoteShape(this.sectionIdx, next);
-    const ih = this.services?.getInputHandler();
-    if (ih) {
-      ih.executeOperation({
-        kind: 'snapshot',
-        operationType: 'endnoteShape',
-        operation: () => { apply(); return ih.getCursorPosition(); },
-      });
-    } else {
-      apply();
-      this.eventBus.emit('document-changed');
-    }
+    return applyThroughRouter({
+      services: this.services,
+      label: 'EndnoteShapeDialog',
+      operationType: 'endnoteShape',
+      // 무변경이면 뮤테이션도 기록도 생략(null) — phantom 엔트리·스냅샷 2슬롯 방지.
+      operation: (ih) => {
+        if (unchanged) return null;
+        apply();
+        return ih.getCursorPosition();
+      },
+      fallback: () => { apply(); this.eventBus.emit('document-changed'); },
+    });
   }
 
   private populate(): void {

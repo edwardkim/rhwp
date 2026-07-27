@@ -59,6 +59,11 @@ impl PageLayerTree {
         self.text_sources = text_sources;
         self
     }
+
+    pub fn with_bin_data_epoch(mut self, bin_data_epoch: u32) -> Self {
+        self.resources.set_source_image_epoch(bin_data_epoch);
+        self
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

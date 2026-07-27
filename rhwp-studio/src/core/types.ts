@@ -1203,6 +1203,8 @@ export interface LayerImageOp {
   mime?: string;
   base64?: string;
   imageRef?: number | string;
+  /** 문서 세대와 BinData ID에서 만든 원본 그림 신원 키 (schema minor 20+). */
+  sourceImageKey?: string;
   fillMode?: string;
   originalSize?: { width: number; height: number };
   crop?: { left: number; top: number; right: number; bottom: number };

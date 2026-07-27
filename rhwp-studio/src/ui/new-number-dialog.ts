@@ -1,6 +1,7 @@
 import { ModalDialog } from './dialog';
 import type { EventBus } from '@/core/event-bus';
 import type { CommandServices } from '@/command/types';
+import { applyThroughRouter } from './dialog-apply';
 
 export class NewNumberDialog extends ModalDialog {
   private wasm: any;
@@ -51,27 +52,19 @@ export class NewNumberDialog extends ModalDialog {
     }, 50);
   }
 
-  protected onConfirm(): void | boolean {
+  protected onConfirm(): boolean {
     const num = parseInt(this.numInput.value, 10);
     if (isNaN(num) || num < 1 || num > 65535) return false;
     // [새 번호 이관] snapshot 으로 라우팅(#2077 동형). services 미주입 시 직접 적용 fallback.
     const apply = () => this.wasm.insertNewNumber(
       this.cursorPos.sec, this.cursorPos.para, this.cursorPos.offset, num,
     );
-    try {
-      const ih = this.services?.getInputHandler();
-      if (ih) {
-        ih.executeOperation({
-          kind: 'snapshot',
-          operationType: 'insertNewNumber',
-          operation: () => { apply(); return ih.getCursorPosition(); },
-        });
-      } else {
-        apply();
-        this.eventBus.emit('document-changed');
-      }
-    } catch (e) {
-      console.warn('[NewNumberDialog] 삽입 실패:', e);
-    }
+    return applyThroughRouter({
+      services: this.services,
+      label: 'NewNumberDialog',
+      operationType: 'insertNewNumber',
+      operation: (ih) => { apply(); return ih.getCursorPosition(); },
+      fallback: () => { apply(); this.eventBus.emit('document-changed'); },
+    });
   }
 }

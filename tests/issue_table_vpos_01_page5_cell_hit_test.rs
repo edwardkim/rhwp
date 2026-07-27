@@ -6,11 +6,20 @@
 //!   - pi=32 ci=0  1x1  "국민이 주도하고 AI가 뒷받침하는 국민주권정부"
 //!   - pi=34 ci=0  1x1  (외곽 wrapper, 내부 1x1 title + 11x3 본문 표)
 //!
-//! 좌표는 `cargo run -- export-svg samples/table-vpos-01.hwp -p 4 --debug-overlay`
+//! 좌표는 `cargo run --bin rhwp -- export-svg samples/table-vpos-01.hwp -p 4 --debug-overlay`
 //! SVG 의 cell-clip 영역에서 측정 (96 DPI).
 //!
 //! [Task #990] pi=33(빈 문단 위 treat-as-char 도형) advance 이중 가산 정정으로
 //! pi=34 외곽 표 및 내부 11x3 표가 30.84px 위로 이동 — pi=34 inner 11x3 좌표 갱신.
+//!
+//! [#3386] 중첩 11x3 클릭점은 **하드코딩을 버리고 실행 시점 기하에서 유도**한다.
+//! hit_test 는 셀 사각형 전체가 아니라 셀 안 각 줄의 line band(≈20px)에서만 중첩
+//! 경로를 반환하므로, 표 행높이가 조금만 움직여도 박아둔 셀 중심 좌표가 줄 사이
+//! 빈틈으로 빠진다. 행높이는 설치 폰트에 의존해 환경마다 다르므로(로컬 Windows =
+//! 한글 폰트 보유, CI Linux = 폴백) 절대 좌표는 어느 한쪽에서만 맞는다. #3386
+//! A/C/D 행경계 교정이 CI 에서만 두 셀을 줄 밖으로 밀어낸 것이 그 사례다.
+//! 그래서 대상 셀의 커서 사각형(path→rect)에서 클릭점을 만들고 그 점이 다시 같은
+//! 셀 경로로 해석되는지(rect→path) 왕복을 검증한다.
 //!
 //! 본 테스트는 hit_test_native 반환 검증 + 실제 cell-entry(insert_text_in_cell_by_path)
 //! 검증을 모두 수행한다.
@@ -71,6 +80,32 @@ fn assert_table_hit(hit: &Value, parent_para: u64, control: u64) {
         hit.get("cellPath").is_some(),
         "click must include cellPath, hit={hit}"
     );
+}
+
+/// pi=34 외곽 1x1 안 inner 표의 `cell_index` 셀 첫 글자 커서 사각형에서 클릭점을 만든다.
+///
+/// 반환값은 (x, y) — 커서 사각형 왼쪽에서 4px 안쪽, 줄 높이의 중앙. 행높이가
+/// 환경/수정으로 이동해도 항상 그 셀의 줄 위에 있으므로 절대 좌표 하드코딩 없이
+/// "그 셀을 클릭했을 때" 를 재현한다.
+fn inner_cell_click_point(doc: &HwpDocument, cell_index: usize) -> (f64, f64) {
+    let path_json = format!(
+        r#"[{{"controlIndex":0,"cellIndex":0,"cellParaIndex":1}},
+            {{"controlIndex":0,"cellIndex":{cell_index},"cellParaIndex":0}}]"#
+    );
+    let rect_json = doc
+        .get_cursor_rect_by_path(0, 34, &path_json, 0)
+        .unwrap_or_else(|e| panic!("cursor rect for inner cell {cell_index}: {e:?}"));
+    let rect: Value = serde_json::from_str(&rect_json)
+        .unwrap_or_else(|e| panic!("parse cursor rect `{rect_json}`: {e}"));
+    assert_eq!(
+        rect["pageIndex"].as_u64(),
+        Some(4),
+        "inner cell {cell_index} must live on page index 4, rect={rect_json}"
+    );
+    let x = rect["x"].as_f64().expect("cursor x") + 4.0;
+    let y = rect["y"].as_f64().expect("cursor y")
+        + rect["height"].as_f64().expect("cursor height") / 2.0;
+    (x, y)
 }
 
 /// 중첩 클릭에서 cellPath 마지막 entry 의 cellIndex 가 기대 inner cell_index 와 일치하는지 검증.
@@ -138,38 +173,42 @@ fn page5_big_inner_title_cell_returns_nested_path() {
 // pi=34 inner 11x3 — c=0 column 라벨 셀들 (rowspan=2)
 // =======================================================================
 
-/// cell[0] r=0,c=0 "1|참여소통" — cell-clip-52 (x=86.2 y=267.16 w=83.4 h=164.9), 중심 (128, 349.16)
+/// cell[0] r=0,c=0 "1|참여소통" (rowspan=2 라벨 셀)
 #[test]
 fn page5_inner_11x3_c0_row0_label_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 128.0, 349.16);
+    let (x, y) = inner_cell_click_point(&doc, 0);
+    let hit = hit_json(&doc, 4, x, y);
     assert_table_hit(&hit, 34, 0);
     assert_nested_inner_cell(&hit, 0);
 }
 
-/// cell[7] r=3,c=0 "2|기본사회" — cell-clip-82 (x=86.2 y=444.76 w=83.4 h=164.9), 중심 (128, 527.16)
+/// cell[7] r=3,c=0 "2|기본사회"
 #[test]
 fn page5_inner_11x3_c0_row3_label_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 128.0, 527.16);
+    let (x, y) = inner_cell_click_point(&doc, 7);
+    let hit = hit_json(&doc, 4, x, y);
     assert_table_hit(&hit, 34, 0);
     assert_nested_inner_cell(&hit, 7);
 }
 
-/// cell[14] r=6,c=0 "3|공직혁신" — cell-clip-111 (x=86.2 y=622.26 w=83.4 h=159.1), 중심 (128, 701.86)
+/// cell[14] r=6,c=0 "3|공직혁신"
 #[test]
 fn page5_inner_11x3_c0_row6_label_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 128.0, 701.86);
+    let (x, y) = inner_cell_click_point(&doc, 14);
+    let hit = hit_json(&doc, 4, x, y);
     assert_table_hit(&hit, 34, 0);
     assert_nested_inner_cell(&hit, 14);
 }
 
-/// cell[19] r=9,c=0 "4|공공 AX" — cell-clip-136 (x=86.2 y=818.56 w=83.4 h=157.4), 중심 (128, 897.26)
+/// cell[19] r=9,c=0 "4|공공 AX"
 #[test]
 fn page5_inner_11x3_c0_row9_label_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 128.0, 897.26);
+    let (x, y) = inner_cell_click_point(&doc, 19);
+    let hit = hit_json(&doc, 4, x, y);
     assert_table_hit(&hit, 34, 0);
     assert_nested_inner_cell(&hit, 19);
 }
@@ -208,38 +247,42 @@ fn page5_inner_11x3_char_overlap_marker_advances_one_box() {
 // pi=34 inner 11x3 — c=2 column 본문 셀들
 // =======================================================================
 
-/// cell[2] r=0,c=2 "국민 주도..." — cell-clip-61 (x=177.6 y=298.06 w=529.9 h=45.1), 중심 (442.5, 320.56)
+/// cell[2] r=0,c=2 "국민 주도 참여‧소통 거버넌스 구현"
 #[test]
 fn page5_inner_11x3_c2_row0_content_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 442.5, 320.56);
+    let (x, y) = inner_cell_click_point(&doc, 2);
+    let hit = hit_json(&doc, 4, x, y);
     assert_table_hit(&hit, 34, 0);
     assert_nested_inner_cell(&hit, 2);
 }
 
-/// cell[3] r=1,c=2 "대국민 소통..." — cell-clip-65 (x=177.6 y=312.26 w=529.9 h=119.9), 중심 (442.5, 372.16)
+/// cell[3] r=1,c=2 "대국민 소통..."
 #[test]
 fn page5_inner_11x3_c2_row1_content_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 442.5, 372.16);
+    let (x, y) = inner_cell_click_point(&doc, 3);
+    let hit = hit_json(&doc, 4, x, y);
     assert_table_hit(&hit, 34, 0);
     assert_nested_inner_cell(&hit, 3);
 }
 
-/// cell[9] r=3,c=2 "포용과 균형의 기본사회 구현" — cell-clip-91 (x=177.6 y=475.56 w=529.9 h=45.1), 중심 (442.5, 498.16)
+/// cell[9] r=3,c=2 "포용과 균형의 기본사회 구현"
 #[test]
 fn page5_inner_11x3_c2_row3_content_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 442.5, 498.16);
+    let (x, y) = inner_cell_click_point(&doc, 9);
+    let hit = hit_json(&doc, 4, x, y);
     assert_table_hit(&hit, 34, 0);
     assert_nested_inner_cell(&hit, 9);
 }
 
-/// cell[16] r=6,c=2 "성과로 신뢰..." — cell-clip-120 (x=177.6 y=653.16 w=529.9 h=45.1), 중심 (442.5, 675.66)
+/// cell[16] r=6,c=2 "성과로 신뢰..."
 #[test]
 fn page5_inner_11x3_c2_row6_content_cell() {
     let doc = load_doc();
-    let hit = hit_json(&doc, 4, 442.5, 675.66);
+    let (x, y) = inner_cell_click_point(&doc, 16);
+    let hit = hit_json(&doc, 4, x, y);
     assert_table_hit(&hit, 34, 0);
     assert_nested_inner_cell(&hit, 16);
 }
@@ -257,7 +300,8 @@ fn page5_inner_11x3_c2_row6_content_cell() {
 #[test]
 fn page5_inner_11x3_c2_row0_insert_lands_in_inner_cell() {
     let mut doc = load_doc();
-    let hit = hit_json(&doc, 4, 442.5, 320.56);
+    let (x, y) = inner_cell_click_point(&doc, 2);
+    let hit = hit_json(&doc, 4, x, y);
     let path = path_tuples(&hit);
     let parent_para = hit["parentParaIndex"].as_u64().expect("parentParaIndex") as usize;
     let char_offset = hit["charOffset"].as_u64().expect("charOffset") as usize;

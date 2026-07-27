@@ -582,6 +582,12 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
     if data.len() >= 2 && data.starts_with(&[0x0A, 0x05]) {
         return "image/x-pcx";
     }
+    // [#3460] HWPX BinData 는 SVG 를 그대로 담을 수 있다(`<hc:img>` → `Format="svg"`).
+    // 여기서 놓치면 data URI 가 application/octet-stream 으로 나가 브라우저·rsvg 가
+    // 그리지 않고 빈 공간이 된다. WASM 판별기(web_canvas)는 이미 같은 분기를 갖고 있다.
+    if crate::renderer::svg_fragment::is_svg_prefix(data) {
+        return "image/svg+xml";
+    }
     "application/octet-stream"
 }
 

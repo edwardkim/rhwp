@@ -154,6 +154,16 @@ pub fn draw_image_bytes(
     if !is_valid_destination_rect(x, y, width, height) {
         return false;
     }
+    // [#3460] HWPX BinData 는 SVG 를 그대로 담는다(`<hc:img>` → `Format="svg"`). skia 디코더는
+    // SVG 를 읽지 못해 종전에는 회색 자리표시자만 남았다. 같은 모듈의 resvg 로 목적지 크기에
+    // 맞춰 먼저 래스터화하면 이후 크롭·채움·효과 경로를 그대로 탈 수 있다.
+    let svg_raster = if crate::renderer::svg_fragment::is_svg_prefix(bytes) {
+        rasterize_svg_document_to_png(bytes, width, height, canvas_raster_scale(canvas))
+    } else {
+        None
+    };
+    let bytes = svg_raster.as_deref().unwrap_or(bytes);
+
     let normalized_bytes = if detect_image_mime_type(bytes) == "image/jpeg" {
         grayscale_jpeg_bytes_to_png_bytes(bytes)
     } else {
@@ -340,6 +350,63 @@ pub fn draw_image_bytes(
 
     canvas.restore();
     true
+}
+
+/// [#3460] 캔버스 변환에서 래스터 배율을 얻는다 (확대 출력에서 SVG 가 뭉개지지 않게).
+fn canvas_raster_scale(canvas: &skia_safe::Canvas) -> f32 {
+    let matrix = canvas.local_to_device_as_3x3();
+    let scale = matrix.scale_x().abs().max(matrix.scale_y().abs());
+    if scale.is_finite() && scale > 0.0 {
+        scale.clamp(1.0, 4.0)
+    } else {
+        1.0
+    }
+}
+
+/// [#3460] 완결된 SVG 문서(BinData 그림)를 목적지 크기에 맞춰 PNG 로 래스터화한다.
+///
+/// 조각(fragment) 경로와 달리 원본이 자체 `viewBox`/크기를 가진 문서이므로, 트리 크기를
+/// 목적지 픽셀 크기로 맞추는 스케일 변환만 적용한다.
+fn rasterize_svg_document_to_png(
+    bytes: &[u8],
+    width: f32,
+    height: f32,
+    raster_scale: f32,
+) -> Option<Vec<u8>> {
+    if bytes.is_empty()
+        || bytes.len() > MAX_SVG_FRAGMENT_BYTES
+        || !width.is_finite()
+        || !height.is_finite()
+        || !raster_scale.is_finite()
+        || width <= 0.0
+        || height <= 0.0
+        || raster_scale <= 0.0
+    {
+        return None;
+    }
+    let raster_width = (width * raster_scale).ceil().max(1.0) as u64;
+    let raster_height = (height * raster_scale).ceil().max(1.0) as u64;
+    if raster_width
+        .checked_mul(raster_height)
+        .is_none_or(|pixels| pixels > MAX_SVG_RASTER_PIXELS)
+    {
+        return None;
+    }
+
+    let options = svg_parse_options();
+    let tree = usvg::Tree::from_data(bytes, &options).ok()?;
+    let size = tree.size();
+    if !(size.width() > 0.0 && size.height() > 0.0) {
+        return None;
+    }
+
+    let mut pixmap = tiny_skia::Pixmap::new(raster_width as u32, raster_height as u32)?;
+    let transform = tiny_skia::Transform::from_scale(
+        raster_width as f32 / size.width(),
+        raster_height as f32 / size.height(),
+    );
+    resvg::render(&tree, transform, &mut pixmap.as_mut());
+    pixmap.encode_png().ok()
 }
 
 fn rasterize_svg_fragment_to_png(

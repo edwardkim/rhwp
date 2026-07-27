@@ -175,21 +175,28 @@ function applyHfTemplate(
     // 모드 탈출/재진입은 커서 상태라 기록 밖에 둔다(undo 는 본문 분기로 모드를 빠져나온다).
     // 위에서 이미 HF 모드를 종료했으므로 여기서 읽는 위치는 본문 위치다.
     const bodyPos = ih.getPosition();
+    let applied = false;
     ih.executeOperation({
       kind: 'snapshot',
       operationType: 'applyHfTemplate',
       operation: (wasm) => {
-        const r = wasm.applyHfTemplate(sectionIdx, isHeader, applyTo, templateId);
-        // 의미상 실패(ok:false)면 throw 해 before==after 무변 스냅샷 엔트리를 막는다(삽입류와 동형).
-        if (!r.ok) throw new Error('[page:applyHfTemplate] 마당 적용 실패');
-        return bodyPos;
+        // [Task #2370] 의미상 실패(ok:false)는 문서 무변경이므로 null 로 기록을 취소한다.
+        // 종전에는 같은 목적으로 throw 했으나(정상 흐름을 예외로 처리) 공용 no-op 신호로 통일.
+        applied = wasm.applyHfTemplate(sectionIdx, isHeader, applyTo, templateId).ok;
+        return applied ? bodyPos : null;
       },
     });
-    // 템플릿 적용 후 편집 모드로 진입. 마당 적용은 기존 HF 를 지우고 다시 만들므로
-    // (`apply_hf_template_native` 1~2단계) 적용 대상 좌표에 HF 가 있음이 보장된다 —
-    // 존재 확인이 필요 없다 (Task #3206).
-    cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, cursor?.rect?.pageIndex ?? 0);
-    services.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
+    if (!applied) {
+      // 적용되지 않았으면 HF 가 생겼다는 보장이 없다 → 편집 모드로 들어가지 않는다.
+      console.warn('[page] 마당 적용 실패: applyHfTemplate 가 ok:false 를 반환');
+      (ih as any).afterEdit?.();
+    } else {
+      // 템플릿 적용 후 편집 모드로 진입. 마당 적용은 기존 HF 를 지우고 다시 만들므로
+      // (`apply_hf_template_native` 1~2단계) 적용 대상 좌표에 HF 가 있음이 보장된다 —
+      // 존재 확인이 필요 없다 (Task #3206).
+      cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, cursor?.rect?.pageIndex ?? 0);
+      services.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
+    }
   } catch (e) {
     console.warn('[page] 마당 적용 실패:', e);
     // 실패 경로 리프레시 — 성공 경로는 executeOperation 이 이미 afterEdit 로 갱신했으므로

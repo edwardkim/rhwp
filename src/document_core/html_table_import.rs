@@ -972,16 +972,17 @@ impl DocumentCore {
         // (insert_picture_native 와 동일 규칙, 기존 storage id 충돌 방지)
         let new_bin_id = (self.document.bin_data_content.len() + 1) as u16;
         let storage_id = self.document.next_bin_data_storage_id();
+        let extension = detect_clipboard_image_mime(&decoded)
+            .split('/')
+            .nth(1)
+            .unwrap_or("png")
+            .to_string();
         self.document
             .bin_data_content
             .push(crate::model::bin_data::BinDataContent {
                 id: storage_id,
-                data: decoded.clone().into(),
-                extension: detect_clipboard_image_mime(&decoded)
-                    .split('/')
-                    .nth(1)
-                    .unwrap_or("png")
-                    .to_string(),
+                data: crate::model::bin_data::BinDataBytes::from_shared(decoded),
+                extension,
             });
 
         // width/height 추출

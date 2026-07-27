@@ -65,10 +65,16 @@ function makeHost() {
     getCellParagraphCountByPath: () => 3,
     getCellParagraphLength: () => 7,
     getCellParagraphCount: () => 3,
-    mergeParagraphInCellByPath: () => undefined,
-    splitParagraphInCellByPath: () => undefined,
-    mergeParagraphInCell: () => undefined,
-    splitParagraphInCell: () => undefined,
+    // [Task #2370 클러스터 D] 브리지 계약은 **JSON 문자열** 반환이고(wasm-bridge.ts
+    // mergeParagraphInCell/…ByPath → string), 커맨드는 그것을 JSON.parse 해
+    // removedParaMeta 를 꺼낸다(#3324). undefined 를 돌려주면 JSON.parse(undefined) 가
+    // throw 한다 — 지금은 호출부 try/catch 와 Proxy 의 호출-전 기록 덕에 이 테스트가
+    // 우연히 통과하지만, 스텁이 실계약과 어긋난 채 남으면 다음 사람이 잘못된 계약을
+    // 믿게 된다. 실제 반환 모양으로 맞춘다.
+    mergeParagraphInCellByPath: () => '{"ok":true}',
+    splitParagraphInCellByPath: () => '{"ok":true}',
+    mergeParagraphInCell: () => '{"ok":true}',
+    splitParagraphInCell: () => '{"ok":true}',
   };
   const wasm = new Proxy(base, {
     get(target, prop) {
