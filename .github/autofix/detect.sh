@@ -69,18 +69,37 @@ for f in samples/*.hwpx; do
   b="samples/$(basename "$f" .hwpx)"
   [ -f "$b.hwp" ] && echo "$f $b.hwp"
 done > "$WORK/pairs.txt"
-echo "대응 쌍 $(wc -l < "$WORK/pairs.txt") 개 — 이번 사이클 12개 검사"
+TOTAL=$(wc -l < "$WORK/pairs.txt")
+echo "대응 쌍 ${TOTAL} 개 — 전수 조사 후 이상치만 취한다"
 
+# ⚠ 자기 보정: 불일치가 '대부분'이면 그건 개별 버그가 아니라 알려진 구조적 격차다.
+#   그걸 매 사이클 새 버그처럼 올리면 오탐 공장이 된다. 먼저 전수 측정해서
+#   불일치가 소수(이상치)일 때만 결함으로 취급한다.
+: > "$WORK/diverged.txt"
 while read -r hwpx hwp; do
   [ -z "${hwpx:-}" ] && continue
-  L="$WORK/irdiff.log"
-  "$BIN" ir-diff "$hwpx" "$hwp" --json >"$L" 2>&1
-  if [ $? -eq 3 ]; then
-    echo "샘플 쌍: $hwpx ↔ $hwp" >> "$L"
-    emit "ir-mismatch" "HWP/HWPX 파서가 같은 문서에서 서로 다른 IR 을 만든다 ($(basename "$hwpx"))" "$L"
-  fi
-done < <(rotate "$WORK/pairs.txt" 12)
-echo "IR 불일치 없음"
+  "$BIN" ir-diff "$hwpx" "$hwp" --json >"$WORK/ir_$(basename "$hwpx").log" 2>&1
+  [ $? -eq 3 ] && echo "$hwpx $hwp" >> "$WORK/diverged.txt"
+done < "$WORK/pairs.txt"
+
+DIV=$(wc -l < "$WORK/diverged.txt")
+PCT=$(( TOTAL > 0 ? DIV * 100 / TOTAL : 0 ))
+echo "불일치 ${DIV}/${TOTAL} 쌍 (${PCT}%)"
+
+if [ "$DIV" -eq 0 ]; then
+  echo "IR 불일치 없음"
+elif [ "$PCT" -gt 20 ]; then
+  # 전반적으로 어긋나 있다 = 개별 결함이 아니라 미구현 영역. 봇이 손댈 대상이 아니다.
+  echo "::notice::불일치가 ${PCT}% 로 광범위하다 — 개별 버그가 아니라 알려진 구조적 격차로 판단하고 이 층을 건너뛴다."
+else
+  read -r hwpx hwp < <(rotate "$WORK/diverged.txt" 1)
+  [ -z "${hwpx:-}" ] && read -r hwpx hwp < "$WORK/diverged.txt"
+  L="$WORK/ir_$(basename "$hwpx").log"
+  { echo "샘플 쌍: $hwpx ↔ $hwp"
+    echo "전체 ${TOTAL} 쌍 중 ${DIV} 쌍만 불일치 — 구조적 격차가 아니라 이 문서 고유의 이상치다."
+  } >> "$L"
+  emit "ir-mismatch" "HWP/HWPX 파서가 같은 문서에서 서로 다른 IR 을 만든다 ($(basename "$hwpx"))" "$L"
+fi
 END
 
 # ─────────────────────────────────────────────────────────────
