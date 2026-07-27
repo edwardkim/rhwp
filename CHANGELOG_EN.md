@@ -6,6 +6,32 @@ This document records the major changes of the rhwp project.
 
 ## [Unreleased]
 
+## [0.8.2] — 2026-07-27
+
+> Hotfix — restores printing in the browser extensions, which had been broken
+> since v0.8.0.
+
+### Extension printing restored
+- **Fixed printing failing with "file not found" in the browser extensions
+  (Chrome, Edge, Firefox).** The print preview document (`print.html`) was not
+  included in the extension build output; it was omitted from the build copy list
+  when the print path was introduced in v0.8.0 (#3433).
+- Added a required-artifact gate to the extension builds. Previously a failed
+  asset copy only produced a warning and the build still succeeded, so the
+  omission went unnoticed. The build now fails when a runtime-required file is
+  missing.
+
+### Rendering correction
+- Wired left/right outMargin into the x-origin of TAC inline tables to match
+  Hangul character rules (#3396).
+
+### Known issues
+- The studio E2E `print-pdf-issue3126` PDF guidance modal assertions fail. The
+  print surface itself works; the failure originates outside this release's scope
+  and its root cause is not yet diagnosed (#3450).
+- The studio E2E `issue-2214` page-local repaint contract failure carries over
+  from v0.8.1; whether it is a regression remains undetermined (#3412).
+
 ## [0.8.1] — 2026-07-26
 
 > PATCH release — rendering corrections and CLI contract consistency since
