@@ -393,7 +393,16 @@ rhwp search 개정본.hwp "2025년" --json | jq .matchCount     # → 0 이어�
   제출용 양식의 파란 안내문 스타일을 실값이 상속하지 않게 한다 (#3391).
 - `-o, --output <파일>` — 출력 파일 (기본 `<입력명>_cell.hwp`)
 - `--dry-run` — 파일을 쓰지 않고 `oldText` → `newText` 변경 예정만 보고한다.
-- `--json` 봉투: `{"schemaVersion":"1.0","source","table","row","col","oldText","newText","dryRun","keepStyle","output"?}`
+- `--json` 봉투: `{"schemaVersion":"1.0","source","table","row","col","oldText","newText","dryRun","keepStyle","overflow":[…],"output"?}`
+- **맞춤 검사(#3480)** — 넣은 값이 칸 폭을 넘치면 `overflow` 로 알린다:
+  `[{"target":"table0[2,3]","text":"…","cellWidthPx":214.63,"textWidthPx":440.0,"lines":3}]`
+  - 에이전트는 렌더 결과를 보지 않으므로, 신호가 없으면 표 경계를 벗어난 문서를
+    완성본으로 판단한다. 이 검사는 **조판 엔진이 있어야** 가능하다.
+  - **채우기를 막지 않는다** — 여러 줄이 정상인 칸(주소·사유)도 있으므로 판단은 소비자 몫이다.
+  - `--dry-run` 에서도 검사하므로 **파일을 만들기 전에** 알 수 있다.
+  - 칸 폭은 `Cell.width` − 안여백, 글자 폭은 첫 문단 `CharShape.base_size` 기준 한글 전각·
+    ASCII 반각 **근사**다(넘침 판정용이며 정밀 조판이 아니다). 실측 사례:
+    [편집 맞춤 검사](../report/edit_demo_fit_check/README.md).
 - 병합으로 덮인 칸은 앵커 좌표를 안내하며 exit 2로 끝난다. 격자 밖 좌표도 exit 2다.
 - 실패 시 원본은 불변이며, v1 범위는 본문 최상위 표와 셀 첫 문단이다.
 

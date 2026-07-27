@@ -592,6 +592,7 @@ fn show_capabilities(args: &[String]) -> i32 {
                 "oldText",
                 "newText",
                 "keepStyle",
+                "overflow",
                 "output",
             ],
         ),
@@ -979,6 +980,7 @@ fn print_help() {
     println!("      --keep-style              셀 안내문 스타일 상속(기본: 검정 글씨로 기록)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cell.hwp)");
     println!("      --dry-run                 파일을 쓰지 않고 old→new 만 보고");
+    println!("      (값이 칸 폭을 넘치면 --json 응답의 overflow 로 알린다 — 채우기는 막지 않음)");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!("      병합으로 덮인 칸은 앵커 좌표 안내와 함께 오류 종료");
     println!();
@@ -8576,6 +8578,98 @@ fn recolor_cell_text_black(
     true
 }
 
+/// [#3480] 셀에 넣을 텍스트가 칸 폭을 넘치는지 잰다.
+///
+/// 넘치면 `(칸 폭 px, 글자 폭 px, 예상 줄 수)` 를 돌려주고, 들어가면 `None`.
+/// 폭은 조판 엔진의 글자 폭 추정(`estimate_text_width_px`)과 IR 의 `Cell.width` 를 쓴다.
+/// **채우기를 막지는 않는다** — 여러 줄이 정상인 칸도 있으므로 신호만 준다.
+fn measure_cell_overflow(
+    doc: &rhwp::wasm_api::HwpDocument,
+    sec: usize,
+    para: usize,
+    ctrl: usize,
+    cell_idx: usize,
+    text: &str,
+) -> Option<(f64, f64, usize)> {
+    use rhwp::model::control::Control;
+    use rhwp::renderer::hwpunit_to_px;
+
+    if text.is_empty() {
+        return None;
+    }
+    let cell = doc
+        .document()
+        .sections
+        .get(sec)?
+        .paragraphs
+        .get(para)?
+        .controls
+        .get(ctrl)
+        .and_then(|c| match c {
+            Control::Table(t) => t.cells.get(cell_idx),
+            _ => None,
+        })?;
+
+    // 셀 안여백을 뺀 실제 글자 영역 폭.
+    let padding = (cell.padding.left + cell.padding.right) as f64;
+    let usable = hwpunit_to_px(
+        (cell.width as f64 - padding) as i32,
+        rhwp::renderer::DEFAULT_DPI,
+    );
+    if usable <= 0.0 {
+        return None;
+    }
+
+    let text_w = estimate_text_width_px(doc, sec, para, ctrl, cell_idx, text);
+    if text_w <= usable {
+        return None;
+    }
+    let lines = (text_w / usable).ceil() as usize;
+    Some((usable, text_w, lines))
+}
+
+/// 셀의 첫 문단 글자 모양을 기준으로 텍스트 폭(px)을 추정한다.
+///
+/// 정밀 조판이 아니라 **넘침 여부 판정용 근사**다 — 한글은 전각, ASCII 는 반각으로 센다.
+fn estimate_text_width_px(
+    doc: &rhwp::wasm_api::HwpDocument,
+    sec: usize,
+    para: usize,
+    ctrl: usize,
+    cell_idx: usize,
+    text: &str,
+) -> f64 {
+    use rhwp::model::control::Control;
+    use rhwp::renderer::hwpunit_to_px;
+
+    // 셀 첫 문단의 글자 크기(HWPUNIT, 1pt = 100). 못 찾으면 10pt 로 본다.
+    let size_hwpunit = doc
+        .document()
+        .sections
+        .get(sec)
+        .and_then(|s| s.paragraphs.get(para))
+        .and_then(|p| p.controls.get(ctrl))
+        .and_then(|c| match c {
+            Control::Table(t) => t.cells.get(cell_idx),
+            _ => None,
+        })
+        .and_then(|cell| cell.paragraphs.first())
+        .and_then(|p| p.char_shapes.first())
+        .and_then(|cs| {
+            doc.document()
+                .doc_info
+                .char_shapes
+                .get(cs.char_shape_id as usize)
+        })
+        .map(|cs| cs.base_size as f64)
+        .unwrap_or(1000.0);
+
+    let em = hwpunit_to_px(size_hwpunit as i32, rhwp::renderer::DEFAULT_DPI);
+    text.chars()
+        .map(|c| if c.is_ascii() { em * 0.5 } else { em })
+        .sum()
+}
+
 fn edit_set_cell(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut table_arg: Option<usize> = None;
@@ -8789,6 +8883,21 @@ fn edit_set_cell(args: &[String]) -> i32 {
         Located::Fail(code) => return code,
     };
 
+    // [#3480] 값이 그 칸에 들어가는지 재고 넘치면 알린다.
+    // 에이전트는 렌더 결과를 보지 않으므로, 신호가 없으면 표 경계를 벗어난 문서를
+    // 완성본으로 판단한다. 조판 엔진이 있어야 답할 수 있는 검사다.
+    let overflow = measure_cell_overflow(&doc, sec, para, ctrl, cell_idx, &new_text).map(
+        |(cell_w, text_w, lines)| {
+            serde_json::json!({
+                "target": format!("table{}[{},{}]", table_no, row, col),
+                "text": new_text,
+                "cellWidthPx": (cell_w * 100.0).round() / 100.0,
+                "textWidthPx": (text_w * 100.0).round() / 100.0,
+                "lines": lines,
+            })
+        },
+    );
+
     if !dry_run {
         // 셀의 모든 문단 텍스트를 비운다 (다문단 셀 — 빈 문단 골격은 유지된다).
         for (pi, len) in para_lens.iter().enumerate() {
@@ -8865,6 +8974,7 @@ fn edit_set_cell(args: &[String]) -> i32 {
             "newText": new_text,
             "dryRun": dry_run,
             "keepStyle": keep_style,
+            "overflow": overflow.clone().map(|o| vec![o]).unwrap_or_default(),
         });
         if !dry_run {
             envelope["output"] = serde_json::Value::String(output_path.clone());
