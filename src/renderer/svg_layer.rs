@@ -242,6 +242,7 @@ impl LayerRenderer for SvgLayerRenderer {
         self.renderer.show_control_codes = tree.output_options.show_control_codes;
         self.renderer.debug_overlay = tree.output_options.debug_overlay;
         self.renderer.show_missing_picture_placeholder = tree.profile.shows_editor_visuals();
+        self.renderer.show_editor_only_nodes = tree.profile.shows_editor_visuals();
         let render_tree = self.build_render_tree(tree);
         self.renderer.render_tree(&render_tree);
         Ok(())
