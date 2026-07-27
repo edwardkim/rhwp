@@ -33,9 +33,13 @@ use std::fmt::Write as _;
 const MAX_EMBEDDED_FONT_BYTES: usize = 32 * 1024 * 1024;
 const MAX_EMBEDDED_FONT_BYTES_PER_PAGE: usize = 64 * 1024 * 1024;
 
-/// Markdown 표 셀은 렌더 트리를 거치지 않으므로, 문단 본문과 수식 script를
-/// 컨트롤 문자 위치에 직접 합친다. 일반 본문 Markdown과 같은 수식 보존 계약이다.
-fn markdown_paragraph_text_with_equations(para: &Paragraph) -> String {
+/// 문단 본문과 수식 script를 컨트롤 문자 위치에 직접 합친다.
+///
+/// 렌더 트리를 거치지 않는 텍스트 표면(Markdown 표 셀, `export-structure`)이 수식을
+/// 버리지 않도록 하는 공용 조립기다 — 일반 본문 Markdown과 같은 수식 보존 계약이다.
+/// [#3413] `export-structure` 가 `para.text` 를 그대로 써 수식이 통째로 빠지던 문제를
+/// 같은 계약으로 닫기 위해 `pub(crate)` 로 올렸다.
+pub(crate) fn paragraph_text_with_equations(para: &Paragraph) -> String {
     let text: Vec<char> = para.text.chars().collect();
     let control_positions = para.control_text_positions();
     let mut equations: Vec<(usize, &str)> = para
@@ -5493,7 +5497,7 @@ impl DocumentCore {
         fn table_cell_text(cell: &crate::model::table::Cell) -> String {
             let mut parts: Vec<String> = Vec::new();
             for para in &cell.paragraphs {
-                let text_with_equations = markdown_paragraph_text_with_equations(para);
+                let text_with_equations = paragraph_text_with_equations(para);
                 let txt = text_with_equations.trim();
                 if !txt.is_empty() {
                     parts.push(markdown_escape_cell(txt));
@@ -5893,7 +5897,7 @@ mod tests {
             },
         )));
 
-        let text = markdown_paragraph_text_with_equations(&paragraph);
+        let text = paragraph_text_with_equations(&paragraph);
         assert!(text.contains("앞"));
         assert!(text.contains("lim _{x rarrow 0}"));
         assert!(text.contains("뒤"));
