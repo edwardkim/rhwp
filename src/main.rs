@@ -256,7 +256,7 @@ fn show_mcp_tools() -> i32 {
         ),
         tool(
             "hwp_fill_fields",
-            "HWP 서식(템플릿)의 누름틀에 값을 채워 새 문서를 만든다. 먼저 hwp_fields 로 어떤 필드가 있는지 확인한 뒤 사용한다. dryRun 으로 파일을 만들지 않고 변경 예정만 확인할 수 있다.",
+            "HWP 서식(템플릿)의 누름틀에 값을 채워 새 문서를 만든다. 먼저 hwp_fields 로 어떤 필드가 있는지 확인한 뒤 사용한다. 같은 이름이 여러 번 나오는 서식(규제영향분석서 등)은 이름에 순번을 붙여 지목한다. dryRun 으로 파일을 만들지 않고 변경 예정만 확인할 수 있다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {
@@ -264,7 +264,7 @@ fn show_mcp_tools() -> i32 {
                     "data": {
                         "type": "object",
                         "additionalProperties": { "type": "string" },
-                        "description": "{\"필드이름\":\"값\"} 형태의 채울 값"
+                        "description": "{\"필드이름\":\"값\"} 형태의 채울 값. 같은 이름이 여러 번 나오면 \"이름[N]\"(0 기준 순번, hwp_fields 목록 순서)으로 N 번째를 지목한다. 순번 없이 주면 첫 번째만 채우고 응답의 ambiguous 에 몇 개 중 몇 개인지 보고한다."
                     },
                     "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_filled.hwp" },
                     "dryRun": { "type": "boolean", "description": "true 면 파일을 쓰지 않고 변경 예정만 보고" }
@@ -273,7 +273,16 @@ fn show_mcp_tools() -> i32 {
             }),
             "edit",
             serde_json::json!(["edit", "fill-fields", "{path}", "--data", "{data}", "--json"]),
-            &["schemaVersion", "source", "dryRun", "filledCount", "filled", "notFound", "output"],
+            &[
+                "schemaVersion",
+                "source",
+                "dryRun",
+                "filledCount",
+                "filled",
+                "notFound",
+                "ambiguous",
+                "output",
+            ],
         ),
         tool(
             "hwp_batch_search",
@@ -8129,6 +8138,26 @@ fn run_edit(args: &[String]) -> i32 {
     }
 }
 
+/// [#3476] `--data` 키를 `(이름, 순번)` 으로 나눈다.
+///
+/// `"피규제집단명[3]"` → `("피규제집단명", 3)`, `"제목명"` → `("제목명", 0)`.
+/// 실제 제출 서식은 같은 이름을 여러 번 쓰므로(규제 대상 집단 14개 등) 순번으로 지목한다.
+/// 순번은 `fields --json` 이 주는 문서 순서와 같다.
+fn parse_field_key(key: &str) -> (&str, usize) {
+    let Some(open) = key.rfind('[') else {
+        return (key, 0);
+    };
+    if !key.ends_with(']') {
+        return (key, 0);
+    }
+    let inner = &key[open + 1..key.len() - 1];
+    match inner.parse::<usize>() {
+        Ok(n) => (&key[..open], n),
+        // 색인으로 해석되지 않으면 이름의 일부로 둔다 — 대괄호가 든 이름을 깨뜨리지 않는다.
+        Err(_) => (key, 0),
+    }
+}
+
 /// `edit fill-fields` — 누름틀에 값을 채운다 (메일머지).
 ///
 /// 검증된 코어 경로(`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없다.
@@ -8220,36 +8249,58 @@ fn edit_fill_fields(args: &[String]) -> i32 {
         }
     };
 
-    // 문서에 실재하는 필드 이름을 먼저 모아, 없는 이름을 편집 전에 가려낸다.
-    let existing: std::collections::HashSet<String> = doc
-        .collect_all_fields()
-        .iter()
-        .filter_map(|fi| fi.field.field_name().map(|s| s.to_string()))
-        .collect();
+    // [#3476] 이름별 **개수**를 센다. 실제 제출 서식은 같은 항목 묶음을 여러 번 요구해
+    // (규제영향분석서의 `피규제집단명` ×14 등) 이름만으로는 하나만 지목된다.
+    let mut name_counts: std::collections::HashMap<String, usize> =
+        std::collections::HashMap::new();
+    for fi in doc.collect_all_fields().iter() {
+        if let Some(n) = fi.field.field_name() {
+            *name_counts.entry(n.to_string()).or_insert(0) += 1;
+        }
+    }
 
     let mut filled: Vec<serde_json::Value> = Vec::new();
     let mut not_found: Vec<String> = Vec::new();
+    // 이름만 준 키가 여러 곳에 해당하면 그 사실을 보고한다 — 침묵하면 소비자가
+    // 불완전한 산출물을 완성본으로 판단한다.
+    let mut ambiguous: Vec<serde_json::Value> = Vec::new();
 
-    for (name, value) in &data {
+    for (key, value) in &data {
         let value_str = match value {
             serde_json::Value::String(s) => s.clone(),
             other => other.to_string(),
         };
-        if !existing.contains(name) {
-            not_found.push(name.clone());
+        let (name, occurrence) = parse_field_key(key);
+        let total = name_counts.get(name).copied().unwrap_or(0);
+
+        // 이름이 없거나, 지정한 순번이 범위를 벗어나면 채우지 않고 보고한다.
+        if total == 0 || occurrence >= total {
+            not_found.push(key.clone());
             continue;
         }
+        if occurrence == 0 && total > 1 && !key.contains('[') {
+            ambiguous.push(serde_json::json!({
+                "name": name,
+                "matched": 1,
+                "total": total,
+            }));
+        }
+
         if dry_run {
             // 파일을 건드리지 않고 무엇이 바뀔지만 기록한다.
-            filled.push(serde_json::json!({ "name": name, "value": value_str }));
+            filled.push(
+                serde_json::json!({ "name": name, "occurrence": occurrence, "value": value_str }),
+            );
             continue;
         }
-        if let Err(e) = doc.set_field_value_by_name(name, &value_str) {
-            eprintln!("오류: 필드 '{}' 설정 실패 - {}", name, e);
+        if let Err(e) = doc.set_field_value_by_name_at(name, occurrence, &value_str) {
+            eprintln!("오류: 필드 '{}' 설정 실패 - {}", key, e);
             // 실패 시 원본 불변 — 출력 파일을 쓰지 않고 즉시 끝낸다.
             return EXIT_RUNTIME;
         }
-        filled.push(serde_json::json!({ "name": name, "value": value_str }));
+        filled.push(
+            serde_json::json!({ "name": name, "occurrence": occurrence, "value": value_str }),
+        );
     }
 
     let output_path = out_path.unwrap_or_else(|| {
@@ -8282,6 +8333,7 @@ fn edit_fill_fields(args: &[String]) -> i32 {
             "filledCount": filled.len(),
             "filled": filled,
             "notFound": not_found,
+            "ambiguous": ambiguous,
         });
         if !dry_run {
             envelope["output"] = serde_json::Value::String(output_path.clone());

@@ -348,11 +348,19 @@ rhwp fields 신청서.hwp --json | jq -r '.fields[] | "\(.name): \(.memo // .gui
 (`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없고, **필드 값만 바꾸므로
 레이아웃·구조는 불변**이다.
 - `--data <JSON|@파일>` — `{"필드이름":"값"}` 형식. `@경로` 면 파일에서 읽는다
-  (대량 메일머지에서 셸 인용을 피한다). 값이 문자열이 아니면 JSON 표현으로 넣는다.
+  (대량 메일머지에서 셸 인용을 피한다. **UTF-8 이어야 한다** — CP949 로 저장하면
+  `stream did not contain valid UTF-8` 로 exit 1). 값이 문자열이 아니면 JSON 표현으로 넣는다.
+- **반복 항목 지목(#3476)** — 같은 이름이 여러 번 나오는 서식(규제영향분석서의
+  `피규제집단명` ×14 등)은 키에 0 기준 순번을 붙여 N 번째를 지목한다:
+  `{"피규제집단명[0]":"…","피규제집단명[13]":"…"}`. 순번은 `fields --json` 목록 순서와 같다.
+  순번 없는 키는 **종전대로 첫 매치**를 채우고, 여러 곳에 해당하면 `ambiguous` 로 보고한다.
+  범위를 벗어난 순번은 `notFound` 에 그대로 실린다.
 - `-o, --output <파일>` — 출력 파일 (기본 `<입력명>_filled.hwp`)
 - `--dry-run` — **파일을 쓰지 않고** 변경 예정 내역만 보고. 에이전트의 사전 확인 장치.
-- `--json` 봉투: `{"schemaVersion":"1.0","source","dryRun","filledCount","filled":[{name,value}],"notFound":[…],"output"?}`
-  - `notFound` — 문서에 없는 필드 이름. 조용히 무시하지 않으므로 오타를 즉시 안다.
+- `--json` 봉투: `{"schemaVersion":"1.0","source","dryRun","filledCount","filled":[{name,occurrence,value}],"notFound":[…],"ambiguous":[…],"output"?}`
+  - `notFound` — 문서에 없는 필드 이름(또는 범위를 벗어난 순번). 조용히 무시하지 않으므로 오타를 즉시 안다.
+  - `ambiguous` — 순번 없이 준 이름이 **여러 곳에 해당**할 때 `{name, matched, total}` 로 보고한다.
+    이 신호가 없으면 소비자가 "14개 중 1개만 채운 문서"를 완성본으로 오판한다.
   - `output` 은 실제 저장했을 때만 실린다(`--dry-run` 이면 없음).
 - **실패 시 원본 불변**: 필드 설정이 하나라도 실패하면 출력 파일을 쓰지 않고 종료 코드 1.
 - 종료 코드는 §종료 코드 계약 (없는 파일·직렬화/쓰기 실패 1 · 인자/JSON 오류 2)

@@ -330,11 +330,29 @@ impl DocumentCore {
 
     /// setFieldValueByName: 필드 이름으로 값 설정
     pub fn set_field_value_by_name(&mut self, name: &str, value: &str) -> Result<String, HwpError> {
+        self.set_field_value_by_name_at(name, 0, value)
+    }
+
+    /// [#3476] 같은 이름이 여러 번 나오는 서식에서 **N 번째**(0 기준) 필드에 값을 넣는다.
+    ///
+    /// 규제영향분석서 같은 실제 제출 서식은 같은 항목 묶음을 여러 번 요구한다
+    /// (`피규제집단명` ×14 등). 이름만으로 찾으면 첫 매치만 바뀌어 나머지를 채울 수 없다.
+    /// 순서는 `collect_all_fields()` 가 주는 문서 순서와 같으므로, 소비자는
+    /// `fields --json` 목록의 순번을 그대로 쓰면 된다.
+    pub fn set_field_value_by_name_at(
+        &mut self,
+        name: &str,
+        occurrence: usize,
+        value: &str,
+    ) -> Result<String, HwpError> {
         let fields = self.collect_all_fields();
         let fi = fields
             .iter()
-            .find(|f| f.field.field_name().map(|n| n == name).unwrap_or(false))
-            .ok_or_else(|| HwpError::InvalidField(format!("필드 이름 '{}' 없음", name)))?;
+            .filter(|f| f.field.field_name().map(|n| n == name).unwrap_or(false))
+            .nth(occurrence)
+            .ok_or_else(|| {
+                HwpError::InvalidField(format!("필드 이름 '{}'[{}] 없음", name, occurrence))
+            })?;
 
         let field_id = fi.field.field_id;
         let location = fi.location.clone();
