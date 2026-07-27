@@ -1340,6 +1340,31 @@ impl Paragraph {
             } else {
                 1
             };
+            // [#3466] 자동번호(제어문자 0x12)는 8 코드 유닛을 점유하면서 가시 placeholder 를
+            // **한 글자 남긴다**(파서 두 경로 공통). 그래서 그 글자 뒤에는 8 갭이 남지 않고
+            // (8 − 1 = 7 → 7/8 = 0) 갭 분배에서 누락돼, 뒤따르는 컨트롤이 한 칸씩 앞당겨졌다
+            // — 수식 k 가 수식 k+1 자리로 가고 마지막 수식은 폴백으로 문단 끝에 붙었다.
+            //
+            // 판별자는 셋을 **모두** 요구한다. stride 8 하나로는 부족하다 — 탭도 가시 글자를
+            // 남기며 8 코드 유닛을 점유하지만(HWP5 `0x09`, HWPX `'\t'` 폭 8) `controls[]` 에는
+            // 들어가지 않으므로, stride 만 보면 탭이 컨트롤 자리를 가로채 반대 방향으로 어순이
+            // 깨진다.
+            //   (1) 이 글자의 stride 가 정확히 8 — 일반 글자는 자기 폭 + 8k 라 8 이 될 수 없다
+            //   (2) 그 글자가 자동번호 placeholder 인 공백
+            //   (3) 지금 자리를 기다리는 컨트롤이 번호 컨트롤
+            // (3) 덕분에 HWPX `newNum`(placeholder 없이 순수 8 갭)은 종전 경로를 그대로 탄다.
+            let pending_is_number_control = matches!(
+                self.controls.get(positions.len()),
+                Some(Control::AutoNumber(_) | Control::NewNumber(_))
+            );
+            if pending_is_number_control
+                && char_width == 1
+                && chars.get(i) == Some(&' ')
+                && next_off == current_off + 8
+            {
+                positions.push(i);
+                continue;
+            }
             if next_off > current_off + char_width {
                 let gap = next_off - current_off - char_width;
                 let n_ctrls = gap / 8;
