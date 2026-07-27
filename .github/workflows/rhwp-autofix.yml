@@ -170,6 +170,8 @@ jobs:
           fi
           COUNT=$(echo "$BODY" | jq '.data | length')
           echo "인증 성공 — 사용 가능 모델 ${COUNT}종"
+          echo "--- 코딩 계열 후보 ---"
+          echo "$BODY" | jq -r '.data[].id' | grep -iE 'coder|code|qwen|deepseek|kimi|nemotron|devstral|codestral' | head -30
 
           # 코딩 특화 모델을 선호 순위대로 찾는다. 없으면 첫 번째 모델로 떨어진다.
           for want in \
