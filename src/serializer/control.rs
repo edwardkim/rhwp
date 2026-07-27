@@ -872,6 +872,7 @@ fn serialize_auto_number(an: &AutoNumber) -> Vec<u8> {
         AutoNumberType::Picture => 3,
         AutoNumberType::Table => 4,
         AutoNumberType::Equation => 5,
+        AutoNumberType::TotalPage => 6,
     };
     let mut attr: u32 = type_val & 0x0F;
     attr |= ((an.format as u32) & 0xFF) << 4; // bit 4~11: 번호 모양
@@ -901,6 +902,7 @@ fn serialize_new_number(nn: &NewNumber) -> Vec<u8> {
         AutoNumberType::Picture => 3,
         AutoNumberType::Table => 4,
         AutoNumberType::Equation => 5,
+        AutoNumberType::TotalPage => 6,
     };
     let attr: u32 = type_val & 0x0F;
     let mut data = Vec::new();

@@ -4593,6 +4593,7 @@ fn parse_num_type(s: &str) -> AutoNumberType {
         "FIGURE" | "PICTURE" => AutoNumberType::Picture,
         "TABLE" => AutoNumberType::Table,
         "EQUATION" => AutoNumberType::Equation,
+        "TOTAL_PAGE" => AutoNumberType::TotalPage,
         _ => AutoNumberType::Page,
     }
 }
@@ -6290,6 +6291,13 @@ fn parse_common_shape_children(
                                 _ => {}
                             }
                         }
+                    }
+                    // 개체 설명문(대체 텍스트) — 방출측(write_shape_comment)은 OLE/차트에도
+                    // <hp:shapeComment>를 쓰지만 이 공용 자식 파서에 arm 이 없어 되읽지
+                    // 못하고 유실됐다(OLE 라운드트립 ir-diff 로 실측: HWP5→HWPX→재파싱 후
+                    // shape comment 사라짐).
+                    b"shapeComment" => {
+                        common.description = read_dutmal_text(reader, b"shapeComment")?;
                     }
                     _ => {}
                 }
@@ -8125,6 +8133,71 @@ mod tests {
             crate::model::shape::OleDrawingAspect::Icon,
             "drawAspect=ICON 이 보존돼야 함"
         );
+    }
+
+    #[test]
+    fn bugfind_ole_shape_comment_is_parsed_into_common_description() {
+        // 실측: samples/bitmap.hwp 를 export-hwpx --verify 로 왕복하면
+        // OLE 개체(그림판 개체)의 "OLE 개체입니다.\r\n개체 형식은 Paintbrush
+        // Picture입니다." 설명문(hp:shapeComment)이 IR 차이 1건으로 검출됐다.
+        // 방출측(write_shape_comment)은 <hp:shapeComment>를 정상적으로 쓰지만
+        // OLE/차트 공용 자식 파서(parse_common_shape_children)에 shapeComment
+        // arm 이 없어 되읽지 못하고 유실되었다.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="1" zOrder="0" binaryItemIDRef="ole1">
+        <hp:sz width="2600" height="2600"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"/>
+        <hp:shapeComment>OLE 개체입니다.&#13;&#10;개체 형식은 Paintbrush Picture입니다.</hp:shapeComment>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected ole shape");
+        };
+        assert_eq!(
+            ole.common.description, "OLE 개체입니다.\r\n개체 형식은 Paintbrush Picture입니다.",
+            "hp:shapeComment 가 ole.common.description 으로 되읽혀야 함"
+        );
+    }
+
+    #[test]
+    fn chart_shape_comment_is_parsed_into_common_description() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:chart id="1" zOrder="0" chartIDRef="Chart/chart1.xml">
+        <hp:sz width="2600" height="2600"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"/>
+        <hp:shapeComment>분기별 매출 차트</hp:shapeComment>
+      </hp:chart>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).expect("parse chart with shapeComment");
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(chart) = shape.as_ref() else {
+            panic!("expected chart modeled as OLE shape");
+        };
+        assert_eq!(chart.common.description, "분기별 매출 차트");
     }
 
     #[test]
