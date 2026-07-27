@@ -266,9 +266,26 @@ jobs:
           ../bot/.github/autofix/cycle-loop.sh "$GITHUB_WORKSPACE/bot" "$PWD" "${{ github.run_number }}"
 
       - name: 결론 없음 — 조용히 종료
-        if: steps.loop.outputs.status != 'FOUND'
+        if: ${{ steps.loop.outputs.status != 'FOUND' && steps.loop.outputs.status != 'ORACLE-ONLY' }}
         run: |
           echo "::notice::${{ steps.loop.outputs.attempts || '0' }}회 시도에서 제출 기준(게이트+반박)을 넘는 결함이 확정되지 않았다. 기준은 낮추지 않는다."
+
+      # 폴백: 수정이 게이트를 못 넘어도 오라클이 기계적으로 확정한 결함은 이슈로 보고한다.
+      # 근거가 CLI 종료코드 계약 위반이라 오탐이 아니다. 같은 제목의 이슈/PR 이 이미 있으면
+      # 루프가 애초에 ORACLE-ONLY 를 내지 않으므로 중복 스팸도 없다.
+      - name: 오라클 발견 이슈 등록 (수정 실패 폴백)
+        if: ${{ steps.loop.outputs.status == 'ORACLE-ONLY' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
+        working-directory: work
+        env:
+          GH_TOKEN: ${{ secrets.RHWP_BOT_PAT }}
+        run: |
+          set -euo pipefail
+          awk 'f{print} /^---$/{c++} c==2 && !f{f=1}' FINDING.md > /tmp/oracle_issue.md
+          printf '\n---\n<sub>저장소 CLI 의 종료코드 계약 위반으로 기계적으로 확정된 결함입니다. 자동 수정이 red→green 게이트를 넘지 못해 이슈로만 보고합니다.</sub>\n' >> /tmp/oracle_issue.md
+          URL=$(gh issue create --repo "$UPSTREAM" \
+            --title "${{ steps.loop.outputs.title }}" \
+            --body-file /tmp/oracle_issue.md)
+          echo "생성된 이슈: $URL"
 
       - name: 이슈 등록 (게이트 통과 후에만)
         if: ${{ steps.loop.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
