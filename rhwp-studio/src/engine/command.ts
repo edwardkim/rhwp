@@ -20,6 +20,14 @@ export interface EditCommand {
    * CommandHistory 가 스냅샷 예산을 WASM 상한과 정합시키는 데 쓴다.
    */
   snapshotResourceCount?(): number;
+  /**
+   * [Task #2370 클러스터 A] execute() 가 문서를 전혀 바꾸지 않았는가.
+   * true 면 CommandHistory 가 이 명령을 undo 스택에 넣지 않는다 — 되돌릴 것이 없는
+   * 엔트리는 Ctrl+Z 를 무효과로 소모하고, redo 스택을 파기하며(`execute` 는 새 명령마다
+   * redo 를 버린다), 스냅샷 명령이면 예산 2슬롯을 점유해 진짜 undo 이력을 축출한다.
+   * 구현하지 않으면 종전대로 항상 기록된다.
+   */
+  isNoOp?(): boolean;
   /** page-local refresh 판정을 위한 가벼운 텍스트 편집 payload. */
   getPageLocalTextEditOptions?(): { insertedText?: string; deleteCount?: number };
   /** 방금 실행한 mutation effect를 한 번만 반환한다. */
@@ -155,7 +163,9 @@ export interface OperationMetadata {
  */
 export type OperationDescriptor =
   | { kind: 'command'; command: EditCommand; meta?: OperationMetadata }
-  | { kind: 'snapshot'; operationType: string; operation: (wasm: WasmBridge) => DocumentPosition; meta?: OperationMetadata }
+  // [Task #2370] snapshot 의 operation 은 아무것도 바꾸지 않았을 때 `null` 을 반환해
+  // "기록하지 말 것"을 알린다(그 경우 커서 이동·리프레시도 건너뛴다).
+  | { kind: 'snapshot'; operationType: string; operation: (wasm: WasmBridge) => DocumentPosition | null; meta?: OperationMetadata }
   | { kind: 'record'; command: EditCommand; meta?: OperationMetadata };
 
 // ─── 본문/셀 분기 헬퍼 ────────────────────────────────
@@ -1836,17 +1846,19 @@ export class SnapshotCommand implements EditCommand {
 
   private beforeId: number | null = null;
   private afterId: number | null = null;
+  private noOp = false;
 
   /**
    * @param operationType 작업 종류 (예: 'pasteInternal', 'deleteControl')
    * @param cursorBefore 작업 전 커서 위치
-   * @param operation 실제 작업을 수행하는 함수. 작업 후 커서 위치를 반환.
+   * @param operation 실제 작업을 수행하는 함수. 작업 후 커서 위치를 반환하며,
+   *   문서를 전혀 바꾸지 않았으면 `null` 을 반환해 기록을 취소한다([Task #2370]).
    */
   constructor(
     operationType: string,
     private cursorBefore: DocumentPosition,
     private cursorAfter: DocumentPosition,
-    private operation: ((wasm: WasmBridge) => DocumentPosition) | null,
+    private operation: ((wasm: WasmBridge) => DocumentPosition | null) | null,
   ) {
     this.type = `snapshot:${operationType}`;
   }
@@ -1866,7 +1878,16 @@ export class SnapshotCommand implements EditCommand {
     // try 범위에 포함해 before/after 를 대칭적으로 해제한다.
     try {
       if (this.operation) {
-        this.cursorAfter = this.operation(wasm);
+        const result = this.operation(wasm);
+        if (result === null) {
+          // [Task #2370] 문서 무변경 — after 를 저장하지 않고 before 를 즉시 반환한다.
+          // 히스토리는 isNoOp() 를 보고 이 명령을 스택에 넣지 않는다.
+          this.noOp = true;
+          this.operation = null;
+          this.discard(wasm);
+          return { ...this.cursorBefore };
+        }
+        this.cursorAfter = result;
       }
       this.afterId = wasm.saveSnapshot();
     } catch (e) {
@@ -1878,6 +1899,11 @@ export class SnapshotCommand implements EditCommand {
     this.operation = null;
 
     return { ...this.cursorAfter };
+  }
+
+  /** [Task #2370] operation 이 `null` 을 반환해 기록이 취소된 명령인가. */
+  isNoOp(): boolean {
+    return this.noOp;
   }
 
   undo(wasm: WasmBridge): DocumentPosition {

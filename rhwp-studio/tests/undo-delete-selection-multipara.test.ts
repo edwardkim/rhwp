@@ -41,6 +41,29 @@ test('undo 는 스냅샷 복원에 위임한다', () => {
     'undo 는 스냅샷 복원만 한다');
 });
 
+test('스냅샷 커서 인자는 (cursorBefore=end, cursorAfter=start) 순서다', () => {
+  // [Task #2370 클러스터 D] 종전 가드는 `new SnapshotCommand('deleteSelection'` 존재만
+  // 봐서 인자를 `start, end` 로 뒤집어도 green 이었다. SnapshotCommand 의 계약은
+  // (operationType, cursorBefore, cursorAfter, operation) 이고 undo 는 cursorBefore 를
+  // 돌려주므로, 뒤집으면 undo 후 캐럿이 선택 **끝** 대신 **시작**에 놓이는 무언 회귀가 된다.
+  assert.match(
+    block,
+    /new SnapshotCommand\(\s*'deleteSelection',\s*end,\s*start\s*,/,
+    "인자 순서는 ('deleteSelection', end, start, …) — undo 후 캐럿이 선택 끝으로 돌아가야 함",
+  );
+  // 계약 자체도 함께 핀한다(SnapshotCommand 쪽이 바뀌면 위 순서의 의미가 달라진다).
+  assert.match(
+    commandSrc,
+    /private cursorBefore: DocumentPosition,\s*\n\s*private cursorAfter: DocumentPosition,/,
+    'SnapshotCommand 생성자는 cursorBefore, cursorAfter 순서',
+  );
+  assert.match(
+    commandSrc,
+    /undo\(wasm: WasmBridge\): DocumentPosition \{[\s\S]{0,220}?return \{ \.\.\.this\.cursorBefore \};/,
+    'SnapshotCommand.undo 는 cursorBefore 를 반환',
+  );
+});
+
 test('undo 가 텍스트 재조립으로 되돌아가지 않는다', () => {
   // 아래가 다시 등장하면 #2406 분할점 결함과 #2418 서식·컨트롤 손실이 함께 살아난다.
   assert.doesNotMatch(block, /savedTexts/, '평문 캡처 부활 금지');

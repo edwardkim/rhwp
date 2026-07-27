@@ -227,13 +227,48 @@ fn resolve_master_page_hrefs<'a, 'b>(
     (hrefs, missing_refs)
 }
 
+/// [#3460] `binaryItemIDRef` 를 매니페스트 위치 기준 정규 이름(`image{N}`)으로 통일한다.
+///
+/// 섹션 파서는 `binaryItemIDRef` 에서 **숫자만 뽑아** `bin_data_id` 로 쓰고(숫자 불변식,
+/// 직렬화 쪽 `context.rs` 도 같은 규약으로 `image{N}` 을 방출한다), BinData 는 매니페스트
+/// 순서대로 `id = 위치+1` 로 적재된다. 그래서 두 가지가 깨진다.
+///
+/// - 숫자가 없는 ID(예: `BINHDR`): 추출 결과가 빈 문자열 → `bin_data_id = 0` → 매칭 실패로
+///   그림이 통째로 사라진다(머리말 SVG 밴드가 빈 공간이 되던 원인).
+/// - 숫자가 위치와 어긋나는 ID(예: 두 번째 항목이 `BIN0007`): 다른 그림을 가리킨다.
+///
+/// 파서 내부 호출 사슬 전체에 매니페스트 맵을 배선하는 대신, 진입 시점에 참조 문자열만
+/// 정규화한다. 실제 바이트 적재(`id = 위치+1`)와 같은 기준을 쓰므로 결과가 일치하고,
+/// 이미 정규형인 문서는 문자열이 바뀌지 않아 무영향이다.
+fn canonicalize_bin_item_refs(xml: &str, bin_data_items: &[content::PackageItem]) -> String {
+    let mut out = xml.to_string();
+    for (i, item) in bin_data_items.iter().enumerate() {
+        let canonical_id = i + 1;
+        let digits: String = item.id.chars().filter(|c| c.is_ascii_digit()).collect();
+        if digits.parse::<usize>() == Ok(canonical_id) {
+            continue; // 이미 숫자 불변식을 만족 — 건드리지 않는다.
+        }
+        let from = format!("binaryItemIDRef=\"{}\"", item.id);
+        if !out.contains(&from) {
+            continue;
+        }
+        let to = format!("binaryItemIDRef=\"image{}\"", canonical_id);
+        out = out.replace(&from, &to);
+    }
+    out
+}
+
 fn attach_hwpx_master_page(
     reader: &mut reader::HwpxReader,
     section: &mut Section,
     master_page_href: &str,
+    bin_data_items: &[content::PackageItem],
 ) -> bool {
     match reader.read_file(master_page_href) {
-        Ok(master_page_xml) => match section::parse_hwpx_master_page(&master_page_xml) {
+        Ok(master_page_xml) => match section::parse_hwpx_master_page(&canonicalize_bin_item_refs(
+            &master_page_xml,
+            bin_data_items,
+        )) {
             Ok(master_page) => {
                 section.section_def.master_pages.push(master_page);
                 true
@@ -336,6 +371,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     let mut sections = Vec::new();
     for (section_idx, section_href) in package_info.section_files.iter().enumerate() {
         let section_xml = reader.read_file(section_href)?;
+        let section_xml = canonicalize_bin_item_refs(&section_xml, &package_info.bin_data_items);
         let master_page_refs = match section::collect_hwpx_section_master_page_refs(&section_xml) {
             Ok(refs) => refs,
             Err(e) => {
@@ -356,7 +392,12 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
 
                 let mut attached_master_page_count = 0usize;
                 for master_page_href in master_page_hrefs {
-                    if attach_hwpx_master_page(&mut reader, &mut section, master_page_href) {
+                    if attach_hwpx_master_page(
+                        &mut reader,
+                        &mut section,
+                        master_page_href,
+                        &package_info.bin_data_items,
+                    ) {
                         attached_master_page_count += 1;
                     }
                 }
@@ -372,6 +413,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
                                     &mut reader,
                                     &mut section,
                                     master_page_href,
+                                    &package_info.bin_data_items,
                                 );
                             }
                         }

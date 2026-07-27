@@ -12,9 +12,31 @@
  */
 import { execFileSync } from 'child_process';
 import { mkdirSync } from 'fs';
-import { runTest, loadHwpFile, assert } from './helpers.mjs';
+import { runTest, loadApp, loadHwpFile, assert } from './helpers.mjs';
 
 const OUTPUT_DIR = '../output/e2e/issue-3126';
+
+/**
+ * PDF 안내 표시 설정을 localStorage 에 직접 심는다 (앱 재초기화 없음).
+ *
+ * [#3450] 이 설정은 `rhwp-settings` 에 영속되고 UserSettingsService 는 앱 초기화
+ * 시점에 한 번만 읽는다. 안내 숨김 케이스가 값을 false 로 남기면 **다음 실행**의
+ * 앞선 케이스들이 안내 없는 흐름(즉시 준비 모달)으로 시작해, 안내 모달 관련 단언만
+ * 실패한다. host 모드는 사용자 Chrome 프로필에 붙으므로 그 값이 실행 사이에 남는다.
+ */
+async function writePdfGuidancePreference(page, show) {
+  await page.evaluate((shouldShow) => {
+    const raw = JSON.parse(localStorage.getItem('rhwp-settings') || '{}');
+    raw.dialog = { ...(raw.dialog || {}), showPdfPrintGuidance: shouldShow };
+    localStorage.setItem('rhwp-settings', JSON.stringify(raw));
+  }, show);
+}
+
+/** 안내 표시 설정을 심고 앱을 다시 초기화해 그 값으로 시작하게 한다. */
+async function applyPdfGuidancePreference(page, show) {
+  await writePdfGuidancePreference(page, show);
+  await loadApp(page);
+}
 
 async function installPrintCapture(page) {
   await page.evaluate(() => {
@@ -267,6 +289,7 @@ function assertSharedPdfContract(menu, dialog, result) {
 }
 
 await runTest('#3126 PDF 경로 — #2524 embedded bitmap/SVG font 회귀', async ({ page, browser }) => {
+  await applyPdfGuidancePreference(page, true);
   const load = await loadHwpFile(page, 'render-p35-font-native-bitmap.hwpx');
   await installPrintCapture(page);
   const menu = await clickPdfMenuItem(page);
@@ -299,6 +322,7 @@ await runTest('#3126 PDF 경로 — #2524 embedded bitmap/SVG font 회귀', asyn
 });
 
 await runTest('#3126 PDF 경로 — #2525 다중 페이지/검색 텍스트 회귀', async ({ page, browser }) => {
+  await applyPdfGuidancePreference(page, true);
   const load = await loadHwpFile(page, 'hwpx/hwpx-02.hwpx');
   assert(load.pageCount > 1, '#2525 fixture는 다중 페이지');
   await installPrintCapture(page);
@@ -324,6 +348,7 @@ await runTest('#3126 PDF 경로 — #2525 다중 페이지/검색 텍스트 회�
 });
 
 await runTest('#3126 PDF 경로 — 안내 숨김 저장과 복원 가능한 직접 준비 흐름', async ({ page }) => {
+  await applyPdfGuidancePreference(page, true);
   await loadHwpFile(page, 'render-p35-font-native-bitmap.hwpx');
   await installPrintCapture(page);
   const firstMenu = await clickPdfMenuItem(page);
@@ -350,6 +375,11 @@ await runTest('#3126 PDF 경로 — 안내 숨김 저장과 복원 가능한 직
   );
   assert(!secondResult.capture.pdfDialogVisibleAtPrint, 'print() 전에 직접 준비 모달 제거');
   assert(secondResult.after.surfaceRemoved, '두 번째 실행 뒤 iframe 정리');
+
+  // [#3450] 이 케이스가 남긴 안내 숨김 설정을 프로필에서 원복한다. 각 케이스가
+  // 시작 시 값을 심으므로 이중 안전장치지만, 실행 뒤 프로필을 처음 상태로 돌려
+  // 다른 스위트·수동 확인이 이 실행에 오염되지 않게 한다.
+  await writePdfGuidancePreference(page, true);
 });
 
 async function clickPrintMenuItem(page) {

@@ -181,6 +181,12 @@ pub struct DocumentCore {
     /// 이미지 base64 인라인으로 페이지당 1MB 급이라 재직렬화(실측 15ms/회)가
     /// 렌더 자체와 맞먹는다. 편집 무효화는 page_tree_cache 와 동일 지점에서.
     pub(crate) layer_tree_json_cache: RefCell<Vec<Vec<(u8, String)>>>,
+    /// 그림 신원 키(`imageKey`)의 문서 단위 세대 번호 (Task #3315).
+    ///
+    /// `bin_data_id` 는 append-only 라 세션 중 id→바이트가 안정하지만, undo 스냅샷
+    /// 복원은 문서를 통째로 갈아끼워 같은 id 가 다른 바이트를 가리키게 만들 수 있다.
+    /// 그래서 그림을 새로 등록할 때와 스냅샷을 되돌릴 때 세대를 올린다.
+    pub(crate) bin_data_epoch: u32,
     /// Batch 모드 플래그 — true이면 paginate() 스킵
     pub(crate) batch_mode: bool,
     /// 이벤트 로그 (Command 실행 시 누적)
@@ -348,6 +354,7 @@ impl DocumentCore {
             pending_pagination_job: None,
             page_tree_cache: RefCell::new(Vec::new()),
             layer_tree_json_cache: RefCell::new(Vec::new()),
+            bin_data_epoch: 0,
             batch_mode: false,
             event_log: Vec::new(),
             overflow_links_cache: RefCell::new(HashMap::new()),

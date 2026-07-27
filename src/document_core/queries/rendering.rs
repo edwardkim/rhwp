@@ -697,13 +697,15 @@ impl DocumentCore {
                             language_index,
                             family,
                             alternate_family,
-                            bytes: font_bytes_by_id.get(&bin_data_id)?.as_slice(),
+                            bytes: &font_bytes_by_id.get(&bin_data_id)?[..],
                             face_index,
                         })
                     },
                 )
                 .collect::<Vec<_>>();
-            let mut builder = LayerBuilder::new(profile).with_output_options(output_options);
+            let mut builder = LayerBuilder::new(profile)
+                .with_output_options(output_options)
+                .with_bin_data_epoch(self.bin_data_epoch);
             Ok(builder.build_with_embedded_fonts(tree, &embedded_fonts))
         })
     }
@@ -711,6 +713,7 @@ impl DocumentCore {
     /// 바이너리 데이터를 0-based `bin_data_content` 인덱스로 반환한다.
     /// [Task #2263] 지연 로딩 도입으로 바이트를 빌려줄 수 없어 소유값을 반환한다.
     pub fn get_bin_data(&self, index: usize) -> Option<Vec<u8>> {
+        // 공개 계약은 소유 `Vec` 이다 — 호출부가 WASM 경계로 넘긴다.
         self.document
             .bin_data_content
             .get(index)
@@ -1412,6 +1415,59 @@ impl DocumentCore {
             | (profile_bits << 5)
     }
 
+    /// 페이지가 그리는 그림들의 신원 키만 작은 JSON 으로 반환한다 (Task #3315).
+    ///
+    /// `{"keys":["bin:0:1:src", ...]}` 형태이며, 등장 순서를 보존한다. 소비자는 이 목록을
+    /// 서명으로 삼아 "그림이 그대로면 앞서 만든 디코드 결과를 재사용"할 수 있다 — 그러려고
+    /// 수 MB 짜리 레이어 트리 JSON 을 다시 받아 정규식으로 훑을 이유가 없다.
+    ///
+    /// 안정된 신원이 없는 그림(`bin_data_id == 0`)은 목록에서 빠지는 대신 `null` 로 자리를
+    /// 남기고 `cacheable:false`를 반환한다. 소비자는 이런 페이지의 prefetch 서명을 저장하지
+    /// 않아야 하므로, 키를 만들 수 없는 합성 그림이 바뀌어도 이전 decode를 재사용하지 않는다.
+    pub fn get_page_source_image_keys_native(&self, page_num: u32) -> Result<String, HwpError> {
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+        fn collect(node: &RenderNode, epoch: u32, out: &mut Vec<Option<String>>) {
+            // LayerBuilder와 같은 pre-order/visibility 계약을 써야 compact API와 JSON의
+            // 키 순서가 같다. Screen profile은 editor-only 노드도 표시한다.
+            if !node.visible {
+                return;
+            }
+            if let RenderNodeType::Image(image) = &node.node_type {
+                if image.data.is_some() {
+                    out.push(crate::paint::source_image_key(epoch, image));
+                }
+            }
+            for child in &node.children {
+                collect(child, epoch, out);
+            }
+        }
+
+        let mut keys = Vec::new();
+        self.with_page_tree_cached(page_num, |tree| {
+            collect(&tree.root, self.bin_data_epoch, &mut keys);
+            Ok(())
+        })?;
+
+        let cacheable = keys.iter().all(Option::is_some);
+        let mut buf = format!("{{\"cacheable\":{cacheable},\"keys\":[");
+        for (index, key) in keys.iter().enumerate() {
+            if index > 0 {
+                buf.push(',');
+            }
+            match key {
+                Some(key) => {
+                    buf.push('"');
+                    buf.push_str(&crate::document_core::helpers::json_escape(key));
+                    buf.push('"');
+                }
+                None => buf.push_str("null"),
+            }
+        }
+        buf.push_str("]}");
+        Ok(buf)
+    }
+
     /// 페이지 overlay 이미지와 replay-plane summary만 작은 JSON으로 반환한다.
     ///
     /// Studio는 BehindText/InFrontOfText 그림 overlay 계산을 위해 전체 PageLayerTree JSON을
@@ -1472,11 +1528,13 @@ impl DocumentCore {
             }
 
             let mut mime = "application/octet-stream";
-            let mut base64_data = String::new();
+            // base64 인코딩은 emit 시점에 버퍼로 직접 흘린다 — 수 MB 중간 String 을
+            // 만들지 않는다 (Task #3315).
+            let mut image_bytes: Option<std::borrow::Cow<[u8]>> = None;
             let mut baked_watermark = false;
             if let Some(payload) = resolved {
                 mime = payload.mime;
-                base64_data = base64::engine::general_purpose::STANDARD.encode(&payload.data);
+                image_bytes = Some(std::borrow::Cow::Borrowed(&payload.data[..]));
                 baked_watermark = matches!(payload.kind, ResolvedImageKind::BakedWatermark);
             } else if let Some(data) = &image.data {
                 let detected = crate::renderer::svg::detect_image_mime_type(data);
@@ -1484,18 +1542,18 @@ impl DocumentCore {
                     if detected == "image/x-pcx" {
                         match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
                             Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
+                            None => (detected, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else if detected == "image/bmp" {
                         match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
                             Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (detected, std::borrow::Cow::Borrowed(data.as_slice())),
+                            None => (detected, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else {
-                        (detected, std::borrow::Cow::Borrowed(data.as_slice()))
+                        (detected, std::borrow::Cow::Borrowed(&data[..]))
                     };
                 mime = final_mime;
-                base64_data = base64::engine::general_purpose::STANDARD.encode(&*final_data);
+                image_bytes = Some(final_data);
             }
 
             buf.push('{');
@@ -1504,7 +1562,10 @@ impl DocumentCore {
             buf.push_str(",\"mime\":");
             write_json_str(buf, mime);
             buf.push_str(",\"base64\":");
-            write_json_str(buf, &base64_data);
+            crate::document_core::helpers::write_json_base64(
+                buf,
+                image_bytes.as_deref().unwrap_or(&[]),
+            );
             buf.push_str(",\"effect\":");
             write_json_str(buf, effect_str(image.effect));
             let _ = write!(

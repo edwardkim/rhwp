@@ -947,7 +947,10 @@ export const tableCommands: CommandDef[] = [
         // [#2344] delete+insert 를 하나의 snapshot 으로 원자화해 라우팅 — 미기록 시 셀 문자
         // 수가 바뀌어 후속 undo 오프셋이 오염되고 텍스트가 손상된다("1234567"→쉼표→Ctrl+Z="67").
         // 라우터가 refresh 하므로 수동 document-changed emit 은 제거.
-        safeTableOp(() => ih.executeOperation({
+        // [Task #2370] 종전에는 여기를 safeTableOp 으로 한 겹 더 감쌌으나, 이 문장이 바깥
+        // try 의 마지막이라 바깥 catch 는 도달할 수 없었다. 관측 차이는 로그뿐이고 바깥
+        // catch 의 메시지가 더 구체적이므로 한 겹만 남긴다.
+        ih.executeOperation({
           kind: 'snapshot',
           operationType: 'cellNumberFormat',
           operation: (wasm) => {
@@ -955,7 +958,7 @@ export const tableCommands: CommandDef[] = [
             wasm.insertTextInCell(sec, ppi, ci, cei, cpi, 0, result);
             return pos;
           },
-        }), '셀 숫자 서식');
+        });
       } catch (err) {
         console.warn('[table:thousand-sep] 구분 쉼표 변환 실패:', err);
       }
@@ -989,7 +992,10 @@ export const tableCommands: CommandDef[] = [
         // [#2344] delete+insert 를 하나의 snapshot 으로 원자화해 라우팅 — 미기록 시 셀 문자
         // 수가 바뀌어 후속 undo 오프셋이 오염되고 텍스트가 손상된다("1234567"→쉼표→Ctrl+Z="67").
         // 라우터가 refresh 하므로 수동 document-changed emit 은 제거.
-        safeTableOp(() => ih.executeOperation({
+        // [Task #2370] 종전에는 여기를 safeTableOp 으로 한 겹 더 감쌌으나, 이 문장이 바깥
+        // try 의 마지막이라 바깥 catch 는 도달할 수 없었다. 관측 차이는 로그뿐이고 바깥
+        // catch 의 메시지가 더 구체적이므로 한 겹만 남긴다.
+        ih.executeOperation({
           kind: 'snapshot',
           operationType: 'cellNumberFormat',
           operation: (wasm) => {
@@ -997,7 +1003,7 @@ export const tableCommands: CommandDef[] = [
             wasm.insertTextInCell(sec, ppi, ci, cei, cpi, 0, result);
             return pos;
           },
-        }), '셀 숫자 서식');
+        });
       } catch (err) {
         console.warn('[table:decimal-add] 자릿점 넣기 실패:', err);
       }
@@ -1031,7 +1037,10 @@ export const tableCommands: CommandDef[] = [
         // [#2344] delete+insert 를 하나의 snapshot 으로 원자화해 라우팅 — 미기록 시 셀 문자
         // 수가 바뀌어 후속 undo 오프셋이 오염되고 텍스트가 손상된다("1234567"→쉼표→Ctrl+Z="67").
         // 라우터가 refresh 하므로 수동 document-changed emit 은 제거.
-        safeTableOp(() => ih.executeOperation({
+        // [Task #2370] 종전에는 여기를 safeTableOp 으로 한 겹 더 감쌌으나, 이 문장이 바깥
+        // try 의 마지막이라 바깥 catch 는 도달할 수 없었다. 관측 차이는 로그뿐이고 바깥
+        // catch 의 메시지가 더 구체적이므로 한 겹만 남긴다.
+        ih.executeOperation({
           kind: 'snapshot',
           operationType: 'cellNumberFormat',
           operation: (wasm) => {
@@ -1039,7 +1048,7 @@ export const tableCommands: CommandDef[] = [
             wasm.insertTextInCell(sec, ppi, ci, cei, cpi, 0, result);
             return pos;
           },
-        }), '셀 숫자 서식');
+        });
       } catch (err) {
         console.warn('[table:decimal-remove] 자릿점 빼기 실패:', err);
       }

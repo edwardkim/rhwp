@@ -66,7 +66,9 @@ fn issue_1198_exam_social_internal_paste_uses_nested_cell_path() {
     let mut doc = load_sample("exam_social.hwp");
 
     // 1쪽 상단 답안지 `성명` 오른쪽 빈 입력칸 내부 좌표.
-    let hit = hit_json(&doc, 0, 250.0, 210.0);
+    // [#3386 A/C/D] 중첩 TAC anchor 의 outer-margin top 정합(+3.8px)으로
+    // 중첩 표가 한글 좌표로 내려가, 종전 y=210.0 이 경계 밖이 됨 — 셀 안쪽 재고정.
+    let hit = hit_json(&doc, 0, 250.0, 216.0);
     let path = path_tuples(&hit);
     assert_eq!(
         path,
@@ -116,7 +118,7 @@ fn issue_1198_exam_social_internal_paste_uses_nested_cell_path() {
 fn issue_1198_exam_social_html_paste_uses_nested_cell_path() {
     let mut doc = load_sample("exam_social.hwp");
 
-    let hit = hit_json(&doc, 0, 250.0, 210.0);
+    let hit = hit_json(&doc, 0, 250.0, 216.0);
     let path = path_tuples(&hit);
     assert_eq!(
         path,

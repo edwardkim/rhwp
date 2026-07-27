@@ -80,6 +80,15 @@ export class CommandHistory {
     const cursorAfter = command.execute(wasm);
     this.captureExecutionEffects(command);
 
+    // [Task #2370 클러스터 A] 문서를 바꾸지 않은 명령은 기록하지 않는다.
+    // 스택에 넣으면 ①Ctrl+Z 한 번이 아무 효과 없이 소모되고 ②아래 discardAll 로
+    // redo 스택이 파기되며 ③스냅샷 명령이면 예산 2슬롯을 먹어 오래된 진짜 이력이
+    // 축출된다(#2328). 세 피해 모두 여기서 끊는다 — redo 스택도 그대로 둔다.
+    if (command.isNoOp?.()) {
+      command.discard?.(wasm);
+      return cursorAfter;
+    }
+
     // 직전 명령과 병합 시도
     if (this.undoStack.length > 0) {
       const last = this.undoStack[this.undoStack.length - 1];

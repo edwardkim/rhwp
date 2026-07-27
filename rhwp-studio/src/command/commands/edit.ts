@@ -254,7 +254,8 @@ export const editCommands: CommandDef[] = [
               return ih.getCursorPosition();
             },
           });
-          services.eventBus.emit('document-mutated', 'field-edit');
+          // [Task #2370] 수동 emit 제거 — 라우터의 'full' refresh(afterEdit)가 이미
+          // 'document-mutated'/'document-changed' 를 emit 한다(insert:field 와 동형).
         } catch (err) {
           console.warn('[field:edit] 누름틀 고치기 실패:', err);
         }

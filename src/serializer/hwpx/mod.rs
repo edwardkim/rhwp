@@ -1341,7 +1341,7 @@ mod tests {
         // 라운드트립: BinData 보존 확인
         let parsed = parse_hwpx(&bytes).expect("parse back");
         assert_eq!(parsed.bin_data_content.len(), 1);
-        assert_eq!(parsed.bin_data_content[0].data.load(), fake_png);
+        assert_eq!(&parsed.bin_data_content[0].data.load()[..], fake_png);
         assert_eq!(parsed.bin_data_content[0].extension, "png");
     }
 

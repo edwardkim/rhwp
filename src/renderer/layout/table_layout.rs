@@ -937,6 +937,26 @@ impl LayoutEngine {
             styles,
             depth > 0 || table.common.treat_as_char,
         );
+        if std::env::var("RHWP_DIAG_TAC").is_ok() {
+            let decl: Vec<f64> = table
+                .cells
+                .iter()
+                .filter(|c| c.row_span == 1)
+                .map(|c| hwpunit_to_px(c.height as i32, self.dpi))
+                .collect();
+            eprintln!(
+                "[DIAG_TAC layout_table] tac={} depth={} mt={} meta={:?} rows={} y_start={:.1} decl_common_h={:.1} row_heights={:?} decl_cell_h={:?}",
+                table.common.treat_as_char,
+                depth,
+                measured_table.is_some(),
+                table_meta,
+                row_count,
+                y_start,
+                hwpunit_to_px(table.common.height as i32, self.dpi),
+                row_heights.iter().map(|h| (h * 10.0).round() / 10.0).collect::<Vec<_>>(),
+                decl.iter().map(|h| (h * 10.0).round() / 10.0).collect::<Vec<_>>(),
+            );
+        }
 
         // ── 2. 누적 위치 계산 ──
         let mut col_x = vec![0.0f64; col_count + 1];
@@ -1637,6 +1657,54 @@ impl LayoutEngine {
                 .all(|p| !crate::renderer::para_has_no_stored_line_segs(p))
     }
 
+    /// [#3386] MeasuredTable 행높이를 행별 저장 선언(cellSz)으로 교정한다.
+    /// 발동 조건(전부 충족 시에만):
+    /// - 모든 셀이 row_span==1 이고 저장 LINE_SEG 를 보유(#2211 술어)
+    /// - 모든 행에 유효 선언 높이 존재(cell.height < 0x8000_0000)
+    /// - 선언 합 == 측정 합 (±1.5px; 총높이 보존 → 쪽수·후속 흐름 불변)
+    /// - 행별 |선언-측정| <= max(12px, 선언의 15%) (실콘텐츠 성장 행 보호)
+    fn trust_declared_row_heights(
+        &self,
+        table: &crate::model::table::Table,
+        row_count: usize,
+        rh: &mut [f64],
+    ) {
+        if row_count == 0 || rh.len() < row_count {
+            return;
+        }
+        let mut decl = vec![f64::NAN; row_count];
+        for cell in &table.cells {
+            if cell.row_span != 1 {
+                return;
+            }
+            if !Self::cell_has_stored_line_segs(cell) {
+                return;
+            }
+            let r = cell.row as usize;
+            if r >= row_count || cell.height >= 0x8000_0000 {
+                return;
+            }
+            let h = hwpunit_to_px(cell.height as i32, self.dpi);
+            if decl[r].is_nan() || h > decl[r] {
+                decl[r] = h;
+            }
+        }
+        if decl.iter().any(|d| d.is_nan()) {
+            return;
+        }
+        let decl_sum: f64 = decl.iter().sum();
+        let measured_sum: f64 = rh[..row_count].iter().sum();
+        if (decl_sum - measured_sum).abs() > 1.5 {
+            return;
+        }
+        for r in 0..row_count {
+            if (decl[r] - rh[r]).abs() > (decl[r] * 0.15).max(12.0) {
+                return;
+            }
+        }
+        rh[..row_count].copy_from_slice(&decl);
+    }
+
     fn resolve_row_heights_with_common_fit(
         &self,
         table: &crate::model::table::Table,
@@ -1650,6 +1718,13 @@ impl LayoutEngine {
         if let Some(mt) = measured_table {
             let mut rh = mt.row_heights.clone();
             rh.resize(row_count, hwpunit_to_px(400, self.dpi));
+            // [#3386] 행별 저장-선언 신뢰(렌더 전용): 전 셀이 rowspan 없이 저장
+            // LINE_SEG 를 보유하고 행별 선언(cellSz)이 모두 존재하며, 선언 합이
+            // 측정 합과 일치(±1.5px)하고 행별 편차가 max(12px,15%) 이내면 행
+            // 경계는 선언을 따른다. 한글 PDF 실측(156678235 p5 pi=46): 한글
+            // 행경계 == cellSz [22.4,41.9,69.4], rhwp 측정 재분배 [19.8,44.8,
+            // 69.1] 은 폰트 메트릭 차로 행 경계만 드리프트 — 총높이 동일.
+            self.trust_declared_row_heights(table, row_count, &mut rh);
             if fit_common_height {
                 self.fit_row_heights_to_common_height(table, &mut rh);
             }
@@ -1702,8 +1777,25 @@ impl LayoutEngine {
                         styles,
                         inner_width,
                     );
+                    // [#3386] 저장 cellSz 가 저장 줄 흐름보다 작은 모순 셀은 한글이
+                    // 줄 흐름 + 상하 여백으로 재성장한다 (156678235 p5 내부 표 r0:
+                    // cellSz 3.8px·lineseg 14.7px → 한글 PDF 실측 18.4px = 14.7+1.9×2).
+                    // 선언이 줄 흐름을 수용하는 셀은 종전대로 pad 미가산 (#2211 유지).
                     let line_req = if relaxed_pad && Self::cell_has_stored_line_segs(cell) {
-                        line_based
+                        let decl_h = if cell.height < 0x8000_0000 {
+                            hwpunit_to_px(cell.height as i32, self.dpi)
+                        } else {
+                            f64::MAX
+                        };
+                        if line_based > decl_h + 1.5 {
+                            // 한글 실좌표는 원(cellMargin) 상하 여백 가산 — resolve
+                            // 축소 pad(0.9×2)가 아니라 저장 1.9×2 로 18.4px 재현.
+                            let raw_pad_v = hwpunit_to_px(cell.padding.top as i32, self.dpi)
+                                + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
+                            line_based + (pad_top + pad_bottom).max(raw_pad_v)
+                        } else {
+                            line_based
+                        }
                     } else {
                         line_based + pad_top + pad_bottom
                     };
@@ -1805,8 +1897,20 @@ impl LayoutEngine {
                 // 개체 기반 지오메트리는 pad 가산 유지.
                 let (line_based, object_based) =
                     self.calc_cell_paragraphs_content_parts(&cell.paragraphs, styles, inner_width);
+                // [#3386] 1-b 와 동일 — 모순 선언(span 합) 초과 성장 시 여백 가산.
                 let line_req = if relaxed_pad && Self::cell_has_stored_line_segs(cell) {
-                    line_based
+                    let decl_h = if cell.height < 0x8000_0000 {
+                        hwpunit_to_px(cell.height as i32, self.dpi)
+                    } else {
+                        f64::MAX
+                    };
+                    if line_based > decl_h + 1.5 {
+                        let raw_pad_v = hwpunit_to_px(cell.padding.top as i32, self.dpi)
+                            + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
+                        line_based + (pad_top + pad_bottom).max(raw_pad_v)
+                    } else {
+                        line_based
+                    }
                 } else {
                     line_based + pad_top + pad_bottom
                 };
@@ -3510,6 +3614,34 @@ impl LayoutEngine {
                                         + hwpunit_to_px(tbl_vpos - first_vpos, self.dpi)
                                 } else {
                                     para_y_before_compose
+                                };
+                                // [#3386] 표 전용 줄(저장 lh == h + om_top + om_bottom)
+                                // 은 표 상단 = 줄 상단 + om_top 이 한글 실좌표다
+                                // (156678235 p5: 저장 vpos+om_top == 한글 PDF 상단
+                                // 536.7px, 종전 anchor 는 om_top 소실로 3.8px 상향).
+                                let host_seg_lh = if has_preceding_text && para.line_segs.len() > 1
+                                {
+                                    para.line_segs.last().map(|s| s.line_height).unwrap_or(0)
+                                } else {
+                                    para.line_segs.first().map(|s| s.line_height).unwrap_or(0)
+                                };
+                                let om_top_hu = i64::from(nested_table.outer_margin_top);
+                                let om_bottom_hu = i64::from(nested_table.outer_margin_bottom);
+                                let table_anchor_y = if nested_table.common.height < 0x8000_0000
+                                    && om_top_hu + om_bottom_hu > 0
+                                    && i64::from(host_seg_lh)
+                                        >= i64::from(nested_table.common.height)
+                                            + om_top_hu
+                                            + om_bottom_hu
+                                            - 10
+                                {
+                                    table_anchor_y
+                                        + hwpunit_to_px(
+                                            nested_table.outer_margin_top as i32,
+                                            self.dpi,
+                                        )
+                                } else {
+                                    table_anchor_y
                                 };
                                 let ctrl_area = LayoutRect {
                                     x: inline_x + tac_om_l,

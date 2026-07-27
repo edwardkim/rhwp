@@ -1308,7 +1308,7 @@ impl DocumentCore {
         let storage_id = self.document.next_bin_data_storage_id();
         self.document.bin_data_content.push(BinDataContent {
             id: storage_id,
-            data: image_data.to_vec().into(),
+            data: crate::model::bin_data::BinDataBytes::from_shared(image_data.to_vec()),
             extension: extension.to_string(),
         });
         // attr: bits 0-3=1(Embedding), bits 4-5=0(Default), bits 8-9=1(Success)
@@ -1325,6 +1325,8 @@ impl DocumentCore {
             extension: Some(extension.to_string()),
         });
         self.document.doc_info.raw_stream = None; // DocInfo 재직렬화
+                                                  // [#3315] 여기서 bin_data_epoch 를 올리지 않는다 — 새 id 를 덧붙일 뿐 기존
+                                                  // id→바이트는 그대로다. 올리면 무관한 그림의 소비자 캐시까지 함께 버려진다.
         position_id
     }
 
@@ -4059,7 +4061,7 @@ mod bindata_storage_id_collision_tests {
             .map(|c| c.data.load())
             .collect();
         assert!(
-            datas.iter().any(|d| d.as_slice() == EXISTING_IMAGE),
+            datas.iter().any(|d| &d[..] == EXISTING_IMAGE),
             "저장 왕복 후 기존 이미지가 소실됨 (스트림 이름 충돌): {:?}",
             reloaded
                 .document()
@@ -4069,7 +4071,7 @@ mod bindata_storage_id_collision_tests {
                 .collect::<Vec<_>>()
         );
         assert!(
-            datas.iter().any(|d| *d == minimal_png().as_slice()),
+            datas.iter().any(|d| &d[..] == minimal_png().as_slice()),
             "저장 왕복 후 신규 이미지가 소실됨"
         );
     }

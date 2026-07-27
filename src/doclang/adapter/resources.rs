@@ -145,7 +145,7 @@ mod tests {
         let doc = Document {
             bin_data_content: vec![BinDataContent {
                 id: 3,
-                data: BinDataBytes::Loaded(vec![]),
+                data: BinDataBytes::Loaded(Vec::new()),
                 extension: "png".to_string(),
             }],
             ..Default::default()

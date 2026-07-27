@@ -25,13 +25,19 @@ runs:
           # [#3289] 고정 /tmp 경로는 동시 잡 간 전개 충돌 — mktemp 로 격리하고,
           # 설치는 같은 디렉터리 임시명 → rename(원자적 교체)으로 부분 바이너리 노출을 막는다.
           tmpdir="$(mktemp -d)"
-          curl -sSfL "$URL" | tar -xzf - -C "$tmpdir"
+          trap 'rm -rf "$tmpdir"' EXIT
+          # [#3431] 파이프가 아니라 파일로 먼저 받는다. 5xx뿐 아니라 전송 중단도 전체
+          # 파일을 다시 받아야 tar에 앞선 조각과 재시도 스트림이 이어지지 않는다.
+          curl -sSfL --retry 5 --retry-delay 2 --retry-connrefused --retry-all-errors \
+            -o "$tmpdir/wasm-pack.tar.gz" "$URL"
+          tar -xzf "$tmpdir/wasm-pack.tar.gz" -C "$tmpdir"
           # [#3284] sudo 없이 사용자 경로(~/.cargo/bin)에 배치 — self-hosted 러너의
           # 제한된 sudo(apt 한정)와 호스티드 러너 양쪽에서 동일하게 동작한다.
           mkdir -p "$install_dir"
           mv "$tmpdir/${TARBALL}/wasm-pack" "$install_dir/wasm-pack.tmp.$$"
           mv -f "$install_dir/wasm-pack.tmp.$$" "$install_dir/wasm-pack"
           rm -rf "$tmpdir"
+          trap - EXIT
         fi
         echo "$install_dir" >> "$GITHUB_PATH"
         "$install_dir/wasm-pack" --version

@@ -5107,9 +5107,22 @@ impl LayoutEngine {
                             }
                             if t.common.treat_as_char && should_render_inline && !already_rendered {
                                 let table_h = hwpunit_to_px(t.common.height as i32, self.dpi);
+                                let om_top = hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
                                 let om_bottom =
                                     hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi);
-                                let table_y = (y + baseline + om_bottom - table_h).max(y);
+                                // [#3386] 저장 lh 가 표+상하 외곽여백을 수용하는 줄
+                                // (한글이 lh = h + om 으로 저장한 표 전용 줄)은 표
+                                // 상단 = 줄 상단 + om_top 이 한글 실좌표다 (156678235
+                                // p5: 저장 vpos+om_top == 한글 PDF 상단, 종전 baseline
+                                // 하단정렬식은 om_top 을 소실해 3.8px 상향). #2220 의
+                                // stored_lh_covers_om 과 동일 술어의 px 판.
+                                let stored_lh_covers_om = (om_top > 0.0 || om_bottom > 0.0)
+                                    && raw_lh >= table_h + om_top + om_bottom - 0.2;
+                                let table_y = if stored_lh_covers_om {
+                                    y + om_top
+                                } else {
+                                    (y + baseline + om_bottom - table_h).max(y)
+                                };
                                 // [Task #2212] 셀 안 인라인 TAC 표는 외곽 셀 경로를
                                 // 확장한 2단 cell_context 로 렌더해야 경로 기반 조회
                                 // (get_table_cell_bboxes_by_path 등)가 내부 셀을 찾는다.

@@ -316,7 +316,7 @@ fn validate_direct_pdf_tree(
                             validate_transform(image.transform, page_index, "image")?;
                             if let Some(data) = resolved
                                 .as_deref()
-                                .map(|payload| payload.data.as_slice())
+                                .map(|payload| &payload.data[..])
                                 .or(image.data.as_deref())
                             {
                                 validate_image_payload(data, page_index, "image")?;
