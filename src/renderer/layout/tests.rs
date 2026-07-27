@@ -2220,6 +2220,7 @@ fn render_tree_with_header_control(control: Control) -> PageRenderTree {
             para_index: 0,
             control_index: 0,
             source_section_index: 0,
+            table_path: Vec::new(),
         }),
         active_footer: None,
         page_number_pos: None,

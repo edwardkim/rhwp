@@ -126,20 +126,34 @@ fn answer_sheet_two_tac_tables_keep_inline_sequence() {
     let number_right = number_table.bbox.x + number_table.bbox.width;
     let parent_line_right = parent_line.bbox.x + parent_line.bbox.width;
 
+    // [Issue #3396] 한글은 TAC 표를 "outMargin 포함 폭의 문자"로 배치한다 —
+    // 표 테두리와 인접 문자 사이에는 그 표의 outMargin 간격이 유지된다.
+    // 이 문서 실값: 성명 표 om 좌/우 = 283HU(3.77px @96dpi), 수험번호 표 om = 0.
+    let name_om_right = 283.0 / 7200.0 * 96.0;
     assert!(
-        (name_right - spaces.bbox.x).abs() <= 0.75,
-        "성명 TAC 표 뒤에 공백 TextRun이 바로 이어져야 함: name_right={name_right:.2}, spaces_x={:.2}",
+        ((spaces.bbox.x - name_right) - name_om_right).abs() <= 0.75,
+        "성명 TAC 표 테두리와 공백 TextRun 사이 간격은 outMargin.right({name_om_right:.2}px)여야 함: \
+         name_right={name_right:.2}, spaces_x={:.2}",
         spaces.bbox.x
     );
     assert!(
         (spaces_right - number_table.bbox.x).abs() <= 0.75,
-        "공백 TextRun 뒤에 수험번호 TAC 표가 바로 이어져야 함: spaces_right={spaces_right:.2}, number_x={:.2}",
+        "공백 TextRun 뒤에 수험번호 TAC 표(om=0)가 바로 이어져야 함: \
+         spaces_right={spaces_right:.2}, number_x={:.2}",
         number_table.bbox.x
     );
+    // [Issue #3396] 오른쪽 정렬의 실제 불변량은 "마지막 TAC 표 우단(om_r=0)이
+    // 부모 셀 inner 우단에 붙는다"이다. 저장 lineseg 시작 x(295.67)가
+    // inner_right - (콘텐츠 폭 + 성명 표 outMargin 좌/우 7.54px)와 일치해
+    // 한컴 자신도 outMargin 포함 폭으로 정렬했음을 증명한다. 종전 기준이던
+    // parent_line bbox 폭은 outMargin 미포함 추정치라 프록시로 부적합.
+    let cell_pad = 141.0 / 7200.0 * 96.0;
+    let cell_inner_right = outer_cell.bbox.x + outer_cell.bbox.width - cell_pad;
+    let _ = parent_line_right;
     assert!(
-        (parent_line_right - number_right).abs() <= 1.0,
-        "부모 셀 오른쪽 정렬 폭 계산은 두 번째 TAC 표 전체 폭까지 포함해야 함: \
-         parent_line_right={parent_line_right:.2}, number_right={number_right:.2}, \
+        (cell_inner_right - number_right).abs() <= 1.0,
+        "부모 셀 오른쪽 정렬: 수험번호 TAC 표 우단이 셀 inner 우단에 붙어야 함: \
+         cell_inner_right={cell_inner_right:.2}, number_right={number_right:.2}, \
          outer_cell={:?}, parent_line={:?}, number_table={:?}",
         outer_cell.bbox,
         parent_line.bbox,

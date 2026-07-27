@@ -90,6 +90,10 @@ mkdirSync(resolve(DIST, 'images'), { recursive: true });
 // [#1444] 다크테마 FOUC 방지 스크립트 (vite publicDir:false 라 개별 복사). 확장 CSP('self')
 // 가 인라인을 금지하므로 viewer.html 의 <script src="/theme-init.js"> 대상 파일을 둔다.
 copy(resolve(ROOT, 'rhwp-studio', 'public', 'theme-init.js'), resolve(DIST, 'theme-init.js'));
+// [#3433] 인쇄 surface. print-surface.ts 가 'print.html' 을 확장 루트 기준 상대 경로로
+// 열므로(new URL(surfacePath, baseUrl)) dist 최상위에 있어야 한다. 같은 확장 origin 이라
+// web_accessible_resources 등재는 불필요하다.
+copy(resolve(ROOT, 'rhwp-studio', 'public', 'print.html'), resolve(DIST, 'print.html'));
 copy(resolve(ROOT, 'rhwp-studio', 'public', 'images', 'icon_small_ko.svg'), resolve(DIST, 'images', 'icon_small_ko.svg'));
 // [#1444] 다크 모드 아이콘 스프라이트 (base.css 다크 테마에서 참조). 누락 시 viewer 404.
 copy(resolve(ROOT, 'rhwp-studio', 'public', 'images', 'icon_small_ko_dark.svg'), resolve(DIST, 'images', 'icon_small_ko_dark.svg'));
@@ -114,6 +118,24 @@ for (const font of fontFiles) {
   copy(resolve(fontDir, font), resolve(DIST, 'fonts', font));
 }
 console.log(`  woff2 ${fontFiles.length}개 복사`);
+
+// [#3433] 필수 산출물 게이트. copy() 는 원본이 없으면 SKIP 경고만 내고 넘어가므로,
+// public/ 자산 누락이 빌드 성공으로 위장된다(print.html 이 v0.8.0~0.8.1 에서 이렇게 빠졌다).
+// 런타임이 반드시 요구하는 파일만 여기서 확인하고, 없으면 빌드를 실패시킨다.
+const REQUIRED_DIST_FILES = [
+  'manifest.json',
+  'viewer.html',
+  'print.html', // print-surface.ts 가 확장 루트 기준으로 연다
+  'theme-init.js',
+  'wasm/rhwp.js',
+  'wasm/rhwp_bg.wasm',
+];
+const missing = REQUIRED_DIST_FILES.filter((f) => !existsSync(resolve(DIST, f)));
+if (missing.length > 0) {
+  console.error('\n=== 빌드 실패: 필수 산출물 누락 ===');
+  for (const f of missing) console.error(`  MISSING: ${f}`);
+  process.exit(1);
+}
 
 console.log('\n=== 빌드 완료 ===');
 console.log(`출력: ${DIST}`);
