@@ -166,6 +166,26 @@ jobs:
           shared-key: autofix
           save-if: true
 
+      # ── 퍼징 탐색층 인프라 — detect.sh 의 A층은 지금까지 nightly/cargo-fuzz 미설치로
+      #    한 번도 돈 적이 없었다. 이걸 켜면 표본 고갈과 무관한 무한 탐색원이 생긴다.
+      - name: nightly 툴체인 (퍼징용, 기본 툴체인은 유지)
+        run: rustup toolchain install nightly --profile minimal
+
+      - name: cargo-fuzz 설치
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-fuzz
+
+      # corpus 를 실행 간에 누적한다 — 돌수록 입력 공간 탐색이 깊어진다.
+      # 작업 트리(work/) 밖에 두어 게이트 STRAY 검사를 오염시키지 않는다.
+      - name: 퍼징 corpus 캐시 (누적 탐색)
+        uses: actions/cache@v4
+        with:
+          path: fuzz-corpus
+          key: rhwp-fuzz-corpus-${{ github.run_id }}
+          restore-keys: |
+            rhwp-fuzz-corpus-
+
       # NVIDIA NIM 은 OpenAI 호환이라 Codex CLI 에 커스텀 프로바이더로 물릴 수 있다.
       # 키가 살아있는지, 어떤 모델이 실제로 응답하는지 먼저 실측한다 — 모델 ID 는
       # 계정/시점에 따라 달라지므로 고정하지 않고 사용 가능한 것 중에서 고른다.
@@ -256,6 +276,8 @@ jobs:
           HUNT_RANGE: ${{ needs.guard.outputs.hunt_range }}
           HUNT_TARGET: ${{ needs.guard.outputs.hunt_target }}
           HUNT_EXCLUDE: ${{ needs.guard.outputs.exclude }}
+          FUZZ_CORPUS_DIR: ${{ github.workspace }}/fuzz-corpus
+          FUZZ_SECS: "240"
         run: |
           set -uo pipefail
           git config user.name  "${{ github.repository_owner }}"
