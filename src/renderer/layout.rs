@@ -2488,6 +2488,16 @@ impl LayoutEngine {
         }) {
             self.substitute_page_auto_numbers_in_composed(para, &mut comp, page_number);
         }
+        if para.controls.iter().any(|ctrl| {
+            matches!(ctrl, Control::AutoNumber(an)
+                if an.number_type == crate::model::control::AutoNumberType::TotalPage)
+        }) {
+            self.substitute_total_page_auto_numbers_in_composed(
+                para,
+                &mut comp,
+                self.total_pages.get(),
+            );
+        }
         comp
     }
 
@@ -2577,21 +2587,60 @@ impl LayoutEngine {
         comp: &mut ComposedParagraph,
         page_number: u32,
     ) {
-        if page_number == 0 {
+        self.substitute_auto_number_type_in_composed(
+            para,
+            comp,
+            crate::model::control::AutoNumberType::Page,
+            page_number,
+        );
+    }
+
+    /// `AutoNumber(TotalPage)` 컨트롤의 placeholder 문자를 문서 총 쪽수로 치환한다.
+    ///
+    /// HWP atno 컨트롤의 번호 종류(표 144) 값 6은 "총 쪽수" 필드다. 과거엔 파서가 이
+    /// 값을 인식하지 못해 Page로 폴백했고, 렌더러도 Page 치환만 수행해서 꼬리말의
+    /// 총 쪽수 상자가 현재 쪽번호와 같은 값을 두 번 표시했다 (예: "3/8" 이어야 할 것이
+    /// "3/3"으로 표시).
+    pub(crate) fn substitute_total_page_auto_numbers_in_composed(
+        &self,
+        para: &Paragraph,
+        comp: &mut ComposedParagraph,
+        total_pages: u32,
+    ) {
+        self.substitute_auto_number_type_in_composed(
+            para,
+            comp,
+            crate::model::control::AutoNumberType::TotalPage,
+            total_pages,
+        );
+    }
+
+    fn substitute_auto_number_type_in_composed(
+        &self,
+        para: &Paragraph,
+        comp: &mut ComposedParagraph,
+        an_type: crate::model::control::AutoNumberType,
+        value: u32,
+    ) {
+        if value == 0 {
             return;
         }
 
-        let page_str = page_number.to_string();
+        let value_str = value.to_string();
 
-        let mut positions = self.page_auto_number_placeholder_positions(para);
+        let mut positions = self.auto_number_placeholder_positions(para, an_type);
         positions.sort_unstable();
         positions.dedup();
         for pos in positions.into_iter().rev() {
-            Self::replace_composed_char_with_display(comp, pos, &page_str);
+            Self::replace_composed_char_with_display(comp, pos, &value_str);
         }
     }
 
-    fn page_auto_number_placeholder_positions(&self, para: &Paragraph) -> Vec<usize> {
+    fn auto_number_placeholder_positions(
+        &self,
+        para: &Paragraph,
+        an_type: crate::model::control::AutoNumberType,
+    ) -> Vec<usize> {
         let ctrl_positions = crate::document_core::helpers::find_control_text_positions(para);
         let text_chars: Vec<char> = para.text.chars().collect();
         let mut positions = Vec::new();
@@ -2600,8 +2649,7 @@ impl LayoutEngine {
         for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
             if !matches!(
                 ctrl,
-                Control::AutoNumber(an)
-                    if an.number_type == crate::model::control::AutoNumberType::Page
+                Control::AutoNumber(an) if an.number_type == an_type
             ) {
                 continue;
             }
@@ -3346,8 +3394,10 @@ impl LayoutEngine {
             .contains(&(page_content.page_index, true));
         if !hidden {
             if let Some(hf_ref) = &page_content.active_header {
-                if let Some(para) = paragraphs.get(hf_ref.para_index) {
-                    if let Some(ctrl) = para.controls.get(hf_ref.control_index) {
+                {
+                    if let Some(ctrl) = crate::renderer::pagination::resolve_header_footer_control(
+                        paragraphs, hf_ref,
+                    ) {
                         if let Control::Header(header) = ctrl {
                             let header_table_area =
                                 self.header_table_area_from_page_border(layout, page_border_fill);
@@ -3481,8 +3531,10 @@ impl LayoutEngine {
             .contains(&(page_content.page_index, false));
         if !hidden {
             if let Some(hf_ref) = &page_content.active_footer {
-                if let Some(para) = paragraphs.get(hf_ref.para_index) {
-                    if let Some(ctrl) = para.controls.get(hf_ref.control_index) {
+                {
+                    if let Some(ctrl) = crate::renderer::pagination::resolve_header_footer_control(
+                        paragraphs, hf_ref,
+                    ) {
                         if let Control::Footer(footer) = ctrl {
                             // [Task #825] 꼬리말 그림 hit-test marker.
                             let outer_ref = crate::renderer::render_tree::HeaderFooterImageRef {
@@ -6420,7 +6472,25 @@ impl LayoutEngine {
                         .map(|c| compute_tac_leading_width(c, control_index, styles))
                         .unwrap_or(0.0)
                 };
-                let base_x = col_area.x + effective_margin + leading;
+                // [Issue #3396] 한글은 TAC 표를 "문자"로 취급해 advance =
+                // outMargin.left + 표폭 + outMargin.right 로 잡고, 괘선(테두리)은
+                // pen + outMargin.left 에 그린다 (오라클 실측: 156678235 p1 JUSTIFY
+                // 표 좌측 괘선 = col_x + om_l, p5 RIGHT 표 우측 괘선 =
+                // 우측 여백 - om_r, 표+여백이 단폭을 넘어도 클램프 없음).
+                // 단, U+F081C 필러 기반 leading(compute_tac_leading_width)이 있는
+                // 케이스는 [#1195] 한컴 실측으로 보정된 별도 축이라 om 을 겹치면
+                // 이중 가산이 된다 (복학원서 접수증 오라클 실측: 한컴 ※ 81.7 vs
+                // rhwp leading 포함 86.9 — leading 축 자체의 잔차가 미해결이므로
+                // 그 케이스는 종전 위치를 유지한다).
+                let (om_l, om_r) = if leading > 0.0 {
+                    (0.0, 0.0)
+                } else {
+                    (
+                        hwpunit_to_px(t.outer_margin_left as i32, self.dpi),
+                        hwpunit_to_px(t.outer_margin_right as i32, self.dpi),
+                    )
+                };
+                let base_x = col_area.x + effective_margin + leading + om_l;
                 // [Issue #291] ParaShape align 반영:
                 // TAC 표가 inline_shape_position 미설정 상태에서 단/문단 좌측에
                 // 붙어버리는 회귀를 막는다. ParaShape align=Right 인 경우 표를
@@ -6430,15 +6500,34 @@ impl LayoutEngine {
                     Some(crate::model::style::Alignment::Right) => {
                         let tbl_w = hwpunit_to_px(t.common.width as i32, self.dpi);
                         let avail_right = col_area.x + col_area.width - margin_right;
-                        (avail_right - tbl_w).max(base_x)
+                        (avail_right - om_r - tbl_w).max(base_x)
                     }
                     Some(crate::model::style::Alignment::Center) => {
                         let tbl_w = hwpunit_to_px(t.common.width as i32, self.dpi);
-                        let center = col_area.x + (col_area.width - tbl_w) / 2.0;
+                        let center =
+                            col_area.x + (col_area.width - tbl_w) / 2.0 + (om_l - om_r) / 2.0;
                         center.max(base_x)
                     }
                     _ => base_x,
                 };
+                if std::env::var("RHWP_DIAG_TACX").is_ok() {
+                    eprintln!(
+                        "DIAG_TACX pi={} ci={} align={:?} base_x={:.2} aligned_x={:.2} tblw={:.2} om_l={} om_r={} col_x={:.2} col_w={:.2} eff_ml={:.2} mr={:.2} leading={:.2}",
+                        para_index,
+                        control_index,
+                        alignment,
+                        base_x,
+                        aligned_x,
+                        hwpunit_to_px(t.common.width as i32, self.dpi),
+                        t.outer_margin_left,
+                        t.outer_margin_right,
+                        col_area.x,
+                        col_area.width,
+                        effective_margin,
+                        margin_right,
+                        leading,
+                    );
+                }
                 Some(aligned_x)
             } else {
                 None
@@ -6736,7 +6825,25 @@ impl LayoutEngine {
                         .first()
                         .map(|s| hwpunit_to_px(s.line_height, self.dpi))
                         .unwrap_or(0.0);
-                    let mut title_flow_y = para_y_for_table;
+                    // [Task #2711 v2] title_flow_y 는 선행 float exclusion 으로 이미
+                    // 밀려난 `table_y_start`(위 exclusion 보정 블록의 결과)를 기준으로
+                    // 삼아야 한다. 종전에는 미보정 `para_y_for_table`에서 다시 자체
+                    // exclusion 루프를 돌렸는데, 이 루프의 판정 조건(오프셋/outer 미포함
+                    // 원시 좌표)이 위 exclusion 보정 블록의 판정 조건과 달라 같은 zone을
+                    // 못 잡는 경우가 있었다 — 그 결과 candidate(title_flow_y+host_line_px+
+                    // outer)가 이미 밀려난 table_y_start보다 작게 나와 max()가 밀려난 값을
+                    // 그대로 선택해 host-title 줄 예약분이 사라지고, 그 줄(예: "7. [필수]")과
+                    // 표 첫 줄이 같은 y 에 겹쳐 그려졌다 (synam-001.hwp p30 "7. [필수]" 행).
+                    // #2439의 같은 문단 2표 저장 형상은 host 텍스트가 두 표 뒤에서
+                    // 재개되는 별도 계약이다. 이 경로까지 이미 밀린 표 좌표를 기준으로
+                    // 삼으면 host 텍스트가 후행 표 위에 남으므로 기존 문단 흐름 기준을
+                    // 유지하고, 일반 visible-host float에서만 실제 표 시작점을 기준으로
+                    // host 한 줄을 예약한다.
+                    let mut title_flow_y = if has_preceding_coanchored_float {
+                        para_y_for_table
+                    } else {
+                        table_y_start
+                    };
                     for zone in visible_float_exclusions.iter() {
                         if title_flow_y + 0.5 >= zone.top && title_flow_y < zone.bottom {
                             title_flow_y = title_flow_y.max(zone.bottom);

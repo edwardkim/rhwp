@@ -673,6 +673,7 @@ impl LayoutEngine {
                     layout_box,
                     color_str,
                     color: eq.color,
+                    script: eq.script.clone(),
                     font_size: font_size_px,
                     section_index: Some(section_index),
                     para_index: Some(para_index),
@@ -2562,6 +2563,25 @@ impl LayoutEngine {
             }
         }
 
+        // AutoNumber(TotalPage) 치환: 글상자 안의 총쪽수 필드를 문서 전체 쪽수로 변환
+        let total_pages = self.total_pages.get();
+        if total_pages > 0 {
+            for (pi, para) in textbox_paragraphs[..para_count].iter().enumerate() {
+                if para.controls.iter().any(|c| {
+                    matches!(c, crate::model::control::Control::AutoNumber(an)
+                        if an.number_type == crate::model::control::AutoNumberType::TotalPage)
+                }) {
+                    if let Some(comp) = composed_paras.get_mut(pi) {
+                        self.substitute_total_page_auto_numbers_in_composed(
+                            para,
+                            comp,
+                            total_pages,
+                        );
+                    }
+                }
+            }
+        }
+
         // 세로 정렬: 전체 콘텐츠 높이를 계산하여 center/bottom 오프셋 적용
         let vert_offset = {
             use crate::model::table::VerticalAlign;
@@ -3015,6 +3035,7 @@ impl LayoutEngine {
                                     layout_box,
                                     color_str,
                                     color: eq.color,
+                                    script: eq.script.clone(),
                                     font_size: font_size_px,
                                     section_index: Some(section_index),
                                     para_index: Some(para_index),
