@@ -445,6 +445,18 @@ fn prepend_endnote_marker_text(para: &mut Paragraph, endnote: &crate::model::foo
     if leading_spaces > 0 {
         para.delete_text_at(0, leading_spaces);
     }
+    // === D1-FIX-A: 번호 텍스트가 autoNum 을 실체화했으므로 그 컨트롤을 제거한다.
+    // 남겨두면 placeholder 갭이 사라진 뒤에도 controls[] 에 남아, 뒤따르는
+    // 인라인 개체(수식)의 갭을 대신 소비해 어순이 한 칸 밀린다.
+    if leading_spaces > 0
+        && matches!(
+            para.controls.first(),
+            Some(crate::model::control::Control::AutoNumber(an))
+                if an.number_type == crate::model::control::AutoNumberType::Endnote
+        )
+    {
+        para.controls.remove(0);
+    }
     let prefix = format!("{} ", format_endnote_marker_text(endnote));
     let prefix_len = prefix.chars().count();
     para.insert_text_at(0, &prefix);
@@ -18570,6 +18582,64 @@ mod tests {
             margin_gutter: 0,
             ..Default::default()
         }
+    }
+
+    /// 미주 번호를 앞에 붙일 때 autoNum 의 placeholder 글자를 지우면서도
+    /// `controls[]` 에 AutoNumber 를 남기면, 갭 분배가 한 칸 밀려 뒤따르는
+    /// 인라인 수식이 자기 갭을 빼앗기고 문단 끝으로 떨어진다.
+    #[test]
+    fn endnote_marker_prepend_keeps_inline_equation_in_place() {
+        use crate::model::control::{AutoNumber, AutoNumberType, Control, Equation};
+        use crate::model::footnote::Endnote;
+
+        // 원본 run 순서: <autoNum/> " (1)" <equation/> " Z"
+        // AUTO_NUMBER 는 8 code unit 을 점유하면서 가시 placeholder ' ' 를 남긴다.
+        let mut equation = Box::<Equation>::default();
+        equation.common.treat_as_char = true;
+        let mut para = Paragraph {
+            text: "  (1) Z".to_string(),
+            char_offsets: vec![0, 8, 9, 10, 11, 20, 21],
+            // 파서 규약: char_count = 마지막 stream 위치 + 글자폭 + 끝 마커 1
+            char_count: 23,
+            controls: vec![
+                Control::AutoNumber(AutoNumber {
+                    number_type: AutoNumberType::Endnote,
+                    ..Default::default()
+                }),
+                Control::Equation(equation),
+            ],
+            ..Default::default()
+        };
+        let endnote = Endnote {
+            number: 1,
+            ..Default::default()
+        };
+
+        prepend_endnote_marker_text(&mut para, &endnote);
+
+        // 번호 표기는 그대로여야 한다 (공백이 늘거나 줄지 않는다).
+        assert_eq!(para.text, "1) (1) Z", "미주 번호 표기가 바뀌었다");
+
+        let positions = para.control_text_positions();
+        let eq_idx = para
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::Equation(_)))
+            .expect("수식 컨트롤은 남아 있어야 한다");
+        let eq_pos = positions[eq_idx];
+        let text_len = para.text.chars().count();
+
+        assert_ne!(
+            eq_pos, text_len,
+            "수식이 문단 끝 폴백으로 밀렸다 (text={:?}, positions={:?})",
+            para.text, positions
+        );
+        // "1) (1)" 바로 뒤 = 6
+        assert_eq!(
+            eq_pos, 6,
+            "수식 위치가 원본 run 순서와 다르다 (text={:?}, positions={:?})",
+            para.text, positions
+        );
     }
 
     fn make_paragraph_with_height(line_height: i32) -> Paragraph {
