@@ -390,9 +390,12 @@ async function installTrace(page) {
       kind: args[0]?.kind,
       commandType: args[0]?.command?.type,
     }));
+    // [#3412] TextMutationEffects 의 필드는 documentPaginationPending/flowChanged 다.
+    // 예전 이름(deferredPagination/cellFlowChanged)으로 읽으면 항상 undefined→null 이
+    // 기록돼, 아래 단언들이 실제 값과 무관하게 null 로 비교된다.
     wrap(input, 'prepareTextMutationBeforeCursor', 'InputHandler.prepareTextMutationBeforeCursor', (args) => ({
-      deferredPagination: args[0]?.deferredPagination ?? null,
-      cellFlowChanged: args[0]?.cellFlowChanged ?? null,
+      deferredPagination: args[0]?.documentPaginationPending ?? null,
+      cellFlowChanged: args[0]?.flowChanged ?? null,
       paginationCompleted: args[0]?.paginationCompleted ?? null,
     }), (result) => ({ result }));
     wrap(input, 'refreshAfterOperation', 'InputHandler.refreshAfterOperation', (args) => ({

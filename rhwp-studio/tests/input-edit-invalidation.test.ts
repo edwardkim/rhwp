@@ -209,7 +209,7 @@ test('deferred pending이 실제로 있을 때만 page-local idle flush를 예�
   );
 });
 
-test('document pagination은 120ms idle과 명시 boundary에서 flush된다', () => {
+test('document pagination은 작은 문서의 120ms idle과 명시 boundary에서 flush된다', () => {
   const inputHandlerSource = readFileSync(new URL('../src/engine/input-handler.ts', import.meta.url), 'utf8');
   const keyboardSource = readFileSync(new URL('../src/engine/input-handler-keyboard.ts', import.meta.url), 'utf8');
   const textSource = readFileSync(new URL('../src/engine/input-handler-text.ts', import.meta.url), 'utf8');
@@ -219,8 +219,23 @@ test('document pagination은 120ms idle과 명시 boundary에서 flush된다', (
     inputHandlerSource,
     /const DOCUMENT_PAGINATION_IDLE_FLUSH_DELAY_MS = 120;/,
   );
-  assert.doesNotMatch(inputHandlerSource, /DEFERRED_PAGINATION_AUTO_FLUSH_PAGE_LIMIT/);
-  assert.doesNotMatch(inputHandlerSource, /shouldAutoFlushDeferredPagination/);
+  // [#3412] #3248 은 idle 병합을 도입하며 문서 크기 게이트를 지우고 그 부재를 여기서
+  // 가드로 고정했다. 그러나 대형 문서에서는 그 flush 자체가 결함이다 — 115쪽 문서에서
+  // 타이핑을 120ms 만 멈추면 동기 전체 pagination 이 839ms 동안 메인 스레드를 막고,
+  // #2214 의 재개형 러너를 취소해 페이지-로컬 리페인트 계약(flush 0)을 깬다.
+  // 그래서 idle 병합은 유지하되 대상은 작은 문서로 되돌린다. 큰 문서는 재개형 러너와
+  // 명시 boundary flush(undo/redo/navigation/blur/저장·인쇄)로 마감한다.
+  assert.match(inputHandlerSource, /const DOCUMENT_PAGINATION_IDLE_FLUSH_PAGE_LIMIT = 30;/);
+  assert.match(
+    inputHandlerSource,
+    /if \(!this\.shouldAutoFlushDeferredPagination\(\)\) return;/,
+    'idle flush 예약은 대상 판정을 통과한 문서에만 걸려야 한다',
+  );
+  assert.match(
+    inputHandlerSource,
+    /private shouldAutoFlushDeferredPagination\(\): boolean \{\s*if \(this\.deferredPaginationRunner\.isActive\(\)\) return false;\s*return this\.wasm\.pageCount <= DOCUMENT_PAGINATION_IDLE_FLUSH_PAGE_LIMIT;\s*\}/,
+    '전진 중인 resumable job 이 있으면 idle flush 는 같은 일을 동기로 되풀이하므로 예약하지 않는다',
+  );
 
   const undoStart = inputHandlerSource.indexOf('private handleUndo(): void {');
   const redoStart = inputHandlerSource.indexOf('private handleRedo(): void {');

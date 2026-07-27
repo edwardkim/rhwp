@@ -48,6 +48,16 @@ const DRAG_SCROLL_MAX_STEP_PX = 20;
 const PX_TO_RAW_2X = 150;
 const PX_TO_HWPUNIT = 75;
 const DOCUMENT_PAGINATION_IDLE_FLUSH_DELAY_MS = 120;
+/**
+ * [#3412] idle 자동 flush 대상 문서 크기 상한.
+ *
+ * #3248 이 idle 병합을 도입하면서 이 게이트(#2010 의 30쪽 상한)를 함께 지워 모든 문서가
+ * 120ms 정지마다 동기 전체 pagination 을 하게 됐다. 대형 문서에서는 그 flush 자체가
+ * 결함이다 — 115쪽 문서 실측으로 메인 스레드를 839ms 막고, #2214 의 재개형 러너를
+ * 취소해 페이지-로컬 리페인트 계약(flush 0)을 깬다. 큰 문서는 러너와 명시 boundary
+ * flush(undo/redo/navigation/blur/저장·인쇄)로 마감한다.
+ */
+const DOCUMENT_PAGINATION_IDLE_FLUSH_PAGE_LIMIT = 30;
 
 type FormatCopyState = {
   charProps: Partial<CharProperties>;
@@ -2464,9 +2474,21 @@ export class InputHandler {
   private scheduleDeferredPaginationFlush(): void {
     this.cancelDeferredPaginationFlush();
     this.deferredPaginationPending = true;
+    if (!this.shouldAutoFlushDeferredPagination()) return;
     this.deferredPaginationFlushTimer = setTimeout(() => {
       this.flushDeferredPaginationIfNeeded('idle-auto');
     }, DOCUMENT_PAGINATION_IDLE_FLUSH_DELAY_MS);
+  }
+
+  /**
+   * [#3412] idle 자동 flush 대상 여부.
+   *
+   * 전진 중인 재개형 잡이 있으면 idle flush 는 그 잡을 취소하고 같은 일을 동기로 다시
+   * 하는 셈이라 예약하지 않는다. 문서 크기 상한은 위 상수 주석 참조.
+   */
+  private shouldAutoFlushDeferredPagination(): boolean {
+    if (this.deferredPaginationRunner.isActive()) return false;
+    return this.wasm.pageCount <= DOCUMENT_PAGINATION_IDLE_FLUSH_PAGE_LIMIT;
   }
 
   private cancelDeferredPaginationFlush(): void {
