@@ -1,0 +1,317 @@
+name: rhwp autofix bot
+
+# 30분마다 upstream devel 을 훑어 '증명 가능한' 버그 1건을 찾아 PR 로 제안한다.
+# 핵심 설계: PR 을 열지 말지는 모델이 아니라 verify-gate.sh 의 종료코드가 결정한다.
+#   red(수정 원복 시 테스트 실패) → green(수정 시 통과) → 회귀 0 → CI 3종 통과
+# 넷 중 하나라도 실패하면 그 사이클은 조용히 버려진다. 오탐은 upstream 에 도달하지 못한다.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "게이트까지만 돌리고 이슈/PR 은 만들지 않음"
+        type: boolean
+        default: true
+      mode:
+        description: "탐색 모드 (auto | diff | module)"
+        type: string
+        default: auto
+
+# 한 사이클(전체 회귀 포함)은 30분을 넘길 수 있다.
+# 직렬화해서 겹치지 않게 하고, 대기 중이던 run 은 GitHub 이 알아서 1건만 남긴다 = 자동 throttle.
+concurrency:
+  group: rhwp-autofix
+  cancel-in-progress: false
+
+env:
+  UPSTREAM: edwardkim/rhwp
+  FORK: ${{ github.repository }}
+  RUST_TOOLCHAIN: "1.93.1"
+  # 내 계정으로 upstream 에 열려 있는 PR 이 이 수 이상이면 이번 사이클은 제출하지 않는다.
+  # (메인테이너가 PR 큐 폭주로 30건 일괄 close 한 이력이 있어 상한을 둔다)
+  MAX_OPEN_PRS: "4"
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ───────────────────────────────────────────────────────────
+  # 1) 이번 사이클을 돌릴 가치가 있는지 먼저 판단 — 대부분 여기서 끝난다
+  # ───────────────────────────────────────────────────────────
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # upstream 은 공개 저장소라 조회는 기본 GITHUB_TOKEN 으로 충분하다.
+    # PAT 는 실제로 upstream 에 쓰는 마지막 두 스텝에서만 쓴다 (최소 권한).
+    permissions:
+      contents: read
+    outputs:
+      proceed: ${{ steps.decide.outputs.proceed }}
+      hunt_mode: ${{ steps.decide.outputs.hunt_mode }}
+      hunt_range: ${{ steps.decide.outputs.hunt_range }}
+      hunt_target: ${{ steps.decide.outputs.hunt_target }}
+      exclude: ${{ steps.decide.outputs.exclude }}
+    steps:
+      - name: PR 큐 상한 확인
+        id: quota
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          OPEN=$(gh api "search/issues?q=repo:${UPSTREAM}+is:pr+is:open+author:${{ github.repository_owner }}" --jq '.total_count')
+          echo "내 열린 PR: ${OPEN} / 상한 ${MAX_OPEN_PRS}"
+          if [ "$OPEN" -ge "$MAX_OPEN_PRS" ]; then
+            echo "over=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::열린 PR ${OPEN}건으로 상한 도달 — 이번 사이클 건너뜀. 기존 PR 이 머지되면 자동 재개."
+          else
+            echo "over=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: upstream devel 최신 상태 조회
+        if: steps.quota.outputs.over == 'false'
+        id: decide
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODE_INPUT: ${{ inputs.mode || 'auto' }}
+        run: |
+          set -euo pipefail
+
+          # 최근 12시간 devel 커밋 — 새로 유입된 회귀가 가장 가치 높은 표적
+          SINCE=$(date -u -d '12 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          RECENT=$(gh api "repos/${UPSTREAM}/commits?sha=devel&since=${SINCE}&per_page=100" --jq 'length')
+          HEAD_SHA=$(gh api "repos/${UPSTREAM}/commits/devel" --jq '.sha')
+          echo "최근 12h 커밋: ${RECENT}건, HEAD=${HEAD_SHA:0:8}"
+
+          if [ "$MODE_INPUT" = "module" ] || { [ "$MODE_INPUT" = "auto" ] && [ "$RECENT" -eq 0 ]; }; then
+            # 새 커밋이 없으면 모듈을 순회한다 (run 번호로 회전 — 같은 곳만 계속 보지 않게)
+            MODULES=(src/parser/hwp src/parser/hwpx src/parser/hwp3 src/renderer src/layout src/editor src/document)
+            IDX=$(( ${{ github.run_number }} % ${#MODULES[@]} ))
+            echo "hunt_mode=module" >> "$GITHUB_OUTPUT"
+            echo "hunt_target=${MODULES[$IDX]}" >> "$GITHUB_OUTPUT"
+            echo "hunt_range=" >> "$GITHUB_OUTPUT"
+          else
+            echo "hunt_mode=diff" >> "$GITHUB_OUTPUT"
+            echo "hunt_range=--since=${SINCE}" >> "$GITHUB_OUTPUT"
+            echo "hunt_target=" >> "$GITHUB_OUTPUT"
+          fi
+
+          # 중복 제출 방지 — 내가 이미 올려둔 PR/이슈 제목을 모델에게 넘긴다
+          {
+            echo "exclude<<EOF"
+            gh api "search/issues?q=repo:${UPSTREAM}+is:open+author:${{ github.repository_owner }}" \
+              --jq '.items[] | "- " + .title'
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "proceed=true" >> "$GITHUB_OUTPUT"
+
+  # ───────────────────────────────────────────────────────────
+  # 2) 탐색 → 기계식 게이트 → (통과 시에만) 이슈 + PR
+  # ───────────────────────────────────────────────────────────
+  hunt:
+    needs: guard
+    if: needs.guard.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write   # 포크(자기 저장소)에 작업 브랜치를 push 하기 위해
+    steps:
+      - name: 시크릿 준비 상태 확인
+        id: secrets
+        env:
+          HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+          HAS_PAT: ${{ secrets.RHWP_BOT_PAT != '' }}
+        run: |
+          echo "ANTHROPIC_API_KEY: ${HAS_KEY}"
+          echo "RHWP_BOT_PAT     : ${HAS_PAT}"
+          echo "has_key=${HAS_KEY}" >> "$GITHUB_OUTPUT"
+          echo "has_pat=${HAS_PAT}" >> "$GITHUB_OUTPUT"
+          if [ "$HAS_KEY" != "true" ]; then
+            echo "::warning title=시크릿 미설정::ANTHROPIC_API_KEY 가 없어 탐색을 건너뛴다. 저장소 Settings → Secrets and variables → Actions 에서 추가할 것."
+          fi
+          if [ "$HAS_PAT" != "true" ]; then
+            echo "::warning title=시크릿 미설정::RHWP_BOT_PAT 가 없어 upstream 이슈/PR 생성은 건너뛴다 (classic PAT, public_repo 스코프)."
+          fi
+
+      - name: 봇 자산 체크아웃 (fork@main)
+        uses: actions/checkout@v7
+        with:
+          path: bot
+
+      - name: 작업 대상 체크아웃 (upstream@devel)
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ env.UPSTREAM }}
+          ref: devel
+          fetch-depth: 0
+          path: work
+
+      - name: Rust 툴체인
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.93.1"
+          components: clippy, rustfmt
+          targets: wasm32-unknown-unknown
+
+      - name: Rust 빌드 캐시
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: work
+          shared-key: autofix
+          save-if: true
+
+      - name: Claude Code 설치
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: 탐색 실행
+        id: hunt
+        if: steps.secrets.outputs.has_key == 'true'
+        working-directory: work
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          HUNT_MODE: ${{ needs.guard.outputs.hunt_mode }}
+          HUNT_RANGE: ${{ needs.guard.outputs.hunt_range }}
+          HUNT_TARGET: ${{ needs.guard.outputs.hunt_target }}
+          HUNT_EXCLUDE: ${{ needs.guard.outputs.exclude }}
+        run: |
+          set -euo pipefail
+          git config user.name  "${{ github.repository_owner }}"
+          git config user.email "${{ github.repository_owner }}@users.noreply.github.com"
+
+          claude -p "$(cat ../bot/.github/autofix/hunt-prompt.md)" \
+            --max-turns 60 \
+            --dangerously-skip-permissions \
+            2>&1 | tee ../hunt.log || true
+
+          if [ ! -f AUTOFIX_RESULT.md ]; then
+            echo "::warning::AUTOFIX_RESULT.md 없음 — 탐색이 결론을 못 냄. 사이클 폐기."
+            echo "status=NO-FINDING" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          STATUS=$(awk -F': ' '/^status:/{print $2; exit}' AUTOFIX_RESULT.md | tr -d ' \r')
+          echo "status=${STATUS}" >> "$GITHUB_OUTPUT"
+          echo "탐색 결과: ${STATUS}"
+
+          if [ "$STATUS" = "FOUND" ]; then
+            echo "slug=$(awk -F': ' '/^slug:/{print $2; exit}'  AUTOFIX_RESULT.md | tr -d ' \r')" >> "$GITHUB_OUTPUT"
+            {
+              echo "title<<EOF"
+              awk -F': ' '/^title:/{sub(/^title: /,""); print; exit}' AUTOFIX_RESULT.md
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 결론 없음 — 조용히 종료
+        if: steps.hunt.outputs.status != 'FOUND'
+        run: |
+          echo "::notice::이번 사이클은 제출 기준을 넘는 버그를 찾지 못했다. 정상 동작이다."
+
+      # ─── 오탐 차단의 핵심. 여기를 통과하지 못하면 upstream 에 아무것도 남지 않는다 ───
+      - name: 기계식 검증 게이트 (red→green + 회귀 0 + CI 3종)
+        if: steps.hunt.outputs.status == 'FOUND'
+        run: |
+          chmod +x bot/.github/autofix/verify-gate.sh
+          bot/.github/autofix/verify-gate.sh "$GITHUB_WORKSPACE/work"
+
+      - name: 이슈 등록 (게이트 통과 후에만)
+        if: ${{ steps.hunt.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
+        id: issue
+        working-directory: work
+        env:
+          GH_TOKEN: ${{ secrets.RHWP_BOT_PAT }}
+        run: |
+          set -euo pipefail
+          # 프론트매터를 뺀 본문만 이슈로
+          awk 'f{print} /^---$/{c++} c==2 && !f{f=1}' AUTOFIX_RESULT.md > /tmp/issue_body.md
+          printf '\n---\n<sub>자동 탐색으로 발견하고 red→green 회귀 테스트로 검증한 뒤 등록했습니다.</sub>\n' >> /tmp/issue_body.md
+
+          URL=$(gh issue create --repo "$UPSTREAM" \
+            --title "${{ steps.hunt.outputs.title }}" \
+            --body-file /tmp/issue_body.md)
+          N="${URL##*/}"
+          echo "number=${N}" >> "$GITHUB_OUTPUT"
+          echo "생성된 이슈: #${N}"
+
+      - name: 테스트 파일 번호 확정 + 처리결과 문서
+        if: ${{ steps.hunt.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
+        working-directory: work
+        env:
+          N: ${{ steps.issue.outputs.number }}
+          SLUG: ${{ steps.hunt.outputs.slug }}
+        run: |
+          set -euo pipefail
+          mv "tests/issue_TBD_${SLUG}.rs" "tests/issue_${N}_${SLUG}.rs"
+          sed -i "s/issue_TBD/issue_${N}/g" "tests/issue_${N}_${SLUG}.rs"
+
+          # 이름 바꾼 뒤에도 green 인지 재확인 (파일명·모듈명 불일치 방어)
+          cargo test --profile release-test --test "issue_${N}_${SLUG}"
+
+          mkdir -p mydocs/report
+          {
+            echo "# ${{ steps.hunt.outputs.title }}"
+            echo
+            echo "Issue: #${N}"
+            echo "브랜치: \`fix/issue-${N}\`"
+            echo
+            awk 'f{print} /^---$/{c++} c==2 && !f{f=1}' AUTOFIX_RESULT.md
+          } > "mydocs/report/task_m100_${N}_report.md"
+          rm -f AUTOFIX_RESULT.md
+
+      - name: 커밋 + fork 에 push
+        if: ${{ steps.hunt.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
+        working-directory: work
+        env:
+          N: ${{ steps.issue.outputs.number }}
+          # 브랜치 push 대상은 내 포크이므로 기본 GITHUB_TOKEN 으로 충분하다.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git switch -c "fix/issue-${N}"
+          git remote add fork "https://x-access-token:${GH_TOKEN}@github.com/${FORK}.git"
+          git add -A
+          git commit -m "fix: ${{ steps.hunt.outputs.title }} (#${N})"
+          git push fork "fix/issue-${N}"
+
+      - name: upstream 에 PR 생성
+        if: ${{ steps.hunt.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
+        working-directory: work
+        env:
+          N: ${{ steps.issue.outputs.number }}
+          GH_TOKEN: ${{ secrets.RHWP_BOT_PAT }}
+        run: |
+          set -euo pipefail
+          {
+            echo "Fixes #${N}"
+            echo
+            sed -n '/^# /,$p' "mydocs/report/task_m100_${N}_report.md" | tail -n +2
+            echo
+            echo "## 검증"
+            echo
+            echo "| 항목 | 결과 |"
+            echo "| --- | --- |"
+            echo "| 수정 원복 시 신규 테스트 | **FAIL** (단정 실패로 결함 재현 확인) |"
+            echo "| 수정 적용 시 신규 테스트 | **PASS** |"
+            echo "| \`cargo fmt --all -- --check\` | PASS |"
+            echo "| \`cargo clippy -- -D warnings\` | PASS |"
+            echo "| \`cargo test --profile release-test --tests\` | PASS (회귀 0) |"
+            echo
+            echo "red→green 은 CI 러너에서 기계적으로 검증했습니다 — 수정분만 stash 하여"
+            echo "신규 테스트가 실제로 실패하는지 확인한 뒤 복원했습니다."
+          } > /tmp/pr_body.md
+
+          gh pr create --repo "$UPSTREAM" \
+            --base devel \
+            --head "${{ github.repository_owner }}:fix/issue-${N}" \
+            --title "fix: ${{ steps.hunt.outputs.title }} (#${N})" \
+            --body-file /tmp/pr_body.md
+
+      - name: 실행 로그 보관
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: autofix-log-${{ github.run_number }}
+          path: |
+            hunt.log
+            work/AUTOFIX_RESULT.md
+          if-no-files-found: ignore
+          retention-days: 14
