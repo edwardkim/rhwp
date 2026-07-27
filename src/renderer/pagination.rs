@@ -164,15 +164,121 @@ pub struct MasterPageRef {
     pub master_page_index: usize,
 }
 
+/// 표 셀 안에 중첩된 머리말/꼬리말 컨트롤로 내려가는 경로 한 단계.
+///
+/// 최상위 문단 → 표 → 셀 → 셀 문단 순으로 내려간다. 여러 단계가 쌓이면
+/// 표 안의 표처럼 다중 중첩도 표현할 수 있다.
+#[derive(Debug, Clone)]
+pub struct HeaderFooterTableStep {
+    /// 바깥 controls 리스트에서 Table 컨트롤의 인덱스
+    pub table_control_index: usize,
+    /// 표 셀 인덱스
+    pub cell_index: usize,
+    /// 셀 내부 문단 인덱스
+    pub cell_para_index: usize,
+}
+
 /// 머리말/꼬리말 참조
 #[derive(Debug, Clone)]
 pub struct HeaderFooterRef {
-    /// Header/Footer 컨트롤이 있는 문단 인덱스
+    /// Header/Footer 컨트롤이 있는 (최상위) 문단 인덱스
     pub para_index: usize,
-    /// 해당 문단 내 컨트롤 인덱스
+    /// Header/Footer 컨트롤이 위치한 (가장 안쪽) controls 리스트 내 인덱스
     pub control_index: usize,
     /// Header/Footer 컨트롤이 속한 구역 인덱스 (구역 간 상속 시 원본 구역 추적용)
     pub source_section_index: usize,
+    /// 표 셀 안에 중첩된 경우의 경로. 비어 있으면 최상위 문단 직속 컨트롤.
+    ///
+    /// HWP 시험지(예: 수능 수학 선택과목 소책자)는 4쪽짜리 소책자의 4쪽 머리말을
+    /// 제목표(1x1 표) 셀 안에 정의하기도 한다. 이 경로가 없으면 그 머리말이
+    /// 수집되지 않아 4쪽 쪽번호가 2쪽 머리말로 대체돼 잘못 표시된다.
+    pub table_path: Vec<HeaderFooterTableStep>,
+}
+
+/// 표 셀 안에 중첩된 Header/Footer 컨트롤을 재귀적으로 수집한다.
+///
+/// `base_path` 는 바깥 문단에서 `table` 까지 내려온 경로(마지막 단계의 셀/문단은
+/// 이 함수 안에서 채운다). 수집된 항목은 최상위 문단 인덱스 `pi` 를 그대로 써서
+/// 페이지 매핑 정합성을 유지한다(PageHide 수집과 동일 규약).
+pub(crate) fn collect_nested_header_footer_controls(
+    table: &crate::model::table::Table,
+    pi: usize,
+    section_index: usize,
+    table_control_index: usize,
+    base_path: &[HeaderFooterTableStep],
+    hf_entries: &mut Vec<(usize, HeaderFooterRef, bool, HeaderFooterApply)>,
+) {
+    for (cell_idx, cell) in table.cells.iter().enumerate() {
+        for (cpi, cp) in cell.paragraphs.iter().enumerate() {
+            let mut path = base_path.to_vec();
+            path.push(HeaderFooterTableStep {
+                table_control_index,
+                cell_index: cell_idx,
+                cell_para_index: cpi,
+            });
+            for (cci, ctrl) in cp.controls.iter().enumerate() {
+                match ctrl {
+                    Control::Header(h) => {
+                        hf_entries.push((
+                            pi,
+                            HeaderFooterRef {
+                                para_index: pi,
+                                control_index: cci,
+                                source_section_index: section_index,
+                                table_path: path.clone(),
+                            },
+                            true,
+                            h.apply_to,
+                        ));
+                    }
+                    Control::Footer(f) => {
+                        hf_entries.push((
+                            pi,
+                            HeaderFooterRef {
+                                para_index: pi,
+                                control_index: cci,
+                                source_section_index: section_index,
+                                table_path: path.clone(),
+                            },
+                            false,
+                            f.apply_to,
+                        ));
+                    }
+                    Control::Table(inner) => {
+                        collect_nested_header_footer_controls(
+                            inner,
+                            pi,
+                            section_index,
+                            cci,
+                            &path,
+                            hf_entries,
+                        );
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+}
+
+/// `HeaderFooterRef` 가 가리키는 Header/Footer 컨트롤을 원본 문단 슬라이스에서 해석한다.
+/// `table_path` 를 따라 표 셀 안까지 내려간다.
+pub(crate) fn resolve_header_footer_control<'a>(
+    paragraphs: &'a [Paragraph],
+    hf_ref: &HeaderFooterRef,
+) -> Option<&'a Control> {
+    let mut para = paragraphs.get(hf_ref.para_index)?;
+    for step in &hf_ref.table_path {
+        let Control::Table(table) = para.controls.get(step.table_control_index)? else {
+            return None;
+        };
+        para = table
+            .cells
+            .get(step.cell_index)?
+            .paragraphs
+            .get(step.cell_para_index)?;
+    }
+    para.controls.get(hf_ref.control_index)
 }
 
 /// 쪽별 활성 머리말/꼬리말 선택기.

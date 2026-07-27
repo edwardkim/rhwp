@@ -1058,6 +1058,7 @@ impl Paginator {
                             para_index: pi,
                             control_index: ci,
                             source_section_index: section_index,
+                            table_path: Vec::new(),
                         };
                         hf_entries.push((pi, r, true, h.apply_to));
                     }
@@ -1066,6 +1067,7 @@ impl Paginator {
                             para_index: pi,
                             control_index: ci,
                             source_section_index: section_index,
+                            table_path: Vec::new(),
                         };
                         hf_entries.push((pi, r, false, f.apply_to));
                     }
@@ -1082,6 +1084,14 @@ impl Paginator {
                     }
                     Control::Table(table) => {
                         Self::collect_pagehide_in_table(table, pi, &mut page_hides);
+                        crate::renderer::pagination::collect_nested_header_footer_controls(
+                            table,
+                            pi,
+                            section_index,
+                            ci,
+                            &[],
+                            &mut hf_entries,
+                        );
                     }
                     _ => {}
                 }
