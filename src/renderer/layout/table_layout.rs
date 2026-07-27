@@ -2667,7 +2667,17 @@ impl LayoutEngine {
                             (true, hwpunit_to_px(eq.common.width as i32, self.dpi))
                         }
                         Control::Table(t) if t.common.treat_as_char => {
-                            (true, hwpunit_to_px(t.common.width as i32, self.dpi))
+                            // [Issue #3396] 한글은 TAC 표의 문자 폭에 outMargin
+                            // 좌/우를 포함한다 (정렬·전진 폭 공히).
+                            (
+                                true,
+                                hwpunit_to_px(
+                                    t.common.width as i32
+                                        + t.outer_margin_left as i32
+                                        + t.outer_margin_right as i32,
+                                    self.dpi,
+                                ),
+                            )
                         }
                         _ => (false, 0.0),
                     };
@@ -3425,6 +3435,7 @@ impl LayoutEngine {
                                     layout_box,
                                     color_str,
                                     color: eq.color,
+                                    script: eq.script.clone(),
                                     font_size: font_size_px,
                                     section_index: Some(section_index),
                                     para_index: table_meta.map(|(pi, _)| pi),
@@ -3469,8 +3480,14 @@ impl LayoutEngine {
                                 )
                                 .is_some();
                             let tac_w = hwpunit_to_px(nested_table.common.width as i32, self.dpi);
+                            // [Issue #3396] 한글 TAC 표 문자 규칙: 괘선은
+                            // pen + outMargin.left, 전진 폭은 outMargin 좌/우 포함.
+                            let tac_om_l =
+                                hwpunit_to_px(nested_table.outer_margin_left as i32, self.dpi);
+                            let tac_om_r =
+                                hwpunit_to_px(nested_table.outer_margin_right as i32, self.dpi);
                             if already_rendered_inline {
-                                inline_x += tac_w;
+                                inline_x += tac_om_l + tac_w + tac_om_r;
                             } else {
                                 // [Task #1195] 표 앞에 텍스트(공백 등)가 선행하면, 한컴은
                                 // 그 textRun 너비 다음에 표를 놓되 잔여 너비가 부족하면
@@ -3495,7 +3512,7 @@ impl LayoutEngine {
                                     para_y_before_compose
                                 };
                                 let ctrl_area = LayoutRect {
-                                    x: inline_x,
+                                    x: inline_x + tac_om_l,
                                     y: table_anchor_y,
                                     width: tac_w,
                                     height: (inner_area.height - (table_anchor_y - inner_area.y))
@@ -3518,13 +3535,13 @@ impl LayoutEngine {
                                     nested_ctx,
                                     0.0,
                                     0.0,
-                                    Some(inline_x),
+                                    Some(inline_x + tac_om_l),
                                     None,
                                     None,
                                     false,
                                     clamp_header_negative_para_offset,
                                 );
-                                inline_x += tac_w;
+                                inline_x += tac_om_l + tac_w + tac_om_r;
                                 // para_y는 TAC 표 높이만큼 갱신 (같은 문단 내 다음 표도 같은 y)
                                 let new_bottom = para_y_before_compose + table_h;
                                 if new_bottom > para_y {
@@ -3985,6 +4002,28 @@ impl LayoutEngine {
                     }) {
                         if let Some(comp) = composed_paras.get_mut(cpi) {
                             self.substitute_page_auto_numbers_in_composed(para, comp, current_pn);
+                        }
+                    }
+                }
+            }
+
+            // AutoNumber(TotalPage) 치환: 셀 내 총쪽수 필드를 문서 전체 쪽수로 변환.
+            // exam_eng.hwp 같은 시험지의 꼬리말 쪽번호 상자는 현재쪽/총쪽수 두 atno를
+            // 같은 셀 안에 서로 다른 문단으로 둔다 — Page만 치환하면 총쪽수 자리에도
+            // 현재 쪽번호가 그려진다 (Task: 꼬리말 총쪽수 필드 미치환 버그).
+            let total_pages = self.total_pages.get();
+            if total_pages > 0 {
+                for (cpi, para) in cell.paragraphs.iter().enumerate() {
+                    if para.controls.iter().any(|c| {
+                        matches!(c, Control::AutoNumber(an)
+                            if an.number_type == crate::model::control::AutoNumberType::TotalPage)
+                    }) {
+                        if let Some(comp) = composed_paras.get_mut(cpi) {
+                            self.substitute_total_page_auto_numbers_in_composed(
+                                para,
+                                comp,
+                                total_pages,
+                            );
                         }
                     }
                 }
