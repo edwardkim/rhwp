@@ -25,7 +25,7 @@ git add -A -N .   # 신규 파일도 git diff 에 보이게 (스테이징은 하
 NEW_TESTS=$(git diff --name-only --diff-filter=A -- 'tests/issue_TBD_*.rs' || true)
 SRC_CHANGES=$(git diff --name-only -- src/ || true)
 STRAY=$(git diff --name-only \
-  | grep -vE '^(src/|tests/issue_TBD_.*\.rs$|mydocs/|AUTOFIX_RESULT\.md$)' || true)
+  | grep -vE '^(src/|tests/issue_TBD_.*\.rs$|mydocs/|AUTOFIX_RESULT\.md$|FINDING\.md$)' || true)
 # src/ 신규 파일은 stash 로 원복이 깔끔하지 않아 red 증명이 흔들린다 —
 # 버그 수정은 기존 코드 '수정'이어야 한다.
 NEW_SRC=$(git diff --name-only --diff-filter=A -- src/ || true)

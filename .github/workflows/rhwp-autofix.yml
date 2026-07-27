@@ -152,9 +152,37 @@ jobs:
       - name: Claude Code 설치
         run: npm install -g @anthropic-ai/claude-code
 
+      # ── 1층: 오라클 탐지 (AI 없음, 오탐 0) ────────────────────────
+      # 저장소 CLI 의 종료코드 계약(ir-diff exit 3, convert --verify exit 3/4 …)으로
+      # '조용히 틀린 결과'를 찾는다. 크래시가 없어도 결함이 잡힌다.
+      - name: 오라클 탐지
+        id: detect
+        working-directory: work
+        run: |
+          set -uo pipefail
+          git config user.name  "${{ github.repository_owner }}"
+          git config user.email "${{ github.repository_owner }}@users.noreply.github.com"
+          chmod +x ../bot/.github/autofix/detect.sh
+          ../bot/.github/autofix/detect.sh "$PWD" "${{ github.run_number }}" 2>&1 | tee ../detect.log
+          KIND=$(grep -oE 'DETECT_KIND=[A-Za-z-]+' ../detect.log | tail -1 | cut -d= -f2)
+          echo "kind=${KIND:-NONE}" >> "$GITHUB_OUTPUT"
+          echo "탐지 결과: ${KIND:-NONE}"
+
+      # ── 2층: 수정 (오라클이 찾은 건은 '고치기'만, 못 찾았으면 AI 가 '찾기') ──
+      - name: 확정 결함 수정
+        id: fix
+        if: ${{ steps.secrets.outputs.has_key == 'true' && steps.detect.outputs.kind != 'NONE' }}
+        working-directory: work
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -uo pipefail
+          claude -p "$(cat ../bot/.github/autofix/fix-prompt.md)" \
+            --max-turns 60 --dangerously-skip-permissions 2>&1 | tee ../fix.log || true
+
       - name: 탐색 실행
         id: hunt
-        if: steps.secrets.outputs.has_key == 'true'
+        if: ${{ steps.secrets.outputs.has_key == 'true' && steps.detect.outputs.kind == 'NONE' }}
         working-directory: work
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -190,14 +218,37 @@ jobs:
             } >> "$GITHUB_OUTPUT"
           fi
 
-      - name: 결론 없음 — 조용히 종료
-        if: steps.hunt.outputs.status != 'FOUND'
+      # 오라클 경로와 AI 탐색 경로 어느 쪽이든 AUTOFIX_RESULT.md 를 남긴다 — 여기서 통합한다.
+      - name: 결과 취합
+        id: result
+        working-directory: work
         run: |
-          echo "::notice::이번 사이클은 제출 기준을 넘는 버그를 찾지 못했다. 정상 동작이다."
+          set -uo pipefail
+          if [ ! -f AUTOFIX_RESULT.md ]; then
+            echo "status=NO-FINDING" >> "$GITHUB_OUTPUT"
+            echo "산출물 없음 — 이번 사이클 폐기."
+            exit 0
+          fi
+          STATUS=$(awk -F': ' '/^status:/{print $2; exit}' AUTOFIX_RESULT.md | tr -d ' \r')
+          echo "status=${STATUS}" >> "$GITHUB_OUTPUT"
+          echo "경로=${{ steps.detect.outputs.kind }} / 결과=${STATUS}"
+          if [ "$STATUS" = "FOUND" ]; then
+            echo "slug=$(awk -F': ' '/^slug:/{print $2; exit}' AUTOFIX_RESULT.md | tr -d ' \r')" >> "$GITHUB_OUTPUT"
+            {
+              echo "title<<EOF"
+              awk '/^title:/{sub(/^title: /,""); print; exit}' AUTOFIX_RESULT.md
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 결론 없음 — 조용히 종료
+        if: steps.result.outputs.status != 'FOUND'
+        run: |
+          echo "::notice::이번 사이클은 제출 기준을 넘는 결함을 찾지 못했다. 정상 동작이다."
 
       # ─── 오탐 차단의 핵심. 여기를 통과하지 못하면 upstream 에 아무것도 남지 않는다 ───
       - name: 기계식 검증 게이트 (red→green + 회귀 0 + CI 3종)
-        if: steps.hunt.outputs.status == 'FOUND'
+        if: steps.result.outputs.status == 'FOUND'
         run: |
           chmod +x bot/.github/autofix/verify-gate.sh
           bot/.github/autofix/verify-gate.sh "$GITHUB_WORKSPACE/work"
@@ -206,7 +257,7 @@ jobs:
       # "기대값 근거가 추측", "테스트가 동어반복", "원인이 아니라 증상을 덮음",
       # "원래 의도된 동작" 중 하나라도 걸리면 제출하지 않는다.
       - name: 반박 심사 (독립 세션)
-        if: steps.hunt.outputs.status == 'FOUND'
+        if: steps.result.outputs.status == 'FOUND'
         working-directory: work
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -227,7 +278,7 @@ jobs:
           echo "반박 심사 통과."
 
       - name: 이슈 등록 (게이트 통과 후에만)
-        if: ${{ steps.hunt.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
+        if: ${{ steps.result.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
         id: issue
         working-directory: work
         env:
@@ -239,18 +290,18 @@ jobs:
           printf '\n---\n<sub>자동 탐색으로 발견하고 red→green 회귀 테스트로 검증한 뒤 등록했습니다.</sub>\n' >> /tmp/issue_body.md
 
           URL=$(gh issue create --repo "$UPSTREAM" \
-            --title "${{ steps.hunt.outputs.title }}" \
+            --title "${{ steps.result.outputs.title }}" \
             --body-file /tmp/issue_body.md)
           N="${URL##*/}"
           echo "number=${N}" >> "$GITHUB_OUTPUT"
           echo "생성된 이슈: #${N}"
 
       - name: 테스트 파일 번호 확정 + 처리결과 문서
-        if: ${{ steps.hunt.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
+        if: ${{ steps.result.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
         working-directory: work
         env:
           N: ${{ steps.issue.outputs.number }}
-          SLUG: ${{ steps.hunt.outputs.slug }}
+          SLUG: ${{ steps.result.outputs.slug }}
         run: |
           set -euo pipefail
           mv "tests/issue_TBD_${SLUG}.rs" "tests/issue_${N}_${SLUG}.rs"
@@ -261,7 +312,7 @@ jobs:
 
           mkdir -p mydocs/report
           {
-            echo "# ${{ steps.hunt.outputs.title }}"
+            echo "# ${{ steps.result.outputs.title }}"
             echo
             echo "Issue: #${N}"
             echo "브랜치: \`fix/issue-${N}\`"
@@ -271,7 +322,7 @@ jobs:
           rm -f AUTOFIX_RESULT.md
 
       - name: 커밋 + fork 에 push
-        if: ${{ steps.hunt.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
+        if: ${{ steps.result.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
         working-directory: work
         env:
           N: ${{ steps.issue.outputs.number }}
@@ -282,11 +333,11 @@ jobs:
           git switch -c "fix/issue-${N}"
           git remote add fork "https://x-access-token:${GH_TOKEN}@github.com/${FORK}.git"
           git add -A
-          git commit -m "fix: ${{ steps.hunt.outputs.title }} (#${N})"
+          git commit -m "fix: ${{ steps.result.outputs.title }} (#${N})"
           git push fork "fix/issue-${N}"
 
       - name: upstream 에 PR 생성
-        if: ${{ steps.hunt.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
+        if: ${{ steps.result.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
         working-directory: work
         env:
           N: ${{ steps.issue.outputs.number }}
@@ -315,7 +366,7 @@ jobs:
           gh pr create --repo "$UPSTREAM" \
             --base devel \
             --head "${{ github.repository_owner }}:fix/issue-${N}" \
-            --title "fix: ${{ steps.hunt.outputs.title }} (#${N})" \
+            --title "fix: ${{ steps.result.outputs.title }} (#${N})" \
             --body-file /tmp/pr_body.md
 
       - name: 실행 로그 보관
