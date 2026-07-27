@@ -96,14 +96,15 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-          # PR 큐 상한 — 내 열린 PR 이 상한 이상이면 이번 사이클은 통째로 쉰다.
-          # (메인테이너 큐 존중 + NVIDIA 크레딧 절약. 종전에는 주석뿐 미구현이었다.)
+          # PR 큐 상한 — '봇이 만든' 열린 PR(fix/issue-* 브랜치)만 센다.
+          # 계정 전체 열린 PR 을 세면 수동 캠페인 PR 에 걸려 봇이 영원히 쉰다 (run #13 사고).
           CAP="${MAX_INPUT:-}"
           CAP="${CAP:-$MAX_OPEN_PRS}"
-          OPEN=$(gh api "search/issues?q=repo:${UPSTREAM}+author:${{ github.repository_owner }}+type:pr+state:open" --jq '.total_count')
-          echo "upstream 열린 PR: ${OPEN}/${CAP}"
+          OPEN=$(gh api "repos/${UPSTREAM}/pulls?state=open&per_page=100" \
+            --jq '[.[] | select(.user.login=="${{ github.repository_owner }}" and (.head.ref|startswith("fix/issue-")))] | length')
+          echo "upstream 열린 봇 PR: ${OPEN}/${CAP}"
           if [ "$OPEN" -ge "$CAP" ]; then
-            echo "::notice::열린 PR ${OPEN}건 — 상한(${CAP}) 도달. 이번 사이클은 쉰다."
+            echo "::notice::봇이 만든 열린 PR ${OPEN}건 — 상한(${CAP}) 도달. 이번 사이클은 쉰다."
             echo "proceed=false" >> "$GITHUB_OUTPUT"
           else
             echo "proceed=true" >> "$GITHUB_OUTPUT"
