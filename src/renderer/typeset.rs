@@ -18123,6 +18123,7 @@ impl TypesetEngine {
                             para_index: pi,
                             control_index: ci,
                             source_section_index: section_index,
+                            table_path: Vec::new(),
                         };
                         hf_entries.push((pi, r, true, h.apply_to));
                     }
@@ -18131,6 +18132,7 @@ impl TypesetEngine {
                             para_index: pi,
                             control_index: ci,
                             source_section_index: section_index,
+                            table_path: Vec::new(),
                         };
                         hf_entries.push((pi, r, false, f.apply_to));
                     }
@@ -18147,6 +18149,16 @@ impl TypesetEngine {
                     }
                     Control::Table(table) => {
                         Self::collect_pagehide_in_table(table, pi, &mut page_hides);
+                        // 표 셀 안에 정의된 머리말/꼬리말도 수집한다 (수능 수학 선택과목
+                        // 소책자의 4쪽 머리말이 제목표 셀 안에 있는 사례).
+                        crate::renderer::pagination::collect_nested_header_footer_controls(
+                            table,
+                            pi,
+                            section_index,
+                            ci,
+                            &[],
+                            &mut hf_entries,
+                        );
                     }
                     _ => {}
                 }

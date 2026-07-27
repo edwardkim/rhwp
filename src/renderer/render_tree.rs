@@ -1255,6 +1255,13 @@ pub struct EquationNode {
     pub color: u32,
     /// 수식 글자 크기 (HWPUNIT → px 변환 후)
     pub font_size: f64,
+    /// 원본 수식 스크립트(HWP 수식 편집기 문법, 예 `sqrt {3} of {5}`).
+    ///
+    /// [#3413] 텍스트 추출 표면(`extract_page_text_native` 등)이 수식 내용을 방출할 수
+    /// 있도록 노드에 보존한다. 이 값이 없으면 수식은 렌더에만 존재하고 평문에서는
+    /// 조용히 사라진다(수학 문서에서 선택지·발문이 통째로 비는 원인).
+    #[serde(default)]
+    pub script: String,
     /// 소속 구역 인덱스
     pub section_index: Option<usize>,
     /// 수식 컨트롤을 소유한 문단 인덱스
