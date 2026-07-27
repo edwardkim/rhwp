@@ -173,20 +173,40 @@ jobs:
           echo "--- 코딩 계열 후보 ---"
           echo "$BODY" | jq -r '.data[].id' | grep -iE 'coder|code|qwen|deepseek|kimi|nemotron|devstral|codestral' | head -30
 
-          # 선호 순위 — 크레딧이 '요청 단위'로 닳으므로 적은 턴에 푸는 강한 모델이 가성비다.
-          # (2026-07 실측: 이 계정에서 확인된 ID 들)
+          # ⚠ /v1/models 목록에 있다고 호출되는 게 아니다. 실측에서 kimi-k2.6 이
+          #   목록에는 있는데 호출 시 404 "Not found for account" 가 났다(미할당).
+          #   그래서 후보마다 1토큰짜리 실제 요청을 던져 200 이 오는 첫 모델을 쓴다.
+          probe() {
+            curl -sS -o /tmp/probe.json -w '%{http_code}' \
+              https://integrate.api.nvidia.com/v1/chat/completions \
+              -H "Authorization: Bearer ${NVIDIA_API_KEY}" -H "Content-Type: application/json" \
+              -d "{\"model\":\"$1\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":1}"
+          }
+
+          # 선호 순위 — 크레딧이 요청 단위로 닳으므로 적은 턴에 푸는 강한 모델이 가성비다.
+          echo "--- 실호출 검증 ---"
           for want in \
             "moonshotai/kimi-k2.6" \
             "deepseek-ai/deepseek-v4-pro" \
-            "nvidia/nemotron-3-super-120b-a12b" \
             "deepseek-ai/deepseek-v4-flash" \
+            "nvidia/nemotron-3-super-120b-a12b" \
             "nvidia/nemotron-3-ultra-550b-a55b" \
-            "nvidia/llama-3.3-nemotron-super-49b-v1.5"; do
-            if echo "$BODY" | jq -e --arg m "$want" '.data[] | select(.id==$m)' >/dev/null; then
-              MODEL="$want"; break
+            "qwen/qwen3-coder-480b-a35b-instruct" \
+            "nvidia/llama-3.3-nemotron-super-49b-v1.5" \
+            "mistralai/codestral-22b-instruct-v0.1" \
+            "nvidia/llama-3.1-nemotron-70b-instruct"; do
+            echo "$BODY" | jq -e --arg m "$want" '.data[] | select(.id==$m)' >/dev/null || continue
+            CODE=$(probe "$want")
+            if [ "$CODE" = "200" ]; then
+              echo "  ${want} → 200 ✅"; MODEL="$want"; break
             fi
+            echo "  ${want} → HTTP ${CODE} (미할당) $(jq -r '.detail // empty' /tmp/probe.json 2>/dev/null | head -c 80)"
           done
-          MODEL="${MODEL:-$(echo "$BODY" | jq -r '.data[0].id')}"
+
+          if [ -z "${MODEL:-}" ]; then
+            echo "::error title=사용 가능한 모델 없음::후보 전부 호출 실패. build.nvidia.com 에서 모델 접근 권한을 확인할 것."
+            echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
           echo "선택 모델: ${MODEL}"
           echo "model=${MODEL}" >> "$GITHUB_OUTPUT"
           echo "ok=true" >> "$GITHUB_OUTPUT"
@@ -230,8 +250,8 @@ jobs:
         run: |
           set -uo pipefail
           aider --model "openai/${MODEL}" \
-            --yes-always --no-auto-commits --no-analytics \
-            --no-show-model-warnings --map-tokens 1024 \
+            --yes-always --no-auto-commits --no-analytics --no-gitignore \
+            --no-show-model-warnings --map-tokens 1024 --edit-format diff \
             --message "$(cat ../bot/.github/autofix/fix-prompt.md)" \
             2>&1 | tee ../fix.log || true
 
@@ -250,8 +270,8 @@ jobs:
         run: |
           set -uo pipefail
           aider --model "openai/${MODEL}" \
-            --yes-always --no-auto-commits --no-analytics \
-            --no-show-model-warnings --map-tokens 1024 \
+            --yes-always --no-auto-commits --no-analytics --no-gitignore \
+            --no-show-model-warnings --map-tokens 1024 --edit-format diff \
             --message "$(cat ../bot/.github/autofix/hunt-prompt.md)" \
             2>&1 | tee ../hunt.log || true
 
