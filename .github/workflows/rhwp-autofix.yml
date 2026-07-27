@@ -173,13 +173,15 @@ jobs:
           echo "--- 코딩 계열 후보 ---"
           echo "$BODY" | jq -r '.data[].id' | grep -iE 'coder|code|qwen|deepseek|kimi|nemotron|devstral|codestral' | head -30
 
-          # 코딩 특화 모델을 선호 순위대로 찾는다. 없으면 첫 번째 모델로 떨어진다.
+          # 선호 순위 — 크레딧이 '요청 단위'로 닳으므로 적은 턴에 푸는 강한 모델이 가성비다.
+          # (2026-07 실측: 이 계정에서 확인된 ID 들)
           for want in \
-            "qwen/qwen3-coder-480b-a35b-instruct" \
-            "moonshotai/kimi-k2-instruct" \
-            "deepseek-ai/deepseek-v3" \
-            "qwen/qwen2.5-coder-32b-instruct" \
-            "nvidia/llama-3.3-nemotron-super-49b-v1"; do
+            "moonshotai/kimi-k2.6" \
+            "deepseek-ai/deepseek-v4-pro" \
+            "nvidia/nemotron-3-super-120b-a12b" \
+            "deepseek-ai/deepseek-v4-flash" \
+            "nvidia/nemotron-3-ultra-550b-a55b" \
+            "nvidia/llama-3.3-nemotron-super-49b-v1.5"; do
             if echo "$BODY" | jq -e --arg m "$want" '.data[] | select(.id==$m)' >/dev/null; then
               MODEL="$want"; break
             fi
@@ -189,28 +191,16 @@ jobs:
           echo "model=${MODEL}" >> "$GITHUB_OUTPUT"
           echo "ok=true" >> "$GITHUB_OUTPUT"
 
-      - name: Codex CLI 설치 + NVIDIA 연결
+      # Codex CLI 는 Responses API 만 받는데 NVIDIA NIM 은 Chat Completions 규격이라
+      # 원천적으로 붙지 않는다(wire_api="chat" 지원 종료). Chat Completions 를 그대로
+      # 쓰는 aider 로 간다. 모델 레지스트리에 의존하지 않도록 generic openai/ 경로를 쓴다.
+      - name: aider 설치
         if: steps.nim.outputs.ok == 'true'
-        env:
-          MODEL: ${{ steps.nim.outputs.model }}
         run: |
           set -euo pipefail
-          npm install -g @openai/codex
-          mkdir -p ~/.codex
-          cat > ~/.codex/config.toml <<TOML
-          model = "${MODEL}"
-          model_provider = "nvidia"
-          approval_policy = "never"
-          sandbox_mode = "danger-full-access"
-
-          [model_providers.nvidia]
-          name = "NVIDIA NIM"
-          base_url = "https://integrate.api.nvidia.com/v1"
-          env_key = "NVIDIA_API_KEY"
-          wire_api = "chat"
-          TOML
-          echo "--- ~/.codex/config.toml ---"; cat ~/.codex/config.toml
-          codex --version || true
+          python -m pip install --quiet --upgrade pip
+          python -m pip install --quiet aider-chat
+          aider --version
 
       # ── 1층: 오라클 탐지 (AI 없음, 오탐 0) ────────────────────────
       # 저장소 CLI 의 종료코드 계약(ir-diff exit 3, convert --verify exit 3/4 …)으로
@@ -234,24 +224,36 @@ jobs:
         if: ${{ steps.nim.outputs.ok == 'true' && steps.detect.outputs.kind != 'NONE' }}
         working-directory: work
         env:
-          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          OPENAI_API_BASE: https://integrate.api.nvidia.com/v1
+          MODEL: ${{ steps.nim.outputs.model }}
         run: |
           set -uo pipefail
-          codex exec "$(cat ../bot/.github/autofix/fix-prompt.md)" 2>&1 | tee ../fix.log || true
+          aider --model "openai/${MODEL}" \
+            --yes-always --no-auto-commits --no-analytics \
+            --no-show-model-warnings --map-tokens 1024 \
+            --message "$(cat ../bot/.github/autofix/fix-prompt.md)" \
+            2>&1 | tee ../fix.log || true
 
       - name: 탐색 실행
         id: hunt
         if: ${{ steps.nim.outputs.ok == 'true' && steps.detect.outputs.kind == 'NONE' }}
         working-directory: work
         env:
-          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          OPENAI_API_BASE: https://integrate.api.nvidia.com/v1
+          MODEL: ${{ steps.nim.outputs.model }}
           HUNT_MODE: ${{ needs.guard.outputs.hunt_mode }}
           HUNT_RANGE: ${{ needs.guard.outputs.hunt_range }}
           HUNT_TARGET: ${{ needs.guard.outputs.hunt_target }}
           HUNT_EXCLUDE: ${{ needs.guard.outputs.exclude }}
         run: |
           set -uo pipefail
-          codex exec "$(cat ../bot/.github/autofix/hunt-prompt.md)" 2>&1 | tee ../hunt.log || true
+          aider --model "openai/${MODEL}" \
+            --yes-always --no-auto-commits --no-analytics \
+            --no-show-model-warnings --map-tokens 1024 \
+            --message "$(cat ../bot/.github/autofix/hunt-prompt.md)" \
+            2>&1 | tee ../hunt.log || true
 
           if [ ! -f AUTOFIX_RESULT.md ]; then
             echo "::warning::AUTOFIX_RESULT.md 없음 — 탐색이 결론을 못 냄. 사이클 폐기."
@@ -314,9 +316,23 @@ jobs:
         working-directory: work
         env:
           NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          MODEL: ${{ steps.nim.outputs.model }}
         run: |
           set -uo pipefail
-          codex exec "$(cat ../bot/.github/autofix/refute-prompt.md)" 2>&1 | tee ../refute.log || true
+          # 반박은 '판정'이므로 편집 에이전트를 쓰지 않는다 — 요청 1회로 끝내고,
+          # 실수로 파일을 건드릴 여지도 없앤다.
+          jq -n --arg m "$MODEL" \
+                --arg sys "$(cat ../bot/.github/autofix/refute-prompt.md)" \
+                --arg usr "$(printf '## AUTOFIX_RESULT.md\n%s\n\n## git diff\n%s\n' \
+                              "$(cat AUTOFIX_RESULT.md)" "$(git diff | head -c 60000)")" \
+            '{model:$m, temperature:0, max_tokens:1200,
+              messages:[{role:"system",content:$sys},{role:"user",content:$usr}]}' > /tmp/refute.json
+
+          curl -sS https://integrate.api.nvidia.com/v1/chat/completions \
+            -H "Authorization: Bearer ${NVIDIA_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d @/tmp/refute.json | tee /tmp/refute_raw.json \
+            | jq -r '.choices[0].message.content // "판정 없음"' | tee ../refute.log
 
           VERDICT=$(grep -oE 'VERDICT: (REAL|REFUTED)' ../refute.log | tail -1 || true)
           echo "판정: ${VERDICT:-<판정 없음>}"
