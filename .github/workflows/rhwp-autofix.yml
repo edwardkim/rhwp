@@ -108,15 +108,15 @@ jobs:
       - name: 시크릿 준비 상태 확인
         id: secrets
         env:
-          HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+          HAS_KEY: ${{ secrets.NVIDIA_API_KEY != '' }}
           HAS_PAT: ${{ secrets.RHWP_BOT_PAT != '' }}
         run: |
-          echo "ANTHROPIC_API_KEY: ${HAS_KEY}"
-          echo "RHWP_BOT_PAT     : ${HAS_PAT}"
+          echo "NVIDIA_API_KEY: ${HAS_KEY}"
+          echo "RHWP_BOT_PAT  : ${HAS_PAT}"
           echo "has_key=${HAS_KEY}" >> "$GITHUB_OUTPUT"
           echo "has_pat=${HAS_PAT}" >> "$GITHUB_OUTPUT"
           if [ "$HAS_KEY" != "true" ]; then
-            echo "::warning title=시크릿 미설정::ANTHROPIC_API_KEY 가 없어 탐색을 건너뛴다. 저장소 Settings → Secrets and variables → Actions 에서 추가할 것."
+            echo "::warning title=시크릿 미설정::NVIDIA_API_KEY 가 없어 수정 단계를 건너뛴다. 탐지층은 그대로 동작한다."
           fi
           if [ "$HAS_PAT" != "true" ]; then
             echo "::warning title=시크릿 미설정::RHWP_BOT_PAT 가 없어 upstream 이슈/PR 생성은 건너뛴다 (classic PAT, public_repo 스코프)."
@@ -149,8 +149,66 @@ jobs:
           shared-key: autofix
           save-if: true
 
-      - name: Claude Code 설치
-        run: npm install -g @anthropic-ai/claude-code
+      # NVIDIA NIM 은 OpenAI 호환이라 Codex CLI 에 커스텀 프로바이더로 물릴 수 있다.
+      # 키가 살아있는지, 어떤 모델이 실제로 응답하는지 먼저 실측한다 — 모델 ID 는
+      # 계정/시점에 따라 달라지므로 고정하지 않고 사용 가능한 것 중에서 고른다.
+      - name: NVIDIA 키 점검 + 모델 선택
+        id: nim
+        if: steps.secrets.outputs.has_key == 'true'
+        env:
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: |
+          set -uo pipefail
+          RESP=$(curl -sS -w '\n%{http_code}' https://integrate.api.nvidia.com/v1/models \
+                   -H "Authorization: Bearer ${NVIDIA_API_KEY}")
+          CODE=$(echo "$RESP" | tail -1)
+          BODY=$(echo "$RESP" | head -n -1)
+          if [ "$CODE" != "200" ]; then
+            echo "::error title=NVIDIA 인증 실패::HTTP ${CODE} — 키가 만료됐거나 잘못됐다."
+            echo "$BODY" | head -5
+            echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          COUNT=$(echo "$BODY" | jq '.data | length')
+          echo "인증 성공 — 사용 가능 모델 ${COUNT}종"
+
+          # 코딩 특화 모델을 선호 순위대로 찾는다. 없으면 첫 번째 모델로 떨어진다.
+          for want in \
+            "qwen/qwen3-coder-480b-a35b-instruct" \
+            "moonshotai/kimi-k2-instruct" \
+            "deepseek-ai/deepseek-v3" \
+            "qwen/qwen2.5-coder-32b-instruct" \
+            "nvidia/llama-3.3-nemotron-super-49b-v1"; do
+            if echo "$BODY" | jq -e --arg m "$want" '.data[] | select(.id==$m)' >/dev/null; then
+              MODEL="$want"; break
+            fi
+          done
+          MODEL="${MODEL:-$(echo "$BODY" | jq -r '.data[0].id')}"
+          echo "선택 모델: ${MODEL}"
+          echo "model=${MODEL}" >> "$GITHUB_OUTPUT"
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+
+      - name: Codex CLI 설치 + NVIDIA 연결
+        if: steps.nim.outputs.ok == 'true'
+        env:
+          MODEL: ${{ steps.nim.outputs.model }}
+        run: |
+          set -euo pipefail
+          npm install -g @openai/codex
+          mkdir -p ~/.codex
+          cat > ~/.codex/config.toml <<TOML
+          model = "${MODEL}"
+          model_provider = "nvidia"
+          approval_policy = "never"
+          sandbox_mode = "danger-full-access"
+
+          [model_providers.nvidia]
+          name = "NVIDIA NIM"
+          base_url = "https://integrate.api.nvidia.com/v1"
+          env_key = "NVIDIA_API_KEY"
+          wire_api = "chat"
+          TOML
+          echo "--- ~/.codex/config.toml ---"; cat ~/.codex/config.toml
+          codex --version || true
 
       # ── 1층: 오라클 탐지 (AI 없음, 오탐 0) ────────────────────────
       # 저장소 CLI 의 종료코드 계약(ir-diff exit 3, convert --verify exit 3/4 …)으로
@@ -171,34 +229,27 @@ jobs:
       # ── 2층: 수정 (오라클이 찾은 건은 '고치기'만, 못 찾았으면 AI 가 '찾기') ──
       - name: 확정 결함 수정
         id: fix
-        if: ${{ steps.secrets.outputs.has_key == 'true' && steps.detect.outputs.kind != 'NONE' }}
+        if: ${{ steps.nim.outputs.ok == 'true' && steps.detect.outputs.kind != 'NONE' }}
         working-directory: work
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
         run: |
           set -uo pipefail
-          claude -p "$(cat ../bot/.github/autofix/fix-prompt.md)" \
-            --max-turns 60 --dangerously-skip-permissions 2>&1 | tee ../fix.log || true
+          codex exec "$(cat ../bot/.github/autofix/fix-prompt.md)" 2>&1 | tee ../fix.log || true
 
       - name: 탐색 실행
         id: hunt
-        if: ${{ steps.secrets.outputs.has_key == 'true' && steps.detect.outputs.kind == 'NONE' }}
+        if: ${{ steps.nim.outputs.ok == 'true' && steps.detect.outputs.kind == 'NONE' }}
         working-directory: work
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
           HUNT_MODE: ${{ needs.guard.outputs.hunt_mode }}
           HUNT_RANGE: ${{ needs.guard.outputs.hunt_range }}
           HUNT_TARGET: ${{ needs.guard.outputs.hunt_target }}
           HUNT_EXCLUDE: ${{ needs.guard.outputs.exclude }}
         run: |
-          set -euo pipefail
-          git config user.name  "${{ github.repository_owner }}"
-          git config user.email "${{ github.repository_owner }}@users.noreply.github.com"
-
-          claude -p "$(cat ../bot/.github/autofix/hunt-prompt.md)" \
-            --max-turns 60 \
-            --dangerously-skip-permissions \
-            2>&1 | tee ../hunt.log || true
+          set -uo pipefail
+          codex exec "$(cat ../bot/.github/autofix/hunt-prompt.md)" 2>&1 | tee ../hunt.log || true
 
           if [ ! -f AUTOFIX_RESULT.md ]; then
             echo "::warning::AUTOFIX_RESULT.md 없음 — 탐색이 결론을 못 냄. 사이클 폐기."
@@ -260,13 +311,10 @@ jobs:
         if: steps.result.outputs.status == 'FOUND'
         working-directory: work
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
         run: |
-          set -euo pipefail
-          claude -p "$(cat ../bot/.github/autofix/refute-prompt.md)" \
-            --max-turns 30 \
-            --dangerously-skip-permissions \
-            2>&1 | tee ../refute.log || true
+          set -uo pipefail
+          codex exec "$(cat ../bot/.github/autofix/refute-prompt.md)" 2>&1 | tee ../refute.log || true
 
           VERDICT=$(grep -oE 'VERDICT: (REAL|REFUTED)' ../refute.log | tail -1 || true)
           echo "판정: ${VERDICT:-<판정 없음>}"
@@ -375,7 +423,11 @@ jobs:
         with:
           name: autofix-log-${{ github.run_number }}
           path: |
+            detect.log
             hunt.log
+            fix.log
+            refute.log
+            work/FINDING.md
             work/AUTOFIX_RESULT.md
           if-no-files-found: ignore
           retention-days: 14
