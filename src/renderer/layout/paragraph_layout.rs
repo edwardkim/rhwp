@@ -3585,6 +3585,34 @@ impl LayoutEngine {
             } else {
                 effective_col_x + effective_margin_left
             };
+            // 한글은 셀 밖 오른쪽 정렬 폭에서 말미 공백을 제외한다
+            // (needs_justify 의 후행 공백 제외와 동일 규칙). 포함하면
+            // [그림+말미공백72] 꼬리말이 공백 폭(447px)만큼 왼쪽으로 이탈 —
+            // 식약처 보도자료 OPEN 로고 실측(한글 x=607.3). 반례: 셀 내부는
+            // 한글이 말미 공백을 포함해 정렬(issue_1285 수험번호 TAC 우단
+            // = 셀 inner 우단 오라클 앵커) — cell_ctx 부재로 한정. Center 도
+            // 근거 부재로 기존 동작 유지.
+            let right_trailing_ws_width = if alignment == Alignment::Right && cell_ctx.is_none() {
+                let all_chars: Vec<char> =
+                    comp_line.runs.iter().flat_map(|r| r.text.chars()).collect();
+                let trailing_spaces = all_chars.iter().rev().take_while(|c| **c == ' ').count();
+                if trailing_spaces > 0 {
+                    if let Some(last_run) = comp_line.runs.last() {
+                        let ts = resolved_to_text_style(
+                            styles,
+                            last_run.char_style_id,
+                            last_run.lang_index,
+                        );
+                        estimate_text_width(&" ".repeat(trailing_spaces), &ts)
+                    } else {
+                        0.0
+                    }
+                } else {
+                    0.0
+                }
+            } else {
+                0.0
+            };
             let x_start = match alignment {
                 Alignment::Center => {
                     let align_offset = if center_packed_cell_label_as_right {
@@ -3608,7 +3636,8 @@ impl LayoutEngine {
                     x_base
                         + inline_offset
                         + num_x_offset
-                        + (available_width - effective_text_width).max(0.0)
+                        + (available_width - (effective_text_width - right_trailing_ws_width))
+                            .max(0.0)
                 }
                 _ => x_base + inline_offset + num_x_offset, // Left, Justify, Split, Distribute(분배중)
             };
