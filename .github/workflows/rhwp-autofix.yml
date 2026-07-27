@@ -18,6 +18,10 @@ on:
         description: "탐색 모드 (auto | diff | module)"
         type: string
         default: auto
+      max_open_prs:
+        description: "PR 큐 상한 임시 override (비우면 기본값 4)"
+        type: string
+        default: ""
 
 # 한 사이클(전체 회귀 포함)은 30분을 넘길 수 있다.
 # 직렬화해서 겹치지 않게 하고, 대기 중이던 run 은 GitHub 이 알아서 1건만 남긴다 = 자동 throttle.
@@ -56,11 +60,13 @@ jobs:
         id: quota
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CAP_OVERRIDE: ${{ inputs.max_open_prs }}
         run: |
           set -euo pipefail
+          CAP="${CAP_OVERRIDE:-$MAX_OPEN_PRS}"
           OPEN=$(gh api "search/issues?q=repo:${UPSTREAM}+is:pr+is:open+author:${{ github.repository_owner }}" --jq '.total_count')
-          echo "내 열린 PR: ${OPEN} / 상한 ${MAX_OPEN_PRS}"
-          if [ "$OPEN" -ge "$MAX_OPEN_PRS" ]; then
+          echo "내 열린 PR: ${OPEN} / 상한 ${CAP}"
+          if [ "$OPEN" -ge "$CAP" ]; then
             echo "over=true" >> "$GITHUB_OUTPUT"
             echo "::notice::열린 PR ${OPEN}건으로 상한 도달 — 이번 사이클 건너뜀. 기존 PR 이 머지되면 자동 재개."
           else
