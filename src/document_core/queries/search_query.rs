@@ -16,6 +16,17 @@ struct SearchHit {
     length: usize,
     /// 표 셀 등 중첩 컨텍스트: (parent_para, ctrl_idx, cell_idx, cell_para)
     cell_context: Option<(usize, usize, usize, usize)>,
+    /// 수식 script 안의 매치이면, 해당 문단 controls 안의 Equation 인덱스.
+    /// `cell_context`가 있으면 그 셀/글상자 문단 안의 인덱스이고, 없으면 본문 문단 인덱스다.
+    equation_control: Option<usize>,
+}
+
+fn replace_char_range(text: &mut String, offset: usize, length: usize, replacement: &str) {
+    let mut chars: Vec<char> = text.chars().collect();
+    let start = offset.min(chars.len());
+    let end = start.saturating_add(length).min(chars.len());
+    chars.splice(start..end, replacement.chars());
+    *text = chars.into_iter().collect();
 }
 
 /// 문단 텍스트에서 query를 검색하여 모든 매치 오프셋을 반환한다.
@@ -87,6 +98,7 @@ fn search_first_body(doc: &DocumentCore, query: &str, case_sensitive: bool) -> O
                     char_offset: offset,
                     length: qlen,
                     cell_context: None,
+                    equation_control: None,
                 });
             }
         }
@@ -109,6 +121,7 @@ fn search_all(doc: &DocumentCore, query: &str, case_sensitive: bool) -> Vec<Sear
                     char_offset: offset,
                     length: qlen,
                     cell_context: None,
+                    equation_control: None,
                 });
             }
 
@@ -130,7 +143,31 @@ fn search_all(doc: &DocumentCore, query: &str, case_sensitive: bool) -> Vec<Sear
                                             cell_idx,
                                             cell_para_idx,
                                         )),
+                                        equation_control: None,
                                     });
+                                }
+                                for (equation_index, control) in
+                                    cell_para.controls.iter().enumerate()
+                                {
+                                    if let Control::Equation(equation) = control {
+                                        for offset in
+                                            find_in_text(&equation.script, query, case_sensitive)
+                                        {
+                                            results.push(SearchHit {
+                                                sec: sec_idx,
+                                                para: para_idx,
+                                                char_offset: offset,
+                                                length: qlen,
+                                                cell_context: Some((
+                                                    para_idx,
+                                                    ctrl_idx,
+                                                    cell_idx,
+                                                    cell_para_idx,
+                                                )),
+                                                equation_control: Some(equation_index),
+                                            });
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -145,9 +182,47 @@ fn search_all(doc: &DocumentCore, query: &str, case_sensitive: bool) -> Vec<Sear
                                         char_offset: offset,
                                         length: qlen,
                                         cell_context: Some((para_idx, ctrl_idx, 0, tb_para_idx)),
+                                        equation_control: None,
                                     });
                                 }
+                                for (equation_index, control) in tb_para.controls.iter().enumerate()
+                                {
+                                    if let Control::Equation(equation) = control {
+                                        for offset in
+                                            find_in_text(&equation.script, query, case_sensitive)
+                                        {
+                                            results.push(SearchHit {
+                                                sec: sec_idx,
+                                                para: para_idx,
+                                                char_offset: offset,
+                                                length: qlen,
+                                                cell_context: Some((
+                                                    para_idx,
+                                                    ctrl_idx,
+                                                    0,
+                                                    tb_para_idx,
+                                                )),
+                                                equation_control: Some(equation_index),
+                                            });
+                                        }
+                                    }
+                                }
                             }
+                        }
+                    }
+                    // 수식 스크립트 — 렌더 트리(EquationNode)가 아니라 IR을 직접 순회하므로
+                    // #3419(export-text/markdown 쪽 수식 텍스트화)와는 별개 경로. 셀/글상자와
+                    // 별도 equation_control 로 표시해 커서 이동 대상에서는 제외한다.
+                    Control::Equation(eq) => {
+                        for offset in find_in_text(&eq.script, query, case_sensitive) {
+                            results.push(SearchHit {
+                                sec: sec_idx,
+                                para: para_idx,
+                                char_offset: offset,
+                                length: qlen,
+                                cell_context: None,
+                                equation_control: Some(ctrl_idx),
+                            });
                         }
                     }
                     _ => {}
@@ -188,7 +263,7 @@ impl DocumentCore {
         // 본문 결과만 필터 (셀/글상자 내부 제외 — 커서 이동 불가)
         let body_hits: Vec<&SearchHit> = all_hits
             .iter()
-            .filter(|h| h.cell_context.is_none())
+            .filter(|h| h.cell_context.is_none() && h.equation_control.is_none())
             .collect();
         if body_hits.is_empty() {
             return Ok(r#"{"found":false}"#.to_string());
@@ -243,7 +318,7 @@ impl DocumentCore {
         } else {
             all_hits
                 .iter()
-                .filter(|h| h.cell_context.is_none())
+                .filter(|h| h.cell_context.is_none() && h.equation_control.is_none())
                 .collect()
         };
 
@@ -256,9 +331,13 @@ impl DocumentCore {
                 ),
                 None => String::new(),
             };
+            let equation_ctx = h
+                .equation_control
+                .map(|control| format!(",\"equationControl\":{}", control))
+                .unwrap_or_default();
             json_parts.push(format!(
-                "{{\"sec\":{},\"para\":{},\"charOffset\":{},\"length\":{}{}}}",
-                h.sec, h.para, h.char_offset, h.length, cell_ctx
+                "{{\"sec\":{},\"para\":{},\"charOffset\":{},\"length\":{}{}{}}}",
+                h.sec, h.para, h.char_offset, h.length, cell_ctx, equation_ctx
             ));
         }
 
@@ -335,7 +414,8 @@ impl DocumentCore {
         // 역순 정렬: 뒤에서부터 치환하여 앞쪽 오프셋에 영향 없도록
         all_hits.reverse();
 
-        let count = all_hits.len();
+        let mut count = 0usize;
+        let mut affected_sections: Vec<usize> = Vec::new();
 
         for hit in &all_hits {
             if let Some((parent_para, ctrl_idx, cell_idx, cell_para_idx)) = hit.cell_context {
@@ -350,7 +430,7 @@ impl DocumentCore {
                     .get_mut(parent_para)
                     .ok_or_else(|| HwpError::RenderError("문단 범위 초과".into()))?;
 
-                let cell_para = match para.controls.get_mut(ctrl_idx) {
+                let nested_para = match para.controls.get_mut(ctrl_idx) {
                     Some(Control::Table(table)) => {
                         let cell = table
                             .cells
@@ -369,8 +449,43 @@ impl DocumentCore {
                     }
                     _ => continue,
                 };
-                cell_para.delete_text_at(hit.char_offset, hit.length);
-                cell_para.insert_text_at(hit.char_offset, new_text);
+                if let Some(equation_index) = hit.equation_control {
+                    let equation = match nested_para.controls.get_mut(equation_index) {
+                        Some(Control::Equation(equation)) => equation,
+                        _ => {
+                            return Err(HwpError::RenderError(
+                                "수식 검색 결과의 컨트롤 경로가 유효하지 않음".into(),
+                            ));
+                        }
+                    };
+                    replace_char_range(&mut equation.script, hit.char_offset, hit.length, new_text);
+                } else {
+                    nested_para.delete_text_at(hit.char_offset, hit.length);
+                    nested_para.insert_text_at(hit.char_offset, new_text);
+                }
+                count += 1;
+                affected_sections.push(hit.sec);
+            } else if let Some(equation_index) = hit.equation_control {
+                let section = self
+                    .document
+                    .sections
+                    .get_mut(hit.sec)
+                    .ok_or_else(|| HwpError::RenderError("구역 범위 초과".into()))?;
+                let para = section
+                    .paragraphs
+                    .get_mut(hit.para)
+                    .ok_or_else(|| HwpError::RenderError("문단 범위 초과".into()))?;
+                let equation = match para.controls.get_mut(equation_index) {
+                    Some(Control::Equation(equation)) => equation,
+                    _ => {
+                        return Err(HwpError::RenderError(
+                            "수식 검색 결과의 컨트롤 경로가 유효하지 않음".into(),
+                        ));
+                    }
+                };
+                replace_char_range(&mut equation.script, hit.char_offset, hit.length, new_text);
+                count += 1;
+                affected_sections.push(hit.sec);
             } else {
                 // 본문 문단 치환 — delete_text_native + insert_text_native는 recompose를 호출하므로
                 // 성능을 위해 직접 문단 수준 조작 후 마지막에 일괄 recompose
@@ -385,12 +500,13 @@ impl DocumentCore {
                     .ok_or_else(|| HwpError::RenderError("문단 범위 초과".into()))?;
                 para.delete_text_at(hit.char_offset, hit.length);
                 para.insert_text_at(hit.char_offset, new_text);
+                count += 1;
+                affected_sections.push(hit.sec);
             }
         }
 
         // 변경된 섹션들 recompose
         if count > 0 {
-            let mut affected_sections: Vec<usize> = all_hits.iter().map(|h| h.sec).collect();
             affected_sections.sort();
             affected_sections.dedup();
             for sec_idx in affected_sections {
@@ -478,9 +594,13 @@ fn format_search_hit(hit: &SearchHit, wrapped: bool) -> String {
         ),
         None => String::new(),
     };
+    let equation_ctx = hit
+        .equation_control
+        .map(|control| format!(",\"equationControl\":{}", control))
+        .unwrap_or_default();
     format!(
-        "{{\"found\":true,\"wrapped\":{},\"sec\":{},\"para\":{},\"charOffset\":{},\"length\":{}{}}}",
-        wrapped, hit.sec, hit.para, hit.char_offset, hit.length, cell_ctx
+        "{{\"found\":true,\"wrapped\":{},\"sec\":{},\"para\":{},\"charOffset\":{},\"length\":{}{}{}}}",
+        wrapped, hit.sec, hit.para, hit.char_offset, hit.length, cell_ctx, equation_ctx
     )
 }
 
@@ -524,5 +644,65 @@ mod tests {
     fn find_in_text_korean() {
         assert_eq!(find_in_text("안녕하세요 세계", "세계", true), vec![6]);
         assert_eq!(find_in_text("가나가나", "가나", true), vec![0, 2]);
+    }
+
+    /// [#3413] `search` 가 수식(Equation) 컨트롤의 script 텍스트를 검색 대상에서
+    /// 빠뜨리던 버그 회귀 테스트. 실제 표본(`samples/exam_math.hwp`)의 수식에는
+    /// `lim` 이 포함돼 있는데도 이전 코드는 matchCount=0 을 반환했다.
+    #[test]
+    fn search_all_text_finds_equation_script() {
+        let data = std::fs::read("samples/exam_math.hwp").expect("샘플 파일 읽기 실패");
+        let doc = DocumentCore::from_bytes(&data).expect("샘플 파일 파싱 실패");
+        let json = doc
+            .search_all_text_native("lim", true, true)
+            .expect("검색 실패");
+        assert!(
+            json.contains("\"charOffset\""),
+            "수식 스크립트 내 'lim' 매치를 찾지 못함: {json}"
+        );
+        assert_ne!(json, "[]", "수식 스크립트 내 'lim' 매치가 비어있음");
+        assert!(
+            json.contains("\"equationControl\""),
+            "수식 매치는 일반 셀 텍스트와 구분되는 주소를 제공해야 함: {json}"
+        );
+    }
+
+    #[test]
+    fn replace_all_updates_equation_scripts_and_reports_actual_count() {
+        let data = std::fs::read("samples/exam_math.hwp").expect("샘플 파일 읽기 실패");
+        let mut doc = DocumentCore::from_bytes(&data).expect("샘플 파일 파싱 실패");
+        let before: serde_json::Value = serde_json::from_str(
+            &doc.search_all_text_native("lim", true, true)
+                .expect("수식 검색 실패"),
+        )
+        .expect("수식 검색 JSON 파싱 실패");
+        let expected = before.as_array().expect("검색 결과 배열").len();
+        assert!(expected > 0, "교체 전 lim 수식이 있어야 함");
+        assert_eq!(
+            doc.grep("lim", true, None).len(),
+            expected,
+            "CLI dry-run(grep)과 실제 replace-all의 수식 검색 범위가 같아야 함"
+        );
+
+        let result: serde_json::Value = serde_json::from_str(
+            &doc.replace_all_native("lim", "LIMIT", true)
+                .expect("수식 치환 실패"),
+        )
+        .expect("수식 치환 JSON 파싱 실패");
+        assert_eq!(result["count"].as_u64(), Some(expected as u64));
+        assert_eq!(
+            doc.search_all_text_native("lim", true, true)
+                .expect("치환 후 원문 검색 실패"),
+            "[]"
+        );
+        let replaced: serde_json::Value = serde_json::from_str(
+            &doc.search_all_text_native("LIMIT", true, true)
+                .expect("치환 후 새 텍스트 검색 실패"),
+        )
+        .expect("치환 후 검색 JSON 파싱 실패");
+        assert_eq!(
+            replaced.as_array().expect("치환 후 검색 결과 배열").len(),
+            expected
+        );
     }
 }

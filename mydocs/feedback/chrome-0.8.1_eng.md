@@ -25,6 +25,7 @@ We do not collect any personal information
 A patch release focused on document rendering accuracy.
 
 [Rendering accuracy]
+• Fixed header page-number boxes and labels overflowing past the side margins to the edge of the paper.
 • WordArt (decorative title text) in legacy HWP 3.0 documents now displays correctly. Previously an image embedded inside the document was misidentified as an external file and left blank.
 • Fixed holes inside shapes being filled in instead of left open.
 • Fixed paragraph borders set to "no line" being drawn as solid lines. Side rules on shaded boxes are corrected as well.
