@@ -1171,6 +1171,7 @@ impl LayoutEngine {
                                         color_str,
                                         color: eq.color,
                                         font_size: font_size_px,
+                                        script: eq.script.clone(),
                                         section_index: Some(section_index),
                                         para_index: Some(para_index),
                                         control_index: Some(ctrl_idx),

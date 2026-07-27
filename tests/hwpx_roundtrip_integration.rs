@@ -729,17 +729,73 @@ fn auto_nums(
     doc: &rhwp::model::document::Document,
 ) -> Vec<(u16, rhwp::model::control::AutoNumberType, u8)> {
     use rhwp::model::control::Control;
-    let mut v = Vec::new();
-    for s in &doc.sections {
-        for p in &s.paragraphs {
-            for c in &p.controls {
-                if let Control::AutoNumber(an) = c {
-                    v.push((an.number, an.number_type, an.format));
+
+    fn collect(
+        paragraphs: &[rhwp::model::paragraph::Paragraph],
+        output: &mut Vec<(u16, rhwp::model::control::AutoNumberType, u8)>,
+    ) {
+        for paragraph in paragraphs {
+            for control in &paragraph.controls {
+                match control {
+                    Control::AutoNumber(auto_number) => output.push((
+                        auto_number.number,
+                        auto_number.number_type,
+                        auto_number.format,
+                    )),
+                    Control::Header(header) => collect(&header.paragraphs, output),
+                    Control::Footer(footer) => collect(&footer.paragraphs, output),
+                    Control::Table(table) => {
+                        for cell in &table.cells {
+                            collect(&cell.paragraphs, output);
+                        }
+                    }
+                    Control::Shape(shape) => {
+                        if let Some(drawing) = shape.drawing() {
+                            if let Some(text_box) = &drawing.text_box {
+                                collect(&text_box.paragraphs, output);
+                            }
+                        }
+                    }
+                    _ => {}
                 }
             }
         }
     }
+
+    let mut v = Vec::new();
+    for section in &doc.sections {
+        collect(&section.paragraphs, &mut v);
+    }
     v
+}
+
+#[test]
+fn total_page_auto_num_preserved_on_hwp_to_hwpx_roundtrip() {
+    use rhwp::model::control::AutoNumberType;
+    use rhwp::parser::{hwpx::parse_hwpx, parse_hwp};
+    use rhwp::serializer::hwpx::serialize_hwpx;
+
+    let d1 = parse_hwp(include_bytes!("../samples/exam_eng.hwp")).expect("parse exam_eng");
+    let total_pages_before: Vec<_> = auto_nums(&d1)
+        .into_iter()
+        .filter(|(_, number_type, _)| *number_type == AutoNumberType::TotalPage)
+        .collect();
+    assert!(
+        !total_pages_before.is_empty(),
+        "exam_eng.hwp fixture must contain AutoNumber(TotalPage)"
+    );
+
+    let out = serialize_hwpx(&d1).expect("serialize exam_eng as HWPX");
+    let d2 = parse_hwpx(&out).expect("reparse serialized HWPX");
+    let total_pages_after: Vec<_> = auto_nums(&d2)
+        .into_iter()
+        .filter(|(_, number_type, _)| *number_type == AutoNumberType::TotalPage)
+        .collect();
+
+    assert_eq!(
+        total_pages_after, total_pages_before,
+        "HWPX 왕복에서 TOTAL_PAGE numType과 번호 형식이 보존돼야 한다"
+    );
 }
 
 #[test]
