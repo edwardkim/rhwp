@@ -4,7 +4,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 기준 파일:
 
-- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.8.1)
+- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.8.2)
 - `rhwp-studio/package.json` / `rhwp-studio/package-lock.json`
 - `rhwp-chrome/package.json` / `rhwp-chrome/package-lock.json`
 - `rhwp-firefox/package.json` / `rhwp-firefox/package-lock.json`

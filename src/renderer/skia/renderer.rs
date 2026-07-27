@@ -3008,6 +3008,7 @@ mod tests {
             denom: Box::new(EqNode::Text("b".to_string())),
         });
         let equation = EquationNode {
+            script: String::new(),
             svg_content: String::new(),
             layout_box,
             color_str: "#ff0000".to_string(),
@@ -3055,6 +3056,7 @@ mod tests {
             bottom: Box::new(EqNode::Text("b".to_string())),
         });
         let equation = EquationNode {
+            script: String::new(),
             svg_content: String::new(),
             layout_box,
             color_str: "#00aa00".to_string(),

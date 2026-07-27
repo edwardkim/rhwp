@@ -703,14 +703,17 @@ pub(crate) fn assign_auto_numbers(doc: &mut Document) {
         doc.doc_properties.equation_start_num.saturating_sub(1),
     ];
 
-    fn counter_index(t: AutoNumberType) -> usize {
+    fn counter_index(t: AutoNumberType) -> Option<usize> {
         match t {
-            AutoNumberType::Page => 0,
-            AutoNumberType::Footnote => 1,
-            AutoNumberType::Endnote => 2,
-            AutoNumberType::Picture => 3,
-            AutoNumberType::Table => 4,
-            AutoNumberType::Equation => 5,
+            AutoNumberType::Page => Some(0),
+            AutoNumberType::Footnote => Some(1),
+            AutoNumberType::Endnote => Some(2),
+            AutoNumberType::Picture => Some(3),
+            AutoNumberType::Table => Some(4),
+            AutoNumberType::Equation => Some(5),
+            // 총 쪽수는 페이지네이션이 끝난 뒤 결정되는 표시값이다. 일반 자동번호
+            // 카운터를 증가시키거나 NewNumber로 재설정할 대상이 아니다.
+            AutoNumberType::TotalPage => None,
         }
     }
 
@@ -741,14 +744,14 @@ pub(crate) fn assign_auto_numbers(doc: &mut Document) {
 fn assign_auto_numbers_in_controls(
     controls: &mut [crate::model::control::Control],
     counters: &mut [u16; 6],
-    counter_index: fn(crate::model::control::AutoNumberType) -> usize,
+    counter_index: fn(crate::model::control::AutoNumberType) -> Option<usize>,
 ) {
     use crate::model::control::Control;
 
     fn assign_caption_auto_numbers(
         caption: &mut Option<crate::model::shape::Caption>,
         counters: &mut [u16; 6],
-        counter_index: fn(crate::model::control::AutoNumberType) -> usize,
+        counter_index: fn(crate::model::control::AutoNumberType) -> Option<usize>,
     ) {
         if let Some(caption) = caption {
             for para in &mut caption.paragraphs {
@@ -760,7 +763,7 @@ fn assign_auto_numbers_in_controls(
     fn assign_text_box_auto_numbers(
         text_box: &mut Option<crate::model::shape::TextBox>,
         counters: &mut [u16; 6],
-        counter_index: fn(crate::model::control::AutoNumberType) -> usize,
+        counter_index: fn(crate::model::control::AutoNumberType) -> Option<usize>,
     ) {
         if let Some(text_box) = text_box {
             for para in &mut text_box.paragraphs {
@@ -772,10 +775,11 @@ fn assign_auto_numbers_in_controls(
     for ctrl in controls.iter_mut() {
         match ctrl {
             Control::AutoNumber(an) => {
-                let idx = counter_index(an.number_type);
-                counters[idx] += 1;
-                an.assigned_number = counters[idx];
-                an.number = counters[idx];
+                if let Some(idx) = counter_index(an.number_type) {
+                    counters[idx] += 1;
+                    an.assigned_number = counters[idx];
+                    an.number = counters[idx];
+                }
             }
             Control::Table(table) => {
                 // 표 내부 셀의 문단도 처리
@@ -932,8 +936,9 @@ fn assign_auto_numbers_in_controls(
                 }
             }
             Control::NewNumber(nn) => {
-                let idx = counter_index(nn.number_type);
-                counters[idx] = nn.number.saturating_sub(1);
+                if let Some(idx) = counter_index(nn.number_type) {
+                    counters[idx] = nn.number.saturating_sub(1);
+                }
             }
             _ => {}
         }
@@ -1472,6 +1477,112 @@ fn load_bin_data_content(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn document_with_number_controls(controls: Vec<crate::model::control::Control>) -> Document {
+        let mut paragraph = crate::model::paragraph::Paragraph::default();
+        paragraph.controls = controls;
+
+        let mut section = crate::model::document::Section::default();
+        section.paragraphs.push(paragraph);
+
+        let mut document = Document::default();
+        document.doc_properties.page_start_num = 1;
+        document.sections.push(section);
+        document
+    }
+
+    fn auto_number_values(
+        document: &Document,
+    ) -> Vec<(crate::model::control::AutoNumberType, u16, u16)> {
+        use crate::model::control::Control;
+
+        document.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .filter_map(|control| match control {
+                Control::AutoNumber(auto_number) => Some((
+                    auto_number.number_type,
+                    auto_number.number,
+                    auto_number.assigned_number,
+                )),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn total_page_auto_number_does_not_advance_page_counter() {
+        use crate::model::control::{AutoNumber, AutoNumberType, Control};
+
+        let mut document = document_with_number_controls(vec![
+            Control::AutoNumber(AutoNumber {
+                number_type: AutoNumberType::Page,
+                ..Default::default()
+            }),
+            Control::AutoNumber(AutoNumber {
+                number_type: AutoNumberType::TotalPage,
+                number: 8,
+                assigned_number: 8,
+                ..Default::default()
+            }),
+            Control::AutoNumber(AutoNumber {
+                number_type: AutoNumberType::Page,
+                ..Default::default()
+            }),
+        ]);
+
+        assign_auto_numbers(&mut document);
+
+        assert_eq!(
+            auto_number_values(&document),
+            vec![
+                (AutoNumberType::Page, 1, 1),
+                (AutoNumberType::TotalPage, 8, 8),
+                (AutoNumberType::Page, 2, 2),
+            ],
+            "TotalPage 표시값은 보존되고 뒤 Page 번호는 연속이어야 한다"
+        );
+    }
+
+    #[test]
+    fn total_page_new_number_does_not_reset_page_counter() {
+        use crate::model::control::{AutoNumber, AutoNumberType, Control, NewNumber};
+
+        let mut document = document_with_number_controls(vec![
+            Control::AutoNumber(AutoNumber {
+                number_type: AutoNumberType::Page,
+                ..Default::default()
+            }),
+            Control::NewNumber(NewNumber {
+                number_type: AutoNumberType::TotalPage,
+                number: 99,
+            }),
+            Control::AutoNumber(AutoNumber {
+                number_type: AutoNumberType::Page,
+                ..Default::default()
+            }),
+            Control::NewNumber(NewNumber {
+                number_type: AutoNumberType::Page,
+                number: 10,
+            }),
+            Control::AutoNumber(AutoNumber {
+                number_type: AutoNumberType::Page,
+                ..Default::default()
+            }),
+        ]);
+
+        assign_auto_numbers(&mut document);
+
+        assert_eq!(
+            auto_number_values(&document),
+            vec![
+                (AutoNumberType::Page, 1, 1),
+                (AutoNumberType::Page, 2, 2),
+                (AutoNumberType::Page, 10, 10),
+            ],
+            "NewNumber(TotalPage)는 Page 카운터에 영향이 없고 NewNumber(Page)는 유지돼야 한다"
+        );
+    }
 
     /// [#1880 v2] HWP3-origin 비율 휴리스틱 대상 문서(문단>50, 저-스타일 비율)
     /// 를 합성해, HWPX-변환본 마커(is_hwpx_variant) 유무에 따라 margin_bottom

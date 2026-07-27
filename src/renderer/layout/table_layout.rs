@@ -3435,6 +3435,7 @@ impl LayoutEngine {
                                     layout_box,
                                     color_str,
                                     color: eq.color,
+                                    script: eq.script.clone(),
                                     font_size: font_size_px,
                                     section_index: Some(section_index),
                                     para_index: table_meta.map(|(pi, _)| pi),
@@ -4001,6 +4002,28 @@ impl LayoutEngine {
                     }) {
                         if let Some(comp) = composed_paras.get_mut(cpi) {
                             self.substitute_page_auto_numbers_in_composed(para, comp, current_pn);
+                        }
+                    }
+                }
+            }
+
+            // AutoNumber(TotalPage) 치환: 셀 내 총쪽수 필드를 문서 전체 쪽수로 변환.
+            // exam_eng.hwp 같은 시험지의 꼬리말 쪽번호 상자는 현재쪽/총쪽수 두 atno를
+            // 같은 셀 안에 서로 다른 문단으로 둔다 — Page만 치환하면 총쪽수 자리에도
+            // 현재 쪽번호가 그려진다 (Task: 꼬리말 총쪽수 필드 미치환 버그).
+            let total_pages = self.total_pages.get();
+            if total_pages > 0 {
+                for (cpi, para) in cell.paragraphs.iter().enumerate() {
+                    if para.controls.iter().any(|c| {
+                        matches!(c, Control::AutoNumber(an)
+                            if an.number_type == crate::model::control::AutoNumberType::TotalPage)
+                    }) {
+                        if let Some(comp) = composed_paras.get_mut(cpi) {
+                            self.substitute_total_page_auto_numbers_in_composed(
+                                para,
+                                comp,
+                                total_pages,
+                            );
                         }
                     }
                 }
