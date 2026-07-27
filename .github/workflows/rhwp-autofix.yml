@@ -64,6 +64,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MODE_INPUT: ${{ inputs.mode || 'auto' }}
+          MAX_INPUT: ${{ inputs.max_open_prs || '' }}
         run: |
           set -euo pipefail
 
@@ -95,7 +96,18 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-          echo "proceed=true" >> "$GITHUB_OUTPUT"
+          # PR 큐 상한 — 내 열린 PR 이 상한 이상이면 이번 사이클은 통째로 쉰다.
+          # (메인테이너 큐 존중 + NVIDIA 크레딧 절약. 종전에는 주석뿐 미구현이었다.)
+          CAP="${MAX_INPUT:-}"
+          CAP="${CAP:-$MAX_OPEN_PRS}"
+          OPEN=$(gh api "search/issues?q=repo:${UPSTREAM}+author:${{ github.repository_owner }}+type:pr+state:open" --jq '.total_count')
+          echo "upstream 열린 PR: ${OPEN}/${CAP}"
+          if [ "$OPEN" -ge "$CAP" ]; then
+            echo "::notice::열린 PR ${OPEN}건 — 상한(${CAP}) 도달. 이번 사이클은 쉰다."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          fi
 
   # ───────────────────────────────────────────────────────────
   # 2) 탐색 → 기계식 게이트 → (통과 시에만) 이슈 + PR
@@ -104,7 +116,8 @@ jobs:
     needs: guard
     if: needs.guard.outputs.proceed == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # 발견 루프(최대 5회, 55분 예산) + 제출 단계 여유
+    timeout-minutes: 120
     permissions:
       contents: write   # 포크(자기 저장소)에 작업 브랜치를 push 하기 위해
     steps:
@@ -225,68 +238,18 @@ jobs:
           python -m pip install --quiet aider-chat
           aider --version
 
-      # ── 1층: 오라클 탐지 (AI 없음, 오탐 0) ────────────────────────
-      # 저장소 CLI 의 종료코드 계약(ir-diff exit 3, convert --verify exit 3/4 …)으로
-      # '조용히 틀린 결과'를 찾는다. 크래시가 없어도 결함이 잡힌다.
-      - name: 오라클 탐지
-        id: detect
-        working-directory: work
-        run: |
-          set -uo pipefail
-          git config user.name  "${{ github.repository_owner }}"
-          git config user.email "${{ github.repository_owner }}@users.noreply.github.com"
-          chmod +x ../bot/.github/autofix/detect.sh
-          ../bot/.github/autofix/detect.sh "$PWD" "${{ github.run_number }}" 2>&1 | tee ../detect.log
-          KIND=$(grep -oE 'DETECT_KIND=[A-Za-z-]+' ../detect.log | tail -1 | cut -d= -f2)
-          echo "kind=${KIND:-NONE}" >> "$GITHUB_OUTPUT"
-          echo "탐지 결과: ${KIND:-NONE}"
-
-      # ── 2층: 수정 (오라클이 찾은 건은 '고치기'만, 못 찾았으면 AI 가 '찾기') ──
-      - name: 확정 결함 수정
-        id: fix
-        if: ${{ steps.nim.outputs.ok == 'true' && steps.detect.outputs.kind != 'NONE' }}
+      # ── 발견 루프: [오라클 탐지 → (수정|탐색) → 게이트 → 반박] 전부 통과할 때까지 ──
+      # 이전에는 사이클당 1회 시도하고 실패하면 조용히 폐기했다. 이제는 한 run 안에서
+      # 시도마다 회전 창·표적을 바꿔 최대 5회(또는 55분) 재시도한다. '무조건 PR' 은
+      # 기준 완화가 아니라 재시도로 달성한다 — 게이트·반박 기준은 그대로다.
+      - name: 발견 루프 (오라클→수정/탐색→게이트→반박, 최대 5회)
+        id: loop
+        if: steps.nim.outputs.ok == 'true'
         working-directory: work
         env:
           OPENAI_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
           OPENAI_API_BASE: https://integrate.api.nvidia.com/v1
-          MODEL: ${{ steps.nim.outputs.model }}
-        run: |
-          set -uo pipefail
-          # run #10 사고: 모델이 유일한 턴을 "cat FINDING.md 하겠다"는 말로 소진하고 끝나
-          # 사이클이 통째로 버려졌다. 읽을 파일은 전부 컨텍스트로 직접 주고(--read + 본문
-          # 인라인), 산출물(AUTOFIX_RESULT.md)이 나올 때까지 최대 3턴 이어간다.
-          READS=(--read FINDING.md)
-          [ -f AGENTS.md ] && READS+=(--read AGENTS.md)
-          [ -f CONTRIBUTING.md ] && READS+=(--read CONTRIBUTING.md)
-          {
-            cat ../bot/.github/autofix/fix-prompt.md
-            printf '\n---\n\n## FINDING.md 전문 (파일을 다시 읽을 필요 없다 — 아래가 전부다)\n\n'
-            cat FINDING.md
-          } > /tmp/fix-msg.md
-
-          run_aider() {
-            aider --model "openai/${MODEL}" \
-              --yes-always --no-auto-commits --no-analytics --no-gitignore \
-              --no-show-model-warnings --map-tokens 1024 --edit-format diff \
-              "${READS[@]}" "$@" 2>&1 | tee -a ../fix.log || true
-          }
-
-          : > ../fix.log
-          run_aider --message "$(cat /tmp/fix-msg.md)"
-          for TURN in 2 3; do
-            [ -f AUTOFIX_RESULT.md ] && break
-            echo "--- ${TURN}턴: AUTOFIX_RESULT.md 미생성 — 대화를 복원해 이어간다 ---" | tee -a ../fix.log
-            run_aider --restore-chat-history \
-              --message "아직 루트에 AUTOFIX_RESULT.md 가 없다. 지시서의 남은 단계(재현 → red 회귀 테스트 작성 → src/ 최소 수정 → AUTOFIX_RESULT.md 작성)를 지금 끝내라. 포기하는 경우에도 status: NO-FINDING 으로 AUTOFIX_RESULT.md 는 반드시 남겨라."
-          done
-
-      - name: 탐색 실행
-        id: hunt
-        if: ${{ steps.nim.outputs.ok == 'true' && steps.detect.outputs.kind == 'NONE' }}
-        working-directory: work
-        env:
-          OPENAI_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
-          OPENAI_API_BASE: https://integrate.api.nvidia.com/v1
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
           MODEL: ${{ steps.nim.outputs.model }}
           HUNT_MODE: ${{ needs.guard.outputs.hunt_mode }}
           HUNT_RANGE: ${{ needs.guard.outputs.hunt_range }}
@@ -294,129 +257,20 @@ jobs:
           HUNT_EXCLUDE: ${{ needs.guard.outputs.exclude }}
         run: |
           set -uo pipefail
-          # 모델은 셸 환경변수를 볼 수 없다 — HUNT_* 값을 메시지 본문에 직접 인라인한다.
-          # 규약 문서도 --read 로 컨텍스트에 실어 '읽으러 가는' 턴 낭비를 없앤다.
-          READS=()
-          [ -f AGENTS.md ] && READS+=(--read AGENTS.md)
-          [ -f CONTRIBUTING.md ] && READS+=(--read CONTRIBUTING.md)
-          {
-            cat ../bot/.github/autofix/hunt-prompt.md
-            printf '\n---\n\n## 이번 사이클 파라미터 (환경변수를 조회할 필요 없다 — 아래가 그 값이다)\n\n'
-            printf -- '- HUNT_MODE: %s\n- HUNT_RANGE: %s\n- HUNT_TARGET: %s\n\n' \
-              "${HUNT_MODE:-}" "${HUNT_RANGE:-}" "${HUNT_TARGET:-}"
-            printf '### HUNT_EXCLUDE — 이미 올린 PR·이슈 제목 (겹치면 즉시 폐기)\n\n%s\n' \
-              "${HUNT_EXCLUDE:-<없음>}"
-          } > /tmp/hunt-msg.md
-
-          run_aider() {
-            aider --model "openai/${MODEL}" \
-              --yes-always --no-auto-commits --no-analytics --no-gitignore \
-              --no-show-model-warnings --map-tokens 1024 --edit-format diff \
-              "${READS[@]}" "$@" 2>&1 | tee -a ../hunt.log || true
-          }
-
-          : > ../hunt.log
-          run_aider --message "$(cat /tmp/hunt-msg.md)"
-          for TURN in 2 3; do
-            [ -f AUTOFIX_RESULT.md ] && break
-            echo "--- ${TURN}턴: AUTOFIX_RESULT.md 미생성 — 대화를 복원해 이어간다 ---" | tee -a ../hunt.log
-            run_aider --restore-chat-history \
-              --message "아직 루트에 AUTOFIX_RESULT.md 가 없다. 지시서의 남은 단계(탐색 → red 테스트 → src/ 최소 수정 → AUTOFIX_RESULT.md 작성)를 지금 끝내라. 제출 기준에 못 미치면 status: NO-FINDING 으로 AUTOFIX_RESULT.md 를 남겨라."
-          done
-
-          if [ ! -f AUTOFIX_RESULT.md ]; then
-            echo "::warning::AUTOFIX_RESULT.md 없음 — 탐색이 결론을 못 냄. 사이클 폐기."
-            echo "status=NO-FINDING" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          STATUS=$(awk -F': ' '/^status:/{print $2; exit}' AUTOFIX_RESULT.md | tr -d ' \r')
-          echo "status=${STATUS}" >> "$GITHUB_OUTPUT"
-          echo "탐색 결과: ${STATUS}"
-
-          if [ "$STATUS" = "FOUND" ]; then
-            echo "slug=$(awk -F': ' '/^slug:/{print $2; exit}'  AUTOFIX_RESULT.md | tr -d ' \r')" >> "$GITHUB_OUTPUT"
-            {
-              echo "title<<EOF"
-              awk -F': ' '/^title:/{sub(/^title: /,""); print; exit}' AUTOFIX_RESULT.md
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
-          fi
-
-      # 오라클 경로와 AI 탐색 경로 어느 쪽이든 AUTOFIX_RESULT.md 를 남긴다 — 여기서 통합한다.
-      - name: 결과 취합
-        id: result
-        working-directory: work
-        run: |
-          set -uo pipefail
-          # aider 부산물(.aider.chat.history.md, 태그 캐시 등)을 여기서 지운다.
-          # 남겨두면 게이트의 '허용 범위 밖 변경(STRAY)' 검사에 걸려 진짜 수정도 탈락한다.
-          rm -rf .aider*
-          if [ ! -f AUTOFIX_RESULT.md ]; then
-            echo "status=NO-FINDING" >> "$GITHUB_OUTPUT"
-            echo "산출물 없음 — 이번 사이클 폐기."
-            exit 0
-          fi
-          STATUS=$(awk -F': ' '/^status:/{print $2; exit}' AUTOFIX_RESULT.md | tr -d ' \r')
-          echo "status=${STATUS}" >> "$GITHUB_OUTPUT"
-          echo "경로=${{ steps.detect.outputs.kind }} / 결과=${STATUS}"
-          if [ "$STATUS" = "FOUND" ]; then
-            echo "slug=$(awk -F': ' '/^slug:/{print $2; exit}' AUTOFIX_RESULT.md | tr -d ' \r')" >> "$GITHUB_OUTPUT"
-            {
-              echo "title<<EOF"
-              awk '/^title:/{sub(/^title: /,""); print; exit}' AUTOFIX_RESULT.md
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
-          fi
+          git config user.name  "${{ github.repository_owner }}"
+          git config user.email "${{ github.repository_owner }}@users.noreply.github.com"
+          chmod +x ../bot/.github/autofix/detect.sh \
+                   ../bot/.github/autofix/verify-gate.sh \
+                   ../bot/.github/autofix/cycle-loop.sh
+          ../bot/.github/autofix/cycle-loop.sh "$GITHUB_WORKSPACE/bot" "$PWD" "${{ github.run_number }}"
 
       - name: 결론 없음 — 조용히 종료
-        if: steps.result.outputs.status != 'FOUND'
+        if: steps.loop.outputs.status != 'FOUND'
         run: |
-          echo "::notice::이번 사이클은 제출 기준을 넘는 결함을 찾지 못했다. 정상 동작이다."
-
-      # ─── 오탐 차단의 핵심. 여기를 통과하지 못하면 upstream 에 아무것도 남지 않는다 ───
-      - name: 기계식 검증 게이트 (red→green + 회귀 0 + CI 3종)
-        if: steps.result.outputs.status == 'FOUND'
-        run: |
-          chmod +x bot/.github/autofix/verify-gate.sh
-          bot/.github/autofix/verify-gate.sh "$GITHUB_WORKSPACE/work"
-
-      # 기계식 게이트를 통과해도, 독립된 심사관이 반박을 시도한다.
-      # "기대값 근거가 추측", "테스트가 동어반복", "원인이 아니라 증상을 덮음",
-      # "원래 의도된 동작" 중 하나라도 걸리면 제출하지 않는다.
-      - name: 반박 심사 (독립 세션)
-        if: steps.result.outputs.status == 'FOUND'
-        working-directory: work
-        env:
-          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
-          MODEL: ${{ steps.nim.outputs.model }}
-        run: |
-          set -uo pipefail
-          # 반박은 '판정'이므로 편집 에이전트를 쓰지 않는다 — 요청 1회로 끝내고,
-          # 실수로 파일을 건드릴 여지도 없앤다.
-          jq -n --arg m "$MODEL" \
-                --arg sys "$(cat ../bot/.github/autofix/refute-prompt.md)" \
-                --arg usr "$(printf '## AUTOFIX_RESULT.md\n%s\n\n## git diff\n%s\n' \
-                              "$(cat AUTOFIX_RESULT.md)" "$(git diff | head -c 60000)")" \
-            '{model:$m, temperature:0, max_tokens:1200,
-              messages:[{role:"system",content:$sys},{role:"user",content:$usr}]}' > /tmp/refute.json
-
-          curl -sS https://integrate.api.nvidia.com/v1/chat/completions \
-            -H "Authorization: Bearer ${NVIDIA_API_KEY}" \
-            -H "Content-Type: application/json" \
-            -d @/tmp/refute.json | tee /tmp/refute_raw.json \
-            | jq -r '.choices[0].message.content // "판정 없음"' | tee ../refute.log
-
-          VERDICT=$(grep -oE 'VERDICT: (REAL|REFUTED)' ../refute.log | tail -1 || true)
-          echo "판정: ${VERDICT:-<판정 없음>}"
-          if [ "$VERDICT" != "VERDICT: REAL" ]; then
-            grep -A2 'VERDICT:' ../refute.log | tail -5 || true
-            echo "::warning::반박 심사에서 살아남지 못했다. 제출하지 않는다."
-            exit 1
-          fi
-          echo "반박 심사 통과."
+          echo "::notice::${{ steps.loop.outputs.attempts || '0' }}회 시도에서 제출 기준(게이트+반박)을 넘는 결함이 확정되지 않았다. 기준은 낮추지 않는다."
 
       - name: 이슈 등록 (게이트 통과 후에만)
-        if: ${{ steps.result.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
+        if: ${{ steps.loop.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
         id: issue
         working-directory: work
         env:
@@ -428,18 +282,18 @@ jobs:
           printf '\n---\n<sub>자동 탐색으로 발견하고 red→green 회귀 테스트로 검증한 뒤 등록했습니다.</sub>\n' >> /tmp/issue_body.md
 
           URL=$(gh issue create --repo "$UPSTREAM" \
-            --title "${{ steps.result.outputs.title }}" \
+            --title "${{ steps.loop.outputs.title }}" \
             --body-file /tmp/issue_body.md)
           N="${URL##*/}"
           echo "number=${N}" >> "$GITHUB_OUTPUT"
           echo "생성된 이슈: #${N}"
 
       - name: 테스트 파일 번호 확정 + 처리결과 문서
-        if: ${{ steps.result.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
+        if: ${{ steps.loop.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
         working-directory: work
         env:
           N: ${{ steps.issue.outputs.number }}
-          SLUG: ${{ steps.result.outputs.slug }}
+          SLUG: ${{ steps.loop.outputs.slug }}
         run: |
           set -euo pipefail
           mv "tests/issue_TBD_${SLUG}.rs" "tests/issue_${N}_${SLUG}.rs"
@@ -450,7 +304,7 @@ jobs:
 
           mkdir -p mydocs/report
           {
-            echo "# ${{ steps.result.outputs.title }}"
+            echo "# ${{ steps.loop.outputs.title }}"
             echo
             echo "Issue: #${N}"
             echo "브랜치: \`fix/issue-${N}\`"
@@ -461,7 +315,7 @@ jobs:
           rm -f AUTOFIX_RESULT.md FINDING.md
 
       - name: 커밋 + fork 에 push
-        if: ${{ steps.result.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
+        if: ${{ steps.loop.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
         working-directory: work
         env:
           N: ${{ steps.issue.outputs.number }}
@@ -472,11 +326,11 @@ jobs:
           git switch -c "fix/issue-${N}"
           git remote add fork "https://x-access-token:${GH_TOKEN}@github.com/${FORK}.git"
           git add -A
-          git commit -m "fix: ${{ steps.result.outputs.title }} (#${N})"
+          git commit -m "fix: ${{ steps.loop.outputs.title }} (#${N})"
           git push fork "fix/issue-${N}"
 
       - name: upstream 에 PR 생성
-        if: ${{ steps.result.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
+        if: ${{ steps.loop.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
         working-directory: work
         env:
           N: ${{ steps.issue.outputs.number }}
@@ -505,7 +359,7 @@ jobs:
           gh pr create --repo "$UPSTREAM" \
             --base devel \
             --head "${{ github.repository_owner }}:fix/issue-${N}" \
-            --title "fix: ${{ steps.result.outputs.title }} (#${N})" \
+            --title "fix: ${{ steps.loop.outputs.title }} (#${N})" \
             --body-file /tmp/pr_body.md
 
       - name: 실행 로그 보관
@@ -517,6 +371,7 @@ jobs:
             detect.log
             hunt.log
             fix.log
+            gate.log
             refute.log
             work/FINDING.md
             work/AUTOFIX_RESULT.md
