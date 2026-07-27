@@ -42,6 +42,15 @@ echo "기타 변경  : ${STRAY:-<없음>}"
 TEST_COUNT=$(echo "$NEW_TESTS" | wc -l)
 [ "$TEST_COUNT" -eq 1 ] || FAIL "신규 테스트가 ${TEST_COUNT}개다. PR 1건 = 버그 1건 = 테스트 1개."
 
+# 기존 테스트 수정 금지 — 기대값을 현재 동작에 맞춰 고쳐 버그를 감추는 짓을 차단한다.
+TOUCHED_TESTS=$(git diff --name-only -- tests/ | grep -v '^tests/issue_TBD_' || true)
+[ -z "$TOUCHED_TESTS" ] || FAIL "기존 테스트를 건드렸다. 기대값 변조는 수정이 아니다: $TOUCHED_TESTS"
+
+# 수정 규모 상한 — 큰 diff 는 '진짜 고쳤는지' 검증이 불가능해진다. 좁은 수정만 받는다.
+DIFF_LINES=$(git diff --numstat -- src/ | awk '{a+=$1; d+=$2} END {print a+d+0}')
+echo "src/ 변경 라인: ${DIFF_LINES}"
+[ "$DIFF_LINES" -le 120 ] || FAIL "src/ 변경이 ${DIFF_LINES}줄이다(상한 120). 범위가 넓은 수정은 무인 검증 대상이 아니다."
+
 TEST_FILE="$NEW_TESTS"
 TEST_TARGET="$(basename "$TEST_FILE" .rs)"
 echo "검증 대상 테스트: $TEST_TARGET"
@@ -78,6 +87,18 @@ STEP "2. GREEN 증명 — 수정 적용 상태에서 테스트 통과 확인"
 cargo test --profile "$TEST_PROFILE" --test "$TEST_TARGET" 2>&1 | tail -40
 [ "${PIPESTATUS[0]}" -eq 0 ] || FAIL "수정을 적용해도 테스트가 통과하지 않는다."
 echo "GREEN 확인 — red→green 성립."
+END
+
+# ─────────────────────────────────────────────────────────────
+# 2b. 결정성 — 같은 테스트를 반복해도 항상 같은 결과여야 한다.
+#     흔들리는(flaky) 테스트는 '버그를 찾았다'는 증명이 되지 못한다.
+# ─────────────────────────────────────────────────────────────
+STEP "2b. 결정성 확인 — 신규 테스트 3회 반복"
+for i in 1 2 3; do
+  cargo test --profile "$TEST_PROFILE" --test "$TEST_TARGET" >/dev/null 2>&1 \
+    || FAIL "반복 ${i}회차에서 실패. 비결정적 테스트는 재현 증명으로 인정하지 않는다."
+  echo "  ${i}/3 통과"
+done
 END
 
 # ─────────────────────────────────────────────────────────────

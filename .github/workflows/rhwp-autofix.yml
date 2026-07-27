@@ -56,25 +56,7 @@ jobs:
       hunt_target: ${{ steps.decide.outputs.hunt_target }}
       exclude: ${{ steps.decide.outputs.exclude }}
     steps:
-      - name: PR 큐 상한 확인
-        id: quota
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CAP_OVERRIDE: ${{ inputs.max_open_prs }}
-        run: |
-          set -euo pipefail
-          CAP="${CAP_OVERRIDE:-$MAX_OPEN_PRS}"
-          OPEN=$(gh api "search/issues?q=repo:${UPSTREAM}+is:pr+is:open+author:${{ github.repository_owner }}" --jq '.total_count')
-          echo "내 열린 PR: ${OPEN} / 상한 ${CAP}"
-          if [ "$OPEN" -ge "$CAP" ]; then
-            echo "over=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::열린 PR ${OPEN}건으로 상한 도달 — 이번 사이클 건너뜀. 기존 PR 이 머지되면 자동 재개."
-          else
-            echo "over=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: upstream devel 최신 상태 조회
-        if: steps.quota.outputs.over == 'false'
         id: decide
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -101,11 +83,12 @@ jobs:
             echo "hunt_target=" >> "$GITHUB_OUTPUT"
           fi
 
-          # 중복 제출 방지 — 내가 이미 올려둔 PR/이슈 제목을 모델에게 넘긴다
+          # 중복·재탕 방지 — 열린 것뿐 아니라 '닫힌' PR/이슈 제목도 넘긴다.
+          # 이미 거절당한 제안을 다시 올리는 것은 오탐과 동급의 사고다.
           {
             echo "exclude<<EOF"
-            gh api "search/issues?q=repo:${UPSTREAM}+is:open+author:${{ github.repository_owner }}" \
-              --jq '.items[] | "- " + .title'
+            gh api "search/issues?q=repo:${UPSTREAM}+author:${{ github.repository_owner }}&sort=updated&per_page=100" \
+              --jq '.items[] | "- [" + .state + "] " + .title'
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -218,6 +201,30 @@ jobs:
         run: |
           chmod +x bot/.github/autofix/verify-gate.sh
           bot/.github/autofix/verify-gate.sh "$GITHUB_WORKSPACE/work"
+
+      # 기계식 게이트를 통과해도, 독립된 심사관이 반박을 시도한다.
+      # "기대값 근거가 추측", "테스트가 동어반복", "원인이 아니라 증상을 덮음",
+      # "원래 의도된 동작" 중 하나라도 걸리면 제출하지 않는다.
+      - name: 반박 심사 (독립 세션)
+        if: steps.hunt.outputs.status == 'FOUND'
+        working-directory: work
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -euo pipefail
+          claude -p "$(cat ../bot/.github/autofix/refute-prompt.md)" \
+            --max-turns 30 \
+            --dangerously-skip-permissions \
+            2>&1 | tee ../refute.log || true
+
+          VERDICT=$(grep -oE 'VERDICT: (REAL|REFUTED)' ../refute.log | tail -1 || true)
+          echo "판정: ${VERDICT:-<판정 없음>}"
+          if [ "$VERDICT" != "VERDICT: REAL" ]; then
+            grep -A2 'VERDICT:' ../refute.log | tail -5 || true
+            echo "::warning::반박 심사에서 살아남지 못했다. 제출하지 않는다."
+            exit 1
+          fi
+          echo "반박 심사 통과."
 
       - name: 이슈 등록 (게이트 통과 후에만)
         if: ${{ steps.hunt.outputs.status == 'FOUND' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' }}
