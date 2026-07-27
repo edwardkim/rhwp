@@ -6,20 +6,51 @@ This document records the major changes of the rhwp project.
 
 ## [Unreleased]
 
+## [0.8.2] — 2026-07-27
+
+> Hotfix — restores printing in the browser extensions, which had been broken
+> since v0.8.0.
+
+### Extension printing restored
+- **Fixed printing failing with "file not found" in the browser extensions
+  (Chrome, Edge, Firefox).** The print preview document (`print.html`) was not
+  included in the extension build output; it was omitted from the build copy list
+  when the print path was introduced in v0.8.0 (#3433).
+- Added a required-artifact gate to the extension builds. Previously a failed
+  asset copy only produced a warning and the build still succeeded, so the
+  omission went unnoticed. The build now fails when a runtime-required file is
+  missing.
+
+### Rendering correction
+- Wired left/right outMargin into the x-origin of TAC inline tables to match
+  Hangul character rules (#3396).
+
+### Known issues
+- The studio E2E `print-pdf-issue3126` PDF guidance modal assertions fail. The
+  print surface itself works; the failure originates outside this release's scope
+  and its root cause is not yet diagnosed (#3450).
+- The studio E2E `issue-2214` page-local repaint contract failure carries over
+  from v0.8.1; whether it is a regression remains undetermined (#3412).
+
 ## [0.8.1] — 2026-07-26
 
-> PATCH release — CLI contract consistency and HWP3 rendering corrections since
+> PATCH release — rendering corrections and CLI contract consistency since
 > v0.8.0. New features are included but are confined to the CLI tooling layer;
 > there are no public library API changes.
 
-### HWP3 rendering corrections
-- Page 1 WordArt now renders without a sidecar file — the embedded OLE payload
-  (pic_type=1, additional info block id=2), previously misread as an externally
-  linked image, is extracted, repackaged, and drawn from its OlePres000 WMF
-  preview. WMF POLYPOLYGON hole loss is also corrected (single path merge) (#3363).
-- Paragraph borders set to "no line" no longer render as solid lines — wiring now
-  follows Hancom's measured mapping. Shading side rules share the same root cause
-  and are corrected together (#3303).
+### Rendering corrections
+- Header objects placed on the master page (page-number boxes, labels) no longer
+  overflow past the side margins to the physical paper edge — the horizontal
+  reference area for paragraph/column-anchored objects is corrected to the body
+  text area, matching Hancom output (#3402).
+- HWP 3.0: page 1 WordArt now renders without a sidecar file — the embedded OLE
+  payload (pic_type=1, additional info block id=2), previously misread as an
+  externally linked image, is extracted, repackaged, and drawn from its OlePres000
+  WMF preview. WMF POLYPOLYGON hole loss is also corrected (single path merge)
+  (#3363).
+- HWP 3.0: paragraph borders set to "no line" no longer render as solid lines —
+  wiring now follows Hancom's measured mapping. Shading side rules share the same
+  root cause and are corrected together (#3303).
 
 ### CLI — contract consistency
 - Unified positional argument parsing across `export` commands — svg/png/pdf/

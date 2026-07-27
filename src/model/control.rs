@@ -132,6 +132,8 @@ pub enum AutoNumberType {
     Picture,
     Table,
     Equation,
+    /// 총 쪽수 (표 144 bits 0~3 값 6) — 현재 쪽번호가 아니라 문서 전체 쪽수를 표시.
+    TotalPage,
 }
 
 /// 새 번호 지정 ('nwno' 컨트롤)

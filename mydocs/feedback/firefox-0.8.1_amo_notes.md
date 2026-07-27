@@ -39,7 +39,7 @@ Unchanged from v0.8.0.
 
 Patch release. Bundled WebAssembly document engine updated v0.8.0 → v0.8.1.
 
-- Rendering accuracy: WordArt in legacy HWP 3.0 documents now renders correctly (an image embedded inside the document was previously misidentified as an external file reference and left blank); holes inside shapes are no longer filled in; paragraph borders set to "no line" are no longer drawn as solid lines.
+- Rendering accuracy: header objects on the master page no longer overflow past the side margins; WordArt in legacy HWP 3.0 documents now renders correctly (an image embedded inside the document was previously misidentified as an external file reference and left blank); holes inside shapes are no longer filled in; paragraph borders set to "no line" are no longer drawn as solid lines.
 - Editing: style creation, modification, and deletion are now recorded in the undo history and can be reverted with Ctrl+Z.
 - Extension: removed unnecessary console error output caused by a development-only fetch path running in production builds.
 - Dependencies: base64 0.22.1 → 0.23.0, snafu 0.9.1 → 0.9.2.

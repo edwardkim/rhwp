@@ -269,6 +269,66 @@ mod tests {
         }
     }
 
+    /// exam_math.hwp: 선택과목 소책자(확통/미적분/기하)마다 소책자 쪽번호가 1,2,3,4로
+    /// 재시작한다. 큰 이탤릭 모서리 쪽번호는 짝수쪽(왼쪽)에서 2쪽=2, 4쪽=4 로 보여야 한다.
+    /// 4쪽 머리말이 제목표 셀 안에 중첩 정의된 확통(p12)·기하(p20)에서 과거에는
+    /// 4 대신 2가 렌더되던 회귀를 방어한다. (미적분 p16은 최상위 머리말이라 항상 정상)
+    #[test]
+    fn test_exam_math_booklet_corner_page_number_on_fourth_page() {
+        let core = load_document("samples/exam_math.hwp")
+            .expect("samples/exam_math.hwp must load for the page-number regression test");
+
+        // 짝수(왼쪽)쪽의 바깥 모서리(가장 왼쪽)에 있는 큰 폰트(>=38px) 한 자리 숫자 = 소책자 쪽번호
+        fn corner_digit(node: &RenderNode, best: &mut Option<(f64, String)>) {
+            if let RenderNodeType::TextRun(run) = &node.node_type {
+                let t = run.text.trim();
+                if t.len() == 1
+                    && t.chars().all(|c| c.is_ascii_digit())
+                    && run.style.font_size >= 38.0
+                    && node.bbox.y < 300.0
+                {
+                    let x = node.bbox.x;
+                    if best.as_ref().map_or(true, |(bx, _)| x < *bx) {
+                        *best = Some((x, t.to_string()));
+                    }
+                }
+            }
+            for child in &node.children {
+                corner_digit(child, best);
+            }
+        }
+
+        // (0-based page_index, 기대 소책자 쪽번호)
+        // p10=확통2, p12=확통4, p14=미적2, p16=미적4, p18=기하2, p20=기하4
+        let expected = [
+            (9, "2"),
+            (11, "4"),
+            (13, "2"),
+            (15, "4"),
+            (17, "2"),
+            (19, "4"),
+        ];
+        let mut validated_pages = 0usize;
+        for (idx, want) in expected {
+            let tree = core.build_page_render_tree(idx).unwrap_or_else(|error| {
+                panic!("exam_math page index {idx} render failed: {error}")
+            });
+            let mut best = None;
+            corner_digit(&tree.root, &mut best);
+            let got = best.map(|(_, s)| s);
+            assert_eq!(
+                got.as_deref(),
+                Some(want),
+                "exam_math 페이지 인덱스 {} 모서리 소책자 쪽번호가 {:?}가 아님 (기대 {})",
+                idx,
+                got,
+                want
+            );
+            validated_pages += 1;
+        }
+        assert_eq!(validated_pages, expected.len());
+    }
+
     #[test]
     fn test_1098_hwpx_last_page_master_replaces_base_master() {
         let Some(core) = load_document("samples/hwpx/exam-kor-2p.hwpx") else {
@@ -653,6 +713,98 @@ mod tests {
             violations.is_empty(),
             "좌측 단 (가) 박스에 4면 stroke rect 가 그려짐 (cross-column 검출 실패): {:?}",
             violations
+        );
+    }
+
+    /// 바탕쪽(master page) 머리말 GSO 개체의 가로 위치 회귀
+    /// (branch pr/task-header-float-horz-margin).
+    ///
+    /// samples/21_언어_기출_편집가능본.hwp 은 매 페이지 머리말(쪽번호 상자,
+    /// "언어이해", "홀수형" 상자, 밑줄)을 바탕쪽 GSO(도형)로 그린다. 이 개체들은
+    /// horz_rel_to=Para(또는 Column) 이며, 바탕쪽에는 단(column)·문단 흐름이 없어
+    /// 가로 기준 영역은 본문 텍스트 영역이어야 한다(한컴 정합).
+    ///
+    /// 수정 전: 바탕쪽 도형 배치(`layout.rs::build_master_page`)가 col_area 로
+    /// paper_area 를 넘겨, Para-Left "8" 상자가 x=0(용지 좌단)에, Para-Right
+    /// "홀수형" 상자가 x=용지폭(용지 우단)에 붙어 좌우 여백 밖으로 튀었다.
+    /// 수정 후: 가로 기준을 본문 영역(x/width)으로 교정해 머리말 상자가 여백 안에
+    /// 놓인다.
+    ///
+    /// 검증: page 8(index 7) 렌더 SVG 에서 머리말 밴드(y<205)의 글상자 clip 이
+    /// 용지 좌/우단에 닿지 않는지 확인. 수정 전에는 min_left≈0, max_right≈용지폭.
+    #[test]
+    fn test_master_page_header_shapes_stay_within_body_margins() {
+        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
+            return;
+        };
+        // page 8 (index 7) — 머리말 GSO 가 매 페이지 반복 렌더된다.
+        let svg = core.render_page_svg_native(7).unwrap_or_default();
+        assert!(!svg.is_empty(), "페이지 8 SVG 가 비어있음");
+
+        // 용지 폭 = SVG 루트 width 속성.
+        let paper_width = {
+            let i = svg.find("width=\"").expect("svg root width 없음") + "width=\"".len();
+            let j = i + svg[i..].find('"').unwrap();
+            svg[i..j].parse::<f64>().expect("용지 폭 파싱 실패")
+        };
+        assert!(paper_width > 1000.0, "용지 폭 파싱 이상: {}", paper_width);
+
+        // 머리말 밴드(y<205)의 글상자 clip rect 수집 → (left, right).
+        let parse_attr = |attrs: &str, name: &str| -> Option<f64> {
+            let pat = format!("{}=\"", name);
+            let i = attrs.find(&pat)? + pat.len();
+            let j = i + attrs[i..].find('"')?;
+            attrs[i..j].parse::<f64>().ok()
+        };
+        let mut header_boxes: Vec<(f64, f64)> = Vec::new();
+        for chunk in svg.split("<clipPath id=\"textbox-clip-").skip(1) {
+            let Some(rect_i) = chunk.find("<rect ") else {
+                continue;
+            };
+            let attrs = &chunk[rect_i..];
+            let (x, y, w) = match (
+                parse_attr(attrs, "x"),
+                parse_attr(attrs, "y"),
+                parse_attr(attrs, "width"),
+            ) {
+                (Some(a), Some(b), Some(c)) => (a, b, c),
+                _ => continue,
+            };
+            if y < 205.0 {
+                header_boxes.push((x, x + w));
+            }
+        }
+        assert!(
+            header_boxes.len() >= 2,
+            "머리말 밴드 글상자를 찾지 못함: {:?}",
+            header_boxes
+        );
+
+        let min_left = header_boxes
+            .iter()
+            .map(|b| b.0)
+            .fold(f64::INFINITY, f64::min);
+        let max_right = header_boxes
+            .iter()
+            .map(|b| b.1)
+            .fold(f64::NEG_INFINITY, f64::max);
+
+        // 좌측(Para-Left 쪽번호 상자): 용지 좌단(x=0) 이 아니라 본문 좌여백
+        // (31mm≈117px) 안. 수정 전 min_left≈0.
+        assert!(
+            min_left > 40.0,
+            "머리말 글상자 좌단이 용지 좌단(x=0)에 붙음: min_left={} boxes={:?}",
+            min_left,
+            header_boxes
+        );
+        // 우측(Para-Right 홀수형 상자): 용지 우단(x=용지폭) 이 아니라 본문 우여백
+        // 안. 수정 전 max_right≈용지폭.
+        assert!(
+            paper_width - max_right > 40.0,
+            "머리말 글상자 우단이 용지 우단(용지폭={})에 붙음: max_right={} boxes={:?}",
+            paper_width,
+            max_right,
+            header_boxes
         );
     }
 
@@ -2381,5 +2533,61 @@ mod tests {
             "next paragraph baseline {} px — expected ~161.3 (file lineSegArray              vertical_pos=4160); ~153.3 means the TAC host line_spacing was dropped",
             y
         );
+    }
+
+    /// exam_eng.hwp 꼬리말 쪽번호 상자 "현재쪽/총쪽수" 회귀 테스트.
+    ///
+    /// HWP atno 컨트롤(표 144)의 "번호 종류" 값 6은 총 쪽수(TotalPage) 필드다.
+    /// 과거엔 파서가 이 값을 인식하지 못해 Page로 폴백했고, 렌더러도 Page 치환만
+    /// 수행해서 꼬리말 쪽번호 상자가 "현재쪽\n현재쪽" 을 표시했다
+    /// (예: 3페이지에서 "3\n3", 6페이지에서 "6\n6" — "3\n8", "6\n8" 이어야 함).
+    ///
+    /// samples/exam_eng.hwp는 총 8페이지이며 각 페이지 텍스트 말미에
+    /// "제 3 교시\n홀수형\n<현재쪽>\n<총쪽수>" 형태의 꼬리말이 들어간다.
+    #[test]
+    fn test_footer_total_page_field_distinct_from_current_page() {
+        let Some(core) = load_document("samples/exam_eng.hwp") else {
+            return;
+        };
+
+        let page_count = core.page_count();
+        assert_eq!(page_count, 8, "exam_eng.hwp는 8페이지여야 함");
+
+        for page_idx in 0..page_count {
+            let text = core
+                .extract_page_text_native(page_idx)
+                .unwrap_or_else(|e| panic!("페이지 {} 텍스트 추출 실패: {:?}", page_idx, e));
+            let trimmed = text.trim_end();
+            let last_two: Vec<&str> = trimmed
+                .rsplit('\n')
+                .take(2)
+                .collect::<Vec<_>>()
+                .into_iter()
+                .rev()
+                .collect();
+            assert_eq!(
+                last_two.len(),
+                2,
+                "페이지 {} 꼬리말 끝에서 두 줄(현재쪽/총쪽수)을 찾지 못함: {:?}",
+                page_idx,
+                trimmed
+            );
+            let current = last_two[0];
+            let total = last_two[1];
+            assert_eq!(
+                current,
+                (page_idx + 1).to_string(),
+                "페이지 {} 꼬리말 현재쪽번호가 {}이어야 함 (실제: {:?})",
+                page_idx,
+                page_idx + 1,
+                current
+            );
+            assert_eq!(
+                total, "8",
+                "페이지 {} 꼬리말 총쪽수가 8이어야 함 (실제: {:?}) — \
+                 AutoNumberType::TotalPage 미치환 시 current와 동일한 값이 찍힌다",
+                page_idx, total
+            );
+        }
     }
 }
