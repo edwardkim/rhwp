@@ -344,6 +344,22 @@ async function installTrace(page) {
       paginationDeferred: result?.paginationDeferred ?? null,
       cellFlowChanged: result?.cellFlowChanged ?? null,
     }));
+    // [#3412] #3254 가 도입한 단일 호출 치환 경로. IME 조합 갱신은 이제 delete+insert 가
+    // 아니라 이 한 번의 replace 로 처리된다 — 계측하지 않으면 흐름이 통째로 안 보인다.
+    wrap(wasm, 'replaceTextInCellDeferredPagination', 'wasm.replaceTextInCellDeferredPagination', (args) => ({
+      sectionIndex: args[0],
+      parentParaIndex: args[1],
+      controlIndex: args[2],
+      cellIndex: args[3],
+      cellParaIndex: args[4],
+      charOffset: args[5],
+      deleteCount: args[6],
+      textLength: String(args[7] ?? '').length,
+    }), (result) => ({
+      resultCharOffset: result?.charOffset ?? null,
+      paginationDeferred: result?.paginationDeferred ?? null,
+      cellFlowChanged: result?.cellFlowChanged ?? null,
+    }));
     wrap(wasm, 'deleteTextInCellDeferredPagination', 'wasm.deleteTextInCellDeferredPagination', (args) => ({
       sectionIndex: args[0],
       parentParaIndex: args[1],
@@ -362,6 +378,12 @@ async function installTrace(page) {
     wrap(wasm, 'exportHwp', 'wasm.exportHwp');
     wrap(wasm, 'exportHwpx', 'wasm.exportHwpx');
     wrap(wasm, 'renderPageSvg', 'wasm.renderPageSvg', (args) => ({ pageIndex: args[0] }));
+    // [#3412] 인쇄/PDF 경로는 b7234ed07 부터 profile 인자를 받는 변형을 쓴다.
+    // 옛 이름만 계측하면 인쇄 barrier 가 렌더 이벤트를 하나도 못 본다.
+    wrap(wasm, 'renderPageSvgWithProfile', 'wasm.renderPageSvgWithProfile', (args) => ({
+      pageIndex: args[0],
+      profile: args[1],
+    }));
     wrap(wasm, 'getCursorRectByPathNear', 'wasm.getCursorRectByPathNear', (args) => ({
       sectionIndex: args[0],
       parentParaIndex: args[1],
@@ -450,11 +472,12 @@ async function collectTrace(page) {
         refreshNow: count('CanvasView.refreshInvalidatedPageNow'),
         deferredInsert: count('wasm.insertTextInCellDeferredPagination'),
         deferredDelete: count('wasm.deleteTextInCellDeferredPagination'),
+        deferredReplace: count('wasm.replaceTextInCellDeferredPagination'),
         immediateDelete: count('wasm.deleteTextInCell'),
         pathDelete: count('wasm.deleteTextInCellByPath'),
         exportHwp: count('wasm.exportHwp'),
         exportHwpx: count('wasm.exportHwpx'),
-        renderPageSvg: count('wasm.renderPageSvg'),
+        renderPageSvg: count('wasm.renderPageSvg') + count('wasm.renderPageSvgWithProfile'),
         cursorRectNear: count('wasm.getCursorRectByPathNear'),
         cursorRect: count('wasm.getCursorRectByPath'),
         cursorRectInCell: count('wasm.getCursorRectInCell'),
@@ -1457,18 +1480,25 @@ async function runMultiUpdateImeSmoke(page, format, bytes) {
   assert.equal(snapshot.pagination.pending, true, `${format} IME deferred hold`);
 
   const trace = await collectTrace(page);
-  const deletes = trace.events.filter((event) => event.type === 'wasm.deleteTextInCellDeferredPagination');
-  assert.equal(trace.counts.deferredInsert, 3, `${format} IME deferred insert count`);
-  assert.equal(trace.counts.deferredDelete, 2, `${format} IME replacement delete count`);
+  // [#3412] #3254 이후 조합 갱신은 delete+insert 가 아니라 단일 replace 를 쓴다.
+  // 첫 갱신(삭제 0)만 insert 로 남고, 2·3번째가 replace 두 번이 된다.
+  const replacements = trace.events.filter(
+    (event) => event.type === 'wasm.replaceTextInCellDeferredPagination',
+  );
+  assert.equal(trace.counts.deferredInsert, 1, `${format} IME deferred insert count`);
+  assert.equal(trace.counts.deferredReplace, 2, `${format} IME deferred replacement count`);
+  assert.equal(trace.counts.deferredDelete, 0, `${format} IME standalone delete count`);
   assert.equal(trace.counts.immediateDelete, 0, `${format} IME synchronous flat delete count`);
   assert.equal(trace.counts.pathDelete, 0, `${format} IME path delete count`);
   assert.equal(trace.counts.cursorRectInCell, 0, `${format} IME anchor cursor lookup count`);
   assert.equal(trace.counts.prepareTextMutation, 3, `${format} IME effect consumption count`);
   assert.equal(trace.counts.wasmFlush, 0, `${format} IME synchronous flush count`);
-  assert.deepEqual(deletes.map((event) => event.charOffset), [
+  // 두 치환 모두 조합 anchor 에서 직전 조합 글자 1개를 지우고 새 글자로 바꾼다.
+  assert.deepEqual(replacements.map((event) => event.charOffset), [
     TARGET.charOffset,
     TARGET.charOffset,
   ]);
+  assert.deepEqual(replacements.map((event) => event.deleteCount), [1, 1]);
   for (const [index, durationMs] of durationsMs.entries()) {
     assert.ok(durationMs < 250, `${format} IME update ${index + 1} blocked ${durationMs.toFixed(2)}ms`);
   }
@@ -1808,11 +1838,29 @@ async function runSaveBarrierSmoke(page, format, bytes) {
 async function runPrintBarrierSmoke(page, format, bytes) {
   const before = await preparePendingBoundary(page, format, bytes);
   await page.evaluate(() => {
+    // [#3412] 인쇄 미리보기는 별도 창(print.html surface)을 열고 load 이벤트·origin·rAF 를
+    // 사용한다. 가짜 창이 document/print/close 만 갖고 있으면 createPrintPreviewSurface 가
+    // addEventListener 에서 죽어 페이지가 한 장도 안 그려진다.
     const printDocument = document.implementation.createHTMLDocument('issue-2424-print');
+    try {
+      Object.defineProperty(printDocument, 'readyState', { value: 'complete', configurable: true });
+    } catch {
+      // readyState 를 덮어쓸 수 없으면 load 이벤트 경로로 넘어간다.
+    }
+    const surfaceUrl = new URL('print.html', document.baseURI).href;
     window.__issue2424PrintWindow = {
       document: printDocument,
+      location: { href: surfaceUrl, origin: window.location.origin },
+      closed: false,
+      addEventListener() {},
+      removeEventListener() {},
+      requestAnimationFrame(callback) {
+        return window.requestAnimationFrame(callback);
+      },
       print() {},
-      close() {},
+      close() {
+        this.closed = true;
+      },
     };
     window.open = () => window.__issue2424PrintWindow;
   });
@@ -1826,7 +1874,9 @@ async function runPrintBarrierSmoke(page, format, bytes) {
   );
   const trace = await collectTrace(page);
   const flush = trace.events.find((event) => event.type === 'wasm.flushDeferredPagination');
-  const firstRender = trace.events.find((event) => event.type === 'wasm.renderPageSvg');
+  const firstRender = trace.events.find(
+    (event) => event.type === 'wasm.renderPageSvg' || event.type === 'wasm.renderPageSvgWithProfile',
+  );
   assert.ok(flush, `${format} print flush event`);
   assert.ok(firstRender, `${format} print render event`);
   assert.ok(flush.sequence < firstRender.sequence, `${format} print must flush before first page render`);
@@ -1835,11 +1885,14 @@ async function runPrintBarrierSmoke(page, format, bytes) {
 
   const output = await page.evaluate(() => ({
     pageCount: window.__issue2424PrintWindow.document.querySelectorAll('.page').length,
-    printBarLabel: window.__issue2424PrintWindow.document.querySelector('.print-bar span')?.textContent ?? '',
+    // [#3412] 402d6342c 에서 미리보기 바가 print-preview-bar/print-preview-title 로 바뀌고
+    // 라벨도 `파일명 — N쪽` 형식이 됐다.
+    printBarLabel: window.__issue2424PrintWindow.document
+      .querySelector('.print-preview-bar .print-preview-title')?.textContent ?? '',
     pending: window.__inputHandler.hasDeferredPaginationPending(),
   }));
   assert.equal(output.pageCount, before.pagination.pageCount, `${format} print final page count`);
-  assert.match(output.printBarLabel, /115페이지/, `${format} print bar page count`);
+  assert.match(output.printBarLabel, /115쪽/, `${format} print bar page count`);
   assert.equal(output.pending, false, `${format} print pending state`);
   await restoreTrace(page);
   console.log(`  print barrier: GREEN, flush→render ${output.pageCount} pages`);
