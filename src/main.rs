@@ -7270,6 +7270,58 @@ fn diff_table(
         ));
     }
     diff_common_obj(diffs, ci, "tbl", &a.common, &b.common);
+    // [#3469] 표 속성만 보고 셀 안 문단을 보지 않으면 변환이 표의 모든 텍스트를 손상시켜도
+    // `--verify` 가 통과한다. 한국 문서는 제목·기관명·연락처가 대개 표 셀 안에 있다.
+    // #1807 이 글상자에 대해 닫은 구멍과 같은 계열이라 같은 방식으로 닫는다.
+    diff_table_cells(diffs, &format!("ctrl[{}]", ci), a, b);
+}
+
+/// [#3469] 표 셀의 문단을 재귀 비교한다 (셀 수 → 셀별 문단 수 → 문단 필드).
+///
+/// 셀 안의 글상자와 중첩 표도 같은 경로로 따라 들어간다. 표 자체의 속성 비교는
+/// `diff_table` 이 이미 하므로 여기서는 내용만 본다 — 중첩 표의 속성은 종전과 같이
+/// 비교 대상이 아니며, 이 함수가 닫는 구멍은 "셀 안 텍스트 손상 미검출"이다.
+fn diff_table_cells(
+    diffs: &mut Vec<String>,
+    prefix: &str,
+    a: &rhwp::model::table::Table,
+    b: &rhwp::model::table::Table,
+) {
+    use rhwp::model::control::Control;
+    if a.cells.len() != b.cells.len() {
+        diffs.push(format!(
+            "{} tbl 셀 수: A={} vs B={}",
+            prefix,
+            a.cells.len(),
+            b.cells.len()
+        ));
+    }
+    for (k, (ca, cb)) in a.cells.iter().zip(b.cells.iter()).enumerate() {
+        let cell_prefix = format!("{} cell[{}]", prefix, k);
+        if ca.paragraphs.len() != cb.paragraphs.len() {
+            diffs.push(format!(
+                "{} 문단 수: A={} vs B={}",
+                cell_prefix,
+                ca.paragraphs.len(),
+                cb.paragraphs.len()
+            ));
+        }
+        for (j, (pa, pb)) in ca.paragraphs.iter().zip(cb.paragraphs.iter()).enumerate() {
+            let para_prefix = format!("{} p[{}]", cell_prefix, j);
+            diff_textbox_paragraph_fields(diffs, &para_prefix, pa, pb);
+            for (cj, (x, y)) in pa.controls.iter().zip(pb.controls.iter()).enumerate() {
+                match (x, y) {
+                    (Control::Shape(sa), Control::Shape(sb)) => {
+                        diff_shape_textbox(diffs, &format!("{}.ctrl[{}]", para_prefix, cj), sa, sb);
+                    }
+                    (Control::Table(ta), Control::Table(tb)) => {
+                        diff_table_cells(diffs, &format!("{}.ctrl[{}]", para_prefix, cj), ta, tb);
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
 }
 
 fn diff_common_obj(
