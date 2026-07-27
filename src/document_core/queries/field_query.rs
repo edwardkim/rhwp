@@ -548,6 +548,20 @@ impl DocumentCore {
             .ok_or_else(|| HwpError::InvalidField("field_range 인덱스 초과".into()))?;
         current_fr.start_char_idx = start_idx;
         current_fr.end_char_idx = new_end;
+        let control_idx = current_fr.control_idx;
+
+        // [#3380] 값을 채운 필드는 더 이상 "초기 상태"가 아니다 — properties 비트 15를 세운다.
+        //
+        // 적재 시 `clear_initial_field_texts` 는 비트 15가 0 인 ClickHere 필드의 텍스트가
+        // 안내문과 같으면 "한컴이 남긴 안내문 잔재"로 보고 지운다. 그래서 채운 값이 하필
+        // 안내문과 같으면(행정 서식의 "주무관"·"공개"·"해당없음" 등 흔한 실값) 저장·재적재
+        // 후 그 칸만 소리 없이 비었다. 쓰기 시점에 상태를 표시해 두면 정규화가 값을 잔재로
+        // 오인하지 않는다. 비트 15 는 이 정규화와 Memo 직렬화에서만 쓰여 렌더에 영향이 없다.
+        if !value.is_empty() {
+            if let Some(Control::Field(field)) = para.controls.get_mut(control_idx) {
+                field.properties |= 1 << 15;
+            }
+        }
 
         // char_offsets 재생성: FIELD_BEGIN/END 갭, 탭 폭, UTF-16 code unit 크기 반영
         rebuild_char_offsets(para);
