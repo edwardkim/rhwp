@@ -47,8 +47,8 @@ const EXPECTED_FAILURES: &[(&str, &str)] = &[
     ("hwpx_sample2.hwpx", "같은 flowWithText 축 1건 (#3505)"),
     (
         "issue1891_external_bindata_link.hwpx",
-        "깊이 3 중첩 표의 캡션 소실 — 캡션 문단 3→1, page_break RowBreak→None. \
-         flowWithText 와 다른 축이며 아직 조사 전",
+        "표 캡션 안에 표가 있을 때 캡션 문단이 3→1 로 잘림 (#3528). 저장기는 문단 3개를 \
+         모두 쓰므로 재파싱 쪽 종료 판정이 유력하나 미확인",
     ),
 ];
 
