@@ -422,6 +422,8 @@ impl DocumentCore {
             idx
         };
 
+        // [#3214] controls 기준 인덱스를 ctrl_data_records 에 그대로 쓰기 전에 정렬한다.
+        paragraph.align_ctrl_data_records();
         paragraph
             .controls
             .insert(insert_idx, Control::Equation(Box::new(equation)));

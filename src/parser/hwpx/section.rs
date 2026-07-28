@@ -4960,7 +4960,13 @@ fn escape_xml_text(s: &str) -> String {
             '<' => out.push_str("&lt;"),
             '>' => out.push_str("&gt;"),
             '"' => out.push_str("&quot;"),
-            _ => out.push(c),
+            // XML 1.0 허용 문자: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+            // 그 외(제어문자 등)는 제거 — 재조립된 문자열이 그대로 저장돼 불법 XML 이 되지 않도록 (#3382 계열)
+            '\u{09}' | '\u{0A}' | '\u{0D}' => out.push(c),
+            '\u{20}'..='\u{D7FF}' | '\u{E000}'..='\u{FFFD}' | '\u{10000}'..='\u{10FFFF}' => {
+                out.push(c)
+            }
+            _ => {} // XML 무효 문자 제거
         }
     }
     out

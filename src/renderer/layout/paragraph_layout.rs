@@ -5514,6 +5514,11 @@ impl LayoutEngine {
                             }),
                             BoundingBox::new(guide_x, y, guide_width, line_height),
                         );
+                        // [#3375] 안내문은 한컴 편집 화면에서만 보이고 인쇄·PDF 에는 나가지
+                        // 않는다. 그림 미지정 placeholder(#2225)와 같은 계약이라 같은
+                        // `editor_only` 표시를 쓴다 — 흐름 폭에는 영향이 없으므로(별도 마커
+                        // 노드) 쪽수·줄바꿈은 프로필과 무관하게 동일하다.
+                        let guide_node = guide_node.with_editor_only();
                         markers.push(MarkerInsert {
                             marker_x: guide_x,
                             marker_w: guide_width,

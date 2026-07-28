@@ -208,9 +208,14 @@ pub fn build_structure(doc: &Document, mode: StructureMode) -> StructureDoc {
 
     for (sec_idx, section) in doc.sections.iter().enumerate() {
         for (para_idx, para) in section.paragraphs.iter().enumerate() {
+            // [#3413] `para.text` 는 수식 자리에 컨트롤 문자만 남긴다. 그대로 쓰면 수학·과학
+            // 문서에서 발문과 선택지가 통째로 비어 나가고(수능 수학 20쪽: 선택지 33세트 전부
+            // 빈 값) 종료 코드는 0 이라 파이프라인이 소실을 알 수 없다. export-text·search 와
+            // 같은 조립기로 수식 script 를 합쳐 텍스트 표면 계약을 맞춘다.
+            let para_text = super::rendering::paragraph_text_with_equations(para);
             let heading = match effective {
                 StructureMode::Outline => classify_outline(doc, para.para_shape_id),
-                StructureMode::Clause => classify_clause(&para.text),
+                StructureMode::Clause => classify_clause(&para_text),
                 StructureMode::Auto => unreachable!(),
             };
 
@@ -225,7 +230,7 @@ pub fn build_structure(doc: &Document, mode: StructureMode) -> StructureDoc {
                         level: h.level,
                         kind: h.kind,
                         marker: h.marker,
-                        heading: para.text.clone(),
+                        heading: para_text.clone(),
                         section: sec_idx,
                         paragraph: para_idx,
                         body: Vec::new(),
@@ -234,7 +239,7 @@ pub fn build_structure(doc: &Document, mode: StructureMode) -> StructureDoc {
                     node_count += 1;
                 }
                 None => {
-                    let text = para.text.trim().to_string();
+                    let text = para_text.trim().to_string();
                     if text.is_empty() {
                         continue;
                     }

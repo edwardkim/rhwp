@@ -7,6 +7,7 @@ use crate::model::paragraph::LineSeg;
 use snafu::Snafu;
 use std::io::{self, Cursor, Read};
 
+pub mod crypto;
 pub mod drawing;
 pub mod encoding;
 pub mod johab;
@@ -31,6 +32,10 @@ pub enum Hwp3Error {
     IoError { source: io::Error },
     #[snafu(display("파싱 오류가 발생했습니다: {}", message))]
     ParseError { message: String },
+    #[snafu(display("비밀번호가 필요한 암호 문서입니다"))]
+    PasswordRequired,
+    #[snafu(display("HWP3 암호 오류: {}", source))]
+    CryptoError { source: crypto::Hwp3CryptoError },
     #[snafu(display("특수 문자 파싱 오류가 발생했습니다: {:?}", source))]
     SpecialCharError {
         source: special_char::Hwp3SpecialCharError,
@@ -46,6 +51,12 @@ impl From<io::Error> for Hwp3Error {
 impl From<special_char::Hwp3SpecialCharError> for Hwp3Error {
     fn from(error: special_char::Hwp3SpecialCharError) -> Self {
         Hwp3Error::SpecialCharError { source: error }
+    }
+}
+
+impl From<crypto::Hwp3CryptoError> for Hwp3Error {
+    fn from(error: crypto::Hwp3CryptoError) -> Self {
+        Hwp3Error::CryptoError { source: error }
     }
 }
 
@@ -3018,6 +3029,9 @@ pub(crate) fn parse_paragraph_list(
 }
 
 /// HWP 3.0 포맷 바이너리를 파싱하여 내부 Document 모델로 변환한다.
+///
+/// 비밀번호 암호 문서는 비밀번호 없이 열 수 없으므로 `Hwp3Error::PasswordRequired`를
+/// 반환한다. 비밀번호가 있는 호출자는 `parse_hwp3_with_password`를 사용한다.
 pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     if data.len() < 30 {
         return Err(Hwp3Error::FileTooSmall);
@@ -3052,6 +3066,10 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     // 1. 문서 정보 파싱 (128 바이트)
     let doc_info = Hwp3DocInfo::read(&mut cursor)?;
 
+    if doc_info.encrypted != 0 {
+        return Err(Hwp3Error::PasswordRequired);
+    }
+
     // 쪽 시작 번호 / 각주 시작 번호를 공용 IR(DocProperties)로 매핑한다.
     // 소비처(assign_auto_numbers, fixup_hwp3_notes)는 이미 이 필드를 읽지만
     // 종전엔 HWP3 파서가 doc_properties 를 전혀 채우지 않아 항상 0(→1)로 시작했다.
@@ -3059,10 +3077,6 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     doc.doc_properties.page_start_num = doc_info.start_page_number;
     doc.doc_properties.footnote_start_num = doc_info.footnote_start_number;
 
-    // doc_info.encrypted(암호 설정 여부)를 FileHeader.encrypted로 배선한다.
-    // HWP5/HWPX는 각자의 헤더에서 이 값을 채우지만 HWP3는 raw_data를 항상
-    // 비암호(flags=0)로 하드코딩해 doc.header.encrypted가 실제 값과 무관하게 false였다.
-    apply_hwp3_encrypted_flag(doc_info.encrypted, &mut doc.header);
     // doc_info.compressed(압축 여부)를 FileHeader.compressed 및 raw_data 플래그 비트(0x01)에
     // 반영한다. 본문 압축 해제(아래 4번)에는 doc_info.compressed를 쓰지만 종전엔 헤더 raw_data를
     // 항상 flags=0(비압축)으로 하드코딩해 doc.header.compressed가 실제 값과 무관하게 false였다.
@@ -3504,6 +3518,24 @@ pub fn parse_hwp3(data: &[u8]) -> Result<Document, Hwp3Error> {
     Ok(doc)
 }
 
+/// 비밀번호와 함께 HWP3 문서를 파싱한다.
+///
+/// 압축 HWP3 암호 본문은 이 모듈 경계에서만 복호화한 뒤 기존 HWP3 파서로 넘긴다.
+/// 일반 HWP3 문서에 비밀번호를 전달하면 기존 파서와 같은 결과를 반환한다.
+pub fn parse_hwp3_with_password(data: &[u8], password: &[u8]) -> Result<Document, Hwp3Error> {
+    if !crypto::is_hwp3_password_protected(data)? {
+        return parse_hwp3(data);
+    }
+
+    let decrypted = crypto::decrypt_hwp3_password_document(data, password)?;
+    let mut document = parse_hwp3(&decrypted)?;
+    // 원본이 암호 문서였다는 메타데이터는 IR에 남긴다. HWP 저장기는 이 플래그를
+    // 감지해 평문 HWP로 저장하므로 복호화 비밀번호나 암호문은 출력에 보존하지 않는다.
+    apply_hwp3_encrypted_flag(1, &mut document.header);
+    apply_hwp3_compressed_flag(1, &mut document.header);
+    Ok(document)
+}
+
 #[derive(Debug)]
 struct Hwp3NoteFixupState {
     footnote_number: u16,
@@ -3725,6 +3757,38 @@ fn fixup_hwp3_outline_fields(doc: &mut crate::model::document::Document) {
 
             doc.doc_info.para_shapes.push(outline_shape);
             paragraph.para_shape_id = (doc.doc_info.para_shapes.len() - 1) as u16;
+        }
+
+        // [#3492] 번호 정보를 ParaShape 로 옮겼으니 HWP3 전용 마커는 공통 IR 에서 걷어낸다.
+        for paragraph in &mut section.paragraphs {
+            strip_hwp3_outline_marker_controls(paragraph);
+        }
+    }
+}
+
+/// [#3492] 소비를 마친 HWP3 개요번호 마커 컨트롤을 문단에서 제거한다.
+///
+/// 이 마커는 HWP3 전용 표현이고 **텍스트 앵커가 없다** — 오브젝트 문자를 남기지 않아
+/// `char_offsets` 어디에도 대응 위치가 없다. 번호는 이미 `ParaShape::head_type`·`para_level`
+/// 과 `Numbering` 으로 옮겨졌으므로 마커 자체는 잔재다.
+///
+/// 공통 IR 에 남겨 두면 HWP5 저장기가 자리 없는 컨트롤에 필드 begin/end(각 8 코드 유닛)를
+/// 지어내 문자 수를 부풀리고, 재파싱하면 필드로 복원되지 않아 `convert --verify` 가 손실로
+/// 판정한다(SO-SUEOP.hwp 93건).
+fn strip_hwp3_outline_marker_controls(paragraph: &mut crate::model::paragraph::Paragraph) {
+    use crate::model::control::Control;
+
+    for i in (0..paragraph.controls.len()).rev() {
+        let Control::Field(field) = &paragraph.controls[i] else {
+            continue;
+        };
+        if !field.command.starts_with("Outline:") {
+            continue;
+        }
+        paragraph.controls.remove(i);
+        // ctrl_data_records 는 controls 와 인덱스가 1:1 이므로 같이 지워 정렬을 유지한다.
+        if i < paragraph.ctrl_data_records.len() {
+            paragraph.ctrl_data_records.remove(i);
         }
     }
 }

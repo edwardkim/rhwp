@@ -28,7 +28,14 @@ pub fn escape_text(s: &str) -> String {
             '&' => out.push_str("&amp;"),
             '<' => out.push_str("&lt;"),
             '>' => out.push_str("&gt;"),
-            _ => out.push(c),
+            // XML 1.0 legal characters: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] |
+            // [#x10000-#x10FFFF].  Anything else (control characters, U+FFFE/U+FFFF) is dropped
+            // so the emitted document stays well-formed XML (#3382 class).
+            '\u{09}' | '\u{0A}' | '\u{0D}' => out.push(c),
+            '\u{20}'..='\u{D7FF}' | '\u{E000}'..='\u{FFFD}' | '\u{10000}'..='\u{10FFFF}' => {
+                out.push(c)
+            }
+            _ => {} // XML-invalid character
         }
     }
     out
@@ -48,7 +55,12 @@ pub fn escape_attr(s: &str) -> String {
             '>' => out.push_str("&gt;"),
             '"' => out.push_str("&quot;"),
             '\'' => out.push_str("&apos;"),
-            _ => out.push(c),
+            // See `escape_text`: XML 1.0 legal characters only (#3382 class).
+            '\u{09}' | '\u{0A}' | '\u{0D}' => out.push(c),
+            '\u{20}'..='\u{D7FF}' | '\u{E000}'..='\u{FFFD}' | '\u{10000}'..='\u{10FFFF}' => {
+                out.push(c)
+            }
+            _ => {} // XML-invalid character
         }
     }
     out
@@ -71,6 +83,28 @@ mod tests {
             escape_attr("a&b<c>\"d\"'e'"),
             "a&amp;b&lt;c&gt;&quot;d&quot;&apos;e&apos;"
         );
+    }
+
+    #[test]
+    fn drops_xml_invalid_control_chars() {
+        // #3382 class: XML 1.0 forbids most C0 controls outright — emitting them verbatim
+        // produces a document that no conforming parser can read ("PCDATA invalid Char value 3").
+        assert_eq!(escape_text("a\u{03}b"), "ab");
+        assert_eq!(escape_attr("a\u{03}b"), "ab");
+        for c in ['\u{00}', '\u{08}', '\u{0B}', '\u{0C}', '\u{0E}', '\u{1F}'] {
+            assert_eq!(
+                escape_text(&format!("x{c}y")),
+                "xy",
+                "control {:#04x}",
+                c as u32
+            );
+        }
+        // U+FFFE / U+FFFF are not XML characters either.
+        assert_eq!(escape_text("a\u{FFFE}\u{FFFF}b"), "ab");
+        // Tab / LF / CR stay — they are legal XML characters.
+        assert_eq!(escape_text("a\tb\nc\rd"), "a\tb\nc\rd");
+        // Ordinary text (incl. non-BMP) is untouched.
+        assert_eq!(escape_text("한글 A\u{1F600}"), "한글 A\u{1F600}");
     }
 
     #[test]

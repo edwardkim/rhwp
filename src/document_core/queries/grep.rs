@@ -123,6 +123,57 @@ impl DocumentCore {
         index
     }
 
+    /// `(구역, 문단, 컨트롤) → [(시작 행, 끝 행, 글로벌 페이지)]` 인덱스.
+    ///
+    /// [#3403] 표가 쪽을 넘겨 이어지면 뒤쪽 행의 셀은 다음 쪽에 렌더되는데, 문단 단위
+    /// 페이지 인덱스는 표 호스트 문단의 **첫 쪽**만 알고 있다. 그래서 분할 표 셀 매치가
+    /// 한 쪽 앞을 가리켰다(RAG 인용이 엉뚱한 쪽을 렌더). 행 범위를 함께 들고 있으면
+    /// 셀의 행 번호로 실제 렌더 쪽을 고를 수 있다.
+    ///
+    /// 분할되지 않은 표(`PageItem::Table`)도 전 행 범위로 함께 넣어, 셀 경로가 항상 같은
+    /// 조회를 쓰도록 한다.
+    fn build_table_row_page_index(
+        &self,
+    ) -> HashMap<(usize, usize, usize), Vec<(usize, usize, u32)>> {
+        let mut index: HashMap<(usize, usize, usize), Vec<(usize, usize, u32)>> = HashMap::new();
+        let mut global_offset = 0u32;
+        for (sec_idx, pr) in self.pagination.iter().enumerate() {
+            for (local_i, page) in pr.pages.iter().enumerate() {
+                let global_page = global_offset + local_i as u32;
+                for col in &page.column_contents {
+                    for item in &col.items {
+                        match item {
+                            PageItem::Table {
+                                para_index,
+                                control_index,
+                            } => {
+                                index
+                                    .entry((sec_idx, *para_index, *control_index))
+                                    .or_default()
+                                    .push((0, usize::MAX, global_page));
+                            }
+                            PageItem::PartialTable {
+                                para_index,
+                                control_index,
+                                start_row,
+                                end_row,
+                                ..
+                            } => {
+                                index
+                                    .entry((sec_idx, *para_index, *control_index))
+                                    .or_default()
+                                    .push((*start_row, *end_row, global_page));
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+            }
+            global_offset += pr.pages.len() as u32;
+        }
+        index
+    }
+
     /// 문서를 검색해 주소가 붙은 매치 목록을 돌려준다.
     ///
     /// 본문·표 셀·글상자를 순회한다(`search_all` 과 같은 범위). `limit` 이 `Some` 이면
@@ -132,6 +183,7 @@ impl DocumentCore {
             return Vec::new();
         }
         let page_index = self.build_paragraph_page_index();
+        let table_row_pages = self.build_table_row_page_index();
         let qlen = query.chars().count();
         let mut out: Vec<GrepMatch> = Vec::new();
 
@@ -139,21 +191,43 @@ impl DocumentCore {
             for (para_idx, para) in section.paragraphs.iter().enumerate() {
                 let page = page_index.get(&(sec_idx, para_idx)).copied();
 
+                let make_at =
+                    |page: Option<u32>,
+                     text: &str,
+                     offset: usize,
+                     cell: Option<CellRef>,
+                     textbox: Option<TextBoxRef>,
+                     equation: Option<EquationRef>| GrepMatch {
+                        section: sec_idx,
+                        paragraph: para_idx,
+                        page,
+                        char_offset: offset,
+                        length: qlen,
+                        text: text.to_string(),
+                        context: make_context(text, offset, qlen),
+                        cell,
+                        textbox,
+                        equation,
+                    };
                 let make = |text: &str,
                             offset: usize,
                             cell: Option<CellRef>,
                             textbox: Option<TextBoxRef>,
-                            equation: Option<EquationRef>| GrepMatch {
-                    section: sec_idx,
-                    paragraph: para_idx,
-                    page,
-                    char_offset: offset,
-                    length: qlen,
-                    text: text.to_string(),
-                    context: make_context(text, offset, qlen),
-                    cell,
-                    textbox,
-                    equation,
+                            equation: Option<EquationRef>| {
+                    make_at(page, text, offset, cell, textbox, equation)
+                };
+                // [#3403] 분할 표 셀은 호스트 문단의 첫 쪽이 아니라 그 행이 실제로 렌더되는
+                // 쪽을 쓴다. 행 범위를 못 찾으면 종전 문단 쪽으로 물러선다.
+                let cell_page = |ctrl_idx: usize, row: usize| -> Option<u32> {
+                    table_row_pages
+                        .get(&(sec_idx, para_idx, ctrl_idx))
+                        .and_then(|ranges| {
+                            ranges
+                                .iter()
+                                .find(|(start, end, _)| row >= *start && row < *end)
+                                .map(|(_, _, page)| *page)
+                        })
+                        .or(page)
                 };
 
                 for offset in super::search_query::find_matches(&para.text, query, case_sensitive) {
@@ -173,7 +247,8 @@ impl DocumentCore {
                                         query,
                                         case_sensitive,
                                     ) {
-                                        out.push(make(
+                                        out.push(make_at(
+                                            cell_page(ctrl_idx, cell.row as usize),
                                             &cp.text,
                                             offset,
                                             Some(CellRef {
@@ -197,7 +272,8 @@ impl DocumentCore {
                                                 query,
                                                 case_sensitive,
                                             ) {
-                                                out.push(make(
+                                                out.push(make_at(
+                                                    cell_page(ctrl_idx, cell.row as usize),
                                                     &equation.script,
                                                     offset,
                                                     Some(CellRef {

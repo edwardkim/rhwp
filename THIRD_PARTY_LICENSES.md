@@ -161,6 +161,48 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 ---
 
+## 직접 포팅한 알고리즘
+
+### Volexity hwp-extract
+
+- 출처: [volexity/hwp-extract](https://github.com/volexity/hwp-extract), commit
+  `e5f8b5e1590dee973630666e687e919fa70da2e2`
+- 참조 파일: `src/hwp_extract/encrypt.py`
+- 적용 위치: `src/parser/crypto.rs`의 HWP5 EncryptVersion 4 키 파생 및 비트 단위
+  AES-CFB 복호화
+- 라이선스: BSD-3-Clause
+
+Modified BSD License
+
+_Copyright © `2024`, `Volexity, Inc`_
+
+_All rights reserved._
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. Neither the name of the `Volexity, Inc` nor the
+   names of its contributors may be used to endorse or promote products
+   derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL `Volexity, Inc` BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+---
+
 ## 참조한 오픈소스 프로젝트 (스펙·설계 참조)
 
 rhwp는 아래 프로젝트들의 **코드를 직접 복사하지 않으며**, 공개된 스펙 정보(enum 값·속성 기본값·태그 이름·검증 규칙 등)만 참조한다.

@@ -1511,6 +1511,8 @@ impl DocumentCore {
             };
 
             // 컨트롤 추가
+            // [#3214] controls 기준 인덱스를 ctrl_data_records 에 그대로 쓰기 전에 정렬한다.
+            paragraph.align_ctrl_data_records();
             paragraph
                 .controls
                 .insert(insert_idx, Control::Shape(Box::new(shape_obj)));
@@ -2326,6 +2328,8 @@ impl DocumentCore {
             }
 
             // 문단에 삽입
+            // [#3214] controls 기준 인덱스를 ctrl_data_records 에 그대로 쓰기 전에 정렬한다.
+            para.align_ctrl_data_records();
             para.controls
                 .insert(insert_idx, Control::Shape(Box::new(child)));
             para.ctrl_data_records.insert(insert_idx, None);
