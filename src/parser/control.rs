@@ -165,9 +165,18 @@ fn parse_table_control(ctrl_data: &[u8], child_records: &[Record]) -> Control {
     }
 
     // HWPTAG_TABLE 레코드 위치 찾기
+    //
+    // [#3528] **직계 자식 레벨**의 것만 본다. 종전에는 첫 HWPTAG_TABLE 을 그냥 집었는데,
+    // 캡션 문단 안에 표가 들어 있으면 그 표가 자기 HWPTAG_TABLE 을 더 앞에 방출한다
+    // (저장 순서: CTRL_TABLE → 캡션 → HWPTAG_TABLE → 셀). 그러면 캡션 범위가 거기서
+    // 끊겨 캡션 문단이 잘리고, 그 안의 표도 얕게 읽힌다.
+    //
+    // 직계 자식은 모두 CTRL_HEADER 바로 아래 레벨이므로(캡션 LIST_HEADER·HWPTAG_TABLE·
+    // 셀 LIST_HEADER 가 같은 레벨), 자식 레코드의 최소 레벨이 곧 직계 레벨이다.
+    let direct_level = child_records.iter().map(|r| r.level).min();
     let table_record_idx = child_records
         .iter()
-        .position(|r| r.tag_id == tags::HWPTAG_TABLE);
+        .position(|r| r.tag_id == tags::HWPTAG_TABLE && Some(r.level) == direct_level);
 
     // HWPTAG_TABLE 이전에 LIST_HEADER가 있으면 캡션
     if let Some(table_idx) = table_record_idx {
