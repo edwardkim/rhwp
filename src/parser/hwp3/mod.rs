@@ -1650,13 +1650,16 @@ fn parse_hwp3_object_dispatch(
         let name = crate::parser::hwp3::encoding::decode_hwp3_string(name_buf)
             .trim_end_matches('\0')
             .to_string();
-        let bookmark_type = (&bookmark_extra[32..34])
-            .read_u16::<LittleEndian>()
-            .unwrap_or(0);
-        let mut field = crate::model::control::Field::default();
-        field.field_type = crate::model::control::FieldType::Unknown;
-        field.command = format!("Bookmark:{}:type={}", name, bookmark_type);
-        controls.push(crate::model::control::Control::Field(field));
+        // 책갈피 종류(offset 40..42)는 공통 IR 의 `Bookmark` 에 자리가 없어 싣지 않는다.
+        // 이름이 책갈피의 정체이고, 그것만 있으면 HWP5 로 온전히 저장된다.
+        //
+        // 종전에는 `Control::Field(command="Bookmark:<이름>:type=N")` 라는 HWP3 전용
+        // 합성 표현을 공통 IR 에 넣었다. 읽는 곳이 없는 잔재였고, HWP5 저장기가 표현할 수
+        // 없어 저장하면 통째로 사라졌다 (hwp3-sample16.hwp 10건, `convert --verify` exit 3).
+        // IR 에는 이미 `Control::Bookmark` 가 있고 저장기도 CTRL_BOOKMARK 로 완비돼 있다.
+        controls.push(crate::model::control::Control::Bookmark(
+            crate::model::control::Bookmark { name },
+        ));
         ctrl_data_records.push(None);
     } else if ch == 7 {
         // [Task #877] 날짜 형식 (spec §10.3, 표 37): 84 bytes total.
