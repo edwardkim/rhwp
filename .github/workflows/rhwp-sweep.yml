@@ -1,0 +1,160 @@
+name: rhwp oracle sweep
+
+# 30분마다 '기계적으로 확정된' 결함 1건을 upstream 이슈로 보고한다.
+#
+# autofix 봇과의 차이: AI 를 전혀 쓰지 않는다. 탐지(1분 33초)만 돌고 끝나므로
+# 한 사이클이 10분 내외다 — autofix 는 AI 수정에 44분+ 를 써서 30분 주기를
+# 구조적으로 맞출 수 없었다. 수정·PR 은 autofix 담당, 발견·보고는 여기 담당.
+#
+# 중복은 '근본 원인 시그니처'로 막는다(detect.sh signature_of). 같은 원인은
+# 샘플이 달라도 한 번만 올라가고, 원인이 다르면 각각 올라간다.
+
+on:
+  schedule:
+    # 혼잡한 정시를 피하고, autofix(13·43분)와도 겹치지 않게 둔다.
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "탐지만 하고 이슈는 만들지 않음"
+        type: boolean
+        default: true
+      max_issues:
+        description: "이번 실행에서 등록할 최대 이슈 수 (기본 1)"
+        type: string
+        default: ""
+
+concurrency:
+  group: rhwp-sweep
+  cancel-in-progress: false
+
+env:
+  UPSTREAM: edwardkim/rhwp
+  # 이 수 이상의 봇 이슈가 열려 있으면 이번 사이클은 보고하지 않는다.
+  # 메인테이너 큐가 감당 못 할 속도로 쌓이는 것을 막는 브레이크.
+  MAX_OPEN_ISSUES: "25"
+  CARGO_TERM_COLOR: always
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    steps:
+      - name: 시크릿 확인
+        id: secrets
+        env:
+          HAS_PAT: ${{ secrets.RHWP_BOT_PAT != '' }}
+        run: |
+          echo "has_pat=${HAS_PAT}" >> "$GITHUB_OUTPUT"
+          [ "$HAS_PAT" = "true" ] || echo "::warning::RHWP_BOT_PAT 없음 — 탐지만 하고 보고는 건너뛴다."
+
+      - name: 봇 자산 체크아웃 (fork@main)
+        uses: actions/checkout@v7
+        with:
+          path: bot
+
+      - name: 작업 대상 체크아웃 (upstream@devel)
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ env.UPSTREAM }}
+          ref: devel
+          fetch-depth: 1
+          path: work
+
+      - name: Rust 툴체인
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.93.1"
+
+      # autofix 가 채운 캐시를 그대로 재사용한다 (저장은 하지 않아 캐시 경합이 없다).
+      - name: Rust 빌드 캐시 (읽기 전용)
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: work
+          shared-key: autofix
+          save-if: false
+
+      - name: 큐 상한 확인
+        id: cap
+        if: steps.secrets.outputs.has_pat == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.RHWP_BOT_PAT }}
+        run: |
+          set -euo pipefail
+          OPEN=$(gh api "search/issues?q=repo:${UPSTREAM}+author:${{ github.repository_owner }}+type:issue+state:open" --jq '.total_count')
+          echo "열린 내 이슈: ${OPEN}/${MAX_OPEN_ISSUES}"
+          if [ "$OPEN" -ge "$MAX_OPEN_ISSUES" ]; then
+            echo "::notice::열린 이슈 ${OPEN}건 — 상한 도달. 이번 사이클은 보고하지 않는다."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 오라클 전수 스윕 (AI 없음)
+        id: sweep
+        working-directory: work
+        env:
+          SWEEP_OUT: ${{ runner.temp }}/findings
+          SWEEP_FACTOR: "4"
+          DETECT_EXCLUDE_FILE: ${{ github.workspace }}/bot/.github/autofix/state/reported-signatures.txt
+        run: |
+          set -uo pipefail
+          mkdir -p "$SWEEP_OUT"
+          chmod +x ../bot/.github/autofix/detect.sh
+          # 회전 인덱스는 시각 기반 — 실행마다 다른 구간을 본다
+          ROT=$(( $(date -u +%s) / 1800 ))
+          ../bot/.github/autofix/detect.sh "$PWD" "$ROT" 2>&1 | tee ../sweep.log
+          N=$(ls "$SWEEP_OUT" 2>/dev/null | wc -l)
+          echo "새 원인 ${N}건 수집"
+          echo "count=${N}" >> "$GITHUB_OUTPUT"
+
+      - name: 이슈 등록 + 시그니처 기록
+        if: ${{ steps.sweep.outputs.count != '0' && inputs.dry_run != true && steps.secrets.outputs.has_pat == 'true' && steps.cap.outputs.ok == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.RHWP_BOT_PAT }}
+          SWEEP_OUT: ${{ runner.temp }}/findings
+          MAX_ISSUES: ${{ inputs.max_issues || '1' }}
+        working-directory: bot
+        run: |
+          set -euo pipefail
+          STATE=.github/autofix/state/reported-signatures.txt
+          mkdir -p "$(dirname "$STATE")"; touch "$STATE"
+          git config user.name  "${{ github.repository_owner }}"
+          git config user.email "${{ github.repository_owner }}@users.noreply.github.com"
+
+          N=0
+          for F in "$SWEEP_OUT"/*.md; do
+            [ "$N" -ge "$MAX_ISSUES" ] && break
+            SIG=$(awk -F': ' '/^sig:/{print $2; exit}' "$F" | tr -d ' \r')
+            KIND=$(awk -F': ' '/^kind:/{print $2; exit}' "$F" | tr -d ' \r')
+            TITLE=$(awk '/^title:/{sub(/^title: /,""); print; exit}' "$F")
+            grep -qF -- "sig:${SIG}" "$STATE" && continue
+
+            awk 'f{print} /^---$/{c++} c==2 && !f{f=1}' "$F" > /tmp/body.md
+            printf '\n---\n<sub>저장소 CLI 의 종료코드 계약 위반으로 기계적으로 확정된 결함입니다. 모델 판단이 개입하지 않았습니다.</sub>\n' >> /tmp/body.md
+            URL=$(gh issue create --repo "$UPSTREAM" --title "$TITLE" --body-file /tmp/body.md)
+            echo "등록: $URL"
+            echo "sig:${SIG} ${KIND} ${URL}" >> "$STATE"
+            N=$(( N + 1 ))
+          done
+
+          if [ "$N" -gt 0 ]; then
+            git add "$STATE"
+            git commit -m "chore(sweep): 보고된 원인 시그니처 ${N}건 기록 [skip ci]"
+            git pull --rebase --quiet origin main || true
+            git push origin HEAD:main
+          fi
+          echo "이번 사이클 보고 ${N}건"
+
+      - name: 로그 보관
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweep-log-${{ github.run_number }}
+          path: |
+            sweep.log
+            ${{ runner.temp }}/findings
+          if-no-files-found: ignore
+          retention-days: 7
