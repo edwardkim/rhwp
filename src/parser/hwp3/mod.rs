@@ -438,7 +438,7 @@ fn reset_hwp3_plain_paragraph_text(para: &mut crate::model::paragraph::Paragraph
         para.char_offsets.push(utf16_pos);
         utf16_pos += ch.encode_utf16(&mut [0; 2]).len() as u32;
     }
-    para.char_count = utf16_pos;
+    para.char_count = utf16_pos + 1; // +1 for 끝 마커 (HWP5/HWPX 규약과 정합, #3510)
     para.has_para_text = !para.text.is_empty();
 }
 
@@ -2671,7 +2671,7 @@ pub(crate) fn parse_paragraph_list(
         }
 
         let mut para = Paragraph::default();
-        para.char_count = utf16_len;
+        para.char_count = utf16_len + 1; // +1 for 끝 마커 (HWP5/HWPX 규약과 정합, #3510)
         para.para_shape_id = para_shape_id;
         para.char_offsets = char_offsets;
         para.text = text_string;
