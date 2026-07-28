@@ -1,3 +1,4 @@
+use rhwp::document_core::queries::cell_fit::{CellFit, CellSelector};
 use std::env;
 use std::fs;
 use std::path::Path;
@@ -8268,6 +8269,37 @@ fn run_edit(args: &[String]) -> i32 {
 ///
 /// 검증된 코어 경로(`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없다.
 /// 필드 값만 바꾸므로 레이아웃·구조는 불변이다.
+/// [#3480] 이름 있는 필드 중 **본문 최상위 표 셀** 안에 있는 것의 좌표를 모은다.
+///
+/// 중첩 표·글상자 안(깊이 2 이상)은 렌더 트리 조회 좌표가 달라 신호를 만들지 않는다 —
+/// 없는 사실을 지어내느니 침묵이 낫다(이 경우는 봉투에 아무 항목도 넣지 않는다).
+fn field_cell_targets(
+    doc: &rhwp::wasm_api::HwpDocument,
+) -> Vec<(String, usize, usize, usize, usize)> {
+    use rhwp::document_core::queries::field_query::NestedEntry;
+    let mut out = Vec::new();
+    for fi in doc.collect_all_fields() {
+        let Some(name) = fi.field.field_name() else {
+            continue;
+        };
+        let [NestedEntry::TableCell {
+            control_index,
+            cell_index,
+            ..
+        }] = fi.location.nested_path.as_slice()
+        else {
+            continue;
+        };
+        out.push((
+            name.to_string(),
+            fi.location.section_index,
+            fi.location.para_index,
+            *control_index,
+            *cell_index,
+        ));
+    }
+    out
+}
 fn edit_fill_fields(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut data_arg: Option<&str> = None;
@@ -8362,6 +8394,22 @@ fn edit_fill_fields(args: &[String]) -> i32 {
         .filter_map(|fi| fi.field.field_name().map(|s| s.to_string()))
         .collect();
 
+    // [#3480] 편집 전 셀 맞춤을 먼저 재 둔다 — 값이 칸을 넘쳤는지는 전후 비교로만 말할 수 있다.
+    // 요청된 이름만 잰다 — 문서 전체를 재면 대형 서식(누름틀 1,000개대)에서 비용이 폭발한다.
+    let requested: std::collections::HashSet<&str> = data.keys().map(|k| k.as_str()).collect();
+    let cell_targets: Vec<(String, usize, usize, usize, usize)> = field_cell_targets(&doc)
+        .into_iter()
+        .filter(|(name, ..)| requested.contains(name.as_str()))
+        .collect();
+    let fits_before: Vec<Option<CellFit>> = cell_targets
+        .iter()
+        .map(|(_, sec, para, ctrl, cell)| {
+            doc.measure_cell_fit(*sec, *para, *ctrl, CellSelector::ModelIndex(*cell))
+                .ok()
+                .flatten()
+        })
+        .collect();
+
     let mut filled: Vec<serde_json::Value> = Vec::new();
     let mut not_found: Vec<String> = Vec::new();
 
@@ -8374,17 +8422,31 @@ fn edit_fill_fields(args: &[String]) -> i32 {
             not_found.push(name.clone());
             continue;
         }
-        if dry_run {
-            // 파일을 건드리지 않고 무엇이 바뀔지만 기록한다.
-            filled.push(serde_json::json!({ "name": name, "value": value_str }));
-            continue;
-        }
+        // [#3480] --dry-run 도 같은 넘침 보고를 하려면 메모리 상 문서에는 적용해야 한다.
+        // 출력 파일은 아래에서 dry_run 일 때 쓰지 않는다.
         if let Err(e) = doc.set_field_value_by_name(name, &value_str) {
             eprintln!("오류: 필드 '{}' 설정 실패 - {}", name, e);
             // 실패 시 원본 불변 — 출력 파일을 쓰지 않고 즉시 끝낸다.
             return EXIT_RUNTIME;
         }
         filled.push(serde_json::json!({ "name": name, "value": value_str }));
+    }
+
+    // [#3480] 채운 이름에 대해서만 전후를 비교한다.
+    let filled_names: std::collections::HashSet<&str> =
+        filled.iter().filter_map(|f| f["name"].as_str()).collect();
+    let mut overflow: Vec<serde_json::Value> = Vec::new();
+    for ((name, sec, para, ctrl, cell), before) in cell_targets.iter().zip(fits_before) {
+        if !filled_names.contains(name.as_str()) {
+            continue;
+        }
+        let after = doc
+            .measure_cell_fit(*sec, *para, *ctrl, CellSelector::ModelIndex(*cell))
+            .ok()
+            .flatten();
+        if let Some(entry) = cell_overflow_entry(format!("field:{name}"), before, after) {
+            overflow.push(entry);
+        }
     }
 
     let output_path = out_path.unwrap_or_else(|| {
@@ -8417,6 +8479,8 @@ fn edit_fill_fields(args: &[String]) -> i32 {
             "filledCount": filled.len(),
             "filled": filled,
             "notFound": not_found,
+            // [#3480] 값이 칸에 들어갔는지 — 비어 있으면 문제 없음.
+            "overflow": overflow,
         });
         if !dry_run {
             envelope["output"] = serde_json::Value::String(output_path.clone());
@@ -8711,6 +8775,33 @@ fn recolor_cell_text_black(
     true
 }
 
+/// [#3480] 편집 전후 셀 맞춤에서 "넘침" 신호를 만든다.
+///
+/// 여러 줄이 정상인 칸도 있으므로 **줄 수 자체가 아니라 편집이 늘린 줄**을 신호로 삼는다.
+/// 가로로 셀 상자를 벗어난 경우(잘림)는 줄 수와 무관하게 신호다.
+/// 채우기를 막지는 않는다 — 판단은 소비자 몫이고, 여기서는 침묵만 없앤다.
+fn cell_overflow_entry(
+    target: String,
+    before: Option<CellFit>,
+    after: Option<CellFit>,
+) -> Option<serde_json::Value> {
+    let after = after?;
+    // 측정 실패(표를 못 찾음)는 신호를 만들지 않는다 — 없는 사실을 지어내지 않는다.
+    let lines_before = before.map(|f| f.lines).unwrap_or(1).max(1);
+    let grew = after.lines > lines_before;
+    if !grew && !after.clipped_horizontally {
+        return None;
+    }
+    Some(serde_json::json!({
+        "target": target,
+        "cellWidthPx": (after.cell_width_px * 10.0).round() / 10.0,
+        "textWidthPx": (after.text_width_px * 10.0).round() / 10.0,
+        "lines": after.lines,
+        "linesBefore": lines_before,
+        "clipped": after.clipped_horizontally,
+    }))
+}
+
 fn edit_set_cell(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut table_arg: Option<usize> = None;
@@ -8924,7 +9015,14 @@ fn edit_set_cell(args: &[String]) -> i32 {
         Located::Fail(code) => return code,
     };
 
-    if !dry_run {
+    // [#3480] 편집 전 셀 맞춤을 먼저 잰다 — "값이 칸을 넘쳤는가" 는 전후 비교로만 말할 수 있다.
+    let fit_before = doc
+        .measure_cell_fit(sec, para, ctrl, CellSelector::ModelIndex(cell_idx))
+        .ok()
+        .flatten();
+
+    // --dry-run 도 같은 보고를 하려면 메모리 상 문서에는 적용해야 한다. 파일은 쓰지 않는다.
+    {
         // 셀의 모든 문단 텍스트를 비운다 (다문단 셀 — 빈 문단 골격은 유지된다).
         for (pi, len) in para_lens.iter().enumerate() {
             if *len == 0 {
@@ -8967,6 +9065,16 @@ fn edit_set_cell(args: &[String]) -> i32 {
         }
     }
 
+    let fit_after = doc
+        .measure_cell_fit(sec, para, ctrl, CellSelector::ModelIndex(cell_idx))
+        .ok()
+        .flatten();
+    let overflow = cell_overflow_entry(
+        format!("table{}[{},{}]", table_no, row, col),
+        fit_before,
+        fit_after,
+    );
+
     let output_path = out_path.unwrap_or_else(|| {
         let stem = Path::new(file_path)
             .file_stem()
@@ -9000,12 +9108,25 @@ fn edit_set_cell(args: &[String]) -> i32 {
             "newText": new_text,
             "dryRun": dry_run,
             "keepStyle": keep_style,
+            // [#3480] 값이 칸에 들어갔는지 — 비어 있으면 문제 없음.
+            "overflow": overflow.clone().map(|v| vec![v]).unwrap_or_default(),
         });
         if !dry_run {
             envelope["output"] = serde_json::Value::String(output_path.clone());
         }
         println!("{envelope}");
         return EXIT_OK;
+    }
+
+    if let Some(o) = &overflow {
+        // JSON 을 안 보는 사람에게도 알린다 — 막지는 않는다.
+        eprintln!(
+            "경고: 값이 칸에 한 줄로 들어가지 않습니다 — {} 줄 {} (칸 폭 {}px, 글 폭 {}px)",
+            o["target"].as_str().unwrap_or(""),
+            o["lines"],
+            o["cellWidthPx"],
+            o["textWidthPx"],
+        );
     }
 
     if dry_run {

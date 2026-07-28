@@ -1,4 +1,6 @@
 mod bookmark_query;
+// [#3480] "이 값이 이 칸에 들어가는가" 는 조판 엔진이 있어야만 답할 수 있는 질의다.
+pub mod cell_fit;
 mod cursor_nav;
 mod cursor_rect;
 pub(crate) mod doc_tree_nav;
