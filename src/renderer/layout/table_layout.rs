@@ -53,6 +53,19 @@ fn cell_para_line_anchor_y(
     }
 }
 
+/// 셀 문단의 저장된 `LINE_SEG.vertical_pos` 를 절대 앵커로 신뢰할 수 있는지 판정한다.
+///
+/// `vertical_pos == 0` 은 "셀 상단" 이라는 유효한 값이면서 동시에 "앵커 없음" 의
+/// 센티널이기도 하다. 셀 안 문단이 전부 0 으로 저장된 문서(중첩 표 안쪽 셀에서 흔하다)
+/// 에서 이를 절대 위치로 받아들이면 모든 문단이 같은 y 로 리셋되어 겹쳐 그려진다.
+/// 첫 문단은 0 이 곧 셀 상단이라 그대로 신뢰하고, 두 번째 이후 문단은 양수 vpos 가
+/// 저장돼 있을 때만 앵커로 쓴다.
+fn first_seg_vpos_is_anchor(para: &Paragraph, cell_para_index: usize) -> bool {
+    para.line_segs
+        .first()
+        .is_some_and(|seg| cell_para_index == 0 || seg.vertical_pos > 0)
+}
+
 fn has_initial_tac_shape_host(paragraphs: &[Paragraph]) -> bool {
     paragraphs.first().is_some_and(|para| {
         para.text.trim().is_empty()
@@ -2727,10 +2740,18 @@ impl LayoutEngine {
             // 문서는 한컴이 각 문단 top을 vpos로 고정해 둔다. 누적 y만 쓰면
             // spacing_before가 중복되거나 음수 line_spacing이 누적되어 줄 위치가
             // 점점 어긋난다.
+            //
+            // 단, vpos == 0 은 "앵커 없음"의 센티널이기도 하다. 셀 안 문단이 전부
+            // vpos == 0 으로 저장된 문서(중첩 표 안쪽 셀에서 흔하다)에서 이를 절대
+            // 위치로 받아들이면 모든 문단이 셀 상단이라는 같은 y 로 리셋되어 서로
+            // 겹쳐 그려진다. 첫 문단의 vpos == 0 은 "셀 상단"이라는 유효한 값이므로
+            // 그대로 두고, 두 번째 이후 문단은 양수 vpos 가 저장돼 있을 때만 앵커로
+            // 쓴다. (같은 파일의 text_y_start 계산도 `v > 0.0` 을 앵커 조건으로 쓴다)
+            let has_stored_para_anchor = first_seg_vpos_is_anchor(para, cp_idx);
             let use_saved_cell_para_vpos = use_top_vpos_anchor
                 || trust_stored_cell_flow
                 || has_initial_tac_shape_host(&cell.paragraphs);
-            if use_saved_cell_para_vpos && !has_nested_table {
+            if use_saved_cell_para_vpos && !has_nested_table && has_stored_para_anchor {
                 if let Some(first_seg) = para.line_segs.first() {
                     if first_seg.vertical_pos >= 0 {
                         let spacing_before = styles
