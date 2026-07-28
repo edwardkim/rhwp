@@ -33,9 +33,13 @@ emit() {  # emit <kind> <title> <evidence-file>
   # 제외 목록(이미 upstream 에 보고된 것 + 이번 run 에서 탈락한 것)에 있으면
   # 이 발견을 건너뛰고 1 을 돌려준다 — 호출부는 계속 다음 표본/다음 층을 훑는다.
   # 이것이 '같은 발견 반복'을 끊고 오라클을 점점 깊은 층으로 보내는 탐색 장치다.
+  # 전체 제목뿐 아니라 샘플명을 뗀 '기본 제목'(= kind 단위)으로도 비교한다.
+  # 같은 근본 원인이 샘플만 바꿔 매 실행 새 이슈로 올라가는 스팸을 막고,
+  # 보고된 kind 는 건너뛰어 다음 층(B4→오버플로→퍼징)으로 탐색을 전진시킨다.
+  local T_BASE="${2% (*}"
   if [ -n "${DETECT_EXCLUDE_FILE:-}" ] && [ -s "${DETECT_EXCLUDE_FILE:-}" ] \
-     && grep -qF -- "$2" "$DETECT_EXCLUDE_FILE"; then
-    echo "제외된 발견 건너뜀(이미 보고/탈락): $2"
+     && { grep -qF -- "$2" "$DETECT_EXCLUDE_FILE" || grep -qF -- "$T_BASE" "$DETECT_EXCLUDE_FILE"; }; then
+    echo "제외된 발견 건너뜀(이미 보고/탈락한 계열): $2"
     return 1
   fi
   {
