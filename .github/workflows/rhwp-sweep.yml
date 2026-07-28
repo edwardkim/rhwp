@@ -144,6 +144,18 @@ jobs:
             TITLE=$(awk '/^title:/{sub(/^title: /,""); print; exit}' "$F")
             grep -qF -- "sig:${SIG}" "$STATE" && continue
 
+            # 2차 방어 — 상태 파일이 유실·되돌려져도 같은 원인을 두 번 올리지 않는다.
+            # 제목의 원인 라벨(" — char_shapes")로 upstream 을 직접 조회한다(닫힌 것 포함).
+            CAUSE=$(printf '%s' "$TITLE" | sed -n 's/.* — \([^(]*\).*/\1/p' | sed 's/[[:space:]]*$//')
+            if [ -n "$CAUSE" ]; then
+              DUP=$(gh api "search/issues?q=$(printf 'repo:%s author:%s in:title %s' "$UPSTREAM" "${{ github.repository_owner }}" "\"— ${CAUSE}\"" | sed 's/ /+/g')" --jq '.total_count' 2>/dev/null || echo 0)
+              if [ "${DUP:-0}" -gt 0 ]; then
+                echo "건너뜀(upstream 에 같은 원인 이슈 존재): ${CAUSE}"
+                echo "sig:${SIG} ${KIND} (기존 이슈와 동일 원인: ${CAUSE})" >> "$STATE"
+                continue
+              fi
+            fi
+
             awk 'f{print} /^---$/{c++} c==2 && !f{f=1}' "$F" > /tmp/body.md
             printf '\n---\n<sub>저장소 CLI 의 종료코드 계약 위반으로 기계적으로 확정된 결함입니다. 모델 판단이 개입하지 않았습니다.</sub>\n' >> /tmp/body.md
             URL=$(gh issue create --repo "$UPSTREAM" --title "$TITLE" --body-file /tmp/body.md)
