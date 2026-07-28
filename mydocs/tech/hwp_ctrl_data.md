@@ -68,9 +68,11 @@ offset  size  설명
 
 - hwplib: `ForControlSectionDefine.java` → CtrlData 읽기
 - 구역 설정의 부가 메타데이터
-- 첫 직접 자식 `CTRL_DATA`는 `Paragraph.ctrl_data_records`가 소유한다.
+- 첫 중첩 `CTRL_HEADER` 전에 나타나는 첫 직접 자식 `CTRL_DATA`는
+  `Paragraph.ctrl_data_records`가 소유한다.
 - `SectionDef.extra_child_records`에는 같은 첫 레코드를 중복 보존하지 않는다.
-- 추가 직접 자식이나 중첩 control의 `CTRL_DATA`는 `extra_child_records`에 raw 보존한다.
+- 추가 직접 자식, 중첩 control의 `CTRL_DATA`, 중첩 header 뒤의 직접 자식
+  `CTRL_DATA`는 `extra_child_records`에 raw 보존한다.
 - 저장 시 `CTRL_HEADER(secd)` 직후에 canonical payload를 한 번만 출력한다. 과거 이중 소유 IR은
   동일 level·payload의 exact duplicate만 제거한다.
 - **호환 근거**: #3507 — 동일 payload를 두 번 쓰면 rhwp 재로드는 성공하지만 macOS 한컴 Viewer와
@@ -110,7 +112,7 @@ offset  size  설명
 | Bookmark 삭제/이름변경 시 동기화 | ✅ |
 | 기타 컨트롤 구조적 파싱 | ⚪ 불필요 (raw 보존으로 충분) |
 | 새 컨트롤 생성 시 CTRL_DATA 생성 | ⚠️ Bookmark만 구현, 기타 미구현 |
-| SectionDef exact duplicate 방어 | ✅ 첫 직접 자식은 단일 owner, legacy 이중 소유 IR은 serializer에서 1회 출력 |
+| SectionDef exact duplicate 방어 | ✅ 첫 중첩 header 전의 첫 직접 자식은 단일 owner, legacy 이중 소유 IR은 serializer에서 1회 출력 |
 
 ## 향후 고도화 대상
 

@@ -314,9 +314,11 @@ fn serialize_section_def(
     }
 
     // 기타 자식 레코드 복원 (바탕쪽 LIST_HEADER + 문단 등)
+    let mut nested_ctrl_header_seen = false;
     for raw in &sd.extra_child_records {
         let is_exact_owned_ctrl_data = ctrl_data_record.is_some_and(|data| {
-            raw.tag_id == tags::HWPTAG_CTRL_DATA
+            !nested_ctrl_header_seen
+                && raw.tag_id == tags::HWPTAG_CTRL_DATA
                 && raw.level == level.saturating_add(1)
                 && raw.data.as_slice() == data
         });
@@ -325,6 +327,11 @@ fn serialize_section_def(
             // Paragraph.ctrl_data_records와 extra_child_records에 동시에 보유해도,
             // 아래 공용 복원 경로가 CTRL_HEADER 직후에 한 번만 출력하도록 한다.
             continue;
+        }
+        if raw.tag_id == tags::HWPTAG_CTRL_HEADER {
+            // 이 경계 뒤의 CTRL_DATA는 중첩 raw 구조의 일부일 수 있으므로
+            // payload가 같아도 원래 위치에서 보존한다.
+            nested_ctrl_header_seen = true;
         }
         records.push(Record {
             tag_id: raw.tag_id,

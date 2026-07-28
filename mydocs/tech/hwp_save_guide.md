@@ -189,11 +189,12 @@ LineSeg[0]:
 | Field | 0x0003 | '%hlk' 등 | CTRL_HEADER → [CTRL_DATA] | L+1 → L+2 |
 | Equation | 0x000B | 'eqed' | CTRL_HEADER → SHAPE_COMPONENT → EQ_EDIT | L+1 → L+2 → L+3 |
 
-SectionDef의 `CTRL_DATA`는 선택적이며 `CTRL_HEADER`의 첫 직접 자식 위치에 둔다. HWP5 파서에서는
-첫 직접 자식 payload를 `Paragraph.ctrl_data_records`가 canonical owner로 보존하고,
-`SectionDef.extra_child_records`에는 같은 레코드를 중복 저장하지 않는다. 추가 직접 자식이나
-중첩 control의 `CTRL_DATA`는 알 수 없는 원본 레코드 보존 대상으로 남긴다. 저장 시 과거 IR이
-두 필드에 동일 level·payload를 함께 갖고 있어도 exact duplicate는 한 번만 출력한다(#3507).
+SectionDef의 `CTRL_DATA`는 선택적이며, canonical payload는 `CTRL_HEADER`의 첫 직접 자식 위치에
+둔다. HWP5 파서에서는 첫 중첩 `CTRL_HEADER` 전에 나타나는 첫 직접 자식 payload를
+`Paragraph.ctrl_data_records`가 canonical owner로 보존하고, `SectionDef.extra_child_records`에는
+같은 레코드를 중복 저장하지 않는다. 추가 직접 자식, 중첩 control의 `CTRL_DATA`, 중첩 header
+뒤의 직접 자식은 알 수 없는 원본 레코드 보존 대상으로 남긴다. 저장 시 과거 IR이 두 필드에
+동일 level·payload를 함께 갖고 있어도 중첩 header 전의 exact duplicate는 한 번만 출력한다(#3507).
 
 ### 2.3 TABLE 레코드 상세 구조
 

@@ -381,6 +381,55 @@ fn test_section_def_direct_ctrl_data_has_single_owner_and_nested_records_are_pre
 }
 
 #[test]
+fn test_section_def_ctrl_data_after_nested_header_stays_in_raw_children() {
+    let mut section_bytes = Vec::new();
+
+    let ph = make_para_header_data(2, 0, 0);
+    section_bytes.extend(make_record_bytes(tags::HWPTAG_PARA_HEADER, 0, &ph));
+
+    let mut ctrl_header = Vec::new();
+    ctrl_header.extend_from_slice(&tags::CTRL_SECTION_DEF.to_le_bytes());
+    ctrl_header.extend_from_slice(&[0u8; 24]);
+    section_bytes.extend(make_record_bytes(tags::HWPTAG_CTRL_HEADER, 1, &ctrl_header));
+
+    let nested_ctrl_id = 0x7473_6574u32; // 'test'
+    section_bytes.extend(make_record_bytes(
+        tags::HWPTAG_CTRL_HEADER,
+        2,
+        &nested_ctrl_id.to_le_bytes(),
+    ));
+    section_bytes.extend(make_record_bytes(tags::HWPTAG_CTRL_DATA, 3, &[0x10, 0x20]));
+
+    let late_direct_ctrl_data = vec![0x30, 0x40, 0x50, 0x60];
+    section_bytes.extend(make_record_bytes(
+        tags::HWPTAG_CTRL_DATA,
+        2,
+        &late_direct_ctrl_data,
+    ));
+
+    let section = parse_body_text_section(&section_bytes).unwrap();
+    let para = &section.paragraphs[0];
+    assert_eq!(
+        para.ctrl_data_records,
+        vec![None],
+        "중첩 CTRL_HEADER 뒤의 직접 자식 CTRL_DATA를 문단 슬롯으로 이동하면 안 된다"
+    );
+
+    let section_def = match &para.controls[0] {
+        Control::SectionDef(section_def) => section_def,
+        other => panic!("SectionDef를 기대했지만 {other:?}"),
+    };
+    assert!(
+        section_def.extra_child_records.iter().any(|raw| {
+            raw.tag_id == tags::HWPTAG_CTRL_DATA
+                && raw.level == 2
+                && raw.data == late_direct_ctrl_data
+        }),
+        "중첩 CTRL_HEADER 뒤의 직접 자식 CTRL_DATA는 raw 자식의 원래 위치에 남아야 한다"
+    );
+}
+
+#[test]
 fn test_parse_section_with_column_def() {
     let mut section_bytes = Vec::new();
 

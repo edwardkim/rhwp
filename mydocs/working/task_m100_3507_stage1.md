@@ -2,15 +2,16 @@
 
 - Issue: #3507
 - 브랜치: `codex/issue-3507-sectiondef-ctrl-data`
-- 기준: `upstream/devel` `ef72fee5138e3c491b6d8f38e459dc94670284f6`
+- 착수 기준: `upstream/devel` `ef72fee5138e3c491b6d8f38e459dc94670284f6`
 - 수행일: 2026-07-28
 
 ## 구현
 
-SectionDef `CTRL_HEADER`의 첫 직접 자식 `CTRL_DATA`를
+SectionDef `CTRL_HEADER`에서 첫 중첩 `CTRL_HEADER` 전에 나타나는 첫 직접 자식 `CTRL_DATA`를
 `Paragraph.ctrl_data_records`의 canonical ownership으로 고정했다.
 `parse_section_def()`는 이 첫 레코드를 `SectionDef.extra_child_records`에 다시 넣지 않는다.
-payload가 다른 추가 직접 자식과 중첩 control의 `CTRL_DATA`는 raw record로 계속 보존한다.
+payload가 다른 추가 직접 자식, 중첩 control의 `CTRL_DATA`, 중첩 header 뒤의 직접 자식
+`CTRL_DATA`는 raw record로 계속 보존한다.
 
 과거 parser 또는 외부 생성 IR이 같은 직접 자식 레코드를 두 필드에 함께 보유한 경우를 위해
 SectionDef serializer에도 방어를 추가했다. 문단 슬롯이 전달한 것과 tag·level·payload가 모두 같은
@@ -100,3 +101,6 @@ focused 결과를 공유한 뒤 저장소 승인 절차에 따라 다음 PR 직�
 3. `cargo fmt --all -- --check`
 4. `cargo clippy --all-targets -- -D warnings`
 5. 최종 diff·문서·작업표 정리
+
+위 게이트의 수행 결과와 전체 sweep baseline 판정은
+[`task_m100_3507_stage2.md`](task_m100_3507_stage2.md)에 기록한다.

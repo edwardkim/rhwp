@@ -151,6 +151,55 @@ fn test_section_def_exact_ctrl_data_duplicate_is_serialized_once() {
     );
 }
 
+#[test]
+fn test_section_def_matching_ctrl_data_after_nested_header_is_preserved() {
+    let canonical_ctrl_data = vec![0x10, 0x20, 0x30, 0x40];
+    let nested_ctrl_id = 0x7473_6574u32; // 'test'
+    let sd = SectionDef {
+        extra_child_records: vec![
+            RawRecord {
+                tag_id: tags::HWPTAG_CTRL_HEADER,
+                level: 2,
+                data: nested_ctrl_id.to_le_bytes().to_vec(),
+            },
+            RawRecord {
+                tag_id: tags::HWPTAG_CTRL_DATA,
+                level: 2,
+                data: canonical_ctrl_data.clone(),
+            },
+        ],
+        ..Default::default()
+    };
+    let para = Paragraph {
+        char_count: 2,
+        controls: vec![Control::SectionDef(Box::new(sd))],
+        ctrl_data_records: vec![Some(canonical_ctrl_data.clone())],
+        ..Default::default()
+    };
+    let section = Section {
+        paragraphs: vec![para],
+        raw_stream: None,
+        ..Default::default()
+    };
+
+    let bytes = serialize_section(&section);
+    let records = Record::read_all(&bytes).expect("직렬화된 Section record 파싱");
+    let matching_records: Vec<_> = records
+        .iter()
+        .filter(|record| {
+            record.tag_id == tags::HWPTAG_CTRL_DATA
+                && record.level == 2
+                && record.data == canonical_ctrl_data
+        })
+        .collect();
+
+    assert_eq!(
+        matching_records.len(),
+        2,
+        "중첩 CTRL_HEADER 뒤의 동일 payload CTRL_DATA는 raw 구조로 보존해야 한다"
+    );
+}
+
 /// [#new] page_num_type 필드만 설정되고 flags 비트(20-21)는 미동기화된
 /// SectionDef를 HWP5로 직렬화 → 재파싱했을 때 page_num_type이 보존되어야 한다.
 ///
