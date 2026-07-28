@@ -16,7 +16,7 @@ Chrome·Edge·Firefox 에서 Ctrl+P 가 "파일을 찾을 수 없음" 으로 실
 | npm `@rhwp/core` · `@rhwp/editor` | 자동(Release) | **0.8.2** |
 | VS Code Marketplace | 자동(Release) | **0.8.2** |
 | Open VSX | 자동(Release) | **0.8.2** |
-| Chrome / Edge / Firefox | 수동 업로드 | zip 준비 완료(메인테이너 작업) |
+| Chrome / Edge / Firefox | 수동 업로드 | **3개 스토어 심사 통과** |
 
 `Publish All Packages` 4개 job 전부 success. VS Code Marketplace 는 v0.8.1 때와 마찬가지로
 인덱싱 지연이 있어 폴링 4회차(약 3분)에 0.8.2 로 확인됐다. Open VSX 와 npm 2종은 1회차에
@@ -119,15 +119,61 @@ v0.8.1 과 달리 **계획대로 진행됐다.** 기준선 이동도, 중간 보
 
 | 이슈 | 내용 |
 |---|---|
-| #3450 | studio E2E `print-pdf-issue3126` PDF 안내 모달 실패. **인쇄 surface 자체는 정상**. 테스트·소스가 v0.8.1 태그 이후 무변경이라 이번 범위 밖에서 비롯했다. 근인 미진단 |
-| #3412 | studio E2E `issue-2214` 페이지 로컬 리페인트 계약 실패. v0.8.1 에서 이어지며 회귀 여부 미확정 |
+| ~~#3450~~ | studio E2E `print-pdf-issue3126` PDF 안내 모달 실패. **인쇄 surface 자체는 정상**. 테스트·소스가 v0.8.1 태그 이후 무변경이라 이번 범위 밖에서 비롯했다 → **2026-07-27 해결**(아래) |
+| ~~#3412~~ | studio E2E `issue-2214` 페이지 로컬 리페인트 계약 실패. v0.8.1 에서 이어지며 회귀 여부 미확정 → **2026-07-27 해결**(아래) |
 
-두 건 모두 CHANGELOG·릴리즈 노트의 "알려진 문제" 에 미확정 사실과 함께 공표했다.
+두 건 모두 CHANGELOG·릴리즈 노트의 "알려진 문제" 에 미확정 사실과 함께 공표했다. 릴리즈
+시점의 사실이므로 CHANGELOG 는 사후 수정하지 않는다 — 이미 태그·Release 로 발행된 이력과
+어긋나기 때문이다.
 
-### 스토어 수동 업로드
+### #3450 후일담 — 릴리즈 직후 해결
 
-v0.8.1 심사는 작업지시자가 취소했으므로 0.8.2 는 **신규 제출**이다. 인쇄가 동작하지 않는
-0.8.1 이 사용자에게 배포되는 일은 없다. AMO 는 확장 zip 과 source zip 을 함께 올린다.
+2026-07-27 09:53 close. 근인은 **PDF 안내 preference 가 브라우저 프로필 상태에 의존한
+것**이었다. [PR #3461](https://github.com/edwardkim/rhwp/pull/3461)(planet6897)이 load 전
+설정·종료 뒤 복원으로 E2E 를 프로필 무관하게 만들었고, 통합 PR
+[#3467](https://github.com/edwardkim/rhwp/pull/3467) merge commit `2d7303c5` 로 `devel` 에
+반영됐다(merge: jangster77).
+
+v0.8.2 1단계에서 "인쇄 surface 자체는 정상, 이번 범위 밖 기존 실패" 로 분류하고 근인을
+**미진단으로 남긴** 판단은 결과적으로 맞았다. 테스트·소스가 v0.8.1 태그 이후 무변경이라는
+사실만으로 범위 밖임을 확정하고, 진단하지 않은 것을 진단한 척하지 않은 것이 릴리즈를
+불필요하게 지연시키지 않으면서도 잘못된 서술을 남기지 않게 했다.
+
+### #3412 후일담 — 근인은 내가 지목한 지점이 아니었다
+
+2026-07-27 09:53 close. [PR #3462](https://github.com/edwardkim/rhwp/pull/3462)(planet6897)가
+통합 PR [#3467](https://github.com/edwardkim/rhwp/pull/3467) merge commit `2d7303c5` 로
+`devel` 에 반영됐다(merge: jangster77).
+
+**1단계 보고에서 나는 실패 지점을 `after-56-sync` 체크포인트로 특정했다. 이는 관측한
+증상이지 근인이 아니었다.** planet6897 이 호출 시각·소요시간을 계측한 결과, 실패는 56번째
+입력 경계에서 일어나지 않았다. 55번째 입력 뒤 `afterPageLocalEdit` 이 pending 이라 120ms
+idle 타이머를 재무장했고, 그 타이머 발화가 `flushDeferredPagination` 을 호출했다. 입력
+순번이 아니라 **타이머 타이밍**이 원인이다.
+
+조치는 30쪽 이하 문서에만 idle flush 를 예약하고, 전진 중인 재개형 잡이 있으면 예약하지
+않는 것이다. 큰 문서는 재개형 러너와 명시 boundary flush(undo/redo/navigation/blur/저장·
+인쇄)로 마감한다. 트레이스가 옛 필드명을 읽어 항상 null 을 기록하던 두 번째 결함도 함께
+정정됐다. 검증은 HWP/HWPX 115-step headless E2E 3 run 전부 `flush=0` GREEN 이다.
+
+주목할 점은 **테스트 가드를 우회하지 않은 처리 방식**이다. #3248 이 게이트 부재를 소스
+가드로 고정해 둔 상태였는데(`tests/input-edit-invalidation.test.ts` 의
+`doesNotMatch(/shouldAutoFlushDeferredPagination/)`), 이름만 바꿔 빠져나가지 않고 가드를
+반대 계약으로 다시 쓰며 근거를 주석에 남겼다. 과거의 믿음이 테스트로 굳어 있을 때 그것을
+정면으로 교체한 사례다.
+
+**v0.8.2 의 미해결 이슈 2건은 모두 해소됐다.** 둘 다 같은 통합 PR #3467 로 처리됐다.
+
+### 스토어 수동 업로드 — 완결
+
+2026-07-27 새벽 1시 심사 요청 → **Chrome Web Store·Microsoft Edge Add-ons·Firefox AMO
+3개 스토어 모두 심사 통과.** AMO 는 확장 zip 과 source zip 을 함께 올렸다.
+
+v0.8.1 심사를 취소하고 0.8.2 를 신규 제출한 판단이 유효했다. 인쇄가 동작하지 않는 0.8.1 이
+사용자에게 도달하지 않았고, 결함 발견부터 수정·배포·스토어 통과까지 하루 안에 닫혔다.
+
+이 릴리즈는 7월 26일 저녁 v0.8.1 배포 점검에서 시작해 날짜를 넘겨 27일 새벽 1시 스토어
+심사 요청까지 이어진 연속 작업이다.
 
 ## 8. 운영 기록
 

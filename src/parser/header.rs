@@ -4,8 +4,9 @@
 //! - 0~31:  시그니처 ("HWP Document File" + NULL 패딩)
 //! - 32~35: 버전 (revision, build, minor, major) LE
 //! - 36~39: 속성 플래그 (u32 LE)
-//! - 40~43: 라이선스 (예약)
-//! - 44~255: 예약
+//! - 40~43: 라이선스 속성
+//! - 44~47: EncryptVersion (u32 LE)
+//! - 48~255: 예약
 
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::Cursor;
@@ -96,6 +97,8 @@ impl FileHeaderFlags {
 pub struct FileHeader {
     pub version: HwpVersion,
     pub flags: FileHeaderFlags,
+    /// 비밀번호 암호화 방식 버전. 4는 한글 7.0 이후 방식이다.
+    pub encrypt_version: u32,
 }
 
 /// FileHeader 파싱 에러
@@ -156,7 +159,17 @@ pub fn parse_file_header(data: &[u8]) -> Result<FileHeader, HeaderError> {
         .map_err(|e| HeaderError::IoError(e.to_string()))?;
     let flags = FileHeaderFlags::from_u32(flags_raw);
 
-    Ok(FileHeader { version, flags })
+    // EncryptVersion (44~47)
+    let mut cursor = Cursor::new(&data[44..48]);
+    let encrypt_version = cursor
+        .read_u32::<LittleEndian>()
+        .map_err(|e| HeaderError::IoError(e.to_string()))?;
+
+    Ok(FileHeader {
+        version,
+        flags,
+        encrypt_version,
+    })
 }
 
 #[cfg(test)]
@@ -211,11 +224,22 @@ mod tests {
 
     #[test]
     fn test_parse_encrypted_document() {
-        let data = make_file_header(5, 0, 0x03); // compressed + encrypted
+        let mut data = make_file_header(5, 0, 0x03); // compressed + encrypted
+        data[44..48].copy_from_slice(&4u32.to_le_bytes());
 
         let header = parse_file_header(&data).unwrap();
         assert!(header.flags.compressed);
         assert!(header.flags.encrypted);
+        assert_eq!(header.encrypt_version, 4);
+    }
+
+    #[test]
+    fn test_parse_encrypt_version_is_little_endian() {
+        let mut data = make_file_header(5, 0, 0);
+        data[44..48].copy_from_slice(&0x0102_0304u32.to_le_bytes());
+
+        let header = parse_file_header(&data).unwrap();
+        assert_eq!(header.encrypt_version, 0x0102_0304);
     }
 
     #[test]

@@ -9,8 +9,9 @@
 //! - **A (baseline)**: 위 전부 통과. 목록에 없는 신규 HWP5 샘플도 자동 포함.
 //! - **B (xfail)**: 식별된 결함으로 제외(사유 필수). 통과하게 되면 `xfail_entries_still_fail`
 //!   가 실패 → baseline 승격.
-//! - **자동 제외**: HWP5(`FileFormat::Hwp`)가 아닌 `.hwp`(HWP3 등)와 배포용 문서
-//!   (`header.distribution`) — serializer 결함이 아니라 범위 밖.
+//! - **자동 제외**: HWP5(`FileFormat::Hwp`)가 아닌 `.hwp`(HWP3 등), 배포용 문서
+//!   (`header.distribution`), 비밀번호 암호 문서 — 일반 gate는 비밀번호를 받지 않아
+//!   serializer 결함을 판정할 수 없으므로 범위 밖. 암호 fixture는 전용 test가 담당한다.
 //!
 //! 주의: 구조(뼈대)+BinData+페이지(자기일관) 보존 검증이며 시각 충실도 보장이 아니다.
 //! 외부 한글-only 페이지 붕괴(convert 경로 등)는 `output/poc/fidelity/` 한글 harness 보조.
@@ -18,7 +19,7 @@
 use std::path::{Path, PathBuf};
 
 use rhwp::diagnostics::hwp5_roundtrip_batch::baseline_check;
-use rhwp::parser::{detect_format, parse_document, FileFormat};
+use rhwp::parser::{detect_format, parse_document, FileFormat, ParseError};
 
 const SAMPLES_ROOT: &str = "samples";
 
@@ -69,7 +70,10 @@ fn in_list(list: &[(&str, &str)], rel: &str) -> bool {
     list.iter().any(|(name, _)| *name == rel)
 }
 
-/// 범위 밖(자동 제외) 여부: HWP5 가 아니거나(HWP3 등) 배포용 문서.
+/// 범위 밖(자동 제외) 여부: HWP5 가 아니거나(HWP3 등), 배포용 또는 비밀번호 암호 문서.
+///
+/// 이 gate는 비밀번호 입력을 제공하지 않으므로 암호 문서는 여기서 직렬화 결함을
+/// 판정할 수 없다. 암호문 fixture는 전용 password test에서 해독·저장 회귀를 다룬다.
 /// `Some(사유)` 면 제외 대상.
 fn out_of_scope(bytes: &[u8]) -> Option<&'static str> {
     if detect_format(bytes) != FileFormat::Hwp {
@@ -77,6 +81,7 @@ fn out_of_scope(bytes: &[u8]) -> Option<&'static str> {
     }
     match parse_document(bytes) {
         Ok(doc) if doc.header.distribution => Some("배포용 문서"),
+        Err(ParseError::EncryptedDocument) => Some("비밀번호 암호 문서(전용 fixture gate)"),
         _ => None,
     }
 }
@@ -132,7 +137,7 @@ fn xfail_entries_still_fail() {
         let bytes = std::fs::read(&path).expect("읽기 실패");
         assert!(
             out_of_scope(&bytes).is_none(),
-            "XFAIL 은 범위 내(HWP5·편집가능) 샘플이어야 함: {name}"
+            "XFAIL 은 범위 내(HWP5·비암호·비배포·편집가능) 샘플이어야 함: {name}"
         );
         assert!(
             baseline_check(&bytes).is_err(),

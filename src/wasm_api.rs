@@ -282,6 +282,10 @@ impl HwpDocument {
         DocumentCore::from_bytes(data).map(|core| HwpDocument { core })
     }
 
+    pub fn from_bytes_with_password(data: &[u8], password: &[u8]) -> Result<HwpDocument, HwpError> {
+        DocumentCore::from_bytes_with_password(data, password).map(|core| HwpDocument { core })
+    }
+
     pub fn find_initial_column_def(paragraphs: &[Paragraph]) -> ColumnDef {
         DocumentCore::find_initial_column_def(paragraphs)
     }
@@ -427,6 +431,20 @@ impl HwpDocument {
         DocumentCore::from_bytes(data)
             .map(|core| HwpDocument { core })
             .map_err(|e| e.into())
+    }
+
+    /// 비밀번호로 보호된 HWP 파일을 비밀번호와 함께 로드한다.
+    ///
+    /// HWP5 EncryptVersion 4와 압축 HWP3를 지원한다. 구버전/비압축 HWP3
+    /// 암호화와 DRM은 지원하지 않는다.
+    /// 암호화되지 않은 HWPX는 일반 생성자로 열 수 있지만 암호화 HWPX는 감지만 하며
+    /// 복호화하지 않는다.
+    /// 비밀번호가 틀린 경우 JS 측에서 잡을 수 있도록 에러 메시지에
+    /// "비밀번호가 일치하지 않"이 포함된 `JsValue` 를 반환한다.
+    /// 암호화되지 않은 일반 문서에 비밀번호를 전달해도 정상 로드된다.
+    #[wasm_bindgen(js_name = openWithPassword)]
+    pub fn open_with_password(data: &[u8], password: &str) -> Result<HwpDocument, JsValue> {
+        Self::from_bytes_with_password(data, password.as_bytes()).map_err(|e| e.into())
     }
 
     /// 빈 문서 생성 (테스트/미리보기용)

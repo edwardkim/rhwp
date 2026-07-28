@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-07-24
+last_verified: 2026-07-26
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -36,6 +36,38 @@ rhwp --version     # 버전
 
 > 한컴은 그림 미지정 placeholder 를 편집기에서만 표시하고 인쇄(및 인쇄 등가
 > 출력)에서는 미출력한다 — rhwp 의 인쇄 등가 프로필이 이 계약을 따른다.
+
+## 비밀번호 보호 HWP
+
+HWP5 FileHeader의 `encrypted` 플래그와 `EncryptVersion=4`가 설정된 문서, 또는
+압축된 HWP3 암호 문서는 전역 비밀번호 옵션으로 연다. 일반 HWPX 읽기와
+암호화 HWPX 복호화는 별도 기능이며, 현재 입력 지원 상태는 다음과 같다.
+
+| 입력 형식 | 현재 상태 | CLI 동작 |
+|-----------|-----------|----------|
+| 암호화되지 않은 HWP5 | 지원 | 기존 명령 사용 |
+| HWP5 비밀번호 암호화, EncryptVersion 4 | 읽기 지원 | `--password` 또는 `--password-stdin` 필요 |
+| HWP3 비밀번호 암호화, 압축 본문 | 읽기 지원 | `--password` 또는 `--password-stdin` 필요 |
+| HWP3 비밀번호 암호화, 비압축 본문 | 미지원 | 비밀번호를 시도해도 종료 코드 1 |
+| HWP5 EncryptVersion 1~3 | 미지원 | 비밀번호를 시도하지 않고 종료 코드 1 |
+| 암호화되지 않은 HWPX | 지원 | 기존 HWPX 파서 사용, 비밀번호 옵션 불필요 |
+| 암호화 HWPX(ODF `encryption-data`) | 감지·분류만 지원 | 복호화하지 않고 종료 코드 1 |
+| DRM(Fasoo/SoftCamp 등) | 미지원 | 비밀번호 암호화와 다른 보호 방식 |
+
+```bash
+# 권장: 비밀번호를 프로세스 인자에 남기지 않는다.
+rhwp info protected.hwp --password-stdin < password.txt
+
+# 간편 방식: 셸 기록이나 프로세스 목록에 값이 노출될 수 있다.
+rhwp --password '문서비밀번호' export-text protected.hwp -o output/
+```
+
+- `--password <값>`과 `--password-stdin`은 명령 앞뒤 어느 위치든 한 번만 지정할 수 있다.
+- 비밀번호가 없으면 종료 코드 2, 틀리면 종료 코드 1이다. 지원하지 않는 HWP5
+  EncryptVersion 또는 비압축 HWP3 암호 본문은 종료 코드 1로 거부한다.
+- 일반 열기·내보내기·변환 명령과 `dump-records`가 이 옵션을 사용한다.
+  `export-doclang`의 보호 문서 거부 정책과 미리보기만 읽는 `thumbnail`에는 적용하지 않는다.
+- 복호화한 문서를 HWP로 저장할 때는 암호화 쓰기를 하지 않고 일반 HWP로 저장한다.
 
 ## 종료 코드 (#2707)
 

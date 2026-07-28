@@ -64,6 +64,8 @@ last_verified: 2026-07-26
 - [한컴 호환은 케이스별 명시 가드](feedback_hancom_compat_specific_over_general.md) — 일반화보다 구조 가드가 안전
 - [자기 검증 ≠ 한컴 호환](feedback_self_verification_not_hancom.md) — 한컴2020 수동 검증 게이트 필수
 - [환각이 테스트로 제도화되는 사슬](feedback_hallucination_locked_by_tests.md) — 글맵시 오분류(#3363): 참조명→외부파일 오인→워크어라운드→스냅샷 테스트가 고정. 테스트는 과거 믿음일 수 있음, 권위 3중 교차검증이 해독제
+- [로직 테스트는 빌드 산출물 누락을 못 잡는다](feedback_logic_tests_miss_build_artifacts.md) — print.html 누락이 테스트 15개 통과하며 두 릴리즈 배포(#3433). copy 실패가 경고만 내는 구조가 근본 원인
+- [증상 지점 ≠ 근인](feedback_symptom_is_not_root_cause.md) — after-56-sync 는 단언이 깨진 위치일 뿐, 실제 원인은 idle 타이머 재무장이었다(#3412). 미진단이면 미진단이라 적을 것
 - [렌더링 의미는 추정 금지 — 권위 자료로 확정](feedback_no_inference_authoritative_spec.md) — 한컴 스펙+대비 샘플+편집기 UI 교차검증 (#1156)
 - [한컴 placeholder 인쇄 억제](hancom_placeholder_print_suppress.md) — 편집기 표시/인쇄 미출력 분기, 시각 판정 오인 방지 (2026-07-12)
 - [v0.7.6 회귀의 origin](feedback_v076_regression_origin.md) — 컨트리뷰터 PDF 정답지 사용 → 회귀. 시각 검증 게이트

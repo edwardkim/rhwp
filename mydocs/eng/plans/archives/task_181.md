@@ -71,7 +71,7 @@ Unit tests for each module + visual verification with equation-containing HWP fi
 
 ### Excluded (Subsequent tasks)
 - LADDER, SLADDER, LONGDIV (special layouts)
-- SCALE (size ratio adjustment, HWP97 legacy)
+- SCALE (size ratio adjustment, HWP3 legacy)
 - REL, BUILDREL (text above/below arrows)
 - COLOR (color specification)
 - Equation editing UI

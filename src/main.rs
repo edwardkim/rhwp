@@ -25,8 +25,137 @@ fn exit_with(exit_code: i32) {
     }
 }
 
+// ============================================================================
+// 전역 비밀번호 (--password / --password-stdin)
+//
+// main() 의 pre-scan 이 설정하고 load_document/load_document_core 가 읽는다.
+// CLI는 단일 스레드이므로 thread_local 로 전역 상태를 안전하게 전달한다.
+// 명령 함수 시그니처를 일일이 바꾸지 않아도 일반 문서 로드 명령에
+// 비밀번호를 적용할 수 있다.
+// ============================================================================
+
+thread_local! {
+    static CLI_PASSWORD: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
+}
+
+fn set_cli_password(pw: Option<String>) {
+    CLI_PASSWORD.with(|c| *c.borrow_mut() = pw);
+}
+
+fn cli_password() -> Option<String> {
+    CLI_PASSWORD.with(|c| c.borrow().clone())
+}
+
+/// 문서 로드 에러 — 비밀번호 필요/불일치/기타를 구분해 종료 코드를 다르게 매핑.
+enum LoadError {
+    /// 암호 문서인데 비밀번호가 제공되지 않음 (EXIT_USAGE)
+    NeedPassword,
+    /// 비밀번호 불일치 (EXIT_RUNTIME)
+    WrongPassword,
+    /// 그 외 파싱 오류 (EXIT_RUNTIME)
+    Other(String),
+}
+
+impl LoadError {
+    /// stderr 에 메시지를 출력하고 매핑된 종료 코드를 반환한다.
+    fn report(self) -> i32 {
+        match self {
+            LoadError::NeedPassword => {
+                eprintln!("오류: 비밀번호가 필요한 암호 문서입니다 (--password <pw> 로 전달).");
+                EXIT_USAGE
+            }
+            LoadError::WrongPassword => {
+                eprintln!("오류: 비밀번호가 일치하지 않거나 암호화 데이터가 손상되었습니다.");
+                EXIT_RUNTIME
+            }
+            LoadError::Other(msg) => {
+                eprintln!("오류: 문서 파싱 실패 - {}", msg);
+                EXIT_RUNTIME
+            }
+        }
+    }
+}
+
+/// HwpError Display 메시지에서 비밀번호 관련 에러를 분류한다.
+/// CryptoError::WrongPassword → "...비밀번호가 일치하지 않...",
+/// ParseError::EncryptedDocument → "...비밀번호가 필요한 암호 문서..." 가
+/// HwpError::InvalidFile 로 래핑돼 전해지므로 부분문자열로 판별한다.
+fn classify_hwp_error(msg: &str) -> LoadError {
+    if msg.contains("비밀번호가 일치하지 않") {
+        LoadError::WrongPassword
+    } else if msg.contains("비밀번호가 필요한 암호 문서") {
+        LoadError::NeedPassword
+    } else {
+        LoadError::Other(msg.to_string())
+    }
+}
+
+/// HwpDocument 로드. 전역 비밀번호가 설정돼 있으면 비밀번호 경로로 연다.
+fn load_document(data: &[u8]) -> Result<rhwp::wasm_api::HwpDocument, LoadError> {
+    let result = match cli_password() {
+        Some(pw) => rhwp::wasm_api::HwpDocument::from_bytes_with_password(data, pw.as_bytes()),
+        None => rhwp::wasm_api::HwpDocument::from_bytes(data),
+    };
+    result.map_err(|e| classify_hwp_error(&e.to_string()))
+}
+
+/// DocumentCore 로드 (export-pdf/export-hml 등). 동일 분기.
+fn load_document_core(data: &[u8]) -> Result<rhwp::document_core::DocumentCore, LoadError> {
+    let result = match cli_password() {
+        Some(pw) => {
+            rhwp::document_core::DocumentCore::from_bytes_with_password(data, pw.as_bytes())
+        }
+        None => rhwp::document_core::DocumentCore::from_bytes(data),
+    };
+    result.map_err(|e| classify_hwp_error(&e.to_string()))
+}
+
+/// args 전체를 스캔해 --password <pw> / --password-stdin 을 추출·제거한다.
+/// 반환: (정제된 args, 비밀번호). 관련 토큰이 없으면 비밀번호는 None.
+fn extract_global_password(mut args: Vec<String>) -> Result<(Vec<String>, Option<String>), i32> {
+    let mut password: Option<String> = None;
+    let mut i = 1; // args[0] 은 프로그램 경로
+    while i < args.len() {
+        match args[i].as_str() {
+            "--password" => {
+                if password.is_some() {
+                    eprintln!("오류: 비밀번호 옵션은 한 번만 지정할 수 있습니다.");
+                    return Err(EXIT_USAGE);
+                }
+                if i + 1 >= args.len() {
+                    eprintln!("오류: --password 뒤에 비밀번호가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+                password = Some(args[i + 1].clone());
+                args.drain(i..=i + 1);
+            }
+            "--password-stdin" => {
+                if password.is_some() {
+                    eprintln!("오류: 비밀번호 옵션은 한 번만 지정할 수 있습니다.");
+                    return Err(EXIT_USAGE);
+                }
+                let mut line = String::new();
+                if let Err(e) = std::io::stdin().read_line(&mut line) {
+                    eprintln!("오류: 표준 입력에서 비밀번호 읽기 실패 - {}", e);
+                    return Err(EXIT_RUNTIME);
+                }
+                password = Some(line.trim_end_matches(['\r', '\n']).to_string());
+                args.remove(i);
+            }
+            _ => i += 1,
+        }
+    }
+    Ok((args, password))
+}
+
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let raw_args: Vec<String> = env::args().collect();
+    // 전역 비밀번호 pre-scan: 어느 위치든 --password / --password-stdin 을 뽑아낸다.
+    let (args, password) = match extract_global_password(raw_args) {
+        Ok(v) => v,
+        Err(code) => process::exit(code),
+    };
+    set_cli_password(password);
 
     match args.get(1).map(|s| s.as_str()) {
         Some("--help") | Some("-h") => print_help(),
@@ -705,6 +834,11 @@ fn print_help() {
     println!();
     println!("사용법: rhwp <명령> [옵션]");
     println!();
+    println!("전역 옵션 (일반 HWP5 열기·내보내기·변환 명령):");
+    println!("      --password <pw>         EncryptVersion 4 암호 문서 열기");
+    println!("      --password-stdin        표준 입력 첫 줄에서 비밀번호 읽기 (권장)");
+    println!("                              --password 값은 프로세스 목록에 노출될 수 있음");
+    println!();
     println!("명령:");
     println!("  export-svg <파일.hwp|파일.hwpx|파일.hml> [옵션]");
     println!("      HWP/HWPX/HML 문서를 SVG로 내보내기");
@@ -1189,12 +1323,9 @@ fn export_svg(args: &[String]) -> i32 {
     let source_format = rhwp::parser::detect_format(&data);
 
     // 문서 로드
-    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let mut doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 문서 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     // [Task #741 후속] 외부 file path 그림 영역 영역 HWP file 영역 영역 같은 dir 영역
@@ -1423,12 +1554,9 @@ fn export_render_tree(args: &[String]) -> i32 {
     };
     let source_format = rhwp::parser::detect_format(&data);
 
-    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let mut doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     if allows_implicit_sibling_resources(source_format) {
@@ -1578,12 +1706,9 @@ fn export_structure(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     let st = build_structure(doc.document(), mode);
@@ -1929,12 +2054,9 @@ fn export_png(args: &[String]) -> i32 {
         }
     };
 
-    let mut core = match rhwp::document_core::DocumentCore::from_bytes(&data) {
+    let mut core = match load_document_core(&data) {
         Ok(c) => c,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {:?}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     // [#3302] 외부 연결 그림(HWP3 pic_type=0 등)의 같은 디렉터리 자동 적재 — export-svg
@@ -2314,12 +2436,9 @@ fn export_pdf(args: &[String]) -> i32 {
             }
         };
 
-        let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        let mut doc = match load_document(&data) {
             Ok(d) => d,
-            Err(e) => {
-                eprintln!("오류: 문서 파싱 실패 - {}", e);
-                return 1;
-            }
+            Err(e) => return e.report(),
         };
 
         // [#3302] 외부 연결 그림 같은 디렉터리 자동 적재 — export-svg/export-png 와 동일 규칙.
@@ -2510,12 +2629,9 @@ fn export_text(args: &[String]) -> i32 {
         }
     };
 
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     let page_count = doc.page_count();
@@ -2789,12 +2905,9 @@ fn export_markdown(args: &[String]) -> i32 {
         }
     };
 
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     let page_count = doc.page_count();
@@ -3599,12 +3712,9 @@ fn show_info(args: &[String]) -> i32 {
     let detected_format = rhwp::parser::detect_format(&data);
 
     // 문서 파싱
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 문서 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     let document = doc.document();
@@ -3930,12 +4040,9 @@ fn dump_note_shape(args: &[String]) -> i32 {
         }
     };
 
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     let sections: Vec<serde_json::Value> = doc
@@ -4059,12 +4166,9 @@ fn dump_pages(args: &[String]) -> i32 {
         }
     };
 
-    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let mut doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     if respect_vpos_reset {
@@ -4141,12 +4245,9 @@ fn dump_endnote_lines(args: &[String]) -> i32 {
         }
     };
 
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     let document = doc.document();
@@ -4558,12 +4659,9 @@ fn dump_controls(args: &[String]) -> i32 {
         }
     };
 
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 문서 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     let document = doc.document();
@@ -5866,12 +5964,9 @@ fn diag_document(args: &[String]) -> i32 {
         }
     };
 
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     let document = doc.document();
@@ -6065,12 +6160,9 @@ fn convert_hwp(args: &[String]) -> i32 {
     };
 
     // 문서 로드
-    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let mut doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     let page_count_before = if verify_options.verify_pages {
@@ -6333,12 +6425,9 @@ fn export_hwpx(args: &[String]) -> i32 {
         }
     };
 
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 문서 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     let page_count_before = if verify_options.verify_pages {
@@ -6494,10 +6583,10 @@ fn export_hml(args: &[String]) {
         );
         process::exit(1);
     });
-    let core = rhwp::document_core::DocumentCore::from_bytes(&data).unwrap_or_else(|error| {
-        eprintln!("오류: 문서 파싱 실패 - {error}");
-        process::exit(1);
-    });
+    let core = match load_document_core(&data) {
+        Ok(c) => c,
+        Err(e) => process::exit(e.report()),
+    };
     let bytes = core.export_hml_native().unwrap_or_else(|error| {
         print_hml_export_error(&error);
         process::exit(1);
@@ -6650,14 +6739,60 @@ fn dump_raw_records(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
-    // FileHeader에서 압축 여부 확인
-    let header = cfb.read_stream_raw("FileHeader").unwrap_or_default();
-    let compressed = header.len() >= 40 && (header[36] & 0x01) != 0;
-    let section = match cfb.read_body_text_section(0, compressed, false) {
-        Ok(s) => s,
+    // 공통 파서와 같은 FileHeader 계약(플래그 + EncryptVersion)을 적용한다.
+    let header = match cfb.read_file_header() {
+        Ok(header) => header,
         Err(e) => {
-            eprintln!("오류: {:?}", e);
+            eprintln!("오류: FileHeader 읽기 실패 - {}", e);
             return EXIT_RUNTIME;
+        }
+    };
+    let file_header = match rhwp::parser::header::parse_file_header(&header) {
+        Ok(header) => header,
+        Err(e) => {
+            eprintln!("오류: FileHeader 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let compressed = file_header.flags.compressed;
+    let encrypted = file_header.flags.encrypted;
+    if encrypted
+        && file_header.encrypt_version != rhwp::parser::crypto::SUPPORTED_PASSWORD_ENCRYPT_VERSION
+    {
+        eprintln!(
+            "오류: 지원하지 않는 암호화 방식 - EncryptVersion {} (지원: {})",
+            file_header.encrypt_version,
+            rhwp::parser::crypto::SUPPORTED_PASSWORD_ENCRYPT_VERSION
+        );
+        return EXIT_RUNTIME;
+    }
+    let section = if encrypted {
+        // 비밀번호 암호 문서: raw 섹션을 읽어 복호화한다.
+        let Some(pwd) = cli_password() else {
+            eprintln!("오류: 비밀번호가 필요한 암호 문서입니다 (--password <pw> 로 전달).");
+            return EXIT_USAGE;
+        };
+        let raw = match cfb.read_body_text_section(0, false, false) {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("오류: {:?}", e);
+                return EXIT_RUNTIME;
+            }
+        };
+        match rhwp::parser::crypto::decrypt_password_protected(&raw, pwd.as_bytes(), compressed) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("오류: 비밀번호 불일치 또는 복호화 실패 - {}", e);
+                return EXIT_RUNTIME;
+            }
+        }
+    } else {
+        match cfb.read_body_text_section(0, compressed, false) {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("오류: {:?}", e);
+                return EXIT_RUNTIME;
+            }
         }
     };
     let records = match Record::read_all(&section) {
@@ -9075,7 +9210,10 @@ fn extract_thumbnail(args: &[String]) -> i32 {
 
 #[cfg(test)]
 mod tests {
-    use super::{allows_implicit_sibling_resources, tab_ext_semantic_differs};
+    use super::{
+        allows_implicit_sibling_resources, extract_global_password, tab_ext_semantic_differs,
+        EXIT_USAGE,
+    };
     use rhwp::parser::FileFormat;
 
     #[test]
@@ -9111,5 +9249,36 @@ mod tests {
         ));
         // marker([6]) 차이 검출
         assert!(tab_ext_semantic_differs(&base, &[1640, 0, 256, 0, 0, 0, 0]));
+    }
+
+    #[test]
+    fn global_password_option_is_removed_from_any_position() {
+        let args = vec![
+            "rhwp".to_string(),
+            "info".to_string(),
+            "sample.hwp".to_string(),
+            "--password".to_string(),
+            "secret".to_string(),
+        ];
+        let (clean, password) = extract_global_password(args).unwrap();
+        assert_eq!(clean, ["rhwp", "info", "sample.hwp"]);
+        assert_eq!(password.as_deref(), Some("secret"));
+    }
+
+    #[test]
+    fn duplicate_global_password_options_are_rejected() {
+        let args = vec![
+            "rhwp".to_string(),
+            "--password".to_string(),
+            "first".to_string(),
+            "info".to_string(),
+            "sample.hwp".to_string(),
+            "--password".to_string(),
+            "second".to_string(),
+        ];
+        assert!(matches!(
+            extract_global_password(args),
+            Err(code) if code == EXIT_USAGE
+        ));
     }
 }
