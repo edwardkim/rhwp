@@ -2,7 +2,7 @@
 
 - Issue: #3507
 - 브랜치: `codex/issue-3507-sectiondef-ctrl-data`
-- 최종 기준: `upstream/devel` `c58ab16057914db2baf1933b8d7f47d84b60e2a3`
+- 최종 기준: `upstream/devel` `f32d964dfc5bdb1a28f41f9277e4aa2d7e4387ff`
 - 착수 기준: `upstream/devel` `ef72fee5138e3c491b6d8f38e459dc94670284f6`
 - 수행일: 2026-07-28
 
@@ -54,12 +54,20 @@ baseline을 바로 덮어쓰지 않고 변경 전 `upstream/devel`을 LFS smudge
 | 검증 | 결과 |
 |---|---|
 | 전체 IR field sweep | 2 passed, 803개 샘플, 회귀 0 |
-| `cargo test --profile release-test --tests` | 전체 test binary 실패 0; lib 2,985 passed / 7 ignored |
+| `cargo test --profile release-test --tests` | 전체 test binary 실패 0; lib 2,988 passed / 7 ignored |
 | `cargo fmt --all -- --check` | pass |
 | `git diff --check` | pass |
 | `cargo clippy --all-targets -- -D warnings` | pass |
 
 renderer·layout·WASM API 변경이 없으므로 별도 WASM build와 신규 시각 sweep은 요구 범위가 아니다.
+
+PR 준비 직전 전진한 `upstream/devel` `9c69bc3d3` 위로 4개 커밋을 재배치했다. 공용
+오늘할일 문서의 최신 기록을 보존해 충돌을 해결한 뒤 위 게이트를 모두 다시 실행했다.
+IR sweep dump는 갱신된 baseline과 byte-for-byte 동일했다.
+
+Draft PR 생성 직후 `devel`에 #3517의 CI·문서 변경 2커밋이 추가되어 `f32d964df` 위로 다시
+재배치했다. 이 기준 이동은 `.github`와 문서에만 한정되어 Rust 소스·테스트·샘플 트리는
+`9c69bc3d3` 기준과 동일하다.
 
 ## 최종 인수 후보
 
@@ -72,6 +80,15 @@ renderer·layout·WASM API 변경이 없으므로 별도 WASM build와 신규 �
 | 셀 값 | `(table=0,row=1,col=1) = 강남대학교` |
 | SectionDef CTRL_DATA | 1개 / 280바이트 / 원본 payload와 동일 |
 
-macOS 한컴오피스 한글 Viewer에서는 파일 손상 대화상자 없이 정상 개방되고 편집 값이 표시됐다.
-Windows 한글 2024는 현재 환경에서 자동화할 수 없으므로 작업지시자 수동 확인을 최종 인수 항목으로
-남긴다. 이 확인 전까지 오늘할일 상태는 `진행중`으로 유지한다.
+## 외부 호환성 최종 판정
+
+| 환경 | 결과 |
+|---|---|
+| macOS 한컴오피스 한글 Viewer | 파일 손상 대화상자 없이 정상 개방, 편집 값 표시 |
+| Windows 한글 2024 | 작업지시자 수동 확인으로 정상 개방 |
+
+2026-07-28 작업지시자가 Windows 한글 2024에서도 정상 개방됨을 확인했다. 두 외부 판정과 모든
+로컬 검증이 통과했으므로 #3507 구현의 인수 조건을 충족했고 오늘할일 상태를 `완료`로 변경했다.
+
+계획 대비 차이와 전체 인수 판정은
+[`task_m100_3507_report.md`](../report/task_m100_3507_report.md)에 종합한다.
