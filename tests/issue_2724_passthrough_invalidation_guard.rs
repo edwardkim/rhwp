@@ -207,6 +207,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         Exempt::SessionState,
         "활성 필드 해제 + 렌더 캐시 무효화. 직렬화 비대상.",
     ),
+    (
+        "queries/field_query.rs",
+        "set_field_value_by_name",
+        Exempt::DelegatesTo("set_field_value_by_name_at"),
+        "[#3476] occurrence 지정판(0번째)에 위임 — 무효화는 위임 대상 본문에서 수행한다.",
+    ),
     // ── 문서 전체 교체·생성 ────────────────────────────────────────────────
     (
         "commands/document.rs",

@@ -330,11 +330,39 @@ impl DocumentCore {
 
     /// setFieldValueByName: 필드 이름으로 값 설정
     pub fn set_field_value_by_name(&mut self, name: &str, value: &str) -> Result<String, HwpError> {
+        self.set_field_value_by_name_at(name, 0, value)
+    }
+
+    /// [#3476] 같은 이름이 반복되는 서식에서 **N번째(0 기준)** 필드를 지정해 값을 넣는다.
+    ///
+    /// 실제 제출 서식(규제영향분석서·사업계획서·평가표)은 같은 항목 묶음을 여러 번 요구해
+    /// 한 이름이 십수 번 반복된다. 이름만으로는 첫 매치밖에 지목할 수 없어 나머지를 채울
+    /// 방법이 없었다. 열거 순서는 `fields` 조회 순서(`collect_all_fields`)와 같다.
+    pub fn set_field_value_by_name_at(
+        &mut self,
+        name: &str,
+        occurrence: usize,
+        value: &str,
+    ) -> Result<String, HwpError> {
         let fields = self.collect_all_fields();
         let fi = fields
             .iter()
-            .find(|f| f.field.field_name().map(|n| n == name).unwrap_or(false))
-            .ok_or_else(|| HwpError::InvalidField(format!("필드 이름 '{}' 없음", name)))?;
+            .filter(|f| f.field.field_name().map(|n| n == name).unwrap_or(false))
+            .nth(occurrence)
+            .ok_or_else(|| {
+                let total = fields
+                    .iter()
+                    .filter(|f| f.field.field_name().map(|n| n == name).unwrap_or(false))
+                    .count();
+                if total == 0 {
+                    HwpError::InvalidField(format!("필드 이름 '{}' 없음", name))
+                } else {
+                    HwpError::InvalidField(format!(
+                        "필드 이름 '{}' 의 {} 번째 항목 없음 (총 {}개)",
+                        name, occurrence, total
+                    ))
+                }
+            })?;
 
         let field_id = fi.field.field_id;
         let location = fi.location.clone();
@@ -364,6 +392,18 @@ impl DocumentCore {
             json_escape(&old_value),
             json_escape(value),
         ))
+    }
+
+    /// [#3476] 필드 이름별 개수. 같은 이름이 여러 번 나오는 서식에서 "몇 개 중 몇 개를
+    /// 채웠는지" 를 호출자가 보고할 수 있게 한다.
+    pub fn field_name_counts(&self) -> std::collections::HashMap<String, usize> {
+        let mut counts = std::collections::HashMap::new();
+        for fi in self.collect_all_fields() {
+            if let Some(name) = fi.field.field_name() {
+                *counts.entry(name.to_string()).or_insert(0) += 1;
+            }
+        }
+        counts
     }
 
     /// 셀 필드의 텍스트를 교체한다 (셀의 첫 문단 텍스트를 value로 대체).

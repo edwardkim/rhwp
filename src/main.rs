@@ -1090,6 +1090,7 @@ fn print_help() {
     println!("      누름틀에 값을 채운다 (서식 자동 작성/메일머지)");
     println!();
     println!("      --data <JSON|@파일>       {{\"필드이름\":\"값\"}} 형식. @경로면 파일에서 읽음");
+    println!("                                반복 이름은 \"이름[N]\"(0 기준)로 지목");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_filled.hwp)");
     println!("      --dry-run                 파일을 쓰지 않고 변경 예정 내역만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
@@ -8264,10 +8265,25 @@ fn run_edit(args: &[String]) -> i32 {
     }
 }
 
+/// [#3476] `이름[N]` 형태의 `--data` 키에서 (이름, 0 기준 색인)을 뽑는다.
+///
+/// 반복 필드를 지목하기 위한 문법이다. 대괄호가 없거나 숫자가 아니면 `None` — 이름 자체에
+/// 대괄호가 들어간 필드를 깨뜨리지 않도록 **숫자 색인일 때만** 분해한다.
+fn parse_field_occurrence_key(key: &str) -> Option<(&str, usize)> {
+    let rest = key.strip_suffix(']')?;
+    let open = rest.rfind('[')?;
+    let (name, digits) = rest.split_at(open);
+    let idx: usize = digits[1..].parse().ok()?;
+    if name.is_empty() {
+        return None;
+    }
+    Some((name, idx))
+}
+
 /// `edit fill-fields` — 누름틀에 값을 채운다 (메일머지).
 ///
 /// 검증된 코어 경로(`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없다.
-/// 필드 값만 바꾸므로 레이아웃·구조는 불변이다.
+/// 필드 값만 바꾸므로 레이아웃·구조는 불변이다. [#3476] 반복 이름은 `이름[N]` 으로 지목한다.
 fn edit_fill_fields(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut data_arg: Option<&str> = None;
@@ -8355,36 +8371,57 @@ fn edit_fill_fields(args: &[String]) -> i32 {
         }
     };
 
-    // 문서에 실재하는 필드 이름을 먼저 모아, 없는 이름을 편집 전에 가려낸다.
-    let existing: std::collections::HashSet<String> = doc
-        .collect_all_fields()
-        .iter()
-        .filter_map(|fi| fi.field.field_name().map(|s| s.to_string()))
-        .collect();
+    // 문서에 실재하는 필드 이름과 **개수**를 먼저 모은다. 없는 이름은 편집 전에 가려내고,
+    // [#3476] 같은 이름이 여러 번 나오면 그 사실을 봉투에 실어 침묵을 없앤다.
+    let name_counts = doc.field_name_counts();
 
     let mut filled: Vec<serde_json::Value> = Vec::new();
     let mut not_found: Vec<String> = Vec::new();
+    let mut ambiguous: Vec<serde_json::Value> = Vec::new();
 
-    for (name, value) in &data {
+    for (key, value) in &data {
         let value_str = match value {
             serde_json::Value::String(s) => s.clone(),
             other => other.to_string(),
         };
-        if !existing.contains(name) {
-            not_found.push(name.clone());
+        // [#3476] `이름[N]` 은 0 기준 occurrence 지정. 색인이 없으면 종전대로 첫 매치다.
+        let (name, occurrence) = match parse_field_occurrence_key(key) {
+            Some((base, idx)) => (base, Some(idx)),
+            None => (key.as_str(), None),
+        };
+        let total = name_counts.get(name).copied().unwrap_or(0);
+        if total == 0 {
+            not_found.push(key.clone());
             continue;
+        }
+        if let Some(idx) = occurrence {
+            if idx >= total {
+                // 범위를 벗어난 색인은 오타와 같은 취급 — 조용히 넘기지 않는다.
+                not_found.push(key.clone());
+                continue;
+            }
+        } else if total > 1 {
+            ambiguous.push(serde_json::json!({
+                "name": name,
+                "matched": 1,
+                "total": total,
+            }));
         }
         if dry_run {
             // 파일을 건드리지 않고 무엇이 바뀔지만 기록한다.
-            filled.push(serde_json::json!({ "name": name, "value": value_str }));
+            filled.push(serde_json::json!({ "name": key, "value": value_str }));
             continue;
         }
-        if let Err(e) = doc.set_field_value_by_name(name, &value_str) {
-            eprintln!("오류: 필드 '{}' 설정 실패 - {}", name, e);
+        let result = match occurrence {
+            Some(idx) => doc.set_field_value_by_name_at(name, idx, &value_str),
+            None => doc.set_field_value_by_name(name, &value_str),
+        };
+        if let Err(e) = result {
+            eprintln!("오류: 필드 '{}' 설정 실패 - {}", key, e);
             // 실패 시 원본 불변 — 출력 파일을 쓰지 않고 즉시 끝낸다.
             return EXIT_RUNTIME;
         }
-        filled.push(serde_json::json!({ "name": name, "value": value_str }));
+        filled.push(serde_json::json!({ "name": key, "value": value_str }));
     }
 
     let output_path = out_path.unwrap_or_else(|| {
@@ -8417,6 +8454,9 @@ fn edit_fill_fields(args: &[String]) -> i32 {
             "filledCount": filled.len(),
             "filled": filled,
             "notFound": not_found,
+            // [#3476] 색인 없이 지정한 이름이 문서에 여러 번 있으면 몇 개 중 몇 개를 채웠는지
+            // 알린다 — 침묵하면 에이전트가 불완전한 산출물을 완성본으로 오해한다.
+            "ambiguous": ambiguous,
         });
         if !dry_run {
             envelope["output"] = serde_json::Value::String(output_path.clone());
