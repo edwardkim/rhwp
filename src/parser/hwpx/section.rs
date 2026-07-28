@@ -1579,6 +1579,12 @@ fn read_text_content_with_tabs(
             Ok(Event::Text(ref t)) => {
                 text.push_str(&t.decode().unwrap_or_default());
             }
+            // 본문 런 텍스트가 CDATA 로 저장된 경우. 이 분기가 없으면 `_ => {}` 로
+            // 버려져 문단 텍스트가 통째로 소실된다(#2916·#2951·#2974 와 같은 결함
+            // 클래스이나, 여기는 수식·덧말이 아닌 일반 <hp:t> 경로다).
+            Ok(Event::CData(ref cdata)) => {
+                text.push_str(&String::from_utf8_lossy(cdata.as_ref()));
+            }
             Ok(Event::GeneralRef(ref r)) => {
                 text.push_str(&decode_xml_general_ref(r));
             }
@@ -5779,6 +5785,11 @@ fn parse_form_object(
                                         form.text.push_str(&s);
                                     }
                                 }
+                                // 양식 개체(edit 컨트롤) 텍스트의 CDATA 저장 형태.
+                                // #2916 과 같은 결함 클래스 — 없으면 form.text 가 빈다.
+                                Ok(Event::CData(ref cdata)) => {
+                                    form.text.push_str(&String::from_utf8_lossy(cdata.as_ref()));
+                                }
                                 Ok(Event::GeneralRef(ref r)) => {
                                     form.text.push_str(&decode_xml_general_ref(r));
                                 }
@@ -6533,6 +6544,56 @@ mod tests {
         let section = parse_hwpx_section(xml).unwrap();
         assert_eq!(section.paragraphs.len(), 1);
         assert_eq!(section.paragraphs[0].text, "< A & B > \"q\" 's' △");
+    }
+
+    #[test]
+    fn run_text_preserve_cdata() {
+        // <hp:t> 본문 런 텍스트가 CDATA 로 저장된 경우, read_text_content_with_tabs 에
+        // Event::CData arm 이 없어 `_ => {}` 로 버려지면서 문단 텍스트가 통째로 소실되던
+        // 결함. #2916·#2951·#2974 와 같은 결함 클래스이나, 이 경로는 수식·덧말이 아닌
+        // 일반 본문이라 영향 범위가 가장 넓다.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:t><![CDATA[a<b & c]]></hp:t>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        assert_eq!(section.paragraphs.len(), 1);
+        assert_eq!(
+            section.paragraphs[0].text, "a<b & c",
+            "본문 런 텍스트의 CDATA 가 소실되면 안 됨"
+        );
+    }
+
+    #[test]
+    fn form_edit_text_preserve_cdata() {
+        // 양식 개체(<hp:edit>)의 <hp:text> 가 CDATA 로 저장된 경우 parse_form_object 의
+        // arm 누락으로 form.text 가 비던 결함. 위와 같은 결함 클래스.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:edit id="1" name="edit1">
+        <hp:text><![CDATA[a<b]]></hp:text>
+      </hp:edit>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Form(form) = &section.paragraphs[0].controls[0] else {
+            panic!("첫 컨트롤은 Form(양식 개체)이어야 함");
+        };
+        assert_eq!(
+            form.text, "a<b",
+            "양식 개체 텍스트의 CDATA 가 소실되면 안 됨"
+        );
     }
 
     #[test]
