@@ -1,10 +1,18 @@
 name: Cancel stale PR runs
 
 # Update branch(synchronize) 뒤 같은 devel PR의 이전 SHA run을 force-cancel한다.
-# PR source를 checkout하거나 PR이 제공한 script를 실행하지 않는다. 외부 fork PR은 GitHub가
-# pull_request token을 읽기 전용으로 낮추므로 job을 skip하고 review 절차의 수동 처리로 남긴다.
+#
+# [#3508] pull_request_target 전환 — fork PR도 자동 cancel 대상이다.
+# - pull_request 이벤트는 fork PR에서 토큰이 읽기 전용으로 강등돼 actions API를 못 부른다.
+#   pull_request_target은 base 저장소 write 토큰을 유지하고, PR base 브랜치(devel)의 이
+#   파일로 평가되므로 main 반영을 기다릴 필요가 없다(#3406 원안의 설계).
+# - 안전 경계: 이 워크플로는 PR source를 checkout하지 않고, PR이 제공한 어떤 코드도
+#   실행하지 않는다. 순수 GitHub API 호출뿐이다. pull_request_target의 알려진 위험은
+#   PR 코드 실행에서 나오므로 이 경계를 바꾸는 수정은 보안 리뷰 없이 금지한다.
+# - fork run은 run.pull_requests 배열이 비는 GitHub quirk가 있어 PR 번호 매치 대신
+#   head_repository + head_branch + head_sha 대조로 stale을 판정한다.
 on:
-  pull_request:
+  pull_request_target:
     branches: [devel]
     types: [synchronize]
 
@@ -21,7 +29,6 @@ concurrency:
 
 jobs:
   cancel-stale-runs:
-    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Force-cancel older pull-request runs for this PR
@@ -48,7 +55,14 @@ jobs:
               core.info(`PR #${pullNumber} is ${pull.state}; nothing to cancel.`);
               return;
             }
+            const headRepo = pull.head.repo ? pull.head.repo.full_name : null;
+            if (!headRepo) {
+              core.info(`PR #${pullNumber} head repository is gone; nothing to cancel.`);
+              return;
+            }
 
+            // branch 필터는 head_branch 문자열 기준이라 fork run도 잡힌다. 다른 fork의
+            // 동명 branch와 섞이지 않도록 아래 filter에서 head_repository를 반드시 대조한다.
             const runs = await github.paginate(
               github.rest.actions.listWorkflowRunsForRepo,
               {
@@ -59,10 +73,14 @@ jobs:
                 per_page: 100,
               },
             );
+            // [#3508] fork run은 run.pull_requests가 빈 배열인 경우가 있어 PR 번호 매치를
+            // 쓰지 않는다. head_repository+head_branch가 이 PR의 head를 유일하게 식별한다.
             const staleRuns = runs.filter((run) => (
               run.head_sha !== pull.head.sha
               && activeStatuses.has(run.status)
-              && (run.pull_requests || []).some((runPull) => runPull.number === pullNumber)
+              && run.head_branch === pull.head.ref
+              && run.head_repository
+              && run.head_repository.full_name === headRepo
             ));
 
             let cancelled = 0;
