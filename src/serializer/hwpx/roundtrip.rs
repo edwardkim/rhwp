@@ -502,6 +502,45 @@ pub fn roundtrip_ir_diff(hwpx_bytes: &[u8]) -> Result<IrDiff, SerializeError> {
 ///
 /// Stage 1~5에서 비교 대상 필드를 누적 확장한다 (문단 텍스트, 표·그림 속성 등).
 /// `hwpx-roundtrip` 배치 진단(Task #1315)에서도 사용한다.
+/// [#3505] 포맷을 넘는 변환에서 **비교할 수 없는 항목**을 걷어낸다.
+///
+/// `diff_documents` 는 HWPX 왕복(같은 포맷) 보존 가드로 만들어졌다. `convert` 처럼 포맷을
+/// 넘는 변환에 그대로 쓰면 **대상 포맷에 자리가 없는 필드**가 차이로 잡혀, 진짜 손실이
+/// 그 잡음에 묻힌다. 샘플 346건 실측에서 차이 224건 중 180건이 이 부류였다.
+///
+/// 걷어내는 것은 둘뿐이고, 각각 "내용이 보존됨"을 실측으로 확인한 것만 넣었다.
+///
+/// 1. **HWPX `<hp:parameters>` 원문**(`raw_parameters_xml`) — HWPX 전용 verbatim 필드(#1391)로
+///    HWP5 에는 대응 표현이 없다. 하이퍼링크·Clickhere 의 실제 payload 는 `command` 와
+///    필드 이름으로 보존된다(issue1893 fixture 11개 전수 확인: `command` 달라진 필드 0건).
+/// 2. **원본이 값을 안 가진 `imgDim`** — 원본 `(0, 0)` 에 왕복본이 실제 치수를 채우는
+///    방향이다. 잃은 것이 아니라 채운 것이라 손실이 아니다.
+///
+/// 같은 포맷 왕복(HWPX→HWPX, HWP5→HWP5)에는 **쓰지 않는다** — 그쪽에서는 두 필드 모두
+/// 보존돼야 할 진짜 계약이다.
+pub fn strip_cross_format_noise(diff: IrDiff) -> IrDiff {
+    IrDiff {
+        differences: diff
+            .differences
+            .into_iter()
+            .filter(|d| !is_cross_format_incomparable(d))
+            .collect(),
+    }
+}
+
+fn is_cross_format_incomparable(d: &IrDifference) -> bool {
+    match d {
+        // HWPX verbatim parameters 소실 — 대상 포맷에 자리가 없다.
+        IrDifference::FieldContent { detail, .. } => {
+            detail.contains("parameters:") && detail.contains("actual=None")
+        }
+        // 원본이 값을 안 가진 imgDim 만 — 다른 크기 필드가 섞여 있으면 남긴다.
+        IrDifference::PictureSize { detail, .. } => {
+            detail.starts_with("imgDim: expected=(0, 0)") && !detail.contains(';')
+        }
+        _ => false,
+    }
+}
 pub fn diff_documents(a: &Document, b: &Document) -> IrDiff {
     let mut diff = IrDiff::default();
 
@@ -595,10 +634,20 @@ pub fn diff_documents(a: &Document, b: &Document) -> IrDiff {
     }
 
     // BinData
-    if a.bin_data_content.len() != b.bin_data_content.len() {
+    //
+    // [#3505] 바이트가 0인 항목은 세지 않는다. HWP3 파서는 그림 컨트롤마다 id·확장자·
+    // 바이트가 모두 빈 placeholder 를 만드는데(hwp3-sample10.hwp 3건), 저장기가 그것을
+    // 쓰지 않는 것은 손실이 아니다. 실제 이미지는 컨트롤 내부 경로로 실려 렌더된다.
+    let non_empty = |d: &Document| -> usize {
+        d.bin_data_content
+            .iter()
+            .filter(|c| !c.data.load().is_empty())
+            .count()
+    };
+    if non_empty(a) != non_empty(b) {
         diff.push(IrDifference::BinDataContentCount {
-            expected: a.bin_data_content.len(),
-            actual: b.bin_data_content.len(),
+            expected: non_empty(a),
+            actual: non_empty(b),
         });
     }
 
