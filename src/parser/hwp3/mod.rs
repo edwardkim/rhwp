@@ -3758,6 +3758,38 @@ fn fixup_hwp3_outline_fields(doc: &mut crate::model::document::Document) {
             doc.doc_info.para_shapes.push(outline_shape);
             paragraph.para_shape_id = (doc.doc_info.para_shapes.len() - 1) as u16;
         }
+
+        // [#3492] 번호 정보를 ParaShape 로 옮겼으니 HWP3 전용 마커는 공통 IR 에서 걷어낸다.
+        for paragraph in &mut section.paragraphs {
+            strip_hwp3_outline_marker_controls(paragraph);
+        }
+    }
+}
+
+/// [#3492] 소비를 마친 HWP3 개요번호 마커 컨트롤을 문단에서 제거한다.
+///
+/// 이 마커는 HWP3 전용 표현이고 **텍스트 앵커가 없다** — 오브젝트 문자를 남기지 않아
+/// `char_offsets` 어디에도 대응 위치가 없다. 번호는 이미 `ParaShape::head_type`·`para_level`
+/// 과 `Numbering` 으로 옮겨졌으므로 마커 자체는 잔재다.
+///
+/// 공통 IR 에 남겨 두면 HWP5 저장기가 자리 없는 컨트롤에 필드 begin/end(각 8 코드 유닛)를
+/// 지어내 문자 수를 부풀리고, 재파싱하면 필드로 복원되지 않아 `convert --verify` 가 손실로
+/// 판정한다(SO-SUEOP.hwp 93건).
+fn strip_hwp3_outline_marker_controls(paragraph: &mut crate::model::paragraph::Paragraph) {
+    use crate::model::control::Control;
+
+    for i in (0..paragraph.controls.len()).rev() {
+        let Control::Field(field) = &paragraph.controls[i] else {
+            continue;
+        };
+        if !field.command.starts_with("Outline:") {
+            continue;
+        }
+        paragraph.controls.remove(i);
+        // ctrl_data_records 는 controls 와 인덱스가 1:1 이므로 같이 지워 정렬을 유지한다.
+        if i < paragraph.ctrl_data_records.len() {
+            paragraph.ctrl_data_records.remove(i);
+        }
     }
 }
 
