@@ -24,7 +24,7 @@ pub mod wmf;
 pub use document_core::DocumentCore;
 pub use error::HwpError;
 pub use model::event::DocumentEvent;
-pub use parser::{parse_document, DocumentParser};
+pub use parser::{parse_document, parse_document_with_password, DocumentParser};
 pub use serializer::{serialize_document, DocumentSerializer};
 
 /// WASM panic hook 초기화 (한 번만 실행)

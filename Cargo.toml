@@ -25,6 +25,8 @@ path = "src/tools/font_metric_gen.rs"
 [dependencies]
 wasm-bindgen = "0.2"
 cfb = "0.14"
+crc32fast = "1"
+des = "0.8"
 flate2 = "1.0"
 byteorder = "1.5"
 base64 = "0.23"

@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/manual/consumer_edit_api_guide.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 ---
 
 # @rhwp/core 편집 API 가이드 (소비자용)
@@ -22,9 +22,30 @@ const doc = HwpDocument.createEmpty();
 
 // 기존 파일 로드
 const doc2 = new HwpDocument(new Uint8Array(buffer));
+
+// 비밀번호 보호 HWP5(EncryptVersion 4) 로드
+const doc3 = HwpDocument.openWithPassword(
+  new Uint8Array(protectedBuffer),
+  password,
+);
 ```
 
 > 텍스트 레이아웃 계산에는 `globalThis.measureTextWidth` 등록이 필요하다(README 참고).
+
+일반 HWPX 읽기와 암호화 HWPX 복호화는 별도 기능이다. 현재 입력 지원 상태는 다음과
+같다.
+
+| 입력 형식 | 현재 상태 | API 동작 |
+|-----------|-----------|----------|
+| 암호화되지 않은 HWP5 | 지원 | `new HwpDocument(data)` |
+| HWP5 비밀번호 암호화, EncryptVersion 4 | 읽기 지원 | `HwpDocument.openWithPassword(data, password)` |
+| HWP5 EncryptVersion 1~3 | 미지원 | 지원하지 않는 암호화 방식으로 예외 |
+| 암호화되지 않은 HWPX | 지원 | `new HwpDocument(data)` |
+| 암호화 HWPX(ODF `encryption-data`) | 감지·분류만 지원 | 복호화하지 않고 예외 |
+| DRM(Fasoo/SoftCamp 등) | 미지원 | 비밀번호 암호화와 다른 보호 방식 |
+
+> 비밀번호가 틀리거나 암호문이 손상되면 이를 구분할 수 없으므로 같은 JS 예외가
+> 발생한다.
 
 ## 2. 편집 API 한눈에
 
@@ -132,6 +153,9 @@ const hwpBytes = doc.exportHwp(); // Uint8Array — .hwp 파일로 저장
 
 > 편집 결과를 원본 HWPX 형식으로 되돌려 저장하는 기능은 제한적이다. 현재는 HWP(.hwp)
 > 저장을 권장한다.
+>
+> 비밀번호로 연 HWP를 `exportHwp()`로 저장하면 암호화 플래그와 EncryptVersion을
+> 제거한 일반 HWP가 생성된다. 현재 비밀번호 암호화 쓰기는 지원하지 않는다.
 
 ## 관련
 
