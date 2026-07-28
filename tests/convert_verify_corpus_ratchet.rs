@@ -45,11 +45,7 @@ const EXPECTED_FAILURES: &[(&str, &str)] = &[
         "같은 flowWithText 축 1건 (#3505)",
     ),
     ("hwpx_sample2.hwpx", "같은 flowWithText 축 1건 (#3505)"),
-    (
-        "issue1891_external_bindata_link.hwpx",
-        "표 캡션 안에 표가 있을 때 캡션 문단이 3→1 로 잘림 (#3528). 저장기는 문단 3개를 \
-         모두 쓰므로 재파싱 쪽 종료 판정이 유력하나 미확인",
-    ),
+    // issue1891_external_bindata_link.hwpx 는 #3528 수정으로 통과한다 — 래칫을 한 칸 조였다.
 ];
 
 /// 게이트에서 제외하는 문서 — 크기에 비해 변환이 지나치게 오래 걸린다(각 2분+).
