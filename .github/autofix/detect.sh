@@ -44,6 +44,14 @@ sig_reported() {
 signature_of() { # signature_of <kind> <evidence-file>  → SIG_OUT, SIG_LABEL 설정
   local K="$1" EV="$2" c h LAST="" LAST_L=""
   local CANDS=() LABELS=()
+  # 탐지 '경로'가 아니라 '원인'으로 묶는다. 같은 char_shapes 손실을 HWP 저장·
+  # HWPX 내보내기·포맷 비교 세 경로가 각각 잡아내는데, 그건 한 버그다.
+  # 경로별로 이슈를 내면 같은 걸 세 번 올리게 된다.
+  local FAM="$K"
+  case "$K" in
+    *ir-loss|ir-mismatch) FAM="ir-loss" ;;
+    *page-shift)          FAM="page-shift" ;;
+  esac
   case "$K" in
     *ir-loss|ir-mismatch)
       # 어긋난 IR 필드 하나하나가 서로 다른 직렬화 결함이다 (camelCase 포함)
@@ -72,7 +80,7 @@ signature_of() { # signature_of <kind> <evidence-file>  → SIG_OUT, SIG_LABEL �
   fi
   local i=0
   for c in "${CANDS[@]}"; do
-    h=$(printf '%s' "${K}:${c}" | sha1sum | cut -c1-12)
+    h=$(printf '%s' "${FAM}:${c}" | sha1sum | cut -c1-12)
     LAST="$h"; LAST_L="${LABELS[$i]}"
     if ! sig_reported "$h"; then
       SIG_LABEL="${LABELS[$i]}"; SIG_OUT="$h"; return 0
