@@ -1,3 +1,4 @@
 sig:5a5b3d70de60 ir-loss/controls https://github.com/edwardkim/rhwp/issues/3492
 sig:d8f14df1bdd0 nondeterministic-render https://github.com/edwardkim/rhwp/issues/3496
 sig:9e9744ae4d04 ir-loss/char_shapes https://github.com/edwardkim/rhwp/issues/3500
+sig:6e7297c77cee hwpx-roundtrip-ir-loss https://github.com/edwardkim/rhwp/issues/3506
