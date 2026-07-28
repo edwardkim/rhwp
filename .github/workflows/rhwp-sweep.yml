@@ -38,7 +38,7 @@ env:
 jobs:
   sweep:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 32
     permissions:
       contents: write
     steps:
@@ -109,7 +109,7 @@ jobs:
         working-directory: work
         env:
           SWEEP_OUT: ${{ runner.temp }}/findings
-          SWEEP_FACTOR: "4"
+          SWEEP_FACTOR: "6"
           DETECT_EXCLUDE_FILE: ${{ github.workspace }}/bot/.github/autofix/state/reported-signatures.txt
         run: |
           set -uo pipefail
