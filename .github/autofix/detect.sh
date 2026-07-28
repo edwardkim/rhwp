@@ -29,41 +29,72 @@ rm -f "$OUT"
 STEP() { echo "::group::[detect] $*"; }
 END()  { echo "::endgroup::"; }
 
-# 근본 원인 시그니처 — 증거에서 '무엇이 어떻게 깨졌는지'만 뽑아 해시한다.
-# 같은 원인은 샘플이 달라도 한 건으로 묶이고(스팸 방지), 원인이 다르면 분리된다
-# (공급 확보). 제목·샘플명 단위 비교보다 정밀해 30분 주기 스윕의 판정 기준이 된다.
-signature_of() { # signature_of <kind> <evidence-file>
-  local K="$1" EV="$2" RAW=""
+# 이 시그니처가 이미 보고/탈락 목록에 있는가
+sig_reported() {
+  [ -n "${DETECT_EXCLUDE_FILE:-}" ] && [ -s "${DETECT_EXCLUDE_FILE:-}" ] \
+    && grep -qF -- "sig:$1" "$DETECT_EXCLUDE_FILE"
+}
+
+# 근본 원인 시그니처 — 한 증거에 여러 원인이 섞여 있으면 원인마다 후보를 만들고,
+# 그중 '아직 보고되지 않은 첫 번째'를 고른다. 그래서 한 문서에서 필드 세 개가
+# 깨져 있어도 사이클마다 원인 하나씩만 나가고, 필드 조합이 다르다는 이유로
+# 같은 버그가 여러 번 올라가는 일이 없다. 선택된 원인의 라벨은 SIG_LABEL 로 돌려준다.
+# 결과는 SIG_OUT/SIG_LABEL 전역에 담는다 — 명령치환으로 부르면 서브셸이라
+# 라벨이 호출부로 돌아오지 못한다.
+signature_of() { # signature_of <kind> <evidence-file>  → SIG_OUT, SIG_LABEL 설정
+  local K="$1" EV="$2" c h LAST="" LAST_L=""
+  local CANDS=() LABELS=()
   case "$K" in
     *ir-loss|ir-mismatch)
-      # 어긋난 IR 필드의 조합 + 직렬화 실패 사유가 원인을 가른다
-      RAW=$(grep -oE '[a-z_]+: expected=' "$EV" 2>/dev/null | sort -u | tr -d ' \n')
-      RAW="${RAW}$(grep -oE '직렬화 실패: [^(]{0,60}' "$EV" 2>/dev/null | sort -u | head -3 | tr -d ' \n')"
+      # 어긋난 IR 필드 하나하나가 서로 다른 직렬화 결함이다 (camelCase 포함)
+      while read -r f; do
+        [ -n "$f" ] && { CANDS+=("field=$f"); LABELS+=("$f"); }
+      done < <(grep -oE '[A-Za-z_][A-Za-z0-9_]*: expected=' "$EV" 2>/dev/null \
+                 | sed 's/: expected=//' | sort -u)
+      # 직렬화 실패 메시지는 그 자체로 독립된 원인
+      while read -r r; do
+        [ -n "$r" ] && { CANDS+=("ser=$r"); LABELS+=("직렬화 실패"); }
+      done < <(grep -oE '직렬화 실패: [^(]{0,40}' "$EV" 2>/dev/null | sort -u | head -3)
       ;;
     arith-overflow|fuzz-crash)
       # 패닉 위치가 곧 버그 위치 — 위치가 다르면 다른 버그다
-      RAW=$(grep -oE "[a-zA-Z0-9_/.-]+\.rs:[0-9]+" "$EV" 2>/dev/null | head -1)
+      c=$(grep -oE "[a-zA-Z0-9_/.-]+\.rs:[0-9]+" "$EV" 2>/dev/null | head -1)
+      [ -n "$c" ] && { CANDS+=("at=$c"); LABELS+=("$c"); }
       ;;
     nondeterministic-render)
-      # 어떤 SVG 요소·속성이 흔들리는지가 비결정성의 출처를 가른다
-      RAW=$(grep -oE '<[a-zA-Z:]+|[a-z-]+="' "$EV" 2>/dev/null | sort -u | head -8 | tr -d '\n')
+      # 어떤 SVG 요소가 흔들리는지가 비결정성의 출처를 가른다
+      c=$(grep -oE '<[a-zA-Z:]+' "$EV" 2>/dev/null | sort -u | head -4 | tr -d '\n')
+      [ -n "$c" ] && { CANDS+=("elem=$c"); LABELS+=("렌더 비결정성"); }
       ;;
   esac
-  [ -z "$RAW" ] && RAW="$K"
-  printf '%s' "${K}:${RAW}" | sha1sum | cut -c1-12
+  if [ "${#CANDS[@]}" -eq 0 ]; then
+    CANDS=("kind=$K"); LABELS=("")
+  fi
+  local i=0
+  for c in "${CANDS[@]}"; do
+    h=$(printf '%s' "${K}:${c}" | sha1sum | cut -c1-12)
+    LAST="$h"; LAST_L="${LABELS[$i]}"
+    if ! sig_reported "$h"; then
+      SIG_LABEL="${LABELS[$i]}"; SIG_OUT="$h"; return 0
+    fi
+    i=$(( i + 1 ))
+  done
+  SIG_LABEL="$LAST_L"; SIG_OUT="$LAST"   # 후보가 전부 보고됨 — 호출부가 걸러낸다
 }
 
 emit() {  # emit <kind> <title> <evidence-file>
   local KIND="$1" TITLE="$2" EV="$3"
-  local SIG; SIG=$(signature_of "$KIND" "$EV")
+  SIG_LABEL=""; SIG_OUT=""
+  signature_of "$KIND" "$EV"
+  local SIG="$SIG_OUT"
 
   # 제외 판정 — 스윕 모드는 시그니처(근본 원인)로, 단발 모드는 제목 계열로 본다.
   # 단발(autofix 루프)은 '수정 실패한 계열'을 통째로 넘겨 다음 층으로 전진해야 하고,
   # 스윕은 원인이 다르면 계속 잡아내야 하므로 기준이 다르다.
   if [ -n "${DETECT_EXCLUDE_FILE:-}" ] && [ -s "${DETECT_EXCLUDE_FILE:-}" ]; then
     if [ -n "${SWEEP_OUT:-}" ]; then
-      if grep -qF -- "sig:${SIG}" "$DETECT_EXCLUDE_FILE"; then
-        echo "  건너뜀(이미 보고된 원인 sig:${SIG}): $TITLE"
+      if sig_reported "$SIG"; then
+        echo "  건너뜀(이미 보고된 원인): $TITLE"
         return 1
       fi
     else
@@ -73,6 +104,14 @@ emit() {  # emit <kind> <title> <evidence-file>
         return 1
       fi
     fi
+  fi
+
+  # 제목에 원인을 드러낸다 — 메인테이너가 제목만 보고 무엇이 깨졌는지 알 수 있고,
+  # 중복 여부도 눈으로 판별된다.
+  if [ -n "${SIG_LABEL:-}" ]; then
+    local HEAD="${TITLE%% (*}" TAIL=""
+    case "$TITLE" in *\ \(*) TAIL=" (${TITLE#*(}" ;; esac
+    TITLE="${HEAD} — ${SIG_LABEL}${TAIL}"
   fi
 
   # 스윕 모드는 한 건에서 멈추지 않는다 — 시그니처별로 모아 두고 계속 훑는다.
