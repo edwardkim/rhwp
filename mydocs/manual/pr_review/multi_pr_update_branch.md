@@ -30,10 +30,13 @@ scripts/pr_triage.sh <author> --list
 contributor 또는 maintainer가 Update branch를 수행해 PR head가 바뀌면, 이전 SHA run이 최신 required check와
 섞여 보일 수 있다. 최신 head의 CI는 절대 취소하지 않는다.
 
-1. `devel` 대상 PR(fork 포함, #3508)에서는 `Cancel stale PR runs` reaper가 `synchronize` event로
-   시작했는지, 최신 head SHA와 함께 확인한다. 이 workflow는 `pull_request_target`으로 base
-   브랜치(devel)의 정의를 실행하되 PR source를 checkout·실행하지 않고, 같은 PR head
-   (head_repository+head_branch)의 이전 SHA `pull_request` run만 force-cancel한다.
+1. `devel` 대상 PR에서는 `Cancel stale PR runs` reaper가 `synchronize` event로 시작했는지,
+   최신 head SHA와 함께 확인한다. 이 workflow는 PR source를 checkout·실행하지 않고, 같은
+   PR head(head_repository+head_branch)의 이전 SHA `pull_request` run만 force-cancel한다.
+   이중 트리거(#3508)다 — same-repo PR은 `pull_request` 경로로 즉시, **fork PR은
+   `pull_request_target` 경로인데 이 트리거는 default 브랜치(main)의 파일 기준으로
+   등록되므로(#3503 실측) 워크플로가 릴리즈로 main에 실린 뒤부터 발동한다.** 그 전의
+   fork PR은 아래 3의 script 폴백을 쓴다.
 2. reaper가 성공했다면 이전 SHA run이 `completed/cancelled`가 되었고 최신 head run이 시작됐는지 확인한다.
 3. reaper 실패·미실행 시에는 `scripts/cancel_stale_pr_runs.sh <PR번호>`로 정리한다(#3508 —
    현재 head 확인 → 이전 SHA active run 나열 → force-cancel → 완료 재확인을 한 명령으로,
