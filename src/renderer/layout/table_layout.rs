@@ -4348,11 +4348,25 @@ impl LayoutEngine {
             // 겹쳐 그려진다(한글은 fresh 재적층). 음수 line_spacing 누적 보정용
             // 정상 vpos 스냅(조직도형·악보 셀)은 extent ≈ 줄높이 합이므로 0.5
             // 비율 가드에 걸리지 않는다.
+            // 위 비율 가드는 문단이 2개인 셀에서 경계에 정확히 걸려 통과한다
+            // (전 문단 vpos=0, lh 동일 → extent = 줄높이합/2). 그래서 문단 단위
+            // 앵커 유무를 직접 본다: 둘째 이후 문단의 first seg vpos == 0 은
+            // "앵커 없음" 센티널이므로, 그런 문단이 있으면 저장 흐름은 문단 위치를
+            // 구분해 담고 있지 않다. 이때 extent 를 콘텐츠 높이로 받아들이면 세로
+            // 정렬 오프셋과 담을 줄 수가 1줄분으로 굳어 뒤 문단이 셀 밖으로 밀려
+            // 잘리거나 아예 렌더되지 않는다. 배치 쪽 first_seg_vpos_is_anchor 와
+            // 같은 규약을 측정에도 적용한다.
+            let stored_flow_has_para_anchors = cell
+                .paragraphs
+                .iter()
+                .enumerate()
+                .all(|(idx, para)| first_seg_vpos_is_anchor(para, idx));
             let trust_stored_cell_flow = (depth > 0 || table.common.treat_as_char)
                 && stored_flow_extent > 0.0
                 && stored_flow_extent + 0.5 < total_content_height
                 && non_flow_object_extent <= stored_flow_extent + 0.5
-                && stored_flow_extent + 0.5 >= 0.5 * stored_flow_line_sum;
+                && stored_flow_extent + 0.5 >= 0.5 * stored_flow_line_sum
+                && stored_flow_has_para_anchors;
             let total_content_height = if trust_stored_cell_flow {
                 stored_flow_extent
             } else {
