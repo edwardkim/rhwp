@@ -5,3 +5,4 @@ sig:6e7297c77cee hwpx-roundtrip-ir-loss https://github.com/edwardkim/rhwp/issues
 sig:b9708340d8d5 hwpx-roundtrip-ir-loss https://github.com/edwardkim/rhwp/issues/3511
 sig:be4e3976f94f hwpx-roundtrip-page-shift https://github.com/edwardkim/rhwp/issues/3521
 sig:dc22a533ff58 hwpx-roundtrip-ir-loss https://github.com/edwardkim/rhwp/issues/3526
+sig:e853dd13acb1 hwpx-roundtrip-ir-loss https://github.com/edwardkim/rhwp/issues/3531
