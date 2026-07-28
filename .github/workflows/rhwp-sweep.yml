@@ -83,8 +83,20 @@ jobs:
           GH_TOKEN: ${{ secrets.RHWP_BOT_PAT }}
         run: |
           set -euo pipefail
-          OPEN=$(gh api "search/issues?q=repo:${UPSTREAM}+author:${{ github.repository_owner }}+type:issue+state:open" --jq '.total_count')
-          echo "열린 내 이슈: ${OPEN}/${MAX_OPEN_ISSUES}"
+          # '봇이 등록한' 이슈만 센다 — 상태 파일에 적힌 것이 곧 봇 이슈다.
+          # 계정 전체 열린 이슈를 세면 수동 캠페인 이슈(50건+)에 걸려 봇이 영원히
+          # 쉰다 (autofix 의 PR 상한에서 이미 같은 사고를 냈다).
+          STATE=bot/.github/autofix/state/reported-signatures.txt
+          OPEN=0
+          if [ -f "$STATE" ]; then
+            while read -r LINE; do
+              N=$(printf '%s' "$LINE" | grep -oE 'issues/[0-9]+' | cut -d/ -f2)
+              [ -z "$N" ] && continue
+              ST=$(gh api "repos/${UPSTREAM}/issues/${N}" --jq '.state' 2>/dev/null || echo "")
+              [ "$ST" = "open" ] && OPEN=$(( OPEN + 1 ))
+            done < "$STATE"
+          fi
+          echo "열린 봇 이슈: ${OPEN}/${MAX_OPEN_ISSUES}"
           if [ "$OPEN" -ge "$MAX_OPEN_ISSUES" ]; then
             echo "::notice::열린 이슈 ${OPEN}건 — 상한 도달. 이번 사이클은 보고하지 않는다."
             echo "ok=false" >> "$GITHUB_OUTPUT"
