@@ -29,23 +29,64 @@ rm -f "$OUT"
 STEP() { echo "::group::[detect] $*"; }
 END()  { echo "::endgroup::"; }
 
+# 근본 원인 시그니처 — 증거에서 '무엇이 어떻게 깨졌는지'만 뽑아 해시한다.
+# 같은 원인은 샘플이 달라도 한 건으로 묶이고(스팸 방지), 원인이 다르면 분리된다
+# (공급 확보). 제목·샘플명 단위 비교보다 정밀해 30분 주기 스윕의 판정 기준이 된다.
+signature_of() { # signature_of <kind> <evidence-file>
+  local K="$1" EV="$2" RAW=""
+  case "$K" in
+    *ir-loss|ir-mismatch)
+      # 어긋난 IR 필드의 조합 + 직렬화 실패 사유가 원인을 가른다
+      RAW=$(grep -oE '[a-z_]+: expected=' "$EV" 2>/dev/null | sort -u | tr -d ' \n')
+      RAW="${RAW}$(grep -oE '직렬화 실패: [^(]{0,60}' "$EV" 2>/dev/null | sort -u | head -3 | tr -d ' \n')"
+      ;;
+    arith-overflow|fuzz-crash)
+      # 패닉 위치가 곧 버그 위치 — 위치가 다르면 다른 버그다
+      RAW=$(grep -oE "[a-zA-Z0-9_/.-]+\.rs:[0-9]+" "$EV" 2>/dev/null | head -1)
+      ;;
+    nondeterministic-render)
+      # 어떤 SVG 요소·속성이 흔들리는지가 비결정성의 출처를 가른다
+      RAW=$(grep -oE '<[a-zA-Z:]+|[a-z-]+="' "$EV" 2>/dev/null | sort -u | head -8 | tr -d '\n')
+      ;;
+  esac
+  [ -z "$RAW" ] && RAW="$K"
+  printf '%s' "${K}:${RAW}" | sha1sum | cut -c1-12
+}
+
 emit() {  # emit <kind> <title> <evidence-file>
-  # 제외 목록(이미 upstream 에 보고된 것 + 이번 run 에서 탈락한 것)에 있으면
-  # 이 발견을 건너뛰고 1 을 돌려준다 — 호출부는 계속 다음 표본/다음 층을 훑는다.
-  # 이것이 '같은 발견 반복'을 끊고 오라클을 점점 깊은 층으로 보내는 탐색 장치다.
-  # 전체 제목뿐 아니라 샘플명을 뗀 '기본 제목'(= kind 단위)으로도 비교한다.
-  # 같은 근본 원인이 샘플만 바꿔 매 실행 새 이슈로 올라가는 스팸을 막고,
-  # 보고된 kind 는 건너뛰어 다음 층(B4→오버플로→퍼징)으로 탐색을 전진시킨다.
-  local T_BASE="${2% (*}"
-  if [ -n "${DETECT_EXCLUDE_FILE:-}" ] && [ -s "${DETECT_EXCLUDE_FILE:-}" ] \
-     && { grep -qF -- "$2" "$DETECT_EXCLUDE_FILE" || grep -qF -- "$T_BASE" "$DETECT_EXCLUDE_FILE"; }; then
-    echo "제외된 발견 건너뜀(이미 보고/탈락한 계열): $2"
-    return 1
+  local KIND="$1" TITLE="$2" EV="$3"
+  local SIG; SIG=$(signature_of "$KIND" "$EV")
+
+  # 제외 판정 — 스윕 모드는 시그니처(근본 원인)로, 단발 모드는 제목 계열로 본다.
+  # 단발(autofix 루프)은 '수정 실패한 계열'을 통째로 넘겨 다음 층으로 전진해야 하고,
+  # 스윕은 원인이 다르면 계속 잡아내야 하므로 기준이 다르다.
+  if [ -n "${DETECT_EXCLUDE_FILE:-}" ] && [ -s "${DETECT_EXCLUDE_FILE:-}" ]; then
+    if [ -n "${SWEEP_OUT:-}" ]; then
+      if grep -qF -- "sig:${SIG}" "$DETECT_EXCLUDE_FILE"; then
+        echo "  건너뜀(이미 보고된 원인 sig:${SIG}): $TITLE"
+        return 1
+      fi
+    else
+      local T_BASE="${TITLE% (*}"
+      if grep -qF -- "$TITLE" "$DETECT_EXCLUDE_FILE" || grep -qF -- "$T_BASE" "$DETECT_EXCLUDE_FILE"; then
+        echo "제외된 발견 건너뜀(이미 보고/탈락한 계열): $TITLE"
+        return 1
+      fi
+    fi
   fi
+
+  # 스윕 모드는 한 건에서 멈추지 않는다 — 시그니처별로 모아 두고 계속 훑는다.
+  local DEST="$OUT"
+  if [ -n "${SWEEP_OUT:-}" ]; then
+    DEST="${SWEEP_OUT}/${SIG}.md"
+    [ -f "$DEST" ] && return 1
+  fi
+
   {
     echo "---"
-    echo "kind: $1"
-    echo "title: $2"
+    echo "kind: $KIND"
+    echo "title: $TITLE"
+    echo "sig: $SIG"
     echo "---"
     echo
     echo "## 기계적 판정 근거"
@@ -53,18 +94,26 @@ emit() {  # emit <kind> <title> <evidence-file>
     echo "저장소 CLI 가 계약 위반을 종료코드로 보고했다. 모델 판단이 개입하지 않았다."
     echo
     echo '```'
-    head -60 "$3"
+    head -60 "$EV"
     echo '```'
-  } > "$OUT"
-  echo "발견: [$1] $2"
-  echo "DETECT_KIND=$1"
+  } > "$DEST"
+
+  if [ -n "${SWEEP_OUT:-}" ]; then
+    echo "  발견 수집: [$KIND] sig:${SIG} — $TITLE"
+    return 1   # 멈추지 않고 계속 훑는다
+  fi
+  echo "발견: [$KIND] $TITLE"
+  echo "DETECT_KIND=$KIND"
   exit 0
 }
 
 rotate() { # rotate <목록파일> <개수> — 매 사이클 다른 구간을 보게 한다
   local total; total=$(wc -l < "$1" 2>/dev/null || echo 0)
   [ "$total" -eq 0 ] && return
-  awk -v s=$(( (ROTATION * $2) % total )) -v n="$2" 'NR>s && NR<=s+n' "$1"
+  # 스윕 모드는 한 번에 여러 원인을 모으는 것이 목적이므로 창을 넓게 본다.
+  local n=$(( $2 * ${SWEEP_FACTOR:-1} ))
+  [ "$n" -gt "$total" ] && n="$total"
+  awk -v s=$(( (ROTATION * n) % total )) -v n="$n" 'NR>s && NR<=s+n' "$1"
 }
 
 echo "회전 인덱스: $ROTATION"
