@@ -5349,7 +5349,11 @@ impl DocumentCore {
                 RenderNodeType::TextRun(tr) => {
                     // 사람이 읽을 문자열이므로 표시 텍스트를 쓴다 — 머리말 필드는
                     // 모델에 제어문자 1자라 그대로 내보내면 값이 사라진다 (Task #3216).
-                    out.push_str(tr.display_or_text());
+                    // [#3385] 렌더가 폰트 정합을 위해 원문으로 흘리는 PUA 는 텍스트
+                    // 표면에서만 읽을 수 있는 문자로 바꾼다 (렌더 결정은 불변).
+                    out.push_str(&crate::renderer::composer::pua_to_text_surface(
+                        tr.display_or_text(),
+                    ));
                     *has_token = true;
                 }
                 RenderNodeType::FootnoteMarker(marker) => {

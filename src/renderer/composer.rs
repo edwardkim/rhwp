@@ -2507,6 +2507,46 @@ pub fn pua_to_display_text(ch: char) -> Option<String> {
     None
 }
 
+/// [#3385] **텍스트 추출 전용** PUA 표시 변환.
+///
+/// 렌더 경로는 U+F02B1~F02C4(사각 안 숫자)를 **일부러 원문 그대로 흘린다** — 표준
+/// ①~⑳ 로 매핑하면 1순위 폰트의 *원 안* 글리프가 즉시 잡혀 한컴 정답지의 *사각 안*
+/// 글리프와 멀어지기 때문이다(Task #509 → 캡스톤 F-1 에서 표준 매핑을 되돌린 근거가
+/// `map_pua_bullet_char` 에 남아 있다).
+///
+/// 그러나 **텍스트 표면은 사정이 다르다.** 추출 결과는 폰트가 없는 소비자(RAG·LLM·grep)
+/// 에게 가므로 원문 PUA 는 읽을 수 없는 코드포인트일 뿐이다. 그래서 렌더 결정은 그대로
+/// 두고 텍스트 표면에서만 읽을 수 있는 문자로 바꾼다.
+///
+/// 의미를 모르는 PUA 는 **매핑을 지어내지 않고 그대로 둔다.**
+pub fn pua_to_text_surface(text: &str) -> std::borrow::Cow<'_, str> {
+    if !text
+        .chars()
+        .any(|ch| text_surface_replacement(ch).is_some())
+    {
+        return std::borrow::Cow::Borrowed(text);
+    }
+    let mut out = String::with_capacity(text.len());
+    for ch in text.chars() {
+        match text_surface_replacement(ch) {
+            Some(rep) => out.push_str(&rep),
+            None => out.push(ch),
+        }
+    }
+    std::borrow::Cow::Owned(out)
+}
+
+fn text_surface_replacement(ch: char) -> Option<String> {
+    let cp = ch as u32;
+    // 사각 안 숫자 1~20 — 렌더는 사각 글리프를 위해 원문을 유지하지만, 텍스트에서는
+    // 둘러싸인 숫자라는 뜻이 전달되면 충분하다.
+    if (0xF02B1..=0xF02C4).contains(&cp) {
+        let n = cp - 0xF02B1; // 0-based
+        return char::from_u32(0x2460 + n).map(|c| c.to_string());
+    }
+    // 렌더가 이미 표시 문자열을 갖고 있는 대역은 같은 답을 쓴다.
+    pua_to_display_text(ch)
+}
 /// 조합된 텍스트 런에서 PUA 테두리 숫자 문자를 찾아 CharOverlap 런으로 변환한다.
 ///
 /// PUA 문자는 원본 그대로 유지하되 CharOverlapInfo만 부착한다.
