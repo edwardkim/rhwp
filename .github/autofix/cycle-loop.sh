@@ -51,7 +51,10 @@ reset_tree() {
 
 run_aider() { # run_aider <logfile> <추가 인자...>
   local LOG="$1"; shift
-  aider --model "openai/${MODEL}" "${AIDER_FLAGS[@]}" "$@" 2>&1 | tee -a "$LOG" || true
+  # NIM 무료 티어는 응답이 분 단위로 느릴 수 있다 — 턴당 상한을 두어
+  # 한 시도가 전체 예산을 독식하는 것을 막는다 (run #15: 시도 1이 53분 소모).
+  timeout -k 30 "${AIDER_TURN_SECS:-900}" \
+    aider --model "openai/${MODEL}" "${AIDER_FLAGS[@]}" "$@" 2>&1 | tee -a "$LOG" || true
 }
 
 # 산출물(AUTOFIX_RESULT.md)이 나올 때까지 같은 대화를 최대 3턴 이어간다.
@@ -61,6 +64,10 @@ aider_until_result() { # aider_until_result <logfile> <msgfile> [파일·플래�
   local TURN
   for TURN in 2 3; do
     [ -f AUTOFIX_RESULT.md ] && break
+    if [ "$(elapsed)" -ge "$BUDGET_SECS" ]; then
+      echo "시간 예산 소진 — 남은 턴 중단" | tee -a "$LOG"
+      break
+    fi
     echo "--- ${TURN}턴: AUTOFIX_RESULT.md 미생성 — 대화 복원 후 계속 ---" | tee -a "$LOG"
     run_aider "$LOG" "$@" --restore-chat-history \
       --message "아직 루트에 AUTOFIX_RESULT.md 가 없다. 지시서의 남은 단계(red 회귀 테스트 작성 → src/ 최소 수정 → AUTOFIX_RESULT.md 작성)를 지금 끝내라. 파일이 더 필요하면 디렉터리가 아니라 정확한 파일 경로를 한 줄에 하나씩 지정해라. 포기하는 경우에도 status: NO-FINDING 으로 AUTOFIX_RESULT.md 는 반드시 남겨라."
