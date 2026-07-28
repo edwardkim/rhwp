@@ -1,5 +1,5 @@
 use super::*;
-use crate::model::document::{Section, SectionDef};
+use crate::model::document::{RawRecord, Section, SectionDef};
 use crate::model::page::PageDef;
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::shape::{GroupShape, RectangleShape};
@@ -56,6 +56,99 @@ fn test_roundtrip_section_def() {
     assert_eq!(parsed.section_def.page_num, 1);
     assert_eq!(parsed.section_def.page_def.width, 59528);
     assert_eq!(parsed.section_def.page_def.height, 84188);
+}
+
+#[test]
+fn test_section_def_exact_ctrl_data_duplicate_is_serialized_once() {
+    let canonical_ctrl_data = vec![0x10, 0x20, 0x30, 0x40];
+    let additional_direct_ctrl_data = vec![0x50, 0x60, 0x70, 0x80];
+    let nested_ctrl_data = vec![0x90, 0xA0, 0xB0, 0xC0];
+    let nested_ctrl_id = 0x7473_6574u32; // 'test'
+
+    let sd = SectionDef {
+        extra_child_records: vec![
+            RawRecord {
+                tag_id: tags::HWPTAG_CTRL_DATA,
+                level: 2,
+                data: canonical_ctrl_data.clone(),
+            },
+            RawRecord {
+                tag_id: tags::HWPTAG_CTRL_DATA,
+                level: 2,
+                data: additional_direct_ctrl_data.clone(),
+            },
+            RawRecord {
+                tag_id: tags::HWPTAG_CTRL_HEADER,
+                level: 2,
+                data: nested_ctrl_id.to_le_bytes().to_vec(),
+            },
+            RawRecord {
+                tag_id: tags::HWPTAG_CTRL_DATA,
+                level: 3,
+                data: nested_ctrl_data.clone(),
+            },
+        ],
+        ..Default::default()
+    };
+    let para = Paragraph {
+        char_count: 2,
+        controls: vec![Control::SectionDef(Box::new(sd))],
+        ctrl_data_records: vec![Some(canonical_ctrl_data.clone())],
+        ..Default::default()
+    };
+    let section = Section {
+        paragraphs: vec![para],
+        raw_stream: None,
+        ..Default::default()
+    };
+
+    let bytes = serialize_section(&section);
+    let records = Record::read_all(&bytes).expect("직렬화된 Section record 파싱");
+    let canonical_records: Vec<_> = records
+        .iter()
+        .filter(|record| {
+            record.tag_id == tags::HWPTAG_CTRL_DATA
+                && record.level == 2
+                && record.data == canonical_ctrl_data
+        })
+        .collect();
+
+    assert_eq!(
+        canonical_records.len(),
+        1,
+        "문단 슬롯과 SectionDef extra가 같은 CTRL_DATA를 소유해도 한 번만 출력해야 한다"
+    );
+    let section_def_pos = records
+        .iter()
+        .position(|record| {
+            record.tag_id == tags::HWPTAG_CTRL_HEADER
+                && record
+                    .data
+                    .starts_with(&tags::CTRL_SECTION_DEF.to_le_bytes())
+        })
+        .expect("SectionDef CTRL_HEADER");
+    assert_eq!(
+        records[section_def_pos + 1].tag_id,
+        tags::HWPTAG_CTRL_DATA,
+        "canonical CTRL_DATA는 SectionDef CTRL_HEADER 직후에 있어야 한다"
+    );
+    assert_eq!(records[section_def_pos + 1].data, canonical_ctrl_data);
+    assert!(
+        records.iter().any(|record| {
+            record.tag_id == tags::HWPTAG_CTRL_DATA
+                && record.level == 2
+                && record.data == additional_direct_ctrl_data
+        }),
+        "payload가 다른 추가 직접 자식 CTRL_DATA는 보존돼야 한다"
+    );
+    assert!(
+        records.iter().any(|record| {
+            record.tag_id == tags::HWPTAG_CTRL_DATA
+                && record.level == 3
+                && record.data == nested_ctrl_data
+        }),
+        "중첩 control의 CTRL_DATA는 보존돼야 한다"
+    );
 }
 
 /// [#new] page_num_type 필드만 설정되고 flags 비트(20-21)는 미동기화된

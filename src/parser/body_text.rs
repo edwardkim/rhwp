@@ -173,11 +173,23 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
 
                 // CTRL_DATA 레코드 추출 (라운드트립 보존용)
                 // 중첩 CTRL_HEADER 이전까지만 검색하여 내부 컨트롤의 CTRL_DATA 혼입 방지
-                let ctrl_data = ctrl_records[1..]
-                    .iter()
-                    .take_while(|r| r.tag_id != tags::HWPTAG_CTRL_HEADER)
-                    .find(|r| r.tag_id == tags::HWPTAG_CTRL_DATA)
-                    .map(|r| r.data.clone());
+                //
+                // SectionDef는 바탕쪽 같은 중첩 raw record를 extra_child_records에도 보존하므로,
+                // CTRL_HEADER의 직접 자식만 문단 control 슬롯의 canonical owner로 삼는다.
+                // 다른 control은 Picture/Shape처럼 CTRL_DATA가 더 깊은 level에 올 수 있어 기존
+                // 탐색 계약을 유지한다.
+                let ctrl_data_record = if matches!(control, Control::SectionDef(_)) {
+                    let direct_child_level = ctrl_records[0].level.saturating_add(1);
+                    ctrl_records[1..].iter().find(|r| {
+                        r.tag_id == tags::HWPTAG_CTRL_DATA && r.level == direct_child_level
+                    })
+                } else {
+                    ctrl_records[1..]
+                        .iter()
+                        .take_while(|r| r.tag_id != tags::HWPTAG_CTRL_HEADER)
+                        .find(|r| r.tag_id == tags::HWPTAG_CTRL_DATA)
+                };
+                let ctrl_data = ctrl_data_record.map(|r| r.data.clone());
 
                 // CTRL_DATA에서 필드 이름 추출 → Field.ctrl_data_name에 설정
                 if let Control::Field(ref mut field) = control {
@@ -532,7 +544,7 @@ fn parse_ctrl_header(records: &[Record]) -> Control {
 
     match ctrl_id {
         tags::CTRL_SECTION_DEF => {
-            let section_def = parse_section_def(ctrl_data, child_records);
+            let section_def = parse_section_def(ctrl_data, child_records, records[0].level);
             Control::SectionDef(Box::new(section_def))
         }
         tags::CTRL_COLUMN_DEF => {
@@ -549,8 +561,9 @@ fn parse_ctrl_header(records: &[Record]) -> Control {
 /// 구역 정의 파싱 ('secd' 컨트롤)
 ///
 /// ctrl_data: CTRL_HEADER의 ctrl_id 이후 데이터
-/// child_records: 자식 레코드 (PAGE_DEF, FOOTNOTE_SHAPE, PAGE_BORDER_FILL)
-fn parse_section_def(ctrl_data: &[u8], child_records: &[Record]) -> SectionDef {
+/// child_records: 자식 레코드 (CTRL_DATA, PAGE_DEF, FOOTNOTE_SHAPE, PAGE_BORDER_FILL, raw 중첩)
+/// ctrl_level: SectionDef CTRL_HEADER의 record level
+fn parse_section_def(ctrl_data: &[u8], child_records: &[Record], ctrl_level: u16) -> SectionDef {
     let mut sd = SectionDef::default();
     let mut r = ByteReader::new(ctrl_data);
 
@@ -584,8 +597,17 @@ fn parse_section_def(ctrl_data: &[u8], child_records: &[Record]) -> SectionDef {
     // 자식 레코드에서 PAGE_DEF, FOOTNOTE_SHAPE, PAGE_BORDER_FILL 파싱
     let mut footnote_count = 0u32;
     let mut border_fill_count = 0u32;
+    let mut direct_ctrl_data_claimed = false;
+    let direct_child_level = ctrl_level.saturating_add(1);
     for record in child_records {
         match record.tag_id {
+            tags::HWPTAG_CTRL_DATA
+                if record.level == direct_child_level && !direct_ctrl_data_claimed =>
+            {
+                // 첫 직접 자식 CTRL_DATA는 Paragraph.ctrl_data_records가 canonical owner다.
+                // 추가 직접 자식과 중첩 control의 CTRL_DATA는 아래 raw 보존 경로에 남긴다.
+                direct_ctrl_data_claimed = true;
+            }
             tags::HWPTAG_PAGE_DEF => {
                 sd.page_def = parse_page_def(&record.data);
             }

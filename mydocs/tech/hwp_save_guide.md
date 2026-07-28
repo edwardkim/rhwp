@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/tech/hwp_spec_errata.md
-last_verified: 2026-07-17
+last_verified: 2026-07-28
 ---
 
 # HWP 저장 기술 가이드
@@ -171,7 +171,7 @@ LineSeg[0]:
 
 | 컨트롤 | char_code | ctrl_id | 필수 레코드 (순서) | 레벨 |
 |--------|-----------|---------|-------------------|------|
-| SectionDef | 0x0002 | 'secd' | CTRL_HEADER → PAGE_DEF → FOOTNOTE_SHAPE×2 → PAGE_BORDER_FILL | L+1 → L+2 |
+| SectionDef | 0x0002 | 'secd' | CTRL_HEADER → [CTRL_DATA] → PAGE_DEF → FOOTNOTE_SHAPE×2 → PAGE_BORDER_FILL | L+1 → L+2 |
 | ColumnDef | 0x0002 | 'cold' | CTRL_HEADER (데이터 내장) | L+1 |
 | Table | 0x000B | 'tbl ' | CTRL_HEADER → [Caption] → TABLE → Cell(LIST_HEADER + Paragraphs)×N | L+1 → L+2 |
 | Picture | 0x000B | 'gso ' | CTRL_HEADER → SHAPE_COMPONENT → SHAPE_COMPONENT_PICTURE | L+1 → L+2 → L+3 |
@@ -188,6 +188,12 @@ LineSeg[0]:
 | Bookmark | 0x0016 | - | CTRL_HEADER만 | L+1 |
 | Field | 0x0003 | '%hlk' 등 | CTRL_HEADER → [CTRL_DATA] | L+1 → L+2 |
 | Equation | 0x000B | 'eqed' | CTRL_HEADER → SHAPE_COMPONENT → EQ_EDIT | L+1 → L+2 → L+3 |
+
+SectionDef의 `CTRL_DATA`는 선택적이며 `CTRL_HEADER`의 첫 직접 자식 위치에 둔다. HWP5 파서에서는
+첫 직접 자식 payload를 `Paragraph.ctrl_data_records`가 canonical owner로 보존하고,
+`SectionDef.extra_child_records`에는 같은 레코드를 중복 저장하지 않는다. 추가 직접 자식이나
+중첩 control의 `CTRL_DATA`는 알 수 없는 원본 레코드 보존 대상으로 남긴다. 저장 시 과거 IR이
+두 필드에 동일 level·payload를 함께 갖고 있어도 exact duplicate는 한 번만 출력한다(#3507).
 
 ### 2.3 TABLE 레코드 상세 구조
 

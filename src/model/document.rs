@@ -264,7 +264,8 @@ pub struct SectionDef {
     pub raw_ctrl_extra: Vec<u8>,
     /// 추가 쪽 테두리/배경 (2번째, 3번째 등)
     pub extra_page_border_fills: Vec<PageBorderFill>,
-    /// 파서가 인식하지 못한 자식 레코드 (바탕쪽 등, 라운드트립 보존용)
+    /// 파서가 인식하지 못한 자식 레코드 (바탕쪽 등, 라운드트립 보존용).
+    /// SectionDef의 첫 직접 자식 CTRL_DATA는 Paragraph.ctrl_data_records가 소유한다.
     pub extra_child_records: Vec<RawRecord>,
     /// 바탕쪽 (extra_child_records에서 파싱, 렌더링 전용)
     pub master_pages: Vec<MasterPage>,

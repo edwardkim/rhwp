@@ -37,7 +37,7 @@ pub fn serialize_control(
     let insert_pos = records.len(); // CTRL_HEADER가 쓰이는 위치 기억
 
     match ctrl {
-        Control::SectionDef(sd) => serialize_section_def(sd, level, records),
+        Control::SectionDef(sd) => serialize_section_def(sd, level, ctrl_data_record, records),
         Control::ColumnDef(cd) => serialize_column_def(cd, level, records),
         Control::Table(table) => serialize_table(table, level, records),
         Control::Header(header) => serialize_header_control(header, level, records),
@@ -231,7 +231,12 @@ fn make_ctrl_record(ctrl_id: u32, level: u16, ctrl_data: &[u8]) -> Record {
 // 구역 정의 ('secd')
 // ============================================================
 
-fn serialize_section_def(sd: &SectionDef, level: u16, records: &mut Vec<Record>) {
+fn serialize_section_def(
+    sd: &SectionDef,
+    level: u16,
+    ctrl_data_record: Option<&[u8]>,
+    records: &mut Vec<Record>,
+) {
     let mut w = ByteWriter::new();
     // HWPX 파서(parse_start_num, pageStartsOn)는 page_num_type 필드만 세팅하고
     // flags bit 20-21은 동기화하지 않는다. HWP5는 page_num_type을 별도 필드로
@@ -310,6 +315,17 @@ fn serialize_section_def(sd: &SectionDef, level: u16, records: &mut Vec<Record>)
 
     // 기타 자식 레코드 복원 (바탕쪽 LIST_HEADER + 문단 등)
     for raw in &sd.extra_child_records {
+        let is_exact_owned_ctrl_data = ctrl_data_record.is_some_and(|data| {
+            raw.tag_id == tags::HWPTAG_CTRL_DATA
+                && raw.level == level.saturating_add(1)
+                && raw.data.as_slice() == data
+        });
+        if is_exact_owned_ctrl_data {
+            // 과거 parser 또는 외부 생성 IR이 같은 직접 자식 CTRL_DATA를
+            // Paragraph.ctrl_data_records와 extra_child_records에 동시에 보유해도,
+            // 아래 공용 복원 경로가 CTRL_HEADER 직후에 한 번만 출력하도록 한다.
+            continue;
+        }
         records.push(Record {
             tag_id: raw.tag_id,
             level: raw.level,
