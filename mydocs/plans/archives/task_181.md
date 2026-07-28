@@ -148,7 +148,7 @@ EqNode
 
 ### 제외 (후속 타스크)
 - LADDER, SLADDER, LONGDIV (특수 레이아웃)
-- SCALE (크기 비율 조정, HWP97 레거시)
+- SCALE (크기 비율 조정, HWP3 레거시)
 - REL, BUILDREL (화살표 위/아래 텍스트)
 - COLOR (색상 지정)
 - 수식 편집 UI

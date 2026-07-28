@@ -256,22 +256,37 @@ export class WasmBridge {
     this._documentDigest = null;
   }
 
-  loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
-    this.releaseDocument();
+  private loadDocumentAtomically(
+    data: Uint8Array,
+    fileName: string | undefined,
+    createDocument: () => HwpDocument,
+  ): DocumentInfo {
     const nextFileName = fileName ?? 'document.hwp';
     const nextDocumentDigest = `blake3:${bytesToHex(blake3(data))}`;
     let nextDoc: HwpDocument | null = null;
 
     try {
-      nextDoc = new HwpDocument(data);
+      nextDoc = createDocument();
+      nextDoc.convertToEditable();
+      this.ensureParagraphStableIdsFor(nextDoc);
+      nextDoc.setFileName(nextFileName);
+      const info: DocumentInfo = JSON.parse(nextDoc.getDocumentInfo());
+
+      // 새 문서를 끝까지 준비한 뒤에만 기존 문서를 교체한다. 암호 필요·오답·손상
+      // 오류에서는 현재 문서와 최근 문서 연결을 그대로 유지해야 한다 (#3474).
+      const previousDoc = this.doc;
       this.doc = nextDoc;
       this._fileName = nextFileName;
+      this._currentFileHandle = null;
       this._documentDigest = nextDocumentDigest;
-      this.doc.convertToEditable();
-      this.ensureParagraphStableIds();
-      this.doc.setFileName(this._fileName);
-      const info: DocumentInfo = JSON.parse(this.doc.getDocumentInfo());
       this._documentGeneration += 1;
+      if (previousDoc) {
+        try {
+          previousDoc.free();
+        } catch {
+          /* noop */
+        }
+      }
       console.log(`[WasmBridge] 문서 로드: ${info.pageCount}페이지`);
 
       // [Task #741 후속] 외부 file path 그림 영역 영역 dev 환경 영역 영역 fetch (basename 영역
@@ -281,9 +296,6 @@ export class WasmBridge {
 
       return info;
     } catch (error) {
-      if (this.doc === nextDoc) {
-        this.doc = null;
-      }
       if (nextDoc) {
         try {
           nextDoc.free();
@@ -291,11 +303,16 @@ export class WasmBridge {
           /* noop */
         }
       }
-      this._fileName = 'document.hwp';
-      this._currentFileHandle = null;
-      this._documentDigest = null;
       throw error;
     }
+  }
+
+  loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
+    return this.loadDocumentAtomically(data, fileName, () => new HwpDocument(data));
+  }
+
+  loadDocumentWithPassword(data: Uint8Array, password: string, fileName?: string): DocumentInfo {
+    return this.loadDocumentAtomically(data, fileName, () => HwpDocument.openWithPassword(data, password));
   }
 
   /** [Task #741 후속] 외부 file path 그림 영역 영역 dev 서버 영역 영역 fetch + inject. */
@@ -991,10 +1008,8 @@ export class WasmBridge {
     return d.getParagraphStableId(sec, para) ?? '';
   }
 
-  /** 비교/스냅샷 생성 직전에만 stable_id를 보정한다(문서 로드 시 자동 호출 금지). */
-  ensureParagraphStableIds(): void {
-    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    const d = this.doc as unknown as { ensureParagraphStableIds?: () => void };
+  private ensureParagraphStableIdsFor(document: HwpDocument): void {
+    const d = document as unknown as { ensureParagraphStableIds?: () => void };
     if (typeof d.ensureParagraphStableIds === 'function') {
       try {
         d.ensureParagraphStableIds();
@@ -1002,6 +1017,12 @@ export class WasmBridge {
         console.warn('[WasmBridge] ensureParagraphStableIds skipped:', e);
       }
     }
+  }
+
+  /** 비교·스냅샷 생성 요청 시 현재 문서의 stable_id를 다시 보정한다. */
+  ensureParagraphStableIds(): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.ensureParagraphStableIdsFor(this.doc);
   }
 
   /** 디버그: `JSON.parse(bridge.debugDumpStableIds(0,0,12))` 등 분할 직후 등 stable_id 확인 */

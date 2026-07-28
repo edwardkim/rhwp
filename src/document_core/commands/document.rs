@@ -53,9 +53,29 @@ impl DocumentCore {
     }
 
     pub fn from_bytes(data: &[u8]) -> Result<DocumentCore, HwpError> {
+        Self::from_bytes_inner(data, None)
+    }
+
+    /// 비밀번호로 보호된 HWP 파일을 비밀번호와 함께 로드한다.
+    ///
+    /// HWP5 EncryptVersion 4 및 압축 HWP3 비밀번호 암호 문서를 연다.
+    /// 비밀번호가 틀리면 `HwpError::InvalidFile`로 래핑된 암호 불일치/손상 오류가
+    /// 반환된다. 암호화되지 않은 HWPX는 기존 파서로 열 수 있지만 암호화 HWPX
+    /// 복호화는 지원하지 않는다.
+    pub fn from_bytes_with_password(
+        data: &[u8],
+        password: &[u8],
+    ) -> Result<DocumentCore, HwpError> {
+        Self::from_bytes_inner(data, Some(password))
+    }
+
+    fn from_bytes_inner(data: &[u8], password: Option<&[u8]>) -> Result<DocumentCore, HwpError> {
         let source_format = crate::parser::detect_format(data);
-        let parsed = crate::parser::parse_document_with_metadata(data)
-            .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
+        let parsed = match password {
+            Some(pwd) => crate::parser::parse_document_with_metadata_password(data, pwd),
+            None => crate::parser::parse_document_with_metadata(data),
+        }
+        .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
         let mut document = parsed.document;
         let hml_metadata = parsed.hml_metadata;
 

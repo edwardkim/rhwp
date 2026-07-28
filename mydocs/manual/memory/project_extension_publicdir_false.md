@@ -27,6 +27,17 @@ src 주입이 동형 선례.)
 **검증**: 웹앱 e2e/빌드만으로는 확장 회귀를 못 잡는다. 확장 새 기능/자산 추가 시
 chrome://extensions unpacked 로드 → viewer 콘솔 CSP/404 확인을 메인테이너에게 요청.
 
+**③ 필수 산출물 게이트 (#3433, 2026-07-27 추가)**: 위 ①을 알고도 `print.html` 누락이
+v0.8.0·v0.8.1 두 릴리즈를 통과했다. 원인은 지식 부족이 아니라 **검출 장치 부재**였다 —
+`build.mjs` 의 `copy()` 가 원본 부재 시 `SKIP (not found)` 경고만 내고 넘어가 누락이 빌드
+성공으로 위장됐다. 이제 두 `build.mjs` 말미에 런타임 필수 파일(`manifest.json`,
+`viewer.html`, `print.html`, `theme-init.js`, `wasm/rhwp.js`, `wasm/rhwp_bg.wasm`) 존재를
+확인하고 없으면 `exit 1` 하는 게이트가 있다. **새 필수 자산을 추가하면 그 목록에도 넣어야**
+같은 사고가 재발하지 않는다.
+
+교훈은 [[feedback_logic_tests_miss_build_artifacts]] 로 분리했다 — print 로직 테스트 15개가
+전부 통과하는 동안 산출물이 빠져 있었다.
+
 **확장 버전 정책**: 스토어는 동일 버전 재업로드 불가. 배포 후 확장 회귀 발견 시 같은
 버전 재제출 불가 → 다음 버전(0.2.x+1)에 묶어 올린다. (라이브러리 버전과 이원화: [[publish_guide 참조]])
 

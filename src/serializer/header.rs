@@ -7,7 +7,9 @@
 //! - [18-31]: 0 패딩
 //! - [32-35]: 버전 (revision, build, minor, major) LE
 //! - [36-39]: 속성 플래그 u32 LE
-//! - [40-255]: 0 패딩
+//! - [40-43]: 라이선스 속성
+//! - [44-47]: EncryptVersion u32 LE
+//! - [48-255]: 0 패딩
 
 use crate::model::document::FileHeader;
 use crate::parser::header::{FILE_HEADER_SIZE, HWP_SIGNATURE};
@@ -116,7 +118,7 @@ mod tests {
 
         // [18-31] 패딩 영역은 0
         assert!(bytes[18..32].iter().all(|&b| b == 0));
-        // [40-255] 패딩 영역은 0
+        // 새 문서는 라이선스/EncryptVersion/예약 영역을 0으로 초기화
         assert!(bytes[40..256].iter().all(|&b| b == 0));
     }
 }
