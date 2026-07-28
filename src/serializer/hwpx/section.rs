@@ -2010,7 +2010,7 @@ fn render_common_shape_xml(
         .unwrap_or(c.instance_id);
     let mut out = format!(
         concat!(
-            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="BOTH_SIDES" lock="{lock}" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}">"#,
+            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="{tf}" lock="{lock}" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}">"#,
             "{block}",
             "{geometry}",
             r#"<hp:sz width="{w}" height="{h}" widthRelTo="{wrt}" heightRelTo="{hrt}" protect="{prot}"/>"#,
@@ -2028,6 +2028,10 @@ fn render_common_shape_xml(
         gl = group_level,
         iid = instid,
         tw = text_wrap_to_hwpx(c.text_wrap),
+        // [#2790] textFlow(글 흐름) — 종전 "BOTH_SIDES" 리터럴은 파서
+        // (parse_object_element_attrs:2962)가 IR 에 적재한 값을 저장에서만 버리는 순손실이었다.
+        // write_rect/write_line(shape.rs)·render_equation 은 이미 IR 기반이다.
+        tf = text_flow_to_hwpx(c.text_flow),
         tac = if c.treat_as_char { "1" } else { "0" },
         fwt = if c.flow_with_text { "1" } else { "0" },
         ao = if c.allow_overlap { "1" } else { "0" },
@@ -2247,8 +2251,19 @@ fn render_equation(eq: &Equation) -> String {
     // [#2840] 개체 잠금(lock) — 종전 하드코딩 "0" 제거, IR(common.locked) 값을 방출.
     let lock = if c.locked { "1" } else { "0" };
 
+    // [#2778] 크기 기준(widthRelTo/heightRelTo) — 종전 "ABSOLUTE" 리터럴은 파서
+    // (parse_object_layout_child:3023)가 IR 에 적재한 단/열/쪽 상대 기준을 저장에서만
+    // 버렸다. #2697(표)·#2712(그림/도형)·#2726(공용 도형)과 동형이다. 높이는 파서가
+    // `parse_size_criterion(_, false)` 로 읽어 치역이 3값이므로 같은 접기 함수를 쓴다.
+    let width_rel_to = size_criterion_str(c.width_criterion);
+    let height_rel_to = height_criterion_str(c.height_criterion);
+
+    // [#2782] 개체 겹침 허용(allowOverlap) — 종전 하드코딩 "0" 제거, IR 값을 방출.
+    // 같은 요소의 treatAsChar·flowWithText 는 이미 IR 기반이었다.
+    let allow_overlap = if c.allow_overlap { "1" } else { "0" };
+
     format!(
-        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="{width_rel_to}" height="{height}" heightRelTo="{height_rel_to}"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="{allow_overlap}" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
         text_wrap_to_hwpx(c.text_wrap),
         text_flow_to_hwpx(c.text_flow),
         vert_rel_to_hwpx(c.vert_rel_to),
@@ -2627,6 +2642,92 @@ mod tests {
         assert!(
             xml.contains(r#"lock="1""#),
             "locked=true 면 lock=\"1\" 을 방출해야 함(하드코딩 \"0\" 잔존 금지): {xml}"
+        );
+    }
+
+    /// [Issue #2778] 수식의 크기 기준(`hp:sz` widthRelTo/heightRelTo)이 IR
+    /// (common.width_criterion/height_criterion)에서 방출돼야 한다. 종전엔 "ABSOLUTE"
+    /// 하드코딩이라 단/열/쪽 상대 크기 기준이 왕복마다 소실됐다.
+    #[test]
+    fn equation_size_criterion_reflects_ir() {
+        use crate::model::control::Equation;
+        use crate::model::shape::SizeCriterion;
+
+        let mut eq = Equation::default();
+        eq.common.width_criterion = SizeCriterion::Column;
+        eq.common.height_criterion = SizeCriterion::Page;
+        let xml = render_equation(&eq);
+        assert!(
+            xml.contains(r#"widthRelTo="COLUMN""#),
+            "수식 widthRelTo 이 IR 값이어야 함: {xml}"
+        );
+        assert!(
+            xml.contains(r#"heightRelTo="PAGE""#),
+            "수식 heightRelTo 이 IR 값이어야 함: {xml}"
+        );
+
+        // 파서는 높이를 `parse_size_criterion(_, allow_column_para = false)` 로 읽어
+        // 치역이 {PAPER, PAGE, ABSOLUTE} 3값뿐이므로, 방출도 같은 3값으로 접어야 멱등이다.
+        let mut folded = Equation::default();
+        folded.common.height_criterion = SizeCriterion::Column;
+        assert!(
+            render_equation(&folded).contains(r#"heightRelTo="ABSOLUTE""#),
+            "heightRelTo 는 COLUMN/PARA 를 ABSOLUTE 로 접어야 왕복이 멱등"
+        );
+    }
+
+    /// [Issue #2782] 수식의 allowOverlap(개체 겹침 허용)이 IR(common.allow_overlap)에서
+    /// 방출돼야 한다. 종전 하드코딩 "0" 은 겹침 허용 설정을 왕복마다 껐다.
+    #[test]
+    fn equation_allow_overlap_reflects_ir() {
+        use crate::model::control::Equation;
+
+        let mut eq = Equation::default();
+        eq.common.allow_overlap = true;
+        let xml = render_equation(&eq);
+        assert!(
+            xml.contains(r#"allowOverlap="1""#),
+            "allow_overlap=true 면 allowOverlap=\"1\" 을 방출해야 함: {xml}"
+        );
+        assert!(
+            render_equation(&Equation::default()).contains(r#"allowOverlap="0""#),
+            "기본값(false)은 종전대로 allowOverlap=\"0\" 이어야 함(회귀 방지)"
+        );
+    }
+
+    /// [Issue #2790] legacy 공용 도형 경로(ellipse/arc/polygon/curve/chart/ole)의 textFlow
+    /// 가 IR(common.text_flow)에서 방출돼야 한다. 종전 "BOTH_SIDES" 하드코딩으로 한쪽
+    /// 배치(LEFT_ONLY 등) 설정이 왕복마다 소실됐다.
+    #[test]
+    fn common_shape_text_flow_reflects_ir() {
+        use crate::model::shape::{CommonObjAttr, TextFlow};
+
+        let mut c = CommonObjAttr::default();
+        c.text_flow = TextFlow::LargestOnly;
+        let mut ctx = SerializeContext::default();
+        let xml = render_common_shape_xml("ellipse", &c, &None, None, &[], "", &mut ctx);
+        assert!(
+            xml.contains(r#"textFlow="LARGEST_ONLY""#),
+            "공용 도형 textFlow 이 IR 값이어야 함: {xml}"
+        );
+        assert!(
+            !xml.contains(r#"textFlow="BOTH_SIDES""#),
+            "BOTH_SIDES 하드코딩 잔존 금지"
+        );
+
+        // 기본값(BothSides)은 종전 출력과 동일해야 한다(회귀 방지).
+        let default_xml = render_common_shape_xml(
+            "ellipse",
+            &CommonObjAttr::default(),
+            &None,
+            None,
+            &[],
+            "",
+            &mut ctx,
+        );
+        assert!(
+            default_xml.contains(r#"textFlow="BOTH_SIDES""#),
+            "기본값은 BOTH_SIDES 를 유지해야 함: {default_xml}"
         );
     }
 
