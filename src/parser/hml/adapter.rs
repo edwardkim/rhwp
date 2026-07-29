@@ -237,7 +237,10 @@ fn into_table(source: HmlTable) -> Result<Control, HmlError> {
             border_fill_id: source_cell.border_fill_id,
             paragraphs,
             apply_inner_margin: true,
-            vertical_align: VerticalAlign::Center,
+            // [#3189] 종전엔 Center 하드코딩이라 원본의 Top/Bottom 이 유실됐다.
+            // reader 가 PARALIST@VertAlign 을 읽어 넣은 값을 그대로 옮긴다
+            // (속성이 없으면 reader 가 Center 로 접으므로 기존 동작과 같다).
+            vertical_align: source_cell.vertical_align,
             ..Default::default()
         });
     }
