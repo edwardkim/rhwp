@@ -1591,6 +1591,19 @@ mod tests {
         image.pixels().filter(|pixel| pixel[3] > 0).count()
     }
 
+    /// 잉크 픽셀의 세로 범위 `(min_y, max_y)`. 잉크가 없으면 `None`.
+    fn ink_y_range(image: &image::RgbaImage) -> Option<(u32, u32)> {
+        let mut min_y: Option<u32> = None;
+        let mut max_y = 0_u32;
+        for (_, y, pixel) in image.enumerate_pixels() {
+            if pixel[3] > 0 {
+                min_y = Some(min_y.map_or(y, |m| m.min(y)));
+                max_y = max_y.max(y);
+            }
+        }
+        min_y.map(|min| (min, max_y))
+    }
+
     fn portable_font_resources() -> ResourceArena {
         let mut resources = ResourceArena::default();
         let font_bytes = [0_u8, 1, 2, 3];
@@ -3018,6 +3031,80 @@ mod tests {
         let image = decode_rgba(&output.bytes);
 
         assert!(count_ink(&image) > 0);
+    }
+
+    #[test]
+    fn issue_2771_script_run_shrinks_glyph_and_shifts_baseline() {
+        // [#2771] skia 경로에는 첨자 분기가 아예 없어 위첨자/아래첨자를 본문과
+        // 같은 크기·같은 baseline 으로 그렸다. SVG/Canvas/HTML 과 동일한
+        // 계약(0.7 배 글꼴 + baseline 이동)을 따라야 한다.
+        let render_script = |superscript: bool, subscript: bool| {
+            let run = TextRunNode {
+                text: "A".to_string(),
+                style: TextStyle {
+                    font_size: 24.0,
+                    color: 0x00000000,
+                    superscript,
+                    subscript,
+                    ..Default::default()
+                },
+                char_shape_id: None,
+                para_shape_id: None,
+                section_index: None,
+                para_index: None,
+                char_start: None,
+                cell_context: None,
+                is_para_end: false,
+                is_line_break_end: false,
+                rotation: 0.0,
+                is_vertical: false,
+                char_overlap: None,
+                border_fill_id: 0,
+                baseline: 32.0,
+                field_marker: Default::default(),
+                display_text: None,
+            };
+            let tree = PageLayerTree::new(
+                64.0,
+                64.0,
+                LayerNode::leaf(
+                    BoundingBox::new(0.0, 0.0, 64.0, 64.0),
+                    None,
+                    vec![PaintOp::text_run(
+                        BoundingBox::new(4.0, 0.0, 56.0, 64.0),
+                        run,
+                    )],
+                ),
+            );
+            let output = SkiaLayerRenderer::new()
+                .render_raster_with_options(&tree, RasterRenderOptions::default())
+                .expect("render script text");
+            ink_y_range(&decode_rgba(&output.bytes)).expect("글리프 잉크가 있어야 함")
+        };
+
+        let (base_top, base_bottom) = render_script(false, false);
+        let (sup_top, sup_bottom) = render_script(true, false);
+        let (sub_top, sub_bottom) = render_script(false, true);
+
+        assert!(
+            sup_bottom < base_bottom,
+            "위첨자는 본문보다 위 baseline 이어야 함: sup={sup_bottom}, base={base_bottom}"
+        );
+        assert!(
+            sub_bottom > base_bottom,
+            "아래첨자는 본문보다 아래 baseline 이어야 함: sub={sub_bottom}, base={base_bottom}"
+        );
+        let base_height = base_bottom - base_top;
+        assert!(
+            sup_bottom - sup_top < base_height,
+            "위첨자 글리프는 0.7 배로 작아야 함: sup={}, base={base_height}",
+            sup_bottom - sup_top
+        );
+        assert!(
+            sub_bottom - sub_top < base_height,
+            "아래첨자 글리프는 0.7 배로 작아야 함: sub={}, base={base_height}",
+            sub_bottom - sub_top
+        );
     }
 
     #[test]

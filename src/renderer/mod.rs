@@ -203,7 +203,54 @@ pub struct TextStyle {
     pub shade_color: ColorRef,
 }
 
+/// 위첨자/아래첨자 글리프를 그릴 때 적용하는 본문 대비 글꼴 크기 배율.
+pub const SCRIPT_FONT_SCALE: f64 = 0.7;
+/// 위첨자 baseline 상향 이동량 (본문 글꼴 크기 대비 em).
+pub const SUPERSCRIPT_RISE_EM: f64 = 0.3;
+/// 아래첨자 baseline 하향 이동량 (본문 글꼴 크기 대비 em).
+pub const SUBSCRIPT_DROP_EM: f64 = 0.15;
+
 impl TextStyle {
+    /// 위첨자/아래첨자 run 의 **그리기** 글꼴 크기와 baseline 을 계산한다.
+    ///
+    /// SVG·Canvas·HTML·Skia·paint JSON 이 각자 하드코딩하던 동일 상수를 한곳으로
+    /// 모은 것이다 (#2771). 레이아웃 advance 는 본문 run 기준을 유지하고 실제
+    /// 글리프 크기와 baseline 만 조정한다는 계약은 종전과 같다.
+    ///
+    /// 비첨자 run 은 인자를 그대로 돌려주므로 기존 출력이 비트 단위로 보존된다.
+    pub fn script_draw_metrics(&self, base_font_size: f64, baseline_y: f64) -> (f64, f64) {
+        if self.superscript {
+            (
+                base_font_size * SCRIPT_FONT_SCALE,
+                baseline_y - base_font_size * SUPERSCRIPT_RISE_EM,
+            )
+        } else if self.subscript {
+            (
+                base_font_size * SCRIPT_FONT_SCALE,
+                baseline_y + base_font_size * SUBSCRIPT_DROP_EM,
+            )
+        } else {
+            (base_font_size, baseline_y)
+        }
+    }
+
+    /// 글자폭 맞춤(fit) 대상 advance 에 적용할 배율 (#2771).
+    ///
+    /// SVG `textLength` 와 Canvas `fit_scale` 은 "레이아웃 advance 에 글리프 폭을
+    /// 맞춘다". 그런데 첨자 글리프는 `script_draw_metrics` 로 0.7 배 축소되어
+    /// 그려지므로, 대상 advance 를 같은 배율로 줄이지 않으면 브라우저가 축소된
+    /// 글리프를 본문 폭까지 되늘려 1/0.7 ≈ 1.43 배 가로 확대가 발생한다.
+    ///
+    /// 비첨자는 **정확히 1.0** 을 돌려준다. `advance * 1.0` 은 IEEE-754 상
+    /// 반올림이 없는 항등 연산이라 기존 `textLength` 값이 비트 단위로 불변이다.
+    pub fn script_advance_scale(&self) -> f64 {
+        if self.superscript || self.subscript {
+            SCRIPT_FONT_SCALE
+        } else {
+            1.0
+        }
+    }
+
     /// 시각적 bold 여부.
     ///
     /// CharShape.bold=true 외에도 HY헤드라인M 같은 heavy display face 를
@@ -1451,6 +1498,83 @@ mod tests {
         // 1인치 = 7200 HWPUNIT, 96 DPI → 96px
         let px = hwpunit_to_px(7200, 96.0);
         assert!((px - 96.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_script_draw_metrics_matches_shared_contract() {
+        // [#2771] SVG/Canvas/HTML/Skia/paint JSON 이 공유하는 첨자 계약:
+        // 글꼴 0.7 배 + baseline 위 0.3em / 아래 0.15em.
+        let base = TextStyle {
+            font_size: 20.0,
+            ..Default::default()
+        };
+
+        let sup = TextStyle {
+            superscript: true,
+            ..base.clone()
+        };
+        let (sup_size, sup_y) = sup.script_draw_metrics(20.0, 100.0);
+        assert!(
+            (sup_size - 14.0).abs() < 1e-9,
+            "위첨자 글꼴은 0.7 배여야 함: {sup_size}"
+        );
+        assert!(
+            (sup_y - 94.0).abs() < 1e-9,
+            "위첨자 baseline 은 0.3em 위여야 함: {sup_y}"
+        );
+
+        let sub = TextStyle {
+            subscript: true,
+            ..base.clone()
+        };
+        let (sub_size, sub_y) = sub.script_draw_metrics(20.0, 100.0);
+        assert!(
+            (sub_size - 14.0).abs() < 1e-9,
+            "아래첨자 글꼴은 0.7 배여야 함: {sub_size}"
+        );
+        assert!(
+            (sub_y - 103.0).abs() < 1e-9,
+            "아래첨자 baseline 은 0.15em 아래여야 함: {sub_y}"
+        );
+
+        // 비첨자는 인자를 그대로 돌려준다.
+        assert_eq!(base.script_draw_metrics(20.0, 100.0), (20.0, 100.0));
+    }
+
+    #[test]
+    fn test_script_advance_scale_is_exact_identity_for_non_script() {
+        // [#2771] 비첨자 배율이 **정확히 1.0** 이어야 기존 golden SVG 의
+        // textLength 값이 비트 단위로 보존된다 (`x * 1.0` 은 IEEE-754 상
+        // 반올림이 없는 항등 연산).
+        let base = TextStyle {
+            font_size: 20.0,
+            ..Default::default()
+        };
+        assert_eq!(base.script_advance_scale(), 1.0);
+        for advance in [0.0_f64, 6.2133, 1e-300, 1e300, f64::MIN_POSITIVE] {
+            assert_eq!(
+                (advance * base.script_advance_scale()).to_bits(),
+                advance.to_bits(),
+                "비첨자 advance 는 비트 단위로 불변이어야 함: {advance}"
+            );
+        }
+
+        // 첨자 배율은 그리기 글꼴 축소율과 반드시 같은 값이어야 한다.
+        // (다르면 글리프가 textLength 로 되늘어나는 #2771 결함이 재발한다.)
+        let sup = TextStyle {
+            superscript: true,
+            ..base.clone()
+        };
+        let sub = TextStyle {
+            subscript: true,
+            ..base.clone()
+        };
+        for style in [&sup, &sub] {
+            assert_eq!(
+                style.script_draw_metrics(20.0, 0.0).0,
+                20.0 * style.script_advance_scale()
+            );
+        }
     }
 
     // [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC 그림 줄 메트릭 합성.
