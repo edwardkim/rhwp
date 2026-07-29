@@ -1899,6 +1899,17 @@ fn parse_tab_def(
         // HwpUnitChar case가 없으면 default 값 적용
         if !found_case && !default_tabs.is_empty() {
             td.tabs = default_tabs;
+        } else if found_case && td.tabs.len() == default_tabs.len() {
+            // [#3551] case 와 default 가 짝으로 있을 때, 홀수 위치는 case(=저장값/2)
+            // 로 정확히 표현되지 않아 case × 2 가 원값보다 1 작아진다(101 → 50 → 100).
+            // 원값은 default 에 그대로 있으므로 어긋난 항목만 default 로 되돌린다.
+            // #3368 이 paraPr 여백에서 지적한 것과 같은 계약이다. 차이가 1 을 넘으면
+            // 두 값이 애초에 짝이 아니라는 뜻이므로 종전대로 case 를 신뢰한다.
+            for (item, def) in td.tabs.iter_mut().zip(default_tabs.iter()) {
+                if item.position != def.position && item.position.abs_diff(def.position) <= 1 {
+                    item.position = def.position;
+                }
+            }
         }
     }
 
@@ -2851,6 +2862,49 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn issue3551_odd_tab_position_prefers_exact_default() {
+        // [#3551] 홀수 저장값은 case(=저장값/2)로 정확히 표현되지 않는다(101 → 50).
+        // 원값이 default 에 그대로 있으므로 어긋난 항목만 default 로 되살려야
+        // 왕복이 고정점이 된다. #3368 이 paraPr 여백에서 지적한 것과 같은 계약.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head"
+         xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">
+  <hh:refList>
+    <hh:tabProperties itemCnt="1">
+      <hh:tabPr id="0" autoTabLeft="0" autoTabRight="0">
+        <hp:switch>
+          <hp:case hp:required-namespace="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar">
+            <hh:tabItem pos="50" type="LEFT" leader="NONE" unit="HWPUNIT"/>
+          </hp:case>
+          <hp:default>
+            <hh:tabItem pos="101" type="LEFT" leader="NONE"/>
+          </hp:default>
+        </hp:switch>
+        <hp:switch>
+          <hp:case hp:required-namespace="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar">
+            <hh:tabItem pos="1644" type="LEFT" leader="NONE" unit="HWPUNIT"/>
+          </hp:case>
+          <hp:default>
+            <hh:tabItem pos="3288" type="LEFT" leader="NONE"/>
+          </hp:default>
+        </hp:switch>
+      </hh:tabPr>
+    </hh:tabProperties>
+  </hh:refList>
+</hh:head>"#;
+        let doc_info = parse_hwpx_header(xml).expect("header parse");
+        let tabs = &doc_info.0.tab_defs[0].tabs;
+        assert_eq!(
+            tabs[0].position, 101,
+            "홀수 위치는 default 원값(101)이어야 함 — case×2 는 100 으로 1 잃는다"
+        );
+        assert_eq!(
+            tabs[1].position, 3288,
+            "짝수 위치는 종전대로 case×2(3288) 와 default 가 일치"
+        );
     }
 
     #[test]
