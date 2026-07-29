@@ -250,6 +250,47 @@ def filter_paths_by_pages(paths: list[Path], selected_pages: list[int] | None) -
     return [path for path in paths if page_num(path) in selected]
 
 
+def raster_paths_for_selected_pages(
+    paths: list[Path], selected_pages: list[int] | None
+) -> list[Path]:
+    """Return only requested inputs before an expensive raster conversion.
+
+    A one-page HWP can expose its internal document number in its SVG filename
+    rather than page 1. Keep that existing singleton fallback usable by
+    rasterizing the sole SVG when an otherwise unmatched single page was
+    requested; the complete cross-group validation still happens below.
+    """
+    selected_paths = filter_paths_by_pages(paths, selected_pages)
+    if selected_paths or not selected_pages:
+        return selected_paths
+    if len(paths) == 1 and selected_pages and len(selected_pages) == 1:
+        return paths
+    return []
+
+
+def pdf_raster_commands(
+    pdf: Path, dpi: int, pdf_prefix: Path, selected_pages: list[int] | None
+) -> list[list[str]]:
+    """Build pdftoppm invocations, limiting raster work to requested pages."""
+    if not selected_pages:
+        return [["pdftoppm", "-r", str(dpi), "-png", str(pdf), str(pdf_prefix)]]
+    return [
+        [
+            "pdftoppm",
+            "-f",
+            str(page),
+            "-l",
+            str(page),
+            "-r",
+            str(dpi),
+            "-png",
+            str(pdf),
+            str(pdf_prefix),
+        ]
+        for page in selected_pages
+    ]
+
+
 def ensure_selected_pages_available(
     selected_pages: list[int],
     groups: dict[str, list[Path]],
@@ -411,8 +452,14 @@ def render_target(
         log_path=tree_log,
     )
 
+    all_svg_paths = sorted(svg_dir.glob("*.svg"), key=page_num)
+    all_tree_paths = sorted(tree_dir.glob("*.json"), key=page_num)
+    print(f"SVG export pages: {len(all_svg_paths)}", flush=True)
+    raster_svg_paths = raster_paths_for_selected_pages(all_svg_paths, selected_pages)
+
     pdf_prefix = pdf_png_dir / "pdf"
-    run(["pdftoppm", "-r", str(dpi), "-png", str(pdf), str(pdf_prefix)], cwd=root)
+    for command in pdf_raster_commands(pdf, dpi, pdf_prefix, selected_pages):
+        run(command, cwd=root)
     # PDF text layer is a candidate-only input for question-marker drift. Some
     # legacy HWP PDFs contain PUA strings that make Poppler's pdftotext abort,
     # while their raster pages remain valid visual oracles. Keep the raster
@@ -433,11 +480,8 @@ def render_target(
             flush=True,
         )
 
-    all_svg_paths = sorted(svg_dir.glob("*.svg"), key=page_num)
-    all_tree_paths = sorted(tree_dir.glob("*.json"), key=page_num)
-    print(f"SVG pages: {len(all_svg_paths)}", flush=True)
     svg_zoom = dpi / 96.0
-    for svg in all_svg_paths:
+    for svg in raster_svg_paths:
         png = rhwp_png_dir / f"rhwp_{page_num(svg):03d}.png"
         # export-svg의 unitless width/height는 CSS px(96dpi)다. rsvg-convert의
         # --dpi-*만 바꾸면 unitless 크기는 그대로이므로, PDF와 같은 목표 DPI로
@@ -460,7 +504,10 @@ def render_target(
     all_rhwp_pngs = sorted(rhwp_png_dir.glob("*.png"), key=page_num)
     all_pdf_pngs = sorted(pdf_png_dir.glob("*.png"), key=page_num)
     pdf_question_markers = extract_pdf_question_markers(pdf_bbox_html, all_pdf_pngs)
-    print(f"PDF pages: {len(all_pdf_pngs)}", flush=True)
+    print(
+        f"Raster PNG pages: rhwp={len(all_rhwp_pngs)}, pdf={len(all_pdf_pngs)}",
+        flush=True,
+    )
     svg_paths = filter_paths_by_pages(all_svg_paths, selected_pages)
     tree_paths = filter_paths_by_pages(all_tree_paths, selected_pages)
     rhwp_pngs = filter_paths_by_pages(all_rhwp_pngs, selected_pages)
@@ -549,6 +596,8 @@ def render_target(
         "exported_svg_pages": len(all_svg_paths),
         "exported_render_tree_pages": len(all_tree_paths),
         "exported_pdf_pages": len(all_pdf_pngs),
+        "rasterized_svg_pages": len(all_rhwp_pngs),
+        "rasterized_pdf_pages": len(all_pdf_pngs),
         "svg_pages": len(svg_paths),
         "render_tree_pages": len(tree_paths),
         "pdf_pages": len(pdf_pngs),

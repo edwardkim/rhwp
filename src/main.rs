@@ -6179,6 +6179,8 @@ fn convert_hwp(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
+    // [#3505] --verify 비교 강도를 정하려면 원본 포맷을 알아야 한다 (대상은 항상 HWP5).
+    let source_format = rhwp::parser::detect_format(&data);
 
     // 문서 로드
     let mut doc = match load_document(&data) {
@@ -6240,6 +6242,13 @@ fn convert_hwp(args: &[String]) -> i32 {
                             doc.document(),
                             reloaded.document(),
                         );
+                        // [#3505] 포맷을 넘는 변환이면 대상 포맷에 자리가 없는 항목을
+                        // 걷어낸다. 같은 포맷(HWP5→HWP5) 왕복은 엄격 비교 그대로.
+                        let diff = if source_format == rhwp::parser::FileFormat::Hwp {
+                            diff
+                        } else {
+                            rhwp::serializer::hwpx::roundtrip::strip_cross_format_noise(diff)
+                        };
                         if !diff.is_empty() {
                             print_ir_verify_failure(&diff, output_path);
                             process::exit(3);
