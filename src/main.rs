@@ -385,24 +385,24 @@ fn show_mcp_tools() -> i32 {
         ),
         tool(
             "hwp_fill_fields",
-            "HWP 서식(템플릿)의 누름틀에 값을 채워 새 문서를 만든다. 먼저 hwp_fields 로 어떤 필드가 있는지 확인한 뒤 사용한다. dryRun 으로 파일을 만들지 않고 변경 예정만 확인할 수 있다.",
+            "HWP 서식(템플릿)의 누름틀에 값을 채워 새 문서를 만든다. 먼저 hwp_fields 로 어떤 필드가 있는지 확인한 뒤 사용한다. dryRun 으로 파일을 만들지 않고 변경 예정만 확인할 수 있다. 산출물은 입력 형식을 따른다(HWPX 입력 → HWPX 산출).",
             serde_json::json!({
                 "type": "object",
                 "properties": {
-                    "path": { "type": "string", "description": "입력 HWP 문서 경로" },
+                    "path": { "type": "string", "description": "입력 HWP/HWPX 문서 경로" },
                     "data": {
                         "type": "object",
                         "additionalProperties": { "type": "string" },
                         "description": "{\"필드이름\":\"값\"} 형태의 채울 값"
                     },
-                    "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_filled.hwp" },
+                    "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_filled.hwp (HWPX 입력이면 _filled.hwpx)" },
                     "dryRun": { "type": "boolean", "description": "true 면 파일을 쓰지 않고 변경 예정만 보고" }
                 },
                 "required": ["path", "data"],
             }),
             "edit",
             serde_json::json!(["edit", "fill-fields", "{path}", "--data", "{data}", "--json"]),
-            &["schemaVersion", "source", "dryRun", "filledCount", "filled", "notFound", "output"],
+            &["schemaVersion", "source", "dryRun", "filledCount", "filled", "notFound", "output", "outputFormat"],
         ),
         tool(
             "hwp_batch_search",
@@ -434,25 +434,25 @@ fn show_mcp_tools() -> i32 {
         ),
         tool(
             "hwp_replace_text",
-            "HWP 문서 전체에서 문자열을 일괄 치환해 새 문서를 만든다 (기관명 변경·연도 갱신·용어 정비). dryRun 으로 파일을 만들지 않고 치환 예정 건수만 확인할 수 있다. 치환 0건이면 출력 파일을 만들지 않는다.",
+            "HWP 문서 전체에서 문자열을 일괄 치환해 새 문서를 만든다 (기관명 변경·연도 갱신·용어 정비). dryRun 으로 파일을 만들지 않고 치환 예정 건수만 확인할 수 있다. 치환 0건이면 출력 파일을 만들지 않는다. 산출물은 입력 형식을 따른다(HWPX 입력 → HWPX 산출).",
             serde_json::json!({
                 "type": "object",
                 "properties": {
-                    "path": { "type": "string", "description": "입력 HWP 문서 경로" },
+                    "path": { "type": "string", "description": "입력 HWP/HWPX 문서 경로" },
                     "find": { "type": "string", "description": "찾을 문자열 (빈 문자열 불가)" },
                     "replace": { "type": "string", "description": "바꿀 문자열 (빈 문자열이면 삭제)" },
-                    "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_replaced.hwp" },
+                    "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_replaced.hwp (HWPX 입력이면 _replaced.hwpx)" },
                     "dryRun": { "type": "boolean", "description": "true 면 파일을 쓰지 않고 치환 예정 건수만 보고" }
                 },
                 "required": ["path", "find", "replace"],
             }),
             "edit",
             serde_json::json!(["edit", "replace-text", "{path}", "--find", "{find}", "--replace", "{replace}", "--json"]),
-            &["schemaVersion", "source", "find", "replace", "caseSensitive", "dryRun", "replacedCount", "output"],
+            &["schemaVersion", "source", "find", "replace", "caseSensitive", "dryRun", "replacedCount", "output", "outputFormat"],
         ),
         tool(
             "hwp_set_cell",
-            "HWP 표의 격자 좌표(hwp_export_tables 와 동일)로 셀 값을 바꿔 새 문서를 만든다 — 누름틀 없는 실물 표 양식 채우기. 먼저 hwp_export_tables 로 좌표를 확인한 뒤 사용한다. 병합으로 덮인 칸은 앵커 좌표를 안내하며 실패한다.",
+            "HWP 표의 격자 좌표(hwp_export_tables 와 동일)로 셀 값을 바꿔 새 문서를 만든다 — 누름틀 없는 실물 표 양식 채우기. 먼저 hwp_export_tables 로 좌표를 확인한 뒤 사용한다. 병합으로 덮인 칸은 앵커 좌표를 안내하며 실패한다. 산출물은 입력 형식을 따른다(HWPX 입력 → HWPX 산출).",
             serde_json::json!({
                 "type": "object",
                 "properties": {
@@ -461,14 +461,14 @@ fn show_mcp_tools() -> i32 {
                     "row": { "type": "integer", "minimum": 0, "description": "행 (0부터)" },
                     "col": { "type": "integer", "minimum": 0, "description": "열 (0부터)" },
                     "text": { "type": "string", "description": "셀에 넣을 값 (빈 문자열이면 비우기)" },
-                    "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_cell.hwp" },
+                    "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_cell.hwp (HWPX 입력이면 _cell.hwpx)" },
                     "dryRun": { "type": "boolean", "description": "true 면 파일을 쓰지 않고 old→new 만 보고" }
                 },
                 "required": ["path", "table", "row", "col", "text"],
             }),
             "edit",
             serde_json::json!(["edit", "set-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--text", "{text}", "--json"]),
-            &["schemaVersion", "source", "table", "row", "col", "oldText", "newText", "dryRun", "output"],
+            &["schemaVersion", "source", "table", "row", "col", "oldText", "newText", "dryRun", "output", "outputFormat"],
         ),
     ];
 
@@ -722,6 +722,7 @@ fn show_capabilities(args: &[String]) -> i32 {
                 "newText",
                 "keepStyle",
                 "output",
+                "outputFormat",
             ],
         ),
         // ── 배치 ──
@@ -1086,21 +1087,25 @@ fn print_help() {
     println!();
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!();
-    println!("  edit fill-fields <파일.hwp> --data <JSON|@파일> [-o <출력.hwp>] [옵션]");
+    println!("  edit fill-fields <파일.hwp|파일.hwpx> --data <JSON|@파일> [-o <출력>] [옵션]");
     println!("      누름틀에 값을 채운다 (서식 자동 작성/메일머지)");
     println!();
     println!("      --data <JSON|@파일>       {{\"필드이름\":\"값\"}} 형식. @경로면 파일에서 읽음");
-    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_filled.hwp)");
+    println!(
+        "      -o, --output <파일>       출력 파일 (기본: 입력명_filled.<입력과 같은 확장자>)"
+    );
     println!("      --dry-run                 파일을 쓰지 않고 변경 예정 내역만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!();
-    println!("  edit replace-text <파일.hwp> --find <문자열> --replace <문자열> [옵션]");
+    println!("  edit replace-text <파일.hwp|파일.hwpx> --find <문자열> --replace <문자열> [옵션]");
     println!("      문서 전체 일괄 치환 (기관명 변경·연도 갱신·용어 정비). 본문+표 셀");
     println!();
     println!("      --find <문자열>           찾을 문자열 (빈 문자열 불가)");
     println!("      --replace <문자열>        바꿀 문자열 (\"\" 이면 삭제)");
     println!("      --ignore-case             대소문자 무시");
-    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_replaced.hwp)");
+    println!(
+        "      -o, --output <파일>       출력 파일 (기본: 입력명_replaced.<입력과 같은 확장자>)"
+    );
     println!("      --dry-run                 파일을 쓰지 않고 치환 예정 건수만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!("      치환 0건이면 출력 파일을 만들지 않음");
@@ -1111,10 +1116,14 @@ fn print_help() {
     println!("      --table/--row/--col       export-tables 격자와 같은 좌표 (0부터)");
     println!("      --text <문자열>           셀에 넣을 값 (비우기는 \"\", 줄바꿈·탭 불가)");
     println!("      --keep-style              셀 안내문 스타일 상속(기본: 검정 글씨로 기록)");
-    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cell.hwp)");
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_cell.<입력과 같은 확장자>)");
     println!("      --dry-run                 파일을 쓰지 않고 old→new 만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!("      병합으로 덮인 칸은 앵커 좌표 안내와 함께 오류 종료");
+    println!();
+    println!("      edit 3종 공통: 산출물은 **입력 형식을 보존**한다 (HWPX 입력 → HWPX 산출).");
+    println!("      HWPX 입력에 -o ….hwp 를 지정하면 그 경로를 존중해 HWP5 로 저장하되");
+    println!("      형식 변경(이미지·차트 유실 가능)을 stderr 로 경고한다.");
     println!();
     println!("내부 개발·회귀 도구 (일반 사용자 대상 아님):");
     println!("  test-caption <파일.hwp> [-o <폴더>] 캡션 라운드트립 검증");
@@ -8297,7 +8306,7 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell> <파일.hwp> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -8314,6 +8323,92 @@ fn run_edit(args: &[String]) -> i32 {
             EXIT_USAGE
         }
     }
+}
+
+/// `edit` 계열 산출 형식 (#3383).
+///
+/// 종전에는 세 하위 명령이 모두 `export_hwp_native()` 로 HWP5 를 강제 산출했다. 그래서
+/// ① HWPX 입력이 조용히 `.hwp` 로 바뀌고(형식 미보존) ② 어댑터 없는 native 경로라
+/// HWPX→HWP IR 매핑(#178)조차 타지 않아 산출물에서 차트·이미지가 유실됐다.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum EditOutputFormat {
+    Hwp,
+    Hwpx,
+}
+
+impl EditOutputFormat {
+    /// 기본 산출 파일의 확장자(점 제외).
+    fn ext(self) -> &'static str {
+        match self {
+            EditOutputFormat::Hwp => "hwp",
+            EditOutputFormat::Hwpx => "hwpx",
+        }
+    }
+
+    /// JSON 봉투의 `outputFormat` 값. **`info --json` 의 `format` 과 같은 어휘**를 쓴다 —
+    /// 확장자(`hwp`)가 아니라 형식 이름(`hwp5`)이라야 두 봉투를 그대로 대조할 수 있다.
+    fn label(self) -> &'static str {
+        match self {
+            EditOutputFormat::Hwp => "hwp5",
+            EditOutputFormat::Hwpx => "hwpx",
+        }
+    }
+}
+
+/// 입력 형식과 사용자가 지정한 `-o` 경로로 `edit` 산출 형식을 정한다 (#3383).
+///
+/// 기본은 **입력 형식 보존**이다 — HWPX 입력은 HWPX 로, 그 외(HWP5/HWP3)는 HWP5 로.
+/// 예외는 하나뿐이다: HWPX 입력에 사용자가 `-o ….hwp` 를 명시한 경우. 이때는 지정한
+/// **경로를 그대로 존중해** HWP5 로 저장하되(기존 스크립트 호환), 형식이 바뀐다는 사실과
+/// 손실 가능성을 stderr 로 알린다(이슈 제안 2의 과도기 경고).
+///
+/// 반대 방향(HWP 입력에 `-o ….hwpx`)은 `edit` 의 책임이 아니다 — 형식 변환은
+/// `rhwp export-hwpx` 가 담당한다. 여기서는 경고만 하고 형식을 바꾸지 않는다.
+fn edit_output_format(input_bytes: &[u8], explicit_out: Option<&str>) -> EditOutputFormat {
+    let source_is_hwpx = matches!(
+        rhwp::parser::detect_format(input_bytes),
+        rhwp::parser::FileFormat::Hwpx
+    );
+    let explicit_ext = explicit_out.and_then(|path| {
+        Path::new(path)
+            .extension()
+            .map(|ext| ext.to_string_lossy().to_ascii_lowercase())
+    });
+
+    match (source_is_hwpx, explicit_ext.as_deref()) {
+        (true, Some("hwp")) => {
+            eprintln!(
+                "경고: 입력은 HWPX 인데 출력 확장자가 .hwp 라 HWP5 로 저장합니다 — \
+                 형식 변환 과정에서 차트·이미지 등이 유실될 수 있습니다 \
+                 (형식을 보존하려면 -o 를 생략하거나 .hwpx 로 지정하세요)."
+            );
+            EditOutputFormat::Hwp
+        }
+        (true, _) => EditOutputFormat::Hwpx,
+        (false, Some("hwpx")) => {
+            eprintln!(
+                "경고: 입력이 HWPX 가 아니므로 HWP5 로 저장합니다 — 지정한 출력 확장자(.hwpx)와 \
+                 실제 형식이 다릅니다 (HWPX 로 변환하려면 `rhwp export-hwpx` 를 쓰세요)."
+            );
+            EditOutputFormat::Hwp
+        }
+        (false, _) => EditOutputFormat::Hwp,
+    }
+}
+
+/// 결정된 형식으로 편집 결과를 직렬화한다 (#3383).
+///
+/// HWP5 산출은 반드시 **어댑터 경유**(`export_hwp_with_adapter`)다. HWPX 출처 IR 을 HWP
+/// 호환 형태로 옮기는 #178 어댑터를 건너뛰면 한컴 호환성과 이미지·차트가 깨진다.
+fn edit_serialize(
+    doc: &mut rhwp::wasm_api::HwpDocument,
+    format: EditOutputFormat,
+) -> Result<Vec<u8>, String> {
+    match format {
+        EditOutputFormat::Hwpx => doc.export_hwpx_native(),
+        EditOutputFormat::Hwp => doc.export_hwp_with_adapter(),
+    }
+    .map_err(|e| e.to_string())
 }
 
 /// `edit fill-fields` — 누름틀에 값을 채운다 (메일머지).
@@ -8362,7 +8457,7 @@ fn edit_fill_fields(args: &[String]) -> i32 {
     }
 
     let (Some(file_path), Some(data_arg)) = (file_path, data_arg) else {
-        eprintln!("사용법: rhwp edit fill-fields <파일.hwp> --data <JSON|@파일> [-o <출력.hwp>] [--dry-run] [--json]");
+        eprintln!("사용법: rhwp edit fill-fields <파일.hwp|파일.hwpx> --data <JSON|@파일> [-o <출력>] [--dry-run] [--json]");
         return EXIT_USAGE;
     };
 
@@ -8439,6 +8534,8 @@ fn edit_fill_fields(args: &[String]) -> i32 {
         filled.push(serde_json::json!({ "name": name, "value": value_str }));
     }
 
+    // [#3383] 입력 형식을 보존한다 — 기본 확장자도 산출 형식을 따른다.
+    let out_format = edit_output_format(&bytes, out_path.as_deref());
     let output_path = out_path.unwrap_or_else(|| {
         // [#3469] 기본 산출물은 **입력 파일 옆**에 만든다. 종전에는 파일명만 써서
         // 현재 작업 디렉터리에 떨어졌는데, 임의 경로의 문서를 다루는 에이전트·MCP
@@ -8448,7 +8545,7 @@ fn edit_fill_fields(args: &[String]) -> i32 {
             .file_stem()
             .map(|s| s.to_string_lossy().to_string())
             .unwrap_or_else(|| "output".to_string());
-        let name = format!("{}_filled.hwp", stem);
+        let name = format!("{}_filled.{}", stem, out_format.ext());
         match input.parent() {
             Some(dir) if !dir.as_os_str().is_empty() => {
                 dir.join(name).to_string_lossy().to_string()
@@ -8458,10 +8555,14 @@ fn edit_fill_fields(args: &[String]) -> i32 {
     });
 
     if !dry_run {
-        let out_bytes = match doc.export_hwp_native() {
+        let out_bytes = match edit_serialize(&mut doc, out_format) {
             Ok(b) => b,
             Err(e) => {
-                eprintln!("오류: HWP 직렬화 실패 - {}", e);
+                eprintln!(
+                    "오류: {} 직렬화 실패 - {}",
+                    out_format.label().to_uppercase(),
+                    e
+                );
                 return EXIT_RUNTIME;
             }
         };
@@ -8482,6 +8583,7 @@ fn edit_fill_fields(args: &[String]) -> i32 {
         });
         if !dry_run {
             envelope["output"] = serde_json::Value::String(output_path.clone());
+            envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
         }
         println!("{envelope}");
         return EXIT_OK;
@@ -8577,7 +8679,7 @@ fn edit_replace_text(args: &[String]) -> i32 {
 
     let (Some(file_path), Some(find), Some(replace)) = (file_path, find_arg, replace_arg) else {
         eprintln!(
-            "사용법: rhwp edit replace-text <파일.hwp> --find <문자열> --replace <문자열> [-o <출력.hwp>] [--ignore-case] [--dry-run] [--json]"
+            "사용법: rhwp edit replace-text <파일.hwp|파일.hwpx> --find <문자열> --replace <문자열> [-o <출력>] [--ignore-case] [--dry-run] [--json]"
         );
         return EXIT_USAGE;
     };
@@ -8619,21 +8721,27 @@ fn edit_replace_text(args: &[String]) -> i32 {
             .unwrap_or(0) as usize
     };
 
+    // [#3383] 입력 형식을 보존한다 — 기본 확장자도 산출 형식을 따른다.
+    let out_format = edit_output_format(&bytes, out_path.as_deref());
     let output_path = out_path.unwrap_or_else(|| {
         let stem = Path::new(file_path)
             .file_stem()
             .map(|s| s.to_string_lossy().to_string())
             .unwrap_or_else(|| "output".to_string());
-        format!("{}_replaced.hwp", stem)
+        format!("{}_replaced.{}", stem, out_format.ext())
     });
 
     // 0건이면 무변경이다 — 산출물을 만들지 않는다 (dry-run 과 동일하게 파일 경로를 타지 않음).
     let wrote_output = !dry_run && replaced_count > 0;
     if wrote_output {
-        let out_bytes = match doc.export_hwp_native() {
+        let out_bytes = match edit_serialize(&mut doc, out_format) {
             Ok(b) => b,
             Err(e) => {
-                eprintln!("오류: HWP 직렬화 실패 - {}", e);
+                eprintln!(
+                    "오류: {} 직렬화 실패 - {}",
+                    out_format.label().to_uppercase(),
+                    e
+                );
                 return EXIT_RUNTIME;
             }
         };
@@ -8655,6 +8763,7 @@ fn edit_replace_text(args: &[String]) -> i32 {
         });
         if wrote_output {
             envelope["output"] = serde_json::Value::String(output_path.clone());
+            envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
         }
         println!("{envelope}");
         return EXIT_OK;
@@ -9029,19 +9138,25 @@ fn edit_set_cell(args: &[String]) -> i32 {
         }
     }
 
+    // [#3383] 입력 형식을 보존한다 — 기본 확장자도 산출 형식을 따른다.
+    let out_format = edit_output_format(&bytes, out_path.as_deref());
     let output_path = out_path.unwrap_or_else(|| {
         let stem = Path::new(file_path)
             .file_stem()
             .map(|s| s.to_string_lossy().to_string())
             .unwrap_or_else(|| "output".to_string());
-        format!("{}_cell.hwp", stem)
+        format!("{}_cell.{}", stem, out_format.ext())
     });
 
     if !dry_run {
-        let out_bytes = match doc.export_hwp_native() {
+        let out_bytes = match edit_serialize(&mut doc, out_format) {
             Ok(b) => b,
             Err(e) => {
-                eprintln!("오류: HWP 직렬화 실패 - {}", e);
+                eprintln!(
+                    "오류: {} 직렬화 실패 - {}",
+                    out_format.label().to_uppercase(),
+                    e
+                );
                 return EXIT_RUNTIME;
             }
         };
@@ -9065,6 +9180,7 @@ fn edit_set_cell(args: &[String]) -> i32 {
         });
         if !dry_run {
             envelope["output"] = serde_json::Value::String(output_path.clone());
+            envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
         }
         println!("{envelope}");
         return EXIT_OK;
