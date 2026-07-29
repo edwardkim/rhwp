@@ -7496,6 +7496,46 @@ impl LayoutEngine {
         })
     }
 
+    /// 컷 유닛 범위를 **중첩 표 행 범위**로 옮긴다 (per-중첩행 유닛 경로).
+    ///
+    /// per-중첩행 분해가 붙은 문단은 유닛이 `nested_row` 를 들고 있으므로, 컷에 들어온
+    /// 유닛들의 행 번호에서 곧바로 범위를 얻는다.
+    ///
+    /// 종전에는 호출부가 "컷 유닛 인덱스 == 중첩행 번호" 라고 가정해 셀이 **문단 1개**
+    /// 일 때만 이 경로를 썼다. 문단이 여럿인 셀에서는 유닛에 텍스트 줄이 섞여 인덱스가
+    /// 행 번호가 아니게 되고, 그러면 렌더가 `available_h` 휴리스틱으로 폴백해 연속
+    /// 페이지가 행 0 부터 다시 그린다(뒤 행 유실). 유닛이 이미 행 번호를 들고 있으니
+    /// 인덱스 가정을 버리고 그 필드를 읽는다.
+    pub(crate) fn nested_row_range_from_cut_units(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        start_unit: usize,
+        end_unit: usize,
+        para_idx: usize,
+    ) -> Option<(usize, usize)> {
+        let units = self.cell_units(cell, table, styles);
+        let lo = start_unit.min(units.len());
+        let hi = end_unit.min(units.len()).max(lo);
+        let mut first: Option<usize> = None;
+        let mut last: Option<usize> = None;
+        for unit in units.iter().take(hi).skip(lo) {
+            if unit.para_idx != para_idx {
+                continue;
+            }
+            let Some(row) = unit.nested_row else {
+                continue;
+            };
+            first = Some(first.map_or(row, |f: usize| f.min(row)));
+            last = Some(last.map_or(row, |l: usize| l.max(row)));
+        }
+        match (first, last) {
+            (Some(f), Some(l)) => Some((f, l + 1)),
+            _ => None,
+        }
+    }
+
     /// RowBreak 분할의 컷 범위에 실제 보이는 내용이 남아 있는지 확인한다.
     ///
     /// 마지막 continuation 에 빈 문단/패딩만 남은 조각은 한컴 PDF에서 별도 페이지를
