@@ -139,7 +139,25 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
                     entry.bin_data_id
                 ))
             })?;
-        z.write_deflated(&entry.href, &data.data.load())?;
+        // [Issue #3547] OLE Storage 복원: HWPX 파서(`normalize_ole_bytes`)는 내부 OLE 의
+        // 선두 4-byte LE size prefix 를 제거한다. 재부착 없이 쓰면 한컴이 CFB 매직
+        // (D0CF11E0)을 OLE 개체 크기(~3.75GB)로 오인하여 "메모리 부족" 오류가 발생한다.
+        // HWP5 저장기(`cfb_writer`, #954)와 동형의 복원 — prefix 가 없던(비 CFB) 입력은
+        // 매직 검사에서 걸러져 영향이 없다.
+        let bytes = data.data.load();
+        const CFB_MAGIC: [u8; 8] = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
+        let payload: Vec<u8> = if data.extension.eq_ignore_ascii_case("ole")
+            && bytes.len() >= 8
+            && bytes[..8] == CFB_MAGIC
+        {
+            let mut v = Vec::with_capacity(bytes.len() + 4);
+            v.extend_from_slice(&(bytes.len() as u32).to_le_bytes());
+            v.extend_from_slice(&bytes);
+            v
+        } else {
+            bytes
+        };
+        z.write_deflated(&entry.href, &payload)?;
         zip_bin_entries.insert(entry.href.clone());
     }
 
