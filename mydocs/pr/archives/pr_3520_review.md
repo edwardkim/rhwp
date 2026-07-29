@@ -11,8 +11,8 @@
 ## 변경과 검토
 
 `src/renderer/composer.rs`의 텍스트 추출이 렌더와 다른 치환 표를 쓰던 분기를 제거해 PUA가
-사용자-visible text surface로 유출되지 않게 한다. 원본은 통합 브랜치에 `cc85ff1ce`으로 적용했다.
-새 CLI 회귀 테스트의 binary 탐색은 collaborator 보정 `553bf3c8e`으로 nextest archive에서도
+사용자-visible text surface로 유출되지 않게 한다. 원본은 통합 브랜치에 `c8db0665f`으로 적용했다.
+새 CLI 회귀 테스트의 binary 탐색은 collaborator 보정 `639e6250d`으로 nextest archive에서도
 동작하도록 했다.
 
 렌더러 파일이지만 SVG/PDF의 geometry·paint path를 바꾸지 않고 추출 문자열 경로만 바꾼다. 그래도
@@ -33,7 +33,7 @@
   `mydocs/pr/assets/pr_3520_text_surface_review_001.png` (SHA-256
   `458016e453045f2ecfddad9ffa58d2f3cfeafa4bc653a891279518ae7164e3d6`).
 
-`--page 1`의 raster 제한 자체는 collaborator 보정 `2d8f57f5d`으로 기록했다. 문서 전체의 SVG와
+`--page 1`의 raster 제한 자체는 collaborator 보정 `7ab7e137a`으로 기록했다. 문서 전체의 SVG와
 render-tree 추출(20/20)은 유지하되 `rsvg-convert`와 `pdftoppm`은 각 1장만 생성하는 회귀 테스트
 4건을 추가했다.
 

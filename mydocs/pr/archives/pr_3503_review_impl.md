@@ -4,32 +4,32 @@
 
 여섯 외부 contributor PR을 최신 `upstream/devel`에 누적 검토한다. 검토 브랜치는
 `review/planet6897-20260729`이며, 2026-07-29에 최신 `upstream/devel`
-`388e43e4ea10a55a0fce2823223629dfe8b17930` 위로 rebase했다. 원본 PR마다 별도 review 문서를
+`d0377df6f0749c920f870a2cd037b5d5d1471f82` 위로 rebase했다. 원본 PR마다 별도 review 문서를
 두고, 이 문서는 적용 순서·collaborator 보정·rollback 범위를 한 곳에 남긴다.
 
 ## 적용 순서
 
 | 순서 | 원 PR head | 통합 commit | 내용 | 비고 |
 |---|---|---|---|---|
-| 1 | #3503 `85f813d` | `c31c31266` | 미주 실제 공백 보존 | 원본 단일 commit |
-| 2 | #3520 `2005086` | `cc85ff1ce` | text-surface PUA 치환 공유 | 원본 단일 commit |
-| 3 | #3525 `a77e171` | `d34c6a668` | HWP3 bookmark control | `info_buf` 충돌 해소 |
-| 4 | #3527 `59f7b85` | `e84e24346` | verify corpus ratchet | 기능 commit |
-| 5 | #3527 `257b8ce` | `54b0a7e2c` | ratchet 문서 | 문서 commit |
-| 6 | #3530 `7c81725` | `fa3b38a30` | nested caption direct-level | #3527 적층분은 제외 |
-| 7 | #3535 `e910c1e` | `4ecca6c96` | char_count 규약 | #3510 중복을 유지 |
+| 1 | #3503 `85f813d` | `1f8b471e0` | 미주 실제 공백 보존 | 원본 단일 commit |
+| 2 | #3520 `2005086` | `c8db0665f` | text-surface PUA 치환 공유 | 원본 단일 commit |
+| 3 | #3525 `a77e171` | `f83e8ee1a` | HWP3 bookmark control | `info_buf` 충돌 해소 |
+| 4 | #3527 `59f7b85` | `5d7f3473b` | verify corpus ratchet | 기능 commit |
+| 5 | #3527 `257b8ce` | `7f93ad3cf` | ratchet 문서 | 문서 commit |
+| 6 | #3530 `7c81725` | `e25f3c376` | nested caption direct-level | #3527 적층분은 제외 |
+| 7 | #3535 `e910c1e` | `5eb0d447b` | char_count 규약 | #3510 중복을 유지 |
 
 추가 collaborator commit은 다음과 같다.
 
 | commit | 이유 | rollback |
 |---|---|---|
-| `553bf3c8e` | 새 CLI tests의 nextest archive binary 탐색 | 테스트 harness만 되돌림 |
-| `be4b30674` | #3525로 해결된 HWP3 bookmark expected failure 제거 | 래칫과 HWP3 assertion 함께 되돌림 |
-| `2d8f57f5d` | `--page` raster 제한·회귀 테스트·대표 PNG | visual helper/doc/asset만 되돌림 |
+| `639e6250d` | 새 CLI tests의 nextest archive binary 탐색 | 테스트 harness만 되돌림 |
+| `699d0fe32` | #3525로 해결된 HWP3 bookmark expected failure 제거 | 래칫과 HWP3 assertion 함께 되돌림 |
+| `7ab7e137a` | `--page` raster 제한·회귀 테스트·대표 PNG | visual helper/doc/asset만 되돌림 |
 
 ## 검증 기록
 
-최신 `388e43e4` rebase 뒤 검토 전용 target
+최신 `d0377df6` rebase 뒤 검토 전용 target
 `target/review-planet6897-20260729`에서 완료한 최종 local gate:
 
 - `cargo fmt --all -- --check`: success.

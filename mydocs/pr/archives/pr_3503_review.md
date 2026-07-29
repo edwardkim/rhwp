@@ -12,11 +12,11 @@
 
 HWpx roundtrip 직렬화에서 미주 앞의 실제 공백을 자동번호 placeholder로 오인해 버리던 경로를
 분리하고 재현 fixture를 추가한다. 원본 단일 커밋은 최신 `upstream/devel` 위 통합 검토 브랜치
-`review/planet6897-20260729`에 `c31c31266`으로 적용했다.
+`review/planet6897-20260729`에 `1f8b471e0`으로 적용했다.
 
 `tests/issue_3495_endnote_space_eaten.rs`는 `CARGO_BIN_EXE_rhwp`가 없는 nextest archive에서도
 실행되도록 runtime 탐색을 보완했다. 이는 contributor 원 변경과 구분되는 collaborator 보정
-`553bf3c8e`이며, 기능 조건이나 기대값은 바꾸지 않는다.
+`639e6250d`이며, 기능 조건이나 기대값은 바꾸지 않는다.
 
 ## 검증과 판정
 

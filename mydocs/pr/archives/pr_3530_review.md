@@ -11,10 +11,10 @@
 ## 변경과 적층 처리
 
 중첩 표가 캡션 경계 판단을 가로채지 않도록 직접 자식 레벨에서만 경계를 판정한다. 원 PR은 #3527의
-두 커밋 위에 적층돼 있으므로 이미 적용한 `e84e24346`/`54b0a7e2c`은 중복 cherry-pick하지 않고,
-본질 증분만 `fa3b38a30`으로 적용했다.
+두 커밋 위에 적층돼 있으므로 이미 적용한 `5d7f3473b`/`7f93ad3cf`은 중복 cherry-pick하지 않고,
+본질 증분만 `e25f3c376`으로 적용했다.
 
-CLI 회귀 테스트의 runtime binary 탐색은 collaborator 보정 `553bf3c8e`으로 통합했다. 이는 archive
+CLI 회귀 테스트의 runtime binary 탐색은 collaborator 보정 `639e6250d`으로 통합했다. 이는 archive
 환경 호환만 바꾸며 nested-caption 기대값과 parser 조건은 원 PR 그대로다.
 
 ## 검증과 판정

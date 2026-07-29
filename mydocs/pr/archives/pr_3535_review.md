@@ -11,7 +11,7 @@
 ## 변경과 충돌 해소
 
 HTML import/table import와 HWP3 parser의 `char_count`를 문단 종결자를 포함하는 UTF-16 규약으로
-통일해 IR diff 928건의 잡음을 없앤다. 통합 적용은 `4ecca6c96`이다.
+통일해 IR diff 928건의 잡음을 없앤다. 통합 적용은 `5eb0d447b`이다.
 
 최신 devel에는 이미 #3510의 HWP3 `utf16_len + 1` 보정이 있었으므로 같은 코드를 중복 적용하지
 않고 유지했다. PR의 HTML import 두 경로와 새 regression test를 적용하고, 해당 주석에는

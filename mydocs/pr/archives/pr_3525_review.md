@@ -11,7 +11,7 @@
 ## 변경과 충돌 해소
 
 HWP3 bookmark control을 임시 unknown field가 아니라 공통 `Control::Bookmark`로 만들어 저장
-roundtrip에서 유실되지 않게 한다. 통합 적용 커밋은 `d34c6a668`이다.
+roundtrip에서 유실되지 않게 한다. 통합 적용 커밋은 `f83e8ee1a`이다.
 
 최신 devel에는 bookmark 원시 부가 바이트를 `info_buf`로 넘기는 선행 변경이 있었다. 원 PR의
 dispatcher 직접 삽입을 그대로 적용하면 control이 두 번 생길 수 있으므로, 충돌은 다음처럼 해소했다.
@@ -21,7 +21,7 @@ dispatcher 직접 삽입을 그대로 적용하면 control이 두 번 생길 수
 3. unit expectation도 unknown field 문자열이 아닌 bookmark name으로 갱신한다.
 
 해결 뒤 verify corpus에서 고쳐진 `hwp3-sample16.hwp` 실패 허용 항목을 제거한 collaborator 보정은
-`be4b30674`이다. 고쳐진 입력을 expected failure로 남기면 래칫이 역으로 실패하므로 필요한 갱신이다.
+`699d0fe32`이다. 고쳐진 입력을 expected failure로 남기면 래칫이 역으로 실패하므로 필요한 갱신이다.
 
 ## fixture와 검증
 
