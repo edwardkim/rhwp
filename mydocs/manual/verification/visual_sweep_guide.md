@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-07-16
+last_verified: 2026-07-30
 ---
 
 # PDF/SVG visual sweep 가이드
@@ -22,6 +22,11 @@ last_verified: 2026-07-16
 - 수식/본문 겹침 후보
 - 줄 band/order drift 후보
 - **구조 heuristic에 걸리지 않는 glyph·PUA·제품명 표시 차이**의 review 후보
+
+이 도구의 절차상 지위는 [시각 검증 거버넌스의 라우팅 표](visual_verification_governance.md)를
+따른다. 독립 기준 PDF와 실제 사용자-visible 실패를 조사할 때는 bug-hunter가 상위이고, sweep은
+후보 검출·재현 범위 축소·수정 전후 무회귀만 담당한다. 이미 원인과 발동 페이지가 확정된 renderer/layout
+PR에서는 이 가이드를 직접 시작점으로 쓴다.
 
 ## 필수 도구
 

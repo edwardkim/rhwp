@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/README.md
-last_verified: 2026-07-16
+last_verified: 2026-07-30
 ---
 
 # 시각 검증 문서 지도
@@ -13,12 +13,16 @@ last_verified: 2026-07-16
 
 | 목적 | 우선 문서 | 보조 문서 |
 | --- | --- | --- |
+| 독립 정답지 기준 실제 사용자 출력 결함의 발굴·원인 판정 | [버그 헌팅 playbook](../bug_hunting_playbook.md) | [시각 검증 거버넌스](visual_verification_governance.md)의 라우팅 표와 이 디렉터리의 도구 |
 | 시각 검증 적용 판단과 증적 규약 | [시각 검증 거버넌스](visual_verification_governance.md) | [PR review 시각·fixture 증적](../pr_review/visual_fixture_evidence.md) |
 | PDF/SVG overlay·drift 후보 탐색 | [PDF/SVG visual sweep 가이드](visual_sweep_guide.md) | [SVG 회귀 diff](svg_regression_diff.md) |
 | 표·그림 geometry 무회귀 | [개체 시각 회귀 하니스](object_visual_regression.md) | [페이지·PI 매칭 오라클](verify_pi_page_vs_hangul.md) |
 | 편집 전후 페이지 수 무회귀 | [편집-스윕 하니스](edit_sweep.md) | [개체 시각 회귀 하니스](object_visual_regression.md) |
 | HWPX→HWP 페이지네이션 정합 | [roundtrip fidelity 하니스](roundtrip_fidelity_harness.md) | [한글 페이지 충실도 오라클](hangul_page_oracle.md) |
 | 한글 PDF 줄 baseline 대조 | [한글 PDF baseline](hangul_pdf_baseline.md) | [시각 클리핑 검출기](visual_clipping_detector.md) |
+
+범위가 확정된 renderer PR은 visual sweep을 직접 시작점으로 쓴다. 원인이 미확정인 실사용 결함은
+bug-hunter가 상위 절차이며 sweep은 후보 검출·무회귀 증적이다. 상세 결정은 거버넌스의 라우팅 표를 따른다.
 
 ## 이전 경로
 
