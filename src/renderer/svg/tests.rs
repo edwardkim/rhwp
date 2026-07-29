@@ -72,6 +72,83 @@ fn test_svg_draw_text_superscript_adjusts_baseline_and_size() {
     assert!(output.contains("y=\"94\""));
 }
 
+/// 주어진 글리프를 담은 `<text>` 줄에서 `textLength` 값을 뽑아낸다.
+fn text_length_of(output: &str, glyph: &str) -> f64 {
+    let needle = format!(">{glyph}</text>");
+    let line = output
+        .lines()
+        .find(|line| line.contains(needle.as_str()))
+        .unwrap_or_else(|| panic!("SVG 에 `{glyph}` <text> 가 있어야 함"));
+    let value = line
+        .split("textLength=\"")
+        .nth(1)
+        .unwrap_or_else(|| panic!("`{glyph}` 는 textLength 를 가져야 함: {line}"))
+        .split('"')
+        .next()
+        .unwrap_or_else(|| panic!("textLength 값이 닫히지 않음: {line}"));
+    value
+        .parse()
+        .unwrap_or_else(|_| panic!("textLength 는 수치여야 함: {line}"))
+}
+
+#[test]
+fn test_svg_draw_text_script_scales_text_length_by_glyph_size() {
+    // [#2771] 첨자 글리프는 본문의 0.7 배 크기로 그려진다. 그런데 폭 맞춤에 쓰는
+    // textLength 가 본문(base) advance 그대로면 lengthAdjust="spacingAndGlyphs"
+    // 가 0.7 배 글리프를 본문 폭까지 되늘려 1/0.7 ≈ 1.43 배 가로 확대가 난다.
+    // → textLength 도 0.7 배여야 한다.
+    let base_style = TextStyle {
+        font_size: 20.0,
+        font_family: "돋움".to_string(),
+        ..Default::default()
+    };
+    let mut base_renderer = SvgRenderer::new();
+    base_renderer.begin_page(800.0, 600.0);
+    base_renderer.draw_text("1", 10.0, 100.0, &base_style);
+    let base_length = text_length_of(base_renderer.output(), "1");
+    assert!(base_length > 0.0, "본문 숫자는 textLength 를 가져야 함");
+
+    for style in [
+        TextStyle {
+            superscript: true,
+            ..base_style.clone()
+        },
+        TextStyle {
+            subscript: true,
+            ..base_style.clone()
+        },
+    ] {
+        let mut renderer = SvgRenderer::new();
+        renderer.begin_page(800.0, 600.0);
+        renderer.draw_text("1", 10.0, 100.0, &style);
+        let script_length = text_length_of(renderer.output(), "1");
+        assert!(
+            (script_length - base_length * 0.7).abs() < 0.001,
+            "첨자 textLength 는 본문의 0.7 배여야 함: base={base_length}, script={script_length}"
+        );
+    }
+}
+
+#[test]
+fn test_svg_draw_text_non_script_text_length_is_unchanged() {
+    // [#2771] 배율 인자는 비첨자에서 **정확히 1.0** 이라 기존 golden textLength
+    // 값이 비트 단위로 보존된다. 레이아웃 advance 자체는 첨자에서도 본문 기준을
+    // 유지하므로(그리기 크기만 축소) 두 run 의 char_positions 는 동일하다.
+    let style = TextStyle {
+        font_size: 20.0,
+        font_family: "돋움".to_string(),
+        ..Default::default()
+    };
+    assert_eq!(style.script_advance_scale(), 1.0);
+
+    let mut renderer = SvgRenderer::new();
+    renderer.begin_page(800.0, 600.0);
+    renderer.draw_text("1", 10.0, 100.0, &style);
+    let length = text_length_of(renderer.output(), "1");
+    // `x * 1.0` 은 IEEE-754 상 반올림 없는 항등 연산이다.
+    assert_eq!(length * style.script_advance_scale(), length);
+}
+
 #[test]
 fn test_svg_draw_text_corner_quote_uses_halfwidth_text_length() {
     let mut renderer = SvgRenderer::new();

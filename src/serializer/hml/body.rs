@@ -6,7 +6,7 @@ use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, RectangleShape, ShapeObject, TextWrap, VertAlign,
     VertRelTo,
 };
-use crate::model::table::{Cell, Table};
+use crate::model::table::{Cell, Table, VerticalAlign};
 use crate::parser::HmlImportMetadata;
 
 use super::error::{unsupported_ir, HmlExportError};
@@ -466,7 +466,15 @@ fn write_cell(writer: &mut XmlWriter, cell: &Cell, path: &str) -> Result<(), Hml
             cell.padding.bottom,
         ),
     );
-    writer.open("PARALIST", &[]);
+    // [#3189] 종전엔 속성 없이 방출해 셀 세로 정렬이 저장 때마다 사라졌다.
+    // 한컴 실물 HML 도 CELL/PARALIST 에 VertAlign 을 적어 넣는다.
+    writer.open(
+        "PARALIST",
+        &[(
+            "VertAlign",
+            cell_vert_align_name(cell.vertical_align).to_string(),
+        )],
+    );
     for (index, paragraph) in cell.paragraphs.iter().enumerate() {
         write_paragraph(writer, paragraph, None, &format!("{path}/P[{index}]"))?;
     }
@@ -533,6 +541,16 @@ fn vert_align_name(value: VertAlign) -> &'static str {
         VertAlign::Inside => "Inside",
         VertAlign::Outside => "Outside",
         VertAlign::Top => "Top",
+    }
+}
+
+/// [#3189] 셀 세로 정렬 이름. 개체 위치용 `vert_align_name`(VertAlign) 과 달리
+/// 표 셀은 Top/Center/Bottom 세 값뿐이다.
+fn cell_vert_align_name(value: VerticalAlign) -> &'static str {
+    match value {
+        VerticalAlign::Top => "Top",
+        VerticalAlign::Center => "Center",
+        VerticalAlign::Bottom => "Bottom",
     }
 }
 

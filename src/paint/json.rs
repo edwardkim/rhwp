@@ -1540,13 +1540,7 @@ fn effective_text_font_size_and_baseline(run: &TextRunNode) -> (f64, f64) {
     } else {
         12.0
     };
-    if run.style.superscript {
-        (base_font_size * 0.7, run.baseline - base_font_size * 0.3)
-    } else if run.style.subscript {
-        (base_font_size * 0.7, run.baseline + base_font_size * 0.15)
-    } else {
-        (base_font_size, run.baseline)
-    }
+    run.style.script_draw_metrics(base_font_size, run.baseline)
 }
 
 fn write_tab_leaders(buf: &mut String, leaders: &[TabLeaderInfo]) {

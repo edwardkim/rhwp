@@ -10,6 +10,7 @@ use crate::model::style::{
     border_width_index, Alignment, BorderFill, BorderLineType, CharShape, Fill, FillType, Font,
     LineSpacingType, ParaShape, ShapeBorderLine, SolidFill, Style, TabDef,
 };
+use crate::model::table::VerticalAlign;
 use crate::model::Padding;
 
 use super::envelope::PreservedFragment;
@@ -168,6 +169,12 @@ pub(crate) struct HmlCell {
     pub height: u32,
     pub padding: Padding,
     pub border_fill_id: u16,
+    /// [#3189] `<PARALIST VertAlign="...">` 의 셀 세로 정렬.
+    /// `VerticalAlign::default()` 는 `Top` 이지만 HML 경로의 실효 기본값은 `Center`
+    /// 다(종전 adapter 가 모든 셀을 Center 로 하드코딩했다). 그래서 `start_cell` 이
+    /// `..Default::default()` 에 맡기지 않고 Center 를 명시로 넣는다 — 이 필드를
+    /// 파생 기본값으로 두면 PARALIST 가 없는 기존 문서의 정렬이 통째로 바뀐다.
+    pub vertical_align: VerticalAlign,
     pub paragraphs: Vec<HmlParagraph>,
 }
 
@@ -442,6 +449,7 @@ impl<'a> ReadState<'a> {
             "TEXTMARGIN" => self.capture_text_margin(element),
             "TABLE" => self.start_table(element),
             "CELL" => self.start_cell(element),
+            "PARALIST" => self.capture_paralist(element),
             "SIZE" => self.capture_object_size(element),
             "POSITION" => self.capture_object_position(element),
             "INSIDEMARGIN" => self.capture_table_padding(element),
@@ -900,8 +908,27 @@ impl<'a> ReadState<'a> {
             width: parse_attribute(element, b"Width")?.unwrap_or(0),
             height: parse_attribute(element, b"Height")?.unwrap_or(0),
             border_fill_id: parse_attribute(element, b"BorderFill")?.unwrap_or(0),
+            // [#3189] PARALIST 가 아예 없는 셀도 종전 동작(Center)을 유지해야 한다.
+            vertical_align: VerticalAlign::Center,
             ..Default::default()
         });
+        Ok(())
+    }
+
+    /// [#3189] `<PARALIST VertAlign="...">` 의 셀 세로 정렬을 가장 안쪽 셀에 귀속한다.
+    ///
+    /// PARALIST 는 셀뿐 아니라 글상자(`DRAWTEXT`) 아래에도 나오므로, 셀 안 글상자의
+    /// PARALIST 가 바깥 셀 값을 덮어쓰지 않도록 문단 귀속과 같은
+    /// `nearest_paragraph_owner_is_cell` 판정을 재사용한다(#2723 과 동일한 규칙).
+    fn capture_paralist(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
+        if !self.nearest_paragraph_owner_is_cell() {
+            return Ok(());
+        }
+        let vertical_align =
+            parse_cell_vertical_align(attribute(element, b"VertAlign")?.as_deref());
+        if let Some(cell) = self.cells.last_mut() {
+            cell.vertical_align = vertical_align;
+        }
         Ok(())
     }
 
@@ -1583,6 +1610,16 @@ fn parse_vert_align(value: Option<&str>) -> VertAlign {
         Some("Inside") => VertAlign::Inside,
         Some("Outside") => VertAlign::Outside,
         _ => VertAlign::Top,
+    }
+}
+
+/// [#3189] 셀 세로 정렬(`PARALIST@VertAlign`). 개체 위치용 `parse_vert_align` 과 달리
+/// 속성이 없으면 `Top` 이 아니라 `Center` 로 접는다 — HML 경로의 실효 기본값이다.
+fn parse_cell_vertical_align(value: Option<&str>) -> VerticalAlign {
+    match value {
+        Some("Top") => VerticalAlign::Top,
+        Some("Bottom") => VerticalAlign::Bottom,
+        _ => VerticalAlign::Center,
     }
 }
 

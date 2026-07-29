@@ -2696,13 +2696,12 @@ impl Renderer for SvgRenderer {
         };
         // 위첨자/아래첨자는 레이아웃 advance 는 원래 run 기준으로 유지하고,
         // 실제 SVG glyph 크기와 baseline 만 Canvas/HTML 출력과 동일하게 조정한다.
-        let (font_size, y) = if style.superscript {
-            (base_font_size * 0.7, y - base_font_size * 0.3)
-        } else if style.subscript {
-            (base_font_size * 0.7, y + base_font_size * 0.15)
-        } else {
-            (base_font_size, y)
-        };
+        let (font_size, y) = style.script_draw_metrics(base_font_size, y);
+        // [#2771] `textLength` 는 **실제로 그려지는** 글리프 폭에 맞춰야 한다.
+        // char_positions 의 advance 는 본문(base) 크기 기준이므로, 0.7 배로 그려지는
+        // 첨자에 그대로 넘기면 lengthAdjust="spacingAndGlyphs" 가 글리프를 1/0.7 배
+        // 가로로 늘린다. 비첨자는 정확히 1.0 이라 기존 textLength 값이 불변이다.
+        let script_advance_scale = style.script_advance_scale();
         let font_family = if style.font_family.is_empty() {
             "sans-serif".to_string()
         } else {
@@ -2863,7 +2862,7 @@ impl Renderer for SvgRenderer {
                 let char_y = y + dy;
                 let length_attrs = svg_text_length_attrs(
                     cluster_str,
-                    cluster_advance(*char_idx, cluster_str),
+                    cluster_advance(*char_idx, cluster_str) * script_advance_scale,
                     ratio,
                 );
                 let shadow_attrs = attrs_for_cluster(cluster_str, &shadow_color);
@@ -2926,14 +2925,17 @@ impl Renderer for SvgRenderer {
                     y,
                     font_size,
                     color,
-                    svg_text_length_attrs(cluster_str, adv, ratio),
+                    svg_text_length_attrs(cluster_str, adv * script_advance_scale, ratio),
                     escape_xml(cluster_str),
                 ));
                 continue;
             }
             let char_x = x + char_positions[*char_idx];
-            let length_attrs =
-                svg_text_length_attrs(cluster_str, cluster_advance(*char_idx, cluster_str), ratio);
+            let length_attrs = svg_text_length_attrs(
+                cluster_str,
+                cluster_advance(*char_idx, cluster_str) * script_advance_scale,
+                ratio,
+            );
             let common_attrs = attrs_for_cluster(cluster_str, &color);
 
             if has_ratio {
