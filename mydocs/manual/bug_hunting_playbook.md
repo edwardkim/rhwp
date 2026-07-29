@@ -252,9 +252,14 @@ IR 대조로 영원히 잡히지 않는다.
   python - <<'PY'
   import zipfile
   a, b = zipfile.ZipFile('서식.hwpx'), zipfile.ZipFile('out.hwpx')
-  for n in a.namelist():
-      if n in b.namelist() and a.getinfo(n).file_size != b.getinfo(n).file_size:
-          print(n, a.getinfo(n).file_size, '->', b.getinfo(n).file_size)
+  a_names, b_names = set(a.namelist()), set(b.namelist())
+  for n in sorted(a_names - b_names):
+      print('missing', n)
+  for n in sorted(b_names - a_names):
+      print('added', n)
+  for n in sorted(a_names & b_names):
+      if a.getinfo(n).file_size != b.getinfo(n).file_size:
+          print('size', n, a.getinfo(n).file_size, '->', b.getinfo(n).file_size)
   PY
   ```
 - **방식(무엇을 찾나)**: 엔트리 **소실/추가**, 엔트리별 **크기 변화**, 그리고 크기가 변한
