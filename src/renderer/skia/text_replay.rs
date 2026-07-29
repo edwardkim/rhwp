@@ -54,11 +54,17 @@ impl SkiaTextReplay<'_> {
                 if text.is_empty() && style.tab_leaders.is_empty() {
                     return;
                 }
-                let font_size = if style.font_size > 0.0 {
-                    style.font_size as f32
+                let base_font_size = if style.font_size > 0.0 {
+                    style.font_size
                 } else {
                     12.0
                 };
+                // [#2771] 위첨자/아래첨자를 SVG/Canvas/HTML 과 동일한 계약(0.7 배
+                // 글꼴 + baseline 이동)으로 그린다. 종전 skia 경로는 첨자 분기가
+                // 아예 없어 본문과 같은 크기·같은 baseline 으로 그렸다.
+                // baseline 이동은 아래 `y` 계산에서 함께 적용한다.
+                let (draw_font_size, _) = style.script_draw_metrics(base_font_size, 0.0);
+                let font_size = draw_font_size as f32;
                 let font_style = match (style.bold, style.italic) {
                     (true, true) => FontStyle::bold_italic(),
                     (true, false) => FontStyle::bold(),
@@ -167,11 +173,13 @@ impl SkiaTextReplay<'_> {
                         Some(font)
                     }
                 };
-                let y = if baseline > 0.0 {
+                let baseline_y = if baseline > 0.0 {
                     bbox.y + baseline
                 } else {
                     bbox.y + bbox.height
                 };
+                // [#2771] 첨자 baseline 이동 (위 0.3em / 아래 0.15em). 비첨자는 항등.
+                let (_, y) = style.script_draw_metrics(base_font_size, baseline_y);
                 let effective_rotation = if is_vertical {
                     rotation + 90.0
                 } else {

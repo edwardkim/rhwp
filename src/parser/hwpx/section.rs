@@ -297,6 +297,11 @@ fn parse_section_def_start(e: &quick_xml::events::BytesStart, sec_def: &mut Sect
             b"outlineShapeIDRef" => {
                 sec_def.outline_numbering_id = parse_u16(&attr);
             }
+            // [#2779] memoShapeIDRef → memo_shape_id (UINT16, header.xml `hh:memoPr@id` 참조).
+            // 종전엔 수집하지 않아 저장 시 템플릿 상수 "0" 으로 리셋됐다(실측 14 secPr/9 파일).
+            b"memoShapeIDRef" => {
+                sec_def.memo_shape_id = parse_u16(&attr);
+            }
             _ => {}
         }
     }
@@ -1078,12 +1083,22 @@ fn parse_note_pr_children(
                             match attr.key.as_ref() {
                                 b"place" => {
                                     if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                        // [#2779] OWPML 스키마(ParaList placement@place)의 정식
+                                        // 토큰은 컨텍스트마다 다르지만 HWP5 attr bits 8-9 코드
+                                        // 공간은 공유한다:
+                                        //   각주 EACH_COLUMN(0)·MERGED_COLUMN(1)·RIGHT_MOST_COLUMN(2)
+                                        //   미주 END_OF_DOCUMENT(0)·END_OF_SECTION(1)
+                                        // 종전엔 MERGED_COLUMN/RIGHT_MOST_COLUMN 이 표에 없어
+                                        // `_ => continue` 로 떨어져, 통단·오른쪽단 각주가 파싱
+                                        // 단계에서 기본값(각 단마다)으로 소실됐다.
+                                        // (BELOW_TEXT/RIGHT_COLUMN 은 스키마 밖 관용 표기 — 수용 유지.)
                                         let placement = match s {
-                                            "END_OF_SECTION" | "BELOW_TEXT" | "sectionEnd"
-                                            | "belowText" => {
+                                            "END_OF_SECTION" | "MERGED_COLUMN" | "BELOW_TEXT"
+                                            | "sectionEnd" | "belowText" => {
                                                 crate::model::footnote::FootnotePlacement::BelowText
                                             }
-                                            "RIGHT_COLUMN" | "rightColumn" => {
+                                            "RIGHT_MOST_COLUMN" | "RIGHT_COLUMN"
+                                            | "rightColumn" => {
                                                 crate::model::footnote::FootnotePlacement::RightColumn
                                             }
                                             "END_OF_DOCUMENT" | "EACH_COLUMN" | "documentEnd"
@@ -1578,6 +1593,12 @@ fn read_text_content_with_tabs(
         match reader.read_event_into(&mut buf) {
             Ok(Event::Text(ref t)) => {
                 text.push_str(&t.decode().unwrap_or_default());
+            }
+            // 본문 런 텍스트가 CDATA 로 저장된 경우. 이 분기가 없으면 `_ => {}` 로
+            // 버려져 문단 텍스트가 통째로 소실된다(#2916·#2951·#2974 와 같은 결함
+            // 클래스이나, 여기는 수식·덧말이 아닌 일반 <hp:t> 경로다).
+            Ok(Event::CData(ref cdata)) => {
+                text.push_str(&String::from_utf8_lossy(cdata.as_ref()));
             }
             Ok(Event::GeneralRef(ref r)) => {
                 text.push_str(&decode_xml_general_ref(r));
@@ -5779,6 +5800,11 @@ fn parse_form_object(
                                         form.text.push_str(&s);
                                     }
                                 }
+                                // 양식 개체(edit 컨트롤) 텍스트의 CDATA 저장 형태.
+                                // #2916 과 같은 결함 클래스 — 없으면 form.text 가 빈다.
+                                Ok(Event::CData(ref cdata)) => {
+                                    form.text.push_str(&String::from_utf8_lossy(cdata.as_ref()));
+                                }
                                 Ok(Event::GeneralRef(ref r)) => {
                                     form.text.push_str(&decode_xml_general_ref(r));
                                 }
@@ -6536,6 +6562,56 @@ mod tests {
     }
 
     #[test]
+    fn run_text_preserve_cdata() {
+        // <hp:t> 본문 런 텍스트가 CDATA 로 저장된 경우, read_text_content_with_tabs 에
+        // Event::CData arm 이 없어 `_ => {}` 로 버려지면서 문단 텍스트가 통째로 소실되던
+        // 결함. #2916·#2951·#2974 와 같은 결함 클래스이나, 이 경로는 수식·덧말이 아닌
+        // 일반 본문이라 영향 범위가 가장 넓다.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:t><![CDATA[a<b & c]]></hp:t>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        assert_eq!(section.paragraphs.len(), 1);
+        assert_eq!(
+            section.paragraphs[0].text, "a<b & c",
+            "본문 런 텍스트의 CDATA 가 소실되면 안 됨"
+        );
+    }
+
+    #[test]
+    fn form_edit_text_preserve_cdata() {
+        // 양식 개체(<hp:edit>)의 <hp:text> 가 CDATA 로 저장된 경우 parse_form_object 의
+        // arm 누락으로 form.text 가 비던 결함. 위와 같은 결함 클래스.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:edit id="1" name="edit1">
+        <hp:text><![CDATA[a<b]]></hp:text>
+      </hp:edit>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Form(form) = &section.paragraphs[0].controls[0] else {
+            panic!("첫 컨트롤은 Form(양식 개체)이어야 함");
+        };
+        assert_eq!(
+            form.text, "a<b",
+            "양식 개체 텍스트의 CDATA 가 소실되면 안 됨"
+        );
+    }
+
+    #[test]
     fn test_parse_endnote_long_note_line_keeps_hwp5_low_word() {
         let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
 <hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
@@ -6615,6 +6691,77 @@ mod tests {
         );
         assert_eq!((section.section_def.endnote_shape.attr >> 8) & 0x03, 1);
         assert_eq!((section.section_def.endnote_shape.attr >> 10) & 0x03, 0);
+    }
+
+    /// [#2779] 각주 placement 의 OWPML 정식 토큰 MERGED_COLUMN(통단)·
+    /// RIGHT_MOST_COLUMN(가장 오른쪽 단)을 파서가 수용해야 한다. 종전엔 토큰 표에
+    /// 없어 `_ => continue` 로 떨어져, 통단/오른쪽단 각주가 파싱 단계에서 기본값
+    /// (각 단마다, 코드 0)으로 소실됐다.
+    #[test]
+    fn issue2779_footnote_placement_accepts_schema_column_tokens() {
+        // (placement, attr bits 8-9 코드) 를 돌려준다.
+        fn parse_place(place: &str) -> (crate::model::footnote::FootnotePlacement, u32) {
+            let xml = format!(
+                r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:secPr textDirection="HORIZONTAL" spaceColumns="1134" tabStop="8000" outlineShapeIDRef="1" masterPageCnt="0">
+        <hp:footNotePr>
+          <hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/>
+          <hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/>
+          <hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/>
+          <hp:numbering type="CONTINUOUS" newNum="1"/>
+          <hp:placement place="{place}" beneathText="0"/>
+        </hp:footNotePr>
+      </hp:secPr>
+    </hp:run>
+  </hp:p>
+</hs:sec>"##
+            );
+            let section = parse_hwpx_section(&xml).unwrap();
+            let shape = &section.section_def.footnote_shape;
+            (shape.placement, (shape.attr >> 8) & 0x03)
+        }
+
+        use crate::model::footnote::FootnotePlacement;
+        assert_eq!(
+            parse_place("MERGED_COLUMN"),
+            (FootnotePlacement::BelowText, 1),
+            "MERGED_COLUMN(통단으로 배열) = attr bits 8-9 코드 1"
+        );
+        assert_eq!(
+            parse_place("RIGHT_MOST_COLUMN"),
+            (FootnotePlacement::RightColumn, 2),
+            "RIGHT_MOST_COLUMN(가장 오른쪽 단에 배열) = attr bits 8-9 코드 2"
+        );
+        // 기본 토큰은 종전대로 코드 0.
+        assert_eq!(
+            parse_place("EACH_COLUMN"),
+            (FootnotePlacement::EachColumn, 0),
+            "EACH_COLUMN(각 단마다 따로 배열) = attr bits 8-9 코드 0"
+        );
+    }
+
+    /// [#2779] secPr@memoShapeIDRef 가 SectionDef.memo_shape_id 로 수집돼야 한다.
+    /// 종전엔 파서가 속성을 읽지 않아 저장 시 템플릿 상수 "0" 으로 리셋됐다.
+    #[test]
+    fn issue2779_secpr_memo_shape_id_ref_parsed() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:secPr id="" textDirection="HORIZONTAL" spaceColumns="1134" tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="1" memoShapeIDRef="2" textVerticalWidthHead="0" masterPageCnt="0">
+      </hp:secPr>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        assert_eq!(section.section_def.memo_shape_id, 2);
     }
 
     #[test]

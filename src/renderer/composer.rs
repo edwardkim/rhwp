@@ -2532,7 +2532,23 @@ fn text_surface_replacement(ch: char) -> Option<String> {
         return char::from_u32(0x2460 + n).map(|c| c.to_string());
     }
     // 렌더가 이미 표시 문자열을 갖고 있는 대역은 같은 답을 쓴다.
-    pua_to_display_text(ch)
+    if let Some(replacement) = pua_to_display_text(ch) {
+        return Some(replacement);
+    }
+    // 렌더의 글리프 치환 표(`map_pua_bullet_char`)를 텍스트 표면에도 적용한다.
+    //
+    // 새 매핑을 지어내지 않고 **렌더가 이미 쓰는 표를 재사용**한다 — 근거(한컴 정답지
+    // 실측)가 그 표에 붙어 있고, 렌더 동작은 바뀌지 않는다. 사각 안 숫자(U+F02B1~F02C4)는
+    // 그 표에서 의도적으로 원문 유지라 위 분기가 계속 담당한다.
+    //
+    // 규모: 저장소 샘플 346건 중 50건이 추출 텍스트에 PUA 를 흘렸고, 그중 U+F080F
+    // (굵은 가로선 ━)만 155,709자다. hwp3-sample11.hwp 는 한 쪽 1,398자 중 181자가
+    // 이 문자이고 최장 96자 연속 — 머리말/꼬리말 가로선이 본문 텍스트로 나갔다.
+    let mapped = super::layout::map_pua_bullet_char(ch);
+    if mapped != ch {
+        return Some(mapped.to_string());
+    }
+    None
 }
 /// 조합된 텍스트 런에서 PUA 테두리 숫자 문자를 찾아 CharOverlap 런으로 변환한다.
 ///

@@ -515,10 +515,13 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
         let is_autonum_placeholder = *ch == ' '
             && offset == prev_end
             && ctrl_idx < para.controls.len()
-            && matches!(
-                control_char_code_and_id(&para.controls[ctrl_idx]).0,
-                0x0011 | 0x0012
-            )
+            // [#3495] 0x0012(자동번호)만 placeholder 공백을 만든다. 두 파서 모두
+            // 그렇다 — parser/body_text.rs 는 ch == 0x0012 일 때만, HWPX section.rs 는
+            // 0x0012 파트일 때만 text 에 공백을 push 한다. 각주·미주(0x0011)는
+            // placeholder 를 만들지 않으므로, 여기 포함하면 미주 앞의 진짜 공백을
+            // placeholder 로 오인해 컨트롤로 덮어쓴다 (SO-SUEOP.hwp 문단 238:
+            // 공백 12개 -> 11개, 뒤 텍스트가 한 칸 당겨짐).
+            && matches!(control_char_code_and_id(&para.controls[ctrl_idx]).0, 0x0012)
             && next_offset.map_or(is_last_text_char, |n| n >= offset + 8);
         if is_autonum_placeholder {
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);

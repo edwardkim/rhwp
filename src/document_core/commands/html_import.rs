@@ -252,7 +252,8 @@ impl DocumentCore {
                     };
                     p.controls.clear();
                     p.text = text;
-                    p.char_count = p.text.encode_utf16().count() as u32;
+                    // [#3494] char_count 는 문단 종결자를 포함한다 (model/paragraph.rs:1042).
+                    p.char_count = p.text.encode_utf16().count() as u32 + 1;
                     p.char_offsets = p
                         .text
                         .chars()
@@ -611,7 +612,8 @@ impl DocumentCore {
             if !plain.is_empty() {
                 let mut para = Paragraph::default();
                 para.text = plain;
-                para.char_count = para.text.encode_utf16().count() as u32;
+                // [#3494] char_count 는 문단 종결자를 포함한다 (model/paragraph.rs:1042).
+                para.char_count = para.text.encode_utf16().count() as u32 + 1;
                 para.char_offsets = para
                     .text
                     .chars()
@@ -638,7 +640,8 @@ impl DocumentCore {
             }
             let mut para = Paragraph::default();
             para.text = trimmed.to_string();
-            para.char_count = para.text.encode_utf16().count() as u32;
+            // [#3494] char_count 는 문단 종결자를 포함한다 (model/paragraph.rs:1042).
+            para.char_count = para.text.encode_utf16().count() as u32 + 1;
             para.char_offsets = para
                 .text
                 .chars()
@@ -793,7 +796,8 @@ impl DocumentCore {
         }
 
         para.text = full_text;
-        para.char_count = para.text.encode_utf16().count() as u32;
+        // [#3494] char_count 는 문단 종결자를 포함한다 (model/paragraph.rs:1042).
+        para.char_count = para.text.encode_utf16().count() as u32 + 1;
         para.char_offsets = para
             .text
             .chars()

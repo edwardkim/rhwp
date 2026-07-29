@@ -342,6 +342,23 @@ fn capabilities_mcp_tool_definitions_contract() {
         info["inputSchema"]["properties"]["path"]["type"] == "string",
         "{info}"
     );
+
+    // [#3480] set-cell의 넘침 경고는 에이전트가 제출 불가 산출물을 선별하는 신호다.
+    // capabilities에는 있으나 MCP 도구 정의에 누락되면 자동 등록 클라이언트가 이를
+    // 알 수 없으므로 두 계약에 함께 있어야 한다. #3383의 실제 산출 형식도 같은 이유다.
+    let set_cell = tools
+        .iter()
+        .find(|t| t["name"] == "hwp_set_cell")
+        .unwrap_or_else(|| panic!("hwp_set_cell 도구 누락: {v}"));
+    let output_fields = set_cell["outputFields"]
+        .as_array()
+        .unwrap_or_else(|| panic!("hwp_set_cell.outputFields 누락: {set_cell}"));
+    for expected in ["overflow", "outputFormat"] {
+        assert!(
+            output_fields.iter().any(|field| field == expected),
+            "hwp_set_cell 출력 계약에 {expected} 누락: {set_cell}"
+        );
+    }
 }
 
 #[test]

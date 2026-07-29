@@ -141,8 +141,9 @@ python3 scripts/task1274_visual_sweep.py \
 ```
 
 `--page`는 여러 번 지정할 수 있고, `--pages`는 `1,3,5-7` 형식을 허용한다. 페이지 번호는
-사용자가 PDF viewer에서 보는 1-based 번호다. 현재 구현은 문서 전체 SVG/PDF raster 산출물을 만든 뒤
-비교·overlay·analysis 단계만 선택 페이지로 좁힌다. 따라서 `compare/compare_022.png`,
+사용자가 PDF viewer에서 보는 1-based 번호다. `export-svg`와 render tree 추출은 문서 단위로 수행하지만,
+`--page`/`--pages`가 지정되면 `rsvg-convert`와 `pdftoppm`의 raster 생성부터 선택 페이지로 제한한다.
+비교·overlay·analysis도 동일한 선택 페이지로만 수행한다. 따라서 `compare/compare_022.png`,
 `overlay/overlay_022.png`, `analysis/annotated_022.png`처럼 실제 페이지 번호가 파일명에 남는다.
 
 저장소 preset에 없는 일반 파일을 실행:
