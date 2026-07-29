@@ -26,6 +26,11 @@ fn sample(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
 }
 
+/// nextest archive 는 런타임에 `CARGO_BIN_EXE_rhwp`를 주입한다(#3289).
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
+}
+
 fn out_dir(tag: &str) -> PathBuf {
     std::env::temp_dir().join(format!(
         "rhwp-issue3385b-{tag}-{}-{}",
@@ -38,7 +43,7 @@ fn out_dir(tag: &str) -> PathBuf {
 }
 
 fn export(kind: &str, rel: &str, dir: &Path) -> String {
-    let out = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let out = Command::new(rhwp_bin())
         .arg(kind)
         .arg(sample(rel))
         .arg("-o")

@@ -24,6 +24,11 @@ fn sample_path() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)
 }
 
+/// nextest archive 는 런타임에 `CARGO_BIN_EXE_rhwp`를 주입한다(#3289).
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
+}
+
 /// 문서 전체에서 "캡션 문단 안에 표를 가진" 표를 찾아 (캡션 문단 수) 목록을 만든다.
 fn captions_holding_tables(doc: &rhwp::model::document::Document) -> Vec<usize> {
     fn walk(paras: &[Paragraph], out: &mut Vec<usize>) {
@@ -75,7 +80,7 @@ fn caption_holding_a_table_keeps_its_paragraphs() {
             .expect("system clock")
             .as_nanos()
     ));
-    let res = std::process::Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let res = std::process::Command::new(rhwp_bin())
         .arg("convert")
         .arg(sample_path())
         .arg(&out)

@@ -34,6 +34,11 @@ fn sample_path() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)
 }
 
+/// nextest archive 는 런타임에 `CARGO_BIN_EXE_rhwp`를 주입한다(#3289).
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
+}
+
 /// 미주를 가진 문단의 (텍스트, 미주 위치) 목록.
 fn endnote_paragraphs(doc: &rhwp::model::document::Document) -> Vec<(String, Vec<usize>)> {
     doc.sections
@@ -57,7 +62,7 @@ fn convert_roundtrip() -> std::path::PathBuf {
             .expect("system clock")
             .as_nanos()
     ));
-    let status = std::process::Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let status = std::process::Command::new(rhwp_bin())
         .arg("convert")
         .arg(sample_path())
         .arg(&out)
