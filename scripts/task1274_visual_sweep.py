@@ -55,6 +55,8 @@ LARGE_INK_REGION_MIN_HEIGHT_PX = 48.0
 LARGE_INK_REGION_DRIFT_LIMIT_PX = 80.0
 ENDNOTE_SEPARATOR_MIN_RUN_PX = 70
 ENDNOTE_SEPARATOR_GAP_DRIFT_LIMIT_PX = 18.0
+LEGACY_GLYPH_MIN_INK_PIXELS = 24
+LEGACY_GLYPH_MAX_INK_MATCH_PERCENT = 80.0
 QUESTION_TITLE_RE = re.compile(r"^\s*문\s*(\d+)")
 CHOICE_MARKER_ONLY_RE = re.compile(r"^[①-⑳]+$")
 PAGE_NUMBER_FOOTER_RE = re.compile(r"^\s*-\s*\d+\s*-\s*$")
@@ -580,6 +582,7 @@ def render_target(
         target.key,
         pdf_question_markers,
         first_endnote_shape(compact_shapes),
+        pixel_diff_threshold,
     )
 
     log_text = export_log.read_text(encoding="utf-8") if export_log.exists() else ""
@@ -1590,6 +1593,155 @@ def render_tree_bbox(node: dict[str, object]) -> tuple[float, float, float, floa
     return x, y, w, h
 
 
+def legacy_glyph_codepoints(text: str) -> list[str]:
+    """Return visible legacy-Jamo/PUA code points in stable source order.
+
+    The render tree intentionally preserves source text. A Hancom reference can
+    nevertheless paint a product-name convention or private glyph differently.
+    Restrict this detector to the legacy ranges so normal font raster variance
+    does not turn every text run into a visual-review candidate.
+    """
+
+    codepoints: list[str] = []
+    for char in text:
+        codepoint = ord(char)
+        is_old_hangul = (
+            0x1100 <= codepoint <= 0x11FF
+            or 0xA960 <= codepoint <= 0xA97F
+            or 0xD7B0 <= codepoint <= 0xD7FF
+        )
+        is_private_use = 0xE000 <= codepoint <= 0xF8FF
+        if (is_old_hangul or is_private_use) and f"U+{codepoint:04X}" not in codepoints:
+            codepoints.append(f"U+{codepoint:04X}")
+    return codepoints
+
+
+def raster_bbox_for_render_tree_bbox(
+    page_tree: dict[str, object],
+    bbox: tuple[float, float, float, float],
+    image: Image.Image,
+) -> list[int] | None:
+    page_bbox = render_tree_bbox(page_tree)
+    if page_bbox is None:
+        return None
+    _, _, page_width, page_height = page_bbox
+    if page_width <= 0.0 or page_height <= 0.0:
+        return None
+    x, y, width, height = bbox
+    scale_x = image.width / page_width
+    scale_y = image.height / page_height
+    left = max(0, int(x * scale_x) - 2)
+    top = max(0, int(y * scale_y) - 2)
+    right = min(image.width, int((x + width) * scale_x + 0.9999) + 2)
+    bottom = min(image.height, int((y + height) * scale_y + 0.9999) + 2)
+    if right <= left or bottom <= top:
+        return None
+    return [left, top, right - left, bottom - top]
+
+
+def ink_match_in_bbox(
+    rhwp: Image.Image,
+    pdf: Image.Image,
+    bbox: list[int],
+    *,
+    pixel_diff_threshold: int,
+) -> dict[str, object]:
+    """Measure visual ink agreement in one render-tree TextRun bbox."""
+
+    left, top, width, height = bbox
+    right = min(rhwp.width, left + width)
+    bottom = min(rhwp.height, top + height)
+    rhwp_pixels = rhwp.load()
+    pdf_pixels = pdf.load()
+    ink_union_pixels = 0
+    ink_diff_pixels = 0
+    for y in range(top, bottom):
+        for x in range(left, right):
+            rhwp_pixel = rhwp_pixels[x, y]
+            pdf_pixel = pdf_pixels[x, y]
+            if not (is_content_pixel(rhwp_pixel) or is_content_pixel(pdf_pixel)):
+                continue
+            ink_union_pixels += 1
+            if max(abs(rhwp_pixel[index] - pdf_pixel[index]) for index in range(3)) > pixel_diff_threshold:
+                ink_diff_pixels += 1
+    ink_match_percent = (
+        (1.0 - ink_diff_pixels / ink_union_pixels) * 100.0
+        if ink_union_pixels
+        else None
+    )
+    return {
+        "ink_union_pixels": ink_union_pixels,
+        "ink_diff_pixels": ink_diff_pixels,
+        "ink_match_percent": round(ink_match_percent, 5) if ink_match_percent is not None else None,
+    }
+
+
+def render_tree_legacy_glyph_visual_candidates(
+    page_tree: dict[str, object] | None,
+    rhwp_image: Image.Image,
+    pdf_image: Image.Image,
+    *,
+    pixel_diff_threshold: int,
+) -> list[dict[str, object]]:
+    """Find legacy glyph TextRuns whose local PDF/SVG ink differs materially.
+
+    This is a review candidate, not a pass/fail assertion: a reference can use
+    a proprietary glyph or product-name convention while the source IR must
+    remain intact. It closes the gap where structural drift is zero but the
+    user-visible glyph is plainly different.
+    """
+
+    if page_tree is None:
+        return []
+    rhwp, pdf = padded_pair(rhwp_image, pdf_image)
+    candidates: list[dict[str, object]] = []
+
+    def visit(node: dict[str, object], path: str) -> None:
+        bbox = render_tree_bbox(node)
+        text = node.get("text")
+        if node.get("type") == "TextRun" and isinstance(text, str) and bbox is not None:
+            codepoints = legacy_glyph_codepoints(text)
+            raster_bbox = raster_bbox_for_render_tree_bbox(page_tree, bbox, rhwp)
+            if codepoints and raster_bbox is not None:
+                metrics = ink_match_in_bbox(
+                    rhwp,
+                    pdf,
+                    raster_bbox,
+                    pixel_diff_threshold=pixel_diff_threshold,
+                )
+                match = metrics["ink_match_percent"]
+                if (
+                    metrics["ink_union_pixels"] >= LEGACY_GLYPH_MIN_INK_PIXELS
+                    and isinstance(match, (int, float))
+                    and match <= LEGACY_GLYPH_MAX_INK_MATCH_PERCENT
+                ):
+                    candidates.append(
+                        {
+                            "path": path,
+                            "pi": node.get("pi"),
+                            "text": text[:96],
+                            "codepoints": codepoints,
+                            "render_tree_bbox": [round(value, 1) for value in bbox],
+                            "bbox": raster_bbox,
+                            **metrics,
+                        }
+                    )
+        children = node.get("children")
+        if isinstance(children, list):
+            for index, child in enumerate(children):
+                if isinstance(child, dict):
+                    visit(child, f"{path}/{index}")
+
+    visit(page_tree, "root")
+    candidates.sort(
+        key=lambda item: (
+            float(item.get("ink_match_percent") or 100.0),
+            -int(item.get("ink_union_pixels") or 0),
+        )
+    )
+    return candidates[:20]
+
+
 def load_render_tree(tree_path: Path) -> dict[str, object] | None:
     if not tree_path.exists():
         return None
@@ -2323,6 +2475,7 @@ def analyze_page(
     page_index: int,
     question_marker_drifts: list[dict[str, object]],
     endnote_shape: dict[str, object],
+    pixel_diff_threshold: int,
 ) -> dict[str, object]:
     rhwp = Image.open(rhwp_path).convert("RGB")
     pdf = Image.open(pdf_path).convert("RGB")
@@ -2439,6 +2592,12 @@ def analyze_page(
     question_title_overlaps = render_tree_question_title_overlap_candidates(tree_path)
     line_order_overlaps = render_tree_line_order_overlap_candidates(tree_path)
     frame_tail_overflows = render_tree_frame_tail_candidates(tree_path, rhwp_frame)
+    legacy_glyph_visual_candidates = render_tree_legacy_glyph_visual_candidates(
+        load_render_tree(tree_path),
+        rhwp,
+        pdf,
+        pixel_diff_threshold=pixel_diff_threshold,
+    )
 
     rhwp_out_pixels = rhwp_out[4] if rhwp_out else 0
     pdf_out_pixels = pdf_out[4] if pdf_out else 0
@@ -2578,6 +2737,8 @@ def analyze_page(
         flags.append("column_line_band_drift")
     if large_ink_region_drift and semantic_flow_flags:
         flags.append("large_ink_region_drift")
+    if legacy_glyph_visual_candidates:
+        flags.append("legacy_glyph_visual_mismatch")
 
     annotated = None
     if flags:
@@ -2600,6 +2761,7 @@ def analyze_page(
                 "render_tree_frame_tail_overflow": frame_tail_overflows,
                 "question_marker_drift": question_marker_drifts,
                 "column_line_band_drift": column_line_drift_candidates,
+                "legacy_glyph_visual": legacy_glyph_visual_candidates,
             },
         )
 
@@ -2647,6 +2809,7 @@ def analyze_page(
         "render_tree_frame_tail_overflow_candidates": frame_tail_overflows,
         "render_tree_frame_tail_overflow_suppressed_candidates": suppressed_frame_tail_overflows,
         "question_marker_drift_candidates": question_marker_drifts,
+        "legacy_glyph_visual_candidates": legacy_glyph_visual_candidates,
         "annotated": str(annotated) if annotated else None,
     }
 
@@ -2782,6 +2945,16 @@ def draw_render_tree_overlays(
             x, y = anchor
             label = f"title pi {item.get('title_pi')}->{item.get('next_pi')}"
             draw.text((x, max(label_h + 2, y - 18)), label, fill=(0, 120, 140), font=font)
+    for item in render_overlays.get("legacy_glyph_visual", [])[:6]:
+        anchor = draw_bbox(item.get("bbox"), (180, 0, 180), 3)
+        if anchor is not None:
+            x, y = anchor
+            codes = ",".join(str(value) for value in item.get("codepoints", []))
+            label = (
+                f"legacy glyph pi {item.get('pi')} "
+                f"ink={item.get('ink_match_percent')}% {codes}"
+            )
+            draw.text((x, max(label_h + 2, y - 18)), label, fill=(180, 0, 180), font=font)
 
 
 def analyze_pages(
@@ -2793,6 +2966,7 @@ def analyze_pages(
     key: str,
     pdf_question_markers: list[dict[str, object]],
     endnote_shape: dict[str, object],
+    pixel_diff_threshold: int,
 ) -> dict[str, object]:
     page_count = min(len(rhwp_pngs), len(pdf_pngs), len(svg_paths), len(tree_paths))
     page_numbers = [page_num(path) for path in rhwp_pngs[:page_count]]
@@ -2829,6 +3003,7 @@ def analyze_pages(
             page_numbers[index] - 1,
             question_marker_drifts_by_page.get(page_numbers[index], []),
             endnote_shape,
+            pixel_diff_threshold,
         )
         for index in range(page_count)
     ]
@@ -2894,6 +3069,9 @@ def analyze_pages(
         "question_marker_drift_pages": [
             page["page"] for page in flagged_pages if "question_marker_drift" in page["flags"]
         ],
+        "legacy_glyph_visual_pages": [
+            page["page"] for page in flagged_pages if "legacy_glyph_visual_mismatch" in page["flags"]
+        ],
         "metrics_json": str(metrics_path),
         "question_flow_json": str(question_flow_path),
     }
@@ -2910,7 +3088,8 @@ def analyze_pages(
         f"order={summary['line_order_overlap_pages']} "
         f"tail={summary['render_tree_frame_tail_overflow_pages']} "
         f"question={summary['question_marker_drift_pages']} "
-        f"large={summary['large_ink_region_drift_pages']}",
+        f"large={summary['large_ink_region_drift_pages']} "
+        f"glyph={summary['legacy_glyph_visual_pages']}",
         flush=True,
     )
     return {"summary": summary, "flagged_pages": flagged_pages}

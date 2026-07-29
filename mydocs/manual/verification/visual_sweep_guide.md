@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-07-16
+last_verified: 2026-07-30
 ---
 
 # PDF/SVG visual sweep 가이드
@@ -21,6 +21,12 @@ last_verified: 2026-07-16
 - frame/tail overflow 후보
 - 수식/본문 겹침 후보
 - 줄 band/order drift 후보
+- **구조 heuristic에 걸리지 않는 glyph·PUA·제품명 표시 차이**의 review 후보
+
+이 도구의 절차상 지위는 [시각 검증 거버넌스의 라우팅 표](visual_verification_governance.md)를
+따른다. 독립 기준 PDF와 실제 사용자-visible 실패를 조사할 때는 bug-hunter가 상위이고, sweep은
+후보 검출·재현 범위 축소·수정 전후 무회귀만 담당한다. 이미 원인과 발동 페이지가 확정된 renderer/layout
+PR에서는 이 가이드를 직접 시작점으로 쓴다.
 
 ## 필수 도구
 
@@ -330,6 +336,49 @@ PDF raster와 rhwp raster가 얼마나 비슷한지를 보여주는 자동 보�
 anti-aliasing, PDF rasterizer, 전체 위치 이동의 영향을 크게 받으므로, 낮은 값은 우선 검토 신호이지
 그 자체로 불합격 판정은 아니다.
 
+### glyph·PUA·제품명 표시 차이도 잡는 방법
+
+기존 `analysis.flagged`는 frame overflow, line/order drift처럼 구조적으로 규칙화한 후보만 집계했다.
+현재 sweep은 여기에 render tree의 옛자모·PUA `TextRun` bbox를 PDF/SVG raster에 대조하는
+`legacy_glyph_visual_mismatch`도 더한다. 해당 bbox의 잉크가 충분하고 국소 일치율이 80% 이하이면
+페이지를 flag하고, `legacy_glyph_visual_candidates`에 text·code point·render-tree/raster bbox·국소
+잉크 지표를 남긴다.
+
+그래도 **`flagged=0`은 모든 glyph·글자폭·자간·제품명 convention이 PDF와 같다는 뜻이 아니다.**
+이 자동 후보는 옛자모·PUA로 범위를 의도적으로 좁혔으므로, 일반 글꼴·색·자간 차이는 별도 review가
+필요하다. 같은 bbox 안에서 `ᄒᆞᆫ글`과 `한글`처럼 다른 glyph를 paint하거나, PUA/글머리표의 의미가
+달라질 때 구조 heuristic만으로는 0건일 수 있다.
+
+다음은 합격 임계값이 아니라, 이런 차이를 놓치지 않기 위한 필수 triage다.
+
+1. 대상 페이지의 `overlay_metrics.json`을 `visual_accuracy_proxy_percent` 오름차순으로 정렬한다.
+   가장 낮은 페이지와 옛자모·PUA·목록 marker가 있는 페이지는 `flagged` 값과 무관하게 review PNG를
+   연다.
+2. review의 좌우 비교에서 glyph 모양, 글자폭, baseline, bullet/번호가 다르면 overlay가 구조 flag를
+   내지 않아도 **시각 fidelity 후보**로 기록한다.
+3. 해당 SVG/render tree의 `TextRun.text`, raw code point, CharShape/font family, 문단 context를
+   확인한다. 원문 IR의 보존과 paint-time display projection은 별도 계약이다.
+4. PDF text layer 추출이 실패했으면 문자 멀티셋 대조를 "차이 없음"으로 처리하지 않는다. raster
+   review와 raw/render-tree 대조만으로 후보를 남기고, text layer 한계를 함께 기록한다.
+
+`legacy_glyph_visual_mismatch`는 불합격을 자동 확정하는 규칙이 아니라 review 우선순위다. `analysis/`
+annotated PNG에는 해당 후보 bbox가 보라색으로 표시된다. 한 페이지에 후보가 여러 개면 국소
+`ink_match_percent`가 낮은 순으로 최대 20개를 기록한다.
+
+페이지별 보조값의 낮은 순서를 보는 예시는 다음과 같다.
+
+```bash
+jq -r '.pages[] | [.page, .visual_accuracy_proxy_percent, .ink_match_percent, .pixel_match_percent] | @tsv' \
+  output/task1274/<target>/overlay/overlay_metrics.json \
+  | sort -t $'\t' -k2,2n
+```
+
+예를 들어 HWP 97 안내문의 `가. ᄒᆞᆫ글 드라이버 사용`은 rhwp render tree에 표준 옛자모가
+남아 있고, 기준 PDF에는 제품명 `한글`로 보일 수 있다. 이 경우 HWP3 parser만 바꾸거나 모든
+`ᄒᆞᆫ`을 현대화하면 실제 옛한글 문서를 훼손할 수 있다. **문서·CharShape·PDF로 증명된 제품명
+context만** paint-time projection 후보로 삼고, 일반 옛한글과 다른 문서는 negative regression으로
+보호한다.
+
 ## 결과 해석
 
 실행 중 출력 예:
@@ -354,12 +403,15 @@ summary: /path/to/rhwp/output/task1274/summary.json
 | `order` | 줄 순서 겹침 후보 |
 | `tail` | render tree 기준 tail overflow 후보 |
 | `question` | PDF/rhwp 문항 marker y drift 후보 |
+| `glyph` | 옛자모·PUA TextRun의 국소 raster 불일치 후보 |
 
 권장 판정 기준:
 
 - `svg_pages == pdf_pages`는 기본 조건이다.
 - `overlay_contact_sheet.png`에서 빨강/파랑/주황이 본문 흐름에 집중되면 우선 검토한다.
 - `visual_accuracy_proxy_percent`는 자동 일치율 지표일 뿐 최종 시각 판정을 대체하지 않는다.
+- `flagged=0`이어도 낮은 `visual_accuracy_proxy_percent` 또는 옛자모·PUA·목록 marker가 있으면
+  review/overlay를 반드시 확인한다. glyph·제품명 표시 차이는 이 경로에서 후보가 된다.
 - PR 의 실제 변경 목적을 먼저 확인한다. 렌더링 개선 PR 이 아니면 visual sweep 차이는 참고 자료이며,
   그 차이만으로 merge 보류나 reject 결론을 내리지 않는다.
 - `frame`, `question`, `title`, `tail`, `eq` 후보는 우선 검토 대상이다.
@@ -369,7 +421,7 @@ summary: /path/to/rhwp/output/task1274/summary.json
 요약만 빠르게 보기:
 
 ```bash
-jq -r '.[] | [.key, .svg_pages, .pdf_pages, (.visual_metrics.flagged_page_count // 0), (.visual_metrics.frame_overflow_pages|join(",")), (.visual_metrics.line_band_drift_pages|join(",")), (.visual_metrics.column_line_band_drift_pages|join(",")), (.visual_metrics.line_order_overlap_pages|join(",")), (.visual_metrics.question_marker_drift_pages|join(","))] | @tsv' output/task1274/summary.json
+jq -r '.[] | [.key, .svg_pages, .pdf_pages, (.visual_metrics.flagged_page_count // 0), (.visual_metrics.frame_overflow_pages|join(",")), (.visual_metrics.line_band_drift_pages|join(",")), (.visual_metrics.column_line_band_drift_pages|join(",")), (.visual_metrics.line_order_overlap_pages|join(",")), (.visual_metrics.question_marker_drift_pages|join(",")), (.visual_metrics.legacy_glyph_visual_pages|join(","))] | @tsv' output/task1274/summary.json
 ```
 
 ## PR에 기록할 때
@@ -383,13 +435,18 @@ PR 리뷰/보고서에는 다음을 분리해 적는다.
 예:
 
 ```markdown
-| target | SVG/PDF pages | flagged | frame | line | column | order | question |
-|---|---:|---:|---|---|---|---|---|
-| `2024-09-between20` | 24/24 | 1 | `[]` | `[11]` | `[11]` | `[11]` | `[]` |
+| target | SVG/PDF pages | flagged | frame | line | column | order | question | glyph |
+|---|---:|---:|---|---|---|---|---|---|
+| `2024-09-between20` | 24/24 | 1 | `[]` | `[11]` | `[11]` | `[11]` | `[]` | `[]` |
 ```
 
 ## 한계
 
 - PDF는 한컴 편집기 직접 시각 판정의 완전한 대체물이 아니다.
 - 폰트/anti-aliasing 차이 때문에 line/column/order 후보가 false positive로 남을 수 있다.
+- 반대로 glyph·글자폭·PUA/제품명 convention 차이는 구조 후보가 0건이어도 실제 fidelity 결함일 수
+  있다. 옛자모·PUA는 `legacy_glyph_visual_mismatch`로 우선 후보화하지만, 낮은 잉크 일치율과
+  review의 반복 차이는 raw/IR/paint 경로로 분리한다.
+- PDF text layer가 손상되거나 추출기에 실패하면 text 기반 자동 분류를 생략할 수 있다. 이 경우
+  raster overlay와 render tree를 사용하되, 문자 멀티셋 무차이를 주장하지 않는다.
 - 최종 수용 여부는 자동 sweep + 회귀 테스트 + 메인테이너 시각 판정을 함께 보고 결정한다.
