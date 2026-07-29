@@ -24,6 +24,10 @@ last_verified: 2026-07-30
 위 head, `MERGEABLE`/`CLEAN`, CI 상태는 이 문서 작성 시점의 참고값이다. 이 review 기록과 대표 asset을
 추가한 뒤에는 review-only fast-pass의 최신 preflight와 `Build & Test` aggregate를 다시 확인해야 한다.
 
+review 기록 commit 뒤 `devel`의 `0255624ea`가 PR branch에 병합되어 최신 head는
+`d5099e46eb28c3f1e3c1bb1ee782293979c21564`가 됐다. 이 2-parent update-branch commit 뒤에는
+review-only 단일 부모 commit이 없었으므로 fast-pass를 재사용하지 않고 full CI fallback을 적용했다.
+
 ## 변경 범위와 검토
 
 - `scripts/task1274_visual_sweep.py`가 옛한글 자모(U+1100–U+11FF, U+A960–U+A97F,
@@ -70,14 +74,20 @@ source → IR → layout → paint 인과 분석이며 visual sweep은 후보 �
 | GitHub Actions — CI | preflight, Lint, archive, Native Skia, default-feature 8 shards, `Build & Test` 모두 success |
 | GitHub Actions — CodeQL | preflight, JavaScript/TypeScript·Python·Rust 분석과 aggregate 모두 success |
 
-full CI는 review 기록 추가 전 최신 code head `991a48d0b97c64dee23c493987144de3b354b9ee` 기준이다.
-이후 commit은 archive review·`mydocs/pr/assets` PNG만 포함하는 review-only 범위로 제한한다.
+최초 full CI는 review 기록 추가 전 code head `991a48d0b97c64dee23c493987144de3b354b9ee` 기준이다.
+update-branch 최신 head `d5099e46eb28c3f1e3c1bb1ee782293979c21564`에서는
+[CI run 30468906842](https://github.com/edwardkim/rhwp/actions/runs/30468906842)가 19분 48초에
+success였다. preflight, Lint, Build test archive, Native Skia, default-feature 8 shards,
+`Build & Test`, CodeQL이 모두 success이고 WASM·frontend gate는 영향 없음으로 skipped였다.
+
+이 추가 기록은 archive review만 변경하는 review-only 범위다. push 뒤 최신 preflight와
+`Build & Test` aggregate를 다시 확인한다.
 
 ## 권고와 merge 전 조건
 
 **권고: 수용.** 이 PR은 #3486의 원인을 성급히 확정하거나 렌더 결과를 변환하지 않고, 재현 가능한
 glyph 후보 검출과 안정 증적, bug-hunter 우선 라우팅을 제공한다. 다음 조건을 충족하면 merge한다.
 
-1. review-only 최신 head의 CI preflight와 `Build & Test` aggregate가 success여야 한다.
+1. 이 최종 review-only head의 CI preflight와 `Build & Test` aggregate가 success여야 한다.
 2. 최신 head가 `MERGEABLE/CLEAN`이어야 한다.
 3. #3486은 open으로 유지하며, 전수 PDF/Studio 판정과 원인 규명은 후속 bug-hunter 단계에서 수행한다.
