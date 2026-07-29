@@ -2,7 +2,11 @@ import { resolve } from 'path';
 
 import { runTest, assert } from './helpers.mjs';
 
-const EDITOR_MODULE_URL = `/@fs${resolve(import.meta.dirname, '../../npm/editor/index.js')}`;
+// Windows 절대 경로(D:\...)도 Vite /@fs URL로 변환되도록 정규화한다
+const EDITOR_MODULE_PATH = resolve(import.meta.dirname, '../../npm/editor/index.js').replace(/\\/g, '/');
+const EDITOR_MODULE_URL = EDITOR_MODULE_PATH.startsWith('/')
+  ? `/@fs${EDITOR_MODULE_PATH}`
+  : `/@fs/${EDITOR_MODULE_PATH}`;
 const VITE_URL = process.env.VITE_URL || 'http://localhost:7700';
 
 runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ page }) => {
@@ -14,6 +18,7 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
     document.body.appendChild(host);
     const editor = await createEditor(host, {
       studioUrl: `${location.origin}/`,
+      renderer: 'auto',
       handshakeTimeoutMs: 10_000,
     });
     editor.element.name = 'rhwp-e2e-target';
@@ -23,17 +28,7 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
     ));
     const sampleBefore = new Uint8Array(sampleBuffer).slice(0, 16);
     const initialLength = sampleBuffer.byteLength;
-    let loadSettled = false;
-    const loadPromise = editor.loadFile(sampleBuffer, 'footnote-01.hwp')
-      .finally(() => { loadSettled = true; });
-    for (let attempt = 0; attempt < 600 && !loadSettled; attempt += 1) {
-      const fallbackButton = Array.from(
-        editor.element.contentDocument?.querySelectorAll('button') ?? [],
-      ).find((button) => button.textContent?.includes('대체 글꼴로 보기'));
-      if (fallbackButton) fallbackButton.click();
-      await new Promise((delay) => setTimeout(delay, 100));
-    }
-    const loaded = await loadPromise;
+    const loaded = await editor.loadFile(sampleBuffer, 'footnote-01.hwp');
     const publicDiagnostics = await editor.getRendererDiagnostics(0);
     const callerBytesPreserved = sampleBuffer.byteLength === initialLength
       && sampleBefore.every((byte, index) => new Uint8Array(sampleBuffer)[index] === byte);
@@ -51,6 +46,8 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
       pageCount: loaded.pageCount,
       publicDiagnosticsSchema: publicDiagnostics.schemaVersion,
       publicDiagnosticsPage: publicDiagnostics.page?.index,
+      publicDiagnosticsRequestBackend: publicDiagnostics.request?.backend?.backend,
+      publicDiagnosticsSelectionRequestBackend: publicDiagnostics.selection?.requestedBackend,
       callerBytesPreserved,
       hwpLength: hwp.byteLength,
       hwpxLength: hwpx.byteLength,
@@ -147,6 +144,10 @@ runTest('Issue #2186 @rhwp/editor MessageChannel v1 iframe transport', async ({ 
   assert(result.pageCount >= 1, 'public loadFile이 transferable HWP buffer를 Studio에 로드한다');
   assert(result.publicDiagnosticsSchema === 1 && result.publicDiagnosticsPage === 0,
     'public getRendererDiagnostics가 versioned page snapshot을 반환한다');
+  assert(result.publicDiagnosticsRequestBackend === 'canvas2d',
+    'renderer-diagnostics-v1 request backend enum은 기존 canvas2d 기본값을 유지한다');
+  assert(result.publicDiagnosticsSelectionRequestBackend === 'auto',
+    'additive selection diagnostics가 실제 auto 요청을 보존한다');
   assert(result.callerBytesPreserved, 'loadFile에 넘긴 동일 caller ArrayBuffer가 detach·변경되지 않는다');
   assert(result.hwpLength > 0, 'public exportHwp가 transferable bytes를 반환한다');
   assert(result.hwpxLength > 0, 'public exportHwpx가 transferable bytes를 반환한다');

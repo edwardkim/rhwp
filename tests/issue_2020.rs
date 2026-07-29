@@ -265,6 +265,10 @@ fn issue_2020_bokhak_receipt_seal_line_and_stamp_align() {
             && (82.0..=88.0).contains(&stamp_circle.height),
         "빨간 도장 원은 한컴 PDF 기준 위치/크기를 따라야 함: circle={stamp_circle:?}"
     );
+    // [#2509 복원] receipt_date_stamp_shift_px(도장 −21px 핵) 제거 + #2430 메트릭
+    // 교정으로 ㊞ 가 오라클 정위치(text x=635.56, Δcx=20.6px)로 복귀 — 한컴 Δcx
+    // 20.9px 와 정합. #2510 로 인해 임시 완화했던 상한 40 을 원래 28 로 복원한다
+    // (#2509 종결). 20.6px 은 "원 내부 왼쪽" [15,28] 정중앙.
     assert!(
         (15.0..=28.0).contains(&(circle_cx - text_cx)) && (text_cy - circle_cy).abs() <= 8.0,
         "날짜 옆 `㊞`은 빨간 도장 원 중심이 아니라 한컴처럼 원 내부 왼쪽에 놓여야 함: text=({text_cx:.1},{text_cy:.1}) circle=({circle_cx:.1},{circle_cy:.1})"

@@ -13,6 +13,7 @@ pub mod image;
 pub mod page;
 pub mod paragraph;
 pub mod path;
+pub mod provenance;
 pub mod shape;
 pub mod style;
 pub mod table;

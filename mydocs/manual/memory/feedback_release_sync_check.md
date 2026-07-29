@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 릴리즈 작업 전 main 동기화 점검 필수
 description: devel→main 머지/태그/릴리즈 작업 시작 전 반드시 로컬 main 을 origin/main 과 동기화 점검. 분기 발견 시 즉시 보고
 type: feedback
-originSessionId: 67d1cb8f-86d4-4672-b831-a8d028a1cfcf
 ---
 devel → main 머지, 태그 생성, 릴리즈 노트 작성 등 릴리즈 작업 시작 직전에 다음 절차를 반드시 수행:
 

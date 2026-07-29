@@ -8,7 +8,8 @@
 2. `mydocs/README.md`
 3. 작업 성격에 맞는 `mydocs/manual/README.md` 또는 `mydocs/tech/README.md`
 4. 개발·문서·Git 작업은 `mydocs/manual/codex/docs_and_git_workflow.md`
-5. PR 검토·merge·후속 처리는 `mydocs/manual/pr_review_workflow.md`
+5. PR 검토·merge·후속 처리는 `mydocs/manual/pr_review_workflow.md`를 먼저 읽고,
+   `mydocs/manual/pr_review/README.md`의 선택표가 지정한 기본·보조 자식 문서를 작업 전에 모두 읽는다.
 6. 로컬 빌드·WASM 검증은 `mydocs/manual/dev_environment_guide.md`
 7. CLI 작업은 `mydocs/manual/cli_commands.md`
 8. 시각 검증은 `mydocs/manual/verification/visual_verification_governance.md`와 `mydocs/manual/verification/visual_sweep_guide.md`
@@ -20,7 +21,8 @@
 - 구현 전에 관련 이슈, 기존 계획·보고서·트러블슈팅을 확인한다.
 - 사용자 또는 다른 도구가 만든 변경은 임의로 되돌리거나 삭제하지 않는다.
 - 작업 브랜치는 최신 `upstream/devel`을 기준으로 만들고, 일반 변경은 PR로 통합한다.
-- collaborator·maintainer의 예외 처리와 오늘할일·PR review 문서는 `pr_review_workflow.md`의 역할별 절차를 따른다.
+- collaborator·maintainer의 예외 처리와 오늘할일·PR review 문서는 `pr_review_workflow.md`의
+  라우팅 결과에 해당하는 역할별 자식 절차를 따른다. 모 문서만 읽고 세부 경로를 추정해 진행하지 않는다.
 - 작업 단계가 바뀌면 현재 단계의 변경을 커밋한 뒤 다음 단계 문서를 시작한다.
 - GitHub comment, remote push, PR 생성은 사용자 승인을 받은 뒤 수행한다.
 

@@ -326,7 +326,23 @@ impl DocumentCore {
                             }
                         }
                         // 표 셀 내 각주
-                        Control::Table(table) if is_before || is_same => {
+                        // [Task #825 후속] is_same(커서와 같은 문단)일 때, 이 Table
+                        // 컨트롤 자체가 커서보다 뒤(char_offset 이후)에 있으면 그
+                        // 안의 각주는 아직 삽입 시점 기준으로 "이전" 각주가 아니다.
+                        // 기존 코드는 위치를 확인하지 않고 무조건 카운트해
+                        // 본문에 텍스트 - 표(각주 포함) - 커서 순서가 아니라
+                        // 커서 - 텍스트 - 표(각주 포함) 순서일 때도 표 각주를
+                        // 선행으로 오산해 신규 각주 번호가 부풀려졌다.
+                        Control::Table(table)
+                            if is_before
+                                || (is_same && {
+                                    let positions =
+                                        crate::document_core::helpers::find_control_text_positions(
+                                            para,
+                                        );
+                                    positions.get(ci).copied().unwrap_or(usize::MAX) <= char_offset
+                                }) =>
+                        {
                             for cell in &table.cells {
                                 for cp in &cell.paragraphs {
                                     count +=
@@ -337,8 +353,17 @@ impl DocumentCore {
                                 }
                             }
                         }
-                        // 글상자 내 각주
-                        Control::Shape(shape) if is_before || is_same => {
+                        // 글상자 내 각주 (표와 동일한 위치 검사)
+                        Control::Shape(shape)
+                            if is_before
+                                || (is_same && {
+                                    let positions =
+                                        crate::document_core::helpers::find_control_text_positions(
+                                            para,
+                                        );
+                                    positions.get(ci).copied().unwrap_or(usize::MAX) <= char_offset
+                                }) =>
+                        {
                             if let Some(text_box) =
                                 shape.drawing().and_then(|d| d.text_box.as_ref())
                             {
@@ -496,13 +521,7 @@ impl DocumentCore {
         // char_offsets[i]는 텍스트 i번째 문자의 UTF-16 오프셋 (컨트롤은 갭으로 표현)
         // 주의: char_offset은 텍스트 기준 인덱스이지만, char_offsets 배열 길이는 text.chars().count()
         // text에 포함되지 않는 제어 문자(cc - text_len 차이)가 있을 수 있으므로 범위 확인
-        if !paragraph.char_offsets.is_empty() {
-            let text_len = paragraph.text.chars().count();
-            let safe_offset = char_offset.min(text_len);
-            for co in paragraph.char_offsets[safe_offset..].iter_mut() {
-                *co += 8;
-            }
-        }
+        paragraph.shift_for_inline_control_insert(char_offset);
         paragraph.char_count += 8;
         paragraph.control_mask |= 1u32 << 0x0011; // 각주/미주 비트
         paragraph.has_para_text = true;
@@ -640,7 +659,18 @@ impl DocumentCore {
                                 }
                             }
                         }
-                        Control::Table(table) if is_before || is_same => {
+                        // [Task #825 후속] 각주와 동일한 결함 — is_same 일 때 Table 위치가
+                        // char_offset 보다 뒤면 그 안의 미주는 아직 선행이 아니다.
+                        Control::Table(table)
+                            if is_before
+                                || (is_same && {
+                                    let positions =
+                                        crate::document_core::helpers::find_control_text_positions(
+                                            para,
+                                        );
+                                    positions.get(ci).copied().unwrap_or(usize::MAX) <= char_offset
+                                }) =>
+                        {
                             for cell in &table.cells {
                                 for cp in &cell.paragraphs {
                                     count +=
@@ -651,7 +681,16 @@ impl DocumentCore {
                                 }
                             }
                         }
-                        Control::Shape(shape) if is_before || is_same => {
+                        Control::Shape(shape)
+                            if is_before
+                                || (is_same && {
+                                    let positions =
+                                        crate::document_core::helpers::find_control_text_positions(
+                                            para,
+                                        );
+                                    positions.get(ci).copied().unwrap_or(usize::MAX) <= char_offset
+                                }) =>
+                        {
                             if let Some(text_box) =
                                 shape.drawing().and_then(|d| d.text_box.as_ref())
                             {
@@ -724,13 +763,7 @@ impl DocumentCore {
             .insert(insert_idx, Control::Endnote(Box::new(endnote)));
         paragraph.ctrl_data_records.insert(insert_idx, None);
 
-        if !paragraph.char_offsets.is_empty() {
-            let text_len = paragraph.text.chars().count();
-            let safe_offset = char_offset.min(text_len);
-            for co in paragraph.char_offsets[safe_offset..].iter_mut() {
-                *co += 8;
-            }
-        }
+        paragraph.shift_for_inline_control_insert(char_offset);
         paragraph.char_count += 8;
         paragraph.control_mask |= 1u32 << 0x0011;
         paragraph.has_para_text = true;
@@ -782,7 +815,7 @@ impl DocumentCore {
 mod char_shape_inherit_tests {
     use crate::document_core::DocumentCore;
     use crate::model::control::Control;
-    use crate::model::paragraph::CharShapeRef;
+    use crate::model::paragraph::{CharShapeRef, Paragraph};
 
     /// 혼합 글자모양 문단: 텍스트 20자, 글자 인덱스 0~9 는 34, 10~ 는 37.
     fn core_with_mixed_shape_paragraph() -> DocumentCore {
@@ -829,6 +862,58 @@ mod char_shape_inherit_tests {
         );
     }
 
+    /// [Task #825 후속] 같은 문단 안, 커서보다 "뒤"(char_offset 이후)에 있는 표
+    /// 안 각주는 신규 각주 번호 계산에서 선행 각주로 세면 안 된다.
+    ///
+    /// 문단 구성: 텍스트 "AB"(char_offset 0~2) 뒤에 표(각주 1개 포함)를 삽입한다.
+    /// 그 상태에서 문단 맨 앞(char_offset=0), 즉 표보다 앞에 신규 각주를 삽입하면
+    /// 표 각주는 아직 "이전" 각주가 아니므로 신규 각주 번호는 1이어야 한다.
+    /// 버그가 있으면 같은 문단(is_same)이라는 이유만으로 표 각주를 무조건 세어
+    /// 번호가 2로 부풀려진다.
+    #[test]
+    fn insert_footnote_ignores_table_footnote_positioned_after_cursor_in_same_paragraph() {
+        use crate::model::footnote::Footnote;
+        use crate::model::table::{Cell, Table};
+
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "AB").unwrap();
+
+        // 표(각주 1개 포함 셀)를 "AB" 텍스트 뒤 sibling control 로 직접 배치한다
+        // (create_table_native 는 문단 끝 삽입 시 별도 문단으로 분리하므로, 같은
+        // 문단 안 텍스트-뒤 컨트롤 배치를 재현하려면 IR 을 직접 구성해야 한다).
+        let mut cell = Cell::default();
+        cell.paragraphs.push(Paragraph::default());
+        cell.paragraphs[0]
+            .controls
+            .push(Control::Footnote(Box::<Footnote>::default()));
+        let mut table = Table::default();
+        table.cells.push(cell);
+
+        let para = &mut core.document.sections[0].paragraphs[0];
+        para.controls.push(Control::Table(Box::new(table)));
+        para.ctrl_data_records.push(None);
+        // "AB"(2) 뒤에 표(8 코드유닛) 갭을 표현하는 char_offsets 항목 추가.
+        para.char_offsets.push(2);
+        para.char_count += 8;
+
+        // 문단 맨 앞(표보다 앞)에 신규 각주 삽입.
+        let result = core
+            .insert_footnote_native(0, 0, 0)
+            .expect("insert footnote before table");
+        let footnote_number: u16 = result
+            .split("\"footnoteNumber\":")
+            .nth(1)
+            .and_then(|s| s.split(|c: char| !c.is_ascii_digit()).next())
+            .and_then(|s| s.parse().ok())
+            .unwrap_or_else(|| panic!("missing footnoteNumber in {result}"));
+
+        assert_eq!(
+            footnote_number, 1,
+            "표 안 각주가 커서보다 뒤에 있으므로 신규 각주는 1번이어야 한다: {result}"
+        );
+    }
+
     /// 기존 미주도 미주 스타일도 없는 문서의 폴백 — 커서 offset 글자모양(37) 상속.
     #[test]
     fn insert_endnote_fallback_inherits_char_shape_at_cursor_offset() {
@@ -850,6 +935,39 @@ mod char_shape_inherit_tests {
             inner.char_shapes.first().map(|cs| cs.char_shape_id),
             Some(37),
             "미주 내부 문단이 커서 offset 글자모양(37)이 아닌 값을 상속"
+        );
+    }
+
+    /// [index-axis 회귀] 인라인 각주 삽입이 char_offsets 는 +8 시프트하면서
+    /// char_shapes.start_pos 는 시프트하지 않아 글자모양 run 경계가 텍스트와 어긋나던 결함.
+    /// text="abcd", char_offsets=[0,1,2,3], run [{0→id5},{2→id6}]. offset 1 에 각주 삽입 후
+    /// 원래 'b'(char idx 1)는 여전히 id 5 여야 한다(결함 시 run1(id6)이 덮어 6 반환).
+    #[test]
+    fn insert_footnote_shifts_char_shapes_with_char_offsets() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "abcd").unwrap();
+        {
+            let para = &mut core.document.sections[0].paragraphs[0];
+            para.text = "abcd".to_string();
+            para.char_offsets = vec![0, 1, 2, 3];
+            para.char_shapes = vec![
+                CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: 5,
+                },
+                CharShapeRef {
+                    start_pos: 2,
+                    char_shape_id: 6,
+                },
+            ];
+        }
+        core.insert_footnote_native(0, 0, 1).unwrap();
+        let para = &core.document.sections[0].paragraphs[0];
+        assert_eq!(
+            para.char_shape_id_at(1),
+            Some(5),
+            "각주 삽입 후 원래 'b'(char idx 1) 글자모양이 오염됨 — char_shapes.start_pos 미시프트"
         );
     }
 }

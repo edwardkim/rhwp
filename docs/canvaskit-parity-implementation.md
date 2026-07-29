@@ -26,10 +26,11 @@ The target contract is:
 The current implementation already has a guarded CanvasKit replay path with
 explicit `default` and `compat` policy modes. It dispatches the core layer node
 kinds, clips, basic page backgrounds, vector primitives, simple raster images,
-basic form objects, root `TextRun` compatibility payloads, and the currently
-supported `GlyphOutline` color-layer subset. It still treats several text,
-image-effect, page-background fill, and document-object families as fallback or
-diagnostic work until their payload contract is strict enough for direct replay.
+basic form objects, root `TextRun` compatibility payloads, horizontal text
+special visuals, and the currently supported `GlyphOutline` color-layer subset.
+It still treats vertical text, effect-heavy text, several image effects,
+page-background fills, and document-object families as fallback or diagnostic
+work until their payload contract is strict enough for direct replay.
 
 `TextRun compatibility` remains the replay baseline for normal text. `GlyphRun`
 and `GlyphOutline` are additive sidecars, not a replacement authority by
@@ -75,6 +76,8 @@ changes:
 - `rhwp-studio/src/core/types.ts`
 - `rhwp-studio/src/view/canvaskit-renderer.ts`
 - `rhwp-studio/src/view/canvaskit/diagnostics.ts`
+- `rhwp-studio/src/view/renderer-session.ts`
+- `rhwp-studio/src/core/wasm-bridge.ts`
 - `rhwp-studio/src/view/canvaskit/`
 - `rhwp-studio/src/view/glyph-outline-payload-status.ts`
 - `rhwp-studio/e2e/renderer-contract.test.mjs`
@@ -105,8 +108,8 @@ Likely families:
 - raster image effects and crop preprocessing;
 - equation and form-object bounds;
 - placeholder and raw-SVG preview payloads;
-- root `TextRun` effects such as rotation, vertical text, tab leaders, control
-  marks, decorations, shadow, outline, and emphasis.
+- remaining root `TextRun` effects such as vertical text, ratio scaling, shadow,
+  outline, emboss, engrave, and shade.
 
 ### 3. Strict Text Variant Replay
 
@@ -144,7 +147,7 @@ document as an exact sidecar. That requires preserving the OpenType SVG em-box
 and baseline geometry in the paint payload; treating the fragment alone as
 page-positioned output would overstate parity.
 
-The additive JSON contract advances to layer schema `1.18` and resource table
+The additive JSON contract advances to layer schema `1.19` and resource table
 `1.5`. Bitmap and SVG sidecar IDs are accompanied by the encoded image bytes,
 static SVG fragments, and content-addressed keys in `resources`, so a consumer
 never receives an arena-local reference without its corresponding payload.
@@ -169,6 +172,28 @@ does not require a DOM/SVG overlay and cannot abort the page. Non-finite,
 over-deep, oversized, or unsupported layout trees stop at an explicit readiness
 blocker instead of being reported as completed direct replay.
 
+P39 externalizes producer-positioned space, tab, paragraph-end, and line-break
+marks and replays them together with horizontal character overlap, tab leaders,
+underline, strikeout, and emphasis marks. Layer schema `1.19` advertises
+`text.charOverlapOp.bounded`, `text.controlMarkOp.positioned`,
+`text.controlMarkOp.bounded`, `text.tabLeaderOp.bounded`, and
+`text.decorationOp.bounded`. Each operation emits at most 4,096 positioned
+items or source characters and carries a completeness flag so truncation is
+never accepted as direct replay. Decoration metrics include script
+baseline/size adjustment and PUA display positions, while tab-leader endpoints
+use the same following-text clamp as Canvas2D. Combined-number character
+overlap uses the compatibility renderer's digit-count scale. `legacyVisuals: "mirror"` keeps the anchored
+`TextRun` from painting the same visual twice. Positioned text replay may split
+a run between the prepared family, the default face, and the bounded old-Hangul
+subset while retaining producer advances. At most 4,096 contiguous fallback
+spans may be planned for one run, preventing adversarial alternating-glyph
+input from multiplying CanvasKit font probes and draw calls without bound.
+Hancom boxed-number PUA characters use a deterministic vector box and digit
+fallback. A glyph that remains unresolved is an unexpected runtime diagnostic
+and causes automatic mode to fall back for the whole document revision.
+Vertical, rotated, malformed, incomplete, or over-limit special visual
+payloads remain fail-closed in preflight and replay.
+
 ### 5. Visual And Artifact Diff Widening
 
 Use render-diff CI to compare Canvas2D and CanvasKit output on focused
@@ -178,10 +203,66 @@ noise floor is understood.
 
 ## Readiness Gate Contract
 
-Canvas2D remains the public default. CanvasKit can be selected only by an
-explicit URL request such as `?renderer=canvaskit`; a stored backend value must
-not enable it on a later visit. Mode requests may come from URL or storage, but
-their source and any rejected value remain visible in renderer diagnostics.
+The browser keeps Canvas2D as the compatibility default. An explicit
+`?renderer=auto` request runs a bounded Rust document capability preflight over
+the selected render profile before CanvasKit is loaded. The
+result is a compact summary and bounded blocker list; it does not serialize
+`PageLayerTree` JSON or resource bytes across the WASM boundary. CanvasKit is
+selected only when the scan is complete and eligible. A page/work limit,
+lowering failure, hidden-overlay requirement, unsupported item, compat overlay,
+or explicit text fallback makes the automatic choice fail closed to Canvas2D.
+The scan first estimates work from the borrowed `PageRenderTree`, before font
+parsing or layer allocation, and then verifies the lowered tree and resource
+arena. Both walks are iterative and depth-bounded. Text-like payloads, encoded
+image bytes, path commands, and lowered resource bytes count toward the fixed
+work budget; oversized or invalid browser image payloads are not reported as
+direct replay candidates. The reported page cost is the larger of the
+pre-lowering estimate and the lowered-tree cost.
+
+The same report carries a bounded, sorted `requiredFontFamilies` list for text
+fallbacks that the selected replay plan will actually paint. A strict glyph
+outline variant does not require its source family. Each browser surface maps
+that list through the shared font catalog before lazy CanvasKit initialization;
+an unavailable family adds a surface blocker and keeps the document on
+Canvas2D. Paragraph and control mark view options participate in the decision
+key. `showParagraphMarks` is eligible when its producer-positioned horizontal
+marker ops pass the same replay plan, while `showControlCodes` remains a
+document-level Canvas2D blocker because structural markers such as table and
+image labels do not yet have paint ops. Unsupported marker geometry also fails
+closed. Eligible families are fetched under a 32 MiB per-face bound and
+registered before the first replay. A named family that still reaches replay
+without a prepared typeface is a document-wide resource failure, not a silent
+substitution with the default Noto face.
+
+The decision is pinned for the whole document revision. Its key includes the
+document digest, edit revision, render profile, resource generation, requested
+backend, and CanvasKit mode. In automatic mode, an edit immediately advances to
+a Canvas2D-pinned revision. Repeated edits coalesce behind a 300 ms quiet period,
+after which one new revision runs the bounded selection again. A resource or
+view-option or profile change also invalidates the decision; there is no
+per-page, per-op, or per-replay-plane backend mixing. CanvasKit initialization
+and resource preparation failures also pin that revision to Canvas2D. Explicit
+`?renderer=auto` enables document selection, while `?renderer=canvas2d` and
+`?renderer=canvaskit` bypass automatic preflight selection. Rejected request
+values remain visible in diagnostics. A CanvasKit surface or replay failure
+discovered after selection also moves an automatic session to Canvas2D for the
+whole revision; the explicit CanvasKit diagnostic path remains available for
+backend debugging.
+
+Studio, its browser-extension and iframe-embed surfaces, and the VS Code
+webview share this `RendererSession` contract while retaining Canvas2D as their
+default request. VS Code adapts its direct `HwpDocument` binding to the same
+bounded preflight source so automatic selection can be enabled separately
+after fidelity convergence. Main pages and thumbnails use the same pinned
+decision. A
+layer-resource or runtime failure replaces any CanvasKit-owned canvas and
+queues one whole-document Canvas2D replay; the selection diagnostics are sent
+to the extension host as additive webview messages. The VS Code package exposes
+only its copied font files to this catalog, explicitly disables external web
+fonts for CanvasKit planning, and cleans stale lazy webview chunks on each
+production build. Externally hosted CSS fonts may still serve Canvas2D, but
+they never make a document eligible for CanvasKit selection in the VS Code
+webview.
 
 `CanvasKitRenderDiagnostics.passesRuntimeReadinessGate` means only that the
 selected page completed a CanvasKit surface flush without a render error or
@@ -197,15 +278,27 @@ complete visual parity. Known capability gaps remain in
 they are added to the exact allowlist with a fixture and review.
 
 Diagnostics are snapshotted by page so viewport prefetch cannot replace the
-result for the page under test. Studio exposes the request, effective backend,
-fallback reason, and page snapshot through `getRendererDiagnostics` on the
+result for the page under test. Studio exposes the requested and effective
+backend, selection reason, fallback reason, decision identity, preflight, and
+page snapshot through `getRendererDiagnostics` on the
 existing `rhwp-request` API. The public `@rhwp/editor` wrapper exposes the same
 operation as `getRendererDiagnostics(page)` with `schemaVersion: 1` after the
 peer advertises `renderer-diagnostics-v1`. Older protocol-v1 peers fail this
 new operation explicitly instead of returning the pre-versioned shape. CanvasKit
 snapshots include bounded image-cache counters and the last render duration so
 cold resource preparation and warm replay can be compared without inspecting
-private renderer state.
+private renderer state. Selection, preflight, resource, and replay failures are
+reported in `selectionError`; `initializationError` is reserved for CanvasKit
+module initialization in the selection snapshot and for Studio application
+initialization at the top level. A failed CanvasKit page snapshot remains
+available after an automatic whole-document fallback so the initiating failure
+is not erased by the subsequent Canvas2D replay.
+For compatibility, the existing v1 `request.backend.backend` enum remains
+limited to `canvas2d | canvaskit`; automatic request intent and its decision are
+reported only through the additive optional `selection` snapshot. Consumers
+that understand only the original v1 shape therefore do not receive a new enum
+member, while newer consumers can inspect `selection.request` and
+`selection.requestedBackend` for `auto`.
 The selected readiness corpus records both document-load/initial-render time
 and one immediate warm replay. Every readiness sample declares cold, warm,
 renderer-duration, and image-cache-pixel budgets; a missing measurement or
@@ -216,8 +309,11 @@ artifacts for regression analysis. The generated
 cache hit, so the producer and CanvasKit resource replay path cannot pass by
 rendering only the text fallback.
 
-The hard readiness set covers paragraph, table, image, font fallback, and
-font-native bitmap cases. It checks requested mode/surface, page canvas
+The hard readiness set covers paragraph, table, image, positioned paragraph
+marks, PUA fallback, and font-native bitmap cases. Synthetic renderer-contract
+tests cover character overlap, tab leaders, and decorations; focused
+document-backed visual fixtures for those three operations remain a follow-up.
+The readiness set checks requested mode/surface, page canvas
 ownership, expected/unexpected diagnostics, visual thresholds, declared layer
 payloads, warm cache hits, decoded-image pixel limits, synchronous warm replay,
 and the document load plus initial render interval. Browser scheduling and the
@@ -230,17 +326,22 @@ The generated font fixtures use the pinned dependency in
 `generate_exact_face_collection_fixture.py`, and
 `generate_font_native_hwpx_fixture.py`; the checked-in outputs and Render Diff
 path filters keep generator, font, and HWPX changes under the same review gate.
-If renderer initialization fails at any stage, this API reports
-`initialized: false`, a null effective backend, and the initialization error
-instead of implying that Canvas2D is active.
+If automatic CanvasKit initialization or resource preparation fails after the
+Studio app itself initialized, this API reports Canvas2D as the effective
+backend together with the exact selection and fallback reason. A Studio app
+initialization failure still reports `initialized: false` and a null effective
+backend.
 
 The manifest flag `canvaskitReadinessGate` selects a bounded paragraph, table,
 and image corpus. `scripts/renderer_baseline.py --readiness-only --profiles
-screen` runs only Canvas2D and CanvasKit default on the automatic surface. Each
+screen` runs only Canvas2D and CanvasKit default on the automatic surface. The
+CanvasKit capture explicitly requests `renderer=auto`; it does not depend on
+the public browser default. Each
 selected case must satisfy all of these conditions:
 
-1. the effective backend is CanvasKit after explicit URL requests for the
-   CanvasKit backend and `default` mode, with `auto` surface preference;
+1. the effective backend is CanvasKit after an explicit `auto` request selects
+   a complete and eligible document, with `default` mode and
+   `auto` surface preference;
 2. page-scoped CanvasKit diagnostics are available and pass the runtime gate;
 3. the visible page canvas is still owned by the page canvas pool after any
    CanvasKit software fallback;
@@ -288,9 +389,42 @@ sweeps remain representative. The selected multi-profile sweep also collects
 verified print-profile PDF artifacts, while selected CanvasKit readiness cases
 remain the bounded visual hard gate.
 
+## Direct PDF Export Contract
+
+P37 adds a native-only, opt-in `PageLayerTree` PDF path using the same Skia
+replay-plane, inherited-layer, clip, text-variant, and resource handling as the
+PNG renderer. PDF recording applies one `72/96` transform because layer
+coordinates are CSS pixels and PDF page boxes use points. Direct export uses the
+print profile unless the caller explicitly selects another profile.
+
+The existing SVG-derived PDF APIs and CLI behavior remain the compatibility
+default. Direct export is exposed only with `native-skia` through the additive
+`render_*_pdf_direct_native` methods and `export-pdf --backend direct`; WASM,
+C/Swift, and XCFramework surfaces are unchanged. SVG-only fallback-family,
+equation-family, and text-as-path options are rejected when direct mode is
+selected instead of being silently ignored.
+
+Direct mode preflights every selected page before opening the PDF writer. Native
+Skia approximations that would lose visible semantics, including gradient,
+pattern, shadow, multi-line/arrow, connector, or unbaked
+image-adjustment payloads, return a page/op-specific error directing the caller
+to the SVG backend. Image decode and Raw SVG fallback failures also abort the
+document rather than recording a placeholder. Raw SVG is the explicit raster
+fallback in this phase and uses the requested fallback DPI; supported text,
+paths, simple shapes, clips, equations, images, and form appearances are
+recorded through the PDF canvas.
+
+Render-diff CI keeps browser Canvas versus compatibility PDF report-only. A
+separate selected corpus (`biz_plan.hwp`, `kps-ai.hwp`, and
+`tac-case-001.hwp`) rasterizes direct and compatibility PDF page 1 at the same
+DPI and hard-fails above a 2% differing-pixel ratio or on a page-size/resource
+error. Broader documents and unsupported vector subsets remain report/fallback
+work rather than being declared parity-complete.
+
 ## Non-Goals
 
-- This plan does not switch the public canvas default.
+- This plan does not make CanvasKit a public default; automatic selection is an
+  explicit opt-in and remains fail-closed and document-scoped.
 - This plan does not add a hidden Canvas2D overlay fallback.
 - This plan does not enable CanvasKit `GlyphRun` or `GlyphOutline` selection
   without proof resources and deterministic diagnostics.

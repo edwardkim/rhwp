@@ -9,7 +9,7 @@ use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{ParaMeta, Paragraph};
 use crate::renderer::composer::reflow_line_segs;
 
 /// applyTo u8 값 → HeaderFooterApply 변환
@@ -315,6 +315,10 @@ impl DocumentCore {
         }
 
         let hf_para = self.get_hf_paragraph_mut(section_idx, is_header, apply_to, hf_para_idx)?;
+        // [Task #2337] undo 재삽입용으로 삭제될 텍스트를 먼저 확보한다. char 단위 슬라이스는
+        // delete_text_at 의 클램핑(text_len - char_offset)과 동일 범위이며, Rust char 경계로
+        // 잘라 studio(UTF-16) 측 조인 모호성을 피한다. 역연산 삭제 커맨드가 재삽입에 쓴다.
+        let deleted_text: String = hf_para.text.chars().skip(char_offset).take(count).collect();
         hf_para.delete_text_at(char_offset, count);
 
         // 리플로우
@@ -332,8 +336,9 @@ impl DocumentCore {
             count,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"charOffset\":{}",
-            char_offset
+            "\"charOffset\":{},\"deletedText\":\"{}\"",
+            char_offset,
+            super::super::helpers::json_escape(&deleted_text)
         )))
     }
 
@@ -345,6 +350,7 @@ impl DocumentCore {
         apply_to: u8,
         hf_para_idx: usize,
         char_offset: usize,
+        restore_meta: Option<ParaMeta>,
     ) -> Result<String, HwpError> {
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -375,7 +381,11 @@ impl DocumentCore {
                     hf_para_idx
                 )));
             }
-            paragraphs[hf_para_idx].split_at(char_offset)
+            let mut new_para = paragraphs[hf_para_idx].split_at(char_offset);
+            if let Some(meta) = restore_meta {
+                new_para.apply_meta(meta);
+            }
+            new_para
         };
 
         // 새 문단 삽입
@@ -439,6 +449,7 @@ impl DocumentCore {
 
         // 병합
         let merge_offset;
+        let removed_meta;
         {
             let ctrl = &mut self.document.sections[section_idx].paragraphs[pi].controls[ci];
             let paragraphs = match ctrl {
@@ -454,6 +465,7 @@ impl DocumentCore {
             }
             merge_offset = paragraphs[hf_para_idx - 1].text.chars().count();
             let removed = paragraphs.remove(hf_para_idx);
+            removed_meta = super::super::helpers::removed_para_meta_field(&removed.capture_meta());
             paragraphs[hf_para_idx - 1].merge_from(&removed);
         }
 
@@ -469,8 +481,8 @@ impl DocumentCore {
             para: hf_para_idx,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"hfParaIndex\":{},\"charOffset\":{}",
-            prev_idx, merge_offset
+            "\"hfParaIndex\":{},\"charOffset\":{}{}",
+            prev_idx, merge_offset, removed_meta
         )))
     }
 
@@ -881,7 +893,8 @@ impl DocumentCore {
         };
 
         let hf_para = self.get_hf_paragraph_mut(section_idx, is_header, apply_to, hf_para_idx)?;
-        hf_para.insert_text_at(char_offset, marker);
+        // 반환·이벤트는 실제로 삽입된 위치를 쓴다 — 요청 값과 다를 수 있다.
+        let inserted_at = hf_para.insert_text_at(char_offset, marker);
 
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
 
@@ -889,16 +902,16 @@ impl DocumentCore {
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
-        let new_offset = char_offset + 1;
+        let new_offset = inserted_at + 1;
         self.event_log.push(DocumentEvent::TextInserted {
             section: section_idx,
             para: 0,
-            offset: char_offset,
+            offset: inserted_at,
             len: 1,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"charOffset\":{}",
-            new_offset
+            "\"charOffset\":{},\"insertedAt\":{},\"insertedLength\":1",
+            new_offset, inserted_at
         )))
     }
 
@@ -1153,6 +1166,59 @@ mod tests {
         assert!(result.contains("Hello"));
     }
 
+    /// 필드 삽입의 반환 오프셋은 실제로 삽입된 자리를 가리킨다.
+    ///
+    /// 반환값이 요청 값을 그대로 되돌려 주면 undo 가 존재하지 않는 자리를 지우려 해
+    /// 무언 no-op 이 된다 (Task #3216).
+    #[test]
+    fn field_insert_reports_where_the_marker_actually_landed() {
+        let mut core = make_test_core();
+        core.create_header_footer_native(0, true, 0).unwrap();
+        core.insert_field_in_hf_native(0, true, 0, 0, 0, 3)
+            .expect("file-name field");
+
+        let result = core
+            .insert_field_in_hf_native(0, true, 0, 0, 1, 1)
+            .expect("page-number field after the file-name marker");
+        assert!(result.contains("\"charOffset\":2"), "{result}");
+        assert!(result.contains("\"insertedAt\":1"), "{result}");
+        assert!(result.contains("\"insertedLength\":1"), "{result}");
+
+        let info = core
+            .get_header_footer_para_info_native(0, true, 0, 0)
+            .unwrap();
+        assert!(info.contains("\"charCount\":2"), "{info}");
+    }
+
+    /// 커서 좌표와 실제 텍스트 삽입 좌표가 다를 때에도 history가 지울 위치를
+    /// 정확히 받는다. trailing inline control 뒤의 위치는 cursor에서 유효하지만
+    /// 모델 텍스트에는 없으므로 `charOffset - 요청 offset`으로 길이를 계산하면 안 된다.
+    #[test]
+    fn field_insert_reports_actual_offset_separately_from_cursor_offset() {
+        let mut core = make_test_core();
+        core.create_header_footer_native(0, true, 0).unwrap();
+        {
+            let para = core.get_hf_paragraph_mut(0, true, 0, 0).unwrap();
+            para.text = "A".to_string();
+            para.char_offsets = vec![0];
+            para.controls.push(Control::Footnote(Box::default()));
+        }
+
+        // 텍스트 1자 뒤의 inline control까지 지나간 커서 좌표. 실제 marker는
+        // text index 1에 들어가지만, 커서는 여전히 control 뒤 위치 2를 가리킨다.
+        let result = core
+            .insert_field_in_hf_native(0, true, 0, 0, 2, 1)
+            .expect("field after trailing inline control");
+        assert!(result.contains("\"charOffset\":2"), "{result}");
+        assert!(result.contains("\"insertedAt\":1"), "{result}");
+        assert!(result.contains("\"insertedLength\":1"), "{result}");
+
+        core.delete_text_in_header_footer_native(0, true, 0, 0, 1, 1)
+            .expect("undo removes the marker at insertedAt");
+        let content = core.get_header_footer_native(0, true, 0).unwrap();
+        assert!(content.contains("\"text\":\"A\""), "{content}");
+    }
+
     #[test]
     fn test_delete_text_in_header() {
         let mut core = make_test_core();
@@ -1178,7 +1244,7 @@ mod tests {
 
         // 문단 분할
         let result = core
-            .split_paragraph_in_header_footer_native(0, true, 0, 0, 5)
+            .split_paragraph_in_header_footer_native(0, true, 0, 0, 5, None)
             .unwrap();
         assert!(result.contains("\"hfParaIndex\":1"));
         assert!(result.contains("\"charOffset\":0"));
@@ -1201,6 +1267,46 @@ mod tests {
             .get_header_footer_para_info_native(0, true, 0, 0)
             .unwrap();
         assert!(result.contains("\"paraCount\":1"));
+    }
+
+    /// 머리말 문단 병합의 undo 가 사라진 문단의 스코프 메타데이터를 되돌리는지 (Task #2342).
+    #[test]
+    fn merge_paragraph_in_header_undo_restores_removed_paragraph_meta() {
+        use crate::document_core::helpers::removed_para_meta_of;
+        use crate::model::paragraph::NumberingRestart;
+
+        let mut core = make_test_core();
+        core.create_header_footer_native(0, true, 0).unwrap();
+        core.insert_text_in_header_footer_native(0, true, 0, 0, 0, "HelloWorld")
+            .unwrap();
+        core.split_paragraph_in_header_footer_native(0, true, 0, 0, 5, None)
+            .unwrap();
+
+        let second = core.get_hf_paragraph_mut(0, true, 0, 1).unwrap();
+        second.para_shape_id = 20;
+        second.style_id = 5;
+        second.numbering_restart = Some(NumberingRestart::ContinuePrevious);
+        second.raw_header_extra = vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB];
+
+        let merged = core
+            .merge_paragraph_in_header_footer_native(0, true, 0, 1)
+            .unwrap();
+        let meta = removed_para_meta_of(&merged);
+        core.split_paragraph_in_header_footer_native(0, true, 0, 0, 5, Some(meta))
+            .unwrap();
+
+        let restored = core.get_hf_paragraph_mut(0, true, 0, 1).unwrap();
+        assert_eq!(restored.text, "World");
+        assert_eq!(restored.para_shape_id, 20);
+        assert_eq!(restored.style_id, 5);
+        assert_eq!(
+            restored.numbering_restart,
+            Some(NumberingRestart::ContinuePrevious)
+        );
+        assert_eq!(
+            restored.raw_header_extra,
+            vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB]
+        );
     }
 
     #[test]

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/tech/investigations/README.md
-last_verified: 2026-07-17
+last_verified: 2026-07-19
 ---
 
 # 이슈별 기술 조사
@@ -51,3 +51,4 @@ last_verified: 2026-07-17
 - [Issue #2023 프론트엔드 조사](issue-2023/README.md)
 - [Issue #2124 프론트엔드 기준선 조사](issue-2124/README.md)
 - [Issue #2125 font ownership 조사](issue-2125/README.md)
+- [Issue #2392 picture props apply 계약 조사](issue-2392/README.md)

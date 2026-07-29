@@ -368,6 +368,8 @@ def render_target(
     selected_pages: list[int] | None,
 ) -> dict[str, object]:
     print(f"== {target.key} ==", flush=True)
+    if dpi <= 0:
+        raise SystemExit(f"DPI는 양수여야 합니다: {dpi}")
     hwp = resolve_input_path(root, target.hwp)
     pdf = resolve_input_path(root, target.pdf)
     if not hwp.exists():
@@ -413,9 +415,26 @@ def render_target(
     all_svg_paths = sorted(svg_dir.glob("*.svg"), key=page_num)
     all_tree_paths = sorted(tree_dir.glob("*.json"), key=page_num)
     print(f"SVG pages: {len(all_svg_paths)}", flush=True)
+    svg_zoom = dpi / 96.0
     for svg in all_svg_paths:
         png = rhwp_png_dir / f"rhwp_{page_num(svg):03d}.png"
-        run(["rsvg-convert", "-f", "png", "-o", str(png), str(svg)], cwd=root, verbose=False)
+        # export-svg의 unitless width/height는 CSS px(96dpi)다. rsvg-convert의
+        # --dpi-*만 바꾸면 unitless 크기는 그대로이므로, PDF와 같은 목표 DPI로
+        # 래스터하려면 zoom도 함께 적용해야 한다.
+        run(
+            [
+                "rsvg-convert",
+                "-f",
+                "png",
+                "--zoom",
+                f"{svg_zoom:.8f}",
+                "-o",
+                str(png),
+                str(svg),
+            ],
+            cwd=root,
+            verbose=False,
+        )
 
     all_rhwp_pngs = sorted(rhwp_png_dir.glob("*.png"), key=page_num)
     all_pdf_pngs = sorted(pdf_png_dir.glob("*.png"), key=page_num)

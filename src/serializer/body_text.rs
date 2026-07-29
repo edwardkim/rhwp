@@ -349,6 +349,11 @@ fn compute_control_mask(para: &Paragraph) -> u32 {
     if para.text.contains('\n') {
         mask |= 1u32 << 0x000A;
     }
+    // 묶음 빈칸 (0x001E, NBSP): serialize_para_text 가 U+00A0 마다 코드 0x1E 를 방출하므로
+    // (#1793) control_mask 비트 30 도 세워 PARA_HEADER 를 PARA_TEXT 와 일치시킨다.
+    if para.text.contains('\u{00A0}') {
+        mask |= 1u32 << 0x001E;
+    }
     // FIXED_WIDTH_SPACE (0x001F): HWPX에서 들어온 일부 문맥은 U+2007을
     // literal code point가 아니라 HWP5 fixed blank control로 저장해야 한다.
     if should_serialize_figure_space_as_hwp_fixed_blank(para) {
@@ -497,6 +502,16 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
         } else {
             None
         };
+        // [#2740] placeholder 가 문단의 **마지막 문자**면 next_offset 이 없어 위 판정이
+        // 항상 실패했다. 그러면 공백을 리터럴로 쓰고 남은 컨트롤을 뒤에 다시 방출하므로,
+        // 재파싱 때 placeholder 가 하나 더 생겨 저장할 때마다 공백이 1개씩 무한히 늘었다
+        // (수렴하지 않음 — 쪽번호 자동번호가 든 머리말/꼬리말이 대표 사례).
+        //
+        // 마지막 문자를 placeholder 로 봐도 안전한 근거: 파서(parser/body_text.rs:334)는
+        // 0x0012 를 만나면 **항상** text 에 공백 placeholder 를 push 한다. 따라서 남은
+        // 컨트롤이 자동번호인데 공백이 마지막이면 그 공백이 곧 placeholder 다 — 진짜
+        // 공백이었다면 그 뒤에 placeholder 가 하나 더 붙어 마지막이 아니게 된다.
+        let is_last_text_char = i + 1 == text_chars.len();
         let is_autonum_placeholder = *ch == ' '
             && offset == prev_end
             && ctrl_idx < para.controls.len()
@@ -504,7 +519,7 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
                 control_char_code_and_id(&para.controls[ctrl_idx]).0,
                 0x0011 | 0x0012
             )
-            && next_offset.map_or(false, |n| n >= offset + 8);
+            && next_offset.map_or(is_last_text_char, |n| n >= offset + 8);
         if is_autonum_placeholder {
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
@@ -1176,6 +1191,23 @@ mod tests {
         assert_eq!(&bytes[2..4], &0x001E_u16.to_le_bytes());
     }
 
+    /// [NBSP mask] U+00A0 은 PARA_TEXT 에 코드 0x1E 로 방출되므로 PARA_HEADER control_mask
+    /// 비트 30 도 서야 한다(안 서면 한컴에서 헤더/텍스트 불일치).
+    #[test]
+    fn test_nbsp_sets_control_mask_bit_30() {
+        let para = Paragraph {
+            char_count: 4,
+            text: "가\u{00A0}나".to_string(),
+            char_offsets: vec![0, 1, 2],
+            ..Default::default()
+        };
+        assert_ne!(
+            compute_control_mask(&para) & (1u32 << 0x001E),
+            0,
+            "U+00A0 포함 시 control_mask 비트 30 이 서야 PARA_TEXT(0x1E)와 일치한다"
+        );
+    }
+
     /// 컨트롤 문자 코드 매핑 테스트
     #[test]
     fn test_control_char_code() {
@@ -1214,6 +1246,7 @@ mod tests {
                 start_char_idx: 0,
                 end_char_idx: 1,
                 control_idx: 0,
+                ..Default::default()
             }],
             ..Default::default()
         };
@@ -1260,11 +1293,13 @@ mod tests {
                     start_char_idx: 0,
                     end_char_idx: 2,
                     control_idx: 0,
+                    ..Default::default()
                 },
                 crate::model::paragraph::FieldRange {
                     start_char_idx: 3,
                     end_char_idx: 5,
                     control_idx: 1,
+                    ..Default::default()
                 },
             ],
             ..Default::default()

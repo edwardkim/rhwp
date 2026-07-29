@@ -11,6 +11,7 @@
 import { ModalDialog } from './dialog';
 import { makeOption } from './dom-utils';
 import type { EventBus } from '@/core/event-bus';
+import type { CommandServices } from '@/command/types';
 
 interface FormulaContext {
   sec: number;
@@ -69,7 +70,7 @@ export class FormulaDialog extends ModalDialog {
   private commaCheck!: HTMLInputElement;
   private errorMsg!: HTMLDivElement;
 
-  constructor(wasm: any, eventBus: EventBus, ctx: FormulaContext) {
+  constructor(wasm: any, eventBus: EventBus, ctx: FormulaContext, private services?: CommandServices) {
     super('계산식', 420);
     this.wasm = wasm;
     this.eventBus = eventBus;
@@ -205,32 +206,63 @@ export class FormulaDialog extends ModalDialog {
         return false;
       }
 
-      // 검증 통과 → 실제 적용 (write_result=true)
-      this.wasm.evaluateTableFormula(
-        this.ctx.sec, this.ctx.ppi, this.ctx.ci,
-        row, col, formula, true,
-      );
-
-      // 형식 + 쉼표 처리
+      // 형식 + 쉼표 문자열은 dry-run 결과만으로 산출 가능 → 뮤테이션 전에 계산.
       let displayValue = validated.result;
       const fmt = this.formatSelect.value;
       if (fmt === 'integer') displayValue = Math.round(displayValue);
       else if (fmt === 'decimal1') displayValue = Number(displayValue.toFixed(1));
       else if (fmt === 'decimal2') displayValue = Number(displayValue.toFixed(2));
 
+      let formatted: string | null = null;
       if (this.commaCheck.checked && typeof displayValue === 'number') {
         const parts = displayValue.toString().split('.');
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        const formatted = parts.join('.');
-        try {
-          this.wasm.insertTextInCell(
-            this.ctx.sec, this.ctx.ppi, this.ctx.ci,
-            this.ctx.cellIndex, 0, 0, formatted,
-          );
-        } catch { /* 쉼표 포맷 기록 실패 시 기본값 유지 */ }
+        formatted = parts.join('.');
       }
 
-      this.eventBus.emit('document-changed');
+      // 검증 통과 → 실제 적용 (write_result=true) + 쉼표 기록.
+      // [계산식 이관] 두 뮤테이션(commit + insertTextInCell)이 미기록이면 undo 불가에 더해
+      // 셀 문자 수 변화로 후속 undo 오프셋이 오염된다(#2344 계열) → 하나의 snapshot 으로
+      // 원자화해 라우팅(#2077 동형). services 미주입 시 직접 적용 fallback.
+      const commit = () => {
+        this.wasm.evaluateTableFormula(
+          this.ctx.sec, this.ctx.ppi, this.ctx.ci,
+          row, col, formula, true,
+        );
+        if (formatted !== null) {
+          try {
+            // [#2367] 위 evaluateTableFormula(write_result=true) 가 이미 원시 결과를 셀에
+            // 기록했다. 지우지 않고 offset 0 에 삽입하면 두 값이 겹쳐 남는다
+            // ("6,912" + "6912" → "6,9126912"). #2344 계열과 동형으로 delete 후 insert 한다.
+            // 같은 commit() 안이라 두 뮤테이션은 하나의 snapshot 으로 원자화된다.
+            const len = this.wasm.getCellParagraphLength(
+              this.ctx.sec, this.ctx.ppi, this.ctx.ci,
+              this.ctx.cellIndex, 0,
+            );
+            if (len > 0) {
+              this.wasm.deleteTextInCell(
+                this.ctx.sec, this.ctx.ppi, this.ctx.ci,
+                this.ctx.cellIndex, 0, 0, len,
+              );
+            }
+            this.wasm.insertTextInCell(
+              this.ctx.sec, this.ctx.ppi, this.ctx.ci,
+              this.ctx.cellIndex, 0, 0, formatted,
+            );
+          } catch { /* 쉼표 포맷 기록 실패 시 기본값 유지 */ }
+        }
+      };
+      const ih = this.services?.getInputHandler();
+      if (ih) {
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'tableFormula',
+          operation: () => { commit(); return ih.getCursorPosition(); },
+        });
+      } else {
+        commit();
+        this.eventBus.emit('document-changed');
+      }
       return true; // 성공 → 대화상자 닫기
     } catch (e: any) {
       this.showError('계산식 실행 실패: ' + (e.message || e));

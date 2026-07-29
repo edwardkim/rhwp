@@ -1489,7 +1489,16 @@ fn compute_line_spacing_hwp(
             // ls_value = 비율값 (예: 160 = 160%)
             // 전체 줄 피치 = line_height * percent / 100
             // line_spacing = 전체 줄 피치 - line_height
-            (line_height_hwp as f64 * (ls_value - 100.0) / 100.0).max(0.0) as i32
+            // [#2279] sub-100% 퍼센트는 음수 gap(압축)으로 존중 — 한글은
+            // line=60% 를 advance 13.6px(=lh×0.6)로 렌더한다 (36398700 pi20
+            // 한글 재저장 anchor 1020HU 실측). 종전 .max(0) 클램프는 fresh
+            // 합성을 lh 그대로(+9px/문단) 팽창시켰다.
+            // ls_value<=0 은 결손 데이터(속성 미지정 파싱 0) — 음수 적용 금지.
+            if ls_value > 0.0 {
+                (line_height_hwp as f64 * (ls_value - 100.0) / 100.0) as i32
+            } else {
+                0
+            }
         }
         LineSpacingType::Fixed => {
             // ls_value = 고정 줄 피치 (px, resolver가 HWPUNIT→px 변환 완료)

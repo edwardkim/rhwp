@@ -1,9 +1,11 @@
 import type { CommandDef } from '../types';
+import type { DocumentPosition } from '@/core/types';
 import { PageSetupDialog } from '@/ui/page-setup-dialog';
 import { PageBorderDialog } from '@/ui/page-border-dialog';
 import { SectionSettingsDialog } from '@/ui/section-settings-dialog';
 import { ColumnSettingsDialog } from '@/ui/column-settings-dialog';
 import { NewNumberDialog } from '@/ui/new-number-dialog';
+import { InsertFieldInHeaderFooterCommand } from '@/engine/command';
 
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
   return {
@@ -16,47 +18,62 @@ function stub(id: string, label: string, icon?: string, shortcut?: string): Comm
   };
 }
 
+/**
+ * 대상 좌표에 머리말/꼬리말이 없으면 만든다 (Task #3206).
+ *
+ * 존재 확인은 **생성 네이티브가 중복을 거부하는 조건과 같은 범위**(구역·종류·applyTo)로 해야
+ * 한다 — `getHeaderFooter` 와 `createHeaderFooter` 는 같은 `find_header_footer_control` 을
+ * 쓰므로 두 판단이 어긋날 수 없다. 대상 좌표를 정하는 일은 호출측(`getHeaderFooterEditTarget`)
+ * 몫이고, 여기서는 그 좌표를 그대로 쓴다.
+ *
+ * `navigateHeaderFooterByPage` 로 존재를 확인하면 안 된다. 이 함수는 `current_page + direction`
+ * 부터 훑는 쪽 이동용이라 현재 쪽을 건너뛴다 — 1쪽 문서에서는 어느 방향으로도 대상이 없어,
+ * 이미 있는 머리말을 없다고 판단하고 생성으로 넘어가 중복 생성 오류가 났다.
+ *
+ * [Task #3207] 생성은 문서 구조를 바꾸므로 snapshot 으로 기록한다(이미 있으면 커서 이동뿐이라
+ * 기록 대상이 아니다).
+ */
+function ensureHeaderFooter(
+  services: Parameters<CommandDef['execute']>[0],
+  ih: NonNullable<ReturnType<Parameters<CommandDef['execute']>[0]['getInputHandler']>>,
+  bodyPos: DocumentPosition,
+  target: { sectionIndex: number; applyTo: number },
+  isHeader: boolean,
+): void {
+  const { sectionIndex, applyTo } = target;
+  const hf = JSON.parse(services.wasm.getHeaderFooter(sectionIndex, isHeader, applyTo));
+  if (hf.exists) return;
+
+  ih.executeOperation({
+    kind: 'snapshot',
+    operationType: 'createHeaderFooter',
+    operation: (wasm) => {
+      wasm.createHeaderFooter(sectionIndex, isHeader, applyTo);
+      return bodyPos;
+    },
+  });
+}
+
 /** 머리말/꼬리말 생성 + 편집 모드 진입 공통 함수 */
 function enterHeaderFooterEditing(
   services: Parameters<CommandDef['execute']>[0],
   isHeader: boolean,
-  applyTo: number,
 ): void {
   const ih = services.getInputHandler();
   if (!ih) return;
   const cursor = (ih as any).cursor;
   if (!cursor) return;
 
-  // 현재 보고 있는 페이지 기준으로 머리말/꼬리말이 있는 페이지 탐색
+  // 편집 대상은 이 쪽에 **실제로 렌더되는** 컨트롤이다 — 어느 것이 렌더되는지는 쪽 홀짝이
+  // 정하고(홀수/짝수가 양 쪽을 이긴다) 구역에 자기 머리말이 없으면 앞 구역에서 상속된다.
+  // `양 쪽` 으로 고정하면 캐럿이 찍힌 머리말과 다른 컨트롤을 편집하게 된다 (Task #3206).
+  // 더블클릭 진입(input-handler-mouse)이 히트테스트로 얻는 것과 같은 답이다.
   const currentPage = cursor.rect?.pageIndex ?? 0;
+  const target = services.wasm.getHeaderFooterEditTarget(currentPage, isHeader);
 
-  // 1) 현재 페이지에 머리말/꼬리말이 있는지 확인
-  let targetResult = services.wasm.navigateHeaderFooterByPage(currentPage - 1, isHeader, 1);
-  // navigateHeaderFooterByPage는 currentPage 다음부터 찾으므로, currentPage-1을 전달하면 currentPage부터 탐색
-  // 결과의 pageIndex가 currentPage이면 현재 페이지에 존재
-  if (!targetResult.ok || targetResult.pageIndex !== currentPage) {
-    // 2) 현재 페이지에 없으면 이전 방향으로 탐색
-    targetResult = services.wasm.navigateHeaderFooterByPage(currentPage, isHeader, -1);
-  }
-  if (!targetResult.ok) {
-    // 3) 이전에도 없으면 다음 방향으로 탐색
-    targetResult = services.wasm.navigateHeaderFooterByPage(currentPage, isHeader, 1);
-  }
-
-  if (targetResult.ok) {
-    // 기존 머리말/꼬리말로 편집 모드 진입
-    cursor.enterHeaderFooterMode(
-      targetResult.isHeader!,
-      targetResult.sectionIdx!,
-      targetResult.applyTo!,
-      targetResult.pageIndex!,
-    );
-  } else {
-    // 문서에 머리말/꼬리말이 전혀 없으면 현재 구역에 새로 생성
-    const sectionIdx = cursor.getPosition().sectionIndex;
-    services.wasm.createHeaderFooter(sectionIdx, isHeader, applyTo);
-    cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, currentPage);
-  }
+  const bodyPos = cursor.getPosition();
+  ensureHeaderFooter(services, ih, bodyPos, target, isHeader);
+  cursor.enterHeaderFooterMode(isHeader, target.sectionIndex, target.applyTo, currentPage);
 
   services.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
   (ih as any).updateCaret?.();
@@ -73,13 +90,31 @@ function insertHfField(
   const cursor = (ih as any).cursor;
   if (!cursor || !cursor.isInHeaderFooter()) return;
   const isHeader = cursor.headerFooterMode === 'header';
+  const target = { sectionIdx: cursor.hfSectionIdx, isHeader, applyTo: cursor.hfApplyTo };
+  const paraIdx = cursor.hfParaIdx;
+  const charOffset = cursor.hfCharOffset;
   try {
     const result = services.wasm.insertFieldInHf(
-      cursor.hfSectionIdx, isHeader, cursor.hfApplyTo,
-      cursor.hfParaIdx, cursor.hfCharOffset, fieldType,
+      target.sectionIdx, isHeader, target.applyTo, paraIdx, charOffset, fieldType,
     );
-    if (result.ok && result.charOffset !== undefined) {
-      cursor.setHfCursorPosition(cursor.hfParaIdx, result.charOffset);
+    if (
+      result.ok
+      && Number.isSafeInteger(result.charOffset)
+      && Number.isSafeInteger(result.insertedAt)
+      && Number.isSafeInteger(result.insertedLength)
+      && result.insertedLength > 0
+    ) {
+      cursor.setHfCursorPosition(paraIdx, result.charOffset);
+      // [Task #3212] 이미 적용된 삽입을 역연산 명령으로 기록한다(#2337 HF 커맨드와 동형).
+      // cursor 좌표와 실제 텍스트 삽입 위치는 inline control 뒤에서 다를 수 있다.
+      // 따라서 역연산은 native가 준 실제 marker 범위를 사용한다.
+      ih.executeOperation({
+        kind: 'record',
+        command: new InsertFieldInHeaderFooterCommand(
+          target, paraIdx, charOffset, result.insertedAt, fieldType,
+          result.insertedLength, result.charOffset,
+        ),
+      });
     }
     (ih as any).afterEdit?.();
     (ih as any).updateCaret?.();
@@ -136,29 +171,31 @@ function applyHfTemplate(
   }
 
   try {
-    services.wasm.applyHfTemplate(sectionIdx, isHeader, applyTo, templateId);
-    // 템플릿 적용 후 편집 모드로 진입
-    const currentPage = cursor?.rect?.pageIndex ?? 0;
-    let targetResult = services.wasm.navigateHeaderFooterByPage(currentPage - 1, isHeader, 1);
-    if (!targetResult.ok || targetResult.pageIndex !== currentPage) {
-      targetResult = services.wasm.navigateHeaderFooterByPage(currentPage, isHeader, -1);
-    }
-    if (!targetResult.ok) {
-      targetResult = services.wasm.navigateHeaderFooterByPage(currentPage, isHeader, 1);
-    }
-    if (targetResult.ok) {
-      cursor.enterHeaderFooterMode(
-        targetResult.isHeader!, targetResult.sectionIdx!,
-        targetResult.applyTo!, targetResult.pageIndex!,
-      );
-    } else {
-      cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, currentPage);
-    }
+    // [Task #3207] 마당 적용은 HF 내용을 통째로 교체하므로 snapshot 으로 기록한다.
+    // 모드 탈출/재진입은 커서 상태라 기록 밖에 둔다(undo 는 본문 분기로 모드를 빠져나온다).
+    // 위에서 이미 HF 모드를 종료했으므로 여기서 읽는 위치는 본문 위치다.
+    const bodyPos = ih.getPosition();
+    ih.executeOperation({
+      kind: 'snapshot',
+      operationType: 'applyHfTemplate',
+      operation: (wasm) => {
+        const r = wasm.applyHfTemplate(sectionIdx, isHeader, applyTo, templateId);
+        // 의미상 실패(ok:false)면 throw 해 before==after 무변 스냅샷 엔트리를 막는다(삽입류와 동형).
+        if (!r.ok) throw new Error('[page:applyHfTemplate] 마당 적용 실패');
+        return bodyPos;
+      },
+    });
+    // 템플릿 적용 후 편집 모드로 진입. 마당 적용은 기존 HF 를 지우고 다시 만들므로
+    // (`apply_hf_template_native` 1~2단계) 적용 대상 좌표에 HF 가 있음이 보장된다 —
+    // 존재 확인이 필요 없다 (Task #3206).
+    cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, cursor?.rect?.pageIndex ?? 0);
     services.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
   } catch (e) {
     console.warn('[page] 마당 적용 실패:', e);
+    // 실패 경로 리프레시 — 성공 경로는 executeOperation 이 이미 afterEdit 로 갱신했으므로
+    // 여기서 다시 부르지 않는다(성공 경로 이중 afterEdit 제거).
+    (ih as any).afterEdit?.();
   }
-  (ih as any).afterEdit?.();
   (ih as any).updateCaret?.();
   // 메뉴 닫기 후 포커스가 유실될 수 있으므로 지연 포커스
   const textarea = (ih as any).textarea;
@@ -177,7 +214,7 @@ export const pageCommands: CommandDef[] = [
       const ih = services.getInputHandler();
       const cursor = ih ? (ih as any).cursor : null;
       const sectionIdx = cursor?.getPosition()?.sectionIndex ?? 0;
-      const dialog = new PageSetupDialog(services.wasm, services.eventBus, sectionIdx);
+      const dialog = new PageSetupDialog(services.wasm, services.eventBus, sectionIdx, services);
       dialog.show();
     },
   },
@@ -189,7 +226,7 @@ export const pageCommands: CommandDef[] = [
       const ih = services.getInputHandler();
       const cursor = ih ? (ih as any).cursor : null;
       const sectionIdx = cursor?.getPosition()?.sectionIndex ?? 0;
-      const dialog = new PageBorderDialog(services.wasm, services.eventBus, sectionIdx);
+      const dialog = new PageBorderDialog(services.wasm, services.eventBus, sectionIdx, services);
       dialog.show();
     },
   },
@@ -199,7 +236,7 @@ export const pageCommands: CommandDef[] = [
     label: '머리말',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
-      enterHeaderFooterEditing(services, true, 0); // Both
+      enterHeaderFooterEditing(services, true);
     },
   },
   // ─── 꼬리말 ──────────────────────────────────
@@ -208,7 +245,7 @@ export const pageCommands: CommandDef[] = [
     label: '꼬리말',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
-      enterHeaderFooterEditing(services, false, 0); // Both
+      enterHeaderFooterEditing(services, false);
     },
   },
   // ─── 머리말/꼬리말 닫기 ────────────────────────
@@ -255,13 +292,18 @@ export const pageCommands: CommandDef[] = [
       // 편집 모드 탈출
       cursor.exitHeaderFooterMode();
       services.eventBus.emit('headerFooterModeChanged', 'none');
-      // 컨트롤 삭제
-      try {
-        services.wasm.deleteHeaderFooter(sectionIdx, isHeader, applyTo);
-      } catch (e) {
-        console.warn('[page] 머리말/꼬리말 삭제 실패:', e);
-      }
-      (ih as any).afterEdit?.();
+      // 컨트롤 삭제 — [Task #3207] snapshot 으로 기록해 undo 로 되살릴 수 있게 한다.
+      // 모드 탈출은 위에서 이미 끝났으므로 여기 커서는 본문이다.
+      const bodyPos = ih.getPosition();
+      ih.executeOperation({
+        kind: 'snapshot',
+        operationType: 'deleteHeaderFooter',
+        operation: (wasm) => {
+          wasm.deleteHeaderFooter(sectionIdx, isHeader, applyTo);
+          return bodyPos;
+        },
+      });
+      // executeOperation 이 이미 afterEdit 로 리프레시하므로 별도 afterEdit 를 부르지 않는다.
       (ih as any).textarea?.focus();
     },
   },
@@ -297,7 +339,7 @@ export const pageCommands: CommandDef[] = [
       if (!wasm || !eventBus) return;
       const dlg = new NewNumberDialog(wasm, eventBus, {
         sec: pos.sectionIndex, para: pos.paragraphIndex, offset: pos.charOffset,
-      });
+      }, services);
       dlg.show();
     },
   },
@@ -313,6 +355,11 @@ export const pageCommands: CommandDef[] = [
       if (!cursor || !cursor.isInHeaderFooter()) return;
       const isHeader = cursor.headerFooterMode === 'header';
       const pageIndex = cursor.rect?.pageIndex ?? 0;
+      // [Task #3207] 감추기는 히스토리에 기록하지 않는다 — toggle_hide_header_footer_native 는
+      // 세션 집합(hidden_header_footer)과 렌더 캐시만 바꾸고 document 는 건드리지 않는데
+      // (레포 가드가 Exempt::SessionState/직렬화 비대상으로 분류), 스냅샷은 document 만 담고
+      // 복원도 세션 집합을 되돌리지 않는다. 라우팅하면 되돌아가는 것 없이 redo 스택이 버려지고
+      // 스냅샷 예산만 소모돼 사용자의 진짜 undo 이력이 축출된다.
       try {
         const result = services.wasm.toggleHideHeaderFooter(pageIndex, isHeader);
         console.log(`[page] ${isHeader ? '머리말' : '꼬리말'} 쪽 ${pageIndex} 감추기: ${result.hidden}`);
@@ -333,6 +380,9 @@ export const pageCommands: CommandDef[] = [
       const cursor = (ih as any).cursor;
       if (!cursor) return;
       const pageIndex = cursor.rect?.pageIndex ?? 0;
+      // [Task #3207] 감추기는 세션 상태라 히스토리에 기록하지 않는다(위 page:hide-headerfooter
+      // 주석 참조). 스냅샷이 담는 내용이 없어 원자화도 실효가 없으므로 종전 호출을 유지하고,
+      // dirty 마킹 경로인 emit 도 그대로 둔다.
       try {
         const headerResult = services.wasm.toggleHideHeaderFooter(pageIndex, true);
         const footerResult = services.wasm.toggleHideHeaderFooter(pageIndex, false);
@@ -417,22 +467,23 @@ export const pageCommands: CommandDef[] = [
       if (!ih) return;
       const pos = ih.getPosition();
       try {
-        // 현재 문단의 감추기 상태 조회
-        const result = JSON.parse((services.wasm as any).doc.getPageHide(pos.sectionIndex, pos.paragraphIndex));
-        if (result.exists) {
-          // 이미 감추기 있음 → 토글 (제거)
-          (services.wasm as any).doc.setPageHide(
-            pos.sectionIndex, pos.paragraphIndex,
-            false, false, false, false, false, false,
-          );
-        } else {
-          // 감추기 없음 → 쪽 번호 감추기 기본 적용
-          (services.wasm as any).doc.setPageHide(
-            pos.sectionIndex, pos.paragraphIndex,
-            false, false, false, false, false, true,
-          );
-        }
-        services.eventBus.emit('document-changed');
+        // 현재 문단의 감추기 상태 조회(읽기) 후 토글값 결정.
+        const cur = JSON.parse((services.wasm as any).doc.getPageHide(pos.sectionIndex, pos.paragraphIndex));
+        // exists → 제거(false), 없음 → 쪽 번호 감추기 적용(true). 나머지 5플래그는 양쪽 모두 false.
+        const applyPageNumHide = !cur.exists;
+        // [page-hide 이관] 문단 감추기 변경을 snapshot 으로 라우팅(기존 emit-only → undo 불가였음).
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'pageHide',
+          operation: (wasm) => {
+            (wasm as any).doc.setPageHide(
+              pos.sectionIndex, pos.paragraphIndex,
+              false, false, false, false, false, applyPageNumHide,
+            );
+            return pos;
+          },
+          meta: { actionId: 'page:hide', domain: 'page', refresh: 'full', dirtyScope: 'document' },
+        });
       } catch (err) {
         console.warn('[page:hide] 감추기 실패:', err);
       }
@@ -483,9 +534,16 @@ export const pageCommands: CommandDef[] = [
       if (!ih) return;
       const pos = ih.getPosition();
       try {
-        // 일반 다단(0), 같은 너비(1), 간격 8mm=2268HU
-        services.wasm.setColumnDef(pos.sectionIndex, def.cols, 0, 1, 2268);
-        services.eventBus.emit('document-changed');
+        // 일반 다단(0), 같은 너비(1), 간격 8mm=2268HU. snapshot 으로 라우팅해 undo 가능.
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'setColumnDef',
+          operation: (wasm) => {
+            wasm.setColumnDef(pos.sectionIndex, def.cols, 0, 1, 2268);
+            return pos;
+          },
+          meta: { actionId: def.id, domain: 'page', refresh: 'full', dirtyScope: 'document' },
+        });
       } catch (err) {
         console.warn(`[${def.id}] 다단 설정 실패:`, err);
       }
@@ -498,9 +556,17 @@ export const pageCommands: CommandDef[] = [
     execute(services) {
       const ih = services.getInputHandler();
       if (!ih) return;
+      const pos = ih.getPosition();
       try {
-        services.wasm.setColumnDef(ih.getPosition().sectionIndex, 2, 0, 0, 2268);
-        services.eventBus.emit('document-changed');
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'setColumnDef',
+          operation: (wasm) => {
+            wasm.setColumnDef(pos.sectionIndex, 2, 0, 0, 2268);
+            return pos;
+          },
+          meta: { actionId: 'page:col-left', domain: 'page', refresh: 'full', dirtyScope: 'document' },
+        });
       } catch (err) { console.warn('[page:col-left]', err); }
     },
   },
@@ -511,9 +577,17 @@ export const pageCommands: CommandDef[] = [
     execute(services) {
       const ih = services.getInputHandler();
       if (!ih) return;
+      const pos = ih.getPosition();
       try {
-        services.wasm.setColumnDef(ih.getPosition().sectionIndex, 2, 0, 0, 2268);
-        services.eventBus.emit('document-changed');
+        ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'setColumnDef',
+          operation: (wasm) => {
+            wasm.setColumnDef(pos.sectionIndex, 2, 0, 0, 2268);
+            return pos;
+          },
+          meta: { actionId: 'page:col-right', domain: 'page', refresh: 'full', dirtyScope: 'document' },
+        });
       } catch (err) { console.warn('[page:col-right]', err); }
     },
   },
@@ -526,7 +600,7 @@ export const pageCommands: CommandDef[] = [
       const ih = services.getInputHandler();
       if (!ih) return;
       const pos = ih.getPosition();
-      const dlg = new ColumnSettingsDialog(services.wasm, services.eventBus, pos.sectionIndex);
+      const dlg = new ColumnSettingsDialog(services.wasm, services.eventBus, pos.sectionIndex, services);
       dlg.show();
     },
   },
@@ -540,7 +614,7 @@ export const pageCommands: CommandDef[] = [
       if (!ih) return;
       const cursor = (ih as any).cursor;
       const sectionIdx = cursor?.getPosition()?.sectionIndex ?? 0;
-      const dialog = new SectionSettingsDialog(services.wasm, services.eventBus, sectionIdx);
+      const dialog = new SectionSettingsDialog(services.wasm, services.eventBus, sectionIdx, services);
       dialog.show();
     },
   },

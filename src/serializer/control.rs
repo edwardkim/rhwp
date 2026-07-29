@@ -233,7 +233,12 @@ fn make_ctrl_record(ctrl_id: u32, level: u16, ctrl_data: &[u8]) -> Record {
 
 fn serialize_section_def(sd: &SectionDef, level: u16, records: &mut Vec<Record>) {
     let mut w = ByteWriter::new();
-    w.write_u32(sd.flags).unwrap();
+    // HWPX 파서(parse_start_num, pageStartsOn)는 page_num_type 필드만 세팅하고
+    // flags bit 20-21은 동기화하지 않는다. HWP5는 page_num_type을 별도 필드로
+    // 갖지 않고 flags bit 20-21로만 표현하므로, 여기서 반영하지 않으면 HWPX
+    // 출처 문서를 HWP5로 저장할 때 홀/짝 쪽번호 시작 설정이 유실된다.
+    let flags = (sd.flags & !0x0030_0000) | (((sd.page_num_type as u32) & 0x03) << 20);
+    w.write_u32(flags).unwrap();
     w.write_i16(sd.column_spacing).unwrap();
     w.write_i16(sd.line_grid).unwrap();
     w.write_i16(sd.char_grid).unwrap();
@@ -786,12 +791,11 @@ fn serialize_footnote(fn_: &Footnote, level: u16, records: &mut Vec<Record>) {
     let mut w = ByteWriter::new();
     w.write_u32(fn_.number as u32).unwrap();
     w.write_u16(fn_.before_decoration_letter).unwrap();
-    let after = if fn_.after_decoration_letter == 0 {
-        0x0029 // ')' default
-    } else {
-        fn_.after_decoration_letter
-    };
-    w.write_u16(after).unwrap();
+    // after_decoration_letter 를 IR 값 그대로 방출한다. 종전엔 0 을 ')'(0x0029)로
+    // 치환해, 닫는 장식이 없는(0) HWP5 각주가 저장 시 ')' 로 오염됐다. 생성 경로
+    // (insert_footnote_native, HWPX 파서)는 항상 0x0029/실제값을 명시 설정하므로
+    // 이 치환은 불필요하고, before_decoration_letter 방출과도 비대칭이었다.
+    w.write_u16(fn_.after_decoration_letter).unwrap();
     w.write_u32(fn_.number_shape).unwrap();
     w.write_u32(fn_.instance_id).unwrap();
     records.push(make_ctrl_record(tags::CTRL_FOOTNOTE, level, w.as_bytes()));
@@ -809,12 +813,8 @@ fn serialize_endnote(en: &Endnote, level: u16, records: &mut Vec<Record>) {
     let mut w = ByteWriter::new();
     w.write_u32(en.number as u32).unwrap();
     w.write_u16(en.before_decoration_letter).unwrap();
-    let after = if en.after_decoration_letter == 0 {
-        0x0029
-    } else {
-        en.after_decoration_letter
-    };
-    w.write_u16(after).unwrap();
+    // after_decoration_letter 를 IR 값 그대로 방출(footnote 와 동일 근거).
+    w.write_u16(en.after_decoration_letter).unwrap();
     w.write_u32(en.number_shape).unwrap();
     w.write_u32(en.instance_id).unwrap();
     records.push(make_ctrl_record(tags::CTRL_ENDNOTE, level, w.as_bytes()));
@@ -965,17 +965,41 @@ fn serialize_bookmark_ctrl_data(bm: &Bookmark) -> Option<Vec<u8>> {
 }
 
 /// 글자 겹침 직렬화 (HWP 스펙 표 152)
+///
+/// [#3143] 미검증 `as` 캐스팅 방어:
+/// - 겹칠 글자는 `encode_utf16()` 으로 서로게이트 쌍을 포함해 인코딩하고,
+///   카운트는 파서(parse_char_overlap)와 대칭인 UTF-16 코드유닛 수로 기록한다.
+///   (기존 `ch as u16` 은 비BMP 문자를 하위 16비트로 절단했다.)
+/// - 카운트 필드(u16/u8)는 타입 한계로 상한을 두고 기록 배열도 함께 절단해
+///   카운트와 실제 데이터가 항상 일치하도록 보장한다.
 fn serialize_char_overlap(co: &CharOverlap) -> Vec<u8> {
     let mut w = ByteWriter::new();
-    w.write_u16(co.chars.len() as u16).unwrap();
+
+    // 겹칠 글자: WCHAR(UTF-16LE) 배열, 서로게이트 쌍 포함
+    let mut utf16: Vec<u16> = Vec::with_capacity(co.chars.len());
+    let mut buf = [0u16; 2];
     for &ch in &co.chars {
-        w.write_u16(ch as u16).unwrap();
+        utf16.extend_from_slice(ch.encode_utf16(&mut buf));
     }
+    // u16 카운트 필드 wraparound 방지 (스펙상 최대 9글자라 실사용에선 도달하지 않음)
+    utf16.truncate(u16::MAX as usize);
+    // 절단 끝이 홀로 남은 상위 서로게이트면 함께 제거
+    if matches!(utf16.last(), Some(&last) if (0xD800..=0xDBFF).contains(&last)) {
+        utf16.pop();
+    }
+    w.write_u16(utf16.len() as u16).unwrap();
+    for unit in utf16 {
+        w.write_u16(unit).unwrap();
+    }
+
     w.write_u8(co.border_type).unwrap();
     w.write_i8(co.inner_char_size).unwrap();
     w.write_u8(co.expansion).unwrap();
-    w.write_u8(co.char_shape_ids.len() as u8).unwrap();
-    for &id in &co.char_shape_ids {
+
+    // charshape 카운트: u8 wraparound 방지 — 카운트와 기록 개수를 함께 상한 절단
+    let n_ids = co.char_shape_ids.len().min(u8::MAX as usize);
+    w.write_u8(n_ids as u8).unwrap();
+    for &id in &co.char_shape_ids[..n_ids] {
         w.write_u32(id).unwrap();
     }
     w.into_bytes()
@@ -1034,7 +1058,9 @@ fn serialize_picture_data(pic: &Picture) -> Vec<u8> {
     let mut w = ByteWriter::new();
     w.write_color_ref(pic.border_color).unwrap();
     w.write_i32(pic.border_width).unwrap();
-    w.write_u32(0).unwrap(); // border_attr
+    // 테두리 속성 워드(선 종류/끝모양 등, 표 87). 파서는 pic.border_attr.attr 로
+    // 읽지만 종전엔 0 을 고정 방출해 스타일 테두리가 저장 시 유실됐다.
+    w.write_u32(pic.border_attr.attr).unwrap(); // border_attr
 
     for &x in &pic.border_x {
         w.write_i32(x).unwrap();
@@ -1181,6 +1207,28 @@ fn serialize_shape_control(
         }
     };
 
+    // [#2715] 캡션(SHAPE_COMPONENT 앞, level+1) 방출 헬퍼.
+    //
+    // 파서는 `SHAPE_COMPONENT` **앞**의 LIST_HEADER 를 캡션으로 읽는데
+    // (`parser/control/shape.rs:134-147`), 종전 도형 arm 은 어느 것도 방출하지
+    // 않아 그리기 도형·묶음·차트 캡션이 HWP5 저장에서 전량 소실됐다 (표 `:492`·
+    // 그림 `:998` 만 방출 중이었다). 한컴 저장본도 `$rec`(사각형)·`$con`(묶음)에
+    // `$pic`(그림)과 **동일한 30B LIST_HEADER** 를 SHAPE_COMPONENT 앞에 쓴다
+    // (`samples/3-09월_교육_통합_2023.hwp`, `samples/draw-group.hwp` 실측).
+    //
+    // 호출 위치는 반드시 `emit_top_level_synthesized_ctrl_data` **뒤**여야 한다 —
+    // `parse_caption` 은 `records[1..]` 전체를 캡션 문단으로 넘기므로, 캡션과
+    // SHAPE_COMPONENT 사이에 CTRL_DATA 가 끼면 문단 파싱이 오염된다.
+    //
+    // OLE arm 은 제외한다: `#1283` 의 196B base-only 계약 영역이고
+    // (`tests/issue_1251_ole_chart_contents.rs` 가 고정), 캡션 보유 OLE 한컴
+    // 실물 샘플을 확보하지 못해 방출 위치를 실측 검증할 수 없다.
+    let emit_caption = |caption: &Option<Caption>, records: &mut Vec<Record>| {
+        if let Some(caption) = caption {
+            serialize_caption(caption, level + 1, records);
+        }
+    };
+
     match shape {
         ShapeObject::Line(line) => {
             let is_connector = line.connector.is_some();
@@ -1195,6 +1243,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&line.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&line.drawing.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1240,6 +1289,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&rect.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&rect.drawing.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1269,6 +1319,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&ellipse.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&ellipse.drawing.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1311,6 +1362,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&poly.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&poly.drawing.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1348,6 +1400,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&arc.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&arc.drawing.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1378,6 +1431,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&curve.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&curve.drawing.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1411,6 +1465,7 @@ fn serialize_shape_control(
                 &serialize_common_obj_attr(&group.common),
             ));
             emit_top_level_synthesized_ctrl_data(records);
+            emit_caption(&group.caption, records);
             // 그룹 컨테이너: SHAPE_COMPONENT + 자식 수 + 자식 ctrl_id 목록 (한컴 호환)
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
@@ -1426,8 +1481,14 @@ fn serialize_shape_control(
                 serialize_group_child(child, child_comp_level, child_type_level, records);
             }
         }
-        ShapeObject::Picture(_pic) => {
-            // 그룹 내 그림: 그룹 직렬화 시 자식으로 처리됨 (단독 Picture는 Control::Picture로 직렬화)
+        ShapeObject::Picture(pic) => {
+            // [#2696] 그룹 해제(object_ops/shape.rs 의 ungroup_shape_native)는 그림
+            // 자식을 최상위 Control::Shape(ShapeObject::Picture) 로 삽입하면서
+            // char_count += 8 을 함께 적용한다. 종전에는 이 arm 이 아무
+            // 레코드도 방출하지 않아 그림이 사라질 뿐 아니라 PARA_TEXT 의 확장 컨트롤
+            // 문자와 CTRL_HEADER 개수가 어긋나 이후 컨트롤이 잘못된 위치에 결합됐다.
+            // Control::Picture 가 쓰는 검증된 경로에 그대로 위임한다.
+            serialize_picture_control(pic, level, ctrl_data_record, records);
         }
         ShapeObject::Chart(chart) => {
             // Task #195 단계 2: raw_chart_data를 그대로 보존하여 라운드트립 유지
@@ -1436,7 +1497,12 @@ fn serialize_shape_control(
                 level,
                 &serialize_common_obj_attr(&chart.common),
             ));
+            // 캡션 (SHAPE_COMPONENT 앞, level+1)
+            if let Some(ref caption) = chart.caption {
+                serialize_caption(caption, level + 1, records);
+            }
             let sc_ctrl_id = chart.drawing.shape_attr.ctrl_id;
+            emit_caption(&chart.caption, records);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
@@ -1458,11 +1524,20 @@ fn serialize_shape_control(
                 level,
                 &serialize_common_obj_attr(&ole.common),
             ));
+            // 캡션 (SHAPE_COMPONENT 앞, level+1)
+            if let Some(ref caption) = ole.caption {
+                serialize_caption(caption, level + 1, records);
+            }
             let drawing = ole_drawing_with_shape_component_contract(ole, true);
             records.push(Record {
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: level + 1,
                 size: 0,
+                // [#2696] OLE 의 SHAPE_COMPONENT 는 의도적으로 base-only 다.
+                // 한컴 저장본(samples/143E433F503322BD33.hwp)의 `$ole` SHAPE_COMPONENT
+                // 실측 크기가 196B(base) 이고, 테두리/채우기/그림자 꼬리를 붙인
+                // 252B 는 같은 파일의 도형 레코드 쪽이다. #1283 이 한컴 읽기 오류를
+                // 잡으며 확정한 계약이므로 Chart arm 과 달리 확장하지 않는다.
                 data: serialize_shape_component(tags::SHAPE_OLE_ID, &drawing.shape_attr, true),
             });
             emit_ctrl_data(records);
@@ -1760,6 +1835,7 @@ fn serialize_group_child(
                 tag_id: tags::HWPTAG_SHAPE_COMPONENT,
                 level: comp_level,
                 size: 0,
+                // [#2696] 최상위 OLE arm 과 동일하게 base-only 를 유지한다(#1283 계약).
                 data: serialize_shape_component(tags::SHAPE_OLE_ID, &drawing.shape_attr, false),
             });
             serialize_text_box_if_present(&drawing, type_level, records);
@@ -2381,7 +2457,9 @@ fn serialize_equation_control(eq: &Equation, level: u16, records: &mut Vec<Recor
     // HWPTAG_EQEDIT 자식 레코드
     let mut w = ByteWriter::new();
     // attr: u32
-    w.write_u32(0).unwrap();
+    // [#2727] 종전 상수 0 하드코딩 → IR 보존값 방출. bit0(수식 범위, HWPX lineMode)
+    // 이 저장마다 CHAR 로 초기화되던 손실 제거.
+    w.write_u32(eq.attr).unwrap();
     // script: HWP string (length-prefixed UTF-16LE)
     w.write_hwp_string(&eq.script).unwrap();
     // font_size: u32

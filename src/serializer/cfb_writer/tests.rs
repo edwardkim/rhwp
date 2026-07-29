@@ -70,6 +70,7 @@ fn test_serialize_hwp_cfb_streams() {
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
         is_hwpx_variant: false,
+        provenance: Default::default(),
     };
 
     let bytes = serialize_hwp(&doc).unwrap();
@@ -114,6 +115,7 @@ fn test_serialize_hwp_compressed() {
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
         is_hwpx_variant: false,
+        provenance: Default::default(),
     };
 
     let bytes = serialize_hwp(&doc).unwrap();
@@ -215,6 +217,7 @@ fn test_full_roundtrip_uncompressed() {
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
         is_hwpx_variant: false,
+        provenance: Default::default(),
     };
 
     // Document → HWP bytes
@@ -294,6 +297,7 @@ fn test_full_roundtrip_compressed() {
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
         is_hwpx_variant: false,
+        provenance: Default::default(),
     };
 
     // Document → HWP bytes (compressed)
@@ -1686,6 +1690,7 @@ fn test_ole_storage_size_prefix_restored() {
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
         is_hwpx_variant: false,
+        provenance: Default::default(),
     };
 
     let bytes = serialize_hwp(&doc).unwrap();
@@ -1772,6 +1777,7 @@ fn test_compressed_ole_storage_payload_is_deflated() {
         hwpx_aux_entries: Vec::new(),
         is_hwp3_variant: false,
         is_hwpx_variant: false,
+        provenance: Default::default(),
     };
 
     let bytes = serialize_hwp(&doc).unwrap();

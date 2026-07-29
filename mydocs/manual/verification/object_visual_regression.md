@@ -30,6 +30,10 @@ render-tree bbox 는 96 DPI px. 한글 PDF(pt, 72 DPI)는 `96/72` 배율로 래�
 
 ## 사용
 ```bash
+# 원커맨드 before/after(권장) — devel 을 임시 worktree 로 빌드해 baseline 자동 생성 →
+# 현 트리와 대조 → PR 본문용 markdown 요약(ovr_diff.md). 한컴 불필요.
+python tools/object_visual_regression.py --preset ovr5 -o output/poc/ovr --diff-against devel
+
 # 한글 대조 + 시각 갤러리 + baseline 저장
 python tools/object_visual_regression.py <file.hwp> -o output/poc/ovr --save-baseline
 
@@ -41,7 +45,19 @@ python tools/object_visual_regression.py <file.hwp> -o output/poc/ovr --rhwp-png
 python tools/object_visual_regression.py <file.hwp> -o output/poc/ovr --baseline output/poc/ovr/baseline.json --no-hwp
 ```
 
+여러 파일을 나열하거나 `--preset ovr5`(KTX/exam_math/21_언어/aift/biz_plan 관례 세트)로 일괄
+실행할 수 있다. 다중 샘플이면 `-o` 아래 샘플별 서브디렉터리에 산출한다.
+
 ## 회귀 게이트 사용
+
+### 원커맨드 (`--diff-against <ref>`)
+1. `--diff-against devel` — ref 를 임시 worktree 로 체크아웃해 release 빌드(최초 1회,
+   이후 `target/ovr-baseline/target_<sha>` 캐시 재사용) → 샘플별 baseline 자동 생성.
+2. 현 트리를 `cargo build --release` 후 대조 → 개체 page 이동/크기 변경(±`--tol`px)·신규/소실 검출.
+3. `ovr_diff.md`(markdown 표)를 출력 — PR 본문에 그대로 붙여넣는 용도.
+4. worktree 는 성공/실패 무관 항상 제거(잔재 없음). 종료코드: 0 무회귀 / 1 회귀 / 2 실행 실패.
+
+### 수동 3단계 (기존 흐름, 하위 호환)
 1. 기준 커밋에서 `--save-baseline` 으로 `baseline.json` 확보(개체 geometry 스냅샷).
 2. 변경 후 `--baseline baseline.json --no-hwp` 로 재실행 → 개체 page 이동/크기 변경(±`--tol`px) 검출.
 3. 종료코드 1 = 회귀 존재(개체 이동/리사이즈). page/PI 게이트와 상보적으로 개체 레벨을 커버.

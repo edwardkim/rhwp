@@ -31,6 +31,10 @@ impl NativeImageKind {
 pub struct OleContainer {
     /// `\x02OlePres000` 스트림에서 추출한 EMF 바이트 (OLE Presentation Stream 헤더 스킵됨)
     pub preview_emf: Option<Vec<u8>>,
+    /// [#3363] `\x02OlePres000` 스트림에서 추출한 WMF 바이트 — EMF 부재 시 폴백.
+    /// HWP3 내장 OLE(글맵시 등)의 프레젠테이션은 표준 WMF 다 (SO-SUEOP 실측:
+    /// 40바이트 헤더 뒤 `01 00 09 00 03` 표준 WMF).
+    pub preview_wmf: Option<Vec<u8>>,
     /// `OOXMLChartContents` 원본 바이트 (OOXML 차트 XML)
     pub ooxml_chart: Option<Vec<u8>>,
     /// `Contents` 원본 바이트 (내부 OLE 데이터)
@@ -45,9 +49,10 @@ impl OleContainer {
         self.ooxml_chart.as_ref().is_some_and(|b| !b.is_empty())
     }
 
-    /// EMF 프리뷰를 포함하는지 여부
+    /// 메타파일(EMF/WMF) 프리뷰를 포함하는지 여부
     pub fn has_preview(&self) -> bool {
         self.preview_emf.as_ref().is_some_and(|b| !b.is_empty())
+            || self.preview_wmf.as_ref().is_some_and(|b| !b.is_empty())
     }
 }
 
@@ -78,6 +83,10 @@ pub fn parse_ole_container(cfb_bytes: &[u8]) -> Option<OleContainer> {
                 let mut buf = Vec::new();
                 if s.read_to_end(&mut buf).is_ok() {
                     container.preview_emf = strip_ole_presentation_header(&buf);
+                    // [#3363] EMF 부재 시 WMF 프레젠테이션 폴백 (HWP3 내장 OLE·글맵시)
+                    if container.preview_emf.is_none() {
+                        container.preview_wmf = strip_ole_presentation_header_wmf(&buf);
+                    }
                 }
             }
         } else if name == "OOXMLChartContents" {
@@ -144,6 +153,7 @@ pub fn parse_ole_container(cfb_bytes: &[u8]) -> Option<OleContainer> {
     }
 
     if container.preview_emf.is_some()
+        || container.preview_wmf.is_some()
         || container.ooxml_chart.is_some()
         || container.raw_contents.is_some()
         || container.native_image.is_some()
@@ -263,6 +273,33 @@ fn strip_ole_presentation_header(data: &[u8]) -> Option<Vec<u8>> {
         // " EMF" = 0x20 0x45 0x4D 0x46
         let sig = &data[i + 40..i + 44];
         if sig == b" EMF" {
+            return Some(data[i..].to_vec());
+        }
+    }
+    None
+}
+
+/// [#3363] OLE Presentation Stream 헤더 뒤의 표준/placeable WMF 를 찾아 반환한다.
+/// EMF 스트립과 동일한 스캔 방식 — 표준 WMF 매직(mtType=1|2, mtHeaderSize=9,
+/// mtVersion 0x0100|0x0300) 또는 placeable WMF 매직(`D7 CD C6 9A`)을 탐색한다.
+fn strip_ole_presentation_header_wmf(data: &[u8]) -> Option<Vec<u8>> {
+    if data.len() < 26 {
+        return None;
+    }
+    let scan_limit = data.len().min(4096);
+    for i in 0..(scan_limit.saturating_sub(8)) {
+        // placeable WMF
+        if data[i..i + 4] == [0xD7, 0xCD, 0xC6, 0x9A] {
+            return Some(data[i..].to_vec());
+        }
+        // 표준 WMF: mtType(1=memory, 2=file) u16 + mtHeaderSize=9 u16 + mtVersion u16
+        let mt_type = u16::from_le_bytes([data[i], data[i + 1]]);
+        let header_size = u16::from_le_bytes([data[i + 2], data[i + 3]]);
+        let version = u16::from_le_bytes([data[i + 4], data[i + 5]]);
+        if (mt_type == 1 || mt_type == 2)
+            && header_size == 9
+            && (version == 0x0100 || version == 0x0300)
+        {
             return Some(data[i..].to_vec());
         }
     }

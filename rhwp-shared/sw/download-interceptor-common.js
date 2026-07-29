@@ -12,8 +12,8 @@
 // - #198: Chrome 마지막 저장 위치 보존 + DEXT5 블랙리스트 + MIME 힌트
 // - #207: 동일 판정 로직을 Firefox 측에도 적용
 
-/** filename 또는 URL 에서 .hwp/.hwpx 확장자를 감지 (쿼리 문자열 허용). */
-export const HWP_EXTENSION_RE = /\.(hwp|hwpx)(\?|$)/i;
+/** filename 또는 URL 에서 .hwp/.hwpx/.hml 확장자를 감지 (쿼리 문자열 허용). */
+export const HWP_EXTENSION_RE = /\.(hwp|hwpx|hml)(\?|$)/i;
 
 /** 한컴 HWP/HWPX MIME 타입 힌트 (소문자 비교). */
 export const HWP_MIME_HINTS = ['haansoft', 'x-hwp', 'hwp+zip'];

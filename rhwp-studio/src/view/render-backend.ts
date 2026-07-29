@@ -1,13 +1,21 @@
 import type { LayerRenderProfile, PageInfo } from '@/core/types';
 
 export type RenderBackend = 'canvas2d' | 'canvaskit';
+export type RenderBackendPreference = 'auto' | RenderBackend;
 export type CanvasKitRenderMode = 'default' | 'compat';
 export type CanvasKitRenderModeUnsupportedReason = 'unsupportedCanvasKitMode';
 export type CanvasKitRenderModeRequestSource = 'default' | 'storage' | 'url';
 export type CanvasKitSurfacePreference = 'auto' | 'webgpu' | 'webgl' | 'software';
 export type CanvasKitSurfaceUnsupportedReason = 'unsupportedSurfaceBackend';
 export type RenderBackendUnsupportedReason = 'unsupportedRenderBackend';
-export type RenderBackendFallbackReason = RenderBackendUnsupportedReason | 'canvaskitInitializationFailed';
+export type RenderBackendFallbackReason =
+  | RenderBackendUnsupportedReason
+  | 'canvaskitDocumentIneligible'
+  | 'canvaskitDocumentPreflightIncomplete'
+  | 'canvaskitRevisionInvalidated'
+  | 'canvaskitInitializationFailed'
+  | 'canvaskitResourcePreparationFailed'
+  | 'canvaskitRuntimeFailed';
 export type RenderBackendRequestSource = 'default' | 'url';
 
 export interface CanvasKitSurfaceRequest {
@@ -24,7 +32,7 @@ export interface CanvasKitRenderModeRequest {
 }
 
 export interface RenderBackendRequest {
-  backend: RenderBackend;
+  backend: RenderBackendPreference;
   source: RenderBackendRequestSource;
   requested?: string;
   unsupportedReason?: RenderBackendUnsupportedReason;
@@ -65,7 +73,7 @@ function searchParam(search: string, ...keys: string[]): string | null {
   return null;
 }
 
-export function resolveRenderBackend(search = ''): RenderBackend {
+export function resolveRenderBackend(search = ''): RenderBackendPreference {
   return resolveRenderBackendRequest(search).backend;
 }
 
@@ -73,6 +81,9 @@ export function resolveRenderBackendRequest(search = ''): RenderBackendRequest {
   const explicit = searchParam(search, 'renderer', 'renderBackend', 'backend');
   const normalized = explicit?.trim().toLowerCase();
   if (!normalized) return { backend: 'canvas2d', source: 'default' };
+  if (normalized === 'auto') {
+    return { backend: 'auto', source: 'url', requested: normalized };
+  }
   if (normalized === 'canvaskit' || normalized === 'skia') {
     return { backend: 'canvaskit', source: 'url', requested: normalized };
   }

@@ -17,13 +17,17 @@ fitz 로 페이지 래스터 + 이미지 bbox 를 얻어, 개체를 읽기순으
     python tools/object_visual_regression.py <file.hwp> -o out/ovr --baseline out/ovr/baseline.json --no-hwp
     # rhwp 래스터 크롭까지 (native-skia 빌드 필요)
     python tools/object_visual_regression.py <file.hwp> -o out/ovr --rhwp-png
+    # 원커맨드 before/after: 지정 ref 를 worktree 빌드해 baseline 자동 생성 → 현 트리와 대조
+    python tools/object_visual_regression.py --preset ovr5 -o out/ovr --diff-against devel
 
 요구: rhwp release 바이너리(+ --rhwp-png 시 native-skia). --no-hwp 아니면 Windows+한컴+pyhwpx+PyMuPDF.
+--diff-against 는 cargo 빌드 2회(기준 ref + 현 트리)를 자동 수행 — 한컴 불필요, geometry 무회귀 전용.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -33,6 +37,11 @@ RHWP = ROOT / "target" / "release" / ("rhwp.exe" if sys.platform == "win32" else
 RHWP_SKIA = RHWP  # export-png 은 동일 바이너리(native-skia feature 빌드)
 DPI = 96.0  # render-tree px 기준
 PT2PX = DPI / 72.0
+
+# OVR 관례 샘플 세트 — CONTRIBUTING "렌더링 PR 자가 검증" 기본 프리셋 (samples/ 기준 상대경로)
+PRESETS = {
+    "ovr5": ["KTX.hwp", "exam_math.hwp", "21_언어_기출_편집가능본.hwp", "aift.hwp", "biz_plan.hwp"],
+}
 
 
 def _ngrams(text: str, n: int = 3):
@@ -61,16 +70,98 @@ def git_head() -> str:
 
 
 # ---------------------------------------------------------------------------
+# --diff-against: 기준 ref worktree 빌드 + baseline 자동 생성
+# ---------------------------------------------------------------------------
+def resolve_ref(ref: str) -> str | None:
+    """ref → short sha. 로컬 ref 우선, 없으면 origin/<ref> 폴백."""
+    for cand in (ref, f"origin/{ref}"):
+        r = subprocess.run(["git", "rev-parse", "--verify", "--short", f"{cand}^{{commit}}"],
+                           cwd=ROOT, capture_output=True, text=True, timeout=10)
+        if r.returncode == 0:
+            return r.stdout.strip()
+    return None
+
+
+def build_ref_binary(sha: str, build_root: Path):
+    """sha 를 임시 worktree 로 체크아웃해 release 빌드. 반환 (binary, err).
+
+    바이너리는 sha 별 캐시(build_root/target_<sha>)에 남아 재실행 시 빌드 생략.
+    worktree 는 성공/실패 무관 항상 정리(잔재 없음).
+    """
+    import shutil
+    import tempfile
+    # cargo 는 CARGO_TARGET_DIR 상대경로를 자기 cwd(worktree) 기준으로 해석 — 절대경로로 고정
+    target = build_root.resolve() / f"target_{sha}"
+    binary = target / "release" / ("rhwp.exe" if sys.platform == "win32" else "rhwp")
+    if binary.exists():
+        return binary, None
+    wt = Path(tempfile.mkdtemp(prefix=f"rhwp_ovr_{sha}_"))
+    try:
+        r = subprocess.run(["git", "worktree", "add", "--detach", str(wt), sha],
+                           cwd=ROOT, capture_output=True, text=True, timeout=120)
+        if r.returncode != 0:
+            return None, f"worktree add 실패: {(r.stderr or '').strip()[:200]}"
+        env = dict(os.environ, CARGO_TARGET_DIR=str(target))
+        r = subprocess.run(["cargo", "build", "--release", "--bin", "rhwp"],
+                           cwd=wt, env=env, capture_output=True, text=True, timeout=5400)
+        if r.returncode != 0:
+            return None, f"기준 ref cargo build 실패(rc={r.returncode}): {(r.stderr or '').strip()[-400:]}"
+        return (binary, None) if binary.exists() else (None, "빌드 후 바이너리 없음")
+    finally:
+        subprocess.run(["git", "worktree", "remove", "--force", str(wt)],
+                       cwd=ROOT, capture_output=True, timeout=60)
+        shutil.rmtree(wt, ignore_errors=True)
+        subprocess.run(["git", "worktree", "prune"], cwd=ROOT, capture_output=True, timeout=60)
+
+
+def compare_objects(robj, bobj, tol):
+    """현재 개체 vs baseline 개체 — 읽기순 인덱스 대응으로 page 이동/크기변경 검출."""
+    regressions = []
+    for i, o in enumerate(robj):
+        b = bobj[i] if i < len(bobj) else None
+        if b is None:
+            regressions.append((i, "신규 개체", "", ""))
+            continue
+        dp = o["page"] - b["page"]
+        dw = o["w"] - b["w"]
+        dh = o["h"] - b["h"]
+        if dp != 0 or abs(dw) > tol or abs(dh) > tol:
+            regressions.append((i, f"page{dp:+d}", f"w{dw:+.1f}", f"h{dh:+.1f}"))
+    for i in range(len(robj), len(bobj)):
+        regressions.append((i, "개체 소실", "", ""))
+    return regressions
+
+
+def write_md_summary(path: Path, rows, cur_head: str, base_label: str, tol: float) -> str:
+    """PR 본문에 붙이기 좋은 markdown 요약표. 반환값 = 파일에 쓴 내용."""
+    lines = [f"### OVR 개체 무회귀 — 현재({cur_head}) vs {base_label} · tol ±{tol:g}px", "",
+             "| 샘플 | 페이지 | 개체 | 회귀 | 상세 |", "|---|---|---|---|---|"]
+    for r in rows:
+        det = "; ".join(f"obj{reg[0]} " + " ".join(x for x in reg[1:] if x) for reg in r["regs"][:5]) or "-"
+        if len(r["regs"]) > 5:
+            det += f" 외 {len(r['regs']) - 5}건"
+        lines.append(f"| {r['name']} | {r['bpages']}→{r['pages']} | {r['bn']}→{r['n']} "
+                     f"| {len(r['regs'])} | {det} |")
+    total = sum(len(r["regs"]) for r in rows)
+    lines += ["", ("**합계: 회귀 0건 — 변경 범위 밖 개체 무이동**" if total == 0 else
+                   f"**합계: 회귀 {total}건 — 개체 이동/크기변경 검출**")]
+    text = "\n".join(lines)
+    path.write_text(text + "\n", encoding="utf-8")
+    return text
+
+
+# ---------------------------------------------------------------------------
 # rhwp 개체 추출 (render-tree)
 # ---------------------------------------------------------------------------
-def rhwp_objects(path: Path, outdir: Path, reuse: bool = False):
+def rhwp_objects(path: Path, outdir: Path, reuse: bool = False, rhwp: Path | None = None,
+                 rtree: str = "rtree"):
     """rhwp export-render-tree → 표 개체 리스트(읽기순). 반환: (objects, page_count, err)."""
-    rtdir = outdir / "rtree"
+    rtdir = outdir / rtree
     rtdir.mkdir(parents=True, exist_ok=True)
     if not (reuse and any(rtdir.glob("render_tree_*.json"))):
         try:
             # export-render-tree 는 -o 를 디렉터리로 취급해 그 안에 render_tree_NNN.json 을 쓴다.
-            r = subprocess.run([str(RHWP), "export-render-tree", str(path), "-o", str(rtdir)],
+            r = subprocess.run([str(rhwp or RHWP), "export-render-tree", str(path), "-o", str(rtdir)],
                                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=900)
         except Exception as e:  # noqa: BLE001
             return None, None, f"render-tree:{e}"
@@ -268,25 +359,58 @@ def write_gallery(outdir, rows, head, meta):
 
 
 # ---------------------------------------------------------------------------
-def main() -> int:
-    ap = argparse.ArgumentParser(description="개체 단위 시각/geometry 회귀 (rhwp vs 한글)")
-    ap.add_argument("file", type=Path)
-    ap.add_argument("-o", "--out", type=Path, required=True)
-    ap.add_argument("--baseline", type=Path, help="이전 rhwp 개체 geometry JSON 과 회귀 비교")
-    ap.add_argument("--save-baseline", action="store_true", help="현재 rhwp 개체 geometry 를 baseline.json 으로 저장")
-    ap.add_argument("--no-hwp", action="store_true", help="한글 대조 생략(rhwp-vs-baseline 회귀만)")
-    ap.add_argument("--rhwp-png", action="store_true", help="rhwp export-png 래스터 크롭(native-skia 필요)")
-    ap.add_argument("--reuse", action="store_true", help="기존 산출물(render-tree/PNG/PDF) 재사용 — 재렌더 생략")
-    ap.add_argument("--tol", type=float, default=2.0, help="geometry 회귀 허용 오차(px)")
-    args = ap.parse_args()
-
-    if not RHWP.exists():
-        print(f"오류: rhwp 바이너리 없음 {RHWP}", file=sys.stderr)
+def run_diff_against(args, files, head) -> int:
+    """원커맨드 before/after: ref worktree 빌드 → baseline 자동 생성 → 현 트리 대조 → md 요약."""
+    sha = resolve_ref(args.diff_against)
+    if not sha:
+        print(f"오류: ref 해석 실패 — {args.diff_against} (git fetch origin {args.diff_against} 필요할 수 있음)",
+              file=sys.stderr)
         return 2
-    args.out.mkdir(parents=True, exist_ok=True)
-    head = git_head()
+    base_label = f"{args.diff_against}@{sha}"
+    print(f"[base] {base_label} worktree 빌드 (최초 1회, 이후 캐시)…")
+    # 캐시는 -o 와 무관한 고정 위치(/target/ 은 gitignore) — sha 단위로 재사용
+    base_bin, err = build_ref_binary(sha, ROOT / "target" / "ovr-baseline")
+    if err:
+        print(f"오류: {err}", file=sys.stderr)
+        return 2
+    print("[cur] 현 트리 cargo build --release…")
+    r = subprocess.run(["cargo", "build", "--release", "--bin", "rhwp"],
+                       cwd=ROOT, capture_output=True, text=True, timeout=5400)
+    if r.returncode != 0:
+        print(f"오류: 현 트리 cargo build 실패(rc={r.returncode}): {(r.stderr or '').strip()[-400:]}",
+              file=sys.stderr)
+        return 2
 
-    robj, rpages, rerr = rhwp_objects(args.file, args.out, reuse=args.reuse)
+    rows = []
+    for f in files:
+        sub = args.out if len(files) == 1 else args.out / f.stem
+        sub.mkdir(parents=True, exist_ok=True)
+        bobj, bpages, berr = rhwp_objects(f, sub, reuse=args.reuse, rhwp=base_bin, rtree="rtree_base")
+        if berr:
+            print(f"오류: {f.name} 기준측 {berr}", file=sys.stderr)
+            return 2
+        (sub / "baseline.json").write_text(
+            json.dumps({"head": base_label, "pages": bpages, "objects": bobj},
+                       ensure_ascii=False, indent=1), encoding="utf-8")
+        robj, rpages, rerr = rhwp_objects(f, sub, reuse=args.reuse)
+        if rerr:
+            print(f"오류: {f.name} 현재측 {rerr}", file=sys.stderr)
+            return 2
+        regs = compare_objects(robj, bobj, args.tol)
+        print(f"[{f.name}] 기준 {bpages}쪽/{len(bobj)}개체 → 현재 {rpages}쪽/{len(robj)}개체, 회귀 {len(regs)}건")
+        rows.append({"name": f.name, "bpages": bpages, "pages": rpages,
+                     "bn": len(bobj), "n": len(robj), "regs": regs})
+
+    md = write_md_summary(args.out / "ovr_diff.md", rows, head, base_label, args.tol)
+    print("\n" + md)
+    print(f"\n[out] {args.out / 'ovr_diff.md'} (PR 본문에 붙여넣기용)")
+    return 1 if any(r["regs"] for r in rows) else 0
+
+
+def run_one(f: Path, outdir: Path, args, head) -> int:
+    """단일 파일 legacy 흐름: baseline 저장/비교 + (옵션) 한글 대조·갤러리."""
+    outdir.mkdir(parents=True, exist_ok=True)
+    robj, rpages, rerr = rhwp_objects(f, outdir, reuse=args.reuse)
     if rerr:
         print(f"오류: {rerr}", file=sys.stderr)
         return 2
@@ -294,31 +418,22 @@ def main() -> int:
 
     # baseline 저장/비교 (rhwp-vs-rhwp 회귀)
     if args.save_baseline:
-        (args.out / "baseline.json").write_text(
+        (outdir / "baseline.json").write_text(
             json.dumps({"head": head, "pages": rpages, "objects": robj}, ensure_ascii=False, indent=1),
             encoding="utf-8")
-        print(f"[baseline] 저장 → {args.out / 'baseline.json'}")
+        print(f"[baseline] 저장 → {outdir / 'baseline.json'}")
     regressions = []
     if args.baseline and args.baseline.exists():
         base = json.loads(args.baseline.read_text(encoding="utf-8"))
         bobj = base.get("objects", [])
-        for i, o in enumerate(robj):
-            b = bobj[i] if i < len(bobj) else None
-            if b is None:
-                regressions.append((i, "신규 개체", "", ""))
-                continue
-            dp = o["page"] - b["page"]
-            dw = o["w"] - b["w"]
-            dh = o["h"] - b["h"]
-            if dp != 0 or abs(dw) > args.tol or abs(dh) > args.tol:
-                regressions.append((i, f"page{dp:+d}", f"w{dw:+.1f}", f"h{dh:+.1f}"))
+        regressions = compare_objects(robj, bobj, args.tol)
         print(f"[regression] baseline({base.get('head')}) 대비 개체 회귀 {len(regressions)}건")
         for r in regressions[:30]:
             print("   obj", *r)
 
     # 한글 대조 + 시각 갤러리
     if not args.no_hwp:
-        hpages_png, hobj, hn, herr = hwp_pdf_and_objects(args.file, args.out, reuse=args.reuse)
+        hpages_png, hobj, hn, herr = hwp_pdf_and_objects(f, outdir, reuse=args.reuse)
         if herr:
             print(f"경고: 한글 대조 실패 — {herr} (rhwp-only 진행)", file=sys.stderr)
             hobj, hpages_png, hn = [], {}, None
@@ -327,7 +442,7 @@ def main() -> int:
 
         rpng = {}
         if args.rhwp_png:
-            rpng, perr = rhwp_render_png(args.file, args.out, reuse=args.reuse)
+            rpng, perr = rhwp_render_png(f, outdir, reuse=args.reuse)
             if perr:
                 print(f"경고: rhwp export-png 실패 — {perr}", file=sys.stderr)
                 rpng = {}
@@ -370,8 +485,8 @@ def main() -> int:
                 if ok:
                     used.add(best[0]); ho = best[1]
                     label = f"J={bestscore:.2f}" if bymethod == "text" else f"size cost={-bestscore:.2f}"
-                rc = crop(rpng, ro, args.out, f"rhwp_{kind}_{ci}") if rpng else None
-                hc = crop(hpages_png, ho, args.out, f"hwp_{kind}_{ci}") if ho else None
+                rc = crop(rpng, ro, outdir, f"rhwp_{kind}_{ci}") if rpng else None
+                hc = crop(hpages_png, ho, outdir, f"hwp_{kind}_{ci}") if ho else None
                 if ho:
                     delta = f"page {ro['page']}→{ho['page']} ({ho['page']-ro['page']:+d}), w{ho['w']-ro['w']:+.0f} h{ho['h']-ro['h']:+.0f} [{label}]"
                 else:
@@ -387,21 +502,68 @@ def main() -> int:
             for hi, ho in hlist:
                 if hi in used:
                     continue
-                hc = crop(hpages_png, ho, args.out, f"hwp_{kind}_only_{hi}")
+                hc = crop(hpages_png, ho, outdir, f"hwp_{kind}_only_{hi}")
                 rows.append({
                     "id": f"{kind}#{hi}", "kind": kind, "rhwp": "-",
                     "hwp": f"p{ho['page']} ({ho['x']},{ho['y']}) {ho['w']}×{ho['h']}" + (f" {ho.get('rows')}×{ho.get('cols')}" if ho.get('rows') else ""),
                     "delta": "한글에만(매칭 없음)", "rc": None, "hc": hc,
                 })
-        write_gallery(args.out, rows, head, f"{args.file.name} | rhwp {rpages}쪽 vs 한글 {hn}쪽")
+        write_gallery(outdir, rows, head, f"{f.name} | rhwp {rpages}쪽 vs 한글 {hn}쪽")
         # TSV
-        with open(args.out / "objects.tsv", "w", encoding="utf-8") as f:
-            f.write("id\tkind\trhwp_page\trhwp_wxh\thwp_page\thwp_wxh\tdelta\n")
+        with open(outdir / "objects.tsv", "w", encoding="utf-8") as tf:
+            tf.write("id\tkind\trhwp_page\trhwp_wxh\thwp_page\thwp_wxh\tdelta\n")
             for r in rows:
-                f.write(f"{r['id']}\t{r['kind']}\t{r['rhwp']}\t\t{r['hwp']}\t\t{r['delta']}\n")
-        print(f"[out] gallery.html + objects.tsv → {args.out}")
+                tf.write(f"{r['id']}\t{r['kind']}\t{r['rhwp']}\t\t{r['hwp']}\t\t{r['delta']}\n")
+        print(f"[out] gallery.html + objects.tsv → {outdir}")
 
     return 1 if regressions else 0
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description="개체 단위 시각/geometry 회귀 (rhwp vs 한글)")
+    ap.add_argument("files", type=Path, nargs="*", help="대상 HWP (여러 개 가능, --preset 과 병용 가능)")
+    ap.add_argument("-o", "--out", type=Path, required=True)
+    ap.add_argument("--preset", choices=sorted(PRESETS),
+                    help="관례 샘플 세트 추가 — ovr5: KTX/exam_math/21_언어/aift/biz_plan")
+    ap.add_argument("--diff-against", metavar="REF",
+                    help="지정 ref(예: devel)를 임시 worktree 로 빌드해 baseline 자동 생성 후 "
+                         "현 트리와 대조 — 원커맨드, 한컴 불필요, md 요약 출력")
+    ap.add_argument("--baseline", type=Path, help="이전 rhwp 개체 geometry JSON 과 회귀 비교")
+    ap.add_argument("--save-baseline", action="store_true", help="현재 rhwp 개체 geometry 를 baseline.json 으로 저장")
+    ap.add_argument("--no-hwp", action="store_true", help="한글 대조 생략(rhwp-vs-baseline 회귀만)")
+    ap.add_argument("--rhwp-png", action="store_true", help="rhwp export-png 래스터 크롭(native-skia 필요)")
+    ap.add_argument("--reuse", action="store_true", help="기존 산출물(render-tree/PNG/PDF) 재사용 — 재렌더 생략")
+    ap.add_argument("--tol", type=float, default=2.0, help="geometry 회귀 허용 오차(px)")
+    args = ap.parse_args()
+
+    files = list(args.files)
+    if args.preset:
+        files += [ROOT / "samples" / n for n in PRESETS[args.preset]]
+    if not files:
+        ap.error("대상 파일 또는 --preset 필요")
+    missing = [f for f in files if not f.exists()]
+    if missing:
+        print("오류: 파일 없음 — " + ", ".join(str(m) for m in missing), file=sys.stderr)
+        return 2
+    if args.baseline and len(files) > 1:
+        ap.error("--baseline 은 단일 파일 전용 — 다중 샘플 before/after 는 --diff-against 사용")
+
+    args.out.mkdir(parents=True, exist_ok=True)
+    head = git_head()
+
+    if args.diff_against:
+        return run_diff_against(args, files, head)
+
+    if not RHWP.exists():
+        print(f"오류: rhwp 바이너리 없음 {RHWP}", file=sys.stderr)
+        return 2
+    rc = 0
+    for f in files:
+        outdir = args.out if len(files) == 1 else args.out / f.stem
+        if len(files) > 1:
+            print(f"=== {f.name} ===")
+        rc = max(rc, run_one(f, outdir, args, head))
+    return rc
 
 
 if __name__ == "__main__":

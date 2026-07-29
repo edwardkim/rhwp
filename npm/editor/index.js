@@ -36,7 +36,15 @@ export async function createEditor(container, options = {}) {
     throw new Error(`Container not found: ${container}`);
   }
 
-  const studioUrl = options.studioUrl || DEFAULT_STUDIO_URL;
+  let studioUrl = options.studioUrl || DEFAULT_STUDIO_URL;
+  if (options.renderer !== undefined) {
+    if (!['auto', 'canvas2d', 'canvaskit'].includes(options.renderer)) {
+      throw new TypeError(`Unsupported renderer: ${options.renderer}`);
+    }
+    const resolvedStudioUrl = new URL(studioUrl, document.baseURI);
+    resolvedStudioUrl.searchParams.set('renderer', options.renderer);
+    studioUrl = resolvedStudioUrl.href;
+  }
 
   // iframe 생성
   const iframe = document.createElement('iframe');
@@ -108,6 +116,11 @@ export class RhwpEditor {
    *
    * @param data - HWP 파일의 ArrayBuffer 또는 Uint8Array
    * @param fileName - 파일 이름 (선택)
+   * @param options - 로드 옵션 (선택)
+   * @param options.skipUnsavedGuard - 미저장 변경 확인 없이 문서 교체
+   * @param options.suppressDialogs - 로드 후 안내창(HWPX 검증, 로컬 글꼴 감지) 없이 열기.
+   *   임베드 환경에서 안내창의 사용자 선택을 기다리느라 loadFile 응답이 지연/교착되는
+   *   것을 방지한다. 검증 경고는 '그대로 열기'로 처리되고, 글꼴은 웹 대체 글꼴로 표시된다.
    * @returns { pageCount: number }
    *
    * @example
@@ -118,8 +131,13 @@ export class RhwpEditor {
    * console.log(`${result.pageCount}페이지`);
    * ```
    */
-  async loadFile(data, fileName = 'document.hwp') {
-    return this._request('loadFile', { data, fileName });
+  async loadFile(data, fileName = 'document.hwp', options = {}) {
+    return this._request('loadFile', {
+      data,
+      fileName,
+      skipUnsavedGuard: options.skipUnsavedGuard === true,
+      suppressDialogs: options.suppressDialogs === undefined || options.suppressDialogs === true,
+    });
   }
 
   /**
@@ -195,6 +213,27 @@ export class RhwpEditor {
    */
   async exportHwpVerify() {
     return this._request('exportHwpVerify');
+  }
+
+  /**
+   * 내보내기 바이트의 영속화(업로드/핸드오프) 완료를 스튜디오에 통지합니다.
+   *
+   * dirty 상태를 해제하고 자동복구 draft의 IndexedDB 삭제 "완료"까지 기다린 뒤
+   * resolve합니다 — resolve 이후 창을 닫아도 안전합니다. 업로드 실패 시에는
+   * 호출하지 마세요(백업 draft가 보존되어야 합니다).
+   *
+   * 스튜디오가 `notify-saved-v1` capability를 광고하지 않으면(구버전 또는
+   * legacy 폴백 연결) 요청을 보내지 않고 명시적으로 실패합니다.
+   *
+   * @param fileName - 호스트가 저장에 사용한 파일 이름 (선택)
+   * @returns {Promise<{ ok: true, wasDirty: boolean }>}
+   */
+  async notifySaved(fileName) {
+    if (!this._transport.supports('notify-saved-v1')) {
+      throw new Error('notifySaved is not supported by this Studio');
+    }
+    const params = typeof fileName === 'string' && fileName.length > 0 ? { fileName } : {};
+    return this._request('notifySaved', params);
   }
 
   /**

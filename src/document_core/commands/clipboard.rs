@@ -646,6 +646,7 @@ impl DocumentCore {
             // [Task #2299] 붙여넣기로 문단 높이가 변했으므로 하류 vpos 를 재연결한다.
             // 생략하면 후속 문단 first < 커진 end 세임이 저장돼 이후 편집의 리셋
             // 보존이 이를 단/쪽 경계로 오인한다.
+            let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
             crate::renderer::composer::recalculate_section_vpos(
                 &mut self.document.sections[section_idx].paragraphs,
                 para_idx,
@@ -653,7 +654,7 @@ impl DocumentCore {
                 stored_end_for_reset,
                 &self.styles,
                 self.dpi,
-                self.document.is_hwp3_variant,
+                doc_hwp3_layout,
             );
             self.recompose_paragraph(section_idx, para_idx);
             self.paginate_if_needed();
@@ -708,6 +709,7 @@ impl DocumentCore {
         // [Task #2299] 삽입 문단들의 vpos 를 흐름에 연결한다. 클립보드 클론의
         // 원본 좌표/placeholder 를 방치하면 이후 편집의 vpos 재계산이 이를 저장
         // 단/쪽 리셋으로 오인해 영구 고착시킨다 — 신규 구간은 리셋 보존에서 제외.
+        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
         crate::renderer::composer::recalculate_section_vpos(
             &mut self.document.sections[section_idx].paragraphs,
             para_idx,
@@ -715,7 +717,7 @@ impl DocumentCore {
             None,
             &self.styles,
             self.dpi,
-            self.document.is_hwp3_variant,
+            doc_hwp3_layout,
         );
 
         // 6. 선택적 재구성: 삽입된 문단 composed 추가 + 영향 문단 재구성
@@ -900,6 +902,15 @@ impl DocumentCore {
                 &clip_paras,
             )?
         };
+
+        // [#2825] flat 형제 paste_internal_in_cell_native 는 붙여넣기 직후
+        // reflow_cell_paragraph 로 셀 폭 기준 재래핑을 하지만, path 버전은 이 호출이
+        // 없어 깊이 ≥2 중첩 셀에 붙여넣은 문단이 이전 line_segs 를 그대로 유지했다.
+        // #2755 가 delete/split/merge by_path 에 도입한 reflow_cell_paragraph_by_path
+        // 를 붙여넣기 경로에도 동일하게 적용한다.
+        for i in cell_para_idx..=last_para_idx {
+            self.reflow_cell_paragraph_by_path(section_idx, parent_para_idx, path, i);
+        }
 
         let outer_ctrl = path[0].0;
         self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
@@ -1165,6 +1176,7 @@ impl DocumentCore {
             );
             self.reflow_paragraph(section_idx, para_idx);
         }
+        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
         crate::renderer::composer::recalculate_section_vpos(
             &mut self.document.sections[section_idx].paragraphs,
             para_idx,
@@ -1172,7 +1184,7 @@ impl DocumentCore {
             None,
             &self.styles,
             self.dpi,
-            self.document.is_hwp3_variant,
+            doc_hwp3_layout,
         );
 
         // 리플로우 + 페이지네이션
@@ -1850,6 +1862,129 @@ mod char_shape_inherit_tests {
                 .map(|cs| cs.char_shape_id),
             Some(37),
             "붙여넣기 후 빈 이웃 문단이 커서 offset 글자모양(37)이 아닌 값을 상속"
+        );
+    }
+}
+
+/// [#2825] `paste_internal_in_cell_by_path_native` 가 깊이 ≥2 중첩 셀에서도
+/// 최내곽 셀 폭으로 재래핑(reflow)하는지 검증한다.
+#[cfg(test)]
+mod nested_cell_paste_reflow_tests {
+    use crate::document_core::{ClipboardData, DocumentCore};
+    use crate::model::control::Control;
+    use crate::model::document::{Document, Section, SectionDef};
+    use crate::model::page::PageDef;
+    use crate::model::paragraph::{CharShapeRef, Paragraph};
+    use crate::model::table::{Cell, Table};
+
+    /// 바깥 표(셀 폭 5000, 넉넉함) 문단 안에 안쪽 표(셀 폭 200, 좁음)를 중첩시키고,
+    /// 안쪽 셀에는 빈 문단 하나만 둔다. path 는 [(outer,0,0),(inner,0,0)].
+    fn core_with_nested_narrow_empty_cell() -> (DocumentCore, Vec<(usize, usize, usize)>) {
+        let inner_para = Paragraph::default();
+
+        let inner_table = Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                row: 0,
+                col: 0,
+                col_span: 1,
+                row_span: 1,
+                width: 200, // 최내곽 셀 폭
+                paragraphs: vec![inner_para],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        let mut outer_cell_para = Paragraph::default();
+        outer_cell_para
+            .controls
+            .push(Control::Table(Box::new(inner_table)));
+        let inner_ctrl_idx = outer_cell_para.controls.len() - 1;
+
+        let outer_table = Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                row: 0,
+                col: 0,
+                col_span: 1,
+                row_span: 1,
+                width: 5000, // 바깥 셀은 넉넉히 — 안쪽 셀 폭이 실제 리플로우 기준임을 분리
+                paragraphs: vec![outer_cell_para],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        let mut body_para = Paragraph::default();
+        body_para
+            .controls
+            .push(Control::Table(Box::new(outer_table)));
+        let outer_ctrl_idx = body_para.controls.len() - 1;
+
+        let mut section = Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    margin_left: 8504,
+                    margin_right: 8504,
+                    margin_top: 5668,
+                    margin_bottom: 4252,
+                    margin_header: 4252,
+                    margin_footer: 4252,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        section.paragraphs.push(body_para);
+        let mut doc = Document::default();
+        doc.sections.push(section);
+
+        let mut core = DocumentCore::new_empty();
+        core.document = doc;
+        core.composed = vec![Vec::new()];
+        core.dirty_sections = vec![true];
+        core.dirty_paragraphs = vec![None];
+        let path = vec![(outer_ctrl_idx, 0, 0), (inner_ctrl_idx, 0, 0)];
+        (core, path)
+    }
+
+    /// [#2825] red→green: 40자 텍스트를 내부 클립보드로 채운 뒤 폭 200 최내곽 셀에
+    /// 붙여넣으면, 붙여넣기 직후 셀 폭 기준으로 재래핑돼 여러 줄이어야 한다.
+    /// 수정 전에는 `paste_internal_in_cell_by_path_native` 가 재래핑을 호출하지
+    /// 않아 `line_segs` 가 1줄(insert_text_at 직후 미보정 상태)로 남았다.
+    #[test]
+    fn paste_in_nested_cell_by_path_reflows_inner_cell() {
+        let (mut core, path) = core_with_nested_narrow_empty_cell();
+        let text = "A".repeat(40);
+        core.clipboard = Some(ClipboardData {
+            paragraphs: vec![Paragraph {
+                text: text.clone(),
+                char_offsets: (0..text.chars().count() as u32).collect(),
+                char_count: text.chars().count() as u32,
+                char_shapes: vec![CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: 0,
+                }],
+                has_para_text: true,
+                ..Default::default()
+            }],
+            plain_text: text,
+        });
+
+        core.paste_internal_in_cell_by_path_native(0, 0, &path, 0)
+            .expect("중첩 셀 붙여넣기가 성공해야 함");
+
+        let paras = core.get_cell_paragraphs_mut_by_path(0, 0, &path).unwrap();
+        assert!(
+            paras[0].line_segs.len() > 1,
+            "폭 200 최내곽 셀에 40자를 붙여넣으면 여러 줄로 재래핑돼야 함 (실제 {}줄)",
+            paras[0].line_segs.len()
         );
     }
 }

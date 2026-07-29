@@ -309,6 +309,8 @@ pub struct HeightMeasurer {
     dpi: f64,
     is_hwp3_variant: bool,
     use_hwp3_origin_flow_spacing_before: bool,
+    render_normalization:
+        std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
 }
 
 impl HeightMeasurer {
@@ -317,6 +319,9 @@ impl HeightMeasurer {
             dpi,
             is_hwp3_variant: false,
             use_hwp3_origin_flow_spacing_before: false,
+            render_normalization: std::sync::Arc::new(
+                crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
+            ),
         }
     }
 
@@ -328,6 +333,14 @@ impl HeightMeasurer {
 
     pub fn with_hwp3_origin_flow_spacing_before(mut self, enabled: bool) -> Self {
         self.use_hwp3_origin_flow_spacing_before = enabled;
+        self
+    }
+
+    pub fn with_render_normalization(
+        mut self,
+        overlay: std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
+    ) -> Self {
+        self.render_normalization = overlay;
         self
     }
 
@@ -515,16 +528,40 @@ impl HeightMeasurer {
         );
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
 
-        // [Task #1042 Stage 6c] line_segs.empty paragraph 의 compose_lines fallback
-        // 결과를 단 너비 기반으로 recompose — paragraph_layout (Stage 6b) 와 동일.
+        // [Task #1042 Stage 6c][#2632] line_segs.empty paragraph 의 compose_lines
+        // fallback 결과를 단 너비 기반으로 recompose — typeset(format_paragraph)·
+        // render(layout_partial_paragraph) 와 동일한 본문 래퍼(recompose_for_body_width)
+        // 사용. 종전엔 셀 전용 recompose_for_cell_width 를 써 restyle_fallback_runs_
+        // by_char_shapes(글자모양별 run 재분할)를 건너뛰어, 글자모양이 섞인 본문
+        // NO_LS 문단의 측정 폭/줄수가 typeset/render 와 어긋났다.
         let recomposed: Option<ComposedParagraph> = match (composed, column_width_px) {
-            (Some(c), Some(cw)) if para.line_segs.is_empty() && cw > 0.0 => {
+            // [#2553] line_segs.is_empty() 를 match guard 에 두면 저장 line_segs 가 있는
+            // 문단이 곧장 `_ => None` 으로 떨어져 아래 stale 재래핑 분기에 도달할 수 없다.
+            // typeset.rs / paragraph_layout.rs 와 동일하게 술어를 arm 본문으로 내린다.
+            (Some(c), Some(cw)) if cw > 0.0 => {
                 let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
                 let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                 let inner = (cw - margin_l - margin_r).max(0.0);
-                if inner > 0.0 {
+                if inner > 0.0 && para.line_segs.is_empty() {
                     let mut cloned = c.clone();
-                    crate::renderer::composer::recompose_for_cell_width(
+                    // [#2279] 본문 NO_LS 는 글자모양 재분할 포함 래퍼 사용 —
+                    // typeset/paragraph_layout(렌더)와 동일 (측정/렌더 줄수·pitch 정합).
+                    // cell 래퍼는 restyle_fallback_runs_by_char_shapes 를 빠뜨려
+                    // 혼합 글자모양 문단의 측정 폭이 렌더와 어긋났다.
+                    crate::renderer::composer::recompose_for_body_width(
+                        &mut cloned,
+                        para,
+                        inner,
+                        styles,
+                    );
+                    Some(cloned)
+                } else if inner > 0.0
+                    && crate::renderer::composer::masked_stored_lines_stale(c, para, inner, styles)
+                {
+                    // [#2279] 마스킹 저장분할 stale(실폭-과잉/줄수-과소) 본문 문단
+                    // fresh 재래핑 — typeset/paragraph_layout(렌더)와 동일.
+                    let mut cloned = c.clone();
+                    crate::renderer::composer::recompose_stored_lines_if_overflowing_body(
                         &mut cloned,
                         para,
                         inner,
@@ -601,7 +638,12 @@ impl HeightMeasurer {
                         use crate::model::style::LineSpacingType;
                         let (base, extra) = match ls_type {
                             LineSpacingType::Percent => {
-                                let e = (max_fs * (ls_val - 100.0) / 100.0).max(0.0);
+                                // [#2279] sub-100% 퍼센트 음수 gap 존중 (line_breaking 정합)
+                                let e = if ls_val > 0.0 {
+                                    max_fs * (ls_val - 100.0) / 100.0
+                                } else {
+                                    0.0
+                                };
                                 (max_fs, e)
                             }
                             LineSpacingType::Fixed => (ls_val.max(max_fs), 0.0),
@@ -844,7 +886,7 @@ impl HeightMeasurer {
         styles: &ResolvedStyleSet,
         depth: usize,
         // [#2195] 부모 셀 전폭(px, 스트레치 기준). 0.0 = 미적용.
-        parent_cell_w: f64,
+        _parent_cell_w: f64,
     ) -> f64 {
         if depth >= Self::MAX_NESTED_DEPTH {
             return 0.0;
@@ -856,8 +898,8 @@ impl HeightMeasurer {
                     .iter()
                     .filter_map(|ctrl| {
                         if let Control::Table(nested) = ctrl {
-                            let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi);
-                            let stretch = 1.0; // [#2195] 스트레치는 render_normalized 로 일원화
+                            let stretch =
+                                self.render_normalization.nested_table_width_scale(nested);
                             let mt =
                                 self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch);
                             Some(mt.total_height)
@@ -881,7 +923,7 @@ impl HeightMeasurer {
         styles: &ResolvedStyleSet,
         depth: usize,
         // [#2195] 부모 셀 전폭(px, 스트레치 기준). 0.0 = 미적용.
-        parent_cell_w: f64,
+        _parent_cell_w: f64,
     ) -> f64 {
         if depth >= Self::MAX_NESTED_DEPTH {
             return 0.0;
@@ -894,8 +936,8 @@ impl HeightMeasurer {
                     .iter()
                     .filter_map(|ctrl| {
                         if let Control::Table(nested) = ctrl {
-                            let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi);
-                            let stretch = 1.0; // [#2195] 스트레치는 render_normalized 로 일원화
+                            let stretch =
+                                self.render_normalization.nested_table_width_scale(nested);
                             let mt =
                                 self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch);
                             // [#2148 실험] NO_LS 중첩 표 선언 신뢰 — 성장 전용 max.
@@ -936,6 +978,8 @@ impl HeightMeasurer {
         // 저장 487.6px vs 실효 ~506px, 근거설명 셀 41줄 오라클 + 휴먼명조 사다리).
         width_scale: f64,
     ) -> MeasuredTable {
+        let width_scale =
+            width_scale.max(self.render_normalization.nested_table_width_scale(table));
         if depth >= Self::MAX_NESTED_DEPTH {
             let rc = table.row_count as usize;
             let (rbs, rbe) = compute_row_blocks(table, rc);
@@ -1280,11 +1324,11 @@ impl HeightMeasurer {
                         .flat_map(|p| p.controls.iter())
                         .filter_map(|ctrl| {
                             if let Control::Table(nested) = ctrl {
-                                let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi);
                                 // 한글 실효폭은 부모 셀 **전폭**(pad 미차감, 76076
                                 // 근거설명 셀: 유효 ~504px = 부모 w 506.2, inner 492.6
                                 // 으로는 L0 40자 수용 불가) 기준.
-                                let stretch = 1.0; // [#2195] 스트레치는 render_normalized 로 일원화
+                                let stretch =
+                                    self.render_normalization.nested_table_width_scale(nested);
                                 let mt = self.measure_table_impl(
                                     nested,
                                     0,

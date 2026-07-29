@@ -54,6 +54,8 @@ jobs:
   preflight:
     name: CI preflight
     runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 10
     permissions:
       actions: read
       contents: read
@@ -70,8 +72,11 @@ jobs:
       - name: Detect review-only fast pass
         id: detect
         continue-on-error: true
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
+          # [#2804] API 5xx 일시 오류에 job 이 죽지 않도록 재시도한다.
+          # retry-exempt-status-codes 기본값(400,401,403,404,422)이 4xx 를 제외하므로 5xx 만 재시도된다.
+          retries: 3
           script: |
             const allowedConclusions = new Set(['success', 'skipped', 'neutral']);
             const { owner, repo } = context.repo;
@@ -114,6 +119,20 @@ jobs:
               return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
             }
 
+            function isCurrentBaseReviewMerge(commit, baseSha) {
+              const parents = commit.parents || [];
+              return parents.length === 2 && parents.some((parent) => parent.sha === baseSha);
+            }
+
+            async function isCurrentBaseAncestor(candidateSha, baseSha) {
+              const { data: comparison } = await github.rest.repos.compareCommitsWithBasehead({
+                owner,
+                repo,
+                basehead: `${baseSha}...${candidateSha}`,
+              });
+              return comparison.status === 'ahead' || comparison.status === 'identical';
+            }
+
             function latestRun(runs) {
               return runs
                 .slice()
@@ -122,6 +141,74 @@ jobs:
                   const aTime = Date.parse(a.completed_at || a.started_at || a.created_at || 0);
                   return bTime - aTime;
                 })[0];
+            }
+
+            async function buildResult(candidateSha, pr) {
+              const checkRuns = await github.paginate(github.rest.checks.listForRef, {
+                owner,
+                repo,
+                ref: candidateSha,
+                per_page: 100,
+              });
+              let source = 'check-run';
+              let buildRun = latestRun(checkRuns.filter((run) => (
+                run.name === 'Build & Test'
+                && run.app?.slug === 'github-actions'
+              )));
+
+              if (!buildRun) {
+                // Fork PRs can expose the aggregate only through Actions jobs. Keep the
+                // branch and exact candidate SHA identity guard for that fallback.
+                const workflowRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                  owner,
+                  repo,
+                  workflow_id: 'ci.yml',
+                  event: 'pull_request',
+                  branch: pr.head.ref,
+                  per_page: 100,
+                });
+                const workflowRun = latestRun(workflowRuns.filter((run) => (
+                  run.path === '.github/workflows/ci.yml'
+                  && run.event === 'pull_request'
+                  && run.head_sha === candidateSha
+                )));
+
+                if (!workflowRun) {
+                  return { state: 'missing', reason: `missing-build-and-test:${candidateSha}` };
+                }
+                if (workflowRun.status !== 'completed') {
+                  return {
+                    state: 'pending',
+                    reason: `build-and-test-workflow-not-completed:${workflowRun.status}`,
+                  };
+                }
+
+                const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                  owner,
+                  repo,
+                  run_id: workflowRun.id,
+                  filter: 'latest',
+                  per_page: 100,
+                });
+                buildRun = latestRun(jobs.filter((job) => job.name === 'Build & Test'));
+                if (!buildRun) {
+                  return { state: 'missing', reason: `missing-build-and-test-job:${candidateSha}` };
+                }
+                source = 'actions-job';
+              }
+              if (buildRun.status !== 'completed') {
+                return {
+                  state: 'pending',
+                  reason: `build-and-test-not-completed:${buildRun.status}`,
+                };
+              }
+              if (!allowedConclusions.has(buildRun.conclusion)) {
+                return {
+                  state: 'failed',
+                  reason: `build-and-test-not-green:${buildRun.conclusion}`,
+                };
+              }
+              return { state: 'green', source, conclusion: buildRun.conclusion };
             }
 
             try {
@@ -155,8 +242,8 @@ jobs:
                 return;
               }
 
-              let trailingReviewOnlyCommits = 0;
-              let candidateSha = '';
+              const reviewOnlyCandidates = [];
+              let codeCandidateSha = '';
 
               for (let index = commits.length - 1; index >= 0; index -= 1) {
                 const sha = commits[index].sha;
@@ -175,100 +262,57 @@ jobs:
 
                 const reviewOnly = files.every((file) => isAllowedReviewPath(file));
                 if (reviewOnly) {
-                  if ((commit.parents || []).length !== 1) {
-                    setResult(false, `${reviewOnlyLabel(files)}-merge-commit:${sha}`);
-                    return;
+                  const parents = commit.parents || [];
+                  if (parents.length === 1) {
+                    reviewOnlyCandidates.push(sha);
+                    continue;
                   }
-                  trailingReviewOnlyCommits += 1;
-                  continue;
+                  // #3233: a docs-only Update branch merge can be an eligible green
+                  // candidate only after a trailing review-only record. Other merge
+                  // shapes may hide code outside the review-only diff.
+                  if (reviewOnlyCandidates.length > 0
+                    && isCurrentBaseReviewMerge(commit, pr.base.sha)) {
+                    reviewOnlyCandidates.push(sha);
+                    core.info(`including current-base ${reviewOnlyLabel(files)} merge candidate ${sha}`);
+                    break;
+                  }
+                  setResult(false, `${reviewOnlyLabel(files)}-merge-not-reusable:${sha}`);
+                  return;
                 }
 
-                candidateSha = sha;
+                codeCandidateSha = sha;
                 break;
               }
 
-              if (trailingReviewOnlyCommits === 0) {
+              if (reviewOnlyCandidates.length === 0) {
                 setResult(false, 'no-trailing-review-only-commits');
                 return;
               }
-              if (!candidateSha) {
-                candidateSha = pr.base.sha;
-                core.info(`all PR commits are review-only; using base SHA ${candidateSha}`);
-                setResult(true, 'all-review-only-no-code-impact', candidateSha);
-                return;
+              if (codeCandidateSha) {
+                reviewOnlyCandidates.push(codeCandidateSha);
               }
 
-              const checkRuns = await github.paginate(github.rest.checks.listForRef, {
-                owner,
-                repo,
-                ref: candidateSha,
-                per_page: 100,
-              });
-              let buildSource = 'check-run';
-              let buildRun = latestRun(checkRuns.filter((run) => (
-                run.name === 'Build & Test'
-                && run.app?.slug === 'github-actions'
-              )));
-
-              if (!buildRun) {
-                // Fork pull_request runs may expose the head SHA through Actions jobs while
-                // returning no check-runs for that same SHA. The Actions head_sha server filter
-                // can omit fork runs too, so narrow by the PR branch and compare head_sha locally.
-                // Still require the exact CI workflow, head SHA, and aggregate job.
-                const workflowRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
-                  owner,
-                  repo,
-                  workflow_id: 'ci.yml',
-                  event: 'pull_request',
-                  branch: pr.head.ref,
-                  per_page: 100,
-                });
-                const workflowRun = latestRun(workflowRuns.filter((run) => (
-                  run.path === '.github/workflows/ci.yml'
-                  && run.event === 'pull_request'
-                  && run.head_sha === candidateSha
-                )));
-
-                if (!workflowRun) {
-                  setResult(false, `missing-build-and-test:${candidateSha}`, candidateSha);
+              for (const candidateSha of reviewOnlyCandidates) {
+                if (!(await isCurrentBaseAncestor(candidateSha, pr.base.sha))) {
+                  core.info(`candidate does not include current base: ${candidateSha}`);
+                  continue;
+                }
+                const result = await buildResult(candidateSha, pr);
+                if (result.state === 'green') {
+                  const successReason = result.source === 'check-run'
+                    ? `build-and-test-green:${result.conclusion}`
+                    : `build-and-test-job-green:${result.conclusion}`;
+                  setResult(true, successReason, candidateSha);
                   return;
                 }
-                if (workflowRun.status !== 'completed') {
-                  setResult(
-                    false,
-                    `build-and-test-workflow-not-completed:${workflowRun.status}`,
-                    candidateSha,
-                  );
+                if (result.state === 'failed') {
+                  setResult(false, result.reason, candidateSha);
                   return;
                 }
-
-                const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
-                  owner,
-                  repo,
-                  run_id: workflowRun.id,
-                  filter: 'latest',
-                  per_page: 100,
-                });
-                buildRun = latestRun(jobs.filter((job) => job.name === 'Build & Test'));
-                if (!buildRun) {
-                  setResult(false, `missing-build-and-test-job:${candidateSha}`, candidateSha);
-                  return;
-                }
-                buildSource = 'actions-job';
-              }
-              if (buildRun.status !== 'completed') {
-                setResult(false, `build-and-test-not-completed:${buildRun.status}`, candidateSha);
-                return;
-              }
-              if (!allowedConclusions.has(buildRun.conclusion)) {
-                setResult(false, `build-and-test-not-green:${buildRun.conclusion}`, candidateSha);
-                return;
+                core.info(`candidate not reusable yet: ${candidateSha} (${result.reason})`);
               }
 
-              const successReason = buildSource === 'check-run'
-                ? `build-and-test-green:${buildRun.conclusion}`
-                : `build-and-test-job-green:${buildRun.conclusion}`;
-              setResult(true, successReason, candidateSha);
+              setResult(false, 'no-green-current-base-build-candidate');
             } catch (error) {
               core.warning(`CI preflight failed; running full CI. ${error.message}`);
               setResult(false, 'preflight-error');
@@ -277,8 +321,11 @@ jobs:
       - name: Detect frontend impact
         id: frontend-impact
         continue-on-error: true
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
+          # [#2804] API 5xx 일시 오류에 job 이 죽지 않도록 재시도한다.
+          # retry-exempt-status-codes 기본값(400,401,403,404,422)이 4xx 를 제외하므로 5xx 만 재시도된다.
+          retries: 3
           script: |
             const { owner, repo } = context.repo;
             const directoryPrefixes = [
@@ -380,26 +427,203 @@ jobs:
               setResult(true, 'detection-error');
             }
 
-  build-default-feature-tests:
-    name: Build default-feature tests
+  # [#2393] 기본 테스트 병렬화 — 테스트 바이너리를 한 번 빌드해 아카이브하고
+  # 8개 샤드가 컴파일 없이 나눠 실행한다. [#3266] Native Skia와 archive는 같은
+  # lint/frontend gate 뒤 병렬로 시작한다. [#3268] Lint와 Frontend도 preflight 뒤
+  # 병렬이지만, Native/archive는 두 gate 성공 뒤에만 시작한다. Native 실패 시 archive가
+  # 끝날 수는 있어도 shard는 두 job 성공 뒤에만 시작하므로 #3064의 테스트 실행 차단은 유지된다.
+  # required check 는 집계 job "Build & Test" 로 불변이다.
+  build-test-archive:
+    name: Build test archive
     runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 30
+    needs: [preflight, lint, frontend-package-gates]
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs.lint.result == 'success'
+        && (
+          needs['frontend-package-gates'].result == 'success'
+          || (
+            needs.preflight.outputs.frontend_required != 'true'
+            && needs['frontend-package-gates'].result == 'skipped'
+          )
+        )
+      }}
+    permissions:
+      contents: read
+    outputs:
+      cargo_profile: ${{ steps.profile.outputs.cargo_profile }}
+      runnable_tests: ${{ steps.count.outputs.runnable_tests }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # [Task #1109 / #1192 C] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
+      # 테스트 빌드 시 디스크 한도 초과를 줄인다.
+      - name: Free disk space (remove unused pre-installed toolchains)
+        run: |
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
+          df -h
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.93.1
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
+
+      # [#2393] 수동 restore/save 캐시 → rust-cache (적중률·정리 자동화).
+      # 저장 정책은 종전과 동일하게 devel/main push 로 한정.
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: test-archive
+          save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
+
+      # [Task #1849] PR/devel push 는 release-test 전체 회귀, main/tag/manual 은 release.
+      - name: Select cargo profile
+        id: profile
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]] || [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/devel" ]]; then
+            echo "cargo_profile=release-test" >> "$GITHUB_OUTPUT"
+          else
+            echo "cargo_profile=release" >> "$GITHUB_OUTPUT"
+          fi
+
+      # [Task #1667] nextest archive 는 default-feature test=true 전 타깃(rhwp lib
+      # 테스트 실행 파일 포함)과 CLI 테스트가 쓰는 비테스트 바이너리(rhwp)까지 담는다.
+      - name: Build and archive default-feature tests
+        run: |
+          echo "profile=${{ steps.profile.outputs.cargo_profile }} event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
+          cargo nextest archive \
+            --cargo-profile "${{ steps.profile.outputs.cargo_profile }}" \
+            --archive-file tests.tar.zst
+
+      # [#2393] 샤드 합계 대조의 기대치 — 비-ignored(runnable) 테스트 수.
+      # nextest Summary 의 skipped 는 파티션 제외분과 #[ignore] 를 합산하므로
+      # run 합계의 기준은 total 이 아니라 runnable 이다 (3차 PR CI 실측: 23 ignored).
+      - name: Count runnable tests
+        id: count
+        run: |
+          runnable=$(cargo nextest list \
+            --cargo-profile "${{ steps.profile.outputs.cargo_profile }}" \
+            --message-format json \
+            | jq '[."rust-suites"[].testcases | to_entries[] | select(.value.ignored | not)] | length')
+          if [[ -z "$runnable" || "$runnable" == "0" ]]; then
+            echo "::error::runnable test count unavailable"; exit 1
+          fi
+          echo "runnable_tests=$runnable" >> "$GITHUB_OUTPUT"
+          echo "runnable_tests=$runnable"
+
+      - name: Upload test archive
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-archive-${{ github.run_id }}
+          path: tests.tar.zst
+          # tests.tar.zst 는 cargo-nextest가 이미 압축한 파일이다. ZIP 재압축 CPU를
+          # 쓰지 않아 Native Skia와 겹치는 archive 준비 시간을 더 줄인다. (#3266)
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+
+  test-shard:
+    name: Default-feature tests (shard ${{ matrix.shard }}/8)
+    runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 30
+    needs: [preflight, native-skia-tests, build-test-archive]
+    # [#3266] archive와 Native Skia를 병렬화하되, 두 필수 worker가 모두 성공한
+    # 뒤에만 기본 테스트를 실행한다. 따라서 Native 실패 시 archive가 완료돼도 shard는 skip된다.
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs['native-skia-tests'].result == 'success'
+        && needs['build-test-archive'].result == 'success'
+      }}
+    permissions:
+      contents: read
+    strategy:
+      # [#3064] 8개 shard는 계속 병렬 실행하되 하나가 실패하면 나머지를 즉시 취소한다.
+      fail-fast: true
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+
+    steps:
+      # 테스트가 samples/ pdf/ 등 저장소 픽스처를 읽으므로 checkout 필요.
+      - uses: actions/checkout@v7
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.93.1
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
+
+      - name: Download test archive
+        uses: actions/download-artifact@v8
+        with:
+          name: test-archive-${{ github.run_id }}
+
+      # [#2393] 공허 통과 방지: Summary 의 run/skipped 를 파싱해 샤드별
+      # `<run> <total>` 을 아티팩트로 남긴다. 집계 job 이 8샤드 합계 = 전체
+      # 테스트 수를 대조한다 (샤드 누락·파티션 중복이 green 으로 위장 불가).
+      - name: Run shard ${{ matrix.shard }}/8
+        run: |
+          set -o pipefail
+          # --extract-to . : CLI 테스트의 env!("CARGO_BIN_EXE_rhwp") 는 빌드
+          # 러너 절대 경로가 컴파일 타임에 박힌다. GitHub 러너는 job 간
+          # workspace 경로가 동일하므로 워크스페이스에 풀어 target/ 경로를
+          # 그대로 복원한다 (임시 디렉터리 추출 시 NotFound — PR CI 실측).
+          cargo nextest run \
+            --archive-file tests.tar.zst \
+            --workspace-remap . \
+            --extract-to . \
+            --partition "hash:${{ matrix.shard }}/8" \
+            2>&1 | tee nextest-shard.log
+          # CARGO_TERM_COLOR=always 로 Summary 라인에 ANSI 색코드가 섞이므로
+          # 스트립 후 파싱한다 (2차 PR CI 실측 — 376 run green 인데 파싱 실패).
+          summary=$(sed 's/\x1b\[[0-9;]*m//g' nextest-shard.log | grep -E "Summary \[" | tail -1)
+          run=$(echo "$summary" | grep -oE "[0-9]+ tests run" | grep -oE "^[0-9]+")
+          skipped=$(echo "$summary" | grep -oE "[0-9]+ skipped" | grep -oE "^[0-9]+" || echo 0)
+          if [[ -z "$run" ]]; then
+            echo "::error::shard summary parse failed"; exit 1
+          fi
+          echo "$run $((run + skipped))" > "shard-count-${{ matrix.shard }}.txt"
+          cat "shard-count-${{ matrix.shard }}.txt"
+
+      - name: Upload shard count
+        uses: actions/upload-artifact@v7
+        with:
+          name: shard-count-${{ matrix.shard }}
+          path: shard-count-${{ matrix.shard }}.txt
+          retention-days: 1
+          if-no-files-found: error
+
+  lint:
+    name: Lint (fmt, clippy, WASM check)
+    runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 20
     needs: preflight
     if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
     permissions:
       contents: read
 
     steps:
-      - uses: actions/checkout@v5
-
-      # [Task #1109 / #1192 C] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
-      # 테스트 빌드 시 디스크 한도 초과를 줄인다.
-      # [#1192] 캐시 정상 작동 확인 후 "크고 빠른" 항목(android/dotnet)만 남기고 축소.
-      # 느린 docker prune --all / apt clean / ghc / CodeQL 정리는 제거. df -h 로 여유 확인.
-      - name: Free disk space (remove unused pre-installed toolchains)
-        run: |
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /usr/share/dotnet
-          df -h
+      - uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -408,73 +632,48 @@ jobs:
           components: clippy, rustfmt
           targets: wasm32-unknown-unknown
 
-      - name: Restore cargo registry & build cache
-        id: cargo_cache_restore
-        uses: actions/cache/restore@v5
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+          shared-key: lint
+          save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
       - name: Format check
         run: cargo fmt --all -- --check
 
-      # [Task #1849] PR is release-test full regression. devel push keeps this Build
-      # step as release smoke, while test steps below use release-test. main/tag/manual
-      # keep full release tests.
-      - name: Build
-        run: |
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-            echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
-            cargo build --profile release-test --verbose
-          else
-            echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF} role=release-smoke-or-full"
-            cargo build --release --verbose
-          fi
-
-      # [Task #1667] `cargo test --tests` covers all default-feature test=true
-      # targets, including the rhwp lib test executable. Keep one default-feature
-      # test step here so the same lib tests are not rerun by a separate --lib step.
-      - name: Run default-feature tests
-        run: |
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]] || [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/devel" ]]; then
-            echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
-            cargo test --profile release-test --tests --verbose
-          else
-            echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
-            cargo test --release --tests --verbose
-          fi
+      - name: Clippy
+        run: cargo clippy -- -D warnings
 
       - name: Check WASM target
         run: cargo check --target wasm32-unknown-unknown --lib
 
-      - name: Clippy
-        run: cargo clippy -- -D warnings
-
-      - name: Save cargo registry & build cache
-        if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.cargo_cache_restore.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
   native-skia-tests:
     name: Native Skia tests
     runs-on: ubuntu-latest
-    needs: preflight
-    if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 30
+    needs: [preflight, lint, frontend-package-gates]
+    # frontend 비대상 job의 skipped는 정상 경로다. 대상 job의 실패/취소와 lint 실패는
+    # native-skia 이후 worker 전체에 전파한다.
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs.lint.result == 'success'
+        && (
+          needs['frontend-package-gates'].result == 'success'
+          || (
+            needs.preflight.outputs.frontend_required != 'true'
+            && needs['frontend-package-gates'].result == 'skipped'
+          )
+        )
+      }}
     permissions:
       contents: read
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       # [Task #1109 / #1192 C] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
       # 테스트 빌드 시 디스크 한도 초과를 줄인다.
@@ -491,17 +690,14 @@ jobs:
         with:
           toolchain: 1.93.1
 
-      - name: Restore cargo registry & build cache
-        id: cargo_cache_restore
-        uses: actions/cache/restore@v5
+      # [#2431 C] 기본 test job 의 rust-cache 이행 후 writer가 사라진
+      # Linux-cargo-* namespace 대신 Native Skia 전용 shared key를 사용한다.
+      # PR은 restore-only, devel/main push만 save하는 신뢰 경계를 유지한다.
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+          shared-key: native-skia
+          save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
       - name: Install native Skia runtime packages
         run: |
@@ -517,22 +713,29 @@ jobs:
             echo "profile=release-test event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
             cargo test --profile release-test --features native-skia skia --lib --verbose
             cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder --verbose
+            cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export --verbose
           else
             echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
             cargo test --release --features native-skia skia --lib --verbose
             cargo test --release --features native-skia --test issue_2225_missing_picture_placeholder --verbose
+            cargo test --release --features native-skia --test render_p37_direct_pdf_export --verbose
           fi
 
   frontend-package-gates:
     name: Frontend package gates
     runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 20
+    # [#3268] Frontend는 Lint의 산출물을 읽지 않고 독립 runner에서 별도 target/cache를 쓴다.
+    # preflight의 fast-pass·영향 판정만 기다려 Lint와 병렬 시작한다. Lint 실패 시 Frontend가
+    # 끝날 수는 있지만 Native/archive는 아래 두 worker의 성공을 모두 계속 요구한다.
     needs: preflight
     if: ${{ always() && needs.preflight.result == 'success' && needs.preflight.outputs.fast_pass != 'true' && needs.preflight.outputs.frontend_required == 'true' }}
     permissions:
       contents: read
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -541,11 +744,11 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        uses: ./.github/actions/install-wasm-pack
 
       - name: Restore frontend WASM cargo cache
         id: frontend_wasm_cargo_cache_restore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: |
             ~/.cargo/registry
@@ -559,7 +762,7 @@ jobs:
         run: wasm-pack build --target web --dev
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
@@ -585,6 +788,9 @@ jobs:
       - name: Run shared and extension service worker tests
         run: node --test rhwp-shared/sw/*.test.js rhwp-chrome/sw/*.test.mjs rhwp-firefox/sw/*.test.mjs
 
+      - name: Run Chrome extension options UI tests
+        run: node --test rhwp-chrome/options.test.mjs
+
       - name: Run Studio unit tests
         run: npm --prefix rhwp-studio run test
 
@@ -607,7 +813,7 @@ jobs:
 
       - name: Save frontend WASM cargo cache
         if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.frontend_wasm_cargo_cache_restore.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: |
             ~/.cargo/registry
@@ -618,9 +824,13 @@ jobs:
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 45
     needs:
       - preflight
-      - build-default-feature-tests
+      - build-test-archive
+      - test-shard
+      - lint
       - native-skia-tests
       - frontend-package-gates
     if: ${{ always() }}
@@ -628,13 +838,57 @@ jobs:
       contents: read
 
     steps:
+      # [#2393] 샤드 합계 대조 — 8샤드의 `<run> <total>` 을 모아 합계가 전체
+      # 테스트 수와 일치하는지 검증한다 (fast-pass 시 샤드 미실행이라 생략).
+      - name: Download shard counts
+        if: ${{ needs.preflight.outputs.fast_pass != 'true' && needs['test-shard'].result == 'success' }}
+        uses: actions/download-artifact@v8
+        with:
+          pattern: shard-count-*
+          merge-multiple: true
+
+      - name: Verify shard totals
+        if: ${{ needs.preflight.outputs.fast_pass != 'true' && needs['test-shard'].result == 'success' }}
+        env:
+          EXPECTED_RUNNABLE: ${{ needs['build-test-archive'].outputs.runnable_tests }}
+        run: |
+          shards=$(find . -maxdepth 1 -type f -name 'shard-count-*.txt' | wc -l | tr -d ' ')
+          if [[ "$shards" != "8" ]]; then
+            echo "::error::expected 8 shard count files, found ${shards}"
+            exit 1
+          fi
+          if [[ -z "${EXPECTED_RUNNABLE}" ]]; then
+            echo "::error::expected runnable test count missing from build-test-archive"
+            exit 1
+          fi
+          sum=0; total=""
+          for f in shard-count-*.txt; do
+            read -r run t < "$f"
+            sum=$((sum + run))
+            if [[ -z "$total" ]]; then total="$t"; fi
+            if [[ "$t" != "$total" ]]; then
+              echo "::error::shard total mismatch: ${f} says ${t}, expected ${total}"
+              exit 1
+            fi
+            echo "${f}: run=${run} total=${t}"
+          done
+          # 기대치는 runnable(비-ignored) — Summary 의 skipped 는 파티션 제외분과
+          # #[ignore] 합산이라 total 과의 직접 비교는 성립하지 않는다 (3차 실측).
+          echo "sum(run)=${sum} expected runnable=${EXPECTED_RUNNABLE} (listed total=${total})"
+          if [[ "$sum" != "${EXPECTED_RUNNABLE}" ]]; then
+            echo "::error::shard run sum ${sum} != runnable tests ${EXPECTED_RUNNABLE} (누락 또는 중복)"
+            exit 1
+          fi
+
       - name: Check Build & Test worker results
         env:
           PREFLIGHT_RESULT: ${{ needs.preflight.result }}
           FAST_PASS: ${{ needs.preflight.outputs.fast_pass }}
           FRONTEND_REQUIRED: ${{ needs.preflight.outputs.frontend_required }}
           FRONTEND_REASON: ${{ needs.preflight.outputs.frontend_reason }}
-          BUILD_DEFAULT_RESULT: ${{ needs['build-default-feature-tests'].result }}
+          BUILD_ARCHIVE_RESULT: ${{ needs['build-test-archive'].result }}
+          TEST_SHARD_RESULT: ${{ needs['test-shard'].result }}
+          LINT_RESULT: ${{ needs['lint'].result }}
           NATIVE_SKIA_RESULT: ${{ needs['native-skia-tests'].result }}
           FRONTEND_RESULT: ${{ needs['frontend-package-gates'].result }}
         run: |
@@ -642,7 +896,9 @@ jobs:
           printf 'fast_pass=%s\n' "${FAST_PASS}"
           printf 'frontend_required=%s\n' "${FRONTEND_REQUIRED}"
           printf 'frontend_reason=%s\n' "${FRONTEND_REASON}"
-          printf 'build_default=%s\n' "${BUILD_DEFAULT_RESULT}"
+          printf 'build_archive=%s\n' "${BUILD_ARCHIVE_RESULT}"
+          printf 'test_shard=%s\n' "${TEST_SHARD_RESULT}"
+          printf 'lint=%s\n' "${LINT_RESULT}"
           printf 'native_skia=%s\n' "${NATIVE_SKIA_RESULT}"
           printf 'frontend=%s\n' "${FRONTEND_RESULT}"
 
@@ -657,8 +913,16 @@ jobs:
           fi
 
           failed=0
-          if [[ "${BUILD_DEFAULT_RESULT}" != "success" ]]; then
-            echo "::error::Build default-feature tests result: ${BUILD_DEFAULT_RESULT}"
+          if [[ "${BUILD_ARCHIVE_RESULT}" != "success" ]]; then
+            echo "::error::Build test archive result: ${BUILD_ARCHIVE_RESULT}"
+            failed=1
+          fi
+          if [[ "${TEST_SHARD_RESULT}" != "success" ]]; then
+            echo "::error::Default-feature test shards result: ${TEST_SHARD_RESULT}"
+            failed=1
+          fi
+          if [[ "${LINT_RESULT}" != "success" ]]; then
+            echo "::error::Lint result: ${LINT_RESULT}"
             failed=1
           fi
           if [[ "${NATIVE_SKIA_RESULT}" != "success" ]]; then
@@ -679,12 +943,14 @@ jobs:
   wasm-build:
     name: WASM Build
     runs-on: ubuntu-latest
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 30
     permissions:
       contents: read
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       # [Task #1109 / #1192 C] wasm-build job 도 build-and-test 와 동일 축소 패턴.
       # "크고 빠른" 항목(android/dotnet)만 제거. df -h 로 여유 확인.
@@ -701,10 +967,10 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        uses: ./.github/actions/install-wasm-pack
 
       - name: Cache cargo registry & build
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry
@@ -718,7 +984,7 @@ jobs:
         run: wasm-pack build --target web --release
 
       - name: Upload WASM artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: rhwp-wasm-pkg
           path: pkg/

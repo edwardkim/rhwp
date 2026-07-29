@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import {
   EMBED_CAPABILITIES,
@@ -9,6 +10,31 @@ import {
 } from '../src/embed/protocol.ts';
 import { routeEmbedRequest, type EmbedRpcHandlers } from '../src/embed/rpc-router.ts';
 import { installEmbedRuntime } from '../src/embed/runtime.ts';
+
+test('renderer diagnostics v1 keeps auto intent in the additive selection field', () => {
+  const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+  assert.match(
+    source,
+    /renderBackendRequest\.backend === 'auto'[\s\S]*?backend: 'canvas2d'[\s\S]*?backend: diagnosticsBackendRequest/,
+  );
+  assert.match(
+    source,
+    /getRendererDiagnostics\(pageIndex\)[\s\S]*?request: rendererRuntimeRequest[\s\S]*?selection,/,
+  );
+});
+
+test('main.ts는 호스트 저장 완료 API completeHostSave를 window.rhwpStudio로 노출한다 (#2660)', () => {
+  const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+  // 코어: markClean('host-save') 후 draft 삭제 "완료"까지 await — 팝업 close 안전 계약
+  assert.match(
+    source,
+    /async function completeHostSave\(fileName\?: string\)[\s\S]*?markClean\('host-save'\)[\s\S]*?await autosaveManager\.discardCurrentDraft\('host-save'\)[\s\S]*?wasDirty/,
+  );
+  // window 공개 API: DEV 전용이 아닌 무조건 노출
+  assert.match(source, /\.rhwpStudio = \{\s*\n?\s*notifySaved:/);
+  // embed RPC 핸들러도 동일 코어를 사용한다
+  assert.match(source, /async notifySaved\(fileName\)[\s\S]*?completeHostSave\(fileName\)/);
+});
 
 test('embed protocol은 capability를 포함한 v1 connect와 session-bound request만 허용한다', () => {
   assert.equal(isConnectMessage({
@@ -21,6 +47,7 @@ test('embed protocol은 capability를 포함한 v1 connect와 session-bound requ
     'transferable-array-buffer',
     'hml-export',
     'renderer-diagnostics-v1',
+    'notify-saved-v1',
   ]);
 
   assert.equal(isRequestEnvelope({
@@ -49,6 +76,7 @@ test('embed router는 binary load와 unknown method를 공개 동작으로 처�
     exportHml: async () => new Uint8Array([3]),
     getHmlSaveState: async () => ({ sourceFormat: 'hml', hmlSavable: true, blockers: [] }),
     exportHwpVerify: async () => ({ recovered: true }),
+    notifySaved: async () => ({ ok: true as const, wasDirty: true }),
   };
 
   assert.deepEqual(
@@ -101,6 +129,7 @@ test('embed runtime은 parent의 exact origin에서 v1 port session을 설치한
     exportHml: async () => new Uint8Array([3]),
     getHmlSaveState: async () => ({ sourceFormat: 'hml', hmlSavable: true, blockers: [] }),
     exportHwpVerify: async () => ({ recovered: true }),
+    notifySaved: async () => ({ ok: true as const, wasDirty: true }),
   };
   const cleanup = installEmbedRuntime({
     hostWindow: hostWindow as unknown as Window,
@@ -144,6 +173,154 @@ test('embed runtime은 parent의 exact origin에서 v1 port session을 설치한
   ]);
   cleanup();
   channel.port1.close();
+});
+
+test('embed runtime은 custom scheme 최상위 same-window legacy 요청을 처리한다', async () => {
+  let messageListener: (event: MessageEvent) => void = () => {};
+  let resolveResponse: (value: unknown) => void = () => {};
+  const response = new Promise<unknown>((resolve) => { resolveResponse = resolve; });
+  const hostWindow = {
+    addEventListener(_type: string, listener: (event: MessageEvent) => void) {
+      messageListener = listener;
+    },
+    removeEventListener() {},
+    postMessage(message: unknown, options: unknown) { resolveResponse({ message, options }); },
+  };
+  const cleanup = installEmbedRuntime({
+    hostWindow: hostWindow as unknown as Window,
+    parentWindow: hostWindow as unknown as Window,
+    handlers: { ready: async () => true } as EmbedRpcHandlers,
+  });
+
+  try {
+    messageListener({
+      data: { type: 'rhwp-request', id: 2396, method: 'ready', params: {} },
+      source: hostWindow,
+      origin: 'alhangeul-studio://app',
+      ports: [],
+    } as unknown as MessageEvent);
+
+    assert.deepEqual(await Promise.race([
+      response,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('legacy response timeout')), 50)),
+    ]), {
+      message: { type: 'rhwp-response', id: 2396, result: true },
+      options: { targetOrigin: 'alhangeul-studio://app' },
+    });
+  } finally {
+    cleanup();
+  }
+});
+
+test('embed runtime은 custom scheme 최상위 v1 connect를 거부한 뒤 legacy 요청을 처리한다', async () => {
+  let messageListener: (event: MessageEvent) => void = () => {};
+  let readyCalls = 0;
+  let resolveResponse: (value: unknown) => void = () => {};
+  const response = new Promise<unknown>((resolve) => { resolveResponse = resolve; });
+  const hostWindow = {
+    addEventListener(_type: string, listener: (event: MessageEvent) => void) {
+      messageListener = listener;
+    },
+    removeEventListener() {},
+    postMessage(message: unknown, options: unknown) { resolveResponse({ message, options }); },
+  };
+  const connectPort = {
+    onmessage: null,
+    closed: false,
+    messages: [] as unknown[],
+    start() {},
+    postMessage(message: unknown) { this.messages.push(message); },
+    close() { this.closed = true; },
+  };
+  const cleanup = installEmbedRuntime({
+    hostWindow: hostWindow as unknown as Window,
+    parentWindow: hostWindow as unknown as Window,
+    handlers: {
+      ready: async () => { readyCalls += 1; return true; },
+    } as EmbedRpcHandlers,
+  });
+
+  try {
+    messageListener({
+      data: {
+        type: 'rhwp-connect', version: 1, sessionId: 'custom-top-level',
+        capabilities: ['transferable-array-buffer'],
+      },
+      source: hostWindow,
+      origin: 'alhangeul-studio://app',
+      ports: [connectPort],
+    } as unknown as MessageEvent);
+
+    assert.equal(connectPort.closed, true);
+    assert.deepEqual(connectPort.messages, []);
+
+    messageListener({
+      data: { type: 'rhwp-request', id: 2396, method: 'ready', params: {} },
+      source: hostWindow,
+      origin: 'alhangeul-studio://app',
+      ports: [],
+    } as unknown as MessageEvent);
+
+    assert.deepEqual(await Promise.race([
+      response,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('legacy response timeout')), 50)),
+    ]), {
+      message: { type: 'rhwp-response', id: 2396, result: true },
+      options: { targetOrigin: 'alhangeul-studio://app' },
+    });
+    assert.equal(readyCalls, 1);
+  } finally {
+    cleanup();
+  }
+});
+
+test('embed runtime은 custom scheme iframe parent와 forged sibling 요청을 거부한다', () => {
+  let messageListener: (event: MessageEvent) => void = () => {};
+  let readyCalls = 0;
+  let responses = 0;
+  const hostWindow = {
+    addEventListener(_type: string, listener: (event: MessageEvent) => void) {
+      messageListener = listener;
+    },
+    removeEventListener() {},
+  };
+  const parentWindow = { postMessage() { responses += 1; } };
+  const siblingWindow = { postMessage() { responses += 1; } };
+  const port = () => ({
+    onmessage: null,
+    closed: false,
+    start() {},
+    postMessage() {},
+    close() { this.closed = true; },
+  });
+  const iframePort = port();
+  const siblingPort = port();
+  const cleanup = installEmbedRuntime({
+    hostWindow: hostWindow as unknown as Window,
+    parentWindow: parentWindow as unknown as Window,
+    handlers: {
+      ready: async () => { readyCalls += 1; return true; },
+    } as EmbedRpcHandlers,
+  });
+
+  messageListener({
+    data: { type: 'rhwp-request', id: 1, method: 'ready', params: {} },
+    source: parentWindow,
+    origin: 'alhangeul-studio://app',
+    ports: [iframePort],
+  } as unknown as MessageEvent);
+  messageListener({
+    data: { type: 'rhwp-request', id: 2, method: 'ready', params: {} },
+    source: siblingWindow,
+    origin: 'alhangeul-studio://app',
+    ports: [siblingPort],
+  } as unknown as MessageEvent);
+
+  assert.equal(readyCalls, 0);
+  assert.equal(responses, 0);
+  assert.equal(iframePort.closed, true);
+  assert.equal(siblingPort.closed, true);
+  cleanup();
 });
 
 test('exportHml transferable 응답은 WASM 소유 bytes를 detach하지 않는다', async () => {
@@ -257,6 +434,7 @@ function rendererDiagnostics(page: number) {
     initializationError: null,
     effectiveBackend: 'canvaskit' as const,
     backendFallbackReason: null,
+    selection: null,
     page: { index: page, canvaskit: null },
   };
 }
@@ -603,4 +781,57 @@ test('embed runtime은 거부되거나 정리된 모든 transferred port의 소�
   cleanup();
   assert.equal(bound.closed, true);
   assert.equal(bound.onmessage, null);
+});
+
+test('embed router는 suppressDialogs 파라미터를 핸들러로 전달한다 (기본 false)', async () => {
+  const calls: Array<{ skipUnsavedGuard: boolean; suppressDialogs: boolean }> = [];
+  const handlers: EmbedRpcHandlers = {
+    ready: async () => true,
+    loadFile: async (_data, _fileName, skipUnsavedGuard, suppressDialogs) => {
+      calls.push({ skipUnsavedGuard, suppressDialogs });
+      return { pageCount: 1 };
+    },
+    pageCount: async () => 1,
+    getRendererDiagnostics: async () => { throw new Error('unused'); },
+    getPageSvg: async () => '<svg/>',
+    exportHwp: async () => new Uint8Array(),
+    exportHwpx: async () => new Uint8Array(),
+    exportHml: async () => new Uint8Array(),
+    getHmlSaveState: async () => ({ sourceFormat: 'hml', hmlSavable: true, blockers: [] }),
+    exportHwpVerify: async () => ({}),
+    notifySaved: async () => ({ ok: true as const, wasDirty: false }),
+  };
+
+  await routeEmbedRequest('loadFile', { data: new Uint8Array([1]) }, handlers);
+  await routeEmbedRequest(
+    'loadFile',
+    { data: new Uint8Array([1]), skipUnsavedGuard: true, suppressDialogs: true },
+    handlers,
+  );
+
+  assert.deepEqual(calls, [
+    { skipUnsavedGuard: false, suppressDialogs: false },
+    { skipUnsavedGuard: true, suppressDialogs: true },
+  ]);
+});
+
+test('embed router는 notifySaved fileName을 정규화해 핸들러로 전달한다 (#2660)', async () => {
+  const received: Array<string | undefined> = [];
+  const handlers = {
+    notifySaved: async (fileName?: string) => {
+      received.push(fileName);
+      return { ok: true as const, wasDirty: true };
+    },
+  } as EmbedRpcHandlers;
+
+  assert.deepEqual(
+    await routeEmbedRequest('notifySaved', {}, handlers),
+    { ok: true, wasDirty: true },
+  );
+  await routeEmbedRequest('notifySaved', { fileName: 'a.hwp' }, handlers);
+  // 비문자열/빈 문자열 fileName은 undefined로 정규화한다
+  await routeEmbedRequest('notifySaved', { fileName: 123 }, handlers);
+  await routeEmbedRequest('notifySaved', { fileName: '' }, handlers);
+
+  assert.deepEqual(received, [undefined, 'a.hwp', undefined, undefined]);
 });

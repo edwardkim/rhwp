@@ -68,8 +68,8 @@ pub fn render_master_page_xml(mp: &MasterPage, id: &str, ctx: &mut SerializeCont
     format!(
         concat!(
             r#"<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>"#,
-            r#"<masterPage {xmlns} id="{id}" type="{ty}" pageNumber="{pn}" pageDuplicate="{pd}" pageFront="0">"#,
-            r#"<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="{tw}" textHeight="{th}" hasTextRef="{tr}" hasNumRef="{nr}">"#,
+            r#"<masterPage {xmlns} id="{id}" type="{ty}" pageNumber="{pn}" pageDuplicate="{pd}" pageFront="{pf}">"#,
+            r#"<hp:subList id="" textDirection="{td}" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="{tw}" textHeight="{th}" hasTextRef="{tr}" hasNumRef="{nr}">"#,
             "{body}",
             r#"</hp:subList></masterPage>"#,
         ),
@@ -78,6 +78,12 @@ pub fn render_master_page_xml(mp: &MasterPage, id: &str, ctx: &mut SerializeCont
         ty = master_page_type_str(mp),
         pn = mp.hwpx_page_number.unwrap_or(0),
         pd = page_duplicate_str(mp),
+        pf = mp.page_front as u8,
+        td = if mp.text_direction == 1 {
+            "VERTICAL"
+        } else {
+            "HORIZONTAL"
+        },
         tw = mp.text_width,
         th = mp.text_height,
         tr = mp.text_ref,
@@ -92,4 +98,53 @@ pub fn render_master_page_refs(ids: &[String]) -> String {
     ids.iter()
         .map(|id| format!(r#"<hp:masterPage idRef="{id}"/>"#))
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::document::Document;
+
+    #[test]
+    fn master_page_page_front_round_trips() {
+        // pageFront(표지 전용 바탕쪽)이 render→parse 왕복에서 보존돼야 한다.
+        // 종전엔 serializer 가 pageFront="0" 고정, 파서 미독으로 유실됐다.
+        let mp = MasterPage {
+            page_front: true,
+            ..Default::default()
+        };
+        let doc = Document::default();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = render_master_page_xml(&mp, "0", &mut ctx);
+        assert!(xml.contains(r#"pageFront="1""#), "pageFront=1 방출: {xml}");
+
+        let parsed =
+            crate::parser::hwpx::section::parse_hwpx_master_page(&xml).expect("master page parse");
+        assert!(parsed.page_front, "pageFront 이 왕복에서 보존돼야 함");
+    }
+
+    #[test]
+    fn master_page_text_direction_round_trips() {
+        // 세로쓰기 바탕쪽(hp:subList@textDirection="VERTICAL")이 render→parse 왕복에서
+        // 보존돼야 한다. 종전엔 serializer 가 textDirection="HORIZONTAL" 고정, 파서 미독으로
+        // 세로쓰기가 유실됐다.
+        let mp = MasterPage {
+            text_direction: 1,
+            ..Default::default()
+        };
+        let doc = Document::default();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = render_master_page_xml(&mp, "0", &mut ctx);
+        assert!(
+            xml.contains(r#"textDirection="VERTICAL""#),
+            "textDirection=VERTICAL 방출: {xml}"
+        );
+
+        let parsed =
+            crate::parser::hwpx::section::parse_hwpx_master_page(&xml).expect("master page parse");
+        assert_eq!(
+            parsed.text_direction, 1,
+            "text_direction 이 왕복에서 보존돼야 함"
+        );
+    }
 }

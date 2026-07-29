@@ -111,6 +111,14 @@ impl DocumentCore {
         match control {
             Some(Control::Form(f)) => {
                 apply_form_value(f, value_json);
+                // 원본 스트림 무효화 — serialize_section 은 raw_stream 이 있으면 원본
+                // 바이트를 그대로 반환하므로(serializer/body_text.rs), 비우지 않으면
+                // 방금 넣은 양식 값이 저장 시 통째로 사라진다. 화면은 recompose 로
+                // 갱신되니 사용자는 저장이 됐다고 믿게 된다. 누름틀 쪽
+                // set_field_value_*(field_query.rs)와 동일한 불변식이다.
+                if let Some(s) = self.document.sections.get_mut(sec) {
+                    s.raw_stream = None;
+                }
                 self.recompose_section(sec);
                 Ok(r#"{"ok":true}"#.to_string())
             }
@@ -162,6 +170,11 @@ impl DocumentCore {
         match form {
             Some(f) => {
                 apply_form_value(f, value_json);
+                // set_form_value_native 와 동일 — 셀 안 양식 값도 섹션 raw_stream 을
+                // 비워야 저장 시 반영된다.
+                if let Some(s) = self.document.sections.get_mut(sec) {
+                    s.raw_stream = None;
+                }
                 self.recompose_section(sec);
                 Ok(r#"{"ok":true}"#.to_string())
             }
@@ -403,4 +416,119 @@ fn parse_insert_string_args(args: &str) -> Option<(String, usize)> {
     let idx = idx_str.parse().unwrap_or(0);
 
     Some((text, idx))
+}
+
+#[cfg(test)]
+mod tests {
+    //! 양식 값 설정의 raw_stream 무효화 회귀 테스트.
+    //!
+    //! serialize_section(serializer/body_text.rs)은 raw_stream 이 Some 이면 IR 을 무시하고
+    //! 원본 바이트를 그대로 반환한다. HWP5 파서는 모든 섹션에 raw_stream 을 채우므로
+    //! (parser/mod.rs), 양식 값 설정이 raw_stream 을 비우지 않으면 — 양식 채우기만 하고
+    //! 저장하는 표준 워크플로에서 — 입력한 값 전부가 저장 시 조용히 사라진다.
+    //! 누름틀 쪽 set_field_value_*(field_query.rs)는 같은 불변식을 이미 지킨다.
+
+    use crate::document_core::DocumentCore;
+    use crate::model::control::{Control, FormObject};
+    use crate::model::document::{Document, Section};
+    use crate::model::paragraph::Paragraph;
+    use crate::model::table::{Cell, Table};
+    use crate::serializer::body_text::serialize_section;
+
+    const SENTINEL: u8 = 0xAB;
+
+    fn core_from(doc: Document) -> DocumentCore {
+        let mut core = DocumentCore::new_empty();
+        core.document = doc;
+        core.composed = vec![Vec::new()];
+        core.dirty_sections = vec![true];
+        core.dirty_paragraphs = vec![None];
+        core
+    }
+
+    /// 파싱된 문서를 흉내낸다 — 섹션이 원본 스트림 바이트를 물고 있는 상태.
+    fn section_with_raw_stream(paragraphs: Vec<Paragraph>) -> Section {
+        Section {
+            paragraphs,
+            raw_stream: Some(vec![SENTINEL; 64]),
+            ..Default::default()
+        }
+    }
+
+    fn body_form_doc() -> Document {
+        let mut para = Paragraph::default();
+        para.controls.push(Control::Form(Box::default()));
+        let mut doc = Document::default();
+        doc.sections.push(section_with_raw_stream(vec![para]));
+        doc
+    }
+
+    fn cell_form_doc() -> Document {
+        let mut cell_para = Paragraph::default();
+        cell_para.controls.push(Control::Form(Box::default()));
+        let mut table = Table::default();
+        table.row_count = 1;
+        table.col_count = 1;
+        table.cells = vec![Cell {
+            row: 0,
+            col: 0,
+            col_span: 1,
+            row_span: 1,
+            paragraphs: vec![cell_para],
+            ..Default::default()
+        }];
+        let mut para = Paragraph::default();
+        para.controls.push(Control::Table(Box::new(table)));
+        let mut doc = Document::default();
+        doc.sections.push(section_with_raw_stream(vec![para]));
+        doc
+    }
+
+    #[test]
+    fn set_form_value_invalidates_section_raw_stream() {
+        let mut core = core_from(body_form_doc());
+        let r = core
+            .set_form_value_native(0, 0, 0, r#"{"value":1,"text":"동의함"}"#)
+            .expect("호출이 성공해야 함");
+        assert!(r.contains(r#""ok":true"#), "전제: 양식 값 설정 성공 ({r})");
+
+        // 값은 IR 에 반영됐고,
+        match &core.document.sections[0].paragraphs[0].controls[0] {
+            Control::Form(f) => {
+                assert_eq!(f.value, 1);
+                assert_eq!(f.text, "동의함");
+            }
+            _ => panic!("양식 컨트롤이어야 함"),
+        }
+        // 원본 스트림은 무효화돼야 한다 — 남아 있으면 저장이 원본 바이트를 그대로 써서
+        // 방금 넣은 값이 파일에서 사라진다.
+        assert!(
+            core.document.sections[0].raw_stream.is_none(),
+            "raw_stream 이 남으면 양식 값이 저장 시 통째로 사라진다"
+        );
+        // 저장 경로 결과로도 확인: 원본 sentinel 바이트가 더 이상 그대로 나가지 않는다.
+        let out = serialize_section(&core.document.sections[0]);
+        assert_ne!(
+            out,
+            vec![SENTINEL; 64],
+            "serialize_section 이 여전히 원본 바이트를 반환하면 값 유실"
+        );
+    }
+
+    #[test]
+    fn set_form_value_in_cell_invalidates_section_raw_stream() {
+        let mut core = core_from(cell_form_doc());
+        let r = core
+            .set_form_value_in_cell_native(0, 0, 0, 0, 0, 0, r#"{"value":1}"#)
+            .expect("호출이 성공해야 함");
+        assert!(
+            r.contains(r#""ok":true"#),
+            "전제: 셀 양식 값 설정 성공 ({r})"
+        );
+
+        assert!(
+            core.document.sections[0].raw_stream.is_none(),
+            "셀 안 양식 값도 섹션 raw_stream 을 비워야 저장에 반영된다"
+        );
+    }
 }

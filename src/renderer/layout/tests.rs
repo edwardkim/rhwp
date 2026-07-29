@@ -5,8 +5,9 @@ use super::utils::{expand_numbering_format, numbering_format_to_number_format};
 use super::*;
 use crate::model::page::{ColumnDef, PageDef};
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
-use crate::model::shape::RectangleShape;
+use crate::model::shape::{CommonObjAttr, RectangleShape, TextWrap, VertRelTo};
 use crate::model::style::{Numbering, NumberingHead};
+use crate::model::table::{Cell, Table, TablePageBreak};
 use crate::renderer::composer::compose_paragraph;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 use crate::renderer::{TabStop, TextStyle};
@@ -62,6 +63,175 @@ fn test_build_empty_page() {
     );
     // 페이지 노드 + 배경 + 머리말 + 본문 + 각주 + 꼬리말
     assert!(tree.root.children.len() >= 4);
+}
+
+/// Task #3216: AutoNumber(Page)와 명시 쪽번호 필드가 같은 문단에 있어도 각각은
+/// 모델 한 글자를 유지하고 표시값만 확장해야 한다.
+#[test]
+fn issue3216_page_auto_number_does_not_expand_manual_page_field_model_text() {
+    use crate::model::control::{AutoNumber, AutoNumberType};
+
+    let para = Paragraph {
+        // 앞 U+0015는 Studio에서 삽입한 명시 쪽번호 필드, 뒤 U+0015는 HWPX
+        // AutoNumber(Page) placeholder다. char_offsets의 8-unit gap이 컨트롤 위치를
+        // 뒤 placeholder로 고정한다.
+        text: "\u{0015}\u{0015}".to_string(),
+        char_offsets: vec![0, 9],
+        char_count: 10,
+        controls: vec![Control::AutoNumber(AutoNumber {
+            number_type: AutoNumberType::Page,
+            ..Default::default()
+        })],
+        ..Default::default()
+    };
+    let engine = LayoutEngine::with_default_dpi();
+    let mut composed = compose_paragraph(&para);
+
+    engine.substitute_hf_field_markers(&mut composed, 12);
+    engine.substitute_page_auto_numbers_in_composed(&para, &mut composed, 12);
+
+    let runs: Vec<(String, Option<String>)> = composed
+        .lines
+        .iter()
+        .flat_map(|line| line.runs.iter())
+        .map(|run| (run.text.clone(), run.display_text.clone()))
+        .collect();
+    assert_eq!(
+        runs,
+        vec![
+            ("\u{0015}".to_string(), Some("12".to_string())),
+            ("\u{0015}".to_string(), Some("12".to_string())),
+        ],
+        "명시 필드와 AutoNumber 모두 raw text는 모델 marker 한 글자여야 한다"
+    );
+}
+
+fn issue2817_textless_picture_host(vert_rel_to: VertRelTo, text_wrap: TextWrap) -> Paragraph {
+    let mut picture = crate::model::image::Picture::default();
+    picture.common.treat_as_char = false;
+    picture.common.vert_rel_to = vert_rel_to;
+    picture.common.text_wrap = text_wrap;
+    Paragraph {
+        controls: vec![Control::Picture(Box::new(picture))],
+        ..Default::default()
+    }
+}
+
+#[test]
+fn issue2817_paper_anchor_infront_picture_host_reserves_line_advance() {
+    let para = issue2817_textless_picture_host(VertRelTo::Paper, TextWrap::InFrontOfText);
+    assert!(textless_infront_para_host_requires_line_advance(&para));
+}
+
+#[test]
+fn issue2817_paper_anchor_behind_picture_host_keeps_no_line_advance() {
+    let para = issue2817_textless_picture_host(VertRelTo::Paper, TextWrap::BehindText);
+    assert!(!textless_infront_para_host_requires_line_advance(&para));
+}
+
+#[test]
+fn issue2439_fragment_margin_evidence_is_narrow_and_structural() {
+    let anchor = Paragraph {
+        line_segs: vec![LineSeg {
+            line_height: 1200,
+            line_spacing: 240,
+            ..Default::default()
+        }],
+        controls: vec![Control::Table(Box::new(Table {
+            page_break: TablePageBreak::RowBreak,
+            common: CommonObjAttr {
+                treat_as_char: false,
+                text_wrap: TextWrap::TopAndBottom,
+                vert_rel_to: VertRelTo::Para,
+                vertical_offset: 399,
+                ..Default::default()
+            },
+            ..Default::default()
+        }))],
+        ..Default::default()
+    };
+    // [#2808] 접힌 ladder 증거(next.vpos = host.vpos + host 줄 advance)가 있어야
+    // native 재현 형상으로 인정된다 — typeset::tests::issue2439_native_empty_host_
+    // rowbreak_evidence_is_narrow 의 스탬프와 동일.
+    let signature = Paragraph {
+        text: "signature".to_string(),
+        line_segs: vec![LineSeg {
+            line_height: 1000,
+            vertical_pos: 1440,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let paragraphs = vec![anchor.clone(), signature];
+
+    assert!(repeats_native_empty_host_rowbreak_fragment_margin(
+        true,
+        &paragraphs,
+        0,
+        0,
+    ));
+    assert!(!repeats_native_empty_host_rowbreak_fragment_margin(
+        false,
+        &paragraphs,
+        0,
+        0,
+    ));
+
+    let no_plain_tail = vec![anchor, Paragraph::new_empty()];
+    assert!(!repeats_native_empty_host_rowbreak_fragment_margin(
+        true,
+        &no_plain_tail,
+        0,
+        0,
+    ));
+}
+
+#[test]
+fn issue2439_full_table_top_matches_first_partial_fragment_top() {
+    let para_y = 100.0;
+    let vertical_offset = 5.32;
+    let outer_top = 3.77;
+
+    let full_table_top = empty_host_float_raw_top(para_y, vertical_offset, outer_top);
+    let first_partial_fragment_top = para_y + outer_top + vertical_offset;
+    assert!((full_table_top - first_partial_fragment_top).abs() < 1e-9);
+
+    // The generic empty-host float contract remains unchanged when the strict structural
+    // evidence is absent, and negative offsets remain clamped at the host paragraph top.
+    assert_eq!(empty_host_float_raw_top(para_y, -8.0, 0.0), para_y);
+}
+
+#[test]
+fn oversized_row_width_outlier_does_not_expand_base_columns() {
+    let mut cells = Vec::new();
+    for row in 0..3 {
+        for col in 0..2 {
+            cells.push(Cell {
+                row,
+                col,
+                row_span: 1,
+                col_span: 1,
+                width: if row == 0 && col == 0 { 150 } else { 100 },
+                ..Default::default()
+            });
+        }
+    }
+    let table = Table {
+        row_count: 3,
+        col_count: 2,
+        cells,
+        common: CommonObjAttr {
+            width: 200,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let engine = LayoutEngine::with_default_dpi();
+    let widths = engine.resolve_column_widths(&table, 2);
+    let expected = hwpunit_to_px(100, DEFAULT_DPI);
+
+    assert!((widths[0] - expected).abs() < 0.01, "widths={widths:?}");
+    assert!((widths[1] - expected).abs() < 0.01, "widths={widths:?}");
 }
 
 #[test]
@@ -1420,22 +1590,24 @@ fn test_square_bullet_with_space_preserves_layout() {
     };
     let positions = compute_char_positions("□ 가", &style);
     assert_eq!(positions.len(), 4);
-    // □: 전각(20) + 자간(-1.6) = advance 18.4
+    // [#2279] 자간은 글자폭 비례 (통제 사다리 실측): 전각은 fs-비례와 동일,
+    // 반각(공백)은 절반만 압축된다.
+    // □: 전각(20) + 자간(20×-8%) = advance 18.4
     assert!(
         (positions[1] - 18.4).abs() < 0.01,
         "positions[1] expected 18.4, got {}",
         positions[1]
     );
-    // 공백: 반각(10) + 자간(-1.6) = advance 8.4 (min_clamp 5.0 미작동)
+    // 공백: 반각(10) + 자간(10×-8% = -0.8) = advance 9.2 (min_clamp 5.0 미작동)
     assert!(
-        (positions[2] - 26.8).abs() < 0.01,
-        "positions[2] expected 26.8, got {}",
+        (positions[2] - 27.6).abs() < 0.01,
+        "positions[2] expected 27.6, got {}",
         positions[2]
     );
     // 가: 전각(20) + 자간(-1.6) = advance 18.4
     assert!(
-        (positions[3] - 45.2).abs() < 0.01,
-        "positions[3] expected 45.2, got {}",
+        (positions[3] - 46.0).abs() < 0.01,
+        "positions[3] expected 46.0, got {}",
         positions[3]
     );
 }
@@ -1482,8 +1654,9 @@ fn test_tac_leading_width_block_table_full_line() {
         ..Default::default()
     };
     let width = super::compute_tac_leading_width(&composed, 0, &styles);
-    // 4 spaces × (10 base - 1.6 lspc) = 33.6 (min_clamp 5.0 미작동)
-    assert!((width - 33.6).abs() < 0.5, "expected ~33.6, got {}", width);
+    // [#2279] 자간 글자폭 비례: 4 spaces × (10 base + 10×-8% = 9.2) = 36.8
+    // (min_clamp 5.0 미작동)
+    assert!((width - 36.8).abs() < 0.5, "expected ~36.8, got {}", width);
 }
 
 #[test]
@@ -2216,4 +2389,37 @@ fn page_bg_image_only_on_section_first_page() {
     let (color_rest, image_rest) = page_bg_color_and_image_present(false);
     assert!(!image_rest, "구역 첫 쪽이 아니면 배경 이미지가 없어야 한다");
     assert!(color_rest, "이미지가 억제돼도 색 채우기는 유지되어야 한다");
+}
+
+/// [Task #2835] TAC picture/shape 배치 경로의 좌측 margin 이 paragraph_layout.rs
+/// (Task #544 v2, 커밋 a30dca73) 의 "margin_left 단일 가산" 규칙과 일치해야 한다.
+///
+/// 버그(수정 전): `has_visible_stroke && border_spacing[0]==[1]==0` 인 문단에서
+/// `inner_pad_left = para_margin_left` 를 추가로 더해 TAC 그림이 같은 문단의 본문
+/// 텍스트보다 `para_margin_left` 만큼 더 오른쪽으로 밀렸다 (exam_kor.hwp pi=46 등
+/// 실측 inner_pad_left=11.33px). 본 테스트는 `border_fill_id`/`border_spacing` 유무와
+/// 무관하게 `tac_picture_effective_margin_left` 가 `para_margin_left`(+indent) 만
+/// 반환해야 함을 검증한다.
+#[test]
+fn tac_picture_effective_margin_left_matches_paragraph_layout_single_margin_rule() {
+    use super::tac_picture_effective_margin_left;
+
+    // 테두리(has_visible_stroke) + border_spacing=0 케이스 (버그 트리거 조건)여도
+    // margin_left 를 한 번만 반영해야 한다. 버그 있던 구현이라면 11.33 + 11.33 = 22.66.
+    let para_margin_left = 11.33;
+    assert!(
+        (tac_picture_effective_margin_left(para_margin_left, 0.0) - para_margin_left).abs() < 1e-9,
+        "border_spacing=0/유테두리 문단에서도 margin_left 를 한 번만 더해야 함 \
+         (이중 가산 버그: 22.66 이 아니라 11.33 이어야 함)"
+    );
+
+    // indent>0 (첫 줄 hanging indent) 이면 margin_left + indent 만 더해야 한다.
+    let para_indent = 13.23;
+    assert!(
+        (tac_picture_effective_margin_left(para_margin_left, para_indent)
+            - (para_margin_left + para_indent))
+            .abs()
+            < 1e-9,
+        "indent>0 이면 margin_left + indent 만 반영해야 함 (inner_pad 이중 가산 없이)"
+    );
 }

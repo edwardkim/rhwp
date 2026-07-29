@@ -553,10 +553,11 @@ fn resolve_legacy_latin_font(name: &str, lang_index: usize) -> Option<&'static s
 fn resolve_hft_font(name: &str, lang_index: usize) -> Option<&'static str> {
     // === 직접 TTF 매핑 (모든 언어 공통) ===
     let common = match name {
-        "한양중고딕" => Some("HY중고딕"),
-        "한양신명조" => Some("HY신명조"),
-        "한양견명조" => Some("HY견명조"),
-        "한양견고딕" => Some("HY견고딕"),
+        // [#2430] 한양 4종·휴먼명조는 치환하지 않고 원명 유지 — 한글 실측
+        // (COM 무신축 래더 2026-07-20)상 HY 대응 폰트와 ASCII 폭이 다른
+        // 별개 페이스(숫자 0.497/0.565em vs HY 0.583~0.668em). 자체 메트릭은
+        // font_metrics_data 의 Hanyang*/HumanMyeongJo, CSS 폴백은
+        // generic_fallback 의 명조/고딕 substring 분류가 동일 체인을 준다.
         "한양그래픽" => Some("굴림"),
         "한양궁서" => Some("궁서"),
         "신명 태고딕" => Some("HY중고딕"),
@@ -571,7 +572,7 @@ fn resolve_hft_font(name: &str, lang_index: usize) -> Option<&'static str> {
         // 명조 계열 → HY견명조
         "명조" => Some("HY견명조"),
         // 체인 평탄화: 다단계 HFT→HFT→...→TTF 체인의 최종 결과
-        "휴먼명조" => Some("HY신명조"),
+        // ("휴먼명조" 는 [#2430] 원명 유지 — 위 한양 계열 주석 참조)
         "문화바탕" | "문화바탕제목" | "문화쓰기" | "문화쓰기흘림" => {
             Some("HY신명조")
         }
@@ -681,9 +682,14 @@ fn resolve_ttf_font(name: &str) -> Option<&'static str> {
         "Malgun Gothic" => Some("맑은 고딕"),
         "HY그래픽M" => Some("HY그래픽"),
         "SPOQAHANSANS" => Some("SpoqaHanSans"),
-        // 한컴 체인: 한컴바탕→함초롬바탕, 한컴돋움→함초롬돋움
-        "한컴바탕" => Some("함초롬바탕"),
-        "한컴돋움" => Some("함초롬돋움"),
+        // [#2279] 한컴바탕/한컴돋움은 함초롬 계열로 치환하지 않는다.
+        // TTF name table 실측: 한컴바탕 = Haansoft Batang(HBATANG.TTF),
+        // 한컴돋움 = Haansoft Dotum(HDOTUM.TTF) — 함초롬(HCR)과 별개 폰트로
+        // 메트릭이 다르다 ('*' 0.583 vs 0.498em, 한글 음절 1.0 vs 0.97em).
+        // 종전 치환은 한컴돋움 문서의 폭 측정을 HCR Dotum 메트릭으로 보내
+        // 줄수 ±1 오차를 만들었다 (한글 PDF 실측: '*' 0.583em, 음절 1.0em).
+        // 메트릭은 font_metrics_data::resolve_metric_alias 가 Haansoft 엔트리로
+        // 연결하고, SVG 렌더 폴백 체인(svg.rs)은 한컴* 이름을 직접 처리한다.
         // 영어(1) 전용 TTF 치환 (webhwp lang=1)
         "MS Sans Serif" => Some("함초롬돋움"),
         "Tahoma" => Some("함초롬돋움"),

@@ -101,6 +101,7 @@ impl DocumentCore {
             &self.document.sections[section_idx].paragraphs[para_idx],
         );
         self.reflow_paragraph(section_idx, para_idx);
+        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
         crate::renderer::composer::recalculate_section_vpos(
             &mut self.document.sections[section_idx].paragraphs,
             para_idx,
@@ -108,7 +109,7 @@ impl DocumentCore {
             stored_end_for_reset,
             &self.styles,
             self.dpi,
-            self.document.is_hwp3_variant,
+            doc_hwp3_layout,
         );
         self.recompose_paragraph(section_idx, para_idx);
         self.paginate_if_needed();
@@ -659,6 +660,12 @@ impl DocumentCore {
             .and_then(|s| s.paragraphs.get_mut(para_idx))
             .ok_or_else(|| HwpError::InvalidField("문단 위치 초과".into()))?;
         remove_field_in_para(para, char_offset)?;
+        // 필드 제거는 섹션 본문을 바꾸므로 raw_stream 을 무효화해야 저장에 반영된다
+        // (삽입 짝 insert_click_here_field_at 과 동형). 누락 시 recompose 로 화면만
+        // 갱신되고 저장은 원본 바이트를 재방출해 지운 필드가 되살아난다.
+        if let Some(section) = self.document.sections.get_mut(section_idx) {
+            section.raw_stream = None;
+        }
         self.recompose_section(section_idx);
         Ok(r#"{"ok":true}"#.to_string())
     }
@@ -715,6 +722,11 @@ impl DocumentCore {
             }
         };
         remove_field_in_para(para, char_offset)?;
+        // 셀/글상자 내 필드 제거도 섹션 본문 스트림을 바꾸므로 raw_stream 무효화 필요
+        // (삽입 짝 insert_click_here_field_at_in_cell 과 동형).
+        if let Some(section) = self.document.sections.get_mut(section_idx) {
+            section.raw_stream = None;
+        }
         self.recompose_section(section_idx);
         Ok(r#"{"ok":true}"#.to_string())
     }
@@ -1009,8 +1021,10 @@ fn collect_fields_from_paragraph(
                                 properties: if cell.editable_in_form() { 1 } else { 0 },
                                 extra_properties: 0,
                                 ctrl_data_name: Some(fname.clone()),
+                                instance_id: None,
                                 memo_index: 0,
                                 memo_paragraphs: Vec::new(),
+                                memo_text_direction: None,
                                 raw_parameters_xml: None,
                             },
                             location: loc,
@@ -1260,6 +1274,7 @@ fn insert_click_here_field_in_para(
         extra_properties: 0x09,
         field_id,
         ctrl_id: tags::FIELD_CLICKHERE,
+        instance_id: None,
         ctrl_data_name: if name.is_empty() {
             None
         } else {
@@ -1267,6 +1282,7 @@ fn insert_click_here_field_in_para(
         },
         memo_index: 0,
         memo_paragraphs: Vec::new(),
+        memo_text_direction: None,
         raw_parameters_xml: None,
     };
 
@@ -1280,6 +1296,7 @@ fn insert_click_here_field_in_para(
         start_char_idx: start,
         end_char_idx: start,
         control_idx: insert_idx,
+        ..Default::default()
     };
     let range_idx = para
         .field_ranges
@@ -1471,11 +1488,99 @@ mod tests {
             extra_properties: 0,
             field_id: ctrl_id,
             ctrl_id,
+            instance_id: None,
             ctrl_data_name: None,
             memo_index: 0,
             memo_paragraphs: Vec::new(),
+            memo_text_direction: None,
             raw_parameters_xml: None,
         })
+    }
+
+    fn para_with_click_here_field() -> Paragraph {
+        // 스트림: [ColumnDef 8B] A B C [FIELD_BEGIN] X Y [FIELD_END], 필드는 [3,5]
+        Paragraph {
+            text: "ABCXY".into(),
+            controls: vec![
+                Control::ColumnDef(Default::default()),
+                make_field_control(100),
+            ],
+            field_ranges: vec![FieldRange {
+                start_char_idx: 3,
+                end_char_idx: 5,
+                control_idx: 1,
+                ..Default::default()
+            }],
+            char_count: 21,
+            char_offsets: vec![8, 9, 10, 19, 20],
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn remove_field_at_invalidates_raw_stream() {
+        // 본문 필드 제거는 섹션 본문을 바꾸므로 raw_stream 이 무효화돼야 저장에 반영된다.
+        // 무효화 라인을 제거하면 이 테스트가 실패한다(RED): 저장이 원본 바이트를 재방출해
+        // 지운 필드가 되살아난다.
+        let mut core = DocumentCore::new_empty();
+        core.document.sections.push(Section {
+            paragraphs: vec![para_with_click_here_field()],
+            raw_stream: Some(vec![0xAB; 64]),
+            ..Default::default()
+        });
+        core.composed = vec![Vec::new()];
+        core.dirty_sections = vec![true];
+        core.dirty_paragraphs = vec![None];
+
+        core.remove_field_at(0, 0, 4).unwrap();
+
+        assert!(
+            core.document.sections[0].raw_stream.is_none(),
+            "remove_field_at 후 raw_stream 이 무효화돼야 한다"
+        );
+        let bytes = crate::serializer::body_text::serialize_section(&core.document.sections[0]);
+        assert_ne!(
+            bytes,
+            vec![0xAB; 64],
+            "serialize_section 이 여전히 원본 바이트를 반환"
+        );
+        // 필드 컨트롤이 실제로 제거돼 ColumnDef 만 남는다
+        assert_eq!(core.document.sections[0].paragraphs[0].controls.len(), 1);
+    }
+
+    #[test]
+    fn remove_field_at_in_cell_invalidates_raw_stream() {
+        // 표 셀 내 필드 제거도 섹션 본문 스트림을 바꾸므로 raw_stream 무효화가 필요하다.
+        let table = Table {
+            cells: vec![Cell {
+                paragraphs: vec![para_with_click_here_field()],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let parent_para = Paragraph {
+            controls: vec![Control::Table(Box::new(table))],
+            ..Default::default()
+        };
+        let mut core = DocumentCore::new_empty();
+        core.document.sections.push(Section {
+            paragraphs: vec![parent_para],
+            raw_stream: Some(vec![0xAB; 64]),
+            ..Default::default()
+        });
+        core.composed = vec![Vec::new()];
+        core.dirty_sections = vec![true];
+        core.dirty_paragraphs = vec![None];
+
+        core.remove_field_at_in_cell(0, 0, 0, 0, 0, 4, false)
+            .unwrap();
+
+        assert!(
+            core.document.sections[0].raw_stream.is_none(),
+            "remove_field_at_in_cell 후 raw_stream 이 무효화돼야 한다"
+        );
+        let bytes = crate::serializer::body_text::serialize_section(&core.document.sections[0]);
+        assert_ne!(bytes, vec![0xAB; 64]);
     }
 
     #[test]
@@ -1491,6 +1596,7 @@ mod tests {
                 start_char_idx: 3,
                 end_char_idx: 5,
                 control_idx: 1,
+                ..Default::default()
             }],
             char_offsets: vec![8, 9, 10, 19, 20],
             ..Default::default()
@@ -1512,6 +1618,7 @@ mod tests {
                 start_char_idx: 0,
                 end_char_idx: 2,
                 control_idx: 0,
+                ..Default::default()
             }],
             char_offsets: vec![8, 9],
             ..Default::default()
@@ -1535,6 +1642,7 @@ mod tests {
                 start_char_idx: 4,
                 end_char_idx: 7,
                 control_idx: 1,
+                ..Default::default()
             }],
             // 원본 offsets (stale after text change, but char_offsets[0] still valid for ctrls_before_text)
             char_offsets: vec![8, 9, 10, 11, 20, 21, 22],

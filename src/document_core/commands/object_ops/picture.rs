@@ -548,6 +548,7 @@ impl DocumentCore {
                 &self.document.sections[section_idx].paragraphs[parent_para_idx],
             );
             self.reflow_paragraph(section_idx, parent_para_idx);
+            let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
             crate::renderer::composer::recalculate_section_vpos(
                 &mut self.document.sections[section_idx].paragraphs,
                 parent_para_idx,
@@ -555,7 +556,7 @@ impl DocumentCore {
                 stored_end_for_reset,
                 &self.styles,
                 self.dpi,
-                self.document.is_hwp3_variant,
+                doc_hwp3_layout,
             );
         }
         // 캡션 생성/삭제 시 AutoNumber 재할당. 생성 path 는 문단 placeholder 도 보강한다.
@@ -661,7 +662,25 @@ impl DocumentCore {
                     ))
                 }
             };
+            // [Task #1151 v2] 본문 picture setter(set_picture_properties_native) 와 동일하게,
+            // treatAsChar false→true/true→false 전환 시 앵커 문단의 line_segs 도 갱신해야
+            // 한다. 머리말/꼬리말 경로는 이 마이그레이션이 누락되어 있었음 — tac on 시
+            // 그림 높이가 줄 높이에 반영되지 않아 렌더 시 그림이 겹치거나 잘림.
+            let was_tac = pic.common.treat_as_char;
             caption_created = Self::apply_picture_props_inner(pic, props_json);
+            let now_tac = pic.common.treat_as_char;
+            if !was_tac && now_tac {
+                if let crate::model::control::Control::Picture(pic_box) =
+                    &mut inner_para.controls[inner_control_idx]
+                {
+                    Self::migrate_picture_floating_to_inline(
+                        &mut inner_para.line_segs,
+                        pic_box.as_mut(),
+                    );
+                }
+            } else if was_tac && !now_tac {
+                Self::migrate_empty_picture_para_inline_to_floating(inner_para);
+            }
         }
         if caption_created {
             return Err(HwpError::RenderError(
@@ -2101,7 +2120,7 @@ mod issue_1151_cell_picture_insert_tests {
 
         core.set_picture_properties_native(0, 0, ctrl_idx, r#"{"treatAsChar":true}"#)
             .expect("dropped picture becomes treat-as-char");
-        core.split_paragraph_native(0, 0, logical_offset)
+        core.split_paragraph_native(0, 0, logical_offset, None)
             .expect("Enter after dropped picture");
 
         assert_eq!(
@@ -2369,7 +2388,7 @@ mod issue_1151_cell_picture_insert_tests {
             .expect("fixture 읽기 실패 samples/투명도0-50.hwp");
         let mut core = DocumentCore::from_bytes(&data).expect("parse samples/투명도0-50.hwp");
 
-        core.split_paragraph_native(0, 0, 2)
+        core.split_paragraph_native(0, 0, 2, None)
             .expect("두 번째 TAC 그림 뒤 Enter");
 
         assert_eq!(

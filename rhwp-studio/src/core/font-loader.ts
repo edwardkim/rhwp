@@ -20,6 +20,23 @@ export interface WebFontLoadOptions {
   disableExternalWebFonts?: boolean;
 }
 
+export interface CanvasKitBundledFontSource {
+  url: string;
+  aliases: string[];
+}
+
+export interface CanvasKitFontPlanOptions extends WebFontLoadOptions {
+  /** `fonts/` 상대 경로를 이 URL 아래의 확장/앱 자산으로 바꾼다. */
+  localFontBaseUrl?: string;
+  /** 배포 표면이 실제로 포함한 로컬 파일만 허용한다. 미지정 시 전체 카탈로그를 허용한다. */
+  availableLocalFiles?: ReadonlySet<string>;
+}
+
+export interface CanvasKitFontPlan {
+  sources: CanvasKitBundledFontSource[];
+  unavailableFonts: string[];
+}
+
 // 함초롬체 CDN (눈누 jsdelivr — 비상업적 사용 허용, 한컴 라이선스)
 const CDN_HAMCHOB_R = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff';
 const CDN_HAMCHOB_B = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatangB.woff';
@@ -143,6 +160,81 @@ function isExternalFontFile(file: string): boolean {
 function selectableFontList(options?: WebFontLoadOptions): FontEntry[] {
   if (options?.disableExternalWebFonts !== true) return FONT_LIST;
   return FONT_LIST.filter(f => !isExternalFontFile(f.file));
+}
+
+function normalizeFontFamily(value: string): string {
+  return value
+    .replace(/\u0000/g, '')
+    .normalize('NFC')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLocaleLowerCase('en-US');
+}
+
+function canvasKitFontUrl(file: string, localFontBaseUrl?: string): string {
+  if (isExternalFontFile(file) || !localFontBaseUrl) return file;
+  const base = localFontBaseUrl.replace(/\/+$/, '');
+  return `${base}/${file.replace(/^fonts\//, '')}`;
+}
+
+/** CanvasKit이 첫 replay 전에 등록해야 하는 실제 font byte source를 계산한다. */
+export function resolveCanvasKitFontPlan(
+  requiredFontFamilies: readonly string[],
+  options: CanvasKitFontPlanOptions = {},
+): CanvasKitFontPlan {
+  const canvasKitSubstitutes = new Map([
+    [normalizeFontFamily('휴먼명조'), normalizeFontFamily('HY신명조')],
+    [normalizeFontFamily('한컴 윤고딕 230'), normalizeFontFamily('Noto Sans KR ExtraLight')],
+  ]);
+  const entriesByFamily = new Map<string, FontEntry>();
+  for (const entry of FONT_LIST) {
+    entriesByFamily.set(normalizeFontFamily(entry.name), entry);
+  }
+
+  const sourcesByUrl = new Map<string, Set<string>>();
+  const unavailableFonts = new Map<string, string>();
+  const requiredEntries: Array<{ entry: FontEntry; requested: string }> = [];
+  for (const requested of requiredFontFamilies) {
+    const normalized = normalizeFontFamily(requested);
+    if (!normalized) continue;
+    const entry = entriesByFamily.get(normalized)
+      ?? entriesByFamily.get(canvasKitSubstitutes.get(normalized) ?? '');
+    if (!entry) {
+      unavailableFonts.set(normalized, requested.trim());
+      continue;
+    }
+    const localFile = entry.file.startsWith('fonts/')
+      ? entry.file.slice('fonts/'.length)
+      : null;
+    const unavailable = (options.disableExternalWebFonts === true && isExternalFontFile(entry.file))
+      || (localFile !== null
+        && options.availableLocalFiles !== undefined
+        && !options.availableLocalFiles.has(localFile));
+    if (unavailable) {
+      unavailableFonts.set(normalized, requested.trim());
+      continue;
+    }
+    requiredEntries.push({ entry, requested: requested.trim() });
+  }
+
+  for (const { entry, requested } of requiredEntries) {
+    const url = canvasKitFontUrl(entry.file, options.localFontBaseUrl);
+    const aliases = sourcesByUrl.get(url) ?? new Set<string>();
+    aliases.add(requested);
+    for (const candidate of FONT_LIST) {
+      if (candidate.file === entry.file) aliases.add(candidate.name);
+    }
+    sourcesByUrl.set(url, aliases);
+  }
+
+  return {
+    sources: [...sourcesByUrl.entries()].map(([url, aliases]) => ({
+      url,
+      aliases: [...aliases].sort((left, right) => left.localeCompare(right, 'ko')),
+    })),
+    unavailableFonts: [...unavailableFonts.values()]
+      .sort((left, right) => left.localeCompare(right, 'ko')),
+  };
 }
 
 function registerFontFaces(options?: WebFontLoadOptions): void {

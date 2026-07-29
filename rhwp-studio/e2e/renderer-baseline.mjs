@@ -91,6 +91,9 @@ const BACKENDS = [
       const surfaceQuery = options.canvaskitSurface === 'auto'
         ? ''
         : `&canvaskitSurface=${encodeURIComponent(options.canvaskitSurface)}`;
+      if (options.readinessOnly) {
+        return `?renderer=auto&canvaskitMode=default&renderProfile=${encodeURIComponent(profile)}${surfaceQuery}`;
+      }
       return `?renderer=canvaskit&canvaskitMode=default&renderProfile=${encodeURIComponent(profile)}${surfaceQuery}`;
     },
     filenameForProfile(profile) {
@@ -311,7 +314,25 @@ function normalizeSamples(manifest, filterText, scope, readinessOnly) {
       file,
       category: sample.category || 'uncategorized',
       page: sample.page ?? 0,
+      viewOptions: {
+        showParagraphMarks: false,
+        showControlCodes: false,
+      },
     };
+    if (sample.viewOptions !== undefined) {
+      if (!sample.viewOptions || typeof sample.viewOptions !== 'object'
+        || Array.isArray(sample.viewOptions)
+        || Object.keys(sample.viewOptions).some(
+          key => !['showParagraphMarks', 'showControlCodes'].includes(key),
+        )
+        || Object.values(sample.viewOptions).some(value => typeof value !== 'boolean')) {
+        throw new Error(`invalid viewOptions for baseline sample: ${id}`);
+      }
+      normalizedSample.viewOptions = {
+        showParagraphMarks: sample.viewOptions.showParagraphMarks ?? false,
+        showControlCodes: sample.viewOptions.showControlCodes ?? false,
+      };
+    }
     if (!Number.isInteger(normalizedSample.page) || normalizedSample.page < 0) {
       throw new Error(`baseline sample page must be a non-negative integer: ${id}`);
     }
@@ -385,6 +406,39 @@ function normalizeSamples(manifest, filterText, scope, readinessOnly) {
   });
 }
 
+async function applySampleViewOptions(page, viewOptions) {
+  const previous = await page.evaluate(() => ({
+    decisionKey: window.__canvasView?.getRendererSessionDiagnostics?.()?.decisionKey ?? null,
+    showParagraphMarks: window.__wasm?.getShowParagraphMarks?.() ?? false,
+    showControlCodes: window.__wasm?.getShowControlCodes?.() ?? false,
+  }));
+  if (previous.showParagraphMarks === viewOptions.showParagraphMarks
+    && previous.showControlCodes === viewOptions.showControlCodes) return;
+  await page.evaluate((options) => {
+    const wasm = window.__wasm;
+    if (!wasm) throw new Error('baseline view options require a loaded document');
+    wasm.setShowControlCodes(options.showControlCodes);
+    wasm.setShowParagraphMarks(options.showParagraphMarks);
+    window.__eventBus?.emit('document-view-changed');
+  }, viewOptions);
+  await page.waitForFunction(
+    ({ expected, previousKey }) => {
+      const wasm = window.__wasm;
+      const decisionKey = window.__canvasView
+        ?.getRendererSessionDiagnostics?.()?.decisionKey ?? null;
+      return wasm?.getShowParagraphMarks?.() === expected.showParagraphMarks
+        && wasm?.getShowControlCodes?.() === expected.showControlCodes
+        && decisionKey !== null
+        && decisionKey !== previousKey;
+    },
+    { timeout: 15000, polling: 50 },
+    { expected: viewOptions, previousKey: previous.decisionKey },
+  );
+  await page.evaluate(() => new Promise(resolve => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  }));
+}
+
 async function resetRendererDiagnostics(page) {
   await page.evaluate(() => {
     const pageRenderer = window.__canvasView?.pageRenderer;
@@ -402,6 +456,7 @@ async function readRendererDiagnostics(page, pageIndex, backendKey, profile) {
     const surfaceDiagnostics = pageRenderer?.canvaskitRenderer?.getSurfaceDiagnostics?.() ?? null;
     const canvaskitRender = window.__canvasView
       ?.getCanvasKitRenderDiagnostics?.(targetPageIndex) ?? null;
+    const selection = window.__canvasView?.getRendererSessionDiagnostics?.() ?? null;
     const trackedCanvas = window.__canvasView?.canvasPool?.getCanvas?.(targetPageIndex) ?? null;
     let replayPlan = null;
     let replayPlanError = null;
@@ -423,6 +478,7 @@ async function readRendererDiagnostics(page, pageIndex, backendKey, profile) {
         activeBackend: window.__renderBackend ?? null,
         request: window.__rendererRuntimeRequest ?? null,
         backendFallbackReason: window.__renderBackendFallbackReason ?? null,
+        selection,
         canvasOwnershipTracked: trackedCanvas instanceof HTMLCanvasElement && trackedCanvas.isConnected,
       },
       imageEffects: {
@@ -546,6 +602,7 @@ try {
 
         const loadResult = await loadHwpFile(page, sample.file);
         const documentLoadAndInitialRenderMs = loadResult.documentLoadAndInitialRenderMs;
+        await applySampleViewOptions(page, sample.viewOptions);
         if (sample.page >= loadResult.pageCount) {
           throw new Error(
             `baseline sample page is out of range: ${sample.id} page=${sample.page} pageCount=${loadResult.pageCount}`,
@@ -1273,9 +1330,29 @@ for (const result of results.filter((entry) => entry.readinessGateRequired)) {
   if (runtime.activeBackend !== 'canvaskit') {
     blockers.push('backendNotActive');
   }
-  if (runtime.request?.backend?.backend !== 'canvaskit'
+  if (runtime.request?.backend?.backend !== 'canvas2d'
     || runtime.request?.backend?.source !== 'url') {
-    blockers.push('explicitCanvasKitRequestMissing');
+    blockers.push('legacyRequestProjectionMismatch');
+  }
+  if (runtime.selection?.requestedBackend !== 'auto'
+    || runtime.selection?.request?.backend !== 'auto'
+    || runtime.selection?.request?.source !== 'url'
+    || runtime.selection?.effectiveBackend !== 'canvaskit'
+    || runtime.selection?.selectionReason !== 'autoEligible') {
+    blockers.push('autoSelectionMismatch');
+  }
+  if (runtime.selection?.preflight?.status !== 'eligible'
+    || runtime.selection?.preflight?.complete !== true
+    || runtime.selection?.preflight?.eligible !== true) {
+    blockers.push('autoPreflightNotEligible');
+  }
+  if (typeof runtime.selection?.documentDigest !== 'string'
+    || !runtime.selection.documentDigest.startsWith('blake3:')) {
+    blockers.push('autoDocumentDigestMissing');
+  }
+  if (!Number.isSafeInteger(runtime.selection?.documentRevision)
+    || !Number.isSafeInteger(runtime.selection?.resourceGeneration)) {
+    blockers.push('autoDecisionGenerationMissing');
   }
   if (runtime.request?.canvaskitMode?.mode !== 'default'
     || runtime.request?.canvaskitMode?.source !== 'url') {
@@ -1371,6 +1448,7 @@ for (const result of results.filter((entry) => entry.readinessGateRequired)) {
     activeBackend: runtime.activeBackend ?? null,
     canvasOwnershipTracked: runtime.canvasOwnershipTracked === true,
     request: runtime.request ?? null,
+    selection: runtime.selection ?? null,
     backendFallbackReason: runtime.backendFallbackReason ?? null,
     expectedUnsupportedOps: renderDiagnostics?.lastExpectedUnsupportedOps ?? [],
     unexpectedUnsupportedOps: renderDiagnostics?.lastUnexpectedUnsupportedOps ?? [],
@@ -1401,7 +1479,7 @@ const canvaskitReadinessGate = {
   criteria: {
     sampleFlag: 'canvaskitReadinessGate',
     profile: 'screen',
-    targetBackend: 'canvaskit-default',
+    targetBackend: 'canvaskit-default (explicit auto request)',
     canvaskitSurface: 'auto',
     requireActiveBackend: true,
     requireRuntimeReadiness: true,

@@ -2,16 +2,20 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: project_1582_refactor_umbrella
-description: "#1582 = 0.8/v1.0 아키텍처 리팩토링 umbrella 이슈 — 첫 단계 SourceProvenance+LayoutCompatibilityProfile, feature freeze 선행"
+description: "#1582 CLOSED(2026-07-19) — 리팩토링 umbrella 종결, Stage 1(Provenance/Profile)은 #2403 이관. 재개 트리거·산식·후보 목록 보존"
 metadata: 
   node_type: memory
   type: project
-  originSessionId: 2560b31a-9f1c-4764-bbf1-7ba5fc27c7ce
 ---
 
-**이슈 #1582 (OPEN, 닫지 않음)** 는 0.8/v1.0 구조 정리의 **기준(umbrella) 이슈**다
+**이슈 #1582 는 CLOSED (2026-07-19, 작업지시자 승인 절차)** — 종결 시점 실측 최대 CC 118·
+테스트 3,277/0 으로 재개 트리거 미충족 인증. **Stage 1(SourceProvenance/
+LayoutCompatibilityProfile)은 #2403 으로 이관** (help wanted, 재개 트리거 3종 승계,
+#2373 잔여 문서군 판별자 = 첫 구체 수요). 이하 이력은 보존 기록이다.
+
+원래 #1582 는 0.8/v1.0 구조 정리의 **기준(umbrella) 이슈**다
 (2026-06-27 isty2e 감사 제안 → jangster77 방향 확정). 대규모 rewrite 아님.
 
 **핵심 진단**: 9개 도메인 모델 축(canonical IR/package 보존/layout 호환/media/layout/visual/

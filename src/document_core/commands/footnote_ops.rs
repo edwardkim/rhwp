@@ -8,7 +8,7 @@ use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{ParaMeta, Paragraph};
 use crate::renderer::composer::reflow_line_segs;
 
 impl DocumentCore {
@@ -19,6 +19,10 @@ impl DocumentCore {
                 match ctrl {
                     Control::Footnote(footnote) => {
                         footnote.number = number;
+                        number += 1;
+                    }
+                    Control::Endnote(endnote) => {
+                        endnote.number = number;
                         number += 1;
                     }
                     Control::Table(table) => {
@@ -96,8 +100,10 @@ impl DocumentCore {
 
         let positions = crate::document_core::helpers::find_control_text_positions(para);
         for (control_idx, ctrl) in para.controls.iter().enumerate() {
-            let Control::Footnote(footnote) = ctrl else {
-                continue;
+            let number = match ctrl {
+                Control::Footnote(footnote) => footnote.number,
+                Control::Endnote(endnote) => endnote.number,
+                _ => continue,
             };
             let Some(marker_pos) = positions.get(control_idx).copied() else {
                 continue;
@@ -114,7 +120,7 @@ impl DocumentCore {
                     para_idx,
                     control_idx,
                     marker_pos,
-                    footnote.number,
+                    number,
                 ));
             }
         }
@@ -141,11 +147,15 @@ impl DocumentCore {
             let ctrl = para.controls.get(control_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("컨트롤 인덱스 {} 범위 초과", control_idx))
             })?;
-            let Control::Footnote(footnote) = ctrl else {
-                return Err(HwpError::RenderError(format!(
-                    "컨트롤 {}은 각주가 아닙니다",
-                    control_idx
-                )));
+            let number = match ctrl {
+                Control::Footnote(footnote) => footnote.number,
+                Control::Endnote(endnote) => endnote.number,
+                _ => {
+                    return Err(HwpError::RenderError(format!(
+                        "컨트롤 {}은 각주/미주가 아닙니다",
+                        control_idx
+                    )));
+                }
             };
             let positions = crate::document_core::helpers::find_control_text_positions(para);
             let marker_pos = positions.get(control_idx).copied().ok_or_else(|| {
@@ -154,16 +164,33 @@ impl DocumentCore {
                     control_idx
                 ))
             })?;
-            (marker_pos, footnote.number)
+            (marker_pos, number)
         };
 
         {
             let section = &mut self.document.sections[section_idx];
             let para = &mut section.paragraphs[para_idx];
 
+            let marker_utf16_pos = para.char_offsets.get(marker_pos).copied().unwrap_or(0);
             for offset in para.char_offsets.iter_mut().skip(marker_pos) {
                 if *offset >= 8 {
                     *offset -= 8;
+                }
+            }
+            // char_shapes/range_tags 도 char_offsets 와 함께 되돌린다 — 삽입 경로
+            // (shift_for_inline_control_insert)와 대칭되는 삭제측 시프트가 없으면
+            // 삭제 지점 이후 글자모양 run·range_tag 경계가 텍스트와 어긋난다.
+            for cs in &mut para.char_shapes {
+                if cs.start_pos > marker_utf16_pos {
+                    cs.start_pos = cs.start_pos.saturating_sub(8);
+                }
+            }
+            for rt in &mut para.range_tags {
+                if rt.start >= marker_utf16_pos {
+                    rt.start = rt.start.saturating_sub(8);
+                }
+                if rt.end >= marker_utf16_pos {
+                    rt.end = rt.end.saturating_sub(8);
                 }
             }
 
@@ -517,6 +544,9 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         let fn_para =
             self.get_footnote_paragraph_mut(section_idx, para_idx, control_idx, fn_para_idx)?;
+        // [Task #2337] undo 재삽입용 삭제 텍스트 확보 (HF 와 동일 방식 — char 슬라이스로
+        // delete_text_at 클램핑과 동일 범위). 역연산 삭제 커맨드가 사용한다.
+        let deleted_text: String = fn_para.text.chars().skip(char_offset).take(count).collect();
         fn_para.delete_text_at(char_offset, count);
 
         self.reflow_footnote_paragraph(section_idx, para_idx, control_idx, fn_para_idx);
@@ -532,8 +562,9 @@ impl DocumentCore {
             count,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"charOffset\":{}",
-            char_offset
+            "\"charOffset\":{},\"deletedText\":\"{}\"",
+            char_offset,
+            super::super::helpers::json_escape(&deleted_text)
         )))
     }
 
@@ -545,9 +576,10 @@ impl DocumentCore {
         control_idx: usize,
         fn_para_idx: usize,
         char_offset: usize,
+        restore_meta: Option<ParaMeta>,
     ) -> Result<String, HwpError> {
         // 문단 분할
-        let new_para = {
+        let mut new_para = {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
             })?;
@@ -583,6 +615,9 @@ impl DocumentCore {
                 }
             }
         };
+        if let Some(meta) = restore_meta {
+            new_para.apply_meta(meta);
+        }
 
         // 새 문단 삽입
         let new_para_idx = fn_para_idx + 1;
@@ -630,6 +665,7 @@ impl DocumentCore {
         }
 
         let merge_offset;
+        let removed_meta;
         {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
@@ -650,6 +686,8 @@ impl DocumentCore {
                     }
                     merge_offset = f.paragraphs[fn_para_idx - 1].text.chars().count();
                     let removed = f.paragraphs.remove(fn_para_idx);
+                    removed_meta =
+                        super::super::helpers::removed_para_meta_field(&removed.capture_meta());
                     f.paragraphs[fn_para_idx - 1].merge_from(&removed);
                 }
                 Control::Endnote(e) => {
@@ -661,6 +699,8 @@ impl DocumentCore {
                     }
                     merge_offset = e.paragraphs[fn_para_idx - 1].text.chars().count();
                     let removed = e.paragraphs.remove(fn_para_idx);
+                    removed_meta =
+                        super::super::helpers::removed_para_meta_field(&removed.capture_meta());
                     e.paragraphs[fn_para_idx - 1].merge_from(&removed);
                 }
                 _ => {
@@ -683,8 +723,148 @@ impl DocumentCore {
             para: para_idx,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
-            "\"fnParaIndex\":{},\"charOffset\":{}",
-            prev_idx, merge_offset
+            "\"fnParaIndex\":{},\"charOffset\":{}{}",
+            prev_idx, merge_offset, removed_meta
         )))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::document_core::DocumentCore;
+    use crate::model::control::Control;
+
+    /// 본문 최상위(표/글상자 밖) 미주는 renumber_footnotes_in_section 의 바깥쪽 match 에
+    /// Control::Endnote 분기가 없어 각주 삭제 후에도 번호가 갱신되지 않던 결함의 회귀 테스트.
+    #[test]
+    fn delete_footnote_renumbers_top_level_endnote_after_it() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "ab").unwrap();
+
+        // 순서: 각주(offset 0) -> 미주(offset 1, 각주 삽입으로 +8 시프트됨)
+        core.insert_footnote_native(0, 0, 0).unwrap();
+        let endnote_offset = core.document.sections[0].paragraphs[0]
+            .char_offsets
+            .get(1)
+            .copied()
+            .unwrap() as usize;
+        core.insert_endnote_native(0, 0, endnote_offset).unwrap();
+
+        let footnote_ctrl_idx = core.document.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::Footnote(_)))
+            .expect("본문에 각주 컨트롤이 있어야 함");
+        core.delete_footnote_native(0, 0, footnote_ctrl_idx)
+            .unwrap();
+
+        let remaining_endnote_number = core.document.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|c| match c {
+                Control::Endnote(e) => Some(e.number),
+                _ => None,
+            })
+            .expect("본문에 미주 컨트롤이 남아 있어야 함");
+
+        assert_eq!(
+            remaining_endnote_number, 1,
+            "각주 삭제 후 본문 최상위 미주 번호가 1로 재계산되어야 함"
+        );
+    }
+
+    /// 각주 문단 병합의 undo 가 사라진 문단의 스코프 메타데이터를 되돌리는지 (Task #2342).
+    #[test]
+    fn merge_paragraph_in_footnote_undo_restores_removed_paragraph_meta() {
+        use crate::document_core::helpers::removed_para_meta_of;
+        use crate::model::paragraph::NumberingRestart;
+
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "ab").unwrap();
+        core.insert_footnote_native(0, 0, 0).unwrap();
+        let ctrl_idx = core.document.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .position(|c| matches!(c, Control::Footnote(_)))
+            .expect("각주 컨트롤");
+
+        core.insert_text_in_footnote_native(0, 0, ctrl_idx, 0, 0, "HelloWorld")
+            .unwrap();
+        core.split_paragraph_in_footnote_native(0, 0, ctrl_idx, 0, 5, None)
+            .unwrap();
+
+        let second = core.get_footnote_paragraph_mut(0, 0, ctrl_idx, 1).unwrap();
+        second.para_shape_id = 20;
+        second.style_id = 5;
+        second.numbering_restart = Some(NumberingRestart::NewStart(3));
+        second.raw_header_extra = vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB];
+        let text_before_merge = second.text.clone();
+
+        let merged = core
+            .merge_paragraph_in_footnote_native(0, 0, ctrl_idx, 1)
+            .unwrap();
+        let meta = removed_para_meta_of(&merged);
+        core.split_paragraph_in_footnote_native(0, 0, ctrl_idx, 0, 5, Some(meta))
+            .unwrap();
+
+        let restored = core.get_footnote_paragraph_mut(0, 0, ctrl_idx, 1).unwrap();
+        assert_eq!(restored.text, text_before_merge);
+        assert_eq!(restored.para_shape_id, 20);
+        assert_eq!(restored.style_id, 5);
+        assert_eq!(
+            restored.numbering_restart,
+            Some(NumberingRestart::NewStart(3))
+        );
+        assert_eq!(
+            restored.raw_header_extra,
+            vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB]
+        );
+    }
+}
+
+#[cfg(test)]
+mod delete_footnote_char_shape_tests {
+    use crate::document_core::DocumentCore;
+    use crate::model::paragraph::CharShapeRef;
+
+    /// [reference-integrity 회귀] 각주 삭제 후 char_offsets 만 -8 시프트하고
+    /// char_shapes.start_pos 는 그대로 두면, 삭제 지점 이후 글자모양 run 경계가
+    /// 텍스트와 어긋난다(삽입측 shift_for_inline_control_insert 와 비대칭).
+    #[test]
+    fn delete_footnote_shifts_char_shapes_back_with_char_offsets() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "abcd").unwrap();
+        core.insert_footnote_native(0, 0, 2).unwrap();
+
+        // 각주 삽입 후 'c'(char idx 뒤쪽, 각주 마커 이후)의 글자모양을 별도 run(id=9)으로 지정.
+        let (control_idx, marker_pos) = {
+            let para = &core.document.sections[0].paragraphs[0];
+            let positions = crate::document_core::helpers::find_control_text_positions(para);
+            let ci = para
+                .controls
+                .iter()
+                .position(|c| matches!(c, crate::model::control::Control::Footnote(_)))
+                .expect("각주 컨트롤");
+            (ci, positions[ci])
+        };
+        {
+            let para = &mut core.document.sections[0].paragraphs[0];
+            para.char_shapes.push(CharShapeRef {
+                start_pos: marker_pos as u32 + 8,
+                char_shape_id: 9,
+            });
+        }
+
+        core.delete_footnote_native(0, 0, control_idx).unwrap();
+
+        let para = &core.document.sections[0].paragraphs[0];
+        assert_eq!(
+            para.char_shape_id_at(2),
+            Some(9),
+            "각주 삭제 후 char_shapes.start_pos 가 되돌아가지 않아 글자모양 run 이 텍스트와 어긋남"
+        );
     }
 }

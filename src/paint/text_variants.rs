@@ -344,6 +344,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 10.0,
                 field_marker: FieldMarkerType::None,
+                display_text: None,
             },
         )
     }

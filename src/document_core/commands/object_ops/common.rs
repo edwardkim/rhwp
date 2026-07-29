@@ -387,13 +387,7 @@ impl crate::document_core::DocumentCore {
             .insert(insert_idx, Control::NewNumber(new_number));
         paragraph.ctrl_data_records.insert(insert_idx, None);
 
-        if !paragraph.char_offsets.is_empty() {
-            let text_len = paragraph.text.chars().count();
-            let safe_offset = char_offset.min(text_len);
-            for co in paragraph.char_offsets[safe_offset..].iter_mut() {
-                *co += 8;
-            }
-        }
+        paragraph.shift_for_inline_control_insert(char_offset);
         paragraph.char_count += 8;
         paragraph.control_mask |= 1u32 << 0x0012;
         paragraph.has_para_text = true;

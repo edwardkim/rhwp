@@ -352,7 +352,9 @@ fn task888_basic_table_materializes_hancom_table_attrs() {
         table.raw_table_record_attr, 0x0400_0006,
         "HWPX table record attr는 pageBreak/repeatHeader/noAdjust와 안쪽 여백 활성 계약 필드로 재구성한다"
     );
-    assert_eq!(report.table_record_row_sizes_materialized, 1);
+    // [#3062] row_sizes 는 이제 HWPX 파서가 셀 수로 직접 채우므로 어댑터
+    // materialize 는 no-op 이다 (attr 계열과 동일한 "파서가 이미 한다" 계약).
+    assert_eq!(report.table_record_row_sizes_materialized, 0);
     assert_eq!(table.row_sizes, vec![4, 4, 4]);
     assert!(table.raw_ctrl_data.len() >= 4);
     assert_eq!(
@@ -408,7 +410,8 @@ fn task888_expense_report_materializes_tac_table_ctrl_attrs() {
         report.table_ctrl_header_attr_materialized, 0,
         "HWPX 파서가 TAC table CTRL_HEADER attr를 이미 materialize한다"
     );
-    assert_eq!(report.table_record_row_sizes_materialized, 2);
+    // [#3062] row_sizes 는 파서가 직접 채우므로 어댑터 materialize 는 0 이다.
+    assert_eq!(report.table_record_row_sizes_materialized, 0);
 }
 
 #[test]

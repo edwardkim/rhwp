@@ -142,7 +142,18 @@ fn init_exam_doc_info(doc: &mut Document, default_font: &str) -> ExamStyleIds {
         },
         ..Default::default()
     };
-    doc.doc_info.border_fills = vec![BorderFill::default(), boxed_border_fill];
+    // [#3355] `BorderFill::default()` 는 무테두리가 아니다 — `BorderLineType` 의 Rust
+    // 기본값이 Solid(1) 라서 4면 실선이 되고, 이를 기본 글자모양이 참조해 모든 텍스트
+    // 런에 검정 상자가 그려졌다. 무테두리를 명시 생성한다.
+    let no_border_fill = BorderFill {
+        borders: [BorderLine {
+            line_type: BorderLineType::None,
+            width: 0,
+            color: 0,
+        }; 4],
+        ..Default::default()
+    };
+    doc.doc_info.border_fills = vec![no_border_fill, boxed_border_fill];
     doc.doc_info.tab_defs = vec![TabDef::default()];
 
     let mut char_shape = CharShape {
@@ -705,6 +716,23 @@ mod tests {
 
         assert_eq!(doc.doc_info.border_fills.len(), 2);
         assert_eq!(doc.doc_info.para_shapes.len(), 2);
+        // [#3355] 기본 borderFill(첫 엔트리)은 무테두리여야 한다 — 기본 글자모양이
+        // 참조하므로 실선이면 모든 텍스트 런에 상자가 그려진다.
+        assert!(
+            doc.doc_info.border_fills[0]
+                .borders
+                .iter()
+                .all(|b| b.line_type == crate::model::style::BorderLineType::None),
+            "기본 borderFill 은 4면 모두 선 없음이어야 합니다"
+        );
+        // boxed 블록용(둘째 엔트리)은 실선 테두리를 유지한다.
+        assert!(
+            doc.doc_info.border_fills[1]
+                .borders
+                .iter()
+                .all(|b| b.line_type == crate::model::style::BorderLineType::Solid),
+            "boxed borderFill 은 실선을 유지해야 합니다"
+        );
         assert_eq!(
             doc.sections[0].paragraphs[0].text,
             "3. 다음 보기에서 알 수 있는 것은?"

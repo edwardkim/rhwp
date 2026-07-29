@@ -28,6 +28,7 @@ rhwp는 Rust로 HWP/HWPX/HWP3 문서를 공통 IR로 변환하고 네이티브�
 ## 로컬 시작
 
 ```bash
+git remote add upstream https://github.com/edwardkim/rhwp.git  # fork를 clone한 경우 최초 1회
 git fetch upstream
 git switch -c <work-branch> upstream/devel
 cargo build

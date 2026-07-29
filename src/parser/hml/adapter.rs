@@ -19,6 +19,11 @@ pub(crate) fn into_document(mut source: HmlSource) -> Result<Document, HmlError>
             },
             ..Default::default()
         },
+        provenance: crate::model::provenance::SourceProvenance {
+            format: crate::model::provenance::SourceFormat::Hml,
+            hwp3_lineage: false,
+            hwpx_lineage: false,
+        },
         ..Default::default()
     };
     document.doc_info.hwpml_version = Some(source.version.clone());
@@ -236,9 +241,19 @@ fn into_table(source: HmlTable) -> Result<Control, HmlError> {
             ..Default::default()
         });
     }
-    let row_sizes = (0..source.row_count)
-        .map(|row| cells.iter().filter(|cell| cell.row == row).count() as i16)
-        .collect();
+    // [#2833] row_count 는 <TABLE RowCount="..."> 를 검증 없이 받은 u16 이다.
+    // 종전 코드는 row_count 만큼 순회하며 매 행마다 cells 전체를 다시 스캔해
+    // O(row_count × cells.len()) 이었다 — RowCount 만 부풀린 입력이 파싱 자체를
+    // 느리게 만들었다(#2751 은 export 경로, 이건 import 경로의 동형 잔여).
+    // cells 를 한 번만 순회해 행별로 누적하면 O(row_count + cells.len()).
+    // cell.row >= row_count 인 셀은 종전에도 어떤 행에도 카운트되지 않았으므로
+    // (0..row_count 범위 밖) get_mut 이 None 인 경우 그대로 무시해 동일하게 맞춘다.
+    let mut row_sizes = vec![0i16; source.row_count as usize];
+    for cell in &cells {
+        if let Some(slot) = row_sizes.get_mut(cell.row as usize) {
+            *slot = slot.saturating_add(1);
+        }
+    }
     let attr = u32::from(source.common.treat_as_char);
     let mut table = Table {
         attr,

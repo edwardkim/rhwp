@@ -4,8 +4,8 @@
 (() => {
   'use strict';
 
-  const HWP_EXTENSIONS = /\.(hwp|hwpx)(\?.*)?$/i;
-  const DOCUMENT_PATH_EXTENSIONS = /\.(hwp|hwpx)$/i;
+  const HWP_EXTENSIONS = /\.(hwp|hwpx|hml)(\?.*)?$/i;
+  const DOCUMENT_PATH_EXTENSIONS = /\.(hwp|hwpx|hml)$/i;
   const GITHUB_NON_DOCUMENT_MARKERS = new Set(['edit', 'commits', 'blame', 'tree']);
   const BADGE_CLASS = 'rhwp-badge';
   const HOVER_CLASS = 'rhwp-hover-card';
@@ -122,10 +122,11 @@
   });
 
   // 확장 존재 알림
+  const EXT_VERSION = chrome.runtime.getManifest().version;
   document.documentElement.setAttribute('data-hwp-extension', 'rhwp');
-  document.documentElement.setAttribute('data-hwp-extension-version', '0.2.8');
+  document.documentElement.setAttribute('data-hwp-extension-version', EXT_VERSION);
   window.dispatchEvent(new CustomEvent('hwp-extension-ready', {
-    detail: { name: 'rhwp', version: '0.2.8', capabilities: ['preview', 'edit', 'print'] }
+    detail: { name: 'rhwp', version: EXT_VERSION, capabilities: ['preview', 'edit', 'print'] }
   }));
 
   // 개발자 도구 주입 (페이지 컨텍스트에 rhwpDev 노출)
@@ -577,7 +578,8 @@
   // ─── 링크 처리 ───
 
   function processLinks(root = document) {
-    const anchors = root.querySelectorAll('a[href]');
+    const anchors = root.matches?.('a[href]') ? [root] : [];
+    anchors.push(...root.querySelectorAll('a[href]'));
     for (const anchor of anchors) {
       if (anchor.hasAttribute(PROCESSED_ATTR)) continue;
       if (!isHwpLink(anchor)) continue;

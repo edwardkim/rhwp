@@ -29,7 +29,7 @@ test('handleUndo 는 히스토리 점프 시 개체/표 선택을 해제한다',
 
   assert.match(
     block,
-    /exitObjectSelectionAfterHistoryJump\(\)/,
+    /resetDerivedStateAfterHistoryJump\(\)/,
     'undo 는 stale 선택 ref 를 남기지 않도록 선택 해제를 호출해야 함',
   );
 });
@@ -40,14 +40,14 @@ test('handleRedo 는 히스토리 점프 시 개체/표 선택을 해제한다',
 
   assert.match(
     block,
-    /exitObjectSelectionAfterHistoryJump\(\)/,
+    /resetDerivedStateAfterHistoryJump\(\)/,
     'redo 는 stale 선택 ref 를 남기지 않도록 선택 해제를 호출해야 함',
   );
 });
 
 test('선택 해제 헬퍼는 개체·표 선택 모두 정리하고 상태 이벤트를 발행한다', () => {
   const handler = source('src/engine/input-handler.ts');
-  const block = methodBlock(handler, 'exitObjectSelectionAfterHistoryJump');
+  const block = methodBlock(handler, 'resetDerivedStateAfterHistoryJump');
 
   assert.match(block, /exitPictureObjectSelection\(\)/, '그림/도형 선택 해제');
   assert.match(block, /pictureObjectRenderer\?\.clear\(\)/, '선택 핸들 렌더러 정리');

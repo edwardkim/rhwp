@@ -56,17 +56,75 @@ pub fn serialize_hwp(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     // 4. 압축 여부 결정
     let compressed = doc.header.compressed;
 
-    // 5. CFB 컨테이너 조립
+    // 5. 미리보기 텍스트 보정
+    //
+    // preview 는 파싱 원본에서 그대로 실려 온다 (원본 보존 우선). 그러나 내장
+    // 템플릿에서 만든 새 문서는 템플릿의 placeholder 미리보기("\r\n")를 물고
+    // 나가 탐색기·한컴 미리보기에 빈 문서로 보인다. 원본 미리보기가 없거나
+    // placeholder 일 때만 본문에서 새로 만든다 — 실문서의 원본 미리보기는 건드리지 않는다.
+    let preview = supplement_preview(doc);
+
+    // 6. CFB 컨테이너 조립
     write_hwp_cfb(
         &header_bytes,
         &doc_info_bytes,
         &section_bytes_list,
         &doc.doc_info.bin_data_list,
         &doc.bin_data_content,
-        &doc.preview,
+        &preview,
         &doc.extra_streams,
         compressed,
     )
+}
+
+/// PrvText 가 비었거나 placeholder 면 본문 텍스트로 채운다.
+///
+/// 원본 미리보기가 실재하면 그대로 둔다 (라운드트립 보존).
+fn supplement_preview(doc: &Document) -> Option<Preview> {
+    let has_real_text = doc
+        .preview
+        .as_ref()
+        .and_then(|p| p.text.as_ref())
+        .map(|t| !t.trim().is_empty())
+        .unwrap_or(false);
+
+    if has_real_text {
+        return doc.preview.clone();
+    }
+
+    let text = build_preview_text(doc);
+    if text.trim().is_empty() {
+        return doc.preview.clone();
+    }
+
+    Some(Preview {
+        image: doc.preview.as_ref().and_then(|p| p.image.clone()),
+        text: Some(text),
+    })
+}
+
+/// 본문 문단에서 미리보기 텍스트를 만든다.
+///
+/// 한컴은 앞부분 일부만 담는다 (shortcut.hwp 실측 2044B ≈ 1022자).
+/// 표/글상자 안 텍스트는 제외하고 본문 문단만 이어 붙인다.
+fn build_preview_text(doc: &Document) -> String {
+    const MAX_CHARS: usize = 1000;
+
+    let mut out = String::new();
+    for section in &doc.sections {
+        for para in &section.paragraphs {
+            let line = para.text.trim_end_matches('\u{0}');
+            if line.is_empty() {
+                continue;
+            }
+            out.push_str(line);
+            out.push_str("\r\n");
+            if out.chars().count() >= MAX_CHARS {
+                return out.chars().take(MAX_CHARS).collect();
+            }
+        }
+    }
+    out
 }
 
 /// raw deflate 압축 (wbits=-15)

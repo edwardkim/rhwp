@@ -105,43 +105,9 @@ CHROME_CDP=http://localhost:19222 node e2e/edit-pipeline.test.mjs --mode=host
 
 ### 2.2 전체 테스트 목록
 
-#### 핵심 테스트
-
-| 테스트 파일 | 설명 | 항목 수 |
-|------------|------|---------|
-| `e2e/edit-pipeline.test.mjs` | 편집 파이프라인 통합 검증 (문단 추가/삭제, 표 삽입, 이미지, 글상자, 대량 편집) | 52 |
-| `e2e/text-flow.test.mjs` | 텍스트 플로우 (입력, 줄바꿈, 엔터, 페이지 넘김, Backspace) | 6 |
-
-#### 기능별 테스트
-
-| 테스트 파일 | 설명 | 샘플 파일 |
-|------------|------|----------|
-| `e2e/blogform.test.mjs` | BlogForm_BookReview.hwp 누름틀 안내문 처리 | BlogForm_BookReview.hwp |
-| `e2e/copy-paste.test.mjs` | 텍스트 블럭 복사/붙여넣기 | — |
-| `e2e/footnote-insert.test.mjs` | 각주 삽입 시 문단 위치 검증 | footnote-01.hwp |
-| `e2e/footnote-vpos.test.mjs` | 각주 편집 시 vpos 이상 검증 | footnote-01.hwp |
-| `e2e/line-spacing.test.mjs` | 줄간격 변경에 따른 페이지 넘김 | — |
-| `e2e/page-break.test.mjs` | 강제 쪽 나누기 | biz_plan.hwp |
-| `e2e/shape-inline.test.mjs` | 도형 인라인 컨트롤 — 커서 이동 및 텍스트 삽입 | — |
-| `e2e/shift-end.test.mjs` | Shift+End 선택 범위 검증 | shift-return.hwp |
-| `e2e/typesetting.test.mjs` | 조판 품질 검증 (문단부호 표시) | — |
-| `e2e/responsive.test.mjs` | 반응형 레이아웃 (뷰포트 크기별) | — |
-| `e2e/hwpctl-basic.test.mjs` | hwpctl API 기본 동작 | — |
-
-#### 디버그용 (수동 확인)
-
-| 테스트 파일 | 설명 |
-|------------|------|
-| `e2e/debug-pagination.test.mjs` | 페이지네이션 디버그 |
-| `e2e/debug-table-pos.test.mjs` | 표 위치 디버그 |
-| `e2e/debug-textbox.test.mjs` | 글상자 디버그 |
-
-#### 유틸리티
-
-| 파일 | 설명 |
-|------|------|
-| `e2e/helpers.mjs` | 공통 헬퍼 (테스트 러너, 브라우저 연결, 문서 로드, 검증, 스크린샷, 보고서 생성) |
-| `e2e/report-generator.mjs` | HTML 보고서 생성기 (`TestReporter` 클래스) |
+테스트 스크립트의 단일 권위 목록은 [`rhwp-studio/e2e/MANIFEST.md`](../../rhwp-studio/e2e/MANIFEST.md)다
+(#2353 — 분류·상태·용도·샘플·배선 전수). 파일 추가/변경/폐기 시 MANIFEST 를 함께 갱신하고,
+`python3 scripts/check_e2e_manifest.py` 로 대조를 확인한다 (양방향 대조 + 명명 정합 + 배선 실재).
 
 ### 2.3 headless 모드 (CI용)
 

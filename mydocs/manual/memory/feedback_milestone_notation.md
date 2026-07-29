@@ -2,7 +2,7 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 마일스톤 표기 규칙
 description: v1.0.0 → M100, v0.5.x → M05x 형식. 오늘할일과 커밋에서 사용.
 type: feedback

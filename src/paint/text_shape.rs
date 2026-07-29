@@ -505,6 +505,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 12.0,
             field_marker: crate::renderer::render_tree::FieldMarkerType::None,
+            display_text: None,
         }
     }
 

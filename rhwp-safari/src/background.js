@@ -12,10 +12,6 @@ const PRIVATE_IP_PATTERNS = [
   /^127\./, /^10\./, /^192\.168\./, /^172\.(1[6-9]|2\d|3[01])\./,
   /^169\.254\./, /^0\./, /^\[::1\]/, /^localhost$/i, /\.local$/i,
 ];
-const HWP_SIGNATURE = [0xD0, 0xCF, 0x11, 0xE0];
-const HWPX_SIGNATURE = [0x50, 0x4B, 0x03, 0x04];
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
-
 function isPrivateHost(hostname) {
   return PRIVATE_IP_PATTERNS.some(re => re.test(hostname));
 }
@@ -40,7 +36,7 @@ function isAllowedDomain(hostname, domains) {
 
 function hasHwpExtension(parsed) {
   const p = parsed.pathname.toLowerCase();
-  return p.endsWith('.hwp') || p.endsWith('.hwpx');
+  return p.endsWith('.hwp') || p.endsWith('.hwpx') || p.endsWith('.hml');
 }
 
 function isDownloadEndpoint(parsed) {
@@ -53,14 +49,6 @@ async function getAllowedDomains() {
     const s = await browser.storage.local.get({ allowedDomains: DEFAULT_ALLOWED_DOMAINS });
     return s.allowedDomains;
   } catch { return DEFAULT_ALLOWED_DOMAINS; }
-}
-
-function verifyHwpSignature(bytes) {
-  if (bytes.length < 4) return { isHwp: false, format: null };
-  const b = new Uint8Array(bytes.slice(0, 4));
-  if (HWP_SIGNATURE.every((v, i) => b[i] === v)) return { isHwp: true, format: 'hwp' };
-  if (HWPX_SIGNATURE.every((v, i) => b[i] === v)) return { isHwp: true, format: 'hwpx' };
-  return { isHwp: false, format: null };
 }
 
 // ─── 보안: 파일명 새니타이즈 ───
@@ -258,10 +246,10 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
               if (!res2.ok) throw new Error(`HTTP ${res2.status}`);
               const buf = await res2.arrayBuffer();
               if (buf.byteLength > maxSize) throw new Error('파일 크기 초과');
-              const sig = verifyHwpSignature(buf);
-              if (!sig.isHwp) {
-                logSecurity('signature-blocked', fetchUrl, '매직 넘버 불일치');
-                sendResponse({ error: 'HWP 파일이 아닙니다' });
+              const signature = verifyDocumentSignature(buf);
+              if (!signature.isDocument) {
+                logSecurity('signature-blocked', fetchUrl, '지원하지 않는 한글 문서 형식');
+                sendResponse({ error: '지원하지 않는 한글 문서 형식입니다' });
                 return;
               }
               sendResponse({ data: buf });
@@ -287,11 +275,11 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
             return;
           }
 
-          // 매직 넘버 검증
-          const sig = verifyHwpSignature(buf);
-          if (!sig.isHwp) {
-            logSecurity('signature-blocked', fetchUrl, '매직 넘버 불일치');
-            sendResponse({ error: 'HWP 파일이 아닙니다' });
+          // 문서 형식 검증
+          const signature = verifyDocumentSignature(buf);
+          if (!signature.isDocument) {
+            logSecurity('signature-blocked', fetchUrl, '지원하지 않는 한글 문서 형식');
+            sendResponse({ error: '지원하지 않는 한글 문서 형식입니다' });
             return;
           }
 

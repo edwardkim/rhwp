@@ -4,7 +4,7 @@
   'use strict';
   if (window.rhwpDev) return;
 
-  const VERSION = '0.2.8';
+  const VERSION = document.documentElement.getAttribute('data-hwp-extension-version') || 'unknown';
 
   window.rhwpDev = {
     inspect() {
@@ -15,7 +15,7 @@
       for (const a of links) {
         const href = a.href || '';
         const isMarked = a.getAttribute('data-hwp') === 'true';
-        const isExt = /\.(hwp|hwpx)(\?.*)?$/i.test(href);
+        const isExt = /\.(hwp|hwpx|hml)(\?.*)?$/i.test(href);
 
         if (!isMarked && !isExt) continue;
 

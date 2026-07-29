@@ -26,17 +26,20 @@ HWPX(XML 기반)와 HWP(바이너리)는 동일한 문서를 다른 형식으로
 ## 사용법
 
 ```bash
-rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>]
+rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-lines <N>] [--json]
 ```
 
 ### 옵션
 
 | 옵션 | 단축 | 설명 |
 |------|------|------|
-| `--section <번호>` | `-s` | 특정 구역만 비교 (0부터 시작) |
+| `--section <번호>` | `-s` | 특정 구역만 비교 (0부터 시작). 값 자리에 플래그(`-` 시작)가 오면 값 없음으로 처리 |
 | `--para <번호>` | `-p` | 특정 문단만 비교 (0부터 시작) |
-| `--summary` |  | 카테고리별 차이 카운트만 출력 (paragraph 헤더 + 개별 차이 라인 생략) |
-| `--max-lines <N>` |  | 출력 라인 수를 N 으로 제한, 초과 시 truncation 마커 표시 (`=== 비교 완료` 라인은 항상 출력) |
+| `--summary` |  | 카테고리별 차이 카운트만 출력 (paragraph 헤더 + 개별 차이 라인 생략). **`--json` 병용 시 JSON 이 이겨** 카운트 텍스트는 출력하지 않음 |
+| `--max-lines <N>` |  | 출력 라인 수를 N 으로 제한, 초과 시 truncation 마커 표시 (`=== 비교 완료` 라인은 항상 출력). **단 `--json` 병용 시에는 봉투 한 줄만 나가고 이 텍스트 출력은 전부 생략** |
+| `--json` (#3274) |  | 판정 봉투 JSON 한 줄만 stdout 출력 (`schemaVersion`·`a`·`b`·`identical`·`diffCount`·`categories`). 종료 코드: 차이 발견 3, 읽기·파싱 실패 1(stdout 0바이트), 인자 부족 2 |
+
+> **병용·인자 규칙(#3274)**: `--summary`/`--max-lines` 와 `--json` 을 함께 주면 **stdout 순수성을 위해 JSON 이 이긴다**(텍스트 출력 전부 생략). 값을 받는 `-s`/`-p`/`--max-lines` 는 다음 토큰이 플래그면 값으로 삼키지 않는다. **알 수 없는 옵션(오타 포함)은 현재 조용히 무시**되어 exit 2 가 아니므로(전역 계약 §종료 코드의 예외, #3178 정렬은 별도 이슈), 게이트 스크립트는 플래그 철자를 정확히 쓸 것.
 
 #### 출력 가드 사용 예
 
@@ -47,6 +50,15 @@ rhwp ir-diff samples/hwpx/aift.hwpx samples/aift.hwp --summary
 # 출력을 50 라인으로 제한 (긴 출력 처음 검사)
 rhwp ir-diff samples/hwpx/aift.hwpx samples/aift.hwp --max-lines 50
 ```
+
+#### 파이프라인 게이트 사용 예 (#3274)
+
+```bash
+# 대량 변환 후 내용 보존 검증 — 차이가 있으면 exit 3 으로 즉시 신호
+rhwp ir-diff 원본.hwp 변환본.hwpx --json || echo "격리 대상"
+# {"a":"원본.hwp","b":"변환본.hwpx","categories":{...},"diffCount":N,"identical":false,"schemaVersion":"1.0"}
+```
+
 
 ### 사용 예시
 

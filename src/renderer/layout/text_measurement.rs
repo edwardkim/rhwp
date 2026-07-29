@@ -48,6 +48,20 @@ fn build_cluster_len(chars: &[char]) -> Vec<u8> {
     cluster_len
 }
 
+/// [#2279] 자간(%)의 픽셀 기여 — 한글은 자간을 **해당 글자의 진행폭 비례**로
+/// 적용한다 (fs-비례 아님). 무신축 Justify 마지막 줄 실측(36392557 pi34,
+/// 휴먼명조 '*' 14pt 자간 -9%/장평 96%: 0.44em = 0.5×0.96×0.91)으로 확정.
+/// 전각(1.0em) 글자는 fs-비례와 동일하므로 CJK 자간 동작은 불변이고,
+/// 반각/좁은 글자에서만 압축·확장이 글자폭에 비례해 정확해진다.
+/// style.letter_spacing 은 fs×% 로 저장되어 있으므로 (base/fs) 로 환산한다.
+#[inline]
+fn glyph_letter_spacing(letter_spacing_px: f64, glyph_base_px: f64, font_size: f64) -> f64 {
+    if font_size <= 0.0 {
+        return letter_spacing_px;
+    }
+    letter_spacing_px * (glyph_base_px / font_size)
+}
+
 /// 스타일에서 공통 파라미터 추출 (font_size, ratio, tab_w)
 fn style_params(style: &TextStyle) -> (f64, f64, f64) {
     let font_size = if style.font_size > 0.0 {
@@ -310,7 +324,9 @@ fn compute_char_positions_walk(
     let char_width = |i: usize| -> f64 {
         let c = chars[i];
         if c == '\u{2007}' {
-            return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+            return font_size * 0.5 * ratio
+                + glyph_letter_spacing(style.letter_spacing, font_size * 0.5 * ratio, font_size)
+                + style.extra_char_spacing;
         }
         // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
         if c == '\u{FFFC}' {
@@ -328,7 +344,9 @@ fn compute_char_positions_walk(
         } else {
             char_px_raw
         };
-        let mut w = char_px * ratio + style.letter_spacing + style.extra_char_spacing;
+        let mut w = char_px * ratio
+            + glyph_letter_spacing(style.letter_spacing, char_px * ratio, font_size)
+            + style.extra_char_spacing;
         if c == ' ' {
             w += style.extra_word_spacing;
         }
@@ -443,7 +461,13 @@ impl TextMeasurer for EmbeddedTextMeasurer {
         let char_width = |i: usize| -> f64 {
             let c = chars[i];
             if c == '\u{2007}' {
-                return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+                return font_size * 0.5 * ratio
+                    + glyph_letter_spacing(
+                        style.letter_spacing,
+                        font_size * 0.5 * ratio,
+                        font_size,
+                    )
+                    + style.extra_char_spacing;
             }
             // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
             if c == '\u{FFFC}' {
@@ -490,7 +514,9 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             } else {
                 base_w_raw
             };
-            let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
+            let mut w = base_w * ratio
+                + glyph_letter_spacing(style.letter_spacing, base_w * ratio, font_size)
+                + style.extra_char_spacing;
             if c == ' ' {
                 w += style.extra_word_spacing;
             }
@@ -1039,7 +1065,13 @@ impl TextMeasurer for WasmTextMeasurer {
         let char_width = |i: usize| -> f64 {
             let c = chars[i];
             if c == '\u{2007}' {
-                return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+                return font_size * 0.5 * ratio
+                    + glyph_letter_spacing(
+                        style.letter_spacing,
+                        font_size * 0.5 * ratio,
+                        font_size,
+                    )
+                    + style.extra_char_spacing;
             }
             // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
             if c == '\u{FFFC}' {
@@ -1073,7 +1105,9 @@ impl TextMeasurer for WasmTextMeasurer {
             } else {
                 char_px_raw
             };
-            let mut w = char_px * ratio + style.letter_spacing + style.extra_char_spacing;
+            let mut w = char_px * ratio
+                + glyph_letter_spacing(style.letter_spacing, char_px * ratio, font_size)
+                + style.extra_char_spacing;
             if c == ' ' {
                 w += style.extra_word_spacing;
             }
@@ -1561,10 +1595,15 @@ fn haansoft_latin_override(primary_name: &str, c: char) -> Option<f64> {
 /// 명조(HY견명조 치환) 등 여타 = 반각 (80168 개정안{{7}} p9/p13 '시ㆍ도조례'
 /// 1줄 오라클, 개정안{{1}} P21 마크와 반각 양립 검증). embedded 메트릭
 /// (HY견명조 수록분)이 전각이라 룩업보다 앞서 판정하되, 함초롬(HCR) 계열은
-/// embedded 메트릭을 신뢰한다 (None 반환).
+/// embedded 메트릭을 신뢰한다 (None 반환). [#2279] 한컴바탕/한컴돋움
+/// (Haansoft 실메트릭, ㆍ=1.0em)도 동일하게 embedded 메트릭을 신뢰한다.
 pub(crate) fn area_dot_fallback_width(font_family: &str, font_size: f64) -> Option<f64> {
     let fam = font_family.split(',').next().unwrap_or("").trim();
-    if fam.contains("함초롬") || fam.contains("HCR") {
+    if fam.contains("함초롬")
+        || fam.contains("HCR")
+        || fam.contains("한컴")
+        || fam.contains("Haansoft")
+    {
         return None;
     }
     Some(if fam.contains("한양신명조") {
@@ -1671,7 +1710,9 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
     let char_width = |i: usize| -> f64 {
         let c = chars[i];
         if c == '\u{2007}' {
-            return font_size * 0.5 * ratio + style.letter_spacing + style.extra_char_spacing;
+            return font_size * 0.5 * ratio
+                + glyph_letter_spacing(style.letter_spacing, font_size * 0.5 * ratio, font_size)
+                + style.extra_char_spacing;
         }
         // 인라인 객체 placeholder 는 실제 control node 가 따로 그리므로 텍스트 폭은 0.
         if c == '\u{FFFC}' {
@@ -1705,7 +1746,9 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
         } else {
             base_w_raw
         };
-        let mut w = base_w * ratio + style.letter_spacing + style.extra_char_spacing;
+        let mut w = base_w * ratio
+            + glyph_letter_spacing(style.letter_spacing, base_w * ratio, font_size)
+            + style.extra_char_spacing;
         if c == ' ' {
             w += style.extra_word_spacing;
         }
@@ -2094,6 +2137,112 @@ mod tests {
         assert!(haansoft_latin_override("함초롬바탕 확장", '(').is_none());
         assert!(haansoft_latin_override("HCR Batang Ext", '(').is_none());
         assert!(haansoft_latin_override("바탕", '(').is_none());
+    }
+
+    // ── #2279 한컴돋움/한컴바탕 = Haansoft 실메트릭 ──
+
+    /// 한컴돋움/한컴바탕의 실체는 Haansoft Dotum/Batang (HDOTUM.TTF/HBATANG.TTF
+    /// name table 한국어명). 한글 PDF 실측(36398599 pi35 단일줄 무신축 '*' run:
+    /// 0.583em, 한글 음절 1.0em)과 hmtx 가 일치 — HCR(함초롬) 메트릭('*' 0.498,
+    /// 음절 0.97em)으로 회귀하면 '*' 마스킹 구분선·본문 래핑 줄수가 한글 대비
+    /// ±1 이탈한다 (92 컨트롤셋 36398599/36399105 −1쪽 계열).
+    #[test]
+    fn issue_2279_hancom_dotum_batang_use_haansoft_metrics() {
+        let fs = 20.0; // 15pt
+        let w = |fam: &str, c: char| {
+            measure_char_width_embedded(fam, false, false, c, fs)
+                .unwrap_or_else(|| panic!("측정 실패: {fam} {c:?}"))
+        };
+        // 한컴돋움 = Haansoft Dotum
+        assert!(
+            (w("한컴돋움", '*') - fs * 0.583).abs() < 0.05,
+            "'*' {}",
+            w("한컴돋움", '*')
+        );
+        assert!(
+            (w("한컴돋움", '0') - fs * 0.583).abs() < 0.05,
+            "'0' {}",
+            w("한컴돋움", '0')
+        );
+        assert!(
+            (w("한컴돋움", '가') - fs * 1.0).abs() < 0.05,
+            "'가' {}",
+            w("한컴돋움", '가')
+        );
+        // 한컴바탕 = Haansoft Batang (음절 1.0em; ASCII 는 #2156 표와 동일)
+        assert!(
+            (w("한컴바탕", '가') - fs * 1.0).abs() < 0.05,
+            "'가' {}",
+            w("한컴바탕", '가')
+        );
+        assert!(
+            (w("한컴바탕", '*') - fs * 0.5).abs() < 0.05,
+            "'*' {}",
+            w("한컴바탕", '*')
+        );
+        // 함초롬돋움은 종전대로 HCR Dotum 메트릭 유지 (한글 대체 여부 미실측)
+        assert!(
+            (w("함초롬돋움", '가') - fs * 0.97).abs() < 0.05,
+            "HCR '가' {}",
+            w("함초롬돋움", '가')
+        );
+        // ㆍ(U+318D): 한컴 계열은 area_dot 폴백 대신 embedded 메트릭(1.0em) 신뢰
+        assert!(area_dot_fallback_width("한컴돋움", fs).is_none());
+        assert!(area_dot_fallback_width("한컴바탕", fs).is_none());
+    }
+
+    // ── #2430 한양·휴먼 HFT 실측 메트릭의 native/WASM 정합 보장 ──
+
+    /// 한양 4종·휴먼명조의 ASCII 전 구간(0x20..=0x7E)이 embedded 메트릭으로
+    /// 해소됨을 고정한다. WasmTextMeasurer 는 embedded 메트릭을 Canvas
+    /// measureText 보다 우선하므로, 이 커버리지가 성립하는 한 원본 글꼴이
+    /// 없는 Studio 환경(HY 대체 글리프 표시)에서도 줄바꿈·캐럿·선택 좌표를
+    /// 결정하는 문자폭은 native(EmbeddedTextMeasurer)와 동일하다 — hybrid
+    /// (HFT 실측 메트릭 + HY 대체 표시) 정책의 레이아웃 정합 근거.
+    /// 회귀 시(원명 미해소 → Canvas 폴백) 브라우저 폰트에 따라 셀 재래핑
+    /// 줄수가 native 와 갈라진다 (#2430 재래핑 오발동의 재발 형태).
+    #[test]
+    fn issue_2430_hft_faces_ascii_embedded_coverage() {
+        let fs = 40.0 / 3.0; // 10pt = 13.333px
+        for fam in [
+            "한양신명조",
+            "한양중고딕",
+            "한양견명조",
+            "한양견고딕",
+            "휴먼명조",
+        ] {
+            for code in 0x20..=0x7Eu32 {
+                let c = char::from_u32(code).unwrap();
+                let w =
+                    measure_char_width_embedded(fam, false, false, c, fs).unwrap_or_else(|| {
+                        panic!("{fam} {c:?}: embedded 메트릭 미해소 — Canvas 폴백 회귀")
+                    });
+                assert!(w > 0.0, "{fam} {c:?}: 비정상 폭 {w}");
+            }
+        }
+        // 실측 스팟 체크 (tools/task2430/measured/ ladder 실측 = 커밋 테이블):
+        // 명조·중고딕 계열 숫자 0.497em, 견 계열 0.565em.
+        let w = |fam: &str, c: char| measure_char_width_embedded(fam, false, false, c, fs).unwrap();
+        assert!(
+            (w("한양신명조", '0') - fs * 0.497).abs() < 0.05,
+            "신명조 '0' {}",
+            w("한양신명조", '0')
+        );
+        assert!(
+            (w("휴먼명조", '0') - fs * 0.497).abs() < 0.05,
+            "휴먼명조 '0' {}",
+            w("휴먼명조", '0')
+        );
+        assert!(
+            (w("한양견명조", '0') - fs * 0.565).abs() < 0.05,
+            "견명조 '0' {}",
+            w("한양견명조", '0')
+        );
+        assert!(
+            (w("한양견고딕", '0') - fs * 0.565).abs() < 0.05,
+            "견고딕 '0' {}",
+            w("한양견고딕", '0')
+        );
     }
 
     // ── MockTextMeasurer 테스트 ──

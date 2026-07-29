@@ -267,6 +267,34 @@ fn test_serialize_para_shape_roundtrip() {
 }
 
 #[test]
+fn serialize_para_shape_writes_outline_level_into_tail() {
+    // [#2734] 말미 4바이트는 개요 수준(0~9 = 1수준~10수준)이다. 종전엔 0 리터럴이라
+    // 재직렬화되는 모든 문단 모양의 개요 수준이 사라졌다(코퍼스 실측 872건).
+    // attr1 bit25~27 은 3비트라 한컴처럼 6 에서 포화해야 한다.
+    for lvl in 0u8..=9 {
+        let ps = ParaShape {
+            para_level: lvl,
+            ..Default::default()
+        };
+        let data = serialize_para_shape(&ps);
+        assert_eq!(data.len(), 58, "58바이트 길이 계약(#1110) 유지");
+
+        let tail = u32::from_le_bytes([data[54], data[55], data[56], data[57]]);
+        assert_eq!(
+            tail as u8, lvl,
+            "말미 4바이트에 개요 수준 {lvl} 이 실려야 함"
+        );
+
+        let attr1 = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+        assert_eq!(
+            (attr1 >> 25) & 0x07,
+            lvl.min(6) as u32,
+            "attr1 bit25~27 은 6 에서 포화(한컴 실측 규약)"
+        );
+    }
+}
+
+#[test]
 fn test_serialize_style_roundtrip() {
     let style = Style {
         raw_data: None,
@@ -277,6 +305,7 @@ fn test_serialize_style_roundtrip() {
         lang_id: 1042,
         para_shape_id: 1,
         char_shape_id: 2,
+        lock_form: false,
     };
 
     let data = serialize_style(&style);
@@ -354,6 +383,7 @@ fn test_serialize_border_fill_solid() {
             image: None,
             alpha: 0,
         },
+        three_d: false,
     };
 
     let data = serialize_border_fill(&bf);
@@ -372,6 +402,56 @@ fn test_serialize_border_fill_solid() {
 }
 
 #[test]
+fn test_serialize_border_fill_preserves_solid_and_image_alpha() {
+    // 채우기는 BorderFill 헤더(attr 2 + 4테두리×6 + 대각선 6) 뒤 오프셋 32 부터.
+    const FILL_OFFSET: usize = 32;
+
+    // Solid: alpha=180 이 왕복해야 한다(종전엔 additional_size=1+0x00 로 항상 0).
+    let mut bf = BorderFill {
+        raw_data: None,
+        attr: 0,
+        borders: [BorderLine::default(); 4],
+        diagonal: DiagonalLine::default(),
+        center_line: CenterLine::None,
+        fill: Fill {
+            fill_type: FillType::Solid,
+            solid: Some(SolidFill {
+                background_color: 0x00FFFFFF,
+                pattern_color: 0,
+                pattern_type: -1,
+            }),
+            gradient: None,
+            image: None,
+            alpha: 180,
+        },
+        three_d: false,
+    };
+    let data = serialize_border_fill(&bf);
+    let mut r = crate::parser::byte_reader::ByteReader::new(&data[FILL_OFFSET..]);
+    let parsed = crate::parser::doc_info::parse_fill(&mut r);
+    assert_eq!(parsed.alpha, 180, "Solid 채우기 alpha 가 왕복에서 유실됨");
+
+    // Image: alpha=200 이 왕복해야 한다(종전엔 alpha 바이트를 아예 안 냈다).
+    bf.fill = Fill {
+        fill_type: FillType::Image,
+        solid: None,
+        gradient: None,
+        image: Some(crate::model::style::ImageFill {
+            fill_mode: crate::model::style::ImageFillMode::TileAll,
+            brightness: 0,
+            contrast: 0,
+            effect: 0,
+            bin_data_id: 1,
+        }),
+        alpha: 200,
+    };
+    let data = serialize_border_fill(&bf);
+    let mut r = crate::parser::byte_reader::ByteReader::new(&data[FILL_OFFSET..]);
+    let parsed = crate::parser::doc_info::parse_fill(&mut r);
+    assert_eq!(parsed.alpha, 200, "Image 채우기 alpha 가 왕복에서 유실됨");
+}
+
+#[test]
 fn test_serialize_border_fill_cross_centerline_uses_hwp5_center_bits() {
     let bf = BorderFill {
         raw_data: None,
@@ -380,6 +460,7 @@ fn test_serialize_border_fill_cross_centerline_uses_hwp5_center_bits() {
         diagonal: DiagonalLine::default(),
         center_line: CenterLine::Cross,
         fill: Fill::default(),
+        three_d: false,
     };
 
     let data = serialize_border_fill(&bf);
@@ -433,6 +514,7 @@ fn test_serialize_border_fill_image_fill_mode_uses_hwp5_values() {
                 }),
                 alpha: 0,
             },
+            three_d: false,
         };
 
         let data = serialize_border_fill(&bf);
@@ -564,6 +646,7 @@ fn test_serialize_doc_info_roundtrip() {
         lang_id: 1042,
         para_shape_id: 0,
         char_shape_id: 0,
+        lock_form: false,
     });
 
     // 직렬화 → 역직렬화
@@ -608,6 +691,54 @@ fn test_serialize_numbering_roundtrip() {
     assert_eq!(len, 3);
 }
 
+/// IR 로 생성된 번호(WASM create_numbering)는 attr=0 이고 number_format 만 세팅된다.
+/// serialize_numbering 이 number_format 을 attr 비트 5~8 로 재인코딩하지 않으면 저장·재로드
+/// 시 파서가 number_format=(0>>5)&0xF=0(DIGIT)로 복원해 모든 수준의 번호 형식이 유실된다.
+#[test]
+fn numbering_serializes_number_format_into_attr_bits() {
+    let mut numbering = Numbering::default();
+    numbering.heads[0] = NumberingHead {
+        attr: 0,
+        width_adjust: 0,
+        text_distance: 0,
+        char_shape_id: 0,
+        number_format: 8, // 예: HANGUL_MIXED
+    };
+    numbering.level_formats[0] = "^1.".to_string();
+    numbering.level_start_numbers = [1; 7];
+
+    let data = serialize_numbering(&numbering);
+    let mut r = crate::parser::byte_reader::ByteReader::new(&data);
+    let attr = r.read_u32().unwrap();
+    assert_eq!(
+        (attr >> 5) & 0x0F,
+        8,
+        "number_format 가 attr 비트 5~8 로 방출돼야 재로드 시 형식이 보존된다"
+    );
+}
+
+/// HWPX 유래/IR 생성 TabDef 는 attr=0 이고 auto_tab 불리언만 세팅된다. serialize_tab_def 이
+/// 불리언을 attr 하위 2비트로 재인코딩하지 않으면 자동 탭 설정이 저장·재로드 시 유실된다.
+#[test]
+fn tab_def_serializes_auto_tab_bits_from_bools() {
+    use crate::model::style::TabDef;
+    let td = TabDef {
+        raw_data: None,
+        attr: 0,
+        tabs: vec![],
+        auto_tab_left: false,
+        auto_tab_right: true,
+    };
+    let bytes = serialize_tab_def(&td);
+    let mut r = crate::parser::byte_reader::ByteReader::new(&bytes);
+    let attr = r.read_u32().unwrap();
+    assert_eq!(
+        attr & 0x03,
+        0b10,
+        "auto_tab_right=true → attr bit1 이 세팅돼야 저장 보존"
+    );
+}
+
 /// [#1793] BULLET 레코드 직렬화 레이아웃 — 문단 머리 정보는 char_shape_id 포함
 /// 12바이트. char_shape_id 4바이트 누락 시 재파싱에서 bullet_char 오프셋이
 /// 어긋나 글머리표 문자가 NUL 로 손상된다 (HWPX→HWP 저장 후 렌더 손상).
@@ -623,6 +754,7 @@ fn test_serialize_bullet_layout_and_roundtrip() {
         image_bullet: 0,
         image_data: [0; 4],
         check_bullet_char: '\0',
+        raw_para_head: None,
     };
 
     // 레이아웃: 문단 머리 정보 12바이트 후 offset 12 에 bullet_char

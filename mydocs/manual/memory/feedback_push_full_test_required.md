@@ -2,13 +2,12 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: push-cargo-test-tests-fmt-check
 description: cargo test --lib만으로는 통합 테스트(tests/issue_*.rs) 회귀를 못 잡음. push/머지 전 --tests 전체 + fmt --check 동시 검증 필수
 metadata: 
   node_type: memory
   type: feedback
-  originSessionId: da1865ca-614e-44a5-8c3e-ce3fe8956096
 ---
 
 **Why:** PR #1020 머지 (2026-05-20) 시 자기 검증으로 `cargo test --release --lib` (1307 passed) 만 확인하고 `--test issue_826` 통합 테스트를 누락하여 CI 회귀 발생. `tests/issue_826.rs:52` 의 "기존 매핑된 PUA 정합 유지" 회귀 가드가 `U+F02B1 → ①` 기대로 남아 있었으나 PR #1020 이 매핑 entry 를 제거 (raw passthrough). 메인테이너 hotfix 1차 push 시 또 fmt 미검증으로 2차 hotfix 필요 + 사고로 다른 PR source 흡수.

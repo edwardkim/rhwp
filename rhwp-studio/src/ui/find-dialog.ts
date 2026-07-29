@@ -29,6 +29,9 @@ export class FindDialog {
   /** 현재 검색 결과 (바꾸기 시 위치 참조용) */
   private currentHit: SearchResult | null = null;
 
+  /** [Task #2339] history-jumped 구독 해제 핸들 (열려 있는 동안만 구독). */
+  private historyJumpOff: (() => void) | null = null;
+
   constructor(services: CommandServices, mode: FindMode) {
     this.services = services;
     this.mode = mode;
@@ -45,12 +48,17 @@ export class FindDialog {
     this.caseSensitiveCheck.checked = FindDialog.lastCaseSensitive;
     this.applyMode();
     this.installKeyCaptureHandler();
+    // [Task #2339] undo/redo 로 문서가 되돌려지면 currentHit(sec/para/charOffset)이 stale 이
+    // 되어 바꾸기가 엉뚱한 위치를 치환한다 → history-jumped 구독으로 무효화(열려 있는 동안만).
+    this.historyJumpOff = this.services.eventBus.on('history-jumped', () => { this.currentHit = null; });
     this.focusInput();
   }
 
   hide(): void {
     this._open = false;
     this.removeKeyCaptureHandler();
+    this.historyJumpOff?.();
+    this.historyJumpOff = null;
     this.wrap?.remove();
   }
 

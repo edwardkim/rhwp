@@ -2,13 +2,12 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: project_refactor_governance
 description: "리팩토링 기본 거버넌스 2원칙 — SOLID + 복잡도 (작업지시자 확정, 2026-07-04)"
 metadata: 
   node_type: memory
   type: project
-  originSessionId: 2560b31a-9f1c-4764-bbf1-7ba5fc27c7ce
 ---
 
 rhwp 의 리팩토링 판단·평가는 **2개 기본 거버넌스**를 따르고, 실행은 **"한 번에 하지 않는다 —

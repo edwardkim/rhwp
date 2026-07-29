@@ -61,12 +61,14 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 1. Fork (GitHub UI)
    edwardkim/rhwp → myid/rhwp
 
-2. Clone
+2. Clone + upstream 등록 (최초 1회)
    git clone https://github.com/myid/rhwp.git
    cd rhwp
+   git remote add upstream https://github.com/edwardkim/rhwp.git
 
-3. 브랜치 생성 + 작업
-   git checkout -b fix/issue-123
+3. 브랜치 생성 + 작업 — 반드시 최신 upstream/devel 기준
+   git fetch upstream
+   git switch -c fix/issue-123 upstream/devel
    (코드 수정 + 테스트)
 
 4. Push (본인 Fork에)
@@ -90,7 +92,7 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 
 ```bash
 cargo fmt --all -- --check                   # 포맷 정책 준수
-cargo test --profile release-test --tests    # 통합 테스트 포함 전체 (5,500+)
+cargo test --profile release-test --tests    # 통합 테스트 포함 전체 (3,400+)
 cargo clippy -- -D warnings                  # 린트 경고 0건
 ```
 
@@ -169,10 +171,18 @@ cargo fmt --all -- --check       # CI와 같은 포맷 검증
 줄어듭니다. 모두 **한컴 설치 없이** (macOS/Linux 포함) 실행할 수 있습니다.
 
 ```bash
-# 개체(표·그림) geometry 무회귀 — 수정 전 baseline 저장, 수정 후 비교
+# 개체(표·그림) geometry 무회귀 — 원커맨드: devel 을 worktree 빌드해 baseline 자동 생성 후
+# 현 트리와 대조, PR 본문용 markdown 요약(out/ovr/ovr_diff.md)까지 출력
+python tools/object_visual_regression.py --preset ovr5 -o out/ovr --diff-against devel
+
+# (수동 3단계 흐름도 그대로 동작 — 수정 전 baseline 저장, 수정 후 비교)
 python tools/object_visual_regression.py <샘플.hwp> -o out/ovr --no-hwp --save-baseline
-#   (수정 적용 후)
 python tools/object_visual_regression.py <샘플.hwp> -o out/ovr2 --no-hwp --baseline out/ovr/baseline.json
+
+# 편집-스윕 — 편집 경로 PR(vpos·pagination·undo)의 가짜 페이지 변동 검출
+# devel 과 브랜치에서 각각 스윕 → 공통/해소/신규 분류 리포트 (신규 존재 시 exit 1)
+cargo run --release --example edit_sweep -- samples -o out/sweep/branch.tsv
+cargo run --release --example edit_sweep -- --compare out/sweep/devel.tsv out/sweep/branch.tsv -o out/sweep/report.md
 
 # 라운드트립 시각 기하 회귀
 cargo run --release --bin rhwp -- render-diff <샘플.hwp>
@@ -182,7 +192,8 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir out/r
 ```
 
 - OVR(개체 시각 회귀)로 "변경 범위 밖 문서의 개체가 움직이지 않았음"을 결과와 함께
-  PR 본문에 적어주시면 리뷰가 빨라집니다.
+  PR 본문에 적어주시면 리뷰가 빨라집니다 — `--diff-against devel` 이 출력하는
+  `ovr_diff.md` 표를 그대로 붙여넣으면 됩니다 (git 상태 전환·baseline 관리 불필요).
 - 어떤 PR 에 어떤 시각 증거가 필요한지는
   [시각 검증 거버넌스](mydocs/manual/verification/visual_verification_governance.md)를 참고하세요 —
   시각 검증은 전수 절차가 아니라 **PR 의 수정 목적과 사용자에게 보이는 동작 기준으로 선택**합니다.
@@ -252,6 +263,11 @@ rhwp-studio/        ← 웹 에디터 (TypeScript + Vite)
 - `cargo clippy -- -D warnings` 경고 0건 (CI에서 강제)
 - `unwrap()` 최소화
 - 모든 문서는 한국어로 작성
+- **소스 포맷 분기**: HWP3/HWPX 등 원본 포맷에 따른 레이아웃 분기가 필요하면
+  boolean 전달이나 포맷 이름 비교 대신 `Document::layout_profile()` 질의를
+  사용합니다 (`mydocs/tech/parser_architecture.md` 의 "소스 출처와 레이아웃
+  호환 정책" 참조). 새 판별이 필요하면 profile 질의를 추가하는 방식으로
+  엽니다.
 
 ## 문서 작성 규칙
 

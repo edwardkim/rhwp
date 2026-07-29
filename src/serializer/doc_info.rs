@@ -231,9 +231,20 @@ pub fn serialize_bin_data(bin_data: &BinData) -> Vec<u8> {
 pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
+    // 대체 글꼴 이름: HWP5 는 alt_name 한 곳에만 담는다. HWPX 파서는 같은 값을
+    // subst_font(<hh:substFont face=...>)로 채우고 alt_name 은 None 으로 두므로,
+    // 여기서 두 출처를 합쳐야 HWPX→HWP5 저장에서 대체 글꼴이 살아남는다.
+    // (종전엔 alt_name 만 봐서 HWPX 출처 대체 글꼴이 통째로 유실됐다.)
+    let alt_name = font.alt_name.as_deref().or_else(|| {
+        font.subst_font
+            .as_ref()
+            .map(|s| s.face.as_str())
+            .filter(|face| !face.is_empty())
+    });
+
     // attr 바이트 재구성
     let mut attr = font.alt_type & 0x03;
-    if font.alt_name.is_some() {
+    if alt_name.is_some() {
         attr |= 0x80;
     }
     if font.type_info.is_some() {
@@ -246,7 +257,7 @@ pub fn serialize_face_name(font: &Font) -> Vec<u8> {
 
     w.write_hwp_string(&font.name).unwrap();
 
-    if let Some(ref alt_name) = font.alt_name {
+    if let Some(alt_name) = alt_name {
         w.write_u8(font.alt_type & 0x03).unwrap();
         w.write_hwp_string(alt_name).unwrap();
     }
@@ -360,9 +371,12 @@ fn serialize_fill(w: &mut ByteWriter, fill: &crate::model::style::Fill) {
                 w.write_color_ref(solid.pattern_color).unwrap();
                 w.write_i32(solid.pattern_type).unwrap();
             }
-            // 추가 채우기 속성: size(u32) + alpha(u8)
-            w.write_u32(1).unwrap();
-            w.write_u8(0).unwrap(); // alpha
+            // 추가 채우기 속성: size(u32) = 0, 이어서 미확인 바이트로 alpha(u8).
+            // hwplib 및 parse_fill(additional_size 만큼 skip 후 종류별 1바이트를
+            // alpha 로 읽음)과 정합. 종전엔 size=1·0x00 을 내보내 skip 이 alpha
+            // 자리를 먹고 alpha 가 항상 0 으로 되읽혔다.
+            w.write_u32(0).unwrap();
+            w.write_u8(fill.alpha).unwrap();
         }
         FillType::Gradient => {
             if let Some(ref grad) = fill.gradient {
@@ -394,8 +408,11 @@ fn serialize_fill(w: &mut ByteWriter, fill: &crate::model::style::Fill) {
                 w.write_u8(img.effect).unwrap();
                 w.write_u16(img.bin_data_id).unwrap();
             }
-            // 추가 채우기 속성: size(u32)
+            // 추가 채우기 속성: size(u32) = 0, 이어서 미확인 바이트로 alpha(u8).
+            // parse_fill 의 image(0x02) 경로가 종류별 1바이트를 alpha 로 읽으므로
+            // 이 바이트가 없으면 EOF 로 alpha 가 0 이 됐다.
             w.write_u32(0).unwrap();
+            w.write_u8(fill.alpha).unwrap();
         }
         FillType::None => {
             // 추가 채우기 속성: size(u32) = 0
@@ -527,7 +544,11 @@ pub fn serialize_char_shape(cs: &CharShape) -> Vec<u8> {
 
 pub fn serialize_tab_def(td: &TabDef) -> Vec<u8> {
     let mut w = ByteWriter::new();
-    w.write_u32(td.attr).unwrap();
+    // auto tab 비트(bit0=left, bit1=right)를 불리언에서 재인코딩한다. 파서는 이 두
+    // 불리언을 attr 하위 2비트로만 복원하므로(parser/doc_info.rs), HWPX 유래/IR 생성
+    // TabDef(attr=0 이고 불리언만 세팅)를 그대로 쓰면 자동 탭 설정이 저장 시 유실된다.
+    let attr = (td.attr & !0x03) | (td.auto_tab_left as u32) | ((td.auto_tab_right as u32) << 1);
+    w.write_u32(attr).unwrap();
     w.write_u32(td.tabs.len() as u32).unwrap();
     for tab in &td.tabs {
         w.write_u32(tab.position).unwrap();
@@ -544,7 +565,12 @@ fn serialize_numbering(numbering: &Numbering) -> Vec<u8> {
     // 수준별(1~7) 문단 머리 정보 + 번호 형식 문자열
     for level in 0..7 {
         let head = &numbering.heads[level];
-        w.write_u32(head.attr).unwrap();
+        // number_format(문단 번호 형식)을 attr 비트 5~8 로 재인코딩한다. 파서는 number_format
+        // 을 (attr>>5)&0xF 로만 복원하므로(parser/doc_info.rs), IR 로 생성된 번호(WASM
+        // create_numbering)처럼 attr=0 이고 number_format 만 세팅된 경우 이를 반영하지 않으면
+        // 저장·재로드 시 모든 수준이 DIGIT(0)로 유실된다. serialize_para_shape 의 attr1 재인코딩과 동형.
+        let attr = (head.attr & !(0x0f << 5)) | ((head.number_format as u32 & 0x0f) << 5);
+        w.write_u32(attr).unwrap();
         w.write_i16(head.width_adjust).unwrap();
         w.write_i16(head.text_distance).unwrap();
         w.write_u32(head.char_shape_id).unwrap();
@@ -631,8 +657,11 @@ pub fn serialize_para_shape(ps: &ParaShape) -> Vec<u8> {
         crate::model::style::HeadType::Bullet => 3,
     }) << 23;
     // bits 25-27: para_level
+    // [#2734] 3비트 필드라 6 에서 포화시킨다. 한컴 실측 규약(개요 8~10수준 문단모양 138건이
+    // 모두 attr1 비트 6 + 말미 4바이트 7/8/9)과 동일하다. 종전 `& 0x07` 은 para_level 이
+    // 7 이상일 때 8→0, 9→1 로 엉뚱한 수준을 박는다.
     attr1 &= !(0x07 << 25);
-    attr1 |= (ps.para_level as u32 & 0x07) << 25;
+    attr1 |= (ps.para_level.min(6) as u32) << 25;
     w.write_u32(attr1).unwrap();
     w.write_i32(ps.margin_left).unwrap();
     w.write_i32(ps.margin_right).unwrap();
@@ -658,7 +687,11 @@ pub fn serialize_para_shape(ps: &ParaShape) -> Vec<u8> {
     // 내보낸 정답지들은 PARA_SHAPE를 58바이트로 저장한다. 이 tail이 없으면
     // 한컴 편집기가 일부 masterpage/header 글상자 내부 줄나눔 폭을 다르게
     // 해석해 페이지 번호가 다음 줄로 밀리는 사례가 있다.
-    w.write_u32(0).unwrap();
+    //
+    // [#2734] 이 4바이트의 정체는 개요 수준(0~9 = 1수준~10수준)이다. samples 코퍼스의
+    // 58바이트 레코드 11,913건에서 tail 과 attr1 bit25~27 이 전수 정합하며(포화 138건 제외),
+    // tail != 0 인 872건이 종전 0 리터럴에 덮여 사라졌다. 길이 계약은 그대로 두고 값만 채운다.
+    w.write_u32(ps.para_level.min(9) as u32).unwrap();
     w.into_bytes()
 }
 

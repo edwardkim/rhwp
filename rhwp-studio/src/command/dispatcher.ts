@@ -8,6 +8,10 @@ const FORM_MODE_BLOCKED_IDS = new Set([
   'edit:delete',
   'field:edit',
   'field:remove',
+  // [#2361 리뷰] 편집 용지의 파일 메뉴/F7 변형. page:setup 은 'page:' prefix 로 차단되는데
+  // 이 변형만 열려 있었다 — 양식 모드에선 snapshot 이 드롭되므로(입력-핸들러 게이트) 다이얼로그가
+  // 열리면 확인이 무언 폐기된다. 두 진입점을 동일하게 차단해 정합.
+  'file:page-setup',
 ]);
 
 const FORM_MODE_BLOCKED_PREFIXES = [

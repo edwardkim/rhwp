@@ -240,7 +240,7 @@ export async function loadHwpFile(page, filename) {
       const buf = await resp.arrayBuffer();
       const docInfo = window.__wasm?.loadDocument(new Uint8Array(buf), fname);
       if (!docInfo) return { error: 'loadDocument returned null' };
-      window.__canvasView?.loadDocument?.();
+      await window.__canvasView?.loadDocument?.();
       return {
         pageCount: docInfo.pageCount,
         documentLoadAndInitialRenderMs: performance.now() - startedAt,
@@ -796,7 +796,7 @@ export function assert(condition, message) {
  */
 function getReportFilename() {
   const scriptPath = process.argv[1] || 'unknown';
-  const basename = scriptPath.split('/').pop().replace(/\.test\.mjs$/, '');
+  const basename = scriptPath.split(/[\\/]/).pop().replace(/\.test\.mjs$/, '');
   return `${basename}-report.html`;
 }
 

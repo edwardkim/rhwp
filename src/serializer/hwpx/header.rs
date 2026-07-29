@@ -85,6 +85,15 @@ pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, S
     write_bullets(&mut w, &doc.doc_info)?;
     write_para_properties(&mut w, &doc.doc_info, ctx)?;
     write_styles(&mut w, &doc.doc_info, ctx)?;
+    // memoProperties(메모 모양 정의: 테두리/색상)는 refList 마지막 자식으로,
+    // parse_memo_shape가 만드는 extra_records(HWPTAG_MEMO_SHAPE, hwpx→hwp5
+    // 변환 전용)는 여기서 쓰이지 않는다. 원본 verbatim splice로 hwpx→hwpx
+    // 라운드트립 시 memoPr 소실을 막는다(#3xxx).
+    if let Some(memo_properties) = &doc.doc_info.memo_properties_xml {
+        w.get_mut()
+            .write_all(memo_properties.as_bytes())
+            .map_err(|e| SerializeError::XmlError(format!("memoProperties splice: {e}")))?;
+    }
     end_tag(&mut w, "hh:refList")?;
 
     // 문서 설정 tail: 원본 HWPX 가 있으면 그대로 splice(compatibleDocument/
@@ -339,6 +348,10 @@ fn write_border_fill<W: Write>(
     ctx: &SerializeContext,
 ) -> Result<(), SerializeError> {
     let attr = effective_border_fill_attr(bf);
+    // [#2965] 표 24 bit0=3D 효과, bit1=그림자 효과 — 파서가 attr 에 보존하는
+    // 실값을 read_border_fill 이 되돌리지 않고 상수로 방출하던 결함 수정.
+    let three_d = bool01(attr & 1 != 0);
+    let shadow = bool01(attr & (1 << 1) != 0);
 
     // 속성 순서 (BorderFillType.cpp:64-68): id, threeD, shadow, centerLine, breakCellSeparateLine
     start_tag_attrs(
@@ -346,8 +359,8 @@ fn write_border_fill<W: Write>(
         "hh:borderFill",
         &[
             ("id", &(id + 1).to_string()), // HWPX 관찰: id는 1-based
-            ("threeD", "0"),
-            ("shadow", "0"),
+            ("threeD", three_d),
+            ("shadow", shadow),
             ("centerLine", center_line_type(bf)),
             ("breakCellSeparateLine", "0"),
         ],
@@ -402,6 +415,21 @@ fn write_diag_line<W: Write>(
             ("isCounter", is_counter),
         ],
     )
+}
+
+// [#2947] parser 측 parse_numbering_format_code() (표 43) 의 역매핑.
+fn numbering_format_str(code: u8) -> &'static str {
+    match code {
+        1 => "CIRCLED_DIGIT",
+        2 => "ROMAN_CAPITAL",
+        3 => "ROMAN_SMALL",
+        4 => "LATIN_CAPITAL",
+        5 => "LATIN_SMALL",
+        8 => "HANGUL_SYLLABLE",
+        12 => "HANGUL_NUMBER",
+        13 => "HANJA_NUMBER",
+        _ => "DIGIT",
+    }
 }
 
 fn diagonal_shape_type(code: u8) -> &'static str {
@@ -650,14 +678,7 @@ fn write_char_pr<W: Write>(
         w,
         "hh:shadow",
         &[
-            (
-                "type",
-                if cs.shadow_type == 0 {
-                    "NONE"
-                } else {
-                    "CONTINUOUS"
-                },
-            ),
+            ("type", shadow_type_str(cs.shadow_type)),
             ("color", &color_hex(cs.shadow_color)),
             ("offsetX", &cs.shadow_offset_x.to_string()),
             ("offsetY", &cs.shadow_offset_y.to_string()),
@@ -756,12 +777,31 @@ fn line_shape_str(s: u8) -> &'static str {
     }
 }
 
+// [#2695] 외곽선 8종. IR outline_type 은 HWP5 attr bits 8-10(3비트)을 그대로 담으므로
+// 0~7 전부를 방출해야 한다. 4~7 을 NONE 으로 떨구면 외곽선이 소멸한다.
 fn outline_type_str(t: u8) -> &'static str {
     match t {
         0 => "NONE",
         1 => "SOLID",
         2 => "DASH",
         3 => "DOT",
+        4 => "DASH_DOT",
+        5 => "DASH_DOT_DOT",
+        6 => "LONG_DASH",
+        7 => "CIRCLE",
+        _ => "NONE",
+    }
+}
+
+// [#2695] 그림자 3종. IR shadow_type 은 HWP5 attr bits 11-12(2비트).
+// 1=비연속(DROP), 2=연속(CONTINUOUS). 3은 예약값(미정의).
+// [#3038] 종전엔 예약값 3이 `_ => "CONTINUOUS"`로 떨어져 그림자 없음이 그림자
+// 있음으로 둔갑했다. 계약(0~2) 밖의 값은 안전한 기본값(NONE)으로 방출한다.
+fn shadow_type_str(t: u8) -> &'static str {
+    match t {
+        0 => "NONE",
+        1 => "DROP",
+        2 => "CONTINUOUS",
         _ => "NONE",
     }
 }
@@ -837,6 +877,14 @@ fn tab_leader_str(f: u8) -> &'static str {
         6 => "LONG_DASH",
         7 => "CIRCLE",
         8 => "DOUBLE_SLIM",
+        // OWPML LineType3 스펙 리터럴(Core XML schema.xml 335~349행)로 방출한다.
+        // 종전엔 THIN_THICK/THICK_THIN/TRIM 이라는 비표준 이름을 썼는데, rhwp
+        // 자기 자신은 다시 읽을 수 있어도(파서가 두 이름을 모두 허용) 한/글 등
+        // 스펙을 따르는 다른 구현체에는 정의되지 않은 값이라 상호운용에 문제가
+        // 있었다(#2857). 파서는 하위호환을 위해 옛 이름도 계속 받는다.
+        9 => "SLIM_THICK",
+        10 => "THICK_SLIM",
+        11 => "SLIM_THICK_SLIM",
         _ => "NONE",
     }
 }
@@ -892,6 +940,11 @@ fn write_numbering<W: Write>(
         let level_s = (level + 1).to_string();
         let start_s = start.to_string();
         let wa = h.width_adjust.to_string();
+        // [#2947] h.number_format 을 무시하고 "DIGIT" 로 고정 방출하면 HWP5 경유
+        // 저장 시 로마자/한글/원문자 등 문단 번호 형식이 전부 아라비아 숫자로 뒤바뀐다.
+        let num_format = numbering_format_str(h.number_format);
+        let text_offset_s = h.text_distance.to_string();
+        let char_pr_id_ref_s = h.char_shape_id.to_string();
         empty_tag(
             w,
             "hh:paraHead",
@@ -903,9 +956,9 @@ fn write_numbering<W: Write>(
                 ("autoIndent", "1"),
                 ("widthAdjust", &wa),
                 ("textOffsetType", "PERCENT"),
-                ("textOffset", "50"),
-                ("numFormat", "DIGIT"),
-                ("charPrIDRef", &u32::MAX.to_string()),
+                ("textOffset", &text_offset_s),
+                ("numFormat", num_format),
+                ("charPrIDRef", &char_pr_id_ref_s),
                 ("checkable", "0"),
             ],
         )?;
@@ -945,28 +998,42 @@ fn write_bullet<W: Write>(
     let id_s = (id + 1).to_string(); // 관찰: 1-based, ParaShape.numbering_id 참조와 정합
     let char_s = b.bullet_char.to_string();
     let use_image = if b.image_bullet > 0 { "1" } else { "0" };
-    start_tag_attrs(
-        w,
-        "hh:bullet",
-        &[("id", &id_s), ("char", &char_s), ("useImage", use_image)],
-    )?;
-    // paraHead 뼈대 (파서는 무시하나 OWPML 유효성/한컴 호환 위해 방출).
-    empty_tag(
-        w,
-        "hh:paraHead",
-        &[
-            ("level", "0"),
-            ("align", "LEFT"),
-            ("useInstWidth", "0"),
-            ("autoIndent", "1"),
-            ("widthAdjust", &b.width_adjust.to_string()),
-            ("textOffsetType", "PERCENT"),
-            ("textOffset", "50"),
-            ("numFormat", "DIGIT"),
-            ("charPrIDRef", &u32::MAX.to_string()),
-            ("checkable", "0"),
-        ],
-    )?;
+    // [#3028] checkedChar(체크 글머리표 문자) — 값이 있을 때만 방출한다.
+    let has_checked_char = b.check_bullet_char != '\0';
+    let checked_char_s = b.check_bullet_char.to_string();
+    let mut attrs: Vec<(&str, &str)> = vec![("id", &id_s), ("char", &char_s)];
+    if has_checked_char {
+        attrs.push(("checkedChar", &checked_char_s));
+    }
+    attrs.push(("useImage", use_image));
+    start_tag_attrs(w, "hh:bullet", &attrs)?;
+    // 원본 HWPX paraHead 구간이 있으면(=이 파일에서 파싱된 bullet) 그대로 splice 해
+    // align/useInstWidth/autoIndent/textOffsetType/checkable 등 Bullet 필드로 표현
+    // 못하는 속성까지 무손실 복원(numbering.raw_para_heads 와 동일 패턴, #2790).
+    // 없으면(HWP5 경로 등) widthAdjust/textOffset/charPrIDRef 만 필드값으로 채운
+    // 뼈대로 폴백 — checkable 은 checkedChar 유무를 따른다(#3028).
+    if let Some(raw) = &b.raw_para_head {
+        w.get_mut()
+            .write_all(raw.as_bytes())
+            .map_err(|e| SerializeError::XmlError(format!("bullet paraHead splice: {e}")))?;
+    } else {
+        empty_tag(
+            w,
+            "hh:paraHead",
+            &[
+                ("level", "0"),
+                ("align", "LEFT"),
+                ("useInstWidth", "0"),
+                ("autoIndent", "1"),
+                ("widthAdjust", &b.width_adjust.to_string()),
+                ("textOffsetType", "PERCENT"),
+                ("textOffset", &b.text_distance.to_string()),
+                ("numFormat", "DIGIT"),
+                ("charPrIDRef", &b.char_shape_id.to_string()),
+                ("checkable", if has_checked_char { "1" } else { "0" }),
+            ],
+        )?;
+    }
     end_tag(w, "hh:bullet")?;
     Ok(())
 }
@@ -1276,8 +1343,10 @@ fn write_style<W: Write>(w: &mut Writer<W>, id: u16, st: &Style) -> Result<(), S
             ("paraPrIDRef", &st.para_shape_id.to_string()),
             ("charPrIDRef", &st.char_shape_id.to_string()),
             ("nextStyleIDRef", &st.next_style_id.to_string()),
-            ("langID", "1042"),
-            ("lockForm", "0"),
+            // 파서가 Style.lang_id 로 읽는 값을 그대로 되돌린다. 종전 "1042"
+            // 하드코딩은 비한국어 langID(예: 1033)를 왕복마다 1042 로 바꿨다.
+            ("langID", &st.lang_id.to_string()),
+            ("lockForm", bool01(st.lock_form)),
         ],
     )
 }
@@ -1320,6 +1389,51 @@ use super::utils::start_tag;
 mod tests {
     use super::*;
     use crate::parser::hwpx::parse_hwpx;
+
+    #[test]
+    fn write_style_emits_ir_lang_id() {
+        // 파서가 읽은 Style.lang_id 가 그대로 방출돼야 한다.
+        // 종전엔 "1042" 하드코딩으로 비한국어 langID 가 왕복마다 뭉개졌다.
+        let st = Style {
+            lang_id: 1033,
+            ..Default::default()
+        };
+        let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
+        write_style(&mut w, 0, &st).expect("write_style");
+        let xml = String::from_utf8(w.into_inner()).unwrap();
+        assert!(
+            xml.contains(r#"langID="1033""#),
+            "Style.lang_id 가 방출돼야 함: {xml}"
+        );
+    }
+
+    #[test]
+    fn write_style_emits_ir_lock_form() {
+        // [Task #2839] 파서가 읽은 Style.lock_form 이 그대로 방출돼야 한다.
+        // 종전엔 "0" 하드코딩으로 lockForm="1" 스타일이 왕복마다 잠금 해제로 뭉개졌다.
+        let st = Style {
+            lock_form: true,
+            ..Default::default()
+        };
+        let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
+        write_style(&mut w, 0, &st).expect("write_style");
+        let xml = String::from_utf8(w.into_inner()).unwrap();
+        assert!(
+            xml.contains(r#"lockForm="1""#),
+            "Style.lock_form 이 방출돼야 함: {xml}"
+        );
+    }
+
+    #[test]
+    fn task_m100_shadow_type_str_reserved_value_maps_to_none() {
+        // [#3038] 계약(0~2) 밖의 예약값(3)은 CONTINUOUS 로 둔갑하지 않고
+        // 안전한 기본값 NONE 으로 방출돼야 한다.
+        assert_eq!(shadow_type_str(0), "NONE");
+        assert_eq!(shadow_type_str(1), "DROP");
+        assert_eq!(shadow_type_str(2), "CONTINUOUS");
+        assert_eq!(shadow_type_str(3), "NONE");
+        assert_eq!(shadow_type_str(99), "NONE");
+    }
 
     #[test]
     fn write_header_runs_on_empty_document() {
@@ -1370,6 +1484,34 @@ mod tests {
         assert!(
             !xml.contains(r#"version="1.2""#),
             "하드코딩 1.2 가 남아있으면 안 됨"
+        );
+    }
+
+    #[test]
+    fn write_header_preserves_memo_properties_roundtrip() {
+        // aift.hwpx 실물 헤더에는 refList 마지막 자식으로
+        // <hh:memoProperties itemCnt="1"><hh:memoPr .../></hh:memoProperties>
+        // 가 있다. parse_memo_shape()가 만드는 extra_records(HWPTAG_MEMO_SHAPE)는
+        // hwpx→hwp5 변환 전용이라 write_header가 참조하지 않으므로, splice
+        // 보존이 없으면 hwpx→hwpx 라운드트립에서 memoPr(메모 모양: 테두리/색상)이
+        // 통째로 사라진다.
+        let bytes = include_bytes!("../../../samples/hwpx/aift.hwpx");
+        let doc = parse_hwpx(bytes).expect("parse aift.hwpx");
+        assert!(
+            doc.doc_info.memo_properties_xml.is_some(),
+            "파서가 memoProperties 원문을 보존해야 함"
+        );
+        let ctx = SerializeContext::collect_from_document(&doc);
+        let header_xml =
+            String::from_utf8(write_header(&doc, &ctx).expect("write header")).unwrap();
+        assert!(
+            header_xml.contains("<hh:memoProperties"),
+            "재직렬화된 header.xml에 memoProperties가 있어야 함: {header_xml}"
+        );
+        assert!(
+            header_xml.contains(r#"lineType="SOLID""#)
+                && header_xml.contains(r##"fillColor="#CBFF99""##),
+            "memoPr 원본 속성(lineType/fillColor 등)이 그대로 보존돼야 함: {header_xml}"
         );
     }
 
@@ -1642,6 +1784,29 @@ mod tests {
     }
 
     #[test]
+    fn write_border_fill_preserves_three_d_and_shadow_bits() {
+        // [#2965] bf.attr bit0=3D, bit1=그림자. 종전엔 threeD/shadow 가 항상
+        // "0" 으로 하드코딩되어 파서가 보존한 값이 왕복에서 소실됐다.
+        let mut bf = BorderFill::default();
+        bf.attr = 0b11; // bit0(3D)=1, bit1(shadow)=1
+
+        let mut writer = Writer::new(Vec::new());
+        write_border_fill(
+            &mut writer,
+            0,
+            &bf,
+            &SerializeContext::collect_from_document(&Default::default()),
+        )
+        .expect("write borderFill");
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(r#"threeD="1""#) && xml.contains(r#"shadow="1""#),
+            "attr bit0/bit1 이 threeD/shadow 로 방출돼야 함: {xml}"
+        );
+    }
+
+    #[test]
     fn write_border_fill_preserves_center_line_type() {
         let mut bf = BorderFill::default();
         bf.center_line = CenterLine::Vertical;
@@ -1905,6 +2070,100 @@ mod tests {
         );
     }
 
+    /// [#2695] charPr 자식 하나를 담은 최소 hh:head 를 파싱해 CharShape 를 얻는다.
+    fn parse_single_char_pr(child: &str) -> CharShape {
+        let xml = format!(
+            r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:charProperties itemCnt="1">
+      <hh:charPr id="0" height="1000" textColor="#000000" shadeColor="none">
+        <hh:fontRef hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>
+        {child}
+      </hh:charPr>
+    </hh:charProperties>
+  </hh:refList>
+</hh:head>"##
+        );
+        let (doc_info, _) =
+            crate::parser::hwpx::header::parse_hwpx_header(&xml).expect("parse hh:head");
+        doc_info.char_shapes[0].clone()
+    }
+
+    /// [#2695] CharShape 를 charPr 로 직렬화한 XML 문자열.
+    fn write_single_char_pr(cs: &CharShape) -> String {
+        let mut writer = Writer::new(Vec::new());
+        write_char_pr(&mut writer, 0, cs).expect("write charPr");
+        String::from_utf8(writer.into_inner()).unwrap()
+    }
+
+    #[test]
+    fn char_pr_outline_type_roundtrips_all_eight_values() {
+        // [#2695] 외곽선은 HWP5 attr bits 8-10(3비트) = 8종이다. 종전엔 파서가
+        // NONE/SOLID/DASH/DOT 4종만 알고 나머지를 `_ => 0` 으로, 직렬화가
+        // `_ => "NONE"` 으로 떨궈 4~7 지정 시 외곽선이 통째로 사라졌다.
+        for (name, expected) in [
+            ("NONE", 0u8),
+            ("SOLID", 1),
+            ("DASH", 2),
+            ("DOT", 3),
+            ("DASH_DOT", 4),
+            ("DASH_DOT_DOT", 5),
+            ("LONG_DASH", 6),
+            ("CIRCLE", 7),
+        ] {
+            let cs = parse_single_char_pr(&format!(r#"<hh:outline type="{name}"/>"#));
+            assert_eq!(
+                cs.outline_type, expected,
+                "outline type={name} 은 IR {expected} 로 파싱돼야 함"
+            );
+
+            let xml = write_single_char_pr(&cs);
+            assert!(
+                xml.contains(&format!(r#"<hh:outline type="{name}"/>"#)),
+                "outline_type={expected} 은 type=\"{name}\" 으로 방출돼야 함: {xml}"
+            );
+        }
+    }
+
+    #[test]
+    fn char_pr_shadow_drop_survives_roundtrip_with_offsets() {
+        // [#2695] 비연속(DROP)은 offsetX/offsetY 로 본체와 떨어뜨려 그리는 종류다.
+        // 종전엔 파서가 DROP|CONTINUOUS 를 모두 1 로 합치고 직렬화가 0 이외를
+        // 무조건 CONTINUOUS 로 써서 DROP 이 방출 불가능했고, 보존된 오프셋도
+        // 해석 주체를 잃었다.
+        let cs = parse_single_char_pr(
+            r##"<hh:shadow type="DROP" color="#C0C0C0" offsetX="10" offsetY="-7"/>"##,
+        );
+        assert_eq!(cs.shadow_type, 1, "DROP 은 IR 1(비연속)");
+        assert_eq!(cs.shadow_offset_x, 10);
+        assert_eq!(cs.shadow_offset_y, -7);
+
+        let xml = write_single_char_pr(&cs);
+        assert!(
+            xml.contains(r#"<hh:shadow type="DROP""#),
+            "shadow_type=1 은 type=\"DROP\" 으로 방출돼야 함: {xml}"
+        );
+        assert!(
+            xml.contains(r#"offsetX="10" offsetY="-7""#),
+            "오프셋도 함께 보존돼야 함: {xml}"
+        );
+    }
+
+    #[test]
+    fn char_pr_shadow_continuous_is_ir_two_not_one() {
+        // [#2695] 연속은 HWP5 attr bits 11-12 = 2 다. 종전 파서는 1 로 읽어
+        // HWPX 를 경유한 .hwp 재저장 시 비트값이 2→1 로 손상됐다.
+        let cs = parse_single_char_pr(r##"<hh:shadow type="CONTINUOUS" color="#808080"/>"##);
+        assert_eq!(cs.shadow_type, 2, "CONTINUOUS 는 IR 2(연속)");
+
+        let xml = write_single_char_pr(&cs);
+        assert!(
+            xml.contains(r#"<hh:shadow type="CONTINUOUS""#),
+            "shadow_type=2 는 type=\"CONTINUOUS\" 로 방출돼야 함: {xml}"
+        );
+    }
+
     #[test]
     fn write_para_pr_emits_condense_fontlineheight_snaptogrid_from_attr1() {
         // condense/fontLineHeight/snapToGrid 는 상수가 아니라 attr1 비트에서 나와야 한다.
@@ -2039,5 +2298,57 @@ mod tests {
 
         assert_eq!(xml.matches("<hh:paraHead").count(), 10);
         assert!(xml.starts_with(r#"<hh:numbering id="1" start="0">"#));
+    }
+
+    #[test]
+    fn write_numbering_skeleton_uses_number_format_not_hardcoded_digit() {
+        // [#2947] HWP5 경유(raw_para_heads 없음) 시 h.number_format(예: ROMAN_CAPITAL=2)
+        // 을 무시하고 "DIGIT" 로 고정 방출하면 로마자/한글 문단 번호가 유실된다.
+        let mut n = Numbering::default();
+        n.heads[0].number_format = 2; // ROMAN_CAPITAL
+
+        let mut writer = Writer::new(Vec::new());
+        write_numbering(&mut writer, 0, &n).unwrap();
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(r#"numFormat="ROMAN_CAPITAL""#),
+            "level 1 paraHead 는 number_format=2 를 ROMAN_CAPITAL 로 방출해야 한다: {xml}"
+        );
+    }
+
+    #[test]
+    fn write_numbering_skeleton_preserves_text_distance_and_char_shape_id() {
+        // HWP5 경로(raw_para_heads 없음)에서 NumberingHead.text_distance /
+        // char_shape_id 는 DocInfo 파서가 실제 값으로 채워 넣는 필드인데,
+        // 폴백 스켈레톤이 textOffset="50" / charPrIDRef=u32::MAX 로 하드코딩해
+        // 유실시키면 안 된다 (write_bullet 의 대응 필드 처리와 대칭이어야 함).
+        let mut n = Numbering::default();
+        n.heads[0].text_distance = 130;
+        n.heads[0].char_shape_id = 7;
+
+        let mut writer = Writer::new(Vec::new());
+        write_numbering(&mut writer, 0, &n).unwrap();
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(r#"textOffset="130""#),
+            "text_distance 유실: {xml}"
+        );
+        assert!(
+            xml.contains(r#"charPrIDRef="7""#),
+            "char_shape_id 유실: {xml}"
+        );
+    }
+
+    #[test]
+    fn tab_leader_str_emits_double_and_triple_line_types() {
+        // fill_type 9/10/11 이 "NONE" 으로 유실되지 않고 OWPML LineType3 스펙 리터럴
+        // (Core XML schema.xml 335~349행)로 방출돼야 한다 (#2857). 파서는 옛 이름
+        // (THIN_THICK/THICK_THIN/TRIM)도 하위호환으로 계속 받는다.
+        assert_eq!(tab_leader_str(9), "SLIM_THICK");
+        assert_eq!(tab_leader_str(10), "THICK_SLIM");
+        assert_eq!(tab_leader_str(11), "SLIM_THICK_SLIM");
+        assert_eq!(tab_leader_str(8), "DOUBLE_SLIM");
     }
 }

@@ -68,7 +68,14 @@ impl ByteWriter {
     /// `ByteReader::read_hwp_string()`의 역방향.
     /// 형식: [u16 글자수] + [UTF-16LE 바이트 * 글자수]
     pub fn write_hwp_string(&mut self, s: &str) -> io::Result<()> {
-        let utf16: Vec<u16> = s.encode_utf16().collect();
+        let mut utf16: Vec<u16> = s.encode_utf16().collect();
+        // 글자수 필드가 u16이므로 초과 시 자르지 않으면 wraparound 로 레코드가 손상된다.
+        if utf16.len() > u16::MAX as usize {
+            utf16.truncate(u16::MAX as usize);
+            if matches!(utf16.last(), Some(&u) if (0xD800..=0xDBFF).contains(&u)) {
+                utf16.pop();
+            }
+        }
         self.write_u16(utf16.len() as u16)?;
         for code_unit in &utf16 {
             self.write_u16(*code_unit)?;
@@ -196,6 +203,20 @@ mod tests {
 
         let mut reader = ByteReader::new(&bytes);
         assert_eq!(reader.read_hwp_string().unwrap(), "Hello 세계!");
+    }
+
+    #[test]
+    fn test_write_hwp_string_overlong_truncates_instead_of_wrapping() {
+        // u16::MAX(65535) 초과 길이 문자열을 그대로 쓰면 `as u16` 캐스팅이 wraparound 되어
+        // 기록된 길이 필드와 실제 바이트열이 어긋난 손상 레코드가 생긴다.
+        let s: String = "A".repeat(u16::MAX as usize + 10);
+        let mut w = ByteWriter::new();
+        w.write_hwp_string(&s).unwrap();
+        let bytes = w.into_bytes();
+
+        let mut reader = ByteReader::new(&bytes);
+        let read_back = reader.read_hwp_string().unwrap();
+        assert_eq!(read_back.encode_utf16().count(), u16::MAX as usize);
     }
 
     #[test]

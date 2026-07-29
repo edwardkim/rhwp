@@ -20,6 +20,12 @@
 </p>
 
 <p align="center">
+  <a href="https://chromewebstore.google.com/detail/pgakpjflombjmehnebnbpnalhegaanag"><img src="https://img.shields.io/chrome-web-store/v/pgakpjflombjmehnebnbpnalhegaanag?label=Chrome%20Web%20Store&logo=googlechrome&logoColor=white" alt="Chrome Web Store" /></a>
+  <a href="https://microsoftedge.microsoft.com/addons/detail/rhwp/nfkdfobhmanddlhdbclkpoanbccpigcn"><img src="https://img.shields.io/badge/Edge%20Add--ons-Store-0078D7" alt="Edge Add-ons" /></a>
+  <a href="https://addons.mozilla.org/firefox/addon/rhwp-free-hwp-editor/"><img src="https://img.shields.io/amo/v/rhwp-free-hwp-editor?label=Firefox%20Add-ons&logo=firefoxbrowser&logoColor=white" alt="Firefox Add-ons" /></a>
+</p>
+
+<p align="center">
   <a href="README.md">한국어</a> | <strong>English</strong>
 </p>
 
@@ -56,7 +62,7 @@ Foundation  Typeset   Collab    Complete
 
 ## Milestones
 
-### v0.5.0 ~ v0.7.x — Foundation (current)
+### v0.5.0 ~ v0.8.x — Foundation (current)
 
 > Reverse-engineering complete, read/write foundation established
 
@@ -65,7 +71,7 @@ Foundation  Typeset   Collab    Complete
 - Pagination (multi-column split, table row split), headers/footers, master pages, footnotes
 - SVG/PNG/PDF export (CLI) + Canvas/CanvasKit rendering (WASM/Web)
 - Web editor + hwpctl-compatible API (30 Actions, Field API)
-- 5,500+ Rust tests + studio unit/e2e/visual-regression CI
+- 3,400+ Rust tests + studio unit/e2e/visual-regression CI
 
 > HML support is limited to HWPML 2.9/2.91 structures verified by the current real-file corpus.
 > Supported equations can be imported and edited; HML-origin documents can be saved back to HML
@@ -112,16 +118,20 @@ Per-cycle changes (including contributor credits) are recorded in [CHANGELOG_EN.
 
 ### Output
 - SVG export (CLI, legacy + layer replay)
-- PNG export (native Skia, `--features native-skia`) / PDF export (`--text-as-paths`, byte-reproducible)
-- Canvas rendering (WASM/Web) + CanvasKit direct replay (opt-in)
+- PNG export (native Skia, `--features native-skia`)
+- PDF export: SVG compatibility by default (`--text-as-paths`, byte-reproducible), native Skia direct opt-in (`--features native-skia`, `--backend direct`)
+- Canvas rendering (WASM/Web) + opt-in document-scoped Canvas2D/CanvasKit auto selection
 - Save: native HWP editing, semantics-preserving HWPX/HML save, HWPX → HWP conversion
 - Debug overlay (paragraph/table boundaries + indices + y-coordinates)
 
 ### Multi-Renderer Backends
 - Shared paint IR: `PageRenderTree` → `PageLayerTree` (Rust `DocumentCore::build_page_layer_tree`, WASM `getPageLayerTree`) — `schemaVersion: 1`, compatible changes stay additive
-- Backends: legacy/layered SVG, Canvas2D (browser default), CanvasKit direct replay (`?renderer=canvaskit` opt-in with a readiness gate), native Skia PNG/PDF (`--features native-skia`)
+- Backends: legacy/layered SVG, Canvas2D, CanvasKit direct replay, native Skia PNG/direct PDF (`--features native-skia`)
+- Studio, browser extension/embed, and VS Code viewer surfaces keep Canvas2D as the compatibility default. An explicit Studio-family `?renderer=auto` request pins only documents with a complete, eligible bounded preflight and available required fonts to CanvasKit. Paragraph/control marks and preflight, initialization, resource-preparation, or runtime failures pin the whole revision to Canvas2D. `?renderer=canvas2d` and `?renderer=canvaskit` remain explicit overrides.
 - Text IR v2: font-blob-proof-gated GlyphRun/GlyphOutline sidecars — unproven cases always fall back to `TextRun` (compatibility contract)
 - Visual regression CI: render-diff (Canvas family + report-only PDF diff), shared replay-plane ordering (background → behindText → flow → inFrontOfText) across all four backends
+- Direct PDF uses the print profile and a CSS-px-to-PDF-point `72/96` transform. Lossy gradient/pattern/shadow/connector/image-adjustment payloads fail with guidance to use the SVG backend; only Raw SVG uses the bounded `--raster-dpi` fallback.
+- Selected direct/compatibility PDF rasters are hard-gated at 2%; the broader browser/compatibility PDF comparison remains report-only.
 
 ### Web Editor
 - Text editing (insert, delete, undo/redo)
@@ -196,7 +206,7 @@ New contributors: start with the [onboarding guide](mydocs/eng/manual/onboarding
 ```bash
 cargo build                    # Development build
 cargo build --release          # Release build
-cargo test                     # Run tests (5,500+ tests)
+cargo test                     # Run tests (3,400+ tests)
 ```
 
 ### WASM Build
@@ -325,7 +335,7 @@ This project takes the opposite approach. A human **task director** maintains fu
 |--|-------------|-------------|
 | **Human role** | Accept AI output | Direct, review, decide |
 | **Planning** | None — "just build it" | Written plan → approval → execution |
-| **Quality gate** | Hope it works | 5,500+ tests + Clippy + CI + code review |
+| **Quality gate** | Hope it works | 3,400+ tests + Clippy + CI + code review |
 | **Debugging** | Ask AI to fix AI's bugs | Human diagnoses, AI implements fix |
 | **Architecture** | Emergent (accidental) | Deliberate (CQRS, dependency direction) |
 | **Documentation** | None | 10,000+ files of process records |
@@ -364,7 +374,7 @@ local/task{N}  ──commit──commit──┐
 
 | Branch | Purpose |
 |--------|---------|
-| `main` | Release (tags: v0.7.19 etc.) |
+| `main` | Release (tags: v0.8.0 etc.) |
 | `devel` | Development integration (remote push target) |
 | `local/devel` | Local working branch of devel |
 | `local/task{N}` | GitHub Issue-numbered task branch |

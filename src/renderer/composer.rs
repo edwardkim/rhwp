@@ -1448,11 +1448,36 @@ pub fn recompose_stored_single_line_if_overflowing(
     if !stored_single || composed.lines.len() != 1 || cell_inner_width_px <= 0.0 {
         return;
     }
+    // [#2430] 발동 임계 ×1.05 는 측정(원패딩) vs 렌더(shrink패딩) 폭 발산(#2237)
+    // 으로 살짝(1.05~1.35×) 초과한 정합 셀까지 거짓 재래핑해 줄수를 부풀리고
+    // 쪽당 표 행 적재를 떨어뜨렸다(분할표 11건 과다분할 회귀). 본문 판
+    // `stored_lines_overflow`(#2525)와 동일하게 ×1.8 로 좁혀 정당한 장평/자간·
+    // 패딩 발산 범위(≤~1.5×)를 넘는 부실 저장만 재래핑한다. #2291 원 타깃
+    // (76자 1-lineseg = ~7.6× 초과, 절단 해소)은 임계 위라 계속 재래핑.
     let over = composed
         .lines
         .first()
-        .map(|l| estimate_composed_line_width(l, styles) > cell_inner_width_px * 1.05)
+        .map(|l| estimate_composed_line_width(l, styles) > cell_inner_width_px * 1.8)
         .unwrap_or(false);
+    if std::env::var("RHWP_DIAG_CELLREWRAP").is_ok() && over {
+        if let Some(l) = composed.lines.first() {
+            for run in &l.runs {
+                let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                eprintln!(
+                    "DIAG_CELLREWRAP inner={:.1} fs={:.1} lsp={:.2} font={:?} w={:.1} text={:?}",
+                    cell_inner_width_px,
+                    ts.font_size,
+                    ts.letter_spacing,
+                    ts.font_family.split(',').next().unwrap_or(""),
+                    estimate_text_width(effective_text_for_metrics(run), &ts),
+                    effective_text_for_metrics(run)
+                        .chars()
+                        .take(10)
+                        .collect::<String>(),
+                );
+            }
+        }
+    }
     if !over {
         return;
     }
@@ -1460,6 +1485,155 @@ pub fn recompose_stored_single_line_if_overflowing(
     let mut para_no_ls = para.clone();
     para_no_ls.line_segs.clear();
     recompose_for_cell_width(composed, &para_no_ls, cell_inner_width_px, styles);
+}
+
+/// [#2279] 저장 lineseg 분할의 실폭-과잉 판정 (본문 판, 줄수 무관).
+///
+/// 저장(비합성) 분할의 어떤 줄이든 추정 실폭이 단 내폭을 명백히(×1.05)
+/// 초과하면 그 분할은 물리적으로 성립하지 않는 부실 저장이다 — 마스킹('*'
+/// 치환) 결재문서는 원문 기준의 저장 분할을 남겨 실폭과 모순인 경우가 있고,
+/// 한글은 항상 fresh 재계산하므로 더 많은 줄로 배치한다 (36392557 pi34
+/// 실측: '*'×164 저장 2줄, 줄0 90자 ≈ 내폭 1.4× vs 한글 PDF 3줄 80/68/16).
+/// [정밀화] 마스킹 문단('*' 비중 ≥ 50%) 한정 — 일반 텍스트 문단은 rhwp
+/// 폭 추정 오차가 1.05×를 넘는 사례(prep_1790387/온새미로 실측 회귀)가
+/// 있어 재래핑하지 않는다. 마스킹 치환은 원문과 글자폭이 달라지는 유일한
+/// 물리적 근거가 있는 계열이다.
+pub fn stored_lines_overflow(
+    composed: &ComposedParagraph,
+    para: &Paragraph,
+    inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    let stored = !para.line_segs.is_empty()
+        && para
+            .line_segs
+            .iter()
+            .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+    if !stored || composed.lines.is_empty() || inner_width_px <= 0.0 {
+        return false;
+    }
+    if composed.lines.len() != para.line_segs.len() {
+        return false;
+    }
+    // [#2525] 비마스킹 대형 과밀: 저장 lineseg 이 장평 반영 실폭
+    // (estimate_composed_line_width 는 ts.ratio 를 자체 반영) 기준으로도 내폭을
+    // 크게(≥1.8×) 초과하면, 정당한 장평/자간 압축 범위(최소 advance 클램프 0.5×
+    // → 최대 ~2× 과밀)를 벗어난 부실 단일-저장 lineseg 다 (hwpx-02 p5: 135자
+    // 1줄 ≈4.5× 과밀 → 숫자 char_px*ratio*0.5 클램프로 0.5em 겹침). 마스킹(*)
+    // 게이트와 무관하게 fresh 재래핑한다. 정당한 장평 압축 문서는 ratio 반영
+    // 실폭이 내폭 이내라 오발동하지 않는다.
+    if composed
+        .lines
+        .iter()
+        .any(|l| estimate_composed_line_width(l, styles) > inner_width_px * 1.8)
+    {
+        return true;
+    }
+    // 마스킹 판별: 공백 제외 글자의 절반 이상이 '*'
+    let (mut stars, mut others) = (0usize, 0usize);
+    for c in para.text.chars() {
+        if c == '*' {
+            stars += 1;
+        } else if !c.is_whitespace() {
+            others += 1;
+        }
+    }
+    if stars < 8 || stars < others {
+        return false;
+    }
+    let fired = composed
+        .lines
+        .iter()
+        .any(|l| estimate_composed_line_width(l, styles) > inner_width_px * 1.05);
+    if fired && std::env::var("RHWP_DIAG_REWRAP").is_ok() {
+        let widths: Vec<String> = composed
+            .lines
+            .iter()
+            .map(|l| format!("{:.0}", estimate_composed_line_width(l, styles)))
+            .collect();
+        eprintln!(
+            "DIAG_REWRAP fire inner={:.0} lines={} widths={:?} text='{}'",
+            inner_width_px,
+            composed.lines.len(),
+            widths,
+            para.text.chars().take(24).collect::<String>(),
+        );
+    }
+    fired
+}
+
+/// [#2279 stale-과소] 마스킹 문단의 저장 분할이 fresh 재래핑보다 **많은 줄**
+/// 인 경우 — 마스킹 치환('*')으로 원문보다 좁아졌는데 저장 분할은 원문 기준
+/// 줄수를 남긴 부실 저장. 한글은 fresh 재계산으로 줄수를 줄인다(36341511
+/// pi61/62/68/70/71 재저장 실측: 저장 3~5줄 vs fresh −1줄씩, 문단당 +31px
+/// 잔존 누적 +1쪽). 과잉(#2360, 실폭>내폭×1.05)과 대칭 — 마스킹·저장 요건은
+/// 동일하고, fresh 프로브 재래핑의 줄수가 저장과 다르면 stale 로 본다.
+pub fn masked_stored_lines_stale(
+    composed: &ComposedParagraph,
+    para: &Paragraph,
+    inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    if stored_lines_overflow(composed, para, inner_width_px, styles) {
+        return true;
+    }
+    let stored = !para.line_segs.is_empty()
+        && para
+            .line_segs
+            .iter()
+            .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+    if !stored
+        || composed.lines.is_empty()
+        || inner_width_px <= 0.0
+        || composed.lines.len() != para.line_segs.len()
+        || composed.lines.len() < 2
+    {
+        return false;
+    }
+    let (mut stars, mut others) = (0usize, 0usize);
+    for c in para.text.chars() {
+        if c == '*' {
+            stars += 1;
+        } else if !c.is_whitespace() {
+            others += 1;
+        }
+    }
+    if stars < 8 || stars < others {
+        return false;
+    }
+    let mut probe = composed.clone();
+    let mut para_no_ls = para.clone();
+    para_no_ls.line_segs.clear();
+    recompose_for_body_width(&mut probe, &para_no_ls, inner_width_px, styles);
+    let stale = probe.lines.len() != composed.lines.len();
+    if stale && std::env::var("RHWP_DIAG_REWRAP").is_ok() {
+        eprintln!(
+            "DIAG_REWRAP stale-count inner={:.0} stored={} fresh={} text='{}'",
+            inner_width_px,
+            composed.lines.len(),
+            probe.lines.len(),
+            para.text.chars().take(24).collect::<String>(),
+        );
+    }
+    stale
+}
+
+/// [#2279] 본문(column) 판 부실-저장 예외 — 저장 분할이 실폭 모순(과잉)이거나
+/// 마스킹 문단의 저장 줄수가 fresh 와 다르면(과소 포함) 저장을 불신하고 본문
+/// 경로(`recompose_for_body_width` — 글자모양 재분할 포함)로 fresh 재래핑한다.
+/// 셀 판(#2291, 1줄 한정)과 같은 원리의 다중줄 일반화 + 마스킹 한정.
+pub fn recompose_stored_lines_if_overflowing_body(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    column_inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+) {
+    if !masked_stored_lines_stale(composed, para, column_inner_width_px, styles) {
+        return;
+    }
+    let mut para_no_ls = para.clone();
+    para_no_ls.line_segs.clear();
+    recompose_for_body_width(composed, &para_no_ls, column_inner_width_px, styles);
 }
 
 pub fn recompose_for_cell_width(
@@ -1820,7 +1994,15 @@ fn is_hwp3_hwp5_missing_lineseg_legacy_bullet(
                 styles
                     .char_styles
                     .get(run.char_style_id as usize)
-                    .map(|cs| cs.font_family.split(',').next().unwrap_or("").trim() == "HY신명조")
+                    .map(|cs| {
+                        matches!(
+                            cs.font_family.split(',').next().unwrap_or("").trim(),
+                            // [#2430] 한양신명조·휴먼명조는 종전 HY신명조 치환이
+                            // 풀려 원명으로 온다 — #2070 v3/v4 규칙(원 계보가
+                            // 한양신명조 사다리) 대상 유지.
+                            "HY신명조" | "한양신명조" | "휴먼명조"
+                        )
+                    })
                     .unwrap_or(false)
             })
 }

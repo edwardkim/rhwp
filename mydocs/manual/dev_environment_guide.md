@@ -33,6 +33,16 @@ npm --version
 로컬 검증 기준은 최신 `upstream/devel`이다. 일반 변경은 작업 브랜치에서 검증한 뒤 `devel` 대상 PR로
 통합하며 `upstream/devel`에 직접 push하지 않는다.
 
+fork를 clone하면 원격은 fork를 가리키는 `origin` 하나뿐이다. 원본 저장소를 가리키는 `upstream`을
+최초 1회 등록한다.
+
+```bash
+git remote add upstream https://github.com/edwardkim/rhwp.git
+git remote -v
+```
+
+이후 작업 브랜치는 최신 `upstream/devel`에서 만든다.
+
 ```bash
 git fetch upstream
 git switch -c <work-branch> upstream/devel

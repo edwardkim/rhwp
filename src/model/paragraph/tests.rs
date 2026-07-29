@@ -646,6 +646,36 @@ fn test_merge_from_empty_text_with_control() {
 }
 
 #[test]
+fn test_merge_from_text_only_control_mask_bits() {
+    // other 문단이 controls는 없고 tab/개행만 가진 경우에도 control_mask의
+    // 텍스트 기반 비트(0x9=tab, 0xA=개행)가 병합 결과에 반영돼야 한다.
+    let mut para1 = Paragraph {
+        text: "안녕".to_string(),
+        char_count: 3,
+        char_offsets: vec![0, 1],
+        has_para_text: true,
+        ..Default::default()
+    };
+
+    let tab_para = Paragraph {
+        text: "\t뒤".to_string(),
+        char_count: 3,
+        char_offsets: vec![0, 1],
+        control_mask: 1u32 << 0x0009,
+        has_para_text: true,
+        ..Default::default()
+    };
+
+    para1.merge_from(&tab_para);
+
+    assert_ne!(
+        para1.control_mask & (1u32 << 0x0009),
+        0,
+        "controls가 없는 other의 tab 비트도 control_mask에 반영돼야 한다"
+    );
+}
+
+#[test]
 fn test_merge_from_control_then_right_half() {
     // 셀 paste 3단 흐름 재현: split_at → merge(컨트롤 문단) → merge(right_half)
     let mut para = Paragraph {
@@ -783,6 +813,7 @@ fn test_merge_from_field_ranges_ctrl_offset() {
             start_char_idx: 0,
             end_char_idx: 1,
             control_idx: 0,
+            ..Default::default()
         }],
         has_para_text: true,
         ..Default::default()
@@ -824,6 +855,160 @@ fn test_split_and_merge_roundtrip() {
     para.merge_from(&new_para);
     assert_eq!(para.text, "안녕하세요");
     assert_eq!(para.char_offsets, vec![0, 1, 2, 3, 4]);
+}
+
+#[test]
+fn test_undo_split_moves_merged_clickhere_field_to_restored_paragraph() {
+    // 문단 병합 뒤 undo가 split_at(병합 지점)을 호출하는 경로를 재현한다.
+    // 두 번째 문단의 Field와 FieldRange는 복원된 새 문단에 함께 남아야 한다.
+    let mut merged = Paragraph {
+        text: "AB".to_string(),
+        char_count: 3,
+        char_offsets: vec![0, 1],
+        has_para_text: true,
+        ..Default::default()
+    };
+    let field_paragraph = Paragraph {
+        text: "CD".to_string(),
+        char_count: 11,
+        // Field 하나가 첫 텍스트 앞의 8 code unit을 점유한다.
+        char_offsets: vec![8, 9],
+        controls: vec![Control::Field(crate::model::control::Field {
+            field_type: crate::model::control::FieldType::ClickHere,
+            ..Default::default()
+        })],
+        ctrl_data_records: vec![Some(vec![0x24, 0x17])],
+        field_ranges: vec![FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 2,
+            control_idx: 0,
+            ..Default::default()
+        }],
+        has_para_text: true,
+        ..Default::default()
+    };
+
+    let merge_pos = merged.merge_from(&field_paragraph);
+    assert_eq!(merge_pos, 2);
+
+    let restored = merged.split_at(merge_pos);
+
+    assert!(merged.field_ranges.is_empty());
+    assert!(merged.controls.is_empty());
+    assert_eq!(restored.text, "CD");
+    assert!(matches!(restored.controls.as_slice(), [Control::Field(_)]));
+    assert_eq!(restored.ctrl_data_records, vec![Some(vec![0x24, 0x17])]);
+    assert_eq!(
+        restored
+            .field_ranges
+            .iter()
+            .map(|range| (range.start_char_idx, range.end_char_idx, range.control_idx))
+            .collect::<Vec<_>>(),
+        vec![(0, 2, 0)]
+    );
+    assert_ne!(restored.control_mask & (1 << 0x0003), 0);
+    assert_ne!(restored.control_mask & (1 << 0x0004), 0);
+}
+
+#[test]
+fn test_split_moves_field_with_range_without_consuming_visible_offset() {
+    let mut para = Paragraph {
+        text: "AABB".to_string(),
+        char_count: 13,
+        char_offsets: vec![0, 1, 2, 3],
+        controls: vec![Control::Field(crate::model::control::Field {
+            field_type: crate::model::control::FieldType::ClickHere,
+            ..Default::default()
+        })],
+        field_ranges: vec![FieldRange {
+            start_char_idx: 2,
+            end_char_idx: 4,
+            control_idx: 0,
+            ..Default::default()
+        }],
+        has_para_text: true,
+        ..Default::default()
+    };
+
+    // Field는 새 문단으로 이관되지만, split offset 2는 보이는 "AA" 뒤여야 한다.
+    let restored = para.split_at(2);
+
+    assert_eq!(para.text, "AA");
+    assert!(para.controls.is_empty());
+    assert!(para.field_ranges.is_empty());
+    assert_eq!(restored.text, "BB");
+    assert!(matches!(restored.controls.as_slice(), [Control::Field(_)]));
+    assert_eq!(
+        restored
+            .field_ranges
+            .iter()
+            .map(|range| (range.start_char_idx, range.end_char_idx, range.control_idx))
+            .collect::<Vec<_>>(),
+        vec![(0, 2, 0)]
+    );
+}
+
+#[test]
+fn test_merge_undo_restores_second_paragraph_meta() {
+    // 병합 undo 는 split_at 으로 문단을 되살리는데, 새 문단의 메타데이터는 앞 문단에서
+    // 상속되므로 사라진 문단의 원래 값을 재현할 수 없다. capture_meta/apply_meta 로
+    // 되돌린다 (Task #2342).
+    let mut first = Paragraph {
+        text: "AB".to_string(),
+        char_count: 3,
+        char_offsets: vec![0, 1],
+        para_shape_id: 10,
+        style_id: 1,
+        raw_header_extra: vec![0, 0, 0, 0, 0, 0, 0xAA, 0xAA, 0xAA, 0xAA],
+        has_para_text: true,
+        ..Default::default()
+    };
+    let second = Paragraph {
+        text: "C\tD".to_string(),
+        char_count: 4,
+        char_offsets: vec![0, 1, 2],
+        para_shape_id: 20,
+        style_id: 5,
+        column_type: ColumnBreakType::Page,
+        raw_break_type: 0x04,
+        numbering_restart: Some(NumberingRestart::NewStart(7)),
+        raw_header_extra: vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB],
+        tab_extended: vec![[100, 0, 0x0200, 0, 0, 0, 9]],
+        has_para_text: true,
+        ..Default::default()
+    };
+    let meta = second.capture_meta();
+
+    let merge_pos = first.merge_from(&second);
+    let mut restored = first.split_at(merge_pos);
+
+    // apply_meta 이전: split_at 의 Enter 시맨틱대로 앞 문단 값을 상속한다.
+    assert_eq!(restored.para_shape_id, 10);
+    assert_eq!(restored.style_id, 1);
+
+    restored.apply_meta(meta);
+
+    assert_eq!(restored.text, "C\tD");
+    assert_eq!(restored.para_shape_id, 20);
+    assert_eq!(restored.style_id, 5);
+    assert_eq!(restored.column_type, ColumnBreakType::Page);
+    assert_eq!(restored.raw_break_type, 0x04);
+    assert_eq!(
+        restored.numbering_restart,
+        Some(NumberingRestart::NewStart(7))
+    );
+    assert_eq!(
+        restored.raw_header_extra,
+        vec![0, 0, 0, 0, 0, 0, 0xBB, 0xBB, 0xBB, 0xBB]
+    );
+    assert_eq!(restored.tab_extended, vec![[100, 0, 0x0200, 0, 0, 0, 9]]);
+
+    // 앞 문단은 자기 값을 유지한다.
+    assert_eq!(first.para_shape_id, 10);
+    assert_eq!(
+        first.raw_header_extra,
+        vec![0, 0, 0, 0, 0, 0, 0xAA, 0xAA, 0xAA, 0xAA]
+    );
 }
 
 #[test]

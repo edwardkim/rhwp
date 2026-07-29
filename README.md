@@ -60,7 +60,7 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 
 ## 이정표
 
-### v0.5.0 ~ v0.7.x — 뼈대 (현재)
+### v0.5.0 ~ v0.8.x — 뼈대 (현재)
 
 > 역공학 완성, 읽기/쓰기 기반 구축
 
@@ -69,7 +69,7 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 - 페이지네이션 (다단 분할, 표 행 분할), 머리말/꼬리말/바탕쪽/각주
 - SVG/PNG/PDF 내보내기 (CLI) + Canvas/CanvasKit 렌더링 (WASM/Web)
 - 웹 에디터 + hwpctl 호환 API (30 Actions, Field API)
-- 5,500+ Rust 테스트 + studio 단위/e2e/시각 회귀 CI
+- 3,400+ Rust 테스트 + studio 단위/e2e/시각 회귀 CI
 
 > HML은 실제 corpus로 확인된 HWPML 2.9/2.91 구조만 제한 지원합니다. 지원 범위의 수식은
 > 가져와 편집할 수 있고, 보존 불가 요소가 없는 HML 원본은 preflight 검사 후 HML로 다시
@@ -114,16 +114,19 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
 
 ### Output (출력)
 - SVG export (CLI, legacy + layer replay)
-- PNG export (native Skia, `--features native-skia`) / PDF export (`--text-as-paths` 지원, 바이트 재현성)
-- Canvas rendering (WASM/Web) + CanvasKit direct replay (opt-in)
+- PNG export (native Skia, `--features native-skia`)
+- PDF export: SVG compatibility 기본(`--text-as-paths` 지원, 바이트 재현성), native Skia direct opt-in(`--features native-skia`, `--backend direct`)
+- Canvas rendering (WASM/Web) + 명시 opt-in 문서 단위 Canvas2D/CanvasKit 자동 선택
 - 저장: HWP 편집 저장, HWPX/HML 의미 보존 저장, HWPX → HWP 변환 경로
 - Debug overlay (paragraph/table boundaries + indices + y-coordinates)
 
 ### Multi-Renderer Backends (멀티 렌더러 백엔드)
 - 공통 paint IR: `PageRenderTree` → `PageLayerTree` (Rust `DocumentCore::build_page_layer_tree`, WASM `getPageLayerTree`) — `schemaVersion: 1`, 호환 변경은 additive 원칙
-- 백엔드: legacy/layered SVG, Canvas2D(브라우저 기본), CanvasKit 직접 replay(`?renderer=canvaskit` opt-in + readiness gate), native Skia PNG/PDF(`--features native-skia`)
+- 백엔드: legacy/layered SVG, Canvas2D, CanvasKit 직접 replay, native Skia PNG/direct PDF(`--features native-skia`)
+- Studio, 브라우저 확장/embed, VS Code 뷰어의 기본 요청은 호환 경로인 Canvas2D입니다. Studio 계열에서 `?renderer=auto`를 명시하면 bounded document preflight가 완전하고 적격이며 필요한 문서 폰트를 준비할 수 있는 경우만 CanvasKit으로 고정합니다. 수평 글자 겹침, 탭 리더, 밑줄·취소선·강조점, 위치가 확정된 공백·탭·문단 끝·줄바꿈 부호는 CanvasKit이 직접 재생합니다. `[표]`, `[그림]` 같은 구조 조판 부호를 포함하는 `showControlCodes`와 지원하지 않는 세로쓰기·회전된 특수 텍스트 시각 요소·텍스트 효과, 판정·초기화·리소스 준비·런타임 실패는 해당 문서 revision 전체를 Canvas2D로 고정합니다. `?renderer=canvas2d`와 `?renderer=canvaskit`은 명시적 강제 선택입니다.
 - Text IR v2: 폰트 blob 증명 기반 GlyphRun/GlyphOutline 사이드카 — 미증명 케이스는 항상 `TextRun` 폴백 (호환 계약)
-- 시각 회귀 CI: render-diff(Canvas 계열 + report-only PDF diff), 4-backend 공통 replay-plane(배경→글뒤→본문→글앞) 계약
+- direct PDF는 print profile과 CSS px→PDF point `72/96` 변환을 사용합니다. 손실되는 gradient/pattern/shadow/connector/image adjustment는 SVG backend 사용을 안내하며 실패하고, Raw SVG만 `--raster-dpi` 기반 bounded raster fallback을 사용합니다.
+- 시각 회귀 CI: render-diff(Canvas 계열 + browser/compatibility PDF report), selected direct/compatibility PDF 2% hard gate, 4-backend 공통 replay-plane(배경→글뒤→본문→글앞) 계약
 
 ### Web Editor (웹 에디터)
 - Text editing (insert, delete, undo/redo)
@@ -198,7 +201,7 @@ document.getElementById('viewer').innerHTML = doc.renderPageSvg(0);
 ```bash
 cargo build                    # Development build
 cargo build --release          # Release build
-cargo test                     # Run tests (5,500+ tests)
+cargo test                     # Run tests (3,400+ tests)
 ```
 
 ### WASM Build
@@ -326,7 +329,7 @@ scripts/                       # Build & quality tools
 |--|-----------|-----------|
 | **사람의 역할** | AI 출력 수락 | 지시, 검토, 결정 |
 | **계획** | 없음 — "그냥 만들어" | 계획서 작성 → 승인 → 실행 |
-| **품질 관문** | 동작하길 바람 | 5,500+ 테스트 + Clippy + CI + 코드 리뷰 |
+| **품질 관문** | 동작하길 바람 | 3,400+ 테스트 + Clippy + CI + 코드 리뷰 |
 | **디버깅** | AI에게 AI 버그 수정 요청 | 사람이 진단, AI가 구현 |
 | **아키텍처** | 우연히 형성 | 의도적 설계 (CQRS, 의존성 방향) |
 | **문서** | 없음 | 10,000+개 파일의 프로세스 기록 |
@@ -365,7 +368,7 @@ local/task{N}  ──커밋──커밋──┐
 
 | 브랜치 | 용도 |
 |--------|------|
-| `main` | 릴리즈 (태그: v0.7.19 등) |
+| `main` | 릴리즈 (태그: v0.8.0 등) |
 | `devel` | 개발 통합 (원격 push 대상) |
 | `local/devel` | devel 의 로컬 작업 브랜치 |
 | `local/task{N}` | GitHub Issue 번호 기반 타스크 브랜치 |

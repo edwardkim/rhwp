@@ -39,12 +39,14 @@ pub fn draw_svg_fragment(
     width: f32,
     height: f32,
     sampling: ImageSampling,
+    raster_scale: f32,
 ) -> bool {
     // [Issue #2292] RawSvg 조각은 페이지 절대 좌표로 방출된다(SVG 백엔드
     // 직접 삽입·web_canvas 와 동일 계약). viewBox 원점에 조각의 페이지
     // 위치(x, y)를 넘겨 bbox 창만 래스터한다 — (0,0) 가정 시 창 밖 콘텐츠
     // 전부 클리핑 + bbox 재배치 이중 오프셋으로 차트가 잘렸다.
-    let Some(png) = rasterize_svg_fragment_to_png(svg_fragment, x, y, width, height) else {
+    let Some(png) = rasterize_svg_fragment_to_png(svg_fragment, x, y, width, height, raster_scale)
+    else {
         return false;
     };
     draw_image_bytes(
@@ -57,10 +59,10 @@ pub fn draw_svg_fragment(
         Some(ImageFillMode::FitToSize),
         None,
         None,
+        None,
         ImageEffect::RealPic,
         sampling,
-    );
-    true
+    )
 }
 
 pub fn draw_image_bytes(
@@ -73,9 +75,10 @@ pub fn draw_image_bytes(
     fill_mode: Option<ImageFillMode>,
     original_size: Option<(f64, f64)>,
     crop: Option<(i32, i32, i32, i32)>,
+    crop_reference_size: Option<(u32, u32)>,
     effect: ImageEffect,
     sampling: ImageSampling,
-) {
+) -> bool {
     let is_valid_destination_rect = |x: f32, y: f32, width: f32, height: f32| {
         x.is_finite()
             && y.is_finite()
@@ -149,7 +152,7 @@ pub fn draw_image_bytes(
     };
 
     if !is_valid_destination_rect(x, y, width, height) {
-        return;
+        return false;
     }
     let normalized_bytes = if detect_image_mime_type(bytes) == "image/jpeg" {
         grayscale_jpeg_bytes_to_png_bytes(bytes)
@@ -160,7 +163,7 @@ pub fn draw_image_bytes(
 
     let Some(image) = Image::from_encoded(Data::new_copy(encoded_bytes)) else {
         draw_missing_image_placeholder(x, y, width, height);
-        return;
+        return false;
     };
 
     let dst = Rect::from_xywh(x, y, width, height);
@@ -173,19 +176,17 @@ pub fn draw_image_bytes(
     let mode = fill_mode.unwrap_or(ImageFillMode::FitToSize);
     let decoded_width = image.width() as f32;
     let decoded_height = image.height() as f32;
-    let crop_src = crop.and_then(|(left, top, right, bottom)| {
+    let crop_src = crop.and_then(|crop_rect| {
         if decoded_width <= 0.0 || decoded_height <= 0.0 {
             return None;
         }
-        let scale_x = right as f32 / decoded_width;
-        let scale_y = bottom as f32 / decoded_height;
-        if scale_x <= 0.0 || scale_y <= 0.0 {
-            return None;
-        }
-        let src_x = left as f32 / scale_x;
-        let src_y = top as f32 / scale_y;
-        let src_w = (right - left) as f32 / scale_x;
-        let src_h = (bottom - top) as f32 / scale_y;
+        let (src_x, src_y, src_w, src_h) = crate::renderer::svg::compute_image_crop_src(
+            crop_rect,
+            crop_reference_size,
+            decoded_width as f64,
+            decoded_height as f64,
+        );
+        let (src_x, src_y, src_w, src_h) = (src_x as f32, src_y as f32, src_w as f32, src_h as f32);
         let is_cropped = src_x > 0.5
             || src_y > 0.5
             || (src_w - decoded_width).abs() > 1.0
@@ -217,9 +218,12 @@ pub fn draw_image_bytes(
         }
     };
 
-    if matches!(mode, ImageFillMode::FitToSize | ImageFillMode::None) {
+    if matches!(
+        mode,
+        ImageFillMode::FitToSize | ImageFillMode::Total | ImageFillMode::None
+    ) {
         draw_image_rect(crop_src, dst);
-        return;
+        return true;
     }
 
     let image_width = original_size
@@ -230,7 +234,7 @@ pub fn draw_image_bytes(
         .unwrap_or_else(|| image.height() as f32);
     if !is_valid_image_size(image_width, image_height) {
         draw_missing_image_placeholder(x, y, width, height);
-        return;
+        return false;
     }
 
     canvas.save();
@@ -293,7 +297,7 @@ pub fn draw_image_bytes(
             && draw_tiled_shader(dst, x, y)
         {
             canvas.restore();
-            return;
+            return true;
         }
         if matches!(
             mode,
@@ -306,7 +310,7 @@ pub fn draw_image_bytes(
             };
             if draw_tiled_shader(Rect::from_xywh(x, tile_y, width, image_height), x, tile_y) {
                 canvas.restore();
-                return;
+                return true;
             }
         }
         if matches!(
@@ -320,9 +324,11 @@ pub fn draw_image_bytes(
             };
             if draw_tiled_shader(Rect::from_xywh(tile_x, y, image_width, height), tile_x, y) {
                 canvas.restore();
-                return;
+                return true;
             }
         }
+        canvas.restore();
+        return false;
     } else {
         let (image_x, image_y) =
             resolve_image_placement(mode, x, y, width, height, image_width, image_height);
@@ -333,6 +339,7 @@ pub fn draw_image_bytes(
     }
 
     canvas.restore();
+    true
 }
 
 fn rasterize_svg_fragment_to_png(
@@ -341,6 +348,7 @@ fn rasterize_svg_fragment_to_png(
     src_y: f32,
     width: f32,
     height: f32,
+    raster_scale: f32,
 ) -> Option<Vec<u8>> {
     if svg_fragment.is_empty()
         || svg_fragment.len() > MAX_SVG_FRAGMENT_BYTES
@@ -348,13 +356,17 @@ fn rasterize_svg_fragment_to_png(
         || !src_y.is_finite()
         || !width.is_finite()
         || !height.is_finite()
+        || !raster_scale.is_finite()
         || width <= 0.0
         || height <= 0.0
+        || raster_scale <= 0.0
     {
         return None;
     }
-    let raster_width = width.ceil() as u64;
-    let raster_height = height.ceil() as u64;
+    let output_width = width * raster_scale;
+    let output_height = height * raster_scale;
+    let raster_width = output_width.ceil() as u64;
+    let raster_height = output_height.ceil() as u64;
     if raster_width
         .checked_mul(raster_height)
         .is_none_or(|pixels| pixels > MAX_SVG_RASTER_PIXELS)
@@ -365,7 +377,7 @@ fn rasterize_svg_fragment_to_png(
     // [Issue #2292] 조각은 페이지 절대 좌표 — viewBox 를 조각의 페이지 좌표
     // 창(src_x, src_y 원점)으로 지정해 bbox 영역만 (0,0) 래스터로 사상한다.
     let svg = format!(
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{width:.2}\" height=\"{height:.2}\" viewBox=\"{src_x:.2} {src_y:.2} {width:.2} {height:.2}\">{svg_fragment}</svg>"
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{output_width:.2}\" height=\"{output_height:.2}\" viewBox=\"{src_x:.2} {src_y:.2} {width:.2} {height:.2}\">{svg_fragment}</svg>"
     );
     let options = svg_parse_options();
     let tree = usvg::Tree::from_str(&svg, &options).ok()?;
@@ -403,14 +415,9 @@ fn svg_fontdb() -> Arc<usvg::fontdb::Database> {
             // resvg 가 조각의 텍스트를 통째로 드롭했다.
             let mut fontdb = usvg::fontdb::Database::new();
             fontdb.load_system_fonts();
-            for dir in &["ttfs", "ttfs/windows", "ttfs/hwp"] {
-                if std::path::Path::new(dir).exists() {
-                    fontdb.load_fonts_dir(dir);
-                }
-            }
-            if std::path::Path::new("/mnt/c/Windows/Fonts").exists() {
-                fontdb.load_fonts_dir("/mnt/c/Windows/Fonts");
-            }
+            // [#2864] 조달 순서는 renderer::font_paths 가 단일 정의한다.
+            // ttfs/opensource 번들이 최후 폴백으로 남아 한국어 드롭을 막는다(#2293).
+            crate::renderer::font_paths::load_into_fontdb(&mut fontdb, &[]);
 
             // generic 폴백은 실존하는 첫 후보로 (매칭 실패 = 텍스트 드롭 방지).
             let sans = first_existing_family(

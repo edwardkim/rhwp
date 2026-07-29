@@ -3,6 +3,8 @@
 
 import type { ContextMenuItem } from '@/ui/context-menu';
 import * as _connector from './input-handler-connector';
+import { MoveLineEndpointCommand } from './command';
+import { computeLineEndpointRecord } from './object-drag-record';
 
 function protectedCellKey(hit: any): string | null {
   if (!hit || hit.isTextBox) return null;
@@ -114,7 +116,7 @@ function selectProtectedCell(this: any, hit: any): void {
     this.tableObjectRenderer?.clear();
     this.eventBus.emit('table-object-selection-changed', false);
   }
-  this.cursor.moveTo(hit);
+  this.cursor.moveToHit(hit);
   this.cursor.resetPreferredX();
   if (!this.cursor.enterCellSelectionMode('protected')) return;
   this.active = true;
@@ -211,7 +213,7 @@ function finishCellSelectionDrag(this: any, e: MouseEvent): void {
       this.cursor.exitCellSelectionMode();
       this.cellSelectionRenderer?.clear();
       this.cursor.clearSelection();
-      this.cursor.moveTo(hit);
+      this.cursor.moveToHit(hit);
       this.cursor.resetPreferredX();
       this.cursor.setAnchor();
       this.active = true;
@@ -399,11 +401,11 @@ export function onClick(this: any, e: MouseEvent): void {
                 hit.sectionIndex === ref.sec &&
                 hit.parentParaIndex === ref.ppi &&
                 hit.controlIndex === ref.ci &&
-                !this.isTableBorderClick(px, py, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
+                !this.isTableBorderClick(pi, px, py, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
               enterCellHit = hit;
             }
           }
-          const bbox = this.wasm.getTableBBox(ref.sec, ref.ppi, ref.ci);
+          const bbox = this.wasm.getTableBBoxAtPage(ref.sec, ref.ppi, ref.ci, pi);
           if (px >= bbox.x && px <= bbox.x + bbox.width &&
               py >= bbox.y && py <= bbox.y + bbox.height) {
             clickedInsideSelectedTable = true;
@@ -563,11 +565,21 @@ export function onClick(this: any, e: MouseEvent): void {
                 const pw = this.virtualScroll.getPageWidth(picBbox.pageIndex);
                 const pl = this.virtualScroll.getPageLeftResolved(picBbox.pageIndex, sc.clientWidth);
                 this.isLineEndpointDragging = true;
+                // [Task #2759] 드래그 시작 시 원래 끝점(글로벌 HWPUNIT)을 캡처해 종료 시
+                // Undo 기록의 before 로 쓴다. (x1,y1)=시작점, (x2,y2)=끝점 — 드래그 중
+                // 좌표 계산(PX2HWP=75)과 동일. cellPath 는 담지 않는다(잔여: 셀 내 직선 미대응).
+                const PX2HWP_LINE = 75;
                 this.lineEndpointState = {
                   ref: { sec: ref.sec, ppi: ref.ppi, ci: ref.ci, type: ref.type },
                   endpoint: dir === 'sw' ? 'start' : 'end',
                   pageIndex: picBbox.pageIndex,
                   pageLeft: pl, pageOffset: po, zoom,
+                  orig: {
+                    sx: Math.round((picBbox.x1 ?? 0) * PX2HWP_LINE),
+                    sy: Math.round((picBbox.y1 ?? 0) * PX2HWP_LINE),
+                    ex: Math.round((picBbox.x2 ?? 0) * PX2HWP_LINE),
+                    ey: Math.round((picBbox.y2 ?? 0) * PX2HWP_LINE),
+                  },
                 };
                 this.container.style.cursor = 'crosshair';
                 document.addEventListener('mouseup', this.onMouseUpBound, { once: true });
@@ -695,6 +707,10 @@ export function onClick(this: any, e: MouseEvent): void {
             const contentX = e.clientX - contentRect.left;
             const contentY = e.clientY - contentRect.top;
             const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
+            // hover 경로(handleMouseMove)의 캐시 일치 판정이 pageHint 를 비교하므로 여기서
+            // 채워준다. 비워두면 `undefined !== pageIdx` 가 항상 참이라 hover 가 매번
+            // early return 해 표 리사이즈 marker 가 한 번도 표시되지 않는다.
+            this.cachedTableRef.pageHint = pageIdx;
             const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
             const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
             const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
@@ -836,7 +852,9 @@ export function onClick(this: any, e: MouseEvent): void {
   // 각주 편집 모드에서 클릭 처리
   if (this.cursor.isInFootnote()) {
     try {
-      const fnHit = this.wasm.hitTestFootnote(pageIdx, pageX, pageY);
+      const fnHit = this.wasm.pageHasFootnoteFootholds(pageIdx)
+        ? this.wasm.hitTestFootnote(pageIdx, pageX, pageY)
+        : { hit: false };
       if (!fnHit.hit) {
         // 본문 영역 클릭 → 각주 편집 모드 탈출
         this.cursor.exitFootnoteMode();
@@ -893,7 +911,9 @@ export function onClick(this: any, e: MouseEvent): void {
   // 각주 영역 클릭 → 각주 편집 모드 진입
   if (!this.cursor.isInFootnote()) {
     try {
-      const fnHit = this.wasm.hitTestFootnote(pageIdx, pageX, pageY);
+      const fnHit = this.wasm.pageHasFootnoteFootholds(pageIdx)
+        ? this.wasm.hitTestFootnote(pageIdx, pageX, pageY)
+        : { hit: false };
       if (fnHit.hit) {
         // hitTestInFootnote로 정확한 footnoteIndex와 커서 위치를 얻기
         const inFnHit = this.wasm.hitTestInFootnote(pageIdx, pageX, pageY);
@@ -939,9 +959,9 @@ export function onClick(this: any, e: MouseEvent): void {
 
     // 표 경계선 클릭 감지 → 표 객체 선택 (셀 내부에서 외곽 클릭)
     if (hit.parentParaIndex !== undefined && hit.controlIndex !== undefined && !hit.isTextBox) {
-      if (this.isTableBorderClick(pageX, pageY, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
+      if (this.isTableBorderClick(pageIdx, pageX, pageY, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
         this.cursor.clearSelection();
-        this.cursor.moveTo(hit); // 셀 위치로 이동 (유효한 렌더링 위치)
+        this.cursor.moveToHit(hit); // 셀 위치로 이동 (유효한 렌더링 위치)
         this.cursor.enterTableObjectSelectionDirect(hit.sectionIndex, hit.parentParaIndex, hit.controlIndex);
         this.active = true;
         this.caret.hide();
@@ -999,7 +1019,7 @@ export function onClick(this: any, e: MouseEvent): void {
         this.pictureObjectRenderer?.clear();
         this.eventBus.emit('picture-object-selection-changed', false);
         this.cursor.clearSelection();
-        this.cursor.moveTo(hit);
+        this.cursor.moveToHit(hit);
         this.cursor.resetPreferredX();
         this.cursor.setAnchor();
         this.active = true;
@@ -1084,7 +1104,7 @@ export function onClick(this: any, e: MouseEvent): void {
     if (hit.isTextBox) {
       this.exitPictureObjectSelectionIfNeeded();
       this.cursor.clearSelection();
-      this.cursor.moveTo(hit);
+      this.cursor.moveToHit(hit);
       this.cursor.resetPreferredX();
       this.cursor.setAnchor();
       this.active = true;
@@ -1138,7 +1158,7 @@ export function onClick(this: any, e: MouseEvent): void {
             const pos = this.cursor.getPosition();
             if (pos.parentParaIndex === picHit.ppi && pos.controlIndex === picHit.ci) {
               this.cursor.clearSelection();
-              this.cursor.moveTo(hit);
+              this.cursor.moveToHit(hit);
               this.cursor.resetPreferredX();
               this.cursor.setAnchor();
               this.active = true;
@@ -1210,7 +1230,7 @@ export function onClick(this: any, e: MouseEvent): void {
     if (e.shiftKey) {
       // Shift+클릭: 현재 위치에서 클릭 위치까지 선택 확장
       this.cursor.setAnchor(); // anchor가 없으면 현재 커서 위치를 anchor로
-      this.cursor.moveTo(hit);
+      this.cursor.moveToHit(hit);
       this.active = true;
       this.updateCaret();
       this.textarea.focus();
@@ -1219,7 +1239,7 @@ export function onClick(this: any, e: MouseEvent): void {
 
     // 일반 클릭: 커서 배치 + 드래그 시작
     this.cursor.clearSelection();
-    this.cursor.moveTo(hit);
+    this.cursor.moveToHit(hit);
     this.cursor.resetPreferredX();
     this.prepareClickHerePointerEntry?.(pageX);
     this.cursor.setAnchor(); // 드래그 시작점(anchor) 설정
@@ -1710,7 +1730,7 @@ export function onMouseMove(this: any, e: MouseEvent): void {
         const px = (x - pl) / zoom;
         const py = (y - po) / zoom;
         try {
-          const bbox = this.wasm.getTableBBox(ref.sec, ref.ppi, ref.ci);
+          const bbox = this.wasm.getTableBBoxAtPage(ref.sec, ref.ppi, ref.ci, pi);
           if (px >= bbox.x && px <= bbox.x + bbox.width &&
               py >= bbox.y && py <= bbox.y + bbox.height) {
             this.container.style.cursor = 'move';
@@ -1878,10 +1898,7 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
 
   // 직선 끝점 드래그 종료
   if (this.isLineEndpointDragging) {
-    this.isLineEndpointDragging = false;
-    this.lineEndpointState = null;
-    this.container.style.cursor = '';
-    if (this.dragRafId) { cancelAnimationFrame(this.dragRafId); this.dragRafId = 0; }
+    this.finishLineEndpointDrag();
     return;
   }
 
@@ -1942,10 +1959,59 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
 function bringShapeToFront(this: any, picHit: any): void {
   if (picHit.type === 'shape' || picHit.type === 'line' || picHit.type === 'group' || picHit.type === 'ole') {
     try {
-      this.wasm.changeShapeZOrder(picHit.sec, picHit.ppi, picHit.ci, 'front');
+      // [Task #2759] 선택 시 z순서 변경도 문서 뮤테이션 — 메뉴 정렬(insert.ts:427 등)의
+      // recordObjectMutation 과 동형으로 snapshot 기록해 undo 가능·redo 무효화·스냅샷 undo
+      // 동반 파괴를 막는다. UI 후처리(선택 진입·재렌더)는 호출부가 기존대로 수행한다.
+      const pos = this.getCursorPosition();
+      this.executeOperation({
+        kind: 'snapshot',
+        operationType: 'changeZOrder',
+        operation: (wasm: any) => {
+          wasm.changeShapeZOrder(picHit.sec, picHit.ppi, picHit.ci, 'front');
+          return pos;
+        },
+      });
       this.eventBus.emit('document-changed');
     } catch { /* ignore */ }
   }
+}
+
+/**
+ * [Task #2759] 직선 끝점 드래그 종료 — 드래그 중 이미 문서에 반영된 끝점 이동을 Undo
+ * 히스토리에 기록한다. 다른 드래그 종료(finishPictureMoveDrag/finishPictureResizeDrag)와
+ * 동형으로 kind:'record' 를 쓴다(after 는 종료 시점 문서에서 읽어 실제 반영값과 정합).
+ */
+export function finishLineEndpointDrag(this: any): void {
+  const st = this.lineEndpointState;
+  if (st && st.orig) {
+    try {
+      const PX2HWP = 75;
+      const bbox = this.findPictureBbox(st.ref);
+      if (bbox) {
+        const after = {
+          sx: Math.round((bbox.x1 ?? 0) * PX2HWP),
+          sy: Math.round((bbox.y1 ?? 0) * PX2HWP),
+          ex: Math.round((bbox.x2 ?? 0) * PX2HWP),
+          ey: Math.round((bbox.y2 ?? 0) * PX2HWP),
+        };
+        const record = computeLineEndpointRecord(st.orig, after);
+        if (record) {
+          this.executeOperation({
+            kind: 'record',
+            command: new MoveLineEndpointCommand(
+              st.ref.sec, st.ref.ppi, st.ref.ci, record.before, record.after,
+            ),
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('[InputHandler] 직선 끝점 이동 기록 실패:', err);
+    }
+  }
+  this.isLineEndpointDragging = false;
+  this.lineEndpointState = null;
+  this.container.style.cursor = '';
+  if (this.dragRafId) { cancelAnimationFrame(this.dragRafId); this.dragRafId = 0; }
 }
 
 function getRotatedCursor(dir: string, angleDeg: number): string {

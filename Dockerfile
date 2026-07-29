@@ -1,6 +1,8 @@
 FROM rust:latest
 
 # wasm 타겟 및 wasm-pack 설치
+# [#2233] wasm-pack 버전은 CI 와 단일 정책으로 고정한다. 버전 변경 시 여기와
+# .github/actions/install-wasm-pack/action.yml 을 함께 갱신한다.
 RUN rustup target add wasm32-unknown-unknown \
     && rustup component add clippy \
     && cargo install wasm-pack@0.15.0

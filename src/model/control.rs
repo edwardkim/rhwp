@@ -60,11 +60,23 @@ pub enum Control {
     Unknown(UnknownControl),
 }
 
+/// [#2727] `Equation::attr` 의 bit 0 — 수식이 차지하는 범위.
+///
+/// set = 줄 단위 (HWPX `lineMode="LINE"`), clear = 글자 단위 (`lineMode="CHAR"`).
+pub const EQUATION_LINE_MODE_BIT: u32 = 0x0000_0001;
+
 /// 수식 ('eqed' 컨트롤, HWP 스펙 표 105)
 #[derive(Debug, Clone, Default)]
 pub struct Equation {
     /// 개체 공통 속성 (위치, 크기, 배치)
     pub common: CommonObjAttr,
+    /// [#2727] HWPTAG_EQEDIT 속성 (HWP5 spec 표 105 attribute, UINT32).
+    ///
+    /// bit 0 = 수식이 차지하는 범위 (0 = 글자 단위, 1 = 줄 단위) — HWPX
+    /// `hp:equation@lineMode` (`CHAR` / `LINE`) 와 대응한다. 나머지 비트는 의미
+    /// 미상이므로 UINT32 전체를 원본 그대로 보존해 왕복시킨다. 기본값 0 은
+    /// OWPML `lineMode` 기본값 `CHAR` 와 일치한다.
+    pub attr: u32,
     /// 수식 스크립트 ("1 over 2" 등)
     pub script: String,
     /// 글자 크기 (HWPUNIT)
@@ -77,6 +89,10 @@ pub struct Equation {
     /// HWP5 spec 표 105 에 누락되어 있으나 한컴 실제 저장본에 baseline 과 version_info
     /// 사이에 UINT16 zero 가 위치. Task #1061 발견.
     pub unknown: u16,
+    /// EQEDIT 속성 (UINT32, HWPTAG_EQEDIT 첫 필드).
+    /// bit 0: lineMode (0=글자 단위/CHAR, 1=줄 단위/LINE).
+    /// 종전엔 파싱 후 버려지고 저장 시 0으로 고정되어 lineMode 유실. Issue #2727.
+    pub eqedit: u32,
     /// 버전 정보
     pub version_info: String,
     /// 수식 글꼴명
@@ -234,12 +250,20 @@ pub struct Field {
     pub field_id: u32,
     /// 원본 ctrl_id (직렬화용)
     pub ctrl_id: u32,
+    /// HWPX `<hp:fieldBegin fieldid="..">` 원본 값 (동종 필드 간 공유되는 instance id).
+    /// `id`(=field_id, 문서 내 고유)와 별개 값이며 실물 파일에서 서로 다를 수 있다(#1512).
+    /// `None` 이면 fieldid 속성 자체가 없었거나 파서가 값을 못 읽은 경우 — 방출 생략.
+    pub instance_id: Option<u32>,
     /// CTRL_DATA에서 읽은 필드 이름 (누름틀 고치기에서 설정)
     pub ctrl_data_name: Option<String>,
     /// 메모 인덱스 (hwplib: memoIndex)
     pub memo_index: u32,
     /// 메모 본문 문단 리스트 (`fieldBegin type="MEMO"` 내부 subList)
     pub memo_paragraphs: Vec<Paragraph>,
+    /// 메모 본문 subList 의 `textDirection` 속성 (예: "VERTICAL"). 세로쓰기 메모가
+    /// 왕복 시 가로쓰기로 뒤집히지 않도록 원본 값을 보존한다.
+    /// `None` 이면 기본값 "HORIZONTAL" 방출.
+    pub memo_text_direction: Option<String>,
     /// HWPX `<hp:parameters>` 요소 원문 verbatim (#1391).
     ///
     /// 전 fieldBegin 타입(MEMO/HYPERLINK/FORMULA/BOOKMARK 등)이 parameters 를
@@ -329,16 +353,19 @@ impl Field {
     /// - 필드 이름(Name)은 command 에 넣지 않는다 — CTRL_DATA 레코드(0x57) 전담.
     ///   (이전엔 Name 키를 넣어 한컴이 Direction 범위를 잘못 잘라 안내문 바인딩 실패.)
     pub fn build_clickhere_command(guide: &str, memo: &str) -> String {
-        let guide_len = guide.chars().count();
-        let memo_len = memo.chars().count();
+        // §4.5: wstring {n} 은 UTF-16 code unit(WCHAR) 수다. chars().count()(스칼라 수)는
+        // BMP 밖 문자(이모지·CJK 확장한자 등)를 문자당 1개 적게 세어, 한컴이 안내문/메모
+        // 범위를 잘못 해석한다.
+        let guide_len = guide.encode_utf16().count();
+        let memo_len = memo.encode_utf16().count();
 
         // HelpState 값 뒤 공백 2개 (한컴 정답지 동형).
         let inner = format!(
             "Direction:wstring:{}:{} HelpState:wstring:{}:{}  ",
             guide_len, guide, memo_len, memo
         );
-        // set 길이는 마지막 trailing 공백 1개를 제외한 inner 글자수.
-        let set_len = inner.chars().count() - 1;
+        // set 길이도 WCHAR 수 기준. 마지막 trailing 공백 1개 제외(-1) — 공백은 BMP 라 유지.
+        let set_len = inner.encode_utf16().count() - 1;
         format!("Clickhere:set:{}:{}", set_len, inner)
     }
 
@@ -507,6 +534,27 @@ mod tests {
             set_len,
             body.chars().count() - 1,
             "set 길이 = inner 글자수 − 1 (trailing 공백 제외): {cmd}"
+        );
+    }
+
+    /// §4.5: wstring {n}·set {N} 은 UTF-16 code unit(WCHAR) 수여야 한다.
+    /// BMP 밖 문자(U+20000)는 2 WCHAR 이므로 chars().count() 로는 1개 적게 세어진다.
+    #[test]
+    fn clickhere_wstring_len_counts_utf16_wchars() {
+        // guide "a𠀀b": a(1) + U+20000(2 WCHAR) + b(1) = 4 WCHAR (chars().count()=3)
+        let cmd = Field::build_clickhere_command("a\u{20000}b", "");
+        assert!(
+            cmd.contains("Direction:wstring:4:a\u{20000}b "),
+            "guide {{n}} 은 UTF-16 code unit 수(4)여야 한다(chars().count()=3 이면 RED): {cmd}"
+        );
+        // set 길이도 WCHAR 기준 (inner 의 UTF-16 수 − 1).
+        let body = cmd.strip_prefix("Clickhere:set:").unwrap();
+        let (set_str, inner) = body.split_once(':').unwrap();
+        let set_len: usize = set_str.parse().unwrap();
+        assert_eq!(
+            set_len,
+            inner.encode_utf16().count() - 1,
+            "set {{N}} 은 WCHAR 수: {cmd}"
         );
     }
 

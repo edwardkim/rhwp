@@ -2630,7 +2630,12 @@ impl DocumentCore {
         ) -> Option<CursorHit> {
             if let RenderNodeType::TextRun(ref text_run) = node.node_type {
                 let matches_cell = text_run.cell_context.as_ref().map_or(false, |ctx| {
+                    // path.len()==1 가드가 없으면 중첩 표 *내부* 셀의 run 도
+                    // 매칭된다: 내부 run 의 path[0] 은 그 중첩 표를 품은 바깥 셀과
+                    // 정확히 같기 때문이다. 같은 파일의 cell_context_matches 가
+                    // path 길이 일치를 계약으로 명시한다.
                     ctx.parent_para_index == parent_para
+                        && ctx.path.len() == 1
                         && ctx.path[0].control_index == ctrl_idx
                         && ctx.path[0].cell_index == c_idx
                         && ctx.path[0].cell_para_index == cp_idx
@@ -2720,7 +2725,12 @@ impl DocumentCore {
         ) -> Option<(f64, f64, f64)> {
             if let RenderNodeType::TextRun(ref text_run) = node.node_type {
                 let matches_cell = text_run.cell_context.as_ref().map_or(false, |ctx| {
+                    // path.len()==1 가드가 없으면 중첩 표 *내부* 셀의 run 도
+                    // 매칭된다: 내부 run 의 path[0] 은 그 중첩 표를 품은 바깥 셀과
+                    // 정확히 같기 때문이다. 같은 파일의 cell_context_matches 가
+                    // path 길이 일치를 계약으로 명시한다.
                     ctx.parent_para_index == parent_para
+                        && ctx.path.len() == 1
                         && ctx.path[0].control_index == ctrl_idx
                         && ctx.path[0].cell_index == c_idx
                         && ctx.path[0].cell_para_index == cp_idx
@@ -2847,7 +2857,11 @@ impl DocumentCore {
             let mut result: Option<usize> = None;
             if let RenderNodeType::TextRun(ref tr) = node.node_type {
                 if let Some(ref ctx) = tr.cell_context {
+                    // 위와 동일 근거의 path.len()==1 가드. 이 함수는 max 를 취하므로
+                    // 중첩 표 내부 run 이 섞이면 바깥 셀이 실제로 그려지지 않은
+                    // 페이지에서도 "그려졌다"고 보고해 캐럿 클램프가 어긋난다.
                     if ctx.parent_para_index == parent_para
+                        && ctx.path.len() == 1
                         && ctx.path[0].control_index == ctrl_idx
                         && ctx.path[0].cell_index == c_idx
                     {
@@ -3875,39 +3889,59 @@ impl DocumentCore {
         // 머리말 영역 hit 판정 (layout.header_area — 정확한 머리말 범위)
         let h = &layout.header_area;
         if x >= h.x && x <= h.x + h.width && y >= h.y && y <= h.y + h.height {
-            // active header에서 source_section_index와 apply_to 추출
-            // 머리말은 이전 구역에서 상속될 수 있으므로 source_section_index 우선
-            if let Some((source_sec, apply_to)) = self.get_active_hf_info(page_num, true) {
-                return Ok(format!(
-                    "{{\"hit\":true,\"isHeader\":true,\"sectionIndex\":{},\"applyTo\":{}}}",
-                    source_sec, apply_to
-                ));
-            }
-            // active 정보가 없는 경우 fallback (빈 머리말 영역 — 신규 생성 대상)
-            let (section_idx, _) = self.find_section_for_page(page_num);
+            let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, true);
             return Ok(format!(
-                "{{\"hit\":true,\"isHeader\":true,\"sectionIndex\":{},\"applyTo\":0}}",
-                section_idx
+                "{{\"hit\":true,\"isHeader\":true,\"sectionIndex\":{},\"applyTo\":{}}}",
+                section_idx, apply_to
             ));
         }
 
         // 꼬리말 영역 hit 판정 (layout.footer_area)
         let f = &layout.footer_area;
         if x >= f.x && x <= f.x + f.width && y >= f.y && y <= f.y + f.height {
-            if let Some((source_sec, apply_to)) = self.get_active_hf_info(page_num, false) {
-                return Ok(format!(
-                    "{{\"hit\":true,\"isHeader\":false,\"sectionIndex\":{},\"applyTo\":{}}}",
-                    source_sec, apply_to
-                ));
-            }
-            let (section_idx, _) = self.find_section_for_page(page_num);
+            let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, false);
             return Ok(format!(
-                "{{\"hit\":true,\"isHeader\":false,\"sectionIndex\":{},\"applyTo\":0}}",
-                section_idx
+                "{{\"hit\":true,\"isHeader\":false,\"sectionIndex\":{},\"applyTo\":{}}}",
+                section_idx, apply_to
             ));
         }
 
         Ok("{\"hit\":false}".to_string())
+    }
+
+    /// 이 쪽에서 머리말/꼬리말을 편집할 때 대상이 되는 (구역, applyTo) 를 반환한다.
+    ///
+    /// 편집 대상은 **그 쪽에 실제로 렌더되는 컨트롤**(`page.active_header`/`active_footer`)이다.
+    /// 어느 컨트롤이 렌더되는지는 쪽 홀짝이 정하며(홀수/짝수가 양 쪽을 이긴다 —
+    /// `renderer/pagination/engine.rs` 의 `active_header` 결정), 구역에 자기 머리말이 없으면
+    /// 앞 구역에서 상속된다(`source_section_index`). 요청한 applyTo 로 대상을 고정하면
+    /// 화면에 보이는 컨트롤과 다른 것을 편집하게 된다 (Task #3206).
+    ///
+    /// 렌더되는 컨트롤이 없으면(빈 머리말 영역) 이 쪽이 속한 구역에 `양 쪽`으로 새로
+    /// 만드는 것이 대상이다.
+    pub(crate) fn resolve_header_footer_target(
+        &self,
+        page_num: u32,
+        is_header: bool,
+    ) -> (usize, u8) {
+        self.get_active_hf_info(page_num, is_header)
+            .unwrap_or_else(|| (self.find_section_for_page(page_num).0, 0))
+    }
+
+    /// `resolve_header_footer_target` 의 JSON 반환 — 좌표 없이 쪽만으로 편집 대상을 묻는
+    /// 경로(툴바 `머리말`/`꼬리말`)용. 히트테스트는 영역 판정이 앞에 붙을 뿐 같은 답을 쓴다.
+    ///
+    /// 반환: JSON `{"ok":true,"sectionIndex":N,"applyTo":N}`
+    pub fn get_header_footer_edit_target_native(
+        &self,
+        page_num: u32,
+        is_header: bool,
+    ) -> Result<String, HwpError> {
+        let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, is_header);
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"sectionIndex\":{},\"applyTo\":{}",
+            section_idx, apply_to
+        )))
     }
 
     /// 페이지 번호로 구역 인덱스를 찾는다.
@@ -4009,7 +4043,9 @@ impl DocumentCore {
         struct HfRunInfo {
             hf_para_idx: usize, // 머리말/꼬리말 내 문단 인덱스 (0, 1, 2, ...)
             char_start: usize,
+            /// 모델 글자 수 — 오프셋은 이 공간에서 센다.
             char_count: usize,
+            /// 표시 글자 위치 — 폭·x 는 이 공간에서 잰다.
             char_positions: Vec<f64>,
             bbox_x: f64,
             bbox_y: f64,
@@ -4025,7 +4061,10 @@ impl DocumentCore {
                     // marker_para = usize::MAX - hf_para_idx → 복원
                     if marker_para >= (usize::MAX - 1000) {
                         let hf_para_idx = usize::MAX - marker_para;
-                        let positions = compute_char_positions(&text_run.text, &text_run.style);
+                        // 폭은 화면에 그려지는 글자로, 오프셋은 모델 글자로 센다.
+                        // 필드는 모델 1자가 표시 N자라 둘이 다르다 (Task #3216).
+                        let positions =
+                            compute_char_positions(text_run.display_or_text(), &text_run.style);
                         runs.push(HfRunInfo {
                             hf_para_idx,
                             char_start: cs,
@@ -4074,11 +4113,33 @@ impl DocumentCore {
             positions.len()
         }
 
+        /// 표시 인덱스를 모델 인덱스로 옮긴다.
+        ///
+        /// 머리말/꼬리말 필드는 모델 1자가 화면에서 N자로 보이므로 두 공간의 길이가
+        /// 다르다. 경계로 반올림하면 필드는 앞/뒤에만 캐럿이 놓이고(원자적 필드), 길이가
+        /// 같은 보통 런은 항등이다 (Task #3216).
+        fn model_index_in_run(run: &HfRunInfo, display_idx: usize) -> usize {
+            let display_len = run.char_positions.len().saturating_sub(1);
+            if display_len == 0 || display_len == run.char_count {
+                return display_idx.min(run.char_count);
+            }
+            (display_idx * run.char_count + display_len / 2) / display_len
+        }
+
+        /// 모델 인덱스를 표시 인덱스로 되돌린다 — 캐럿 x 를 재는 쪽.
+        fn display_index_in_run(run: &HfRunInfo, model_idx: usize) -> usize {
+            let display_len = run.char_positions.len().saturating_sub(1);
+            if display_len == 0 || display_len == run.char_count || run.char_count == 0 {
+                return model_idx;
+            }
+            (model_idx * display_len + run.char_count / 2) / run.char_count
+        }
+
         fn format_hf_hit(run: &HfRunInfo, char_offset: usize, page_num: u32) -> String {
             let cursor_x = if char_offset <= run.char_start {
                 run.bbox_x
             } else {
-                let local_idx = char_offset - run.char_start;
+                let local_idx = display_index_in_run(run, char_offset - run.char_start);
                 if local_idx < run.char_positions.len() {
                     run.bbox_x + run.char_positions[local_idx]
                 } else if !run.char_positions.is_empty() {
@@ -4103,7 +4164,8 @@ impl DocumentCore {
                 && y <= run.bbox_y + run.bbox_h
             {
                 let local_x = x - run.bbox_x;
-                let char_offset = find_char_at_x_hf(&run.char_positions, local_x);
+                let display_idx = find_char_at_x_hf(&run.char_positions, local_x);
+                let char_offset = model_index_in_run(run, display_idx);
                 return Ok(format_hf_hit(run, run.char_start + char_offset, page_num));
             }
         }
@@ -4152,7 +4214,8 @@ impl DocumentCore {
         for run in &line_runs {
             if x >= run.bbox_x && x <= run.bbox_x + run.bbox_w {
                 let local_x = x - run.bbox_x;
-                let char_offset = find_char_at_x_hf(&run.char_positions, local_x);
+                let display_idx = find_char_at_x_hf(&run.char_positions, local_x);
+                let char_offset = model_index_in_run(run, display_idx);
                 return Ok(format_hf_hit(run, run.char_start + char_offset, page_num));
             }
         }
@@ -4167,6 +4230,17 @@ impl DocumentCore {
 
     /// 각주 영역 히트테스트
     ///
+    /// 페이지에 각주 영역이 존재하는지 빠르게 확인.
+    /// 페이지네이션 메타데이터(footnotes Vec)만 조회하므로 render tree build가 필요 없다.
+    /// hitTestFootnote fast-reject (#2428) 전용.
+    pub fn page_has_footnote_footholds_native(&self, page_num: u32) -> bool {
+        let (page_content, _, _) = match self.find_page(page_num) {
+            Ok(result) => result,
+            Err(_) => return false,
+        };
+        !page_content.footnotes.is_empty()
+    }
+
     /// 페이지 좌표가 각주 영역에 해당하는지 판별.
     /// 반환: JSON `{"hit":true,"footnoteIndex":N}` 또는 `{"hit":false}`
     pub fn hit_test_footnote_native(

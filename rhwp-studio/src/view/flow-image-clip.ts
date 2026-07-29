@@ -17,9 +17,13 @@ export interface FlowImagePaintOp {
   mime: string;
   base64: string;
   crop: FlowImageCrop | null;
+  originalSizeHu: [number, number] | null;
   rotation: number;
   horzFlip: boolean;
   vertFlip: boolean;
+  // 그림 효과(회색조/흑백/밝기/명암)를 DOM <img> 에 적용할 CSS filter. 없으면 null.
+  // web_canvas.rs render_image 의 compose_image_filter 와 동일 산출.
+  filter: string | null;
   // DOM 정적 그림도 원래 PageLayerTree의 clip 계보를 유지해야 한다.
   clip: FlowImageBbox | null;
 }
@@ -39,12 +43,40 @@ type LayerPaintOpLike = {
   mime?: unknown;
   base64?: unknown;
   crop?: unknown;
+  originalSizeHu?: unknown;
+  effect?: unknown;
+  brightness?: unknown;
+  contrast?: unknown;
+  bakedWatermark?: unknown;
   transform?: {
     rotation?: unknown;
     horzFlip?: unknown;
     vertFlip?: unknown;
   };
 };
+
+/**
+ * 그림 효과(ImageEffect)+밝기/명암을 DOM <img> 용 CSS filter 문자열로 변환한다.
+ * `src/renderer/web_canvas.rs::compose_image_filter` 와 동일한 산출을 유지해
+ * WASM canvas 경로와 DOM flow-image 경로의 렌더 결과가 일치하도록 한다.
+ * 워터마크로 baked 된 픽셀(bakedWatermark)은 효과가 이미 적용돼 있으므로 제외한다.
+ */
+export function composeImageFilter(op: LayerPaintOpLike): string | null {
+  if (op.bakedWatermark === true) return null;
+  const parts: string[] = [];
+  const effect = typeof op.effect === 'string' ? op.effect : 'realPic';
+  if (effect === 'grayScale' || effect === 'pattern8x8') {
+    parts.push('grayscale(100%)');
+  } else if (effect === 'blackWhite') {
+    parts.push('grayscale(100%)');
+    parts.push('contrast(1000%)');
+  }
+  const brightness = finiteNumber(op.brightness);
+  const contrast = finiteNumber(op.contrast);
+  if (brightness !== 0) parts.push(`brightness(${((100 + brightness) / 100).toFixed(4)})`);
+  if (contrast !== 0) parts.push(`contrast(${((100 + contrast) / 100).toFixed(4)})`);
+  return parts.length > 0 ? parts.join(' ') : null;
+}
 
 export function collectFlowImagePaintOps(
   root: unknown,
@@ -80,9 +112,11 @@ export function collectFlowImagePaintOps(
           mime: op.mime,
           base64: op.base64,
           crop: isFiniteCrop(op.crop) ? op.crop : null,
+          originalSizeHu: isPositiveSizeTuple(op.originalSizeHu) ? op.originalSizeHu : null,
           rotation: finiteNumber(op.transform?.rotation),
           horzFlip: op.transform?.horzFlip === true,
           vertFlip: op.transform?.vertFlip === true,
+          filter: composeImageFilter(op),
           clip: clip ?? null,
         });
       }
@@ -112,6 +146,12 @@ function isLayerNode(value: unknown): value is LayerNodeLike {
 
 function isLayerPaintOp(value: unknown): value is LayerPaintOpLike {
   return value !== null && typeof value === 'object';
+}
+
+function isPositiveSizeTuple(value: unknown): value is [number, number] {
+  return Array.isArray(value)
+    && value.length === 2
+    && value.every((entry) => typeof entry === 'number' && Number.isFinite(entry) && entry > 0);
 }
 
 function intersectBboxes(

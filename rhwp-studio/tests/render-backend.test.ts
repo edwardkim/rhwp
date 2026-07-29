@@ -13,6 +13,7 @@ import {
 import {
   canvasKitImageCacheKey,
   canvasKitImageFillModeTiles,
+  canvasKitImageFillModeStretches,
   canvasKitImagePlacement,
   canvasKitImageSourceRect,
   HWPUNIT_PER_PIXEL,
@@ -25,9 +26,11 @@ import {
 import { isExpectedCanvasKitUnsupportedOp } from '../src/view/canvaskit/diagnostics.ts';
 import type { LayerInfo, LayerPaintOp } from '../src/core/types.ts';
 import { glyphOutlinePayloadResourceKey, glyphOutlinePayloadStatus } from '../src/view/glyph-outline-payload-status.ts';
+import { collectVectorRawSvgDataUrls } from '../src/view/raw-svg-prefetch.ts';
 
-test('render backend resolver keeps Canvas2D as the default and accepts skia aliases', () => {
+test('render backend resolver keeps Canvas2D as the compatibility default and accepts explicit aliases', () => {
   assert.equal(resolveRenderBackend(''), 'canvas2d');
+  assert.equal(resolveRenderBackend('?renderer=auto'), 'auto');
   assert.equal(resolveRenderBackend('?renderer=canvas'), 'canvas2d');
   assert.equal(resolveRenderBackend('?renderer=canvas2d'), 'canvas2d');
   assert.equal(resolveRenderBackend('?renderer=canvaskit'), 'canvaskit');
@@ -45,6 +48,11 @@ test('render backend resolver reports invalid explicit values and keeps URL opt-
     assert.deepEqual(resolveRenderBackendRequest(''), {
       backend: 'canvas2d',
       source: 'default',
+    });
+    assert.deepEqual(resolveRenderBackendRequest('?renderer=auto'), {
+      backend: 'auto',
+      source: 'url',
+      requested: 'auto',
     });
     assert.deepEqual(resolveRenderBackendRequest('?renderer=canvaskit'), {
       backend: 'canvaskit',
@@ -157,6 +165,28 @@ test('CanvasKit renderer source does not introduce Canvas2D overlay replay', () 
   assert.equal(source.includes('rhwpOverlay'), false);
 });
 
+test('CanvasKit text replay preserves LayerTree positions for regular runs', () => {
+  const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
+  assert.match(source, /if \(hasLayoutPositions\) \{[\s\S]*?canvas\.drawGlyphs\(/);
+  assert.doesNotMatch(source, /needsPreservedAdvances && hasLayoutPositions/);
+});
+
+test('CanvasKit text replay uses positioned fallback glyphs and external text visuals', () => {
+  const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
+  assert.match(source, /const candidateFonts = \[font\][\s\S]*?selectedFontIndices[\s\S]*?canvas\.drawGlyphs/);
+  assert.match(source, /case 'charOverlap':\s+this\.renderCharOverlap/);
+  assert.match(source, /case 'textControlMark':\s+this\.renderTextControlMark/);
+  assert.match(source, /case 'tabLeader':\s+this\.renderTabLeader/);
+  assert.match(source, /case 'textDecoration':\s+this\.renderTextDecoration/);
+  assert.doesNotMatch(source, /case 'charOverlap':[\s\S]{0,200}unsupportedOps\.add\(op\.type\)/);
+});
+
+test('CanvasKit auto preflight permits text marks but blocks missing structural control markers', () => {
+  const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /viewOption:showParagraphMarks/);
+  assert.match(source, /viewOption:showControlCodes/);
+});
+
 test('CanvasKit contains malformed images and bounds both decode caches', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
   assert.match(source, /try \{\s*image = this\.canvasKit\.MakeImageFromEncoded/);
@@ -177,6 +207,12 @@ test('CanvasKit distinguishes missing-picture editor and print replay', () => {
   assert.match(source, /profile === 'print' \|\| profile === 'highQuality'/);
   assert.match(source, /MAX_PLACEHOLDER_DASH_SEGMENTS_PER_AXIS = 2048/);
   assert.match(source, /\.every\(Number\.isFinite\)/);
+});
+
+test('CanvasKit form replay accepts the canonical LayerTree form type names', () => {
+  const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
+  assert.match(source, /op\.formType === 'checkBox'/);
+  assert.match(source, /op\.formType === 'radioButton'/);
 });
 
 test('PageLayerTree bridge verifies the returned profile instead of relabeling it', () => {
@@ -367,7 +403,9 @@ test('PageRenderer splits flow static images before the first Canvas2D flow rend
   assert.match(source, /this\.flowSplitSupported = false/);
   assert.match(source, /flow-dynamic 렌더 미지원/);
   assert.match(source, /flow-static 지연 재렌더 실패/);
-  assert.match(source, /'flow-static',\s*layers,\s*allowReuse,\s*false/);
+  // RawSvg 차트/OLE는 첫 Canvas2D 렌더에서 이미지 디코드를 시작해야 다음 재렌더에서 보인다.
+  assert.match(source, /'flow-static',\s*layers,\s*allowReuse,\s*\)/);
+  assert.doesNotMatch(source, /'flow-static',\s*layers,\s*allowReuse,\s*false/);
   assert.match(source, /createOrReuseFlowImageLayer\(/);
   assert.match(source, /usesDomFlowImages \? overlays\.rawSvgCount/);
   assert.match(source, /element\.src = `data:\$\{image\.mime\};base64,\$\{image\.base64\}`/);
@@ -381,9 +419,12 @@ test('PageRenderer deferred image rerender preserves static layer reuse policy',
   assert.match(source, /retrySignature: overlays\.signature/);
   assert.match(source, /reuseStaticFlow/);
   assert.match(source, /reuseStaticOverlay/);
-  assert.match(source, /const retryKey = `\$\{imageCount\}:\$\{policy\.retrySignature\}`/);
+  assert.match(source, /const retryKey = `\$\{imageCount\}:\$\{rawSvgCount\}:\$\{policy\.retrySignature\}`/);
   assert.match(source, /IMAGE_RE_RENDER_FALLBACK_DELAY_MS = 1500/);
+  assert.match(source, /RAW_SVG_EARLY_RE_RENDER_DELAYS_MS = \[0, 32, 96, 240\]/);
   assert.match(source, /const job: ReRenderJob/);
+  assert.match(source, /if \(rawSvgCount > 0\)/);
+  assert.match(source, /earlyRawSvgTimers/);
   assert.match(source, /this\.prefetchLayerImages\(pageIdx\)/);
   assert.match(source, /if \(decoded\) finish\(\)/);
   assert.equal(source.includes('const delays = [200, 600, 1500]'), false);
@@ -392,12 +433,58 @@ test('PageRenderer deferred image rerender preserves static layer reuse policy',
   assert.match(source, /if \(policy\.reuseStaticOverlay\) return/);
 });
 
+test('순수 RawSvg 프리페치는 PageLayerTree bbox 계약으로 SVG URL을 만든다', () => {
+  const urls: string[] = [];
+  collectVectorRawSvgDataUrls({
+    root: {
+      kind: 'leaf',
+      ops: [{
+        type: 'rawSvg',
+        bbox: { x: 12.5, y: 34.25, width: 56.75, height: 78.5 },
+        svg: '<g class="hwp-ooxml-chart"><path d="M0 0"/></g>',
+      }],
+    },
+  }, urls);
+
+  assert.equal(urls.length, 1);
+  assert.match(urls[0], /^data:image\/svg\+xml;base64,/);
+  const encoded = urls[0].slice(urls[0].indexOf(',') + 1);
+  const svg = Buffer.from(encoded, 'base64').toString('utf8');
+  assert.equal(
+    svg,
+    '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
+      + 'width="56.750" height="78.500" viewBox="12.500 34.250 56.750 78.500">\n'
+      + '<g class="hwp-ooxml-chart"><path d="M0 0"/></g>\n</svg>',
+  );
+
+  collectVectorRawSvgDataUrls({
+    type: 'rawSvg',
+    bbox: { x: 0, y: 0, width: 1, height: 1 },
+    svg: '<image href="data:image/png;base64,AA=="/>',
+  }, urls);
+  assert.equal(urls.length, 1, '내부 raster data URL이 있는 rawSvg는 별도 프리페치하지 않는다');
+});
+
 test('CanvasView renders visible pages before deferred prefetch work', () => {
   const source = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
   assert.match(source, /for \(const pageIdx of visiblePages\)/);
   assert.match(source, /this\.schedulePrefetchPages\(prefetchPages\.filter/);
   assert.match(source, /requestIdleCallback\(run, \{ timeout: 1000 \}\)/);
   assert.match(source, /cancelPendingPrefetch\(\)/);
+});
+
+test('CanvasView falls back from failed CanvasKit readiness only for auto requests', () => {
+  const source = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
+  assert.match(
+    source,
+    /canvaskitDiagnostics[\s\S]*?!canvaskitDiagnostics\.passesRuntimeReadinessGate[\s\S]*?rendererSession\.isAutoRequest\(\)/,
+  );
+  assert.match(source, /readinessBlockers\.join\(','\)/);
+  assert.match(source, /lastRenderError[\s\S]*?lastUnexpectedUnsupportedOps/);
+  assert.doesNotMatch(
+    source,
+    /getCanvasKitRenderDiagnostics\(pageIdx\)\?\.lastRenderError/,
+  );
 });
 
 test('ViewportManager coalesces scroll events to one animation frame', () => {
@@ -454,6 +541,18 @@ test('CanvasKit image crop source follows the same HWPUNIT crop scale as SVG rep
   assert.equal(canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 174000, bottom: 26580 }), null);
 });
 
+test('CanvasKit image crop source honors issue2817 imgDim coordinates', () => {
+  assert.equal(
+    canvasKitImageSourceRect(
+      192,
+      108,
+      { left: 0, top: 0, right: 144000, bottom: 81000 },
+      [144000, 81000],
+    ),
+    null,
+  );
+});
+
 test('CanvasKit image placement follows layer fill-mode anchors', () => {
   const bbox = { x: 10, y: 20, width: 100, height: 80 };
   assert.deepEqual(canvasKitImagePlacement('center', bbox, 40, 20), { x: 40, y: 50 });
@@ -467,6 +566,15 @@ test('CanvasKit image fill-mode tiling detection stays explicit', () => {
   }
   for (const mode of [undefined, 'fitToSize', 'none', 'center', 'leftTop', 'rightBottom']) {
     assert.equal(canvasKitImageFillModeTiles(mode), false);
+  }
+});
+
+test('CanvasKit image TOTAL fill stretches like fitToSize', () => {
+  for (const mode of [undefined, 'fitToSize', 'total']) {
+    assert.equal(canvasKitImageFillModeStretches(mode), true);
+  }
+  for (const mode of ['none', 'center', 'leftTop', 'tileAll']) {
+    assert.equal(canvasKitImageFillModeStretches(mode), false);
   }
 });
 

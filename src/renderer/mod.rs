@@ -15,10 +15,13 @@ pub mod equation;
 pub(crate) mod equation_tac_flow;
 pub mod float_placement;
 pub mod font_metrics_data;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod font_paths;
 pub(crate) mod form_caption;
 pub mod height_cursor;
 pub mod height_measurer;
 pub mod html;
+pub(crate) mod image_header;
 pub mod image_resolver;
 pub mod layer_renderer;
 pub mod layout;
@@ -28,6 +31,7 @@ pub mod pagination;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf;
 pub mod pua_oldhangul;
+pub mod render_normalization;
 pub mod render_tree;
 pub mod scheduler;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
@@ -617,7 +621,12 @@ pub fn corrected_line_metrics(
     if max_fs > 0.0 && raw_lh < max_fs {
         match ls_type {
             LineSpacingType::Percent => {
-                let extra = (max_fs * (ls_val - 100.0) / 100.0).max(0.0);
+                // [#2279] sub-100% 퍼센트 음수 gap 존중 (line_breaking 정합)
+                let extra = if ls_val > 0.0 {
+                    max_fs * (ls_val - 100.0) / 100.0
+                } else {
+                    0.0
+                };
                 (max_fs, extra)
             }
             LineSpacingType::Fixed => (ls_val.max(max_fs), 0.0),
@@ -960,6 +969,77 @@ pub(crate) fn text_anchor_square_table_strip(
         + cm.margin.right as i32;
     let strip_sw = full_sw - strip_cs;
     (strip_cs > 0 && strip_sw > 0).then_some((strip_cs, strip_sw))
+}
+
+/// [#3314] 요청 face 의 굵기/폭 접미사를 벗긴 base family.
+///
+/// `"Noto Serif KR Black"` → `Some("Noto Serif KR")`, 접미사가 없으면 `None`.
+/// 폴백 체인은 요청 face 바로 뒤에 이 base 를 끼워 넣는다 — 접미사 face 가
+/// 미설치일 때 같은 family 의 base face 가 generic 체인(Batang 등)보다 먼저
+/// 구제한다(1.hwpx: 한컴 NotoSerifKR vs rhwp Batang, 제목 잉크 −31%).
+/// 요청 face 가 실존하면 체인 선두라 무영향. **렌더 경로 전용** — 측정 경로
+/// (`text_measurement`)는 쓰지 않아 조판(쪽수)이 불변이다.
+pub fn base_family_without_weight_suffix(font_family: &str) -> Option<String> {
+    // 뒤에서부터 제거되는 토큰들. "Extra Bold" 처럼 두 토큰으로 쪼개진 경우를
+    // 위해 수식 접두 토큰(extra/ultra/semi/demi)도 포함한다.
+    const WEIGHT_TOKENS: &[&str] = &[
+        "black",
+        "heavy",
+        "extrabold",
+        "ultrabold",
+        "semibold",
+        "demibold",
+        "bold",
+        "medium",
+        "regular",
+        "normal",
+        "extralight",
+        "ultralight",
+        "demilight",
+        "light",
+        "thin",
+        "extra",
+        "ultra",
+        "semi",
+        "demi",
+    ];
+    let mut tokens: Vec<&str> = font_family.split_whitespace().collect();
+    let original_len = tokens.len();
+    while tokens.len() > 1 {
+        let last = tokens.last().expect("len > 1").to_ascii_lowercase();
+        if WEIGHT_TOKENS.contains(&last.as_str()) {
+            tokens.pop();
+        } else {
+            break;
+        }
+    }
+    (tokens.len() < original_len).then(|| tokens.join(" "))
+}
+
+/// [#3314] 렌더용 폴백 체인 문자열: `요청 face → (base family) → generic 체인`.
+pub fn render_font_family_chain(font_family: &str) -> String {
+    let fb = generic_fallback(font_family);
+    match base_family_without_weight_suffix(font_family) {
+        Some(base) => format!("{},'{}',{}", font_family, base, fb),
+        None => format!("{},{}", font_family, fb),
+    }
+}
+
+/// Canvas 2D 렌더용 인용 font-family 체인.
+///
+/// [#3314] Canvas API가 요구하는 인용 형식을 유지하면서, 굵기 접미사 face
+/// 바로 뒤에 base family를 넣어 generic 폴백보다 먼저 선택되게 한다.
+/// 측정 경로에는 사용하지 않는다.
+pub fn canvas_font_family_chain(font_family: &str) -> String {
+    if font_family.is_empty() {
+        return "sans-serif".to_string();
+    }
+
+    let fallback = generic_fallback(font_family);
+    match base_family_without_weight_suffix(font_family) {
+        Some(base) => format!("\"{}\", \"{}\", {}", font_family, base, fallback),
+        None => format!("\"{}\", {}", font_family, fallback),
+    }
 }
 
 /// CSS generic fallback 반환 (serif 또는 sans-serif)
@@ -1628,6 +1708,51 @@ mod tests {
         assert_eq!(format_number(26, NumberFormat::LatinUpper), "Z");
         assert_eq!(format_number(27, NumberFormat::LatinUpper), "AA");
         assert_eq!(format_number(1, NumberFormat::LatinLower), "a");
+    }
+
+    /// [#3314] 굵기 접미사 face 의 base family 추출과 렌더 체인 삽입.
+    #[test]
+    fn test_base_family_without_weight_suffix() {
+        assert_eq!(
+            base_family_without_weight_suffix("Noto Serif KR Black").as_deref(),
+            Some("Noto Serif KR")
+        );
+        assert_eq!(
+            base_family_without_weight_suffix("나눔고딕 Bold").as_deref(),
+            Some("나눔고딕")
+        );
+        assert_eq!(
+            base_family_without_weight_suffix("경기천년제목 Light").as_deref(),
+            Some("경기천년제목")
+        );
+        // 두 토큰 접미사 ("Extra Bold")
+        assert_eq!(
+            base_family_without_weight_suffix("Noto Sans KR Extra Bold").as_deref(),
+            Some("Noto Sans KR")
+        );
+        // 접미사 없음 → None (체인 불변)
+        assert_eq!(base_family_without_weight_suffix("맑은 고딕"), None);
+        assert_eq!(base_family_without_weight_suffix("HY헤드라인M"), None);
+        assert_eq!(base_family_without_weight_suffix("휴먼명조"), None);
+        // 전체가 접미사 토큰뿐이면 벗기지 않는다
+        assert_eq!(base_family_without_weight_suffix("Light"), None);
+        // 렌더 체인: 요청 face → base → generic
+        let chain = render_font_family_chain("Noto Serif KR Black");
+        assert!(chain.starts_with("Noto Serif KR Black,'Noto Serif KR',"));
+        let plain = render_font_family_chain("맑은 고딕");
+        assert!(plain.starts_with("맑은 고딕,'Malgun Gothic'"));
+
+        assert_eq!(
+            canvas_font_family_chain("Noto Serif KR Black"),
+            format!(
+                "\"Noto Serif KR Black\", \"Noto Serif KR\", {}",
+                generic_fallback("Noto Serif KR Black")
+            )
+        );
+        assert_eq!(
+            canvas_font_family_chain("맑은 고딕"),
+            format!("\"맑은 고딕\", {}", generic_fallback("맑은 고딕"))
+        );
     }
 
     #[test]

@@ -10,7 +10,7 @@ import {
 runTest('BlogForm_BookReview.hwp 누름틀 안내문 테스트', async ({ page }) => {
   // 1. 문서 로드
   console.log('[1] BlogForm_BookReview.hwp 파일 로드...');
-  const { pageCount } = await loadHwpFile(page, 'BlogForm_BookReview.hwp');
+  const { pageCount } = await loadHwpFile(page, 'basic/BlogForm_BookReview.hwp');
   console.log(`  페이지 수: ${pageCount}`);
   await screenshot(page, 'blogform-01-before-click');
 

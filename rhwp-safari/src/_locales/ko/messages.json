@@ -1,0 +1,49 @@
+{
+  "extName": {
+    "message": "rhwp - HWP 문서 뷰어 & 에디터"
+  },
+  "extDescription": {
+    "message": "브라우저에서 HWP/HWPX 파일을 바로 열고 편집할 수 있는 확장 프로그램. 설치 없이, 광고 없이, 무료로."
+  },
+  "actionTitle": {
+    "message": "rhwp - HWP 뷰어"
+  },
+  "contextMenuOpen": {
+    "message": "rhwp로 열기"
+  },
+  "badgeTooltip": {
+    "message": "rhwp로 열기"
+  },
+  "badgeTooltipWithInfo": {
+    "message": "$TITLE$ ($PAGES$쪽) $SIZE$",
+    "placeholders": {
+      "title": { "content": "$1" },
+      "pages": { "content": "$2" },
+      "size": { "content": "$3" }
+    }
+  },
+  "optionsTitle": {
+    "message": "rhwp 설정"
+  },
+  "optionsAutoOpen": {
+    "message": "HWP/HWPX 다운로드 시 자동으로 뷰어에서 열기"
+  },
+  "optionsShowBadges": {
+    "message": "웹페이지에서 HWP 링크 옆에 아이콘 표시"
+  },
+  "optionsHoverPreview": {
+    "message": "HWP 링크에 마우스를 올리면 미리보기 표시"
+  },
+  "optionsDisableExternalWebFonts": {
+    "message": "외부 웹폰트 사용 안 함"
+  },
+  "optionsDisableExternalWebFontsDesc": {
+    "message": "내부망/오프라인 환경에서 권장합니다. 일부 문서의 글꼴, 줄바꿈, 페이지 배치가 달라질 수 있습니다"
+  },
+  "optionsSaved": {
+    "message": "저장됨"
+  },
+  "optionsPrivacy": {
+    "message": "파일은 서버로 전송되지 않으며, 모든 처리는 브라우저 내에서 이루어집니다."
+  }
+}

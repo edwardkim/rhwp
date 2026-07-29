@@ -59,6 +59,10 @@ pub struct Document {
     /// tolerance 2.0 vs 64.0px 등)를 HWPX 로 해석해야 같은 IR 이 같은 쪽수가 된다
     /// (roundtrip 자기정합). native HWP5 는 마커가 없어 불변.
     pub is_hwpx_variant: bool,
+    /// [#2403 Stage 1] 문서 출처 서명 — 파서가 확정하는 단일 진실.
+    /// `is_hwp3_variant`/`is_hwpx_variant` 는 shim 으로 존치하며 파서의 같은
+    /// 쓰기 지점에서 동기된다. 레이아웃 분기는 [`Self::layout_profile`] 경유.
+    pub provenance: crate::model::provenance::SourceProvenance,
 }
 
 /// 미리보기 데이터 (PrvImage, PrvText 스트림)
@@ -174,6 +178,12 @@ pub struct DocInfo {
     pub bullet_count: u32,
     /// MemoShape 개수 (ID_MAPPINGS에 포함, 현재 파싱 미지원이지만 보존 필요)
     pub memo_shape_count: u32,
+    /// HWPX 헤더 `<hh:refList>` 안의 `<hh:memoProperties>...</hh:memoProperties>`
+    /// (또는 자기닫힘) 블록을 원본 그대로 보존한다. `extra_records`의
+    /// HWPTAG_MEMO_SHAPE 바이너리는 hwpx→hwp5 변환 전용이라 hwpx→hwpx
+    /// 라운드트립 시 refList에 재방출되지 않아, memoPr(메모 테두리/색상 모양)이
+    /// 통째로 소실되는 문제를 splice 보존으로 막는다. 원본에 없으면 None.
+    pub memo_properties_xml: Option<String>,
     /// DISTRIBUTE_DOC_DATA 레코드 제거 플래그 (serializer에서 raw_stream surgical remove 수행)
     pub distribute_doc_data_removed: bool,
     /// raw_stream이 model 변경과 동기화되지 않음 (serializer에서 재생성 필요)
@@ -270,6 +280,28 @@ impl Document {
             .iter()
             .find(|(p, _)| p == path)
             .map(|(_, d)| d.as_slice())
+    }
+
+    /// [#2403 Stage 1] 레이아웃 호환 정책 질의 표면.
+    ///
+    /// 기존 분기의 1:1 파생 — `hwp3_layout` = `is_hwp3_variant`,
+    /// `hwpx_stored_layout` = (HWPX 컨테이너 && rhwp HWP5→HWPX 산출물 마커
+    /// 없음) || rhwp HWPX→HWP 변환본. HWP5→HWPX 마커는 세션 중 부착될 수
+    /// 있어 저장 값이 아닌 현재 문서 상태에서 파생한다. `native_hwp5_layout`은
+    /// HWP5 컨테이너이면서 HWP3/HWPX 변환 계보가 없는 경우에만 true다.
+    pub fn layout_profile(&self) -> crate::model::provenance::LayoutCompatibilityProfile {
+        use crate::model::provenance::SourceFormat;
+        let hwp5_origin_hwpx = self.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH).is_some();
+        crate::model::provenance::LayoutCompatibilityProfile::new(
+            self.provenance.hwp3_lineage,
+            self.provenance.format == SourceFormat::Hwp3,
+            (self.provenance.format == SourceFormat::Hwpx && !hwp5_origin_hwpx)
+                || self.provenance.hwpx_lineage,
+            hwp5_origin_hwpx,
+            self.provenance.format == SourceFormat::Hwp5
+                && !self.provenance.hwp3_lineage
+                && !self.provenance.hwpx_lineage,
+        )
     }
 
     /// 외부 이미지 binDataId가 이미 로드되었는지 확인한다.
@@ -562,6 +594,37 @@ mod tests {
         let doc = Document::default();
         assert_eq!(doc.sections.len(), 0);
         assert_eq!(doc.doc_properties.section_count, 0);
+    }
+
+    #[test]
+    fn hwp3_native_layout_matches_legacy_version_and_lineage_expression() {
+        use crate::model::provenance::SourceFormat;
+
+        // formatting.rs 의 종전 판정식 `version.major==3 && !hwp3_layout()` 이
+        // hwp3_native_layout() 과 4개 출처에서 모두 일치함을 고정한다.
+        let build = |format: SourceFormat, hwp3_lineage: bool, major: u8| {
+            let mut doc = Document::default();
+            doc.provenance.format = format;
+            doc.provenance.hwp3_lineage = hwp3_lineage;
+            doc.header.version.major = major;
+            doc
+        };
+
+        let cases = [
+            // (format, hwp3_lineage, major, 기대 native 여부)
+            (SourceFormat::Hwp3, false, 3, true),  // native HWP3
+            (SourceFormat::Hwp5, true, 5, false),  // HWP3→HWP5 변환본
+            (SourceFormat::Hwp5, false, 5, false), // 일반 HWP5
+            (SourceFormat::Hwpx, false, 5, false), // HWPX
+        ];
+
+        for (format, lineage, major, expected) in cases {
+            let doc = build(format, lineage, major);
+            let legacy = doc.header.version.major == 3 && !doc.layout_profile().hwp3_layout();
+            let refactored = doc.layout_profile().hwp3_native_layout();
+            assert_eq!(legacy, refactored, "{format:?}/{lineage}/{major}");
+            assert_eq!(refactored, expected, "{format:?}/{lineage}/{major}");
+        }
     }
 
     #[test]

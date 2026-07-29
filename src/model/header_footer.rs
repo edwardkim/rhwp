@@ -79,6 +79,9 @@ pub struct MasterPage {
     pub replace_base: bool,
     /// 확장 플래그 raw 값 (LIST_HEADER byte 18-19)
     pub ext_flags: u16,
+    /// HWPX `masterPage@pageFront` — 첫 쪽(표지) 전용 바탕쪽 여부.
+    /// HWP5에서 읽은 바탕쪽은 해당 XML 속성이 없으므로 기본 false.
+    pub page_front: bool,
     /// 문단 리스트
     pub paragraphs: Vec<Paragraph>,
     /// 텍스트 영역 폭 (HWPUNIT)
@@ -89,6 +92,11 @@ pub struct MasterPage {
     pub text_ref: u8,
     /// 번호 참조 비트맵
     pub num_ref: u8,
+    /// HWPX masterPage/hp:subList@textDirection. 0=HORIZONTAL, 1=VERTICAL.
+    ///
+    /// 세로쓰기 바탕쪽(예: 세로 제본 문서)의 subList가 VERTICAL로 저장되는데,
+    /// serializer 가 이를 읽지 않고 HORIZONTAL 로 고정 출력하면 왕복 시 세로쓰기가 유실된다.
+    pub text_direction: u8,
     /// HWPX masterPage@pageNumber.
     ///
     /// HWPX에서 이 값은 바탕쪽 내부 PAGE 필드의 치환 가능 여부를 판단하는 힌트로 쓰인다.

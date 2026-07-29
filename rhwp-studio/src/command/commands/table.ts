@@ -79,14 +79,21 @@ function blockCalcCommand(id: string, label: string, func: string, shortcut: str
         const row = cellInfo.row;
         const col = cellInfo.col;
         const formula = `=${func}(above)`;
-        const result = services.wasm.evaluateTableFormula(
-          pos.sectionIndex, pos.parentParaIndex, pos.controlIndex,
-          row, col, formula, true,
-        );
-        const parsed = JSON.parse(result);
-        if (parsed.ok) {
-          services.eventBus.emit('document-changed');
-        }
+        // [블록계산 이관] write=true 는 결과를 셀에 써서 문자 수를 바꾼다 — 미기록 시 후속
+        // undo 오프셋 오염(#2344 셀 숫자 서식과 동일 계열). dry-run(write=false)으로 ok 를
+        // 확인한 뒤 commit 을 snapshot 으로 라우팅한다(라우터가 refresh → 수동 emit 제거).
+        const check = JSON.parse(services.wasm.evaluateTableFormula(
+          pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, row, col, formula, false,
+        ));
+        if (!check.ok) return;
+        safeTableOp(() => ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'tableBlockCalc',
+          operation: (wasm) => {
+            wasm.evaluateTableFormula(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, row, col, formula, true);
+            return pos;
+          },
+        }), '블록 계산');
       } catch (err) {
         console.warn(`[${id}] 블록 계산 실패:`, err);
       }
@@ -104,7 +111,7 @@ function openFormulaDialog(services: Parameters<CommandDef['execute']>[0]): void
     ppi: pos.parentParaIndex,
     ci: pos.controlIndex,
     cellIndex: pos.cellIndex,
-  });
+  }, services);
   dialog.show();
 }
 
@@ -937,9 +944,18 @@ export const tableCommands: CommandDef[] = [
           result = sign + formatted + decPart;
         }
         if (result === text) return;
-        services.wasm.deleteTextInCell(sec, ppi, ci, cei, cpi, 0, len);
-        services.wasm.insertTextInCell(sec, ppi, ci, cei, cpi, 0, result);
-        services.eventBus.emit('document-changed');
+        // [#2344] delete+insert 를 하나의 snapshot 으로 원자화해 라우팅 — 미기록 시 셀 문자
+        // 수가 바뀌어 후속 undo 오프셋이 오염되고 텍스트가 손상된다("1234567"→쉼표→Ctrl+Z="67").
+        // 라우터가 refresh 하므로 수동 document-changed emit 은 제거.
+        safeTableOp(() => ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'cellNumberFormat',
+          operation: (wasm) => {
+            wasm.deleteTextInCell(sec, ppi, ci, cei, cpi, 0, len);
+            wasm.insertTextInCell(sec, ppi, ci, cei, cpi, 0, result);
+            return pos;
+          },
+        }), '셀 숫자 서식');
       } catch (err) {
         console.warn('[table:thousand-sep] 구분 쉼표 변환 실패:', err);
       }
@@ -970,9 +986,18 @@ export const tableCommands: CommandDef[] = [
         const fmtInt = hasCommas ? intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : intPart;
         const result = sign + fmtInt + '.' + newDecimals;
         if (result === text) return;
-        services.wasm.deleteTextInCell(sec, ppi, ci, cei, cpi, 0, len);
-        services.wasm.insertTextInCell(sec, ppi, ci, cei, cpi, 0, result);
-        services.eventBus.emit('document-changed');
+        // [#2344] delete+insert 를 하나의 snapshot 으로 원자화해 라우팅 — 미기록 시 셀 문자
+        // 수가 바뀌어 후속 undo 오프셋이 오염되고 텍스트가 손상된다("1234567"→쉼표→Ctrl+Z="67").
+        // 라우터가 refresh 하므로 수동 document-changed emit 은 제거.
+        safeTableOp(() => ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'cellNumberFormat',
+          operation: (wasm) => {
+            wasm.deleteTextInCell(sec, ppi, ci, cei, cpi, 0, len);
+            wasm.insertTextInCell(sec, ppi, ci, cei, cpi, 0, result);
+            return pos;
+          },
+        }), '셀 숫자 서식');
       } catch (err) {
         console.warn('[table:decimal-add] 자릿점 넣기 실패:', err);
       }
@@ -1003,9 +1028,18 @@ export const tableCommands: CommandDef[] = [
         const newDecimals = decimals.slice(0, -1);
         const result = newDecimals ? sign + fmtInt + '.' + newDecimals : sign + fmtInt;
         if (result === text) return;
-        services.wasm.deleteTextInCell(sec, ppi, ci, cei, cpi, 0, len);
-        services.wasm.insertTextInCell(sec, ppi, ci, cei, cpi, 0, result);
-        services.eventBus.emit('document-changed');
+        // [#2344] delete+insert 를 하나의 snapshot 으로 원자화해 라우팅 — 미기록 시 셀 문자
+        // 수가 바뀌어 후속 undo 오프셋이 오염되고 텍스트가 손상된다("1234567"→쉼표→Ctrl+Z="67").
+        // 라우터가 refresh 하므로 수동 document-changed emit 은 제거.
+        safeTableOp(() => ih.executeOperation({
+          kind: 'snapshot',
+          operationType: 'cellNumberFormat',
+          operation: (wasm) => {
+            wasm.deleteTextInCell(sec, ppi, ci, cei, cpi, 0, len);
+            wasm.insertTextInCell(sec, ppi, ci, cei, cpi, 0, result);
+            return pos;
+          },
+        }), '셀 숫자 서식');
       } catch (err) {
         console.warn('[table:decimal-remove] 자릿점 빼기 실패:', err);
       }

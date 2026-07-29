@@ -59,11 +59,23 @@ impl DocumentCore {
         let mut document = parsed.document;
         let hml_metadata = parsed.hml_metadata;
 
+        // [#2279 실험 전용] 본문 저장 lineseg 전면 무시 → fresh 재계산.
+        // 기계생성 결재문서의 부분-사다리 불신 실험 계측용 (기본 no-op).
+        // 주의: 92셋 전수 실측(2026-07-18)에서 전면 fresh 는 88→76 광역 회귀 —
+        // 부분 사다리의 정합을 fresh 가 아직 대체하지 못함. 판별-자동화 금지.
+        if std::env::var("RHWP_EXP_BODY_FRESH").is_ok() {
+            for sec in document.sections.iter_mut() {
+                for para in sec.paragraphs.iter_mut() {
+                    para.line_segs.clear();
+                }
+            }
+        }
+
         // [Task #1001] HWP3 변환본의 ParaShape 단위 1/2 추가 보정
         let styles = crate::renderer::style_resolver::resolve_styles_with_variant(
             &document.doc_info,
             DEFAULT_DPI,
-            document.is_hwp3_variant,
+            document.layout_profile().hwp3_layout(),
         );
 
         let hwp5_origin_hwpx = matches!(source_format, crate::parser::FileFormat::Hwpx)
@@ -94,7 +106,7 @@ impl DocumentCore {
         // 문단은 typeset 의 em 폴백(#2070 축3)이 담당하고(80168 pi=424 오라클),
         // 본문 텍스트 문단 합성은 흐름 소비 팽창으로 sijang 밀도 핀 -5쪽(#2070v2).
         // HWP3 변환본은 #998 게이트(sample16-hwp5=64) 정합상 종전 유지.
-        let include_cell_empty = !document.is_hwp3_variant;
+        let include_cell_empty = !document.layout_profile().hwp3_layout();
         Self::reflow_zero_height_paragraphs(
             &mut document,
             &styles,
@@ -128,7 +140,7 @@ impl DocumentCore {
             pagination: Vec::new(),
             styles,
             composed,
-            render_normalized: Vec::new(),
+            render_normalization: super::super::RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,
             fallback_font: DEFAULT_FALLBACK_FONT.to_string(),
             layout_engine: LayoutEngine::new(DEFAULT_DPI),
@@ -146,6 +158,9 @@ impl DocumentCore {
             measured_sections: Vec::new(),
             dirty_paragraphs: Vec::new(),
             para_column_map: Vec::new(),
+            deferred_pagination_revision: 0,
+            deferred_pagination_descriptor: None,
+            pending_pagination_job: None,
             page_tree_cache: RefCell::new(Vec::new()),
             layer_tree_json_cache: RefCell::new(Vec::new()),
             batch_mode: false,
@@ -989,6 +1004,7 @@ impl DocumentCore {
         let styles = resolve_styles(&self.document.doc_info, self.dpi);
         let dpi = self.dpi;
         let mut reflowed = 0usize;
+        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
 
         for section in &mut self.document.sections {
             let page_def = &section.section_def.page_def;
@@ -1049,7 +1065,7 @@ impl DocumentCore {
                     None,
                     &self.styles,
                     self.dpi,
-                    self.document.is_hwp3_variant,
+                    doc_hwp3_layout,
                 );
             }
         }
@@ -1469,7 +1485,11 @@ impl DocumentCore {
         let id = self.next_snapshot_id;
         self.next_snapshot_id += 1;
         self.snapshot_store.push((id, self.document.clone()));
-        // 최대 100개 제한 — 초과 시 가장 오래된 스냅샷 제거
+        // 최대 100개 제한 — 초과 시 가장 오래된 스냅샷 제거.
+        // [Task #2328] studio 히스토리(rhwp-studio/src/engine/history.ts 의
+        // WASM_MAX_SNAPSHOTS)와 양방향 결합. 이 값을 studio 예산(MAX-2)보다 낮추면
+        // studio 가 참조 중인 오래된 undo 스냅샷이 무통보 축출돼 undo 예외가
+        // 재발한다. 변경 시 반드시 studio 상수도 함께 갱신한다.
         const MAX_SNAPSHOTS: usize = 100;
         while self.snapshot_store.len() > MAX_SNAPSHOTS {
             self.snapshot_store.remove(0);
@@ -1854,11 +1874,13 @@ mod validate_linesegs_tests {
                     start_char_idx: 0,
                     end_char_idx: 6,
                     control_idx: 0,
+                    ..Default::default()
                 },
                 FieldRange {
                     start_char_idx: 0,
                     end_char_idx: 6,
                     control_idx: 0,
+                    ..Default::default()
                 },
             ],
             ..Default::default()
