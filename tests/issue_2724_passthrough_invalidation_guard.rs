@@ -328,6 +328,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "필드 위치를 조회한 뒤 텍스트 치환 헬퍼에 위임.",
     ),
     (
+        "queries/field_query.rs",
+        "set_field_value_by_name",
+        Exempt::DelegatesTo("set_field_value_by_name_at"),
+        "첫 occurrence를 선택하는 호환 래퍼. 실제 필드 치환·section raw_stream 무효화는 occurrence 경로가 수행.",
+    ),
+    (
         "queries/rendering.rs",
         "set_section_def_native",
         Exempt::DelegatesTo("apply_section_def_json"),

@@ -305,13 +305,7 @@ impl Renderer for HtmlRenderer {
         };
 
         // 위첨자/아래첨자: y좌표·font_size 직접 조정 (absolute 위치이므로 vertical-align 불가)
-        let (draw_y, draw_size) = if style.superscript {
-            (y - font_size * 0.3, font_size * 0.7)
-        } else if style.subscript {
-            (y + font_size * 0.15, font_size * 0.7)
-        } else {
-            (y, font_size)
-        };
+        let (draw_size, draw_y) = style.script_draw_metrics(font_size, y);
 
         let mut css = format!(
             "position:absolute;left:{}px;top:{}px;font-family:{};font-size:{}px;color:{};",

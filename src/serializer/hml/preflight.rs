@@ -670,9 +670,11 @@ fn validate_table(table: &Table, path: &str, blockers: &mut Vec<HmlSaveBlocker>)
 }
 
 fn validate_cell(cell: &Cell, path: &str, blockers: &mut Vec<HmlSaveBlocker>) {
+    // [#3189] cell.vertical_align 은 이제 PARALIST@VertAlign 으로 왕복하므로
+    // 더 이상 blocker 가 아니다 (Top/Bottom 셀도 저장 가능). 글상자
+    // (`validate_text_box`) 쪽 vertical_align 은 아직 방출 경로가 없어 그대로 둔다.
     let omitted = cell.list_header_width_ref != 0
         || cell.text_direction != 0
-        || cell.vertical_align != VerticalAlign::Center
         || !cell.apply_inner_margin
         || cell.is_header
         || !cell.raw_list_extra.is_empty()

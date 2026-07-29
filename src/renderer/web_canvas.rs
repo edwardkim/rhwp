@@ -2164,13 +2164,12 @@ impl Renderer for WebCanvasRenderer {
         };
 
         // 위첨자/아래첨자: 글꼴 크기 축소 + y좌표 조정
-        let (font_size, y) = if style.superscript {
-            (base_font_size * 0.7, y - base_font_size * 0.3)
-        } else if style.subscript {
-            (base_font_size * 0.7, y + base_font_size * 0.15)
-        } else {
-            (base_font_size, y)
-        };
+        let (font_size, y) = style.script_draw_metrics(base_font_size, y);
+        // [#2771] 폰트를 이미 0.7 배로 설정했으므로 measure_text 도 0.7 배 폭을
+        // 돌려준다. 맞춤 대상 advance(본문 기준)를 같은 배율로 줄이지 않으면
+        // fit_scale = base / (0.7·base) ≈ 1.43 이 되어 글리프가 가로로 늘어난다.
+        // 비첨자는 정확히 1.0 이라 종전 fit_scale 이 불변이다.
+        let script_advance_scale = style.script_advance_scale();
 
         let font_family = super::canvas_font_family_chain(&style.font_family);
 
@@ -2359,7 +2358,7 @@ impl Renderer for WebCanvasRenderer {
                             .map(|metrics| metrics.width())
                             .and_then(|actual_w| {
                                 canvas_cluster_fit_scale(
-                                    cluster_advance,
+                                    cluster_advance * script_advance_scale,
                                     actual_w * ratio,
                                     style.letter_spacing,
                                     pin_ascii_advance,
