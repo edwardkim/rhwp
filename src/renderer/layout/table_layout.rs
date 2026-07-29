@@ -4251,7 +4251,23 @@ impl LayoutEngine {
             };
 
             // 수직 정렬 (분할 표에서는 Top 강제 — 보이는 영역이 전체 셀보다 작음)
-            let effective_valign = if row_filter.is_some() {
+            // 중첩 표 행 범위 부분 렌더에서, **셀이 실제로 잘릴 때만** Top 을 강제한다.
+            //
+            // `row_filter` 는 행 단위로 자르므로 필터 안에 온전히 들어가는 셀은 잘리지
+            // 않는다. 그런 셀까지 Top 으로 덮으면 세로로 긴 병합 라벨이 정중앙이 아니라
+            // 맨 위에 붙는다 (한컴 pdf/kps-ai-2022.pdf p65 실측 = 정중앙. rhwp p66 은
+            // 상단). 실측: kps-ai 의 Center 지정 셀 57건 중 55건이 안 잘리는데도 Top
+            // 강제를 받았다.
+            //
+            // 잘리는 두 경우는 이 조건과 무관하게 결과가 Top 으로 수렴한다 —
+            // 상단 잘림(r < sr)은 라벨이 앞 페이지에 이미 렌더돼 문단을 비우고(아래 #1073
+            // 처리), 하단 잘림은 콘텐츠가 가시 높이를 넘어 정렬 오프셋이 0 으로 클램프된다.
+            // 그래도 종전 동작을 그 두 경우에 한해 그대로 남긴다.
+            let cell_clipped_by_row_filter = row_filter.is_some_and(|(sr, er)| {
+                let cell_end_row = (r + cell.row_span as usize).min(row_count);
+                r < sr || cell_end_row > er
+            });
+            let effective_valign = if cell_clipped_by_row_filter {
                 VerticalAlign::Top
             } else {
                 cell.vertical_align
