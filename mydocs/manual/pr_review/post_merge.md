@@ -120,9 +120,12 @@ done
 
 OPEN이면 작업지시자 승인 뒤 수동 close와 후속 comment를 남긴다.
 
+여러 단락의 후속 기록은 [공통 본문 전송 규칙](../pr_review_workflow.md#34-github-markdown-본문-전송)에 따라
+close와 comment를 분리하고 실제 줄바꿈을 담은 `--body-file`을 쓴다.
+
 ~~~bash
-gh issue close N --repo edwardkim/rhwp \
-  --comment "[PR M](https://github.com/edwardkim/rhwp/pull/M) 머지로 해결 (by @contributor). ..."
+gh issue close N --repo edwardkim/rhwp
+gh issue comment N --repo edwardkim/rhwp --body-file <issue-comment.md>
 ~~~
 
 CLOSED여도 같은 merge commit·같은 검증 증적의 maintainer comment가 아직 없으면 다음을 담은 comment를 남긴다.
