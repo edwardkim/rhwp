@@ -25,7 +25,8 @@ on:
       - 'docs/canvaskit-parity-implementation.md'
       - 'docs/text-ir-v2.md'
       - 'rhwp-studio/**'
-      - 'mydocs/**'
+      # Review 기록·asset은 렌더 입력이 아니다. trailing review-only commit이
+      # Canvas visual diff를 다시 시작하지 않게 mydocs/**는 trigger에서 제외한다 (#3559).
       - '.github/workflows/render-diff.yml'
   workflow_dispatch:
     inputs:

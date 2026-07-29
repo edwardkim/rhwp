@@ -46,12 +46,40 @@ mydocs/orders/YYYYMMDD.md                  # 갱신이 필요한 경우
 contributor 원 commit을 rewrite하지 않는다. review 문서·오늘할일·보정 code는 별도 commit으로 나누고,
 보정이 있으면 review 문서에 contributor 원 변경과 collaborator 추가 변경을 구분한다.
 
+### 9.3.0 LFS 대상 사전 판독
+
+review-only 문서 push를 포함한 **모든** contributor source branch push는 dry-run이나 실제 push 전에,
+contributor 원 head와 local HEAD 사이 변경 파일이 LFS 추적 대상인지 먼저 판독한다. LFS 대상이 아닌
+Markdown-only commit에도 Git LFS pre-push hook은 lock 검증을 시도할 수 있으므로, 실패한 일반 push를
+근거로 뒤늦게 판단하지 않는다.
+
+~~~bash
+review_source_sha=<push 직전 contributor head SHA>
+git diff --name-only -z "$review_source_sha" HEAD |
+  while IFS= read -r -d '' review_path; do
+    git check-attr filter -- "$review_path"
+  done
+git lfs status
+~~~
+
+- 출력에 `filter: lfs`가 하나라도 있거나 `git lfs status`가 새 object push를 보이면 LFS 대상이다.
+  정상 LFS pre-push hook을 포함한 dry-run과 실제 push를 사용하고, object·lock 권한 문제를 먼저
+  해결한다.
+- 둘 다 없으면 LFS object는 이번 ref update와 무관하다. 처음부터 `GIT_LFS_SKIP_PUSH=1`을 붙인
+  dry-run과 실제 push를 사용해 LFS lock 검증만 건너뛴다. 다른 pre-push hook을 무력화하거나
+  `core.hooksPath`를 바꾸지 않는다.
+
+원격 SHA가 source SHA와 다른 경우에는 이 판독을 시작하지 않는다. 새 contributor commit을 fetch해
+source SHA를 다시 고정한 뒤 재판독한다.
+
 ~~~bash
 git fetch upstream pull/N/head:local/prN
 git switch local/prN
 # local 검증과 archive review·오늘할일 작성
 git commit -m "docs: PR #N 검토 기록"
+# 9.3.0의 LFS 판독 결과에 따라 둘 중 하나를 선택
 git push https://github.com/<contributor>/rhwp.git HEAD:<head-branch>
+GIT_LFS_SKIP_PUSH=1 git push https://github.com/<contributor>/rhwp.git HEAD:<head-branch>
 ~~~
 
 push 뒤 PR head SHA가 local HEAD와 같은지 확인하고, 9.3.2 fast-pass 또는 최신 head full CI 결과가
@@ -84,14 +112,15 @@ branch를 다시 준비하고, contributor commit을 rebase, amend, reset, force
 #### 9.3.1.2 commit 분리와 LFS dry-run
 
 - code·regression test 보정과 review·오늘할일은 별도 commit으로 만든다.
-- source SHA와 local HEAD 사이에 LFS 추적 파일이나 새 LFS object가 있으면 정상 LFS lock·upload 권한을 쓴다.
-- 먼저 정상 pre-push hook을 포함한 dry-run을 실행한다.
+- dry-run 전에 [9.3.0의 LFS 대상 사전 판독](#930-lfs-대상-사전-판독)을 완료한다. 이 판독은
+  code 보정뿐 아니라 review-only 문서 push에도 동일하게 적용한다.
+- LFS 대상이면 정상 pre-push hook을 포함한 dry-run을 실행한다.
 
 ~~~bash
 git push --dry-run https://github.com/<contributor>/rhwp.git HEAD:<head-branch>
 ~~~
 
-LFS object가 전혀 없고 LFS locks:verify 인증만 실패할 때에만 다음 dry-run으로 Git ref write를 분리 확인한다.
+LFS 대상이 전혀 없다고 사전 판독됐으면 첫 dry-run부터 다음 명령으로 Git ref write를 분리 확인한다.
 core.hooksPath를 무력화해 다른 pre-push hook 전체를 건너뛰지 않는다.
 
 ~~~bash
@@ -101,8 +130,9 @@ GIT_LFS_SKIP_PUSH=1 \
 
 #### 9.3.1.3 승인 뒤 실제 push와 CI
 
-작업지시자가 push를 승인했고, 마지막 remote SHA가 보정 시작 SHA와 같으며, 변경에 LFS object가 없을 때만
-collaborator 추가 commit을 contributor source branch에 push한다.
+작업지시자가 push를 승인했고 마지막 remote SHA가 보정 시작 SHA와 같을 때만 collaborator 추가 commit을
+contributor source branch에 push한다. [9.3.0의 사전 판독](#930-lfs-대상-사전-판독)에서 LFS 대상이
+있었으면 정상 push를, 없었으면 처음부터 `GIT_LFS_SKIP_PUSH=1` push를 사용한다.
 
 ~~~bash
 GIT_LFS_SKIP_PUSH=1 \

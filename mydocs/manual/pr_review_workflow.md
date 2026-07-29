@@ -130,6 +130,20 @@ CI가 끝난 뒤 또는 contributor가 새 commit을 push한 뒤에는 head SHA,
 이 매뉴얼의 기본 경로가 아니다. 필요하면 별도 작업 계획과 작업지시자 승인을 받아 lock·disk·결과 귀속을
 명확히 한 뒤에만 사용한다.
 
+### 3.4 GitHub Markdown 본문 전송
+
+여러 단락의 review·comment·issue comment에는 실제 LF 줄바꿈을 전송한다. 셸 큰따옴표 안의 `\n`은
+줄바꿈이 아니라 문자 그대로이므로 `--body "...\n..."` 또는 `--comment "...\n..."`로 게시하지 않는다.
+
+- PR review와 PR comment는 실제 줄바꿈을 담은 임시 Markdown 파일을 만들고 `--body-file`로 보낸다.
+  `gh pr review N --repo edwardkim/rhwp --approve --body-file <review.md>`,
+  `gh pr comment N --repo edwardkim/rhwp --body-file <comment.md>`처럼 실행한다.
+- 여러 단락의 issue 후속 기록은 `gh issue close N`과 `gh issue comment N --body-file <comment.md>`로
+  분리한다. `gh issue close --comment`는 한 줄의 짧은 기록에만 쓴다.
+- `gh api --input <json>`을 쓸 때는 JSON의 `\n` escape가 실제 LF로 해석되는 유효 JSON인지 확인한다.
+- 게시 직후 해당 review/comment API의 `body`를 읽어 literal `\\n`이 남지 않았는지 확인하고, 임시 본문
+  파일은 정확한 경로만 정리한다.
+
 ## 4. review 산출물의 공통 규칙
 
 PR review 문서는 merge 후에도 모순되지 않아야 한다. draft, mergeable, head SHA, CI 상태는
