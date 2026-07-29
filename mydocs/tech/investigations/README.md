@@ -52,3 +52,4 @@ last_verified: 2026-07-19
 - [Issue #2124 프론트엔드 기준선 조사](issue-2124/README.md)
 - [Issue #2125 font ownership 조사](issue-2125/README.md)
 - [Issue #2392 picture props apply 계약 조사](issue-2392/README.md)
+- [Issue #3486 HWP3 렌더링 정합 조사](issue-3486/README.md)
