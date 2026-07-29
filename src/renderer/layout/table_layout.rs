@@ -7457,15 +7457,42 @@ impl LayoutEngine {
         } else {
             flow_visible.min(remaining)
         };
+        // 행 범위는 픽셀 오프셋에서 유도한다. 종전에는 `0..1` 로 고정해, 2행 이상
+        // 중첩 표가 텍스트와 문단을 공유하면 연속 페이지가 **행 0 만** 다시 그리고
+        // 뒤 행의 내용이 어느 페이지에도 나오지 않았다 (75544 pi=527: 2행 표,
+        // off 672 + vis 747 = 전체 1419 로 높이 회계는 완전한데 end_row=1 이라
+        // 행 1 의 25문단이 통째로 탈락). #1073 이 per-중첩행 컷 경로에서 고친
+        // "row0 재렌더" 와 같은 결함이 혼재 문단 경로에 남아 있던 것이다.
+        //
+        // 높이 필드는 유닛 회계에서 온 값을 그대로 쓴다 — 조각 경계는 이미 컷이
+        // 정했고, 행 변환은 "그 조각이 어느 행들을 담는가" 만 정한다.
+        let nested = cell.paragraphs.get(para_idx).and_then(|p| {
+            p.controls.iter().find_map(|ctrl| match ctrl {
+                Control::Table(t) => Some(&**t),
+                _ => None,
+            })
+        });
+        let (start_row, end_row, row_offset_within_start) = match nested {
+            Some(nt) if nt.row_count > 1 => {
+                let ncol = nt.col_count as usize;
+                let nrow = nt.row_count as usize;
+                let row_heights = self.resolve_row_heights(nt, ncol, nrow, None, styles, true);
+                let cs = hwpunit_to_px(nt.cell_spacing as i32, self.dpi);
+                let rows = calc_nested_split_rows(&row_heights, cs, offset, visible);
+                (rows.start_row, rows.end_row, rows.offset_within_start)
+            }
+            // 1행 표는 종전 규약 유지 — 행 경계가 없어 오프셋만으로 이어진다.
+            _ => (0, 1, offset_within_start),
+        };
         Some(NestedTableSplit {
-            start_row: 0,
-            end_row: 1,
+            start_row,
+            end_row,
             visible_height,
             flow_height,
             // Keep one visible content unit reserved in bbox/flow so the
             // border wraps only that tail line and the following paragraph in
             // the host cell starts below it.
-            offset_within_start,
+            offset_within_start: row_offset_within_start,
         })
     }
 
