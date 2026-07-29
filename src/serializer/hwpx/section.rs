@@ -95,7 +95,8 @@ fn replace_visibility(xml: &str, sd: &SectionDef) -> String {
     xml.replacen(TEMPLATE_VISIBILITY, &render_visibility(sd), 1)
 }
 
-/// [#1987] 템플릿 secPr 의 하드코딩 스칼라(spaceColumns, outlineShapeIDRef)를 IR 값으로 치환.
+/// [#1987] 템플릿 secPr 의 하드코딩 스칼라(spaceColumns, outlineShapeIDRef, memoShapeIDRef 등)를
+/// IR 값으로 치환.
 /// 각 속성은 템플릿 secPr 여는 태그에 정확히 1회 등장하므로 replacen(1)로 안전하다.
 fn replace_secpr_scalars(xml: &str, sd: &SectionDef) -> String {
     let out = xml.replacen(
@@ -119,6 +120,16 @@ fn replace_secpr_scalars(xml: &str, sd: &SectionDef) -> String {
     let out = out.replacen(
         r#"outlineShapeIDRef="1""#,
         &format!(r#"outlineShapeIDRef="{}""#, sd.outline_numbering_id),
+        1,
+    );
+
+    // [#2779] 메모 모양 참조. 파서가 secPr@memoShapeIDRef 를 memo_shape_id 로 읽지만
+    // 직렬화가 템플릿 상수 "0" 만 방출해, 메모 모양이 지정된 구역이 저장마다 0 으로
+    // 리셋됐다(실측 14 secPr/9 파일). 템플릿 secPr 여는 태그에 정확히 1회 등장하고
+    // 기본 SectionDef 도 0 이라 기본 문서 출력은 바이트 동일하다.
+    let out = out.replacen(
+        r#"memoShapeIDRef="0""#,
+        &format!(r#"memoShapeIDRef="{}""#, sd.memo_shape_id),
         1,
     );
 
@@ -233,6 +244,54 @@ fn render_note_numbering(shape: &crate::model::footnote::FootnoteShape) -> Strin
         r#"<hp:numbering type="{}" newNum="{}"/>"#,
         note_numbering_str(shape.numbering),
         shape.start_number,
+    )
+}
+
+/// [#2779] FootnotePlacement → HWPX `placement/@place` 토큰 (컨텍스트 키 역매핑).
+///
+/// OWPML 스키마(ParaList: footNotePr/endNotePr 의 placement@place)는 각주와 미주에
+/// 서로 다른 열거를 두지만, 두 열거는 HWP5 `attr` bits 8-9 의 같은 코드 공간을 쓴다
+/// (모델 주석 「각 단마다 따로 배열 / 문서의 마지막」과 동일한 대응):
+///
+/// | 코드 | FootnotePlacement | 각주 토큰          | 미주 토큰       |
+/// |------|-------------------|--------------------|-----------------|
+/// | 0    | EachColumn        | EACH_COLUMN        | END_OF_DOCUMENT |
+/// | 1    | BelowText         | MERGED_COLUMN      | END_OF_SECTION  |
+/// | 2    | RightColumn       | RIGHT_MOST_COLUMN  | (없음)          |
+///
+/// 즉 코드↔토큰은 컨텍스트를 아는 한 각 컨텍스트 안에서 전단사이므로, 호출자가
+/// 자기가 각주/미주 중 무엇을 렌더하는지 알려주면 무손실 역매핑이 된다.
+/// 미주에 코드 2(RightColumn)가 들어오는 비정상 IR 은 스키마에 대응 토큰이 없어
+/// 기본값 `END_OF_DOCUMENT` 로 강등한다.
+fn note_place_str(
+    placement: crate::model::footnote::FootnotePlacement,
+    is_end_note: bool,
+) -> &'static str {
+    use crate::model::footnote::FootnotePlacement::*;
+    if is_end_note {
+        match placement {
+            BelowText => "END_OF_SECTION",
+            // EachColumn 및 스키마 밖 RightColumn → 기본값.
+            _ => "END_OF_DOCUMENT",
+        }
+    } else {
+        match placement {
+            BelowText => "MERGED_COLUMN",
+            RightColumn => "RIGHT_MOST_COLUMN",
+            EachColumn => "EACH_COLUMN",
+        }
+    }
+}
+
+/// [#2779] FootnoteShape → `<hp:placement .../>` (place + beneathText).
+fn render_note_placement(
+    shape: &crate::model::footnote::FootnoteShape,
+    is_end_note: bool,
+) -> String {
+    format!(
+        r#"<hp:placement place="{}" beneathText="{}"/>"#,
+        note_place_str(shape.placement, is_end_note),
+        u8::from(shape.print_inline_after_text),
     )
 }
 
@@ -370,26 +429,25 @@ fn replace_footnote_shape(xml: &str, sd: &SectionDef) -> String {
         &render_note_numbering(&sd.endnote_shape),
     );
 
-    // beneathText(본문 아래 바로 이어 출력). placement 의 `place` 열거형은 각주/
-    // 미주 의미를 conflate 해 무손실 역매핑이 어렵지만, beneathText 는 같은 요소의
-    // 독립 bool 이라 역매핑이 명확하다. 파서는 이 값을
-    // FootnoteShape.print_inline_after_text(HWP 바이너리 attr bit13)로 읽는데
-    // 템플릿이 "0" 으로 고정돼 저장 때마다 꺼졌다.
-    // 각주/미주 앵커의 place 값이 서로 달라 replacen(1) 충돌이 없다.
+    // placement — 배치 방법(place)과 beneathText(본문 아래 바로 이어 출력).
+    //
+    // beneathText 는 같은 요소의 독립 bool 이라 종전에도 IR 반영됐다(템플릿 "0" 고정
+    // 이라 저장 때마다 꺼지던 결함). [#2779] place 는 종전에 템플릿 상수
+    // (EACH_COLUMN/END_OF_DOCUMENT)를 그대로 방출해, 통단·오른쪽단 각주와 구역끝
+    // 미주가 저장마다 기본 배치로 되돌아갔다. 컨텍스트 키 역매핑(note_place_str)으로
+    // 각주/미주 각각의 스키마 토큰을 방출한다.
+    //
+    // 각주 슬롯의 방출 토큰은 EACH_COLUMN/MERGED_COLUMN/RIGHT_MOST_COLUMN 셋 뿐이라
+    // 미주 앵커(END_OF_DOCUMENT)를 새로 만들어내지 않는다 — 연쇄 replacen(1) 이
+    // 서로의 슬롯을 훔칠 수 없다(기존 코드와 동일 근거).
     out.replacen(
         r#"<hp:placement place="EACH_COLUMN" beneathText="0"/>"#,
-        &format!(
-            r#"<hp:placement place="EACH_COLUMN" beneathText="{}"/>"#,
-            u8::from(sd.footnote_shape.print_inline_after_text)
-        ),
+        &render_note_placement(&sd.footnote_shape, false),
         1,
     )
     .replacen(
         r#"<hp:placement place="END_OF_DOCUMENT" beneathText="0"/>"#,
-        &format!(
-            r#"<hp:placement place="END_OF_DOCUMENT" beneathText="{}"/>"#,
-            u8::from(sd.endnote_shape.print_inline_after_text)
-        ),
+        &render_note_placement(&sd.endnote_shape, true),
         1,
     )
 }
@@ -2010,7 +2068,7 @@ fn render_common_shape_xml(
         .unwrap_or(c.instance_id);
     let mut out = format!(
         concat!(
-            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="BOTH_SIDES" lock="{lock}" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}">"#,
+            r#"<hp:{tag} id="{id}" zOrder="{zo}" numberingType="{nt}" textWrap="{tw}" textFlow="{tf}" lock="{lock}" dropcapstyle="None" href="" groupLevel="{gl}" instid="{iid}">"#,
             "{block}",
             "{geometry}",
             r#"<hp:sz width="{w}" height="{h}" widthRelTo="{wrt}" heightRelTo="{hrt}" protect="{prot}"/>"#,
@@ -2028,6 +2086,10 @@ fn render_common_shape_xml(
         gl = group_level,
         iid = instid,
         tw = text_wrap_to_hwpx(c.text_wrap),
+        // [#2790] textFlow(글 흐름) — 종전 "BOTH_SIDES" 리터럴은 파서
+        // (parse_object_element_attrs:2962)가 IR 에 적재한 값을 저장에서만 버리는 순손실이었다.
+        // write_rect/write_line(shape.rs)·render_equation 은 이미 IR 기반이다.
+        tf = text_flow_to_hwpx(c.text_flow),
         tac = if c.treat_as_char { "1" } else { "0" },
         fwt = if c.flow_with_text { "1" } else { "0" },
         ao = if c.allow_overlap { "1" } else { "0" },
@@ -2247,8 +2309,19 @@ fn render_equation(eq: &Equation) -> String {
     // [#2840] 개체 잠금(lock) — 종전 하드코딩 "0" 제거, IR(common.locked) 값을 방출.
     let lock = if c.locked { "1" } else { "0" };
 
+    // [#2778] 크기 기준(widthRelTo/heightRelTo) — 종전 "ABSOLUTE" 리터럴은 파서
+    // (parse_object_layout_child:3023)가 IR 에 적재한 단/열/쪽 상대 기준을 저장에서만
+    // 버렸다. #2697(표)·#2712(그림/도형)·#2726(공용 도형)과 동형이다. 높이는 파서가
+    // `parse_size_criterion(_, false)` 로 읽어 치역이 3값이므로 같은 접기 함수를 쓴다.
+    let width_rel_to = size_criterion_str(c.width_criterion);
+    let height_rel_to = height_criterion_str(c.height_criterion);
+
+    // [#2782] 개체 겹침 허용(allowOverlap) — 종전 하드코딩 "0" 제거, IR 값을 방출.
+    // 같은 요소의 treatAsChar·flowWithText 는 이미 IR 기반이었다.
+    let allow_overlap = if c.allow_overlap { "1" } else { "0" };
+
     format!(
-        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{height}" heightRelTo="ABSOLUTE"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="0" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="{width_rel_to}" height="{height}" heightRelTo="{height_rel_to}"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="{allow_overlap}" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
         text_wrap_to_hwpx(c.text_wrap),
         text_flow_to_hwpx(c.text_flow),
         vert_rel_to_hwpx(c.vert_rel_to),
@@ -2630,6 +2703,92 @@ mod tests {
         );
     }
 
+    /// [Issue #2778] 수식의 크기 기준(`hp:sz` widthRelTo/heightRelTo)이 IR
+    /// (common.width_criterion/height_criterion)에서 방출돼야 한다. 종전엔 "ABSOLUTE"
+    /// 하드코딩이라 단/열/쪽 상대 크기 기준이 왕복마다 소실됐다.
+    #[test]
+    fn equation_size_criterion_reflects_ir() {
+        use crate::model::control::Equation;
+        use crate::model::shape::SizeCriterion;
+
+        let mut eq = Equation::default();
+        eq.common.width_criterion = SizeCriterion::Column;
+        eq.common.height_criterion = SizeCriterion::Page;
+        let xml = render_equation(&eq);
+        assert!(
+            xml.contains(r#"widthRelTo="COLUMN""#),
+            "수식 widthRelTo 이 IR 값이어야 함: {xml}"
+        );
+        assert!(
+            xml.contains(r#"heightRelTo="PAGE""#),
+            "수식 heightRelTo 이 IR 값이어야 함: {xml}"
+        );
+
+        // 파서는 높이를 `parse_size_criterion(_, allow_column_para = false)` 로 읽어
+        // 치역이 {PAPER, PAGE, ABSOLUTE} 3값뿐이므로, 방출도 같은 3값으로 접어야 멱등이다.
+        let mut folded = Equation::default();
+        folded.common.height_criterion = SizeCriterion::Column;
+        assert!(
+            render_equation(&folded).contains(r#"heightRelTo="ABSOLUTE""#),
+            "heightRelTo 는 COLUMN/PARA 를 ABSOLUTE 로 접어야 왕복이 멱등"
+        );
+    }
+
+    /// [Issue #2782] 수식의 allowOverlap(개체 겹침 허용)이 IR(common.allow_overlap)에서
+    /// 방출돼야 한다. 종전 하드코딩 "0" 은 겹침 허용 설정을 왕복마다 껐다.
+    #[test]
+    fn equation_allow_overlap_reflects_ir() {
+        use crate::model::control::Equation;
+
+        let mut eq = Equation::default();
+        eq.common.allow_overlap = true;
+        let xml = render_equation(&eq);
+        assert!(
+            xml.contains(r#"allowOverlap="1""#),
+            "allow_overlap=true 면 allowOverlap=\"1\" 을 방출해야 함: {xml}"
+        );
+        assert!(
+            render_equation(&Equation::default()).contains(r#"allowOverlap="0""#),
+            "기본값(false)은 종전대로 allowOverlap=\"0\" 이어야 함(회귀 방지)"
+        );
+    }
+
+    /// [Issue #2790] legacy 공용 도형 경로(ellipse/arc/polygon/curve/chart/ole)의 textFlow
+    /// 가 IR(common.text_flow)에서 방출돼야 한다. 종전 "BOTH_SIDES" 하드코딩으로 한쪽
+    /// 배치(LEFT_ONLY 등) 설정이 왕복마다 소실됐다.
+    #[test]
+    fn common_shape_text_flow_reflects_ir() {
+        use crate::model::shape::{CommonObjAttr, TextFlow};
+
+        let mut c = CommonObjAttr::default();
+        c.text_flow = TextFlow::LargestOnly;
+        let mut ctx = SerializeContext::default();
+        let xml = render_common_shape_xml("ellipse", &c, &None, None, &[], "", &mut ctx);
+        assert!(
+            xml.contains(r#"textFlow="LARGEST_ONLY""#),
+            "공용 도형 textFlow 이 IR 값이어야 함: {xml}"
+        );
+        assert!(
+            !xml.contains(r#"textFlow="BOTH_SIDES""#),
+            "BOTH_SIDES 하드코딩 잔존 금지"
+        );
+
+        // 기본값(BothSides)은 종전 출력과 동일해야 한다(회귀 방지).
+        let default_xml = render_common_shape_xml(
+            "ellipse",
+            &CommonObjAttr::default(),
+            &None,
+            None,
+            &[],
+            "",
+            &mut ctx,
+        );
+        assert!(
+            default_xml.contains(r#"textFlow="BOTH_SIDES""#),
+            "기본값은 BOTH_SIDES 를 유지해야 함: {default_xml}"
+        );
+    }
+
     /// [Issue #1944] legacy 공용 도형 경로(polygon/ellipse/arc/curve)가 도형 내
     /// 글상자(drawText) 문단을 방출해야 한다 — 종전 누락으로 도형 안 텍스트 소실.
     #[test]
@@ -2853,6 +3012,100 @@ mod tests {
         assert!(
             !xml.contains(r#"beneathText="0""#),
             "템플릿 기본 beneathText=0 잔존 금지"
+        );
+    }
+
+    /// [#2779] placement 의 `place`(배치 방법)가 템플릿 상수가 아니라 IR 값으로
+    /// 방출돼야 한다. 각주/미주는 같은 코드 공간(attr bits 8-9)을 쓰지만 OWPML 토큰이
+    /// 서로 달라, 컨텍스트 키 역매핑이 필요하다:
+    ///   각주 1=MERGED_COLUMN(통단) / 2=RIGHT_MOST_COLUMN, 미주 1=END_OF_SECTION.
+    /// 재파싱까지 확인해 rhwp 자기 왕복이 무손실인지 본다.
+    #[test]
+    fn issue2779_note_place_reflects_ir() {
+        use crate::model::footnote::FootnotePlacement;
+        use crate::parser::hwpx::section::parse_hwpx_section;
+
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (mut doc, mut section) = make_doc_with_paragraph(para);
+        section.section_def.footnote_shape.placement = FootnotePlacement::BelowText;
+        section.section_def.endnote_shape.placement = FootnotePlacement::BelowText;
+        doc.sections = vec![section.clone()];
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hp:placement place="MERGED_COLUMN" beneathText="0"/>"#),
+            "각주 통단 배치가 IR 값으로 방출돼야 함"
+        );
+        assert!(
+            xml.contains(r#"<hp:placement place="END_OF_SECTION" beneathText="0"/>"#),
+            "미주 구역끝 배치가 IR 값으로 방출돼야 함"
+        );
+        assert!(
+            !xml.contains(r#"place="EACH_COLUMN""#),
+            "템플릿 상수 EACH_COLUMN 잔존 금지"
+        );
+        assert!(
+            !xml.contains(r#"place="END_OF_DOCUMENT""#),
+            "템플릿 상수 END_OF_DOCUMENT 잔존 금지"
+        );
+
+        let reparsed = parse_hwpx_section(&xml).unwrap();
+        assert_eq!(
+            reparsed.section_def.footnote_shape.placement,
+            FootnotePlacement::BelowText,
+            "각주 배치가 재파싱에서 보존돼야 함"
+        );
+        assert_eq!(
+            reparsed.section_def.endnote_shape.placement,
+            FootnotePlacement::BelowText,
+            "미주 배치가 재파싱에서 보존돼야 함"
+        );
+    }
+
+    /// [#2779] 각주 코드 2(가장 오른쪽 단)는 각주 전용 토큰이 있으나, 미주에는 스키마상
+    /// 대응 토큰이 없어 기본값 END_OF_DOCUMENT 로 강등한다(주석 참조).
+    #[test]
+    fn issue2779_note_place_right_column_footnote_only() {
+        use crate::model::footnote::FootnotePlacement;
+
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (mut doc, mut section) = make_doc_with_paragraph(para);
+        section.section_def.footnote_shape.placement = FootnotePlacement::RightColumn;
+        section.section_def.endnote_shape.placement = FootnotePlacement::RightColumn;
+        doc.sections = vec![section.clone()];
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hp:placement place="RIGHT_MOST_COLUMN" beneathText="0"/>"#),
+            "각주 오른쪽단 배치가 IR 값으로 방출돼야 함"
+        );
+        assert!(
+            xml.contains(r#"<hp:placement place="END_OF_DOCUMENT" beneathText="0"/>"#),
+            "미주는 스키마 밖 코드 2 를 기본값으로 강등해야 함"
+        );
+    }
+
+    /// [#2779] 기본 SectionDef(placement=EachColumn, beneathText=0)의 출력은 템플릿과
+    /// 동일해야 한다 — 무변경 가드.
+    #[test]
+    fn issue2779_note_place_keeps_template_defaults() {
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(r#"<hp:placement place="EACH_COLUMN" beneathText="0"/>"#),
+            "각주 기본 배치는 템플릿과 동일해야 함"
+        );
+        assert!(
+            xml.contains(r#"<hp:placement place="END_OF_DOCUMENT" beneathText="0"/>"#),
+            "미주 기본 배치는 템플릿과 동일해야 함"
         );
     }
 
@@ -3178,6 +3431,54 @@ mod tests {
         assert!(
             !xml.contains(r#"spaceColumns="1134""#),
             "템플릿 1134 잔존 금지"
+        );
+    }
+
+    /// [#2779] secPr@memoShapeIDRef 가 템플릿 상수 "0" 이 아니라 IR 값으로 방출되고
+    /// 재파싱까지 살아남아야 한다. 종전엔 3계층(모델/파서/직렬화기) 모두 결손이라
+    /// 메모 모양 참조가 저장마다 0 으로 리셋됐다(실측 14 secPr/9 파일).
+    #[test]
+    fn issue2779_secpr_memo_shape_id_reflects_ir() {
+        use crate::parser::hwpx::section::parse_hwpx_section;
+
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (mut doc, mut section) = make_doc_with_paragraph(para);
+        section.section_def.memo_shape_id = 3;
+        doc.sections = vec![section.clone()];
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert!(
+            xml.contains(r#"memoShapeIDRef="3""#),
+            "memoShapeIDRef 가 IR 값이어야 함: {}",
+            &xml[..600.min(xml.len())]
+        );
+        assert!(
+            !xml.contains(r#"memoShapeIDRef="0""#),
+            "템플릿 상수 memoShapeIDRef=0 잔존 금지"
+        );
+
+        let reparsed = parse_hwpx_section(&xml).unwrap();
+        assert_eq!(
+            reparsed.section_def.memo_shape_id, 3,
+            "memoShapeIDRef 가 재파싱에서 보존돼야 함"
+        );
+    }
+
+    /// [#2779] 기본 SectionDef(memo_shape_id=0)의 출력은 템플릿과 동일해야 한다 —
+    /// 무변경 가드.
+    #[test]
+    fn issue2779_secpr_memo_shape_id_keeps_template_default() {
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(
+            xml.contains(r#"outlineShapeIDRef="0" memoShapeIDRef="0""#),
+            "기본 문서는 템플릿 그대로여야 함: {}",
+            &xml[..600.min(xml.len())]
         );
     }
 

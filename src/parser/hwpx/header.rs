@@ -1198,6 +1198,13 @@ fn parse_para_shape_switch(
     let mut def_next: Option<i32> = None;
     let mut def_line_spacing_type: Option<LineSpacingType> = None;
     let mut def_line_spacing: Option<i32> = None;
+    // case 원본 값(1× 스케일)을 임시 저장 ([#3368] default 채택 판정용)
+    let mut case_margin_left: Option<i32> = None;
+    let mut case_margin_right: Option<i32> = None;
+    let mut case_indent: Option<i32> = None;
+    let mut case_prev: Option<i32> = None;
+    let mut case_next: Option<i32> = None;
+    let mut case_line_spacing: Option<i32> = None;
 
     loop {
         match reader.read_event_into(&mut buf) {
@@ -1240,11 +1247,26 @@ fn parse_para_shape_switch(
                                         // 일반 HWPX 문단 흐름과 기준 HWP3 변환본이 함께 밀린다.
                                         let val2x = val * 2;
                                         match tag_name {
-                                            b"left" => ps.margin_left = val2x,
-                                            b"right" => ps.margin_right = val2x,
-                                            b"intent" => ps.indent = val2x,
-                                            b"prev" => ps.spacing_before = val2x,
-                                            b"next" => ps.spacing_after = val2x,
+                                            b"left" => {
+                                                ps.margin_left = val2x;
+                                                case_margin_left = Some(val);
+                                            }
+                                            b"right" => {
+                                                ps.margin_right = val2x;
+                                                case_margin_right = Some(val);
+                                            }
+                                            b"intent" => {
+                                                ps.indent = val2x;
+                                                case_indent = Some(val);
+                                            }
+                                            b"prev" => {
+                                                ps.spacing_before = val2x;
+                                                case_prev = Some(val);
+                                            }
+                                            b"next" => {
+                                                ps.spacing_after = val2x;
+                                                case_next = Some(val);
+                                            }
                                             _ => {}
                                         }
                                         found_case = true;
@@ -1294,6 +1316,7 @@ fn parse_para_shape_switch(
                                         LineSpacingType::Percent => v,
                                         _ => v * 2,
                                     };
+                                    case_line_spacing = Some(v);
                                 }
                                 found_case = true;
                             } else if in_default {
@@ -1349,9 +1372,64 @@ fn parse_para_shape_switch(
         if let Some(v) = def_line_spacing {
             ps.line_spacing = v;
         }
+    } else {
+        // [#3368] case 와 default 가 반감 관계면 default 의 원본값을 채택한다.
+        // (홀수 값은 case 인코딩으로 표현되지 않아 case×2 로는 1 만큼 어긋난다.)
+        if let Some(v) = exact_value_from_default(case_margin_left, def_margin_left) {
+            ps.margin_left = v;
+        }
+        if let Some(v) = exact_value_from_default(case_margin_right, def_margin_right) {
+            ps.margin_right = v;
+        }
+        if let Some(v) = exact_value_from_default(case_indent, def_indent) {
+            ps.indent = v;
+        }
+        if let Some(v) = exact_value_from_default(case_prev, def_prev) {
+            ps.spacing_before = v;
+        }
+        if let Some(v) = exact_value_from_default(case_next, def_next) {
+            ps.spacing_after = v;
+        }
+        let ls_exact = match ps.line_spacing_type {
+            // PERCENT 는 비율이라 반감 대상이 아니다(방출측도 양쪽에 같은 값을 쓴다).
+            LineSpacingType::Percent => None,
+            _ => exact_value_from_default(case_line_spacing, def_line_spacing),
+        };
+        if let Some(v) = ls_exact {
+            ps.line_spacing = v;
+        }
     }
 
     Ok(())
+}
+
+/// `<switch>` 의 `case`(HwpUnitChar, 1× 스케일) 와 `default`(IR 과 같은 2× 스케일) 가
+/// 반감 관계일 때 `default` 에 남아 있는 원본값을 돌려준다. 그 외에는 `None`.
+///
+/// [#3368] 홀수 2× 값은 `case` 인코딩(정수 나눗셈)으로 표현할 수 없어, `case × 2` 로만
+/// 되읽으면 1 만큼 어긋난다 (`ml 101 → case 50 → 100`). 원본값은 `default` 에 그대로
+/// 남으므로 반감 관계가 확인되면 그쪽을 채택해 왕복을 고정점으로 만든다.
+///
+/// 판정식은 `|default − case × 2| ≤ 1` 이다. 음수 반내림 방향이 한컴(내림:
+/// `default -519 → case -260`) 과 우리 writer(0 방향 절단: `default -2621 → case -1310`)
+/// 에서 서로 달라 양쪽을 함께 받아야 한다. `default == case × 2` 인 짝수 값은 기존
+/// 결과와 같으므로 실제로 값이 바뀌는 것은 홀수 `default` 뿐이다.
+///
+/// 두 분기에 **같은 값**을 쓴 문서(반감 없음)는 `case != default` 조건으로 제외해
+/// 기존 `case × 2` 해석을 그대로 유지한다. 한컴 원본 표본 262개 실측 기준 margin 쌍
+/// 분포는 반감 16,248(그중 홀수 default 37) · 동일값 21 · 그 외 0 이며, lineSpacing 은
+/// PERCENT 가 동일값, FIXED/AT_LEAST 가 반감으로 같은 규칙을 따른다. 즉 이 정정으로
+/// 값이 바뀌는 한컴 원본 필드는 37개뿐이고, 모두 한컴이 `default` 에 적어 둔 값으로
+/// 되돌아간다.
+fn exact_value_from_default(case: Option<i32>, default: Option<i32>) -> Option<i32> {
+    let (case, default) = (case?, default?);
+    // i64 승격은 오버플로 없이 gap 을 계산하기 위한 것이다.
+    let gap = i64::from(default) - i64::from(case) * 2;
+    if case != default && gap.abs() <= 1 {
+        Some(default)
+    } else {
+        None
+    }
 }
 
 // ─── Style ───
@@ -2556,6 +2634,85 @@ mod tests {
         assert_eq!(ps.indent, -4520);
         assert_eq!(ps.spacing_before, 568);
         assert_eq!(ps.spacing_after, 1136);
+    }
+
+    #[test]
+    fn odd_para_margin_survives_hwpx_serialize_parse_roundtrip() {
+        // [#3368] 홀수 여백(ml=101)은 <hp:case>(HwpUnitChar) 의 정수 나눗셈으로
+        // 표현할 수 없어 case×2 로만 되읽으면 101 → 50 → 100 으로 1 만큼 줄었다
+        // (ir-diff "PS[64] ml: 100vs101", exit 3). writer 가 <hp:default> 에 원본값을
+        // 같이 쓰므로 되읽기가 이를 채택해 왕복이 고정점이 되어야 한다.
+        use crate::serializer::hwpx::{context::SerializeContext, header::write_header};
+
+        let mut ps = ParaShape::default();
+        ps.margin_left = 101;
+        ps.margin_right = -101; // 음수 홀수(0 방향 절단)도 함께 고정
+        ps.indent = 2621;
+        ps.spacing_before = 7;
+        ps.spacing_after = 9;
+        ps.line_spacing = 333;
+        ps.line_spacing_type = LineSpacingType::Fixed;
+
+        let mut doc = crate::model::document::Document::default();
+        doc.doc_info.para_shapes = vec![ps];
+        let ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_header(&doc, &ctx).expect("write_header"))
+            .expect("header.xml 은 UTF-8");
+
+        let (doc_info, _) = parse_hwpx_header(&xml).expect("parse header");
+        let back = &doc_info.para_shapes[0];
+
+        assert_eq!(back.margin_left, 101, "홀수 좌측여백 왕복: {xml}");
+        assert_eq!(back.margin_right, -101, "음수 홀수 우측여백 왕복: {xml}");
+        assert_eq!(back.indent, 2621, "홀수 들여쓰기 왕복: {xml}");
+        assert_eq!(back.spacing_before, 7, "홀수 문단위 간격 왕복: {xml}");
+        assert_eq!(back.spacing_after, 9, "홀수 문단아래 간격 왕복: {xml}");
+        assert_eq!(back.line_spacing, 333, "홀수 고정 줄간격 왕복: {xml}");
+    }
+
+    #[test]
+    fn hancom_equal_case_default_switch_keeps_hwpunitchar_scale() {
+        // [#3368] default 채택은 반감 관계(case = default/2)일 때로 한정한다.
+        // 한컴 산출물 중 두 분기에 같은 값을 쓰는 문서(반감 없음)까지 default 를
+        // 채택하면 모든 여백이 절반으로 접힌다. case×2 해석이 유지돼야 한다.
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head"
+  xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core"
+  xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">
+  <hh:refList>
+    <hh:paraProperties itemCnt="1">
+      <hh:paraPr id="1">
+        <hp:switch>
+          <hp:case hp:required-namespace="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar">
+            <hh:margin>
+              <hc:intent value="-700" unit="HWPUNIT"/>
+              <hc:left value="1400" unit="HWPUNIT"/>
+              <hc:right value="0" unit="HWPUNIT"/>
+              <hc:prev value="0" unit="HWPUNIT"/>
+              <hc:next value="120" unit="HWPUNIT"/>
+            </hh:margin>
+          </hp:case>
+          <hp:default>
+            <hh:margin>
+              <hc:intent value="-700" unit="HWPUNIT"/>
+              <hc:left value="1400" unit="HWPUNIT"/>
+              <hc:right value="0" unit="HWPUNIT"/>
+              <hc:prev value="0" unit="HWPUNIT"/>
+              <hc:next value="120" unit="HWPUNIT"/>
+            </hh:margin>
+          </hp:default>
+        </hp:switch>
+      </hh:paraPr>
+    </hh:paraProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        let ps = &doc_info.para_shapes[1];
+
+        assert_eq!(ps.margin_left, 2800, "동일값 switch 는 case×2 유지");
+        assert_eq!(ps.indent, -1400, "동일값 switch 는 case×2 유지");
+        assert_eq!(ps.spacing_after, 240, "동일값 switch 는 case×2 유지");
     }
 
     #[test]

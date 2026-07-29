@@ -193,8 +193,10 @@ pub fn write_line<W: Write>(
     write_fill_brush(w, &line.drawing.fill, ctx)?;
     write_shadow(w, &line.drawing)?;
 
-    // 좌표 — hp:startPt/hp:endPt 자식 (파서가 읽는 유일 경로). connectLine 은
-    // subjectIDRef/subjectIdx(연결 개체) 포함.
+    // 좌표 — startPt/endPt 자식 (파서가 읽는 유일 경로. 프리픽스 무관 로컬명
+    // 매칭). 네임스페이스는 요소별로 다르다: hp:line 의 자식은 hc: (XSD LineType
+    // — hp: 로 쓰면 한컴오피스가 문서를 거부한다), hp:connectLine 의 자식은
+    // hp: (ConnectPointType 로컬 요소, subjectIDRef/subjectIdx 포함).
     let (sub_start_ref, sub_start_idx, sub_end_ref, sub_end_idx) = line
         .connector
         .as_ref()
@@ -233,8 +235,8 @@ pub fn write_line<W: Write>(
             ],
         )?;
     } else {
-        empty_tag(w, "hp:startPt", &[("x", &sx), ("y", &sy)])?;
-        empty_tag(w, "hp:endPt", &[("x", &ex), ("y", &ey)])?;
+        empty_tag(w, "hc:startPt", &[("x", &sx), ("y", &sy)])?;
+        empty_tag(w, "hc:endPt", &[("x", &ex), ("y", &ey)])?;
     }
 
     // connectLine 제어점 (꺾인/곡선 커넥터의 경로).
@@ -1406,18 +1408,20 @@ mod tests {
 
     #[test]
     fn line_emits_start_end_attrs() {
-        // [Issue #1943] 좌표는 hp:startPt/hp:endPt 자식으로 방출한다 (파서가 읽는
+        // [Issue #1943] 좌표는 startPt/endPt 자식으로 방출한다 (파서가 읽는
         // 유일 경로). 종전 startX/Y attr 은 파서가 무시하는 dead 출력이었다.
+        // hp:line 의 자식 네임스페이스는 hc: 다 (XSD LineType — hp: 로 쓰면
+        // 한컴오피스가 문서를 거부한다).
         let mut line = LineShape::default();
         line.start = Point { x: 100, y: 200 };
         line.end = Point { x: 300, y: 400 };
         let xml = serialize_line(&line);
         assert!(
-            xml.contains(r#"<hp:startPt x="100" y="200""#),
+            xml.contains(r#"<hc:startPt x="100" y="200""#),
             "startPt 자식 방출: {xml}"
         );
         assert!(
-            xml.contains(r#"<hp:endPt x="300" y="400""#),
+            xml.contains(r#"<hc:endPt x="300" y="400""#),
             "endPt 자식 방출: {xml}"
         );
         // 컴포넌트 블록·lineShape 보존 (#1943 (B)).
