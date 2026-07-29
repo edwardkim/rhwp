@@ -2692,7 +2692,10 @@ pub(crate) fn parse_paragraph_list(
         }
 
         let mut para = Paragraph::default();
-        para.char_count = utf16_len + 1; // +1 for 끝 마커 (HWP5/HWPX 규약과 정합, #3510)
+        // [#3494, #3510] 공통 IR 의 char_count 는 **문단 종결자를 포함**한다
+        // (model/paragraph.rs:1042 `+1 for paragraph end marker`, HWP5 PARA_HEADER.nChars 와 동일).
+        // utf16_len 은 본문+컨트롤 코드 유닛 합이라 종결자가 빠져 있었다.
+        para.char_count = utf16_len + 1;
         para.para_shape_id = para_shape_id;
         para.char_offsets = char_offsets;
         para.text = text_string;
