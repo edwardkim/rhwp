@@ -841,18 +841,70 @@ fn write_tab_pr<W: Write>(w: &mut Writer<W>, id: u16, td: &TabDef) -> Result<(),
     } else {
         start_tag_attrs(w, "hh:tabPr", &attrs_ref)?;
         for tab in &td.tabs {
-            empty_tag(
-                w,
-                "hh:tabItem",
-                &[
-                    ("pos", &tab.position.to_string()),
-                    ("type", tab_type_str(tab.tab_type)),
-                    ("leader", tab_leader_str(tab.fill_type)),
-                ],
-            )?;
+            write_tab_item_switch(w, tab)?;
         }
         end_tag(w, "hh:tabPr")?;
     }
+    Ok(())
+}
+
+/// tabItem 을 한컴 원본과 동일하게 `<hp:switch>`(case/default) 구조로 쓴다 (#3551).
+///
+/// `parse_tab_def` 의 정확한 역. 파서는 HwpUnitChar `case` 값을 ×2 하여 IR 에
+/// 적재하므로(`stored = case × 2`, parser/hwpx/header.rs:1789), 역으로:
+///   - `case`(HwpUnitChar) 값 = 저장값 / 2, `unit="HWPUNIT"` 동반
+///   - `default` 값 = 저장값 그대로
+///
+/// 종전엔 switch 없이 `hh:tabItem` 만 방출해 한컴 원본의 구조가 소실됐다
+/// (실측: 서울시 공개 서식 4건에서 tabItem 이 정확히 절반). 같은 파일의
+/// `write_para_margin_switch` 와 동형이다.
+///
+/// 홀수 저장값은 `case` 로 정확히 표현할 수 없으므로(`101/2 = 50`), 파서가
+/// `default != case × 2` 일 때 `default` 원값을 채택해 되살린다 — #3368 이
+/// paraPr 여백에서 지적한 것과 같은 계약이다.
+fn write_tab_item_switch<W: Write>(
+    w: &mut Writer<W>,
+    tab: &crate::model::style::TabItem,
+) -> Result<(), SerializeError> {
+    super::utils::start_tag(w, "hp:switch")?;
+
+    start_tag_attrs(
+        w,
+        "hp:case",
+        &[(
+            "hp:required-namespace",
+            "http://www.hancom.co.kr/hwpml/2016/HwpUnitChar",
+        )],
+    )?;
+    write_tab_item(w, tab, true)?;
+    end_tag(w, "hp:case")?;
+
+    super::utils::start_tag(w, "hp:default")?;
+    write_tab_item(w, tab, false)?;
+    end_tag(w, "hp:default")?;
+
+    end_tag(w, "hp:switch")?;
+    Ok(())
+}
+
+/// `<hh:tabItem>` 한 개. `half=true` 면 HwpUnitChar case 용으로 저장값의 절반과
+/// `unit="HWPUNIT"` 를 쓴다.
+fn write_tab_item<W: Write>(
+    w: &mut Writer<W>,
+    tab: &crate::model::style::TabItem,
+    half: bool,
+) -> Result<(), SerializeError> {
+    let pos = if half { tab.position / 2 } else { tab.position };
+    let pos = pos.to_string();
+    let mut attrs: Vec<(&str, &str)> = vec![
+        ("pos", pos.as_str()),
+        ("type", tab_type_str(tab.tab_type)),
+        ("leader", tab_leader_str(tab.fill_type)),
+    ];
+    if half {
+        attrs.push(("unit", "HWPUNIT"));
+    }
+    empty_tag(w, "hh:tabItem", &attrs)?;
     Ok(())
 }
 
@@ -1943,6 +1995,43 @@ mod tests {
                 r##"<hc:fillBrush><hc:winBrush faceColor="none" hatchColor="#FF000000" alpha="0"/></hc:fillBrush>"##
             ),
             "보존된 빈 winBrush 가 faceColor=none 으로 복원되어야 함: {xml}"
+        );
+    }
+
+    #[test]
+    fn write_tab_pr_emits_tab_item_switch_case_default() {
+        // [#3551] tabItem 은 한컴 원본과 동일하게 <hp:switch>(case=저장값/2 +
+        // unit="HWPUNIT", default=저장값) 로 나가야 한다. 종전엔 switch 없이
+        // hh:tabItem 만 방출해 실물 문서에서 tabItem 이 정확히 절반이 됐다.
+        use crate::model::style::{TabDef, TabItem};
+
+        let mut td = TabDef::default();
+        td.tabs = vec![TabItem {
+            position: 3288,
+            tab_type: 0,
+            fill_type: 0,
+        }];
+
+        let mut writer = Writer::new(Vec::new());
+        write_tab_pr(&mut writer, 2, &td).expect("write tabPr");
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(
+                r#"<hp:case hp:required-namespace="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar"><hh:tabItem pos="1644" type="LEFT" leader="NONE" unit="HWPUNIT"/></hp:case>"#
+            ),
+            "case 는 절반값(1644) + unit=HWPUNIT: {xml}"
+        );
+        assert!(
+            xml.contains(
+                r#"<hp:default><hh:tabItem pos="3288" type="LEFT" leader="NONE"/></hp:default>"#
+            ),
+            "default 는 저장값(3288), unit 없음: {xml}"
+        );
+        assert_eq!(
+            xml.matches("<hp:switch>").count(),
+            1,
+            "탭 1개당 switch 1개: {xml}"
         );
     }
 
