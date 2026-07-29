@@ -661,6 +661,17 @@ pub struct PageBackgroundImage {
 }
 
 impl PageBackgroundImage {
+    /// 공통 `ImageFill` 원시 저장값을 쪽 배경의 화면 색조 인자로 바꾼다.
+    ///
+    /// HWP5/HWPX/HWP3의 `ImageFill`은 IR에서 `(brightness, contrast)` 필드에
+    /// legacy binary 저장 순서를 보존한다. 쪽 배경 화면에서는 이 순서가 반대여서,
+    /// 원시값을 그대로 필터에 넘기면 HWPX `bright="50" contrast="-15"`가
+    /// `brightness=-15, contrast=50`으로 뒤집혀 보인다. parser·IR diff·round-trip
+    /// 계약은 건드리지 않고 renderer 경계에서만 의미 순서를 투영한다.
+    pub const fn display_brightness_contrast(&self) -> (i8, i8) {
+        (self.contrast, self.brightness)
+    }
+
     /// 워터마크 효과 적용 여부 (Issue #1156).
     ///
     /// HWP/HWPX 에는 워터마크 적용 비트가 없다. 한컴 편집기는 "워터마크 효과"

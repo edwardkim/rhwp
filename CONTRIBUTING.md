@@ -88,6 +88,18 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 - **하나의 PR에 여러 fix를 담을 때는 이슈별로 커밋을 분리**해주세요. 여러 수정이 한 커밋에
   섞이면 회귀 추적·선별 반영·리뷰가 어려워져 머지가 지연됩니다.
 
+### Claude·Codex capability 기여
+
+재사용할 Claude 에이전트·Claude Skill·Codex Skill을 추가하거나 변경하기 전에는
+[에이전트 capability 카탈로그](mydocs/manual/agent_capability_registry.md)를 읽어 기존 기능과 중복되지
+않는지 확인해주세요.
+
+- 같은 사용자 산출물·권위 문서·비범위면 새 기능을 만들지 않고 기존 capability에 어댑터만 추가합니다.
+- 새 capability면 전용 Issue를 먼저 만들고 `CAP-<Issue 번호>`를 사용합니다. 로컬 순번을 임의로
+  정하지 않습니다.
+- 진입점·권위 문서·상태 변경은 같은 PR에서 카탈로그에 반영하고, Codex Skill은 카탈로그의 검증 절에
+  따라 `quick_validate.py`를 실행합니다.
+
 ### PR 전 체크리스트
 
 ```bash

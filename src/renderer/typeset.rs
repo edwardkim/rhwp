@@ -1669,6 +1669,18 @@ fn is_sample16_integrated_db_cluster_tail_paragraph(para: &Paragraph) -> bool {
         && para.controls.iter().all(|c| matches!(c, Control::Field(_)))
 }
 
+/// 원본 HWP3의 저장 LINE_SEG 안쪽 vpos 되감김은 hyperlink marker가 있어도 본문 흐름을
+/// 바꾸지 않는다. hyperlink는 글자 위치의 인라인 메타데이터이므로, 표·그림·각주처럼
+/// 줄/쪽을 점유하는 컨트롤과 같은 이유로 reset 신호를 무시하면 안 된다.
+///
+/// 범위를 `Hyperlink` 하나로 제한한다. Field/Ruby/수식/form과 모든 객체 컨트롤은 각각
+/// 별도 줄높이·분할 계약을 가지므로 여기서 허용하지 않는다.
+fn hwp3_text_rewind_controls_are_inline_hyperlinks(para: &Paragraph) -> bool {
+    para.controls
+        .iter()
+        .all(|control| matches!(control, Control::Hyperlink(_)))
+}
+
 fn internal_vpos_page_break_line(
     para: &Paragraph,
     line_count: usize,
@@ -1682,8 +1694,9 @@ fn internal_vpos_page_break_line(
 
     let first = para.line_segs.first()?;
     let sample16_tail = is_sample16_integrated_db_cluster_tail_paragraph(para);
-    let hwp3_text_rewind =
-        hwp3_lineseg_source && para.controls.is_empty() && para_has_visible_text(para);
+    let hwp3_text_rewind = hwp3_lineseg_source
+        && hwp3_text_rewind_controls_are_inline_hyperlinks(para)
+        && para_has_visible_text(para);
 
     // [Issue #2006] 빈-텍스트 문단에 전면(full-page) tac 이미지가 다수 스택된 경우
     // (예: 1790387 PrEP 보고서 pi=367, tac 그림 2장 각 lh≈900px, vpos=0..0), 한글은

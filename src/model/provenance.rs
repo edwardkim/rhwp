@@ -48,6 +48,7 @@ pub struct SourceProvenance {
 pub struct LayoutCompatibilityProfile {
     hwp3_layout: bool,
     hwp3_native_layout: bool,
+    hwp3_password_layout: bool,
     hwpx_stored_layout: bool,
     hwp5_origin_hwpx: bool,
     native_hwp5_layout: bool,
@@ -64,6 +65,7 @@ impl LayoutCompatibilityProfile {
         Self {
             hwp3_layout,
             hwp3_native_layout,
+            hwp3_password_layout: false,
             hwpx_stored_layout,
             hwp5_origin_hwpx,
             native_hwp5_layout,
@@ -80,6 +82,24 @@ impl LayoutCompatibilityProfile {
     /// 계약 분기. 기존 `is_hwp3_source` 동치.
     pub fn hwp3_native_layout(&self) -> bool {
         self.hwp3_native_layout
+    }
+
+    /// 원본 HWP3가 비밀번호로 복호화된 문서인지 여부.
+    ///
+    /// 일부 HWP3 암호 문서는 일반 HWP3와 다른 저장 line-segment 계약을 쓴다.
+    /// 그 보정은 원본 암호 상태가 확인된 문서에만 적용해야 일반 HWP3의 흐름을
+    /// 바꾸지 않는다.
+    pub fn hwp3_password_layout(&self) -> bool {
+        self.hwp3_password_layout
+    }
+
+    /// 원본 암호 HWP3 전용 레이아웃 계약을 표시한다.
+    ///
+    /// `Document::layout_profile`만 이 값을 유도한다. 별도 렌더러 단위 테스트는
+    /// 기존 기본값(false)을 유지한다.
+    pub(crate) fn with_hwp3_password_layout(mut self, enabled: bool) -> Self {
+        self.hwp3_password_layout = enabled;
+        self
     }
 
     /// 저장 lineseg 를 HWPX 시멘틱으로 해석할지 여부(RowBreak 분할 tolerance

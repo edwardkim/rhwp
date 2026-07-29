@@ -489,8 +489,10 @@ export class CompareResultWindow {
       const pageIdx = ea.pageIndex;
       const draw = (): void => {
         try {
-          canvas.width = Math.max(1, Math.floor(info.width * scale));
-          canvas.height = Math.max(1, Math.floor(info.height * scale));
+          // renderPageToCanvas의 bitmap 경계는 올림이다. 비교 창도 같은 규칙을
+          // 써야 분수 페이지 크기에서 우·하단 픽셀이 잘리지 않는다.
+          canvas.width = Math.max(1, Math.ceil(info.width * scale));
+          canvas.height = Math.max(1, Math.ceil(info.height * scale));
           wasm.renderPageToCanvasFiltered(pageIdx, canvas, scale, 'all');
           const locShort = formatParagraphLocationForSide(item, side);
           const pageLine = `${ea.pageIndex + 1}쪽`;
@@ -523,4 +525,3 @@ export class CompareResultWindow {
   }
 
 }
-

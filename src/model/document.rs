@@ -304,6 +304,9 @@ impl Document {
                 && !self.provenance.hwp3_lineage
                 && !self.provenance.hwpx_lineage,
         )
+        .with_hwp3_password_layout(
+            self.provenance.format == SourceFormat::Hwp3 && self.header.encrypted,
+        )
     }
 
     /// 외부 이미지 binDataId가 이미 로드되었는지 확인한다.
@@ -628,6 +631,30 @@ mod tests {
             assert_eq!(legacy, refactored, "{format:?}/{lineage}/{major}");
             assert_eq!(refactored, expected, "{format:?}/{lineage}/{major}");
         }
+    }
+
+    #[test]
+    fn hwp3_password_layout_requires_native_hwp3_and_encrypted_origin() {
+        use crate::model::provenance::SourceFormat;
+
+        let mut hwp3 = Document::default();
+        hwp3.provenance.format = SourceFormat::Hwp3;
+        assert!(
+            !hwp3.layout_profile().hwp3_password_layout(),
+            "평문 HWP3에는 암호 원본 전용 레이아웃 계약을 적용하지 않는다"
+        );
+
+        hwp3.header.encrypted = true;
+        assert!(
+            hwp3.layout_profile().hwp3_password_layout(),
+            "복호화 뒤에도 보존한 HWP3 암호 플래그가 레이아웃 계약을 선택한다"
+        );
+
+        hwp3.provenance.format = SourceFormat::Hwpx;
+        assert!(
+            !hwp3.layout_profile().hwp3_password_layout(),
+            "HWPX 암호 문서는 HWP3 전용 계약을 사용하지 않는다"
+        );
     }
 
     #[test]

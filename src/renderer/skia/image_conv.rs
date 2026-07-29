@@ -61,6 +61,8 @@ pub fn draw_svg_fragment(
         None,
         None,
         ImageEffect::RealPic,
+        0,
+        0,
         sampling,
     )
 }
@@ -77,6 +79,8 @@ pub fn draw_image_bytes(
     crop: Option<(i32, i32, i32, i32)>,
     crop_reference_size: Option<(u32, u32)>,
     effect: ImageEffect,
+    brightness: i8,
+    contrast: i8,
     sampling: ImageSampling,
 ) -> bool {
     let is_valid_destination_rect = |x: f32, y: f32, width: f32, height: f32| {
@@ -107,6 +111,20 @@ pub fn draw_image_bytes(
         ImageEffect::GrayScale => Some(grayscale_filter(1.0, 0.0)),
         ImageEffect::BlackWhite => Some(grayscale_filter(255.0, -127.5)),
         ImageEffect::Pattern8x8 => Some(grayscale_filter(1.0, 0.0)),
+    };
+    let brightness_contrast_filter = |brightness: i8, contrast: i8| {
+        let brightness = brightness.clamp(-100, 100) as f32 / 100.0;
+        let slope = (100.0 + contrast.clamp(-100, 100) as f32) / 100.0;
+        // Skia color-matrix의 translation 열은 0..255 색상 범위를 쓴다.
+        // SVG filter의 정규화된 intercept와 동일한 색조가 되도록 변환한다.
+        let intercept = ((0.5 - 0.5 * slope) + brightness) * 255.0;
+        color_filters::matrix_row_major(
+            &[
+                slope, 0.0, 0.0, 0.0, intercept, 0.0, slope, 0.0, 0.0, intercept, 0.0, 0.0, slope,
+                0.0, intercept, 0.0, 0.0, 0.0, 1.0, 0.0,
+            ],
+            None,
+        )
     };
     let resolve_image_placement = |fill_mode: ImageFillMode,
                                    x: f32,
@@ -179,7 +197,16 @@ pub fn draw_image_bytes(
     let dst = Rect::from_xywh(x, y, width, height);
     let mut paint = Paint::default();
     paint.set_anti_alias(true);
-    if let Some(color_filter) = image_effect_filter(effect) {
+    let effect_filter = image_effect_filter(effect);
+    let adjustment_filter = (brightness != 0 || contrast != 0)
+        .then(|| brightness_contrast_filter(brightness, contrast));
+    let color_filter = match (effect_filter, adjustment_filter) {
+        (Some(effect), Some(adjustment)) => color_filters::compose(adjustment, effect),
+        (Some(effect), None) => Some(effect),
+        (None, Some(adjustment)) => Some(adjustment),
+        (None, None) => None,
+    };
+    if let Some(color_filter) = color_filter {
         paint.set_color_filter(color_filter);
     }
 

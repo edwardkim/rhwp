@@ -117,6 +117,14 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
     if (0x36E7..=0x36F0).contains(&ch) {
         return char::from_u32(0x2460 + (ch - 0x36E7) as u32);
     }
+    // `한글 97 안내문` HWP3 원본의 머리말 회사명 graphic char 여섯 글자.
+    // HWP3 암호 fixture의 원시 값 0x37C0..=0x37C5와, 같은 문서의 HWPX
+    // 변환본 U+F03EF..=U+F03F4 및 Hancom PDF의 "한글과컴퓨터"를 대조해
+    // 확정했다. 렌더러의 공통 한컴 PUA 표가 표시 문자열을 담당하므로 여기서는
+    // 해당 PUA를 보존한다.
+    if (0x37C0..=0x37C5).contains(&ch) {
+        return char::from_u32(0xF03EF + (ch - 0x37C0) as u32);
+    }
     let codepoint: u32 = match ch {
         0x0081 => 0x201C,  // 왼쪽 큰따옴표
         0x0082 => 0x201D,  // 오른쪽 큰따옴표
@@ -160,5 +168,14 @@ mod tests {
     fn decode_johab_araea_preserves_legacy_jamo_sequence() {
         // HWP3 fixture의 첫 글자. 한컴 HWPX 변환본은 "ᄒᆞᆫ"으로 보존한다.
         assert_eq!(decode_johab_araea_jamo(0xD3C5), Some(('ᄒ', 'ᆞ', Some('ᆫ'))));
+    }
+
+    #[test]
+    fn decode_hwp3_company_graphics_to_the_common_hancom_pua() {
+        let decoded: String = (0x37C0..=0x37C5).map(decode_johab).collect();
+        assert_eq!(
+            decoded,
+            "\u{F03EF}\u{F03F0}\u{F03F1}\u{F03F2}\u{F03F3}\u{F03F4}"
+        );
     }
 }

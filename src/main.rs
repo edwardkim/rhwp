@@ -8002,18 +8002,29 @@ fn ir_diff(args: &[String]) -> i32 {
         }
     };
 
-    let doc_a = match rhwp::parser::parse_document(&data_a) {
+    // 일반 열기·내보내기 명령과 동일하게 전역 --password/--password-stdin을
+    // 적용한다. 종전에는 ir-diff만 parse_document를 직접 호출해, 암호 문서가
+    // 비교 대상이면 복호화 지원이 있어도 EncryptedDocument로 즉시 종료했다.
+    // 비암호 문서는 parse_document_with_password가 비밀번호를 무시하므로, 암호/
+    // 평문 counterpart 비교에도 하나의 입력 경로를 사용할 수 있다.
+    let password = cli_password();
+    let parse_for_ir_diff = |data: &[u8]| match password.as_deref() {
+        Some(password) => rhwp::parser::parse_document_with_password(data, password.as_bytes()),
+        None => rhwp::parser::parse_document(data),
+    };
+
+    let doc_a = match parse_for_ir_diff(&data_a) {
         Ok(d) => d,
         Err(e) => {
-            eprintln!("오류: {} 파싱 실패: {:?}", file_a, e);
-            return EXIT_RUNTIME;
+            eprintln!("오류: {} 파싱 실패", file_a);
+            return classify_hwp_error(&e.to_string()).report();
         }
     };
-    let doc_b = match rhwp::parser::parse_document(&data_b) {
+    let doc_b = match parse_for_ir_diff(&data_b) {
         Ok(d) => d,
         Err(e) => {
-            eprintln!("오류: {} 파싱 실패: {:?}", file_b, e);
-            return EXIT_RUNTIME;
+            eprintln!("오류: {} 파싱 실패", file_b);
+            return classify_hwp_error(&e.to_string()).report();
         }
     };
 

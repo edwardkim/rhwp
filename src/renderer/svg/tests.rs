@@ -488,8 +488,36 @@ fn test_page_background_image_non_realpic_watermark_uses_legacy_opacity() {
         "non-RealPic PageBackground watermark should keep the image effect filter: {output}"
     );
     assert!(
-        output.contains("rhwp-img-bc-b-50c70"),
-        "non-RealPic PageBackground watermark should keep the brightness/contrast filter: {output}"
+        output.contains("rhwp-img-bc-b70c-50"),
+        "non-RealPic PageBackground watermark should keep the display brightness/contrast filter: {output}"
+    );
+}
+
+#[test]
+fn test_page_background_image_uses_display_brightness_contrast_order() {
+    let png = bmp_bytes_to_png_bytes(&make_minimal_bmp_2x2()).expect("BMP->PNG 변환 실패");
+    let image = PageBackgroundImage {
+        data: png,
+        fill_mode: ImageFillMode::Center,
+        // HWP5 공통 IR의 raw storage order. 화면에서는 bright=50, contrast=-15다.
+        brightness: -15,
+        contrast: 50,
+        effect: crate::model::image::ImageEffect::RealPic,
+    };
+    let bbox = BoundingBox::new(10.0, 20.0, 100.0, 50.0);
+    let mut renderer = SvgRenderer::new();
+    renderer.begin_page(200.0, 100.0);
+
+    renderer.render_page_background_image(&image, &bbox);
+
+    let output = renderer.output();
+    assert!(
+        output.contains("rhwp-img-bc-b50c-15"),
+        "쪽 배경은 raw ImageFill 순서가 아닌 화면 bright/contrast를 써야 한다: {output}"
+    );
+    assert!(
+        !output.contains("rhwp-img-bc-b-15c50"),
+        "raw 저장 순서를 화면 필터에 직접 넘기면 안 된다: {output}"
     );
 }
 

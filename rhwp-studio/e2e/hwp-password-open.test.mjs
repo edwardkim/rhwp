@@ -20,6 +20,7 @@ const FIXTURES = [
     name: 'HWP3 압축 비밀번호 문서',
     path: path.join(REPO_ROOT, 'samples', 'HWP3-password-123456.hwp'),
     pageCount: 24,
+    canvasAt144Dpi: { width: 1191, height: 1684 },
   },
 ];
 
@@ -121,5 +122,21 @@ runTest('Issue #3474/#3481 HWP3/HWP5 암호 문서 열기', async ({ page }) => 
     assert(finalState.fileName.endsWith('.hwp') && finalState.dialogGone, '성공 뒤 입력 대화상자를 제거한다');
     assert(!finalState.localHasPassword && !finalState.sessionHasPassword,
       '암호를 local/session storage에 보관하지 않는다');
+
+    if (fixture.canvasAt144Dpi) {
+      const canvasExtent = await page.evaluate(() => {
+        const doc = window.__wasm?.doc;
+        if (!doc || typeof doc.renderPageToCanvas !== 'function') {
+          throw new Error('WASM Canvas 렌더러를 찾을 수 없습니다');
+        }
+        const canvas = document.createElement('canvas');
+        // Studio의 CSS 좌표는 96dpi이므로 1.5x는 PDF 대조의 144dpi bitmap이다.
+        doc.renderPageToCanvas(0, canvas, 1.5);
+        return { width: canvas.width, height: canvas.height };
+      });
+      assert(canvasExtent.width === fixture.canvasAt144Dpi.width
+        && canvasExtent.height === fixture.canvasAt144Dpi.height,
+      `${fixture.name} 144dpi Canvas가 A4 우·하단 경계를 자르지 않는다`);
+    }
   }
 });

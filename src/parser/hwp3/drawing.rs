@@ -670,6 +670,29 @@ fn parse_shape_list(
     Ok(list)
 }
 
+/// HWP3 사각형의 무색·무늬 없음 sentinel을 채우기 없음으로 판정한다.
+///
+/// `fill_color`의 high byte는 표 69의 RGB 영역이 아니다. 실제 HWP3 원본에서
+/// 사각형의 `0x10000000`은 테두리만 남기는 no-fill 표식으로 사용된다. 반면 같은
+/// 표식이 글상자 기본 스타일에도 나타나므로 개체 종류와 무늬/그라데이션 부재까지
+/// 함께 확인한다.
+fn hwp3_rectangle_uses_no_fill_marker(header: &Hwp3DrawingObjectCommonHeader) -> bool {
+    header.object_type == 2
+        && header.basic_attr.fill_color == 0x1000_0000
+        && header.basic_attr.pattern_type == 0
+        && header.gradient_attr.is_none()
+}
+
+/// HWP3 선 색상의 무색 sentinel을 테두리 없음으로 판정한다.
+///
+/// `0x10000000`은 검정 RGB 값이 아니다. HWP3 원본의 글자처럼 취급된 사각형과
+/// 여백 구분선에서 이 값은 "선 없음"을 뜻한다. 기존의 `line_width > 0` 보정이
+/// 이 sentinel도 검정 실선으로 승격해 한컴/HWP5 변환본에는 없는 테두리를 그렸다.
+/// 실제 검정은 `0x00000000`이므로 구분할 수 있다.
+fn hwp3_uses_no_line_marker(header: &Hwp3DrawingObjectCommonHeader) -> bool {
+    header.basic_attr.line_color == 0x1000_0000
+}
+
 fn map_to_shape_object(
     raw: Hwp3DrawingObject,
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
@@ -704,6 +727,7 @@ fn map_to_shape_object(
                     0,            // body_left_hu: 드로잉 내부 텍스트, wrap zone 불필요
                     i32::MAX / 2, // column_width_hu
                     0,            // body_height_hu: 도형 내부 텍스트는 본문 페이지 분할 제외
+                    false,        // 복호화 원본의 본문 Square-wrap 계약은 적용하지 않음
                 )?;
                 parsed_paragraphs = paras;
             }
@@ -776,7 +800,10 @@ fn map_to_shape_object(
         // 상 존재하나 한컴 동작은 일관 solid — 작업지시자 한컴 한글 정답지 시각
         // 정답 단언. HWP3 sample 분포 sweep: line_style=2 는 sample16 한정 (다른
         // fixture: 0/1 만), narrow fix 회귀 risk 0. HWP3 한정 (HWP5/HWPX 무영향).
-        attr: {
+        attr: if hwp3_uses_no_line_marker(&header) {
+            // line_width가 남아 있어도 HWP3 무색 sentinel은 선을 그리지 않는다.
+            0
+        } else {
             let raw_attr = header.basic_attr.line_style as u32;
             let line_type = raw_attr & 0x3F;
             if line_type == 0 && header.basic_attr.line_width > 0 {
@@ -791,56 +818,61 @@ fn map_to_shape_object(
         outline_style: 0,
     };
 
-    // [Task #877 Stage 4] HWP3 fill_color 의 high byte (bit 24~31) 가 0 이 아니면
-    // 한컴 HWP3 의 "기본값 없음/투명" flag 로 추정 (sample16 paragraph 5/131/393:
-    // raw 0x10000000 = bit 28 set + RGB 0). rhwp 가 raw 그대로 ColorRef 로 사용
-    // → 거의 검정 fill (alpha=0x10) → 외곽선이 fill 위에 안 보이는 회귀.
-    //
-    // 해결: RGB=0 + high flag set 인 경우 흰색 fill 로 대체. 한컴 viewer 의 실제
-    // 표시 (연한 보라 채우기) 와 100% 정합은 아니나 외곽선 가시화로 본질 표현.
-    let raw_fc = header.basic_attr.fill_color;
-    let fill_flag = (raw_fc >> 24) & 0xFF;
-    let fill_rgb = raw_fc & 0x00FFFFFF;
-    let effective_rgb = if fill_flag != 0 && fill_rgb == 0 {
-        0x00FFFFFF
+    let fill = if hwp3_rectangle_uses_no_fill_marker(&header) {
+        // HWP3 사각형의 `0x10000000`은 RGB가 아니라 "채우기 없음" sentinel이다.
+        // 이 값을 흰색 단색 채움으로 대체하면, 아이콘 위에 놓인 테두리 사각형이
+        // 아이콘을 가려 버린다. 한컴 HWP5 변환본도 같은 사각형을 Fill=None으로
+        // 기록한다. 글상자(type 6)는 같은 high byte를 서로 다른 기본 스타일에
+        // 사용하므로, 사각형·무늬 없음·비그라데이션 조합으로 한정한다.
+        Fill::default()
     } else {
-        fill_rgb
-    };
-    // [Task #1008 격차 A] HWP3 gradient_attr 이 파싱된 경우 IR Fill.gradient 에 매핑.
-    // HWP3 raw stream 의 Hwp3DrawingObjectGradientAttr (drawing.rs:149~170) 은 이미
-    // basic_attr.has_gradient() 시 파싱되어 header.gradient_attr 에 보존되지만, 종전
-    // 코드는 fill_type 을 항상 Solid 로 하드코딩하여 데이터가 무시되었음. HWP5 의
-    // doc_info.rs:404 매핑과 동일 contract 로 IR 주입 (step→blur, 2-stop colors,
-    // positions=vec![] → renderer 가 균등 분포).
-    let (fill_type, gradient) = if let Some(g) = header.gradient_attr.as_ref() {
-        let grad = crate::model::style::GradientFill {
-            gradient_type: g.kind as i16,
-            angle: g.angle as i16,
-            center_x: g.center_x as i16,
-            center_y: g.center_y as i16,
-            blur: g.step as i16,
-            step_center: 0,
-            colors: vec![g.start_color, g.end_color],
-            positions: vec![],
+        let raw_fc = header.basic_attr.fill_color;
+        let fill_flag = (raw_fc >> 24) & 0xFF;
+        let fill_rgb = raw_fc & 0x00FFFFFF;
+        // HWP3 글상자 등은 high-byte marker와 RGB=0을 기본 흰색 면으로 사용한다.
+        // 사각형의 no-fill marker만 위 분기에서 분리하고, 기존 가시성 보정은 유지한다.
+        let effective_rgb = if fill_flag != 0 && fill_rgb == 0 {
+            0x00FFFFFF
+        } else {
+            fill_rgb
         };
-        (crate::model::style::FillType::Gradient, Some(grad))
-    } else {
-        (crate::model::style::FillType::Solid, None)
-    };
-    let fill = Fill {
-        fill_type,
-        solid: Some(crate::model::style::SolidFill {
-            background_color: effective_rgb,
-            pattern_color: header.basic_attr.pattern_color,
-            pattern_type: header.basic_attr.pattern_type as i32,
-        }),
-        gradient,
-        image: None,
-        // [Task #877 Stage 4] 한컴 호환 alpha convention: 0=불투명, 255=완전 투명.
-        // (renderer/layout/utils.rs:199 의 opacity 식: opacity = 1 - alpha/255)
-        // 기존 alpha=255 → opacity=0 → SVG <rect opacity="0.000"> 완전 투명 회귀.
-        // HWP3 raw 에는 alpha 정보 없음, 한컴 viewer 의 default = 불투명 = alpha 0.
-        alpha: 0,
+
+        // [Task #1008 격차 A] HWP3 gradient_attr 이 파싱된 경우 IR Fill.gradient 에 매핑.
+        // HWP3 raw stream 의 Hwp3DrawingObjectGradientAttr (drawing.rs:149~170) 은 이미
+        // basic_attr.has_gradient() 시 파싱되어 header.gradient_attr 에 보존되지만, 종전
+        // 코드는 fill_type 을 항상 Solid 로 하드코딩하여 데이터가 무시되었음. HWP5 의
+        // doc_info.rs:404 매핑과 동일 contract 로 IR 주입 (step→blur, 2-stop colors,
+        // positions=vec![] → renderer 가 균등 분포).
+        let (fill_type, gradient) = if let Some(g) = header.gradient_attr.as_ref() {
+            let grad = crate::model::style::GradientFill {
+                gradient_type: g.kind as i16,
+                angle: g.angle as i16,
+                center_x: g.center_x as i16,
+                center_y: g.center_y as i16,
+                blur: g.step as i16,
+                step_center: 0,
+                colors: vec![g.start_color, g.end_color],
+                positions: vec![],
+            };
+            (crate::model::style::FillType::Gradient, Some(grad))
+        } else {
+            (crate::model::style::FillType::Solid, None)
+        };
+        Fill {
+            fill_type,
+            solid: Some(crate::model::style::SolidFill {
+                background_color: effective_rgb,
+                pattern_color: header.basic_attr.pattern_color,
+                pattern_type: header.basic_attr.pattern_type as i32,
+            }),
+            gradient,
+            image: None,
+            // [Task #877 Stage 4] 한컴 호환 alpha convention: 0=불투명, 255=완전 투명.
+            // (renderer/layout/utils.rs:199 의 opacity 식: opacity = 1 - alpha/255)
+            // 기존 alpha=255 → opacity=0 → SVG <rect opacity="0.000"> 완전 투명 회귀.
+            // HWP3 raw 에는 alpha 정보 없음, 한컴 viewer 의 default = 불투명 = alpha 0.
+            alpha: 0,
+        }
     };
 
     let text_box = if (header.basic_attr.options & (1 << 19)) != 0 || !parsed_paragraphs.is_empty()
@@ -904,6 +936,56 @@ fn map_to_shape_object(
 mod modified_arc_overread_tests {
     use super::*;
     use std::io::Cursor;
+
+    #[test]
+    fn rectangle_no_fill_marker_does_not_apply_to_text_boxes() {
+        let rectangle = Hwp3DrawingObjectCommonHeader {
+            object_type: 2,
+            basic_attr: Hwp3DrawingObjectBasicAttr {
+                fill_color: 0x1000_0000,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert!(hwp3_rectangle_uses_no_fill_marker(&rectangle));
+
+        let text_box = Hwp3DrawingObjectCommonHeader {
+            object_type: 6,
+            basic_attr: Hwp3DrawingObjectBasicAttr {
+                fill_color: 0x1000_0000,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert!(
+            !hwp3_rectangle_uses_no_fill_marker(&text_box),
+            "글상자의 동일 marker는 기본 스타일이지 사각형 no-fill이 아님"
+        );
+    }
+
+    #[test]
+    fn no_line_marker_is_distinct_from_black_line() {
+        let no_line = Hwp3DrawingObjectCommonHeader {
+            basic_attr: Hwp3DrawingObjectBasicAttr {
+                line_color: 0x1000_0000,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert!(hwp3_uses_no_line_marker(&no_line));
+
+        let black_line = Hwp3DrawingObjectCommonHeader {
+            basic_attr: Hwp3DrawingObjectBasicAttr {
+                line_color: 0x0000_0000,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert!(
+            !hwp3_uses_no_line_marker(&black_line),
+            "실제 검정 선은 sentinel이 아니므로 기존 line-style 보정을 유지한다"
+        );
+    }
 
     // [Task #2824] 변형된 호(object_type=9)는 스펙 11.3.4절에 따라 공통 헤더
     // 외에 추가 세부 정보가 전혀 없어야 한다. 수정 전 코드는 존재하지 않는

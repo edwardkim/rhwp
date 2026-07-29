@@ -1653,6 +1653,15 @@ fn test_normalize_canvas_scale_clamps_request_and_canvas_extent() {
 }
 
 #[test]
+fn test_scaled_canvas_extent_keeps_fractional_a4_edge() {
+    // A4를 CSS 96dpi 좌표로 환산한 뒤 144dpi(1.5x) bitmap으로 옮기는 경계값이다.
+    // `as u32` 절사 회귀 시 각각 1190 × 1683이 되어 마지막 물리 픽셀이 사라진다.
+    assert_eq!(scaled_canvas_extent(793.700_787, 1.5), 1191);
+    assert_eq!(scaled_canvas_extent(1_122.519_685, 1.5), 1684);
+    assert_eq!(scaled_canvas_extent(16_384.25, 1.0), 16_384);
+}
+
+#[test]
 fn test_document_with_paragraphs() {
     use crate::model::document::SectionDef;
     use crate::model::page::PageDef;

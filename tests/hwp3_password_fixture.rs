@@ -10,6 +10,8 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
+use rhwp::model::control::Control;
+use rhwp::model::style::FillType;
 use rhwp::parser::{parse_document, ParseError};
 use rhwp::{parse_document_with_password, wasm_api::HwpDocument};
 
@@ -87,7 +89,62 @@ fn actual_hwp3_password_fixture_requires_the_password_and_preserves_structure() 
             .sum::<usize>(),
         365
     );
-    assert_eq!(document.bin_data_content.len(), 2);
+    // 추가정보 블록 #6의 쪽 배경 BMP까지 BinData로 복원한다. 이전에는 이
+    // 배경을 버려 HWP3 원본만 본문 중간의 큰 색상 그림이 사라졌다.
+    assert_eq!(document.bin_data_content.len(), 3);
+    let page_border_fill_id = document.sections[0]
+        .section_def
+        .page_border_fill
+        .border_fill_id;
+    assert!(
+        page_border_fill_id > 0,
+        "HWP3 쪽 배경 BorderFill을 연결해야 함"
+    );
+    let page_border_fill = &document.doc_info.border_fills[(page_border_fill_id - 1) as usize];
+    let page_background = page_border_fill
+        .fill
+        .image
+        .as_ref()
+        .expect("HWP3 쪽 배경 이미지 채우기를 복원해야 함");
+    assert_eq!(
+        page_background.fill_mode,
+        rhwp::model::style::ImageFillMode::Center
+    );
+    assert_eq!(
+        (page_background.brightness, page_background.contrast),
+        (-15, 50)
+    );
+    assert_eq!(
+        page_background.effect, 0,
+        "원본 REAL_PIC 효과를 보존해야 함"
+    );
+    let background_bin = &document.bin_data_content[(page_background.bin_data_id - 1) as usize];
+    assert_eq!(background_bin.extension, "bmp");
+    assert!(
+        background_bin.data.load().starts_with(b"BM"),
+        "복원한 쪽 배경은 BMP payload여야 함"
+    );
+
+    // HWP3 원문의 본문 첫 도형은 화면에서는 U+FFFC 하나의 마커로 표현되지만,
+    // 공통 IR stream에서는 HWP5와 동일하게 8 code unit을 차지해야 한다.
+    // 그렇지 않으면 뒤에 저장된 HWP3 LineInfo.start_pos가 도형 뒤 본문에서
+    // 7 unit 앞당겨져 줄 경계·글자 모양이 어긋난다.
+    let body_with_floating_shape = document.sections[0]
+        .paragraphs
+        .iter()
+        .find(|paragraph| paragraph.text.contains("감사드립니다. \u{FFFC}저희"))
+        .expect("첫 본문 떠다니는 도형 문단을 찾아야 함");
+    let marker_index = body_with_floating_shape
+        .text
+        .chars()
+        .position(|ch| ch == '\u{FFFC}')
+        .expect("떠다니는 도형 마커를 찾아야 함");
+    assert_eq!(
+        body_with_floating_shape.char_offsets[marker_index + 1]
+            - body_with_floating_shape.char_offsets[marker_index],
+        8,
+        "HWP3 가시 개체 컨트롤은 IR stream에서 8 code unit을 차지해야 함"
+    );
 
     let comparison =
         parse_document(&comparison_hwpx_bytes()).expect("비교용 HWPX fixture를 열어야 함");
@@ -107,6 +164,29 @@ fn actual_hwp3_password_fixture_requires_the_password_and_preserves_structure() 
     assert!(hwp3_text.contains("ᄒᆞᆫ글 97 안내문"));
     assert!(hwpx_text.contains("ᄒᆞᆫ글\u{2007}97 안내문"));
 
+    // HWP3 원본 머리말의 0x37C0..=0x37C5 graphic char는 HWPX 변환본과
+    // 같은 한컴 PUA로 보존해야 한다. 이후 렌더러 공통 표가 이를
+    // "한글과컴퓨터"로 투영한다. 이 회귀가 없으면 HWP3만 머리말 좌측이 빈다.
+    let hwp3_header_text: String = document.sections[0]
+        .paragraphs
+        .iter()
+        .flat_map(|paragraph| paragraph.controls.iter())
+        .filter_map(|control| match control {
+            rhwp::model::control::Control::Header(header) => Some(
+                header
+                    .paragraphs
+                    .iter()
+                    .map(|paragraph| paragraph.text.as_str())
+                    .collect::<String>(),
+            ),
+            _ => None,
+        })
+        .collect();
+    assert!(
+        hwp3_header_text.contains("\u{F03EF}\u{F03F0}\u{F03F1}\u{F03F2}\u{F03F3}\u{F03F4}"),
+        "HWP3 머리말 PUA: {hwp3_header_text:?}"
+    );
+
     let hwp_document = HwpDocument::from_bytes_with_password(&bytes, FIXTURE_PASSWORD)
         .expect("공개 HwpDocument API도 fixture를 열어야 함");
     assert_eq!(hwp_document.page_count(), 24);
@@ -124,6 +204,204 @@ fn actual_hwp3_password_fixture_requires_the_password_and_preserves_structure() 
             .map(|section| section.paragraphs.len())
             .sum::<usize>(),
         365
+    );
+}
+
+#[test]
+fn actual_hwp3_password_fixture_keeps_white_shaded_table_cells_white() {
+    let document = parse_document_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+        .expect("실제 HWP3 fixture를 열어야 함");
+    let table = document.sections[0]
+        .paragraphs
+        .iter()
+        .flat_map(|paragraph| paragraph.controls.iter())
+        .find_map(|control| match control {
+            Control::Table(table) if table.row_count == 4 && table.col_count == 2 => {
+                Some(table.as_ref())
+            }
+            _ => None,
+        })
+        .expect("운영 체제/권장 사양 4×2 표를 찾아야 함");
+
+    for cell in table.cells.iter().filter(|cell| cell.col == 1) {
+        let fill = &document.doc_info.border_fills[(cell.border_fill_id - 1) as usize].fill;
+        assert_eq!(
+            fill.fill_type,
+            FillType::Solid,
+            "우측 셀은 단색 채움이어야 함"
+        );
+        assert_eq!(
+            fill.solid.expect("우측 셀 단색 채움").background_color,
+            0x00FF_FFFF,
+            "HWP3 표의 색상=흰색·음영=100%는 검정이 아니라 흰 배경이어야 함"
+        );
+    }
+}
+
+#[test]
+fn actual_hwp3_password_fixture_anchors_inline_folder_table_to_paragraph() {
+    let document = parse_document_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+        .expect("실제 HWP3 fixture를 열어야 함");
+    let table = document.sections[0].paragraphs[30]
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            Control::Table(table) if table.row_count == 1 && table.col_count == 4 => {
+                Some(table.as_ref())
+            }
+            _ => None,
+        })
+        .expect("폴더 구성 1×4 표를 찾아야 함");
+
+    assert!(
+        table.common.treat_as_char,
+        "HWP3 ref_pos=0 표는 inline이어야 함"
+    );
+    assert_eq!(
+        table.common.horz_rel_to,
+        rhwp::model::shape::HorzRelTo::Para,
+        "inline 표의 수평 기준은 종이가 아니라 문단이어야 함"
+    );
+    assert_eq!(
+        table.common.vert_rel_to,
+        rhwp::model::shape::VertRelTo::Para,
+        "inline 표의 수직 기준은 종이가 아니라 문단이어야 함"
+    );
+}
+
+#[test]
+fn actual_hwp3_password_fixture_keeps_icon_outline_at_column_origin_without_fill() {
+    let document = parse_document_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+        .expect("실제 HWP3 fixture를 열어야 함");
+    let paragraph = &document.sections[0].paragraphs[8];
+
+    let picture = paragraph
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            Control::Picture(picture) => Some(picture.as_ref()),
+            _ => None,
+        })
+        .expect("아이콘 그림을 찾아야 함");
+    assert_eq!(
+        picture.common.horz_rel_to,
+        rhwp::model::shape::HorzRelTo::Column,
+        "HWP3 ref_pos=1 그림은 문단 여백을 중복 적용하지 않는 단 기준이어야 함"
+    );
+
+    let rectangle = paragraph
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            Control::Shape(shape) => match shape.as_ref() {
+                rhwp::model::shape::ShapeObject::Rectangle(rectangle) => Some(rectangle),
+                _ => None,
+            },
+            _ => None,
+        })
+        .expect("아이콘 테두리 사각형을 찾아야 함");
+    assert_eq!(
+        rectangle.common.horz_rel_to,
+        rhwp::model::shape::HorzRelTo::Column,
+        "테두리도 그림과 같은 단 기준 원점이어야 함"
+    );
+    assert_eq!(
+        rectangle.drawing.fill.fill_type,
+        FillType::None,
+        "0x10000000 HWP3 사각형 marker는 아이콘을 덮는 흰 채움이 아니라 no-fill이어야 함"
+    );
+    assert!(
+        rectangle.drawing.fill.solid.is_none(),
+        "no-fill 사각형은 단색 채움 데이터를 만들면 안 됨"
+    );
+    assert_eq!(
+        paragraph
+            .line_segs
+            .iter()
+            .take(2)
+            .map(|line| (line.column_start, line.segment_width))
+            .collect::<Vec<_>>(),
+        vec![(3500, 36520), (3500, 36520)],
+        "Square 그림 옆 첫 두 줄은 한컴 HWP5 변환본과 같은 cs/sw를 가져야 함"
+    );
+
+    let heading_rectangles = document.sections[0].paragraphs[10]
+        .controls
+        .iter()
+        .filter_map(|control| match control {
+            Control::Shape(shape) => match shape.as_ref() {
+                rhwp::model::shape::ShapeObject::Rectangle(rectangle) => Some(rectangle),
+                _ => None,
+            },
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        heading_rectangles.len(),
+        2,
+        "차례 제목 양쪽의 inline 사각형 두 개를 찾아야 함"
+    );
+    assert!(
+        heading_rectangles
+            .iter()
+            .all(|rectangle| rectangle.drawing.border_line.attr & 0x3F == 0),
+        "0x10000000 선색 marker는 검정 테두리가 아니라 no-line이어야 함"
+    );
+}
+
+#[test]
+fn actual_hwp3_password_fixture_keeps_regular_page_background_opaque() {
+    let mut document = HwpDocument::from_bytes_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+        .expect("실제 HWP3 fixture를 열어야 함");
+    let svg = document
+        .render_page_svg(0)
+        .expect("첫 쪽 SVG를 렌더해야 함");
+
+    assert!(
+        svg.contains("rhwp-img-bc-b50c-15"),
+        "배경의 HWP 밝기 50·대비 -15 색조는 유지해야 함"
+    );
+    assert!(
+        !svg.contains("<g opacity=\"0.17\">"),
+        "일반 쪽 배경의 밝기·대비를 legacy watermark opacity로 처리하면 안 됨"
+    );
+}
+
+#[test]
+fn actual_hwp3_password_fixture_normalizes_hanging_indent_first_line_margin() {
+    let document = parse_document_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+        .expect("실제 HWP3 fixture를 열어야 함");
+    let paragraph = &document.sections[0].paragraphs[32];
+    assert!(paragraph.text.starts_with("\\HNC\t\t\t"));
+
+    let para_shape = &document.doc_info.para_shapes[paragraph.para_shape_id as usize];
+    assert_eq!(
+        para_shape.margin_left, 7000,
+        "HWP3 음수 들여쓰기의 첫 줄은 raw left_margin+indent 기준이어야 함"
+    );
+    assert_eq!(
+        para_shape.indent, -16456,
+        "내어쓰기 폭은 원시 HWP3 값을 그대로 보존해야 함"
+    );
+}
+
+#[test]
+fn actual_hwp3_password_fixture_keeps_hyperlink_internal_vpos_reset_on_next_page() {
+    let document = HwpDocument::from_bytes_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+        .expect("실제 HWP3 fixture를 열어야 함");
+
+    // 문단 258은 hyperlink marker 하나를 포함하지만, 저장 LINE_SEG는 두 번째 줄을
+    // 다음 쪽 상단(vpos=0)으로 명시한다. marker를 flow 개체처럼 취급하면 17쪽에
+    // 두 줄을 과배치하고 18쪽 첫 줄이 사라진다.
+    let page_17 = document.dump_page_items(Some(16));
+    let page_18 = document.dump_page_items(Some(17));
+    assert!(
+        page_17.contains("PartialParagraph  pi=258  lines=0..1"),
+        "17쪽에는 reset 전 첫 줄만 남아야 함\n--- page 17 ---\n{page_17}"
+    );
+    assert!(
+        page_18.contains("PartialParagraph  pi=258  lines=1..3"),
+        "18쪽은 hyperlink 뒤 저장 reset 줄부터 시작해야 함\n--- page 18 ---\n{page_18}"
     );
 }
 

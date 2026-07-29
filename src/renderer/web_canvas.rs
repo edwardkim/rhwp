@@ -655,7 +655,6 @@ impl WebCanvasRenderer {
         }
         if let Some(img) = &bg.image {
             let preserve_color_watermark = img.is_real_picture_watermark_tone_preset();
-            let is_watermark_image = img.is_watermark();
             let mut baked_color_watermark = false;
             let render_data: std::borrow::Cow<[u8]> = if preserve_color_watermark {
                 match crate::renderer::image_resolver::real_picture_watermark_bytes_to_hancom_tone_png_bytes(
@@ -677,12 +676,17 @@ impl WebCanvasRenderer {
                     Some(real_picture_watermark_tone_filter())
                 }
             } else {
-                compose_image_filter(img.effect, img.brightness, img.contrast)
+                let (brightness, contrast) = img.display_brightness_contrast();
+                compose_image_filter(img.effect, brightness, contrast)
             };
             if let Some(ref f) = filter_str {
                 self.ctx.set_filter(f);
             }
-            let needs_watermark_opacity = preserve_color_watermark || is_watermark_image;
+            // 일반 RealPic 쪽 배경의 밝기·대비는 색조 조정일 뿐 opacity 표식이
+            // 아니다. 다만 기존 비-RealPic 워터마크는 legacy opacity 계약을 유지한다.
+            let needs_watermark_opacity = preserve_color_watermark
+                || (!matches!(img.effect, crate::model::image::ImageEffect::RealPic)
+                    && img.is_watermark());
             if needs_watermark_opacity {
                 let opacity = if preserve_color_watermark {
                     REAL_PICTURE_WATERMARK_PAGE_OPACITY

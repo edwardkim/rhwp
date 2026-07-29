@@ -624,7 +624,9 @@ impl SkiaLayerRenderer {
                           original_size,
                           crop,
                           crop_reference_size,
-                          effect| {
+                          effect,
+                          brightness,
+                          contrast| {
             draw_image_bytes(
                 canvas,
                 data,
@@ -637,6 +639,8 @@ impl SkiaLayerRenderer {
                 crop,
                 crop_reference_size,
                 effect,
+                brightness,
+                contrast,
                 ImageSampling::linear(),
             )
         };
@@ -818,23 +822,27 @@ impl SkiaLayerRenderer {
                                 canvas.draw_rect(rect, &paint);
                             }
                             if let Some(image) = &background.image {
-                                // [Issue #1156] 워터마크(밝기·대비가 둘 다 0 이 아님)
-                                // 인 배경 이미지만 반투명 합성한다. 밝기·대비가 0/0 인
-                                // 일반 배경 이미지는 불투명 그대로 (effect 그레이스케일
-                                // 등은 draw_image 가 컬러 필터로 처리).
-                                // svg.rs/web_canvas.rs render_page_background_image 정합.
-                                let is_watermark = image.is_watermark();
-                                if is_watermark {
+                                // 일반 RealPic 쪽 배경의 밝기·대비는 색조 조정일 뿐
+                                // 워터마크 표식이 아니다. 검증된 RealPic 프리셋과 기존
+                                // 비-RealPic 워터마크만 반투명 합성한다.
+                                let preserve_color_watermark =
+                                    image.is_real_picture_watermark_tone_preset();
+                                let legacy_non_realpic_watermark = !matches!(
+                                    image.effect,
+                                    crate::model::image::ImageEffect::RealPic
+                                ) && image.is_watermark();
+                                let needs_watermark_opacity =
+                                    preserve_color_watermark || legacy_non_realpic_watermark;
+                                if needs_watermark_opacity {
                                     use crate::renderer::render_tree::{
                                         LEGACY_IMAGE_WATERMARK_OPACITY,
                                         REAL_PICTURE_WATERMARK_PAGE_OPACITY,
                                     };
-                                    let wm_opacity =
-                                        if image.is_real_picture_watermark_tone_preset() {
-                                            REAL_PICTURE_WATERMARK_PAGE_OPACITY
-                                        } else {
-                                            LEGACY_IMAGE_WATERMARK_OPACITY
-                                        };
+                                    let wm_opacity = if preserve_color_watermark {
+                                        REAL_PICTURE_WATERMARK_PAGE_OPACITY
+                                    } else {
+                                        LEGACY_IMAGE_WATERMARK_OPACITY
+                                    };
                                     let alpha = (255.0 * wm_opacity).round() as u32;
                                     canvas.save_layer_alpha(Some(rect), alpha);
                                 }
@@ -846,8 +854,18 @@ impl SkiaLayerRenderer {
                                     None,
                                     None,
                                     image.effect,
+                                    if preserve_color_watermark {
+                                        0
+                                    } else {
+                                        image.display_brightness_contrast().0
+                                    },
+                                    if preserve_color_watermark {
+                                        0
+                                    } else {
+                                        image.display_brightness_contrast().1
+                                    },
                                 );
-                                if is_watermark {
+                                if needs_watermark_opacity {
                                     canvas.restore();
                                 }
                                 if !rendered && strict_resource_failures {
@@ -1137,6 +1155,8 @@ impl SkiaLayerRenderer {
                                     image.crop,
                                     image.original_size_hu,
                                     effect,
+                                    0,
+                                    0,
                                 );
                                 if opacity < 1.0 {
                                     canvas.restore();

@@ -15,6 +15,7 @@ closes #
 - [ ] `cargo clippy -- -D warnings` 통과
 - [ ] 관련 샘플 파일로 SVG 내보내기 확인
 - [ ] 웹(WASM) 렌더링 확인 (해당하는 경우)
+- [ ] `.claude/agents/`, `.claude/skills/`, `.agents/skills/` 변경 시: [capability 카탈로그](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/agent_capability_registry.md)의 등록·검증 규칙을 반영
 
 ## 스크린샷
 

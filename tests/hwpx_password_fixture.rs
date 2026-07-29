@@ -99,6 +99,20 @@ fn actual_odf_hwpx_fixture_requires_the_password_and_matches_plain_counterpart()
         (1, 365, vec![85078, 93678, 738])
     );
     assert_eq!(document_shape(&decrypted), document_shape(&plain));
+    let page_border_fill_id = plain.sections[0]
+        .section_def
+        .page_border_fill
+        .border_fill_id;
+    let page_background = plain.doc_info.border_fills[(page_border_fill_id - 1) as usize]
+        .fill
+        .image
+        .as_ref()
+        .expect("HWPX 원본의 쪽 배경 imgBrush를 보존해야 함");
+    assert_eq!(
+        (page_background.brightness, page_background.contrast),
+        (-15, 50),
+        "header.xml의 <hc:img bright=\"50\" contrast=\"-15\">는 HWP5 공통 ImageFill 저장 순서로 정규화해야 함"
+    );
     assert!(
         decrypted.sections[0]
             .paragraphs
@@ -146,4 +160,34 @@ fn cli_password_exit_contract_uses_the_actual_odf_hwpx_fixture() {
     assert_eq!(opened.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&opened.stdout);
     assert!(stdout.contains("페이지 수: 23"), "CLI stdout: {stdout}");
+}
+
+#[test]
+fn cli_ir_diff_accepts_password_stdin_for_actual_odf_hwpx_fixture() {
+    let encrypted = fixture_path(ENCRYPTED_FIXTURE);
+    let plain = fixture_path(PLAIN_FIXTURE);
+    let encrypted = encrypted.to_str().expect("utf-8 fixture path");
+    let plain = plain.to_str().expect("utf-8 fixture path");
+
+    let output = run_with_password_stdin(
+        &["ir-diff", encrypted, plain, "--json", "--password-stdin"],
+        FIXTURE_PASSWORD,
+    );
+    assert!(
+        matches!(output.status.code(), Some(0) | Some(3)),
+        "암호 HWPX 비교는 암호 미전달 오류가 아니라 동일/차이 판정을 내야 함: status={:?}, stderr={}",
+        output.status.code(),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(
+        !String::from_utf8_lossy(&output.stderr).contains("EncryptedDocument"),
+        "ir-diff는 --password-stdin을 일반 열기 명령과 같이 적용해야 함: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let envelope: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("ir-diff --json은 판정 봉투를 출력해야 함");
+    assert!(
+        envelope.get("identical").is_some() && envelope.get("diffCount").is_some(),
+        "ir-diff JSON 계약: {envelope}"
+    );
 }

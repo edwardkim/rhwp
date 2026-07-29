@@ -1234,7 +1234,10 @@ fn parse_para_shape_switch(
                                     let val = parse_i32(&attr);
                                     if in_hwpunitchar_case {
                                         // HwpUnitChar 값은 실제 HWPUNIT(1× 스케일)이므로
-                                        // HWP 바이너리와 동일한 2× 스케일로 변환
+                                        // HWP 바이너리와 동일한 2× IR 스케일로 정규화한다.
+                                        // HWP3 암호 원본의 별도 spacing 계약은 HWP3 parser
+                                        // 안에서만 처리한다. HWPX 전체에 반감 적용하면
+                                        // 일반 HWPX 문단 흐름과 기준 HWP3 변환본이 함께 밀린다.
                                         let val2x = val * 2;
                                         match tag_name {
                                             b"left" => ps.margin_left = val2x,
@@ -1582,8 +1585,13 @@ fn parse_border_fill(
                                             _ => ImageFillMode::TileAll,
                                         };
                                     }
-                                    b"bright" => img_fill.brightness = parse_i8(&attr),
-                                    b"contrast" => img_fill.contrast = parse_i8(&attr),
+                                    // HWPX의 속성명은 HWP5 이진 FILL_INFO와 반대 순서로
+                                    // 기록된다. 공통 ImageFill은 이진 HWP5의 저장 계약
+                                    // (brightness, contrast)을 사용하므로 이 자리에서
+                                    // 정규화한다. 같은 문서의 HWP5 변환본과 기준 PDF의
+                                    // 쪽 배경 색조로 교차 확인했다.
+                                    b"bright" => img_fill.contrast = parse_i8(&attr),
+                                    b"contrast" => img_fill.brightness = parse_i8(&attr),
                                     _ => {}
                                 }
                             }
@@ -1607,8 +1615,10 @@ fn parse_border_fill(
                                                 .collect();
                                             img_fill.bin_data_id = num.parse().unwrap_or(0);
                                         }
-                                        b"bright" => img_fill.brightness = parse_i8(&attr),
-                                        b"contrast" => img_fill.contrast = parse_i8(&attr),
+                                        // imgBrush 속성에 없고 img에만 있는 경우도 같은
+                                        // HWPX→HWP5 공통 모델 정규화 규약을 적용한다.
+                                        b"bright" => img_fill.contrast = parse_i8(&attr),
+                                        b"contrast" => img_fill.brightness = parse_i8(&attr),
                                         b"effect" => {
                                             img_fill.effect = match attr_str(&attr).as_str() {
                                                 "GRAY_SCALE" => 1,
@@ -2515,6 +2525,40 @@ mod tests {
     }
 
     #[test]
+    fn hwpunitchar_spacing_uses_common_hwp5_ir_scale() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head"
+  xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core"
+  xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">
+  <hh:refList>
+    <hh:paraProperties itemCnt="1">
+      <hh:paraPr id="1">
+        <hp:switch>
+          <hp:case hp:required-namespace="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar">
+            <hh:margin>
+              <hc:intent value="-2260" unit="HWPUNIT"/>
+              <hc:left value="3500" unit="HWPUNIT"/>
+              <hc:right value="2500" unit="HWPUNIT"/>
+              <hc:prev value="284" unit="HWPUNIT"/>
+              <hc:next value="568" unit="HWPUNIT"/>
+            </hh:margin>
+          </hp:case>
+        </hp:switch>
+      </hh:paraPr>
+    </hh:paraProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
+        let ps = &doc_info.para_shapes[1];
+        assert_eq!(ps.margin_left, 7000);
+        assert_eq!(ps.margin_right, 5000);
+        assert_eq!(ps.indent, -4520);
+        assert_eq!(ps.spacing_before, 568);
+        assert_eq!(ps.spacing_after, 1136);
+    }
+
+    #[test]
     fn para_shape_linespacing_between_lines_parses_as_space_only() {
         // 방출측 line_spacing_type_str 은 SpaceOnly 를 "BETWEEN_LINES" 로 낸다. 파서가 이를
         // 안 받으면(_ => Percent) rhwp 저장 SpaceOnly 줄간격이 재로드 시 Percent 로 유실된다.
@@ -3103,7 +3147,7 @@ mod tests {
         let bf = parse_single_border_fill(
             r#"<hh:borderFill id="346">
                  <hh:fillBrush>
-                   <hc:imgBrush mode="TOTAL" bright="10" contrast="0" effect="REAL_PIC">
+                   <hc:imgBrush mode="TOTAL" bright="50" contrast="-15" effect="REAL_PIC">
                      <hc:img binaryItemIDRef="image36"/>
                    </hc:imgBrush>
                  </hh:fillBrush>
@@ -3113,6 +3157,11 @@ mod tests {
         let img = bf.fill.image.expect("image brush");
         assert_eq!(img.fill_mode, ImageFillMode::Total);
         assert_eq!(img.bin_data_id, 36);
+        assert_eq!(
+            (img.brightness, img.contrast),
+            (-15, 50),
+            "HWPX bright/contrast는 HWP5 공통 ImageFill 저장 순서로 정규화한다"
+        );
     }
 
     #[test]

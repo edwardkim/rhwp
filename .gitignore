@@ -56,6 +56,8 @@ Thumbs.db
 .claude/*
 # .claude/skills/는 프로젝트 종속 Skill (rhwp 바이너리 호출, ingest_schema_v1 사용)이므로 추적
 !.claude/skills/
+# .claude/agents/는 프로젝트 종속 서브에이전트 정의(bug-hunter 등, #3398)이므로 추적
+!.claude/agents/
 
 # 환경변수 (민감 정보)
 .env
@@ -99,3 +101,4 @@ samples/issue836/
 # Python 바이트코드 캐시 (tools/render_page_gate.py 등 실행 시 생성)
 __pycache__/
 *.pyc
+tmp/

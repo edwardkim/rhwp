@@ -17,6 +17,7 @@ from urllib.parse import unquote, urlsplit
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+CAPABILITY_REGISTRY = REPOSITORY_ROOT / "mydocs/manual/agent_capability_registry.md"
 DEFAULT_PATHS = (
     "AGENTS.md",
     "CLAUDE.md",
@@ -33,6 +34,18 @@ INLINE_LINK_RE = re.compile(
     r"!?\[[^\]]*\]\(\s*(?:<([^>]+)>|([^\s)]+))(?:\s+[^)]*)?\s*\)"
 )
 REFERENCE_LINK_RE = re.compile(r"^\s*\[[^\]]+\]:\s*(?:<([^>]+)>|([^\s]+))")
+CAPABILITY_REGISTRY_COLUMNS = (
+    "등록 식별번호",
+    "capability ID",
+    "책임과 비범위",
+    "권위 문서",
+    "Claude 진입점",
+    "Codex 진입점",
+    "상태·소유",
+)
+CAPABILITY_ID_RE = re.compile(r"^(?:CAP-[1-9]\d*|LEGACY-[0-9a-f]{9})$")
+CAPABILITY_SLUG_RE = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
+CAPABILITY_STATUSES = {"active", "deprecated"}
 
 
 @dataclass(frozen=True)
@@ -56,6 +69,12 @@ class RedirectReference:
     source: Path
     line: int
     redirect_path: str
+
+
+@dataclass(frozen=True)
+class CapabilityRegistryError:
+    line: int
+    message: str
 
 
 def parse_args() -> argparse.Namespace:
@@ -287,6 +306,200 @@ def collect_redirect_references(
     return references
 
 
+def table_cells(line: str) -> list[str] | None:
+    stripped = line.strip()
+    if not (stripped.startswith("|") and stripped.endswith("|")):
+        return None
+
+    cells: list[str] = []
+    current: list[str] = []
+    preceding_backslashes = 0
+    for character in stripped[1:-1]:
+        if character == "|" and preceding_backslashes % 2 == 0:
+            cells.append("".join(current).strip())
+            current = []
+            preceding_backslashes = 0
+            continue
+        current.append(character)
+        if character == "\\":
+            preceding_backslashes += 1
+        else:
+            preceding_backslashes = 0
+    cells.append("".join(current).strip())
+    return cells
+
+
+def registry_link_target(
+    source: Path,
+    line: int,
+    column: str,
+    value: str,
+    errors: list[CapabilityRegistryError],
+) -> Path | None:
+    destinations = [
+        match.group(1) or match.group(2) for match in INLINE_LINK_RE.finditer(value)
+    ]
+    if len(destinations) != 1:
+        errors.append(
+            CapabilityRegistryError(
+                line,
+                f"{column}에는 저장소 내부 Markdown 링크를 정확히 하나 적어야 합니다",
+            )
+        )
+        return None
+
+    destination = destinations[0]
+    resolved = resolve_local_destination(source, destination)
+    if resolved is None:
+        errors.append(
+            CapabilityRegistryError(
+                line,
+                f"{column}은 외부 URL이나 앵커만이 아닌 저장소 내부 파일이어야 합니다: {destination}",
+            )
+        )
+        return None
+    try:
+        resolved.relative_to(REPOSITORY_ROOT)
+    except ValueError:
+        errors.append(
+            CapabilityRegistryError(
+                line,
+                f"{column}은 저장소 밖 경로를 가리킬 수 없습니다: {destination}",
+            )
+        )
+        return None
+    if not resolved.is_file():
+        errors.append(
+            CapabilityRegistryError(
+                line,
+                f"{column} 대상 파일이 없습니다: {destination}",
+            )
+        )
+        return None
+    return resolved
+
+
+def collect_capability_registry_errors() -> list[CapabilityRegistryError]:
+    """active capability 행의 식별자와 runtime 진입점 무결성을 검사한다.
+
+    일반 링크 검사는 Markdown 전체의 대상 존재만 본다. 이 검사는 등록부에서 active 행이
+    필수 authority를 갖는지, 한 runtime 진입점이 둘 이상의 capability에 중복 연결되지
+    않는지를 표 구조에 맞춰 추가로 확인한다.
+    """
+
+    if not CAPABILITY_REGISTRY.is_file():
+        # 카탈로그 도입 전 커밋에서도 이 범용 검사기를 실행할 수 있어야 한다.
+        return []
+
+    errors: list[CapabilityRegistryError] = []
+    identifiers: dict[str, int] = {}
+    capability_ids: dict[str, int] = {}
+    adapter_owners: dict[Path, str] = {}
+    header_seen = False
+    in_table = False
+
+    for line_number, line in enumerate(
+        CAPABILITY_REGISTRY.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        cells = table_cells(line)
+        if cells == list(CAPABILITY_REGISTRY_COLUMNS):
+            if header_seen:
+                errors.append(CapabilityRegistryError(line_number, "등록부 표 header가 중복되었습니다"))
+            header_seen = True
+            in_table = True
+            continue
+        if not in_table:
+            continue
+        if cells is None:
+            break
+        if all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells):
+            continue
+        if len(cells) != 7:
+            errors.append(
+                CapabilityRegistryError(line_number, "등록부 행은 7개 열이어야 합니다")
+            )
+            continue
+
+        registration_id = cells[0].strip("`")
+        capability_id = cells[1].strip("`")
+        if not CAPABILITY_ID_RE.fullmatch(registration_id):
+            errors.append(
+                CapabilityRegistryError(
+                    line_number,
+                    "등록 식별번호는 CAP-<양의 Issue 번호(선행 0 없음)> 또는 "
+                    "LEGACY-<9자리 SHA> 형식이어야 합니다",
+                )
+            )
+        previous_line = identifiers.setdefault(registration_id, line_number)
+        if previous_line != line_number:
+            errors.append(
+                CapabilityRegistryError(
+                    line_number,
+                    f"등록 식별번호가 {previous_line}행과 중복됩니다: {registration_id}",
+                )
+            )
+        if not CAPABILITY_SLUG_RE.fullmatch(capability_id):
+            errors.append(
+                CapabilityRegistryError(
+                    line_number,
+                    "capability ID는 소문자 kebab-case여야 합니다",
+                )
+            )
+        previous_capability_line = capability_ids.setdefault(capability_id, line_number)
+        if previous_capability_line != line_number:
+            errors.append(
+                CapabilityRegistryError(
+                    line_number,
+                    f"capability ID가 {previous_capability_line}행과 중복됩니다: {capability_id}",
+                )
+            )
+
+        status, separator, owner = cells[6].partition("·")
+        status = status.strip()
+        owner = owner.strip()
+        if status not in CAPABILITY_STATUSES:
+            errors.append(
+                CapabilityRegistryError(
+                    line_number,
+                    "상태는 active 또는 deprecated여야 합니다",
+                )
+            )
+            continue
+        if status != "active":
+            continue
+        if not separator or not owner:
+            errors.append(
+                CapabilityRegistryError(
+                    line_number,
+                    "active 항목에는 상태 뒤에 소유 maintainer를 적어야 합니다",
+                )
+            )
+
+        registry_link_target(
+            CAPABILITY_REGISTRY, line_number, "권위 문서", cells[3], errors
+        )
+        for column, value in (("Claude 진입점", cells[4]), ("Codex 진입점", cells[5])):
+            if value == "—":
+                continue
+            adapter = registry_link_target(
+                CAPABILITY_REGISTRY, line_number, column, value, errors
+            )
+            if adapter is None:
+                continue
+            previous_owner = adapter_owners.setdefault(adapter, registration_id)
+            if previous_owner != registration_id:
+                errors.append(
+                    CapabilityRegistryError(
+                        line_number,
+                        f"runtime 진입점이 {previous_owner}와 중복됩니다: {display_path(adapter)}",
+                    )
+                )
+
+    if not header_seen:
+        errors.append(CapabilityRegistryError(1, "등록부 표 header를 찾을 수 없습니다"))
+    return errors
+
+
 def display_path(path: Path) -> str:
     try:
         return str(path.relative_to(REPOSITORY_ROOT))
@@ -316,6 +529,7 @@ def main() -> int:
     redirect_references = collect_redirect_references(
         changed if args.changed_from else tracked_files(), redirects
     )
+    capability_registry_errors = collect_capability_registry_errors()
 
     print(f"검사 문서: {len(markdown_files)}개")
     if args.changed_from:
@@ -324,7 +538,12 @@ def main() -> int:
         print(f"금지 경로 검사 문서: {len(forbidden_scan_files)}개")
     if redirects:
         print(f"redirect stub: {len(redirects)}개")
-    if not broken_links and not forbidden_links and not redirect_references:
+    if (
+        not broken_links
+        and not forbidden_links
+        and not redirect_references
+        and not capability_registry_errors
+    ):
         print("내부 Markdown 상대 링크: 이상 없음")
         return 0
 
@@ -350,6 +569,13 @@ def main() -> int:
         print(
             f"- {display_path(reference.source)}:{reference.line}: "
             f"{reference.redirect_path}",
+            file=sys.stderr,
+        )
+    if capability_registry_errors:
+        print(f"capability 등록부 무결성 오류: {len(capability_registry_errors)}건")
+    for error in capability_registry_errors:
+        print(
+            f"- {display_path(CAPABILITY_REGISTRY)}:{error.line}: {error.message}",
             file=sys.stderr,
         )
     return 1

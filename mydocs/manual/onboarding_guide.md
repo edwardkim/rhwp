@@ -24,6 +24,7 @@ rhwp는 Rust로 HWP/HWPX/HWP3 문서를 공통 IR로 변환하고 네이티브�
 - PR 준비와 검토: [PR 리뷰·통합 워크플로우](pr_review_workflow.md)
 - 시각 검증: [시각 검증 문서 지도](verification/README.md)
 - 파서 경계: [포맷 파서와 공통 Document IR 경계](../tech/parser_architecture.md)
+- Claude 에이전트·Claude/Codex Skill 기여: [에이전트 capability 카탈로그](agent_capability_registry.md)
 
 ## 로컬 시작
 
@@ -55,6 +56,16 @@ npx vite --host 0.0.0.0 --port 7700
 
 오늘할일, PR review 문서, maintainer 보정은 기여자·collaborator·maintainer 역할에 따라 다르다. 임의로
 일반화하지 않고 [PR 리뷰·통합 워크플로우](pr_review_workflow.md)를 따른다.
+
+## Claude·Codex capability 기여
+
+재사용할 Claude 에이전트·Claude Skill·Codex Skill을 새로 만들거나 변경하려면, 구현 전에
+[에이전트 capability 카탈로그](agent_capability_registry.md)를 읽는다. 기존 capability와 사용자 산출물·권위
+문서·비범위가 같으면 별도 기능을 만들지 않고 해당 capability에 런타임 어댑터만 추가한다. 새 capability면
+전용 GitHub Issue를 먼저 만들어 `CAP-<Issue 번호>`를 발급하고, 같은 PR에서 카탈로그와 authority를 갱신한다.
+
+Skill 검증의 PyYAML 가상환경·`quick_validate.py` 명령은 카탈로그의 **검증** 절을 따른다. 이 문서에는
+환경별 명령을 복제하지 않는다.
 
 ## 기본 원칙
 
