@@ -1991,9 +1991,9 @@ fn parse_object_control_char(
             .to_string();
         controls.push(crate::model::control::Control::Field(field));
     } else if ch == 6 {
-        // [#3050 동형] 책갈피(spec §10.2, 표 36). 개체 디스패치가 info_buf 에 담아 준
+        // [#3524, #3050 동형] 책갈피(spec §10.2, 표 36). 개체 디스패치가 info_buf 에 담아 준
         // 34바이트(0..32 = hchar[16] 책갈피 이름, 32..34 = word 책갈피 종류)를
-        // Control::Field 로 배선한다. 종전에는 디스패치가 직접 push 한 뒤 이 tail
+        // 공통 Control::Bookmark 로 배선한다. 종전에는 디스패치가 직접 push 한 뒤 이 tail
         // 캐치올(`else`)로 떨어져 Control::Unknown 이 한 번 더 push 됐고, 제어문자
         // 1개에 Control 이 2개가 되어 이후 문자↔컨트롤 정렬이 밀렸다.
         let name_buf = if info_buf.len() >= 32 {
@@ -2004,15 +2004,11 @@ fn parse_object_control_char(
         let name = crate::parser::hwp3::encoding::decode_hwp3_string(name_buf)
             .trim_end_matches('\0')
             .to_string();
-        let bookmark_type = if info_buf.len() >= 34 {
-            (&info_buf[32..34]).read_u16::<LittleEndian>().unwrap_or(0)
-        } else {
-            0
-        };
-        let mut field = crate::model::control::Field::default();
-        field.field_type = crate::model::control::FieldType::Unknown;
-        field.command = format!("Bookmark:{}:type={}", name, bookmark_type);
-        controls.push(crate::model::control::Control::Field(field));
+        // 종류(offset 32..34)는 공통 IR 의 Bookmark 에 자리가 없어 싣지 않는다.
+        // 이름은 공통 표현으로 HWP5 저장기까지 보존된다.
+        controls.push(crate::model::control::Control::Bookmark(
+            crate::model::control::Bookmark { name },
+        ));
     } else {
         controls.push(crate::model::control::Control::Unknown(
             crate::model::control::UnknownControl { ctrl_id: ch as u32 },
@@ -2696,7 +2692,10 @@ pub(crate) fn parse_paragraph_list(
         }
 
         let mut para = Paragraph::default();
-        para.char_count = utf16_len + 1; // +1 for 끝 마커 (HWP5/HWPX 규약과 정합, #3510)
+        // [#3494, #3510] 공통 IR 의 char_count 는 **문단 종결자를 포함**한다
+        // (model/paragraph.rs:1042 `+1 for paragraph end marker`, HWP5 PARA_HEADER.nChars 와 동일).
+        // utf16_len 은 본문+컨트롤 코드 유닛 합이라 종결자가 빠져 있었다.
+        para.char_count = utf16_len + 1;
         para.para_shape_id = para_shape_id;
         para.char_offsets = char_offsets;
         para.text = text_string;
@@ -4988,11 +4987,12 @@ mod tests {
 
     #[test]
     fn test_hwp3_bookmark_ch6_pushes_exactly_one_control() {
-        // [#3050 동형] ch==6(책갈피, spec §10.2 표 36)도 개체 디스패치에서
-        // Control::Field 를 push 한 뒤 tail 캐치올(`else`)로 떨어져
+        // [#3524, #3050 동형] ch==6(책갈피, spec §10.2 표 36)는 개체 디스패치에서
+        // raw 바이트를 넘기고 tail 에서 공통 Control::Bookmark 를 한 번만 만든다.
+        // 종전처럼 디스패치에서 먼저 push 한 뒤 tail 캐치올(`else`)로 떨어지면
         // Control::Unknown 을 한 번 더 push 했다. 제어문자 마커 1개당 Control 이
         // 2개가 되어 이후 문자↔컨트롤 정렬이 밀리므로, 정확히 1개만 push 되고
-        // 책갈피 이름·종류가 그대로 보존되는지 검증한다.
+        // 공통 IR 에 책갈피 이름이 보존되는지 검증한다.
         let mut bookmark_extra = [0u8; 34];
         // 0..32: hchar[16] 책갈피 이름 (널 패딩), 32..34: word 책갈피 종류
         bookmark_extra[..9].copy_from_slice(b"BOOKMARK1");
@@ -5063,14 +5063,10 @@ mod tests {
             "ctrl_data_records 도 controls 와 같은 길이여야 함"
         );
         match &controls[0] {
-            crate::model::control::Control::Field(f) => {
-                assert_eq!(f.field_type, crate::model::control::FieldType::Unknown);
-                assert_eq!(
-                    f.command, "Bookmark:BOOKMARK1:type=1",
-                    "책갈피 이름과 종류가 보존돼야 함"
-                );
+            crate::model::control::Control::Bookmark(bookmark) => {
+                assert_eq!(bookmark.name, "BOOKMARK1", "책갈피 이름이 보존돼야 함");
             }
-            other => panic!("Control::Field 가 아님: {other:?}"),
+            other => panic!("Control::Bookmark 가 아님: {other:?}"),
         }
     }
 

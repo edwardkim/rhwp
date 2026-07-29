@@ -935,7 +935,8 @@ impl DocumentCore {
             // 외부 URL 이미지는 처리하지 않음 — 텍스트로 대체
             let mut para = Paragraph::default();
             para.text = "[이미지]".to_string();
-            para.char_count = para.text.encode_utf16().count() as u32;
+            // [#3494] char_count 는 문단 종결자를 포함한다 (model/paragraph.rs:1042).
+            para.char_count = para.text.encode_utf16().count() as u32 + 1;
             para.char_offsets = para
                 .text
                 .chars()
@@ -996,7 +997,8 @@ impl DocumentCore {
         // Picture Control 생성 (placeholder로 텍스트 표현)
         let mut para = Paragraph::default();
         para.text = "[이미지]".to_string();
-        para.char_count = para.text.encode_utf16().count() as u32;
+        // [#3494] char_count 는 문단 종결자를 포함한다 (model/paragraph.rs:1042).
+        para.char_count = para.text.encode_utf16().count() as u32 + 1;
         para.char_offsets = para
             .text
             .chars()
