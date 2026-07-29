@@ -1623,15 +1623,11 @@ fn parse_hwp3_object_dispatch(
             if let Err(_) = body_cursor.read_exact(&mut field_data) {
                 return Ok(Some(true));
             }
-            // [Task #877 후속] field_data 는 파싱만 되고 IR로 배선되지 않아 소실됐다.
-            // 책갈피(ch==6)와 동일하게 원본 바이트를 command 에 실어 Field control로 배선.
-            let mut field = crate::model::control::Field::default();
-            field.field_type = crate::model::control::FieldType::Unknown;
-            field.command = crate::parser::hwp3::encoding::decode_hwp3_string(&field_data)
-                .trim_end_matches('\0')
-                .to_string();
-            controls.push(crate::model::control::Control::Field(field));
-            ctrl_data_records.push(None);
+            // [#3050] field_data 는 상호참조(ch==29)와 같은 계약으로 info_buf 에만
+            // 실어 보내고, Control::Field 생성은 호출자 tail 에서 한 번만 한다.
+            // 이 분기에서 직접 push 하면 tail 캐치올(`else`)이 Control::Unknown 을
+            // 한 번 더 push 해 "제어문자 1개 = Control 1개" 불변식이 깨진다.
+            **info_buf = field_data;
         }
     } else if ch == 6 {
         // [Task #877] 책갈피 (spec §10.2, 표 36): 42 bytes total.
@@ -1987,6 +1983,18 @@ fn parse_object_control_char(
         field.properties = ref_type as u32;
         field.extra_properties = kind;
 
+        controls.push(crate::model::control::Control::Field(field));
+    } else if ch == 5 {
+        // [#3050] 필드 코드(spec §10.1, 표 33). 개체 디스패치가 info_buf 에 담아 준
+        // 필드 세부 정보 원본 바이트를 Control::Field 로 배선한다. 여기에 전용
+        // 분기가 없으면 캐치올로 떨어져 Control::Unknown 이 되어 필드가 IR 에서
+        // 사라진다. 상호참조(ch==29)와 동일하게 tail 에서만 push 해 제어문자
+        // 1개당 Control 이 정확히 1개 유지되도록 한다.
+        let mut field = crate::model::control::Field::default();
+        field.field_type = crate::model::control::FieldType::Unknown;
+        field.command = crate::parser::hwp3::encoding::decode_hwp3_string(info_buf.as_slice())
+            .trim_end_matches('\0')
+            .to_string();
         controls.push(crate::model::control::Control::Field(field));
     } else {
         controls.push(crate::model::control::Control::Unknown(
@@ -4876,6 +4884,89 @@ mod tests {
                 .any(|c| matches!(c, crate::model::control::Control::Field(_))),
             "ch==5 필드 코드가 Control::Field 로 배선되지 않음: {controls:?}"
         );
+    }
+
+    #[test]
+    fn test_hwp3_field_code_ch5_pushes_exactly_one_control() {
+        // [#3050] ch==5 는 개체 디스패치에서 Control::Field 를 push 한 뒤에도
+        // tail 캐치올(`else`)로 떨어져 Control::Unknown 을 한 번 더 push 했다.
+        // 제어문자 마커 1개당 Control 이 2개가 되어 이후 문자↔컨트롤 정렬이
+        // 밀리므로, 정확히 1개만 push 되는지 검증한다.
+        let payload = b"ABCD";
+        let mut body = Vec::new();
+        body.extend_from_slice(&(payload.len() as u32).to_le_bytes()); // header_val1
+        body.extend_from_slice(&5u16.to_le_bytes()); // ch2 (close)
+        body.extend_from_slice(payload);
+
+        let mut body_cursor = Cursor::new(body.as_slice());
+        let mut doc_char_shapes = Vec::new();
+        let mut doc_para_shapes = Vec::new();
+        let mut doc_border_fills = Vec::new();
+        let mut doc_tab_defs = Vec::new();
+        let mut pic_name_to_id = std::collections::HashMap::new();
+        let para_info = Hwp3ParaInfo {
+            follow_prev_para_shape: 0,
+            char_count: 10,
+            line_count: 1,
+            include_char_shape: 0,
+            flags: 0,
+            special_char_flags: 0,
+            style_index: 0,
+            rep_char_shape: Default::default(),
+            para_shape: None,
+        };
+        let mut text_string = String::new();
+        let mut char_offsets = Vec::new();
+        let mut hwp3_char_to_utf16_pos = vec![0u32; 10];
+        let mut controls = Vec::new();
+        let mut ctrl_data_records = Vec::new();
+        let mut scan = Hwp3CharScan {
+            text_string: &mut text_string,
+            char_offsets: &mut char_offsets,
+            hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
+            controls: &mut controls,
+            ctrl_data_records: &mut ctrl_data_records,
+            use_password_layout_contract: false,
+        };
+
+        parse_object_control_char(
+            &mut body_cursor,
+            &mut doc_char_shapes,
+            &mut doc_para_shapes,
+            &mut doc_border_fills,
+            &mut doc_tab_defs,
+            &mut pic_name_to_id,
+            0,
+            0,
+            0,
+            5,
+            &para_info,
+            0,
+            0,
+            &mut scan,
+        )
+        .unwrap();
+
+        assert_eq!(
+            controls.len(),
+            1,
+            "ch==5 마커 1개에 Control 이 1개만 push 돼야 함: {controls:?}"
+        );
+        assert_eq!(
+            ctrl_data_records.len(),
+            1,
+            "ctrl_data_records 도 controls 와 같은 길이여야 함"
+        );
+        match &controls[0] {
+            crate::model::control::Control::Field(f) => {
+                assert_eq!(f.field_type, crate::model::control::FieldType::Unknown);
+                assert_eq!(
+                    f.command, "ABCD",
+                    "필드 세부 정보 원본 바이트가 보존돼야 함"
+                );
+            }
+            other => panic!("Control::Field 가 아님: {other:?}"),
+        }
     }
 
     #[test]
