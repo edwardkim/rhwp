@@ -28,10 +28,6 @@ use rhwp::serializer::hwpx::roundtrip::{diff_documents, strip_cross_format_noise
 /// 고치면 여기서 지운다. 새로 추가할 때는 반드시 근거를 함께 적는다.
 const EXPECTED_FAILURES: &[(&str, &str)] = &[
     (
-        "hwp3-sample16.hwp",
-        "HWP3 책갈피 소실 (#3524) — PR #3525 로 수정 제출, 머지되면 이 줄을 지운다",
-    ),
-    (
         "2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
         "표 flowWithText 가 false→true 로 뒤집힘 20건 (#3505). rhwp 렌더 영향은 0으로 \
          확인(쪽수·텍스트·SVG 괘선 좌표 동일), 한글 해석은 오라클 필요",

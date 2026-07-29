@@ -4987,11 +4987,12 @@ mod tests {
 
     #[test]
     fn test_hwp3_bookmark_ch6_pushes_exactly_one_control() {
-        // [#3050 동형] ch==6(책갈피, spec §10.2 표 36)도 개체 디스패치에서
-        // Control::Field 를 push 한 뒤 tail 캐치올(`else`)로 떨어져
+        // [#3524, #3050 동형] ch==6(책갈피, spec §10.2 표 36)는 개체 디스패치에서
+        // raw 바이트를 넘기고 tail 에서 공통 Control::Bookmark 를 한 번만 만든다.
+        // 종전처럼 디스패치에서 먼저 push 한 뒤 tail 캐치올(`else`)로 떨어지면
         // Control::Unknown 을 한 번 더 push 했다. 제어문자 마커 1개당 Control 이
         // 2개가 되어 이후 문자↔컨트롤 정렬이 밀리므로, 정확히 1개만 push 되고
-        // 책갈피 이름·종류가 그대로 보존되는지 검증한다.
+        // 공통 IR 에 책갈피 이름이 보존되는지 검증한다.
         let mut bookmark_extra = [0u8; 34];
         // 0..32: hchar[16] 책갈피 이름 (널 패딩), 32..34: word 책갈피 종류
         bookmark_extra[..9].copy_from_slice(b"BOOKMARK1");
