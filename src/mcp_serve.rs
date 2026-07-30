@@ -476,9 +476,12 @@ fn session_set_cell(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
         .get("keepStyle")
         .and_then(|k| k.as_bool())
         .unwrap_or(false);
-    let (sd, id) = match with_doc(args, sessions) {
-        Ok(v) => v,
-        Err(e) => return e,
+    let Some(doc_id) = args.get("docId").and_then(|d| d.as_str()) else {
+        return tool_error("docId 가 필요합니다".into());
+    };
+    let id = doc_id.to_string();
+    let Some(sd) = sessions.docs.get_mut(&id) else {
+        return tool_error(format!("열려 있지 않은 핸들: {id} (hwp_open 먼저)"));
     };
     let (sec, para, ctrl, cell_idx, para_lens, old_text) = match crate::resolve_table_cell(
         sd.doc.document(),
