@@ -123,6 +123,9 @@ HWP/HWPX → PNG(Skia raster, AI 파이프라인/VLM 연동). 상세: [export_pn
 
 ### `export-pdf <파일> [옵션]`
 HWP/HWPX → PDF (svg2pdf + pdf-writer).
+- `--json` (#3596): 산출물 매니페스트를 stdout 에 JSON 으로 출력한다(렌더 동작 무변경).
+  `{"schemaVersion":"1.0","source","format":"pdf","backend","output","bytes","pageCount","renderedCount"}`
+  실패 경로의 stdout 은 비운다(export-svg 규약).
 - `-o <파일>`, `--output <파일>` — 출력 PDF 파일(기본 `output/<입력명>.pdf`)
 - `-p <번호>`, `--page <번호>` — 0-based 단일 페이지 선택. 생략하면 전체 문서를 다중 페이지 PDF로 내보낸다.
 - `--font-path <경로>` — PDF 변환 fontdb에 추가할 폰트 탐색 경로(여러 번 지정 가능)
@@ -223,6 +226,9 @@ find forms/ -name '*.hwp' | rhwp batch fields --json | jq -c 'select(.fieldCount
 
 ### `export-markdown <파일> [옵션]`
 페이지별 텍스트 → Markdown(.md). `-o`, `-p`.
+- `--json` (#3596): 산출물 매니페스트를 stdout 에 JSON 으로.
+  `{"schemaVersion":"1.0","source","format":"markdown","outputDir","pageCount","renderedCount","imageCount","pages":[{"page","path","bytes"}]}`
+  실패 경로(부분 저장)의 stdout 은 비운다.
 
 ### `export-tables <파일> [--json] [-o out.json]` (#3278)
 표를 **격자 JSON** 으로 추출한다 (표 데이터의 기계 소비용). 파서/렌더 무변경 읽기 질의.
@@ -522,6 +528,13 @@ HWP 문서를 HWPX(ZIP+XML)로 변환 저장. `convert`(배포용 해제)와 별
   차이가 있으면 산출물은 남기고 종료 코드 3으로 실패한다.
 - `--verify-pages` — 변환 전/후 렌더 페이지 수를 비교한다.
   불일치하면 산출물은 남기고 종료 코드 4로 실패한다.
+- `--json` (#3596): 변환·검증 봉투를 stdout 순수 JSON 으로.
+  `{"schemaVersion":"1.0","source","output","format":"hwpx","bytes","verify","verifyPages"}`
+  — `verify`/`verifyPages` 는 해당 옵션을 준 경우에만 객체(`{identical,diffCount}` /
+  `{before,after,identical}`), 아니면 `null`. **종료 코드 계약은 무변경**: 차이가
+  검출되면 봉투를 낸 뒤 exit 3/4 로 끝난다(`ir-diff --json` 과 같은 "판정은 데이터" 규약).
+  재파싱 실패는 판정 불가이므로 stdout 을 비우고 기존 코드로 끝난다.
+  `convert` 는 이 옵션을 받지 않는다(구현 없는 침묵 수용 방지, exit 2).
 - 더 넓은 시각 정합은 `tools/roundtrip_fidelity_harness.py` 또는 `render-diff`로 별도 대조한다.
 
 ### `export-hml <입력.hml> -o <출력.hml>`

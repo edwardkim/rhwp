@@ -357,6 +357,51 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["format", "outputDir", "pageCount", "renderedCount", "pages"],
         ),
         tool(
+            "hwp_export_pdf",
+            "문서를 PDF 로 렌더해 저장하고 산출물 매니페스트(경로·크기·페이지 수)를 돌려준다. 제출·인쇄용 최종 산출물을 만들 때 쓴다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "HWP/HWPX/HML 문서 경로" },
+                    "output": { "type": "string", "description": "출력 PDF 파일 경로" }
+                },
+                "required": ["path", "output"],
+            }),
+            "export-pdf",
+            serde_json::json!(["export-pdf", "{path}", "-o", "{output}", "--json"]),
+            &["schemaVersion", "source", "format", "backend", "output", "bytes", "pageCount", "renderedCount"],
+        ),
+        tool(
+            "hwp_export_markdown",
+            "문서를 페이지별 Markdown(이미지 자산 포함)으로 추출하고 산출물 매니페스트를 돌려준다. LLM 파이프라인·정적 사이트 입력으로 쓴다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "HWP/HWPX/HML 문서 경로" },
+                    "output": { "type": "string", "description": "출력 폴더 경로" }
+                },
+                "required": ["path", "output"],
+            }),
+            "export-markdown",
+            serde_json::json!(["export-markdown", "{path}", "-o", "{output}", "--json"]),
+            &["schemaVersion", "source", "format", "outputDir", "pageCount", "renderedCount", "imageCount", "pages"],
+        ),
+        tool(
+            "hwp_convert_hwpx",
+            "HWP 문서를 HWPX 로 변환 저장하고 IR 왕복 검증(--verify)까지 한 번에 수행한다. verify.identical=false(CLI exit 3)는 오류가 아니라 '변환은 저장됐지만 IR 차이가 있다'는 판정이다 — hwp_ir_diff 로 상세를 본다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWP/HWPX 문서 경로" },
+                    "output": { "type": "string", "description": "출력 HWPX 파일 경로" }
+                },
+                "required": ["path", "output"],
+            }),
+            "export-hwpx",
+            serde_json::json!(["export-hwpx", "{path}", "{output}", "--verify", "--json"]),
+            &["schemaVersion", "source", "output", "format", "bytes", "verify", "verifyPages"],
+        ),
+        tool(
             "hwp_export_tables",
             "문서의 표를 병합 정보와 중첩 구조를 보존한 격자 JSON으로 추출한다.",
             path_schema(serde_json::json!({})),
@@ -646,20 +691,55 @@ fn show_capabilities(args: &[String]) -> i32 {
             "native-skia",
             cfg!(feature = "native-skia"),
         ),
-        cmd(
+        cmd_json(
             "export-pdf",
             "export",
-            "문서를 PDF로 렌더 (svg|direct backend)",
+            "문서를 PDF로 렌더 (svg|direct backend, --json 매니페스트)",
+            false,
+            &["-o", "-p", "--backend", "--profile", "--font-path", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "format",
+                "backend",
+                "output",
+                "bytes",
+                "pageCount",
+                "renderedCount",
+            ],
         ),
-        cmd(
+        cmd_json(
             "export-markdown",
             "export",
-            "페이지별 텍스트를 Markdown으로 추출",
+            "페이지별 텍스트를 Markdown으로 추출 (--json 매니페스트)",
+            false,
+            &["-o", "-p", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "format",
+                "outputDir",
+                "pageCount",
+                "renderedCount",
+                "imageCount",
+                "pages",
+            ],
         ),
-        cmd(
+        cmd_json(
             "export-hwpx",
             "export",
-            "HWP→HWPX 변환 저장 (--verify 게이트, exit 3/4)",
+            "HWP→HWPX 변환 저장 (--verify 게이트 exit 3/4, --json 봉투)",
+            false,
+            &["--verify", "--verify-pages", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "output",
+                "format",
+                "bytes",
+                "verify",
+                "verifyPages",
+            ],
         ),
         cmd("export-hml", "export", "HML 원본을 HWPML 2.91 XML로 저장"),
         cmd(
@@ -2222,10 +2302,16 @@ fn export_pdf(args: &[String]) -> i32 {
         let mut render_profile: Option<rhwp::paint::RenderProfile> = None;
         let mut compatibility_only_options = Vec::new();
         let mut direct_raster_dpi_was_set = false;
+        // [#3596] --json: 산출물 매니페스트를 stdout 순수 JSON 으로. 렌더 동작 무변경.
+        let mut json_mode = false;
 
         let mut i = 0;
         while i < args.len() {
             match args[i].as_str() {
+                "--json" => {
+                    json_mode = true;
+                    i += 1;
+                }
                 "--output" | "-o" => {
                     if i + 1 < args.len() {
                         output_file = args[i + 1].clone();
@@ -2489,7 +2575,9 @@ fn export_pdf(args: &[String]) -> i32 {
         }
 
         let page_count = doc.page_count();
-        println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+        if !json_mode {
+            println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+        }
         if page_count == 0 {
             eprintln!("오류: PDF로 내보낼 페이지가 없습니다.");
             return 1;
@@ -2559,16 +2647,36 @@ fn export_pdf(args: &[String]) -> i32 {
             eprintln!("오류: PDF 저장 실패 - {}", e);
             return 1;
         }
-        println!(
-            "  → {} ({}KB, {}페이지)",
-            output_file,
-            pdf_bytes.len() / 1024,
-            pages.len()
-        );
-        if pdf_backend == rhwp::renderer::pdf::PdfBackend::DirectLayer {
-            println!("PDF backend: direct");
+        if json_mode {
+            let backend_name = match pdf_backend {
+                rhwp::renderer::pdf::PdfBackend::CompatibilitySvg => "svg",
+                rhwp::renderer::pdf::PdfBackend::DirectLayer => "direct",
+            };
+            println!(
+                "{}",
+                serde_json::json!({
+                    "schemaVersion": "1.0",
+                    "source": file_path,
+                    "format": "pdf",
+                    "backend": backend_name,
+                    "output": output_file,
+                    "bytes": pdf_bytes.len(),
+                    "pageCount": page_count,
+                    "renderedCount": pages.len(),
+                })
+            );
+        } else {
+            println!(
+                "  → {} ({}KB, {}페이지)",
+                output_file,
+                pdf_bytes.len() / 1024,
+                pages.len()
+            );
+            if pdf_backend == rhwp::renderer::pdf::PdfBackend::DirectLayer {
+                println!("PDF backend: direct");
+            }
+            println!("PDF 내보내기 완료");
         }
-        println!("PDF 내보내기 완료");
         0
     }
 }
@@ -2577,6 +2685,7 @@ fn print_export_pdf_usage() {
     eprintln!("사용법: rhwp export-pdf <파일.hwp|파일.hwpx|파일.hml> [옵션]");
     eprintln!("  -o, --output <파일>       출력 PDF 파일");
     eprintln!("  -p, --page <번호>        특정 페이지만 내보내기 (0부터 시작)");
+    eprintln!("      --json               산출물 매니페스트를 stdout 에 JSON 으로 출력");
     eprintln!("      --backend <svg|direct> PDF backend (기본값: svg)");
     eprintln!(
         "      --profile <프로필>   layer 출력 프로필 (screen|print|high-quality|fast-preview)"
@@ -2889,10 +2998,16 @@ fn export_markdown(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut output_dir = "output".to_string();
     let mut target_page: Option<u32> = None;
+    // [#3596] --json: 산출물 매니페스트를 stdout 순수 JSON 으로. 추출 동작 무변경.
+    let mut json_mode = false;
 
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
+            "--json" => {
+                json_mode = true;
+                i += 1;
+            }
             "--output" | "-o" => {
                 if i + 1 < args.len() {
                     output_dir = args[i + 1].clone();
@@ -2951,7 +3066,9 @@ fn export_markdown(args: &[String]) -> i32 {
     };
 
     let page_count = doc.page_count();
-    println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    if !json_mode {
+        println!("문서 로드 완료: {} ({}페이지)", file_path, page_count);
+    }
     if page_count == 0 {
         eprintln!("오류: 문서에 페이지가 없습니다.");
         return EXIT_RUNTIME;
@@ -2993,6 +3110,8 @@ fn export_markdown(args: &[String]) -> i32 {
     // [#2707] 요청한 페이지 수가 아니라 실제로 저장에 성공한 MD 페이지 수를 센다.
     // 이미지 실패는 경고로 남기고 MD 자체는 저장되므로 페이지 실패로 세지 않는다.
     let mut written_page_count = 0usize;
+    // [#3596] --json 매니페스트용 페이지별 산출물 기록.
+    let mut manifest: Vec<serde_json::Value> = Vec::new();
 
     let mime_to_ext = |mime: &str| -> &'static str {
         match mime {
@@ -3145,7 +3264,15 @@ fn export_markdown(args: &[String]) -> i32 {
 
                 match fs::write(&md_path, markdown.as_bytes()) {
                     Ok(_) => {
-                        println!("  → {}", md_path.display());
+                        if json_mode {
+                            manifest.push(serde_json::json!({
+                                "page": page_num,
+                                "path": md_path.display().to_string(),
+                                "bytes": markdown.len(),
+                            }));
+                        } else {
+                            println!("  → {}", md_path.display());
+                        }
                         written_page_count += 1;
                     }
                     Err(e) => eprintln!("오류: Markdown 저장 실패 - {}: {}", md_path.display(), e),
@@ -3157,7 +3284,33 @@ fn export_markdown(args: &[String]) -> i32 {
         }
     }
 
-    if written_image_count > 0 {
+    // [#2707] 한 장이라도 못 썼으면 런타임 실패다. [#3596] JSON 모드의 실패는
+    // stdout 을 비워 부분 매니페스트를 성공으로 오인하지 않게 한다(export-svg 규약).
+    if written_page_count != pages.len() {
+        if !json_mode {
+            println!(
+                "Markdown 내보내기 완료: {}개 MD 파일 → {}/",
+                written_page_count, output_dir
+            );
+        }
+        return EXIT_RUNTIME;
+    }
+
+    if json_mode {
+        println!(
+            "{}",
+            serde_json::json!({
+                "schemaVersion": "1.0",
+                "source": file_path,
+                "format": "markdown",
+                "outputDir": output_dir,
+                "pageCount": page_count,
+                "renderedCount": written_page_count,
+                "imageCount": written_image_count,
+                "pages": manifest,
+            })
+        );
+    } else if written_image_count > 0 {
         println!(
             "Markdown 내보내기 완료: {}개 MD 파일, {}개 이미지 → {}/",
             written_page_count, written_image_count, output_dir
@@ -3169,12 +3322,7 @@ fn export_markdown(args: &[String]) -> i32 {
         );
     }
 
-    // [#2707] 한 장이라도 못 썼으면 런타임 실패다.
-    if written_page_count == pages.len() {
-        EXIT_OK
-    } else {
-        EXIT_RUNTIME
-    }
+    EXIT_OK
 }
 
 /// [#3238] batch — 파일 목록을 stdin(한 줄당 하나)으로 받아 한 프로세스에서 전건 처리하고
@@ -6113,6 +6261,8 @@ fn diag_document(args: &[String]) -> i32 {
 struct ConversionVerifyOptions {
     verify: bool,
     verify_pages: bool,
+    /// [#3596] 봉투를 stdout 순수 JSON 으로. export-hwpx 만 허용한다(`allow_json`).
+    json: bool,
 }
 
 impl ConversionVerifyOptions {
@@ -6126,6 +6276,7 @@ fn parse_conversion_verify_args(
     usage: &str,
     min_positionals: usize,
     max_positionals: usize,
+    allow_json: bool,
 ) -> Result<(Vec<String>, ConversionVerifyOptions), String> {
     let mut positionals = Vec::new();
     let mut options = ConversionVerifyOptions::default();
@@ -6134,6 +6285,9 @@ fn parse_conversion_verify_args(
         match arg.as_str() {
             "--verify" => options.verify = true,
             "--verify-pages" => options.verify_pages = true,
+            // [#3596] 구현 없는 명령이 --json 을 조용히 받으면 소비자가 빈 stdout 을
+            // 성공 봉투로 오인한다 — 허용된 명령에서만 받는다.
+            "--json" if allow_json => options.json = true,
             value if value.starts_with('-') => {
                 return Err(format!("알 수 없는 옵션: {}\n사용법: {}", value, usage));
             }
@@ -6307,6 +6461,7 @@ fn convert_hwp(args: &[String]) -> i32 {
         "rhwp convert <입력.hwp|입력.hwpx> <출력.hwp> [--verify] [--verify-pages]",
         2,
         2,
+        false,
     ) {
         Ok(parsed) => parsed,
         Err(message) => {
@@ -6559,9 +6714,10 @@ fn export_doclang(args: &[String]) -> i32 {
 fn export_hwpx(args: &[String]) -> i32 {
     let (positionals, verify_options) = match parse_conversion_verify_args(
         args,
-        "rhwp export-hwpx <입력.hwp|입력.hwpx> [출력.hwpx] [--verify] [--verify-pages]",
+        "rhwp export-hwpx <입력.hwp|입력.hwpx> [출력.hwpx] [--verify] [--verify-pages] [--json]",
         1,
         2,
+        true,
     ) {
         Ok(parsed) => parsed,
         Err(message) => {
@@ -6613,18 +6769,45 @@ fn export_hwpx(args: &[String]) -> i32 {
         None
     };
 
+    // [#3596] JSON 봉투: 판정(verify/verifyPages)까지 채운 뒤 한 번에 낸다.
+    // 종료 코드 계약(0/1/3/4)은 무변경 — 차이가 검출되어도 봉투를 stdout 에 내고
+    // exit 3/4 로 끝난다(ir-diff --json 과 같은 "판정은 데이터" 규약).
+    let json_mode = verify_options.json;
+    let emit_envelope = |bytes_len: usize,
+                         verify: serde_json::Value,
+                         verify_pages: serde_json::Value| {
+        println!(
+            "{}",
+            serde_json::json!({
+                "schemaVersion": "1.0",
+                "source": positionals[0],
+                "output": output_path.display().to_string(),
+                "format": "hwpx",
+                "bytes": bytes_len,
+                "verify": verify,
+                "verifyPages": verify_pages,
+            })
+        );
+    };
+
     match doc.export_hwpx_native() {
         Ok(bytes) => match fs::write(&output_path, &bytes) {
             Ok(_) => {
-                println!(
-                    "저장 완료: {} ({}KB)",
-                    output_path.display(),
-                    bytes.len() / 1024
-                );
+                if !json_mode {
+                    println!(
+                        "저장 완료: {} ({}KB)",
+                        output_path.display(),
+                        bytes.len() / 1024
+                    );
+                }
+                let mut verify_report = serde_json::Value::Null;
+                let mut verify_pages_report = serde_json::Value::Null;
+                let mut exit_code = EXIT_OK;
                 if verify_options.enabled() {
                     let reloaded = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
                         Ok(d) => d,
                         Err(e) => {
+                            // 재파싱 실패는 판정 불가 — JSON 모드에서도 stdout 을 비운다.
                             eprintln!("검증 실패: 저장된 HWPX 재파싱 실패 - {}", e);
                             process::exit(verify_reparse_failed_exit_code(verify_options));
                         }
@@ -6637,9 +6820,20 @@ fn export_hwpx(args: &[String]) -> i32 {
                                 "검증 실패(--verify-pages): 변환 전 {}쪽, 재파싱 후 {}쪽",
                                 before, after
                             );
+                            verify_pages_report = serde_json::json!({
+                                "before": before, "after": after, "identical": false,
+                            });
+                            if json_mode {
+                                emit_envelope(bytes.len(), verify_report, verify_pages_report);
+                            }
                             process::exit(4);
                         }
-                        println!("검증 통과(--verify-pages): {}쪽", before);
+                        if !json_mode {
+                            println!("검증 통과(--verify-pages): {}쪽", before);
+                        }
+                        verify_pages_report = serde_json::json!({
+                            "before": before, "after": after, "identical": true,
+                        });
                     }
 
                     if verify_options.verify {
@@ -6649,10 +6843,25 @@ fn export_hwpx(args: &[String]) -> i32 {
                         );
                         if !diff.is_empty() {
                             print_ir_verify_failure(&diff, &output_path.display().to_string());
-                            process::exit(3);
+                            verify_report = serde_json::json!({
+                                "identical": false, "diffCount": diff.differences.len(),
+                            });
+                            exit_code = 3;
+                        } else {
+                            if !json_mode {
+                                println!("검증 통과(--verify): IR 차이 없음");
+                            }
+                            verify_report = serde_json::json!({
+                                "identical": true, "diffCount": 0,
+                            });
                         }
-                        println!("검증 통과(--verify): IR 차이 없음");
                     }
+                }
+                if json_mode {
+                    emit_envelope(bytes.len(), verify_report, verify_pages_report);
+                }
+                if exit_code != EXIT_OK {
+                    process::exit(exit_code);
                 }
                 EXIT_OK
             }
