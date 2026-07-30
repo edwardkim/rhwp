@@ -168,7 +168,10 @@ fn doc_fields_reflects_session_fill_without_reparse() {
         .find(|x| x["name"] == "회사명")
         .and_then(|x| x["value"].as_str())
         .unwrap_or("");
-    assert_eq!(val, "뷰검증 주식회사", "fill 이 세션 조회에 반영돼야 합니다: {after}");
+    assert_eq!(
+        val, "뷰검증 주식회사",
+        "fill 이 세션 조회에 반영돼야 합니다: {after}"
+    );
 }
 
 #[test]
