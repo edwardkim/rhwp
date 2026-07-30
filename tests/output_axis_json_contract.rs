@@ -91,7 +91,11 @@ fn export_pdf_json_manifest() {
 
     // 매니페스트가 가리키는 파일이 실제로 그 크기로 존재해야 한다.
     let meta = std::fs::metadata(&out).expect("PDF 산출물이 존재해야 합니다");
-    assert_eq!(meta.len(), bytes, "보고된 bytes 와 실제 파일 크기가 다릅니다");
+    assert_eq!(
+        meta.len(),
+        bytes,
+        "보고된 bytes 와 실제 파일 크기가 다릅니다"
+    );
 
     let _ = std::fs::remove_file(&out);
 }
@@ -175,10 +179,7 @@ fn export_hwpx_json_envelope_with_verify() {
         describe(&args, &output)
     );
     if !identical {
-        assert!(
-            v["verify"]["diffCount"].as_u64().unwrap_or(0) >= 1,
-            "{v}"
-        );
+        assert!(v["verify"]["diffCount"].as_u64().unwrap_or(0) >= 1, "{v}");
     }
 
     let _ = std::fs::remove_file(&out);
@@ -275,7 +276,10 @@ fn capabilities_reports_output_axis_json() {
             .iter()
             .find(|c| c["name"] == name)
             .unwrap_or_else(|| panic!("{name} 이 capabilities 에 없습니다"));
-        assert_eq!(entry["json"], true, "{name} 은 json:true 여야 합니다: {entry}");
+        assert_eq!(
+            entry["json"], true,
+            "{name} 은 json:true 여야 합니다: {entry}"
+        );
     }
 
     let mcp = run(&["capabilities", "--mcp"]);
