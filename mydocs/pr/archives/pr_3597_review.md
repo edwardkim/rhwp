@@ -56,8 +56,8 @@ cherry-pick했다. PR 안의 `devel` merge commit은 제외했고 충돌은 없�
 | Markdown 링크·metadata | passed |
 
 모든 Cargo 검증은 전용 `target/review-kevin9327-20260731`, `CARGO_INCREMENTAL=0`으로 실행했다.
-전체 release-test는 서식 보정 전의 동일 프로그램 동작을 검증했고, 보정 뒤에는 focused 계약·fmt·clippy를
-재실행했다. 보정에 test code whitespace 외 의미 변경은 없지만, test commit이 추가됐으므로 최신 remote head의
+전체 release-test는 서식 보정 전의 동일 프로그램 동작을 검증했고, 보정 뒤에도 전체 `release-test`를
+재실행해 `exit 0`을 확인했다. 이어 focused 계약·fmt·clippy도 재실행했다. 보정에 test code whitespace 외 의미 변경은 없지만, test commit이 추가됐으므로 최신 remote head의
 **full CI**를 merge 전 필수 조건으로 둔다.
 
 ## 발견 사항과 수용 판단
