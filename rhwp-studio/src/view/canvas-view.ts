@@ -582,7 +582,7 @@ export class CanvasView {
         CENTER_ZOOM_ANCHOR,
         nextViewport,
       );
-      this.viewportManager.setScrollLeft(nextScroll.scrollLeft);
+      this.viewportManager.setScrollLeft(this.clampScrollLeft(nextScroll.scrollLeft));
       this.viewportManager.setScrollTop(nextScroll.scrollTop);
     } else {
       this.viewportManager.setScrollLeft(
@@ -598,6 +598,20 @@ export class CanvasView {
       this.pageRenderer.cancelAll();
     }
     this.updateVisiblePages();
+  }
+
+  /**
+   * [#3591] 앵커 계산 결과를 실제 스크롤 가능 범위로 가둔다.
+   *
+   * 팬 여백이 창 폭 100% 이던 시절에는 오버슈트를 여백이 흡수했지만, 여백이
+   * 얇아지면 계산값이 범위를 넘을 수 있다(브라우저는 대입 시 클램프하므로 화면은
+   * 안전하나, 이후 계산이 어긋난 값을 근거로 삼는 것을 막는다). 콘텐츠가 창보다
+   * 좁으면 스크롤 여지가 없으므로 0 이다.
+   */
+  private clampScrollLeft(value: number): number {
+    const viewportWidth = this.viewportManager.getViewportSize().width;
+    const maxScroll = Math.max(0, this.virtualScroll.getTotalWidth() - viewportWidth);
+    return Math.max(0, Math.min(value, maxScroll));
   }
 
   private getZoomPageBox(pageIdx: number, viewportWidth: number): ZoomPageBox {
@@ -636,7 +650,7 @@ export class CanvasView {
       },
       anchor,
     );
-    this.viewportManager.setScrollLeft(nextScroll.scrollLeft);
+    this.viewportManager.setScrollLeft(this.clampScrollLeft(nextScroll.scrollLeft));
     this.viewportManager.setScrollTop(nextScroll.scrollTop);
 
     this.eventBus.emit('zoom-level-display', zoom);

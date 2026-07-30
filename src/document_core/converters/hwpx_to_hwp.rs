@@ -52,7 +52,6 @@ pub struct AdapterReport {
     /// HWPX 표 TABLE record row-size payload 를 행별 셀 수로 보강한 횟수
     pub table_record_row_sizes_materialized: u32,
     /// HWPX 표 TABLE record trailing zone/count payload 를 한컴 저장 관례로 보강한 횟수
-    pub table_record_extra_materialized: u32,
     /// `cell.list_attr bit 16` 보강 횟수 (Stage 3)
     pub cells_list_attr_bit16_set: u32,
     /// HWPX 출처 셀 LIST_HEADER width_ref/raw_list_extra materialize 횟수
@@ -130,7 +129,6 @@ impl AdapterReport {
                 + self.table_ctrl_header_attr_materialized
                 + self.table_record_attr_materialized
                 + self.table_record_row_sizes_materialized
-                + self.table_record_extra_materialized
                 + self.cells_list_attr_bit16_set
                 + self.cells_list_header_contract_materialized
                 + self.border_fills_no_fill_normalized
@@ -1526,7 +1524,6 @@ fn adapt_table_with_context(
         materialize_table_outer_margin(table, report);
         materialize_table_record_attr(table, report);
         materialize_table_record_row_sizes(table, report);
-        materialize_table_record_extra(table, report);
         materialize_table_ctrl_header_attr(table, report);
 
         table.raw_ctrl_data = serialize_common_obj_attr(&table.common);
@@ -1670,13 +1667,6 @@ fn materialize_table_record_row_sizes(table: &mut Table, report: &mut AdapterRep
     if table.row_sizes != row_sizes {
         table.row_sizes = row_sizes;
         report.table_record_row_sizes_materialized += 1;
-    }
-}
-
-fn materialize_table_record_extra(table: &mut Table, report: &mut AdapterReport) {
-    if table.raw_table_record_extra.is_empty() {
-        table.raw_table_record_extra = vec![0, 0];
-        report.table_record_extra_materialized += 1;
     }
 }
 
@@ -1968,7 +1958,8 @@ mod tests {
 
         assert_eq!(table.raw_table_record_attr, 0x0400_000e);
         assert_eq!(table.row_sizes, vec![3]);
-        assert_eq!(table.raw_table_record_extra, vec![0, 0]);
+        // [#3570] 한컴은 zone 개수까지만 쓰고 끝낸다 — 여분 2바이트를 넣지 않는다.
+        assert!(table.raw_table_record_extra.is_empty());
         assert_eq!(
             u32::from_le_bytes(
                 table.raw_ctrl_data[common_obj_offsets::FLAGS]
@@ -2839,12 +2830,12 @@ mod tests {
             assert!(!table.raw_ctrl_data.is_empty());
             assert_eq!(table.raw_table_record_attr & 0x04, 0x04);
             assert_eq!(table.row_sizes, vec![1]);
-            assert_eq!(table.raw_table_record_extra, vec![0, 0]);
+            // [#3570] 한컴은 zone 개수까지만 쓰고 끝낸다 — 여분 2바이트 없음.
+            assert!(table.raw_table_record_extra.is_empty());
             assert_eq!(table.cells[0].raw_list_extra.len(), 13);
         }
 
         assert_eq!(report.tables_ctrl_data_synthesized, 2);
-        assert_eq!(report.table_record_extra_materialized, 2);
         assert_eq!(report.cells_list_header_contract_materialized, 2);
     }
 

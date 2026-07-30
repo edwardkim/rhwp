@@ -1295,7 +1295,14 @@ fn serialize_shape_control(
                     w.write_i32(cp.y).unwrap();
                     w.write_u16(cp.point_type).unwrap();
                 }
-                w.write_bytes(&conn.raw_trailing).unwrap();
+                // [#3570] 한컴은 제어점 뒤에 0 4바이트를 더 쓴다(전수 20건 모두
+                // `00000000`). 종전에는 raw_trailing 이 비면 아무것도 쓰지 않아
+                // 레코드가 4바이트 짧았다. 다각형(위)과 같은 관례로 채운다.
+                if conn.raw_trailing.is_empty() {
+                    w.write_u32(0).unwrap();
+                } else {
+                    w.write_bytes(&conn.raw_trailing).unwrap();
+                }
             } else {
                 w.write_i32(if line.started_right_or_bottom { 1 } else { 0 })
                     .unwrap();
@@ -1667,7 +1674,14 @@ fn serialize_group_child(
                     w.write_i32(cp.y).unwrap();
                     w.write_u16(cp.point_type).unwrap();
                 }
-                w.write_bytes(&conn.raw_trailing).unwrap();
+                // [#3570] 한컴은 제어점 뒤에 0 4바이트를 더 쓴다(전수 20건 모두
+                // `00000000`). 종전에는 raw_trailing 이 비면 아무것도 쓰지 않아
+                // 레코드가 4바이트 짧았다. 다각형(위)과 같은 관례로 채운다.
+                if conn.raw_trailing.is_empty() {
+                    w.write_u32(0).unwrap();
+                } else {
+                    w.write_bytes(&conn.raw_trailing).unwrap();
+                }
             } else {
                 w.write_i32(if line.started_right_or_bottom { 1 } else { 0 })
                     .unwrap();

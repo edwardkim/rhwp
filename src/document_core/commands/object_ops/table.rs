@@ -575,7 +575,8 @@ impl DocumentCore {
             outer_margin_bottom: 283,
             raw_ctrl_data,
             raw_table_record_attr: 0x00000006, // 한컴 기본값 (bit1=셀분리금지, bit2=repeat_header)
-            raw_table_record_extra: vec![0u8; 2],
+            // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
+            raw_table_record_extra: Vec::new(),
             dirty: true,
             local_resize_rows: Vec::new(),
             local_resize_cols: Vec::new(),
@@ -1002,7 +1003,8 @@ impl DocumentCore {
             outer_margin_bottom: outer_margin,
             raw_ctrl_data,
             raw_table_record_attr: 0x04000006,
-            raw_table_record_extra: vec![0u8; 2],
+            // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
+            raw_table_record_extra: Vec::new(),
             dirty: true,
             local_resize_rows: Vec::new(),
             local_resize_cols: Vec::new(),
