@@ -9470,6 +9470,96 @@ fn estimate_text_width_px(
         .sum()
 }
 
+/// [#3603] 격자 주소(export-tables 좌표) → 모델 좌표 해석.
+/// CLI(edit set-cell)와 세션 도구(hwp_doc_set_cell)가 공유한다 — 병합으로 덮인 칸은
+/// 앵커 좌표를 안내하며 실패한다(보호 동작). 반환: (sec, para, ctrl, cell_idx,
+/// 문단별 글자 수, 기존 텍스트).
+enum CellResolveError {
+    Usage(String),
+    Runtime(String),
+}
+
+#[allow(clippy::type_complexity)]
+fn resolve_table_cell(
+    document: &rhwp::model::document::Document,
+    table_no: usize,
+    row: u16,
+    col: u16,
+) -> Result<(usize, usize, usize, usize, Vec<usize>, String), CellResolveError> {
+    use rhwp::document_core::queries::table_extract::extract_tables;
+    use rhwp::model::control::Control;
+    let grids = extract_tables(document);
+    let Some(grid) = grids
+        .iter()
+        .find(|g| g.index == table_no && g.container_path.is_empty())
+    else {
+        let top_level = grids.iter().filter(|g| g.container_path.is_empty()).count();
+        return Err(CellResolveError::Runtime(format!(
+            "오류: 본문 최상위 표 {} 번이 없습니다 (최상위 표 {}개; 중첩 표는 v1 범위 밖).",
+            table_no, top_level
+        )));
+    };
+    let Some(Control::Table(table)) = document.sections[grid.section].paragraphs[grid.paragraph]
+        .controls
+        .get(grid.control)
+    else {
+        return Err(CellResolveError::Runtime(
+            "오류: 표 컨트롤 좌표 해석 실패 (내부 불일치).".into(),
+        ));
+    };
+    if row >= table.row_count || col >= table.col_count {
+        return Err(CellResolveError::Usage(format!(
+            "오류: 좌표가 격자를 벗어났습니다 — 표 {} 는 {}x{} 입니다.",
+            table_no, table.row_count, table.col_count
+        )));
+    }
+    match table
+        .cells
+        .iter()
+        .enumerate()
+        .find(|(_, c)| c.row == row && c.col == col)
+    {
+        Some((cell_idx, c)) => {
+            let para_lens: Vec<usize> = c
+                .paragraphs
+                .iter()
+                .map(|p| p.text.chars().count())
+                .collect();
+            let old_text = c
+                .paragraphs
+                .iter()
+                .map(|p| p.text.as_str())
+                .collect::<Vec<_>>()
+                .join(
+                    "
+",
+                )
+                .trim()
+                .to_string();
+            Ok((
+                grid.section,
+                grid.paragraph,
+                grid.control,
+                cell_idx,
+                para_lens,
+                old_text,
+            ))
+        }
+        None => {
+            let anchor = table.cells.iter().find(|c| {
+                c.row <= row && row < c.row + c.row_span && c.col <= col && col < c.col + c.col_span
+            });
+            Err(CellResolveError::Usage(match anchor {
+                Some(a) => format!(
+                    "오류: ({},{}) 는 병합으로 덮인 칸입니다 — 앵커 ({},{}) 를 지정하세요.",
+                    row, col, a.row, a.col
+                ),
+                None => format!("오류: ({},{}) 위치에 셀이 없습니다.", row, col),
+            }))
+        }
+    }
+}
+
 fn edit_set_cell(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut table_arg: Option<usize> = None;
@@ -9588,100 +9678,18 @@ fn edit_set_cell(args: &[String]) -> i32 {
     // 격자 주소(export-tables 좌표) → 모델 좌표. 병합으로 덮인 칸은 앵커가 아니므로
     // 모델 셀 순회로 (row,col) 앵커를 직접 찾는다 (격자 배열 위치는 손상 방어 필터
     // 때문에 모델 인덱스와 어긋날 수 있어 쓰지 않는다).
-    enum Located {
-        Ok(usize, usize, usize, usize, Vec<usize>, String),
-        Fail(i32),
-    }
-    let located = {
-        use rhwp::document_core::queries::table_extract::extract_tables;
-        use rhwp::model::control::Control;
-        let document = doc.document();
-        let grids = extract_tables(document);
-        match grids
-            .iter()
-            .find(|g| g.index == table_no && g.container_path.is_empty())
-        {
-            None => {
-                let top_level = grids.iter().filter(|g| g.container_path.is_empty()).count();
-                eprintln!(
-                    "오류: 본문 최상위 표 {} 번이 없습니다 (최상위 표 {}개; 중첩 표는 v1 범위 밖).",
-                    table_no, top_level
-                );
-                Located::Fail(EXIT_RUNTIME)
+    let (sec, para, ctrl, cell_idx, para_lens, old_text) =
+        match resolve_table_cell(doc.document(), table_no, row, col) {
+            Ok(v) => v,
+            Err(CellResolveError::Usage(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_USAGE;
             }
-            Some(grid) => match document.sections[grid.section].paragraphs[grid.paragraph]
-                .controls
-                .get(grid.control)
-            {
-                Some(Control::Table(table)) => {
-                    if row >= table.row_count || col >= table.col_count {
-                        eprintln!(
-                            "오류: 좌표가 격자를 벗어났습니다 — 표 {} 는 {}x{} 입니다.",
-                            table_no, table.row_count, table.col_count
-                        );
-                        Located::Fail(EXIT_USAGE)
-                    } else {
-                        match table
-                            .cells
-                            .iter()
-                            .enumerate()
-                            .find(|(_, c)| c.row == row && c.col == col)
-                        {
-                            Some((cell_idx, c)) => {
-                                // 셀의 문단별 글자 수(전체 비우기용)와, export-tables 격자와
-                                // 같은 방식(줄바꿈 결합 + 트림)의 기존 텍스트를 모은다.
-                                let para_lens: Vec<usize> = c
-                                    .paragraphs
-                                    .iter()
-                                    .map(|p| p.text.chars().count())
-                                    .collect();
-                                let old_text = c
-                                    .paragraphs
-                                    .iter()
-                                    .map(|p| p.text.as_str())
-                                    .collect::<Vec<_>>()
-                                    .join("\n")
-                                    .trim()
-                                    .to_string();
-                                Located::Ok(
-                                    grid.section,
-                                    grid.paragraph,
-                                    grid.control,
-                                    cell_idx,
-                                    para_lens,
-                                    old_text,
-                                )
-                            }
-                            None => {
-                                let anchor = table.cells.iter().find(|c| {
-                                    c.row <= row
-                                        && row < c.row + c.row_span
-                                        && c.col <= col
-                                        && col < c.col + c.col_span
-                                });
-                                match anchor {
-                                    Some(a) => eprintln!(
-                                        "오류: ({},{}) 는 병합으로 덮인 칸입니다 — 앵커 ({},{}) 를 지정하세요.",
-                                        row, col, a.row, a.col
-                                    ),
-                                    None => eprintln!("오류: ({},{}) 위치에 셀이 없습니다.", row, col),
-                                }
-                                Located::Fail(EXIT_USAGE)
-                            }
-                        }
-                    }
-                }
-                _ => {
-                    eprintln!("오류: 표 컨트롤 좌표 해석 실패 (내부 불일치).");
-                    Located::Fail(EXIT_RUNTIME)
-                }
-            },
-        }
-    };
-    let (sec, para, ctrl, cell_idx, para_lens, old_text) = match located {
-        Located::Ok(a, b, c, d, e, f) => (a, b, c, d, e, f),
-        Located::Fail(code) => return code,
-    };
+            Err(CellResolveError::Runtime(msg)) => {
+                eprintln!("{msg}");
+                return EXIT_RUNTIME;
+            }
+        };
 
     // [#3480] 값이 그 칸에 들어가는지 재고 넘치면 알린다.
     // 에이전트는 렌더 결과를 보지 않으므로, 신호가 없으면 표 경계를 벗어난 문서를

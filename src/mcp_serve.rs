@@ -201,6 +201,22 @@ fn served_tools(tool_defs: &[serde_json::Value]) -> Vec<serde_json::Value> {
         }
     }));
     tools.push(serde_json::json!({
+        "name": "hwp_doc_set_cell",
+        "description": "[#3603] 핸들의 표 격자 좌표(hwp_doc_tables 와 동일)에 값을 기록한다 — 디스크 미기록, hwp_doc_save 가 기록 지점. 병합으로 덮인 칸은 앵커 좌표를 안내하며 실패하고, 칸 넘침은 overflow 로 보고한다(무상태 hwp_set_cell 과 동형).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "docId": { "type": "string" },
+                "table": { "type": "integer", "minimum": 0, "description": "본문 최상위 표 번호" },
+                "row": { "type": "integer", "minimum": 0 },
+                "col": { "type": "integer", "minimum": 0 },
+                "text": { "type": "string", "description": "셀에 넣을 값 (빈 문자열이면 비우기)" },
+                "keepStyle": { "type": "boolean", "description": "true 면 셀 스타일 상속 유지 (기본: 검정·비이탤릭 정규화)" }
+            },
+            "required": ["docId", "table", "row", "col", "text"]
+        }
+    }));
+    tools.push(serde_json::json!({
         "name": "hwp_doc_fill_fields",
         "description": "[#3598] hwp_open 으로 연 핸들의 IR 에 누름틀 값을 직접 채운다(디스크 미기록 — hwp_doc_save 가 유일한 기록 지점). 여러 번 호출하면 누적된다. 판정 필드(filledCount/notFound/ambiguous)는 hwp_fill_fields 와 동형이고, 반복 필드는 '이름[N]' 으로 지목한다.",
         "inputSchema": {
@@ -259,6 +275,7 @@ fn handle_tool_call(
         "hwp_doc_text" => Ok(session_doc_text(&args, sessions)),
         "hwp_doc_search" => Ok(session_search(&args, sessions)),
         "hwp_doc_replace_text" => Ok(session_replace_text(&args, sessions)),
+        "hwp_doc_set_cell" => Ok(session_set_cell(&args, sessions)),
         "hwp_doc_fill_fields" => Ok(session_fill_fields(&args, sessions)),
         "hwp_doc_save" => Ok(session_save(&args, sessions)),
         "hwp_close" => Ok(session_close(&args, sessions)),
@@ -437,6 +454,95 @@ fn session_replace_text(args: &serde_json::Value, sessions: &mut Sessions) -> se
             "replace": replace,
             "caseSensitive": case_sensitive,
             "replacedCount": count,
+        })
+        .to_string(),
+    )
+}
+
+/// [#3603] 핸들의 표 격자 좌표에 값을 기록한다 — resolve_table_cell(CLI 와 공유)로
+/// 좌표를 해석하고, overflow 판정·검정 정규화까지 무상태 edit set-cell 과 동형이다.
+fn session_set_cell(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let (Some(table_no), Some(row), Some(col)) = (
+        args.get("table").and_then(|v| v.as_u64()),
+        args.get("row").and_then(|v| v.as_u64()),
+        args.get("col").and_then(|v| v.as_u64()),
+    ) else {
+        return tool_error("table/row/col 이 필요합니다".into());
+    };
+    let Some(new_text) = args.get("text").and_then(|t| t.as_str()).map(String::from) else {
+        return tool_error("text 가 필요합니다".into());
+    };
+    let keep_style = args
+        .get("keepStyle")
+        .and_then(|k| k.as_bool())
+        .unwrap_or(false);
+    let (sd, id) = match with_doc(args, sessions) {
+        Ok(v) => v,
+        Err(e) => return e,
+    };
+    let (sec, para, ctrl, cell_idx, para_lens, old_text) = match crate::resolve_table_cell(
+        sd.doc.document(),
+        table_no as usize,
+        row as u16,
+        col as u16,
+    ) {
+        Ok(v) => v,
+        Err(crate::CellResolveError::Usage(m)) | Err(crate::CellResolveError::Runtime(m)) => {
+            return tool_error(m)
+        }
+    };
+    let overflow = crate::measure_cell_overflow(&sd.doc, sec, para, ctrl, cell_idx, &new_text).map(
+        |(cell_w, text_w, lines)| {
+            serde_json::json!({
+                "target": format!("table{}[{},{}]", table_no, row, col),
+                "cellWidthPx": (cell_w * 100.0).round() / 100.0,
+                "textWidthPx": (text_w * 100.0).round() / 100.0,
+                "lines": lines,
+            })
+        },
+    );
+    for (pi, len) in para_lens.iter().enumerate() {
+        if *len == 0 {
+            continue;
+        }
+        if let Err(e) = sd.doc.delete_text_in_cell(
+            sec as u32,
+            para as u32,
+            ctrl as u32,
+            cell_idx as u32,
+            pi as u32,
+            0,
+            *len as u32,
+        ) {
+            return tool_error(format!("셀 비우기 실패(문단 {pi}): {e:?}"));
+        }
+    }
+    if !new_text.is_empty() {
+        if let Err(e) = sd.doc.insert_text_in_cell(
+            sec as u32,
+            para as u32,
+            ctrl as u32,
+            cell_idx as u32,
+            0,
+            0,
+            &new_text,
+        ) {
+            return tool_error(format!("셀 쓰기 실패: {e:?}"));
+        }
+        if !keep_style
+            && !crate::recolor_cell_text_black(sd.doc.document_mut(), sec, para, ctrl, cell_idx)
+        {
+            // 경고 수준 — 봉투에 남기지 않고 진행 (CLI 와 동일한 관용).
+        }
+    }
+    tool_ok_text(
+        serde_json::json!({
+            "schemaVersion": "1.0",
+            "docId": id,
+            "table": table_no, "row": row, "col": col,
+            "oldText": old_text,
+            "newText": new_text,
+            "overflow": overflow.map(|o| vec![o]).unwrap_or_default(),
         })
         .to_string(),
     )
