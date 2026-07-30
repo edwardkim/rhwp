@@ -417,6 +417,21 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "output", "format", "bytes", "wasDistribution", "verify", "verifyPages"],
         ),
         tool(
+            "hwp_export_hml",
+            "HML 원본을 HWPML 2.91 XML 로 재직렬화해 저장하고 봉투를 돌려준다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HML 경로" },
+                    "output": { "type": "string", "description": "출력 HML 경로" }
+                },
+                "required": ["path", "output"],
+            }),
+            "export-hml",
+            serde_json::json!(["export-hml", "{path}", "-o", "{output}", "--json"]),
+            &["schemaVersion", "source", "output", "format", "bytes"],
+        ),
+        tool(
             "hwp_build_from_ingest",
             "ingest JSON 명세로 새 HWPX 문서를 생성한다 — 기존 문서 편집이 아니라 무(無)에서 만드는 유일한 생성 경로. 스키마는 tools/rhwp-ingest/schema/ 참조.",
             serde_json::json!({
@@ -779,7 +794,14 @@ fn show_capabilities(args: &[String]) -> i32 {
                 "verifyPages",
             ],
         ),
-        cmd("export-hml", "export", "HML 원본을 HWPML 2.91 XML로 저장"),
+        cmd_json(
+            "export-hml",
+            "export",
+            "HML 원본을 HWPML 2.91 XML로 저장 (--json 봉투)",
+            false,
+            &["-o", "--json"],
+            &["schemaVersion", "source", "output", "format", "bytes"],
+        ),
         cmd(
             "export-doclang",
             "export",
@@ -7010,15 +7032,22 @@ fn export_hwpx(args: &[String]) -> i32 {
 struct HmlExportArgs {
     input: std::path::PathBuf,
     output: std::path::PathBuf,
+    /// [#3616] 봉투를 stdout 순수 JSON 으로.
+    json: bool,
 }
 
 fn parse_hml_export_args(args: &[String]) -> Result<HmlExportArgs, String> {
-    let usage = "rhwp export-hml <입력.hml> -o <출력.hml>";
+    let usage = "rhwp export-hml <입력.hml> -o <출력.hml> [--json]";
     let mut input = None;
     let mut output = None;
+    let mut json = false;
     let mut index = 0;
     while index < args.len() {
         match args[index].as_str() {
+            "--json" => {
+                json = true;
+                index += 1;
+            }
             "-o" | "--output" => {
                 let value = args
                     .get(index + 1)
@@ -7043,6 +7072,7 @@ fn parse_hml_export_args(args: &[String]) -> Result<HmlExportArgs, String> {
         }
     }
     Ok(HmlExportArgs {
+        json,
         input: input.ok_or_else(|| format!("입력 파일이 필요합니다\n사용법: {usage}"))?,
         output: output.ok_or_else(|| format!("출력 경로가 필요합니다\n사용법: {usage}"))?,
     })
@@ -7110,11 +7140,24 @@ fn export_hml(args: &[String]) {
         eprintln!("오류: 파일 저장 실패 - {}: {error}", paths.output.display());
         process::exit(1);
     });
-    println!(
-        "저장 완료: {} ({}KB)",
-        paths.output.display(),
-        bytes.len() / 1024
-    );
+    if paths.json {
+        println!(
+            "{}",
+            serde_json::json!({
+                "schemaVersion": "1.0",
+                "source": paths.input.display().to_string(),
+                "output": paths.output.display().to_string(),
+                "format": "hml",
+                "bytes": bytes.len(),
+            })
+        );
+    } else {
+        println!(
+            "저장 완료: {} ({}KB)",
+            paths.output.display(),
+            bytes.len() / 1024
+        );
+    }
 }
 
 /// `rhwp build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>`
