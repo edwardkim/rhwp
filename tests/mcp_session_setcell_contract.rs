@@ -121,9 +121,10 @@ fn set_cell_accumulates_and_survives_save() {
     let mut s = Server::started();
     let d = s.open(&src);
 
-    // 첫 표의 실존 앵커 좌표를 동적으로 고른다 (표본 병합 배치에 독립).
-    let (e, t) = s.call("hwp_doc_tables", serde_json::json!({"docId": d}));
-    assert!(!e, "{t}");
+    // 첫 표의 실존 앵커 좌표를 동적으로 고른다 — 무상태 export-tables 로
+    // (#3612 미머지 상태와 독립).
+    let et = run_cli(&["export-tables", src.to_str().unwrap(), "--json"]);
+    let t: serde_json::Value = serde_json::from_slice(&et.stdout).expect("export-tables");
     let cell = &t["tables"][0]["cells"][0];
     let (row, col) = (cell["row"].as_u64().unwrap(), cell["col"].as_u64().unwrap());
 
@@ -166,7 +167,8 @@ fn covered_cell_reports_anchor_via_is_error() {
     let mut s = Server::started();
     let d = s.open(&src);
     // 병합 스팬이 있는 셀을 찾아 그 덮인 좌표를 찌른다. 없으면 건너뜀.
-    let (_, t) = s.call("hwp_doc_tables", serde_json::json!({"docId": d}));
+    let et = run_cli(&["export-tables", src.to_str().unwrap(), "--json"]);
+    let t: serde_json::Value = serde_json::from_slice(&et.stdout).expect("export-tables");
     let cells = t["tables"][0]["cells"].as_array().unwrap().clone();
     let Some(m) = cells
         .iter()
