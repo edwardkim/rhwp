@@ -20,7 +20,7 @@ last_verified: 2026-07-31
 | contributor 원 head | `c930cac3cbedacdf0354fccaeb139b695c60db0d` |
 | 작성 시점 PR 상태 | `MERGEABLE` / `BEHIND` (최종 merge 전 재확인 필요) |
 | 원 변경 규모 | 5 files, +603 / -34 |
-| collaborator 추가 변경 | 최신 `devel` 병합 `f9b9ea9f3`, 계약 테스트 rustfmt 보정 `7d6c4a5bf` |
+| collaborator 추가 변경 | 최신 `devel` 병합 `f9b9ea9f3`, test rustfmt `7d6c4a5bf`, `src/main.rs` rustfmt `71c798465` |
 | 최종 merge 조건 | 최신 head full CI 통과, review 문서·오늘할일 포함, mergeable 및 작업지시자 승인 확인 |
 
 `export-pdf`, `export-markdown`은 stdout JSON envelope으로 산출물 목록·매니페스트를 돌려주고,
@@ -51,7 +51,7 @@ cherry-pick했다. PR 안의 `devel` merge commit은 제외했고 충돌은 없�
 | focused 신규 계약 5 바이너리 | 28 passed |
 | 기존 `cli_json_contract` | 22 passed |
 | `cargo test --profile release-test --tests` | 누적 통합 트리 exit 0 (완료까지 대기해 확인) |
-| `cargo fmt --check` | 원 head에서 계약 테스트 세 곳의 서식 불일치 발견 → `7d6c4a5bf` 보정 후 passed |
+| `cargo fmt --all -- --check` | 원 head test 세 곳 → `7d6c4a5bf`, 최신 CI가 지적한 `src/main.rs` 한 블록 → `71c798465`, 보정 후 passed |
 | `cargo clippy --all-targets -- -D warnings` | passed |
 | Markdown 링크·metadata | passed |
 
@@ -62,10 +62,11 @@ cherry-pick했다. PR 안의 `devel` merge commit은 제외했고 충돌은 없�
 
 ## 발견 사항과 수용 판단
 
-원 head의 CI 실패 원인은 `tests/output_axis_json_contract.rs`의 `cargo fmt --check` 세 곳뿐이었다.
-production 동작이나 JSON 계약의 실패가 아니라 차단성 서식 결함이므로, contributor 원 commit은 보존하고
-collaborator test-only commit으로 정렬했다. 이 결함은 #3597을 적층한 #3607에도 전파되므로 #3597을 먼저
-정상화·merge한다.
+원 source head의 첫 CI 실패는 `tests/output_axis_json_contract.rs`의 rustfmt 세 곳이었고,
+`7d6c4a5bf` 보정 뒤 최신 full CI는 `src/main.rs`의 `export-hwpx --json` closure 한 블록을 추가로
+지적했다. 모두 production 동작이나 JSON 계약의 실패가 아닌 차단성 서식 결함이다. contributor 원 commit은
+보존하고 두 collaborator style commit으로 정렬했다. 이 결함은 #3597을 적층한 #3607에도 전파되므로 #3597을
+먼저 정상화·merge한다.
 
 **조건부 merge 권고.** 현재 source branch에 보정과 이 review/오늘할일 commit을 추가한 뒤, 그 최신 head의
 full CI가 성공하고 `MERGEABLE` 상태가 재확인되면 #3597을 merge한다. #3596의 자동 close는 merge 뒤

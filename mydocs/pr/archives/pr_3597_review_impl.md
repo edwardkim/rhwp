@@ -13,7 +13,7 @@ last_verified: 2026-07-31
 | --- | --- | --- |
 | #3597 contributor 원 변경 | `c930cac3c` | rewrite·amend·force-push 금지 |
 | #3597 base update | `f9b9ea9f3` | 최신 `upstream/devel`을 source head에 병합 |
-| #3597 보정 | `7d6c4a5bf` | 계약 테스트 rustfmt만 별도 commit |
+| #3597 보정 | `7d6c4a5bf`, `71c798465` | 계약 테스트 및 `src/main.rs` rustfmt를 각각 별도 commit |
 | review 묶음 | 이 문서·`pr_3597_review.md`·`20260731.md` | code 보정과 분리한 docs commit |
 
 적층 관계는 `#3597 → #3607`, `#3599 → #3602`이며, #3610은 독립 문서 PR이다. 최신 `devel`에서
@@ -46,6 +46,6 @@ cherry-pick 누적 검토를 먼저 완료했지만, 이 통합 branch는 검증
   시작한다.
 - 최신 full CI 실패, aggregate pending/failure, mergeability 변화, LFS object/lock 필요은 해당 PR에서 멈추고
   원인을 분리한다. 이전에 merge한 PR을 되돌리거나 contributor history를 rewrite하지 않는다.
-- collaborator 보정에 문제가 발견되면 `7d6c4a5bf`만 별도 revert할 수 있어 contributor 원 변경과 review
-  문서가 독립적으로 보존된다.
+- collaborator 보정에 문제가 발견되면 `7d6c4a5bf` 또는 `71c798465`만 별도 revert할 수 있어 contributor
+  원 변경과 review 문서가 독립적으로 보존된다.
 - 모든 PR의 post-merge 확인이 끝난 뒤에만 전용 Cargo target과 검토 branch를 정리한다.
