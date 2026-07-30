@@ -1,0 +1,7 @@
+경영보고: tools=6
+행정서식: tools=8
+데이터분석: tools=5
+콘텐츠제작: tools=6
+아카이브검색: tools=7
+품질검증: tools=6
+개발통합: tools=22

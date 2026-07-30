@@ -49,10 +49,47 @@ impl Sessions {
     }
 }
 
-pub fn run() -> i32 {
+pub fn run(args: &[String]) -> i32 {
+    // [#3629] 직무 프로필: tools/list 자체를 역할 세트로 필터 — 호스트 설정 한 줄로
+    // '행정서식 전용 서버'를 등록한다. 단일 출처는 agent_profiles::PROFILES.
+    let mut profile: Option<&'static crate::agent_profiles::AgentProfile> = None;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--profile" => {
+                i += 1;
+                let Some(name) = args.get(i) else {
+                    eprintln!("오류: --profile 뒤에 역할 이름이 필요합니다.");
+                    eprintln!("사용 가능: {}", crate::agent_profiles::names().join(", "));
+                    return crate::EXIT_USAGE;
+                };
+                match crate::agent_profiles::find(name) {
+                    Some(p) => profile = Some(p),
+                    None => {
+                        eprintln!("오류: 알 수 없는 프로필 '{name}'");
+                        eprintln!("사용 가능: {}", crate::agent_profiles::names().join(", "));
+                        return crate::EXIT_USAGE;
+                    }
+                }
+            }
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return crate::EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
     let stdin = std::io::stdin();
     let stdout = std::io::stdout();
-    let tool_defs = crate::mcp_tool_definitions();
+    let mut tool_defs = crate::mcp_tool_definitions();
+    if let Some(p) = profile {
+        tool_defs.retain(|t| {
+            t["name"]
+                .as_str()
+                .map(|n| crate::agent_profiles::allows_tool(p, n))
+                .unwrap_or(false)
+        });
+    }
     let mut sessions = Sessions::new();
 
     for line in stdin.lock().lines() {
@@ -102,9 +139,12 @@ pub fn run() -> i32 {
                 }),
             ),
             "ping" => ok_response(id, serde_json::json!({})),
-            "tools/list" => {
-                ok_response(id, serde_json::json!({ "tools": served_tools(&tool_defs) }))
-            }
+            "tools/list" => ok_response(
+                id,
+                serde_json::json!({
+                    "tools": served_tools(&tool_defs, profile.map(|p| p.session).unwrap_or(true))
+                }),
+            ),
             "tools/call" => match handle_tool_call(&params, &tool_defs, &mut sessions) {
                 Ok(result) => ok_response(id, result),
                 Err(e) => error_response(id, INVALID_PARAMS, &e),
@@ -139,7 +179,7 @@ fn error_response(id: serde_json::Value, code: i64, message: &str) -> serde_json
 }
 
 /// tools/list 응답: 선언 도구(MCP 필수 3종만 노출) + 세션 도구 3종.
-fn served_tools(tool_defs: &[serde_json::Value]) -> Vec<serde_json::Value> {
+fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<serde_json::Value> {
     let mut tools: Vec<serde_json::Value> = tool_defs
         .iter()
         .map(|t| {
@@ -150,6 +190,9 @@ fn served_tools(tool_defs: &[serde_json::Value]) -> Vec<serde_json::Value> {
             })
         })
         .collect();
+    if !include_session {
+        return tools;
+    }
     tools.push(serde_json::json!({
         "name": "hwp_open",
         "description": "문서를 파싱해 세션 핸들(docId)을 연다. 대형 문서를 여러 번 조회할 때 재파싱을 피한다. 조회가 끝나면 hwp_close 로 닫는다.",

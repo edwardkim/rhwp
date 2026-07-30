@@ -3,6 +3,7 @@ use std::fs;
 use std::path::Path;
 use std::process;
 
+mod agent_profiles;
 mod atomic_file;
 mod mcp_serve;
 
@@ -173,7 +174,7 @@ fn main() {
         Some("export-hml") => export_hml(&args[2..]),
         Some("export-doclang") => exit_with(export_doclang(&args[2..])),
         Some("capabilities") => exit_with(show_capabilities(&args[2..])),
-        Some("mcp-serve") => exit_with(mcp_serve::run()),
+        Some("mcp-serve") => exit_with(mcp_serve::run(&args[2..])),
         Some("batch") => exit_with(run_batch(&args[2..])),
         Some("info") => exit_with(show_info(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
@@ -240,8 +241,16 @@ fn main() {
 /// MCP 서버 저자(및 함수 호출 클라이언트)가 도구 이름·설명·입력 JSON Schema·실행 배선을
 /// 손으로 옮겨 적지 않게 한다. `--json` 계약을 가진 명령이 늘면
 /// `capabilities_mcp_covers_every_json_command` 가 누락을 잡는다.
-fn show_mcp_tools() -> i32 {
-    let tools = mcp_tool_definitions();
+fn show_mcp_tools(profile: Option<&'static agent_profiles::AgentProfile>) -> i32 {
+    let mut tools = mcp_tool_definitions();
+    if let Some(p) = profile {
+        tools.retain(|t| {
+            t["name"]
+                .as_str()
+                .map(|n| agent_profiles::allows_tool(p, n))
+                .unwrap_or(false)
+        });
+    }
 
     let manifest = serde_json::json!({
         "schemaVersion": "1.0",
@@ -258,6 +267,13 @@ fn show_mcp_tools() -> i32 {
             "server": "mcp-serve",
         },
         "tools": tools,
+        "profile": profile.map(|p| serde_json::json!({
+            "name": p.name,
+            "summary": p.summary,
+            "session": p.session,
+            "recipe": p.recipe,
+        })),
+        "profiles": agent_profiles::names(),
     });
     println!("{manifest}");
     EXIT_OK
@@ -651,17 +667,49 @@ fn show_capabilities(args: &[String]) -> i32 {
     // 로드맵상 MCP 서버 자체는 별도 저장소(#227)지만, 그 서버가 도구 목록·입력 스키마를
     // 손으로 베껴 쓰면 rhwp 가 바뀔 때마다 조용히 낡는다. 원천을 여기서 낸다.
     let mut mcp_mode = false;
-    for a in args {
-        match a.as_str() {
+    // [#3629] 직무 프로필 필터 — 단일 출처는 agent_profiles::PROFILES.
+    let mut profile: Option<String> = None;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
             "--mcp" => mcp_mode = true,
+            "--profile" => {
+                i += 1;
+                match args.get(i) {
+                    Some(p) => profile = Some(p.clone()),
+                    None => {
+                        eprintln!("오류: --profile 뒤에 역할 이름이 필요합니다.");
+                        eprintln!("사용 가능: {}", agent_profiles::names().join(", "));
+                        return EXIT_USAGE;
+                    }
+                }
+            }
             other => {
                 eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
             }
         }
+        i += 1;
     }
+    let profile = match profile {
+        Some(name) => match agent_profiles::find(&name) {
+            Some(p) => Some(p),
+            None => {
+                eprintln!("오류: 알 수 없는 프로필 '{name}'");
+                eprintln!("사용 가능: {}", agent_profiles::names().join(", "));
+                return EXIT_USAGE;
+            }
+        },
+        None => None,
+    };
     if mcp_mode {
-        return show_mcp_tools();
+        return show_mcp_tools(profile);
+    }
+    if profile.is_some() {
+        eprintln!(
+            "오류: --profile 은 --mcp 와 함께 사용합니다 (capabilities --mcp --profile <역할>)."
+        );
+        return EXIT_USAGE;
     }
 
     fn cmd(name: &str, category: &str, summary: &str) -> serde_json::Value {
