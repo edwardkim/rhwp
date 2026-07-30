@@ -6773,22 +6773,21 @@ fn export_hwpx(args: &[String]) -> i32 {
     // 종료 코드 계약(0/1/3/4)은 무변경 — 차이가 검출되어도 봉투를 stdout 에 내고
     // exit 3/4 로 끝난다(ir-diff --json 과 같은 "판정은 데이터" 규약).
     let json_mode = verify_options.json;
-    let emit_envelope = |bytes_len: usize,
-                         verify: serde_json::Value,
-                         verify_pages: serde_json::Value| {
-        println!(
-            "{}",
-            serde_json::json!({
-                "schemaVersion": "1.0",
-                "source": positionals[0],
-                "output": output_path.display().to_string(),
-                "format": "hwpx",
-                "bytes": bytes_len,
-                "verify": verify,
-                "verifyPages": verify_pages,
-            })
-        );
-    };
+    let emit_envelope =
+        |bytes_len: usize, verify: serde_json::Value, verify_pages: serde_json::Value| {
+            println!(
+                "{}",
+                serde_json::json!({
+                    "schemaVersion": "1.0",
+                    "source": positionals[0],
+                    "output": output_path.display().to_string(),
+                    "format": "hwpx",
+                    "bytes": bytes_len,
+                    "verify": verify,
+                    "verifyPages": verify_pages,
+                })
+            );
+        };
 
     match doc.export_hwpx_native() {
         Ok(bytes) => match fs::write(&output_path, &bytes) {
