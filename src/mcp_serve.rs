@@ -32,6 +32,9 @@ struct SessionDoc {
     doc: HwpDocument,
     /// 원본이 HWPX 였는가. save 는 이 값으로 산출 형식을 정한다(HWPX→HWPX, 그 외→HWP5).
     source_is_hwpx: bool,
+    /// [#3609] hwp_doc_info 봉투용 — open 시점의 원본 크기·감지 형식.
+    size_bytes: usize,
+    detected_format: rhwp::parser::FileFormat,
 }
 
 /// 열린 문서 핸들 테이블. 서버 프로세스가 사는 동안 유지된다.
@@ -174,6 +177,26 @@ fn served_tools(tool_defs: &[serde_json::Value]) -> Vec<serde_json::Value> {
         }
     }));
     tools.push(serde_json::json!({
+        "name": "hwp_doc_info",
+        "description": "[#3609] 핸들의 메타(형식·페이지/문단 수·폰트)를 재파싱 없이 조회한다. 편집 후 페이지 수 변화를 추적할 때 쓴다. 봉투는 hwp_info 와 동형.",
+        "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
+    }));
+    tools.push(serde_json::json!({
+        "name": "hwp_doc_fields",
+        "description": "[#3609] 핸들의 누름틀을 재파싱 없이 조사한다. hwp_doc_fill_fields 직후 반영값 확인에 쓴다. 봉투는 hwp_fields 와 동형.",
+        "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
+    }));
+    tools.push(serde_json::json!({
+        "name": "hwp_doc_tables",
+        "description": "[#3609] 핸들의 표 격자를 재파싱 없이 추출한다. 봉투는 hwp_export_tables 와 동형.",
+        "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
+    }));
+    tools.push(serde_json::json!({
+        "name": "hwp_doc_render_page",
+        "description": "[#3609] 핸들에서 해당 쪽을 SVG 로 렌더해 저장한다 — 편집 직후 눈검증(VLM) 루프가 세션 안에서 닫힌다.",
+        "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" }, "page": { "type": "integer", "minimum": 0 }, "output": { "type": "string", "description": "출력 SVG 경로" } }, "required": ["docId", "page", "output"] }
+    }));
+    tools.push(serde_json::json!({
         "name": "hwp_doc_search",
         "description": "[#3601] hwp_open 으로 연 핸들에서 재파싱 없이 검색한다. 주소 어휘(matches[].section/paragraph/page/context)는 hwp_search 와 동형 — 대형 문서에서 '어디를 고칠까'를 반복 탐색할 때 쓴다.",
         "inputSchema": {
@@ -257,6 +280,10 @@ fn handle_tool_call(
     match name {
         "hwp_open" => Ok(session_open(&args, sessions)),
         "hwp_doc_text" => Ok(session_doc_text(&args, sessions)),
+        "hwp_doc_info" => Ok(session_info(&args, sessions)),
+        "hwp_doc_fields" => Ok(session_fields(&args, sessions)),
+        "hwp_doc_tables" => Ok(session_tables(&args, sessions)),
+        "hwp_doc_render_page" => Ok(session_render_page(&args, sessions)),
         "hwp_doc_search" => Ok(session_search(&args, sessions)),
         "hwp_doc_replace_text" => Ok(session_replace_text(&args, sessions)),
         "hwp_doc_fill_fields" => Ok(session_fill_fields(&args, sessions)),
@@ -308,10 +335,9 @@ fn session_open(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
         Err(e) => return tool_error(format!("{path} 파싱 실패: {e:?}")),
     };
     // [#3598] save 의 형식 보존을 위해 원본 형식을 핸들에 함께 기억한다.
-    let source_is_hwpx = matches!(
-        rhwp::parser::detect_format(&data),
-        rhwp::parser::FileFormat::Hwpx
-    );
+    let detected_format = rhwp::parser::detect_format(&data);
+    let source_is_hwpx = matches!(detected_format, rhwp::parser::FileFormat::Hwpx);
+    let size_bytes = data.len();
     let page_count = doc.page_count();
     let doc_id = format!("doc-{}", sessions.next_id);
     sessions.next_id += 1;
@@ -320,6 +346,8 @@ fn session_open(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
         SessionDoc {
             doc,
             source_is_hwpx,
+            size_bytes,
+            detected_format,
         },
     );
     tool_ok_text(
@@ -365,6 +393,90 @@ fn session_doc_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
             "docId": doc_id,
             "pageCount": page_objs.len(),
             "pages": page_objs,
+        })
+        .to_string(),
+    )
+}
+
+/// [#3609] 세션 조회 4종 — 전부 무상태 봉투 helper 재사용(동형 보장).
+fn with_doc<'a>(
+    args: &serde_json::Value,
+    sessions: &'a mut Sessions,
+) -> Result<(&'a mut SessionDoc, String), serde_json::Value> {
+    let Some(doc_id) = args.get("docId").and_then(|d| d.as_str()) else {
+        return Err(tool_error("docId 가 필요합니다".into()));
+    };
+    let id = doc_id.to_string();
+    match sessions.docs.get_mut(&id) {
+        Some(sd) => Ok((sd, id)),
+        None => Err(tool_error(format!(
+            "열려 있지 않은 핸들: {id} (hwp_open 먼저)"
+        ))),
+    }
+}
+
+fn session_info(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let (sd, id) = match with_doc(args, sessions) {
+        Ok(v) => v,
+        Err(e) => return e,
+    };
+    tool_ok_text(
+        crate::info_json_value(&id, sd.size_bytes, sd.detected_format, &sd.doc).to_string(),
+    )
+}
+
+fn session_fields(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let (sd, id) = match with_doc(args, sessions) {
+        Ok(v) => v,
+        Err(e) => return e,
+    };
+    let fields = crate::collect_field_records(&sd.doc);
+    tool_ok_text(crate::fields_json_value(&id, &fields).to_string())
+}
+
+fn session_tables(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let (sd, id) = match with_doc(args, sessions) {
+        Ok(v) => v,
+        Err(e) => return e,
+    };
+    let tables = rhwp::document_core::queries::table_extract::extract_tables(sd.doc.document());
+    tool_ok_text(crate::tables_json_value(&id, &tables).to_string())
+}
+
+fn session_render_page(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let Some(page) = args.get("page").and_then(|p| p.as_u64()) else {
+        return tool_error("page 가 필요합니다".into());
+    };
+    let Some(output) = args
+        .get("output")
+        .and_then(|o| o.as_str())
+        .map(String::from)
+    else {
+        return tool_error("output 이 필요합니다".into());
+    };
+    let (sd, id) = match with_doc(args, sessions) {
+        Ok(v) => v,
+        Err(e) => return e,
+    };
+    let page_count = sd.doc.page_count();
+    if page as u32 >= page_count {
+        return tool_error(format!("페이지 범위 초과: {page} (0~{})", page_count - 1));
+    }
+    let svg = match sd.doc.render_page_svg(page as u32) {
+        Ok(s) => s,
+        Err(e) => return tool_error(format!("페이지 {page} 렌더 실패: {e:?}")),
+    };
+    if let Err(e) = std::fs::write(&output, &svg) {
+        return tool_error(format!("{output} 쓰기 실패: {e}"));
+    }
+    tool_ok_text(
+        serde_json::json!({
+            "schemaVersion": "1.0",
+            "docId": id,
+            "page": page,
+            "format": "svg",
+            "output": output,
+            "bytes": svg.len(),
         })
         .to_string(),
     )
