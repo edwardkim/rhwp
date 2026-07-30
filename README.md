@@ -225,6 +225,29 @@ npx vite --host 0.0.0.0 --port 7700
 
 Open `http://localhost:7700` in your browser.
 
+## AI 에이전트에서 쓰기 (MCP)
+
+rhwp 는 MCP(Model Context Protocol) 서버를 내장한다 — 설정 한 줄이면 Claude Code 등
+MCP 호스트가 HWP/HWPX 를 읽고·검색하고·채우고·변환한다:
+
+```jsonc
+// .mcp.json
+{ "mcpServers": { "rhwp": { "command": "rhwp", "args": ["mcp-serve"] } } }
+```
+
+첫 호출 3종 (조사 → 위치 → 채움):
+
+```jsonc
+hwp_info        { "path": "문서.hwp" }                       // 규모·형식 파악
+hwp_search      { "path": "문서.hwp", "query": "위임전결" }   // 몇 쪽 어느 셀인지
+hwp_fill_fields { "path": "서식.hwp", "data": {"성명":"홍길동"} }  // 누름틀 채움
+```
+
+대형 문서는 `hwp_open` → `hwp_doc_*` 세션 도구로 재파싱 없이 반복 조회·편집한다.
+전체 도구 지도·오류 의미론은 [MCP 통합 가이드](mydocs/manual/mcp_integration_guide.md),
+막히면 [에이전트 실패 사전](mydocs/manual/agent_troubleshooting_guide.md).
+CLI 만 쓸 때의 입구는 `rhwp capabilities` 한 번이면 된다(전 명령 기계 계약 자기서술).
+
 ## CLI Usage
 
 ### SVG Export
