@@ -1,0 +1,35 @@
+# rhwp
+
+> 알(R), 모두의 한글 — Rust + WebAssembly 로 HWP/HWPX/HWP3/HML 문서를 파싱·편집·렌더링하는 오픈소스 문서 엔진. CLI `--json` 봉투(#2707 종료 코드)와 MCP 서버(`rhwp mcp-serve`)를 갖춰 AI 에이전트가 1급 소비자다.
+
+에이전트는 [에이전트 지식 지도](mydocs/manual/agent_knowledge_map.md)를 첫 문서로 읽는다 — 작업별 명령 결정 표, 봉투 필드 사전, 실패 사전 앵커가 한 곳에 있다.
+
+## 시작하기
+
+- [README](README.md): 프로젝트 개요·로드맵·온라인 데모.
+- [AGENTS.md](AGENTS.md): 저장소 작업 규약과 문서 로딩 순서.
+- [에이전트 지식 지도](mydocs/manual/agent_knowledge_map.md): 단일 진입점 — 3문 진입(작업/실패/추가)·봉투 필드 사전·주소 어휘·표본/계약 테스트 지도.
+- [manual 문서 지도](mydocs/manual/README.md): 상황별 권위 문서 선택표.
+- [온보딩 가이드](mydocs/manual/onboarding_guide.md): 신규 기여자 시작 절차.
+
+## 계약 — 종료 코드·JSON 봉투
+
+- [CLI 명령어 매뉴얼](mydocs/manual/cli_commands.md): 명령·옵션·`--json` 봉투의 canonical reference. 종료 코드 계약(0 성공/1 런타임/2 사용법/3 IR 차이/4 쪽수 불일치, #2707) 포함.
+- [CLI JSON 파이프라인 가이드](mydocs/manual/cli_json_pipeline_guide.md): stdout 순수 JSON/NDJSON 규약과 `batch` 파이프라인의 실측 시나리오.
+- [MCP 통합 가이드](mydocs/manual/mcp_integration_guide.md): `capabilities --mcp` 매니페스트 소비와 `mcp-serve` 표준 서버, 판정 3층(JSON-RPC 오류/isError/봉투) 의미론.
+
+## 실무 가이드
+
+- [에이전트 실무 대체 예제집](mydocs/manual/agent_task_playbook.md): 사람 업무 → 명령 시퀀스 → 기계 검증 8개 시나리오 + 공무원 업무 커버리지 21행.
+- [서식 자동화 심화 가이드](mydocs/manual/form_filling_guide.md): fill-fields·set-cell·replace-text 3축의 실물 서식 함정과 판정 규칙(ambiguous·overflow·재독 대조).
+
+## 문제 해결
+
+- [에이전트 실패 사전](mydocs/manual/agent_troubleshooting_guide.md): 오류 문자열 그대로 검색되는 증상별 원인·처방.
+- [문서 진단 도구](mydocs/manual/document_diagnostics_tool_manual.md): info → dump → diag 순으로 입력 문서 자체의 이상을 좁히는 절차.
+
+## 기여·로드맵
+
+- [기여 가이드](CONTRIBUTING.md): 기여 절차와 규약.
+- [에이전트 표면 플레이북](mydocs/manual/agent_surface_playbook.md): CLI `--json`·MCP 도구를 추가하는 공식 절차와 수용 기준.
+- [에이전트 표면 로드맵 #3608](https://github.com/edwardkim/rhwp/issues/3608): 실측 커버리지 매트릭스·마일스톤(M1~M17)·도구 백로그의 권위.
