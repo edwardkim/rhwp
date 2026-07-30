@@ -587,6 +587,22 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "find", "replace", "caseSensitive", "dryRun", "replacedCount", "output", "outputFormat"],
         ),
         tool(
+            "hwp_set_checkbox",
+            "실물 양식의 k번째(0 기준, hwp_search 문서 순서) 체크박스 문자를 체크한다(기본 □→☑). 전량 치환이 아니라 지정한 하나만 바꾼다 — 정부 서식의 해당 항목 체크용. 산출물은 입력 형식을 따른다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWP/HWPX 문서 경로" },
+                    "occurrence": { "type": "integer", "minimum": 0, "description": "몇 번째 □ 인가 (0 기준, hwp_search 로 확인)" },
+                    "output": { "type": "string", "description": "출력 경로" }
+                },
+                "required": ["path", "occurrence", "output"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "replace-text", "{path}", "--find", "□", "--replace", "☑", "--occurrence", "{occurrence}", "-o", "{output}", "--json"]),
+            &["schemaVersion", "source", "find", "replace", "occurrence", "dryRun", "replacedCount", "output", "outputFormat"],
+        ),
+        tool(
             "hwp_set_cell",
             "HWP 표의 격자 좌표(hwp_export_tables 와 동일)로 셀 값을 바꿔 새 문서를 만든다 — 누름틀 없는 실물 표 양식 채우기. 먼저 hwp_export_tables 로 좌표를 확인한 뒤 사용한다. 병합으로 덮인 칸은 앵커 좌표를 안내하며 실패한다. 산출물은 입력 형식을 따른다(HWPX 입력 → HWPX 산출).",
             serde_json::json!({
@@ -899,7 +915,7 @@ fn show_capabilities(args: &[String]) -> i32 {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환 / set-cell: 표 셀 기록",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록",
             false,
             &[
                 "--data",
@@ -9241,6 +9257,8 @@ fn edit_replace_text(args: &[String]) -> i32 {
     let mut ignore_case = false;
     let mut dry_run = false;
     let mut json_mode = false;
+    // [#3395] 문서 순서 k번째(0 기준) 매치만 치환 — 체크박스류 반복 문자 지목.
+    let mut occurrence: Option<usize> = None;
 
     let mut i = 0;
     while i < args.len() {
@@ -9276,6 +9294,16 @@ fn edit_replace_text(args: &[String]) -> i32 {
                 }
             }
             "--ignore-case" => ignore_case = true,
+            "--occurrence" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
+                    Some(n) => occurrence = Some(n),
+                    None => {
+                        eprintln!("오류: --occurrence 뒤에 0 이상의 정수가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
             "--dry-run" => dry_run = true,
             "--json" => json_mode = true,
             other if other.starts_with('-') => {
@@ -9320,9 +9348,16 @@ fn edit_replace_text(args: &[String]) -> i32 {
 
     let replaced_count = if dry_run {
         // 파일을 건드리지 않는다 — 읽기 전용 검색으로 치환 예정 건수만 센다.
-        doc.grep(find, !ignore_case, None).len()
+        match occurrence {
+            // dry-run + occurrence: 그 순번이 존재하면 1, 아니면 0.
+            Some(n) => usize::from(doc.grep(find, !ignore_case, None).len() > n),
+            None => doc.grep(find, !ignore_case, None).len(),
+        }
     } else {
-        let result = match doc.replace_all(find, replace, !ignore_case) {
+        let result = match match occurrence {
+            Some(n) => doc.replace_nth_native(find, replace, !ignore_case, n),
+            None => doc.replace_all_native(find, replace, !ignore_case),
+        } {
             Ok(r) => r,
             Err(e) => {
                 eprintln!("오류: 치환 실패 - {:?}", e);
@@ -9372,6 +9407,7 @@ fn edit_replace_text(args: &[String]) -> i32 {
             "source": file_path,
             "find": find,
             "replace": replace,
+            "occurrence": occurrence,
             "caseSensitive": !ignore_case,
             "dryRun": dry_run,
             "replacedCount": replaced_count,
