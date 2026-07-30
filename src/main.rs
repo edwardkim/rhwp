@@ -112,8 +112,8 @@ fn load_document_core(data: &[u8]) -> Result<rhwp::document_core::DocumentCore, 
 }
 
 /// args 전체를 스캔해 --password <pw> / --password-stdin 을 추출·제거한다.
-/// 반환: (정제된 args, 비밀번호). 관련 토큰이 없으면 비밀번호는 None.
-fn extract_global_password(mut args: Vec<String>) -> Result<(Vec<String>, Option<String>), i32> {
+/// 정제된 인자는 제자리에서 보존하고, 비밀번호만 반환한다.
+fn extract_global_password(args: &mut Vec<String>) -> Result<Option<String>, i32> {
     let mut password: Option<String> = None;
     let mut i = 1; // args[0] 은 프로그램 경로
     while i < args.len() {
@@ -146,13 +146,13 @@ fn extract_global_password(mut args: Vec<String>) -> Result<(Vec<String>, Option
             _ => i += 1,
         }
     }
-    Ok((args, password))
+    Ok(password)
 }
 
 fn main() {
-    let raw_args: Vec<String> = env::args().collect();
+    let mut args: Vec<String> = env::args().collect();
     // 전역 비밀번호 pre-scan: 어느 위치든 --password / --password-stdin 을 뽑아낸다.
-    let (args, password) = match extract_global_password(raw_args) {
+    let password = match extract_global_password(&mut args) {
         Ok(v) => v,
         Err(code) => process::exit(code),
     };
@@ -9958,21 +9958,21 @@ mod tests {
 
     #[test]
     fn global_password_option_is_removed_from_any_position() {
-        let args = vec![
+        let mut args = vec![
             "rhwp".to_string(),
             "info".to_string(),
             "sample.hwp".to_string(),
             "--password".to_string(),
             "secret".to_string(),
         ];
-        let (clean, password) = extract_global_password(args).unwrap();
-        assert_eq!(clean, ["rhwp", "info", "sample.hwp"]);
+        let password = extract_global_password(&mut args).unwrap();
+        assert_eq!(args, ["rhwp", "info", "sample.hwp"]);
         assert_eq!(password.as_deref(), Some("secret"));
     }
 
     #[test]
     fn duplicate_global_password_options_are_rejected() {
-        let args = vec![
+        let mut args = vec![
             "rhwp".to_string(),
             "--password".to_string(),
             "first".to_string(),
@@ -9982,7 +9982,7 @@ mod tests {
             "second".to_string(),
         ];
         assert!(matches!(
-            extract_global_password(args),
+            extract_global_password(&mut args),
             Err(code) if code == EXIT_USAGE
         ));
     }
