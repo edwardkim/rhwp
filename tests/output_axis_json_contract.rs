@@ -239,9 +239,9 @@ fn json_runtime_failure_keeps_stdout_empty() {
 }
 
 #[test]
-fn convert_does_not_gain_json_silently() {
-    // 범위 가드: 본 계약은 export-hwpx 까지다. convert 가 --json 을 조용히 받아들이면
-    // (구현 없이) 소비자는 빈 stdout 을 성공 봉투로 오인한다 — 명시적으로 exit 2 를 고정.
+fn convert_json_envelope_with_verify() {
+    // [#3605] 종전에는 allow_json 게이트가 구현 없는 --json 수용을 exit 2 로 막았다.
+    // 구현이 생겼으므로 가드의 목적을 전환한다: 봉투·exit 정합을 고정한다.
     let p = sample();
     if !p.exists() {
         eprintln!("샘플 없음 — 건너뜀");
@@ -252,12 +252,22 @@ fn convert_does_not_gain_json_silently() {
         "convert",
         p.to_str().unwrap(),
         out.to_str().unwrap(),
+        "--verify",
         "--json",
     ];
     let output = run(&args);
+    let v = parse_json(&args, &output);
+    assert_eq!(v["schemaVersion"], "1.0", "{v}");
+    assert_eq!(v["format"], "hwp5", "{v}");
+    assert!(v["bytes"].as_u64().unwrap_or(0) > 0, "{v}");
+    assert!(out.exists(), "산출물은 판정과 무관하게 저장된다");
+    let identical = v["verify"]["identical"]
+        .as_bool()
+        .unwrap_or_else(|| panic!("verify.identical 필요: {v}"));
+    let expected = if identical { 0 } else { 3 };
     assert_eq!(
         output.status.code(),
-        Some(2),
+        Some(expected),
         "{}",
         describe(&args, &output)
     );

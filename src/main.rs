@@ -402,6 +402,21 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "output", "format", "bytes", "verify", "verifyPages"],
         ),
         tool(
+            "hwp_convert_hwp5",
+            "HWPX(또는 배포용 HWP)를 편집 가능 HWP5 로 변환 저장하고 IR 왕복 검증(--verify)까지 한 번에 수행한다. verify.identical=false(CLI exit 3)는 변환은 저장됐지만 IR 차이가 있다는 판정이다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWPX/HWP 문서 경로" },
+                    "output": { "type": "string", "description": "출력 HWP 파일 경로" }
+                },
+                "required": ["path", "output"],
+            }),
+            "convert",
+            serde_json::json!(["convert", "{path}", "{output}", "--verify", "--json"]),
+            &["schemaVersion", "source", "output", "format", "bytes", "wasDistribution", "verify", "verifyPages"],
+        ),
+        tool(
             "hwp_build_from_ingest",
             "ingest JSON 명세로 새 HWPX 문서를 생성한다 — 기존 문서 편집이 아니라 무(無)에서 만드는 유일한 생성 경로. 스키마는 tools/rhwp-ingest/schema/ 참조.",
             serde_json::json!({
@@ -808,10 +823,22 @@ fn show_capabilities(args: &[String]) -> i32 {
             "export",
             "페이지별 render tree bbox JSON 덤프",
         ),
-        cmd(
+        cmd_json(
             "convert",
             "export",
-            "HWP↔HWPX 변환 (--verify/--verify-pages 게이트)",
+            "HWPX/배포용→편집 가능 HWP5 변환 (--verify 게이트 exit 3/4, --json 봉투)",
+            false,
+            &["--verify", "--verify-pages", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "output",
+                "format",
+                "bytes",
+                "wasDistribution",
+                "verify",
+                "verifyPages",
+            ],
         ),
         cmd_json(
             "build-from-ingest",
@@ -6512,10 +6539,10 @@ fn extract_pages(args: &[String]) -> i32 {
 fn convert_hwp(args: &[String]) -> i32 {
     let (positionals, verify_options) = match parse_conversion_verify_args(
         args,
-        "rhwp convert <입력.hwp|입력.hwpx> <출력.hwp> [--verify] [--verify-pages]",
+        "rhwp convert <입력.hwp|입력.hwpx> <출력.hwp> [--verify] [--verify-pages] [--json]",
         2,
         2,
-        false,
+        true,
     ) {
         Ok(parsed) => parsed,
         Err(message) => {
@@ -6549,15 +6576,16 @@ fn convert_hwp(args: &[String]) -> i32 {
     } else {
         None
     };
+    let json_mode = verify_options.json;
     let was_distribution = doc.document().header.distribution;
-    if !was_distribution {
+    if !was_distribution && !json_mode {
         println!("{}: 이미 편집 가능한 문서입니다.", input_path);
     }
 
     // 변환
     match doc.convert_to_editable_native() {
         Ok(_) => {
-            if was_distribution {
+            if was_distribution && !json_mode {
                 println!("배포용 → 편집 가능 변환 완료");
             }
         }
@@ -6568,10 +6596,32 @@ fn convert_hwp(args: &[String]) -> i32 {
     }
 
     // 직렬화
+    // [#3605] JSON 봉투 — export-hwpx(#3596)와 같은 "판정은 데이터" 규약.
+    let emit_envelope =
+        |bytes_len: usize, verify: serde_json::Value, verify_pages: serde_json::Value| {
+            println!(
+                "{}",
+                serde_json::json!({
+                    "schemaVersion": "1.0",
+                    "source": input_path,
+                    "output": output_path,
+                    "format": "hwp5",
+                    "bytes": bytes_len,
+                    "wasDistribution": was_distribution,
+                    "verify": verify,
+                    "verifyPages": verify_pages,
+                })
+            );
+        };
     match doc.export_hwp_with_adapter() {
         Ok(bytes) => match fs::write(output_path, &bytes) {
             Ok(_) => {
-                println!("저장 완료: {} ({}KB)", output_path, bytes.len() / 1024);
+                if !json_mode {
+                    println!("저장 완료: {} ({}KB)", output_path, bytes.len() / 1024);
+                }
+                let mut verify_report = serde_json::Value::Null;
+                let mut verify_pages_report = serde_json::Value::Null;
+                let mut exit_code = EXIT_OK;
                 if verify_options.enabled() {
                     let reloaded = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
                         Ok(d) => d,
@@ -6588,9 +6638,20 @@ fn convert_hwp(args: &[String]) -> i32 {
                                 "검증 실패(--verify-pages): 변환 전 {}쪽, 재파싱 후 {}쪽",
                                 before, after
                             );
+                            verify_pages_report = serde_json::json!({
+                                "before": before, "after": after, "identical": false,
+                            });
+                            if json_mode {
+                                emit_envelope(bytes.len(), verify_report, verify_pages_report);
+                            }
                             process::exit(4);
                         }
-                        println!("검증 통과(--verify-pages): {}쪽", before);
+                        if !json_mode {
+                            println!("검증 통과(--verify-pages): {}쪽", before);
+                        }
+                        verify_pages_report = serde_json::json!({
+                            "before": before, "after": after, "identical": true,
+                        });
                     }
 
                     if verify_options.verify {
@@ -6607,10 +6668,25 @@ fn convert_hwp(args: &[String]) -> i32 {
                         };
                         if !diff.is_empty() {
                             print_ir_verify_failure(&diff, output_path);
-                            process::exit(3);
+                            verify_report = serde_json::json!({
+                                "identical": false, "diffCount": diff.differences.len(),
+                            });
+                            exit_code = 3;
+                        } else {
+                            if !json_mode {
+                                println!("검증 통과(--verify): IR 차이 없음");
+                            }
+                            verify_report = serde_json::json!({
+                                "identical": true, "diffCount": 0,
+                            });
                         }
-                        println!("검증 통과(--verify): IR 차이 없음");
                     }
+                }
+                if json_mode {
+                    emit_envelope(bytes.len(), verify_report, verify_pages_report);
+                }
+                if exit_code != EXIT_OK {
+                    process::exit(exit_code);
                 }
                 EXIT_OK
             }
