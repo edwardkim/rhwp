@@ -455,6 +455,23 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "format", "mime", "width", "height", "bytes", "dataUri"],
         ),
         tool(
+            "hwp_split_document",
+            "문서에서 지정한 쪽 범위만 남겨 새 파일로 저장한다 — 대형 문서의 발췌·부분 제출·결함 이분법용. 쪽 단위로 자르되 문단 단위로 지우므로 결과 쪽수는 재조판으로 달라질 수 있다(pagesAfter 로 실측 보고).",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWP/HWPX 문서 경로" },
+                    "from": { "type": "integer", "minimum": 0, "description": "시작 쪽 (0 기준, 포함)" },
+                    "to": { "type": "integer", "minimum": 0, "description": "끝 쪽 (0 기준, 포함)" },
+                    "output": { "type": "string", "description": "출력 파일 경로" }
+                },
+                "required": ["path", "from", "to", "output"],
+            }),
+            "extract-pages",
+            serde_json::json!(["extract-pages", "{path}", "{output}", "--from", "{from}", "--to", "{to}", "--json"]),
+            &["schemaVersion", "source", "output", "from", "to", "pagesBefore", "pagesAfter", "paragraphsKept", "paragraphsRemoved"],
+        ),
+        tool(
             "hwp_export_tables",
             "문서의 표를 병합 정보와 중첩 구조를 보존한 격자 JSON으로 추출한다.",
             path_schema(serde_json::json!({})),
@@ -830,6 +847,24 @@ fn show_capabilities(args: &[String]) -> i32 {
             false,
             &["-o", "--json"],
             &["schemaVersion", "source", "tableCount", "tables"],
+        ),
+        cmd_json(
+            "extract-pages",
+            "export",
+            "쪽 범위만 남겨 저장 (--json 봉투; 발췌·부분 제출·결함 이분법)",
+            false,
+            &["--from", "--to", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "output",
+                "from",
+                "to",
+                "pagesBefore",
+                "pagesAfter",
+                "paragraphsKept",
+                "paragraphsRemoved",
+            ],
         ),
         cmd_json(
             "search",
