@@ -402,6 +402,29 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "output", "format", "bytes", "verify", "verifyPages"],
         ),
         tool(
+            "hwp_build_from_ingest",
+            "ingest JSON 명세로 새 HWPX 문서를 생성한다 — 기존 문서 편집이 아니라 무(無)에서 만드는 유일한 생성 경로. 스키마는 tools/rhwp-ingest/schema/ 참조.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "ingest JSON 경로" },
+                    "output": { "type": "string", "description": "출력 HWPX 파일 경로" }
+                },
+                "required": ["path", "output"],
+            }),
+            "build-from-ingest",
+            serde_json::json!(["build-from-ingest", "{path}", "-o", "{output}", "--json"]),
+            &["schemaVersion", "source", "output", "format", "bytes", "questionCount", "paragraphCount"],
+        ),
+        tool(
+            "hwp_thumbnail",
+            "문서를 열지 않고 내장 썸네일(PrvImage)만 뽑아 data URI 로 돌려준다 — 대량 아카이브를 훑을 때 초경량 미리보기(렌더 없이 즉시, VLM 직행).",
+            path_schema(serde_json::json!({})),
+            "thumbnail",
+            serde_json::json!(["thumbnail", "{path}", "--data-uri", "--json"]),
+            &["schemaVersion", "source", "format", "mime", "width", "height", "bytes", "dataUri"],
+        ),
+        tool(
             "hwp_export_tables",
             "문서의 표를 병합 정보와 중첩 구조를 보존한 격자 JSON으로 추출한다.",
             path_schema(serde_json::json!({})),
@@ -790,8 +813,39 @@ fn show_capabilities(args: &[String]) -> i32 {
             "export",
             "HWP↔HWPX 변환 (--verify/--verify-pages 게이트)",
         ),
-        cmd("build-from-ingest", "export", "ingest JSON에서 HWPX 생성"),
-        cmd("thumbnail", "export", "내장 썸네일(PrvImage) 추출"),
+        cmd_json(
+            "build-from-ingest",
+            "export",
+            "ingest JSON에서 HWPX 생성 (--json 봉투)",
+            false,
+            &["-o", "--media-dir", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "output",
+                "format",
+                "bytes",
+                "questionCount",
+                "paragraphCount",
+            ],
+        ),
+        cmd_json(
+            "thumbnail",
+            "export",
+            "내장 썸네일(PrvImage) 추출 (--json 봉투)",
+            false,
+            &["-o", "--base64", "--data-uri", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "format",
+                "mime",
+                "width",
+                "height",
+                "bytes",
+                "output",
+            ],
+        ),
         // ── 편집 (#3329 Stage 3) ──
         cmd_json(
             "edit",
@@ -6773,22 +6827,21 @@ fn export_hwpx(args: &[String]) -> i32 {
     // 종료 코드 계약(0/1/3/4)은 무변경 — 차이가 검출되어도 봉투를 stdout 에 내고
     // exit 3/4 로 끝난다(ir-diff --json 과 같은 "판정은 데이터" 규약).
     let json_mode = verify_options.json;
-    let emit_envelope = |bytes_len: usize,
-                         verify: serde_json::Value,
-                         verify_pages: serde_json::Value| {
-        println!(
-            "{}",
-            serde_json::json!({
-                "schemaVersion": "1.0",
-                "source": positionals[0],
-                "output": output_path.display().to_string(),
-                "format": "hwpx",
-                "bytes": bytes_len,
-                "verify": verify,
-                "verifyPages": verify_pages,
-            })
-        );
-    };
+    let emit_envelope =
+        |bytes_len: usize, verify: serde_json::Value, verify_pages: serde_json::Value| {
+            println!(
+                "{}",
+                serde_json::json!({
+                    "schemaVersion": "1.0",
+                    "source": positionals[0],
+                    "output": output_path.display().to_string(),
+                    "format": "hwpx",
+                    "bytes": bytes_len,
+                    "verify": verify,
+                    "verifyPages": verify_pages,
+                })
+            );
+        };
 
     match doc.export_hwpx_native() {
         Ok(bytes) => match fs::write(&output_path, &bytes) {
@@ -7001,6 +7054,8 @@ fn build_from_ingest(args: &[String]) -> i32 {
     let mut input_path: Option<&str> = None;
     let mut output_path: Option<&str> = None;
     let mut media_dir: Option<&str> = None;
+    // [#3600] --json: 생성 봉투를 stdout 순수 JSON 으로. 생성 동작 무변경.
+    let mut json_mode = false;
 
     let mut i = 0;
     while i < args.len() {
@@ -7021,11 +7076,19 @@ fn build_from_ingest(args: &[String]) -> i32 {
                 media_dir = Some(&args[i + 1]);
                 i += 2;
             }
+            "--json" => {
+                json_mode = true;
+                i += 1;
+            }
+            // [#3600] 미지 옵션 침묵 무시 제거 — #3349/#2551 계열 규약(즉시 exit 2)과 정합.
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
             other => {
-                if input_path.is_none() {
-                    input_path = Some(other);
-                } else {
-                    eprintln!("경고: 알 수 없는 인자 '{}' 무시", other);
+                if input_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
                 }
                 i += 1;
             }
@@ -7085,16 +7148,29 @@ fn build_from_ingest(args: &[String]) -> i32 {
 
     match fs::write(output, &hwpx_bytes) {
         Ok(_) => {
-            println!(
-                "저장 완료: {} ({}바이트, 문제 {}개, 문단 {}개)",
-                output,
-                hwpx_bytes.len(),
-                ingest.questions.len(),
-                doc.sections
-                    .iter()
-                    .map(|s| s.paragraphs.len())
-                    .sum::<usize>()
-            );
+            let paragraph_count: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
+            if json_mode {
+                println!(
+                    "{}",
+                    serde_json::json!({
+                        "schemaVersion": "1.0",
+                        "source": input,
+                        "output": output,
+                        "format": "hwpx",
+                        "bytes": hwpx_bytes.len(),
+                        "questionCount": ingest.questions.len(),
+                        "paragraphCount": paragraph_count,
+                    })
+                );
+            } else {
+                println!(
+                    "저장 완료: {} ({}바이트, 문제 {}개, 문단 {}개)",
+                    output,
+                    hwpx_bytes.len(),
+                    ingest.questions.len(),
+                    paragraph_count
+                );
+            }
             EXIT_OK
         }
         Err(e) => {
@@ -9803,6 +9879,8 @@ fn extract_thumbnail(args: &[String]) -> i32 {
     let mut input_path: Option<&str> = None;
     let mut output_path: Option<String> = None;
     let mut mode = "file"; // "file", "base64", "data-uri"
+                           // [#3600] --json: 봉투를 stdout 순수 JSON 으로. 추출 동작 무변경.
+    let mut json_mode = false;
 
     let mut i = 0;
     while i < args.len() {
@@ -9819,6 +9897,7 @@ fn extract_thumbnail(args: &[String]) -> i32 {
             }
             "--base64" => mode = "base64",
             "--data-uri" => mode = "data-uri",
+            "--json" => json_mode = true,
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
@@ -9864,16 +9943,45 @@ fn extract_thumbnail(args: &[String]) -> i32 {
         _ => "application/octet-stream",
     };
 
+    // [#3600] JSON 봉투 공통부 — 모드별로 output/base64/dataUri 만 달라진다.
+    let envelope_base = |extra: serde_json::Value| {
+        let mut v = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": input_path,
+            "format": result.format,
+            "mime": mime,
+            "width": result.width,
+            "height": result.height,
+            "bytes": result.data.len(),
+            "output": serde_json::Value::Null,
+        });
+        if let (Some(obj), Some(e)) = (v.as_object_mut(), extra.as_object()) {
+            for (k, val) in e {
+                obj.insert(k.clone(), val.clone());
+            }
+        }
+        v
+    };
+
     match mode {
         "base64" => {
             use base64::Engine;
             let b64 = base64::engine::general_purpose::STANDARD.encode(&result.data);
-            println!("{}", b64);
+            if json_mode {
+                println!("{}", envelope_base(serde_json::json!({ "base64": b64 })));
+            } else {
+                println!("{}", b64);
+            }
         }
         "data-uri" => {
             use base64::Engine;
             let b64 = base64::engine::general_purpose::STANDARD.encode(&result.data);
-            println!("data:{};base64,{}", mime, b64);
+            let uri = format!("data:{};base64,{}", mime, b64);
+            if json_mode {
+                println!("{}", envelope_base(serde_json::json!({ "dataUri": uri })));
+            } else {
+                println!("{}", uri);
+            }
         }
         _ => {
             // 파일 출력
@@ -9895,14 +10003,18 @@ fn extract_thumbnail(args: &[String]) -> i32 {
 
             match fs::write(&out, &result.data) {
                 Ok(_) => {
-                    println!(
-                        "썸네일 추출 완료: {} ({}x{}, {} bytes, {})",
-                        out,
-                        result.width,
-                        result.height,
-                        result.data.len(),
-                        result.format
-                    );
+                    if json_mode {
+                        println!("{}", envelope_base(serde_json::json!({ "output": out })));
+                    } else {
+                        println!(
+                            "썸네일 추출 완료: {} ({}x{}, {} bytes, {})",
+                            out,
+                            result.width,
+                            result.height,
+                            result.data.len(),
+                            result.format
+                        );
+                    }
                 }
                 Err(e) => {
                     eprintln!("오류: 파일 저장 실패: {} ({})", out, e);
