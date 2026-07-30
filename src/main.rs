@@ -176,6 +176,7 @@ fn main() {
         Some("mcp-serve") => exit_with(mcp_serve::run()),
         Some("batch") => exit_with(run_batch(&args[2..])),
         Some("info") => exit_with(show_info(&args[2..])),
+        Some("digest") => exit_with(digest_document(&args[2..])),
         Some("dump") => exit_with(dump_controls(&args[2..])),
         Some("dump-note-shape") => exit_with(dump_note_shape(&args[2..])),
         Some("dump-endnote-lines") => exit_with(dump_endnote_lines(&args[2..])),
@@ -308,6 +309,27 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             "info",
             serde_json::json!(["info", "--json", "{path}"]),
             &["format", "sizeBytes", "sections", "pageCount", "paraCount", "fonts"],
+        ),
+        // [#3633] 초소형 모델용 매크로 1호. 설명은 40자 이내로 극단 압축한다 —
+        // 도구 목록 자체가 컨텍스트 예산을 잠식하는 4B급 모델이 1차 소비자이기
+        // 때문이다(계약 테스트 digest_macro_contract 가 길이를 감시한다).
+        tool(
+            "hwp_digest",
+            "문서 요약 한 번에: 메타·개요·발췌·다음 행동",
+            path_schema(serde_json::json!({
+                "maxChars": { "type": "integer", "minimum": 1, "description": "발췌 최대 문자 수. 기본 2000" }
+            })),
+            "digest",
+            serde_json::json!(["digest", "--json", "{path}"]),
+            &[
+                "format",
+                "pageCount",
+                "paraCount",
+                "outline",
+                "excerpt",
+                "truncated",
+                "nextStep",
+            ],
         ),
         tool(
             "hwp_export_text",
@@ -669,6 +691,25 @@ fn show_capabilities(args: &[String]) -> i32 {
             true,
             &["--mode", "-o", "--json"],
             &["schemaVersion", "source", "mode", "nodeCount", "structure"],
+        ),
+        // [#3633] 초소형 모델용 매크로 1호 — info+structure+발췌를 원콜로 묶는다.
+        cmd_json(
+            "digest",
+            "query",
+            "문서 요약 봉투(메타·개요·발췌·nextStep)를 한 번 호출로 출력",
+            false,
+            &["--max-chars", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "format",
+                "pageCount",
+                "paraCount",
+                "outline",
+                "excerpt",
+                "truncated",
+                "nextStep",
+            ],
         ),
         cmd_json(
             "capabilities",
@@ -1137,6 +1178,12 @@ fn print_help() {
     println!("      HWP/HWPX/HML 문서 정보 표시");
     println!();
     println!("      --json                  문서 정보를 JSON으로 stdout에 출력");
+    println!();
+    println!("  digest <파일> [--max-chars N] [--json]");
+    println!("      문서 요약 봉투 한 줄 출력 — 메타(info)·개요 상위 노드·첫 페이지 발췌·");
+    println!("      nextStep 유도문을 한 번 호출로 묶은 매크로 (초소형 모델용, #3633)");
+    println!();
+    println!("      --max-chars <N>         발췌 최대 문자 수 (기본: 2000)");
     println!();
     println!("  capabilities [--mcp]");
     println!("      도구 자기서술 JSON 출력 (명령·플래그·JSON 계약·종료 코드) — 에이전트용");
@@ -3915,6 +3962,129 @@ fn info_json_value(
         "paraCount": para_count,
         "fonts": fonts,
     })
+}
+
+/// [#3633] `nextStep` 고정 문자열 계약 — 봉투를 받은 초소형 모델이 다음 행동을
+/// 지어내지 않고 받아 적게 하는 유도문. 문구 변경은 계약 테스트
+/// (`tests/digest_macro_contract.rs`)가 잡는 의도적 결정이어야 한다.
+const DIGEST_NEXT_STEP: &str = "더 읽으려면 export-text --json -p <쪽>, 찾으려면 search --json";
+/// [#3633] excerpt 기본 절단 길이(문자 수) — 4B급 모델의 컨텍스트 예산에 맞춘 보수값.
+const DIGEST_DEFAULT_MAX_CHARS: usize = 2000;
+/// [#3633] outline 에 싣는 최상위 노드 제목 최대 개수 — 트리 전체를 싣지 않는다.
+const DIGEST_OUTLINE_LIMIT: usize = 20;
+/// [#3633] excerpt 원천 페이지 수 — 앞쪽 페이지 0~2 만 발췌한다.
+const DIGEST_EXCERPT_PAGES: u32 = 3;
+
+/// [#3633] `digest` — 초소형 모델용 매크로 도구 축 1호.
+///
+/// 도구 체이닝을 못 하는 모델(4B급)을 위해 "info 로 훑고 → export-structure 로
+/// 개요를 얻고 → export-text 로 첫 장을 읽는" 3단 파이프라인을 한 번 호출로
+/// 결정론적으로 수행한다. 새 로직 없이 기존 원천만 재사용한다:
+/// `load_document` → `info_json_value` 의 필드 + `build_structure` 상위 노드 제목 +
+/// `extract_page_text_native` 발췌(`--max-chars` 문자 절단).
+///
+/// 출력은 항상 봉투 한 줄 JSON 이다(기계 전용 명령 — 표면 규약 통일을 위해
+/// `--json` 플래그는 받아만 둔다). 실패 시 stdout 은 0바이트.
+fn digest_document(args: &[String]) -> i32 {
+    use rhwp::document_core::queries::structure::{build_structure, StructureMode};
+
+    let mut file_path: Option<&str> = None;
+    let mut max_chars = DIGEST_DEFAULT_MAX_CHARS;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => {}
+            "--max-chars" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
+                    Some(n) if n > 0 => max_chars = n,
+                    _ => {
+                        eprintln!("오류: --max-chars 뒤에 1 이상의 숫자가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp digest <파일> [--max-chars N] [--json]");
+        return EXIT_USAGE;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let file_size = data.len();
+    let detected_format = rhwp::parser::detect_format(&data);
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+
+    // 메타는 info --json 과 같은 원천(info_json_value)에서 뽑는다 — 어휘 동형 보장.
+    let info = info_json_value(file_path, file_size, detected_format, &doc);
+
+    // 구조 최상위 노드 제목만 싣는다 — 트리 전체는 export-structure 의 몫이다.
+    let st = build_structure(doc.document(), StructureMode::Auto);
+    let outline: Vec<&str> = st
+        .roots
+        .iter()
+        .take(DIGEST_OUTLINE_LIMIT)
+        .map(|n| n.heading.as_str())
+        .collect();
+
+    // 앞쪽 페이지 텍스트 발췌 → max_chars 문자에서 절단 (char 경계 안전).
+    let page_count = doc.page_count();
+    let mut excerpt_src = String::new();
+    for p in 0..page_count.min(DIGEST_EXCERPT_PAGES) {
+        match doc.extract_page_text_native(p) {
+            Ok(text) => {
+                if !excerpt_src.is_empty() {
+                    excerpt_src.push('\n');
+                }
+                excerpt_src.push_str(&text);
+            }
+            Err(e) => {
+                eprintln!("오류: 페이지 {} 텍스트 추출 실패 - {:?}", p, e);
+                return EXIT_RUNTIME;
+            }
+        }
+    }
+    let truncated = excerpt_src.chars().count() > max_chars;
+    let excerpt: String = if truncated {
+        excerpt_src.chars().take(max_chars).collect()
+    } else {
+        excerpt_src
+    };
+
+    let envelope = serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "format": info["format"],
+        "pageCount": info["pageCount"],
+        "paraCount": info["paraCount"],
+        "outline": outline,
+        "excerpt": excerpt,
+        "truncated": truncated,
+        "nextStep": DIGEST_NEXT_STEP,
+    });
+    println!("{envelope}");
+    EXIT_OK
 }
 
 fn show_info(args: &[String]) -> i32 {
