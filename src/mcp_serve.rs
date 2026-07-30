@@ -174,6 +174,33 @@ fn served_tools(tool_defs: &[serde_json::Value]) -> Vec<serde_json::Value> {
         }
     }));
     tools.push(serde_json::json!({
+        "name": "hwp_doc_search",
+        "description": "[#3601] hwp_open 으로 연 핸들에서 재파싱 없이 검색한다. 주소 어휘(matches[].section/paragraph/page/context)는 hwp_search 와 동형 — 대형 문서에서 '어디를 고칠까'를 반복 탐색할 때 쓴다.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "docId": { "type": "string", "description": "hwp_open 이 돌려준 핸들" },
+                "query": { "type": "string", "minLength": 1, "description": "검색어" },
+                "caseSensitive": { "type": "boolean", "description": "대소문자 구분. 기본 true" }
+            },
+            "required": ["docId", "query"]
+        }
+    }));
+    tools.push(serde_json::json!({
+        "name": "hwp_doc_replace_text",
+        "description": "[#3601] 핸들의 IR 에 문자열 일괄 치환을 누적한다(디스크 미기록 — hwp_doc_save 가 기록 지점). replacedCount 0 은 오류가 아니라 계수 보고다. hwp_doc_fill_fields 와 조합해 '채우고 다듬고 한 번에 저장'하는 흐름을 만든다.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "docId": { "type": "string", "description": "hwp_open 이 돌려준 핸들" },
+                "find": { "type": "string", "minLength": 1, "description": "찾을 문자열" },
+                "replace": { "type": "string", "description": "바꿀 문자열 (빈 문자열이면 삭제)" },
+                "caseSensitive": { "type": "boolean", "description": "대소문자 구분. 기본 true" }
+            },
+            "required": ["docId", "find", "replace"]
+        }
+    }));
+    tools.push(serde_json::json!({
         "name": "hwp_doc_fill_fields",
         "description": "[#3598] hwp_open 으로 연 핸들의 IR 에 누름틀 값을 직접 채운다(디스크 미기록 — hwp_doc_save 가 유일한 기록 지점). 여러 번 호출하면 누적된다. 판정 필드(filledCount/notFound/ambiguous)는 hwp_fill_fields 와 동형이고, 반복 필드는 '이름[N]' 으로 지목한다.",
         "inputSchema": {
@@ -230,6 +257,8 @@ fn handle_tool_call(
     match name {
         "hwp_open" => Ok(session_open(&args, sessions)),
         "hwp_doc_text" => Ok(session_doc_text(&args, sessions)),
+        "hwp_doc_search" => Ok(session_search(&args, sessions)),
+        "hwp_doc_replace_text" => Ok(session_replace_text(&args, sessions)),
         "hwp_doc_fill_fields" => Ok(session_fill_fields(&args, sessions)),
         "hwp_doc_save" => Ok(session_save(&args, sessions)),
         "hwp_close" => Ok(session_close(&args, sessions)),
@@ -336,6 +365,78 @@ fn session_doc_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
             "docId": doc_id,
             "pageCount": page_objs.len(),
             "pages": page_objs,
+        })
+        .to_string(),
+    )
+}
+
+/// [#3601] 열린 핸들에서 재파싱 없이 검색한다. 봉투는 무상태 `search --json` 과
+/// 같은 helper(`crate::search_json_value`)를 재사용해 주소 어휘 동형을 보장한다
+/// (`source` 자리에는 경로 대신 핸들 docId 가 들어간다).
+fn session_search(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let Some(doc_id) = args.get("docId").and_then(|d| d.as_str()) else {
+        return tool_error("docId 가 필요합니다".into());
+    };
+    let Some(query) = args.get("query").and_then(|q| q.as_str()) else {
+        return tool_error("query 가 필요합니다".into());
+    };
+    if query.is_empty() {
+        return tool_error("query 는 빈 문자열일 수 없습니다".into());
+    }
+    let case_sensitive = args
+        .get("caseSensitive")
+        .and_then(|c| c.as_bool())
+        .unwrap_or(true);
+    let Some(sd) = sessions.docs.get_mut(doc_id) else {
+        return tool_error(format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"));
+    };
+    let matches = sd.doc.grep(query, case_sensitive, None);
+    let total = matches.len();
+    tool_ok_text(
+        crate::search_json_value(doc_id, query, case_sensitive, &matches, total).to_string(),
+    )
+}
+
+/// [#3601] 핸들의 IR 에 문자열 일괄 치환을 누적한다 — 디스크 미기록, save 가 기록 지점.
+/// 무상태 `edit replace-text` 와 같은 코어 경로(`replace_all_native`)를 재사용한다.
+fn session_replace_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let Some(doc_id) = args.get("docId").and_then(|d| d.as_str()) else {
+        return tool_error("docId 가 필요합니다".into());
+    };
+    let Some(find) = args.get("find").and_then(|f| f.as_str()) else {
+        return tool_error("find 가 필요합니다".into());
+    };
+    if find.is_empty() {
+        return tool_error("find 는 빈 문자열일 수 없습니다".into());
+    }
+    let Some(replace) = args.get("replace").and_then(|r| r.as_str()) else {
+        return tool_error("replace 가 필요합니다".into());
+    };
+    let case_sensitive = args
+        .get("caseSensitive")
+        .and_then(|c| c.as_bool())
+        .unwrap_or(true);
+    let Some(sd) = sessions.docs.get_mut(doc_id) else {
+        return tool_error(format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"));
+    };
+    let result = match sd.doc.replace_all_native(find, replace, case_sensitive) {
+        Ok(r) => r,
+        Err(e) => return tool_error(format!("치환 실패: {e}")),
+    };
+    // replace_all_native 는 {"ok":true,"count":N} 문자열을 낸다 — 계수만 뽑아
+    // 세션 봉투 어휘(replacedCount)로 정규화한다.
+    let count = serde_json::from_str::<serde_json::Value>(&result)
+        .ok()
+        .and_then(|v| v["count"].as_u64())
+        .unwrap_or(0);
+    tool_ok_text(
+        serde_json::json!({
+            "schemaVersion": "1.0",
+            "docId": doc_id,
+            "find": find,
+            "replace": replace,
+            "caseSensitive": case_sensitive,
+            "replacedCount": count,
         })
         .to_string(),
     )
