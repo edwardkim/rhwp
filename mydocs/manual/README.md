@@ -23,6 +23,7 @@ last_verified: 2026-07-25
 | 신규 기여자 시작 | [온보딩 가이드](onboarding_guide.md) | [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) |
 | 에이전트·스크립트 실행 실패의 증상별 처방 | [에이전트 실패 사전](agent_troubleshooting_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md), [문서 진단 도구](document_diagnostics_tool_manual.md) |
 | `rhwp` CLI 전체 옵션과 동작 | [CLI 명령어 매뉴얼](cli_commands.md) | [rhwp-cli Skill 사용 가이드](rhwp_cli_skill_guide.md), [dump 명령 가이드](dump_command.md), [PNG 내보내기 가이드](export_png_command.md), [CLI JSON 파이프라인 가이드](cli_json_pipeline_guide.md), [에이전트 실무 대체 예제집](agent_task_playbook.md) |
+| CLI `--json`·MCP 도구 신규 추가 절차와 수용 기준 | [에이전트 표면 플레이북](agent_surface_playbook.md) | [CLI 명령어 매뉴얼](cli_commands.md), [MCP 통합 가이드](mcp_integration_guide.md) |
 | 실사례 여정 기반 버그 헌팅 | [버그 헌팅 playbook](bug_hunting_playbook.md) | [Claude bug-hunter 에이전트](../../.claude/agents/bug-hunter.md), [Codex bug-hunter Skill](../../.agents/skills/bug-hunter/SKILL.md), [정답지 비교 하네스](../../tools/fidelity_compare/README.md) |
 | 로컬 OWPML XML 스키마 자산 | [OWPML XML 스키마 reference](owpml_schema_reference.md) | [한컴 공식 OWPML 모델 참조 가이드](../tech/hwpx_hancom_reference.md) |
 | PDF/SVG 기준 비교의 정책 | [시각 검증 문서 지도](verification/README.md) | [시각 검증 거버넌스](verification/visual_verification_governance.md), [PDF/SVG visual sweep 가이드](verification/visual_sweep_guide.md) |
