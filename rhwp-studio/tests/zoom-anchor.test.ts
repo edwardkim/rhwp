@@ -95,7 +95,8 @@ test('CanvasView consumes the zoom anchor and corrects both scroll axes', () => 
 
   assert.match(source, /eventBus\.on\('zoom-changed', \(zoom, anchor\)/);
   assert.match(source, /calculateAnchoredScroll\(/);
-  assert.match(source, /setScrollLeft\(nextScroll\.scrollLeft\)/);
+  // [#3591] 가로는 팬 여백 축소로 계산값이 범위를 넘을 수 있어 clampScrollLeft 를 거친다.
+  assert.match(source, /setScrollLeft\(this\.clampScrollLeft\(nextScroll\.scrollLeft\)\)/);
   assert.match(source, /setScrollTop\(nextScroll\.scrollTop\)/);
 });
 

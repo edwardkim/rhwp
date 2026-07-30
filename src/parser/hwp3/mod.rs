@@ -2054,12 +2054,19 @@ fn parse_field_control_char(
             // 제거하면 기존 서식의 본문 흐름과 CharShape 위치가 달라진다.
             if ch != 20 || !*use_password_layout_contract {
                 char_offsets.push(utf16_len);
-                utf16_len += 1;
                 // AutoNumber(ch=18)은 HWP5 패턴("  ")과 일치하도록 공백으로 저장
                 if ch == 18 {
                     text_string.push(' ');
+                    // [#3504] 자동번호는 공통 IR 규약상 **확장 컨트롤 8 코드유닛**을
+                    // 차지한다(HWP5 파서와 동일). 종전에는 1 유닛만 세어 char_offsets 가
+                    // 연속이었고, 직렬화의 placeholder 판정
+                    // (serializer/body_text.rs 의 `next_offset >= offset + 8`)이 실패했다.
+                    // 그러면 공백이 리터럴로 쓰이고 컨트롤이 문단 **끝**에 다시 방출돼,
+                    // 재파싱 때 말미 공백 1칸이 생겼다 (SO-SUEOP 미주 213건).
+                    utf16_len += 8;
                 } else {
                     text_string.push('\u{FFFC}');
+                    utf16_len += 1;
                 }
             }
 
