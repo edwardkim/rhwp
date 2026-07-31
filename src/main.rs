@@ -113,8 +113,14 @@ fn load_document_core(data: &[u8]) -> Result<rhwp::document_core::DocumentCore, 
 }
 
 /// args 전체를 스캔해 --password <pw> / --password-stdin 을 추출·제거한다.
-/// 반환: (정제된 args, 비밀번호). 관련 토큰이 없으면 비밀번호는 None.
-fn extract_global_password(mut args: Vec<String>) -> Result<(Vec<String>, Option<String>), i32> {
+/// 뽑아낸 비밀번호는 이 함수 안에서 `set_cli_password()` 로 소비하고, 반환값에는
+/// 비밀번호 토큰이 제거된 args 만 담는다.
+///
+/// 비밀번호를 반환 튜플에 실어 보내면 CodeQL(`rust/cleartext-logging`)이 튜플 전체를
+/// taint 로 보고, 비밀번호가 이미 제거된 args 를 쓰는 오류 출력까지 sink 로 분류한다
+/// (PR #3405 검토에서 41건 과탐지로 확인). 반환 경로에서 비밀번호를 떼어 그 병합 지점을
+/// 없앤다.
+fn extract_global_password(mut args: Vec<String>) -> Result<Vec<String>, i32> {
     let mut password: Option<String> = None;
     let mut i = 1; // args[0] 은 프로그램 경로
     while i < args.len() {
@@ -147,17 +153,18 @@ fn extract_global_password(mut args: Vec<String>) -> Result<(Vec<String>, Option
             _ => i += 1,
         }
     }
-    Ok((args, password))
+    set_cli_password(password);
+    Ok(args)
 }
 
 fn main() {
     let raw_args: Vec<String> = env::args().collect();
     // 전역 비밀번호 pre-scan: 어느 위치든 --password / --password-stdin 을 뽑아낸다.
-    let (args, password) = match extract_global_password(raw_args) {
+    // 비밀번호는 pre-scan 안에서 CLI_PASSWORD 로 들어가고 여기로는 돌아오지 않는다.
+    let args = match extract_global_password(raw_args) {
         Ok(v) => v,
         Err(code) => process::exit(code),
     };
-    set_cli_password(password);
 
     match args.get(1).map(|s| s.as_str()) {
         Some("--help") | Some("-h") => print_help(),
@@ -4854,8 +4861,19 @@ fn dump_extents(args: &[String]) -> i32 {
         }
     }
 
+    // -p 는 다른 dump 명령과 같이 0-based 쪽 인덱스다. 범위를 벗어나면 렌더 트리 생성
+    // 실패 메시지 대신 사용법 오류로 끊는다.
     let pages: Vec<u32> = match target_page {
-        Some(p) => vec![p],
+        Some(p) => {
+            if p >= page_count {
+                eprintln!(
+                    "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
+                    page_count - 1
+                );
+                return EXIT_USAGE;
+            }
+            vec![p]
+        }
         None => (0..page_count).collect(),
     };
 
@@ -10734,8 +10752,8 @@ fn extract_thumbnail(args: &[String]) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::{
-        allows_implicit_sibling_resources, extract_global_password, tab_ext_semantic_differs,
-        EXIT_USAGE,
+        allows_implicit_sibling_resources, cli_password, extract_global_password, set_cli_password,
+        tab_ext_semantic_differs, EXIT_USAGE,
     };
     use rhwp::parser::FileFormat;
 
@@ -10783,9 +10801,12 @@ mod tests {
             "--password".to_string(),
             "secret".to_string(),
         ];
-        let (clean, password) = extract_global_password(args).unwrap();
+        set_cli_password(None);
+        let clean = extract_global_password(args).unwrap();
         assert_eq!(clean, ["rhwp", "info", "sample.hwp"]);
-        assert_eq!(password.as_deref(), Some("secret"));
+        // 비밀번호는 반환값이 아니라 CLI_PASSWORD(thread_local)로 전달된다.
+        assert_eq!(cli_password().as_deref(), Some("secret"));
+        set_cli_password(None);
     }
 
     #[test]
