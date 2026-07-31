@@ -4870,7 +4870,7 @@ fn dump_extents(args: &[String]) -> i32 {
             if p >= page_count {
                 eprintln!(
                     "오류: 페이지 번호가 범위를 벗어났습니다 (0~{})",
-                    page_count - 1
+                    page_count.saturating_sub(1)
                 );
                 return EXIT_USAGE;
             }

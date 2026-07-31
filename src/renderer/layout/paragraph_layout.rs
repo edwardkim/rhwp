@@ -3646,23 +3646,22 @@ impl LayoutEngine {
             // = 셀 inner 우단 오라클 앵커) — cell_ctx 부재로 한정. Center 도
             // 근거 부재로 기존 동작 유지.
             let right_trailing_ws_width = if alignment == Alignment::Right && cell_ctx.is_none() {
-                let all_chars: Vec<char> =
-                    comp_line.runs.iter().flat_map(|r| r.text.chars()).collect();
-                let trailing_spaces = all_chars.iter().rev().take_while(|c| **c == ' ').count();
-                if trailing_spaces > 0 {
-                    if let Some(last_run) = comp_line.runs.last() {
-                        let ts = resolved_to_text_style(
-                            styles,
-                            last_run.char_style_id,
-                            last_run.lang_index,
-                        );
-                        estimate_text_width(&" ".repeat(trailing_spaces), &ts)
-                    } else {
-                        0.0
+                // 말미 공백이 서로 다른 글꼴/글자 크기의 run 경계를 넘을 수 있다.
+                // 전체 공백을 마지막 run의 style로 재측정하면 그만큼 오른쪽 앵커를
+                // 틀리게 복원하므로, 뒤에서부터 각 run의 실제 style 폭을 더한다.
+                let mut width = 0.0;
+                for run in comp_line.runs.iter().rev() {
+                    let trailing_spaces = run.text.chars().rev().take_while(|c| *c == ' ').count();
+                    if trailing_spaces == 0 {
+                        break;
                     }
-                } else {
-                    0.0
+                    let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                    width += estimate_text_width(&" ".repeat(trailing_spaces), &ts);
+                    if trailing_spaces != run.text.chars().count() {
+                        break;
+                    }
                 }
+                width
             } else {
                 0.0
             };
