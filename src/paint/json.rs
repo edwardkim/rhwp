@@ -4384,7 +4384,12 @@ mod tests {
             None,
         );
         path.connector_endpoints = Some((1.0, 2.0, 3.0, 4.0));
-        path.line_style = Some(LineStyle::default());
+        path.line_style = Some(LineStyle {
+            color: 0x0056_3412,
+            width: 2.0,
+            dash: StrokeDash::DashDot,
+            ..Default::default()
+        });
 
         let mut image = ImageNode::new(7, Some(vec![1, 2, 3]));
         image.effect = ImageEffect::BlackWhite;
@@ -4439,9 +4444,14 @@ mod tests {
         );
 
         let json = tree.to_json();
+        let value: Value = serde_json::from_str(&json).expect("valid layer JSON");
+        let path_op = &value["root"]["ops"][0];
 
         assert!(json.contains("\"connectorEndpoints\":{\"x1\":1.000"));
         assert!(json.contains("\"lineStyle\":"));
+        assert_eq!(path_op["lineStyle"]["color"], "#123456");
+        assert_eq!(path_op["lineStyle"]["width"], 2.0);
+        assert_eq!(path_op["lineStyle"]["dash"], "dashDot");
         assert!(json.contains("\"effect\":\"blackWhite\""));
         assert!(json.contains("\"brightness\":-50"));
         assert!(json.contains("\"contrast\":70"));

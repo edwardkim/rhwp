@@ -60,9 +60,15 @@ const CANVASKIT_PERFORMANCE_BUDGET_KEYS = new Set([
 ]);
 const CANVASKIT_READINESS_EXPECTATION_KEYS = new Set([
   'glyphOutlinePayloadKinds',
+  'minLayerFeatureCounts',
   'minWarmImageCacheHits',
 ]);
 const CANVASKIT_GLYPH_RESOURCE_PAYLOAD_KINDS = new Set(['bitmapGlyph', 'svgGlyph']);
+const CANVASKIT_LAYER_FEATURE_COUNT_KEYS = new Set([
+  'dashedStrokes',
+  'verticalPresentationPunctuation',
+  'verticalTextRuns',
+]);
 const BACKENDS = [
   {
     key: 'canvas2d',
@@ -188,8 +194,21 @@ function canvaskitReadinessExpectationsForSample(sample) {
   if (!Number.isInteger(minWarmImageCacheHits) || minWarmImageCacheHits < 0) {
     throw new Error(`CanvasKit warm image cache expectation for ${sample.id} must be non-negative`);
   }
+  const minLayerFeatureCounts = expectations.minLayerFeatureCounts ?? {};
+  if (!minLayerFeatureCounts
+    || typeof minLayerFeatureCounts !== 'object'
+    || Array.isArray(minLayerFeatureCounts)
+    || Object.keys(minLayerFeatureCounts).some(
+      (key) => !CANVASKIT_LAYER_FEATURE_COUNT_KEYS.has(key),
+    )
+    || Object.values(minLayerFeatureCounts).some(
+      (count) => !Number.isInteger(count) || count <= 0,
+    )) {
+    throw new Error(`CanvasKit layer feature expectations for ${sample.id} are invalid`);
+  }
   return {
     glyphOutlinePayloadKinds: [...new Set(payloadKinds)],
+    minLayerFeatureCounts: { ...minLayerFeatureCounts },
     minWarmImageCacheHits,
   };
 }
@@ -499,6 +518,9 @@ async function readLayerFeatureProbe(page, pageIndex, profile) {
   return await page.evaluate(([targetPageIndex, targetProfile]) => {
     const tree = window.__wasm?.getPageLayerTreeObject?.(targetPageIndex, targetProfile);
     if (!tree?.root) return null;
+    const featureCounts = window.__canvasView
+      ?.getCanvasKitRenderDiagnostics?.(targetPageIndex)
+      ?.replayFeatureCounts ?? null;
     const glyphOutlinePayloadCounts = {};
     const stack = [tree.root];
     while (stack.length > 0) {
@@ -509,12 +531,14 @@ async function readLayerFeatureProbe(page, pageIndex, profile) {
         if (node.child) stack.push(node.child);
       } else if (node?.kind === 'leaf') {
         for (const op of node.ops ?? []) {
-          if (op?.type !== 'glyphOutline' || typeof op.payloadKind !== 'string') continue;
-          glyphOutlinePayloadCounts[op.payloadKind] = (glyphOutlinePayloadCounts[op.payloadKind] ?? 0) + 1;
+          if (op?.type === 'glyphOutline' && typeof op.payloadKind === 'string') {
+            glyphOutlinePayloadCounts[op.payloadKind]
+              = (glyphOutlinePayloadCounts[op.payloadKind] ?? 0) + 1;
+          }
         }
       }
     }
-    return { glyphOutlinePayloadCounts };
+    return { featureCounts, glyphOutlinePayloadCounts };
   }, [pageIndex, layerProfile]);
 }
 
@@ -1473,6 +1497,13 @@ for (const result of results.filter((entry) => entry.readinessGateRequired)) {
     if ((result.warmReplay?.imageCacheHitDelta ?? 0)
       < readinessExpectations.minWarmImageCacheHits) {
       blockers.push('warmImageCacheHitMissing');
+    }
+    for (const [feature, minimum] of Object.entries(
+      readinessExpectations.minLayerFeatureCounts,
+    )) {
+      if ((result.layerFeatureProbe?.featureCounts?.[feature] ?? 0) < minimum) {
+        blockers.push(`layerFeatureMinimumMissing:${feature}`);
+      }
     }
   }
 

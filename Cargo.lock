@@ -1099,6 +1099,7 @@ dependencies = [
  "svg2pdf",
  "svgtypes 0.16.1",
  "ttf-parser",
+ "unicode-properties",
  "unicode-segmentation",
  "unicode-width",
  "usvg 0.45.1",

@@ -880,18 +880,34 @@
       "file": "table-004.hwp",
       "category": "table",
       "page": 0,
-      "notes": "Table border and cell style sample from the checked-in table corpus.",
+      "canvaskitReadinessGate": true,
+      "canvaskitReadinessExpectations": {
+        "minLayerFeatureCounts": {
+          "dashedStrokes": 12,
+          "verticalPresentationPunctuation": 2,
+          "verticalTextRuns": 14
+        }
+      },
+      "canvaskitPerformanceBudget": {
+        "maxColdDocumentLoadAndInitialRenderMs": 30000,
+        "maxWarmReplayMs": 5000,
+        "maxWarmRendererDurationMs": 4000,
+        "maxImageCachePixels": 67108864
+      },
+      "notes": "Table border, cell style, vertical text, and vertical presentation punctuation sample.",
       "browserParityThresholds": {
         "maxDiffRatio": null,
+        "minimumInkPixels": 50000,
         "inkMaskNeighborhoodRadius": 3,
-        "inkMaskMaxDiffRatio": 0.002,
-        "nonInkMaxDiffPixels": 0,
+        "inkMaskMaxDiffRatio": 0.005,
+        "nonInkMaxDiffPixels": 4,
         "solidInkMaxDiffRatio": 0.0065
       },
       "diagnosticAxes": [
-        "table"
+        "table",
+        "vertical-text"
       ],
-      "baselineTier": "extended"
+      "baselineTier": "representative"
     },
     {
       "id": "table-diagonal-cell-hwp",

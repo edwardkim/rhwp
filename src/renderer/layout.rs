@@ -1434,6 +1434,12 @@ pub struct LayoutEngine {
     /// 현재 페이지 본문 영역 (표 HorzRelTo::Page / VertRelTo::Page 위치 계산용)
     /// (x, y, width, height). 미설정 시 (0, 0, 0, 0) — 호출부에서 col_area로 폴백.
     current_body_area: std::cell::Cell<(f64, f64, f64, f64)>,
+    /// 현재 페이지의 물리 높이 (px).
+    ///
+    /// [#3637] 셀 안 넘침 진단의 기준선이다. 본문 하단이 아니라 **쪽 하단**이어야 한다 —
+    /// 본문 하단과 쪽 하단 사이(아래 여백·꼬리말 영역)에 그려진 글자는 실제로 보이므로
+    /// 결함이 아니다. 본문 하단으로 재면 그 구간이 통째로 오탐이 된다.
+    current_page_height: std::cell::Cell<f64>,
     /// HWP3-origin HWP5 변환본 여부.
     /// [#2403] 소스분기 질의 표면 — set_layout_profile 로 배선 (종전 hwp3_variant/
     /// hwpx_source Cell 2개 통합).
@@ -1535,6 +1541,7 @@ impl LayoutEngine {
             show_control_codes: std::cell::Cell::new(false),
             current_paper_width: std::cell::Cell::new(0.0),
             current_body_area: std::cell::Cell::new((0.0, 0.0, 0.0, 0.0)),
+            current_page_height: std::cell::Cell::new(0.0),
             profile: std::cell::Cell::new(Default::default()),
             use_hwp3_origin_flow_spacing_before: std::cell::Cell::new(false),
             render_normalization: std::cell::RefCell::new(std::sync::Arc::new(
@@ -3084,6 +3091,7 @@ impl LayoutEngine {
                 // 바탕쪽은 본문보다 먼저 렌더링되므로 표 위치 계산용 현재 페이지 context를
                 // 여기서 명시적으로 채워야 `vertRelTo=PAGE`, `horzRelTo=PAGE`가 올바르게 동작한다.
                 self.current_paper_width.set(layout.page_width);
+                self.current_page_height.set(layout.page_height);
                 self.current_body_area.set((
                     body_area.x,
                     body_area.y,
@@ -4570,6 +4578,9 @@ impl LayoutEngine {
 
         // 현재 페이지 용지 너비 설정 (표 HorzRelTo::Paper 위치 계산용)
         self.current_paper_width.set(layout.page_width);
+        // [#3637] 쪽 높이도 여기서 채운다. 바탕쪽 분기(위)에서만 채우면 바탕쪽 없는
+        // 문서에서 0 으로 남아 셀 넘침 진단이 통째로 침묵한다.
+        self.current_page_height.set(layout.page_height);
         // 현재 페이지 본문 영역 설정 (표 HorzRelTo::Page / VertRelTo::Page 계산용 — Task #347)
         let ba = &layout.body_area;
         self.current_body_area

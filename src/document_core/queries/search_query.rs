@@ -405,12 +405,42 @@ impl DocumentCore {
         new_text: &str,
         case_sensitive: bool,
     ) -> Result<String, HwpError> {
+        self.replace_matches_native(query, new_text, case_sensitive, None)
+    }
+
+    /// [#3395] 문서 순서 k번째(0 기준) 매치 **하나만** 치환한다. 실물 서식의 체크박스
+    /// (□ 19개 중 k번째만 ☑)처럼 같은 문자가 여럿일 때 전량 치환은 문서를 망가뜨린다.
+    /// 몸통은 replace_all_native 와 동일 경로를 재사용한다 — 새 편집 로직 없음.
+    pub fn replace_nth_native(
+        &mut self,
+        query: &str,
+        new_text: &str,
+        case_sensitive: bool,
+        occurrence: usize,
+    ) -> Result<String, HwpError> {
+        self.replace_matches_native(query, new_text, case_sensitive, Some(occurrence))
+    }
+
+    fn replace_matches_native(
+        &mut self,
+        query: &str,
+        new_text: &str,
+        case_sensitive: bool,
+        occurrence: Option<usize>,
+    ) -> Result<String, HwpError> {
         if query.is_empty() {
             return Ok(r#"{"ok":true,"count":0}"#.to_string());
         }
 
         // 모든 매치를 찾되, 역순으로 치환 (오프셋 변동 방지)
         let mut all_hits = search_all(self, query, case_sensitive);
+        if let Some(n) = occurrence {
+            // 문서 순서 k번째 하나만 남긴다. 범위를 벗어나면 count 0 (판정은 데이터).
+            all_hits = match all_hits.into_iter().nth(n) {
+                Some(hit) => vec![hit],
+                None => Vec::new(),
+            };
+        }
         // 역순 정렬: 뒤에서부터 치환하여 앞쪽 오프셋에 영향 없도록
         all_hits.reverse();
 

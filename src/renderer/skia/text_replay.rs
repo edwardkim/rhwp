@@ -9,7 +9,9 @@ use crate::paint::LayerOutputOptions;
 use crate::renderer::composer::{
     decode_pua_overlap_number, expand_pua_render_text, pua_to_display_text, CharOverlapInfo,
 };
-use crate::renderer::layout::{compute_char_positions, split_into_clusters};
+use crate::renderer::layout::{
+    compute_char_positions, is_halfwidth_cjk_quote, split_into_clusters,
+};
 use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::{clamp_tab_leader_end_x, TextStyle};
 
@@ -147,6 +149,22 @@ impl SkiaTextReplay<'_> {
                     chain
                 };
                 let primary_typeface = typeface_chain.first().cloned();
+                // 한글은 bold face 가 없는 폰트(휴먼명조 등 단일 400 페이스)에
+                // 동일 정규 페이스 + stroke 로 합성 굵게를 적용한다 (오라클
+                // PDF 실측: 굵은 헤더가 정규 휴먼명조 임베드로 방출). custom
+                // typeface 는 스타일 무시 단일 페이스라 여기서 embolden 으로
+                // 합성한다. 시스템 매칭이 진짜 bold 페이스를 반환한 경우는
+                // weight 조건에서 제외돼 이중 굵게가 없다.
+                let want_synthetic_bold = style.bold;
+                let finish_font = |tf: Typeface, size: f32| -> Font {
+                    let is_bold_face = *tf.font_style().weight() >= 600;
+                    let mut font = Font::new(tf, size);
+                    font.set_edging(font::Edging::AntiAlias);
+                    if want_synthetic_bold && !is_bold_face {
+                        font.set_embolden(true);
+                    }
+                    font
+                };
                 let font_for_text = |sample: &str, size: f32| -> Option<Font> {
                     let visible_char = sample.chars().find(|ch| !ch.is_whitespace());
                     if let Some(ch) = visible_char {
@@ -156,16 +174,12 @@ impl SkiaTextReplay<'_> {
                             .find(|tf| tf.unichar_to_glyph(codepoint) != 0)
                             .cloned()
                         {
-                            let mut font = Font::new(tf, size);
-                            font.set_edging(font::Edging::AntiAlias);
-                            return Some(font);
+                            return Some(finish_font(tf, size));
                         }
                         return None;
                     }
                     if let Some(tf) = primary_typeface.clone() {
-                        let mut font = Font::new(tf, size);
-                        font.set_edging(font::Edging::AntiAlias);
-                        Some(font)
+                        Some(finish_font(tf, size))
                     } else {
                         let mut font = Font::default();
                         font.set_size(size);
@@ -549,6 +563,22 @@ impl SkiaTextReplay<'_> {
                                 + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
                                 + dx;
                             let char_y = y as f32 + dy;
+                            // 반각 강제 구두점: 측정은 반각(0.3~0.5em)인데 폰트
+                            // 글리프가 전각인 문자(휴먼명조 U+2018 등)를 그대로
+                            // 그리면 다음 글자와 겹친다. web_canvas 와 동일하게
+                            // 0.5× 수평 축소로 반각 공간에 배치 (한글은 자체
+                            // 내장 협폭 글리프로 렌더 — 오라클 PDF Type3 실측).
+                            let needs_halfwidth_scale = cluster.chars().next().is_some_and(|ch| {
+                                matches!(ch, '\u{2018}'..='\u{2027}') || is_halfwidth_cjk_quote(ch)
+                            }) && !has_ratio;
+                            if needs_halfwidth_scale {
+                                canvas.save();
+                                canvas.translate((char_x, char_y));
+                                canvas.scale((0.5, 1.0));
+                                canvas.draw_str(cluster, (0.0, 0.0), &font, &text_paint);
+                                canvas.restore();
+                                continue;
+                            }
                             if has_ratio {
                                 canvas.save();
                                 canvas.translate((char_x, char_y));

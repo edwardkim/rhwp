@@ -204,6 +204,7 @@ export class PageRenderer {
       lastExpectedUnsupportedOps: [...diagnostics.lastExpectedUnsupportedOps],
       lastUnexpectedUnsupportedOps: [...diagnostics.lastUnexpectedUnsupportedOps],
       readinessBlockers: [...diagnostics.readinessBlockers],
+      replayFeatureCounts: { ...diagnostics.replayFeatureCounts },
     };
   }
 
@@ -217,6 +218,7 @@ export class PageRenderer {
       lastExpectedUnsupportedOps: [...diagnostics.lastExpectedUnsupportedOps],
       lastUnexpectedUnsupportedOps: [...diagnostics.lastUnexpectedUnsupportedOps],
       readinessBlockers: [...diagnostics.readinessBlockers],
+      replayFeatureCounts: { ...diagnostics.replayFeatureCounts },
     };
   }
 

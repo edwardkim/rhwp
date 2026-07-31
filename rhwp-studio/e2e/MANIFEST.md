@@ -63,6 +63,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `print-pdf-issue3126.test.mjs` | 상시 | active | #3126 same-origin iframe 인쇄/PDF UX, 상태 불변, #2524/#2525 browser PDF 회귀 | render-p35-font-native-bitmap.hwpx, hwpx/hwpx-02.hwpx | 수동 | native dialog는 Chrome/Edge 수동 절차 병행 |
 | `pr2260-vscode-zoom-menu.test.mjs` | 상시 | active | [PR #2260 검증] rhwp-vscode 배율 메뉴 — 호스트 Chrome CDP 로 webview 하네스 구동. | — | 수동 |  |
 | `renderer-baseline-native-diff.mjs` | 유틸 | active | 렌더러 baseline — studio vs native 산출 대조 | — | CI |  |
+| `renderer-baseline-contract.mjs` | 유틸 | active | CanvasKit runtime 실패 진단 정규화 helper | — | 수동 | `renderer-baseline.mjs`에서 import |
 | `renderer-baseline.mjs` | 유틸 | active | 렌더러 baseline 스윕 러너 (manifest 기반 다문서 측정) | — | npm+CI |  |
 | `renderer-contract.test.mjs` | 상시 | active | 렌더러 백엔드 계약 검증 (plane/replay 정합) | — | npm+CI |  |
 | `report-generator.mjs` | 유틸 | active | E2E 테스트 HTML 보고서 생성기 | — | 수동 |  |
