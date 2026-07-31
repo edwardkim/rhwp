@@ -268,9 +268,10 @@ serialized origins. Shade, shadow, outline, emboss, and engrave reuse the same
 bounded fallback spans, so a paint effect cannot silently change character
 placement. The legacy zero and white shade sentinels remain no-fill values.
 Old-Hangul clusters retain their bounded, producer-anchored paragraph shaper.
-Arabic, Indic, combining-mark, emoji-sequence, and other complex-script runs
-remain fail-closed as `scriptTextRequiresShaping` until the IR carries explicit
-direction and positioned cluster advances. Old-Hangul or boxed-PUA runs that
+Arabic, Indic, combining-mark, bidi-format, emoji-sequence, and other
+complex-script runs remain fail-closed as `scriptTextRequiresShaping` until the
+IR carries explicit direction and positioned cluster advances. Old-Hangul or
+boxed-PUA runs that
 also request ratio, shade, shadow, outline, emboss, or engrave use the same
 fail-closed route until CanvasKit can apply those paints to one exact shaped
 result.
@@ -367,11 +368,12 @@ vertical text, presentation punctuation, and dashed borders. Synthetic
 renderer-contract tests cover character overlap, tab leaders, and decorations;
 focused document-backed visual fixtures for those three operations remain a
 follow-up.
-Readiness entries can declare minimum layer feature counts. The vertical-table
-gate currently requires 14 vertical `TextRun` operations, two vertical
-presentation-form characters, and 12 dashed strokes, preventing a producer
-regression from making the intended fixture pass after silently dropping part
-of the feature under test.
+Readiness entries can declare minimum replay feature counts. The vertical-table
+gate currently requires the CanvasKit runtime to complete 14 vertical
+`TextRun` operations, two vertical presentation-form rotations, and 12 dashed
+strokes. These counters are recorded only after the corresponding draw path
+completes, so an unselected, unsupported, or non-drawing LayerTree operation
+cannot satisfy the gate.
 The readiness set checks requested mode/surface, page canvas
 ownership, expected/unexpected diagnostics, visual thresholds, declared layer
 payloads, warm cache hits, decoded-image pixel limits, synchronous warm replay,

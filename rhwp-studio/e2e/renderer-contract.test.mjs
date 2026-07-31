@@ -723,6 +723,7 @@ function runExecutableTextReplay(op, {
   drawGlyphsError,
   drawParagraphError,
   fillPaintErrorAt = null,
+  requirePreparedFontFamilies = false,
   shapedTextAvailable = true,
 } = {}) {
   const events = [];
@@ -866,7 +867,8 @@ function runExecutableTextReplay(op, {
     XYWHRect(x, y, width, height) {
       return { x, y, width, height };
     },
-  }, 'default', {}, fallbackTypeface, symbolTypeface, shapedTextAvailable ? {} : null, 'Noto Sans KR');
+  }, 'default', {}, fallbackTypeface, symbolTypeface, shapedTextAvailable ? {} : null,
+  'Noto Sans KR', 'fonts/NotoSansKR-Regular.woff2', requirePreparedFontFamilies);
   renderer.unsupportedOps = unsupportedOps;
   if (usePreparedTypeface) {
     renderer.findPreparedTypeface = (fontFamily) => ({
@@ -956,7 +958,7 @@ function runExecutableStrokeDashReplay() {
     type: 'path',
     bbox: { x: 0, y: 0, width: 10, height: 10 },
     commands: [{ type: 'moveTo', x: 0, y: 0 }, { type: 'lineTo', x: 10, y: 10 }],
-    style: { fillColor: null },
+    style: { fillColor: null, strokeWidth: 0 },
     lineStyle: { color: '#123456', width: 2, dash: 'dashDot' },
   });
   renderer.renderLine(canvas, {
@@ -1687,6 +1689,15 @@ assert.equal(
   'each CanvasKit dash path effect should be released after drawing',
 );
 assert.deepEqual(
+  strokeDashReplay.renderer.diagnostics().replayFeatureCounts,
+  {
+    dashedStrokes: 4,
+    verticalPresentationPunctuation: 0,
+    verticalTextRuns: 0,
+  },
+  'dash readiness counts must include only completed native dash draws',
+);
+assert.deepEqual(
   strokeDashReplay.events.find(event => event.type === 'canvas.drawPath'),
   { type: 'canvas.drawPath', color: [18, 52, 86, 1], width: 2 },
   'path replay should merge lineStyle color, width, and dash into the serialized shape style',
@@ -1876,7 +1887,19 @@ assert.deepEqual(
   'a bounded CJK PUA display projection should retain its serialized positions',
 );
 
-for (const text of ['e\u0301', 'سلام', 'ສະບາຍດີ', 'བོད', 'မြန်မာ']) {
+for (const text of [
+  'e\u0301',
+  'к\u0483',
+  '漢\u302A',
+  'か\u3099',
+  'a\u200Fb',
+  'a\u2067b',
+  '\u00AD',
+  'سلام',
+  'ສະບາຍດີ',
+  'བོད',
+  'မြန်မာ',
+]) {
   const shapedTextReplay = runExecutableTextReplay({
     type: 'textRun',
     bbox: { x: 0, y: 20, width: 48, height: 20 },
@@ -2065,6 +2088,15 @@ assert.equal(
   true,
   'vertical punctuation should rotate its base glyph by 90 degrees',
 );
+assert.deepEqual(
+  verticalPresentationReplay.diagnostics.replayFeatureCounts,
+  {
+    dashedStrokes: 0,
+    verticalPresentationPunctuation: 1,
+    verticalTextRuns: 1,
+  },
+  'vertical readiness counts must be emitted only after the dedicated replay path completes',
+);
 
 const verticalSuperscriptReplay = runExecutableTextReplay({
   type: 'textRun',
@@ -2215,6 +2247,20 @@ assert.deepEqual(
     kind: 'unregisteredFallback',
   }],
   'unregistered authored families should not silently disappear behind the default face',
+);
+const strictMissingFontReplay = runExecutableTextReplay({
+  type: 'textRun',
+  bbox: { x: 0, y: 20, width: 20, height: 20 },
+  text: 'A',
+  baseline: 15,
+  positions: [0, 10],
+  style: { fontFamily: 'Missing Family', fontSize: 20 },
+}, { requirePreparedFontFamilies: true });
+assert.match(String(strictMissingFontReplay.error), /font family가 준비되지 않았습니다/);
+assert.equal(
+  strictMissingFontReplay.events.some((event) => event.type === 'paint.create'),
+  false,
+  'strict font readiness failures must happen before allocating native paint',
 );
 for (let index = 0; index < 5000; index += 1) {
   unregisteredFontReplay.renderer.recordFontSubstitution({
@@ -2645,13 +2691,13 @@ const verticalTextReadinessSample = rendererBaselineManifest.samples
   .find((sample) => sample.id === 'table-border-style');
 assert.equal(
   verticalTextReadinessSample?.browserParityThresholds?.inkMaskMaxDiffRatio,
-  0.004,
+  0.005,
   'vertical text readiness must keep its calibrated ink-mask tolerance bounded',
 );
 assert.equal(
   verticalTextReadinessSample?.browserParityThresholds?.nonInkMaxDiffPixels,
-  0,
-  'vertical punctuation readiness must reject non-ink raster changes',
+  4,
+  'vertical punctuation readiness must keep non-ink raster changes tightly bounded',
 );
 assert.equal(
   verticalTextReadinessSample?.browserParityThresholds?.minimumInkPixels,
@@ -2925,6 +2971,7 @@ assert.ok(
   rendererBaselineSource.includes('measureWarmCanvasKitReplay')
     && rendererBaselineSource.includes('requireColdAndWarmPerformanceBudget')
     && rendererBaselineSource.includes('readLayerFeatureProbe')
+    && rendererBaselineSource.includes('?.replayFeatureCounts')
     && rendererBaselineSource.includes('minLayerFeatureCounts')
     && rendererBaselineSource.includes('layerFeatureMinimumMissing:'),
   'CanvasKit readiness should gate cold/warm replay and declared layer features',

@@ -518,17 +518,10 @@ async function readLayerFeatureProbe(page, pageIndex, profile) {
   return await page.evaluate(([targetPageIndex, targetProfile]) => {
     const tree = window.__wasm?.getPageLayerTreeObject?.(targetPageIndex, targetProfile);
     if (!tree?.root) return null;
+    const featureCounts = window.__canvasView
+      ?.getCanvasKitRenderDiagnostics?.(targetPageIndex)
+      ?.replayFeatureCounts ?? null;
     const glyphOutlinePayloadCounts = {};
-    const featureCounts = {
-      dashedStrokes: 0,
-      verticalPresentationPunctuation: 0,
-      verticalTextRuns: 0,
-    };
-    const verticalPresentationCodePoints = new Set([
-      0xfe19, 0xfe31, 0xfe32, 0xfe33, 0xfe34, 0xfe35, 0xfe36, 0xfe37, 0xfe38,
-      0xfe39, 0xfe3a, 0xfe3b, 0xfe3c, 0xfe3d, 0xfe3e, 0xfe3f, 0xfe40, 0xfe41,
-      0xfe42, 0xfe43, 0xfe44,
-    ]);
     const stack = [tree.root];
     while (stack.length > 0) {
       const node = stack.pop();
@@ -541,26 +534,6 @@ async function readLayerFeatureProbe(page, pageIndex, profile) {
           if (op?.type === 'glyphOutline' && typeof op.payloadKind === 'string') {
             glyphOutlinePayloadCounts[op.payloadKind]
               = (glyphOutlinePayloadCounts[op.payloadKind] ?? 0) + 1;
-          }
-          if (op?.type === 'textRun' && op.isVertical === true) {
-            featureCounts.verticalTextRuns += 1;
-            const replayText = typeof op.displayText === 'string' ? op.displayText : op.text;
-            if (typeof replayText === 'string') {
-              featureCounts.verticalPresentationPunctuation += Array.from(replayText)
-                .filter((character) => verticalPresentationCodePoints.has(
-                  character.codePointAt(0) ?? 0,
-                )).length;
-            }
-          }
-          const dash = op?.type === 'line'
-            ? op.style?.dash
-            : op?.type === 'path'
-              ? op.lineStyle?.dash ?? op.style?.strokeDash
-              : op?.type === 'rectangle' || op?.type === 'ellipse'
-                ? op.style?.strokeDash
-                : undefined;
-          if (typeof dash === 'string' && dash !== 'solid') {
-            featureCounts.dashedStrokes += 1;
           }
         }
       }

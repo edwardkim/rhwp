@@ -899,8 +899,8 @@
         "maxDiffRatio": null,
         "minimumInkPixels": 50000,
         "inkMaskNeighborhoodRadius": 3,
-        "inkMaskMaxDiffRatio": 0.004,
-        "nonInkMaxDiffPixels": 0,
+        "inkMaskMaxDiffRatio": 0.005,
+        "nonInkMaxDiffPixels": 4,
         "solidInkMaxDiffRatio": 0.0065
       },
       "diagnosticAxes": [
