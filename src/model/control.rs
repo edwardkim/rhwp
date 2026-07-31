@@ -344,6 +344,12 @@ impl Field {
         self.properties & 1 != 0
     }
 
+    /// 수정됨(dirty) 표식 (properties bit 15) — `clear_initial_field_texts` 의 보존 게이트.
+    /// HWPX `<hp:fieldBegin dirty="..">` 가 이 비트의 대응물이다 (#3545).
+    pub fn is_dirty(&self) -> bool {
+        self.properties & (1 << 15) != 0
+    }
+
     /// 누름틀(ClickHere) command 문자열을 한컴 포맷으로 재구축한다.
     ///
     /// 한컴 정답지(`samples/field-01.hwp`, `form-01.hwp`) 동형 (#1434):

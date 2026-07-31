@@ -4556,6 +4556,13 @@ fn parse_field_begin_attrs(e: &quick_xml::events::BytesStart) -> Field {
                     f.properties |= 1;
                 }
             }
+            b"dirty" => {
+                // properties bit 15 = 수정됨 표식 — 버리면 clear_initial_field_texts 의
+                // 보존 게이트(#3380)가 HWPX 축에서 항상 열려 텍스트가 유실된다 (#3545)
+                if parse_bool_attr(&attr) {
+                    f.properties |= 1 << 15;
+                }
+            }
             _ => {}
         }
     }
