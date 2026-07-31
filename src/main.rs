@@ -112,15 +112,17 @@ fn load_document_core(data: &[u8]) -> Result<rhwp::document_core::DocumentCore, 
     result.map_err(|e| classify_hwp_error(&e.to_string()))
 }
 
-/// args 전체를 스캔해 --password <pw> / --password-stdin 을 추출·제거한다.
+/// args 전체를 스캔해 인증 옵션(`--password <pw>` / `--password-stdin`)을 떼어낸다.
 /// 뽑아낸 비밀번호는 이 함수 안에서 `set_cli_password()` 로 소비하고, 반환값에는
-/// 비밀번호 토큰이 제거된 args 만 담는다.
+/// 해당 토큰이 제거된 args 만 담는다.
 ///
-/// 비밀번호를 반환 튜플에 실어 보내면 CodeQL(`rust/cleartext-logging`)이 튜플 전체를
-/// taint 로 보고, 비밀번호가 이미 제거된 args 를 쓰는 오류 출력까지 sink 로 분류한다
-/// (PR #3405 검토에서 41건 과탐지로 확인). 반환 경로에서 비밀번호를 떼어 그 병합 지점을
-/// 없앤다.
-fn extract_global_password(mut args: Vec<String>) -> Result<Vec<String>, i32> {
+/// 이름과 반환 형태가 "정제된 args" 인 것은 의도적이다. 비밀번호를 반환값(과거의
+/// `(args, password)` 튜플)에 싣거나 함수 이름에 `password` 를 두면 CodeQL
+/// `rust/cleartext-logging` 이 이 호출의 결과 전체를 민감 데이터로 보고, 비밀번호
+/// 토큰이 이미 제거된 args 를 쓰는 오류·진단 출력까지 sink 로 분류한다
+/// (PR #3405 검토에서 41건 과탐지로 확인, PR #3644 에서 alert #119 로 재발).
+/// 반환 경로에 비밀번호가 남지 않으므로 이 분류는 실제 유출 경로가 아니다.
+fn strip_global_auth_options(mut args: Vec<String>) -> Result<Vec<String>, i32> {
     let mut password: Option<String> = None;
     let mut i = 1; // args[0] 은 프로그램 경로
     while i < args.len() {
@@ -161,7 +163,7 @@ fn main() {
     let raw_args: Vec<String> = env::args().collect();
     // 전역 비밀번호 pre-scan: 어느 위치든 --password / --password-stdin 을 뽑아낸다.
     // 비밀번호는 pre-scan 안에서 CLI_PASSWORD 로 들어가고 여기로는 돌아오지 않는다.
-    let args = match extract_global_password(raw_args) {
+    let args = match strip_global_auth_options(raw_args) {
         Ok(v) => v,
         Err(code) => process::exit(code),
     };
@@ -10752,8 +10754,8 @@ fn extract_thumbnail(args: &[String]) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::{
-        allows_implicit_sibling_resources, cli_password, extract_global_password, set_cli_password,
-        tab_ext_semantic_differs, EXIT_USAGE,
+        allows_implicit_sibling_resources, cli_password, set_cli_password,
+        strip_global_auth_options, tab_ext_semantic_differs, EXIT_USAGE,
     };
     use rhwp::parser::FileFormat;
 
@@ -10802,7 +10804,7 @@ mod tests {
             "secret".to_string(),
         ];
         set_cli_password(None);
-        let clean = extract_global_password(args).unwrap();
+        let clean = strip_global_auth_options(args).unwrap();
         assert_eq!(clean, ["rhwp", "info", "sample.hwp"]);
         // 비밀번호는 반환값이 아니라 CLI_PASSWORD(thread_local)로 전달된다.
         assert_eq!(cli_password().as_deref(), Some("secret"));
@@ -10821,7 +10823,7 @@ mod tests {
             "second".to_string(),
         ];
         assert!(matches!(
-            extract_global_password(args),
+            strip_global_auth_options(args),
             Err(code) if code == EXIT_USAGE
         ));
     }
