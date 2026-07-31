@@ -3250,6 +3250,43 @@ impl LayoutEngine {
                     line_visual_bottom, col_bottom, line_visual_bottom - col_bottom,
                 );
             }
+            // [#3637] 셀 안 줄이 **쪽 본문 하단**을 넘는 경우.
+            //
+            // 위 진단은 `is_body_flow_col_area && cell_ctx.is_none()` 이라 본문 흐름만
+            // 본다. 셀은 `col_area` 가 셀 사각형이라 그 조건이 언제나 거짓이고, 그래서
+            // 셀 안에서 쪽 밖으로 나간 글자는 **한 줄도 보고되지 않았다**.
+            //
+            // 실측: 쪽 밖 글자가 있는 문서 91건 중 8건이 이 침묵 구간이었다
+            // (총 2,910자, 최대 471.8px 초과). 텍스트 추출에는 남아 있어 텍스트 diff 로도
+            // 안 잡히고, 진단마저 없어 관측 자체가 불가능했다.
+            //
+            // 기준선 두 가지가 함께 맞아야 오탐이 사라진다.
+            //
+            // 1. **쪽 하단** (본문 하단 아님). 본문 하단과 쪽 하단 사이는 아래 여백·꼬리말
+            //    구간이라 거기 그려진 글자는 실제로 보인다. 본문 하단으로 재면 그 구간이
+            //    통째로 오탐이 된다.
+            // 2. 줄의 **윗변**(`text_y`). 아랫변으로 재면 마지막 줄 디센더가 경계를 스치는
+            //    정상 상태까지 잡는다. 윗변이 이미 쪽 밖이면 그 줄은 **어느 부분도 그려지지
+            //    않는다** — 배율·글꼴에 무관한 판정이다.
+            //
+            // MATCH 대조군 80건 실측: 아랫변 기준은 9건(11%) 오탐, 초과폭이 전부
+            // 5.4~23.9px(줄 높이 이내)였다. 윗변으로 바꾸니 7건, 기준을 쪽 하단으로 옮겨야
+            // 0 이 된다. 진짜 침묵 구간 8건은 146.0~512.0px 라 어느 기준에서도 남는다.
+            if cell_ctx.is_some() && !blank_spacer_line {
+                let page_h = self.current_page_height.get();
+                if page_h > 0.0 && text_y > page_h + 0.5 {
+                    eprintln!(
+                        "LAYOUT_OVERFLOW_CELL: section={} pi={} line={} y={:.1} \
+                         page_bottom={:.1} overflow={:.1}px",
+                        section_index,
+                        para_index,
+                        line_idx,
+                        text_y,
+                        page_h,
+                        text_y - page_h,
+                    );
+                }
+            }
             // [Task #604 R3] wrap_anchor 가 있으면 본 문단은 anchor 그림/표 옆 wrap text.
             // 각 라인의 LineSeg cs(column_start)/sw(segment_width)를 x 오프셋/너비로 적용.
             // typeset 의 wrap_around state machine 매칭 결과 (ColumnContent.wrap_anchors)
