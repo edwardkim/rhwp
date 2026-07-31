@@ -4,8 +4,10 @@
 //! 문단에서는 "앵커 없음"의 센티널이다. 이를 절대 위치로 받아들이면 셀 안 모든
 //! 문단이 같은 y 로 리셋되어 겹쳐 그려진다.
 //!
-//! 대상 셀 — `samples/issue1949_giant_cell_nested_tables_perf.hwp` 104쪽,
+//! 대상 셀 — `samples/issue1949_giant_cell_nested_tables_perf.hwp`의
 //! 중첩 표 안쪽 셀. 두 문단 모두 `vpos=0 lh=1000` 으로 저장돼 있다.
+//! 다른 pagination 수정이 해당 셀의 페이지 번호를 바꿀 수 있으므로, 특정 페이지를
+//! 고정하지 않고 순차 조판한 전체 트리에서 고유한 문단 쌍을 찾는다.
 //!
 //! ```text
 //! para[0] "로터리 조종기"      line_segs=(vpos=0 lh=1000)
@@ -23,8 +25,6 @@ use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue1949_giant_cell_nested_tables_perf.hwp";
-/// 대상 쪽 (0-based). 사용자 기준 104쪽.
-const PAGE_INDEX: u32 = 103;
 const PARA_A: &str = "로터리 조종기";
 const PARA_B: &str = "(Rotary controls";
 
@@ -67,20 +67,18 @@ fn load_target() -> (BoundingBox, Vec<(String, BoundingBox)>) {
 
     // 페이지를 처음부터 순차로 빌드한다 — 단일 페이지만 빌드하면 조판 상태가 달라
     // 대상 페이지의 트리가 전수 렌더와 일치하지 않는다.
-    let mut tree = None;
-    for page in 0..=PAGE_INDEX {
-        tree = Some(
-            core.build_page_render_tree(page)
-                .unwrap_or_else(|e| panic!("build page {page}: {e:?}")),
-        );
+    for page in 0..core.page_count() {
+        let tree = core
+            .build_page_render_tree(page)
+            .unwrap_or_else(|e| panic!("build page {page}: {e:?}"));
+        if let Some(cell) = find_target_cell(&tree.root) {
+            return cell;
+        }
     }
-    let tree = tree.expect("대상 페이지 렌더 트리");
-    find_target_cell(&tree.root).unwrap_or_else(|| {
-        panic!(
-            "{SAMPLE} page {} 에서 대상 셀을 찾지 못했다",
-            PAGE_INDEX + 1
-        )
-    })
+    panic!(
+        "{SAMPLE} 전체 {}쪽에서 대상 셀을 찾지 못했다",
+        core.page_count()
+    )
 }
 
 #[test]

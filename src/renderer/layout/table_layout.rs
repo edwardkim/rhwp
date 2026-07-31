@@ -53,19 +53,6 @@ fn cell_para_line_anchor_y(
     }
 }
 
-/// 셀 문단의 저장된 `LINE_SEG.vertical_pos` 를 절대 앵커로 신뢰할 수 있는지 판정한다.
-///
-/// `vertical_pos == 0` 은 "셀 상단" 이라는 유효한 값이면서 동시에 "앵커 없음" 의
-/// 센티널이기도 하다. 셀 안 문단이 전부 0 으로 저장된 문서(중첩 표 안쪽 셀에서 흔하다)
-/// 에서 이를 절대 위치로 받아들이면 모든 문단이 같은 y 로 리셋되어 겹쳐 그려진다.
-/// 첫 문단은 0 이 곧 셀 상단이라 그대로 신뢰하고, 두 번째 이후 문단은 양수 vpos 가
-/// 저장돼 있을 때만 앵커로 쓴다.
-fn first_seg_vpos_is_anchor(para: &Paragraph, cell_para_index: usize) -> bool {
-    para.line_segs
-        .first()
-        .is_some_and(|seg| cell_para_index == 0 || seg.vertical_pos > 0)
-}
-
 fn has_initial_tac_shape_host(paragraphs: &[Paragraph]) -> bool {
     paragraphs.first().is_some_and(|para| {
         para.text.trim().is_empty()
@@ -2747,7 +2734,7 @@ impl LayoutEngine {
             // 겹쳐 그려진다. 첫 문단의 vpos == 0 은 "셀 상단"이라는 유효한 값이므로
             // 그대로 두고, 두 번째 이후 문단은 양수 vpos 가 저장돼 있을 때만 앵커로
             // 쓴다. (같은 파일의 text_y_start 계산도 `v > 0.0` 을 앵커 조건으로 쓴다)
-            let has_stored_para_anchor = first_seg_vpos_is_anchor(para, cp_idx);
+            let has_stored_para_anchor = crate::renderer::first_seg_vpos_is_anchor(para, cp_idx);
             let use_saved_cell_para_vpos = use_top_vpos_anchor
                 || trust_stored_cell_flow
                 || has_initial_tac_shape_host(&cell.paragraphs);
@@ -4360,7 +4347,7 @@ impl LayoutEngine {
                 .paragraphs
                 .iter()
                 .enumerate()
-                .all(|(idx, para)| first_seg_vpos_is_anchor(para, idx));
+                .all(|(idx, para)| crate::renderer::first_seg_vpos_is_anchor(para, idx));
             let trust_stored_cell_flow = (depth > 0 || table.common.treat_as_char)
                 && stored_flow_extent > 0.0
                 && stored_flow_extent + 0.5 < total_content_height
