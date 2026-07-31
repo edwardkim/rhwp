@@ -2,6 +2,9 @@
 
 이 파일은 저장소 안에서 재현 가능한 작업 부트스트랩이다. 세부 절차는 아래 권위 문서를 우선한다.
 
+> **에이전트 진입점**: rhwp 를 도구로 부리는 에이전트는 루트 [`llms.txt`](llms.txt)와
+> [에이전트 지식 지도](mydocs/manual/agent_knowledge_map.md)에서 시작한다.
+
 ## 문서 로딩 순서
 
 1. `CLAUDE.md`

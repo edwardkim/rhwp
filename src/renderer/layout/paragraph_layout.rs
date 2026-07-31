@@ -2858,12 +2858,28 @@ impl LayoutEngine {
                             .windows(2)
                             .all(|w| w[1].vertical_pos >= w[0].vertical_pos)
                     {
-                        let base_vpos = if start_line == 0 {
-                            0
-                        } else {
-                            range.first().map(|seg| seg.vertical_pos).unwrap_or(0)
-                        };
-                        Some((base_vpos, y))
+                        // [#3637] 기준은 **단 상단**이다 (원점 0).
+                        //
+                        // `LINE_SEG.vertical_pos` 는 문단 기준이 아니라 쪽(단) 상단 기준
+                        // 누적 절대값이다 — 같은 쪽에서 pi=5 → 13949, pi=17 → 58149 로
+                        // 문단을 가로질러 단조 증가한다. 따라서 줄의 y 는
+                        // `단 상단 + vpos` 이지, `흐름 커서 + vpos` 가 아니다.
+                        //
+                        // 종전에는 `start_line == 0` 일 때 기준 vpos 만 0 으로 두고 기준 y 는
+                        // 흐름 커서(`y`)로 두어, 절대값이 커서 위에 **한 번 더** 얹혔다.
+                        // 문단이 쪽 상단이면 커서≈0 이라 무해했지만, 쪽 중간 문단이면 자기
+                        // vpos 만큼 아래로 밀려 쪽 밖으로 나간다.
+                        //
+                        // 실측 (해양 모빌리티 보도자료 pi=17):
+                        //   단 상단 94.5 + vpos 775.3 = 869.8px 가 정답인데 흐름 커서
+                        //   869.8 에 vpos 를 또 더해 1660px 에 그렸다. 쪽 하단 1028px 를
+                        //   632px 넘겨 세 줄 93글자가 SVG·PNG 어느 경로에서도 보이지 않았다.
+                        //
+                        // 기준 y 를 단 상단으로 내리면 첫 줄이 개체 아래로 밀린 경우
+                        // (#1459 자리차지 그림 + TAC 그림 스택)도 그 밀림이 vpos 에 이미
+                        // 담겨 있어 그대로 재현된다. 첫 줄 vpos 를 기준 삼으면 그 밀림이
+                        // 사라져 두 그림이 같은 y 에 겹친다 — 실제로 겪은 회귀다.
+                        Some((0, col_area.y))
                     } else {
                         None
                     }
@@ -3234,6 +3250,43 @@ impl LayoutEngine {
                     line_visual_bottom, col_bottom, line_visual_bottom - col_bottom,
                 );
             }
+            // [#3637] 셀 안 줄이 **쪽 본문 하단**을 넘는 경우.
+            //
+            // 위 진단은 `is_body_flow_col_area && cell_ctx.is_none()` 이라 본문 흐름만
+            // 본다. 셀은 `col_area` 가 셀 사각형이라 그 조건이 언제나 거짓이고, 그래서
+            // 셀 안에서 쪽 밖으로 나간 글자는 **한 줄도 보고되지 않았다**.
+            //
+            // 실측: 쪽 밖 글자가 있는 문서 91건 중 8건이 이 침묵 구간이었다
+            // (총 2,910자, 최대 471.8px 초과). 텍스트 추출에는 남아 있어 텍스트 diff 로도
+            // 안 잡히고, 진단마저 없어 관측 자체가 불가능했다.
+            //
+            // 기준선 두 가지가 함께 맞아야 오탐이 사라진다.
+            //
+            // 1. **쪽 하단** (본문 하단 아님). 본문 하단과 쪽 하단 사이는 아래 여백·꼬리말
+            //    구간이라 거기 그려진 글자는 실제로 보인다. 본문 하단으로 재면 그 구간이
+            //    통째로 오탐이 된다.
+            // 2. 줄의 **윗변**(`text_y`). 아랫변으로 재면 마지막 줄 디센더가 경계를 스치는
+            //    정상 상태까지 잡는다. 윗변이 이미 쪽 밖이면 그 줄은 **어느 부분도 그려지지
+            //    않는다** — 배율·글꼴에 무관한 판정이다.
+            //
+            // MATCH 대조군 80건 실측: 아랫변 기준은 9건(11%) 오탐, 초과폭이 전부
+            // 5.4~23.9px(줄 높이 이내)였다. 윗변으로 바꾸니 7건, 기준을 쪽 하단으로 옮겨야
+            // 0 이 된다. 진짜 침묵 구간 8건은 146.0~512.0px 라 어느 기준에서도 남는다.
+            if cell_ctx.is_some() && !blank_spacer_line {
+                let page_h = self.current_page_height.get();
+                if page_h > 0.0 && text_y > page_h + 0.5 {
+                    eprintln!(
+                        "LAYOUT_OVERFLOW_CELL: section={} pi={} line={} y={:.1} \
+                         page_bottom={:.1} overflow={:.1}px",
+                        section_index,
+                        para_index,
+                        line_idx,
+                        text_y,
+                        page_h,
+                        text_y - page_h,
+                    );
+                }
+            }
             // [Task #604 R3] wrap_anchor 가 있으면 본 문단은 anchor 그림/표 옆 wrap text.
             // 각 라인의 LineSeg cs(column_start)/sw(segment_width)를 x 오프셋/너비로 적용.
             // typeset 의 wrap_around state machine 매칭 결과 (ColumnContent.wrap_anchors)
@@ -3585,6 +3638,33 @@ impl LayoutEngine {
             } else {
                 effective_col_x + effective_margin_left
             };
+            // 한글은 셀 밖 오른쪽 정렬 폭에서 말미 공백을 제외한다
+            // (needs_justify 의 후행 공백 제외와 동일 규칙). 포함하면
+            // [그림+말미공백72] 꼬리말이 공백 폭(447px)만큼 왼쪽으로 이탈 —
+            // 식약처 보도자료 OPEN 로고 실측(한글 x=607.3). 반례: 셀 내부는
+            // 한글이 말미 공백을 포함해 정렬(issue_1285 수험번호 TAC 우단
+            // = 셀 inner 우단 오라클 앵커) — cell_ctx 부재로 한정. Center 도
+            // 근거 부재로 기존 동작 유지.
+            let right_trailing_ws_width = if alignment == Alignment::Right && cell_ctx.is_none() {
+                // 말미 공백이 서로 다른 글꼴/글자 크기의 run 경계를 넘을 수 있다.
+                // 전체 공백을 마지막 run의 style로 재측정하면 그만큼 오른쪽 앵커를
+                // 틀리게 복원하므로, 뒤에서부터 각 run의 실제 style 폭을 더한다.
+                let mut width = 0.0;
+                for run in comp_line.runs.iter().rev() {
+                    let trailing_spaces = run.text.chars().rev().take_while(|c| *c == ' ').count();
+                    if trailing_spaces == 0 {
+                        break;
+                    }
+                    let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                    width += estimate_text_width(&" ".repeat(trailing_spaces), &ts);
+                    if trailing_spaces != run.text.chars().count() {
+                        break;
+                    }
+                }
+                width
+            } else {
+                0.0
+            };
             let x_start = match alignment {
                 Alignment::Center => {
                     let align_offset = if center_packed_cell_label_as_right {
@@ -3608,7 +3688,8 @@ impl LayoutEngine {
                     x_base
                         + inline_offset
                         + num_x_offset
-                        + (available_width - effective_text_width).max(0.0)
+                        + (available_width - (effective_text_width - right_trailing_ws_width))
+                            .max(0.0)
                 }
                 _ => x_base + inline_offset + num_x_offset, // Left, Justify, Split, Distribute(분배중)
             };

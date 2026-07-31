@@ -184,6 +184,7 @@ export function resolveCanvasKitFontPlan(
 ): CanvasKitFontPlan {
   const canvasKitSubstitutes = new Map([
     [normalizeFontFamily('휴먼명조'), normalizeFontFamily('HY신명조')],
+    [normalizeFontFamily('한양중고딕'), normalizeFontFamily('HY중고딕')],
     [normalizeFontFamily('한컴 윤고딕 230'), normalizeFontFamily('Noto Sans KR ExtraLight')],
   ]);
   const entriesByFamily = new Map<string, FontEntry>();
