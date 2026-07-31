@@ -93,15 +93,30 @@ test('[#3350] 최초 execute 실패는 before 스냅샷 복원 후 ID를 해제�
   const catchBody = block.slice(catchStart);
 
   const idxRestore = catchBody.indexOf('wasm.restoreSnapshot(this.beforeId)');
-  const idxDiscard = catchBody.indexOf('this.discard(wasm)');
-  assert.ok(idxRestore !== -1 && idxDiscard !== -1 && idxRestore < idxDiscard,
-    '부분 변경을 before 스냅샷으로 rollback한 뒤 ID를 해제해야 함');
+  assert.notEqual(idxRestore, -1, '부분 변경을 before 스냅샷으로 rollback해야 함');
   assert.match(catchBody, /catch \(rollbackError\)/,
     'rollback 실패도 별도로 포착해야 함');
   assert.match(catchBody, /new AggregateError\(\s*\[operationError, rollbackError\]/,
     '원래 operation 오류와 rollback 오류를 함께 보존해야 함');
-  assert.match(catchBody, /throw operationError/,
-    'rollback 성공 시 원래 operation 오류를 그대로 전파해야 함');
+
+  // [#3662] rollback **성공** 경로의 discard 를 따로 못박는다.
+  //
+  // 종전에는 `catchBody.indexOf('this.discard(wasm)')` 로 순서만 봤는데, 그 첫 번째 일치는
+  // inner `catch (rollbackError)` 안의 discard 다. 그래서 성공 경로의 discard 를 지워도
+  // 가드가 통과했다 — 스냅샷 2개가 조용히 누수되는 회귀를 못 잡는다.
+  //
+  // inner catch 가 닫힌 **뒤** discard → rethrow 가 이어지는지 확인해 성공 경로에 고정한다.
+  assert.match(
+    catchBody,
+    /\}\s*this\.discard\(wasm\);\s*throw operationError;/,
+    'rollback 성공 시 before/after 를 해제한 뒤 원래 operation 오류를 전파해야 함',
+  );
+
+  // inner catch 안의 discard 도 함께 남아 있어야 한다 — rollback 이 실패해도 ID 는 해제한다.
+  const rollbackCatch = catchBody.slice(catchBody.indexOf('catch (rollbackError)'));
+  const innerBody = rollbackCatch.slice(0, rollbackCatch.indexOf('throw new AggregateError'));
+  assert.match(innerBody, /this\.discard\(wasm\)/,
+    'rollback 실패 경로도 스냅샷 ID 를 해제해야 함');
 });
 
 test('[결함1] 스냅샷 예산은 WASM 상한에서 순간 +2 여유를 뺀 값이다', () => {

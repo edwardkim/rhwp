@@ -685,10 +685,11 @@ fn decode_image_with_format_limited(
 #[cfg(test)]
 mod tests {
     use super::{
-        bmp_bytes_to_png_bytes, grayscale_jpeg_bytes_to_png_bytes, resolve_image_payload,
-        watermark_jpeg_bytes_to_hancom_baked_png_bytes, ConversionMemo, CONVERSIONS_RUN,
-        MAX_MEMO_BYTES, MAX_MEMO_ENTRIES,
+        bmp_bytes_to_png_bytes, emitted_image_bytes, grayscale_jpeg_bytes_to_png_bytes,
+        is_watermark_image, resolve_image_payload, watermark_jpeg_bytes_to_hancom_baked_png_bytes,
+        ConversionMemo, CONVERSIONS_RUN, MAX_MEMO_BYTES, MAX_MEMO_ENTRIES,
     };
+    use crate::model::image::ImageEffect;
     use crate::paint::ResolvedImageKind;
     use crate::renderer::render_tree::ImageNode;
     use image::{DynamicImage, ImageFormat, Rgb, RgbImage};
@@ -916,5 +917,239 @@ mod tests {
 
         assert!(bmp_bytes_to_png_bytes(&bmp).is_none());
         assert!(resolve_image_payload(&ImageNode::new(1, Some(bmp))).is_none());
+    }
+}
+
+#[cfg(test)]
+mod emitted_bytes_key_agreement_tests {
+    //! Task #3315: 신원 키의 variant 가 JSON 경로와 **같은 바이트**를 가리키는지 고정한다.
+    //!
+    //! `getPageLayerTree` 가 base64 를 생략하면 소비자는 `getSourceImageBytes(key)` 로 바이트를
+    //! 받는다. 두 경로는 `emitted_image_bytes` 를 함께 쓰므로 변환 사슬 자체는 갈라질 수 없지만,
+    //! **넘기는 술어가 다르다** —
+    //!
+    //! - JSON 경로: `is_watermark_image(image)` (ImageNode 를 직접 본다)
+    //! - 키 조회 경로: `parse_source_image_key(key)` 로 되읽은 variant
+    //!
+    //! 그 둘이 어긋나면 워터마크 그림에 원본 JPEG 을 돌려주고도 성공한 것처럼 보인다. 여기서
+    //! 고정하는 것은 "키만으로 같은 바이트를 재현할 수 있다"는 계약이고, 변환 분기(BMP·PCX·
+    //! TIFF·회색 JPEG·워터마크 JPEG·변환 실패 되돌림)마다 확인한다.
+
+    use super::{emitted_image_bytes, is_watermark_image};
+    use crate::model::image::ImageEffect;
+    use crate::paint::{parse_source_image_key, source_image_key};
+    use crate::renderer::render_tree::ImageNode;
+    use image::{DynamicImage, ImageFormat, Rgb, RgbImage};
+    use std::io::Cursor;
+
+    const EPOCH: u32 = 5;
+
+    fn encoded(
+        width: u32,
+        height: u32,
+        format: ImageFormat,
+        pixel: impl Fn(u32, u32) -> [u8; 3],
+    ) -> Vec<u8> {
+        let mut img = RgbImage::new(width, height);
+        for y in 0..height {
+            for x in 0..width {
+                img.put_pixel(x, y, Rgb(pixel(x, y)));
+            }
+        }
+        let mut out = Vec::new();
+        DynamicImage::ImageRgb8(img)
+            .write_to(&mut Cursor::new(&mut out), format)
+            .expect("encode");
+        out
+    }
+
+    fn gray_jpeg() -> Vec<u8> {
+        encoded(8, 8, ImageFormat::Jpeg, |x, y| {
+            let g = 150 + ((x + y) % 32) as u8;
+            [g, g, g]
+        })
+    }
+
+    fn color_jpeg() -> Vec<u8> {
+        encoded(8, 8, ImageFormat::Jpeg, |x, y| {
+            if (x + y) % 2 == 0 {
+                [220, 64, 64]
+            } else {
+                [64, 120, 220]
+            }
+        })
+    }
+
+    /// 워터마크 bake 가 **실제로 성공하는** JPEG.
+    ///
+    /// `watermark_jpeg_bytes_to_hancom_baked_png_bytes` 는 테두리의 85% 이상과 전체의 20% 이상이
+    /// 흰색에 가까워야 bake 한다. 단색·격자 같은 합성 이미지는 그 조건을 못 맞춰 `None` 이
+    /// 되고, 그러면 `wmpng` 와 `src` 두 분기가 같은 되돌림 결과로 수렴해 **variant 가 갈렸는지
+    /// 확인할 수 없다**. 그래서 흰 바탕에 작은 어두운 얼룩을 둔 모양으로 만든다.
+    fn watermark_shaped_jpeg() -> Vec<u8> {
+        encoded(48, 48, ImageFormat::Jpeg, |x, y| {
+            let center = (20..28).contains(&x) && (20..28).contains(&y);
+            if center {
+                [40, 40, 40]
+            } else {
+                [255, 255, 255]
+            }
+        })
+    }
+
+    /// 그림 하나에 대해 두 경로의 (mime, bytes) 가 같은지 확인한다.
+    fn assert_paths_agree(label: &str, image: &ImageNode) {
+        let data = image.data.as_deref().expect("바이트가 있어야 한다");
+
+        // JSON 경로가 쓰는 술어.
+        let (json_mime, json_bytes) = emitted_image_bytes(data, is_watermark_image(image));
+
+        // 키 조회 경로 — 키를 문자열로 내보내고 되읽어 variant 만으로 재현한다.
+        let key = source_image_key(EPOCH, image).expect("bin_data_id != 0 이면 키가 나온다");
+        let (epoch, bin_data_id, variant) =
+            parse_source_image_key(&key).expect("발급한 키는 되읽을 수 있어야 한다");
+        assert_eq!(epoch, EPOCH, "{label}: 키의 세대가 어긋난다");
+        assert_eq!(
+            bin_data_id, image.bin_data_id,
+            "{label}: 키의 id 가 어긋난다"
+        );
+        let (key_mime, key_bytes) = emitted_image_bytes(data, variant.bakes_watermark());
+
+        assert_eq!(
+            json_mime, key_mime,
+            "{label}: mime 이 갈렸다 — 소비자가 Blob 타입을 잘못 정한다 (key={key})"
+        );
+        assert_eq!(
+            json_bytes.as_ref(),
+            key_bytes.as_ref(),
+            "{label}: 바이트가 갈렸다 — 키로 받은 그림이 인라인 base64 와 다르다 (key={key})"
+        );
+    }
+
+    fn watermarked(mut image: ImageNode) -> ImageNode {
+        // `is_watermark_image` 가 참이 되는 최소 조건.
+        image.effect = ImageEffect::GrayScale;
+        image.brightness = 20;
+        image
+    }
+
+    #[test]
+    fn issue_3315_key_variant_reproduces_json_bytes_for_every_conversion_branch() {
+        let png = encoded(4, 4, ImageFormat::Png, |_, _| [10, 20, 30]);
+        let bmp = encoded(16, 16, ImageFormat::Bmp, |x, _| [x as u8 * 4, 90, 200]);
+        let tiff = encoded(4, 4, ImageFormat::Tiff, |x, y| {
+            [32 + x as u8, 96 + y as u8, 160]
+        });
+
+        let cases: Vec<(&str, ImageNode)> = vec![
+            // 변환 없음 — 원본 mime 그대로.
+            ("PNG", ImageNode::new(1, Some(png.clone()))),
+            // 브라우저가 못 읽는 포맷 → PNG 변환.
+            ("BMP", ImageNode::new(2, Some(bmp))),
+            ("TIFF", ImageNode::new(3, Some(tiff))),
+            // 회색 JPEG → PNG 정규화.
+            ("회색 JPEG", ImageNode::new(4, Some(gray_jpeg()))),
+            // 색 JPEG → 변환 없음(정규화 대상이 아니다).
+            ("색 JPEG", ImageNode::new(5, Some(color_jpeg()))),
+            // 워터마크 bake — variant 가 `wmpng` 로 갈리는 유일한 축. bake 가 실제로 성공하는
+            // 모양이어야 두 분기의 결과가 달라지고, 그래야 갈라짐을 잡을 수 있다.
+            (
+                "워터마크 JPEG(bake 성공)",
+                watermarked(ImageNode::new(6, Some(watermark_shaped_jpeg()))),
+            ),
+            // bake 술어는 참인데 bake 가 실패하는 모양 — 두 분기가 같은 되돌림으로 수렴한다.
+            (
+                "워터마크 술어 + bake 실패",
+                watermarked(ImageNode::new(7, Some(gray_jpeg()))),
+            ),
+            // JPEG 이 아니면 효과가 붙어도 bake 대상이 아니다 — variant 는 `src` 로 남아야 한다.
+            ("효과 붙은 PNG", watermarked(ImageNode::new(8, Some(png)))),
+        ];
+
+        for (label, image) in &cases {
+            assert_paths_agree(label, image);
+        }
+    }
+
+    /// bake 가 성공하는 모양에서 두 variant 의 바이트가 **실제로 다름**을 먼저 못박는다.
+    ///
+    /// 이 단언이 없으면 위 등가성 테스트가 "두 경로가 같다"를 확인하는 게 아니라 "두 분기가
+    /// 애초에 구분되지 않는다"를 확인하는 것일 수 있다.
+    #[test]
+    fn issue_3315_watermark_variant_actually_changes_the_bytes() {
+        let jpeg = watermark_shaped_jpeg();
+        let (baked_mime, baked) = emitted_image_bytes(&jpeg, true);
+        let (plain_mime, plain) = emitted_image_bytes(&jpeg, false);
+
+        assert_eq!(baked_mime, "image/png", "bake 결과는 PNG 다");
+        assert_ne!(
+            baked.as_ref(),
+            plain.as_ref(),
+            "이 모양에서 bake 가 돌지 않으면 variant 갈라짐을 검증할 수 없다"
+        );
+        // mime 은 갈리지 않는다 — 흰 바탕 그림은 비-워터마크 경로에서도 회색 JPEG 으로 판정돼
+        // PNG 로 정규화된다. 즉 이 축의 차이는 **바이트에만** 나타나므로, mime 만 비교하는
+        // 검증은 워터마크 갈라짐을 놓친다.
+        assert_eq!(plain_mime, "image/png");
+    }
+
+    #[test]
+    fn issue_3315_variant_marks_watermark_bake_only_for_jpeg() {
+        let png = encoded(4, 4, ImageFormat::Png, |_, _| [1, 2, 3]);
+        let jpeg = color_jpeg();
+
+        // JPEG + 효과 → wmpng
+        let key = source_image_key(EPOCH, &watermarked(ImageNode::new(1, Some(jpeg.clone()))))
+            .expect("키");
+        assert!(
+            key.ends_with(":wmpng"),
+            "JPEG 워터마크는 wmpng 여야 한다: {key}"
+        );
+
+        // JPEG + 효과 없음 → src
+        let key = source_image_key(EPOCH, &ImageNode::new(1, Some(jpeg))).expect("키");
+        assert!(
+            key.ends_with(":src"),
+            "효과 없는 JPEG 은 src 여야 한다: {key}"
+        );
+
+        // PNG + 효과 → src (bake 는 JPEG 경로에만 있다)
+        let key = source_image_key(EPOCH, &watermarked(ImageNode::new(1, Some(png)))).expect("키");
+        assert!(
+            key.ends_with(":src"),
+            "PNG 은 효과가 붙어도 bake 하지 않으므로 src 여야 한다: {key}"
+        );
+    }
+
+    /// 변환이 **실패**하면 두 경로가 함께 원본으로 되돌아가야 한다.
+    ///
+    /// 되돌림이 한쪽에만 있으면 키로 받은 바이트가 인라인과 달라진다. 헤더만 그럴듯한 손상
+    /// BMP 로 그 경로를 태운다 — `resolve_image_payload` 는 `None` 을 주고, 두 경로 모두
+    /// `emitted_image_bytes` 안에서 같은 되돌림을 밟는다.
+    #[test]
+    fn issue_3315_failed_conversion_falls_back_identically_on_both_paths() {
+        let mut broken_bmp = vec![0u8; 64];
+        broken_bmp[..2].copy_from_slice(b"BM");
+        let image = ImageNode::new(9, Some(broken_bmp.clone()));
+
+        let (mime, bytes) = emitted_image_bytes(&broken_bmp, is_watermark_image(&image));
+        assert_eq!(mime, "image/bmp", "변환 실패 시 감지한 원본 mime 을 쓴다");
+        assert_eq!(
+            bytes.as_ref(),
+            &broken_bmp[..],
+            "변환 실패 시 원본 바이트를 쓴다"
+        );
+
+        assert_paths_agree("손상 BMP", &image);
+    }
+
+    /// 신원 키를 낼 수 없는 그림은 키 조회로 되찾을 수 없다 — 그래서 생략 대상이 아니다.
+    #[test]
+    fn issue_3315_synthetic_images_have_no_key() {
+        let png = encoded(2, 2, ImageFormat::Png, |_, _| [0, 0, 0]);
+        // bin_data_id == 0 — 문서 BinData 에 대응하지 않는 합성 그림.
+        assert!(source_image_key(EPOCH, &ImageNode::new(0, Some(png))).is_none());
+        // 바이트를 내보내지 않는 op 도 키가 없다.
+        assert!(source_image_key(EPOCH, &ImageNode::new(1, None)).is_none());
     }
 }
