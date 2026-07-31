@@ -478,6 +478,14 @@ mod tests {
             Some("bin:3:7:wmpng")
         );
 
+        // 밝기와 명암 중 하나만 바뀌어도 기존 bake 술어는 같은 variant를 발급한다.
+        image.brightness = 0;
+        image.contrast = 1;
+        assert_eq!(
+            source_image_key(3, &image).as_deref(),
+            Some("bin:3:7:wmpng")
+        );
+
         // JPEG 이 아니면 효과 필드는 별도 JSON 속성일 뿐 base64 payload는 바뀌지 않는다.
         image.data = Some(vec![0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a]);
         assert_eq!(source_image_key(3, &image).as_deref(), Some("bin:3:7:src"));
