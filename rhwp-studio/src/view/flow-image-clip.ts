@@ -14,8 +14,14 @@ export interface FlowImageCrop {
 
 export interface FlowImagePaintOp {
   bbox: FlowImageBbox;
-  mime: string;
-  base64: string;
+  /**
+   * `<img>.src` 로 그대로 넣는 값.
+   *
+   * 전체 레이어 트리 경로는 `data:{mime};base64,{...}`, 좁은 질의 경로는 신원 키별 object
+   * URL 이다(Task #3315). 두 생산자가 같은 필드를 채우므로 DOM 조립부는 어느 쪽에서 왔는지
+   * 알 필요가 없다.
+   */
+  src: string;
   crop: FlowImageCrop | null;
   originalSizeHu: [number, number] | null;
   rotation: number;
@@ -109,8 +115,7 @@ export function collectFlowImagePaintOps(
         }
         images.push({
           bbox: op.bbox,
-          mime: op.mime,
-          base64: op.base64,
+          src: `data:${op.mime};base64,${op.base64}`,
           crop: isFiniteCrop(op.crop) ? op.crop : null,
           originalSizeHu: isPositiveSizeTuple(op.originalSizeHu) ? op.originalSizeHu : null,
           rotation: finiteNumber(op.transform?.rotation),
@@ -196,4 +201,61 @@ function isFiniteCrop(value: unknown): value is FlowImageCrop {
 function finiteNumber(value: unknown): number {
   const number = Number(value);
   return Number.isFinite(number) ? number : 0;
+}
+
+/**
+ * 좁은 질의(`getPageFlowImageOps`) 응답을 `FlowImagePaintOp` 로 옮긴다 (Task #3315).
+ *
+ * 위 `collectFlowImagePaintOps` 와 **같은 타입을 내는 두 번째 생산자**다. 나란히 두는 이유는
+ * 둘이 어긋나면 화면이 갈리기 때문이다 — Rust 쪽 등가성은 `tests/issue_3315_flow_image_narrow_query.rs`
+ * 가 실문서로 고정하고, 여기서는 필드 옮김만 한다.
+ *
+ * 잘림은 Rust 가 이미 조상 `clipRect` 를 교차해 접어 준다. 그래서 계보를 다시 훑지 않는다.
+ *
+ * `null` 을 돌려주면 이 경로를 쓸 수 없다는 뜻이다 — 호출부는 전체 트리 경로로 되돌아가야
+ * 한다. 그런 경우는 셋이다: ①응답이 유효한 JSON 이 아니다 ②`cacheable:false`(신원 키를 낼 수
+ * 없는 합성 그림이 섞여 바이트를 되찾을 방법이 없다) ③키로 URL 을 만들지 못했다(세대가 바뀐
+ * 낡은 키). 부분적으로 성공한 목록을 돌려주면 그림 몇 장이 조용히 사라지므로 전부 아니면 전무다.
+ */
+export function flowImageOpsFromNarrowQuery(
+  json: string,
+  resolveSrc: (key: string, mime: string) => string | null,
+): FlowImagePaintOp[] | null {
+  let payload: unknown;
+  try {
+    payload = JSON.parse(json);
+  } catch {
+    return null;
+  }
+  if (payload === null || typeof payload !== 'object') return null;
+  const response = payload as { cacheable?: unknown; images?: unknown };
+  if (response.cacheable !== true) return null;
+  if (!Array.isArray(response.images)) return null;
+
+  const images: FlowImagePaintOp[] = [];
+  for (const entry of response.images) {
+    if (entry === null || typeof entry !== 'object') return null;
+    const op = entry as LayerPaintOpLike & {
+      clip?: unknown;
+      sourceImageKey?: unknown;
+    };
+    if (!isFiniteBbox(op.bbox)) return null;
+    if (typeof op.mime !== 'string' || typeof op.sourceImageKey !== 'string') return null;
+
+    const src = resolveSrc(op.sourceImageKey, op.mime);
+    if (src === null) return null;
+
+    images.push({
+      bbox: op.bbox,
+      src,
+      crop: isFiniteCrop(op.crop) ? op.crop : null,
+      originalSizeHu: isPositiveSizeTuple(op.originalSizeHu) ? op.originalSizeHu : null,
+      rotation: finiteNumber(op.transform?.rotation),
+      horzFlip: op.transform?.horzFlip === true,
+      vertFlip: op.transform?.vertFlip === true,
+      filter: composeImageFilter(op),
+      clip: isFiniteBbox(op.clip) ? op.clip : null,
+    });
+  }
+  return images;
 }

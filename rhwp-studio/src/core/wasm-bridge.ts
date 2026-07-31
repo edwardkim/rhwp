@@ -686,6 +686,43 @@ export class WasmBridge {
     }
   }
 
+  /**
+   * 본문(flow) 그림의 배치 정보만 받는다 (Task #3315).
+   *
+   * 전체 레이어 트리를 받아 flow 그림을 걸러내면 그림 1장에 수 MB 를 편집마다 옮긴다.
+   * 이 질의는 바이트를 빼고 bbox·잘림·효과·신원 키만 주므로 수백 바이트다. 바이트는
+   * `getSourceImageBytes(key)` 로 그림이 바뀔 때만 따로 받는다.
+   *
+   * 구형 WASM(미지원)에서는 `null` — 호출부는 종전의 전체 트리 경로로 되돌아간다.
+   */
+  getPageFlowImageOps(pageNum: number): string | null {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { getPageFlowImageOps?: (p: number) => string };
+    if (typeof d.getPageFlowImageOps !== 'function') return null;
+    try {
+      return d.getPageFlowImageOps(pageNum);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 그림 신원 키로 바이트를 받는다 (Task #3315).
+   *
+   * 키를 풀 수 없으면 `null` — 세대가 바뀐 낡은 키이거나 없는 그림이다. 호출부는 종전
+   * 경로로 되돌아가야 한다.
+   */
+  getSourceImageBytes(key: string): Uint8Array | null {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { getSourceImageBytes?: (k: string) => Uint8Array };
+    if (typeof d.getSourceImageBytes !== 'function') return null;
+    try {
+      return d.getSourceImageBytes(key);
+    } catch {
+      return null;
+    }
+  }
+
   getPageLayerTreeObject(pageNum: number, profile: LayerRenderProfile = 'screen'): PageLayerTree {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as {
