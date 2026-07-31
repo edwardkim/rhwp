@@ -139,6 +139,11 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         0x3479 => 0x25B7,  // ▷ WHITE RIGHT-POINTING TRIANGLE
         0x347A => 0x25B6,  // ▶ BLACK RIGHT-POINTING TRIANGLE
         0x3441 => 0x25A0,  // ■ BLACK SQUARE
+        // `한글 97 안내문` HWP3 원본의 표 셀 글머리표. HWP5 변환본과
+        // 한컴 PDF가 모두 U+25B8(▸)으로 표시하므로, HWP3 사적 코드도 같은
+        // 표준 Unicode로 보존한다. 매핑이 없으면 decode_johab가 '?'를 반환하고
+        // HWP3 parser가 미지원 사적 코드를 조용히 건너뛰어 글머리표가 사라진다.
+        0x2F67 => 0x25B8, // ▸ BLACK RIGHT-POINTING SMALL TRIANGLE
         // [Task #1105] sample16 글머리 prefix.
         // HWP3 0x3366 은 한컴 HWP5 변환본에서 U+F03C5 로 보존되고, 렌더러가
         // 이를 한컴오피스 표시값인 □(U+25A1)로 확장한다. 여기서 ○로 직접
@@ -177,5 +182,10 @@ mod tests {
             decoded,
             "\u{F03EF}\u{F03F0}\u{F03F1}\u{F03F2}\u{F03F3}\u{F03F4}"
         );
+    }
+
+    #[test]
+    fn decode_hwp3_table_triangle_bullet() {
+        assert_eq!(decode_johab(0x2F67), '▸');
     }
 }
