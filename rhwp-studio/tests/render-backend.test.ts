@@ -445,10 +445,39 @@ test('PageRenderer prefers the narrow flow-image query and keeps the full-tree f
   // fallback 경로가 남아 있어야 한다.
   assert.match(source, /this\.wasm\.getPageLayerTree\(pageIdx\)/);
   assert.match(source, /collectFlowImagePaintOps\(/);
-  // object URL 은 문서를 갈아끼울 때와 정리할 때 회수한다.
   assert.match(source, /private flowImageUrls = new FlowImageUrlCache\(\)/);
+  // 캐시에 문서 신원을 넘긴다 — 키는 문서 안에서만 신원이라 항목이 스스로 어느 문서 것인지
+  // 알아야 한다(#3315 P1).
+  assert.match(source, /digest: this\.wasm\.documentDigest/);
+  assert.match(source, /generation: this\.wasm\.documentGeneration/);
+});
+
+// [#3315 P1] object URL 캐시를 편집 경로에서 비우면 캐시가 없는 것과 같아진다.
+// `invalidateDocumentRevision` 은 renderer decision key 에 묶여 같은 문서 편집마다 불리므로
+// (canvas-view.ts 의 `decisionChanged && !changed`), 그 자리에서 회수해서는 안 된다.
+test('PageRenderer keeps the flow-image URL cache across edits and releases only on dispose', () => {
+  const source = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
   const releaseSites = source.match(/this\.flowImageUrls\.releaseAll\(\)/g) ?? [];
-  assert.equal(releaseSites.length, 2, 'invalidateDocumentRevision 과 dispose 두 곳에서 회수');
+  assert.equal(releaseSites.length, 1, 'releaseAll 은 dispose 한 곳에서만');
+
+  const disposeBody = source.slice(source.indexOf('  dispose(): void {'));
+  assert.match(
+    disposeBody.slice(0, disposeBody.indexOf('\n  }')),
+    /this\.flowImageUrls\.releaseAll\(\)/,
+    'dispose 는 URL 을 거둔다',
+  );
+
+  const invalidateStart = source.indexOf('  invalidateDocumentRevision(): void {');
+  assert.ok(invalidateStart >= 0, 'invalidateDocumentRevision 이 있어야 한다');
+  const invalidateBody = source.slice(
+    invalidateStart,
+    invalidateStart + source.slice(invalidateStart).indexOf('\n  }'),
+  );
+  assert.doesNotMatch(
+    invalidateBody,
+    /flowImageUrls/,
+    'invalidateDocumentRevision 은 편집마다 불리므로 URL 캐시를 건드리면 안 된다',
+  );
 });
 
 test('PageRenderer deferred image rerender preserves static layer reuse policy', () => {

@@ -113,22 +113,33 @@ test('빈 목록은 유효한 결과다 — 그림 없는 쪽에서 전체 트�
 
 // ── object URL 캐시 ──
 
-test('object URL 캐시는 키당 한 번만 바이트를 받는다', () => {
-  const revoked: string[] = [];
-  const created: string[] = [];
+const DOC_A = { digest: 'digest-a', generation: 1 };
+const DOC_B = { digest: 'digest-b', generation: 1 };
+
+/** `URL.createObjectURL`/`revokeObjectURL` 을 세어 보는 스텁. */
+function withUrlStub<T>(body: (state: { created: string[]; revoked: string[] }) => T): T {
+  const state = { created: [] as string[], revoked: [] as string[] };
   const originalCreate = globalThis.URL.createObjectURL;
   const originalRevoke = globalThis.URL.revokeObjectURL;
   let counter = 0;
   globalThis.URL.createObjectURL = () => {
     const url = `blob:stub/${++counter}`;
-    created.push(url);
+    state.created.push(url);
     return url;
   };
   globalThis.URL.revokeObjectURL = (url: string) => {
-    revoked.push(url);
+    state.revoked.push(url);
   };
-
   try {
+    return body(state);
+  } finally {
+    globalThis.URL.createObjectURL = originalCreate;
+    globalThis.URL.revokeObjectURL = originalRevoke;
+  }
+}
+
+test('object URL 캐시는 같은 문서 안에서 키당 한 번만 바이트를 받는다', () => {
+  withUrlStub((state) => {
     const cache = new FlowImageUrlCache();
     let loads = 0;
     const loadBytes = () => {
@@ -136,29 +147,92 @@ test('object URL 캐시는 키당 한 번만 바이트를 받는다', () => {
       return new Uint8Array([1, 2, 3]);
     };
 
-    const first = cache.urlFor('bin:0:1:src', 'image/png', loadBytes);
-    const second = cache.urlFor('bin:0:1:src', 'image/png', loadBytes);
+    const first = cache.urlFor('bin:0:1:src', 'image/png', DOC_A, loadBytes);
+    const second = cache.urlFor('bin:0:1:src', 'image/png', DOC_A, loadBytes);
     assert.equal(first, second, '같은 키는 같은 URL');
     assert.equal(loads, 1, '바이트는 한 번만 받는다 — 편집마다 다시 받으면 캐시가 무의미하다');
     assert.equal(cache.size, 1);
     assert.equal(cache.has('bin:0:1:src'), true);
 
-    cache.urlFor('bin:0:2:src', 'image/png', loadBytes);
+    cache.urlFor('bin:0:2:src', 'image/png', DOC_A, loadBytes);
     assert.equal(cache.size, 2);
 
     cache.releaseAll();
     assert.equal(cache.size, 0);
-    assert.deepEqual(revoked, created, '회수하지 않으면 문서를 갈아끼울 때마다 URL 이 쌓인다');
-  } finally {
-    globalThis.URL.createObjectURL = originalCreate;
-    globalThis.URL.revokeObjectURL = originalRevoke;
-  }
+    assert.deepEqual(
+      state.revoked,
+      state.created,
+      '회수하지 않으면 renderer 수명 동안 URL 이 쌓인다',
+    );
+  });
+});
+
+// [#3315 P1] 그림 키는 문서 안에서만 신원이다 — `bin_data_epoch` 가 문서마다 0 에서 시작하므로
+// 두 문서의 첫 그림이 똑같이 `bin:0:1:src` 다. 캐시가 문서 신원을 들지 않으면 새 문서가 옛 문서의
+// 그림을 받는다. 종전에는 호출부의 `releaseAll()` 타이밍에 기댔고, 그 타이밍이 틀렸다.
+test('같은 키라도 문서가 다르면 새 바이트를 읽는다', () => {
+  withUrlStub(() => {
+    const cache = new FlowImageUrlCache();
+    const loaded: string[] = [];
+    const bytesFor = (tag: string) => (key: string) => {
+      loaded.push(`${tag}:${key}`);
+      return new Uint8Array([tag.charCodeAt(0)]);
+    };
+
+    const a = cache.urlFor('bin:0:1:src', 'image/png', DOC_A, bytesFor('A'));
+    const b = cache.urlFor('bin:0:1:src', 'image/png', DOC_B, bytesFor('B'));
+
+    assert.notEqual(a, b, '문서가 바뀌었는데 옛 문서의 URL 을 재사용했다');
+    assert.deepEqual(loaded, ['A:bin:0:1:src', 'B:bin:0:1:src']);
+    assert.equal(cache.size, 1, '옛 문서 항목은 남지 않는다');
+  });
+});
+
+test('같은 파일을 다시 열면(generation 증가) 캐시를 재사용하지 않는다', () => {
+  withUrlStub(() => {
+    const cache = new FlowImageUrlCache();
+    let loads = 0;
+    const loadBytes = () => {
+      loads += 1;
+      return new Uint8Array([7]);
+    };
+
+    cache.urlFor('bin:0:1:src', 'image/png', { digest: 'same', generation: 1 }, loadBytes);
+    cache.urlFor('bin:0:1:src', 'image/png', { digest: 'same', generation: 2 }, loadBytes);
+    assert.equal(loads, 2, 'digest 가 같아도 문서 인스턴스가 다르면 다시 읽어야 한다');
+  });
+});
+
+test('문서가 바뀌면 옛 URL 을 회수한다', () => {
+  withUrlStub((state) => {
+    const cache = new FlowImageUrlCache();
+    const loadBytes = () => new Uint8Array([1]);
+
+    cache.urlFor('bin:0:1:src', 'image/png', DOC_A, loadBytes);
+    assert.deepEqual(state.revoked, []);
+    cache.urlFor('bin:0:1:src', 'image/png', DOC_B, loadBytes);
+    assert.equal(state.revoked.length, 1, '옛 문서 URL 을 거두지 않으면 새지 않는 대신 쌓인다');
+  });
+});
+
+test('문서 신원을 모르면 캐시하지 않고 되돌린다', () => {
+  withUrlStub(() => {
+    const cache = new FlowImageUrlCache();
+    // digest 가 null 이면 항목을 어느 문서 것이라고 표시할 수 없다.
+    assert.equal(
+      cache.urlFor('bin:0:1:src', 'image/png', { digest: null, generation: 0 }, () =>
+        new Uint8Array([1]),
+      ),
+      null,
+    );
+    assert.equal(cache.size, 0);
+  });
 });
 
 test('바이트를 받을 수 없으면 URL 을 만들지 않는다', () => {
   const cache = new FlowImageUrlCache();
-  assert.equal(cache.urlFor('bin:9:1:src', 'image/png', () => null), null);
+  assert.equal(cache.urlFor('bin:9:1:src', 'image/png', DOC_A, () => null), null);
   // 빈 바이트도 그림이 될 수 없다 — 캐시에 남겨 두면 다음 조회가 빈 URL 을 재사용한다.
-  assert.equal(cache.urlFor('bin:9:2:src', 'image/png', () => new Uint8Array()), null);
+  assert.equal(cache.urlFor('bin:9:2:src', 'image/png', DOC_A, () => new Uint8Array()), null);
   assert.equal(cache.size, 0);
 });

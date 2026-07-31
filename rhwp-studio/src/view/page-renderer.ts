@@ -83,8 +83,9 @@ export class PageRenderer {
   /**
    * DOM flow 그림의 신원 키별 object URL (Task #3315).
    *
-   * 키가 내용에서 유도되므로 스스로 무효화된다 — 편집 때 비우지 않는다. 문서를 갈아끼울 때만
-   * 회수한다(`invalidateDocumentRevision`·`dispose`).
+   * 키가 내용에서 유도되므로 스스로 무효화된다 — 편집 때 비우지 않는다. 문서 경계는 캐시가
+   * 항목과 함께 들고 있는 문서 신원이 가르므로, 바깥에서 비워 줄 시점을 맞출 필요가 없다
+   * (`prefetchedImageSignatures` 와 같은 방식).
    */
   private flowImageUrls = new FlowImageUrlCache();
   private prefetchRequestTokens = new Map<number, number>();
@@ -123,8 +124,10 @@ export class PageRenderer {
     this.cancelAll();
     this.releaseAllPageDiagnostics();
     this.layerSummaryCache.clear();
-    // 문서가 갈리면 옛 신원 키는 다시 조회되지 않는다 — object URL 을 여기서 거둔다(#3315).
-    this.flowImageUrls.releaseAll();
+    // [#3315] object URL 캐시는 여기서 비우지 않는다. 이 메서드는 renderer decision key 에
+    // 묶여 있어 같은 문서를 편집할 때마다 불리므로, 여기서 비우면 캐시가 매 키 입력에 수 MB 를
+    // 다시 읽는다 — 캐시가 없는 것과 같아진다. 문서 경계는 캐시 항목이 들고 있는 문서 신원이
+    // 가른다(`FlowImageUrlCache`).
   }
 
   /** 페이지를 Canvas에 렌더링한다 (renderScale = zoom × DPR) */
@@ -679,8 +682,14 @@ export class PageRenderer {
   private getFlowImagePaintOps(pageIdx: number): FlowImagePaintOp[] {
     const narrowJson = this.wasm.getPageFlowImageOps(pageIdx);
     if (narrowJson !== null) {
+      const document = {
+        digest: this.wasm.documentDigest,
+        generation: this.wasm.documentGeneration,
+      };
       const images = flowImageOpsFromNarrowQuery(narrowJson, (key, mime) =>
-        this.flowImageUrls.urlFor(key, mime, (k) => this.wasm.getSourceImageBytes(k)),
+        this.flowImageUrls.urlFor(key, mime, document, (k) =>
+          this.wasm.getSourceImageBytes(k),
+        ),
       );
       if (images !== null) return images;
     }

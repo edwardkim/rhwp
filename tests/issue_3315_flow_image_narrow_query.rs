@@ -33,13 +33,22 @@ fn is_flow_image(op: &Value, layer: Option<&Value>) -> bool {
     !matches!(wrap, Some("behindText") | Some("inFrontOfText"))
 }
 
+/// 전체 트리에서 뽑은 flow 그림 — op 과 **조상 clip 교차 결과**를 함께 든다.
+///
+/// clip 은 op 안에 있지 않고 조상 `ClipRect` 계보에서 나오므로, 좁은 질의의 `clip` 필드와
+/// 대조하려면 트리 쪽에서도 같은 값을 계산해 들고 있어야 한다.
+struct TreeFlowImage {
+    op: Value,
+    clip: Option<[f64; 4]>,
+}
+
 /// 전체 레이어 트리에서 flow plane 그림 op 을 studio 의 `collectFlowImagePaintOps` 와 같은
 /// 계약으로 뽑는다 — pre-order, `layer` 상속, `clipRect` 조상 교차.
 fn collect_flow_images_from_tree<'a>(
     node: &'a Value,
     inherited_layer: Option<&'a Value>,
     clip: Option<[f64; 4]>,
-    out: &mut Vec<Value>,
+    out: &mut Vec<TreeFlowImage>,
 ) {
     let active_layer = node.get("layer").or(inherited_layer);
     let next_clip = if node.get("kind").and_then(Value::as_str) == Some("clipRect") {
@@ -69,7 +78,10 @@ fn collect_flow_images_from_tree<'a>(
             if intersect(next_clip, bbox).is_none() {
                 continue;
             }
-            out.push(op.clone());
+            out.push(TreeFlowImage {
+                op: op.clone(),
+                clip: next_clip,
+            });
         }
     }
     if let Some(children) = node.get("children").and_then(Value::as_array) {
@@ -80,6 +92,22 @@ fn collect_flow_images_from_tree<'a>(
     if let Some(child) = node.get("child") {
         collect_flow_images_from_tree(child, active_layer, next_clip, out);
     }
+}
+
+/// `Option<&Value>` 를 거치지 않는 형태 — `clip` 필드가 있으면 반드시 유효한 bbox 여야 한다.
+fn bbox_of_value(value: &Value) -> [f64; 4] {
+    bbox_of(Some(value)).expect("clip 필드는 유효한 bbox 여야 한다")
+}
+
+/// 직렬화 정밀도(`{:.3}`)로 접어 비교한다.
+///
+/// 두 생산자는 교차를 **다른 순서**로 한다 — Rust 는 교차한 뒤 `{:.3}` 으로 쓰고, 트리 경로는
+/// 이미 `{:.3}` 인 값들을 받아 소비자 쪽에서 교차한다. 그래서 `211.987` 과
+/// `211.98699999999997` 처럼 마지막 비트만 다른 값이 나온다. 이 차이는 소비자의 wrapper 를
+/// bbox 와 사실상 같은 크기로 만들 뿐이라 화면에 나타나지 않는다. 이 테스트가 잡아야 하는 것은
+/// **clip 의 존재 여부와 위치**이므로 직렬화 정밀도에서 비교한다.
+fn rounded(bbox: Option<[f64; 4]>) -> Option<[i64; 4]> {
+    bbox.map(|values| values.map(|value| (value * 1000.0).round() as i64))
 }
 
 fn bbox_of(value: Option<&Value>) -> Option<[f64; 4]> {
@@ -157,7 +185,7 @@ fn narrow(doc: &rhwp::wasm_api::HwpDocument, page: u32) -> Value {
     serde_json::from_str(&json).expect("좁은 질의 JSON 이 유효해야 한다")
 }
 
-fn tree_flow_images(doc: &rhwp::wasm_api::HwpDocument, page: u32) -> Vec<Value> {
+fn tree_flow_images(doc: &rhwp::wasm_api::HwpDocument, page: u32) -> Vec<TreeFlowImage> {
     let json = doc
         .get_page_layer_tree_with_profile_native(page, rhwp::paint::RenderProfile::Screen)
         .expect("layer tree");
@@ -186,8 +214,19 @@ fn issue_3315_narrow_query_matches_full_tree() {
             );
             total_images += images.len();
 
-            for (index, (narrow_op, tree_op)) in images.iter().zip(&from_tree).enumerate() {
+            for (index, (narrow_op, tree)) in images.iter().zip(&from_tree).enumerate() {
                 let at = format!("{sample} p{page} #{index}");
+                let tree_op = &tree.op;
+                // clip 은 op 밖(조상 ClipRect)에서 오므로 트리 쪽 계산값과 대조한다.
+                //
+                // **존재 여부까지** 맞아야 한다. `page-renderer.ts` 의 `needsClipWrapper` 는
+                // `clip !== null` 을 먼저 보고 그다음 `rotation !== 0` 을 보므로, bbox 를 줄이지
+                // 않는 clip 을 생략하면 회전 그림이 좁은 질의 경로에서만 모서리를 노출한다.
+                assert_eq!(
+                    rounded(narrow_op.get("clip").map(bbox_of_value)),
+                    rounded(tree.clip),
+                    "{at}: 조상 clip 이 다르다 — 회전 그림의 wrapper 판정이 갈린다"
+                );
                 assert_eq!(
                     narrow_op["bbox"], tree_op["bbox"],
                     "{at}: bbox 가 다르다 — 소비자가 다른 자리에 그린다"

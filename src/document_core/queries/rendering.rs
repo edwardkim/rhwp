@@ -1533,8 +1533,11 @@ impl DocumentCore {
     /// 따로 받는다.
     ///
     /// `clip` 은 조상 `ClipRect` 를 교차해 접은 값이다. 소비자가 트리 없이도 같은 잘림을
-    /// 재현할 수 있어야 하므로, 계보를 넘기는 대신 결과만 준다. 교차가 비면 그 그림은 보이지
-    /// 않으므로 목록에서 빠진다.
+    /// 재현할 수 있어야 하므로, 계보를 넘기는 대신 결과만 준다. 조상 clip 이 있으면 그것이
+    /// bbox 를 줄이든 아니든 **언제나** 싣는다 — 무엇을 자를지는 소비자의 판정이고, 생산자가
+    /// 그 판정을 복제하면 갈라진다. 조상 clip 이 아예 없으면 필드도 없다.
+    ///
+    /// 그림이 clip 과 전혀 겹치지 않으면 보이지 않으므로 목록에서 빠진다.
     ///
     /// `sourceImageKey` 를 낼 수 없는 그림(`bin_data_id == 0` 합성 그림)이 하나라도 있으면
     /// `cacheable:false` 다 — 소비자는 그 페이지에 한해 종전의 전체 트리 경로로 되돌아가야
@@ -1620,33 +1623,24 @@ impl DocumentCore {
                             let Some(data) = image.data.as_deref() else {
                                 continue;
                             };
-                            // 보이는 영역이 없으면 소비자가 그릴 것도 없다.
-                            let Some(visible) = intersect(clip, *bbox) else {
+                            // 보이는 영역이 없으면 소비자가 그릴 것도 없다. 교차 결과는 가시성
+                            // 판정에만 쓰고, 직렬화에는 canonical 한 조상 clip 을 그대로 넘긴다.
+                            if intersect(clip, *bbox).is_none() {
                                 continue;
-                            };
+                            }
                             let key = crate::paint::source_image_key(self.epoch, image);
                             if key.is_none() {
                                 self.cacheable = false;
                             }
-                            self.write_image(
-                                *bbox,
-                                visible,
-                                clip,
-                                image,
-                                resolved.as_deref(),
-                                data,
-                                key,
-                            );
+                            self.write_image(*bbox, clip, image, resolved.as_deref(), data, key);
                         }
                     }
                 }
             }
 
-            #[allow(clippy::too_many_arguments)]
             fn write_image(
                 &mut self,
                 bbox: BoundingBox,
-                visible: BoundingBox,
                 clip: Option<BoundingBox>,
                 image: &crate::renderer::render_tree::ImageNode,
                 resolved: Option<&crate::paint::ResolvedImagePayload>,
@@ -1659,15 +1653,16 @@ impl DocumentCore {
                 }
                 buf.push_str("{\"bbox\":");
                 write_bbox(buf, bbox);
-                // 잘림이 실제로 그림을 자를 때만 싣는다 — 소비자가 wrapper 를 만들 조건과 같다.
-                if clip.is_some()
-                    && (visible.x != bbox.x
-                        || visible.y != bbox.y
-                        || visible.width != bbox.width
-                        || visible.height != bbox.height)
-                {
+                // 조상 clip 이 있으면 **언제나** 싣는다. 교차한 값을 그대로 주고, 그것으로 무엇을
+                // 할지는 소비자가 정한다.
+                //
+                // 이 자리에 "bbox 를 줄일 때만 싣기" 를 두면 소비자의 판정 조건을 흉내 내는
+                // 것이고, 그 흉내는 이미 틀렸다 — 회전 그림은 clip 이 bbox 를 다 덮어도 wrapper
+                // 로 모서리를 잘라야 한다(`page-renderer.ts` 의 `rotation !== 0` 분기). 생산자가
+                // 소비자 조건을 복제하면 그 조건이 바뀔 때 두 생산자가 조용히 갈라진다.
+                if let Some(clip) = clip {
                     buf.push_str(",\"clip\":");
-                    write_bbox(buf, visible);
+                    write_bbox(buf, clip);
                 }
                 let mime = crate::renderer::image_resolver::emitted_image_mime(
                     data,
