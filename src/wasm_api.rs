@@ -812,6 +812,16 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 본문(flow) 그림의 배치 정보만 작은 JSON 으로 반환한다 (Task #3315).
+    ///
+    /// 전체 레이어 트리를 받아 flow 그림을 걸러내던 studio 경로를 대체한다. 바이트는 빠져
+    /// 있고 `sourceImageKey` 로 `getSourceImageBytes` 를 부르면 된다.
+    #[wasm_bindgen(js_name = getPageFlowImageOps)]
+    pub fn get_page_flow_image_ops(&self, page_num: u32) -> Result<String, JsValue> {
+        self.get_page_flow_image_ops_native(page_num)
+            .map_err(|e| e.into())
+    }
+
     /// 그림 신원 키로 바이트를 Uint8Array 로 반환한다 (Task #3315).
     ///
     /// `getPageLayerTreeWithProfile(page, profile, true)` 로 base64 를 생략했을 때 바이트를

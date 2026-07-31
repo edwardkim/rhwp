@@ -198,6 +198,27 @@ pub(crate) fn emitted_image_bytes(
     }
 }
 
+/// 그림 op 이 내보내는 mime 만 (Task #3315).
+///
+/// 바이트가 필요 없는 소비자 — 배치 정보만 주는 좁은 질의 — 를 위한 것이다. `resolved` 가
+/// 붙어 있으면 그 mime 이 최종값이므로 변환을 다시 돌지 않는다. 큰 JPEG 은 메모 키 해싱만으로
+/// 3.7MB 당 1.35 ms 라, 매 편집에 도는 경로에서는 이 절약이 그대로 이득이다.
+///
+/// `resolved` 가 없을 때 "그러면 변환이 실패했다는 뜻이니 원본 mime 이다" 로 단축하지 않고
+/// `emitted_image_bytes` 에 위임한다. 그 전제는 `paint/builder.rs` 가 트리를 만들 때만
+/// 성립하고, 직접 조립한 `PaintOp::Image { resolved: None }` 에는 성립하지 않는다 — 구조가
+/// 보장하지 않는 불변식에 기대면 조용히 갈라진다.
+pub(crate) fn emitted_image_mime(
+    data: &[u8],
+    resolved: Option<&ResolvedImagePayload>,
+    bakes_watermark: bool,
+) -> &'static str {
+    match resolved {
+        Some(payload) => payload.mime,
+        None => emitted_image_bytes(data, bakes_watermark).0,
+    }
+}
+
 pub(crate) fn image_node_with_resolved_payload(
     image: &ImageNode,
     resolved: Option<&ResolvedImagePayload>,
