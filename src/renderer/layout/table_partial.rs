@@ -397,6 +397,31 @@ impl LayoutEngine {
             };
             let line_ranges: Option<Vec<(usize, usize)>> = cut_units
                 .map(|(su, eu)| self.cell_line_ranges_from_cut(cell, table, styles, su, eu));
+            // [#3637] 이 조각이 시작하는 vpos.
+            //
+            // `LINE_SEG.vertical_pos` 는 **셀 시작** 기준 누적값이다. 연속 조각에서 그
+            // 절대값을 이 쪽의 `text_y_start` 에 그대로 더하면, 앞 쪽으로 넘어간 부분의
+            // 높이만큼 통째로 아래로 밀린다(아래 표-직후 스냅).
+            //
+            // 원점은 `cut_units` 가 정한 **가시 범위의 첫 줄**에서 가져와야 한다. "루프에서
+            // 처음 만나는 문단" 으로는 얻을 수 없다 — 빈 문단도 `line_segs` 가 1개라
+            // 스킵되지 않아 `p[0]`(vpos≈0)이 잡히고 보정이 0 이 된다(실제로 겪은 무효 수정).
+            let fragment_start_vpos: i32 = line_ranges
+                .as_ref()
+                .and_then(|ranges| {
+                    ranges
+                        .iter()
+                        .enumerate()
+                        .find(|(_, (s, e))| s < e)
+                        .and_then(|(pi, (s, _))| {
+                            cell.paragraphs
+                                .get(pi)?
+                                .line_segs
+                                .get(*s)
+                                .map(|seg| seg.vertical_pos.max(0))
+                        })
+                })
+                .unwrap_or(0);
             // [Task #1073] 이 셀이 per-중첩행 분해 대상(단일 문단 + 가시 텍스트 없음 + 단일
             // 중첩 표 2행+)이면 cut 유닛 인덱스가 곧 중첩행 범위 → 렌더 NestedTableSplit 에
             // start_row 로 전달(연속 페이지가 중첩행 0부터 재렌더되는 결함 정정).
@@ -1369,12 +1394,23 @@ impl LayoutEngine {
 
                 if has_table_ctrl && mixed_nested_split.is_none() {
                     // LINE_SEG vpos 기반으로 para_y 보정.
+                    //
+                    // [#3637] 원점은 이 **조각**의 시작 vpos 다 (셀 시작이 아니라).
+                    //
+                    // 실측 (무학대선 보도자료 2쪽, 조각 시작 vpos=7160=95.5px):
+                    //   보정 전  p[19] → 583.1,  p[27] → 977.2   (= text_y_start + 절대 vpos)
+                    //   보정 후  p[19] → 487.6,  p[27] → 881.7
+                    // 두 곳 모두 오차가 정확히 95.5px 였고, 그만큼 표 직후에 빈 공간이
+                    // 생겨 뒤 내용이 쪽 밖으로 밀려 어느 렌더 경로에서도 보이지 않았다.
                     let is_last_para = cp_idx + 1 == composed_paras.len();
                     if !is_last_para {
                         if let Some(next_para) = cell.paragraphs.get(cp_idx + 1) {
                             if let Some(next_seg) = next_para.line_segs.first() {
-                                let next_vpos_y =
-                                    text_y_start + hwpunit_to_px(next_seg.vertical_pos, self.dpi);
+                                let next_vpos_y = text_y_start
+                                    + hwpunit_to_px(
+                                        (next_seg.vertical_pos - fragment_start_vpos).max(0),
+                                        self.dpi,
+                                    );
                                 para_y = para_y.max(next_vpos_y);
                             }
                         }
