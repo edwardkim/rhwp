@@ -81,13 +81,13 @@ test('CanvasKit readiness classification keeps new diagnostic suffixes unexpecte
   for (const expected of [
     'glyphOutline:unsupportedColorGlyph',
     'imageEffect:grayScale',
-    'textRun:verticalText',
   ]) {
     assert.equal(isExpectedCanvasKitUnsupportedOp(expected), true, expected);
   }
   for (const unexpected of [
     'glyphOutline:replayInvariant',
     'imageEffect:futureEffect',
+    'textRun:verticalText',
     'textRun:newCoverageGap',
     'renderPage',
     'unknown',

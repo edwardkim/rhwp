@@ -2727,10 +2727,18 @@ impl LayoutEngine {
             // 문서는 한컴이 각 문단 top을 vpos로 고정해 둔다. 누적 y만 쓰면
             // spacing_before가 중복되거나 음수 line_spacing이 누적되어 줄 위치가
             // 점점 어긋난다.
+            //
+            // 단, vpos == 0 은 "앵커 없음"의 센티널이기도 하다. 셀 안 문단이 전부
+            // vpos == 0 으로 저장된 문서(중첩 표 안쪽 셀에서 흔하다)에서 이를 절대
+            // 위치로 받아들이면 모든 문단이 셀 상단이라는 같은 y 로 리셋되어 서로
+            // 겹쳐 그려진다. 첫 문단의 vpos == 0 은 "셀 상단"이라는 유효한 값이므로
+            // 그대로 두고, 두 번째 이후 문단은 양수 vpos 가 저장돼 있을 때만 앵커로
+            // 쓴다. (같은 파일의 text_y_start 계산도 `v > 0.0` 을 앵커 조건으로 쓴다)
+            let has_stored_para_anchor = crate::renderer::first_seg_vpos_is_anchor(para, cp_idx);
             let use_saved_cell_para_vpos = use_top_vpos_anchor
                 || trust_stored_cell_flow
                 || has_initial_tac_shape_host(&cell.paragraphs);
-            if use_saved_cell_para_vpos && !has_nested_table {
+            if use_saved_cell_para_vpos && !has_nested_table && has_stored_para_anchor {
                 if let Some(first_seg) = para.line_segs.first() {
                     if first_seg.vertical_pos >= 0 {
                         let spacing_before = styles
@@ -4251,7 +4259,23 @@ impl LayoutEngine {
             };
 
             // 수직 정렬 (분할 표에서는 Top 강제 — 보이는 영역이 전체 셀보다 작음)
-            let effective_valign = if row_filter.is_some() {
+            // 중첩 표 행 범위 부분 렌더에서, **셀이 실제로 잘릴 때만** Top 을 강제한다.
+            //
+            // `row_filter` 는 행 단위로 자르므로 필터 안에 온전히 들어가는 셀은 잘리지
+            // 않는다. 그런 셀까지 Top 으로 덮으면 세로로 긴 병합 라벨이 정중앙이 아니라
+            // 맨 위에 붙는다 (한컴 pdf/kps-ai-2022.pdf p65 실측 = 정중앙. rhwp p66 은
+            // 상단). 실측: kps-ai 의 Center 지정 셀 57건 중 55건이 안 잘리는데도 Top
+            // 강제를 받았다.
+            //
+            // 잘리는 두 경우는 이 조건과 무관하게 결과가 Top 으로 수렴한다 —
+            // 상단 잘림(r < sr)은 라벨이 앞 페이지에 이미 렌더돼 문단을 비우고(아래 #1073
+            // 처리), 하단 잘림은 콘텐츠가 가시 높이를 넘어 정렬 오프셋이 0 으로 클램프된다.
+            // 그래도 종전 동작을 그 두 경우에 한해 그대로 남긴다.
+            let cell_clipped_by_row_filter = row_filter.is_some_and(|(sr, er)| {
+                let cell_end_row = (r + cell.row_span as usize).min(row_count);
+                r < sr || cell_end_row > er
+            });
+            let effective_valign = if cell_clipped_by_row_filter {
                 VerticalAlign::Top
             } else {
                 cell.vertical_align
@@ -4311,11 +4335,25 @@ impl LayoutEngine {
             // 겹쳐 그려진다(한글은 fresh 재적층). 음수 line_spacing 누적 보정용
             // 정상 vpos 스냅(조직도형·악보 셀)은 extent ≈ 줄높이 합이므로 0.5
             // 비율 가드에 걸리지 않는다.
+            // 위 비율 가드는 문단이 2개인 셀에서 경계에 정확히 걸려 통과한다
+            // (전 문단 vpos=0, lh 동일 → extent = 줄높이합/2). 그래서 문단 단위
+            // 앵커 유무를 직접 본다: 둘째 이후 문단의 first seg vpos == 0 은
+            // "앵커 없음" 센티널이므로, 그런 문단이 있으면 저장 흐름은 문단 위치를
+            // 구분해 담고 있지 않다. 이때 extent 를 콘텐츠 높이로 받아들이면 세로
+            // 정렬 오프셋과 담을 줄 수가 1줄분으로 굳어 뒤 문단이 셀 밖으로 밀려
+            // 잘리거나 아예 렌더되지 않는다. 배치 쪽 first_seg_vpos_is_anchor 와
+            // 같은 규약을 측정에도 적용한다.
+            let stored_flow_has_para_anchors = cell
+                .paragraphs
+                .iter()
+                .enumerate()
+                .all(|(idx, para)| crate::renderer::first_seg_vpos_is_anchor(para, idx));
             let trust_stored_cell_flow = (depth > 0 || table.common.treat_as_char)
                 && stored_flow_extent > 0.0
                 && stored_flow_extent + 0.5 < total_content_height
                 && non_flow_object_extent <= stored_flow_extent + 0.5
-                && stored_flow_extent + 0.5 >= 0.5 * stored_flow_line_sum;
+                && stored_flow_extent + 0.5 >= 0.5 * stored_flow_line_sum
+                && stored_flow_has_para_anchors;
             let total_content_height = if trust_stored_cell_flow {
                 stored_flow_extent
             } else {
@@ -7457,16 +7495,83 @@ impl LayoutEngine {
         } else {
             flow_visible.min(remaining)
         };
+        // 행 범위는 픽셀 오프셋에서 유도한다. 종전에는 `0..1` 로 고정해, 2행 이상
+        // 중첩 표가 텍스트와 문단을 공유하면 연속 페이지가 **행 0 만** 다시 그리고
+        // 뒤 행의 내용이 어느 페이지에도 나오지 않았다 (75544 pi=527: 2행 표,
+        // off 672 + vis 747 = 전체 1419 로 높이 회계는 완전한데 end_row=1 이라
+        // 행 1 의 25문단이 통째로 탈락). #1073 이 per-중첩행 컷 경로에서 고친
+        // "row0 재렌더" 와 같은 결함이 혼재 문단 경로에 남아 있던 것이다.
+        //
+        // 높이 필드는 유닛 회계에서 온 값을 그대로 쓴다 — 조각 경계는 이미 컷이
+        // 정했고, 행 변환은 "그 조각이 어느 행들을 담는가" 만 정한다.
+        let nested = cell.paragraphs.get(para_idx).and_then(|p| {
+            p.controls.iter().find_map(|ctrl| match ctrl {
+                Control::Table(t) => Some(&**t),
+                _ => None,
+            })
+        });
+        let (start_row, end_row, row_offset_within_start) = match nested {
+            Some(nt) if nt.row_count > 1 => {
+                let ncol = nt.col_count as usize;
+                let nrow = nt.row_count as usize;
+                let row_heights = self.resolve_row_heights(nt, ncol, nrow, None, styles, true);
+                let cs = hwpunit_to_px(nt.cell_spacing as i32, self.dpi);
+                let rows = calc_nested_split_rows(&row_heights, cs, offset, visible);
+                (rows.start_row, rows.end_row, rows.offset_within_start)
+            }
+            // 1행 표는 종전 규약 유지 — 행 경계가 없어 오프셋만으로 이어진다.
+            _ => (0, 1, offset_within_start),
+        };
         Some(NestedTableSplit {
-            start_row: 0,
-            end_row: 1,
+            start_row,
+            end_row,
             visible_height,
             flow_height,
             // Keep one visible content unit reserved in bbox/flow so the
             // border wraps only that tail line and the following paragraph in
             // the host cell starts below it.
-            offset_within_start,
+            offset_within_start: row_offset_within_start,
         })
+    }
+
+    /// 컷 유닛 범위를 **중첩 표 행 범위**로 옮긴다 (per-중첩행 유닛 경로).
+    ///
+    /// per-중첩행 분해가 붙은 문단은 유닛이 `nested_row` 를 들고 있으므로, 컷에 들어온
+    /// 유닛들의 행 번호에서 곧바로 범위를 얻는다.
+    ///
+    /// 종전에는 호출부가 "컷 유닛 인덱스 == 중첩행 번호" 라고 가정해 셀이 **문단 1개**
+    /// 일 때만 이 경로를 썼다. 문단이 여럿인 셀에서는 유닛에 텍스트 줄이 섞여 인덱스가
+    /// 행 번호가 아니게 되고, 그러면 렌더가 `available_h` 휴리스틱으로 폴백해 연속
+    /// 페이지가 행 0 부터 다시 그린다(뒤 행 유실). 유닛이 이미 행 번호를 들고 있으니
+    /// 인덱스 가정을 버리고 그 필드를 읽는다.
+    pub(crate) fn nested_row_range_from_cut_units(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        start_unit: usize,
+        end_unit: usize,
+        para_idx: usize,
+    ) -> Option<(usize, usize)> {
+        let units = self.cell_units(cell, table, styles);
+        let lo = start_unit.min(units.len());
+        let hi = end_unit.min(units.len()).max(lo);
+        let mut first: Option<usize> = None;
+        let mut last: Option<usize> = None;
+        for unit in units.iter().take(hi).skip(lo) {
+            if unit.para_idx != para_idx {
+                continue;
+            }
+            let Some(row) = unit.nested_row else {
+                continue;
+            };
+            first = Some(first.map_or(row, |f: usize| f.min(row)));
+            last = Some(last.map_or(row, |l: usize| l.max(row)));
+        }
+        match (first, last) {
+            (Some(f), Some(l)) => Some((f, l + 1)),
+            _ => None,
+        }
     }
 
     /// RowBreak 분할의 컷 범위에 실제 보이는 내용이 남아 있는지 확인한다.

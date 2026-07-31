@@ -397,20 +397,6 @@ impl LayoutEngine {
             };
             let line_ranges: Option<Vec<(usize, usize)>> = cut_units
                 .map(|(su, eu)| self.cell_line_ranges_from_cut(cell, table, styles, su, eu));
-            // [Task #1073] 이 셀이 per-중첩행 분해 대상(단일 문단 + 가시 텍스트 없음 + 단일
-            // 중첩 표 2행+)이면 cut 유닛 인덱스가 곧 중첩행 범위 → 렌더 NestedTableSplit 에
-            // start_row 로 전달(연속 페이지가 중첩행 0부터 재렌더되는 결함 정정).
-            let nested_cut_range: Option<(usize, usize)> = cut_units.filter(|_| {
-                cell.paragraphs.len() == 1
-                    && cell.paragraphs[0].text.trim().is_empty()
-                    && cell.paragraphs[0]
-                        .controls
-                        .iter()
-                        .filter(|c| matches!(c, crate::model::control::Control::Table(_)))
-                        .count()
-                        == 1
-            });
-
             // 셀 내 텍스트 높이 (분할 행이면 줄 범위 내만 계산)
             // spacing_before: 셀 첫 문단 제외, spacing_after: 셀 마지막 문단 제외
             let split_para_count = cell.paragraphs.len();
@@ -631,6 +617,18 @@ impl LayoutEngine {
                 };
                 let mixed_nested_split = cut_units.and_then(|(su, eu)| {
                     self.mixed_nested_split_from_cut(cell, table, styles, su, eu, cp_idx)
+                });
+                // [Task #1073] 이 문단이 per-중첩행 유닛으로 분해됐으면(가시 텍스트 없음 +
+                // 단일 중첩 표 2행+) 컷에 들어온 유닛의 `nested_row` 에서 중첩 행 범위를
+                // 얻어 NestedTableSplit 으로 넘긴다.
+                //
+                // 종전에는 "컷 유닛 인덱스 == 중첩행 번호" 라고 가정해 **셀**이 문단 1개일
+                // 때만 이 경로를 썼다. 분해 조건은 문단 단위(cell_units)인데 게이트는 셀
+                // 단위여서, 문단이 여럿인 셀은 아래 `available_h` 휴리스틱으로 폴백했고 그
+                // 분기는 오프셋을 0.0 으로 고정하므로 연속 페이지가 행 0 부터 다시 그리고
+                // 뒤 행이 어느 페이지에도 나오지 않았다.
+                let nested_cut_rows: Option<(usize, usize)> = cut_units.and_then(|(su, eu)| {
+                    self.nested_row_range_from_cut_units(cell, table, styles, su, eu, cp_idx)
                 });
                 let visible_non_inline_controls = cut_units.is_some_and(|(su, eu)| {
                     self.cell_cut_contains_non_inline_control_units(
@@ -1252,8 +1250,8 @@ impl LayoutEngine {
                                                 flow_height: split.flow_height,
                                                 offset_within_start: split.offset_within_start,
                                             })
-                                        } else if let Some((su, eu)) = nested_cut_range {
-                                            // [Task #1073] 페이지네이션 컷(중첩행 범위)으로 직접
+                                        } else if let Some((row_lo, row_hi)) = nested_cut_rows {
+                                            // [Task #1073] 페이지네이션 컷의 중첩행 범위로 직접
                                             // NestedTableSplit 구성 — 연속 페이지가 start_row 부터
                                             // 렌더(available_h 휴리스틱의 row0 재렌더 결함 정정).
                                             let ncol = nested_table.col_count as usize;
@@ -1270,8 +1268,8 @@ impl LayoutEngine {
                                                 nested_table.cell_spacing as i32,
                                                 self.dpi,
                                             );
-                                            let start_row = su.min(nrow);
-                                            let end_row = eu.min(nrow);
+                                            let start_row = row_lo.min(nrow);
+                                            let end_row = row_hi.min(nrow).max(start_row);
                                             let mut vis_h = 0.0;
                                             for r in start_row..end_row {
                                                 vis_h += nrow_heights[r];

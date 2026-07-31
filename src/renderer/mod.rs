@@ -910,6 +910,40 @@ pub(crate) fn para_has_no_stored_line_segs(p: &crate::model::paragraph::Paragrap
     p.line_segs.is_empty() || p.line_segs.iter().all(|s| s.tag & 0x8000_0000 != 0)
 }
 
+/// 셀 문단의 저장 `LINE_SEG.vertical_pos` 를 절대 앵커로 신뢰할 수 있는지 판정한다.
+///
+/// `vertical_pos == 0` 은 "셀 상단"이라는 유효한 값이면서 동시에 "앵커 없음"의
+/// 센티널이기도 하다. 첫 문단은 0 이 곧 셀 상단이라 그대로 신뢰하고, 두 번째 이후
+/// 문단은 양수 vpos 가 저장돼 있을 때만 앵커로 쓴다.
+#[inline]
+pub(crate) fn first_seg_vpos_is_anchor(
+    para: &crate::model::paragraph::Paragraph,
+    cell_para_index: usize,
+) -> bool {
+    para.line_segs
+        .first()
+        .is_some_and(|seg| cell_para_index == 0 || seg.vertical_pos > 0)
+}
+
+/// 셀의 저장 vpos 흐름이 문단 위치를 구분해 담고 있는지 ("사다리" 온전성).
+///
+/// 셀 안 문단이 전부 `vpos == 0` 으로 저장된 문서(중첩 표 안쪽 셀에서 흔하다)에서는
+/// 저장 흐름이 문단 위치를 구분하지 못한다. 이 경우 다음 세 가지가 모두 성립하지
+/// 않으므로 저장 지오메트리를 신뢰해선 안 된다.
+///
+/// - 문단별 절대 배치 — 전 문단이 셀 상단 한 y 로 리셋된다
+/// - `max(vpos + lh)` 기반 셀 높이 — 1문단분으로 붕괴한다
+/// - `para_top + 중첩표 높이` 의 max 합성 — 텍스트와 중첩 표가 서로를 가린다
+#[inline]
+pub(crate) fn cell_vpos_ladder_is_intact(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+) -> bool {
+    paragraphs
+        .iter()
+        .enumerate()
+        .all(|(idx, para)| first_seg_vpos_is_anchor(para, idx))
+}
+
 /// [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC(글자처럼) 그림/도형 플로우
 /// 줄 메트릭 합성. 컨트롤 폭을 가용 폭에 greedy wrap 하여 줄별 (최대 높이, 0)
 /// 을 돌려준다.

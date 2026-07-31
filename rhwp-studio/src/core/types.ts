@@ -1102,6 +1102,7 @@ export interface LayerTextRunOp {
   baseline?: number;
   rotation?: number;
   isVertical?: boolean;
+  orientation?: 'horizontal' | 'vertical-upright' | 'vertical-sideways';
   style?: LayerTextStyle;
   placement?: { runToPage?: LayerAffineTransform; baselineY?: number };
   positions?: number[];
@@ -1126,10 +1127,12 @@ export interface LayerFootnoteMarkerOp {
   color?: string;
 }
 
+export type LayerStrokeDash = 'solid' | 'dash' | 'dot' | 'dashDot' | 'dashDotDot';
+
 export interface LayerLineStyle {
   color?: string;
   width?: number;
-  dash?: string;
+  dash?: LayerStrokeDash;
   lineType?: string;
   startArrow?: string;
   endArrow?: string;
@@ -1139,7 +1142,7 @@ export interface LayerShapeStyle {
   fillColor?: string | null;
   strokeColor?: string | null;
   strokeWidth?: number;
-  strokeDash?: string;
+  strokeDash?: LayerStrokeDash;
   opacity?: number;
 }
 

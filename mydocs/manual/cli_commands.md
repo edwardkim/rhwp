@@ -355,6 +355,24 @@ HWP 파일 정보 표시(버전/구역 수/암호화 등).
   `{"schemaVersion":"1.0","source","format":"hwp5|hwpx|hwp3|hml","sizeBytes","version","sections","pageCount","paraCount","fonts"}`.
   `version` 은 HML 이면 null. 스키마 계약은 `export-text --json` 항목과 동일 규칙.
 
+### `digest <파일> [--max-chars N] [--json]` (#3633)
+초소형 모델용 매크로 1호 — "info 로 훑고 → export-structure 로 개요를 얻고 →
+export-text 로 첫 장을 읽는" 3단 파이프라인을 **한 번 호출**로 수행한다. 도구
+체이닝을 못 하는 로컬 소형 모델(4B급)이 1차 소비자다. 설계 결정은
+[초소형 모델용 매크로 도구 축 설계 결정](../tech/tiny_model_macro_tools.md).
+- 기계 전용 명령: `--json` 유무와 무관하게 항상 봉투 **한 줄 JSON** 을 낸다 —
+  `{"schemaVersion":"1.0","source","format","pageCount","paraCount","outline":[최상위 노드 제목 최대 20개],"excerpt","truncated","nextStep"}`
+- `excerpt` 는 페이지 0~2 텍스트를 `--max-chars`(기본 2000) **문자 수**에서 절단한
+  발췌. 절단되면 `truncated:true`.
+- `nextStep` 은 고정 문자열 계약(다음 행동 유도문) — 문구 변경은
+  `tests/digest_macro_contract.rs` 가 잡는다.
+- 실패 시 stdout 0바이트, 종료 코드는 #2707 계약(0/1/2).
+
+```bash
+# 처음 보는 문서를 한 번 호출로 파악
+rhwp digest 편람.hwp --json --max-chars 500
+```
+
 ### `search <파일> <검색어> [--json] [--ignore-case] [--limit N]` (#3283)
 문서를 검색해 매치마다 **구역·문단·페이지·문자 오프셋**을 함께 돌려준다.
 평문을 뽑아 외부에서 찾으면 주소가 소멸해 근거 제시가 불가능한데, rhwp 는 조판 엔진이

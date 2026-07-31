@@ -917,6 +917,51 @@ impl HeightMeasurer {
     /// 중첩 표가 있는 문단의 LINE_SEG.line_height는 표의 실제 높이를 담지 못하는
     /// 문서가 있다. 이 경우 문단의 vertical_pos를 기준으로 중첩 표의 재귀 측정
     /// 높이를 더해 셀 콘텐츠의 실제 끝점을 구한다.
+    /// 저장 vpos 사다리가 붕괴한 셀에서, **줄높이에 흡수되지 않은** 중첩 표 높이의 합.
+    ///
+    /// 사다리가 온전한 셀은 `para_top + 중첩표 높이` 의 max 합성이 성립하지만
+    /// (`cell_nested_controls_bottom`), 붕괴한 셀은 `para_top` 이 전부 0 이 되어
+    /// max 가 "가장 큰 중첩 표 하나"로 축소된다. 그 경우 줄높이 누적합에 이 값을
+    /// 가산해야 한컴 배치와 맞는다.
+    ///
+    /// 문단의 저장 `line_height` 가 품은 중첩 표 높이를 이미 담고 있으면 가산 대상이
+    /// 아니다 — 더하면 이중 계상이다. 한 셀 안에서도 문단별로 다르다(실측: 같은 셀에서
+    /// `lh 2535 ⊇ 표 1965` 는 흡수, `lh 900` vs `표 30270` 은 미흡수). 0.7.13
+    /// `e16a6070` 의 "이미 표 높이를 담은 LINE_SEG 가 있으면 보정 생략" 과 같은 규약.
+    fn unabsorbed_nested_tables_height(
+        &self,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        depth: usize,
+    ) -> f64 {
+        if depth >= Self::MAX_NESTED_DEPTH {
+            return 0.0;
+        }
+        paragraphs
+            .iter()
+            .map(|p| {
+                let para_max_lh = p.line_segs.iter().map(|s| s.line_height).max().unwrap_or(0);
+                p.controls
+                    .iter()
+                    .filter_map(|ctrl| {
+                        let Control::Table(nested) = ctrl else {
+                            return None;
+                        };
+                        if para_max_lh >= nested.common.height as i32 {
+                            return None; // 줄높이가 이미 담고 있다
+                        }
+                        let stretch = self.render_normalization.nested_table_width_scale(nested);
+                        let mt = self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch);
+                        let declared = hwpunit_to_px(nested.common.height as i32, self.dpi);
+                        let om = hwpunit_to_px(nested.outer_margin_top as i32, self.dpi)
+                            + hwpunit_to_px(nested.outer_margin_bottom as i32, self.dpi);
+                        Some(mt.total_height.max(declared) + om)
+                    })
+                    .sum::<f64>()
+            })
+            .sum()
+    }
+
     fn cell_nested_controls_bottom(
         &self,
         paragraphs: &[Paragraph],
@@ -1312,40 +1357,23 @@ impl HeightMeasurer {
                     .paragraphs
                     .iter()
                     .all(crate::renderer::para_has_no_stored_line_segs);
-                let content_height = if has_nested_table_in_cell && cell_all_no_ls {
+                // 저장 vpos 사다리가 붕괴한 셀(둘째 이후 문단이 전부 vpos=0)은 아래
+                // max 합성이 성립하지 않는다 — para_top 이 전부 0 이 되어 텍스트와
+                // 중첩 표가 서로를 가린다. NO_LS 와 같은 additive 경로로 보낸다.
+                // (실측: 문단 29개·중첩표 5개 호스트 셀에서 last_seg_end 26105 HU 대
+                // 줄높이 누적합 81090 HU, 선언 141785 HU → 조각이 짧아져 잔여 중첩
+                // 행이 렌더에서 탈락)
+                let ladder_intact = crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs);
+                let content_height = if has_nested_table_in_cell
+                    && (cell_all_no_ls || !ladder_intact)
+                {
                     // [#2148 실험] NO_LS 셀은 vpos 사다리가 없어 nested_bottom 의
                     // para_top(첫 lineseg vpos)=0 → 위 텍스트 문단이 소거된다
                     // (80168 pi=271 r6: 텍스트 2줄 + 중첩 99.7 → max 로 99.7 과소,
                     // 한글 160.2 는 합산 흐름). 텍스트 합 + 중첩 표 합(선언 max +
                     // outMargin — 이 additive 경로 한정, 한글 검산 160.1)으로 가산.
-                    let nested_sum: f64 = cell
-                        .paragraphs
-                        .iter()
-                        .flat_map(|p| p.controls.iter())
-                        .filter_map(|ctrl| {
-                            if let Control::Table(nested) = ctrl {
-                                // 한글 실효폭은 부모 셀 **전폭**(pad 미차감, 76076
-                                // 근거설명 셀: 유효 ~504px = 부모 w 506.2, inner 492.6
-                                // 으로는 L0 40자 수용 불가) 기준.
-                                let stretch =
-                                    self.render_normalization.nested_table_width_scale(nested);
-                                let mt = self.measure_table_impl(
-                                    nested,
-                                    0,
-                                    0,
-                                    styles,
-                                    depth + 1,
-                                    stretch,
-                                );
-                                let declared = hwpunit_to_px(nested.common.height as i32, self.dpi);
-                                let om = hwpunit_to_px(nested.outer_margin_top as i32, self.dpi)
-                                    + hwpunit_to_px(nested.outer_margin_bottom as i32, self.dpi);
-                                Some(mt.total_height.max(declared) + om)
-                            } else {
-                                None
-                            }
-                        })
-                        .sum();
+                    let nested_sum =
+                        self.unabsorbed_nested_tables_height(&cell.paragraphs, styles, depth);
                     text_height + nested_sum
                 } else if has_nested_table_in_cell {
                     // 마지막 문단의 마지막 LINE_SEG의 vpos + line_height
@@ -2191,9 +2219,31 @@ impl HeightMeasurer {
                 } else {
                     0.0
                 };
-                let nested_bottom =
-                    self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth, mc_cell_w);
-                mc.total_content_height = nested_bottom.max(mc.total_content_height);
+                // 저장 vpos 사다리가 붕괴한 셀(둘째 이후 문단이 전부 vpos=0)은 max
+                // 합성이 성립하지 않는다 — para_top 이 전부 0 이 되어 nested_bottom 이
+                // "가장 큰 중첩 표 하나"로 축소되고 텍스트 줄높이를 통째로 가린다.
+                // 그 경우 줄높이 누적합 + 미흡수 중첩 표 합으로 가산한다.
+                //
+                // NO_LS 셀(저장 lineseg 자체가 없음)은 기존 max 경로를 유지한다 —
+                // #2148 캘리브레이션 대상이고 사다리 유무를 논할 저장분이 없다.
+                let all_no_ls = cell
+                    .paragraphs
+                    .iter()
+                    .all(crate::renderer::para_has_no_stored_line_segs);
+                let ladder_collapsed =
+                    !all_no_ls && !crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs);
+                mc.total_content_height = if ladder_collapsed {
+                    mc.total_content_height
+                        + self.unabsorbed_nested_tables_height(&cell.paragraphs, styles, depth)
+                } else {
+                    let nested_bottom = self.cell_nested_controls_bottom(
+                        &cell.paragraphs,
+                        styles,
+                        depth,
+                        mc_cell_w,
+                    );
+                    nested_bottom.max(mc.total_content_height)
+                };
             }
         }
         for mc in &mut measured_cells {
