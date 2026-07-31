@@ -28,9 +28,15 @@ explicit `default` and `compat` policy modes. It dispatches the core layer node
 kinds, clips, basic page backgrounds, vector primitives, simple raster images,
 basic form objects, root `TextRun` compatibility payloads, horizontal text
 special visuals, and the currently supported `GlyphOutline` color-layer subset.
-It still treats vertical text, effect-heavy text, several image effects,
-page-background fills, and document-object families as fallback or diagnostic
-work until their payload contract is strict enough for direct replay.
+The standard solid, dash, dot, dash-dot, and dash-dot-dot stroke patterns are
+direct for line, shape, and path primitives and retain bounded native-effect
+lifetime.
+Root `TextRun` replay includes producer-positioned vertical text, vertical
+presentation punctuation, ratio scaling, shade, shadow, outline, emboss, and
+engrave for the nominal-glyph-safe subset. Several image effects, page-background fills,
+vertical or rotated special visual ops, and document-object families remain
+fallback or diagnostic work until their payload contract is strict enough for
+direct replay.
 
 `TextRun compatibility` remains the replay baseline for normal text. `GlyphRun`
 and `GlyphOutline` are additive sidecars, not a replacement authority by
@@ -108,8 +114,8 @@ Likely families:
 - raster image effects and crop preprocessing;
 - equation and form-object bounds;
 - placeholder and raw-SVG preview payloads;
-- remaining root `TextRun` effects such as vertical text, ratio scaling, shadow,
-  outline, emboss, engrave, and shade.
+- complex-script runs that still need explicit direction and positioned cluster
+  advances, plus old-Hangul or boxed-PUA combinations with ratio or paint effects.
 
 ### 3. Strict Text Variant Replay
 
@@ -254,6 +260,32 @@ registered before the first replay. A named family that still reaches replay
 without a prepared typeface is a document-wide resource failure, not a silent
 substitution with the default Noto face.
 
+The direct `TextRun` runtime consumes producer positions for nominal-glyph-safe
+horizontal and vertical runs. Vertical presentation forms such as `U+FE35` and `U+FE36` use
+their broadly available base punctuation and rotate that glyph around the
+producer cell center. Ratio scaling changes glyph shapes while preserving the
+serialized origins. Shade, shadow, outline, emboss, and engrave reuse the same
+bounded fallback spans, so a paint effect cannot silently change character
+placement. The legacy zero and white shade sentinels remain no-fill values.
+Old-Hangul clusters retain their bounded, producer-anchored paragraph shaper.
+Arabic, Indic, combining-mark, bidi-format, emoji-sequence, and other
+complex-script runs remain fail-closed as `scriptTextRequiresShaping` until the
+IR carries explicit direction and positioned cluster advances. Old-Hangul or
+boxed-PUA runs that
+also request ratio, shade, shadow, outline, emboss, or engrave use the same
+fail-closed route until CanvasKit can apply those paints to one exact shaped
+result.
+
+Forced CanvasKit replay also exposes bounded font-substitution diagnostics.
+They distinguish an unregistered authored family that reached the default face
+from per-glyph default, symbol, and old-Hangul coverage fallbacks. Automatic
+selection still requires all authored families to be prepared before replay;
+the diagnostics make explicit overrides observable without weakening that
+document-level admission rule.
+Known legacy aliases follow the existing web substitution contract during
+preparation. In particular, `한양중고딕` resolves through `HY중고딕` to the
+bundled Noto Sans KR face instead of being rejected as an unknown family.
+
 The decision is pinned for the whole document revision. Its key includes the
 document digest, edit revision, render profile, resource generation, requested
 backend, and CanvasKit mode. In automatic mode, an edit immediately advances to
@@ -331,9 +363,17 @@ cache hit, so the producer and CanvasKit resource replay path cannot pass by
 rendering only the text fallback.
 
 The hard readiness set covers paragraph, table, image, positioned paragraph
-marks, PUA fallback, and font-native bitmap cases. Synthetic renderer-contract
-tests cover character overlap, tab leaders, and decorations; focused
-document-backed visual fixtures for those three operations remain a follow-up.
+marks, PUA fallback, font-native bitmap, and a real HWP table containing
+vertical text, presentation punctuation, and dashed borders. Synthetic
+renderer-contract tests cover character overlap, tab leaders, and decorations;
+focused document-backed visual fixtures for those three operations remain a
+follow-up.
+Readiness entries can declare minimum replay feature counts. The vertical-table
+gate currently requires the CanvasKit runtime to complete 14 vertical
+`TextRun` operations, two vertical presentation-form rotations, and 12 dashed
+strokes. These counters are recorded only after the corresponding draw path
+completes, so an unselected, unsupported, or non-drawing LayerTree operation
+cannot satisfy the gate.
 The readiness set checks requested mode/surface, page canvas
 ownership, expected/unexpected diagnostics, visual thresholds, declared layer
 payloads, warm cache hits, decoded-image pixel limits, synchronous warm replay,
@@ -403,9 +443,9 @@ The versioned corpus records a SHA-256 document digest and diagnostic axes for
 every sample. Browser and native comparisons require matching sample, digest,
 page, and profile identities before comparing pixels, while retaining backend
 and actual surface provenance. Identity mismatches are a separate result class,
-not visual noise. The default `representative` tier retains the existing 21-case
+not visual noise. The default `representative` tier retains a bounded 24-case
 runtime envelope. `--scope full` and the manual workflow's `corpus=full` input
-select the complete 120-case browser/native corpus; WebGPU/software surface
+select the complete 122-case browser/native corpus; WebGPU/software surface
 sweeps remain representative. The selected multi-profile sweep also collects
 verified print-profile PDF artifacts, while selected CanvasKit readiness cases
 remain the bounded visual hard gate.

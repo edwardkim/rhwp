@@ -365,6 +365,18 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         Exempt::DelegatesTo("delete_text_native"),
         "검색 후 삭제 + 삽입 조합. 두 뮤테이터가 각각 무효화한다.",
     ),
+    (
+        "queries/search_query.rs",
+        "replace_all_native",
+        Exempt::DelegatesTo("replace_matches_native"),
+        "[#3395] 전량 치환 몸통이 공통 헬퍼로 이관됨. 무효화(`raw_stream = None`)는 헬퍼가 수행.",
+    ),
+    (
+        "queries/search_query.rs",
+        "replace_nth_native",
+        Exempt::DelegatesTo("replace_matches_native"),
+        "[#3395] k번째 매치 치환 — replace_all_native 와 같은 공통 헬퍼에 위임. 무효화는 헬퍼가 수행.",
+    ),
     // ── 판정 보류 ──────────────────────────────────────────────────────────
     (
         "commands/document.rs",
