@@ -2321,7 +2321,7 @@ fn render_equation(eq: &Equation) -> String {
     let allow_overlap = if c.allow_overlap { "1" } else { "0" };
 
     format!(
-        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" instid="{id}" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="{width_rel_to}" height="{height}" heightRelTo="{height_rel_to}"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="{allow_overlap}" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
+        r#"<hp:equation id="{id}" zOrder="{z_order}" numberingType="EQUATION" textWrap="{}" textFlow="{}" lock="{lock}" dropcapstyle="None" version="{version}" baseLine="{baseline}" textColor="{text_color}" baseUnit="{base_unit}" lineMode="{line_mode}" font="{font}"><hp:script>{script}</hp:script><hp:sz width="{width}" widthRelTo="{width_rel_to}" height="{height}" heightRelTo="{height_rel_to}"/><hp:pos treatAsChar="{treat}" affectLSpacing="0" flowWithText="{flow_with_text}" allowOverlap="{allow_overlap}" holdAnchorAndSO="{hold}" vertRelTo="{}" horzRelTo="{}" vertAlign="{}" horzAlign="{}" vertOffset="{vert_offset}" horzOffset="{horz_offset}"/><hp:outMargin left="{margin_left}" right="{margin_right}" top="{margin_top}" bottom="{margin_bottom}"/>{shape_comment}</hp:equation>"#,
         text_wrap_to_hwpx(c.text_wrap),
         text_flow_to_hwpx(c.text_flow),
         vert_rel_to_hwpx(c.vert_rel_to),
@@ -2751,6 +2751,22 @@ mod tests {
             render_equation(&Equation::default()).contains(r#"allowOverlap="0""#),
             "기본값(false)은 종전대로 allowOverlap=\"0\" 이어야 함(회귀 방지)"
         );
+    }
+
+    /// [Issue #3543] 수식(`hp:equation`)은 스키마 비허용 `instid` 속성을 방출하지
+    /// 않아야 한다. instid 는 도형 컴포넌트 공통(KS X 6101:2024 표 209) 소관이고
+    /// equation 요소 정의(표 207·샘플 114)에는 없다 — 한컴 저장본도 수식에는
+    /// 방출하지 않는다. 파서는 수식의 instid 를 버리므로 제거해도 왕복 불변.
+    #[test]
+    fn equation_omits_instid() {
+        use crate::model::control::Equation;
+
+        let xml = render_equation(&Equation::default());
+        assert!(
+            !xml.contains("instid"),
+            "수식은 스키마 비허용 instid 를 방출하면 안 됨(KS X 6101 표 207): {xml}"
+        );
+        assert!(xml.contains(r#" id=""#), "id 속성은 유지돼야 함: {xml}");
     }
 
     /// [Issue #2790] legacy 공용 도형 경로(ellipse/arc/polygon/curve/chart/ole)의 textFlow
