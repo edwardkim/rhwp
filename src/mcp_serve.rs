@@ -32,6 +32,9 @@ struct SessionDoc {
     doc: HwpDocument,
     /// 원본이 HWPX 였는가. save 는 이 값으로 산출 형식을 정한다(HWPX→HWPX, 그 외→HWP5).
     source_is_hwpx: bool,
+    /// [#3609] hwp_doc_info 봉투용 — open 시점의 원본 크기·감지 형식.
+    size_bytes: usize,
+    detected_format: rhwp::parser::FileFormat,
 }
 
 /// 열린 문서 핸들 테이블. 서버 프로세스가 사는 동안 유지된다.
@@ -49,10 +52,48 @@ impl Sessions {
     }
 }
 
-pub fn run() -> i32 {
+pub fn run(args: &[String]) -> i32 {
+    // [#3629] 직무 프로필: tools/list 자체를 역할 세트로 필터 — 호스트 설정 한 줄로
+    // '행정서식 전용 서버'를 등록한다. 단일 출처는 agent_profiles::PROFILES.
+    let mut profile: Option<&'static crate::agent_profiles::AgentProfile> = None;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--profile" => {
+                i += 1;
+                let Some(name) = args.get(i) else {
+                    eprintln!("오류: --profile 뒤에 역할 이름이 필요합니다.");
+                    eprintln!("사용 가능: {}", crate::agent_profiles::names().join(", "));
+                    return crate::EXIT_USAGE;
+                };
+                match crate::agent_profiles::find(name) {
+                    Some(p) => profile = Some(p),
+                    None => {
+                        eprintln!("오류: 알 수 없는 프로필 '{name}'");
+                        eprintln!("사용 가능: {}", crate::agent_profiles::names().join(", "));
+                        return crate::EXIT_USAGE;
+                    }
+                }
+            }
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return crate::EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
     let stdin = std::io::stdin();
     let stdout = std::io::stdout();
-    let tool_defs = crate::mcp_tool_definitions();
+    let mut tool_defs = crate::mcp_tool_definitions();
+    if let Some(p) = profile {
+        tool_defs.retain(|t| {
+            t["name"]
+                .as_str()
+                .map(|n| crate::agent_profiles::allows_tool(p, n))
+                .unwrap_or(false)
+        });
+    }
+    let include_session = profile.map(|p| p.session).unwrap_or(true);
     let mut sessions = Sessions::new();
 
     for line in stdin.lock().lines() {
@@ -102,13 +143,18 @@ pub fn run() -> i32 {
                 }),
             ),
             "ping" => ok_response(id, serde_json::json!({})),
-            "tools/list" => {
-                ok_response(id, serde_json::json!({ "tools": served_tools(&tool_defs) }))
+            "tools/list" => ok_response(
+                id,
+                serde_json::json!({
+                    "tools": served_tools(&tool_defs, include_session)
+                }),
+            ),
+            "tools/call" => {
+                match handle_tool_call(&params, &tool_defs, include_session, &mut sessions) {
+                    Ok(result) => ok_response(id, result),
+                    Err(e) => error_response(id, INVALID_PARAMS, &e),
+                }
             }
-            "tools/call" => match handle_tool_call(&params, &tool_defs, &mut sessions) {
-                Ok(result) => ok_response(id, result),
-                Err(e) => error_response(id, INVALID_PARAMS, &e),
-            },
             other => error_response(
                 id,
                 METHOD_NOT_FOUND,
@@ -139,7 +185,7 @@ fn error_response(id: serde_json::Value, code: i64, message: &str) -> serde_json
 }
 
 /// tools/list 응답: 선언 도구(MCP 필수 3종만 노출) + 세션 도구 3종.
-fn served_tools(tool_defs: &[serde_json::Value]) -> Vec<serde_json::Value> {
+fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<serde_json::Value> {
     let mut tools: Vec<serde_json::Value> = tool_defs
         .iter()
         .map(|t| {
@@ -150,6 +196,9 @@ fn served_tools(tool_defs: &[serde_json::Value]) -> Vec<serde_json::Value> {
             })
         })
         .collect();
+    if !include_session {
+        return tools;
+    }
     tools.push(serde_json::json!({
         "name": "hwp_open",
         "description": "문서를 파싱해 세션 핸들(docId)을 연다. 대형 문서를 여러 번 조회할 때 재파싱을 피한다. 조회가 끝나면 hwp_close 로 닫는다.",
@@ -172,6 +221,26 @@ fn served_tools(tool_defs: &[serde_json::Value]) -> Vec<serde_json::Value> {
             },
             "required": ["docId"]
         }
+    }));
+    tools.push(serde_json::json!({
+        "name": "hwp_doc_info",
+        "description": "[#3609] 핸들의 메타(형식·페이지/문단 수·폰트)를 재파싱 없이 조회한다. 편집 후 페이지 수 변화를 추적할 때 쓴다. 봉투는 hwp_info 와 동형.",
+        "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
+    }));
+    tools.push(serde_json::json!({
+        "name": "hwp_doc_fields",
+        "description": "[#3609] 핸들의 누름틀을 재파싱 없이 조사한다. hwp_doc_fill_fields 직후 반영값 확인에 쓴다. 봉투는 hwp_fields 와 동형.",
+        "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
+    }));
+    tools.push(serde_json::json!({
+        "name": "hwp_doc_tables",
+        "description": "[#3609] 핸들의 표 격자를 재파싱 없이 추출한다. 봉투는 hwp_export_tables 와 동형.",
+        "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
+    }));
+    tools.push(serde_json::json!({
+        "name": "hwp_doc_render_page",
+        "description": "[#3609] 핸들에서 해당 쪽을 SVG 로 렌더해 저장한다 — 편집 직후 눈검증(VLM) 루프가 세션 안에서 닫힌다.",
+        "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" }, "page": { "type": "integer", "minimum": 0 }, "output": { "type": "string", "description": "출력 SVG 경로" } }, "required": ["docId", "page", "output"] }
     }));
     tools.push(serde_json::json!({
         "name": "hwp_doc_search",
@@ -198,6 +267,22 @@ fn served_tools(tool_defs: &[serde_json::Value]) -> Vec<serde_json::Value> {
                 "caseSensitive": { "type": "boolean", "description": "대소문자 구분. 기본 true" }
             },
             "required": ["docId", "find", "replace"]
+        }
+    }));
+    tools.push(serde_json::json!({
+        "name": "hwp_doc_set_cell",
+        "description": "[#3603] 핸들의 표 격자 좌표(hwp_doc_tables 와 동일)에 값을 기록한다 — 디스크 미기록, hwp_doc_save 가 기록 지점. 병합으로 덮인 칸은 앵커 좌표를 안내하며 실패하고, 칸 넘침은 overflow 로 보고한다(무상태 hwp_set_cell 과 동형).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "docId": { "type": "string" },
+                "table": { "type": "integer", "minimum": 0, "description": "본문 최상위 표 번호" },
+                "row": { "type": "integer", "minimum": 0 },
+                "col": { "type": "integer", "minimum": 0 },
+                "text": { "type": "string", "description": "셀에 넣을 값 (빈 문자열이면 비우기)" },
+                "keepStyle": { "type": "boolean", "description": "true 면 셀 스타일 상속 유지 (기본: 검정·비이탤릭 정규화)" }
+            },
+            "required": ["docId", "table", "row", "col", "text"]
         }
     }));
     tools.push(serde_json::json!({
@@ -243,6 +328,7 @@ fn served_tools(tool_defs: &[serde_json::Value]) -> Vec<serde_json::Value> {
 fn handle_tool_call(
     params: &serde_json::Value,
     tool_defs: &[serde_json::Value],
+    include_session: bool,
     sessions: &mut Sessions,
 ) -> Result<serde_json::Value, String> {
     let name = params
@@ -254,11 +340,24 @@ fn handle_tool_call(
         .cloned()
         .unwrap_or(serde_json::json!({}));
 
+    // tools/list에서 제거한 세션 도구는 호출로 우회할 수도 없어야 한다. 프로필은
+    // 추천 목록이 아니라 서버가 실제로 제공하는 도구 집합의 경계다.
+    if !include_session && is_session_tool(name) {
+        return Ok(tool_error(format!(
+            "현재 프로필에서는 세션 도구를 제공하지 않습니다: {name}"
+        )));
+    }
+
     match name {
         "hwp_open" => Ok(session_open(&args, sessions)),
         "hwp_doc_text" => Ok(session_doc_text(&args, sessions)),
+        "hwp_doc_info" => Ok(session_info(&args, sessions)),
+        "hwp_doc_fields" => Ok(session_fields(&args, sessions)),
+        "hwp_doc_tables" => Ok(session_tables(&args, sessions)),
+        "hwp_doc_render_page" => Ok(session_render_page(&args, sessions)),
         "hwp_doc_search" => Ok(session_search(&args, sessions)),
         "hwp_doc_replace_text" => Ok(session_replace_text(&args, sessions)),
+        "hwp_doc_set_cell" => Ok(session_set_cell(&args, sessions)),
         "hwp_doc_fill_fields" => Ok(session_fill_fields(&args, sessions)),
         "hwp_doc_save" => Ok(session_save(&args, sessions)),
         "hwp_close" => Ok(session_close(&args, sessions)),
@@ -269,6 +368,24 @@ fn handle_tool_call(
             Ok(run_cli_tool(def, &args))
         }
     }
+}
+
+fn is_session_tool(name: &str) -> bool {
+    matches!(
+        name,
+        "hwp_open"
+            | "hwp_doc_text"
+            | "hwp_doc_info"
+            | "hwp_doc_fields"
+            | "hwp_doc_tables"
+            | "hwp_doc_render_page"
+            | "hwp_doc_search"
+            | "hwp_doc_replace_text"
+            | "hwp_doc_set_cell"
+            | "hwp_doc_fill_fields"
+            | "hwp_doc_save"
+            | "hwp_close"
+    )
 }
 
 fn tool_error(message: String) -> serde_json::Value {
@@ -308,10 +425,9 @@ fn session_open(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
         Err(e) => return tool_error(format!("{path} 파싱 실패: {e:?}")),
     };
     // [#3598] save 의 형식 보존을 위해 원본 형식을 핸들에 함께 기억한다.
-    let source_is_hwpx = matches!(
-        rhwp::parser::detect_format(&data),
-        rhwp::parser::FileFormat::Hwpx
-    );
+    let detected_format = rhwp::parser::detect_format(&data);
+    let source_is_hwpx = matches!(detected_format, rhwp::parser::FileFormat::Hwpx);
+    let size_bytes = data.len();
     let page_count = doc.page_count();
     let doc_id = format!("doc-{}", sessions.next_id);
     sessions.next_id += 1;
@@ -320,6 +436,8 @@ fn session_open(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
         SessionDoc {
             doc,
             source_is_hwpx,
+            size_bytes,
+            detected_format,
         },
     );
     tool_ok_text(
@@ -343,8 +461,11 @@ fn session_doc_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
     let doc = &mut sd.doc;
     let page_count = doc.page_count();
     let pages: Vec<u32> = match args.get("page").and_then(|p| p.as_u64()) {
-        Some(p) => {
-            let p = p as u32;
+        Some(raw_page) => {
+            let p = match u32::try_from(raw_page) {
+                Ok(p) => p,
+                Err(_) => return tool_error(format!("페이지 번호 범위 초과: {raw_page}")),
+            };
             if p >= page_count {
                 return tool_error(format!("페이지 범위 초과: {p} (0~{})", page_count - 1));
             }
@@ -365,6 +486,97 @@ fn session_doc_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
             "docId": doc_id,
             "pageCount": page_objs.len(),
             "pages": page_objs,
+        })
+        .to_string(),
+    )
+}
+
+/// [#3609] 세션 조회 4종 — 전부 무상태 봉투 helper 재사용(동형 보장).
+fn with_doc<'a>(
+    args: &serde_json::Value,
+    sessions: &'a mut Sessions,
+) -> Result<(&'a mut SessionDoc, String), serde_json::Value> {
+    let Some(doc_id) = args.get("docId").and_then(|d| d.as_str()) else {
+        return Err(tool_error("docId 가 필요합니다".into()));
+    };
+    let id = doc_id.to_string();
+    match sessions.docs.get_mut(&id) {
+        Some(sd) => Ok((sd, id)),
+        None => Err(tool_error(format!(
+            "열려 있지 않은 핸들: {id} (hwp_open 먼저)"
+        ))),
+    }
+}
+
+fn session_info(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let (sd, id) = match with_doc(args, sessions) {
+        Ok(v) => v,
+        Err(e) => return e,
+    };
+    tool_ok_text(
+        crate::info_json_value(&id, sd.size_bytes, sd.detected_format, &sd.doc).to_string(),
+    )
+}
+
+fn session_fields(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let (sd, id) = match with_doc(args, sessions) {
+        Ok(v) => v,
+        Err(e) => return e,
+    };
+    let fields = crate::collect_field_records(&sd.doc);
+    tool_ok_text(crate::fields_json_value(&id, &fields).to_string())
+}
+
+fn session_tables(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let (sd, id) = match with_doc(args, sessions) {
+        Ok(v) => v,
+        Err(e) => return e,
+    };
+    let tables = rhwp::document_core::queries::table_extract::extract_tables(sd.doc.document());
+    tool_ok_text(crate::tables_json_value(&id, &tables).to_string())
+}
+
+fn session_render_page(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let Some(raw_page) = args.get("page").and_then(|p| p.as_u64()) else {
+        return tool_error("page 가 필요합니다".into());
+    };
+    let page = match u32::try_from(raw_page) {
+        Ok(page) => page,
+        Err(_) => return tool_error(format!("페이지 번호 범위 초과: {raw_page}")),
+    };
+    let Some(output) = args
+        .get("output")
+        .and_then(|o| o.as_str())
+        .map(String::from)
+    else {
+        return tool_error("output 이 필요합니다".into());
+    };
+    let (sd, id) = match with_doc(args, sessions) {
+        Ok(v) => v,
+        Err(e) => return e,
+    };
+    let page_count = sd.doc.page_count();
+    if page_count == 0 {
+        return tool_error("렌더 가능한 페이지가 없습니다".into());
+    }
+    if page >= page_count {
+        return tool_error(format!("페이지 범위 초과: {page} (0~{})", page_count - 1));
+    }
+    let svg = match sd.doc.render_page_svg(page) {
+        Ok(s) => s,
+        Err(e) => return tool_error(format!("페이지 {page} 렌더 실패: {e:?}")),
+    };
+    if let Err(e) = std::fs::write(&output, &svg) {
+        return tool_error(format!("{output} 쓰기 실패: {e}"));
+    }
+    tool_ok_text(
+        serde_json::json!({
+            "schemaVersion": "1.0",
+            "docId": id,
+            "page": page,
+            "format": "svg",
+            "output": output,
+            "bytes": svg.len(),
         })
         .to_string(),
     )
@@ -437,6 +649,106 @@ fn session_replace_text(args: &serde_json::Value, sessions: &mut Sessions) -> se
             "replace": replace,
             "caseSensitive": case_sensitive,
             "replacedCount": count,
+        })
+        .to_string(),
+    )
+}
+
+/// [#3603] 핸들의 표 격자 좌표에 값을 기록한다 — resolve_table_cell(CLI 와 공유)로
+/// 좌표를 해석하고, overflow 판정·검정 정규화까지 무상태 edit set-cell 과 동형이다.
+fn session_set_cell(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
+    let (Some(table_no), Some(row), Some(col)) = (
+        args.get("table").and_then(|v| v.as_u64()),
+        args.get("row").and_then(|v| v.as_u64()),
+        args.get("col").and_then(|v| v.as_u64()),
+    ) else {
+        return tool_error("table/row/col 이 필요합니다".into());
+    };
+    let Some(new_text) = args.get("text").and_then(|t| t.as_str()).map(String::from) else {
+        return tool_error("text 가 필요합니다".into());
+    };
+    let keep_style = args
+        .get("keepStyle")
+        .and_then(|k| k.as_bool())
+        .unwrap_or(false);
+    let Some(doc_id) = args.get("docId").and_then(|d| d.as_str()) else {
+        return tool_error("docId 가 필요합니다".into());
+    };
+    let id = doc_id.to_string();
+    let Some(sd) = sessions.docs.get_mut(&id) else {
+        return tool_error(format!("열려 있지 않은 핸들: {id} (hwp_open 먼저)"));
+    };
+    let table_no = match usize::try_from(table_no) {
+        Ok(value) => value,
+        Err(_) => return tool_error("table 값이 이 플랫폼의 범위를 벗어났습니다".into()),
+    };
+    let row = match u16::try_from(row) {
+        Ok(value) => value,
+        Err(_) => return tool_error("row 값은 0~65535 범위여야 합니다".into()),
+    };
+    let col = match u16::try_from(col) {
+        Ok(value) => value,
+        Err(_) => return tool_error("col 값은 0~65535 범위여야 합니다".into()),
+    };
+    let (sec, para, ctrl, cell_idx, para_lens, old_text) =
+        match crate::resolve_table_cell(sd.doc.document(), table_no, row, col) {
+            Ok(v) => v,
+            Err(crate::CellResolveError::Usage(m)) | Err(crate::CellResolveError::Runtime(m)) => {
+                return tool_error(m)
+            }
+        };
+    let overflow = crate::measure_cell_overflow(&sd.doc, sec, para, ctrl, cell_idx, &new_text).map(
+        |(cell_w, text_w, lines)| {
+            serde_json::json!({
+                "target": format!("table{}[{},{}]", table_no, row, col),
+                "cellWidthPx": (cell_w * 100.0).round() / 100.0,
+                "textWidthPx": (text_w * 100.0).round() / 100.0,
+                "lines": lines,
+            })
+        },
+    );
+    for (pi, len) in para_lens.iter().enumerate() {
+        if *len == 0 {
+            continue;
+        }
+        if let Err(e) = sd.doc.delete_text_in_cell(
+            sec as u32,
+            para as u32,
+            ctrl as u32,
+            cell_idx as u32,
+            pi as u32,
+            0,
+            *len as u32,
+        ) {
+            return tool_error(format!("셀 비우기 실패(문단 {pi}): {e:?}"));
+        }
+    }
+    if !new_text.is_empty() {
+        if let Err(e) = sd.doc.insert_text_in_cell(
+            sec as u32,
+            para as u32,
+            ctrl as u32,
+            cell_idx as u32,
+            0,
+            0,
+            &new_text,
+        ) {
+            return tool_error(format!("셀 쓰기 실패: {e:?}"));
+        }
+        if !keep_style
+            && !crate::recolor_cell_text_black(sd.doc.document_mut(), sec, para, ctrl, cell_idx)
+        {
+            // 경고 수준 — 봉투에 남기지 않고 진행 (CLI 와 동일한 관용).
+        }
+    }
+    tool_ok_text(
+        serde_json::json!({
+            "schemaVersion": "1.0",
+            "docId": id,
+            "table": table_no, "row": row, "col": col,
+            "oldText": old_text,
+            "newText": new_text,
+            "overflow": overflow.map(|o| vec![o]).unwrap_or_default(),
         })
         .to_string(),
     )
@@ -604,10 +916,29 @@ fn substitute_args(
 fn run_cli_tool(def: &serde_json::Value, args: &serde_json::Value) -> serde_json::Value {
     let template: Vec<serde_json::Value> =
         def["cli"]["args"].as_array().cloned().unwrap_or_default();
-    let cli_args = match substitute_args(&template, args) {
+    let mut cli_args = match substitute_args(&template, args) {
         Ok(a) => a,
         Err(e) => return tool_error(e),
     };
+    if let Some(optional_args) = def["cli"]["optionalArgs"].as_array() {
+        for optional in optional_args {
+            let Some(key) = optional.get("when").and_then(|v| v.as_str()) else {
+                return tool_error("MCP optionalArgs.when 정의가 올바르지 않습니다".into());
+            };
+            if args.get(key).is_none() {
+                continue;
+            }
+            let Some(template) = optional.get("args").and_then(|v| v.as_array()) else {
+                return tool_error(format!(
+                    "MCP optionalArgs.{key}.args 정의가 올바르지 않습니다"
+                ));
+            };
+            match substitute_args(template, args) {
+                Ok(extra) => cli_args.extend(extra),
+                Err(e) => return tool_error(e),
+            }
+        }
+    }
 
     let exe = match std::env::current_exe() {
         Ok(p) => p,
