@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2020Convert_usage.md
-last_verified: 2026-07-28
+last_verified: 2026-07-31
 ---
 
 # HWP 2020 변환 client 사용법
@@ -18,12 +18,18 @@ last_verified: 2026-07-28
 - 지원 출력: `pdf`, `hwpx`, `hwp`
 - 변환 방향: `.hwp -> pdf|hwpx|hwp`, `.hwpx -> pdf|hwp`이며 `.hwpx -> hwpx`는 지원하지 않는다.
 - PDF는 Hancom Office 2020의 non-GUI `PrintToPDFEx`와 `PrintMethod=0`(1-up) 인쇄 경로로 생성한다.
-- 암호가 설정된 `.hwp`와 `.hwpx`는 `password`(VS Code) 또는 `--password-stdin`(CLI)으로 변환할 수 있다.
-  암호 HWPX는 ODF AES-256-CBC/PBKDF2 형식만 지원하며 DRM 등 그 밖의 암호화 문서는 지원하지 않는다.
+- 암호 HWP3/HWP5 `.hwp`는 `password`(VS Code) 또는 `--password-stdin`(CLI)으로
+  `pdf|hwpx|hwp`로 변환할 수 있다.
+- ODF AES-256-CBC/PBKDF2 암호 `.hwpx`는 같은 암호 전달 방식으로 `pdf|hwp`로 변환할 수 있다.
+  DRM 등 이 형식 밖의 암호화 문서는 지원하지 않는다.
 - CLI의 `--input`, `--output-dir`과 VS Code tool의 `input_path`, `output_dir`은 모두 client가 실행되는
   로컬 PC 경로다. 원격 서버의 경로를 입력하지 않는다.
-- 변환본은 MCP response의 inline binary로 client에 전달되며, server는 응답을 만든 직후 input, intermediate,
-  output, log가 있는 작업 directory를 삭제한다. server에서 나중에 다시 내려받는 persistent `resource_uri`는 제공하지 않는다.
+- 변환본은 MCP response의 inline binary로 client에 전달된다. 동기 변환은 response delivery 완료 직후,
+  비동기 변환은 `download` response delivery 완료 직후 input, intermediate, output, log가 있는 작업
+  directory를 삭제한다. server에서 나중에 다시 내려받는 persistent `resource_uri`는 제공하지 않는다.
+- 2026-07-31 운영 MCP 검증에서 암호 HWP3 세 방향, 암호 HWP5 HWP 세 방향, 암호 HWPX 두 방향이 모두
+  성공했다. 모든 case에서 client/server SHA-256이 일치하고 `response_finished` delivery가 기록됐다.
+  암호 HWP5가 만드는 큰 `Contents/section0.xml`도 XML 전체를 memory로 읽지 않는 validator로 확인한다.
 
 서버 URL/IP, 인증 토큰, `.env.local` 내용은 Git, issue, PR, 공개 문서, 로그에 기록하지 않는다.
 인증된 collaborator만 비공개 채널로 공유받고, 필요하면 `@jangster77`에게 요청한다.
@@ -33,7 +39,7 @@ last_verified: 2026-07-28
 rhwp에는 최신 client artifact 하나만 유지한다.
 
 ```text
-tools/hwp-convert-mcp-client-20260728-215936.tar.gz
+tools/hwp-convert-mcp-client-20260731-230819.tar.gz
 ```
 
 이전 client archive는 사용하거나 보관하지 않는다. 작업 PC에서는 새 archive만 유지한다.
@@ -44,10 +50,10 @@ MCP client tarball은 rhwp 저장소의 `tools/` 아래에 둔다. 서버 URL/to
 사용자 PC의 로컬 client 디렉터리에 둔다.
 
 ```text
-/Users/me/rhwp/
-  tools/hwp-convert-mcp-client-20260728-215936.tar.gz
+$HOME/rhwp/
+  tools/hwp-convert-mcp-client-20260731-230819.tar.gz
 
-/Users/me/Devel/hwp-convert/
+$HOME/Devel/hwp-convert/
   .env.local
 ```
 
@@ -69,7 +75,7 @@ HWP2020_MCP_AUTH_TOKEN=<관리자가_제공한_토큰>
 
 ```bash
 /opt/homebrew/bin/npx -y \
-  --package=file:/Users/me/rhwp/tools/hwp-convert-mcp-client-20260728-215936.tar.gz \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz" \
   -- \
   hwp2020-mcp-convert --help
 ```
@@ -78,13 +84,13 @@ PDF 변환 예:
 
 ```bash
 /opt/homebrew/bin/npx -y \
-  --package=file:/Users/me/rhwp/tools/hwp-convert-mcp-client-20260728-215936.tar.gz \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz" \
   -- \
   hwp2020-mcp-convert \
-  --env-file /Users/me/Devel/hwp-convert/.env.local \
-  --input /Users/me/rhwp/samples/example.hwp \
+  --env-file "$HOME/Devel/hwp-convert/.env.local" \
+  --input "$HOME/rhwp/samples/example.hwp" \
   --target pdf \
-  --output-dir /Users/me/rhwp/pdf \
+  --output-dir "$HOME/rhwp/pdf" \
   --output-filename example-2020.pdf \
   --paper-size a4 \
   --orientation landscape \
@@ -102,20 +108,58 @@ request의 `password`로 전달하며, 대화형 prompt를 열지 않는다.
 ```bash
 printf '%s\n' "$HWP_DOCUMENT_PASSWORD" | \
   /opt/homebrew/bin/npx -y \
-  --package=file:/Users/me/rhwp/tools/hwp-convert-mcp-client-20260728-215936.tar.gz \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz" \
   -- \
   hwp2020-mcp-convert \
-  --env-file /Users/me/Devel/hwp-convert/.env.local \
-  --input /Users/me/rhwp/samples/locked.hwpx \
+  --env-file "$HOME/Devel/hwp-convert/.env.local" \
+  --input "$HOME/rhwp/samples/locked.hwpx" \
   --target pdf \
-  --output-dir /Users/me/rhwp/pdf \
+  --output-dir "$HOME/rhwp/pdf" \
   --output-filename locked-2020.pdf \
   --timeout-seconds 900 \
   --password-stdin
 ```
 
 `HWP_DOCUMENT_PASSWORD`는 현재 shell에서만 설정하고 shell history, Git, `.env.local`에는 저장하지 않는다.
-암호 처리 중 생성되는 server-side HWPX intermediate와 PDF는 response 생성 후 즉시 삭제된다.
+동기 변환의 암호 처리 중 생성되는 server-side HWPX intermediate와 PDF는 response delivery 완료 후 삭제된다.
+
+### 긴 문서 비동기 CLI 변환
+
+동기 `convert`는 result response가 끝날 때까지 기다린다. 긴 문서는 먼저 `start`로 `job_id`를 받고,
+`status`를 polling한 뒤 `download`로 변환본을 저장한다. `status`의 `progress_percent`는 한컴이 쪽별 진행률을
+제공하지 않아 `null`일 수 있으며, `phase`, `elapsed_ms`, `output_bytes`, `delivery`를 기준으로 확인한다.
+
+```bash
+# 1. upload와 job 시작
+/opt/homebrew/bin/npx -y \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz" \
+  -- \
+  hwp2020-mcp-convert start \
+  --env-file "$HOME/Devel/hwp-convert/.env.local" \
+  --input "$HOME/rhwp/samples/large-manual.hwpx" \
+  --target pdf \
+  --timeout-seconds 1800
+
+# 2. succeeded 또는 failed가 될 때까지 상태 확인
+/opt/homebrew/bin/npx -y \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz" \
+  -- \
+  hwp2020-mcp-convert status \
+  --env-file "$HOME/Devel/hwp-convert/.env.local" \
+  --job-id <start가_반환한_UUID>
+
+# 3. SHA-256 검증 후 client local directory에 저장
+/opt/homebrew/bin/npx -y \
+  --package=file:"$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz" \
+  -- \
+  hwp2020-mcp-convert download \
+  --env-file "$HOME/Devel/hwp-convert/.env.local" \
+  --job-id <start가_반환한_UUID> \
+  --output-dir "$HOME/rhwp/pdf"
+```
+
+암호 문서도 `start`에 `--password-stdin`을 붙여 같은 흐름으로 처리할 수 있다. `download`가 성공해 client
+filesystem 저장과 SHA-256을 확인한 뒤에는 server job directory가 남지 않는다.
 
 ## PDF 용지와 방향
 
@@ -160,11 +204,11 @@ Apple Silicon Homebrew 환경에서는 보통 `/opt/homebrew/bin/npx`다. 워크
       "command": "/opt/homebrew/bin/npx",
       "args": [
         "-y",
-        "--package=file:/Users/me/rhwp/tools/hwp-convert-mcp-client-20260728-215936.tar.gz",
+        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz",
         "--",
         "hwp2020-mcp-bridge"
       ],
-      "envFile": "/Users/me/Devel/hwp-convert/.env.local",
+      "envFile": "${userHome}/Devel/hwp-convert/.env.local",
       "env": {
         "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
       }
@@ -187,17 +231,17 @@ MCP 접근이 막혀 있으면 VS Code 사용자 설정에 다음을 추가한�
 ## VS Code 변환 요청 예
 
 ```text
-hwp2020Convert를 사용해서 /Users/me/rhwp/samples/example.hwp 파일을 A3 세로 PDF로 변환하고
-/Users/me/rhwp/pdf 에 example-a3-2020.pdf 이름으로 저장해줘.
+hwp2020Convert를 사용해서 <사용자_홈>/rhwp/samples/example.hwp 파일을 A3 세로 PDF로 변환하고
+<사용자_홈>/rhwp/pdf 에 example-a3-2020.pdf 이름으로 저장해줘.
 ```
 
 직접 tool 인자로 표현하면 다음과 같다.
 
 ```json
 {
-  "input_path": "/Users/me/rhwp/samples/example.hwp",
+  "input_path": "<사용자_홈>/rhwp/samples/example.hwp",
   "target": "pdf",
-  "output_dir": "/Users/me/rhwp/pdf",
+  "output_dir": "<사용자_홈>/rhwp/pdf",
   "output_filename": "example-a3-2020.pdf",
   "timeout_seconds": 900,
   "paper_size": "a3",
@@ -209,9 +253,9 @@ hwp2020Convert를 사용해서 /Users/me/rhwp/samples/example.hwp 파일을 A3 �
 
 ```json
 {
-  "input_path": "/Users/me/rhwp/samples/locked.hwpx",
+  "input_path": "<사용자_홈>/rhwp/samples/locked.hwpx",
   "target": "pdf",
-  "output_dir": "/Users/me/rhwp/pdf",
+  "output_dir": "<사용자_홈>/rhwp/pdf",
   "output_filename": "locked-2020.pdf",
   "password": "<문서_암호>",
   "timeout_seconds": 900
@@ -256,15 +300,15 @@ pdf/task2097/1730000_selection_report-2020.pdf
 - `pdfinfo`의 `Page size`와 `Pages`가 기대값과 일치
 
 ```bash
-pdfinfo /Users/me/rhwp/pdf/example-a3-2020.pdf | rg '^(Pages|Page size):'
-file /Users/me/rhwp/pdf/example-a3-2020.pdf
-shasum -a 256 /Users/me/rhwp/pdf/example-a3-2020.pdf
+pdfinfo "$HOME/rhwp/pdf/example-a3-2020.pdf" | rg '^(Pages|Page size):'
+file "$HOME/rhwp/pdf/example-a3-2020.pdf"
+shasum -a 256 "$HOME/rhwp/pdf/example-a3-2020.pdf"
 ```
 
 ## 문제 해결
 
-- client archive가 `tools/hwp-convert-mcp-client-20260728-215936.tar.gz` 하나만 있는지 확인한다.
-- `--package=file:/.../tools/hwp-convert-mcp-client-20260728-215936.tar.gz`처럼 `file:` 스킴과
+- client archive가 `tools/hwp-convert-mcp-client-20260731-230819.tar.gz` 하나만 있는지 확인한다.
+- `--package=file:$HOME/rhwp/tools/hwp-convert-mcp-client-20260731-230819.tar.gz`처럼 `file:` 스킴과
   절대경로를 사용한다.
 - `/opt/homebrew/bin/npx`가 실제 `npx` 경로와 다르면 `mcp.json`의 `command`를 `which npx` 결과로
   바꾼다.
@@ -275,9 +319,7 @@ shasum -a 256 /Users/me/rhwp/pdf/example-a3-2020.pdf
   `HWP2020_MCP_SERVER_URL`을 추가하거나 `--server-url`을 직접 지정한다.
 - `--input`은 client 로컬 파일이어야 하고, `--output-dir` 상위 경로에는 쓰기 권한이 있어야 한다.
 - 큰 문서는 `--timeout-seconds`를 900~1800초로 늘린다.
-- 복잡한 문서(그림 대량·중첩 표)의 PDF 변환은 `--timeout-seconds` 지정과 무관하게 약 13~15분에서
-  MCP `-32001`(Request timed out)이 날 수 있다. 2026-07-30 실측: 384쪽·9MB 편람은 1500초 지정에도
-  실패, 27쪽 KTX.hwp는 7.6초 성공 — 병목은 쪽수가 아니라 콘텐츠 복잡도다. **개방 여부 판정만
-  필요하면 `--target hwp`**(전량 인쇄 생략, 384쪽도 수 분 내)를 쓰고, PDF 정답지가 필요한 복잡
-  문서는 `extract-pages`로 조각낸 뒤 변환한다.
+- 복잡한 문서(그림 대량·중첩 표)의 PDF 변환에는 `--timeout-seconds 900` 또는 `1800`을 지정하고,
+  동기 요청 대신 `start`/`status`/`download` 흐름으로 처리한다. 한컴은 신뢰할 수 있는 쪽별 진행률을
+  제공하지 않으므로 `status.phase`, `elapsed_ms`, `output_bytes`와 최종 validation을 확인한다.
 - VS Code의 `MCP: Reset Cached Tools` 명령이 없으면 `Developer: Reload Window` 또는 재시작을 사용한다.
