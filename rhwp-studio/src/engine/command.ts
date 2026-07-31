@@ -1890,9 +1890,23 @@ export class SnapshotCommand implements EditCommand {
         this.cursorAfter = result;
       }
       this.afterId = wasm.saveSnapshot();
-    } catch (e) {
-      this.discard(wasm); // before/after id 를 null-safe 로 해제
-      throw e;
+    } catch (operationError) {
+      // [#3350] 최초 execute 가 실패하면 명령 전체를 원자적으로 되돌린다. 이 커맨드는
+      // history 에 push 되기 전이므로 before 스냅샷을 가진 SnapshotCommand만 rollback을
+      // 수행할 수 있다. after-save 실패도 execute 실패이므로 같은 계약을 따른다.
+      try {
+        if (this.beforeId !== null) {
+          wasm.restoreSnapshot(this.beforeId);
+        }
+      } catch (rollbackError) {
+        this.discard(wasm);
+        throw new AggregateError(
+          [operationError, rollbackError],
+          `${this.type} 실행 실패 후 rollback도 실패했습니다`,
+        );
+      }
+      this.discard(wasm);
+      throw operationError;
     }
 
     // operation 참조 해제 (클로저에 캡처된 리소스 해제)
