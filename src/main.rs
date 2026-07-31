@@ -4339,12 +4339,25 @@ fn dump_extents(args: &[String]) -> i32 {
             if is_outside {
                 outside.push((b.y, bottom, kind, idx.clone()));
             }
-            // 빈 구간 계산에는 실제 콘텐츠만 쓴다 — 컨테이너(Body/Column)는 쪽 전체를
-            // 덮어 모든 구간을 가려버린다.
-            if matches!(
-                n.node_type,
-                RenderNodeType::TextLine(_) | RenderNodeType::Table(_)
-            ) {
+            // 빈 구간 계산에는 **잎 콘텐츠**만 쓴다.
+            //
+            // 컨테이너는 자기 안의 공백을 통째로 가린다. Body·Column 뿐 아니라 **표도**
+            // 그렇다 — 본문 전체를 담은 1×1 표는 쪽 전체를 덮어 내부 201px 공백을
+            // "구간 없음" 으로 만들었다(#3637 조사에서 실제로 겪은 오판이다).
+            //
+            // 그래서 TextLine 과, **자손에 TextLine 이 없는** 표(= 빈 표)만 센다.
+            let has_text_descendant = {
+                fn any_text(n: &RenderNode) -> bool {
+                    if matches!(n.node_type, RenderNodeType::TextLine(_)) {
+                        return true;
+                    }
+                    n.children.iter().any(any_text)
+                }
+                n.children.iter().any(any_text)
+            };
+            if matches!(n.node_type, RenderNodeType::TextLine(_))
+                || (matches!(n.node_type, RenderNodeType::Table(_)) && !has_text_descendant)
+            {
                 spans.push((b.y, bottom, kind, idx.clone()));
             }
             if show_gaps || (only_outside && !is_outside) {
