@@ -568,14 +568,9 @@ impl SkiaTextReplay<'_> {
                             // 그리면 다음 글자와 겹친다. web_canvas 와 동일하게
                             // 0.5× 수평 축소로 반각 공간에 배치 (한글은 자체
                             // 내장 협폭 글리프로 렌더 — 오라클 PDF Type3 실측).
-                            let needs_halfwidth_scale = cluster
-                                .chars()
-                                .next()
-                                .is_some_and(|ch| {
-                                    matches!(ch, '\u{2018}'..='\u{2027}')
-                                        || is_halfwidth_cjk_quote(ch)
-                                })
-                                && !has_ratio;
+                            let needs_halfwidth_scale = cluster.chars().next().is_some_and(|ch| {
+                                matches!(ch, '\u{2018}'..='\u{2027}') || is_halfwidth_cjk_quote(ch)
+                            }) && !has_ratio;
                             if needs_halfwidth_scale {
                                 canvas.save();
                                 canvas.translate((char_x, char_y));
