@@ -446,10 +446,38 @@ test('PageRenderer prefers the narrow flow-image query and keeps the full-tree f
   assert.match(source, /this\.wasm\.getPageLayerTree\(pageIdx\)/);
   assert.match(source, /collectFlowImagePaintOps\(/);
   assert.match(source, /private flowImageUrls = new FlowImageUrlCache\(\)/);
-  // 캐시에 문서 신원을 넘긴다 — 키는 문서 안에서만 신원이라 항목이 스스로 어느 문서 것인지
-  // 알아야 한다(#3315 P1).
-  assert.match(source, /digest: this\.wasm\.documentDigest/);
-  assert.match(source, /generation: this\.wasm\.documentGeneration/);
+});
+
+// [#3315 P1] 그림 키는 문서 안에서만 신원이므로(문서마다 `bin_data_id`·epoch 가 다시 시작)
+// 문서가 갈리는 경계에서 캐시를 넘겨야 한다. 그 경계는 캐시가 어느 문서의 것인지 정하는 자리다.
+test('PageRenderer hands the flow-image URL cache the document identity at the load boundary', () => {
+  const source = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
+  const beginStart = source.indexOf('  beginDocument(): void {');
+  assert.ok(beginStart >= 0, 'beginDocument 이 있어야 한다');
+  const beginBody = source.slice(
+    beginStart,
+    beginStart + source.slice(beginStart).indexOf('\n  }'),
+  );
+  assert.match(beginBody, /this\.flowImageUrls\.beginDocument\(/);
+  assert.match(beginBody, /digest: this\.wasm\.documentDigest/);
+  assert.match(beginBody, /generation: this\.wasm\.documentGeneration/);
+});
+
+// [#3315] 회수를 조회 시점에 두면 새 문서가 flow 그림을 한 장도 조회하지 않을 때 옛 문서의
+// object URL 이 renderer 수명 내내 남는다. 문서 (재)로드 경계가 캐시에 알려 줘야 한다.
+test('CanvasView notifies the renderer of the document boundary', () => {
+  const source = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
+  const prepareStart = source.indexOf('  prepareDocumentLoad(): void {');
+  assert.ok(prepareStart >= 0, 'prepareDocumentLoad 이 있어야 한다');
+  const prepareBody = source.slice(
+    prepareStart,
+    prepareStart + source.slice(prepareStart).indexOf('\n  }'),
+  );
+  assert.match(
+    prepareBody,
+    /this\.pageRenderer\.beginDocument\(\)/,
+    '문서 교체 경계가 renderer 의 문서 범위 자원을 넘기지 않으면 옛 문서 URL 이 남는다',
+  );
 });
 
 // [#3315 P1] object URL 캐시를 편집 경로에서 비우면 캐시가 없는 것과 같아진다.
@@ -458,7 +486,7 @@ test('PageRenderer prefers the narrow flow-image query and keeps the full-tree f
 test('PageRenderer keeps the flow-image URL cache across edits and releases only on dispose', () => {
   const source = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
   const releaseSites = source.match(/this\.flowImageUrls\.releaseAll\(\)/g) ?? [];
-  assert.equal(releaseSites.length, 1, 'releaseAll 은 dispose 한 곳에서만');
+  assert.equal(releaseSites.length, 1, 'releaseAll 은 dispose 한 곳에서만 — 문서 경계는 beginDocument');
 
   const disposeBody = source.slice(source.indexOf('  dispose(): void {'));
   assert.match(

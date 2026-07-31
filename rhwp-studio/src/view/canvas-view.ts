@@ -170,6 +170,9 @@ export class CanvasView {
     this.cancelAutoRendererReselection();
     this.rendererFallbackScheduled = false;
     this.rendererSession.beginDocument(this.wasm.documentDigest);
+    // [#3315] 문서 범위 object URL 도 같은 경계에서 넘긴다 — 새 문서가 flow 그림을 조회하지
+    // 않으면 옛 문서의 URL 을 거둘 기회가 다시 오지 않는다.
+    this.pageRenderer.beginDocument();
     this.activeRendererDecisionKey = null;
     this.reset();
   }
