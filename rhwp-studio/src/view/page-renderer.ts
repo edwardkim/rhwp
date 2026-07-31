@@ -12,9 +12,11 @@ import {
 import { collectVectorRawSvgDataUrls } from './raw-svg-prefetch';
 import {
   collectFlowImagePaintOps,
+  flowImageOpsFromNarrowQuery,
   visibleFlowImageBbox,
   type FlowImagePaintOp,
 } from './flow-image-clip';
+import { FlowImageUrlCache } from './flow-image-url-cache';
 import type { RenderBackend } from './render-backend';
 
 interface LayerPlaneSummary {
@@ -78,6 +80,13 @@ export class PageRenderer {
    * 비우기에 기대지 않고 항목 자체가 어느 문서의 것인지 말하게 한다.
    */
   private prefetchedImageSignatures = new Map<number, PrefetchSignature>();
+  /**
+   * DOM flow 그림의 신원 키별 object URL (Task #3315).
+   *
+   * 키가 내용에서 유도되므로 스스로 무효화된다 — 편집 때 비우지 않는다. 문서를 갈아끼울 때만
+   * 회수한다(`invalidateDocumentRevision`·`dispose`).
+   */
+  private flowImageUrls = new FlowImageUrlCache();
   private prefetchRequestTokens = new Map<number, number>();
   private nextPrefetchRequestToken = 0;
   private flowSplitSupported: boolean | null = null;
@@ -114,6 +123,8 @@ export class PageRenderer {
     this.cancelAll();
     this.releaseAllPageDiagnostics();
     this.layerSummaryCache.clear();
+    // 문서가 갈리면 옛 신원 키는 다시 조회되지 않는다 — object URL 을 여기서 거둔다(#3315).
+    this.flowImageUrls.releaseAll();
   }
 
   /** 페이지를 Canvas에 렌더링한다 (renderScale = zoom × DPR) */
@@ -480,7 +491,8 @@ export class PageRenderer {
 
       const element = new Image();
       element.alt = '';
-      element.src = `data:${image.mime};base64,${image.base64}`;
+      // data URL(전체 트리 경로) 또는 신원 키별 object URL(좁은 질의 경로) — #3315.
+      element.src = image.src;
       element.style.position = 'absolute';
       element.style.pointerEvents = 'none';
       // 그림 효과(회색조/흑백/밝기/명암) — WASM canvas 경로(render_image)와 달리
@@ -651,7 +663,28 @@ export class PageRenderer {
     );
   }
 
+  /**
+   * 본문 그림의 DOM 배치 정보.
+   *
+   * [#3315] 좁은 질의를 먼저 쓴다. 종전에는 여기서 전체 레이어 트리 JSON 을 받았는데, 그림
+   * 1장이 4.77MB 면 그 JSON 이 6.6MB 라 편집마다 경계 복사와 `JSON.parse` 로 20 ms 가 나갔다.
+   * 좁은 질의는 같은 문서에서 309 bytes 다.
+   *
+   * 캐시로는 풀 수 없다 — 본문이 흐르면 그림이 그대로여도 bbox 가 움직인다. 그래서 질의를
+   * 좁히고, **바이트만** 신원 키별 object URL 로 캐시한다.
+   *
+   * 좁은 질의를 못 쓰는 경우(구형 WASM·합성 그림이 섞인 페이지·낡은 키)에는 종전 경로로
+   * 되돌아간다. 조용히 그림을 빠뜨리는 것보다 느린 게 낫다.
+   */
   private getFlowImagePaintOps(pageIdx: number): FlowImagePaintOp[] {
+    const narrowJson = this.wasm.getPageFlowImageOps(pageIdx);
+    if (narrowJson !== null) {
+      const images = flowImageOpsFromNarrowQuery(narrowJson, (key, mime) =>
+        this.flowImageUrls.urlFor(key, mime, (k) => this.wasm.getSourceImageBytes(k)),
+      );
+      if (images !== null) return images;
+    }
+
     let json: string;
     try {
       json = this.wasm.getPageLayerTree(pageIdx);
@@ -1130,6 +1163,7 @@ export class PageRenderer {
     this.prefetchRequestTokens.clear();
     this.layerSummaryCache.clear();
     this.canvaskitDiagnosticsByPage.clear();
+    this.flowImageUrls.releaseAll();
     this.canvaskitRenderer = null;
   }
 }

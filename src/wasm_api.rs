@@ -181,11 +181,16 @@ fn get_page_layer_tree_with_profile_impl(
     document: &HwpDocument,
     page_num: u32,
     profile: &str,
+    omit_image_bytes: bool,
 ) -> Result<String, JsValue> {
     let profile = crate::paint::RenderProfile::parse(profile)
         .ok_or_else(|| JsValue::from_str(&format!("unsupported render profile: {profile}")))?;
     document
-        .get_page_layer_tree_with_profile_native(page_num, profile)
+        .get_page_layer_tree_with_options_native(
+            page_num,
+            profile,
+            crate::paint::LayerJsonOptions { omit_image_bytes },
+        )
         .map_err(|error| error.into())
 }
 
@@ -713,19 +718,26 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 페이지 레이어 트리를 profile 별로 반환한다.
+    ///
+    /// [Task #3315] `omit_image_bytes` 를 `true` 로 주면 그림 base64 를 싣지 않고
+    /// `sourceImageKey` 만 남긴다 — 바이트는 `getSourceImageBytes(key)` 로 따로 받는다.
+    /// 인자를 생략하면(`undefined`) 종전과 똑같은 JSON 이므로 기존 호출부는 영향이 없다.
     #[wasm_bindgen(js_name = getPageLayerTreeWithProfile)]
     pub fn get_page_layer_tree_with_profile(
         &self,
         page_num: u32,
         profile: &str,
+        omit_image_bytes: Option<bool>,
     ) -> Result<String, JsValue> {
+        let omit_image_bytes = omit_image_bytes.unwrap_or(false);
         #[cfg(feature = "subsecond-dev")]
         {
             let mut hot = subsecond::HotFn::current(get_page_layer_tree_with_profile_impl);
-            return hot.call((self, page_num, profile));
+            return hot.call((self, page_num, profile, omit_image_bytes));
         }
         #[cfg(not(feature = "subsecond-dev"))]
-        get_page_layer_tree_with_profile_impl(self, page_num, profile)
+        get_page_layer_tree_with_profile_impl(self, page_num, profile, omit_image_bytes)
     }
 
     #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
@@ -798,6 +810,34 @@ impl HwpDocument {
     pub fn get_page_source_image_keys(&self, page_num: u32) -> Result<String, JsValue> {
         self.get_page_source_image_keys_native(page_num)
             .map_err(|e| e.into())
+    }
+
+    /// 본문(flow) 그림의 배치 정보만 작은 JSON 으로 반환한다 (Task #3315).
+    ///
+    /// 전체 레이어 트리를 받아 flow 그림을 걸러내던 studio 경로를 대체한다. 바이트는 빠져
+    /// 있고 `sourceImageKey` 로 `getSourceImageBytes` 를 부르면 된다.
+    #[wasm_bindgen(js_name = getPageFlowImageOps)]
+    pub fn get_page_flow_image_ops(&self, page_num: u32) -> Result<String, JsValue> {
+        self.get_page_flow_image_ops_native(page_num)
+            .map_err(|e| e.into())
+    }
+
+    /// 그림 신원 키로 바이트를 Uint8Array 로 반환한다 (Task #3315).
+    ///
+    /// `getPageLayerTreeWithProfile(page, profile, true)` 로 base64 를 생략했을 때 바이트를
+    /// 받는 경로다. mime 은 레이어 트리의 그림 op 이 계속 싣고 있으므로 여기서 되풀이하지
+    /// 않는다.
+    ///
+    /// 키를 풀 수 없으면 던진다 — 세대가 바뀐 낡은 키이거나 없는 그림이다. 호출부는 잡아서
+    /// 레이어 트리를 다시 받는 쪽으로 되돌아가면 된다.
+    #[wasm_bindgen(js_name = getSourceImageBytes)]
+    pub fn get_source_image_bytes(&self, key: &str) -> Result<Vec<u8>, JsValue> {
+        match self.get_source_image_bytes_native(key) {
+            Some((_mime, bytes)) => Ok(bytes),
+            None => Err(JsValue::from_str(&format!(
+                "unresolvable source image key: {key}"
+            ))),
+        }
     }
 
     /// 페이지 정보를 JSON 문자열로 반환한다.

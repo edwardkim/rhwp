@@ -428,9 +428,27 @@ test('PageRenderer splits flow static images before the first Canvas2D flow rend
   assert.doesNotMatch(source, /'flow-static',\s*layers,\s*allowReuse,\s*false/);
   assert.match(source, /createOrReuseFlowImageLayer\(/);
   assert.match(source, /usesDomFlowImages \? overlays\.rawSvgCount/);
-  assert.match(source, /element\.src = `data:\$\{image\.mime\};base64,\$\{image\.base64\}`/);
+  // [#3315] DOM <img> 는 생산자가 정한 src 를 그대로 쓴다 — 전체 트리 경로의 data URL 이든
+  // 좁은 질의 경로의 신원 키별 object URL 이든 조립부는 분기하지 않는다.
+  assert.match(source, /element\.src = image\.src/);
   assert.match(source, /HWP_UNITS_PER_CSS_PIXEL = 75/);
   assert.match(source, /applyFlowImageCrop\(element, image, displayScale\)/);
+});
+
+// [#3315] 편집마다 전체 레이어 트리(그림 1장에 6.6MB)를 받던 자리를 좁은 질의가 대체한다.
+// 못 쓰는 경우에는 반드시 종전 경로로 되돌아가야 한다 — 조용히 그림을 빠뜨리면 안 된다.
+test('PageRenderer prefers the narrow flow-image query and keeps the full-tree fallback', () => {
+  const source = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
+  assert.match(source, /this\.wasm\.getPageFlowImageOps\(pageIdx\)/);
+  assert.match(source, /flowImageOpsFromNarrowQuery\(/);
+  assert.match(source, /this\.wasm\.getSourceImageBytes\(k\)/);
+  // fallback 경로가 남아 있어야 한다.
+  assert.match(source, /this\.wasm\.getPageLayerTree\(pageIdx\)/);
+  assert.match(source, /collectFlowImagePaintOps\(/);
+  // object URL 은 문서를 갈아끼울 때와 정리할 때 회수한다.
+  assert.match(source, /private flowImageUrls = new FlowImageUrlCache\(\)/);
+  const releaseSites = source.match(/this\.flowImageUrls\.releaseAll\(\)/g) ?? [];
+  assert.equal(releaseSites.length, 2, 'invalidateDocumentRevision 과 dispose 두 곳에서 회수');
 });
 
 test('PageRenderer deferred image rerender preserves static layer reuse policy', () => {

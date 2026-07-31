@@ -86,6 +86,24 @@ test('[결함3] execute 는 operation·after-save 어느 throw 에도 스냅샷�
     'after-save 가 catch 밖(try 이후)에 남아있음 — 누수 경로');
 });
 
+test('[#3350] 최초 execute 실패는 before 스냅샷 복원 후 ID를 해제한다', () => {
+  const block = methodBlock(command, 'execute(wasm: WasmBridge): DocumentPosition {');
+  const catchStart = block.search(/\}\s*catch \(operationError\)/);
+  assert.notEqual(catchStart, -1, '최초 execute 실패 catch가 있어야 함');
+  const catchBody = block.slice(catchStart);
+
+  const idxRestore = catchBody.indexOf('wasm.restoreSnapshot(this.beforeId)');
+  const idxDiscard = catchBody.indexOf('this.discard(wasm)');
+  assert.ok(idxRestore !== -1 && idxDiscard !== -1 && idxRestore < idxDiscard,
+    '부분 변경을 before 스냅샷으로 rollback한 뒤 ID를 해제해야 함');
+  assert.match(catchBody, /catch \(rollbackError\)/,
+    'rollback 실패도 별도로 포착해야 함');
+  assert.match(catchBody, /new AggregateError\(\s*\[operationError, rollbackError\]/,
+    '원래 operation 오류와 rollback 오류를 함께 보존해야 함');
+  assert.match(catchBody, /throw operationError/,
+    'rollback 성공 시 원래 operation 오류를 그대로 전파해야 함');
+});
+
 test('[결함1] 스냅샷 예산은 WASM 상한에서 순간 +2 여유를 뺀 값이다', () => {
   // 새 SnapshotCommand.execute 는 before/after 2개를 예산 강제 이전에 저장하므로,
   // 예산 == MAX 면 그 순간 store 가 MAX 초과 → WASM 무통보 축출 → orphan.

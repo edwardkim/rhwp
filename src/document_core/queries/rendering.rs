@@ -1373,11 +1373,28 @@ impl DocumentCore {
         page_num: u32,
         profile: RenderProfile,
     ) -> Result<String, HwpError> {
+        self.get_page_layer_tree_with_options_native(
+            page_num,
+            profile,
+            crate::paint::LayerJsonOptions::default(),
+        )
+    }
+
+    /// [Task #3315] `options` 로 그림 base64 생략을 켤 수 있는 레이어 트리 JSON.
+    ///
+    /// 생략본과 종전 JSON 은 **서로 다른 캐시 변형**이다 — 같은 슬롯을 쓰면 한쪽 소비자가
+    /// 다른 쪽 모양을 받는다. 그래서 아래 지문에 생략 여부를 함께 접는다.
+    pub fn get_page_layer_tree_with_options_native(
+        &self,
+        page_num: u32,
+        profile: RenderProfile,
+        options: crate::paint::LayerJsonOptions,
+    ) -> Result<String, HwpError> {
         // [Task #2222] 직렬화 JSON 캐시 — 트리 캐시(#2227 with_page_tree_cached)가
         // 있어도 1MB 급 재직렬화가 renderPage 마다 렌더 비용과 맞먹게 반복된다
         // (주보 p2 실측: 15.2ms/회, JSON 1.05MB). 출력옵션 지문이 다르면 미스.
         let idx = page_num as usize;
-        let fp = self.layer_output_options_fingerprint(profile);
+        let fp = self.layer_output_options_fingerprint(profile, options);
         if let Some(variants) = self.layer_tree_json_cache.borrow().get(idx) {
             if let Some((_, json)) = variants.iter().find(|(f, _)| *f == fp) {
                 return Ok(json.clone());
@@ -1385,7 +1402,7 @@ impl DocumentCore {
         }
         let json = self
             .build_page_layer_tree_with_profile(page_num, profile)?
-            .to_json();
+            .to_json_with_options(options);
         {
             // 토글(투명선/잘림보기 등) 왕복이 매번 미스가 되지 않도록 페이지당
             // 옵션 변형 4개까지 보관 (초과 시 가장 오래된 변형 제거).
@@ -1404,7 +1421,12 @@ impl DocumentCore {
     }
 
     /// [Task #2222] 레이어 출력옵션 5종과 profile의 비트 지문 — JSON 캐시 키.
-    fn layer_output_options_fingerprint(&self, profile: RenderProfile) -> u8 {
+    /// [Task #3315] 그림 바이트 생략 여부를 최상위 비트에 함께 접는다.
+    fn layer_output_options_fingerprint(
+        &self,
+        profile: RenderProfile,
+        options: crate::paint::LayerJsonOptions,
+    ) -> u8 {
         let profile_bits = match profile {
             RenderProfile::FastPreview => 0,
             RenderProfile::Screen => 1,
@@ -1417,6 +1439,7 @@ impl DocumentCore {
             | (u8::from(self.clip_enabled) << 3)
             | (u8::from(self.debug_overlay) << 4)
             | (profile_bits << 5)
+            | (u8::from(options.omit_image_bytes) << 7)
     }
 
     /// 페이지가 그리는 그림들의 신원 키만 작은 JSON 으로 반환한다 (Task #3315).
@@ -1470,6 +1493,248 @@ impl DocumentCore {
         }
         buf.push_str("]}");
         Ok(buf)
+    }
+
+    /// 그림 신원 키로 그 op 이 내보내는 바이트와 mime 을 되돌려준다 (Task #3315).
+    ///
+    /// `get_page_layer_tree_with_options_native` 가 base64 를 생략했을 때 소비자가 바이트를
+    /// 받는 경로다. 반환값은 인라인 base64 가 담고 있던 것과 **같은 바이트여야** 하므로 변환은
+    /// JSON 경로와 같은 `emitted_image_bytes` 를 쓴다 — 사본을 두면 두 경로가 갈라진다.
+    ///
+    /// 키의 epoch 가 현재 문서 세대와 다르면 `None` 이다. 스냅샷 복원처럼 id→바이트 대응이
+    /// 깨지는 연산 뒤에 옛 키로 물어본 경우이므로, 낡은 바이트를 주는 대신 소비자가 트리를
+    /// 다시 받게 한다.
+    ///
+    /// 세션에 삽입한 그림은 `load_shared()` 가 같은 할당을 돌려주지만(#3411), 파일에서 읽은
+    /// `Loaded` 바이트는 여기서 한 벌 복사된다. 이 조회는 페이지의 그림이 바뀔 때만 불리므로
+    /// 키 입력마다 도는 경로가 아니다.
+    pub fn get_source_image_bytes_native(&self, key: &str) -> Option<(&'static str, Vec<u8>)> {
+        let (epoch, bin_data_id, variant) = crate::paint::parse_source_image_key(key)?;
+        if epoch != self.bin_data_epoch {
+            return None;
+        }
+        let content =
+            crate::renderer::layout::find_bin_data(&self.document.bin_data_content, bin_data_id)?;
+        let data = content.data.load_shared();
+        let (mime, bytes) =
+            crate::renderer::image_resolver::emitted_image_bytes(&data, variant.bakes_watermark());
+        Some((mime, bytes.into_owned()))
+    }
+
+    /// 본문(flow) 그림의 **배치 정보만** 작은 JSON 으로 반환한다 (Task #3315).
+    ///
+    /// studio 는 flow 그림을 DOM `<img>` 로 내보내려고 편집마다 전체 레이어 트리 JSON 을
+    /// 받아 왔다(`getFlowImagePaintOps`). 그림 1장이 4.77MB 면 그 JSON 이 6.6MB 라, 경계
+    /// 복사와 `JSON.parse` 만으로 키 입력당 20 ms 가 나갔다.
+    ///
+    /// 캐시로는 풀 수 없는 문제다 — 본문이 흐르면 그림 bbox 가 움직이므로 그림이 그대로여도
+    /// 결과가 달라진다. 그래서 캐시가 아니라 **질의를 좁힌다**: 바이트를 빼고 bbox·clip·
+    /// 효과·신원 키만 준다. 바이트는 `get_source_image_bytes_native(key)` 로 그림이 바뀔 때만
+    /// 따로 받는다.
+    ///
+    /// `clip` 은 조상 `ClipRect` 를 교차해 접은 값이다. 소비자가 트리 없이도 같은 잘림을
+    /// 재현할 수 있어야 하므로, 계보를 넘기는 대신 결과만 준다. 교차가 비면 그 그림은 보이지
+    /// 않으므로 목록에서 빠진다.
+    ///
+    /// `sourceImageKey` 를 낼 수 없는 그림(`bin_data_id == 0` 합성 그림)이 하나라도 있으면
+    /// `cacheable:false` 다 — 소비자는 그 페이지에 한해 종전의 전체 트리 경로로 되돌아가야
+    /// 한다. 키가 없으면 바이트를 받을 방법이 없기 때문이다.
+    pub fn get_page_flow_image_ops_native(&self, page_num: u32) -> Result<String, HwpError> {
+        use crate::paint::{
+            paint_op_replay_plane_with_layer, LayerNode, LayerNodeKind, PaintOp, PaintReplayPlane,
+        };
+        use crate::renderer::render_tree::{BoundingBox, RenderLayerInfo};
+
+        fn intersect(first: Option<BoundingBox>, second: BoundingBox) -> Option<BoundingBox> {
+            let Some(first) = first else {
+                return Some(second);
+            };
+            let left = first.x.max(second.x);
+            let top = first.y.max(second.y);
+            let right = (first.x + first.width).min(second.x + second.width);
+            let bottom = (first.y + first.height).min(second.y + second.height);
+            if right <= left || bottom <= top {
+                return None;
+            }
+            Some(BoundingBox {
+                x: left,
+                y: top,
+                width: right - left,
+                height: bottom - top,
+            })
+        }
+
+        fn write_bbox(buf: &mut String, bbox: BoundingBox) {
+            let _ = write!(
+                buf,
+                "{{\"x\":{:.3},\"y\":{:.3},\"width\":{:.3},\"height\":{:.3}}}",
+                bbox.x, bbox.y, bbox.width, bbox.height
+            );
+        }
+
+        struct Collector {
+            images: String,
+            epoch: u32,
+            cacheable: bool,
+        }
+
+        impl Collector {
+            fn visit(
+                &mut self,
+                node: &LayerNode,
+                inherited_layer: Option<RenderLayerInfo>,
+                clip: Option<BoundingBox>,
+            ) {
+                let active_layer = node.layer.or(inherited_layer);
+                match &node.kind {
+                    LayerNodeKind::Group { children, .. } => {
+                        for child in children {
+                            self.visit(child, active_layer, clip);
+                        }
+                    }
+                    LayerNodeKind::ClipRect {
+                        child,
+                        clip: node_clip,
+                        ..
+                    } => {
+                        // 교차가 비면 이 아래는 전부 보이지 않는다 — 내려가지 않는다.
+                        if let Some(next) = intersect(clip, *node_clip) {
+                            self.visit(child, active_layer, Some(next));
+                        }
+                    }
+                    LayerNodeKind::Leaf { ops } => {
+                        for op in ops {
+                            let PaintOp::Image {
+                                bbox,
+                                image,
+                                resolved,
+                            } = op
+                            else {
+                                continue;
+                            };
+                            if paint_op_replay_plane_with_layer(op, active_layer)
+                                != PaintReplayPlane::Flow
+                            {
+                                continue;
+                            }
+                            let Some(data) = image.data.as_deref() else {
+                                continue;
+                            };
+                            // 보이는 영역이 없으면 소비자가 그릴 것도 없다.
+                            let Some(visible) = intersect(clip, *bbox) else {
+                                continue;
+                            };
+                            let key = crate::paint::source_image_key(self.epoch, image);
+                            if key.is_none() {
+                                self.cacheable = false;
+                            }
+                            self.write_image(
+                                *bbox,
+                                visible,
+                                clip,
+                                image,
+                                resolved.as_deref(),
+                                data,
+                                key,
+                            );
+                        }
+                    }
+                }
+            }
+
+            #[allow(clippy::too_many_arguments)]
+            fn write_image(
+                &mut self,
+                bbox: BoundingBox,
+                visible: BoundingBox,
+                clip: Option<BoundingBox>,
+                image: &crate::renderer::render_tree::ImageNode,
+                resolved: Option<&crate::paint::ResolvedImagePayload>,
+                data: &[u8],
+                key: Option<String>,
+            ) {
+                let buf = &mut self.images;
+                if !buf.is_empty() {
+                    buf.push(',');
+                }
+                buf.push_str("{\"bbox\":");
+                write_bbox(buf, bbox);
+                // 잘림이 실제로 그림을 자를 때만 싣는다 — 소비자가 wrapper 를 만들 조건과 같다.
+                if clip.is_some()
+                    && (visible.x != bbox.x
+                        || visible.y != bbox.y
+                        || visible.width != bbox.width
+                        || visible.height != bbox.height)
+                {
+                    buf.push_str(",\"clip\":");
+                    write_bbox(buf, visible);
+                }
+                let mime = crate::renderer::image_resolver::emitted_image_mime(
+                    data,
+                    resolved,
+                    crate::renderer::image_resolver::is_watermark_image(image),
+                );
+                let _ = write!(buf, ",\"mime\":\"{}\"", mime);
+                match key {
+                    Some(key) => {
+                        let _ = write!(
+                            buf,
+                            ",\"sourceImageKey\":\"{}\"",
+                            crate::document_core::helpers::json_escape(&key)
+                        );
+                    }
+                    None => buf.push_str(",\"sourceImageKey\":null"),
+                }
+                if let Some((left, top, right, bottom)) = image.crop {
+                    let _ = write!(
+                        buf,
+                        ",\"crop\":{{\"left\":{},\"top\":{},\"right\":{},\"bottom\":{}}}",
+                        left, top, right, bottom
+                    );
+                }
+                if let Some((width, height)) = image.original_size_hu {
+                    let _ = write!(buf, ",\"originalSizeHu\":[{},{}]", width, height);
+                }
+                // 효과는 값으로 넘긴다 — CSS filter 조립은 studio 의 `composeImageFilter` 가
+                // `web_canvas.rs::compose_image_filter` 와 맞춰 두었으므로 여기서 되풀이하지 않는다.
+                let _ = write!(
+                    buf,
+                    ",\"effect\":\"{}\",\"brightness\":{},\"contrast\":{}",
+                    match image.effect {
+                        crate::model::image::ImageEffect::RealPic => "realPic",
+                        crate::model::image::ImageEffect::GrayScale => "grayScale",
+                        crate::model::image::ImageEffect::BlackWhite => "blackWhite",
+                        crate::model::image::ImageEffect::Pattern8x8 => "pattern8x8",
+                    },
+                    image.brightness,
+                    image.contrast
+                );
+                if matches!(
+                    resolved.map(|payload| payload.kind),
+                    Some(crate::paint::ResolvedImageKind::BakedWatermark)
+                ) {
+                    buf.push_str(",\"bakedWatermark\":true");
+                }
+                let _ = write!(
+                    buf,
+                    ",\"transform\":{{\"rotation\":{:.3},\"horzFlip\":{},\"vertFlip\":{}}}}}",
+                    image.transform.rotation, image.transform.horz_flip, image.transform.vert_flip
+                );
+            }
+        }
+
+        let tree = self.build_page_layer_tree(page_num)?;
+        let mut collector = Collector {
+            images: String::new(),
+            epoch: self.bin_data_epoch,
+            cacheable: true,
+        };
+        collector.visit(&tree.root, None, None);
+
+        Ok(format!(
+            "{{\"cacheable\":{},\"images\":[{}]}}",
+            collector.cacheable, collector.images
+        ))
     }
 
     /// 페이지 overlay 이미지와 replay-plane summary만 작은 JSON으로 반환한다.
