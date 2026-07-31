@@ -42,13 +42,15 @@ static layer 경로를 유지한다.
 | 통합 code head CI | lint·WASM check, frontend package gates, Native Skia, archive, default-feature 8 shards, CodeQL, Canvas visual diff, `Build & Test` 모두 success |
 | Rust 회귀 | 실제 flow-image HWP/HWPX 4개에서 tree와 narrow query의 개수·순서·bbox·clip·effect·transform·mime·key 동등성, key-byte 해석, bbox 이동, no-flow 페이지를 고정 |
 | Studio 회귀 | data URL/object URL mapping, cacheable false, malformed/unresolvable all-or-nothing fallback, object URL release를 고정 |
-| 로컬 WASM | review 전용 target에서 `wasm-pack build --target web --out-dir pkg` exit 0; Studio shell boot 확인 |
+| 실제 브라우저 | headless Chrome Canvas2D에서 cacheable key→bytes, blob URL 그림 3장 decode, 문서 교체 뒤 기존 URL 전부 revoke·cache 0 확인 |
 | 추가 전체 Cargo | source 및 exact integration CI와 중복되므로 작업지시에 따라 실행하지 않음. 성공 근거로 사용하지 않음 |
 
-로컬 in-app Studio에서 fixture file chooser는 자동 제어 surface가 hidden input을 열지 못해 실제 fixture
-load까지 완료하지 못했다. 이를 browser 성공으로 바꾸지 않는다. 이미 source와 exact integration head의
-Canvas visual diff, frontend gates, Rust 실문서 등가성 회귀가 수용 근거이며, 최종 aggregate가 별도 merge
-조건이다.
+실제 Studio 검증은 `3-10월_교육_통합_2022.hwp` p0에서 수행했다. cacheable key의 바이트를 받고 DOM
+blob URL 그림 세 장이 모두 natural size로 decode됨을 확인한 뒤, `field-01.hwp`로 문서를 바꿔 그 URL들이
+전부 revoke되고 cache가 0이 됨을 확인했다. raw SVG가 섞인 `143E433F503322BD33.hwp`는 DOM split을 하지
+않고 기존 static 경로로 fallback했으며, 추가 flow-image HWP/HWPX 표본 세 건은 blob DOM layer를 만들었다.
+이는 source·exact integration head의 Canvas visual diff, frontend gates, Rust 실문서 등가성 회귀를 보완하는
+실제 소비자 경로 검증이다.
 
 ## 권고
 

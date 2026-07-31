@@ -38,6 +38,11 @@ branch이므로 #3653 기능을 중복 적용하지 않았고, 통합 branch에�
 code head는 `52903c91bf132f7f3a977afc9cc265859b024c85`다. source #3653·#3655·#3656·#3660의 full CI와
 #3661 exact code head의 lint/WASM, frontend gates, Native Skia, archive, default-feature 8 shards, CodeQL,
 Canvas visual diff, `Build & Test` aggregate가 모두 성공했다. 현재 상태는 `CLEAN`·`MERGEABLE`이다.
+
+통합 head의 headless Chrome Canvas2D에서는 `3-10월_교육_통합_2022.hwp` p0의 cacheable flow-image key를
+bytes로 해석해 blob URL 그림 3장이 모두 decode됨을 확인했다. `field-01.hwp`로 문서를 교체하면 기존
+DOM URL이 모두 revoke되고 cache가 0이 됐다. raw SVG가 있는 `143E433F503322BD33.hwp`는 기존 static
+경로로 fallback했고, 추가 flow-image 표본 세 건은 blob DOM layer를 만들었다.
 로컬은 전용 target에서 fresh `wasm-pack build`만 exit 0을 확인했고, 전체 Cargo는 exact CI와 중복하지
 않도록 실행하지 않았다.
 
