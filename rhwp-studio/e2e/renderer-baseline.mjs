@@ -60,9 +60,15 @@ const CANVASKIT_PERFORMANCE_BUDGET_KEYS = new Set([
 ]);
 const CANVASKIT_READINESS_EXPECTATION_KEYS = new Set([
   'glyphOutlinePayloadKinds',
+  'minLayerFeatureCounts',
   'minWarmImageCacheHits',
 ]);
 const CANVASKIT_GLYPH_RESOURCE_PAYLOAD_KINDS = new Set(['bitmapGlyph', 'svgGlyph']);
+const CANVASKIT_LAYER_FEATURE_COUNT_KEYS = new Set([
+  'dashedStrokes',
+  'verticalPresentationPunctuation',
+  'verticalTextRuns',
+]);
 const BACKENDS = [
   {
     key: 'canvas2d',
@@ -188,8 +194,21 @@ function canvaskitReadinessExpectationsForSample(sample) {
   if (!Number.isInteger(minWarmImageCacheHits) || minWarmImageCacheHits < 0) {
     throw new Error(`CanvasKit warm image cache expectation for ${sample.id} must be non-negative`);
   }
+  const minLayerFeatureCounts = expectations.minLayerFeatureCounts ?? {};
+  if (!minLayerFeatureCounts
+    || typeof minLayerFeatureCounts !== 'object'
+    || Array.isArray(minLayerFeatureCounts)
+    || Object.keys(minLayerFeatureCounts).some(
+      (key) => !CANVASKIT_LAYER_FEATURE_COUNT_KEYS.has(key),
+    )
+    || Object.values(minLayerFeatureCounts).some(
+      (count) => !Number.isInteger(count) || count <= 0,
+    )) {
+    throw new Error(`CanvasKit layer feature expectations for ${sample.id} are invalid`);
+  }
   return {
     glyphOutlinePayloadKinds: [...new Set(payloadKinds)],
+    minLayerFeatureCounts: { ...minLayerFeatureCounts },
     minWarmImageCacheHits,
   };
 }
@@ -500,6 +519,16 @@ async function readLayerFeatureProbe(page, pageIndex, profile) {
     const tree = window.__wasm?.getPageLayerTreeObject?.(targetPageIndex, targetProfile);
     if (!tree?.root) return null;
     const glyphOutlinePayloadCounts = {};
+    const featureCounts = {
+      dashedStrokes: 0,
+      verticalPresentationPunctuation: 0,
+      verticalTextRuns: 0,
+    };
+    const verticalPresentationCodePoints = new Set([
+      0xfe19, 0xfe31, 0xfe32, 0xfe33, 0xfe34, 0xfe35, 0xfe36, 0xfe37, 0xfe38,
+      0xfe39, 0xfe3a, 0xfe3b, 0xfe3c, 0xfe3d, 0xfe3e, 0xfe3f, 0xfe40, 0xfe41,
+      0xfe42, 0xfe43, 0xfe44,
+    ]);
     const stack = [tree.root];
     while (stack.length > 0) {
       const node = stack.pop();
@@ -509,12 +538,34 @@ async function readLayerFeatureProbe(page, pageIndex, profile) {
         if (node.child) stack.push(node.child);
       } else if (node?.kind === 'leaf') {
         for (const op of node.ops ?? []) {
-          if (op?.type !== 'glyphOutline' || typeof op.payloadKind !== 'string') continue;
-          glyphOutlinePayloadCounts[op.payloadKind] = (glyphOutlinePayloadCounts[op.payloadKind] ?? 0) + 1;
+          if (op?.type === 'glyphOutline' && typeof op.payloadKind === 'string') {
+            glyphOutlinePayloadCounts[op.payloadKind]
+              = (glyphOutlinePayloadCounts[op.payloadKind] ?? 0) + 1;
+          }
+          if (op?.type === 'textRun' && op.isVertical === true) {
+            featureCounts.verticalTextRuns += 1;
+            const replayText = typeof op.displayText === 'string' ? op.displayText : op.text;
+            if (typeof replayText === 'string') {
+              featureCounts.verticalPresentationPunctuation += Array.from(replayText)
+                .filter((character) => verticalPresentationCodePoints.has(
+                  character.codePointAt(0) ?? 0,
+                )).length;
+            }
+          }
+          const dash = op?.type === 'line'
+            ? op.style?.dash
+            : op?.type === 'path'
+              ? op.lineStyle?.dash ?? op.style?.strokeDash
+              : op?.type === 'rectangle' || op?.type === 'ellipse'
+                ? op.style?.strokeDash
+                : undefined;
+          if (typeof dash === 'string' && dash !== 'solid') {
+            featureCounts.dashedStrokes += 1;
+          }
         }
       }
     }
-    return { glyphOutlinePayloadCounts };
+    return { featureCounts, glyphOutlinePayloadCounts };
   }, [pageIndex, layerProfile]);
 }
 
@@ -1473,6 +1524,13 @@ for (const result of results.filter((entry) => entry.readinessGateRequired)) {
     if ((result.warmReplay?.imageCacheHitDelta ?? 0)
       < readinessExpectations.minWarmImageCacheHits) {
       blockers.push('warmImageCacheHitMissing');
+    }
+    for (const [feature, minimum] of Object.entries(
+      readinessExpectations.minLayerFeatureCounts,
+    )) {
+      if ((result.layerFeatureProbe?.featureCounts?.[feature] ?? 0) < minimum) {
+        blockers.push(`layerFeatureMinimumMissing:${feature}`);
+      }
     }
   }
 

@@ -19,6 +19,16 @@ test('CanvasKit font plan groups document aliases that share one bundled face', 
   assert.ok(plan.sources[0].aliases.includes('Noto Sans KR'));
 });
 
+test('CanvasKit font plan follows the existing Hanyang Jung Gothic substitution', () => {
+  const plan = resolveCanvasKitFontPlan(['한양중고딕']);
+
+  assert.deepEqual(plan.unavailableFonts, []);
+  assert.equal(plan.sources.length, 1);
+  assert.match(plan.sources[0].url, /NotoSansKR-Regular\.woff2$/);
+  assert.ok(plan.sources[0].aliases.includes('한양중고딕'));
+  assert.ok(plan.sources[0].aliases.includes('HY중고딕'));
+});
+
 test('CanvasKit font plan fails closed for unavailable surface fonts', () => {
   const offline = resolveCanvasKitFontPlan(
     ['함초롬바탕', 'Times New Roman'],

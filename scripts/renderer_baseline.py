@@ -240,6 +240,7 @@ def load_manifest(
             if readiness_expectations is not None:
                 allowed_expectation_keys = {
                     "glyphOutlinePayloadKinds",
+                    "minLayerFeatureCounts",
                     "minWarmImageCacheHits",
                 }
                 if (
@@ -265,6 +266,25 @@ def load_manifest(
                 ):
                     raise SystemExit(
                         f"readiness sample {sample_id} has invalid warm image cache expectations"
+                    )
+                min_feature_counts = readiness_expectations.get(
+                    "minLayerFeatureCounts", {}
+                )
+                allowed_feature_counts = {
+                    "dashedStrokes",
+                    "verticalPresentationPunctuation",
+                    "verticalTextRuns",
+                }
+                if (
+                    not isinstance(min_feature_counts, dict)
+                    or not set(min_feature_counts).issubset(allowed_feature_counts)
+                    or any(
+                        type(value) is not int or value <= 0
+                        for value in min_feature_counts.values()
+                    )
+                ):
+                    raise SystemExit(
+                        f"readiness sample {sample_id} has invalid layer feature expectations"
                     )
         if filter_text and not (
             filter_text in str(sample_id).lower()
