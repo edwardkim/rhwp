@@ -123,6 +123,7 @@ const VERTICAL_PRESENTATION_BASE_TEXT = new Map<string, string>([
   ['\uFE43', '\u300E'],
   ['\uFE44', '\u300F'],
 ]);
+const COMPLEX_SHAPING_UNICODE_CATEGORY = /[\p{M}\p{Cf}]/u;
 type MutablePath = Path & Pick<PathBuilder, 'arcToRotated' | 'close' | 'cubicTo' | 'lineTo' | 'moveTo'>;
 type LayerColorGraph = NonNullable<NonNullable<LayerGlyphOutlineOp['colorLayers']>['paintGraph']>;
 type LayerColorGraphNode = NonNullable<LayerColorGraph['nodes']>[number];
@@ -174,16 +175,7 @@ function textRequiresComplexShaping(text: string): boolean {
       || (codePoint >= 0xff00 && codePoint <= 0xffef)
       || (codePoint >= 0x1d400 && codePoint <= 0x1d7ff)
       || (codePoint >= 0x20000 && codePoint <= 0x323af);
-    if (!nominalGlyphReplayIsSafe
-      || (codePoint >= 0x0300 && codePoint <= 0x036f)
-      || (codePoint >= 0x1ab0 && codePoint <= 0x1aff)
-      || (codePoint >= 0x1dc0 && codePoint <= 0x1dff)
-      || (codePoint >= 0x200c && codePoint <= 0x200d)
-      || (codePoint >= 0x20d0 && codePoint <= 0x20ff)
-      || (codePoint >= 0xfe00 && codePoint <= 0xfe0f)
-      || (codePoint >= 0xfe20 && codePoint <= 0xfe2f)
-      || (codePoint >= 0x1f1e6 && codePoint <= 0x1faff)
-      || (codePoint >= 0xe0100 && codePoint <= 0xe01ef)) {
+    if (!nominalGlyphReplayIsSafe || COMPLEX_SHAPING_UNICODE_CATEGORY.test(character)) {
       return true;
     }
   }
@@ -202,6 +194,12 @@ function textRunHasPaintEffects(style: NonNullable<LayerTextRunOp['style']>): bo
 
 interface EquationRenderBudget {
   remainingNodes: number;
+}
+
+export interface CanvasKitReplayFeatureCounts {
+  dashedStrokes: number;
+  verticalPresentationPunctuation: number;
+  verticalTextRuns: number;
 }
 
 export interface CanvasKitRenderDiagnostics {
@@ -236,6 +234,7 @@ export interface CanvasKitRenderDiagnostics {
   fontSubstitutionLimit: number;
   unregisteredFontFallbacks: number;
   fontSubstitutions: CanvasKitFontSubstitutionDiagnostic[];
+  replayFeatureCounts: CanvasKitReplayFeatureCounts;
 }
 
 export interface CanvasKitFontSubstitutionDiagnostic {
@@ -317,6 +316,11 @@ export class CanvasKitLayerRenderer {
   private currentResources: LayerResources | undefined;
   private currentShowParagraphMarks = false;
   private currentShowControlCodes = false;
+  private currentReplayFeatureCounts: CanvasKitReplayFeatureCounts = {
+    dashedStrokes: 0,
+    verticalPresentationPunctuation: 0,
+    verticalTextRuns: 0,
+  };
   private selectedTextVariantOps = new WeakSet<LayerPaintOp>();
   private documentGeneration = 0;
   private disposed = false;
@@ -582,6 +586,7 @@ export class CanvasKitLayerRenderer {
     this.unsupportedOps.clear();
     this.currentImageFailures.clear();
     this.currentFontSubstitutions.clear();
+    this.resetReplayFeatureCounts();
     this.lastRenderError = null;
     this.lastRenderCompleted = false;
     let surface: SkSurface | null = null;
@@ -689,6 +694,7 @@ export class CanvasKitLayerRenderer {
     this.imageFailureCacheHits = 0;
     this.currentImageFailures.clear();
     this.currentFontSubstitutions.clear();
+    this.resetReplayFeatureCounts();
     this.renderCount = 0;
     this.lastRenderDurationMs = null;
   }
@@ -749,6 +755,15 @@ export class CanvasKitLayerRenderer {
         (substitution) => substitution.kind === 'unregisteredFallback',
       ).length,
       fontSubstitutions,
+      replayFeatureCounts: { ...this.currentReplayFeatureCounts },
+    };
+  }
+
+  private resetReplayFeatureCounts(): void {
+    this.currentReplayFeatureCounts = {
+      dashedStrokes: 0,
+      verticalPresentationPunctuation: 0,
+      verticalTextRuns: 0,
     };
   }
 
@@ -757,6 +772,7 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.clear();
       this.currentImageFailures.clear();
       this.currentFontSubstitutions.clear();
+      this.resetReplayFeatureCounts();
       this.surfaceBackend = null;
       this.surfaceFallbackReason = null;
     }
@@ -1192,7 +1208,7 @@ export class CanvasKitLayerRenderer {
     const replayStyle: LayerShapeStyle = {
       ...style,
       strokeColor: style.strokeColor ?? op.lineStyle?.color,
-      strokeWidth: style.strokeWidth ?? op.lineStyle?.width,
+      strokeWidth: op.lineStyle?.width ?? style.strokeWidth,
       strokeDash: op.lineStyle?.dash ?? style.strokeDash,
     };
 
@@ -1855,7 +1871,6 @@ export class CanvasKitLayerRenderer {
         || (code >= 0xa960 && code <= 0xa97f)
         || (code >= 0xd7b0 && code <= 0xd7ff);
     });
-    const paint = this.makeFillPaint(style.color ?? '#000000');
     const effectPaints: SkPaint[] = [];
     let fontSize = baseFontSize;
     let baselineShift = 0;
@@ -1889,6 +1904,7 @@ export class CanvasKitLayerRenderer {
     }
     const typeface = preparedTypeface?.typeface ?? this.defaultTypeface;
     const fontManager = preparedTypeface?.fontManager ?? this.defaultFontManager;
+    const paint = this.makeFillPaint(style.color ?? '#000000');
     let font: Font | null = null;
     const fallbackFonts: Font[] = [];
     let boxedPuaFont: Font | null = null;
@@ -2218,6 +2234,12 @@ export class CanvasKitLayerRenderer {
         for (const effectPaint of effectPaints) effectPaint.delete?.();
         paint.delete?.();
       }
+    }
+    if (op.isVertical) {
+      this.currentReplayFeatureCounts.verticalTextRuns += 1;
+    }
+    if (verticalPresentationText !== undefined) {
+      this.currentReplayFeatureCounts.verticalPresentationPunctuation += 1;
     }
   }
 
@@ -3487,6 +3509,7 @@ export class CanvasKitLayerRenderer {
     try {
       paint.setPathEffect(effect);
       draw();
+      this.currentReplayFeatureCounts.dashedStrokes += 1;
     } finally {
       effect.delete?.();
     }

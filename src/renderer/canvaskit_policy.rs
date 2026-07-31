@@ -1,6 +1,7 @@
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
+use unicode_properties::{GeneralCategory, UnicodeGeneralCategory};
 
 use crate::model::image::ImageEffect;
 use crate::model::shape::TextWrap;
@@ -2104,19 +2105,14 @@ fn text_requires_complex_shaping(text: &str) -> bool {
                 | 0x1d400..=0x1d7ff
                 | 0x20000..=0x323af
         );
-        !nominal_glyph_replay_is_safe
-            || matches!(
-                code_point,
-                0x0300..=0x036f
-                    | 0x1ab0..=0x1aff
-                    | 0x1dc0..=0x1dff
-                    | 0x200c..=0x200d
-                    | 0x20d0..=0x20ff
-                    | 0xfe00..=0xfe0f
-                    | 0xfe20..=0xfe2f
-                    | 0x1f1e6..=0x1faff
-                    | 0xe0100..=0xe01ef
-            )
+        let category_requires_shaping = matches!(
+            ch.general_category(),
+            GeneralCategory::NonspacingMark
+                | GeneralCategory::SpacingMark
+                | GeneralCategory::EnclosingMark
+                | GeneralCategory::Format
+        );
+        !nominal_glyph_replay_is_safe || category_requires_shaping
     })
 }
 
@@ -3139,8 +3135,19 @@ mod tests {
         assert_eq!(plan.items[0].status, CanvasKitReplayStatus::Direct);
         assert_eq!(plan.items[0].detail, None);
 
-        for text in ["e\u{0301}", "سلام", "ສະບາຍດີ", "བོད", "မြန်မာ"]
-        {
+        for text in [
+            "e\u{0301}",
+            "к\u{0483}",
+            "漢\u{302a}",
+            "か\u{3099}",
+            "a\u{200f}b",
+            "a\u{2067}b",
+            "\u{00ad}",
+            "سلام",
+            "ສະບາຍດີ",
+            "བོད",
+            "မြန်မာ",
+        ] {
             let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), text_run(text))]);
             let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
             assert_eq!(plan.items[0].status, CanvasKitReplayStatus::DirectRequired);
