@@ -32,6 +32,7 @@ pub use font_glyph::{
     FontBitmapGlyphDecodeError, FontBitmapGlyphDecodeOptions, FontGlyphLoweringReport,
     FontSvgGlyphDecodeError, FontSvgGlyphDecodeOptions,
 };
+pub use json::LayerJsonOptions;
 pub use layer_tree::{
     CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree,
     TextSourceAnnotation, TextSourceEntry, TextSourceId, TextSourceRange, TextSourceSpan,
@@ -57,9 +58,9 @@ pub use replay_order::{
     PaintReplayPlane,
 };
 pub use resources::{
-    font_blob_resource_key, image_resource_key, resource_digest_hex, source_image_key,
-    svg_resource_key, FontBlobResourceId, ImageResourceId, ResourceArena, SvgResourceId,
-    RESOURCE_KEY_ALGORITHM,
+    font_blob_resource_key, image_resource_key, parse_source_image_key, resource_digest_hex,
+    source_image_key, svg_resource_key, FontBlobResourceId, ImageResourceId, ResourceArena,
+    SourceImageVariant, SvgResourceId, RESOURCE_KEY_ALGORITHM,
 };
 pub use schema::{
     LayerTreeSchema, LAYER_TREE_SCHEMA, PAGE_LAYER_TREE_COORDINATE_SYSTEM,

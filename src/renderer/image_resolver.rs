@@ -167,6 +167,37 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
     }
 }
 
+/// 그림 op 이 실제로 내보내는 바이트와 mime 을 결정한다 (Task #3315).
+///
+/// `resolve_image_payload` 는 변환에 **성공한** 경우만 payload 를 주고, 실패하면 `None` 이라
+/// 호출부가 원본 바이트로 되돌아간다. 그래서 "JSON 에 실린 바이트"는 두 분기의 합이었고,
+/// `paint/json.rs` 가 그 되돌림 사슬을 사본으로 들고 있었다. base64 를 생략한 뒤 키로 같은
+/// 바이트를 되돌려주려면 **최종 결과가 한 곳에서만 정해져야** 한다 — 두 곳에 두면 갈라진다.
+///
+/// `bakes_watermark` 는 `paint::source_image_key` 의 variant 판정과 같은 값이다. 키가 이미
+/// variant 를 담고 있으므로 키로 조회할 때는 `ImageNode` 없이도 같은 바이트를 재현한다.
+/// 워터마크 bake 가 실패하면 회색 JPEG 경로로 내려가는데, 이는 `resolved == None` 일 때
+/// json 쪽 되돌림이 하던 것과 같은 순서다.
+pub(crate) fn emitted_image_bytes(
+    data: &[u8],
+    bakes_watermark: bool,
+) -> (&'static str, std::borrow::Cow<'_, [u8]>) {
+    let mime = detect_image_mime_type(data);
+    let converted = match mime {
+        "image/bmp" => bmp_bytes_to_png_bytes(data),
+        "image/x-pcx" => pcx_bytes_to_png_bytes(data),
+        "image/tiff" => tiff_bytes_to_png_bytes(data),
+        "image/jpeg" if bakes_watermark => watermark_jpeg_bytes_to_hancom_baked_png_bytes(data)
+            .or_else(|| grayscale_jpeg_bytes_to_png_bytes(data)),
+        "image/jpeg" => grayscale_jpeg_bytes_to_png_bytes(data),
+        _ => None,
+    };
+    match converted {
+        Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
+        None => (mime, std::borrow::Cow::Borrowed(data)),
+    }
+}
+
 pub(crate) fn image_node_with_resolved_payload(
     image: &ImageNode,
     resolved: Option<&ResolvedImagePayload>,
@@ -183,7 +214,11 @@ pub(crate) fn image_node_with_resolved_payload(
     image
 }
 
-fn is_watermark_image(image: &ImageNode) -> bool {
+/// 워터마크 bake 대상 판정. `paint::source_image_key` 의 variant 결정과 같은 술어를 써야
+/// 키가 가리키는 바이트와 실제로 내보내는 바이트가 어긋나지 않는다 (Task #3315).
+///
+/// mime 검사는 포함하지 않는다 — 호출부가 JPEG 분기 안에서 쓴다.
+pub(crate) fn is_watermark_image(image: &ImageNode) -> bool {
     !matches!(image.effect, ImageEffect::RealPic) && (image.brightness != 0 || image.contrast != 0)
 }
 

@@ -68,13 +68,37 @@ const KNOWN_TEXT_FEATURES: &[&str] = &[
     "text.vertical.mixedPerGlyph",
 ];
 
+/// 레이어 트리 JSON 직렬화 옵션 (Task #3315).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct LayerJsonOptions {
+    /// 그림 바이트를 base64 로 싣지 않는다.
+    ///
+    /// `sourceImageKey` 를 낼 수 있는 op 만 대상이다 — 키가 없으면 소비자가 바이트를 되찾을
+    /// 길이 없으므로 그 op 은 종전대로 base64 를 싣는다. 기본값이 `false` 라서 이 옵션을
+    /// 지정하지 않는 기존 호출부의 JSON 은 한 바이트도 달라지지 않는다.
+    pub omit_image_bytes: bool,
+}
+
+/// 직렬화 도중 트리 아래로 흘려야 하는 값. 그림 op 하나를 쓰려면 문서 세대(키 발급)와
+/// 생략 여부가 함께 필요해 한 덩이로 옮겼다.
+#[derive(Debug, Clone, Copy)]
+struct JsonWriteContext {
+    bin_data_epoch: u32,
+    options: LayerJsonOptions,
+}
+
 impl PageLayerTree {
     pub fn to_json(&self) -> String {
+        self.to_json_with_options(LayerJsonOptions::default())
+    }
+
+    /// [Task #3315] 그림 base64 생략을 켤 수 있는 직렬화. `to_json()` 은 기본 옵션 위임이다.
+    pub fn to_json_with_options(&self, options: LayerJsonOptions) -> String {
         let mut buf = String::with_capacity(32_768);
         buf.push('{');
         let _ = write!(
             buf,
-            "\"schemaVersion\":{},\"schemaMinorVersion\":{},\"schema\":{{\"major\":{},\"minor\":{}}},\"resourceTableVersion\":{},\"resourceTableMinorVersion\":{},\"resourceTable\":{{\"major\":{},\"minor\":{}}},\"unit\":{},\"coordinateSystem\":{},\"profile\":{},\"buildOptions\":{{\"showTransparentBorders\":{},\"clipEnabled\":{}}},\"debugOptions\":{{\"debugOverlay\":{}}},\"outputOptions\":{{\"showParagraphMarks\":{},\"showControlCodes\":{},\"showTransparentBorders\":{},\"clipEnabled\":{},\"debugOverlay\":{}}},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
+            "\"schemaVersion\":{},\"schemaMinorVersion\":{},\"schema\":{{\"major\":{},\"minor\":{}}},\"resourceTableVersion\":{},\"resourceTableMinorVersion\":{},\"resourceTable\":{{\"major\":{},\"minor\":{}}},\"unit\":{},\"coordinateSystem\":{},\"profile\":{},\"imageBytes\":{},\"buildOptions\":{{\"showTransparentBorders\":{},\"clipEnabled\":{}}},\"debugOptions\":{{\"debugOverlay\":{}}},\"outputOptions\":{{\"showParagraphMarks\":{},\"showControlCodes\":{},\"showTransparentBorders\":{},\"clipEnabled\":{},\"debugOverlay\":{}}},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
             LAYER_TREE_SCHEMA.schema_version,
             LAYER_TREE_SCHEMA.schema_minor_version,
             LAYER_TREE_SCHEMA.schema_version,
@@ -86,6 +110,13 @@ impl PageLayerTree {
             json_escape(LAYER_TREE_SCHEMA.unit),
             json_escape(LAYER_TREE_SCHEMA.coordinate_system),
             json_escape(render_profile_str(self.profile)),
+            // [#3315] 그림 바이트가 op 안에 있는지(`inline`), 키로 따로 받아야 하는지(`byKey`).
+            // 소비자가 op 마다 `base64` 유무를 추측하지 않고 문서 단위로 판정할 수 있게 한다.
+            json_escape(if options.omit_image_bytes {
+                "byKey"
+            } else {
+                "inline"
+            }),
             self.output_options.show_transparent_borders,
             self.output_options.clip_enabled,
             self.output_options.debug_overlay,
@@ -102,7 +133,10 @@ impl PageLayerTree {
             &mut buf,
             &mut text_source_state,
             &self.resources,
-            self.resources.source_image_epoch(),
+            JsonWriteContext {
+                bin_data_epoch: self.resources.source_image_epoch(),
+                options,
+            },
         );
         buf.push_str(",\"textSources\":");
         write_text_source_entries(&mut buf, &self.text_sources);
@@ -382,7 +416,7 @@ impl LayerNode {
         buf: &mut String,
         text_sources: &mut TextSourceExportState,
         resources: &ResourceArena,
-        bin_data_epoch: u32,
+        ctx: JsonWriteContext,
     ) {
         buf.push('{');
         buf.push_str("\"bounds\":");
@@ -412,7 +446,7 @@ impl LayerNode {
                     if idx > 0 {
                         buf.push(',');
                     }
-                    child.write_json(buf, text_sources, resources, bin_data_epoch);
+                    child.write_json(buf, text_sources, resources, ctx);
                 }
                 buf.push(']');
             }
@@ -429,7 +463,7 @@ impl LayerNode {
                     json_escape(clip_kind_str(*clip_kind))
                 );
                 buf.push_str(",\"child\":");
-                child.write_json(buf, text_sources, resources, bin_data_epoch);
+                child.write_json(buf, text_sources, resources, ctx);
             }
             LayerNodeKind::Leaf { ops } => {
                 buf.push_str(",\"kind\":\"leaf\",\"ops\":[");
@@ -438,7 +472,7 @@ impl LayerNode {
                     if idx > 0 {
                         buf.push(',');
                     }
-                    op.write_json(buf, text_sources, &leaf_visuals, resources, bin_data_epoch);
+                    op.write_json(buf, text_sources, &leaf_visuals, resources, ctx);
                 }
                 buf.push(']');
             }
@@ -454,7 +488,7 @@ impl PaintOp {
         text_sources: &mut TextSourceExportState,
         leaf_visuals: &LeafTextVisualOps,
         resources: &ResourceArena,
-        bin_data_epoch: u32,
+        ctx: JsonWriteContext,
     ) {
         match self {
             PaintOp::PageBackground { bbox, background } => {
@@ -834,47 +868,47 @@ impl PaintOp {
                 buf.push('{');
                 buf.push_str("\"type\":\"image\",\"bbox\":");
                 write_bbox(buf, *bbox);
+                // [#3315] 키가 있는 op 만 base64 를 생략할 수 있다 — 소비자가 그 키로
+                // `getSourceImageBytes` 를 불러 같은 바이트를 받는다. 키를 낼 수 없는 합성
+                // 그림(`bin_data_id == 0`)은 되찾을 길이 없으므로 종전대로 싣는다.
+                let source_image_key = crate::paint::source_image_key(ctx.bin_data_epoch, image);
+                let omit_bytes = ctx.options.omit_image_bytes && source_image_key.is_some();
                 if let Some(payload) = resolved.as_deref() {
-                    let _ = write!(buf, ",\"mime\":\"{}\",\"base64\":", payload.mime);
-                    write_json_base64(buf, &payload.data[..]);
+                    if omit_bytes {
+                        let _ = write!(
+                            buf,
+                            ",\"mime\":\"{}\",\"imageBytesOmitted\":true",
+                            payload.mime
+                        );
+                    } else {
+                        let _ = write!(buf, ",\"mime\":\"{}\",\"base64\":", payload.mime);
+                        write_json_base64(buf, &payload.data[..]);
+                    }
                     if matches!(payload.kind, ResolvedImageKind::BakedWatermark) {
                         buf.push_str(",\"bakedWatermark\":true");
                     }
                 } else if let Some(data) = &image.data {
                     // Task #516 Stage 5.2: overlay layer 의 <img> data URL 생성용 mime 노출.
                     // PCX 등 비표준은 PNG 변환 후 emit (CLI SVG 와 동일 정책 적용).
-                    let mime = crate::renderer::svg::detect_image_mime_type(data);
-                    let (final_mime, final_data): (&str, std::borrow::Cow<[u8]>) = if mime
-                        == "image/x-pcx"
-                    {
-                        match crate::renderer::svg::pcx_bytes_to_png_bytes(data) {
-                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (mime, std::borrow::Cow::Borrowed(&data[..])),
-                        }
-                    } else if mime == "image/bmp" {
-                        match crate::renderer::svg::bmp_bytes_to_png_bytes(data) {
-                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (mime, std::borrow::Cow::Borrowed(&data[..])),
-                        }
-                    } else if mime == "image/tiff" {
-                        match crate::renderer::image_resolver::tiff_bytes_to_png_bytes(data) {
-                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (mime, std::borrow::Cow::Borrowed(&data[..])),
-                        }
-                    } else if mime == "image/jpeg" {
-                        match crate::renderer::image_resolver::grayscale_jpeg_bytes_to_png_bytes(
+                    // [#3315] 변환 사슬의 단일 권위는 `emitted_image_bytes` 다 — 키로 바이트를
+                    // 되돌려주는 경로가 같은 함수를 써야 두 결과가 갈라지지 않는다.
+                    let (final_mime, final_data) =
+                        crate::renderer::image_resolver::emitted_image_bytes(
                             data,
-                        ) {
-                            Some(png) => ("image/png", std::borrow::Cow::Owned(png)),
-                            None => (mime, std::borrow::Cow::Borrowed(&data[..])),
-                        }
+                            crate::renderer::image_resolver::is_watermark_image(image),
+                        );
+                    if omit_bytes {
+                        let _ = write!(
+                            buf,
+                            ",\"mime\":\"{}\",\"imageBytesOmitted\":true",
+                            final_mime
+                        );
                     } else {
-                        (mime, std::borrow::Cow::Borrowed(&data[..]))
-                    };
-                    let _ = write!(buf, ",\"mime\":\"{}\",\"base64\":", final_mime);
-                    write_json_base64(buf, &final_data);
+                        let _ = write!(buf, ",\"mime\":\"{}\",\"base64\":", final_mime);
+                        write_json_base64(buf, &final_data);
+                    }
                 }
-                if let Some(key) = crate::paint::source_image_key(bin_data_epoch, image) {
+                if let Some(key) = source_image_key {
                     let _ = write!(buf, ",\"sourceImageKey\":{}", json_escape(&key));
                 }
                 if let Some(fill_mode) = image.fill_mode {
@@ -4290,7 +4324,11 @@ mod tests {
 
         let json = tree.to_json();
 
-        assert!(json.contains("\"schemaMinorVersion\":20"));
+        // 상수에서 끌어온다 — 숫자를 박아 두면 schema minor 를 올릴 때마다 무관한 테스트가 깨진다.
+        assert!(json.contains(&format!(
+            "\"schemaMinorVersion\":{}",
+            LAYER_TREE_SCHEMA.schema_minor_version
+        )));
         assert!(json.contains("\"payloadResourceKey\":\"glyphPayload:bitmapGlyph:imageRef:0"));
         assert!(json.contains("placement:0.123,0.568,10.988,10.543"));
         assert!(json.contains(&format!(":resource:{image_resource_key}\"")));
