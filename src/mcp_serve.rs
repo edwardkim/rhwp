@@ -702,6 +702,12 @@ fn session_set_cell(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
     let Some(doc_id) = args.get("docId").and_then(|d| d.as_str()) else {
         return tool_error("docId 가 필요합니다".into());
     };
+    // [#3603] 필수 인자가 모두 갖춰진 뒤, 핸들을 건드리기 전에 거부한다 — 무상태 CLI 는
+    // 파일을 읽기도 전에 EXIT_USAGE 로 끊는다. 여기만 통과시키면 셀 문단 하나에 raw 개행이
+    // 박힌 채 IR 에 누적되고, 그 핸들은 hwp_close 전까지 되돌릴 방법이 없다.
+    if let Some(message) = crate::set_cell_control_char_rejection(&new_text) {
+        return tool_error(message.to_string());
+    }
     let id = doc_id.to_string();
     let Some(sd) = sessions.docs.get_mut(&id) else {
         return tool_error(format!("열려 있지 않은 핸들: {id} (hwp_open 먼저)"));
@@ -729,6 +735,9 @@ fn session_set_cell(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
         |(cell_w, text_w, lines)| {
             serde_json::json!({
                 "target": format!("table{}[{},{}]", table_no, row, col),
+                // CLI 의 overflow 항목과 키 집합을 맞춘다 — 넘친 값이 무엇이었는지 없으면
+                // 여러 칸을 연달아 채운 에이전트가 어느 값이 넘쳤는지 되짚을 수 없다.
+                "text": new_text,
                 "cellWidthPx": (cell_w * 100.0).round() / 100.0,
                 "textWidthPx": (text_w * 100.0).round() / 100.0,
                 "lines": lines,
@@ -776,6 +785,9 @@ fn session_set_cell(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
             "table": table_no, "row": row, "col": col,
             "oldText": old_text,
             "newText": new_text,
+            // CLI 봉투와 같은 키 — 검정 정규화를 건너뛰었는지는 제출 서식에서 결과가
+            // 달라지는 판단 재료라, 무엇이 적용됐는지 봉투만 보고 알 수 있어야 한다.
+            "keepStyle": keep_style,
             "overflow": overflow.map(|o| vec![o]).unwrap_or_default(),
         })
         .to_string(),

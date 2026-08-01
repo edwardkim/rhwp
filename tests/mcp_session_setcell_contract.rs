@@ -230,3 +230,147 @@ fn set_cell_rejects_numeric_indices_before_narrowing() {
         "범위 안내가 있어야 합니다: {value}"
     );
 }
+
+/// [#3603] 세션 도구는 CLI 와 **같은 문장으로** 제어문자를 거부한다.
+///
+/// 종전에는 세션 경로만 통과시켜, 한 셀 문단 안에 raw 개행이 들어간 채 IR 에 누적됐다
+/// (저장본을 다시 읽어야 겨우 드러난다). 거부 문장은 테스트가 따로 적어 두지 않고 CLI 를
+/// 실제로 돌려 얻는다 — 문자열을 두 벌 관리하면 그 자체가 다음 어긋남의 씨앗이다.
+#[test]
+fn set_cell_rejects_control_chars_with_cli_message() {
+    let src = sample();
+    if !src.exists() {
+        eprintln!("샘플 없음 — 건너뜀");
+        return;
+    }
+    let cli_out = temp_path("ctrlchar-cli");
+    let cli = run_cli(&[
+        "edit",
+        "set-cell",
+        src.to_str().unwrap(),
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "0",
+        "--text",
+        "가\n나",
+        "-o",
+        cli_out.to_str().unwrap(),
+        "--json",
+    ]);
+    assert_eq!(
+        cli.status.code(),
+        Some(2),
+        "CLI 는 EXIT_USAGE(2) 로 끊습니다"
+    );
+    assert!(!cli_out.exists(), "거부된 편집은 파일을 만들지 않습니다");
+    let cli_message = String::from_utf8_lossy(&cli.stderr).trim().to_string();
+    assert!(!cli_message.is_empty(), "CLI 안내문이 비어 있습니다");
+
+    let mut s = Server::started();
+    let d = s.open(&src);
+    let (err, before) = s.call("hwp_doc_tables", serde_json::json!({"docId": d}));
+    assert!(!err, "{before}");
+
+    for bad in ["가\n나", "가\t나", "가\r나", "줄1\r\n줄2"] {
+        let (err, v) = s.call(
+            "hwp_doc_set_cell",
+            serde_json::json!({"docId": d, "table": 0, "row": 0, "col": 0, "text": bad}),
+        );
+        assert!(err, "{bad:?} 는 isError 여야 합니다: {v}");
+        assert_eq!(
+            v.as_str().unwrap_or_default(),
+            cli_message,
+            "{bad:?}: CLI 와 같은 문장으로 거부해야 합니다"
+        );
+    }
+
+    // 거부는 핸들을 건드리기 전에 끝난다 — 격자가 한 글자도 달라지면 안 된다.
+    let (err, after) = s.call("hwp_doc_tables", serde_json::json!({"docId": d}));
+    assert!(!err, "{after}");
+    assert_eq!(before, after, "거부된 편집이 핸들 IR 을 바꿨습니다");
+}
+
+/// 봉투 키가 무상태 `edit set-cell --json` 과 같다.
+///
+/// overflow 에서 `text` 가 빠지면 여러 칸을 연달아 채운 에이전트가 '어느 값이 넘쳤는지'
+/// 를 되짚을 수 없고, `keepStyle` 이 빠지면 검정 정규화가 걸렸는지 봉투만으로 못 읽는다.
+#[test]
+fn set_cell_envelope_carries_keep_style_and_overflow_text() {
+    let src = sample();
+    if !src.exists() {
+        eprintln!("샘플 없음 — 건너뜀");
+        return;
+    }
+    let mut s = Server::started();
+    let d = s.open(&src);
+
+    let (err, v) = s.call(
+        "hwp_doc_set_cell",
+        serde_json::json!({
+            "docId": d, "table": 0, "row": 0, "col": 0, "text": "봉투대조", "keepStyle": true
+        }),
+    );
+    assert!(!err, "{v}");
+    assert_eq!(
+        v["keepStyle"],
+        serde_json::json!(true),
+        "요청한 keepStyle 이 봉투에 그대로 실려야 합니다: {v}"
+    );
+
+    // 기본값(미지정)도 봉투에 실린다 — 무엇이 적용됐는지 늘 알 수 있어야 한다.
+    let (err, d2) = s.call(
+        "hwp_doc_set_cell",
+        serde_json::json!({"docId": d, "table": 0, "row": 0, "col": 0, "text": "기본"}),
+    );
+    assert!(!err, "{d2}");
+    assert_eq!(v["keepStyle"].is_boolean(), true, "{v}");
+    assert_eq!(d2["keepStyle"], serde_json::json!(false), "{d2}");
+
+    // 넘치는 값을 넣어 overflow 를 강제하고 CLI 와 키 집합을 대조한다.
+    let long = "가나다라마바사아자차카타파하".repeat(4);
+    let cli = run_cli(&[
+        "edit",
+        "set-cell",
+        src.to_str().unwrap(),
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "0",
+        "--text",
+        &long,
+        "--dry-run",
+        "--json",
+    ]);
+    assert_eq!(
+        cli.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&cli.stderr)
+    );
+    let cv: serde_json::Value = serde_json::from_slice(&cli.stdout).expect("edit set-cell --json");
+    let cli_overflow = cv["overflow"].as_array().expect("overflow").clone();
+    if cli_overflow.is_empty() {
+        eprintln!("이 샘플에서는 넘침이 나지 않음 — 키 대조 건너뜀");
+        return;
+    }
+
+    let (err, ov) = s.call(
+        "hwp_doc_set_cell",
+        serde_json::json!({"docId": d, "table": 0, "row": 0, "col": 0, "text": long}),
+    );
+    assert!(!err, "{ov}");
+    let sess_overflow = ov["overflow"].as_array().expect("overflow");
+    assert_eq!(sess_overflow.len(), cli_overflow.len(), "{ov}");
+    let cli_keys: Vec<&String> = cli_overflow[0].as_object().expect("obj").keys().collect();
+    let sess_keys: Vec<&String> = sess_overflow[0].as_object().expect("obj").keys().collect();
+    assert_eq!(
+        sess_keys, cli_keys,
+        "overflow 항목 키 집합이 CLI 와 같아야 합니다: {ov}"
+    );
+    assert_eq!(sess_overflow[0]["text"], serde_json::json!(long), "{ov}");
+}

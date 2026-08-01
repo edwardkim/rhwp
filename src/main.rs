@@ -10330,6 +10330,24 @@ fn estimate_text_width_px(
         .sum()
 }
 
+/// [#3603] `set-cell` 계열이 셀 값으로 거부하는 제어문자 안내문.
+///
+/// CLI(`edit set-cell`)와 세션 도구(`hwp_doc_set_cell`)가 **같은 문장**으로 거부해야 한다 —
+/// 두 경로가 서로 다른 문장(또는 한쪽만 검사)을 내면 에이전트는 같은 제약을 두 번 배워야
+/// 하고, 무엇보다 세션 경로만 통과시키면 한 셀 문단 안에 raw 개행이 박힌 문서가 만들어진다.
+/// v1 셀 기록 계약은 '한 줄 값'이다.
+const SET_CELL_CONTROL_CHAR_MESSAGE: &str =
+    "오류: --text 에 줄바꿈·탭은 넣을 수 없습니다 (한 줄 값 기록).";
+
+/// 셀 값에 제어문자가 있으면 공통 안내문을 돌려준다 (없으면 `None`).
+///
+/// 문장뿐 아니라 **판정식까지** 공유해야 '문장은 같은데 거부 조건이 다른' 어긋남이 안 생긴다.
+fn set_cell_control_char_rejection(text: &str) -> Option<&'static str> {
+    text.chars()
+        .any(|ch| matches!(ch, '\r' | '\n' | '\t'))
+        .then_some(SET_CELL_CONTROL_CHAR_MESSAGE)
+}
+
 /// [#3603] 격자 주소(export-tables 좌표) → 모델 좌표 해석.
 /// CLI(edit set-cell)와 세션 도구(hwp_doc_set_cell)가 공유한다 — 병합으로 덮인 칸은
 /// 앵커 좌표를 안내하며 실패한다(보호 동작). 반환: (sec, para, ctrl, cell_idx,
@@ -10515,8 +10533,9 @@ fn edit_set_cell(args: &[String]) -> i32 {
         );
         return EXIT_USAGE;
     };
-    if new_text.chars().any(|ch| matches!(ch, '\r' | '\n' | '\t')) {
-        eprintln!("오류: --text 에 줄바꿈·탭은 넣을 수 없습니다 (한 줄 값 기록).");
+    // 판정과 문장 모두 세션 도구(hwp_doc_set_cell)와 공유한다 — 문서를 읽기 전에 끊는다.
+    if let Some(message) = set_cell_control_char_rejection(new_text) {
+        eprintln!("{message}");
         return EXIT_USAGE;
     }
 
