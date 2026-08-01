@@ -608,6 +608,31 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             &["schemaVersion", "source", "output", "format", "bytes"],
         ),
         tool(
+            "hwp_export_doclang",
+            "문서를 DocLang v0.6 의미 XML 로 내보내 저장하고 산출 봉투(경로·크기·에셋·손실 건수)를 돌려준다. 다운스트림 AI 파이프라인 입력으로 쓴다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWP5/HWPX 문서 경로" },
+                    "output": { "type": "string", "description": "출력 DocLang XML 경로" }
+                },
+                "required": ["path", "output"],
+            }),
+            "export-doclang",
+            serde_json::json!(["export-doclang", "{path}", "-o", "{output}", "--json"]),
+            &[
+                "schemaVersion",
+                "source",
+                "output",
+                "format",
+                "doclangVersion",
+                "bytes",
+                "assetsDir",
+                "assetCount",
+                "lossCount",
+            ],
+        ),
+        tool(
             "hwp_build_from_ingest",
             "ingest JSON 명세로 새 HWPX 문서를 생성한다 — 기존 문서 편집이 아니라 무(無)에서 만드는 유일한 생성 경로. 스키마는 tools/rhwp-ingest/schema/ 참조.",
             serde_json::json!({
@@ -1071,10 +1096,23 @@ fn show_capabilities(args: &[String]) -> i32 {
             &["-o", "--json"],
             &["schemaVersion", "source", "output", "format", "bytes"],
         ),
-        cmd(
+        cmd_json(
             "export-doclang",
             "export",
-            "문서를 DocLang v0.6 XML로 내보내기",
+            "문서를 DocLang v0.6 XML로 내보내기 (--json 봉투)",
+            false,
+            &["-o", "--assets-dir", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "output",
+                "format",
+                "doclangVersion",
+                "bytes",
+                "assetsDir",
+                "assetCount",
+                "lossCount",
+            ],
         ),
         cmd_json(
             "export-tables",
@@ -1467,12 +1505,15 @@ fn print_help() {
     println!("      HML 원본 문서를 의미 보존 HWPML 2.91 XML로 저장");
     println!("      -o, --output <파일>    출력 HML 파일 (필수, 원본 덮어쓰기 금지)");
     println!();
-    println!("  export-doclang <파일.hwp|파일.hwpx> [-o <출력.xml>] [--assets-dir <디렉터리>]");
+    println!(
+        "  export-doclang <파일.hwp|파일.hwpx> [-o <출력.xml>] [--assets-dir <디렉터리>] [--json]"
+    );
     println!("      HWP/HWPX 문서를 DocLang v0.6 XML로 내보내기");
     println!();
     println!("      -o, --output <파일>     출력 XML 파일 (기본: <입력 stem>.dclg.xml)");
     println!("      --assets-dir <디렉터리> 그림 등 이진 자원을 이 디렉터리에 파일로 기록");
     println!("                              (생략 시 base64 data URI로 XML에 인라인)");
+    println!("      --json                  산출 봉투를 stdout 에 JSON 으로 출력");
     println!();
     println!("  info <파일.hwp|파일.hwpx|파일.hml> [--json]");
     println!("      HWP/HWPX/HML 문서 정보 표시");
@@ -7443,10 +7484,16 @@ fn export_doclang(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut output_override: Option<std::path::PathBuf> = None;
     let mut assets_dir: Option<std::path::PathBuf> = None;
+    // [#3696] --json: 산출 봉투를 stdout 순수 JSON 으로. 변환 동작 무변경.
+    let mut json_mode = false;
 
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
+            "--json" => {
+                json_mode = true;
+                i += 1;
+            }
             "--output" | "-o" => {
                 if i + 1 < args.len() {
                     output_override = Some(std::path::PathBuf::from(&args[i + 1]));
@@ -7482,7 +7529,7 @@ fn export_doclang(args: &[String]) -> i32 {
     let Some(file_path) = file_path else {
         eprintln!("오류: 문서 파일 경로를 지정해주세요.");
         eprintln!(
-            "사용법: rhwp export-doclang <파일.hwp|파일.hwpx> [-o <출력.xml>] [--assets-dir <디렉터리>] (rhwp --help 참조)"
+            "사용법: rhwp export-doclang <파일.hwp|파일.hwpx> [-o <출력.xml>] [--assets-dir <디렉터리>] [--json] (rhwp --help 참조)"
         );
         return EXIT_USAGE;
     };
@@ -7545,6 +7592,25 @@ fn export_doclang(args: &[String]) -> i32 {
 
     match fs::write(&output_path, outcome.xml.as_bytes()) {
         Ok(_) => {
+            if json_mode {
+                // [#3696] 산출 봉투 — 사람용 출력(크기·에셋·손실 건수)의 기계 대응물.
+                // assetsDir 는 --assets-dir 를 준 경우에만 문자열, 아니면 null.
+                println!(
+                    "{}",
+                    serde_json::json!({
+                        "schemaVersion": "1.0",
+                        "source": file_path,
+                        "output": output_path.display().to_string(),
+                        "format": "doclang",
+                        "doclangVersion": rhwp::doclang::DOCLANG_VERSION,
+                        "bytes": outcome.xml.len(),
+                        "assetsDir": assets_dir.as_ref().map(|d| d.display().to_string()),
+                        "assetCount": outcome.assets.len(),
+                        "lossCount": outcome.loss.len(),
+                    })
+                );
+                return EXIT_OK;
+            }
             println!(
                 "저장 완료: {} ({}KB)",
                 output_path.display(),
