@@ -953,8 +953,14 @@ fn run_cli_tool(def: &serde_json::Value, args: &serde_json::Value) -> serde_json
             let Some(key) = optional.get("when").and_then(|v| v.as_str()) else {
                 return tool_error("MCP optionalArgs.when 정의가 올바르지 않습니다".into());
             };
-            if args.get(key).is_none() {
-                continue;
+            // 존재 여부만으로는 부족하다. `--dry-run` 같은 presence 플래그는 값이 없어
+            // "있으면 켜짐" 이므로, `dryRun: false` 를 존재로 세면 **끄라고 보낸 요청이
+            // 켜는 요청이 된다**. JSON 의 false/null 은 "그 축을 쓰지 않음" 으로 읽는다.
+            match args.get(key) {
+                None | Some(serde_json::Value::Null) | Some(serde_json::Value::Bool(false)) => {
+                    continue;
+                }
+                Some(_) => {}
             }
             let Some(template) = optional.get("args").and_then(|v| v.as_array()) else {
                 return tool_error(format!(

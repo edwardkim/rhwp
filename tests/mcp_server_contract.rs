@@ -181,6 +181,125 @@ fn tools_list_matches_capabilities_manifest() {
     }
 }
 
+/// 선언된 입력 속성 중 **어느 CLI 경로로도 전달되지 않는** 것 — 즉 스키마에만
+/// 존재하는 유령 인자를 stdin 전송 축만 남기고 전부 거부한다.
+///
+/// 이 목록은 argv 가 아닌 다른 축으로 전달되는 속성만 담는다. 늘리려면 그 축이
+/// 실제로 존재함을 근거로 적어야 한다 — allowlist 가 커지면 가드가 무의미해진다.
+const NON_ARGV_PROPERTIES: &[(&str, &str)] = &[
+    (
+        "paths",
+        "자식 CLI stdin 으로 한 줄에 하나씩 흘려 넣는다(batch 계열).",
+    ),
+    (
+        "password",
+        "민감값이라 argv 금지 — cli.passwordStdin 계약으로 stdin 전달.",
+    ),
+];
+
+#[test]
+fn every_declared_input_property_is_wired_to_the_cli() {
+    // 드리프트 가드 2: 이름뿐 아니라 **인자 배선**까지 본다.
+    //
+    // `inputSchema` 에 선언만 하고 `cli.args` 자리표시자에도 `cli.optionalArgs.when`
+    // 에도 넣지 않으면, 서버는 그 인자를 조용히 버린 채 성공을 보고한다. 에이전트는
+    // 스키마를 읽고 인자를 보냈으므로 반영됐다고 믿는다 — `dryRun: true` 를 보냈는데
+    // 파일이 써지고 응답에는 `"dryRun": false` 가 오는 형태였다(#3712 이전 devel).
+    // 컴파일 에러도 런타임 오류도 없이 계약만 거짓말한다.
+    let cap = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .args(["capabilities", "--mcp"])
+        .output()
+        .expect("capabilities 실행 실패");
+    let manifest: serde_json::Value =
+        serde_json::from_slice(&cap.stdout).expect("capabilities --mcp JSON");
+    let tools = manifest["tools"].as_array().expect("tools 배열");
+    assert!(
+        !tools.is_empty(),
+        "도구가 0건이면 이 가드는 공허하게 통과한다"
+    );
+
+    let mut orphans: Vec<String> = Vec::new();
+    for t in tools {
+        let name = t["name"].as_str().unwrap_or("<이름없음>");
+        let Some(props) = t["inputSchema"]["properties"].as_object() else {
+            continue;
+        };
+        // argv 템플릿(필수)에 쓰인 `{키}` 전부.
+        let mut wired: Vec<String> = t["cli"]["args"]
+            .as_array()
+            .map(|a| {
+                a.iter()
+                    .filter_map(|v| v.as_str())
+                    .filter(|s| s.starts_with('{') && s.ends_with('}') && s.len() > 2)
+                    .map(|s| s[1..s.len() - 1].to_string())
+                    .collect()
+            })
+            .unwrap_or_default();
+        // 선택 인자는 `when` 키 자체가 배선 지점이다(값 없는 presence 플래그 포함).
+        if let Some(optional) = t["cli"]["optionalArgs"].as_array() {
+            for o in optional {
+                if let Some(key) = o["when"].as_str() {
+                    wired.push(key.to_string());
+                }
+            }
+        }
+        for key in props.keys() {
+            if wired.iter().any(|w| w == key) {
+                continue;
+            }
+            if NON_ARGV_PROPERTIES.iter().any(|(k, _)| k == key) {
+                continue;
+            }
+            orphans.push(format!(
+                "  - {name}.{key} — inputSchema 에만 있고 cli.args/optionalArgs 어디에도 없음"
+            ));
+        }
+    }
+
+    assert!(
+        orphans.is_empty(),
+        "선언만 되고 배선되지 않은 MCP 입력 인자 {}건:\n{}\n\n\
+         스키마에 쓴 인자는 반드시 자식 CLI 에 닿아야 한다. 닿지 않으면 서버는 그 인자를\n\
+         조용히 버리고 성공을 보고하며, 에이전트는 반영됐다고 믿는다(dryRun 이 그 형태였다).\n\
+         고치는 법: `tool_with_optional_args` 로 `{{ \"when\": \"<키>\", \"args\": [...] }}` 를\n\
+         더하라. argv 가 아닌 축(stdin 등)으로 전달한다면 NON_ARGV_PROPERTIES 에 근거와\n\
+         함께 등재하라.",
+        orphans.len(),
+        orphans.join("\n"),
+    );
+}
+
+/// 값 없는 presence 플래그는 "있으면 켜짐" 이다. `false` 를 존재로 세면 **끄라고 보낸
+/// 요청이 켜는 요청이 된다** — 되돌릴 수 없는 쓰기에서 특히 위험하다.
+#[test]
+fn boolean_false_does_not_inject_a_presence_flag() {
+    let p = sample(SAMPLE);
+    if !p.exists() {
+        eprintln!("샘플 없음 — 건너뜀");
+        return;
+    }
+    let out = std::env::temp_dir().join("rhwp_mcp_dryrun_false.hwp");
+    let _ = std::fs::remove_file(&out);
+
+    let mut s = Server::started();
+    let r = s.call_tool(
+        "hwp_replace_text",
+        serde_json::json!({
+            "path": p.to_string_lossy(),
+            "find": "가",
+            "replace": "나",
+            "output": out.to_string_lossy(),
+            "dryRun": false,
+        }),
+    );
+    let text = r["result"]["content"][0]["text"].as_str().unwrap_or("");
+    assert!(
+        !text.contains("\"dryRun\":true") && !text.contains("\"dryRun\": true"),
+        "dryRun:false 를 보냈는데 --dry-run 이 주입됐다 — presence 플래그가 값을 무시했다: {text}"
+    );
+    let _ = std::fs::remove_file(&out);
+}
+
 #[test]
 fn tools_call_stateless_info_works() {
     let p = sample(SAMPLE);
