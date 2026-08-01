@@ -632,13 +632,17 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
         ),
         tool(
             "hwp_split_document",
-            "문서에서 지정한 쪽 범위만 남겨 새 파일로 저장한다 — 대형 문서의 발췌·부분 제출·결함 이분법용. 쪽 단위로 자르되 문단 단위로 지우므로 결과 쪽수는 재조판으로 달라질 수 있다(pagesAfter 로 실측 보고).",
+            "문서에서 지정한 쪽 범위만 남겨 새 파일로 저장한다 — 대형 문서의 발췌·부분 제출·결함 이분법용. from/to 는 **1 기준**이다(첫 쪽이 1) — 다른 도구의 page 인자는 0 기준이므로 그대로 옮겨 쓰면 한 쪽 밀린 문서가 조용히 나온다. 쪽 단위로 자르되 문단 단위로 지우므로 결과 쪽수는 재조판으로 달라질 수 있다(pagesAfter 로 실측 보고).",
             serde_json::json!({
                 "type": "object",
                 "properties": {
                     "path": { "type": "string", "description": "입력 HWP/HWPX 문서 경로" },
-                    "from": { "type": "integer", "minimum": 0, "description": "시작 쪽 (0 기준, 포함)" },
-                    "to": { "type": "integer", "minimum": 0, "description": "끝 쪽 (0 기준, 포함)" },
+                    // [#3565] extract-pages 만 1 기준이다. rhwp 의 다른 쪽 축(-p,
+                    // export-text 의 page, search 의 matches[].page)은 전부 0 기준이라
+                    // 여기서 헷갈리면 **오류 없이 한 쪽 밀린 문서**가 나온다. 기준을
+                    // 감추지 말고 설명에 못 박는다 (split_page_base_matches_cli 가 감시).
+                    "from": { "type": "integer", "minimum": 1, "description": "시작 쪽 (1 기준, 포함) — 주의: rhwp 의 다른 page 인자는 0 기준이지만 extract-pages 만 1 기준이다. 첫 쪽은 1" },
+                    "to": { "type": "integer", "minimum": 1, "description": "끝 쪽 (1 기준, 포함)" },
                     "output": { "type": "string", "description": "출력 파일 경로" }
                 },
                 "required": ["path", "from", "to", "output"],
