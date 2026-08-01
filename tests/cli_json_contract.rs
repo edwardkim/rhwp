@@ -651,3 +651,201 @@ fn batch_unknown_subcommand_is_usage_error() {
 fn rhwp_bin() -> String {
     std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
 }
+
+/// `--help` 가 광고하는 명령 토큰들.
+///
+/// help 의 명령 줄 패턴은 "정확히 2칸 들여쓰기 + 소문자/하이픈 토큰"이다(옵션·설명 줄은
+/// 그보다 깊게 들여쓴다). 양방향 가드가 **같은 파서**를 봐야 한쪽만 통과하는 착시가 없다.
+fn help_command_tokens() -> Vec<String> {
+    let help = run(&["--help"]);
+    let help_text = String::from_utf8_lossy(&help.stdout);
+    let mut tokens: Vec<String> = Vec::new();
+    for line in help_text.lines() {
+        let Some(rest) = line.strip_prefix("  ") else {
+            continue;
+        };
+        if rest.starts_with(' ') || rest.starts_with('-') {
+            continue; // 옵션·설명 줄
+        }
+        let token = rest.split_whitespace().next().unwrap_or("");
+        if token.is_empty()
+            || !token
+                .chars()
+                .all(|c| c.is_ascii_lowercase() || c == '-' || c.is_ascii_digit())
+        {
+            continue;
+        }
+        if !tokens.iter().any(|t| t == token) {
+            tokens.push(token.to_string());
+        }
+    }
+    tokens
+}
+
+/// `--help` 에 일부러 싣지 않는 명령과 그 사유.
+///
+/// 여기 넣어도 되는 것은 "사용자가 부를 일이 없는 내부 프로브"뿐이다. 사유 없는
+/// 허용목록은 가치가 없으므로 각 항목이 이유 문자열을 동반한다.
+const HELP_HIDDEN: &[(&str, &str)] = &[
+    (
+        "core-pages",
+        "코어 페이지 수만 찍는 회귀 조사용 프로브 — 산출물도 --json 계약도 없다",
+    ),
+    (
+        "dump-extents",
+        "레이아웃 트리 extent 원시 덤프 — 렌더러 디버깅 전용이라 사용자 어휘가 아니다",
+    ),
+    (
+        "measure-width",
+        "파일이 아니라 문자열을 받는 글꼴 폭 계산기 — 문서 처리 명령이 아니다",
+    ),
+];
+
+#[test]
+fn help_covers_every_capabilities_command() {
+    // 드리프트 가드 ③(신규): capabilities 가 광고하는 명령은 사람이 보는 `--help` 에도
+    // 있어야 한다. 종전 가드는 help→capabilities 한 방향뿐이라, 매뉴얼 절까지 갖춘
+    // 사용자용 명령이 help 에서 통째로 빠져도 아무도 못 잡았다(extract-pages 가 실제로
+    // 그랬다 — --json 계약까지 가진 명령이 help 에 없었다).
+    let cap = parse_stdout_json(&["capabilities"], &run(&["capabilities"]));
+    let help = help_command_tokens();
+    assert!(
+        help.len() > 10,
+        "help 파서가 명령을 거의 못 찾았습니다 — 파서가 조용히 0건을 내면 이 가드가 \
+         공허하게 통과합니다: {help:?}"
+    );
+
+    let missing: Vec<&str> = cap["commands"]
+        .as_array()
+        .expect("commands 배열")
+        .iter()
+        .filter_map(|c| c["name"].as_str())
+        .filter(|n| !help.iter().any(|h| h.as_str() == *n))
+        .filter(|n| !HELP_HIDDEN.iter().any(|(hidden, _)| *hidden == *n))
+        .collect();
+    assert!(
+        missing.is_empty(),
+        "capabilities 에는 있는데 --help 에 없는 명령: {missing:?}\n\
+         사용자용이면 print_help 에 추가하고, 내부 프로브면 HELP_HIDDEN 에 사유와 함께 넣으세요."
+    );
+
+    // 허용목록이 낡는 것도 같은 부류의 드리프트다 — help 에 실린 명령이 목록에 남아
+    // 있으면 "감췄다"는 설명 자체가 거짓이 되므로 지우게 만든다.
+    let stale: Vec<&str> = HELP_HIDDEN
+        .iter()
+        .map(|(hidden, _)| *hidden)
+        .filter(|hidden| help.iter().any(|h| h.as_str() == *hidden))
+        .collect();
+    assert!(
+        stale.is_empty(),
+        "이미 --help 에 실린 명령이 HELP_HIDDEN 에 남아 있습니다: {stale:?}"
+    );
+
+    for (hidden, why) in HELP_HIDDEN {
+        assert!(
+            !why.trim().is_empty(),
+            "{hidden} 의 은닉 사유가 비었습니다."
+        );
+    }
+}
+
+#[test]
+fn capabilities_declared_flags_are_real_cli_flags() {
+    // 드리프트 가드 ④(신규): `commands[].flags` 에 선언한 플래그는 실제로 존재해야 한다.
+    // 매니페스트는 에이전트가 도구 정의를 자동 생성하는 원천이라(cli_json_pipeline_guide),
+    // 여기 빠진 플래그는 그 에이전트가 영영 못 쓰는 기능이 된다. 여기서는 축 단위
+    // 선언(batch.flags)과 명령 항목 선언(commands[batch].flags)의 어긋남을 잡는다 —
+    // 같은 문서 안에서 서로 다른 말을 하고 있으면 어느 쪽도 믿을 수 없다.
+    let cap = parse_stdout_json(&["capabilities"], &run(&["capabilities"]));
+    let axis: Vec<&str> = cap["batch"]["flags"]
+        .as_array()
+        .expect("batch.flags")
+        .iter()
+        .filter_map(|f| f.as_str())
+        .collect();
+    let entry: Vec<&str> = cap["commands"]
+        .as_array()
+        .expect("commands")
+        .iter()
+        .find(|c| c["name"] == "batch")
+        .expect("batch 항목")["flags"]
+        .as_array()
+        .expect("commands[batch].flags")
+        .iter()
+        .filter_map(|f| f.as_str())
+        .collect();
+    let missing: Vec<&str> = axis
+        .iter()
+        .copied()
+        .filter(|f| !entry.contains(f))
+        .collect();
+    assert!(
+        missing.is_empty(),
+        "batch.flags 에는 있는데 commands[batch].flags 에 없는 플래그: {missing:?}\n\
+         (같은 매니페스트가 서로 다른 말을 하면 소비자는 어느 쪽도 믿을 수 없다)"
+    );
+
+    // edit 의 --occurrence 는 같은 항목 summary 가 이름을 대고 MCP 도구가 고정 배선한다.
+    let edit_flags: Vec<&str> = cap["commands"]
+        .as_array()
+        .expect("commands")
+        .iter()
+        .find(|c| c["name"] == "edit")
+        .expect("edit 항목")["flags"]
+        .as_array()
+        .expect("commands[edit].flags")
+        .iter()
+        .filter_map(|f| f.as_str())
+        .collect();
+    let mcp = parse_stdout_json(&["capabilities", "--mcp"], &run(&["capabilities", "--mcp"]));
+    let wired = mcp["tools"]
+        .as_array()
+        .expect("tools")
+        .iter()
+        .find(|t| t["name"] == "hwp_set_checkbox")
+        .expect("hwp_set_checkbox")["cli"]["args"]
+        .to_string();
+    if wired.contains("--occurrence") {
+        assert!(
+            edit_flags.contains(&"--occurrence"),
+            "MCP 도구가 고정 배선하는 --occurrence 가 edit flags 에 없습니다: {edit_flags:?}"
+        );
+    }
+}
+
+#[test]
+fn capabilities_formats_write_lists_every_produced_format() {
+    // 드리프트 가드 ⑤(신규): 실제로 만들어 내는 형식은 formats.write 에 있어야 한다.
+    // 매니페스트만 읽는 에이전트가 "HWP5 로는 못 쓴다"고 오판하면 변환 축을 통째로 못 쓴다.
+    // 선언을 믿지 않고 **실제로 만들어 본 뒤** 봉투가 보고한 형식과 대조한다.
+    let cap = parse_stdout_json(&["capabilities"], &run(&["capabilities"]));
+    let write: Vec<&str> = cap["formats"]["write"]
+        .as_array()
+        .expect("formats.write")
+        .iter()
+        .filter_map(|f| f.as_str())
+        .collect();
+
+    let src = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let out = std::env::temp_dir().join(format!("rhwp-capdrift-{}.hwp", std::process::id()));
+    let args = [
+        "convert",
+        src.to_str().unwrap(),
+        out.to_str().unwrap(),
+        "--json",
+    ];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
+    let v = parse_stdout_json(&args, &output);
+    let produced = v["format"].as_str().expect("format");
+    assert!(
+        write.contains(&produced),
+        "convert 가 실제로 낸 형식 {produced} 이 formats.write 에 없습니다: {write:?}"
+    );
+    let _ = std::fs::remove_file(&out);
+}

@@ -1197,6 +1197,9 @@ fn show_capabilities(args: &[String]) -> i32 {
                 "--row",
                 "--col",
                 "--text",
+                // 같은 항목의 summary 가 이미 이름을 대고 있고 MCP 도구
+                // hwp_set_checkbox 가 이 플래그를 고정 배선한다 — 목록에만 없었다.
+                "--occurrence",
                 "--keep-style",
                 "-o",
                 "--dry-run",
@@ -1227,7 +1230,9 @@ fn show_capabilities(args: &[String]) -> i32 {
             "batch",
             "stdin 파일 목록을 한 프로세스에서 파일 간 병렬 처리, NDJSON 스트림 출력",
             true,
-            &["--json", "--threads", "--mode"],
+            // --query 는 같은 매니페스트가 광고하는 search 축의 **필수** 인자다
+            // (없으면 exit 2). 축 단위 batch.flags 에는 있는데 명령 항목에만 빠져 있었다.
+            &["--json", "--threads", "--mode", "--query"],
             &["schemaVersion", "source", "error", "exitClass"],
         ),
         // ── 진단 ──
@@ -1248,10 +1253,13 @@ fn show_capabilities(args: &[String]) -> i32 {
             "두 문서의 IR 차이를 JSON으로 비교",
             false,
             &["-s", "-p", "--json"],
+            // 실제 봉투는 a/b 다 (ir-diff 방출부, cli_commands.md 의 문서화된 모양도 동일).
+            // 자기서술만 sourceA/sourceB 로 어긋나 있었다 — 매니페스트로 파서를 만드는
+            // 에이전트는 비교 대상 경로를 통째로 못 읽는다.
             &[
                 "schemaVersion",
-                "sourceA",
-                "sourceB",
+                "a",
+                "b",
                 "identical",
                 "diffCount",
                 "categories",
@@ -1306,7 +1314,10 @@ fn show_capabilities(args: &[String]) -> i32 {
         "schemaVersion": "1.0",
         "tool": "rhwp",
         "version": rhwp::version(),
-        "formats": { "read": ["hwp5", "hwpx", "hwp3", "hml"], "write": ["hwpx", "hml", "pdf", "svg", "png", "txt", "md", "doclang"] },
+        // hwp5 는 convert·extract-pages·edit -o *.hwp 가 실제로 내는 산출 형식이다
+        // (봉투의 format/outputFormat 이 "hwp5"). 쓰기 목록에서 빠져 있어 매니페스트만
+        // 읽은 에이전트가 "HWP5 로는 못 쓴다"고 오판했다.
+        "formats": { "read": ["hwp5", "hwpx", "hwp3", "hml"], "write": ["hwp5", "hwpx", "hml", "pdf", "svg", "png", "txt", "md", "doclang"] },
         "exitCodes": {
             "0": "성공",
             "1": "런타임 실패 (읽기·파싱·렌더·쓰기)",
@@ -1455,6 +1466,15 @@ fn print_help() {
         "                              경로/폰트명에 공백이 있으면 큰따옴표 권장: --font-path \"./My Fonts\""
     );
     println!("                              예: --fallback-sans \"Apple SD Gothic Neo\"");
+    println!();
+    println!("  extract-pages <입력> <출력.hwp> --from N --to M [--json]");
+    println!("      쪽 범위만 남겨 저장 (대형 문서 결함 이분법·부분 발췌)");
+    println!();
+    println!("      --from <N>              시작 쪽 (1부터, 기본: 1)");
+    println!("      --to <M>                끝 쪽 (필수)");
+    println!("      -o, --output <파일>     출력 경로 (위치 인자 대신 지정 가능)");
+    println!("      --json                  전후 쪽수·문단 수 요약을 JSON으로 출력");
+    println!("      쪽 단위로 자르되 문단 단위로 지운다 — 결과 쪽수가 범위와 다를 수 있음");
     println!();
     println!("  export-hwpx <입력.hwp|입력.hwpx> [출력.hwpx] [--verify] [--verify-pages]");
     println!("      HWP 문서를 HWPX(ZIP+XML)로 변환 저장. 출력 생략 시 <입력 stem>.hwpx");
