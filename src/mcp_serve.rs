@@ -22,8 +22,17 @@ use std::io::{BufRead, Write};
 use rhwp::wasm_api::HwpDocument;
 
 const PROTOCOL_VERSION: &str = "2025-06-18";
+/// 이 서버가 실제로 말할 수 있는 프로토콜 개정판 목록.
+///
+/// 요청받은 값을 그대로 되비추면 서버는 `"9999-99-99"` 같은 존재하지 않는 개정판까지
+/// "지원한다"고 답하게 된다 — 그래 놓고 몸통은 `structuredContent`(2025-06-18 신설)처럼
+/// 특정 개정판 전용 표면을 내보내므로, 클라이언트는 **끊어야 할 신호를 영영 못 받은 채**
+/// 못 읽는 응답을 받는다. 지원 목록을 명시적으로 두는 이유가 이것이다.
+/// 새 개정판을 실제로 구현하면 이 배열에 한 줄 더하는 것이 유일한 변경점이다.
+const SUPPORTED_PROTOCOL_VERSIONS: &[&str] = &[PROTOCOL_VERSION];
 /// JSON-RPC 2.0 예약 오류 코드.
 const PARSE_ERROR: i64 = -32700;
+const INVALID_REQUEST: i64 = -32600;
 const METHOD_NOT_FOUND: i64 = -32601;
 const INVALID_PARAMS: i64 = -32602;
 
@@ -119,8 +128,32 @@ pub fn run(args: &[String]) -> i32 {
             }
         };
 
+        // [JSON-RPC 2.0 §5] 파싱은 됐지만 Request 객체가 **아닌** 프레임 — 배열(배치)·
+        // 문자열·숫자·불리언·null. 예전에는 이 프레임에서 `msg.get("id")` 가 None 을
+        // 돌려줘 알림과 구분되지 않았고, 그래서 한 바이트도 쓰지 않고 다음 줄로 넘어갔다.
+        // 스트림은 멀쩡히 살아 있는데 응답 하나만 통째로 증발하므로, 클라이언트는 그 id 를
+        // 영원히 기다린다. 프레임에서 id 를 알아낼 방법이 없으니 규약대로 id=null 로
+        // -32600 을 돌려준다.
+        if !msg.is_object() {
+            let reason = if msg.is_array() {
+                // MCP 2025-06-18 은 JSON-RPC 배치를 명시적으로 제거했다(changelog
+                // "Remove support for JSON-RPC batching"). "배열이라 못 읽었다"가 아니라
+                // "이 개정판에 배치가 없다"라고 짚어줘야 호스트가 요청을 한 줄에 하나씩
+                // 푸는 쪽으로 고칠 수 있다 — 사유가 곧 수정 지시가 되게 한다.
+                "JSON-RPC 배치(배열)는 MCP 2025-06-18 에서 제거되었습니다 — \
+                 요청을 한 줄에 하나씩 보내세요"
+            } else {
+                "요청은 JSON 객체여야 합니다"
+            };
+            write_msg(
+                &stdout,
+                &error_response(serde_json::Value::Null, INVALID_REQUEST, reason),
+            );
+            continue;
+        }
+
         let id = msg.get("id").cloned();
-        let method = msg.get("method").and_then(|m| m.as_str()).unwrap_or("");
+        let method = msg.get("method").and_then(|m| m.as_str());
         let params = msg.get("params").cloned().unwrap_or(serde_json::json!({}));
 
         // 알림(id 없음)은 응답하지 않는다.
@@ -128,13 +161,23 @@ pub fn run(args: &[String]) -> i32 {
             continue;
         };
 
+        // [JSON-RPC 2.0 §4] method 는 문자열이어야 한다. 없거나 문자열이 아니면 "그런
+        // 메서드가 없다"(-32601)가 아니라 "요청 구조가 틀렸다"(-32600)다. 예전에는
+        // `unwrap_or("")` 로 빈 이름을 만들어 -32601 로 흘려보냈고, 문구까지
+        // "지원하지 않는 메서드: " 처럼 이름이 빈 채로 나가 호출자가 원인을 못 짚었다.
+        let Some(method) = method else {
+            write_msg(
+                &stdout,
+                &error_response(id, INVALID_REQUEST, "method 는 문자열이어야 합니다"),
+            );
+            continue;
+        };
+
         let response = match method {
             "initialize" => ok_response(
                 id,
                 serde_json::json!({
-                    "protocolVersion": params.get("protocolVersion")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or(PROTOCOL_VERSION),
+                    "protocolVersion": negotiate_protocol_version(&params),
                     "capabilities": { "tools": {} },
                     "serverInfo": {
                         "name": "rhwp",
@@ -182,6 +225,24 @@ fn error_response(id: serde_json::Value, code: i64, message: &str) -> serde_json
         "jsonrpc": "2.0", "id": id,
         "error": { "code": code, "message": message }
     })
+}
+
+/// [MCP 2025-06-18 lifecycle §Version Negotiation] 클라이언트가 요청한 개정판을
+/// 지원하면 **같은 값**으로, 아니면 서버가 지원하는 다른 개정판으로 응답한다(둘 다 MUST).
+///
+/// 후자가 핵심이다: 클라이언트는 서버가 제시한 개정판을 자기가 못 하면 연결을 끊게
+/// 되어 있는데, 요청값을 되비추면 그 검사가 **항상 통과**해 버려 끊을 기회 자체가
+/// 사라진다. 버전이 없거나 문자열이 아닌 경우도 "요청한 개정판이 목록에 없다"와 같은
+/// 갈래로 접어 서버 기준판을 제시한다.
+fn negotiate_protocol_version(params: &serde_json::Value) -> &'static str {
+    let Some(requested) = params.get("protocolVersion").and_then(|v| v.as_str()) else {
+        return PROTOCOL_VERSION;
+    };
+    SUPPORTED_PROTOCOL_VERSIONS
+        .iter()
+        .find(|supported| **supported == requested)
+        .copied()
+        .unwrap_or(PROTOCOL_VERSION)
 }
 
 /// tools/list 응답: 선언 도구(MCP 필수 3종만 노출) + 세션 도구 3종.
