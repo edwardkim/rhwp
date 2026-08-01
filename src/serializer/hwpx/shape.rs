@@ -352,8 +352,14 @@ pub(crate) fn write_ole<W: Write>(
     let tw = text_wrap_str(c.text_wrap);
     let tf = text_flow_str(c.text_flow);
     // owned 으로 변환해 ctx 불변 borrow 를 즉시 해제(이후 write_caption 의 &mut 사용).
-    let bidref = ctx
-        .resolve_bin_id(ole.bin_data_id as u16)
+    // [버그] ole.bin_data_id 는 HWP5 바이너리 상 4바이트(u32) 필드지만 BinData 테이블은
+    // u16 ID 로 관리된다. 종전에는 `as u16` 로 상위 비트를 자른 뒤 조회해, 65536 이상인
+    // (잘못된/조작된) 값이 하위 16비트가 같은 다른 BinData 항목을 가리키는 오참조를
+    // 일으킬 수 있었다. try_from 으로 범위를 벗어나면 미등록으로 취급해 빈 참조로
+    // 남긴다(기존 "미등록 id → 빈 문자열" 처리와 동일한 안전한 폴백).
+    let bidref = u16::try_from(ole.bin_data_id)
+        .ok()
+        .and_then(|id| ctx.resolve_bin_id(id))
         .unwrap_or("")
         .to_string();
     let draw_aspect = match ole.drawing_aspect {
@@ -1884,5 +1890,48 @@ mod tests {
         assert_eq!(hatch_style_str(5), "CROSS");
         assert_eq!(hatch_style_str(6), "CROSS_DIAGONAL");
         assert_eq!(hatch_style_str(99), "HORIZONTAL");
+    }
+
+    /// [버그] OLE 의 `bin_data_id` 는 HWP5 바이너리상 u32 필드다. 종전 코드는
+    /// `as u16` 로 상위 비트를 잘라 조회했기 때문에, 65536 이상인 id가 하위 16비트가
+    /// 같은 *다른* BinData 항목(예: id=5)을 잘못 가리킬 수 있었다. 이 값이 등록된
+    /// BinData 범위(u16)를 벗어나면 그 어떤 항목도 가리키지 않고 빈 참조로 남아야
+    /// 한다(오참조 방지).
+    #[test]
+    fn ole_bin_data_id_beyond_u16_does_not_alias_truncated_entry() {
+        use crate::model::bin_data::{BinData, BinDataContent, BinDataType};
+        use crate::model::document::Document;
+
+        let mut doc = Document::default();
+        // 하위 16비트가 0x10005 와 같은(=5) 정상 BinData 항목을 등록해 둔다.
+        doc.bin_data_content.push(BinDataContent {
+            id: 5,
+            data: vec![0, 1, 2].into(),
+            extension: "png".to_string(),
+        });
+        doc.doc_info.bin_data_list.push(BinData {
+            data_type: BinDataType::Embedding,
+            storage_id: 5,
+            extension: Some("png".to_string()),
+            ..Default::default()
+        });
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        // 등록 확인: id=5 는 정상적으로 조회돼야 한다.
+        assert_eq!(ctx.resolve_bin_id(5), Some("image5"));
+
+        let ole = OleShape {
+            bin_data_id: 0x1_0005, // truncate 시 5 가 되는 값(범위 밖)
+            drawing_aspect: OleDrawingAspect::Content,
+            ..Default::default()
+        };
+
+        let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
+        write_ole(&mut w, &ole, &mut ctx).expect("write_ole");
+        let xml = String::from_utf8(w.into_inner()).unwrap();
+
+        assert!(
+            !xml.contains(r#"binaryItemIDRef="image5""#),
+            "u32 bin_data_id 가 u16 로 잘려 무관한 image5 를 오참조함: {xml}"
+        );
     }
 }
