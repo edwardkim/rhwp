@@ -18,6 +18,27 @@ fn sample(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
 }
 
+/// 자식이 stdin 을 다 읽기 전에 종료하면 파이프의 읽기 끝이 닫혀 `write_all` 이 `EPIPE` 를
+/// 받는다. 이 파일의 테스트들은 바로 그 동작(`*_rejected_before_consuming_path_stdin`,
+/// `*_rejects_flag_as_out_dir_before_any_write`)을 검증하므로, `BrokenPipe` 는 오류가 아니라
+/// **검증 대상의 정상적인 부산물**이다. 오류로 다루면 기능이 의도대로 일찍 거부할수록 테스트가
+/// 더 자주 깨진다 (#3763).
+///
+/// 실제 계약은 이 함수가 돌려주는 종료 코드·stdout 으로 확인한다. 자식이 정말 stdin 을
+/// 필요로 했다면 그 단언에서 잡히므로 검증력은 줄지 않는다. 그 밖의 쓰기 오류는 그대로 패닉한다.
+fn write_stdin_tolerating_broken_pipe(child: &mut std::process::Child, stdin_body: &str) {
+    match child
+        .stdin
+        .as_mut()
+        .expect("stdin")
+        .write_all(stdin_body.as_bytes())
+    {
+        Ok(()) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::BrokenPipe => {}
+        Err(error) => panic!("stdin 쓰기 실패: {error:?}"),
+    }
+}
+
 fn run_with_stdin(args: &[&str], stdin_body: &str) -> Output {
     let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
         .args(args)
@@ -26,12 +47,7 @@ fn run_with_stdin(args: &[&str], stdin_body: &str) -> Output {
         .stderr(Stdio::piped())
         .spawn()
         .expect("rhwp 실행 실패");
-    child
-        .stdin
-        .as_mut()
-        .expect("stdin")
-        .write_all(stdin_body.as_bytes())
-        .expect("stdin 쓰기 실패");
+    write_stdin_tolerating_broken_pipe(&mut child, stdin_body);
     child.wait_with_output().expect("rhwp 종료 대기 실패")
 }
 
@@ -45,12 +61,7 @@ fn run_with_stdin_in_dir(args: &[&str], stdin_body: &str, current_dir: &Path) ->
         .stderr(Stdio::piped())
         .spawn()
         .expect("rhwp 실행 실패");
-    child
-        .stdin
-        .as_mut()
-        .expect("stdin")
-        .write_all(stdin_body.as_bytes())
-        .expect("stdin 쓰기 실패");
+    write_stdin_tolerating_broken_pipe(&mut child, stdin_body);
     child.wait_with_output().expect("rhwp 종료 대기 실패")
 }
 

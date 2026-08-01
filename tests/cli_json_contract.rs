@@ -24,6 +24,10 @@ fn run(args: &[&str]) -> Output {
 }
 
 /// stdin 으로 파일 목록을 흘려 넣는 batch 실행 헬퍼.
+///
+/// 자식이 stdin 을 다 읽기 전에 종료하면(예: 인자 검증에서 usage 오류로 즉시 거부)
+/// `write_all` 이 `EPIPE` 를 받는다. 이는 오류가 아니라 검증 대상 동작의 정상적인
+/// 부산물이므로 넘어간다 — 실제 계약은 종료 코드·stdout 으로 확인한다 (#3763).
 fn run_with_stdin(args: &[&str], stdin_body: &str) -> Output {
     let mut child = Command::new(rhwp_bin())
         .args(args)
@@ -32,12 +36,16 @@ fn run_with_stdin(args: &[&str], stdin_body: &str) -> Output {
         .stderr(Stdio::piped())
         .spawn()
         .expect("rhwp 실행 실패");
-    child
+    match child
         .stdin
         .as_mut()
         .expect("stdin")
         .write_all(stdin_body.as_bytes())
-        .expect("stdin 쓰기 실패");
+    {
+        Ok(()) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::BrokenPipe => {}
+        Err(error) => panic!("stdin 쓰기 실패: {error:?}"),
+    }
     child.wait_with_output().expect("rhwp 종료 대기 실패")
 }
 
