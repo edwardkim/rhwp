@@ -29,6 +29,7 @@ last_verified: 2026-07-19
 | CI cache 정책 이력 | [Issue #1664 cache 정책 결정](ci_cache_policy_1664.md) | 현재 동작은 `.github/workflows/ci.yml` 재확인 |
 | WASM toolchain 버전 | [wasm-pack 버전 고정 정책](wasm_pack_version_policy.md) | 현재 설치 동작은 `.github/actions/install-wasm-pack/action.yml`과 `Dockerfile` 재확인 |
 | 에이전트 표면 내성 설계 | [경량 에이전트 내성 — CLI·MCP 계약 확장 4건](weak_agent_proofing.md) | [에이전트 실패 사전](../manual/agent_troubleshooting_guide.md), [에이전트 표면 플레이북](../manual/agent_surface_playbook.md) |
+| 외부 바인딩 공통 기반(M18~M20) | [IR 스키마 버저닝·표면 판단·파이썬 1호 명세](bindings_foundation.md) | 로드맵 #3608 M18~M20, [에이전트 표면 플레이북](../manual/agent_surface_playbook.md) |
 | 이슈별 기술 조사 | [이슈별 기술 조사 지도](investigations/README.md) | [Issue #511 IR wrap 조사](investigations/issue-511/README.md), [Issue #1151 picture TAC 조사](investigations/issue-1151/README.md), [Issue #1584 이후 HWPX 잔여 IR 차이 조사](investigations/issue-1584/README.md), [Issue #1658 페이지네이션 조사](investigations/issue-1658/README.md), [Issue #1772 잔여 OVER 조사](investigations/issue-1772/README.md), [Issue #2125 font ownership 조사](investigations/issue-2125/README.md) |
 
 ## 현재 구조를 읽는 법
