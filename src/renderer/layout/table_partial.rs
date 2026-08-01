@@ -1309,6 +1309,7 @@ impl LayoutEngine {
                                                 visible_height: split.visible_height,
                                                 flow_height: split.flow_height,
                                                 offset_within_start: split.offset_within_start,
+                                                terminal: split.terminal,
                                             })
                                         } else if let Some((row_lo, row_hi)) = nested_cut_rows {
                                             // [Task #1073] 페이지네이션 컷의 중첩행 범위로 직접
@@ -1342,6 +1343,10 @@ impl LayoutEngine {
                                                 end_row,
                                                 visible_height: vis_h,
                                                 flow_height: vis_h,
+                                                // [#3658] per-중첩행 컷 경로도 마지막 유닛까지
+                                                // 포함한 컷(end_cut=[])이면 종료 조각이다.
+                                                terminal: cut_units
+                                                    .is_some_and(|(_, eu)| eu == usize::MAX),
                                                 offset_within_start: 0.0,
                                             })
                                         } else if nested_h > available_h + 0.5 {

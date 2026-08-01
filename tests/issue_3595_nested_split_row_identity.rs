@@ -36,8 +36,8 @@ const MARKERS: &[&str] = &[
     "2.자동화평가결과의산출에유리하다고판단되는정보",
 ];
 
-/// 같은 행의 **마지막** 문단. 컷 종료 판정이 꼬리 조각을 남기고 끝나는 별개 결함에
-/// 걸려 아직 렌더되지 않는다.
+/// 같은 행의 **마지막** 문단. [#3658] 종료 조각(end_cut=[])의 셀 하단 드롭이
+/// 이 꼬리 문단을 유실시키던 결함의 회귀 마커.
 const TAIL_MARKER: &str = "○○금융회사대표이사△△△";
 
 fn rendered_text_without_spaces() -> String {
@@ -85,16 +85,15 @@ fn nested_table_sharing_a_paragraph_with_text_is_not_dropped() {
 
 /// 같은 표의 **마지막** 문단까지 렌더되어야 한다.
 ///
-/// 아직 통과하지 못한다. 행 범위 유도(연속 페이지가 뒤 행을 이어받는 것)는 고쳤으나,
-/// 컷 종료 판정이 마지막 조각을 남기고 끝나는 결함이 남아 있다 — 컷이 `end_cut=[]`
-/// 로 완료를 선언해 이어받을 페이지가 만들어지지 않는다.
+/// [#3658] 종전 결함: 컷이 `end_cut=[]` 로 완료를 선언한 종료 조각에서, 렌더가
+/// start_row 를 처음부터 재적층해 행 그리드(747px)보다 커지고(766px+), 초과한
+/// 꼬리 줄이 "셀 하단 초과 줄 드롭"(다음 쪽 소속 줄 제외용)에 걸려 어느 쪽에도
+/// 렌더되지 않았다 — 이어받을 continuation 이 없어 영구 유실.
 ///
-/// 관련 잔여 경로:
-/// - per-중첩행 유닛(`nested_row`)이 렌더 시점 `nested_cut_range` 로 전달되지 않아
-///   `available_h` 휴리스틱으로 폴백하는 경로
-/// - 그 휴리스틱의 오프셋이 `0.0` 으로 고정되어 연속 페이지가 행 0 부터 다시 그리는 결함
+/// 수정: 종료 조각(`NestedTableSplit.terminal`)은 (1) 이전 쪽에 이미 보인
+/// start_row 상단 밴드만큼 `offset_within_start` 를 부여해 잔여 콘텐츠가 행
+/// 그리드 안에 들어가게 하고, (2) 셀 하단 초과 줄 드롭을 적용하지 않는다.
 #[test]
-#[ignore = "컷 종료 판정이 꼬리 조각을 남긴다 — 별건 추적 중"]
 fn nested_table_tail_paragraph_is_rendered() {
     let rendered = rendered_text_without_spaces();
     assert!(

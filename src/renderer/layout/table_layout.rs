@@ -389,6 +389,10 @@ pub(crate) struct NestedTableSplit {
     pub flow_height: f64,
     /// start_row 내부 오프셋: 이미 이전 페이지에 렌더링된 start_row 상단 부분의 높이
     pub offset_within_start: f64,
+    /// [#3658] 이 조각이 해당 셀 콘텐츠의 **마지막** 조각인가 (컷이 마지막 유닛까지
+    /// 포함 — end_cut 종료). true 면 이어받을 continuation 이 없으므로 셀 하단 초과
+    /// 줄 드롭(다음 쪽 소속 줄 제외용)을 적용하지 않는다 — 꼬리 문단 유실 방지.
+    pub terminal: bool,
 }
 
 /// 중첩 표에서 pixel offset/space를 행 범위로 변환한다.
@@ -407,6 +411,7 @@ pub(crate) fn calc_nested_split_rows(
             visible_height: 0.0,
             flow_height: 0.0,
             offset_within_start: 0.0,
+            terminal: false,
         };
     }
 
@@ -474,6 +479,7 @@ pub(crate) fn calc_nested_split_rows(
         visible_height,
         flow_height: visible_height,
         offset_within_start: 0.0,
+        terminal: false,
     }
 }
 
@@ -500,6 +506,10 @@ struct HorizontalCellVars {
     depth: usize,
     clamp_header_negative_para_offset: bool,
     inline_table_flow_y_shift: f64,
+    /// [#3658] 분할 렌더(row_filter)가 이 셀 콘텐츠의 마지막 조각인가.
+    /// true 면 셀 하단 초과 줄 드롭(다음 쪽 소속 줄 제외)을 적용하지 않는다 —
+    /// 이어받을 continuation 이 없어 드롭된 꼬리 줄은 영구 유실되기 때문.
+    split_terminal: bool,
 }
 
 impl LayoutEngine {
@@ -993,6 +1003,8 @@ impl LayoutEngine {
         } else {
             (0.0, None, 0.0)
         };
+        // [#3658] 종료 조각 여부 — 셀 하단 초과 줄 드롭 예외 판정에 사용.
+        let split_terminal = nested_split.is_some_and(|s| s.terminal);
 
         let row_col_x = build_row_col_x(
             table,
@@ -1270,6 +1282,7 @@ impl LayoutEngine {
             split_row_range,
             row_y_shift,
             split_y_offset,
+            split_terminal,
             clamp_header_negative_para_offset,
             inline_table_flow_y_shift,
             header_footer_padding_compat,
@@ -2684,6 +2697,7 @@ impl LayoutEngine {
             depth,
             clamp_header_negative_para_offset,
             inline_table_flow_y_shift,
+            split_terminal,
         } = v;
         let inner_area = LayoutRect {
             x: inner_x,
@@ -2834,8 +2848,11 @@ impl LayoutEngine {
 
             if !has_block_table_ctrl {
                 let is_last_para = cp_idx + 1 == composed_paras.len();
-                // 분할 중첩 표: 셀 하단을 초과하는 줄은 렌더링하지 않음
-                let end_line = if row_filter.is_some() {
+                // 분할 중첩 표: 셀 하단을 초과하는 줄은 렌더링하지 않음.
+                // [#3658] 단, 종료 조각(split_terminal)은 예외 — 이어받을 continuation
+                // 이 없으므로 드롭하면 꼬리 줄이 영구 유실된다. 재적층 드리프트로
+                // 수 px 넘치는 마지막 줄은 오버플로 감수하고 렌더한다.
+                let end_line = if row_filter.is_some() && !split_terminal {
                     let cell_bottom = cell_y + cell_h;
                     let mut sim_y = para_y;
                     let mut fit = composed.lines.len();
@@ -3995,6 +4012,7 @@ impl LayoutEngine {
         row_filter: Option<(usize, usize)>,
         row_y_shift: f64,
         split_y_offset: f64,
+        split_terminal: bool,
         clamp_header_negative_para_offset: bool,
         inline_table_flow_y_shift: f64,
         header_footer_padding_compat: bool,
@@ -4447,6 +4465,7 @@ impl LayoutEngine {
                         depth,
                         clamp_header_negative_para_offset,
                         inline_table_flow_y_shift,
+                        split_terminal,
                     },
                 );
             } // else (가로쓰기)
@@ -7521,17 +7540,50 @@ impl LayoutEngine {
                 _ => None,
             })
         });
-        let (start_row, end_row, row_offset_within_start) = match nested {
+        // [#3658] 이 컷이 셀의 마지막 유닛까지 포함하면(end_cut=[] 종료) 이 조각이
+        // 이 셀 콘텐츠의 마지막 조각이다 — 이후 continuation 이 만들어지지 않는다.
+        let terminal = end_unit >= units.len();
+        let (start_row, end_row, row_offset_within_start, visible_height) = match nested {
             Some(nt) if nt.row_count > 1 => {
                 let ncol = nt.col_count as usize;
                 let nrow = nt.row_count as usize;
                 let row_heights = self.resolve_row_heights(nt, ncol, nrow, None, styles, true);
                 let cs = hwpunit_to_px(nt.cell_spacing as i32, self.dpi);
                 let rows = calc_nested_split_rows(&row_heights, cs, offset, visible);
-                (rows.start_row, rows.end_row, rows.offset_within_start)
+                // [#3658] 종료 조각: start_row 상단 중 이전 쪽에 이미 보인 밴드만큼
+                // 내부 오프셋을 부여한다. 종전(0.0 고정)에는 종료 조각이 start_row 를
+                // 처음부터 재적층해 행 그리드보다 커지고, 초과한 꼬리 문단이 셀 하단
+                // 드롭에 걸려 어느 쪽에도 렌더되지 않았다 (75544 pi=527: 재적층 766px
+                // vs 행높이 747px → 마지막 2문단 유실). 이미 보인 밴드를 건너뛰면
+                // 잔여 콘텐츠가 행 그리드 안에 들어가고 중복 렌더도 없다.
+                let shown_band = if terminal && rows.start_row > 0 && rows.end_row >= nrow {
+                    let mut prefix = 0.0f64;
+                    for (r, rh) in row_heights.iter().enumerate().take(rows.start_row) {
+                        prefix += rh;
+                        if r + 1 < nrow {
+                            prefix += cs;
+                        }
+                    }
+                    let band = offset - prefix;
+                    if band > 0.5 {
+                        band
+                    } else {
+                        0.0
+                    }
+                } else {
+                    0.0
+                };
+                let vis_h = if terminal && shown_band > 0.0 {
+                    // 종료 조각의 표시 상자는 포함 행 전체(그리드) 높이를 유지한다 —
+                    // 유닛 회계 기반 상자가 행 그리드보다 작으면 셀 클립이 꼬리를 자른다.
+                    visible_height.max(rows.visible_height)
+                } else {
+                    visible_height
+                };
+                (rows.start_row, rows.end_row, shown_band, vis_h)
             }
             // 1행 표는 종전 규약 유지 — 행 경계가 없어 오프셋만으로 이어진다.
-            _ => (0, 1, offset_within_start),
+            _ => (0, 1, offset_within_start, visible_height),
         };
         Some(NestedTableSplit {
             start_row,
@@ -7542,6 +7594,7 @@ impl LayoutEngine {
             // border wraps only that tail line and the following paragraph in
             // the host cell starts below it.
             offset_within_start: row_offset_within_start,
+            terminal,
         })
     }
 
