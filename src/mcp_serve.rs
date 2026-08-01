@@ -368,7 +368,18 @@ fn handle_tool_call(
         "hwp_close" => Ok(session_close(&args, sessions)),
         _ => {
             let Some(def) = tool_defs.iter().find(|t| t["name"] == name) else {
-                return Ok(tool_error(format!("알 수 없는 도구: {name}")));
+                // [#3694] didYouMean — error 필드가 기존 원문을 담아 하위호환.
+                let error = format!("알 수 없는 도구: {name}");
+                let candidates: Vec<&str> = tool_defs
+                    .iter()
+                    .filter_map(|t| t["name"].as_str())
+                    .collect();
+                let did_you_mean: Vec<String> = crate::closest_name(name, candidates.into_iter())
+                    .into_iter()
+                    .collect();
+                return Ok(tool_error(
+                    serde_json::json!({ "error": error, "didYouMean": did_you_mean }).to_string(),
+                ));
             };
             Ok(run_cli_tool(def, &args))
         }
