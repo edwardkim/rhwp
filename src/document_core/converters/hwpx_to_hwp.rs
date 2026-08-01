@@ -20,7 +20,7 @@ use std::collections::BTreeSet;
 
 use crate::model::bin_data::{BinDataContent, BinDataStatus, BinDataType};
 use crate::model::control::Control;
-use crate::model::document::{Document, Section, SectionDef};
+use crate::model::document::{Document, HwpVersion, Section, SectionDef};
 use crate::model::image::Picture;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{common_obj_offsets, ShapeObject, TextBox};
@@ -60,6 +60,8 @@ pub struct AdapterReport {
     pub border_fills_no_fill_normalized: u32,
     /// HWPX 출처 FileHeader를 HWP5 compressed 저장 관례로 보정한 횟수
     pub file_header_compression_normalized: u32,
+    /// [#3706] HWP3 출처 FileHeader 버전(major=3)을 HWP5 버전으로 실체화한 횟수
+    pub file_header_version_materialized: u32,
     /// HWPX 출처 DocProperties.section_count 보정 횟수
     pub doc_properties_section_count_normalized: u32,
     /// HWPX embedded BinData metadata 보정 횟수
@@ -133,6 +135,7 @@ impl AdapterReport {
                 + self.cells_list_header_contract_materialized
                 + self.border_fills_no_fill_normalized
                 + self.file_header_compression_normalized
+                + self.file_header_version_materialized
                 + self.doc_properties_section_count_normalized
                 + self.bin_data_metadata_normalized
                 + self.bin_data_order_materialized
@@ -582,6 +585,33 @@ fn normalize_file_header_for_hwp(doc: &mut Document, report: &mut AdapterReport)
 
     if doc.header.flags & 0x01 == 0 {
         doc.header.flags |= 0x01;
+        changed = true;
+    }
+
+    // [#3706, #3676 후속] HWP3 파서는 HWP5 컨테이너용 버전(5.0.3.0)을 `raw_data` 바이트
+    // (32..36 = revision/build/minor/major)에만 기록하고, 필드 `version` 은
+    // major=3 (메모리 전용 표시)으로 남긴다 — `serialize_file_header` 가
+    // raw_data 를 우선 쓰는 것을 전제한 설계다 (`parser/hwp3/mod.rs`).
+    // 그런데 본 함수가 아래에서 raw_data 를 버리므로 직렬화가 필드 경로로
+    // 떨어져 HWP5 컨테이너에 버전 3 이 기록됐다(규격 위반 — 한컴 저장본은
+    // 예외 없이 5.x). 버리기 전에 raw_data 의 5.x 버전을 필드로 회수하고,
+    // 회수할 수 없으면 파서 기본값 5.0.3.0 으로 실체화한다.
+    // 이미 5.x 인 경로(HWPX 파서는 5.1.0.0 을 필드에 직접 기록)는 무변경.
+    if doc.header.version.major < 5 {
+        let salvaged = doc
+            .header
+            .raw_data
+            .as_deref()
+            .filter(|raw| raw.len() >= 36 && raw[35] >= 5)
+            .map(|raw| (raw[35], raw[34], raw[33], raw[32]));
+        let (major, minor, build, revision) = salvaged.unwrap_or((5, 0, 3, 0));
+        doc.header.version = HwpVersion {
+            major,
+            minor,
+            build,
+            revision,
+        };
+        report.file_header_version_materialized += 1;
         changed = true;
     }
 
