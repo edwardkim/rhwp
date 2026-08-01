@@ -282,6 +282,26 @@ fn test_set_column_widths_wrong_len() {
 // === merge_cells 테스트 ===
 
 #[test]
+fn test_merge_cells_zero_span_cell_does_not_panic() {
+    // 손상된 HWP5 문서에서 row_span/col_span이 0으로 파싱될 수 있다
+    // (src/parser/control.rs 참고). merge_cells()가 겹침 검사 시
+    // `row + row_span - 1`을 saturating 없이 계산하면 u16 언더플로로
+    // 패닉했다. 정상 표 안에 span 0인 셀이 섞여 있어도 패닉 없이
+    // 동작해야 한다 (회귀 방지).
+    let mut table = make_table(2, 2);
+    // 병합 대상 범위 밖의 셀에 span 0을 주입해, retain 이전의
+    // 겹침 검사 루프가 이 셀도 순회하도록 한다.
+    if let Some(cell) = table.cells.iter_mut().find(|c| c.col == 1 && c.row == 1) {
+        cell.row_span = 0;
+        cell.col_span = 0;
+    }
+
+    // 패닉하지 않고 정상적으로 (0,0)-(0,0) 병합(사실상 no-op)이 처리되어야 한다.
+    let result = table.merge_cells(0, 0, 0, 0);
+    assert!(result.is_ok());
+}
+
+#[test]
 fn test_merge_cells_2x2_full() {
     let mut table = make_table(2, 2);
 

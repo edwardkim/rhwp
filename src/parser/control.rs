@@ -362,8 +362,11 @@ fn parse_cell(records: &[Record]) -> Cell {
     // 셀 속성 (표 82: 26바이트)
     cell.col = r.read_u16().unwrap_or(0);
     cell.row = r.read_u16().unwrap_or(0);
-    cell.col_span = r.read_u16().unwrap_or(1);
-    cell.row_span = r.read_u16().unwrap_or(1);
+    // 손상된 문서는 colSpan/rowSpan에 0을 기록할 수 있다. HWPX/HWP3 파서는
+    // 이미 .max(1)로 최소 1을 보장하므로 HWP5도 동일하게 정규화한다
+    // (0이면 이후 병합/렌더링 로직의 `row + row_span - 1` 계산이 언더플로한다).
+    cell.col_span = r.read_u16().unwrap_or(1).max(1);
+    cell.row_span = r.read_u16().unwrap_or(1).max(1);
     cell.width = r.read_u32().unwrap_or(0);
     cell.height = r.read_u32().unwrap_or(0);
 

@@ -1313,9 +1313,15 @@ impl Table {
         }
 
         // 범위 내 셀이 모두 범위 안에 들어오는지 확인 (부분 겹침 방지)
+        //
+        // row_span/col_span은 정상 경로(HWPX/HWP3 파서)에서는 항상 1 이상으로
+        // 정규화되지만, HWP5 바이너리 파서(src/parser/control.rs)는 파일에 기록된
+        // 값을 검증 없이 그대로 사용하므로 손상된 문서에서는 0이 들어올 수 있다.
+        // saturating 연산 없이 `row + row_span - 1`을 계산하면 row_span=0일 때
+        // u16 언더플로로 패닉한다.
         for cell in &self.cells {
-            let cell_end_row = cell.row + cell.row_span - 1;
-            let cell_end_col = cell.col + cell.col_span - 1;
+            let cell_end_row = cell.row.saturating_add(cell.row_span).saturating_sub(1);
+            let cell_end_col = cell.col.saturating_add(cell.col_span).saturating_sub(1);
 
             // 셀이 범위와 겹치는지 확인
             let overlaps = cell.col <= end_col
