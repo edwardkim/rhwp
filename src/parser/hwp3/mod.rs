@@ -927,6 +927,20 @@ struct Hwp3DrawingCarry<'a> {
     info_buf: &'a mut Vec<u8>,
 }
 
+/// HWP3 표 셀 안여백 필드(부호 있는 16비트, 단위 1/100mm)를 IR HU(1/7200inch)
+/// 스케일(×4)로 변환한다.
+///
+/// [오버플로 결함] 종전엔 `read_i16(..) as u32 * 4` 로 직접 계산했다. 음수 i16 값을
+/// 곧바로 `as u32`로 캐스팅하면 부호가 거대한 양의 값으로 뒤집히는데(예: -1 ->
+/// 4294967295), 이후 `* 4`는 u32 범위를 넘어 debug 빌드(오버플로 체크 on, 테스트
+/// 기본 프로필)에서 곱셈 자체가 패닉한다. i32 중간값을 거쳐 오버플로 패닉 없이
+/// 계산한다.
+fn read_hwp3_cell_padding_scaled(mut bytes: &[u8]) -> i16 {
+    use byteorder::{LittleEndian, ReadBytesExt};
+    let raw = bytes.read_i16::<LittleEndian>().unwrap_or(0) as i32;
+    (raw * 4) as i16
+}
+
 /// [#2003 추출] 개체 컨트롤 디스패치 — ch==10(표/글상자/수식/버튼)·11(그리기)·
 /// 14~17·29·5~8 의 if-else 체인 전체. 원본 무변경 이동 (셀·캡션은
 /// `parse_paragraph_list` 재귀). 반환 `Some(중단여부)` = 호출자 조기 return,
@@ -1061,19 +1075,21 @@ fn parse_hwp3_object_dispatch(
         // 미리 채워두면 serializer/hwpx_to_hwp 수정 없이 attr가 올바르게 저장된다.
         table.raw_ctrl_data = build_raw_ctrl_data(&table.common);
 
-        let cell_padding_left =
-            (&info_buf[34..36]).read_i16::<LittleEndian>().unwrap_or(0) as u32 * 4;
-        let cell_padding_right =
-            (&info_buf[36..38]).read_i16::<LittleEndian>().unwrap_or(0) as u32 * 4;
-        let cell_padding_top =
-            (&info_buf[38..40]).read_i16::<LittleEndian>().unwrap_or(0) as u32 * 4;
-        let cell_padding_bottom =
-            (&info_buf[40..42]).read_i16::<LittleEndian>().unwrap_or(0) as u32 * 4;
+        // [오버플로 결함] 종전엔 `read_i16(..) as u32 * 4` 로 계산했다. 음수 i16 값을
+        // 곧바로 `as u32`로 캐스팅하면 부호가 거대한 양의 값으로 뒤집히는데(예:
+        // -1 -> 4294967295), 이후 `* 4` 는 u32 범위를 넘어 debug 빌드(오버플로 체크
+        // on, 테스트 기본 프로필)에서 곱셈 자체가 패닉한다. `read_hwp3_margin_scaled`
+        // (표/그림 바깥여백·안여백, PR #3757)와 동형으로 i32 중간값을 거쳐
+        // 오버플로 패닉 없이 계산한다.
+        let cell_padding_left = read_hwp3_cell_padding_scaled(&info_buf[34..36]);
+        let cell_padding_right = read_hwp3_cell_padding_scaled(&info_buf[36..38]);
+        let cell_padding_top = read_hwp3_cell_padding_scaled(&info_buf[38..40]);
+        let cell_padding_bottom = read_hwp3_cell_padding_scaled(&info_buf[40..42]);
 
-        table.padding.left = cell_padding_left as i16;
-        table.padding.right = cell_padding_right as i16;
-        table.padding.top = cell_padding_top as i16;
-        table.padding.bottom = cell_padding_bottom as i16;
+        table.padding.left = cell_padding_left;
+        table.padding.right = cell_padding_right;
+        table.padding.top = cell_padding_top;
+        table.padding.bottom = cell_padding_bottom;
 
         let caption_width = (&info_buf[46..48]).read_u16::<LittleEndian>().unwrap_or(0) as u32 * 4;
         let caption_pos = (&info_buf[70..72]).read_u16::<LittleEndian>().unwrap_or(0);
@@ -1173,10 +1189,10 @@ fn parse_hwp3_object_dispatch(
             cell.width = w as u32;
             cell.height = h as u32;
 
-            cell.padding.left = cell_padding_left as i16;
-            cell.padding.right = cell_padding_right as i16;
-            cell.padding.top = cell_padding_top as i16;
-            cell.padding.bottom = cell_padding_bottom as i16;
+            cell.padding.left = cell_padding_left;
+            cell.padding.right = cell_padding_right;
+            cell.padding.top = cell_padding_top;
+            cell.padding.bottom = cell_padding_bottom;
 
             let v_align = cell_info[19];
             cell.vertical_align = match v_align {
@@ -4662,6 +4678,36 @@ mod tests {
     use super::*;
     use std::fs::File;
     use std::io::Read;
+
+    #[test]
+    fn read_hwp3_cell_padding_scaled_preserves_large_negative_values_without_overflow_panic() {
+        // [오버플로 결함] 종전 `read_i16(..) as u32 * 4` 는 음수 i16을 곧바로 u32로
+        // 캐스팅해 거대한 양의 값으로 뒤집은 뒤 곱셈했다. 이 곱셈은 u32 범위를 넘어
+        // debug 빌드(오버플로 체크 on, 테스트 기본 프로필)에서 패닉했다. 이 회귀
+        // 테스트는 음수 셀 패딩 입력이 패닉 없이 wrapping 스케일된 결과를 내는지
+        // 확인한다.
+        let minus_one: [u8; 2] = (-1i16).to_le_bytes();
+        // 종전 결함 재현: (-1i16 as u32) * 4 == 4294967292, u32 곱셈이 아니라 이미
+        // as u32 캐스팅에서 뒤집힌 값이지만, u32::MAX 근방에서 4를 곱하면 오버플로.
+        assert_eq!(read_hwp3_cell_padding_scaled(&minus_one), -4);
+
+        let large_negative: [u8; 2] = (-9000i16).to_le_bytes();
+        // -9000 * 4 = -36000, i16 범위(-32768)를 넘어 i32 -> i16 캐스팅에서 wrapping.
+        assert_eq!(
+            read_hwp3_cell_padding_scaled(&large_negative),
+            (-36000i32) as i16,
+            "8192 이상 절댓값의 음수 셀 패딩은 패닉 없이 wrapping 스케일돼야 함"
+        );
+
+        let small_negative: [u8; 2] = (-100i16).to_le_bytes();
+        assert_eq!(read_hwp3_cell_padding_scaled(&small_negative), -400);
+
+        let positive: [u8; 2] = 200i16.to_le_bytes();
+        assert_eq!(read_hwp3_cell_padding_scaled(&positive), 800);
+
+        let zero: [u8; 2] = 0i16.to_le_bytes();
+        assert_eq!(read_hwp3_cell_padding_scaled(&zero), 0);
+    }
 
     #[test]
     fn test_convert_para_shape_wires_border_connection_into_attr1_bit28() {
