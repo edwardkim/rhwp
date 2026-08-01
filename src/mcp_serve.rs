@@ -1279,10 +1279,17 @@ fn session_save(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
         );
     };
 
-    let format = if sd.source_is_hwpx {
-        crate::EditOutputFormat::Hwpx
-    } else {
-        crate::EditOutputFormat::Hwp
+    // [버그] `output` 경로의 확장자를 무시하고 원본 포맷(source_is_hwpx)만으로 직렬화
+    // 형식을 정했다 — HWPX 핸들을 `.hwp` 경로로 저장해도 zip(HWPX) 바이트를 그대로
+    // 써 버려 확장자와 실제 내용이 어긋났다. CLI의 `edit_output_format`(main.rs)은
+    // 명시적 출력 확장자를 우선하는데, MCP 세션 경로만 비동형이었다. 같은 규칙을 쓴다.
+    let explicit_ext = std::path::Path::new(output)
+        .extension()
+        .map(|ext| ext.to_string_lossy().to_ascii_lowercase());
+    let format = match (sd.source_is_hwpx, explicit_ext.as_deref()) {
+        (true, Some("hwp")) => crate::EditOutputFormat::Hwp,
+        (true, _) => crate::EditOutputFormat::Hwpx,
+        (false, _) => crate::EditOutputFormat::Hwp,
     };
     // HWP5 산출 경로의 어댑터(`convert_if_hwpx_source`)는 `Hwpx | Hwp3` 양쪽에서 돌며
     // 살아 있는 IR 을 제자리에서 고친다. 도구 계약이 "핸들은 저장 후에도 열려 있다"

@@ -225,6 +225,57 @@ fn session_save_preserves_hwpx_format() {
     let _ = std::fs::remove_file(&out);
 }
 
+/// [버그] `hwp_doc_save` 는 `output` 경로의 확장자를 무시하고 원본 포맷
+/// (`source_is_hwpx`) 만으로 직렬화 형식을 정했다 — HWPX 로 연 핸들을 `.hwp`
+/// 경로로 저장해도 zip(HWPX) 바이트를 그대로 써서 확장자와 실제 내용이
+/// 어긋났다. CLI 의 `edit_output_format` 은 명시적 출력 확장자를 우선하는데
+/// (`.hwp` 지정 시 HWP5 로 변환), MCP 세션 경로만 비동형이었다. `.hwp` 로
+/// 저장하면 실제로 HWP5(CFB, `D0 CF 11 E0`) 바이트가 나와야 한다.
+#[test]
+fn session_save_honors_explicit_hwp_output_extension_for_hwpx_source() {
+    let src = sample();
+    if !src.exists() {
+        eprintln!("샘플 없음 — 건너뜀");
+        return;
+    }
+    let hwpx_src = temp_path("ext-src", "hwpx");
+    let conv = run_cli(&[
+        "export-hwpx",
+        src.to_str().unwrap(),
+        hwpx_src.to_str().unwrap(),
+    ]);
+    assert_eq!(conv.status.code(), Some(0), "사전 변환 실패");
+
+    let mut s = Server::started();
+    let doc_id = s.open(&hwpx_src);
+
+    // HWPX 핸들인데 출력 경로 확장자는 .hwp — CLI 규약대로 HWP5 로 변환 저장돼야 한다.
+    let out = temp_path("ext-out", "hwp");
+    let (err, sv) = s.call(
+        "hwp_doc_save",
+        serde_json::json!({"docId": doc_id, "output": out.to_str().unwrap()}),
+    );
+    assert!(!err, "{sv}");
+    assert_eq!(
+        sv["outputFormat"], "hwp5",
+        "output 확장자 .hwp 를 존중해 HWP5 로 저장해야 합니다: {sv}"
+    );
+
+    let bytes = std::fs::read(&out).expect(".hwp 출력 파일을 읽을 수 없습니다");
+    assert!(
+        bytes.starts_with(&[0xD0, 0xCF, 0x11, 0xE0]),
+        ".hwp 로 저장했는데 HWP5(CFB) 바이트가 아닙니다 — 처음 4바이트: {:02X?}",
+        &bytes[..bytes.len().min(4)]
+    );
+    assert!(
+        !bytes.starts_with(b"PK"),
+        ".hwp 로 저장했는데 여전히 HWPX(zip) 바이트가 그대로 나왔습니다: {sv}"
+    );
+
+    let _ = std::fs::remove_file(&hwpx_src);
+    let _ = std::fs::remove_file(&out);
+}
+
 #[test]
 fn session_fill_reports_judgment_fields_like_stateless() {
     // 무상태 hwp_fill_fields 와 같은 판정 어휘 — notFound 는 침묵하지 않는다.
