@@ -7739,7 +7739,14 @@ fn search_document(args: &[String]) -> i32 {
                 }
             }
             other if !end_of_options && other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
+                // 옵션 오타는 계속 거부한다(삼키면 오타가 검색어가 되어 조용히 0건이 된다).
+                // 다만 검색어가 정말 '-' 로 시작하는 경우 빠져나갈 길을 알려줘야 한다 —
+                // 안내가 없으면 에이전트는 "고치라"는 exit 2 를 받고도 고칠 방법을 모른다.
+                eprintln!(
+                    "알 수 없는 옵션: {other}\n\
+                     힌트: 검색어가 '-' 로 시작한다면 `--` 뒤에 두세요 — \
+                     rhwp search <파일> --json -- <검색어>"
+                );
                 return EXIT_USAGE;
             }
             other => {
