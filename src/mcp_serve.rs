@@ -93,7 +93,13 @@ pub fn run(args: &[String]) -> i32 {
                 .unwrap_or(false)
         });
     }
-    let include_session = profile.map(|p| p.session).unwrap_or(true);
+    // 세션 도구도 이름 단위로 건다 — 프로필이 없으면 전 도구, 있으면 그 프로필의
+    // session_tools 목록. 종전에는 bool 하나라 조회 전용 직무가 세션을 쓰려면
+    // 편집·저장까지 통째로 열렸다.
+    let session_allows = move |name: &str| match profile {
+        None => true,
+        Some(p) => crate::agent_profiles::allows_session_tool(p, name),
+    };
     let mut sessions = Sessions::new();
 
     for line in stdin.lock().lines() {
@@ -146,11 +152,11 @@ pub fn run(args: &[String]) -> i32 {
             "tools/list" => ok_response(
                 id,
                 serde_json::json!({
-                    "tools": served_tools(&tool_defs, include_session)
+                    "tools": served_tools(&tool_defs, &session_allows)
                 }),
             ),
             "tools/call" => {
-                match handle_tool_call(&params, &tool_defs, include_session, &mut sessions) {
+                match handle_tool_call(&params, &tool_defs, &session_allows, &mut sessions) {
                     Ok(result) => ok_response(id, result),
                     Err(e) => error_response(id, INVALID_PARAMS, &e),
                 }
@@ -185,7 +191,10 @@ fn error_response(id: serde_json::Value, code: i64, message: &str) -> serde_json
 }
 
 /// tools/list 응답: 선언 도구(MCP 필수 3종만 노출) + 세션 도구 3종.
-fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<serde_json::Value> {
+fn served_tools(
+    tool_defs: &[serde_json::Value],
+    session_allows: &dyn Fn(&str) -> bool,
+) -> Vec<serde_json::Value> {
     let mut tools: Vec<serde_json::Value> = tool_defs
         .iter()
         .map(|t| {
@@ -196,10 +205,10 @@ fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<s
             })
         })
         .collect();
-    if !include_session {
-        return tools;
-    }
-    tools.push(serde_json::json!({
+    // 세션 도구는 이름 단위로 걸러 내보낸다 — tools/list 와 tools/call 이 같은
+    // 판정 함수를 쓰므로 목록에서 뺀 도구를 호출로 우회할 수 없다.
+    let mut session: Vec<serde_json::Value> = Vec::new();
+    session.push(serde_json::json!({
         "name": "hwp_open",
         "description": "문서를 파싱해 세션 핸들(docId)을 연다. 대형 문서를 여러 번 조회할 때 재파싱을 피한다. 암호 문서는 선택 password를 쓴다. 조회가 끝나면 hwp_close 로 닫는다.",
         "inputSchema": {
@@ -215,7 +224,7 @@ fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<s
             "required": ["path"]
         }
     }));
-    tools.push(serde_json::json!({
+    session.push(serde_json::json!({
         "name": "hwp_doc_text",
         "description": "hwp_open 으로 연 핸들에서 페이지 텍스트를 재파싱 없이 읽는다.",
         "inputSchema": {
@@ -227,27 +236,27 @@ fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<s
             "required": ["docId"]
         }
     }));
-    tools.push(serde_json::json!({
+    session.push(serde_json::json!({
         "name": "hwp_doc_info",
         "description": "[#3609] 핸들의 메타(형식·페이지/문단 수·폰트)를 재파싱 없이 조회한다. 편집 후 페이지 수 변화를 추적할 때 쓴다. 봉투는 hwp_info 와 동형.",
         "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
     }));
-    tools.push(serde_json::json!({
+    session.push(serde_json::json!({
         "name": "hwp_doc_fields",
         "description": "[#3609] 핸들의 누름틀을 재파싱 없이 조사한다. hwp_doc_fill_fields 직후 반영값 확인에 쓴다. 봉투는 hwp_fields 와 동형.",
         "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
     }));
-    tools.push(serde_json::json!({
+    session.push(serde_json::json!({
         "name": "hwp_doc_tables",
         "description": "[#3609] 핸들의 표 격자를 재파싱 없이 추출한다. 봉투는 hwp_export_tables 와 동형.",
         "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" } }, "required": ["docId"] }
     }));
-    tools.push(serde_json::json!({
+    session.push(serde_json::json!({
         "name": "hwp_doc_render_page",
         "description": "[#3609] 핸들에서 해당 쪽을 SVG 로 렌더해 저장한다 — 편집 직후 눈검증(VLM) 루프가 세션 안에서 닫힌다.",
         "inputSchema": { "type": "object", "properties": { "docId": { "type": "string" }, "page": { "type": "integer", "minimum": 0 }, "output": { "type": "string", "description": "출력 SVG 경로" } }, "required": ["docId", "page", "output"] }
     }));
-    tools.push(serde_json::json!({
+    session.push(serde_json::json!({
         "name": "hwp_doc_search",
         "description": "[#3601] hwp_open 으로 연 핸들에서 재파싱 없이 검색한다. 주소 어휘(matches[].section/paragraph/page/context)는 hwp_search 와 동형 — 대형 문서에서 '어디를 고칠까'를 반복 탐색할 때 쓴다.",
         "inputSchema": {
@@ -260,7 +269,7 @@ fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<s
             "required": ["docId", "query"]
         }
     }));
-    tools.push(serde_json::json!({
+    session.push(serde_json::json!({
         "name": "hwp_doc_replace_text",
         "description": "[#3601] 핸들의 IR 에 문자열 일괄 치환을 누적한다(디스크 미기록 — hwp_doc_save 가 기록 지점). replacedCount 0 은 오류가 아니라 계수 보고다. hwp_doc_fill_fields 와 조합해 '채우고 다듬고 한 번에 저장'하는 흐름을 만든다.",
         "inputSchema": {
@@ -274,7 +283,7 @@ fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<s
             "required": ["docId", "find", "replace"]
         }
     }));
-    tools.push(serde_json::json!({
+    session.push(serde_json::json!({
         "name": "hwp_doc_set_cell",
         "description": "[#3603] 핸들의 표 격자 좌표(hwp_doc_tables 와 동일)에 값을 기록한다 — 디스크 미기록, hwp_doc_save 가 기록 지점. 병합으로 덮인 칸은 앵커 좌표를 안내하며 실패하고, 칸 넘침은 overflow 로 보고한다(무상태 hwp_set_cell 과 동형).",
         "inputSchema": {
@@ -290,7 +299,7 @@ fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<s
             "required": ["docId", "table", "row", "col", "text"]
         }
     }));
-    tools.push(serde_json::json!({
+    session.push(serde_json::json!({
         "name": "hwp_doc_fill_fields",
         "description": "[#3598] hwp_open 으로 연 핸들의 IR 에 누름틀 값을 직접 채운다(디스크 미기록 — hwp_doc_save 가 유일한 기록 지점). 여러 번 호출하면 누적된다. 판정 필드(filledCount/notFound/ambiguous)는 hwp_fill_fields 와 동형이고, 반복 필드는 '이름[N]' 으로 지목한다.",
         "inputSchema": {
@@ -302,7 +311,7 @@ fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<s
             "required": ["docId", "data"]
         }
     }));
-    tools.push(serde_json::json!({
+    session.push(serde_json::json!({
         "name": "hwp_doc_save",
         "description": "[#3598] 핸들에 누적된 편집을 형식 보존(HWPX→HWPX, 그 외→HWP5, #3383 규약)으로 저장한다. 핸들은 저장 후에도 열려 있다 — 이어서 편집·재저장할 수 있다.",
         "inputSchema": {
@@ -314,7 +323,7 @@ fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<s
             "required": ["docId", "output"]
         }
     }));
-    tools.push(serde_json::json!({
+    session.push(serde_json::json!({
         "name": "hwp_close",
         "description": "hwp_open 으로 연 핸들을 닫아 메모리를 해제한다.",
         "inputSchema": {
@@ -325,6 +334,11 @@ fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<s
             "required": ["docId"]
         }
     }));
+    tools.extend(
+        session
+            .into_iter()
+            .filter(|t| session_allows(t["name"].as_str().unwrap_or_default())),
+    );
     tools
 }
 
@@ -333,7 +347,7 @@ fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<s
 fn handle_tool_call(
     params: &serde_json::Value,
     tool_defs: &[serde_json::Value],
-    include_session: bool,
+    session_allows: &dyn Fn(&str) -> bool,
     sessions: &mut Sessions,
 ) -> Result<serde_json::Value, String> {
     let name = params
@@ -347,7 +361,8 @@ fn handle_tool_call(
 
     // tools/list에서 제거한 세션 도구는 호출로 우회할 수도 없어야 한다. 프로필은
     // 추천 목록이 아니라 서버가 실제로 제공하는 도구 집합의 경계다.
-    if !include_session && is_session_tool(name) {
+    // 목록 필터와 **같은 판정 함수**를 쓴다 — 둘이 갈라지면 경계가 뚫린다.
+    if is_session_tool(name) && !session_allows(name) {
         return Ok(tool_error(format!(
             "현재 프로필에서는 세션 도구를 제공하지 않습니다: {name}"
         )));

@@ -148,3 +148,107 @@ fn serve_profile_rejects_hidden_session_tool_calls() {
     let _ = child.kill();
     let _ = child.wait();
 }
+
+/// [#3629 후속] 조회 전용 직무는 **세션 쓰기 도구를 갖지 못한다.**
+///
+/// 종전에는 프로필의 세션 축이 `bool` 하나였다. 그래서 대량 RAG·감사용
+/// `아카이브검색`(허용 도구 7종에 쓰기 도구가 하나도 없다)이 세션을 쓰려면
+/// 편집·저장 4종까지 통째로 열릴 수밖에 없었고, 읽기 전용을 표방한 프로필로
+/// `hwp_open` → `hwp_doc_save` 를 이어 **원본 문서를 덮어쓸 수 있었다**(실측).
+///
+/// 목록과 호출 두 층을 함께 본다 — 목록에서 뺐는데 호출로 들어가면 프로필은
+/// 경계가 아니라 추천 목록으로 격하된다(`mcp_serve.rs` 의 우회 차단 주석).
+#[test]
+fn readonly_profile_serves_no_session_write_tools() {
+    const WRITE_TOOLS: [&str; 4] = [
+        "hwp_doc_save",
+        "hwp_doc_fill_fields",
+        "hwp_doc_set_cell",
+        "hwp_doc_replace_text",
+    ];
+
+    let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .args(["mcp-serve", "--profile", "아카이브검색"])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("mcp-serve");
+    let mut stdin = child.stdin.take().unwrap();
+    let mut stdout = BufReader::new(child.stdout.take().unwrap());
+
+    writeln!(stdin, r#"{{"jsonrpc":"2.0","id":1,"method":"tools/list"}}"#).unwrap();
+    stdin.flush().unwrap();
+    let mut line = String::new();
+    assert!(stdout.read_line(&mut line).unwrap() > 0, "조기 종료");
+    let listed: serde_json::Value = serde_json::from_str(line.trim()).unwrap();
+    let names: Vec<String> = listed["result"]["tools"]
+        .as_array()
+        .expect("tools 배열")
+        .iter()
+        .filter_map(|t| t["name"].as_str().map(String::from))
+        .collect();
+
+    // 조회 세션은 열려 있어야 한다 — 이 프로필의 레시피가 hwp_open 을 쓴다.
+    assert!(names.contains(&"hwp_open".to_string()), "{names:?}");
+    assert!(names.contains(&"hwp_doc_search".to_string()), "{names:?}");
+    for w in WRITE_TOOLS {
+        assert!(
+            !names.contains(&w.to_string()),
+            "조회 전용 프로필이 쓰기 도구 {w} 를 노출했습니다: {names:?}"
+        );
+    }
+
+    // 목록에서 뺐으면 호출로도 들어갈 수 없어야 한다.
+    for (i, w) in WRITE_TOOLS.iter().enumerate() {
+        writeln!(
+            stdin,
+            r#"{{"jsonrpc":"2.0","id":{},"method":"tools/call","params":{{"name":"{w}","arguments":{{"docId":"doc-1","output":"x.hwp"}}}}}}"#,
+            10 + i
+        )
+        .unwrap();
+        stdin.flush().unwrap();
+        let mut l = String::new();
+        assert!(stdout.read_line(&mut l).unwrap() > 0, "조기 종료 ({w})");
+        let r: serde_json::Value = serde_json::from_str(l.trim()).unwrap();
+        assert_eq!(
+            r["result"]["isError"], true,
+            "{w} 호출이 우회로 들어갔습니다: {r}"
+        );
+    }
+
+    let _ = child.kill();
+    let _ = child.wait();
+}
+
+/// 자기서술도 실제 제공 집합과 같아야 한다 — 선언 7종, 실제 19종이면 매니페스트로
+/// 도구 정의를 자동 생성하는 소비자가 실물과 다른 표면을 얻는다.
+#[test]
+fn capabilities_declares_the_session_tools_it_actually_serves() {
+    let out = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .args(["capabilities", "--mcp", "--profile", "아카이브검색"])
+        .output()
+        .expect("capabilities");
+    let v: serde_json::Value = serde_json::from_slice(&out.stdout).expect("mcp JSON");
+    let declared: Vec<String> = v["profile"]["sessionTools"]
+        .as_array()
+        .expect("profile.sessionTools 가 있어야 합니다")
+        .iter()
+        .filter_map(|t| t.as_str().map(String::from))
+        .collect();
+    assert!(declared.contains(&"hwp_open".to_string()), "{declared:?}");
+    assert!(
+        !declared.contains(&"hwp_doc_save".to_string()),
+        "조회 전용 프로필 선언에 쓰기 도구가 있습니다: {declared:?}"
+    );
+    assert_eq!(v["profile"]["session"], true, "{v}");
+
+    // 세션을 안 여는 프로필은 sessionTools 가 null 이다.
+    let out = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .args(["capabilities", "--mcp", "--profile", "데이터분석"])
+        .output()
+        .expect("capabilities");
+    let v: serde_json::Value = serde_json::from_slice(&out.stdout).expect("mcp JSON");
+    assert_eq!(v["profile"]["session"], false, "{v}");
+    assert!(v["profile"]["sessionTools"].is_null(), "{v}");
+}

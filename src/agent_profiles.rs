@@ -6,14 +6,57 @@
 //! `mcp-serve --profile` 양쪽을 구동한다 — 목록을 다른 곳에 복제하지 않는다
 //! (플레이북 규칙 1).
 
-/// 역할 프로필 하나. `tools` 는 무상태 MCP 도구 이름, `session` 은 세션 도구 포함 여부.
+/// 세션 도구 전체 — `mcp_serve::served_tools` 가 내보내는 목록과 같은 순서.
+///
+/// 자기서술(`capabilities --mcp --profile`)이 "필터 없음"을 이름으로 펼쳐 보일 때 쓴다.
+/// 선언과 서버가 어긋나지 않도록 목록은 여기 하나뿐이다.
+pub const ALL_SESSION_TOOLS: &[&str] = &[
+    "hwp_open",
+    "hwp_doc_text",
+    "hwp_doc_info",
+    "hwp_doc_fields",
+    "hwp_doc_tables",
+    "hwp_doc_render_page",
+    "hwp_doc_search",
+    "hwp_doc_replace_text",
+    "hwp_doc_set_cell",
+    "hwp_doc_fill_fields",
+    "hwp_doc_save",
+    "hwp_close",
+];
+
+/// 세션 도구 중 **문서를 바꾸지 않는** 것들 — 조회 전용 직무가 여는 집합.
+///
+/// 나머지 4종(`hwp_doc_replace_text`/`hwp_doc_set_cell`/`hwp_doc_fill_fields`/
+/// `hwp_doc_save`)은 IR 을 고치거나 디스크에 쓴다. `hwp_doc_render_page` 는 SVG 파일을
+/// 쓰지만 대상이 호출자가 지정한 새 산출물이지 원본 문서가 아니므로 조회 축에 남긴다.
+pub const SESSION_READ_TOOLS: &[&str] = &[
+    "hwp_open",
+    "hwp_doc_text",
+    "hwp_doc_info",
+    "hwp_doc_fields",
+    "hwp_doc_tables",
+    "hwp_doc_search",
+    "hwp_doc_render_page",
+    "hwp_close",
+];
+
+/// 역할 프로필 하나. `tools` 는 무상태 MCP 도구 이름, `session_tools` 는 세션 도구 이름.
 pub struct AgentProfile {
     pub name: &'static str,
     pub summary: &'static str,
     /// 이 직무가 쓰는 무상태 도구 이름들 (mcp_tool_definitions 의 name).
     pub tools: &'static [&'static str],
-    /// 세션 도구(hwp_open/hwp_doc_*/hwp_close) 노출 여부 — 반복 조회·편집 직무만 true.
-    pub session: bool,
+    /// 이 직무가 쓰는 **세션 도구** 이름들.
+    ///
+    /// `None` 이면 세션 표면 자체를 열지 않는다. `Some(&[])` 은 `tools` 와 같은 규약으로
+    /// "필터 없음"(전 세션 도구)을 뜻하고, `Some(목록)` 은 그 목록만 연다.
+    ///
+    /// 종전에는 `bool` 하나였다 — 그래서 조회 전용 직무가 세션을 쓰려면 편집·저장까지
+    /// 통째로 열 수밖에 없었고, 읽기 전용을 표방한 프로필이 `hwp_doc_save` 로 원본을
+    /// 덮어쓸 수 있었다. 프로필은 추천 목록이 아니라 **서버가 실제로 제공하는 도구
+    /// 집합의 경계**이므로(mcp_serve.rs 의 우회 차단 주석), 세션 축도 이름 단위로 건다.
+    pub session_tools: Option<&'static [&'static str]>,
     /// 권장 호출 순서 레시피 — 경량 에이전트가 순서 실수를 하지 않도록 계약으로 제공.
     pub recipe: &'static [&'static str],
 }
@@ -30,7 +73,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_thumbnail",
             "hwp_export_pdf",
         ],
-        session: false,
+        session_tools: None,
         recipe: &[
             "hwp_info 로 규모·형식 파악",
             "hwp_export_structure 로 목차 확보 후 필요한 절만 hwp_export_text",
@@ -51,7 +94,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_export_svg",
             "hwp_ir_diff",
         ],
-        session: true,
+        session_tools: Some(&[]),
         recipe: &[
             "hwp_fields 로 무엇을 요구하는 서식인지 조사 (반복 이름은 '이름[N]')",
             "hwp_fill_fields → notFound/ambiguous 가 비어야 완료",
@@ -70,7 +113,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_batch",
             "hwp_batch_search",
         ],
-        session: false,
+        session_tools: None,
         recipe: &[
             "단건은 hwp_export_tables (병합은 rowSpan/colSpan 보존)",
             "대량은 paths 배열로 hwp_batch subcommand=export-tables",
@@ -88,7 +131,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_thumbnail",
             "hwp_convert_hwpx",
         ],
-        session: false,
+        session_tools: None,
         recipe: &[
             "hwp_build_from_ingest 로 ingest JSON → HWPX 생성",
             "hwp_export_svg 로 조판 확인 후 hwp_export_pdf 로 발행",
@@ -107,7 +150,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_thumbnail",
             "hwp_split_document",
         ],
-        session: true,
+        session_tools: Some(SESSION_READ_TOOLS),
         recipe: &[
             "hwp_batch subcommand=info 로 아카이브 대장화",
             "hwp_batch_search 로 전 문서 검색 (어느 문서 몇 쪽)",
@@ -126,7 +169,7 @@ pub const PROFILES: &[AgentProfile] = &[
             "hwp_export_svg",
             "hwp_info",
         ],
-        session: false,
+        session_tools: None,
         recipe: &[
             "변환은 hwp_convert_* 의 verify 봉투로 1차 판정",
             "차이가 있으면 hwp_ir_diff 로 categories 분류",
@@ -137,7 +180,7 @@ pub const PROFILES: &[AgentProfile] = &[
         name: "개발통합",
         summary: "전체 표면 — 필터 없음 (rhwp 를 통합하는 개발 에이전트)",
         tools: &[],
-        session: true,
+        session_tools: Some(&[]),
         recipe: &[
             "capabilities 로 전 명령 계약을 파악하고 시작",
             "mydocs/manual/agent_knowledge_map.md 가 진입점",
@@ -158,4 +201,20 @@ pub fn names() -> Vec<&'static str> {
 /// 무상태 도구가 이 프로필에 포함되는가. tools 가 비어 있으면 전체 허용.
 pub fn allows_tool(profile: &AgentProfile, tool_name: &str) -> bool {
     profile.tools.is_empty() || profile.tools.contains(&tool_name)
+}
+
+/// 세션 도구가 이 프로필에 포함되는가. `tools` 와 같은 규약 — 빈 목록은 전체 허용.
+///
+/// `tools/list` 필터와 `tools/call` 게이트가 **같은 함수**를 써야 한다. 목록에서 뺀
+/// 도구를 호출로 우회할 수 있으면 프로필은 경계가 아니라 추천 목록으로 격하된다.
+pub fn allows_session_tool(profile: &AgentProfile, tool_name: &str) -> bool {
+    match profile.session_tools {
+        None => false,
+        Some(list) => list.is_empty() || list.contains(&tool_name),
+    }
+}
+
+/// 이 프로필이 세션 표면을 조금이라도 여는가 — 자기서술(`capabilities --mcp`)용.
+pub fn opens_session(profile: &AgentProfile) -> bool {
+    profile.session_tools.is_some()
 }

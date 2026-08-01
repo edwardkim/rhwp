@@ -333,7 +333,8 @@ fn show_mcp_tools(profile: Option<&'static agent_profiles::AgentProfile>) -> i32
         "profile": profile.map(|p| serde_json::json!({
             "name": p.name,
             "summary": p.summary,
-            "session": p.session,
+            "session": crate::agent_profiles::opens_session(p),
+            "sessionTools": p.session_tools.map(|t| if t.is_empty() { crate::agent_profiles::ALL_SESSION_TOOLS.to_vec() } else { t.to_vec() }),
             "recipe": p.recipe,
         })),
         "profiles": agent_profiles::names(),
