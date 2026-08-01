@@ -479,6 +479,56 @@ fn mcp_password(args: &serde_json::Value) -> Result<Option<String>, String> {
     Ok(Some(password.to_string()))
 }
 
+/// MCP 인자 강제변환의 단일 계약 — **없음**과 **있는데 형식이 틀림**을 가른다.
+///
+/// `args.get(k).and_then(|v| v.as_u64())` 는 두 경우를 모두 `None` 으로 뭉갠다. 그러면
+/// `page: -1` 같은 오타가 "page 생략"과 구별되지 않아, 한 쪽만 달라던 요청이 문서 전체를
+/// **성공 응답으로** 받아 간다. 호출자(에이전트)는 isError 도 경고도 못 보므로 오타를
+/// 알아챌 방법이 없다 — 조용히 틀린 답을 주는 부류라 반드시 거부해야 한다.
+///
+/// `null` 만 관용적으로 "생략"으로 읽는다. 다수 MCP 호스트가 미지정 선택 인자를 `null` 로
+/// 직렬화하므로, 이를 오류로 만들면 멀쩡한 호출이 깨진다.
+fn opt_u64(args: &serde_json::Value, key: &str) -> Result<Option<u64>, String> {
+    let Some(v) = args.get(key) else {
+        return Ok(None);
+    };
+    if v.is_null() {
+        return Ok(None);
+    }
+    if let Some(n) = v.as_u64() {
+        return Ok(Some(n));
+    }
+    // 파이썬 계열 호스트는 정수를 `3.0` 으로 직렬화하고 JSON Schema 도 이를 integer 로
+    // 인정한다. 소수부 없는 음이 아닌 값만 받아 준다 — `2.5`·`-1`·`"3"`·`true` 는 거부.
+    if let Some(f) = v.as_f64() {
+        if f.fract() == 0.0 && f >= 0.0 && f <= u64::MAX as f64 {
+            return Ok(Some(f as u64));
+        }
+    }
+    Err(format!("{key} 는 0 이상의 정수여야 합니다 (받은 값: {v})"))
+}
+
+/// `opt_u64` 의 불리언 판. `"true"`/`1` 같은 근사값도 거부한다 — 선언이 `boolean` 인데
+/// 실행이 관용 변환을 하면 선언과 실행이 어긋나고, 어긋난 쪽은 늘 조용하다.
+fn opt_bool(args: &serde_json::Value, key: &str) -> Result<Option<bool>, String> {
+    match args.get(key) {
+        None | Some(serde_json::Value::Null) => Ok(None),
+        Some(serde_json::Value::Bool(b)) => Ok(Some(*b)),
+        Some(v) => Err(format!(
+            "{key} 는 true 또는 false 여야 합니다 (받은 값: {v})"
+        )),
+    }
+}
+
+/// 필수 정수. "생략"과 "형식 오류"를 서로 다른 문구로 보고한다 — 같은 문구로 뭉개면
+/// 호출자가 값이 아니라 호출 형태를 의심하며 헛수고한다.
+fn req_u64(args: &serde_json::Value, key: &str) -> Result<u64, String> {
+    match opt_u64(args, key)? {
+        Some(n) => Ok(n),
+        None => Err(format!("{key} 가 필요합니다")),
+    }
+}
+
 fn session_doc_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
     let Some(doc_id) = args.get("docId").and_then(|d| d.as_str()) else {
         return tool_error("docId 가 필요합니다".into());
@@ -488,7 +538,13 @@ fn session_doc_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
     };
     let doc = &mut sd.doc;
     let page_count = doc.page_count();
-    let pages: Vec<u32> = match args.get("page").and_then(|p| p.as_u64()) {
+    // page 오타(-1·2.5·"3")를 "생략"과 갈라 낸다. 뭉개면 아래 `None` 갈래로
+    // 떨어져 **문서 전체**가 성공 응답으로 나간다 — 한 쪽만 달라던 호출과 구별 불가.
+    let page_arg = match opt_u64(args, "page") {
+        Ok(v) => v,
+        Err(e) => return tool_error(e),
+    };
+    let pages: Vec<u32> = match page_arg {
         Some(raw_page) => {
             let p = match u32::try_from(raw_page) {
                 Ok(p) => p,
@@ -565,8 +621,11 @@ fn session_tables(args: &serde_json::Value, sessions: &mut Sessions) -> serde_js
 }
 
 fn session_render_page(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
-    let Some(raw_page) = args.get("page").and_then(|p| p.as_u64()) else {
-        return tool_error("page 가 필요합니다".into());
+    // page 는 필수 인자다. as_u64() 로 뭉개면 `page: -1` 도 "page 가 필요합니다"
+    // 로 보고돼, 보냈는데 없다고 하는 오진이 된다.
+    let raw_page = match req_u64(args, "page") {
+        Ok(v) => v,
+        Err(e) => return tool_error(e),
     };
     let page = match u32::try_from(raw_page) {
         Ok(page) => page,
@@ -623,10 +682,13 @@ fn session_search(args: &serde_json::Value, sessions: &mut Sessions) -> serde_js
     if query.is_empty() {
         return tool_error("query 는 빈 문자열일 수 없습니다".into());
     }
-    let case_sensitive = args
-        .get("caseSensitive")
-        .and_then(|c| c.as_bool())
-        .unwrap_or(true);
+    // `"false"`·`0` 은 as_bool() 에서 None → 기본값 true 로 되돌아간다. 축을
+    // 끄라고 보낸 요청이 켠 채 실행되고, 봉투는 caseSensitive:true 를 **성공**으로
+    // 보고한다. 검색 결과가 조용히 달라지므로 거부가 유일하게 안전한 처리다.
+    let case_sensitive = match opt_bool(args, "caseSensitive") {
+        Ok(v) => v.unwrap_or(true),
+        Err(e) => return tool_error(e),
+    };
     let Some(sd) = sessions.docs.get_mut(doc_id) else {
         return tool_error(format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"));
     };
@@ -652,10 +714,13 @@ fn session_replace_text(args: &serde_json::Value, sessions: &mut Sessions) -> se
     let Some(replace) = args.get("replace").and_then(|r| r.as_str()) else {
         return tool_error("replace 가 필요합니다".into());
     };
-    let case_sensitive = args
-        .get("caseSensitive")
-        .and_then(|c| c.as_bool())
-        .unwrap_or(true);
+    // 검색과 달리 여기서는 **문서가 바뀐다**. caseSensitive 오타가 조용히
+    // true 로 되돌아가면 치환 대상 집합이 달라진 채 IR 에 누적되고, save 가 그대로
+    // 디스크에 굳힌다 — 되돌릴 수 없는 축이라 더더욱 거부해야 한다.
+    let case_sensitive = match opt_bool(args, "caseSensitive") {
+        Ok(v) => v.unwrap_or(true),
+        Err(e) => return tool_error(e),
+    };
     let Some(sd) = sessions.docs.get_mut(doc_id) else {
         return tool_error(format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"));
     };
@@ -685,20 +750,30 @@ fn session_replace_text(args: &serde_json::Value, sessions: &mut Sessions) -> se
 /// [#3603] 핸들의 표 격자 좌표에 값을 기록한다 — resolve_table_cell(CLI 와 공유)로
 /// 좌표를 해석하고, overflow 판정·검정 정규화까지 무상태 edit set-cell 과 동형이다.
 fn session_set_cell(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
-    let (Some(table_no), Some(row), Some(col)) = (
-        args.get("table").and_then(|v| v.as_u64()),
-        args.get("row").and_then(|v| v.as_u64()),
-        args.get("col").and_then(|v| v.as_u64()),
-    ) else {
-        return tool_error("table/row/col 이 필요합니다".into());
+    // 셋 다 보냈는데 하나가 음수여도 종전에는 "table/row/col 이 필요합니다" 였다.
+    // 있는 인자를 없다고 말하는 오진이라, 호출자는 값이 아니라 호출 형태를 의심하며
+    // 같은 실수를 반복한다. 축별로 따로 검사해 어느 축이 왜 틀렸는지 지목한다.
+    let table_no = match req_u64(args, "table") {
+        Ok(v) => v,
+        Err(e) => return tool_error(e),
+    };
+    let row = match req_u64(args, "row") {
+        Ok(v) => v,
+        Err(e) => return tool_error(e),
+    };
+    let col = match req_u64(args, "col") {
+        Ok(v) => v,
+        Err(e) => return tool_error(e),
     };
     let Some(new_text) = args.get("text").and_then(|t| t.as_str()).map(String::from) else {
         return tool_error("text 가 필요합니다".into());
     };
-    let keep_style = args
-        .get("keepStyle")
-        .and_then(|k| k.as_bool())
-        .unwrap_or(false);
+    // keepStyle 오타는 "스타일 상속 유지" 요청을 조용히 검정 정규화로 되돌린다 —
+    // 서식지 셀 서식이 말없이 지워지는 경로라 관용 변환을 두면 안 된다.
+    let keep_style = match opt_bool(args, "keepStyle") {
+        Ok(v) => v.unwrap_or(false),
+        Err(e) => return tool_error(e),
+    };
     let Some(doc_id) = args.get("docId").and_then(|d| d.as_str()) else {
         return tool_error("docId 가 필요합니다".into());
     };

@@ -637,8 +637,8 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "type": "object",
                 "properties": {
                     "path": { "type": "string", "description": "입력 HWP/HWPX 문서 경로" },
-                    "from": { "type": "integer", "minimum": 0, "description": "시작 쪽 (0 기준, 포함)" },
-                    "to": { "type": "integer", "minimum": 0, "description": "끝 쪽 (0 기준, 포함)" },
+                    "from": { "type": "integer", "minimum": 1, "description": "시작 쪽 (1 기준, 포함). 세션 도구(hwp_doc_text·hwp_doc_render_page)의 page 는 0 기준이니 두 기수를 섞지 않는다" },
+                    "to": { "type": "integer", "minimum": 1, "description": "끝 쪽 (1 기준, 포함)" },
                     "output": { "type": "string", "description": "출력 파일 경로" }
                 },
                 "required": ["path", "from", "to", "output"],
@@ -667,7 +667,9 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "required": ["path", "query"],
             }),
             "search",
-            serde_json::json!(["search", "{path}", "{query}", "--json"]),
+            // `--` 뒤는 전부 위치 인자다 — 그래서 `--json` 은 구분자 **앞**에
+            // 와야 한다. 뒤에 두면 세 번째 위치 인자가 되어 "인자가 너무 많습니다" 다.
+            serde_json::json!(["search", "{path}", "--json", "--", "{query}"]),
             &["source", "query", "caseSensitive", "matchCount", "matches"],
         ),
         tool(
@@ -6834,12 +6836,19 @@ fn search_document(args: &[String]) -> i32 {
     let mut ignore_case = false;
     let mut limit: Option<usize> = None;
 
+    // POSIX 옵션 종결자. 검색어가 '-' 로 시작하면 종전에는 플래그로 먹혔다 —
+    // `-i` 는 대소문자 축을 **조용히** 뒤집고(리터럴 "-i" 를 찾으려던 호출이 다음
+    // 위치 인자를 대소문자 무시로 검색한다), 그 외에는 "알 수 없는 옵션" 으로 죽어
+    // 하이픈으로 시작하는 문자열은 아예 검색할 수 없었다.
+    let mut end_of_options = false;
+
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
-            "--json" => json_mode = true,
-            "--ignore-case" | "-i" => ignore_case = true,
-            "--limit" => {
+            "--" if !end_of_options => end_of_options = true,
+            "--json" if !end_of_options => json_mode = true,
+            "--ignore-case" | "-i" if !end_of_options => ignore_case = true,
+            "--limit" if !end_of_options => {
                 i += 1;
                 match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
                     Some(n) if n >= 1 => limit = Some(n),
@@ -6849,7 +6858,7 @@ fn search_document(args: &[String]) -> i32 {
                     }
                 }
             }
-            other if other.starts_with('-') => {
+            other if !end_of_options && other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
             }
