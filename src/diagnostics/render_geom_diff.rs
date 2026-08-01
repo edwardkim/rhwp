@@ -816,8 +816,11 @@ fn run_single(opts: &CliOptions) -> i32 {
         {
             Ok(c) => c,
             Err(e) => {
+                // 읽기·파싱 실패는 런타임 오류(1)다. 2는 인자 개수/형식이 틀린
+                // 사용법 오류 전용 — 계약(cli_commands.md 종료 코드 표)상 스크립트가
+                // "내 호출이 틀렸다"로 오독해 재시도 대신 인자를 고치려 든다.
                 eprintln!("오류: A 로드 실패 {}: {e}", a.display());
-                return 2;
+                return 1;
             }
         };
         let core_b = match fs::read(b)
@@ -826,8 +829,9 @@ fn run_single(opts: &CliOptions) -> i32 {
         {
             Ok(c) => c,
             Err(e) => {
+                // 읽기·파싱 실패는 런타임 오류(1).
                 eprintln!("오류: B 로드 실패 {}: {e}", b.display());
-                return 2;
+                return 1;
             }
         };
         match diff_render_geometry(&core_a, &core_b) {
@@ -843,8 +847,9 @@ fn run_single(opts: &CliOptions) -> i32 {
         let data = match fs::read(f) {
             Ok(d) => d,
             Err(e) => {
+                // 읽기 실패는 런타임 오류(1). 이 갈래도 같은 부류였다.
                 eprintln!("오류: 파일 읽기 실패 {}: {e}", f.display());
-                return 2;
+                return 1;
             }
         };
         match roundtrip_geom(&data, opts.via) {

@@ -272,8 +272,8 @@ fn main() {
         Some("test-shape") => test_shape_roundtrip(&args[2..]),
         Some("test-caption") => exit_with(test_caption(&args[2..])),
         Some("gen-table") => gen_table(&args[2..]),
-        Some("gen-pua") => gen_pua_test(&args[2..]),
-        Some("test-field") => test_field_roundtrip(&args[2..]),
+        Some("gen-pua") => exit_with(gen_pua_test(&args[2..])),
+        Some("test-field") => exit_with(test_field_roundtrip(&args[2..])),
         Some("ir-diff") => exit_with(ir_diff(&args[2..])),
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
@@ -8462,11 +8462,21 @@ fn gen_table(args: &[String]) {
 /// 사용:
 ///   rhwp gen-pua [output_path]
 ///   기본 출력: output/pua-test.hwp
-fn gen_pua_test(args: &[String]) {
-    let output = args
-        .first()
-        .map(|s| s.as_str())
-        .unwrap_or("output/pua-test.hwp");
+fn gen_pua_test(args: &[String]) -> i32 {
+    // gen-pua 의 positional 은 입력이 아니라 **출력** 경로다. capabilities 가 다른
+    // 진단 명령과 나란히 노출하는 탓에 `rhwp gen-pua 문서.hwp` 를 "이 파일을 조사"로
+    // 읽은 호출이 실제로 원본을 말없이 덮어썼다(#3691 조사 중 발생). 사용자가 명시한
+    // 경로가 이미 있으면 거부한다 — 기본 경로는 재생성 대상이라 검사에서 제외한다.
+    let explicit = args.first().map(|s| s.as_str());
+    if let Some(path) = explicit {
+        if Path::new(path).exists() {
+            eprintln!("오류: gen-pua 의 인자는 생성할 **출력** 경로입니다 (입력 파일이 아닙니다).");
+            eprintln!("      이미 존재하는 파일을 덮어쓰지 않습니다: {}", path);
+            eprintln!("사용법: rhwp gen-pua [출력경로]   # 기본 output/pua-test.hwp");
+            return EXIT_USAGE;
+        }
+    }
+    let output = explicit.unwrap_or("output/pua-test.hwp");
 
     println!("PUA 문자 셋트 입력 HWP 문서 생성 중...");
 
@@ -8541,27 +8551,50 @@ fn gen_pua_test(args: &[String]) {
     if let Some(parent) = out_path.parent() {
         fs::create_dir_all(parent).ok();
     }
-    fs::write(out_path, bytes).expect("파일 저장 실패");
+    if let Err(e) = fs::write(out_path, bytes) {
+        // 종료 코드 계약: 쓰기 실패는 런타임 오류(1)다. 종전에는 .expect() 로 패닉해
+        // 계약에 없는 101 로 끝났다.
+        eprintln!("오류: 파일 저장 실패 - {}: {}", output, e);
+        return EXIT_RUNTIME;
+    }
     println!("저장 완료: {} ({} 종 PUA)", output, pua_set.len());
     println!();
     println!("다음 단계:");
     println!("  1. 한컴 2022 편집기에서 본 파일 열기 → PDF 출력 (정답지)");
     println!("  2. rhwp export-svg {} → SVG 출력 비교", output);
     println!("  3. 시각 비교로 매핑 정합 확정");
+    EXIT_OK
 }
 
-fn test_field_roundtrip(args: &[String]) {
-    let input = args
-        .first()
-        .map(|s| s.as_str())
-        .unwrap_or("hwp_webctl/bsbc01_10_000.hwp");
+fn test_field_roundtrip(args: &[String]) -> i32 {
+    // 인자를 생략하면 저장소에 없는 하드코딩 경로("hwp_webctl/bsbc01_10_000.hwp")를
+    // `.expect()` 로 읽어 패닉(exit 101)했다 — 계약(cli_commands.md)에 없는 종료 코드라
+    // CI 게이트가 분류할 수 없다. 형제 명령 test-caption 과 같은 모양으로 맞춘다
+    // (tests/issue_cli_test_caption_no_panic.rs 가 그쪽을 이미 고정하고 있다).
+    if args.is_empty() {
+        eprintln!("사용법: rhwp test-field <파일.hwp> [출력.hwp]");
+        return EXIT_USAGE;
+    }
+    let input = args[0].as_str();
     let output = args
         .get(1)
         .map(|s| s.as_str())
         .unwrap_or("output/field_test.hwp");
 
-    let data = std::fs::read(input).expect("파일 읽기 실패");
-    let mut core = rhwp::document_core::DocumentCore::from_bytes(&data).expect("문서 파싱 실패");
+    let data = match std::fs::read(input) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일 읽기 실패 - {}: {}", input, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut core = match rhwp::document_core::DocumentCore::from_bytes(&data) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("오류: 문서 파싱 실패 - {}: {:?}", input, e);
+            return EXIT_RUNTIME;
+        }
+    };
 
     // 1. 필드 목록 출력
     let fields = core.collect_all_fields();
@@ -8604,18 +8637,34 @@ fn test_field_roundtrip(args: &[String]) {
     let para0 = &core.document().sections[0].paragraphs[0];
 
     // 4. 직렬화 → 저장
-    let saved = core.export_hwp_native().expect("직렬화 실패");
-    std::fs::write(output, &saved).expect("저장 실패");
+    let saved = match core.export_hwp_native() {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("오류: 직렬화 실패 - {:?}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+    if let Err(e) = std::fs::write(output, &saved) {
+        eprintln!("오류: 저장 실패 - {}: {}", output, e);
+        return EXIT_RUNTIME;
+    }
     println!("\n저장: {} ({}바이트)", output, saved.len());
 
     // 5. 재로딩 → 필드 확인
-    let mut core2 = rhwp::document_core::DocumentCore::from_bytes(&saved).expect("재로딩 실패");
+    let mut core2 = match rhwp::document_core::DocumentCore::from_bytes(&saved) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("오류: 재로딩 실패 - {:?}", e);
+            return EXIT_RUNTIME;
+        }
+    };
     let fields3 = core2.collect_all_fields();
     println!("\n=== 재로딩 후 확인 ===");
     for fi in &fields3 {
         let name = fi.field.field_name().unwrap_or("(이름없음)");
         println!("  {} = \"{}\"", name, fi.value);
     }
+    EXIT_OK
 }
 
 fn control_tag(c: &rhwp::model::control::Control) -> &'static str {
