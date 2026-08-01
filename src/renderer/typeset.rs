@@ -12198,8 +12198,18 @@ impl TypesetEngine {
                     .first()
                     .zip(para.line_segs.last())
                     .and_then(|(first, last)| {
-                        let has_progressing_vpos =
-                            para.line_segs.len() <= 1 || last.vertical_pos > first.vertical_pos;
+                        // 끝점만 비교하면 **문단 중간에서 리셋되는 사다리**를 놓친다.
+                        // 쪽을 넘나드는 문단은 vpos 가 0 으로 돌아갔다가 다시 오르므로
+                        // 첫↔끝은 증가로 보이지만 span 은 무의미하다 (#3751 · 1170000 입법역량
+                        // pi=1265: 48000 →[line7 리셋]→ 62400, span 208px 인데 실제
+                        // 34줄 1088px — fit 이 208 로 판정해 쪽을 863.9px 넘겼다).
+                        // 사다리 전체가 단조 증가일 때만 span 을 쓴다.
+                        let monotonic = para
+                            .line_segs
+                            .windows(2)
+                            .all(|w| w[1].vertical_pos >= w[0].vertical_pos);
+                        let has_progressing_vpos = para.line_segs.len() <= 1
+                            || (monotonic && last.vertical_pos > first.vertical_pos);
                         if !has_progressing_vpos {
                             return None;
                         }
