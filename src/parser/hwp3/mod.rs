@@ -936,6 +936,22 @@ struct Hwp3DrawingCarry<'a> {
 /// `info_buf` 로만 넘기고, `Control` 생성·push 는 호출자 tail 에서 제어문자
 /// 1개당 정확히 1개만 한다(그래서 `controls`/`ctrl_data_records` 도 받지 않는다).
 #[allow(clippy::too_many_arguments)]
+/// HWP3 셀 패딩 바이트(부호 있는 16비트, 단위 1/100mm)를 IR HU(1/7200inch)
+/// 스케일(×4)로 변환한다.
+///
+/// [부호 확장 결함] 종전엔 `read_i16(..) as u32 * 4` 로 계산했다. 음수 i16를
+/// 곧바로 `as u32` 로 캐스팅하면 부호 확장된 큰 양수(예: -5 → 4294967291)가
+/// 되고, 거기에 `* 4` 를 곱하면 release 빌드에서는 오버플로가 랩어라운드돼
+/// 엉뚱한 패딩 값이 나오고 debug 빌드(오버플로 체크 on, 테스트가 기본으로
+/// 도는 프로필)에서는 곱셈 자체가 패닉한다. 음수 셀 패딩(HWP3 문서에서
+/// 드물지만 유효한 값)을 만나면 파서가 죽거나 표가 깨지는 결함이었다.
+/// `i32` 중간값을 거치면 부호가 보존되고 오버플로 없이 계산된다.
+fn read_hwp3_padding_scaled(mut bytes: &[u8]) -> i16 {
+    use byteorder::{LittleEndian, ReadBytesExt};
+    let raw = bytes.read_i16::<LittleEndian>().unwrap_or(0) as i32;
+    (raw * 4) as i16
+}
+
 fn parse_hwp3_object_dispatch(
     body_cursor: &mut Cursor<&[u8]>,
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
@@ -1061,19 +1077,15 @@ fn parse_hwp3_object_dispatch(
         // 미리 채워두면 serializer/hwpx_to_hwp 수정 없이 attr가 올바르게 저장된다.
         table.raw_ctrl_data = build_raw_ctrl_data(&table.common);
 
-        let cell_padding_left =
-            (&info_buf[34..36]).read_i16::<LittleEndian>().unwrap_or(0) as u32 * 4;
-        let cell_padding_right =
-            (&info_buf[36..38]).read_i16::<LittleEndian>().unwrap_or(0) as u32 * 4;
-        let cell_padding_top =
-            (&info_buf[38..40]).read_i16::<LittleEndian>().unwrap_or(0) as u32 * 4;
-        let cell_padding_bottom =
-            (&info_buf[40..42]).read_i16::<LittleEndian>().unwrap_or(0) as u32 * 4;
+        let cell_padding_left = read_hwp3_padding_scaled(&info_buf[34..36]);
+        let cell_padding_right = read_hwp3_padding_scaled(&info_buf[36..38]);
+        let cell_padding_top = read_hwp3_padding_scaled(&info_buf[38..40]);
+        let cell_padding_bottom = read_hwp3_padding_scaled(&info_buf[40..42]);
 
-        table.padding.left = cell_padding_left as i16;
-        table.padding.right = cell_padding_right as i16;
-        table.padding.top = cell_padding_top as i16;
-        table.padding.bottom = cell_padding_bottom as i16;
+        table.padding.left = cell_padding_left;
+        table.padding.right = cell_padding_right;
+        table.padding.top = cell_padding_top;
+        table.padding.bottom = cell_padding_bottom;
 
         let caption_width = (&info_buf[46..48]).read_u16::<LittleEndian>().unwrap_or(0) as u32 * 4;
         let caption_pos = (&info_buf[70..72]).read_u16::<LittleEndian>().unwrap_or(0);
@@ -1173,10 +1185,10 @@ fn parse_hwp3_object_dispatch(
             cell.width = w as u32;
             cell.height = h as u32;
 
-            cell.padding.left = cell_padding_left as i16;
-            cell.padding.right = cell_padding_right as i16;
-            cell.padding.top = cell_padding_top as i16;
-            cell.padding.bottom = cell_padding_bottom as i16;
+            cell.padding.left = cell_padding_left;
+            cell.padding.right = cell_padding_right;
+            cell.padding.top = cell_padding_top;
+            cell.padding.bottom = cell_padding_bottom;
 
             let v_align = cell_info[19];
             cell.vertical_align = match v_align {
@@ -4662,6 +4674,26 @@ mod tests {
     use super::*;
     use std::fs::File;
     use std::io::Read;
+
+    #[test]
+    fn read_hwp3_padding_scaled_preserves_negative_values_without_overflow() {
+        // [부호 확장 결함] 종전 `read_i16(..) as u32 * 4` 는 음수 셀 패딩을
+        // 부호 확장된 거대한 u32 로 만들어 debug 빌드에서 곱셈 오버플로 패닉,
+        // release 빌드에서는 랩어라운드된 엉뚱한 값을 만들었다. 이 회귀 테스트는
+        // 음수 입력이 패닉 없이 부호를 보존한 채 ×4 스케일된 결과를 내는지 확인한다.
+        let negative_five: [u8; 2] = (-5i16).to_le_bytes();
+        assert_eq!(
+            read_hwp3_padding_scaled(&negative_five),
+            -20,
+            "음수 셀 패딩은 부호를 보존한 채 ×4 스케일돼야 함"
+        );
+
+        let positive: [u8; 2] = 30i16.to_le_bytes();
+        assert_eq!(read_hwp3_padding_scaled(&positive), 120);
+
+        let zero: [u8; 2] = 0i16.to_le_bytes();
+        assert_eq!(read_hwp3_padding_scaled(&zero), 0);
+    }
 
     #[test]
     fn test_convert_para_shape_wires_border_connection_into_attr1_bit28() {
