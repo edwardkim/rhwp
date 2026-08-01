@@ -1,0 +1,10 @@
+$ rhwp exprot-svg doc.hwp ; echo exit=$?
+오류: 알 수 없는 명령입니다 - exprot-svg
+힌트: 가장 가까운 명령은 'export-svg' 입니다
+rhwp v0.8.2
+사용법: rhwp <명령> [옵션]
+'rhwp --help'로 자세한 사용법을 확인하세요.
+exit=2
+
+# MCP: tools/call name="hwp_serch" (오타)
+{"id":1,"jsonrpc":"2.0","result":{"content":[{"text":"{\"didYouMean\":[\"hwp_search\"],\"error\":\"알 수 없는 도구: hwp_serch\"}","type":"text"}],"isError":true}}

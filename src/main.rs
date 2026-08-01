@@ -236,7 +236,15 @@ fn main() {
         // 종료 코드 2로 끝낸다(기존에는 stdout + 0이라 오타 낸 명령이 스크립트에서 성공으로 보였다).
         other => {
             match other {
-                Some(command) => eprintln!("오류: 알 수 없는 명령입니다 - {}", command),
+                Some(command) => {
+                    eprintln!("오류: 알 수 없는 명령입니다 - {}", command);
+                    // [#3694] did-you-mean — 후보는 capabilities 단일 출처. 이름 환각을
+                    // 교정 단서 없이 돌려보내면 경량 에이전트는 맹목 재시도 루프에 빠진다.
+                    let names = capabilities_command_names();
+                    if let Some(hint) = closest_name(command, names.iter().map(String::as_str)) {
+                        eprintln!("힌트: 가장 가까운 명령은 '{hint}' 입니다");
+                    }
+                }
                 None => eprintln!("오류: 명령을 지정해주세요."),
             }
             eprintln!("rhwp v{}", rhwp::version());
@@ -727,90 +735,40 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
 ///
 /// `--help`(사람용)와 본 목록(기계용)은 함께 현행화한다 — help 에만 추가된 명령은
 /// `tests/cli_json_contract.rs::capabilities_covers_every_help_command` 가 잡는다.
-fn show_capabilities(args: &[String]) -> i32 {
-    // [#3263] --mcp: MCP 서버가 그대로 등록할 수 있는 도구 정의.
-    // 로드맵상 MCP 서버 자체는 별도 저장소(#227)지만, 그 서버가 도구 목록·입력 스키마를
-    // 손으로 베껴 쓰면 rhwp 가 바뀔 때마다 조용히 낡는다. 원천을 여기서 낸다.
-    let mut mcp_mode = false;
-    // [#3629] 직무 프로필 필터 — 단일 출처는 agent_profiles::PROFILES.
-    let mut profile: Option<String> = None;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--mcp" => mcp_mode = true,
-            "--profile" => {
-                i += 1;
-                match args.get(i) {
-                    Some(p) => profile = Some(p.clone()),
-                    None => {
-                        eprintln!("오류: --profile 뒤에 역할 이름이 필요합니다.");
-                        eprintln!("사용 가능: {}", agent_profiles::names().join(", "));
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            other => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-        }
-        i += 1;
-    }
-    let profile = match profile {
-        Some(name) => match agent_profiles::find(&name) {
-            Some(p) => Some(p),
-            None => {
-                eprintln!("오류: 알 수 없는 프로필 '{name}'");
-                eprintln!("사용 가능: {}", agent_profiles::names().join(", "));
-                return EXIT_USAGE;
-            }
-        },
-        None => None,
-    };
-    if mcp_mode {
-        return show_mcp_tools(profile);
-    }
-    if profile.is_some() {
-        eprintln!(
-            "오류: --profile 은 --mcp 와 함께 사용합니다 (capabilities --mcp --profile <역할>)."
-        );
-        return EXIT_USAGE;
-    }
+// [#3694] capabilities 명령 목록의 단일 출처 — 자기서술과 did-you-mean 이 공유한다.
+fn cmd(name: &str, category: &str, summary: &str) -> serde_json::Value {
+    serde_json::json!({ "name": name, "category": category, "summary": summary })
+}
 
-    fn cmd(name: &str, category: &str, summary: &str) -> serde_json::Value {
-        serde_json::json!({ "name": name, "category": category, "summary": summary })
-    }
-    fn cmd_json(
-        name: &str,
-        category: &str,
-        summary: &str,
-        batch: bool,
-        flags: &[&str],
-        record_fields: &[&str],
-    ) -> serde_json::Value {
-        serde_json::json!({
-            "name": name, "category": category, "summary": summary,
-            "json": true, "batch": batch, "flags": flags, "recordFields": record_fields,
-        })
-    }
-    /// [#3357] feature 게이트 명령 — 빌드에 따라 실행 가능 여부가 달라지므로 자기서술이
-    /// 가용성을 명시한다. 두 필드는 빌드와 무관하게 항상 방출되고 값만 달라진다
-    /// (스키마 안정성). 매니페스트만 보고 호출을 생성하는 에이전트가 exit 2 를
-    /// 밟기 전에 알 수 있게 한다.
-    fn cmd_gated(
-        name: &str,
-        category: &str,
-        summary: &str,
-        requires_feature: &str,
-        available: bool,
-    ) -> serde_json::Value {
-        serde_json::json!({
-            "name": name, "category": category, "summary": summary,
-            "requiresFeature": requires_feature, "available": available,
-        })
-    }
+fn cmd_json(
+    name: &str,
+    category: &str,
+    summary: &str,
+    batch: bool,
+    flags: &[&str],
+    record_fields: &[&str],
+) -> serde_json::Value {
+    serde_json::json!({
+        "name": name, "category": category, "summary": summary,
+        "json": true, "batch": batch, "flags": flags, "recordFields": record_fields,
+    })
+}
 
-    let commands = vec![
+fn cmd_gated(
+    name: &str,
+    category: &str,
+    summary: &str,
+    requires_feature: &str,
+    available: bool,
+) -> serde_json::Value {
+    serde_json::json!({
+        "name": name, "category": category, "summary": summary,
+        "requiresFeature": requires_feature, "available": available,
+    })
+}
+
+fn capabilities_command_entries() -> Vec<serde_json::Value> {
+    vec![
         // ── 기계 계약(--json) 명령 ──
         cmd_json(
             "info",
@@ -1196,7 +1154,103 @@ fn show_capabilities(args: &[String]) -> i32 {
         cmd("test-field", "internal", "누름틀 왕복 테스트"),
         cmd("gen-table", "internal", "표 샘플 생성"),
         cmd("gen-pua", "internal", "PUA 샘플 생성"),
-    ];
+    ]
+}
+
+/// [#3694] 명령 이름 목록 (did-you-mean 후보).
+fn capabilities_command_names() -> Vec<String> {
+    capabilities_command_entries()
+        .iter()
+        .filter_map(|c| c["name"].as_str().map(String::from))
+        .collect()
+}
+
+/// [#3694] 레벤슈타인 거리 — 의존성 없이 소형 구현 (이름 환각 교정용).
+pub(crate) fn levenshtein(a: &str, b: &str) -> usize {
+    let a: Vec<char> = a.chars().collect();
+    let b: Vec<char> = b.chars().collect();
+    let mut prev: Vec<usize> = (0..=b.len()).collect();
+    let mut cur = vec![0usize; b.len() + 1];
+    for i in 1..=a.len() {
+        cur[0] = i;
+        for j in 1..=b.len() {
+            let cost = usize::from(a[i - 1] != b[j - 1]);
+            cur[j] = (prev[j] + 1).min(cur[j - 1] + 1).min(prev[j - 1] + cost);
+        }
+        std::mem::swap(&mut prev, &mut cur);
+    }
+    prev[b.len()]
+}
+
+/// [#3694] 후보 중 가장 가까운 이름 — 임계(길이 대비 1/3, 최소 1·최대 3) 초과면 None.
+/// 오제안 0 원칙: 애매하면 제안하지 않는 편이 경량 에이전트에게 안전하다.
+pub(crate) fn closest_name<'a, I: IntoIterator<Item = &'a str>>(
+    input: &str,
+    candidates: I,
+) -> Option<String> {
+    let mut best: Option<(usize, &str)> = None;
+    for c in candidates {
+        let d = levenshtein(input, c);
+        if best.map(|(bd, _)| d < bd).unwrap_or(true) {
+            best = Some((d, c));
+        }
+    }
+    let (d, name) = best?;
+    let cap = (input.chars().count() / 3).clamp(1, 3);
+    (d <= cap).then(|| name.to_string())
+}
+
+fn show_capabilities(args: &[String]) -> i32 {
+    // [#3263] --mcp: MCP 서버가 그대로 등록할 수 있는 도구 정의.
+    // 로드맵상 MCP 서버 자체는 별도 저장소(#227)지만, 그 서버가 도구 목록·입력 스키마를
+    // 손으로 베껴 쓰면 rhwp 가 바뀔 때마다 조용히 낡는다. 원천을 여기서 낸다.
+    let mut mcp_mode = false;
+    // [#3629] 직무 프로필 필터 — 단일 출처는 agent_profiles::PROFILES.
+    let mut profile: Option<String> = None;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--mcp" => mcp_mode = true,
+            "--profile" => {
+                i += 1;
+                match args.get(i) {
+                    Some(p) => profile = Some(p.clone()),
+                    None => {
+                        eprintln!("오류: --profile 뒤에 역할 이름이 필요합니다.");
+                        eprintln!("사용 가능: {}", agent_profiles::names().join(", "));
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    let profile = match profile {
+        Some(name) => match agent_profiles::find(&name) {
+            Some(p) => Some(p),
+            None => {
+                eprintln!("오류: 알 수 없는 프로필 '{name}'");
+                eprintln!("사용 가능: {}", agent_profiles::names().join(", "));
+                return EXIT_USAGE;
+            }
+        },
+        None => None,
+    };
+    if mcp_mode {
+        return show_mcp_tools(profile);
+    }
+    if profile.is_some() {
+        eprintln!(
+            "오류: --profile 은 --mcp 와 함께 사용합니다 (capabilities --mcp --profile <역할>)."
+        );
+        return EXIT_USAGE;
+    }
+
+    let commands = capabilities_command_entries();
 
     let caps = serde_json::json!({
         "schemaVersion": "1.0",
