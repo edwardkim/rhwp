@@ -991,3 +991,31 @@ fn parse_document_dispatches_hml_into_document_ir() {
 
     assert_eq!(document.sections[0].paragraphs[0].text, "안녕 HML 123");
 }
+
+/// `RECTANGLE` 의 `POSITION HorzOffset`/`VertOffset` 는 음수(왼쪽/위쪽으로 벗어난 앵커 상대
+/// 배치)일 수 있고, 우리 자신의 HML writer
+/// (`serializer/hml/body.rs::position_attributes`, `(offset as i32).to_string()`)도 음수를
+/// 그대로 방출한다. 따라서 음수 오프셋 왕복은 반드시 성립해야 하는 계약이다.
+///
+/// 이 왕복이 성립하는 이유는 타입에 있다. `reader.rs` 의 `RECTANGLE` 분기는 타입 파라미터
+/// 없이 `parse_attribute` 를 부르지만, 대입 대상이 `HmlRectangle::horizontal_offset: i32`
+/// (모델의 `HwpUnit = u32` 가 아니라 파서 중간 구조체의 `i32`)라 `T` 가 `i32` 로 추론되고
+/// `i32::from_str` 이 `-` 부호를 받아들인다. 이후 `adapter.rs` 가 `as u32` 로 재해석해
+/// 모델에 싣는다.
+///
+/// 이 계약은 타입 추론에 의존하므로 조용히 깨질 수 있다 — `HmlRectangle` 의 필드 타입을
+/// `u32` 로 바꾸거나 `parse_attribute::<u32>` 로 못박으면 `u32::from_str` 이 `-` 를 거부해
+/// 음수 오프셋을 가진 문서 전체가 열리지 않게 된다. 이 테스트가 그 회귀를 잡는다.
+#[test]
+fn rectangle_position_parses_negative_offsets_like_table_does() {
+    let xml = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P><TEXT><RECTANGLE>
+        <SHAPEOBJECT><SIZE Width="1000" Height="500"/><POSITION TreatAsChar="true" FlowWithText="false" AllowOverlap="true" HorzOffset="-100" VertOffset="-200" HorzRelTo="Page" VertRelTo="Page" HorzAlign="Left" VertAlign="Top"/></SHAPEOBJECT>
+      </RECTANGLE></TEXT></P></SECTION></BODY><TAIL/></HWPML>"#;
+
+    let parsed = parse_hml(xml)
+        .expect("RECTANGLE POSITION with negative offsets should parse, matching TABLE's behavior");
+    let rectangle = first_rectangle(&parsed.document);
+
+    assert_eq!(rectangle.common.horizontal_offset as i32, -100);
+    assert_eq!(rectangle.common.vertical_offset as i32, -200);
+}
