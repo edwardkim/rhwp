@@ -309,7 +309,8 @@ fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<s
             "type": "object",
             "properties": {
                 "docId": { "type": "string", "description": "hwp_open 이 돌려준 핸들" },
-                "output": { "type": "string", "description": "출력 파일 경로" }
+                "output": { "type": "string", "description": "출력 파일 경로" },
+                "verify": { "type": "boolean", "description": "true 면 저장본 재파싱 IR 자기검증(verify 필드)" }
             },
             "required": ["docId", "output"]
         }
@@ -951,6 +952,18 @@ fn session_save(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
     if let Err(e) = std::fs::write(output, &bytes) {
         return tool_error(format!("{output} 쓰기 실패: {e}"));
     }
+    // [#3702] verify:true — 저장본 재파싱 IR 자기검증. 세션은 exit 가 없으므로
+    // isError:false 를 유지하고 판정은 verify 필드로 낸다(판정은 데이터).
+    let verify = if args
+        .get("verify")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false)
+    {
+        let (report, _failed) = crate::edit_verify_report(&sd.doc, &bytes, false);
+        report
+    } else {
+        serde_json::Value::Null
+    };
     tool_ok_text(
         serde_json::json!({
             "schemaVersion": "1.0",
@@ -958,6 +971,7 @@ fn session_save(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
             "output": output,
             "outputFormat": format.label(),
             "bytes": bytes.len(),
+            "verify": verify,
         })
         .to_string(),
     )

@@ -9767,6 +9767,44 @@ fn edit_output_format(input_bytes: &[u8], explicit_out: Option<&str>) -> EditOut
 ///
 /// HWP5 산출은 반드시 **어댑터 경유**(`export_hwp_with_adapter`)다. HWPX 출처 IR 을 HWP
 /// 호환 형태로 옮기는 #178 어댑터를 건너뛰면 한컴 호환성과 이미지·차트가 깨진다.
+/// [#3702] 편집 저장본 자기검증 — 편집 후 IR 과 저장본 재파싱 IR 을 내부 대조한다.
+/// 반환: (verify 봉투 값, exit 3 여부). 비교기는 diff_documents 재사용(신규 로직 없음).
+/// HWPX 소스→HWP5 산출 같은 교차 포맷은 #3505 노이즈 제거를 승계한다.
+fn edit_verify_report(
+    doc: &rhwp::wasm_api::HwpDocument,
+    out_bytes: &[u8],
+    cross_format: bool,
+) -> (serde_json::Value, bool) {
+    let reloaded = match rhwp::wasm_api::HwpDocument::from_bytes(out_bytes) {
+        Ok(d) => d,
+        Err(e) => {
+            // 재파싱 실패는 판정 불가 — identical:false + 사유로 보고(저장물은 남는다).
+            return (
+                serde_json::json!({ "identical": false, "diffCount": null, "reparseError": e.to_string() }),
+                true,
+            );
+        }
+    };
+    let diff =
+        rhwp::serializer::hwpx::roundtrip::diff_documents(doc.document(), reloaded.document());
+    let diff = if cross_format {
+        rhwp::serializer::hwpx::roundtrip::strip_cross_format_noise(diff)
+    } else {
+        diff
+    };
+    if diff.is_empty() {
+        (
+            serde_json::json!({ "identical": true, "diffCount": 0 }),
+            false,
+        )
+    } else {
+        (
+            serde_json::json!({ "identical": false, "diffCount": diff.differences.len() }),
+            true,
+        )
+    }
+}
+
 fn edit_serialize(
     doc: &mut rhwp::wasm_api::HwpDocument,
     format: EditOutputFormat,
@@ -9788,6 +9826,8 @@ fn edit_fill_fields(args: &[String]) -> i32 {
     let mut out_path: Option<String> = None;
     let mut dry_run = false;
     let mut json_mode = false;
+    // [#3702] 저장 직후 자기검증 — 판정은 데이터, 차이 시 exit 3.
+    let mut verify_mode = false;
 
     let mut i = 0;
     while i < args.len() {
@@ -9814,6 +9854,7 @@ fn edit_fill_fields(args: &[String]) -> i32 {
             }
             "--dry-run" => dry_run = true,
             "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
@@ -9943,6 +9984,8 @@ fn edit_fill_fields(args: &[String]) -> i32 {
         }
     });
 
+    let mut verify_report = serde_json::Value::Null;
+    let mut verify_failed = false;
     if !dry_run {
         let out_bytes = match edit_serialize(&mut doc, out_format) {
             Ok(b) => b,
@@ -9959,6 +10002,14 @@ fn edit_fill_fields(args: &[String]) -> i32 {
             eprintln!("오류: 출력 쓰기 실패 - {}: {}", output_path, e);
             return EXIT_RUNTIME;
         }
+        // [#3702] 저장 직후 자기검증 — 편집 후 IR ↔ 저장본 재파싱 IR.
+        if verify_mode {
+            let cross = out_format == EditOutputFormat::Hwp
+                && rhwp::parser::detect_format(&bytes) == rhwp::parser::FileFormat::Hwpx;
+            let (report, failed) = edit_verify_report(&doc, &out_bytes, cross);
+            verify_report = report;
+            verify_failed = failed;
+        }
     }
 
     if json_mode {
@@ -9974,8 +10025,12 @@ fn edit_fill_fields(args: &[String]) -> i32 {
         if !dry_run {
             envelope["output"] = serde_json::Value::String(output_path.clone());
             envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
+            envelope["verify"] = verify_report.clone();
         }
         println!("{envelope}");
+        if verify_failed {
+            process::exit(3);
+        }
         return EXIT_OK;
     }
 
@@ -9999,6 +10054,10 @@ fn edit_fill_fields(args: &[String]) -> i32 {
     if !not_found.is_empty() {
         println!("  문서에 없는 필드 이름: {}", not_found.join(", "));
     }
+    if verify_failed {
+        eprintln!("검증 실패(--verify): 저장본 재파싱 IR 차이 — 상세는 --json 또는 ir-diff");
+        process::exit(3);
+    }
     EXIT_OK
 }
 
@@ -10016,6 +10075,8 @@ fn edit_replace_text(args: &[String]) -> i32 {
     let mut ignore_case = false;
     let mut dry_run = false;
     let mut json_mode = false;
+    // [#3702] 저장 직후 자기검증 — 판정은 데이터, 차이 시 exit 3.
+    let mut verify_mode = false;
     // [#3395] 문서 순서 k번째(0 기준) 매치만 치환 — 체크박스류 반복 문자 지목.
     let mut occurrence: Option<usize> = None;
 
@@ -10065,6 +10126,7 @@ fn edit_replace_text(args: &[String]) -> i32 {
             }
             "--dry-run" => dry_run = true,
             "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
@@ -10142,6 +10204,8 @@ fn edit_replace_text(args: &[String]) -> i32 {
 
     // 0건이면 무변경이다 — 산출물을 만들지 않는다 (dry-run 과 동일하게 파일 경로를 타지 않음).
     let wrote_output = !dry_run && replaced_count > 0;
+    let mut verify_report = serde_json::Value::Null;
+    let mut verify_failed = false;
     if wrote_output {
         let out_bytes = match edit_serialize(&mut doc, out_format) {
             Ok(b) => b,
@@ -10157,6 +10221,14 @@ fn edit_replace_text(args: &[String]) -> i32 {
         if let Err(e) = fs::write(&output_path, &out_bytes) {
             eprintln!("오류: 출력 쓰기 실패 - {}: {}", output_path, e);
             return EXIT_RUNTIME;
+        }
+        // [#3702] 저장 직후 자기검증 — 편집 후 IR ↔ 저장본 재파싱 IR.
+        if verify_mode {
+            let cross = out_format == EditOutputFormat::Hwp
+                && rhwp::parser::detect_format(&bytes) == rhwp::parser::FileFormat::Hwpx;
+            let (report, failed) = edit_verify_report(&doc, &out_bytes, cross);
+            verify_report = report;
+            verify_failed = failed;
         }
     }
 
@@ -10174,8 +10246,12 @@ fn edit_replace_text(args: &[String]) -> i32 {
         if wrote_output {
             envelope["output"] = serde_json::Value::String(output_path.clone());
             envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
+            envelope["verify"] = verify_report.clone();
         }
         println!("{envelope}");
+        if verify_failed {
+            process::exit(3);
+        }
         return EXIT_OK;
     }
 
@@ -10194,6 +10270,10 @@ fn edit_replace_text(args: &[String]) -> i32 {
             "치환 완료: {} → {} — {:?} → {:?} ({}건)",
             file_path, output_path, find, replace, replaced_count
         );
+    }
+    if verify_failed {
+        eprintln!("검증 실패(--verify): 저장본 재파싱 IR 차이 — 상세는 --json 또는 ir-diff");
+        process::exit(3);
     }
     EXIT_OK
 }
@@ -10483,6 +10563,8 @@ fn edit_set_cell(args: &[String]) -> i32 {
     let mut out_path: Option<String> = None;
     let mut dry_run = false;
     let mut json_mode = false;
+    // [#3702] 저장 직후 자기검증 — 판정은 데이터, 차이 시 exit 3.
+    let mut verify_mode = false;
     // [#3391] 실물 공고 양식의 기입 칸 안내문은 파란 이탤릭이 흔하다. set-cell 은
     // "안내문을 지우고 실값을 쓰는" 용도이므로 제출 요건(검정 글씨)에 맞춰 기본을
     // 검정·비이탤릭·비진하게로 기록한다. --keep-style 로 셀 스타일 상속을 유지한다.
@@ -10547,6 +10629,7 @@ fn edit_set_cell(args: &[String]) -> i32 {
             }
             "--dry-run" => dry_run = true,
             "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
@@ -10673,6 +10756,8 @@ fn edit_set_cell(args: &[String]) -> i32 {
         format!("{}_cell.{}", stem, out_format.ext())
     });
 
+    let mut verify_report = serde_json::Value::Null;
+    let mut verify_failed = false;
     if !dry_run {
         let out_bytes = match edit_serialize(&mut doc, out_format) {
             Ok(b) => b,
@@ -10688,6 +10773,14 @@ fn edit_set_cell(args: &[String]) -> i32 {
         if let Err(e) = fs::write(&output_path, &out_bytes) {
             eprintln!("오류: 출력 쓰기 실패 - {}: {}", output_path, e);
             return EXIT_RUNTIME;
+        }
+        // [#3702] 저장 직후 자기검증 — 편집 후 IR ↔ 저장본 재파싱 IR.
+        if verify_mode {
+            let cross = out_format == EditOutputFormat::Hwp
+                && rhwp::parser::detect_format(&bytes) == rhwp::parser::FileFormat::Hwpx;
+            let (report, failed) = edit_verify_report(&doc, &out_bytes, cross);
+            verify_report = report;
+            verify_failed = failed;
         }
     }
 
@@ -10707,8 +10800,12 @@ fn edit_set_cell(args: &[String]) -> i32 {
         if !dry_run {
             envelope["output"] = serde_json::Value::String(output_path.clone());
             envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
+            envelope["verify"] = verify_report.clone();
         }
         println!("{envelope}");
+        if verify_failed {
+            process::exit(3);
+        }
         return EXIT_OK;
     }
 
@@ -10722,6 +10819,10 @@ fn edit_set_cell(args: &[String]) -> i32 {
             "셀 기록 완료: {} → {} — 표{} ({},{}) {:?} → {:?}",
             file_path, output_path, table_no, row, col, old_text, new_text
         );
+    }
+    if verify_failed {
+        eprintln!("검증 실패(--verify): 저장본 재파싱 IR 차이 — 상세는 --json 또는 ir-diff");
+        process::exit(3);
     }
     EXIT_OK
 }

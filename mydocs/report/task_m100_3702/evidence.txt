@@ -1,0 +1,10 @@
+# fill-fields --verify --json (라이브, field-01.hwp)
+{"ambiguous":[],"dryRun":false,"filled":[{"name":"회사명","occurrence":0,"value":"검증사"}],"filledCount":1,"notFound":[],"output":"C:/Users/swsz9/AppData/Local/Temp/ev-fill.hwp","outputFormat":"hwp5","schemaVersion":"1.0","source":"samples/field-01.hwp","verify":{"diffCount":0,"identical":true}}
+exit=0
+
+# set-cell --verify --json (라이브, 지자체 보고서 hwpx — export-tables 로 고른 실존 좌표)
+{"col":0,"dryRun":false,"keepStyle":false,"newText":"V","oldText":"본 보고서는 \n\n\n\n\n\n\n\n\n\n\n 알려 주시기 바랍니다.","output":"C:/Users/swsz9/AppData/Local/Temp/ev-cell.hwpx","outputFormat":"hwpx","overflow":[],"row":0,"schemaVersion":"1.0","source":"samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx","table":1,"verify":{"diffCount":0,"identical":true}}
+exit=0
+
+# mcp-serve hwp_doc_save verify:true (라이브)
+{"id":2,"jsonrpc":"2.0","result":{"content":[{"text":"{\"bytes\":473600,\"docId\":\"doc-1\",\"output\":\"/tmp/ev-sess.hwp\",\"outputFormat\":\"hwp5\",\"schemaVersion\":\"1.0\",\"verify\":{\"diffCount\":0,\"identical\":true}}","type":"text"}],"isError":false,"structuredContent":{"bytes":473600,"docId":"doc-1","output":"/tmp/ev-sess.hwp","outputFormat":"hwp5","schemaVersion":"1.0","verify":{"diffCount":0,"identical":true}}}}
