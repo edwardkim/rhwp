@@ -6302,8 +6302,12 @@ fn parse_common_shape_children(
                                         _ => HorzAlign::Left,
                                     };
                                 }
-                                b"vertOffset" => common.vertical_offset = parse_u32(&attr),
-                                b"horzOffset" => common.horizontal_offset = parse_u32(&attr),
+                                b"vertOffset" => {
+                                    common.vertical_offset = parse_i32_wrapping(&attr) as u32
+                                }
+                                b"horzOffset" => {
+                                    common.horizontal_offset = parse_i32_wrapping(&attr) as u32
+                                }
                                 b"treatAsChar" => common.treat_as_char = parse_bool(&attr),
                                 // [#2784] affectLSpacing(줄 간격에 영향) — 공통 개체 pos 되읽기.
                                 b"affectLSpacing" => common.affect_line_spacing = parse_bool(&attr),
@@ -8292,6 +8296,47 @@ mod tests {
             ole.drawing_aspect,
             crate::model::shape::OleDrawingAspect::Icon,
             "drawAspect=ICON 이 보존돼야 함"
+        );
+    }
+
+    #[test]
+    fn bugfind_ole_pos_negative_offset_is_not_wrapped_to_huge_u32() {
+        // hp:pos 의 vertOffset/horzOffset 은 HWPUNIT 음수값을 unsigned 32-bit
+        // decimal 문자열("4294965296" = i32 -2000)로 저장할 수 있다.
+        // 표(hp:tbl)/그림(hp:pic)/선(hp:line) 파서는 parse_i32_wrapping 을 쓰지만
+        // OLE/차트가 공유하는 parse_common_shape_children 은 parse_u32 를 써서,
+        // 음수 오프셋이 거대한 양수(약 42억)로 뭉개졌다.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="1" zOrder="0" binaryItemIDRef="ole1">
+        <hp:sz width="2600" height="2600"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="PARA"
+                vertOffset="4294965296" horzOffset="4294964867"/>
+        <hc:extent x="1" y="1"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected ole shape");
+        };
+        assert_eq!(
+            ole.common.vertical_offset as i32, -2000,
+            "vertOffset 이 부호 없는 거대한 값이 아니라 음수 HWPUNIT 으로 보존돼야 함"
+        );
+        assert_eq!(
+            ole.common.horizontal_offset as i32, -2429,
+            "horzOffset 이 부호 없는 거대한 값이 아니라 음수 HWPUNIT 으로 보존돼야 함"
         );
     }
 
