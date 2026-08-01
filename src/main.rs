@@ -284,8 +284,10 @@ fn main() {
         Some("convert") => exit_with(convert_hwp(&args[2..])),
         Some("extract-pages") => exit_with(extract_pages(&args[2..])),
         Some("build-from-ingest") => exit_with(build_from_ingest(&args[2..])),
-        Some("hwp5-inventory") => rhwp::diagnostics::hwp5_inventory::run(&args[2..]),
-        Some("hwp5-inventory-diff") => rhwp::diagnostics::hwp5_inventory_diff::run(&args[2..]),
+        Some("hwp5-inventory") => exit_with(rhwp::diagnostics::hwp5_inventory::run(&args[2..])),
+        Some("hwp5-inventory-diff") => {
+            exit_with(rhwp::diagnostics::hwp5_inventory_diff::run(&args[2..]))
+        }
         Some("hwp5-contract-analyze") => {
             exit_with(rhwp::diagnostics::hwp5_contract_analyze::run(&args[2..]))
         }
@@ -305,7 +307,9 @@ fn main() {
         Some("hwp5-first-para-control-probe") => exit_with(
             rhwp::diagnostics::hwp5_first_para_control_probe::run(&args[2..]),
         ),
-        Some("hwp5-anchor-trace") => rhwp::diagnostics::hwp5_anchor_trace::run(&args[2..]),
+        Some("hwp5-anchor-trace") => {
+            exit_with(rhwp::diagnostics::hwp5_anchor_trace::run(&args[2..]))
+        }
         Some("hwp5-cell-header-probe") => {
             exit_with(rhwp::diagnostics::hwp5_cell_header_probe::run(&args[2..]))
         }

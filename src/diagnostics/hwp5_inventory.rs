@@ -80,10 +80,17 @@ pub struct Hwp5Inventory {
     pub items: Vec<Hwp5InventoryItem>,
 }
 
-pub fn run(args: &[String]) {
-    if args.is_empty() || matches!(args.first().map(String::as_str), Some("--help" | "-h")) {
+pub fn run(args: &[String]) -> i32 {
+    // 종료 코드 계약(mydocs/manual/cli_commands.md): 명시적 `--help`/`-h` 만 성공(0)이고
+    // 인자 누락·파싱 실패는 사용법 오류(2), 실행 실패는 런타임 오류(1)다. 인자 없음을
+    // help 와 같은 취급으로 0을 돌려주면 스크립트가 "경로를 안 줬는데 성공"으로 읽는다.
+    if matches!(args.first().map(String::as_str), Some("--help" | "-h")) {
         print_usage();
-        return;
+        return 0;
+    }
+    if args.is_empty() {
+        print_usage();
+        return 2;
     }
 
     let options = match parse_args(args) {
@@ -91,7 +98,7 @@ pub fn run(args: &[String]) {
         Err(message) => {
             eprintln!("{message}");
             print_usage();
-            return;
+            return 2;
         }
     };
 
@@ -99,7 +106,7 @@ pub fn run(args: &[String]) {
         Ok(inventory) => inventory,
         Err(error) => {
             eprintln!("오류: {error}");
-            return;
+            return 1;
         }
     };
 
@@ -112,15 +119,17 @@ pub fn run(args: &[String]) {
         if let Some(parent) = out.parent() {
             if let Err(error) = fs::create_dir_all(parent) {
                 eprintln!("오류: 출력 폴더 생성 실패 - {}: {error}", parent.display());
-                return;
+                return 1;
             }
         }
         if let Err(error) = fs::write(&out, rendered) {
             eprintln!("오류: 출력 파일 쓰기 실패 - {}: {error}", out.display());
+            return 1;
         }
     } else {
         print!("{rendered}");
     }
+    0
 }
 
 fn parse_args(args: &[String]) -> Result<Options, String> {
@@ -179,8 +188,10 @@ fn parse_args(args: &[String]) -> Result<Options, String> {
 }
 
 fn print_usage() {
-    println!("사용법:");
-    println!("  rhwp hwp5-inventory <파일.hwp> [--format jsonl|md] [--section N] [--out <path>]");
+    // 사용법 안내는 stderr 로 나간다 — stdout 은 인벤토리 데이터(jsonl/md) 전용이라
+    // 섞이면 파이프로 받는 소비자가 파싱에서 깨진다.
+    eprintln!("사용법:");
+    eprintln!("  rhwp hwp5-inventory <파일.hwp> [--format jsonl|md] [--section N] [--out <path>]");
 }
 
 pub fn build_inventory(path: &Path, section_filter: Option<u32>) -> Result<Hwp5Inventory, String> {

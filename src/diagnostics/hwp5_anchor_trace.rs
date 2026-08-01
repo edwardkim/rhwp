@@ -22,10 +22,16 @@ struct Options {
     out: Option<PathBuf>,
 }
 
-pub fn run(args: &[String]) {
-    if args.is_empty() || matches!(args.first().map(String::as_str), Some("--help" | "-h")) {
+pub fn run(args: &[String]) -> i32 {
+    // 종료 코드 계약(mydocs/manual/cli_commands.md): 명시적 `--help`/`-h` 만 성공(0)이고
+    // 인자 누락·파싱 실패는 사용법 오류(2), 실행 실패는 런타임 오류(1)다.
+    if matches!(args.first().map(String::as_str), Some("--help" | "-h")) {
         print_usage();
-        return;
+        return 0;
+    }
+    if args.is_empty() {
+        print_usage();
+        return 2;
     }
 
     let options = match parse_args(args) {
@@ -33,7 +39,7 @@ pub fn run(args: &[String]) {
         Err(message) => {
             eprintln!("{message}");
             print_usage();
-            return;
+            return 2;
         }
     };
 
@@ -43,17 +49,22 @@ pub fn run(args: &[String]) {
                 if let Some(parent) = out.parent() {
                     if let Err(error) = fs::create_dir_all(parent) {
                         eprintln!("오류: 출력 폴더 생성 실패 - {}: {error}", parent.display());
-                        return;
+                        return 1;
                     }
                 }
                 if let Err(error) = fs::write(out, output) {
                     eprintln!("오류: 출력 파일 쓰기 실패 - {}: {error}", out.display());
+                    return 1;
                 }
             } else {
                 print!("{output}");
             }
+            0
         }
-        Err(error) => eprintln!("오류: {error}"),
+        Err(error) => {
+            eprintln!("오류: {error}");
+            1
+        }
     }
 }
 
@@ -122,8 +133,10 @@ fn parse_args(args: &[String]) -> Result<Options, String> {
 }
 
 fn print_usage() {
-    println!("사용법:");
-    println!("  rhwp hwp5-anchor-trace <파일.hwp> --needle <텍스트> [--section N] [--window N] [--out <path>]");
+    // 사용법 안내는 stderr 로 나간다 — stdout 은 trace 데이터 전용이라
+    // 섞이면 파이프로 받는 소비자가 파싱에서 깨진다.
+    eprintln!("사용법:");
+    eprintln!("  rhwp hwp5-anchor-trace <파일.hwp> --needle <텍스트> [--section N] [--window N] [--out <path>]");
 }
 
 fn run_inner(options: &Options) -> Result<String, String> {
