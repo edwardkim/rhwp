@@ -1,0 +1,14 @@
+# 1) fill-fields --json — changedPages 지정 (라이브, field-01.hwp 3쪽)
+{"ambiguous":[],"changedPages":[0],"dryRun":false,"filled":[{"name":"회사명","occurrence":0,"value":"페이지지정사"}],"filledCount":1,"notFound":[],"output":"C:/Users/swsz9/AppData/Local/Temp/cp-fill.hwp","outputFormat":"hwp5","schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null}
+exit=0
+
+# 2) replace-text --json — 매치 페이지 지정 (라이브)
+{"caseSensitive":true,"changedPages":[0],"dryRun":false,"find":"마케팅","occurrence":null,"output":"C:/Users/swsz9/AppData/Local/Temp/cp-repl.hwp","outputFormat":"hwp5","replace":"기획","replacedCount":1,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null}
+exit=0
+
+# 3) dry-run — null 강등 (예측 목록으로 오인 금지)
+{"ambiguous":[],"changedPages":null,"dryRun":true,"filled":[{"name":"회사명","occurrence":0,"value":"드라이런"}],"filledCount":1,"notFound":[],"schemaVersion":"1.0","source":"samples/field-01.hwp"}
+
+# 4) run 저널 — step 합집합 changedPages (라이브)
+{"assertions":{"notFoundEmpty":true,"verify":true},"changedPages":[0],"input":"samples/field-01.hwp","output":"/tmp/cp-plan.hwp","outputFormat":"hwp5","planVersion":"1.0","schemaVersion":"1.0","steps":[{"action":"fill_fields","ambiguous":[],"filled":[{"name":"회사명","occurrence":0,"value":"합집합사"}],"filledCount":1,"notFound":[],"step":0},{"action":"replace_text","find":"마케팅","replacedCount":1,"step":1}],"verify":{"diffCount":0,"identical":true}}
+exit=0
