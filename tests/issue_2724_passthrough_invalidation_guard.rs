@@ -118,6 +118,13 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "pending job을 drain하거나 기존 paginate로 fallback. 편집 IR은 선행 뮤테이터가 이미 무효화.",
     ),
     (
+        "queries/rendering.rs",
+        "repaginate_if_needed",
+        Exempt::SessionState,
+        "dirty 구역을 다시 쪽으로 나눌 뿐(pagination·측정 캐시). 문서 IR 무변경 — \
+         선행 편집 뮤테이터가 이미 무효화했다.",
+    ),
+    (
         "commands/clipboard.rs",
         "clear_clipboard_native",
         Exempt::SessionState,
