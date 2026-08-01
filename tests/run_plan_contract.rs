@@ -65,7 +65,10 @@ fn prevalidation_failure_is_exit_2_with_no_output() {
     assert_eq!(invalid.len(), 1, "{v}");
     assert_eq!(invalid[0]["step"], 1, "0-기반 step 지목: {v}");
     assert!(
-        invalid[0]["reason"].as_str().unwrap_or("").contains("존재하지않는필드XYZ"),
+        invalid[0]["reason"]
+            .as_str()
+            .unwrap_or("")
+            .contains("존재하지않는필드XYZ"),
         "왜 불가한지: {v}"
     );
     let _ = std::fs::remove_file(&plan_path);
