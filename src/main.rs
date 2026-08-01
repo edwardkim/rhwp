@@ -284,6 +284,7 @@ fn main() {
         Some("thumbnail") => exit_with(extract_thumbnail(&args[2..])),
         Some("fields") => exit_with(show_fields(&args[2..])),
         Some("edit") => exit_with(run_edit(&args[2..])),
+        Some("run") => exit_with(cmd_run_plan(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
         // 종료 코드 2로 끝낸다(기존에는 stdout + 0이라 오타 낸 명령이 스크립트에서 성공으로 보였다).
         other => {
@@ -823,6 +824,23 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             serde_json::json!(["edit", "set-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--text", "{text}", "--json"]),
             &["schemaVersion", "source", "table", "row", "col", "oldText", "newText", "dryRun", "overflow", "output", "outputFormat"],
         ),
+        tool(
+            "hwp_run_plan",
+            "[#3703] 선언적 편집 계획(JSON)을 정적 선검증→원자 실행→저널로 수행한다. 도구 호출을 체이닝하는 대신 의도를 계획서 하나로 선언하면, 전 step 의 실행 가능성을 미리 판정하고(불가 시 실행 0·invalid[]·exit 2) 인메모리로 적용해 단언(verify 자기검증) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경. steps: fill_fields{data} · replace_text{find,replace[,occurrence]} · set_cell{table,row,col,text[,keepStyle]} · set_checkbox{occurrence}.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "plan": {
+                        "type": "object",
+                        "description": "계획서. { planVersion:\"1.0\", input:<원본 경로>, output:<산출 경로>, steps:[{action:…}…], assertions:{ notFoundEmpty?, verify? } }"
+                    }
+                },
+                "required": ["plan"],
+            }),
+            "run",
+            serde_json::json!(["run", "--plan-json", "{plan}", "--json"]),
+            &["schemaVersion", "planVersion", "input", "output", "outputFormat", "steps", "verify", "invalid"],
+        ),
     ];
     for definition in &mut tools {
         if definition["name"]
@@ -925,6 +943,23 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "excerpt",
                 "truncated",
                 "nextStep",
+            ],
+        ),
+        cmd_json(
+            "run",
+            "edit",
+            "선언적 편집 계획 실행 — 정적 선검증·원자 실행·저널 (#3703)",
+            false,
+            &["--json", "--plan-json"],
+            &[
+                "schemaVersion",
+                "planVersion",
+                "input",
+                "output",
+                "outputFormat",
+                "steps",
+                "verify",
+                "invalid",
             ],
         ),
         cmd_json(
@@ -1690,6 +1725,14 @@ fn print_help() {
     println!("      edit 3종 공통: 산출물은 **입력 형식을 보존**한다 (HWPX 입력 → HWPX 산출).");
     println!("      HWPX 입력에 -o ….hwp 를 지정하면 그 경로를 존중해 HWP5 로 저장하되");
     println!("      형식 변경(이미지·차트 유실 가능)을 stderr 로 경고한다.");
+    println!();
+    println!("  run <계획.json> [--json]              선언적 편집 계획 실행 (#3703)");
+    println!("      전 step 을 정적 선검증(불가 시 실행 0·exit 2)하고 인메모리로 원자");
+    println!("      실행해 단언(verify) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경.");
+    println!("      steps: fill_fields{{data}} · replace_text{{find,replace[,occurrence]}}");
+    println!("             · set_cell{{table,row,col,text}} · set_checkbox{{occurrence}}");
+    println!("      --plan-json '<JSON>'      파일 대신 인라인 계획 (MCP hwp_run_plan 경로)");
+    println!("      단언 실패는 exit 3 — 저널(steps[]·verify)로 판정을 데이터로 보고");
     println!();
     println!("내부 개발·회귀 도구 (일반 사용자 대상 아님):");
     println!("  test-caption <파일.hwp> [-o <폴더>] 캡션 라운드트립 검증");
@@ -9814,6 +9857,392 @@ fn edit_serialize(
         EditOutputFormat::Hwp => doc.export_hwp_with_adapter(),
     }
     .map_err(|e| e.to_string())
+}
+
+// ─── [#3703] 계획 실행기 — 명령(CLI)·도구(MCP) 위의 3층: 선언적 편집 계획 ───
+
+/// `rhwp run <계획.json>` — 계획서를 정적 선검증 → 원자 실행 → 저널로 수행한다.
+///
+/// 다단 체이닝(호출 사이 상태 유실, 중간 실패의 반편집 문서)이 에이전트 실패의
+/// 뿌리라서 절차 대신 **의도(계획서)** 를 받는다. 판정은 전부 데이터다:
+/// 선검증 위반 = invalid[] + exit 2(실행 0), verify 단언 실패 = exit 3(디스크
+/// 무변경), 성공 = step 저널 + verify + exit 0(단 한 번 저장).
+fn cmd_run_plan(args: &[String]) -> i32 {
+    let mut plan_path: Option<&str> = None;
+    let mut plan_inline: Option<&str> = None;
+    let mut json_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--plan-json" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => plan_inline = Some(v.as_str()),
+                    None => {
+                        eprintln!("오류: --plan-json 뒤에 계획 JSON 문자열이 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other if !other.starts_with("--") && plan_path.is_none() => plan_path = Some(other),
+            other => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {}", other);
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+    let plan_text = match (plan_inline, plan_path) {
+        (Some(inline), _) => inline.to_string(),
+        (None, Some(path)) => match fs::read_to_string(path) {
+            Ok(t) => t,
+            Err(e) => {
+                eprintln!("오류: 계획 파일을 읽을 수 없습니다 - {}: {}", path, e);
+                return EXIT_RUNTIME;
+            }
+        },
+        (None, None) => {
+            eprintln!("사용법: rhwp run <계획.json> [--json]  (파일 대신 --plan-json '<JSON>')");
+            return EXIT_USAGE;
+        }
+    };
+    let plan: serde_json::Value = match serde_json::from_str(&plan_text) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("오류: 계획 JSON 파싱 실패 - {}", e);
+            return EXIT_USAGE;
+        }
+    };
+    let (journal, code) = run_plan_engine(&plan);
+    if json_mode {
+        println!("{}", journal);
+    } else if code == EXIT_OK {
+        println!(
+            "완료: {} step 적용, 산출 {}",
+            journal["steps"].as_array().map(|s| s.len()).unwrap_or(0),
+            journal["output"].as_str().unwrap_or("-")
+        );
+    } else {
+        // 사람 모드에서도 판정 근거는 저널 그대로 남긴다 — 달리 설명할 출처가 없다.
+        eprintln!("{}", journal);
+    }
+    code
+}
+
+/// 계획 실행 본체 — (저널, 종료 코드). CLI 와 MCP `hwp_run_plan` 이 같은 판정을 공유한다.
+fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
+    fn usage(reason: &str) -> (serde_json::Value, i32) {
+        (
+            serde_json::json!({ "schemaVersion": "1.0", "error": reason }),
+            EXIT_USAGE,
+        )
+    }
+    fn fail(reason: String) -> (serde_json::Value, i32) {
+        (
+            serde_json::json!({ "schemaVersion": "1.0", "error": reason }),
+            EXIT_RUNTIME,
+        )
+    }
+
+    if plan["planVersion"].as_str() != Some("1.0") {
+        return usage("planVersion \"1.0\" 이 필요합니다");
+    }
+    let Some(input) = plan["input"].as_str() else {
+        return usage("input (원본 문서 경로)이 필요합니다");
+    };
+    let Some(output) = plan["output"].as_str() else {
+        return usage("output (산출 경로)이 필요합니다");
+    };
+    let steps = match plan["steps"].as_array() {
+        Some(s) if !s.is_empty() => s,
+        _ => return usage("steps 는 비어 있지 않은 배열이어야 합니다"),
+    };
+    let assert_verify = plan["assertions"]["verify"].as_bool().unwrap_or(false);
+    // notFoundEmpty 는 선검증이 구조적으로 보장한다 — 계약 표기로 저널에 남긴다.
+    let assert_not_found_empty = plan["assertions"]["notFoundEmpty"]
+        .as_bool()
+        .unwrap_or(true);
+
+    let bytes = match fs::read(input) {
+        Ok(d) => d,
+        Err(e) => return fail(format!("입력을 읽을 수 없습니다 - {}: {}", input, e)),
+    };
+    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
+        Ok(d) => d,
+        Err(e) => return fail(format!("HWP 파싱 실패 - {}", e)),
+    };
+
+    // 1) 정적 선검증 — 실행 0. 위반을 전부 모아 한 번에 보고한다(하나 고치면 다음
+    //    위반이 나오는 두더지잡기 방지). 판정자는 실행이 쓰는 바로 그 함수들이다.
+    let mut name_counts: std::collections::HashMap<String, usize> =
+        std::collections::HashMap::new();
+    for fi in doc.collect_all_fields().iter() {
+        if let Some(n) = fi.field.field_name() {
+            *name_counts.entry(n.to_string()).or_insert(0) += 1;
+        }
+    }
+    let mut invalid: Vec<serde_json::Value> = Vec::new();
+    for (idx, step) in steps.iter().enumerate() {
+        let action = step["action"].as_str().unwrap_or("");
+        match action {
+            "fill_fields" => {
+                let Some(data) = step["data"].as_object() else {
+                    invalid.push(serde_json::json!({ "step": idx, "action": action,
+                        "reason": "data 는 {\"필드이름\":\"값\"} 객체여야 합니다" }));
+                    continue;
+                };
+                for key in data.keys() {
+                    let (name, occurrence) = parse_field_key(key);
+                    let total = name_counts.get(name).copied().unwrap_or(0);
+                    if total == 0 || occurrence >= total {
+                        invalid.push(serde_json::json!({ "step": idx, "action": action,
+                            "reason": format!("필드 '{}' 이(가) 없거나 순번이 범위 밖입니다 (동명 {}개)", key, total) }));
+                    }
+                }
+            }
+            "replace_text" => {
+                let Some(find) = step["find"].as_str().filter(|s| !s.is_empty()) else {
+                    invalid.push(serde_json::json!({ "step": idx, "action": action,
+                        "reason": "find (비어 있지 않은 문자열)가 필요합니다" }));
+                    continue;
+                };
+                if !step["replace"].is_string() {
+                    invalid.push(serde_json::json!({ "step": idx, "action": action,
+                        "reason": "replace (문자열)가 필요합니다" }));
+                    continue;
+                }
+                let case_sensitive = step["caseSensitive"].as_bool().unwrap_or(true);
+                let count = doc.grep(find, case_sensitive, None).len();
+                match step["occurrence"].as_u64() {
+                    Some(n) if (n as usize) >= count => {
+                        invalid.push(serde_json::json!({ "step": idx, "action": action,
+                            "reason": format!("occurrence {} 이(가) 범위 밖입니다 ('{}' 일치 {}건)", n, find, count) }));
+                    }
+                    None if count == 0 => {
+                        invalid.push(serde_json::json!({ "step": idx, "action": action,
+                            "reason": format!("'{}' 일치 0건 — 치환할 곳이 없습니다", find) }));
+                    }
+                    _ => {}
+                }
+            }
+            "set_checkbox" => {
+                let Some(n) = step["occurrence"].as_u64() else {
+                    invalid.push(serde_json::json!({ "step": idx, "action": action,
+                        "reason": "occurrence (0 기준 순번)가 필요합니다" }));
+                    continue;
+                };
+                let count = doc.grep("□", true, None).len();
+                if (n as usize) >= count {
+                    invalid.push(serde_json::json!({ "step": idx, "action": action,
+                        "reason": format!("occurrence {} 이(가) 범위 밖입니다 (빈 체크박스 □ {}건)", n, count) }));
+                }
+            }
+            "set_cell" => {
+                let (Some(t), Some(r), Some(c), Some(text)) = (
+                    step["table"].as_u64(),
+                    step["row"].as_u64(),
+                    step["col"].as_u64(),
+                    step["text"].as_str(),
+                ) else {
+                    invalid.push(serde_json::json!({ "step": idx, "action": action,
+                        "reason": "table·row·col (정수)과 text (문자열)가 필요합니다" }));
+                    continue;
+                };
+                if text.chars().any(|ch| matches!(ch, '\r' | '\n' | '\t')) {
+                    invalid.push(serde_json::json!({ "step": idx, "action": action,
+                        "reason": "text 에 줄바꿈·탭은 넣을 수 없습니다 (한 줄 값 기록)" }));
+                    continue;
+                }
+                if let Err(e) = resolve_table_cell(doc.document(), t as usize, r as u16, c as u16)
+                {
+                    let (CellResolveError::Usage(msg) | CellResolveError::Runtime(msg)) = e;
+                    invalid
+                        .push(serde_json::json!({ "step": idx, "action": action, "reason": msg }));
+                }
+            }
+            "" => {
+                invalid.push(serde_json::json!({ "step": idx, "reason": "action 이 필요합니다" }))
+            }
+            other => invalid.push(serde_json::json!({ "step": idx, "action": other,
+                "reason": format!("알 수 없는 action: {} (fill_fields·replace_text·set_cell·set_checkbox)", other) })),
+        }
+    }
+    if !invalid.is_empty() {
+        return (
+            serde_json::json!({
+                "schemaVersion": "1.0", "planVersion": "1.0",
+                "input": input, "output": output, "invalid": invalid,
+            }),
+            EXIT_USAGE,
+        );
+    }
+
+    // 2) 원자 실행 — 전 step 을 인메모리 IR 에만 적용한다. 디스크는 아직 무변경이라
+    //    어느 step 이 실패해도 반편집 문서가 남지 않는다.
+    let mut journal_steps: Vec<serde_json::Value> = Vec::new();
+    for (idx, step) in steps.iter().enumerate() {
+        let action = step["action"].as_str().unwrap_or("");
+        match action {
+            "fill_fields" => {
+                let data = step["data"].as_object().expect("선검증 통과");
+                let mut filled: Vec<serde_json::Value> = Vec::new();
+                let mut ambiguous: Vec<serde_json::Value> = Vec::new();
+                for (key, value) in data {
+                    let value_str = match value {
+                        serde_json::Value::String(s) => s.clone(),
+                        other => other.to_string(),
+                    };
+                    let (name, occurrence) = parse_field_key(key);
+                    let total = name_counts.get(name).copied().unwrap_or(0);
+                    if occurrence == 0 && total > 1 && !key.contains('[') {
+                        ambiguous.push(
+                            serde_json::json!({ "name": name, "matched": 1, "total": total }),
+                        );
+                    }
+                    if let Err(e) = doc.set_field_value_by_name_at(name, occurrence, &value_str) {
+                        return fail(format!("step {}: 필드 '{}' 설정 실패 - {}", idx, key, e));
+                    }
+                    filled.push(serde_json::json!({
+                        "name": name, "occurrence": occurrence, "value": value_str,
+                    }));
+                }
+                journal_steps.push(serde_json::json!({
+                    "step": idx, "action": "fill_fields",
+                    "filledCount": filled.len(), "filled": filled,
+                    "notFound": [], "ambiguous": ambiguous,
+                }));
+            }
+            "replace_text" => {
+                let find = step["find"].as_str().expect("선검증 통과");
+                let replace = step["replace"].as_str().expect("선검증 통과");
+                let case_sensitive = step["caseSensitive"].as_bool().unwrap_or(true);
+                let result = match step["occurrence"].as_u64() {
+                    Some(n) => doc.replace_nth_native(find, replace, case_sensitive, n as usize),
+                    None => doc.replace_all_native(find, replace, case_sensitive),
+                };
+                let count = match result {
+                    Ok(r) => serde_json::from_str::<serde_json::Value>(&r)
+                        .ok()
+                        .and_then(|v| v["count"].as_u64())
+                        .unwrap_or(0),
+                    Err(e) => return fail(format!("step {}: 치환 실패 - {:?}", idx, e)),
+                };
+                journal_steps.push(serde_json::json!({
+                    "step": idx, "action": "replace_text",
+                    "find": find, "replacedCount": count,
+                }));
+            }
+            "set_checkbox" => {
+                let n = step["occurrence"].as_u64().expect("선검증 통과") as usize;
+                let count = match doc.replace_nth_native("□", "☑", true, n) {
+                    Ok(r) => serde_json::from_str::<serde_json::Value>(&r)
+                        .ok()
+                        .and_then(|v| v["count"].as_u64())
+                        .unwrap_or(0),
+                    Err(e) => return fail(format!("step {}: 체크박스 기록 실패 - {:?}", idx, e)),
+                };
+                journal_steps.push(serde_json::json!({
+                    "step": idx, "action": "set_checkbox",
+                    "occurrence": n, "replacedCount": count,
+                }));
+            }
+            "set_cell" => {
+                let t = step["table"].as_u64().expect("선검증 통과") as usize;
+                let r = step["row"].as_u64().expect("선검증 통과") as u16;
+                let c = step["col"].as_u64().expect("선검증 통과") as u16;
+                let text = step["text"].as_str().expect("선검증 통과");
+                let keep_style = step["keepStyle"].as_bool().unwrap_or(false);
+                // 앞 step 의 편집으로 좌표가 밀릴 수 있어 실행 시점에 재해석한다.
+                let (sec, para, ctrl, cell_idx, para_lens, old_text) =
+                    match resolve_table_cell(doc.document(), t, r, c) {
+                        Ok(v) => v,
+                        Err(CellResolveError::Usage(m) | CellResolveError::Runtime(m)) => {
+                            return fail(format!("step {}: {}", idx, m));
+                        }
+                    };
+                for (pi, len) in para_lens.iter().enumerate() {
+                    if *len == 0 {
+                        continue;
+                    }
+                    if let Err(e) = doc.delete_text_in_cell(
+                        sec as u32,
+                        para as u32,
+                        ctrl as u32,
+                        cell_idx as u32,
+                        pi as u32,
+                        0,
+                        *len as u32,
+                    ) {
+                        return fail(format!(
+                            "step {}: 셀 비우기 실패(문단 {}) - {:?}",
+                            idx, pi, e
+                        ));
+                    }
+                }
+                if !text.is_empty() {
+                    if let Err(e) = doc.insert_text_in_cell(
+                        sec as u32,
+                        para as u32,
+                        ctrl as u32,
+                        cell_idx as u32,
+                        0,
+                        0,
+                        text,
+                    ) {
+                        return fail(format!("step {}: 셀 쓰기 실패 - {:?}", idx, e));
+                    }
+                    if !keep_style
+                        && !recolor_cell_text_black(doc.document_mut(), sec, para, ctrl, cell_idx)
+                    {
+                        eprintln!("경고: step {} 셀 글자색을 검정으로 바꾸지 못했습니다.", idx);
+                    }
+                }
+                journal_steps.push(serde_json::json!({
+                    "step": idx, "action": "set_cell",
+                    "table": t, "row": r, "col": c, "oldText": old_text,
+                }));
+            }
+            _ => unreachable!("선검증이 막는다"),
+        }
+    }
+
+    // 3) 사후 단언 → 단 한 번 저장. 단언 실패 시 디스크 무변경 — 자연 트랜잭션.
+    let out_format = edit_output_format(&bytes, Some(output));
+    let out_bytes = match edit_serialize(&mut doc, out_format) {
+        Ok(b) => b,
+        Err(e) => return fail(format!("{} 직렬화 실패 - {}", out_format.label(), e)),
+    };
+    let mut verify_report = serde_json::Value::Null;
+    if assert_verify {
+        let cross = out_format == EditOutputFormat::Hwp
+            && rhwp::parser::detect_format(&bytes) == rhwp::parser::FileFormat::Hwpx;
+        let (report, failed) = edit_verify_report(&doc, &out_bytes, cross);
+        verify_report = report;
+        if failed {
+            return (
+                serde_json::json!({
+                    "schemaVersion": "1.0", "planVersion": "1.0",
+                    "input": input, "output": output,
+                    "steps": journal_steps, "verify": verify_report,
+                    "error": "verify 단언 실패 — 디스크 무변경",
+                }),
+                3,
+            );
+        }
+    }
+    if let Err(e) = fs::write(output, &out_bytes) {
+        return fail(format!("출력 파일을 쓸 수 없습니다 - {}: {}", output, e));
+    }
+    (
+        serde_json::json!({
+            "schemaVersion": "1.0", "planVersion": "1.0",
+            "input": input, "output": output, "outputFormat": out_format.label(),
+            "steps": journal_steps, "verify": verify_report,
+            "assertions": { "notFoundEmpty": assert_not_found_empty, "verify": assert_verify },
+        }),
+        EXIT_OK,
+    )
 }
 
 /// `edit fill-fields` — 누름틀에 값을 채운다 (메일머지).

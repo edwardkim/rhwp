@@ -1,0 +1,11 @@
+# 1) 정상 계획 — rhwp run demo_plan.json --json (라이브)
+{"assertions":{"notFoundEmpty":true,"verify":true},"input":"samples/field-01.hwp","output":"/tmp/plan-out.hwp","outputFormat":"hwp5","planVersion":"1.0","schemaVersion":"1.0","steps":[{"action":"fill_fields","ambiguous":[],"filled":[{"name":"회사명","occurrence":0,"value":"계획실행주식회사"}],"filledCount":1,"notFound":[],"step":0},{"action":"replace_text","find":"마케팅","replacedCount":1,"step":1}],"verify":{"diffCount":0,"identical":true}}
+exit=0
+
+# 2) 선검증 실패 — 위반 2건을 한 번에 모아 보고, 실행 0 (라이브)
+{"input":"samples/field-01.hwp","invalid":[{"action":"fill_fields","reason":"필드 '존재하지않는필드XYZ' 이(가) 없거나 순번이 범위 밖입니다 (동명 0개)","step":1},{"action":"replace_text","reason":"'이런문자열은없다9999' 일치 0건 — 치환할 곳이 없습니다","step":2}],"output":"/tmp/plan-bad.hwp","planVersion":"1.0","schemaVersion":"1.0"}
+exit=2
+(출력 파일 부재 = 실행 0 증명)
+
+# 3) MCP hwp_run_plan — 인라인 계획 (라이브)
+{"id":1,"jsonrpc":"2.0","result":{"content":[{"text":"{\"assertions\":{\"notFoundEmpty\":true,\"verify\":true},\"input\":\"samples/field-01.hwp\",\"output\":\"/tmp/plan-out.hwp\",\"outputFormat\":\"hwp5\",\"planVersion\":\"1.0\",\"schemaVersion\":\"1.0\",\"steps\":[{\"action\":\"fill_fields\",\"ambiguous\":[],\"filled\":[{\"name\":\"회사명\",\"occurrence\":0,\"value\":\"계획실행주식회사\"}],\"filledCount\":1,\"notFound\":[],\"step\":0},{\"action\":\"replace_text\",\"find\":\"마케팅\",\"replacedCount\":1,\"step\":1}],\"verify\":{\"diffCount\":0,\"identical\":true}}","type":"text"}],"isError":false,"structuredContent":{"assertions":{"notFoundEmpty":true,"verify":true},"input":"samples/field-01.hwp","output":"/tmp/plan-out.hwp","outputFormat":"hwp5","planVersion":"1.0","schemaVersion":"1.0","steps":[{"action":"fill_fields","ambiguous":[],"filled":[{"name":"회사명","occurrence":0,"value":"계획실행주식회사"}],"filledCount":1,"notFound":[],"step":0},{"action":"replace_text","find":"마케팅","replacedCount":1,"step":1}],"verify":{"diffCount":0,"identical":true}}}}
