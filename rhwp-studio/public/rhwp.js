@@ -1333,6 +1333,22 @@ export class HwpDocument {
         return v1;
     }
     /**
+     * 문서를 HWP5 EncryptVersion 4 비밀번호 문서로 내보낸다.
+     * @param {string} password
+     * @returns {Uint8Array}
+     */
+    exportHwpWithPassword(password) {
+        const ptr0 = passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_exportHwpWithPassword(this.__wbg_ptr, ptr0, len0);
+        if (ret[3]) {
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        var v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v2;
+    }
+    /**
      * 어댑터 적용 + HWP 직렬화 + 자기 재로드 검증을 수행하고 결과를 JSON 으로 반환한다 (#178).
      *
      * 반환 JSON:
@@ -1379,6 +1395,22 @@ export class HwpDocument {
         var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
         return v1;
+    }
+    /**
+     * 문서를 ODF AES-256-CBC/PBKDF2 비밀번호 보호 HWPX로 내보낸다.
+     * @param {string} password
+     * @returns {Uint8Array}
+     */
+    exportHwpxWithPassword(password) {
+        const ptr0 = passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_exportHwpxWithPassword(this.__wbg_ptr, ptr0, len0);
+        if (ret[3]) {
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        var v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v2;
     }
     /**
      * 선택 영역을 HTML 문자열로 변환한다 (본문).

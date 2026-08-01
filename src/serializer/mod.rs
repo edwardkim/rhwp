@@ -14,9 +14,9 @@ pub mod hwpx;
 pub mod mini_cfb;
 pub mod record_writer;
 
-pub use cfb_writer::serialize_hwp;
+pub use cfb_writer::{serialize_hwp, serialize_hwp_with_password};
 pub use hml::serialize_hml;
-pub use hwpx::serialize_hwpx;
+pub use hwpx::{serialize_hwpx, serialize_hwpx_with_password};
 
 /// 직렬화 에러 (HWP + HWPX 공용)
 #[derive(Debug)]
@@ -31,6 +31,8 @@ pub enum SerializeError {
     XmlError(String),
     /// 지원하지 않는 입력 (예: HWP 소스를 HWPX 직렬화기에 넘긴 경우)
     UnsupportedInput(String),
+    /// 비밀번호 보호 패키지 생성 실패
+    CryptoError(String),
 }
 
 impl std::fmt::Display for SerializeError {
@@ -41,6 +43,7 @@ impl std::fmt::Display for SerializeError {
             SerializeError::ZipError(e) => write!(f, "ZIP 쓰기 실패: {}", e),
             SerializeError::XmlError(e) => write!(f, "XML 쓰기 실패: {}", e),
             SerializeError::UnsupportedInput(e) => write!(f, "지원하지 않는 입력: {}", e),
+            SerializeError::CryptoError(e) => write!(f, "비밀번호 암호화 실패: {}", e),
         }
     }
 }

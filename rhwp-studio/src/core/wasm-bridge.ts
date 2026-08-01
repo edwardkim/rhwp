@@ -167,6 +167,8 @@ export class WasmBridge {
   private initialized = false;
   private _fileName = 'document.hwp';
   private _currentFileHandle: FileSystemFileHandleLike | null = null;
+  /** 마지막 저장본이 출력 암호로 보호됐는지 여부만 보관한다. 암호 문자열은 보관하지 않는다. */
+  private _requiresPasswordForSave = false;
   private _documentDigest: string | null = null;
   /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
   private _documentGeneration = 0;
@@ -253,6 +255,7 @@ export class WasmBridge {
       this.doc = null;
     }
     this._currentFileHandle = null;
+    this._requiresPasswordForSave = false;
     this._documentDigest = null;
   }
 
@@ -278,6 +281,7 @@ export class WasmBridge {
       this.doc = nextDoc;
       this._fileName = nextFileName;
       this._currentFileHandle = null;
+      this._requiresPasswordForSave = false;
       this._documentDigest = nextDocumentDigest;
       this._documentGeneration += 1;
       if (previousDoc) {
@@ -372,6 +376,7 @@ export class WasmBridge {
     this.ensureParagraphStableIds();
     this._fileName = '새 문서.hwp';
     this._currentFileHandle = null;
+    this._requiresPasswordForSave = false;
     this.doc.setFileName(this._fileName);
     try {
       this._documentDigest = `blake3:${bytesToHex(blake3(this.doc.exportHwp()))}`;
@@ -408,6 +413,14 @@ export class WasmBridge {
     this._currentFileHandle = handle;
   }
 
+  get requiresPasswordForSave(): boolean {
+    return this._requiresPasswordForSave;
+  }
+
+  set requiresPasswordForSave(value: boolean) {
+    this._requiresPasswordForSave = value;
+  }
+
   get isNewDocument(): boolean {
     return this._fileName === '새 문서.hwp';
   }
@@ -417,9 +430,19 @@ export class WasmBridge {
     return this.doc.exportHwp();
   }
 
+  exportHwpWithPassword(password: string): Uint8Array {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.exportHwpWithPassword(password);
+  }
+
   exportHwpx(): Uint8Array {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.exportHwpx();
+  }
+
+  exportHwpxWithPassword(password: string): Uint8Array {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.exportHwpxWithPassword(password);
   }
 
   /** HML로 저장 (보존 불가 요소가 있으면 던진다). 현재 WASM 빌드가 지원하지 않으면 던진다. */

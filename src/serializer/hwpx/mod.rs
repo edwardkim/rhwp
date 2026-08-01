@@ -204,6 +204,19 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     z.finish()
 }
 
+/// Document IR을 한컴 ODF AES-256-CBC 비밀번호 보호 HWPX로 직렬화한다.
+///
+/// ZIP/문서 생성은 평문 `serialize_hwpx()`와 동일하게 수행한 뒤 공통 암호 모듈이
+/// header, section, settings, preview와 BinData 엔트리만 암호화한다.
+pub fn serialize_hwpx_with_password(
+    doc: &Document,
+    password: &[u8],
+) -> Result<Vec<u8>, SerializeError> {
+    let plain = serialize_hwpx(doc)?;
+    crate::password_crypto::encrypt_hwpx_package(&plain, password)
+        .map_err(|error| SerializeError::CryptoError(error.to_string()))
+}
+
 fn write_container_rdf(section_hrefs: &[String]) -> String {
     const PKG_NS: &str = "http://www.hancom.co.kr/hwpml/2016/meta/pkg#";
 

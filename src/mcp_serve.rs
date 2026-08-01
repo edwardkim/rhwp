@@ -201,11 +201,16 @@ fn served_tools(tool_defs: &[serde_json::Value], include_session: bool) -> Vec<s
     }
     tools.push(serde_json::json!({
         "name": "hwp_open",
-        "description": "문서를 파싱해 세션 핸들(docId)을 연다. 대형 문서를 여러 번 조회할 때 재파싱을 피한다. 조회가 끝나면 hwp_close 로 닫는다.",
+        "description": "문서를 파싱해 세션 핸들(docId)을 연다. 대형 문서를 여러 번 조회할 때 재파싱을 피한다. 암호 문서는 선택 password를 쓴다. 조회가 끝나면 hwp_close 로 닫는다.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "path": { "type": "string", "description": "HWP/HWPX/HML 문서 경로" }
+                "path": { "type": "string", "description": "HWP/HWPX/HML 문서 경로" },
+                "password": {
+                    "type": "string",
+                    "writeOnly": true,
+                    "description": "암호 문서 비밀번호. 서버는 응답과 세션 상태에 보존하지 않는다."
+                }
             },
             "required": ["path"]
         }
@@ -420,9 +425,17 @@ fn session_open(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
         Ok(d) => d,
         Err(e) => return tool_error(format!("{path} 읽기 실패: {e}")),
     };
-    let doc = match HwpDocument::from_bytes(&data) {
+    let password = match mcp_password(args) {
+        Ok(password) => password,
+        Err(message) => return tool_error(message),
+    };
+    let document_result = match password.as_deref() {
+        Some(password) => HwpDocument::from_bytes_with_password(&data, password.as_bytes()),
+        None => HwpDocument::from_bytes(&data),
+    };
+    let doc = match document_result {
         Ok(d) => d,
-        Err(e) => return tool_error(format!("{path} 파싱 실패: {e:?}")),
+        Err(e) => return tool_error(format!("{path} 파싱 실패: {e}")),
     };
     // [#3598] save 의 형식 보존을 위해 원본 형식을 핸들에 함께 기억한다.
     let detected_format = rhwp::parser::detect_format(&data);
@@ -449,6 +462,21 @@ fn session_open(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
         })
         .to_string(),
     )
+}
+
+/// MCP password는 자식 CLI stdin의 첫 줄과 같은 계약으로 제한한다. 값은 호출 범위를
+/// 벗어나 저장하지 않으며, 오류 문자열에도 포함하지 않는다.
+fn mcp_password(args: &serde_json::Value) -> Result<Option<String>, String> {
+    let Some(value) = args.get("password") else {
+        return Ok(None);
+    };
+    let Some(password) = value.as_str() else {
+        return Err("password는 문자열이어야 합니다".into());
+    };
+    if password.contains(['\r', '\n']) {
+        return Err("password에는 줄바꿈을 포함할 수 없습니다".into());
+    }
+    Ok(Some(password.to_string()))
 }
 
 fn session_doc_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json::Value {
@@ -940,15 +968,15 @@ fn run_cli_tool(def: &serde_json::Value, args: &serde_json::Value) -> serde_json
         }
     }
 
+    let password = match mcp_password(args) {
+        Ok(password) => password,
+        Err(message) => return tool_error(message),
+    };
+
     let exe = match std::env::current_exe() {
         Ok(p) => p,
         Err(e) => return tool_error(format!("실행 파일 경로 조회 실패: {e}")),
     };
-    let mut cmd = std::process::Command::new(exe);
-    cmd.args(&cli_args)
-        .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped());
-
     // stdin 도구(hwp_batch 계열): paths 배열을 한 줄에 하나씩 흘려 넣는다.
     let stdin_paths: Option<String> = args.get("paths").and_then(|p| p.as_array()).map(|arr| {
         arr.iter()
@@ -956,7 +984,27 @@ fn run_cli_tool(def: &serde_json::Value, args: &serde_json::Value) -> serde_json
             .collect::<Vec<_>>()
             .join("\n")
     });
-    if stdin_paths.is_some() {
+    if password.is_some() && stdin_paths.is_some() {
+        return tool_error(
+            "batch MCP 도구는 경로 목록 stdin과 password를 함께 받을 수 없습니다".into(),
+        );
+    }
+    if password.is_some() && def["cli"]["passwordStdin"].is_null() {
+        return tool_error("이 MCP 도구는 password 입력을 지원하지 않습니다".into());
+    }
+    if password.is_some() {
+        // 민감값은 argv가 아니라 기존 CLI의 stdin 계약으로만 전달한다.
+        cli_args.push("--password-stdin".to_string());
+    }
+
+    let stdin_payload = password
+        .map(|password| format!("{password}\n"))
+        .or_else(|| stdin_paths.map(|paths| format!("{paths}\n")));
+    let mut cmd = std::process::Command::new(exe);
+    cmd.args(&cli_args)
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped());
+    if stdin_payload.is_some() {
         cmd.stdin(std::process::Stdio::piped());
     }
 
@@ -964,10 +1012,9 @@ fn run_cli_tool(def: &serde_json::Value, args: &serde_json::Value) -> serde_json
         Ok(c) => c,
         Err(e) => return tool_error(format!("CLI 실행 실패: {e}")),
     };
-    if let (Some(paths), Some(mut si)) = (stdin_paths, child.stdin.take()) {
-        let _ = si.write_all(paths.as_bytes());
-        let _ = si.write_all(b"\n");
-        // drop 으로 stdin 닫힘 — batch 가 EOF 를 본다.
+    if let (Some(payload), Some(mut stdin)) = (stdin_payload, child.stdin.take()) {
+        let _ = stdin.write_all(payload.as_bytes());
+        // drop 으로 stdin 닫힘 — password reader와 batch가 EOF를 본다.
     }
     let output = match child.wait_with_output() {
         Ok(o) => o,

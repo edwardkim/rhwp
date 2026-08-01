@@ -5594,10 +5594,27 @@ impl HwpDocument {
         self.export_hwp_with_adapter().map_err(|e| e.into())
     }
 
+    /// 문서를 HWP5 EncryptVersion 4 비밀번호 문서로 내보낸다.
+    ///
+    /// browser UI는 암호를 저장하지 않고 저장 시점에만 전달한다. HWPX 출처 문서는 일반
+    /// HWP 저장과 동일하게 HWPX-to-HWP adapter를 먼저 적용한다.
+    #[wasm_bindgen(js_name = exportHwpWithPassword)]
+    pub fn export_hwp_with_password_wasm(&mut self, password: &str) -> Result<Vec<u8>, JsValue> {
+        self.export_hwp_with_adapter_with_password(password.as_bytes())
+            .map_err(|e| e.into())
+    }
+
     /// Document IR을 HWPX(ZIP+XML)로 직렬화하여 반환한다.
     #[wasm_bindgen(js_name = exportHwpx)]
     pub fn export_hwpx(&self) -> Result<Vec<u8>, JsValue> {
         self.export_hwpx_native().map_err(|e| e.into())
+    }
+
+    /// 문서를 ODF AES-256-CBC/PBKDF2 비밀번호 보호 HWPX로 내보낸다.
+    #[wasm_bindgen(js_name = exportHwpxWithPassword)]
+    pub fn export_hwpx_with_password_wasm(&self, password: &str) -> Result<Vec<u8>, JsValue> {
+        self.export_hwpx_native_with_password(password.as_bytes())
+            .map_err(|e| e.into())
     }
 
     /// HML 원본의 공통 IR을 HWPML 2.91 XML로 직렬화하여 반환한다.

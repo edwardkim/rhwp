@@ -21,6 +21,16 @@ test('암호 문서는 명시적인 암호 필요 오류에서만 입력 UI로 �
   assert.match(openPath, /return loadPasswordProtectedDocument\(data, fileName\);/, '암호 필요일 때만 대화상자로 전환한다');
 });
 
+test('드롭 문서도 파일 메뉴와 같은 암호 열기 경로를 쓰며 File System Access handle을 capture하지 않는다', () => {
+  const dropPath = between(mainSource, "container.addEventListener('drop', async (e) => {", 'function setupZoomControls');
+  assert.match(dropPath, /const confirmed = await showDropConfirmDialog\(file\.name\)/, '드롭 열기 확인을 유지해야 합니다');
+  assert.match(dropPath, /await loadFile\(file\);/, '드롭 문서는 파일 메뉴와 같은 loadFile 경로를 사용해야 합니다');
+  assert.doesNotMatch(dropPath, /captureDroppedFileHandle|getAsFileSystemHandle|fileHandle:/,
+    '암호 문서 드롭에서 Chromium File System Access IPC를 시작하면 안 됩니다');
+  assert.match(mainSource, /async function loadDocumentForOpen[\s\S]*loadPasswordProtectedDocument/,
+    'loadFile 이후 암호 감지와 password dialog 경로를 유지해야 합니다');
+});
+
 test('암호 입력은 단일 시도에만 쓰고, 취소와 오입력은 영속 경로에 도달하지 않는다', () => {
   const passwordPath = between(mainSource, 'async function loadPasswordProtectedDocument', 'async function loadDocumentForOpen');
   assert.match(passwordPath, /showHwpPasswordDialog\(fileName, retryMessage\)/, '문서 이름만 대화상자에 전달한다');

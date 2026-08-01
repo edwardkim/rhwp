@@ -22,7 +22,6 @@ import { pageCommands } from '@/command/commands/page';
 import { toolCommands } from '@/command/commands/tool';
 import { installPwaFileHandling, type FileHandlingWindowLike } from '@/command/pwa-file-handling';
 import {
-  captureDroppedFileHandle,
   isSupportedDocumentFileName,
   type FileSystemFileHandleLike,
 } from '@/command/file-system-access';
@@ -595,12 +594,6 @@ function setupFileInput(): void {
       return;
     }
 
-    // #3259: Chromium은 getAsFileSystemHandle을 drop event와 같은 tick에 호출해야 한다.
-    // 아직 bytes를 읽거나 handle을 저장하지 않으며, 아래 사용자 확인이 승인된 뒤에만 사용한다.
-    const droppedFileHandle = isDoc
-      ? captureDroppedFileHandle(e.dataTransfer?.items, file)
-      : Promise.resolve<FileSystemFileHandleLike | null>(null);
-
     // [#1439] 보안: 드롭으로 로컬 파일을 읽는 동작은 기본에서 제외하고, 사용자가
     // 명시적으로 [열기]를 눌러 동의한 경우에만 진행한다 (확장/웹 공통).
     const confirmed = await showDropConfirmDialog(file.name);
@@ -642,8 +635,10 @@ function setupFileInput(): void {
       return;
     }
 
-    // HWP/HWPX/HML — loadFile 내부 unsaved 가드는 드롭 확인 이후에 동작한다.
-    await loadFile(file, { fileHandle: await droppedFileHandle });
+    // HWP/HWPX/HML — Finder/Explorer drop에서는 File System Access handle을 capture하지
+    // 않는다. macOS Chromium에서 encrypted HWPX drag/drop 시 해당 IPC가 renderer를 종료시키는
+    // 사례가 있어, 열기에 충분한 File bytes만 사용한다. 저장은 이후 save-as 경로로 진행한다.
+    await loadFile(file);
   });
 }
 

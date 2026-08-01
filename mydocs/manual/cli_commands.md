@@ -68,7 +68,13 @@ rhwp --password '문서비밀번호' export-text protected.hwp -o output/
   EncryptVersion 또는 비압축 HWP3 암호 본문은 종료 코드 1로 거부한다.
 - 일반 열기·내보내기·변환 명령과 `dump-records`가 이 옵션을 사용한다.
   `export-doclang`의 보호 문서 거부 정책과 미리보기만 읽는 `thumbnail`에는 적용하지 않는다.
-- 복호화한 문서를 HWP로 저장할 때는 암호화 쓰기를 하지 않고 일반 HWP로 저장한다.
+- `convert`와 `export-hwpx`는 `--output-password <값>` 또는 `--output-password-stdin`을 받으면
+  각각 HWP5 EncryptVersion 4와 ODF AES-256-CBC/PBKDF2 HWPX로 저장한다. 입력 암호와 출력 암호는
+  독립적이므로 복호화·재암호화가 가능하다.
+- 두 stdin 옵션을 함께 쓰면 stdin 첫 줄은 입력 암호, 둘째 줄은 출력 암호다. `--output-password`는
+  프로세스 목록과 shell history에 값이 남을 수 있으므로 `--output-password-stdin`을 권장한다.
+- 출력 암호는 `convert`/`export-hwpx`의 `--verify`, `--verify-pages` 재열기에도 사용한다. PDF와
+  기타 내보내기 명령에는 파일 형식 암호 저장을 제공하지 않는다.
 
 ## 종료 코드 (#2707)
 
@@ -526,12 +532,14 @@ rhwp export-tables 작성본.hwpx --json | jq '.tables[0].cells[] | select(.row=
 
 ## 3. 변환·비교
 
-### `convert <입력.hwp|.hwpx> <출력.hwp> [--verify] [--verify-pages]`
+### `convert <입력.hwp|.hwpx> <출력.hwp> [--verify] [--verify-pages] [--output-password-stdin]`
 배포용(읽기전용) HWP → 편집 가능 HWP 변환. 출력은 항상 `.hwp`.
 - `--verify` — 저장 후 산출물을 재파싱하여 어댑터 적용 후 IR과 재로딩 IR 차이를 검출한다.
   차이가 있으면 산출물은 남기고 종료 코드 3으로 실패한다.
 - `--verify-pages` — 저장 전 문서 페이지 수와 저장 후 재로딩 페이지 수를 비교한다.
   불일치하면 산출물은 남기고 종료 코드 4로 실패한다.
+- `--output-password <값>` / `--output-password-stdin` — 출력 HWP5에 비밀번호를 설정한다.
+  암호 출력은 HWPX→HWP adapter를 적용한 뒤 저장한다.
 
 ### `extract-pages <입력> <출력.hwp> --from N --to M [--json]` (#3565)
 지정한 쪽 범위만 남겨 저장한다. **대형 문서의 결함을 이분법으로 좁히기 위한 진단 도구**다
@@ -543,7 +551,7 @@ rhwp export-tables 작성본.hwpx --json | jq '.tables[0].cells[] | select(.row=
   [`tools/hwp_open_bisect/`](../../tools/hwp_open_bisect/README.md) 를 쓴다.
 - `--json` — 결과 요약(원본/추출 후 쪽수, 남긴·지운 문단 수)을 JSON 한 줄로 출력한다.
 
-### `export-hwpx <입력.hwp|.hwpx> [출력.hwpx] [--verify] [--verify-pages]` (#1868, #1638)
+### `export-hwpx <입력.hwp|.hwpx> [출력.hwpx] [--verify] [--verify-pages] [--output-password-stdin]` (#1868, #1638)
 HWP 문서를 HWPX(ZIP+XML)로 변환 저장. `convert`(배포용 해제)와 별개의 포맷 변환 명령.
 - 입력 포맷 자동 감지(HWP5/HWP3/HWPX — HWPX 입력은 재직렬화).
 - 출력 생략 시 입력과 같은 폴더에 `<입력 stem>.hwpx`. 입력==출력 경로면 거부(원본 보호).
@@ -551,6 +559,8 @@ HWP 문서를 HWPX(ZIP+XML)로 변환 저장. `convert`(배포용 해제)와 별
   차이가 있으면 산출물은 남기고 종료 코드 3으로 실패한다.
 - `--verify-pages` — 변환 전/후 렌더 페이지 수를 비교한다.
   불일치하면 산출물은 남기고 종료 코드 4로 실패한다.
+- `--output-password <값>` / `--output-password-stdin` — 출력 HWPX의 ODF encryption-data와
+  AES-256-CBC/PBKDF2 보호를 설정한다.
 - `--json` (#3596): 변환·검증 봉투를 stdout 순수 JSON 으로.
   `{"schemaVersion":"1.0","source","output","format":"hwpx","bytes","verify","verifyPages"}`
   — `verify`/`verifyPages` 는 해당 옵션을 준 경우에만 객체(`{identical,diffCount}` /

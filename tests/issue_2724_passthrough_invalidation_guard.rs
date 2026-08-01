@@ -275,6 +275,13 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "commands/document.rs",
+        "export_hwp_with_adapter_with_password",
+        Exempt::DelegatesTo("convert_if_hwpx_source"),
+        "암호 HWP 저장도 평문 저장과 같은 HWPX-to-HWP 어댑터만 IR을 변경한다. \
+         어댑터가 `raw_stream_dirty` 를 세우고, 비밀번호 직렬화는 IR을 변경하지 않는다.",
+    ),
+    (
+        "commands/document.rs",
         "serialize_hwp_with_verify",
         Exempt::DelegatesTo("export_hwp_with_adapter"),
         "export 후 재로드 검증만 수행. 자체 IR 변경 없음.",

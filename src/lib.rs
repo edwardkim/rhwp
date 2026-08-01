@@ -14,6 +14,7 @@ pub mod ole_chart;
 pub mod ooxml_chart;
 pub mod paint;
 pub mod parser;
+pub mod password_crypto;
 pub mod renderer;
 pub mod serializer;
 #[cfg(feature = "subsecond-dev")]

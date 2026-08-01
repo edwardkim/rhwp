@@ -1,5 +1,6 @@
 use std::env;
 use std::fs;
+use std::io::Read as _;
 use std::path::Path;
 use std::process;
 
@@ -28,7 +29,7 @@ fn exit_with(exit_code: i32) {
 }
 
 // ============================================================================
-// 전역 비밀번호 (--password / --password-stdin)
+// 전역 비밀번호 (--password / --password-stdin, --output-password / --output-password-stdin)
 //
 // main() 의 pre-scan 이 설정하고 load_document/load_document_core 가 읽는다.
 // CLI는 단일 스레드이므로 thread_local 로 전역 상태를 안전하게 전달한다.
@@ -38,6 +39,7 @@ fn exit_with(exit_code: i32) {
 
 thread_local! {
     static CLI_PASSWORD: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
+    static CLI_OUTPUT_PASSWORD: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
 }
 
 fn set_cli_password(pw: Option<String>) {
@@ -46,6 +48,14 @@ fn set_cli_password(pw: Option<String>) {
 
 fn cli_password() -> Option<String> {
     CLI_PASSWORD.with(|c| c.borrow().clone())
+}
+
+fn set_cli_output_password(pw: Option<String>) {
+    CLI_OUTPUT_PASSWORD.with(|c| *c.borrow_mut() = pw);
+}
+
+fn cli_output_password() -> Option<String> {
+    CLI_OUTPUT_PASSWORD.with(|c| c.borrow().clone())
 }
 
 /// 문서 로드 에러 — 비밀번호 필요/불일치/기타를 구분해 종료 코드를 다르게 매핑.
@@ -112,9 +122,11 @@ fn load_document_core(data: &[u8]) -> Result<rhwp::document_core::DocumentCore, 
     result.map_err(|e| classify_hwp_error(&e.to_string()))
 }
 
-/// args 전체를 스캔해 인증 옵션(`--password <pw>` / `--password-stdin`)을 떼어낸다.
-/// 뽑아낸 비밀번호는 이 함수 안에서 `set_cli_password()` 로 소비하고, 반환값에는
-/// 해당 토큰이 제거된 args 만 담는다.
+/// args 전체를 스캔해 입력·출력 인증 옵션을 떼어낸다.
+///
+/// 뽑아낸 입력 암호와 출력 암호는 이 함수 안에서 thread-local 상태로 소비하고,
+/// 반환값에는 해당 토큰이 제거된 args 만 담는다. 두 stdin 옵션을 같이 사용하면
+/// stdin 첫 줄은 입력, 둘째 줄은 출력 암호로 고정한다.
 ///
 /// 이름과 반환 형태가 "정제된 args" 인 것은 의도적이다. 비밀번호를 반환값(과거의
 /// `(args, password)` 튜플)에 싣거나 함수 이름에 `password` 를 두면 CodeQL
@@ -124,6 +136,9 @@ fn load_document_core(data: &[u8]) -> Result<rhwp::document_core::DocumentCore, 
 /// 반환 경로에 비밀번호가 남지 않으므로 이 분류는 실제 유출 경로가 아니다.
 fn strip_global_auth_options(mut args: Vec<String>) -> Result<Vec<String>, i32> {
     let mut password: Option<String> = None;
+    let mut output_password: Option<String> = None;
+    let mut password_stdin = false;
+    let mut output_password_stdin = false;
     let mut i = 1; // args[0] 은 프로그램 경로
     while i < args.len() {
         match args[i].as_str() {
@@ -140,29 +155,66 @@ fn strip_global_auth_options(mut args: Vec<String>) -> Result<Vec<String>, i32> 
                 args.drain(i..=i + 1);
             }
             "--password-stdin" => {
-                if password.is_some() {
+                if password.is_some() || password_stdin {
                     eprintln!("오류: 비밀번호 옵션은 한 번만 지정할 수 있습니다.");
                     return Err(EXIT_USAGE);
                 }
-                let mut line = String::new();
-                if let Err(e) = std::io::stdin().read_line(&mut line) {
-                    eprintln!("오류: 표준 입력에서 비밀번호 읽기 실패 - {}", e);
-                    return Err(EXIT_RUNTIME);
+                password_stdin = true;
+                args.remove(i);
+            }
+            "--output-password" => {
+                if output_password.is_some() || output_password_stdin {
+                    eprintln!("오류: 출력 비밀번호 옵션은 한 번만 지정할 수 있습니다.");
+                    return Err(EXIT_USAGE);
                 }
-                password = Some(line.trim_end_matches(['\r', '\n']).to_string());
+                if i + 1 >= args.len() {
+                    eprintln!("오류: --output-password 뒤에 비밀번호가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+                output_password = Some(args[i + 1].clone());
+                args.drain(i..=i + 1);
+            }
+            "--output-password-stdin" => {
+                if output_password.is_some() || output_password_stdin {
+                    eprintln!("오류: 출력 비밀번호 옵션은 한 번만 지정할 수 있습니다.");
+                    return Err(EXIT_USAGE);
+                }
+                output_password_stdin = true;
                 args.remove(i);
             }
             _ => i += 1,
         }
     }
+
+    if password_stdin || output_password_stdin {
+        let mut stdin = String::new();
+        if let Err(error) = std::io::stdin().read_to_string(&mut stdin) {
+            eprintln!("오류: 표준 입력에서 비밀번호 읽기 실패 - {}", error);
+            return Err(EXIT_RUNTIME);
+        }
+        let mut lines = stdin.lines();
+        if password_stdin {
+            password = Some(lines.next().unwrap_or_default().to_string());
+        }
+        if output_password_stdin {
+            output_password = Some(lines.next().unwrap_or_default().to_string());
+        }
+    }
+    if let Some(value) = output_password.as_deref() {
+        if value.is_empty() || value.len() > 4096 || value.contains(['\r', '\n']) {
+            eprintln!("오류: 출력 비밀번호는 빈 값·줄바꿈 없이 UTF-8 4096바이트 이하여야 합니다.");
+            return Err(EXIT_USAGE);
+        }
+    }
     set_cli_password(password);
+    set_cli_output_password(output_password);
     Ok(args)
 }
 
 fn main() {
     let raw_args: Vec<String> = env::args().collect();
-    // 전역 비밀번호 pre-scan: 어느 위치든 --password / --password-stdin 을 뽑아낸다.
-    // 비밀번호는 pre-scan 안에서 CLI_PASSWORD 로 들어가고 여기로는 돌아오지 않는다.
+    // 전역 인증 pre-scan: 어느 위치든 입력/출력 비밀번호 옵션을 뽑아낸다.
+    // 비밀번호는 pre-scan 안에서 thread-local 상태로 들어가고 여기로는 돌아오지 않는다.
     let args = match strip_global_auth_options(raw_args) {
         Ok(v) => v,
         Err(code) => process::exit(code),
@@ -350,7 +402,50 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
         definition
     }
 
-    vec![
+    fn supports_password_stdin(name: &str) -> bool {
+        matches!(
+            name,
+            "hwp_info"
+                | "hwp_digest"
+                | "hwp_export_text"
+                | "hwp_export_structure"
+                | "hwp_ir_diff"
+                | "hwp_export_svg"
+                | "hwp_export_pdf"
+                | "hwp_export_markdown"
+                | "hwp_convert_hwpx"
+                | "hwp_convert_hwp5"
+                | "hwp_split_document"
+                | "hwp_export_tables"
+                | "hwp_search"
+                | "hwp_fields"
+                | "hwp_fill_fields"
+                | "hwp_replace_text"
+                | "hwp_set_checkbox"
+                | "hwp_set_cell"
+        )
+    }
+
+    fn add_password_stdin_contract(definition: &mut serde_json::Value) {
+        let Some(properties) = definition["inputSchema"]["properties"].as_object_mut() else {
+            return;
+        };
+        properties.insert(
+            "password".to_string(),
+            serde_json::json!({
+                "type": "string",
+                "writeOnly": true,
+                "description": "암호 문서 비밀번호. MCP 서버는 응답·세션에 저장하지 않고, 무상태 도구에서는 자식 CLI stdin으로만 전달한다."
+            }),
+        );
+        definition["cli"]["passwordStdin"] = serde_json::json!({
+            "argument": "password",
+            "flag": "--password-stdin",
+            "format": "utf8-first-line"
+        });
+    }
+
+    let mut tools = vec![
         tool(
             "hwp_info",
             "HWP/HWPX/HML 문서의 메타데이터(포맷·구역/페이지/문단 수·폰트)를 조회한다. 문서를 열기 전에 규모와 형식을 파악할 때 쓴다.",
@@ -725,7 +820,16 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             serde_json::json!(["edit", "set-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--text", "{text}", "--json"]),
             &["schemaVersion", "source", "table", "row", "col", "oldText", "newText", "dryRun", "overflow", "output", "outputFormat"],
         ),
-    ]
+    ];
+    for definition in &mut tools {
+        if definition["name"]
+            .as_str()
+            .is_some_and(supports_password_stdin)
+        {
+            add_password_stdin_contract(definition);
+        }
+    }
+    tools
 }
 
 /// [#3263] 도구 자기서술 — 에이전트가 첫 호출 1회로 명령·계약·스키마를 파악하는 입구.
@@ -7403,6 +7507,7 @@ fn convert_hwp(args: &[String]) -> i32 {
         None
     };
     let json_mode = verify_options.json;
+    let output_password = cli_output_password();
     let was_distribution = doc.document().header.distribution;
     if !was_distribution && !json_mode {
         println!("{}: 이미 편집 가능한 문서입니다.", input_path);
@@ -7434,12 +7539,17 @@ fn convert_hwp(args: &[String]) -> i32 {
                     "format": "hwp5",
                     "bytes": bytes_len,
                     "wasDistribution": was_distribution,
+                    "passwordProtected": output_password.is_some(),
                     "verify": verify,
                     "verifyPages": verify_pages,
                 })
             );
         };
-    match doc.export_hwp_with_adapter() {
+    let serialized = match output_password.as_deref() {
+        Some(password) => doc.export_hwp_with_adapter_with_password(password.as_bytes()),
+        None => doc.export_hwp_with_adapter(),
+    };
+    match serialized {
         Ok(bytes) => match fs::write(output_path, &bytes) {
             Ok(_) => {
                 if !json_mode {
@@ -7449,7 +7559,14 @@ fn convert_hwp(args: &[String]) -> i32 {
                 let mut verify_pages_report = serde_json::Value::Null;
                 let mut exit_code = EXIT_OK;
                 if verify_options.enabled() {
-                    let reloaded = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
+                    let reloaded = match output_password.as_deref() {
+                        Some(password) => rhwp::wasm_api::HwpDocument::from_bytes_with_password(
+                            &bytes,
+                            password.as_bytes(),
+                        ),
+                        None => rhwp::wasm_api::HwpDocument::from_bytes(&bytes),
+                    };
+                    let reloaded = match reloaded {
                         Ok(d) => d,
                         Err(e) => {
                             eprintln!("검증 실패: 저장된 HWP 재파싱 실패 - {}", e);
@@ -7729,6 +7846,7 @@ fn export_hwpx(args: &[String]) -> i32 {
     // 종료 코드 계약(0/1/3/4)은 무변경 — 차이가 검출되어도 봉투를 stdout 에 내고
     // exit 3/4 로 끝난다(ir-diff --json 과 같은 "판정은 데이터" 규약).
     let json_mode = verify_options.json;
+    let output_password = cli_output_password();
     let emit_envelope =
         |bytes_len: usize, verify: serde_json::Value, verify_pages: serde_json::Value| {
             println!(
@@ -7739,13 +7857,18 @@ fn export_hwpx(args: &[String]) -> i32 {
                     "output": output_path.display().to_string(),
                     "format": "hwpx",
                     "bytes": bytes_len,
+                    "passwordProtected": output_password.is_some(),
                     "verify": verify,
                     "verifyPages": verify_pages,
                 })
             );
         };
 
-    match doc.export_hwpx_native() {
+    let serialized = match output_password.as_deref() {
+        Some(password) => doc.export_hwpx_native_with_password(password.as_bytes()),
+        None => doc.export_hwpx_native(),
+    };
+    match serialized {
         Ok(bytes) => match fs::write(&output_path, &bytes) {
             Ok(_) => {
                 if !json_mode {
@@ -7759,7 +7882,14 @@ fn export_hwpx(args: &[String]) -> i32 {
                 let mut verify_pages_report = serde_json::Value::Null;
                 let mut exit_code = EXIT_OK;
                 if verify_options.enabled() {
-                    let reloaded = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
+                    let reloaded = match output_password.as_deref() {
+                        Some(password) => rhwp::wasm_api::HwpDocument::from_bytes_with_password(
+                            &bytes,
+                            password.as_bytes(),
+                        ),
+                        None => rhwp::wasm_api::HwpDocument::from_bytes(&bytes),
+                    };
+                    let reloaded = match reloaded {
                         Ok(d) => d,
                         Err(e) => {
                             // 재파싱 실패는 판정 불가 — JSON 모드에서도 stdout 을 비운다.
@@ -10980,8 +11110,9 @@ fn extract_thumbnail(args: &[String]) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::{
-        allows_implicit_sibling_resources, cli_password, set_cli_password,
-        strip_global_auth_options, tab_ext_semantic_differs, EXIT_USAGE,
+        allows_implicit_sibling_resources, cli_output_password, cli_password,
+        set_cli_output_password, set_cli_password, strip_global_auth_options,
+        tab_ext_semantic_differs, EXIT_USAGE,
     };
     use rhwp::parser::FileFormat;
 
@@ -11046,6 +11177,42 @@ mod tests {
             "info".to_string(),
             "sample.hwp".to_string(),
             "--password".to_string(),
+            "second".to_string(),
+        ];
+        assert!(matches!(
+            strip_global_auth_options(args),
+            Err(code) if code == EXIT_USAGE
+        ));
+    }
+
+    #[test]
+    fn global_output_password_is_removed_without_leaking_into_command_args() {
+        let args = vec![
+            "rhwp".to_string(),
+            "convert".to_string(),
+            "source.hwp".to_string(),
+            "output.hwp".to_string(),
+            "--output-password".to_string(),
+            "protected".to_string(),
+        ];
+        set_cli_password(None);
+        set_cli_output_password(None);
+        let clean = strip_global_auth_options(args).unwrap();
+        assert_eq!(clean, ["rhwp", "convert", "source.hwp", "output.hwp"]);
+        assert_eq!(cli_output_password().as_deref(), Some("protected"));
+        set_cli_output_password(None);
+    }
+
+    #[test]
+    fn duplicate_global_output_password_options_are_rejected() {
+        let args = vec![
+            "rhwp".to_string(),
+            "--output-password".to_string(),
+            "first".to_string(),
+            "convert".to_string(),
+            "source.hwp".to_string(),
+            "output.hwp".to_string(),
+            "--output-password".to_string(),
             "second".to_string(),
         ];
         assert!(matches!(

@@ -1163,6 +1163,20 @@ impl DocumentCore {
         self.export_hwp_native()
     }
 
+    /// HWPX 출처 어댑터를 적용한 뒤 HWP5 EncryptVersion 4 비밀번호 문서로 저장한다.
+    ///
+    /// 일반 HWP 저장과 마찬가지로 HWPX 출처는 반드시 adapter를 먼저 통과한다. 암호화만
+    /// 별도 serializer로 우회하면 차트·그림 HWPX IR이 HWP5 계약으로 정규화되지 않는다.
+    pub fn export_hwp_with_adapter_with_password(
+        &mut self,
+        password: &[u8],
+    ) -> Result<Vec<u8>, HwpError> {
+        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
+        let _report = convert_if_hwpx_source(&mut self.document, self.source_format);
+        crate::serializer::serialize_hwp_with_password(&self.document, password)
+            .map_err(|error| HwpError::RenderError(error.to_string()))
+    }
+
     /// 어댑터 적용 + 직렬화 + 자기 재로드 검증을 한 번에 수행한다 (#178 Stage 6).
     ///
     /// 명시 호출 전용. 운영 경로 (`export_hwp_with_adapter`) 는 검증 비용을 부담하지 않으며,
@@ -1197,6 +1211,22 @@ impl DocumentCore {
 
     /// Document IR을 HWPX(ZIP+XML)로 직렬화 (네이티브 에러 타입)
     pub fn export_hwpx_native(&self) -> Result<Vec<u8>, HwpError> {
+        self.hwpx_document_for_export(|document| crate::serializer::serialize_hwpx(document))
+    }
+
+    /// Document IR을 ODF AES-256-CBC 비밀번호 보호 HWPX로 직렬화한다.
+    pub fn export_hwpx_native_with_password(&self, password: &[u8]) -> Result<Vec<u8>, HwpError> {
+        self.hwpx_document_for_export(|document| {
+            crate::serializer::serialize_hwpx_with_password(document, password)
+        })
+    }
+
+    fn hwpx_document_for_export<T>(
+        &self,
+        serialize: impl FnOnce(
+            &crate::model::document::Document,
+        ) -> Result<T, crate::serializer::SerializeError>,
+    ) -> Result<T, HwpError> {
         let serialized = if matches!(self.source_format, crate::parser::FileFormat::Hwp) {
             let mut doc = self.document.clone();
             if !doc
@@ -1210,9 +1240,9 @@ impl DocumentCore {
                 ));
             }
             Self::materialize_hwp5_missing_linesegs_for_hwpx_export(&mut doc);
-            crate::serializer::serialize_hwpx(&doc)
+            serialize(&doc)
         } else {
-            crate::serializer::serialize_hwpx(&self.document)
+            serialize(&self.document)
         };
         serialized.map_err(|e| HwpError::RenderError(e.to_string()))
     }

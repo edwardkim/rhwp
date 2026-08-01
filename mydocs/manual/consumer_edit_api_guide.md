@@ -64,7 +64,7 @@ const doc3 = HwpDocument.openWithPassword(
 | 그림 | `insertPicture` |
 | 필드(누름틀) | `insertClickHereField`, `getFieldList`, `setFieldValueByName` |
 | 서식 | `applyCharFormat`, `applyParaFormat`, `setCharShapeId` |
-| 저장 | `exportHwp` (HWP 바이트 반환) |
+| 저장 | `exportHwp`, `exportHwpx`, `exportHwpWithPassword`, `exportHwpxWithPassword` |
 
 정확한 시그니처·반환은 패키지의 `rhwp.d.ts`(타입 정의)를 본다. IDE 자동완성으로 인자
 이름과 타입이 표시된다.
@@ -153,13 +153,21 @@ doc.applyCharFormatInCellEx(JSON.stringify({
 
 ```ts
 const hwpBytes = doc.exportHwp(); // Uint8Array — .hwp 파일로 저장
+
+// HWP5 EncryptVersion 4 비밀번호 문서로 저장
+const protectedHwpBytes = doc.exportHwpWithPassword(password);
+
+// ODF AES-256-CBC/PBKDF2 비밀번호 HWPX로 저장
+const protectedHwpxBytes = doc.exportHwpxWithPassword(password);
 ```
 
-> 편집 결과를 원본 HWPX 형식으로 되돌려 저장하는 기능은 제한적이다. 현재는 HWP(.hwp)
-> 저장을 권장한다.
->
-> 비밀번호로 연 문서를 `exportHwp()`로 저장하면 암호화 플래그와 EncryptVersion을
-> 제거한 일반 HWP가 생성된다. 현재 비밀번호 암호화 쓰기는 지원하지 않는다.
+`exportHwpWithPassword(password)`는 HWP5 EncryptVersion 4로, `exportHwpxWithPassword(password)`는
+ODF `encryption-data`의 AES-256-CBC/PBKDF2 계약으로 저장한다. HWPX 출처를 HWP로 저장할 때는
+일반 HWP 저장과 동일하게 HWPX-to-HWP adapter를 먼저 적용한다.
+
+`exportHwp()`와 `exportHwpx()`는 언제나 평문 출력이다. 비밀번호로 연 문서를 보호 상태로
+다시 저장하려면 명시적으로 `*WithPassword` 메서드를 호출해야 한다. 호출자는 비밀번호를
+로그, 파일명, URL, 브라우저 저장소에 기록하지 않아야 하며, 사용 뒤 참조를 즉시 비운다.
 
 ## 관련
 
