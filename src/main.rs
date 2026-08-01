@@ -448,11 +448,11 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
     let mut tools = vec![
         tool(
             "hwp_info",
-            "HWP/HWPX/HML 문서의 메타데이터(포맷·구역/페이지/문단 수·폰트)를 조회한다. 문서를 열기 전에 규모와 형식을 파악할 때 쓴다.",
+            "HWP/HWPX/HML 문서의 메타데이터(포맷·구역/페이지/문단 수·폰트·제목)를 조회한다. 문서를 열기 전에 규모와 형식을 파악할 때 쓴다.",
             path_schema(serde_json::json!({})),
             "info",
             serde_json::json!(["info", "--json", "{path}"]),
-            &["format", "sizeBytes", "sections", "pageCount", "paraCount", "fonts"],
+            &["format", "sizeBytes", "sections", "pageCount", "paraCount", "fonts", "title"],
         ),
         // [#3633] 초소형 모델용 매크로 1호. 설명은 40자 이내로 극단 압축한다 —
         // 도구 목록 자체가 컨텍스트 예산을 잠식하는 4B급 모델이 1차 소비자이기
@@ -919,7 +919,7 @@ fn show_capabilities(args: &[String]) -> i32 {
         cmd_json(
             "info",
             "query",
-            "문서 메타(포맷·버전·페이지/문단 수·폰트) 표시",
+            "문서 메타(포맷·버전·페이지/문단 수·폰트·제목) 표시",
             true,
             &["--json"],
             &[
@@ -932,6 +932,7 @@ fn show_capabilities(args: &[String]) -> i32 {
                 "pageCount",
                 "paraCount",
                 "fonts",
+                "title",
             ],
         ),
         cmd_json(
@@ -4220,6 +4221,31 @@ fn search_json_value(
     })
 }
 
+/// [#3407] `title` 이 훑는 앞쪽 페이지 수 상한 — 표지가 이미지·빈 쪽인 문서의
+/// fallback 범위. digest 발췌(`DIGEST_EXCERPT_PAGES`)와 같은 "앞 3쪽" 어휘를 쓴다.
+const TITLE_SCAN_PAGES: u32 = 3;
+
+/// [#3407] 문서 제목 best-effort 추출 — 대량 아카이브 1-pass 대장화용.
+///
+/// 렌더된 페이지 텍스트(`extract_page_text_native`, `export-text --json` 과 같은
+/// 원천)의 첫 의미 줄(trim 후 비어있지 않은 첫 줄)을 돌려준다. 종전 2-pass
+/// 대장화(`batch info` + 문서별 `export-text` 첫 줄 파싱)가 소비자 쪽에서 하던
+/// 규칙을 엔진이 한 번만 정의한다. 표지가 이미지라 첫 쪽 텍스트가 비면 다음
+/// 쪽으로 내려가며(앞 `TITLE_SCAN_PAGES` 쪽까지), 그래도 없으면 `None`(JSON
+/// null)이다. 값 자체는 계약이 아닌 best-effort 필드이고, 추출 실패도 문서
+/// 메타 조회를 막지 않도록 조용히 다음 쪽으로 넘어간다.
+fn document_title(doc: &rhwp::wasm_api::HwpDocument) -> Option<String> {
+    for page in 0..doc.page_count().min(TITLE_SCAN_PAGES) {
+        let Ok(text) = doc.extract_page_text_native(page) else {
+            continue;
+        };
+        if let Some(line) = text.lines().map(str::trim).find(|l| !l.is_empty()) {
+            return Some(line.to_string());
+        }
+    }
+    None
+}
+
 /// [#3237] `info --json`·`batch info --json` 이 공유하는 문서 메타 JSON 레코드.
 /// `schemaVersion` 이 계약이며 필드 추가는 허용, 변경·삭제는 계약 테스트가 잡는다.
 fn info_json_value(
@@ -4267,6 +4293,8 @@ fn info_json_value(
         "pageCount": doc.page_count(),
         "paraCount": para_count,
         "fonts": fonts,
+        // [#3407] best-effort 문서 제목 — 없으면 null. batch info 로 자동 전파.
+        "title": document_title(doc),
     })
 }
 
