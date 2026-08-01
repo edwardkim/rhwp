@@ -19,10 +19,17 @@ struct Options {
     record_index: Option<usize>,
 }
 
-pub fn run(args: &[String]) {
-    if args.is_empty() || matches!(args.first().map(String::as_str), Some("--help" | "-h")) {
+pub fn run(args: &[String]) -> i32 {
+    // 종료 코드 계약(mydocs/manual/cli_commands.md): 명시적 `--help` 만 성공(0)이고,
+    // 인자 누락·파싱 실패는 사용법 오류(2), 실행 실패는 런타임 오류(1)다. 종전에는
+    // 반환형이 `()` 라 main 의 exit_with 를 통과하지 못해 무슨 일이 나든 0으로 끝났다.
+    if matches!(args.first().map(String::as_str), Some("--help" | "-h")) {
         print_usage();
-        return;
+        return super::EXIT_OK;
+    }
+    if args.is_empty() {
+        print_usage();
+        return super::EXIT_USAGE;
     }
 
     let options = match parse_args(args) {
@@ -30,13 +37,15 @@ pub fn run(args: &[String]) {
         Err(message) => {
             eprintln!("{message}");
             print_usage();
-            return;
+            return super::EXIT_USAGE;
         }
     };
 
     if let Err(error) = run_inner(options) {
         eprintln!("오류: {error}");
+        return super::EXIT_RUNTIME;
     }
+    super::EXIT_OK
 }
 
 fn parse_args(args: &[String]) -> Result<Options, String> {
@@ -101,8 +110,10 @@ fn parse_args(args: &[String]) -> Result<Options, String> {
 }
 
 fn print_usage() {
-    println!("사용법:");
-    println!(
+    // 안내는 stderr 로 나간다(계약). stdout 은 프로브 데이터 전용이라
+    // 섞이면 JSONL 을 파이프로 받는 소비자가 파싱에서 깨진다.
+    eprintln!("사용법:");
+    eprintln!(
         "  rhwp hwp5-ctrl-data-trace <oracle.hwp> <generated.hwp> --out <path> [--section N] [--record-index N]"
     );
 }

@@ -127,3 +127,64 @@ fn successful_diagnostic_commands_return_zero() {
 fn rhwp_bin() -> String {
     std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
 }
+
+/// `hwp5-*` 프로브 8종의 종료 코드 계약.
+///
+/// 진입점이 `pub fn run(args: &[String])` 즉 반환형이 유닛이라 `main` 의 `exit_with` 를
+/// 통과하지 못했다 — 인자를 빠뜨리든 파일이 없든 **무조건 exit 0** 이었다. `&&` 나
+/// `set -e` 로 엮은 스크립트, CI 게이트가 실패를 성공으로 읽는다.
+///
+/// 세 갈래를 함께 본다: 명시적 `--help` 만 성공(0), 인자 누락·파싱 실패는 사용법
+/// 오류(2), 인자가 갖춰진 뒤의 실행 실패는 런타임 오류(1).
+#[test]
+fn hwp5_probes_report_contract_exit_codes() {
+    const PROBES: [&str; 8] = [
+        "hwp5-borderfill-diagonal-probe",
+        "hwp5-cell-header-probe",
+        "hwp5-contract-analyze",
+        "hwp5-contract-probe",
+        "hwp5-ctrl-data-trace",
+        "hwp5-first-para-control-probe",
+        "hwp5-mel-personnel-probe",
+        "hwp5-table-probe",
+    ];
+    for probe in PROBES {
+        // ① 인자 없음 → 사용법 오류. 종전에는 0 이었다.
+        let no_args = assert_code(&[probe], 2);
+        assert!(
+            String::from_utf8_lossy(&no_args.stdout).trim().is_empty(),
+            "사용법 안내는 stderr 로 나가야 합니다({probe}): {}",
+            describe(&[probe], &no_args)
+        );
+
+        // ② 명시적 --help 는 성공이다 — 도움말을 물어본 호출까지 실패로 만들면 안 된다.
+        assert_code(&[probe, "--help"], 0);
+    }
+}
+
+/// 인자가 갖춰진 뒤의 읽기·파싱 실패는 런타임 오류(1)여야 한다.
+///
+/// 프로브마다 필요한 인자 개수가 달라(2개짜리·3개짜리) 한 벌로 묶을 수 없다.
+/// 인자 개수를 채운 대표 2종만 확인한다 — 반환형 변경이 실제로 실패를 전달하는지가
+/// 요점이고, 그건 한 갈래만 통과해도 증명된다.
+#[test]
+fn hwp5_probes_report_runtime_failure_after_arity_is_satisfied() {
+    let out_dir = std::env::temp_dir().join(format!("rhwp-probe-{}", std::process::id()));
+    let out = out_dir.to_string_lossy().to_string();
+    for probe in ["hwp5-table-probe", "hwp5-cell-header-probe"] {
+        let args = [
+            probe,
+            "없는A-probe.hwp",
+            "없는B-probe.hwp",
+            "--out-dir",
+            &out,
+        ];
+        let output = assert_code(&args, 1);
+        assert!(
+            String::from_utf8_lossy(&output.stdout).trim().is_empty(),
+            "실패 시 stdout 은 비어야 합니다({probe}): {}",
+            describe(&args, &output)
+        );
+    }
+    let _ = std::fs::remove_dir_all(&out_dir);
+}

@@ -251,22 +251,28 @@ fn main() {
         Some("build-from-ingest") => exit_with(build_from_ingest(&args[2..])),
         Some("hwp5-inventory") => rhwp::diagnostics::hwp5_inventory::run(&args[2..]),
         Some("hwp5-inventory-diff") => rhwp::diagnostics::hwp5_inventory_diff::run(&args[2..]),
-        Some("hwp5-contract-analyze") => rhwp::diagnostics::hwp5_contract_analyze::run(&args[2..]),
-        Some("hwp5-ctrl-data-trace") => rhwp::diagnostics::hwp5_ctrl_data_trace::run(&args[2..]),
-        Some("hwp5-contract-probe") => rhwp::diagnostics::hwp5_contract_probe::run(&args[2..]),
-        Some("hwp5-table-probe") => rhwp::diagnostics::hwp5_table_probe::run(&args[2..]),
+        Some("hwp5-contract-analyze") => {
+            exit_with(rhwp::diagnostics::hwp5_contract_analyze::run(&args[2..]))
+        }
+        Some("hwp5-ctrl-data-trace") => {
+            exit_with(rhwp::diagnostics::hwp5_ctrl_data_trace::run(&args[2..]))
+        }
+        Some("hwp5-contract-probe") => {
+            exit_with(rhwp::diagnostics::hwp5_contract_probe::run(&args[2..]))
+        }
+        Some("hwp5-table-probe") => exit_with(rhwp::diagnostics::hwp5_table_probe::run(&args[2..])),
         Some("hwp5-mel-personnel-probe") => {
-            rhwp::diagnostics::hwp5_mel_personnel_probe::run(&args[2..])
+            exit_with(rhwp::diagnostics::hwp5_mel_personnel_probe::run(&args[2..]))
         }
-        Some("hwp5-borderfill-diagonal-probe") => {
-            rhwp::diagnostics::hwp5_borderfill_diagonal_probe::run(&args[2..])
-        }
-        Some("hwp5-first-para-control-probe") => {
-            rhwp::diagnostics::hwp5_first_para_control_probe::run(&args[2..])
-        }
+        Some("hwp5-borderfill-diagonal-probe") => exit_with(
+            rhwp::diagnostics::hwp5_borderfill_diagonal_probe::run(&args[2..]),
+        ),
+        Some("hwp5-first-para-control-probe") => exit_with(
+            rhwp::diagnostics::hwp5_first_para_control_probe::run(&args[2..]),
+        ),
         Some("hwp5-anchor-trace") => rhwp::diagnostics::hwp5_anchor_trace::run(&args[2..]),
         Some("hwp5-cell-header-probe") => {
-            rhwp::diagnostics::hwp5_cell_header_probe::run(&args[2..])
+            exit_with(rhwp::diagnostics::hwp5_cell_header_probe::run(&args[2..]))
         }
         Some("dump-records") => exit_with(dump_raw_records(&args[2..])),
         Some("test-shape") => test_shape_roundtrip(&args[2..]),
