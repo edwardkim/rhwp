@@ -91,6 +91,10 @@ js-sys = "0.3"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
+# [#3707] 통합 시험이 공격 문서를 **시험 시점에 합성**하려면 HWPX(zip) 재압축이
+# 필요하다 — 실물 악성 파일을 저장소에 커밋하지 않기 위해서다. 위 [dependencies]
+# 와 같은 버전이라 의존성 그래프도, WASM 산출물도 그대로다.
+zip = { version = "8.5", default-features = false, features = ["deflate"] }
 
 # ── Clippy 린트 정책 ──
 # 리팩토링(타스크 142) 각 단계 완료 시 allow → warn → deny 전환

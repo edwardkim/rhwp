@@ -1214,6 +1214,16 @@ fn show_capabilities(args: &[String]) -> i32 {
             "stdout": "데이터(JSON/NDJSON)만 — 진단·진행·요약은 stderr",
             "schemaPolicy": "필드 추가 허용, 변경·삭제는 schemaVersion 범프",
             "failure": "단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1",
+            // [#3707] 봉투에 담기는 문서 유래 문자열의 유니코드 기만 판정. 이 키가
+            // 있으면 바이너리가 검사한다는 뜻이다 — 키가 없으면 '깨끗함'이 아니라
+            // '검사하지 않음'으로 읽어야 한다.
+            "textSecurity": {
+                "field": "textSecurity",
+                "status": ["clean", "warning"],
+                "kinds": ["confusableFieldName", "mixedScript", "bidiControl", "invisibleChar", "ansiEscape"],
+                "policy": "보고 전용 — 문서 문자열을 수정하지 않는다",
+                "surfaces": ["fields --json", "edit fill-fields --json(confusable)"],
+            },
         },
         "batch": {
             "subcommands": ["export-text", "info", "export-structure", "export-tables", "fields", "search"],
@@ -4088,11 +4098,65 @@ fn tables_json_value(
 
 /// [#3346] `fields --json` 과 `batch fields` 가 공유하는 봉투.
 fn fields_json_value(file_path: &str, fields: &[serde_json::Value]) -> serde_json::Value {
+    let names: Vec<String> = fields
+        .iter()
+        .filter_map(|f| f["name"].as_str().map(String::from))
+        .collect();
     serde_json::json!({
         "schemaVersion": "1.0",
         "source": file_path,
         "fieldCount": fields.len(),
         "fields": fields,
+        "textSecurity": text_security_value(&names),
+    })
+}
+
+/// 누름틀 이름 축의 유니코드 기만 판정 봉투.
+///
+/// 봉투에 담기는 이름은 **공격자가 내용을 정할 수 있는 문서**에서 온다. 에이전트는
+/// 그 이름으로 "이 칸을 채워라"를 지목하므로, 화면상 같지만 바이트가 다른 이름 쌍이
+/// 있으면 엉뚱한 칸이 채워지고도 `filledCount` 는 성공을 보고한다(#3707).
+///
+/// 판정만 하고 이름을 고치지 않는다 — 문서 엔진이 사용자 문자열을 조용히 바꾸는 것은
+/// 어떤 보안 이득으로도 정당화되지 않는다. `status` 는 `clean`/`warning` 2단이고,
+/// 항상 실려 나간다: 필드가 없으면 `clean`, 옛 바이너리면 키 자체가 없다 —
+/// 소비자가 "검사했는데 깨끗함"과 "검사하지 않음"을 구별할 수 있어야 한다.
+fn text_security_value(names: &[String]) -> serde_json::Value {
+    use rhwp::document_core::text_security as ts;
+
+    let mut findings: Vec<serde_json::Value> = Vec::new();
+
+    // ① 화면상 같은 이름 쌍 — 실제 공격 서명이다.
+    for (_, group) in ts::confusable_collisions(names) {
+        findings.push(serde_json::json!({
+            "kind": "confusableFieldName",
+            "scope": "fieldName",
+            "names": group,
+            "note": "이름이 화면상 구별되지 않는 누름틀이 둘 이상입니다 — 이름으로 지목해 채우면 의도와 다른 칸이 채워질 수 있습니다. occurrence 대신 hwp_fields 가 돌려준 바이트를 그대로 쓰거나, 사람 확인을 거치세요.",
+        }));
+    }
+
+    // ② 이름 하나하나의 혼합 스크립트·보이지 않는 문자.
+    for name in names {
+        for risk in ts::scan_identifier(name) {
+            findings.push(serde_json::json!({
+                "kind": risk.kind.label(),
+                "scope": "fieldName",
+                "names": [name],
+                "codepoints": risk.codepoints.iter().map(|c| ts::format_codepoint(*c))
+                    .collect::<Vec<_>>(),
+                "note": risk.kind.describe(),
+            }));
+        }
+    }
+
+    if findings.is_empty() {
+        return serde_json::json!({ "status": "clean" });
+    }
+    serde_json::json!({
+        "status": "warning",
+        "findingCount": findings.len(),
+        "findings": findings,
     })
 }
 
@@ -9700,6 +9764,12 @@ fn edit_fill_fields(args: &[String]) -> i32 {
     // 이름만 준 키가 여러 곳에 해당하면 그 사실을 보고한다 — 침묵하면 소비자가
     // 불완전한 산출물을 완성본으로 판단한다.
     let mut ambiguous: Vec<serde_json::Value> = Vec::new();
+    // [#3707] 바이트가 달라 위 개수 판정을 통과하지만 **화면상 구별되지 않는** 이름
+    // 쌍은 별도 축이다. 지목한 이름에 그런 쌍둥이가 있으면 채우되 반드시 보고한다 —
+    // 침묵하면 "엉뚱한 칸을 채우고 완벽한 성공을 보고"하는 상태가 된다.
+    let all_names: Vec<String> = name_counts.keys().cloned().collect();
+    let confusable_groups = rhwp::document_core::text_security::confusable_collisions(&all_names);
+    let mut confusable: Vec<serde_json::Value> = Vec::new();
 
     for (key, value) in &data {
         let value_str = match value {
@@ -9719,6 +9789,17 @@ fn edit_fill_fields(args: &[String]) -> i32 {
                 "name": name,
                 "matched": 1,
                 "total": total,
+            }));
+        }
+        if let Some((_, group)) = confusable_groups
+            .iter()
+            .find(|(_, g)| g.iter().any(|n| n == name))
+        {
+            let others: Vec<&String> = group.iter().filter(|n| *n != name).collect();
+            confusable.push(serde_json::json!({
+                "name": name,
+                "lookalikes": others,
+                "note": "화면상 구별되지 않는 이름의 누름틀이 이 문서에 함께 있습니다 — 채운 칸이 의도한 칸인지 확인하세요.",
             }));
         }
 
@@ -9786,6 +9867,7 @@ fn edit_fill_fields(args: &[String]) -> i32 {
             "filled": filled,
             "notFound": not_found,
             "ambiguous": ambiguous,
+            "confusable": confusable,
         });
         if !dry_run {
             envelope["output"] = serde_json::Value::String(output_path.clone());
@@ -9814,6 +9896,14 @@ fn edit_fill_fields(args: &[String]) -> i32 {
     }
     if !not_found.is_empty() {
         println!("  문서에 없는 필드 이름: {}", not_found.join(", "));
+    }
+    for c in &confusable {
+        // 사람에게도 알린다 — 화면상 같은 이름이라 눈으로는 잡을 수 없는 축이다.
+        eprintln!(
+            "경고: '{}' 과(와) 화면상 구별되지 않는 이름의 누름틀이 문서에 함께 있습니다 \
+             — 채운 칸이 의도한 칸인지 확인하세요.",
+            c["name"].as_str().unwrap_or("")
+        );
     }
     EXIT_OK
 }

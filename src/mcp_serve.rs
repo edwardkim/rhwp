@@ -781,6 +781,11 @@ fn session_fill_fields(args: &serde_json::Value, sessions: &mut Sessions) -> ser
     let mut filled: Vec<serde_json::Value> = Vec::new();
     let mut not_found: Vec<String> = Vec::new();
     let mut ambiguous: Vec<serde_json::Value> = Vec::new();
+    // [#3707] 개수 판정을 통과하지만 화면상 구별되지 않는 이름 쌍 — 무상태 경로와
+    // 같은 코어(text_security)를 재사용해 판정 어휘를 동형으로 유지한다.
+    let all_names: Vec<String> = name_counts.keys().cloned().collect();
+    let confusable_groups = rhwp::document_core::text_security::confusable_collisions(&all_names);
+    let mut confusable: Vec<serde_json::Value> = Vec::new();
 
     // 1차: 판정만 먼저 — 핸들은 살아 있는 상태라, 중간 실패로 절반만 채워진 IR 을
     // 남기지 않도록 적용 전에 전 키를 검증한다.
@@ -801,6 +806,17 @@ fn session_fill_fields(args: &serde_json::Value, sessions: &mut Sessions) -> ser
                 "name": name,
                 "matched": 1,
                 "total": total,
+            }));
+        }
+        if let Some((_, group)) = confusable_groups
+            .iter()
+            .find(|(_, g)| g.iter().any(|n| n == name))
+        {
+            let others: Vec<&String> = group.iter().filter(|n| *n != name).collect();
+            confusable.push(serde_json::json!({
+                "name": name,
+                "lookalikes": others,
+                "note": "화면상 구별되지 않는 이름의 누름틀이 이 문서에 함께 있습니다 — 채운 칸이 의도한 칸인지 확인하세요.",
             }));
         }
         apply.push((name.to_string(), occurrence, value_str));
@@ -827,6 +843,7 @@ fn session_fill_fields(args: &serde_json::Value, sessions: &mut Sessions) -> ser
             "filled": filled,
             "notFound": not_found,
             "ambiguous": ambiguous,
+            "confusable": confusable,
         })
         .to_string(),
     )
