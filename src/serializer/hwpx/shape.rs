@@ -526,8 +526,13 @@ fn write_offset<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {
-    let x = sa.offset_x.to_string();
-    let y = sa.offset_y.to_string();
+    // [#3544] hp:offset x/y 는 OWPML XSD 상 unsigned. 한컴 산출물은 음수 오프셋을
+    // u32 wraparound 십진수로 기록하고(예: -2429 → "4294964867"), 파서도
+    // `parse_u32 as i32` 로 같은 관례를 복호한다. IR 은 레이아웃 계산을 위해
+    // signed 가 정당하므로 값은 두고, XML 경계에서만 부호화를 복원한다 —
+    // signed 그대로 문자열화하면 `y="-2"` 류 스키마 위반이 된다.
+    let x = (sa.offset_x as u32).to_string();
+    let y = (sa.offset_y as u32).to_string();
     empty_tag(w, "hp:offset", &[("x", &x), ("y", &y)])
 }
 
@@ -1535,6 +1540,21 @@ mod tests {
             xml.contains(r#"textDirection="VERTICAL""#) && !xml.contains("VERTICALALL"),
             "VERTICAL (ALL 아님) 보존: {}",
             xml
+        );
+    }
+
+    /// [Issue #3544] hp:offset x/y 는 OWPML XSD 상 unsigned — 음수 IR 오프셋은
+    /// 한컴 관례대로 u32 wraparound 십진수로 방출해야 한다 (파서 `parse_u32 as
+    /// i32` 복호의 역함수). signed 그대로 문자열화하면 `y="-2"` 류 스키마 위반.
+    #[test]
+    fn issue3544_negative_offset_emitted_as_u32_wraparound() {
+        let mut rect = RectangleShape::default();
+        rect.drawing.shape_attr.offset_x = -8974;
+        rect.drawing.shape_attr.offset_y = -2;
+        let xml = serialize_rect(&rect);
+        assert!(
+            xml.contains(r#"<hp:offset x="4294958322" y="4294967294"/>"#),
+            "음수 오프셋은 u32 wraparound 십진수로 방출되어야 한다: {xml}"
         );
     }
 
