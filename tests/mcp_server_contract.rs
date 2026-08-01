@@ -257,3 +257,133 @@ fn unknown_tool_returns_is_error() {
     );
     assert_eq!(r["result"]["isError"], true, "{r}");
 }
+
+// ── [#3627] resources 표면 ─────────────────────────────────────────────────
+
+/// `resources/list` 는 자기서술 매니페스트 1종 + canonical 문서 3종을 낸다.
+#[test]
+fn resources_list_declares_manifest_and_docs() {
+    let mut s = Server::started();
+    let r = s.request("resources/list", serde_json::json!({}));
+    let resources = r["result"]["resources"]
+        .as_array()
+        .unwrap_or_else(|| panic!("resources/list 응답에 resources 배열이 없습니다: {r}"));
+    let uris: Vec<&str> = resources
+        .iter()
+        .map(|x| x["uri"].as_str().unwrap_or_default())
+        .collect();
+    for expected in [
+        "rhwp://capabilities/mcp",
+        "rhwp://docs/llms.txt",
+        "rhwp://docs/agent_knowledge_map.md",
+        "rhwp://docs/agent_troubleshooting_guide.md",
+    ] {
+        assert!(uris.contains(&expected), "{expected} 가 없습니다: {uris:?}");
+    }
+    // MCP 필수 필드 — 빠지면 호스트가 리소스 목록을 그리지 못한다.
+    for x in resources {
+        assert!(x["name"].is_string(), "{x}");
+        assert!(x["mimeType"].is_string(), "{x}");
+    }
+}
+
+/// initialize 가 resources capability 를 선언해야 한다 — 선언이 없으면 호스트는
+/// `resources/list` 를 아예 부르지 않는다. 스펙상 빈 객체가 "subscribe·listChanged
+/// 둘 다 미지원" 의 정식 선언이다(생략이 아니라).
+#[test]
+fn initialize_declares_resources_capability() {
+    let mut s = Server::start();
+    let r = s.request(
+        "initialize",
+        serde_json::json!({
+            "protocolVersion": "2025-06-18",
+            "capabilities": {},
+            "clientInfo": {"name": "contract-test", "version": "0"}
+        }),
+    );
+    assert!(
+        r["result"]["capabilities"]["resources"].is_object(),
+        "resources capability 선언이 없습니다: {r}"
+    );
+}
+
+/// 복제 금지 가드 — 리소스 본문은 저장소의 canonical 문서와 **바이트 동일**해야 한다.
+/// `include_str!` 로 원본을 그대로 가리키므로 복제본이 생기면 여기서 갈린다.
+#[test]
+fn resources_read_serves_canonical_docs() {
+    let mut s = Server::started();
+    let r = s.request(
+        "resources/read",
+        serde_json::json!({"uri": "rhwp://docs/agent_troubleshooting_guide.md"}),
+    );
+    let c = &r["result"]["contents"][0];
+    assert_eq!(
+        c["uri"], "rhwp://docs/agent_troubleshooting_guide.md",
+        "contents[].uri 는 요청 URI 와 같아야 합니다: {r}"
+    );
+    assert_eq!(c["mimeType"], "text/markdown", "{r}");
+    let text = c["text"]
+        .as_str()
+        .unwrap_or_else(|| panic!("contents[].text 가 없습니다: {r}"));
+    let on_disk = std::fs::read_to_string(sample("mydocs/manual/agent_troubleshooting_guide.md"))
+        .expect("실패 사전 문서 읽기 실패");
+    assert_eq!(
+        text, on_disk,
+        "리소스 본문이 저장소 canonical 문서와 다릅니다 — 복제본이 생겼습니다"
+    );
+}
+
+/// 프로필 정합 — 자기서술 매니페스트가 tools/list 에 없는 도구를 광고하면 에이전트가
+/// "알 수 없는 도구" 를 밟는다. 두 표면은 같은 단일 출처를 써야 한다.
+#[test]
+fn resources_read_capabilities_matches_tools_list() {
+    let mut s = Server::started();
+    let served: Vec<String> = s.request("tools/list", serde_json::json!({}))["result"]["tools"]
+        .as_array()
+        .expect("tools 배열")
+        .iter()
+        .map(|t| t["name"].as_str().unwrap_or_default().to_string())
+        .collect();
+
+    let r = s.request(
+        "resources/read",
+        serde_json::json!({"uri": "rhwp://capabilities/mcp"}),
+    );
+    let c = &r["result"]["contents"][0];
+    assert_eq!(c["mimeType"], "application/json", "{r}");
+    let manifest: serde_json::Value = serde_json::from_str(
+        c["text"]
+            .as_str()
+            .unwrap_or_else(|| panic!("contents[].text 가 없습니다: {r}")),
+    )
+    .expect("매니페스트가 JSON 이 아닙니다");
+    for t in manifest["tools"].as_array().expect("tools 배열") {
+        let name = t["name"].as_str().unwrap_or_default().to_string();
+        assert!(
+            served.contains(&name),
+            "매니페스트가 광고한 {name} 이 tools/list 에 없습니다: {served:?}"
+        );
+    }
+}
+
+/// 없는 리소스는 스펙이 정한 -32002 와 `data.uri` 로 답한다.
+#[test]
+fn resources_read_unknown_uri_returns_resource_not_found() {
+    let mut s = Server::started();
+    let r = s.request(
+        "resources/read",
+        serde_json::json!({"uri": "rhwp://docs/no_such_doc.md"}),
+    );
+    assert_eq!(
+        r["error"]["code"], -32002,
+        "알 수 없는 리소스는 -32002: {r}"
+    );
+    assert_eq!(
+        r["error"]["data"]["uri"], "rhwp://docs/no_such_doc.md",
+        "error.data.uri 로 문제의 URI 를 돌려줘야 합니다: {r}"
+    );
+
+    // uri 자체가 없으면 요청 구조 오류다 — 리소스 부재와 구분한다.
+    let r = s.request("resources/read", serde_json::json!({}));
+    assert_eq!(r["error"]["code"], -32602, "{r}");
+}

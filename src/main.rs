@@ -305,6 +305,14 @@ fn main() {
 /// 손으로 옮겨 적지 않게 한다. `--json` 계약을 가진 명령이 늘면
 /// `capabilities_mcp_covers_every_json_command` 가 누락을 잡는다.
 fn show_mcp_tools(profile: Option<&'static agent_profiles::AgentProfile>) -> i32 {
+    println!("{}", mcp_manifest_value(profile));
+    EXIT_OK
+}
+
+/// [#3627] 매니페스트 **값** — `capabilities --mcp` 의 stdout 과 `mcp-serve` 의
+/// `rhwp://capabilities/mcp` 리소스가 같은 함수를 쓴다. 프로필 필터가 두 곳에
+/// 복제되면 자기서술이 tools/list 에 없는 도구를 광고하게 된다.
+fn mcp_manifest_value(profile: Option<&'static agent_profiles::AgentProfile>) -> serde_json::Value {
     let mut tools = mcp_tool_definitions();
     if let Some(p) = profile {
         tools.retain(|t| {
@@ -315,7 +323,7 @@ fn show_mcp_tools(profile: Option<&'static agent_profiles::AgentProfile>) -> i32
         });
     }
 
-    let manifest = serde_json::json!({
+    serde_json::json!({
         "schemaVersion": "1.0",
         "protocol": "mcp",
         "server": {
@@ -337,9 +345,7 @@ fn show_mcp_tools(profile: Option<&'static agent_profiles::AgentProfile>) -> i32
             "recipe": p.recipe,
         })),
         "profiles": agent_profiles::names(),
-    });
-    println!("{manifest}");
-    EXIT_OK
+    })
 }
 
 /// [#3263→#3140] MCP 도구 정의의 단일 출처 — `capabilities --mcp`(선언 출력)와

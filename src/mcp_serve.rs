@@ -26,6 +26,8 @@ const PROTOCOL_VERSION: &str = "2025-06-18";
 const PARSE_ERROR: i64 = -32700;
 const METHOD_NOT_FOUND: i64 = -32601;
 const INVALID_PARAMS: i64 = -32602;
+/// [#3627] MCP resources 규약이 못박은 코드 — "Resource not found: -32002".
+const RESOURCE_NOT_FOUND: i64 = -32002;
 
 /// 열린 문서 핸들 하나 — 편집·저장의 형식 보존(#3383)을 위해 원본 형식을 기억한다.
 struct SessionDoc {
@@ -135,7 +137,9 @@ pub fn run(args: &[String]) -> i32 {
                     "protocolVersion": params.get("protocolVersion")
                         .and_then(|v| v.as_str())
                         .unwrap_or(PROTOCOL_VERSION),
-                    "capabilities": { "tools": {} },
+                    // [#3627] subscribe/listChanged 는 아직 없다 — 스펙상 빈 객체가
+                    // "두 기능 모두 미지원" 의 정식 선언이다(생략이 아니라).
+                    "capabilities": { "tools": {}, "resources": {} },
                     "serverInfo": {
                         "name": "rhwp",
                         "version": rhwp::version(),
@@ -155,6 +159,15 @@ pub fn run(args: &[String]) -> i32 {
                     Err(e) => error_response(id, INVALID_PARAMS, &e),
                 }
             }
+            "resources/list" => {
+                ok_response(id, serde_json::json!({ "resources": served_resources() }))
+            }
+            "resources/read" => match read_resource(&params, profile) {
+                Ok(result) => ok_response(id, result),
+                Err((code, message, uri)) => {
+                    resource_error_response(id, code, &message, uri.as_deref())
+                }
+            },
             other => error_response(
                 id,
                 METHOD_NOT_FOUND,
@@ -182,6 +195,136 @@ fn error_response(id: serde_json::Value, code: i64, message: &str) -> serde_json
         "jsonrpc": "2.0", "id": id,
         "error": { "code": code, "message": message }
     })
+}
+
+// ── [#3627] resources 표면 ─────────────────────────────────────────────────
+
+/// 서버가 내는 문서 리소스 하나. 필드 이름은 MCP `resources/list` 의 Resource
+/// 객체(uri/name/title/description/mimeType)와 1:1 로 대응한다.
+struct DocResource {
+    uri: &'static str,
+    name: &'static str,
+    title: &'static str,
+    description: &'static str,
+    mime_type: &'static str,
+    text: &'static str,
+}
+
+/// 프로필과 무관하게 항상 노출되는 자기서술 매니페스트의 URI.
+const CAPABILITIES_URI: &str = "rhwp://capabilities/mcp";
+
+/// [#3627] 저장소의 canonical 문서를 `include_str!` 로 **컴파일 시점에** 안는다.
+///
+/// rhwp 는 단일 실행 파일로 배포된다 — 저장소 밖에 설치된 exe 옆에는 `mydocs/` 가
+/// 없으므로 런타임 디스크 읽기는 정작 리소스가 필요한 설치 환경에서 그대로 실패한다
+/// (개발 트리에서만 되는 리소스는 계약이 아니다). 원본 파일을 그대로 가리키므로
+/// 복제본은 생기지 않고(문서를 고치면 다음 빌드가 따라온다), 템플릿 XML 을
+/// `include_str!` 로 안는 `serializer::hwpx::static_assets` 선례와 같은 방식이다.
+///
+/// URI 는 커스텀 `rhwp://` 스킴이다. 본문이 바이너리 안에 있으므로 `file://` 은
+/// 설치본에 존재하지 않는 경로를 광고하게 되고, `https://` 는 스펙상 클라이언트가
+/// 직접 가져올 수 있을 때만 쓴다.
+const DOC_RESOURCES: &[DocResource] = &[
+    DocResource {
+        uri: "rhwp://docs/llms.txt",
+        name: "llms.txt",
+        title: "rhwp 문서 지도 (llms.txt)",
+        description: "에이전트 진입점 — 계약·실무·문제 해결 문서로 가는 링크 목록.",
+        mime_type: "text/plain",
+        text: include_str!("../llms.txt"),
+    },
+    DocResource {
+        uri: "rhwp://docs/agent_knowledge_map.md",
+        name: "agent_knowledge_map.md",
+        title: "에이전트 지식 지도",
+        description: "작업별 명령 결정 표·봉투 필드 사전·주소 어휘. 첫 문서로 읽는다.",
+        mime_type: "text/markdown",
+        text: include_str!("../mydocs/manual/agent_knowledge_map.md"),
+    },
+    DocResource {
+        uri: "rhwp://docs/agent_troubleshooting_guide.md",
+        name: "agent_troubleshooting_guide.md",
+        title: "에이전트 실패 사전",
+        description: "오류 문자열 그대로 검색되는 증상별 원인·처방.",
+        mime_type: "text/markdown",
+        text: include_str!("../mydocs/manual/agent_troubleshooting_guide.md"),
+    },
+];
+
+/// resources/list 응답 본문.
+///
+/// 프로필은 리소스 **목록**을 필터하지 않는다 — 지식 지도·실패 사전은 특정 도구의
+/// 사용설명서가 아니라 봉투 어휘·판정 규칙 같은 전 표면 공통 문서라, 가리면 그
+/// 프로필이 실제로 가진 도구를 쓰는 능력만 깎인다. 대신 계약 문서인 매니페스트는
+/// **내용**이 프로필로 렌더된다(read_resource) — tools/list 에 없는 도구를
+/// 자기서술이 광고하면 에이전트가 "알 수 없는 도구" 를 밟는다.
+fn served_resources() -> Vec<serde_json::Value> {
+    let mut resources = vec![serde_json::json!({
+        "uri": CAPABILITIES_URI,
+        "name": "capabilities-mcp",
+        "title": "rhwp MCP 자기서술 매니페스트",
+        "description": "이 서버가 제공하는 도구의 이름·설명·입력 스키마·CLI 배선. \
+                        --profile 로 띄운 서버는 tools/list 와 같은 필터된 목록을 낸다.",
+        "mimeType": "application/json",
+    })];
+    resources.extend(DOC_RESOURCES.iter().map(|r| {
+        serde_json::json!({
+            "uri": r.uri,
+            "name": r.name,
+            "title": r.title,
+            "description": r.description,
+            "mimeType": r.mime_type,
+            "size": r.text.len(),
+        })
+    }));
+    resources
+}
+
+/// resources/read 본체. Err 는 (코드, 메시지, uri) — 미지의 URI 는 스펙이 정한
+/// -32002, 잘못된 요청 구조는 -32602 로 가른다.
+fn read_resource(
+    params: &serde_json::Value,
+    profile: Option<&'static crate::agent_profiles::AgentProfile>,
+) -> Result<serde_json::Value, (i64, String, Option<String>)> {
+    let Some(uri) = params.get("uri").and_then(|u| u.as_str()) else {
+        return Err((INVALID_PARAMS, "params.uri 가 필요합니다".into(), None));
+    };
+    let (mime_type, text) = if uri == CAPABILITIES_URI {
+        // 단일 출처: `capabilities --mcp` 의 stdout 과 같은 함수가 낸 값이다.
+        (
+            "application/json",
+            crate::mcp_manifest_value(profile).to_string(),
+        )
+    } else {
+        match DOC_RESOURCES.iter().find(|r| r.uri == uri) {
+            Some(r) => (r.mime_type, r.text.to_string()),
+            None => {
+                return Err((
+                    RESOURCE_NOT_FOUND,
+                    format!("알 수 없는 리소스: {uri}"),
+                    Some(uri.to_string()),
+                ))
+            }
+        }
+    };
+    // contents 는 배열이다 — 한 URI 가 여러 조각을 낼 수 있다는 스펙 형태를 지킨다.
+    Ok(serde_json::json!({
+        "contents": [{ "uri": uri, "mimeType": mime_type, "text": text }]
+    }))
+}
+
+/// 리소스 오류는 스펙 예시대로 `data.uri` 로 어떤 URI 가 문제였는지 되돌려준다.
+fn resource_error_response(
+    id: serde_json::Value,
+    code: i64,
+    message: &str,
+    uri: Option<&str>,
+) -> serde_json::Value {
+    let mut response = error_response(id, code, message);
+    if let Some(uri) = uri {
+        response["error"]["data"] = serde_json::json!({ "uri": uri });
+    }
+    response
 }
 
 /// tools/list 응답: 선언 도구(MCP 필수 3종만 노출) + 세션 도구 3종.
