@@ -61,6 +61,12 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 권위는 [#3608](https://github.com/edwardkim/rhwp/issues/3608)이다. 절차를 어긴 표면
 추가는 되돌린다.
 
+**다른 언어에서 쓰려면**: 파이썬은 [`bindings/python`](../../bindings/python)(M18,
+#3762)이 이미 3층을 전부 감싼다 — 설계·규약은
+[파이썬 바인딩 가이드](python_binding_guide.md). 새 언어 바인딩은
+[`bindings_foundation.md`](../tech/bindings_foundation.md) §4 의 착수 조건을 따르고,
+IR 모양은 `rhwp export-ir-schema` 를 코드 생성의 단일 출처로 쓴다(수기 목록 금지).
+
 ## 2. 봉투 필드 사전 — 필드 이름으로 찾는 역인덱스
 
 모든 `--json` 봉투 공통: stdout 은 순수 JSON 하나(배치는 NDJSON), 스키마는 필드
@@ -150,6 +156,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `issue_3372_gian_form_contract.rs` | 일반기안문 표준 서식 자산의 유효성 (#3372) |
 | `render_p22_web_canvas_contract.rs` | 웹 캔버스 레이어 재생이 render node 를 재구축하지 않는 계약 |
 | `render_p23_pdf_export_contract.rs` | PDF export native API 경로 계약 |
+| `ir_schema_contract.rs` | `export-ir-schema` 스키마 건전성 — 끊어진 참조·고아 정의·닫힌 객체 금지 (#3762) |
 
 ## 유지 규약
 

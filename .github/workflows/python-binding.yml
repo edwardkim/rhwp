@@ -1,0 +1,96 @@
+name: python-binding
+
+# M18 파이썬 바인딩 (#3762). 바인딩은 기존 계약의 재포장이므로, 여기서 지키는 것은
+# "파이썬이 도나"가 아니라 **계약이 어긋나지 않았나**다 — 패리티 가드가 핵심이다.
+
+on:
+  push:
+    paths:
+      - "bindings/python/**"
+      - "src/ir_schema.rs"
+      - ".github/workflows/python-binding.yml"
+  pull_request:
+    paths:
+      - "bindings/python/**"
+      - "src/ir_schema.rs"
+      - ".github/workflows/python-binding.yml"
+
+jobs:
+  unit:
+    # 단위 테스트는 rhwp 빌드 없이 돈다 — 탐색·변환·예외 매핑·계획 직렬화는 순수 로직.
+    name: 단위 (바이너리 없이)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: 의존성 설치
+        working-directory: bindings/python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: 단위 테스트
+        working-directory: bindings/python
+        run: pytest tests/ -q -m "not integration"
+      - name: 타입 검사
+        working-directory: bindings/python
+        run: mypy src/rhwp
+        continue-on-error: true
+      - name: 린트
+        working-directory: bindings/python
+        run: ruff check src tests tools
+        continue-on-error: true
+
+  integration:
+    # 실제 바이너리와 실제 문서로 왕복. 패리티 가드가 여기서 돈다.
+    name: 통합 (rhwp 빌드)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: rhwp 빌드
+        run: cargo build --release --bin rhwp
+      - name: 의존성 설치
+        working-directory: bindings/python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: 통합 테스트
+        working-directory: bindings/python
+        env:
+          RHWP_BIN: ${{ github.workspace }}/target/release/rhwp
+        run: pytest tests/ -q
+      - name: 예제 실행
+        working-directory: bindings/python
+        env:
+          RHWP_BIN: ${{ github.workspace }}/target/release/rhwp
+        run: |
+          python examples/01_read_document.py ../../samples/field-01.hwp
+          python examples/06_ir_schema.py
+
+  wheel:
+    name: 휠 빌드
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 빌드
+        working-directory: bindings/python
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rhwp-wheel
+          path: bindings/python/dist/*

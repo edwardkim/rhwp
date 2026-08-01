@@ -269,6 +269,7 @@ fn main() {
         Some("export-hwpx") => exit_with(export_hwpx(&args[2..])),
         Some("export-hml") => export_hml(&args[2..]),
         Some("export-doclang") => exit_with(export_doclang(&args[2..])),
+        Some("export-ir-schema") => exit_with(cmd_export_ir_schema(&args[2..])),
         Some("capabilities") => exit_with(show_capabilities(&args[2..])),
         Some("mcp-serve") => exit_with(mcp_serve::run(&args[2..])),
         Some("batch") => exit_with(run_batch(&args[2..])),
@@ -940,6 +941,26 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             ]),
             &["schemaVersion", "source", "table", "row", "col", "oldText", "newText", "dryRun", "overflow", "output", "outputFormat", "changedPages"],
         ),
+        tool_with_optional_args(
+            "hwp_export_ir_schema",
+            "[#3762] 공개 문서 IR 의 JSON Schema 를 돌려준다. capabilities 가 *명령 표면*의 자기서술이라면 이것은 *문서 모델*의 자기서술이다 — 표·문단·누름틀·컨트롤이 어떤 모양인지 기계가 읽을 수 있다. 문서를 입력으로 받지 않는다(타입의 서술이지 특정 문서의 속성이 아니다). 외부 바인딩·코드 생성기가 단일 출처로 쓴다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "bare": {
+                        "type": "boolean",
+                        "description": "참이면 봉투 없이 스키마 본문만 (JSON Schema 도구에 바로 먹일 때)"
+                    }
+                },
+                // 문서를 받지 않으므로 필수 인자가 없다 — 그래도 빈 배열을 선언한다.
+                // 소비자가 required 의 부재와 "필수 없음"을 구분할 수 없으면 안 된다.
+                "required": [],
+            }),
+            "export-ir-schema",
+            serde_json::json!(["export-ir-schema", "--json"]),
+            serde_json::json!([{ "when": "bare", "args": ["--bare"] }]),
+            &["schemaVersion", "irSchemaVersion", "dialect", "definitionCount", "schema"],
+        ),
         tool(
             "hwp_run_plan",
             "[#3703] 선언적 편집 계획(JSON)을 정적 선검증→원자 실행→저널로 수행한다. 도구 호출을 체이닝하는 대신 의도를 계획서 하나로 선언하면, 전 step 의 실행 가능성을 미리 판정하고(불가 시 실행 0·invalid[]·exit 2) 인메모리로 적용해 단언(verify 자기검증) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경. fill_fields step 은 화면상 구별되지 않는 필드 이름을 steps[].confusable 로 경고한다. steps: fill_fields{data} · replace_text{find,replace[,occurrence]} · set_cell{table,row,col,text[,keepStyle]} · set_checkbox{occurrence}.",
@@ -1063,6 +1084,14 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "truncated",
                 "nextStep",
             ],
+        ),
+        cmd_json(
+            "export-ir-schema",
+            "export",
+            "공개 IR 의 JSON Schema 산출 — 외부 바인딩 코드 생성의 단일 출처 (#3762)",
+            false,
+            &["--json", "--bare", "-o"],
+            &["schemaVersion", "irSchemaVersion", "dialect", "definitionCount", "schema"],
         ),
         cmd_json(
             "run",
@@ -1932,6 +1961,9 @@ fn print_help() {
     println!("      HWPX 입력에 -o ….hwp 를 지정하면 그 경로를 존중해 HWP5 로 저장하되");
     println!("      형식 변경(이미지·차트 유실 가능)을 stderr 로 경고한다.");
     println!();
+    println!("  export-ir-schema [--bare] [-o <파일>] [--json]");
+    println!("      공개 IR 의 JSON Schema — 외부 바인딩 코드 생성의 단일 출처");
+    println!("      --bare 는 봉투 없이 스키마 본문만 (JSON Schema 도구 입력용)");
     println!("  run <계획.json> [--json]              선언적 편집 계획 실행 (#3703)");
     println!("      전 step 을 정적 선검증(불가 시 실행 0·exit 2)하고 인메모리로 원자");
     println!("      실행해 단언(verify) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경.");
@@ -10743,6 +10775,78 @@ fn edit_serialize(
 /// 뿌리라서 절차 대신 **의도(계획서)** 를 받는다. 판정은 전부 데이터다:
 /// 선검증 위반 = invalid[] + exit 2(실행 0), verify 단언 실패 = exit 3(디스크
 /// 무변경), 성공 = step 저널 + verify + exit 0(단 한 번 저장).
+/// [#3762] `export-ir-schema` — 공개 IR 의 JSON Schema 를 낸다 (M18 바인딩 착수 조건).
+///
+/// 문서를 입력으로 받지 않는다 — 스키마는 **타입의 자기서술**이지 특정 문서의
+/// 속성이 아니다. capabilities 가 명령 표면을 설명하듯, 이 명령은 문서 모델을
+/// 설명한다. 외부 바인딩 세대가 코드 생성의 단일 출처로 쓴다.
+fn cmd_export_ir_schema(args: &[String]) -> i32 {
+    let mut out_path: Option<&str> = None;
+    let mut json_mode = false;
+    let mut bare = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            // 봉투 없이 스키마 본문만 — JSON Schema 도구에 바로 먹이려는 용도.
+            "--bare" => bare = true,
+            "-o" | "--out" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.as_str()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {}", other);
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+
+    let payload = if bare {
+        rhwp::ir_schema::ir_schema()
+    } else {
+        rhwp::ir_schema::envelope()
+    };
+    let text = match serde_json::to_string_pretty(&payload) {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("오류: 스키마 직렬화 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    if let Some(path) = out_path {
+        if let Err(e) = fs::write(path, text.as_bytes()) {
+            eprintln!("오류: 스키마를 쓸 수 없습니다 - {}: {}", path, e);
+            return EXIT_RUNTIME;
+        }
+        if json_mode {
+            // 파일로 뺐어도 stdout 은 기계 계약을 유지한다 — 어디에 썼는지 알려준다.
+            println!(
+                "{}",
+                serde_json::json!({
+                    "schemaVersion": "1.0",
+                    "irSchemaVersion": rhwp::ir_schema::IR_SCHEMA_VERSION,
+                    "output": path,
+                    "bytes": text.len(),
+                })
+            );
+        } else {
+            println!("IR 스키마 저장: {} ({} bytes)", path, text.len());
+        }
+        return EXIT_OK;
+    }
+
+    println!("{text}");
+    EXIT_OK
+}
+
 fn cmd_run_plan(args: &[String]) -> i32 {
     let mut plan_path: Option<&str> = None;
     let mut plan_inline: Option<&str> = None;

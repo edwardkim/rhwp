@@ -187,6 +187,41 @@ document.getElementById('viewer').innerHTML = doc.renderPageSvg(0);
 | [@rhwp/editor](https://www.npmjs.com/package/@rhwp/editor) | 완전한 에디터 UI (iframe) | `npm i @rhwp/editor` |
 | [@rhwp/core](https://www.npmjs.com/package/@rhwp/core) | WASM 파서/렌더러 (API) | `npm i @rhwp/core` |
 
+## 파이썬에서 쓰기
+
+`bindings/python` 이 CLI `--json` 봉투와 `mcp-serve` 세션 계약을 그대로 재포장한다
+(런타임 의존성 0 — 표준 라이브러리만).
+
+```bash
+pip install -e bindings/python      # PyPI 배포 전
+export RHWP_BIN=$(pwd)/target/release/rhwp
+```
+
+```python
+import rhwp
+
+# 1층 — 무상태
+meta = rhwp.info("보고서.hwp")
+print(meta.page_count, meta.format)
+
+# 2층 — 세션 (같은 문서를 반복해서 만질 때)
+with rhwp.open("서식.hwp") as doc:
+    doc.fill_fields({"성명": "홍길동"})
+    saved = doc.save("제출본.hwp", verify=True)
+    assert saved.verify.identical
+
+# 3층 — 계획 (하나라도 불가능하면 아무것도 저장하지 않는다)
+plan = rhwp.Plan("서식.hwp", "제출본.hwp").fill_fields({"성명": "홍길동"}).verify()
+if plan.check().ok:
+    plan.run()
+```
+
+문서: [README](bindings/python/README.md) ·
+[API](bindings/python/docs/API.md) ·
+[요리책](bindings/python/docs/COOKBOOK.md) ·
+[문제 해결](bindings/python/docs/TROUBLESHOOTING.md) ·
+[이주 가이드](bindings/python/docs/MIGRATION.md)
+
 ## Quick Start (소스 빌드)
 
 처음 프로젝트에 참여하는 개발자는 [온보딩 가이드](mydocs/manual/onboarding_guide.md)를 먼저 읽어보세요. 프로젝트 아키텍처, 디버깅 도구, 개발 워크플로우를 한눈에 파악할 수 있습니다.

@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rhwp"
+version = "0.1.0"
+description = "HWP/HWPX 문서 엔진 rhwp 의 파이썬 바인딩 — CLI --json 봉투와 mcp-serve 세션 계약의 재포장"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.8"
+keywords = ["hwp", "hwpx", "hancom", "document", "korean", "office"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: Korean",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Rust",
+  "Topic :: Office/Business",
+  "Topic :: Text Processing",
+]
+# 런타임 의존성 없음 — 표준 라이브러리만 쓴다.
+# 바인딩이 무거우면 "재포장"이 아니라 새 표면이 된다.
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "mypy>=1.0", "ruff>=0.1"]
+
+[project.urls]
+Homepage = "https://github.com/edwardkim/rhwp"
+Repository = "https://github.com/edwardkim/rhwp"
+Issues = "https://github.com/edwardkim/rhwp/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rhwp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# 바이너리가 없는 환경에서도 단위 테스트는 돌아야 한다 — 통합만 건너뛴다.
+markers = ["integration: 실제 rhwp 바이너리가 필요한 테스트"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+
+[tool.mypy]
+python_version = "3.8"
+strict = true
+warn_unreachable = true
