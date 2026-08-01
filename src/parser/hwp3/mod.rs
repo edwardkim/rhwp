@@ -927,6 +927,21 @@ struct Hwp3DrawingCarry<'a> {
     info_buf: &'a mut Vec<u8>,
 }
 
+/// HWP3 표/그림 바깥여백·안여백 필드(부호 있는 16비트, 단위 1/100mm)를 IR HU
+/// (1/7200inch) 스케일(×4)로 변환한다.
+///
+/// [오버플로 결함] 종전엔 `read_i16(..) * 4` 로 직접 계산했다. `i16 * i16` 연산은
+/// 결과가 여전히 `i16` 인데, 절댓값이 8192 이상인 입력(HWP3 문서에서 드물지만
+/// 파일 포맷상 유효한 범위, 또는 손상/적대적 입력)에서 곱셈이 `i16` 범위를
+/// 넘으면 debug 빌드(오버플로 체크 on, 테스트가 기본으로 도는 프로필)에서
+/// 곧바로 패닉한다. `read_hwp3_padding_scaled`(셀 패딩, #task-diag-exit-codes)와
+/// 동형으로 `i32` 중간값을 거쳐 오버플로 패닉 없이 계산한다.
+fn read_hwp3_margin_scaled(mut bytes: &[u8]) -> i16 {
+    use byteorder::{LittleEndian, ReadBytesExt};
+    let raw = bytes.read_i16::<LittleEndian>().unwrap_or(0) as i32;
+    (raw * 4) as i16
+}
+
 /// [#2003 추출] 개체 컨트롤 디스패치 — ch==10(표/글상자/수식/버튼)·11(그리기)·
 /// 14~17·29·5~8 의 if-else 체인 전체. 원본 무변경 이동 (셀·캡션은
 /// `parse_paragraph_list` 재귀). 반환 `Some(중단여부)` = 호출자 조기 return,
@@ -992,19 +1007,19 @@ fn parse_hwp3_object_dispatch(
         // 이들은 모두 같은 구조를 가집니다: 84바이트 정보 -> 각 셀당 27바이트 -> 셀당 문단 리스트 -> 캡션 문단.
         let mut table = crate::model::table::Table::default();
 
-        table.outer_margin_left = (&info_buf[18..20]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-        table.outer_margin_right = (&info_buf[20..22]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-        table.outer_margin_top = (&info_buf[22..24]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-        table.outer_margin_bottom = (&info_buf[24..26]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        table.outer_margin_left = read_hwp3_margin_scaled(&info_buf[18..20]);
+        table.outer_margin_right = read_hwp3_margin_scaled(&info_buf[20..22]);
+        table.outer_margin_top = read_hwp3_margin_scaled(&info_buf[22..24]);
+        table.outer_margin_bottom = read_hwp3_margin_scaled(&info_buf[24..26]);
         table.common.margin.left = table.outer_margin_left;
         table.common.margin.right = table.outer_margin_right;
         table.common.margin.top = table.outer_margin_top;
         table.common.margin.bottom = table.outer_margin_bottom;
 
-        table.padding.left = (&info_buf[26..28]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-        table.padding.right = (&info_buf[28..30]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-        table.padding.top = (&info_buf[30..32]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-        table.padding.bottom = (&info_buf[32..34]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        table.padding.left = read_hwp3_margin_scaled(&info_buf[26..28]);
+        table.padding.right = read_hwp3_margin_scaled(&info_buf[28..30]);
+        table.padding.top = read_hwp3_margin_scaled(&info_buf[30..32]);
+        table.padding.bottom = read_hwp3_margin_scaled(&info_buf[32..34]);
 
         table.common.width =
             ((&info_buf[42..44]).read_u16::<LittleEndian>().unwrap_or(0) as u32) * 4;
@@ -1357,15 +1372,15 @@ fn parse_hwp3_object_dispatch(
             pic.common.text_wrap = crate::model::shape::TextWrap::TopAndBottom;
         }
 
-        pic.common.margin.left = (&info_buf[18..20]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-        pic.common.margin.right = (&info_buf[20..22]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-        pic.common.margin.top = (&info_buf[22..24]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-        pic.common.margin.bottom = (&info_buf[24..26]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        pic.common.margin.left = read_hwp3_margin_scaled(&info_buf[18..20]);
+        pic.common.margin.right = read_hwp3_margin_scaled(&info_buf[20..22]);
+        pic.common.margin.top = read_hwp3_margin_scaled(&info_buf[22..24]);
+        pic.common.margin.bottom = read_hwp3_margin_scaled(&info_buf[24..26]);
 
-        pic.padding.left = (&info_buf[26..28]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-        pic.padding.right = (&info_buf[28..30]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-        pic.padding.top = (&info_buf[30..32]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
-        pic.padding.bottom = (&info_buf[32..34]).read_i16::<LittleEndian>().unwrap_or(0) * 4;
+        pic.padding.left = read_hwp3_margin_scaled(&info_buf[26..28]);
+        pic.padding.right = read_hwp3_margin_scaled(&info_buf[28..30]);
+        pic.padding.top = read_hwp3_margin_scaled(&info_buf[30..32]);
+        pic.padding.bottom = read_hwp3_margin_scaled(&info_buf[32..34]);
 
         let horz_align = (&info_buf[10..12]).read_i16::<LittleEndian>().unwrap_or(0);
         if horz_align == -1 {
@@ -4662,6 +4677,31 @@ mod tests {
     use super::*;
     use std::fs::File;
     use std::io::Read;
+
+    #[test]
+    fn read_hwp3_margin_scaled_preserves_large_negative_values_without_overflow_panic() {
+        // [오버플로 결함] 종전 `read_i16(..) * 4` 는 `i16 * i16` 그대로였다. 절댓값이
+        // 8192 이상인 표 바깥여백/안여백·그림 여백/안여백(HWP3 문서 상 유효한 범위,
+        // 또는 손상/적대적 입력)을 만나면 곱셈이 i16 범위를 넘어 debug 빌드(오버플로
+        // 체크 on, 테스트 기본 프로필)에서 파서 전체가 패닉했다. 이 회귀 테스트는
+        // 그런 큰 음수 입력이 패닉 없이 wrapping 스케일된 결과를 내는지 확인한다.
+        let large_negative: [u8; 2] = (-9000i16).to_le_bytes();
+        // -9000 * 4 = -36000, which does not fit in i16 (min -32768) — wraps via i32→i16 cast.
+        assert_eq!(
+            read_hwp3_margin_scaled(&large_negative),
+            (-36000i32) as i16,
+            "8192 이상 절댓값의 음수 여백은 패닉 없이 wrapping 스케일돼야 함"
+        );
+
+        let small_negative: [u8; 2] = (-100i16).to_le_bytes();
+        assert_eq!(read_hwp3_margin_scaled(&small_negative), -400);
+
+        let positive: [u8; 2] = 200i16.to_le_bytes();
+        assert_eq!(read_hwp3_margin_scaled(&positive), 800);
+
+        let zero: [u8; 2] = 0i16.to_le_bytes();
+        assert_eq!(read_hwp3_margin_scaled(&zero), 0);
+    }
 
     #[test]
     fn test_convert_para_shape_wires_border_connection_into_attr1_bit28() {
