@@ -154,4 +154,66 @@ mod tests {
         );
         assert!(!xml.contains('\u{03}'));
     }
+
+    /// HWPX 속성값의 마크업 문자 이스케이프 계약.
+    ///
+    /// `start_tag_attrs`/`empty_tag` 는 값에 `filter_xml_1_0_chars` 만 적용하고 나머지는
+    /// quick-xml 에 맡긴다. 이스케이프는 `push_attribute` 가 아니라 그 인자인
+    /// `(&str, &str)` → `Attribute` 변환에서 일어난다 — quick-xml 이 문서화한 동작:
+    /// "Key is stored as-is, but the value will be escaped."
+    ///
+    /// 이 위임 관계는 눈에 보이지 않아서 양쪽으로 조용히 깨질 수 있다.
+    /// (a) 값을 `&[u8]` 로 넘기도록 바꾸면 그 `From` 구현은 이스케이프하지 않으므로
+    ///     `&`/`<` 가 그대로 새어나가 저장된 `section*.xml` 이 불법 XML 이 되거나,
+    ///     `"` 가 속성값을 조기 종료시켜 뒤 내용이 마크업으로 해석된다.
+    /// (b) 반대로 여기서 `xml_escape` 를 한 번 더 적용하면 이중 이스케이프가 되어
+    ///     `&` 가 `&amp;amp;` 로 저장되고, 다시 읽으면 `&amp;` 가 되어 값이 손상된다.
+    ///     (예: Picture href 의 쿼리스트링 `?a=1&b=2`)
+    ///
+    /// 그래서 형식만 보지 않고 실제 파서로 왕복시켜 값이 그대로 복원되는지까지 확인한다.
+    #[test]
+    fn event_writers_escape_markup_chars_in_attribute_values() {
+        use quick_xml::{Reader, XmlVersion};
+
+        let mut bytes = Vec::new();
+        let mut writer = Writer::new(&mut bytes);
+        start_tag_attrs(&mut writer, "hp:start", &[("href", r#"a&b<c>d"e"#)]).unwrap();
+        end_tag(&mut writer, "hp:start").unwrap();
+        empty_tag(&mut writer, "hp:empty", &[("href", r#"x&y"z<w"#)]).unwrap();
+
+        let xml = String::from_utf8(bytes).unwrap();
+
+        // 원문이 그대로 새어나가면 불법 XML / 속성 인젝션이다.
+        assert!(
+            !xml.contains(r#"href="a&b<c>d"e""#),
+            "속성값이 이스케이프되지 않고 그대로 방출됨: {xml}"
+        );
+        // 마크업 문자는 엔티티로 나타나야 한다.
+        assert!(
+            xml.contains("&amp;") && xml.contains("&lt;") && xml.contains("&gt;"),
+            "{xml}"
+        );
+        // 이중 이스케이프 방지 — `&amp;amp;` 가 보이면 값이 손상된 것이다.
+        assert!(!xml.contains("&amp;amp;"), "이중 이스케이프됨: {xml}");
+
+        // 형식이 아니라 의미 보존 확인: 실제 파서로 왕복시켜 원래 값이 그대로 나와야 한다.
+        let mut reader = Reader::from_str(&xml);
+        let mut seen = Vec::new();
+        loop {
+            match reader.read_event().unwrap() {
+                Event::Start(e) | Event::Empty(e) => {
+                    for a in e.attributes().flatten() {
+                        seen.push(
+                            a.normalized_value(XmlVersion::Implicit1_0)
+                                .unwrap()
+                                .into_owned(),
+                        );
+                    }
+                }
+                Event::Eof => break,
+                _ => {}
+            }
+        }
+        assert_eq!(seen, vec![r#"a&b<c>d"e"#, r#"x&y"z<w"#]);
+    }
 }
