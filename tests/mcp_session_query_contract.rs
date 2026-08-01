@@ -248,3 +248,62 @@ fn session_query_tools_are_listed() {
         assert!(names.contains(&t.to_string()), "{t} 누락: {names:?}");
     }
 }
+
+/// 대량 치환이 문서를 여러 쪽 늘려도 핸들의 페이지 어휘가 즉시 따라와야 한다.
+/// 종전에는 replace 가 recompose 만 남기고 재페이지네이션하지 않아 pageCount 와
+/// 검색 matches[].page 가 편집 전 레이아웃에 머물렀다.
+#[test]
+fn session_replace_repaginates_page_vocabulary() {
+    let src = sample();
+    if !src.exists() {
+        eprintln!("샘플 없음 — 건너뜀");
+        return;
+    }
+    let mut s = Server::started();
+    let doc_id = s.open(&src);
+
+    let (err, before) = s.call("hwp_doc_info", serde_json::json!({"docId": doc_id}));
+    assert!(!err, "{before}");
+    let pages_before = before["pageCount"].as_u64().expect("pageCount");
+
+    // 전 쪽에 흩어진 조사 하나를 장문 마커로 부풀려 강제로 쪽수를 늘린다.
+    let marker = "쪽수팽창마커 ".repeat(20);
+    let (err, rep) = s.call(
+        "hwp_doc_replace_text",
+        serde_json::json!({"docId": doc_id, "find": "의", "replace": marker}),
+    );
+    assert!(!err, "{rep}");
+    assert!(
+        rep["replacedCount"].as_u64().unwrap_or(0) > 10,
+        "전제 확인: 대량 치환이어야 시험이 의미 있다: {rep}"
+    );
+
+    let (err, after) = s.call("hwp_doc_info", serde_json::json!({"docId": doc_id}));
+    assert!(!err, "{after}");
+    let pages_after = after["pageCount"].as_u64().expect("pageCount");
+    assert!(
+        pages_after > pages_before,
+        "치환 직후 세션 pageCount 가 편집 전 레이아웃에 머물러 있습니다 \
+         (before={pages_before}, after={pages_after})"
+    );
+
+    // 검색의 page 주소도 새 레이아웃을 봐야 한다 — 문서가 크게 늘었으므로
+    // 마커 일부는 편집 전 마지막 쪽 너머에 있어야 정상이다.
+    let (err, sr) = s.call(
+        "hwp_doc_search",
+        serde_json::json!({"docId": doc_id, "query": "쪽수팽창마커"}),
+    );
+    assert!(!err, "{sr}");
+    let max_page = sr["matches"]
+        .as_array()
+        .expect("matches")
+        .iter()
+        .filter_map(|m| m["page"].as_u64())
+        .max()
+        .unwrap_or(0);
+    assert!(
+        max_page >= pages_before,
+        "검색 page 주소가 편집 전 레이아웃에 머물러 있습니다 \
+         (max_page={max_page}, 편집 전 쪽수={pages_before})"
+    );
+}

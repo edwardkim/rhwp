@@ -3649,6 +3649,16 @@ impl DocumentCore {
         }
     }
 
+    /// 편집 API(누름틀 채움·전체 치환 등)가 `recompose_section` 으로 남긴 dirty
+    /// 구역을 즉시 재페이지네이션하는 공개 표면 — 같은 인스턴스에서 편집 직후
+    /// 페이지 어휘(page_count·페이지 텍스트·렌더·grep 의 page 주소)를 읽는
+    /// 세션형 소비자(mcp-serve 핸들)가 호출한다. 무상태 CLI 는 편집 후 곧바로
+    /// 직렬화·종료하므로 부르지 않는다. batch 모드에서는 Command 흐름과 같은
+    /// 규약으로 미룬다.
+    pub fn repaginate_if_needed(&mut self) {
+        self.paginate_if_needed();
+    }
+
     /// 모든 구역을 페이지로 분할한다 (dirty 구역만 재처리, 증분 표 측정).
     ///
     /// [Task #1046] 사후 reflow(A) 접근은 페이지네이터↔렌더러 측정 드리프트로 인해

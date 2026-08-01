@@ -281,3 +281,66 @@ fn session_edit_tools_are_listed() {
         assert!(names.contains(&t.to_string()), "{t} 누락: {names:?}");
     }
 }
+
+/// 채움이 문서를 여러 쪽 늘려도 핸들의 페이지 어휘가 즉시 따라와야 한다.
+/// hwp_doc_info 는 "편집 후 페이지 수 변화를 추적할 때 쓴다"고 약속하므로,
+/// 세션 pageCount 는 저장본을 새로 파싱한 지상 진실과 같아야 하고, 늘어난
+/// 마지막 쪽은 hwp_doc_text 로 곧바로 읽혀야 한다(범위 초과가 아니라).
+#[test]
+fn session_fill_repaginates_page_vocabulary() {
+    let src = sample();
+    if !src.exists() {
+        eprintln!("샘플 없음 — 건너뜀");
+        return;
+    }
+    let mut s = Server::started();
+    let doc_id = s.open(&src);
+
+    let (err, before) = s.call("hwp_doc_info", serde_json::json!({"docId": doc_id}));
+    assert!(!err, "{before}");
+    let pages_before = before["pageCount"].as_u64().expect("pageCount");
+
+    // 한 문단짜리 누름틀에 수천 자를 채워 강제로 여러 쪽을 밀어낸다.
+    let huge = "세션 편집 직후 페이지 어휘 갱신 계약 검증용 장문 텍스트. ".repeat(150);
+    let (err, fill) = s.call(
+        "hwp_doc_fill_fields",
+        serde_json::json!({"docId": doc_id, "data": {"회사명": huge}}),
+    );
+    assert!(!err, "{fill}");
+    assert_eq!(fill["filledCount"].as_u64(), Some(1), "{fill}");
+
+    let (err, after) = s.call("hwp_doc_info", serde_json::json!({"docId": doc_id}));
+    assert!(!err, "{after}");
+    let pages_session = after["pageCount"].as_u64().expect("pageCount");
+
+    // 지상 진실: 저장본을 새로 파싱한 pageCount (보고를 믿지 않는다).
+    let out = temp_path("repag", "hwp");
+    let (err, sv) = s.call(
+        "hwp_doc_save",
+        serde_json::json!({"docId": doc_id, "output": out.to_str().unwrap()}),
+    );
+    assert!(!err, "{sv}");
+    let reread = run_cli(&["info", out.to_str().unwrap(), "--json"]);
+    let rv: serde_json::Value = serde_json::from_slice(&reread.stdout).expect("info --json");
+    let pages_truth = rv["pageCount"].as_u64().expect("pageCount");
+
+    assert!(
+        pages_truth > pages_before,
+        "전제 확인: 채움이 쪽수를 늘려야 시험이 의미 있다 \
+         (before={pages_before}, truth={pages_truth})"
+    );
+    assert_eq!(
+        pages_session, pages_truth,
+        "세션 pageCount 가 편집 전 레이아웃에 머물러 있습니다 \
+         (세션 {pages_session} vs 신규 파싱 {pages_truth})"
+    );
+
+    // 늘어난 마지막 쪽이 세션에서 곧바로 읽혀야 한다.
+    let (err, text) = s.call(
+        "hwp_doc_text",
+        serde_json::json!({"docId": doc_id, "page": pages_truth - 1}),
+    );
+    assert!(!err, "늘어난 마지막 쪽 읽기가 범위 초과로 거부됨: {text}");
+
+    let _ = std::fs::remove_file(&out);
+}

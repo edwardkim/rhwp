@@ -641,6 +641,12 @@ fn session_replace_text(args: &serde_json::Value, sessions: &mut Sessions) -> se
         .ok()
         .and_then(|v| v["count"].as_u64())
         .unwrap_or(0);
+    // 치환이 실제로 일어났다면 핸들의 페이지 어휘를 즉시 갱신한다 — 코어는
+    // recompose 로 dirty 만 남기므로, 여기서 재페이지네이션하지 않으면 이후
+    // hwp_doc_info/text/render/search 가 편집 전 레이아웃을 서빙한다.
+    if count > 0 {
+        sd.doc.repaginate_if_needed();
+    }
     tool_ok_text(
         serde_json::json!({
             "schemaVersion": "1.0",
@@ -817,6 +823,14 @@ fn session_fill_fields(args: &serde_json::Value, sessions: &mut Sessions) -> ser
         filled.push(serde_json::json!({
             "name": name, "occurrence": occurrence, "value": value_str,
         }));
+    }
+    // 채움이 실제로 반영됐다면 핸들의 페이지 어휘를 즉시 갱신한다 — 코어의
+    // set_field_value_by_name_at 는 recompose 로 dirty 만 남기므로, 여기서
+    // 재페이지네이션하지 않으면 hwp_doc_info 의 pageCount("편집 후 페이지 수
+    // 변화를 추적" 약속)와 text/render/search 의 page 주소가 전부 편집 전
+    // 레이아웃에 머문다. 도구 호출당 1회 — 필드 수만큼 반복하지 않는다.
+    if !apply.is_empty() {
+        doc.repaginate_if_needed();
     }
 
     tool_ok_text(
