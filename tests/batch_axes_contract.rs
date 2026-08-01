@@ -276,3 +276,260 @@ fn mcp_batch_tools_are_invocable_from_their_declaration() {
         "cli.args 에 {{query}} 자리표시자가 필요합니다: {args_str}"
     );
 }
+
+// ── [#3626] convert 축 ─────────────────────────────────────────────────────
+
+/// convert 축은 파일을 쓴다 — 테스트마다 격리된 임시 폴더를 쓴다.
+fn convert_tmp_dir(tag: &str) -> PathBuf {
+    let dir = std::env::temp_dir().join(format!(
+        "rhwp-batch-convert-{tag}-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("system clock")
+            .as_nanos()
+    ));
+    std::fs::create_dir_all(&dir).expect("임시 폴더 생성 실패");
+    dir
+}
+
+fn field_names(v: &serde_json::Value) -> Vec<String> {
+    let mut names: Vec<String> = v
+        .as_object()
+        .unwrap_or_else(|| panic!("JSON 객체가 아닙니다: {v}"))
+        .keys()
+        .cloned()
+        .collect();
+    names.sort();
+    names
+}
+
+/// 핵심 계약: 배치 레코드 = 단건 `convert --json` 봉투.
+///
+/// 샘플이 무손실로 왕복하는지 여부를 테스트가 미리 알 필요가 없도록 **단건을 오라클로
+/// 두고** 대조한다 — 필드 이름 집합·판정·종료 코드가 모두 같아야 한다.
+#[test]
+fn batch_convert_record_is_isomorphic_to_single_command_envelope() {
+    let p = sample(SAMPLE);
+    let s = p.to_str().unwrap();
+    let single_dir = convert_tmp_dir("single");
+    let batch_dir = convert_tmp_dir("batch");
+    let single_out = single_dir.join("hwp3-sample.hwp");
+
+    let single_args = [
+        "convert",
+        s,
+        single_out.to_str().unwrap(),
+        "--verify",
+        "--verify-pages",
+        "--json",
+    ];
+    let single = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .args(single_args)
+        .output()
+        .expect("rhwp 실행 실패");
+
+    let batch_args = [
+        "batch",
+        "convert",
+        "--out-dir",
+        batch_dir.to_str().unwrap(),
+        "--verify",
+        "--verify-pages",
+        "--json",
+    ];
+    let batch = run_with_stdin(&batch_args, &format!("{s}\n"));
+
+    // 판정을 1 로 접지 않는다: 단건이 0/3/4 중 무엇으로 끝나든 배치도 같아야 한다.
+    assert_eq!(
+        batch.status.code(),
+        single.status.code(),
+        "단건과 배치의 종료 코드가 달라졌습니다\n{}",
+        describe(&batch_args, &batch)
+    );
+
+    let single_env: serde_json::Value =
+        serde_json::from_str(String::from_utf8_lossy(&single.stdout).trim())
+            .expect("단건 봉투 JSON");
+    let records = ndjson(&batch_args, &batch);
+    assert_eq!(records.len(), 1, "{}", describe(&batch_args, &batch));
+    let v = &records[0];
+
+    assert_eq!(
+        field_names(v),
+        field_names(&single_env),
+        "배치 레코드는 단건 convert 봉투와 같은 필드여야 합니다\n배치: {v}\n단건: {single_env}"
+    );
+    for key in ["schemaVersion", "format", "wasDistribution"] {
+        assert_eq!(v[key], single_env[key], "{key} 불일치: {v} / {single_env}");
+    }
+    // 판정은 데이터 — 같은 문서라면 단건과 배치의 판정이 같아야 한다.
+    assert_eq!(v["verify"], single_env["verify"], "{v}");
+    assert_eq!(v["verifyPages"], single_env["verifyPages"], "{v}");
+    assert!(v["bytes"].as_u64().unwrap_or(0) > 0, "{v}");
+
+    // 산출물은 --out-dir 아래 <입력이름>.hwp 로 실제로 만들어져야 한다.
+    let produced = batch_dir.join("hwp3-sample.hwp");
+    assert!(
+        produced.is_file(),
+        "산출 파일이 없습니다: {}",
+        produced.display()
+    );
+
+    let _ = std::fs::remove_dir_all(&single_dir);
+    let _ = std::fs::remove_dir_all(&batch_dir);
+}
+
+/// 기존 규약(순서 보존 + 부분 실패 exit 1)이 **쓰기 축에서도** 성립해야 한다.
+/// 검증 판정(3/4)이 있더라도 하드 실패가 있으면 1 이 이긴다 — 소비자가 재실행
+/// 대상과 검토 대상을 갈라야 하기 때문이다.
+#[test]
+fn batch_convert_preserves_order_and_hard_failure_wins() {
+    let a = sample(SAMPLE);
+    let b = sample(SAMPLE_TABLE);
+    let out = convert_tmp_dir("partial");
+    let args = [
+        "batch",
+        "convert",
+        "--out-dir",
+        out.to_str().unwrap(),
+        "--verify",
+        "--json",
+    ];
+    let output = run_with_stdin(
+        &args,
+        &format!(
+            "{}\n없는파일-batch-convert.hwp\n{}\n",
+            a.to_str().unwrap(),
+            b.to_str().unwrap()
+        ),
+    );
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "{}",
+        describe(&args, &output)
+    );
+
+    let records = ndjson(&args, &output);
+    assert_eq!(records.len(), 3, "{}", describe(&args, &output));
+    assert!(records[0].get("error").is_none(), "{:?}", records[0]);
+    assert!(records[1].get("error").is_some(), "{:?}", records[1]);
+    assert_eq!(records[1]["exitClass"], "runtime", "{:?}", records[1]);
+    assert!(records[2].get("error").is_none(), "{:?}", records[2]);
+    let _ = std::fs::remove_dir_all(&out);
+}
+
+/// `--out-dir` 는 입력 파일 이름만 남긴다. 서로 다른 폴더의 같은 이름은 한 경로로
+/// 겹치므로, **절반만 변환된 산출 폴더를 남기지 않도록 쓰기 전에** 거부해야 한다.
+#[test]
+fn batch_convert_output_collision_is_refused_before_any_write() {
+    let root = convert_tmp_dir("collide");
+    let dir_a = root.join("a");
+    let dir_b = root.join("b");
+    std::fs::create_dir_all(&dir_a).expect("a 폴더");
+    std::fs::create_dir_all(&dir_b).expect("b 폴더");
+    let src = sample(SAMPLE);
+    let a = dir_a.join("dup.hwp");
+    let b = dir_b.join("dup.hwp");
+    std::fs::copy(&src, &a).expect("복사 a");
+    std::fs::copy(&src, &b).expect("복사 b");
+    let out = root.join("out");
+
+    let args = [
+        "batch",
+        "convert",
+        "--out-dir",
+        out.to_str().unwrap(),
+        "--json",
+    ];
+    let output = run_with_stdin(
+        &args,
+        &format!("{}\n{}\n", a.to_str().unwrap(), b.to_str().unwrap()),
+    );
+    assert_eq!(
+        output.status.code(),
+        Some(2),
+        "이름이 겹치는 입력은 사용법 오류여야 합니다\n{}",
+        describe(&args, &output)
+    );
+    assert!(
+        String::from_utf8_lossy(&output.stdout).trim().is_empty(),
+        "거부된 실행은 레코드를 내지 않아야 합니다\n{}",
+        describe(&args, &output)
+    );
+    let written = std::fs::read_dir(&out).map(|d| d.count()).unwrap_or(0);
+    assert_eq!(
+        written,
+        0,
+        "부분 산출물이 남았습니다: {}\n{}",
+        out.display(),
+        describe(&args, &output)
+    );
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// 목적지를 추측하지 않는다 — stdin 경로 목록만으로 파일을 흩뿌리면 안 된다.
+/// 그리고 convert 전용 플래그는 다른 축에서 거부된다(`--query`·`--mode` 와 같은 규약).
+#[test]
+fn batch_convert_flags_are_axis_scoped() {
+    assert_eq!(
+        run_with_stdin(&["batch", "convert", "--json"], "")
+            .status
+            .code(),
+        Some(2),
+        "--out-dir 없는 convert 는 사용법 오류여야 합니다"
+    );
+    for extra in [
+        vec!["--out-dir", "x"],
+        vec!["--verify"],
+        vec!["--verify-pages"],
+    ] {
+        let mut args = vec!["batch", "info", "--json"];
+        args.extend(extra);
+        let output = run_with_stdin(&args, "");
+        assert_eq!(
+            output.status.code(),
+            Some(2),
+            "{}",
+            describe(&args, &output)
+        );
+    }
+}
+
+/// 드리프트 가드: 축·플래그·집계 규칙이 자기서술에 함께 있어야 소비자가 3/4 를
+/// "부분 실패"로 오해하지 않는다.
+#[test]
+fn capabilities_batch_declares_convert_axis_and_exit_aggregation() {
+    let output = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .args(["capabilities"])
+        .output()
+        .expect("rhwp 실행 실패");
+    let v: serde_json::Value = serde_json::from_slice(&output.stdout).expect("capabilities JSON");
+    let subs: Vec<&str> = v["batch"]["subcommands"]
+        .as_array()
+        .expect("batch.subcommands")
+        .iter()
+        .filter_map(|s| s.as_str())
+        .collect();
+    assert!(
+        subs.contains(&"convert"),
+        "batch 축에 convert 누락: {subs:?}"
+    );
+    let flags: Vec<&str> = v["batch"]["flags"]
+        .as_array()
+        .expect("batch.flags")
+        .iter()
+        .filter_map(|s| s.as_str())
+        .collect();
+    for expected in ["--out-dir", "--verify", "--verify-pages"] {
+        assert!(
+            flags.contains(&expected),
+            "batch 플래그에 {expected} 누락: {flags:?}"
+        );
+    }
+    assert!(
+        v["batch"]["exitAggregation"].is_string(),
+        "종료 코드 집계 규칙이 자기서술에 있어야 합니다: {v}"
+    );
+}

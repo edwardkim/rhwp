@@ -1320,10 +1320,13 @@ fn show_capabilities(args: &[String]) -> i32 {
             "failure": "단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1",
         },
         "batch": {
-            "subcommands": ["export-text", "info", "export-structure", "export-tables", "fields", "search"],
-            "flags": ["--json", "--threads", "--mode", "--query"],
+            "subcommands": ["export-text", "info", "export-structure", "export-tables", "fields", "search", "convert"],
+            "flags": ["--json", "--threads", "--mode", "--query", "--out-dir", "--verify", "--verify-pages"],
             "ordering": "stdin 입력 순서 보존",
             "input": "stdin, 한 줄당 파일 경로 하나",
+            // [#3626] convert 축만 파일을 쓴다 — 목적지·충돌 규약·종료 코드 집계를 밝힌다.
+            "output": "convert 축만 파일을 쓴다 — 목적지는 --out-dir 하나, 이름은 <입력이름>.hwp. 같은 이름이 둘 이상이면 한 건도 쓰지 않고 exit 2",
+            "exitAggregation": "error 레코드가 하나라도 있으면 1, 없고 verifyPages 불일치가 있으면 4, verify 차이만 있으면 3, 전부 통과면 0",
         },
         "commands": commands,
     });
@@ -1411,13 +1414,18 @@ fn print_help() {
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
     println!("      --json                  결과를 JSON으로 stdout에 출력 (파일 저장 안 함)");
     println!();
-    println!("  batch <export-text|info|export-structure|export-tables|fields|search> --json [--threads <N>]");
+    println!("  batch <export-text|info|export-structure|export-tables|fields|search|convert> --json [--threads <N>]");
     println!(
         "      stdin의 파일 목록(한 줄당 하나)을 한 프로세스로 전건 처리해 NDJSON 스트림 출력"
     );
     println!("      --threads <N>           파일 간 병렬 스레드 수 (기본: CPU 코어 수)");
     println!("      --mode <m>              export-structure 전용: auto|outline|clause");
     println!("      --query <검색어>        search 전용: 찾을 문자열");
+    println!("      --out-dir <폴더>        convert 전용(필수): 산출물을 모을 폴더");
+    println!("                              산출 이름은 <입력이름>.hwp — 이름이 겹치면");
+    println!("                              한 건도 쓰지 않고 사용법 오류(2)로 끝낸다");
+    println!("      --verify                convert 전용: 재파싱 IR 비교 (전건 차이 → 3)");
+    println!("      --verify-pages          convert 전용: 재파싱 쪽수 비교 (전건 불일치 → 4)");
     println!();
     println!("  export-markdown <파일.hwp> [옵션]");
     println!("      페이지별 텍스트를 Markdown(.md)으로 내보내기");
@@ -3744,6 +3752,8 @@ fn run_batch(args: &[String]) -> i32 {
     let is_structure = subcommand == Some("export-structure");
     // [#3346] --query 는 search 축 전용이다 (--mode 가 export-structure 전용인 것과 같은 규약).
     let is_search = subcommand == Some("search");
+    // [#3626] --out-dir·--verify·--verify-pages 는 convert 축 전용이다 (같은 규약).
+    let is_convert = subcommand == Some("convert");
     if !matches!(
         subcommand,
         Some("export-text")
@@ -3752,10 +3762,11 @@ fn run_batch(args: &[String]) -> i32 {
             | Some("export-tables")
             | Some("fields")
             | Some("search")
+            | Some("convert")
     ) {
         match subcommand {
             Some(unknown) => eprintln!(
-                "오류: batch 는 export-text·info·export-structure·export-tables·fields·search 만 지원합니다 - {}",
+                "오류: batch 는 export-text·info·export-structure·export-tables·fields·search·convert 만 지원합니다 - {}",
                 unknown
             ),
             None => eprintln!("오류: batch 서브커맨드를 지정해주세요."),
@@ -3768,11 +3779,55 @@ fn run_batch(args: &[String]) -> i32 {
     let mut threads_opt: Option<usize> = None;
     let mut structure_mode = rhwp::document_core::queries::structure::StructureMode::Auto;
     let mut search_query: Option<String> = None;
+    // [#3626] convert 축 전용 — 목적지와 검증 게이트.
+    let mut out_dir: Option<std::path::PathBuf> = None;
+    // batch 레코드는 언제나 JSON 이므로 json 은 켠 채로 둔다 — verify/verify_pages 만 옵션.
+    let mut verify_options = ConversionVerifyOptions {
+        json: true,
+        ..ConversionVerifyOptions::default()
+    };
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
             "--json" => {
                 json_mode = true;
+                i += 1;
+            }
+            "--out-dir" => {
+                // [#3626] --out-dir 는 convert 축 전용이다.
+                if !is_convert {
+                    eprintln!("오류: --out-dir 는 convert 에서만 사용할 수 있습니다.");
+                    return EXIT_USAGE;
+                }
+                let Some(value) = args.get(i + 1) else {
+                    eprintln!("오류: --out-dir 뒤에 폴더 경로가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                if value.is_empty() {
+                    eprintln!("오류: --out-dir 폴더 경로가 비어 있습니다.");
+                    return EXIT_USAGE;
+                }
+                out_dir = Some(std::path::PathBuf::from(value));
+                i += 2;
+            }
+            "--verify" | "--verify-pages" => {
+                // 옵션 이름을 리터럴로 고정한다 — 인자에서 온 문자열을 그대로 찍으면
+                // CodeQL cleartext-logging 대상이 된다(extract-pages 와 같은 규약).
+                let opt: &'static str = if args[i] == "--verify" {
+                    "--verify"
+                } else {
+                    "--verify-pages"
+                };
+                // [#3626] 검증 게이트는 파일을 쓰는 convert 축에서만 뜻이 있다.
+                if !is_convert {
+                    eprintln!("오류: {opt} 는 convert 에서만 사용할 수 있습니다.");
+                    return EXIT_USAGE;
+                }
+                if opt == "--verify" {
+                    verify_options.verify = true;
+                } else {
+                    verify_options.verify_pages = true;
+                }
                 i += 1;
             }
             "--query" => {
@@ -3851,6 +3906,20 @@ fn run_batch(args: &[String]) -> i32 {
             };
             BatchMode::Search { query: q }
         }
+        Some("convert") => {
+            // [#3626] 목적지는 명시적이어야 한다. 읽기 전용 6축과 달리 이 축은 입력마다
+            // 파일을 쓰는데, 경로는 stdin 에서 오므로 호출자가 산출물이 어디 생기는지
+            // 명령줄만 보고 알 수 없으면 안 된다.
+            let Some(dir) = out_dir.as_deref() else {
+                eprintln!("오류: batch convert 는 --out-dir <폴더> 가 필요합니다.");
+                eprintln!("{USAGE}");
+                return EXIT_USAGE;
+            };
+            BatchMode::Convert {
+                out_dir: dir,
+                verify: verify_options,
+            }
+        }
         _ => BatchMode::Structure(structure_mode),
     };
 
@@ -3867,6 +3936,38 @@ fn run_batch(args: &[String]) -> i32 {
             Err(e) => {
                 eprintln!("오류: stdin 읽기 실패 - {}", e);
                 return EXIT_RUNTIME;
+            }
+        }
+    }
+
+    // [#3626] 변환 축은 파일을 쓴다 — 읽기 전용 6축에 없던 사전 점검이 필요하다.
+    // 산출 이름은 입력 파일 이름만 따르므로 서로 다른 폴더의 같은 이름이 한 경로로 겹친다.
+    // 겹침을 레코드로 보고하며 진행하면 이미 절반이 변환된 산출 폴더가 남는다. 한 바이트도
+    // 쓰기 전에 전건을 미리 계산해 잡고, 잡히면 사용법 오류로 끝낸다(부분 산출물 없음).
+    if let BatchMode::Convert { out_dir, .. } = mode {
+        if let Err(e) = fs::create_dir_all(out_dir) {
+            eprintln!(
+                "오류: 출력 폴더를 만들 수 없습니다 - {}: {}",
+                out_dir.display(),
+                e
+            );
+            return EXIT_RUNTIME;
+        }
+        let mut claimed: std::collections::HashMap<std::path::PathBuf, &str> =
+            std::collections::HashMap::with_capacity(paths.len());
+        for path in &paths {
+            let candidate = batch_convert_output_path(out_dir, Path::new(path));
+            if let Some(first) = claimed.insert(candidate.clone(), path.as_str()) {
+                eprintln!(
+                    "오류: 산출 경로가 겹칩니다 - {} ← {} · {}",
+                    candidate.display(),
+                    first,
+                    path
+                );
+                eprintln!(
+                    "      --out-dir 는 입력 파일 이름만 남기므로 서로 다른 폴더의 같은 이름을 구분할 수 없습니다. 입력을 나눠 실행하세요."
+                );
+                return EXIT_USAGE;
             }
         }
     }
@@ -3899,7 +4000,7 @@ fn run_batch(args: &[String]) -> i32 {
     let space = std::sync::Condvar::new(); // 버퍼에 자리가 났다
     let ready = std::sync::Condvar::new(); // 방출 차례 레코드가 도착했다
 
-    let (failed, emitted) = std::thread::scope(|scope| {
+    let (failed, emitted, verify_diff, verify_pages_diff) = std::thread::scope(|scope| {
         for _ in 0..threads.min(n) {
             scope.spawn(|| loop {
                 if abort.load(std::sync::atomic::Ordering::Relaxed) {
@@ -3932,6 +4033,11 @@ fn run_batch(args: &[String]) -> i32 {
         // (271건 실측에서 방출 버스트 구간 수 초 손실).
         let mut failed = 0usize;
         let mut emitted = 0usize;
+        // [#3626] 검증 판정은 실패가 아니다 — 변환·저장은 성공했고 산출물도 있다.
+        // 실패 계수와 섞으면 소비자가 "읽을 수 없었다"와 "변환은 됐는데 IR 이 다르다"를
+        // 종료 코드로 구분할 수 없다.
+        let mut verify_diff = 0usize;
+        let mut verify_pages_diff = 0usize;
         let mut drained: Vec<serde_json::Value> = Vec::new();
         'emit: while emitted < n {
             drained.clear();
@@ -3950,6 +4056,10 @@ fn run_batch(args: &[String]) -> i32 {
             for record in &drained {
                 if record.get("error").is_some() {
                     failed += 1;
+                } else if batch_verdict_differs(record, "verifyPages") {
+                    verify_pages_diff += 1;
+                } else if batch_verdict_differs(record, "verify") {
+                    verify_diff += 1;
                 }
                 if let Err(e) = writeln!(out, "{record}") {
                     // 파이프 소비자가 끊은 경우(broken pipe 등): 새 작업 수주를 멈추고
@@ -3961,7 +4071,7 @@ fn run_batch(args: &[String]) -> i32 {
                 }
             }
         }
-        (failed, emitted)
+        (failed, emitted, verify_diff, verify_pages_diff)
     });
 
     if abort.load(std::sync::atomic::Ordering::Relaxed) {
@@ -3980,8 +4090,22 @@ fn run_batch(args: &[String]) -> i32 {
         started.elapsed().as_millis(),
         threads
     );
+    if verify_diff > 0 || verify_pages_diff > 0 {
+        eprintln!(
+            "batch: 검증 판정 — verify 차이 {}건, verify-pages 불일치 {}건 (변환·저장 자체는 성공)",
+            verify_diff, verify_pages_diff
+        );
+    }
+    // [#3626] 종료 코드 집계. 하드 실패(산출물이 아예 없음)가 가장 나쁘므로 기존 규약대로
+    // 1 이 우선한다. 그 아래는 단건 convert 의 우선순위를 그대로 따른다 — 단건도 쪽수
+    // 검사를 IR 검사보다 먼저 해 exit 4 로 끊는다. 검증 판정을 1 로 접지 않는 이유는
+    // 소비자가 재실행 대상(1)과 검토 대상(3/4)을 갈라야 하기 때문이다.
     if failed > 0 {
         EXIT_RUNTIME
+    } else if verify_pages_diff > 0 {
+        4
+    } else if verify_diff > 0 {
+        3
     } else {
         EXIT_OK
     }
@@ -4002,6 +4126,12 @@ enum BatchMode<'a> {
     Search {
         query: &'a str,
     },
+    /// [#3626] 편집 가능 HWP5 변환 저장 — `convert --json` 봉투와 스키마 공유.
+    /// 읽기 전용인 다른 축과 달리 입력마다 파일을 쓰므로 목적지(`out_dir`)를 들고 다닌다.
+    Convert {
+        out_dir: &'a Path,
+        verify: ConversionVerifyOptions,
+    },
 }
 
 /// [#3238] 파일 하나를 처리해 NDJSON 레코드 하나를 만든다. 실패는 레코드로 보고하고
@@ -4017,6 +4147,7 @@ fn batch_record(mode: BatchMode<'_>, path: &str) -> serde_json::Value {
         BatchMode::Tables => batch_tables_record_inner(path),
         BatchMode::Fields => batch_fields_record_inner(path),
         BatchMode::Search { query } => batch_search_record_inner(path, query),
+        BatchMode::Convert { out_dir, verify } => batch_convert_record_inner(path, out_dir, verify),
     })) {
         Ok(record) => record,
         Err(payload) => {
@@ -4144,6 +4275,148 @@ fn batch_search_record_inner(path: &str, query: &str) -> serde_json::Value {
     let total_match_count = all_matches.len();
     let matches: Vec<_> = all_matches.into_iter().take(BATCH_MATCH_LIMIT).collect();
     search_json_value(path, query, true, &matches, total_match_count)
+}
+
+/// [#3626] `batch convert` 의 산출 경로 — `<out-dir>/<입력 파일이름>.hwp`.
+///
+/// stdin 은 한 줄에 경로 하나뿐이라 출력 경로를 함께 받을 자리가 없다. 그래서 정책으로
+/// 정한다: 목적지는 `--out-dir` 하나, 이름은 입력 파일 이름을 따른다. 입력 폴더 구조를
+/// 미러링하지 않는 것은 의도다 — 절대 경로·`..`·드라이브 문자가 섞인 목록에서는 "무엇을
+/// 기준으로 한 상대 경로인가"가 정의되지 않는다. 대신 이름 겹침은 `run_batch` 가 **한
+/// 바이트도 쓰기 전에** 전건 사전 점검으로 잡는다.
+fn batch_convert_output_path(out_dir: &Path, input: &Path) -> std::path::PathBuf {
+    let stem = input
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_else(|| "output".to_string());
+    out_dir.join(format!("{stem}.hwp"))
+}
+
+/// [#3626] 검증 판정 봉투가 "차이 있음"인가. 필드가 없거나 null 이면 판정 자체가 없다.
+fn batch_verdict_differs(record: &serde_json::Value, key: &str) -> bool {
+    record
+        .get(key)
+        .and_then(|v| v.get("identical"))
+        .and_then(|v| v.as_bool())
+        == Some(false)
+}
+
+/// [#3626] `batch convert --json` 의 파일당 레코드 — 단건 `convert --json` 봉투와 같은
+/// 스키마다. 쪽수 불일치면 IR 비교를 하지 않고 `verify: null` 로 두는 단락(short-circuit)
+/// 까지 단건과 같다.
+///
+/// 다른 것은 끝내는 방식뿐이다. 단건은 검증 차이에서 `process::exit(3|4)` 로 프로세스를
+/// 끊지만 배치는 뒤 파일이 남아 있어 끊을 수 없다. 그래서 판정은 레코드에만 담고
+/// (`ir-diff --json` 과 같은 "판정은 데이터" 규약) `run_batch` 가 전건을 모아 집계한다.
+///
+/// 재파싱 실패는 "판정 불가"가 아니라 **열 수 없는 산출물**이므로, 단건이 3/4 로 끝내는
+/// 것과 달리 배치가 가진 `error` 레코드 채널로 보고한다(→ 최종 exit 1). 배치에는 단건에
+/// 없는 실패 채널이 있고, 이쪽이 소비자에게 더 정확하다.
+fn batch_convert_record_inner(
+    path: &str,
+    out_dir: &Path,
+    verify_options: ConversionVerifyOptions,
+) -> serde_json::Value {
+    let input_path = Path::new(path);
+    let output_path = batch_convert_output_path(out_dir, input_path);
+    // 사전 점검은 산출물끼리의 겹침만 본다. "산출 경로가 곧 그 입력"(--out-dir 이 입력
+    // 폴더이고 입력이 이미 .hwp)은 파일 동일성 판정이 필요하므로 여기서 막는다 —
+    // 단건 convert/export-hwpx 의 "원본을 덮어쓰지 않는다" 가드와 같은 규약.
+    if paths_refer_to_same_file(input_path, &output_path) {
+        return batch_fail_record(
+            path,
+            "입력과 출력 경로가 같습니다. 원본을 덮어쓰지 않습니다.".to_string(),
+        );
+    }
+
+    let data = match fs::read(input_path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    // [#3505] --verify 비교 강도를 정하려면 원본 포맷을 알아야 한다 (대상은 항상 HWP5).
+    let source_format = rhwp::parser::detect_format(&data);
+    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {:?}", e)),
+    };
+
+    let page_count_before = if verify_options.verify_pages {
+        Some(doc.page_count())
+    } else {
+        None
+    };
+    let was_distribution = doc.document().header.distribution;
+    if let Err(e) = doc.convert_to_editable_native() {
+        return batch_fail_record(path, format!("변환 실패: {:?}", e));
+    }
+
+    let bytes = match doc.export_hwp_with_adapter() {
+        Ok(b) => b,
+        Err(e) => return batch_fail_record(path, format!("직렬화 실패: {:?}", e)),
+    };
+    if let Err(e) = fs::write(&output_path, &bytes) {
+        // [#2707] 출력 파일이 아예 안 만들어졌는데 성공 레코드를 내던 부류의 경로.
+        return batch_fail_record(
+            path,
+            format!("파일 저장 실패 - {}: {}", output_path.display(), e),
+        );
+    }
+
+    let bytes_len = bytes.len();
+    let envelope = |verify: serde_json::Value, verify_pages: serde_json::Value| {
+        serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": path,
+            "output": output_path.display().to_string(),
+            "format": "hwp5",
+            "bytes": bytes_len,
+            "wasDistribution": was_distribution,
+            // batch 는 비밀번호 옵션을 받지 않는다(run_batch 가드) — 늘 false 다.
+            "passwordProtected": false,
+            "verify": verify,
+            "verifyPages": verify_pages,
+        })
+    };
+
+    if !verify_options.enabled() {
+        return envelope(serde_json::Value::Null, serde_json::Value::Null);
+    }
+
+    let reloaded = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
+        Ok(d) => d,
+        Err(e) => {
+            return batch_fail_record(path, format!("검증 실패: 저장된 HWP 재파싱 실패 - {:?}", e))
+        }
+    };
+
+    let mut verify_pages_report = serde_json::Value::Null;
+    if let Some(before) = page_count_before {
+        let after = reloaded.page_count();
+        verify_pages_report = serde_json::json!({
+            "before": before, "after": after, "identical": before == after,
+        });
+        if before != after {
+            // 단건 convert 와 같은 단락 — 쪽수가 다르면 IR 비교까지 가지 않는다.
+            return envelope(serde_json::Value::Null, verify_pages_report);
+        }
+    }
+
+    let mut verify_report = serde_json::Value::Null;
+    if verify_options.verify {
+        let diff =
+            rhwp::serializer::hwpx::roundtrip::diff_documents(doc.document(), reloaded.document());
+        // [#3505] 포맷을 넘는 변환이면 대상 포맷에 자리가 없는 항목을 걷어낸다.
+        let diff = if source_format == rhwp::parser::FileFormat::Hwp {
+            diff
+        } else {
+            rhwp::serializer::hwpx::roundtrip::strip_cross_format_noise(diff)
+        };
+        verify_report = serde_json::json!({
+            "identical": diff.is_empty(), "diffCount": diff.differences.len(),
+        });
+    }
+
+    envelope(verify_report, verify_pages_report)
 }
 
 /// [#3238] `batch info --json` 의 파일당 레코드 — `info --json` 과 같은 스키마
