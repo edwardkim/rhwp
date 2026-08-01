@@ -646,6 +646,35 @@ fn batch_unknown_subcommand_is_usage_error() {
     );
 }
 
+/// [#3712] exit code 사전이 실제 계약을 따라가는지 — 자기서술 드리프트 가드.
+///
+/// exit 3 은 처음 `convert/export-hwpx --verify` 하나였다가 `edit 3종 --verify`(#3702)·
+/// `run` 계획 단언(#3703)으로 넓어졌다. 사전이 옛 서술에 머물면 에이전트는 자기서술만
+/// 읽고 "편집에는 3이 안 나온다"고 판단한다 — 선언이 계약을 배신하는 지점이다.
+#[test]
+fn exit_code_dictionary_covers_every_verify_surface() {
+    let args = ["capabilities"];
+    let output = run(&args);
+    let v = parse_stdout_json(&args, &output);
+    for code in ["0", "1", "2", "3", "4"] {
+        let entry = v["exitCodes"][code]
+            .as_str()
+            .unwrap_or_else(|| panic!("exitCodes.{code} 설명 필요: {v}"));
+        assert!(
+            !entry.trim().is_empty(),
+            "exitCodes.{code} 가 빈 문자열: {v}"
+        );
+    }
+    // exit 3 을 낼 수 있는 표면이 늘면 사전도 함께 늘어야 한다.
+    let three = v["exitCodes"]["3"].as_str().unwrap();
+    for surface in ["convert", "edit", "run"] {
+        assert!(
+            three.contains(surface),
+            "exit 3 사전이 '{surface}' 표면을 빠뜨렸다: {three}"
+        );
+    }
+}
+
 /// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,
 /// nextest가 런타임에 재매핑해 주입하는 CARGO_BIN_EXE_rhwp를 우선한다.
 fn rhwp_bin() -> String {
