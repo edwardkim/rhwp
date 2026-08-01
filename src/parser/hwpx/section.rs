@@ -2654,17 +2654,17 @@ fn parse_picture(
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
                                 b"x" => {
-                                    let v = parse_u32(&attr);
-                                    shape_attr.offset_x = v as i32;
+                                    let v = parse_i32_wrapping(&attr);
+                                    shape_attr.offset_x = v;
                                     if !has_pos {
-                                        common.horizontal_offset = v;
+                                        common.horizontal_offset = v as u32;
                                     }
                                 }
                                 b"y" => {
-                                    let v = parse_u32(&attr);
-                                    shape_attr.offset_y = v as i32;
+                                    let v = parse_i32_wrapping(&attr);
+                                    shape_attr.offset_y = v;
                                     if !has_pos {
-                                        common.vertical_offset = v;
+                                        common.vertical_offset = v as u32;
                                     }
                                 }
                                 _ => {}
@@ -3157,17 +3157,17 @@ fn parse_object_layout_child(
             for attr in ce.attributes().flatten() {
                 match attr.key.as_ref() {
                     b"x" => {
-                        let v = parse_u32(&attr);
-                        shape_attr.offset_x = v as i32;
+                        let v = parse_i32_wrapping(&attr);
+                        shape_attr.offset_x = v;
                         if !*has_pos {
-                            common.horizontal_offset = v;
+                            common.horizontal_offset = v as u32;
                         }
                     }
                     b"y" => {
-                        let v = parse_u32(&attr);
-                        shape_attr.offset_y = v as i32;
+                        let v = parse_i32_wrapping(&attr);
+                        shape_attr.offset_y = v;
                         if !*has_pos {
-                            common.vertical_offset = v;
+                            common.vertical_offset = v as u32;
                         }
                     }
                     _ => {}
@@ -8011,6 +8011,57 @@ mod tests {
         assert_eq!(connector.control_points.len(), 2);
         assert_eq!(connector.control_points[1].x, 100);
         assert_eq!(connector.control_points[1].point_type, 26);
+    }
+
+    #[test]
+    fn bugfind_shape_offset_negative_x_y_not_dropped_to_zero() {
+        // hp:offset(개체 내부 shape-transform 오프셋) x/y 는 음수일 수 있는데,
+        // 종전엔 parse_u32 로 읽어 "-500" 같은 문자열이 파싱 실패로 0 이 됐다
+        // (hp:pos 의 vertOffset/horzOffset 형제 필드는 이미 parse_i32_wrapping 사용).
+        // hp:pos 가 없어 offset 이 common.horizontal_offset/vertical_offset 에도
+        // 그대로 폴백되는 경로를 함께 확인한다.
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:connectLine id="1" zOrder="0" textWrap="SQUARE" textFlow="BOTH_SIDES" instid="1" type="STRAIGHT_ONEWAY">
+        <hp:offset x="-500" y="-800"/>
+        <hp:orgSz width="100" height="1"/>
+        <hp:curSz width="100" height="0"/>
+        <hp:lineShape color="#000000" width="141" style="SOLID" headStyle="NORMAL" tailStyle="NORMAL" headfill="1" tailfill="1" headSz="MEDIUM_MEDIUM" tailSz="MEDIUM_MEDIUM"/>
+        <hp:startPt x="0" y="0" subjectIDRef="1" subjectIdx="0"/>
+        <hp:endPt x="100" y="0" subjectIDRef="2" subjectIdx="0"/>
+      </hp:connectLine>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"##;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Line(line) = shape.as_ref() else {
+            panic!("expected line shape");
+        };
+
+        assert_eq!(
+            line.drawing.shape_attr.offset_x, -500,
+            "offset x=-500 이 0으로 뭉개지면 안 됨"
+        );
+        assert_eq!(
+            line.drawing.shape_attr.offset_y, -800,
+            "offset y=-800 이 0으로 뭉개지면 안 됨"
+        );
+        assert_eq!(
+            line.common.horizontal_offset as i32, -500,
+            "hp:pos 가 없으면 offset 이 common.horizontal_offset 으로 폴백돼야 함"
+        );
+        assert_eq!(
+            line.common.vertical_offset as i32, -800,
+            "hp:pos 가 없으면 offset 이 common.vertical_offset 으로 폴백돼야 함"
+        );
     }
 
     #[test]
