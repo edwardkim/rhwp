@@ -13,7 +13,9 @@
 use crate::renderer::layout::estimate_text_width_unrounded;
 use crate::renderer::TextStyle;
 
-pub fn run(args: &[String]) {
+pub fn run(args: &[String]) -> i32 {
+    // 종료 코드 계약(mydocs/manual/cli_commands.md): 반환형이 `()` 라 인자 누락
+    // (사용법 오류)에도 0 으로 끝나, 폭 사다리 스크립트가 빈 출력을 정상으로 취급했다.
     let mut font = String::from("함초롬바탕");
     let mut size_pt = 10.0f64;
     let mut ratio = 100.0f64;
@@ -44,7 +46,7 @@ pub fn run(args: &[String]) {
     }
     if texts.is_empty() {
         eprintln!("사용: rhwp measure-width --size 10 [--font 이름] [--repeat N] <text>...");
-        return;
+        return super::EXIT_USAGE;
     }
     let style = TextStyle {
         font_family: font.clone(),
@@ -64,4 +66,5 @@ pub fn run(args: &[String]) {
         let label: String = t.chars().take(8).collect();
         println!("{label}\t{n}\t{w:.3}\t{:.4}", w / n as f64);
     }
+    super::EXIT_OK
 }

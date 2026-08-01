@@ -269,18 +269,18 @@ fn main() {
             rhwp::diagnostics::hwp5_cell_header_probe::run(&args[2..])
         }
         Some("dump-records") => exit_with(dump_raw_records(&args[2..])),
-        Some("test-shape") => test_shape_roundtrip(&args[2..]),
+        Some("test-shape") => exit_with(test_shape_roundtrip(&args[2..])),
         Some("test-caption") => exit_with(test_caption(&args[2..])),
-        Some("gen-table") => gen_table(&args[2..]),
+        Some("gen-table") => exit_with(gen_table(&args[2..])),
         Some("gen-pua") => gen_pua_test(&args[2..]),
         Some("test-field") => test_field_roundtrip(&args[2..]),
         Some("ir-diff") => exit_with(ir_diff(&args[2..])),
         Some("hwpx-roundtrip") => rhwp::diagnostics::hwpx_roundtrip_batch::run(&args[2..]),
         Some("hwp5-roundtrip") => rhwp::diagnostics::hwp5_roundtrip_batch::run(&args[2..]),
         Some("render-diff") => rhwp::diagnostics::render_geom_diff::run(&args[2..]),
-        Some("measure-width") => rhwp::diagnostics::text_width_probe::run(&args[2..]),
-        Some("core-pages") => rhwp::diagnostics::core_pages_probe::run(&args[2..]),
-        Some("bench") => rhwp::diagnostics::bench::run(&args[2..]),
+        Some("measure-width") => exit_with(rhwp::diagnostics::text_width_probe::run(&args[2..])),
+        Some("core-pages") => exit_with(rhwp::diagnostics::core_pages_probe::run(&args[2..])),
+        Some("bench") => exit_with(rhwp::diagnostics::bench::run(&args[2..])),
         Some("thumbnail") => exit_with(extract_thumbnail(&args[2..])),
         Some("fields") => exit_with(show_fields(&args[2..])),
         Some("edit") => exit_with(run_edit(&args[2..])),
@@ -8157,7 +8157,7 @@ fn dump_raw_records(args: &[String]) -> i32 {
     EXIT_OK
 }
 
-fn test_shape_roundtrip(args: &[String]) {
+fn test_shape_roundtrip(args: &[String]) -> i32 {
     let input = if args.is_empty() {
         "saved/g555-s.hwp"
     } else {
@@ -8173,7 +8173,7 @@ fn test_shape_roundtrip(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("입력 파일 읽기 오류: {}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -8181,7 +8181,7 @@ fn test_shape_roundtrip(args: &[String]) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("HWP 파싱 오류: {:?}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     };
 
@@ -8207,7 +8207,7 @@ fn test_shape_roundtrip(args: &[String]) {
         Ok(r) => eprintln!("글상자 생성 성공: {}", r),
         Err(e) => {
             eprintln!("글상자 생성 실패: {:?}", e);
-            return;
+            return EXIT_RUNTIME;
         }
     }
 
@@ -8215,11 +8215,15 @@ fn test_shape_roundtrip(args: &[String]) {
         Ok(bytes) => {
             if let Err(e) = fs::write(output, &bytes) {
                 eprintln!("파일 저장 오류: {}", e);
-            } else {
-                eprintln!("저장 완료: {} ({}KB)", output, bytes.len() / 1024);
+                return EXIT_RUNTIME;
             }
+            eprintln!("저장 완료: {} ({}KB)", output, bytes.len() / 1024);
+            EXIT_OK
         }
-        Err(e) => eprintln!("직렬화 오류: {:?}", e),
+        Err(e) => {
+            eprintln!("직렬화 오류: {:?}", e);
+            EXIT_RUNTIME
+        }
     }
 }
 
@@ -8367,7 +8371,7 @@ fn test_caption(args: &[String]) -> i32 {
     EXIT_OK
 }
 
-fn gen_table(args: &[String]) {
+fn gen_table(args: &[String]) -> i32 {
     let rows: u16 = args.first().and_then(|s| s.parse().ok()).unwrap_or(1000);
     let cols: u16 = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(6);
     let output = args
@@ -8449,8 +8453,14 @@ fn gen_table(args: &[String]) {
     if let Some(parent) = out_path.parent() {
         fs::create_dir_all(parent).ok();
     }
-    fs::write(out_path, bytes).expect("파일 저장 실패");
+    if let Err(e) = fs::write(out_path, bytes) {
+        // 종료 코드 계약: 쓰기 실패는 런타임 오류(1)다. 종전에는 .expect() 로 패닉해
+        // 계약에 없는 101 로 끝났다.
+        eprintln!("오류: 파일 저장 실패 - {}: {}", output, e);
+        return EXIT_RUNTIME;
+    }
     println!("저장 완료: {} ({}행 × {}열)", output, rows, cols);
+    EXIT_OK
 }
 
 /// PUA (Private Use Area) 문자 셋트를 입력한 HWP 테스트 문서 생성.

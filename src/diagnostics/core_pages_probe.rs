@@ -26,23 +26,26 @@ fn first_text(n: &RenderNode, out: &mut String) {
     }
 }
 
-pub fn run(args: &[String]) {
+pub fn run(args: &[String]) -> i32 {
+    // 종료 코드 계약(mydocs/manual/cli_commands.md): 반환형이 `()` 라 인자 누락도
+    // 읽기·파싱 실패도 전부 0 으로 끝났다 — 페이지네이션 대조 스크립트가 실패를
+    // 성공으로 읽는다.
     let Some(path) = args.first() else {
         eprintln!("사용: rhwp core-pages <파일>");
-        return;
+        return super::EXIT_USAGE;
     };
     let data = match std::fs::read(path) {
         Ok(d) => d,
         Err(e) => {
             eprintln!("읽기 실패: {e}");
-            return;
+            return super::EXIT_RUNTIME;
         }
     };
     let core = match DocumentCore::from_bytes(&data) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("파싱 실패: {e:?}");
-            return;
+            return super::EXIT_RUNTIME;
         }
     };
     let n = core.page_count();
@@ -55,4 +58,5 @@ pub fn run(args: &[String]) {
         let head: String = s.chars().take(24).collect();
         println!("p{:03} {}", p + 1, head);
     }
+    super::EXIT_OK
 }

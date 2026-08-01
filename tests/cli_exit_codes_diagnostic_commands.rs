@@ -127,3 +127,41 @@ fn successful_diagnostic_commands_return_zero() {
 fn rhwp_bin() -> String {
     std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
 }
+
+/// 남은 진단 명령 5종의 종료 코드 계약.
+///
+/// 전부 진입점이 `pub fn run(args: &[String])`(또는 `fn f(args) -> ()`)라 `main` 의
+/// `exit_with` 를 통과하지 못했다 — 인자를 빠뜨리든 파일이 없든 **무조건 exit 0** 이었다.
+/// `hwp5-*` 8종과 같은 뿌리지만, 이쪽은 본문이 제각각이라 갈래마다 판정이 필요했다.
+///
+/// `gen-table` 은 여기 없다 — 행·열·출력 경로 전부 기본값이 있어 **인자 없음이 정상
+/// 실행**이다. 그 명령의 실패 축은 쓰기 실패(1)이고 그건 별도로 다룬다.
+#[test]
+fn remaining_diagnostics_report_usage_error_without_arguments() {
+    for cmd in ["core-pages", "measure-width", "bench"] {
+        let output = assert_code(&[cmd], 2);
+        assert!(
+            String::from_utf8_lossy(&output.stdout).trim().is_empty(),
+            "사용법 안내는 stderr 로 나가야 합니다({cmd}): {}",
+            describe(&[cmd], &output)
+        );
+    }
+}
+
+/// 인자가 갖춰진 뒤의 읽기·파싱 실패는 런타임 오류(1)여야 한다.
+///
+/// `bench` 는 종전에도 파일 처리 실패를 1로 냈지만 `std::process::exit(1)` 로 직접
+/// 끊었다 — 반환으로 바꿔 다른 진단 명령과 같은 계약 하나만 지키게 했다. 그 변경이
+/// 코드를 바꾸지 않았는지 여기서 고정한다.
+#[test]
+fn remaining_diagnostics_report_runtime_failure_on_unreadable_input() {
+    for cmd in ["core-pages", "test-shape", "bench"] {
+        let args = [cmd, "없는파일-diag-rest.hwp"];
+        let output = assert_code(&args, 1);
+        assert!(
+            !String::from_utf8_lossy(&output.stderr).contains("panicked"),
+            "패닉 흔적이 남아 있습니다({cmd}): {}",
+            describe(&args, &output)
+        );
+    }
+}
