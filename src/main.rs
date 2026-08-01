@@ -478,7 +478,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "nextStep",
             ],
         ),
-        tool(
+        tool_with_optional_args(
             "hwp_export_text",
             "문서의 페이지별 본문 텍스트를 추출한다. 특정 페이지만 필요하면 page 를 준다.",
             path_schema(serde_json::json!({
@@ -486,9 +486,12 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             })),
             "export-text",
             serde_json::json!(["export-text", "--json", "{path}"]),
+            serde_json::json!([
+                { "when": "page", "args": ["-p", "{page}"] }
+            ]),
             &["pageCount", "pages"],
         ),
-        tool(
+        tool_with_optional_args(
             "hwp_export_structure",
             "문서의 개요/조문 계층을 트리로 추출한다. 법령·규정의 '제N조' 구조를 얻어 조문 단위로 인용하거나 청킹할 때 쓴다.",
             path_schema(serde_json::json!({
@@ -500,6 +503,9 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             })),
             "export-structure",
             serde_json::json!(["export-structure", "--json", "{path}"]),
+            serde_json::json!([
+                { "when": "mode", "args": ["--mode", "{mode}"] }
+            ]),
             &["mode", "nodeCount", "structure"],
         ),
         tool(
@@ -678,7 +684,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             serde_json::json!(["fields", "{path}", "--json"]),
             &["source", "fieldCount", "fields"],
         ),
-        tool(
+        tool_with_optional_args(
             "hwp_batch",
             "여러 문서를 한 프로세스에서 병렬 처리해 NDJSON 스트림으로 받는다. 파일 목록은 stdin 으로 한 줄에 하나씩 넣는다. 아카이브 전체를 스윕할 때 쓴다.",
             serde_json::json!({
@@ -700,9 +706,12 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             }),
             "batch",
             serde_json::json!(["batch", "{subcommand}", "--json"]),
+            serde_json::json!([
+                { "when": "threads", "args": ["--threads", "{threads}"] }
+            ]),
             &["schemaVersion", "source", "error", "exitClass"],
         ),
-        tool(
+        tool_with_optional_args(
             "hwp_fill_fields",
             "HWP 서식(템플릿)의 누름틀에 값을 채워 새 문서를 만든다. 먼저 hwp_fields 로 어떤 필드가 있는지 확인한 뒤 사용한다. 같은 이름이 여러 번 나오는 서식(규제영향분석서 등)은 이름에 순번을 붙여 지목한다. dryRun 으로 파일을 만들지 않고 변경 예정만 확인할 수 있다. 산출물은 입력 형식을 따른다(HWPX 입력 → HWPX 산출).",
             serde_json::json!({
@@ -721,6 +730,10 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             }),
             "edit",
             serde_json::json!(["edit", "fill-fields", "{path}", "--data", "{data}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
             &[
                 "schemaVersion",
                 "source",
@@ -733,7 +746,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "outputFormat",
             ],
         ),
-        tool(
+        tool_with_optional_args(
             "hwp_batch_search",
             "여러 문서를 한 프로세스에서 병렬 검색해 NDJSON 스트림으로 받는다. 매치마다 구역·문단·페이지 주소가 붙어 '어느 문서 몇 쪽'을 답할 수 있다. 파일 목록은 stdin 으로 한 줄에 하나씩 넣는다.",
             serde_json::json!({
@@ -751,6 +764,9 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             }),
             "batch",
             serde_json::json!(["batch", "search", "--json", "--query", "{query}"]),
+            serde_json::json!([
+                { "when": "threads", "args": ["--threads", "{threads}"] }
+            ]),
             &[
                 "schemaVersion",
                 "source",
@@ -761,7 +777,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "matches",
             ],
         ),
-        tool(
+        tool_with_optional_args(
             "hwp_replace_text",
             "HWP 문서 전체에서 문자열을 일괄 치환해 새 문서를 만든다 (기관명 변경·연도 갱신·용어 정비). dryRun 으로 파일을 만들지 않고 치환 예정 건수만 확인할 수 있다. 치환 0건이면 출력 파일을 만들지 않는다. 산출물은 입력 형식을 따른다(HWPX 입력 → HWPX 산출).",
             serde_json::json!({
@@ -777,6 +793,10 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             }),
             "edit",
             serde_json::json!(["edit", "replace-text", "{path}", "--find", "{find}", "--replace", "{replace}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
             &["schemaVersion", "source", "find", "replace", "caseSensitive", "dryRun", "replacedCount", "output", "outputFormat"],
         ),
         tool(
@@ -795,7 +815,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             serde_json::json!(["edit", "replace-text", "{path}", "--find", "□", "--replace", "☑", "--occurrence", "{occurrence}", "-o", "{output}", "--json"]),
             &["schemaVersion", "source", "find", "replace", "occurrence", "dryRun", "replacedCount", "output", "outputFormat"],
         ),
-        tool(
+        tool_with_optional_args(
             "hwp_set_cell",
             "HWP 표의 격자 좌표(hwp_export_tables 와 동일)로 셀 값을 바꿔 새 문서를 만든다 — 누름틀 없는 실물 표 양식 채우기. 먼저 hwp_export_tables 로 좌표를 확인한 뒤 사용한다. 병합으로 덮인 칸은 앵커 좌표를 안내하며 실패한다. 산출물은 입력 형식을 따른다(HWPX 입력 → HWPX 산출).",
             serde_json::json!({
@@ -813,6 +833,10 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             }),
             "edit",
             serde_json::json!(["edit", "set-cell", "{path}", "--table", "{table}", "--row", "{row}", "--col", "{col}", "--text", "{text}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
             &["schemaVersion", "source", "table", "row", "col", "oldText", "newText", "dryRun", "overflow", "output", "outputFormat"],
         ),
     ];
