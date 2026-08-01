@@ -257,3 +257,127 @@ fn unknown_tool_returns_is_error() {
     );
     assert_eq!(r["result"]["isError"], true, "{r}");
 }
+
+/// stdin 도구(hwp_batch)를 paths 없이 부르면 자식이 서버의 프로토콜 stdin 을
+/// 상속해 이후 JSON-RPC 프레임을 파일 경로로 소비했다 — 응답은 클라이언트가
+/// stdin 을 닫아야만 돌아오고, 그 사이 요청은 영원히 사라진다. 수정 후에는
+/// 자식을 띄우기 전에 거부하므로 stdin 이 열린 채로도 즉시 응답이 와야 한다.
+///
+/// 회귀 시 Server::request 는 영원히 블록되므로, 이 테스트만은 읽기 전용
+/// 스레드 + 타임아웃으로 하네스를 직접 구성한다(테스트 자체가 행하지 않도록).
+#[test]
+fn batch_without_paths_fails_fast_and_protocol_stays_alive() {
+    let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .arg("mcp-serve")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("rhwp mcp-serve 실행 실패");
+    let mut stdin = child.stdin.take().expect("stdin");
+    let stdout = child.stdout.take().expect("stdout");
+
+    let (tx, rx) = std::sync::mpsc::channel::<serde_json::Value>();
+    std::thread::spawn(move || {
+        let reader = BufReader::new(stdout);
+        for line in reader.lines() {
+            let Ok(line) = line else { break };
+            if line.trim().is_empty() {
+                continue;
+            }
+            if let Ok(v) = serde_json::from_str::<serde_json::Value>(line.trim()) {
+                if tx.send(v).is_err() {
+                    break;
+                }
+            }
+        }
+    });
+    let recv = |what: &str| -> serde_json::Value {
+        rx.recv_timeout(std::time::Duration::from_secs(20))
+            .unwrap_or_else(|_| {
+                panic!(
+                    "{what} 응답이 오지 않았습니다 — 자식이 서버의 프로토콜 stdin 을 \
+                 상속해 스트림을 소비하고 있을 가능성이 큽니다"
+                )
+            })
+    };
+
+    writeln!(
+        stdin,
+        r#"{{"jsonrpc":"2.0","id":1,"method":"initialize","params":{{"protocolVersion":"2025-06-18","capabilities":{{}},"clientInfo":{{"name":"t","version":"0"}}}}}}"#
+    )
+    .expect("initialize 쓰기");
+    stdin.flush().expect("flush");
+    let r = recv("initialize");
+    assert_eq!(r["id"], 1, "{r}");
+
+    // 핵심: stdin 을 계속 연 채로 paths 없는 batch 호출 → 즉시 도구 오류.
+    writeln!(
+        stdin,
+        r#"{{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{{"name":"hwp_batch","arguments":{{"subcommand":"info"}}}}}}"#
+    )
+    .expect("batch 쓰기");
+    stdin.flush().expect("flush");
+    let r = recv("paths 없는 hwp_batch");
+    assert_eq!(r["id"], 2, "{r}");
+    assert_eq!(r["result"]["isError"], true, "선검증 거부여야 한다: {r}");
+
+    // 프로토콜 생존 증명: 다음 요청이 자식에게 도둑맞지 않고 응답받는다.
+    writeln!(stdin, r#"{{"jsonrpc":"2.0","id":3,"method":"ping"}}"#).expect("ping 쓰기");
+    stdin.flush().expect("flush");
+    let r = recv("후속 ping");
+    assert_eq!(r["id"], 3, "ping 이 자식에게 소비되면 안 된다: {r}");
+
+    drop(stdin);
+    let _ = child.wait();
+}
+
+/// paths 형태 오류 3종(비배열·비문자열 항목·빈 배열)은 자식 실행 전에 명확한
+/// 메시지로 거부된다 — 비문자열을 조용히 걸러 "0건 스윕"을 만드는 대신.
+#[test]
+fn batch_paths_wrong_shapes_rejected_before_spawn() {
+    let mut s = Server::started();
+    for (args, why) in [
+        (
+            serde_json::json!({"subcommand": "info", "paths": "a.hwp"}),
+            "문자열 paths 는 배열이 아니다",
+        ),
+        (
+            serde_json::json!({"subcommand": "info", "paths": [1, 2, 3]}),
+            "비문자열 항목은 걸러내지 않고 거부한다",
+        ),
+        (
+            serde_json::json!({"subcommand": "info", "paths": []}),
+            "빈 배열은 '0건 스윕 실패' 오보 대신 선거부한다",
+        ),
+    ] {
+        let r = s.request(
+            "tools/call",
+            serde_json::json!({"name": "hwp_batch", "arguments": args}),
+        );
+        assert_eq!(r["result"]["isError"], true, "{why}: {r}");
+        let msg = r["result"]["content"][0]["text"].as_str().unwrap_or("");
+        assert!(
+            msg.contains("paths"),
+            "{why} — 메시지가 paths 를 짚어야 한다: {r}"
+        );
+    }
+    // 거부 뒤에도 서버는 정상 동작한다.
+    let r = s.request("ping", serde_json::json!({}));
+    assert!(r["result"].is_object(), "{r}");
+}
+
+/// 대조군: 올바른 paths 배열은 종전대로 stdin 파이프로 흘러 NDJSON 결과를 낸다.
+#[test]
+fn batch_with_paths_still_streams() {
+    let mut s = Server::started();
+    let envelope = s.call_tool(
+        "hwp_batch",
+        serde_json::json!({"subcommand": "info", "paths": [sample(SAMPLE).to_string_lossy()]}),
+    );
+    assert_eq!(envelope["schemaVersion"], "1.0", "{envelope}");
+    assert!(
+        envelope["pageCount"].as_u64().unwrap_or(0) > 0,
+        "batch info 레코드에 pageCount 가 있어야 한다: {envelope}"
+    );
+}

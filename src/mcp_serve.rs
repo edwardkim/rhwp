@@ -973,17 +973,45 @@ fn run_cli_tool(def: &serde_json::Value, args: &serde_json::Value) -> serde_json
         Err(message) => return tool_error(message),
     };
 
+    // stdin 도구(hwp_batch 계열): paths 배열을 한 줄에 하나씩 흘려 넣는다.
+    //
+    // paths 가 없거나 형태가 틀린 채 자식을 띄우면 자식이 서버의 stdin — 즉 MCP
+    // 프로토콜 스트림 자체 — 을 상속한다. 그 순간부터 클라이언트가 보내는 JSON-RPC
+    // 프레임을 자식 batch 가 "파일 경로"로 읽어가고(응답 없는 요청), 서버는 자식이
+    // EOF 를 볼 때까지 wait_with_output 에서 멈춘다. 그래서 stdin 도구는 자식을
+    // 띄우기 전에 paths 를 선검증해 즉시 도구 오류로 돌려준다.
+    let stdin_paths: Option<String> =
+        if crate::MCP_STDIN_TOOLS.contains(&def["name"].as_str().unwrap_or_default()) {
+            let Some(arr) = args.get("paths").and_then(|p| p.as_array()) else {
+                return tool_error(
+                    "paths 는 문자열 배열이어야 합니다 (예: {\"paths\":[\"a.hwp\"]})".into(),
+                );
+            };
+            let mut paths = Vec::with_capacity(arr.len());
+            for v in arr {
+                match v.as_str() {
+                    Some(s) => paths.push(s),
+                    // 비문자열을 조용히 걸러내면 "3건을 보냈는데 0건 스윕"이 성공처럼
+                    // 보인다 — 형태 오류는 실행 전에 그대로 알려준다.
+                    None => {
+                        return tool_error(format!("paths 항목은 문자열이어야 합니다: {v}"));
+                    }
+                }
+            }
+            if paths.is_empty() {
+                return tool_error(
+                    "paths 가 비어 있습니다 — 대상 문서 경로를 1개 이상 넣어 주세요".into(),
+                );
+            }
+            Some(paths.join("\n"))
+        } else {
+            None
+        };
+
     let exe = match std::env::current_exe() {
         Ok(p) => p,
         Err(e) => return tool_error(format!("실행 파일 경로 조회 실패: {e}")),
     };
-    // stdin 도구(hwp_batch 계열): paths 배열을 한 줄에 하나씩 흘려 넣는다.
-    let stdin_paths: Option<String> = args.get("paths").and_then(|p| p.as_array()).map(|arr| {
-        arr.iter()
-            .filter_map(|v| v.as_str())
-            .collect::<Vec<_>>()
-            .join("\n")
-    });
     if password.is_some() && stdin_paths.is_some() {
         return tool_error(
             "batch MCP 도구는 경로 목록 stdin과 password를 함께 받을 수 없습니다".into(),
@@ -1004,8 +1032,12 @@ fn run_cli_tool(def: &serde_json::Value, args: &serde_json::Value) -> serde_json
     cmd.args(&cli_args)
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped());
+    // 자식 stdin 은 payload(password 또는 paths)를 흘릴 때만 파이프, 그 외에는
+    // 항상 닫는다(null) — 어떤 자식도 서버의 프로토콜 stdin 을 상속해서는 안 된다.
     if stdin_payload.is_some() {
         cmd.stdin(std::process::Stdio::piped());
+    } else {
+        cmd.stdin(std::process::Stdio::null());
     }
 
     let mut child = match cmd.spawn() {

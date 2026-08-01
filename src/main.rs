@@ -326,7 +326,7 @@ fn show_mcp_tools(profile: Option<&'static agent_profiles::AgentProfile>) -> i32
         "invocation": {
             "transport": "cli",
             "note": "각 도구의 cli.args 에서 {name} 자리표시자를 inputSchema 의 같은 이름 값으로 치환해 실행한다. stdout 은 순수 JSON, 진단은 stderr, 종료 코드는 0/1/2(+ir-diff 차이 3). 자리표시자 치환 없이 바로 쓰려면 `rhwp mcp-serve`(stdio JSON-RPC 서버, #3140)를 실행한다.",
-            "stdinTools": ["hwp_batch", "hwp_batch_search"],
+            "stdinTools": MCP_STDIN_TOOLS,
             "server": "mcp-serve",
         },
         "tools": tools,
@@ -341,6 +341,12 @@ fn show_mcp_tools(profile: Option<&'static agent_profiles::AgentProfile>) -> i32
     println!("{manifest}");
     EXIT_OK
 }
+
+/// stdin 으로 경로 목록을 받는 MCP 도구 — `capabilities --mcp` 의 `invocation.stdinTools`
+/// 선언과 `mcp-serve` 의 자식 stdin 배선(`run_cli_tool`)이 이 목록 하나를 공유한다.
+/// 이 도구들은 `paths` 없이 자식을 띄우면 자식이 서버의 프로토콜 stdin 을 상속해
+/// 이후 JSON-RPC 프레임을 파일 경로로 소비하므로, 서버 쪽에서 반드시 선검증한다.
+const MCP_STDIN_TOOLS: [&str; 2] = ["hwp_batch", "hwp_batch_search"];
 
 /// [#3263→#3140] MCP 도구 정의의 단일 출처 — `capabilities --mcp`(선언 출력)와
 /// `mcp-serve`(실행 서버)가 같은 목록을 쓴다. 여기에만 추가하면 양쪽이 함께 갱신된다.
