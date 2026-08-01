@@ -377,9 +377,15 @@ fn handle_tool_call(
                 let did_you_mean: Vec<String> = crate::closest_name(name, candidates.into_iter())
                     .into_iter()
                     .collect();
-                return Ok(tool_error(
-                    serde_json::json!({ "error": error, "didYouMean": did_you_mean }).to_string(),
-                ));
+                let mut body = serde_json::json!({ "error": error, "didYouMean": did_you_mean });
+                if let Some(best) = body["didYouMean"][0].as_str() {
+                    body["nextCall"] = serde_json::json!({
+                        "name": best,
+                        "arguments": {},
+                        "why": "요청한 이름이 없음 — 가장 가까운 실존 도구로 교정"
+                    });
+                }
+                return Ok(tool_error(body.to_string()));
             };
             Ok(run_cli_tool(def, &args))
         }
@@ -401,6 +407,23 @@ fn is_session_tool(name: &str) -> bool {
             | "hwp_doc_fill_fields"
             | "hwp_doc_save"
             | "hwp_close"
+    )
+}
+
+/// [#3699] 교정 호출 동봉 오류 — error 필드가 기존 원문을 담아 하위호환.
+/// nextCall.name 은 반드시 실존 도구(호출부 책임, 계약 테스트가 고정).
+fn tool_error_with_next(
+    message: String,
+    next_name: &str,
+    next_args: serde_json::Value,
+    why: &str,
+) -> serde_json::Value {
+    tool_error(
+        serde_json::json!({
+            "error": message,
+            "nextCall": { "name": next_name, "arguments": next_args, "why": why }
+        })
+        .to_string(),
     )
 }
 
@@ -495,7 +518,12 @@ fn session_doc_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
         return tool_error("docId 가 필요합니다".into());
     };
     let Some(sd) = sessions.docs.get_mut(doc_id) else {
-        return tool_error(format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"));
+        return tool_error_with_next(
+            format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"),
+            "hwp_open",
+            serde_json::json!({ "path": "<열 문서 경로>" }),
+            "핸들이 없거나 만료 — hwp_open 으로 docId 를 재발급한 뒤 재시도",
+        );
     };
     let doc = &mut sd.doc;
     let page_count = doc.page_count();
@@ -541,9 +569,12 @@ fn with_doc<'a>(
     let id = doc_id.to_string();
     match sessions.docs.get_mut(&id) {
         Some(sd) => Ok((sd, id)),
-        None => Err(tool_error(format!(
-            "열려 있지 않은 핸들: {id} (hwp_open 먼저)"
-        ))),
+        None => Err(tool_error_with_next(
+            format!("열려 있지 않은 핸들: {id} (hwp_open 먼저)"),
+            "hwp_open",
+            serde_json::json!({ "path": "<열 문서 경로>" }),
+            "핸들이 없거나 만료 — hwp_open 으로 docId 를 재발급한 뒤 재시도",
+        )),
     }
 }
 
@@ -639,7 +670,12 @@ fn session_search(args: &serde_json::Value, sessions: &mut Sessions) -> serde_js
         .and_then(|c| c.as_bool())
         .unwrap_or(true);
     let Some(sd) = sessions.docs.get_mut(doc_id) else {
-        return tool_error(format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"));
+        return tool_error_with_next(
+            format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"),
+            "hwp_open",
+            serde_json::json!({ "path": "<열 문서 경로>" }),
+            "핸들이 없거나 만료 — hwp_open 으로 docId 를 재발급한 뒤 재시도",
+        );
     };
     let matches = sd.doc.grep(query, case_sensitive, None);
     let total = matches.len();
@@ -668,7 +704,12 @@ fn session_replace_text(args: &serde_json::Value, sessions: &mut Sessions) -> se
         .and_then(|c| c.as_bool())
         .unwrap_or(true);
     let Some(sd) = sessions.docs.get_mut(doc_id) else {
-        return tool_error(format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"));
+        return tool_error_with_next(
+            format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"),
+            "hwp_open",
+            serde_json::json!({ "path": "<열 문서 경로>" }),
+            "핸들이 없거나 만료 — hwp_open 으로 docId 를 재발급한 뒤 재시도",
+        );
     };
     let result = match sd.doc.replace_all_native(find, replace, case_sensitive) {
         Ok(r) => r,
@@ -715,7 +756,12 @@ fn session_set_cell(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
     };
     let id = doc_id.to_string();
     let Some(sd) = sessions.docs.get_mut(&id) else {
-        return tool_error(format!("열려 있지 않은 핸들: {id} (hwp_open 먼저)"));
+        return tool_error_with_next(
+            format!("열려 있지 않은 핸들: {id} (hwp_open 먼저)"),
+            "hwp_open",
+            serde_json::json!({ "path": "<열 문서 경로>" }),
+            "핸들이 없거나 만료 — hwp_open 으로 docId 를 재발급한 뒤 재시도",
+        );
     };
     let table_no = match usize::try_from(table_no) {
         Ok(value) => value,
@@ -806,7 +852,12 @@ fn session_fill_fields(args: &serde_json::Value, sessions: &mut Sessions) -> ser
         return tool_error("data 는 {\"필드이름\":\"값\"} 객체여야 합니다".into());
     };
     let Some(sd) = sessions.docs.get_mut(doc_id) else {
-        return tool_error(format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"));
+        return tool_error_with_next(
+            format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"),
+            "hwp_open",
+            serde_json::json!({ "path": "<열 문서 경로>" }),
+            "핸들이 없거나 만료 — hwp_open 으로 docId 를 재발급한 뒤 재시도",
+        );
     };
     let doc = &mut sd.doc;
 
@@ -880,7 +931,12 @@ fn session_save(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
         return tool_error("output 이 필요합니다".into());
     };
     let Some(sd) = sessions.docs.get_mut(doc_id) else {
-        return tool_error(format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"));
+        return tool_error_with_next(
+            format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"),
+            "hwp_open",
+            serde_json::json!({ "path": "<열 문서 경로>" }),
+            "핸들이 없거나 만료 — hwp_open 으로 docId 를 재발급한 뒤 재시도",
+        );
     };
 
     let format = if sd.source_is_hwpx {
@@ -912,7 +968,12 @@ fn session_close(args: &serde_json::Value, sessions: &mut Sessions) -> serde_jso
         return tool_error("docId 가 필요합니다".into());
     };
     if sessions.docs.remove(doc_id).is_none() {
-        return tool_error(format!("열려 있지 않은 핸들: {doc_id}"));
+        return tool_error_with_next(
+            format!("열려 있지 않은 핸들: {doc_id}"),
+            "hwp_open",
+            serde_json::json!({ "path": "<열 문서 경로>" }),
+            "핸들이 없거나 만료 — hwp_open 으로 docId 를 재발급한 뒤 재시도",
+        );
     }
     tool_ok_text(
         serde_json::json!({
