@@ -4,7 +4,7 @@
 //! 각 Control enum variant를 CTRL_HEADER 레코드(+자식 레코드)로 변환한다.
 
 use super::body_text::serialize_paragraph_list;
-use super::byte_writer::ByteWriter;
+use super::byte_writer::{char_to_wchar, ByteWriter};
 
 use crate::document_core::converters::common_obj_attr_writer::pack_common_attr_bits;
 use crate::model::control::*;
@@ -410,9 +410,9 @@ fn serialize_page_def(pd: &PageDef) -> Vec<u8> {
 fn serialize_footnote_shape(fs: &FootnoteShape) -> Vec<u8> {
     let mut w = ByteWriter::new();
     w.write_u32(fs.attr).unwrap();
-    w.write_u16(fs.user_char as u16).unwrap();
-    w.write_u16(fs.prefix_char as u16).unwrap();
-    w.write_u16(fs.suffix_char as u16).unwrap();
+    w.write_u16(char_to_wchar(fs.user_char)).unwrap();
+    w.write_u16(char_to_wchar(fs.prefix_char)).unwrap();
+    w.write_u16(char_to_wchar(fs.suffix_char)).unwrap();
     w.write_u16(fs.start_number).unwrap();
     // HWP5 노트 구분선 길이는 i16 슬롯. 한컴 전폭 sentinel(14692344)은 i16을 넘지만
     // HWP5 포맷 한계상 하위 16비트로 기록한다(HWPX 경로는 i32 원본을 보존).
@@ -911,9 +911,9 @@ fn serialize_auto_number(an: &AutoNumber) -> Vec<u8> {
         an.assigned_number
     };
     data.extend_from_slice(&num.to_le_bytes());
-    data.extend_from_slice(&(an.user_symbol as u16).to_le_bytes());
-    data.extend_from_slice(&(an.prefix_char as u16).to_le_bytes());
-    data.extend_from_slice(&(an.suffix_char as u16).to_le_bytes());
+    data.extend_from_slice(&char_to_wchar(an.user_symbol).to_le_bytes());
+    data.extend_from_slice(&char_to_wchar(an.prefix_char).to_le_bytes());
+    data.extend_from_slice(&char_to_wchar(an.suffix_char).to_le_bytes());
     data
 }
 
@@ -938,10 +938,10 @@ fn serialize_page_num_pos(pnp: &PageNumberPos) -> Vec<u8> {
     let attr: u32 = (pnp.format as u32 & 0xFF) | ((pnp.position as u32 & 0x0F) << 8);
     let mut data = Vec::new();
     data.extend_from_slice(&attr.to_le_bytes());
-    data.extend_from_slice(&(pnp.user_symbol as u16).to_le_bytes());
-    data.extend_from_slice(&(pnp.prefix_char as u16).to_le_bytes());
-    data.extend_from_slice(&(pnp.suffix_char as u16).to_le_bytes());
-    data.extend_from_slice(&(pnp.dash_char as u16).to_le_bytes());
+    data.extend_from_slice(&char_to_wchar(pnp.user_symbol).to_le_bytes());
+    data.extend_from_slice(&char_to_wchar(pnp.prefix_char).to_le_bytes());
+    data.extend_from_slice(&char_to_wchar(pnp.suffix_char).to_le_bytes());
+    data.extend_from_slice(&char_to_wchar(pnp.dash_char).to_le_bytes());
     data
 }
 

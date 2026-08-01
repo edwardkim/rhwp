@@ -6,6 +6,19 @@
 use byteorder::{LittleEndian, WriteBytesExt};
 use std::io;
 
+/// BMP(U+0000~U+FFFF) 밖의 문자를 HWP5 WCHAR(16비트) 슬롯에 그대로 `as u16`으로 캐스팅하면
+/// 상위 비트가 잘려나가 다른 문자로 손상된다(예: '🔶'(U+1F536) as u16 == 0xF536).
+/// HWPX는 이런 문자를 유효하게 담을 수 있으므로(글머리표·각주 기호 등), HWP5로 저장할 때는
+/// BMP를 벗어난 문자를 대체 문자(U+FFFD, REPLACEMENT CHARACTER)로 치환해 최소한 손상된 값이
+/// 엉뚱한 글자로 조용히 바뀌지 않도록 한다.
+pub fn char_to_wchar(c: char) -> u16 {
+    if (c as u32) <= 0xFFFF {
+        c as u16
+    } else {
+        0xFFFD
+    }
+}
+
 /// 바이트 라이터 (버퍼 기반)
 pub struct ByteWriter {
     buf: Vec<u8>,
@@ -109,6 +122,22 @@ impl ByteWriter {
 mod tests {
     use super::*;
     use crate::parser::byte_reader::ByteReader;
+
+    #[test]
+    fn test_char_to_wchar_bmp_passthrough() {
+        assert_eq!(char_to_wchar('A'), 0x0041);
+        assert_eq!(char_to_wchar('가'), 0xAC00);
+        assert_eq!(char_to_wchar('\u{FFFF}'), 0xFFFF);
+    }
+
+    #[test]
+    fn test_char_to_wchar_astral_replaces_instead_of_truncating() {
+        // '🔶'(U+1F536)를 그냥 `as u16`으로 캐스팅하면 상위 비트가 잘려 0xF536(다른 문자)이
+        // 되어 손상된 값이 조용히 기록된다. char_to_wchar는 대신 U+FFFD로 치환해야 한다.
+        let c = '\u{1F536}';
+        assert_ne!(c as u32 as u16, 0xFFFD); // as u16 캐스팅은 0xF536이 되어 손상된다는 전제 확인
+        assert_eq!(char_to_wchar(c), 0xFFFD);
+    }
 
     #[test]
     fn test_write_u8() {

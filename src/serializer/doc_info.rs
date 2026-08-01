@@ -7,7 +7,7 @@
 //! DOCUMENT_PROPERTIES → ID_MAPPINGS → BIN_DATA → FACE_NAME →
 //! BORDER_FILL → CHAR_SHAPE → TAB_DEF → NUMBERING → PARA_SHAPE → STYLE
 
-use super::byte_writer::ByteWriter;
+use super::byte_writer::{char_to_wchar, ByteWriter};
 use super::record_writer::write_record;
 
 use crate::model::bin_data::{BinData, BinDataType};
@@ -610,7 +610,7 @@ fn serialize_bullet(bullet: &Bullet) -> Vec<u8> {
     w.write_u32(bullet.char_shape_id).unwrap();
 
     // 글머리표 문자 (WCHAR)
-    w.write_u16(bullet.bullet_char as u16).unwrap();
+    w.write_u16(char_to_wchar(bullet.bullet_char)).unwrap();
 
     // 이미지 글머리표 여부 (INT32)
     w.write_i32(bullet.image_bullet).unwrap();
@@ -621,7 +621,7 @@ fn serialize_bullet(bullet: &Bullet) -> Vec<u8> {
     }
 
     // 체크 글머리표 문자 (WCHAR)
-    w.write_u16(bullet.check_bullet_char as u16).unwrap();
+    w.write_u16(char_to_wchar(bullet.check_bullet_char)).unwrap();
 
     w.into_bytes()
 }
