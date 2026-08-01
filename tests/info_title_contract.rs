@@ -91,7 +91,12 @@ fn first_meaningful_line_via_export_text(rel: &str) -> Option<String> {
         describe(&args, &output)
     );
     let v: serde_json::Value = serde_json::from_slice(&output.stdout).expect("export-text JSON");
-    for page in v["pages"].as_array().expect("pages").iter().take(TITLE_SCAN_PAGES) {
+    for page in v["pages"]
+        .as_array()
+        .expect("pages")
+        .iter()
+        .take(TITLE_SCAN_PAGES)
+    {
         for line in page["text"].as_str().expect("text").lines() {
             let t = line.trim();
             if !t.is_empty() {
