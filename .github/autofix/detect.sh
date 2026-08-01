@@ -255,13 +255,16 @@ END
 STEP "B4. 렌더 결정성 (export-svg 2회 바이트 비교)"
 while read -r s; do
   [ -z "${s:-}" ] && continue
-  "$BIN" export-svg "$s" -o "$WORK/a.svg" >/dev/null 2>&1 || continue
-  "$BIN" export-svg "$s" -o "$WORK/b.svg" >/dev/null 2>&1 || continue
-  if ! cmp -s "$WORK/a.svg" "$WORK/b.svg"; then
+  # -o 는 디렉터리 인자다(그 안에 <표본>.svg 생성) — cmp 로 디렉터리를 비교하면
+  # 내용과 무관하게 exit 2 가 나와 전부 오탐이 된다(#3635·#3496). 파일 단위로 비교한다.
+  rm -rf "$WORK/a_svg" "$WORK/b_svg"
+  "$BIN" export-svg "$s" -o "$WORK/a_svg" >/dev/null 2>&1 || continue
+  "$BIN" export-svg "$s" -o "$WORK/b_svg" >/dev/null 2>&1 || continue
+  if ! diff -rq "$WORK/a_svg" "$WORK/b_svg" >/dev/null 2>&1; then
     L="$WORK/det.log"
     { echo "샘플: $s"
       echo "1회차와 2회차 export-svg 결과가 바이트 단위로 다르다 (렌더가 비결정적)."
-      diff <(head -c 4000 "$WORK/a.svg") <(head -c 4000 "$WORK/b.svg") | head -30
+      diff -r "$WORK/a_svg" "$WORK/b_svg" | head -30
     } > "$L"
     emit "nondeterministic-render" "같은 입력을 두 번 렌더하면 결과가 달라진다 ($(basename "$s"))" "$L"
   fi
