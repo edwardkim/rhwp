@@ -17875,7 +17875,14 @@ impl TypesetEngine {
                 && !prev_is_floating_anchor
                 && max_vpos_px <= st.layout.available_body_height()
             {
-                max_vpos_px
+                // 사다리는 **한글의 쪽 경계** 기준이라, 한글이 이미 쪽을 끊은 자리에서는
+                // 직전 문단의 vpos 가 다음 쪽 상단 값이 되어 이 쪽이 실제로 소비한 높이를
+                // 크게 밑돈다. 그러면 아래 Task #853 가드가 "아직 여유 있다" 로 오판해
+                // 새 zone 을 같은 쪽에 얹는다 (2990099 주파수 분배표 115쪽: 사다리 76px
+                // vs 실소비 867.4px — zone 두 개가 1657.3px 로 본문 876.9px 에 겹쳐
+                // 745.7px 이 쪽 밖으로 나갔다). 흐름 누적은 이 쪽에 실제로 놓인 양이므로
+                // 둘 중 큰 값이 이 쪽의 소비량이다.
+                max_vpos_px.max(st.current_height)
             } else {
                 st.current_height
             }
