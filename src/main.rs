@@ -948,14 +948,14 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "properties": {
                     "plan": {
                         "type": "object",
-                        "description": "계획서. { planVersion:\"1.0\", input:<원본 경로>, output:<산출 경로>, steps:[{action:…}…], assertions:{ notFoundEmpty?, verify? } }"
+                        "description": "계획서. { planVersion:\"1.0\", input:<원본 경로>, output:<산출 경로>, steps:[{action:…}…], assertions:{ notFoundEmpty?, verify? }, dryRun?:true } — dryRun:true 면 선검증만 하고 preview 저널을 낸다(디스크 무변경). 계획을 실행 전에 검사할 때 쓴다."
                     }
                 },
                 "required": ["plan"],
             }),
             "run",
             serde_json::json!(["run", "--plan-json", "{plan}", "--json"]),
-            &["schemaVersion", "planVersion", "input", "output", "outputFormat", "steps", "steps[].confusable", "verify", "invalid", "changedPages"],
+            &["schemaVersion", "planVersion", "input", "output", "outputFormat", "steps", "steps[].confusable", "verify", "invalid", "changedPages", "dryRun", "preview"],
         ),
     ];
     for definition in &mut tools {
@@ -1069,7 +1069,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             "edit",
             "선언적 편집 계획 실행 — 정적 선검증·원자 실행·저널 (#3703)",
             false,
-            &["--json", "--plan-json"],
+            &["--json", "--plan-json", "--dry-run"],
             &[
                 "schemaVersion",
                 "planVersion",
@@ -1938,6 +1938,7 @@ fn print_help() {
     println!("      steps: fill_fields{{data}} · replace_text{{find,replace[,occurrence]}}");
     println!("             · set_cell{{table,row,col,text}} · set_checkbox{{occurrence}}");
     println!("      --plan-json '<JSON>'      파일 대신 인라인 계획 (MCP hwp_run_plan 경로)");
+    println!("      --dry-run                 선검증만 — preview 저널, 디스크 무변경 (계획서 dryRun:true 와 동일)");
     println!("      단언 실패는 exit 3 — 저널(steps[]·verify)로 판정을 데이터로 보고");
     println!();
     println!("내부 개발·회귀 도구 (일반 사용자 대상 아님):");
@@ -10747,10 +10748,13 @@ fn cmd_run_plan(args: &[String]) -> i32 {
     let mut plan_path: Option<&str> = None;
     let mut plan_inline: Option<&str> = None;
     let mut json_mode = false;
+    // [#3721] 선검증만 돌리고 디스크는 건드리지 않는다 — 계획을 제출 전에 검사.
+    let mut dry_run = false;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--json" => json_mode = true,
+            "--dry-run" => dry_run = true,
             "--plan-json" => {
                 i += 1;
                 match args.get(i) {
@@ -10779,20 +10783,38 @@ fn cmd_run_plan(args: &[String]) -> i32 {
             }
         },
         (None, None) => {
-            eprintln!("사용법: rhwp run <계획.json> [--json]  (파일 대신 --plan-json '<JSON>')");
+            eprintln!("사용법: rhwp run <계획.json> [--json] [--dry-run]  (파일 대신 --plan-json '<JSON>')");
             return EXIT_USAGE;
         }
     };
-    let plan: serde_json::Value = match serde_json::from_str(&plan_text) {
+    let mut plan: serde_json::Value = match serde_json::from_str(&plan_text) {
         Ok(v) => v,
         Err(e) => {
             eprintln!("오류: 계획 JSON 파싱 실패 - {}", e);
             return EXIT_USAGE;
         }
     };
+    // 플래그는 계획서 필드를 덮어쓴다 — 의도의 단일 출처는 계획서이고, CLI 는 그 편의 입구다.
+    // (계획서가 dryRun 을 실을 수 있으므로 MCP hwp_run_plan 은 인자 추가 없이 같은 계약을 얻는다.)
+    if dry_run {
+        if let Some(obj) = plan.as_object_mut() {
+            obj.insert("dryRun".to_string(), serde_json::Value::Bool(true));
+        }
+    }
     let (journal, code) = run_plan_engine(&plan);
     if json_mode {
         println!("{}", journal);
+    } else if code == EXIT_OK && journal["dryRun"] == true {
+        println!(
+            "검사 통과: {} step 실행 가능 (디스크 무변경, 산출 예정 {})",
+            journal["preview"].as_array().map(|s| s.len()).unwrap_or(0),
+            journal["output"].as_str().unwrap_or("-")
+        );
+        if let Some(preview) = journal["preview"].as_array() {
+            for step in preview {
+                println!("  - {}", preview_line(step));
+            }
+        }
     } else if code == EXIT_OK {
         println!(
             "완료: {} step 적용, 산출 {}",
@@ -10816,6 +10838,40 @@ fn cmd_run_plan(args: &[String]) -> i32 {
         eprintln!("{}", journal);
     }
     code
+}
+
+/// [#3721] dry-run 미리보기 한 줄 — 사람 모드에서 "무엇이 얼마나 바뀌나"를 읽게 한다.
+fn preview_line(step: &serde_json::Value) -> String {
+    let idx = step["step"].as_u64().unwrap_or(0);
+    match step["action"].as_str().unwrap_or("") {
+        "fill_fields" => format!(
+            "step {}: 누름틀 {}칸 채움",
+            idx,
+            step["targets"].as_array().map(|a| a.len()).unwrap_or(0)
+        ),
+        "replace_text" => format!(
+            "step {}: '{}' {}건 중 {}건 치환",
+            idx,
+            step["find"].as_str().unwrap_or(""),
+            step["matches"].as_u64().unwrap_or(0),
+            step["willReplace"].as_u64().unwrap_or(0)
+        ),
+        "set_checkbox" => format!(
+            "step {}: 빈 체크박스 {}개 중 {}번째 표시",
+            idx,
+            step["available"].as_u64().unwrap_or(0),
+            step["occurrence"].as_u64().unwrap_or(0)
+        ),
+        "set_cell" => format!(
+            "step {}: 표 {} ({},{}) 기록 — 현재값 {:?}",
+            idx,
+            step["table"].as_u64().unwrap_or(0),
+            step["row"].as_u64().unwrap_or(0),
+            step["col"].as_u64().unwrap_or(0),
+            step["currentText"].as_str().unwrap_or("")
+        ),
+        other => format!("step {}: {}", idx, other),
+    }
 }
 
 /// 계획 실행 본체 — (저널, 종료 코드). CLI 와 MCP `hwp_run_plan` 이 같은 판정을 공유한다.
@@ -10882,6 +10938,9 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
     let all_names: Vec<String> = name_counts.keys().cloned().collect();
     let confusable_groups = rhwp::document_core::text_security::confusable_collisions(&all_names);
     let mut invalid: Vec<serde_json::Value> = Vec::new();
+    // [#3721] 선검증이 이미 계산한 값을 미리보기로 모은다 — dry-run 은 이걸 그대로 낸다.
+    // (실행 모드에서는 쓰이지 않지만, 판정자와 미리보기가 같은 계산이라 어긋날 수 없다.)
+    let mut preview: Vec<serde_json::Value> = Vec::new();
     for (idx, step) in steps.iter().enumerate() {
         let action = step["action"].as_str().unwrap_or("");
         match action {
@@ -10891,14 +10950,24 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
                         "reason": "data 는 {\"필드이름\":\"값\"} 객체여야 합니다" }));
                     continue;
                 };
-                for key in data.keys() {
+                let mut targets: Vec<serde_json::Value> = Vec::new();
+                for (key, value) in data.iter() {
                     let (name, occurrence) = parse_field_key(key);
                     let total = name_counts.get(name).copied().unwrap_or(0);
                     if total == 0 || occurrence >= total {
                         invalid.push(serde_json::json!({ "step": idx, "action": action,
                             "reason": format!("필드 '{}' 이(가) 없거나 순번이 범위 밖입니다 (동명 {}개)", key, total) }));
+                        continue;
                     }
+                    targets.push(serde_json::json!({
+                        "name": name, "occurrence": occurrence, "sameNameCount": total,
+                        "value": value.as_str().map(|v| v.to_string())
+                            .unwrap_or_else(|| value.to_string()),
+                    }));
                 }
+                preview.push(
+                    serde_json::json!({ "step": idx, "action": action, "targets": targets }),
+                );
             }
             "replace_text" => {
                 let Some(find) = step["find"].as_str().filter(|s| !s.is_empty()) else {
@@ -10922,7 +10991,12 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
                         invalid.push(serde_json::json!({ "step": idx, "action": action,
                             "reason": format!("'{}' 일치 0건 — 치환할 곳이 없습니다", find) }));
                     }
-                    _ => {}
+                    // occurrence 지정이면 1건만, 아니면 전건 — 실행 분기와 같은 규칙.
+                    occurrence => preview.push(serde_json::json!({
+                        "step": idx, "action": action, "find": find,
+                        "matches": count,
+                        "willReplace": if occurrence.is_some() { 1 } else { count },
+                    })),
                 }
             }
             "set_checkbox" => {
@@ -10935,6 +11009,9 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
                 if (n as usize) >= count {
                     invalid.push(serde_json::json!({ "step": idx, "action": action,
                         "reason": format!("occurrence {} 이(가) 범위 밖입니다 (빈 체크박스 □ {}건)", n, count) }));
+                } else {
+                    preview.push(serde_json::json!({ "step": idx, "action": action,
+                        "occurrence": n, "available": count }));
                 }
             }
             "set_cell" => {
@@ -10977,10 +11054,18 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
                         continue;
                     }
                 };
-                if let Err(e) = resolve_table_cell(doc.document(), table, row, col) {
-                    let (CellResolveError::Usage(msg) | CellResolveError::Runtime(msg)) = e;
-                    invalid
-                        .push(serde_json::json!({ "step": idx, "action": action, "reason": msg }));
+                match resolve_table_cell(doc.document(), table, row, col) {
+                    Err(e) => {
+                        let (CellResolveError::Usage(msg) | CellResolveError::Runtime(msg)) = e;
+                        invalid.push(
+                            serde_json::json!({ "step": idx, "action": action, "reason": msg }),
+                        );
+                    }
+                    Ok((.., current)) => preview.push(serde_json::json!({
+                        "step": idx, "action": action,
+                        "table": table, "row": row, "col": col,
+                        "currentText": current, "newText": text,
+                    })),
                 }
             }
             "" => {
@@ -10997,6 +11082,21 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
                 "input": input, "output": output, "invalid": invalid,
             }),
             EXIT_USAGE,
+        );
+    }
+
+    // [#3721] dry-run — 선검증만 하고 여기서 끝낸다. 실행도, 저장도 없다.
+    // 계획을 *제출 전에* 검사하는 가장 싼 안전장치이고, 미리보기는 위에서 판정자가
+    // 이미 계산한 값 그대로라 "검사 결과와 실제 실행이 다를" 여지가 없다.
+    if plan["dryRun"].as_bool().unwrap_or(false) {
+        return (
+            serde_json::json!({
+                "schemaVersion": "1.0", "planVersion": "1.0", "dryRun": true,
+                "input": input, "output": output,
+                "preview": preview, "invalid": [],
+                "assertions": { "notFoundEmpty": assert_not_found_empty, "verify": assert_verify },
+            }),
+            EXIT_OK,
         );
     }
 
