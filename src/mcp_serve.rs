@@ -868,7 +868,9 @@ fn session_save(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
     let Some(output) = args.get("output").and_then(|o| o.as_str()) else {
         return tool_error("output 이 필요합니다".into());
     };
-    let Some(sd) = sessions.docs.get_mut(doc_id) else {
+    // 저장은 스냅숏이다 — `get_mut` 이 아니라 `get` 으로 잡아 "save 는 핸들의 IR 을
+    // 바꾸지 않는다"는 계약을 컴파일러가 지키게 한다.
+    let Some(sd) = sessions.docs.get(doc_id) else {
         return tool_error(format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"));
     };
 
@@ -877,7 +879,10 @@ fn session_save(args: &serde_json::Value, sessions: &mut Sessions) -> serde_json
     } else {
         crate::EditOutputFormat::Hwp
     };
-    let bytes = match crate::edit_serialize(&mut sd.doc, format) {
+    // HWP5 산출 경로의 어댑터(`convert_if_hwpx_source`)는 `Hwpx | Hwp3` 양쪽에서 돌며
+    // 살아 있는 IR 을 제자리에서 고친다. 도구 계약이 "핸들은 저장 후에도 열려 있다"
+    // 이므로 세션은 복제본에 어댑터를 태우는 스냅숏 경로를 쓴다.
+    let bytes = match crate::edit_serialize_snapshot(&sd.doc, format) {
         Ok(b) => b,
         Err(e) => return tool_error(format!("직렬화 실패: {e}")),
     };

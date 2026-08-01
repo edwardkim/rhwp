@@ -1163,6 +1163,25 @@ impl DocumentCore {
         self.export_hwp_native()
     }
 
+    /// 어댑터를 **복제본에 적용해** HWP5 를 낸다 — 호출자의 IR 은 그대로다.
+    ///
+    /// `export_hwp_with_adapter` 는 살아 있는 IR 을 직접 정규화한다. 저장 직후 종료하는
+    /// CLI 에서는 관측되지 않지만, 저장 뒤에도 계속 쓰이는 핸들(MCP 세션)에서는 저장이
+    /// 문서를 바꿔 버린다. 특히 어댑터는 `Hwpx | Hwp3` 양쪽에서 돌면서 각 구역 첫 문단의
+    /// `controls[0]` 에 `Control::SectionDef` 를 끼워 넣는데, 같은 문단의
+    /// `field_ranges[].control_idx` 는 밀어 주지 않는다 — 저장 한 번에 누름틀이 가리키는
+    /// 컨트롤이 한 칸씩 어긋난다. 저장은 스냅숏이어야 하므로 복제본에만 어댑터를 태운다.
+    ///
+    /// 비용은 `Document` 1회 clone 이다. 그 값을 치를 이유가 없는 CLI 경로는
+    /// `export_hwp_with_adapter` 를 계속 쓴다.
+    pub fn export_hwp_with_adapter_snapshot(&self) -> Result<Vec<u8>, HwpError> {
+        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
+        let mut snapshot = self.document.clone();
+        let _report = convert_if_hwpx_source(&mut snapshot, self.source_format);
+        crate::serializer::serialize_document(&snapshot)
+            .map_err(|e| HwpError::RenderError(e.to_string()))
+    }
+
     /// HWPX 출처 어댑터를 적용한 뒤 HWP5 EncryptVersion 4 비밀번호 문서로 저장한다.
     ///
     /// 일반 HWP 저장과 마찬가지로 HWPX 출처는 반드시 adapter를 먼저 통과한다. 암호화만

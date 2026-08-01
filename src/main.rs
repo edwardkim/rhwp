@@ -9724,6 +9724,23 @@ fn edit_serialize(
     .map_err(|e| e.to_string())
 }
 
+/// `edit_serialize` 와 같은 바이트를 내되 **IR 을 건드리지 않는다**.
+///
+/// 무상태 CLI 는 저장 직후 프로세스가 끝나므로 어댑터가 살아 있는 IR 을 정규화해도
+/// 관측되지 않는다. 세션 핸들은 다르다 — 도구 계약이 "핸들은 저장 후에도 열려 있다"
+/// 이므로 저장은 스냅숏이어야 한다. 그래서 세션 경로만 이쪽을 쓰고 CLI 의 `&mut`
+/// 경로는 그대로 둔다(CLI 에 문서 1회 clone 비용을 지우지 않는다).
+fn edit_serialize_snapshot(
+    doc: &rhwp::wasm_api::HwpDocument,
+    format: EditOutputFormat,
+) -> Result<Vec<u8>, String> {
+    match format {
+        EditOutputFormat::Hwpx => doc.export_hwpx_native(),
+        EditOutputFormat::Hwp => doc.export_hwp_with_adapter_snapshot(),
+    }
+    .map_err(|e| e.to_string())
+}
+
 /// `edit fill-fields` — 누름틀에 값을 채운다 (메일머지).
 ///
 /// 검증된 코어 경로(`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없다.

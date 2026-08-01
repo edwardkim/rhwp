@@ -281,3 +281,65 @@ fn session_edit_tools_are_listed() {
         assert!(names.contains(&t.to_string()), "{t} 누락: {names:?}");
     }
 }
+
+/// 저장은 **스냅숏**이다 — 도구 계약이 "핸들은 저장 후에도 열려 있다" 이므로,
+/// 저장 한 번이 살아 있는 IR 을 바꾸면 계약이 깨진다.
+///
+/// HWP5 산출 경로의 어댑터(`convert_if_hwpx_source`)는 `Hwpx | Hwp3` 양쪽에서 돌면서
+/// 각 구역 첫 문단 `controls[0]` 에 `Control::SectionDef` 를 끼워 넣는다. 그런데 같은
+/// 문단의 `field_ranges[].control_idx` 는 밀어 주지 않으므로, 저장 전에 잡아 둔 좌표가
+/// 저장 후 다른 컨트롤을 가리킨다. 실측(수정 전, samples/hwp3-sample.hwp): 저장 한 번에
+/// 본문이 21,538자 → 21,522자로 줄었다(빈 줄 16개 소실).
+#[test]
+fn session_save_does_not_mutate_live_handle_hwp3_source() {
+    let src = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-sample.hwp");
+    if !src.exists() {
+        eprintln!("HWP3 샘플 없음 — 건너뜀");
+        return;
+    }
+    let mut s = Server::started();
+    let doc_id = s.open(&src);
+
+    let (err, before) = s.call("hwp_doc_text", serde_json::json!({"docId": doc_id}));
+    assert!(!err, "{before}");
+    let (err, info_before) = s.call("hwp_doc_info", serde_json::json!({"docId": doc_id}));
+    assert!(!err, "{info_before}");
+
+    let out = temp_path("hwp3snap", "hwp");
+    let (err, sv) = s.call(
+        "hwp_doc_save",
+        serde_json::json!({"docId": doc_id, "output": out.to_str().unwrap()}),
+    );
+    assert!(!err, "{sv}");
+    assert_eq!(sv["outputFormat"], "hwp5", "{sv}");
+
+    let (err, after) = s.call("hwp_doc_text", serde_json::json!({"docId": doc_id}));
+    assert!(!err, "{after}");
+    let (err, info_after) = s.call("hwp_doc_info", serde_json::json!({"docId": doc_id}));
+    assert!(!err, "{info_after}");
+    assert_eq!(before, after, "저장이 핸들의 본문을 바꿨습니다");
+    assert_eq!(info_before, info_after, "저장이 핸들의 메타를 바꿨습니다");
+
+    // 이어서 저장해도 같은 바이트여야 한다 — 1회차가 IR 을 바꿨다면 여기서 갈린다.
+    let out2 = temp_path("hwp3snap2", "hwp");
+    let (err, sv2) = s.call(
+        "hwp_doc_save",
+        serde_json::json!({"docId": doc_id, "output": out2.to_str().unwrap()}),
+    );
+    assert!(!err, "{sv2}");
+    assert_eq!(
+        std::fs::read(&out).expect("1차 산출물"),
+        std::fs::read(&out2).expect("2차 산출물"),
+        "연속 저장이 서로 다른 바이트를 냈습니다 — 저장이 상태를 남겼다는 뜻입니다"
+    );
+
+    // 저장 뒤에도 편집이 이어져야 한다 — '핸들은 계속 열려 있다' 의 실질 검증.
+    let (err, rep) = s.call(
+        "hwp_doc_replace_text",
+        serde_json::json!({"docId": doc_id, "find": "그림", "replace": "그림"}),
+    );
+    assert!(!err, "저장 후 편집이 실패했습니다: {rep}");
+
+    let _ = std::fs::remove_file(&out);
+    let _ = std::fs::remove_file(&out2);
+}
