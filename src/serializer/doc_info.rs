@@ -621,7 +621,8 @@ fn serialize_bullet(bullet: &Bullet) -> Vec<u8> {
     }
 
     // 체크 글머리표 문자 (WCHAR)
-    w.write_u16(char_to_wchar(bullet.check_bullet_char)).unwrap();
+    w.write_u16(char_to_wchar(bullet.check_bullet_char))
+        .unwrap();
 
     w.into_bytes()
 }
