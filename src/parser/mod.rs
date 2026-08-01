@@ -527,6 +527,33 @@ fn apply_hwp3_origin_fixup(doc: &mut Document) {
     if doc.is_hwpx_variant {
         return;
     }
+    // [#3707] rhwp 가 만든 HWP3→HWP5 변환본에 쪽나눔 허용치를 되돌린다.
+    //
+    // HWP3 파서는 `pagination_bottom_tolerance = 1600 HU`(21.3px)를 세운다 — 한글97 의
+    // 마지막 줄 tolerance 를 흉내 내 **페이지네이터에게만** 여유를 주는 렌더러 내부
+    // 값이고 파일 포맷 필드가 아니다. HWP5 로 저장·재파싱하면 0 이 되어 본문 가용이
+    // 21.3px 짧아진다.
+    //
+    // 그만큼 미주 단 가용이 줄어 단 전환이 일찍 걸리고, 2단 미주의 왼쪽 단이 조기에
+    // 닫혀 미주가 다음 쪽으로 밀린다(SO-SUEOP 44쪽: 미주 128·129 가 45쪽으로). 한컴은
+    // 원본·왕복본 모두 44쪽에 실으므로 허용치가 살아 있는 쪽이 정답지와 맞는다.
+    //
+    // 파일에 실리는 여백(`margin_bottom`)은 건드리지 않는다 — 줄이면 한컴이 보는 쪽
+    // 기하가 원본과 달라지고 `convert --verify` 의 IR 비교에도 잡힌다. 이 값은 그
+    // 비교에서 제외되는 렌더러 내부 값이라 왕복 정합을 깨지 않는다.
+    if doc
+        .extra_streams
+        .iter()
+        .any(|(p, _)| p == crate::document_core::converters::hwpx_to_hwp::HWP3_ORIGIN_STREAM_PATH)
+    {
+        for section in doc.sections.iter_mut() {
+            let pd = &mut section.section_def.page_def;
+            if pd.pagination_bottom_tolerance == 0 {
+                pd.pagination_bottom_tolerance = 1600.min(pd.margin_bottom);
+            }
+        }
+    }
+
     let total_paragraphs: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
     if total_paragraphs <= 50 {
         return;

@@ -2149,6 +2149,23 @@ impl TypesetState {
         // 개행이 누적되지 않는다. 실제 꼬리말이 있으면 점유 가능성이 있으므로
         // 보수적으로 밴드를 회수하지 않는다.
         let footnote_penalty = (self.current_footnote_height - self.footer_band_reclaim()).max(0.0);
+        // [#3707 진단] 가용 높이의 차감 내역. 두 문서에서 avail 이 21.4px 다른데
+        // 본문 영역은 같으므로, 어느 항목이 그 차이를 만드는지 가른다. 동작 불변.
+        if std::env::var("RHWP_DIAG_AVAIL").is_ok() {
+            eprintln!(
+                "DIAG_AVAIL base={:.1} fn_h={:.1} reclaim={:.1} penalty={:.1} fn_margin={:.1} zone_y={:.1} bottom_fixed={:.1} → {:.1}",
+                base,
+                self.current_footnote_height,
+                self.footer_band_reclaim(),
+                footnote_penalty,
+                fn_margin,
+                self.current_zone_y_offset,
+                self.current_bottom_fixed_exclusion,
+                (base - footnote_penalty - fn_margin - self.current_zone_y_offset
+                    - self.current_bottom_fixed_exclusion)
+                    .max(0.0),
+            );
+        }
         (base
             - footnote_penalty
             - fn_margin
@@ -6788,6 +6805,21 @@ impl TypesetEngine {
                 .unwrap_or(raw_en_fit);
             let total_advance_fit = line_advances_sum.max(non_tac_object_height.unwrap_or(0.0));
             let remaining_height = (available - st.current_height).max(0.0);
+            // [#3707 진단] 미주 단 전환 판정의 입력. 동작 불변.
+            // 높이 누적(EN_ACC)은 두 문서가 소수점까지 같은데 단 전환만 갈리므로,
+            // 남는 후보는 여기 `available`/`en_col_w`/`current_height` 다.
+            if std::env::var("RHWP_DIAG_ENCOL").is_ok() {
+                eprintln!(
+                    "DIAG_ENCOL pi={} avail={:.1} cur_h={:.1} remain={:.1} col_w={:.1} fit={:.1} adv={:.1}",
+                    en_para_idx,
+                    available,
+                    st.current_height,
+                    remaining_height,
+                    en_col_w,
+                    en_fit,
+                    total_advance_fit,
+                );
+            }
             // [Task #1363 v2 Stage 3] A2: 새 para 를 이어붙인 렌더-정합 시뮬
             // bottom 으로 fit 판정 (saved line_segs 기반 → 렌더와 일치).
             let a2_overflow_with_para = if ssot_level >= EnSsotLevel::A2 {
