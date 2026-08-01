@@ -1,0 +1,2 @@
+# 닫힌 핸들 → nextCall 교정 (라이브)
+{"id":1,"jsonrpc":"2.0","result":{"content":[{"text":"{\"error\":\"열려 있지 않은 핸들: doc-999 (hwp_open 먼저)\",\"nextCall\":{\"arguments\":{\"path\":\"<열 문서 경로>\"},\"name\":\"hwp_open\",\"why\":\"핸들이 없거나 만료 — hwp_open 으로 docId 를 재발급한 뒤 재시도\"}}","type":"text"}],"isError":true}}
