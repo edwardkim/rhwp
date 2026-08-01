@@ -574,6 +574,14 @@ use std::collections::HashMap;
 
 const HWP3_UNIT_SCALE: i32 = 4;
 
+/// 신뢰할 수 없는 파일에서 읽은 HWP3 raw margin(u32)을 `* HWP3_UNIT_SCALE` 스케일 후
+/// `i16` 필드(`TextBox::margin_*`)에 담는다. 곱셈이 `i32`/`i16` 범위를 넘으면 그대로
+/// 캐스팅하는 대신 클램프해 오버플로 panic(malformed/fuzzed 파일에서의 DoS)을 막는다.
+fn hwp3_margin_to_i16(raw_margin: u32) -> i16 {
+    let scaled = raw_margin as i64 * HWP3_UNIT_SCALE as i64;
+    scaled.clamp(i16::MIN as i64, i16::MAX as i64) as i16
+}
+
 pub fn parse_drawing_object_tree(
     cursor: &mut std::io::Cursor<&[u8]>,
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
@@ -751,8 +759,8 @@ fn map_to_shape_object(
     let mut final_shape = shape;
 
     let common = CommonObjAttr {
-        width: (header.object_size[0] as u32 * HWP3_UNIT_SCALE as u32),
-        height: (header.object_size[1] as u32 * HWP3_UNIT_SCALE as u32),
+        width: header.object_size[0].saturating_mul(HWP3_UNIT_SCALE as u32),
+        height: header.object_size[1].saturating_mul(HWP3_UNIT_SCALE as u32),
         ..Default::default()
     };
 
@@ -775,19 +783,22 @@ fn map_to_shape_object(
     }
 
     let shape_attr = ShapeComponentAttr {
-        offset_x: header.relative_pos[0] as i32 * HWP3_UNIT_SCALE,
-        offset_y: header.relative_pos[1] as i32 * HWP3_UNIT_SCALE,
-        original_width: (header.object_size[0] as u32 * HWP3_UNIT_SCALE as u32),
-        original_height: (header.object_size[1] as u32 * HWP3_UNIT_SCALE as u32),
-        current_width: (header.object_size[0] as u32 * HWP3_UNIT_SCALE as u32),
-        current_height: (header.object_size[1] as u32 * HWP3_UNIT_SCALE as u32),
+        offset_x: (header.relative_pos[0] as i64 * HWP3_UNIT_SCALE as i64)
+            .clamp(i32::MIN as i64, i32::MAX as i64) as i32,
+        offset_y: (header.relative_pos[1] as i64 * HWP3_UNIT_SCALE as i64)
+            .clamp(i32::MIN as i64, i32::MAX as i64) as i32,
+        original_width: header.object_size[0].saturating_mul(HWP3_UNIT_SCALE as u32),
+        original_height: header.object_size[1].saturating_mul(HWP3_UNIT_SCALE as u32),
+        current_width: header.object_size[0].saturating_mul(HWP3_UNIT_SCALE as u32),
+        current_height: header.object_size[1].saturating_mul(HWP3_UNIT_SCALE as u32),
         rotation_angle,
         ..Default::default()
     };
 
     let border_line = ShapeBorderLine {
         color: header.basic_attr.line_color,
-        width: header.basic_attr.line_width as i32 * HWP3_UNIT_SCALE,
+        width: (header.basic_attr.line_width as i64 * HWP3_UNIT_SCALE as i64)
+            .clamp(i32::MIN as i64, i32::MAX as i64) as i32,
         // [Task #877 Stage 3] HWP3 drawing line_style = 0 (= "선 종류 없음") 인데
         // line_width > 0 인 경우 → 실제 한컴 viewer 는 실선으로 표시. (sample16 RFP
         // 박스 외곽선 회귀: raw line_style=0, line_width=84, line_color=0 검정)
@@ -878,10 +889,10 @@ fn map_to_shape_object(
     let text_box = if (header.basic_attr.options & (1 << 19)) != 0 || !parsed_paragraphs.is_empty()
     {
         Some(TextBox {
-            margin_left: (header.basic_attr.textbox_margin[0] as i32 * HWP3_UNIT_SCALE) as i16,
-            margin_top: (header.basic_attr.textbox_margin[1] as i32 * HWP3_UNIT_SCALE) as i16,
-            margin_right: (header.basic_attr.textbox_margin[0] as i32 * HWP3_UNIT_SCALE) as i16,
-            margin_bottom: (header.basic_attr.textbox_margin[1] as i32 * HWP3_UNIT_SCALE) as i16,
+            margin_left: hwp3_margin_to_i16(header.basic_attr.textbox_margin[0]),
+            margin_top: hwp3_margin_to_i16(header.basic_attr.textbox_margin[1]),
+            margin_right: hwp3_margin_to_i16(header.basic_attr.textbox_margin[0]),
+            margin_bottom: hwp3_margin_to_i16(header.basic_attr.textbox_margin[1]),
             paragraphs: parsed_paragraphs,
             ..Default::default()
         })
@@ -936,6 +947,50 @@ fn map_to_shape_object(
 mod modified_arc_overread_tests {
     use super::*;
     use std::io::Cursor;
+
+    // [POC] textbox_margin/line_width/object_size 는 파일에서 그대로 읽은 신뢰
+    // 불가 u32 값이다. `* HWP3_UNIT_SCALE(4)` 를 i32/i16 로 계산·캐스팅하는
+    // 과정에서 큰 값(예: u32::MAX)이 들어오면 곱셈이 i32 오버플로를 일으켜
+    // debug 빌드에서 panic한다(fuzzing/악성 파일 경로에서 서비스 거부).
+    #[test]
+    fn map_to_shape_object_does_not_panic_on_huge_margins() {
+        let header = Hwp3DrawingObjectCommonHeader {
+            object_type: 6, // TextBox
+            object_size: [u32::MAX, u32::MAX],
+            relative_pos: [u32::MAX, u32::MAX],
+            basic_attr: Hwp3DrawingObjectBasicAttr {
+                line_width: u32::MAX,
+                textbox_margin: [u32::MAX, u32::MAX],
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let raw = Hwp3DrawingObject::TextBox(
+            header,
+            Hwp3DrawingTextBox {
+                info1_len: 0,
+                info2_len: 0,
+                paragraph_list_data: Vec::new(),
+            },
+        );
+        let mut doc_char_shapes = Vec::new();
+        let mut doc_para_shapes = Vec::new();
+        let mut doc_border_fills = Vec::new();
+        let mut doc_tab_defs = Vec::new();
+        let mut pic_name_to_id = HashMap::new();
+        let result = map_to_shape_object(
+            raw,
+            &mut doc_char_shapes,
+            &mut doc_para_shapes,
+            &mut doc_border_fills,
+            &mut doc_tab_defs,
+            &mut pic_name_to_id,
+        );
+        assert!(
+            result.is_ok(),
+            "거대한 margin/width 값에서도 panic 없이 처리되어야 함"
+        );
+    }
 
     #[test]
     fn rectangle_no_fill_marker_does_not_apply_to_text_boxes() {
