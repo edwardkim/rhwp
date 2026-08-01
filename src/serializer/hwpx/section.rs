@@ -733,9 +733,20 @@ impl RunSplitter {
     /// `pos` 이하 위치의 경계를 모두 적용 — 규칙 1 (경계 먼저, 콘텐츠는 새 run 소속).
     fn cut_before(&mut self, pos: u32) {
         while self.needs_cut(pos) {
-            self.close_run();
-            self.next += 1;
+            self.cut_one();
         }
+    }
+
+    /// 경계 1개만 적용한다 — 같은 위치에 여러 경계가 겹칠 때 그중 특정 run 에
+    /// 콘텐츠를 넣어야 하는 경우에 쓴다 (#3545 안내문 잔재 복원).
+    fn cut_one(&mut self) {
+        self.close_run();
+        self.next += 1;
+    }
+
+    /// 현재 열려 있는 run 의 `charPrIDRef`.
+    fn current_shape_id(&self) -> u32 {
+        self.segs[self.next - 1].1
     }
 
     /// 현재 run 을 `<hp:run charPrIDRef>` 로 감싸 완성 목록에 추가.
@@ -783,6 +794,53 @@ fn emit_field_end(out: &mut String, para: &Paragraph, fr: &FieldRange) {
             out.push_str("</hp:ctrl>");
         }
     }
+}
+
+/// [#3545] 적재 정규화가 지운 **초기 상태 누름틀의 안내문 본문 run** 을 되살린다.
+///
+/// 한컴은 미기입 누름틀(`dirty="0"`)의 안내문을 파일에는 begin~end 사이 본문 run 으로
+/// 유지하고 렌더·인쇄에서만 구분 취급한다 (`samples/hwpx/form-01.hwpx` 의
+/// `<hp:run charPrIDRef="6"><hp:t>여기에 입력</hp:t></hp:run>`). rhwp 는 적재 시
+/// `clear_initial_field_texts` 로 이를 빈 필드로 정규화하므로, 저장에서 되살리지 않으면
+/// 파일 차원에서 텍스트가 영구 소실된다(XSD 는 통과하는 조용한 내용 소실).
+///
+/// IR 위치 축(`expected_utf16_pos`)은 건드리지 않고 **방출 XML 에만** 텍스트를 되돌린다.
+/// 재적재하면 같은 정규화가 다시 지우므로 IR 은 저장→적재 고정점을 유지한다.
+fn emit_guide_residue(splitter: &mut RunSplitter, para: &Paragraph, fr: &FieldRange, pos: u32) {
+    // 값이 채워진 필드는 본문 run 이 이미 있다 — 중복 주입 금지.
+    if fr.start_char_idx != fr.end_char_idx {
+        return;
+    }
+    let Some(Control::Field(f)) = para.controls.get(fr.control_idx) else {
+        return;
+    };
+    // 수정됨(bit 15) 표식이 선 필드는 초기 상태가 아니다 — 사용자가 비운 값을 되살리면 안 된다.
+    if f.is_dirty() {
+        return;
+    }
+    let Some(residue) = f.guide_residue.as_ref() else {
+        return;
+    };
+    if residue.text.is_empty() {
+        return;
+    }
+    // 잔재를 담던 run 의 경계까지만 먼저 끊는다 — 삭제 수술이 같은 위치에 접어 둔
+    // zero-width run 들이 원본 서식(charPrIDRef)의 유일한 근거다.
+    while splitter.needs_cut(pos) && splitter.current_shape_id() != residue.char_shape_id {
+        splitter.cut_one();
+    }
+    let mut tab_idx = 0usize;
+    splitter
+        .content
+        .push_str(&render_hp_t_content(&residue.text, &[], &mut tab_idx));
+}
+
+/// `pos` 위치에서 경계를 적용하고 `fieldEnd` 를 방출한다.
+/// 0-length 필드면 그 직전에 안내문 잔재를 복원한다 (#3545).
+fn emit_field_end_at(splitter: &mut RunSplitter, para: &Paragraph, fr: &FieldRange, pos: u32) {
+    emit_guide_residue(splitter, para, fr, pos);
+    splitter.cut_before(pos);
+    emit_field_end(&mut splitter.content, para, fr);
 }
 
 /// 고아(다단락) fieldEnd 를 `<hp:ctrl><hp:fieldEnd .../></hp:ctrl>` 로 방출 (Task #1556).
@@ -1028,8 +1086,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         }
         for (i, fr) in para.field_ranges.iter().enumerate() {
             if fr.start_char_idx == fr.end_char_idx && !field_end_emitted[i] {
-                splitter.cut_before(expected_utf16_pos);
-                emit_field_end(&mut splitter.content, para, fr);
+                emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                 field_end_emitted[i] = true;
             }
@@ -1109,8 +1166,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     && fr.end_char_idx == idx
                     && fr.control_idx == emitted_ctrl_idx
                 {
-                    splitter.cut_before(expected_utf16_pos);
-                    emit_field_end(&mut splitter.content, para, fr);
+                    emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
                     expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                     field_end_emitted[i] = true;
                 }
@@ -1147,8 +1203,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     &para.tab_extended,
                     &mut tab_idx,
                 );
-                splitter.cut_before(expected_utf16_pos);
-                emit_field_end(&mut splitter.content, para, fr);
+                emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
                 field_end_emitted[i] = true;
             }
         }
@@ -1218,8 +1273,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     &para.tab_extended,
                     &mut tab_idx,
                 );
-                splitter.cut_before(expected_utf16_pos);
-                emit_field_end(&mut splitter.content, para, fr);
+                emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
                 // [#1407] fieldEnd 는 8유닛 슬롯을 소비한다. expected 를 +8 진행하지
                 // 않으면 다음 idx 에서 텍스트-끝 슬롯(newNum 등)이 이 8유닛 갭을
                 // 가로채 텍스트가 +8 밀린다 (143E 문단 0.14: char_offsets[3] 27→35).
@@ -1250,8 +1304,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             if begin_slot_pending {
                 continue;
             }
-            splitter.cut_before(expected_utf16_pos);
-            emit_field_end(&mut splitter.content, para, fr);
+            emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
             field_end_emitted[i] = true;
         }
@@ -1292,8 +1345,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                 && fr.start_char_idx == fr.end_char_idx
                 && fr.control_idx == emitted_ctrl_idx
             {
-                splitter.cut_before(expected_utf16_pos);
-                emit_field_end(&mut splitter.content, para, fr);
+                emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                 field_end_emitted[i] = true;
             }
@@ -1302,8 +1354,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     // [Task #1893] 방어: 지연분이 슬롯 루프에서 매칭되지 못했으면 말미에 방출(종전 동작).
     for (i, fr) in para.field_ranges.iter().enumerate() {
         if !field_end_emitted[i] {
-            splitter.cut_before(expected_utf16_pos);
-            emit_field_end(&mut splitter.content, para, fr);
+            emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
             field_end_emitted[i] = true;
         }

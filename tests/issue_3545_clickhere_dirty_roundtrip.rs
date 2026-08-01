@@ -148,3 +148,122 @@ fn initial_state_still_normalized_on_load() {
         "왕복 후에도 초기 상태 유지"
     );
 }
+
+// =====================================================================
+// [#3545 잔여 축] 초기 상태(dirty="0") 안내문 본문 run 의 파일 수준 보존
+//
+// 한컴 정준형(form-01.hwpx 실물)은 미기입 누름틀의 안내문을 **본문 run 으로 파일에
+// 유지**하고 렌더/인쇄에서만 구분 취급한다. rhwp 는 적재 정규화가 이 텍스트를 IR 에서
+// 지우므로, 저장기가 잔재를 복원 방출하지 않으면 저장할 때마다 파일에서 영구 소실된다
+// (XSD 는 통과하는 조용한 내용 소실 — 재적재 시 다시 지워져 값 API 표면에는 안 보인다).
+// =====================================================================
+
+/// form-01.hwpx 원본의 안내문 본문 run (charPrIDRef="6" 전용 run 내부).
+const BODY_GUIDE_RUN: &str = "<hp:t>여기에 입력</hp:t>";
+
+/// 저장 축: 초기 상태 누름틀의 안내문 본문 run 이 저장본에 1회 보존되어야 한다.
+#[test]
+fn initial_guide_body_run_survives_hwpx_save() {
+    let doc = load(&sample_bytes());
+    let xml = section_xml(&doc.export_hwpx().expect("export_hwpx"));
+    assert_eq!(
+        xml.matches(BODY_GUIDE_RUN).count(),
+        1,
+        "초기 상태 누름틀의 안내문 본문 run 이 저장에서 소실/중복됐다"
+    );
+    // 원본 형상 그대로 — 잔재를 담던 run 의 charPrIDRef 까지 복원되어야 서식이 산다.
+    assert!(
+        xml.contains(r#"<hp:run charPrIDRef="6"><hp:t>여기에 입력</hp:t></hp:run>"#),
+        "복원된 안내문 run 의 char shape 가 원본(charPrIDRef=\"6\")과 다르다"
+    );
+    assert!(
+        xml.contains(FIELD_ANCHOR),
+        "잔재 복원은 초기 상태(dirty=\"0\") 표식을 바꾸면 안 된다"
+    );
+}
+
+/// 고정점: 저장→재적재→재저장에서도 본문 run 이 1회 유지되고, 값 API 는 빈 값을 유지한다.
+#[test]
+fn initial_guide_body_run_save_reload_save_fixed_point() {
+    let doc = load(&sample_bytes());
+    let saved1 = doc.export_hwpx().expect("export 1");
+    let reloaded = load(&saved1);
+    assert_eq!(
+        field_value(&reloaded, FIELD),
+        "",
+        "재적재 후에도 필드 값 API 는 빈 값이어야 한다 (정규화 계약 유지)"
+    );
+    let xml2 = section_xml(&reloaded.export_hwpx().expect("export 2"));
+    assert_eq!(
+        xml2.matches(BODY_GUIDE_RUN).count(),
+        1,
+        "저장→재적재→재저장 고정점에서 안내문 본문 run 이 소실/중복됐다"
+    );
+}
+
+/// 무회귀 가드: 채운 필드(dirty="1")는 실값 run 만 방출한다 — 잔재 복원이 중복 주입되면 안 된다.
+#[test]
+fn filled_field_body_run_not_duplicated() {
+    let mut doc = load(&sample_bytes());
+    doc.set_field_value_by_name_api(FIELD, GUIDE)
+        .expect("set_field_value_by_name");
+    let xml = section_xml(&doc.export_hwpx().expect("export_hwpx"));
+    assert_eq!(
+        xml.matches(BODY_GUIDE_RUN).count(),
+        1,
+        "채운 필드의 값 run 은 정확히 1회여야 한다 (잔재 복원 중복 주입 금지)"
+    );
+    assert!(
+        xml.contains(r#"name="myMsg01" editable="1" dirty="1""#),
+        "채운 필드는 dirty=\"1\" 이어야 한다"
+    );
+}
+
+/// 실물 행정 서식 코퍼스 대표본(issue1893 fixture): 안내문 run 보존 + 원본부터 빈 스팬은
+/// 잔재가 없으므로 텍스트를 주입하면 안 된다.
+#[test]
+fn gov_form_guide_runs_preserved_and_empty_spans_untouched() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue1893_clickhere_field_roundtrip.hwpx");
+    let bytes = std::fs::read(&path).expect("read issue1893 fixture");
+    let doc = load(&bytes);
+    let xml = section_xml(&doc.export_hwpx().expect("export_hwpx"));
+
+    // 소속관서 필드(id=1549188898): 원본은 begin~end 사이에 <hp:t>소속관서</hp:t> 보유.
+    let span = field_span(&xml, "1549188898");
+    assert!(
+        span.contains(r#"<hp:run charPrIDRef="20"><hp:t>소속관서</hp:t></hp:run>"#),
+        "초기 상태 누름틀(소속관서)의 안내문 본문 run 이 원본 형상으로 복원되지 않았다: {span}"
+    );
+
+    // id=1549188905: 원본부터 빈 스팬(begin 직후 end, 텍스트 run 없음) — 주입 금지.
+    let empty_span = field_span(&xml, "1549188905");
+    assert!(
+        !contains_nonempty_hp_t(empty_span),
+        "원본부터 빈 누름틀 스팬에 텍스트가 주입됐다: {empty_span}"
+    );
+}
+
+/// fieldBegin(id=..)부터 대응 fieldEnd(beginIDRef=..) 직전까지의 XML 조각.
+fn field_span<'a>(xml: &'a str, id: &str) -> &'a str {
+    let begin = xml
+        .find(&format!(r#"id="{id}""#))
+        .unwrap_or_else(|| panic!("fieldBegin id={id} 없음"));
+    let end = xml
+        .find(&format!(r#"beginIDRef="{id}""#))
+        .unwrap_or_else(|| panic!("fieldEnd beginIDRef={id} 없음"));
+    assert!(begin < end, "fieldBegin 이 fieldEnd 앞이어야 함 (id={id})");
+    &xml[begin..end]
+}
+
+/// 조각 안에 내용이 있는 `<hp:t>` 가 존재하는지 (빈 `<hp:t></hp:t>`/`<hp:t/>` 는 무시).
+fn contains_nonempty_hp_t(fragment: &str) -> bool {
+    let mut rest = fragment;
+    while let Some(i) = rest.find("<hp:t>") {
+        rest = &rest[i + "<hp:t>".len()..];
+        if !rest.starts_with("</hp:t>") {
+            return true;
+        }
+    }
+    false
+}

@@ -237,6 +237,18 @@ pub struct HiddenComment {
     pub paragraphs: Vec<Paragraph>,
 }
 
+/// 초기 상태 누름틀에서 적재 정규화가 제거한 안내문 본문 run 의 원본 형상 (#3545).
+///
+/// 편집 IR 은 빈 필드로 정규화된 상태가 authoritative 이고, 이 구조체는 **저장 시
+/// 원본 파일 형상을 되돌리기 위한 파생 상태**다 (값 API·렌더는 이 값을 보지 않는다).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct GuideResidue {
+    /// 제거된 본문 텍스트 원문 (한컴이 안내문 뒤에 붙이는 trailing 공백까지 그대로).
+    pub text: String,
+    /// 그 텍스트를 담던 run 의 `charPrIDRef` — 복원 시 원본 서식을 함께 되살린다.
+    pub char_shape_id: u32,
+}
+
 /// 필드 컨트롤
 #[derive(Debug, Clone, Default)]
 pub struct Field {
@@ -272,6 +284,15 @@ pub struct Field {
     /// 가지나 IR 은 Command/Number 만 추출하므로, 무손실 roundtrip 을 위해 원문을
     /// 그대로 보존한다 (HWP5 경로엔 무관 — HWPX 파서만 적재).
     pub raw_parameters_xml: Option<String>,
+    /// [#3545] 적재 정규화(`clear_initial_field_texts`)가 지운 안내문 본문 run 의 잔재.
+    ///
+    /// 한컴은 미기입 누름틀(dirty="0")의 안내문을 **파일에는 본문 run 으로 유지**하고
+    /// 렌더·인쇄에서만 구분 취급한다 (`samples/hwpx/form-01.hwpx` 의
+    /// `<hp:run charPrIDRef="6"><hp:t>여기에 입력</hp:t></hp:run>`). rhwp 는 편집 IR 을
+    /// 빈 필드로 정규화하므로, 저장에서 이 잔재를 되살리지 않으면 파일 차원에서
+    /// 텍스트가 영구 소실된다. 정규화 계약(값 API 는 빈 값)은 그대로 두고 HWPX 저장
+    /// 시에만 원본 run 을 복원한다.
+    pub guide_residue: Option<GuideResidue>,
 }
 
 impl Field {

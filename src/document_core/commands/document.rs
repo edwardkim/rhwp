@@ -1839,6 +1839,26 @@ impl DocumentCore {
                 // 필드의 end 마커를 컨트롤로 오산해 begin 갭을 유실 — 필드쌍 교차 페어링 유발).
                 if offsets_valid && start < end && end <= orig_offsets.len() {
                     let u_start = orig_offsets[start];
+                    // [#3545] 지워진 본문 run 을 HWPX 저장에서 되살리기 위한 잔재 기록.
+                    // 한컴 정준형은 미기입 누름틀의 안내문을 파일에 본문 run 으로 남기므로
+                    // (form-01.hwpx), 기록 없이 저장하면 파일에서 영구 소실된다. 서식까지
+                    // 되살리도록 그 텍스트를 담던 run 의 char shape 도 함께 남긴다 — 아래
+                    // 수술이 zero-width 로 접기 전의 원본 좌표에서 조회해야 정확하다.
+                    let residue_shape_id = para
+                        .char_shapes
+                        .iter()
+                        .rev()
+                        .find(|cs| cs.start_pos <= u_start)
+                        .map(|cs| cs.char_shape_id)
+                        .unwrap_or(0);
+                    let residue_text: String = orig_chars[start..end].iter().collect();
+                    let ctrl_idx = para.field_ranges[fri].control_idx;
+                    if let Some(Control::Field(f)) = para.controls.get_mut(ctrl_idx) {
+                        f.guide_residue = Some(crate::model::control::GuideResidue {
+                            text: residue_text,
+                            char_shape_id: residue_shape_id,
+                        });
+                    }
                     // 삭제 폭 = 삭제 문자들의 utf16 폭만. orig_offsets[end] 는 필드 end
                     // 마커의 8유닛 갭을 건너뛴 다음 문자 위치라 갭까지 폭에 포함되어
                     // 후속 오프셋에서 마커 갭이 소실된다(슬롯 방출 위치 붕괴).

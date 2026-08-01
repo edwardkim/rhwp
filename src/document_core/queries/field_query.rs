@@ -1058,6 +1058,7 @@ fn collect_fields_from_paragraph(
                                 memo_paragraphs: Vec::new(),
                                 memo_text_direction: None,
                                 raw_parameters_xml: None,
+                                guide_residue: None,
                             },
                             location: loc,
                             value,
@@ -1316,6 +1317,7 @@ fn insert_click_here_field_in_para(
         memo_paragraphs: Vec::new(),
         memo_text_direction: None,
         raw_parameters_xml: None,
+        guide_residue: None,
     };
 
     para.controls.insert(insert_idx, Control::Field(field));
@@ -1526,6 +1528,7 @@ mod tests {
             memo_paragraphs: Vec::new(),
             memo_text_direction: None,
             raw_parameters_xml: None,
+            guide_residue: None,
         })
     }
 
