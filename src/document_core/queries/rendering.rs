@@ -4744,6 +4744,408 @@ impl DocumentCore {
         Err(HwpError::PageOutOfRange(page_num))
     }
 
+    /// [#3697] dump-pages 텍스트/JSON 두 출력이 공유하는 구역 전처리.
+    ///
+    /// 미주 문단 합침(#1082)과 items 밖 문단(어울림/빈 줄 감춤) 페이지 귀속
+    /// (#1700·#1705·#1955)을 한 곳에 두어, 텍스트 덤프와 JSON 계약이 서로 다른
+    /// 진단을 보고하는 드리프트를 구조적으로 차단한다.
+    fn page_dump_section_ctx<'a>(
+        &'a self,
+        sec_idx: usize,
+        pr: &'a PaginationResult,
+        sec_start_page: u32,
+    ) -> PageDumpSectionCtx<'a> {
+        use crate::model::control::Control;
+        use crate::renderer::hwpunit_to_px;
+        use crate::renderer::pagination::PageItem;
+
+        let dpi = self.dpi;
+        let body_paragraphs = self.section_render_paragraphs(sec_idx);
+        // [Task #1082] 미주 paragraphs 를 본문 뒤에 합쳐 인덱싱 정합.
+        // 미주 PageItem 의 para_index = body_paragraphs.len() + 미주 로컬 인덱스
+        // (typeset.rs en_para_idx 와 동일). 합치지 않으면 미주 항목이 out-of-bounds 로
+        // 본문이 빈 것처럼 표시된다(시험지 다단 미주 디버깅 차단).
+        let body_len = body_paragraphs.len();
+        let paragraphs: std::borrow::Cow<'a, [Paragraph]> = if pr.endnote_paragraphs.is_empty() {
+            std::borrow::Cow::Borrowed(body_paragraphs)
+        } else {
+            std::borrow::Cow::Owned(
+                body_paragraphs
+                    .iter()
+                    .chain(pr.endnote_paragraphs.iter())
+                    .cloned()
+                    .collect(),
+            )
+        };
+
+        // [Task #1700] cc.items 에 없는 문단(어울림 흡수 / 빈 줄 감춤)을 페이지 PI 로 표면화
+        // 하기 위한 사전 패스. 한글(OLE)은 이들을 본문 문단으로 카운트하므로 문단→페이지
+        // 매핑이 정합된다. 레이아웃/렌더 트리는 변경하지 않으므로 기하·페이지 수·시각 불변.
+        // 1) items 문단 → 표시 페이지(global+1) 매핑 — **마지막** 출현 페이지(다중 페이지 표는
+        //    끝 페이지에 빈 문단이 따라오므로 last-page 가 한글과 정합).
+        let mut item_disp_page: std::collections::HashMap<usize, u32> =
+            std::collections::HashMap::new();
+        // [#1705] 표의 첫(앵커) 출현 페이지 — 어울림 빈 문단이 표 옆 wrap zone 에 있을 때 사용.
+        let mut item_first_page: std::collections::HashMap<usize, u32> =
+            std::collections::HashMap::new();
+        for (li, page) in pr.pages.iter().enumerate() {
+            let disp = sec_start_page + li as u32 + 1;
+            for cc in &page.column_contents {
+                for item in &cc.items {
+                    let pidx = match item {
+                        PageItem::FullParagraph { para_index }
+                        | PageItem::PartialParagraph { para_index, .. }
+                        | PageItem::Table { para_index, .. }
+                        | PageItem::PartialTable { para_index, .. }
+                        | PageItem::Shape { para_index, .. } => Some(*para_index),
+                        _ => None,
+                    };
+                    if let Some(p) = pidx {
+                        item_disp_page.insert(p, disp); // 마지막(끝) 페이지
+                        item_first_page.entry(p).or_insert(disp); // 첫(앵커) 페이지
+                    }
+                }
+            }
+        }
+        // 2) 표면화 대상을 페이지별로 그룹화: (para_index, is_wrap, table_pi).
+        //    - 어울림(wrap-around): 앵커 표(table_para_index)의 페이지에 귀속.
+        //    - 빈 줄 감춤(hidden_empty_paras): 직전 item 문단(대개 표)의 페이지에 귀속.
+        let mut extra_by_page: std::collections::HashMap<u32, Vec<(usize, bool, usize)>> =
+            std::collections::HashMap::new();
+        let mut emitted_extra: std::collections::HashSet<usize> = std::collections::HashSet::new();
+        for page in pr.pages.iter() {
+            for cc in &page.column_contents {
+                for wp in &cc.wrap_around_paras {
+                    if !emitted_extra.insert(wp.para_index) {
+                        continue;
+                    }
+                    // [#1705] 어울림(floating) 표의 트레일링 빈 문단 귀속:
+                    //   line_seg 폭(sw)이 좁으면(표 옆 wrap zone) 표의 **첫(앵커) 페이지**,
+                    //   전체 폭이면(표 아래로 흐름) 표의 **마지막 페이지**.
+                    //   한글은 wrap zone 문단을 앵커 페이지에, 전체폭 문단을 표 끝 페이지에 둔다.
+                    let sw_px = paragraphs
+                        .get(wp.para_index)
+                        .and_then(|p| p.line_segs.first())
+                        .map(|s| hwpunit_to_px(s.segment_width as i32, dpi))
+                        .unwrap_or(0.0);
+                    let body_w = page.layout.body_area.width;
+                    let is_wrap_zone = sw_px > 0.0 && sw_px < body_w * 0.9;
+                    // [#1955] 글뒤로/글앞으로 anchor 표는 플로우를 소비하지 않으므로
+                    // 후행 문단은 폭과 무관하게 **앵커 페이지** 귀속 (한글: stored
+                    // LINE_SEG vpos 가 앵커 쪽 위치를 가리킴).
+                    let anchor_behind = paragraphs
+                        .get(wp.table_para_index)
+                        .map(|p| {
+                            p.controls.iter().any(|c| {
+                                matches!(c, Control::Table(t)
+                                    if !t.common.treat_as_char
+                                        && matches!(t.common.text_wrap,
+                                            crate::model::shape::TextWrap::BehindText
+                                                | crate::model::shape::TextWrap::InFrontOfText))
+                            })
+                        })
+                        .unwrap_or(false);
+                    let disp = if is_wrap_zone || anchor_behind {
+                        item_first_page.get(&wp.table_para_index)
+                    } else {
+                        item_disp_page.get(&wp.table_para_index)
+                    }
+                    .copied()
+                    .unwrap_or(sec_start_page + 1);
+                    extra_by_page.entry(disp).or_default().push((
+                        wp.para_index,
+                        true,
+                        wp.table_para_index,
+                    ));
+                }
+            }
+        }
+        let mut hidden_sorted: Vec<usize> = pr
+            .hidden_empty_paras
+            .iter()
+            .copied()
+            .filter(|p| !item_disp_page.contains_key(p) && !emitted_extra.contains(p))
+            .collect();
+        hidden_sorted.sort_unstable();
+        for hidx in hidden_sorted {
+            let mut disp = sec_start_page + 1;
+            for j in (0..hidx).rev() {
+                if let Some(d) = item_disp_page.get(&j) {
+                    disp = *d;
+                    break;
+                }
+            }
+            extra_by_page
+                .entry(disp)
+                .or_default()
+                .push((hidx, false, 0));
+            emitted_extra.insert(hidx);
+        }
+
+        PageDumpSectionCtx {
+            paragraphs,
+            body_len,
+            extra_by_page,
+        }
+    }
+
+    /// [#3697] 페이지네이션 결과를 기계 계약 JSON 으로 덤프 (#3608 1-C).
+    ///
+    /// 텍스트 덤프(`dump_page_items`)와 같은 순회·같은 구역 전처리
+    /// (`page_dump_section_ctx`)를 공유하고, 표현만 구조화 필드로 바꾼다.
+    /// 반환값은 `pages` 배열 — 봉투(schemaVersion·source 등)는 CLI 가 감싼다.
+    pub fn dump_page_items_json(&self, page_filter: Option<u32>) -> serde_json::Value {
+        use crate::model::control::Control;
+        use crate::renderer::pagination::PageItem;
+
+        let dpi = self.dpi;
+        let mut pages_out: Vec<serde_json::Value> = Vec::new();
+        let mut global_page = 0u32;
+
+        for (sec_idx, pr) in self.pagination.iter().enumerate() {
+            let ctx = self.page_dump_section_ctx(sec_idx, pr, global_page);
+            let paragraphs: &[Paragraph] = &ctx.paragraphs;
+            let body_len = ctx.body_len;
+            let measured = self.measured_sections.get(sec_idx);
+
+            // 미주 항목(pi >= body_len)의 원본 위치 — 텍스트 덤프의 `src=...` 와 동일.
+            let endnote_source_json = |para_index: usize| -> serde_json::Value {
+                if para_index < body_len {
+                    return serde_json::Value::Null;
+                }
+                pr.endnote_para_sources
+                    .get(para_index - body_len)
+                    .map(|src| {
+                        serde_json::json!({
+                            "section": src.section_index,
+                            "para": src.para_index,
+                            "controlIndex": src.control_index,
+                            "noteParaIndex": src.note_para_index,
+                        })
+                    })
+                    .unwrap_or(serde_json::Value::Null)
+            };
+
+            for page in pr.pages.iter() {
+                if let Some(pf) = page_filter {
+                    if global_page != pf {
+                        global_page += 1;
+                        continue;
+                    }
+                }
+
+                let la = &page.layout;
+                let mut columns_out: Vec<serde_json::Value> = Vec::new();
+                for (col_idx, cc) in page.column_contents.iter().enumerate() {
+                    let hwp_used_px = compute_hwp_used_height(cc, paragraphs, dpi);
+                    let mut items_out: Vec<serde_json::Value> = Vec::new();
+                    for item in &cc.items {
+                        let v = match item {
+                            PageItem::FullParagraph { para_index } => {
+                                let height = measured
+                                    .and_then(|m| m.get_measured_paragraph(*para_index))
+                                    .map(|mp| {
+                                        let lh_sum: f64 = mp.line_heights.iter().sum();
+                                        let ls_sum: f64 = mp.line_spacings.iter().sum();
+                                        serde_json::json!({
+                                            "total": mp.spacing_before
+                                                + lh_sum
+                                                + ls_sum
+                                                + mp.spacing_after,
+                                            "spacingBefore": mp.spacing_before,
+                                            "lineHeightSum": lh_sum,
+                                            "lineSpacingSum": ls_sum,
+                                            "spacingAfter": mp.spacing_after,
+                                        })
+                                    });
+                                serde_json::json!({
+                                    "kind": "fullParagraph",
+                                    "paraIndex": para_index,
+                                    "isEndnote": *para_index >= body_len,
+                                    "endnoteSource": endnote_source_json(*para_index),
+                                    "height": height,
+                                    "vpos": vpos_range_json(paragraphs.get(*para_index), None, None),
+                                    "lineSegs": line_seg_brief_json(paragraphs.get(*para_index)),
+                                    "textPreview": para_text_preview(paragraphs.get(*para_index)),
+                                })
+                            }
+                            PageItem::PartialParagraph {
+                                para_index,
+                                start_line,
+                                end_line,
+                            } => serde_json::json!({
+                                "kind": "partialParagraph",
+                                "paraIndex": para_index,
+                                "startLine": start_line,
+                                "endLine": end_line,
+                                "isEndnote": *para_index >= body_len,
+                                "endnoteSource": endnote_source_json(*para_index),
+                                "vpos": vpos_range_json(
+                                    paragraphs.get(*para_index),
+                                    Some(*start_line),
+                                    Some(*end_line),
+                                ),
+                                "lineSegs": line_seg_brief_json(paragraphs.get(*para_index)),
+                            }),
+                            PageItem::Table {
+                                para_index,
+                                control_index,
+                            } => serde_json::json!({
+                                "kind": "table",
+                                "paraIndex": para_index,
+                                "controlIndex": control_index,
+                                "isEndnote": *para_index >= body_len,
+                                "endnoteSource": endnote_source_json(*para_index),
+                                "table": table_summary_json(
+                                    paragraphs,
+                                    *para_index,
+                                    *control_index,
+                                    dpi,
+                                    true,
+                                ),
+                                "vpos": vpos_range_json(paragraphs.get(*para_index), None, None),
+                                "lineSegs": line_seg_brief_json(paragraphs.get(*para_index)),
+                            }),
+                            PageItem::PartialTable {
+                                para_index,
+                                control_index,
+                                start_row,
+                                end_row,
+                                is_continuation,
+                                start_cut,
+                                end_cut,
+                                ..
+                            } => serde_json::json!({
+                                "kind": "partialTable",
+                                "paraIndex": para_index,
+                                "controlIndex": control_index,
+                                "startRow": start_row,
+                                "endRow": end_row,
+                                "isContinuation": is_continuation,
+                                "startCut": start_cut,
+                                "endCut": end_cut,
+                                "isEndnote": *para_index >= body_len,
+                                "endnoteSource": endnote_source_json(*para_index),
+                                "table": table_summary_json(
+                                    paragraphs,
+                                    *para_index,
+                                    *control_index,
+                                    dpi,
+                                    false,
+                                ),
+                                "vpos": vpos_range_json(paragraphs.get(*para_index), None, None),
+                                "lineSegs": line_seg_brief_json(paragraphs.get(*para_index)),
+                            }),
+                            PageItem::Shape {
+                                para_index,
+                                control_index,
+                            } => {
+                                let control = paragraphs
+                                    .get(*para_index)
+                                    .and_then(|p| p.controls.get(*control_index))
+                                    .map(|c| match c {
+                                        Control::Shape(s) => serde_json::json!({
+                                            "type": "shape",
+                                            "textWrap": format!("{:?}", s.common().text_wrap),
+                                            "treatAsChar": s.common().treat_as_char,
+                                        }),
+                                        Control::Picture(p) => serde_json::json!({
+                                            "type": "picture",
+                                            "treatAsChar": p.common.treat_as_char,
+                                        }),
+                                        Control::Equation(_) => {
+                                            serde_json::json!({ "type": "equation" })
+                                        }
+                                        _ => serde_json::json!({ "type": "other" }),
+                                    });
+                                serde_json::json!({
+                                    "kind": "shape",
+                                    "paraIndex": para_index,
+                                    "controlIndex": control_index,
+                                    "isEndnote": *para_index >= body_len,
+                                    "endnoteSource": endnote_source_json(*para_index),
+                                    "control": control,
+                                    "vpos": vpos_range_json(paragraphs.get(*para_index), None, None),
+                                    "lineSegs": line_seg_brief_json(paragraphs.get(*para_index)),
+                                })
+                            }
+                            PageItem::EndnoteSeparator {
+                                separator_length,
+                                margin_above,
+                                margin_below,
+                                line_width,
+                                color,
+                                ..
+                            } => serde_json::json!({
+                                "kind": "endnoteSeparator",
+                                "separatorLength": separator_length,
+                                "marginAbove": margin_above,
+                                "marginBelow": margin_below,
+                                "lineWidth": line_width,
+                                "color": format!("#{:06x}", color & 0x00ff_ffff),
+                            }),
+                        };
+                        items_out.push(v);
+                    }
+                    columns_out.push(serde_json::json!({
+                        "index": col_idx,
+                        "itemCount": cc.items.len(),
+                        "usedHeight": cc.used_height,
+                        "hwpUsedHeight": hwp_used_px,
+                        "usedDiff": hwp_used_px.map(|h| cc.used_height - h),
+                        "zoneYOffset": cc.zone_y_offset,
+                        "items": items_out,
+                    }));
+                }
+
+                // [Task #1700] cc.items 에 없는 문단(어울림/빈 줄 감춤) — 텍스트 덤프와 동일 귀속.
+                let disp_page = global_page + 1;
+                let extras_out: Vec<serde_json::Value> = ctx
+                    .extra_by_page
+                    .get(&disp_page)
+                    .map(|list| {
+                        list.iter()
+                            .map(|(pidx, is_wrap, tpi)| {
+                                if *is_wrap {
+                                    serde_json::json!({
+                                        "kind": "wrapAroundPara",
+                                        "paraIndex": pidx,
+                                        "tableParaIndex": tpi,
+                                        "textPreview": para_text_preview(paragraphs.get(*pidx)),
+                                    })
+                                } else {
+                                    serde_json::json!({
+                                        "kind": "hiddenEmptyPara",
+                                        "paraIndex": pidx,
+                                        "textPreview": para_text_preview(paragraphs.get(*pidx)),
+                                    })
+                                }
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default();
+
+                pages_out.push(serde_json::json!({
+                    "pageIndex": global_page,
+                    "displayPage": global_page + 1,
+                    "section": sec_idx,
+                    "pageNumber": page.page_number,
+                    "bodyArea": {
+                        "x": la.body_area.x,
+                        "y": la.body_area.y,
+                        "width": la.body_area.width,
+                        "height": la.body_area.height,
+                    },
+                    "columns": columns_out,
+                    "extras": extras_out,
+                }));
+
+                global_page += 1;
+            }
+        }
+        serde_json::Value::Array(pages_out)
+    }
+
     /// 페이지네이션 결과를 텍스트로 덤프 (디버깅용).
     /// page_filter: None이면 전체, Some(n)이면 해당 페이지만.
     pub fn dump_page_items(&self, page_filter: Option<u32>) -> String {
@@ -4756,130 +5158,13 @@ impl DocumentCore {
         let mut global_page = 0u32;
 
         for (sec_idx, pr) in self.pagination.iter().enumerate() {
-            let body_paragraphs = self.section_render_paragraphs(sec_idx);
-            // [Task #1082] 미주 paragraphs 를 본문 뒤에 합쳐 인덱싱 정합.
-            // 미주 PageItem 의 para_index = body_paragraphs.len() + 미주 로컬 인덱스
-            // (typeset.rs en_para_idx 와 동일). 합치지 않으면 미주 항목이 out-of-bounds 로
-            // 본문이 빈 것처럼 표시된다(시험지 다단 미주 디버깅 차단).
-            let body_len = body_paragraphs.len();
-            let combined: Vec<Paragraph>;
-            let paragraphs: &[Paragraph] = if pr.endnote_paragraphs.is_empty() {
-                body_paragraphs
-            } else {
-                combined = body_paragraphs
-                    .iter()
-                    .chain(pr.endnote_paragraphs.iter())
-                    .cloned()
-                    .collect();
-                &combined
-            };
+            // [#3697] 구역 전처리(미주 합침 #1082 · items 밖 문단 귀속 #1700 계열)는
+            // JSON 덤프(`dump_page_items_json`)와 공유한다 — 두 출력의 드리프트 차단.
+            let ctx = self.page_dump_section_ctx(sec_idx, pr, global_page);
+            let paragraphs: &[Paragraph] = &ctx.paragraphs;
+            let body_len = ctx.body_len;
+            let extra_by_page = &ctx.extra_by_page;
             let measured = self.measured_sections.get(sec_idx);
-
-            // [Task #1700] cc.items 에 없는 문단(어울림 흡수 / 빈 줄 감춤)을 페이지 PI 로 표면화
-            // 하기 위한 사전 패스. 한글(OLE)은 이들을 본문 문단으로 카운트하므로 문단→페이지
-            // 매핑이 정합된다. 레이아웃/렌더 트리는 변경하지 않으므로 기하·페이지 수·시각 불변.
-            // 1) items 문단 → 표시 페이지(global+1) 매핑 — **마지막** 출현 페이지(다중 페이지 표는
-            //    끝 페이지에 빈 문단이 따라오므로 last-page 가 한글과 정합).
-            let sec_start_page = global_page;
-            let mut item_disp_page: std::collections::HashMap<usize, u32> =
-                std::collections::HashMap::new();
-            // [#1705] 표의 첫(앵커) 출현 페이지 — 어울림 빈 문단이 표 옆 wrap zone 에 있을 때 사용.
-            let mut item_first_page: std::collections::HashMap<usize, u32> =
-                std::collections::HashMap::new();
-            for (li, page) in pr.pages.iter().enumerate() {
-                let disp = sec_start_page + li as u32 + 1;
-                for cc in &page.column_contents {
-                    for item in &cc.items {
-                        let pidx = match item {
-                            PageItem::FullParagraph { para_index }
-                            | PageItem::PartialParagraph { para_index, .. }
-                            | PageItem::Table { para_index, .. }
-                            | PageItem::PartialTable { para_index, .. }
-                            | PageItem::Shape { para_index, .. } => Some(*para_index),
-                            _ => None,
-                        };
-                        if let Some(p) = pidx {
-                            item_disp_page.insert(p, disp); // 마지막(끝) 페이지
-                            item_first_page.entry(p).or_insert(disp); // 첫(앵커) 페이지
-                        }
-                    }
-                }
-            }
-            // 2) 표면화 대상을 페이지별로 그룹화: (para_index, is_wrap, table_pi).
-            //    - 어울림(wrap-around): 앵커 표(table_para_index)의 페이지에 귀속.
-            //    - 빈 줄 감춤(hidden_empty_paras): 직전 item 문단(대개 표)의 페이지에 귀속.
-            let mut extra_by_page: std::collections::HashMap<u32, Vec<(usize, bool, usize)>> =
-                std::collections::HashMap::new();
-            let mut emitted_extra: std::collections::HashSet<usize> =
-                std::collections::HashSet::new();
-            for page in pr.pages.iter() {
-                for cc in &page.column_contents {
-                    for wp in &cc.wrap_around_paras {
-                        if !emitted_extra.insert(wp.para_index) {
-                            continue;
-                        }
-                        // [#1705] 어울림(floating) 표의 트레일링 빈 문단 귀속:
-                        //   line_seg 폭(sw)이 좁으면(표 옆 wrap zone) 표의 **첫(앵커) 페이지**,
-                        //   전체 폭이면(표 아래로 흐름) 표의 **마지막 페이지**.
-                        //   한글은 wrap zone 문단을 앵커 페이지에, 전체폭 문단을 표 끝 페이지에 둔다.
-                        let sw_px = paragraphs
-                            .get(wp.para_index)
-                            .and_then(|p| p.line_segs.first())
-                            .map(|s| hwpunit_to_px(s.segment_width as i32, dpi))
-                            .unwrap_or(0.0);
-                        let body_w = page.layout.body_area.width;
-                        let is_wrap_zone = sw_px > 0.0 && sw_px < body_w * 0.9;
-                        // [#1955] 글뒤로/글앞으로 anchor 표는 플로우를 소비하지 않으므로
-                        // 후행 문단은 폭과 무관하게 **앵커 페이지** 귀속 (한글: stored
-                        // LINE_SEG vpos 가 앵커 쪽 위치를 가리킴).
-                        let anchor_behind = paragraphs
-                            .get(wp.table_para_index)
-                            .map(|p| {
-                                p.controls.iter().any(|c| {
-                                    matches!(c, Control::Table(t)
-                                        if !t.common.treat_as_char
-                                            && matches!(t.common.text_wrap,
-                                                crate::model::shape::TextWrap::BehindText
-                                                    | crate::model::shape::TextWrap::InFrontOfText))
-                                })
-                            })
-                            .unwrap_or(false);
-                        let disp = if is_wrap_zone || anchor_behind {
-                            item_first_page.get(&wp.table_para_index)
-                        } else {
-                            item_disp_page.get(&wp.table_para_index)
-                        }
-                        .copied()
-                        .unwrap_or(sec_start_page + 1);
-                        extra_by_page.entry(disp).or_default().push((
-                            wp.para_index,
-                            true,
-                            wp.table_para_index,
-                        ));
-                    }
-                }
-            }
-            let mut hidden_sorted: Vec<usize> = pr
-                .hidden_empty_paras
-                .iter()
-                .copied()
-                .filter(|p| !item_disp_page.contains_key(p) && !emitted_extra.contains(p))
-                .collect();
-            hidden_sorted.sort_unstable();
-            for hidx in hidden_sorted {
-                let mut disp = sec_start_page + 1;
-                for j in (0..hidx).rev() {
-                    if let Some(d) = item_disp_page.get(&j) {
-                        disp = *d;
-                        break;
-                    }
-                }
-                extra_by_page
-                    .entry(disp)
-                    .or_default()
-                    .push((hidx, false, 0));
-                emitted_extra.insert(hidx);
-            }
 
             for (local_idx, page) in pr.pages.iter().enumerate() {
                 if let Some(pf) = page_filter {
@@ -5943,6 +6228,78 @@ impl DocumentCore {
     // =====================================================================
 }
 
+/// [#3697] dump-pages 텍스트/JSON 두 출력이 공유하는 구역 전처리 결과.
+struct PageDumpSectionCtx<'a> {
+    /// 본문(+미주 #1082) 문단. 미주가 없으면 원본 슬라이스 차용.
+    paragraphs: std::borrow::Cow<'a, [Paragraph]>,
+    /// 본문 문단 수 — 이 인덱스 이상은 미주 문단.
+    body_len: usize,
+    /// 표시 페이지(global+1) → (para_index, 어울림 여부, 앵커 표 para_index) — #1700 계열.
+    extra_by_page: std::collections::HashMap<u32, Vec<(usize, bool, usize)>>,
+}
+
+/// [#3697] dump-pages JSON 의 문단 미리보기 — 텍스트 덤프와 같은 제어문자 제거 + 40자.
+/// 기계 소비자용이므로 텍스트 덤프의 "(빈)" 대체 표기는 쓰지 않는다 (빈 문단 = "").
+fn para_text_preview(para: Option<&Paragraph>) -> String {
+    para.map(|p| {
+        p.text
+            .chars()
+            .filter(|c| *c > '\u{001F}')
+            .take(40)
+            .collect()
+    })
+    .unwrap_or_default()
+}
+
+/// [#3697] dump-pages JSON 의 표 컨트롤 요약.
+/// `with_geometry` 는 전체 표 항목에서만 true (텍스트 덤프와 같은 정보 범위).
+fn table_summary_json(
+    paragraphs: &[Paragraph],
+    para_index: usize,
+    control_index: usize,
+    dpi: f64,
+    with_geometry: bool,
+) -> serde_json::Value {
+    use crate::model::control::Control;
+    use crate::renderer::hwpunit_to_px;
+
+    paragraphs
+        .get(para_index)
+        .and_then(|p| p.controls.get(control_index))
+        .and_then(|c| {
+            if let Control::Table(t) = c {
+                let mut v = serde_json::json!({
+                    "rowCount": t.row_count,
+                    "colCount": t.col_count,
+                });
+                if with_geometry {
+                    if let Some(obj) = v.as_object_mut() {
+                        obj.insert(
+                            "widthPx".into(),
+                            serde_json::json!(hwpunit_to_px(t.common.width as i32, dpi)),
+                        );
+                        obj.insert(
+                            "heightPx".into(),
+                            serde_json::json!(hwpunit_to_px(t.common.height as i32, dpi)),
+                        );
+                        obj.insert(
+                            "textWrap".into(),
+                            serde_json::json!(format!("{:?}", t.common.text_wrap)),
+                        );
+                        obj.insert(
+                            "treatAsChar".into(),
+                            serde_json::json!(t.common.treat_as_char),
+                        );
+                    }
+                }
+                Some(v)
+            } else {
+                None
+            }
+        })
+        .unwrap_or(serde_json::Value::Null)
+}
+
 /// 단이 HWP 원본 layout 에서 사용했을 높이를 LINE_SEG vpos 기준으로 추정 (px).
 ///
 /// 알고리즘:
@@ -6057,29 +6414,38 @@ fn compute_hwp_used_height(
     Some(hwpunit_to_px((bottom_hwpu - base_top).max(0), dpi))
 }
 
-/// LINE_SEG vertical_pos 범위를 문자열로 포맷.
+/// [#3697] vpos 범위 분석 결과 — 텍스트(`format_vpos_range`)/JSON(`vpos_range_json`)
+/// 두 표현이 같은 판정(리셋/되감기)을 공유하기 위한 중간 형태.
+struct VposRange {
+    first: i32,
+    last: i32,
+    /// 요청 범위가 한 줄이면 true (텍스트 표현이 단일값으로 축약).
+    single: bool,
+    resets: Vec<usize>,
+    rewinds: Vec<usize>,
+}
+
+/// LINE_SEG vertical_pos 범위 분석.
 ///
 /// `start_line..end_line` 가 None 이면 문단 전체 범위.
 /// `vertical_pos == 0` 인 줄(문단 첫 줄 제외)을 vpos-reset 으로 마킹.
-fn format_vpos_range(
+fn vpos_range(
     para: Option<&Paragraph>,
     start_line: Option<usize>,
     end_line: Option<usize>,
-) -> String {
-    let Some(p) = para else { return String::new() };
+) -> Option<VposRange> {
+    let p = para?;
     if p.line_segs.is_empty() {
-        return String::new();
-    };
+        return None;
+    }
     let total = p.line_segs.len();
     let s = start_line.unwrap_or(0).min(total.saturating_sub(1));
     let end_exclusive = end_line.unwrap_or(total).min(total);
     if s >= end_exclusive {
-        return String::new();
-    };
+        return None;
+    }
     let e = end_exclusive - 1;
 
-    let first = p.line_segs[s].vertical_pos;
-    let last = p.line_segs[e].vertical_pos;
     let mut resets: Vec<usize> = Vec::new();
     let mut rewinds: Vec<usize> = Vec::new();
     for i in s..=e {
@@ -6091,18 +6457,81 @@ fn format_vpos_range(
             rewinds.push(i);
         }
     }
-    let mut s_out = if s == e {
-        format!("vpos={}", first)
-    } else {
-        format!("vpos={}..{}", first, last)
+    Some(VposRange {
+        first: p.line_segs[s].vertical_pos,
+        last: p.line_segs[e].vertical_pos,
+        single: s == e,
+        resets,
+        rewinds,
+    })
+}
+
+/// LINE_SEG vertical_pos 범위를 문자열로 포맷.
+fn format_vpos_range(
+    para: Option<&Paragraph>,
+    start_line: Option<usize>,
+    end_line: Option<usize>,
+) -> String {
+    let Some(r) = vpos_range(para, start_line, end_line) else {
+        return String::new();
     };
-    for r in resets {
-        s_out.push_str(&format!(" [vpos-reset@line{}]", r));
+    let mut s_out = if r.single {
+        format!("vpos={}", r.first)
+    } else {
+        format!("vpos={}..{}", r.first, r.last)
+    };
+    for i in r.resets {
+        s_out.push_str(&format!(" [vpos-reset@line{}]", i));
     }
-    for r in rewinds {
-        s_out.push_str(&format!(" [vpos-rewind@line{}]", r));
+    for i in r.rewinds {
+        s_out.push_str(&format!(" [vpos-rewind@line{}]", i));
     }
     s_out
+}
+
+/// [#3697] `format_vpos_range` 와 같은 분석(`vpos_range`)의 JSON 표현.
+fn vpos_range_json(
+    para: Option<&Paragraph>,
+    start_line: Option<usize>,
+    end_line: Option<usize>,
+) -> serde_json::Value {
+    match vpos_range(para, start_line, end_line) {
+        Some(r) => serde_json::json!({
+            "first": r.first,
+            "last": r.last,
+            "resets": r.resets,
+            "rewinds": r.rewinds,
+        }),
+        None => serde_json::Value::Null,
+    }
+}
+
+/// [#3697] `format_line_seg_brief` 와 같은 요약(첫/마지막 줄)의 JSON 표현.
+fn line_seg_brief_json(para: Option<&Paragraph>) -> serde_json::Value {
+    fn seg_json(seg: &crate::model::paragraph::LineSeg) -> serde_json::Value {
+        serde_json::json!({
+            "textStart": seg.text_start,
+            "lineHeight": seg.line_height,
+            "textHeight": seg.text_height,
+            "baselineDistance": seg.baseline_distance,
+            "lineSpacing": seg.line_spacing,
+            "columnStart": seg.column_start,
+            "segmentWidth": seg.segment_width,
+        })
+    }
+    let Some(p) = para else {
+        return serde_json::Value::Null;
+    };
+    if p.line_segs.is_empty() {
+        return serde_json::json!({ "count": 0 });
+    }
+    let first = &p.line_segs[0];
+    let last = p.line_segs.last().unwrap_or(first);
+    serde_json::json!({
+        "count": p.line_segs.len(),
+        "first": seg_json(first),
+        "last": seg_json(last),
+    })
 }
 
 /// dump-pages에서 line_seg 계약을 빠르게 대조하기 위한 한 줄 요약.

@@ -1232,7 +1232,21 @@ fn show_capabilities(args: &[String]) -> i32 {
         ),
         // ── 진단 ──
         cmd("dump", "diagnostic", "문서 조판부호 구조 덤프"),
-        cmd("dump-pages", "diagnostic", "페이지네이션 항목 덤프"),
+        cmd_json(
+            "dump-pages",
+            "diagnostic",
+            "페이지네이션 항목 덤프 (--json: 조판 진단 기계 계약)",
+            false,
+            &["-p", "--respect-vpos-reset", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "pageCount",
+                "pageFilter",
+                "respectVposReset",
+                "pages",
+            ],
+        ),
         cmd(
             "dump-extents",
             "diagnostic",
@@ -1503,7 +1517,7 @@ fn print_help() {
     println!("  dump-endnote-lines <파일.hwp> <section> <para> <control> [note-para]");
     println!("      특정 미주 원본 문단의 line_seg, TextRun, TAC 수식 위치를 함께 덤프");
     println!();
-    println!("  dump-pages <파일.hwp> [-p <번호>] [--respect-vpos-reset]");
+    println!("  dump-pages <파일.hwp> [-p <번호>] [--respect-vpos-reset] [--json]");
     println!("      페이지네이션 결과 덤프 (페이지별 문단/표 배치 목록)");
     println!();
     println!("  dump-records <파일.hwp>");
@@ -5104,13 +5118,16 @@ fn dump_extents(args: &[String]) -> i32 {
 
 fn dump_pages(args: &[String]) -> i32 {
     if args.is_empty() {
-        eprintln!("사용법: rhwp dump-pages <파일.hwp> [-p <페이지번호>]");
+        eprintln!(
+            "사용법: rhwp dump-pages <파일.hwp> [-p <페이지번호>] [--respect-vpos-reset] [--json]"
+        );
         return EXIT_USAGE;
     }
 
     let file_path = &args[0];
     let mut target_page: Option<u32> = None;
     let mut respect_vpos_reset = false;
+    let mut json_mode = false;
 
     let mut i = 1;
     while i < args.len() {
@@ -5135,6 +5152,10 @@ fn dump_pages(args: &[String]) -> i32 {
             }
             "--respect-vpos-reset" => {
                 respect_vpos_reset = true;
+                i += 1;
+            }
+            "--json" => {
+                json_mode = true;
                 i += 1;
             }
             _ => {
@@ -5176,8 +5197,22 @@ fn dump_pages(args: &[String]) -> i32 {
         }
     }
 
-    println!("문서 로드: {} ({}페이지)", file_path, page_count);
-    print!("{}", doc.dump_page_items(target_page));
+    if json_mode {
+        // [#3697] 페이지네이션 진단 기계 계약 (#3608 1-C). stdout 은 순수 JSON 단건 봉투 —
+        // 진행/요약 출력은 내지 않는다 (jsonContract 규약).
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "pageCount": page_count,
+            "pageFilter": target_page,
+            "respectVposReset": respect_vpos_reset,
+            "pages": doc.dump_page_items_json(target_page),
+        });
+        println!("{envelope}");
+    } else {
+        println!("문서 로드: {} ({}페이지)", file_path, page_count);
+        print!("{}", doc.dump_page_items(target_page));
+    }
     EXIT_OK
 }
 

@@ -383,6 +383,10 @@ fn capabilities_mcp_covers_every_json_command() {
         .filter_map(|c| c["name"].as_str())
         // capabilities 자신은 도구가 아니라 도구 목록의 원천이라 제외한다.
         .filter(|n| *n != "capabilities")
+        // [#3697] dump-pages 는 CLI 진단 계약만 우선 노출한다 — #3608 1-C 표는 이
+        // 항목에 MCP 도구를 짝짓지 않았다(1-D 의 진단 도구 원칙). 에이전트 수요가
+        // 실증되면 별도 이슈로 승격해 이 제외를 지운다.
+        .filter(|n| *n != "dump-pages")
         .filter(|n| !mcp_commands.contains(n))
         .collect();
     assert!(
