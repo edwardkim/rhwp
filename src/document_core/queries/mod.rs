@@ -11,6 +11,8 @@ pub mod rendering;
 /// 주소(구역·문단·페이지)를 가진 검색 — 조판 엔진이 있어야만 가능한 질의.
 pub mod changed_pages;
 pub mod grep;
+/// [#3787 S2] 프롬프트 주입 신호 탐지 — 읽기 전용, 문서 무변경.
+pub mod injection_scan;
 pub(crate) mod search_query;
 pub mod structure;
 pub mod table_extract;
