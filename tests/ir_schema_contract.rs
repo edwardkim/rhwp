@@ -44,11 +44,11 @@ fn envelope_declares_version_and_dialect() {
     let v = schema_envelope();
     assert_eq!(v["schemaVersion"], "1.0", "{v}");
     assert!(v["irSchemaVersion"].is_string(), "{v}");
-    assert!(
-        v["dialect"]
-            .as_str()
-            .unwrap_or("")
-            .contains("json-schema.org"),
+    // 부분 문자열 검사(`.contains("json-schema.org")`)는 호스트를 판정하지 못한다 —
+    // https://json-schema.org.evil.com/... 같은 값도 통과하므로 계약 검사로 쓸 수 없다.
+    // 방언은 src/ir_schema.rs 의 SCHEMA_DIALECT 로 고정된 값이니 정확히 대조한다.
+    assert_eq!(
+        v["dialect"], "https://json-schema.org/draft/2020-12/schema",
         "방언을 명시해야 소비자가 파서를 고를 수 있다: {v}"
     );
     assert!(v["definitionCount"].as_u64().unwrap_or(0) >= 25, "{v}");

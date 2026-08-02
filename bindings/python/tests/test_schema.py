@@ -79,7 +79,12 @@ def schema() -> IrSchema:
 
 def test_version_and_dialect_are_exposed(schema: IrSchema) -> None:
     assert schema.version == "1.0"
-    assert "json-schema.org" in schema.dialect
+    # 부분 문자열 검사("json-schema.org" in ...)는 호스트를 판정하지 못한다 —
+    # https://json-schema.org.evil.com/... 같은 값도 통과한다
+    # (CodeQL py/incomplete-url-substring-sanitization, high).
+    # 방언은 src/ir_schema.rs 의 SCHEMA_DIALECT 로 고정된 값이므로 정확히 대조한다.
+    # 방언이 바뀌면 이 검사가 잡아야 계약이 성립한다.
+    assert schema.dialect == "https://json-schema.org/draft/2020-12/schema"
 
 
 def test_root_resolves_to_document(schema: IrSchema) -> None:
