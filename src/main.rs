@@ -966,6 +966,37 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             serde_json::json!([{ "when": "bare", "args": ["--bare"] }]),
             &["schemaVersion", "irSchemaVersion", "dialect", "definitionCount", "schema"],
         ),
+        tool_with_optional_args(
+            "hwp_insert_image",
+            "[#3719 §6-5] 도장·서명 같은 그림을 쪽 좌표에 붙여 새 문서를 만든다 — 채워 넣은 서식에 직인을 얹는 실물 제출의 마지막 조각. **길이 단위는 전부 HWPUNIT(1/7200 inch)이며 픽셀이 아니다** (A4 세로 = 59528 × 84188). 용지 왼쪽 위 모서리 기준 (x, y) 에 놓는 떠 있는 그림이다. 크기를 생략하면 원본 픽셀을 96dpi 로 환산하고, 한쪽만 주면 원본 비율을 지킨다. 쪽 밖으로 나가면 자르지 않고 overflow 로 보고한다. 지원 형식은 png·jpg·jpeg·bmp·tif·tiff 이며 그 밖은 인자 오류다. 산출물은 입력 형식을 따른다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "입력 HWP/HWPX 문서 경로" },
+                    "image": { "type": "string", "description": "삽입할 그림 파일 경로 (png/jpg/jpeg/bmp/tif/tiff)" },
+                    "page": { "type": "integer", "minimum": 0, "description": "붙일 쪽 (0부터). 생략하면 첫 쪽" },
+                    "x": { "type": "integer", "minimum": 0, "description": "용지 왼쪽 모서리에서의 가로 위치 (HWPUNIT, 1/7200 inch). 생략하면 0" },
+                    "y": { "type": "integer", "minimum": 0, "description": "용지 위쪽 모서리에서의 세로 위치 (HWPUNIT, 1/7200 inch). 생략하면 0" },
+                    "width": { "type": "integer", "minimum": 1, "description": "그림 너비 (HWPUNIT, 1/7200 inch). 생략하면 원본 픽셀 × 75" },
+                    "height": { "type": "integer", "minimum": 1, "description": "그림 높이 (HWPUNIT, 1/7200 inch). 생략하면 원본 픽셀 × 75" },
+                    "output": { "type": "string", "description": "출력 파일 경로. 생략하면 <입력명>_image.hwp (HWPX 입력이면 _image.hwpx)" },
+                    "dryRun": { "type": "boolean", "description": "true 면 파일을 쓰지 않고 배치 예정만 보고" }
+                },
+                "required": ["path", "image"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "insert-image", "{path}", "--image", "{image}", "--json"]),
+            serde_json::json!([
+                { "when": "page", "args": ["--page", "{page}"] },
+                { "when": "x", "args": ["--x", "{x}"] },
+                { "when": "y", "args": ["--y", "{y}"] },
+                { "when": "width", "args": ["--width", "{width}"] },
+                { "when": "height", "args": ["--height", "{height}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "image", "page", "x", "y", "width", "height", "binDataId", "dryRun", "overflow", "output", "outputFormat", "verify", "changedPages"],
+        ),
         tool(
             "hwp_run_plan",
             "[#3703] 선언적 편집 계획(JSON)을 정적 선검증→원자 실행→저널로 수행한다. 도구 호출을 체이닝하는 대신 의도를 계획서 하나로 선언하면, 전 step 의 실행 가능성을 미리 판정하고(불가 시 실행 0·invalid[]·exit 2) 인메모리로 적용해 단언(verify 자기검증) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경. fill_fields step 은 화면상 구별되지 않는 필드 이름을 steps[].confusable 로 경고한다. steps: fill_fields{data} · replace_text{find,replace[,occurrence]} · set_cell{table,row,col,text[,keepStyle]} · set_checkbox{occurrence}.",
@@ -1403,7 +1434,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
         cmd_json(
             "edit",
             "edit",
-            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록",
+            "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-image: 도장·서명 그림 삽입(길이는 HWPUNIT)",
             false,
             &[
                 "--data",
@@ -1418,8 +1449,17 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 // hwp_set_checkbox 가 이 플래그를 고정 배선한다 — 목록에만 없었다.
                 "--occurrence",
                 "--keep-style",
+                // [#3719 §6-5] insert-image 축. 길이 인자는 전부 HWPUNIT(1/7200 inch).
+                "--image",
+                "--page",
+                "--x",
+                "--y",
+                "--width",
+                "--height",
                 "-o",
                 "--dry-run",
+                // [#3702] edit 4종이 모두 받는 저장 직후 자기검증 — 선언만 빠져 있었다.
+                "--verify",
                 "--json",
             ],
             &[
@@ -1437,8 +1477,18 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "newText",
                 "keepStyle",
                 "overflow",
+                // [#3719 §6-5] insert-image 봉투 축.
+                "image",
+                "page",
+                "x",
+                "y",
+                "width",
+                "height",
+                "binDataId",
                 "output",
                 "outputFormat",
+                "verify",
+                "changedPages",
             ],
         ),
         // ── 배치 ──
@@ -2053,7 +2103,22 @@ fn print_help() {
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!("      병합으로 덮인 칸은 앵커 좌표 안내와 함께 오류 종료");
     println!();
-    println!("      edit 3종 공통: 산출물은 **입력 형식을 보존**한다 (HWPX 입력 → HWPX 산출).");
+    println!("  edit insert-image <파일> --image <그림> [옵션]");
+    println!("      도장·서명 그림을 쪽 좌표에 붙인다 (용지 기준 떠 있는 그림)");
+    println!();
+    println!("      --image <경로>            png·jpg·jpeg·bmp·tif·tiff (그 밖은 인자 오류)");
+    println!("      --page <번호>             붙일 쪽 (0부터, 기본 0)");
+    println!("      --x/--y <값>              용지 왼쪽 위 모서리 기준 위치 (기본 0)");
+    println!("      --width/--height <값>     그림 크기 (생략: 원본 픽셀 ×75, 한쪽만: 비율 유지)");
+    println!(
+        "      길이 단위는 모두 **HWPUNIT(1/7200 inch)** — 픽셀이 아니다 (A4 세로 59528×84188)"
+    );
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_image.<입력과 같은 확장자>)");
+    println!("      --dry-run                 파일을 쓰지 않고 배치 예정만 보고");
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!("      (쪽 밖으로 나가면 자르지 않고 --json 응답의 overflow 로 알린다)");
+    println!();
+    println!("      edit 4종 공통: 산출물은 **입력 형식을 보존**한다 (HWPX 입력 → HWPX 산출).");
     println!("      HWPX 입력에 -o ….hwp 를 지정하면 그 경로를 존중해 HWP5 로 저장하되");
     println!("      형식 변경(이미지·차트 유실 가능)을 stderr 로 경고한다.");
     println!();
@@ -10708,12 +10773,13 @@ fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<serde_json::V
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 fn run_edit(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-image> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
         Some("replace-text") => edit_replace_text(&args[1..]),
         Some("set-cell") => edit_set_cell(&args[1..]),
+        Some("insert-image") => edit_insert_image(&args[1..]),
         Some(other) => {
             eprintln!("오류: 알 수 없는 edit 하위 명령 - {}", other);
             eprintln!("{USAGE}");
@@ -12707,6 +12773,459 @@ fn edit_set_cell(args: &[String]) -> i32 {
         println!(
             "셀 기록 완료: {} → {} — 표{} ({},{}) {:?} → {:?}",
             file_path, output_path, table_no, row, col, old_text, new_text
+        );
+    }
+    if verify_failed {
+        eprintln!("검증 실패(--verify): 저장본 재파싱 IR 차이 — 상세는 --json 또는 ir-diff");
+        process::exit(3);
+    }
+    EXIT_OK
+}
+
+/// [#3719 §6-5] `edit insert-image` 가 받는 그림 형식.
+///
+/// BinData 로 넣을 수 있고 **원본 픽셀 크기를 헤더만 읽어 잴 수 있는** 형식만 담는다.
+/// 크기를 못 재면 배율·배치 좌표가 의미를 잃으므로 삽입을 시작하지 않는다.
+const INSERT_IMAGE_FORMATS: [&str; 6] = ["png", "jpg", "jpeg", "bmp", "tif", "tiff"];
+
+/// 96dpi 픽셀 1개 = 75 HWPUNIT(7200/96). 코어가 crop 을 `px * 75` 로 잡는 것과 같은 환산비다.
+const HWPUNIT_PER_PX: u32 = 75;
+
+/// 그림의 원본 픽셀 크기 — 전체 디코드 없이 헤더만 읽는다.
+///
+/// 확장자는 거짓말할 수 있으므로 매직 바이트로 형식을 다시 판정한다. 알아보지 못하면
+/// `None` — 호출부가 인자 오류(exit 2)로 끊는다.
+fn insert_image_dimensions(bytes: &[u8]) -> Option<(u32, u32)> {
+    use image::ImageFormat;
+
+    let format = image::guess_format(bytes).ok()?;
+    if !matches!(
+        format,
+        ImageFormat::Png | ImageFormat::Jpeg | ImageFormat::Bmp | ImageFormat::Tiff
+    ) {
+        return None;
+    }
+    let (width, height) = image::ImageReader::with_format(std::io::Cursor::new(bytes), format)
+        .into_dimensions()
+        .ok()?;
+    if width == 0 || height == 0 {
+        return None;
+    }
+    Some((width, height))
+}
+
+/// `--page` 가 가리키는 쪽의 **앵커 문단**(구역 인덱스, 문단 인덱스).
+///
+/// 용지 기준(Paper-relative) floating 그림은 앵커 문단이 놓인 쪽에 그려진다. 그래서
+/// "몇 쪽" 을 "어느 문단" 으로 옮겨야 하는데, 그 환산은 이미 조판 결과가 알고 있다 —
+/// 기존 진단 질의 `dump_page_items_json` 을 그대로 읽어 그 쪽의 첫 본문 항목을 고른다
+/// (새 조판 로직 0). 미주(`isEndnote`)는 구역 뒤에 합성된 문단이라 앵커로 쓰지 않는다.
+fn insert_image_page_anchor(
+    doc: &rhwp::wasm_api::HwpDocument,
+    page: u32,
+) -> Option<(usize, usize)> {
+    let empty: Vec<serde_json::Value> = Vec::new();
+    let pages = doc.dump_page_items_json(Some(page));
+    let page_json = pages.as_array()?.first()?;
+    let section = page_json["section"].as_u64()? as usize;
+
+    for column in page_json["columns"].as_array().unwrap_or(&empty) {
+        for item in column["items"].as_array().unwrap_or(&empty) {
+            if item["isEndnote"] == true {
+                continue;
+            }
+            if let Some(para) = item["paraIndex"].as_u64() {
+                return Some((section, para as usize));
+            }
+        }
+    }
+    // 항목이 하나도 없는 쪽(어울림 문단·감춘 빈 줄만 귀속된 쪽)은 extras 로 온다.
+    for extra in page_json["extras"].as_array().unwrap_or(&empty) {
+        if let Some(para) = extra["paraIndex"].as_u64() {
+            return Some((section, para as usize));
+        }
+    }
+    None
+}
+
+/// `edit insert-image` — 도장·서명 같은 그림을 쪽 좌표에 붙인다 (#3719 §6-5).
+///
+/// 실물 서식 제출의 마지막 조각이다. 채워 넣은 서식에 직인·서명 이미지를 얹지 못하면
+/// 사람이 한 번 더 한컴을 열어야 하고, 그 순간 자동화 사슬이 끊긴다.
+///
+/// 새 삽입 로직을 만들지 않는다 — 검증된 코어 `insert_picture_native` 의 **본문 floating
+/// 분기**(용지 기준 offset, `treat_as_char=false`, 한컴 native 기본값)를 그대로 쓴다.
+/// 인자 파싱·저장·봉투·`--verify`·`changedPages` 는 `edit set-cell` 과 같은 형태다.
+///
+/// **길이 단위는 전부 HWPUNIT(1/7200 inch)** 이다 — px 로 오해하면 도장이 점만 하게
+/// 찍히거나 아예 안 보인다. A4 세로는 59528 × 84188 HWPUNIT.
+fn edit_insert_image(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]";
+
+    let mut file_path: Option<&str> = None;
+    let mut image_path: Option<&str> = None;
+    let mut page_arg: u32 = 0;
+    let mut x_hu: u32 = 0;
+    let mut y_hu: u32 = 0;
+    let mut width_arg: Option<u32> = None;
+    let mut height_arg: Option<u32> = None;
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    // [#3702] 저장 직후 자기검증 — 판정은 데이터, 차이 시 exit 3.
+    let mut verify_mode = false;
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--image" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => image_path = Some(v),
+                    None => {
+                        eprintln!("오류: --image 뒤에 그림 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--page" | "--x" | "--y" | "--width" | "--height" => {
+                let name = args[i].clone();
+                // 단위를 오류 문구에도 박아 둔다 — px 로 넣으면 도장이 사라진다.
+                let unit = if name == "--page" {
+                    " (0부터)"
+                } else {
+                    " (HWPUNIT, 1/7200 inch)"
+                };
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다{unit}.");
+                    return EXIT_USAGE;
+                };
+                let Ok(value) = v.parse::<u32>() else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다{unit}: {v}");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--page" => page_arg = value,
+                    "--x" => x_hu = value,
+                    "--y" => y_hu = value,
+                    "--width" => width_arg = Some(value),
+                    _ => height_arg = Some(value),
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+
+    let (Some(file_path), Some(image_path)) = (file_path, image_path) else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    for (name, value) in [("--width", width_arg), ("--height", height_arg)] {
+        if value == Some(0) {
+            eprintln!("오류: {name} 는 1 이상이어야 합니다 (HWPUNIT, 1/7200 inch).");
+            return EXIT_USAGE;
+        }
+    }
+
+    // ── 그림 선검증 — 문서를 읽기 전에 끊는다 ──
+    // 지원하지 않는 형식은 **인자 문제**다(런타임 실패가 아니다) → exit 2.
+    let image_ext = Path::new(image_path)
+        .extension()
+        .map(|e| e.to_string_lossy().to_ascii_lowercase())
+        .unwrap_or_default();
+    if !INSERT_IMAGE_FORMATS.contains(&image_ext.as_str()) {
+        eprintln!(
+            "오류: 지원하지 않는 그림 형식입니다 - {} (지원: {})",
+            if image_ext.is_empty() {
+                "확장자 없음".to_string()
+            } else {
+                image_ext.clone()
+            },
+            INSERT_IMAGE_FORMATS.join(", ")
+        );
+        return EXIT_USAGE;
+    }
+    let image_bytes = match fs::read(image_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 그림 파일을 읽을 수 없습니다 - {}: {}", image_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    // 확장자만 믿지 않는다 — 내용이 그림이 아니면 원본 픽셀 크기를 못 재고,
+    // 크기를 모르면 배치 좌표가 의미를 잃는다.
+    let Some((natural_w_px, natural_h_px)) = insert_image_dimensions(&image_bytes) else {
+        eprintln!(
+            "오류: 그림 형식을 알아볼 수 없습니다 - {} (지원: {})",
+            image_path,
+            INSERT_IMAGE_FORMATS.join(", ")
+        );
+        return EXIT_USAGE;
+    };
+
+    // 크기 결정: 둘 다 없으면 원본 픽셀(96dpi 환산), 하나만 주면 원본 비율 유지.
+    // 어느 쪽이든 최종 값은 봉투에 그대로 실어 "조용한 보정" 이 없게 한다.
+    let (width_hu, height_hu) = match (width_arg, height_arg) {
+        (Some(w), Some(h)) => (w, h),
+        (Some(w), None) => (
+            w,
+            ((w as u64 * natural_h_px as u64) / natural_w_px as u64).max(1) as u32,
+        ),
+        (None, Some(h)) => (
+            ((h as u64 * natural_w_px as u64) / natural_h_px as u64).max(1) as u32,
+            h,
+        ),
+        (None, None) => (
+            natural_w_px.saturating_mul(HWPUNIT_PER_PX),
+            natural_h_px.saturating_mul(HWPUNIT_PER_PX),
+        ),
+    };
+    // 코어는 offset·크기를 i32/u32 로 다룬다. 범위를 넘는 값이 조용히 감기면 도장이
+    // 엉뚱한 곳에 찍히므로 인자 오류로 끊는다.
+    for (name, value) in [
+        ("--x", x_hu),
+        ("--y", y_hu),
+        ("--width", width_hu),
+        ("--height", height_hu),
+    ] {
+        if value > i32::MAX as u32 {
+            eprintln!(
+                "오류: {name} 값이 너무 큽니다 (HWPUNIT 최대 {}): {value}",
+                i32::MAX
+            );
+            return EXIT_USAGE;
+        }
+    }
+
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: HWP 파싱 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    let page_count = doc.page_count();
+    if page_arg >= page_count {
+        eprintln!(
+            "오류: 페이지 번호가 범위를 벗어났습니다 (0~{}): {page_arg}",
+            page_count.saturating_sub(1)
+        );
+        return EXIT_USAGE;
+    }
+    let Some((sec, para)) = insert_image_page_anchor(&doc, page_arg) else {
+        eprintln!("오류: {page_arg}쪽(0 기준)에서 그림을 붙일 본문 문단을 찾지 못했습니다.");
+        return EXIT_RUNTIME;
+    };
+
+    // [#3480 과 같은 취지] 쪽 밖으로 나가면 **조용히 자르지 않는다**. 에이전트는 렌더
+    // 결과를 보지 않으므로 신호가 없으면 잘려 나간 도장을 완성본으로 판단한다.
+    let page_def = &doc.document().sections[sec].section_def.page_def;
+    let (paper_w, paper_h) = if page_def.landscape {
+        (page_def.height as i64, page_def.width as i64)
+    } else {
+        (page_def.width as i64, page_def.height as i64)
+    };
+    let right = x_hu as i64 + width_hu as i64;
+    let bottom = y_hu as i64 + height_hu as i64;
+    let overflow = if right > paper_w || bottom > paper_h {
+        Some(serde_json::json!({
+            "page": page_arg,
+            "paperWidthHu": paper_w,
+            "paperHeightHu": paper_h,
+            "rightHu": right,
+            "bottomHu": bottom,
+            "overflowXHu": (right - paper_w).max(0),
+            "overflowYHu": (bottom - paper_h).max(0),
+        }))
+    } else {
+        None
+    };
+
+    let mut bin_data_id = serde_json::Value::Null;
+    if !dry_run {
+        // 그림 설명(대체 텍스트)은 파일명 — 한컴이 개체 속성에 보여 주는 값이다.
+        let description = Path::new(image_path)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_default();
+        let inserted = match doc.insert_picture_native(
+            sec,
+            para,
+            0,
+            &[],
+            &image_bytes,
+            width_hu,
+            height_hu,
+            natural_w_px,
+            natural_h_px,
+            &image_ext,
+            &description,
+            Some(x_hu as i32),
+            Some(y_hu as i32),
+        ) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("오류: 그림 삽입 실패 - {}", e);
+                // 실패 시 원본 불변 — 출력 파일을 쓰지 않고 즉시 끝낸다.
+                return EXIT_RUNTIME;
+            }
+        };
+        // binDataId 는 새 조회 API 없이 방금 삽입한 컨트롤에서 직접 읽는다 —
+        // 같은 그림을 다시 참조하거나(도장 재사용) 산출물을 감사할 때 쓰는 주소다.
+        let ctrl_idx = serde_json::from_str::<serde_json::Value>(&inserted)
+            .ok()
+            .and_then(|v| v["controlIdx"].as_u64())
+            .unwrap_or_default() as usize;
+        if let Some(rhwp::model::control::Control::Picture(picture)) = doc
+            .document()
+            .sections
+            .get(sec)
+            .and_then(|s| s.paragraphs.get(para))
+            .and_then(|p| p.controls.get(ctrl_idx))
+        {
+            bin_data_id = serde_json::json!(picture.image_attr.bin_data_id);
+        }
+    }
+
+    // [#3383] 입력 형식을 보존한다 — 기본 확장자도 산출 형식을 따른다.
+    let out_format = edit_output_format(&bytes, out_path.as_deref());
+    let output_path = out_path.unwrap_or_else(|| {
+        let stem = Path::new(file_path)
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| "output".to_string());
+        format!("{}_image.{}", stem, out_format.ext())
+    });
+
+    let mut verify_report = serde_json::Value::Null;
+    let mut verify_failed = false;
+    if !dry_run {
+        let out_bytes = match edit_serialize(&mut doc, out_format) {
+            Ok(b) => b,
+            Err(e) => {
+                eprintln!(
+                    "오류: {} 직렬화 실패 - {}",
+                    out_format.label().to_uppercase(),
+                    e
+                );
+                return EXIT_RUNTIME;
+            }
+        };
+        if let Err(e) = fs::write(&output_path, &out_bytes) {
+            eprintln!("오류: 출력 쓰기 실패 - {}: {}", output_path, e);
+            return EXIT_RUNTIME;
+        }
+        // [#3702] 저장 직후 자기검증 — 편집 후 IR ↔ 저장본 재파싱 IR.
+        if verify_mode {
+            let cross = out_format == EditOutputFormat::Hwp
+                && rhwp::parser::detect_format(&bytes) == rhwp::parser::FileFormat::Hwpx;
+            let (report, failed) = edit_verify_report(&doc, &out_bytes, cross);
+            verify_report = report;
+            verify_failed = failed;
+        }
+    }
+
+    // [#3712] 눈검증 대상 페이지 — 앵커 문단이 걸친 쪽 전부.
+    let changed_pages = if dry_run {
+        serde_json::Value::Null
+    } else {
+        match doc.pages_covering_paragraphs(&[(sec, para)]) {
+            Some(pages) => serde_json::json!(pages),
+            None => serde_json::Value::Null,
+        }
+    };
+
+    if json_mode {
+        let mut envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "image": image_path,
+            "page": page_arg,
+            "x": x_hu,
+            "y": y_hu,
+            "width": width_hu,
+            "height": height_hu,
+            "binDataId": bin_data_id,
+            "dryRun": dry_run,
+            "changedPages": changed_pages,
+            "overflow": overflow.clone().map(|o| vec![o]).unwrap_or_default(),
+        });
+        if !dry_run {
+            envelope["output"] = serde_json::Value::String(output_path.clone());
+            envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
+            envelope["verify"] = verify_report.clone();
+        }
+        println!("{envelope}");
+        if verify_failed {
+            process::exit(3);
+        }
+        return EXIT_OK;
+    }
+
+    if dry_run {
+        println!(
+            "배치 예정: {} {}쪽 ({}, {}) 크기 {}×{} HWPUNIT ← {} (원본 {}×{}px)",
+            file_path,
+            page_arg,
+            x_hu,
+            y_hu,
+            width_hu,
+            height_hu,
+            image_path,
+            natural_w_px,
+            natural_h_px
+        );
+    } else {
+        println!(
+            "그림 삽입 완료: {} → {} — {}쪽 ({}, {}) 크기 {}×{} HWPUNIT ← {} (원본 {}×{}px)",
+            file_path,
+            output_path,
+            page_arg,
+            x_hu,
+            y_hu,
+            width_hu,
+            height_hu,
+            image_path,
+            natural_w_px,
+            natural_h_px
+        );
+    }
+    if overflow.is_some() {
+        eprintln!(
+            "경고: 그림이 쪽 밖으로 나갑니다 (용지 {}×{} HWPUNIT, 오른쪽 {} 아래 {}) — 상세는 --json 의 overflow",
+            paper_w, paper_h, right, bottom
         );
     }
     if verify_failed {

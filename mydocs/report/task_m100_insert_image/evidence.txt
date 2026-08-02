@@ -1,0 +1,130 @@
+# task_m100_insert_image — 실측 원문 (rhwp v0.8.2)
+# 채집일 2026-08-02 / 대상 samples/field-01.hwp (HWP5 3쪽), 도장 40x20px
+
+## 1) 기본 삽입 — 쪽·좌표·크기 지정 (HWPUNIT)
+$ rhwp edit insert-image samples/field-01.hwp --image stamp.png --page 0 --x 30000 --y 40000 --width 6000 --height 3000 -o out.hwp --json
+{"binDataId":4,"changedPages":[0],"dryRun":false,"height":3000,"image":"C:/Users/swsz9/AppData/Local/Temp/stamp.png","output":"C:/Users/swsz9/AppData/Local/Temp/e1.hwp","outputFormat":"hwp5","overflow":[],"page":0,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null,"width":6000,"x":30000,"y":40000}
+exit=0
+
+## 2) 크기 생략 — 원본 픽셀 x75 (96dpi 환산). 40x20px -> 3000x1500 HWPUNIT
+{"binDataId":4,"changedPages":[0],"dryRun":false,"height":1500,"image":"C:/Users/swsz9/AppData/Local/Temp/stamp.png","output":"C:/Users/swsz9/AppData/Local/Temp/e2.hwp","outputFormat":"hwp5","overflow":[],"page":0,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null,"width":3000,"x":0,"y":0}
+exit=0
+
+## 3) 한쪽만 지정 — 원본 비율 유지 (40:20 -> 8000:4000)
+{"binDataId":4,"changedPages":[0],"dryRun":false,"height":4000,"image":"C:/Users/swsz9/AppData/Local/Temp/stamp.png","output":"C:/Users/swsz9/AppData/Local/Temp/e3.hwp","outputFormat":"hwp5","overflow":[],"page":0,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null,"width":8000,"x":0,"y":0}
+exit=0
+
+## 4) --dry-run — 산출 0, 배치 예정만 (changedPages/binDataId/output 은 null)
+{"binDataId":null,"changedPages":null,"dryRun":true,"height":1500,"image":"C:/Users/swsz9/AppData/Local/Temp/stamp.png","overflow":[],"page":0,"schemaVersion":"1.0","source":"samples/field-01.hwp","width":3000,"x":1000,"y":2000}
+exit=0
+산출물 존재? NO
+
+## 5) 쪽 밖 배치 — 자르지 않고 overflow 로 보고 (용지 경계 +1 HWPUNIT)
+{"binDataId":4,"changedPages":[0],"dryRun":false,"height":3000,"image":"C:/Users/swsz9/AppData/Local/Temp/stamp.png","output":"C:/Users/swsz9/AppData/Local/Temp/e5.hwp","outputFormat":"hwp5","overflow":[{"bottomHu":84189,"overflowXHu":1,"overflowYHu":1,"page":0,"paperHeightHu":84188,"paperWidthHu":59528,"rightHu":59529}],"page":0,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null,"width":6000,"x":53529,"y":81189}
+exit=0
+
+## 6) 용지 경계에 정확히 닿는 배치 — 넘침 아님 (거짓 경보 금지)
+{"binDataId":null,"changedPages":null,"dryRun":true,"height":3000,"image":"C:/Users/swsz9/AppData/Local/Temp/stamp.png","overflow":[],"page":0,"schemaVersion":"1.0","source":"samples/field-01.hwp","width":6000,"x":53528,"y":81188}
+exit=0
+
+## 7) 형식별 수용 — png/jpg/bmp/tif 전부 같은 규약(40x20px -> 3000x1500)
+  png  width=3000 height=1500 binDataId=4 exit=0
+  jpg  width=3000 height=1500 binDataId=4 exit=0
+  bmp  width=3000 height=1500 binDataId=4 exit=0
+  tif  width=3000 height=1500 binDataId=4 exit=0
+
+## 8) 지원 안 하는 형식 — 인자 오류(2), stdout 0바이트
+exit=2
+stdout bytes=0  stderr=오류: 지원하지 않는 그림 형식입니다 - svg (지원: png, jpg, jpeg, bmp, tif, tiff)
+산출물 존재? NO
+
+## 9) 확장자 거짓말(.png 인데 내용은 아님) — 매직바이트로 잡아 2
+exit=2
+stdout bytes=0  stderr=오류: 그림 형식을 알아볼 수 없습니다 - C:/Users/swsz9/AppData/Local/Temp/liar.png (지원: png, jpg, jpeg, bmp, tif, tiff)
+
+## 10) 없는 그림 파일 — 런타임 실패(1), 인자 오류(2) 아님
+exit=1
+stdout bytes=0  stderr=오류: 그림 파일을 읽을 수 없습니다 - C:/Users/swsz9/AppData/Local/Temp/ghost.png: 지정된 파일을 찾을 수 없습니다. (os error 2)
+
+## 11) 쪽 범위 초과 — 인자 오류(2). 문서는 3쪽(info.pageCount)
+  info.pageCount=3
+exit=2
+stdout bytes=0  stderr=오류: 페이지 번호가 범위를 벗어났습니다 (0~2): 3
+
+## 12) 음수 좌표 — 조용히 0 으로 깎지 않고 인자 오류(2)
+exit=2
+stdout bytes=0  stderr=오류: --x 뒤에 0 이상의 정수가 필요합니다 (HWPUNIT, 1/7200 inch): -100
+
+## 13) 쪽 지정(앵커) — --page N 이 changedPages 에 N 을 담는가 (0,1,2쪽 전수)
+  --page 0  changedPages=[0]
+  --page 1  changedPages=[1]
+  --page 2  changedPages=[2]
+
+## 14) --verify — 저장 직후 IR 자기검증 (코어 img_dim 정합 후 identical:true)
+{"binDataId":4,"changedPages":[0],"dryRun":false,"height":1500,"image":"C:/Users/swsz9/AppData/Local/Temp/stamp.png","output":"C:/Users/swsz9/AppData/Local/Temp/e14.hwp","outputFormat":"hwp5","overflow":[],"page":0,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":{"diffCount":0,"identical":true},"width":3000,"x":10000,"y":10000}
+exit=0
+
+## 14b) [수정 전 실측] 같은 명령이 diffCount=1 로 exit 3 이었다
+    DIFF: PictureSize { section: 0, paragraph: 0, path: "/ctrl[2]pic",
+           detail: "imgDim: expected=(0, 0) actual=(3000, 1500)" }
+    → insert_picture_native 가 img_dim 을 (0,0) 으로 두고, HWP5 직렬화기는
+      crop.right/bottom 을 원본 크기 자리에 쓰고, HWP5 파서는 그것을 img_dim 으로
+      되읽는다. 정상 삽입인데 --verify 가 항상 exit 3 이었다.
+
+## 15) HWPX 입력 — 산출 형식 보존 (HWPX -> HWPX)
+{"binDataId":26,"changedPages":[0],"dryRun":false,"height":2500,"image":"C:/Users/swsz9/AppData/Local/Temp/stamp.png","output":"C:/Users/swsz9/AppData/Local/Temp/e15.hwpx","outputFormat":"hwpx","overflow":[],"page":0,"schemaVersion":"1.0","source":"samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx","verify":null,"width":5000,"x":20000,"y":20000}
+exit=0
+
+## 16) 사람용 출력 (--json 없이) + 쪽 밖 경고는 stderr
+그림 삽입 완료: samples/field-01.hwp → C:/Users/swsz9/AppData/Local/Temp/e16.hwp — 0쪽 (53529, 81189) 크기 6000×3000 HWPUNIT ← C:/Users/swsz9/AppData/Local/Temp/stamp.png (원본 40×20px)
+경고: 그림이 쪽 밖으로 나갑니다 (용지 59528×84188 HWPUNIT, 오른쪽 59529 아래 84189) — 상세는 --json 의 overflow
+exit=0
+
+## 17) 자기서술 — capabilities commands[edit].flags 에 insert-image 축 등재
+  flags      = ['--data', '--find', '--replace', '--ignore-case', '--table', '--row', '--col', '--text', '--occurrence', '--keep-style', '--image', '--page', '--x', '--y', '--width', '--height', '-o', '--dry-run', '--verify', '--json']
+  summary    = 문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-image: 도장·서명 그림 삽입(길이는 HWPUNIT)
+
+## 18) MCP 도구 정의 (capabilities --mcp) — required 배열 + 전 속성 CLI 배선
+  inputSchema.type      = object
+  inputSchema.required  = ['path', 'image']
+  properties            = ['dryRun', 'height', 'image', 'output', 'page', 'path', 'width', 'x', 'y']
+  cli.args              = ['edit', 'insert-image', '{path}', '--image', '{image}', '--json']
+  cli.optionalArgs.when = ['page', 'x', 'y', 'width', 'height', 'output', 'dryRun']
+  배선 안 된 속성        = [] (0건이어야 함)
+  outputFields          = ['schemaVersion', 'source', 'image', 'page', 'x', 'y', 'width', 'height', 'binDataId', 'dryRun', 'overflow', 'output', 'outputFormat', 'verify', 'changedPages']
+  매니페스트 도구 총수   = 26
+
+## 19) MCP 서버 실호출 — tools/call hwp_insert_image (stdio JSON-RPC 왕복)
+  응답: {"binDataId":4,"changedPages":[1],"dryRun":false,"height":3000,"image":"C:/Users/swsz9/AppData/Local/Temp/stamp.png","output":"C:/Users/swsz9/AppData/Local/Temp/mcp-stamp.hwp","outputFormat":"hwp5","overflow":[],"page":1,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null,"width":6000,"x":30000,"y":40000}
+  isError: False
+  산출물 존재? YES (474112 bytes)
+
+## 20) 검증 게이트 실측
+$ cargo build --release --bin rhwp
+    Finished `release` profile [optimized] target(s) in 7m 59s        (경고 0)
+
+$ cargo test --release --test insert_image_contract \
+      --test cli_json_contract --test mcp_server_contract \
+      --test agent_profile_router_contract --test edit_set_cell_contract \
+      --test edit_verify_contract --test changed_pages_contract \
+      --test edit_fill_fields_contract --test edit_replace_text_contract
+  insert_image_contract          19 passed; 0 failed   (신규)
+  cli_json_contract              26 passed; 0 failed
+  mcp_server_contract            22 passed; 0 failed
+  agent_profile_router_contract   7 passed; 0 failed
+  edit_set_cell_contract          5 passed; 0 failed
+  edit_verify_contract            4 passed; 0 failed
+  changed_pages_contract          5 passed; 0 failed
+  edit_fill_fields_contract       7 passed; 0 failed
+  edit_replace_text_contract      5 passed; 0 failed
+  ── 합계 100 passed; 0 failed
+
+$ cargo test --release --lib          # 코어 img_dim 변경 무회귀
+  test result: ok. 3030 passed; 0 failed; 7 ignored; finished in 12.73s
+
+$ cargo clippy -- -D warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 01s   (경고 0)
+
+$ git diff --name-only HEAD | grep '\.rs$' | xargs -n 10 rustfmt --edition 2021 \
+      --config-path rustfmt.toml --config newline_style=Auto --check
+  (차이 없음 — 종료 0)

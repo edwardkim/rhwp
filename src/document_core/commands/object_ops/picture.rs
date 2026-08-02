@@ -1509,6 +1509,20 @@ impl DocumentCore {
             right: (natural_width_px * 75) as i32,
             bottom: (natural_height_px * 75) as i32,
         };
+        // [#3719 §6-5] crop 이 기준으로 삼는 전체 좌표 범위를 IR 에도 남긴다.
+        //
+        // 종전에는 `img_dim` 을 기본값 (0,0) 으로 두었는데, HWP5 직렬화기는 그 경우
+        // `crop.right/bottom` 을 원본 크기 자리에 기록하고(control.rs 의 #1929 폴백)
+        // HWP5 파서는 그 값을 다시 `img_dim` 으로 적재한다. 그래서 **삽입 직후 IR 과
+        // 저장본 재파싱 IR 이 항상 이 한 필드만큼 어긋났다** — `edit insert-image
+        // --verify` 가 정상 삽입에도 exit 3 을 내는 형태였다(실측 diffCount=1,
+        // `imgDim: expected=(0,0) actual=(3000,1500)`).
+        //
+        // 값은 직렬화기가 이미 쓰던 것과 같고, 렌더러의 폴백(`compute_image_crop_src`
+        // 는 imgDim 이 없으면 crop.right/bottom 을 같은 자리에 쓴다)과도 같은 배율이라
+        // 그림이 놓이는 결과는 바뀌지 않는다. HWPX 산출은 종전 `imgDim 0/0` 대신 실제
+        // 좌표 범위를 얻는다(HWP5 산출과의 비대칭 해소).
+        let img_dim = ((natural_width_px * 75), (natural_height_px * 75));
         let image_attr = ImageAttr {
             bin_data_id: position_id,
             brightness: 0,
@@ -1557,6 +1571,7 @@ impl DocumentCore {
                     border_x: bx,
                     border_y: by,
                     crop,
+                    img_dim,
                     image_attr,
                     ..Default::default()
                 };
@@ -1633,6 +1648,7 @@ impl DocumentCore {
                 border_x: bx,
                 border_y: by,
                 crop,
+                img_dim,
                 image_attr,
                 ..Default::default()
             };
@@ -1715,6 +1731,7 @@ impl DocumentCore {
             border_x: bx,
             border_y: by,
             crop,
+            img_dim,
             image_attr,
             ..Default::default()
         };
