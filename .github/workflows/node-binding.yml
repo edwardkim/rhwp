@@ -179,4 +179,14 @@ jobs:
         env:
           RHWP_BIN: ${{ github.workspace }}/target/release/rhwp
         # 다르면 exit 1. 고치는 법은 `npm run gen:types` 후 커밋.
-        run: npm run gen:check
+        #
+        # 다만 `export-ir-schema` 는 M18(#3762, PR #3775)이 신설한 명령이라 그 PR 이
+        # 머지되기 전에는 devel 바이너리에 없다. 그때는 실패가 아니라 **건너뛴다** —
+        # 선행 PR 을 기다리는 상태를 "타입이 뒤처졌다"로 보고하면 진짜 드리프트를
+        # 놓치게 된다. 명령이 생기는 순간 이 검사는 저절로 활성화된다.
+        run: |
+          if "$RHWP_BIN" export-ir-schema --bare > /dev/null 2>&1; then
+            npm run gen:check
+          else
+            echo "::notice title=생성 타입 검사 건너뜀::이 rhwp 에 export-ir-schema 가 없습니다 (M18/#3775 머지 전). 머지되면 자동으로 활성화됩니다."
+          fi

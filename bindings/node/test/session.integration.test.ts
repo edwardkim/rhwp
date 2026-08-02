@@ -141,7 +141,12 @@ describe.skipIf(!fieldSampleReady)('2층 세션 — 한 서버에 문서 여럿'
 
       const firstMeta = await first.info();
       const secondMeta = await second.info();
-      expect(firstMeta.get<string>('source')).toContain('field-01');
+
+      // 세션 봉투의 `source` 는 **파일 경로가 아니라 핸들 식별자**다(실측: "doc-1").
+      // 무상태 `info` 는 경로를 주지만 세션 도구는 핸들을 에코한다 — 두 층의 어휘가
+      // 다르다는 사실 자체를 여기서 고정한다. 경로를 기대하고 짜면 조용히 어긋난다.
+      expect(firstMeta.get<string>('source')).toBe(first.docId);
+      expect(secondMeta.get<string>('source')).toBe(second.docId);
       expect(secondMeta.get<number>('pageCount')).toBeGreaterThanOrEqual(1);
 
       // 한쪽을 닫아도 다른 쪽은 살아 있어야 한다 — 그렇지 않으면 세션 공유가
