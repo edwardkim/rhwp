@@ -18,6 +18,27 @@ fn sample(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
 }
 
+/// stdin 에 본문을 쓰되, 자식이 stdin 을 읽기 전에 종료한 경우의 BrokenPipe 는
+/// 무시한다. 인자 검증 거부 계열 테스트는 프로세스가 입력을 소비하기 전에
+/// 종료하는 것이 정상 경로라, 쓰기 완료 여부는 검증 대상(종료 코드·출력)이
+/// 아니다. CI 에서 이 레이스로 간헐 실패가 있었다 (예: run 30713114055 의
+/// batch_convert_rejects_flag_as_out_dir_before_any_write).
+fn write_stdin_ignoring_early_exit(child: &mut std::process::Child, stdin_body: &str) {
+    use std::io::ErrorKind;
+    if let Err(err) = child
+        .stdin
+        .as_mut()
+        .expect("stdin")
+        .write_all(stdin_body.as_bytes())
+    {
+        assert_eq!(
+            err.kind(),
+            ErrorKind::BrokenPipe,
+            "stdin 쓰기 실패: {err:?}"
+        );
+    }
+}
+
 fn run_with_stdin(args: &[&str], stdin_body: &str) -> Output {
     let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
         .args(args)
@@ -26,12 +47,7 @@ fn run_with_stdin(args: &[&str], stdin_body: &str) -> Output {
         .stderr(Stdio::piped())
         .spawn()
         .expect("rhwp 실행 실패");
-    child
-        .stdin
-        .as_mut()
-        .expect("stdin")
-        .write_all(stdin_body.as_bytes())
-        .expect("stdin 쓰기 실패");
+    write_stdin_ignoring_early_exit(&mut child, stdin_body);
     child.wait_with_output().expect("rhwp 종료 대기 실패")
 }
 
@@ -45,12 +61,7 @@ fn run_with_stdin_in_dir(args: &[&str], stdin_body: &str, current_dir: &Path) ->
         .stderr(Stdio::piped())
         .spawn()
         .expect("rhwp 실행 실패");
-    child
-        .stdin
-        .as_mut()
-        .expect("stdin")
-        .write_all(stdin_body.as_bytes())
-        .expect("stdin 쓰기 실패");
+    write_stdin_ignoring_early_exit(&mut child, stdin_body);
     child.wait_with_output().expect("rhwp 종료 대기 실패")
 }
 

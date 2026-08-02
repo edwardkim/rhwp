@@ -66,7 +66,8 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   [{ key: 'l', ctrl: true }, 'edit:find-again'],
   [{ key: 'v', alt: true, shift: true }, 'edit:compare-documents'],
   [{ key: 'h', ctrl: true, shift: true }, 'edit:document-history'],
-  [{ key: 'g', alt: true }, 'edit:goto'],
+  // macOS 영문 입력에서 Option+G의 key는 ©가 되지만 물리 키는 KeyG로 유지된다.
+  [{ key: 'g', code: 'KeyG', alt: true }, 'edit:goto'],
   [{ key: 'ㅎ', alt: true }, 'edit:goto'],
 
   // 입력
