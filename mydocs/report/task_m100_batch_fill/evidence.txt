@@ -1,0 +1,119 @@
+=== rhwp v0.8.2 / upstream/devel a8d7bdfbf / 2026-08-02T11:14:52Z ===
+=== 실행 환경: Windows 11, release 빌드 (RUSTFLAGS=-C linker=rust-lld) ===
+
+--- [1] 서식의 실제 누름틀 (테스트 데이터의 출처 — 이름을 하드코딩하지 않는다) ---
+$ rhwp fields samples/field-01.hwp --json
+      5 "name":"목차1"
+      1 "name":"부서명"
+      1 "name":"이메일"
+      1 "name":"작성자"
+      1 "name":"전화번호"
+      1 "name":"제목"
+      1 "name":"회사명"
+
+--- [2] JSONL 3행 -> 산출 3개, --name-field 값이 겹치면 _2 (덮어쓰지 않는다) ---
+$ rhwp batch fill --form samples/field-01.hwp --data rows.jsonl --out-dir out1 --name-field 작성자 --json
+{"ambiguous":[],"changedPages":[0,2],"confusable":[],"dryRun":false,"filled":[{"name":"작성자","occurrence":0,"value":"홍길동"},{"name":"제목","occurrence":0,"value":"1분기"},{"name":"회사명","occurrence":0,"value":"가나다 주식회사"}],"filledCount":3,"notFound":[],"output":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/out1\\홍길동.hwp","outputFormat":"hwp5","row":0,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null}
+{"ambiguous":[],"changedPages":[0,2],"confusable":[],"dryRun":false,"filled":[{"name":"작성자","occurrence":0,"value":"김철수"},{"name":"제목","occurrence":0,"value":"2분기"},{"name":"회사명","occurrence":0,"value":"라마바 주식회사"}],"filledCount":3,"notFound":[],"output":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/out1\\김철수.hwp","outputFormat":"hwp5","row":1,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null}
+{"ambiguous":[],"changedPages":[0,2],"confusable":[],"dryRun":false,"filled":[{"name":"작성자","occurrence":0,"value":"홍길동"},{"name":"제목","occurrence":0,"value":"3분기"},{"name":"회사명","occurrence":0,"value":"사아자"}],"filledCount":3,"notFound":[],"output":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/out1\\홍길동_2.hwp","outputFormat":"hwp5","row":2,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null}
+batch fill: 3행 중 3 성공, 0 실패 (14ms, threads=32)
+exit=0
+산출 파일: 김철수.hwp 홍길동.hwp 홍길동_2.hwp 
+
+--- [3] CSV: BOM + CRLF + 따옴표 안의 쉼표/줄바꿈/이중따옴표 (엑셀 저장본) ---
+$ rhwp batch fill --form samples/field-01.hwp --data rows.csv --out-dir out2 --name-field 작성자 --verify --json
+{"ambiguous":[],"changedPages":[0,2],"confusable":[],"dryRun":false,"filled":[{"name":"작성자","occurrence":0,"value":"홍/길:동"},{"name":"제목","occurrence":0,"value":"줄1\n줄2"},{"name":"회사명","occurrence":0,"value":"주식회사 가,나"}],"filledCount":3,"notFound":[],"output":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/out2\\홍_길_동.hwp","outputFormat":"hwp5","row":0,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":{"diffCount":0,"identical":true}}
+{"ambiguous":[],"changedPages":[0,2],"confusable":[],"dryRun":false,"filled":[{"name":"작성자","occurrence":0,"value":""},{"name":"제목","occurrence":0,"value":"인용 \"값\""},{"name":"회사명","occurrence":0,"value":"사아자"}],"filledCount":3,"notFound":[],"output":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/out2\\0002.hwp","outputFormat":"hwp5","row":1,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":{"diffCount":0,"identical":true}}
+batch fill: 2행 중 2 성공, 0 실패 (18ms, threads=32)
+exit=0
+산출 파일: 0002.hwp 홍_길_동.hwp    (금지문자 / : 는 _ 로 치환, 이름 필드가 비면 순번)
+
+--- [4] 실패 행은 스트림에 남는다 (사라지면 처리 누락을 셀 수 없다) + exit 1 ---
+$ rhwp batch fill --form samples/field-01.hwp --data broken.jsonl --out-dir out3 --json
+{"ambiguous":[],"changedPages":[0],"confusable":[],"dryRun":false,"filled":[{"name":"회사명","occurrence":0,"value":"정상 앞"}],"filledCount":1,"notFound":[],"output":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/out3\\0001.hwp","outputFormat":"hwp5","row":0,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null}
+{"error":"JSONL 행 파싱 실패 - expected value at line 1 column 1","exitClass":"runtime","row":1,"schemaVersion":"1.0","source":"samples/field-01.hwp"}
+{"error":"JSONL 행은 {\"필드이름\":\"값\"} 형식의 JSON 객체여야 합니다","exitClass":"runtime","row":2,"schemaVersion":"1.0","source":"samples/field-01.hwp"}
+{"ambiguous":[],"changedPages":[0],"confusable":[],"dryRun":false,"filled":[{"name":"회사명","occurrence":0,"value":"정상 뒤"}],"filledCount":1,"notFound":[],"output":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/out3\\0004.hwp","outputFormat":"hwp5","row":3,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null}
+batch fill: 4행 중 2 성공, 2 실패 (14ms, threads=32)
+exit=1
+산출 파일: 0001.hwp 0004.hwp    (4행 중 2행만 산출, 레코드는 4건 전부)
+
+--- [5] --dry-run: 산출 0, 폴더조차 만들지 않는다, exit 0 ---
+$ rhwp batch fill ... --out-dir out4 --dry-run --json
+{"ambiguous":[],"changedPages":null,"confusable":[],"dryRun":true,"filled":[{"name":"작성자","occurrence":0,"value":"홍길동"},{"name":"제목","occurrence":0,"value":"1분기"},{"name":"회사명","occurrence":0,"value":"가나다 주식회사"}],"filledCount":3,"notFound":[],"output":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/out4\\0001.hwp","outputFormat":"hwp5","row":0,"schemaVersion":"1.0","source":"samples/field-01.hwp"}
+{"ambiguous":[],"changedPages":null,"confusable":[],"dryRun":true,"filled":[{"name":"작성자","occurrence":0,"value":"김철수"},{"name":"제목","occurrence":0,"value":"2분기"},{"name":"회사명","occurrence":0,"value":"라마바 주식회사"}],"filledCount":3,"notFound":[],"output":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/out4\\0002.hwp","outputFormat":"hwp5","row":1,"schemaVersion":"1.0","source":"samples/field-01.hwp"}
+{"ambiguous":[],"changedPages":null,"confusable":[],"dryRun":true,"filled":[{"name":"작성자","occurrence":0,"value":"홍길동"},{"name":"제목","occurrence":0,"value":"3분기"},{"name":"회사명","occurrence":0,"value":"사아자"}],"filledCount":3,"notFound":[],"output":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/out4\\0003.hwp","outputFormat":"hwp5","row":2,"schemaVersion":"1.0","source":"samples/field-01.hwp"}
+batch fill: 3행 중 3 성공, 0 실패 (2ms, threads=32, dry-run)
+exit=0
+out4 존재? 아니오
+
+--- [6] 데이터는 stdin 이 아니라 --data 파일이다 (stdin 쓰레기를 무시) ---
+$ printf "이 줄은 경로도 데이터도 아니다\n" | rhwp batch fill ... --out-dir out5 --json
+batch fill: 3행 중 3 성공, 0 실패 (15ms, threads=32)
+{"ambiguous":[],"changedPages":[0,2],"confusable":[],"dryRun":false,"filled":[{"name":"작성자","occurrence":0,"value":"홍길동"},{"name":"제목","occurrence":0,"value":"1분기"},{"name":"회사명","occurrence":0,"value":"가나다 주식회사"}],"filledCount":3,"notFound":[],"output":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/out5\\0001.hwp","outputFormat":"hwp5","row":0,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null}
+산출 파일 수: 3   (stdin 2줄을 읽었다면 결과가 달라진다)
+
+--- [7] 인자 오류는 전부 exit 2, stdout 0 바이트, 산출물 0 ---
+  --form 없음 -> exit=2 stdout=0바이트  "오류: batch fill 은 --form <서식> --data <행 파일> --out-dir <폴더> 가 모두 필요합니다."
+  --data 없음 -> exit=2 stdout=0바이트  "오류: batch fill 은 --form <서식> --data <행 파일> --out-dir <폴더> 가 모두 필요합니다."
+  --out-dir 없음 -> exit=2 stdout=0바이트  "오류: batch fill 은 --form <서식> --data <행 파일> --out-dir <폴더> 가 모두 필요합니다."
+  --json 없음 -> exit=2 stdout=0바이트  "오류: batch 는 현재 --json 출력만 지원합니다."
+  모르는 확장자 -> exit=2 stdout=0바이트  "오류: --data 는 .jsonl 또는 .csv 여야 합니다 - .txt"
+  0행 -> exit=2 stdout=0바이트  "오류: --data 에 데이터 행이 없습니다 - C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/empty.jsonl"
+  CSV 따옴표 미종료 -> exit=2 stdout=0바이트  "오류: --data CSV 의 따옴표가 닫히지 않았습니다."
+  CSV 헤더 중복 -> exit=2 stdout=0바이트  "오류: --data CSV 헤더에 같은 이름이 두 번 있습니다 - 회사명"
+  out-dir x 생성? 아니오
+
+--- [8] 축 스코프: fill 전용 플래그는 다른 축에서, 다른 축 플래그는 fill 에서 거부 ---
+  rhwp batch info --json --form f -> exit=2
+  rhwp batch info --json --name-field n -> exit=2
+  rhwp batch info --json --dry-run -> exit=2
+  rhwp batch fill --json --mode auto -> exit=2
+  rhwp batch fill --json --query 가 -> exit=2
+  rhwp batch fill --json --verify-pages -> exit=2
+
+--- [9] 자기서술 드리프트 가드 (jq 로 발췌) ---
+$ rhwp capabilities | jq -c "{subcommands: .batch.subcommands, flags: .batch.flags}"
+{"subcommands":["export-text","info","export-structure","export-tables","fields","search","convert","fill"],"flags":["--json","--threads","--mode","--query","--out-dir","--verify","--verify-pages","--form","--name-field","--dry-run"]}
+$ rhwp capabilities | jq -c ".commands[]|select(.name==\"batch\")|.flags"
+["--json","--threads","--mode","--query","--out-dir","--verify","--verify-pages","--form","--name-field","--dry-run"]
+$ rhwp capabilities | jq -r ".batch.input"
+stdin, 한 줄당 파일 경로 하나 (batch 에서는 경로 목록 전용). 단 fill 축은 stdin 을 읽지 않는다 — --form 서식 1개 + --data 행 파일(.jsonl|.csv) 1개를 받고, 한 행이 산출물 하나가 된다
+$ rhwp capabilities | jq -r ".batch.output"
+convert·fill 축만 파일을 쓴다. convert: 목적지는 --out-dir 하나, 이름은 <입력이름>.hwp — 대소문자만 다른 이름을 포함해 같은 이름이 둘 이상이면 한 건도 쓰지 않고 exit 2. fill: 이름은 --name-field 값(파일명 금지 문자는 _ 로 치환), 없으면 0001 순번이며 겹치면 뒤에 _2·_3 을 붙여 덮어쓰지 않는다
+$ rhwp capabilities --mcp | jq -c ".tools[]|select(.name==\"hwp_batch_fill\")|{required, props, args, optional}"
+{"required":["form","data","outDir"],"props":["data","dryRun","form","nameField","outDir","verify"],"args":["batch","fill","--json","--form","{form}","--data","{data}","--out-dir","{outDir}"],"optional":["nameField","verify","dryRun"]}
+$ rhwp capabilities --mcp | jq -c ".invocation.stdinTools"     (fill 은 stdin 도구가 아니다)
+["hwp_batch","hwp_batch_search"]
+
+--- [10] --help 발췌 ---
+  batch fill --form <서식> --data <행.jsonl|행.csv> --out-dir <폴더> --json [옵션]
+      서식 1개 + 데이터 N행 → 산출 N개 (메일머지). 행마다 NDJSON 레코드 하나
+      이 축만 stdin 을 읽지 않는다 — 다른 batch 축은 stdin 으로 파일 경로
+      목록을 받지만, fill 의 입력은 경로가 아니라 --data 파일의 '행'이다
+
+      --form <서식>           누름틀이 있는 템플릿 문서 (필수)
+      --data <행 파일>        .jsonl: 한 줄에 {"필드이름":"값"} 객체 하나
+                              .csv:   첫 줄 헤더 = 누름틀 이름 (BOM·따옴표 허용)
+      --out-dir <폴더>        산출물을 모을 폴더 (필수)
+      --name-field <필드>     산출 파일 이름으로 쓸 데이터 필드
+                              생략 시 0001.hwp 순번. 파일명 금지 문자는 _ 로
+                              치환하고, 이름이 겹치면 뒤에 _2 를 붙인다
+      --verify                행마다 저장 직후 자기검증 (차이 → 3)
+
+--- [11] 검증 (CI 와 같은 명령) ---
+$ cargo test --release --test batch_fill_contract --test batch_axes_contract --test cli_json_contract --test mcp_server_contract --test edit_fill_fields_contract --test changed_pages_contract --test run_plan_contract
+     Running tests\batch_axes_contract.rs (target\release\deps\batch_axes_contract-dd2be36da61aace0.exe)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.07s
+     Running tests\batch_fill_contract.rs (target\release\deps\batch_fill_contract-178b84ebc9977459.exe)
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.37s
+     Running tests\changed_pages_contract.rs (target\release\deps\changed_pages_contract-1c54539e2b55b1e6.exe)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s
+     Running tests\cli_json_contract.rs (target\release\deps\cli_json_contract-ee6cdd976ade5bc1.exe)
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.93s
+     Running tests\edit_fill_fields_contract.rs (target\release\deps\edit_fill_fields_contract-6896b3e2856d48ec.exe)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+     Running tests\mcp_server_contract.rs (target\release\deps\mcp_server_contract-5191a9bfb95cd860.exe)
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 28.06s
+     Running tests\run_plan_contract.rs (target\release\deps\run_plan_contract-e9406484337789b2.exe)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.54s
