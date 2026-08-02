@@ -1,0 +1,253 @@
+rhwp inspect unicode — 실측 증적 (#3787 S4)
+==========================================
+rhwp v0.8.2 / 기준 커밋 a8d7bdfbf (upstream/devel)
+toolchain 1.93.1-x86_64-pc-windows-msvc, RUSTFLAGS="-C linker=rust-lld"
+
+
+[1] 정상 문서 오탐 — samples 전수 스윕
+--------------------------------------
+$ for f in samples/*.hwp samples/*.hwpx; do rhwp inspect unicode "$f" --json; done
+
+  대상 파일          : 351
+  스캔 성공          : 348
+  clean: true        : 348
+  오탐(FALSE POSITIVE): 0        <<< 수용 기준 충족
+  스캔 실패          : 3   (전부 암호 문서. exit 2, "비밀번호가 필요한 보호 문서입니다")
+                          samples/HWP3-password-123456.hwp
+                          samples/hwp3-sample16-hwp5-2024-password-123456.hwp
+                          samples/HWP5-password-123456.hwpx
+  누적 스캔 문자     : 7,813,383자
+  전수 스윕 벽시계   : 54.7초  (파일당 평균 0.157초 — 대부분 파싱·조판 비용)
+
+
+[1-a] 좁히기 전 상태 — 규칙을 좁힌 근거
+---------------------------------------
+첫 스윕에서 단 1개 파일이 걸렸다.
+
+  samples/exam_kor.hwp : 24건 (zero_width U+200B, low 13 / medium 11)
+
+24건 전부 같은 형태였다 — 한/글 옛한글 낱자(PUA)에 잇댄 U+200B.
+
+  raw: …'쥭<U+F152><U+200B>'(중의)처럼 이어 적기도 하고, '<U+F1C4><U+200B><U+200B>으란'…
+          ^^^^^^^^ 옛한글 낱자(PUA)   ^^^^^^^^^^ 조판 보조 제로폭
+  raw: …'<U+EB66><U+200B>늘', '말<U+EBD4><U+200B><U+E566><U+200B><U+200B>'…
+  raw: …각각 '<U+E38A><U+200B>외다', '<U+F537><U+200B>오<U+ECF0><U+200B>'로만 쓴다.
+
+중세 국어(옛한글) 시험지다. 한/글은 유니코드에 자리가 없는 옛한글 낱자·조판부호를 PUA
+코드포인트로 싣고(BMP U+E000~F8FF, 15면 보충 U+F0000~), 낱자 조합을 끊어 줄바꿈·자간을
+잡는 데 U+200B 를 쓴다. 은닉 채널이 아니라 조판의 부산물이다.
+
+→ 제로폭 축에 한정해, 앞뒤 어느 한쪽이 PUA 글자면 보고하지 않도록 좁혔다.
+  (`zero_width_is_hangul_typesetting`. 방향 제어·태그 문자에는 이 완화를 주지 않는다)
+
+좁힌 뒤 재스윕:
+  $ rhwp inspect unicode samples/exam_kor.hwp --json
+  {"clean":true,"findingCount":0,"findings":[], ... ,"scannedChars":41970}
+
+  → 348/348 clean, 오탐 0.
+
+
+[2] 한글 자모 결합(U+1100 계열)은 잡지 않는다 — 실제 문서로 확인
+---------------------------------------------------------------
+조합형 한글이 실제로 살아 있는 HWP 문서를 만들어 스캔했다.
+
+  $ rhwp edit replace-text samples/2026_oss_rst.hwp \
+        --find "제출 방법" --replace $'총액 가 나 …' \
+        -o jamo.hwp --json          # 총액(NFD) + 가 나 다 삼(NFD)
+
+  $ rhwp export-text jamo.hwp --json | (U+1100~U+11FF 개수)
+    문서에 남은 자모 : 15자
+    ['0x110e','0x1169','0x11bc','0x110b','0x1162','0x11a8','0x1100','0x1161', …]
+
+  $ rhwp inspect unicode jamo.hwp --json
+    clean: True   findingCount: 0   scannedChars: 2957
+
+  → 자모 15자가 문서에 실재하는 상태에서 탐지 0건. 어느 축에서도 잡지 않는다.
+    (단위 테스트 `ordinary_korean_text_is_clean` 이 같은 판정을 코어에서도 고정)
+
+
+[3] 네 축 탐지 — 실제 HWP/HWPX 문서로 end-to-end
+------------------------------------------------
+정상 샘플에 페이로드를 심어 HWP5·HWPX 두 기록 경로 모두 확인.
+
+페이로드(문단 1개에 네 축 동시):
+  제출<U+200B><U+200B><U+200B>방법 <U+202E>cod.exe<U+202C> Т(U+0422)otal<U+E0049…E0065>
+
+기록 경로 보존 확인 (export-text 로 재추출한 코드포인트):
+  hwp  : 0x200b 0x200b 0x200b … 0x202e c o d . e x e 0x202c … 0x422 o t a l 0xe0049 …
+  hwpx : 0x200b 0x200b 0x200b … 0x202e c o d . e x e 0x202c … 0x422 o t a l 0xe0049 …
+  → 비-BMP 태그 문자(U+E0049)까지 양쪽 writer 가 보존한다.
+
+탐지 결과 (rhwp inspect unicode attack.hwp --json):
+  zero_width    U+200B  high    runLength=3
+  bidi_override U+202E  high    rendered "…제출 exe.doc…"  raw "…제출 <U+202E>cod.exe<U+202C>…"
+  bidi_override U+202C  low     (닫는 문자 — 여는 쪽이 이미 보고됨)
+  confusable    U+0422  medium  rendered "Total"          raw "Т<U+0422>otal"
+  tag_char      U+E0049 high    runLength=6  hidden="Ignore"  rendered 에는 흔적 없음
+
+  → rendered 와 raw 가 실제로 어긋난다. 이것이 이 명령의 산출물이다.
+
+
+[4] rendered 계산 방식 — 묶음 단위 재배열
+------------------------------------------
+UAX #9 전체가 아니라 명시적 방향 제어의 재배열만 구현한다(목적이 조판이 아니라
+"제어문자가 순서를 뒤집었는가"를 보이는 것).
+
+레벨 스택 1패스:
+  RLE/RLO/RLI            → RTL 프레임 push
+  LRE/LRO/LRI/FSI        → LTR 프레임 push
+  PDF/PDI                → 프레임 pop → 접어서 부모에 "한 묶음으로" 붙임
+  제로폭·태그·C0         → 버림 (화면에 없다)
+  그 외                  → 현재 프레임에 1글자 묶음으로 push
+RTL 프레임을 접을 때 글자가 아니라 묶음의 순서를 뒤집는다.
+
+중첩 검증 (`nested_bidi_levels_reorder_by_run_not_by_char`):
+  논리      : RLO a LRO b c PDF d PDF
+  글자 단위 : dcba   ← 틀림 (안쪽 LTR 구간까지 거꾸로)
+  묶음 단위 : dbca   ← 이 구현의 출력
+창 안에서 닫히지 않은 레벨도 끝에서 접는다(안 접으면 그 구간이 보고에서 사라진다).
+
+raw 는 논리 순서 그대로에 제어문자를 <U+XXXX> 로 드러낸 것이고, rendered/raw 는
+같은 창(±24자)에서 만들어 나란히 비교 가능하다. 봉투에는 원문 제어문자를 싣지 않는다 —
+보고 출력이 그 출력을 읽는 터미널·에이전트를 다시 속이면 안 되기 때문이다.
+
+
+[5] 성능 — 대형 문서 실측
+--------------------------
+(5-a) 프로세스 단위: 스캔 비용이 파싱·조판 비용에 묻혀 측정되지 않는다.
+      inspect(전체) − info(파싱만) 의 차이를 5회 최소값으로 잰 결과 (ms):
+
+  문서                                      스캔문자     inspect      info    차이
+  2026_oss_rst.hwp                             2,943     0.024s    0.025s   -0.8ms
+  21868765_별표2_보건소_분장사무.hwp            2,626     0.029s    0.032s   -2.7ms
+  2022년 국립국어원 업무계획.hwp               31,126     0.067s    0.063s   +4.3ms
+  exam_kor.hwp                                 41,970     0.066s    0.091s  -24.4ms
+  2025 행정업무운영 편람(최종).hwp            232,511     0.220s    0.194s  +26.0ms
+  hwp3-sample10.hwp                         1,046,775     2.047s    2.092s  -44.4ms
+
+  → 104만 자 문서에서도 차이가 프로세스 노이즈(±40ms) 안에 있다.
+    스캔은 전체 실행 시간의 유의미한 몫이 아니다.
+
+(5-b) 차수 판정은 코어를 직접 불러 크기 사다리로 잰다
+      (`scan_cost_stays_linear_as_input_grows`, --release):
+
+$ cargo test --release --lib -j 1 text_security -- --nocapture
+
+  [clean] 42,000자  0.309ms → 336,000자   2.241ms   (배율 7.26,   6.7 ns/자)
+  [dirty] 39,000자 22.620ms → 312,000자 162.588ms   (배율 7.19, 521.1 ns/자)
+
+  · clean = 탐지 0건(전수 순회만). dirty = 낱말마다 탐지가 걸리는 최악 입력
+    (제로폭 + 방향 오버라이드 + 동형자를 한 단위에 넣고 반복)
+  · 입력 8배에 시간 7.26배 / 7.19배 — 두 경우 모두 선형이다
+  · 탐지가 다량으로 걸리면 창(발췌·재배열) 생성 비용이 붙어 자당 비용이 약 78배로
+    커지지만, 그 비용도 문서 크기가 아니라 탐지 건수에 비례한다(차수는 그대로 선형)
+
+  선형이면 8배 입력에 8배 시간, 2차식이면 64배다. 테스트는 24배 상한으로 차수를 가른다.
+
+비용 구조:
+  · 문자열 1개당 Vec<char> 수집 1회 + 인덱스 순회 1회 = O(n)
+  · 낱말 경계·연속 열은 순회 중 상태로 들고 간다(되돌아가지 않음)
+  · 발췌/재배열/지시문 표지 검사는 탐지 1건당 고정 창(±40자, ±48자) — 문서 크기 무관
+  · 탐지 0건이면 창 생성 비용 자체가 발생하지 않는다
+  · 글자마다 정규식을 돌리는 경로는 없다
+
+
+[6] 문서 무변경
+----------------
+스캔 전후 파일 바이트 동일 (`scanning_does_not_touch_the_document`).
+--json / --kind bidi / --kind all / 사람용 출력 4경로를 모두 돌린 뒤 비교.
+inspect 에는 출력 경로 인자가 없고 IR 을 고치는 코드 경로가 없다.
+
+
+[7] 드리프트 가드 — agent_preflight 선검사
+-------------------------------------------
+$ py .agentwt/preflight/tools/agent_preflight.py --repo . --bin target/release/rhwp.exe
+
+  통과   doc 주석 오배치
+  통과   ReDoS — 백트래킹 폭발 정규식
+  통과   MCP inputSchema 모양 (26개 도구)
+  통과   선언 속성 ↔ CLI 배선
+  통과   capabilities ↔ --help 상호 커버 (55개 명령)
+  통과   --json 명령 ↔ MCP 도구 커버
+  통과   선언 flags 실재 (62개 플래그)
+  통과   실패 경로 stdout 0바이트 (3개 경로)
+
+MCP 도구 선언 실물:
+  name        : hwp_inspect_unicode
+  inputSchema : type=object
+                properties = { path(string), kind(string, enum) }
+                required   = ["path"]                  <<< required 배열 존재
+  kind enum   : ["zero-width","bidi","tag","confusable","all"]
+                (DeceptionKind::ALL 에서 생성 — 선언과 파서가 같은 출처)
+  cli         : command="inspect"
+                args=["inspect","unicode","{path}","--json"]
+                optionalArgs=[{when:"kind", args:["--kind","{kind}"]}]
+  → 선언한 속성 2개(path, kind)가 전부 argv 에 닿는다.
+
+
+[8] 실패 경로 stdout 0바이트 — 8경로
+-------------------------------------
+$ rhwp <경로> ; echo exit=$? stdout_bytes=<len>
+
+  inspect                                              exit=2  stdout_bytes=0
+  inspect 유니코드                                     exit=2  stdout_bytes=0
+  inspect unicode                                      exit=2  stdout_bytes=0
+  inspect unicode <파일> --kind                        exit=2  stdout_bytes=0
+  inspect unicode <파일> --kind 없는축                 exit=2  stdout_bytes=0
+  inspect unicode <파일> --wat                         exit=2  stdout_bytes=0
+  inspect unicode <파일> <파일>                        exit=2  stdout_bytes=0
+  inspect unicode 없는파일.hwp --json                  exit=1  stdout_bytes=0
+
+  안내는 전부 stderr. 탐지 건수는 실행 실패가 아니므로 탐지가 있어도 exit 0.
+
+
+[9] 검증 명령 결과
+-------------------
+$ export RUSTFLAGS="-C linker=rust-lld" CARGO_HTTP_CHECK_REVOKE=false
+
+$ cargo build --release --bin rhwp
+    Finished `release` profile [optimized] target(s) in 11m 36s          → OK
+
+$ cargo test --release --lib -j 1 text_security
+    running 22 tests
+    test result: ok. 22 passed; 0 failed; 0 ignored                      → OK
+    (기존 회귀 9건 전부 포함: pure_scripts_are_not_flagged /
+     mixed_script_name_is_flagged / bidi_and_invisible_in_free_text /
+     ansi_escape_is_flagged / skeleton_folds_confusables /
+     hangul_nfd_and_nfc_share_a_skeleton / hangul_collision_is_reported /
+     collisions_report_only_cross_script_twins / all_hangul_document_is_quiet)
+
+$ cargo test --release -j 1 --test unicode_deception_contract \
+      --test cli_json_contract --test mcp_server_contract
+    cli_json_contract          : 26 passed; 0 failed                     → OK
+    mcp_server_contract        : 22 passed; 0 failed                     → OK
+    unicode_deception_contract : 14 passed; 0 failed                     → OK
+
+$ cargo clippy -j 1 -- -D warnings
+    Finished `dev` profile ... (경고 0)                                   → OK
+
+$ git diff --name-only HEAD | grep '\.rs$' \
+    | xargs -n 10 rustfmt --edition 2021 --config-path rustfmt.toml \
+                          --config newline_style=Auto --check
+    (출력 없음)                                                           → OK
+
+$ py .agentwt/preflight/tools/agent_preflight.py --repo . --bin target/release/rhwp.exe
+    전부 통과.                                                            → OK
+
+
+[10] 구현 중 계약 테스트가 잡은 실제 결함 1건
+----------------------------------------------
+`confusable_finding_folds_to_the_latin_lookalike` 최초 실행 실패:
+
+  left : "Total\u{e0049}\u{e0067}\u{e006e}\u{e006f}\u{e0072}\u{e0065}"
+  right: "Total"
+
+원인 — 낱말 경계는 보이지 않는 문자를 **건너뛰며** 잡는다(`Т<U+200B>otal` 같은 제로폭
+우회를 막기 위한 설계). 그래서 낱말 조각에 뒤따르던 태그 문자 6자가 함께 들어왔고,
+`rendered` 필터가 제로폭·방향 제어만 걸러 태그 문자를 놓쳤다. 결과적으로 사람이 눈으로
+대조하려던 바로 그 문자열("보이는 모습")이 보이지 않는 문자로 오염됐고, `raw` 에는 원문
+태그 문자가 그대로 실려 "봉투에 제어문자를 싣지 않는다"는 원칙도 깨졌다.
+
+조치 — 보이지 않는/제어 코드포인트 판정을 `is_invisible_or_control` 하나로 모으고
+`annotate`(드러내기)·`visual_order`(빼기)·`confusable_finding` 세 곳이 같은 집합을 쓰게 했다.
+회귀 고정: `confusable_rendered_drops_invisible_neighbours`.
