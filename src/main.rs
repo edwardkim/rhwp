@@ -10767,14 +10767,6 @@ fn edit_serialize(
     .map_err(|e| e.to_string())
 }
 
-// ─── [#3703] 계획 실행기 — 명령(CLI)·도구(MCP) 위의 3층: 선언적 편집 계획 ───
-
-/// `rhwp run <계획.json>` — 계획서를 정적 선검증 → 원자 실행 → 저널로 수행한다.
-///
-/// 다단 체이닝(호출 사이 상태 유실, 중간 실패의 반편집 문서)이 에이전트 실패의
-/// 뿌리라서 절차 대신 **의도(계획서)** 를 받는다. 판정은 전부 데이터다:
-/// 선검증 위반 = invalid[] + exit 2(실행 0), verify 단언 실패 = exit 3(디스크
-/// 무변경), 성공 = step 저널 + verify + exit 0(단 한 번 저장).
 /// [#3762] `export-ir-schema` — 공개 IR 의 JSON Schema 를 낸다 (M18 바인딩 착수 조건).
 ///
 /// 문서를 입력으로 받지 않는다 — 스키마는 **타입의 자기서술**이지 특정 문서의
@@ -10847,6 +10839,14 @@ fn cmd_export_ir_schema(args: &[String]) -> i32 {
     EXIT_OK
 }
 
+// ─── [#3703] 계획 실행기 — 명령(CLI)·도구(MCP) 위의 3층: 선언적 편집 계획 ───
+
+/// `rhwp run <계획.json>` — 계획서를 정적 선검증 → 원자 실행 → 저널로 수행한다.
+///
+/// 다단 체이닝(호출 사이 상태 유실, 중간 실패의 반편집 문서)이 에이전트 실패의
+/// 뿌리라서 절차 대신 **의도(계획서)** 를 받는다. 판정은 전부 데이터다:
+/// 선검증 위반 = invalid[] + exit 2(실행 0), verify 단언 실패 = exit 3(디스크
+/// 무변경), 성공 = step 저널 + verify + exit 0(단 한 번 저장).
 fn cmd_run_plan(args: &[String]) -> i32 {
     let mut plan_path: Option<&str> = None;
     let mut plan_inline: Option<&str> = None;
