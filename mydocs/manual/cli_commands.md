@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-07-29
+last_verified: 2026-08-03
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -214,7 +214,7 @@ rhwp export-text 편람.hwp --json --max-chars 4000 | jq '{truncated, omittedCou
 - 옵션은 파일 앞뒤 어디에 와도 된다 (#3349, export-structure/export-tables 와 동일 규약).
   파일 positional 을 두 번 주면 exit 2.
 
-### `batch <export-text|info|export-structure|export-tables|fields|search|convert> --json [옵션]` (#3238, #3261, #3346, #3626)
+### `batch <export-text|info|export-structure|export-tables|fields|search|convert|fill> --json [옵션]` (#3238, #3261, #3346, #3626, #3719 §6-6)
 stdin 의 파일 목록(한 줄당 경로 하나)을 **한 프로세스에서 파일 간 병렬**로 처리해
 NDJSON(한 줄당 레코드 하나)을 stdin 입력 순서대로 스트림 출력한다.
 - `batch export-text` 성공 레코드: `{"schemaVersion":"1.0","source","pageCount","text"}`
@@ -228,6 +228,34 @@ NDJSON(한 줄당 레코드 하나)을 stdin 입력 순서대로 스트림 출�
   **`--query <검색어>` 는 이 축 전용이며 필수**다(없으면 사용법 오류 2).
   대량 코퍼스에서 스트림이 부풀지 않도록 **파일당 매치 1,000건 상한**을 둔다
   (단건 `search --limit` 과 같은 취지). 대소문자는 구분한다.
+- `batch fill` (#3719 §6-6) 은 **입력 축 자체가 다르다** — stdin 파일 목록이 아니라 서식
+  1개(`--form`)와 데이터 파일 1개(`--data`)를 받고, 산출은 데이터 행 수만큼 나온다(진짜
+  메일머지: `edit fill-fields` 는 서식 1 → 산출 1이라 N명분을 만들려면 도구를 N번 불러야
+  한다). 사용법: `rhwp batch fill --form <서식.hwp|서식.hwpx> --data <행.jsonl|행.csv> --out-dir <폴더> --json [--name-field <필드>] [--verify] [--dry-run] [--threads <N>]`
+  - `--data` — `.jsonl`(한 줄에 `{"필드이름":"값"}` 객체 하나) 또는 `.csv`(첫 줄 헤더 =
+    누름틀 이름, BOM·따옴표 허용)
+  - `--out-dir <폴더>` (필수) — 산출 문서를 모을 폴더
+  - `--name-field <필드>` — 산출 파일 이름으로 쓸 데이터 필드. 생략하면 1 기준 순번
+    (자릿수는 행 수에 맞춰 자동, 최소 4자리). 파일명 금지 문자는 `_` 로 치환하고 이름이
+    겹치면 `_2` 를 붙인다. 산출 경로는 **한 행도 쓰기 전에** 전부 정해, 병렬 실행에서도
+    이름이 실행 순서에 좌우되지 않는다.
+  - `--verify` — 행마다 저장 직후 자기검증. 차이가 있으면 최종 종료 코드에 반영된다
+    (채움·저장 자체는 성공, `batch fill: … 검증 판정` 이 stderr 요약에 함께 실린다)
+  - `--dry-run` — 파일을 쓰지 않고 각 행이 채워지는지만 판정(그래도 `--out-dir` 는 필수 —
+    선검증이 **실행과 같은 명령줄에서 `--dry-run` 하나만 빼면 되는 것**이라야 뜻이 있다)
+  - 성공 레코드는 `edit fill-fields --json` 과 같은 봉투에 `row`(0 기준 행 번호)가 붙는다:
+    `{"schemaVersion":"1.0","source","row","dryRun","filledCount","filled","notFound","ambiguous","output"?,"outputFormat"?,"verify"?}`.
+    실패 레코드는 다른 batch 축과 같은 공통 실패 스키마 + `row`.
+  - 서식은 행마다 다시 열리지만, 못 여는 서식이면 시작 전에 한 번만 판정해 실패를
+    N번 반복 보고하지 않는다.
+
+```bash
+# 서식 1개 + 데이터 여러 행 → 산출 문서 N개 (진짜 메일머지)
+rhwp fields 신청서.hwp --json | jq -r '.fields[].name'      # 먼저 누름틀 이름 확인
+rhwp batch fill --form 신청서.hwp --data 신청자목록.csv \
+  --out-dir output/filled --name-field 성명 --json > filled.ndjson
+jq -c '{row, output, filledCount}' filled.ndjson
+```
 - `batch convert` 는 **CLI 전용 쓰기 축**이다. `--out-dir <폴더>`가 필수이고,
   `--verify`·`--verify-pages`를 선택할 수 있다. 입력마다 `<out-dir>/<입력이름>.hwp`를
   한 번만 쓴 뒤 단건 `convert --json`과 같은 봉투를 NDJSON으로 낸다. MCP `hwp_batch`에는
@@ -292,6 +320,49 @@ find inbox/ -name '*.hwp' | rhwp batch convert --out-dir converted --verify --ve
 ```bash
 # 병합 헤더를 가진 표에서 헤더 셀만 추출
 rhwp export-tables 별표.hwp --json | jq '.tables[].cells[] | select(.isHeader)'
+```
+
+### `table-to-csv <파일.hwp|파일.hwpx> [--table <번호>] [-o <경로>] [--bom] [--json]` (#3719 §6)
+본문 최상위 표를 RFC 4180 CSV 로 내보낸다. `export-tables` 의 격자 JSON 은 병합을 span 으로
+보존하지만 표 계산기(엑셀 등)는 직사각 격자만 먹는다. 그래서 격자를 채워서(병합으로 덮인
+칸 = 빈 문자열) 낸다 — 앵커 셀만 이어 붙이면 병합 행에서 열이 밀린다.
+- 대상은 **본문 최상위 표뿐**이다(`edit set-cell`·`csv-to-table` 과 같은 좌표계). 중첩 표는
+  v1 범위 밖이다.
+- `--table <번호>` — 표 하나만 선택(`export-tables` 의 `index`). 생략하면 본문 최상위 표 전부.
+- `-o, --out, --output <경로>` — `--table` 을 함께 주면 그 경로가 **파일**, 생략하면
+  표별 CSV 를 담을 **폴더**(각 `table<index>.csv`). 생략하면 CSV 본문을 stdout 으로 흘린다
+  (표가 여럿이면 `# table{index} (rows x cols)` 로 구분).
+- `--bom` — UTF-8 BOM 을 파일 앞에 붙인다(엑셀 한글 깨짐 방지). **봉투의 `csv` 문자열에는
+  붙지 않는다** — JSON 소비자가 첫 셀 앞의 U+FEFF 를 값으로 오독하지 않도록.
+- `--json` 봉투: `{"schemaVersion":"1.0","source","tableCount","tables":[{"index","rowCount","colCount","csv","output"?}],"bom","output"?,"outputFormat"?}`
+
+```bash
+# 본문 최상위 표 CSV 전량 추출
+rhwp table-to-csv samples/hwpx/basic-table-01.hwpx --json | jq '.tables[] | {index, rowCount, colCount}'
+```
+
+### `csv-to-table <파일.hwp|파일.hwpx> --csv <경로.csv> --table <번호> [-o <출력>] [--dry-run] [--verify] [--json]` (#3719 §7)
+CSV 내용으로 기존 표 N 의 셀을 덮어쓴다. `table-to-csv` 의 짝 — 발견(export-tables) →
+CSV 로 내보내 사람/도구가 편집 → 다시 써넣기를 닫는다. 표 **크기는 바꾸지 않는다**.
+- `--csv <경로.csv>` (필수) — UTF-8 CSV. 행/열 수가 표와 다르면 **한 칸도 쓰지 않고**
+  `invalid[]` 로 보고하며 exit 2(사용법 오류) — 조용히 잘라내지 않는다.
+- `--table <번호>` (필수) — 본문 최상위 표의 0-based 번호(`export-tables`/`table-to-csv` 와 같은 좌표계).
+- 병합으로 덮인 칸에 값이 있으면(`coveredCellNotEmpty`) 거부한다 — 값은 앵커 칸에 둔다.
+  셀 안 줄바꿈·탭은 `edit set-cell` 과 같은 판정으로 거부한다(`controlCharacter`).
+- 값이 실제로 달라지는 앵커 칸만 다시 쓴다(무변경 칸은 건드리지 않아 서식을 보존).
+  `edit set-cell` 과 달리 글자색을 검정으로 덮지 않는다 — 이미 서식이 잡힌 보고서의
+  값만 갱신하는 축이다.
+- `-o, --output <파일>` — 출력 파일(기본 `<입력명>_csv.<입력과 같은 확장자>`, §edit 산출 형식)
+- `--dry-run` — 파일을 쓰지 않고 `changed[]`(old→new)만 보고
+- `--verify` — 저장 직후 IR 자기검증(차이 시 exit 3)
+- `--json` 봉투(선검증 실패 시): `{"schemaVersion":"1.0","source","csv","table","rowCount","colCount","changedCount":0,"changed":[],"invalid":[{"reason","row"?,"col"?,"expected"?,"actual"?,"message"}],"dryRun","changedPages":null}`
+- `--json` 봉투(성공 시): 위와 같은 형태이되 `changedCount`/`changed:[{row,col,oldText,newText}]`,
+  `invalid:[]`, 저장했으면 `output`/`outputFormat`/`verify`/`changedPages`(표를 걸친 쪽 목록) 추가.
+
+```bash
+rhwp table-to-csv samples/hwpx/basic-table-01.hwpx --table 0 -o /tmp/표0.csv
+# /tmp/표0.csv 를 편집한 뒤
+rhwp csv-to-table samples/hwpx/basic-table-01.hwpx --csv /tmp/표0.csv --table 0 -o 작성본.hwpx --json
 ```
 
 ### `export-render-tree <파일> [옵션]`
@@ -604,6 +675,33 @@ rhwp edit set-cell 양식.hwpx --table 0 --row 2 --col 1 --text "1,234" -o 작�
 rhwp export-tables 작성본.hwpx --json | jq '.tables[0].cells[] | select(.row==2 and .col==1).text'
 ```
 
+### `edit insert-image <파일> --image <그림> [--page N] [--x N --y N] [--width N --height N] [-o <출력>] [--dry-run] [--verify] [--json]` (#3719 §6-5)
+도장·서명 같은 그림을 쪽 좌표에 붙인다 — 채워 넣은 서식에 직인을 얹는 실물 제출의 마지막 조각.
+- `--image <그림>` (필수) — 지원 형식은 `png`·`jpg`·`jpeg`·`bmp`·`tif`·`tiff` 뿐(확장자와 내용
+  둘 다 검사). 그 밖은 사용법 오류(exit 2)로 문서를 읽기 전에 끊는다.
+- **좌표·크기 단위는 전부 HWPUNIT(1/7200 inch)이며 픽셀이 아니다**(A4 세로 = 59528×84188).
+  용지 왼쪽 위 모서리 기준 `(x, y)` 에 떠 있는 그림으로 놓는다.
+  - `--page <번호>` — 붙일 쪽(0부터). 생략하면 0쪽. 범위를 벗어나면 exit 2.
+  - `--x`, `--y` — 생략하면 0
+  - `--width`, `--height` — 둘 다 생략하면 원본 픽셀을 96dpi 로 환산, 한쪽만 주면 원본
+    비율을 지켜 다른 쪽을 계산한다. `0` 은 사용법 오류(1 이상이어야 함).
+- **쪽 밖으로 나가도 자르지 않는다** — `overflow` 로만 알린다(에이전트는 렌더를 보지
+  않으므로 신호가 없으면 잘려 나간 도장을 완성본으로 오판한다).
+- `-o, --output <파일>` — 출력 파일(기본 `<입력명>_image.<입력과 같은 확장자>`, §edit 산출 형식)
+- `--dry-run` — 파일을 쓰지 않고 배치 예정만 보고
+- `--verify` — 저장 직후 IR 자기검증(차이 시 exit 3)
+- `--json` 봉투: `{"schemaVersion":"1.0","source","image","page","x","y","width","height","binDataId","dryRun","changedPages","overflow":[{"page","paperWidthHu","paperHeightHu","rightHu","bottomHu","overflowXHu","overflowYHu"}],"output"?,"outputFormat"?,"verify"?}`
+  - `binDataId` 는 실제로 저장했을 때만 값이 실린다(방금 삽입한 그림의 BinData 참조 —
+    같은 그림 재사용이나 산출물 감사용 주소). `overflow` 는 넘칠 때만 원소 1개, 아니면 `[]`.
+- 그림 설명(대체 텍스트)은 삽입한 파일명을 그대로 쓴다(한컴 개체 속성에 노출).
+- 실패 시 원본 불변, 산출 형식은 `edit` 5종과 같은 §edit 산출 형식 규약을 따른다.
+
+```bash
+rhwp edit insert-image 신청서_filled.hwp --image samples/images/moogung.jpg \
+  --page 0 --x 50000 --y 70000 --width 5000 --height 5000 \
+  -o 제출본.hwp --json | jq '{output, overflow}'
+```
+
 ### `edit redact <파일> [--kind …] [--mask <문자>] [--dry-run] [-o <출력>|--in-place]` (#3719 §6-11)
 공개 전 개인정보 마스킹 — 주민등록번호·전화번호·이메일·카드번호를 찾아 **자릿수를 유지한 채**
 가린다. 탐지는 읽기 전용 코어(`document_core::queries::pii_scan`)가 하고, 실제 변경은 검증된
@@ -683,7 +781,7 @@ rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount
 ```
 
 ### `edit` 산출 형식 (#3383)
-`edit` 5종(`fill-fields`/`replace-text`/`set-cell`/`redact`/`sanitize`)은
+`edit` 6종(`fill-fields`/`replace-text`/`set-cell`/`insert-image`/`redact`/`sanitize`)은
 **입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`
@@ -903,3 +1001,9 @@ record 를 축별로 비교한다.
 - 본 문서는 `src/main.rs` 명령 디스패치 기준. CLI 추가/변경 시 `--help` 문자열과 본 문서를 함께 갱신한다.
 - 2026-07-04 현행화: dispatch 39개 명령 전수 등재 완료(§1~§5). 게이트·공용 명령은 정식 절,
   조사 프로브(§4)·개발 보조(§5)는 묶음 등재.
+- 2026-08-03 현행화: 병합 PR에서 미뤄 뒀던 신규 명령 4종을 실물(`src/main.rs` 디스패치)
+  기준으로 보강 — `table-to-csv`/`csv-to-table`(§1), `batch fill`(§1), `edit insert-image`(§2).
+  **이번 작업 환경에서는 로컬 릴리스 빌드가 MSVC `dbghelp.lib` 손상(link.exe LNK1123)으로
+  실패**해 `rhwp --help`/`capabilities` 를 직접 뽑지 못했다 — `src/main.rs` 소스(usage
+  문자열·JSON 봉투 구성 코드)를 1차 근거로 삼았다. 실제 `--help`/`capabilities` 출력 대조와
+  예시 명령 실행 검증은 빌드 가능한 환경(CI 등)에서 재확인이 필요하다.
