@@ -74,9 +74,6 @@ jobs:
         working-directory: bindings/node
         run: npm run typecheck
 
-      - name: 린트
-        working-directory: bindings/node
-        run: npm run lint
 
       - name: 단위 테스트
         working-directory: bindings/node

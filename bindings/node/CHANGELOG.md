@@ -130,6 +130,21 @@
   이쪽은 저장 후에도 stdout 이 봉투를 유지한다(`output`·`bytes`). 노출 여부를 가른 것은
   플래그 이름이 아니라 **봉투 계약을 지키는가**다.
 
+### 도구 선택 (실측으로 정해진 것)
+
+- **ESLint 를 devDependency 에서 뺐다.** `@typescript-eslint@8` 의 peer 범위는
+  `typescript >=4.8.4 <6.1.0` 인데 이 저장소는 **TypeScript 7** 을 쓴다. 넣어 두면
+  `npm install` 자체가 ERESOLVE 로 실패한다(CI 4개 잡이 여기서 죽었다).
+  타입 안전은 `tsc --noEmit` 이 strict 전 옵션으로 담당하므로 더 강한 게이트가 이미 있다.
+  typescript-eslint 가 TS 7 을 지원하면 되돌린다.
+- **타입 선언을 tsup 이 아니라 tsc 가 만든다.** tsup 의 dts 파이프라인은 내부에
+  TypeScript 5.7 을 물고 있어 TS 7 프로그램에서 터진다
+  (`Cannot read properties of undefined (reading 'useCaseSensitiveFileNames')`).
+  번들만 tsup 에 맡기고 선언은 `tsconfig.build.json`(emitDeclarationOnly)로 낸다.
+- **`.d.cts` 는 `.d.ts` 를 복제해 만든다** (`tools/emit-cjs-types.mjs`).
+  `exports` 의 `require` 갈래가 `.d.cts` 를 가리키는데 tsc 는 `.d.ts` 만 내기 때문이다.
+  이 패키지 타입에 ESM 전용 문법이 없어 같은 내용이면 충분하다.
+
 ### 알려진 제약
 
 - **rhwp 바이너리를 동봉하지 않는다.** 파이썬 1호와 마찬가지로 npm 패키지에는 실행

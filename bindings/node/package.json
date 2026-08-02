@@ -62,9 +62,8 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && tsc -p tsconfig.build.json && node tools/emit-cjs-types.mjs",
     "typecheck": "tsc -p tsconfig.json",
-    "lint": "eslint .",
     "test": "vitest run",
     "test:unit": "vitest run --project unit",
     "gen:types": "tsx tools/gen-types.ts",
@@ -73,9 +72,6 @@
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.19.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
-    "eslint": "^9.0.0",
     "tsup": "^8.3.0",
     "tsx": "^4.8.1",
     "typescript": "^7.0.2",
@@ -94,7 +90,7 @@
     "target": "es2022",
     "platform": "node",
     "outDir": "dist",
-    "dts": true,
+    "dts": false,
     "sourcemap": true,
     "clean": true,
     "splitting": false,
