@@ -29,6 +29,7 @@ last_verified: 2026-07-19
 | CI cache 정책 이력 | [Issue #1664 cache 정책 결정](ci_cache_policy_1664.md) | 현재 동작은 `.github/workflows/ci.yml` 재확인 |
 | WASM toolchain 버전 | [wasm-pack 버전 고정 정책](wasm_pack_version_policy.md) | 현재 설치 동작은 `.github/actions/install-wasm-pack/action.yml`과 `Dockerfile` 재확인 |
 | 에이전트 표면 내성 설계 | [경량 에이전트 내성 — CLI·MCP 계약 확장 4건](weak_agent_proofing.md) | [에이전트 실패 사전](../manual/agent_troubleshooting_guide.md), [에이전트 표면 플레이북](../manual/agent_surface_playbook.md) |
+| 에이전트 보안 — 문서가 에이전트를 조종하는 경로 | [에이전트 보안 문서 지도](agent_security/README.md) | [위협 모델](agent_security/threat_model.md), [공격 표면](agent_security/attack_surface.md), [소비 에이전트 가이드](agent_security/consumer_guide.md), 로드맵 #3793·구현 #3787 |
 | 외부 바인딩 공통 기반(M18~M20) | [IR 스키마 버저닝·표면 판단·파이썬 1호 명세](bindings_foundation.md) | 로드맵 #3608 M18~M20, [에이전트 표면 플레이북](../manual/agent_surface_playbook.md) |
 | 이슈별 기술 조사 | [이슈별 기술 조사 지도](investigations/README.md) | [Issue #511 IR wrap 조사](investigations/issue-511/README.md), [Issue #1151 picture TAC 조사](investigations/issue-1151/README.md), [Issue #1584 이후 HWPX 잔여 IR 차이 조사](investigations/issue-1584/README.md), [Issue #1658 페이지네이션 조사](investigations/issue-1658/README.md), [Issue #1772 잔여 OVER 조사](investigations/issue-1772/README.md), [Issue #2125 font ownership 조사](investigations/issue-2125/README.md) |
 
@@ -41,6 +42,9 @@ last_verified: 2026-07-19
 - 현재 분리된 이슈별 조사는 `investigations/issue-####/`에서 관리한다. 각 디렉터리의 README가 해당
   스냅샷과 진단의 당시 범위, 최신성 제한, 관련 문서를 설명한다.
 - [webhwp/](webhwp/README.md) 하위 문서는 2026-02 번들을 역분석한 historical investigation 묶음이다.
+- [agent_security/](agent_security/README.md) 하위 문서는 rhwp가 에이전트 도구로서 노출하는 보안
+  표면의 계약이다. 파서 견고성이 아니라 **문서 내용이 에이전트 행동에 영향을 미치는 경로**를 다룬다.
+  구현(#3787)이 진행 중이므로 각 문서는 "현재 있는 것"과 "설계된 것"을 구분해 표시한다.
 - [archive/](archive/README.md)의 v1 roadmap처럼 대체된 계획은 historical 자료로 취급하며, 새 작업의
   근거로 직접 사용하지 않는다.
 
