@@ -11,6 +11,8 @@ pub mod rendering;
 /// 주소(구역·문단·페이지)를 가진 검색 — 조판 엔진이 있어야만 가능한 질의.
 pub mod changed_pages;
 pub mod grep;
+/// [#3719 §6-11] 공개 전 개인정보 탐지 — 읽기 전용 판정(마스킹은 CLI 의 치환 경로).
+pub mod pii_scan;
 pub(crate) mod search_query;
 pub mod structure;
 pub mod table_extract;

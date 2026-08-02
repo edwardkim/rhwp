@@ -542,8 +542,87 @@ rhwp edit set-cell 양식.hwpx --table 0 --row 2 --col 1 --text "1,234" -o 작�
 rhwp export-tables 작성본.hwpx --json | jq '.tables[0].cells[] | select(.row==2 and .col==1).text'
 ```
 
+### `edit redact <파일> [--kind …] [--mask <문자>] [--dry-run] [-o <출력>|--in-place]` (#3719 §6-11)
+공개 전 개인정보 마스킹 — 주민등록번호·전화번호·이메일·카드번호를 찾아 **자릿수를 유지한 채**
+가린다. 탐지는 읽기 전용 코어(`document_core::queries::pii_scan`)가 하고, 실제 변경은 검증된
+치환 경로(`replace_all_native`)를 재사용하므로 새 편집 로직이 없다. 주소는 `grep` 재사용이라
+매치마다 구역·문단·**쪽**·문자 오프셋이 따라온다.
+
+- `--kind <목록>` — `ssn|phone|email|card|all` 을 쉼표로 나열 (기본 `all`)
+- `--mask <문자>` — 마스킹 문자 **한 글자**. 영숫자는 거부한다(본문과 구별 불가). 두 글자
+  이상이면 자릿수 보존이 깨지므로 조용히 자르지 않고 exit 2.
+- `--dry-run` — **권장 첫 단계**. 파일을 만들지 않고 `findings[]` 만 보고한다.
+- `-o, --output <파일>` / `--in-place` — 둘 중 하나가 **반드시** 필요하다(§원본 보호).
+- `--verify` — 저장 직후 IR 자기검증(차이 시 exit 3, #3702)
+- `--json` 봉투:
+  `{"schemaVersion":"1.0","source","kinds","mask","dryRun","inPlace","findingCount",`
+  `"findings":[{"kind","raw","masked","section","paragraph","page","charOffset"}],`
+  `"redactedCount","changedPages","output"?,"outputFormat"?,"verify"?}`
+  - `output`/`outputFormat`/`verify` 는 실제 저장했을 때만 실린다 — **탐지 0건이면 출력
+    파일을 만들지 않는다**.
+
+**탐지 규칙(보수적)** — 마스킹은 되돌릴 수 없고 오탐은 본문을 훼손하므로, 형태가 맞아도
+검증을 통과하지 못하면 **탐지하지 않는다**.
+
+| 종류 | 형태 | 추가 검증 |
+| --- | --- | --- |
+| `ssn` | `######-#######` | 생년월일 실재(윤년 포함) + 성별/세기 코드 1~8 + mod 11 검증 숫자 |
+| `card` | `4-4-4-4`(`-`/공백), Amex `4-6-5`, 연속 15·16자리 | Luhn |
+| `phone` | `01[016789]-3~4자리-4자리`, `02-3~4자리-4자리` | 하이픈 필수 |
+| `email` | `지역부@라벨(.라벨)+` | 라벨 2개 이상 + 최상위 도메인 영문 2자 이상 |
+
+- 앞뒤가 숫자면 더 긴 토큰의 일부로 보고 버린다(계좌번호 안의 16자리 부분열 오인 방지).
+- **02 외 지역번호, 13·14·19자리 카드, 여권번호·계좌번호는 v1 범위 밖**이다 — 체크섬이
+  없거나 문서번호와 구별할 근거가 없어 보수적 판정이 불가능하다. 근거와 확장 조건은
+  [처리 기록](../report/task_m100_redact/README.md)에 있다.
+
+**원본 보호** — `-o` 도 `--in-place` 도 없으면 **실행하지 않는다**(exit 2). 다른 `edit`
+명령과 달리 `_redacted.hwp` 같은 기본 이름도 만들지 않는다. `-o` 가 원본 자신을 가리켜도
+같은 이유로 거부한다. 쓰기는 원자적이라 `--in-place` 도중 실패해도 원본이 잘리지 않는다.
+
+> `findings[].raw` 는 **원문 개인정보 그 자체**다. 감사를 위해 넣었지만 로그·이슈에 그대로
+> 붙이면 유출 경로가 된다.
+
+```bash
+# 권장 흐름: 먼저 무엇이 지워질지 본다 → 확인 후 적용
+rhwp edit redact 계약서.hwp --dry-run --json | jq '.findings[] | {kind, page, masked}'
+rhwp edit redact 계약서.hwp -o 공개본.hwp --verify --json | jq '{redactedCount, changedPages}'
+rhwp edit redact 계약서.hwp --kind ssn,card -o 공개본.hwp --json   # 종류를 좁힐 수도 있다
+```
+
+### `edit sanitize <파일> [--keep-preview] [-o <출력>] [--json]` (#3719 §6-11)
+문서 메타데이터 제거 — 작성자·제목·주제·최종수정자·작성/수정 일시·미리보기.
+**본문 내용은 건드리지 않는다**(`export-text` 결과가 전후 동일).
+
+- `--keep-preview` — 미리보기 **이미지**를 남긴다(기본은 제거). 미리보기 텍스트는 언제나 대상.
+- `-o, --output <파일>` — 출력 파일 (기본 `<입력명>_sanitized.<입력과 같은 확장자>`)
+- `--json` 봉투:
+  `{"schemaVersion":"1.0","source","keepPreview","removedCount","removed":[{"field","before"}],"output","outputFormat"}`
+
+지우는 대상은 셋이다.
+
+1. **OLE 요약 정보**(`\x05HwpSummaryInformation`) — `title`·`subject`·`author`·`keywords`·
+   `comments`·`lastSavedBy`·`revisionNumber`·`dateString`(문자열)과 `createdAt`·
+   `lastSavedAt`·`lastPrintedAt`(FILETIME → ISO 8601 로 보고). 속성 오프셋 표가 절대 위치를
+   담고 있어 **바이트 길이를 바꾸지 않고** 비운다.
+2. **HWPX 저작자 메타**(`Contents/content.hpf` 의 `<opf:metadata>`) — 직렬화기가 원본에서
+   그대로 splice 하는 유일한 저작자 경로다. 중립 블록으로 교체한다.
+3. **미리보기**(PrvText·PrvImage) — ZIP 엔트리와 HWP5 계약 스트림 양쪽.
+
+`removed[]` 는 **거짓 보고를 하지 않는다**. HWP5 직렬화기는 PrvText 가 비면 본문 앞부분으로
+다시 채우므로, 미리보기 텍스트는 **지금 본문과 다를 때만**(= 예전 판의 잔재일 때만) 지우고
+보고한다. HWPX 원본의 `/HwpSummaryInformation` 은 파일에 없던 계약 fallback 상수라 HWPX 로
+저장할 때는 손대지 않고, HWP5 로 변환할 때만 처리한다. 그래서 **두 번째 실행은
+`removedCount: 0`** 이다 — 첫 실행이 실제로 지웠다는 증거다.
+
+```bash
+rhwp edit sanitize 보고서.hwp -o 배포본.hwp --json | jq '.removed[] | "\(.field): \(.before)"'
+rhwp edit sanitize 배포본.hwp -o /tmp/재확인.hwp --json | jq .removedCount   # → 0
+```
+
 ### `edit` 산출 형식 (#3383)
-`edit` 3종(`fill-fields`/`replace-text`/`set-cell`)은 **입력 형식을 보존**한다.
+`edit` 5종(`fill-fields`/`replace-text`/`set-cell`/`redact`/`sanitize`)은
+**입력 형식을 보존**한다.
 
 - HWPX 입력 → HWPX 산출(`export_hwpx_native`), 기본 확장자도 `.hwpx`
 - 그 밖의 입력(HWP5/HWP3) → HWP5 산출. 이때 직렬화는 **어댑터 경유**

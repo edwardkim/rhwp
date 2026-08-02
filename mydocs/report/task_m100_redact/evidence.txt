@@ -1,0 +1,105 @@
+rhwp v0.8.2
+수집 시각(UTC): 2026-08-02T12:29:24Z
+
+※ 실제 개인정보는 저장소에 두지 않는다. 아래 값은 형태만 개인정보인 가공 값이며
+   유효값 4개 + 검증 실패 미끼 2개를 samples/field-01.hwp 누름틀에 심어 만든다.
+
+=== 0. 가짜 개인정보 문서 생성 (edit fill-fields) ===
+filledCount: 4  changedPages: [0]
+
+=== 1. edit redact --dry-run --json (오탐 0 확인) ===
+findingCount: 4  dryRun: True  kinds: ['ssn', 'card', 'phone', 'email']  mask: *
+  card   4111-1111-1111-1111  -> ****-****-****-****  (구역 0, 문단 7, 쪽 0, 오프셋 10)
+  ssn    900101-1234568       -> ******-*******       (구역 0, 문단 8, 쪽 0, 오프셋 11)
+  phone  010-1234-5678        -> ***-****-****        (구역 0, 문단 10, 쪽 0, 오프셋 7)
+  email  hong@example.com     -> ****@*******.***     (구역 0, 문단 11, 쪽 0, 오프셋 9)
+  미끼 미탐지 [900101-1234567]: 통과
+  미끼 미탐지 [1234-5678-9012-3456]: 통과
+  봉투에 output 키 없음(dry-run): 통과
+  dry-run 이 만든 파일 수: 0 (0 이어야 함)
+
+=== 2. 원본 보호 — -o / --in-place 없이 실행 ===
+  exit=2  stdout=0바이트
+  stderr: 오류: 마스킹은 되돌릴 수 없습니다. 산출 경로를 -o <출력> 으로 지정하거나, 원본을 덮어쓸 의도라면 --in-place 를 명시하세요 (먼저 --dry-run 으로 무엇이 지워질지 확인하기를 권합니다).
+  원본 md5 불변: 통과
+
+=== 3. 원본 보호 — -o 가 원본 자신을 지목 ===
+  exit=2  stdout=0바이트
+  원본 md5 불변: 통과
+
+=== 4. edit redact 실제 적용 (--verify) ===
+  redactedCount: 4  changedPages: [0]  outputFormat: hwp5  verify: {'diffCount': 0, 'identical': True}
+
+=== 5. 산출 본문 — 마스킹은 되고 미끼는 살아 있는가 ===
+  | 회사명  : 카드 ****-****-****-**** / 
+  | 미끼 900101-1234567 / 미끼 
+  | 작성자  : 홍길동 ******-*******
+  | Tel  : ***-****-****여기에 입력
+  | E-Mail : ****@*******.***여기에 입력
+
+  마스킹됨 [900101-1234568]: 통과
+  마스킹됨 [4111-1111-1111-1111]: 통과
+  마스킹됨 [010-1234-5678]: 통과
+  마스킹됨 [hong@example.com]: 통과
+  미끼 보존 [900101-1234567]: 통과
+  미끼 보존 [1234-5678-9012-3456]: 통과
+
+=== 6. --kind 필터 / --mask 검증 ===
+  kinds: ['email']  mask: #  findings: [('email', '####@#######.###')]
+  --mask '**' exit=2 (2 여야 함)
+  --mask 'x' exit=2 (2 여야 함)
+
+=== 7. edit sanitize (HWP5) — removed[] 와 재실행 0건 ===
+  removedCount: 10  outputFormat: hwp5
+    title            마케팅 전략 기획서
+    author           cabso
+    dateString       2026년 3월 9일 월요일 오전 3:24:42
+    keywords         기획서표지,표지서식
+    lastSavedBy      cabso
+    revisionNumber   11, 0, 0, 2129 WIN32LEWindows_8
+    createdAt        2026-03-08T18:24:42Z
+    lastSavedAt      2026-03-08T18:34:40Z
+    preview.text     \r\n마케팅 \r\n전략 기획서\r\n \r\n\r\n회사명  : \r\n작성자  : \r\n부서명  : \r\nTel  :…
+    preview.image    Png 19323 bytes
+  재실행 removedCount: 0  (0 이어야 첫 실행이 실제로 지운 것)
+
+=== 8. sanitize 는 본문을 바꾸지 않는다 (export-text 전후 비교) ===
+  3쪽 전부 문자 단위 동일: 통과
+
+=== 9. edit sanitize (HWPX) — 형식 보존 · 재실행 0건 · 본문 불변 ===
+  removedCount: 3  outputFormat: hwpx  fields: ['hwpx.metadata', 'preview.text', 'preview.image']
+  재실행 removedCount: 0
+  23쪽 전부 문자 단위 동일: 통과
+
+=== 10. HWPX→HWP5 변환 sanitize (요약 정보가 실제 산출물에 실리는 경로) ===
+  outputFormat: hwp5  removedCount: 9
+  fields: ['author', 'dateString', 'lastSavedBy', 'revisionNumber', 'createdAt', 'lastSavedAt', 'hwpx.metadata', 'preview.text', 'preview.image']
+  FILETIME 교차검증  dateString='2026년 3월 16일 월요일 오전 6:56:40'  createdAt='2026-03-15T21:56:40Z'
+
+=== 11. --keep-preview 는 썸네일을 남긴다 ===
+  keepPreview: True  removed: ['title', 'author', 'dateString', 'keywords', 'lastSavedBy', 'revisionNumber', 'createdAt', 'lastSavedAt', 'preview.text']
+  --keep-preview 산출물 thumbnail exit=0  (0 이어야 함)
+  기본(제거) 산출물 thumbnail exit=1  (0 이 아니어야 함)
+
+=== 12. 실패 경로 stdout 0바이트 ===
+  exit=1 stdout=0바이트 :: edit redact 없는파일.hwp -o x.hwp --json
+  exit=1 stdout=0바이트 :: edit sanitize 없는파일.hwp --json
+  exit=2 stdout=0바이트 :: edit redact samples/field-01.hwp --json
+  exit=2 stdout=0바이트 :: edit redact samples/field-01.hwp --kind 없는종류 --json
+  exit=2 stdout=0바이트 :: edit sanitize samples/field-01.hwp --없는옵션
+  exit=2 stdout=0바이트 :: edit redact samples/field-01.hwp -o x.hwp --in-place
+
+=== 13. 자기서술 — capabilities / MCP 배선 / help ===
+  commands[edit].flags: ['--data', '--find', '--replace', '--ignore-case', '--table', '--row', '--col', '--text', '--occurrence', '--keep-style', '--kind', '--mask', '--in-place', '--keep-preview', '-o', '--dry-run', '--verify', '--json']
+  hwp_redact
+    type=object required=['path']
+    properties=['dryRun', 'inPlace', 'kind', 'mask', 'output', 'path', 'verify']
+    미배선 속성=[]  (빈 목록이어야 함)
+  hwp_sanitize
+    type=object required=['path']
+    properties=['keepPreview', 'output', 'path']
+    미배선 속성=[]  (빈 목록이어야 함)
+    edit redact <파일.hwp|파일.hwpx> [--kind …] [--dry-run] [-o <출력>|--in-place]
+    edit sanitize <파일.hwp|파일.hwpx> [--keep-preview] [-o <출력>] [--json]
+
+=== 끝 ===
