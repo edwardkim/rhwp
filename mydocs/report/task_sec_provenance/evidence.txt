@@ -1,0 +1,156 @@
+# [#3787 S1] 봉투 출처 표지 — 검증 증적
+# 워크트리: .agentwt/sec-provenance / 브랜치: pr/sec-provenance (upstream/devel 기준)
+# 환경: Windows 11, RUSTFLAGS="-C linker=rust-lld", CARGO_HTTP_CHECK_REVOKE=false
+
+────────────────────────────────────────────────────────────────────────
+1. 빌드
+────────────────────────────────────────────────────────────────────────
+$ cargo build --release --bin rhwp
+    Finished `release` profile [optimized] target(s) in 2m 54s
+(exit 0)
+
+────────────────────────────────────────────────────────────────────────
+2. 계약 테스트 3종
+────────────────────────────────────────────────────────────────────────
+$ cargo test --release --test provenance_contract --test cli_json_contract --test mcp_server_contract
+
+  tests/cli_json_contract.rs     : 26 passed; 0 failed   (기존 계약 무회귀)
+  tests/mcp_server_contract.rs   : 22 passed; 0 failed   (기존 계약 무회귀)
+  tests/provenance_contract.rs   :  7 passed; 0 failed   (신규)
+  ─────────────────────────────────────────────
+  합계                            : 55 passed; 0 failed
+
+신규 7종:
+  provenance_map_covers_every_json_command            ok
+  every_text_bearing_command_declares_untrusted_fields ok
+  untrusted_flag_matches_map                          ok
+  every_json_envelope_carries_the_flag                ok
+  export_provenance_map_is_wired_across_every_surface ok
+  capabilities_advertises_the_provenance_contract     ok
+  schema_version_stays_1_0_because_the_flag_is_additive ok
+
+────────────────────────────────────────────────────────────────────────
+3. clippy
+────────────────────────────────────────────────────────────────────────
+$ cargo clippy -- -D warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 59.86s
+(경고 0, exit 0)
+
+────────────────────────────────────────────────────────────────────────
+4. rustfmt
+────────────────────────────────────────────────────────────────────────
+# cargo fmt --all 은 이 PC 에서 os error 206 으로 실패한다 → 파일 단위로 돌린다.
+$ rustfmt --edition 2021 --config-path rustfmt.toml --config newline_style=Auto \
+    --check src/main.rs tests/provenance_contract.rs
+(출력 없음, exit 0)
+# src/main.rs 를 주면 rustfmt 가 `mod provenance;` 를 따라가 src/provenance.rs 도 함께 본다.
+
+────────────────────────────────────────────────────────────────────────
+5. 선검사 (agent_preflight.py)
+────────────────────────────────────────────────────────────────────────
+$ python .agentwt/preflight/tools/agent_preflight.py --repo . --bin target/release/rhwp.exe
+
+  통과   doc 주석 오배치
+  통과   ReDoS — 백트래킹 폭발 정규식
+  통과   rustfmt (1개 파일)
+  통과   MCP inputSchema 모양 (26개 도구)
+  통과   선언 속성 ↔ CLI 배선
+  통과   capabilities ↔ --help 상호 커버 (55개 명령)
+  통과   --json 명령 ↔ MCP 도구 커버
+  통과   선언 flags 실재 (61개 플래그)
+  통과   실패 경로 stdout 0바이트 (3개 경로)
+
+  전부 통과.
+
+────────────────────────────────────────────────────────────────────────
+6. 지도 규모
+────────────────────────────────────────────────────────────────────────
+$ rhwp export-provenance-map --json | (집계)
+  commands            : 24   (capabilities 의 --json 계약 명령 전부)
+  선언된 문서 파생 필드 : 51
+  문서 파생을 담는 명령 : 13   batch digest dump-pages edit export-structure
+                              export-tables export-text fields info ir-diff
+                              run search thumbnail
+  담지 않는 명령        : 11   (untrustedContent:false 를 명시)
+
+────────────────────────────────────────────────────────────────────────
+7. 표지 실측 (기존 값 불변 + 필드 추가만)
+────────────────────────────────────────────────────────────────────────
+$ rhwp info --json samples/hwp3-sample.hwp
+  untrustedContent=True  untrustedFields=['title', 'fonts[]']
+  title='￼Creating Linux Virtual Servers'
+
+$ rhwp search samples/hwp3-sample.hwp 한 --json
+  untrustedContent=True  untrustedFields=['matches[].text', 'matches[].context']
+  matchCount=143
+
+$ rhwp fields samples/hwp3-sample.hwp --json
+  {"fieldCount":0,"fields":[],"schemaVersion":"1.0","source":"…","textSecurity":{"status":"clean"},
+   "untrustedContent":false,"untrustedFields":[]}
+  → 문서를 열었지만 담긴 문서 값이 없으면 false. 표지는 그래도 실린다.
+
+$ rhwp edit set-cell samples/table-001.hwp --table 0 --row 0 --col 0 --text ZZ --dry-run --json
+  {"…","oldText":"구 분","untrustedContent":true,"untrustedFields":["oldText"]}
+
+$ rhwp export-pdf samples/hwp3-sample.hwp -o out.pdf -p 0 --json
+  {"backend":"svg",…,"untrustedContent":false,"untrustedFields":[]}
+  → 매니페스트만 내는 명령도 false 를 명시한다(옛 바이너리와 구별 가능).
+
+기존 필드의 이름·타입·값은 하나도 바뀌지 않았다. schemaVersion 은 전 봉투 "1.0" 유지.
+
+════════════════════════════════════════════════════════════════════════
+8. ★ 가드가 실제로 누락을 잡는가 — 일부러 빠뜨린 실측
+════════════════════════════════════════════════════════════════════════
+
+가드는 "만들었다"가 아니라 "실패시켜 봤다"여야 의미가 있다. 두 가지 드리프트를
+실제로 재현했다.
+
+── 실험 A: 선언된 필드를 지웠다 (기존 명령에 문서 값이 남았는데 선언만 사라진 경우)
+   src/provenance.rs 의 search 항목에서
+     f("matches[].text",  "GrepMatch.text — …"),
+     f("matches[].context", "GrepMatch.context — …"),
+   두 줄을 지우고 `untrusted: NONE` 으로 바꾼 뒤 재빌드.
+
+   결과: every_text_bearing_command_declares_untrusted_fields FAILED
+
+     선언되지 않은 문서 파생 필드 3건:
+       - search: 문서 문자열이 {"matches[].context", "matches[].text"} 에 실렸는데
+                 untrustedContent 가 true 가 아닙니다
+       - search: 봉투의 matches[].context 에 문서 문자열이 실렸는데 지도에 선언이
+                 없습니다 (선언된 최상위 키: {})
+       - search: 봉투의 matches[].text 에 문서 문자열이 실렸는데 지도에 선언이
+                 없습니다 (선언된 최상위 키: {})
+
+     src/provenance.rs 의 MAP 에 경로와 근거(origin)를 추가하세요. 봉투가 문서 값을
+     담는데 지도가 침묵하면, 그 값을 받은 에이전트는 문서에 적힌 문장을 도구의
+     지시로 읽습니다.
+
+   test result: FAILED. 6 passed; 1 failed
+   → 지도를 참고하지 않고 **문서 자체**에서 만든 오라클이 봉투 속 문서 문자열을
+     찾아내 정확한 경로까지 지목했다. 선언을 지운다고 가드가 따라 눈감지 않는다.
+
+── 실험 B: 명령 항목을 통째로 지웠다 (새 명령이 추가됐는데 지도에 안 넣은 경우와 동형)
+   src/provenance.rs 에서 CommandProvenance{ command:"dump-pages", … } 블록 전체 삭제
+   (25개 → 24개 항목) 후 재빌드.
+
+   결과: 4개 가드가 동시에 FAILED
+
+     provenance_map_covers_every_json_command FAILED
+       --json 계약 명령인데 출처 지도에 없는 것: ["dump-pages"]
+       src/provenance.rs 의 MAP 에 항목을 추가하세요. 문서 값을 담지 않는 명령이라도
+       빈 목록과 사유(note)를 남겨야 소비자가 '판정했고 없음'을 알 수 있습니다.
+
+     untrusted_flag_matches_map                          FAILED
+     every_text_bearing_command_declares_untrusted_fields FAILED
+     schema_version_stays_1_0_because_the_flag_is_additive FAILED
+       (셋 다 "지도에 dump-pages 항목이 없습니다" 로 멈춘다)
+
+   test result: FAILED. 3 passed; 4 failed
+   → 새 명령을 지도에서 빠뜨리면 자동으로 걸린다. 요구된 완료 조건 그대로다.
+
+── 두 실험 모두 원상 복구 후 재검증: 7 passed; 0 failed (§2)
+
+── 부수 소득: 실험 B 도중 export-pdf 가 스레드 병렬로 4번 겹쳐 돌면서
+   `memory allocation of 16273348 bytes failed` 로 죽는 것을 실측했다. 가드 4종이
+   각자 전 명령을 다시 실행하던 구조가 원인이라, 스윕을 OnceLock 으로 프로세스당
+   1회만 돌리도록 고쳤다. 부작용으로 테스트 시간이 13.61s → 2.17s 로 줄었다.
