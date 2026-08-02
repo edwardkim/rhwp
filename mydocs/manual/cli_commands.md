@@ -193,9 +193,24 @@ rhwp export-pdf input.hwp -o out.pdf \
 ### `export-text <파일> [옵션]`
 페이지별 텍스트 → TXT. `-o`, `-p`.
 - `--json` (#3237): 파일 저장 대신 stdout 에 순수 JSON 하나를 출력. 진행 메시지 없음.
-  `{"schemaVersion":"1.0","source","pageCount","pages":[{"page","text"}]}` —
+  `{"schemaVersion":"1.0","source","pageCount","truncated","omittedCount","pages":[{"page","text"}]}` —
   `schemaVersion` 이 계약이며 필드 추가는 허용, 변경·삭제는 `tests/cli_json_contract.rs` 가 잡는다.
   `page` 는 `-p` 와 같은 0 기준.
+- `--max-chars <N>` (#3787 S7): 본문 문자 상한. **기본은 무제한**이고, `--json` 과
+  함께 써야 한다(파일 저장 모드에는 절단 사실을 실을 봉투가 없어 exit 2 로 거부).
+  거대 문서가 에이전트 컨텍스트를 밀어내는 것을 막는 용도다.
+  - **조용히 자르지 않는다** — 최상위 `truncated:true` 와 `omittedCount`(생략 문자 수)를
+    싣고, 잘린 쪽마다 `pages[].truncated`·`pages[].omittedCount` 를 붙인다.
+  - **쪽 주소를 보존한다** — 예산이 떨어져도 `pages[]` 에서 항목을 빼지 않는다.
+    빼면 `pageCount` 가 줄어 문서가 실제보다 짧아 보인다.
+  - `0`·음수·비정수는 사용법 오류(exit 2)다. `0` 을 무제한으로 뭉개면 "아무것도 주지
+    마라"는 요청이 "전부 달라"로 뒤집힌다.
+  - 계약 근거는 [에이전트 경계 무결성 계약](../tech/agent_boundary_contract.md) S7.
+
+```bash
+# 처음 보는 대형 문서를 컨텍스트 예산 안에서 훑기
+rhwp export-text 편람.hwp --json --max-chars 4000 | jq '{truncated, omittedCount}'
+```
 - 옵션은 파일 앞뒤 어디에 와도 된다 (#3349, export-structure/export-tables 와 동일 규약).
   파일 positional 을 두 번 주면 exit 2.
 
@@ -408,16 +423,18 @@ rhwp digest 편람.hwp --json --max-chars 500
 문서를 검색해 매치마다 **구역·문단·페이지·문자 오프셋**을 함께 돌려준다.
 평문을 뽑아 외부에서 찾으면 주소가 소멸해 근거 제시가 불가능한데, rhwp 는 조판 엔진이
 있어 "몇 쪽"에 답할 수 있다. 파서/렌더 무변경 읽기 질의.
-- `--json` 봉투: `{"schemaVersion":"1.0","source","query","caseSensitive","matchCount","totalMatchCount","truncated","matches":[…]}`
+- `--json` 봉투: `{"schemaVersion":"1.0","source","query","caseSensitive","matchCount","totalMatchCount","truncated","omittedCount","matches":[…]}`
 - 매치: `{section,paragraph,page?,charOffset,length,text,context,cell?}`
   - `page` 는 0부터 시작하는 글로벌 페이지. 조판에 배치되지 않은 문단이면 생략된다.
   - `cell` 은 표 셀 안의 매치일 때 `{control,cell,paragraph}` 좌표
   - `context` 는 매치 앞뒤 발췌(각 40자)
 - 검색 범위는 본문 + 표 셀 + 글상자 (`search_query::search_all` 과 동일)
 - **매치 0건은 오류가 아니다** — `matchCount:0`, 종료 코드 0 (1은 런타임 실패 전용)
-- `--limit N` 은 대형 문서에서 컨텍스트를 아끼기 위한 상한. 절단돼도
-  `totalMatchCount`(문서 전체 매치 수)와 `truncated:true` 로 총량이 보인다 (#3353) —
-  `matchCount` 는 종전대로 반환된 매치 수(= `matches` 길이)다.
+- `--max-matches N`(= `--limit N`, #3353)은 대형 문서에서 컨텍스트를 아끼기 위한 상한.
+  **기본은 무제한**이다. 절단돼도 `totalMatchCount`(문서 전체 매치 수)·`truncated:true`·
+  `omittedCount`(생략 매치 수)로 총량이 보인다 — `matchCount` 는 종전대로 반환된 매치
+  수(= `matches` 길이)다. 두 이름은 같은 축이며 봉투가 완전히 같다(`--max-matches` 가
+  `export-text --max-chars` 와 어휘를 맞춘 이름, #3787 S7). `0` 은 사용법 오류(exit 2).
 - **검색어가 `-` 로 시작하면 `--` 뒤에 둔다.** 그러지 않으면 옵션으로 파싱돼
   `알 수 없는 옵션` exit 2 가 난다. `--` 이후는 전부 위치 인자로 읽는다.
 

@@ -435,7 +435,8 @@ fn served_tools(
             "type": "object",
             "properties": {
                 "docId": { "type": "string", "description": "hwp_open 이 돌려준 핸들" },
-                "page": { "type": "integer", "minimum": 0, "description": "0부터 시작하는 페이지 번호. 생략하면 전체" }
+                "page": { "type": "integer", "minimum": 0, "description": "0부터 시작하는 페이지 번호. 생략하면 전체" },
+                "maxChars": { "type": "integer", "minimum": 1, "description": "[#3787 S7] 본문 전체의 문자 상한. 넘으면 truncated:true 와 omittedCount(생략 문자 수)를 봉투에 남긴다. 생략하면 무제한" }
             },
             "required": ["docId"]
         }
@@ -468,7 +469,8 @@ fn served_tools(
             "properties": {
                 "docId": { "type": "string", "description": "hwp_open 이 돌려준 핸들" },
                 "query": { "type": "string", "minLength": 1, "description": "검색어" },
-                "caseSensitive": { "type": "boolean", "description": "대소문자 구분. 기본 true" }
+                "caseSensitive": { "type": "boolean", "description": "대소문자 구분. 기본 true" },
+                "maxMatches": { "type": "integer", "minimum": 1, "description": "[#3787 S7] 반환 매치 상한. 절단되면 totalMatchCount·truncated:true·omittedCount 가 총량을 알린다. 생략하면 무제한" }
             },
             "required": ["docId", "query"]
         }
@@ -774,6 +776,19 @@ fn opt_bool(args: &serde_json::Value, key: &str) -> Result<Option<bool>, String>
     }
 }
 
+/// [#3787 S7] 자원 상한(1 이상) 인자. 생략은 **무제한**이고, `0`·음수·소수·문자열은
+/// 거부한다 — `0` 을 "무제한"으로 뭉개면 "아무것도 주지 마라"는 요청이 "전부 달라"가
+/// 되어 정반대로 실행된다.
+fn opt_limit(args: &serde_json::Value, key: &str) -> Result<Option<usize>, String> {
+    match opt_u64(args, key)? {
+        None => Ok(None),
+        Some(0) => Err(format!("{key} 는 1 이상이어야 합니다 (생략하면 무제한)")),
+        Some(n) => usize::try_from(n)
+            .map(Some)
+            .map_err(|_| format!("{key} 범위 초과: {n}")),
+    }
+}
+
 /// 필수 정수. "생략"과 "형식 오류"를 서로 다른 문구로 보고한다 — 같은 문구로 뭉개면
 /// 호출자가 값이 아니라 호출 형태를 의심하며 헛수고한다.
 fn req_u64(args: &serde_json::Value, key: &str) -> Result<u64, String> {
@@ -803,6 +818,11 @@ fn session_doc_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
         Ok(v) => v,
         Err(e) => return tool_error(e),
     };
+    // [#3787 S7] 컨텍스트 범람 방어 상한. 생략하면 무제한(종전 동작).
+    let max_chars = match opt_limit(args, "maxChars") {
+        Ok(v) => v,
+        Err(e) => return tool_error(e),
+    };
     let pages: Vec<u32> = match page_arg {
         Some(raw_page) => {
             let p = match u32::try_from(raw_page) {
@@ -816,18 +836,23 @@ fn session_doc_text(args: &serde_json::Value, sessions: &mut Sessions) -> serde_
         }
         None => (0..page_count).collect(),
     };
-    let mut page_objs = Vec::with_capacity(pages.len());
+    let mut extracted = Vec::with_capacity(pages.len());
     for p in pages {
         match doc.extract_page_text_native(p) {
-            Ok(text) => page_objs.push(serde_json::json!({ "page": p, "text": text })),
+            Ok(text) => extracted.push((p, text)),
             Err(e) => return tool_error(format!("페이지 {p} 텍스트 추출 실패: {e:?}")),
         }
     }
+    // [#3787 S7] 무상태 `export-text --json --max-chars` 와 같은 helper 를 쓴다 —
+    // 절단 어휘(truncated·omittedCount)가 두 표면에서 갈라지지 않게 한다.
+    let (page_objs, omitted_count) = crate::truncate_page_texts(&extracted, max_chars);
     tool_ok_text(
         serde_json::json!({
             "schemaVersion": "1.0",
             "docId": doc_id,
             "pageCount": page_objs.len(),
+            "truncated": omitted_count > 0,
+            "omittedCount": omitted_count,
             "pages": page_objs,
         })
         .to_string(),
@@ -951,6 +976,11 @@ fn session_search(args: &serde_json::Value, sessions: &mut Sessions) -> serde_js
         Ok(v) => v.unwrap_or(true),
         Err(e) => return tool_error(e),
     };
+    // [#3787 S7] 컨텍스트 범람 방어 상한. 생략하면 무제한(종전 동작).
+    let max_matches = match opt_limit(args, "maxMatches") {
+        Ok(v) => v,
+        Err(e) => return tool_error(e),
+    };
     let Some(sd) = sessions.docs.get_mut(doc_id) else {
         return tool_error_with_next(
             format!("열려 있지 않은 핸들: {doc_id} (hwp_open 먼저)"),
@@ -959,11 +989,15 @@ fn session_search(args: &serde_json::Value, sessions: &mut Sessions) -> serde_js
             "핸들이 없거나 만료 — hwp_open 으로 docId 를 재발급한 뒤 재시도",
         );
     };
-    let matches = sd.doc.grep(query, case_sensitive, None);
-    let total = matches.len();
-    tool_ok_text(
-        crate::search_json_value(doc_id, query, case_sensitive, &matches, total).to_string(),
-    )
+    // [#3787 S7] 총량은 전수 grep 으로 세고 **표시만** 자른다 — 무상태 `search
+    // --max-matches` 와 같은 규칙이라 totalMatchCount 가 두 표면에서 같은 뜻이다.
+    let all = sd.doc.grep(query, case_sensitive, None);
+    let total = all.len();
+    let shown: Vec<_> = match max_matches {
+        Some(n) => all.into_iter().take(n).collect(),
+        None => all,
+    };
+    tool_ok_text(crate::search_json_value(doc_id, query, case_sensitive, &shown, total).to_string())
 }
 
 /// [#3601] 핸들의 IR 에 문자열 일괄 치환을 누적한다 — 디스크 미기록, save 가 기록 지점.

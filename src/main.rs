@@ -556,14 +556,17 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             "hwp_export_text",
             "문서의 페이지별 본문 텍스트를 추출한다. 특정 페이지만 필요하면 page 를 준다.",
             path_schema(serde_json::json!({
-                "page": { "type": "integer", "minimum": 0, "description": "0부터 시작하는 페이지 번호. 생략하면 전체" }
+                "page": { "type": "integer", "minimum": 0, "description": "0부터 시작하는 페이지 번호. 생략하면 전체" },
+                // [#3787 S7] 컨텍스트 범람 방어. 생략하면 무제한이다.
+                "maxChars": { "type": "integer", "minimum": 1, "description": "본문 전체의 문자 상한. 넘으면 truncated:true 와 omittedCount(생략 문자 수)를 봉투에 남긴다. 생략하면 무제한" }
             })),
             "export-text",
             serde_json::json!(["export-text", "--json", "{path}"]),
             serde_json::json!([
-                { "when": "page", "args": ["-p", "{page}"] }
+                { "when": "page", "args": ["-p", "{page}"] },
+                { "when": "maxChars", "args": ["--max-chars", "{maxChars}"] }
             ]),
-            &["pageCount", "pages"],
+            &["pageCount", "truncated", "omittedCount", "pages"],
         ),
         tool_with_optional_args(
             "hwp_export_structure",
@@ -779,7 +782,16 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             // `--` 뒤는 전부 위치 인자다 — 그래서 `--json` 은 구분자 **앞**에
             // 와야 한다. 뒤에 두면 세 번째 위치 인자가 되어 "인자가 너무 많습니다" 다.
             serde_json::json!(["search", "{path}", "--json", "--", "{query}"]),
-            &["source", "query", "caseSensitive", "matchCount", "matches"],
+            &[
+                "source",
+                "query",
+                "caseSensitive",
+                "matchCount",
+                "totalMatchCount",
+                "truncated",
+                "omittedCount",
+                "matches",
+            ],
         ),
         tool(
             "hwp_fields",
@@ -1101,8 +1113,15 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             "export",
             "페이지별 텍스트 추출 (TXT 파일 또는 --json stdout)",
             true,
-            &["-o", "-p", "--json"],
-            &["schemaVersion", "source", "pageCount", "pages"],
+            &["-o", "-p", "--max-chars", "--json"],
+            &[
+                "schemaVersion",
+                "source",
+                "pageCount",
+                "truncated",
+                "omittedCount",
+                "pages",
+            ],
         ),
         cmd_json(
             "export-structure",
@@ -1324,7 +1343,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             "query",
             "문서 검색 결과를 구역·문단·페이지·문자 오프셋 주소와 함께 출력",
             false,
-            &["--json", "--ignore-case", "--limit"],
+            &["--json", "--ignore-case", "--limit", "--max-matches"],
             &[
                 "schemaVersion",
                 "source",
@@ -1333,6 +1352,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "matchCount",
                 "totalMatchCount",
                 "truncated",
+                "omittedCount",
                 "matches",
             ],
         ),
@@ -1797,6 +1817,8 @@ fn print_help() {
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
     println!("      -p, --page <번호>       특정 페이지만 내보내기 (0부터 시작)");
     println!("      --json                  결과를 JSON으로 stdout에 출력 (파일 저장 안 함)");
+    println!("      --max-chars <N>         본문 문자 상한 (--json 전용, 기본: 무제한). 넘으면");
+    println!("                              봉투에 truncated:true·omittedCount 를 남긴다");
     println!();
     println!("  batch <export-text|info|export-structure|export-tables|fields|search|convert> --json [--threads <N>]");
     println!(
@@ -1933,7 +1955,9 @@ fn print_help() {
     println!();
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!("      --ignore-case             대소문자 무시");
-    println!("      --limit <N>               최대 매치 수 (컨텍스트 절약용)");
+    println!("      --max-matches <N>         최대 매치 수 (기본: 무제한). 절단되면 봉투에");
+    println!("                                truncated:true·omittedCount 가 남는다");
+    println!("      --limit <N>               --max-matches 의 기존 이름 (#3353, 동의어)");
     println!();
     println!("  hwp5-inventory <파일.hwp> [--format jsonl|md] [--section N] [--out <path>]");
     println!("      HWP5 DocInfo/BodyText record inventory 생성 (HWPX→HWP contract 분석용)");
@@ -3559,6 +3583,8 @@ fn export_text(args: &[String]) -> i32 {
     let mut file_path: Option<&str> = None;
     let mut output_dir = "output".to_string();
     let mut target_page: Option<u32> = None;
+    // [#3787 S7] 기본은 **무제한**이다 — 종전 호출의 산출을 조용히 줄이지 않는다.
+    let mut max_chars: Option<usize> = None;
 
     let mut i = 0;
     while i < args.len() {
@@ -3569,6 +3595,16 @@ fn export_text(args: &[String]) -> i32 {
                     Some(p) => output_dir = p.clone(),
                     None => {
                         eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--max-chars" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
+                    Some(n) if n >= 1 => max_chars = Some(n),
+                    _ => {
+                        eprintln!("오류: --max-chars 뒤에 1 이상의 정수가 필요합니다.");
                         return EXIT_USAGE;
                     }
                 }
@@ -3608,6 +3644,16 @@ fn export_text(args: &[String]) -> i32 {
         eprintln!("사용법: rhwp export-text <파일.hwp> [옵션] (rhwp --help 참조)");
         return EXIT_USAGE;
     };
+
+    // [#3787 S7] `--max-chars` 는 **에이전트 컨텍스트**를 지키는 상한이다. 파일
+    // 저장 모드에는 지킬 컨텍스트가 없고, 거기서 조용히 잘린 .txt 를 남기면 절단
+    // 사실을 실을 봉투조차 없다. 아무 일도 안 하는 플래그는 함정이므로 거부한다.
+    if max_chars.is_some() && !json_mode {
+        eprintln!(
+            "오류: --max-chars 는 --json 과 함께 써야 합니다 (봉투에 절단 사실을 싣는 옵션)."
+        );
+        return EXIT_USAGE;
+    }
 
     let data = match fs::read(file_path) {
         Ok(d) => d,
@@ -3658,22 +3704,26 @@ fn export_text(args: &[String]) -> i32 {
 
     // [#3237] JSON 모드: 파일을 쓰지 않고 요청 페이지 전체를 stdout JSON 하나로 낸다.
     if json_mode {
-        let mut page_objs = Vec::with_capacity(pages.len());
+        let mut extracted = Vec::with_capacity(pages.len());
         for page_num in &pages {
             match doc.extract_page_text_native(*page_num) {
-                Ok(text) => {
-                    page_objs.push(serde_json::json!({ "page": page_num, "text": text }));
-                }
+                Ok(text) => extracted.push((*page_num, text)),
                 Err(e) => {
                     eprintln!("오류: 페이지 {} 텍스트 추출 실패 - {}", page_num, e);
                     return EXIT_RUNTIME;
                 }
             }
         }
+        // [#3787 S7] 총량을 보고하려면 전수 추출이 불가피하다 — `--max-chars` 의 목적은
+        // 추출 시간이 아니라 **출력 컨텍스트** 절약이므로 추출 후 표시만 절단한다
+        // (`search --limit` 이 전수 grep 후 절단하는 것과 같은 이유, #3353).
+        let (page_objs, omitted_count) = truncate_page_texts(&extracted, max_chars);
         let result = serde_json::json!({
             "schemaVersion": "1.0",
             "source": file_path,
             "pageCount": page_objs.len(),
+            "truncated": omitted_count > 0,
+            "omittedCount": omitted_count,
             "pages": page_objs,
         });
         println!("{result}");
@@ -4978,8 +5028,59 @@ fn search_json_value(
         "matchCount": matches.len(),
         "totalMatchCount": total_match_count,
         "truncated": matches.len() < total_match_count,
+        // [#3787 S7] 절단 축의 어휘를 텍스트 축(`export-text --max-chars`)과 맞춘다.
+        // `totalMatchCount - matchCount` 로 유도할 수 있는 값이지만, 유도를 요구하면
+        // "전부 봤다"는 오독이 그대로 남는다 — 생략량은 명시가 계약이다.
+        "omittedCount": total_match_count.saturating_sub(matches.len()),
         "matches": matches,
     })
+}
+
+/// [#3787 S7] 페이지 텍스트 산출의 문자 예산 절단 — CLI `export-text --json` 과
+/// MCP `hwp_doc_text` 가 같은 규칙을 공유한다.
+///
+/// **조용히 자르지 않는다.** 거대 문서가 에이전트 컨텍스트를 밀어내는 것을 막는 게
+/// 목적이지만, 잘랐다는 사실을 숨기면 그 절단이 "전부 읽었다"는 거짓말이 된다.
+/// 그래서 두 가지를 지킨다.
+///
+/// 1. **쪽 주소를 보존한다** — 예산이 떨어져도 `pages[]` 에서 항목을 빼지 않는다.
+///    빼면 `pageCount` 가 줄어 문서가 실제보다 짧아 보인다.
+/// 2. **생략량을 남긴다** — 잘린 페이지마다 `truncated:true`·`omittedCount`(생략된
+///    문자 수)를 싣고, 봉투 최상위에 합계를 싣는다. 최상위 `truncated` 는 절단이
+///    없어도 항상 나가고(false), 페이지 항목의 두 필드는 잘린 페이지에만 붙는다.
+///
+/// `max_chars` 가 `None` 이면 무제한이다(기본값 — 종전 동작 무변경).
+fn truncate_page_texts(
+    pages: &[(u32, String)],
+    max_chars: Option<usize>,
+) -> (Vec<serde_json::Value>, usize) {
+    let mut objs = Vec::with_capacity(pages.len());
+    let mut budget = max_chars;
+    let mut omitted_total = 0usize;
+    for (page, text) in pages {
+        let total = text.chars().count();
+        let keep = match budget {
+            Some(remaining) => remaining.min(total),
+            None => total,
+        };
+        if let Some(remaining) = budget.as_mut() {
+            *remaining -= keep;
+        }
+        let omitted = total - keep;
+        omitted_total += omitted;
+        let kept: String = if omitted == 0 {
+            text.clone()
+        } else {
+            text.chars().take(keep).collect()
+        };
+        let mut obj = serde_json::json!({ "page": page, "text": kept });
+        if omitted > 0 {
+            obj["truncated"] = serde_json::json!(true);
+            obj["omittedCount"] = serde_json::json!(omitted);
+        }
+        objs.push(obj);
+    }
+    (objs, omitted_total)
 }
 
 /// [#3407] `title` 이 훑는 앞쪽 페이지 수 상한 — 표지가 이미지·빈 쪽인 문서의
@@ -7857,12 +7958,16 @@ fn search_document(args: &[String]) -> i32 {
             "--" if !end_of_options => end_of_options = true,
             "--json" if !end_of_options => json_mode = true,
             "--ignore-case" | "-i" if !end_of_options => ignore_case = true,
-            "--limit" if !end_of_options => {
+            // [#3787 S7] `--max-matches` 는 자원 상한 어휘를 텍스트 축
+            // (`export-text --max-chars`)과 맞춘 이름이고, `--limit`(#3353)은 같은
+            // 축의 기존 이름이다. 두 이름이 같은 변수를 채우므로 의미 분기는 없다.
+            "--limit" | "--max-matches" if !end_of_options => {
+                let flag = args[i].clone();
                 i += 1;
                 match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
                     Some(n) if n >= 1 => limit = Some(n),
                     _ => {
-                        eprintln!("오류: --limit 뒤에 1 이상의 정수가 필요합니다.");
+                        eprintln!("오류: {flag} 뒤에 1 이상의 정수가 필요합니다.");
                         return EXIT_USAGE;
                     }
                 }
@@ -7894,7 +7999,7 @@ fn search_document(args: &[String]) -> i32 {
 
     let (Some(file_path), Some(query)) = (file_path, query) else {
         eprintln!(
-            "사용법: rhwp search <파일.hwp|파일.hwpx> <검색어> [--json] [--ignore-case] [--limit <N>]"
+            "사용법: rhwp search <파일.hwp|파일.hwpx> <검색어> [--json] [--ignore-case] [--max-matches <N>]"
         );
         return EXIT_USAGE;
     };
@@ -7937,7 +8042,7 @@ fn search_document(args: &[String]) -> i32 {
 
     if truncated {
         println!(
-            "검색: {:?} in {} — {}건 중 {}건 표시 (--limit)",
+            "검색: {:?} in {} — {}건 중 {}건 표시 (--max-matches)",
             query,
             file_path,
             total_match_count,
