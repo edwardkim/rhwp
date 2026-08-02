@@ -1,0 +1,21 @@
+// 빌드 전용 설정 — 배포물에 들어갈 것만 본다.
+//
+// 테스트·예제·생성기(tools)를 제외하는 이유: 그것들은 개발 편의를 위해 느슨한
+// 코드(픽스처, 의도적 오사용 케이스)를 담을 수 있는데, 그게 배포 산출물의 타입
+// 선언에 새어 들어가면 소비자가 우리 테스트 유틸을 API 로 착각한다.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    // 배포물에 `src/` 를 넣지 않으므로 선언 맵은 갈 곳 없는 링크가 된다.
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    // 배포 코드에는 미사용 변수가 남을 이유가 없다 — 기본값(true)을 그대로 상속한다.
+    "sourceMap": false
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist", "node_modules", "test", "tools", "examples", "**/*.test.ts"]
+}

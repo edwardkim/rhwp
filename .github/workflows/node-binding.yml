@@ -1,0 +1,185 @@
+name: node-binding
+
+# M19 Node/TS 바인딩 (#3776). 바인딩은 새 표면이 아니라 기존 계약의 재포장이므로,
+# 여기서 지키는 것은 "TypeScript 가 도나"가 아니라 **계약이 어긋나지 않았나**다.
+#
+# 잡을 넷으로 나눈 이유:
+#   1. 단위 — 바이너리 없이 도는 게 계약이다. 매트릭스로 지원 Node 범위를 실제로 밟는다.
+#   2. 통합 — 실물 rhwp 와 왕복해야만 드러나는 것(봉투 모양, 종료 코드, 세션 수명)을 본다.
+#   3. 패키지 빌드 — `npm pack` 산출물이 실제로 만들어지는지. exports 맵이 깨지면 여기서 난다.
+#   4. 생성 타입 최신 검사 — 스키마가 바뀌었는데 커밋된 타입이 옛것이면 실패시킨다.
+#
+# 액션은 전부 SHA 로 고정한다(이 저장소 관례). 태그는 옮겨질 수 있고, 옮겨진 태그는
+# 검증한 적 없는 코드를 CI 권한으로 실행한다.
+
+on:
+  push:
+    branches: [main, devel]
+    paths:
+      - 'bindings/node/**'
+      # 생성 타입의 원천. 스키마가 바뀌면 커밋된 타입이 낡는다.
+      - 'src/capabilities_schema.rs'
+      - '.github/workflows/node-binding.yml'
+  pull_request:
+    branches: [main, devel]
+    paths:
+      - 'bindings/node/**'
+      - 'src/capabilities_schema.rs'
+      - '.github/workflows/node-binding.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+
+# 같은 PR 에 새 push 가 오면 진행 중 run 을 취소한다. devel/main push 의 머지 검증
+# run 은 보존한다 (ci.yml 과 같은 방침).
+concurrency:
+  group: node-binding-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  unit:
+    # 탐색·이름 변환·예외 매핑·계획 직렬화는 순수 로직이다. 여기서 rhwp 를 빌드해야
+    # 한다면 "바이너리 없이 돈다"는 계약이 이미 깨진 것이다.
+    name: 단위 (바이너리 없이)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # engines 가 >=18 이므로 하한(18)·중간(20)·상한(22)을 실제로 밟는다.
+        node-version: ['18', '20', '22']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Node.js 설치
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          # 잠금 파일을 커밋하지 않으므로 setup-node 의 npm 캐시는 쓸 수 없다
+          # (캐시 키가 package-lock.json 해시라 파일이 없으면 스텝이 실패한다).
+
+      - name: 의존성 설치
+        working-directory: bindings/node
+        # 잠금 파일이 없어 `npm ci` 는 쓸 수 없다. 런타임 의존성이 0 이라 설치되는 건
+        # 전부 개발 도구이며, 범위가 넓어 매번 새로 푸는 비용이 크지 않다.
+        run: npm install --no-audit --no-fund
+
+      - name: 타입 검사
+        working-directory: bindings/node
+        run: npm run typecheck
+
+      - name: 린트
+        working-directory: bindings/node
+        run: npm run lint
+
+      - name: 단위 테스트
+        working-directory: bindings/node
+        run: npm run test:unit
+
+  integration:
+    # 실제 바이너리와 실제 문서로 왕복. 봉투 필드 이름이 바뀌면 여기서만 드러난다.
+    name: 통합 (rhwp 빌드)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Rust 툴체인 설치
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+
+      - name: Cargo 캐시
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2.9.1
+
+      - name: Node.js 설치
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+
+      - name: rhwp 빌드
+        run: cargo build --release --bin rhwp
+
+      - name: 의존성 설치
+        working-directory: bindings/node
+        run: npm install --no-audit --no-fund
+
+      - name: 전체 테스트 (단위 + 통합)
+        working-directory: bindings/node
+        env:
+          # 이 변수가 있을 때만 통합 프로젝트의 대상이 채워진다 (vitest.config.ts).
+          RHWP_BIN: ${{ github.workspace }}/target/release/rhwp
+        run: npm test
+
+  package:
+    # exports 맵·files·듀얼 산출물이 실제로 만들어지는지. 설정 파일만 보고는 알 수 없다.
+    name: 패키지 빌드
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Node.js 설치
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+
+      - name: 의존성 설치
+        working-directory: bindings/node
+        run: npm install --no-audit --no-fund
+
+      - name: 빌드
+        working-directory: bindings/node
+        run: npm run build
+
+      - name: 패키징
+        working-directory: bindings/node
+        # `--dry-run` 이 아니라 실제 tarball 을 만든다 — 아티팩트를 받아 열어보고
+        # 무엇이 들어갔는지 눈으로 확인할 수 있어야 한다.
+        run: npm pack
+
+      - name: tarball 내용 확인
+        working-directory: bindings/node
+        # 배포물에 소스나 테스트가 섞여 들어가면 로그에서 바로 보인다.
+        run: tar -tzf rhwp-node-*.tgz
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rhwp-node-tarball
+          path: bindings/node/*.tgz
+          if-no-files-found: error
+
+  generated-types:
+    # 커밋된 생성 타입이 지금의 스키마와 같은지. 다르면 실패시킨다 — 낡은 타입은
+    # "컴파일은 되는데 런타임에 필드가 없는" 가장 나쁜 형태로 드러난다.
+    name: 생성 타입 최신 검사
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Rust 툴체인 설치
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+
+      - name: Cargo 캐시
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2.9.1
+
+      - name: Node.js 설치
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+
+      - name: rhwp 빌드
+        run: cargo build --release --bin rhwp
+
+      - name: 의존성 설치
+        working-directory: bindings/node
+        run: npm install --no-audit --no-fund
+
+      - name: 생성 타입 재생성 후 비교
+        working-directory: bindings/node
+        env:
+          RHWP_BIN: ${{ github.workspace }}/target/release/rhwp
+        # 다르면 exit 1. 고치는 법은 `npm run gen:types` 후 커밋.
+        run: npm run gen:check

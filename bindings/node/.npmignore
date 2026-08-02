@@ -1,0 +1,31 @@
+# npm 배포물에서 제외할 것.
+#
+# `package.json` 의 `files` 가 이미 화이트리스트(dist, README, CHANGELOG)이므로
+# 이 파일은 이중 안전장치다. `files` 를 손볼 때 실수로 넓어져도 아래 항목은 막힌다.
+# 특히 `dist/` **안에** 섞여 들어갈 수 있는 것들이 실질적인 대상이다.
+
+# 소스와 빌드 중간물
+src/
+tools/
+*.tsbuildinfo
+*.d.ts.map
+
+# 검증 자산 — 배포물에 넣으면 패키지가 몇 배로 커지고, 소비자는 쓸 일이 없다.
+test/
+examples/
+coverage/
+vitest.config.ts
+
+# 개발 전용 설정
+tsconfig*.json
+eslint.config.js
+.eslintrc*
+
+# 문서 소스. 배포에는 README.md 와 CHANGELOG.md 만 간다.
+docs/
+
+# 로컬 산출물·잡동사니
+node_modules/
+*.log
+.DS_Store
+*.tgz

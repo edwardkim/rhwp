@@ -11,6 +11,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
+use serde_json::{json, Value};
+
 use crate::document_core::DocumentCore;
 use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 use crate::HwpError;
@@ -478,6 +480,17 @@ pub fn roundtrip_geom(data: &[u8], via: Via) -> Result<DocGeomDiff, HwpError> {
 /// 기본 변위 임계값(px). Stage 3 에서 실측 분포로 보정한다.
 const DEFAULT_MAX_DISP: f64 = 1.0;
 
+/// `--json` 봉투 스키마 버전. 필드 추가는 허용, 변경·삭제는 범프한다.
+const SCHEMA_VERSION: &str = "1.0";
+
+// 종료 코드 — #2707 사전. 회귀 **검출**(도구는 정상 동작)과 런타임 **실패**를 같은
+// 코드로 뭉개면 CI 는 "렌더가 깨졌다"와 "파일을 못 읽었다"를 구분할 수 없다.
+const EXIT_OK: i32 = 0;
+const EXIT_RUNTIME: i32 = 1;
+const EXIT_USAGE: i32 = 2;
+/// 검증 단언 실패 — `--verify` 계열과 같은 의미론. `--json` 모드에서만 낸다.
+const EXIT_REGRESSION: i32 = 3;
+
 struct CliOptions {
     /// 위치 인자(파일/폴더). 배치는 1개(폴더), 자기 라운드트립 1개, 두 파일 비교 2개.
     positionals: Vec<PathBuf>,
@@ -486,6 +499,8 @@ struct CliOptions {
     page: Option<u32>,
     max_disp: f64,
     out_dir: PathBuf,
+    /// 기계 계약 모드 — stdout 은 단건 JSON 봉투(배치는 NDJSON)만 싣는다.
+    json: bool,
 }
 
 fn parse_cli(args: &[String]) -> Result<CliOptions, String> {
@@ -495,11 +510,13 @@ fn parse_cli(args: &[String]) -> Result<CliOptions, String> {
     let mut page = None;
     let mut max_disp = DEFAULT_MAX_DISP;
     let mut out_dir = PathBuf::from("output/poc/render_diff");
+    let mut json_mode = false;
 
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--batch" => batch = true,
+            "--json" => json_mode = true,
             "--via" => {
                 i += 1;
                 match args.get(i).map(|s| s.as_str()) {
@@ -532,7 +549,7 @@ fn parse_cli(args: &[String]) -> Result<CliOptions, String> {
     }
 
     if positionals.is_empty() {
-        return Err("사용법: rhwp render-diff <파일> [--via hwpx|hwp] [-p N] [--max-disp PX]\n         rhwp render-diff <a> <b> [-p N]\n         rhwp render-diff --batch <폴더> [--via hwpx] [-o 출력폴더]".into());
+        return Err("사용법: rhwp render-diff <파일> [--via hwpx|hwp] [-p N] [--max-disp PX] [--json]\n         rhwp render-diff <a> <b> [-p N] [--json]\n         rhwp render-diff --batch <폴더> [--via hwpx] [-o 출력폴더] [--json]".into());
     }
     if batch && positionals.len() != 1 {
         return Err("--batch 는 폴더 1개만 지정".into());
@@ -547,6 +564,113 @@ fn parse_cli(args: &[String]) -> Result<CliOptions, String> {
         page,
         max_disp,
         out_dir,
+        json: json_mode,
+    })
+}
+
+/// 라운드트립 경유 포맷의 안정 문자열 (봉투 `via` 값).
+fn via_str(via: Via) -> &'static str {
+    match via {
+        Via::Hwpx => "hwpx",
+        Via::Hwp => "hwp",
+    }
+}
+
+/// 유한하지 않은 변위는 JSON `null` 로 낸다.
+///
+/// NaN·무한대를 0 이나 문자열로 위장시키면 소비자는 "차이 없음"으로 오독한다. 측정
+/// 불가는 값이 아니라 값의 **부재**이므로 null 이 유일하게 정직한 표현이다.
+fn fnum(v: f64) -> Value {
+    if v.is_finite() {
+        json!(v)
+    } else {
+        Value::Null
+    }
+}
+
+/// `Option<u32>` → 숫자 또는 null.
+fn opt_u32(v: Option<u32>) -> Value {
+    v.map(Value::from).unwrap_or(Value::Null)
+}
+
+/// 페이지 한 장의 봉투 조각.
+fn page_json(p: &PageGeomDiff) -> Value {
+    let top: Vec<Value> = p
+        .top_deltas
+        .iter()
+        .map(|d| {
+            json!({
+                "path": d.path,
+                "nodeType": d.node_type,
+                "disp": fnum(d.disp()),
+                "dx": fnum(d.dx),
+                "dy": fnum(d.dy),
+                "dw": fnum(d.dw),
+                "dh": fnum(d.dh),
+            })
+        })
+        .collect();
+    let types: Vec<Value> = p
+        .type_deltas
+        .iter()
+        .map(|t| {
+            json!({
+                "nodeType": t.node_type,
+                "countA": t.count_a,
+                "countB": t.count_b,
+                "net": t.net(),
+            })
+        })
+        .collect();
+    json!({
+        "page": p.page,
+        "nodeCountA": p.node_count_a,
+        "nodeCountB": p.node_count_b,
+        "maxDisp": fnum(p.max_disp),
+        "meanDisp": fnum(p.mean_disp),
+        "structureMismatch": p.structure_mismatch,
+        "structTextrunPm1": p.struct_textrun_pm1,
+        "topDeltas": top,
+        "typeDeltas": types,
+    })
+}
+
+/// 단건(자기 라운드트립·두 파일) 비교의 `--json` 봉투.
+fn single_envelope(
+    opts: &CliOptions,
+    diff: &DocGeomDiff,
+    sum: &DiffSummary,
+    status: &str,
+) -> Value {
+    let pair = opts.positionals.len() == 2;
+    let pages: Vec<Value> = filtered_pages(diff, opts.page)
+        .into_iter()
+        .map(page_json)
+        .collect();
+    json!({
+        "schemaVersion": SCHEMA_VERSION,
+        // 두 파일 비교에는 "경유 포맷"이 없다 — 라운드트립 축과 섞이지 않게 mode 로 가른다.
+        "mode": if pair { "pair" } else { "roundtrip" },
+        "sourceA": opts.positionals[0].display().to_string(),
+        "sourceB": if pair {
+            json!(opts.positionals[1].display().to_string())
+        } else {
+            Value::Null
+        },
+        "via": if pair { Value::Null } else { json!(via_str(opts.via)) },
+        "pageFilter": opt_u32(opts.page),
+        "threshold": fnum(opts.max_disp),
+        "pageCountA": diff.page_count_a,
+        "pageCountB": diff.page_count_b,
+        "pageCountMismatch": diff.page_count_mismatch(),
+        "maxDisp": fnum(sum.max_disp),
+        "worstPage": opt_u32(sum.worst_page),
+        "overPages": sum.over_pages,
+        "structPages": sum.struct_pages,
+        "hardStructPages": sum.hard_struct_pages,
+        "status": status,
+        "regression": status_is_hard_failure(status),
+        "pages": pages,
     })
 }
 
@@ -649,11 +773,45 @@ struct BatchRow {
     max_disp: f64,
     worst_page: Option<u32>,
     struct_pages: usize,
+    /// TextRun ±1 로 설명되지 않는 구조 불일치 페이지 수 (봉투 `hardStructPages`).
+    hard_struct_pages: usize,
     over_pages: usize,
     /// 파일 전체에 걸친 노드 타입별 순증감 (구조 불일치 원인 국소화).
     struct_delta: String,
     elapsed_ms: u128,
     error: String,
+}
+
+/// 배치 NDJSON 한 줄.
+///
+/// 로드 실패도 `error` 를 단 레코드로 남긴다 — 스트림에서 통째로 사라지면 소비자는
+/// 처리 누락 자체를 알 수 없다(입력 N건, 출력 N-1건인데 아무도 실패를 보고하지 않는다).
+/// `error` 키의 **존재**가 실패 판정이라 성공 레코드에는 넣지 않는다(batch 축 규약과 동일).
+fn batch_record(opts: &CliOptions, row: &BatchRow) -> Value {
+    let mut rec = json!({
+        "schemaVersion": SCHEMA_VERSION,
+        "mode": "roundtrip",
+        "source": row.rel_path,
+        "via": via_str(opts.via),
+        "threshold": fnum(opts.max_disp),
+        "pageCountA": row.pages_a,
+        "pageCountB": row.pages_b,
+        "pageCountMismatch": row.pages_a != row.pages_b,
+        "maxDisp": fnum(row.max_disp),
+        "worstPage": opt_u32(row.worst_page),
+        "overPages": row.over_pages,
+        "structPages": row.struct_pages,
+        "hardStructPages": row.hard_struct_pages,
+        "status": row.status,
+        // 로드 실패는 "회귀 검출"이 아니라 "측정 실패"다 — 두 축을 겹치지 않게 가른다.
+        "regression": row.error.is_empty() && status_is_hard_failure(&row.status),
+        "structDelta": row.struct_delta,
+        "elapsedMs": row.elapsed_ms as u64,
+    });
+    if !row.error.is_empty() {
+        rec["error"] = json!(row.error);
+    }
+    rec
 }
 
 /// 문서 전 페이지의 타입 델타를 타입별 순증감으로 집계 (예: `Line:-4;RawSvg:-1`).
@@ -677,7 +835,7 @@ fn run_batch(opts: &CliOptions) -> i32 {
         Ok(f) => f,
         Err(e) => {
             eprintln!("오류: {e}");
-            return 2;
+            return EXIT_USAGE;
         }
     };
     if files.is_empty() {
@@ -685,7 +843,7 @@ fn run_batch(opts: &CliOptions) -> i32 {
             "오류: 처리할 .hwp/.hwpx 파일이 없습니다: {}",
             root.display()
         );
-        return 2;
+        return EXIT_USAGE;
     }
 
     let mut rows = Vec::with_capacity(files.len());
@@ -703,6 +861,7 @@ fn run_batch(opts: &CliOptions) -> i32 {
             max_disp: 0.0,
             worst_page: None,
             struct_pages: 0,
+            hard_struct_pages: 0,
             over_pages: 0,
             struct_delta: String::new(),
             elapsed_ms: 0,
@@ -720,48 +879,67 @@ fn run_batch(opts: &CliOptions) -> i32 {
                 row.max_disp = sum.max_disp;
                 row.worst_page = sum.worst_page;
                 row.struct_pages = sum.struct_pages;
+                row.hard_struct_pages = sum.hard_struct_pages;
                 row.over_pages = sum.over_pages;
                 row.struct_delta = aggregate_struct_delta(&diff);
             }
             Err(e) => row.error = e,
         }
         row.elapsed_ms = started.elapsed().as_millis();
-        println!(
-            "[{:>15}] max_disp={:>7.2} struct={} over={} {:>6}ms  {}{}",
-            row.status,
-            row.max_disp,
-            row.struct_pages,
-            row.over_pages,
-            row.elapsed_ms,
-            row.rel_path,
-            if row.struct_delta.is_empty() {
-                String::new()
-            } else {
-                format!("  [{}]", row.struct_delta)
+        if opts.json {
+            // 한 줄 한 레코드 — 소비자가 전건 완료를 기다리지 않고 흘려 읽는다.
+            println!("{}", batch_record(opts, &row));
+        } else {
+            println!(
+                "[{:>15}] max_disp={:>7.2} struct={} over={} {:>6}ms  {}{}",
+                row.status,
+                row.max_disp,
+                row.struct_pages,
+                row.over_pages,
+                row.elapsed_ms,
+                row.rel_path,
+                if row.struct_delta.is_empty() {
+                    String::new()
+                } else {
+                    format!("  [{}]", row.struct_delta)
+                }
+            );
+            if !row.error.is_empty() {
+                println!("                  └ {}", row.error);
             }
-        );
-        if !row.error.is_empty() {
-            println!("                  └ {}", row.error);
         }
         rows.push(row);
     }
 
-    if let Err(e) = write_batch_tsv(&opts.out_dir, &rows) {
+    if let Err(e) = write_batch_tsv(&opts.out_dir, &rows, opts.json) {
         eprintln!("오류: {e}");
-        return 1;
+        return EXIT_RUNTIME;
     }
-    print_batch_summary(&rows);
+    print_batch_summary(&rows, opts.json);
 
-    // 게이트 명령이므로 PASS 외 status 는 CI/스크립트에서 실패로 감지되게 한다.
+    if opts.json {
+        // 측정 실패(로드)와 회귀 검출은 다른 사건이다. 로드 실패가 하나라도 있으면
+        // "전건을 재봤다"고 말할 수 없으므로 런타임 실패(1)가 우선한다.
+        if rows.iter().any(|r| !r.error.is_empty()) {
+            return EXIT_RUNTIME;
+        }
+        return if rows.iter().any(|r| status_is_hard_failure(&r.status)) {
+            EXIT_REGRESSION
+        } else {
+            EXIT_OK
+        };
+    }
+
+    // 사람 모드는 종전 계약 그대로 — 기존 CI 스크립트가 1 을 실패로 읽고 있다.
     let hard = rows.iter().any(|r| status_is_hard_failure(&r.status));
     if hard {
-        1
+        EXIT_RUNTIME
     } else {
-        0
+        EXIT_OK
     }
 }
 
-fn write_batch_tsv(out_dir: &Path, rows: &[BatchRow]) -> Result<(), String> {
+fn write_batch_tsv(out_dir: &Path, rows: &[BatchRow], json: bool) -> Result<(), String> {
     fs::create_dir_all(out_dir).map_err(|e| format!("출력 폴더 생성 실패: {e}"))?;
     let path = out_dir.join("geom_inventory.tsv");
     let mut tsv = String::from(
@@ -786,23 +964,41 @@ fn write_batch_tsv(out_dir: &Path, rows: &[BatchRow]) -> Result<(), String> {
         ));
     }
     fs::write(&path, tsv).map_err(|e| format!("TSV 쓰기 실패: {e}"))?;
-    println!("\nTSV 저장: {}", path.display());
+    // `--json` 의 stdout 은 NDJSON 전용이다 — 산출물 안내는 진단이라 stderr 로 뺀다.
+    let note = format!("\nTSV 저장: {}", path.display());
+    if json {
+        eprintln!("{note}");
+    } else {
+        println!("{note}");
+    }
     Ok(())
 }
 
-fn print_batch_summary(rows: &[BatchRow]) {
+fn batch_summary_text(rows: &[BatchRow]) -> String {
     let count = |s: &str| rows.iter().filter(|r| r.status == s).count();
     let overall_max = rows.iter().map(|r| r.max_disp).fold(0.0_f64, f64::max);
-    println!();
-    println!("=== render-diff 요약 ===");
-    println!("  총 파일         : {}", rows.len());
-    println!("  PASS            : {}", count("PASS"));
-    println!("  WARN_TEXTRUN    : {}", count("WARN_TEXTRUN"));
-    println!("  OVER            : {}", count("OVER"));
-    println!("  STRUCT_MISMATCH : {}", count("STRUCT_MISMATCH"));
-    println!("  PAGE_MISMATCH   : {}", count("PAGE_MISMATCH"));
-    println!("  LOAD_FAIL       : {}", count("LOAD_FAIL"));
-    println!("  전체 최대 변위  : {overall_max:.2} px");
+    let mut out = String::from("\n=== render-diff 요약 ===\n");
+    out.push_str(&format!("  총 파일         : {}\n", rows.len()));
+    out.push_str(&format!("  PASS            : {}\n", count("PASS")));
+    out.push_str(&format!("  WARN_TEXTRUN    : {}\n", count("WARN_TEXTRUN")));
+    out.push_str(&format!("  OVER            : {}\n", count("OVER")));
+    out.push_str(&format!(
+        "  STRUCT_MISMATCH : {}\n",
+        count("STRUCT_MISMATCH")
+    ));
+    out.push_str(&format!("  PAGE_MISMATCH   : {}\n", count("PAGE_MISMATCH")));
+    out.push_str(&format!("  LOAD_FAIL       : {}\n", count("LOAD_FAIL")));
+    out.push_str(&format!("  전체 최대 변위  : {overall_max:.2} px\n"));
+    out
+}
+
+fn print_batch_summary(rows: &[BatchRow], json: bool) {
+    let text = batch_summary_text(rows);
+    if json {
+        eprint!("{text}");
+    } else {
+        print!("{text}");
+    }
 }
 
 /// 단일/두 파일 비교를 표준출력에 보고하고 종료 코드를 반환한다.
@@ -820,7 +1016,7 @@ fn run_single(opts: &CliOptions) -> i32 {
                 // 사용법 오류 전용 — 계약(cli_commands.md 종료 코드 표)상 스크립트가
                 // "내 호출이 틀렸다"로 오독해 재시도 대신 인자를 고치려 든다.
                 eprintln!("오류: A 로드 실패 {}: {e}", a.display());
-                return 1;
+                return EXIT_RUNTIME;
             }
         };
         let core_b = match fs::read(b)
@@ -831,14 +1027,14 @@ fn run_single(opts: &CliOptions) -> i32 {
             Err(e) => {
                 // 읽기·파싱 실패는 런타임 오류(1).
                 eprintln!("오류: B 로드 실패 {}: {e}", b.display());
-                return 1;
+                return EXIT_RUNTIME;
             }
         };
         match diff_render_geometry(&core_a, &core_b) {
             Ok(d) => d,
             Err(e) => {
                 eprintln!("오류: 기하 비교 실패 - {e:?}");
-                return 1;
+                return EXIT_RUNTIME;
             }
         }
     } else {
@@ -849,20 +1045,43 @@ fn run_single(opts: &CliOptions) -> i32 {
             Err(e) => {
                 // 읽기 실패는 런타임 오류(1). 이 갈래도 같은 부류였다.
                 eprintln!("오류: 파일 읽기 실패 {}: {e}", f.display());
-                return 1;
+                return EXIT_RUNTIME;
             }
         };
         match roundtrip_geom(&data, opts.via) {
             Ok(d) => d,
             Err(e) => {
                 eprintln!("오류: 라운드트립 비교 실패 - {e:?}");
-                return 1;
+                return EXIT_RUNTIME;
             }
         }
     };
 
+    // 범위 밖 `-p` 는 사용법 오류(2)다. 조용한 빈 결과로 내면 "필터가 안 맞았다"와
+    // "차이가 없다"가 같은 출력이 된다 — 정반대 결론인데 소비자는 후자로 읽는다.
+    if let Some(want) = opts.page {
+        if !diff.pages.iter().any(|p| p.page == want) {
+            eprintln!(
+                "오류: -p {want} 는 비교 범위 밖입니다 (비교 대상 페이지 0..{})",
+                diff.pages.len()
+            );
+            return EXIT_USAGE;
+        }
+    }
+
     let sum = summarize(&diff, opts.page, opts.max_disp);
     let status = status_str(&diff, &sum, opts.max_disp);
+
+    if opts.json {
+        println!("{}", single_envelope(opts, &diff, &sum, status));
+        // 회귀 **검출**은 도구의 정상 동작이다. 1(런타임 실패)로 내면 CI 는 "렌더가
+        // 깨졌다"와 "파일을 못 읽었다"를 같은 신호로 받는다 — 3 으로 갈라 낸다.
+        return if status_is_hard_failure(status) {
+            EXIT_REGRESSION
+        } else {
+            EXIT_OK
+        };
+    }
 
     println!("페이지 수: A={} B={}", diff.page_count_a, diff.page_count_b);
     if diff.page_count_mismatch() {
@@ -923,10 +1142,12 @@ fn run_single(opts: &CliOptions) -> i32 {
     }
     println!("status: {status}");
 
+    // 사람 모드는 종전 계약 그대로 1 이다 — 이미 1 을 실패로 읽는 CI 스크립트가 있다.
+    // 새 의미론(3)은 `--json` 소비자에게만 준다.
     if status_is_hard_failure(status) {
-        1
+        EXIT_RUNTIME
     } else {
-        0
+        EXIT_OK
     }
 }
 
@@ -936,7 +1157,7 @@ pub fn run(args: &[String]) {
         Ok(o) => o,
         Err(e) => {
             eprintln!("오류: {e}");
-            std::process::exit(2);
+            std::process::exit(EXIT_USAGE);
         }
     };
     let code = if opts.batch {
@@ -944,7 +1165,7 @@ pub fn run(args: &[String]) {
     } else {
         run_single(&opts)
     };
-    if code != 0 {
+    if code != EXIT_OK {
         std::process::exit(code);
     }
 }
@@ -1248,5 +1469,136 @@ mod tests {
         let pg = diff_page(0, &a, &b);
         // 커버리지·줄폭이 다르므로 사전차단 미발동 → 구조 불일치로 검출(위양성 아님).
         assert!(pg.structure_mismatch);
+    }
+
+    // ---- `--json` 봉투 ----
+
+    fn opts(positionals: &[&str], page: Option<u32>) -> CliOptions {
+        CliOptions {
+            positionals: positionals.iter().map(PathBuf::from).collect(),
+            batch: false,
+            via: Via::Hwpx,
+            page,
+            max_disp: DEFAULT_MAX_DISP,
+            out_dir: PathBuf::from("output/poc/render_diff"),
+            json: true,
+        }
+    }
+
+    #[test]
+    fn non_finite_displacement_becomes_null_not_zero() {
+        // NaN 을 0 으로 내보내면 소비자는 "차이 없음"으로 오독한다 — 측정 불가는 부재다.
+        assert_eq!(fnum(f64::NAN), Value::Null);
+        assert_eq!(fnum(f64::INFINITY), Value::Null);
+        assert_eq!(fnum(f64::NEG_INFINITY), Value::Null);
+        assert_eq!(fnum(0.0), json!(0.0));
+        assert_eq!(fnum(-1.5), json!(-1.5));
+    }
+
+    #[test]
+    fn nan_page_metrics_serialize_as_null() {
+        let mut p = page_diff(false, false, f64::NAN);
+        p.mean_disp = f64::INFINITY;
+        p.top_deltas.push(NodeDelta {
+            path: "Body".into(),
+            node_type: "Body",
+            dx: f64::NAN,
+            dy: 0.0,
+            dw: 0.0,
+            dh: 0.0,
+        });
+        let v = page_json(&p);
+        assert!(v["maxDisp"].is_null(), "{v}");
+        assert!(v["meanDisp"].is_null(), "{v}");
+        assert!(v["topDeltas"][0]["dx"].is_null(), "{v}");
+        assert_eq!(v["topDeltas"][0]["dy"], json!(0.0), "{v}");
+    }
+
+    #[test]
+    fn roundtrip_envelope_declares_via_and_null_source_b() {
+        let o = opts(&["a.hwp"], None);
+        let d = doc_diff(vec![page_diff(false, false, 0.0)]);
+        let sum = summarize(&d, None, o.max_disp);
+        let v = single_envelope(&o, &d, &sum, status_str(&d, &sum, o.max_disp));
+        assert_eq!(v["schemaVersion"], SCHEMA_VERSION, "{v}");
+        assert_eq!(v["mode"], "roundtrip", "{v}");
+        assert_eq!(v["sourceA"], "a.hwp", "{v}");
+        assert!(v["sourceB"].is_null(), "{v}");
+        assert_eq!(v["via"], "hwpx", "{v}");
+        assert!(v["pageFilter"].is_null(), "{v}");
+        assert_eq!(v["status"], "PASS", "{v}");
+        assert_eq!(v["regression"], false, "{v}");
+        assert_eq!(v["pages"].as_array().map(Vec::len), Some(1), "{v}");
+    }
+
+    #[test]
+    fn pair_envelope_has_no_via_because_there_is_no_roundtrip() {
+        let o = opts(&["a.hwp", "b.hwpx"], None);
+        let d = doc_diff(vec![page_diff(true, false, 0.0)]);
+        let sum = summarize(&d, None, o.max_disp);
+        let v = single_envelope(&o, &d, &sum, status_str(&d, &sum, o.max_disp));
+        assert_eq!(v["mode"], "pair", "{v}");
+        assert_eq!(v["sourceB"], "b.hwpx", "{v}");
+        assert!(v["via"].is_null(), "{v}");
+        assert_eq!(v["status"], "STRUCT_MISMATCH", "{v}");
+        assert_eq!(v["regression"], true, "{v}");
+        assert_eq!(v["hardStructPages"], 1, "{v}");
+    }
+
+    #[test]
+    fn batch_load_failure_record_carries_error_and_is_not_a_regression() {
+        let o = opts(&["dir"], None);
+        let row = BatchRow {
+            rel_path: "x.hwp".into(),
+            status: "LOAD_FAIL".into(),
+            pages_a: 0,
+            pages_b: 0,
+            max_disp: 0.0,
+            worst_page: None,
+            struct_pages: 0,
+            hard_struct_pages: 0,
+            over_pages: 0,
+            struct_delta: String::new(),
+            elapsed_ms: 7,
+            error: "열 수 없음".into(),
+        };
+        let v = batch_record(&o, &row);
+        assert_eq!(v["source"], "x.hwp", "{v}");
+        assert_eq!(v["error"], "열 수 없음", "{v}");
+        // 측정 실패는 회귀 검출이 아니다 — 두 축이 겹치면 배치 종료 코드를 못 가른다.
+        assert_eq!(v["regression"], false, "{v}");
+        assert_eq!(v["elapsedMs"], 7, "{v}");
+    }
+
+    #[test]
+    fn batch_success_record_omits_the_error_key() {
+        let o = opts(&["dir"], None);
+        let row = BatchRow {
+            rel_path: "ok.hwp".into(),
+            status: "OVER".into(),
+            pages_a: 2,
+            pages_b: 2,
+            max_disp: 4.25,
+            worst_page: Some(1),
+            struct_pages: 0,
+            hard_struct_pages: 0,
+            over_pages: 1,
+            struct_delta: String::new(),
+            elapsed_ms: 3,
+            error: String::new(),
+        };
+        let v = batch_record(&o, &row);
+        assert!(v.get("error").is_none(), "{v}");
+        assert_eq!(v["regression"], true, "{v}");
+        assert_eq!(v["worstPage"], 1, "{v}");
+        assert_eq!(v["maxDisp"], json!(4.25), "{v}");
+    }
+
+    #[test]
+    fn json_flag_parses_and_defaults_off() {
+        let on = parse_cli(&["a.hwp".to_string(), "--json".to_string()]).expect("파싱");
+        assert!(on.json);
+        let off = parse_cli(&["a.hwp".to_string()]).expect("파싱");
+        assert!(!off.json);
     }
 }

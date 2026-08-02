@@ -1,0 +1,473 @@
+/**
+ * 명령별 봉투 타입 — **자동 생성 파일. 손으로 고치지 마세요.**
+ *
+ * 재생성: `npm run gen:types` (tools/gen-types.ts)
+ * 출처:   `rhwp capabilities` — version 0.8.2, `--json` 봉투 24개
+ *
+ * `capabilities` 는 명령마다 **어떤 필드가 있는지**(`recordFields`)만 선언하고 타입은
+ * 말하지 않습니다. 그래서 대부분의 필드가 `unknown` 입니다 — 짐작한 타입을 적으면 그
+ * 짐작이 컴파일러의 보증으로 둔갑하고, 사용자는 검사받았다고 믿은 채 틀린 코드를 씁니다.
+ * 이름만으로 확실한 소수(`schemaVersion`·`pageCount`·`verify` …)에만 타입을 줍니다.
+ *
+ * 모든 필드가 선택(`?`)인 이유: 옵션에 따라 나오지 않는 필드가 있는데 `capabilities`
+ * 는 그 조건을 서술하지 않습니다. 없을 수 있다는 사실을 타입에 남깁니다.
+ *
+ * 인덱스 시그니처는 봉투의 **추가-전용** 계약이자, 각 인터페이스가
+ * `Envelope<T extends RawEnvelope>` 의 제약을 만족하게 하는 장치입니다.
+ *
+ * @packageDocumentation
+ */
+
+import type { RawVerifyReport } from './envelope.js';
+
+/** 이 파일을 만들어 낸 capabilities 스냅샷 버전(= rhwp 버전). */
+export const CAPABILITIES_SNAPSHOT_VERSION = '0.8.2';
+
+/**
+ * `rhwp batch --json` 봉투.
+ *
+ * stdin 파일 목록을 한 프로세스에서 파일 간 병렬 처리, NDJSON 스트림 출력
+ */
+export interface BatchEnvelope {
+  readonly error?: string;
+  readonly exitClass?: unknown;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp build-from-ingest --json` 봉투.
+ *
+ * ingest JSON에서 HWPX 생성 (--json 봉투)
+ */
+export interface BuildFromIngestEnvelope {
+  readonly bytes?: number;
+  readonly format?: string;
+  readonly output?: string;
+  readonly paragraphCount?: number;
+  readonly questionCount?: number;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp capabilities` 봉투.
+ *
+ * 본 자기서술 JSON 출력
+ */
+export interface CapabilitiesEnvelope {
+  readonly batch?: unknown;
+  readonly commands?: unknown;
+  readonly exitCodes?: unknown;
+  readonly schemaVersion?: string;
+  readonly tool?: string;
+  readonly version?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp convert --json` 봉투.
+ *
+ * HWPX/배포용→편집 가능 HWP5 변환 (--verify 게이트 exit 3/4, --json 봉투)
+ */
+export interface ConvertEnvelope {
+  readonly bytes?: number;
+  readonly format?: string;
+  readonly output?: string;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+  readonly verify?: RawVerifyReport | null;
+  readonly verifyPages?: unknown;
+  readonly wasDistribution?: boolean;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp digest --json` 봉투.
+ *
+ * 문서 요약 봉투(메타·개요·발췌·nextStep)를 한 번 호출로 출력
+ */
+export interface DigestEnvelope {
+  readonly excerpt?: string;
+  readonly format?: string;
+  readonly nextStep?: string;
+  readonly outline?: unknown;
+  readonly pageCount?: number;
+  readonly paraCount?: number;
+  readonly schemaVersion?: string;
+  readonly sections?: unknown;
+  readonly source?: string;
+  readonly truncated?: boolean;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp dump-pages --json` 봉투.
+ *
+ * 페이지네이션 항목 덤프 (--json: 조판 진단 기계 계약)
+ */
+export interface DumpPagesEnvelope {
+  readonly pageCount?: number;
+  readonly pageFilter?: unknown;
+  readonly pages?: unknown;
+  readonly respectVposReset?: unknown;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp edit --json` 봉투.
+ *
+ * 문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) /
+ * set-cell: 표 셀 기록
+ */
+export interface EditEnvelope {
+  readonly col?: unknown;
+  readonly dryRun?: boolean;
+  readonly filled?: unknown;
+  readonly filledCount?: number;
+  readonly keepStyle?: unknown;
+  readonly newText?: unknown;
+  readonly notFound?: unknown;
+  readonly oldText?: unknown;
+  readonly output?: string;
+  readonly outputFormat?: string;
+  readonly overflow?: unknown;
+  readonly replacedCount?: number;
+  readonly row?: unknown;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+  readonly table?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp export-capabilities-schema --json` 봉투.
+ *
+ * capabilities 자기서술 자체의 JSON Schema 산출 — 명령 표면 코드 생성의 단일 출처 (#3776)
+ */
+export interface ExportCapabilitiesSchemaEnvelope {
+  readonly capabilitiesSchemaVersion?: string;
+  readonly definitionCount?: number;
+  readonly dialect?: string;
+  readonly mcpSchema?: unknown;
+  readonly schema?: unknown;
+  readonly schemaVersion?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp export-doclang --json` 봉투.
+ *
+ * 문서를 DocLang v0.6 XML로 내보내기 (--json 봉투)
+ */
+export interface ExportDoclangEnvelope {
+  readonly assetCount?: number;
+  readonly assetsDir?: string;
+  readonly bytes?: number;
+  readonly doclangVersion?: string;
+  readonly format?: string;
+  readonly lossCount?: number;
+  readonly output?: string;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp export-hml --json` 봉투.
+ *
+ * HML 원본을 HWPML 2.91 XML로 저장 (--json 봉투)
+ */
+export interface ExportHmlEnvelope {
+  readonly bytes?: number;
+  readonly format?: string;
+  readonly output?: string;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp export-hwpx --json` 봉투.
+ *
+ * HWP→HWPX 변환 저장 (--verify 게이트 exit 3/4, --json 봉투)
+ */
+export interface ExportHwpxEnvelope {
+  readonly bytes?: number;
+  readonly format?: string;
+  readonly output?: string;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+  readonly verify?: RawVerifyReport | null;
+  readonly verifyPages?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp export-markdown --json` 봉투.
+ *
+ * 페이지별 텍스트를 Markdown으로 추출 (--json 매니페스트)
+ */
+export interface ExportMarkdownEnvelope {
+  readonly format?: string;
+  readonly imageCount?: number;
+  readonly outputDir?: string;
+  readonly pageCount?: number;
+  readonly pages?: unknown;
+  readonly renderedCount?: number;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp export-pdf --json` 봉투.
+ *
+ * 문서를 PDF로 렌더 (svg|direct backend, --json 매니페스트)
+ */
+export interface ExportPdfEnvelope {
+  readonly backend?: string;
+  readonly bytes?: number;
+  readonly format?: string;
+  readonly output?: string;
+  readonly pageCount?: number;
+  readonly renderedCount?: number;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp export-structure --json` 봉투.
+ *
+ * 문서 개요/조문 계층을 JSON 트리로 추출
+ */
+export interface ExportStructureEnvelope {
+  readonly mode?: string;
+  readonly nodeCount?: number;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+  readonly structure?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp export-svg --json` 봉투.
+ *
+ * 문서를 페이지별 SVG로 렌더하고 --json 매니페스트 출력
+ */
+export interface ExportSvgEnvelope {
+  readonly format?: string;
+  readonly outputDir?: string;
+  readonly pageCount?: number;
+  readonly pages?: unknown;
+  readonly renderedCount?: number;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp export-tables --json` 봉투.
+ *
+ * 표를 병합·중첩 구조를 보존한 격자 JSON으로 추출
+ */
+export interface ExportTablesEnvelope {
+  readonly schemaVersion?: string;
+  readonly source?: string;
+  readonly tableCount?: number;
+  readonly tables?: unknown;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp export-text --json` 봉투.
+ *
+ * 페이지별 텍스트 추출 (TXT 파일 또는 --json stdout)
+ */
+export interface ExportTextEnvelope {
+  readonly pageCount?: number;
+  readonly pages?: unknown;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp extract-pages --json` 봉투.
+ *
+ * 쪽 범위만 남겨 저장 (--json 봉투; 발췌·부분 제출·결함 이분법)
+ */
+export interface ExtractPagesEnvelope {
+  readonly from?: number;
+  readonly output?: string;
+  readonly pagesAfter?: number;
+  readonly pagesBefore?: number;
+  readonly paragraphsKept?: number;
+  readonly paragraphsRemoved?: number;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+  readonly to?: number;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp fields --json` 봉투.
+ *
+ * 누름틀/필드를 이름·안내문·현재값·위치와 함께 조사
+ */
+export interface FieldsEnvelope {
+  readonly fieldCount?: number;
+  readonly fields?: unknown;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp info --json` 봉투.
+ *
+ * 문서 메타(포맷·버전·페이지/문단 수·폰트·제목) 표시
+ */
+export interface InfoEnvelope {
+  readonly fonts?: readonly string[];
+  readonly format?: string;
+  readonly pageCount?: number;
+  readonly paraCount?: number;
+  readonly schemaVersion?: string;
+  readonly sections?: number;
+  readonly sizeBytes?: number;
+  readonly source?: string;
+  readonly title?: string;
+  readonly version?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp ir-diff --json` 봉투.
+ *
+ * 두 문서의 IR 차이를 JSON으로 비교
+ */
+export interface IrDiffEnvelope {
+  readonly a?: string;
+  readonly b?: string;
+  readonly categories?: unknown;
+  readonly diffCount?: number;
+  readonly identical?: boolean;
+  readonly schemaVersion?: string;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp run --json` 봉투.
+ *
+ * 선언적 편집 계획 실행 — 정적 선검증·원자 실행·저널 (#3703)
+ */
+export interface RunEnvelope {
+  readonly input?: unknown;
+  readonly invalid?: unknown;
+  readonly output?: string;
+  readonly outputFormat?: string;
+  readonly planVersion?: string;
+  readonly schemaVersion?: string;
+  readonly steps?: unknown;
+  readonly verify?: RawVerifyReport | null;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp search --json` 봉투.
+ *
+ * 문서 검색 결과를 구역·문단·페이지·문자 오프셋 주소와 함께 출력
+ */
+export interface SearchEnvelope {
+  readonly caseSensitive?: boolean;
+  readonly matchCount?: number;
+  readonly matches?: unknown;
+  readonly query?: string;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+  readonly totalMatchCount?: number;
+  readonly truncated?: boolean;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * `rhwp thumbnail --json` 봉투.
+ *
+ * 내장 썸네일(PrvImage) 추출 (--json 봉투)
+ */
+export interface ThumbnailEnvelope {
+  readonly bytes?: number;
+  readonly format?: string;
+  readonly height?: number;
+  readonly mime?: string;
+  readonly output?: string;
+  readonly schemaVersion?: string;
+  readonly source?: string;
+  readonly width?: number;
+
+  readonly [key: string]: unknown;
+}
+
+/**
+ * 명령 이름 → 봉투 타입.
+ *
+ * `recordFields` 를 선언한 명령만 들어 있습니다 — 나머지는 `--json` 봉투를 내지 않습니다.
+ */
+export interface EnvelopeByCommand {
+  batch: BatchEnvelope;
+  "build-from-ingest": BuildFromIngestEnvelope;
+  capabilities: CapabilitiesEnvelope;
+  convert: ConvertEnvelope;
+  digest: DigestEnvelope;
+  "dump-pages": DumpPagesEnvelope;
+  edit: EditEnvelope;
+  "export-capabilities-schema": ExportCapabilitiesSchemaEnvelope;
+  "export-doclang": ExportDoclangEnvelope;
+  "export-hml": ExportHmlEnvelope;
+  "export-hwpx": ExportHwpxEnvelope;
+  "export-markdown": ExportMarkdownEnvelope;
+  "export-pdf": ExportPdfEnvelope;
+  "export-structure": ExportStructureEnvelope;
+  "export-svg": ExportSvgEnvelope;
+  "export-tables": ExportTablesEnvelope;
+  "export-text": ExportTextEnvelope;
+  "extract-pages": ExtractPagesEnvelope;
+  fields: FieldsEnvelope;
+  info: InfoEnvelope;
+  "ir-diff": IrDiffEnvelope;
+  run: RunEnvelope;
+  search: SearchEnvelope;
+  thumbnail: ThumbnailEnvelope;
+}
+
+/** `--json` 봉투를 내는 명령 이름. */
+export type EnvelopeCommand = keyof EnvelopeByCommand;

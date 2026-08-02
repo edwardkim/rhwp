@@ -1,0 +1,442 @@
+# M19(#3776) 증적 — 실행 원문
+#
+# 수집 2026-08-02 / Windows 11 / 브랜치 pr/m19-node-binding / HEAD cc3829116
+# 바이너리 target/release/rhwp.exe (이 브랜치의 export-capabilities-schema 포함)
+# py 호출은 PYTHONIOENCODING=utf-8 (윈도우 cp949 로 리다이렉트되면 한글이 깨진다)
+
+==============================================================
+1. rhwp 명령 표면 — 바인딩 노출 기준의 출처
+==============================================================
+
+$ ./target/release/rhwp.exe --version
+rhwp v0.8.2
+
+$ ./target/release/rhwp.exe capabilities | py -c "<집계>"
+tool             : rhwp
+version          : 0.8.2
+schemaVersion    : 1.0
+commands         : 55
+json declared    : 24
+json NOT declared: 31
+by category      : {'batch': 1, 'diagnostic': 25, 'edit': 2, 'export': 16, 'internal': 5, 'query': 5, 'serve': 1}
+
+$ ./target/release/rhwp.exe capabilities | py -c "<json 선언 명령 목록>"
+  batch                         build-from-ingest             capabilities                  convert
+  digest                        dump-pages                    edit                          export-capabilities-schema
+  export-doclang                export-hml                    export-hwpx                   export-markdown
+  export-pdf                    export-structure              export-svg                    export-tables
+  export-text                   extract-pages                 fields                        info
+  ir-diff                       run                           search                        thumbnail
+
+$ ./target/release/rhwp.exe capabilities | head -c 300
+{"batch":{"authentication":"지원하지 않음 — --password·--password-stdin·--output-password·--output-password-stdin 은 usage error; 암호화 batch 의 credential 전달 계약은 아직 정의되지 않았다","exitAggregation":"error 레코드가 하나라도 있으면 1, 없고 verifyPa
+
+==============================================================
+2. export-capabilities-schema — 이 브랜치가 추가한 명령
+==============================================================
+
+$ ./target/release/rhwp.exe export-capabilities-schema | py -c "<집계>"
+envelope keys         : ['capabilitiesSchemaVersion', 'definitionCount', 'dialect', 'mcpSchema', 'schema', 'schemaVersion']
+capabilitiesSchemaVer : 1.0
+dialect               : https://json-schema.org/draft/2020-12/schema
+definitionCount       : 18
+schema $defs          : 9
+mcpSchema $defs       : 9
+schema root $ref      : #/$defs/Capabilities
+
+$ ./target/release/rhwp.exe export-capabilities-schema | head -c 400
+{
+  "capabilitiesSchemaVersion": "1.0",
+  "definitionCount": 18,
+  "dialect": "https://json-schema.org/draft/2020-12/schema",
+  "mcpSchema": {
+    "$defs": {
+      "AgentProfile": {
+        "additionalProperties": true,
+        "description": "역할 프로필 — 도구 표면을 역할별로 좁혀 모델의 선택지를 줄인다.",
+        "properties": {
+          "name": {
+            "descr
+
+$ ./target/release/rhwp.exe export-capabilities-schema --bare | py -c "<봉투 없음 확인>"
+bare top-level keys: ['$defs', '$id', '$ref', '$schema', 'capabilitiesSchemaVersion', 'description', 'title']
+has capabilitiesSchemaVersion (envelope-only field): True
+
+$ ./target/release/rhwp.exe capabilities | py -c "<export-capabilities-schema 선언>"
+{
+  "batch": false,
+  "category": "export",
+  "flags": [
+    "--json",
+    "--bare",
+    "-o"
+  ],
+  "json": true,
+  "name": "export-capabilities-schema",
+  "recordFields": [
+    "schemaVersion",
+    "capabilitiesSchemaVersion",
+    "dialect",
+    "definitionCount",
+    "schema",
+    "mcpSchema"
+  ],
+  "summary": "capabilities 자기서술 자체의 JSON Schema 산출 — 명령 표면 코드 생성의 단일 출처 (#3776)"
+}
+
+==============================================================
+3. 통합 테스트가 실물 실행으로 잡은 결함 — 재현
+==============================================================
+
+--- 3-1. extract-pages 는 --pages 를 모른다 (문서·초기 바인딩이 틀렸다) ---
+
+$ ./target/release/rhwp.exe capabilities | py -c "<extract-pages 선언>"
+{
+  "batch": false,
+  "category": "export",
+  "flags": [
+    "--from",
+    "--to",
+    "--json"
+  ],
+  "json": true,
+  "name": "extract-pages",
+  "recordFields": [
+    "schemaVersion",
+    "source",
+    "output",
+    "from",
+    "to",
+    "pagesBefore",
+    "pagesAfter",
+    "paragraphsKept",
+    "paragraphsRemoved"
+  ],
+  "summary": "쪽 범위만 남겨 저장 (--json 봉투; 발췌·부분 제출·결함 이분법)"
+}
+
+# 고치기 전 바인딩이 조립하던 명령줄 (--pages "1-2")
+$ ./target/release/rhwp.exe extract-pages samples/2010-01-06.hwp --pages "1-2" -o out.hwp --json
+알 수 없는 옵션: --pages
+exit=2
+
+# 고친 뒤 조립하는 명령줄 (--from 1 --to 2)
+$ ./target/release/rhwp.exe extract-pages samples/2010-01-06.hwp --from 1 --to 2 -o out.hwp --json
+{"from":1,"output":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/new.hwp","pagesAfter":2,"pagesBefore":6,"paragraphsKept":28,"paragraphsRemoved":59,"schemaVersion":"1.0","source":"samples/2010-01-06.hwp","to":2}
+exit=0
+
+# 출력 경로를 빼면 exit 2 — out 은 타입상 선택이지만 실질 필수다
+$ ./target/release/rhwp.exe extract-pages samples/2010-01-06.hwp --from 1 --to 2 --json
+사용법: rhwp extract-pages <입력> <출력.hwp> --from N --to M [--json]
+exit=2
+
+--- 3-2. render-diff 는 --json 을 지원하지 않는다 (renderDiff 제거 근거) ---
+
+$ ./target/release/rhwp.exe capabilities | py -c "<render-diff 선언>"
+{
+  "category": "diagnostic",
+  "name": "render-diff",
+  "summary": "왕복/두 파일 렌더 기하 차이 검증"
+}
+
+'json' key present: False
+'flags' key present: False
+
+$ ./target/release/rhwp.exe render-diff samples/2010-01-06.hwp --json
+오류: 알 수 없는 옵션: --json
+exit=2
+
+--- 3-3. run 은 --dry-run 을 선언하지 않는다 (Plan.check() 안전 가드 근거) ---
+
+$ ./target/release/rhwp.exe capabilities | py -c "<run 선언>"
+{
+  "batch": false,
+  "category": "edit",
+  "flags": [
+    "--json",
+    "--plan-json"
+  ],
+  "json": true,
+  "name": "run",
+  "recordFields": [
+    "schemaVersion",
+    "planVersion",
+    "input",
+    "output",
+    "outputFormat",
+    "steps",
+    "verify",
+    "invalid"
+  ],
+  "summary": "선언적 편집 계획 실행 — 정적 선검증·원자 실행·저널 (#3703)"
+}
+
+'--dry-run' in flags: False
+
+==============================================================
+4. Plan.check() 안전 가드의 근거 — 미지원 rhwp 는 dryRun 을 무시하고 저장한다
+==============================================================
+
+# 계획서에 dryRun:true 를 실어 그대로 보낸다 (가드가 없다면 check() 가 하는 일).
+# 출력 파일이 없는 상태에서 시작한다.
+
+$ ls scratchpad/plan_out.hwp
+ls: cannot access 'C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/plan_out.hwp': No such file or directory
+
+$ ./target/release/rhwp.exe run --plan-json {"planVersion":"1.0","input":"samples/field-01.hwp","output":"…/plan_out.hwp","dryRun":true,"steps":[{"action":"replace_text","find":"전략 기획서","replace":"전략 보고서"}]} --json
+{"assertions":{"notFoundEmpty":true,"verify":false},"changedPages":[0],"input":"samples/field-01.hwp","output":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/plan_out.hwp","outputFormat":"hwp5","planVersion":"1.0","schemaVersion":"1.0","steps":[{"action":"replace_text","find":"전략 기획서","replacedCount":1,"step":0}],"verify":null}
+exit=0
+
+$ ls -l scratchpad/plan_out.hwp
+-rw-r--r-- 1 swsz9 197609 473600 Aug  2 10:50 plan_out.hwp
+
+# 판정: exit 0, 봉투에 dryRun 필드 없음, changedPages[0] 보고, 그리고 **파일이 생겼다**.
+#       호출자는 '검사만 했다'고 믿는데 문서가 편집·저장됐다. 실패도 경고도 없다.
+#       그래서 check() 는 --dry-run 선언을 먼저 확인하고, 없으면 실행 대신 던진다.
+
+$ ./target/release/rhwp.exe run --plan-json <같은 계획> --dry-run --json   # 플래그로 줘도
+오류: 알 수 없는 옵션입니다 - --dry-run
+exit=2
+
+==============================================================
+5. bindings/node 규모 — 파일 수·줄 수
+==============================================================
+
+# 주의: 측정 시점에 src/·test/·tools/ 를 다른 담당이 동시 작업 중이었다.
+#       아래 수치는 2026-08-02 측정값이며 최종 커밋과 다를 수 있다.
+
+$ find bindings/node -type f -not -path "*/node_modules/*" -not -path "*/dist/*" | wc -l
+52
+
+$ find bindings/node -type f ... | sed "s/.*\.//" | sort | uniq -c | sort -rn
+     39 ts
+      8 md
+      3 json
+      1 npmignore
+      1 js
+
+$ wc -l bindings/node/src/*.ts
+   163 bindings/node/src/binary.ts
+   249 bindings/node/src/browser.ts
+   453 bindings/node/src/commands.ts
+   254 bindings/node/src/envelope.ts
+   473 bindings/node/src/envelopes.ts
+   260 bindings/node/src/errors.ts
+   236 bindings/node/src/index.ts
+   875 bindings/node/src/ir.ts
+   139 bindings/node/src/naming.ts
+   312 bindings/node/src/plan.ts
+   359 bindings/node/src/process.ts
+   324 bindings/node/src/schema.ts
+   456 bindings/node/src/session.ts
+  4553 total
+
+$ wc -l bindings/node/test/*.ts bindings/node/test/helpers/*.ts
+   203 bindings/node/test/binary.test.ts
+   274 bindings/node/test/commands.integration.test.ts
+   291 bindings/node/test/envelope.test.ts
+   270 bindings/node/test/errors.test.ts
+   220 bindings/node/test/naming.test.ts
+   239 bindings/node/test/parity.integration.test.ts
+   155 bindings/node/test/plan.integration.test.ts
+   283 bindings/node/test/plan.test.ts
+   270 bindings/node/test/process.test.ts
+   124 bindings/node/test/schema.integration.test.ts
+   166 bindings/node/test/session.integration.test.ts
+   180 bindings/node/test/types.test-d.ts
+   264 bindings/node/test/helpers/fake-binary.ts
+   331 bindings/node/test/helpers/integration.ts
+  3270 total
+
+$ wc -l bindings/node/tools/gen-types.ts bindings/node/docs/*.md bindings/node/README.md bindings/node/CHANGELOG.md
+  1002 bindings/node/tools/gen-types.ts
+   691 bindings/node/docs/API.md
+   626 bindings/node/docs/COOKBOOK.md
+   271 bindings/node/docs/DESIGN.md
+   313 bindings/node/docs/MIGRATION.md
+   467 bindings/node/docs/TROUBLESHOOTING.md
+   298 bindings/node/README.md
+    97 bindings/node/CHANGELOG.md
+  3765 total
+
+$ wc -l bindings/node/examples/*.ts | tail -1
+ 1096 total
+
+==============================================================
+6. 생성 타입 — 두 출처의 산출물
+==============================================================
+
+$ grep -c "^export interface" bindings/node/src/ir.ts        # 출처: export-ir-schema
+39
+$ grep -c "^export type"      bindings/node/src/ir.ts
+2
+$ grep -c "^export interface" bindings/node/src/envelopes.ts # 출처: capabilities
+25
+$ grep -c "^export type"      bindings/node/src/envelopes.ts
+1
+
+# ir.ts        : interface 39 + type alias 2 = 정의 41
+# envelopes.ts : interface 25 + type alias 1 = 정의 26
+
+==============================================================
+7. 테스트 — 정적 계수 (이 PC 에서는 실행 불가)
+==============================================================
+
+$ for f in bindings/node/test/*.test.ts; do grep -cE "^\s*(it|test)(\.[a-z]+)?\(" $f; done
+15  test/binary.test.ts
+13  test/commands.integration.test.ts
+33  test/envelope.test.ts
+25  test/errors.test.ts
+17  test/naming.test.ts
+7  test/parity.integration.test.ts
+6  test/plan.integration.test.ts
+25  test/plan.test.ts
+30  test/process.test.ts
+5  test/schema.integration.test.ts
+5  test/session.integration.test.ts
+
+$ cat bindings/node/test/*.test.ts | grep -cE "^\s*(it|test)(\.[a-z]+)?\("   # 선언 총계
+181
+$ cat bindings/node/test/*.test.ts | grep -cE "^\s*(it|test)\.[a-z]+\("      # 그중 it.each 등
+12
+
+# 선언 181개 (단순 169 + it.each 12). it.each 는 실행 시 표 행 수만큼 늘어나므로
+# **실제 실행 건수는 181보다 많다** — 정확한 수는 CI 의 vitest 출력이 권위다.
+# 단위(바이너리 불필요): binary 15 + envelope 33 + errors 25 + naming 17 + plan 25 + process 30 = 145 선언
+# 통합(RHWP_BIN 필요)  : commands 13 + parity 7 + plan 6 + schema 5 + session 5 = 36 선언
+# types.test-d.ts(180줄)는 타입 수준 검사라 위 계수에 없다.
+
+# 이 PC 에서 vitest 를 돌리지 못한 이유:
+$ test -d bindings/node/node_modules && echo EXISTS || echo MISSING
+MISSING
+$ node --version
+v24.17.0
+# 의존성이 설치돼 있지 않다. 잠금 파일을 커밋하지 않는 정책이라 오프라인 설치도 불가.
+# 테스트 실행의 권위는 .github/workflows/node-binding.yml 의 4개 잡이다.
+
+==============================================================
+8. M18 선행 의존 — export-ir-schema 는 아직 없다
+==============================================================
+
+$ ./target/release/rhwp.exe export-ir-schema
+오류: 알 수 없는 명령입니다 - export-ir-schema
+rhwp v0.8.2
+사용법: rhwp <명령> [옵션]
+exit=2
+
+$ ls src/ir_schema.rs
+ls: cannot access 'src/ir_schema.rs': No such file or directory
+
+$ git ls-files bindings/python | wc -l
+0
+
+# 판정: M18(#3762, PR #3775)이 아직 머지되지 않았다. 따라서
+#   - exportIrSchema()/irSchema() 는 이 브랜치 바이너리에서 exit 2 다.
+#   - src/ir.ts 는 M18 이 있는 환경에서 생성한 산출물이고, gen:check 는
+#     M18 머지 후에야 이 저장소 CI 에서 의미가 있다.
+#   - bindings/python 디렉터리는 이 브랜치에 없다 (git ls-files 0건).
+
+==============================================================
+9. Rust 계약 테스트 — 이 PC 에서 빌드 불가 (CI 가 유일 검증 수단)
+==============================================================
+
+$ ls tests/capabilities_schema_contract.rs src/capabilities_schema.rs
+src/capabilities_schema.rs
+tests/capabilities_schema_contract.rs
+
+$ grep -c "#\[test\]" tests/capabilities_schema_contract.rs
+17
+
+$ cargo test --profile release-test --test capabilities_schema_contract   # 발췌
+CVTRES : fatal error CVT1107: 'C:\Program Files (x86)\Windows Kits\10\lib\10.0.26100.0\um\x64\dbghelp.lib'이(가) 손상되었습니다.
+LINK : fatal error LNK1123: COFF로 변환하는 동안 오류가 발생했습니다. 파일이 잘못되었거나 손상되었습니다.
+error: could not compile `blake3` (build script) due to 1 previous error
+
+# 이 PC 의 Windows SDK dbghelp.lib 손상으로 release-test 프로파일 링크가 실패한다.
+# release 프로파일 바이너리(위 1~4절에 쓴 것)는 이전에 빌드돼 있어 사용 가능했다.
+# Rust 계약 테스트의 검증 권위는 CI 다.
+
+==============================================================
+10. 문서 링크 검사
+==============================================================
+
+$ py scripts/check_markdown_links.py mydocs/manual/agent_knowledge_map.md
+검사 문서: 1개
+내부 Markdown 상대 링크: 이상 없음
+
+$ py scripts/check_markdown_links.py mydocs/manual/node_binding_guide.md
+- mydocs\manual\node_binding_guide.md:13: python_binding_guide.md -> mydocs\manual\python_binding_guide.md
+- mydocs\manual\node_binding_guide.md:266: python_binding_guide.md -> mydocs\manual\python_binding_guide.md
+검사 문서: 1개
+깨진 내부 Markdown 상대 링크: 2건
+
+# node_binding_guide.md 의 2건은 python_binding_guide.md(M18 산출물)가 이 브랜치에
+# 없어서 생긴 것이다. M18 머지로 자연 해소되거나, 먼저 머지하려면 링크를 풀어야 한다.
+# 이 절 작성자의 담당 파일이 아니라 손대지 않았다.
+
+
+==============================================================
+11. 재측정 — 작업 도중 명령 표면이 바뀌었다 (중요)
+==============================================================
+
+# 1~10절은 rhwp.exe (Aug 2 09:47 빌드) 기준이다. 문서 작업 중 다른 담당이
+# render-diff --json (#3719 §6-2)을 구현해 넣었고, 바이너리가 10:51 로 다시
+# 빌드됐다. 아래는 그 이후 재측정이다.
+
+$ ls -la target/release/rhwp.exe
+-rwxr-xr-x 2 swsz9 197609 16659968 Aug  2 10:51 target/release/rhwp.exe
+
+$ ./target/release/rhwp.exe capabilities | py -c "<재집계>"
+commands         : 55
+json declared    : 25   (3절 측정 시점: 24)
+json NOT declared: 30   (3절 측정 시점: 31)
+
+$ ./target/release/rhwp.exe capabilities | py -c "<render-diff 재확인>"
+{
+  "batch": false,
+  "category": "diagnostic",
+  "flags": [
+    "--json",
+    "--batch",
+    "--via",
+    "-p",
+    "--max-disp",
+    "-o"
+  ],
+  "json": true,
+  "name": "render-diff",
+  "recordFields": [
+    "schemaVersion",
+    "mode",
+    "sourceA",
+    "sourceB",
+    "via",
+    "pageFilter",
+    "threshold",
+    "pageCountA",
+    "pageCountB",
+    "pageCountMismatch",
+    "maxDisp",
+    "worstPage",
+    "overPages",
+    "structPages",
+    "hardStructPages",
+    "status",
+    "regression",
+    "pages"
+  ],
+  "summary": "왕복/두 파일 렌더 기하 차이 검증 — --json 회귀 검출은 exit 3 (--batch 는 NDJSON)"
+}
+
+$ ./target/release/rhwp.exe render-diff samples/2010-01-06.hwp --json | head -c 300
+{"hardStructPages":0,"maxDisp":6.0,"mode":"roundtrip","overPages":6,"pageCountA":6,"pageCountB":6,"pageCountMismatch":false,"pageFilter":null,"pages":[{"maxDisp":6.0,"meanDisp":0.032640949554896145,"nodeCountA":337,"nodeCountB":337,"page":0,"structTextrunPm1":false,"structureMismatch":false,"topDelt
+exit=3
+
+$ grep -c "renderDiff" bindings/node/src/commands.ts
+0
+
+# 결론: render-diff 가 이제 json:true 를 선언하는데 바인딩에 renderDiff 가 없다.
+#       parity.integration.test.ts 의 '선언된 json 명령마다 바인딩에 대응 함수가
+#       있다' 가 이 상태로 CI 에 올라가면 실패한다. commands.ts 에 renderDiff 를
+#       추가하고 문서 4곳을 되돌려야 한다 (README 처리기록 '남은 것' 참조).
+

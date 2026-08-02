@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/agent_knowledge_map.md
-last_verified: 2026-07-31
+last_verified: 2026-08-02
 ---
 
 # 에이전트 지식 지도 — rhwp 참조 문서의 단일 진입점
@@ -60,6 +60,21 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 절차(이슈 → red 계약 테스트 → 구현 → 증적 2종 → PR)를 따른다. 잔여 목록·우선순위의
 권위는 [#3608](https://github.com/edwardkim/rhwp/issues/3608)이다. 절차를 어긴 표면
 추가는 되돌린다.
+
+### 1-4. 다른 언어에서 쓰려는가 — 바인딩 가이드
+
+바인딩은 **새 표면이 아니라 기존 계약의 재포장**이다. 판정·좌표·파싱은 전부 rhwp
+본체가 하고, 바인딩은 인자 조립·봉투 파싱·종료 코드 매핑 셋만 한다. 그래서 §1-1 의
+명령 표와 §2 의 봉투 필드 사전이 언어를 바꿔도 그대로 권위다.
+
+| 언어 | 패키지 | 가이드 | 상태 |
+|---|---|---|---|
+| Node/TypeScript | `@rhwp/node` | [node_binding_guide.md](node_binding_guide.md) | M19 [#3776](https://github.com/edwardkim/rhwp/issues/3776) — 진행 |
+| Python | `rhwp` | `python_binding_guide.md` (M18 과 함께 들어온다) | M19 의 선행. [#3762](https://github.com/edwardkim/rhwp/issues/3762) / PR [#3775](https://github.com/edwardkim/rhwp/pull/3775) — 제출, 머지 대기 |
+
+노출 기준은 손으로 고른 목록이 아니라 `capabilities` 의 `json` 선언이다 — 진단
+계열처럼 `--json` 이 없는 명령은 바인딩에 함수로 없고, 필요하면 저수준 실행기로
+직접 부른다. 두 가이드가 서로 어긋나면 계약이 언어마다 갈린 것이므로 어긋난 쪽을 고친다.
 
 ## 2. 봉투 필드 사전 — 필드 이름으로 찾는 역인덱스
 
@@ -150,6 +165,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `issue_3372_gian_form_contract.rs` | 일반기안문 표준 서식 자산의 유효성 (#3372) |
 | `render_p22_web_canvas_contract.rs` | 웹 캔버스 레이어 재생이 render node 를 재구축하지 않는 계약 |
 | `render_p23_pdf_export_contract.rs` | PDF export native API 경로 계약 |
+| `capabilities_schema_contract.rs` | `export-capabilities-schema` — 명령 표면 자기서술의 스키마 건전성 (#3776). 바인딩 타입 생성기가 이 모양에 기대므로 여기가 계약이다 |
 
 ## 유지 규약
 
