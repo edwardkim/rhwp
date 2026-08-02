@@ -281,6 +281,7 @@ fn main() {
         Some("dump-extents") => exit_with(dump_extents(&args[2..])),
         Some("diag") => exit_with(diag_document(&args[2..])),
         Some("search") => exit_with(search_document(&args[2..])),
+        Some("inspect") => exit_with(inspect_command(&args[2..])),
         Some("convert") => exit_with(convert_hwp(&args[2..])),
         Some("extract-pages") => exit_with(extract_pages(&args[2..])),
         Some("build-from-ingest") => exit_with(build_from_ingest(&args[2..])),
@@ -482,6 +483,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 | "hwp_export_tables"
                 | "hwp_search"
                 | "hwp_fields"
+                | "hwp_inspect_hidden_text"
                 | "hwp_fill_fields"
                 | "hwp_replace_text"
                 | "hwp_set_checkbox"
@@ -782,6 +784,32 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             "fields",
             serde_json::json!(["fields", "{path}", "--json"]),
             &["source", "fieldCount", "fields"],
+        ),
+        // [#3787 S3] 신뢰할 수 없는 문서를 LLM 에 먹이기 **전에** 부르는 도구.
+        // 본문 텍스트는 그대로 프롬프트가 되므로, 사람이 열어도 안 보이는 문자열이
+        // 섞여 있는지부터 판정한다.
+        tool_with_optional_args(
+            "hwp_inspect_hidden_text",
+            "문서에 사람 눈으로는 보이지 않는 텍스트가 숨어 있는지 조사한다 — 흰 배경에 흰 글씨, 0pt/극소 글자, 쪽 밖 배치. 신뢰할 수 없는 문서를 export-text 로 읽어 LLM 프롬프트에 넣기 전에 먼저 호출한다(간접 프롬프트 인젝션 선별). clean=true 면 탐지 0건이다. 문서를 수정하지 않는 읽기 전용 판정이며, 지우는 것은 편집 명령의 몫이다.",
+            path_schema(serde_json::json!({
+                "thresholdPt": { "type": "number", "minimum": 0, "description": "near_invisible 임계 pt. 실효 글자 크기가 이 값 미만이면 은닉으로 본다. 기본 1.0" },
+                "includeOffPage": { "type": "boolean", "description": "쪽 경계 완전히 밖에 놓인 문단도 보고할지. 기본 false(좌표 판정이라 오탐 여지)" }
+            })),
+            "inspect",
+            serde_json::json!(["inspect", "hidden-text", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "thresholdPt", "args": ["--threshold-pt", "{thresholdPt}"] },
+                { "when": "includeOffPage", "args": ["--include-offpage"] }
+            ]),
+            &[
+                "schemaVersion",
+                "source",
+                "thresholdPt",
+                "includeOffPage",
+                "hiddenText",
+                "hiddenCharCount",
+                "clean",
+            ],
         ),
         tool_with_optional_args(
             "hwp_batch",
@@ -1251,6 +1279,23 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             false,
             &["--json"],
             &["schemaVersion", "source", "fieldCount", "fields"],
+        ),
+        // [#3787 S3] 은닉 텍스트 판정 — 조판 엔진이 있어야만 가능한 보안 질의.
+        cmd_json(
+            "inspect",
+            "query",
+            "은닉 텍스트 조사 — 흰 배경 흰 글씨·0pt·쪽 밖 텍스트 (읽기 전용)",
+            false,
+            &["--json", "--threshold-pt", "--include-offpage"],
+            &[
+                "schemaVersion",
+                "source",
+                "thresholdPt",
+                "includeOffPage",
+                "hiddenText",
+                "hiddenCharCount",
+                "clean",
+            ],
         ),
         cmd(
             "export-render-tree",
@@ -1892,6 +1937,15 @@ fn print_help() {
     println!("      누름틀/필드 조사 (읽기 전용) — 이름·안내문·지시문·현재값·위치");
     println!();
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!();
+    println!("  inspect hidden-text <파일.hwp|파일.hwpx> [--json] [옵션]");
+    println!("      은닉 텍스트 조사 (읽기 전용) — 사람 눈에는 안 보이는데 텍스트 추출기가");
+    println!("      읽어 LLM 프롬프트로 흘러드는 문자열을 찾는다 (간접 프롬프트 인젝션 대비).");
+    println!("      흰 배경에 흰 글씨·0pt 글자처럼 조판 정보가 있어야만 보이는 은닉을 잡는다.");
+    println!();
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!("      --threshold-pt <N>        near_invisible 임계 pt (기본: 1.0)");
+    println!("      --include-offpage         쪽 경계 완전히 밖에 놓인 문단도 보고 (기본: 끔)");
     println!();
     println!("  edit fill-fields <파일.hwp|파일.hwpx> --data <JSON|@파일> [-o <출력>] [옵션]");
     println!("      누름틀에 값을 채운다 (서식 자동 작성/메일머지)");
@@ -3698,6 +3752,141 @@ fn export_tables(args: &[String]) -> i32 {
         println!(
             "  표{} [구역{}:문단{}]: {}행×{}열, 셀 {}개 (병합 {}개, 중첩 {}개)",
             t.index, t.section, t.paragraph, t.rows, t.cols, t.cell_count, merged, nested
+        );
+    }
+    EXIT_OK
+}
+
+/// `inspect` — 읽기 전용 보안 질의 묶음. 현재 축은 `hidden-text` 하나다.
+///
+/// [#3787 S3] 편집 명령과 분리한 이유: 이 축은 **판정만** 한다. 은닉 텍스트를 지우는
+/// 것은 별개의 편집 결정이며, 조사 명령이 문서를 건드리면 "원본을 그대로 둔 채
+/// 위험 여부만 알고 싶다"는 1차 수요를 만족시킬 수 없다.
+fn inspect_command(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp inspect hidden-text <파일.hwp|파일.hwpx> [--json] [--threshold-pt <N>] [--include-offpage]";
+    match args.first().map(|s| s.as_str()) {
+        Some("hidden-text") => inspect_hidden_text(&args[1..]),
+        Some(other) => {
+            eprintln!("오류: 알 수 없는 inspect 축입니다 - {other}");
+            if let Some(hint) = closest_name(other, ["hidden-text"]) {
+                eprintln!("혹시 이것인가요? inspect {hint}");
+            }
+            eprintln!("{USAGE}");
+            EXIT_USAGE
+        }
+        None => {
+            eprintln!("{USAGE}");
+            EXIT_USAGE
+        }
+    }
+}
+
+/// `inspect hidden-text` — 사람 눈에 안 보이는데 추출기는 읽어 가는 텍스트를 보고한다.
+///
+/// 탐지 건수가 0이 아니어도 종료 코드는 0이다 — 1은 런타임 실패 전용이고(#2707),
+/// "위험 문서 발견"은 실패가 아니라 **정상적으로 얻어낸 판정 결과**다. 소비자는
+/// `clean` 필드로 분기한다.
+fn inspect_hidden_text(args: &[String]) -> i32 {
+    use rhwp::document_core::queries::hidden_text::HiddenTextOptions;
+
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    let mut opts = HiddenTextOptions::default();
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--include-offpage" => opts.include_off_page = true,
+            "--threshold-pt" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.parse::<f64>().ok()) {
+                    // 상한은 CharShape.base_size 의 스펙 상한(4096pt)과 같다.
+                    Some(n) if n.is_finite() && (0.0..=4096.0).contains(&n) => {
+                        opts.threshold_pt = n
+                    }
+                    _ => {
+                        eprintln!(
+                            "오류: --threshold-pt 뒤에 0 이상 4096 이하의 실수가 필요합니다."
+                        );
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다.");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+
+    let Some(file_path) = file_path else {
+        eprintln!("사용법: rhwp inspect hidden-text <파일.hwp|파일.hwpx> [--json] [--threshold-pt <N>] [--include-offpage]");
+        return EXIT_USAGE;
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+
+    let report = doc.detect_hidden_text(&opts);
+
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "source": file_path,
+            "thresholdPt": opts.threshold_pt,
+            "includeOffPage": opts.include_off_page,
+            "hiddenText": report.hidden_text,
+            "hiddenCharCount": report.hidden_char_count,
+            "clean": report.clean,
+        });
+        println!("{envelope}");
+        return EXIT_OK;
+    }
+
+    // 기본 출력은 사람용 요약 — 기계 소비는 --json 이 담당한다.
+    if report.clean {
+        println!("은닉 텍스트 없음: {} (탐지 0건)", file_path);
+        return EXIT_OK;
+    }
+    println!(
+        "은닉 텍스트 {}건 (문자 {}개): {}",
+        report.hidden_text.len(),
+        report.hidden_char_count,
+        file_path
+    );
+    for f in &report.hidden_text {
+        let kind = match f.kind {
+            rhwp::document_core::queries::hidden_text::HiddenKind::SameAsBackground => {
+                "배경색과 같은 글자색"
+            }
+            rhwp::document_core::queries::hidden_text::HiddenKind::NearInvisible => "극소 글자",
+            rhwp::document_core::queries::hidden_text::HiddenKind::ZeroSize => "0pt 글자",
+            rhwp::document_core::queries::hidden_text::HiddenKind::OffPage => "쪽 밖 배치",
+        };
+        let page = f
+            .page
+            .map(|p| format!("{}쪽", p + 1))
+            .unwrap_or_else(|| "미배치".to_string());
+        println!(
+            "  [{}] 구역{}:문단{} ({}) {}자: {}",
+            kind, f.section, f.paragraph, page, f.char_count, f.excerpt
         );
     }
     EXIT_OK

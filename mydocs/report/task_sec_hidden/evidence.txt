@@ -1,0 +1,85 @@
+# inspect hidden-text 실측 근거
+생성: 2026-08-02T12:51:09Z  rhwp rhwp v0.8.2
+
+## 1. 정상 표본 전수 스윕 (samples/*.hwp, *.hwpx)
+  로드실패(2) samples/HWP3-password-123456.hwp
+  로드실패(2) samples/hwp3-sample16-hwp5-2024-password-123456.hwp
+  탐지 samples/issue1892_hwp3_tab_roundtrip.hwp
+    {"clean":false,"hiddenCharCount":4,"hiddenText":[{"charCount":2,"detail":{"backgroundColor":"#FFFFFF","backgroundSource":"page","textColor":"#FFFFFF"},"excerpt":"귀하","kind":"same_as_background","page":0,"paragraph":7,"section":0},{"charCount":2,"detail":{"backgroundColor":"#FFFFFF","backgroundSource":"page","textColor":"#FFFFFF"},"excerpt":"귀하","kind":"same_as_background","page":0,"paragraph":9,"section":0}],"includeOffPage":false,"schemaVersion":"1.0","source":"samples/issue1892_hwp3_tab_roundtrip.hwp","thresholdPt":1.0}
+
+  탐지 samples/synam-001.hwp
+    {"clean":false,"hiddenCharCount":28,"hiddenText":[{"charCount":28,"detail":{"backgroundColor":"#FFFFFF","backgroundSource":"page","textColor":"#FFFFFF"},"excerpt":"판정기준(주택공급에 관한 규칙 제52조, 제53조)","kind":"same_as_background","page":22,"paragraph":164,"section":0}],"includeOffPage":false,"schemaVersion":"1.0","source":"samples/synam-001.hwp","thresholdPt":1.0}
+
+  로드실패(2) samples/HWP5-password-123456.hwpx
+
+  총 351개 / 탐지있음 2개 / 로드실패 3개(전부 암호 문서, exit 2 + stdout 0바이트)
+  → 오탐 0. 탐지된 2개는 아래 2절에서 좌표로 '진짜 은닉'임을 확인함.
+
+## 2. 탐지 2건이 진짜 은닉임을 SVG 렌더 좌표로 확인
+
+두 건 모두 `same_as_background` / `backgroundSource: page` (흰 종이 위 흰 글씨).
+"뒤에 무언가 깔려 있어서 실제로는 보이는" 경우가 아님을 확인했다.
+
+### samples/synam-001.hwp — 23쪽(0기준 22)
+  rhwp export-svg samples/synam-001.hwp -p 22
+  - 쪽 안 <image> 개수: 0
+  - 흰 글씨 런: y=304.39, font-size=16.0  → 글리프 상자 대략 y 288.4~304.4
+  - 가장 가까운 유색 사각형: <rect y="318.27" height="28.64" fill="#a9c58f">  → y 318.3~346.9
+    ⇒ 겹치지 않는다. 같은 쪽의 다른 흰 글씨(y=338.65)는 이 초록 막대 위라서
+      판정기가 셀/문단 배경으로 올바로 해소하고 **보고하지 않았다**.
+  ⇒ y=304.39 의 28자는 흰 종이 위 흰 글씨. 진짜 은닉.
+
+### samples/issue1892_hwp3_tab_roundtrip.hwp — 1쪽(0기준 0)
+  rhwp export-svg samples/issue1892_hwp3_tab_roundtrip.hwp -p 0
+  - 쪽 안 <image> 개수: 0
+  - 흰색이 아닌 <rect> 개수: 0
+  - 흰 글씨 런 4개: (646.72, 314.27) (660.05, 314.27) (646.32, 367.60) (659.65, 367.60)
+  ⇒ 뒤에 아무것도 없다. "귀하" 2벌이 흰 종이 위 흰 글씨. 진짜 은닉(서식 잔재로 보임).
+
+## 3. 개발 중 잡은 오탐 2종과 근거 (회귀 가드가 테스트에 있음)
+
+### 3-1. shade_color = 0 을 "검정 음영"으로 읽어 31,907건 오탐
+  초기 구현은 음영 없음 sentinel 을 흰색(0x00FFFFFF)만으로 봤다.
+  실측: 351개 표본 중 17개(전부 HWP3 계열)에서 31,907건 탐지 — 전부 오탐.
+    예) samples/SO-SUEOP.hwp  textColor=#000000 shadeColor=#000000 로 본문 전체
+  근본 원인: CharShape::default() 의 shade_color 가 0이고, HWP3 변환·HML(ShadeColor
+    미지정 unwrap_or(0))·HWPX(shadeColor 속성 부재)가 이 자리를 0으로 남긴다.
+  판정 근거(추측 아님): rhwp 자신의 렌더러가 0을 칠하지 않는다.
+    src/renderer/svg.rs:2746            if shade_rgb != 0x00FFFFFF && shade_rgb != 0 {
+    src/renderer/skia/text_replay.rs:379 if shade_rgb != 0x00FF_FFFF && shade_rgb != 0 && ...
+  조치: char_shade() 가 흰색·검정 두 sentinel 을 모두 "음영 없음"으로 본다.
+  회귀 가드: black_shade_sentinel_does_not_fire_on_black_text (계약),
+            black_shade_sentinel_is_not_a_black_background (단위)
+
+### 3-2. 그림 위 흰 글씨를 "흰 종이 위 흰 글씨"로 오판
+  samples/tac-img-02.hwp / .hwpx 에서 흰 숫자 캡션 18건이 오탐이었다.
+  실측(6쪽): 흰 글씨 '1' 이 (85.03, 199.70),
+             배너 JPEG 이 x 75.59~721.89, y 175.61~208.85  ⇒ 글자가 그림 안에 있다.
+  실측(23쪽): 흰 '1'(85.03, 195.93) ⊂ IMG(y 175.6~201.3),
+              흰 '2'(85.03, 492.62) ⊂ IMG(y 468.5~501.7)
+  조치 ①: 면을 덮는 개체(그림/차트/OLE/그룹/채우기 있는 도형)가 놓인 쪽에서는
+          쪽 바탕(source=page)을 근거로 쓰지 않는다. 개체가 다음 쪽으로 넘칠 수
+          있으므로 점유 쪽 + 1 까지 표시한다.
+  조치 ②: 표가 여러 쪽에 걸치면 첫 쪽만이 아니라 **점유한 모든 쪽**을 표시한다
+          (조치 ① 만으로는 23쪽 배너가 남았다).
+  회귀 가드: page_source_is_suppressed_when_a_graphic_covers_the_page
+
+### 3-3. 표 영역(zone) 채우기 누락으로 남아 있던 11건
+  samples/tac-img-02.hwp 문단 345 는 1행×2열 표이고
+    셀[0] bf=5 (채우기 없음) / zone[0] row=0..0 col=0..1 bf=18 (색)
+  셀 채우기만 보면 채우기 없음 → 쪽 바탕(흰 종이)까지 흘러내려가 오탐이 된다.
+  렌더러 칠하기 순서(src/renderer/layout/table_layout.rs 4-1 → 4-2 → 셀):
+    표 전체 → 영역(zone) → 셀   ⇒ 글자 바로 뒤 우선순위는 셀 > zone > 표
+  조치: 셀 → zone → 표 → 바깥 순으로 배경을 해소한다.
+  결과: tac-img-02 (.hwp/.hwpx) 탐지 0건.
+
+## 4. 오탐 추이
+  초기 구현            : 351개 중 20개 문서에서 탐지 (31,946건) — 대부분 오탐
+  3-1 적용             : 4개 문서 (14건)
+  3-2 적용             : 4개 문서 (14건, tac-img-02 잔존)
+  3-3 적용             : 2개 문서 (3건) — 전부 진짜 은닉, **오탐 0**
+
+## 5. 실패 경로 stdout 0바이트 확인
+  rhwp inspect hidden-text samples/HWP5-password-123456.hwpx --json
+    exit=2  stdout=0바이트  stderr="오류: 비밀번호가 필요한 암호 문서입니다 ..."
+  그 외 실패 경로 8종은 failure_paths_keep_stdout_empty 계약 테스트가 감시한다.

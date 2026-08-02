@@ -11,6 +11,8 @@ pub mod rendering;
 /// 주소(구역·문단·페이지)를 가진 검색 — 조판 엔진이 있어야만 가능한 질의.
 pub mod changed_pages;
 pub mod grep;
+/// [#3787 S3] 은닉 텍스트 판정 — 흰 글씨/0pt/쪽 밖 텍스트를 읽기 전용으로 보고한다.
+pub mod hidden_text;
 pub(crate) mod search_query;
 pub mod structure;
 pub mod table_extract;
