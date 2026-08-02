@@ -186,10 +186,18 @@ export class SessionClosedError extends RhwpError {}
 /** 제한 시간 안에 끝나지 않았다. 자식 프로세스는 종료를 시도한 뒤 던져진다. */
 export class RhwpTimeoutError extends RhwpError {}
 
-/** 공백·따옴표가 있으면 감싼다 — 재현 명령이 그대로 붙여넣기 가능하도록. */
+/**
+ * 공백·따옴표가 있으면 감싼다 — 재현 명령이 그대로 붙여넣기 가능하도록.
+ *
+ * **역슬래시를 먼저 이스케이프한다.** 따옴표만 이스케이프하면 `C:\경로\` 같은
+ * 인자가 `"C:\경로\"` 가 되어 끝 역슬래시가 닫는 따옴표를 잡아먹는다 —
+ * 붙여넣으면 명령이 깨지고, 최악의 경우 다음 인자와 뭉쳐 다른 명령이 된다.
+ * 순서가 뒤바뀌면 이미 넣은 이스케이프를 다시 이스케이프하므로 반드시 이 순서다.
+ */
 function quoteArgument(arg: string): string {
-  if (arg && !/[\s"']/.test(arg)) return arg;
-  return `"${arg.replace(/"/g, '\\"')}"`;
+  if (arg && !/[\s"'\\]/.test(arg)) return arg;
+  const escaped = arg.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  return `"${escaped}"`;
 }
 
 /** {@link raiseForExit} 옵션. */

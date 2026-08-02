@@ -11,8 +11,15 @@
  * @packageDocumentation
  */
 
-/** 연속 대문자(약어) 경계를 살린다: `HTMLPage` → `html_page`. */
-const ACRONYM_BOUNDARY = /([A-Z]+)([A-Z][a-z])/g;
+/**
+ * 연속 대문자(약어) 경계를 살린다: `HTMLPage` → `html_page`.
+ *
+ * 앞 그룹이 `[A-Z]+`(가변 길이)이면 `AAAA…Aa` 같은 입력에서 역추적이 다항으로
+ * 늘어난다(ReDoS). 고정 길이 `[A-Z]` 로 바꿔도 **결과가 같다** — 경계는 "대문자
+ * 하나 뒤에 대문자+소문자"라는 국소 조건이고, 앞쪽 대문자를 얼마나 먹는지는
+ * 삽입 위치를 바꾸지 않기 때문이다. (`HTMLPage`·`ABCd`·`AAAa` 로 확인.)
+ */
+const ACRONYM_BOUNDARY = /([A-Z])([A-Z][a-z])/g;
 /** 일반 단어 경계: `pageCount` → `page_count`. */
 const WORD_BOUNDARY = /([a-z0-9])([A-Z])/g;
 
