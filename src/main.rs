@@ -281,6 +281,7 @@ fn main() {
         Some("dump-extents") => exit_with(dump_extents(&args[2..])),
         Some("diag") => exit_with(diag_document(&args[2..])),
         Some("search") => exit_with(search_document(&args[2..])),
+        Some("extract-data") => exit_with(extract_data_command(&args[2..])),
         Some("convert") => exit_with(convert_hwp(&args[2..])),
         Some("extract-pages") => exit_with(extract_pages(&args[2..])),
         Some("build-from-ingest") => exit_with(build_from_ingest(&args[2..])),
@@ -481,6 +482,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 | "hwp_split_document"
                 | "hwp_export_tables"
                 | "hwp_search"
+                | "hwp_extract_data"
                 | "hwp_fields"
                 | "hwp_fill_fields"
                 | "hwp_replace_text"
@@ -774,6 +776,36 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             // 와야 한다. 뒤에 두면 세 번째 위치 인자가 되어 "인자가 너무 많습니다" 다.
             serde_json::json!(["search", "{path}", "--json", "--", "{query}"]),
             &["source", "query", "caseSensitive", "matchCount", "matches"],
+        ),
+        // [#3719 §6-10] 날짜·금액·수량 추출 — `hwp_search` 가 검색어에 대해 한 일을
+        // 데이터 값에 대해 한다. 값과 주소가 한 몸이라 그대로 인용·검증할 수 있다.
+        tool_with_optional_args(
+            "hwp_extract_data",
+            "문서의 날짜·금액·수량을 구역·문단·페이지·문자 오프셋 주소와 함께 뽑는다. 값마다 raw(문서 표기)와 normalized(ISO-8601 날짜·정수 금액·수량 값)가 함께 오며, 정규화할 수 없으면 normalized 는 null 이고 raw 만 믿을 수 있다(두 자리 연도는 세기를 추정하지 않는다). 표 셀·글상자 값에는 cell/textbox 좌표가 붙는다.",
+            path_schema(serde_json::json!({
+                "kind": {
+                    "type": "string",
+                    "enum": ["date", "amount", "number", "all"],
+                    "description": "뽑을 종류. 기본 all"
+                },
+                "limit": { "type": "integer", "minimum": 1, "description": "최대 반환 건수(컨텍스트 절약). 총량은 totalItemCount 로 온다" }
+            })),
+            "extract-data",
+            serde_json::json!(["extract-data", "{path}", "--json"]),
+            serde_json::json!([
+                { "when": "kind", "args": ["--kind", "{kind}"] },
+                { "when": "limit", "args": ["--limit", "{limit}"] }
+            ]),
+            &[
+                "schemaVersion",
+                "source",
+                "kind",
+                "itemCount",
+                "totalItemCount",
+                "truncated",
+                "counts",
+                "items",
+            ],
         ),
         tool(
             "hwp_fields",
@@ -1242,6 +1274,24 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "totalMatchCount",
                 "truncated",
                 "matches",
+            ],
+        ),
+        // [#3719 §6-10] 행정문서 구조화의 공통 프리미티브 — 값과 주소를 한 몸으로 낸다.
+        cmd_json(
+            "extract-data",
+            "query",
+            "날짜·금액·수량을 구역·문단·페이지·문자 오프셋 주소와 함께 추출",
+            false,
+            &["--json", "--kind", "--limit"],
+            &[
+                "schemaVersion",
+                "source",
+                "kind",
+                "itemCount",
+                "totalItemCount",
+                "truncated",
+                "counts",
+                "items",
             ],
         ),
         cmd_json(
@@ -1813,6 +1863,15 @@ fn print_help() {
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!("      --ignore-case             대소문자 무시");
     println!("      --limit <N>               최대 매치 수 (컨텍스트 절약용)");
+    println!();
+    println!("  extract-data <파일.hwp|파일.hwpx> [옵션]");
+    println!("      날짜·금액·수량 추출 — 값마다 구역·문단·페이지·문자 오프셋을 함께 반환");
+    println!();
+    println!("      --kind <종류>             date|amount|number|all (기본: all)");
+    println!("      --limit <N>               최대 항목 수 (총량은 totalItemCount)");
+    println!("      --json                    계약 봉투 JSON을 stdout에 출력");
+    println!("      정규화할 수 없으면 normalized 는 null 이고 raw 만 남는다");
+    println!("      (두 자리 연도 '26.8.2·한글 수사 금액은 세기·값을 추정하지 않음)");
     println!();
     println!("  hwp5-inventory <파일.hwp> [--format jsonl|md] [--section N] [--out <path>]");
     println!("      HWP5 DocInfo/BodyText record inventory 생성 (HWPX→HWP contract 분석용)");
@@ -7818,6 +7877,182 @@ fn search_document(args: &[String]) -> i32 {
         println!(
             "  [{}] 구역{}:문단{} +{}  {}",
             page, m.section, m.paragraph, m.char_offset, m.context
+        );
+    }
+    EXIT_OK
+}
+
+/// [#3719 §6-10] `extract-data --json` 봉투.
+///
+/// `counts` 는 **요청한 종류에 대한 문서 전체 건수**다(`--limit` 절단 전). 요청하지 않은
+/// 종류의 키는 아예 넣지 않는다 — `--kind date` 인데 `"amount": 0` 이 보이면 "금액이 없다"로
+/// 오독되기 때문이다. `itemCount` 는 실제 반환된 건수이고, `totalItemCount`·`truncated` 가
+/// 절단 사실을 드러낸다(#3353 의 `search` 와 같은 어휘).
+fn extract_data_json_value(
+    file_path: &str,
+    kind: &str,
+    items: &[rhwp::document_core::queries::extract_data::DataItem],
+    total_item_count: usize,
+    counts: &serde_json::Value,
+) -> serde_json::Value {
+    serde_json::json!({
+        "schemaVersion": "1.0",
+        "source": file_path,
+        "kind": kind,
+        "itemCount": items.len(),
+        "totalItemCount": total_item_count,
+        "truncated": items.len() < total_item_count,
+        "counts": counts,
+        "items": items,
+    })
+}
+
+/// `extract-data` — 행정문서의 날짜·금액·수량을 **주소와 함께** 뽑는다.
+///
+/// 문서 구조화의 공통 프리미티브다. 평문을 뽑아 밖에서 정규식을 돌리면 값은 얻어도
+/// "어느 쪽 몇 번째 문단"이 소멸해 근거 제시가 안 된다. 인식 규칙과 정규화 규약은
+/// `document_core::queries::extract_data` 모듈 문서에 있다.
+fn extract_data_command(args: &[String]) -> i32 {
+    use rhwp::document_core::queries::extract_data::DataKind;
+
+    let mut file_path: Option<&str> = None;
+    let mut json_mode = false;
+    let mut limit: Option<usize> = None;
+    let mut kind_arg = "all".to_string();
+
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            "--kind" => {
+                i += 1;
+                match args.get(i).map(String::as_str) {
+                    Some("all") => kind_arg = "all".to_string(),
+                    Some(value) if DataKind::parse(value).is_some() => {
+                        kind_arg = value.to_string();
+                    }
+                    _ => {
+                        eprintln!("오류: --kind 는 date|amount|number|all 중 하나여야 합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--limit" => {
+                i += 1;
+                match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
+                    Some(n) if n >= 1 => limit = Some(n),
+                    _ => {
+                        eprintln!("오류: --limit 뒤에 1 이상의 정수가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.is_none() {
+                    file_path = Some(other);
+                } else {
+                    eprintln!("오류: 인자가 너무 많습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+
+    let Some(file_path) = file_path else {
+        eprintln!(
+            "사용법: rhwp extract-data <파일.hwp|파일.hwpx> [--kind date|amount|number|all] [--limit <N>] [--json]"
+        );
+        return EXIT_USAGE;
+    };
+
+    let selected: Vec<DataKind> = if kind_arg == "all" {
+        DataKind::ALL.to_vec()
+    } else {
+        DataKind::parse(&kind_arg).into_iter().collect()
+    };
+
+    let data = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let doc = match load_document(&data) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+
+    // [#3353 과 같은 이유] 총량을 보고하려면 전수 스캔이 불가피하다 — `--limit` 은 스캔
+    // 시간이 아니라 출력 컨텍스트를 아끼는 장치이므로, 전수 추출 후 표시만 절단한다.
+    let all_items = doc.extract_data(&selected);
+    let total_item_count = all_items.len();
+    let mut counts = serde_json::Map::new();
+    for kind in &selected {
+        let n = all_items.iter().filter(|it| it.kind == *kind).count();
+        counts.insert(kind.as_str().to_string(), serde_json::json!(n));
+    }
+    let counts = serde_json::Value::Object(counts);
+
+    let items: Vec<_> = match limit {
+        Some(n) => all_items.into_iter().take(n).collect(),
+        None => all_items,
+    };
+
+    if json_mode {
+        let envelope =
+            extract_data_json_value(file_path, &kind_arg, &items, total_item_count, &counts);
+        println!("{envelope}");
+        // 0건은 실패가 아니다 — 1은 런타임 실패 전용이다(#2707).
+        return EXIT_OK;
+    }
+
+    let summary = selected
+        .iter()
+        .map(|k| format!("{} {}", k.as_str(), counts[k.as_str()]))
+        .collect::<Vec<_>>()
+        .join(" · ");
+    if items.len() < total_item_count {
+        println!(
+            "추출: {} — {}건 중 {}건 표시 (--limit)  [{}]",
+            file_path,
+            total_item_count,
+            items.len(),
+            summary
+        );
+    } else {
+        println!("추출: {} — {}건  [{}]", file_path, items.len(), summary);
+    }
+    for item in &items {
+        let page = item
+            .page
+            .map(|p| format!("{}쪽", p + 1))
+            .unwrap_or_else(|| "쪽 미배치".to_string());
+        // 정규화 불가는 감추지 않고 그대로 보인다 — 소비자가 raw 로 판단해야 한다.
+        let normalized = match &item.normalized {
+            Some(v) => serde_json::to_string(v).unwrap_or_else(|_| "?".to_string()),
+            None => "null(정규화 불가)".to_string(),
+        };
+        let unit = item
+            .unit
+            .as_deref()
+            .map(|u| format!(" {u}"))
+            .unwrap_or_default();
+        println!(
+            "  [{}] 구역{}:문단{} +{}  {:<7} {}  → {}{}",
+            page,
+            item.section,
+            item.paragraph,
+            item.char_offset,
+            item.kind.as_str(),
+            item.raw,
+            normalized,
+            unit
         );
     }
     EXIT_OK

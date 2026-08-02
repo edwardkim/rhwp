@@ -109,6 +109,7 @@ pub const PROFILES: &[AgentProfile] = &[
         tools: &[
             "hwp_info",
             "hwp_export_tables",
+            "hwp_extract_data",
             "hwp_search",
             "hwp_batch",
             "hwp_batch_search",
@@ -116,6 +117,7 @@ pub const PROFILES: &[AgentProfile] = &[
         session_tools: None,
         recipe: &[
             "단건은 hwp_export_tables (병합은 rowSpan/colSpan 보존)",
+            "표 밖 본문의 날짜·금액·수량은 hwp_extract_data (값과 쪽 주소가 한 몸)",
             "대량은 paths 배열로 hwp_batch subcommand=export-tables",
             "값 위치 추적은 hwp_search 의 셀 주소",
         ],

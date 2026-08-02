@@ -96,7 +96,10 @@ impl DocumentCore {
     /// `(구역, 문단) → 글로벌 페이지` 인덱스를 한 번에 만든다.
     ///
     /// 한 문단이 여러 쪽에 걸치면 **처음 등장한 쪽**을 쓴다 — 인용은 시작 위치가 기준이다.
-    fn build_paragraph_page_index(&self) -> HashMap<(usize, usize), u32> {
+    ///
+    /// [#3719] `extract_data` 도 같은 인덱스를 쓴다 — 주소가 붙은 질의는 "몇 쪽"의 정의를
+    /// 하나만 가져야 한다. 복제하면 두 명령이 서로 다른 쪽을 답하게 된다.
+    pub(crate) fn build_paragraph_page_index(&self) -> HashMap<(usize, usize), u32> {
         let mut index: HashMap<(usize, usize), u32> = HashMap::new();
         let mut global_offset = 0u32;
         for (sec_idx, pr) in self.pagination.iter().enumerate() {
@@ -132,7 +135,7 @@ impl DocumentCore {
     ///
     /// 분할되지 않은 표(`PageItem::Table`)도 전 행 범위로 함께 넣어, 셀 경로가 항상 같은
     /// 조회를 쓰도록 한다.
-    fn build_table_row_page_index(
+    pub(crate) fn build_table_row_page_index(
         &self,
     ) -> HashMap<(usize, usize, usize), Vec<(usize, usize, u32)>> {
         let mut index: HashMap<(usize, usize, usize), Vec<(usize, usize, u32)>> = HashMap::new();

@@ -1,0 +1,64 @@
+# extract-data 실측 — 전부 라이브 실행 (rhwp v0.8.2)
+
+# 1) 실물 정부 문서 전량 추출 — 값마다 주소가 붙는다
+$ rhwp extract-data <행정업무운영 편람.hwp> --json
+{"counts": {"amount": 10, "date": 466, "number": 241}, "kind": "all", "schemaVersion": "1.0", "totalItemCount": 717, "truncated": false}
+
+# 2) 같은 문단의 아라비아 숫자 금액과 한글 수사 금액이 나란히 온다
+#    — 수사 쪽은 값을 지어내지 않고 normalized:null 로 남는다
+$ rhwp extract-data <편람.hwp> --kind amount --limit 3 --json
+  {"charOffset": 8, "currency": "KRW", "kind": "amount", "length": 8, "normalized": 21345000, "page": 44, "paragraph": 203, "raw": "21,345천원", "section": 2}
+  {"charOffset": 5, "currency": "KRW", "kind": "amount", "length": 9, "normalized": 113560, "page": 56, "paragraph": 351, "raw": "금113,560원", "section": 2}
+  {"charOffset": 15, "currency": "KRW", "kind": "amount", "length": 12, "normalized": null, "page": 56, "paragraph": 351, "raw": "금일십일만삼천오백육십원", "section": 2}
+
+# 3) 두 자리 연도는 세기를 추정하지 않는다 (편람의 어깨점 표기)
+  date total=466, normalized-null=1
+  null -> {"charOffset": 16, "kind": "date", "length": 7, "normalized": null, "page": 51, "paragraph": 264, "raw": "’26. 1.", "section": 2}
+  ok   -> {"charOffset": 45, "kind": "date", "length": 12, "normalized": "1949-07-15", "page": 13, "paragraph": 38, "raw": "1949. 7. 15.", "section": 1}
+
+# 4) 연·월만 있는 표기는 부분 날짜다 — 없는 날(日)을 1일로 채우지 않는다
+$ rhwp extract-data <기부·답례품 보고서_양식.hwpx> --json
+  {"charOffset": 0, "kind": "date", "length": 8, "normalized": "2026-01", "page": 0, "paragraph": 18, "raw": "2026. 1.", "section": 0}
+  {"charOffset": 16, "kind": "number", "length": 3, "normalized": 17, "page": 15, "paragraph": 140, "raw": "17개", "section": 0, "unit": "개"}
+
+# 5) 단위 배수는 정수 연산으로 정확히 (소수 + 배수 포함, 국립국어원 업무계획)
+  amount total=65
+   57억원             -> 5700000000    (page 8)
+   3,180백만원         -> 3180000000    (page 8)
+   574백만원           -> 574000000     (page 8)
+   800백만원           -> 800000000     (page 8)
+   1,213백만원         -> 1213000000    (page 9)
+   12.03억원          -> 1203000000    (page 9)
+   2.15백만원          -> 2150000       (page 9)
+   9.88백만원          -> 9880000       (page 9)
+
+# 6) --limit 는 표시만 줄인다 — 총량과 절단 사실을 숨기지 않는다
+  {"counts": {"amount": 10, "date": 466, "number": 241}, "itemCount": 3, "totalItemCount": 717, "truncated": true}
+
+# 7) --kind 필터는 경계 판정을 바꾸지 않는다 (전체 실행의 종류별 건수와 같다)
+    --kind date    counts={"date": 466}
+    --kind amount  counts={"amount": 10}
+    --kind number  counts={"number": 241}
+    --kind all     counts={"amount": 10, "date": 466, "number": 241}
+
+# 8) 기본 출력은 사람용 요약이다 (--json 전용 계약)
+$ rhwp extract-data <기부·답례품 보고서_양식.hwpx>
+  추출: samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx — 2건  [date 1 · amount 0 · number 1]
+    [1쪽] 구역0:문단18 +0  date    2026. 1.  → "2026-01"
+    [16쪽] 구역0:문단140 +16  number  17개  → 17 개
+
+# 9) 실패 경로 — 종료 코드 계약(#2707)과 stdout 0바이트
+    없는 파일         -> exit=1 stdout=0바이트
+    경로 없음         -> exit=2 stdout=0바이트
+    --kind 치즈       -> exit=2 stdout=0바이트
+    stderr: 오류: --kind 는 date|amount|number|all 중 하나여야 합니다.
+
+# 10) 드리프트 가드 — capabilities / --help / MCP 도구 배선
+    capabilities: {"batch": false, "category": "query", "flags": ["--json", "--kind", "--limit"], "json": true, "name": "extract-data", "recordFields": ["schemaVersion", "source", "kind", "itemCount", "totalItemCount", "truncated", "counts", "items"], "summary": "날짜·금액·수량을 구역·문단·페이지·문자 오프셋 주소와 함께 추출"}
+    --help 명령 줄: 1건
+    MCP hwp_extract_data: {"cli": {"args": ["extract-data", "{path}", "--json"], "command": "extract-data", "optionalArgs": [{"args": ["--kind", "{kind}"], "when": "kind"}, {"args": ["--limit", "{limit}"], "when": "limit"}], "passwordStdin": {"argument": "password", "flag": "--password-stdin", "format": "utf8-first-line"}}, "properties": ["kind", "limit", "password", "path"], "required": ["path"]}
+
+# 11) 대형 문서 성능 — 393쪽 10MB 문서, 파싱 포함
+    run1: 226ms
+    run2: 252ms
+    run3: 338ms
