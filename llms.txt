@@ -23,6 +23,14 @@
 - [에이전트 실무 대체 예제집](mydocs/manual/agent_task_playbook.md): 사람 업무 → 명령 시퀀스 → 기계 검증 8개 시나리오 + 공무원 업무 커버리지 21행.
 - [서식 자동화 심화 가이드](mydocs/manual/form_filling_guide.md): fill-fields·set-cell·replace-text 3축의 실물 서식 함정과 판정 규칙(ambiguous·overflow·재독 대조).
 
+## 레시피 — 처음부터 끝까지 실측 출력으로 따라가는 예제
+
+- [레시피 1 — 서식 채워서 제출용으로 만들기](mydocs/manual/recipes/01_fill_form_and_submit.md): 누름틀 채움 → 도장 삽입 → 메타데이터 제거.
+- [레시피 2 — 표 데이터를 CSV로 뽑아 고치고 되돌리기](mydocs/manual/recipes/02_table_csv_roundtrip.md): 표 좌표 기반 서식의 CSV 왕복.
+- [레시피 4 — 출처를 모르는 문서를 처음 열 때](mydocs/manual/recipes/04_safety_check_untrusted_doc.md): 본문을 통째로 노출하지 않고 `info`·`digest`·`fields`(`textSecurity`)·`search`·`batch`로 점진적 신뢰도 판정.
+- [레시피 5 — 서식 하나에 여러 사람 데이터를 한 번에 채우기](mydocs/manual/recipes/05_mail_merge_batch_fill.md): `batch fill`로 메일머지형 대량 서식 채움.
+- [레시피 6 — 편집 전후를 눈이 아니라 숫자로 비교하기](mydocs/manual/recipes/06_visual_regression_before_after.md): `render-diff`로 편집이 렌더링 레이아웃에 준 영향을 정량 판정.
+
 ## 문제 해결
 
 - [에이전트 실패 사전](mydocs/manual/agent_troubleshooting_guide.md): 오류 문자열 그대로 검색되는 증상별 원인·처방.

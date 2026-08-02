@@ -61,6 +61,20 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 권위는 [#3608](https://github.com/edwardkim/rhwp/issues/3608)이다. 절차를 어긴 표면
 추가는 되돌린다.
 
+### 1-3-1. 끝에서 끝까지 예제를 따라 하고 싶은가 — 레시피
+
+표 1-1이 명령 하나하나의 판정 필드를 알려준다면, 아래 레시피는 "처음부터 끝까지
+한 번에 실행 가능한 순서"를 실측 출력과 함께 보여준다. 각 레시피는 독립 실행
+가능하고, 서로 필요한 지점에서만 상호 참조한다.
+
+| 레시피 | 다루는 것 | 핵심 명령 |
+|---|---|---|
+| [1 — 서식 채워서 제출용으로 만들기](recipes/01_fill_form_and_submit.md) | 누름틀 채움 → 도장 삽입 → 메타데이터 제거 | `fields`·`edit fill-fields`·`edit insert-image`·`edit sanitize` |
+| [2 — 표 데이터를 CSV로 뽑아 고치고 되돌리기](recipes/02_table_csv_roundtrip.md) | 표 좌표 기반 서식의 CSV 왕복 | `export-tables`·`edit set-cell` |
+| [4 — 출처를 모르는 문서를 처음 열 때](recipes/04_safety_check_untrusted_doc.md) | 본문 전체를 노출하지 않고 점진적으로 신뢰도 판정 | `info`·`digest`·`fields`(`textSecurity`)·`search`·`batch` |
+| [5 — 서식 하나에 여러 사람 데이터를 한 번에 채우기](recipes/05_mail_merge_batch_fill.md) | 메일머지형 대량 서식 채움 | `batch fill` |
+| [6 — 편집 전후를 눈이 아니라 숫자로 비교하기](recipes/06_visual_regression_before_after.md) | 편집이 렌더링 레이아웃에 준 영향을 정량 판정 | `render-diff` |
+
 ### 1-4. 다른 언어에서 쓰려는가 — 바인딩 가이드
 
 바인딩은 **새 표면이 아니라 기존 계약의 재포장**이다. 판정·좌표·파싱은 전부 rhwp
