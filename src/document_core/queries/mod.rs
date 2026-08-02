@@ -13,4 +13,6 @@ pub mod changed_pages;
 pub mod grep;
 pub(crate) mod search_query;
 pub mod structure;
+// [#3719 §6-7] 표 ↔ CSV 변환 — `table_extract` 격자를 재사용하는 순수 변환 코어.
+pub mod table_csv;
 pub mod table_extract;

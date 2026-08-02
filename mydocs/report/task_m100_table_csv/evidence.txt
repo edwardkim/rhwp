@@ -1,0 +1,122 @@
+#3719 §6-7 table-to-csv / csv-to-table 실측 증거
+수집일: 2026-08-02 / 브랜치 pr/table-csv (upstream/devel a8d7bdfbf 기준)
+환경: Windows 11, RUSTFLAGS="-C linker=rust-lld", CARGO_HTTP_CHECK_REVOKE=false
+샘플: samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx (표 53개, 병합 포함)
+
+아래는 전부 실제 실행 출력이다 — 추정치나 재구성이 아니다.
+
+=== 0. 샘플 최상위 표 index (하드코딩 금지 근거) ===
+tableCount = 53 / top-level = 52
+첫 최상위 index = 1 (0 아님 — 머리말 표가 0)
+병합 있는 첫 최상위 표: index 2 3 x 3 anchors 6
+
+=== 1. table-to-csv --table 2 --json (병합 격자 채움) ===
+{"bom":false,"schemaVersion":"1.0","source":"samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx","tableCount":1,"tables":[{"colCount":3,"csv":",< 2025년 기부·답례품 실적 분석보고서 요약 >,\r\n,,\r\n,,\r\n","index":2,"rowCount":3}]}
+
+index 2 rowCount 3 colCount 3
+레코드 수 3 (= rowCount) / 레코드별 필드 수 [3, 3, 3] (= colCount 전부 3 — 병합 채움 확인)
+csv repr: ',<\u20072025년 기부·답례품 실적 분석보고서 요약\u2007>,\r\n,,\r\n,,\r\n'
+
+=== 2. table-to-csv (전체) — 최상위 표 전부 ===
+tableCount = 52 bom = False
+index 목록 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] ...
+
+=== 3. -o 폴더 + --bom (엑셀 호환) ===
+생성 파일 수: 52
+table2.csv 선두 3바이트: 00000000: efbb bf                                  ...
+
+=== 4. 왕복 — 같은 CSV 되넣기 (changedCount 0 + verify) ===
+CSV 내보내기 완료: samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx (표 1개)
+  C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/same.csv
+  schemaVersion = "1.0"
+  table = 2
+  rowCount = 3
+  colCount = 3
+  changedCount = 0
+  invalid = []
+  dryRun = false
+  changedPages = [1]
+  outputFormat = "hwpx"
+  verify = {"diffCount": 0, "identical": true}
+
+=== 5. 값 갱신 — 한 칸만 바뀐다 ===
+  changedCount = 1
+  changed = [{"col": 0, "newText": "표값-2026", "oldText": "", "row": 0}]
+  changedPages = [1, 2]
+  되읽기:
+    '표값-2026,<\u20072025년 기부·답례품 실적 분석보고서 요약\u2007>,'
+
+=== 6. 행 수 불일치 — invalid + exit 2 + 무산출 ===
+{"changed":[],"changedCount":0,"changedPages":null,"colCount":3,"csv":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/short.csv","dryRun":false,"invalid":[{"actual":2,"expected":3,"message":"CSV 행 수 2 가 표 2 의 행 수 3 와 다릅니다 — 표 크기는 바꾸지 않습니다.","reason":"rowCountMismatch"}],"rowCount":3,"schemaVersion":"1.0","source":"samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx","table":2}
+  exit=2  산출물 존재=no
+
+=== 7. 병합으로 덮인 칸에 값 — invalid ===
+{"changed":[],"changedCount":0,"changedPages":null,"colCount":3,"csv":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/covered.csv","dryRun":false,"invalid":[{"col":1,"message":"(1,1) 는 병합으로 덮인 칸이라 쓸 수 없습니다 — 값은 앵커 칸에 두고 이 칸은 비우세요.","reason":"coveredCellNotEmpty","row":1}],"rowCount":3,"schemaVersion":"1.0","source":"samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx","table":2}
+  exit=2
+
+=== 8. 잘못된 CSV — 패닉 없이 invalid ===
+{"changed":[],"changedCount":0,"changedPages":null,"colCount":3,"csv":"C:/Users/swsz9/AppData/Local/Temp/claude/C--/d6031f1b-3749-41c1-b386-cad754a4b595/scratchpad/ev/bad.csv","dryRun":false,"invalid":[{"col":0,"message":"CSV 1행 1열: 따옴표가 닫히지 않았습니다","reason":"csvParse","row":0}],"rowCount":3,"schemaVersion":"1.0","source":"samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx","table":2}
+  exit=2
+
+=== 9. 실패 경로 stdout 0바이트 ===
+  rhwp table-to-csv → exit=2 stdout=0바이트
+  rhwp csv-to-table → exit=2 stdout=0바이트
+  rhwp table-to-csv --table 99999 → exit=1 stdout=0바이트
+
+=== 10. 자기서술 정합 (capabilities / MCP / help) ===
+  {"batch": false, "category": "export", "flags": ["--table", "-o", "--bom", "--json"], "json": true, "name": "table-to-csv", "recordFields": ["schemaVersion", "source", "tableCount", "tables", "bom", "output", "outputFormat"], "summary": "본문 최상위 표를 병합 격자를 채운 RFC 4180 CSV 로 내보내기"}
+  {"batch": false, "category": "edit", "flags": ["--csv", "--table", "-o", "--dry-run", "--verify", "--json"], "json": true, "name": "csv-to-table", "recordFields": ["schemaVersion", "source", "csv", "table", "rowCount", "colCount", "changedCount", "changed", "invalid", "dryRun", "changedPages", "output", "outputFormat", "verify"], "summary": "CSV 로 기존 표 N 의 셀 덮어쓰기 — 표 크기 불변, 행·열 불일치는 invalid+exit 2"}
+  hwp_table_to_csv | required = ['path'] | properties = ['bom', 'output', 'path', 'table'] | wired = ['bom', 'output', 'path', 'table']
+  hwp_csv_to_table | required = ['path', 'csv', 'table'] | properties = ['csv', 'dryRun', 'output', 'path', 'table', 'verify'] | wired = ['csv', 'dryRun', 'output', 'path', 'table', 'verify']
+  모든 선언 속성이 CLI 에 배선됨 ✔
+  --help 등재: 2
+
+
+=== 11. 빌드·테스트·린트 (CI 와 같은 명령) ===
+$ cargo build --release --bin rhwp
+    Finished `release` profile [optimized] target(s) in 8m 06s        (exit 0)
+
+$ cargo test --release --test table_csv_contract --test cli_json_contract --test mcp_server_contract
+     Running tests\cli_json_contract.rs
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.52s
+     Running tests\mcp_server_contract.rs
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.07s
+     Running tests\table_csv_contract.rs
+running 14 tests
+test table_to_csv_json_envelope_contract ... ok
+test unknown_top_level_table_is_a_runtime_error_with_silent_stdout ... ok
+test bom_flag_only_affects_the_file_not_the_envelope ... ok
+test malformed_csv_is_invalid_not_a_panic ... ok
+test merged_table_csv_is_a_full_rectangle ... ok
+test capabilities_and_mcp_declare_both_commands ... ok
+test col_count_mismatch_is_invalid_and_writes_nothing ... ok
+test dry_run_writes_no_file ... ok
+test missing_arguments_are_usage_errors_with_silent_stdout ... ok
+test identical_csv_writes_nothing_and_verifies ... ok
+test row_count_mismatch_is_invalid_and_writes_nothing ... ok
+test rfc4180_quoting_survives_a_round_trip_through_the_document ... ok
+test value_in_a_merged_covered_cell_is_invalid ... ok
+test value_written_by_csv_is_readable_back ... ok
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.41s
+
+$ cargo test --release --lib table_csv          (코어 모듈 단위 테스트)
+running 8 tests
+test document_core::queries::table_csv::tests::bom_is_stripped ... ok
+test document_core::queries::table_csv::tests::empty_fields_are_kept ... ok
+test document_core::queries::table_csv::tests::empty_input_is_zero_records ... ok
+test document_core::queries::table_csv::tests::quotes_only_when_needed ... ok
+test document_core::queries::table_csv::tests::unterminated_quote_is_an_error ... ok
+test document_core::queries::table_csv::tests::garbage_after_closing_quote_is_an_error ... ok
+test document_core::queries::table_csv::tests::round_trip_preserves_special_characters ... ok
+test document_core::queries::table_csv::tests::trailing_separator_does_not_add_a_record ... ok
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 3037 filtered out; finished in 0.00s
+
+$ cargo clippy -- -D warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 53.15s   (exit 0, 경고 0)
+
+$ rustfmt --edition 2021 --config-path rustfmt.toml --config newline_style=Auto --check \
+      src/main.rs src/document_core/queries/table_csv.rs \
+      src/document_core/queries/mod.rs tests/table_csv_contract.rs
+    (출력 없음 = 차이 없음)
+
+합계: 신규 계약 14건 + 코어 단위 8건 green, 무회귀 cli_json 26 · mcp_server 22 green.
