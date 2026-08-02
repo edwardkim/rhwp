@@ -495,6 +495,14 @@ fn recipes() -> Vec<Recipe> {
             ndjson: false,
         },
         Recipe {
+            command: "explain",
+            doc: Some(field.clone()),
+            args: vec![s("explain"), p(&field), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
             command: "edit",
             doc: Some(table.clone()),
             args: vec![
