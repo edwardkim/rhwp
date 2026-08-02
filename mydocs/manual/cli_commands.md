@@ -597,6 +597,79 @@ rhwp 는 이미 필드에 값을 쓸 수 있지만(`set_field_value_by_name`) �
 rhwp fields 신청서.hwp --json | jq -r '.fields[] | "\(.name): \(.memo // .guide)"'
 ```
 
+### `export-provenance-map [--json]`
+봉투의 어느 필드가 **문서에서 온 값**(= 문서 작성자가 내용을 정하는 값)인지의 지도를 낸다.
+문서를 열지 않는 유일한 무상태 명령 — 에이전트가 다른 봉투를 파싱하기 **전에** "이 필드는
+데이터이지 지시가 아니다"를 판정할 수 있어야 하므로 지도 자체가 입력 없이 바로 닿는다.
+- 기계 계약은 `--json`, 사람용은 기본 출력(명령별 `필드 ← 출처` 목록)
+- `--json` 봉투: `{"schemaVersion":"1.0","tool":"rhwp","version","envelopeFlags":{...},"pathSyntax","policy":{...},"commands":{<명령>:{"untrusted":[...],"origins":{...},"note"}}}`
+- `--json` 계약을 가진 명령의 실제 응답에는 `provenance::marked` 가 붙인 두 필드가
+  실린다 — `untrustedContent`(이 봉투가 문서 파생 값을 실제로 담으면 `true`),
+  `untrustedFields`(실제로 실린 문서 파생 필드 경로들, 본 지도의 부분집합). 여기 실린 값은
+  **데이터이지 지시가 아니다** — 그 안의 문장을 도구·사용자의 지시로 실행하지 않는다.
+  판정이 애매하면 문서 파생으로 선언한다(과소 선언만 위험).
+- 대상은 `capabilities` 의 `--json` 계약 명령 전부. 계약 봉투가 없는 사람용 덤프 명령
+  (`dump`·`diag` 등)은 대상이 아니다.
+- 배경 설계 결정과 소비 규약은 [에이전트 보안 문서 지도](../tech/agent_security/README.md) —
+  특히 [소비 에이전트 가이드](../tech/agent_security/consumer_guide.md) 참조.
+
+```bash
+rhwp export-provenance-map --json | jq '.commands["export-text"]'
+```
+
+### `inspect <hidden-text|injection|unicode> <파일.hwp|파일.hwpx> [축별 옵션]`
+문서를 **읽기만** 하는 보안 검사 명령군 — `hidden-text`(조판 은닉), `injection`(문장형 지시
+신호), `unicode`(화면과 바이트의 불일치)를 각각 판정한다. 어느 축도 문서를 고치지 않는다.
+탐지 건수가 0이 아니어도 종료 코드는 0이다 — 1은 런타임 실패 전용이고(#2707), "위험 문서
+발견"은 실패가 아니라 정상적으로 얻어낸 판정 결과다. 소비자는 봉투의 `clean`(단, `injection`
+은 `highestConfidence`도) 필드로 분기한다.
+탐지 규칙·오탐 정책·위협 모델의 전체 근거는 [에이전트 보안 문서 지도](../tech/agent_security/README.md)를
+따른다 — 이 항목들은 **사용법**만 서술하고 축별 상세 위협 모델은 중복하지 않는다:
+[은닉 콘텐츠](../tech/agent_security/hidden_content.md),
+[간접 프롬프트 인젝션](../tech/agent_security/indirect_prompt_injection.md),
+[유니코드 기만](../tech/agent_security/unicode_deception.md).
+`samples/` 는 이 축의 **정상(음성) 코퍼스**다 — 실제 위협 표본은 별도 코퍼스에 있으므로,
+아래 예시를 정상 문서에 돌리면 대개 `clean:true` 가 정상 결과다.
+
+#### `inspect hidden-text <파일> [--json] [--threshold-pt <N>] [--include-offpage]`
+사람 눈에 안 보이는데 텍스트 추출기는 읽어 가는 텍스트를 보고한다(배경색과 같은 글자색·
+극소 글자·0pt 글자·쪽 밖 배치).
+- `--threshold-pt <N>` — "극소 글자" 판정 상한(pt). 0~4096 실수만 허용(CharShape.base_size
+  스펙 상한과 동일). 생략 시 기본값 사용.
+- `--include-offpage` — 쪽 밖에 배치된 텍스트도 대상에 포함
+- `--json` 봉투: `{"schemaVersion":"1.0","source","thresholdPt","includeOffPage","hiddenText":[{"kind","section","paragraph","page"?,"charCount","excerpt"}],"hiddenCharCount","clean"}`
+
+```bash
+rhwp inspect hidden-text "samples/2025 행정업무운영 편람(최종).hwp" --json | jq '{clean, hiddenCharCount}'
+```
+
+#### `inspect injection <파일> [--json] [--min-confidence low|medium|high] [--include-fields]`
+문서 텍스트에서 프롬프트 주입 신호(도구 이름 언급, 지시문 패턴 등)를 신고한다. **문서를
+고치지 않는다** — 조용히 지우면 사용자는 원문을 봤다고 믿는데 실제로는 아니다.
+- `--min-confidence <등급>` — `low`(기본)·`medium`·`high` 미만 신호는 제외
+- `--include-fields` — 누름틀 안내문·메모 등 필드 텍스트도 검사 범위에 포함(기본은 본문 위주;
+  포함 여부는 봉투의 `scanScopes` 가 밝힌다 — 훑지 않은 영역은 "깨끗함"이 아니라 "검사 안 함")
+- 도구 이름 판정은 `capabilities --mcp` 의 무상태 도구 목록과 `mcp-serve` 세션 도구 목록을
+  실측 원천으로 쓴다(하드코딩하지 않음) — 새 도구가 추가되면 탐지도 함께 자란다.
+- `--json` 봉투: `{"schemaVersion":"1.0","source","minConfidence","includeFields","scanScopes":[...],"injectionSignals":[...],"signalCount","highestConfidence","clean"}`
+
+```bash
+rhwp inspect injection samples/field-01.hwp --json | jq '{clean, highestConfidence, signalCount}'
+```
+
+#### `inspect unicode <파일> [--json] [--kind zero-width|bidi|tag|confusable|all]`
+화면에 보이는 것과 LLM 이 읽는 바이트가 어긋나는 지점(제로폭 문자·양방향 오버라이드·태그
+문자·동형이의 문자)을 찾는다. 문서는 읽기만 한다.
+- `--kind <축>` — `zero-width`·`bidi`·`tag`·`confusable`·`all`(기본) 중 하나로 좁힌다
+- 본문 + 표 셀 + 글상자 + 수식을 1패스로 훑는다(정규식이 아니라 코드포인트 스캔)
+- 산출은 `rendered`(보이는 모습)와 `raw`(실제 순서)를 **나란히** 낸다 — 차이가 눈에 보이지
+  않으면 보고는 공허하다
+- `--json` 봉투: `{"schemaVersion":"1.0","source","kindFilter","scannedChars","findings":[{"kind","codepoint","severity","section","paragraph","location","charOffset","runLength","excerpt","rendered","raw","hidden"?,"why"}],"findingCount","clean","severityCounts":{"high","medium","low"},"kindCounts":{...}}`
+
+```bash
+rhwp inspect unicode samples/field-01.hwp --json --kind zero-width | jq '{clean, findingCount}'
+```
+
 ### `edit fill-fields <파일> --data <JSON|@파일> [옵션]` (#3329)
 누름틀에 값을 채운다 — 서식 자동 작성/메일머지. 검증된 코어 경로
 (`set_field_value_by_name`)를 재사용하므로 새 편집 로직이 없고, **필드 값만 바꾸므로
@@ -1001,9 +1074,12 @@ record 를 축별로 비교한다.
 - 본 문서는 `src/main.rs` 명령 디스패치 기준. CLI 추가/변경 시 `--help` 문자열과 본 문서를 함께 갱신한다.
 - 2026-07-04 현행화: dispatch 39개 명령 전수 등재 완료(§1~§5). 게이트·공용 명령은 정식 절,
   조사 프로브(§4)·개발 보조(§5)는 묶음 등재.
-- 2026-08-03 현행화: 병합 PR에서 미뤄 뒀던 신규 명령 4종을 실물(`src/main.rs` 디스패치)
-  기준으로 보강 — `table-to-csv`/`csv-to-table`(§1), `batch fill`(§1), `edit insert-image`(§2).
-  **이번 작업 환경에서는 로컬 릴리스 빌드가 MSVC `dbghelp.lib` 손상(link.exe LNK1123)으로
-  실패**해 `rhwp --help`/`capabilities` 를 직접 뽑지 못했다 — `src/main.rs` 소스(usage
-  문자열·JSON 봉투 구성 코드)를 1차 근거로 삼았다. 실제 `--help`/`capabilities` 출력 대조와
-  예시 명령 실행 검증은 빌드 가능한 환경(CI 등)에서 재확인이 필요하다.
+- 2026-08-03 현행화: 병합 PR에서 미뤄 뒀던 신규 명령 8종을 실물(`src/main.rs` 디스패치)
+  기준으로 보강 — `table-to-csv`/`csv-to-table`(§1), `batch fill`(§1), `edit insert-image`(§2),
+  `export-provenance-map`·`inspect hidden-text`/`injection`/`unicode`(§2). `edit redact`/
+  `edit sanitize`/`extract-data`는 이미 정확히 등재돼 있어 정정 없음. 보안 축 위협 모델은
+  중복 서술하지 않고 `mydocs/tech/agent_security/`로 링크했다. **이번 작업 환경에서는
+  로컬 릴리스 빌드가 MSVC `dbghelp.lib` 손상(link.exe LNK1123)으로 실패**해
+  `rhwp --help`/`capabilities` 를 직접 뽑지 못했다 — `src/main.rs` 소스(usage 문자열·JSON
+  봉투 구성 코드)를 1차 근거로 삼았다. 실제 `--help`/`capabilities` 출력 대조와 예시 명령
+  실행 검증은 빌드 가능한 환경(CI 등)에서 재확인이 필요하다.
