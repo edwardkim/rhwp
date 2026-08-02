@@ -29,7 +29,12 @@ fn describe(args: &[&str], o: &Output) -> String {
 fn schema_envelope() -> serde_json::Value {
     let args = ["export-ir-schema"];
     let output = run(&args);
-    assert_eq!(output.status.code(), Some(0), "{}", describe(&args, &output));
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
     serde_json::from_slice(&output.stdout).expect("봉투 JSON")
 }
 
@@ -40,7 +45,10 @@ fn envelope_declares_version_and_dialect() {
     assert_eq!(v["schemaVersion"], "1.0", "{v}");
     assert!(v["irSchemaVersion"].is_string(), "{v}");
     assert!(
-        v["dialect"].as_str().unwrap_or("").contains("json-schema.org"),
+        v["dialect"]
+            .as_str()
+            .unwrap_or("")
+            .contains("json-schema.org"),
         "방언을 명시해야 소비자가 파서를 고를 수 있다: {v}"
     );
     assert!(v["definitionCount"].as_u64().unwrap_or(0) >= 25, "{v}");
@@ -130,7 +138,10 @@ fn schema_covers_edit_surface_types() {
         "ParaShape",
         "Provenance",
     ] {
-        assert!(defs.contains_key(required), "{required} 정의 누락: {defs:?}");
+        assert!(
+            defs.contains_key(required),
+            "{required} 정의 누락: {defs:?}"
+        );
     }
 }
 
@@ -152,7 +163,12 @@ fn every_definition_is_documented() {
 fn bare_flag_emits_schema_body_only() {
     let args = ["export-ir-schema", "--bare"];
     let output = run(&args);
-    assert_eq!(output.status.code(), Some(0), "{}", describe(&args, &output));
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
     let v: serde_json::Value = serde_json::from_slice(&output.stdout).expect("스키마");
     assert!(v["$schema"].is_string(), "{v}");
     assert!(v["$defs"].is_object(), "{v}");
@@ -174,7 +190,12 @@ fn output_file_keeps_stdout_machine_readable() {
     let target_str = target.to_str().unwrap().to_string();
     let args = ["export-ir-schema", "-o", &target_str, "--json"];
     let output = run(&args);
-    assert_eq!(output.status.code(), Some(0), "{}", describe(&args, &output));
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
 
     let v: serde_json::Value = serde_json::from_slice(&output.stdout).expect("봉투");
     assert_eq!(v["output"], target_str, "{v}");
@@ -192,7 +213,12 @@ fn output_file_keeps_stdout_machine_readable() {
 fn unknown_option_is_usage_error() {
     let args = ["export-ir-schema", "--없는옵션"];
     let output = run(&args);
-    assert_eq!(output.status.code(), Some(2), "{}", describe(&args, &output));
+    assert_eq!(
+        output.status.code(),
+        Some(2),
+        "{}",
+        describe(&args, &output)
+    );
     assert!(output.stdout.is_empty(), "{}", describe(&args, &output));
 }
 
@@ -201,18 +227,30 @@ fn unknown_option_is_usage_error() {
 fn missing_output_path_is_usage_error() {
     let args = ["export-ir-schema", "-o"];
     let output = run(&args);
-    assert_eq!(output.status.code(), Some(2), "{}", describe(&args, &output));
+    assert_eq!(
+        output.status.code(),
+        Some(2),
+        "{}",
+        describe(&args, &output)
+    );
     assert!(output.stdout.is_empty());
 }
 
 /// 쓸 수 없는 경로는 런타임 오류(1) — 사용법 오류와 구분한다.
 #[test]
 fn unwritable_output_is_runtime_error() {
-    let bad: PathBuf = PathBuf::from("없는폴더-irschema").join("깊은").join("경로.json");
+    let bad: PathBuf = PathBuf::from("없는폴더-irschema")
+        .join("깊은")
+        .join("경로.json");
     let bad_str = bad.to_str().unwrap().to_string();
     let args = ["export-ir-schema", "-o", &bad_str];
     let output = run(&args);
-    assert_eq!(output.status.code(), Some(1), "{}", describe(&args, &output));
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "{}",
+        describe(&args, &output)
+    );
 }
 
 /// capabilities 가 이 명령을 json 명령으로 선언한다 (드리프트 가드와 정합).
