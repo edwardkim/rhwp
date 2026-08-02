@@ -2463,15 +2463,29 @@ struct FormattedParagraph {
 
 impl FormattedParagraph {
     /// 특정 줄의 advance 높이 (콘텐츠 + 줄간격)
+    ///
+    /// Issue #3780: 연속 페이지 재배치에서 기록된 줄 인덱스가 새 레이아웃 줄 수를
+    /// 넘는 off-by-one(len 31, index 31 실측 패닉)이 들어올 수 있다 — 존재하지
+    /// 않는 줄의 advance 는 0.0 으로 방어해 렌더를 지속한다.
     #[inline]
     fn line_advance(&self, line_idx: usize) -> f64 {
+        if line_idx >= self.line_count() {
+            return 0.0;
+        }
         self.line_heights[line_idx] + self.line_spacings[line_idx]
     }
 
-    /// 줄 범위의 advance 합계
+    /// 두 벡터가 함께 인덱싱되는 자리의 안전 상한 (구성은 zip 이라 보통 같다).
+    #[inline]
+    fn line_count(&self) -> usize {
+        self.line_heights.len().min(self.line_spacings.len())
+    }
+
+    /// 줄 범위의 advance 합계 (Issue #3780 — 범위를 실제 줄 수로 클램프)
     fn line_advances_sum(&self, range: std::ops::Range<usize>) -> f64 {
-        range
-            .into_iter()
+        let end = range.end.min(self.line_count());
+        let start = range.start.min(end);
+        (start..end)
             .map(|i| self.line_heights[i] + self.line_spacings[i])
             .sum()
     }
@@ -18596,6 +18610,39 @@ fn endnote_separator_height_px(shape: &FootnoteShape, dpi: f64) -> f64 {
     hwpunit_to_px(shape.separator_above_margin_hu() as i32, dpi)
         + line_height
         + hwpunit_to_px(endnote_separator_below_margin(shape) as i32, dpi)
+}
+
+#[cfg(test)]
+mod issue_3780_line_advance_oob {
+    use super::FormattedParagraph;
+
+    fn fp(lines: usize) -> FormattedParagraph {
+        FormattedParagraph {
+            total_height: 0.0,
+            line_heights: vec![10.0; lines],
+            line_spacings: vec![2.0; lines],
+            spacing_before: 0.0,
+            spacing_after: 0.0,
+            height_for_fit: 0.0,
+        }
+    }
+
+    /// red→green: 클램프를 원복하면 이 두 테스트는 index out of bounds 로 패닉한다
+    /// (len 31 / index 31 — 실측 사고와 동일한 상태).
+    #[test]
+    fn out_of_range_line_advance_is_zero_not_panic() {
+        let p = fp(31);
+        assert_eq!(p.line_advance(31), 0.0);
+        assert_eq!(p.line_advance(30), 12.0, "경계 안 동작 불변");
+    }
+
+    #[test]
+    fn out_of_range_advance_sum_clamps_to_existing_lines() {
+        let p = fp(31);
+        assert_eq!(p.line_advances_sum(29..33), 24.0, "29,30 두 줄만 합산");
+        assert_eq!(p.line_advances_sum(0..31), 31.0 * 12.0, "전 범위 동작 불변");
+        assert_eq!(p.line_advances_sum(40..50), 0.0);
+    }
 }
 
 #[cfg(test)]
