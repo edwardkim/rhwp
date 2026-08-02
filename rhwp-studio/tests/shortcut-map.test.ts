@@ -42,6 +42,13 @@ test('IME pending 상태처럼 key가 Process여도 code로 장평/자간 단축
   assert.equal(command({ key: 'Process', code: 'KeyW', altKey: true, shiftKey: true }), 'format:char-spacing-increase');
 });
 
+test('macOS 영문 입력 Option+G의 © 문자 값도 물리 KeyG로 찾아가기를 실행한다', () => {
+  assert.equal(command({ key: 'g', code: 'KeyG', altKey: true }, 'mac'), 'edit:goto');
+  assert.equal(command({ key: '©', code: 'KeyG', altKey: true }, 'mac'), 'edit:goto');
+  assert.equal(command({ key: 'ㅎ', code: 'KeyG', altKey: true }, 'mac'), 'edit:goto');
+  assert.equal(command({ key: '©', code: 'KeyH', altKey: true }, 'mac'), null);
+});
+
 test('표 줄/칸 추가·지우기 단축키는 대화상자 명령으로 매핑한다', () => {
   assert.equal(command({ key: 'Enter', altKey: true }, 'mac'), 'table:insert-row-col');
   assert.equal(command({ key: 'enter', altKey: true }, 'mac'), 'table:insert-row-col');
