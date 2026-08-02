@@ -146,6 +146,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `mcp_server_contract.rs` | `mcp-serve` 핸드셰이크·선언-서버 드리프트 가드·isError (#3140) |
 | `mcp_session_query_contract.rs` | 세션 조회·치환(hwp_doc_search·hwp_doc_replace_text) (#3601) |
 | `mcp_session_edit_contract.rs` | 세션 채움·형식 보존 저장(hwp_doc_fill_fields·hwp_doc_save) (#3598) |
+| `mcp_session_changed_pages_contract.rs` | 세션 편집 3종 `changedPages` — 무상태 판 동형·재조판 후 렌더 가능 (#3719 §6-1) |
 | `issue_3366_thumbnail_contract.rs` | `thumbnail` 종료 코드·파싱 계약 (#3366) |
 | `issue_3372_gian_form_contract.rs` | 일반기안문 표준 서식 자산의 유효성 (#3372) |
 | `render_p22_web_canvas_contract.rs` | 웹 캔버스 레이어 재생이 render node 를 재구축하지 않는 계약 |

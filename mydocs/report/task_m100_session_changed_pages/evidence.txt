@@ -1,0 +1,26 @@
+# 1) 세션 hwp_doc_fill_fields — changedPages 지정 (라이브, samples/field-01.hwp 3쪽)
+#    필드 이름은 `rhwp fields samples/field-01.hwp --json` 으로 확인 (fieldCount=11, 첫 이름 회사명)
+{"ambiguous":[],"changedPages":[0],"confusable":[],"docId":"doc-1","filled":[{"name":"회사명","occurrence":0,"value":"세션쪽지정사"}],"filledCount":1,"notFound":[],"schemaVersion":"1.0"}
+
+# 2) 세션 hwp_doc_replace_text — 치환 전 매치 주소가 근거
+{"caseSensitive":true,"changedPages":[0],"docId":"doc-1","find":"마케팅","replace":"기획","replacedCount":1,"schemaVersion":"1.0"}
+
+# 3) 무변경은 빈 목록 — null("전체를 보라")로 내리지 않는다
+{"caseSensitive":true,"changedPages":[],"docId":"doc-1","find":"존재하지않는문자열QZX","replace":"y","replacedCount":0,"schemaVersion":"1.0"}
+{"ambiguous":[],"changedPages":[],"confusable":[],"docId":"doc-1","filled":[],"filledCount":0,"notFound":["없는누름틀"],"schemaVersion":"1.0"}
+
+# 4) 무상태 대조 — 같은 문서·같은 편집의 edit --json 봉투 (동형 확인)
+{"ambiguous":[],"changedPages":[0],"confusable":[],"dryRun":false,"filled":[{"name":"회사명","occurrence":0,"value":"세션쪽지정사"}],"filledCount":1,"notFound":[],"output":"C:\\Users\\swsz9\\AppData\\Local\\Temp\\ev-fill.hwp","outputFormat":"hwp5","schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null}
+{"caseSensitive":true,"changedPages":[0],"dryRun":false,"find":"마케팅","occurrence":null,"output":"C:\\Users\\swsz9\\AppData\\Local\\Temp\\ev-repl.hwp","outputFormat":"hwp5","replace":"기획","replacedCount":1,"schemaVersion":"1.0","source":"samples/field-01.hwp","verify":null}
+
+# 5) 세션 hwp_doc_set_cell vs 무상태 edit set-cell (samples/table-001.hwp 1쪽)
+#    좌표는 `rhwp export-tables samples/table-001.hwp --json` 의 첫 본문 최상위 표 첫 칸
+{"changedPages":[0],"col":0,"docId":"doc-1","keepStyle":false,"newText":"세션셀","oldText":"구 분","overflow":[],"row":0,"schemaVersion":"1.0","table":0}
+{"changedPages":[0],"col":0,"dryRun":false,"keepStyle":false,"newText":"세션셀","oldText":"구 분","output":"C:\\Users\\swsz9\\AppData\\Local\\Temp\\ev-cell.hwp","outputFormat":"hwp5","overflow":[],"row":0,"schemaVersion":"1.0","source":"samples/table-001.hwp","table":0,"verify":null}
+
+# 6) 재조판 시점 — 회사명에 5,000자를 채워 쪽을 늘린다 (편집 전 3쪽 → 편집 후 11쪽)
+#    changedPages 의 3~8쪽은 **편집 전에는 존재하지 않던 쪽**이다 —
+#    재조판 전에 계산했다면 낼 수 없는 값이고, 그 자리에서 렌더도 된다.
+{"pageCount(before)": 3, "changedPages": [0, 1, 2, 3, 4, 5, 6, 7, 8], "pageCount(after)": 11}
+{"bytes":182206,"docId":"doc-1","format":"svg","output":"C:\\Users\\swsz9\\AppData\\Local\\Temp\\ev-page8.svg","page":8,"schemaVersion":"1.0"}
+
