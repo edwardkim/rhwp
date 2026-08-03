@@ -535,9 +535,19 @@ def check_declared_flags_real(binary: Path, caps_j, rep: Report) -> None:
             if not str(flag).startswith("--"):
                 continue
             checked += 1
-            # 인자 없이 플래그만 줘서 "알 수 없는 옵션" 이 나오는지만 본다.
+            # 인자 없이 플래그만 줘서 CLI 가 그 플래그를 아는지 본다.
+            #
+            # 판정은 **stderr 만** 본다. stdout 을 섞으면
+            # `export-capabilities-schema --bare` 처럼 **종료 코드 사전을 출력하는 명령**이
+            # 자기 출력 안의 "사용법 오류 (인자 없음, 알 수 없는 옵션/명령)" 에 걸려
+            # 스스로를 미구현으로 신고한다(실측 오탐 2건).
+            #
+            # 종료 코드도 먼저 본다 — 플래그가 정상 동작하면 0 이다. 0 으로 끝났으면
+            # CLI 가 받아들인 것이므로 진단 문자열이 어디에 있든 실패로 보지 않는다.
             r = run([str(binary), name, str(flag)])
-            blob = (r.stdout + r.stderr)
+            if r.returncode == 0:
+                continue
+            blob = r.stderr
             if "알 수 없는 옵션" in blob or "unknown option" in blob.lower():
                 rep.fail(
                     check,
