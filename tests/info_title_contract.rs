@@ -42,13 +42,28 @@ fn run_with_stdin(args: &[&str], stdin_body: &str) -> Output {
         .stderr(Stdio::piped())
         .spawn()
         .expect("rhwp 실행 실패");
-    child
+    write_stdin_ignoring_early_exit(&mut child, stdin_body);
+    child.wait_with_output().expect("rhwp 종료 대기 실패")
+}
+
+/// stdin 에 본문을 쓰되, 자식이 stdin 을 읽기 전에 종료한 경우의 BrokenPipe 는
+/// 무시한다. 인자 검증 거부 계열 테스트는 프로세스가 입력을 소비하기 전에
+/// 종료하는 것이 정상 경로라, 쓰기 완료 여부는 검증 대상(종료 코드·출력)이
+/// 아니다 (#3763 — batch_axes_contract.rs 와 같은 처리).
+fn write_stdin_ignoring_early_exit(child: &mut std::process::Child, stdin_body: &str) {
+    use std::io::ErrorKind;
+    if let Err(err) = child
         .stdin
         .as_mut()
         .expect("stdin")
         .write_all(stdin_body.as_bytes())
-        .expect("stdin 쓰기 실패");
-    child.wait_with_output().expect("rhwp 종료 대기 실패")
+    {
+        assert_eq!(
+            err.kind(),
+            ErrorKind::BrokenPipe,
+            "stdin 쓰기 실패: {err:?}"
+        );
+    }
 }
 
 fn describe(args: &[&str], output: &Output) -> String {
