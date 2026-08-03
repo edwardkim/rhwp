@@ -32,6 +32,7 @@ last_verified: 2026-07-19
 | 에이전트 보안 — 문서가 에이전트를 조종하는 경로 | [에이전트 보안 문서 지도](agent_security/README.md) | [위협 모델](agent_security/threat_model.md), [공격 표면](agent_security/attack_surface.md), [소비 에이전트 가이드](agent_security/consumer_guide.md), 로드맵 #3793·구현 #3787 |
 | 신뢰할 수 없는 문서에 대한 경계 | [에이전트 경계 무결성 계약 — 경로·교정단서·자원한계·핸들](agent_boundary_contract.md) | 회귀 `tests/boundary_integrity_contract.rs`, 처리 결과 [task_sec_boundary](../report/task_sec_boundary/README.md) |
 | 외부 바인딩 공통 기반(M18~M20) | [IR 스키마 버저닝·표면 판단·파이썬 1호 명세](bindings_foundation.md) | 로드맵 #3608 M18~M20, [에이전트 표면 플레이북](../manual/agent_surface_playbook.md) |
+| 문서 지능 서버(M25) — 파일 감시·워크스페이스·참조 조회 | [문서 지능 서버 문서 지도](document_intelligence/README.md) | [파일 감시와 증분 재파싱](document_intelligence/incremental_reparse.md), [다문서 워크스페이스 핸들](document_intelligence/workspace_handles.md), [참조 조회](document_intelligence/reference_queries.md), 로드맵 #3608 M25 |
 | 이슈별 기술 조사 | [이슈별 기술 조사 지도](investigations/README.md) | [Issue #511 IR wrap 조사](investigations/issue-511/README.md), [Issue #1151 picture TAC 조사](investigations/issue-1151/README.md), [Issue #1584 이후 HWPX 잔여 IR 차이 조사](investigations/issue-1584/README.md), [Issue #1658 페이지네이션 조사](investigations/issue-1658/README.md), [Issue #1772 잔여 OVER 조사](investigations/issue-1772/README.md), [Issue #2125 font ownership 조사](investigations/issue-2125/README.md) |
 
 ## 현재 구조를 읽는 법
@@ -46,6 +47,10 @@ last_verified: 2026-07-19
 - [agent_security/](agent_security/README.md) 하위 문서는 rhwp가 에이전트 도구로서 노출하는 보안
   표면의 계약이다. 파서 견고성이 아니라 **문서 내용이 에이전트 행동에 영향을 미치는 경로**를 다룬다.
   구현(#3787)이 진행 중이므로 각 문서는 "현재 있는 것"과 "설계된 것"을 구분해 표시한다.
+- [document_intelligence/](document_intelligence/README.md) 하위 문서는 로드맵 #3608 M25 의 **설계**다.
+  구현이 아직 없으므로 각 문서는 "지금 있는 것"(코드 경로)과 "설계된 것"(제안)을 갈라 표시한다.
+  현재 동작의 권위는 [MCP 연동 가이드](../manual/mcp_integration_guide.md)와
+  [에이전트 경계 무결성 계약](agent_boundary_contract.md)이다.
 - [archive/](archive/README.md)의 v1 roadmap처럼 대체된 계획은 historical 자료로 취급하며, 새 작업의
   근거로 직접 사용하지 않는다.
 
