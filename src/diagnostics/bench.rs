@@ -68,6 +68,16 @@ pub fn run(args: &[String]) -> i32 {
                 i += 1;
                 tsv = args.get(i).cloned();
             }
+            // [#3884 G2] 미지 플래그를 파일 이름으로 접지 않는다 — `--json` 을 주면
+            // "그런 파일이 없다"로 실패하던 것이 대표 증상이다. 침묵 무시는 더 나쁘다:
+            // 오타 난 옵션이 측정 조건을 조용히 바꾼 채 성공을 보고한다.
+            other if other.starts_with('-') => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
+                eprintln!(
+                    "사용법: rhwp bench <파일...> | --batch <폴더> [-n 반복수] [--tsv 출력.tsv]"
+                );
+                return super::EXIT_USAGE;
+            }
             other => files.push(other.to_string()),
         }
         i += 1;
@@ -88,9 +98,6 @@ pub fn run(args: &[String]) -> i32 {
         iters = 1;
     }
 
-    println!("=== bench: 단계별 처리 성능 (median of {iters}회, 워밍업 1회) ===");
-    println!("주의: 절대 수치는 측정 머신·빌드 의존. 동일 환경 상대·재현 지표로 해석.");
-
     let mut rows: Vec<Row> = Vec::new();
     let mut failures = 0usize;
     for f in &files {
@@ -102,14 +109,26 @@ pub fn run(args: &[String]) -> i32 {
             }
         }
     }
-    print_table(&rows);
+    // [#3884 G1] 전건 실패면 stdout 을 비운다 — 빈 표에 배너까지 얹어 내보내면
+    // 파이프 소비자가 "측정 결과"로 읽는다. 실패의 전말은 stderr 와 종료 코드가 말한다.
+    if !rows.is_empty() {
+        println!("=== bench: 단계별 처리 성능 (median of {iters}회, 워밍업 1회) ===");
+        println!("주의: 절대 수치는 측정 머신·빌드 의존. 동일 환경 상대·재현 지표로 해석.");
+        print_table(&rows);
+    }
 
     if let Some(path) = tsv {
-        match write_tsv(&path, &rows) {
-            Ok(()) => println!("\nTSV: {path}"),
-            Err(e) => {
-                eprintln!("TSV 쓰기 실패: {e}");
-                failures += 1;
+        if rows.is_empty() {
+            // 측정 성공 0건이면 산출물을 만들지 않는다(redact 의 "탐지 0건 = 파일
+            // 미생성"과 같은 원칙) — 빈 표를 받은 쪽이 "측정했고 결과가 없다"로 오독한다.
+            eprintln!("TSV 생략: 측정 성공이 0건입니다 - {path}");
+        } else {
+            match write_tsv(&path, &rows) {
+                Ok(()) => println!("\nTSV: {path}"),
+                Err(e) => {
+                    eprintln!("TSV 쓰기 실패: {e}");
+                    failures += 1;
+                }
             }
         }
     }

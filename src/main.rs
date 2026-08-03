@@ -2475,7 +2475,9 @@ fn capabilities_value() -> serde_json::Value {
         "jsonContract": {
             "stdout": "데이터(JSON/NDJSON)만 — 진단·진행·요약은 stderr",
             "schemaPolicy": "필드 추가 허용, 변경·삭제는 schemaVersion 범프",
-            "failure": "단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1",
+            // [#3884 G3] run 의 예외는 설계다(판정을 데이터로 보고) — 적지 않으면
+            // "실패 = stdout 0바이트"를 믿는 소비자가 run 에서 깨진다.
+            "failure": "단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1. 예외: run — 실패도 봉투를 stdout 으로 낸다(입력 오류 exit 1 + error, 계획 무효 exit 2 + invalid[], 단언 실패 exit 3 + verify 저널)",
             // [#3707] 봉투에 담기는 문서 유래 문자열의 유니코드 기만 판정. 이 키가
             // 있으면 바이너리가 검사한다는 뜻이다 — 키가 없으면 '깨끗함'이 아니라
             // '검사하지 않음'으로 읽어야 한다.
@@ -8997,6 +8999,15 @@ fn dump_controls(args: &[String]) -> i32 {
     }
 
     let file_path = &args[0];
+    // [#3884 G2] 첫 인자 자리에 플래그가 오면 "파일을 읽을 수 없습니다 - --json" 같은
+    // 오독 메시지로 새지 않게 사용법 오류로 끊는다.
+    if file_path.starts_with('-') {
+        eprintln!("오류: 알 수 없는 옵션입니다 - {file_path}");
+        eprintln!(
+            "사용법: rhwp dump <파일.hwp|파일.hwpx|파일.hml> [--section <번호>] [--para <번호>]"
+        );
+        return EXIT_USAGE;
+    }
     let mut filter_section: Option<usize> = None;
     let mut filter_para: Option<usize> = None;
 
@@ -9018,6 +9029,15 @@ fn dump_controls(args: &[String]) -> i32 {
                 } else {
                     i += 1;
                 }
+            }
+            // [#3884 G2] 미지 플래그 침묵 무시 금지 — `--json` 을 붙이면 JSON 이 나올
+            // 거라 믿는 소비자에게 사람용 텍스트를 exit 0 으로 돌려주던 구멍이다.
+            other if other.starts_with('-') => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
+                eprintln!(
+                    "사용법: rhwp dump <파일.hwp|파일.hwpx|파일.hml> [--section <번호>] [--para <번호>]"
+                );
+                return EXIT_USAGE;
             }
             _ => {
                 i += 1;
@@ -10534,6 +10554,14 @@ fn extract_data_command(args: &[String]) -> i32 {
 fn diag_document(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("오류: HWP 파일 경로를 지정해주세요.");
+        eprintln!("사용법: rhwp diag <파일.hwp>");
+        return EXIT_USAGE;
+    }
+
+    // [#3884 G2] diag 는 추가 옵션이 없다 — 지금까지는 어떤 플래그를 붙여도(--json 포함)
+    // 조용히 무시하고 exit 0 이라, 옵션이 먹혔다는 착각을 만들었다.
+    if let Some(bad) = args.iter().find(|a| a.starts_with('-')) {
+        eprintln!("오류: 알 수 없는 옵션입니다 - {bad}");
         eprintln!("사용법: rhwp diag <파일.hwp>");
         return EXIT_USAGE;
     }
