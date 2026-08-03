@@ -604,7 +604,7 @@ rhwp edit set-cell 양식.hwpx --table 0 --row 2 --col 1 --text "1,234" -o 작�
 rhwp export-tables 작성본.hwpx --json | jq '.tables[0].cells[] | select(.row==2 and .col==1).text'
 ```
 
-### `edit redact <파일> [--kind …] [--mask <문자>] [--dry-run] [-o <출력>|--in-place]` (#3719 §6-11)
+### `edit redact <파일> [--kind …] [--mask <문자>] [--dry-run] [--no-raw] [-o <출력>|--in-place]` (#3719 §6-11)
 공개 전 개인정보 마스킹 — 주민등록번호·전화번호·이메일·카드번호를 찾아 **자릿수를 유지한 채**
 가린다. 탐지는 읽기 전용 코어(`document_core::queries::pii_scan`)가 하고, 실제 변경은 검증된
 치환 경로(`replace_all_native`)를 재사용하므로 새 편집 로직이 없다. 주소는 `grep` 재사용이라
@@ -614,14 +614,19 @@ rhwp export-tables 작성본.hwpx --json | jq '.tables[0].cells[] | select(.row=
 - `--mask <문자>` — 마스킹 문자 **한 글자**. 영숫자는 거부한다(본문과 구별 불가). 두 글자
   이상이면 자릿수 보존이 깨지므로 조용히 자르지 않고 exit 2.
 - `--dry-run` — **권장 첫 단계**. 파일을 만들지 않고 `findings[]` 만 보고한다.
+- `--no-raw` — `findings[].raw`(원문 개인정보)를 봉투/사람용 출력 양쪽에서 **뺀다**(생략,
+  `null` 아님). `kind`/`masked`/`section`/`paragraph`/`page`/`charOffset` 은 그대로 남으므로
+  위치·건수 검토는 그대로 되고, 로그·이슈에 봉투를 그대로 붙여도 원문이 새지 않는다.
+  기본값은 이전과 동일(`raw` 포함) — 기존 계약을 바꾸지 않는다.
 - `-o, --output <파일>` / `--in-place` — 둘 중 하나가 **반드시** 필요하다(§원본 보호).
 - `--verify` — 저장 직후 IR 자기검증(차이 시 exit 3, #3702)
 - `--json` 봉투:
-  `{"schemaVersion":"1.0","source","kinds","mask","dryRun","inPlace","findingCount",`
-  `"findings":[{"kind","raw","masked","section","paragraph","page","charOffset"}],`
+  `{"schemaVersion":"1.0","source","kinds","mask","dryRun","inPlace","noRaw","findingCount",`
+  `"findings":[{"kind","raw"?,"masked","section","paragraph","page","charOffset"}],`
   `"redactedCount","changedPages","output"?,"outputFormat"?,"verify"?}`
   - `output`/`outputFormat`/`verify` 는 실제 저장했을 때만 실린다 — **탐지 0건이면 출력
     파일을 만들지 않는다**.
+  - `findings[].raw` 는 `--no-raw` 를 주면 필드 자체가 빠진다(`raw"?`).
 
 **탐지 규칙(보수적)** — 마스킹은 되돌릴 수 없고 오탐은 본문을 훼손하므로, 형태가 맞아도
 검증을 통과하지 못하면 **탐지하지 않는다**.
@@ -643,11 +648,13 @@ rhwp export-tables 작성본.hwpx --json | jq '.tables[0].cells[] | select(.row=
 같은 이유로 거부한다. 쓰기는 원자적이라 `--in-place` 도중 실패해도 원본이 잘리지 않는다.
 
 > `findings[].raw` 는 **원문 개인정보 그 자체**다. 감사를 위해 넣었지만 로그·이슈에 그대로
-> 붙이면 유출 경로가 된다.
+> 붙이면 유출 경로가 된다. **로그·이슈에 봉투를 그대로 붙여야 한다면 `--no-raw` 를 써서
+> `raw` 를 애초에 빼라.**
 
 ```bash
 # 권장 흐름: 먼저 무엇이 지워질지 본다 → 확인 후 적용
 rhwp edit redact 계약서.hwp --dry-run --json | jq '.findings[] | {kind, page, masked}'
+rhwp edit redact 계약서.hwp --dry-run --no-raw --json > 검토용.json   # raw 없이 그대로 첨부 가능
 rhwp edit redact 계약서.hwp -o 공개본.hwp --verify --json | jq '{redactedCount, changedPages}'
 rhwp edit redact 계약서.hwp --kind ssn,card -o 공개본.hwp --json   # 종류를 좁힐 수도 있다
 ```

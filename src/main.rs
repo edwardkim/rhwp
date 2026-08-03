@@ -1281,7 +1281,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
         // [#3719 §6-11] 공개 전 정리 — 되돌릴 수 없는 쓰기라 dryRun 이 1차 흐름이다.
         tool_with_optional_args(
             "hwp_redact",
-            "공개 전 개인정보를 찾아 자릿수를 유지한 채 마스킹한다 (주민등록번호·전화·이메일·카드번호). **되돌릴 수 없다** — 먼저 dryRun:true 로 findings[] 를 받아 무엇이 지워질지 확인하고, 실제 적용 시에는 output 을 반드시 지정한다(원본을 덮어쓰려면 inPlace:true). 탐지는 보수적이다: 주민등록번호는 검증 숫자, 카드번호는 Luhn 을 통과해야 하며 전화는 하이픈이 있는 이동전화·서울(02) 번호만 본다 — 오탐이 본문을 훼손하기 때문이다. findings[].raw 는 원문 개인정보이므로 로그에 남기지 않는다.",
+            "공개 전 개인정보를 찾아 자릿수를 유지한 채 마스킹한다 (주민등록번호·전화·이메일·카드번호). **되돌릴 수 없다** — 먼저 dryRun:true 로 findings[] 를 받아 무엇이 지워질지 확인하고, 실제 적용 시에는 output 을 반드시 지정한다(원본을 덮어쓰려면 inPlace:true). 탐지는 보수적이다: 주민등록번호는 검증 숫자, 카드번호는 Luhn 을 통과해야 하며 전화는 하이픈이 있는 이동전화·서울(02) 번호만 본다 — 오탐이 본문을 훼손하기 때문이다. findings[].raw 는 원문 개인정보이므로 로그에 남기지 않는다. **noRaw:true 를 권장한다** — 위치·종류(kind/masked/section/paragraph/page/charOffset)만으로 검토가 끝나면 findings[].raw 자체를 봉투에서 뺄 수 있다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {
@@ -1294,7 +1294,8 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                     "output": { "type": "string", "description": "출력 파일 경로. dryRun 이 아니면 output 또는 inPlace 중 하나가 반드시 필요하다(원본 보호, 없으면 exit 2)" },
                     "inPlace": { "type": "boolean", "description": "true 면 원본을 덮어쓴다 (되돌릴 수 없음)" },
                     "dryRun": { "type": "boolean", "description": "true 면 파일을 쓰지 않고 findings[] 만 보고 — 권장 첫 단계" },
-                    "verify": { "type": "boolean", "description": "저장 직후 IR 자기검증 (차이 시 exit 3)" }
+                    "verify": { "type": "boolean", "description": "저장 직후 IR 자기검증 (차이 시 exit 3)" },
+                    "noRaw": { "type": "boolean", "description": "true 면 findings[] 에서 raw(원문 개인정보) 필드를 아예 뺀다. 로그·이슈에 봉투를 그대로 붙여야 할 때 권장 — kind/masked/section/paragraph/page/charOffset 은 그대로 남는다" }
                 },
                 "required": ["path"],
             }),
@@ -1306,7 +1307,8 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 { "when": "output", "args": ["-o", "{output}"] },
                 { "when": "inPlace", "args": ["--in-place"] },
                 { "when": "dryRun", "args": ["--dry-run"] },
-                { "when": "verify", "args": ["--verify"] }
+                { "when": "verify", "args": ["--verify"] },
+                { "when": "noRaw", "args": ["--no-raw"] }
             ]),
             &[
                 "schemaVersion",
@@ -1941,6 +1943,8 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "--keep-preview",
                 "-o",
                 "--dry-run",
+                // [redact-noraw] --dry-run 봉투의 findings[].raw 유출을 막는 옵션.
+                "--no-raw",
                 // [#3702] 모든 편집 축이 받는 저장 직후 자기검증.
                 "--verify",
                 "--json",
@@ -2760,12 +2764,15 @@ fn print_help() {
     println!("      (쪽 밖으로 나가면 자르지 않고 --json 응답의 overflow 로 알린다)");
     println!();
     println!("      edit 명령 공통: 산출물은 **입력 형식을 보존**한다 (HWPX 입력 → HWPX 산출).");
-    println!("  edit redact <파일.hwp|파일.hwpx> [--kind …] [--dry-run] [-o <출력>|--in-place]");
+    println!(
+        "  edit redact <파일.hwp|파일.hwpx> [--kind …] [--dry-run] [--no-raw] [-o <출력>|--in-place]"
+    );
     println!("      공개 전 개인정보 마스킹 — 주민등록번호·전화·이메일·카드번호");
     println!();
     println!("      --kind <목록>             ssn|phone|email|card|all (쉼표 구분, 기본 all)");
     println!("      --mask <문자>             마스킹 문자 한 글자 (기본 *, 자릿수 보존)");
     println!("      --dry-run                 **권장 첫 단계** — 무엇이 지워질지만 보고");
+    println!("      --no-raw                  findings[].raw(원문 개인정보)를 봉투에서 뺀다");
     println!("      -o, --output <파일>       출력 파일");
     println!("      --in-place                원본을 덮어쓴다 (되돌릴 수 없음)");
     println!("      --verify                  저장 직후 IR 자기검증 (차이 시 exit 3)");
@@ -2777,6 +2784,7 @@ fn print_help() {
         "      전화는 하이픈이 있는 이동전화·서울(02) 번호만 본다 (오탐이 본문을 훼손하므로)."
     );
     println!("      --dry-run 출력에는 원문 개인정보가 그대로 들어간다 — 로그에 남기지 말 것.");
+    println!("      로그·이슈에 봉투를 그대로 붙여야 한다면 --no-raw 를 함께 써서 raw 를 빼라.");
     println!();
     println!("  edit sanitize <파일.hwp|파일.hwpx> [--keep-preview] [-o <출력>] [--json]");
     println!("      문서 메타데이터 제거 — 작성자·제목·최종수정자·작성일·미리보기");
@@ -14407,6 +14415,7 @@ fn edit_redact(args: &[String]) -> i32 {
     let mut json_mode = false;
     let mut verify_mode = false;
     let mut in_place = false;
+    let mut no_raw = false;
 
     let mut i = 0;
     while i < args.len() {
@@ -14467,6 +14476,7 @@ fn edit_redact(args: &[String]) -> i32 {
             "--dry-run" => dry_run = true,
             "--verify" => verify_mode = true,
             "--json" => json_mode = true,
+            "--no-raw" => no_raw = true,
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
                 return EXIT_USAGE;
@@ -14483,7 +14493,7 @@ fn edit_redact(args: &[String]) -> i32 {
 
     let Some(file_path) = file_path else {
         eprintln!(
-            "사용법: rhwp edit redact <파일.hwp|파일.hwpx> [--kind ssn|phone|email|card|all] [--mask <문자>] [--dry-run] [--verify] [-o <출력>|--in-place] [--json]"
+            "사용법: rhwp edit redact <파일.hwp|파일.hwpx> [--kind ssn|phone|email|card|all] [--mask <문자>] [--dry-run] [--no-raw] [--verify] [-o <출력>|--in-place] [--json]"
         );
         return EXIT_USAGE;
     };
@@ -14610,6 +14620,23 @@ fn edit_redact(args: &[String]) -> i32 {
     };
 
     if json_mode {
+        // --no-raw: findings[].raw(원문 개인정보)를 봉투에서 아예 뺀다. `null`로 채우지
+        // 않는 이유 — 이 코드베이스는 "선택적으로 없을 수 있는 필드"를 스키마 차원에서
+        // 생략으로 표현한다(PiiFinding.page 의 skip_serializing_if 가 같은 관례). raw 를
+        // null 로 두면 소비자가 "탐지는 됐지만 값이 비었다"와 "일부러 뺐다"를 구분할
+        // 근거가 없어지고, jq 같은 파이프라인에서 null 이 그대로 로그에 찍혀 새 유출
+        // 경로가 될 수 있다. 필드 자체가 없으면 그 위험이 구조적으로 사라진다.
+        let mut findings_value =
+            serde_json::to_value(&findings).unwrap_or(serde_json::Value::Array(Vec::new()));
+        if no_raw {
+            if let serde_json::Value::Array(items) = &mut findings_value {
+                for item in items.iter_mut() {
+                    if let serde_json::Value::Object(obj) = item {
+                        obj.remove("raw");
+                    }
+                }
+            }
+        }
         let mut envelope = serde_json::json!({
             "schemaVersion": "1.0",
             "source": file_path,
@@ -14617,8 +14644,9 @@ fn edit_redact(args: &[String]) -> i32 {
             "mask": mask_char.to_string(),
             "dryRun": dry_run,
             "inPlace": in_place,
+            "noRaw": no_raw,
             "findingCount": findings.len(),
-            "findings": findings,
+            "findings": findings_value,
             "redactedCount": redacted_count,
             "changedPages": changed_pages,
         });
@@ -14642,10 +14670,17 @@ fn edit_redact(args: &[String]) -> i32 {
             targets.len()
         );
         for f in &findings {
+            // --no-raw 는 --json 뿐 아니라 이 사람용 출력에도 적용한다 — 콘솔 로그·
+            // 터미널 스크롤백도 유출 경로이므로 절반만 가려서는 목적을 달성하지 못한다.
+            let shown_raw: &str = if no_raw {
+                "(생략됨, --no-raw)"
+            } else {
+                &f.raw
+            };
             println!(
                 "  [{}] {} → {} (구역 {}, 문단 {}, 쪽 {})",
                 f.kind,
-                f.raw,
+                shown_raw,
                 f.masked,
                 f.section,
                 f.paragraph,

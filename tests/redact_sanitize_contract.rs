@@ -411,6 +411,87 @@ fn kind_filter_narrows_detection() {
     );
 }
 
+/// **기본값 무회귀** — `--no-raw` 없이는 지금까지처럼 `findings[].raw` 가 그대로 나온다.
+#[test]
+fn default_still_includes_raw() {
+    let Some(doc) = make_pii_document("default_raw.hwp") else {
+        return;
+    };
+    let args = [
+        "edit",
+        "redact",
+        doc.to_str().unwrap(),
+        "--dry-run",
+        "--json",
+    ];
+    let out = run(&args);
+    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
+    let v = json_of(&args, &out);
+    assert_eq!(v["noRaw"], false, "{v}");
+    let findings = v["findings"].as_array().expect("findings");
+    assert!(!findings.is_empty(), "탐지 0건이면 이 가드는 공허하다: {v}");
+    for f in findings {
+        assert!(
+            f.get("raw").and_then(|r| r.as_str()).is_some(),
+            "기본값에서 raw 가 사라졌습니다(기존 계약 위반): {f}"
+        );
+    }
+}
+
+/// `--no-raw` — `findings[].raw` 필드 자체가 **생략**된다(`null` 이 아니다). 위치·종류
+/// 정보(kind/masked/section/paragraph/page/charOffset)는 그대로 남아야 위치 검토가 된다.
+#[test]
+fn no_raw_omits_the_field_without_changing_other_fields() {
+    let Some(doc) = make_pii_document("no_raw.hwp") else {
+        return;
+    };
+    let args = [
+        "edit",
+        "redact",
+        doc.to_str().unwrap(),
+        "--dry-run",
+        "--no-raw",
+        "--json",
+    ];
+    let out = run(&args);
+    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
+    let v = json_of(&args, &out);
+    assert_eq!(v["noRaw"], true, "{v}");
+    let findings = v["findings"].as_array().expect("findings");
+    assert!(!findings.is_empty(), "탐지 0건이면 이 가드는 공허하다: {v}");
+    for f in findings {
+        let obj = f.as_object().expect("finding 은 object");
+        assert!(
+            !obj.contains_key("raw"),
+            "--no-raw 인데 raw 필드가 남아 있습니다(생략이 아니라 null 이거나 그대로임): {f}"
+        );
+        for field in ["kind", "masked", "section", "paragraph", "charOffset"] {
+            assert!(
+                obj.contains_key(field),
+                "--no-raw 가 다른 필드까지 지웠습니다({field}): {f}"
+            );
+        }
+    }
+
+    // 사람용 출력(비-json)도 원문을 감춰야 한다 — 콘솔 로그도 유출 경로다.
+    let args = [
+        "edit",
+        "redact",
+        doc.to_str().unwrap(),
+        "--dry-run",
+        "--no-raw",
+    ];
+    let out = run(&args);
+    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    for real in [VALID_SSN, VALID_CARD, "010-1234-5678", "hong@example.com"] {
+        assert!(
+            !stdout.contains(real),
+            "--no-raw 인데 사람용 출력에 원문이 남았습니다({real}): {stdout}"
+        );
+    }
+}
+
 /// `sanitize` 는 메타데이터만 지우고 **본문 텍스트를 바꾸지 않는다**.
 #[test]
 fn sanitize_removes_metadata_without_touching_the_body() {
