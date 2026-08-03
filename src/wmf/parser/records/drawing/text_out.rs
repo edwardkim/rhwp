@@ -57,7 +57,18 @@ impl META_TEXTOUT {
         let (string_length, string_length_bytes) = crate::wmf::parser::read_i16_from_le_bytes(buf)?;
         record_size.consume(string_length_bytes);
 
-        let string_len = string_length + (string_length % 2);
+        // `string_length` 는 i16 라 손상된 WMF 가 음수를 담을 수 있다. 음수를
+        // `as usize` 로 넓히면 usize::MAX 근처가 되어 `read_variable`(내부
+        // `vec![0u8; len]`)가 capacity overflow 로 패닉한다(-1 → 18446744073709551615).
+        // #3875 가 POLYLINE/POLYGON 에 넣은 가드와 같은 클래스다.
+        if string_length < 0 {
+            return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
+                cause: format!("The string_length field `{string_length}` must not be negative"),
+            });
+        }
+        // usize 로 넓힌 뒤 홀수 보정을 더한다 — i16 에서 `32767 + 1` 은 오버플로라
+        // (debug 패닉 / release wrap→음수→huge) 넓힌 뒤 더해야 안전하다.
+        let string_len = string_length as usize + (string_length as usize % 2);
 
         let ((string, string_bytes), (y_start, y_start_bytes), (x_start, x_start_bytes)) = (
             crate::wmf::parser::read_variable(buf, string_len as usize)?,
