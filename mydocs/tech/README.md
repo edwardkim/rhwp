@@ -32,6 +32,7 @@ last_verified: 2026-07-19
 | 에이전트 보안 — 문서가 에이전트를 조종하는 경로 | [에이전트 보안 문서 지도](agent_security/README.md) | [위협 모델](agent_security/threat_model.md), [공격 표면](agent_security/attack_surface.md), [소비 에이전트 가이드](agent_security/consumer_guide.md), 로드맵 #3793·구현 #3787 |
 | 신뢰할 수 없는 문서에 대한 경계 | [에이전트 경계 무결성 계약 — 경로·교정단서·자원한계·핸들](agent_boundary_contract.md) | 회귀 `tests/boundary_integrity_contract.rs`, 처리 결과 [task_sec_boundary](../report/task_sec_boundary/README.md) |
 | 외부 바인딩 공통 기반(M18~M20) | [IR 스키마 버저닝·표면 판단·파이썬 1호 명세](bindings_foundation.md) | 로드맵 #3608 M18~M20, [에이전트 표면 플레이북](../manual/agent_surface_playbook.md) |
+| WASM/브라우저 에이전트 표면(M24) | [WASM 에이전트 표면 문서 지도](wasm_agent_surface/README.md) | [WASM capabilities 자기서술](wasm_agent_surface/self_description.md), [브라우저 MCP-유사 브리지](wasm_agent_surface/browser_bridge.md), [설치 0 온보딩](wasm_agent_surface/zero_install_onboarding.md), 로드맵 #3608 M24·#3869 |
 | 이슈별 기술 조사 | [이슈별 기술 조사 지도](investigations/README.md) | [Issue #511 IR wrap 조사](investigations/issue-511/README.md), [Issue #1151 picture TAC 조사](investigations/issue-1151/README.md), [Issue #1584 이후 HWPX 잔여 IR 차이 조사](investigations/issue-1584/README.md), [Issue #1658 페이지네이션 조사](investigations/issue-1658/README.md), [Issue #1772 잔여 OVER 조사](investigations/issue-1772/README.md), [Issue #2125 font ownership 조사](investigations/issue-2125/README.md) |
 
 ## 현재 구조를 읽는 법
