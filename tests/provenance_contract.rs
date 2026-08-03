@@ -236,6 +236,14 @@ const CALLER_ECHO: &[(&str, &str)] = &[
     ("output", "호출자가 지정한 산출 경로"),
     ("outputDir", "호출자가 지정한 산출 폴더"),
     ("assetsDir", "호출자가 지정한 자산 폴더"),
+    // 전체 경로 항목 — 잎(leaf)으로 등재하면 같은 잎을 가진 문서 파생 경로
+    // (예: fields[].name — 문서에서 읽은 누름틀 이름)까지 면제돼 가드가 약해진다.
+    (
+        "filled[].name",
+        "fill-fields --data 의 키 반향 — 채움이 성공한 이름은 문서 누름틀 이름과 \
+         같아질 수밖에 없지만, 봉투에 실리는 문자열 자체는 호출자가 준 것이다 \
+         (src/provenance.rs edit 항목 note 의 기존 판정과 동일)",
+    ),
     (
         "path",
         "매니페스트의 산출 파일 경로 — 입력 파일이름에서 조합된다",
@@ -249,6 +257,11 @@ const CALLER_ECHO: &[(&str, &str)] = &[
 ];
 
 fn is_caller_echo(path: &str) -> bool {
+    // 전체 경로 일치 우선 — filled[].name 처럼 특정 자리만 반향인 경우를 잎 등재로
+    // 넓히지 않기 위해서다.
+    if CALLER_ECHO.iter().any(|(k, _)| *k == path) {
+        return true;
+    }
     let leaf = path.rsplit('.').next().unwrap_or(path);
     let leaf = leaf.trim_end_matches("[]");
     CALLER_ECHO.iter().any(|(k, _)| *k == leaf)
@@ -387,6 +400,47 @@ fn recipes() -> Vec<Recipe> {
         .expect("table-to-csv 기준선 CSV")
         .to_string();
     std::fs::write(&table_csv_path, table_csv).expect("CSV 기준선 쓰기");
+
+    // [#3885] redact 스윕용 가짜 개인정보 문서 — 저장소에 PII 샘플을 두지 않는다
+    // (tests/redact_sanitize_contract.rs 와 같은 fill-fields 주입 방식). 값은 전부
+    // 가공이다: 검증 숫자(mod 11)를 통과하는 실재 인물 무관 주민번호, 하이픈 형태
+    // 전화번호. 이 값들이 본문에 들어가야 오라클이 findings[].raw 를 잡는다.
+    let pii = PathBuf::from(out("prov-pii.hwp"));
+    let _ = std::fs::remove_file(&pii);
+    let pii_args = vec![
+        s("edit"),
+        s("fill-fields"),
+        p(&field),
+        s("--data"),
+        s(r#"{"작성자":"홍길동 900101-1234568","전화번호":"010-1234-5678"}"#),
+        s("-o"),
+        p(&pii),
+        s("--json"),
+    ];
+    let pii_fill = run(&pii_args);
+    assert_eq!(
+        pii_fill.status.code(),
+        Some(0),
+        "PII 픽스처를 만들지 못했습니다:\n{}",
+        describe(&pii_args, &pii_fill)
+    );
+
+    // insert-image 레시피용 그림 — 아무 실물 이미지면 된다.
+    let stamp = sample("samples/s1.jpg");
+
+    // [#3880 T1] recordFields 전수 대조용 픽스처 — 선언 필드가 "그 필드를 내는
+    // 호출"에서만 나오는 경우, 그 호출을 스윕에 실제로 넣는다(허용목록 대신).
+    let bad_plan = serde_json::json!({
+        "planVersion": "1.0",
+        "input": p(&field),
+        "output": out("prov-run-bad.hwp"),
+        "steps": [ { "action": "fill_fields", "data": { "prov없는필드": "x" } } ],
+    })
+    .to_string();
+    let fill_rows_path = PathBuf::from(out("prov-fill-rows.jsonl"));
+    std::fs::write(&fill_rows_path, "{\"작성자\":\"홍길동 제안\"}\n").expect("fill rows 쓰기");
+    let fill_out_dir = dir.join("prov-fill-out");
+    let _ = std::fs::create_dir_all(&fill_out_dir);
 
     vec![
         Recipe {
@@ -531,6 +585,192 @@ fn recipes() -> Vec<Recipe> {
             stdin: None,
             exit: 0,
             ndjson: false,
+        },
+        // [#3885] edit 는 하위 명령마다 봉투가 다르다 — set-cell 하나로 "edit 를
+        // 덮었다"고 치면 redact 의 findings[].raw(개인정보 원문) 같은 가장 민감한
+        // 경로가 스윕 밖에 남는다. 문서 파생 값을 싣는 하위 명령을 각각 돌린다.
+        Recipe {
+            command: "edit",
+            doc: Some(pii.clone()),
+            args: vec![s("edit"), s("redact"), p(&pii), s("--dry-run"), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "edit",
+            doc: Some(pii.clone()),
+            args: vec![
+                s("edit"),
+                s("sanitize"),
+                p(&pii),
+                s("-o"),
+                out("prov-sanitized.hwp"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        // 문서 유래 문자열이 없는 edit 봉투(insert-image)도 표지 존재 검사는 받는다.
+        Recipe {
+            command: "edit",
+            doc: Some(field.clone()),
+            args: vec![
+                s("edit"),
+                s("insert-image"),
+                p(&field),
+                s("--image"),
+                p(&stamp),
+                s("--dry-run"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        // ── [#3880 T1] recordFields 전수 대조 보강 — 선언 필드를 실제로 내는 호출들 ──
+        Recipe {
+            // digest --sections: 선언 필드 sections(절 단위 청크)는 이 플래그에서만 나온다.
+            command: "digest",
+            doc: Some(main.clone()),
+            args: vec![s("digest"), s("--json"), s("--sections"), p(&main)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // inspect 는 축이 셋이다 — unicode 하나로 "덮었다" 치면 hidden-text 의
+            // hiddenText·hiddenCharCount, injection 의 injectionSignals 등이 사각에 남는다.
+            command: "inspect",
+            doc: Some(main.clone()),
+            args: vec![s("inspect"), s("hidden-text"), p(&main), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "inspect",
+            doc: Some(field.clone()),
+            args: vec![s("inspect"), s("injection"), p(&field), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // run 무효 계획 — invalid[] 는 실패 봉투에만 실린다(exit 2). 실패 봉투도
+            // 표지 존재 검사를 받게 하는 부수 효과가 있다.
+            command: "run",
+            doc: Some(field.clone()),
+            args: vec![s("run"), s("--plan-json"), bad_plan, s("--json")],
+            stdin: None,
+            exit: 2,
+            ndjson: false,
+        },
+        Recipe {
+            // table-to-csv -o: output·outputFormat 은 파일 산출에서만 나온다.
+            command: "table-to-csv",
+            doc: Some(table.clone()),
+            args: vec![
+                s("table-to-csv"),
+                p(&table),
+                s("--table"),
+                s("0"),
+                s("-o"),
+                out("prov-t2c.csv"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // csv-to-table 실적용 + --verify: output·outputFormat·verify.
+            command: "csv-to-table",
+            doc: Some(table.clone()),
+            args: vec![
+                s("csv-to-table"),
+                p(&table),
+                s("--csv"),
+                p(&table_csv_path),
+                s("--table"),
+                s("0"),
+                s("-o"),
+                out("prov-c2t.hwp"),
+                s("--verify"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // edit fill-fields --verify: filled·filledCount·notFound·verify.
+            command: "edit",
+            doc: Some(field.clone()),
+            args: vec![
+                s("edit"),
+                s("fill-fields"),
+                p(&field),
+                s("--data"),
+                s(r#"{"회사명":"티일 주식회사"}"#),
+                s("-o"),
+                out("prov-fill.hwp"),
+                s("--verify"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // edit replace-text: replacedCount.
+            command: "edit",
+            doc: Some(pii.clone()),
+            args: vec![
+                s("edit"),
+                s("replace-text"),
+                p(&pii),
+                s("--find"),
+                s("홍길동"),
+                s("--replace"),
+                s("김샘플"),
+                s("-o"),
+                out("prov-repl.hwp"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // batch 오류 레코드 — error·exitClass 는 파일 단위 실패 레코드에만 실린다.
+            // jsonContract: "batch 는 error 레코드 + 최종 exit 1".
+            command: "batch",
+            doc: None,
+            args: vec![s("batch"), s("info"), s("--json")],
+            stdin: Some(s("prov-no-such-file-3885.hwp\n")),
+            exit: 1,
+            ndjson: true,
+        },
+        Recipe {
+            // batch fill — row·output·filledCount·notFound 는 메일머지 행 봉투에만.
+            command: "batch",
+            doc: Some(field.clone()),
+            args: vec![
+                s("batch"),
+                s("fill"),
+                s("--form"),
+                p(&field),
+                s("--data"),
+                p(&fill_rows_path),
+                s("--out-dir"),
+                p(&fill_out_dir),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: true,
         },
         Recipe {
             command: "run",
@@ -716,10 +956,16 @@ static SWEEP: OnceLock<Sweep> = OnceLock::new();
 fn sweep() -> &'static Sweep {
     SWEEP.get_or_init(|| {
         let recipes = recipes();
-        let mut envelopes = BTreeMap::new();
+        let mut envelopes: BTreeMap<&'static str, Vec<Value>> = BTreeMap::new();
         let mut oracles: BTreeMap<PathBuf, DocOracle> = BTreeMap::new();
         for r in &recipes {
-            envelopes.insert(r.command, run_recipe(r));
+            // [#3885] insert 는 같은 명령의 앞 레시피 봉투를 덮어쓴다 — edit 처럼
+            // 하위 명령이 여럿인 축은 레시피도 여럿이라, 누적하지 않으면 마지막
+            // 하위 명령만 검사되고 나머지는 조용히 빠진다(redact 가 그렇게 빠졌다).
+            envelopes
+                .entry(r.command)
+                .or_default()
+                .extend(run_recipe(r));
             if let Some(doc) = &r.doc {
                 if !oracles.contains_key(doc) {
                     oracles.insert(doc.clone(), oracle(doc));
@@ -894,6 +1140,15 @@ fn every_text_bearing_command_declares_untrusted_fields() {
         let declared_roots: BTreeSet<&str> = declared.iter().map(|p| root_of(p)).collect();
 
         for env in envelopes_of(r.command) {
+            // [#3885] 표지 존재는 오라클 매치와 무관한 모든 봉투의 의무다. 종전에는
+            // 문서 문자열이 "발견된" 봉투만 검사해서, 표지 키 자체가 없는 봉투는
+            // 어느 단언에도 걸리지 않고 빠져나갔다 — redact 가 정확히 그 구멍이었다.
+            if env.get("untrustedContent").is_none() || env.get("untrustedFields").is_none() {
+                failures.push(format!(
+                    "  - {}: 봉투에 출처 표지(untrustedContent/untrustedFields)가 없습니다",
+                    r.command
+                ));
+            }
             let mut found = BTreeSet::new();
             scan(env, "", or, &mut found);
             if found.is_empty() {
@@ -1135,4 +1390,156 @@ fn schema_version_stays_1_0_because_the_flag_is_additive() {
         }
     }
     assert_eq!(provenance_map()["schemaVersion"], "1.0");
+}
+
+/// [#3885] 스윕 면제는 "문서 오라클을 만들 수 없다"는 뜻이지 "표지를 안 실어도
+/// 된다"가 아니다 — 종전에는 면제 명령의 봉투를 아무 가드도 열어 보지 않아, 스키마
+/// 봉투 2종(export-ir-schema·export-capabilities-schema)이 표지 없이 나가는 것을
+/// 아무도 몰랐다. 면제 명령마다 실제 호출로 표지 존재를 고정하고, 호출표 완전성을
+/// SWEEP_EXEMPT 와 기계로 대조한다 — 새 면제가 표지 검사까지 조용히 면제받는
+/// 드리프트를 막는다.
+#[test]
+fn sweep_exempt_envelopes_still_carry_provenance_marks() {
+    let dir = tmp_dir();
+    let ingest = dir.join("prov-exempt-ingest.json");
+    std::fs::write(&ingest, r#"{"version":"1","questions":[]}"#).expect("ingest 픽스처");
+    let ingest_out = dir.join("prov-exempt-ingest.hwpx");
+
+    let invocations: BTreeMap<&str, Vec<String>> = [
+        ("export-ir-schema", vec![s("export-ir-schema"), s("--json")]),
+        (
+            "export-capabilities-schema",
+            vec![s("export-capabilities-schema"), s("--json")],
+        ),
+        (
+            "export-agent-manifest",
+            vec![s("export-agent-manifest"), s("--json")],
+        ),
+        // [#3808 선등재] 아직 devel 에 없는 명령 — 표는 SWEEP_EXEMPT 기준으로만
+        // 순회하므로 초과 항목은 미사용으로 잠들어 있다가, #3808 이 그 명령을
+        // 면제 목록에 넣는 순간 자동으로 검사에 편입된다(어느 쪽이 먼저 머지돼도
+        // 후속 수정 없음 — 3-PR 누적 머지에서 이 항목 유무로 실측 확인).
+        (
+            "export-plan-schema",
+            vec![s("export-plan-schema"), s("--json")],
+        ),
+        (
+            "build-from-ingest",
+            vec![
+                s("build-from-ingest"),
+                ingest.to_str().expect("경로").to_string(),
+                s("-o"),
+                ingest_out.to_str().expect("경로").to_string(),
+                s("--json"),
+            ],
+        ),
+    ]
+    .into_iter()
+    .collect();
+
+    for (name, _why) in SWEEP_EXEMPT {
+        let args = invocations.get(name).unwrap_or_else(|| {
+            panic!(
+                "SWEEP_EXEMPT 의 {name} 이 표지 존재 검사 호출표에 없습니다 — \
+                 이 테스트의 invocations 에 호출 방법을 더하세요"
+            )
+        });
+        let out = run(args);
+        assert_eq!(
+            out.status.code(),
+            Some(0),
+            "{name} 호출 실패:\n{}",
+            describe(args, &out)
+        );
+        let env: Value = serde_json::from_slice(&out.stdout)
+            .unwrap_or_else(|e| panic!("{name} stdout 이 JSON 이 아닙니다({e})"));
+        assert!(
+            env.get("untrustedContent").is_some() && env.get("untrustedFields").is_some(),
+            "{name} 봉투에 출처 표지(untrustedContent/untrustedFields)가 없습니다"
+        );
+        // 면제 = 문서를 열지 않는 명령이므로 값도 false/빈 배열이어야 한다.
+        assert_eq!(
+            env["untrustedContent"],
+            Value::Bool(false),
+            "{name}: 문서를 열지 않는데 untrustedContent 가 false 가 아닙니다"
+        );
+    }
+}
+
+/// [#3880 T1] 선언한 `recordFields` 가 실물 봉투에 실제로 나타난다 — 스윕 전수.
+///
+/// `info` 의 `warnings` 부재(T1, #3882 로 수정)가 통과했던 구멍이 이것이다:
+/// 자기서술이 필드를 광고하는데 **아무 가드도 실물과 대조하지 않았다.** 스윕이
+/// 이미 전 `--json` 명령을 유효 인자로 실행하므로, 명령별 봉투 최상위 키 합집합과
+/// 선언을 대조한다. 중첩 경로(`steps[].confusable` 류)는 최상위 대조 대상이
+/// 아니다 — 바인딩 파리티 테스트(bindings/python/tests/test_envelope_parity.py)와
+/// 같은 기준이며, 그쪽은 대표 4개 명령만 본다(이쪽이 전수다).
+///
+/// 조건부 필드는 **사유와 함께** CONDITIONAL_RECORD_FIELDS 에 적는다 — 사유 없는
+/// 허용목록은 가드를 무력화한다. 가능하면 허용 대신 레시피가 그 필드를 실제로
+/// 나오게 하는 쪽을 택한다(예: sanitize 레시피가 `-o` 로 저장해 `output` 을 낸다).
+const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
+    // (명령, 필드, 스윕 레시피가 그 필드를 못 내는 사유)
+];
+
+#[test]
+fn declared_record_fields_actually_appear_in_envelopes() {
+    let cap = capabilities();
+    let sweep = sweep();
+
+    let mut observed: BTreeMap<&str, BTreeSet<String>> = BTreeMap::new();
+    for r in &sweep.recipes {
+        let keys = observed.entry(r.command).or_default();
+        for env in envelopes_of(r.command) {
+            if let Some(o) = env.as_object() {
+                keys.extend(o.keys().cloned());
+            }
+        }
+    }
+
+    let empty = Vec::new();
+    let mut problems: Vec<String> = Vec::new();
+    for c in cap["commands"].as_array().expect("commands") {
+        if c["json"] != Value::Bool(true) {
+            continue;
+        }
+        let name = c["name"].as_str().expect("name");
+        // 스윕 밖(면제) 명령의 봉투는 sweep_exempt_envelopes_still_carry_provenance_marks
+        // 가 따로 연다 — 여기서는 스윕이 실행해 본 명령만 대조한다.
+        let Some(keys) = observed.get(name) else {
+            continue;
+        };
+        for field in c["recordFields"].as_array().unwrap_or(&empty) {
+            let Some(field) = field.as_str() else {
+                continue;
+            };
+            if field.contains('[') || field.contains('.') {
+                continue;
+            }
+            if keys.contains(field) {
+                continue;
+            }
+            if let Some((_, _, why)) = CONDITIONAL_RECORD_FIELDS
+                .iter()
+                .find(|(cmd, f, _)| *cmd == name && *f == field)
+            {
+                assert!(
+                    !why.trim().is_empty(),
+                    "{name}.{field} 허용 사유가 비었습니다"
+                );
+                continue;
+            }
+            problems.push(format!(
+                "  - {name}: 선언한 '{field}' 가 스윕 봉투 어디에도 없습니다 (실물 키: {keys:?})"
+            ));
+        }
+    }
+    assert!(
+        problems.is_empty(),
+        "자기서술이 광고하는 필드가 실물에 없는 것 {}건:\n{}\n\n\
+         capabilities 선언을 실물에 맞추거나, 레시피가 그 필드를 실제로 내게 하거나, \
+         조건부라면 CONDITIONAL_RECORD_FIELDS 에 사유와 함께 적으세요.",
+        problems.len(),
+        problems.join("\n"),
+    );
 }
