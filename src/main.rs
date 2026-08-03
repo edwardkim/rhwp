@@ -853,21 +853,31 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "verify",
             ],
         ),
-        tool(
+        tool_with_optional_args(
             "hwp_search",
             "문서에서 검색어를 찾아 구역·문단·페이지·문자 오프셋 주소와 문맥을 돌려준다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {
                     "path": { "type": "string", "description": "HWP/HWPX 문서 경로" },
-                    "query": { "type": "string", "minLength": 1, "description": "검색어" }
+                    "query": { "type": "string", "minLength": 1, "description": "검색어" },
+                    "context": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "매치가 속한 문단의 앞뒤 N개 문단 텍스트를 matches[].contextBefore/contextAfter 로 함께 받는다. 생략하면 종전과 동일(문맥 없음)"
+                    }
                 },
                 "required": ["path", "query"],
             }),
             "search",
-            // `--` 뒤는 전부 위치 인자다 — 그래서 `--json` 은 구분자 **앞**에
-            // 와야 한다. 뒤에 두면 세 번째 위치 인자가 되어 "인자가 너무 많습니다" 다.
+            // `--` 뒤는 전부 위치 인자다 — 그래서 `--json`(과 `--context`)은 구분자
+            // **앞**에 와야 한다. 뒤에 두면 세 번째 위치 인자가 되어 "인자가 너무
+            // 많습니다" 다. `{query}` 는 이 배선의 마지막 원소여야 한다 —
+            // optionalArgs 는 이 "--" 앞에 삽입된다(run_cli_tool 참고).
             serde_json::json!(["search", "{path}", "--json", "--", "{query}"]),
+            serde_json::json!([
+                { "when": "context", "args": ["--context", "{context}"] }
+            ]),
             &[
                 "source",
                 "query",
@@ -1774,7 +1784,13 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             "query",
             "문서 검색 결과를 구역·문단·페이지·문자 오프셋 주소와 함께 출력",
             false,
-            &["--json", "--ignore-case", "--limit", "--max-matches"],
+            &[
+                "--json",
+                "--ignore-case",
+                "--limit",
+                "--max-matches",
+                "--context",
+            ],
             &[
                 "schemaVersion",
                 "source",
@@ -9828,6 +9844,7 @@ fn search_document(args: &[String]) -> i32 {
     let mut json_mode = false;
     let mut ignore_case = false;
     let mut limit: Option<usize> = None;
+    let mut context: Option<usize> = None;
 
     // POSIX 옵션 종결자. 검색어가 '-' 로 시작하면 종전에는 플래그로 먹혔다 —
     // `-i` 는 대소문자 축을 **조용히** 뒤집고(리터럴 "-i" 를 찾으려던 호출이 다음
@@ -9851,6 +9868,19 @@ fn search_document(args: &[String]) -> i32 {
                     Some(n) if n >= 1 => limit = Some(n),
                     _ => {
                         eprintln!("오류: {flag} 뒤에 1 이상의 정수가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            // [#3835] 매치 앞뒤 문단을 함께 보고 싶은 에이전트용 — 매치가 속한 문단의
+            // 앞뒤 N개 문단 텍스트를 matches[].contextBefore/contextAfter 로 얹는다.
+            // 기본(플래그 없음)은 종전과 완전히 동일하다.
+            "--context" if !end_of_options => {
+                i += 1;
+                match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
+                    Some(n) if n >= 1 => context = Some(n),
+                    _ => {
+                        eprintln!("오류: --context 뒤에 1 이상의 정수가 필요합니다.");
                         return EXIT_USAGE;
                     }
                 }
@@ -9882,7 +9912,8 @@ fn search_document(args: &[String]) -> i32 {
 
     let (Some(file_path), Some(query)) = (file_path, query) else {
         eprintln!(
-            "사용법: rhwp search <파일.hwp|파일.hwpx> <검색어> [--json] [--ignore-case] [--max-matches <N>]"
+            "사용법: rhwp search <파일.hwp|파일.hwpx> <검색어> [--json] [--ignore-case] \
+             [--max-matches <N>] [--context <N>]"
         );
         return EXIT_USAGE;
     };
@@ -9905,7 +9936,7 @@ fn search_document(args: &[String]) -> i32 {
     // [#3353] 총량을 보고하려면 전수 스캔이 불가피하다 — `--limit` 의 목적은 스캔 시간이
     // 아니라 출력 컨텍스트 절약이므로, 전수 grep 후 표시만 절단한다. 절단 사실을 숨기면
     // 에이전트가 "정확히 N건"과 "N건만 표시(실제 그 이상)"를 구별할 수 없다.
-    let all_matches = doc.grep(query, !ignore_case, None);
+    let all_matches = doc.grep_with_context(query, !ignore_case, None, context);
     let total_match_count = all_matches.len();
     let matches: Vec<_> = match limit {
         Some(n) => all_matches.into_iter().take(n).collect(),

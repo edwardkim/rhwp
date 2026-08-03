@@ -1493,7 +1493,16 @@ fn run_cli_tool(def: &serde_json::Value, args: &serde_json::Value) -> serde_json
                 ));
             };
             match substitute_args(template, args) {
-                Ok(extra) => cli_args.extend(extra),
+                // [#3835] `cli.args` 에 POSIX `--` 옵션 종결자가 있으면(예: hwp_search 의
+                // `{query}` 앞) 선택 인자를 그 **앞**에 끼워 넣는다. 뒤에 붙이면 이미
+                // 닫힌 옵션 파싱 구간(위치 인자만 허용)에 플래그가 섞여 "인자가 너무
+                // 많습니다" 가 된다. `--` 가 없는 배선은 종전처럼 끝에 붙인다.
+                Ok(extra) => match cli_args.iter().position(|a| a == "--") {
+                    Some(dash_pos) => {
+                        cli_args.splice(dash_pos..dash_pos, extra);
+                    }
+                    None => cli_args.extend(extra),
+                },
                 Err(e) => return tool_error(e),
             }
         }

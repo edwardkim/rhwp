@@ -15,6 +15,7 @@ use serde::Serialize;
 
 use crate::document_core::DocumentCore;
 use crate::model::control::Control;
+use crate::model::paragraph::Paragraph;
 use crate::renderer::pagination::PageItem;
 
 /// 검색 매치 하나.
@@ -46,6 +47,13 @@ pub struct GrepMatch {
     /// `cell`/`textbox` 좌표와 함께 제공된다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub equation: Option<EquationRef>,
+    /// `--context N` 을 준 경우 매치가 속한 문단 **앞** N개 문단의 텍스트
+    /// (문서/셀/글상자 경계 밖으로는 나가지 않는다 — 있는 만큼만 준다).
+    #[serde(rename = "contextBefore", skip_serializing_if = "Option::is_none")]
+    pub context_before: Option<Vec<String>>,
+    /// `--context N` 을 준 경우 매치가 속한 문단 **뒤** N개 문단의 텍스트.
+    #[serde(rename = "contextAfter", skip_serializing_if = "Option::is_none")]
+    pub context_after: Option<Vec<String>>,
 }
 
 /// 표 셀 매치의 좌표.
@@ -90,6 +98,23 @@ fn make_context(text: &str, offset: usize, length: usize) -> String {
         out.push('…');
     }
     out
+}
+
+/// 매치가 속한 문단을 담은 `paragraphs` 슬라이스에서 `idx` 앞뒤 `n`개 문단의
+/// 텍스트를 뽑는다. 경계(첫/마지막 문단)에서는 있는 만큼만 준다 — 범위 밖으로
+/// 나가지 않는다.
+fn context_window(paragraphs: &[Paragraph], idx: usize, n: usize) -> (Vec<String>, Vec<String>) {
+    let start = idx.saturating_sub(n);
+    let before = paragraphs[start..idx]
+        .iter()
+        .map(|p| p.text.clone())
+        .collect();
+    let end = (idx + 1 + n).min(paragraphs.len());
+    let after = paragraphs[idx + 1..end]
+        .iter()
+        .map(|p| p.text.clone())
+        .collect();
+    (before, after)
 }
 
 impl DocumentCore {
@@ -181,7 +206,23 @@ impl DocumentCore {
     ///
     /// 본문·표 셀·글상자를 순회한다(`search_all` 과 같은 범위). `limit` 이 `Some` 이면
     /// 그 개수에서 멈춘다 — 대형 문서에서 컨텍스트를 아끼기 위한 상한이다.
+    ///
+    /// 기존 계약과 완전히 동일한 얇은 래퍼다(`context: None`) — `grep_with_context` 로
+    /// 위임한다.
     pub fn grep(&self, query: &str, case_sensitive: bool, limit: Option<usize>) -> Vec<GrepMatch> {
+        self.grep_with_context(query, case_sensitive, limit, None)
+    }
+
+    /// `grep` 과 같지만 `context` 가 `Some(n)` 이면 매치가 속한 문단의 앞뒤 `n`개
+    /// 문단 텍스트를 `contextBefore`/`contextAfter` 로 함께 돌려준다(표 셀·글상자
+    /// 매치는 그 컨테이너 안에서, 본문 매치는 구역 문단 목록 안에서 앞뒤를 센다).
+    pub fn grep_with_context(
+        &self,
+        query: &str,
+        case_sensitive: bool,
+        limit: Option<usize>,
+        context: Option<usize>,
+    ) -> Vec<GrepMatch> {
         if query.is_empty() {
             return Vec::new();
         }
@@ -200,7 +241,9 @@ impl DocumentCore {
                      offset: usize,
                      cell: Option<CellRef>,
                      textbox: Option<TextBoxRef>,
-                     equation: Option<EquationRef>| GrepMatch {
+                     equation: Option<EquationRef>,
+                     context_before: Option<Vec<String>>,
+                     context_after: Option<Vec<String>>| GrepMatch {
                         section: sec_idx,
                         paragraph: para_idx,
                         page,
@@ -211,13 +254,32 @@ impl DocumentCore {
                         cell,
                         textbox,
                         equation,
+                        context_before,
+                        context_after,
                     };
+                // 본문 문단 기준 컨텍스트 — 구역 문단 목록 안에서 앞뒤를 센다.
+                let (body_ctx_before, body_ctx_after) = match context {
+                    Some(n) => {
+                        let (b, a) = context_window(&section.paragraphs, para_idx, n);
+                        (Some(b), Some(a))
+                    }
+                    None => (None, None),
+                };
                 let make = |text: &str,
                             offset: usize,
                             cell: Option<CellRef>,
                             textbox: Option<TextBoxRef>,
                             equation: Option<EquationRef>| {
-                    make_at(page, text, offset, cell, textbox, equation)
+                    make_at(
+                        page,
+                        text,
+                        offset,
+                        cell,
+                        textbox,
+                        equation,
+                        body_ctx_before.clone(),
+                        body_ctx_after.clone(),
+                    )
                 };
                 // [#3403] 분할 표 셀은 호스트 문단의 첫 쪽이 아니라 그 행이 실제로 렌더되는
                 // 쪽을 쓴다. 행 범위를 못 찾으면 종전 문단 쪽으로 물러선다.
@@ -245,6 +307,16 @@ impl DocumentCore {
                         Control::Table(table) => {
                             for (cell_idx, cell) in table.cells.iter().enumerate() {
                                 for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
+                                    // 셀 안의 매치는 구역 문단이 아니라 그 셀의 문단
+                                    // 목록 안에서 앞뒤를 센다.
+                                    let (cell_ctx_before, cell_ctx_after) = match context {
+                                        Some(n) => {
+                                            let (b, a) =
+                                                context_window(&cell.paragraphs, cp_idx, n);
+                                            (Some(b), Some(a))
+                                        }
+                                        None => (None, None),
+                                    };
                                     for offset in super::search_query::find_matches(
                                         &cp.text,
                                         query,
@@ -261,6 +333,8 @@ impl DocumentCore {
                                             }),
                                             None,
                                             None,
+                                            cell_ctx_before.clone(),
+                                            cell_ctx_after.clone(),
                                         ));
                                         if limit.is_some_and(|n| out.len() >= n) {
                                             return out;
@@ -288,6 +362,8 @@ impl DocumentCore {
                                                     Some(EquationRef {
                                                         control: equation_idx,
                                                     }),
+                                                    cell_ctx_before.clone(),
+                                                    cell_ctx_after.clone(),
                                                 ));
                                                 if limit.is_some_and(|n| out.len() >= n) {
                                                     return out;
@@ -303,12 +379,22 @@ impl DocumentCore {
                                 crate::document_core::helpers::get_textbox_from_shape(shape)
                             {
                                 for (tp_idx, tp) in tb.paragraphs.iter().enumerate() {
+                                    // 글상자 안의 매치는 글상자 문단 목록 안에서 앞뒤를
+                                    // 센다(본문 문단 목록이 아니다).
+                                    let (tb_ctx_before, tb_ctx_after) = match context {
+                                        Some(n) => {
+                                            let (b, a) = context_window(&tb.paragraphs, tp_idx, n);
+                                            (Some(b), Some(a))
+                                        }
+                                        None => (None, None),
+                                    };
                                     for offset in super::search_query::find_matches(
                                         &tp.text,
                                         query,
                                         case_sensitive,
                                     ) {
-                                        out.push(make(
+                                        out.push(make_at(
+                                            page,
                                             &tp.text,
                                             offset,
                                             None,
@@ -317,6 +403,8 @@ impl DocumentCore {
                                                 paragraph: tp_idx,
                                             }),
                                             None,
+                                            tb_ctx_before.clone(),
+                                            tb_ctx_after.clone(),
                                         ));
                                         if limit.is_some_and(|n| out.len() >= n) {
                                             return out;
@@ -331,7 +419,8 @@ impl DocumentCore {
                                                 query,
                                                 case_sensitive,
                                             ) {
-                                                out.push(make(
+                                                out.push(make_at(
+                                                    page,
                                                     &equation.script,
                                                     offset,
                                                     None,
@@ -342,6 +431,8 @@ impl DocumentCore {
                                                     Some(EquationRef {
                                                         control: equation_idx,
                                                     }),
+                                                    tb_ctx_before.clone(),
+                                                    tb_ctx_after.clone(),
                                                 ));
                                                 if limit.is_some_and(|n| out.len() >= n) {
                                                     return out;
