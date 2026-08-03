@@ -27,20 +27,9 @@ use rhwp::serializer::hwpx::roundtrip::{diff_documents, strip_cross_format_noise
 ///
 /// 고치면 여기서 지운다. 새로 추가할 때는 반드시 근거를 함께 적는다.
 const EXPECTED_FAILURES: &[(&str, &str)] = &[
-    (
-        "2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
-        "표 flowWithText 가 false→true 로 뒤집힘 20건 (#3505). rhwp 렌더 영향은 0으로 \
-         확인(쪽수·텍스트·SVG 괘선 좌표 동일), 한글 해석은 오라클 필요",
-    ),
-    (
-        "2025 행정업무운영 편람(최종).hwpx",
-        "같은 flowWithText 축 12건 (#3505)",
-    ),
-    (
-        "issue1853_caption_precedes_body_split.hwpx",
-        "같은 flowWithText 축 1건 (#3505)",
-    ),
-    ("hwpx_sample2.hwpx", "같은 flowWithText 축 1건 (#3505)"),
+    // #3505 로 등재했던 `flowWithText` 축 4건은 #3834 수정으로 전부 통과한다 — 래칫을
+    // 네 칸 조였다. 뒤집힘의 근인은 HWPX→HWP5 어댑터가 공통 속성 bit 13 을 무조건 OR 한
+    // 것이었고, 한글 2022 는 같은 변환에서 원본 `0` 을 그대로 둔다(실측 13문서 표 84개).
     // issue1891_external_bindata_link.hwpx 는 #3528 수정으로 통과한다 — 래칫을 한 칸 조였다.
 ];
 

@@ -1927,12 +1927,17 @@ fn materialize_table_record_row_sizes(table: &mut Table, report: &mut AdapterRep
 }
 
 fn materialize_table_ctrl_header_attr(table: &mut Table, report: &mut AdapterReport) {
-    const HWPX_TABLE_FLOW_WITH_TEXT_BIT: u32 = 0x0000_2000;
     const HWPX_TABLE_NUMBERING_BIT: u32 = 0x0800_0000;
     const HWP5_TABLE_CAPTION_COMMON_ATTR_BIT: u32 = 0x2000_0000;
 
     let before = table.common.attr;
-    let mut attr = pack_common_attr_bits(&table.common) | HWPX_TABLE_FLOW_WITH_TEXT_BIT;
+    // [#3834] 자리차지 비트(bit 13)는 `pack_common_attr_bits` 가 IR 에서 만든다. 종전
+    // 무조건 OR 은 원본 `flowWithText="0"` 를 파괴했다 — HWPX 는 이 속성을 항상 명시
+    // 하므로(코퍼스 119문서 표 560개, 누락 0) 파서 기본값을 메울 필요가 없다. 한글
+    // 2022 도 같은 변환에서 `0` 을 그대로 둔다 — HWPX 를 열어 HWP 로 저장한 실측에서
+    // 13문서 표 84개 전부 보존, 정규화 0건(`tools/hangul_flowwithtext_oracle.py`).
+    // #2697 의 표 번호 비트 무조건 OR 과 같은 계열이다.
+    let mut attr = pack_common_attr_bits(&table.common);
     // [#2697] 파서(materialize_hwpx_table_attrs)와 동일 게이트: "표 번호" 비트는
     // numberingType 이 실제로 TABLE 일 때만 세운다. 종전 무조건 OR 은 numberingType=
     // "PICTURE"/"NONE" 표를 HWP5 저장 시 표 번호 범주로 되돌려, 파서가 #2697 에서
@@ -2483,6 +2488,9 @@ mod tests {
                 width: 47697,
                 height: 3525,
                 z_order: 26,
+                // [#3834] 계약값 bit 13 은 IR 의 이 필드에서 나온다. 원본 한컴 표가 자리차지
+                // 이므로 픽스처도 켠다 — 종전에는 어댑터가 무조건 OR 해 IR 과 무관했다.
+                flow_with_text: true,
                 // HWPX 파서는 표 기본 numberingType 을 TABLE 로 채운다 (section.rs).
                 numbering_type: crate::model::shape::ObjectNumberingType::Table,
                 ..Default::default()
@@ -2597,6 +2605,8 @@ mod tests {
                 width: 47152,
                 height: 14976,
                 z_order: 6,
+                // [#3834] 계약값 bit 13 의 출처 — 위 표와 같다.
+                flow_with_text: true,
                 // HWPX 파서는 표 기본 numberingType 을 TABLE 로 채운다 (section.rs).
                 numbering_type: crate::model::shape::ObjectNumberingType::Table,
                 ..Default::default()
