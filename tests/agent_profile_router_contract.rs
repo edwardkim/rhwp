@@ -252,3 +252,64 @@ fn capabilities_declares_the_session_tools_it_actually_serves() {
     assert_eq!(v["profile"]["session"], false, "{v}");
     assert!(v["profile"]["sessionTools"].is_null(), "{v}");
 }
+
+/// [agent-profile-audit] 전수 감사 회귀 가드 — 새 무상태 도구를 추가하면서 어느 직무
+/// 프로필에도 등재하지 않는 실수(hwp_insert_image 가 그랬듯)를 CI 에서 잡는다.
+///
+/// `개발통합` 은 `tools: &[]`(필터 없음)이라 항상 전 도구를 "포함"하므로 이 검사에서는
+/// 뺀다 — 그렇지 않으면 이 테스트가 절대 실패할 수 없어 가드 역할을 못 한다. 대신 특정
+/// 직무 프로필 6개의 합집합이 전 도구를 덮는지 본다.
+#[test]
+fn every_stateless_tool_belongs_to_some_specific_profile() {
+    let all = run(&["capabilities", "--mcp"]);
+    let av: serde_json::Value = serde_json::from_slice(&all.stdout).expect("mcp JSON");
+    let all_names: Vec<String> = av["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|t| t["name"].as_str().map(String::from))
+        .collect();
+    assert!(!all_names.is_empty(), "{av}");
+
+    let specific_profiles = [
+        "경영보고",
+        "행정서식",
+        "데이터분석",
+        "콘텐츠제작",
+        "아카이브검색",
+        "품질검증",
+    ];
+    let mut covered: std::collections::HashSet<String> = std::collections::HashSet::new();
+    for profile in specific_profiles {
+        let out = run(&["capabilities", "--mcp", "--profile", profile]);
+        assert_eq!(out.status.code(), Some(0), "{profile}");
+        let v: serde_json::Value = serde_json::from_slice(&out.stdout).expect("mcp JSON");
+        for t in v["tools"].as_array().unwrap() {
+            if let Some(n) = t["name"].as_str() {
+                covered.insert(n.to_string());
+            }
+        }
+    }
+
+    // [#3762/#3776/#3787] 자기서술(문서 IR·capabilities·출처지도) 스키마 도구 — 업무를
+    // 수행하는 직무가 아니라 외부 바인딩·코드 생성기 저자를 위한 개발자 도구이므로
+    // 의도적으로 `개발통합`(필터 없음)에만 있고 특정 업무 프로필에는 없다.
+    let meta_only_by_design: std::collections::HashSet<&str> = [
+        "hwp_export_ir_schema",
+        "hwp_export_capabilities_schema",
+        "hwp_export_provenance_map",
+    ]
+    .into_iter()
+    .collect();
+
+    let missing: Vec<&String> = all_names
+        .iter()
+        .filter(|n| !meta_only_by_design.contains(n.as_str()) && !covered.contains(n.as_str()))
+        .collect();
+    assert!(
+        missing.is_empty(),
+        "다음 무상태 도구가 어느 업무 프로필에도 없습니다(개발통합 필터-없음 예외로만 접근 \
+         가능) — agent_profiles.rs 의 해당 프로필 tools 목록에 추가하거나, 의도적 예외라면 \
+         meta_only_by_design 에 사유와 함께 넣으세요: {missing:?}"
+    );
+}
