@@ -25,7 +25,7 @@ use crate::model::ColorRef;
 
 use super::canonical_defaults::FONTFACE_LANG_NAMES;
 use super::context::SerializeContext;
-use super::utils::{empty_tag, end_tag, start_tag_attrs, write_xml_decl};
+use super::utils::{empty_tag, end_tag, start_tag_attrs, text, write_xml_decl};
 use super::SerializeError;
 
 /// `header.xml` 바이트 생성. Stage 1 진입점.
@@ -997,23 +997,30 @@ fn write_numbering<W: Write>(
         let num_format = numbering_format_str(h.number_format);
         let text_offset_s = h.text_distance.to_string();
         let char_pr_id_ref_s = h.char_shape_id.to_string();
-        empty_tag(
-            w,
-            "hh:paraHead",
-            &[
-                ("start", &start_s),
-                ("level", &level_s),
-                ("align", "LEFT"),
-                ("useInstWidth", "1"),
-                ("autoIndent", "1"),
-                ("widthAdjust", &wa),
-                ("textOffsetType", "PERCENT"),
-                ("textOffset", &text_offset_s),
-                ("numFormat", num_format),
-                ("charPrIDRef", &char_pr_id_ref_s),
-                ("checkable", "0"),
-            ],
-        )?;
+        let attrs = [
+            ("start", start_s.as_str()),
+            ("level", level_s.as_str()),
+            ("align", "LEFT"),
+            ("useInstWidth", "1"),
+            ("autoIndent", "1"),
+            ("widthAdjust", wa.as_str()),
+            ("textOffsetType", "PERCENT"),
+            ("textOffset", text_offset_s.as_str()),
+            ("numFormat", num_format),
+            ("charPrIDRef", char_pr_id_ref_s.as_str()),
+            ("checkable", "0"),
+        ];
+        // [#3838] 번호 형식 문자열은 `hh:paraHead` 의 **텍스트 내용**이다("^1." 등).
+        // 자기닫힘으로 내보내면 형식이 사라져 문단 번호가 아예 렌더되지 않는다.
+        // 한컴 원본 실측: paraHead 232개 중 172개가 내용을 갖는다.
+        let format_str = n.level_formats.get(idx).map(String::as_str).unwrap_or("");
+        if format_str.is_empty() {
+            empty_tag(w, "hh:paraHead", &attrs)?;
+        } else {
+            start_tag_attrs(w, "hh:paraHead", &attrs)?;
+            text(w, format_str)?;
+            end_tag(w, "hh:paraHead")?;
+        }
     }
     end_tag(w, "hh:numbering")?;
     Ok(())
@@ -2387,6 +2394,36 @@ mod tests {
 
         assert_eq!(xml.matches("<hh:paraHead").count(), 10);
         assert!(xml.starts_with(r#"<hh:numbering id="1" start="0">"#));
+    }
+
+    #[test]
+    fn write_numbering_skeleton_emits_level_format_string_as_text() {
+        // [#3838] 번호 형식 문자열("^1." 등)은 `hh:paraHead` 의 **텍스트 내용**이다.
+        // 폴백이 자기닫힘 태그로 속성만 내보내면 형식이 사라져 문단 번호가 아예
+        // 렌더되지 않는다 — IR diff 는 0 이라 `--verify` 게이트가 못 잡는다.
+        //
+        // 한컴 원본 실측(HWPX 40건): paraHead 232개 중 172개가 내용을 갖는다.
+        let mut n = Numbering::default();
+        n.level_formats[0] = "^1.".to_string();
+        n.level_formats[1] = "(^2)".to_string();
+
+        let mut writer = Writer::new(Vec::new());
+        write_numbering(&mut writer, 0, &n).unwrap();
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(">^1.</hh:paraHead>"),
+            "level 1 형식 문자열이 텍스트 내용으로 나가야 한다: {xml}"
+        );
+        assert!(
+            xml.contains(">(^2)</hh:paraHead>"),
+            "level 2 형식 문자열이 텍스트 내용으로 나가야 한다: {xml}"
+        );
+        // 형식이 빈 수준은 종전대로 자기닫힘 — 빈 내용을 만들지 않는다.
+        assert!(
+            xml.contains("checkable=\"0\"/>"),
+            "형식이 없는 수준은 자기닫힘을 유지해야 한다: {xml}"
+        );
     }
 
     #[test]
