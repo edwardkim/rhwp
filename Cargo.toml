@@ -37,7 +37,7 @@ hmac = "0.12"
 pbkdf2 = "0.12"
 getrandom = { version = "0.3", features = ["wasm_js"] }
 sha1 = "0.10"
-sha2 = "0.10"
+sha2 = "0.11"
 blake3 = "1"
 zip = { version = "8.5", default-features = false, features = ["deflate"] }
 quick-xml = "0.41"
