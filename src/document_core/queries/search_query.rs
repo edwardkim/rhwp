@@ -250,6 +250,7 @@ impl DocumentCore {
         from_char: usize,
         forward: bool,
         case_sensitive: bool,
+        include_cells: bool,
     ) -> Result<String, HwpError> {
         if query.is_empty() {
             return Ok(r#"{"found":false}"#.to_string());
@@ -260,11 +261,23 @@ impl DocumentCore {
             return Ok(r#"{"found":false}"#.to_string());
         }
 
-        // 본문 결과만 필터 (셀/글상자 내부 제외 — 커서 이동 불가)
-        let body_hits: Vec<&SearchHit> = all_hits
-            .iter()
-            .filter(|h| h.cell_context.is_none() && h.equation_control.is_none())
-            .collect();
+        // [#3865] 표 셀 안에만 있는 단어가 "결과 없음"으로 나오던 원인이 이 필터였다.
+        // 종전 주석의 사유는 "커서 이동 불가"였지만, 그 뒤 편집기가 셀 좌표를 다루게 되어
+        // (getCursorRectInCell·DocumentPosition 의 cellIndex 계열) 더는 성립하지 않는다.
+        // 다만 셀 히트를 받으면 호출자가 셀 좌표로 이동할 수 있어야 하므로, 옵트인으로 연다 —
+        // 기본값은 종전 동작 그대로라 기존 호출자는 무회귀다.
+        //
+        // 셀 히트의 sec·para 는 표가 놓인 **바깥 문단** 좌표이고, 셀 안 위치는 cellContext
+        // (parentPara·ctrlIdx·cellIdx·cellPara)로 따로 실린다. 그래서 아래 전/후 판정은
+        // 셀 히트에서도 그대로 성립한다(표가 놓인 문단 기준으로 정렬된다).
+        let body_hits: Vec<&SearchHit> = if include_cells {
+            all_hits.iter().collect()
+        } else {
+            all_hits
+                .iter()
+                .filter(|h| h.cell_context.is_none() && h.equation_control.is_none())
+                .collect()
+        };
         if body_hits.is_empty() {
             return Ok(r#"{"found":false}"#.to_string());
         }

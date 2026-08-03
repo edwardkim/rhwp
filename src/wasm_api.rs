@@ -4842,6 +4842,10 @@ impl HwpDocument {
     // ── 검색/치환 API ──
 
     /// 문서 텍스트 검색
+    ///
+    /// [#3865] `include_cells` 를 참으로 주면 표 셀·글상자 안의 매치도 돌려준다. 그 경우
+    /// 결과에 `cellContext`(parentPara·ctrlIdx·cellIdx·cellPara)가 실리므로, 호출자는
+    /// 그 좌표로 커서를 옮길 수 있어야 한다. 생략하면 종전대로 본문만 본다.
     #[wasm_bindgen(js_name = searchText)]
     pub fn search_text(
         &self,
@@ -4851,6 +4855,7 @@ impl HwpDocument {
         from_char: u32,
         forward: bool,
         case_sensitive: bool,
+        include_cells: Option<bool>,
     ) -> Result<String, JsValue> {
         self.core
             .search_text_native(
@@ -4860,6 +4865,8 @@ impl HwpDocument {
                 from_char as usize,
                 forward,
                 case_sensitive,
+                // [#3865] 미지정이면 종전 동작(본문만) — 인자를 6개만 넘기던 기존 호출자 무회귀.
+                include_cells.unwrap_or(false),
             )
             .map_err(|e| e.into())
     }

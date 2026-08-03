@@ -263,6 +263,9 @@ export class FindDialog {
       fromChar,
       forward,
       this.caseSensitiveCheck.checked,
+      // [#3865] 표 셀 안 텍스트도 찾는다. 아래 navigateToHit 이 cellContext 를 셀 좌표로
+      // 옮길 수 있으므로 켤 수 있다 — 못 옮기면 "찾았다는데 화면은 안 움직임"이 된다.
+      true,
     );
 
     if (result.found) {
@@ -285,22 +288,39 @@ export class FindDialog {
     const ih = this.services.getInputHandler();
     if (!ih || !hit.found) return;
 
-    // 검색 결과 위치로 커서 이동
-    const startPos = {
-      sectionIndex: hit.sec!,
-      paragraphIndex: hit.para!,
-      charOffset: hit.charOffset!,
-    };
-    const endPos = {
-      sectionIndex: hit.sec!,
-      paragraphIndex: hit.para!,
-      charOffset: hit.charOffset! + hit.length!,
-    };
+    // 검색 결과 위치로 커서 이동.
+    // [#3865] 표 셀 매치는 cellContext 로 셀 안 문단을 지목한다. 이때 paragraphIndex 는
+    // 표가 놓인 바깥 문단이고, 실제 캐럿 위치는 cellIndex 계열 필드가 정한다.
+    const cell = hit.cellContext;
+    const startPos = cell
+      ? {
+          sectionIndex: hit.sec!,
+          paragraphIndex: cell.parentPara,
+          charOffset: hit.charOffset!,
+          parentParaIndex: cell.parentPara,
+          controlIndex: cell.ctrlIdx,
+          cellIndex: cell.cellIdx,
+          cellParaIndex: cell.cellPara,
+        }
+      : {
+          sectionIndex: hit.sec!,
+          paragraphIndex: hit.para!,
+          charOffset: hit.charOffset!,
+        };
+    const endPos = { ...startPos, charOffset: hit.charOffset! + hit.length! };
 
     // 선택 영역으로 하이라이트: anchor → start, cursor → end
-    ih.moveCursorTo(startPos);
-    // setAnchor + moveTo로 선택 범위 지정
     const cursor = (ih as any).cursor;
+    if (cell) {
+      // moveCursorTo 의 사전 검증은 본문 좌표만 본다(getCursorRect). 셀 위치를 넘기면
+      // 바깥 문단을 검사해 엉뚱하게 거절될 수 있으므로, 셀 매치는 커서를 직접 옮긴다 —
+      // rhwpDev.goto 가 이미 쓰는 경로다.
+      cursor?.clearSelection();
+      cursor?.moveTo(startPos);
+    } else {
+      ih.moveCursorTo(startPos);
+    }
+    // setAnchor + moveTo로 선택 범위 지정
     if (cursor) {
       cursor.setAnchor();
       cursor.moveTo(endPos);
@@ -321,19 +341,33 @@ export class FindDialog {
     // 텍스트 치환도 undo 대상 — 편집 라우터의 snapshot 명령으로 기록한다
     // (#1320 계약, pasteImage/objectProps 와 동일 패턴). services 미주입
     // 환경에서만 직접 적용 fallback.
+    //
+    // [#3865] 표 셀 매치는 반드시 셀 전용 경로로 바꿔야 한다. replaceText 는 본문 좌표만
+    // 받으므로 셀 히트의 (sec, para) 를 그대로 넘기면 **표가 놓인 바깥 문단**을 고치게 되어
+    // 엉뚱한 곳이 손상된다. 찾기가 셀 매치를 반환하기 시작했으니 여기도 함께 갈라야 한다.
+    const cell = hit.cellContext;
+    const applyReplace = (wasm: typeof this.services.wasm): ReplaceResult => {
+      if (cell) {
+        const r = wasm.replaceTextInCellDeferredPagination(
+          hit.sec!, cell.parentPara, cell.ctrlIdx, cell.cellIdx, cell.cellPara,
+          hit.charOffset!, hit.length!, newText,
+        );
+        return { ok: r.ok };
+      }
+      return wasm.replaceText(
+        hit.sec!, hit.para!, hit.charOffset!, hit.length!, newText,
+      );
+    };
+
     let result: ReplaceResult = { ok: false };
     const ih = this.services.getInputHandler();
     if (ih) {
       ih.executeOperation({ kind: 'snapshot', operationType: 'replaceText', operation: (wasm) => {
-        result = wasm.replaceText(
-          hit.sec!, hit.para!, hit.charOffset!, hit.length!, newText,
-        );
+        result = applyReplace(wasm);
         return ih.getCursorPosition();
       }});
     } else {
-      result = this.services.wasm.replaceText(
-        hit.sec!, hit.para!, hit.charOffset!, hit.length!, newText,
-      );
+      result = applyReplace(this.services.wasm);
       this.services.eventBus.emit('document-changed');
     }
 

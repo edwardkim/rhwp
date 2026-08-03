@@ -2935,9 +2935,14 @@ export class WasmBridge {
 
   // ── 검색/치환 API ──
 
-  searchText(query: string, fromSec: number, fromPara: number, fromChar: number, forward: boolean, caseSensitive: boolean): import('./types').SearchResult {
+  /**
+   * [#3865] includeCells 를 켜면 표 셀·글상자 안의 매치도 돌려준다. 그 결과에는
+   * cellContext 가 실리므로 호출자는 셀 좌표로 커서를 옮길 수 있어야 한다.
+   * 기본값은 종전대로 본문만 — 셀 이동을 못 하는 호출자가 무회귀로 남는다.
+   */
+  searchText(query: string, fromSec: number, fromPara: number, fromChar: number, forward: boolean, caseSensitive: boolean, includeCells: boolean = false): import('./types').SearchResult {
     if (!this.doc || typeof (this.doc as any).searchText !== 'function') return { found: false };
-    return JSON.parse((this.doc as any).searchText(query, fromSec, fromPara, fromChar, forward, caseSensitive));
+    return JSON.parse((this.doc as any).searchText(query, fromSec, fromPara, fromChar, forward, caseSensitive, includeCells));
   }
 
   searchAllText(query: string, caseSensitive: boolean, includeCells: boolean = false): import('./types').SearchHit[] {
