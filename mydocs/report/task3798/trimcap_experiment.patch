@@ -1,0 +1,100 @@
+diff --git a/src/renderer/typeset.rs b/src/renderer/typeset.rs
+index 53f172f2d..20e7f38ee 100644
+--- a/src/renderer/typeset.rs
++++ b/src/renderer/typeset.rs
+@@ -900,16 +900,49 @@ fn take_strict_plain_text_fit_after_empty_host_float_once(
+     true
+ }
+ 
++/// 쪽 끝 문단이 본문 하단 밖으로 흘려도 되는 폭 [#3798].
++///
++/// 쪽 마지막 문단의 적합 판정은 말미 줄간격을 뺀 높이(`height_for_fit`)로 한다
++/// [Task #359]. 한글도 쪽 하단을 조금 넘겨 채우므로 방향은 맞지만, 트림에 한도가
++/// 없어 rhwp 는 말미 줄간격 **전량**(실측 최대 33.7px)을 흘려보낸다. 그래서
++/// 한글이 다음 쪽으로 넘긴 문단을 현재 쪽에 얹는다.
++///
++/// 한도는 92셋 통제셋이 허용하는 가장 조인 값이다 — 5.0 에서 통제셋 1건이 깨지고
++/// 5.5 이상은 92/92 로 평탄하다. 이득은 한도가 작을수록 매끄럽게 커진다
++/// (PI 해소 12/13/7 @ 8/6/12px). #2137 의 TAC 개체 40px 스필 한도와 같은 관용구다.
++const PAGE_END_SPILL_LIMIT_PX: f64 = 6.0;
++
++/// 쪽 끝 문단의 적합 판정 높이.
++///
++/// 한도는 **한 줄 문단에만** 건다. 한 줄 문단은 선택이 이분법(이 쪽이냐 다음 쪽이냐)
++/// 이라 스필 폭이 곧 답이다. 여러 줄 문단에서 적합 높이는 **어디서 쪼갤지**를 정하는
++/// 다른 질문이고, 거기에 한도를 걸면 통째로 넘어갈 문단을 줄 단위로 쪼개 쪽을 늘린다
++/// (`2022년 국립국어원 업무계획.hwp` pi=39: 두 줄 63.7px 이 4·5쪽으로 갈려 35→36쪽).
+ fn paragraph_page_end_fit_height(
+     total_height: f64,
+     height_for_fit: f64,
+     require_full_advance: bool,
++    single_line: bool,
++    text_only: bool,
+ ) -> f64 {
+     if require_full_advance {
+-        total_height.max(height_for_fit)
+-    } else {
+-        height_for_fit
++        return total_height.max(height_for_fit);
+     }
++    if !single_line {
++        return height_for_fit;
++    }
++    // 글월만 있는 문단에만 건다. 빈 문단은 넘치는 것이 잉크가 아니라 간격뿐이고,
++    // 개체를 담은 문단의 말미 간격은 개체 높이가 부풀린 값이라 스필 폭으로 읽으면 안
++    // 된다(148719004: 빈 문단 pi=173 과 그림 문단 pi=348/713/714 의 말미 간격이
++    // 52~88px — 한도를 걸면 넷 다 밀려 54->55쪽).
++    if !text_only {
++        return height_for_fit;
++    }
++    let limit = std::env::var("RHWP_EXP_TRIMCAP")
++        .ok()
++        .and_then(|v| v.parse::<f64>().ok())
++        .unwrap_or(PAGE_END_SPILL_LIMIT_PX);
++    total_height.min(height_for_fit.max(total_height - limit))
+ }
+ 
+ fn para_line_spacing_px(para: &Paragraph, dpi: f64) -> f64 {
+@@ -12592,6 +12625,8 @@ impl TypesetEngine {
+             fmt.total_height,
+             fmt.height_for_fit,
+             omit_untrusted_empty || strict_after_empty_host_float,
++            fmt.line_heights.len() == 1,
++            para.controls.is_empty() && para.text.chars().any(|c| c > '\u{001F}'),
+         );
+         if forced_page_break_line.is_none()
+             && (st.current_height + page_end_fit_height <= available
+@@ -18841,8 +18876,31 @@ mod tests {
+             &plain,
+         ));
+ 
+-        assert_eq!(paragraph_page_end_fit_height(21.3, 13.3, false), 13.3);
+-        assert_eq!(paragraph_page_end_fit_height(21.3, 13.3, true), 21.3);
++        // [#3798] 한 줄 문단은 말미 줄간격 트림에 한도가 있다 — 8.0px 를 빼려 해도 6.0 까지다.
++        let capped = paragraph_page_end_fit_height(21.3, 13.3, false, true, true);
++        assert!(
++            (capped - (21.3 - PAGE_END_SPILL_LIMIT_PX)).abs() < 1e-9,
++            "트림 한도가 걸리지 않았다 (적합높이 {capped})"
++        );
++        // 한도 안쪽 트림은 그대로 산다.
++        assert_eq!(
++            paragraph_page_end_fit_height(21.3, 17.3, false, true, true),
++            17.3
++        );
++        // 빈 문단·개체 문단은 한도 밖 — 말미 간격이 스필 폭을 뜻하지 않는다.
++        assert_eq!(
++            paragraph_page_end_fit_height(21.3, 13.3, false, true, false),
++            13.3
++        );
++        // 여러 줄 문단은 종전대로 — 여기 한도를 걸면 쪼갤 자리가 밀려 쪽이 는다.
++        assert_eq!(
++            paragraph_page_end_fit_height(21.3, 13.3, false, false, true),
++            13.3
++        );
++        assert_eq!(
++            paragraph_page_end_fit_height(21.3, 13.3, true, false, true),
++            21.3
++        );
+     }
+ 
+     fn issue2439_cut_paragraph(line_count: usize, line_height: i32) -> Paragraph {
