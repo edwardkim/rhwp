@@ -265,6 +265,23 @@ pub const MAP: &[CommandProvenance] = &[
                 "화면상 같아 보이는 **문서의 다른 누름틀 이름들** (#3707)",
             ),
             f("oldText", "set-cell 이 덮어쓰기 전 셀에 있던 문서 텍스트"),
+            // [#3885] redact — 마스킹 전 원문. 개인정보 그 자체이므로 이 경로의 값은
+            // 로그·이슈에 옮기지 않는다(--no-raw 면 봉투에 없어 표지에서도 빠진다).
+            f(
+                "findings[].raw",
+                "redact 가 탐지한 개인정보 **원문** — 문서 본문에서 그대로 뽑은 값",
+            ),
+            // 마스킹 결과도 문서 파생이다 — 영숫자는 가려지지만 하이픈·@·점 같은
+            // 구조 문자와 길이가 원문에서 온다. 보수적으로 선언한다(과대 선언이 안전).
+            f(
+                "findings[].masked",
+                "redact 마스킹 결과 — 구조 문자·자릿수가 문서 원문에서 유래",
+            ),
+            f(
+                "removed[].before",
+                "sanitize 가 지운 문서 속성 원문 — 제목·작성자·키워드, 그리고 \
+                 preview.text 는 본문 첫 화면 발췌",
+            ),
         ],
         note: "find·replace·filled[].name 은 호출자가 준 문자열이고, \
                replacedCount·changedPages·verify 는 엔진 판정값이다.",

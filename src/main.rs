@@ -13496,9 +13496,13 @@ fn cmd_export_ir_schema(args: &[String]) -> i32 {
     }
 
     let payload = if bare {
+        // --bare 는 JSON Schema 검증기에 그대로 먹이는 본문이다 — 봉투 표지를 섞지 않는다.
         rhwp::ir_schema::ir_schema()
     } else {
-        rhwp::ir_schema::envelope()
+        // [#3885] "표지는 항상 실린다" — 문서를 열지 않는 명령의 봉투도
+        // untrustedContent:false 를 명시한다. 키 부재는 "안전"이 아니라
+        // "이 빌드는 표지를 모른다"로 읽히기 때문이다.
+        provenance::marked(rhwp::ir_schema::envelope(), "export-ir-schema")
     };
     let text = match serde_json::to_string_pretty(&payload) {
         Ok(t) => t,
@@ -13517,12 +13521,15 @@ fn cmd_export_ir_schema(args: &[String]) -> i32 {
             // 파일로 뺐어도 stdout 은 기계 계약을 유지한다 — 어디에 썼는지 알려준다.
             println!(
                 "{}",
-                serde_json::json!({
-                    "schemaVersion": "1.0",
-                    "irSchemaVersion": rhwp::ir_schema::IR_SCHEMA_VERSION,
-                    "output": path,
-                    "bytes": text.len(),
-                })
+                provenance::marked(
+                    serde_json::json!({
+                        "schemaVersion": "1.0",
+                        "irSchemaVersion": rhwp::ir_schema::IR_SCHEMA_VERSION,
+                        "output": path,
+                        "bytes": text.len(),
+                    }),
+                    "export-ir-schema"
+                )
             );
         } else {
             println!("IR 스키마 저장: {} ({} bytes)", path, text.len());
@@ -13563,9 +13570,14 @@ fn cmd_export_capabilities_schema(args: &[String]) -> i32 {
     }
 
     let payload = if bare {
+        // --bare 는 JSON Schema 검증기에 그대로 먹이는 본문이다 — 봉투 표지를 섞지 않는다.
         rhwp::capabilities_schema::capabilities_schema()
     } else {
-        rhwp::capabilities_schema::envelope()
+        // [#3885] export-ir-schema 와 같은 사유 — 문서를 열지 않아도 표지는 싣는다.
+        provenance::marked(
+            rhwp::capabilities_schema::envelope(),
+            "export-capabilities-schema",
+        )
     };
     let text = match serde_json::to_string_pretty(&payload) {
         Ok(t) => t,
@@ -13583,13 +13595,16 @@ fn cmd_export_capabilities_schema(args: &[String]) -> i32 {
         if json_mode {
             println!(
                 "{}",
-                serde_json::json!({
-                    "schemaVersion": "1.0",
-                    "capabilitiesSchemaVersion":
-                        rhwp::capabilities_schema::CAPABILITIES_SCHEMA_VERSION,
-                    "output": path,
-                    "bytes": text.len(),
-                })
+                provenance::marked(
+                    serde_json::json!({
+                        "schemaVersion": "1.0",
+                        "capabilitiesSchemaVersion":
+                            rhwp::capabilities_schema::CAPABILITIES_SCHEMA_VERSION,
+                        "output": path,
+                        "bytes": text.len(),
+                    }),
+                    "export-capabilities-schema"
+                )
             );
         } else {
             println!("capabilities 스키마 저장: {} ({} bytes)", path, text.len());
@@ -15130,7 +15145,11 @@ fn edit_redact(args: &[String]) -> i32 {
             envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
             envelope["verify"] = verify_report.clone();
         }
-        println!("{envelope}");
+        // [#3885] findings[].raw 는 마스킹 전 원문 — 개인정보 그 자체다. 가장 민감한
+        // 값을 싣는 봉투가 출처 표지 없이 나가면 S1 계약("표지는 항상 실린다")이
+        // 정확히 그 지점에서 무너진다. --no-raw 면 raw 경로가 봉투에 없으므로
+        // 표지도 masked 만 선언한다(실재 경로 필터).
+        println!("{}", provenance::marked(envelope, "edit"));
         if verify_failed {
             process::exit(3);
         }
@@ -15587,7 +15606,9 @@ fn edit_sanitize(args: &[String]) -> i32 {
             "output": output_path,
             "outputFormat": out_format.label(),
         });
-        println!("{envelope}");
+        // [#3885] removed[].before 는 지워진 문서 속성 원문이다 — 제목·작성자에
+        // 더해 preview.text 는 본문 첫 화면 발췌라 문서 문장이 통째로 실린다.
+        println!("{}", provenance::marked(envelope, "edit"));
         return EXIT_OK;
     }
 
@@ -16584,7 +16605,10 @@ fn edit_insert_image(args: &[String]) -> i32 {
             envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
             envelope["verify"] = verify_report.clone();
         }
-        println!("{envelope}");
+        // [#3885] 이 봉투의 값은 전부 호출자 인자·엔진 판정이라 문서 유래 경로가
+        // 없지만, 표지 자체는 항상 싣는다 — 키 부재는 "안전"이 아니라 "판정 안 함"
+        // 으로 읽어야 하기 때문이다(S1).
+        println!("{}", provenance::marked(envelope, "edit"));
         if verify_failed {
             process::exit(3);
         }

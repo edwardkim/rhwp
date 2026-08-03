@@ -719,3 +719,79 @@ fn capabilities_and_mcp_declare_both_commands() {
         assert!(help.contains(line), "--help 에 '{line}' 이 없습니다");
     }
 }
+
+/// [#3885] 봉투 출처 표지 — `findings[].raw` 는 문서에서 그대로 나온 개인정보라
+/// untrusted 로 표지돼야 하고, `--no-raw` 면 그 경로가 봉투에 없으니 표지에서도
+/// 빠져야 한다(실재 경로 필터). 표지가 없으면 가장 민감한 값을 실은 봉투가
+/// "출처 판정 안 함"으로 나간다 — S1 계약이 정확히 그 지점에서 무너진다.
+#[test]
+fn redact_envelope_marks_document_values_as_untrusted() {
+    let Some(doc) = make_pii_document("provmark.hwp") else {
+        return;
+    };
+    let p = doc.to_str().expect("경로 UTF-8");
+
+    let args = ["edit", "redact", p, "--dry-run", "--json"];
+    let out = run(&args);
+    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
+    let v = json_of(&args, &out);
+    assert_eq!(
+        v["untrustedContent"],
+        serde_json::Value::Bool(true),
+        "raw 원문을 싣는 봉투인데 untrustedContent 가 true 가 아닙니다: {v}"
+    );
+    let fields: Vec<&str> = v["untrustedFields"]
+        .as_array()
+        .expect("untrustedFields")
+        .iter()
+        .filter_map(|x| x.as_str())
+        .collect();
+    assert!(fields.contains(&"findings[].raw"), "{v}");
+    assert!(fields.contains(&"findings[].masked"), "{v}");
+
+    let args = ["edit", "redact", p, "--dry-run", "--json", "--no-raw"];
+    let out = run(&args);
+    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
+    let v = json_of(&args, &out);
+    assert_eq!(v["untrustedContent"], serde_json::Value::Bool(true), "{v}");
+    let fields: Vec<&str> = v["untrustedFields"]
+        .as_array()
+        .expect("untrustedFields")
+        .iter()
+        .filter_map(|x| x.as_str())
+        .collect();
+    assert!(
+        !fields.contains(&"findings[].raw"),
+        "--no-raw 로 raw 가 봉투에 없는데 표지가 그 경로를 주장합니다: {v}"
+    );
+    assert!(fields.contains(&"findings[].masked"), "{v}");
+}
+
+/// [#3885] sanitize 봉투 — `removed[].before` 는 지워진 문서 속성 원문(제목·작성자,
+/// 그리고 본문 첫 화면 발췌인 preview.text)이라 untrusted 로 표지돼야 한다.
+#[test]
+fn sanitize_envelope_marks_removed_before_as_untrusted() {
+    let Some(doc) = make_pii_document("provmark-san.hwp") else {
+        return;
+    };
+    let p = doc.to_str().expect("경로 UTF-8");
+    let outp = scratch("provmark-sanitized.hwp");
+    let o = outp.to_str().expect("경로 UTF-8");
+
+    let args = ["edit", "sanitize", p, "-o", o, "--json"];
+    let out = run(&args);
+    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
+    let v = json_of(&args, &out);
+    assert!(
+        v["removedCount"].as_u64().unwrap_or(0) > 0,
+        "제거된 속성이 없으면 이 검사는 공허합니다: {v}"
+    );
+    assert_eq!(v["untrustedContent"], serde_json::Value::Bool(true), "{v}");
+    let fields: Vec<&str> = v["untrustedFields"]
+        .as_array()
+        .expect("untrustedFields")
+        .iter()
+        .filter_map(|x| x.as_str())
+        .collect();
+    assert!(fields.contains(&"removed[].before"), "{v}");
+}
