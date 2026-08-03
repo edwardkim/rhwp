@@ -1556,7 +1556,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
             "query",
             "본 자기서술 JSON 출력",
             false,
-            &[],
+            &["--search"],
             &[
                 "schemaVersion",
                 "tool",
@@ -2171,6 +2171,51 @@ pub(crate) fn closest_name<'a, I: IntoIterator<Item = &'a str>>(
     (d <= cap).then(|| name.to_string())
 }
 
+/// [#3828 B1] `capabilities --search <키워드...> [--json]` — commands[].name·summary 를
+/// 대소문자 무시 부분 문자열로 필터한다. 결정론적 매칭(유사도 점수·LLM 없음).
+///
+/// 키워드를 공백으로 여러 개 주면(예: `--search "표 병합"`) **AND** 조건으로 좁힌다 —
+/// 검색 도구의 통상 관례(모든 검색어를 만족해야 좁혀진다)를 따르고, 사용자가 한
+/// 단어로는 너무 넓은 결과를 받고 두 번째 단어로 더 좁히고 싶을 때 OR 보다 AND 가
+/// 직관과 맞는다. OR 이 필요하면 `--search` 를 두 번 호출하면 된다(별도 결과 두 묶음).
+fn show_capabilities_search(query: &str, json_mode: bool) -> i32 {
+    let keywords: Vec<String> = query.split_whitespace().map(|k| k.to_lowercase()).collect();
+    let commands = capabilities_command_entries();
+    let matched: Vec<serde_json::Value> = commands
+        .into_iter()
+        .filter(|c| {
+            let name = c["name"].as_str().unwrap_or_default().to_lowercase();
+            let summary = c["summary"].as_str().unwrap_or_default().to_lowercase();
+            let haystack = format!("{name} {summary}");
+            keywords.iter().all(|k| haystack.contains(k.as_str()))
+        })
+        .collect();
+
+    if json_mode {
+        let envelope = serde_json::json!({
+            "schemaVersion": "1.0",
+            "tool": "rhwp",
+            "version": rhwp::version(),
+            "search": query,
+            "commands": matched,
+        });
+        println!("{}", provenance::marked(envelope, "capabilities"));
+        return EXIT_OK;
+    }
+
+    if matched.is_empty() {
+        println!("'{query}' 에 매치하는 명령이 없습니다.");
+        return EXIT_OK;
+    }
+    println!("'{query}' 검색 결과 ({}건):", matched.len());
+    for c in &matched {
+        let name = c["name"].as_str().unwrap_or_default();
+        let summary = c["summary"].as_str().unwrap_or_default();
+        println!("  {name:<24} {summary}");
+    }
+    EXIT_OK
+}
+
 fn show_capabilities(args: &[String]) -> i32 {
     // [#3263] --mcp: MCP 서버가 그대로 등록할 수 있는 도구 정의.
     // 로드맵상 MCP 서버 자체는 별도 저장소(#227)지만, 그 서버가 도구 목록·입력 스키마를
@@ -2178,10 +2223,26 @@ fn show_capabilities(args: &[String]) -> i32 {
     let mut mcp_mode = false;
     // [#3629] 직무 프로필 필터 — 단일 출처는 agent_profiles::PROFILES.
     let mut profile: Option<String> = None;
+    // [#3828 B1] 처음 오는 에이전트는 정확한 명령 이름을 모른다 — `--search <키워드>`
+    // 로 commands[].name·summary 를 부분 문자열(대소문자 무시)로 훑을 수 있게 한다.
+    // 결정론적 매칭이다: 유사도 점수·LLM 판단 없음 (#3787 원칙과 동일).
+    let mut search_query: Option<String> = None;
+    let mut json_mode = false;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--mcp" => mcp_mode = true,
+            "--json" => json_mode = true,
+            "--search" => {
+                i += 1;
+                match args.get(i) {
+                    Some(q) => search_query = Some(q.clone()),
+                    None => {
+                        eprintln!("오류: --search 뒤에 키워드가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
             "--profile" => {
                 i += 1;
                 match args.get(i) {
@@ -2199,6 +2260,21 @@ fn show_capabilities(args: &[String]) -> i32 {
             }
         }
         i += 1;
+    }
+    if let Some(query) = search_query {
+        if mcp_mode || profile.is_some() {
+            eprintln!("오류: --search 는 --mcp/--profile 과 함께 쓸 수 없습니다.");
+            return EXIT_USAGE;
+        }
+        return show_capabilities_search(&query, json_mode);
+    }
+    // --search 없이 --json 만 온 경우는 기존과 동일하게 사용법 오류로 처리한다
+    // (기본 `capabilities` — 인자 없음 — 의 동작·출력은 절대 바뀌지 않는다).
+    if json_mode {
+        eprintln!(
+            "오류: --json 은 --search 와 함께 사용합니다 (capabilities --search <키워드> --json)."
+        );
+        return EXIT_USAGE;
     }
     let profile = match profile {
         Some(name) => match agent_profiles::find(&name) {
