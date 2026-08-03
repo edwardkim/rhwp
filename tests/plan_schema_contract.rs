@@ -171,6 +171,10 @@ fn envelope_carries_version_dialect_and_definition_count() {
         "definitionCount 가 실제 정의 수와 다르다"
     );
     assert!(count >= 9, "정의가 너무 적다: {count}");
+    // [#3787 S1] "표지는 항상 실린다" — 문서를 열지 않는 명령의 봉투도
+    // untrustedContent:false 를 명시한다.
+    assert_eq!(v["untrustedContent"], false, "출처 표지 누락: {v}");
+    assert_eq!(v["untrustedFields"], serde_json::json!([]), "{v}");
 }
 
 #[test]
@@ -182,6 +186,10 @@ fn bare_emits_the_schema_body_without_the_envelope() {
         v.get("definitionCount").is_none(),
         "--bare 는 봉투 키를 싣지 않는다 — JSON Schema 도구에 그대로 먹이는 용도다"
     );
+    assert!(
+        v.get("untrustedContent").is_none(),
+        "--bare 는 출처 표지도 섞지 않는다 — 검증기에 그대로 먹이는 본문이다"
+    );
 }
 
 #[test]
@@ -192,6 +200,7 @@ fn output_file_and_json_report() {
     assert_eq!(out.status.code(), Some(0));
     let v: serde_json::Value = serde_json::from_slice(&out.stdout).expect("저장 보고 봉투");
     assert_eq!(v["output"], path.as_str(), "{v}");
+    assert_eq!(v["untrustedContent"], false, "저장 보고도 봉투다: {v}");
     let bytes = v["bytes"].as_u64().expect("bytes");
     let written = std::fs::read(out_file.path()).expect("저장된 스키마");
     assert_eq!(written.len() as u64, bytes, "보고한 크기와 실제가 다르다");

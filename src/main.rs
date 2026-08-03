@@ -13618,9 +13618,12 @@ fn cmd_export_plan_schema(args: &[String]) -> i32 {
     }
 
     let payload = if bare {
+        // --bare 는 JSON Schema 검증기에 그대로 먹이는 본문이다 — 봉투 표지를 섞지 않는다.
         rhwp::plan_schema::plan_schema()
     } else {
-        rhwp::plan_schema::envelope()
+        // [#3787 S1] "표지는 항상 실린다" — 문서를 열지 않는 명령의 봉투도
+        // untrustedContent:false 를 명시한다는 것이 capabilities 의 선언이다.
+        provenance::marked(rhwp::plan_schema::envelope(), "export-plan-schema")
     };
     let text = match serde_json::to_string_pretty(&payload) {
         Ok(t) => t,
@@ -13639,12 +13642,15 @@ fn cmd_export_plan_schema(args: &[String]) -> i32 {
             // 파일로 뺐어도 stdout 은 기계 계약을 유지한다 — 어디에 썼는지 알려준다.
             println!(
                 "{}",
-                serde_json::json!({
-                    "schemaVersion": "1.0",
-                    "planSchemaVersion": rhwp::plan_schema::PLAN_SCHEMA_VERSION,
-                    "output": path,
-                    "bytes": text.len(),
-                })
+                provenance::marked(
+                    serde_json::json!({
+                        "schemaVersion": "1.0",
+                        "planSchemaVersion": rhwp::plan_schema::PLAN_SCHEMA_VERSION,
+                        "output": path,
+                        "bytes": text.len(),
+                    }),
+                    "export-plan-schema"
+                )
             );
         } else {
             println!("계획 스키마 저장: {} ({} bytes)", path, text.len());
