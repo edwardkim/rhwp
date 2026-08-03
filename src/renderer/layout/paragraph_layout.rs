@@ -3178,7 +3178,12 @@ impl LayoutEngine {
                 && !uses_stored_segment_geometry
                 && composed.numbering_text.is_none()
                 && para.map(|p| p.controls.is_empty()).unwrap_or(false)
-                && profile.native_hwp5_layout();
+                // [#3837] rhwp 가 HWP5 원본에서 내보낸 HWPX 도 같은 계약이다 — 저장
+                // LINE_SEG 가 그 HWP5 의 것이라 `column_start` 가 여전히 권위다. 이 조건이
+                // 없으면 왕복만으로 들여쓴 줄이 왼쪽으로 밀린다(1370000-200800015: 저장
+                // cs=22677 = 302.4px 가 무시돼 글리프 595개가 그만큼 이동).
+                // 원본 HWPX 는 건드리지 않는다 — 그쪽 저장 계약은 별개 축이다.
+                && (profile.native_hwp5_layout() || profile.hwp5_origin_hwpx());
             // 암호 HWP3의 Square-wrap Picture/Shape 저장 cs/sw는 문단 좌·우 inset까지
             // 포함한 완성 line box다. 여기서 ParaShape margin을 다시 더하거나 빼면
             // 그림과 글자 사이에 여백이 한 번 더 생기고 right edge도 불필요하게 줄어든다.
