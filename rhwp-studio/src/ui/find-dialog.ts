@@ -4,6 +4,55 @@ import type { SearchResult, ReplaceResult, ReplaceAllResult } from '@/core/types
 export type FindMode = 'find' | 'replace';
 
 /**
+ * [#3865] 검색 히트로 커서를 옮기고 매치를 선택 표시한다.
+ *
+ * 찾기 대화상자와 대화상자 없는 "찾기 다음"(F3) 이 **같은 이동 규칙을 써야** 한다.
+ * 한쪽만 셀을 다루면 같은 문서에서 Ctrl+F 는 표 안을 찾는데 F3 는 못 찾는 상태가 된다.
+ *
+ * 표 셀 매치는 `cellContext` 가 셀 안 문단을 지목한다. 이때 `paragraphIndex` 는 표가
+ * 놓인 바깥 문단이고, 실제 캐럿 위치는 `cellIndex` 계열 필드가 정한다.
+ */
+export function navigateToSearchHit(ih: ReturnType<CommandServices['getInputHandler']>, hit: SearchResult): void {
+  if (!ih || !hit.found) return;
+
+  const cell = hit.cellContext;
+  const startPos = cell
+    ? {
+        sectionIndex: hit.sec!,
+        paragraphIndex: cell.parentPara,
+        charOffset: hit.charOffset!,
+        parentParaIndex: cell.parentPara,
+        controlIndex: cell.ctrlIdx,
+        cellIndex: cell.cellIdx,
+        cellParaIndex: cell.cellPara,
+      }
+    : {
+        sectionIndex: hit.sec!,
+        paragraphIndex: hit.para!,
+        charOffset: hit.charOffset!,
+      };
+  const endPos = { ...startPos, charOffset: hit.charOffset! + hit.length! };
+
+  // 선택 영역으로 하이라이트: anchor → start, cursor → end
+  const cursor = (ih as any).cursor;
+  if (cell) {
+    // moveCursorTo 의 사전 검증은 본문 좌표만 본다(getCursorRect). 셀 위치를 넘기면
+    // 바깥 문단을 검사해 엉뚱하게 거절될 수 있으므로, 셀 매치는 커서를 직접 옮긴다 —
+    // rhwpDev.goto 가 이미 쓰는 경로다.
+    cursor?.clearSelection();
+    cursor?.moveTo(startPos);
+  } else {
+    ih.moveCursorTo(startPos);
+  }
+  if (cursor) {
+    cursor.setAnchor();
+    cursor.moveTo(endPos);
+  }
+  // 캐럿 갱신 + 스크롤
+  (ih as any).updateCaret?.();
+}
+
+/**
  * 찾기/찾아바꾸기 모달리스 대화상자
  *
  * ModalDialog와 달리 편집 영역 조작이 가능하도록 overlay를 사용하지 않는다.
@@ -285,48 +334,7 @@ export class FindDialog {
   }
 
   private navigateToHit(hit: SearchResult): void {
-    const ih = this.services.getInputHandler();
-    if (!ih || !hit.found) return;
-
-    // 검색 결과 위치로 커서 이동.
-    // [#3865] 표 셀 매치는 cellContext 로 셀 안 문단을 지목한다. 이때 paragraphIndex 는
-    // 표가 놓인 바깥 문단이고, 실제 캐럿 위치는 cellIndex 계열 필드가 정한다.
-    const cell = hit.cellContext;
-    const startPos = cell
-      ? {
-          sectionIndex: hit.sec!,
-          paragraphIndex: cell.parentPara,
-          charOffset: hit.charOffset!,
-          parentParaIndex: cell.parentPara,
-          controlIndex: cell.ctrlIdx,
-          cellIndex: cell.cellIdx,
-          cellParaIndex: cell.cellPara,
-        }
-      : {
-          sectionIndex: hit.sec!,
-          paragraphIndex: hit.para!,
-          charOffset: hit.charOffset!,
-        };
-    const endPos = { ...startPos, charOffset: hit.charOffset! + hit.length! };
-
-    // 선택 영역으로 하이라이트: anchor → start, cursor → end
-    const cursor = (ih as any).cursor;
-    if (cell) {
-      // moveCursorTo 의 사전 검증은 본문 좌표만 본다(getCursorRect). 셀 위치를 넘기면
-      // 바깥 문단을 검사해 엉뚱하게 거절될 수 있으므로, 셀 매치는 커서를 직접 옮긴다 —
-      // rhwpDev.goto 가 이미 쓰는 경로다.
-      cursor?.clearSelection();
-      cursor?.moveTo(startPos);
-    } else {
-      ih.moveCursorTo(startPos);
-    }
-    // setAnchor + moveTo로 선택 범위 지정
-    if (cursor) {
-      cursor.setAnchor();
-      cursor.moveTo(endPos);
-    }
-    // 캐럿 갱신 + 스크롤
-    (ih as any).updateCaret?.();
+    navigateToSearchHit(this.services.getInputHandler(), hit);
   }
 
   private doReplace(): void {

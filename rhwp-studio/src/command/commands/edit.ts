@@ -1,6 +1,6 @@
 import type { CommandDef } from '../types';
 import { FieldEditDialog } from '@/ui/field-edit-dialog';
-import { FindDialog } from '@/ui/find-dialog';
+import { FindDialog, navigateToSearchHit } from '@/ui/find-dialog';
 import { GotoDialog } from '@/ui/goto-dialog';
 import { HistoryDialog } from '@/ui/history-dialog';
 import { CompareDialog } from '@/ui/compare-dialog';
@@ -153,24 +153,12 @@ export const editCommands: CommandDef[] = [
         const result = services.wasm.searchText(
           FindDialog.lastQuery, pos.sectionIndex, pos.paragraphIndex,
           pos.charOffset, true, FindDialog.lastCaseSensitive,
+          // [#3865] 대화상자와 같은 범위를 본다 — 한쪽만 셀을 다루면 같은 문서에서
+          // Ctrl+F 는 표 안을 찾는데 F3 는 못 찾는 상태가 된다.
+          true,
         );
-        if (result.found) {
-          ih.moveCursorTo({
-            sectionIndex: result.sec!,
-            paragraphIndex: result.para!,
-            charOffset: result.charOffset!,
-          });
-          const cursor = (ih as any).cursor;
-          if (cursor) {
-            cursor.setAnchor();
-            cursor.moveTo({
-              sectionIndex: result.sec!,
-              paragraphIndex: result.para!,
-              charOffset: result.charOffset! + result.length!,
-            });
-          }
-          (ih as any).updateCaret?.();
-        }
+        // 이동 규칙도 대화상자와 공유한다(셀 매치는 셀 좌표로 간다).
+        navigateToSearchHit(ih, result);
       }
     },
   },
