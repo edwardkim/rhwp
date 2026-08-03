@@ -4541,12 +4541,9 @@ fn export_tables(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     let tables = extract_tables(doc.document());
@@ -9894,12 +9891,9 @@ fn search_document(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     // [#3353] 총량을 보고하려면 전수 스캔이 불가피하다 — `--limit` 의 목적은 스캔 시간이
@@ -10395,12 +10389,9 @@ fn extract_pages(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
-    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let mut doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 문서 파싱 실패 - {e}");
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
     let report = match doc.extract_page_range(from, to) {
         Ok(r) => r,
@@ -13982,8 +13973,15 @@ fn fill_fields_core(
 ) -> Result<FillOutcome, String> {
     let bytes = fs::read(file_path)
         .map_err(|e| format!("파일을 읽을 수 없습니다 - {}: {}", file_path, e))?;
-    let mut doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .map_err(|e| format!("HWP 파싱 실패 - {}", e))?;
+    let mut doc = load_document(&bytes).map_err(|e| match e {
+        LoadError::NeedPassword => {
+            "비밀번호가 필요한 암호 문서입니다 (--password <pw> 로 전달)".to_string()
+        }
+        LoadError::WrongPassword => {
+            "비밀번호가 일치하지 않거나 암호화 데이터가 손상되었습니다".to_string()
+        }
+        LoadError::Other(msg) => format!("HWP 파싱 실패 - {}", msg),
+    })?;
 
     // [#3476] 이름별 **개수**를 센다. 실제 제출 서식은 같은 항목 묶음을 여러 번 요구해
     // (규제영향분석서의 `피규제집단명` ×14 등) 이름만으로는 하나만 지목된다.
@@ -14235,12 +14233,9 @@ fn edit_replace_text(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
-    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
+    let mut doc = match load_document(&bytes) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     // [#3712] 치환 전 매치 주소를 붙잡는다 — 문자열 치환은 문단 인덱스를 밀지 않는다.
@@ -15498,12 +15493,9 @@ fn edit_set_cell(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
-    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&bytes) {
+    let mut doc = match load_document(&bytes) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     // 격자 주소(export-tables 좌표) → 모델 좌표. 병합으로 덮인 칸은 앵커가 아니므로
@@ -16154,12 +16146,9 @@ fn show_fields(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
-    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+    let doc = match load_document(&data) {
         Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: HWP 파싱 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
+        Err(e) => return e.report(),
     };
 
     let fields = collect_field_records(&doc);
