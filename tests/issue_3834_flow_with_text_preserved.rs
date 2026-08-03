@@ -66,7 +66,10 @@ fn hwpx_to_hwp_keeps_flow_with_text_on() {
     assert!(!tables.is_empty(), "표본에 표가 없다");
 
     for (i, t) in tables.iter().enumerate() {
-        assert!(t.common.flow_with_text, "표 {i} 의 IR flow_with_text 가 꺼졌다");
+        assert!(
+            t.common.flow_with_text,
+            "표 {i} 의 IR flow_with_text 가 꺼졌다"
+        );
         assert_eq!(
             t.common.attr & FLOW_WITH_TEXT_BIT,
             FLOW_WITH_TEXT_BIT,
