@@ -121,10 +121,8 @@ mod hidden_text_synth {
             let needle = "TextColor=\"";
             if let Some(at) = patched.find(needle) {
                 let value_start = at + needle.len();
-                let value_end = value_start
-                    + patched[value_start..]
-                        .find('"')
-                        .expect("속성 값 미종결");
+                let value_end =
+                    value_start + patched[value_start..].find('"').expect("속성 값 미종결");
                 patched.replace_range(value_start..value_end, "16777215");
             }
             out.push_str(&patched);
@@ -137,10 +135,8 @@ mod hidden_text_synth {
         );
         out = out.replace("<CHAR>table</CHAR>", &format!("<CHAR>{INJECTION}</CHAR>"));
 
-        let path = std::env::temp_dir().join(format!(
-            "rhwp-corpus-hidden-{}.hml",
-            std::process::id()
-        ));
+        let path =
+            std::env::temp_dir().join(format!("rhwp-corpus-hidden-{}.hml", std::process::id()));
         std::fs::write(&path, out).expect("합성 HML 쓰기 실패");
         path
     }
@@ -148,15 +144,18 @@ mod hidden_text_synth {
 
 /// `edit replace-text` 로 정상 샘플에 페이로드를 덧붙인다.
 /// `tests/injection_scan_contract.rs`·`tests/unicode_deception_contract.rs` 와 같은 합성 방식.
-fn synthesize_text_payload(host_rel: &str, anchor: &str, payload: &str, tag: &str) -> Option<PathBuf> {
+fn synthesize_text_payload(
+    host_rel: &str,
+    anchor: &str,
+    payload: &str,
+    tag: &str,
+) -> Option<PathBuf> {
     let host = repo(host_rel);
     if !host.exists() {
         return None;
     }
-    let out = std::env::temp_dir().join(format!(
-        "rhwp-corpus-text-{tag}-{}.hwp",
-        std::process::id()
-    ));
+    let out =
+        std::env::temp_dir().join(format!("rhwp-corpus-text-{tag}-{}.hwp", std::process::id()));
     let _ = std::fs::remove_file(&out);
     let replacement = format!("{anchor} {payload}");
     let args = [
@@ -249,13 +248,11 @@ fn top_level_documents() -> Vec<PathBuf> {
         .filter_map(|e| e.ok().map(|e| e.path()))
         .filter(|p| {
             p.is_file()
-                && p.extension()
-                    .and_then(|e| e.to_str())
-                    .is_some_and(|e| {
-                        e.eq_ignore_ascii_case("hwp")
-                            || e.eq_ignore_ascii_case("hwpx")
-                            || e.eq_ignore_ascii_case("hml")
-                    })
+                && p.extension().and_then(|e| e.to_str()).is_some_and(|e| {
+                    e.eq_ignore_ascii_case("hwp")
+                        || e.eq_ignore_ascii_case("hwpx")
+                        || e.eq_ignore_ascii_case("hml")
+                })
         })
         .collect();
     entries.sort();
@@ -304,10 +301,7 @@ fn negative_corpus_sweep_is_clean_across_all_three_detectors() {
                 let v = parse_stdout_json(&args, &out);
                 checked_hidden += 1;
                 if v["clean"] != true && !KNOWN_GENUINE_HIDDEN_TEXT.contains(&name.as_str()) {
-                    dirty.push(format!(
-                        "  - [hidden-text] {name}: {}",
-                        v["hiddenText"]
-                    ));
+                    dirty.push(format!("  - [hidden-text] {name}: {}", v["hiddenText"]));
                 }
             }
             // 종료 코드가 0이 아니면(암호 문서 등) 이 스윕의 관심사가 아니다.
@@ -316,22 +310,13 @@ fn negative_corpus_sweep_is_clean_across_all_three_detectors() {
         // injection
         {
             let p = path.to_str().unwrap();
-            let args = [
-                "inspect",
-                "injection",
-                p,
-                "--json",
-                "--include-fields",
-            ];
+            let args = ["inspect", "injection", p, "--json", "--include-fields"];
             let out = run(&args);
             if out.status.code() == Some(0) {
                 let v = parse_stdout_json(&args, &out);
                 checked_injection += 1;
                 if v["clean"] != true {
-                    dirty.push(format!(
-                        "  - [injection] {name}: {}",
-                        v["injectionSignals"]
-                    ));
+                    dirty.push(format!("  - [injection] {name}: {}", v["injectionSignals"]));
                 }
             }
         }
