@@ -199,7 +199,7 @@ rhwp edit sanitize form-01_sealed.hwp -o form-01_final.hwp --json
   `edit insert-image`·`edit sanitize`의 전체 옵션.
 - [레시피 4 — 출처를 모르는 문서를 처음 열 때](04_safety_check_untrusted_doc.md) —
   0단계의 `textSecurity.status`가 `"clean"`이 아닐 때 밟는 절차.
-- [CLI 명령어 매뉴얼의 `edit redact` 절](../cli_commands.md) — sanitize와 짝을 이루는
-  본문 PII 마스킹 명령의 옵션·출력 계약.
+- [레시피 3 — 배포 전 개인정보 마스킹](03_redact_before_sharing.md) — sanitize와
+  짝을 이루는 본문 PII 마스킹(`edit redact`)을 처음부터 끝까지 실측으로 따라가는 절차.
 - [에이전트 실무 대체 예제집 1절](../agent_task_playbook.md) — 사람 업무 관점의
   더 넓은 시나리오.

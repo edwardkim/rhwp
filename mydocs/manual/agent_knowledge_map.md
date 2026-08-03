@@ -71,6 +71,7 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 |---|---|---|
 | [1 — 서식 채워서 제출용으로 만들기](recipes/01_fill_form_and_submit.md) | 누름틀 채움 → 도장 삽입 → 메타데이터 제거 | `fields`·`edit fill-fields`·`edit insert-image`·`edit sanitize` |
 | [2 — 표 데이터를 CSV로 뽑아 고치고 되돌리기](recipes/02_table_csv_roundtrip.md) | 표 좌표 기반 서식의 CSV 왕복 | `export-tables`·`edit set-cell` |
+| [3 — 배포 전 개인정보 마스킹](recipes/03_redact_before_sharing.md) | 본문 PII 마스킹 → 속성 제거 → 재검사 게이트 | `edit redact`·`edit sanitize`·`search` |
 | [4 — 출처를 모르는 문서를 처음 열 때](recipes/04_safety_check_untrusted_doc.md) | 본문 전체를 노출하지 않고 점진적으로 신뢰도 판정 | `info`·`digest`·`fields`(`textSecurity`)·`search`·`batch` |
 | [5 — 서식 하나에 여러 사람 데이터를 한 번에 채우기](recipes/05_mail_merge_batch_fill.md) | 메일머지형 대량 서식 채움 | `batch fill` |
 | [6 — 편집 전후를 눈이 아니라 숫자로 비교하기](recipes/06_visual_regression_before_after.md) | 편집이 렌더링 레이아웃에 준 영향을 정량 판정 | `render-diff` |

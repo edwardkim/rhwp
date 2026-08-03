@@ -27,6 +27,7 @@
 
 - [레시피 1 — 서식 채워서 제출용으로 만들기](mydocs/manual/recipes/01_fill_form_and_submit.md): 누름틀 채움 → 도장 삽입 → 메타데이터 제거.
 - [레시피 2 — 표 데이터를 CSV로 뽑아 고치고 되돌리기](mydocs/manual/recipes/02_table_csv_roundtrip.md): 표 좌표 기반 서식의 CSV 왕복.
+- [레시피 3 — 배포 전 개인정보 마스킹](mydocs/manual/recipes/03_redact_before_sharing.md): `edit redact`(dry-run→적용→`--verify`)와 `edit sanitize`를 짝으로 묶어 본문 PII·메타데이터를 지우고, `search`·재검사 게이트로 "정말 지워졌는가"를 기계 판정.
 - [레시피 4 — 출처를 모르는 문서를 처음 열 때](mydocs/manual/recipes/04_safety_check_untrusted_doc.md): 본문을 통째로 노출하지 않고 `info`·`digest`·`fields`(`textSecurity`)·`search`·`batch`로 점진적 신뢰도 판정.
 - [레시피 5 — 서식 하나에 여러 사람 데이터를 한 번에 채우기](mydocs/manual/recipes/05_mail_merge_batch_fill.md): `batch fill`로 메일머지형 대량 서식 채움.
 - [레시피 6 — 편집 전후를 눈이 아니라 숫자로 비교하기](mydocs/manual/recipes/06_visual_regression_before_after.md): `render-diff`로 편집이 렌더링 레이아웃에 준 영향을 정량 판정.

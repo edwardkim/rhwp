@@ -297,6 +297,8 @@ rhwp batch fields --json < check_list.txt \
   진단이 필요할 때).
 - [에이전트 실패 사전](../agent_troubleshooting_guide.md) — 오류 문자열별
   원인·처방.
+- [레시피 3 — 배포 전 개인정보 마스킹](03_redact_before_sharing.md) —
+  판정을 통과해 작업을 마친 문서를 밖으로 보내기 전의 마지막 정리.
 - [레시피 5 — 서식 하나에 여러 사람 데이터를 한 번에 채우기](05_mail_merge_batch_fill.md) —
   이 레시피로 안전 판정을 통과한 서식을 대량으로 채울 때.
 - [레시피 6 — 편집 전후를 눈이 아니라 숫자로 비교하기](06_visual_regression_before_after.md) —
