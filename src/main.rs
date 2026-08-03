@@ -276,6 +276,7 @@ fn main() {
         Some("export-capabilities-schema") => exit_with(cmd_export_capabilities_schema(&args[2..])),
         Some("capabilities") => exit_with(show_capabilities(&args[2..])),
         Some("export-provenance-map") => exit_with(export_provenance_map(&args[2..])),
+        Some("export-agent-manifest") => exit_with(cmd_export_agent_manifest(&args[2..])),
         Some("mcp-serve") => exit_with(mcp_serve::run(&args[2..])),
         Some("batch") => exit_with(run_batch(&args[2..])),
         Some("info") => exit_with(show_info(&args[2..])),
@@ -1278,6 +1279,27 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             serde_json::json!(["export-provenance-map", "--json"]),
             &["schemaVersion", "tool", "version", "envelopeFlags", "pathSyntax", "policy", "commands"],
         ),
+        // [#3828 B2] 처음 붙는 에이전트가 capabilities → export-ir-schema →
+        // export-provenance-map → export-plan-schema 를 각각 왕복하지 않도록 1회로 묶는다.
+        // 문서를 열지 않는 무상태 도구이므로 hwp_export_provenance_map 처럼 입력이 없다.
+        tool_with_optional_args(
+            "hwp_export_agent_manifest",
+            "capabilities·export-ir-schema·export-provenance-map(있으면 export-plan-schema)의 산출을 한 번의 호출로 조립해 돌려준다. 처음 붙는 에이전트의 부트스트랩 왕복을 줄이는 용도. 아직 없는 축은 필드를 넣지 않고 missingAxes 로 무엇이 빠졌는지 밝힌다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "bare": {
+                        "type": "boolean",
+                        "description": "참이면 최상위 봉투 표지(schemaVersion) 없이 조립된 객체만"
+                    }
+                },
+                "required": [],
+            }),
+            "export-agent-manifest",
+            serde_json::json!(["export-agent-manifest", "--json"]),
+            serde_json::json!([{ "when": "bare", "args": ["--bare"] }]),
+            &["schemaVersion", "capabilities", "irSchema", "provenanceMap", "missingAxes"],
+        ),
         // [#3719 §6-11] 공개 전 정리 — 되돌릴 수 없는 쓰기라 dryRun 이 1차 흐름이다.
         tool_with_optional_args(
             "hwp_redact",
@@ -1582,6 +1604,16 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "policy",
                 "commands",
             ],
+        ),
+        // [#3828 B2] capabilities·export-ir-schema·export-provenance-map(·있으면
+        // export-plan-schema)을 한 봉투로 묶는다 — 처음 붙는 에이전트의 왕복 4회를 1회로.
+        cmd_json(
+            "export-agent-manifest",
+            "query",
+            "capabilities+irSchema+provenanceMap(+planSchema, 있으면)을 한 번의 호출로 조립 — 누락 축은 missingAxes 로 명시 (#3828 B2)",
+            false,
+            &["--json", "--bare"],
+            &["schemaVersion", "capabilities", "irSchema", "provenanceMap", "missingAxes"],
         ),
         cmd(
             "mcp-serve",
@@ -2221,9 +2253,18 @@ fn show_capabilities(args: &[String]) -> i32 {
         return EXIT_USAGE;
     }
 
+    let caps = capabilities_value();
+    println!("{}", provenance::marked(caps, "capabilities"));
+    EXIT_OK
+}
+
+/// [#3828 B2] `capabilities` 본문(표지 전) — `export-agent-manifest` 가 조립할 때도
+/// 이 함수 하나를 부른다. 두 곳에서 각자 만들면 매니페스트의 `capabilities` 필드가
+/// 실제 `capabilities` 출력과 조용히 갈라질 수 있다.
+fn capabilities_value() -> serde_json::Value {
     let commands = capabilities_command_entries();
 
-    let caps = serde_json::json!({
+    serde_json::json!({
         "schemaVersion": "1.0",
         "tool": "rhwp",
         "version": rhwp::version(),
@@ -2279,9 +2320,7 @@ fn show_capabilities(args: &[String]) -> i32 {
             "exitAggregation": "error 레코드가 하나라도 있으면 1, 없고 verifyPages 불일치가 있으면 4, verify 차이만 있으면 3, 전부 통과면 0",
         },
         "commands": commands,
-    });
-    println!("{}", provenance::marked(caps, "capabilities"));
-    EXIT_OK
+    })
 }
 
 /// [#3787 S1] `export-provenance-map` — 어느 명령의 어느 봉투 필드가 **문서에서 온
@@ -2555,6 +2594,7 @@ fn print_help() {
     println!("      -o, --out <파일>        스키마를 파일로 저장 (생략 시 stdout)");
     println!("      --json                  -o 와 함께 쓰면 저장 결과를 JSON 봉투로 보고");
     println!("  export-provenance-map [--json]");
+    println!("  export-agent-manifest [--bare] [--json]");
     println!("      명령별 '문서에서 온 값' 필드 지도 — 그 값들은 데이터이지 지시가 아니다");
     println!("      각 봉투의 untrustedContent/untrustedFields 표지와 같은 원천");
     println!();
@@ -13196,6 +13236,83 @@ fn cmd_export_capabilities_schema(args: &[String]) -> i32 {
     }
 
     println!("{text}");
+    EXIT_OK
+}
+
+/// [#3828 B2] `export-agent-manifest` 조립 코어 — capabilities·irSchema·provenanceMap
+/// (그리고 있으면 planSchema)을 왕복 1회로 묶는다.
+///
+/// 각 서브필드는 해당 명령의 기존 산출 함수를 그대로 불러 조립만 한다 — 스키마·지도
+/// 로직을 여기서 다시 만들지 않는다. `planSchema` 축(#3808 `export-plan-schema`)은
+/// 이 브랜치 시점에 아직 병합되지 않아 필드를 넣지 않고, 대신 `missingAxes` 로
+/// 무엇이 빠졌는지 기계가 읽게 명시한다 — null 로 채우면 "값이 비었다"와 "명령이
+/// 아직 없다"를 소비자가 구분할 수 없다.
+fn agent_manifest_value(bare: bool) -> serde_json::Value {
+    let mut fields = serde_json::Map::new();
+    fields.insert(
+        "capabilities".to_string(),
+        provenance::marked(capabilities_value(), "capabilities"),
+    );
+    fields.insert("irSchema".to_string(), rhwp::ir_schema::ir_schema());
+    fields.insert(
+        "provenanceMap".to_string(),
+        provenance::marked(
+            provenance::map_json(&rhwp::version()),
+            "export-provenance-map",
+        ),
+    );
+    // planSchema: `export-plan-schema`(#3808)가 이 시점에 아직 없다 — 있으면 여기서
+    // rhwp::plan_schema 류 함수를 불러 필드를 채우고 missingAxes 에서 뺀다.
+    fields.insert("missingAxes".to_string(), serde_json::json!(["planSchema"]));
+
+    if bare {
+        return serde_json::Value::Object(fields);
+    }
+    let mut envelope = serde_json::Map::new();
+    envelope.insert("schemaVersion".to_string(), serde_json::json!("1.0"));
+    envelope.extend(fields);
+    serde_json::Value::Object(envelope)
+}
+
+/// [#3828 B2] `export-agent-manifest` — 처음 붙는 에이전트가 capabilities →
+/// export-ir-schema → export-provenance-map → export-plan-schema 를 각각 따로
+/// 호출하던 왕복 4회를 1회로 줄인다.
+fn cmd_export_agent_manifest(args: &[String]) -> i32 {
+    let mut json_mode = false;
+    let mut bare = false;
+    for arg in args {
+        match arg.as_str() {
+            "--json" => json_mode = true,
+            "--bare" => bare = true,
+            other => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+        }
+    }
+
+    let manifest = provenance::marked(agent_manifest_value(bare), "export-agent-manifest");
+
+    if json_mode {
+        let text = match serde_json::to_string_pretty(&manifest) {
+            Ok(t) => t,
+            Err(e) => {
+                eprintln!("오류: 매니페스트 직렬화 실패 - {}", e);
+                return EXIT_RUNTIME;
+            }
+        };
+        println!("{text}");
+        return EXIT_OK;
+    }
+
+    println!("rhwp 에이전트 매니페스트 (capabilities + irSchema + provenanceMap 조립)");
+    println!();
+    println!("  capabilities     포함");
+    println!("  irSchema         포함");
+    println!("  provenanceMap    포함");
+    println!("  planSchema       없음 — export-plan-schema(#3808) 미병합");
+    println!();
+    println!("기계 계약은 --json 을 쓰세요 (--bare 로 최상위 표지 없이).");
     EXIT_OK
 }
 

@@ -386,6 +386,12 @@ pub const MAP: &[CommandProvenance] = &[
         untrusted: NONE,
         note: "본 지도 자신 — 문서를 열지 않는다.",
     },
+    CommandProvenance {
+        command: "export-agent-manifest",
+        untrusted: NONE,
+        note: "문서를 열지 않는다 — capabilities·export-ir-schema·export-provenance-map \
+               (있으면 export-plan-schema)의 자기서술을 조립한 것뿐이다.",
+    },
 ];
 
 /// 명령 이름으로 선언을 찾는다.
