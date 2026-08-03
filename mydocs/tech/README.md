@@ -29,6 +29,7 @@ last_verified: 2026-07-19
 | CI cache 정책 이력 | [Issue #1664 cache 정책 결정](ci_cache_policy_1664.md) | 현재 동작은 `.github/workflows/ci.yml` 재확인 |
 | WASM toolchain 버전 | [wasm-pack 버전 고정 정책](wasm_pack_version_policy.md) | 현재 설치 동작은 `.github/actions/install-wasm-pack/action.yml`과 `Dockerfile` 재확인 |
 | 에이전트 표면 내성 설계 | [경량 에이전트 내성 — CLI·MCP 계약 확장 4건](weak_agent_proofing.md) | [에이전트 실패 사전](../manual/agent_troubleshooting_guide.md), [에이전트 표면 플레이북](../manual/agent_surface_playbook.md) |
+| 자율 유지보수 — 병렬 세션·드리프트·엔드게임 | [자율 유지보수 지도](autonomous_maintenance/README.md) | [병렬 세션 규약](autonomous_maintenance/parallel_session_protocol.md), [선등재 패턴](autonomous_maintenance/pre_registration_pattern.md), [드리프트 감지](autonomous_maintenance/drift_detection.md), [엔드게임 판정](autonomous_maintenance/endgame_criteria.md) — 로드맵 #3907 J그룹 |
 | 에이전트 보안 — 문서가 에이전트를 조종하는 경로 | [에이전트 보안 문서 지도](agent_security/README.md) | [위협 모델](agent_security/threat_model.md), [공격 표면](agent_security/attack_surface.md), [소비 에이전트 가이드](agent_security/consumer_guide.md), 로드맵 #3793·구현 #3787 |
 | 신뢰할 수 없는 문서에 대한 경계 | [에이전트 경계 무결성 계약 — 경로·교정단서·자원한계·핸들](agent_boundary_contract.md) | 회귀 `tests/boundary_integrity_contract.rs`, 처리 결과 [task_sec_boundary](../report/task_sec_boundary/README.md) |
 | 외부 바인딩 공통 기반(M18~M20) | [IR 스키마 버저닝·표면 판단·파이썬 1호 명세](bindings_foundation.md) | 로드맵 #3608 M18~M20, [에이전트 표면 플레이북](../manual/agent_surface_playbook.md) |
