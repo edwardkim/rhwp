@@ -68,6 +68,17 @@ pub fn run(args: &[String]) -> i32 {
                 i += 1;
                 tsv = args.get(i).cloned();
             }
+            // [#3884 G2] 종전엔 미지 인자를 전부 파일 경로로 삼켰다. 그래서
+            // `bench <문서> --json` 이 "--json 이라는 파일" 을 읽으려다 실패해 exit 1 로
+            // 끝났고, 그 전에 이미 헤더를 stdout 에 찍은 뒤였다 — 실패 경로에서 stdout 을
+            // 흘리지 않는다는 규약(G1)까지 함께 깨진다. #3349 규약대로 즉시 거부한다.
+            other if other.starts_with('-') => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
+                eprintln!(
+                    "사용법: rhwp bench <파일...> | --batch <폴더> [-n 반복수] [--tsv 출력.tsv]"
+                );
+                return super::EXIT_USAGE;
+            }
             other => files.push(other.to_string()),
         }
         i += 1;

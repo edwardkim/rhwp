@@ -9019,6 +9019,17 @@ fn dump_controls(args: &[String]) -> i32 {
                     i += 1;
                 }
             }
+            // [#3884 G2] 종전엔 미지 인자를 조용히 건너뛰어 `dump <문서> --bogus-flag` 가
+            // exit 0 으로 끝났다. 오타를 성공으로 돌려주면 호출자는 자기가 요청한 것과
+            // 다른 것을 받고도 알 수 없다. `--json` 도 같은 취급이라 JSON 을 기대한
+            // 에이전트가 사람용 텍스트를 파싱하다 깨진다. #3349 규약대로 즉시 거부한다.
+            other if other.starts_with('-') => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
+                eprintln!(
+                    "사용법: rhwp dump <파일.hwp|파일.hwpx|파일.hml> [--section <번호>] [--para <번호>]"
+                );
+                return EXIT_USAGE;
+            }
             _ => {
                 i += 1;
             }
@@ -10539,6 +10550,15 @@ fn diag_document(args: &[String]) -> i32 {
     }
 
     let file_path = &args[0];
+    // [#3884 G2] diag 는 플래그를 아예 파싱하지 않아 뒤에 붙은 인자를 통째로 무시했다.
+    // `diag <문서> --json` 이 exit 0 으로 사람용 텍스트를 내면, JSON 을 기대한 호출자는
+    // 요청이 먹혔다고 믿은 채 파싱에서 깨진다. #3349 규약대로 즉시 거부한다.
+    if let Some(other) = args[1..].iter().find(|a| a.starts_with('-')) {
+        eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
+        eprintln!("사용법: rhwp diag <파일.hwp>");
+        return EXIT_USAGE;
+    }
+
     let data = match fs::read(file_path) {
         Ok(d) => d,
         Err(e) => {
