@@ -275,6 +275,23 @@ fn top_level_documents() -> Vec<PathBuf> {
 /// 이 목록이 오탐을 숨기는 서랍이 된다.
 const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &["synam-001.hwp", "issue1892_hwp3_tab_roundtrip.hwp"];
 
+/// 제로폭 축의 같은 성격 목록 — **탐지가 맞았는데 표본이 실제로 그렇다**는 선언.
+///
+/// `정책연구용역사업 중간진도보고서(…).hwp` 1040 문단에 U+200B 2개가 잇달아 있다.
+/// 앞이 공백, 뒤가 일반 한글 음절(`… ④유럽 <U+200B><U+200B>평의회의 …`)이라
+/// `zero_width_is_hangul_typesetting` 의 PUA 인접 완화에 걸리지 않는다 — 그 완화는
+/// 옛한글 조판 부산물만 겨냥한 것이고 이건 그게 아니다. 웹에서 옮겨 붙일 때 섞여 든
+/// 흔적으로 보이며, **문서에 보이지 않는 문자가 실제로 있다**는 탐지 자체는 옳다.
+/// `.hwp`·`.hwpx` 는 같은 문서의 두 포맷이라 같은 1건이 두 번 잡힌다.
+///
+/// 규칙을 느슨하게 하지 않고 이 문서만 뺀다. 제로폭 탐지의 감도를 낮추면
+/// 낱자 사이에 끼워 넣는 진짜 회피(`비밀<U+200B>번호`)까지 함께 놓친다.
+/// 항목을 추가할 때는 반드시 위와 같은 개별 근거(문단·코드포인트·앞뒤 문자)를 남긴다.
+const KNOWN_GENUINE_ZERO_WIDTH: &[&str] = &[
+    "정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+    "정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+];
+
 #[test]
 fn negative_corpus_sweep_is_clean_across_all_three_detectors() {
     let docs = top_level_documents();
@@ -329,7 +346,7 @@ fn negative_corpus_sweep_is_clean_across_all_three_detectors() {
             if out.status.code() == Some(0) {
                 let v = parse_stdout_json(&args, &out);
                 checked_unicode += 1;
-                if v["clean"] != true {
+                if v["clean"] != true && !KNOWN_GENUINE_ZERO_WIDTH.contains(&name.as_str()) {
                     dirty.push(format!(
                         "  - [unicode] {name}: {}건 {}",
                         v["findingCount"], v["findings"]
@@ -437,6 +454,20 @@ fn allowlisted_documents_still_actually_trigger_detection() {
         assert_eq!(
             v["clean"], false,
             "{name} 은 진짜 은닉 텍스트가 있다고 허용목록에 올렸는데 지금은 clean 입니다.\n\
+             탐지기가 퇴행했거나(고칠 것) 문서가 바뀌었습니다(목록에서 뺄 것). 봉투: {v}"
+        );
+    }
+
+    // 제로폭 축도 같은 규칙으로 지킨다 — 허용목록은 어느 축에서든 자기검증돼야 한다.
+    for name in KNOWN_GENUINE_ZERO_WIDTH {
+        let path = repo("samples").join(name);
+        if !path.exists() {
+            continue;
+        }
+        let v = inspect_unicode(&path);
+        assert_eq!(
+            v["clean"], false,
+            "{name} 은 실제로 제로폭 문자가 있다고 허용목록에 올렸는데 지금은 clean 입니다.\n\
              탐지기가 퇴행했거나(고칠 것) 문서가 바뀌었습니다(목록에서 뺄 것). 봉투: {v}"
         );
     }
