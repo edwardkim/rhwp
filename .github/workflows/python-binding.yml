@@ -90,7 +90,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip build
           python -m build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: rhwp-wheel
           path: bindings/python/dist/*
