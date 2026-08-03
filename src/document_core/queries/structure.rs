@@ -60,6 +60,10 @@ pub struct StructureNode {
 #[derive(Debug, Clone, Serialize)]
 pub struct StructureDoc {
     pub mode: &'static str,
+    /// 봉투 키는 `nodeCount` 다. 최상위 레코드는 `main.rs` 가 이미 그 이름으로 올리는데
+    /// 중첩된 `structure` 객체만 Rust 필드명 그대로 나가 **같은 값이 두 이름으로**
+    /// 보였다. 별칭 계층이 없는 정적 매핑 언어(C#·Swift)에서는 이 필드가 사라진다.
+    #[serde(rename = "nodeCount")]
     pub node_count: usize,
     /// 첫 제목 이전의 본문(서문).
     #[serde(skip_serializing_if = "Vec::is_empty")]

@@ -543,7 +543,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             path_schema(serde_json::json!({})),
             "info",
             serde_json::json!(["info", "--json", "{path}"]),
-            &["format", "sizeBytes", "sections", "pageCount", "paraCount", "fonts", "title"],
+            &["format", "sizeBytes", "sections", "pageCount", "paraCount", "fonts", "title", "warnings"],
         ),
         // [#3633] 초소형 모델용 매크로 1호. 설명은 40자 이내로 극단 압축한다 —
         // 도구 목록 자체가 컨텍스트 예산을 잠식하는 4B급 모델이 1차 소비자이기
@@ -1480,6 +1480,7 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "paraCount",
                 "fonts",
                 "title",
+                "warnings",
             ],
         ),
         cmd_json(
@@ -7038,8 +7039,42 @@ fn info_json_value(
             "fonts": fonts,
             // [#3407] best-effort 문서 제목 — 없으면 null. batch info 로 자동 전파.
             "title": document_title(doc),
+            // [#3880 T1] 파싱 중 건너뛴 것을 봉투가 스스로 밝힌다.
+            //
+            // 인간 출력은 `warnings: N` 과 상세를 stderr 로 내는데 JSON 분기는 그
+            // 앞에서 `return EXIT_OK` 로 끝나 도달하지 못했다. 그래서 리소스가 조용히
+            // 잘린 문서가 **exit 0 + 완전해 보이는 봉투**를 냈다 — `fonts` 가 부분
+            // 목록인데 봉투는 그렇다고 말하지 않았다(#3719 "부분 목록 금지" 위반).
+            //
+            // 경고가 없으면 빈 배열이다. 키를 빼면 소비자가 "경고 없음"과 "이 빌드는
+            // 경고를 모름"을 구별할 수 없다.
+            "warnings": info_warnings_value(doc),
         }),
         "info",
+    )
+}
+
+/// [#3880 T1] `info --json` 의 `warnings[]` — 파싱이 건너뛴 것의 기계 판정용.
+///
+/// 현재 원천은 HML 파서의 `hml_metadata().warnings` 하나다. 다른 포맷이 같은 기구를
+/// 갖추면 여기에 합류시킨다 — 그때까지 이 배열이 비어 있다고 해서 "문서가 온전하다"는
+/// 뜻은 아니며, 그 한계는 `mydocs/manual/cli_commands.md` 에 적는다.
+fn info_warnings_value(doc: &rhwp::wasm_api::HwpDocument) -> serde_json::Value {
+    let Some(metadata) = doc.hml_metadata() else {
+        return serde_json::Value::Array(Vec::new());
+    };
+    serde_json::Value::Array(
+        metadata
+            .warnings
+            .iter()
+            .map(|w| {
+                serde_json::json!({
+                    "code": format!("{:?}", w.code),
+                    "xmlPath": w.xml_path,
+                    "message": w.message,
+                })
+            })
+            .collect(),
     )
 }
 
