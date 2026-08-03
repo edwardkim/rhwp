@@ -510,6 +510,23 @@ fn recipes() -> Vec<Recipe> {
             exit: 0,
             ndjson: false,
         },
+        // [#3885] redact·sanitize 도 `edit` 봉투다. 종전 레시피는 set-cell 하나뿐이라
+        // 이 두 경로가 스윕 밖에 있었고, 그래서 표지 누락이 드러나지 않았다.
+        // redact 는 --dry-run 으로 디스크를 건드리지 않고 findings[] 만 받는다.
+        Recipe {
+            command: "edit",
+            doc: Some(main.clone()),
+            args: vec![
+                s("edit"),
+                s("redact"),
+                p(&main),
+                s("--dry-run"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
         Recipe {
             command: "edit",
             doc: Some(table.clone()),
@@ -842,6 +859,74 @@ fn provenance_map_covers_every_json_command() {
             origins.len(),
             untrusted.len(),
             "{name}: origins 와 untrusted 개수가 다릅니다(낡은 근거가 남았습니다): {entry}"
+        );
+    }
+}
+
+// ── 가드 ①-b 지도에 있는 것과 봉투에 실리는 것은 다른 문제다 ─────────────────
+
+/// 실제 봉투가 표지를 **싣는지** 본다.
+///
+/// 가드 ① 은 지도가 명령을 **등재**했는지만 본다. 그래서 등재는 돼 있는데 실행 결과
+/// 봉투에는 `untrustedContent` 키가 아예 없는 상태를 통과시킨다 — #3885 의 4건이 정확히
+/// 그 사각에 있었다(`edit redact` 가 `findings[].raw` 에 원문 개인정보를 표지 없이 실었다).
+///
+/// 정책이 *"표지는 항상 실린다 — 문서를 열지 않는 명령의 봉투도 `untrustedContent:false`
+/// 를 명시한다"* 라고 적은 이유가 여기 있다. 키가 없으면 소비자는 **"안전하다"와 "이 빌드는
+/// 표지를 모른다"를 구별할 수 없다.** 후자라면 다른 봉투의 표지도 믿을 수 없다.
+#[test]
+fn every_executed_envelope_actually_carries_the_marker() {
+    let sweep = sweep();
+    let mut missing: Vec<String> = Vec::new();
+
+    for r in &sweep.recipes {
+        for env in envelopes_of(r.command) {
+            if !env.is_object() {
+                continue;
+            }
+            if env.get("untrustedContent").is_none() {
+                missing.push(format!("  - {} ({})", r.command, r.args.join(" ")));
+                break;
+            }
+        }
+    }
+
+    assert!(
+        missing.is_empty(),
+        "봉투에 출처 표지(untrustedContent)가 없는 명령 {}건:\n{}\n\n\
+         src/main.rs 의 해당 출력부를 `provenance::marked(envelope, \"<명령>\")` 로 감싸세요. \
+         문서를 열지 않는 명령도 `false` 를 명시해야 합니다 — 키의 부재는 '안전함'이 아니라 \
+         '이 빌드는 표지를 모름'으로 읽힙니다.",
+        missing.len(),
+        missing.join("\n"),
+    );
+}
+
+/// 스윕 면제 명령도 표지에서는 면제가 아니다.
+///
+/// `SWEEP_EXEMPT` 는 "문서 오라클을 만들 수 없다"는 뜻이지 "표지를 안 달아도 된다"가
+/// 아니다. 오히려 이쪽이 `untrustedContent:false` 를 **명시**해야 하는 쪽이다 — 문서를
+/// 열지 않는다는 사실 자체가 소비자가 알아야 할 판정이기 때문이다.
+///
+/// `--bare` 는 봉투가 아니라 스키마 본문이므로 대상이 아니다(검증기에 그대로 먹인다).
+#[test]
+fn document_free_schema_commands_still_state_false() {
+    for cmd in ["export-ir-schema", "export-capabilities-schema"] {
+        let args = vec![s(cmd)];
+        let out = run(&args);
+        assert_eq!(
+            out.status.code(),
+            Some(0),
+            "{cmd} 실행 실패 — 가드가 공허하게 통과하지 않도록 먼저 고치세요\n{}",
+            describe(&args, &out)
+        );
+        let v: Value = serde_json::from_slice(&out.stdout)
+            .unwrap_or_else(|e| panic!("{cmd} 봉투가 JSON 이 아닙니다: {e}"));
+        assert_eq!(
+            v["untrustedContent"],
+            Value::Bool(false),
+            "{cmd} 는 문서를 열지 않으므로 untrustedContent:false 를 **명시**해야 합니다. \
+             키가 없으면 소비자가 '안전함'과 '이 빌드는 표지를 모름'을 구별할 수 없습니다: {v}"
         );
     }
 }

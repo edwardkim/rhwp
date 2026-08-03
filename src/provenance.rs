@@ -265,9 +265,21 @@ pub const MAP: &[CommandProvenance] = &[
                 "화면상 같아 보이는 **문서의 다른 누름틀 이름들** (#3707)",
             ),
             f("oldText", "set-cell 이 덮어쓰기 전 셀에 있던 문서 텍스트"),
+            // [#3885] redact·sanitize 도 `edit` 봉투다. 종전엔 표지가 아예 없어
+            // 이 두 필드가 선언되지 않았다 — 지도가 침묵하면 그 값을 받은 에이전트는
+            // 문서에 적힌 문장을 도구의 지시로 읽는다.
+            f(
+                "findings[].raw",
+                "redact 가 문서에서 찾아낸 **원문 개인정보** — 주민등록번호·카드번호·전화·이메일. \
+                 `--no-raw` 로 뺄 수 있지만 기본값은 싣는다 (#3841)",
+            ),
+            f(
+                "removed[].before",
+                "sanitize 가 지우기 전 문서 메타데이터에 있던 원문 값",
+            ),
         ],
         note: "find·replace·filled[].name 은 호출자가 준 문자열이고, \
-               replacedCount·changedPages·verify 는 엔진 판정값이다.",
+               replacedCount·changedPages·verify·redactedCount·removedCount 는 엔진 판정값이다.",
     },
     CommandProvenance {
         command: "run",

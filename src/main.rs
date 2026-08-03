@@ -13495,10 +13495,14 @@ fn cmd_export_ir_schema(args: &[String]) -> i32 {
         i += 1;
     }
 
+    // [#3885] `--bare` 는 봉투가 아니라 스키마 본문이므로 표지를 달지 않는다(JSON Schema
+    // 검증기에 그대로 먹이는 용도라 이물이 섞이면 안 된다). 봉투 모드는 문서를 열지 않아도
+    // `untrustedContent:false` 를 **명시**해야 한다 — 키가 없으면 소비자가 "안전하다"와
+    // "이 빌드는 표지를 모른다"를 구별할 수 없고, 후자라면 다른 봉투의 표지도 못 믿는다.
     let payload = if bare {
         rhwp::ir_schema::ir_schema()
     } else {
-        rhwp::ir_schema::envelope()
+        provenance::marked(rhwp::ir_schema::envelope(), "export-ir-schema")
     };
     let text = match serde_json::to_string_pretty(&payload) {
         Ok(t) => t,
@@ -13562,10 +13566,15 @@ fn cmd_export_capabilities_schema(args: &[String]) -> i32 {
         i += 1;
     }
 
+    // [#3885] `--bare` 는 스키마 본문이라 표지를 달지 않는다. 봉투 모드는 문서를 열지
+    // 않아도 `untrustedContent:false` 를 명시한다 — export-ir-schema 와 같은 이유다.
     let payload = if bare {
         rhwp::capabilities_schema::capabilities_schema()
     } else {
-        rhwp::capabilities_schema::envelope()
+        provenance::marked(
+            rhwp::capabilities_schema::envelope(),
+            "export-capabilities-schema",
+        )
     };
     let text = match serde_json::to_string_pretty(&payload) {
         Ok(t) => t,
@@ -15130,7 +15139,10 @@ fn edit_redact(args: &[String]) -> i32 {
             envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
             envelope["verify"] = verify_report.clone();
         }
-        println!("{envelope}");
+        // [#3885] 표지는 항상 실린다 — 이 봉투는 findings[].raw 에 **원문 개인정보**를
+        // 담는데 종전엔 표지가 아예 없었다. 가장 민감한 값을 싣는 봉투가 "이건 문서에서
+        // 온 값이다"를 말하지 않으면 출처 표지 계약의 목적이 그 지점에서 무너진다.
+        println!("{}", provenance::marked(envelope, "edit"));
         if verify_failed {
             process::exit(3);
         }
@@ -15587,7 +15599,8 @@ fn edit_sanitize(args: &[String]) -> i32 {
             "output": output_path,
             "outputFormat": out_format.label(),
         });
-        println!("{envelope}");
+        // [#3885] removed[].before 는 문서에서 지운 메타데이터 **원문**이다 — 표지를 단다.
+        println!("{}", provenance::marked(envelope, "edit"));
         return EXIT_OK;
     }
 
