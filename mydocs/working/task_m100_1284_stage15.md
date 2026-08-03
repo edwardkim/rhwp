@@ -50,7 +50,7 @@
 3. 문26 tail 뒤 문27 제목은 hard backtrack 임계값 바로 위에 놓일 때 10px soft backtrack으로 하단 제목 위치를 맞춘다.
 4. `issue_1139_inline_picture_duplicate.rs`에 2023-09 page16 문23~문27 좌표와 문25→문26, 문26→문27 overlap 회귀 테스트를 추가한다.
 5. sweep line-order 분석에서 tall visual-empty line 뒤 문항 제목 overlap을 후보에 포함한다.
-6. focused test와 `python3 scripts/task1274_visual_sweep.py --target 2023-09`로 재검증한다.
+6. focused test와 `python3 scripts/visual_sweep.py --target 2023-09`로 재검증한다.
 
 ## 검증 대기
 
@@ -60,6 +60,6 @@
   - `cargo test --lib compact_endnote_question_title_after_tall_mid_backtrack_shifts_lazy_base -- --nocapture`
   - `cargo test --lib compact_endnote_question_title_tail_soft_backtrack_after_equation_tail -- --nocapture`
   - `cargo test --test issue_1139_inline_picture_duplicate`
-  - `python3 -m py_compile scripts/task1274_visual_sweep.py`
-  - `python3 scripts/task1274_visual_sweep.py --target 2023-09`
+  - `python3 -m py_compile scripts/visual_sweep.py`
+  - `python3 scripts/visual_sweep.py --target 2023-09`
 - 구현 후에는 PR 준비 CI를 처음부터 다시 이어서 수행한다.

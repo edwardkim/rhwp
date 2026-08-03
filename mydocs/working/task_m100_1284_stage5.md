@@ -9,7 +9,7 @@
 ## 커밋 후 sweep 결과
 
 - 명령:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
+  - `python3 scripts/visual_sweep.py --target 2024-09-between20`
 - 결과:
   - `flagged=20/24`
   - `frame=[]`
@@ -86,7 +86,7 @@
   - passed
 - `cargo build`
   - passed
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
   - `question=[18,21,22,23]`
   - page21 문25/문26 drift 후보가 제거됐다.
   - `LAYOUT_OVERFLOW` / `LAYOUT_OVERFLOW_DRAW` 로그는 없다.

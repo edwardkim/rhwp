@@ -69,7 +69,7 @@ Stage24 전체 sweep에서 page count는 모두 SVG/render tree/PDF 1:1로 맞�
 - `cargo fmt --all -- --check`: 통과
 - `cargo test --lib compact_endnote -- --nocapture`: 28개 통과
 - `cargo build --bin rhwp`: 통과
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between20-below2 --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage25_gap_target_final --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between20-below2 --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage25_gap_target_final --rhwp-bin target/debug/rhwp`
   - `2024-11-practice-above0-between20-below2`
     - page count: 22/22/22 유지
     - overflow: 51건 -> 38건

@@ -41,7 +41,7 @@ glyph 겹침 같은 반복 차이도 bug-hunter의 정답지 provenance, source�
 
 | 확인 대상 | 도구 | 산출물 |
 |---|---|---|
-| 페이지 수·overlay 차이 위치·잉크 일치율·drift/overflow/겹침 **후보 자동 검출** | `scripts/task1274_visual_sweep.py` ([가이드](visual_sweep_guide.md)) | 페이지별 후보 목록, raster overlay |
+| 페이지 수·overlay 차이 위치·잉크 일치율·drift/overflow/겹침 **후보 자동 검출** | `scripts/visual_sweep.py` ([가이드](visual_sweep_guide.md)) | 페이지별 후보 목록, raster overlay |
 | **개체(표·그림) geometry 무회귀** (baseline 대비 이동/리사이즈) | `tools/object_visual_regression.py --no-hwp` ([매뉴얼](object_visual_regression.md)) — Linux 가능, 한컴 불필요 | `objects.tsv`, 회귀 건수(종료코드) |
 | 개체 단위 rhwp↔한글 대조 (한컴 환경) | 동일 도구 full 모드 | `gallery.html` side-by-side 크롭 |
 | 라운드트립 시각 기하 회귀 | `rhwp render-diff` | PASS/OVER/STRUCT 판정 |

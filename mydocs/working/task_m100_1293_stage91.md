@@ -46,7 +46,7 @@ stage90에서 `2024-09-between20` p19의 `문28` question marker drift는 해소
 cargo fmt --check
 cargo build --bin rhwp
 cargo test --test issue_1139_inline_picture_duplicate issue_1293_equation_control_is_not_always_treat_as_char -- --nocapture
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -74,7 +74,7 @@ python3 scripts/task1274_visual_sweep.py \
 cargo fmt --check
 cargo build --bin rhwp
 cargo test --test issue_1139_inline_picture_duplicate issue_1293_equation_control_is_not_always_treat_as_char -- --nocapture
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \

@@ -31,7 +31,7 @@ overflow를 회귀시키지 않는다.
 ## 검증 계획
 
 - 단일 target:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage45_single --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage45_single --rhwp-bin target/debug/rhwp`
 - focused sweep:
   - `2024-11-practice-above0-between20-below2`
   - `2024-11-practice-above0-between7-below2`
@@ -44,7 +44,7 @@ overflow를 회귀시키지 않는다.
 현재 HEAD 기준 단일 sweep에서 mismatch가 재현되었다.
 
 - 명령:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage45_single_baseline --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage45_single_baseline --rhwp-bin target/debug/rhwp`
 - 결과:
   - SVG/PDF: `23/22`
   - render tree/PDF: `23/22`
@@ -92,7 +92,7 @@ overflow를 회귀시키지 않는다.
 ### 단일 target
 
 - 명령:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage45_single_fix2 --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage45_single_fix2 --rhwp-bin target/debug/rhwp`
 - 결과:
 
 | target | page count | overflow | frame/title/order/equation |
@@ -107,7 +107,7 @@ overflow를 회귀시키지 않는다.
 ### focused sweep
 
 - 명령:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between20-below2 --target 2024-11-practice-above0-between7-below2 --target 2024-11-practice-above20-between7-below2 --target 2024-11-practice-shape987 --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage45_focused --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between20-below2 --target 2024-11-practice-above0-between7-below2 --target 2024-11-practice-above20-between7-below2 --target 2024-11-practice-shape987 --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage45_focused --rhwp-bin target/debug/rhwp`
 - 결과:
 
 | target | page count | overflow | frame/title/order/equation |

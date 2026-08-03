@@ -35,7 +35,7 @@ Stage54에서 `question_marker_flow_drift`를 추가해
   - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
 - targeted visual:
   - `cargo build --bin rhwp`
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage55_no_separator --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage55_no_separator --rhwp-bin target/debug/rhwp`
 - qflow 후보가 줄어드는지 확인한다. 단순 page count 유지가 아니라 `compare_020.png`,
   `compare_021.png` 직접 확인을 포함한다.
 
@@ -71,7 +71,7 @@ gap에서만 순차 높이를 소비하던 조건을 `large_separator_block && !
   - 통과
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 52개 전부 통과
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage55_no_separator_final --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage55_no_separator_final --rhwp-bin target/debug/rhwp`
   - page count: `23/23/23`
   - `overflow_lines`: 0
   - `frame_overflow_pages`: []

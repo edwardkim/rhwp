@@ -115,7 +115,7 @@ vpos 보정과 line-spacing/between-notes 소비 위치를 기준으로 좁혀�
 - `cargo build --bin rhwp`
 - `cargo fmt --all -- --check`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage21_target_check --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage21_target_check --rhwp-bin target/debug/rhwp`
 - 회귀 target:
   - `2024-11-practice-shape987`
   - `2024-11-practice-no-separator-above20-between20-below20`

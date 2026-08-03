@@ -47,7 +47,7 @@ p18(display) `pi=875/876`, p20(display) `pi=966/967` FullParagraph overflow가 �
 - `cargo fmt --all -- --check`
 - `cargo test compact_endnote_zero_between_question_title_caps_forward_gap --lib`
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage23_target_sweep --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage23_target_sweep --rhwp-bin target/debug/rhwp`
 
 ## 현재 검증 메모
 
@@ -55,7 +55,7 @@ p18(display) `pi=875/876`, p20(display) `pi=966/967` FullParagraph overflow가 �
 - `cargo test compact_endnote_zero_between_question_title_caps_forward_gap --lib`: 통과.
 - `cargo build --bin rhwp`: 통과.
 - target sweep:
-  - 명령: `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage23_target_sweep --rhwp-bin target/debug/rhwp`
+  - 명령: `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage23_target_sweep --rhwp-bin target/debug/rhwp`
   - SVG/render-tree/PDF 페이지 수: `21/21/21`.
   - 자동 flag: `19/21`, `frame_overflow_pages=[]`.
   - `overflow_lines`: `0`.

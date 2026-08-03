@@ -59,10 +59,10 @@ typeset 누적 높이에는 반영하지 않았다. 공식 미주 모양에서�
 - `cargo fmt --all -- --check` — 통과
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1139_endnote_spacing_reference_files_match_hancom_page_counts -- --nocapture` — 1 passed
 - `cargo build --bin rhwp` — 통과
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-below20-above20 --out output/task1293_stage4 --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-09-below20-above20 --out output/task1293_stage4 --rhwp-bin target/debug/rhwp`
   - 23/23/23
   - flags: `frame=[9,17,18,19]`, `red=[9,10,13,17,18,19,22]`, `line=[4,7,10,11,15,17,18,21,22]`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20 --out output/task1293_stage4_between20 --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20 --out output/task1293_stage4_between20 --rhwp-bin target/debug/rhwp`
   - 24/24/24
   - flags: `frame=[12]`, `red=[11,13,14,17,18,20,21,22,23]`, `line=[4,7,8,10,12,14,15,16,20,21,23]`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture` — 51 passed

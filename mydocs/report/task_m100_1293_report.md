@@ -22,7 +22,7 @@
   - HWP5/HWPX 미주 모양 값의 정규화 의미 대응 보강.
 - `src/renderer/typeset.rs`, `src/renderer/height_cursor.rs`, `src/renderer/layout.rs`
   - visible/no-separator, default/large `미주 사이`, 큰/기본 `구분선 아래`, rewind/title-tail, equation/TAC tail의 공통 흐름 보정.
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
   - note shape와 separator gap, question marker flow, line/large ink drift 분석 보강.
   - 같은 HWP/PDF를 두 번 검사하던 `2024-09-below20above20` 중복 target 제거.
 - `tests/issue_1139_inline_picture_duplicate.rs`, `tests/issue_1082_endnote_multicolumn_drift.rs`, `tests/issue_1050_footnote_serialize.rs`, `src/renderer/layout/tests.rs`
@@ -50,7 +50,7 @@ GitHub Actions CI와 PR 생성은 수행하지 않았다. 작업지시자 요청
     - stage117: `2022-09` 0 전환, 회귀 target 0 유지
 - rebase 후 최종 전체 visual sweep:
   - 기준: `upstream/devel` `a0a37d72`
-  - 명령: `python3 scripts/task1274_visual_sweep.py --target all --out output/task1293_stage122_rebase_full_sweep`
+  - 명령: `python3 scripts/visual_sweep.py --target all --out output/task1293_stage122_rebase_full_sweep`
   - 결과: `flagged=7/323`
   - 0 target: 12개
   - 잔여 target: 3개 key

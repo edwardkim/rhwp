@@ -115,7 +115,7 @@ env CARGO_INCREMENTAL=0 cargo test --profile release-test --test issue_rowbreak_
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1867-issue1733-hwpx-p242 \
   --hwp samples/task1725/text_footnote_tail_overpagination.hwpx \
   --pdf pdf/text_footnote_tail_overpagination-2024.pdf \

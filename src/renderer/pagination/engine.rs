@@ -1788,6 +1788,7 @@ impl Paginator {
                                                 tb_para_index: tp_idx,
                                                 tb_control_index: tc_idx,
                                             },
+                                            fragment: None,
                                         });
                                         let fn_height = super::estimate_footnote_note_height(
                                             &fn_ctrl, self.dpi,
@@ -1837,6 +1838,7 @@ impl Paginator {
                                 para_index: para_idx,
                                 control_index: ctrl_idx,
                             },
+                            fragment: None,
                         });
                         let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
                         st.add_footnote_height(fn_height);
@@ -2180,6 +2182,7 @@ impl Paginator {
                                     cell_para_index: cp_idx,
                                     cell_control_index: cc_idx,
                                 },
+                                fragment: None,
                             });
                             let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
                             st.add_footnote_height(fn_height);

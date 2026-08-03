@@ -41,8 +41,8 @@
 
 - 기존 `issue_1139_inline_picture_duplicate.rs`에 2024 미주사이20 문15~문18 marker y guard 추가
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
-- 필요 시 `python3 scripts/task1274_visual_sweep.py --target all`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
+- 필요 시 `python3 scripts/visual_sweep.py --target all`
 
 ## 검증 결과
 

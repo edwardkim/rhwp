@@ -51,7 +51,7 @@
 - RowBreak/저장 bounds 회귀 묶음: `issue_1156_rowbreak_fragment_fit`, `issue_1749_saved_bounds_page_break`, `issue_1937_rowbreak_footnote_overpagination`, `issue_1748_rowbreak_straddle_rowspan`, `issue_1753_deferred_table_fill_ahead`, `issue_1763_cell_trailing_ls_expand`, `issue_2015_saved_bounds_rowbreak`, `issue_554`, `issue_712`, `issue_713`, `issue_1152_intra_para_vpos_reset` 통과.
 - `CARGO_INCREMENTAL=0 cargo build --bin rhwp`: 통과.
 - `wasm-pack build --target web --out-dir pkg`: 통과.
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`: 통과.
+- `python3 -m py_compile scripts/visual_sweep.py`: 통과.
 - `target/debug/rhwp info "samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp"`: 5쪽.
 - `target/debug/rhwp dump-pages "samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp" --page 1`: 2쪽에 `Table pi=24 ci=0 14x15` 유지.
 - `http://localhost:7700/` 기존 Vite 서버에서 `rhwp-studio` 실제 앱 검증: `samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp` 로드 결과 5쪽, Canvas 793×1122 생성, 브라우저 console/page error 0건.

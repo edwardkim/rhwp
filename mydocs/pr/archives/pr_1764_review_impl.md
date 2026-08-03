@@ -35,7 +35,7 @@ git cherry-pick 4e47d0fb1283cefcadd87bba08da0348c7b04230
 완료.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --file-target pr1764-cell-trailing-hwp samples/task1763/cell_trailing_ls_expand.hwp samples/task1763/cell_trailing_ls_expand-2024.pdf \
   --file-target pr1764-cell-trailing-hwpx samples/task1763/cell_trailing_ls_expand.hwpx samples/task1763/cell_trailing_ls_expand-2024.pdf \
   --page 1 \

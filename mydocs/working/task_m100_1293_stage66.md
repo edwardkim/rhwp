@@ -26,7 +26,7 @@ Stage65에서 공식 `미주 모양` 의미와 2024-11 샘플의 UI 값을 확�
 
 ## 계측 방법
 
-1. `scripts/task1274_visual_sweep.py --target <target>`로 SVG/PDF/render-tree/annotation을 생성한다.
+1. `scripts/visual_sweep.py --target <target>`로 SVG/PDF/render-tree/annotation을 생성한다.
 2. `metrics.json`의 `endnote_separator_gap`을 우선 확인한다.
    - separator 후보가 있으면 rhwp/PDF separator y와 first content y를 비교한다.
    - separator 후보가 없으면 first content y와 page/body 흐름을 별도로 확인한다.
@@ -37,7 +37,7 @@ Stage65에서 공식 `미주 모양` 의미와 2024-11 샘플의 UI 값을 확�
 
 ```sh
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
   --target 2024-11-practice-above0-between7-below2 \
@@ -64,7 +64,7 @@ python3 scripts/task1274_visual_sweep.py \
 
 ```sh
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
   --target 2024-11-practice-above0-between7-below2 \
@@ -120,7 +120,7 @@ python3 scripts/task1274_visual_sweep.py \
 
 ## 다음 단계
 
-Stage67에서는 source behavior 변경보다 먼저 `scripts/task1274_visual_sweep.py`를 보강한다.
+Stage67에서는 source behavior 변경보다 먼저 `scripts/visual_sweep.py`를 보강한다.
 
 - `has_visible_separator=false`이면 separator candidate를 찾지 않고 no-separator content-start
   metric을 별도로 기록한다.

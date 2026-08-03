@@ -73,7 +73,7 @@ Stage75에서 `3-11월_실전_통합_2024-구분선위0미주사이0구분선아
 - 검증 결과:
   - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
     - 52 passed.
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage76_title_tail --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage76_title_tail --rhwp-bin target/debug/rhwp`
     - `2024-11-practice-above0-between0-below0`: SVG/PDF/render tree `21/21/21`, `qflow=[]`, `frame=[]`, `equation_text_overlap=[]`.
     - `2024-11-practice-above0-between20-below2`: SVG/PDF/render tree `22/22/22`, 기존 `qflow=[10,20]` 유지, `frame=[]`, `equation_text_overlap=[]`.
   - `compare_020.png`에서 q30 제목이 RHWP/PDF 모두 좌측 단 하단 tail에 위치하는 것을 확인했다.

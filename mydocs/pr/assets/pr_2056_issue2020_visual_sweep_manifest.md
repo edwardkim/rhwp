@@ -42,10 +42,10 @@ summaries copied from the same run.
 ## Commands
 
 ```bash
-python3 scripts/task1274_visual_sweep.py --out output/issue2020/pr_prep/visual_passport_lawgo_p1 --rhwp-bin target/release/rhwp --key issue2020-passport-lawgo-p1 --hwp samples/issue2020/passport_application_lawgo.hwp --pdf pdf/issue2020/passport_application_lawgo-lawgo-2020.pdf --page 1
-python3 scripts/task1274_visual_sweep.py --out output/issue2020/pr_prep/visual_passport_2022_p1 --rhwp-bin target/release/rhwp --key issue2020-passport-2022-p1 --hwp samples/issue2020/passport_application_lawgo.hwp --pdf pdf/issue2020/passport_application_lawgo-2022.pdf --page 1
-python3 scripts/task1274_visual_sweep.py --out output/issue2020/pr_prep/visual_fsc_hwp_p1_p2 --rhwp-bin target/release/rhwp --key issue2020-fsc-hwp-p1-p2 --hwp 'samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp' --pdf 'pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwp-2022.pdf' --pages 1-2
-python3 scripts/task1274_visual_sweep.py --out output/issue2020/pr_prep/visual_fsc_hwpx_p1_p2 --rhwp-bin target/release/rhwp --key issue2020-fsc-hwpx-p1-p2 --hwp 'samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwpx' --pdf 'pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwpx-2022.pdf' --pages 1-2
-python3 scripts/task1274_visual_sweep.py --out output/issue2020/pr_prep/visual_bokhak_p1 --rhwp-bin target/release/rhwp --key issue2020-bokhak-p1 --hwp samples/복학원서.hwp --pdf pdf/issue2020/복학원서-2022.pdf --page 1
-python3 scripts/task1274_visual_sweep.py --out output/issue2020/pr_prep/visual_niklp_p3 --rhwp-bin target/release/rhwp --key issue2020-niklp-p3 --hwp 'samples/2022년 국립국어원 업무계획.hwp' --pdf 'pdf/2022년 국립국어원 업무계획-2022.pdf' --page 3
+python3 scripts/visual_sweep.py --out output/issue2020/pr_prep/visual_passport_lawgo_p1 --rhwp-bin target/release/rhwp --key issue2020-passport-lawgo-p1 --hwp samples/issue2020/passport_application_lawgo.hwp --pdf pdf/issue2020/passport_application_lawgo-lawgo-2020.pdf --page 1
+python3 scripts/visual_sweep.py --out output/issue2020/pr_prep/visual_passport_2022_p1 --rhwp-bin target/release/rhwp --key issue2020-passport-2022-p1 --hwp samples/issue2020/passport_application_lawgo.hwp --pdf pdf/issue2020/passport_application_lawgo-2022.pdf --page 1
+python3 scripts/visual_sweep.py --out output/issue2020/pr_prep/visual_fsc_hwp_p1_p2 --rhwp-bin target/release/rhwp --key issue2020-fsc-hwp-p1-p2 --hwp 'samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp' --pdf 'pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwp-2022.pdf' --pages 1-2
+python3 scripts/visual_sweep.py --out output/issue2020/pr_prep/visual_fsc_hwpx_p1_p2 --rhwp-bin target/release/rhwp --key issue2020-fsc-hwpx-p1-p2 --hwp 'samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwpx' --pdf 'pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwpx-2022.pdf' --pages 1-2
+python3 scripts/visual_sweep.py --out output/issue2020/pr_prep/visual_bokhak_p1 --rhwp-bin target/release/rhwp --key issue2020-bokhak-p1 --hwp samples/복학원서.hwp --pdf pdf/issue2020/복학원서-2022.pdf --page 1
+python3 scripts/visual_sweep.py --out output/issue2020/pr_prep/visual_niklp_p3 --rhwp-bin target/release/rhwp --key issue2020-niklp-p3 --hwp 'samples/2022년 국립국어원 업무계획.hwp' --pdf 'pdf/2022년 국립국어원 업무계획-2022.pdf' --page 3
 ```

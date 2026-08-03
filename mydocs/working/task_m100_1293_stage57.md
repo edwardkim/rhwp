@@ -72,7 +72,7 @@ st.current_height + en_fit > available - ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_P
 targeted sweep:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-no-separator-above20-between20-below20 \
   --out output/task1293_stage57_no_separator_tail_guard \
   --rhwp-bin target/debug/rhwp
@@ -131,4 +131,4 @@ cargo test --test issue_1139_inline_picture_duplicate -- --nocapture
 - 수정 후:
   - `cargo build --bin rhwp`
   - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20`

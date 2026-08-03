@@ -64,7 +64,7 @@ GitHub CI는 모두 통과했다. WASM Build는 workflow 조건상 skip이며 CI
 ## 시각 검증
 
 기준 PDF는 이미 저장소의 `pdf/chart/라인/*-2022.pdf`에 존재해 MCP 변환은 사용하지 않았다.
-`scripts/task1274_visual_sweep.py`로 라인 5종 x hwp/hwpx 10개를 모두 비교했다.
+`scripts/visual_sweep.py`로 라인 5종 x hwp/hwpx 10개를 모두 비교했다.
 
 결과 요약:
 

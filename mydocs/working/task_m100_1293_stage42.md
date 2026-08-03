@@ -69,7 +69,7 @@ pagination advance 문제가 아니라 renderer의 saved-vpos 하단 기준 또�
 ## 검증 계획
 
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage42_zero_profile --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage42_zero_profile --rhwp-bin target/debug/rhwp`
 - focused 4종 sweep으로 기존 7mm/8mm target 회귀 확인
 - `cargo test --lib compact_endnote -- --nocapture`
 

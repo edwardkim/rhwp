@@ -74,7 +74,7 @@ PR의 핵심 주장은 "tac 캡션을 선행 same-para float 로 오인해 본�
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1855-issue1853 \
   --hwp samples/issue1853_caption_precedes_body_split.hwpx \
   --pdf pdf/issue1853_caption_precedes_body_split-2024.pdf \

@@ -30,7 +30,7 @@ review-only 단일 부모 commit이 없었으므로 fast-pass를 재사용하지
 
 ## 변경 범위와 검토
 
-- `scripts/task1274_visual_sweep.py`가 옛한글 자모(U+1100–U+11FF, U+A960–U+A97F,
+- `scripts/visual_sweep.py`가 옛한글 자모(U+1100–U+11FF, U+A960–U+A97F,
   U+D7B0–U+D7FF)와 BMP PUA(U+E000–U+F8FF) `TextRun`을 render-tree bounding box로
   raster에 대응시킨다.
 - PDF 기준 이미지와의 국소 ink union/diff를 계산해 `legacy_glyph_visual_mismatch`,
@@ -66,8 +66,8 @@ source → IR → layout → paint 인과 분석이며 visual sweep은 후보 �
 
 | 검증 | 결과 |
 | --- | --- |
-| `python3 -m unittest scripts/tests/test_task1274_visual_sweep.py` | 7건 통과 |
-| `python3 -m py_compile scripts/task1274_visual_sweep.py` | 통과 |
+| `python3 -m unittest scripts/tests/test_visual_sweep.py` | 7건 통과 |
+| `python3 -m py_compile scripts/visual_sweep.py` | 통과 |
 | `python3 scripts/check_markdown_links.py mydocs/manual/verification mydocs/plans/task_m100_3486_v2.md` | 12문서 내부 링크 통과 |
 | `python3 scripts/check_document_metadata.py` | 421문서 메타데이터 통과 |
 | `git diff --check` | 통과 |

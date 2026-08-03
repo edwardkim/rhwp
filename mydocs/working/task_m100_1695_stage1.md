@@ -39,7 +39,7 @@ SO-SUEOP HWP3 샘플에서 `LINE_SEG` `vpos` reset/rewind가 페이지/단 경�
   - 결과: 통과
 - `target/debug/rhwp export-render-tree samples/SO-SUEOP.hwp -p 5/23/28`
   - 결과: 기존 `LAYOUT_OVERFLOW` 로그가 사라짐
-- `python3 scripts/task1274_visual_sweep.py --key issue1695-so-sueop-hwp --hwp samples/SO-SUEOP.hwp --pdf pdf/SO-SUEOP-2024.pdf --out output/issue1695_after_visual --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --key issue1695-so-sueop-hwp --hwp samples/SO-SUEOP.hwp --pdf pdf/SO-SUEOP-2024.pdf --out output/issue1695_after_visual --rhwp-bin target/debug/rhwp`
   - 결과: SVG 46페이지, PDF 46페이지, `flagged=0/46`
 - `env CARGO_INCREMENTAL=0 cargo test --test issue_1692`
   - 결과: 통과, 11 passed

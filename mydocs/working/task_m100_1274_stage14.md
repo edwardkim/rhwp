@@ -42,7 +42,7 @@
 
 - `cargo test --test issue_241 -- --nocapture`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
 - 필요 시 `cargo fmt --check`, `cargo test --tests` 재실행
 
 ## 검증 결과

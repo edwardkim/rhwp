@@ -72,7 +72,7 @@ qflow `[10, 20]`을 분석한다. 단순한 미주 사이 수치 보정이 아�
 - `cargo fmt --all`: 통과.
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 53개 통과.
 - `cargo build --bin rhwp`: 통과.
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage77_equation_tac_guard --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage77_equation_tac_guard --rhwp-bin target/debug/rhwp`
   - `2024-11-practice-above0-between0-below0`: SVG/PDF/render tree `21/21/21`, qflow `[]`.
   - `2024-11-practice-above0-between20-below2`: SVG/PDF/render tree `22/22/22`, qflow `[10, 20]` 유지.
 

@@ -23,7 +23,7 @@ HWP3 PDF/Studio source-to-canvas 판정은 Stage 12-B의 별도 증적이다.
 
 ## 구현 중인 계약
 
-`scripts/task1274_visual_sweep.py`에 다음을 추가했다.
+`scripts/visual_sweep.py`에 다음을 추가했다.
 
 - 기본 실행은 target output을 비우고 새로 만들며, 명시적 `--resume`만 기존 산출물을 유지한다.
 - `run_manifest.json`은 입력 HWP/PDF SHA-256, Git HEAD, sweep script SHA-256, rhwp binary SHA-256,
@@ -42,7 +42,7 @@ HWP3 PDF/Studio source-to-canvas 판정은 Stage 12-B의 별도 증적이다.
 원인 판정이나 렌더 품질 합격 근거가 아니다.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key task3486-stage12-resume-smoke \
   --hwp samples/복학원서.hwp \
   --pdf pdf/복학원서-2022.pdf \
@@ -63,8 +63,8 @@ Focused 코드 검증도 통과했다.
 
 | 명령 | 결과 |
 | --- | --- |
-| `python3 -m py_compile scripts/task1274_visual_sweep.py` | 성공 |
-| `python3 scripts/tests/test_task1274_visual_sweep.py` | 11 tests 통과 — 기존 선택/raster·glyph 경계와 provenance 거부, shard 누적, 불완전 checkpoint 비재사용, 완료 page만 합친 `incomplete` summary |
+| `python3 -m py_compile scripts/visual_sweep.py` | 성공 |
+| `python3 scripts/tests/test_visual_sweep.py` | 11 tests 통과 — 기존 선택/raster·glyph 경계와 provenance 거부, shard 누적, 불완전 checkpoint 비재사용, 완료 page만 합친 `incomplete` summary |
 | `git diff --check` | 성공 |
 
 ## Historical binary의 암호 HWP3 p3 checkpoint 계약 확인
@@ -80,7 +80,7 @@ provenance로 사용하지 않았다.
 bug-hunter 판정은 전용 target에서 다시 빌드한 binary로 재실행한 뒤에만 기록한다.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key hwp3-password-stage12-resume-p003 \
   --hwp samples/HWP3-password-123456.hwp \
   --pdf pdf/HWP3-password-123456.pdf \
@@ -153,8 +153,8 @@ IR을 고치는 전역 `ᄒᆞᆫ → 한`은 Stage 11의 배제 결론대로 �
 | --- | --- |
 | `cargo test --profile release-test legacy_hancom_product --lib` (`CARGO_TARGET_DIR=target/task3486-stage12`, `CARGO_INCREMENTAL=0`) | 3 passed — 일반 옛한글 비변경, 줄 경계 보정, composer 우회 직접 `TextRunNode` 보정과 raw text 보존 |
 | `cargo fmt --check`, `git diff --check` | 성공 |
-| `python3 -m py_compile scripts/task1274_visual_sweep.py` | 성공 |
-| `python3 scripts/tests/test_task1274_visual_sweep.py` | 12 tests passed — `displayText`가 해결한 glyph는 raw text가 옛자모여도 후보로 재발하지 않음 |
+| `python3 -m py_compile scripts/visual_sweep.py` | 성공 |
+| `python3 scripts/tests/test_visual_sweep.py` | 12 tests passed — `displayText`가 해결한 glyph는 raw text가 옛자모여도 후보로 재발하지 않음 |
 | 실제 HWP3 PDF sweep | current 전용 release-test binary, 144 DPI, pages 3·19 요청/완료, `missing=[]`, `run_state=complete`; SVG/render tree는 24쪽 export되었지만 **24쪽 raster sweep 완료 주장은 하지 않음** |
 
 실제 p3·p19 run의 `legacy_glyph_visual_pages=[]`, 각 페이지의

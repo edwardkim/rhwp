@@ -57,7 +57,7 @@ Stage8-A에서 `미주 사이 20mm` 초과분 전체 예약으로
 - `cargo fmt --all -- --check`
 - `cargo build --bin rhwp`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage9_between0 --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage9_between0 --rhwp-bin target/debug/rhwp`
 - page count: `2024-11-practice-shape987`, `2024-11-practice-no-separator-above20-between20-below20`, `2024-11-practice-above0-between20-below2`
 
 ## 2024-11 샘플 8종 sweep 확인
@@ -68,7 +68,7 @@ Stage8-A에서 `미주 사이 20mm` 초과분 전체 예약으로
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
   --target 2024-11-practice-above0-between7-below2 \

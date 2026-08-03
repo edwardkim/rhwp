@@ -86,7 +86,7 @@ HWPX 조합 샘플은 같은 UI 값을 `separator_margin_top=5669`, `separator_m
 - `cargo fmt --all -- --check` — 통과
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1139_endnote_shape_api_clears_hwp5_separator_above_fallback_slot -- --nocapture` — 통과
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture` — 52 passed
-- `task1274_visual_sweep.py` focused target 재실행
+- `visual_sweep.py` focused target 재실행
 
 ## Stage5 판단
 

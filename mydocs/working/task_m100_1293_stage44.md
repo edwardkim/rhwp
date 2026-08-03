@@ -14,7 +14,7 @@ script에 등록된 전체 target을 다시 실행해 Stage43의 profile-specifi
 ## 검증 계획
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target all \
   --out output/task1293_stage44_full_sweep \
   --rhwp-bin target/debug/rhwp

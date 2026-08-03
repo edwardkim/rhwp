@@ -92,7 +92,7 @@ p2에는 다른 3×1 table subtree의 최대 17.1px 및 `TextLine` 5.5px 초과�
 HWP→PDF(job `c4dc4e2e-009e-4e63-b15c-dfec2323fb59`, validation ok, run_status 0)로 생성했다. server URL·token은
 기록하지 않는다.
 
-최종 debug binary로 `task1274_visual_sweep.py`를 p1–8, p9–12 두 batch로 실행했다. 각 batch는 13개 SVG/
+최종 debug binary로 `visual_sweep.py`를 p1–8, p9–12 두 batch로 실행했다. 각 batch는 13개 SVG/
 render tree를 export하고, 기준 PDF의 요청한 12쪽 raster·compare·overlay·review를 모두 완료했다.
 
 | 페이지 | 구조 후보 | pixel match | ink proxy | 사람 판정 |

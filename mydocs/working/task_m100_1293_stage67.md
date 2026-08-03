@@ -11,7 +11,7 @@ metric을 보강한다.
 
 ## 수정 대상
 
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
 
 ## 구현 방향
 
@@ -33,7 +33,7 @@ metric을 보강한다.
 ## 검증 명령
 
 ```sh
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-no-separator-above20-between20-below20 \
   --target 2024-11-practice-above0-between0-below0 \
   --out output/task1293_stage67_gap_metric \
@@ -66,7 +66,7 @@ python3 scripts/task1274_visual_sweep.py \
 실행 완료:
 
 ```sh
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-no-separator-above20-between20-below20 \
   --target 2024-11-practice-above0-between0-below0 \
   --out output/task1293_stage67_gap_metric \

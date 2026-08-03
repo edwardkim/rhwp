@@ -47,7 +47,7 @@ git cherry-pick -n local/pr1756
 완료.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1756-host-heading \
   --hwp samples/task1753/deferred_takeplace_fill_ahead.hwpx \
   --pdf samples/task1753/deferred_takeplace_fill_ahead-2024.pdf \

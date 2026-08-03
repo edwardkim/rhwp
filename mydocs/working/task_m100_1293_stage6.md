@@ -65,16 +65,16 @@ layout이 이를 순차 높이 또는 잘못된 split으로 처리하는 문제�
 - HWPX: raw `separatorMarginTop=8.999mm`, raw `noteSpacing=6.999mm`, raw `rawUnknown=7.997mm`
 - UI 의미값: `구분선 위 8.999mm / 구분선 아래 6.999mm / 미주 사이 7.997mm`
 
-`scripts/task1274_visual_sweep.py`에 `2024-11-practice-shape987` target을 추가했다.
+`scripts/visual_sweep.py`에 `2024-11-practice-shape987` target을 추가했다.
 
 ## 검증 결과
 
 - `cargo fmt --all -- --check`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20 --out output/task1293_stage6_between20 --rhwp-bin target/debug/rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-below20-above20 --out output/task1293_stage6_abovebelow20 --rhwp-bin target/debug/rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-shape987 --out output/task1293_stage6_2024_11_shape987 --rhwp-bin target/debug/rhwp`
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20 --out output/task1293_stage6_between20 --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-09-below20-above20 --out output/task1293_stage6_abovebelow20 --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-shape987 --out output/task1293_stage6_2024_11_shape987 --rhwp-bin target/debug/rhwp`
+- `python3 -m py_compile scripts/visual_sweep.py`
 
 확인된 결과:
 

@@ -40,7 +40,7 @@ internal vpos rewind + 단 하단 이동` 구조에 걸리는 공통 흐름 보�
 
 ```bash
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-shape987 \
   --out output/task1293_stage40_shape_trial13 \
   --rhwp-bin target/debug/rhwp
@@ -60,7 +60,7 @@ renderer overflow 제거까지 확인했고, 남은 시각 drift는 후속 stage
 ### focused sweep
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-above20-between7-below2 \
   --target 2024-11-practice-above20-between0-below20 \
   --target 2024-11-practice-shape987 \

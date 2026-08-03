@@ -34,7 +34,7 @@
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1284_2024_between20 -- --nocapture`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
 - `cargo build`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
 
 ## 진행 기록
 

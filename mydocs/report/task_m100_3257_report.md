@@ -48,7 +48,7 @@
 | `CARGO_INCREMENTAL=0 cargo test --lib trailing_tac_width_tests -- --nocapture` | 3 passed |
 | `CARGO_INCREMENTAL=0 cargo test --lib issue_3257_centered_trailing_picture_uses_full_line_width -- --nocapture` | 1 passed |
 | `CARGO_INCREMENTAL=0 cargo test --test issue_1219_equation_line_hangul_advance --test issue_1285_tac_sequence_right_align -- --nocapture` | 3 passed |
-| `CARGO_INCREMENTAL=0 python3 scripts/task1274_visual_sweep.py ... --page 4 --dpi 144` | 성공, 후보 0/1 |
+| `CARGO_INCREMENTAL=0 python3 scripts/visual_sweep.py ... --page 4 --dpi 144` | 성공, 후보 0/1 |
 | `cargo fmt`, `git diff --check` | 통과 |
 
 ### IR field sweep baseline

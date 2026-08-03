@@ -12,7 +12,7 @@ Stage51 검증 중 `cargo build --bin rhwp`로 `target/debug/rhwp`를 최신 코
 
 ```bash
 rm -rf output/task1293_stage51_full_sweep_final
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target all \
   --out output/task1293_stage51_full_sweep_final \
   --rhwp-bin target/debug/rhwp

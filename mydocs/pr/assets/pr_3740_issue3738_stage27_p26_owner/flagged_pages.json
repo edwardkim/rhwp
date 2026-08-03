@@ -1,0 +1,724 @@
+[
+  {
+    "page": 27,
+    "flags": [
+      "endnote_separator_gap_drift"
+    ],
+    "rhwp_frame": [
+      39,
+      442,
+      1152,
+      1645
+    ],
+    "pdf_frame": [
+      39,
+      291,
+      1151,
+      1645
+    ],
+    "rhwp_outside_frame_pixels": 0,
+    "pdf_outside_frame_pixels": 0,
+    "rhwp_outside_frame_max_y": null,
+    "pdf_outside_frame_max_y": null,
+    "rhwp_outside_frame_extent_px": null,
+    "pdf_outside_frame_extent_px": null,
+    "frame_overflow_tolerated_bleed": false,
+    "paper_size_footer_frame_bleed": false,
+    "rhwp_outside_frame_bleed_px": 0,
+    "pdf_outside_frame_bleed_px": 0,
+    "content_bottom_delta_px": -1.0,
+    "red_marker_drift": {
+      "rhwp_count": 3,
+      "pdf_count": 5,
+      "paired": 3,
+      "max_abs_delta_px": 938.0,
+      "p90_abs_delta_px": 792.0,
+      "mean_abs_delta_px": 617.8
+    },
+    "line_band_drift": {
+      "rhwp_count": 23,
+      "pdf_count": 30,
+      "paired": 23,
+      "max_abs_delta_px": 607.0,
+      "p90_abs_delta_px": 584.5,
+      "mean_abs_delta_px": 354.6
+    },
+    "column_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          39,
+          442,
+          593,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          291,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 22,
+          "pdf_count": 28,
+          "paired": 22,
+          "max_abs_delta_px": 610.0,
+          "p90_abs_delta_px": 585.0,
+          "mean_abs_delta_px": 354.0
+        },
+        "rhwp_first_band": {
+          "y0": 460,
+          "y1": 479,
+          "x0": 142,
+          "x1": 584,
+          "pixels": 2014,
+          "cy": 469.5
+        },
+        "rhwp_last_band": {
+          "y0": 1618,
+          "y1": 1619,
+          "x0": 584,
+          "x1": 591,
+          "pixels": 16,
+          "cy": 1618.5
+        },
+        "pdf_first_band": {
+          "y0": 298,
+          "y1": 312,
+          "x0": 155,
+          "x1": 591,
+          "pixels": 2037,
+          "cy": 305.0
+        },
+        "pdf_last_band": {
+          "y0": 1613,
+          "y1": 1614,
+          "x0": 567,
+          "x1": 591,
+          "pixels": 20,
+          "cy": 1613.5
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          442,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          291,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 17,
+          "pdf_count": 24,
+          "paired": 17,
+          "max_abs_delta_px": 730.5,
+          "p90_abs_delta_px": 618.0,
+          "mean_abs_delta_px": 358.4
+        },
+        "rhwp_first_band": {
+          "y0": 461,
+          "y1": 477,
+          "x0": 599,
+          "x1": 1037,
+          "pixels": 1636,
+          "cy": 469.0
+        },
+        "rhwp_last_band": {
+          "y0": 1611,
+          "y1": 1612,
+          "x0": 601,
+          "x1": 628,
+          "pixels": 24,
+          "cy": 1611.5
+        },
+        "pdf_first_band": {
+          "y0": 299,
+          "y1": 309,
+          "x0": 599,
+          "x1": 998,
+          "pixels": 165,
+          "cy": 304.0
+        },
+        "pdf_last_band": {
+          "y0": 1613,
+          "y1": 1614,
+          "x0": 601,
+          "x1": 624,
+          "pixels": 20,
+          "cy": 1613.5
+        }
+      }
+    ],
+    "column_line_band_drift_candidates": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          39,
+          442,
+          593,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          291,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 22,
+          "pdf_count": 28,
+          "paired": 22,
+          "max_abs_delta_px": 610.0,
+          "p90_abs_delta_px": 585.0,
+          "mean_abs_delta_px": 354.0
+        },
+        "rhwp_first_band": {
+          "y0": 460,
+          "y1": 479,
+          "x0": 142,
+          "x1": 584,
+          "pixels": 2014,
+          "cy": 469.5
+        },
+        "rhwp_last_band": {
+          "y0": 1618,
+          "y1": 1619,
+          "x0": 584,
+          "x1": 591,
+          "pixels": 16,
+          "cy": 1618.5
+        },
+        "pdf_first_band": {
+          "y0": 298,
+          "y1": 312,
+          "x0": 155,
+          "x1": 591,
+          "pixels": 2037,
+          "cy": 305.0
+        },
+        "pdf_last_band": {
+          "y0": 1613,
+          "y1": 1614,
+          "x0": 567,
+          "x1": 591,
+          "pixels": 20,
+          "cy": 1613.5
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          442,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          291,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 17,
+          "pdf_count": 24,
+          "paired": 17,
+          "max_abs_delta_px": 730.5,
+          "p90_abs_delta_px": 618.0,
+          "mean_abs_delta_px": 358.4
+        },
+        "rhwp_first_band": {
+          "y0": 461,
+          "y1": 477,
+          "x0": 599,
+          "x1": 1037,
+          "pixels": 1636,
+          "cy": 469.0
+        },
+        "rhwp_last_band": {
+          "y0": 1611,
+          "y1": 1612,
+          "x0": 601,
+          "x1": 628,
+          "pixels": 24,
+          "cy": 1611.5
+        },
+        "pdf_first_band": {
+          "y0": 299,
+          "y1": 309,
+          "x0": 599,
+          "x1": 998,
+          "pixels": 165,
+          "cy": 304.0
+        },
+        "pdf_last_band": {
+          "y0": 1613,
+          "y1": 1614,
+          "x0": 601,
+          "x1": 624,
+          "pixels": 20,
+          "cy": 1613.5
+        }
+      }
+    ],
+    "column_text_flow_masked_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          139,
+          122,
+          593,
+          1562
+        ],
+        "pdf_frame": [
+          139,
+          122,
+          593,
+          1562
+        ],
+        "drift": {
+          "rhwp_count": 33,
+          "pdf_count": 33,
+          "paired": 33,
+          "max_abs_delta_px": 2.0,
+          "p90_abs_delta_px": 1.0,
+          "mean_abs_delta_px": 0.7
+        },
+        "rhwp_first_band": {
+          "y0": 125,
+          "y1": 143,
+          "x0": 144,
+          "x1": 591,
+          "pixels": 2117,
+          "cy": 134.0
+        },
+        "rhwp_last_band": {
+          "y0": 1541,
+          "y1": 1557,
+          "x0": 142,
+          "x1": 458,
+          "pixels": 1317,
+          "cy": 1549.0
+        },
+        "pdf_first_band": {
+          "y0": 126,
+          "y1": 144,
+          "x0": 144,
+          "x1": 576,
+          "pixels": 2170,
+          "cy": 135.0
+        },
+        "pdf_last_band": {
+          "y0": 1542,
+          "y1": 1558,
+          "x0": 142,
+          "x1": 436,
+          "pixels": 1410,
+          "cy": 1550.0
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          122,
+          1052,
+          1562
+        ],
+        "pdf_frame": [
+          597,
+          122,
+          1051,
+          1562
+        ],
+        "drift": {
+          "rhwp_count": 29,
+          "pdf_count": 29,
+          "paired": 29,
+          "max_abs_delta_px": 1.5,
+          "p90_abs_delta_px": 1.0,
+          "mean_abs_delta_px": 0.6
+        },
+        "rhwp_first_band": {
+          "y0": 125,
+          "y1": 143,
+          "x0": 599,
+          "x1": 1045,
+          "pixels": 2005,
+          "cy": 134.0
+        },
+        "rhwp_last_band": {
+          "y0": 1449,
+          "y1": 1470,
+          "x0": 602,
+          "x1": 989,
+          "pixels": 1717,
+          "cy": 1459.5
+        },
+        "pdf_first_band": {
+          "y0": 126,
+          "y1": 144,
+          "x0": 599,
+          "x1": 1045,
+          "pixels": 2075,
+          "cy": 135.0
+        },
+        "pdf_last_band": {
+          "y0": 1449,
+          "y1": 1467,
+          "x0": 599,
+          "x1": 982,
+          "pixels": 1968,
+          "cy": 1458.0
+        }
+      }
+    ],
+    "column_text_flow_table_masks": {
+      "rhwp": [],
+      "pdf": []
+    },
+    "column_text_flow_body_frames": {
+      "rhwp": [
+        139,
+        122,
+        1052,
+        1562
+      ],
+      "pdf": [
+        139,
+        122,
+        1051,
+        1562
+      ]
+    },
+    "column_text_flow_collapse_candidates": [],
+    "large_ink_region_drift": {
+      "rhwp_count": 4,
+      "pdf_count": 13,
+      "paired": 4,
+      "deltas_px": [
+        831.0,
+        967.0,
+        863.0,
+        959.0
+      ],
+      "max_abs_delta_px": 967.0,
+      "mean_abs_delta_px": 905.0,
+      "rhwp_regions": [
+        {
+          "x0": 135.0,
+          "y0": 1066.0,
+          "x1": 999.0,
+          "y1": 1402.0,
+          "w": 864.0,
+          "h": 336.0,
+          "cy": 1234.0,
+          "tiles": 924.0
+        },
+        {
+          "x0": 135.0,
+          "y0": 1418.0,
+          "x1": 711.0,
+          "y1": 1482.0,
+          "w": 576.0,
+          "h": 64.0,
+          "cy": 1450.0,
+          "tiles": 41.0
+        },
+        {
+          "x0": 727.0,
+          "y0": 1418.0,
+          "x1": 999.0,
+          "y1": 1466.0,
+          "w": 272.0,
+          "h": 48.0,
+          "cy": 1442.0,
+          "tiles": 24.0
+        },
+        {
+          "x0": 151.0,
+          "y0": 1514.0,
+          "x1": 455.0,
+          "y1": 1562.0,
+          "w": 304.0,
+          "h": 48.0,
+          "cy": 1538.0,
+          "tiles": 40.0
+        }
+      ],
+      "pdf_regions": [
+        {
+          "x0": 151.0,
+          "y0": 291.0,
+          "x1": 1031.0,
+          "y1": 515.0,
+          "w": 880.0,
+          "h": 224.0,
+          "cy": 403.0,
+          "tiles": 381.0
+        },
+        {
+          "x0": 759.0,
+          "y0": 451.0,
+          "x1": 1047.0,
+          "y1": 515.0,
+          "w": 288.0,
+          "h": 64.0,
+          "cy": 483.0,
+          "tiles": 37.0
+        },
+        {
+          "x0": 135.0,
+          "y0": 547.0,
+          "x1": 567.0,
+          "y1": 611.0,
+          "w": 432.0,
+          "h": 64.0,
+          "cy": 579.0,
+          "tiles": 56.0
+        },
+        {
+          "x0": 727.0,
+          "y0": 547.0,
+          "x1": 1047.0,
+          "y1": 611.0,
+          "w": 320.0,
+          "h": 64.0,
+          "cy": 579.0,
+          "tiles": 43.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 627.0,
+          "x1": 615.0,
+          "y1": 691.0,
+          "w": 448.0,
+          "h": 64.0,
+          "cy": 659.0,
+          "tiles": 68.0
+        },
+        {
+          "x0": 311.0,
+          "y0": 707.0,
+          "x1": 647.0,
+          "y1": 771.0,
+          "w": 336.0,
+          "h": 64.0,
+          "cy": 739.0,
+          "tiles": 29.0
+        },
+        {
+          "x0": 135.0,
+          "y0": 787.0,
+          "x1": 327.0,
+          "y1": 851.0,
+          "w": 192.0,
+          "h": 64.0,
+          "cy": 819.0,
+          "tiles": 25.0
+        },
+        {
+          "x0": 279.0,
+          "y0": 787.0,
+          "x1": 423.0,
+          "y1": 851.0,
+          "w": 144.0,
+          "h": 64.0,
+          "cy": 819.0,
+          "tiles": 17.0
+        }
+      ]
+    },
+    "endnote_shape_ui": {
+      "separator_visible": true,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_below_mm": 2.0,
+      "separator_length_mm": 43.321
+    },
+    "endnote_separator_gap": {
+      "expected_separator": true,
+      "separator_below_mm": 2.0,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_length_px": 163.7,
+      "rhwp": {
+        "expected_separator": true,
+        "candidate_count": 1,
+        "selected": {
+          "x0": 94.5,
+          "x1": 296.1,
+          "y0": 1019.0,
+          "y1": 1019.5,
+          "length": 201.6,
+          "cy": 1019.2,
+          "gap_height": 0.5
+        },
+        "gap_px": 56.5,
+        "marker_gap_px": 56.5,
+        "first_content_y": 1076.0,
+        "first_marker_y": 1076.0,
+        "candidates": [
+          {
+            "x0": 94.5,
+            "x1": 296.1,
+            "y0": 1019.0,
+            "y1": 1019.5,
+            "length": 201.6,
+            "cy": 1019.2,
+            "gap_height": 0.5
+          }
+        ]
+      },
+      "pdf": {
+        "expected_separator": true,
+        "candidate_count": 116,
+        "selected": {
+          "x0": 368.0,
+          "x1": 583.0,
+          "y0": 1072.0,
+          "y1": 1073.0,
+          "length": 216.0,
+          "cy": 1072.5,
+          "gap_height": 2.0
+        },
+        "gap_px": 3.0,
+        "marker_gap_px": 3.0,
+        "first_content_y": 1076.0,
+        "first_marker_y": 1076.0,
+        "candidates": [
+          {
+            "x0": 842.0,
+            "x1": 968.0,
+            "y0": 1322.0,
+            "y1": 1322.0,
+            "length": 127.0,
+            "cy": 1322.0,
+            "gap_height": 1.0
+          },
+          {
+            "x0": 338.0,
+            "x1": 462.0,
+            "y0": 1323.0,
+            "y1": 1329.0,
+            "length": 122.0,
+            "cy": 1326.0,
+            "gap_height": 7.0
+          },
+          {
+            "x0": 323.0,
+            "x1": 432.0,
+            "y0": 1344.0,
+            "y1": 1344.0,
+            "length": 110.0,
+            "cy": 1344.0,
+            "gap_height": 1.0
+          },
+          {
+            "x0": 762.0,
+            "x1": 861.0,
+            "y0": 1365.0,
+            "y1": 1366.0,
+            "length": 100.0,
+            "cy": 1365.5,
+            "gap_height": 2.0
+          },
+          {
+            "x0": 323.0,
+            "x1": 432.0,
+            "y0": 1382.0,
+            "y1": 1382.0,
+            "length": 110.0,
+            "cy": 1382.0,
+            "gap_height": 1.0
+          },
+          {
+            "x0": 762.0,
+            "x1": 861.0,
+            "y0": 1387.0,
+            "y1": 1387.0,
+            "length": 100.0,
+            "cy": 1387.0,
+            "gap_height": 1.0
+          }
+        ]
+      },
+      "gap_delta_px": 53.5
+    },
+    "endnote_no_separator_content_start": null,
+    "between_notes_marker_gap": {
+      "expected_between_notes_mm": 0.0,
+      "expected_between_notes_px": null,
+      "rhwp_marker_count": 3,
+      "pdf_marker_count": 5,
+      "paired_gap_count": 1,
+      "max_abs_delta_px": 146.0,
+      "mean_abs_delta_px": 146.0,
+      "rhwp_marker_y": [
+        1097.0,
+        1268.0,
+        1220.5
+      ],
+      "pdf_marker_y": [
+        305.0,
+        330.0,
+        1097.0,
+        1269.0,
+        329.5
+      ],
+      "rhwp_marker_y_by_column": [
+        [
+          1097.0,
+          1268.0
+        ],
+        [
+          1220.5
+        ]
+      ],
+      "pdf_marker_y_by_column": [
+        [
+          305.0,
+          330.0,
+          1097.0,
+          1269.0
+        ],
+        [
+          329.5
+        ]
+      ],
+      "rhwp_gaps_px": [
+        171.0
+      ],
+      "pdf_gaps_px": [
+        25.0,
+        767.0,
+        172.0
+      ],
+      "pairs": [
+        {
+          "prev_index": 0,
+          "next_index": 1,
+          "rhwp_gap_px": 171.0,
+          "pdf_gap_px": 25.0,
+          "delta_px": 146.0
+        }
+      ]
+    },
+    "svg": "/private/tmp/rhwp-stage27-p26-p27-sweep-20260802/issue3738-stage27-hwp-p026-p027/svg/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)_027.svg",
+    "render_tree_json": "/private/tmp/rhwp-stage27-p26-p27-sweep-20260802/issue3738-stage27-hwp-p026-p027/render_tree/render_tree_027.json",
+    "equation_text_overlap_candidates": [],
+    "question_title_text_overlap_candidates": [],
+    "line_order_overlap_candidates": [],
+    "render_tree_frame_tail_overflow_candidates": [],
+    "render_tree_frame_tail_overflow_suppressed_candidates": [],
+    "question_marker_drift_candidates": [],
+    "legacy_glyph_visual_candidates": [],
+    "annotated": "/private/tmp/rhwp-stage27-p26-p27-sweep-20260802/issue3738-stage27-hwp-p026-p027/analysis/annotated_027.png"
+  }
+]

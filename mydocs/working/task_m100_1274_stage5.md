@@ -36,7 +36,7 @@ Stage4 이후 `2022-11-practice`는 SVG/PDF/비교 PNG가 21쪽씩 생성되고 
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 48개 통과
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2022-11-practice`
+- `python3 scripts/visual_sweep.py --target 2022-11-practice`
   - SVG 21쪽, PDF 21쪽, 비교 PNG 21쪽
   - `output/task1274/2022-11-practice/manifest.json`의 `overflow_lines` 비어 있음
 - `compare_012.png`

@@ -35,7 +35,7 @@ CARGO_INCREMENTAL=0 cargo test --profile release-test --tests
 시각 sweep:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --file-target pr2140-line-plain-hwpx samples/chart/라인/꺽은선형.hwpx pdf/chart/라인/꺽은선형-2022.pdf \
   --file-target pr2140-line-plain-hwp samples/chart/라인/꺽은선형.hwp pdf/chart/라인/꺽은선형-2022.pdf \
   --file-target pr2140-line-marker-hwpx samples/chart/라인/표식이있는꺽은선형.hwpx pdf/chart/라인/표식이있는꺽은선형-2022.pdf \

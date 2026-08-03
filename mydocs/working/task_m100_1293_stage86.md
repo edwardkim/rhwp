@@ -60,7 +60,7 @@ stage85에서 page10, page11, page12의 직접 문제는 해결됐다. 남은 �
 
 - `cargo build --bin rhwp`
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1293_... -- --nocapture`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 ...`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 ...`
 
 ## 진행 기록
 

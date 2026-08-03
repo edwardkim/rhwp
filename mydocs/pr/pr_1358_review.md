@@ -21,7 +21,7 @@
 
 변경:
 
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
   - 새 target `2024-09-below20above20` 추가
   - HWP: `samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp`
   - PDF: `pdf/3-09월_교육_통합_2024-구분선아래20구분선위20.pdf`
@@ -89,11 +89,11 @@ local/pr1358-merge-test @ 6918f2e0
 
 ```bash
 git diff --check
-python3 -m py_compile scripts/task1274_visual_sweep.py
-python3 scripts/task1274_visual_sweep.py --help
+python3 -m py_compile scripts/visual_sweep.py
+python3 scripts/visual_sweep.py --help
 cargo test --test issue_1082_endnote_multicolumn_drift
 cargo fmt --all -- --check
-python3 scripts/task1274_visual_sweep.py --target 2024-09-below20above20 --out output/poc/pr1358-visual-sweep --rhwp-bin target/debug/rhwp
+python3 scripts/visual_sweep.py --target 2024-09-below20above20 --out output/poc/pr1358-visual-sweep --rhwp-bin target/debug/rhwp
 ```
 
 결과:
@@ -101,8 +101,8 @@ python3 scripts/task1274_visual_sweep.py --target 2024-09-below20above20 --out o
 | 명령 | 결과 |
 |---|---|
 | `git diff --check` | 통과 |
-| `python3 -m py_compile scripts/task1274_visual_sweep.py` | 통과 |
-| `python3 scripts/task1274_visual_sweep.py --help` | 통과, 새 target 노출 확인 |
+| `python3 -m py_compile scripts/visual_sweep.py` | 통과 |
+| `python3 scripts/visual_sweep.py --help` | 통과, 새 target 노출 확인 |
 | `cargo test --test issue_1082_endnote_multicolumn_drift` | 통과, 5 passed |
 | `cargo fmt --all -- --check` | 통과 |
 | 새 target sweep 실행 | 통과 |
@@ -138,7 +138,7 @@ sweep 결과 요약:
 수용 가능한 이유:
 
 - PR은 런타임 렌더러 소스를 변경하지 않는다.
-- `scripts/task1274_visual_sweep.py`에 대상 샘플을 추가하는 변경은 작고 명확하다.
+- `scripts/visual_sweep.py`에 대상 샘플을 추가하는 변경은 작고 명확하다.
 - 새 target은 실제 파일 존재 확인, `--help` 노출, 전체 sweep 실행까지 통과했다.
 - `issue_1082_endnote_multicolumn_drift` 5개 테스트가 통과하여 현재 바운드 추적 상태가 유지된다.
 - 문서에는 정밀 수정 시도가 왜 실패했는지와 어떤 회귀를 만들었는지 기록되어 있어, 같은 경로 재조사를 줄이는 가치가 있다.
@@ -161,8 +161,8 @@ sweep 결과 요약:
 3. contributor 작업 문서 archive 정리.
 4. 최종 검증:
    - `git diff --check`
-   - `python3 -m py_compile scripts/task1274_visual_sweep.py`
-   - `python3 scripts/task1274_visual_sweep.py --help`
+   - `python3 -m py_compile scripts/visual_sweep.py`
+   - `python3 scripts/visual_sweep.py --help`
    - `cargo test --test issue_1082_endnote_multicolumn_drift`
 5. 처리 보고서 작성.
 6. `origin/devel` push.

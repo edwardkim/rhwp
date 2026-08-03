@@ -47,7 +47,7 @@
 - 신규 21쪽 문23 guard 테스트
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1284_2024_between20 -- --nocapture`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
 
 ## 검증 결과
 
@@ -55,7 +55,7 @@
   - 3 passed
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 54 passed
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
   - `question=[18,21,22,23]`
   - page 21의 `문23 column_drift` 후보는 사라졌다.
   - page 21에는 후속 후보로 q25/q26 약 +57px drift와 `pi=1082/1083` tail overflow 로그가 남았다.

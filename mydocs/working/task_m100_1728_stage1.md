@@ -36,7 +36,7 @@ env CARGO_INCREMENTAL=0 cargo test --test issue_1748_rowbreak_straddle_rowspan -
 
 ## PDF 기준 시각 재검증
 
-`scripts/task1274_visual_sweep.py`는 선택 페이지만 분석하더라도 현재 구현상 전체 문서 SVG/PDF raster를 먼저
+`scripts/visual_sweep.py`는 선택 페이지만 분석하더라도 현재 구현상 전체 문서 SVG/PDF raster를 먼저
 생성한다. giant 42쪽 전체 export가 오래 걸려 중단하고, 같은 가이드의 산출물 형식(`compare`, `overlay`,
 `review`)을 유지하도록 5~6쪽만 직접 생성했다.
 

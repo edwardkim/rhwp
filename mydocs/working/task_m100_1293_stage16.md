@@ -29,7 +29,7 @@ frame을 넘는 경우에는 split 후보로 다시 넘겨야 한다.
 
 ## 수정 내용
 
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
   - frame 하단 6px 이내의 glyph bleed는 metric에는 기록하되 `frame_overflow_pixels` 플래그에서 제외한다.
   - equation/text overlap 판단 시 TextRun bbox 높이를 16px ink 높이로 제한하고, y-overlap이 4px 이상인 경우만 후보로 남긴다.
 - `src/renderer/typeset.rs`
@@ -58,10 +58,10 @@ frame을 넘는 경우에는 split 후보로 다시 넘겨야 한다.
 
 ## 검증 예정
 
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`: 통과
+- `python3 -m py_compile scripts/visual_sweep.py`: 통과
 - `cargo build --bin rhwp`: 통과
 - `cargo fmt --all -- --check`: 통과
 - `target/debug/rhwp dump-pages ... -p 18 --respect-vpos-reset`: 일반 dump와 동일
 - `target/debug/rhwp dump-pages ... -p 19 --respect-vpos-reset`: 일반 dump와 동일
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-shape987 --out output/task1293_stage16_shape987_renderer_and_sweep_check --rhwp-bin target/debug/rhwp`: 완료
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-shape987 --out output/task1293_stage16_shape987_renderer_and_sweep_check --rhwp-bin target/debug/rhwp`: 완료
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 52개 통과

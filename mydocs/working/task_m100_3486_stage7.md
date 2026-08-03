@@ -16,7 +16,7 @@ last_verified: 2026-07-29
 ## 비교 방법과 범위
 
 2026-07-29에 암호 HWP3 원본을 재직렬화하지 않고, 일회성 `--password-stdin` wrapper로
-`scripts/task1274_visual_sweep.py`에 직접 전달했다. PDF와 rhwp SVG raster를 같은 144 DPI,
+`scripts/visual_sweep.py`에 직접 전달했다. PDF와 rhwp SVG raster를 같은 144 DPI,
 pixel diff threshold 32로 24쪽 모두 1:1 대응했다. 기준 PDF의 legacy text layer 때문에
 `pdftotext -bbox-layout`는 abort했지만, SVG export·PDF raster·compare·overlay·review 생성은
 24쪽 모두 완료됐다. 따라서 이 단계의 판정 근거는 raster와 육안 대조이며 PDF text bbox 결과가 아니다.

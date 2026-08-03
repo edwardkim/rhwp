@@ -44,7 +44,7 @@
   - `rhwp info`: 2 pages
   - `dump-pages`: p1은 제목+표1, p2는 표2 전체
 - visual sweep:
-  - command: `python3 scripts/task1274_visual_sweep.py --key pr1844-float-stack-defer --hwp samples/float-stack-defer.hwp --pdf pdf/float-stack-defer-2022.pdf --pages 1-2 --out output/pr1844_visual --rhwp-bin target/debug/rhwp`
+  - command: `python3 scripts/visual_sweep.py --key pr1844-float-stack-defer --hwp samples/float-stack-defer.hwp --pdf pdf/float-stack-defer-2022.pdf --pages 1-2 --out output/pr1844_visual --rhwp-bin target/debug/rhwp`
   - flagged: 0/2
   - review p1: `output/pr1844_visual/pr1844-float-stack-defer/review/review_001.png`
   - review p2: `output/pr1844_visual/pr1844-float-stack-defer/review/review_002.png`

@@ -23,7 +23,7 @@ default col0 tail 에 HeightCursor 시뮬 렌더-y 예측 advance 블록 추가 
 - **advance 로는 문제 이동만, 해소 불가** 실증 → 롤백(베이스라인 복구)
 
 ## 수확 (보존)
-- `scripts/task1274_visual_sweep.py` 에 대상 샘플 타겟(`2024-09-below20above20`) 추가 →
+- `scripts/visual_sweep.py` 에 대상 샘플 타겟(`2024-09-below20above20`) 추가 →
   exam 시각 회귀 세트 확장. cascade 회귀를 정확히 검출(세트 가치 입증).
 - 근본 원인·수정 지점·검증 요건·회귀 양상을 stage1/A/BC 문서에 확정 기록
   (다음 착수 시 재조사 불필요).

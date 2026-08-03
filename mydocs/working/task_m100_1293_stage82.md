@@ -54,7 +54,7 @@ stage81 이후 `3-09월_교육_통합_2024-미주사이20.hwp`에서 남은 미�
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py --target 2024-09-between20 --out output/task1293_stage82_between20_after_body_stale --rhwp-bin target/debug/rhwp
+python3 scripts/visual_sweep.py --target 2024-09-between20 --out output/task1293_stage82_between20_after_body_stale --rhwp-bin target/debug/rhwp
 ```
 
 결과:

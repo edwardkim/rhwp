@@ -64,7 +64,7 @@ Stage35 전체 sweep에서 page count와 hard 후보는 모두 통과했지만, 
 - `cargo build --bin rhwp`: 통과
 - focused sweep:
   - 명령:
-    `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between7-below2 --target 2024-11-practice-above20-between0-below20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage36_focused --rhwp-bin target/debug/rhwp`
+    `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between7-below2 --target 2024-11-practice-above20-between0-below20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage36_focused --rhwp-bin target/debug/rhwp`
   - 결과 파일: `output/task1293_stage36_focused/summary.json`
 
 | target | page count | overflow_lines | hard 후보 |

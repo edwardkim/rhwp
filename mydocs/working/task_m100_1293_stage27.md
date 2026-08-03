@@ -69,7 +69,7 @@ Stage27 수정 후보:
   - `cargo fmt --all -- --check`: 통과
   - `cargo test --lib compact_endnote -- --nocapture`: 28개 통과
   - `cargo build --bin rhwp`: 통과
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --target 2024-11-practice-above0-between20-below2 --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage27_no_separator_target --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --target 2024-11-practice-above0-between20-below2 --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage27_no_separator_target --rhwp-bin target/debug/rhwp`
 - 결과:
   - `no-separator` page 10의 `dump-pages -p 9` 배치가 그대로였다.
   - `pi=464~466` overflow도 그대로 남았다.
@@ -116,7 +116,7 @@ Stage27 수정 후보:
 - `cargo fmt --all -- --check`: 통과
 - `cargo test --lib compact_endnote -- --nocapture`: 28개 통과
 - `cargo build --bin rhwp`: 통과
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --target 2024-11-practice-above0-between20-below2 --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage27_tail_fix_target --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --target 2024-11-practice-above0-between20-below2 --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage27_tail_fix_target --rhwp-bin target/debug/rhwp`
 
 | target | page count | overflow | 판단 |
 |---|---:|---:|---|

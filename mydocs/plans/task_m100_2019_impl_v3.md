@@ -86,7 +86,7 @@ v2 의 `para_is_floating_overlay_anchor` 는 부동 폼 앵커의 flow footprint
 - `cargo build --bin rhwp`
 - `CARGO_INCREMENTAL=0 cargo test --test issue_2019_floating_form_overpagination -- --nocapture`
 - `target/debug/rhwp dump-pages samples/hwpx/issue2019_floating_form_74312.hwpx` → 18페이지
-- `scripts/task1274_visual_sweep.py --key issue2019 ... --out output/task2019_v3_visual_scaffold_skip2` → `flagged=0/18`
+- `scripts/visual_sweep.py --key issue2019 ... --out output/task2019_v3_visual_scaffold_skip2` → `flagged=0/18`
 
 ## 5. PR #2035 처리 방향
 

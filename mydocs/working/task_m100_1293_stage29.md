@@ -89,7 +89,7 @@ Stage29는 1번을 좁은 조건으로 시도한다. 다만 검증 중 보이는
 - `cargo test --lib compact_endnote -- --nocapture`: 28개 통과
 - `cargo build --bin rhwp`: 통과
 - target sweep:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --target 2024-11-practice-above0-between20-below2 --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage29_visible_large_between_rewind_target --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --target 2024-11-practice-above0-between20-below2 --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage29_visible_large_between_rewind_target --rhwp-bin target/debug/rhwp`
 
 | target | page count | overflow_lines | title/order/equation/frame 후보 | 판단 |
 |---|---:|---:|---:|---|

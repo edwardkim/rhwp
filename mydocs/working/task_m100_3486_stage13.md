@@ -21,7 +21,7 @@ last_verified: 2026-07-31
 출력, 이 문서에 기록하지 않고 local stdin launcher로만 HWP3에 공급했다.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key hwp3-stage13-post-toc-p01-06 \
   --hwp samples/HWP3-password-123456.hwp \
   --pdf pdf/HWP3-password-123456.pdf \

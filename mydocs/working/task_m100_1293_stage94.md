@@ -29,7 +29,7 @@ visual의 logical bbox가 텍스트보다 위쪽으로 확장되는 검출기 �
 ## 검증 계획
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -67,8 +67,8 @@ CI 전체 테스트와 PR은 작업지시자 지시에 따라 수행하지 않�
 ## 검증 결과
 
 ```bash
-python3 -B -c "import ast, pathlib; ast.parse(pathlib.Path('scripts/task1274_visual_sweep.py').read_text())"
-python3 scripts/task1274_visual_sweep.py \
+python3 -B -c "import ast, pathlib; ast.parse(pathlib.Path('scripts/visual_sweep.py').read_text())"
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \

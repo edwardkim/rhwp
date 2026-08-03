@@ -61,7 +61,7 @@ red/line/equation 후보를 실제 pagination 차이로 보고, 공통 미주 �
   - 통과
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 52 passed
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-below20-above20 --out output/task1293_stage18_2024_09_below20_above20_check --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-09-below20-above20 --out output/task1293_stage18_2024_09_below20_above20_check --rhwp-bin target/debug/rhwp`
   - SVG/PDF/render-tree: 23/23/23
   - `frame_overflow_pages=[]`
   - `question_title_text_overlap_pages=[]`
@@ -69,15 +69,15 @@ red/line/equation 후보를 실제 pagination 차이로 보고, 공통 미주 �
   - p18의 `red_marker_drift`는 `max_abs_delta_px=1.0`, `mean_abs_delta_px=0.5`로 감소
   - p18의 남은 `equation_text_overlap`은 `text_pi=923`, text=`이 경우 구하는 확률은`
     줄과 바로 아래 수식 bbox 접촉 오탐으로 시각 확인
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`
+- `python3 -m py_compile scripts/visual_sweep.py`
   - 통과
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-below20-above20 --out output/task1293_stage18_detector_p18_check --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-09-below20-above20 --out output/task1293_stage18_detector_p18_check --rhwp-bin target/debug/rhwp`
   - p18 정상 줄간 equation/text 접촉 후보 제거
   - `equation_text_overlap_pages=[]`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage18_detector_p13_check --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage18_detector_p13_check --rhwp-bin target/debug/rhwp`
   - p13 단 경계 equation/text 후보 유지
   - `equation_text_overlap_pages=[13]`
-- `python3 scripts/task1274_visual_sweep.py --target all --out output/task1293_stage18_all_detector_check --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target all --out output/task1293_stage18_all_detector_check --rhwp-bin target/debug/rhwp`
   - 15개 target 모두 SVG/PDF/render-tree 쪽수 1:1
   - 모든 target에서 `frame_overflow_pages=[]`, `question_title_text_overlap_pages=[]`,
     `line_order_overlap_pages=[]`

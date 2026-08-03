@@ -8,7 +8,7 @@ Stage47에서 9월 기본 계열의 compact 미주 tail line-box overflow 로그
 
 ## 확인 계획
 
-- `python3 scripts/task1274_visual_sweep.py --target all --out output/task1293_stage48_full_sweep --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target all --out output/task1293_stage48_full_sweep --rhwp-bin target/debug/rhwp`
 - 각 target별로 다음 값을 확인한다.
   - SVG/PDF/render tree page count 1:1 여부
   - `overflow_lines`

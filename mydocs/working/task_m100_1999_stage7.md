@@ -51,7 +51,7 @@ Stage 6은 HWPX 소스 여부가 아니라 문서 구조를 기준으로 RowBrea
 visual sweep:
 
 - 명령:
-  `python3 scripts/task1274_visual_sweep.py --key issue1999-p14-16-stage7 --file-target issue1999-hwp-stage7 samples/issue1949_giant_cell_nested_tables_perf.hwp pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf --file-target issue1999-hwpx-stage7 samples/issue1949_giant_cell_nested_tables_perf.hwpx pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf --pages 14-16 --out output/task1999_issue1999_p14_16_stage7 --rhwp-bin target/debug/rhwp`
+  `python3 scripts/visual_sweep.py --key issue1999-p14-16-stage7 --file-target issue1999-hwp-stage7 samples/issue1949_giant_cell_nested_tables_perf.hwp pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf --file-target issue1999-hwpx-stage7 samples/issue1949_giant_cell_nested_tables_perf.hwpx pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf --pages 14-16 --out output/task1999_issue1999_p14_16_stage7 --rhwp-bin target/debug/rhwp`
 - summary: `output/task1999_issue1999_p14_16_stage7/summary.json`
 - HWP: SVG/PDF/render-tree 115/115/115쪽, 14~16쪽 `flagged=0/3`
 - HWPX: SVG/PDF/render-tree 115/115/115쪽, 14~16쪽 `flagged=0/3`

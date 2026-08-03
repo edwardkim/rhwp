@@ -54,7 +54,7 @@ Stage5 이후 6개 문서는 모두 PDF와 페이지 수가 1:1로 맞는다.
   - 48개 통과
   - 기존 `2022-10` `pi=588` 관련 overflow 로그는 남아 있음
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py`
+- `python3 scripts/visual_sweep.py`
 
 전체 sweep 결과:
 

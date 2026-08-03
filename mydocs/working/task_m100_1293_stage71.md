@@ -75,7 +75,7 @@ Stage70에서 `dump-pages`에 원본 미주 source와 `line_seg` 요약을 붙�
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 52개 통과.
 - 부분 sweep:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage71_boundary_tac --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage71_boundary_tac --rhwp-bin target/debug/rhwp`
   - 두 target 모두 SVG/PDF/render tree 페이지 수 1:1.
   - `equation_text_overlap_pages`는 비어 있음.
   - `frame_overflow_pages`는 비어 있음.

@@ -19,7 +19,7 @@
 
 주의 사항은 변경량이 크다는 점이다. GitHub 기준 `+1641 / -16`, 29 files이며, 대부분은
 한컴 기준 샘플과 PDF 바이너리 추가다. 코드 변경은 `src/main.rs`의 덤프 CLI와
-`scripts/task1274_visual_sweep.py`의 분석 스크립트에 한정된다.
+`scripts/visual_sweep.py`의 분석 스크립트에 한정된다.
 
 ## 2. PR 정보
 
@@ -53,7 +53,7 @@
   - 특정 미주 원본 문단의 `line_seg`, `TextRun`, 컨트롤 위치, TAC 수식 정보를 함께 출력한다.
   - Task 1293에서 문제가 된 "문단 내 lineSegArray / line_seg / 글자처럼 취급해야 하는 수식" 추적용이다.
 
-### 3.2 `scripts/task1274_visual_sweep.py`
+### 3.2 `scripts/visual_sweep.py`
 
 미주/문항 흐름 sweep 검출을 보강했다.
 

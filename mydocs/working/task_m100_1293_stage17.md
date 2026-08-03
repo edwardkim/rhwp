@@ -86,9 +86,9 @@ Stage16에서 `shape987` p19/p20의 하단 tail overflow와 sweep의 하단 glyp
 
 ## 검증 예정
 
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between7-below2 --target 2022-11-practice --target 2024-09-below20-above20 --out output/task1293_stage17_candidate_recheck --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between7-below2 --target 2022-11-practice --target 2024-09-below20-above20 --out output/task1293_stage17_candidate_recheck --rhwp-bin target/debug/rhwp`
 - `cargo fmt --all -- --check`
 - `cargo test compact_endnote_bottom_rewind --lib -- --nocapture`
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between7-below2 --target 2022-11-practice --target 2024-09-below20-above20 --out output/task1293_stage17_after_height_cursor_check --rhwp-bin target/debug/rhwp`
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between7-below2 --target 2022-11-practice --target 2024-09-below20-above20 --out output/task1293_stage17_after_height_cursor_check --rhwp-bin target/debug/rhwp`
+- `python3 -m py_compile scripts/visual_sweep.py`

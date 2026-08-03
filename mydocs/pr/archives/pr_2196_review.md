@@ -75,7 +75,7 @@ MCP 서버 URL/IP와 인증 토큰은 공개 문서에 기록하지 않는다. �
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key issue2190-hwpx-sample2 \
   --hwp samples/hwpx_sample2.hwpx \
   --pdf pdf/hwpx_sample2-2020.pdf \

@@ -26600,3 +26600,136 @@ fn local_body_replace_paginates_immediately_at_flow_boundary() {
             .sum::<usize>() as u32
     );
 }
+
+// ─── Alt(local resize) 조절 셀이 Ctrl(칸 전체 delta) 조절을 따라오는지 ─────────
+//
+// Alt+방향키(localResize + render 힌트)로 조절한
+// 행은 `local_resize_cell_widths` 에 절대값 override 를 갖는다. 이후 Ctrl+방향키
+// (plain widthDelta)가 칸 전체를 조절하면 cell.width 는 움직이는데 override 는
+// 그대로 남아 — Alt 만진 행만 옛 경계에 얼어붙고 나머지 칸이 움직인다("따로 논다").
+// 계약: plain delta 가 override 를 가진 셀에 적용되면 override 도 같은 양만큼
+// 이동해야 한다 (높이 동일).
+
+#[test]
+fn local_resize_override_follows_plain_width_delta() {
+    let mut doc = HwpDocument::create_empty();
+    let table_result = doc.create_table_native(0, 0, 0, 3, 3).expect("표 생성");
+    let table_para_idx = issue_1481_json_usize(&table_result, "paraIdx");
+
+    // 대상 셀: row1 col1 (cellIdx 는 행 우선)
+    let (target_idx, base_width) = {
+        let table = issue_1481_table(&doc, table_para_idx);
+        let (idx, cell) = table
+            .cells
+            .iter()
+            .enumerate()
+            .find(|(_, c)| c.row == 1 && c.col == 1)
+            .expect("row1col1");
+        (idx, cell.width)
+    };
+
+    // 1) Alt 상당: localResize + renderWidth override 등록
+    let render_w = base_width + 900;
+    doc.resize_table_cells_native(
+        0,
+        table_para_idx,
+        0,
+        &format!(
+            r#"[{{"cellIdx":{target_idx},"widthDelta":900,"localResize":true,"renderWidth":{render_w}}}]"#
+        ),
+    )
+    .expect("local resize");
+    {
+        let table = issue_1481_table(&doc, table_para_idx);
+        let (_, w) = table
+            .local_resize_cell_widths
+            .iter()
+            .find(|(idx, _)| *idx == target_idx)
+            .expect("override 등록");
+        assert_eq!(*w, render_w);
+    }
+
+    // 2) Ctrl 상당: 같은 칸(col1) 전체에 plain widthDelta +600
+    let col_updates = {
+        let table = issue_1481_table(&doc, table_para_idx);
+        table
+            .cells
+            .iter()
+            .enumerate()
+            .filter(|(_, c)| c.col == 1 && c.col_span == 1)
+            .map(|(idx, _)| format!(r#"{{"cellIdx":{idx},"widthDelta":600}}"#))
+            .collect::<Vec<_>>()
+            .join(",")
+    };
+    doc.resize_table_cells_native(0, table_para_idx, 0, &format!("[{col_updates}]"))
+        .expect("칸 전체 resize");
+
+    let table = issue_1481_table(&doc, table_para_idx);
+    let (_, w) = table
+        .local_resize_cell_widths
+        .iter()
+        .find(|(idx, _)| *idx == target_idx)
+        .expect("override 유지");
+    assert_eq!(
+        *w,
+        render_w + 600,
+        "plain widthDelta 가 override 를 가진 셀에 적용되면 override 도 같은 양만큼 \
+         이동해야 한다 — 아니면 Alt 조절 행만 옛 경계에 얼어붙는다"
+    );
+}
+
+#[test]
+fn local_resize_override_follows_plain_height_delta() {
+    // 폭 테스트(local_resize_override_follows_plain_width_delta)의 높이 대칭.
+    let mut doc = HwpDocument::create_empty();
+    let table_result = doc.create_table_native(0, 0, 0, 3, 3).expect("표 생성");
+    let table_para_idx = issue_1481_json_usize(&table_result, "paraIdx");
+
+    let (target_idx, base_height) = {
+        let table = issue_1481_table(&doc, table_para_idx);
+        let (idx, cell) = table
+            .cells
+            .iter()
+            .enumerate()
+            .find(|(_, c)| c.row == 1 && c.col == 1)
+            .expect("row1col1");
+        (idx, cell.height)
+    };
+
+    let render_h = base_height + 900;
+    doc.resize_table_cells_native(
+        0,
+        table_para_idx,
+        0,
+        &format!(
+            r#"[{{"cellIdx":{target_idx},"heightDelta":900,"localResize":true,"renderHeight":{render_h}}}]"#
+        ),
+    )
+    .expect("local resize");
+
+    let row_updates = {
+        let table = issue_1481_table(&doc, table_para_idx);
+        table
+            .cells
+            .iter()
+            .enumerate()
+            .filter(|(_, c)| c.row == 1 && c.row_span == 1)
+            .map(|(idx, _)| format!(r#"{{"cellIdx":{idx},"heightDelta":600}}"#))
+            .collect::<Vec<_>>()
+            .join(",")
+    };
+    doc.resize_table_cells_native(0, table_para_idx, 0, &format!("[{row_updates}]"))
+        .expect("줄 전체 resize");
+
+    let table = issue_1481_table(&doc, table_para_idx);
+    let (_, h) = table
+        .local_resize_cell_heights
+        .iter()
+        .find(|(idx, _)| *idx == target_idx)
+        .expect("override 유지");
+    assert_eq!(
+        *h,
+        render_h + 600,
+        "높이 override 도 plain delta 를 따라와야 한다 (폭과 대칭)"
+    );
+}

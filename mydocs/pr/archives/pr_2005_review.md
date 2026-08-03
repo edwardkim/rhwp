@@ -62,7 +62,7 @@ renderer/layout 쪽수·표 split·그림 flow를 직접 바꾸므로 visual swe
 수행한 visual sweep:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py --key issue1999-p14-16-stage7 \
+python3 scripts/visual_sweep.py --key issue1999-p14-16-stage7 \
   --file-target issue1999-hwp-stage7 samples/issue1949_giant_cell_nested_tables_perf.hwp pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf \
   --file-target issue1999-hwpx-stage7 samples/issue1949_giant_cell_nested_tables_perf.hwpx pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf \
   --pages 14-16 \

@@ -34,7 +34,7 @@
 실행 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --out output/pr1890-visual \
   --rhwp-bin target/debug/rhwp \
   --page 1 \

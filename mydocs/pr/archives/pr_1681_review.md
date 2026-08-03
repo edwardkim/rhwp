@@ -70,7 +70,7 @@ visual roundtrip baseline 승격은 좋은 방향이다. 이번 검토에서는 
 
 - `cargo test --test svg_snapshot`: 8개 golden snapshot 통과
 - `cargo test --profile release-test --test visual_roundtrip_baseline`: 3개 visual roundtrip baseline 통과
-- `python3 scripts/task1274_visual_sweep.py --target all`: 15개 target 모두 SVG/PDF page count 일치, page count mismatch 0건
+- `python3 scripts/visual_sweep.py --target all`: 15개 target 모두 SVG/PDF page count 일치, page count mismatch 0건
 - 자동 sweep flagged 후보: 5개 target. matrix/group textbox PR 본문 release asset은 저장소 fixture가 아니므로, 해당 asset 자체의 canonical 일치는 수동 시각 판정 대상으로 남긴다.
 - browser/WASM 경로: `rhwp-studio` TypeScript/test와 `wasm-pack build --target web --out-dir pkg` 통과
 

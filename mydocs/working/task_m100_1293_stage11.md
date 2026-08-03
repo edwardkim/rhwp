@@ -70,7 +70,7 @@ Stage10 sweep 결과:
 ## 검증 대기
 
 - [x] `cargo fmt --all -- --check`
-- [x] `python3 -m py_compile scripts/task1274_visual_sweep.py`
+- [x] `python3 -m py_compile scripts/visual_sweep.py`
 - [x] `cargo build --bin rhwp`
 - [x] `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
 - [x] `2024-11-practice-shape987`, `2024-11-practice-above20-between0-below20` pair sweep

@@ -83,7 +83,7 @@ OVR은 한컴 없이 실행하는 geometry 보조 근거다. 한컴 before/after
 
 ## 한컴 기준 before/after/OVL
 
-저장소의 한컴 기준 PDF를 사용해 `scripts/task1274_visual_sweep.py`를 실행하고 review contact
+저장소의 한컴 기준 PDF를 사용해 `scripts/visual_sweep.py`를 실행하고 review contact
 sheet를 직접 판정했다. 이 판정은 upstream 대비 회귀 여부와 한컴 oracle 정확성을 분리한다.
 
 | 표본 | 범위 | 페이지 | 자동 후보 | upstream 회귀 | 한컴 oracle |

@@ -1419,6 +1419,18 @@ export class CursorState {
     this.cellAnchor = { row: newRow, col: newCol };
     this.cellFocus = { row: newRow, col: newCol };
     this.excludedCells.clear();
+
+    // F5 단일 셀 선택의 화살표 이동은 하이라이트뿐 아니라 실제 편집 캐럿도 대상 셀 첫 위치로 옮긴다.
+    // 그래야 셀 선택을 끝낸 직후의 입력·서식 명령이 표시된 셀에 적용된다.
+    const targetCell = bboxes.find(b =>
+      newRow >= b.row && newRow < b.row + b.rowSpan
+        && newCol >= b.col && newCol < b.col + b.colSpan,
+    );
+    if (!targetCell) return;
+    this.preferredX = null;
+    this.atLineEnd = false;
+    this.moveToCellByIndex(sec, ppi, ci, cellPath, targetCell.cellIdx, 'start');
+    this.updateRect();
   }
 
   /** Shift+클릭: anchor 고정, focus를 클릭 셀로 이동 (범위 선택). */

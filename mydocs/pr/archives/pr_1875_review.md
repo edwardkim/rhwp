@@ -83,7 +83,7 @@ visual sweep은 기준 PDF가 있는 대표 페이지를 대상으로 수행했�
 
 2구역 `END_OF_DOCUMENT` fixture:
 
-- 명령: `python3 scripts/task1274_visual_sweep.py --key pr1875-eod --hwp /private/tmp/rhwp-pr1875-fixtures/endnote_end_of_document_fixture.hwpx --pdf pdf/endnote_end_of_document_fixture-2024.pdf --pages 1-2 --out output/pr1875-visual/eod`
+- 명령: `python3 scripts/visual_sweep.py --key pr1875-eod --hwp /private/tmp/rhwp-pr1875-fixtures/endnote_end_of_document_fixture.hwpx --pdf pdf/endnote_end_of_document_fixture-2024.pdf --pages 1-2 --out output/pr1875-visual/eod`
 - SVG pages: 2.
 - PDF pages: 2.
 - selected pages: 1, 2.
@@ -98,7 +98,7 @@ visual sweep은 기준 PDF가 있는 대표 페이지를 대상으로 수행했�
 
 3구역 다중 미주 fixture:
 
-- 명령: `python3 scripts/task1274_visual_sweep.py --key pr1875-multi --hwp /private/tmp/rhwp-pr1875-fixtures/endnote_multi_note_fixture.hwpx --pdf pdf/endnote_multi_note_fixture-2024.pdf --page 3 --out output/pr1875-visual/multi`
+- 명령: `python3 scripts/visual_sweep.py --key pr1875-multi --hwp /private/tmp/rhwp-pr1875-fixtures/endnote_multi_note_fixture.hwpx --pdf pdf/endnote_multi_note_fixture-2024.pdf --page 3 --out output/pr1875-visual/multi`
 - selected page: 3.
 - flagged: 0/1.
 - p3 review: `output/pr1875-visual/multi/pr1875-multi/review/review_003.png`.

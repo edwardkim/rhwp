@@ -56,7 +56,7 @@ HWP5 `Alignment::Split`(HWPX `DISTRIBUTE_SPACE`, 한컴 UI의 나눔 정렬)을
 | `src/renderer/layout/paragraph_layout.rs` | Split/Justify 마지막 줄 판정 분리, 회귀 테스트 2건 추가 |
 | `src/renderer/web_canvas.rs` | 음수 자간 Canvas glyph 폭 축소 방지 |
 | `tests/golden_svg/issue-617/exam-kor-page5.svg` | 한컴 2022 기준과 가까워진 `<보 기>` 나눔정렬 좌표 반영 |
-| `scripts/task1274_visual_sweep.py` | `--dpi`를 SVG zoom에도 적용, 0 이하 DPI 거부 |
+| `scripts/visual_sweep.py` | `--dpi`를 SVG zoom에도 적용, 0 이하 DPI 거부 |
 | `mydocs/plans/task_m100_2809*.md` | 조사·구현 계약 기록 |
 | `mydocs/working/task_m100_2809_stage*.md` | 단계별 원인·검증 증적 기록 |
 | `rhwp-studio/e2e/issue-2809-split-alignment.test.mjs` | 실제 백엔드, 좌표 span과 최종 Canvas glyph 픽셀 폭 회귀 검증 |
@@ -106,7 +106,7 @@ HWP 2022 PDF의 좌우 괄호는 `229.44pt / 266.88pt`, 수정 SVG 환산값은
 - `CARGO_INCREMENTAL=0 cargo test --test svg_snapshot` — `8 passed; 0 failed`.
 - `CARGO_INCREMENTAL=0 cargo clippy --all-targets -- -D warnings` — 통과.
 - `cargo fmt --all --check`, `git diff --check` — 통과.
-- `python3 -m py_compile scripts/task1274_visual_sweep.py` — 통과.
+- `python3 -m py_compile scripts/visual_sweep.py` — 통과.
 - visual sweep 96dpi/144dpi 실동작 — 각 `flagged=0/1`.
 - `wasm-pack build --target web --out-dir pkg` — 통과.
 - `cd rhwp-studio && npm run e2e:issue-2809` — assertion `7/7` 통과.

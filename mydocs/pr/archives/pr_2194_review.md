@@ -114,7 +114,7 @@ PR review 규칙에 따라 cargo 검증 전 `/Users/tsjang/rhwp/target` 하위 �
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr2194-issue1949 \
   --hwp samples/issue1949_giant_cell_nested_tables_perf.hwp \
   --pdf pdf/issue1949_giant_cell_nested_tables_perf-2020.pdf \

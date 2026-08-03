@@ -69,7 +69,7 @@ RowBreak 잔여까지 모두 닫지는 못한다. #2070을 close하려면 최소
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr2198_80168 \
   --hwp samples/80168_regulatory_analysis.hwp \
   --pdf pdf/80168_regulatory_analysis-2022.pdf \

@@ -36,7 +36,7 @@ success다. 이 review 기록은 이 green code candidate 뒤에 review-only com
 
 ## 변경 범위와 검토
 
-- `scripts/task1274_visual_sweep.py`는 HWP/PDF·Git HEAD·실행 스크립트/바이너리·DPI·diff threshold
+- `scripts/visual_sweep.py`는 HWP/PDF·Git HEAD·실행 스크립트/바이너리·DPI·diff threshold
   provenance를 `run_manifest.json`으로 기록한다. 새 실행은 output을 초기화하고, `--resume`은 provenance가
   같은 경우에만 완성 artifact를 모두 갖춘 page checkpoint를 재사용한다. shard 요청과
   requested/completed/missing/run_state를 원자적으로 집계한다.
@@ -94,8 +94,8 @@ p3에서 rhwp 표 제목은 이제 `한글 97의 사용 환경`으로, p19의 `�
 | 검증 | 결과 |
 | --- | --- |
 | `cargo test --profile release-test legacy_hancom_product --lib` (`CARGO_TARGET_DIR=target/task3486-stage12`, `CARGO_INCREMENTAL=0`) | 3 passed — raw text 보존, 일반 옛한글 비변경, 줄 경계와 composer 우회 경로 |
-| `python3 -m py_compile scripts/task1274_visual_sweep.py` | 통과 |
-| `python3 scripts/tests/test_task1274_visual_sweep.py` | 12 passed — provenance/resume/shard와 `displayText` glyph 음성 회귀 |
+| `python3 -m py_compile scripts/visual_sweep.py` | 통과 |
+| `python3 scripts/tests/test_visual_sweep.py` | 12 passed — provenance/resume/shard와 `displayText` glyph 음성 회귀 |
 | `cargo test --profile release-test --test issue_2099_araea_pua` (`CARGO_TARGET_DIR=target/task3486-stage12`, `CARGO_INCREMENTAL=0`) | 4 passed — U+F53A의 실제 옛한글 SVG 확장을 제품명으로 오투영하지 않음 |
 | `cargo fmt --check`, `git diff --check` | 통과 |
 | GitHub Actions — CI | `7d0bc0023` 기준 preflight, lint, test archive, Native Skia, default-feature 8 shards, `Build & Test` 모두 success |

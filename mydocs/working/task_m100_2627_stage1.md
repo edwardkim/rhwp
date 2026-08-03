@@ -71,7 +71,7 @@ CARGO_INCREMENTAL=0 cargo test --profile release-test \
 
 CARGO_INCREMENTAL=0 cargo build
 
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key issue2559-footnote \
   --hwp samples/issue2559/1341000_research_report_footnotes.hwp \
   --pdf pdf/issue2559/1341000_research_report_footnotes-2020-print.pdf \

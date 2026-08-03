@@ -44,7 +44,7 @@ PR head를 현재 `devel` 위에 squash 통합했다.
 
 `src/main.rs` 에 `export-render-tree` CLI를 추가했다.
 
-`scripts/task1274_visual_sweep.py` 는 HWP/PDF/SVG/PNG/render tree를 생성하고 다음 후보를 수집한다.
+`scripts/visual_sweep.py` 는 HWP/PDF/SVG/PNG/render tree를 생성하고 다음 후보를 수집한다.
 
 - frame overflow
 - red marker drift

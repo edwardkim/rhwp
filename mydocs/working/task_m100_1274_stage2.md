@@ -39,7 +39,7 @@ Stage1 전체 sweep에서 가장 큰 overflow 후보는 `3-11월_실전_통합_2
 
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture` 통과: 47개 테스트.
 - `cargo build --bin rhwp` 통과.
-- `python3 scripts/task1274_visual_sweep.py --target 2022-11-practice` 통과.
+- `python3 scripts/visual_sweep.py --target 2022-11-practice` 통과.
 
 ## 시각/로그 확인
 

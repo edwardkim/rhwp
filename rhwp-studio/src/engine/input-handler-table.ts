@@ -6,6 +6,14 @@ import { getObjectProperties, setObjectProperties } from './input-handler-pictur
 import type { CellBbox } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { BorderEdge } from './table-resize-renderer';
+import {
+  buildColumnResizeUpdates,
+  buildLocalResizeUpdates,
+  buildBoundaryResizeUpdates,
+  type CellSelectionRange,
+  type LocalResizeUpdate,
+  type ResizeArrowKey,
+} from './table-resize-updates';
 import { showToast } from '@/ui/toast';
 
 const MIN_TABLE_CELL_SIZE_HWP = 200;
@@ -1416,44 +1424,29 @@ export function finishMoveDrag(this: any): void {
   }
 }
 
-export function resizeCellByKeyboard(this: any, key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
+/** 세 모드 공통: 셀 bbox 조회 → 빌더 → snapshot 라우팅. */
+function applyKeyboardResize(
+  this: any,
+  key: ResizeArrowKey,
+  operationType: string,
+  build: (bboxes: CellBbox[], range: CellSelectionRange, key: ResizeArrowKey) => LocalResizeUpdate[],
+): void {
   const ctx = this.cursor.getCellTableContext();
   const range = this.cursor.getSelectedCellRange();
   if (!ctx || !range) return;
 
-  const DELTA = 300; // 1 키스트로크 당 300 HWPUNIT (~1mm)
   let bboxes: CellBbox[];
   try {
     bboxes = this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci);
   } catch { return; }
 
-  // 선택 범위 내 셀 bbox 추출
-  const selectedBboxes = bboxes
-    .filter(b => b.row >= range.startRow && b.row <= range.endRow
-              && b.col >= range.startCol && b.col <= range.endCol);
-  if (selectedBboxes.length === 0) return;
-
-  const updates: Array<{ cellIdx: number; widthDelta?: number; heightDelta?: number }> = [];
-  const updatedCells = new Set<number>();
-  const isHoriz = (key === 'ArrowLeft' || key === 'ArrowRight');
-  const delta = (key === 'ArrowRight' || key === 'ArrowDown') ? DELTA : -DELTA;
-
-  // 선택 블록 내부 이웃에 반대 delta를 넣으면 전체 선택에서 첫 행/열만 변한다.
-  // 한컴처럼 선택된 셀들은 모두 같은 방향으로 크기를 조정한다.
-  for (const bbox of selectedBboxes) {
-    if (updatedCells.has(bbox.cellIdx)) continue;
-    updatedCells.add(bbox.cellIdx);
-    if (isHoriz) {
-      updates.push({ cellIdx: bbox.cellIdx, widthDelta: delta });
-    } else {
-      updates.push({ cellIdx: bbox.cellIdx, heightDelta: delta });
-    }
-  }
+  const updates = build(bboxes, range, key);
+  if (updates.length === 0) return;
 
   try {
     this.executeOperation({
       kind: 'snapshot',
-      operationType: 'resizeCellByKeyboard',
+      operationType,
       operation: (wasm: any) => {
         wasm.resizeTableCells(ctx.sec, ctx.ppi, ctx.ci, updates);
         return this.cursor.getPosition();
@@ -1461,8 +1454,23 @@ export function resizeCellByKeyboard(this: any, key: 'ArrowUp' | 'ArrowDown' | '
     });
     this.updateCellSelection();
   } catch (err) {
-    console.warn('[InputHandler] resizeCellByKeyboard 실패:', err);
+    console.warn(`[InputHandler] ${operationType} 실패:`, err);
   }
+}
+
+/** Ctrl/Cmd+방향키 — 칸/줄 전체 크기 조절 (한컴 table(size).htm). */
+export function resizeCellByKeyboard(this: any, key: ResizeArrowKey): void {
+  applyKeyboardResize.call(this, key, 'resizeCellByKeyboard', buildColumnResizeUpdates);
+}
+
+/** Alt+방향키 — 선택 칸/줄과 바로 오른쪽/아래 이웃을 반대로 조절 (한컴 table(size).htm). */
+export function resizeCellLocalByKeyboard(this: any, key: ResizeArrowKey): void {
+  applyKeyboardResize.call(this, key, 'resizeCellLocalByKeyboard', buildLocalResizeUpdates);
+}
+
+/** Shift+방향키 — 경계 이동, 이웃이 반대로 조절 (한컴 table(size).htm). */
+export function resizeCellBoundaryByKeyboard(this: any, key: ResizeArrowKey): void {
+  applyKeyboardResize.call(this, key, 'resizeCellBoundaryByKeyboard', buildBoundaryResizeUpdates);
 }
 
 /** 전체 표 비율 리사이즈 (phase 3, Ctrl+방향키) */

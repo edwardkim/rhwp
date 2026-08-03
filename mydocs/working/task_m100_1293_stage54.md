@@ -18,7 +18,7 @@ page count와 기존 core gate가 모두 맞아도 문항 흐름이 PDF와 구�
 
 ## 구현 계획
 
-- `scripts/task1274_visual_sweep.py`에 `question_marker_flow_drift` flag를 추가한다.
+- `scripts/visual_sweep.py`에 `question_marker_flow_drift` flag를 추가한다.
 - 단순 빨간 marker y 차이 전체가 아니라 다음처럼 구조 차이가 큰 페이지만 flag한다.
   - 빨간 marker 개수 차이가 2개 이상이고 line/large drift가 동반된다.
   - 또는 marker 최대 y drift가 매우 크고 line drift가 동반된다.
@@ -34,7 +34,7 @@ page count와 기존 core gate가 모두 맞아도 문항 흐름이 PDF와 구�
 문법 확인:
 
 ```bash
-python3 -m py_compile scripts/task1274_visual_sweep.py
+python3 -m py_compile scripts/visual_sweep.py
 ```
 
 native CLI 갱신:
@@ -46,7 +46,7 @@ cargo build --bin rhwp
 targeted sweep:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-no-separator-above20-between20-below20 \
   --out output/task1293_stage54_qflow_no_separator \
   --rhwp-bin target/debug/rhwp

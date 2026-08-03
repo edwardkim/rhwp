@@ -60,7 +60,7 @@ sample16-hwp5-2022 page count 가 64 에서 65 로 증가했다. 이후 일반 �
 - visual sweep command:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key issue1695-so-sueop-hwp \
   --hwp samples/SO-SUEOP.hwp \
   --pdf pdf/SO-SUEOP-2024.pdf \

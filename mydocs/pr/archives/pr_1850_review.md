@@ -53,7 +53,7 @@ focused test와 기준 PDF 대조에서 PR 본문 방향과 일치함을 확인�
 - `env CARGO_INCREMENTAL=0 cargo build` 통과
 - `env CARGO_INCREMENTAL=0 cargo test --profile release-test --test issue_1692 --test issue_1789_exclusion_probe_line_spacing` 통과
 - `env CARGO_INCREMENTAL=0 cargo clippy --all-targets -- -D warnings` 통과
-- `python3 -m py_compile scripts/task1274_visual_sweep.py` 통과
+- `python3 -m py_compile scripts/visual_sweep.py` 통과
 
 추가 baseline 비교:
 
@@ -76,7 +76,7 @@ target/debug/rhwp export-pdf 'samples/hwpx/opengov/36389312_결재문서본문_�
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1850-exclusion \
   --hwp samples/task1789/exclusion_probe_line_spacing.hwpx \
   --pdf pdf/exclusion_probe_line_spacing-2024.pdf \
@@ -102,7 +102,7 @@ p177 ↔ PDF p1을 자동 1:1 매칭해 확인했다.
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1850-36389312 \
   --hwp 'samples/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177).hwpx' \
   --pdf 'pdf/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177)-2024.pdf' \
@@ -124,7 +124,7 @@ python3 scripts/task1274_visual_sweep.py \
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1850-so-sueop-hwp-p22 \
   --hwp samples/SO-SUEOP.hwp \
   --pdf pdf/SO-SUEOP-2024.pdf \

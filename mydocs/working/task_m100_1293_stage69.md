@@ -11,7 +11,7 @@ red glyph fragment 오탐을 분리한다.
 
 ## 수정 대상
 
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
 
 ## 구현 방향
 
@@ -28,7 +28,7 @@ red glyph fragment 오탐을 분리한다.
 ## 검증 명령
 
 ```sh
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-above0-between0-below0 \
   --target 2024-11-practice-above0-between20-below2 \
   --out output/task1293_stage69_marker_cluster \
@@ -54,7 +54,7 @@ python3 scripts/task1274_visual_sweep.py \
 실행 완료:
 
 ```sh
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-above0-between0-below0 \
   --target 2024-11-practice-above0-between20-below2 \
   --out output/task1293_stage69_marker_cluster \

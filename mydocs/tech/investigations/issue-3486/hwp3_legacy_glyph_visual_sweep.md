@@ -9,7 +9,7 @@ last_verified: 2026-07-30
 
 ## 목적과 범위
 
-`scripts/task1274_visual_sweep.py`의 새 `legacy_glyph_visual_mismatch` 후보가 구조 heuristic이
+`scripts/visual_sweep.py`의 새 `legacy_glyph_visual_mismatch` 후보가 구조 heuristic이
 0건인 경우에도 사용자가 지적한 제품명 glyph 차이를 잡는지 확인한다. 이 실행은 **rhwp SVG와
 저장소 기준 PDF의 raster 비교**이며, Studio Canvas 또는 한컴 편집기의 최종 수용 판정이 아니다.
 
@@ -34,7 +34,7 @@ last_verified: 2026-07-30
 증적 생성 직후 삭제했다.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key hwp3-password-stage12-glyph \
   --hwp samples/HWP3-password-123456.hwp \
   --pdf pdf/HWP3-password-123456.pdf \
@@ -107,8 +107,8 @@ python3 scripts/task1274_visual_sweep.py \
 
 ## 검증 및 한계
 
-- `python3 -m py_compile scripts/task1274_visual_sweep.py` 성공.
-- `python3 scripts/tests/test_task1274_visual_sweep.py` 성공: 7 tests. 옛자모 mismatch 양성, PUA mismatch
+- `python3 -m py_compile scripts/visual_sweep.py` 성공.
+- `python3 scripts/tests/test_visual_sweep.py` 성공: 7 tests. 옛자모 mismatch 양성, PUA mismatch
   양성, 현대 `한글` 음성 경계를 포함한다.
 - 이 증적은 `ᄒᆞᆫ글 → 한글` 전역 치환이나 HWP3 parser 보정을 정당화하지 않는다. raw IR을 보존하고,
   제품명 context 한정 display projection인지 일반 옛한글/font capability인지의 전수 분류는 후속

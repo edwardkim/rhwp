@@ -67,7 +67,7 @@ first-time contributor PR 이므로 공개 코멘트는 환영 인사와 함께,
 `mydocs/manual/verification/visual_sweep_guide.md` 에 따라 PR 본문이 한컴 동작 근거로 든 ta-pic on/off 쌍을 확인했다.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --file-target ta-pic-restrict-on samples/ta-pic-001-r-쪽영역안제한.hwp pdf/ta-pic-001-r-쪽영역안제한-2024.pdf \
   --file-target ta-pic-restrict-off samples/ta-pic-001-r-쪽영역안제한no.hwp pdf/ta-pic-001-r-쪽영역안제한no-2024.pdf \
   --out output/pr2033_visual

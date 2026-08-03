@@ -95,7 +95,7 @@ target 정리 후 macOS 로컬에서 실행했다.
 ### HWPX 원본 vs 기준 PDF
 
 - command:
-  `python3 scripts/task1274_visual_sweep.py --key pr1886-issue1770 --hwp samples/issue1770_rowsplit_tolerance.hwpx --pdf pdf/issue1770_rowsplit_tolerance-2024.pdf --out output/pr1886-issue1770`
+  `python3 scripts/visual_sweep.py --key pr1886-issue1770 --hwp samples/issue1770_rowsplit_tolerance.hwpx --pdf pdf/issue1770_rowsplit_tolerance-2024.pdf --out output/pr1886-issue1770`
 - SVG/PDF pages: 4/4
 - flagged: 0/4
 - p3 compare: `output/pr1886-issue1770/pr1886-issue1770/compare/compare_003.png`
@@ -109,7 +109,7 @@ target 정리 후 macOS 로컬에서 실행했다.
 - 변환 command:
   `target/debug/rhwp convert samples/issue1770_rowsplit_tolerance.hwpx output/pr1886-issue1770/converted/issue1770_rowsplit_tolerance.hwp`
 - sweep command:
-  `python3 scripts/task1274_visual_sweep.py --key pr1886-issue1770-converted --hwp output/pr1886-issue1770/converted/issue1770_rowsplit_tolerance.hwp --pdf pdf/issue1770_rowsplit_tolerance-2024.pdf --out output/pr1886-issue1770-converted`
+  `python3 scripts/visual_sweep.py --key pr1886-issue1770-converted --hwp output/pr1886-issue1770/converted/issue1770_rowsplit_tolerance.hwp --pdf pdf/issue1770_rowsplit_tolerance-2024.pdf --out output/pr1886-issue1770-converted`
 - SVG/PDF pages: 4/4
 - flagged: 0/4
 - p3 compare: `output/pr1886-issue1770-converted/pr1886-issue1770-converted/compare/compare_003.png`

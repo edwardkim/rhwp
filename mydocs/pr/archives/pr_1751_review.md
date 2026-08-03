@@ -51,13 +51,13 @@
 ## 시각 검증
 
 - `samples/task1750/split_guard_spacing_before.hwp` vs `samples/task1750/split_guard_spacing_before-2024.pdf`
-  - command: `python3 scripts/task1274_visual_sweep.py --key pr1751-split-guard-hwp --hwp samples/task1750/split_guard_spacing_before.hwp --pdf samples/task1750/split_guard_spacing_before-2024.pdf --out output/pr-page2-visual --rhwp-bin target/release-test/rhwp --pixel-diff-threshold 32`
+  - command: `python3 scripts/visual_sweep.py --key pr1751-split-guard-hwp --hwp samples/task1750/split_guard_spacing_before.hwp --pdf samples/task1750/split_guard_spacing_before-2024.pdf --out output/pr-page2-visual --rhwp-bin target/release-test/rhwp --pixel-diff-threshold 32`
   - SVG/PDF pages: 5/5
   - flagged: 0/5
   - review contact sheet: `output/pr-page2-visual/pr1751-split-guard-hwp/review_contact_sheet.png`
   - `visual_accuracy_proxy_percent`: average 7.42244, worst 0.91055
 - `samples/task1750/split_guard_spacing_before.hwpx` vs `samples/task1750/split_guard_spacing_before-2024.pdf`
-  - command: `python3 scripts/task1274_visual_sweep.py --key pr1751-split-guard-hwpx --hwp samples/task1750/split_guard_spacing_before.hwpx --pdf samples/task1750/split_guard_spacing_before-2024.pdf --out output/pr-page2-visual --rhwp-bin target/release-test/rhwp --pixel-diff-threshold 32`
+  - command: `python3 scripts/visual_sweep.py --key pr1751-split-guard-hwpx --hwp samples/task1750/split_guard_spacing_before.hwpx --pdf samples/task1750/split_guard_spacing_before-2024.pdf --out output/pr-page2-visual --rhwp-bin target/release-test/rhwp --pixel-diff-threshold 32`
   - SVG/PDF pages: 5/5
   - flagged: 0/5
   - review contact sheet: `output/pr-page2-visual/pr1751-split-guard-hwpx/review_contact_sheet.png`

@@ -56,7 +56,7 @@ Stage18 이후 `2024-11-practice-above20-between0-below20`에서 큰 구분선 �
     흐름을 방지했다.
   - 첫 column에서는 실제 `en_fit`이 남은 영역에 들어가면 큰 구분선 새 미주 head tail을
     보존해 불필요한 다음 column advance를 피했다.
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
   - render-tree 수식/텍스트 bbox 후보를 먼저 거른 뒤 RHWP PNG에서 실제 ink bbox를 다시 계산한다.
   - 같은 `TextLine` 내부의 수식/텍스트는 정상 inline 흐름으로 보아 제외한다.
   - 양단 column sibling 경계에서 왼쪽 수식 bbox가 오른쪽 column 시작 x까지 넓게 잡히는
@@ -66,24 +66,24 @@ Stage18 이후 `2024-11-practice-above20-between0-below20`에서 큰 구분선 �
 
 ## 검증 결과
 
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`
+- `python3 -m py_compile scripts/visual_sweep.py`
 - `cargo build --bin rhwp`
 - `cargo fmt --all -- --check`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 52 passed
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage19_final_p13_check --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage19_final_p13_check --rhwp-bin target/debug/rhwp`
   - SVG/PDF/render-tree 쪽수 `21/21/21`
   - `frame_overflow_pages=[]`
   - `equation_text_overlap_pages=[]`
   - `question_title_text_overlap_pages=[]`
   - `line_order_overlap_pages=[]`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-below20-above20 --out output/task1293_stage19_final_p18_check --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-09-below20-above20 --out output/task1293_stage19_final_p18_check --rhwp-bin target/debug/rhwp`
   - SVG/PDF/render-tree 쪽수 `23/23/23`
   - `frame_overflow_pages=[]`
   - `equation_text_overlap_pages=[]`
   - `question_title_text_overlap_pages=[]`
   - `line_order_overlap_pages=[]`
-- `python3 scripts/task1274_visual_sweep.py --target all --out output/task1293_stage19_final_all_check --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target all --out output/task1293_stage19_final_all_check --rhwp-bin target/debug/rhwp`
   - 15개 대상 모두 SVG/PDF/render-tree 쪽수가 1:1로 일치한다.
   - `frame_overflow_pages`, `equation_text_overlap_pages`,
     `question_title_text_overlap_pages`, `line_order_overlap_pages`가 모두 비었다.

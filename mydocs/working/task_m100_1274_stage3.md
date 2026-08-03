@@ -48,7 +48,7 @@ Stage2에서 같은 페이지의 `pi=537` 빈 non-TAC 그림 host phantom overfl
   - 진행 중 테스트 범위 제한에 맞춰 전체 CI급 테스트는 실행하지 않았다.
 - `cargo build --bin rhwp`
   - 네이티브 SVG export용 바이너리 빌드 통과.
-- `python3 scripts/task1274_visual_sweep.py --target 2022-11-practice`
+- `python3 scripts/visual_sweep.py --target 2022-11-practice`
   - SVG/PDF/비교 PNG: 21/21/21.
   - `pi=553` 관련 `LAYOUT_OVERFLOW_DRAW`/`LAYOUT_OVERFLOW` 로그 제거 확인.
   - 남은 manifest overflow 후보: `pi=0` 2건.

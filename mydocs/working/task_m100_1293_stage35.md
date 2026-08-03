@@ -10,7 +10,7 @@ Task 1293 goal은 미주 기능 완료이므로, Stage24 기준으로 남아 있
 
 ## 대상
 
-- `scripts/task1274_visual_sweep.py --target all`
+- `scripts/visual_sweep.py --target all`
 - 출력: `output/task1293_stage35_full_sweep`
 
 ## 확인 항목

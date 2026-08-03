@@ -44,7 +44,7 @@ targeted sweep을 수행했다.
 
 ```bash
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-no-separator-above20-between20-below20 \
   --out output/task1293_stage56_no_separator_no_sep_block \
   --rhwp-bin target/debug/rhwp
@@ -72,7 +72,7 @@ Stage55 상태로 되돌렸다.
   - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
 - targeted visual:
   - `cargo build --bin rhwp`
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage56_no_separator --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage56_no_separator --rhwp-bin target/debug/rhwp`
 - 직접 확인:
   - `compare_017.png`
   - `compare_018.png`

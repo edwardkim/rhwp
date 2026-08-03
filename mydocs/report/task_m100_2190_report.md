@@ -60,7 +60,7 @@ Vite 7700에서 `hwpx_sample2.hwpx`를 CanvasKit 경로로 열어 1쪽의 `■`�
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key issue2190-hwpx-sample2 \
   --hwp samples/hwpx_sample2.hwpx \
   --pdf pdf/hwpx_sample2-2020.pdf \

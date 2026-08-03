@@ -41,7 +41,7 @@ Stage3의 compact 미주 하단 bleed 허용도 본문 단 흐름에서만 적�
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 48개 통과
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2022-11-practice`
+- `python3 scripts/visual_sweep.py --target 2022-11-practice`
   - SVG 21쪽, PDF 21쪽, 비교 PNG 21쪽
   - `output/task1274/2022-11-practice/manifest.json`의 `overflow_lines` 비어 있음
 
@@ -72,7 +72,7 @@ Stage3의 compact 미주 하단 bleed 허용도 본문 단 흐름에서만 적�
   - 48개 테스트 통과.
 - `cargo build --bin rhwp`
   - 네이티브 SVG export용 바이너리 빌드 통과.
-- `python3 scripts/task1274_visual_sweep.py --target 2022-11-practice`
+- `python3 scripts/visual_sweep.py --target 2022-11-practice`
   - SVG/PDF/비교 PNG: 21/21/21.
   - `output/task1274/2022-11-practice/manifest.json`
     - `overflow_lines: []`

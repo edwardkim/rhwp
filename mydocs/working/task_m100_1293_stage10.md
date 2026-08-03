@@ -110,7 +110,7 @@ typeset 높이와 layout 높이가 다르게 소비되는 문제다.
 ## 검증 결과
 
 - `cargo fmt --all -- --check`
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`
+- `python3 -m py_compile scripts/visual_sweep.py`
 - `cargo build --bin rhwp`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
 - 2024-11 샘플 8종 sweep

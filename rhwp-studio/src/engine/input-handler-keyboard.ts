@@ -971,32 +971,38 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
   if (this.cursor.isInCellSelectionMode()) {
     if (e.key === 'Escape') {
       e.preventDefault();
-      // 셀 선택 모드 → 표 객체 선택 모드
+      // F5 셀 선택 모드 → 마지막 선택 셀의 편집 상태
       this.cursor.exitCellSelectionMode();
       this.cellSelectionRenderer?.clear();
-      if (this.cursor.enterTableObjectSelection()) {
-        this.caret.hide();
-        this.selectionRenderer.clear();
-        this.renderTableObjectSelection();
-        this.eventBus.emit('table-object-selection-changed', true);
-      } else {
-        this.updateCaret();
-      }
+      this.updateCaret();
       return;
     }
-    // Ctrl/Cmd/Alt+방향키: 셀 크기 조절
-    if ((e.ctrlKey || e.metaKey || e.altKey) && (
-        e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
-        e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+    // 셀 크기 조절 — 한컴 3모드 (help.hancom.com hwp/table/table(size).htm):
+    //   Ctrl/Cmd+방향키  = 칸/줄 전체 크기 조절, 표 전체 크기 변화
+    //   Alt+방향키       = 선택 칸/줄 전체와 바로 오른쪽/아래 이웃을 반대로 조절 (표 크기 유지)
+    //   Shift+방향키     = 경계 이동 — 셀이 커진 만큼 이웃 셀이 작아짐
+    const isArrow = e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
+        e.key === 'ArrowLeft' || e.key === 'ArrowRight';
+    if ((e.ctrlKey || e.metaKey) && isArrow) {
       e.preventDefault();
       const phase = this.cursor.getCellSelectionPhase();
       if (phase === 3) {
         // phase 3: 전체 표 비율 리사이즈 (모든 셀에 동일 delta)
         this.resizeTableProportional(e.key as 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight');
       } else {
-        // phase 1, 2: 선택 셀 크기 조절 (이웃 셀 반대 delta)
+        // phase 1, 2: 선택 칸/줄 전체 크기 조절
         this.resizeCellByKeyboard(e.key as 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight');
       }
+      return;
+    }
+    if (e.altKey && isArrow) {
+      e.preventDefault();
+      this.resizeCellLocalByKeyboard(e.key as 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight');
+      return;
+    }
+    if (e.shiftKey && isArrow) {
+      e.preventDefault();
+      this.resizeCellBoundaryByKeyboard(e.key as 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight');
       return;
     }
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
@@ -1013,6 +1019,9 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       } else {
         // phase 1: 단일 셀 이동
         this.cursor.moveCellSelection(dr, dc);
+        // 문서 입력 위치는 CursorState가 새 셀로 갱신하지만, F5 셀 선택 중에는
+        // 한컴처럼 텍스트 캐럿을 노출하지 않는다.
+        this.caret.hide();
       }
       this.updateCellSelection();
       return;

@@ -2,7 +2,7 @@
 
 use super::super::composer::{compose_paragraph, ComposedParagraph};
 use super::super::page_layout::LayoutRect;
-use super::super::pagination::{FootnoteRef, FootnoteSource};
+use super::super::pagination::{FootnoteFragment, FootnoteRef, FootnoteSource};
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{
@@ -21,6 +21,36 @@ use crate::model::shape::{
     Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo,
 };
 use crate::model::style::Alignment;
+
+fn fragment_line_bounds(fragment: Option<FootnoteFragment>, total_lines: usize) -> (usize, usize) {
+    match fragment {
+        Some(fragment) => {
+            let start = fragment.start_line.min(total_lines);
+            let end = fragment.end_line.clamp(start, total_lines);
+            (start, end)
+        }
+        None => (0, total_lines),
+    }
+}
+
+fn fragment_draws_separator(fragment: Option<FootnoteFragment>) -> bool {
+    fragment
+        .map(|fragment| fragment.draw_separator)
+        .unwrap_or(true)
+}
+
+fn fragment_draws_number(fragment: Option<FootnoteFragment>) -> bool {
+    fragment
+        .map(|fragment| fragment.draw_number)
+        .unwrap_or(true)
+}
+
+fn footnote_composed_line_count(paragraphs: &[Paragraph]) -> usize {
+    paragraphs
+        .iter()
+        .map(|paragraph| compose_paragraph(paragraph).lines.len().max(1))
+        .sum()
+}
 
 impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
@@ -827,20 +857,43 @@ impl LayoutEngine {
         }
         let mut total = 0.0;
 
-        // 구분선 위 여백 + 구분선 + 아래 여백
-        total += hwpunit_to_px(shape.separator_above_margin_hu() as i32, self.dpi);
-        total += border_width_to_px(shape.separator_line_width).max(0.5);
-        total += hwpunit_to_px(shape.separator_below_margin_hu() as i32, self.dpi);
+        // 연속 각주 tail은 다음 page에서 separator를 다시 그리지 않는다.
+        if footnotes
+            .iter()
+            .any(|footnote| fragment_draws_separator(footnote.fragment))
+        {
+            total += hwpunit_to_px(shape.separator_above_margin_hu() as i32, self.dpi);
+            total += border_width_to_px(shape.separator_line_width).max(0.5);
+            total += hwpunit_to_px(shape.separator_below_margin_hu() as i32, self.dpi);
+        }
 
-        // 각 각주의 문단 높이 (LineSeg.line_height는 HWP에서 줄간격 이미 반영됨)
+        // 실제 `layout_footnote_area`와 같은 줄 높이 산식을 사용한다. 저장 LineSeg의
+        // line_height만 더하면 renderer가 누적하는 trailing line_spacing이 빠져 긴
+        // 각주가 예약 영역(및 footer)을 넘을 수 있다. 마지막 각주 문단의 마지막 줄은
+        // layout 경로에서도 trailing spacing을 붙이지 않는다.
         for (i, fn_ref) in footnotes.iter().enumerate() {
             let fn_paras = get_footnote_paragraphs(fn_ref, paragraphs);
+            let (start_line, end_line) =
+                fragment_line_bounds(fn_ref.fragment, footnote_composed_line_count(fn_paras));
+            let mut flat_line = 0usize;
             for para in fn_paras {
-                if para.line_segs.is_empty() {
-                    total += hwpunit_to_px(400, self.dpi);
+                let composed = compose_paragraph(para);
+                if composed.lines.is_empty() {
+                    if (start_line..end_line).contains(&flat_line) {
+                        total += hwpunit_to_px(400, self.dpi);
+                    }
+                    flat_line += 1;
                 } else {
-                    for seg in &para.line_segs {
-                        total += hwpunit_to_px(seg.line_height, self.dpi);
+                    for line in &composed.lines {
+                        let is_selected = (start_line..end_line).contains(&flat_line);
+                        if is_selected {
+                            total += hwpunit_to_px(line.line_height, self.dpi);
+                            let is_last_selected_line = flat_line + 1 == end_line;
+                            if !is_last_selected_line {
+                                total += hwpunit_to_px(line.line_spacing, self.dpi);
+                            }
+                        }
+                        flat_line += 1;
                     }
                 }
             }
@@ -865,41 +918,46 @@ impl LayoutEngine {
     ) {
         let mut y = fn_area.y;
 
-        // (1) 구분선 위 여백
-        y += hwpunit_to_px(shape.separator_above_margin_hu() as i32, self.dpi);
+        if footnotes
+            .iter()
+            .any(|footnote| fragment_draws_separator(footnote.fragment))
+        {
+            // (1) 구분선 위 여백
+            y += hwpunit_to_px(shape.separator_above_margin_hu() as i32, self.dpi);
 
-        // (2) 구분선
-        let sep_length = if shape.separator_length > 0 {
-            // separator_length는 HWP 단위로 페이지 폭의 비율
-            let fraction = shape.separator_length as f64 / 50000.0;
-            fn_area.width * fraction.min(1.0)
-        } else {
-            fn_area.width / 3.0 // 기본값: 1/3 폭
-        };
-        let line_width = border_width_to_px(shape.separator_line_width).max(0.5);
+            // (2) 구분선
+            let sep_length = if shape.separator_length > 0 {
+                // separator_length는 HWP 단위로 페이지 폭의 비율
+                let fraction = shape.separator_length as f64 / 50000.0;
+                fn_area.width * fraction.min(1.0)
+            } else {
+                fn_area.width / 3.0 // 기본값: 1/3 폭
+            };
+            let line_width = border_width_to_px(shape.separator_line_width).max(0.5);
 
-        let sep_id = tree.next_id();
-        let sep_node = RenderNode::new(
-            sep_id,
-            RenderNodeType::Line(LineNode::new(
-                fn_area.x,
-                y,
-                fn_area.x + sep_length,
-                y,
-                LineStyle {
-                    color: shape.separator_color,
-                    width: line_width,
-                    dash: StrokeDash::Solid,
-                    ..Default::default()
-                },
-            )),
-            BoundingBox::new(fn_area.x, y - line_width / 2.0, sep_length, line_width),
-        );
-        fn_node.children.push(sep_node);
-        y += line_width;
+            let sep_id = tree.next_id();
+            let sep_node = RenderNode::new(
+                sep_id,
+                RenderNodeType::Line(LineNode::new(
+                    fn_area.x,
+                    y,
+                    fn_area.x + sep_length,
+                    y,
+                    LineStyle {
+                        color: shape.separator_color,
+                        width: line_width,
+                        dash: StrokeDash::Solid,
+                        ..Default::default()
+                    },
+                )),
+                BoundingBox::new(fn_area.x, y - line_width / 2.0, sep_length, line_width),
+            );
+            fn_node.children.push(sep_node);
+            y += line_width;
 
-        // (3) 구분선 아래 여백
-        y += hwpunit_to_px(shape.separator_below_margin_hu() as i32, self.dpi);
+            // (3) 구분선 아래 여백
+            y += hwpunit_to_px(shape.separator_below_margin_hu() as i32, self.dpi);
+        }
 
         // (4) 각 각주 렌더링
         // 각주 TextRun에 마커를 인코딩하여 히트테스트에서 식별 가능하도록 함
@@ -913,6 +971,10 @@ impl LayoutEngine {
                 shape.prefix_char,
                 shape.suffix_char,
             );
+            let (fragment_start, fragment_end) =
+                fragment_line_bounds(fn_ref.fragment, footnote_composed_line_count(fn_paras));
+            let mut flat_line = 0usize;
+            let mut number_drawn = false;
 
             for (p_idx, para) in fn_paras.iter().enumerate() {
                 let composed = compose_paragraph(para);
@@ -925,13 +987,19 @@ impl LayoutEngine {
                     .map(|cs| cs.char_shape_id as u32)
                     .unwrap_or(composed.para_style_id as u32);
 
-                // [Issue #483] 각주의 마지막 paragraph 는 trailing line_spacing 미적용
-                // — 다음 각주와의 간격은 between-notes 값이 책임. trailing ls 까지 합산하면
-                // 각주 사이 gap 이 line_spacing 만큼 부풀려짐.
-                let is_last_para_of_fn = p_idx + 1 == fn_paras.len();
+                let line_count = composed.lines.len().max(1);
+                let para_start = flat_line;
+                let para_end = flat_line + line_count;
+                let selected_start = fragment_start.saturating_sub(para_start).min(line_count);
+                let selected_end = fragment_end.saturating_sub(para_start).min(line_count);
+                flat_line = para_end;
+                if selected_start >= selected_end {
+                    continue;
+                }
+                let is_last_selected_line = para_start + selected_end == fragment_end;
 
-                if p_idx == 0 {
-                    // 첫 문단: 각주 번호를 텍스트 앞에 삽입
+                if fragment_draws_number(fn_ref.fragment) && !number_drawn {
+                    // 첫 fragment의 첫 선택 줄에만 각주 번호를 삽입한다.
                     y = self.layout_footnote_paragraph_with_number(
                         tree,
                         fn_node,
@@ -943,8 +1011,11 @@ impl LayoutEngine {
                         marker_section,
                         marker_para,
                         base_cs_id,
-                        is_last_para_of_fn,
+                        selected_start,
+                        selected_end,
+                        is_last_selected_line,
                     );
+                    number_drawn = true;
                 } else {
                     let returned_y = self.layout_composed_paragraph(
                         tree,
@@ -953,8 +1024,8 @@ impl LayoutEngine {
                         styles,
                         fn_area,
                         y,
-                        0,
-                        composed.lines.len(),
+                        selected_start,
+                        selected_end,
                         marker_section,
                         marker_para,
                         None,
@@ -966,13 +1037,11 @@ impl LayoutEngine {
                         None,
                         None, // 각주 컨텍스트 — wrap zone 무관
                     );
-                    if is_last_para_of_fn {
-                        // layout_composed_paragraph 가 마지막 line 의 trailing line_spacing 을
-                        // 포함시키므로, 각주 마지막 paragraph 에서는 그만큼 빼서 between-notes
-                        // 과의 이중 합산을 막는다.
+                    if is_last_selected_line {
+                        // fragment의 마지막 줄은 trailing line-spacing을 쓰지 않는다.
                         let trail_ls = composed
                             .lines
-                            .last()
+                            .get(selected_end.saturating_sub(1))
                             .map(|l| hwpunit_to_px(l.line_spacing, self.dpi))
                             .unwrap_or(0.0);
                         y = returned_y - trail_ls;
@@ -1004,13 +1073,19 @@ impl LayoutEngine {
         marker_section: usize,
         marker_para: usize,
         base_cs_id: u32,
-        // [Issue #483] true 면 각주의 마지막 paragraph — 마지막 line 의 trailing
-        // line_spacing 을 누적하지 않는다 (between-notes 와 이중 합산 방지).
-        is_last_para_of_fn: bool,
+        line_start: usize,
+        line_end: usize,
+        // fragment의 마지막 선택 줄은 trailing line_spacing을 누적하지 않는다.
+        is_last_selected_line: bool,
     ) -> f64 {
         let mut y = y_start;
+        // 분할 큐는 빈 각주 문단도 한 줄의 virtual fragment로 센다. 실제 composed
+        // 줄은 0개이므로 그 범위를 그대로 slice하면 panic 난다. 기존 비분할 경로처럼
+        // 빈 문단 fallback까지 흘려보내 번호/높이 계약을 보존한다.
+        let line_start = line_start.min(composed.lines.len());
+        let line_end = line_end.min(composed.lines.len()).max(line_start);
 
-        for (line_idx, comp_line) in composed.lines.iter().enumerate() {
+        for (offset, comp_line) in composed.lines[line_start..line_end].iter().enumerate() {
             // LineSeg.line_height는 HWP에서 줄간격이 이미 반영된 값
             let line_height = hwpunit_to_px(comp_line.line_height, self.dpi);
             let baseline = hwpunit_to_px(comp_line.baseline_distance, self.dpi);
@@ -1025,7 +1100,7 @@ impl LayoutEngine {
             let mut x = area.x;
 
             // 첫 줄에 각주 번호 삽입
-            if line_idx == 0 {
+            if offset == 0 {
                 // 각주 번호 스타일: 문단의 기본 char_shape로 고정 (크기 약간 축소)
                 // 빈/비빈 문단 모두 동일한 base_cs_id 사용 → 리렌더링 시 폰트·폭 변동 방지
                 let base_style = {
@@ -1103,8 +1178,8 @@ impl LayoutEngine {
             // 단, 각주의 마지막 paragraph 의 마지막 line 에서는 trailing line_spacing 을
             // 누적하지 않는다 — 다음 각주와의 간격은 between-notes 값이 책임하므로
             // 이중 합산을 피하기 위함.
-            let is_last_line = line_idx + 1 >= composed.lines.len();
-            if is_last_para_of_fn && is_last_line {
+            let is_last_line = offset + 1 >= line_end - line_start;
+            if is_last_selected_line && is_last_line {
                 y += line_height;
             } else {
                 let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);

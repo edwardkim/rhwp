@@ -56,7 +56,7 @@ git cherry-pick a200cb0b833a82d32e9a921c6566a24b80178f2b
 완료.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --file-target pr1766-merged-cell-hwp samples/task1765/merged_cell_trailing_ls.hwp samples/task1765/merged_cell_trailing_ls-2024.pdf \
   --file-target pr1766-merged-cell-hwpx samples/task1765/merged_cell_trailing_ls.hwpx samples/task1765/merged_cell_trailing_ls-2024.pdf \
   --page 2 \

@@ -16,7 +16,7 @@ qflow 오탐을 해소했다. 이제 구현 계획서의 visual 검증 범위에
 
 ## 검증 계획
 
-1. `python3 scripts/task1274_visual_sweep.py --target all`을 새 output 경로로 실행한다.
+1. `python3 scripts/visual_sweep.py --target all`을 새 output 경로로 실행한다.
 2. `summary.json`에서 page count와 강한 후보 목록을 추린다.
 3. 실제 결함 후보가 있으면 다음 스테이지에서 원인 분석 후 수정한다.
 4. 후보가 sweep 허용 drift뿐이면 Stage79 결과로 남기고, PR 전 전체 CI 검증은 작업지시자
@@ -25,7 +25,7 @@ qflow 오탐을 해소했다. 이제 구현 계획서의 visual 검증 범위에
 ## 검증 결과
 
 - 실행 명령:
-  `python3 scripts/task1274_visual_sweep.py --target all --out output/task1293_stage79_full_sweep --rhwp-bin target/debug/rhwp`
+  `python3 scripts/visual_sweep.py --target all --out output/task1293_stage79_full_sweep --rhwp-bin target/debug/rhwp`
 - 전체 target의 SVG/PDF/render tree page count는 모두 일치했다.
 - `frame_overflow`, `equation_text_overlap`, `question_title_text_overlap`, `line_order_overlap`,
   `endnote_separator_gap_drift` 후보는 없었다.

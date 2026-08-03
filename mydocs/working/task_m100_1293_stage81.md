@@ -71,12 +71,12 @@
   - 통과
 - `cargo test --lib renderer::height_cursor::tests::compact_endnote_large_empty_spacer_collapses_trailing_gap_at_bottom -- --nocapture`
   - 통과
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20 --out output/task1293_stage81_between20_current --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20 --out output/task1293_stage81_between20_current --rhwp-bin target/debug/rhwp`
   - page 수 `SVG/PDF/render_tree = 24/24/24`
   - flagged page `7/24`에서 `6/24`로 감소
   - frame overflow, equation overlap, title overlap 후보 없음
   - page23은 flagged 목록에서 제거됨
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20 --out output/task1293_stage81_between20_after_empty_spacer --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20 --out output/task1293_stage81_between20_after_empty_spacer --rhwp-bin target/debug/rhwp`
   - page 수 `SVG/PDF/render_tree = 24/24/24`
   - flagged page `5/24`
   - page16은 flag 없음. `question_marker_drift_candidates`, `tail_transition_candidates`,

@@ -88,7 +88,7 @@ advance 후 다음 미주 시작 기준에도 객체 높이를 반영한다.
 ## 검증 결과
 
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between7-below2 --target 2024-11-practice-above20-between0-below20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage41_zero_profile --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between7-below2 --target 2024-11-practice-above20-between0-below20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage41_zero_profile --rhwp-bin target/debug/rhwp`
 - `cargo test --lib compact_endnote -- --nocapture`
 - `cargo fmt --all -- --check`
 - `git diff --check`

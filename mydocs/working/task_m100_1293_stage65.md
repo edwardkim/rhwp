@@ -130,8 +130,8 @@ EndnoteSpacingContract {
   - `3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwp`
   - 사용자가 추가한 최신 3개 샘플
 - target sweep:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0`
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20`
 - focused tests:
   - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - `cargo test --test issue_1050_footnote_serialize -- --nocapture`

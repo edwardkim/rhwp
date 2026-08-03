@@ -6,7 +6,7 @@
 separator line과 첫 미주 내용 사이의 실제 거리도 측정하도록 요구한다.
 
 Stage49 기준 전체 target의 page count와 renderer `LAYOUT_OVERFLOW`는 0건이 되었지만,
-현재 `scripts/task1274_visual_sweep.py`는 `note_shape` 값과 overlap/overflow 후보만 기록한다.
+현재 `scripts/visual_sweep.py`는 `note_shape` 값과 overlap/overflow 후보만 기록한다.
 구분선 위/아래/미주 사이 설정이 실제 화면 간격으로 맞는지 확인하려면 separator line과 첫 미주
 content 간격을 RHWP/PDF 양쪽에서 직접 측정하는 지표가 필요하다.
 
@@ -19,7 +19,7 @@ content 간격을 RHWP/PDF 양쪽에서 직접 측정하는 지표가 필요하�
 
 ## 구현 내용
 
-- `scripts/task1274_visual_sweep.py`의 `note_shape` 요약에 다음 값을 추가했다.
+- `scripts/visual_sweep.py`의 `note_shape` 요약에 다음 값을 추가했다.
   - `separatorEnabled`
   - `separatorLengthMm`
 - 분석 단계에서 RHWP render tree의 `Line` 노드 중 예상 구분선 길이에 맞는 후보를
@@ -37,7 +37,7 @@ content 간격을 RHWP/PDF 양쪽에서 직접 측정하는 지표가 필요하�
 ## 대표 검증
 
 - 명령:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage50_separator_sweep --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage50_separator_sweep --rhwp-bin target/debug/rhwp`
 - 결과:
   - `2024-11-practice-shape987`: page count `21/21/21`, renderer overflow `0`, separator drift `[]`
   - `2024-11-practice-above0-between0-below0`: page count `21/21/21`, renderer overflow `0`, separator drift `[]`
@@ -46,7 +46,7 @@ content 간격을 RHWP/PDF 양쪽에서 직접 측정하는 지표가 필요하�
 ## 전체 sweep 검증
 
 - 명령:
-  - `python3 scripts/task1274_visual_sweep.py --target all --out output/task1293_stage50_full_sweep --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target all --out output/task1293_stage50_full_sweep --rhwp-bin target/debug/rhwp`
 - 결과:
   - 전체 target 수: 15개
   - SVG/PDF/render tree page count mismatch: 0개
@@ -62,7 +62,7 @@ content 간격을 RHWP/PDF 양쪽에서 직접 측정하는 지표가 필요하�
 
 ## 추가 검증
 
-- `PYTHONDONTWRITEBYTECODE=1 python3 -m py_compile scripts/task1274_visual_sweep.py`
+- `PYTHONDONTWRITEBYTECODE=1 python3 -m py_compile scripts/visual_sweep.py`
 - `git diff --check`
 
 ## 판단

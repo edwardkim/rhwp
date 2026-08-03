@@ -51,7 +51,7 @@ PR #1764 최신 head 기준 GitHub Actions는 Build & Test, Render Diff, CodeQL 
 `mydocs/manual/verification/visual_sweep_guide.md` 기준으로 PR 재현 샘플을 한컴 2024 PDF와 비교했다.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --file-target pr1764-cell-trailing-hwp samples/task1763/cell_trailing_ls_expand.hwp samples/task1763/cell_trailing_ls_expand-2024.pdf \
   --file-target pr1764-cell-trailing-hwpx samples/task1763/cell_trailing_ls_expand.hwpx samples/task1763/cell_trailing_ls_expand-2024.pdf \
   --page 1 \

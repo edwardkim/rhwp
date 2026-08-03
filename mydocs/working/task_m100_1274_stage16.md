@@ -34,8 +34,8 @@
 
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2022-09`
-- 필요 시 `python3 scripts/task1274_visual_sweep.py`
+- `python3 scripts/visual_sweep.py --target 2022-09`
+- 필요 시 `python3 scripts/visual_sweep.py`
 
 ## 검증 결과
 
@@ -43,8 +43,8 @@
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 49개 통과.
 - `cargo fmt --check`: 통과.
 - `cargo build --bin rhwp`: 통과.
-- `python3 scripts/task1274_visual_sweep.py --target 2022-09`: SVG/PDF/compare 23/23/23, overflow 0건.
-- `python3 scripts/task1274_visual_sweep.py`:
+- `python3 scripts/visual_sweep.py --target 2022-09`: SVG/PDF/compare 23/23/23, overflow 0건.
+- `python3 scripts/visual_sweep.py`:
   - `2022-09`: SVG/PDF/compare 23/23/23, overflow 0건.
   - `2023-09`: SVG/PDF/compare 20/20/20, overflow 0건.
   - `2024-09-below20`: SVG/PDF/compare 23/23/23, overflow 0건.

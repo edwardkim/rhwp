@@ -39,7 +39,7 @@
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1284_2024_between20_page13_question_flow_matches_pdf -- --nocapture`
 - 신규 18~19쪽 guard 테스트
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
 
 ## 검증 결과
 
@@ -47,7 +47,7 @@
   - 2 passed
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 53 passed
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
   - `question` 후보가 `[16,18,19,20,21,22,23]`에서 `[18,21,23]`으로 감소했다.
   - `frame=[]`로 frame overflow 후보는 없다.
   - 19쪽은 `question_marker_drift_candidates=[]`가 됐다.

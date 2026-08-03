@@ -46,7 +46,7 @@ Stage73 진단에서 `3-11월_실전_통합_2024-구분선위0미주사이0구�
 - `dump-pages samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwp -p 11`
   - 12쪽 왼쪽 단은 문16 전체와 문17 앞부분까지 남는다.
   - 오른쪽 단은 문17 tail 뒤 문18로 이어져 PDF compare의 큰 흐름과 맞아졌다.
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage74_vpos_span_tail --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage74_vpos_span_tail --rhwp-bin target/debug/rhwp`
   - `2024-11-practice-above0-between0-below0`: page count 21/21, `qflow=[18]`.
     기존 `[11,12,13,19,20]`에서 page18 하나로 감소했다.
   - `2024-11-practice-above0-between20-below2`: page count 22/22, `qflow=[10,20]`.

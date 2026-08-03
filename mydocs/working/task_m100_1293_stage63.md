@@ -37,7 +37,7 @@ Stage62에서 `문13` 제목 자체를 당기는 실험은 모두 폐기했다. 
 
 ## 검증 계획
 
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0`
 - 필요 시 `rsvg-convert`로 SVG page 11을 PNG화한다.
 - 분석 스크립트는 임시 명령으로 수행하고, 재사용 가치가 있으면 sweep script 보강 stage로 분리한다.
 
@@ -47,7 +47,7 @@ Stage62에서 `문13` 제목 자체를 당기는 실험은 모두 폐기했다. 
 
 ```sh
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-above0-between0-below0 \
   --out output/task1293_stage63_zero_baseline \
   --rhwp-bin target/debug/rhwp

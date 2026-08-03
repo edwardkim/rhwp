@@ -73,7 +73,7 @@ master-page/header 장식 요소를 render plane별로 replay하고, 섹션을 �
 
 - `cargo test --test svg_snapshot`: 8개 golden snapshot 통과
 - `cargo test --profile release-test --test visual_roundtrip_baseline`: 3개 visual roundtrip baseline 통과
-- `python3 scripts/task1274_visual_sweep.py --target all`: 15개 target 모두 SVG/PDF page count 일치, page count mismatch 0건
+- `python3 scripts/visual_sweep.py --target all`: 15개 target 모두 SVG/PDF page count 일치, page count mismatch 0건
 - 자동 sweep flagged 후보: 5개 target. master-page/header furniture ordering 변경과 직접 맞물린 page count mismatch는 없었지만, PR 본문 release asset 자체는 저장소 fixture가 아니므로 필요 시 수동 비교로 확인한다.
 - browser/WASM 경로: `rhwp-studio` TypeScript/test와 `wasm-pack build --target web --out-dir pkg` 통과
 

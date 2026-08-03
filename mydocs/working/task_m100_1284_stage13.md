@@ -16,7 +16,7 @@
 ## 분석 계획
 
 - `output/task1274/2024-09-between20/analysis/render_tree_022.json`과 `question_flow.json`에서 문28 관련 paragraph index, column, bbox를 확인한다.
-- 현 sweep이 이 유형을 탐지하지 못한다면, 좌단 tail line order/column 이월 후보를 `task1274_visual_sweep.py`에 추가할지 검토한다.
+- 현 sweep이 이 유형을 탐지하지 못한다면, 좌단 tail line order/column 이월 후보를 `visual_sweep.py`에 추가할지 검토한다.
 - pagination/typeset 쪽에서 last-column/page-tail 보정과 달리 “왼쪽 단 하단에서 다음 단으로 보내야 하는 tail” 분기가 누락됐는지 확인한다.
 
 ## sweep 누락 원인
@@ -46,7 +46,7 @@
 - `src/renderer/typeset.rs`
   - 큰 `미주 사이` 다단 미주에서 현재 tail 한 줄 뒤에 vpos rewind를 가진 TAC 그림-only 문단이 이어질 때, tail 한 줄도 그림과 함께 다음 단으로 넘기도록 보정했다.
   - 대상 패턴은 `ep_idx > 0`, 다음 단이 남은 상태, 현재 단 하단 88% 이후, 한 줄 tail, 다음 문단이 treat-as-char picture/shape only이고 vpos가 되감기는 경우로 제한했다.
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
   - render tree의 `TextLine` bbox가 frame bottom을 넘는 하단 tail 후보를 `render_tree_frame_tail_overflow`로 검출한다.
   - 기존 픽셀 기반 frame bleed가 관용 처리되더라도 tail bbox와 column/line drift가 같이 있으면 annotation PNG를 생성한다.
   - summary 출력에 `tail=[...]` 항목을 추가했다.
@@ -54,12 +54,12 @@
 ## 검증
 
 - `cargo fmt --all -- --check`: 통과.
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`: 통과.
+- `python3 -m py_compile scripts/visual_sweep.py`: 통과.
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1284_2024_between20_page22_23_question_tail_matches_pdf -- --nocapture`: 통과.
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1284_2024_between20 -- --nocapture`: 5개 통과.
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 62개 통과.
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`: `flagged=0/24`, `tail=[]`.
-- `python3 scripts/task1274_visual_sweep.py`: 전체 6종 수행 완료.
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`: `flagged=0/24`, `tail=[]`.
+- `python3 scripts/visual_sweep.py`: 전체 6종 수행 완료.
   - `2024-09-between20`: `flagged=0/24`, `tail=[]`.
   - 새 tail 검출기가 기존 잠복 후보 6쪽을 추가로 발견했다.
 

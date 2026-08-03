@@ -36,7 +36,7 @@ GitHub PR head 기준 checks:
 | `src/renderer/typeset.rs` | compact 미주 단 하단 fit, large between-notes 예약, 내부 vpos rewind, 제목/첫 줄 동반 넘김, TAC 그림 rewind 공통 보정 |
 | `src/renderer/height_cursor.rs` | compact 미주 tail vpos backtrack 조건 다수 보정, equation-only tail frame-fit, debug 로그 가드 정리 |
 | `src/main.rs` | `export-render-tree` CLI 추가 |
-| `scripts/task1274_visual_sweep.py` | HWP/PDF/SVG/PNG/render tree 기반 시각 sweep helper 추가 |
+| `scripts/visual_sweep.py` | HWP/PDF/SVG/PNG/render tree 기반 시각 sweep helper 추가 |
 | `tests/issue_1139_inline_picture_duplicate.rs` | #1274 관련 회귀 테스트 추가 |
 | `tests/golden_svg/issue-677/bokhakwonseo-page1.svg` | 골든 SVG 갱신 |
 
@@ -88,7 +88,7 @@ GitHub PR head 기준 checks:
 용도:
 
 - 페이지별 render tree bbox JSON 산출
-- `task1274_visual_sweep.py`에서 수식/텍스트 겹침, line order overlap, frame overflow 후보를 분석
+- `visual_sweep.py`에서 수식/텍스트 겹침, line order overlap, frame overflow 후보를 분석
 
 CLI 출력 로그는 명령형 도구의 정상 출력 범위다.
 
@@ -113,7 +113,7 @@ PR 본문 기준 검증:
 - `cargo clippy -- -D warnings`
 - `wasm-pack build --target web --release --out-dir pkg` fresh worktree 검증
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-- `python3 scripts/task1274_visual_sweep.py --target all`
+- `python3 scripts/visual_sweep.py --target all`
 
 PR head CI 기준:
 

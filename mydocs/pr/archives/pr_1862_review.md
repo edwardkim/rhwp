@@ -83,7 +83,7 @@ env CARGO_INCREMENTAL=0 cargo test --profile release-test \
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1862-issue1858 \
   --hwp 'samples/issue1858_paper_anchor_float_stack.hwpx' \
   --pdf 'pdf/issue1858_paper_anchor_float_stack-2024.pdf' \

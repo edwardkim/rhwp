@@ -13,6 +13,10 @@ use crate::model::table::{TablePageBreak, VerticalAlign};
 use crate::renderer::float_placement::signed_hwpunit;
 
 const ROWBREAK_OBJECT_BOTTOM_BLEED_TOLERANCE_PX: f64 = 64.0;
+/// [#3738 Stage 19] native HWP5가 빈 1×1 RowBreak picture table에 남기는 stale page
+/// origin은 일반적인 local offset보다 한 페이지 단위로 크다. 이 값보다 작은 음수는
+/// 일반 그림 위치일 수 있으므로 절대 보정하지 않는다.
+const ROWBREAK_STALE_PAGE_SCALE_PICTURE_OFFSET_MIN_HU: i32 = -40_000;
 
 /// [Task #548] paragraph 의 line N 에 적용되는 effective margin_left.
 /// paragraph_layout.rs 의 line_indent 산식과 동일 (단일 룰).
@@ -61,6 +65,64 @@ fn has_initial_tac_shape_host(paragraphs: &[Paragraph]) -> bool {
                 .iter()
                 .any(|ctrl| matches!(ctrl, Control::Shape(shape) if shape.common().treat_as_char))
     })
+}
+
+/// native HWP5와 original HWPX의 빈 RowBreak 그림 표가 fresh page로 이월된 뒤에도, 내부 picture가
+/// 이월 전 outer host 좌표를 상쇄하지 않도록 하는 정확한 형상 판정이다.
+///
+/// `host_stored_vpos_hu`는 table의 소유 문단에서만 얻을 수 있으며 셀 paragraph의
+/// vpos와 다르다. 이 값을 table-cell 경로까지 명시적으로 전달해, page-scale 음수
+/// picture offset이 의도한 일반 음수 위치인지와 page boundary 상쇄인지 구분한다.
+fn stored_layout_relocated_empty_rowbreak_picture_resets_offset(
+    stored_layout: bool,
+    native_hwp5_layout: bool,
+    host_stored_vpos_hu: Option<i32>,
+    table: &crate::model::table::Table,
+    cell: &crate::model::table::Cell,
+    para: &Paragraph,
+    picture: &crate::model::image::Picture,
+) -> bool {
+    let Some(host_vpos) = host_stored_vpos_hu else {
+        return false;
+    };
+    if !stored_layout
+        || host_vpos <= 0
+        || table.page_break != TablePageBreak::RowBreak
+        || table.common.treat_as_char
+        || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        || !matches!(table.common.vert_rel_to, VertRelTo::Para)
+        || table.row_count != 1
+        || table.col_count != 1
+        || table.cells.len() != 1
+        || cell.row != 0
+        || cell.col != 0
+        || cell.row_span != 1
+        || cell.col_span != 1
+        || cell.paragraphs.len() != 1
+        || !para.text.trim().is_empty()
+        || para.controls.len() != 1
+        || para.line_segs.len() != 1
+        || para.line_segs[0].vertical_pos != 0
+        || !matches!(picture.common.text_wrap, TextWrap::TopAndBottom)
+        || picture.common.treat_as_char
+        || !picture.common.flow_with_text
+        || !matches!(picture.common.vert_rel_to, VertRelTo::Para)
+    {
+        return false;
+    }
+
+    let table_offset = signed_hwpunit(table.common.vertical_offset);
+    let picture_offset = signed_hwpunit(picture.common.vertical_offset);
+    let relocated_page_ladder = table_offset > 0
+        && picture_offset < 0
+        && (host_vpos as i64 + table_offset as i64 + picture_offset as i64).abs() <= 8;
+    // HWP p25 (pi=357)는 table vOffset=0인데 picture에만 stale -50000 HU가 남았다.
+    // 이는 다음 쪽 ladder가 아니라 같은 물리 쪽의 page-scale stale origin이다. HWPX
+    // stored-layout에는 이 HWP5 직렬화 서명이 없으므로 native 경로에만 한정한다.
+    let same_page_stale_hwp5_picture = native_hwp5_layout
+        && table_offset == 0
+        && picture_offset <= ROWBREAK_STALE_PAGE_SCALE_PICTURE_OFFSET_MIN_HU;
+    relocated_page_ladder || same_page_stale_hwp5_picture
 }
 
 use super::super::composer::effective_text_for_metrics;
@@ -505,6 +567,8 @@ struct HorizontalCellVars {
     outline_numbering_id: u16,
     depth: usize,
     clamp_header_negative_para_offset: bool,
+    /// root-body table owner의 첫 저장 LINE_SEG vpos. nested/header/footer 호출은 None.
+    outer_host_stored_vpos_hu: Option<i32>,
     inline_table_flow_y_shift: f64,
     /// [#3658] 분할 렌더(row_filter)가 이 셀 콘텐츠의 마지막 조각인가.
     /// true 면 셀 하단 초과 줄 드롭(다음 쪽 소속 줄 제외)을 적용하지 않는다 —
@@ -714,6 +778,7 @@ impl LayoutEngine {
         inline_x_override: Option<f64>,
         nested_split: Option<&NestedTableSplit>,
         para_y: Option<f64>,
+        outer_host_stored_vpos_hu: Option<i32>,
         allow_para_top_bleed: bool,
         clamp_header_negative_para_offset: bool,
     ) -> f64 {
@@ -881,6 +946,7 @@ impl LayoutEngine {
                             inline_x_override,
                             nested_split,
                             para_y,
+                            None,
                             allow_para_top_bleed,
                             clamp_header_negative_para_offset,
                         );
@@ -1269,6 +1335,7 @@ impl LayoutEngine {
             bin_data_content,
             depth,
             table_meta,
+            outer_host_stored_vpos_hu,
             enclosing_cell_ctx.clone(),
             &row_col_x,
             &row_y,
@@ -2696,6 +2763,7 @@ impl LayoutEngine {
             outline_numbering_id,
             depth,
             clamp_header_negative_para_offset,
+            outer_host_stored_vpos_hu,
             inline_table_flow_y_shift,
             split_terminal,
         } = v;
@@ -3131,6 +3199,17 @@ impl LayoutEngine {
                             let unrestricted_take_place_cell_float = !pic.common.flow_with_text
                                 && matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
                                 && matches!(pic.common.vert_rel_to, VertRelTo::Para);
+                            let reset_relocated_stored_picture_offset =
+                                stored_layout_relocated_empty_rowbreak_picture_resets_offset(
+                                    self.profile.get().native_hwp5_layout()
+                                        || self.profile.get().hwpx_stored_layout(),
+                                    self.profile.get().native_hwp5_layout(),
+                                    outer_host_stored_vpos_hu,
+                                    table,
+                                    cell,
+                                    para,
+                                    pic,
+                                );
                             let detached_from_inline_table_flow = inline_table_flow_y_shift > 0.0
                                 && unrestricted_take_place_cell_float;
                             let picture_anchor_y = if detached_from_inline_table_flow {
@@ -3175,21 +3254,47 @@ impl LayoutEngine {
                             //   TOP    = content_top + vOffset
                             //   CENTER = content_top + (content_h − pic_h + vOffset)/2
                             //   BOTTOM = content_bottom − pic_h − vOffset
-                            let pic_y = if top_and_bottom_para
+                            let pic_y = if reset_relocated_stored_picture_offset {
+                                // 이 형상은 cell의 Center 값이 현 물리 페이지의 정렬 계약이
+                                // 아니라 stale 음수 offset과 짝을 이룬 이전 페이지 ladder다.
+                                // page-local content top이 한컴 PDF의 그림 상단이다.
+                                content_cell_y + pad_top
+                            } else if top_and_bottom_para
                                 && pic.common.flow_with_text
                                 && !unrestricted_take_place_cell_float
                                 && !detached_from_inline_table_flow
                             {
-                                let v_off =
-                                    hwpunit_to_px(pic.common.vertical_offset as i32, self.dpi);
+                                let v_off = hwpunit_to_px(
+                                    signed_hwpunit(pic.common.vertical_offset),
+                                    self.dpi,
+                                );
+                                // [#3738 Stage 8] Bottom caption은 그림과 하나의
+                                // 시각 블록이다. 이를 빼고 Center/Bottom을 계산하면
+                                // 그림 본체만 셀 중앙에 놓이고, caption이 셀 밖으로
+                                // 넘쳐 뒤 본문과 겹친다. Top caption은 그림 위쪽
+                                // 좌표 계약이 달라 이 보정 대상이 아니다.
+                                let bottom_caption_h =
+                                    pic.caption.as_ref().map_or(0.0, |caption| {
+                                        if matches!(
+                                            caption.direction,
+                                            crate::model::shape::CaptionDirection::Bottom
+                                        ) {
+                                            self.calculate_caption_height(&pic.caption, styles)
+                                                + hwpunit_to_px(caption.spacing as i32, self.dpi)
+                                        } else {
+                                            0.0
+                                        }
+                                    });
+                                let aligned_visual_h = pic_h + bottom_caption_h;
                                 let content_top = content_cell_y + pad_top;
                                 match effective_valign {
                                     VerticalAlign::Top => content_top + v_off,
                                     VerticalAlign::Center => {
-                                        content_top + (inner_height - pic_h + v_off) / 2.0
+                                        content_top
+                                            + (inner_height - aligned_visual_h + v_off) / 2.0
                                     }
                                     VerticalAlign::Bottom => {
-                                        content_top + inner_height - pic_h - v_off
+                                        content_top + inner_height - aligned_visual_h - v_off
                                     }
                                 }
                             } else {
@@ -3209,32 +3314,48 @@ impl LayoutEngine {
                             // [Task #1151 v4] 셀 안 non-inline picture (tac=false 자리차지 등):
                             // outer paragraph idx + inner picture ctrl idx +
                             // cell_ctx 전달.
-                            if detached_from_inline_table_flow || unrestricted_take_place_cell_float
+                            let picture_parent = if detached_from_inline_table_flow
+                                || unrestricted_take_place_cell_float
                             {
-                                self.layout_picture(
-                                    tree,
-                                    table_node,
-                                    &pic_for_layout,
-                                    &pic_area,
-                                    bin_data_content,
-                                    Alignment::Left,
-                                    Some(section_index),
-                                    cell_context.as_ref().map(|c| c.parent_para_index),
-                                    Some(ctrl_idx),
-                                    cell_context.as_ref(),
-                                );
+                                &mut *table_node
                             } else {
-                                self.layout_picture(
+                                &mut *cell_node
+                            };
+                            self.layout_picture(
+                                tree,
+                                picture_parent,
+                                &pic_for_layout,
+                                &pic_area,
+                                bin_data_content,
+                                Alignment::Left,
+                                Some(section_index),
+                                cell_context.as_ref().map(|c| c.parent_para_index),
+                                Some(ctrl_idx),
+                                cell_context.as_ref(),
+                            );
+                            // 셀 안 부동 그림도 본문/각주 그림과 마찬가지로 자체 caption을
+                            // 방출해야 한다. 이 경로가 빠져 있으면 HWP5 LIST_HEADER의
+                            // 그림 caption은 파싱돼도 화면에는 사라지고 후속 flow의 기준도
+                            // 달라진다. 현재는 image frame 아래에 놓이는 Bottom caption만
+                            // 이 경로의 cell-local placement와 같은 좌표계로 렌더한다.
+                            if let Some(caption) = pic.caption.as_ref().filter(|caption| {
+                                matches!(caption.direction, CaptionDirection::Bottom)
+                                    && !caption.paragraphs.is_empty()
+                            }) {
+                                let caption_spacing =
+                                    hwpunit_to_px(caption.spacing as i32, self.dpi);
+                                self.layout_caption(
                                     tree,
-                                    cell_node,
-                                    &pic_for_layout,
-                                    &pic_area,
+                                    picture_parent,
+                                    caption,
+                                    styles,
+                                    &inner_area,
+                                    pic_x,
+                                    pic_w,
+                                    pic_y + pic_h + caption_spacing,
+                                    &mut self.auto_counter.borrow_mut(),
                                     bin_data_content,
-                                    Alignment::Left,
-                                    Some(section_index),
-                                    cell_context.as_ref().map(|c| c.parent_para_index),
-                                    Some(ctrl_idx),
-                                    cell_context.as_ref(),
+                                    cell_context.clone(),
                                 );
                             }
                             if matches!(pic.common.text_wrap, TextWrap::TopAndBottom) {
@@ -3706,6 +3827,7 @@ impl LayoutEngine {
                                     Some(inline_x + tac_om_l),
                                     None,
                                     None,
+                                    None,
                                     false,
                                     clamp_header_negative_para_offset,
                                 );
@@ -3829,6 +3951,7 @@ impl LayoutEngine {
                                 nested_ctx,
                                 0.0,
                                 0.0,
+                                None,
                                 None,
                                 None,
                                 None,
@@ -3999,6 +4122,7 @@ impl LayoutEngine {
         bin_data_content: &[BinDataContent],
         depth: usize,
         table_meta: Option<(usize, usize)>,
+        outer_host_stored_vpos_hu: Option<i32>,
         enclosing_cell_ctx: Option<CellContext>,
         row_col_x: &[Vec<f64>],
         row_y: &[f64],
@@ -4464,6 +4588,7 @@ impl LayoutEngine {
                         outline_numbering_id,
                         depth,
                         clamp_header_negative_para_offset,
+                        outer_host_stored_vpos_hu,
                         inline_table_flow_y_shift,
                         split_terminal,
                     },
@@ -8073,7 +8198,7 @@ impl LayoutEngine {
 
 #[cfg(test)]
 mod row_cut_tests {
-    use super::LayoutEngine;
+    use super::{stored_layout_relocated_empty_rowbreak_picture_resets_offset, LayoutEngine};
     use crate::model::control::Control;
     use crate::model::image::Picture;
     use crate::model::paragraph::{LineSeg, Paragraph};
@@ -8185,6 +8310,129 @@ mod row_cut_tests {
         para.text.clear();
         para.char_count = 0;
         para
+    }
+
+    #[test]
+    fn stored_layout_relocated_empty_rowbreak_picture_uses_outer_host_vpos() {
+        let mut para = empty_anchor_non_inline_picture_para(0);
+        let Control::Picture(picture) = &mut para.controls[0] else {
+            panic!("그림 컨트롤 아님");
+        };
+        picture.common.vertical_offset = (-52_790i32) as u32;
+
+        let cell = cell(0, 0, vec![para.clone()]);
+        let mut host = rowbreak_table(vec![cell.clone()]);
+        host.common = CommonObjAttr {
+            treat_as_char: false,
+            text_wrap: TextWrap::TopAndBottom,
+            vert_rel_to: VertRelTo::Para,
+            vertical_offset: 560,
+            ..Default::default()
+        };
+        let Control::Picture(picture) = &para.controls[0] else {
+            panic!("그림 컨트롤 아님");
+        };
+
+        assert!(
+            stored_layout_relocated_empty_rowbreak_picture_resets_offset(
+                true,
+                true,
+                Some(52_230),
+                &host,
+                &cell,
+                &para,
+                picture,
+            )
+        );
+        assert!(
+            !stored_layout_relocated_empty_rowbreak_picture_resets_offset(
+                true,
+                true,
+                Some(52_220),
+                &host,
+                &cell,
+                &para,
+                picture,
+            )
+        );
+        assert!(
+            !stored_layout_relocated_empty_rowbreak_picture_resets_offset(
+                false,
+                true,
+                Some(52_230),
+                &host,
+                &cell,
+                &para,
+                picture,
+            )
+        );
+    }
+
+    #[test]
+    fn native_hwp5_same_page_stale_empty_rowbreak_picture_resets_offset() {
+        let mut para = empty_anchor_non_inline_picture_para(0);
+        let Control::Picture(picture) = &mut para.controls[0] else {
+            panic!("그림 컨트롤 아님");
+        };
+        picture.common.vertical_offset = (-50_000i32) as u32;
+
+        let cell = cell(0, 0, vec![para.clone()]);
+        let mut host = rowbreak_table(vec![cell.clone()]);
+        host.common = CommonObjAttr {
+            treat_as_char: false,
+            text_wrap: TextWrap::TopAndBottom,
+            vert_rel_to: VertRelTo::Para,
+            vertical_offset: 0,
+            ..Default::default()
+        };
+        let Control::Picture(picture) = &para.controls[0] else {
+            panic!("그림 컨트롤 아님");
+        };
+
+        assert!(
+            stored_layout_relocated_empty_rowbreak_picture_resets_offset(
+                true,
+                true,
+                Some(12_000),
+                &host,
+                &cell,
+                &para,
+                picture,
+            ),
+            "native HWP5의 page-scale stale picture offset은 current cell top으로 reset해야 한다"
+        );
+        assert!(
+            !stored_layout_relocated_empty_rowbreak_picture_resets_offset(
+                true,
+                false,
+                Some(12_000),
+                &host,
+                &cell,
+                &para,
+                picture,
+            ),
+            "HWPX stored-layout에 native HWP5 stale-offset 규칙이 번지면 안 된다"
+        );
+
+        let Control::Picture(picture) = &mut para.controls[0] else {
+            panic!("그림 컨트롤 아님");
+        };
+        picture.common.vertical_offset = (-39_999i32) as u32;
+        let Control::Picture(picture) = &para.controls[0] else {
+            panic!("그림 컨트롤 아님");
+        };
+        assert!(
+            !stored_layout_relocated_empty_rowbreak_picture_resets_offset(
+                true,
+                true,
+                Some(12_000),
+                &host,
+                &cell,
+                &para,
+                picture,
+            ),
+            "page-scale 기준보다 작은 일반 음수 offset은 보정하면 안 된다"
+        );
     }
 
     #[test]

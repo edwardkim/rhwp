@@ -10,7 +10,7 @@
 - 전체 수정 지점 contact sheet:
   - `output/task1274/pr1277_modified_pages_contact.png`
 - 6개 교육 통합 문서 전체 sweep:
-  - `python3 scripts/task1274_visual_sweep.py --target all`
+  - `python3 scripts/visual_sweep.py --target all`
   - `output/task1274/summary.json`
 - `issue_241.hwpx` 별도 비교:
   - `output/task1274/issue-241-pr1277/compare/compare_001.png`
@@ -48,8 +48,8 @@
 - 반대로 stage20에서 고친 page 13 `문15)`, page 21 `문26)`, `3-10월_교육_통합_2022.hwp` page 11/16은 회귀시키지 않는다.
 - 수정 후 최소 확인:
   - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
-  - `python3 scripts/task1274_visual_sweep.py --target all`
+  - `python3 scripts/visual_sweep.py --target 2024-09-between20`
+  - `python3 scripts/visual_sweep.py --target all`
 
 ## 상태
 

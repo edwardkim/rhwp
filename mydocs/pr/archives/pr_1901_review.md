@@ -41,7 +41,7 @@ PR 본문과 테스트가 HWPX 라운드트립 렌더 분기를 직접 다루고
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1901-issue1893 \
   --hwp samples/issue1893_clickhere_field_roundtrip.hwpx \
   --pdf pdf/issue1893_clickhere_field_roundtrip-2022.pdf \
@@ -78,7 +78,7 @@ target/debug/rhwp export-hwpx \
   output/pr1901-roundtrip/issue1893_clickhere_field_roundtrip.saved.hwpx \
   --verify --verify-pages
 
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1901-issue1893-saved \
   --hwp output/pr1901-roundtrip/issue1893_clickhere_field_roundtrip.saved.hwpx \
   --pdf pdf/issue1893_clickhere_field_roundtrip-2022.pdf \

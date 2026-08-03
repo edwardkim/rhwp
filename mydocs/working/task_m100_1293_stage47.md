@@ -107,7 +107,7 @@ tail 허용 범위를 공통 미주 흐름 조건으로 보정했다.
 - focused sweep:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2022-09 \
   --target 2024-09-below20 \
   --target 2024-09-between20 \

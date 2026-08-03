@@ -38,14 +38,14 @@
 실행 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1954-hwp \
   --hwp "samples/chart/특이케이스/가로막대형_하나만있을떄_단일시리즈제목.hwp" \
   --pdf "pdf/chart/특이케이스/가로막대형_하나만있을떄_단일시리즈제목-2022.pdf" \
   --page 1 \
   --out output/pr1954-visual-hwp
 
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1954-hwpx \
   --hwp "samples/chart/특이케이스/가로막대형_하나만있을떄_단일시리즈제목.hwpx" \
   --pdf "pdf/chart/특이케이스/가로막대형_하나만있을떄_단일시리즈제목-2022.pdf" \

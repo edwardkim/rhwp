@@ -80,7 +80,7 @@ PR head에는 `Merge branch 'devel' into pr/devel-1765` 커밋이 포함되어 �
 `mydocs/manual/verification/visual_sweep_guide.md` 기준으로 문제 페이지인 2쪽을 HWP/HWPX 양쪽에서 기준 PDF와 비교했다.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --file-target pr1766-merged-cell-hwp samples/task1765/merged_cell_trailing_ls.hwp samples/task1765/merged_cell_trailing_ls-2024.pdf \
   --file-target pr1766-merged-cell-hwpx samples/task1765/merged_cell_trailing_ls.hwpx samples/task1765/merged_cell_trailing_ls-2024.pdf \
   --page 2 \

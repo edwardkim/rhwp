@@ -71,7 +71,7 @@ target/debug/rhwp export-hwpx samples/issue1893_clickhere_field_roundtrip.hwpx o
 원본 HWPX vs 기준 PDF:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1901-issue1893 \
   --hwp samples/issue1893_clickhere_field_roundtrip.hwpx \
   --pdf pdf/issue1893_clickhere_field_roundtrip-2022.pdf \
@@ -82,7 +82,7 @@ python3 scripts/task1274_visual_sweep.py \
 저장 HWPX vs 기준 PDF:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1901-issue1893-saved \
   --hwp output/pr1901-roundtrip/issue1893_clickhere_field_roundtrip.saved.hwpx \
   --pdf pdf/issue1893_clickhere_field_roundtrip-2022.pdf \

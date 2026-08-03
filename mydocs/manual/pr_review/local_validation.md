@@ -30,24 +30,27 @@ pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 git fetch upstream pull/N/head:local/prN
 ~~~
 
-## 4.1.1 devel 기준 가시성 검토 branch
+## 4.1.1 devel 정합 가시성 검토 branch
 
 사용자가 터미널·VS Code에서 진행을 보거나 외부 PR을 실제 merge 대신 누적 체리픽으로 검토하면,
-PR head를 기본 작업트리에 바로 checkout하지 않는다. 먼저 clean한 기본 작업트리에서 upstream/devel 기준
-가시성 branch를 만든다.
+PR head를 기본 작업트리에 바로 checkout하지 않는다. 먼저 clean한 기본 작업트리에서 현재 PR head를
+포함한 가시성 branch를 만든다. 시작 전에 `upstream/devel`이 PR head의 조상인지 확인해, VS Code 그래프에서
+`devel` 위의 contributor 변경과 이후 메인터너 보정이 함께 보이게 한다.
 
 ~~~bash
 git status --short
-git fetch upstream devel
-git switch devel
-git merge --ff-only upstream/devel
-git switch -c review/<contributor>-<yyyymmdd> upstream/devel
+git fetch upstream devel pull/N/head:refs/remotes/upstream/prN-head
+git merge-base --is-ancestor upstream/devel upstream/prN-head
+git switch -c review/<contributor>-<yyyymmdd> upstream/prN-head
 git status --short --branch
 ~~~
 
 - 사용자 또는 다른 도구의 변경이 있으면 중단하고 보고한다.
 - 시작·적용·conflict·검증 상태 보고에 검토 branch명, 기준 devel SHA, 원 PR 번호와 적용 SHA를 적는다.
-- 검토 산출물과 maintainer 보정은 이 branch에만 쌓고, devel에는 직접 commit하지 않는다.
+- 검토 산출물과 메인터너 보정은 이 branch에만 연속해서 쌓고, devel에는 직접 commit하지 않는다. 보정 단계가
+  시작됐다고 `review/prN-maintainer` 같은 두 번째 local branch를 만들거나 checkout하지 않는다.
+- PR head가 최신 `upstream/devel`의 조상이 아니면 여기서 억지 merge나 rebase를 하지 않는다. 오래된 base
+  처리로 전환해 source head를 다시 고정한 뒤, 같은 가시성 branch에서 후속 단계를 이어간다.
 - CI 또는 승인 대기 중에는 branch를 유지한다. 종료 뒤 cleanup은 [merge 후속 처리](post_merge.md)의
   branch/worktree/target 정리 게이트를 따른다.
 

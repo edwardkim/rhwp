@@ -56,10 +56,10 @@ qflow `[10, 20]`이다.
 - `cargo fmt --all`: 통과
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 53개 통과
 - `cargo build --bin rhwp`: 통과
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`: 통과
+- `python3 -m py_compile scripts/visual_sweep.py`: 통과
 - sweep:
   - 명령:
-    `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage78_column_marker_sweep2 --rhwp-bin target/debug/rhwp`
+    `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage78_column_marker_sweep2 --rhwp-bin target/debug/rhwp`
   - `2024-11-practice-above0-between0-below0`: SVG/PDF/render tree `21/21/21`, qflow `[]`
   - `2024-11-practice-above0-between20-below2`: SVG/PDF/render tree `22/22/22`, qflow `[]`
   - page20 dump에서 `pi=894`가 page20 맨 위로 넘어와 PDF/Hancom의 이전 미주 tail 흐름과 맞는다.

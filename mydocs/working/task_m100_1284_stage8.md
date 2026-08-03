@@ -59,7 +59,7 @@
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1284_2024_between20 -- --nocapture`: 5개 통과.
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 56개 통과.
 - `cargo build`: 통과.
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`: 완료.
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`: 완료.
   - `frame_overflow_pages=[]`
   - `question_marker_drift_pages=[]`
   - `question_title_text_overlap_pages=[]`

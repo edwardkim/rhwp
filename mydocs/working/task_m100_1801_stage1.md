@@ -30,8 +30,8 @@
 
 | 항목 | 결과 |
 |---|---|
-| `python3 -m py_compile scripts/task1274_visual_sweep.py` | 통과 |
-| `python3 scripts/task1274_visual_sweep.py --help` | 신규 옵션 노출 확인 |
+| `python3 -m py_compile scripts/visual_sweep.py` | 통과 |
+| `python3 scripts/visual_sweep.py --help` | 신규 옵션 노출 확인 |
 | `--page 2` smoke | 통과 |
 | `compare_002.png` | 생성 확인 |
 | `overlay_002.png` | 생성 확인 |
@@ -42,7 +42,7 @@
 ## smoke 명령
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key smoke-eng-p2-overlay-comment \
   --hwp /Users/tsjang/rhwp/samples/exam_eng.hwp \
   --pdf /Users/tsjang/rhwp/pdf/exam_eng-2022.pdf \

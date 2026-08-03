@@ -77,7 +77,7 @@ Stage37에서 `2024-11-practice-above20-between7-below2`의 문26 제목과 초�
 - `cargo test --lib compact_endnote -- --nocapture`
   - 28 passed
 - focused visual sweep:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between7-below2 --target 2024-11-practice-above20-between0-below20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage38_focused_final --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between7-below2 --target 2024-11-practice-above20-between0-below20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage38_focused_final --rhwp-bin target/debug/rhwp`
   - 4개 target 모두 SVG/PDF/render tree 21/21/21
   - 4개 target 모두 frame overflow 없음
 - 직접 확인:

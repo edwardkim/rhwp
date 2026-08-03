@@ -52,7 +52,7 @@ stage89에서 `FootnoteShape` attr 해석과 수식 TAC 판정 정리는 커밋�
 ```bash
 cargo build --bin rhwp
 cargo test --test issue_1139_inline_picture_duplicate issue_1293_ -- --nocapture
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -95,7 +95,7 @@ stage90에서는 위 기준으로 p11/p18/p19의 head group anchor 모델을 분
 cargo fmt --check
 cargo build --bin rhwp
 cargo test --test issue_1139_inline_picture_duplicate issue_1293_equation_control_is_not_always_treat_as_char -- --nocapture
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \

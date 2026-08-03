@@ -68,7 +68,7 @@ Stage25에서 큰 `미주 사이` 문서의 새 제목 tail 일부를 공통 로
 - `cargo fmt --all -- --check`: 통과
 - `cargo test --lib compact_endnote -- --nocapture`: 28개 통과
 - `cargo build --bin rhwp`: 통과
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage26_no_separator_target --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage26_no_separator_target --rhwp-bin target/debug/rhwp`
   - no-separator: page count 23/23/23, overflow 37건 유지
   - above0-between20-below2: page count 22/22/22, overflow 38건 유지
 

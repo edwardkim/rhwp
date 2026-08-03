@@ -20,7 +20,7 @@ Stage67에서 visual sweep이 공식 미주 설정값, 구분선 없음, marker 
 ## 검증 명령
 
 ```sh
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
   --target 2024-11-practice-above0-between7-below2 \
@@ -47,7 +47,7 @@ python3 scripts/task1274_visual_sweep.py \
 실행 완료:
 
 ```sh
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
   --target 2024-11-practice-above0-between7-below2 \

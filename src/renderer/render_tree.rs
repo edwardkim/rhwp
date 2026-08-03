@@ -234,7 +234,31 @@ impl RenderNode {
             RenderNodeType::TableCell(tc) => {
                 ("Cell", format!(",\"row\":{},\"col\":{}", tc.row, tc.col))
             }
-            RenderNodeType::Image(_) => ("Image", String::new()),
+            RenderNodeType::Image(image) => {
+                let mut extra = String::new();
+                if let Some(para_index) = image.para_index {
+                    extra.push_str(&format!(",\"pi\":{para_index}"));
+                }
+                if let Some(control_index) = image.control_index {
+                    extra.push_str(&format!(",\"ci\":{control_index}"));
+                }
+                let text_wrap = image
+                    .text_wrap
+                    .or_else(|| self.layer.and_then(|layer| layer.text_wrap));
+                if let Some(text_wrap) = text_wrap {
+                    let name = match text_wrap {
+                        TextWrap::Square => "Square",
+                        TextWrap::Tight => "Tight",
+                        TextWrap::Through => "Through",
+                        TextWrap::TopAndBottom => "TopAndBottom",
+                        TextWrap::BehindText => "BehindText",
+                        TextWrap::InFrontOfText => "InFrontOfText",
+                    };
+                    extra.push_str(",\"textWrap\":");
+                    extra.push_str(&json_escape(name));
+                }
+                ("Image", extra)
+            }
             RenderNodeType::TextBox => ("TextBox", String::new()),
             RenderNodeType::Equation(_) => ("Equation", String::new()),
             RenderNodeType::Line(_) => ("Line", String::new()),
@@ -1741,6 +1765,28 @@ mod tests {
         let bbox = BoundingBox::from_hwpunit_rect(&rect, 96.0);
         assert!((bbox.width - 96.0).abs() < 0.01);
         assert!((bbox.height - 96.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn render_tree_json_exposes_image_owner_and_text_wrap() {
+        let mut tree = PageRenderTree::new(0, 100.0, 100.0);
+        let mut image = ImageNode::new(9, None);
+        image.para_index = Some(1355);
+        image.control_index = Some(0);
+        image.text_wrap = Some(TextWrap::Square);
+        let image_id = tree.next_id();
+        tree.root.children.push(RenderNode::new(
+            image_id,
+            RenderNodeType::Image(image),
+            BoundingBox::new(10.0, 20.0, 30.0, 40.0),
+        ));
+
+        let json = tree.root.to_json();
+
+        assert!(json.contains("\"type\":\"Image\""));
+        assert!(json.contains("\"pi\":1355"));
+        assert!(json.contains("\"ci\":0"));
+        assert!(json.contains("\"textWrap\":\"Square\""));
     }
 
     // === Task #1154: clip_overlapping_same_bin_images 단위 테스트 ===

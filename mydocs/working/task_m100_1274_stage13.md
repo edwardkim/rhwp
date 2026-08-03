@@ -25,7 +25,7 @@
 
 - 진행 중 자동 테스트는 `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`만 사용한다.
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
 - 필요 시 전체 sweep으로 여섯 대상 페이지 수와 overflow를 다시 확인한다.
 - 전체 CI급 테스트는 전체 목표 마지막에만 수행한다.
 
@@ -40,11 +40,11 @@
 - `cargo fmt` 완료.
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 48개 통과.
 - `cargo build --bin rhwp` 통과.
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`:
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`:
   - SVG 24쪽 / PDF 24쪽.
   - overflow 0건.
   - 22쪽 오른쪽 단에 `pi=1126..1128`이 들어가고 23쪽은 `문29`로 시작한다.
-- `python3 scripts/task1274_visual_sweep.py`:
+- `python3 scripts/visual_sweep.py`:
   - `2022-09`: 23/23, overflow 0건.
   - `2023-09`: 20/20, overflow 0건.
   - `2024-09-below20`: 23/23, overflow 0건.

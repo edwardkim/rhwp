@@ -1,0 +1,1734 @@
+[
+  {
+    "page": 42,
+    "flags": [
+      "question_marker_flow_drift"
+    ],
+    "rhwp_frame": [
+      39,
+      113,
+      1152,
+      1645
+    ],
+    "pdf_frame": [
+      39,
+      113,
+      1151,
+      1645
+    ],
+    "rhwp_outside_frame_pixels": 0,
+    "pdf_outside_frame_pixels": 0,
+    "rhwp_outside_frame_max_y": null,
+    "pdf_outside_frame_max_y": null,
+    "rhwp_outside_frame_extent_px": null,
+    "pdf_outside_frame_extent_px": null,
+    "frame_overflow_tolerated_bleed": false,
+    "paper_size_footer_frame_bleed": false,
+    "rhwp_outside_frame_bleed_px": 0,
+    "pdf_outside_frame_bleed_px": 0,
+    "content_bottom_delta_px": -1.0,
+    "red_marker_drift": {
+      "rhwp_count": 0,
+      "pdf_count": 3,
+      "paired": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null
+    },
+    "line_band_drift": {
+      "rhwp_count": 25,
+      "pdf_count": 24,
+      "paired": 24,
+      "max_abs_delta_px": 3.5,
+      "p90_abs_delta_px": 1.5,
+      "mean_abs_delta_px": 0.6
+    },
+    "column_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          39,
+          113,
+          593,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          113,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 24,
+          "pdf_count": 26,
+          "paired": 24,
+          "max_abs_delta_px": 216.5,
+          "p90_abs_delta_px": 64.0,
+          "mean_abs_delta_px": 47.5
+        },
+        "rhwp_first_band": {
+          "y0": 129,
+          "y1": 155,
+          "x0": 151,
+          "x1": 387,
+          "pixels": 6145,
+          "cy": 142.0
+        },
+        "rhwp_last_band": {
+          "y0": 1611,
+          "y1": 1615,
+          "x0": 562,
+          "x1": 591,
+          "pixels": 44,
+          "cy": 1613.0
+        },
+        "pdf_first_band": {
+          "y0": 128,
+          "y1": 155,
+          "x0": 151,
+          "x1": 388,
+          "pixels": 6159,
+          "cy": 141.5
+        },
+        "pdf_last_band": {
+          "y0": 1617,
+          "y1": 1618,
+          "x0": 584,
+          "x1": 591,
+          "pixels": 16,
+          "cy": 1617.5
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          113,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          113,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 22,
+          "pdf_count": 22,
+          "paired": 22,
+          "max_abs_delta_px": 2.0,
+          "p90_abs_delta_px": 0.5,
+          "mean_abs_delta_px": 0.4
+        },
+        "rhwp_first_band": {
+          "y0": 170,
+          "y1": 181,
+          "x0": 599,
+          "x1": 622,
+          "pixels": 188,
+          "cy": 175.5
+        },
+        "rhwp_last_band": {
+          "y0": 1611,
+          "y1": 1612,
+          "x0": 601,
+          "x1": 628,
+          "pixels": 26,
+          "cy": 1611.5
+        },
+        "pdf_first_band": {
+          "y0": 170,
+          "y1": 180,
+          "x0": 600,
+          "x1": 623,
+          "pixels": 158,
+          "cy": 175.0
+        },
+        "pdf_last_band": {
+          "y0": 1613,
+          "y1": 1614,
+          "x0": 601,
+          "x1": 624,
+          "pixels": 21,
+          "cy": 1613.5
+        }
+      }
+    ],
+    "column_line_band_drift_candidates": [],
+    "column_text_flow_collapse_candidates": [],
+    "large_ink_region_drift": {
+      "rhwp_count": 14,
+      "pdf_count": 10,
+      "paired": 10,
+      "deltas_px": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        -80.0,
+        -240.0,
+        -240.0,
+        -424.0,
+        -608.0,
+        -704.0
+      ],
+      "max_abs_delta_px": 704.0,
+      "mean_abs_delta_px": 229.6,
+      "rhwp_regions": [
+        {
+          "x0": 151.0,
+          "y0": 129.0,
+          "x1": 391.0,
+          "y1": 401.0,
+          "w": 240.0,
+          "h": 272.0,
+          "cy": 265.0,
+          "tiles": 161.0
+        },
+        {
+          "x0": 327.0,
+          "y0": 161.0,
+          "x1": 679.0,
+          "y1": 497.0,
+          "w": 352.0,
+          "h": 336.0,
+          "cy": 329.0,
+          "tiles": 320.0
+        },
+        {
+          "x0": 695.0,
+          "y0": 273.0,
+          "x1": 951.0,
+          "y1": 337.0,
+          "w": 256.0,
+          "h": 64.0,
+          "cy": 305.0,
+          "tiles": 29.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 545.0,
+          "x1": 503.0,
+          "y1": 609.0,
+          "w": 336.0,
+          "h": 64.0,
+          "cy": 577.0,
+          "tiles": 43.0
+        },
+        {
+          "x0": 519.0,
+          "y0": 545.0,
+          "x1": 791.0,
+          "y1": 609.0,
+          "w": 272.0,
+          "h": 64.0,
+          "cy": 577.0,
+          "tiles": 35.0
+        },
+        {
+          "x0": 871.0,
+          "y0": 545.0,
+          "x1": 1015.0,
+          "y1": 609.0,
+          "w": 144.0,
+          "h": 64.0,
+          "cy": 577.0,
+          "tiles": 16.0
+        },
+        {
+          "x0": 279.0,
+          "y0": 625.0,
+          "x1": 727.0,
+          "y1": 689.0,
+          "w": 448.0,
+          "h": 64.0,
+          "cy": 657.0,
+          "tiles": 34.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 705.0,
+          "x1": 407.0,
+          "y1": 769.0,
+          "w": 240.0,
+          "h": 64.0,
+          "cy": 737.0,
+          "tiles": 20.0
+        }
+      ],
+      "pdf_regions": [
+        {
+          "x0": 151.0,
+          "y0": 129.0,
+          "x1": 391.0,
+          "y1": 401.0,
+          "w": 240.0,
+          "h": 272.0,
+          "cy": 265.0,
+          "tiles": 160.0
+        },
+        {
+          "x0": 327.0,
+          "y0": 161.0,
+          "x1": 679.0,
+          "y1": 497.0,
+          "w": 352.0,
+          "h": 336.0,
+          "cy": 329.0,
+          "tiles": 325.0
+        },
+        {
+          "x0": 695.0,
+          "y0": 273.0,
+          "x1": 951.0,
+          "y1": 337.0,
+          "w": 256.0,
+          "h": 64.0,
+          "cy": 305.0,
+          "tiles": 29.0
+        },
+        {
+          "x0": 199.0,
+          "y0": 545.0,
+          "x1": 391.0,
+          "y1": 609.0,
+          "w": 192.0,
+          "h": 64.0,
+          "cy": 577.0,
+          "tiles": 24.0
+        },
+        {
+          "x0": 279.0,
+          "y0": 625.0,
+          "x1": 519.0,
+          "y1": 689.0,
+          "w": 240.0,
+          "h": 64.0,
+          "cy": 657.0,
+          "tiles": 41.0
+        },
+        {
+          "x0": 215.0,
+          "y0": 785.0,
+          "x1": 567.0,
+          "y1": 849.0,
+          "w": 352.0,
+          "h": 64.0,
+          "cy": 817.0,
+          "tiles": 46.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 865.0,
+          "x1": 359.0,
+          "y1": 929.0,
+          "w": 192.0,
+          "h": 64.0,
+          "cy": 897.0,
+          "tiles": 23.0
+        },
+        {
+          "x0": 135.0,
+          "y0": 945.0,
+          "x1": 919.0,
+          "y1": 1377.0,
+          "w": 784.0,
+          "h": 432.0,
+          "cy": 1161.0,
+          "tiles": 1130.0
+        }
+      ]
+    },
+    "endnote_shape_ui": {
+      "separator_visible": true,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_below_mm": 2.0,
+      "separator_length_mm": 43.321
+    },
+    "endnote_separator_gap": {
+      "expected_separator": true,
+      "separator_below_mm": 2.0,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_length_px": 163.7,
+      "rhwp": {
+        "expected_separator": true,
+        "candidate_count": 1,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": [
+          {
+            "x0": 94.5,
+            "x1": 296.1,
+            "y0": 987.6,
+            "y1": 988.1,
+            "length": 201.6,
+            "cy": 987.9,
+            "gap_height": 0.5
+          }
+        ]
+      },
+      "pdf": {
+        "expected_separator": true,
+        "candidate_count": 276,
+        "selected": {
+          "x0": 528.0,
+          "x1": 677.0,
+          "y0": 397.0,
+          "y1": 397.0,
+          "length": 150.0,
+          "cy": 397.0,
+          "gap_height": 1.0
+        },
+        "gap_px": 6.0,
+        "marker_gap_px": 6.0,
+        "first_content_y": 403.0,
+        "first_marker_y": 403.0,
+        "candidates": [
+          {
+            "x0": 743.0,
+            "x1": 841.0,
+            "y0": 1313.0,
+            "y1": 1313.0,
+            "length": 99.0,
+            "cy": 1313.0,
+            "gap_height": 1.0
+          },
+          {
+            "x0": 599.0,
+            "x1": 816.0,
+            "y0": 1314.0,
+            "y1": 1318.0,
+            "length": 202.0,
+            "cy": 1316.0,
+            "gap_height": 5.0
+          },
+          {
+            "x0": 658.0,
+            "x1": 750.0,
+            "y0": 1322.0,
+            "y1": 1322.0,
+            "length": 93.0,
+            "cy": 1322.0,
+            "gap_height": 1.0
+          },
+          {
+            "x0": 599.0,
+            "x1": 793.0,
+            "y0": 1326.0,
+            "y1": 1332.0,
+            "length": 139.0,
+            "cy": 1329.0,
+            "gap_height": 7.0
+          },
+          {
+            "x0": 644.0,
+            "x1": 771.0,
+            "y0": 1339.0,
+            "y1": 1339.0,
+            "length": 128.0,
+            "cy": 1339.0,
+            "gap_height": 1.0
+          },
+          {
+            "x0": 624.0,
+            "x1": 729.0,
+            "y0": 1342.0,
+            "y1": 1342.0,
+            "length": 106.0,
+            "cy": 1342.0,
+            "gap_height": 1.0
+          }
+        ]
+      },
+      "gap_delta_px": null
+    },
+    "endnote_no_separator_content_start": null,
+    "between_notes_marker_gap": {
+      "expected_between_notes_mm": 0.0,
+      "expected_between_notes_px": null,
+      "rhwp_marker_count": 0,
+      "pdf_marker_count": 3,
+      "paired_gap_count": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null,
+      "rhwp_marker_y": [],
+      "pdf_marker_y": [
+        174.0,
+        259.5,
+        368.5
+      ],
+      "rhwp_marker_y_by_column": [
+        []
+      ],
+      "pdf_marker_y_by_column": [
+        [
+          174.0,
+          259.5,
+          368.5
+        ]
+      ],
+      "rhwp_gaps_px": [],
+      "pdf_gaps_px": [
+        85.5,
+        109.0
+      ],
+      "pairs": []
+    },
+    "svg": "/private/tmp/rhwp-stage23-p43-sweep-20260802/issue3738-stage23-hwp-p042-p045/svg/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)_042.svg",
+    "render_tree_json": "/private/tmp/rhwp-stage23-p43-sweep-20260802/issue3738-stage23-hwp-p042-p045/render_tree/render_tree_042.json",
+    "equation_text_overlap_candidates": [],
+    "question_title_text_overlap_candidates": [],
+    "line_order_overlap_candidates": [],
+    "render_tree_frame_tail_overflow_candidates": [],
+    "render_tree_frame_tail_overflow_suppressed_candidates": [],
+    "question_marker_drift_candidates": [],
+    "legacy_glyph_visual_candidates": [],
+    "annotated": "/private/tmp/rhwp-stage23-p43-sweep-20260802/issue3738-stage23-hwp-p042-p045/analysis/annotated_042.png"
+  },
+  {
+    "page": 43,
+    "flags": [],
+    "rhwp_frame": [
+      39,
+      113,
+      1152,
+      1645
+    ],
+    "pdf_frame": [
+      39,
+      113,
+      1151,
+      1645
+    ],
+    "rhwp_outside_frame_pixels": 0,
+    "pdf_outside_frame_pixels": 0,
+    "rhwp_outside_frame_max_y": null,
+    "pdf_outside_frame_max_y": null,
+    "rhwp_outside_frame_extent_px": null,
+    "pdf_outside_frame_extent_px": null,
+    "frame_overflow_tolerated_bleed": false,
+    "paper_size_footer_frame_bleed": false,
+    "rhwp_outside_frame_bleed_px": 0,
+    "pdf_outside_frame_bleed_px": 0,
+    "content_bottom_delta_px": -2.0,
+    "red_marker_drift": {
+      "rhwp_count": 0,
+      "pdf_count": 0,
+      "paired": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null
+    },
+    "line_band_drift": {
+      "rhwp_count": 45,
+      "pdf_count": 45,
+      "paired": 45,
+      "max_abs_delta_px": 2.5,
+      "p90_abs_delta_px": 1.5,
+      "mean_abs_delta_px": 1.0
+    },
+    "column_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          39,
+          113,
+          593,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          113,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 43,
+          "pdf_count": 44,
+          "paired": 43,
+          "max_abs_delta_px": 1.5,
+          "p90_abs_delta_px": 1.0,
+          "mean_abs_delta_px": 0.8
+        },
+        "rhwp_first_band": {
+          "y0": 125,
+          "y1": 143,
+          "x0": 143,
+          "x1": 591,
+          "pixels": 2180,
+          "cy": 134.0
+        },
+        "rhwp_last_band": {
+          "y0": 1611,
+          "y1": 1615,
+          "x0": 562,
+          "x1": 591,
+          "pixels": 44,
+          "cy": 1613.0
+        },
+        "pdf_first_band": {
+          "y0": 126,
+          "y1": 144,
+          "x0": 142,
+          "x1": 591,
+          "pixels": 2199,
+          "cy": 135.0
+        },
+        "pdf_last_band": {
+          "y0": 1617,
+          "y1": 1618,
+          "x0": 584,
+          "x1": 591,
+          "pixels": 16,
+          "cy": 1617.5
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          113,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          113,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 45,
+          "pdf_count": 44,
+          "paired": 44,
+          "max_abs_delta_px": 63.0,
+          "p90_abs_delta_px": 14.5,
+          "mean_abs_delta_px": 5.6
+        },
+        "rhwp_first_band": {
+          "y0": 125,
+          "y1": 143,
+          "x0": 603,
+          "x1": 1048,
+          "pixels": 2191,
+          "cy": 134.0
+        },
+        "rhwp_last_band": {
+          "y0": 1611,
+          "y1": 1612,
+          "x0": 599,
+          "x1": 628,
+          "pixels": 30,
+          "cy": 1611.5
+        },
+        "pdf_first_band": {
+          "y0": 126,
+          "y1": 144,
+          "x0": 599,
+          "x1": 1048,
+          "pixels": 2215,
+          "cy": 135.0
+        },
+        "pdf_last_band": {
+          "y0": 1613,
+          "y1": 1614,
+          "x0": 600,
+          "x1": 624,
+          "pixels": 24,
+          "cy": 1613.5
+        }
+      }
+    ],
+    "column_line_band_drift_candidates": [],
+    "column_text_flow_collapse_candidates": [],
+    "large_ink_region_drift": {
+      "rhwp_count": 22,
+      "pdf_count": 14,
+      "paired": 14,
+      "deltas_px": [
+        0.0,
+        0.0,
+        -240.0,
+        -240.0,
+        -160.0,
+        -240.0,
+        -240.0,
+        -240.0,
+        -240.0,
+        -240.0,
+        -400.0,
+        -400.0,
+        -400.0,
+        -592.0
+      ],
+      "max_abs_delta_px": 592.0,
+      "mean_abs_delta_px": 259.4,
+      "rhwp_regions": [
+        {
+          "x0": 231.0,
+          "y0": 161.0,
+          "x1": 407.0,
+          "y1": 225.0,
+          "w": 176.0,
+          "h": 64.0,
+          "cy": 193.0,
+          "tiles": 31.0
+        },
+        {
+          "x0": 407.0,
+          "y0": 161.0,
+          "x1": 839.0,
+          "y1": 225.0,
+          "w": 432.0,
+          "h": 64.0,
+          "cy": 193.0,
+          "tiles": 66.0
+        },
+        {
+          "x0": 759.0,
+          "y0": 161.0,
+          "x1": 1047.0,
+          "y1": 225.0,
+          "w": 288.0,
+          "h": 64.0,
+          "cy": 193.0,
+          "tiles": 45.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 241.0,
+          "x1": 295.0,
+          "y1": 305.0,
+          "w": 128.0,
+          "h": 64.0,
+          "cy": 273.0,
+          "tiles": 24.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 321.0,
+          "x1": 487.0,
+          "y1": 385.0,
+          "w": 320.0,
+          "h": 64.0,
+          "cy": 353.0,
+          "tiles": 48.0
+        },
+        {
+          "x0": 423.0,
+          "y0": 321.0,
+          "x1": 695.0,
+          "y1": 385.0,
+          "w": 272.0,
+          "h": 64.0,
+          "cy": 353.0,
+          "tiles": 44.0
+        },
+        {
+          "x0": 695.0,
+          "y0": 321.0,
+          "x1": 1047.0,
+          "y1": 385.0,
+          "w": 352.0,
+          "h": 64.0,
+          "cy": 353.0,
+          "tiles": 57.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 401.0,
+          "x1": 295.0,
+          "y1": 465.0,
+          "w": 128.0,
+          "h": 64.0,
+          "cy": 433.0,
+          "tiles": 24.0
+        }
+      ],
+      "pdf_regions": [
+        {
+          "x0": 583.0,
+          "y0": 161.0,
+          "x1": 871.0,
+          "y1": 225.0,
+          "w": 288.0,
+          "h": 64.0,
+          "cy": 193.0,
+          "tiles": 35.0
+        },
+        {
+          "x0": 887.0,
+          "y0": 161.0,
+          "x1": 1047.0,
+          "y1": 225.0,
+          "w": 160.0,
+          "h": 64.0,
+          "cy": 193.0,
+          "tiles": 22.0
+        },
+        {
+          "x0": 311.0,
+          "y0": 401.0,
+          "x1": 743.0,
+          "y1": 465.0,
+          "w": 432.0,
+          "h": 64.0,
+          "cy": 433.0,
+          "tiles": 40.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 481.0,
+          "x1": 599.0,
+          "y1": 545.0,
+          "w": 432.0,
+          "h": 64.0,
+          "cy": 513.0,
+          "tiles": 53.0
+        },
+        {
+          "x0": 759.0,
+          "y0": 481.0,
+          "x1": 1015.0,
+          "y1": 545.0,
+          "w": 256.0,
+          "h": 64.0,
+          "cy": 513.0,
+          "tiles": 45.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 561.0,
+          "x1": 535.0,
+          "y1": 625.0,
+          "w": 368.0,
+          "h": 64.0,
+          "cy": 593.0,
+          "tiles": 37.0
+        },
+        {
+          "x0": 551.0,
+          "y0": 561.0,
+          "x1": 1015.0,
+          "y1": 625.0,
+          "w": 464.0,
+          "h": 64.0,
+          "cy": 593.0,
+          "tiles": 36.0
+        },
+        {
+          "x0": 199.0,
+          "y0": 641.0,
+          "x1": 439.0,
+          "y1": 705.0,
+          "w": 240.0,
+          "h": 64.0,
+          "cy": 673.0,
+          "tiles": 37.0
+        }
+      ]
+    },
+    "endnote_shape_ui": {
+      "separator_visible": true,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_below_mm": 2.0,
+      "separator_length_mm": 43.321
+    },
+    "endnote_separator_gap": {
+      "expected_separator": true,
+      "separator_below_mm": 2.0,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_length_px": 163.7,
+      "rhwp": {
+        "expected_separator": true,
+        "candidate_count": 1,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": [
+          {
+            "x0": 94.5,
+            "x1": 296.1,
+            "y0": 752.7,
+            "y1": 753.2,
+            "length": 201.6,
+            "cy": 753.0,
+            "gap_height": 0.5
+          }
+        ]
+      },
+      "pdf": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "gap_delta_px": null
+    },
+    "endnote_no_separator_content_start": null,
+    "between_notes_marker_gap": {
+      "expected_between_notes_mm": 0.0,
+      "expected_between_notes_px": null,
+      "rhwp_marker_count": 0,
+      "pdf_marker_count": 0,
+      "paired_gap_count": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null,
+      "rhwp_marker_y": [],
+      "pdf_marker_y": [],
+      "rhwp_marker_y_by_column": [
+        []
+      ],
+      "pdf_marker_y_by_column": [
+        []
+      ],
+      "rhwp_gaps_px": [],
+      "pdf_gaps_px": [],
+      "pairs": []
+    },
+    "svg": "/private/tmp/rhwp-stage23-p43-sweep-20260802/issue3738-stage23-hwp-p042-p045/svg/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)_043.svg",
+    "render_tree_json": "/private/tmp/rhwp-stage23-p43-sweep-20260802/issue3738-stage23-hwp-p042-p045/render_tree/render_tree_043.json",
+    "equation_text_overlap_candidates": [],
+    "question_title_text_overlap_candidates": [],
+    "line_order_overlap_candidates": [],
+    "render_tree_frame_tail_overflow_candidates": [],
+    "render_tree_frame_tail_overflow_suppressed_candidates": [],
+    "question_marker_drift_candidates": [],
+    "legacy_glyph_visual_candidates": [],
+    "annotated": null
+  },
+  {
+    "page": 44,
+    "flags": [
+      "column_text_flow_collapse"
+    ],
+    "rhwp_frame": [
+      39,
+      549,
+      1152,
+      1645
+    ],
+    "pdf_frame": [
+      39,
+      554,
+      1151,
+      1645
+    ],
+    "rhwp_outside_frame_pixels": 0,
+    "pdf_outside_frame_pixels": 0,
+    "rhwp_outside_frame_max_y": null,
+    "pdf_outside_frame_max_y": null,
+    "rhwp_outside_frame_extent_px": null,
+    "pdf_outside_frame_extent_px": null,
+    "frame_overflow_tolerated_bleed": false,
+    "paper_size_footer_frame_bleed": false,
+    "rhwp_outside_frame_bleed_px": 0,
+    "pdf_outside_frame_bleed_px": 0,
+    "content_bottom_delta_px": -1.0,
+    "red_marker_drift": {
+      "rhwp_count": 0,
+      "pdf_count": 0,
+      "paired": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null
+    },
+    "line_band_drift": {
+      "rhwp_count": 27,
+      "pdf_count": 13,
+      "paired": 13,
+      "max_abs_delta_px": 861.5,
+      "p90_abs_delta_px": 788.5,
+      "mean_abs_delta_px": 568.4
+    },
+    "column_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          39,
+          549,
+          593,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          554,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 54,
+          "pdf_count": 54,
+          "paired": 54,
+          "max_abs_delta_px": 65.5,
+          "p90_abs_delta_px": 40.5,
+          "mean_abs_delta_px": 30.0
+        },
+        "rhwp_first_band": {
+          "y0": 557,
+          "y1": 572,
+          "x0": 255,
+          "x1": 591,
+          "pixels": 715,
+          "cy": 564.5
+        },
+        "rhwp_last_band": {
+          "y0": 1611,
+          "y1": 1615,
+          "x0": 562,
+          "x1": 591,
+          "pixels": 44,
+          "cy": 1613.0
+        },
+        "pdf_first_band": {
+          "y0": 561,
+          "y1": 578,
+          "x0": 261,
+          "x1": 591,
+          "pixels": 902,
+          "cy": 569.5
+        },
+        "pdf_last_band": {
+          "y0": 1617,
+          "y1": 1618,
+          "x0": 584,
+          "x1": 591,
+          "pixels": 16,
+          "cy": 1617.5
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          549,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          554,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 53,
+          "pdf_count": 40,
+          "paired": 40,
+          "max_abs_delta_px": 432.5,
+          "p90_abs_delta_px": 335.5,
+          "mean_abs_delta_px": 263.9
+        },
+        "rhwp_first_band": {
+          "y0": 557,
+          "y1": 572,
+          "x0": 605,
+          "x1": 905,
+          "pixels": 510,
+          "cy": 564.5
+        },
+        "rhwp_last_band": {
+          "y0": 1611,
+          "y1": 1612,
+          "x0": 602,
+          "x1": 628,
+          "pixels": 25,
+          "cy": 1611.5
+        },
+        "pdf_first_band": {
+          "y0": 556,
+          "y1": 804,
+          "x0": 599,
+          "x1": 912,
+          "pixels": 12054,
+          "cy": 680.0
+        },
+        "pdf_last_band": {
+          "y0": 1617,
+          "y1": 1618,
+          "x0": 599,
+          "x1": 606,
+          "pixels": 16,
+          "cy": 1617.5
+        }
+      }
+    ],
+    "column_line_band_drift_candidates": [
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          549,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          554,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 53,
+          "pdf_count": 40,
+          "paired": 40,
+          "max_abs_delta_px": 432.5,
+          "p90_abs_delta_px": 335.5,
+          "mean_abs_delta_px": 263.9
+        },
+        "rhwp_first_band": {
+          "y0": 557,
+          "y1": 572,
+          "x0": 605,
+          "x1": 905,
+          "pixels": 510,
+          "cy": 564.5
+        },
+        "rhwp_last_band": {
+          "y0": 1611,
+          "y1": 1612,
+          "x0": 602,
+          "x1": 628,
+          "pixels": 25,
+          "cy": 1611.5
+        },
+        "pdf_first_band": {
+          "y0": 556,
+          "y1": 804,
+          "x0": 599,
+          "x1": 912,
+          "pixels": 12054,
+          "cy": 680.0
+        },
+        "pdf_last_band": {
+          "y0": 1617,
+          "y1": 1618,
+          "x0": 599,
+          "x1": 606,
+          "pixels": 16,
+          "cy": 1617.5
+        }
+      }
+    ],
+    "column_text_flow_collapse_candidates": [
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          549,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          554,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 53,
+          "pdf_count": 40,
+          "paired": 40,
+          "max_abs_delta_px": 432.5,
+          "p90_abs_delta_px": 335.5,
+          "mean_abs_delta_px": 263.9
+        },
+        "rhwp_first_band": {
+          "y0": 557,
+          "y1": 572,
+          "x0": 605,
+          "x1": 905,
+          "pixels": 510,
+          "cy": 564.5
+        },
+        "rhwp_last_band": {
+          "y0": 1611,
+          "y1": 1612,
+          "x0": 602,
+          "x1": 628,
+          "pixels": 25,
+          "cy": 1611.5
+        },
+        "pdf_first_band": {
+          "y0": 556,
+          "y1": 804,
+          "x0": 599,
+          "x1": 912,
+          "pixels": 12054,
+          "cy": 680.0
+        },
+        "pdf_last_band": {
+          "y0": 1617,
+          "y1": 1618,
+          "x0": 599,
+          "x1": 606,
+          "pixels": 16,
+          "cy": 1617.5
+        },
+        "band_count_delta": 13,
+        "reason": "column_line_count_and_y_flow_diverge"
+      }
+    ],
+    "large_ink_region_drift": {
+      "rhwp_count": 2,
+      "pdf_count": 4,
+      "paired": 2,
+      "deltas_px": [
+        -29.0,
+        -37.0
+      ],
+      "max_abs_delta_px": 37.0,
+      "mean_abs_delta_px": 33.0,
+      "rhwp_regions": [
+        {
+          "x0": 247.0,
+          "y0": 549.0,
+          "x1": 919.0,
+          "y1": 1349.0,
+          "w": 672.0,
+          "h": 800.0,
+          "cy": 949.0,
+          "tiles": 1162.0
+        },
+        {
+          "x0": 631.0,
+          "y0": 1381.0,
+          "x1": 999.0,
+          "y1": 1445.0,
+          "w": 368.0,
+          "h": 64.0,
+          "cy": 1413.0,
+          "tiles": 39.0
+        }
+      ],
+      "pdf_regions": [
+        {
+          "x0": 247.0,
+          "y0": 554.0,
+          "x1": 999.0,
+          "y1": 1402.0,
+          "w": 752.0,
+          "h": 848.0,
+          "cy": 978.0,
+          "tiles": 1484.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 1418.0,
+          "x1": 1047.0,
+          "y1": 1482.0,
+          "w": 880.0,
+          "h": 64.0,
+          "cy": 1450.0,
+          "tiles": 158.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 1498.0,
+          "x1": 647.0,
+          "y1": 1562.0,
+          "w": 480.0,
+          "h": 64.0,
+          "cy": 1530.0,
+          "tiles": 93.0
+        },
+        {
+          "x0": 647.0,
+          "y0": 1498.0,
+          "x1": 999.0,
+          "y1": 1562.0,
+          "w": 352.0,
+          "h": 64.0,
+          "cy": 1530.0,
+          "tiles": 67.0
+        }
+      ]
+    },
+    "endnote_shape_ui": {
+      "separator_visible": true,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_below_mm": 2.0,
+      "separator_length_mm": 43.321
+    },
+    "endnote_separator_gap": {
+      "expected_separator": true,
+      "separator_below_mm": 2.0,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_length_px": 163.7,
+      "rhwp": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "pdf": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "gap_delta_px": null
+    },
+    "endnote_no_separator_content_start": null,
+    "between_notes_marker_gap": {
+      "expected_between_notes_mm": 0.0,
+      "expected_between_notes_px": null,
+      "rhwp_marker_count": 0,
+      "pdf_marker_count": 0,
+      "paired_gap_count": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null,
+      "rhwp_marker_y": [],
+      "pdf_marker_y": [],
+      "rhwp_marker_y_by_column": [
+        []
+      ],
+      "pdf_marker_y_by_column": [
+        []
+      ],
+      "rhwp_gaps_px": [],
+      "pdf_gaps_px": [],
+      "pairs": []
+    },
+    "svg": "/private/tmp/rhwp-stage23-p43-sweep-20260802/issue3738-stage23-hwp-p042-p045/svg/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)_044.svg",
+    "render_tree_json": "/private/tmp/rhwp-stage23-p43-sweep-20260802/issue3738-stage23-hwp-p042-p045/render_tree/render_tree_044.json",
+    "equation_text_overlap_candidates": [],
+    "question_title_text_overlap_candidates": [],
+    "line_order_overlap_candidates": [],
+    "render_tree_frame_tail_overflow_candidates": [],
+    "render_tree_frame_tail_overflow_suppressed_candidates": [],
+    "question_marker_drift_candidates": [],
+    "legacy_glyph_visual_candidates": [],
+    "annotated": "/private/tmp/rhwp-stage23-p43-sweep-20260802/issue3738-stage23-hwp-p042-p045/analysis/annotated_044.png"
+  },
+  {
+    "page": 45,
+    "flags": [],
+    "rhwp_frame": [
+      39,
+      540,
+      1152,
+      1645
+    ],
+    "pdf_frame": [
+      39,
+      539,
+      1151,
+      1645
+    ],
+    "rhwp_outside_frame_pixels": 0,
+    "pdf_outside_frame_pixels": 0,
+    "rhwp_outside_frame_max_y": null,
+    "pdf_outside_frame_max_y": null,
+    "rhwp_outside_frame_extent_px": null,
+    "pdf_outside_frame_extent_px": null,
+    "frame_overflow_tolerated_bleed": false,
+    "paper_size_footer_frame_bleed": false,
+    "rhwp_outside_frame_bleed_px": 0,
+    "pdf_outside_frame_bleed_px": 0,
+    "content_bottom_delta_px": -2.0,
+    "red_marker_drift": {
+      "rhwp_count": 0,
+      "pdf_count": 0,
+      "paired": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null
+    },
+    "line_band_drift": {
+      "rhwp_count": 27,
+      "pdf_count": 27,
+      "paired": 27,
+      "max_abs_delta_px": 1.5,
+      "p90_abs_delta_px": 0.5,
+      "mean_abs_delta_px": 0.4
+    },
+    "column_line_band_drift": [
+      {
+        "column": 0,
+        "rhwp_frame": [
+          39,
+          540,
+          593,
+          1645
+        ],
+        "pdf_frame": [
+          39,
+          539,
+          593,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 25,
+          "pdf_count": 26,
+          "paired": 25,
+          "max_abs_delta_px": 1.0,
+          "p90_abs_delta_px": 0.5,
+          "mean_abs_delta_px": 0.2
+        },
+        "rhwp_first_band": {
+          "y0": 558,
+          "y1": 576,
+          "x0": 251,
+          "x1": 591,
+          "pixels": 1598,
+          "cy": 567.0
+        },
+        "rhwp_last_band": {
+          "y0": 1611,
+          "y1": 1615,
+          "x0": 562,
+          "x1": 591,
+          "pixels": 44,
+          "cy": 1613.0
+        },
+        "pdf_first_band": {
+          "y0": 558,
+          "y1": 576,
+          "x0": 254,
+          "x1": 591,
+          "pixels": 1562,
+          "cy": 567.0
+        },
+        "pdf_last_band": {
+          "y0": 1617,
+          "y1": 1618,
+          "x0": 584,
+          "x1": 591,
+          "pixels": 16,
+          "cy": 1617.5
+        }
+      },
+      {
+        "column": 1,
+        "rhwp_frame": [
+          597,
+          540,
+          1152,
+          1645
+        ],
+        "pdf_frame": [
+          597,
+          539,
+          1151,
+          1645
+        ],
+        "drift": {
+          "rhwp_count": 22,
+          "pdf_count": 21,
+          "paired": 21,
+          "max_abs_delta_px": 53.5,
+          "p90_abs_delta_px": 0.5,
+          "mean_abs_delta_px": 2.7
+        },
+        "rhwp_first_band": {
+          "y0": 558,
+          "y1": 576,
+          "x0": 599,
+          "x1": 706,
+          "pixels": 562,
+          "cy": 567.0
+        },
+        "rhwp_last_band": {
+          "y0": 1611,
+          "y1": 1612,
+          "x0": 601,
+          "x1": 628,
+          "pixels": 27,
+          "cy": 1611.5
+        },
+        "pdf_first_band": {
+          "y0": 558,
+          "y1": 576,
+          "x0": 599,
+          "x1": 702,
+          "pixels": 540,
+          "cy": 567.0
+        },
+        "pdf_last_band": {
+          "y0": 1613,
+          "y1": 1614,
+          "x0": 599,
+          "x1": 624,
+          "pixels": 21,
+          "cy": 1613.5
+        }
+      }
+    ],
+    "column_line_band_drift_candidates": [],
+    "column_text_flow_collapse_candidates": [],
+    "large_ink_region_drift": {
+      "rhwp_count": 16,
+      "pdf_count": 11,
+      "paired": 11,
+      "deltas_px": [
+        1.0,
+        1.0,
+        -159.0,
+        -79.0,
+        -79.0,
+        -79.0,
+        -159.0,
+        -159.0,
+        -159.0,
+        -159.0,
+        -287.0
+      ],
+      "max_abs_delta_px": 287.0,
+      "mean_abs_delta_px": 120.1,
+      "rhwp_regions": [
+        {
+          "x0": 167.0,
+          "y0": 652.0,
+          "x1": 503.0,
+          "y1": 716.0,
+          "w": 336.0,
+          "h": 64.0,
+          "cy": 684.0,
+          "tiles": 59.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 812.0,
+          "x1": 439.0,
+          "y1": 876.0,
+          "w": 272.0,
+          "h": 64.0,
+          "cy": 844.0,
+          "tiles": 45.0
+        },
+        {
+          "x0": 455.0,
+          "y0": 812.0,
+          "x1": 839.0,
+          "y1": 876.0,
+          "w": 384.0,
+          "h": 64.0,
+          "cy": 844.0,
+          "tiles": 50.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 892.0,
+          "x1": 423.0,
+          "y1": 956.0,
+          "w": 256.0,
+          "h": 64.0,
+          "cy": 924.0,
+          "tiles": 43.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 972.0,
+          "x1": 1047.0,
+          "y1": 1036.0,
+          "w": 880.0,
+          "h": 64.0,
+          "cy": 1004.0,
+          "tiles": 144.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 1052.0,
+          "x1": 279.0,
+          "y1": 1116.0,
+          "w": 112.0,
+          "h": 64.0,
+          "cy": 1084.0,
+          "tiles": 14.0
+        },
+        {
+          "x0": 279.0,
+          "y0": 1052.0,
+          "x1": 583.0,
+          "y1": 1116.0,
+          "w": 304.0,
+          "h": 64.0,
+          "cy": 1084.0,
+          "tiles": 43.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 1132.0,
+          "x1": 535.0,
+          "y1": 1196.0,
+          "w": 368.0,
+          "h": 64.0,
+          "cy": 1164.0,
+          "tiles": 68.0
+        }
+      ],
+      "pdf_regions": [
+        {
+          "x0": 167.0,
+          "y0": 651.0,
+          "x1": 503.0,
+          "y1": 715.0,
+          "w": 336.0,
+          "h": 64.0,
+          "cy": 683.0,
+          "tiles": 51.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 811.0,
+          "x1": 279.0,
+          "y1": 875.0,
+          "w": 112.0,
+          "h": 64.0,
+          "cy": 843.0,
+          "tiles": 14.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 971.0,
+          "x1": 327.0,
+          "y1": 1035.0,
+          "w": 160.0,
+          "h": 64.0,
+          "cy": 1003.0,
+          "tiles": 18.0
+        },
+        {
+          "x0": 503.0,
+          "y0": 971.0,
+          "x1": 1047.0,
+          "y1": 1035.0,
+          "w": 544.0,
+          "h": 64.0,
+          "cy": 1003.0,
+          "tiles": 55.0
+        },
+        {
+          "x0": 167.0,
+          "y0": 1051.0,
+          "x1": 279.0,
+          "y1": 1115.0,
+          "w": 112.0,
+          "h": 64.0,
+          "cy": 1083.0,
+          "tiles": 14.0
+        },
+        {
+          "x0": 535.0,
+          "y0": 1131.0,
+          "x1": 743.0,
+          "y1": 1195.0,
+          "w": 208.0,
+          "h": 64.0,
+          "cy": 1163.0,
+          "tiles": 24.0
+        },
+        {
+          "x0": 967.0,
+          "y0": 1211.0,
+          "x1": 1047.0,
+          "y1": 1275.0,
+          "w": 80.0,
+          "h": 64.0,
+          "cy": 1243.0,
+          "tiles": 13.0
+        },
+        {
+          "x0": 775.0,
+          "y0": 1291.0,
+          "x1": 903.0,
+          "y1": 1355.0,
+          "w": 128.0,
+          "h": 64.0,
+          "cy": 1323.0,
+          "tiles": 12.0
+        }
+      ]
+    },
+    "endnote_shape_ui": {
+      "separator_visible": true,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_below_mm": 2.0,
+      "separator_length_mm": 43.321
+    },
+    "endnote_separator_gap": {
+      "expected_separator": true,
+      "separator_below_mm": 2.0,
+      "separator_above_mm": 0.79,
+      "between_notes_mm": 0.0,
+      "separator_length_px": 163.7,
+      "rhwp": {
+        "expected_separator": true,
+        "candidate_count": 1,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": [
+          {
+            "x0": 94.5,
+            "x1": 296.1,
+            "y0": 1003.4,
+            "y1": 1003.9,
+            "length": 201.6,
+            "cy": 1003.6,
+            "gap_height": 0.5
+          }
+        ]
+      },
+      "pdf": {
+        "expected_separator": true,
+        "candidate_count": 0,
+        "selected": null,
+        "gap_px": null,
+        "first_content_y": null,
+        "first_marker_y": null,
+        "candidates": []
+      },
+      "gap_delta_px": null
+    },
+    "endnote_no_separator_content_start": null,
+    "between_notes_marker_gap": {
+      "expected_between_notes_mm": 0.0,
+      "expected_between_notes_px": null,
+      "rhwp_marker_count": 0,
+      "pdf_marker_count": 0,
+      "paired_gap_count": 0,
+      "max_abs_delta_px": null,
+      "mean_abs_delta_px": null,
+      "rhwp_marker_y": [],
+      "pdf_marker_y": [],
+      "rhwp_marker_y_by_column": [
+        []
+      ],
+      "pdf_marker_y_by_column": [
+        []
+      ],
+      "rhwp_gaps_px": [],
+      "pdf_gaps_px": [],
+      "pairs": []
+    },
+    "svg": "/private/tmp/rhwp-stage23-p43-sweep-20260802/issue3738-stage23-hwp-p042-p045/svg/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)_045.svg",
+    "render_tree_json": "/private/tmp/rhwp-stage23-p43-sweep-20260802/issue3738-stage23-hwp-p042-p045/render_tree/render_tree_045.json",
+    "equation_text_overlap_candidates": [],
+    "question_title_text_overlap_candidates": [],
+    "line_order_overlap_candidates": [],
+    "render_tree_frame_tail_overflow_candidates": [],
+    "render_tree_frame_tail_overflow_suppressed_candidates": [],
+    "question_marker_drift_candidates": [],
+    "legacy_glyph_visual_candidates": [],
+    "annotated": null
+  }
+]

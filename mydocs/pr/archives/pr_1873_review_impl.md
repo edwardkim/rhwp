@@ -51,7 +51,7 @@ git diff --check
 완료.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key issue1695-so-sueop-hwp \
   --hwp samples/SO-SUEOP.hwp \
   --pdf pdf/SO-SUEOP-2024.pdf \

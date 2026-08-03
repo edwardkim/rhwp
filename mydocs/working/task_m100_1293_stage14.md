@@ -73,6 +73,6 @@ Stage13에서 `shape987` p12 내부 rewind 중복과 빈 spacer 뒤 미주 간�
 ## 검증
 
 - `cargo build --bin rhwp`: 통과
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-shape987 --out output/task1293_stage14_shape987_final2_check --rhwp-bin target/debug/rhwp`: 완료
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-shape987 --out output/task1293_stage14_shape987_final2_check --rhwp-bin target/debug/rhwp`: 완료
 - `cargo fmt --all -- --check`: 통과
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 52개 통과

@@ -58,7 +58,7 @@ Stage19에서 `2024-11-practice-above20-between0-below20`의 쪽수와 major swe
 - 수정 후 최소 검증:
   - `cargo fmt --all -- --check`
   - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage20_target_check --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage20_target_check --rhwp-bin target/debug/rhwp`
   - 회귀 target: `2024-09-below20-above20`, `2024-11-practice-shape987`,
     `2024-11-practice-no-separator-above20-between20-below20`
 
@@ -72,7 +72,7 @@ Stage19에서 `2024-11-practice-above20-between0-below20`의 쪽수와 major swe
     vpos 흐름을 유지해 과도한 쪽수 증가를 막는다.
   - 큰 구분선 문서에서도 `미주 사이=0`인 compact 흐름이고 현재 단에 여유가 있을 때는
     새 미주 시작의 stale forward vpos를 formatter 높이로 cap한다.
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
   - 큰 그림/표/수식 덩어리의 y drift를 감시하는 `large_ink_region_drift` 지표를 추가했다.
   - red/line drift가 있는 페이지에서 큰 ink region의 개수나 중심 y가 PDF와 크게 다르면
     후보로 표시한다.

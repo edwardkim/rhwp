@@ -46,7 +46,7 @@ PR #1410 병합 뒤 최종 sweep에 남은 3개 target, 7개 후보를 재현하
 - `cargo fmt --check`: 통과
 - `git diff --check`: 통과
 - targeted visual sweep:
-  - 명령: `python3 scripts/task1274_visual_sweep.py --target 2022-10 --target 2024-09-below20-above20 --target 2024-11-practice-above0-between20-below2 --out output/task1411_stage3_after_fix_v2 --rhwp-bin target/debug/rhwp`
+  - 명령: `python3 scripts/visual_sweep.py --target 2022-10 --target 2024-09-below20-above20 --target 2024-11-practice-above0-between20-below2 --out output/task1411_stage3_after_fix_v2 --rhwp-bin target/debug/rhwp`
   - 결과: `2022-10` `0/18`, `2024-09-below20-above20` `3/23`, `2024-11-practice-above0-between20-below2` `3/22`
 - PR 전 로컬 필수 검증:
   - `cargo build --release`: 통과

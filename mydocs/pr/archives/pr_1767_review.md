@@ -56,7 +56,7 @@ dbf4cf39b Task #1663: 빈-host co-anchored 자리차지 float 표 orphan control
 실행:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --file-target pr1767-issue1663 \
   samples/issue1663_coanchored_float_orphan.hwpx \
   pdf/issue1663_coanchored_float_orphan-2024.pdf \

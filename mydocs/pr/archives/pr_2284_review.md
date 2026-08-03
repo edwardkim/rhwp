@@ -43,7 +43,7 @@
 
 최종 merge commit과 동일한 `devel`에서 `samples/86712_regulatory_analysis.hwp`를 `pdf/issue1921/86712_regulatory_analysis-2024.pdf`와 비교했다.
 
-- 명령: `python3 scripts/task1274_visual_sweep.py --key pr2284-final-86712 --hwp samples/86712_regulatory_analysis.hwp --pdf pdf/issue1921/86712_regulatory_analysis-2024.pdf --pages 10,65 --rhwp-bin /private/tmp/rhwp-pr2284-record-target/debug/rhwp --out /private/tmp/rhwp-pr2284-final-visual`
+- 명령: `python3 scripts/visual_sweep.py --key pr2284-final-86712 --hwp samples/86712_regulatory_analysis.hwp --pdf pdf/issue1921/86712_regulatory_analysis-2024.pdf --pages 10,65 --rhwp-bin /private/tmp/rhwp-pr2284-record-target/debug/rhwp --out /private/tmp/rhwp-pr2284-final-visual`
 - 페이지 수: 기준 PDF 65쪽 / rhwp SVG 및 render tree 65쪽
 - 선택 페이지 structural flag: 0/2
 - p10: pixel match `87.33713%`, 내용 픽셀 중심 보조값 `5.42125%`

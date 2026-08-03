@@ -30,7 +30,7 @@ stage98에서는 새 미주 title이 현재 단 하단에 단독으로 남는 �
 ```bash
 cargo fmt --check
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2023-09 \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
@@ -82,7 +82,7 @@ target/debug/rhwp dump-pages samples/3-09월_교육_통합_2023.hwp -p 10
 ```bash
 cargo fmt --check
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2023-09 \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \

@@ -59,7 +59,7 @@ stage88에서 확인한 미주 간격 보정은 일부 샘플을 개선했지만
 4. targeted sweep:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -136,7 +136,7 @@ cargo test --test issue_1050_footnote_serialize issue_1050_hwpx_footnote_shape_c
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -190,7 +190,7 @@ python3 scripts/task1274_visual_sweep.py \
 결과:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --out output/task1293_stage89_continuation_gap_probe
 ```
@@ -220,7 +220,7 @@ python3 scripts/task1274_visual_sweep.py \
 결과:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --out output/task1293_stage89_boundary_gap_probe
 ```
@@ -275,7 +275,7 @@ python3 scripts/task1274_visual_sweep.py \
 ```bash
 cargo fmt --check
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --out output/task1293_stage89_reverted_probe
 ```
@@ -309,7 +309,7 @@ python3 scripts/task1274_visual_sweep.py \
 명령:
 
 ```bash
-RHWP_EN_SSOT=A2 python3 scripts/task1274_visual_sweep.py \
+RHWP_EN_SSOT=A2 python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -344,7 +344,7 @@ RHWP_EN_SSOT=A2 python3 scripts/task1274_visual_sweep.py \
 결과:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -388,7 +388,7 @@ visible_large_tac_tail=false
 결과:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -420,7 +420,7 @@ python3 scripts/task1274_visual_sweep.py \
 결과:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -449,7 +449,7 @@ TAC 그림을 다음 쪽으로 넘기는 실험 분기가 코드에 남아 있�
 
 ```bash
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -499,7 +499,7 @@ cargo build --bin rhwp
 RHWP_ENDNOTE_BOUNDARY_DEBUG=1 RHWP_ENDNOTE_ADVANCE_DEBUG=1 \
   target/debug/rhwp dump-pages samples/3-09월_교육_통합_2024-미주사이20.hwp -p 19 \
   > output/task1293_stage89_line_tac_boundary_debug_p19.log 2>&1
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -530,7 +530,7 @@ python3 scripts/task1274_visual_sweep.py \
 결과:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -561,7 +561,7 @@ python3 scripts/task1274_visual_sweep.py \
 결과:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -592,7 +592,7 @@ python3 scripts/task1274_visual_sweep.py \
 결과:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -624,7 +624,7 @@ python3 scripts/task1274_visual_sweep.py \
 결과:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -656,7 +656,7 @@ python3 scripts/task1274_visual_sweep.py \
 실험 1:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -671,7 +671,7 @@ python3 scripts/task1274_visual_sweep.py \
 실험 2:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -712,7 +712,7 @@ render_tree p975 y=803.6, PDF 문28 y=803.5
 결과:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -751,7 +751,7 @@ python3 scripts/task1274_visual_sweep.py \
 결과:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -793,7 +793,7 @@ python3 scripts/task1274_visual_sweep.py \
 
 ```bash
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -872,7 +872,7 @@ cargo fmt
 cargo test --test issue_1139_inline_picture_duplicate \
   issue_1293_equation_control_is_not_always_treat_as_char -- --nocapture
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -904,7 +904,7 @@ python3 scripts/task1274_visual_sweep.py \
 
 ```bash
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --out output/task1293_stage89_current_probe
 ```

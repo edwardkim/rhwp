@@ -26,7 +26,7 @@
 
 완료.
 
-- `scripts/task1274_visual_sweep.py` 로 p5 비교를 수행했다.
+- `scripts/visual_sweep.py` 로 p5 비교를 수행했다.
 - `review_005.png` 는 잔존 후보를 보여주며, PR 설명의 원인 2 잔존과 일치한다.
 - 대표 asset: `mydocs/pr/assets/pr_1826_visual_saved_bounds_p005.png`
 

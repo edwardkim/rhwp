@@ -22,7 +22,7 @@ Stage6에서 `3-11월_실전_통합_2024-구분선위9미주사이8구분선아�
   - raw `noteSpacing=6.999mm`
   - raw `rawUnknown=7.997mm`
 - 양쪽 UI 의미값은 모두 `위 8.999mm / 아래 6.999mm / 사이 7.997mm`로 같다.
-- `task1274_visual_sweep.py --target 2024-11-practice-shape987`
+- `visual_sweep.py --target 2024-11-practice-shape987`
   - SVG/render tree 22쪽
   - PDF 21쪽
   - `flagged=20/21`
@@ -41,7 +41,7 @@ Stage6에서 `3-11월_실전_통합_2024-구분선위9미주사이8구분선아�
 
 - `cargo fmt --all -- --check`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-shape987 --out output/task1293_stage7_2024_11_shape987 --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-shape987 --out output/task1293_stage7_2024_11_shape987 --rhwp-bin target/debug/rhwp`
 - 필요 시 `2024-09-between20`, `2024-09-below20-above20` 회귀 sweep 재확인
 
 ## 추가 샘플 반영
@@ -71,7 +71,7 @@ Stage6에서 `3-11월_실전_통합_2024-구분선위9미주사이8구분선아�
 
 ## Stage7 구현
 
-1. `scripts/task1274_visual_sweep.py`
+1. `scripts/visual_sweep.py`
    - 신규 2024-11 미주 모양 샘플 7종을 target으로 추가했다.
    - target key는 `above20-between7-below2`, `no-separator-above20-between20-below20`처럼
      설정값이 그대로 보이게 했다.
@@ -87,16 +87,16 @@ Stage6에서 `3-11월_실전_통합_2024-구분선위9미주사이8구분선아�
 ## Stage7 검증
 
 - `cargo fmt --all -- --check` — 통과
-- `python3 -m py_compile scripts/task1274_visual_sweep.py` — 통과
+- `python3 -m py_compile scripts/visual_sweep.py` — 통과
 - `cargo build --bin rhwp` — 통과
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture` — 52 passed
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-shape987 --out output/task1293_stage7_validation --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-shape987 --out output/task1293_stage7_validation --rhwp-bin target/debug/rhwp`
   - SVG/render tree 22쪽, PDF 21쪽
   - `flagged=20/21`, frame `[11, 13, 17]`, red `10~21`, line `9~21`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage7_validation_between20 --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage7_validation_between20 --rhwp-bin target/debug/rhwp`
   - SVG/render tree 21쪽, PDF 22쪽
   - `flagged=20/21`, frame `[11, 12, 15, 18, 19]`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage7_validation_no_separator --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage7_validation_no_separator --rhwp-bin target/debug/rhwp`
   - SVG/render tree 21쪽, PDF 23쪽
   - `compare_010.png` 기준 rhwp에는 초록 구분선이 그려지지 않으며, 여백은 적용된다.
   - 전체 미주 흐름은 아직 PDF보다 앞서므로 Stage8에서 계속 분석한다.

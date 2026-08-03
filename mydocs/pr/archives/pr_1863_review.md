@@ -48,7 +48,7 @@ focused `svg_snapshot`은 렌더 영향권 빠른 확인용으로 별도 실행�
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --file-target pr1863-rowbreak-hwp samples/rowbreak-problem-pages.hwp pdf/rowbreak-problem-pages-2024.pdf \
   --file-target pr1863-rowbreak-hwpx samples/rowbreak-problem-pages.hwpx pdf/rowbreak-problem-pages-2024.pdf \
   --pages 11-13 \

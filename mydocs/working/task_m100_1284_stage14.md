@@ -34,7 +34,7 @@
 ## 검증 계획
 
 - 후보별 targeted test를 추가한 뒤 해당 테스트를 먼저 실행한다.
-- `python3 scripts/task1274_visual_sweep.py --target <target>`로 해당 문서 focused sweep을 재확인한다.
+- `python3 scripts/visual_sweep.py --target <target>`로 해당 문서 focused sweep을 재확인한다.
 - 후보가 정리되면 전체 sweep을 다시 수행한다.
 
 ## 구현 결과
@@ -68,7 +68,7 @@
 
 ### sweep 검출 보정
 
-- `scripts/task1274_visual_sweep.py`에 `suppress_tolerated_frame_tail_candidates`를 추가했다.
+- `scripts/visual_sweep.py`에 `suppress_tolerated_frame_tail_candidates`를 추가했다.
 - render tree line box만 큰 수식 높이를 포함해서 살짝 frame 아래로 보이지만, 실제 PDF/RHWP pixel bottom 차이가 작고 marker drift가 없는 후보는 `render_tree_frame_tail_overflow_suppressed_candidates`로 분리한다.
 - 이 필터로 `3-09월_교육_통합_2023.hwp` 16쪽/19쪽의 작은 line-height 기반 tail 후보는 실제 flag에서 제외된다.
 
@@ -81,7 +81,7 @@
 
 | 명령 | 결과 |
 |---|---|
-| `python3 -m py_compile scripts/task1274_visual_sweep.py` | 통과 |
+| `python3 -m py_compile scripts/visual_sweep.py` | 통과 |
 | `cargo test --test issue_1139_inline_picture_duplicate issue_1284 -- --nocapture` | 16 passed |
 | `cargo test --lib compact_endnote -- --nocapture` | 31 passed |
-| `python3 scripts/task1274_visual_sweep.py` | 6종 전체 `flagged=0`: `2022-09 0/23`, `2023-09 0/20`, `2024-09-below20 0/23`, `2024-09-between20 0/24`, `2022-10 0/18`, `2022-11-practice 0/21` |
+| `python3 scripts/visual_sweep.py` | 6종 전체 `flagged=0`: `2022-09 0/23`, `2023-09 0/20`, `2024-09-below20 0/23`, `2024-09-between20 0/24`, `2022-10 0/18`, `2022-11-practice 0/21` |

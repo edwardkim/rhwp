@@ -14,7 +14,7 @@
 ## 변경
 
 - 계획서와 단계 문서 파일명을 `task_m100_1274*` 기준으로 변경했다.
-- sweep 스크립트명을 `scripts/task1274_visual_sweep.py` 기준으로 변경했다.
+- sweep 스크립트명을 `scripts/visual_sweep.py` 기준으로 변경했다.
 - 문서 본문의 task 번호, 출력 폴더, 로컬 브랜치 표기를 `1274` 기준으로 변경했다.
 - 회귀 테스트 함수명을 `issue_1274_*` 기준으로 변경했다.
 - 오늘할일 문서의 임의 로컬 task 설명을 GitHub Issue #1274 설명으로 변경했다.
@@ -30,7 +30,7 @@
 - `cargo fmt --check`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py`
+- `python3 scripts/visual_sweep.py`
 
 ## 검증 결과
 
@@ -38,7 +38,7 @@
 - `cargo fmt --check`: 통과.
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 48개 통과.
 - `cargo build --bin rhwp`: 통과.
-- `python3 scripts/task1274_visual_sweep.py`:
+- `python3 scripts/visual_sweep.py`:
   - `2022-09`: SVG/PDF/compare 23/23/23, overflow 0건.
   - `2023-09`: SVG/PDF/compare 20/20/20, overflow 0건.
   - `2024-09-below20`: SVG/PDF/compare 23/23/23, overflow 0건.

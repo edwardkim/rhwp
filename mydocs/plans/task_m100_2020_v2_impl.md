@@ -50,7 +50,7 @@
 - 검증:
   - `cargo fmt --check`
   - `git diff --check`
-  - `python3 -m py_compile scripts/task1274_visual_sweep.py`
+  - `python3 -m py_compile scripts/visual_sweep.py`
   - `CARGO_INCREMENTAL=0 cargo test --test issue_2020 -- --nocapture`
   - `CARGO_INCREMENTAL=0 cargo test --lib corner_quote -- --nocapture`
   - `CARGO_INCREMENTAL=0 cargo test --lib test_630_middle_dot_full_width_in_registered_font -- --nocapture`

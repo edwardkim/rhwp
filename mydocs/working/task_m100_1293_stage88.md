@@ -70,7 +70,7 @@ clean 기준으로 확인된 조합:
 2. focused test:
    `cargo test --test issue_1139_inline_picture_duplicate issue_1293_ -- --nocapture`
 3. targeted sweep:
-   `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage88_targeted`
+   `python3 scripts/visual_sweep.py --target 2024-09-between20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage88_targeted`
 4. `annotated_*.png`, `metrics.json`, `question_flow.json`, `render_tree_*.json`로 visible separator 공통
    회귀 여부를 확인한다.
 
@@ -105,7 +105,7 @@ clean 기준으로 확인된 조합:
 
 - `cargo build`
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1293_ -- --nocapture`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage88_targeted`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage88_targeted`
 
 결과:
 
@@ -129,7 +129,7 @@ clean 기준으로 확인된 조합:
 명령:
 
 ```bash
-RHWP_EN_SSOT=A3 python3 scripts/task1274_visual_sweep.py \
+RHWP_EN_SSOT=A3 python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -167,7 +167,7 @@ stage88 공통 해결책이 아니며, 현재 단계에서는 기각한다.
 검증:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
   --target 2024-11-practice-no-separator-above20-between20-below20 \
@@ -219,7 +219,7 @@ stale-forward가 다시 적용됐다. 이 패턴은 특정 문항이 아니라 �
 cargo build
 cargo test --lib height_cursor -- --nocapture
 cargo test --test issue_1139_inline_picture_duplicate issue_1293_ -- --nocapture
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -296,7 +296,7 @@ stage88은 공통 visible separator compact 경계 중 “순차 fit인데 vpos 
 cargo build
 cargo fmt --check
 cargo test --test issue_1139_inline_picture_duplicate issue_1293_ -- --nocapture
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -363,7 +363,7 @@ large-gap advance 정책에서 명시적으로 제외해야 한다는 점이다.
 cargo fmt --check
 cargo build
 cargo test --test issue_1139_inline_picture_duplicate issue_1293_ -- --nocapture
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \

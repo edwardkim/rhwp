@@ -32,7 +32,7 @@ PR 본문에서 기준으로 든 `75828` 원본/PDF는 현재 체크아웃에 �
 |---|---|
 | 샘플 | `samples/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177).hwpx` |
 | 기준 PDF | `pdf/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177)-2024.pdf` |
-| 실행 | `python3 scripts/task1274_visual_sweep.py --key pr1968-1969-36389312 --hwp <sample> --pdf <pdf> --page 1 --out output/pr1968-1969-visual` |
+| 실행 | `python3 scripts/visual_sweep.py --key pr1968-1969-36389312 --hwp <sample> --pdf <pdf> --page 1 --out output/pr1968-1969-visual` |
 | 결과 | SVG/PDF 1/1쪽, `flagged=0/1` |
 | pixel match | `92.64419%` |
 | 내용 픽셀 중심 자동 일치율 보조값 | `15.94925%` |

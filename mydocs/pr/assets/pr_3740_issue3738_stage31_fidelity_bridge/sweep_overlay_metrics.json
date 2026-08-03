@@ -1,0 +1,70 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 88.76598,
+    "worst_pixel_match_percent": 86.69894,
+    "average_ink_match_percent": 14.28038,
+    "worst_ink_match_percent": 10.86981,
+    "average_visual_accuracy_proxy_percent": 14.28038,
+    "worst_visual_accuracy_proxy_percent": 10.86981,
+    "worst_pages": [
+      127,
+      156
+    ]
+  },
+  "pages": [
+    {
+      "page": 127,
+      "rhwp_png": "/private/tmp/rhwp-stage31-fidelity-bridge-final-20260803.0Tbzxu/issue3738-stage31-fidelity-bridge-final/rhwp_png/rhwp_127.png",
+      "pdf_png": "/private/tmp/rhwp-stage31-fidelity-bridge-final-20260803.0Tbzxu/issue3738-stage31-fidelity-bridge-final/pdf_png/pdf-127.png",
+      "overlay_png": "/private/tmp/rhwp-stage31-fidelity-bridge-final-20260803.0Tbzxu/issue3738-stage31-fidelity-bridge-final/overlay/overlay_127.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 266772,
+      "diff_ratio": 0.13301064,
+      "pixel_match_percent": 86.69894,
+      "ink_union_pixels": 299306,
+      "ink_diff_pixels": 266772,
+      "ink_diff_ratio": 0.89130188,
+      "ink_match_percent": 10.86981,
+      "visual_accuracy_proxy_percent": 10.86981,
+      "mean_abs_channel_delta": 15.612,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        142,
+        125,
+        1048,
+        1620
+      ]
+    },
+    {
+      "page": 156,
+      "rhwp_png": "/private/tmp/rhwp-stage31-fidelity-bridge-final-20260803.0Tbzxu/issue3738-stage31-fidelity-bridge-final/rhwp_png/rhwp_156.png",
+      "pdf_png": "/private/tmp/rhwp-stage31-fidelity-bridge-final-20260803.0Tbzxu/issue3738-stage31-fidelity-bridge-final/pdf_png/pdf-156.png",
+      "overlay_png": "/private/tmp/rhwp-stage31-fidelity-bridge-final-20260803.0Tbzxu/issue3738-stage31-fidelity-bridge-final/overlay/overlay_156.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 183857,
+      "diff_ratio": 0.09166981,
+      "pixel_match_percent": 90.83302,
+      "ink_union_pixels": 223374,
+      "ink_diff_pixels": 183857,
+      "ink_diff_ratio": 0.82309042,
+      "ink_match_percent": 17.69096,
+      "visual_accuracy_proxy_percent": 17.69096,
+      "mean_abs_channel_delta": 11.505,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        141,
+        125,
+        1049,
+        1621
+      ]
+    }
+  ]
+}

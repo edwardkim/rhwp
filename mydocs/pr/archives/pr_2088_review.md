@@ -50,7 +50,7 @@ PR에 기준 PDF가 없어 HWP 2020 MCP로 생성했다. 서버 URL/IP와 토큰
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --file-target pr2088_issue2083 samples/issue2083_hide_fill_page.hwpx pdf/issue2083_hide_fill_page-2020.pdf \
   --out output/planet6897_prs_visual_20260709
 ```

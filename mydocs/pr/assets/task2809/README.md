@@ -40,7 +40,7 @@ WASM Canvas와 실제 편집기 캡처는 E2E 실행 시 `output/e2e/task2809/`�
 ```bash
 wasm-pack build --target web --out-dir pkg
 cd rhwp-studio && npm run e2e:issue-2809
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key task2809-jubo \
   --hwp samples/issues/2809/jubo_20260104.hwp \
   --pdf pdf/issue-2809-jubo_20260104-2020.pdf \

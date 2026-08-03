@@ -70,7 +70,7 @@ Stage29 문서의 채택 범위는 page-bottom TAC picture/shape-only 사례였�
 
 ```bash
 rm -rf output/task1293_stage51_regression_sweep
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-09-below20 \
   --target 2022-10 \
@@ -102,7 +102,7 @@ python3 scripts/task1274_visual_sweep.py \
 
 ```bash
 rm -rf output/task1293_stage51_regression_sweep_final
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-09-below20 \
   --target 2022-10 \

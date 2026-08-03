@@ -18,7 +18,7 @@ Stage45에서 `2024-11-practice-above0-between20-below2`의 page count 회귀와
 ## 검증 계획
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target all \
   --out output/task1293_stage46_full_sweep \
   --rhwp-bin target/debug/rhwp

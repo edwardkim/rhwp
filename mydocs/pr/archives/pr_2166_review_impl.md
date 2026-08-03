@@ -44,7 +44,7 @@ wasm-pack build --target web --out-dir pkg
 
 ```bash
 hwp2020-mcp-convert --input samples/issue2164/의견제출서(양식).hwp --target pdf
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key issue2164 \
   --hwp samples/issue2164/의견제출서(양식).hwp \
   --pdf pdf/issue2164/의견제출서(양식)-2020.pdf \

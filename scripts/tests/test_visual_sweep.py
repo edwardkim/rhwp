@@ -10,10 +10,10 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 
-MODULE_PATH = Path(__file__).resolve().parents[1] / "task1274_visual_sweep.py"
-SPEC = importlib.util.spec_from_file_location("task1274_visual_sweep", MODULE_PATH)
+MODULE_PATH = Path(__file__).resolve().parents[1] / "visual_sweep.py"
+SPEC = importlib.util.spec_from_file_location("visual_sweep", MODULE_PATH)
 if SPEC is None or SPEC.loader is None:
-    raise RuntimeError(f"task1274_visual_sweep 모듈을 불러올 수 없습니다: {MODULE_PATH}")
+    raise RuntimeError(f"visual_sweep 모듈을 불러올 수 없습니다: {MODULE_PATH}")
 SWEEP = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = SWEEP
 SPEC.loader.exec_module(SWEEP)
@@ -176,6 +176,97 @@ class ResumeCheckpointTests(unittest.TestCase):
             self.assertEqual(summary["compare_pages"], 1)
 
 
+class FidelityLayoutBridgeTests(unittest.TestCase):
+    @staticmethod
+    def square_wrap_overlap_tree() -> dict[str, object]:
+        return {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 400, "h": 500},
+            "children": [
+                {
+                    "type": "Body",
+                    "bbox": {"x": 20, "y": 20, "w": 360, "h": 420},
+                    "children": [
+                        {
+                            "type": "Image",
+                            "pi": 1355,
+                            "ci": 0,
+                            "textWrap": "Square",
+                            "bbox": {"x": 180, "y": 90, "w": 120, "h": 180},
+                        },
+                        *[
+                            {
+                                "type": "TextLine",
+                                "pi": 1356,
+                                "bbox": {"x": 40, "y": y, "w": 300, "h": 14},
+                                "children": [{"type": "TextRun", "text": "본문"}],
+                            }
+                            for y in (110, 140, 170)
+                        ],
+                    ],
+                }
+            ],
+        }
+
+    def test_uses_fidelity_square_wrap_detector(self) -> None:
+        for text_wrap in ("Square", "Tight", "Through"):
+            with self.subTest(text_wrap=text_wrap):
+                tree = self.square_wrap_overlap_tree()
+                tree["children"][0]["children"][0]["textWrap"] = text_wrap
+                candidates = SWEEP.render_tree_square_wrap_text_overlap_candidates(tree)
+
+                self.assertEqual(len(candidates), 1)
+                self.assertEqual(candidates[0]["pi"], 1355)
+                self.assertEqual(candidates[0]["overlap_line_count"], 3)
+
+    def test_rejects_missing_or_malformed_render_tree(self) -> None:
+        for tree in (None, {}, {"type": "Page"}):
+            with self.subTest(tree=tree):
+                with self.assertRaisesRegex(RuntimeError, "render tree"):
+                    SWEEP.render_tree_square_wrap_text_overlap_candidates(tree)
+
+    def test_analyze_page_flags_fidelity_square_wrap_candidate(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            rhwp_path = root / "rhwp.png"
+            pdf_path = root / "pdf.png"
+            tree_path = root / "tree.json"
+            svg_path = root / "page.svg"
+            analysis_dir = root / "analysis"
+            Image.new("RGB", (400, 500), "white").save(rhwp_path)
+            Image.new("RGB", (400, 500), "white").save(pdf_path)
+            svg_path.write_text("<svg/>", encoding="utf-8")
+            tree_path.write_text(
+                json.dumps(self.square_wrap_overlap_tree()), encoding="utf-8"
+            )
+
+            result = SWEEP.analyze_page(
+                rhwp_path,
+                pdf_path,
+                svg_path,
+                tree_path,
+                analysis_dir,
+                "fixture",
+                0,
+                [],
+                {},
+                32,
+            )
+
+        self.assertIn("square_wrap_text_overlap", result["flags"])
+        self.assertEqual(result["square_wrap_text_overlap_candidates"][0]["pi"], 1355)
+
+    def test_summary_includes_fidelity_square_wrap_flag(self) -> None:
+        summary, flagged = SWEEP.visual_summary_for_pages(
+            [{"page": 127, "flags": ["square_wrap_text_overlap"]}],
+            Path("metrics.json"),
+            Path("question_flow.json"),
+        )
+
+        self.assertEqual(summary["square_wrap_text_overlap_pages"], [127])
+        self.assertEqual(flagged[0]["page"], 127)
+
+
 class LegacyGlyphVisualCandidateTests(unittest.TestCase):
     def test_old_hangul_run_with_local_pdf_mismatch_is_a_candidate(self) -> None:
         tree = {
@@ -288,6 +379,108 @@ class LegacyGlyphVisualCandidateTests(unittest.TestCase):
         )
 
         self.assertEqual(candidates[0]["codepoints"], ["U+E001"])
+
+
+class ColumnTextFlowCollapseCandidateTests(unittest.TestCase):
+    def test_detects_large_single_column_band_count_and_y_flow_divergence(self) -> None:
+        drifts = [
+            {
+                "column": 1,
+                "drift": {
+                    "rhwp_count": 34,
+                    "pdf_count": 37,
+                    "mean_abs_delta_px": 109.4,
+                    "p90_abs_delta_px": 157.0,
+                },
+            }
+        ]
+
+        candidates = SWEEP.column_text_flow_collapse_candidates(drifts)
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["column"], 1)
+        self.assertEqual(candidates[0]["band_count_delta"], 3)
+        self.assertEqual(candidates[0]["reason"], "column_line_count_and_y_flow_diverge")
+
+    def test_does_not_treat_small_font_baseline_shift_as_flow_collapse(self) -> None:
+        drifts = [
+            {
+                "column": 0,
+                "drift": {
+                    "rhwp_count": 37,
+                    "pdf_count": 37,
+                    "mean_abs_delta_px": 95.0,
+                    "p90_abs_delta_px": 150.0,
+                },
+            }
+        ]
+
+        self.assertEqual(SWEEP.column_text_flow_collapse_candidates(drifts), [])
+
+    def test_masks_centered_table_strokes_before_column_text_flow_comparison(self) -> None:
+        rhwp = Image.new("RGB", (200, 200), "white")
+        pdf = Image.new("RGB", (200, 200), "white")
+        rhwp_draw = ImageDraw.Draw(rhwp)
+        pdf_draw = ImageDraw.Draw(pdf)
+
+        # Same centered table: rhwp rules are disconnected bands while the PDF
+        # raster joins them.  These are not paragraph-flow baselines.
+        for y in range(20, 131, 10):
+            rhwp_draw.line((102, y, 198, y), fill="black", width=1)
+        pdf_draw.rectangle((102, 20, 198, 130), fill="black")
+        for y in (140, 160, 180):
+            rhwp_draw.line((102, y, 198, y), fill="black", width=1)
+            pdf_draw.line((102, y, 198, y), fill="black", width=1)
+
+        frame = (0, 0, 200, 200)
+        raw = SWEEP.column_line_band_drifts(rhwp, pdf, frame, frame)
+        self.assertEqual(len(SWEEP.column_text_flow_collapse_candidates(raw)), 1)
+
+        masked = SWEEP.column_line_band_drifts(
+            rhwp,
+            pdf,
+            frame,
+            frame,
+            rhwp_mask_rectangles=[(102, 20, 199, 131)],
+            pdf_mask_rectangles=[(102, 20, 199, 131)],
+        )
+        self.assertEqual(SWEEP.column_text_flow_collapse_candidates(masked), [])
+
+    def test_body_table_mask_excludes_footnote_table(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 100, "h": 100},
+            "children": [
+                {
+                    "type": "Body",
+                    "bbox": {"x": 0, "y": 0, "w": 100, "h": 100},
+                    "children": [
+                        {
+                            "type": "Table",
+                            "bbox": {"x": 10, "y": 20, "w": 30, "h": 40},
+                        }
+                    ],
+                },
+                {
+                    "type": "FootnoteArea",
+                    "children": [
+                        {
+                            "type": "Table",
+                            "bbox": {"x": 50, "y": 60, "w": 20, "h": 20},
+                        }
+                    ],
+                },
+            ],
+        }
+
+        self.assertEqual(
+            SWEEP.render_tree_body_table_masks(tree, Image.new("RGB", (100, 100), "white")),
+            [(8, 18, 42, 62)],
+        )
+        self.assertEqual(
+            SWEEP.render_tree_body_raster_frame(tree, Image.new("RGB", (100, 100), "white")),
+            (0, 0, 100, 100),
+        )
 
 
 if __name__ == "__main__":

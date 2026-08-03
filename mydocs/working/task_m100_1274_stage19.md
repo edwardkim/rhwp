@@ -33,7 +33,7 @@ host 문단의 `layout_paragraph`를 건너뛰고 있다. 이 처리 자체는 �
 
 - `cargo test --test issue_241 -- --nocapture`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-- `python3 scripts/task1274_visual_sweep.py --target 2022-11-practice`
+- `python3 scripts/visual_sweep.py --target 2022-11-practice`
 
 ## 검증 결과
 
@@ -49,6 +49,6 @@ host 문단의 `layout_paragraph`를 건너뛰고 있다. 이 처리 자체는 �
   - 통과.
 - `cargo clippy -- -D warnings`
   - 통과.
-- `python3 scripts/task1274_visual_sweep.py --target 2022-11-practice`
+- `python3 scripts/visual_sweep.py --target 2022-11-practice`
   - SVG/PDF 페이지 수 21/21.
   - `manifest.json`의 `overflow_lines` 0건.

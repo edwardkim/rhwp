@@ -336,6 +336,12 @@ hwp5rb	text-align.hwp	sections[].paragraphs[].controls[].cells[].list_header_wid
 hwp5rb	대각선샘플.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	10
 hwp5rb	복학원서.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	30
 hwp5rb	셀보호2.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
+hwp5rb	정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	sections[].paragraphs[].control_mask	1
+hwp5rb	정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	sections[].paragraphs[].controls[].caption.paragraphs[].control_mask	2
+hwp5rb	정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	217
+hwp5rb	정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].control_mask	2
+hwp5rb	정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].paragraphs[].control_mask	2
+hwp5rb	정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	sections[].paragraphs[].controls[].paragraphs[].control_mask	6
 hwp5rb	추진일정.hwp	sections[].paragraphs[].char_count	1
 hwp5rb	추진일정.hwp	sections[].paragraphs[].char_offsets[]	7
 hwp5rb	추진일정.hwp	sections[].paragraphs[].control_mask	1

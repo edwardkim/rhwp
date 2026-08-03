@@ -87,7 +87,7 @@ env CARGO_INCREMENTAL=0 cargo test --profile release-test --tests
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --out output/pr1894-visual \
   --rhwp-bin target/debug/rhwp \
   --key pr1894-36389312 \

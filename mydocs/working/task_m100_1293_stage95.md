@@ -19,7 +19,7 @@ targeted 범위 밖의 잔여 후보가 있는지 확인하고, 결과에 따라
 ## 검증 계획
 
 ```bash
-python3 scripts/task1274_visual_sweep.py --target all --out output/task1293_stage95_full_sweep
+python3 scripts/visual_sweep.py --target all --out output/task1293_stage95_full_sweep
 git diff --check
 ```
 
@@ -32,7 +32,7 @@ CI 전체 테스트와 PR은 작업지시자 지시에 따라 수행하지 않�
 ## 검증 결과
 
 ```bash
-python3 scripts/task1274_visual_sweep.py --target all --out output/task1293_stage95_full_sweep
+python3 scripts/visual_sweep.py --target all --out output/task1293_stage95_full_sweep
 ```
 
 - 실행 완료: `output/task1293_stage95_full_sweep/summary.json`

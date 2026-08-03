@@ -52,14 +52,14 @@
 ## 시각 검증
 
 - `samples/task1745/table_text_anchor_wrap.hwp` vs `pdf/table_text_anchor_wrap-2024.pdf`
-  - command: `python3 scripts/task1274_visual_sweep.py --key pr1746-table-text-anchor --hwp samples/task1745/table_text_anchor_wrap.hwp --pdf pdf/table_text_anchor_wrap-2024.pdf --pages 1-3 --out output/pr1746-visual --rhwp-bin target/release-test/rhwp --pixel-diff-threshold 32`
+  - command: `python3 scripts/visual_sweep.py --key pr1746-table-text-anchor --hwp samples/task1745/table_text_anchor_wrap.hwp --pdf pdf/table_text_anchor_wrap-2024.pdf --pages 1-3 --out output/pr1746-visual --rhwp-bin target/release-test/rhwp --pixel-diff-threshold 32`
   - SVG/PDF pages: 3/3
   - selected pages: 1-3
   - flagged: 0/3
   - review contact sheet: `output/pr1746-visual/pr1746-table-text-anchor/review_contact_sheet.png`
   - `visual_accuracy_proxy_percent`: p1 4.1875, p2 6.5884, p3 5.92948
 - untracked 추가 검증 샘플 `samples/table_text_anchor_wrap.hwpx` vs `pdf/table_text_anchor_wrap-2024.pdf`
-  - command: `python3 scripts/task1274_visual_sweep.py --key pr1746-table-text-anchor-hwpx --hwp samples/table_text_anchor_wrap.hwpx --pdf pdf/table_text_anchor_wrap-2024.pdf --pages 1-3 --out output/pr1746-visual-hwpx --rhwp-bin target/release-test/rhwp --pixel-diff-threshold 32`
+  - command: `python3 scripts/visual_sweep.py --key pr1746-table-text-anchor-hwpx --hwp samples/table_text_anchor_wrap.hwpx --pdf pdf/table_text_anchor_wrap-2024.pdf --pages 1-3 --out output/pr1746-visual-hwpx --rhwp-bin target/release-test/rhwp --pixel-diff-threshold 32`
   - SVG/PDF pages: 3/3
   - selected pages: 1-3
   - flagged: 1/3

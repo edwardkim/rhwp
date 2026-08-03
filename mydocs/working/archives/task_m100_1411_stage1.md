@@ -16,7 +16,7 @@ PR #1410 merge 이후 `upstream/devel` 기준에서 #1293 최종 잔여 visual s
 
 ```bash
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2022-10 \
   --target 2024-09-below20-above20 \
   --target 2024-11-practice-above0-between20-below2 \

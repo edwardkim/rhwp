@@ -57,7 +57,7 @@
 기록에는 환경 의존 절대 경로가 아니라 repo-relative 경로를 사용한다.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1855-issue1853 \
   --hwp samples/issue1853_caption_precedes_body_split.hwpx \
   --pdf pdf/issue1853_caption_precedes_body_split-2024.pdf \

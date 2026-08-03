@@ -49,7 +49,7 @@ Stage74에서 `3-11월_실전_통합_2024-구분선위0미주사이0구분선아
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 52개 통과.
 - target sweep:
   - 명령:
-    `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage75_lineseg_text_run --rhwp-bin target/debug/rhwp`
+    `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage75_lineseg_text_run --rhwp-bin target/debug/rhwp`
   - `2024-11-practice-above0-between0-below0`: SVG/PDF 21/21, `qflow=[20]`.
     Stage74의 `qflow=[18]` 대비 18쪽 문항 흐름 후보가 제거됐다.
   - `2024-11-practice-above0-between20-below2`: SVG/PDF 22/22, `qflow=[10, 20]`.

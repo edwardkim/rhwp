@@ -73,7 +73,7 @@ Stage59 기준 qflow 후보는 10, 11, 12, 13, 17, 18, 19, 20쪽이었다. 먼�
 실행:
 
 ```sh
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-above0-between0-below0 \
   --out output/task1293_stage60_zero_line_advance_guard \
   --rhwp-bin target/debug/rhwp

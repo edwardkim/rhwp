@@ -73,7 +73,7 @@ line break 보정은 텍스트 조판 전체에 영향을 줄 수 있다. #1677�
 - `cargo test --test svg_snapshot`: 8개 golden snapshot 통과
 - `cargo test --profile release-test --test visual_roundtrip_baseline`: 3개 visual roundtrip baseline 통과
 - `cargo test --profile release-test --tests page_count`: 필터 매칭 26개 통과
-- `python3 scripts/task1274_visual_sweep.py --target all`: 15개 target 모두 SVG/PDF page count 일치, page count mismatch 0건
+- `python3 scripts/visual_sweep.py --target all`: 15개 target 모두 SVG/PDF page count 일치, page count mismatch 0건
 - 자동 sweep flagged 후보: 5개 target. PUA 매핑/line-break 변경과 결합 가능성은 있으나, 현재 자동 sweep에서는 전체 페이지 수 불일치가 없다.
 - browser/WASM 경로: `rhwp-studio` TypeScript/test와 `wasm-pack build --target web --out-dir pkg` 통과
 

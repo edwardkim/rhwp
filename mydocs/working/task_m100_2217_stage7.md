@@ -26,7 +26,7 @@ Task #2217의 renderer/WASM/Studio 변경을 PR 준비 전에 시각 검증한�
 
 ## visual sweep 결과
 
-- 명령: `python3 scripts/task1274_visual_sweep.py --key issue2217-20200830 --hwp samples/issue2217/20200830.hwp --pdf pdf/issue2217/20200830-2020.pdf --pages 1-4 --dpi 144 --rhwp-bin target/release/rhwp --out output/task2217_visual_sweep`.
+- 명령: `python3 scripts/visual_sweep.py --key issue2217-20200830 --hwp samples/issue2217/20200830.hwp --pdf pdf/issue2217/20200830-2020.pdf --pages 1-4 --dpi 144 --rhwp-bin target/release/rhwp --out output/task2217_visual_sweep`.
 - 4쪽 PDF, 4쪽 SVG, 4쪽 render tree, 4쪽 비교/overlay/review 패널을 생성했다.
 - overlay 자동 참고값: 평균 pixel match `85.10261%`, 평균 ink match 및 visual accuracy proxy `6.05756%`.
 - 대표 검토 패널: `output/task2217_visual_sweep/issue2217-20200830/review/review_001.png` 및 `review_002.png`.

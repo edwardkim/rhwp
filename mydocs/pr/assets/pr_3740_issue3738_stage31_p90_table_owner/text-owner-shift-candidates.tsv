@@ -1,0 +1,2 @@
+page	next_page	direction	shared_chars	source_coverage	target_coverage	shared_chars_detail	note
+90	91	rhwp_later_than_reference	20	0.769	1.000	U+002E:.×1,U+0037:7×1,U+0045:E×1,U+0055:U×1,U+AC00:\uac00×1,U+ADDC:\uaddc×1,U+AE30:\uae30×2,U+B144:\ub144×1,U+BBF8:\ubbf8×1,U+C0DD:\uc0dd×1,U+C131:\uc131×1,U+C6A9:\uc6a9×1,U+C790:\uc790×1,U+C7A5:\uc7a5×1,U+C815:\uc815×1,U+C874:\uc874×1,U+C99D:\uc99d×1,U+D45C:\ud45c×1,U+D5C8:\ud5c8×1	candidate only; PDF visual owner review required

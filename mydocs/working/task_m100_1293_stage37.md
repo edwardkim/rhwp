@@ -62,7 +62,7 @@ continuation 본문이 renderer에서는 frame 아래로 밀리지만 pagination
 - `cargo build --bin rhwp`: 통과
 - focused sweep:
   - 명령:
-    `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between7-below2 --target 2024-11-practice-above20-between0-below20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage37_focused3 --rhwp-bin target/debug/rhwp`
+    `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between7-below2 --target 2024-11-practice-above20-between0-below20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage37_focused3 --rhwp-bin target/debug/rhwp`
   - 결과 파일: `output/task1293_stage37_focused3/summary.json`
 
 | target | page count | overflow_lines | hard 후보 | frame 후보 |

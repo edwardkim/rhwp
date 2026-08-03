@@ -15,9 +15,12 @@
 ## 요구사항
 
 ```bash
-pip install pypdfium2 pillow          # PDF 렌더 + 픽셀 diff
+pip install pypdf                     # text-only 후보 원장
+pip install pypdfium2 pillow          # PDF 렌더 + 픽셀 diff(비-text-only)
 # Chrome/Chromium 설치 필요 (SVG → PNG 캡처)
 ```
+
+`--text-only`는 `pypdf`만 필요하며 Chrome과 `pypdfium2`를 요구하지 않는다.
 
 실행 파일은 플랫폼에 맞춰 자동 탐색한다.
 
@@ -52,6 +55,16 @@ python tools/fidelity_compare/fidelity_compare.py plan 0 34
 # 저장소 밖에 산출해 worktree를 깨끗하게 유지
 python tools/fidelity_compare/fidelity_compare.py plan 0 9 \
   --out-dir /tmp/rhwp-fidelity-plan
+
+# REG에 없는 HWP/PDF 쌍: 215쪽 첫 후보 수집에는 PNG/Chrome을 생략하고 SVG를 한 번만 전수 생성
+RHWP_BIN=target/release-test/rhwp \
+python3 tools/fidelity_compare/fidelity_compare.py 0 214 \
+  --source 'samples/입력.hwp' \
+  --reference-pdf 'pdf/한컴-기준.pdf' \
+  --label issue-3738-hwp \
+  --reference-grade '한컴 2020 기준 PDF' \
+  --text-only --export-all-svg --layout-ledger \
+  --out-dir /tmp/rhwp-fidelity-issue-3738
 ```
 
 `--out-dir`은 지정한 디렉터리 자체를 산출 루트로 쓴다. 생략하면
@@ -60,7 +73,65 @@ python tools/fidelity_compare/fidelity_compare.py plan 0 9 \
 - `cmp-pNNN.png`: 기준 PDF와 rhwp 렌더의 쪽별 비교 시트
 - `report.tsv`: 픽셀 diff% 랭킹
 - `text-report.tsv`: 기준 PDF 텍스트층에만 있는 문자와 SVG에만 있는 문자 수·코드포인트
+- `text-owner-shift-candidates.tsv`: 인접한 두 쪽에서 SVG-only와 PDF-only 문자가 크게 상호 일치한
+  page-owner 이동 후보. `rhwp_earlier_than_reference`/`rhwp_later_than_reference` 방향을 기록하며,
+  PDF visual owner 대조 전에는 결함 판정이 아니다.
+- `text-owner-sequence-candidates.tsv`: 문자 Counter가 다른 본문/각주와 상쇄해 놓칠 수 있는 경우를
+  보완한다. NFC·공백 정규화 뒤 한 쪽에서 사라진 16자 이상 **순서 보존** 문자열이 바로 다음 rhwp/PDF
+  쪽에만 있으면 같은 owner 방향 후보로 기록한다. URL·citation·긴 각주 이동에는 강하지만, 최종 layout
+  판정은 아니다.
+- `page-count-ledger.tsv`: 기준 PDF, `--export-all-svg`의 전체 SVG, `--layout-ledger`의 전체 render tree
+  쪽수를 분리 기록한다. 페이지 수 차이는 전역 page-break 보정의 근거가 아니라 individual owner 조사 후보를
+  여는 신호다.
 - `provenance.tsv`: 원본·기준 PDF 경로와 기준 등급
+- `run-state.tsv`: requested/completed/missing 페이지와 완료 여부. 누락이 있으면 종료 코드도 0이 아니다.
+- `svg/export-svg-manifest.json`: `--export-all-svg`가 보관한 rhwp SVG 매니페스트
+- `layout-candidates.tsv`: `--layout-ledger`가 기록한 body↔각주 TextLine, 표↔footer, 표/그림 page-frame 밖,
+  Square/Tight/Through 그림을 3행 이상 침범한 본문 후보
+- `table-fragment-candidates.tsv`: 같은 source `(pi, ci)`의 Body `Table`이 인접 물리 쪽에 다시 나온 경우,
+  표↔footer·page frame 후보, 또는 쪽 하단 표와 24자 이상 PDF↔SVG text delta가 함께 있는 경우를 한 행에
+  묶는다. rows/cols·각 쪽 bbox·하단 여백·text delta를 남기지만 **PDF table row owner나 올바른 표 분할을
+  판정하지 않는 candidate**다.
+
+`--source`, `--reference-pdf`, `--label`을 모두 지정하면 등록 fixture 대신 임의의 HWP/HWPX와 기준 PDF를
+비교한다. 이 direct-pair 형식의 positional은 `<시작쪽> <끝쪽>`뿐이다. 기존 등록 fixture 형식
+`<키> <시작쪽> <끝쪽>`은 그대로 유지된다.
+
+`--text-only`는 Chrome·PNG·비교 시트를 만들지 않는다. 기준 PDF text와 SVG `<text>`만 비교하므로
+각주/본문/caption의 페이지 owner 이동·누락 후보를 빠르게 전수 수집하는 첫 단계에 적합하다.
+`text-owner-shift-candidates.tsv`는 인접 쪽의 상호 text difference를 묶어, pN에 너무 이르게 나온
+각주가 기준 PDF에서는 pN+1에 있는 경우처럼 page-owner 후보를 바로 보인다.
+`text-owner-sequence-candidates.tsv`는 p52→p53처럼 다른 본문 문자와 Counter가 상쇄되는 이동도
+순서 보존 URL/citation 문자열로 보완한다. 사진 위치,
+같은 문자 수의 줄바꿈/overlap, PDF 기준 표 행 owner는 검출할 수 없다. 다만
+`table-fragment-candidates.tsv`는 같은 `(pi, ci)`의 인접 쪽 fragment와 footer/frame·하단 text-delta 신호를
+우선순위 후보로 묶는다. `text-report.tsv` 상위 페이지와 `export-svg --json`의 `overflowCellLines` 및 bbox
+ledger를 합친 뒤에만 pixel diff와 visual sweep으로 확정한다.
+
+`--export-all-svg`는 지정 범위와 관계없이 `export-svg`를 한 번 실행해 SVG cache를 채운다. 긴 문서의
+전수 text-only pass에서 페이지마다 rhwp 프로세스를 재기동하지 않기 위한 선택지다. 이후 같은 `--out-dir`에
+대해 후보 범위만 pixel 비교하면 기존 SVG를 재사용한다.
+
+`--layout-ledger`는 전체 render tree를 한 번 export하므로, 선택 page만 text compare하더라도
+`page-count-ledger.tsv`에 render tree 전체 페이지 수를 남긴다. `--export-all-svg`를 함께 주면 SVG 전체 쪽수도
+기록한다. 선택 page SVG cache 수는 partial run과 stale cache를 구분할 수 없어서 전체 수로 가장하지 않는다.
+
+`--layout-ledger`는 `export-render-tree`를 한 번 실행해 `layout-candidates.tsv`와
+`table-fragment-candidates.tsv`를 만든다. `body_footnote_lines`는 Body `TextLine`의 하단이
+`FootnoteArea` 상단보다 1px 이상 아래인 경우, `table_footer`는 Body 표의 하단이 Footer 상단보다 1px 이상 아래인
+경우다. `*_outside_frame`은 Body 표/그림이 page frame 밖에 나간 경우다. 표 fragment ledger는 source `(pi, ci)`가
+인접 render-tree 쪽에 연속한 것, 표/footer·frame 충돌, 또는 page 높이의 하단 15%에 걸친 표와 24자 이상
+PDF↔SVG text delta를 함께 기록한다. 이것은 rhwp 쪽의 source-table 연속성 및 위험 신호일 뿐 PDF의 행 owner나
+올바른 분할을 판정하지 않는다. `square_wrap_text_overlap`은 Square/Tight/Through 그림의 물리 box를 그 폭의 절반 이상
+가로지르는 Body `TextLine`이 3행 이상인 경우다. BehindText/InFrontOfText 그림은 의도된 overlay일 수 있어 이
+후보에서 제외한다. stroke 반올림과 문서 고유 overlay도 후보가 될 수 있으므로, 0이 아닌 값은 곧바로 결함이 아니라
+visual review 대상으로 해석한다.
+
+`scripts/visual_sweep.py`는 자신의 render tree 분석에서 이 Square/Tight/Through 후보 함수를
+재사용해 `square_wrap_text_overlap` flag와 annotation을 남긴다. 따라서 sweep의 `flagged=0`이 이 특정
+기하 후보를 덮어쓰지는 않는다. 다만 text owner, table fragment, page-count는 sweep이 재계산하지 않으므로
+실물 PDF 대조에서는 이 도구의 전체 ledger를 먼저 보존한다. bridge에 필요한 render tree가 없거나
+손상되면 sweep은 후보 0으로 fail-open하지 않고 run을 실패시킨다.
 
 단계별 확장(10쪽 → 전수 → 고난도 문서)으로 돌리고, 픽셀 랭킹과 문자 멀티셋 격차를
 교차해 후보를 좁힌다. **랭킹 상위 페이지의 시트를 눈으로 감사**한 뒤 실질 결함만

@@ -18,7 +18,7 @@ Stage2에서 공식 의미 접근자를 추가했으므로, 이번 단계에서�
 ## 작업 계획
 
 1. `export-render-tree` 또는 별도 CLI 출력에 미주 모양 정규화 값을 포함할 수 있는지 확인한다.
-2. `scripts/task1274_visual_sweep.py`의 target summary에 미주 모양 메타데이터를 추가한다.
+2. `scripts/visual_sweep.py`의 target summary에 미주 모양 메타데이터를 추가한다.
 3. summary/metrics에서 `구분선 위`, `구분선 아래`, `미주 사이` 값을 mm 단위로 확인할 수 있게 한다.
 4. `2024-09-below20`, `2024-09-between20`, `2024-09-below20-above20` sweep을 재실행해
    페이지 수와 flags 변화를 확인한다.
@@ -41,7 +41,7 @@ Stage2에서 공식 의미 접근자를 추가했으므로, 이번 단계에서�
    것을 확인했다. HWPX 조합 샘플은 같은 값이 `aboveLine` → `separator_margin_top`으로 들어온다.
 4. `FootnoteShape::separator_above_margin_hu()`가 HWPX `separator_margin_top`을 우선 사용하고,
    없으면 HWP5 `separator_margin_bottom`을 공식 `구분선 위` fallback으로 쓰도록 정규화했다.
-5. `scripts/task1274_visual_sweep.py`에 다음을 추가했다.
+5. `scripts/visual_sweep.py`에 다음을 추가했다.
    - target `2024-09-below20-above20`
    - 각 target의 `analysis/note_shape.json`
    - `summary.json`의 compact `note_shape` 값
@@ -63,7 +63,7 @@ Stage2에서 공식 의미 접근자를 추가했으므로, 이번 단계에서�
 ## 검증
 
 - `cargo fmt --all -- --check`
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`
+- `python3 -m py_compile scripts/visual_sweep.py`
 - `cargo build --bin rhwp`
 - `target/debug/rhwp dump-note-shape samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp`
 - `target/debug/rhwp dump-note-shape samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwpx`
@@ -71,9 +71,9 @@ Stage2에서 공식 의미 접근자를 추가했으므로, 이번 단계에서�
 - `cargo test --test issue_1050_footnote_serialize -- --nocapture` — 7 passed
 - `cargo test --lib parse_endnote -- --nocapture` — 3 passed
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture` — 51 passed
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-below20-above20 --out output/task1293_stage3 --rhwp-bin target/debug/rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-below20 --out output/task1293_stage3_below20 --rhwp-bin target/debug/rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20 --out output/task1293_stage3_between20 --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-09-below20-above20 --out output/task1293_stage3 --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-09-below20 --out output/task1293_stage3_below20 --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20 --out output/task1293_stage3_between20 --rhwp-bin target/debug/rhwp`
 
 ## 남은 판단
 

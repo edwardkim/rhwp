@@ -128,7 +128,7 @@ fn endnote_para_rendered_advance(
 
 ### 3.3 게이트 (매 divergence 이전 공통, 수행계획서 §5)
 1. 전체 `cargo test` 0 failed (특히 issue_1082/1139/1274/1284).
-2. `scripts/task1274_visual_sweep.py --target all` flagged ≤ 베이스라인
+2. `scripts/visual_sweep.py --target all` flagged ≤ 베이스라인
    (2022-09:1, 2023-09:0, 2024-below20:1, 2024-between20:1, 2022-10:0, 2022-11:1).
 3. **issue_1082 px**: 비대상 exam(3-09'23 hwp/hwpx, 3-11'22, 3-09'22) **0.0 유지**,
    대상(3-09'24 sep20/20) **50.1 → 감소**(REG_LIMIT 60 이내 + p17 C×C·p22 해소 방향).

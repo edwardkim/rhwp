@@ -57,7 +57,7 @@
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1284_2024_between20 -- --nocapture` 통과: 4 passed.
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture` 통과: 55 passed.
 - `cargo build` 통과.
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
   - `frame=[]`
   - `question=[18, 21]`
   - page22/page23의 문28/문30 question drift 후보 제거.

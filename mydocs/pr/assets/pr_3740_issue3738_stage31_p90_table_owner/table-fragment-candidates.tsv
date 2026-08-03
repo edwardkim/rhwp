@@ -1,0 +1,2 @@
+page	next_page	pi	ci	rows	cols	next_rows	next_cols	bbox	next_bbox	signals	page_text_delta_chars	next_page_text_delta_chars	page_bottom_gap_px	next_page_bottom_gap_px	note
+90	91	962	0	7	6	7	6	94.5,715.0,559.4,278.5	94.5,83.2,559.4,83.5	same_pi_ci_adjacent_fragment|page_bottom_near_material_text_delta	26	31	129.0	955.8	candidate only; does not assert PDF table row owner or fragment correctness

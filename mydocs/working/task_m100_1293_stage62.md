@@ -40,7 +40,7 @@ pagination은 현재 단에 남지만 renderer에서 frame 밖으로 내려가�
   - `target/debug/rhwp dump-pages ... -p 10`
   - `target/debug/rhwp export-render-tree ...`
 - target sweep:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage62_zero_lazy_base --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage62_zero_lazy_base --rhwp-bin target/debug/rhwp`
 - focused regression:
   - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - `cargo test --test issue_1050_footnote_serialize -- --nocapture`
@@ -53,7 +53,7 @@ pagination은 현재 단에 남지만 renderer에서 frame 밖으로 내려가�
 Stage61 HEAD 기준 target sweep을 다시 실행했다.
 
 ```sh
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-above0-between0-below0 \
   --out output/task1293_stage62_zero_lazy_base_sweep \
   --rhwp-bin target/debug/rhwp
@@ -119,7 +119,7 @@ FullPara pi=539 y_in=1089.8 y_out=1107.8 dy=18.0
    - 결과 sweep:
 
 ```sh
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-above0-between0-below0 \
   --out output/task1293_stage62_zero_refined \
   --rhwp-bin target/debug/rhwp

@@ -32,7 +32,7 @@ CARGO_INCREMENTAL=0 cargo test --test issue_2019_floating_form_overpagination --
 target/debug/rhwp dump-pages samples/hwpx/issue2019_floating_form_74312.hwpx
 cargo test --profile release-test --test visual_roundtrip_baseline visual_baseline_all_samples -- --nocapture
 CARGO_INCREMENTAL=0 cargo test --profile release-test --tests
-python3 scripts/task1274_visual_sweep.py --key issue2019 ... --out output/task2019_v3_visual_scaffold_skip2
+python3 scripts/visual_sweep.py --key issue2019 ... --out output/task2019_v3_visual_scaffold_skip2
 cargo fmt --check
 git diff --check
 wasm-pack build --target web --out-dir pkg

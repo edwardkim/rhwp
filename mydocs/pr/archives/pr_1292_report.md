@@ -48,7 +48,7 @@ PR branch 전체를 merge하지 않은 이유:
 
 ### 3.2 visual sweep 고도화
 
-`scripts/task1274_visual_sweep.py`가 PDF bbox와 render tree bbox를 함께 비교하도록 확장됐다.
+`scripts/visual_sweep.py`가 PDF bbox와 render tree bbox를 함께 비교하도록 확장됐다.
 
 추가/보강 항목:
 
@@ -83,12 +83,12 @@ PR branch 전체를 merge하지 않은 이유:
 | 항목 | 결과 | 비고 |
 |---|---|---|
 | `cargo fmt --all -- --check` | 통과 |  |
-| `python3 -m py_compile scripts/task1274_visual_sweep.py` | 통과 |  |
+| `python3 -m py_compile scripts/visual_sweep.py` | 통과 |  |
 | `cargo build --verbose` | 통과 | Cargo global cache last-use DB readonly 경고만 발생 |
 | `cargo check --target wasm32-unknown-unknown --lib` | 통과 |  |
 | `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture` | 통과 | 67 passed |
 | `cargo test --features native-skia skia --lib --verbose` | 통과 | 39 passed |
-| `python3 scripts/task1274_visual_sweep.py --target all` | 실행 완료 | `rsvg-convert` 설치 후 재실행 |
+| `python3 scripts/visual_sweep.py --target all` | 실행 완료 | `rsvg-convert` 설치 후 재실행 |
 | `docker compose --env-file .env.docker run --rm wasm` | 통과 | Done in 2m 54s |
 
 `visual_sweep --target all` 재실행 결과:

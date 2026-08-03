@@ -369,6 +369,18 @@ pub enum FootnoteSource {
     },
 }
 
+/// 한 각주를 물리 페이지 경계에서 나눈 line fragment.
+///
+/// `start_line..end_line`은 각주 안의 문단을 순서대로 compose한 뒤의 평탄 line index다.
+/// `end_line`은 exclusive다. 첫 fragment만 separator와 번호를 그린다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FootnoteFragment {
+    pub start_line: usize,
+    pub end_line: usize,
+    pub draw_separator: bool,
+    pub draw_number: bool,
+}
+
 /// 페이지에 배치되는 각주 참조
 #[derive(Debug, Clone)]
 pub struct FootnoteRef {
@@ -376,6 +388,8 @@ pub struct FootnoteRef {
     pub number: u16,
     /// 출처
     pub source: FootnoteSource,
+    /// `None`이면 각주 전체를 그린다.
+    pub fragment: Option<FootnoteFragment>,
 }
 
 /// 한 단(Column)에 배치될 콘텐츠
@@ -849,6 +863,7 @@ impl PaginationResult {
                         FootnoteRef {
                             number: f.number,
                             source,
+                            fragment: f.fragment,
                         }
                     })
                     .collect(),

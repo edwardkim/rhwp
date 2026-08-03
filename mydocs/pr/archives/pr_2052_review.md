@@ -69,7 +69,7 @@ PR에 기준 PDF가 첨부되어 있지 않아 HWP 2020 MCP로 기준 PDF를 생
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr2052-issue2007-42065 \
   --hwp samples/basic/issue2007_nested_cell_pagination_42065.hwp \
   --pdf pdf/basic/issue2007_nested_cell_pagination_42065-2020.pdf \

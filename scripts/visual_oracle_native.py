@@ -3,10 +3,10 @@
 
 rhwp 쪽:  `rhwp export-png`(native-skia) 네이티브 래스터
 PDF 쪽:   PyMuPDF(fitz) 로 직접 래스터 (poppler 불필요)
-비교:     PIL + numpy 로 pixel/ink match + overlay (task1274_visual_sweep.py 시맨틱 정합)
+비교:     PIL + numpy 로 pixel/ink match + overlay (visual_sweep.py 시맨틱 정합)
 
 Windows/Git-Bash 환경(패키지 매니저 없음)에서 시각 판정을 가능케 한다.
-scripts/task1274_visual_sweep.py 의 대체가 아니라, 오라클 도구 부재 환경용 경량 경로.
+scripts/visual_sweep.py 의 대체가 아니라, 오라클 도구 부재 환경용 경량 경로.
 
 사용:
   python scripts/visual_oracle_native.py \

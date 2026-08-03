@@ -1,0 +1,106 @@
+{
+  "key": "issue3738-stage28-hwp-p052-p054",
+  "hwp": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+  "pdf": "pdf/pr3740/hwp/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-2020.pdf",
+  "requested_pages": [
+    52,
+    53,
+    54
+  ],
+  "completed_pages": [
+    52,
+    53,
+    54
+  ],
+  "missing_pages": [],
+  "run_state": "complete",
+  "run_manifest": "/private/tmp/rhwp-stage28-p52-p54-sweep-20260802/issue3738-stage28-hwp-p052-p054/run_manifest.json",
+  "exported_svg_pages": 219,
+  "exported_render_tree_pages": 219,
+  "exported_pdf_pages": 3,
+  "rasterized_svg_pages": 3,
+  "rasterized_pdf_pages": 3,
+  "svg_pages": 3,
+  "render_tree_pages": 3,
+  "pdf_pages": 3,
+  "compare_pages": 3,
+  "overlay_pages": 3,
+  "review_pages": 3,
+  "pdf_question_markers": 0,
+  "contact_sheet": "/private/tmp/rhwp-stage28-p52-p54-sweep-20260802/issue3738-stage28-hwp-p052-p054/contact_sheet.png",
+  "overlay_contact_sheet": "/private/tmp/rhwp-stage28-p52-p54-sweep-20260802/issue3738-stage28-hwp-p052-p054/overlay_contact_sheet.png",
+  "review_contact_sheet": "/private/tmp/rhwp-stage28-p52-p54-sweep-20260802/issue3738-stage28-hwp-p052-p054/review_contact_sheet.png",
+  "analysis_dir": "/private/tmp/rhwp-stage28-p52-p54-sweep-20260802/issue3738-stage28-hwp-p052-p054/analysis",
+  "overlay_dir": "/private/tmp/rhwp-stage28-p52-p54-sweep-20260802/issue3738-stage28-hwp-p052-p054/overlay",
+  "review_dir": "/private/tmp/rhwp-stage28-p52-p54-sweep-20260802/issue3738-stage28-hwp-p052-p054/review",
+  "note_shape": [
+    {
+      "section": 0,
+      "footnote": {
+        "separatorAboveMm": 2.999,
+        "separatorBelowMm": 2.0,
+        "betweenNotesMm": 0.998,
+        "separatorEnabled": true,
+        "separatorLengthMm": -0.004,
+        "rawSeparatorMarginTopMm": -0.004,
+        "rawSeparatorMarginBottomMm": 2.999,
+        "rawNoteSpacingMm": 2.0,
+        "rawUnknownMm": 0.998
+      },
+      "endnote": {
+        "separatorAboveMm": 0.79,
+        "separatorBelowMm": 2.0,
+        "betweenNotesMm": 0.0,
+        "separatorEnabled": true,
+        "separatorLengthMm": 43.321,
+        "rawSeparatorMarginTopMm": 0.79,
+        "rawSeparatorMarginBottomMm": 2.999,
+        "rawNoteSpacingMm": 2.0,
+        "rawUnknownMm": 0.0
+      }
+    }
+  ],
+  "note_shape_json": "/private/tmp/rhwp-stage28-p52-p54-sweep-20260802/issue3738-stage28-hwp-p052-p054/analysis/note_shape.json",
+  "overlay_metrics": {
+    "compared_pages": 3,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 90.77912,
+    "worst_pixel_match_percent": 89.92044,
+    "average_ink_match_percent": 10.8396,
+    "worst_ink_match_percent": 9.69252,
+    "average_visual_accuracy_proxy_percent": 10.8396,
+    "worst_visual_accuracy_proxy_percent": 9.69252,
+    "worst_pages": [
+      54,
+      52,
+      53
+    ]
+  },
+  "overlay_metrics_json": "/private/tmp/rhwp-stage28-p52-p54-sweep-20260802/issue3738-stage28-hwp-p052-p054/overlay/overlay_metrics.json",
+  "visual_metrics": {
+    "analyzed_pages": 3,
+    "flagged_page_count": 0,
+    "frame_overflow_pages": [],
+    "content_bottom_drift_pages": [],
+    "red_marker_drift_pages": [],
+    "question_marker_flow_drift_pages": [],
+    "line_band_drift_pages": [],
+    "column_line_band_drift_pages": [],
+    "column_text_flow_collapse_pages": [],
+    "large_ink_region_drift_pages": [],
+    "endnote_separator_gap_drift_pages": [],
+    "endnote_separator_observed_pages": [],
+    "endnote_separator_gap_pages": [],
+    "endnote_no_separator_content_pages": [],
+    "between_notes_marker_gap_pages": [],
+    "equation_text_overlap_pages": [],
+    "question_title_text_overlap_pages": [],
+    "line_order_overlap_pages": [],
+    "render_tree_frame_tail_overflow_pages": [],
+    "question_marker_drift_pages": [],
+    "legacy_glyph_visual_pages": [],
+    "metrics_json": "/private/tmp/rhwp-stage28-p52-p54-sweep-20260802/issue3738-stage28-hwp-p052-p054/analysis/metrics.json",
+    "question_flow_json": "/private/tmp/rhwp-stage28-p52-p54-sweep-20260802/issue3738-stage28-hwp-p052-p054/analysis/question_flow.json"
+  },
+  "flagged_pages": []
+}

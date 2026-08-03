@@ -1517,6 +1517,20 @@ impl DocumentCore {
                     let entry = width_delta_by_row.entry(cell.row).or_insert((0, 0));
                     entry.0 += 1;
                     entry.1 += actual_delta;
+                    // local resize override(절대값 렌더 폭)를 가진 셀에 plain delta 가
+                    // 적용되면 override 도 같은 양만큼 이동시킨다. 그대로 두면 이후
+                    // 칸 전체 조절(Ctrl) 시 이 셀의 행만 옛 경계에 얼어붙어 나머지
+                    // 칸과 따로 논다 (renderWidth 힌트 갱신 케이스는 아래 local_resize
+                    // 블록이 절대값을 다시 쓰므로 이 보정과 겹치지 않는다).
+                    if upd.render_width.is_none() {
+                        if let Some((_, w)) = table
+                            .local_resize_cell_widths
+                            .iter_mut()
+                            .find(|(idx, _)| *idx == upd.cell_idx)
+                        {
+                            *w = (*w as i64 + actual_delta).max(MIN_CELL_SIZE as i64) as u32;
+                        }
+                    }
                 }
                 if upd.height_delta != 0 {
                     let old_h = cell.height;
@@ -1528,6 +1542,16 @@ impl DocumentCore {
                     let entry = height_delta_by_col.entry(cell.col).or_insert((0, 0));
                     entry.0 += 1;
                     entry.1 += actual_delta;
+                    // 높이 override 도 폭과 동일하게 동반 이동 (위 주석 참조).
+                    if upd.render_height.is_none() {
+                        if let Some((_, h)) = table
+                            .local_resize_cell_heights
+                            .iter_mut()
+                            .find(|(idx, _)| *idx == upd.cell_idx)
+                        {
+                            *h = (*h as i64 + actual_delta).max(MIN_CELL_SIZE as i64) as u32;
+                        }
+                    }
                 }
             }
             if upd.local_resize {

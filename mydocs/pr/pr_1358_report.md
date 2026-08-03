@@ -21,7 +21,7 @@ PR #1358은 미주 다단 페이지네이션 잔여 문제(#1336/#1357)를 직�
 
 변경 내용:
 
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
   - 새 target `2024-09-below20above20` 추가
   - HWP: `samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp`
   - PDF: `pdf/3-09월_교육_통합_2024-구분선아래20구분선위20.pdf`
@@ -57,11 +57,11 @@ GitHub checks:
 | 명령 | 결과 |
 |---|---|
 | `git diff --check` | 통과 |
-| `python3 -m py_compile scripts/task1274_visual_sweep.py` | 통과 |
-| `python3 scripts/task1274_visual_sweep.py --help` | 통과, 새 target 노출 확인 |
+| `python3 -m py_compile scripts/visual_sweep.py` | 통과 |
+| `python3 scripts/visual_sweep.py --help` | 통과, 새 target 노출 확인 |
 | `cargo test --test issue_1082_endnote_multicolumn_drift` | 통과, 5 passed |
 | `cargo fmt --all -- --check` | 통과 |
-| `python3 scripts/task1274_visual_sweep.py --target 2024-09-below20above20 --out output/poc/pr1358-visual-sweep --rhwp-bin target/debug/rhwp` | 통과 |
+| `python3 scripts/visual_sweep.py --target 2024-09-below20above20 --out output/poc/pr1358-visual-sweep --rhwp-bin target/debug/rhwp` | 통과 |
 
 새 target sweep 산출:
 

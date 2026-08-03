@@ -1352,6 +1352,14 @@ export class InputHandler {
     _table.resizeCellByKeyboard.call(this, key);
   }
 
+  private resizeCellLocalByKeyboard(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
+    _table.resizeCellLocalByKeyboard.call(this, key);
+  }
+
+  private resizeCellBoundaryByKeyboard(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
+    _table.resizeCellBoundaryByKeyboard.call(this, key);
+  }
+
   private resizeTableProportional(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
     _table.resizeTableProportional.call(this, key);
   }

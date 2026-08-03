@@ -72,7 +72,7 @@ PDF와 달랐다.
 
 - sweep:
   - 명령:
-    `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2022-09 --target 2022-10 --out output/task1293_stage83_after_tail_split_sweep --rhwp-bin target/debug/rhwp`
+    `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --target 2022-09 --target 2022-10 --out output/task1293_stage83_after_tail_split_sweep --rhwp-bin target/debug/rhwp`
   - 결과 요약:
     - `2024-11-practice-above0-between0-below0`: SVG/render-tree/PDF `21/21/21`, `flagged=5/21`
     - `2022-09`: SVG/render-tree/PDF `23/23/23`, `flagged=4/23`

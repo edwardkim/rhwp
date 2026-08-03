@@ -36,7 +36,7 @@
 |---|---|
 | 샘플 | `samples/issue1949_giant_cell_nested_tables_perf.hwpx` |
 | 기준 PDF | `pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf` |
-| 실행 | `python3 scripts/task1274_visual_sweep.py --key pr1985_issue1949 --hwp samples/issue1949_giant_cell_nested_tables_perf.hwpx --pdf pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf --out output/task1274` |
+| 실행 | `python3 scripts/visual_sweep.py --key pr1985_issue1949 --hwp samples/issue1949_giant_cell_nested_tables_perf.hwpx --pdf pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf --out output/task1274` |
 | 페이지 수 | SVG 112쪽 / 기준 PDF 115쪽 |
 | 자동 후보 | `flagged=100/112` |
 | pixel match | 평균 `91.86403%`, worst `88.307%` |

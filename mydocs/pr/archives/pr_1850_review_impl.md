@@ -39,7 +39,7 @@
 - `env CARGO_INCREMENTAL=0 cargo build` 통과.
 - `env CARGO_INCREMENTAL=0 cargo test --profile release-test --test issue_1692 --test issue_1789_exclusion_probe_line_spacing` 통과.
 - `env CARGO_INCREMENTAL=0 cargo clippy --all-targets -- -D warnings` 통과.
-- `python3 -m py_compile scripts/task1274_visual_sweep.py` 통과.
+- `python3 -m py_compile scripts/visual_sweep.py` 통과.
 
 ## Stage 4. 시각 검증
 

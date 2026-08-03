@@ -37,7 +37,7 @@ PR base 기준:
 | `src/renderer/height_cursor.rs` | compact 미주 gap, 수식-only/tail/title 흐름 보정 helper 및 테스트 추가 |
 | `src/renderer/layout.rs` | 미주 문항 제목 tail, direct bottom fit, 수식 tail 뒤 compact 처리 추가 |
 | `src/renderer/typeset.rs` | 기본 7mm/large-between note tail, last-column visual split, frame 하단 보존 로직 추가 |
-| `scripts/task1274_visual_sweep.py` | PDF bbox 기반 question flow/drift 분석, false positive 억제, `question_flow.json` 출력 추가 |
+| `scripts/visual_sweep.py` | PDF bbox 기반 question flow/drift 분석, false positive 억제, `question_flow.json` 출력 추가 |
 | `tests/issue_1139_inline_picture_duplicate.rs` | issue #1284 관련 교육 통합 페이지별 bbox 회귀 테스트 다수 추가 |
 | `samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp` | 신규 검증 샘플 |
 | `samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwpx` | 신규 검증 샘플 |
@@ -136,7 +136,7 @@ visual sweep을 PDF bbox와 render tree bbox 기준으로 확장한 것도 이 �
 - 특정 교육 통합 문서군에는 맞지만, 미주가 있는 일반 문서/다단 문서/수식 많은 문서에서 다른 drift를 만들 수 있다.
 - 최근 페이지네이션 PR들이 계속 누적된 상태라, #1145, #1153, #1285 계열 회귀 샘플을 함께 확인해야 한다.
 
-### 4.5 `task1274_visual_sweep.py`
+### 4.5 `visual_sweep.py`
 
 PDF word bbox와 render tree bbox를 함께 비교하고 `question_flow.json`을 생성하도록 확장된다.
 
@@ -199,8 +199,8 @@ PDF word bbox와 render tree bbox를 함께 비교하고 `question_flow.json`을
 7. `cargo check --target wasm32-unknown-unknown --lib`
 8. `cargo test --features native-skia skia --lib --verbose`
 9. `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-10. `python3 -m py_compile scripts/task1274_visual_sweep.py`
-11. 가능하면 `python3 scripts/task1274_visual_sweep.py --target all`
+10. `python3 -m py_compile scripts/visual_sweep.py`
+11. 가능하면 `python3 scripts/visual_sweep.py --target all`
 12. maintainer SVG/웹 시각 판정
 13. 통과 시 `devel` 병합/push 및 PR 종료 처리
 
@@ -260,12 +260,12 @@ git cherry-pick f3f4c0d7 a583c66c f2fa3632 b16e4e8f bc53f250 0495601b a83058e2 2
 | 항목 | 결과 | 비고 |
 |---|---|---|
 | `cargo fmt --all -- --check` | 통과 |  |
-| `python3 -m py_compile scripts/task1274_visual_sweep.py` | 통과 |  |
+| `python3 -m py_compile scripts/visual_sweep.py` | 통과 |  |
 | `cargo build --verbose` | 통과 | Cargo global cache last-use DB readonly 경고만 발생 |
 | `cargo check --target wasm32-unknown-unknown --lib` | 통과 |  |
 | `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture` | 통과 | 67 passed |
 | `cargo test --features native-skia skia --lib --verbose` | 통과 | 39 passed |
-| `python3 scripts/task1274_visual_sweep.py --target all` | 실행 완료 | `rsvg-convert` 설치 후 재실행 |
+| `python3 scripts/visual_sweep.py --target all` | 실행 완료 | `rsvg-convert` 설치 후 재실행 |
 | `docker compose --env-file .env.docker run --rm wasm` | 통과 | Done in 2m 54s, `pkg/rhwp_bg.wasm` 5.3M |
 
 `visual_sweep --target all` 재실행 결과:
@@ -309,5 +309,5 @@ cp pkg/rhwp.js pkg/rhwp_bg.wasm pkg/rhwp.d.ts pkg/rhwp_bg.wasm.d.ts rhwp-studio/
 현재 판정:
 
 - 자동 검증과 maintainer SVG/웹 시각 판정을 모두 통과했다.
-- `python3 scripts/task1274_visual_sweep.py --target all`도 `rsvg-convert` 설치 후 재실행했다. 일부 line/column/order 잔여 후보는 있으나, 페이지 수와 핵심 drift 후보는 안정적이며 maintainer 시각 판정으로 최종 게이트를 통과했다.
+- `python3 scripts/visual_sweep.py --target all`도 `rsvg-convert` 설치 후 재실행했다. 일부 line/column/order 잔여 후보는 있으나, 페이지 수와 핵심 drift 후보는 안정적이며 maintainer 시각 판정으로 최종 게이트를 통과했다.
 - PR #1292는 수용 가능하다.

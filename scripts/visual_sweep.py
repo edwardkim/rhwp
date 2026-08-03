@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import html as html_lib
+import importlib.util
 import json
 import os
 import re
@@ -14,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -40,6 +42,12 @@ LINE_BAND_DRIFT_MEAN_LIMIT_PX = 60.0
 LINE_BAND_DRIFT_P90_LIMIT_PX = 120.0
 COLUMN_LINE_DRIFT_MEAN_LIMIT_PX = 42.0
 COLUMN_LINE_DRIFT_P90_LIMIT_PX = 70.0
+# 본문이 그림 주변에서 세로 열로 붕괴하는 경우처럼, 한 column의 line-band 수와
+# y 흐름이 PDF와 함께 크게 달라진 형상은 일반 column drift보다 강한 검토 신호다.
+# 폰트 차이만으로 생기는 소폭 baseline shift는 이 조합을 만족하지 않는다.
+COLUMN_TEXT_FLOW_COLLAPSE_MIN_BAND_COUNT_DELTA = 3
+COLUMN_TEXT_FLOW_COLLAPSE_MEAN_DRIFT_LIMIT_PX = 80.0
+COLUMN_TEXT_FLOW_COLLAPSE_P90_DRIFT_LIMIT_PX = 120.0
 EQUATION_OVERLAP_LIMIT = 0.08
 EQUATION_OVERLAP_MIN_PX = 4.0
 EQUATION_FLOW_LINE_OVERLAP_TOLERANCE_PX = 8.0
@@ -779,6 +787,7 @@ def visual_summary_for_pages(
         "question_marker_flow_drift_pages": flagged_numbers("question_marker_flow_drift"),
         "line_band_drift_pages": flagged_numbers("line_band_drift"),
         "column_line_band_drift_pages": flagged_numbers("column_line_band_drift"),
+        "column_text_flow_collapse_pages": flagged_numbers("column_text_flow_collapse"),
         "large_ink_region_drift_pages": flagged_numbers("large_ink_region_drift"),
         "endnote_separator_gap_drift_pages": flagged_numbers("endnote_separator_gap_drift"),
         "endnote_separator_observed_pages": [
@@ -800,6 +809,7 @@ def visual_summary_for_pages(
         ],
         "between_notes_marker_gap_pages": [page.get("page") for page in pages if paired_marker_gap(page)],
         "equation_text_overlap_pages": flagged_numbers("equation_text_overlap"),
+        "square_wrap_text_overlap_pages": flagged_numbers("square_wrap_text_overlap"),
         "question_title_text_overlap_pages": flagged_numbers("question_title_text_overlap"),
         "line_order_overlap_pages": flagged_numbers("line_order_overlap"),
         "render_tree_frame_tail_overflow_pages": flagged_numbers("render_tree_frame_tail_overflow"),
@@ -1669,25 +1679,53 @@ def column_frame(frame: tuple[int, int, int, int], column: int) -> tuple[int, in
     return min(right, mid + 2), top, right, bottom
 
 
+def mask_content_regions(
+    image: Image.Image,
+    rectangles: list[tuple[int, int, int, int]],
+) -> Image.Image:
+    """Return an image with known non-body regions blanked for text-flow bands.
+
+    The column-flow signal intentionally measures raster line bands because it
+    also catches text reflowed around a floating drawing.  A centered table,
+    however, contributes dense rules and cell text that are not paragraph
+    baselines.  Mask only such render-tree-owned regions for this one signal;
+    raw raster and table geometry checks remain available to the caller.
+    """
+    if not rectangles:
+        return image
+    masked = image.copy()
+    draw = ImageDraw.Draw(masked)
+    for left, top, right, bottom in rectangles:
+        if right <= left or bottom <= top:
+            continue
+        draw.rectangle((left, top, right - 1, bottom - 1), fill="white")
+    return masked
+
+
 def column_line_band_drifts(
     rhwp: Image.Image,
     pdf: Image.Image,
     rhwp_frame: tuple[int, int, int, int],
     pdf_frame: tuple[int, int, int, int],
+    *,
+    rhwp_mask_rectangles: list[tuple[int, int, int, int]] | None = None,
+    pdf_mask_rectangles: list[tuple[int, int, int, int]] | None = None,
 ) -> list[dict[str, object]]:
+    rhwp_for_flow = mask_content_regions(rhwp, rhwp_mask_rectangles or [])
+    pdf_for_flow = mask_content_regions(pdf, pdf_mask_rectangles or [])
     drifts: list[dict[str, object]] = []
     for column in (0, 1):
         rhwp_column_frame = column_frame(rhwp_frame, column)
         pdf_column_frame = column_frame(pdf_frame, column)
         rhwp_bands = row_bands(
-            rhwp,
+            rhwp_for_flow,
             frame=rhwp_column_frame,
             predicate=is_content_pixel,
             min_pixels_per_row=8,
             gap=2,
         )
         pdf_bands = row_bands(
-            pdf,
+            pdf_for_flow,
             frame=pdf_column_frame,
             predicate=is_content_pixel,
             min_pixels_per_row=8,
@@ -1721,6 +1759,41 @@ def column_line_band_drift_candidates(drifts: list[dict[str, object]]) -> list[d
             continue
         if mean >= COLUMN_LINE_DRIFT_MEAN_LIMIT_PX and p90 >= COLUMN_LINE_DRIFT_P90_LIMIT_PX:
             candidates.append(item)
+    return candidates
+
+
+def column_text_flow_collapse_candidates(
+    drifts: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    """Return high-confidence one-column text-flow collapse candidates.
+
+    A regular font/raster difference can move many baselines by a small amount.
+    This rule additionally requires a material line-band count change in the same
+    column, so it is aimed at failures such as text being reflowed into narrow
+    vertical strips beside a floating drawing.  It is still a review candidate,
+    not an automatic pass/fail decision.
+    """
+    candidates: list[dict[str, object]] = []
+    for item in drifts:
+        drift = item.get("drift")
+        if not isinstance(drift, dict):
+            continue
+        rhwp_count = drift.get("rhwp_count")
+        pdf_count = drift.get("pdf_count")
+        mean = drift.get("mean_abs_delta_px")
+        p90 = drift.get("p90_abs_delta_px")
+        if not all(isinstance(value, (int, float)) for value in (rhwp_count, pdf_count, mean, p90)):
+            continue
+        band_count_delta = abs(int(rhwp_count) - int(pdf_count))
+        if (
+            band_count_delta >= COLUMN_TEXT_FLOW_COLLAPSE_MIN_BAND_COUNT_DELTA
+            and float(mean) >= COLUMN_TEXT_FLOW_COLLAPSE_MEAN_DRIFT_LIMIT_PX
+            and float(p90) >= COLUMN_TEXT_FLOW_COLLAPSE_P90_DRIFT_LIMIT_PX
+        ):
+            candidate = dict(item)
+            candidate["band_count_delta"] = band_count_delta
+            candidate["reason"] = "column_line_count_and_y_flow_diverge"
+            candidates.append(candidate)
     return candidates
 
 
@@ -2229,6 +2302,79 @@ def raster_bbox_for_render_tree_bbox(
     return [left, top, right - left, bottom - top]
 
 
+def render_tree_body_table_masks(
+    page_tree: dict[str, object] | None,
+    image: Image.Image,
+) -> list[tuple[int, int, int, int]]:
+    """Project Body table boxes to an image for the paragraph-flow signal.
+
+    A table's own cells/rules must not be mistaken for left/right paragraph
+    columns.  Header/footer/footnote tables are deliberately excluded because
+    the column-flow detector only reasons about the Body region.
+    """
+    if page_tree is None:
+        return []
+    masks: list[tuple[int, int, int, int]] = []
+
+    def visit(node: dict[str, object], region: str = "outside") -> None:
+        node_type = node.get("type")
+        if node_type in {"Body", "FootnoteArea", "Footer", "Header"}:
+            region = str(node_type)
+        if region == "Body" and node_type == "Table":
+            bbox = render_tree_bbox(node)
+            if bbox is not None:
+                raster = raster_bbox_for_render_tree_bbox(page_tree, bbox, image)
+                if raster is not None:
+                    left, top, width, height = raster
+                    masks.append((left, top, left + width, top + height))
+            # Child cell text belongs to this same table; do not add duplicates.
+            return
+        children = node.get("children")
+        if isinstance(children, list):
+            for child in children:
+                if isinstance(child, dict):
+                    visit(child, region)
+
+    visit(page_tree)
+    return masks
+
+
+def render_tree_body_raster_frame(
+    page_tree: dict[str, object] | None,
+    image: Image.Image,
+) -> tuple[int, int, int, int] | None:
+    """Return the Body frame in raster coordinates when the tree exposes it.
+
+    A page without an explicit paper border can contain a wide table rule.  The
+    generic raster frame finder may then mistake that rule for the page top.
+    The Body bbox is authoritative for the text-flow comparison and is still
+    optional so existing documents without it retain the generic fallback.
+    """
+    if page_tree is None:
+        return None
+
+    def visit(node: dict[str, object]) -> tuple[float, float, float, float] | None:
+        if node.get("type") == "Body":
+            return render_tree_bbox(node)
+        children = node.get("children")
+        if isinstance(children, list):
+            for child in children:
+                if isinstance(child, dict):
+                    found = visit(child)
+                    if found is not None:
+                        return found
+        return None
+
+    body_bbox = visit(page_tree)
+    if body_bbox is None:
+        return None
+    raster = raster_bbox_for_render_tree_bbox(page_tree, body_bbox, image)
+    if raster is None:
+        return None
+    left, top, width, height = raster
+    return left, top, left + width, top + height
+
+
 def ink_match_in_bbox(
     rhwp: Image.Image,
     pdf: Image.Image,
@@ -2348,6 +2494,59 @@ def load_render_tree(tree_path: Path) -> dict[str, object] | None:
     if not isinstance(tree, dict):
         return None
     return tree
+
+
+@lru_cache(maxsize=1)
+def fidelity_compare_layout_module() -> object:
+    """Load the canonical fidelity layout detector without duplicating its rules.
+
+    `visual_sweep.py` already has the render tree required by
+    `fidelity_compare --layout-ledger`. Reusing that detector means a
+    `flagged=0` visual sweep cannot silently override a Square/Tight/Through
+    image-to-Body-text overlap candidate found by the fast fidelity pass.
+    """
+    module_path = (
+        Path(__file__).resolve().parents[1]
+        / "tools"
+        / "fidelity_compare"
+        / "fidelity_compare.py"
+    )
+    spec = importlib.util.spec_from_file_location("rhwp_fidelity_compare_layout", module_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"fidelity layout detector를 불러올 수 없습니다: {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    try:
+        spec.loader.exec_module(module)
+    except Exception:
+        sys.modules.pop(spec.name, None)
+        raise
+    return module
+
+
+def render_tree_square_wrap_text_overlap_candidates(
+    tree: dict[str, object] | None,
+) -> list[dict[str, object]]:
+    """Return the canonical fidelity Square/Tight/Through overlap candidates."""
+    if (
+        tree is None
+        or tree.get("type") != "Page"
+        or not isinstance(tree.get("children"), list)
+    ):
+        # The fidelity bridge must fail closed. Treating a missing/corrupt
+        # render tree as an empty candidate list would turn a broken export
+        # into an unjustified ``flagged=0`` result.
+        raise RuntimeError("fidelity Square-wrap 검출에 유효한 render tree가 필요합니다")
+    module = fidelity_compare_layout_module()
+    detector = getattr(module, "square_wrap_text_overlap_candidates", None)
+    if not callable(detector):
+        raise RuntimeError("fidelity layout detector에 square_wrap_text_overlap 후보 함수가 없습니다")
+    raw_candidates = detector(tree)
+    if not isinstance(raw_candidates, list) or not all(
+        isinstance(candidate, dict) for candidate in raw_candidates
+    ):
+        raise RuntimeError("fidelity Square-wrap 후보 형식이 올바르지 않습니다")
+    return raw_candidates
 
 
 def mm_to_px(mm: object, dpi: int = 96) -> float | None:
@@ -3117,8 +3316,23 @@ def analyze_page(
     )
     red_drift = compare_ordered_y(rhwp_red, pdf_red)
     line_drift = compare_ordered_y(rhwp_bands, pdf_bands)
+    page_tree = load_render_tree(tree_path)
+    square_wrap_text_overlaps = render_tree_square_wrap_text_overlap_candidates(page_tree)
     column_line_drifts = column_line_band_drifts(rhwp, pdf, rhwp_frame, pdf_frame)
     column_line_drift_candidates = column_line_band_drift_candidates(column_line_drifts)
+    rhwp_table_masks = render_tree_body_table_masks(page_tree, rhwp)
+    pdf_table_masks = render_tree_body_table_masks(page_tree, pdf)
+    rhwp_flow_frame = render_tree_body_raster_frame(page_tree, rhwp) or rhwp_frame
+    pdf_flow_frame = render_tree_body_raster_frame(page_tree, pdf) or pdf_frame
+    column_text_flow_drifts = column_line_band_drifts(
+        rhwp,
+        pdf,
+        rhwp_flow_frame,
+        pdf_flow_frame,
+        rhwp_mask_rectangles=rhwp_table_masks,
+        pdf_mask_rectangles=pdf_table_masks,
+    )
+    column_text_flow_collapse = column_text_flow_collapse_candidates(column_text_flow_drifts)
     large_region_drift = compare_large_ink_regions(
         large_ink_regions(rhwp, frame=rhwp_frame),
         large_ink_regions(pdf, frame=pdf_frame),
@@ -3187,7 +3401,7 @@ def analyze_page(
     line_order_overlaps = render_tree_line_order_overlap_candidates(tree_path)
     frame_tail_overflows = render_tree_frame_tail_candidates(tree_path, rhwp_frame)
     legacy_glyph_visual_candidates = render_tree_legacy_glyph_visual_candidates(
-        load_render_tree(tree_path),
+        page_tree,
         rhwp,
         pdf,
         pixel_diff_threshold=pixel_diff_threshold,
@@ -3299,6 +3513,8 @@ def analyze_page(
         flags.append("question_marker_flow_drift")
     if equation_overlaps:
         flags.append("equation_text_overlap")
+    if square_wrap_text_overlaps:
+        flags.append("square_wrap_text_overlap")
     if (
         expected_separator
         and separator_gap_delta is not None
@@ -3309,6 +3525,8 @@ def analyze_page(
         flags.append("question_title_text_overlap")
     if line_order_overlaps:
         flags.append("line_order_overlap")
+    if column_text_flow_collapse:
+        flags.append("column_text_flow_collapse")
     frame_tail_flow_overflow = bool(frame_tail_overflows and (column_line_drift_candidates or rhwp_out_pixels > 0))
     if frame_tail_flow_overflow:
         flags.append("render_tree_frame_tail_overflow")
@@ -3316,6 +3534,7 @@ def analyze_page(
         flags.append("question_marker_drift")
     semantic_flow_flags = bool(
         equation_overlaps
+        or square_wrap_text_overlaps
         or question_title_overlaps
         or line_order_overlaps
         or frame_tail_flow_overflow
@@ -3350,11 +3569,13 @@ def analyze_page(
             annotated_path,
             {
                 "equation_text_overlap": equation_overlaps,
+                "square_wrap_text_overlap": square_wrap_text_overlaps,
                 "question_title_text_overlap": question_title_overlaps,
                 "line_order_overlap": line_order_overlaps,
                 "render_tree_frame_tail_overflow": frame_tail_overflows,
                 "question_marker_drift": question_marker_drifts,
                 "column_line_band_drift": column_line_drift_candidates,
+                "column_text_flow_collapse": column_text_flow_collapse,
                 "legacy_glyph_visual": legacy_glyph_visual_candidates,
             },
         )
@@ -3379,6 +3600,16 @@ def analyze_page(
         "line_band_drift": line_drift,
         "column_line_band_drift": column_line_drifts,
         "column_line_band_drift_candidates": column_line_drift_candidates,
+        "column_text_flow_masked_line_band_drift": column_text_flow_drifts,
+        "column_text_flow_table_masks": {
+            "rhwp": [list(mask) for mask in rhwp_table_masks],
+            "pdf": [list(mask) for mask in pdf_table_masks],
+        },
+        "column_text_flow_body_frames": {
+            "rhwp": list(rhwp_flow_frame),
+            "pdf": list(pdf_flow_frame),
+        },
+        "column_text_flow_collapse_candidates": column_text_flow_collapse,
         "large_ink_region_drift": large_region_drift,
         "endnote_shape_ui": endnote_shape_ui,
         "endnote_separator_gap": {
@@ -3398,6 +3629,7 @@ def analyze_page(
         "svg": str(svg_path),
         "render_tree_json": str(tree_path),
         "equation_text_overlap_candidates": equation_overlaps,
+        "square_wrap_text_overlap_candidates": square_wrap_text_overlaps,
         "question_title_text_overlap_candidates": question_title_overlaps,
         "line_order_overlap_candidates": line_order_overlaps,
         "render_tree_frame_tail_overflow_candidates": frame_tail_overflows,
@@ -3473,6 +3705,17 @@ def draw_render_tree_overlays(
         )
         draw.text((18, label_h + 18 + index * 20), label, fill=(180, 0, 0), font=font)
 
+    for index, item in enumerate(render_overlays.get("column_text_flow_collapse", [])[:4]):
+        drift = item.get("drift")
+        if not isinstance(drift, dict):
+            continue
+        label = (
+            f"TEXT FLOW COLLAPSE c{item.get('column')} "
+            f"band-delta={item.get('band_count_delta')} "
+            f"mean={drift.get('mean_abs_delta_px')} p90={drift.get('p90_abs_delta_px')}"
+        )
+        draw.text((18, label_h + 110 + index * 20), label, fill=(220, 0, 0), font=font)
+
     def draw_bbox(
         box: object,
         color: tuple[int, int, int],
@@ -3532,6 +3775,17 @@ def draw_render_tree_overlays(
             x, y = anchor
             label = f"eq/text pi {item.get('text_pi')} r={item.get('overlap_ratio')}"
             draw.text((x, max(label_h + 2, y - 18)), label, fill=(180, 80, 0), font=font)
+    for item in render_overlays.get("square_wrap_text_overlap", [])[:4]:
+        anchor = draw_bbox(item.get("image_bbox"), (220, 0, 0), 3)
+        draw_bbox(item.get("first_line_bbox"), (255, 140, 0), 2)
+        draw_bbox(item.get("last_line_bbox"), (255, 140, 0), 2)
+        if anchor is not None:
+            x, y = anchor
+            label = (
+                f"{item.get('text_wrap')} wrap/text pi {item.get('pi')} "
+                f"c{item.get('ci')} lines={item.get('overlap_line_count')}"
+            )
+            draw.text((x, max(label_h + 2, y - 18)), label, fill=(220, 0, 0), font=font)
     for item in render_overlays.get("question_title_text_overlap", [])[:4]:
         anchor = draw_bbox(item.get("title_bbox"), (0, 150, 180), 2)
         draw_bbox(item.get("next_bbox"), (220, 60, 0), 2)
@@ -3617,6 +3871,9 @@ def analyze_pages(
         "column_line_band_drift_pages": [
             page["page"] for page in flagged_pages if "column_line_band_drift" in page["flags"]
         ],
+        "column_text_flow_collapse_pages": [
+            page["page"] for page in flagged_pages if "column_text_flow_collapse" in page["flags"]
+        ],
         "large_ink_region_drift_pages": [
             page["page"] for page in flagged_pages if "large_ink_region_drift" in page["flags"]
         ],
@@ -3653,6 +3910,9 @@ def analyze_pages(
             if page["between_notes_marker_gap"]["paired_gap_count"] > 0
         ],
         "equation_text_overlap_pages": [page["page"] for page in flagged_pages if "equation_text_overlap" in page["flags"]],
+        "square_wrap_text_overlap_pages": [
+            page["page"] for page in flagged_pages if "square_wrap_text_overlap" in page["flags"]
+        ],
         "question_title_text_overlap_pages": [
             page["page"] for page in flagged_pages if "question_title_text_overlap" in page["flags"]
         ],
@@ -3676,8 +3936,10 @@ def analyze_pages(
         f"frame={summary['frame_overflow_pages']} red={summary['red_marker_drift_pages']} "
         f"qflow={summary['question_marker_flow_drift_pages']} "
         f"line={summary['line_band_drift_pages']} column={summary['column_line_band_drift_pages']} "
+        f"flowcollapse={summary['column_text_flow_collapse_pages']} "
         f"sep={summary['endnote_separator_gap_drift_pages']} "
         f"eq={summary['equation_text_overlap_pages']} "
+        f"wrap={summary['square_wrap_text_overlap_pages']} "
         f"title={summary['question_title_text_overlap_pages']} "
         f"order={summary['line_order_overlap_pages']} "
         f"tail={summary['render_tree_frame_tail_overflow_pages']} "

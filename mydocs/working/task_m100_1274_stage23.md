@@ -40,7 +40,7 @@ VPOS_CORR: path=page pi=901 prev_pi=900 ... y_in=1059.09 end_y=1038.67 result=10
 1. `height_cursor.rs`의 compact endnote question title backtrack 조건을 보정한다.
    - page-path의 새 문항 제목이 저장 vpos 기준으로 분리 가능한 위치를 가리키고, 현재 y가 하단 근처이며, backtrack 폭이 작은 경우 `end_y`를 적용한다.
    - 목적은 `pi=900` 제목을 `1020px`대 위치로 되돌려 `pi=901` 본문과 분리하는 것이다.
-2. `scripts/task1274_visual_sweep.py`에 문항 제목/다음 본문 overlap 후보를 추가한다.
+2. `scripts/visual_sweep.py`에 문항 제목/다음 본문 overlap 후보를 추가한다.
    - render tree `TextLine` 텍스트가 `문\d+` 패턴으로 시작하는 line과 다음 본문 line의 bbox overlap을 검사한다.
    - page 17은 수정 전 `question_title_text_overlap`으로 잡히고, 수정 후 사라져야 한다.
 3. 필요하면 focused regression assertion을 추가한다.
@@ -49,11 +49,11 @@ VPOS_CORR: path=page pi=901 prev_pi=900 ... y_in=1059.09 end_y=1038.67 result=10
 ## 검증 계획
 
 - `cargo build --bin rhwp`
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`
-- `python3 scripts/task1274_visual_sweep.py --target 2022-09`
+- `python3 -m py_compile scripts/visual_sweep.py`
+- `python3 scripts/visual_sweep.py --target 2022-09`
   - page 17 `문29` marker와 `네 장의 ...` 본문이 compare PNG에서 분리되는지 확인한다.
   - `metrics.json`에서 page 17의 `question_title_text_overlap` 후보가 사라지는지 확인한다.
-- `python3 scripts/task1274_visual_sweep.py --target all`
+- `python3 scripts/visual_sweep.py --target all`
   - 6종 전체 SVG/PDF/render tree page count가 유지되는지 확인한다.
   - 기존 stage22 후보 목록이 새 검출 기준으로 더 정확해졌는지 확인한다.
 
@@ -67,16 +67,16 @@ VPOS_CORR: path=page pi=901 prev_pi=900 ... y_in=1059.09 end_y=1038.67 result=10
   - compact endnote page-path에서 새 문항 제목이 단 하단 근처에 있고 저장 vpos가 더 안전한 위치를 가리킬 때 `end_y`를 적용하도록 `compact_endnote_title_bottom_backtrack` 임계값을 조정했다.
   - 일반 replay-path에는 기존 `0.95` 하단 판정을 유지하고, page-path만 `0.90`으로 완화했다. 이로써 `pi=900` 문항 제목이 저장 vpos 기준으로 먼저 올라가고, 다음 `pi=901` 본문은 그 아래에 남는다.
   - `compact_endnote_page_path_title_bottom_backtrack_allows_safe_title` 단위 테스트를 추가해 page-path 새 문항 제목이 하단에서 backtrack되는 조건을 고정했다.
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
   - render tree JSON에서 `TextLine` 텍스트와 bbox를 읽어 `문\d+` 형태의 문항 제목 line과 바로 다음 본문 line의 bbox overlap을 검사하는 `question_title_text_overlap` 지표를 추가했다.
   - `summary.json`/`metrics.json`에 `question_title_text_overlap_pages`, `question_title_text_overlap_candidates`를 기록한다.
 
 ## 검증 결과
 
-- `python3 -m py_compile scripts/task1274_visual_sweep.py` 통과.
+- `python3 -m py_compile scripts/visual_sweep.py` 통과.
 - `cargo test --lib compact_endnote_page_path_title_bottom_backtrack_allows_safe_title -- --nocapture` 통과.
 - `cargo build --bin rhwp` 통과.
-- `python3 scripts/task1274_visual_sweep.py --target 2022-09` 통과.
+- `python3 scripts/visual_sweep.py --target 2022-09` 통과.
   - SVG/PDF/render tree 모두 23쪽.
   - page 17 `question_title_text_overlap_candidates`는 빈 배열이다.
   - page 17 compare PNG에서 `문29） 175` 제목과 `네 장의 카드를 꺼내는 경우의 수는` 본문이 분리되어 보인다.
@@ -84,7 +84,7 @@ VPOS_CORR: path=page pi=901 prev_pi=900 ... y_in=1059.09 end_y=1038.67 result=10
     - `output/task1274/2022-09/compare/compare_017.png`
     - `output/task1274/2022-09/analysis/annotated_017.png`
     - `output/task1274/2022-09/render_tree/render_tree_017.json`
-- `python3 scripts/task1274_visual_sweep.py --target all` 통과.
+- `python3 scripts/visual_sweep.py --target all` 통과.
   - `2022-09`: SVG/PDF/render tree 23/23/23쪽, `title=[]`.
   - `2023-09`: SVG/PDF/render tree 20/20/20쪽, `title=[]`.
   - `2024-09-below20`: SVG/PDF/render tree 23/23/23쪽, `title=[]`.

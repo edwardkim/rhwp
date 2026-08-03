@@ -215,7 +215,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   'src/engine/input-handler-keyboard.ts': 21,
   'src/engine/input-handler-mouse.ts': 3,
   'src/engine/input-handler-picture.ts': 11,
-  'src/engine/input-handler-table.ts': 7,
+  'src/engine/input-handler-table.ts': 9, // +2: 한컴 3모드 셀 크기 조절 분화 — Alt(resizeCellLocalByKeyboard)·Shift(resizeCellBoundaryByKeyboard) 각각 executeOperation snapshot 으로 라우팅 (undo 기록됨)
   'src/engine/input-handler-text.ts': 11, // #2424: raw IME delete를 command 공통 typed helper로 이관
   // ── hwpctl — 의도적 미라우팅 (#3648 정책 판정, 2026-07-31) ──
   //

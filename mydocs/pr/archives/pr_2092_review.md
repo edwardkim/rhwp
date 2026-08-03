@@ -50,7 +50,7 @@
 
 `86712` 공식 PDF 핀을 직접 sweep했다.
 
-- 실행: `python3 scripts/task1274_visual_sweep.py --file-target pr2092_issue1921_86712 samples/86712_regulatory_analysis.hwp pdf/issue1921/86712_regulatory_analysis-2024.pdf --out output/planet6897_prs_visual_20260709_pr2092`
+- 실행: `python3 scripts/visual_sweep.py --file-target pr2092_issue1921_86712 samples/86712_regulatory_analysis.hwp pdf/issue1921/86712_regulatory_analysis-2024.pdf --out output/planet6897_prs_visual_20260709_pr2092`
 - rhwp SVG pages: 65
 - render tree pages: 65
 - PDF pages: 65

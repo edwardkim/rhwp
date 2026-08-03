@@ -3,10 +3,12 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import io
+import json
 import subprocess
 import sys
 import tempfile
 import unittest
+from collections import Counter
 from pathlib import Path
 from unittest import mock
 
@@ -147,6 +149,447 @@ class TextLayerComparisonTests(unittest.TestCase):
             extracted = FIDELITY.svg_text(svg)
 
         self.assertEqual(extracted, "A가")
+
+    def test_adjacent_reciprocal_text_difference_is_owner_shift_candidate(self) -> None:
+        moved = Counter("각주26) footnote owner")
+
+        candidates = FIDELITY.adjacent_text_owner_shift_candidates(
+            {
+                25: (Counter(), moved),
+                26: (moved, Counter()),
+            }
+        )
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["page"], 25)
+        self.assertEqual(candidates[0]["next_page"], 26)
+        self.assertEqual(candidates[0]["direction"], "rhwp_earlier_than_reference")
+        self.assertEqual(candidates[0]["shared_count"], sum(moved.values()))
+
+    def test_adjacent_partial_text_overlap_is_not_owner_shift_candidate(self) -> None:
+        candidates = FIDELITY.adjacent_text_owner_shift_candidates(
+            {
+                0: (Counter(), Counter("abcdefgh")),
+                1: (Counter("abcxxxxx"), Counter()),
+            }
+        )
+
+        self.assertEqual(candidates, [])
+
+    def test_adjacent_ordered_sequence_detects_counter_diluted_late_owner(self) -> None:
+        moved = "60)http://www.who.int/transplantation/ConsensusStatementShort.pdf?ua=1"
+        candidates = FIDELITY.adjacent_text_owner_sequence_candidates(
+            {
+                51: (f"p52 본문 {moved}", "p52 본문"),
+                52: ("p53 본문", f"p53 본문 {moved}"),
+            }
+        )
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["page"], 51)
+        self.assertEqual(candidates[0]["next_page"], 52)
+        self.assertEqual(candidates[0]["direction"], "rhwp_later_than_reference")
+        self.assertEqual(candidates[0]["sequence"], moved)
+
+    def test_adjacent_ordered_sequence_normalizes_target_page_line_breaks(self) -> None:
+        moved = "60) http://www.who.int/transplantation/ConsensusStatementShort.pdf?ua=1"
+        candidates = FIDELITY.adjacent_text_owner_sequence_candidates(
+            {
+                51: (f"p52 본문 {moved}", "p52 본문"),
+                52: (
+                    "p53 본문",
+                    "p53 본문\n60)    http://www.who.int/transplantation/"
+                    "ConsensusStatementShort.pdf?ua=1",
+                ),
+            }
+        )
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["page"], 51)
+        self.assertEqual(candidates[0]["next_page"], 52)
+        self.assertEqual(candidates[0]["direction"], "rhwp_later_than_reference")
+
+    def test_adjacent_ordered_sequence_detects_a_multistep_late_owner_chain(self) -> None:
+        moved60 = "60) https://example.test/zzzzzzzzzzzzzzzzzzzzzzzz"
+        moved62 = "62) qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
+        candidates = FIDELITY.adjacent_text_owner_sequence_candidates(
+            {
+                51: (f"p52 본문 {moved60}", "p52 본문"),
+                52: (f"p53 본문 {moved62}", f"p53 본문\n{moved60}"),
+                53: ("p54 본문", f"p54 본문\n{moved62}"),
+            }
+        )
+
+        self.assertEqual(
+            [(candidate["page"], candidate["next_page"], candidate["direction"])
+            for candidate in candidates],
+            [(51, 52, "rhwp_later_than_reference"), (52, 53, "rhwp_later_than_reference")],
+        )
+
+    def test_adjacent_ordered_sequence_ignores_intra_page_reorder(self) -> None:
+        moved = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        tail = "qrstuvwxyz" * 10
+        candidates = FIDELITY.adjacent_text_owner_sequence_candidates(
+            {
+                0: (f"prefix{moved}{tail}", f"prefix{tail}{moved}"),
+                1: ("p2", f"p2{moved}"),
+            }
+        )
+
+        self.assertEqual(candidates, [])
+
+    def test_adjacent_ordered_sequence_detects_early_owner(self) -> None:
+        moved = "26)11번참고문헌내Adametal논문"
+        candidates = FIDELITY.adjacent_text_owner_sequence_candidates(
+            {
+                25: ("p26 본문", f"p26 본문 {moved}"),
+                26: (f"p27 본문 {moved}", "p27 본문"),
+            }
+        )
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["page"], 25)
+        self.assertEqual(candidates[0]["next_page"], 26)
+        self.assertEqual(candidates[0]["direction"], "rhwp_earlier_than_reference")
+
+    def test_ordered_sequence_ignores_text_still_owned_by_next_reference_page(self) -> None:
+        moved = "동일한문장이정상적으로다음쪽에도있음"
+        candidates = FIDELITY.adjacent_text_owner_sequence_candidates(
+            {
+                0: (f"p1 {moved}", "p1"),
+                1: (f"p2 {moved}", f"p2 {moved}"),
+            }
+        )
+
+        self.assertEqual(candidates, [])
+
+    def test_owner_shift_ledger_uses_one_based_page_numbers(self) -> None:
+        moved = Counter("각주26) footnote owner")
+        with tempfile.TemporaryDirectory() as directory:
+            FIDELITY.write_text_owner_shift_ledger(
+                Path(directory),
+                {
+                    25: (Counter(), moved),
+                    26: (moved, Counter()),
+                },
+            )
+            report = (Path(directory) / "text-owner-shift-candidates.tsv").read_text(
+                encoding="utf-8"
+            )
+
+        self.assertIn("26\t27\trhwp_earlier_than_reference", report)
+
+    def test_owner_sequence_ledger_uses_one_based_page_numbers(self) -> None:
+        moved = "60)http://www.who.int/transplantation/ConsensusStatementShort.pdf?ua=1"
+        with tempfile.TemporaryDirectory() as directory:
+            FIDELITY.write_text_owner_sequence_ledger(
+                Path(directory),
+                {
+                    51: (f"p52 {moved}", "p52"),
+                    52: ("p53", f"p53 {moved}"),
+                },
+            )
+            report = (Path(directory) / "text-owner-sequence-candidates.tsv").read_text(
+                encoding="utf-8"
+            )
+
+        self.assertIn("52\t53\trhwp_later_than_reference", report)
+        self.assertIn(moved, report)
+
+    def test_numbered_page_count_ignores_manifest_and_non_page_files(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in (
+                "document_001.svg",
+                "document_002.svg",
+                "export-svg-manifest.json",
+                "document_002.copy.svg",
+            ):
+                (root / name).write_text("", encoding="utf-8")
+
+            count = FIDELITY.numbered_page_count(root, ".svg")
+
+        self.assertEqual(count, 2)
+
+    def test_page_count_ledger_keeps_partial_svg_scope_unknown(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            FIDELITY.write_page_count_ledger(
+                Path(directory),
+                reference_page_count=215,
+                full_svg_page_count=None,
+                full_render_tree_page_count=219,
+            )
+            report = (Path(directory) / "page-count-ledger.tsv").read_text(
+                encoding="utf-8"
+            )
+
+        self.assertIn("reference_pdf\t215\t0\tfull PDF", report)
+        self.assertIn("rhwp_svg\t-\t-\tnot counted", report)
+        self.assertIn("rhwp_render_tree\t219\t4\tfull render tree", report)
+
+
+class LayoutCandidateTests(unittest.TestCase):
+    @staticmethod
+    def body_table_tree(
+        *,
+        pi: int = 100,
+        ci: int = 0,
+        rows: int = 5,
+        cols: int = 3,
+        x: float = 80.0,
+        y: float = 700.0,
+        width: float = 560.0,
+        height: float = 180.0,
+        footer_y: float | None = None,
+    ) -> dict[str, object]:
+        children: list[dict[str, object]] = [
+            {
+                "type": "Body",
+                "bbox": {"x": 50, "y": 50, "w": 700, "h": 900},
+                "children": [
+                    {
+                        "type": "Table",
+                        "pi": pi,
+                        "ci": ci,
+                        "rows": rows,
+                        "cols": cols,
+                        "bbox": {"x": x, "y": y, "w": width, "h": height},
+                    }
+                ],
+            }
+        ]
+        if footer_y is not None:
+            children.append(
+                {
+                    "type": "Footer",
+                    "bbox": {"x": 50, "y": footer_y, "w": 700, "h": 30},
+                }
+            )
+        return {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1000},
+            "children": children,
+        }
+
+    def test_table_fragment_ledger_records_same_source_table_on_adjacent_pages(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            tree_dir = root / "render_tree"
+            tree_dir.mkdir()
+            (tree_dir / "render_tree_001.json").write_text(
+                json.dumps(self.body_table_tree(y=760.0, height=160.0)),
+                encoding="utf-8",
+            )
+            (tree_dir / "render_tree_002.json").write_text(
+                json.dumps(self.body_table_tree(y=80.0, height=130.0)),
+                encoding="utf-8",
+            )
+
+            FIDELITY.write_table_fragment_ledger(
+                root,
+                tree_dir,
+                [0],
+                {0: (Counter("a" * 30), Counter())},
+            )
+            report = (root / "table-fragment-candidates.tsv").read_text(
+                encoding="utf-8"
+            )
+
+        self.assertIn("page\tnext_page\tpi\tci\trows\tcols", report)
+        self.assertIn("1\t2\t100\t0\t5\t3\t5\t3", report)
+        self.assertIn("80.0,760.0,560.0,160.0", report)
+        self.assertIn("same_pi_ci_adjacent_fragment", report)
+        self.assertIn("page_bottom_near_material_text_delta", report)
+        self.assertIn("does not assert PDF table row owner", report)
+
+    def test_table_fragment_candidates_include_footer_and_frame_geometry_signals(self) -> None:
+        tree = self.body_table_tree(
+            x=-5.0,
+            y=870.0,
+            width=560.0,
+            height=100.0,
+            footer_y=920.0,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            tree_dir = Path(directory)
+            (tree_dir / "render_tree_001.json").write_text(
+                json.dumps(tree), encoding="utf-8"
+            )
+            candidates = FIDELITY.table_fragment_candidates(tree_dir, [0], {})
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(
+            candidates[0]["signals"],
+            ["page_table_footer", "page_table_outside_frame"],
+        )
+
+    def test_bottom_near_table_requires_material_text_delta(self) -> None:
+        tree = self.body_table_tree(y=780.0, height=100.0)
+        with tempfile.TemporaryDirectory() as directory:
+            tree_dir = Path(directory)
+            (tree_dir / "render_tree_001.json").write_text(
+                json.dumps(tree), encoding="utf-8"
+            )
+            below_threshold = FIDELITY.table_fragment_candidates(
+                tree_dir,
+                [0],
+                {0: (Counter("a" * 23), Counter())},
+            )
+            material_delta = FIDELITY.table_fragment_candidates(
+                tree_dir,
+                [0],
+                {0: (Counter("a" * 24), Counter())},
+            )
+
+        self.assertEqual(below_threshold, [])
+        self.assertEqual(len(material_delta), 1)
+        self.assertEqual(
+            material_delta[0]["signals"],
+            ["page_bottom_near_material_text_delta"],
+        )
+
+    def test_square_wrapped_image_crossed_by_three_body_lines_is_a_candidate(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1100},
+            "children": [
+                {
+                    "type": "Body",
+                    "bbox": {"x": 50, "y": 50, "w": 700, "h": 900},
+                    "children": [
+                        {
+                            "type": "Image",
+                            "pi": 1355,
+                            "ci": 0,
+                            "textWrap": "Square",
+                            "bbox": {"x": 400, "y": 120, "w": 220, "h": 260},
+                        },
+                        {
+                            "type": "TextLine",
+                            "bbox": {"x": 100, "y": 150, "w": 560, "h": 16},
+                        },
+                        {
+                            "type": "TextLine",
+                            "bbox": {"x": 100, "y": 180, "w": 560, "h": 16},
+                        },
+                        {
+                            "type": "TextLine",
+                            "bbox": {"x": 100, "y": 210, "w": 560, "h": 16},
+                        },
+                    ],
+                }
+            ],
+        }
+
+        candidates = FIDELITY.square_wrap_text_overlap_candidates(tree)
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["pi"], 1355)
+        self.assertEqual(candidates[0]["overlap_line_count"], 3)
+        self.assertEqual(FIDELITY.layout_candidates(tree)[4], 1)
+
+    def test_square_wrap_ignores_empty_full_width_guide_lines(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1100},
+            "children": [
+                {
+                    "type": "Body",
+                    "bbox": {"x": 50, "y": 50, "w": 700, "h": 900},
+                    "children": [
+                        {
+                            "type": "Image",
+                            "textWrap": "Square",
+                            "bbox": {"x": 400, "y": 120, "w": 220, "h": 260},
+                        },
+                        *[
+                            {
+                                "type": "TextLine",
+                                "bbox": {"x": 100, "y": y, "w": 560, "h": 16},
+                                "children": [{"type": "TextRun", "text": ""}],
+                            }
+                            for y in (150, 180, 210)
+                        ],
+                    ],
+                }
+            ],
+        }
+
+        self.assertEqual(FIDELITY.square_wrap_text_overlap_candidates(tree), [])
+
+    def test_square_wrap_keeps_marker_line_with_empty_text_run(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1100},
+            "children": [
+                {
+                    "type": "Body",
+                    "bbox": {"x": 50, "y": 50, "w": 700, "h": 900},
+                    "children": [
+                        {
+                            "type": "Image",
+                            "pi": 1,
+                            "ci": 0,
+                            "textWrap": "Square",
+                            "bbox": {"x": 300, "y": 200, "w": 200, "h": 200},
+                        },
+                        *[
+                            {
+                                "type": "TextLine",
+                                "bbox": {"x": 100, "y": y, "w": 500, "h": 16},
+                                "children": (
+                                    [
+                                        {"type": "TextRun", "text": ""},
+                                        {"type": "FnMarker"},
+                                    ]
+                                    if y == 300
+                                    else [{"type": "TextRun", "text": "본문"}]
+                                ),
+                            }
+                            for y in (230, 300, 360)
+                        ],
+                    ],
+                }
+            ],
+        }
+
+        candidates = FIDELITY.square_wrap_text_overlap_candidates(tree)
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["overlap_line_count"], 3)
+
+    def test_in_front_image_is_not_a_square_wrap_overlap_candidate(self) -> None:
+        tree = {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 800, "h": 1100},
+            "children": [
+                {
+                    "type": "Body",
+                    "bbox": {"x": 50, "y": 50, "w": 700, "h": 900},
+                    "children": [
+                        {
+                            "type": "Image",
+                            "textWrap": "InFrontOfText",
+                            "bbox": {"x": 400, "y": 120, "w": 220, "h": 260},
+                        },
+                        {
+                            "type": "TextLine",
+                            "bbox": {"x": 100, "y": 150, "w": 560, "h": 16},
+                        },
+                        {
+                            "type": "TextLine",
+                            "bbox": {"x": 100, "y": 180, "w": 560, "h": 16},
+                        },
+                        {
+                            "type": "TextLine",
+                            "bbox": {"x": 100, "y": 210, "w": 560, "h": 16},
+                        },
+                    ],
+                }
+            ],
+        }
+
+        self.assertEqual(FIDELITY.square_wrap_text_overlap_candidates(tree), [])
 
 
 class RegistryAndArgumentsTests(unittest.TestCase):

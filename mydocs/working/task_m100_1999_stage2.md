@@ -59,7 +59,7 @@ target/debug/rhwp info samples/issue1949_giant_cell_nested_tables_perf.hwp | rg 
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key issue1999-p14-16-hwp-final \
   --hwp samples/issue1949_giant_cell_nested_tables_perf.hwp \
   --pdf pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf \
@@ -92,7 +92,7 @@ python3 scripts/task1274_visual_sweep.py \
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key issue1999-p14-16-hwpx-final \
   --hwp samples/issue1949_giant_cell_nested_tables_perf.hwpx \
   --pdf pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf \

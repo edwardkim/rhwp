@@ -54,5 +54,5 @@ p18은 split 흐름이 PDF와 맞아졌지만, sweep상 하단 5px glyph bleed �
 
 - `cargo build --bin rhwp`: 통과
 - `target/debug/rhwp dump-pages ... -p 17`: `pi=853` split 확인
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-shape987 --out output/task1293_stage15_shape987_p18_check --rhwp-bin target/debug/rhwp`: 완료
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-shape987 --out output/task1293_stage15_shape987_p18_check --rhwp-bin target/debug/rhwp`: 완료
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 52개 통과

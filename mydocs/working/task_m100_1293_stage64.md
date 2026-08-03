@@ -83,7 +83,7 @@ vpos base reset을 완화하거나 lazy base seed를 보존한다.
   - `cargo test --test issue_1050_footnote_serialize -- --nocapture`
   - `cargo test --lib compact_endnote`
 - visual sweep:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage64_zero_rewind_base --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage64_zero_rewind_base --rhwp-bin target/debug/rhwp`
   - 회귀 확인 후 전체 task1293 sweep
 
 ## 실험 결과

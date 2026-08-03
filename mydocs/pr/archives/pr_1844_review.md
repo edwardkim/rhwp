@@ -47,7 +47,7 @@
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1844-float-stack-defer \
   --hwp samples/float-stack-defer.hwp \
   --pdf pdf/float-stack-defer-2022.pdf \

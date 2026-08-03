@@ -27,7 +27,7 @@ saved-vpos 하단 기준 또는 overflow 판정 차이일 가능성이 크다.
 ## 검증 계획
 
 - layout overflow 허용 조건 변경 시:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage43_zero_profile --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage43_zero_profile --rhwp-bin target/debug/rhwp`
   - focused 4종 sweep
   - `cargo test --lib compact_endnote -- --nocapture`
 
@@ -79,7 +79,7 @@ profile에서만 별도 허용폭을 적용한다.
 
 ```bash
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-above0-between0-below0 \
   --out output/task1293_stage43_zero_profile \
   --rhwp-bin target/debug/rhwp
@@ -97,7 +97,7 @@ python3 scripts/task1274_visual_sweep.py \
 ### focused 4종 sweep
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-above20-between7-below2 \
   --target 2024-11-practice-above20-between0-below20 \
   --target 2024-11-practice-shape987 \

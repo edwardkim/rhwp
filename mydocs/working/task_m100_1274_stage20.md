@@ -27,8 +27,8 @@
 
 ## 검증 계획
 
-- `scripts/task1274_visual_sweep.py --target 2024-09-between20`로 SVG/PDF/compare 산출물을 재생성한다.
-- `scripts/task1274_visual_sweep.py --target 2022-10`로 SVG/PDF/compare 산출물을 재생성한다.
+- `scripts/visual_sweep.py --target 2024-09-between20`로 SVG/PDF/compare 산출물을 재생성한다.
+- `scripts/visual_sweep.py --target 2022-10`로 SVG/PDF/compare 산출물을 재생성한다.
 - page 13, page 22, page 11, page 16의 rhwp PNG와 한컴 PDF 기준 PNG를 직접 비교한다.
 - 반복 구현 중에는 `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture` 중심으로 확인한다.
 - 수정 후 `2024-09-between20` visual sweep에서 page frame 하단 overflow가 사라졌는지 확인한다.
@@ -55,11 +55,11 @@
   - 51개 통과.
   - 추가 확인: `3-10월_교육_통합_2022.hwp` page 11 `문20)` 하단 수식이 frame 안에 남는지 검사.
   - 추가 확인: `3-10월_교육_통합_2022.hwp` page 16 `문30)` 제목과 첫 본문 줄이 frame 안에 함께 남는지 검사.
-- `python3 scripts/task1274_visual_sweep.py --target 2022-10`
+- `python3 scripts/visual_sweep.py --target 2022-10`
   - SVG 18쪽, PDF 18쪽.
   - `output/task1274/2022-10/compare/compare_011.png`: page 11 `문20)` 하단 수식이 frame 안에 남는다.
   - `output/task1274/2022-10/compare/compare_016.png`: page 16 `문30) 12`와 첫 본문 줄이 한컴 PDF 기준처럼 page 하단에 같이 보인다.
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
   - SVG 24쪽, PDF 24쪽.
   - `output/task1274/2024-09-between20/compare/compare_013.png`: page 13 `문15)` 꼬리가 frame 아래로 내려가지 않는다.
   - `output/task1274/2024-09-between20/compare/compare_021.png`, `compare_022.png`: page 21 `문26)` 시작과 page 22 이어지는 풀이가 frame 안에서 이어진다.

@@ -53,7 +53,7 @@
 
 ## 4. visual sweep DPI 정정
 
-- `scripts/task1274_visual_sweep.py`의 `--dpi`는 종전 PDF `pdftoppm`에만 적용되고,
+- `scripts/visual_sweep.py`의 `--dpi`는 종전 PDF `pdftoppm`에만 적용되고,
   unitless CSS px 크기의 SVG에는 적용되지 않았다.
 - SVG 변환에 `dpi / 96` zoom을 함께 적용해 양쪽 래스터를 같은 목표 DPI로 만든다.
 - `--dpi 144` 실측:
@@ -70,7 +70,7 @@
 - `CARGO_INCREMENTAL=0 cargo test --test svg_snapshot`: `8 passed; 0 failed`.
 - `CARGO_INCREMENTAL=0 cargo clippy --all-targets -- -D warnings`: 통과.
 - `cargo fmt --all --check`: 통과.
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`: 통과.
+- `python3 -m py_compile scripts/visual_sweep.py`: 통과.
 - OVR `--preset ovr5 --diff-against devel`: 5개 샘플, 개체 회귀 0건.
 - `wasm-pack build --target web --out-dir pkg`: 통과.
 - `cd rhwp-studio && npm run e2e:issue-2809`: Stage 2에서 위·아래 span 검증으로 교체.

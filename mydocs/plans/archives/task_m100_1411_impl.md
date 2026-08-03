@@ -17,7 +17,7 @@
 
 ```bash
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2022-10 \
   --target 2024-09-below20-above20 \
   --target 2024-11-practice-above0-between20-below2 \
@@ -71,7 +71,7 @@ git diff --check
 ```bash
 cargo fmt --check
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2022-10 \
   --target 2024-09-below20-above20 \
   --target 2024-11-practice-above0-between20-below2 \

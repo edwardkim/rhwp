@@ -60,7 +60,7 @@ bottom 기준 gap을 이미 확보했는데, layout 단계가 직전 `line_spaci
 - targeted sweep:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2022-10 \
   --target 2024-09-below20-above20 \
   --target 2024-11-practice-above0-between20-below2 \
@@ -75,5 +75,5 @@ python3 scripts/task1274_visual_sweep.py \
 - `cargo fmt --check`: 통과
 - `cargo build --bin rhwp`: 통과
 - `cargo test --lib compact_endnote_question_title_after_tall_tail_limited_backtrack`: 통과
-- `python3 scripts/task1274_visual_sweep.py ... --out output/task1411_stage3_after_fix_v2`: 통과
+- `python3 scripts/visual_sweep.py ... --out output/task1411_stage3_after_fix_v2`: 통과
 - `git diff --check`: 통과

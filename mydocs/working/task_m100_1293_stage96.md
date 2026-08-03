@@ -25,7 +25,7 @@ stage95 full sweep에서 여러 target에 `question_title_text_overlap` 후보�
 ## 검증 계획
 
 ```bash
-python3 scripts/task1274_visual_sweep.py --target all --out output/task1293_stage96_full_sweep
+python3 scripts/visual_sweep.py --target all --out output/task1293_stage96_full_sweep
 git diff --check
 ```
 
@@ -61,8 +61,8 @@ compare/annotated 기준 실제 제목과 본문이 겹친다기보다 HWP line 
 ## 검증 결과
 
 ```bash
-python3 -B -c "import ast, pathlib; ast.parse(pathlib.Path('scripts/task1274_visual_sweep.py').read_text())"
-python3 scripts/task1274_visual_sweep.py --target all --out output/task1293_stage96_full_sweep
+python3 -B -c "import ast, pathlib; ast.parse(pathlib.Path('scripts/visual_sweep.py').read_text())"
+python3 scripts/visual_sweep.py --target all --out output/task1293_stage96_full_sweep
 ```
 
 - AST 문법 확인: 통과

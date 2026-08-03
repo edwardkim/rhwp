@@ -84,7 +84,7 @@ target/debug/rhwp dump-pages samples/hwpx/issue2019_floating_form_74312.hwpx
 초기 v3 기준선:
 
 ```text
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key issue2019 \
   --hwp samples/hwpx/issue2019_floating_form_74312.hwpx \
   --pdf pdf/issue2019/issue2019_floating_form_74312-2020.pdf \
@@ -109,7 +109,7 @@ python3 scripts/task1274_visual_sweep.py \
 최신 v3 결과:
 
 ```text
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key issue2019 \
   --hwp samples/hwpx/issue2019_floating_form_74312.hwpx \
   --pdf pdf/issue2019/issue2019_floating_form_74312-2020.pdf \

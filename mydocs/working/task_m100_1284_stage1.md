@@ -18,16 +18,16 @@
 
 ## 검증 계획
 
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`
+- `python3 -m py_compile scripts/visual_sweep.py`
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
   - 13쪽/14쪽에서 `question_marker_drift`가 문항 번호와 함께 표시되는지 확인한다.
   - `flagged_pages.json`, `metrics.json`, `annotated_013.png`, `annotated_014.png`를 확인한다.
-- 필요 시 `python3 scripts/task1274_visual_sweep.py --target all`
+- 필요 시 `python3 scripts/visual_sweep.py --target all`
 
 ## 구현 내용
 
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
   - 필수 도구에 `pdftotext`를 추가했다.
   - 각 PDF를 `pdftotext -bbox-layout`로 변환해 `pdf_bbox.html`을 산출한다.
   - PDF의 `문\d+` word bbox를 PNG 좌표계로 변환해 `pdf_question_markers`로 저장한다.
@@ -39,9 +39,9 @@
 
 ## 검증 결과
 
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`: 통과
+- `python3 -m py_compile scripts/visual_sweep.py`: 통과
 - `cargo build --bin rhwp`: 통과
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`: 통과
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`: 통과
   - `question_marker_drift_pages=[13, 14, 18, 21, 23]`
   - 13쪽:
     - `문17`: 같은 13쪽/오른쪽 단, `y_delta_px=-88.2`
@@ -50,7 +50,7 @@
   - 14쪽:
     - `문19`: 같은 14쪽/왼쪽 단, `y_delta_px=-77.2`
     - `문20`: 같은 14쪽/왼쪽 단, `y_delta_px=-89.5`
-- `python3 scripts/task1274_visual_sweep.py --target all`: 통과
+- `python3 scripts/visual_sweep.py --target all`: 통과
   - `2022-09`: `question=[]`
   - `2023-09`: `question=[15, 20]`
   - `2024-09-below20`: `question=[]`

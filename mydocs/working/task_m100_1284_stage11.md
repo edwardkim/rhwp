@@ -49,7 +49,7 @@
 
 ### 수식/텍스트 겹침 후보
 
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
   - 수식 bbox와 텍스트 bbox의 overlap ratio만 보던 기준에 overlap width/height를 추가했다.
   - 실제 글자 겹침이 아니라 line box가 1px대 접촉하는 경우는 제외한다.
   - 같은 TextLine 내부 수식/텍스트, 문항 제목 line, 선택지 marker-only 텍스트, object placeholder는 계속 noise로 제외한다.
@@ -59,7 +59,7 @@
 
 ### 문장 순서/line overlap 후보
 
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
   - 이전 line이 `[EQ]` placeholder 중심이고 다음 line이 문항 제목이면 `line_order_overlap`에서 제외한다.
   - 실제 수식-문항 제목 충돌은 `equation_text_overlap`/시각 검증에서 별도로 잡는다.
 - 처리된 오탐
@@ -74,7 +74,7 @@
 
 ## 검증 결과
 
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`
+- `python3 -m py_compile scripts/visual_sweep.py`
   - 통과
 - `cargo fmt --all -- --check`
   - 통과
@@ -86,7 +86,7 @@
   - 5개 통과
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 62개 통과
-- `python3 scripts/task1274_visual_sweep.py --target all`
+- `python3 scripts/visual_sweep.py --target all`
   - 전체 6종 SVG/PDF/render-tree 페이지 수 1:1 일치
   - actionable flag 0
 

@@ -31,7 +31,7 @@ stage99에서는 `2023-09` p13의 대표 후보를 추적해, 미주 title/body 
 ```bash
 cargo fmt --check
 cargo build --bin rhwp
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2023-09 \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
@@ -89,7 +89,7 @@ RHWP_ENDNOTE_ADVANCE_DEBUG=1 RHWP_EN_SSOT_DEBUG=1 \
 ### targeted sweep 결과
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2023-09 \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \

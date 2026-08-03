@@ -26,7 +26,7 @@
 
 완료.
 
-- `scripts/task1274_visual_sweep.py` 로 p2 비교를 수행했다.
+- `scripts/visual_sweep.py` 로 p2 비교를 수행했다.
 - 자동 후보 `flagged=0/1` 로 PR 목적의 상단 오프셋은 해소된 것으로 판정했다.
 - 대표 asset: `mydocs/pr/assets/pr_1828_visual_split_guard_p002.png`
 

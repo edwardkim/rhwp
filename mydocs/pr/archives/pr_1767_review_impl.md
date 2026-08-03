@@ -53,7 +53,7 @@ env CARGO_INCREMENTAL=0 cargo clippy --all-targets -- -D warnings
 실행:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --file-target pr1767-issue1663 \
   samples/issue1663_coanchored_float_orphan.hwpx \
   pdf/issue1663_coanchored_float_orphan-2024.pdf \

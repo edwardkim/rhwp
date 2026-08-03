@@ -76,7 +76,7 @@ stage83 이후 현재 sweep과 compare PNG 기준으로만
 
 - `cargo fmt`
 - `cargo build`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage84_after_zero_title_boundary_sweep --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage84_after_zero_title_boundary_sweep --rhwp-bin target/debug/rhwp`
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1293_2024_zero_endnote_spacing_page10_question7_intro_stays_left_tail`
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1256_2022_sep_page10_question12_keeps_between_notes_gap`
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1274_2022_oct_page11_question20_equation_tail_stays_in_frame`

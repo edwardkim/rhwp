@@ -68,17 +68,17 @@
 
 - `cargo fmt --check`: 통과
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 59개 통과
-- `python3 scripts/task1274_visual_sweep.py --target 2023-09`
+- `python3 scripts/visual_sweep.py --target 2023-09`
   - `SVG pages=20`, `PDF pages=20`
   - `question=[]`
   - 잔여: 기존 `frame=[19]`
-- `python3 scripts/task1274_visual_sweep.py --target 2022-09`
+- `python3 scripts/visual_sweep.py --target 2022-09`
   - `SVG pages=23`, `PDF pages=23`
   - `frame=[]`, `question=[]`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-below20`
+- `python3 scripts/visual_sweep.py --target 2024-09-below20`
   - `SVG pages=23`, `PDF pages=23`
   - `frame=[]`, `question=[]`
-- `python3 scripts/task1274_visual_sweep.py --target all`
+- `python3 scripts/visual_sweep.py --target all`
   - `2022-09`: `frame=[]`, `question=[]`
   - `2023-09`: `frame=[19]`, `question=[]`
   - `2024-09-below20`: `frame=[]`, `question=[]`

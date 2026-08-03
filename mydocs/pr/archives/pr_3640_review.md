@@ -47,7 +47,7 @@ Center 중첩 셀을 render tree에서 직접 대조한다. source contributor c
 `pdf/kps-ai-2022.pdf`
 (`sha256:7c064fd290368369a3c8eaa7d7b03668c46fb4dfe0fc18ba52d00456ffe01d28`)다. candidate와 devel에서
 각각 78쪽 SVG를 export했으며, 76쪽은 byte-identical이고 변화는 결함 조각인 rhwp 66·67쪽에만 있었다.
-기준 PDF는 77쪽이라 `task1274_visual_sweep.py`의 같은 페이지 번호 자동 매칭을 이 판정에 쓰지 않았다.
+기준 PDF는 77쪽이라 `visual_sweep.py`의 같은 페이지 번호 자동 매칭을 이 판정에 쓰지 않았다.
 대신 PR이 재현한 대응인 **PDF 65 ↔ rhwp 66**을 직접 raster했다. 인쇄 footer는 각각 62·63으로 다르지만,
 두 페이지 모두 같은 `소프트웨어사업 영향평가 결과서` 첫 조각(사업명·기본정보·운영계획)을 담는 기존
 pagination offset이다. 이 offset은 devel과 candidate 모두에서 같고 이번 변경 범위가 아니다.

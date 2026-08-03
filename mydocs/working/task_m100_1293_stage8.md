@@ -34,8 +34,8 @@ Stage7에서 2024-11 미주 모양 샘플 7종을 검증 세트에 편입하고 
 - `cargo fmt --all -- --check`
 - `cargo build --bin rhwp`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage8_between20 --rhwp-bin target/debug/rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage8_no_separator --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage8_between20 --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage8_no_separator --rhwp-bin target/debug/rhwp`
 - 필요 시 `2024-09-between20`, `2024-11-practice-shape987` 회귀 sweep
 
 ## Stage8-A: `미주 사이 20mm` 초과분 전체 반영
@@ -73,9 +73,9 @@ p20~p21에서 rhwp가 문29 그림/다른풀이를 한 페이지 앞에 붙이�
 ### 검증
 
 - `cargo fmt --all -- --check` — 통과
-- `python3 -m py_compile scripts/task1274_visual_sweep.py` — 통과
+- `python3 -m py_compile scripts/visual_sweep.py` — 통과
 - `cargo build --bin rhwp` — 통과
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture` — 52 passed
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage8_between20 --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage8_between20 --rhwp-bin target/debug/rhwp`
   - SVG/render tree 22쪽, PDF 22쪽
   - `flagged=21/22`, frame `[11, 15, 19, 21]`, red `[10, 11, 12, 15, 17, 18, 20, 21, 22]`, line `[9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20, 21, 22]`

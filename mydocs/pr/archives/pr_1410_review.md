@@ -89,7 +89,7 @@ rewind/title-tail, equation/TAC tail 흐름을 분기한다.
 
 ### 3.4 Visual sweep 보강
 
-`scripts/task1274_visual_sweep.py`는 중복 target인 `2024-09-below20above20`를 제거하고,
+`scripts/visual_sweep.py`는 중복 target인 `2024-09-below20above20`를 제거하고,
 question title overlap 최소 픽셀, line order false positive 억제, frame tail tolerance를 보강했다.
 최종 보고서 기준 full sweep은 `flagged=7/323`, clean target 12개이며, 잔여 3개 key는 공식 미주
 간격식 직접 불일치가 아니라 tail/cascade 후보로 분류됐다.
@@ -105,7 +105,7 @@ PR head 문서 기록 기준:
 | `cargo test --profile release-test --tests` | 통과 |
 | `cargo fmt --check` | 통과 |
 | `PATH="$HOME/.cargo/bin:$PATH" wasm-pack build --target web --out-dir pkg` | 통과 |
-| `python3 scripts/task1274_visual_sweep.py --target all --out output/task1293_stage122_rebase_full_sweep` | `flagged=7/323`, clean target 12개 |
+| `python3 scripts/visual_sweep.py --target all --out output/task1293_stage122_rebase_full_sweep` | `flagged=7/323`, clean target 12개 |
 
 검토 시점 재확인:
 

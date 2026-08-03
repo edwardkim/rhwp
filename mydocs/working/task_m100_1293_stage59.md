@@ -9,7 +9,7 @@ Stage57은 no-separator large block의 stale vpos tail advance를 보정했고, 
 ## 검증 명령
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target all \
   --out output/task1293_stage59_full_sweep \
   --rhwp-bin target/debug/rhwp

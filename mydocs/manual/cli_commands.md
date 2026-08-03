@@ -744,6 +744,22 @@ HWP 문서를 HWPX(ZIP+XML)로 변환 저장. `convert`(배포용 해제)와 별
   재파싱 실패는 판정 불가이므로 stdout 을 비우고 기존 코드로 끝난다.
   `convert` 는 이 옵션을 받지 않는다(구현 없는 침묵 수용 방지, exit 2).
 - 더 넓은 시각 정합은 `tools/roundtrip_fidelity_harness.py` 또는 `render-diff`로 별도 대조한다.
+  단, 한컴 기준 PDF가 있는 대형 문서는 `tools/fidelity_compare/fidelity_compare.py`의 direct pair
+  `--source <HWP/HWPX> --reference-pdf <PDF> --label <ASCII>`를 사용한다. 먼저
+  `--text-only --export-all-svg --layout-ledger`로 PDF text↔SVG text 및 render-tree 기하 후보(본문/각주,
+  표/footer, frame, Square/Tight/Through 그림을 3행 이상 침범한 본문)를 전수 수집하고, 후보 페이지만
+  pixel compare/visual sweep으로 확정한다. 이때 `text-owner-shift-candidates.tsv`의 인접 쪽
+  reciprocal text difference와 `text-owner-sequence-candidates.tsv`의 NFC·공백 정규화 16자 이상
+  순서 보존 text 이동은 각주·본문·caption이 한 쪽 이르게/늦게 놓인 physical owner 후보를 바로 묶어 준다.
+  후자는 p52→p53 URL처럼 다른 본문과 문자 Counter가 상쇄되는 이동을 보완한다.
+  `table-fragment-candidates.tsv`는 같은 source `(pi, ci)` Body 표가 인접 render-tree 쪽에 연속한 경우와
+  표/footer·frame 신호, 또는 쪽 하단 표와 24자 이상 text delta를 rows/cols·bbox·쪽 신호와 함께 묶는다.
+  이는 visual review 우선순위 후보일 뿐 **PDF table row owner나 표 분할 정답을 판정하지 않는다.**
+  `page-count-ledger.tsv`는 PDF↔전체 SVG/render-tree page count drift를 별도로 드러낸다. 이 신호들은
+  모두 candidate일 뿐 전역 page-break 보정의 근거는 아니다. 같은 문자만으로는 표 row geometry·same-page
+  overlap을 판정할 수 없다.
+  `render-diff`는 rhwp
+  자기 roundtrip 비교이므로 한컴 PDF 기준 fidelity 후보를 대신하지 않는다.
 
 ### `export-hml <입력.hml> -o <출력.hml>`
 HML 원본 문서를 의미 보존 HWPML 2.91 XML로 저장한다.

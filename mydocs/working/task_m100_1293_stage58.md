@@ -52,7 +52,7 @@ Stage57에서 no-separator large block의 stale vpos tail advance를 보정해 p
 
 ## 수정
 
-`scripts/task1274_visual_sweep.py`의 qflow 판정을 보강했다.
+`scripts/visual_sweep.py`의 qflow 판정을 보강했다.
 
 - red marker 개수 차이가 있더라도 red y drift가 `80px` 미만이고 line drift가 구조 기준 미만이면
   qflow로 승격하지 않는다.
@@ -64,13 +64,13 @@ Stage57에서 no-separator large block의 stale vpos tail advance를 보정해 p
 문법 확인:
 
 ```bash
-python3 -m py_compile scripts/task1274_visual_sweep.py
+python3 -m py_compile scripts/visual_sweep.py
 ```
 
 targeted sweep:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-11-practice-no-separator-above20-between20-below20 \
   --out output/task1293_stage58_no_separator_qflow_refined \
   --rhwp-bin target/debug/rhwp
@@ -86,6 +86,6 @@ python3 scripts/task1274_visual_sweep.py \
 
 ## 검증 계획
 
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20`
-- 필요 시 `python3 scripts/task1274_visual_sweep.py --target all`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20`
+- 필요 시 `python3 scripts/visual_sweep.py --target all`
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`

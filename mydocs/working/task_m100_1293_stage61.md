@@ -42,7 +42,7 @@ Stage60 rhwp 기준:
 
 - `cargo build --bin rhwp`
 - target sweep:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage61_zero_qflow --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage61_zero_qflow --rhwp-bin target/debug/rhwp`
 - focused regression:
   - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - `cargo test --test issue_1050_footnote_serialize -- --nocapture`
@@ -52,7 +52,7 @@ Stage60 rhwp 기준:
 
 ### 현재 Stage60 기준
 
-- `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage61_keep_page_base --rhwp-bin target/debug/rhwp`
+- `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage61_keep_page_base --rhwp-bin target/debug/rhwp`
   실험 전/후 비교에서 page count는 21/21/21로 유지되지만, page 11 qflow 후보는 유지된다.
 - `dump-pages -p 10` 기준 page 11 첫 단은 `pi=538`까지 배치되고 `pi=539` 문13 제목은
   둘째 단으로 이동한다.

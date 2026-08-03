@@ -50,7 +50,7 @@ PR #1756은 #1754 위에 스택된 단일 커밋으로 올라와 있다. #1754�
 `mydocs/manual/verification/visual_sweep_guide.md` 기준으로 PR 핵심 페이지를 한컴 2024 PDF와 비교했다.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1756-host-heading \
   --hwp samples/task1753/deferred_takeplace_fill_ahead.hwpx \
   --pdf samples/task1753/deferred_takeplace_fill_ahead-2024.pdf \

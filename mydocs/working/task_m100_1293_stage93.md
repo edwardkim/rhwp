@@ -25,7 +25,7 @@ tolerance 안에 있다. stage93에서는 이 후보가 렌더 pagination 문제
 ## 검증 계획
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -55,8 +55,8 @@ CI 전체 테스트와 PR은 작업지시자 지시에 따라 수행하지 않�
 ## 검증 결과
 
 ```bash
-python3 -m py_compile scripts/task1274_visual_sweep.py
-python3 scripts/task1274_visual_sweep.py \
+python3 -m py_compile scripts/visual_sweep.py
+python3 scripts/visual_sweep.py \
   --target 2024-09-between20 \
   --target 2024-11-practice-shape987 \
   --target 2024-11-practice-above0-between0-below0 \
@@ -64,7 +64,7 @@ python3 scripts/task1274_visual_sweep.py \
   --out output/task1293_stage93_targeted
 ```
 
-- `python3 -m py_compile scripts/task1274_visual_sweep.py`: 통과
+- `python3 -m py_compile scripts/visual_sweep.py`: 통과
 - targeted sweep:
   - `2024-09-between20`: `flagged=1/24`, `tail=[]`, `question=[]`, 남은 페이지는 p11 하나
   - `2024-11-practice-shape987`: `flagged=0/21`

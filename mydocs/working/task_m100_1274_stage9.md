@@ -26,7 +26,7 @@
 
 - 진행 중 자동 테스트는 `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`만 사용한다.
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2022-10`
+- `python3 scripts/visual_sweep.py --target 2022-10`
 - 필요 시 전체 sweep으로 페이지 수와 overflow 수를 다시 확인한다.
 - 전체 CI급 테스트는 전체 목표 마지막에만 수행한다.
 
@@ -50,12 +50,12 @@
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 48개 통과
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2022-10`
+- `python3 scripts/visual_sweep.py --target 2022-10`
   - SVG/PDF/비교 PNG 18쪽 유지
   - `2022-10` overflow 6줄에서 3줄로 감소
   - `pi=805`, `pi=806` overflow 3줄 제거
   - `dump-pages` 기준 15쪽 왼쪽 단은 `pi=804`까지, 오른쪽 단은 `pi=805` 문28부터 시작한다.
-- `python3 scripts/task1274_visual_sweep.py`
+- `python3 scripts/visual_sweep.py`
 
 전체 sweep 결과:
 

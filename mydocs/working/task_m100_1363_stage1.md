@@ -12,7 +12,7 @@
 
 → 목표: 대상 50.1 → 감소(특히 p17 C×C·p22 해소), 그 외 exam **0.0 유지**.
 
-### 시각 회귀 sweep (`task1274_visual_sweep.py`, flagged/총)
+### 시각 회귀 sweep (`visual_sweep.py`, flagged/총)
 2022-09:1, 2023-09:0, 2024-below20:1, 2024-between20:1, 2022-10:0, 2022-11:1
 (below20above20 타겟은 sweep 에 추가 필요 — PR #1358 에 있음). 회귀 시 flagged 증가.
 

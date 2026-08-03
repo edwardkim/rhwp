@@ -12,7 +12,7 @@
 |---|---|---|
 | rhwp 래스터 | `rhwp export-png`(native-skia) | 네이티브 렌더(프로덕션 경로). `--features native-skia` 빌드 필요 |
 | PDF 래스터 | PyMuPDF(fitz) | poppler 불필요, 이미 설치됨 |
-| 비교/오버레이 | PIL + numpy | task1274_visual_sweep.py 시맨틱 정합 |
+| 비교/오버레이 | PIL + numpy | visual_sweep.py 시맨틱 정합 |
 
 - 96 DPI 기준: A4 → 794×1122~1123px (rhwp/PDF 정합, ±1px 패딩).
 - 산출: `rhwp_png/ pdf_png/ overlay/ review/ metrics.json`.

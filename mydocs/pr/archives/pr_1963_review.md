@@ -49,7 +49,7 @@ IR offset 보존이다. 따라서 visual sweep은 페이지 수와 큰 배치 �
 실행 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr1963-issue1948-cross-para-fieldend \
   --hwp samples/hwpx/issue1948_cross_para_fieldend.hwpx \
   --pdf pdf/issue1948_cross_para_fieldend-2024.pdf \

@@ -36,7 +36,7 @@
 |---|---|
 | 샘플 | `samples/issue1950_hwp3_tab_charoffset.hwp` |
 | 기준 PDF | `pdf/issue1950_hwp3_tab_charoffset-2024.pdf` |
-| 실행 | `python3 scripts/task1274_visual_sweep.py --key pr1991_issue1950 --hwp samples/issue1950_hwp3_tab_charoffset.hwp --pdf pdf/issue1950_hwp3_tab_charoffset-2024.pdf --out output/task1274` |
+| 실행 | `python3 scripts/visual_sweep.py --key pr1991_issue1950 --hwp samples/issue1950_hwp3_tab_charoffset.hwp --pdf pdf/issue1950_hwp3_tab_charoffset-2024.pdf --out output/task1274` |
 | 페이지 수 | SVG 1쪽 / 기준 PDF 1쪽 |
 | 자동 후보 | `flagged=0/1` |
 | pixel match | `95.90899%` |

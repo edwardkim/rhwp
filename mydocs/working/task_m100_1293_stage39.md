@@ -63,7 +63,7 @@ Stage38 결과에서 `2024-11-practice-above20-between7-below2`의 page 19를 �
 ## 검증
 
 - 단일 대상 sweep:
-  - 명령: `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between7-below2 --out output/task1293_stage39_target1 --rhwp-bin target/debug/rhwp`
+  - 명령: `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between7-below2 --out output/task1293_stage39_target1 --rhwp-bin target/debug/rhwp`
   - page count: SVG/PDF/render tree `21/21/21`
   - renderer `LAYOUT_OVERFLOW`: `8 -> 0`
   - `frame_overflow_pages`, `question_title_text_overlap_pages`, `line_order_overlap_pages`,
@@ -73,7 +73,7 @@ Stage38 결과에서 `2024-11-practice-above20-between7-below2`의 page 19를 �
 
 - focused sweep:
   - 명령:
-    `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between7-below2 --target 2024-11-practice-above20-between0-below20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage39_focused --rhwp-bin target/debug/rhwp`
+    `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between7-below2 --target 2024-11-practice-above20-between0-below20 --target 2024-11-practice-shape987 --target 2024-11-practice-above0-between0-below0 --out output/task1293_stage39_focused --rhwp-bin target/debug/rhwp`
 
 | target | page count | Stage38 overflow | Stage39 overflow | 핵심 후보 |
 |---|---:|---:|---:|---|

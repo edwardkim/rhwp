@@ -49,7 +49,7 @@
   - `cargo test --test issue_1050_footnote_serialize`
   - `cargo test --lib compact_endnote`
 - visual:
-  - `python3 scripts/task1274_visual_sweep.py --target all`
+  - `python3 scripts/visual_sweep.py --target all`
   - 구분선 위/아래/미주 사이 샘플별 PDF/PNG 직접 비교
 - PR CI 전체 테스트 - 작업지시자 명시 승인 후에만:
   - `cargo fmt --all -- --check`

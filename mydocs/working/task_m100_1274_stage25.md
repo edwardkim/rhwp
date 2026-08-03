@@ -27,10 +27,10 @@
 
 - `cargo test --lib <추가 단위 테스트> -- --nocapture`
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2022-10`
+- `python3 scripts/visual_sweep.py --target 2022-10`
   - 11쪽 문20 `line_order_overlap_candidates`가 사라지는지 확인한다.
   - `compare_011.png`와 `annotated_011.png`에서 본문/수식이 분리되는지 확인한다.
-- 필요 시 `python3 scripts/task1274_visual_sweep.py --target all`
+- 필요 시 `python3 scripts/visual_sweep.py --target all`
 
 ## 상태
 
@@ -48,7 +48,7 @@
   - page-path compact 미주 하단 tail backtrack 결과가 이전 line 하단보다 위로 올라가지 않도록 클램프했다.
   - tall inline 뒤의 일반 텍스트 line은 저장 `vpos`가 안전한 위치를 가리키면 이전 콘텐츠 하단까지 당겨 뒤 수식 line 공간을 확보한다.
   - 수식-only tail fit은 page-path compact 하단에서 저장 `end_y`가 이전 추정 하단보다 몇 px 위인 경우를 허용하고, frame 안착을 우선하되 이전 line과 과도하게 겹치지 않도록 4px tolerance를 둔다.
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
   - stage24에서 추가한 `line_order_overlap` 지표로 stage25 수정 전/후 문20 후보 소거 여부를 확인했다.
 
 ## 검증 결과
@@ -57,7 +57,7 @@
   - `compact_endnote_page_tail_backtrack_keeps_previous_content_bottom`: 통과
   - `compact_endnote_page_tail_text_after_tall_line_backtracks_to_previous_bottom`: 통과
 - `cargo build --bin rhwp`: 통과
-- `python3 scripts/task1274_visual_sweep.py --target 2022-10`: 통과
+- `python3 scripts/visual_sweep.py --target 2022-10`: 통과
   - `analysis: 2022-10 ... frame=[] ... title=[] order=[]`
   - 11쪽 `line_order_overlap_candidates=[]`
   - 문20 직접 겹침 후보였던 `pi=586`/`pi=587` 후보가 사라졌다.
@@ -69,7 +69,7 @@
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1189_2022_oct_page11_endnote_question_gaps_match_pdf -- --nocapture`: 통과
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 통과
   - 51개 테스트 모두 통과.
-- `python3 scripts/task1274_visual_sweep.py --target all`: 통과
+- `python3 scripts/visual_sweep.py --target all`: 통과
   - `2022-09`: SVG/PDF/render tree 23/23/23쪽, `order=[]`, `frame=[]`
   - `2023-09`: SVG/PDF/render tree 20/20/20쪽, `order=[]`, 기존 full sweep 후보 `frame=[19]`
   - `2024-09-below20`: SVG/PDF/render tree 23/23/23쪽, `order=[]`, `frame=[]`

@@ -106,7 +106,7 @@ GitHub Actions:
 명령:
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr2104-2098 \
   --hwp samples/task2098/page_bottom_fixed_anchor_vpos0.hwpx \
   --pdf pdf/task2098/page_bottom_fixed_anchor_vpos0-2020.pdf \

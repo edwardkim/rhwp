@@ -81,7 +81,7 @@ GitHub 기준 이 PR은 `CONFLICTING` / `DIRTY`였다. 로컬에서는 `upstream
 
 - `cargo test --test svg_snapshot`: 8개 golden snapshot 통과
 - `cargo test --profile release-test --test visual_roundtrip_baseline`: 3개 visual roundtrip baseline 통과
-- `python3 scripts/task1274_visual_sweep.py --target all`: 15개 target 모두 SVG/PDF page count 일치, page count mismatch 0건
+- `python3 scripts/visual_sweep.py --target all`: 15개 target 모두 SVG/PDF page count 일치, page count mismatch 0건
 - `pdfinfo 'pdf/2025 행정업무운영 편람(최종)-2024.pdf'`: 383쪽
 - `./target/release/rhwp info 'samples/2025 행정업무운영 편람(최종).hwp'`: 383쪽
 - `./target/release/rhwp info 'samples/2025 행정업무운영 편람(최종).hwpx'`: 383쪽

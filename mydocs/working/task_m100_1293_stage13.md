@@ -74,4 +74,4 @@ advance를 먼저 수행했다. 그래서 `pi=571`의 앞쪽 줄까지 다음 �
 - `cargo test height_cursor --lib -- --nocapture`: 37개 통과
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`: 52개 통과
 - `cargo test --test issue_1139_inline_picture_duplicate issue_1274_2022_oct_page11_question20_equation_tail_stays_in_frame -- --nocapture`: 통과
-- `python3 scripts/task1274_visual_sweep.py --target all --out output/task1293_stage13_all_threshold_check --rhwp-bin target/debug/rhwp`: 완료
+- `python3 scripts/visual_sweep.py --target all --out output/task1293_stage13_all_threshold_check --rhwp-bin target/debug/rhwp`: 완료

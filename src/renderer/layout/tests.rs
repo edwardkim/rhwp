@@ -3,9 +3,12 @@ use super::super::pagination::{ColumnContent, PageContent, PageItem};
 use super::text_measurement::estimate_text_width;
 use super::utils::{expand_numbering_format, numbering_format_to_number_format};
 use super::*;
+use crate::model::image::Picture;
 use crate::model::page::{ColumnDef, PageDef};
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
-use crate::model::shape::{CommonObjAttr, RectangleShape, TextWrap, VertRelTo};
+use crate::model::shape::{
+    Caption, CaptionDirection, CommonObjAttr, RectangleShape, TextWrap, VertRelTo,
+};
 use crate::model::style::{Numbering, NumberingHead};
 use crate::model::table::{Cell, Table, TablePageBreak};
 use crate::renderer::composer::compose_paragraph;
@@ -199,6 +202,103 @@ fn issue2439_full_table_top_matches_first_partial_fragment_top() {
     // The generic empty-host float contract remains unchanged when the strict structural
     // evidence is absent, and negative offsets remain clamped at the host paragraph top.
     assert_eq!(empty_host_float_raw_top(para_y, -8.0, 0.0), para_y);
+}
+
+#[test]
+fn stored_layout_relocated_picture_caption_uses_next_saved_flow_anchor() {
+    let picture = Picture {
+        common: CommonObjAttr {
+            height: 24_791,
+            treat_as_char: false,
+            text_wrap: TextWrap::TopAndBottom,
+            vert_rel_to: VertRelTo::Para,
+            vertical_offset: (-52_790_i32) as u32,
+            flow_with_text: true,
+            ..Default::default()
+        },
+        caption: Some(Caption {
+            direction: CaptionDirection::Bottom,
+            paragraphs: vec![Paragraph::default()],
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let table = Table {
+        row_count: 1,
+        col_count: 1,
+        page_break: TablePageBreak::RowBreak,
+        common: CommonObjAttr {
+            height: 18_257,
+            treat_as_char: false,
+            text_wrap: TextWrap::TopAndBottom,
+            vert_rel_to: VertRelTo::Para,
+            vertical_offset: 560,
+            ..Default::default()
+        },
+        cells: vec![Cell {
+            row: 0,
+            col: 0,
+            row_span: 1,
+            col_span: 1,
+            height: 36_782,
+            paragraphs: vec![Paragraph {
+                line_segs: vec![LineSeg {
+                    vertical_pos: 0,
+                    ..Default::default()
+                }],
+                controls: vec![Control::Picture(Box::new(picture))],
+                ..Default::default()
+            }],
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let host = Paragraph {
+        line_segs: vec![LineSeg {
+            vertical_pos: 52_230,
+            ..Default::default()
+        }],
+        controls: vec![Control::Table(Box::new(table.clone()))],
+        ..Default::default()
+    };
+    let next = Paragraph {
+        line_segs: vec![LineSeg {
+            vertical_pos: 30_689,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let col = LayoutRect {
+        x: 0.0,
+        y: 79.2,
+        width: 600.0,
+        height: 900.0,
+    };
+
+    let flow_top = stored_layout_relocated_empty_rowbreak_picture_next_flow_top(
+        true,
+        &host,
+        &table,
+        Some(&next),
+        &col,
+        96.0,
+    )
+    .expect("이월 그림의 다음 저장 anchor");
+    assert!(
+        (flow_top - 488.386_666_7).abs() < 0.001,
+        "flow_top={flow_top}"
+    );
+    assert!(
+        stored_layout_relocated_empty_rowbreak_picture_next_flow_top(
+            false,
+            &host,
+            &table,
+            Some(&next),
+            &col,
+            96.0,
+        )
+        .is_none()
+    );
 }
 
 #[test]

@@ -29,8 +29,8 @@
 
 - 진행 중 자동 테스트는 `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`만 사용한다.
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
-- 필요 시 `python3 scripts/task1274_visual_sweep.py --target 2024-09-below20`로 20mm 관련 회귀를 함께 본다.
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
+- 필요 시 `python3 scripts/visual_sweep.py --target 2024-09-below20`로 20mm 관련 회귀를 함께 본다.
 - 전체 CI급 테스트는 전체 목표 마지막에만 수행한다.
 
 ## 수정
@@ -46,10 +46,10 @@
 - `cargo test --test issue_1139_inline_picture_duplicate -- --nocapture`
   - 48개 통과
 - `cargo build --bin rhwp`
-- `python3 scripts/task1274_visual_sweep.py --target 2024-09-between20`
+- `python3 scripts/visual_sweep.py --target 2024-09-between20`
   - SVG/PDF/비교 PNG 24쪽 일치
   - overflow 35줄에서 8줄로 감소
-- `python3 scripts/task1274_visual_sweep.py`
+- `python3 scripts/visual_sweep.py`
 
 전체 sweep 결과:
 

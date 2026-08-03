@@ -42,7 +42,7 @@ height를 기준으로 둘째 표를 다음 쪽으로 넘기고, 렌더 아이�
 메인터너 보정 반영 binary와 위 HWP 2020 PDF로 다음을 실행했다.
 
 ```bash
-python3 scripts/task1274_visual_sweep.py \
+python3 scripts/visual_sweep.py \
   --key pr3270-issue2813-maintainer-fix \
   --hwp samples/issue2813/dangjik_dutylog.hwpx \
   --pdf pdf/issue2813/dangjik_dutylog-2020.pdf \

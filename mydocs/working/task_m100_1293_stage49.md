@@ -78,11 +78,11 @@ draw overflow 없이 다음 항목과 같은 미주 흐름으로 이어지는 �
 - `cargo test --lib compact_endnote -- --nocapture`: 29개 통과
 - `cargo build --bin rhwp`: 통과
 - focused sweep:
-  - `python3 scripts/task1274_visual_sweep.py --target 2023-09 --target 2024-09-below20-above20 --out output/task1293_stage49_resweep --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2023-09 --target 2024-09-below20-above20 --out output/task1293_stage49_resweep --rhwp-bin target/debug/rhwp`
   - 두 target 모두 SVG/PDF/render tree page count가 1:1이다.
   - 두 target 모두 `render_tree.log`의 `LAYOUT_OVERFLOW`가 0건이다.
 - full sweep:
-  - `python3 scripts/task1274_visual_sweep.py --target all --out output/task1293_stage49_full_sweep --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target all --out output/task1293_stage49_full_sweep --rhwp-bin target/debug/rhwp`
   - 전체 15개 target에서 SVG/PDF/render tree page count가 모두 1:1이다.
   - 전체 15개 target에서 renderer `LAYOUT_OVERFLOW`가 총 0건이다.
 

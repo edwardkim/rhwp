@@ -91,7 +91,7 @@
 
 ## 수정 내용
 
-- `scripts/task1274_visual_sweep.py`
+- `scripts/visual_sweep.py`
   - frame bottom 후보 선택을 `count` 우선이 아니라 가장 아래쪽 y 좌표 우선으로 바꿨다.
   - 검출된 bottom이 페이지 높이의 90%보다 위이면 page frame bottom으로 보기 어렵기 때문에 기본 하단값으로 fallback한다.
   - rhwp만 12px 이하로 frame 아래에 걸리고 PDF와 본문 하단 차이가 크지 않은 경우는 `frame_overflow_tolerated_bleed`로 기록하고 `frame_overflow_pixels` flag에서는 제외한다.
@@ -100,9 +100,9 @@
 ## 검증
 
 ```bash
-python3 -m py_compile scripts/task1274_visual_sweep.py
-python3 scripts/task1274_visual_sweep.py --target 2022-11-practice
-python3 scripts/task1274_visual_sweep.py --target all
+python3 -m py_compile scripts/visual_sweep.py
+python3 scripts/visual_sweep.py --target 2022-11-practice
+python3 scripts/visual_sweep.py --target all
 ```
 
 ### focused sweep

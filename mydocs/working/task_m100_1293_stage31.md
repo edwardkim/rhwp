@@ -37,9 +37,9 @@ Stage30에서 `구분선 없음 + 구분선위20 + 미주사이20 + 구분선아
 - `cargo test --lib compact_endnote -- --nocapture`
 - `cargo build --bin rhwp`
 - focused sweep:
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage31_no_separator_target --rhwp-bin target/debug/rhwp`
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage31_between20_target --rhwp-bin target/debug/rhwp`
-  - `python3 scripts/task1274_visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage31_above20_between0_target --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-no-separator-above20-between20-below20 --out output/task1293_stage31_no_separator_target --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above0-between20-below2 --out output/task1293_stage31_between20_target --rhwp-bin target/debug/rhwp`
+  - `python3 scripts/visual_sweep.py --target 2024-11-practice-above20-between0-below20 --out output/task1293_stage31_above20_between0_target --rhwp-bin target/debug/rhwp`
 
 ## 구현 내용
 

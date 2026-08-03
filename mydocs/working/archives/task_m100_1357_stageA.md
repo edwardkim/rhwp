@@ -1,11 +1,11 @@
 # Stage A 완료보고서 — Task #1357 시각 회귀 하니스 + 베이스라인
 
 ## 하니스
-기존 `scripts/task1274_visual_sweep.py` 재사용 (PDF↔native SVG 페이지 비교: frame/red/
+기존 `scripts/visual_sweep.py` 재사용 (PDF↔native SVG 페이지 비교: frame/red/
 line/column/eq/title/order/tail/question 메트릭). 본 타스크 대상 샘플을 TARGETS 에 추가:
 `2024-09-below20above20` (`3-09월_교육_통합_2024-구분선아래20구분선위20.hwp`).
 
-실행: `python3 scripts/task1274_visual_sweep.py --target all --out output/task1357/<tag>`
+실행: `python3 scripts/visual_sweep.py --target all --out output/task1357/<tag>`
 
 ## 베이스라인 (수정 전, base=stream/devel — #1355 미포함)
 
