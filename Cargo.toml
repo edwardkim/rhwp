@@ -41,7 +41,7 @@ sha2 = "0.10"
 blake3 = "1"
 zip = { version = "8.5", default-features = false, features = ["deflate"] }
 quick-xml = "0.41"
-roxmltree = "0.20"
+roxmltree = "0.21"
 svgtypes = "0.16"
 codepage = "0.1.2"
 embedded-io = "0.7.1"
