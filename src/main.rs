@@ -340,6 +340,8 @@ fn main() {
         Some("explain") => exit_with(explain_document(&args[2..])),
         Some("edit") => exit_with(run_edit(&args[2..])),
         Some("run") => exit_with(cmd_run_plan(&args[2..])),
+        // [#3719 §6-4] 계획을 *만드는* 쪽의 정답지 — `run` 바로 옆에 둔다.
+        Some("export-plan-schema") => exit_with(cmd_export_plan_schema(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
         // 종료 코드 2로 끝낸다(기존에는 stdout + 0이라 오타 낸 명령이 스크립트에서 성공으로 보였다).
         other => {
@@ -1457,20 +1459,40 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
         ),
         tool(
             "hwp_run_plan",
-            "[#3703] 선언적 편집 계획(JSON)을 정적 선검증→원자 실행→저널로 수행한다. 도구 호출을 체이닝하는 대신 의도를 계획서 하나로 선언하면, 전 step 의 실행 가능성을 미리 판정하고(불가 시 실행 0·invalid[]·exit 2) 인메모리로 적용해 단언(verify 자기검증) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경. fill_fields step 은 화면상 구별되지 않는 필드 이름을 steps[].confusable 로 경고한다. steps: fill_fields{data} · replace_text{find,replace[,occurrence]} · set_cell{table,row,col,text[,keepStyle]} · set_checkbox{occurrence}.",
+            "[#3703] 선언적 편집 계획(JSON)을 정적 선검증→원자 실행→저널로 수행한다. 도구 호출을 체이닝하는 대신 의도를 계획서 하나로 선언하면, 전 step 의 실행 가능성을 미리 판정하고(불가 시 실행 0·invalid[]·exit 2) 인메모리로 적용해 단언(verify 자기검증) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경. fill_fields step 은 화면상 구별되지 않는 필드 이름을 steps[].confusable 로 경고한다. steps: fill_fields{data} · replace_text{find,replace[,occurrence]} · set_cell{table,row,col,text[,keepStyle]} · set_checkbox{occurrence}. [#3719 §6-8] 각 step 은 선택 필드 if 로 조건을 달 수 있고(fieldExists·fieldEquals·textFound), 조건이 거짓이면 그 step 만 건너뛰며 저널에 skipped:true 로 남는다. 계획서의 정확한 문법은 hwp_export_plan_schema 로 먼저 받아 보라.",
             serde_json::json!({
                 "type": "object",
                 "properties": {
                     "plan": {
                         "type": "object",
-                        "description": "계획서. { planVersion:\"1.0\", input:<원본 경로>, output:<산출 경로>, steps:[{action:…}…], assertions:{ notFoundEmpty?, verify? }, dryRun?:true } — dryRun:true 면 선검증만 하고 preview 저널을 낸다(디스크 무변경). 계획을 실행 전에 검사할 때 쓴다."
+                        "description": "계획서. { planVersion:\"1.0\", input:<원본 경로>, output:<산출 경로>, steps:[{action:…, if?:{…}}…], assertions:{ notFoundEmpty?, verify? }, dryRun?:true } — dryRun:true 면 선검증만 하고 preview 저널을 낸다(디스크 무변경). 계획을 실행 전에 검사할 때 쓴다. 전체 JSON Schema 는 hwp_export_plan_schema 참조"
                     }
                 },
                 "required": ["plan"],
             }),
             "run",
             serde_json::json!(["run", "--plan-json", "{plan}", "--json"]),
-            &["schemaVersion", "planVersion", "input", "output", "outputFormat", "steps", "steps[].confusable", "verify", "invalid", "changedPages", "dryRun", "preview"],
+            &["schemaVersion", "planVersion", "input", "output", "outputFormat", "steps", "steps[].confusable", "steps[].skipped", "verify", "invalid", "changedPages", "dryRun", "preview"],
+        ),
+        tool_with_optional_args(
+            "hwp_export_plan_schema",
+            "[#3719 §6-4] hwp_run_plan 이 받는 **계획서 자체**의 JSON Schema 를 돌려준다. hwp_run_plan 이 계획을 실행한다면 이 도구는 계획을 어떻게 쓰는지 알려준다 — step 4종의 필수·선택 필드, 조건절 if 의 문법, assertions 의 뜻이 판별 유니온으로 적혀 있다. 계획을 처음 만들 때 한 번 받아 두면 필드명을 지어내 invalid[] 로 되돌아오는 왕복을 없앨 수 있다. 문서를 입력으로 받지 않는다(계획서 문법의 서술이지 특정 문서의 속성이 아니다).",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "bare": {
+                        "type": "boolean",
+                        "description": "참이면 봉투 없이 계획 스키마 본문만 (JSON Schema 검증기에 바로 먹일 때)"
+                    }
+                },
+                // 문서를 받지 않으므로 필수 인자가 없다 — 그래도 빈 배열을 선언한다.
+                // 소비자가 required 의 부재와 "필수 없음"을 구분할 수 없으면 안 된다.
+                "required": [],
+            }),
+            "export-plan-schema",
+            serde_json::json!(["export-plan-schema", "--json"]),
+            serde_json::json!([{ "when": "bare", "args": ["--bare"] }]),
+            &["schemaVersion", "planSchemaVersion", "dialect", "definitionCount", "schema"],
         ),
         tool_with_optional_args(
             "hwp_export_capabilities_schema",
@@ -1653,6 +1675,23 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "steps",
                 "verify",
                 "invalid",
+            ],
+        ),
+        // [#3719 §6-4] 계획서 문법의 단일 출처 — `run` 바로 뒤에 둔다. 계획을 실행하는
+        // 명령과 계획을 쓰는 법을 알려주는 명령이 자기서술에서도 붙어 있어야 에이전트가
+        // 하나를 보고 다른 하나를 놓치지 않는다.
+        cmd_json(
+            "export-plan-schema",
+            "export",
+            "계획서(run) 문법의 JSON Schema 산출 — 계획 생성의 단일 출처 (#3719 §6-4)",
+            false,
+            &["--json", "--bare", "-o"],
+            &[
+                "schemaVersion",
+                "planSchemaVersion",
+                "dialect",
+                "definitionCount",
+                "schema",
             ],
         ),
         cmd_json(
@@ -3051,7 +3090,17 @@ fn print_help() {
     println!("             · set_cell{{table,row,col,text}} · set_checkbox{{occurrence}}");
     println!("      --plan-json '<JSON>'      파일 대신 인라인 계획 (MCP hwp_run_plan 경로)");
     println!("      --dry-run                 선검증만 — preview 저널, 디스크 무변경 (계획서 dryRun:true 와 동일)");
+    println!("      step 마다 if 조건 가능: {{fieldExists}}·{{fieldEquals:{{name,value}}}}·{{textFound}}");
+    println!("      조건이 거짓이면 그 step 만 건너뛰고 저널에 skipped:true·reason 으로 남긴다");
+    println!("      (거짓인 step 은 선검증도 면제 — 없는 필드를 채우는 step 도 위반이 아니다)");
     println!("      단언 실패는 exit 3 — 저널(steps[]·verify)로 판정을 데이터로 보고");
+    println!();
+    println!("  export-plan-schema [--bare] [-o <파일>] [--json]");
+    println!("      run 계획서 문법의 JSON Schema 출력 — 계획을 쓰기 전에 읽는 정답지");
+    println!();
+    println!("      --bare                  봉투 없이 계획 스키마 본문만 출력");
+    println!("      -o, --out <파일>        스키마를 파일로 저장 (생략 시 stdout)");
+    println!("      --json                  -o 와 함께 쓰면 저장 결과를 JSON 봉투로 보고");
     println!();
     println!("내부 개발·회귀 도구 (일반 사용자 대상 아님):");
     println!("  test-caption <파일.hwp> [-o <폴더>] 캡션 라운드트립 검증");
@@ -13534,6 +13583,79 @@ fn cmd_export_ir_schema(args: &[String]) -> i32 {
     EXIT_OK
 }
 
+/// [#3719 §6-4] `export-plan-schema` — `run` 계획서 문법의 JSON Schema 를 낸다.
+///
+/// 문서를 입력으로 받지 않는다 — 스키마는 **계획서 문법의 자기서술**이지 특정 문서의
+/// 속성이 아니다. `run --json` 이 이미 쓴 계획을 검사한다면, 이 명령은 계획을 **쓰기
+/// 전에** 읽는 정답지다. 필드명을 지어내고 `invalid[]` 로 되돌아오는 왕복이 계획 생성
+/// 실패의 대부분이라, 그 왕복을 없애는 것이 목적이다.
+fn cmd_export_plan_schema(args: &[String]) -> i32 {
+    let mut out_path: Option<&str> = None;
+    let mut json_mode = false;
+    let mut bare = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--json" => json_mode = true,
+            // 봉투 없이 스키마 본문만 — JSON Schema 검증기에 바로 먹이려는 용도.
+            "--bare" => bare = true,
+            "-o" | "--out" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.as_str()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            other => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {}", other);
+                return EXIT_USAGE;
+            }
+        }
+        i += 1;
+    }
+
+    let payload = if bare {
+        rhwp::plan_schema::plan_schema()
+    } else {
+        rhwp::plan_schema::envelope()
+    };
+    let text = match serde_json::to_string_pretty(&payload) {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("오류: 스키마 직렬화 실패 - {}", e);
+            return EXIT_RUNTIME;
+        }
+    };
+
+    if let Some(path) = out_path {
+        if let Err(e) = fs::write(path, text.as_bytes()) {
+            eprintln!("오류: 스키마를 쓸 수 없습니다 - {}: {}", path, e);
+            return EXIT_RUNTIME;
+        }
+        if json_mode {
+            // 파일로 뺐어도 stdout 은 기계 계약을 유지한다 — 어디에 썼는지 알려준다.
+            println!(
+                "{}",
+                serde_json::json!({
+                    "schemaVersion": "1.0",
+                    "planSchemaVersion": rhwp::plan_schema::PLAN_SCHEMA_VERSION,
+                    "output": path,
+                    "bytes": text.len(),
+                })
+            );
+        } else {
+            println!("계획 스키마 저장: {} ({} bytes)", path, text.len());
+        }
+        return EXIT_OK;
+    }
+
+    println!("{text}");
+    EXIT_OK
+}
+
 /// [#3776] `export-capabilities-schema` — capabilities 자체의 JSON Schema 를 낸다.
 fn cmd_export_capabilities_schema(args: &[String]) -> i32 {
     let mut out_path: Option<&str> = None;
@@ -13747,22 +13869,47 @@ fn cmd_run_plan(args: &[String]) -> i32 {
     if json_mode {
         println!("{}", journal);
     } else if code == EXIT_OK && journal["dryRun"] == true {
+        let preview_all = journal["preview"].as_array().cloned().unwrap_or_default();
+        // [#3719 §6-8] 건너뛸 step 은 "실행 가능"에 넣지 않는다 — dry-run 이 예고하는
+        // 실행 개수와 run(실제 실행)이 보고할 적용 개수가 같은 말을 해야 한다.
+        let skipped_count = preview_all.iter().filter(|s| s["skipped"] == true).count();
         println!(
-            "검사 통과: {} step 실행 가능 (디스크 무변경, 산출 예정 {})",
-            journal["preview"].as_array().map(|s| s.len()).unwrap_or(0),
+            "검사 통과: {} step 실행 가능{} (디스크 무변경, 산출 예정 {})",
+            preview_all.len() - skipped_count,
+            if skipped_count == 0 {
+                String::new()
+            } else {
+                format!(" · {} step 건너뜀 예정", skipped_count)
+            },
             journal["output"].as_str().unwrap_or("-")
         );
-        if let Some(preview) = journal["preview"].as_array() {
-            for step in preview {
-                println!("  - {}", preview_line(step));
-            }
+        for step in &preview_all {
+            println!("  - {}", preview_line(step));
         }
     } else if code == EXIT_OK {
+        // [#3719 §6-8] 건너뛴 step 을 적용한 것과 같이 세면 "다 됐다"는 보고가 거짓이 된다.
+        let skipped: Vec<&serde_json::Value> = journal["steps"]
+            .as_array()
+            .map(|steps| steps.iter().filter(|s| s["skipped"] == true).collect())
+            .unwrap_or_default();
+        let total = journal["steps"].as_array().map(|s| s.len()).unwrap_or(0);
         println!(
-            "완료: {} step 적용, 산출 {}",
-            journal["steps"].as_array().map(|s| s.len()).unwrap_or(0),
+            "완료: {} step 적용{}, 산출 {}",
+            total - skipped.len(),
+            if skipped.is_empty() {
+                String::new()
+            } else {
+                format!(" · {} step 건너뜀", skipped.len())
+            },
             journal["output"].as_str().unwrap_or("-")
         );
+        for step in &skipped {
+            println!(
+                "  - step {} 건너뜀: {}",
+                step["step"].as_u64().unwrap_or(0),
+                step["reason"].as_str().unwrap_or("")
+            );
+        }
         if let Some(steps) = journal["steps"].as_array() {
             for step in steps {
                 if let Some(confusable) = step["confusable"].as_array() {
@@ -13785,6 +13932,14 @@ fn cmd_run_plan(args: &[String]) -> i32 {
 /// [#3721] dry-run 미리보기 한 줄 — 사람 모드에서 "무엇이 얼마나 바뀌나"를 읽게 한다.
 fn preview_line(step: &serde_json::Value) -> String {
     let idx = step["step"].as_u64().unwrap_or(0);
+    // [#3719 §6-8] 건너뛸 step 은 다른 필드가 비어 있으므로 액션별 분기보다 먼저 본다.
+    if step["skipped"] == true {
+        return format!(
+            "step {} 건너뜀 예정: {}",
+            idx,
+            step["reason"].as_str().unwrap_or("")
+        );
+    }
     match step["action"].as_str().unwrap_or("") {
         "fill_fields" => format!(
             "step {}: 누름틀 {}칸 채움",
@@ -13872,6 +14027,10 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
     // [#3712] 같은 순회에서 문단 주소도 담는다 — 저널 changedPages 산출 근거.
     let mut name_locs: std::collections::HashMap<String, Vec<(usize, usize)>> =
         std::collections::HashMap::new();
+    // [#3719 §6-8] 조건절 fieldEquals 가 볼 **현재 값**. 같은 순회에서 담아 두면
+    // 조건 판정이 문서를 다시 훑지 않는다(동명 필드는 선언 순서 = 순번 순서).
+    let mut name_values: std::collections::HashMap<String, Vec<String>> =
+        std::collections::HashMap::new();
     for fi in doc.collect_all_fields().iter() {
         if let Some(n) = fi.field.field_name() {
             *name_counts.entry(n.to_string()).or_insert(0) += 1;
@@ -13879,6 +14038,10 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
                 .entry(n.to_string())
                 .or_default()
                 .push((fi.location.section_index, fi.location.para_index));
+            name_values
+                .entry(n.to_string())
+                .or_default()
+                .push(fi.value.clone());
         }
     }
     // `edit fill-fields`·세션 경로와 같은 text-security 판정이다. 계획 실행만
@@ -13889,8 +14052,49 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
     // [#3721] 선검증이 이미 계산한 값을 미리보기로 모은다 — dry-run 은 이걸 그대로 낸다.
     // (실행 모드에서는 쓰이지 않지만, 판정자와 미리보기가 같은 계산이라 어긋날 수 없다.)
     let mut preview: Vec<serde_json::Value> = Vec::new();
+
+    // [#3719 §6-8] 조건부 step — 조건은 **입력 문서 기준으로 실행 전에 한 번** 판정한다.
+    // 실행 중에 다시 보면 선검증이 통과시킨 step 이 실행에서 조건을 잃는(또는 그 반대)
+    // 상태가 생겨, "무엇이 왜 안 바뀌었는지"가 저널만 봐서는 재구성되지 않는다.
+    // 판정 결과는 Some(사유) = 건너뜀, None = 실행.
+    let mut skip_reasons: Vec<Option<String>> = Vec::with_capacity(steps.len());
+    for step in steps.iter() {
+        match step.get("if") {
+            None => skip_reasons.push(None),
+            Some(condition) => {
+                match evaluate_step_condition(condition, &doc, &name_counts, &name_values) {
+                    Ok(reason) => skip_reasons.push(reason),
+                    Err(_) => {
+                        // 문법 오류는 아래 선검증 루프에서 다시 판정해 invalid 에 담는다
+                        // (사유 메시지를 한 곳에서만 만들기 위함) — 여기서는 자리만 채운다.
+                        skip_reasons.push(None);
+                    }
+                }
+            }
+        }
+    }
+
     for (idx, step) in steps.iter().enumerate() {
         let action = step["action"].as_str().unwrap_or("");
+        // [#3719 §6-8] 조건 문법 오류는 계획 자체가 무효다 — invalid 로 즉시 보고한다.
+        if let Some(condition) = step.get("if") {
+            if let Err(message) =
+                evaluate_step_condition(condition, &doc, &name_counts, &name_values)
+            {
+                invalid
+                    .push(serde_json::json!({ "step": idx, "action": action, "reason": message }));
+                continue;
+            }
+        }
+        // 조건이 거짓인 step 은 **실행 가능성 검사를 면제**한다. 없는 필드를 채우는
+        // step 이라도 애초에 실행되지 않으므로 위반이 아니다 — 여기서 걸러 내지 않으면
+        // 조건절은 "쓸 수는 있으나 쓰면 계획이 통과하지 않는" 장식이 된다.
+        if let Some(reason) = &skip_reasons[idx] {
+            preview.push(serde_json::json!({
+                "step": idx, "action": action, "skipped": true, "reason": reason,
+            }));
+            continue;
+        }
         match action {
             "fill_fields" => {
                 let Some(data) = step["data"].as_object() else {
@@ -14057,6 +14261,14 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
     let mut changed_paras: Vec<(usize, usize)> = Vec::new();
     for (idx, step) in steps.iter().enumerate() {
         let action = step["action"].as_str().unwrap_or("");
+        // [#3719 §6-8] 건너뛴 step 도 저널에 남긴다. 조용히 사라지면 소비자는 "왜 그
+        // 칸이 안 바뀌었는지"를 알 방법이 없다 — 조건이 거짓이었다는 사실 자체가 결과다.
+        if let Some(reason) = &skip_reasons[idx] {
+            journal_steps.push(serde_json::json!({
+                "step": idx, "action": action, "skipped": true, "reason": reason,
+            }));
+            continue;
+        }
         match action {
             "fill_fields" => {
                 let data = step["data"].as_object().expect("선검증 통과");
@@ -14266,6 +14478,115 @@ fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i32) {
         ),
         EXIT_OK,
     )
+}
+
+/// [#3719 §6-8] step 조건절 판정 — `Ok(None)` = 조건 참(실행), `Ok(Some(사유))` =
+/// 조건 거짓(건너뜀), `Err(사유)` = 조건 **문법** 오류(계획 자체가 무효).
+///
+/// 거짓과 문법 오류를 같은 축으로 접으면 오타 하나가 "조건이 거짓이었다"로 둔갑해
+/// 계획이 조용히 아무 일도 하지 않고 성공을 보고한다. 그래서 두 축을 나눈다 —
+/// 거짓은 정상 판정(exit 0, skipped 저널), 문법 오류는 `invalid` + exit 2 다.
+///
+/// 판정은 **입력 문서** 기준이다. 앞 step 의 편집 결과를 조건이 보게 하면 선검증(실행 전)
+/// 과 실행(편집 후)이 서로 다른 답을 낼 수 있고, 그러면 "검사를 통과한 계획이 실행에서
+/// 다르게 동작"한다.
+fn evaluate_step_condition(
+    condition: &serde_json::Value,
+    doc: &rhwp::wasm_api::HwpDocument,
+    name_counts: &std::collections::HashMap<String, usize>,
+    name_values: &std::collections::HashMap<String, Vec<String>>,
+) -> Result<Option<String>, String> {
+    let Some(map) = condition.as_object() else {
+        return Err(
+            "if 는 { fieldExists | fieldEquals | textFound } 중 하나를 담은 객체여야 합니다"
+                .to_string(),
+        );
+    };
+    // 조건 두 개를 나열하면 and 인지 or 인지가 계획서 어디에도 적혀 있지 않다.
+    // 추측해서 실행하는 대신 거절한다 — 되돌릴 수 없는 쓰기의 전제 조건이다.
+    if map.len() != 1 {
+        return Err(format!(
+            "if 는 조건을 정확히 하나만 담아야 합니다 (현재 {}개: {}) — 둘 이상은 and/or 가 정의돼 있지 않습니다",
+            map.len(),
+            map.keys().cloned().collect::<Vec<_>>().join(", ")
+        ));
+    }
+    let (key, value) = map.iter().next().expect("길이 1");
+    match key.as_str() {
+        "fieldExists" => {
+            let Some(spec) = value.as_str().filter(|s| !s.is_empty()) else {
+                return Err(
+                    "if.fieldExists 는 비어 있지 않은 필드 이름 문자열이어야 합니다".to_string(),
+                );
+            };
+            let (name, occurrence) = parse_field_key(spec);
+            let total = name_counts.get(name).copied().unwrap_or(0);
+            if occurrence < total {
+                Ok(None)
+            } else {
+                Ok(Some(format!(
+                    "조건 fieldExists '{}' 불충족 — 문서의 동명 누름틀 {}개",
+                    spec, total
+                )))
+            }
+        }
+        "fieldEquals" => {
+            let Some(operand) = value.as_object() else {
+                return Err(
+                    "if.fieldEquals 는 {\"name\":<필드 이름>, \"value\":<비교값>} 객체여야 합니다"
+                        .to_string(),
+                );
+            };
+            if let Some(unknown) = operand
+                .keys()
+                .find(|k| k.as_str() != "name" && k.as_str() != "value")
+            {
+                return Err(format!(
+                    "if.fieldEquals 에 알 수 없는 키: {} (name·value 만 받습니다)",
+                    unknown
+                ));
+            }
+            let (Some(spec), Some(expected)) = (
+                operand.get("name").and_then(|v| v.as_str()),
+                operand.get("value").and_then(|v| v.as_str()),
+            ) else {
+                return Err("if.fieldEquals 의 name·value 는 둘 다 문자열이어야 합니다".to_string());
+            };
+            if spec.is_empty() {
+                return Err("if.fieldEquals 의 name 이 비어 있습니다".to_string());
+            }
+            let (name, occurrence) = parse_field_key(spec);
+            match name_values.get(name).and_then(|v| v.get(occurrence)) {
+                Some(actual) if actual == expected => Ok(None),
+                Some(actual) => Ok(Some(format!(
+                    "조건 fieldEquals '{}' == '{}' 불충족 — 현재값 '{}'",
+                    spec, expected, actual
+                ))),
+                None => Ok(Some(format!(
+                    "조건 fieldEquals '{}' == '{}' 불충족 — 해당 누름틀이 없습니다",
+                    spec, expected
+                ))),
+            }
+        }
+        "textFound" => {
+            let Some(needle) = value.as_str().filter(|s| !s.is_empty()) else {
+                return Err("if.textFound 는 비어 있지 않은 문자열이어야 합니다".to_string());
+            };
+            // 한 건만 확인하면 되므로 limit 1 — 존재 판정에 전건 수집은 낭비다.
+            if doc.grep(needle, true, Some(1)).is_empty() {
+                Ok(Some(format!(
+                    "조건 textFound '{}' 불충족 — 본문에서 찾지 못했습니다",
+                    needle
+                )))
+            } else {
+                Ok(None)
+            }
+        }
+        other => Err(format!(
+            "알 수 없는 조건: {} (fieldExists·fieldEquals·textFound)",
+            other
+        )),
+    }
 }
 
 /// `edit_serialize` 와 같은 바이트를 내되 **IR 을 건드리지 않는다**.

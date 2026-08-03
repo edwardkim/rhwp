@@ -17,6 +17,7 @@ pub mod ooxml_chart;
 pub mod paint;
 pub mod parser;
 pub mod password_crypto;
+pub mod plan_schema;
 pub mod provenance;
 pub mod renderer;
 pub mod serializer;
