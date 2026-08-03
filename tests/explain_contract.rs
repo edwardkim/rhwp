@@ -221,7 +221,12 @@ fn explain_usage_error_exit_two() {
 #[test]
 fn explain_multiple_files_exit_usage() {
     let p = sample(SAMPLE_FIELDS);
-    let args = ["explain", p.to_str().unwrap(), p.to_str().unwrap(), "--json"];
+    let args = [
+        "explain",
+        p.to_str().unwrap(),
+        p.to_str().unwrap(),
+        "--json",
+    ];
     let output = run(&args);
     assert_eq!(
         output.status.code(),
@@ -294,8 +299,5 @@ fn explain_encrypted_document_with_password_reports_encrypted_true() {
     let v: serde_json::Value = serde_json::from_slice(&output.stdout).expect("json");
     assert_eq!(v["encrypted"], true, "{v}");
     let summary = v["summary"].as_str().unwrap();
-    assert!(
-        summary.contains("암호로 보호돼 있다"),
-        "{summary}"
-    );
+    assert!(summary.contains("암호로 보호돼 있다"), "{summary}");
 }
