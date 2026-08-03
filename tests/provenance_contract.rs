@@ -319,6 +319,14 @@ const SWEEP_EXEMPT: &[(&str, &str)] = &[
         "문서를 입력으로 받지 않는 capabilities 타입 스키마다. --bare가 아닌 모드도 특정 \
          문서가 아닌 스키마 봉투를 낸다.",
     ),
+    (
+        "export-agent-manifest",
+        "문서를 입력으로 받지 않는다 — 인자가 --json 과 --bare 뿐이고, 내는 것은 \
+         capabilities·irSchema·provenanceMap 을 조립한 rhwp 자신의 매니페스트다. \
+         구성 요소는 이미 각자의 계약으로 고정돼 있고(capabilities 는 이 파일의 다른 \
+         가드, provenanceMap 은 export-provenance-map), 여기서 다시 볼 문서 유래 \
+         문자열이 없다.",
+    ),
 ];
 
 fn s(v: &str) -> String {
