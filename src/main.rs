@@ -418,7 +418,7 @@ fn mcp_manifest_value(profile: Option<&'static agent_profiles::AgentProfile>) ->
 /// 선언과 `mcp-serve` 의 자식 stdin 배선(`run_cli_tool`)이 이 목록 하나를 공유한다.
 /// 이 도구들은 `paths` 없이 자식을 띄우면 자식이 서버의 프로토콜 stdin 을 상속해
 /// 이후 JSON-RPC 프레임을 파일 경로로 소비하므로, 서버 쪽에서 반드시 선검증한다.
-const MCP_STDIN_TOOLS: [&str; 2] = ["hwp_batch", "hwp_batch_search"];
+const MCP_STDIN_TOOLS: [&str; 3] = ["hwp_batch", "hwp_batch_search", "hwp_batch_extract_data"];
 
 /// [#3787 S4] `inspect unicode --kind` 의 허용값 — 탐지 코어가 단일 출처다.
 fn inspect_unicode_kind_enum() -> Vec<String> {
@@ -1105,6 +1105,51 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
                 "totalMatchCount",
                 "truncated",
                 "matches",
+            ],
+        ),
+        // [#3830] 여러 문서에 걸친 날짜·금액·수량 추출 — hwp_extract_data 가 문서 하나에
+        // 대해 하는 일을 아카이브 전체에 대해 한다. --query 가 필수라 hwp_batch 로는 부를
+        // 수 없는 hwp_batch_search 와 같은 이유로 전용 도구다(kind·limit 은 선택이지만
+        // paths 는 stdin 축이라 마찬가지로 전용 도구로 분리한다).
+        tool_with_optional_args(
+            "hwp_batch_extract_data",
+            "여러 문서에서 날짜·금액·수량을 한 프로세스에서 병렬로 뽑아 NDJSON 스트림으로 받는다. 레코드마다 단건 hwp_extract_data 와 같은 봉투(items·counts·totalItemCount)가 실린다. 파일 목록은 stdin 으로 한 줄에 하나씩 넣는다. limit 은 배치 전체가 아니라 문서마다 적용되는 상한이다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "paths": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "처리할 문서 경로 목록 (stdin 으로 전달된다)"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": ["date", "amount", "number", "all"],
+                        "description": "뽑을 종류. 기본 all"
+                    },
+                    "limit": { "type": "integer", "minimum": 1, "description": "문서당 최대 반환 건수(컨텍스트 절약, 배치 전체가 아니라 문서마다 적용). 총량은 totalItemCount 로 온다" },
+                    "threads": { "type": "integer", "minimum": 1, "description": "병렬 스레드 수. 기본은 CPU 코어 수" }
+                },
+                "required": ["paths"],
+            }),
+            "batch",
+            serde_json::json!(["batch", "extract-data", "--json"]),
+            serde_json::json!([
+                { "when": "kind", "args": ["--kind", "{kind}"] },
+                { "when": "limit", "args": ["--limit", "{limit}"] },
+                { "when": "threads", "args": ["--threads", "{threads}"] }
+            ]),
+            &[
+                "schemaVersion",
+                "source",
+                "kind",
+                "itemCount",
+                "totalItemCount",
+                "truncated",
+                "counts",
+                "items",
+                "error",
+                "exitClass",
             ],
         ),
         // [#3719 §6-6] 진짜 메일머지. hwp_fill_fields 는 서식 1 → 산출 1 이라, 100명분을
@@ -2004,6 +2049,11 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "--form",
                 "--name-field",
                 "--dry-run",
+                // extract-data 축 전용. batch.flags 에만 넣고 여기 빠뜨리면
+                // 같은 매니페스트가 서로 다른 말을 하게 된다
+                // (capabilities_declared_flags_are_real_cli_flags 가 잡는다).
+                "--kind",
+                "--limit",
             ],
             &[
                 "schemaVersion",
@@ -2263,8 +2313,8 @@ fn show_capabilities(args: &[String]) -> i32 {
             },
         },
         "batch": {
-            "subcommands": ["export-text", "info", "export-structure", "export-tables", "fields", "search", "convert", "fill"],
-            "flags": ["--json", "--threads", "--mode", "--query", "--out-dir", "--verify", "--verify-pages", "--form", "--name-field", "--dry-run"],
+            "subcommands": ["export-text", "info", "export-structure", "export-tables", "fields", "search", "extract-data", "convert", "fill"],
+            "flags": ["--json", "--threads", "--mode", "--query", "--kind", "--limit", "--out-dir", "--verify", "--verify-pages", "--form", "--name-field", "--dry-run"],
             "ordering": "입력 순서 보존 (fill 은 데이터 행 순서)",
             // [#3719] fill 축만 입력 축이 다르다 — 여기를 읽고 stdin 에 경로를 밀어 넣으면
             // 그 프로세스는 아무것도 읽지 않은 채 데이터 파일만 처리한다.
@@ -2272,8 +2322,11 @@ fn show_capabilities(args: &[String]) -> i32 {
             "authentication": "지원하지 않음 — --password·--password-stdin·--output-password·--output-password-stdin 은 usage error; 암호화 batch 의 credential 전달 계약은 아직 정의되지 않았다",
             // [#3626→#3719] 파일을 쓰는 축(convert·fill)의 목적지·충돌 규약을 밝힌다.
             "output": "convert·fill 축만 파일을 쓴다. convert: 목적지는 --out-dir 하나, 이름은 <입력이름>.hwp — 대소문자만 다른 이름을 포함해 같은 이름이 둘 이상이면 한 건도 쓰지 않고 exit 2. fill: 이름은 --name-field 값(파일명 금지 문자는 _ 로 치환), 없으면 0001 순번이며 겹치면 뒤에 _2·_3 을 붙여 덮어쓰지 않는다",
+            // [#3830] extract-data 축의 --limit 는 **배치 전체가 아니라 문서마다** 적용되는
+            // 상한이다 — 단건 `extract-data --limit` 과 같은 의미다.
+            "limit": "extract-data 의 --limit 는 문서마다 적용된다(전역 상한 아님) — counts·totalItemCount 는 절단 전 그 문서의 총량이다",
             "mcp": {
-                "available": ["export-text", "info", "export-structure", "export-tables", "fields", "search (hwp_batch_search)", "fill (hwp_batch_fill)"],
+                "available": ["export-text", "info", "export-structure", "export-tables", "fields", "search (hwp_batch_search)", "extract-data (hwp_batch_extract_data)", "fill (hwp_batch_fill)"],
                 "excluded": { "convert": "파일을 쓰는 축이라 현재 hwp_batch MCP 도구에는 노출하지 않으며 CLI 에서만 사용한다" },
             },
             "exitAggregation": "error 레코드가 하나라도 있으면 1, 없고 verifyPages 불일치가 있으면 4, verify 차이만 있으면 3, 전부 통과면 0",
@@ -2409,13 +2462,17 @@ fn print_help() {
     println!("      --max-chars <N>         본문 문자 상한 (--json 전용, 기본: 무제한). 넘으면");
     println!("                              봉투에 truncated:true·omittedCount 를 남긴다");
     println!();
-    println!("  batch <export-text|info|export-structure|export-tables|fields|search|convert> --json [--threads <N>]");
+    println!("  batch <export-text|info|export-structure|export-tables|fields|search|extract-data|convert> --json [--threads <N>]");
     println!(
         "      stdin의 파일 목록(한 줄당 하나)을 한 프로세스로 전건 처리해 NDJSON 스트림 출력"
     );
     println!("      --threads <N>           파일 간 병렬 스레드 수 (기본: CPU 코어 수)");
     println!("      --mode <m>              export-structure 전용: auto|outline|clause");
     println!("      --query <검색어>        search 전용: 찾을 문자열");
+    println!("      --kind <종류>           extract-data 전용: date|amount|number|all (기본 all)");
+    println!(
+        "      --limit <N>             extract-data 전용: 문서당 최대 반환 건수 (배치 전체가 아님)"
+    );
     println!("      --out-dir <폴더>        convert 전용(필수): 산출물을 모을 폴더");
     println!("                              산출 이름은 <입력이름>.hwp — 이름이 겹치면");
     println!("                              한 건도 쓰지 않고 사용법 오류(2)로 끝낸다");
@@ -5531,7 +5588,7 @@ fn export_markdown(args: &[String]) -> i32 {
 fn run_batch(args: &[String]) -> i32 {
     use std::io::{BufRead, Write};
 
-    const USAGE: &str = "사용법: <파일 목록> | rhwp batch <export-text|info|export-structure|export-tables|fields|search|convert> --json [--mode auto|outline|clause] [--query <검색어>] [--threads <N>] [convert: --out-dir <폴더> [--verify] [--verify-pages]]  (stdin: 한 줄당 파일 경로 하나)\n      rhwp batch fill --form <서식> --data <행.jsonl|행.csv> --out-dir <폴더> --json  (fill 만 stdin 을 읽지 않는다)";
+    const USAGE: &str = "사용법: <파일 목록> | rhwp batch <export-text|info|export-structure|export-tables|fields|search|extract-data|convert> --json [--mode auto|outline|clause] [--query <검색어>] [--kind date|amount|number|all] [--limit <N>] [--threads <N>] [convert: --out-dir <폴더> [--verify] [--verify-pages]]  (stdin: 한 줄당 파일 경로 하나)\n      rhwp batch fill --form <서식> --data <행.jsonl|행.csv> --out-dir <폴더> --json  (fill 만 stdin 을 읽지 않는다)";
 
     let subcommand = args.first().map(String::as_str);
     // [#3719 §6-6] fill 축은 **입력 축 자체가 다르다** — stdin 파일 목록이 아니라 서식 1 개와
@@ -5545,6 +5602,8 @@ fn run_batch(args: &[String]) -> i32 {
     let is_search = subcommand == Some("search");
     // [#3626] --out-dir·--verify·--verify-pages 는 convert 축 전용이다 (같은 규약).
     let is_convert = subcommand == Some("convert");
+    // [#3830] --kind·--limit 는 extract-data 축 전용이다 (같은 규약).
+    let is_extract_data = subcommand == Some("extract-data");
     if !matches!(
         subcommand,
         Some("export-text")
@@ -5553,11 +5612,12 @@ fn run_batch(args: &[String]) -> i32 {
             | Some("export-tables")
             | Some("fields")
             | Some("search")
+            | Some("extract-data")
             | Some("convert")
     ) {
         match subcommand {
             Some(unknown) => eprintln!(
-                "오류: batch 는 export-text·info·export-structure·export-tables·fields·search·convert·fill 만 지원합니다 - {}",
+                "오류: batch 는 export-text·info·export-structure·export-tables·fields·search·extract-data·convert·fill 만 지원합니다 - {}",
                 unknown
             ),
             None => eprintln!("오류: batch 서브커맨드를 지정해주세요."),
@@ -5570,6 +5630,9 @@ fn run_batch(args: &[String]) -> i32 {
     let mut threads_opt: Option<usize> = None;
     let mut structure_mode = rhwp::document_core::queries::structure::StructureMode::Auto;
     let mut search_query: Option<String> = None;
+    // [#3830] extract-data 축 전용 — 종류 필터·문서당 상한.
+    let mut extract_kind = "all".to_string();
+    let mut extract_limit: Option<usize> = None;
     // [#3626] convert 축 전용 — 목적지와 검증 게이트.
     let mut out_dir: Option<std::path::PathBuf> = None;
     // batch 레코드는 언제나 JSON 이므로 json 은 켠 채로 둔다 — verify/verify_pages 만 옵션.
@@ -5640,6 +5703,49 @@ fn run_batch(args: &[String]) -> i32 {
                 search_query = Some(value.clone());
                 i += 2;
             }
+            "--kind" => {
+                // [#3830] --kind 는 extract-data 축 전용이다.
+                if !is_extract_data {
+                    eprintln!("오류: --kind 는 extract-data 에서만 사용할 수 있습니다.");
+                    return EXIT_USAGE;
+                }
+                let Some(value) = args.get(i + 1) else {
+                    eprintln!("오류: --kind 뒤에 date|amount|number|all 이 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match value.as_str() {
+                    "all" => extract_kind = "all".to_string(),
+                    v if rhwp::document_core::queries::extract_data::DataKind::parse(v)
+                        .is_some() =>
+                    {
+                        extract_kind = v.to_string();
+                    }
+                    _ => {
+                        eprintln!("오류: --kind 는 date|amount|number|all 중 하나여야 합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+                i += 2;
+            }
+            "--limit" => {
+                // [#3830] --limit 는 extract-data 축 전용 — **문서마다** 적용되는 상한이다.
+                if !is_extract_data {
+                    eprintln!("오류: --limit 는 extract-data 에서만 사용할 수 있습니다.");
+                    return EXIT_USAGE;
+                }
+                let Some(value) = args.get(i + 1) else {
+                    eprintln!("오류: --limit 뒤에 1 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                match value.parse::<usize>() {
+                    Ok(n) if n >= 1 => extract_limit = Some(n),
+                    _ => {
+                        eprintln!("오류: --limit 뒤에 1 이상의 정수가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+                i += 2;
+            }
             "--mode" => {
                 // [#3261] --mode 는 export-structure 축 전용이다.
                 if !is_structure {
@@ -5699,6 +5805,10 @@ fn run_batch(args: &[String]) -> i32 {
             };
             BatchMode::Search { query: q }
         }
+        Some("extract-data") => BatchMode::ExtractData {
+            kind: extract_kind.as_str(),
+            limit: extract_limit,
+        },
         Some("convert") => {
             // [#3626] 목적지는 명시적이어야 한다. 읽기 전용 6축과 달리 이 축은 입력마다
             // 파일을 쓰는데, 경로는 stdin 에서 오므로 호출자가 산출물이 어디 생기는지
@@ -6469,6 +6579,14 @@ enum BatchMode<'a> {
         out_dir: &'a Path,
         verify: ConversionVerifyOptions,
     },
+    /// [#3830] 날짜·금액·수량 추출 — `extract-data --json` 봉투와 스키마 공유.
+    /// `limit` 은 **문서마다** 적용되는 상한이다(§6-10) — 전건을 이 축에서 훑어 상한을
+    /// 적용하면 뒤쪽 문서가 조용히 0건이 되므로, 문서 하나를 처리하는 이 함수 내부에서
+    /// 매 문서마다 독립적으로 절단한다.
+    ExtractData {
+        kind: &'a str,
+        limit: Option<usize>,
+    },
 }
 
 /// [#3238] 파일 하나를 처리해 NDJSON 레코드 하나를 만든다. 실패는 레코드로 보고하고
@@ -6485,6 +6603,9 @@ fn batch_record(mode: BatchMode<'_>, path: &str) -> serde_json::Value {
         BatchMode::Fields => batch_fields_record_inner(path),
         BatchMode::Search { query } => batch_search_record_inner(path, query),
         BatchMode::Convert { out_dir, verify } => batch_convert_record_inner(path, out_dir, verify),
+        BatchMode::ExtractData { kind, limit } => {
+            batch_extract_data_record_inner(path, kind, limit)
+        }
     })) {
         Ok(record) => record,
         Err(payload) => {
@@ -6548,6 +6669,53 @@ fn batch_export_text_record_inner(path: &str) -> serde_json::Value {
         }),
         "export-text",
     )
+}
+
+/// [#3830] `batch extract-data --json` 의 파일당 레코드 — 단건 `extract-data --json`
+/// 봉투(`extract_data_json_value` 공유)와 같은 스키마다. 추출 로직은 새로 만들지 않고
+/// `DocumentCore::extract_data` 를 그대로 부른다(`extract_data_command` 와 동일한 절차).
+///
+/// [§6-10] `limit` 은 **이 문서 하나**에 대한 상한이다 — 배치 전체에 걸친 전역 상한이
+/// 아니다. 전역 상한으로 읽으면 앞선 문서가 한도를 다 써버려 뒤 문서가 조용히 0건으로
+/// 보고되고, 소비자는 "그 문서에 값이 없다"와 "한도를 이미 다 썼다"를 구별할 수 없다.
+/// 그래서 문서마다 독립적으로 전수 추출 후 절단한다 — 단건 `extract-data` 와 같은 규약.
+fn batch_extract_data_record_inner(
+    path: &str,
+    kind_arg: &str,
+    limit: Option<usize>,
+) -> serde_json::Value {
+    use rhwp::document_core::queries::extract_data::DataKind;
+
+    let data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파일을 읽을 수 없습니다: {}", e)),
+    };
+    let doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
+        Ok(d) => d,
+        Err(e) => return batch_fail_record(path, format!("파싱 실패: {}", e)),
+    };
+
+    let selected: Vec<DataKind> = if kind_arg == "all" {
+        DataKind::ALL.to_vec()
+    } else {
+        DataKind::parse(kind_arg).into_iter().collect()
+    };
+
+    let all_items = doc.extract_data(&selected);
+    let total_item_count = all_items.len();
+    let mut counts = serde_json::Map::new();
+    for kind in &selected {
+        let n = all_items.iter().filter(|it| it.kind == *kind).count();
+        counts.insert(kind.as_str().to_string(), serde_json::json!(n));
+    }
+    let counts = serde_json::Value::Object(counts);
+
+    let items: Vec<_> = match limit {
+        Some(n) => all_items.into_iter().take(n).collect(),
+        None => all_items,
+    };
+
+    extract_data_json_value(path, kind_arg, &items, total_item_count, &counts)
 }
 
 /// [#3261] `batch export-structure --json` 의 파일당 레코드 — `export-structure --json`
