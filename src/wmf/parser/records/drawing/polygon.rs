@@ -47,6 +47,16 @@ impl META_POLYGON {
             crate::wmf::parser::read_i16_from_le_bytes(buf)?;
         record_size.consume(number_of_points_bytes);
 
+        // i16 음수 → `as usize` 는 usize::MAX 근처가 되고 `Vec::with_capacity` 가
+        // capacity overflow 로 패닉한다. poly_line.rs 와 같은 결함이며 Region 이
+        // 이미 쓰는 방식으로 막는다(objects/graphics/region.rs:96).
+        if number_of_points < 0 {
+            return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
+                cause: format!(
+                    "The number_of_points field `{number_of_points}` must not be negative"
+                ),
+            });
+        }
         let mut a_points = Vec::with_capacity(number_of_points as usize);
 
         for _ in 0..number_of_points {

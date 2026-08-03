@@ -44,6 +44,17 @@ impl META_POLYLINE {
             crate::wmf::parser::read_i16_from_le_bytes(buf)?;
         record_size.consume(number_of_points_bytes);
 
+        // `number_of_points` 는 i16 이라 손상된 WMF 가 음수를 담을 수 있다. 음수를
+        // `as usize` 로 넓히면 usize::MAX 근처가 되어 `Vec::with_capacity` 가
+        // capacity overflow 로 패닉한다(-1 → 18446744073709551615).
+        // 같은 결함을 Region 은 이미 이 방식으로 막는다(objects/graphics/region.rs:96).
+        if number_of_points < 0 {
+            return Err(crate::wmf::parser::ParseError::UnexpectedPattern {
+                cause: format!(
+                    "The number_of_points field `{number_of_points}` must not be negative"
+                ),
+            });
+        }
         let mut a_points = Vec::with_capacity(number_of_points as usize);
 
         for _ in 0..number_of_points {
