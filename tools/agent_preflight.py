@@ -549,27 +549,110 @@ def check_declared_flags_real(binary: Path, caps_j, rep: Report) -> None:
         rep.ok(f"{check} ({checked}개 플래그)")
 
 
-def check_failure_stdout_silent(binary: Path, rep: Report) -> None:
-    """실패 경로에서 stdout 이 0바이트여야 한다. 반쪽 JSON 이 나가면
-    소비자가 파싱하다 죽거나, 더 나쁘게는 잘린 값을 참으로 읽는다."""
+# 실패 경로에서 stdout 봉투를 내는 것이 **의도된 설계**인 명령.
+#
+# `run` 은 계획 파싱이 성공한 뒤의 실패를 저널 봉투로 보고한다 —
+# MCP `hwp_run_plan` 과 같은 저널을 공유하기 때문이다. 다만 이 예외가
+# `capabilities.jsonContract.failure` 자기서술에는 적혀 있지 않다(#3884 G3).
+# 여기 넣는다고 그 불일치가 해소되는 것은 아니므로, 자기서술 쪽을 고칠 때까지
+# 이 목록이 그 사실의 기록 역할을 한다.
+FAILURE_STDOUT_ALLOWED = {"run"}
+
+
+def check_failure_stdout_silent(binary: Path, caps_j, rep: Report) -> None:
+    """실패 경로에서 stdout 이 0바이트여야 한다.
+
+    반쪽 JSON 이 나가면 소비자가 파싱하다 죽거나, 더 나쁘게는 **잘린 값을 참으로
+    읽는다.**
+
+    예전에는 `info`·`export-text` 두 명령만 하드코딩해서 봤다. 그 사이 `--json`
+    명령이 31개로 늘었고, 검사 밖에 있던 `bench` 가 exit 1 에 stdout 518바이트를
+    흘리고 있었다(#3884 G1). **표면이 자라면 하드코딩한 표본은 자동으로 낡는다** —
+    그래서 `capabilities` 에서 `--json` 명령을 전수로 받아 훑는다.
+    """
     check = "실패 경로 stdout 0바이트"
-    cases = [
-        ["info", "--json", "존재하지_않는_파일_preflight.hwp"],
-        ["info", "--json"],
-        ["export-text", "--json", "존재하지_않는_파일_preflight.hwp"],
-    ]
+    cmds = command_map(caps_j)
+    if not cmds:
+        rep.skip(check, "capabilities.commands 를 못 읽음")
+        return
+
+    missing = "존재하지_않는_파일_preflight.hwp"
     bad = 0
-    for args in cases:
-        r = run([str(binary)] + args)
-        if r.returncode != 0 and r.stdout.strip():
-            rep.fail(
-                check,
-                f"`{' '.join(args)}` → exit {r.returncode} 인데 stdout {len(r.stdout)}바이트",
-                "실패 경로에서는 stdout 에 아무것도 쓰지 마라. 진단은 stderr 로.",
-            )
-            bad += 1
+    checked = 0
+    skipped_allowed = []
+
+    for name, spec in sorted(cmds.items()):
+        # `--json` 선언 명령이 1차 대상이지만, **선언하지 않은 명령도 실패하면
+        # stdout 이 비어야 한다** — 규약은 봉투 유무가 아니라 실패 경로에 걸린다.
+        # `bench` 가 정확히 그 사각이었다: json 미선언이라 --json 필터를 빠져나가면서
+        # exit 1 에 stdout 518바이트를 흘리고 있었다(#3884 G1).
+        if name in FAILURE_STDOUT_ALLOWED:
+            skipped_allowed.append(name)
+            continue
+        # 없는 파일을 준다 — 문서를 받는 명령이면 런타임 실패, 아니면 사용법 오류다.
+        # 어느 쪽이든 **실패이므로 stdout 은 비어야 한다.**
+        for args in ([name, "--json", missing], [name, "--json"]):
+            r = run([str(binary)] + args)
+            checked += 1
+            if r.returncode != 0 and r.stdout.strip():
+                rep.fail(
+                    check,
+                    f"`rhwp {' '.join(args)}` → exit {r.returncode} 인데 "
+                    f"stdout {len(r.stdout)}바이트",
+                    "실패 경로에서는 stdout 에 아무것도 쓰지 마라. 진단은 stderr 로. "
+                    "의도된 예외라면 FAILURE_STDOUT_ALLOWED 에 **사유와 함께** 넣어라.",
+                )
+                bad += 1
+
     if bad == 0:
-        rep.ok(f"{check} ({len(cases)}개 경로)")
+        note = f" (제외 {','.join(skipped_allowed)})" if skipped_allowed else ""
+        rep.ok(f"{check} ({checked}개 경로{note})")
+
+
+def check_undeclared_commands_are_not_invisible(binary: Path, caps_j, helptext: str, rep: Report) -> None:
+    """`capabilities` 에 `flags` 를 선언하지 않은 명령은 **모든 플래그 검사에서 사라진다.**
+
+    `check_declared_flags_real` 은 선언한 플래그만 본다(선언 → 실물). 역방향이 없어서
+    **아무것도 선언하지 않으면 검사를 통째로 피한다** — 선언을 안 하는 것이 가드를
+    피하는 가장 쉬운 길이 되는 구조다.
+
+    실제로 그 구멍으로 `dump` 가 미지 플래그를 exit 0 으로 무시하고 있었다(#3884 G2).
+
+    여기서는 **그런 명령이 있다는 사실 자체**를 드러낸다. 자동으로 고칠 수는 없다 —
+    진단 전용 명령을 자기서술에 넣을지, "자기서술 밖 명령"이라는 부류를 정의할지는
+    판단이 필요하기 때문이다. 다만 **판단하지 않은 채 조용히 넘어가지는 않게** 한다.
+    """
+    check = "자기서술 밖 명령"
+    cmds = command_map(caps_j)
+    if not cmds:
+        rep.skip(check, "capabilities.commands 를 못 읽음")
+        return
+
+    silent = sorted(
+        name
+        for name, spec in cmds.items()
+        if not (spec.get("flags") or []) and spec.get("json") is not True
+    )
+    if not silent:
+        rep.ok(check)
+        return
+
+    # 미지 플래그를 실제로 무시하는지 확인한다 — 선언이 없다고 다 문제인 것은 아니다.
+    offenders = []
+    for name in silent:
+        r = run([str(binary), name, "--rhwp-preflight-bogus-flag"])
+        if r.returncode == 0:
+            offenders.append(name)
+
+    if offenders:
+        rep.fail(
+            check,
+            f"미지 플래그를 exit 0 으로 무시: {offenders}",
+            "선언이 없으면 플래그 검사가 통째로 비켜 간다. capabilities 에 등재하거나, "
+            "자기서술 밖 명령의 규약을 문서로 정의하라(#3884 G2).",
+        )
+    else:
+        rep.ok(f"{check} ({len(silent)}개 미선언 명령, 미지 플래그는 거부함)")
 
 
 # ── 엔트리 ───────────────────────────────────────────────────────────────────
@@ -638,7 +721,8 @@ def main() -> int:
                 check_help_coverage(caps_j, helptext, help_hidden, rep)
                 check_json_has_mcp_tool(caps_j, mcp_j, mcp_excluded, rep)
                 check_declared_flags_real(binary, caps_j, rep)
-                check_failure_stdout_silent(binary, rep)
+                check_failure_stdout_silent(binary, caps_j, rep)
+                check_undeclared_commands_are_not_invisible(binary, caps_j, helptext, rep)
 
     # ── 보고 ──
     print()
