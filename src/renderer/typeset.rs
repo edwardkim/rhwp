@@ -1848,6 +1848,38 @@ fn paragraph_saved_vpos_reset_starts_new_page_after(
         if (if multi_col { nv < cl } else { nv <= allowed_top_vpos }) && cl > 5000)
 }
 
+/// 저장 `vpos` 되돌아감을 쪽 경계로 인정하려면 쪽이 이만큼 차 있어야 한다 [#3837].
+///
+/// 쪽 중간에서 인정하면 한 문서 안에서 가드가 연쇄 발동해 쪽수가 늘어난다
+/// (`156633519 산업활동동향`: pi 501개 이동 +3쪽). 이 조건 하나로 PI 코호트 회귀가
+/// 2건에서 0건이 됐고, 50·75·90% 가 모두 같은 결과라 가장 조인 값을 쓴다.
+const STORED_VPOS_REWIND_MIN_FILL: f64 = 0.90;
+
+/// 저장 `vpos` 가 되돌아가는 자리 — 한글이 거기서 쪽을 끊었다는 신호다 [#3837].
+///
+/// 기존 [`paragraph_saved_vpos_reset_starts_new_page_after`] 는 단일 단에서 `nv == 0`
+/// 만 인정하고, 그마저 fit 완화에만 쓰인다(#418 회피). 여기서는 되돌아감 자체를 본다.
+///
+/// 판별력 실측(r29 `PI_MISMATCH` n=1 코호트 66건): 어긋난 항목의 36% 가 되돌아감인데,
+/// 같은 문서 **다른 쪽**의 마지막 항목은 1,134개 중 2개(0.2%)뿐이다 — 180배 농축.
+fn stored_vpos_rewinds(prev_vpos: Option<i32>, para: &Paragraph) -> bool {
+    let Some(nv) = para.line_segs.first().map(|s| s.vertical_pos) else {
+        return false;
+    };
+    // `cl > 5000` 은 기존 vpos-reset 가드와 같은 하한 — 쪽 상단 근처에서 시작한 항목을
+    // 기준으로 삼으면 되돌아감이 아니라 정상 흐름을 끊는다.
+    prev_vpos.is_some_and(|cl| nv < cl && cl > 5000)
+}
+
+/// 값이 있는 가장 가까운 앞 문단의 마지막 저장 `vpos` — 직전 문단이 비어 line_segs 가
+/// 없을 수 있다.
+fn preceding_stored_vpos(paragraphs: &[Paragraph], para_idx: usize) -> Option<i32> {
+    paragraphs[..para_idx.min(paragraphs.len())]
+        .iter()
+        .rev()
+        .find_map(|p| p.line_segs.last().map(|s| s.vertical_pos))
+}
+
 fn paragraph_forces_page_boundary_after(
     current_para: &Paragraph,
     next_para: &Paragraph,
@@ -12593,7 +12625,13 @@ impl TypesetEngine {
             fmt.height_for_fit,
             omit_untrusted_empty || strict_after_empty_host_float,
         );
+        // [#3837] 저장 vpos 가 되돌아가면 한글은 거기서 쪽을 끊었다.
+        let stored_vpos_rewind_break = st.col_count == 1
+            && !st.current_items.is_empty()
+            && st.current_height >= available * STORED_VPOS_REWIND_MIN_FILL
+            && stored_vpos_rewinds(preceding_stored_vpos(paragraphs, para_idx), para);
         if forced_page_break_line.is_none()
+            && !stored_vpos_rewind_break
             && (st.current_height + page_end_fit_height <= available
                 || saved_single_line_bottom_fits
                 || saved_list_tail_body_vpos_fits)
@@ -13933,6 +13971,7 @@ impl TypesetEngine {
                             is_first_placed,
                             is_last_placed,
                             styles,
+                            preceding_stored_vpos(paragraphs_all, para_idx),
                         );
                     } else if self.try_typeset_empty_para_float_table(
                         st,
@@ -14377,6 +14416,8 @@ impl TypesetEngine {
         is_first_placed: bool,
         is_last_placed: bool,
         styles: &ResolvedStyleSet,
+        // [#3837] 값이 있는 가장 가까운 앞 문단의 마지막 저장 vpos.
+        prev_stored_vpos: Option<i32>,
     ) {
         // [Task #1152] 호스트 문단의 intra-paragraph vpos-reset 가드.
         // empty-text host paragraph 가 N controls + N line_segs 1:1 매핑이고,
@@ -14522,10 +14563,17 @@ impl TypesetEngine {
             .is_some_and(|bounds| {
                 saved_bounds_fit_at_flow_tail(bounds, st.current_height, available)
             });
-        if st.current_height + table_height > available
+        // [#3837] 저장 vpos 되돌아감은 한글이 이 표를 다음 쪽 맨 위에 뒀다는 신호다
+        // (21967401 응시원서: 직전 항목 vpos=41645 인데 이 표는 1000).
+        let stored_vpos_rewind_break = st.col_count == 1
+            && !st.current_items.is_empty()
+            && st.current_height >= available * STORED_VPOS_REWIND_MIN_FILL
+            && stored_vpos_rewinds(prev_stored_vpos, para);
+        if (st.current_height + table_height > available
             && !fits_after_overlay_shapes
             && !saved_tac_table_bottom_fits
-            && !st.current_items.is_empty()
+            && !st.current_items.is_empty())
+            || stored_vpos_rewind_break
         {
             st.advance_column_or_new_page();
         }
