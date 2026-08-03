@@ -468,6 +468,37 @@ find samples -type f \( -name "*.hwp" -o -name "*.hwpx" -o -name "*.hml" \) \
 | 7 | **복잡도 + 최대 규모 실측 시간** (⑥) | 탐지기가 DoS 표면이 된다 |
 | 8 | **N2 경계 목록에 한 줄 추가** (§2.2) | 규칙 경계가 문서화되지 않음 |
 
+### 7.1.1 `tests/security_corpus_regression.rs` 에 무엇을 더하는가
+
+세 탐지기별 개별 계약 시험(`hidden_text_contract.rs`·`injection_scan_contract.rs`·
+`unicode_deception_contract.rs`)이 규칙 하나하나의 옳음을 고정한다면, 회귀 스위트
+`tests/security_corpus_regression.rs` 는 **그 전체가 여전히 일관되게 옳은가**를 묶어서
+확인한다. 새 탐지 규칙을 추가했으면 다음을 이 파일에도 반영한다 — 개별 계약 시험에
+표본을 추가하는 것과는 **별개의 작업**이다:
+
+1. **새 벡터를 신설했다면** — `positive_corpus_*` 계열에 그 벡터를 대표하는 합성 문서
+   시험을 하나 추가한다(파일로 커밋하지 않고 §4 방식으로 시험 시점 생성). 기존
+   `positive_corpus_hidden_text_vector_is_caught` 류를 본뜬다: 합성 → `clean: false` →
+   발견 배열이 비지 않았음, 세 단언이면 충분하다. 벡터마다 새 함수를 만들 필요는 없다 —
+   같은 탐지기 안에서는 기존 양성 시험에 새 페이로드를 얹어도 된다.
+2. **기존 규칙을 넓혔다면** — `negative_corpus_sweep_is_clean_across_all_three_detectors`
+   를 그대로 재실행해 경고 0을 재확인한다(§7.2). 이 시험은 이미 세 탐지기를 다 훑으므로
+   별도 준비 없이 바로 게이트로 쓸 수 있다.
+3. **오탐이 보고돼 §7.3 절차로 규칙을 좁혔다면** — 그 문서(또는 최소 재현 표본)를
+   `top_level_documents()` 가 훑는 `samples/` 최상위에 추가하거나(정상 문서일 때만),
+   이미 하위 디렉터리에 있다면 해당 탐지기의 개별 계약 시험 `CLEAN_SAMPLES`/
+   `CLEAN_CORPUS` 목록에 추가한다 — 이 스위트의 스윕 범위는 최상위 문서 파일이고
+   하위 디렉터리 표본은 개별 계약 시험이 커버한다(코드 주석에 이 경계가 적혀 있다).
+4. **봉투에 새 최상위 필드를 추가했다면** — `all_three_envelopes_share_a_consistent_
+   clean_and_array_contract` 가 여전히 통과하는지 확인한다. 세 탐지기가 여전히
+   `clean: bool` + `schemaVersion: "1.0"` + 발견 배열의 정합을 지키는지가 이 시험의
+   역할이다. 새 필드가 이 정합을 깼다면(예: `clean` 을 문자열로 바꿈) 이 시험이 red 로
+   잡아야 한다 — 세 탐지기가 갈라지면 소비자가 도구마다 다른 파싱 코드를 짜야 한다.
+5. **표본 스윕이 대표셋이 아니라 전수를 요구하게 됐다면**(예: 하위 디렉터리 표본에서
+   반복적으로 오탐이 나기 시작) — `top_level_documents()` 의 범위를 재귀로 넓히기 전에
+   §5.3 의 시간 예산(12.65초/668건, `fields` 축 기준)을 함께 실측하고 이 절에 기록한다.
+   프로세스 스폰 비용 때문에 탐지기당 실행 시간이 배치 스캔보다 훨씬 크다.
+
 ### 7.2 규칙을 **넓힐** 때 (기존 규칙의 탐지 범위 확대)
 
 넓히기는 신설보다 위험하다 — 기존 음성 표본이 전부 재검증 대상이 된다.
@@ -540,3 +571,27 @@ find samples -type f \( -name "*.hwp" -o -name "*.hwpx" -o -name "*.hml" \) \
 [#3787](https://github.com/edwardkim/rhwp/issues/3787), 로드맵은
 [#3793](https://github.com/edwardkim/rhwp/issues/3793), 유니코드 축의 전신은
 [#3707](https://github.com/edwardkim/rhwp/issues/3707).
+
+## 음성 코퍼스에 진짜 은닉 텍스트가 섞여 있다
+
+`samples/` 는 "정상 문서 모음"으로 쓰이지만 **실제로는 흰 글씨가 든 문서가 두 건 있다.**
+회귀 스위트를 처음 돌렸을 때 이 두 건이 잡혔고, 오탐인 줄 알았으나 개별 확인 결과
+**탐지가 맞았다**([#3809](https://github.com/edwardkim/rhwp/pull/3809) 에서 SVG 렌더 좌표로 검증):
+
+| 문서 | 내용 | 근거 |
+| --- | --- | --- |
+| `synam-001.hwp` | 23쪽 흰 글자 28자 | 글자 y 288~304, 가장 가까운 초록 막대 y 318~347 — **겹치지 않는다** |
+| `issue1892_hwp3_tab_roundtrip.hwp` | 1쪽 "귀하" 2건 | 그 쪽에 `<image>` 0개, 비흰색 `<rect>` 0개 |
+
+그래서 `tests/security_corpus_regression.rs` 의 `KNOWN_GENUINE_HIDDEN_TEXT` 에
+**이 두 문서만** 등재했다. **규칙을 느슨하게 하지 않았다** — 규칙은 맞았고 코퍼스에 대한
+전제가 틀렸다.
+
+### 허용목록이 서랍이 되지 않게
+
+허용목록은 "탐지가 맞았다"는 선언이므로, 그 문서에서 탐지가 **계속 나와야 한다.**
+`allowlisted_documents_still_actually_trigger_detection` 이 이를 지킨다 — 탐지가 사라지면
+탐지기가 퇴행했거나(고칠 것) 문서가 바뀐 것(목록에서 뺄 것)이고, 어느 쪽이든 사람이 봐야 한다.
+
+**여기에 항목을 추가할 때는 반드시 위 표와 같은 개별 근거를 남긴다.** 근거 없이 이름만
+늘리면 이 목록이 오탐을 숨기는 서랍이 된다.
