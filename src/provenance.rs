@@ -400,8 +400,13 @@ pub const MAP: &[CommandProvenance] = &[
     CommandProvenance {
         command: "export-agent-manifest",
         untrusted: NONE,
-        note: "문서를 열지 않는다 — capabilities·export-ir-schema·export-provenance-map \
-               (있으면 export-plan-schema)의 자기서술을 조립한 것뿐이다.",
+        note: "문서를 열지 않는다 — capabilities·export-ir-schema·export-provenance-map·\
+               export-plan-schema 의 자기서술을 조립한 것뿐이다.",
+    },
+    CommandProvenance {
+        command: "export-plan-schema",
+        untrusted: NONE,
+        note: "문서를 열지 않는다 — run 계획서 문법의 자기서술(JSON Schema)이다.",
     },
 ];
 
