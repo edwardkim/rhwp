@@ -10991,17 +10991,20 @@ fn convert_hwp(args: &[String]) -> i32 {
                             verify_pages_report = serde_json::json!({
                                 "before": before, "after": after, "identical": false,
                             });
-                            if json_mode {
-                                emit_envelope(bytes.len(), verify_report, verify_pages_report);
+                            // [#3915] 여기서 곧장 종료하면 `--verify` 를 함께 준 경우 IR
+                            // 비교가 아예 돌지 않아 **IR 차이가 있어도 보고되지 않는다.**
+                            // 쪽수와 IR 은 서로 다른 결함을 재므로, 한쪽이 실패해도 다른
+                            // 쪽을 마저 재고 함께 보고한다. 종료 코드는 종전대로 쪽수
+                            // 실패를 우선한다(4) — 계약 무변경.
+                            exit_code = 4;
+                        } else {
+                            if !json_mode {
+                                println!("검증 통과(--verify-pages): {}쪽", before);
                             }
-                            process::exit(4);
+                            verify_pages_report = serde_json::json!({
+                                "before": before, "after": after, "identical": true,
+                            });
                         }
-                        if !json_mode {
-                            println!("검증 통과(--verify-pages): {}쪽", before);
-                        }
-                        verify_pages_report = serde_json::json!({
-                            "before": before, "after": after, "identical": true,
-                        });
                     }
 
                     if verify_options.verify {
@@ -11021,7 +11024,11 @@ fn convert_hwp(args: &[String]) -> i32 {
                             verify_report = serde_json::json!({
                                 "identical": false, "diffCount": diff.differences.len(),
                             });
-                            exit_code = 3;
+                            // [#3915] 쪽수 실패(4)가 이미 잡혔으면 그 코드를 유지한다 —
+                            // 두 축이 함께 실패해도 종전 계약대로 4 로 끝난다.
+                            if exit_code == EXIT_OK {
+                                exit_code = 3;
+                            }
                         } else {
                             if !json_mode {
                                 println!("검증 통과(--verify): IR 차이 없음");
@@ -11346,17 +11353,20 @@ fn export_hwpx(args: &[String]) -> i32 {
                             verify_pages_report = serde_json::json!({
                                 "before": before, "after": after, "identical": false,
                             });
-                            if json_mode {
-                                emit_envelope(bytes.len(), verify_report, verify_pages_report);
+                            // [#3915] 여기서 곧장 종료하면 `--verify` 를 함께 준 경우 IR
+                            // 비교가 아예 돌지 않아 **IR 차이가 있어도 보고되지 않는다.**
+                            // 쪽수와 IR 은 서로 다른 결함을 재므로, 한쪽이 실패해도 다른
+                            // 쪽을 마저 재고 함께 보고한다. 종료 코드는 종전대로 쪽수
+                            // 실패를 우선한다(4) — 계약 무변경.
+                            exit_code = 4;
+                        } else {
+                            if !json_mode {
+                                println!("검증 통과(--verify-pages): {}쪽", before);
                             }
-                            process::exit(4);
+                            verify_pages_report = serde_json::json!({
+                                "before": before, "after": after, "identical": true,
+                            });
                         }
-                        if !json_mode {
-                            println!("검증 통과(--verify-pages): {}쪽", before);
-                        }
-                        verify_pages_report = serde_json::json!({
-                            "before": before, "after": after, "identical": true,
-                        });
                     }
 
                     if verify_options.verify {
@@ -11369,7 +11379,11 @@ fn export_hwpx(args: &[String]) -> i32 {
                             verify_report = serde_json::json!({
                                 "identical": false, "diffCount": diff.differences.len(),
                             });
-                            exit_code = 3;
+                            // [#3915] 쪽수 실패(4)가 이미 잡혔으면 그 코드를 유지한다 —
+                            // 두 축이 함께 실패해도 종전 계약대로 4 로 끝난다.
+                            if exit_code == EXIT_OK {
+                                exit_code = 3;
+                            }
                         } else {
                             if !json_mode {
                                 println!("검증 통과(--verify): IR 차이 없음");
