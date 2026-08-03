@@ -1365,7 +1365,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
         // 문서를 열지 않는 무상태 도구이므로 hwp_export_provenance_map 처럼 입력이 없다.
         tool_with_optional_args(
             "hwp_export_agent_manifest",
-            "capabilities·export-ir-schema·export-provenance-map(있으면 export-plan-schema)의 산출을 한 번의 호출로 조립해 돌려준다. 처음 붙는 에이전트의 부트스트랩 왕복을 줄이는 용도. 아직 없는 축은 필드를 넣지 않고 missingAxes 로 무엇이 빠졌는지 밝힌다.",
+            "capabilities·export-ir-schema·export-provenance-map·export-plan-schema 의 산출을 한 번의 호출로 조립해 돌려준다. 처음 붙는 에이전트의 부트스트랩 왕복을 줄이는 용도. 아직 없는 축이 생기면 필드를 넣지 않고 missingAxes 로 무엇이 빠졌는지 밝힌다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {
@@ -1379,7 +1379,7 @@ fn mcp_tool_definitions() -> Vec<serde_json::Value> {
             "export-agent-manifest",
             serde_json::json!(["export-agent-manifest", "--json"]),
             serde_json::json!([{ "when": "bare", "args": ["--bare"] }]),
-            &["schemaVersion", "capabilities", "irSchema", "provenanceMap", "missingAxes"],
+            &["schemaVersion", "capabilities", "irSchema", "provenanceMap", "planSchema", "missingAxes"],
         ),
         // [#3719 §6-11] 공개 전 정리 — 되돌릴 수 없는 쓰기라 dryRun 이 1차 흐름이다.
         tool_with_optional_args(
@@ -1726,15 +1726,15 @@ fn capabilities_command_entries() -> Vec<serde_json::Value> {
                 "commands",
             ],
         ),
-        // [#3828 B2] capabilities·export-ir-schema·export-provenance-map(·있으면
-        // export-plan-schema)을 한 봉투로 묶는다 — 처음 붙는 에이전트의 왕복 4회를 1회로.
+        // [#3828 B2] capabilities·export-ir-schema·export-provenance-map·export-plan-schema
+        // 를 한 봉투로 묶는다 — 처음 붙는 에이전트의 왕복 4회를 1회로.
         cmd_json(
             "export-agent-manifest",
             "query",
-            "capabilities+irSchema+provenanceMap(+planSchema, 있으면)을 한 번의 호출로 조립 — 누락 축은 missingAxes 로 명시 (#3828 B2)",
+            "capabilities+irSchema+provenanceMap+planSchema 를 한 번의 호출로 조립 — 누락 축이 생기면 missingAxes 로 명시 (#3828 B2)",
             false,
             &["--json", "--bare"],
-            &["schemaVersion", "capabilities", "irSchema", "provenanceMap", "missingAxes"],
+            &["schemaVersion", "capabilities", "irSchema", "provenanceMap", "planSchema", "missingAxes"],
         ),
         cmd(
             "mcp-serve",
@@ -13723,14 +13723,14 @@ fn cmd_export_capabilities_schema(args: &[String]) -> i32 {
     EXIT_OK
 }
 
-/// [#3828 B2] `export-agent-manifest` 조립 코어 — capabilities·irSchema·provenanceMap
-/// (그리고 있으면 planSchema)을 왕복 1회로 묶는다.
+/// [#3828 B2] `export-agent-manifest` 조립 코어 — capabilities·irSchema·provenanceMap·
+/// planSchema 를 왕복 1회로 묶는다.
 ///
 /// 각 서브필드는 해당 명령의 기존 산출 함수를 그대로 불러 조립만 한다 — 스키마·지도
-/// 로직을 여기서 다시 만들지 않는다. `planSchema` 축(#3808 `export-plan-schema`)은
-/// 이 브랜치 시점에 아직 병합되지 않아 필드를 넣지 않고, 대신 `missingAxes` 로
-/// 무엇이 빠졌는지 기계가 읽게 명시한다 — null 로 채우면 "값이 비었다"와 "명령이
-/// 아직 없다"를 소비자가 구분할 수 없다.
+/// 로직을 여기서 다시 만들지 않는다. `missingAxes` 는 네 축이 모두 실린 지금 빈
+/// 배열이지만 필드 자체는 남긴다 — 앞으로 축이 늘 때 "아직 없는 축"을 이 배열로
+/// 알리는 것이 B2 의 계약이고, null 로 채우면 "값이 비었다"와 "명령이 아직 없다"를
+/// 소비자가 구분할 수 없다.
 fn agent_manifest_value(bare: bool) -> serde_json::Value {
     let mut fields = serde_json::Map::new();
     fields.insert(
@@ -13745,9 +13745,10 @@ fn agent_manifest_value(bare: bool) -> serde_json::Value {
             "export-provenance-map",
         ),
     );
-    // planSchema: `export-plan-schema`(#3808)가 이 시점에 아직 없다 — 있으면 여기서
-    // rhwp::plan_schema 류 함수를 불러 필드를 채우고 missingAxes 에서 뺀다.
-    fields.insert("missingAxes".to_string(), serde_json::json!(["planSchema"]));
+    // [#3808] planSchema 축 — irSchema 처럼 bare 본문을 싣는다. 본문이 `$id`·
+    // `planSchemaVersion` 을 자체 내장하므로 봉투 메타를 중복하지 않는다.
+    fields.insert("planSchema".to_string(), rhwp::plan_schema::plan_schema());
+    fields.insert("missingAxes".to_string(), serde_json::json!([]));
 
     if bare {
         return serde_json::Value::Object(fields);
@@ -13794,7 +13795,7 @@ fn cmd_export_agent_manifest(args: &[String]) -> i32 {
     println!("  capabilities     포함");
     println!("  irSchema         포함");
     println!("  provenanceMap    포함");
-    println!("  planSchema       없음 — export-plan-schema(#3808) 미병합");
+    println!("  planSchema       포함");
     println!();
     println!("기계 계약은 --json 을 쓰세요 (--bare 로 최상위 표지 없이).");
     EXIT_OK

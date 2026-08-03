@@ -1131,3 +1131,28 @@ fn collect_refs(value: &serde_json::Value, sink: &mut impl FnMut(&str)) {
         _ => {}
     }
 }
+
+// ── 8) 에이전트 매니페스트 접합 (#3828 B2 ↔ #3808) ──────────────────────
+
+/// B2(`export-agent-manifest`)는 이 PR 이 없던 시점에 병합되어 `missingAxes` 로
+/// `["planSchema"]` 를 광고했다. 두 축이 한 트리에 모인 지금 그 광고가 남아 있으면
+/// "축이 있는데 없다고 말하는" 자기서술 거짓이 된다 — 매니페스트가 planSchema 를
+/// 실제로 싣고, 그 본문이 `export-plan-schema --bare` 와 동일(단일 출처)함을 고정한다.
+#[test]
+fn agent_manifest_carries_the_plan_schema_axis() {
+    let args = ["export-agent-manifest", "--json"];
+    let out = run(&args);
+    assert_eq!(out.status.code(), Some(0), "{args:?}");
+    let v: serde_json::Value = serde_json::from_slice(&out.stdout).expect("매니페스트 JSON");
+    assert_eq!(
+        v["missingAxes"],
+        serde_json::json!([]),
+        "네 축이 모두 실렸는데 빠진 축을 광고하고 있다: {}",
+        v["missingAxes"]
+    );
+    assert_eq!(
+        v["planSchema"],
+        schema_body(),
+        "매니페스트의 planSchema 가 export-plan-schema --bare 와 다르다 — 단일 출처 위반"
+    );
+}
