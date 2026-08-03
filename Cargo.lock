@@ -1428,9 +1428,9 @@ dependencies = [
 
 [[package]]
 name = "subsecond"
-version = "0.7.9"
+version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9cc79674bd55726e6b123204403389400229a95fe4a3b2c5453dada70b06ca95"
+checksum = "d350d5788fa94d560d92269266a50efc77b036bfca6675e420b64df7b3211f37"
 dependencies = [
  "js-sys",
  "libc",
@@ -1447,9 +1447,9 @@ dependencies = [
 
 [[package]]
 name = "subsecond-types"
-version = "0.7.9"
+version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9798bfed58797aed51c672aa99810aac30a50d3120ecfdcf28c13784e9a8f1c"
+checksum = "dcf32d66269b5fbb8558334e8d22b657b2f7af0dd2ef56c231541099a862e464"
 dependencies = [
  "serde",
 ]
