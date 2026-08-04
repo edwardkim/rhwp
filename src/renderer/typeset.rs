@@ -2408,6 +2408,41 @@ fn is_single_noninline_picture_table(table: &crate::model::table::Table) -> bool
 /// `LINE_SEG`에 물리 페이지 좌표를 남기는 형상이다. 후자의 내부 그림은 TAC여도
 /// 표 자체가 비-TAC float이므로 허용한다. 그림이 아닌 단순 1×1 표는 별도의 선언
 /// 높이 신뢰 판정을 통과한 native HWP5에서만 raw anchor를 허용한다.
+/// 호스트 문단의 저장 줄이 이 개체 높이를 실제로 담는가 [#3925].
+///
+/// 담지 않는 호스트의 raw `vpos` 를 물리 anchor 로 해석하면 개체가 저장 사다리보다 훨씬
+/// 아래에 놓여 쪽 소비가 부풀고 뒤 문단이 다음 쪽으로 밀린다 —
+/// `36324768_결재문서본문.hwpx` pi=11 은 호스트 `lh` 가 14.7px 인데 표는 253.1px 라
+/// 쪽 소비가 187px 늘어 2→3쪽이 됐다. 판정 기준은 `lh ≥ 표높이 + outMargin 상하` 로
+/// 같은 파일의 사다리 연속 가드와 맞춘다.
+fn stored_host_line_covers_object(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    table: &crate::model::table::Table,
+) -> bool {
+    let need = table.common.height as i64
+        + table.outer_margin_top as i64
+        + table.outer_margin_bottom as i64;
+    let first = |p: &Paragraph| {
+        p.line_segs
+            .iter()
+            .find(|seg| !is_synthetic_line_seg(seg))
+            .map(|seg| seg.vertical_pos as i64)
+    };
+    // 호스트 줄 자체가 개체를 담거나, 다음 문단의 저장 vpos 가 개체 자리를 비워 뒀어야
+    // 사다리가 그 anchor 를 뒷받침한다.
+    let host_covers = para
+        .line_segs
+        .iter()
+        .filter(|seg| !is_synthetic_line_seg(seg))
+        .any(|seg| seg.line_height as i64 >= need);
+    let ladder_leaves_room = match (first(para), next_para.and_then(first)) {
+        (Some(cur), Some(next)) => next - cur >= need,
+        _ => false,
+    };
+    host_covers || ladder_leaves_room
+}
+
 fn is_stored_anchor_picture_table(table: &crate::model::table::Table) -> bool {
     !table.common.treat_as_char
         && matches!(
@@ -15732,7 +15767,12 @@ impl TypesetEngine {
         let stored_single_topbottom_top = (is_topbottom_para_float
             && topbottom_float_count == 1
             && is_stored_anchor_table
-            && (st.profile.native_hwp5_layout() || st.profile.hwpx_stored_layout()))
+            // [#3925] HWPX 원본은 호스트 줄이 개체 높이를 실제로 담을 때만 raw anchor 를
+            // 믿는다. 담지 않는 호스트(36324768: lh 14.7px 인데 표 253.1px)를 raw anchor
+            // 로 보내면 쪽 소비가 187px 부풀어 뒤 문단이 다음 쪽으로 밀린다(2->3쪽).
+            && (st.profile.native_hwp5_layout()
+                || (st.profile.hwpx_stored_layout()
+                    && stored_host_line_covers_object(para, next_para, table))))
         .then(|| {
             let current = para
                 .line_segs
