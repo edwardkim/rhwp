@@ -60,7 +60,7 @@ jobs:
       - name: Detect review-only fast pass
         id: detect
         continue-on-error: true
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           # [#2804] API 5xx 일시 오류에 job 이 죽지 않도록 재시도한다.
           # retry-exempt-status-codes 기본값(400,401,403,404,422)이 4xx 를 제외하므로 5xx 만 재시도된다.
@@ -288,7 +288,7 @@ jobs:
         language: [javascript-typescript, python, rust]
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # [#3290] 호스티드 16GB VM 은 CodeQL 자동 감지 값이 적정하다. self-hosted 로
       # 되돌릴 경우 ram/threads 캡 필수 — #3289 사고(무캡 JVM 40~55GB×2 로 호스트
@@ -300,7 +300,7 @@ jobs:
 
       - name: Install Rust toolchain
         if: matrix.language == 'rust'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
 
       # [Task #1192 B] CodeQL rust analyze 는 cargo 캐시가 없어 매번 cold build 였다.
       # ci.yml 과 동일 path, 별도 key namespace(codeql-rust)로 warm build 화.
