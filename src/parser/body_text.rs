@@ -322,6 +322,7 @@ fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16;
                         start_char_idx: start_idx,
                         end_char_idx: char_count,
                         control_idx: field_ctrl_idx,
+                        end_field_id: 0,
                     });
                 }
             } else if is_extended_only_ctrl_char(ch) {
@@ -724,6 +725,7 @@ fn parse_master_pages_from_raw(raw_records: &[RawRecord]) -> Vec<MasterPage> {
             replace_base: false,
             ext_flags,
             page_front: false, // HWP5 바이너리 바탕쪽엔 pageFront 개념 없음
+            text_direction: 0, // HWP5 바이너리 바탕쪽엔 textDirection 개념 없음
             paragraphs,
             text_width,
             text_height,

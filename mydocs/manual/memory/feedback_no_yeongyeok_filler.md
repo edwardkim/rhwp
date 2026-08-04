@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: ""
 metadata: 
   node_type: memory
-  originSessionId: da1865ca-614e-44a5-8c3e-ce3fe8956096
 ---
 
 "영역" 이라는 단어를 placeholder filler 로 사용하지 않는다.

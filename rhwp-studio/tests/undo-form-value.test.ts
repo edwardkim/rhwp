@@ -57,3 +57,12 @@ test('양식 값 쓰기 4곳(체크박스/라디오/콤보/편집)이 record 로
   assert.match(edit, /recordFormValueChanges\(/, '편집 필드 커밋 기록');
   assert.match(edit, /if \(committed\) return/, '이중 커밋(Enter→blur) 가드');
 });
+
+test('편집 필드 Escape는 blur가 뒤따라도 취소로 끝난다', () => {
+  const edit = ih.slice(ih.indexOf('private showEditOverlay'));
+  assert.match(
+    edit,
+    /else if \(e\.key === 'Escape'\) \{[\s\S]*?committed = true;[\s\S]*?removeFormOverlay\(\);/,
+    'Escape는 committed를 먼저 설정해 blur commit을 막아야 한다',
+  );
+});

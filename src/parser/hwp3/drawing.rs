@@ -40,7 +40,7 @@ impl Hwp3DrawingObjectFrameHeader {
 pub struct Hwp3DrawingObjectHypertextInfo {
     pub length: u32,
     pub jump_file_name: String, // 256 kchar
-    pub jump_bookmark: String,  // 16 hchar (보통 32 바이트지만 문서에 따라 16 바이트로 처리)
+    pub jump_bookmark: String,  // 16 hchar = 32 바이트 (스펙 8.3절 표 21, 오프셋 264→296)
     pub macro_data: Vec<u8>,    // 325 바이트
     pub kind: u8,
     pub reserved: [u8; 3],
@@ -53,7 +53,11 @@ impl Hwp3DrawingObjectHypertextInfo {
         reader.read_exact(&mut jump_file_name_buf)?;
         let jump_file_name = decode_hwp3_string(&jump_file_name_buf);
 
-        let mut jump_bookmark_buf = [0u8; 16]; // 문서에는 16 hchar(32바이트)로 명시되어 있으나, 오프셋 계산상 16바이트로 처리함
+        // [Task #2831] 스펙 8.3절 표 21은 "건너뛸 책갈피"를 hchar array[16]로 명시하며
+        // (hchar=2바이트), 표의 절대 오프셋(264→296)과 전체 길이 공식(617 =
+        // 256+32+325+1+3)이 모두 32바이트를 요구한다. 16바이트만 읽으면 이후
+        // 그리기 개체 레코드 전체가 16바이트씩 밀려 파싱된다.
+        let mut jump_bookmark_buf = [0u8; 32];
         reader.read_exact(&mut jump_bookmark_buf)?;
         let jump_bookmark = decode_hwp3_string(&jump_bookmark_buf);
 
@@ -524,9 +528,10 @@ impl Hwp3DrawingObject {
                 Ok(Hwp3DrawingObject::ModifiedEllipse(header, details))
             }
             9 => {
-                // 수정된 호
-                let _info1_len = reader.read_u32::<LittleEndian>()?;
-                let _info2_len = reader.read_u32::<LittleEndian>()?;
+                // 수정된 호 (회전을 위해 확장된 호): 스펙 11.3.4절에 따라 추가
+                // 세부 정보가 전혀 없다. 공통 헤더의 회전 속성(평행사변형
+                // 세 점)만으로 첫 점에서 끝 점 방향의 호를 그리므로, 사각형/
+                // 타원(타입 2/3)처럼 8바이트 placeholder를 읽으면 안 된다.
                 Ok(Hwp3DrawingObject::ModifiedArc(header))
             }
             10 => {
@@ -893,4 +898,81 @@ fn map_to_shape_object(
     }
 
     Ok((final_shape, connection_info))
+}
+
+#[cfg(test)]
+mod modified_arc_overread_tests {
+    use super::*;
+    use std::io::Cursor;
+
+    // [Task #2824] 변형된 호(object_type=9)는 스펙 11.3.4절에 따라 공통 헤더
+    // 외에 추가 세부 정보가 전혀 없어야 한다. 수정 전 코드는 존재하지 않는
+    // 8바이트(info1_len, info2_len)를 읽어 버려서, 뒤따르는 형제 레코드의
+    // 선두 바이트를 침범했다. 공통 헤더 크기만큼만 커서가 전진하는지 확인한다.
+    #[test]
+    fn modified_arc_does_not_overread_past_common_header() {
+        let mut buf = Vec::new();
+        buf.extend_from_slice(&0u32.to_le_bytes()); // header_length
+        buf.extend_from_slice(&9u16.to_le_bytes()); // object_type = 9 (변형된 호)
+        buf.extend_from_slice(&0u16.to_le_bytes()); // connection_info
+        buf.extend_from_slice(&[0u8; 8]); // relative_pos
+        buf.extend_from_slice(&[0u8; 8]); // object_size
+        buf.extend_from_slice(&[0u8; 8]); // absolute_pos
+        buf.extend_from_slice(&[0u8; 16]); // bounds
+        buf.extend_from_slice(&[0u8; 32]); // basic_attr: line_style..pattern_color (8 x u32)
+        buf.extend_from_slice(&[0u8; 8]); // basic_attr: textbox_margin
+        buf.extend_from_slice(&0u32.to_le_bytes()); // basic_attr: options = 0 (no rotation/gradient/bitmap)
+        let common_header_len = buf.len() as u64;
+
+        // 다음 형제 레코드의 선두 바이트라고 가정한 마커. 수정 전 코드는 이
+        // 8바이트를 info1_len/info2_len으로 잘못 소비한다.
+        buf.extend_from_slice(&0xAAAAAAAAu32.to_le_bytes());
+        buf.extend_from_slice(&0xBBBBBBBBu32.to_le_bytes());
+
+        let mut cursor = Cursor::new(buf);
+        let obj = Hwp3DrawingObject::read(&mut cursor).expect("parse modified arc");
+
+        assert!(matches!(obj, Hwp3DrawingObject::ModifiedArc(_)));
+        assert_eq!(
+            cursor.position(),
+            common_header_len,
+            "ModifiedArc 파싱이 공통 헤더 이후 존재하지 않는 바이트를 소비함"
+        );
+    }
+}
+
+#[cfg(test)]
+mod hypertext_bookmark_underread_tests {
+    use super::*;
+    use std::io::Cursor;
+
+    // [Task #2831] 스펙 8.3절 표 21에 따라 "건너뛸 책갈피"는 hchar array[16] = 32바이트다.
+    // 수정 전 코드는 16바이트만 읽어, 뒤따르는 필드(매크로/종류/예약)의 선두를
+    // 책갈피의 나머지 절반으로 오인하고 읽어버렸다. 32바이트 전체를 소비한 뒤
+    // 정확히 마커 위치에 도달하는지 확인한다.
+    #[test]
+    fn hypertext_info_consumes_full_32_byte_bookmark() {
+        let mut buf = Vec::new();
+        buf.extend_from_slice(&621u32.to_le_bytes()); // length
+        buf.extend_from_slice(&[0u8; 256]); // jump_file_name
+        buf.extend_from_slice(&[0u8; 32]); // jump_bookmark (32바이트 전체)
+        buf.extend_from_slice(&[0u8; 325]); // macro_data
+        buf.push(0u8); // kind
+        buf.extend_from_slice(&[0u8; 3]); // reserved
+        let hypertext_len = buf.len() as u64;
+
+        // 다음 필드라고 가정한 마커. 수정 전 코드는 이 마커의 앞부분을
+        // 책갈피 뒷부분으로 잘못 소비한다.
+        buf.extend_from_slice(&0xCCCCCCCCu32.to_le_bytes());
+
+        let mut cursor = Cursor::new(buf);
+        let _info =
+            Hwp3DrawingObjectHypertextInfo::read(&mut cursor).expect("parse hypertext info");
+
+        assert_eq!(
+            cursor.position(),
+            hypertext_len,
+            "하이퍼텍스트 정보 파싱이 책갈피 필드를 32바이트로 소비하지 않음"
+        );
+    }
 }

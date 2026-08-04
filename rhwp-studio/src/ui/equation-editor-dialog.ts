@@ -14,6 +14,19 @@ import { enableDialogDrag } from './dialog-drag';
  * - PicturePropsDialog 패턴 (ModalDialog 미상속, 자체 overlay/DOM/keyboard 관리)
  */
 
+/**
+ * 수식 스크립트(script)의 안전한 상한 길이(문자 수).
+ *
+ * Rust 직렬화기(`src/serializer/control.rs`)는 EQEDIT 컨트롤의 script 문자열을
+ * `write_hwp_string()`(`src/serializer/byte_writer.rs`)로 기록하는데, 이 함수는 UTF-16
+ * 코드 유닛 수를 `as u16`으로 캐스팅해 길이 프리픽스를 만든다. 문자열 길이가 65536
+ * 이상이면 캐스팅이 랩어라운드되어 길이 프리픽스와 실제 기록된 바이트 수가 어긋난
+ * 손상된 레코드가 만들어진다(#2851/#2862/#2866/#2878과 동일 원인). `.rs`를 수정하지 않는
+ * 범위에서, 손상 가능한 값이 wasm 호출까지 도달하지 않도록 프런트엔드에서 훨씬 낮은
+ * 상한으로 미리 막는다.
+ */
+export const MAX_EQUATION_SCRIPT_LEN = 8000;
+
 type InputMode = 'hwp' | 'latex';
 
 interface TemplateEntry { label: string; hwp: string; latex: string }
@@ -203,6 +216,7 @@ export class EquationEditorDialog {
   private dialog!: HTMLDivElement;
   private previewContainer!: HTMLDivElement;
   private scriptArea!: HTMLTextAreaElement;
+  private scriptErrorLabel!: HTMLDivElement;
   private fontSizeInput!: HTMLInputElement;
   private colorInput!: HTMLInputElement;
   private built = false;
@@ -270,8 +284,14 @@ export class EquationEditorDialog {
     }
 
     this.scriptArea.value = this.origProps.script || '';
+    this.scriptErrorLabel.style.display = 'none';
     this.fontSizeInput.value = String(Math.round(this.origProps.fontSize / 100));
     this.colorInput.value = colorRefToHex(this.origProps.color);
+
+    // 싱글턴으로 재사용 + build() 는 1회만 실행되므로 이전 세션의 기호 검색어와
+    // 펼쳐진 결과 드롭다운이 남지 않도록 초기화한다. (#3145)
+    this.searchInput.value = '';
+    this.searchResults.style.display = 'none';
 
     // 기존 스크립트에 \ 가 있으면 LaTeX 모드로 시작
     if (this.origProps.script && /\\[a-zA-Z]/.test(this.origProps.script)) {
@@ -376,6 +396,7 @@ export class EquationEditorDialog {
     this.scriptArea.className = 'eq-script';
     this.scriptArea.rows = 4;
     this.scriptArea.spellcheck = false;
+    this.scriptArea.maxLength = MAX_EQUATION_SCRIPT_LEN;
     this.scriptArea.addEventListener('input', () => { this.schedulePreview(); this.onScriptInput(); });
     this.scriptArea.addEventListener('keydown', (e) => this.onScriptKeydown(e));
 
@@ -385,6 +406,14 @@ export class EquationEditorDialog {
 
     scriptWrap.append(this.scriptArea, this.acDropdown);
     body.appendChild(scriptWrap);
+
+    this.scriptErrorLabel = document.createElement('div');
+    this.scriptErrorLabel.className = 'eq-script-error';
+    this.scriptErrorLabel.style.color = '#c00';
+    this.scriptErrorLabel.style.fontSize = '11px';
+    this.scriptErrorLabel.style.display = 'none';
+    this.scriptErrorLabel.textContent = `수식 스크립트는 ${MAX_EQUATION_SCRIPT_LEN}자를 넘을 수 없습니다.`;
+    body.appendChild(this.scriptErrorLabel);
 
     // 6) 속성 행
     const propsRow = document.createElement('div');
@@ -691,6 +720,11 @@ export class EquationEditorDialog {
     if (!this.origProps) return;
 
     const script = this.scriptArea.value;
+    if (script.length > MAX_EQUATION_SCRIPT_LEN) {
+      this.scriptErrorLabel.style.display = '';
+      return;
+    }
+    this.scriptErrorLabel.style.display = 'none';
     const fontSizePt = parseInt(this.fontSizeInput.value, 10) || 10;
     const fontSizeHwpunit = fontSizePt * 100;
     const color = hexToColorRef(this.colorInput.value);

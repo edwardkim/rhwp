@@ -145,7 +145,8 @@ export interface LoadFileOptions {
   /**
    * 로드 후 안내창(HWPX 검증, 로컬 글꼴 감지) 없이 열기.
    * 임베드 환경에서 안내창의 사용자 선택을 기다리느라 loadFile 응답이
-   * 지연/교착되는 것을 방지한다.
+   * 지연/교착되는 것을 방지한다. 기본값은 true이며, 안내창을 표시하려면
+   * false를 명시한다.
    */
   suppressDialogs?: boolean;
 }
@@ -170,6 +171,13 @@ export declare class RhwpEditor {
   getHmlSaveState(): Promise<HmlSaveState>;
   /** HWP 직렬화 + 자기 재로드 검증 메타데이터 (#178) */
   exportHwpVerify(): Promise<HwpVerifyResult>;
+  /**
+   * 내보내기 바이트의 영속화(업로드/핸드오프) 완료를 스튜디오에 통지합니다 (#2660).
+   * dirty 해제 + 자동복구 draft 삭제 완료 후 resolve — resolve 이후 창을 닫아도 안전.
+   * 업로드 실패 시에는 호출하지 마세요(백업 draft 보존).
+   * 스튜디오가 notify-saved-v1 capability를 광고하지 않으면 요청 없이 실패합니다.
+   */
+  notifySaved(fileName?: string): Promise<{ ok: true; wasDirty: boolean }>;
   /** iframe 엘리먼트를 반환합니다 */
   readonly element: HTMLIFrameElement;
   /** 에디터를 제거합니다 */

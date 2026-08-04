@@ -8,7 +8,8 @@ last_verified: 2026-07-16
 # Documentation And Git Workflow
 
 > 이 문서는 문서·Git 작업의 공통 절차를 다룬다. PR 검토·merge·후속 처리의 역할별 규칙은
-> [PR 리뷰·통합 워크플로우](../pr_review_workflow.md)를 우선한다. 현재 세션이나 종료된 작업의 상태는
+> [PR 리뷰·통합 워크플로우](../pr_review_workflow.md)와 그
+> [조건별 자식 가이드 선택표](../pr_review/README.md)를 우선한다. 현재 세션이나 종료된 작업의 상태는
 > 이 문서에 기록하지 않는다.
 
 ## Document Language
@@ -41,6 +42,21 @@ mydocs/report/task_m100_{issue}_report.md
 ```text
 mydocs/orders/YYYYMMDD.md
 ```
+
+회차형 측정 기록:
+
+```text
+mydocs/report/{주제}_{회차}_{YYYYMMDD}.md
+```
+
+서베이·벤치마크처럼 동일 축을 반복 측정해 시계열로 비교하는 문서는 이슈 1:1 대응이
+아니므로 `task_m100_{issue}_report.md` 를 적용하지 않는다. 회차와 날짜가 식별자다.
+예: `survey_10k_r18_20260721.md`. 한 이슈로 몰면 회차끼리 이름이 충돌하고 시계열
+비교라는 목적이 사라진다.
+
+파일명의 숫자는 **이슈 번호**다. PR 번호를 쓰지 않는다 — GitHub 는 이슈와 PR 이 번호
+공간을 공유해 번호만으로는 종류를 판별할 수 없으므로(`gh issue view <PR번호>` 가 PR 을
+반환한다), 보고서 본문에 `Issue: #N` 을 명시해 근거를 남긴다. (#2753)
 
 ## Folder Roles
 
@@ -136,5 +152,5 @@ PR 댓글 톤은 과장하지 않는다. "정말 감사합니다", "정성스러
 - 로컬 작업과 검증의 기준은 최신 `upstream/devel`이다.
 - 일반 변경은 작업 브랜치에서 검증한 뒤 `devel` 대상 PR로 통합한다. `upstream/devel`에 직접 push하지 않는다.
 - collaborator·maintainer가 원 PR에 보정하거나 merge 후 운영 기록을 반영하는 경우에도
-  [PR 리뷰·통합 워크플로우](../pr_review_workflow.md)의 역할별 경로를 따른다.
+  [PR 리뷰·통합 워크플로우](../pr_review_workflow.md)의 선택표가 지정한 역할별 경로를 따른다.
 - `local/*`은 로컬 작업 이름일 뿐 원격 `devel`을 갱신하는 명령의 근거가 아니다.

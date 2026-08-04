@@ -1,6 +1,7 @@
 //! 문단 (Paragraph, CharRun, LineSeg, RangeTag)
 
 use super::control::Control;
+use serde::{Deserialize, Serialize};
 
 /// 문단 (HWPTAG_PARA_HEADER + 하위 레코드)
 #[derive(Debug, Default, Clone)]
@@ -57,8 +58,30 @@ pub struct Paragraph {
     pub numbering_restart: Option<NumberingRestart>,
 }
 
+/// 문단 스코프 메타데이터 — 문단 병합의 역연산(undo)에서 복원해야 하는 값들.
+///
+/// `split_at` 이 만드는 새 문단은 앞 문단(`self`)에서 파생되므로 이 값들을 재현할 수
+/// 없다. 사용자가 Enter 로 나눌 때는 앞 문단의 서식을 잇는 것이 옳지만, 병합의
+/// 역연산으로 쓰일 때는 사라진 뒷 문단의 원래 값이어야 한다. 병합 시 캡처해
+/// undo 에서 되돌린다 (Task #2342).
+///
+/// `char_count_msb` 는 여기 없다 — 저장기가 list scope 의 마지막 문단 여부로
+/// 재생성하므로(`serializer/body_text.rs` `char_count_raw`) 파생값이다.
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ParaMeta {
+    pub para_shape_id: u16,
+    pub style_id: u8,
+    pub column_type: ColumnBreakType,
+    pub raw_break_type: u8,
+    pub numbering_restart: Option<NumberingRestart>,
+    /// PARA_HEADER tail — instanceId 및 변경추적 suffix라 문단마다 고유하다.
+    pub raw_header_extra: Vec<u8>,
+    /// TAB 확장 데이터 — 문단 전체가 통째로 이동하므로 분할 없이 그대로 옮긴다.
+    pub tab_extended: Vec<[u16; 7]>,
+}
+
 /// 문단 번호 시작 방식
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum NumberingRestart {
     /// 이전 번호 목록에 이어 (다른 번호 체계 후 복귀 시 이전 카운터 복원)
     ContinuePrevious,
@@ -108,7 +131,7 @@ pub enum CtrlChar {
 }
 
 /// 단 나누기 종류
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
 pub enum ColumnBreakType {
     #[default]
     None,
@@ -274,6 +297,13 @@ pub struct FieldRange {
     pub end_char_idx: usize,
     /// controls[] 배열 내 인덱스 (해당 Field 컨트롤 참조)
     pub control_idx: usize,
+    /// 같은 문단 내 짝을 이루는 `<hp:fieldEnd>` 자신의 `fieldid` 속성값 (0 이면 없음/생략).
+    ///
+    /// `fieldBegin` 의 `id`(문서 내 고유 ID, `Field::field_id` 로 보존)와 달리, `fieldEnd`
+    /// 자신의 `fieldid` 는 별개 값으로 관찰되며(HYPERLINK 등) IR 로 옮기지 않으면 직렬화 시
+    /// 항상 소실된다. 고아(다단락) fieldEnd 는 `OrphanFieldEnd::field_id` 로 이미 보존하므로,
+    /// 같은 문단 내 짝(matched) 경로에도 대칭적으로 보존한다.
+    pub end_field_id: u32,
 }
 
 /// 고아 FIELD_END (0x04) — 짝이 되는 FIELD_BEGIN 이 다른 문단에 있는
@@ -509,9 +539,13 @@ impl Paragraph {
     ///
     /// char_offset이 text.chars().count()를 초과하면 인라인 컨트롤 뒤의
     /// 위치로 간주하여 올바른 UTF-16 위치에 삽입한다.
-    pub fn insert_text_at(&mut self, char_offset: usize, new_text: &str) {
+    ///
+    /// 반환값은 **실제로 삽입된 char 오프셋**이다. 위 컨트롤 갭 처리 때문에 요청 값과
+    /// 다를 수 있으므로, 삽입 뒤 위치를 알려야 하는 호출부는 요청 값이 아니라 이 값을
+    /// 기준으로 삼는다 (Task #3216).
+    pub fn insert_text_at(&mut self, char_offset: usize, new_text: &str) -> usize {
         if new_text.is_empty() {
-            return;
+            return char_offset.min(self.text.chars().count());
         }
 
         let text_chars: Vec<char> = self.text.chars().collect();
@@ -645,6 +679,8 @@ impl Paragraph {
 
         // 6. char_count 갱신
         self.char_count += new_chars.len() as u32;
+
+        effective_char_offset
     }
 
     /// char_offset 위치에서 count개의 문자를 삭제한다.
@@ -753,10 +789,38 @@ impl Paragraph {
         actual_count
     }
 
+    /// 병합으로 사라질 문단의 스코프 메타데이터를 캡처한다 (undo 복원용).
+    pub fn capture_meta(&self) -> ParaMeta {
+        ParaMeta {
+            para_shape_id: self.para_shape_id,
+            style_id: self.style_id,
+            column_type: self.column_type,
+            raw_break_type: self.raw_break_type,
+            numbering_restart: self.numbering_restart,
+            raw_header_extra: self.raw_header_extra.clone(),
+            tab_extended: self.tab_extended.clone(),
+        }
+    }
+
+    /// 캡처한 메타데이터를 되돌린다 — 병합 undo 의 `split_at` 직후에 호출한다.
+    pub fn apply_meta(&mut self, meta: ParaMeta) {
+        self.para_shape_id = meta.para_shape_id;
+        self.style_id = meta.style_id;
+        self.column_type = meta.column_type;
+        self.raw_break_type = meta.raw_break_type;
+        self.numbering_restart = meta.numbering_restart;
+        self.raw_header_extra = meta.raw_header_extra;
+        self.tab_extended = meta.tab_extended;
+    }
+
     /// char_offset 위치에서 문단을 분할한다.
     ///
     /// 현재 문단은 char_offset 이전까지만 유지되고,
     /// char_offset 이후의 텍스트와 메타데이터로 새 문단을 생성하여 반환한다.
+    ///
+    /// 새 문단의 문단 모양·스타일·번호 시작 방식 등은 `self` 에서 상속된다 — Enter
+    /// 분할의 시맨틱이다. 병합의 역연산으로 쓰는 호출부는 `apply_meta` 로 사라진
+    /// 문단의 원래 값을 되돌려야 한다 (Task #2342).
     pub fn split_at(&mut self, char_offset: usize) -> Paragraph {
         let control_positions = self.split_logical_control_positions();
         let split_pos = self.split_text_pos_for_logical_offset(char_offset, &control_positions);
@@ -909,6 +973,7 @@ impl Paragraph {
                     start_char_idx: fr.start_char_idx - split_pos,
                     end_char_idx: fr.end_char_idx - split_pos,
                     control_idx: fr.control_idx,
+                    end_field_id: fr.end_field_id,
                 });
             } else if fr.end_char_idx <= split_pos {
                 // 완전히 원래 문단 쪽
@@ -919,6 +984,7 @@ impl Paragraph {
                     start_char_idx: fr.start_char_idx,
                     end_char_idx: split_pos,
                     control_idx: fr.control_idx,
+                    end_field_id: fr.end_field_id,
                 });
             }
         }
@@ -1112,6 +1178,7 @@ impl Paragraph {
                 start_char_idx: fr.start_char_idx + self_text_len,
                 end_char_idx: fr.end_char_idx + self_text_len,
                 control_idx: fr.control_idx + ctrl_offset,
+                end_field_id: fr.end_field_id,
             });
         }
 
@@ -1126,8 +1193,12 @@ impl Paragraph {
                     .push(other.ctrl_data_records.get(i).cloned().flatten());
             }
             self.controls.extend(other.controls.iter().cloned());
-            self.control_mask |= other.control_mask;
         }
+        // control_mask는 tab/개행 등 텍스트 기반 비트(#1323 이후 확장분)도 포함하므로,
+        // other.controls가 비어 있어도 other.text의 tab/개행이 손실되지 않도록
+        // split_at과 동일하게 병합 후 상태 전체를 재계산한다.
+        self.control_mask =
+            Self::compute_control_mask_for(&self.text, &self.controls, &self.field_ranges);
 
         // 6. char_count 갱신: 텍스트 + 컨트롤(각 8 code unit) + 문단끝(1)
         //    split_at의 ctrl_code_units 계산과 정합. HWPX 직렬화가 char_count에서

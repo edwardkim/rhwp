@@ -47,6 +47,23 @@ pub struct Picture {
     /// imgClip extent 와 독립(전수 측정: 불일치 24/170) — 원본 이미지 픽셀 크기를
     /// verbatim 보존한다. (dimwidth, dimheight). HWPX 파서만 적재.
     pub img_dim: (u32, u32),
+    /// HWPX `<hp:pic reverse="...">` 값 — 그림 좌우 반전(한컴 Automation
+    /// `InsertPicture`의 `reverse` 옵션과 동일 개념). 파서가 읽지 않고 직렬화기가
+    /// 항상 "0"을 방출해 `reverse="1"`로 저장된 그림이 왕복 시 반전이 풀린다.
+    pub reverse: bool,
+    /// HWPX `<hp:pic lock="...">` 값 — 개체 잠금(보호) 여부. 파서가 읽지 않고
+    /// 직렬화기가 항상 "0"을 방출해 lock="1"로 저장된 그림이 왕복 시 잠금 해제됐다.
+    pub lock: bool,
+}
+
+impl Picture {
+    /// 그림 자르기 좌표가 기준으로 삼는 전체 이미지 좌표 범위.
+    ///
+    /// HWPX `imgClip`은 디코딩된 비트맵 픽셀과 항상 75 HU/px 관계가 아니며,
+    /// 이 경우 `imgDim`이 실제 좌표 범위를 보존한다.
+    pub fn crop_reference_size(&self) -> Option<(u32, u32)> {
+        (self.img_dim.0 > 0 && self.img_dim.1 > 0).then_some(self.img_dim)
+    }
 }
 
 /// 자르기 정보

@@ -7,7 +7,7 @@ use std::process::Command;
 
 #[test]
 fn summary_mode_categorizes_diffs() {
-    let exe = env!("CARGO_BIN_EXE_rhwp");
+    let exe = rhwp_bin();
     let output = Command::new(exe)
         .args([
             "ir-diff",
@@ -63,7 +63,7 @@ fn summary_mode_categorizes_diffs() {
 
 #[test]
 fn max_lines_truncates() {
-    let exe = env!("CARGO_BIN_EXE_rhwp");
+    let exe = rhwp_bin();
     let output = Command::new(exe)
         .args([
             "ir-diff",
@@ -92,7 +92,7 @@ fn max_lines_truncates() {
 #[test]
 fn no_flags_preserves_full_output() {
     // 회귀 가드: --summary / --max-lines 없으면 기존 출력 형식 보존
-    let exe = env!("CARGO_BIN_EXE_rhwp");
+    let exe = rhwp_bin();
     let output = Command::new(exe)
         .args(["ir-diff", "samples/hwpx/aift.hwpx", "samples/aift.hwp"])
         .output()
@@ -116,4 +116,10 @@ fn no_flags_preserves_full_output() {
         !stdout.contains("이하 생략"),
         "기본 모드에서는 truncation 출력이 없어야 함"
     );
+}
+
+/// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,
+/// nextest가 런타임에 재매핑해 주입하는 CARGO_BIN_EXE_rhwp를 우선한다.
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
 }

@@ -144,11 +144,12 @@ CanvasKit has two operational modes:
   policy values such as clip padding or sampling, but it does not mean a hidden
   Canvas2D overlay fallback.
 
-The first overlay inventory is deliberately conservative. Raster images,
+The first overlay inventory was deliberately conservative. Raster images,
 equations, form controls, raw SVG fragments, placeholders, special text visual
-ops, and effect-heavy `TextRun` payloads are visible in the plan before any
-hidden overlay is removed. Basic page background, vector primitives, clipping,
-and simple `TextRun` payloads are direct candidates. `GlyphRun` and
+ops, and effect-heavy `TextRun` payloads were made visible in the plan before
+any hidden overlay was removed. Horizontal character overlap, control marks,
+tab leaders, and decorations now have direct replay; unsupported vertical or
+malformed variants remain explicit blockers. `GlyphRun` and
 `GlyphOutline` stay under the P14 text variant selection diagnostics: if the
 strict sidecar is not selected, CanvasKit must use the `TextRun` fallback.
 
@@ -162,10 +163,11 @@ variant-sensitive operations:
 2. Equation and form-object replay: parity fixtures should decide whether the
    vector/layout-box path or an image fallback is the canonical replay for each
    operation before the overlay is removed.
-3. TextRun effects: vertical text, rotation, synthetic style, ratio scaling,
-   shade, outline, shadow, decorations, emphasis dots, tab leaders, and control
-   markers should be promoted effect-by-effect. Unsupported text effects must
-   not trigger approximate `GlyphRun` replay.
+3. TextRun effects: horizontal decorations, emphasis dots, tab leaders, control
+   markers, and character overlap are promoted through external visual ops.
+   Vertical text, ratio scaling, shade, outline, shadow, emboss, and engrave
+   remain guarded. Unsupported text effects must not trigger approximate
+   `GlyphRun` replay.
 4. GlyphRun/GlyphOutline gates: CanvasKit should choose a strict variant only
    when the selection report says it is replayable. Opening outline replay in
    CanvasKit is a backend parity milestone, not a schema change.
@@ -320,6 +322,42 @@ default path.
   generic font-name matching.
 - The public compatibility path is unchanged: when proof is missing, the backend
   keeps the `TextRun` fallback.
+
+## P39 Positioned Text Visual Replay
+
+Layer schema `1.19` adds `text.charOverlapOp.bounded`,
+`text.controlMarkOp.positioned`, `text.controlMarkOp.bounded`,
+`text.tabLeaderOp.bounded`, and `text.decorationOp.bounded`. The producer exports
+space, tab, paragraph-end, and line-break marks with run-relative coordinates
+and font sizes. Each operation is limited to 4,096 positioned items or source
+characters and exports a completeness flag; an incomplete sidecar is never
+eligible for direct replay. Decoration positions follow expanded PUA display
+text and carry the adjusted baseline and font size for superscript/subscript;
+tab-leader endpoints use the compatibility renderer's following-text clamp,
+and combined-number overlap uses the compatibility renderer's digit-count
+scale.
+The same positioned list may appear on the
+anchored `TextRun` as compatibility metadata and on its external
+`TextControlMark` operation; `legacyVisuals.controlMarks: "mirror"` makes the
+external operation the sole paint authority.
+
+CanvasKit directly replays horizontal `CharOverlap`, `TextControlMark`,
+`TabLeader`, and `TextDecoration` operations. It preserves all modeled line
+shapes, bounds wave construction, honors paragraph marks, and keeps vertical,
+rotated, malformed, incomplete, or over-limit payloads on deterministic
+fallback.
+`showControlCodes` remains an automatic-mode blocker because structural labels
+such as table and image markers do not yet have equivalent paint ops. For
+ordinary positioned `TextRun` replay, a missing glyph may use the prepared
+default face or bounded old-Hangul subset for only the affected contiguous span
+while retaining serialized positions. A run may create at most 4,096 fallback
+spans, bounding alternating-glyph font probes and draw calls. Hancom boxed-number
+PUA characters use a bounded vector box and digit fallback. If no prepared face
+or explicit PUA fallback resolves a glyph, `textRun:glyphMapping` remains an
+unexpected runtime diagnostic so automatic mode cannot silently accept missing
+ink. The document-backed readiness set currently covers positioned paragraph
+marks and PUA fallback; character overlap, tab leaders, and decorations are
+held by synthetic replay contracts until focused source fixtures are added.
 
 ## CanvasKit Parity Plan Link
 

@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 작업지시자 정답지 한컴 환경 (컨트리뷰터 환경별)
 description: 한컴 편집기 (Windows) 1차 정답지 + 한컴 2020/2022 PDF 도 정답지 역할 (특히 macOS/Linux 컨트리뷰터). 한컴 뷰어 / 외부 변환 / 한컴 2010 PDF 는 정답지 등급 미달
 type: reference
-originSessionId: 263bacf0-af73-4169-8b90-2cc13f939a31
 ---
 
 **컨트리뷰터 환경별 권위 분리** (2026-05-07 PR #670 갱신):

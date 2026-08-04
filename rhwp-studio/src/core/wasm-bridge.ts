@@ -1,4 +1,5 @@
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
+import * as wasmExports from '@wasm/rhwp.js';
 import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import type { DocumentInfo, PageInfo, PageDef, SectionDef, PageBorderFillSettings, EndnoteShapeSettings, NoteEditInfo, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, CellPathLike, NavContextEntry, FieldInfoResult, BookmarkInfo, LayerRenderProfile, PageLayerTree, CanvasKitDocumentPreflight } from './types';
@@ -14,6 +15,22 @@ import {
   type CellSelectionRectDocument,
   type SelectionPageHints,
 } from './selection-page-hints';
+import {
+  parseLocalBodyTextReplaceResult,
+  type LocalBodyTextReplaceResult,
+} from './local-text-replace-result';
+
+/**
+ * 문단 병합으로 사라진 문단의 스코프 메타데이터 (Task #2342).
+ *
+ * 병합 결과에 실려 오고 undo 분할에 그대로 되돌려주는 불투명 값이다 — 스튜디오는
+ * 내용을 해석하지 않는다.
+ */
+export type RemovedParaMeta = Record<string, unknown>;
+
+function serializeParaMeta(meta: RemovedParaMeta | undefined): string | undefined {
+  return meta && JSON.stringify(meta);
+}
 
 /** HWPX 비표준 감지 경고 리포트 (#177). */
 export interface ValidationReport {
@@ -75,16 +92,32 @@ export interface TableTransposeResult {
   targetCols: number;
 }
 
-/** deferred cell text insert의 pagination 경계 결과 (#2214). */
-export interface DeferredCellTextInsertResult {
+/** deferred cell text mutation의 pagination 경계 결과 (#2214/#2424). */
+export interface DeferredCellTextMutationResult {
   ok: boolean;
   charOffset: number;
   paginationDeferred: boolean;
   cellFlowChanged: boolean;
 }
 
+export type DeferredPaginationStatus = 'none' | 'pending' | 'complete' | 'fallback' | 'stale';
+
+export interface DeferredPaginationResult {
+  ok: boolean;
+  status: DeferredPaginationStatus;
+  revision: number;
+  fragmentsProcessed: number;
+  pageCount: number;
+}
+
 import { fontFamilyChainForDisplay } from './font-substitution';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
+import {
+  connectSubsecondDevtools,
+  type SubsecondWasmExports,
+} from './subsecond-runtime';
+
+let disconnectSubsecondDevtools: (() => void) | null = null;
 
 /**
  * CSS font 문자열에서 font-family를 추출하여 폰트 치환을 적용한다.
@@ -135,14 +168,55 @@ export class WasmBridge {
   private _fileName = 'document.hwp';
   private _currentFileHandle: FileSystemFileHandleLike | null = null;
   private _documentDigest: string | null = null;
+  /** [#3313] 외부 연결 그림 비동기 주입 완료 훅 — 주입 성공(>0)시에만 호출된다.
+   * 첫 렌더 이후에 fetch 가 끝나면 뷰가 재갱신 없이는 이미지를 표시하지 못하므로,
+   * main 쪽에서 뷰 갱신을 배선한다 (dirty 마킹 없는 뷰 전용 경로여야 함). */
+  onExternalImagesInjected?: (injected: number) => void;
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
     installCanvasFontSubstitution();
     this.installMeasureTextWidth();
     await init();
+    if (!disconnectSubsecondDevtools) {
+      disconnectSubsecondDevtools = connectSubsecondDevtools(
+        wasmExports as unknown as SubsecondWasmExports,
+      );
+    }
     this.initialized = true;
     console.log(`[WasmBridge] WASM 초기화 완료 (rhwp ${version()})`);
+  }
+
+  isSubsecondHotpatchEnabled(): boolean {
+    return typeof Reflect.get(wasmExports, 'subsecondProbe') === 'function';
+  }
+
+  getSubsecondProbeValue(): number | null {
+    const probe = Reflect.get(wasmExports, 'subsecondProbe');
+    return typeof probe === 'function' ? probe() : null;
+  }
+
+  getSubsecondPatchRevision(): string | null {
+    if (!this.doc) return null;
+
+    const doc = this.doc as unknown as {
+      getSubsecondPatchRevision?: () => string;
+    };
+    return typeof doc.getSubsecondPatchRevision === 'function'
+      ? doc.getSubsecondPatchRevision()
+      : null;
+  }
+
+  invalidateSubsecondRenderCaches(): boolean {
+    if (!this.doc) return false;
+
+    const doc = this.doc as unknown as {
+      invalidateSubsecondRenderCaches?: () => void;
+    };
+    if (typeof doc.invalidateSubsecondRenderCaches !== 'function') return false;
+
+    doc.invalidateSubsecondRenderCaches();
+    return true;
   }
 
   /** WASM 렌더러가 호출하는 텍스트 폭 측정 함수를 등록한다 */
@@ -224,11 +298,16 @@ export class WasmBridge {
   /** [Task #741 후속] 외부 file path 그림 영역 영역 dev 서버 영역 영역 fetch + inject. */
   private async populateExternalImagesFromDevServer(): Promise<void> {
     if (!this.doc) return;
+    // [#3348] /samples/ fetch는 vite dev 서버 전용(server.fs.allow). 프로덕션 빌드
+    // (Pages·확장)에는 경로가 없어 실패 로그만 쌓이므로 dev 외에는 시도하지 않는다.
+    // 프로덕션 사이드카 공급 UX는 #3313 잔여 범위.
+    if (!import.meta.env.DEV) return;
     try {
       const basenamesJson = this.doc.getExternalImageBasenames();
       const basenames: string[] = JSON.parse(basenamesJson);
       if (basenames.length === 0) return;
       console.log(`[WasmBridge] 외부 image 영역 영역 ${basenames.length}개 영역 영역 fetch 시도`);
+      let totalInjected = 0;
       for (const name of basenames) {
         try {
           const url = `/samples/${name}`;
@@ -243,13 +322,17 @@ export class WasmBridge {
           const filePathHeader = res.headers.get('X-File-Path');
           const displayPath = filePathHeader ? decodeURI(filePathHeader) : '';
           const injected = this.doc.injectExternalImage(name, new Uint8Array(buf), displayPath);
+          totalInjected += injected;
           console.log(`[WasmBridge] 외부 image inject: ${name} → ${displayPath || url} (${buf.byteLength} bytes, ${injected} 영역)`);
         } catch (e) {
           console.warn(`[WasmBridge] 외부 image 영역 영역 영역: ${name}`, e);
         }
       }
-      // 갱신된 image 영역 영역 영역 화면 영역 영역 영역 — eventBus 영역 영역 document-changed 영역 영역.
-      // (caller 영역 영역 영역 별도 영역 영역 reflow 영역 영역.)
+      // [#3313] 주입은 첫 렌더 이후에 끝나므로, 주입이 있었으면 뷰 갱신 훅을 호출한다.
+      // 훅 없이는 페이지 트리 캐시만 무효화되고 화면은 재요청 전까지 이전 프레임을 유지한다.
+      if (totalInjected > 0) {
+        this.onExternalImagesInjected?.(totalInjected);
+      }
     } catch (e) {
       console.warn('[WasmBridge] populateExternalImagesFromDevServer 실패', e);
     }
@@ -388,11 +471,55 @@ export class WasmBridge {
     return this.doc?.pageCount() ?? 0;
   }
 
-  flushDeferredPagination(): { ok: boolean; pageCount?: number } {
+  beginDeferredPagination(fragmentBudget = 1): DeferredPaginationResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { beginDeferredPagination?: (budget: number) => string };
+    if (typeof d.beginDeferredPagination !== 'function') {
+      return {
+        ok: true,
+        status: 'fallback',
+        revision: 0,
+        fragmentsProcessed: 0,
+        pageCount: this.pageCount,
+      };
+    }
+    return JSON.parse(d.beginDeferredPagination(Math.max(1, Math.trunc(fragmentBudget))));
+  }
+
+  stepDeferredPagination(fragmentBudget = 1): DeferredPaginationResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { stepDeferredPagination?: (budget: number) => string };
+    if (typeof d.stepDeferredPagination !== 'function') {
+      return {
+        ok: true,
+        status: 'fallback',
+        revision: 0,
+        fragmentsProcessed: 0,
+        pageCount: this.pageCount,
+      };
+    }
+    return JSON.parse(d.stepDeferredPagination(Math.max(1, Math.trunc(fragmentBudget))));
+  }
+
+  cancelDeferredPagination(): boolean {
+    if (!this.doc) return false;
+    const d = this.doc as unknown as { cancelDeferredPagination?: () => boolean };
+    return typeof d.cancelDeferredPagination === 'function'
+      ? d.cancelDeferredPagination()
+      : false;
+  }
+
+  flushDeferredPagination(): DeferredPaginationResult {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as { flushDeferredPagination?: () => string };
     if (typeof d.flushDeferredPagination !== 'function') {
-      return { ok: true, pageCount: this.pageCount };
+      return {
+        ok: true,
+        status: 'fallback',
+        revision: 0,
+        fragmentsProcessed: 0,
+        pageCount: this.pageCount,
+      };
     }
     return JSON.parse(d.flushDeferredPagination());
   }
@@ -669,6 +796,17 @@ export class WasmBridge {
     return this.doc.renderPageSvg(pageNum);
   }
 
+  renderPageSvgWithProfile(pageNum: number, profile: LayerRenderProfile): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as {
+      renderPageSvgWithProfile?: (pageNum: number, profile: string) => string;
+    };
+    if (typeof d.renderPageSvgWithProfile !== 'function') {
+      throw new Error('[WasmBridge] 현재 WASM은 profile별 SVG 렌더링을 지원하지 않습니다');
+    }
+    return d.renderPageSvgWithProfile(pageNum, profile);
+  }
+
   getCursorRect(sec: number, para: number, charOffset: number): CursorRect {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getCursorRect(sec, para, charOffset));
@@ -719,14 +857,50 @@ export class WasmBridge {
     return this.doc.insertText(sec, para, charOffset, text);
   }
 
+  replaceBodyTextLocal(
+    sec: number,
+    para: number,
+    charOffset: number,
+    deleteCount: number,
+    text: string,
+  ): LocalBodyTextReplaceResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      replaceBodyTextLocal?: (
+        sec: number,
+        para: number,
+        charOffset: number,
+        deleteCount: number,
+        text: string,
+      ) => string;
+    };
+    if (typeof doc.replaceBodyTextLocal === 'function') {
+      return parseLocalBodyTextReplaceResult(
+        doc.replaceBodyTextLocal(sec, para, charOffset, deleteCount, text),
+      );
+    }
+    if (deleteCount > 0) {
+      this.doc.deleteText(sec, para, charOffset, deleteCount);
+    }
+    if (text.length > 0) {
+      this.doc.insertText(sec, para, charOffset, text);
+    }
+    return {
+      ok: true,
+      charOffset: charOffset + [...text].length,
+      documentPaginationPending: false,
+      flowChanged: true,
+    };
+  }
+
   deleteText(sec: number, para: number, charOffset: number, count: number): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.deleteText(sec, para, charOffset, count);
   }
 
-  splitParagraph(sec: number, para: number, charOffset: number): string {
+  splitParagraph(sec: number, para: number, charOffset: number, removedParaMeta?: RemovedParaMeta): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return this.doc.splitParagraph(sec, para, charOffset);
+    return this.doc.splitParagraph(sec, para, charOffset, serializeParaMeta(removedParaMeta));
   }
 
   insertPageBreak(sec: number, para: number, charOffset: number): string {
@@ -759,9 +933,9 @@ export class WasmBridge {
     return this.doc.mergeParagraph(sec, para);
   }
 
-  splitParagraphInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number): string {
+  splitParagraphInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, removedParaMeta?: RemovedParaMeta): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return this.doc.splitParagraphInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset);
+    return this.doc.splitParagraphInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, serializeParaMeta(removedParaMeta));
   }
 
   mergeParagraphInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number): string {
@@ -865,7 +1039,7 @@ export class WasmBridge {
     return this.doc.insertTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, text);
   }
 
-  insertTextInCellDeferredPagination(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, text: string): DeferredCellTextInsertResult {
+  insertTextInCellDeferredPagination(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, text: string): DeferredCellTextMutationResult {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as {
       insertTextInCellDeferredPagination?: (
@@ -886,7 +1060,7 @@ export class WasmBridge {
     } else {
       raw = this.doc.insertTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, text);
     }
-    const parsed = JSON.parse(raw) as Partial<DeferredCellTextInsertResult>;
+    const parsed = JSON.parse(raw) as Partial<DeferredCellTextMutationResult>;
     const parsedCharOffset = parsed.charOffset;
     if (
       parsed.ok !== true ||
@@ -905,9 +1079,129 @@ export class WasmBridge {
     };
   }
 
+  replaceTextInCellDeferredPagination(
+    sec: number,
+    parentPara: number,
+    controlIdx: number,
+    cellIdx: number,
+    cellParaIdx: number,
+    charOffset: number,
+    deleteCount: number,
+    text: string,
+  ): DeferredCellTextMutationResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as {
+      replaceTextInCellDeferredPagination?: (
+        sec: number,
+        parentPara: number,
+        controlIdx: number,
+        cellIdx: number,
+        cellParaIdx: number,
+        charOffset: number,
+        deleteCount: number,
+        text: string,
+      ) => string;
+    };
+
+    let raw: string;
+    let paginationDeferred = false;
+    if (typeof d.replaceTextInCellDeferredPagination === 'function') {
+      raw = d.replaceTextInCellDeferredPagination(
+        sec,
+        parentPara,
+        controlIdx,
+        cellIdx,
+        cellParaIdx,
+        charOffset,
+        deleteCount,
+        text,
+      );
+      paginationDeferred = true;
+    } else {
+      if (deleteCount > 0) {
+        raw = this.doc.deleteTextInCell(
+          sec,
+          parentPara,
+          controlIdx,
+          cellIdx,
+          cellParaIdx,
+          charOffset,
+          deleteCount,
+        );
+      } else {
+        raw = JSON.stringify({ ok: true, charOffset });
+      }
+      if (text.length > 0) {
+        raw = this.doc.insertTextInCell(
+          sec,
+          parentPara,
+          controlIdx,
+          cellIdx,
+          cellParaIdx,
+          charOffset,
+          text,
+        );
+      }
+    }
+
+    const parsed = JSON.parse(raw) as Partial<DeferredCellTextMutationResult>;
+    const parsedCharOffset = parsed.charOffset;
+    if (
+      parsed.ok !== true ||
+      typeof parsedCharOffset !== 'number' ||
+      !Number.isInteger(parsedCharOffset)
+    ) {
+      throw new Error('잘못된 deferred cell text replace 결과');
+    }
+    return {
+      ok: true,
+      charOffset: parsedCharOffset,
+      paginationDeferred,
+      cellFlowChanged: paginationDeferred && parsed.cellFlowChanged !== false,
+    };
+  }
+
   deleteTextInCell(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, count: number): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.deleteTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, count);
+  }
+
+  deleteTextInCellDeferredPagination(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, charOffset: number, count: number): DeferredCellTextMutationResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as {
+      deleteTextInCellDeferredPagination?: (
+        sec: number,
+        parentPara: number,
+        controlIdx: number,
+        cellIdx: number,
+        cellParaIdx: number,
+        charOffset: number,
+        count: number,
+      ) => string;
+    };
+    let raw: string;
+    let paginationDeferred = false;
+    if (typeof d.deleteTextInCellDeferredPagination === 'function') {
+      raw = d.deleteTextInCellDeferredPagination(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, count);
+      paginationDeferred = true;
+    } else {
+      raw = this.doc.deleteTextInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset, count);
+    }
+    const parsed = JSON.parse(raw) as Partial<DeferredCellTextMutationResult>;
+    const parsedCharOffset = parsed.charOffset;
+    if (
+      parsed.ok !== true ||
+      typeof parsedCharOffset !== 'number' ||
+      !Number.isInteger(parsedCharOffset)
+    ) {
+      throw new Error('잘못된 deferred cell text delete 결과');
+    }
+    return {
+      ok: true,
+      charOffset: parsedCharOffset,
+      paginationDeferred,
+      cellFlowChanged: paginationDeferred && parsed.cellFlowChanged !== false,
+    };
   }
 
   // ─── 중첩 표 path 기반 편집 API ──────────────────────────
@@ -928,9 +1222,9 @@ export class WasmBridge {
     return (this.doc as any).deleteRangeInCellByPath(sec, parentPara, pathJson, startPara, startOffset, endPara, endOffset);
   }
 
-  splitParagraphInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number): string {
+  splitParagraphInCellByPath(sec: number, parentPara: number, pathJson: string, charOffset: number, removedParaMeta?: RemovedParaMeta): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return (this.doc as any).splitParagraphInCellByPath(sec, parentPara, pathJson, charOffset);
+    return (this.doc as any).splitParagraphInCellByPath(sec, parentPara, pathJson, charOffset, serializeParaMeta(removedParaMeta));
   }
 
   mergeParagraphInCellByPath(sec: number, parentPara: number, pathJson: string): string {
@@ -1556,12 +1850,12 @@ export class WasmBridge {
     return JSON.parse((this.doc as any).deleteTextInFootnote(sec, para, controlIdx, fnParaIdx, charOffset, count));
   }
 
-  splitParagraphInFootnote(sec: number, para: number, controlIdx: number, fnParaIdx: number, charOffset: number): { ok: boolean; fnParaIndex: number; charOffset: number } {
+  splitParagraphInFootnote(sec: number, para: number, controlIdx: number, fnParaIdx: number, charOffset: number, removedParaMeta?: RemovedParaMeta): { ok: boolean; fnParaIndex: number; charOffset: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse((this.doc as any).splitParagraphInFootnote(sec, para, controlIdx, fnParaIdx, charOffset));
+    return JSON.parse((this.doc as any).splitParagraphInFootnote(sec, para, controlIdx, fnParaIdx, charOffset, serializeParaMeta(removedParaMeta)));
   }
 
-  mergeParagraphInFootnote(sec: number, para: number, controlIdx: number, fnParaIdx: number): { ok: boolean; fnParaIndex: number; charOffset: number } {
+  mergeParagraphInFootnote(sec: number, para: number, controlIdx: number, fnParaIdx: number): { ok: boolean; fnParaIndex: number; charOffset: number; removedParaMeta: RemovedParaMeta } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse((this.doc as any).mergeParagraphInFootnote(sec, para, controlIdx, fnParaIdx));
   }
@@ -1938,8 +2232,13 @@ export class WasmBridge {
     return this.doc.applyParaFormatInHf(sec, isHeader, applyTo, hfParaIdx, propsJson);
   }
 
-  /** 머리말/꼬리말 문단에 필드 마커를 삽입한다 (1=쪽번호, 2=총쪽수, 3=파일이름) */
-  insertFieldInHf(sec: number, isHeader: boolean, applyTo: number, hfParaIdx: number, charOffset: number, fieldType: number): { ok: boolean; charOffset: number } {
+  /**
+   * 머리말/꼬리말 문단에 필드 마커를 삽입한다 (1=쪽번호, 2=총쪽수, 3=파일이름).
+   *
+   * `charOffset`은 삽입 뒤 커서 좌표, `insertedAt`/`insertedLength`는 history가
+   * 역연산할 실제 모델 텍스트 범위다. inline control 뒤 cursor처럼 둘이 다를 수 있다.
+   */
+  insertFieldInHf(sec: number, isHeader: boolean, applyTo: number, hfParaIdx: number, charOffset: number, fieldType: number): { ok: boolean; charOffset: number; insertedAt: number; insertedLength: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.insertFieldInHf(sec, isHeader, applyTo, hfParaIdx, charOffset, fieldType));
   }
@@ -2121,9 +2420,9 @@ export class WasmBridge {
     return this.doc.deleteTextInHeaderFooter(sec, isHeader, applyTo, hfParaIdx, charOffset, count);
   }
 
-  splitParagraphInHeaderFooter(sec: number, isHeader: boolean, applyTo: number, hfParaIdx: number, charOffset: number): string {
+  splitParagraphInHeaderFooter(sec: number, isHeader: boolean, applyTo: number, hfParaIdx: number, charOffset: number, removedParaMeta?: RemovedParaMeta): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return this.doc.splitParagraphInHeaderFooter(sec, isHeader, applyTo, hfParaIdx, charOffset);
+    return this.doc.splitParagraphInHeaderFooter(sec, isHeader, applyTo, hfParaIdx, charOffset, serializeParaMeta(removedParaMeta));
   }
 
   mergeParagraphInHeaderFooter(sec: number, isHeader: boolean, applyTo: number, hfParaIdx: number): string {
@@ -2144,6 +2443,17 @@ export class WasmBridge {
   hitTestHeaderFooter(pageNum: number, x: number, y: number): { hit: boolean; isHeader?: boolean; sectionIndex?: number; applyTo?: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.hitTestHeaderFooter(pageNum, x, y));
+  }
+
+  /**
+   * 이 쪽에서 머리말/꼬리말을 편집할 때 대상이 되는 (구역, applyTo).
+   *
+   * 좌표 없이 쪽만으로 묻는다 — 히트테스트(`hitTestHeaderFooter`)가 영역 판정 뒤에 쓰는
+   * 것과 같은 답이다 (Task #3206).
+   */
+  getHeaderFooterEditTarget(pageNum: number, isHeader: boolean): { sectionIndex: number; applyTo: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).getHeaderFooterEditTarget(pageNum, isHeader));
   }
 
   hitTestInHeaderFooter(pageNum: number, isHeader: boolean, x: number, y: number): { hit: boolean; paraIndex?: number; charOffset?: number; cursorRect?: { pageIndex: number; x: number; y: number; height: number } } {

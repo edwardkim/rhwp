@@ -11,6 +11,31 @@ export interface PrintPage {
   className: string;
 }
 
+export type PrintIntent = 'print' | 'pdf';
+
+export const PDF_PRINT_GUIDANCE =
+  '브라우저 인쇄 창에서 ‘대상 → PDF로 저장’을 선택합니다.';
+
+export function pdfPrintTitle(fileName: string): string {
+  const baseName = fileName.trim().replace(/\.(hwp|hwpx|hml)$/i, '').trim();
+  return baseName || '문서';
+}
+
+export function printProgressText(
+  intent: PrintIntent,
+  currentPage: number,
+  pageCount: number,
+): string {
+  const label = intent === 'pdf' ? 'PDF 준비 중…' : '인쇄 준비 중…';
+  return `${label} (${currentPage}/${pageCount})`;
+}
+
+export function printReadyText(intent: PrintIntent): string {
+  return intent === 'pdf'
+    ? `PDF 준비 완료 — ${PDF_PRINT_GUIDANCE}`
+    : '인쇄 미리보기 준비 완료';
+}
+
 export function pxToPrintMm(px: number): number {
   return Math.round((px * 25.4 / 96) * 1000) / 1000;
 }
@@ -101,12 +126,45 @@ ${pageSizeRules}
 @media screen {
   body { background: #e5e7eb; display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 16px; }
   .page { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-  .print-bar { position: fixed; top: 0; left: 0; right: 0; background: #1e293b; color: #fff; padding: 8px 16px; display: flex; align-items: center; gap: 12px; font: 14px sans-serif; z-index: 100; }
-  .print-bar button { padding: 6px 16px; background: #2563eb; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
-  .print-bar button:hover { background: #1d4ed8; }
-  body { padding-top: 56px; }
+  body.rhwp-print-preview { padding-top: 72px; }
+  .print-preview-bar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 8px 16px;
+    background: #1e293b;
+    color: #f8fafc;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.28);
+    font: 14px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .print-preview-bar button {
+    min-width: 72px;
+    height: 32px;
+    padding: 0 14px;
+    border: 1px solid #64748b;
+    border-radius: 5px;
+    background: #475569;
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+  }
+  .print-preview-bar button:hover { background: #64748b; }
+  .print-preview-bar button:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+  .print-preview-bar .print-preview-primary { background: #2563eb; border-color: #60a5fa; }
+  .print-preview-bar .print-preview-primary:hover { background: #1d4ed8; }
+  .print-preview-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #e2e8f0;
+  }
 }
-@media print { .print-bar { display: none; } }
+@media print { .print-preview-bar { display: none !important; } }
 `;
 }
 

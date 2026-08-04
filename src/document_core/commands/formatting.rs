@@ -1186,6 +1186,23 @@ impl DocumentCore {
         end_offset: usize,
         props_json: &str,
     ) -> Result<String, HwpError> {
+        // [#2755] 깊이 1 셀은 flat 형제가 셀 폭 리플로우(paint-only 게이팅 포함)를 담당한다.
+        // `apply_char_format_in_cell_native`(:1103)는 char_shape_mods_affect_text_flow 로
+        // 게이팅한 뒤에만 reflow_cell_paragraph 를 호출하므로 밑줄/색 변경은 리플로우하지 않는다.
+        if path.len() == 1 {
+            let (control_idx, cell_idx, cell_para_idx) = path[0];
+            return self.apply_char_format_in_cell_native(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+                start_offset,
+                end_offset,
+                props_json,
+            );
+        }
+
         let mut mods = parse_char_shape_mods(props_json);
         if json_has_border_keys(props_json) {
             let bf_id = self.create_border_fill_from_json(props_json);
@@ -1199,6 +1216,13 @@ impl DocumentCore {
         {
             let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
             para.apply_char_shape_range(start_offset, end_offset, new_id);
+        }
+        // [#2755] 깊이 ≥ 2 중첩 셀도 텍스트 흐름에 영향 주는 변경 시 최내곽 셀 폭으로 재래핑한다
+        // (apply_char_format_in_cell_native 의 char_shape_mods_affect_text_flow 게이팅과 동형 —
+        // 밑줄/색 등 paint-only 변경은 여기서도 리플로우하지 않는다).
+        if char_shape_mods_affect_text_flow(&mods) {
+            let inner_cpi = path.last().map(|e| e.2).unwrap_or(0);
+            self.reflow_cell_paragraph_by_path(sec_idx, parent_para_idx, path, inner_cpi);
         }
         let outer_ctrl = path[0].0;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, outer_ctrl);
@@ -1240,6 +1264,23 @@ impl DocumentCore {
         end_offset: usize,
         char_shape_id: u32,
     ) -> Result<String, HwpError> {
+        // [#2755] 깊이 1 셀은 flat 형제가 셀 폭 리플로우를 담당한다.
+        // `set_char_shape_id_in_cell_native`(:1268)는 (복원 대상 모양의 내용을 알 수 없으므로)
+        // 무조건 reflow_cell_paragraph 를 호출한다. undo 복원 경로의 do/undo 대칭을 지킨다.
+        if path.len() == 1 {
+            let (control_idx, cell_idx, cell_para_idx) = path[0];
+            return self.set_char_shape_id_in_cell_native(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+                start_offset,
+                end_offset,
+                char_shape_id,
+            );
+        }
+
         if char_shape_id as usize >= self.document.doc_info.char_shapes.len() {
             return Err(HwpError::RenderError(format!(
                 "글자 모양 ID {} 범위 초과 (총 {}개)",
@@ -1251,6 +1292,10 @@ impl DocumentCore {
             let cell_para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
             cell_para.apply_char_shape_range(start_offset, end_offset, char_shape_id);
         }
+        // [#2755] 깊이 ≥ 2 중첩 셀도 최내곽 셀 폭으로 재래핑한다(복원 대상 모양의 내용을 알 수
+        // 없으므로 flat set_char_shape_id_in_cell_native 처럼 무조건).
+        let inner_cpi = path.last().map(|e| e.2).unwrap_or(0);
+        self.reflow_cell_paragraph_by_path(sec_idx, parent_para_idx, path, inner_cpi);
         let outer_ctrl = path[0].0;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, outer_ctrl);
         self.document.sections[sec_idx].raw_stream = None;
@@ -2379,6 +2424,58 @@ mod cell_reflow_width_tests {
         );
     }
 
+    /// [#2755] `applyCharFormatInCellByPath` 도 깊이 1 셀에서 셀 폭 리플로우를 해야 한다.
+    ///
+    /// Studio 의 `ApplyCharFormatCommand` 는 `isCell`(= 모든 셀) 조건으로 이 경로를 쓰므로
+    /// 깊이 1 셀 서식이 전부 여기로 들어온다. 리플로우가 없으면 글자 폭만 넓어지고 줄
+    /// 경계는 그대로라 텍스트가 셀 오른쪽 경계를 넘어 그려진다.
+    #[test]
+    fn char_format_by_path_reflow_uses_cell_width_not_page_column_width() {
+        let text = "A".repeat(40);
+        let mut core = core_with_narrow_cell(&text);
+
+        core.apply_char_format_in_cell_by_path(0, 0, &[(0, 0, 0)], 0, 40, r#"{"fontSize":2000}"#)
+            .expect("서식 적용이 성공해야 함");
+
+        let table = match &core.document.sections[0].paragraphs[0].controls[0] {
+            Control::Table(t) => t,
+            _ => panic!("표 컨트롤이어야 함"),
+        };
+        let line_count = table.cells[0].paragraphs[0].line_segs.len();
+        assert!(
+            line_count > 1,
+            "셀 폭(200 HWPUNIT)으로 리플로우했다면 40자가 여러 줄로 나뉘어야 함 \
+             (실제 {line_count}줄 — 리플로우가 없으면 저장된 1줄 경계가 그대로 남는다)"
+        );
+    }
+
+    /// [#2755] undo 가 쓰는 `setCharShapeIdInCellByPath` 도 같은 계약을 지켜야 한다.
+    ///
+    /// flat 형제 `set_char_shape_id_in_cell_native` 는 (모양 변화 내용을 알 수 없으므로)
+    /// 무조건 `reflow_cell_paragraph` 를 호출한다.
+    #[test]
+    fn set_char_shape_id_by_path_reflow_uses_cell_width_not_page_column_width() {
+        let text = "A".repeat(40);
+        let mut core = core_with_narrow_cell(&text);
+        if core.document.doc_info.char_shapes.is_empty() {
+            core.document.doc_info.char_shapes.push(Default::default());
+        }
+
+        core.set_char_shape_id_in_cell_by_path(0, 0, &[(0, 0, 0)], 0, 40, 0)
+            .expect("글자 모양 복원이 성공해야 함");
+
+        let table = match &core.document.sections[0].paragraphs[0].controls[0] {
+            Control::Table(t) => t,
+            _ => panic!("표 컨트롤이어야 함"),
+        };
+        let line_count = table.cells[0].paragraphs[0].line_segs.len();
+        assert!(
+            line_count > 1,
+            "셀 폭(200 HWPUNIT)으로 리플로우했다면 40자가 여러 줄로 나뉘어야 함 \
+             (실제 {line_count}줄)"
+        );
+    }
+
     #[test]
     fn para_format_reflow_uses_cell_width_not_page_column_width() {
         let text = "A".repeat(40);
@@ -2395,6 +2492,141 @@ mod cell_reflow_width_tests {
         assert!(
             line_count > 1,
             "셀 폭(200 HWPUNIT)으로 리플로우했다면 40자가 여러 줄로 나뉘어야 함              (실제 {line_count}줄 — 페이지 본문 폭을 쓰면 1줄로 뭉친다)"
+        );
+    }
+
+    /// [#2755] 깊이 2 중첩 표: 바깥 표(1셀, 폭 5000) 문단 안에 안쪽 표(1셀, 폭 200 + 권위
+    /// line_segs)를 둔다. path = [(outer,0,0),(inner,0,0)] 를 함께 돌려준다.
+    fn core_with_nested_narrow_cell(text: &str) -> (DocumentCore, Vec<(usize, usize, usize)>) {
+        let mut inner_para = Paragraph {
+            text: text.to_string(),
+            char_offsets: (0..text.chars().count() as u32).collect(),
+            char_count: text.chars().count() as u32,
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        inner_para.has_para_text = true;
+
+        let inner_table = Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                row: 0,
+                col: 0,
+                col_span: 1,
+                row_span: 1,
+                width: 200,
+                paragraphs: vec![inner_para],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        let mut outer_cell_para = Paragraph::default();
+        outer_cell_para
+            .controls
+            .push(Control::Table(Box::new(inner_table)));
+        let inner_ctrl_idx = outer_cell_para.controls.len() - 1;
+
+        let outer_table = Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                row: 0,
+                col: 0,
+                col_span: 1,
+                row_span: 1,
+                width: 5000,
+                paragraphs: vec![outer_cell_para],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        let mut body_para = Paragraph::default();
+        body_para
+            .controls
+            .push(Control::Table(Box::new(outer_table)));
+        let outer_ctrl_idx = body_para.controls.len() - 1;
+
+        let mut section = Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    margin_left: 8504,
+                    margin_right: 8504,
+                    margin_top: 5668,
+                    margin_bottom: 4252,
+                    margin_header: 4252,
+                    margin_footer: 4252,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        section.paragraphs.push(body_para);
+        let mut doc = Document::default();
+        doc.sections.push(section);
+
+        let mut core = DocumentCore::new_empty();
+        core.document = doc;
+        core.composed = vec![Vec::new()];
+        core.dirty_sections = vec![true];
+        core.dirty_paragraphs = vec![None];
+        let path = vec![(outer_ctrl_idx, 0, 0), (inner_ctrl_idx, 0, 0)];
+        (core, path)
+    }
+
+    fn inner_cell_line_count(core: &DocumentCore, path: &[(usize, usize, usize)]) -> usize {
+        let Control::Table(outer) = &core.document.sections[0].paragraphs[0].controls[path[0].0]
+        else {
+            panic!("바깥 표여야 함");
+        };
+        let Control::Table(inner) = &outer.cells[0].paragraphs[0].controls[path[1].0] else {
+            panic!("안쪽 표여야 함");
+        };
+        inner.cells[0].paragraphs[0].line_segs.len()
+    }
+
+    /// [#2755] 깊이 2 — `applyCharFormatInCellByPath` 가 최내곽 셀 폭으로 재래핑한다.
+    #[test]
+    fn char_format_by_path_reflow_reaches_nested_inner_cell() {
+        let (mut core, path) = core_with_nested_narrow_cell(&"A".repeat(40));
+
+        core.apply_char_format_in_cell_by_path(0, 0, &path, 0, 40, r#"{"fontSize":2000}"#)
+            .expect("서식 적용이 성공해야 함");
+
+        let line_count = inner_cell_line_count(&core, &path);
+        assert!(
+            line_count > 1,
+            "깊이 2 안쪽 셀 폭(200)으로 재래핑되면 40자가 여러 줄이어야 함 (실제 {line_count}줄)"
+        );
+    }
+
+    /// [#2755] 깊이 2 — `setCharShapeIdInCellByPath` 도 최내곽 셀 폭으로 재래핑한다.
+    #[test]
+    fn set_char_shape_id_by_path_reflow_reaches_nested_inner_cell() {
+        let (mut core, path) = core_with_nested_narrow_cell(&"A".repeat(40));
+        if core.document.doc_info.char_shapes.is_empty() {
+            core.document.doc_info.char_shapes.push(Default::default());
+        }
+
+        core.set_char_shape_id_in_cell_by_path(0, 0, &path, 0, 40, 0)
+            .expect("글자 모양 복원이 성공해야 함");
+
+        let line_count = inner_cell_line_count(&core, &path);
+        assert!(
+            line_count > 1,
+            "깊이 2 안쪽 셀 폭(200)으로 재래핑되면 40자가 여러 줄이어야 함 (실제 {line_count}줄)"
         );
     }
 }

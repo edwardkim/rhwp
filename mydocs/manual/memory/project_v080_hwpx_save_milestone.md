@@ -2,13 +2,12 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: project_v080_hwpx_save_milestone
 description: 다음 릴리즈는 0.7→0.8 MINOR 분기점 — HWPX 직접 저장+양방향 포맷 선택이 근거
 metadata: 
   node_type: memory
   type: project
-  originSessionId: 2560b31a-9f1c-4764-bbf1-7ba5fc27c7ce
 ---
 
 다음 rhwp 릴리즈는 **0.7.x → 0.8.0 MINOR 버전 업**으로 올린다 (2026-06-28 작업지시자 결정).

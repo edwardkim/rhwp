@@ -2,13 +2,12 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: feedback_pr_maintainer_comment_required
 description: PR 머지/close 후 PR 자체에 메인테이너 코멘트(처리 결과+검증 요약+감사)를 반드시 등록
 metadata: 
   node_type: memory
   type: feedback
-  originSessionId: 2560b31a-9f1c-4764-bbf1-7ba5fc27c7ce
 ---
 
 PR 처리(merge/close)를 마친 뒤 **PR 자체에 메인테이너 코멘트를 반드시 등록**한다. `gh pr merge --admin`이

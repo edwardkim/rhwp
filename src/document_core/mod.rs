@@ -22,14 +22,18 @@ use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::height_measurer::{MeasuredSection, MeasuredTable};
 use crate::renderer::layout::LayoutEngine;
 use crate::renderer::pagination::PaginationResult;
+use crate::renderer::render_normalization::{RenderNormalizationOverlay, RenderPath};
 use crate::renderer::render_tree::PageRenderTree;
 use crate::renderer::style_resolver::ResolvedStyleSet;
+use crate::renderer::typeset::ResumableTablePaginationJob;
 use crate::renderer::DEFAULT_DPI;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// 기본 폰트 fallback 경로
 pub const DEFAULT_FALLBACK_FONT: &str = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf";
+pub(crate) const TABLE_CAPTION_CELL_SENTINEL: usize = 65_534;
 
 /// 내부 클립보드 데이터
 pub(crate) struct ClipboardData {
@@ -42,6 +46,72 @@ pub(crate) struct ClipboardData {
 /// 표 셀 행/열 바꿈 전용 내부 버퍼
 pub(crate) struct TableTransposeClipboard {
     pub(crate) data: TableTransposeData,
+}
+
+/// [#2424] deferred cell edit가 이후 pagination job에 넘기는 최소 target descriptor.
+///
+/// resumable engine이 붙기 전까지 실제 flush는 기존 동기 `paginate()`를 사용하며,
+/// 성공한 pagination은 이 descriptor를 소비한다.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct DeferredPaginationDescriptor {
+    pub(crate) revision: u64,
+    pub(crate) section_index: usize,
+    pub(crate) para_index: usize,
+    pub(crate) control_index: usize,
+    pub(crate) cell_index: usize,
+    pub(crate) cell_para_index: usize,
+    pub(crate) cell_flow_changed: bool,
+    /// 기존 pagination에서 target table의 첫 fragment가 있던 global page.
+    /// 실제 최초 changed fragment는 synchronous oracle 비교 뒤 더 좁힌다.
+    pub(crate) target_first_page: Option<u32>,
+    pub(crate) table_structure_fingerprint: u64,
+}
+
+/// [#2424] pending pagination job이 descriptor 좌표를 다시 조회한 결과.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum DeferredPaginationTargetStatus {
+    Current,
+    Superseded,
+    TargetMissing,
+    StructureChanged,
+}
+
+pub(crate) struct PendingPaginationJob {
+    pub(crate) descriptor: DeferredPaginationDescriptor,
+    pub(crate) renderer_job: ResumableTablePaginationJob,
+    pub(crate) measured: MeasuredSection,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DeferredPaginationJobState {
+    None,
+    Pending,
+    Complete,
+    Fallback,
+    Stale,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DeferredPaginationStepResult {
+    pub state: DeferredPaginationJobState,
+    pub revision: u64,
+    pub fragments_processed: usize,
+    pub page_count: u32,
+}
+
+pub(crate) struct RenderNormalizedSection {
+    pub(crate) source_revision: u64,
+    pub(crate) paragraphs: Arc<Vec<Paragraph>>,
+    pub(crate) composed: Arc<Vec<ComposedParagraph>>,
+}
+
+#[derive(Default)]
+pub(crate) struct RenderNormalizationState {
+    pub(crate) document_epoch: u64,
+    pub(crate) section_revisions: Vec<u64>,
+    pub(crate) sections: Vec<Option<RenderNormalizedSection>>,
+    pub(crate) path_revisions: HashMap<RenderPath, u64>,
+    pub(crate) overlay: Arc<RenderNormalizationOverlay>,
 }
 
 /// HWP 문서 핵심 도메인 모델
@@ -57,15 +127,10 @@ pub struct DocumentCore {
     pub(crate) styles: ResolvedStyleSet,
     /// 구역별 구성된 문단 목록
     pub(crate) composed: Vec<Vec<ComposedParagraph>>,
-    /// [#2004] 부동(tac=false) 전면 이미지 스택을 인라인(tac=true)으로 재분류한 render-전용
-    /// 문단/구성. 섹션별 Some 이면 pagination·layout 이 원본 대신 이 정규화본을 사용한다.
-    /// **원본 `document` 는 무손상** → 직렬화(save) 정합 유지. paginate 시 재계산.
-    pub(crate) render_normalized: Vec<
-        Option<(
-            Vec<crate::model::paragraph::Paragraph>,
-            Vec<ComposedParagraph>,
-        )>,
-    >,
+    /// [#2308] source IR로부터 재생성되는 revision 기반 render normalization state.
+    /// #2004 immutable compatibility projection과 #2195 sparse width overlay를 소유하며,
+    /// **원본 `document`는 무손상**이고 deferred edit은 projection을 직접 mirror하지 않는다.
+    pub(crate) render_normalization: RenderNormalizationState,
     /// DPI
     pub(crate) dpi: f64,
     /// 대체 폰트 경로
@@ -104,6 +169,12 @@ pub struct DocumentCore {
     /// 구역별 문단→단 인덱스 매핑 (페이지네이션에서 결정)
     /// para_column_map[section_idx][para_idx] = column_index
     pub(crate) para_column_map: Vec<Vec<u16>>,
+    /// [#2424] 마지막 deferred cell edit revision. 새 edit가 기존 pagination job을 대체한다.
+    pub(crate) deferred_pagination_revision: u64,
+    /// [#2424] 아직 full pagination에 반영되지 않은 target descriptor.
+    pub(crate) deferred_pagination_descriptor: Option<DeferredPaginationDescriptor>,
+    /// [#2424] 공개 pagination과 분리된 shadow continuation job.
+    pub(crate) pending_pagination_job: Option<PendingPaginationJob>,
     /// 페이지별 렌더 트리 캐시 (지연 구축, 부분 무효화)
     pub(crate) page_tree_cache: RefCell<Vec<Option<PageRenderTree>>>,
     /// [Task #2222] 페이지 레이어 트리 JSON 캐시 — (출력옵션 지문, 직렬화 결과).
@@ -254,7 +325,7 @@ impl DocumentCore {
             pagination: Vec::new(),
             styles: ResolvedStyleSet::default(),
             composed: Vec::new(),
-            render_normalized: Vec::new(),
+            render_normalization: RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,
             fallback_font: DEFAULT_FALLBACK_FONT.to_string(),
             layout_engine: LayoutEngine::new(DEFAULT_DPI),
@@ -272,6 +343,9 @@ impl DocumentCore {
             measured_sections: Vec::new(),
             dirty_paragraphs: Vec::new(),
             para_column_map: Vec::new(),
+            deferred_pagination_revision: 0,
+            deferred_pagination_descriptor: None,
+            pending_pagination_job: None,
             page_tree_cache: RefCell::new(Vec::new()),
             layer_tree_json_cache: RefCell::new(Vec::new()),
             batch_mode: false,

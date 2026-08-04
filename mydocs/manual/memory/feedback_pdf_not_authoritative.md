@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: PDF 정답지 등급 — 한컴 편집기 자체 PDF(한글 2020/2022)만 정답지, 외부·뷰어·2010 PDF는 미달
 description: 한컴 한글 2020/2022 편집기 SaveAs PDF는 정답지로 사용 가능. 한컴 뷰어 / macOS 인쇄 / 외부 변환 / 한글 2010 PDF는 정답지 등급 미달. 환경별로 결과가 달라 출처 미명시 시 검증 기준 수용 금지.
 type: feedback
-originSessionId: 263bacf0-af73-4169-8b90-2cc13f939a31
 ---
 한컴 PDF 출력은 **어느 한컴인지** 가 정의되지 않으면 정답지로 수용할 수 없다. 한컴 한글 2020/2022 **편집기** 의 SaveAs PDF는 정답지로 사용 가능하지만, 한컴 뷰어 / macOS 인쇄 / 외부 변환 / 한글 2010 PDF는 등급 미달이다.
 

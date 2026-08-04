@@ -940,6 +940,9 @@ export class HwpDocument {
     insertEquation(section_idx: number, para_idx: number, char_offset: number, script: string, font_size: number, color: number): string;
     /**
      * 머리말/꼬리말 문단에 필드 마커를 삽입한다.
+     *
+     * 반환 JSON: `charOffset`은 삽입 후 커서 좌표, `insertedAt`/`insertedLength`는
+     * history 역연산용 실제 모델 텍스트 범위다.
      */
     insertFieldInHf(section_idx: number, is_header: boolean, apply_to: number, hf_para_idx: number, char_offset: number, field_type: number): string;
     /**

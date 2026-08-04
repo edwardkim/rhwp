@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Issue #2809 위·아래 Split 문단 속성 차이 회귀 — E2E 테스트 보고서</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f5f5f5; color: #333; }
+  .header { background: #28a745; color: white; padding: 24px 32px; }
+  .header h1 { font-size: 24px; margin-bottom: 8px; }
+  .header .meta { font-size: 14px; opacity: 0.9; }
+  .summary { display: flex; gap: 16px; padding: 20px 32px; background: white; border-bottom: 1px solid #e0e0e0; }
+  .summary .stat { text-align: center; padding: 12px 24px; border-radius: 8px; }
+  .summary .stat.pass { background: #d4edda; color: #155724; }
+  .summary .stat.fail { background: #f8d7da; color: #721c24; }
+  .summary .stat.skip { background: #fff3cd; color: #856404; }
+  .summary .stat.total { background: #d1ecf1; color: #0c5460; }
+  .stat .number { font-size: 32px; font-weight: bold; }
+  .stat .label { font-size: 12px; text-transform: uppercase; margin-top: 4px; }
+  .content { padding: 24px 32px; max-width: 1200px; margin: 0 auto; }
+  .tc-card { background: white; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+  .tc-card.fail { border-left: 4px solid #dc3545; }
+  .tc-card.pass { border-left: 4px solid #28a745; }
+  .tc-card.skip { border-left: 4px solid #ffc107; }
+  .tc-header { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+  .tc-header h3 { font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .tc-body { padding: 16px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+  .badge.pass { background: #28a745; color: white; }
+  .badge.fail { background: #dc3545; color: white; }
+  .badge.skip { background: #ffc107; color: #333; }
+  .assertions { margin-bottom: 12px; }
+  .assertion { padding: 4px 0; font-size: 14px; font-family: monospace; }
+  .assertion.fail { color: #dc3545; font-weight: bold; }
+  .assertion.skip { color: #856404; }
+  .screenshot { margin-top: 12px; }
+  .screenshot img { max-width: 100%; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; transition: transform 0.2s; }
+  .screenshot img:hover { transform: scale(1.02); }
+  .footer { text-align: center; padding: 20px; font-size: 12px; color: #999; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Issue #2809 위·아래 Split 문단 속성 차이 회귀</h1>
+  <div class="meta">생성: 2026. 7. 22. 오후 7:05:32 | 소요: 3.5초 | rhwp E2E CDP 테스트</div>
+</div>
+<div class="summary">
+  <div class="stat total"><div class="number">7</div><div class="label">Total</div></div>
+  <div class="stat pass"><div class="number">7</div><div class="label">Passed</div></div>
+  <div class="stat fail"><div class="number">0</div><div class="label">Failed</div></div>
+  <div class="stat skip"><div class="number">0</div><div class="label">Skipped</div></div>
+</div>
+<div class="content">
+
+      <div class="tc-card pass">
+        <div class="tc-header">
+          <h3><span class="badge pass">PASS</span> 이슈 원본 HWP WASM 렌더</h3>
+        </div>
+        <div class="tc-body">
+          <div class="assertions"><div class="assertion pass">✅ 2x canvas 생성 (1126×1587)</div>
+<div class="assertion pass">✅ WASM SVG에 다/같/이 라벨 존재</div>
+<div class="assertion pass">✅ 위·아래 Split 라벨 좌표 추출</div>
+<div class="assertion pass">✅ 마지막 glyph 잉크 여유를 포함한 위·아래 분배 폭 정합 (77.9733333333333 / 76.69333333333333)</div>
+<div class="assertion pass">✅ WASM 페이지 레이어 트리의 위·아래 분배 폭 정합 (77.973 / 76.693)</div>
+<div class="assertion pass">✅ 음수 자간은 글자 위치만 조정하고 glyph 폭은 유지 (28 / 28px)</div>
+<div class="assertion pass">✅ 위쪽 마지막 glyph가 셀 우측에서 잘리지 않음 (22 / 28px)</div></div>
+
+        </div>
+      </div>
+</div>
+<div class="footer">rhwp E2E Test Report — Issue #2809 위·아래 Split 문단 속성 차이 회귀</div>
+</body>
+</html>

@@ -40,15 +40,17 @@ pub struct SourceProvenance {
 
 /// 레이아웃 호환 정책 질의 표면.
 ///
-/// Stage 1 은 기존 boolean 분기의 1:1 대응이다 — 질의 이름은 "무엇을 켜는가"
-/// 를 말하고, 값 계산은 [`crate::model::document::Document::layout_profile`] 이
-/// 기존 파생식을 그대로 따른다.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+/// 질의 이름은 "무엇을 켜는가"를 말하고, 값 계산은
+/// [`crate::model::document::Document::layout_profile`] 이 소유한다. 기존 호환
+/// boolean은 1:1로 보존하고, 포맷별 저장 계약이 필요할 때는 정확한 출처 질의를
+/// 별도로 추가한다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LayoutCompatibilityProfile {
     hwp3_layout: bool,
     hwp3_native_layout: bool,
     hwpx_stored_layout: bool,
     hwp5_origin_hwpx: bool,
+    native_hwp5_layout: bool,
 }
 
 impl LayoutCompatibilityProfile {
@@ -57,12 +59,14 @@ impl LayoutCompatibilityProfile {
         hwp3_native_layout: bool,
         hwpx_stored_layout: bool,
         hwp5_origin_hwpx: bool,
+        native_hwp5_layout: bool,
     ) -> Self {
         Self {
             hwp3_layout,
             hwp3_native_layout,
             hwpx_stored_layout,
             hwp5_origin_hwpx,
+            native_hwp5_layout,
         }
     }
 
@@ -89,5 +93,19 @@ impl LayoutCompatibilityProfile {
     /// 저장 행 높이·pagination marker 를 보존한다. 기존 `is_hwp5_origin_hwpx` 동치.
     pub fn hwp5_origin_hwpx(&self) -> bool {
         self.hwp5_origin_hwpx
+    }
+
+    /// 변환 계보가 없는 원본 HWP 5.x 바이너리인지 여부. HML 및 HWP3/HWPX
+    /// 변환본과 저장 LineSeg 계약을 정확히 분리해야 하는 좁은 호환 분기에 쓴다.
+    pub fn native_hwp5_layout(&self) -> bool {
+        self.native_hwp5_layout
+    }
+}
+
+impl Default for LayoutCompatibilityProfile {
+    fn default() -> Self {
+        // 렌더러 단위 테스트와 생성기 경로가 역사적으로 all-false 프로필을
+        // HWP5 기본값으로 사용했다. 새 출처 신호도 같은 기본 의미를 보존한다.
+        Self::new(false, false, false, false, true)
     }
 }
