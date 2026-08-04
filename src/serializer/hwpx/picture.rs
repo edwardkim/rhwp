@@ -31,11 +31,13 @@ use crate::model::image::{
     EffectColor, EffectPoint, EffectRgb, ImageEffect, Picture, PictureShadow,
 };
 use crate::model::shape::{
-    CommonObjAttr, HorzAlign, HorzRelTo, ShapeComponentAttr, TextFlow, TextWrap, VertAlign,
-    VertRelTo,
+    CommonObjAttr, HorzAlign, HorzRelTo, ShapeComponentAttr, SizeCriterion, TextFlow, TextWrap,
+    VertAlign, VertRelTo,
 };
 
 use super::context::SerializeContext;
+// [#2712] hp:sz 크기 기준 헬퍼는 도형 직렬화기와 공유한다(관례 이중화 방지).
+use super::shape::{height_criterion_str, numbering_type_str, size_criterion_str};
 use super::table::write_caption;
 use super::utils::{empty_tag, end_tag, start_tag, start_tag_attrs};
 use super::SerializeError;
@@ -59,6 +61,19 @@ pub fn write_picture<W: Write>(
     let tf = text_flow_str(pic.common.text_flow);
     let instid = pic.instance_id.to_string();
     let href = pic.href.as_deref().unwrap_or("");
+    // [#2861] 좌우 반전 — 종전 하드코딩 "0" 은 reverse="1" 로 저장된 그림의 반전 정보를
+    // 왕복 시 소실시켰다.
+    let reverse = bool01(pic.reverse);
+    // [#2875] 개체 잠금 — 종전 하드코딩 "0" 은 lock="1" 로 저장된 그림의 잠금 정보를
+    // 왕복 시 소실시켰다 (#2861 reverse, #2855 hp:tbl lock 과 동일 패턴).
+    let lock = bool01(pic.lock);
+    // [#2697 동형] numberingType 은 IR(common.numbering_type)을 보존한다. 종전 "PICTURE"
+    // 하드코딩은 그림에 번호 범주를 변경한(예: NONE) 문서에서 저장 시 원본 속성이 유실됐다.
+    // 도형·표 계열은 이미 #1379/#2697 에서 IR 보존으로 정리됐다.
+    let numbering_type = numbering_type_str(pic.common.numbering_type);
+    // [#TODO-IR] groupLevel 은 IR(shape_attr.group_level)을 보존한다. 종전 "0" 하드코딩은
+    // 그룹 내 그림 개체의 중첩 레벨이 저장 시 유실됐다(shape.rs rect/line 경로는 이미 보존).
+    let group_level = pic.shape_attr.group_level.to_string();
 
     start_tag_attrs(
         w,
@@ -66,15 +81,18 @@ pub fn write_picture<W: Write>(
         &[
             ("id", &id_str),
             ("zOrder", &z_order),
-            ("numberingType", "PICTURE"),
+            ("numberingType", &numbering_type),
             ("textWrap", tw),
             ("textFlow", tf),
-            ("lock", "0"),
-            ("dropcapstyle", "None"),
+            ("lock", lock),
+            (
+                "dropcapstyle",
+                super::shape::drop_cap_style_str(pic.common.drop_cap_style),
+            ),
             ("href", href),
-            ("groupLevel", "0"),
+            ("groupLevel", &group_level),
             ("instid", &instid),
-            ("reverse", "0"),
+            ("reverse", reverse),
         ],
     )?;
 
@@ -382,15 +400,20 @@ fn push_opt_attr<'a>(
 fn write_sz<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
     let width = c.width.to_string();
     let height = c.height.to_string();
+    // [#2712] widthRelTo/heightRelTo/protect 는 IR 을 보존한다. 종전 "ABSOLUTE"/"0"
+    // 하드코딩은 HWP5 입력(parser/control/shape.rs:348/380/388 이 attr bit 20/15-17/18-19
+    // 에서 채움)과 문서 코어 편집(set_cell_picture_properties 의 sizeProtect,
+    // tests/issue_1436_size_protect_properties.rs:48)으로 들어온 값을 저장 때 버렸다.
+    // 헬퍼는 도형 직렬화기와 공유해 관례를 하나로 유지한다(shape.rs:1000/1013).
     empty_tag(
         w,
         "hp:sz",
         &[
             ("width", &width),
-            ("widthRelTo", "ABSOLUTE"),
+            ("widthRelTo", size_criterion_str(c.width_criterion)),
             ("height", &height),
-            ("heightRelTo", "ABSOLUTE"),
-            ("protect", "0"),
+            ("heightRelTo", height_criterion_str(c.height_criterion)),
+            ("protect", bool01(c.size_protect)),
         ],
     )
 }
@@ -407,7 +430,9 @@ fn write_pos<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), Seria
         "hp:pos",
         &[
             ("treatAsChar", treat),
-            ("affectLSpacing", "0"),
+            // [#2784] affectLSpacing 은 IR(affect_line_spacing)을 보존한다. 종전 "0"
+            // 하드코딩은 "줄 간격에 영향" 켜진 그림이 저장 시 1→0 으로 드롭됐다.
+            ("affectLSpacing", bool01(c.affect_line_spacing)),
             ("flowWithText", flow_with_text),
             ("allowOverlap", allow_overlap),
             ("holdAnchorAndSO", hold),
@@ -556,6 +581,20 @@ mod tests {
         String::from_utf8(w.into_inner()).unwrap()
     }
 
+    // [#2875] hp:pic lock="1" 이 IR 에 있어도 종전에는 하드코딩 "0" 으로 방출됐다.
+    #[test]
+    fn issue2875_pic_lock_is_preserved_on_serialize() {
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+        pic.lock = true;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(
+            xml.contains(r#"lock="1""#),
+            "hp:pic lock=1 이 저장 시 보존돼야 한다: {xml}"
+        );
+    }
+
     #[test]
     fn task1389_cur_sz_uses_shape_attr() {
         let doc = make_doc_with_bin(1, "png");
@@ -567,6 +606,19 @@ mod tests {
         assert!(
             xml.contains(r#"<hp:curSz width="1366" height="1268"/>"#),
             "curSz 는 shape_attr.current 사용(sz 아님): {xml}"
+        );
+    }
+
+    #[test]
+    fn dropcapstyle_round_trips_instead_of_always_none() {
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+        pic.common.drop_cap_style = crate::model::shape::DropCapStyle::TripleLine;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(
+            xml.contains(r#"dropcapstyle="TripleLine""#),
+            "dropcapstyle 는 원본 값을 보존해야 한다(하드코딩 \"None\" 아님): {xml}"
         );
     }
 
@@ -615,6 +667,21 @@ mod tests {
         assert!(
             xml.contains(r#"alpha="255""#),
             "그림 투명도 100%는 한컴 HWPX alpha byte 255로 저장되어야 한다: {xml}"
+        );
+    }
+
+    // [#2861] reverse="1" 이 IR 에 있어도 종전에는 하드코딩 "0" 으로 방출됐다.
+    #[test]
+    fn issue2861_pic_reverse_is_preserved_on_serialize() {
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+
+        pic.reverse = true;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(
+            xml.contains(r#"reverse="1""#),
+            "hp:pic reverse=1 이 저장 시 보존돼야 한다: {xml}"
         );
     }
 
@@ -884,5 +951,108 @@ mod tests {
         let pic = make_picture(1);
         let xml = serialize(&pic, &mut ctx);
         assert!(!xml.contains("<hp:caption"), "캡션 부재 시 미방출: {}", xml);
+    }
+
+    // ---------- #2712: 그림 hp:sz 크기 기준·크기 보호 라운드트립 ----------
+
+    /// 그림 조각을 한 문단짜리 `<hs:sec>` 으로 감싸 다시 파싱한다(IR 수준 역검증용).
+    fn reparse_pic_common(fragment: &str) -> CommonObjAttr {
+        let xml = format!(
+            concat!(
+                r#"<?xml version="1.0" encoding="UTF-8"?>"#,
+                r#"<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph""#,
+                r#" xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">"#,
+                r#"<hp:p id="0" paraPrIDRef="0" styleIDRef="0">"#,
+                r#"<hp:run charPrIDRef="0">{}<hp:t/></hp:run></hp:p></hs:sec>"#
+            ),
+            fragment
+        );
+        let section = crate::parser::hwpx::section::parse_hwpx_section(&xml)
+            .expect("파싱 가능한 그림 조각이어야 함");
+        match &section.paragraphs[0].controls[0] {
+            crate::model::control::Control::Picture(p) => p.common.clone(),
+            other => panic!("그림 컨트롤이어야 함: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn task2712_pic_sz_criteria_and_protect_emitted_from_ir() {
+        // [#2712] 그림 hp:sz 도 IR 을 보존해야 한다. 종전 "ABSOLUTE"/"ABSOLUTE"/"0"
+        // 하드코딩은 HWP5 입력(parser/control/shape.rs:348/380/388)과 문서 코어
+        // 편집(sizeProtect, tests/issue_1436_size_protect_properties.rs)으로 들어온
+        // 값을 저장 때 버렸다. RED.
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+        pic.common.width_criterion = SizeCriterion::Column;
+        pic.common.height_criterion = SizeCriterion::Page;
+        pic.common.size_protect = true;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(
+            xml.contains(r#"widthRelTo="COLUMN""#),
+            "widthRelTo 가 IR(Column)로 방출돼야 함(종전 ABSOLUTE 하드코딩): {xml}"
+        );
+        assert!(
+            xml.contains(r#"heightRelTo="PAGE""#),
+            "heightRelTo 가 IR(Page)로 방출돼야 함(종전 ABSOLUTE 하드코딩): {xml}"
+        );
+        assert!(
+            xml.contains(r#"protect="1""#),
+            "protect 가 IR(size_protect=true)로 방출돼야 함(종전 0 하드코딩): {xml}"
+        );
+    }
+
+    #[test]
+    fn task2712_pic_sz_round_trips_through_parser() {
+        // [#2712] 그림 파서는 hp:sz 의 크기 기준·크기 보호 arm 이 아예 없어 왕복이 막혀
+        // 있었다(section.rs:2308 인라인 arm 에 width/height 만 존재). 파서 arm 추가로
+        // 방출→파싱이 정확한 역이 돼야 한다. RED.
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+        pic.common.width_criterion = SizeCriterion::Para;
+        pic.common.height_criterion = SizeCriterion::Paper;
+        pic.common.size_protect = true;
+        let xml = serialize(&pic, &mut ctx);
+
+        let back = reparse_pic_common(&xml);
+        assert_eq!(
+            back.width_criterion,
+            SizeCriterion::Para,
+            "그림 widthRelTo 가 IR 로 되읽혀야 함"
+        );
+        assert_eq!(
+            back.height_criterion,
+            SizeCriterion::Paper,
+            "그림 heightRelTo 가 IR 로 되읽혀야 함"
+        );
+        assert!(back.size_protect, "그림 protect 가 IR 로 되읽혀야 함");
+    }
+
+    #[test]
+    fn task2712_pic_height_criterion_is_exact_inverse() {
+        // 높이는 파서가 allow_column_para=false 로 읽으므로 방출도 3값으로 접어야 한다.
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let mut pic = make_picture(1);
+        pic.common.height_criterion = SizeCriterion::Para;
+        let xml = serialize(&pic, &mut ctx);
+        assert!(xml.contains(r#"heightRelTo="ABSOLUTE""#), "{xml}");
+        assert_eq!(
+            reparse_pic_common(&xml).height_criterion,
+            SizeCriterion::Absolute
+        );
+    }
+
+    #[test]
+    fn task2712_pic_sz_defaults_unchanged() {
+        // 기본 IR(Absolute/Absolute/false)은 종전 출력과 동일해야 한다(무변화 보장).
+        // 실측상 samples/hwpx 의 hp:pic 188개가 전부 이 조합이라 회귀 위험이 없다.
+        let doc = make_doc_with_bin(1, "png");
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = serialize(&make_picture(1), &mut ctx);
+        assert!(xml.contains(r#"widthRelTo="ABSOLUTE""#), "{xml}");
+        assert!(xml.contains(r#"heightRelTo="ABSOLUTE""#), "{xml}");
+        assert!(xml.contains(r#"protect="0""#), "{xml}");
     }
 }

@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 보고서는 타스크 브랜치에서 커밋
 description: 단계별 완료보고서, 최종 보고서, 오늘할일 갱신은 타스크 브랜치에서 소스와 함께 커밋해야 함
 type: feedback
-originSessionId: 1f035a49-cf55-4427-a5b6-ba6a493aa832
 ---
 단계별 완료보고서(`_stage{N}.md`), 최종 결과보고서(`_report.md`), 오늘할일(`orders/`) 갱신은 반드시 **타스크 브랜치(`local/task{N}`)에서 소스 수정 커밋과 함께 커밋**한다. merge 전에 반드시 `git status`로 미커밋 파일이 없는지 확인한다.
 

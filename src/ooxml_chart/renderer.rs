@@ -5,21 +5,22 @@
 //! - **콤보 차트** (bar + line) 및 **이중 Y축** 지원
 
 use super::{
-    BarGrouping, LegendPos, OoxmlChart, OoxmlChartType, OoxmlSeries, ScatterStyle, SeriesMarker,
+    BarGrouping, LegendPos, OfPieInfo, OfPieType, OoxmlChart, OoxmlChartType, OoxmlSeries,
+    ScatterStyle, SeriesMarker, View3D,
 };
 
 /// 기본 시리즈 색상 팔레트 (시리즈 색상 미지정 시 순환 사용)
 ///
-/// 한컴 2022 기본 팔레트(`hncChartStyle colorIndex="0"`) — 앞 4색은 `pdf/chart/` 정답지
-/// PDF 픽셀 실측(막대 3시리즈 + 원형 4슬라이스), 5번째 이후는 코퍼스에 4시리즈 초과
-/// 샘플이 없어 미실측(Office 유사색 순서로 유추 배치).
+/// 한컴 2022 기본 팔레트(`hncChartStyle colorIndex="0"`) — 앞 5색은 `pdf/chart/` 정답지
+/// PDF 픽셀 실측(막대 3시리즈 + 원형 4슬라이스 + ofPie 결합 슬라이스), 6번째 이후는
+/// 코퍼스에 초과 샘플이 없어 미실측(Office 유사색 순서로 유추 배치).
 const DEFAULT_PALETTE: &[u32] = &[
     0xFF6183D7, // 파랑 (실측)
     0xFFFE813B, // 주황 (실측)
     0xFFB0B0B0, // 회색 (실측)
     0xFFFCD801, // 노랑 (실측)
-    0xFF5B9BD5, // 하늘 (유추)
-    0xFF70AD47, // 초록 (유추)
+    0xFF27A172, // 초록계 (실측 — ofPie 결합 슬라이스, 원형대원형·가로막대 교차 일치)
+    0xFF5B9BD5, // 하늘 (유추 — [4]에서 강등)
     0xFF9013FE, 0xFF50E3C2,
 ];
 
@@ -29,6 +30,98 @@ fn palette(i: usize) -> u32 {
 
 fn color_hex(c: u32) -> String {
     format!("#{:06x}", c & 0xFFFFFF)
+}
+
+/// RGB 음영 — factor>0 은 흰색 방향 lighten, factor<0 은 검정 방향 darken.
+/// 채널별 선형 보간, 상위(알파) 바이트는 보존. 3D 면 음영용. (C2b #2278)
+fn shade(rgb: u32, factor: f64) -> u32 {
+    let f = factor.clamp(-1.0, 1.0);
+    let ch = |c: u32| -> u32 {
+        let c = c as f64;
+        let v = if f >= 0.0 {
+            c + (255.0 - c) * f
+        } else {
+            c * (1.0 + f)
+        };
+        v.round().clamp(0.0, 255.0) as u32
+    };
+    (rgb & 0xFF00_0000)
+        | (ch((rgb >> 16) & 0xFF) << 16)
+        | (ch((rgb >> 8) & 0xFF) << 8)
+        | ch(rgb & 0xFF)
+}
+
+/// 3D 막대 면 음영 계수 — 정답지 4종 판독 근사(윗면 밝게/우측면 어둡게,
+/// stage1 실측 기록), 시각판정 보정 대상. (C2b #2278)
+const BAR3D_TOP_SHADE: f64 = 0.25;
+const BAR3D_SIDE_SHADE: f64 = -0.25;
+
+/// rAngAx=1(직각 축 — 한컴 차트 스펙 rev1.2 표 100 ProjectionType=1
+/// "2.5차원: 회전·상승해도 XY 면 불변"과 동계) 시어 투영 사전계산.
+/// 씬 = 앞면 플롯평면 × 깊이 [0..D], 화면 깊이 벡터 = (+sin(rotY), −sin(rotX))·D.
+/// 투영 bbox를 플롯 rect에 비등방 fit — 앞면은 좌하 고정, 뒷벽이 우상으로.
+/// rAngAx=0 막대는 코퍼스 부재 — 동일 시어 폴백(근사, 진짜 회전 투영은 Stage 2
+/// 원형에서 rot_x 유도로 도입). (C2b #2278 v2)
+struct ShearProj {
+    /// fit 후 앞면(z=0) rect — 3D 배치 수식의 기준
+    fx: f64,
+    fy: f64,
+    fw: f64,
+    fh: f64,
+    /// fit 후 z=D 화면 오프셋 (+우/+상)
+    dxf: f64,
+    dyf: f64,
+}
+
+fn shear_proj(view: &View3D, px: f64, py: f64, pw: f64, ph: f64, depth: f64) -> ShearProj {
+    // 음수 시어 성분(rotX<0 하향, sin(rotY)<0 좌향)은 코퍼스 부재 + 페인트
+    // 순서(아래→위/왼→오른쪽 은면 제거)와 상충 — 0 클램프 방어 근사.
+    // 실샘플 확보 시 순회 방향 반전과 함께 확장. (v2 설계 리뷰 확정)
+    let ox = (depth * view.rot_y.to_radians().sin()).max(0.0);
+    let oy = (depth * view.rot_x.to_radians().sin()).max(0.0);
+    let sx = pw / (pw + ox).max(1e-9);
+    let sy = ph / (ph + oy).max(1e-9);
+    ShearProj {
+        fx: px,           // ox ≥ 0 → 앞면 좌측 고정
+        fy: py + oy * sy, // oy ≥ 0 → 앞면 하단 고정 (화면 y-down: 상단 여백 = oy·sy)
+        fw: pw * sx,
+        fh: ph * sy,
+        dxf: ox * sx,
+        dyf: oy * sy,
+    }
+}
+
+/// 3D 막대 1개(또는 누적 세그먼트 1개) — 압출 벡터 (+dx, −dy) 3면:
+/// top 평행사변형(밝게) + right 평행사변형(어둡게) + front rect(원색).
+/// dx, dy ≥ 0 전제(shear_proj 클램프 — 음수 성분은 페인트 순서 은면 제거와
+/// 상충하여 정의역 밖). 은면 제거는 호출측 페인트 순서(누적: 아래→위/왼→오른쪽)가
+/// 담당하므로 루프 순서 변경 금지. w/h ≤ 0(0값 세그먼트)이면 무방출 — 누적에서
+/// 이웃 세그먼트의 캡 재도색 방지. 압출 퇴화(dx,dy < 0.01)면 front만. (C2b #2278 v2)
+fn push_bar_3d(svg: &mut String, x: f64, y: f64, w: f64, h: f64, dx: f64, dy: f64, color: u32) {
+    if w <= 0.0 || h <= 0.0 {
+        return;
+    }
+    debug_assert!(dx >= 0.0 && dy >= 0.0, "시어 성분은 클램프로 비음수");
+    if dx > 0.01 || dy > 0.01 {
+        svg.push_str(&format!(
+            "<polygon class=\"hwp-bar3d-top\" points=\"{:.2},{:.2} {:.2},{:.2} {:.2},{:.2} {:.2},{:.2}\" fill=\"{}\"/>\n",
+            x, y, x + dx, y - dy, x + w + dx, y - dy, x + w, y,
+            color_hex(shade(color, BAR3D_TOP_SHADE))
+        ));
+        svg.push_str(&format!(
+            "<polygon class=\"hwp-bar3d-side\" points=\"{:.2},{:.2} {:.2},{:.2} {:.2},{:.2} {:.2},{:.2}\" fill=\"{}\"/>\n",
+            x + w, y, x + w + dx, y - dy, x + w + dx, y + h - dy, x + w, y + h,
+            color_hex(shade(color, BAR3D_SIDE_SHADE))
+        ));
+    }
+    svg.push_str(&format!(
+        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
+        x,
+        y,
+        w,
+        h,
+        color_hex(color)
+    ));
 }
 
 fn xml_escape(s: &str) -> String {
@@ -113,7 +206,10 @@ pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> S
 
     // 영역 분할
     let title_h = if effective_title.is_some() { 22.0 } else { 4.0 };
-    let legend_visible = chart.series.iter().any(|s| !s.name.is_empty());
+    // 파이는 카테고리 기반 범례라 시리즈 이름과 무관하게 항상 그려진다(파이 분기가
+    // render_legend/render_legend_right를 무조건 호출) — 공간 예약도 그에 맞춰야 함.
+    let legend_visible =
+        chart.chart_type == OoxmlChartType::Pie || chart.series.iter().any(|s| !s.name.is_empty());
     // C1c #1882 갭③: legendPos=r(한컴 코퍼스 전 샘플)은 우측 세로 스택 — 하단 슬롯
     // 대신 우측 폭(legend_w)을 확보. 그 외 위치는 현행 하단 가로 유지.
     // `w * 0.30 >= 50.0` 가드: 폭이 좁으면(<167px) 하단 폴백 — 아래 clamp의
@@ -165,9 +261,15 @@ pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> S
         ));
     }
 
-    // 파이 차트는 단독 경로
+    // 파이 차트는 단독 경로 (ofPie 보조플롯 / 3D 타원+측벽 — 2D 경로 무접촉)
     if chart.chart_type == OoxmlChartType::Pie {
-        render_pie(&mut svg, chart, plot_x, plot_y, plot_w, plot_h);
+        if let Some(of) = &chart.of_pie {
+            render_of_pie(&mut svg, chart, of, plot_x, plot_y, plot_w, plot_h);
+        } else if chart.is_3d {
+            render_pie_3d(&mut svg, chart, plot_x, plot_y, plot_w, plot_h);
+        } else {
+            render_pie(&mut svg, chart, plot_x, plot_y, plot_w, plot_h);
+        }
         if legend_right {
             render_legend_right(&mut svg, chart, x + w - legend_w + 4.0, plot_y, plot_h);
         } else {
@@ -460,6 +562,17 @@ fn render_bars(
             (mn, mx, st)
         }
     };
+
+    if chart.is_3d {
+        // 3D는 시어 투영 기반 별도 경로 — 축 범위(vmin/vmax/vstep)는 위에서
+        // 플롯 rect 기준으로 이미 확정(#1882 앵커 무접촉). 배치·방·압출만
+        // 투영 좌표로 수행. (C2b #2278 v2)
+        render_bars_3d(
+            svg, chart, px, py, pw, ph, horizontal, stacked, percent, cat_count, ser_count, vmin,
+            vmax, vstep,
+        );
+        return;
+    }
 
     svg.push_str(&format!(
         "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
@@ -1027,19 +1140,291 @@ fn render_pie(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, p
     }
     let cx = px + pw / 2.0;
     let cy = py + ph / 2.0;
-    let r = (pw.min(ph) / 2.0) * 0.9;
+    // 쪼개진원형: 계열 explosion(%)만큼 슬라이스를 중심각 방향으로 이동 —
+    // 벌어진 extent(r×(1+e))가 기존 fit과 같도록 반지름 축소. explosion 부재
+    // (e=0) 시 기존 산식·출력 그대로. (C2b #2278 Stage 3 v3, 정답지 쪼개진원형)
+    let explode = first.explosion.unwrap_or(0.0).max(0.0) / 100.0;
+    let r = (pw.min(ph) / 2.0) * 0.9 / (1.0 + explode);
 
     let mut start_angle = -std::f64::consts::FRAC_PI_2;
     for (i, &v) in first.values.iter().enumerate() {
         let sweep = v / total * std::f64::consts::TAU;
         let end_angle = start_angle + sweep;
-        let (x1, y1) = (cx + r * start_angle.cos(), cy + r * start_angle.sin());
-        let (x2, y2) = (cx + r * end_angle.cos(), cy + r * end_angle.sin());
+        let mid = start_angle + sweep / 2.0;
+        let (ox, oy) = (cx + r * explode * mid.cos(), cy + r * explode * mid.sin());
+        let (x1, y1) = (ox + r * start_angle.cos(), oy + r * start_angle.sin());
+        let (x2, y2) = (ox + r * end_angle.cos(), oy + r * end_angle.sin());
         let large = if sweep > std::f64::consts::PI { 1 } else { 0 };
         let color = color_hex(first.color.unwrap_or_else(|| palette(i)));
         svg.push_str(&format!(
-            "<path d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\" stroke=\"#ffffff\" stroke-width=\"1\"/>\n",
-            cx, cy, x1, y1, r, r, large, x2, y2, color
+            "<path d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\"/>\n",
+            ox, oy, x1, y1, r, r, large, x2, y2, color
+        ));
+        start_angle = end_angle;
+    }
+}
+
+/// ofPie — 주 원(앞 n−k 카테고리 + 결합 슬라이스) + 보조 플롯(pie|bar) + serLines.
+/// k = split_pos(반올림, 1..=n−1 클램프) 없으면 2. n < 3 → 일반 원형 폴백.
+/// 주 원은 결합 슬라이스 중앙이 보조 플롯(3시 방향)을 향하도록 회전. 결합 슬라이스
+/// 색 = palette(n)(정답지 실측 초록계 [4]), 보조 플롯 색 = palette(n−k+j)
+/// (범례의 카테고리 정순 색과 일치). (C2b #2278 Stage 3)
+fn render_of_pie(
+    svg: &mut String,
+    chart: &OoxmlChart,
+    of: &OfPieInfo,
+    px: f64,
+    py: f64,
+    pw: f64,
+    ph: f64,
+) {
+    use std::f64::consts::TAU;
+    let first = match chart.series.first() {
+        Some(s) => s,
+        None => return,
+    };
+    let n = first.values.len();
+    if n < 3 {
+        render_pie(svg, chart, px, py, pw, ph);
+        return;
+    }
+    let total: f64 = first.values.iter().sum();
+    if total <= 0.0 {
+        return;
+    }
+    // splitPos 의 count 해석은 splitType=pos(및 미지정 auto — 종전 코퍼스 정책
+    // 보존)에만 유효. val/percent/cust 는 값·백분율·점별 임계라 count 로 읽으면
+    // 오분할 — splitPos 를 무시하고 기본 2로 폴백한다. (PR #2500 후속)
+    let split_pos_as_count = matches!(
+        of.split_type,
+        super::OfPieSplitType::Auto | super::OfPieSplitType::Pos
+    );
+    let k = of
+        .split_pos
+        .filter(|_| split_pos_as_count)
+        .map(|v| (v.round() as usize).clamp(1, n - 1))
+        .unwrap_or(2)
+        .min(n - 1);
+    let combined: f64 = first.values[n - k..].iter().sum();
+
+    // 레이아웃 — 정답지(원형대원형-2022 임베드 2702×1577) 픽셀 실측 캘리브레이션:
+    // 주 원 중심 x≈0.23·플롯폭, 보조 중심 x≈0.80, r1≈0.38·플롯높이(가로는 캡),
+    // r2/r1 실측 0.754 = secondPieSize(75)/100 ✓ (스키마 의미 그대로)
+    let cx1 = px + pw * 0.23;
+    let cy = py + ph / 2.0;
+    let r1 = (pw * 0.46).min(ph * 0.76) / 2.0;
+    let cx2 = px + pw * 0.80;
+    let r2 = r1 * (of.second_pie_size.max(0.0) / 100.0);
+
+    // 주 원 — 값 시퀀스 = values[..n−k] + [combined]. 결합 슬라이스 중앙이 3시(θ=0)
+    let sweep_c = combined / total * TAU;
+    let start_main = -sweep_c / 2.0 - (total - combined) / total * TAU;
+    let main_vals: Vec<(f64, u32)> = first.values[..n - k]
+        .iter()
+        .enumerate()
+        .map(|(ci, &v)| (v, first.color.unwrap_or_else(|| palette(ci))))
+        .chain(std::iter::once((
+            combined,
+            first.color.unwrap_or_else(|| palette(n)),
+        )))
+        .collect();
+    let mut start_angle = start_main;
+    for (v, rgb) in &main_vals {
+        let sweep = v / total * TAU;
+        let end_angle = start_angle + sweep;
+        let (x1, y1) = (cx1 + r1 * start_angle.cos(), cy + r1 * start_angle.sin());
+        let (x2, y2) = (cx1 + r1 * end_angle.cos(), cy + r1 * end_angle.sin());
+        let large = if sweep > std::f64::consts::PI { 1 } else { 0 };
+        svg.push_str(&format!(
+            "<path class=\"hwp-ofpie-main\" d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\"/>\n",
+            cx1, cy, x1, y1, r1, r1, large, x2, y2, color_hex(*rgb)
+        ));
+        start_angle = end_angle;
+    }
+
+    if combined > 0.0 {
+        match of.of_pie_type {
+            OfPieType::Pie => {
+                // 보조 원 — 시작각 = +sweep_c/2 (결합 슬라이스 아래 모서리 각도와
+                // 정렬, 정답지 실측 경계 26°≈유도 30°; 12시 시작 아님)
+                let mut s = sweep_c / 2.0;
+                for (j, &v) in first.values[n - k..].iter().enumerate() {
+                    let sweep = v / combined * TAU;
+                    let e = s + sweep;
+                    let (x1, y1) = (cx2 + r2 * s.cos(), cy + r2 * s.sin());
+                    let (x2, y2) = (cx2 + r2 * e.cos(), cy + r2 * e.sin());
+                    let large = if sweep > std::f64::consts::PI { 1 } else { 0 };
+                    let rgb = first.color.unwrap_or_else(|| palette(n - k + j));
+                    svg.push_str(&format!(
+                        "<path class=\"hwp-ofpie-second\" d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\"/>\n",
+                        cx2, cy, x1, y1, r2, r2, large, x2, y2, color_hex(rgb)
+                    ));
+                    s = e;
+                }
+            }
+            OfPieType::Bar => {
+                // 보조 누적 막대 — 첫 분할 카테고리가 맨 위, 위→아래 누적
+                let bar_h = 2.0 * r2;
+                let bar_w = bar_h * 0.45;
+                let bx = cx2 - bar_w / 2.0;
+                let top = cy - bar_h / 2.0;
+                let mut acc = 0.0;
+                for (j, &v) in first.values[n - k..].iter().enumerate() {
+                    let seg = v / combined * bar_h;
+                    let rgb = first.color.unwrap_or_else(|| palette(n - k + j));
+                    svg.push_str(&format!(
+                        "<rect class=\"hwp-ofpie-second\" x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
+                        bx,
+                        top + acc,
+                        bar_w,
+                        seg,
+                        color_hex(rgb)
+                    ));
+                    acc += seg;
+                }
+            }
+        }
+
+        // serLines — 결합 슬라이스 양 모서리 → 보조 플롯. 색은 검정(정답지 실측
+        // 코어 (8,8,8)). Pie는 보조 원 **접선점**(실측: 원 상/하단 아님 —
+        // 모서리에서 원에 접하는 선), Bar는 막대 좌변 상/하단.
+        if of.has_ser_lines {
+            let (ux, uy) = (
+                cx1 + r1 * (-sweep_c / 2.0).cos(),
+                cy + r1 * (-sweep_c / 2.0).sin(),
+            );
+            let (lx, ly) = (
+                cx1 + r1 * (sweep_c / 2.0).cos(),
+                cy + r1 * (sweep_c / 2.0).sin(),
+            );
+            // 외부점 P → 원(cx2, cy, r2) 접점: 중심→P 각 α, β=acos(r2/d), α±β 중
+            // 위 연결선은 위쪽(작은 y) 접점 선택. d ≤ r2 퇴화 시 원 좌측점 폴백.
+            let tangent = |pxp: f64, pyp: f64, upper: bool| -> (f64, f64) {
+                let (dx, dy) = (pxp - cx2, pyp - cy);
+                let d = (dx * dx + dy * dy).sqrt();
+                if d <= r2 {
+                    return (cx2 - r2, cy);
+                }
+                let alpha = dy.atan2(dx);
+                let beta = (r2 / d).acos();
+                let p1 = (
+                    cx2 + r2 * (alpha + beta).cos(),
+                    cy + r2 * (alpha + beta).sin(),
+                );
+                let p2 = (
+                    cx2 + r2 * (alpha - beta).cos(),
+                    cy + r2 * (alpha - beta).sin(),
+                );
+                if (p1.1 < p2.1) == upper {
+                    p1
+                } else {
+                    p2
+                }
+            };
+            let ((tx, ty), (bx2, by2)) = match of.of_pie_type {
+                OfPieType::Pie => (tangent(ux, uy, true), tangent(lx, ly, false)),
+                OfPieType::Bar => {
+                    let bar_h = 2.0 * r2;
+                    let bar_w = bar_h * 0.45;
+                    let bx = cx2 - bar_w / 2.0;
+                    ((bx, cy - r2), (bx, cy + r2))
+                }
+            };
+            for ((x1, y1), (x2, y2)) in [((ux, uy), (tx, ty)), ((lx, ly), (bx2, by2))] {
+                svg.push_str(&format!(
+                    "<line class=\"hwp-ofpie-serline\" x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#000000\" stroke-width=\"0.75\"/>\n",
+                    x1, y1, x2, y2
+                ));
+            }
+        }
+    }
+}
+
+/// 3D 원형 측벽 높이 / rx — 정답지(3차원원형-2022, rotX=30/persp=30) 픽셀 실측
+/// 175px/846.5px. 한컴 스펙 표 43 Pie.ThicknessRatio(반지름의 백분율) 구조 채택,
+/// 비율값은 실측 캘리브레이션. hPercent(기본 100)로 스케일.
+const PIE3D_WALL_RATIO: f64 = 0.207;
+
+/// 3D 원형 — 타원(top) 슬라이스 + 하반부 측벽 밴드 (rAngAx=0 회전+원근).
+///
+/// 타원비 `ry/rx = sin(rotX)·cos(perspective/2°)` — 정답지 실측 0.480과 유도
+/// 0.483이 0.5% 이내 정합(캘리브레이션 1점). 앞/뒤 반타원이 실측 대칭(407.5px
+/// 동일)이라 원근 나눗셈(비대칭) 모델은 기각 — 대칭 타원 유지. rotY는 시작각
+/// 오프셋. 벽 전체를 먼저, top을 나중에 그린다(은면 제거 — 페인트 순서).
+/// 2D `render_pie`는 무접촉(바이트 불변). (C2b #2278 Stage 2)
+fn render_pie_3d(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, ph: f64) {
+    let first = match chart.series.first() {
+        Some(s) => s,
+        None => return,
+    };
+    let total: f64 = first.values.iter().sum();
+    if total <= 0.0 {
+        return;
+    }
+    let view = chart.view3d.clone().unwrap_or_default();
+    // 정의역 방어: rotX 5..90 클램프(0° 타원 퇴화 차단), perspective 0..90 클램프
+    // (perspective/2 > 90° → cos 음수 차단) — 코퍼스(30/30) 밖 카메라 방어
+    let tilt = view.rot_x.clamp(5.0, 90.0).to_radians().sin();
+    let persp = (view.perspective.clamp(0.0, 90.0) / 2.0).to_radians().cos();
+    let ratio = tilt * persp;
+    let wall_k = PIE3D_WALL_RATIO * (view.h_percent.max(0.0) / 100.0);
+    // 반경: 타원+벽 블록(가로 2rx, 세로 (2·타원비+벽비)·rx)이 플롯에 맞는 최대 —
+    // 2D의 원 fit(min(pw,ph))과 달리 납작한 타원의 세로 여유를 사용 (한컴 실측:
+    // rx=846.5 ≈ 플롯 절반폭 × 0.85, 세로는 비구속)
+    let rx = (pw / 2.0).min(ph / (2.0 * ratio + wall_k).max(1e-6)) * 0.9;
+    let ry = rx * ratio;
+    let wall_h = rx * wall_k;
+    let cx = px + pw / 2.0;
+    let cy = py + (ph - wall_h) / 2.0;
+
+    use std::f64::consts::{FRAC_PI_2, PI, TAU};
+    let start0 = -FRAC_PI_2 + view.rot_y.to_radians();
+
+    // 1차 루프 — 하반부(θ∈(0,π), SVG y-down에서 벽 노출면) 측벽. rotY 오프셋으로
+    // 각도가 τ를 넘을 수 있어 (0,π)와 (τ,τ+π) 두 윈도우 클립 — 랩어라운드 불요.
+    let mut s = start0;
+    for (i, &v) in first.values.iter().enumerate() {
+        let e = s + v / total * TAU;
+        let rgb = first.color.unwrap_or_else(|| palette(i));
+        for (w0, w1) in [(0.0, PI), (TAU, TAU + PI)] {
+            let a = s.max(w0);
+            let b = e.min(w1);
+            if b - a > 1e-6 {
+                let (xa, ya) = (cx + rx * a.cos(), cy + ry * a.sin());
+                let (xb, yb) = (cx + rx * b.cos(), cy + ry * b.sin());
+                svg.push_str(&format!(
+                    "<path class=\"hwp-pie3d-wall\" d=\"M{:.2},{:.2} A{:.2},{:.2} 0 0 1 {:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 0 0 {:.2},{:.2} Z\" fill=\"{}\"/>\n",
+                    xa,
+                    ya,
+                    rx,
+                    ry,
+                    xb,
+                    yb,
+                    xb,
+                    yb + wall_h,
+                    rx,
+                    ry,
+                    xa,
+                    ya + wall_h,
+                    color_hex(shade(rgb, BAR3D_SIDE_SHADE))
+                ));
+            }
+        }
+        s = e;
+    }
+
+    // 2차 루프 — top 타원 슬라이스 (2D render_pie 로직의 타원호 버전)
+    let mut start_angle = start0;
+    for (i, &v) in first.values.iter().enumerate() {
+        let sweep = v / total * TAU;
+        let end_angle = start_angle + sweep;
+        let (x1, y1) = (cx + rx * start_angle.cos(), cy + ry * start_angle.sin());
+        let (x2, y2) = (cx + rx * end_angle.cos(), cy + ry * end_angle.sin());
+        let large = if sweep > PI { 1 } else { 0 };
+        let color = color_hex(first.color.unwrap_or_else(|| palette(i)));
+        svg.push_str(&format!(
+            "<path class=\"hwp-pie3d-top\" d=\"M{:.2},{:.2} L{:.2},{:.2} A{:.2},{:.2} 0 {} 1 {:.2},{:.2} Z\" fill=\"{}\"/>\n",
+            cx, cy, x1, y1, rx, ry, large, x2, y2, color
         ));
         start_angle = end_angle;
     }
@@ -1276,6 +1661,326 @@ fn render_value_grid(
     }
 }
 
+/// 3D 방 선 스타일 — 정답지 임베드(2702px) 픽셀 실측: 축선·조그·격자·틱 전부
+/// #808080 균일(gray 126~148)·0.72pt≈0.75. 2D의 축/격자 명암 구분(#e8e8e8)과
+/// 다른 3D 전용 실측 규칙 (시각판정 피드백 2026-07-19).
+const ROOM_LINE_STYLE: &str = "stroke=\"#808080\" stroke-width=\"0.75\"";
+/// 값·카테고리 좌측 틱 길이(pt) — 실측 44/38px ÷ 8.34px/pt ≈ 5.3/4.6
+const ROOM_TICK_LEFT: f64 = 5.0;
+/// 하단 틱 길이(pt) — 실측 31~37px ≈ 3.7~4.4
+const ROOM_TICK_DOWN: f64 = 4.0;
+
+/// 3D 방 + 값축 격자·라벨 — 시어 투영 기반: 뒷벽(z=D, 격자 포함) + 눈금별
+/// 바닥 조그 + 바닥 평행사변형 + 값·카테고리 틱. 격자는 `<line>` 2개(조그+뒷벽)로
+/// 방출(`<polyline>` 미사용 — room 테스트 어휘 유지). 라벨 문자열·포맷은
+/// render_value_grid와 동일(#1882 라벨 앵커) — 위치는 fit 후 앞면 rect 기준.
+/// 한컴 실측(2026-07-19): 벽 테두리·바닥 채움 없음, 바닥 외곽선·틱은 격자와
+/// 동일 스타일. 2D 경로는 이 함수를 쓰지 않는다. (C2b #2278 v2)
+#[allow(clippy::too_many_arguments)]
+fn render_value_grid_3d(
+    svg: &mut String,
+    proj: &ShearProj,
+    vmin: f64,
+    vmax: f64,
+    step: f64,
+    format_code: Option<&str>,
+    horizontal: bool,
+    percent: bool,
+    cat_count: usize,
+) {
+    let (fx, fy, fw, fh) = (proj.fx, proj.fy, proj.fw, proj.fh);
+    let (dxf, dyf) = (proj.dxf, proj.dyf);
+    // 방 표면: 뒷벽(흰 면, 무테두리 — 한컴: 벽 모서리선 없음) → 바닥(흰 면 +
+    // #808080 외곽선; 뒷모서리·좌측 대각은 0 눈금 격자/조그와 겹침) → 앞면 좌측 축선
+    svg.push_str(&format!(
+        "<g class=\"hwp-bar3d-room\">\n<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\"/>\n",
+        fx + dxf,
+        fy - dyf,
+        fw,
+        fh
+    ));
+    svg.push_str(&format!(
+        "<polygon points=\"{:.2},{:.2} {:.2},{:.2} {:.2},{:.2} {:.2},{:.2}\" fill=\"#ffffff\" {ROOM_LINE_STYLE}/>\n",
+        fx,
+        fy + fh,
+        fx + dxf,
+        fy + fh - dyf,
+        fx + fw + dxf,
+        fy + fh - dyf,
+        fx + fw,
+        fy + fh
+    ));
+    svg.push_str(&format!(
+        "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
+        fx,
+        fy,
+        fx,
+        fy + fh
+    ));
+
+    // 라벨 문자열 규칙은 render_value_grid와 동일 (#1882 라벨 앵커 — 위치는
+    // 앞면 rect 기준)
+    let decimal = (step - step.round()).abs() > 1e-9;
+    let label = |v: f64| -> String {
+        if percent {
+            format!("{}%", v.round() as i64)
+        } else if decimal {
+            format_axis_num(v)
+        } else {
+            format_num(v, format_code)
+        }
+    };
+    let span = (vmax - vmin).max(1e-9);
+    let step = if step > 0.0 { step } else { span / 5.0 };
+    let grid_lines = (span / step).round().max(1.0) as usize;
+    for i in 0..=grid_lines {
+        let t = (step * i as f64) / span;
+        let v = vmin + step * i as f64;
+        if horizontal {
+            let gx = fx + fw * t;
+            // 바닥 조그(앞 눈금 → 뒷벽, 깊이 D) + 뒷벽 세로 격자 + 하단 값 틱
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
+                gx,
+                fy + fh,
+                gx + dxf,
+                fy + fh - dyf
+            ));
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
+                gx + dxf,
+                fy + fh - dyf,
+                gx + dxf,
+                fy - dyf
+            ));
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
+                gx,
+                fy + fh,
+                gx,
+                fy + fh + ROOM_TICK_DOWN
+            ));
+            svg.push_str(&format!(
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"10\" fill=\"#666\" text-anchor=\"middle\">{}</text>\n",
+                gx,
+                fy + fh + 12.0,
+                xml_escape(&label(v))
+            ));
+        } else {
+            let gy = fy + fh - fh * t;
+            // 바닥 조그(앞 좌측 눈금 → 뒷벽) + 뒷벽 수평 격자 + 좌측 값 틱
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
+                fx,
+                gy,
+                fx + dxf,
+                gy - dyf
+            ));
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
+                fx + dxf,
+                gy - dyf,
+                fx + fw + dxf,
+                gy - dyf
+            ));
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
+                fx - ROOM_TICK_LEFT,
+                gy,
+                fx,
+                gy
+            ));
+            svg.push_str(&format!(
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"10\" fill=\"#666\" text-anchor=\"end\">{}</text>\n",
+                fx - ROOM_TICK_LEFT - 1.0,
+                gy + 3.0,
+                xml_escape(&label(v))
+            ));
+        }
+    }
+    // 카테고리 경계 틱 — 경계+양끝 = cat_count+1개 (한컴 실측: 세로형은 바닥
+    // 앞모서리 아래로, 가로형은 축선 왼쪽으로; k=0 틱이 축선 연장 역할)
+    for k in 0..=cat_count {
+        if horizontal {
+            let by = fy + fh * k as f64 / cat_count.max(1) as f64;
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
+                fx - ROOM_TICK_LEFT,
+                by,
+                fx,
+                by
+            ));
+        } else {
+            let bx = fx + fw * k as f64 / cat_count.max(1) as f64;
+            svg.push_str(&format!(
+                "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {ROOM_LINE_STYLE}/>\n",
+                bx,
+                fy + fh,
+                bx,
+                fy + fh + ROOM_TICK_DOWN
+            ));
+        }
+    }
+    svg.push_str("</g>\n");
+}
+
+/// 3D 막대 렌더 — 시어 투영(rAngAx=1 관례) 기반 별도 경로. 축 범위
+/// (vmin/vmax/vstep)는 호출측 render_bars가 플롯 rect 기준으로 확정(#1882
+/// 앵커 무접촉), 여기서는 방·배치·압출만 담당. 배치는 fit 후 앞면 rect 기준 —
+/// 2D 루프와 완전 분리(2D 출력 바이트 불변). (C2b #2278 v2)
+#[allow(clippy::too_many_arguments)]
+fn render_bars_3d(
+    svg: &mut String,
+    chart: &OoxmlChart,
+    px: f64,
+    py: f64,
+    pw: f64,
+    ph: f64,
+    horizontal: bool,
+    stacked: bool,
+    percent: bool,
+    cat_count: usize,
+    ser_count: usize,
+    vmin: f64,
+    vmax: f64,
+    vstep: f64,
+) {
+    let view = chart.view3d.clone().unwrap_or_default();
+    // 두께 규칙 slot/(n_eff + gapWidth/100) — Excel gapWidth 의미(슬롯 내 여백을
+    // 막대 폭 %로). 코퍼스 150: 누적 1/2.5=0.4, 묶은 3계열 3/4.5≈0.667 —
+    // v1~v3 눈대중 상수의 유도 원형. 2D는 0.7 휴리스틱 동결.
+    let gap_w = chart.bar_gap_width.unwrap_or(150.0).max(0.0);
+    let n_eff = if stacked { 1.0 } else { ser_count as f64 };
+
+    // fit 전 좌표로 깊이 산출 (fit이 깊이에 의존 — 역방향 순환 없음).
+    // depthPercent = 막대 깊이/폭 % — ECMA "차트 폭 대비"와 다른 의도적 편차
+    // (mod.rs View3D 주석 참조).
+    let slot0 = (if horizontal { ph } else { pw }) / cat_count as f64;
+    let bar_w0 = slot0 / (n_eff + gap_w / 100.0);
+    let b_depth = bar_w0 * view.depth_percent.max(0.0) / 100.0;
+    let d_scene = b_depth * (1.0 + chart.gap_depth.unwrap_or(150.0).max(0.0) / 100.0);
+
+    let proj = shear_proj(&view, px, py, pw, ph, d_scene);
+
+    // 막대 깊이 센터링: z ∈ [z0, z0+b], z0 = (D−b)/2 — gapDepth 여백을 앞뒤로
+    // 분할(Excel/한컴 관례, v2 설계 리뷰). d_scene ≤ ε 퇴화(depthPercent=0)는
+    // 0/0 NaN 가드.
+    let (bdx0, bdy0, bdx, bdy) = if d_scene > 1e-9 {
+        let z0 = (d_scene - b_depth) / 2.0 / d_scene;
+        let zb = b_depth / d_scene;
+        (proj.dxf * z0, proj.dyf * z0, proj.dxf * zb, proj.dyf * zb)
+    } else {
+        (0.0, 0.0, 0.0, 0.0)
+    };
+
+    render_value_grid_3d(
+        svg,
+        &proj,
+        vmin,
+        vmax,
+        vstep,
+        chart.series.first().and_then(|s| s.format_code.as_deref()),
+        horizontal,
+        percent,
+        cat_count,
+    );
+
+    // 배치는 fit 후 앞면 rect 기준
+    let (fx, fy, fw, fh) = (proj.fx, proj.fy, proj.fw, proj.fh);
+    let cat_span = (if horizontal { fh } else { fw }) / cat_count as f64;
+    let bar_w = cat_span / (n_eff + gap_w / 100.0);
+    let bar_span_total = bar_w * n_eff;
+
+    // 가로 막대는 카테고리를 아래→위로 배치 (2D와 동일 규칙)
+    let cat_slot = |ci: usize| -> f64 {
+        let idx = if horizontal { cat_count - 1 - ci } else { ci };
+        cat_span * idx as f64
+    };
+
+    if stacked {
+        // 페인트 순서(세로: 아래→위, 가로: 왼→오른쪽)가 은면 제거 담당 —
+        // 시어 성분 ≥0 클램프(shear_proj)가 이 순서의 유효 전제. 순서 변경 금지.
+        for ci in 0..cat_count {
+            let denom = if percent {
+                let s = category_positive_sum(chart, ci);
+                if s > 0.0 {
+                    s
+                } else {
+                    1.0
+                }
+            } else {
+                (vmax - vmin).max(1e-9)
+            };
+            let mut acc = 0.0_f64;
+            for (si, ser) in chart.series.iter().enumerate() {
+                let v = ser.values.get(ci).copied().unwrap_or(0.0).max(0.0);
+                let rgb = ser.color.unwrap_or_else(|| palette(si));
+                let cell = (if horizontal { fy } else { fx })
+                    + cat_slot(ci)
+                    + (cat_span - bar_span_total) / 2.0;
+                if horizontal {
+                    let seg = fw * (v / denom);
+                    push_bar_3d(
+                        svg,
+                        fx + acc + bdx0,
+                        cell - bdy0,
+                        seg.max(0.0),
+                        bar_span_total,
+                        bdx,
+                        bdy,
+                        rgb,
+                    );
+                    acc += seg;
+                } else {
+                    let seg = fh * (v / denom);
+                    let by = fy + fh - acc - seg;
+                    push_bar_3d(
+                        svg,
+                        cell + bdx0,
+                        by - bdy0,
+                        bar_span_total,
+                        seg.max(0.0),
+                        bdx,
+                        bdy,
+                        rgb,
+                    );
+                    acc += seg;
+                }
+            }
+        }
+    } else {
+        for ci in 0..cat_count {
+            for (si, ser) in chart.series.iter().enumerate() {
+                let v = *ser.values.get(ci).unwrap_or(&0.0);
+                let t = if vmax > vmin {
+                    (v - vmin) / (vmax - vmin)
+                } else {
+                    0.0
+                };
+                let rgb = ser.color.unwrap_or_else(|| palette(si));
+                if horizontal {
+                    let cy = fy
+                        + cat_slot(ci)
+                        + (cat_span - bar_span_total) / 2.0
+                        + bar_w * (ser_count - 1 - si) as f64;
+                    let bw = fw * t;
+                    // 3D는 gapWidth 규칙이 간격 담당 — 2D의 0.95 계수 미적용
+                    push_bar_3d(svg, fx + bdx0, cy - bdy0, bw.max(0.0), bar_w, bdx, bdy, rgb);
+                } else {
+                    let cx =
+                        fx + cat_slot(ci) + (cat_span - bar_span_total) / 2.0 + bar_w * si as f64;
+                    let bh = fh * t;
+                    let by = fy + fh - bh;
+                    push_bar_3d(svg, cx + bdx0, by - bdy0, bar_w, bh.max(0.0), bdx, bdy, rgb);
+                }
+            }
+        }
+    }
+
+    // 가로형 라벨은 좌측 카테고리 틱(5pt) 바깥 — 한컴 실측 간격(2D는 4.0 유지)
+    render_category_labels_at(svg, chart, fx, fy, fw, fh, cat_count, horizontal, 6.0);
+}
+
 fn render_category_labels(
     svg: &mut String,
     chart: &OoxmlChart,
@@ -1285,6 +1990,23 @@ fn render_category_labels(
     ph: f64,
     cat_count: usize,
     horizontal: bool,
+) {
+    render_category_labels_at(svg, chart, px, py, pw, ph, cat_count, horizontal, 4.0);
+}
+
+/// 카테고리 라벨 — `left_gap`: 가로형 라벨의 축선~라벨 간격(2D 4.0 불변,
+/// 3D는 좌측 틱 밖 6.0). 세로형 위치는 공통.
+#[allow(clippy::too_many_arguments)]
+fn render_category_labels_at(
+    svg: &mut String,
+    chart: &OoxmlChart,
+    px: f64,
+    py: f64,
+    pw: f64,
+    ph: f64,
+    cat_count: usize,
+    horizontal: bool,
+    left_gap: f64,
 ) {
     let cat_span = if horizontal {
         ph / cat_count as f64
@@ -1301,7 +2023,7 @@ fn render_category_labels(
             let cy = py + cat_span * row as f64 + cat_span / 2.0 + 3.0;
             svg.push_str(&format!(
                 "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"10\" fill=\"#333\" text-anchor=\"end\">{}</text>\n",
-                px - 4.0, cy, xml_escape(cat)
+                px - left_gap, cy, xml_escape(cat)
             ));
         } else {
             let cx = px + cat_span * ci as f64 + cat_span / 2.0;
@@ -1538,6 +2260,53 @@ mod tests {
         let chart = OoxmlChart::default();
         let svg = render_chart_svg(&chart, 0.0, 0.0, 100.0, 100.0);
         assert!(svg.contains("fallback"));
+    }
+
+    #[test]
+    fn test_pie_legend_reserves_space_regardless_of_series_name() {
+        // 파이 범례는 카테고리 기반이라 시리즈 이름과 무관하게 항상 그려진다
+        // (render_chart_svg 파이 분기는 legend_h/legend_w 계산과 무관하게
+        // render_legend를 무조건 호출). 그런데 legend_h/legend_w는
+        // `legend_visible`(= 시리즈 이름 존재 여부)로만 계산되므로, 시리즈
+        // 이름이 없으면 범례가 그려지는데도 plot_h가 legend 공간을 빼지 않고
+        // 계산되어(버그) 파이 반지름이 이름 있는 경우보다 부당하게 커진다.
+        fn pie(name: &str) -> OoxmlChart {
+            OoxmlChart {
+                chart_type: OoxmlChartType::Pie,
+                series: vec![OoxmlSeries {
+                    name: name.to_string(),
+                    values: vec![1.0, 2.0, 3.0],
+                    series_type: OoxmlChartType::Pie,
+                    ..Default::default()
+                }],
+                categories: vec!["가".into(), "나".into(), "다".into()],
+                ..Default::default()
+            }
+        }
+        fn pie_radius(svg: &str) -> f64 {
+            // path의 `A{r},{r}` 반지름 값을 첫 슬라이스에서 추출
+            let a_pos = svg.find(" A").expect("파이 path 없음");
+            let rest = &svg[a_pos + 2..];
+            let comma = rest.find(',').unwrap();
+            rest[..comma].parse::<f64>().unwrap()
+        }
+
+        let named_svg = render_chart_svg(&pie("판매"), 0.0, 0.0, 400.0, 300.0);
+        let unnamed_svg = render_chart_svg(&pie(""), 0.0, 0.0, 400.0, 300.0);
+
+        // 두 경우 모두 범례가 그려진다 (카테고리 기반이므로 시리즈 이름 무관)
+        assert!(named_svg.contains("hwp-chart-legend"));
+        assert!(unnamed_svg.contains("hwp-chart-legend"));
+
+        let named_r = pie_radius(&named_svg);
+        let unnamed_r = pie_radius(&unnamed_svg);
+        // 범례가 동일하게 그려지므로 예약 공간도 동일해야 하고, 따라서 두
+        // 반지름이 같아야 한다. 버그 상태에서는 unnamed_r > named_r (범례
+        // 공간이 예약되지 않아 파이가 legend와 겹치도록 더 크게 그려짐).
+        assert_eq!(
+            named_r, unnamed_r,
+            "시리즈 이름 유무와 무관하게 파이 범례 공간이 동일하게 예약되어야 함 (named={named_r}, unnamed={unnamed_r})"
+        );
     }
 
     #[test]
@@ -2946,6 +3715,972 @@ mod tests {
         let svg = render_chart_svg(&scatter_chart(ScatterStyle::Marker), 0.0, 0.0, 400.0, 300.0);
         for want in [">0.5<", ">2.5<", ">3<"] {
             assert!(svg.contains(want), "X축 {want} 있어야 (0~3, step 0.5)");
+        }
+    }
+
+    // --- C2b (#2278) Stage 1: 3D 막대 압출 ---
+
+    fn bars3d_chart(chart_type: OoxmlChartType, grouping: BarGrouping) -> OoxmlChart {
+        let mut chart = bars_chart(grouping);
+        chart.chart_type = chart_type;
+        chart.is_3d = true;
+        chart
+    }
+
+    #[test]
+    fn test_shade_lighten_darken() {
+        // 채널별 선형 보간: +0.25 = 흰색 방향 25%, -0.25 = 검정 방향 25%
+        assert_eq!(shade(0x006183D7, 0.25), 0x0089A2E1);
+        assert_eq!(shade(0x006183D7, -0.25), 0x004962A1);
+        // 극단값 클램프
+        assert_eq!(shade(0x00123456, 1.0), 0x00FFFFFF);
+        assert_eq!(shade(0x00123456, -1.0), 0x00000000);
+        // factor 0 항등 + 상위(알파) 바이트 보존
+        assert_eq!(shade(0xFF6183D7, 0.0), 0xFF6183D7);
+        assert_eq!(shade(0xFF6183D7, 0.25) >> 24, 0xFF);
+    }
+
+    #[test]
+    fn test_bar3d_clustered_faces_both_orientations() {
+        // 3D 묶은: 막대(2cat×3ser=6)마다 top/side 면 1쌍 (정답지: 윗면 밝게 +
+        // 우측면 어둡게 사선 압출). 2D는 면 없음.
+        // [지원 범위 — PR #2500 리뷰 P2] 이 시어 투영은 rAngAx=1(직각 축)
+        // 코퍼스 한정 근사다. rAngAx=0(회전 투영)·rotX/rotY 임의 조합은
+        // 동일 시어로 폴백하며 정답지 검증이 없다 — 별도 후속 트랙.
+        for chart_type in [OoxmlChartType::Column, OoxmlChartType::Bar] {
+            let chart = bars3d_chart(chart_type, BarGrouping::Clustered);
+            let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+            assert_eq!(
+                svg.matches("hwp-bar3d-top").count(),
+                6,
+                "{chart_type:?}: top 면 6개"
+            );
+            assert_eq!(
+                svg.matches("hwp-bar3d-side").count(),
+                6,
+                "{chart_type:?}: side 면 6개"
+            );
+        }
+        let svg2d = render_chart_svg(&bars_chart(BarGrouping::Clustered), 0.0, 0.0, 400.0, 300.0);
+        assert!(!svg2d.contains("hwp-bar3d-"), "2D 묶은막대에 3D 면 없어야");
+    }
+
+    #[test]
+    fn test_bar3d_stacked_all_segments_extrude() {
+        // 3D 누적: 모든 세그먼트가 자기 색 top/side를 그림 (2cat×3ser=6쌍).
+        // 은면 제거는 페인트 순서(세로: 아래→위 = 계열1 먼저)가 담당 — 순서 핀.
+        let chart = bars3d_chart(OoxmlChartType::Column, BarGrouping::Stacked);
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        assert_eq!(svg.matches("hwp-bar3d-top").count(), 6, "top 면 6개");
+        assert_eq!(svg.matches("hwp-bar3d-side").count(), 6, "side 면 6개");
+        let s1 = color_hex(shade(palette(0), BAR3D_SIDE_SHADE));
+        let s3 = color_hex(shade(palette(2), BAR3D_SIDE_SHADE));
+        assert!(
+            svg.find(&s1).expect("계열1 side 색") < svg.find(&s3).expect("계열3 side 색"),
+            "누적 페인트 순서: 계열1(아래) 먼저 → 계열3(위) 나중"
+        );
+    }
+
+    #[test]
+    fn test_bar3d_zero_segment_skipped() {
+        // 0값 세그먼트는 면 무방출 — 이웃 세그먼트의 캡(top) 재도색 방지.
+        let mut chart = bars3d_chart(OoxmlChartType::Column, BarGrouping::Stacked);
+        chart.series[1].values = vec![0.0, 1.0]; // 카테고리 a의 계열2 = 0
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        assert_eq!(
+            svg.matches("hwp-bar3d-top").count(),
+            5,
+            "0값 세그먼트는 스킵 (6-1)"
+        );
+    }
+
+    // --- C2b (#2278) v2: 투영 기하 헬퍼 ---
+
+    /// room 그룹 조각 (첫 </g>까지)
+    fn room_slice(svg: &str) -> &str {
+        let s = svg.find("hwp-bar3d-room").expect("room");
+        let room = &svg[s..];
+        &room[..room.find("</g>").expect("room 닫힘")]
+    }
+
+    /// polygon points="..." → (x,y) 목록
+    fn poly_points(chunk: &str) -> Vec<(f64, f64)> {
+        let pts = &chunk[chunk.find("points=\"").expect("points") + 8..];
+        let pts = &pts[..pts.find('"').expect("닫는 따옴표")];
+        pts.split_whitespace()
+            .map(|p| {
+                let mut it = p.split(',');
+                (
+                    it.next().unwrap().parse().unwrap(),
+                    it.next().unwrap().parse().unwrap(),
+                )
+            })
+            .collect()
+    }
+
+    /// 방 바닥 폴리곤(room 첫 polygon) 4점: p1=(fx,fyb) p2=(fx+dxf,fyb−dyf)
+    /// p3=(fx+fw+dxf,·) p4=(fx+fw,fyb) — 씬 파라미터를 SVG에서 역산하는 기준
+    fn floor_points(svg: &str) -> Vec<(f64, f64)> {
+        let room = room_slice(svg);
+        let start = room.find("<polygon").expect("바닥 폴리곤");
+        poly_points(&room[start..])
+    }
+
+    /// 첫 top 면 폴리곤 → 막대 압출 벡터 (bdx, bdy)
+    fn bar_extrusion(svg: &str) -> (f64, f64) {
+        let chunk = svg.split("hwp-bar3d-top").nth(1).expect("top 폴리곤");
+        let pts = poly_points(chunk);
+        (pts[1].0 - pts[0].0, pts[0].1 - pts[1].1)
+    }
+
+    /// 파랑(계열1) front rect (x, y, w, h) 목록 — 범례 swatch(10×10) 제외
+    fn blue_fronts(svg: &str) -> Vec<(f64, f64, f64, f64)> {
+        let parts: Vec<&str> = svg.split("fill=\"#6183d7\"").collect();
+        parts[..parts.len() - 1]
+            .iter()
+            .filter_map(|chunk| {
+                let tag = &chunk[chunk.rfind("<rect ")?..];
+                if tag.contains("width=\"10\" height=\"10\"") {
+                    return None;
+                }
+                Some((
+                    attr_f64_of(tag, "x=\"")?,
+                    attr_f64_of(tag, "y=\"")?,
+                    attr_f64_of(tag, "width=\"")?,
+                    attr_f64_of(tag, "height=\"")?,
+                ))
+            })
+            .collect()
+    }
+
+    #[test]
+    fn test_bar3d_shear_direction() {
+        // 시어 방향: fit 역산으로 pre-fit 성분비 oy/ox == sin(rotX)/sin(rotY)
+        // (기본 카메라 15/20). 비등방 fit(sx≠sy) 때문에 화면 비율은 순수 sin비가
+        // 아님 — pw=fw+dxf, ph=fh+dyf 복원으로 역산 (v2 설계 리뷰 반영).
+        let chart = bars3d_chart(OoxmlChartType::Column, BarGrouping::Clustered);
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        let fl = floor_points(&svg);
+        let dxf = fl[1].0 - fl[0].0;
+        let dyf = fl[0].1 - fl[1].1;
+        let fw = fl[3].0 - fl[0].0;
+        // 뒷벽 rect height = fh
+        let room = room_slice(&svg);
+        let wall = &room[room.find("<rect").expect("뒷벽")..];
+        let fh = attr_f64_of(wall, "height=\"").expect("fh");
+        let ox = dxf * (fw + dxf) / fw;
+        let oy = dyf * (fh + dyf) / fh;
+        let expected = 15.0_f64.to_radians().sin() / 20.0_f64.to_radians().sin();
+        assert!(
+            (oy / ox - expected).abs() < 2e-3,
+            "pre-fit 시어 성분비 sin15/sin20={expected}, 실제 {}",
+            oy / ox
+        );
+        // 막대 압출은 방 깊이 벡터와 평행
+        let (bdx, bdy) = bar_extrusion(&svg);
+        assert!(
+            (bdy / bdx - dyf / dxf).abs() < 2e-3,
+            "막대 압출({},{})이 방 깊이({dxf},{dyf})와 평행해야",
+            bdx,
+            bdy
+        );
+    }
+
+    #[test]
+    fn test_bar3d_room_depth_ratio() {
+        // 방 깊이 / 막대 깊이 = 1 + gapDepth/100 (기본 150 → 2.5) — 센터링과
+        // 무관하게 성립(dxf/bdx = D/b).
+        let chart = bars3d_chart(OoxmlChartType::Column, BarGrouping::Clustered);
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        let fl = floor_points(&svg);
+        let dxf = fl[1].0 - fl[0].0;
+        let (bdx, _) = bar_extrusion(&svg);
+        assert!(
+            (dxf / bdx - 2.5).abs() < 1e-2,
+            "기본 gapDepth 150 → D/b = 2.5, 실제 {}",
+            dxf / bdx
+        );
+        // gapDepth=300 → 4.0
+        let mut chart2 = bars3d_chart(OoxmlChartType::Column, BarGrouping::Clustered);
+        chart2.gap_depth = Some(300.0);
+        let svg2 = render_chart_svg(&chart2, 0.0, 0.0, 400.0, 300.0);
+        let fl2 = floor_points(&svg2);
+        let dxf2 = fl2[1].0 - fl2[0].0;
+        let (bdx2, _) = bar_extrusion(&svg2);
+        assert!(
+            (dxf2 / bdx2 - 4.0).abs() < 1e-2,
+            "gapDepth 300 → 4.0, 실제 {}",
+            dxf2 / bdx2
+        );
+    }
+
+    #[test]
+    fn test_bar3d_thickness_from_gap_width() {
+        // 두께 규칙 slot/(n_eff+gapWidth/100) — v3 눈대중 상수(누적 0.4)의 유도
+        // 원형. 기본 150: 누적 1/2.5=0.4, 묶은 3계열 bar_w = slot/4.5.
+        let cat_span_of = |fronts: &[(f64, f64, f64, f64)]| fronts[1].0 - fronts[0].0;
+
+        let stacked3d = bars3d_chart(OoxmlChartType::Column, BarGrouping::Stacked);
+        let svg = render_chart_svg(&stacked3d, 0.0, 0.0, 400.0, 300.0);
+        let f = blue_fronts(&svg);
+        assert_eq!(f.len(), 2, "2 카테고리 파랑 front");
+        let ratio = f[0].2 / cat_span_of(&f);
+        assert!(
+            (ratio - 0.4).abs() < 1e-3,
+            "누적 두께/슬롯 0.4, 실제 {ratio}"
+        );
+
+        let clustered3d = bars3d_chart(OoxmlChartType::Column, BarGrouping::Clustered);
+        let svg_c = render_chart_svg(&clustered3d, 0.0, 0.0, 400.0, 300.0);
+        let fc = blue_fronts(&svg_c);
+        let ratio_c = fc[0].2 / cat_span_of(&fc);
+        assert!(
+            (ratio_c - 1.0 / 4.5).abs() < 1e-3,
+            "묶은 3계열 bar_w/슬롯 = 1/4.5, 실제 {ratio_c}"
+        );
+
+        // gapWidth=300 누적 → 1/4 = 0.25
+        let mut wide_gap = bars3d_chart(OoxmlChartType::Column, BarGrouping::Stacked);
+        wide_gap.bar_gap_width = Some(300.0);
+        let svg_g = render_chart_svg(&wide_gap, 0.0, 0.0, 400.0, 300.0);
+        let fg = blue_fronts(&svg_g);
+        let ratio_g = fg[0].2 / cat_span_of(&fg);
+        assert!(
+            (ratio_g - 0.25).abs() < 1e-3,
+            "gapWidth 300 누적 → 0.25, 실제 {ratio_g}"
+        );
+
+        // 2D 대조군: 0.7 유지 (바이트 불변 가드)
+        let svg2d = render_chart_svg(&bars_chart(BarGrouping::Stacked), 0.0, 0.0, 400.0, 300.0);
+        let f2 = blue_fronts(&svg2d);
+        let ratio2 = f2[0].2 / cat_span_of(&f2);
+        assert!(
+            (ratio2 - 0.7).abs() < 1e-3,
+            "2D 누적 0.7 유지, 실제 {ratio2}"
+        );
+    }
+
+    #[test]
+    fn test_bar3d_bars_depth_centered() {
+        // 막대 깊이 센터링: 세로 막대 하단 y = 앞면 하단(fyb) − bdy0,
+        // bdy0 = (dyf − bdy)/2 (z0 = (D−b)/2).
+        let chart = bars3d_chart(OoxmlChartType::Column, BarGrouping::Clustered);
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        let fl = floor_points(&svg);
+        let fyb = fl[0].1;
+        let dyf = fl[0].1 - fl[1].1;
+        let (_, bdy) = bar_extrusion(&svg);
+        let f = blue_fronts(&svg);
+        let bottom = f[0].1 + f[0].3;
+        let expected_off = (dyf - bdy) / 2.0;
+        assert!(
+            ((fyb - bottom) - expected_off).abs() < 2e-2,
+            "센터링 오프셋 (dyf−bdy)/2 = {expected_off}, 실제 {}",
+            fyb - bottom
+        );
+    }
+
+    #[test]
+    fn test_bar3d_faces_within_plot() {
+        // fit 스모크: 모든 3D 면 좌표가 차트 bbox(0..400, 0..300) 안.
+        for grouping in [BarGrouping::Clustered, BarGrouping::Stacked] {
+            for chart_type in [OoxmlChartType::Column, OoxmlChartType::Bar] {
+                let chart = bars3d_chart(chart_type, grouping);
+                let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+                for class in ["hwp-bar3d-top", "hwp-bar3d-side"] {
+                    for chunk in svg.split(class).skip(1) {
+                        for (x, y) in poly_points(chunk) {
+                            assert!(
+                                (-0.5..=400.5).contains(&x) && (-0.5..=300.5).contains(&y),
+                                "{chart_type:?}/{grouping:?}: 면 좌표({x},{y}) 이탈"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_bar3d_degenerate_cameras() {
+        // 퇴화·경계 카메라 무패닉 + NaN 무방출 + front 존재.
+        // 음수/역방향 성분은 shear_proj 클램프(정의역 방어)로 0 처리.
+        let cases: &[(f64, f64, f64)] = &[
+            (0.0, 0.0, 100.0),    // 시어 없음 → front만
+            (90.0, 20.0, 100.0),  // rotX 최대
+            (-15.0, 20.0, 100.0), // rotX<0 → 수직 성분 클램프
+            (15.0, 200.0, 100.0), // sin(rotY)<0 → 수평 성분 클램프
+            (15.0, 20.0, 0.0),    // depthPercent=0 → d_scene=0 NaN 가드
+        ];
+        for &(rx, ry, dp) in cases {
+            let mut chart = bars3d_chart(OoxmlChartType::Column, BarGrouping::Clustered);
+            chart.view3d = Some(View3D {
+                rot_x: rx,
+                rot_y: ry,
+                depth_percent: dp,
+                ..Default::default()
+            });
+            let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+            assert!(!svg.contains("NaN"), "({rx},{ry},{dp}): NaN 방출");
+            assert!(
+                svg.contains("fill=\"#6183d7\""),
+                "({rx},{ry},{dp}): front 미방출"
+            );
+        }
+    }
+
+    #[test]
+    fn test_bar3d_room_only_when_3d() {
+        // 3D 방(뒷벽+바닥+커넥터)은 is_3d 막대에만 1회 — 2D는 부재 (시각판정 보정
+        // 2026-07-16: 방 표현 추가, 정답지 4종 공통).
+        for chart_type in [OoxmlChartType::Column, OoxmlChartType::Bar] {
+            for grouping in [BarGrouping::Clustered, BarGrouping::Stacked] {
+                let chart = bars3d_chart(chart_type, grouping);
+                let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+                assert_eq!(
+                    svg.matches("hwp-bar3d-room").count(),
+                    1,
+                    "{chart_type:?}/{grouping:?}: 방 1회"
+                );
+                // 방 그룹 안: 바닥 평행사변형(첫 polygon) + 커넥터/뒷벽 격자 라인
+                let room = &svg[svg.find("hwp-bar3d-room").unwrap()..];
+                let room = &room[..room.find("</g>").expect("방 그룹 닫힘")];
+                assert!(room.contains("<polygon"), "바닥 평행사변형");
+                assert!(room.matches("<line").count() >= 5, "커넥터+뒷벽 격자");
+            }
+        }
+        let svg2d = render_chart_svg(&bars_chart(BarGrouping::Clustered), 0.0, 0.0, 400.0, 300.0);
+        assert!(!svg2d.contains("hwp-bar3d-room"), "2D에 방 없음");
+    }
+
+    #[test]
+    fn test_bar3d_room_grid_on_back_wall() {
+        // 뒷벽 격자선은 (+d,-d) 오프셋 — 세로 차트의 격자 y가 앞면 눈금보다 d만큼
+        // 위(작음). 라벨 텍스트/위치는 2D와 동일(#1882 — test_axis_3d_*가 문자열 핀).
+        let chart = bars3d_chart(OoxmlChartType::Column, BarGrouping::Clustered);
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        let room = &svg[svg.find("hwp-bar3d-room").unwrap()..];
+        let room = &room[..room.find("</g>").unwrap()];
+        // 뒷벽 수평 격자(x1≠x2, y1==y2)의 x1 = px+d — 앞면(px)보다 오른쪽
+        let grid_line = room
+            .split("<line ")
+            .skip(1)
+            .find(|l| {
+                let y1 = attr_f64_of(l, "y1=\"");
+                let y2 = attr_f64_of(l, "y2=\"");
+                let x1 = attr_f64_of(l, "x1=\"");
+                let x2 = attr_f64_of(l, "x2=\"");
+                y1.is_some() && y1 == y2 && x1 != x2
+            })
+            .expect("뒷벽 수평 격자선");
+        let gx1 = attr_f64_of(grid_line, "x1=\"").unwrap();
+        // 방 뒷벽 rect의 x와 격자 x1 일치 (= px+d)
+        let wall_x = attr_f64_of(&room[room.find("<rect").expect("뒷벽")..], "x=\"").unwrap();
+        assert!(
+            (gx1 - wall_x).abs() < 1e-6,
+            "뒷벽 격자 x1({gx1}) == 뒷벽 x({wall_x})"
+        );
+    }
+
+    // --- Stage 1R v2: 방 선 처리 한컴 정합 (시각판정 피드백 2026-07-19) ---
+
+    /// room 내 `<line>`들의 (x1,y1,x2,y2) 목록
+    fn room_lines(room: &str) -> Vec<(f64, f64, f64, f64)> {
+        room.split("<line ")
+            .skip(1)
+            .map(|l| {
+                (
+                    attr_f64_of(l, "x1=\"").unwrap(),
+                    attr_f64_of(l, "y1=\"").unwrap(),
+                    attr_f64_of(l, "x2=\"").unwrap(),
+                    attr_f64_of(l, "y2=\"").unwrap(),
+                )
+            })
+            .collect()
+    }
+
+    #[test]
+    fn test_bar3d_room_hancom_line_style() {
+        // 정답지 임베드(2702px) 픽셀 실측: 축선·조그·격자·틱 전부 #808080 균일
+        // (실측 gray 126~148)·0.72pt≈0.75 — 2D의 축/격자 명암 구분과 다름.
+        // 뒷벽 테두리·바닥 채움 없음(흰 면 + #808080 외곽선만).
+        for chart_type in [OoxmlChartType::Column, OoxmlChartType::Bar] {
+            let chart = bars3d_chart(chart_type, BarGrouping::Stacked);
+            let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+            let room = room_slice(&svg);
+            for stale in ["#cccccc", "#e8e8e8", "#f2f2f2"] {
+                assert!(
+                    !room.contains(stale),
+                    "{chart_type:?}: 연회색 어휘 잔존 {stale}"
+                );
+            }
+            for l in room.split("<line ").skip(1) {
+                let l = &l[..l.find("/>").expect("line 닫힘")];
+                assert!(
+                    l.contains("stroke=\"#808080\"") && l.contains("stroke-width=\"0.75\""),
+                    "{chart_type:?}: 균일 선 스타일 아님: {l}"
+                );
+            }
+            let wall = &room[room.find("<rect").expect("뒷벽")..];
+            let wall = &wall[..wall.find("/>").unwrap()];
+            assert!(!wall.contains("stroke"), "{chart_type:?}: 뒷벽 무테두리");
+            let floor = &room[room.find("<polygon").expect("바닥")..];
+            let floor = &floor[..floor.find("/>").unwrap()];
+            assert!(
+                floor.contains("fill=\"#ffffff\"") && floor.contains("stroke=\"#808080\""),
+                "{chart_type:?}: 바닥 흰 면 + #808080 외곽선"
+            );
+        }
+    }
+
+    #[test]
+    fn test_bar3d_axis_ticks_vertical() {
+        // 세로형: 값 눈금마다 좌측 틱(fx−5→fx, 길이 실측 44px≈5.3pt) + 카테고리
+        // 경계 하단 틱(fyb→fyb+4, 실측 31px≈3.7pt) — 경계+양끝 = cat_count+1개.
+        let chart = bars3d_chart(OoxmlChartType::Column, BarGrouping::Stacked);
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        let room = room_slice(&svg);
+        let fl = floor_points(&svg);
+        let (fx, fyb) = fl[0];
+        let lines = room_lines(room);
+        let left_ticks = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2)| {
+                (y1 - y2).abs() < 1e-6 && (x2 - fx).abs() < 1e-6 && (fx - x1 - 5.0).abs() < 1e-6
+            })
+            .count();
+        let back_grids = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2)| (y1 - y2).abs() < 1e-6 && (x2 - x1) > 10.0)
+            .count();
+        assert!(back_grids >= 2, "뒷벽 수평 격자 존재");
+        assert_eq!(left_ticks, back_grids, "값 눈금마다 좌측 틱");
+        let down_ticks = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2)| {
+                (x1 - x2).abs() < 1e-6 && (y1 - fyb).abs() < 1e-6 && (y2 - fyb - 4.0).abs() < 1e-6
+            })
+            .count();
+        assert_eq!(down_ticks, 3, "카테고리 경계 하단 틱 = cat_count(2)+1");
+    }
+
+    #[test]
+    fn test_bar3d_axis_ticks_horizontal() {
+        // 가로형: 값 눈금마다 하단 틱 + 카테고리 경계 좌측 틱(cat_count+1) —
+        // 한컴 실측(누적가로: 하단 값틱 8개 등간격 225px, 좌측 경계틱 5개).
+        let chart = bars3d_chart(OoxmlChartType::Bar, BarGrouping::Stacked);
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        let room = room_slice(&svg);
+        let fl = floor_points(&svg);
+        let (fx, fyb) = fl[0];
+        let lines = room_lines(room);
+        let down_ticks = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2)| {
+                (x1 - x2).abs() < 1e-6 && (y1 - fyb).abs() < 1e-6 && (y2 - fyb - 4.0).abs() < 1e-6
+            })
+            .count();
+        // 뒷벽 세로 격자(x1==x2, 앞면 축선(x==fx)보다 오른쪽, 길이 > 틱)
+        let back_grids = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2)| {
+                (x1 - x2).abs() < 1e-6 && *x1 > fx + 1e-6 && (y1 - y2).abs() > 10.0
+            })
+            .count();
+        assert!(back_grids >= 2, "뒷벽 세로 격자 존재");
+        assert_eq!(down_ticks, back_grids, "값 눈금마다 하단 틱");
+        let left_ticks = lines
+            .iter()
+            .filter(|(x1, y1, x2, y2)| {
+                (y1 - y2).abs() < 1e-6 && (x2 - fx).abs() < 1e-6 && (fx - x1 - 5.0).abs() < 1e-6
+            })
+            .count();
+        assert_eq!(left_ticks, 3, "카테고리 경계 좌측 틱 = cat_count(2)+1");
+    }
+
+    // --- C2b (#2278) Stage 2: 3D 원형 (rAngAx=0 회전+원근) ---
+
+    fn pie3d_chart(values: Vec<f64>, rot_x: f64, perspective: f64) -> OoxmlChart {
+        OoxmlChart {
+            chart_type: OoxmlChartType::Pie,
+            is_3d: true,
+            view3d: Some(View3D {
+                rot_x,
+                rot_y: 0.0,
+                perspective,
+                r_ang_ax: false,
+                ..View3D::default()
+            }),
+            series: vec![OoxmlSeries {
+                values,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    /// 첫 top 타원호의 (cx, cy, rx, ry) — "M{cx},{cy} … A{rx},{ry}" 파싱
+    fn pie3d_top_geom(svg: &str) -> (f64, f64, f64, f64) {
+        let chunk = svg.split("hwp-pie3d-top").nth(1).expect("top 경로");
+        let d = &chunk[chunk.find("d=\"M").expect("M") + 4..];
+        let (cx, rest) = d.split_once(',').unwrap();
+        let (cy, _) = rest.split_once(' ').unwrap();
+        let a = &chunk[chunk.find(" A").expect("타원호") + 2..];
+        let (rx, rest) = a.split_once(',').unwrap();
+        let (ry, _) = rest.split_once(' ').unwrap();
+        (
+            cx.parse().unwrap(),
+            cy.parse().unwrap(),
+            rx.parse().unwrap(),
+            ry.parse().unwrap(),
+        )
+    }
+
+    /// 벽 경로의 좌표쌍 목록 — 순서: M점, A반지름, 호끝, L점, A반지름, 호끝
+    /// (인덱스 0=시작점, 2=1차 호 끝, 3=벽 하단, 5=복귀 호 끝)
+    fn wall_pairs(chunk: &str) -> Vec<(f64, f64)> {
+        let d = &chunk[chunk.find("d=\"").unwrap() + 3..];
+        let d = &d[..d.find('"').unwrap()];
+        d.split_whitespace()
+            .filter_map(|t| {
+                let t = t.trim_start_matches(['M', 'A', 'L', 'Z']);
+                let (x, y) = t.split_once(',')?;
+                Some((x.parse().ok()?, y.parse().ok()?))
+            })
+            .collect()
+    }
+
+    #[test]
+    fn test_pie3d_ellipse_ratio_follows_rotx() {
+        // 타원비 = sin(rotX)·cos(perspective/2°) — 정답지(rotX=30/persp=30) 실측
+        // ry/rx=0.480, 유도 0.483 (0.5% 이내). 앞뒤 반타원 대칭(원근 비대칭 부재).
+        let svg = render_chart_svg(
+            &pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        let (_, _, rx, ry) = pie3d_top_geom(&svg);
+        let expected = 30f64.to_radians().sin() * 15f64.to_radians().cos();
+        assert!(
+            (ry / rx - expected).abs() < 2e-3,
+            "rotX=30/persp=30 → ry/rx≈{expected:.4}, 실제 {}",
+            ry / rx
+        );
+        let svg = render_chart_svg(
+            &pie3d_chart(vec![25.0, 25.0, 50.0], 60.0, 30.0),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        let (_, _, rx, ry) = pie3d_top_geom(&svg);
+        let expected = 60f64.to_radians().sin() * 15f64.to_radians().cos();
+        assert!(
+            (ry / rx - expected).abs() < 2e-3,
+            "rotX=60 → ry/rx≈{expected:.4}, 실제 {}",
+            ry / rx
+        );
+    }
+
+    #[test]
+    fn test_pie3d_wall_height_measured() {
+        // 측벽 높이 = rx × 0.207 × hPercent/100 — 정답지 실측 175px/846.5px
+        let svg = render_chart_svg(
+            &pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        let (_, _, rx, _) = pie3d_top_geom(&svg);
+        let wall = svg.split("hwp-pie3d-wall").nth(1).expect("벽");
+        let pts = wall_pairs(wall);
+        // 복귀 호 끝(xa, ya+wall) − 시작점(xa, ya)
+        let wall_h = pts[5].1 - pts[0].1;
+        assert!(
+            (wall_h / rx - 0.207).abs() < 5e-3,
+            "벽 높이/rx ≈ 0.207, 실제 {}",
+            wall_h / rx
+        );
+    }
+
+    #[test]
+    fn test_pie3d_wall_lower_half_only() {
+        // 하반부(θ∈(0,π))만 벽: [25,25,50] → 슬라이스1(우상) 벽 없음, 2·3만 —
+        // 벽 색 = shade(팔레트, SIDE) (윗면은 원색)
+        let svg = render_chart_svg(
+            &pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        assert_eq!(svg.matches("hwp-pie3d-wall").count(), 2, "벽 2개");
+        assert_eq!(svg.matches("hwp-pie3d-top").count(), 3, "top 3개");
+        let w1 = svg.split("hwp-pie3d-wall").nth(1).unwrap();
+        let w2 = svg.split("hwp-pie3d-wall").nth(2).unwrap();
+        assert!(
+            w1.contains(&color_hex(shade(palette(1), BAR3D_SIDE_SHADE))),
+            "벽1 = 팔레트1 음영"
+        );
+        assert!(
+            w2.contains(&color_hex(shade(palette(2), BAR3D_SIDE_SHADE))),
+            "벽2 = 팔레트2 음영"
+        );
+    }
+
+    #[test]
+    fn test_pie3d_wall_clipped_at_boundaries() {
+        // 첫 벽 시작 = θ=0 클립(cx+rx, cy), 마지막 벽 호 끝 = θ=π 클립(cx−rx, cy)
+        let svg = render_chart_svg(
+            &pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        let (cx, cy, rx, _) = pie3d_top_geom(&svg);
+        let w1 = wall_pairs(svg.split("hwp-pie3d-wall").nth(1).unwrap());
+        assert!(
+            (w1[0].0 - (cx + rx)).abs() < 0.05 && (w1[0].1 - cy).abs() < 0.05,
+            "첫 벽 시작 (cx+rx, cy), 실제 {:?}",
+            w1[0]
+        );
+        let w2 = wall_pairs(svg.split("hwp-pie3d-wall").nth(2).unwrap());
+        assert!(
+            (w2[2].0 - (cx - rx)).abs() < 0.05 && (w2[2].1 - cy).abs() < 0.05,
+            "마지막 벽 호 끝 (cx−rx, cy), 실제 {:?}",
+            w2[2]
+        );
+    }
+
+    #[test]
+    fn test_pie3d_walls_before_tops() {
+        // 페인트 순서: 벽 전체 → top 전체 (은면 제거)
+        let svg = render_chart_svg(
+            &pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        assert!(
+            svg.rfind("hwp-pie3d-wall").unwrap() < svg.find("hwp-pie3d-top").unwrap(),
+            "벽이 top보다 선행"
+        );
+    }
+
+    #[test]
+    fn test_pie_2d_no_pie3d_vocab() {
+        // 2D 원형 가드: is_3d=false → 3D 어휘 부재 (2D 바이트 불변의 방증)
+        let mut chart = pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0);
+        chart.is_3d = false;
+        chart.view3d = None;
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        assert!(!svg.contains("hwp-pie3d"), "2D에 3D 어휘 없음");
+    }
+
+    // --- C2b (#2278) Stage 3: ofPie 보조플롯 + 팔레트 #5 ---
+
+    fn ofpie_chart(of: OfPieInfo) -> OoxmlChart {
+        OoxmlChart {
+            chart_type: OoxmlChartType::Pie,
+            of_pie: Some(of),
+            series: vec![OoxmlSeries {
+                values: vec![10.0, 3.5, 1.5, 1.2],
+                ..Default::default()
+            }],
+            categories: vec!["a".into(), "b".into(), "c".into(), "d".into()],
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_palette_index4_measured() {
+        // [4] = ofPie 결합 슬라이스 실측 초록계 #27A172 (원형대원형·원형대가로막대형
+        // 정답지 임베드 픽셀 히스토그램 최빈값 — 두 파일 교차 일치)
+        assert_eq!(palette(4), 0xFF27A172, "팔레트 [4] 실측 고정");
+    }
+
+    #[test]
+    fn test_ofpie_pie_secondary_and_serlines() {
+        // 주 원 3(= n−k+1 = 4−2+1) + 보조 원 2(= k) + serLines 2
+        let svg = render_chart_svg(
+            &ofpie_chart(OfPieInfo {
+                has_ser_lines: true,
+                ..Default::default()
+            }),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        assert_eq!(svg.matches("hwp-ofpie-main").count(), 3, "주 원 슬라이스 3");
+        assert_eq!(
+            svg.matches("hwp-ofpie-second").count(),
+            2,
+            "보조 원 슬라이스 2"
+        );
+        assert_eq!(svg.matches("hwp-ofpie-serline").count(), 2, "serLines 2");
+        // has_ser_lines=false → serline 0
+        let svg2 = render_chart_svg(&ofpie_chart(OfPieInfo::default()), 0.0, 0.0, 400.0, 300.0);
+        assert_eq!(
+            svg2.matches("hwp-ofpie-serline").count(),
+            0,
+            "serLines 부재"
+        );
+    }
+
+    #[test]
+    fn test_ofpie_combined_slice_uses_palette4() {
+        // 결합 슬라이스 = palette(n) (n=4 → 실측 초록계) — hex 하드코딩 대신 참조
+        let svg = render_chart_svg(&ofpie_chart(OfPieInfo::default()), 0.0, 0.0, 400.0, 300.0);
+        let main = svg.split("hwp-ofpie-main").nth(3).expect("결합 슬라이스");
+        let main = &main[..main.find("/>").unwrap()];
+        assert!(
+            main.contains(&color_hex(palette(4))),
+            "결합 슬라이스 fill = palette(4)"
+        );
+    }
+
+    #[test]
+    fn test_ofpie_bar_secondary_first_split_cat_on_top() {
+        // Bar형 보조: rect 2개, 첫 분할 카테고리(palette(2))가 맨 위
+        let svg = render_chart_svg(
+            &ofpie_chart(OfPieInfo {
+                of_pie_type: OfPieType::Bar,
+                ..Default::default()
+            }),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        let rects: Vec<&str> = svg.split("hwp-ofpie-second").skip(1).collect();
+        assert_eq!(rects.len(), 2, "보조 rect 2");
+        let y_of = |chunk: &str| attr_f64_of(&chunk[..chunk.find("/>").unwrap()], "y=\"").unwrap();
+        let c_of =
+            |chunk: &str, rgb: u32| chunk[..chunk.find("/>").unwrap()].contains(&color_hex(rgb));
+        assert!(
+            c_of(rects[0], palette(2)) && c_of(rects[1], palette(3)),
+            "보조 색 [2],[3]"
+        );
+        assert!(y_of(rects[0]) < y_of(rects[1]), "첫 분할 카테고리가 맨 위");
+    }
+
+    #[test]
+    fn test_ofpie_split_pos_respected() {
+        // split_pos=3 → 주 원 2(= 4−3+1) + 보조 3
+        let svg = render_chart_svg(
+            &ofpie_chart(OfPieInfo {
+                split_pos: Some(3.0),
+                ..Default::default()
+            }),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        assert_eq!(svg.matches("hwp-ofpie-main").count(), 2, "주 원 2");
+        assert_eq!(svg.matches("hwp-ofpie-second").count(), 3, "보조 3");
+    }
+
+    #[test]
+    fn test_ofpie_non_pos_split_type_falls_back_to_default() {
+        // PR #2500 후속: val/percent/cust 의 splitPos 는 count 가 아니므로
+        // 무시하고 기본 k=2 로 폴백 — 주 원 3(= 4−2+1) + 보조 2.
+        for ty in [
+            super::super::OfPieSplitType::Val,
+            super::super::OfPieSplitType::Percent,
+            super::super::OfPieSplitType::Cust,
+        ] {
+            let svg = render_chart_svg(
+                &ofpie_chart(OfPieInfo {
+                    split_type: ty,
+                    split_pos: Some(3.0),
+                    ..Default::default()
+                }),
+                0.0,
+                0.0,
+                400.0,
+                300.0,
+            );
+            assert_eq!(svg.matches("hwp-ofpie-main").count(), 3, "{ty:?}: 주 원 3");
+            assert_eq!(svg.matches("hwp-ofpie-second").count(), 2, "{ty:?}: 보조 2");
+        }
+        // splitType=pos 는 종전대로 count 적용
+        let svg = render_chart_svg(
+            &ofpie_chart(OfPieInfo {
+                split_type: super::super::OfPieSplitType::Pos,
+                split_pos: Some(3.0),
+                ..Default::default()
+            }),
+            0.0,
+            0.0,
+            400.0,
+            300.0,
+        );
+        assert_eq!(svg.matches("hwp-ofpie-main").count(), 2, "pos: 주 원 2");
+        assert_eq!(svg.matches("hwp-ofpie-second").count(), 3, "pos: 보조 3");
+    }
+
+    #[test]
+    fn test_ofpie_legend_categories_in_order_no_combined() {
+        // 범례: 카테고리 4개 정순(palette 0..3), 결합 슬라이스(palette 4) 부재
+        let svg = render_chart_svg(&ofpie_chart(OfPieInfo::default()), 0.0, 0.0, 400.0, 300.0);
+        let legend = &svg[svg.find("hwp-chart-legend").expect("범례")..];
+        let mut last = 0usize;
+        for i in 0..4 {
+            let p = legend
+                .find(&color_hex(palette(i)))
+                .unwrap_or_else(|| panic!("범례 스와치 {i}"));
+            assert!(p >= last, "범례 정순 위반 ({i})");
+            last = p;
+        }
+        assert!(
+            !legend.contains(&color_hex(palette(4))),
+            "범례에 결합 슬라이스 없음"
+        );
+    }
+
+    #[test]
+    fn test_ofpie_two_values_plain_pie_fallback() {
+        // n=2 < 3 → 일반 원형 폴백 (ofpie 어휘·serline 부재)
+        let mut chart = ofpie_chart(OfPieInfo {
+            has_ser_lines: true,
+            ..Default::default()
+        });
+        chart.series[0].values = vec![7.0, 3.0];
+        chart.categories = vec!["a".into(), "b".into()];
+        let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        assert!(!svg.contains("hwp-ofpie"), "n<3은 일반 원형 폴백");
+    }
+
+    #[test]
+    fn test_pie_exploded_slices_offset() {
+        // 쪼개진원형(계열 explosion 25): 각 슬라이스 꼭짓점이 중심에서 중심각
+        // 방향으로 r×0.25 이동, 반지름은 1/(1+0.25)로 축소(벌어진 만큼 fit).
+        // 정답지: 한컴 쪼개진원형-2022 — 전 슬라이스 균일 벌어짐.
+        let mut plain = OoxmlChart {
+            chart_type: OoxmlChartType::Pie,
+            series: vec![OoxmlSeries {
+                values: vec![4.0, 3.0, 2.0],
+                ..Default::default()
+            }],
+            categories: vec!["a".into(), "b".into(), "c".into()],
+            ..Default::default()
+        };
+        let svg_plain = render_chart_svg(&plain, 0.0, 0.0, 400.0, 300.0);
+        // 2D 원형 슬라이스 path: "M{cx},{cy} L..." — 전 슬라이스 동일 꼭짓점 = 중심
+        let apex = |chunk: &str| -> (f64, f64) {
+            let d = &chunk[chunk.find("d=\"M").unwrap() + 4..];
+            let (x, rest) = d.split_once(',').unwrap();
+            let (y, _) = rest.split_once(' ').unwrap();
+            (x.parse().unwrap(), y.parse().unwrap())
+        };
+        let arc_r = |chunk: &str| -> f64 {
+            let a = &chunk[chunk.find(" A").unwrap() + 2..];
+            a.split_once(',').unwrap().0.parse().unwrap()
+        };
+        // plain 중심/반지름
+        let plain_slices: Vec<String> = svg_plain
+            .split("<path ")
+            .skip(1)
+            .filter(|c| c.starts_with("d=\"M"))
+            .map(|c| c[..c.find("/>").unwrap()].to_string())
+            .collect();
+        assert_eq!(plain_slices.len(), 3, "2D 원형 3슬라이스");
+        let (cx, cy) = apex(&plain_slices[0]);
+        let r_plain = arc_r(&plain_slices[0]);
+
+        plain.series[0].explosion = Some(25.0);
+        let svg_ex = render_chart_svg(&plain, 0.0, 0.0, 400.0, 300.0);
+        let ex_slices: Vec<String> = svg_ex
+            .split("<path ")
+            .skip(1)
+            .filter(|c| c.starts_with("d=\"M"))
+            .map(|c| c[..c.find("/>").unwrap()].to_string())
+            .collect();
+        assert_eq!(ex_slices.len(), 3);
+        let r_ex = arc_r(&ex_slices[0]);
+        assert!(
+            (r_ex - r_plain / 1.25).abs() < 0.05,
+            "반지름 fit 축소: {r_ex} vs {}",
+            r_plain / 1.25
+        );
+        let off = r_ex * 0.25;
+        for (i, s) in ex_slices.iter().enumerate() {
+            let (ax, ay) = apex(s);
+            let d = ((ax - cx).powi(2) + (ay - cy).powi(2)).sqrt();
+            assert!(
+                (d - off).abs() < 0.05,
+                "슬라이스 {i} 꼭짓점 오프셋 {d} ≠ {off}"
+            );
+        }
+        // 서로 다른 방향으로 벌어짐 (꼭짓점 전부 상이)
+        let a0 = apex(&ex_slices[0]);
+        let a1 = apex(&ex_slices[1]);
+        let a2 = apex(&ex_slices[2]);
+        assert!(a0 != a1 && a1 != a2 && a0 != a2, "슬라이스별 방향 분리");
+    }
+
+    #[test]
+    fn test_pie_slices_butt_joined_no_white_border() {
+        // 시각판정 확정(2026-07-19): 한컴 원형 계열은 슬라이스 밀착 — 2D/3D/ofPie
+        // 정답지 원주 전수 스캔 흰 run 0건 → 흰 테두리 미방출 (마커/라인 할로 무관)
+        let pie2d = OoxmlChart {
+            chart_type: OoxmlChartType::Pie,
+            series: vec![OoxmlSeries {
+                values: vec![4.0, 3.0, 2.0],
+                ..Default::default()
+            }],
+            categories: vec!["a".into(), "b".into(), "c".into()],
+            ..Default::default()
+        };
+        let charts = [
+            pie2d,
+            pie3d_chart(vec![25.0, 25.0, 50.0], 30.0, 30.0),
+            ofpie_chart(OfPieInfo {
+                has_ser_lines: true,
+                ..Default::default()
+            }),
+            ofpie_chart(OfPieInfo {
+                of_pie_type: OfPieType::Bar,
+                ..Default::default()
+            }),
+        ];
+        for (i, chart) in charts.iter().enumerate() {
+            let svg = render_chart_svg(chart, 0.0, 0.0, 400.0, 300.0);
+            assert!(
+                !svg.contains("stroke=\"#ffffff\""),
+                "원형 계열 {i}: 슬라이스 흰 테두리 잔존"
+            );
+        }
+    }
+
+    #[test]
+    fn test_pie3d_degenerate_cameras() {
+        // 정의역 방어: rotX=0(타원 퇴화)·90(정원)·perspective=240(cos 음수 위험)
+        for (rx_deg, persp) in [(0.0, 30.0), (90.0, 30.0), (30.0, 240.0), (-15.0, 0.0)] {
+            let svg = render_chart_svg(
+                &pie3d_chart(vec![25.0, 25.0, 50.0], rx_deg, persp),
+                0.0,
+                0.0,
+                400.0,
+                300.0,
+            );
+            assert!(
+                !svg.contains("NaN"),
+                "rotX={rx_deg}/persp={persp}: NaN 없음"
+            );
+            let (_, _, rx, ry) = pie3d_top_geom(&svg);
+            assert!(
+                ry > 0.0 && ry <= rx + 1e-6,
+                "타원비 (0,1] 유지: {}",
+                ry / rx
+            );
         }
     }
 }

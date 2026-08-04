@@ -4,7 +4,7 @@
 
 use crate::error::HwpError;
 use crate::model::control::Control;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{ParaMeta, Paragraph};
 use crate::model::path::PathSegment;
 use crate::model::style::BorderLineType;
 
@@ -822,12 +822,30 @@ pub(crate) fn json_usize(json: &str, key: &str) -> Result<usize, HwpError> {
 }
 
 /// JSON 문자열 이스케이프
+/// JSON 문자열 본문으로 이스케이프한다 (바깥 따옴표는 호출부 몫).
+///
+/// RFC 8259 는 U+0000..=U+001F 를 모두 이스케이프하도록 요구한다. HWP 본문에는 필드
+/// 마커(`\u{0015}`~`\u{0017}`) 같은 제어문자가 그대로 들어 있어, 자주 쓰는 넷만 처리하면
+/// 파서가 거부하는 JSON 이 나간다 (Task #3216).
 pub(crate) fn json_escape(s: &str) -> String {
-    s.replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .replace('\t', "\\t")
+    let mut out = String::with_capacity(s.len());
+    for ch in s.chars() {
+        match ch {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            '\u{08}' => out.push_str("\\b"),
+            '\u{0C}' => out.push_str("\\f"),
+            c if (c as u32) < 0x20 => {
+                use std::fmt::Write;
+                let _ = write!(out, "\\u{:04x}", c as u32);
+            }
+            c => out.push(c),
+        }
+    }
+    out
 }
 
 /// JSON 성공 응답 생성: {"ok":true}
@@ -838,6 +856,35 @@ pub(crate) fn json_ok() -> String {
 /// JSON 성공 응답 생성: {"ok":true,...fields}
 pub(crate) fn json_ok_with(fields: &str) -> String {
     format!("{{\"ok\":true,{}}}", fields)
+}
+
+/// 병합 결과 JSON 에 덧붙일 `,"removedParaMeta":{...}` 조각 (Task #2342).
+///
+/// undo 가 `split_at` 뒤 되돌릴 값이며 스튜디오는 내용을 해석하지 않고 그대로
+/// 분할 호출에 되돌려준다.
+pub(crate) fn removed_para_meta_field(meta: &ParaMeta) -> String {
+    format!(
+        ",\"removedParaMeta\":{}",
+        serde_json::to_string(meta).unwrap()
+    )
+}
+
+/// 병합 결과 JSON 에서 `removedParaMeta` 를 꺼낸다 — 병합 undo 왕복 테스트용.
+#[cfg(test)]
+pub(crate) fn removed_para_meta_of(merge_result: &str) -> ParaMeta {
+    let value: serde_json::Value =
+        serde_json::from_str(merge_result).expect("병합 결과가 JSON 이어야 함");
+    serde_json::from_value(value["removedParaMeta"].clone())
+        .expect("병합 결과에 removedParaMeta 가 있어야 함")
+}
+
+/// 분할 호출이 받은 `removedParaMeta` JSON 을 되돌릴 메타로 해석한다 (Task #2342).
+pub(crate) fn parse_removed_para_meta(json: Option<String>) -> Result<Option<ParaMeta>, HwpError> {
+    json.map(|raw| {
+        serde_json::from_str(&raw)
+            .map_err(|error| HwpError::RenderError(format!("문단 메타 파싱 실패: {}", error)))
+    })
+    .transpose()
 }
 
 /// HWP BGR 색상 (0x00BBGGRR)을 CSS hex (#RRGGBB)로 변환
@@ -1035,17 +1082,23 @@ pub(crate) fn css_color_to_hwp_bgr(css: &str) -> Option<u32> {
         } else {
             None
         }
-    } else if css.starts_with("rgb(") || css.starts_with("rgb (") {
-        // rgb(r, g, b) 형식
-        let inner = css
-            .trim_start_matches("rgb")
-            .trim_start_matches('(')
-            .trim_end_matches(')');
+    } else if css.starts_with("rgb") {
+        // rgb(r, g, b) / rgba(r, g, b, a) 형식 — 브라우저는 알파 포함 색을
+        // rgba()로 직렬화하므로 함께 처리한다.
+        let open = css.find('(')?;
+        let inner = css[open + 1..].trim_end_matches(')');
         let parts: Vec<&str> = inner.split(',').collect();
         if parts.len() >= 3 {
             let r: u32 = parts[0].trim().parse().ok()?;
             let g: u32 = parts[1].trim().parse().ok()?;
             let b: u32 = parts[2].trim().parse().ok()?;
+            // rgba()의 alpha=0(완전 투명)은 색 없음으로 처리
+            if let Some(a_str) = parts.get(3) {
+                let a: f64 = a_str.trim().parse().ok()?;
+                if a <= 0.0 {
+                    return None;
+                }
+            }
             Some(r | (g << 8) | (b << 16))
         } else {
             None
@@ -1265,7 +1318,32 @@ pub(crate) fn parse_css_border_shorthand(val: &str) -> (f64, u32, u8) {
         return (0.0, 0, 0);
     }
 
-    let parts: Vec<&str> = val.split_whitespace().collect();
+    // rgb()/rgba() 안에 공백이 있으면(예: "rgb(255, 0, 0)") 단순 split_whitespace가
+    // 색상 토큰을 여러 조각으로 쪼개버리므로, 괄호 내부의 공백은 보존한 채로 분리한다.
+    let mut parts: Vec<String> = Vec::new();
+    let mut depth = 0i32;
+    let mut cur = String::new();
+    for ch in val.chars() {
+        match ch {
+            '(' => {
+                depth += 1;
+                cur.push(ch);
+            }
+            ')' => {
+                depth -= 1;
+                cur.push(ch);
+            }
+            c if c.is_whitespace() && depth == 0 => {
+                if !cur.is_empty() {
+                    parts.push(std::mem::take(&mut cur));
+                }
+            }
+            c => cur.push(c),
+        }
+    }
+    if !cur.is_empty() {
+        parts.push(cur);
+    }
     let mut width_pt = 0.0f64;
     let mut color: u32 = 0; // black
     let mut style: u8 = 1; // solid
@@ -1296,6 +1374,19 @@ pub(crate) fn parse_css_border_shorthand(val: &str) -> (f64, u32, u8) {
             }
             "hidden" => {
                 style = 0;
+                continue;
+            }
+            // CSS 표준 border-width 키워드 (브라우저 기준 thin=1px, medium=3px, thick=5px)
+            "thin" => {
+                width_pt = 0.75; // 1px
+                continue;
+            }
+            "medium" => {
+                width_pt = 2.25; // 3px
+                continue;
+            }
+            "thick" => {
+                width_pt = 3.75; // 5px
                 continue;
             }
             _ => {}

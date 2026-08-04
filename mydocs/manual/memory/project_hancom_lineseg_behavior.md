@@ -2,7 +2,7 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 한컴 LINE_SEG 자동 재계산 동작
 description: 한컴은 LINE_SEG가 비어있어도(line_height=0) 자체 조판 엔진으로 재계산하여 렌더링. LINE_SEG는 캐시일 뿐.
 type: project

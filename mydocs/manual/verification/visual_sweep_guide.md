@@ -187,6 +187,10 @@ python3 scripts/task1274_visual_sweep.py \
   --out output/visual-so-sueop-p22
 ```
 
+작은 글자나 셀 clip 경계를 확대 판정할 때는 `--dpi 144`처럼 목표 DPI를 높일 수
+있다. 이 값은 PDF raster와 rhwp SVG raster 양쪽에 같은 배율로 적용된다. 기본값은
+96dpi이며 0 이하 값은 허용하지 않는다.
+
 일부 공개문서 축약 샘플은 rhwp SVG/PNG 파일명이 문서 내부 원래 페이지 번호나 문서번호를 따라가고,
 기준 PDF는 해당 페이지만 잘라낸 단일 페이지라 `pdf-1.png`로 생성될 수 있다. 예를 들어 rhwp 쪽은
 `rhwp_177.png`인데 기준 PDF는 `pdf-1.png`인 경우다. 이때 `--page 1`처럼 사용자가 PDF viewer에서 보는

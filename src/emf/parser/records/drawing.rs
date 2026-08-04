@@ -33,7 +33,10 @@ pub fn parse_arc_like(c: &mut Cursor<'_>) -> Result<(RectL, PointL, PointL), Err
 /// POINTS 배열 레코드 공통: RectL bounds + u32 count + POINTS[count] (4B/point).
 pub fn parse_points16(c: &mut Cursor<'_>) -> Result<(RectL, Vec<(i16, i16)>), Error> {
     let bounds = RectL::read(c)?;
-    let count = c.u32()? as usize;
+    // count는 EMF 레코드에서 온 검증되지 않은 u32다. 포인트 1개당 4바이트이므로
+    // 남은 바이트로 상한을 씌워 Vec::with_capacity가 거대한 값을 그대로
+    // 예약하지 않게 한다 (doc_info.rs tab_count류와 동일한 클래스).
+    let count = (c.u32()? as usize).min(c.remaining() / 4);
     let mut pts = Vec::with_capacity(count);
     for _ in 0..count {
         let x = c.u16()? as i16;

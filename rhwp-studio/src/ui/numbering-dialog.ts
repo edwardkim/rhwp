@@ -366,7 +366,10 @@ export class NumberingDialog extends ModalDialog {
     startInput.style.width = '60px';
     startInput.disabled = this.restartMode !== 2;
     startInput.addEventListener('input', () => {
-      this.startNumber = parseInt(startInput.value) || 1;
+      const parsed = parseInt(startInput.value) || 1;
+      // WASM createNumbering으로 넘어가기 전에 min/max(1~999) 범위로 clamp한다.
+      // (input의 min/max HTML 속성은 이 다이얼로그에 <form> submit 흐름이 없어 강제되지 않음)
+      this.startNumber = Math.min(999, Math.max(1, parsed));
       this.updatePreview();
     });
     startSection.appendChild(startLabel);

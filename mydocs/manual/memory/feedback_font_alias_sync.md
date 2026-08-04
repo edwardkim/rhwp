@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 한글 폰트 추가 시 resolve_metric_alias 동기화 필수
 description: 새 한글 폰트를 지원할 때 style_resolver 외에도 font_metrics_data의 resolve_metric_alias에 매핑을 등록하지 않으면 SVG 글자 겹침 발생
 type: feedback
-originSessionId: 67d1cb8f-86d4-4672-b831-a8d028a1cfcf
 ---
 한글 폰트 이름 해석은 **2-계층**. 새 한글 폰트 추가 시 두 계층 모두에 매핑 등록 필수.
 
@@ -24,3 +23,11 @@ originSessionId: 67d1cb8f-86d4-4672-b831-a8d028a1cfcf
 4. 상세 매뉴얼: `mydocs/tech/font_fallback_strategy.md` 부록 A.
 
 **핵심 증상**: SVG 에서 특정 폰트의 라틴/숫자 글자가 좁게 겹침. 폰트명을 grep 으로 확인하면 font-family 속성은 정상이나 x 좌표 간격이 기본값 (보통 ~7.67px). DB 엔트리 실측 폭 (예: HYGothic-Medium = 9.04px) 과 비교하면 차이 식별 가능.
+
+
+**폴백 지정 규칙 (2026-07-15, #2293 작업지시자 권고):** generic 폴백
+(sans/serif/mono)을 지정할 때는 **한국어 가용 폰트를 우선**한다 — 스타일
+정합보다 한글 표시가 우선이므로 라틴 전용 최후 폴백(DejaVu 등) 앞에
+한국어 sans(Noto Sans KR 등)를 배치. 폴백 패밀리는 하드 고정하지 말고
+**fontdb 존재 확인 후 체인의 첫 실존 항목**으로 결정 (미존재 폴백 지정은
+resvg 텍스트 드롭 유발 — #2293 근인).

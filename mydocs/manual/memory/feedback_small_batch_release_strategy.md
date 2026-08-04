@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 작은 단위 PATCH 회전 운영 철학
 description: 활발한 컨트리뷰션 사이클에서 큰 묶음으로 완성도를 높이려는 시도가 위험을 키움. 작은 단위 PATCH 빠른 회전 유지
 type: feedback
-originSessionId: 263bacf0-af73-4169-8b90-2cc13f939a31
 ---
 활발한 외부 컨트리뷰션 사이클에서는 **PATCH 단위 빠른 회전을 유지** 한다. 미해결 이슈를 모두 해결하고 묶어서 완성도를 높이려는 시도가 오히려 위험요소를 키우는 정황을 회피.
 

@@ -2,11 +2,10 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: 이슈 착수 시 즉시 assignee 지정 필수
 description: GitHub 이슈를 내부에서 작업하기로 결정하면 브랜치 생성 전에 반드시 assignee 를 지정해야 함. 누락 시 외부 기여자가 같은 이슈를 독립적으로 집어갈 수 있음
 type: feedback
-originSessionId: 67d1cb8f-86d4-4672-b831-a8d028a1cfcf
 ---
 이슈 착수 결정 → 브랜치 생성 전 **반드시** 해당 이슈에 assignee 를 지정. GitHub 이슈는 기본적으로 "누구든 가져갈 수 있는 오픈 타스크" 로 해석되기 때문.
 

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/README.md
-last_verified: 2026-07-17
+last_verified: 2026-07-23
 ---
 
 # rhwp 문서 지도와 canonical manifest
@@ -35,6 +35,7 @@ front matter는 `mydocs/manual`, `mydocs/tech`, `mydocs/troubleshootings`의 모
 
 - `manual/verification/`: 시각 검증 정책과 실행 가이드
 - `manual/codex/`: 저장소 부트스트랩과 현행 문서·Git 절차
+- `manual/pr_review/`: canonical PR review 라우터가 조건별로 선택하는 역할·검증·후속 처리 가이드
 - `manual/memory/`: 과거 피드백과 memory 출처
 - `tech/investigations/issue-####/`: 특정 이슈의 가설·실험·관찰
 - `tech/archive/`: 대체된 계획·설계와 역사 자료
@@ -52,7 +53,8 @@ front matter는 `mydocs/manual`, `mydocs/tech`, `mydocs/troubleshootings`의 모
 | [문서·Git 워크플로](manual/codex/docs_and_git_workflow.md) | canonical | active | `manual/codex/docs_and_git_workflow.md` | 2026-07-16 |
 | [Codex 문서 지도](manual/codex/README.md) | guide | active | `manual/codex/README.md` | 2026-07-17 |
 | [Claude memory dump 색인](manual/memory/MEMORY.md) | memory | historical | `manual/codex/docs_and_git_workflow.md` | 2026-07-17 |
-| [PR 리뷰·통합 워크플로](manual/pr_review_workflow.md) | canonical | active | `manual/pr_review_workflow.md` | 2026-07-16 |
+| [PR 리뷰·통합 워크플로](manual/pr_review_workflow.md) | canonical | active | `manual/pr_review_workflow.md` | 2026-07-25 |
+| [PR review 조건별 가이드](manual/pr_review/README.md) | guide | active | `manual/pr_review_workflow.md` | 2026-07-25 |
 | [개발 환경 가이드](manual/dev_environment_guide.md) | guide | active | `manual/dev_environment_guide.md` | 2026-07-17 |
 | [온보딩 가이드](manual/onboarding_guide.md) | guide | active | `manual/README.md` | 2026-07-17 |
 | [배포 가이드](manual/publish_guide.md) | guide | active | `manual/publish_guide.md` | 2026-07-17 |
@@ -66,7 +68,7 @@ front matter는 `mydocs/manual`, `mydocs/tech`, `mydocs/troubleshootings`의 모
 | [HWP 5.0 스펙 문서 정오표](tech/hwp_spec_errata.md) | canonical | active | `tech/hwp_spec_errata.md` | 2026-07-16 |
 | [한글 문서 파일 형식 5.0 개정 1.3](tech/한글문서파일형식_5.0_revision1.3.md) | reference | active | `tech/hwp_spec_errata.md` | 2026-07-16 |
 | [Document IR LineSeg 표준](tech/document_ir_lineseg_standard.md) | canonical | active | `tech/document_ir_lineseg_standard.md` | 2026-07-16 |
-| [렌더링 엔진 설계](tech/rendering_engine_design.md) | canonical | active | `tech/rendering_engine_design.md` | 2026-07-16 |
+| [렌더링 엔진 설계](tech/rendering_engine_design.md) | canonical | active | `tech/rendering_engine_design.md` | 2026-07-23 |
 | [표 레이아웃 규칙](tech/table_layout_rules.md) | canonical | active | `tech/table_layout_rules.md` | 2026-07-16 |
 | [폰트 fallback 전략](tech/font_fallback_strategy.md) | canonical | active | `tech/font_fallback_strategy.md` | 2026-07-16 |
 | [편집 action undo/redo 아키텍처](tech/edit_action_undo_redo_architecture.md) | canonical | active | `tech/edit_action_undo_redo_architecture.md` | 2026-07-16 |

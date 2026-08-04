@@ -59,6 +59,12 @@ pub struct CommonObjAttr {
     ///
     /// HWP5 GenShape CTRL_HEADER attr bit 14 후보로 보존한다.
     pub allow_overlap: bool,
+    /// HWPX `hp:pos@affectLSpacing` (개체가 줄 간격에 영향을 주는지).
+    ///
+    /// [#2784] HWP5 개체 공통 속성 attr bit 2 (스펙 표 70). 한컴 원본 파일에서
+    /// bit 2 ⟺ affectLSpacing="1" 를 1:1 대조 검증했다. 이 필드가 없어
+    /// 그림·도형·표 방출이 "0" 으로 하드코딩되던 유실을 해소한다.
+    pub affect_line_spacing: bool,
     /// HWPX 출처 GenShape를 HWP5로 저장할 때 필요한 storage high bit 후보.
     ///
     /// Table adapter의 `0x08000000` 보강과 다른 `0x04000000` bit 26이다.
@@ -90,8 +96,19 @@ pub struct CommonObjAttr {
     /// HWP5 파서는 설정하지 않는다 (기본 None). HWPX 그리기 개체의
     /// `numberingType="PICTURE"` 등을 라운드트립 보존하기 위한 필드.
     pub numbering_type: ObjectNumberingType,
+    /// HWPX `dropcapstyle` (개체를 감싼 단락의 드롭캡 표시 방식) 보존.
+    ///
+    /// 파서가 읽지 않으면 방출측(picture.rs 등)이 항상 `dropcapstyle="None"`으로
+    /// 되돌려, 원본이 `DoubleLine`/`TripleLine`/`Margin` 드롭캡으로 개체를 감싼
+    /// 문단이었더라도 저장 시 드롭캡 스타일이 유실된다.
+    pub drop_cap_style: DropCapStyle,
     /// 파싱된 필드 이후 추가 바이트 (라운드트립 보존용)
     pub raw_extra: Vec<u8>,
+    /// HWPX `lock`(개체 잠금) 속성 보존 (#2840, #2855, #2931).
+    ///
+    /// 파서가 이 속성을 읽지 않아 직렬화 시 항상 `lock="0"`으로 하드코딩되던 문제
+    /// 해소 — 수식·공용 도형·표·차트/OLE 경로에 배선한다.
+    pub locked: bool,
 }
 
 /// HWPX 개체 `numberingType` (캡션 번호 범주)
@@ -102,6 +119,16 @@ pub enum ObjectNumberingType {
     Picture,
     Table,
     Equation,
+}
+
+/// HWPX 개체 `dropcapstyle` (드롭캡 표시 방식). OWPML Core 스키마 `DropCapStyleType`.
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub enum DropCapStyle {
+    #[default]
+    None,
+    DoubleLine,
+    TripleLine,
+    Margin,
 }
 
 /// 세로 위치 기준

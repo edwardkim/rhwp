@@ -314,7 +314,25 @@ function normalizeSamples(manifest, filterText, scope, readinessOnly) {
       file,
       category: sample.category || 'uncategorized',
       page: sample.page ?? 0,
+      viewOptions: {
+        showParagraphMarks: false,
+        showControlCodes: false,
+      },
     };
+    if (sample.viewOptions !== undefined) {
+      if (!sample.viewOptions || typeof sample.viewOptions !== 'object'
+        || Array.isArray(sample.viewOptions)
+        || Object.keys(sample.viewOptions).some(
+          key => !['showParagraphMarks', 'showControlCodes'].includes(key),
+        )
+        || Object.values(sample.viewOptions).some(value => typeof value !== 'boolean')) {
+        throw new Error(`invalid viewOptions for baseline sample: ${id}`);
+      }
+      normalizedSample.viewOptions = {
+        showParagraphMarks: sample.viewOptions.showParagraphMarks ?? false,
+        showControlCodes: sample.viewOptions.showControlCodes ?? false,
+      };
+    }
     if (!Number.isInteger(normalizedSample.page) || normalizedSample.page < 0) {
       throw new Error(`baseline sample page must be a non-negative integer: ${id}`);
     }
@@ -386,6 +404,39 @@ function normalizeSamples(manifest, filterText, scope, readinessOnly) {
       || String(sample.file).toLowerCase().includes(filter)
       || String(sample.category).toLowerCase().includes(filter);
   });
+}
+
+async function applySampleViewOptions(page, viewOptions) {
+  const previous = await page.evaluate(() => ({
+    decisionKey: window.__canvasView?.getRendererSessionDiagnostics?.()?.decisionKey ?? null,
+    showParagraphMarks: window.__wasm?.getShowParagraphMarks?.() ?? false,
+    showControlCodes: window.__wasm?.getShowControlCodes?.() ?? false,
+  }));
+  if (previous.showParagraphMarks === viewOptions.showParagraphMarks
+    && previous.showControlCodes === viewOptions.showControlCodes) return;
+  await page.evaluate((options) => {
+    const wasm = window.__wasm;
+    if (!wasm) throw new Error('baseline view options require a loaded document');
+    wasm.setShowControlCodes(options.showControlCodes);
+    wasm.setShowParagraphMarks(options.showParagraphMarks);
+    window.__eventBus?.emit('document-view-changed');
+  }, viewOptions);
+  await page.waitForFunction(
+    ({ expected, previousKey }) => {
+      const wasm = window.__wasm;
+      const decisionKey = window.__canvasView
+        ?.getRendererSessionDiagnostics?.()?.decisionKey ?? null;
+      return wasm?.getShowParagraphMarks?.() === expected.showParagraphMarks
+        && wasm?.getShowControlCodes?.() === expected.showControlCodes
+        && decisionKey !== null
+        && decisionKey !== previousKey;
+    },
+    { timeout: 15000, polling: 50 },
+    { expected: viewOptions, previousKey: previous.decisionKey },
+  );
+  await page.evaluate(() => new Promise(resolve => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  }));
 }
 
 async function resetRendererDiagnostics(page) {
@@ -551,6 +602,7 @@ try {
 
         const loadResult = await loadHwpFile(page, sample.file);
         const documentLoadAndInitialRenderMs = loadResult.documentLoadAndInitialRenderMs;
+        await applySampleViewOptions(page, sample.viewOptions);
         if (sample.page >= loadResult.pageCount) {
           throw new Error(
             `baseline sample page is out of range: ${sample.id} page=${sample.page} pageCount=${loadResult.pageCount}`,

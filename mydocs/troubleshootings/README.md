@@ -15,6 +15,10 @@ last_verified: 2026-07-17
 분류했다. 현재 구현에서도 그대로 유효함을 직접 재검증한 문서만 `status: active`로 올린다. 이 상태는
 해결책의 폐기를 뜻하지 않으며, 적용 전에 현재 `devel`과의 대조가 필요하다는 표시다.
 
+## 최근 항목
+
+- [HWP3 내장 OLE 참조명을 외부 파일로 오분류 — 테스트가 오분류를 제도화](hwp3_ole_reference_name_misclassification.md) (2026-07-26, #3363 — 프로세스 실패 해부 포함)
+
 ## 최근 분류된 레이아웃·왕복 충실도 항목
 
 - [raw_data 를 문 clone 뮤테이션 — 화면엔 보이고 저장엔 사라짐](raw_data_stale_clone_on_mutation.md)

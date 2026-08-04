@@ -2,13 +2,12 @@
 kind: memory
 status: historical
 canonical: mydocs/manual/memory/MEMORY.md
-last_verified: 2026-07-17
+last_verified: 2026-07-26
 name: feedback_subissue_linking
 description: 라운드형/실행형 이슈는 생성 직후 부모(umbrella) 이슈의 GitHub 서브 이슈로 등록해 연결 관리 — 작업지시자 확인 방식 (2026-07-09)
 metadata: 
   node_type: memory
   type: feedback
-  originSessionId: 2560b31a-9f1c-4764-bbf1-7ba5fc27c7ce
 ---
 
 **라운드형·실행형 이슈는 생성 직후 부모 이슈의 GitHub 서브 이슈로 등록**해 연결

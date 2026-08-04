@@ -14,6 +14,7 @@ test('EditorTransport는 exact origin의 v1 port로 binary를 caller detach 없�
         'transferable-array-buffer',
         'hml-export',
         'renderer-diagnostics-v1',
+        'notify-saved-v1',
       ]);
       const server = ports[0];
       server.onmessage = ({ data }) => {

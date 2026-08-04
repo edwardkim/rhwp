@@ -3,6 +3,7 @@ export const EMBED_CAPABILITIES = [
   'transferable-array-buffer',
   'hml-export',
   'renderer-diagnostics-v1',
+  'notify-saved-v1',
 ] as const;
 
 export interface EmbedConnectAttempt {

@@ -247,6 +247,7 @@ fn push_ole_empty_para_end_anchor(
             border_fill_id: 0,
             baseline,
             field_marker: FieldMarkerType::None,
+            display_text: None,
         }),
         BoundingBox::new(anchor_x, anchor_y, 0.0, line_height),
     );
@@ -443,6 +444,9 @@ impl LayoutEngine {
         parent: &mut RenderNode,
         bbox: BoundingBox,
         cfb_data: &[u8],
+        section_index: usize,
+        para_index: usize,
+        control_index: usize,
     ) -> bool {
         if !self.profile.get().hwpx_stored_layout()
             || !crate::parser::ole_container::is_hmapsi_ole_container(cfb_data)
@@ -482,7 +486,15 @@ impl LayoutEngine {
         );
         let node = RenderNode::new(
             node_id,
-            RenderNodeType::RawSvg(crate::renderer::render_tree::RawSvgNode::new(svg)),
+            // HMapsi preview도 다른 OLE preview와 동일하게 원본 control을 보존한다.
+            // 화면에는 이미 그려졌지만 ref가 없으면 getPageControlLayout()이 이를 `ole`
+            // 선택 대상으로 방출하지 않아 Studio 클릭이 텍스트 hit-test로 빠진다 (#3319).
+            RenderNodeType::RawSvg(crate::renderer::render_tree::RawSvgNode::ole(
+                svg,
+                section_index,
+                para_index,
+                control_index,
+            )),
             bbox,
         );
         parent.children.push(node);
@@ -2047,6 +2059,38 @@ impl LayoutEngine {
                                 }
                             }
 
+                            // [#3363] EMF 부재 시 WMF 프레젠테이션 폴백 — HWP3 내장
+                            // OLE(글맵시 등)의 OlePres000 은 표준 WMF 다. 기존 WMF
+                            // 그림 경로와 동일하게 SVG 로 변환해 data URI 로 배치한다.
+                            if !rendered {
+                                if let Some(wmf_bytes) = container.preview_wmf.as_ref() {
+                                    if let Some(svg_bytes) =
+                                        crate::renderer::svg::convert_wmf_to_svg(wmf_bytes)
+                                    {
+                                        use base64::Engine;
+                                        let b64 = base64::engine::general_purpose::STANDARD
+                                            .encode(&svg_bytes);
+                                        let href = format!("data:image/svg+xml;base64,{}", b64);
+                                        let svg_fragment = format!(
+                                            "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\" href=\"{}\"/>",
+                                            render_x, render_y, render_w, render_h, href, href
+                                        );
+                                        push_ole_raw_svg_render_node(
+                                            tree,
+                                            parent,
+                                            BoundingBox::new(
+                                                render_x, render_y, render_w, render_h,
+                                            ),
+                                            svg_fragment,
+                                            section_index,
+                                            para_index,
+                                            control_index,
+                                        );
+                                        rendered = true;
+                                    }
+                                }
+                            }
+
                             // 네이티브 임베딩 이미지(BMP/PNG/JPEG/GIF) 폴백
                             if !rendered {
                                 if let Some((kind, bytes)) = container.native_image.as_ref() {
@@ -2094,6 +2138,9 @@ impl LayoutEngine {
                                 parent,
                                 BoundingBox::new(render_x, render_y, render_w, render_h),
                                 &content.data.load(),
+                                section_index,
+                                para_index,
+                                control_index,
                             )
                         {
                             rendered = true;
@@ -3313,6 +3360,7 @@ impl LayoutEngine {
                             .unwrap_or(0),
                         baseline: advance * 0.85,
                         field_marker: FieldMarkerType::None,
+                        display_text: None,
                     }),
                     BoundingBox::new(char_x, char_y, char_width, advance),
                 );

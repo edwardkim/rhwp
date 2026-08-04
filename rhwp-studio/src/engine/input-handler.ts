@@ -39,6 +39,7 @@ import { computeHangingIndentPx } from './hanging-indent';
 import { isPageLocalTextEditCommand, type PageLocalTextEditOptions } from './input-edit-invalidation';
 import type { NavigationKeyInput } from './navigation-keymap';
 import { isPointNearBoxBorder } from './table-border-hit';
+import { DeferredPaginationRunner } from './deferred-pagination-runner';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
@@ -46,8 +47,7 @@ const DRAG_SCROLL_MIN_STEP_PX = 2;
 const DRAG_SCROLL_MAX_STEP_PX = 20;
 const PX_TO_RAW_2X = 150;
 const PX_TO_HWPUNIT = 75;
-const DEFERRED_PAGINATION_AUTO_FLUSH_DELAY_MS = 10_000;
-const DEFERRED_PAGINATION_AUTO_FLUSH_PAGE_LIMIT = 30;
+const DOCUMENT_PAGINATION_IDLE_FLUSH_DELAY_MS = 120;
 
 type FormatCopyState = {
   charProps: Partial<CharProperties>;
@@ -311,6 +311,7 @@ export class InputHandler {
   private protectedCellHoverEl: HTMLDivElement | null = null;
   private deferredPaginationFlushTimer: ReturnType<typeof setTimeout> | null = null;
   private deferredPaginationPending = false;
+  private readonly deferredPaginationRunner: DeferredPaginationRunner;
   private rawTextMutationEffects = new TextMutationEffectAccumulator();
 
   // 표 경계선 리사이즈 드래그 상태
@@ -432,6 +433,8 @@ export class InputHandler {
     pageLeft: number;
     pageOffset: number;
     zoom: number;
+    // [Task #2759] 드래그 시작 시 캡처한 원래 끝점(글로벌 HWPUNIT) — 종료 시 Undo 기록의 before.
+    orig: { sx: number; sy: number; ex: number; ey: number };
   } | null = null;
 
   // 양식 개체 오버레이
@@ -447,6 +450,8 @@ export class InputHandler {
   // IME 조합 상태
   private isComposing = false;
   private compositionAnchor: DocumentPosition | null = null;
+  /** 조합 시작 시점의 exact 좌표. 조합 갱신마다 같은 anchor를 다시 탐색하지 않는다. */
+  private compositionAnchorRect: CursorRect | null = null;
   private compositionLength = 0; // 문서에 삽입된 조합 텍스트 길이
   private _lastCompositionText = '';
   private _lastComposedText = '';
@@ -468,6 +473,7 @@ export class InputHandler {
   private onInputBound: (e?: Event) => void;
   private onCompositionStartBound: () => void;
   private onCompositionEndBound: () => void;
+  private onInputBlurBound: () => void;
   private onCopyBound: (e: ClipboardEvent) => void;
   private onCutBound: (e: ClipboardEvent) => void;
   private onPasteBound: (e: ClipboardEvent) => void;
@@ -488,12 +494,18 @@ export class InputHandler {
     this.fieldMarker = new FieldMarkerRenderer(container, virtualScroll);
     this.selectionRenderer = new SelectionRenderer(container, virtualScroll);
     this.history = new CommandHistory();
+    this.deferredPaginationRunner = new DeferredPaginationRunner(
+      wasm,
+      (result) => this.completeResumablePagination(result.pageCount),
+      () => this.fallbackFromResumablePagination(),
+    );
 
     // Hidden input 요소 생성
     // iOS WebKit에서는 <textarea>로 composition 이벤트가 발생하지 않으므로
     // contentEditable <div>를 사용하고 .value 프록시를 추가한다.
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const inputHost = this.container.closest('main') ?? document.body;
 
     if (isIOS) {
       const div = document.createElement('div');
@@ -508,7 +520,8 @@ export class InputHandler {
       div.setAttribute('autocapitalize', 'off');
       div.setAttribute('spellcheck', 'false');
       div.setAttribute('inputmode', 'text');
-      document.body.appendChild(div);
+      div.setAttribute('aria-label', '문서 편집 입력');
+      inputHost.appendChild(div);
       // textarea 인터페이스 호환을 위한 프록시
       Object.defineProperty(div, 'value', {
         get() { return div.textContent || ''; },
@@ -523,7 +536,8 @@ export class InputHandler {
       this.textarea.setAttribute('autocorrect', 'off');
       this.textarea.setAttribute('autocapitalize', 'off');
       this.textarea.setAttribute('spellcheck', 'false');
-      document.body.appendChild(this.textarea);
+      this.textarea.setAttribute('aria-label', '문서 편집 입력');
+      inputHost.appendChild(this.textarea);
     }
 
     this.onClickBound = this.onClick.bind(this);
@@ -532,6 +546,9 @@ export class InputHandler {
     this.onInputBound = this.onInput.bind(this);
     this.onCompositionStartBound = this.onCompositionStart.bind(this);
     this.onCompositionEndBound = this.onCompositionEnd.bind(this);
+    this.onInputBlurBound = () => {
+      this.flushDeferredPaginationIfNeeded('input-blur', false);
+    };
     this.onCopyBound = this.onCopy.bind(this);
     this.onCutBound = this.onCut.bind(this);
     this.onPasteBound = this.onPaste.bind(this);
@@ -561,6 +578,7 @@ export class InputHandler {
     this.textarea.addEventListener('input', this.onInputBound);
     this.textarea.addEventListener('compositionstart', this.onCompositionStartBound);
     this.textarea.addEventListener('compositionend', this.onCompositionEndBound);
+    this.textarea.addEventListener('blur', this.onInputBlurBound);
     this.textarea.addEventListener('copy', this.onCopyBound);
     this.textarea.addEventListener('cut', this.onCutBound);
     this.textarea.addEventListener('paste', this.onPasteBound);
@@ -1331,6 +1349,11 @@ export class InputHandler {
     _mouse.onMouseUp.call(this, _e);
   }
 
+  /** [Task #2759] 직선 끝점 드래그 종료 — 끝점 이동을 Undo 히스토리에 기록 */
+  private finishLineEndpointDrag(): void {
+    _mouse.finishLineEndpointDrag.call(this);
+  }
+
   /** 마우스 이벤트에서 hitTest 결과를 반환한다 */
   private hitTestFromEvent(e: MouseEvent): DocumentPosition | null {
     return this.hitTestFromClientPoint(e.clientX, e.clientY);
@@ -1824,6 +1847,16 @@ export class InputHandler {
     // offset이 0이면 해당 위치, 아니면 offset-1 위치의 서식 반환 (커서 앞 글자 기준)
     const queryOffset = pos.charOffset > 0 ? pos.charOffset - 1 : 0;
     if (pos.parentParaIndex !== undefined) {
+      // [#2756] 중첩 표는 최내곽 셀 대상 ...ByPath 로 조회한다. flat controlIndex/cellIndex/
+      // cellParaIndex 는 hit-test 가 cellPath[0](최외곽)에서 채우므로 그대로 넘기면 **바깥
+      // 셀**의 서식을 읽는다. applyToggleFormat 이 이 값에서 !current[prop] 로 토글 방향을
+      // 정하므로(그리고 실제 적용 ApplyCharFormatCommand 는 이미 ...ByPath 로 안쪽 셀에
+      // 적용) 방향이 어긋나 Ctrl+B/I 가 거꾸로 동작하고 툴바 표시도 오답이 된다.
+      if ((pos.cellPath?.length ?? 0) > 0) {
+        return this.wasm.getCellCharPropertiesAtByPath(
+          pos.sectionIndex, pos.parentParaIndex, JSON.stringify(pos.cellPath), queryOffset,
+        );
+      }
       return this.wasm.getCellCharPropertiesAt(
         pos.sectionIndex, pos.parentParaIndex, pos.controlIndex!,
         pos.cellIndex!, pos.cellParaIndex!, queryOffset,
@@ -2109,6 +2142,7 @@ export class InputHandler {
 
   /** Undo 처리 */
   private handleUndo(): void {
+    this.flushDeferredPaginationIfNeeded('before-undo', false);
     const newPos = this.history.undo(this.wasm);
     if (newPos) {
       this.prepareTextMutationBeforeCursor(IMMEDIATE_TEXT_MUTATION_EFFECTS);
@@ -2122,6 +2156,7 @@ export class InputHandler {
 
   /** Redo 처리 */
   private handleRedo(): void {
+    this.flushDeferredPaginationIfNeeded('before-redo', false);
     const newPos = this.history.redo(this.wasm);
     if (newPos) {
       const boundaryHandled = this.prepareTextMutationBeforeCursor(
@@ -2308,6 +2343,22 @@ export class InputHandler {
     _text.onCompositionStart.call(this);
   }
 
+  /** 현재 cursor가 조합 anchor와 같을 때 시작 좌표를 안전하게 보존한다. */
+  private captureCompositionAnchorRect(anchor: DocumentPosition): void {
+    const current = this.cursor.getPosition();
+    const rect = this.cursor.getRect();
+    this.compositionAnchorRect = rect && CursorState.comparePositions(current, anchor) === 0
+      ? {
+          ...rect,
+          cellBounds: rect.cellBounds ? { ...rect.cellBounds } : undefined,
+        }
+      : null;
+  }
+
+  private clearCompositionAnchorRect(): void {
+    this.compositionAnchorRect = null;
+  }
+
   /** IME 조합 완료 — 조합 텍스트를 Command로 기록 */
   private onCompositionEnd(): void {
     _text.onCompositionEnd.call(this);
@@ -2328,10 +2379,15 @@ export class InputHandler {
     this.rawTextMutationEffects.add(_text.insertTextAtRaw.call(this, pos, text));
   }
 
+  private replaceTextAtRaw(pos: DocumentPosition, deleteCount: number, text: string): void {
+    this.rawTextMutationEffects.add(
+      _text.replaceTextAtRaw.call(this, pos, deleteCount, text),
+    );
+  }
+
   /** 위치에서 텍스트를 삭제한다 (WASM 직접 호출, IME 조합용) */
   private deleteTextAt(pos: DocumentPosition, count: number): void {
-    _text.deleteTextAt.call(this, pos, count);
-    this.rawTextMutationEffects.add(IMMEDIATE_TEXT_MUTATION_EFFECTS);
+    this.rawTextMutationEffects.add(_text.deleteTextAt.call(this, pos, count));
   }
 
   /** textarea에 포커스를 설정한다 (iOS 호환) */
@@ -2385,11 +2441,15 @@ export class InputHandler {
     if (!this.cursor.getRect()?.cellOverflowed) return false;
 
     this.cancelDeferredPaginationFlush();
+    this.deferredPaginationRunner.cancel();
     try {
       this.wasm.flushDeferredPagination();
       this.deferredPaginationPending = false;
       this.lastCellKey = null;
       this.protectedCellHitCache = null;
+      if (this.isComposing) {
+        this.compositionAnchorRect = null;
+      }
       this.eventBus.emit('document-mutated', 'input-handler-cell-overflow');
       this.eventBus.emit('document-changed', 'cell-overflow-pagination');
       this.cursor.moveTo(this.cursor.getPosition());
@@ -2404,12 +2464,9 @@ export class InputHandler {
   private scheduleDeferredPaginationFlush(): void {
     this.cancelDeferredPaginationFlush();
     this.deferredPaginationPending = true;
-    if (!this.shouldAutoFlushDeferredPagination()) {
-      return;
-    }
     this.deferredPaginationFlushTimer = setTimeout(() => {
       this.flushDeferredPaginationIfNeeded('idle-auto');
-    }, DEFERRED_PAGINATION_AUTO_FLUSH_DELAY_MS);
+    }, DOCUMENT_PAGINATION_IDLE_FLUSH_DELAY_MS);
   }
 
   private cancelDeferredPaginationFlush(): void {
@@ -2419,21 +2476,44 @@ export class InputHandler {
     }
   }
 
-  /** deferred mutation을 cursor lookup 전에 등록하고 실제 flow 경계만 동기 flush한다. */
+  /** deferred mutation을 cursor lookup 전에 등록하고 flow 경계에서는 resumable job을 시작한다. */
   private prepareTextMutationBeforeCursor(effects: TextMutationEffects): boolean {
     if (effects.paginationCompleted) {
       this.cancelDeferredPaginationFlush();
+      this.deferredPaginationRunner.cancel();
       this.deferredPaginationPending = false;
     }
-    if (!effects.deferredPagination) return false;
+    if (effects.flowChanged && effects.paginationCompleted) return true;
+    if (!effects.documentPaginationPending) return false;
 
+    const replacesActiveJob = this.deferredPaginationRunner.isActive();
     this.cancelDeferredPaginationFlush();
     this.deferredPaginationPending = true;
-    if (!effects.cellFlowChanged) return false;
+    if (!effects.flowChanged && !replacesActiveJob) return false;
 
-    // 성공 여부와 무관하게 이 호출에서 재시도하지 않는다. 실패하면 pending은 보존된다.
-    this.flushDeferredPaginationIfNeeded('cell-flow-boundary', false);
+    // 최신 revision의 shadow job으로 교체하고, 한 macrotask당 한 fragment씩 전진한다.
+    this.deferredPaginationRunner.start();
     return true;
+  }
+
+  private completeResumablePagination(_pageCount: number): void {
+    this.cancelDeferredPaginationFlush();
+    this.deferredPaginationPending = false;
+    this.lastCellKey = null;
+    this.protectedCellHitCache = null;
+    if (this.isComposing) {
+      this.compositionAnchorRect = null;
+    }
+    this.eventBus.emit('document-mutated', 'input-handler-resumable-pagination');
+    this.eventBus.emit('document-changed', 'deferred-pagination-complete');
+    const position = this.cursor.getPosition();
+    this.cursor.moveTo(position);
+    this.updateCaret();
+  }
+
+  private fallbackFromResumablePagination(): void {
+    // 구버전 WASM 또는 fast-path 비대상 문서는 기존 동기 barrier 의미론을 유지한다.
+    this.flushDeferredPaginationIfNeeded('resumable-fallback');
   }
 
   private resetRawTextMutationEffects(): void {
@@ -2444,22 +2524,24 @@ export class InputHandler {
     return this.prepareTextMutationBeforeCursor(this.rawTextMutationEffects.consume());
   }
 
-  private shouldAutoFlushDeferredPagination(): boolean {
-    return this.wasm.pageCount <= DEFERRED_PAGINATION_AUTO_FLUSH_PAGE_LIMIT;
-  }
-
   hasDeferredPaginationPending(): boolean {
     return this.deferredPaginationPending;
   }
 
   flushDeferredPaginationIfNeeded(reason = 'manual', emitChange = true): boolean {
-    const shouldFlush = this.deferredPaginationPending || this.deferredPaginationFlushTimer !== null;
+    const shouldFlush = this.deferredPaginationPending
+      || this.deferredPaginationFlushTimer !== null
+      || this.deferredPaginationRunner.isActive();
     this.cancelDeferredPaginationFlush();
     if (!shouldFlush) return false;
 
     try {
+      this.deferredPaginationRunner.cancel();
       this.wasm.flushDeferredPagination();
       this.deferredPaginationPending = false;
+      if (this.isComposing) {
+        this.compositionAnchorRect = null;
+      }
       if (emitChange) {
         this.eventBus.emit('document-changed', `deferred-pagination-flush:${reason}`);
       }
@@ -2555,33 +2637,39 @@ export class InputHandler {
       if (this.isComposing && this.compositionAnchor && this.compositionLength > 0) {
         try {
           const anchor = this.compositionAnchor;
-          let startRect: CursorRect;
-          if (this.cursor.isInHeaderFooter()) {
-            const isHeader = this.cursor.headerFooterMode === 'header';
-            startRect = this.wasm.getCursorRectInHeaderFooter(
-              this.cursor.hfSectionIdx, isHeader, this.cursor.hfApplyTo,
-              this.cursor.hfParaIdx, anchor.charOffset, this.cursor.getRect()?.pageIndex ?? 0,
-            )!;
-          } else if (this.cursor.isInFootnote()) {
-            startRect = this.wasm.getCursorRectInFootnote(
-              this.cursor.fnPageNum, this.cursor.fnFootnoteIndex,
-              this.cursor.fnInnerParaIdx, anchor.charOffset,
-            )!;
-          } else if ((anchor.cellPath?.length ?? 0) > 1 && anchor.parentParaIndex !== undefined) {
-            startRect = this.wasm.getCursorRectByPath(
-              anchor.sectionIndex, anchor.parentParaIndex,
-              JSON.stringify(anchor.cellPath), anchor.charOffset,
-            );
-          } else if (anchor.parentParaIndex !== undefined) {
-            startRect = this.wasm.getCursorRectInCell(
-              anchor.sectionIndex, anchor.parentParaIndex,
-              anchor.controlIndex!, anchor.cellIndex!,
-              anchor.cellParaIndex!, anchor.charOffset,
-            );
-          } else {
-            startRect = this.wasm.getCursorRect(
-              anchor.sectionIndex, anchor.paragraphIndex, anchor.charOffset,
-            );
+          let startRect = this.compositionAnchorRect;
+          if (!startRect) {
+            if (this.cursor.isInHeaderFooter()) {
+              const isHeader = this.cursor.headerFooterMode === 'header';
+              startRect = this.wasm.getCursorRectInHeaderFooter(
+                this.cursor.hfSectionIdx, isHeader, this.cursor.hfApplyTo,
+                this.cursor.hfParaIdx, anchor.charOffset, this.cursor.getRect()?.pageIndex ?? 0,
+              )!;
+            } else if (this.cursor.isInFootnote()) {
+              startRect = this.wasm.getCursorRectInFootnote(
+                this.cursor.fnPageNum, this.cursor.fnFootnoteIndex,
+                this.cursor.fnInnerParaIdx, anchor.charOffset,
+              )!;
+            } else if ((anchor.cellPath?.length ?? 0) > 1 && anchor.parentParaIndex !== undefined) {
+              startRect = this.wasm.getCursorRectByPath(
+                anchor.sectionIndex, anchor.parentParaIndex,
+                JSON.stringify(anchor.cellPath), anchor.charOffset,
+              );
+            } else if (anchor.parentParaIndex !== undefined) {
+              startRect = this.wasm.getCursorRectInCell(
+                anchor.sectionIndex, anchor.parentParaIndex,
+                anchor.controlIndex!, anchor.cellIndex!,
+                anchor.cellParaIndex!, anchor.charOffset,
+              );
+            } else {
+              startRect = this.wasm.getCursorRect(
+                anchor.sectionIndex, anchor.paragraphIndex, anchor.charOffset,
+              );
+            }
+            this.compositionAnchorRect = {
+              ...startRect,
+              cellBounds: startRect.cellBounds ? { ...startRect.cellBounds } : undefined,
+            };
           }
           const charWidth = rect.x - startRect.x;
           const text = this.textarea.value || '';
@@ -3096,12 +3184,15 @@ export class InputHandler {
   }
 
   deactivate(): void {
+    this.flushDeferredPaginationIfNeeded('before-deactivate', false);
     this.active = false;
     this.cancelDeferredPaginationFlush();
+    this.deferredPaginationRunner.cancel();
     this.deferredPaginationPending = false;
     this.resetRawTextMutationEffects();
     this.isComposing = false;
     this.compositionAnchor = null;
+    this.compositionAnchorRect = null;
     this.compositionLength = 0;
     this._lastCompositionText = '';
     this._lastComposedText = '';
@@ -3125,6 +3216,7 @@ export class InputHandler {
   }
 
   dispose(): void {
+    this.flushDeferredPaginationIfNeeded('before-dispose', false);
     if (this.isResizeDragging) {
       this.cleanupResizeDrag();
     }
@@ -3140,10 +3232,12 @@ export class InputHandler {
       this.resizeHoverRafId = 0;
     }
     this.cancelDeferredPaginationFlush();
+    this.deferredPaginationRunner.cancel();
     this.deferredPaginationPending = false;
     this.resetRawTextMutationEffects();
     this.isComposing = false;
     this.compositionAnchor = null;
+    this.compositionAnchorRect = null;
     this.compositionLength = 0;
     this._lastCompositionText = '';
     this._lastComposedText = '';
@@ -3169,6 +3263,7 @@ export class InputHandler {
     this.textarea.removeEventListener('input', this.onInputBound);
     this.textarea.removeEventListener('compositionstart', this.onCompositionStartBound);
     this.textarea.removeEventListener('compositionend', this.onCompositionEndBound);
+    this.textarea.removeEventListener('blur', this.onInputBlurBound);
     this.textarea.removeEventListener('copy', this.onCopyBound);
     this.textarea.removeEventListener('cut', this.onCutBound);
     this.textarea.removeEventListener('paste', this.onPasteBound);
@@ -3540,9 +3635,10 @@ export class InputHandler {
 
     try {
       // [Task #2377] 누름틀 제거는 필드+안내문 텍스트를 지운다(문자 수 변경) — 일반
-      // 모드에선 snapshot 으로 기록해 undo 가능하게 한다. 양식 모드는 게이트가 snapshot 을
-      // 드롭해 무언 폐기 회귀(#2361 리뷰 계급)가 되므로 기존 직접 경로를 유지한다(비기록 —
-      // 양식 모드 누름틀 제거의 기록은 역연산 설계가 필요해 범위 외).
+      // 모드에선 snapshot 으로 기록해 undo 가능하게 한다. 아래 양식 모드 분기는 방어적이다:
+      // field:remove는 canExecute에서, 키보드 경계 삭제는 tryConfirmRemove…에서 양식 모드를
+      // 이미 막으므로 현재 도달 경로가 없다. 미래의 직접 호출이 생겨도 snapshot 게이트의
+      // 무언 폐기를 피하려 기존 직접 경로를 보존한다(기록 역연산 설계는 명시적 범위 외).
       if (this.editMode === 'form') {
         const result = this.wasm.removeFieldAt(pos);
         if (!result.ok) return;
@@ -4829,6 +4925,8 @@ export class InputHandler {
         commit();
       } else if (e.key === 'Escape') {
         e.preventDefault();
+        // 취소는 blur가 뒤따라도 값을 적용하거나 히스토리를 기록하지 않아야 한다.
+        committed = true;
         this.removeFormOverlay();
       }
     });
